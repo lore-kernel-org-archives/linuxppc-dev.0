@@ -2,17 +2,17 @@ Return-Path: <alex.williamson@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AF5371A0BD9
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Feb 2015 11:12:16 +1100 (AEDT)
-Message-ID: <1422922326.22865.447.camel@redhat.com>
-Subject: Re: [PATCH v3 05/24] vfio: powerpc/spapr: Move locked_vm accounting
- to helpers
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5905C1A0BD9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Feb 2015 11:14:54 +1100 (AEDT)
+Message-ID: <1422922365.22865.448.camel@redhat.com>
+Subject: Re: [PATCH v3 08/24] powerpc/spapr: vfio: Switch from iommu_table
+ to new powerpc_iommu
 From: Alex Williamson <alex.williamson@redhat.com>
 To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Date: Mon, 02 Feb 2015 17:12:06 -0700
-In-Reply-To: <1422523325-1389-6-git-send-email-aik@ozlabs.ru>
+Date: Mon, 02 Feb 2015 17:12:45 -0700
+In-Reply-To: <1422523325-1389-9-git-send-email-aik@ozlabs.ru>
 References: <1422523325-1389-1-git-send-email-aik@ozlabs.ru>
- <1422523325-1389-6-git-send-email-aik@ozlabs.ru>
+ <1422523325-1389-9-git-send-email-aik@ozlabs.ru>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 Cc: Alexander Graf <agraf@suse.de>, Gavin Shan <gwshan@linux.vnet.ibm.com>,
@@ -28,125 +28,92 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On Thu, 2015-01-29 at 20:21 +1100, Alexey Kardashevskiy wrote:
-> There moves locked pages accounting to helpers.
-> Later they will be reused for Dynamic DMA windows (DDW).
-> 
-> While we are here, update the comment explaining why RLIMIT_MEMLOCK
-> might be required to be bigger than the guest RAM. This also prints
-> pid of the current process in pr_warn/pr_debug.
+> Modern IBM POWERPC systems support multiple (currently two) TCE tables
+> per IOMMU group (a.k.a. PE). This adds a powerpc_iommu container
+> for TCE tables. Right now just one table is supported.
 > 
 > Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 > ---
->  drivers/vfio/vfio_iommu_spapr_tce.c | 72 +++++++++++++++++++++++++++----------
->  1 file changed, 53 insertions(+), 19 deletions(-)
-> 
+>  arch/powerpc/include/asm/iommu.h            |  18 ++--
+>  arch/powerpc/kernel/eeh.c                   |   2 +-
+>  arch/powerpc/kernel/iommu.c                 |  34 ++++----
+>  arch/powerpc/platforms/powernv/pci-ioda.c   |  37 +++++---
+>  arch/powerpc/platforms/powernv/pci-p5ioc2.c |  16 ++--
+>  arch/powerpc/platforms/powernv/pci.c        |   2 +-
+>  arch/powerpc/platforms/powernv/pci.h        |   4 +-
+>  arch/powerpc/platforms/pseries/iommu.c      |   9 +-
+>  drivers/vfio/vfio_iommu_spapr_tce.c         | 131 ++++++++++++++++++++--------
+>  9 files changed, 170 insertions(+), 83 deletions(-)
+[snip]
 > diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
-> index c596053..29d5708 100644
+> index 29d5708..28909e1 100644
 > --- a/drivers/vfio/vfio_iommu_spapr_tce.c
 > +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
-> @@ -29,6 +29,47 @@
->  static void tce_iommu_detach_group(void *iommu_data,
->  		struct iommu_group *iommu_group);
+> @@ -84,7 +84,7 @@ static void decrement_locked_vm(long npages)
+>   */
+>  struct tce_container {
+>  	struct mutex lock;
+> -	struct iommu_table *tbl;
+> +	struct iommu_group *grp;
+>  	bool enabled;
+>  };
 >  
-> +#define IOMMU_TABLE_PAGES(tbl) \
-> +		(((tbl)->it_size << (tbl)->it_page_shift) >> PAGE_SHIFT)
-
-A bit of an infringement on the global namespace with such a generic
-name.
-
-> +
-> +static long try_increment_locked_vm(long npages)
+> @@ -104,16 +104,40 @@ static bool tce_check_page_size(struct page *page, unsigned page_shift)
+>  	return false;
+>  }
+>  
+> +static struct iommu_table *spapr_tce_find_table(
+> +		struct tce_container *container,
+> +		phys_addr_t ioba)
 > +{
-> +	long ret = 0, locked, lock_limit;
+> +	long i;
+> +	struct iommu_table *ret = NULL;
+> +	struct powerpc_iommu *iommu = iommu_group_get_iommudata(container->grp);
 > +
-> +	if (!current || !current->mm)
-> +		return -ESRCH; /* process exited */
+> +	mutex_lock(&container->lock);
+> +	for (i = 0; i < POWERPC_IOMMU_MAX_TABLES; ++i) {
+> +		struct iommu_table *tbl = &iommu->tables[i];
+> +		unsigned long entry = ioba >> tbl->it_page_shift;
+> +		unsigned long start = tbl->it_offset;
+> +		unsigned long end = start + tbl->it_size;
 > +
-> +	down_write(&current->mm->mmap_sem);
-> +	locked = current->mm->locked_vm + npages;
-> +	lock_limit = rlimit(RLIMIT_MEMLOCK) >> PAGE_SHIFT;
-> +	if (locked > lock_limit && !capable(CAP_IPC_LOCK)) {
-> +		pr_warn("[%d] RLIMIT_MEMLOCK (%ld) exceeded\n",
-> +				current->pid, rlimit(RLIMIT_MEMLOCK));
-> +		ret = -ENOMEM;
-> +	} else {
-> +		current->mm->locked_vm += npages;
+> +		if ((start <= entry) && (entry < end)) {
+> +			ret = tbl;
+> +			break;
+> +		}
 > +	}
-> +	pr_debug("[%d] RLIMIT_MEMLOCK+ %ld pages\n", current->pid,
-> +			current->mm->locked_vm);
-> +	up_write(&current->mm->mmap_sem);
+> +	mutex_unlock(&container->lock);
 > +
 > +	return ret;
 > +}
 > +
-> +static void decrement_locked_vm(long npages)
-> +{
-> +	if (!current || !current->mm)
-> +		return; /* process exited */
-> +
-> +	down_write(&current->mm->mmap_sem);
-> +	if (npages > current->mm->locked_vm)
-> +		npages = current->mm->locked_vm;
-> +	current->mm->locked_vm -= npages;
-> +	pr_debug("[%d] RLIMIT_MEMLOCK- %ld pages\n", current->pid,
-> +			current->mm->locked_vm);
-> +	up_write(&current->mm->mmap_sem);
-> +}
-> +
->  /*
->   * VFIO IOMMU fd for SPAPR_TCE IOMMU implementation
->   *
-> @@ -66,8 +107,6 @@ static bool tce_check_page_size(struct page *page, unsigned page_shift)
 >  static int tce_iommu_enable(struct tce_container *container)
 >  {
 >  	int ret = 0;
-> -	unsigned long locked, lock_limit, npages;
-> -	struct iommu_table *tbl = container->tbl;
+> +	struct powerpc_iommu *iommu;
+> +	struct iommu_table *tbl;
 >  
->  	if (!container->tbl)
+> -	if (!container->tbl)
+> +	if (!container->grp)
 >  		return -ENXIO;
-> @@ -95,21 +134,19 @@ static int tce_iommu_enable(struct tce_container *container)
->  	 * Also we don't have a nice way to fail on H_PUT_TCE due to ulimits,
->  	 * that would effectively kill the guest at random points, much better
->  	 * enforcing the limit based on the max that the guest can map.
-> +	 *
-> +	 * Unfortunately at the moment it counts whole tables, no matter how
-> +	 * much memory the guest has. I.e. for 4GB guest and 4 IOMMU groups
-> +	 * each with 2GB DMA window, 8GB will be counted here. The reason for
-> +	 * this is that we cannot tell here the amount of RAM used by the guest
-> +	 * as this information is only available from KVM and VFIO is
-> +	 * KVM agnostic.
+>  
+> -	if (!current->mm)
+> -		return -ESRCH; /* process exited */
+> -
+>  	if (container->enabled)
+>  		return -EBUSY;
+>  
+> @@ -142,7 +166,12 @@ static int tce_iommu_enable(struct tce_container *container)
+>  	 * as this information is only available from KVM and VFIO is
+>  	 * KVM agnostic.
 >  	 */
-> -	down_write(&current->mm->mmap_sem);
-> -	npages = (tbl->it_size << tbl->it_page_shift) >> PAGE_SHIFT;
-> -	locked = current->mm->locked_vm + npages;
-> -	lock_limit = rlimit(RLIMIT_MEMLOCK) >> PAGE_SHIFT;
-> -	if (locked > lock_limit && !capable(CAP_IPC_LOCK)) {
-> -		pr_warn("RLIMIT_MEMLOCK (%ld) exceeded\n",
-> -				rlimit(RLIMIT_MEMLOCK));
-> -		ret = -ENOMEM;
-> -	} else {
-> +	ret = try_increment_locked_vm(IOMMU_TABLE_PAGES(container->tbl));
-> +	if (ret)
-> +		return ret;
->  
-> -		current->mm->locked_vm += npages;
-> -		container->enabled = true;
-> -	}
-> -	up_write(&current->mm->mmap_sem);
-> +	container->enabled = true;
->  
->  	return ret;
->  }
-> @@ -124,10 +161,7 @@ static void tce_iommu_disable(struct tce_container *container)
->  	if (!container->tbl || !current->mm)
->  		return;
->  
-> -	down_write(&current->mm->mmap_sem);
-> -	current->mm->locked_vm -= (container->tbl->it_size <<
-> -			container->tbl->it_page_shift) >> PAGE_SHIFT;
-> -	up_write(&current->mm->mmap_sem);
-> +	decrement_locked_vm(IOMMU_TABLE_PAGES(container->tbl));
->  }
->  
->  static void *tce_iommu_open(unsigned long arg)
+> -	ret = try_increment_locked_vm(IOMMU_TABLE_PAGES(container->tbl));
+> +	iommu = iommu_group_get_iommudata(container->grp);
+> +	if (!iommu)
+> +		return -EFAULT;
+> +
+> +	tbl = &iommu->tables[0];
+
+
+There should probably be a comment somewhere documenting that tables[0]
+is the small window and presumably [1] will be the DDW.
