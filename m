@@ -1,22 +1,38 @@
-Return-Path: <alex.williamson@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0D85F1A0519
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Feb 2015 13:53:51 +1100 (AEDT)
-Message-ID: <1422932018.22865.450.camel@redhat.com>
-Subject: Re: [PATCH v3 24/24] vfio: powerpc/spapr: Support Dynamic DMA windows
-From: Alex Williamson <alex.williamson@redhat.com>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Date: Mon, 02 Feb 2015 19:53:38 -0700
-In-Reply-To: <1422523325-1389-25-git-send-email-aik@ozlabs.ru>
-References: <1422523325-1389-1-git-send-email-aik@ozlabs.ru>
- <1422523325-1389-25-git-send-email-aik@ozlabs.ru>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Alexander Graf <agraf@suse.de>, Gavin Shan <gwshan@linux.vnet.ibm.com>,
- Alexander Gordeev <agordeev@redhat.com>, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0167B1A0A96
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Feb 2015 14:08:33 +1100 (AEDT)
+Received: from /spool/local
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Tue, 3 Feb 2015 13:08:32 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 4CEF62CE8050
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Feb 2015 14:08:29 +1100 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t1338KBL35848204
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 3 Feb 2015 14:08:29 +1100
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t1337t16018609
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 3 Feb 2015 14:07:55 +1100
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Anton Blanchard <anton@samba.org>
+Subject: Re: [PATCH] powerpc/mm: Add trace point for tracking hash pte fault
+In-Reply-To: <20150203090129.5e3c7494@kryten>
+References: <1421753750-17135-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1421809627.4900.1.camel@ellerman.id.au> <87d268v7xm.fsf@linux.vnet.ibm.com>
+ <1422425467.11009.2.camel@ellerman.id.au> <20150202212607.7585dedb@kryten>
+ <87vbjk707w.fsf@linux.vnet.ibm.com> <20150203090129.5e3c7494@kryten>
+Date: Tue, 03 Feb 2015 08:37:35 +0530
+Message-ID: <87pp9r7kw8.fsf@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: linuxppc-dev@lists.ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,253 +42,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2015-01-29 at 20:22 +1100, Alexey Kardashevskiy wrote:
-> This adds create/remove window ioctls to create and remove DMA windows.
-> 
-> This changes VFIO_IOMMU_SPAPR_TCE_GET_INFO handler to return additional
-> information such as a number of supported windows and maximum number
-> levels of TCE tables.
-> 
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> ---
->  arch/powerpc/include/asm/iommu.h    |   2 +-
->  drivers/vfio/vfio_iommu_spapr_tce.c | 137 +++++++++++++++++++++++++++++++++++-
->  include/uapi/linux/vfio.h           |  24 ++++++-
->  3 files changed, 160 insertions(+), 3 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
-> index 33009f9..7ca1c8c 100644
-> --- a/arch/powerpc/include/asm/iommu.h
-> +++ b/arch/powerpc/include/asm/iommu.h
-> @@ -133,7 +133,7 @@ extern void iommu_free_table(struct iommu_table *tbl, const char *node_name);
->  extern struct iommu_table *iommu_init_table(struct iommu_table * tbl,
->  					    int nid);
->  
-> -#define POWERPC_IOMMU_MAX_TABLES	1
-> +#define POWERPC_IOMMU_MAX_TABLES	2
->  
->  #define POWERPC_IOMMU_DEFAULT_LEVELS	1
->  
-> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
-> index 8bcafb7..d3a1cc9 100644
-> --- a/drivers/vfio/vfio_iommu_spapr_tce.c
-> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
-> @@ -300,6 +300,20 @@ static struct iommu_table *spapr_tce_find_table(
->  	return ret;
->  }
->  
-> +static int spapr_tce_find_free_table(struct tce_container *container)
-> +{
-> +	int i;
-> +
-> +	for (i = 0; i < POWERPC_IOMMU_MAX_TABLES; ++i) {
-> +		struct iommu_table *tbl = &container->tables[i];
-> +
-> +		if (!tbl->it_size)
-> +			return i;
-> +	}
-> +
-> +	return -1;
-> +}
-> +
->  static unsigned long tce_default_winsize(struct tce_container *container)
->  {
->  	struct tce_iommu_group *tcegrp;
-> @@ -594,7 +608,7 @@ static long tce_iommu_ioctl(void *iommu_data,
->  				 unsigned int cmd, unsigned long arg)
->  {
->  	struct tce_container *container = iommu_data;
-> -	unsigned long minsz;
-> +	unsigned long minsz, ddwsz;
->  	long ret;
->  
->  	switch (cmd) {
-> @@ -636,6 +650,15 @@ static long tce_iommu_ioctl(void *iommu_data,
->  
->  		info.dma32_window_start = iommu->tce32_start;
->  		info.dma32_window_size = iommu->tce32_size;
-> +		info.windows_supported = iommu->windows_supported;
-> +		info.levels = iommu->levels;
-> +		info.flags = iommu->flags;
-> +
-> +		ddwsz = offsetofend(struct vfio_iommu_spapr_tce_info,
-> +				levels);
-> +
-> +		if (info.argsz == ddwsz)
-> +			minsz = ddwsz;
->  
->  		if (copy_to_user((void __user *)arg, &info, minsz))
->  			return -EFAULT;
-> @@ -800,6 +823,118 @@ static long tce_iommu_ioctl(void *iommu_data,
->  		return ret;
->  	}
->  
-> +	case VFIO_IOMMU_SPAPR_TCE_CREATE: {
-> +		struct vfio_iommu_spapr_tce_create create;
-> +		struct powerpc_iommu *iommu;
-> +		struct tce_iommu_group *tcegrp;
-> +		int num;
-> +
-> +		if (!tce_preregistered(container))
-> +			return -ENXIO;
-> +
-> +		minsz = offsetofend(struct vfio_iommu_spapr_tce_create,
-> +				start_addr);
-> +
-> +		if (copy_from_user(&create, (void __user *)arg, minsz))
-> +			return -EFAULT;
-> +
-> +		if (create.argsz < minsz)
-> +			return -EINVAL;
-> +
-> +		if (create.flags)
-> +			return -EINVAL;
-> +
-> +		num = spapr_tce_find_free_table(container);
-> +		if (num < 0)
-> +			return -ENOSYS;
-> +
-> +		tcegrp = list_first_entry(&container->group_list,
-> +				struct tce_iommu_group, next);
-> +		iommu = iommu_group_get_iommudata(tcegrp->grp);
-> +
-> +		ret = iommu->ops->create_table(iommu, num,
-> +				create.page_shift, create.window_shift,
-> +				create.levels,
-> +				&container->tables[num]);
-> +		if (ret)
-> +			return ret;
-> +
-> +		list_for_each_entry(tcegrp, &container->group_list, next) {
-> +			struct powerpc_iommu *iommutmp =
-> +					iommu_group_get_iommudata(tcegrp->grp);
-> +
-> +			if (WARN_ON_ONCE(iommutmp->ops != iommu->ops))
-> +				return -EFAULT;
-> +
-> +			ret = iommu->ops->set_window(iommutmp, num,
-> +					&container->tables[num]);
-> +			if (ret)
-> +				return ret;
-> +		}
-> +
-> +		create.start_addr =
-> +				container->tables[num].it_offset <<
-> +				container->tables[num].it_page_shift;
-> +
-> +		if (copy_to_user((void __user *)arg, &create, minsz))
-> +			return -EFAULT;
-> +
-> +		mutex_lock(&container->lock);
-> +		mutex_unlock(&container->lock);
+Anton Blanchard <anton@samba.org> writes:
 
-Huh?
-
-> +
-> +		return ret;
-> +	}
-> +	case VFIO_IOMMU_SPAPR_TCE_REMOVE: {
-> +		struct vfio_iommu_spapr_tce_remove remove;
-> +		struct powerpc_iommu *iommu = NULL;
-> +		struct iommu_table *tbl;
-> +		struct tce_iommu_group *tcegrp;
-> +		int num;
-> +
-> +		if (!tce_preregistered(container))
-> +			return -ENXIO;
-> +
-> +		minsz = offsetofend(struct vfio_iommu_spapr_tce_remove,
-> +				start_addr);
-> +
-> +		if (copy_from_user(&remove, (void __user *)arg, minsz))
-> +			return -EFAULT;
-> +
-> +		if (remove.argsz < minsz)
-> +			return -EINVAL;
-> +
-> +		if (remove.flags)
-> +			return -EINVAL;
-> +
-> +
-> +		tbl = spapr_tce_find_table(container, remove.start_addr);
-> +		if (!tbl)
-> +			return -EINVAL;
-> +
-> +		/* Detach windows from IOMMUs */
-> +		mutex_lock(&container->lock);
-> +
-> +		/* Detach groups from IOMMUs */
-> +		num = tbl - container->tables;
-> +		list_for_each_entry(tcegrp, &container->group_list, next) {
-> +			iommu = iommu_group_get_iommudata(tcegrp->grp);
-> +			if (container->tables[num].it_size)
-> +				iommu->ops->unset_window(iommu, num);
-> +		}
-> +
-> +		/* Free table */
-> +		tcegrp = list_first_entry(&container->group_list,
-> +				struct tce_iommu_group, next);
-> +		iommu = iommu_group_get_iommudata(tcegrp->grp);
-> +
-> +		tce_iommu_clear(container, tbl,
-> +				tbl->it_offset, tbl->it_size);
-> +		iommu->ops->free_table(tbl);
-> +
-> +		mutex_unlock(&container->lock);
-> +
-> +		return 0;
-> +	}
->  	}
->  
->  	return -ENOTTY;
-> diff --git a/include/uapi/linux/vfio.h b/include/uapi/linux/vfio.h
-> index 2bb0c9b..7ed7000 100644
-> --- a/include/uapi/linux/vfio.h
-> +++ b/include/uapi/linux/vfio.h
-> @@ -483,9 +483,11 @@ struct vfio_iommu_type1_unregister_memory {
->   */
->  struct vfio_iommu_spapr_tce_info {
->  	__u32 argsz;
-> -	__u32 flags;			/* reserved for future use */
-> +	__u32 flags;
-
-So what are the flags?
-
->  	__u32 dma32_window_start;	/* 32 bit window start (bytes) */
->  	__u32 dma32_window_size;	/* 32 bit window size (bytes) */
-> +	__u32 windows_supported;
-> +	__u32 levels;
->  };
->  
->  #define VFIO_IOMMU_SPAPR_TCE_GET_INFO	_IO(VFIO_TYPE, VFIO_BASE + 12)
-> @@ -521,6 +523,26 @@ struct vfio_eeh_pe_op {
->  
->  #define VFIO_EEH_PE_OP			_IO(VFIO_TYPE, VFIO_BASE + 21)
->  
-> +struct vfio_iommu_spapr_tce_create {
-> +	__u32 argsz;
-> +	__u32 flags;
-> +	/* in */
-> +	__u32 page_shift;
-> +	__u32 window_shift;
-> +	__u32 levels;
-> +	/* out */
-> +	__u64 start_addr;
-> +};
-> +#define VFIO_IOMMU_SPAPR_TCE_CREATE	_IO(VFIO_TYPE, VFIO_BASE + 19)
-> +
-> +struct vfio_iommu_spapr_tce_remove {
-> +	__u32 argsz;
-> +	__u32 flags;
-> +	/* in */
-> +	__u64 start_addr;
-> +};
-> +#define VFIO_IOMMU_SPAPR_TCE_REMOVE	_IO(VFIO_TYPE, VFIO_BASE + 20)
-> +
+> Hi Aneesh,
+>
+>> yes. We do use jump label. I also verified that looking at .s
+>> 
+>> #APP
+>>  # 23 "./arch/powerpc/include/asm/jump_label.h" 1
+>>         1:
+>>         nop
+>>         .pushsection __jump_table,  "aw"
+>>         .llong 1b, .L201, __tracepoint_hash_fault+8      #,
+>>         .popsection
+>> 
+>>  # 0 "" 2
+>
+> So we insert a single nop, and the slow path is in another section. I'd
+> be surprised if we could measure this, unless the nop causes a branch
+> target alignment issue the slow path caused some hot path icache layout
+> issues.
+>
+>> Without patch
+>> sys: 0m11.2425
+>> 
+>> With patch:
+>> sys: 0m11.3258
+>>
+>> ie, a -0.7% impact 
+>> 
+>> If that impact is high we could possibly put that tracepoint within
+>> #ifdef CONFIG_DEBUG_VM ?
+>
+> Did the real time change? I'd be careful about comparing based on
+> system time.
 
 
-Nak, -EINSUFFICIENTDOCS
+Yes it did. 
+11.8769 with patch
+11.7924 without patch
 
->  /* ***************************************************************** */
->  
->  #endif /* _UAPIVFIO_H */
+I will look at the perf stat data difference between the both runs and update.
+
+-aneesh
