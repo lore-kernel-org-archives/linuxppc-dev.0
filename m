@@ -1,24 +1,34 @@
-Return-Path: <bhelgaas@google.com>
-Received: from mail-ob0-x22c.google.com (mail-ob0-x22c.google.com
- [IPv6:2607:f8b0:4003:c01::22c])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2735A1A0C46
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Feb 2015 02:31:53 +1100 (AEDT)
-Received: by mail-ob0-f172.google.com with SMTP id nt9so19339250obb.3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Feb 2015 07:31:50 -0800 (PST)
-Date: Tue, 3 Feb 2015 09:31:46 -0600
-From: Bjorn Helgaas <bhelgaas@google.com>
-To: Kevin Hao <haokexin@gmail.com>
-Subject: Re: [PATCH v2 01/15] PCI: Add pci_device_to_OF_node() stub for
- !CONFIG_OF
-Message-ID: <20150203153146.GA19679@google.com>
-References: <1422923108.4625.2.camel@ellerman.id.au>
- <1422927444-31292-1-git-send-email-haokexin@gmail.com>
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ by lists.ozlabs.org (Postfix) with ESMTP id D2EFA1A0C1A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Feb 2015 03:35:14 +1100 (AEDT)
+Received: from localhost (mailhub1-int [192.168.12.234])
+ by localhost (Postfix) with ESMTP id 730A31C8075
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Feb 2015 17:35:12 +0100 (CET)
+Received: from mailhub1.si.c-s.fr ([192.168.12.234])
+ by localhost (mailhub1.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+ with ESMTP id cwBgLECF4kPC for <linuxppc-dev@lists.ozlabs.org>;
+ Tue,  3 Feb 2015 17:35:12 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie [192.168.25.192])
+ by pegase1.c-s.fr (Postfix) with ESMTP id 59D1B1C8069
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Feb 2015 17:35:12 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 4062CC73C5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Feb 2015 17:35:12 +0100 (CET)
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+ by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+ with ESMTP id LEmEd_9qnaKU for <linuxppc-dev@lists.ozlabs.org>;
+ Tue,  3 Feb 2015 17:35:12 +0100 (CET)
+Received: from [127.0.0.1] (unknown [172.25.231.75])
+ by messagerie.si.c-s.fr (Postfix) with ESMTP id 1C985C73C4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Feb 2015 17:35:12 +0100 (CET)
+Message-ID: <54D0F8BF.5020008@c-s.fr>
+Date: Tue, 03 Feb 2015 17:35:11 +0100
+From: leroy christophe <christophe.leroy@c-s.fr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1422927444-31292-1-git-send-email-haokexin@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org
+To: LinuxPPC-dev <linuxppc-dev@lists.ozlabs.org>
+Subject: cacheable_memcpy() versus memcpy() ==> 8% improvment on FTP throughput
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,38 +38,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Feb 03, 2015 at 09:37:24AM +0800, Kevin Hao wrote:
-> Add a stub for pci_device_to_OF_node() so drivers don't need to
-> use #ifdef CONFIG_OF around calls to it.
-> 
-> Signed-off-by: Kevin Hao <haokexin@gmail.com>
-> Acked-by: Bjorn Helgaas <bhelgaas@google.com>
+In powerpc32 architecture we have a function called cacheable_memcpy() 
+which does same thing as memcpy() but using dcbz/dcbt instructions for 
+an optimised copy (just like __copy_tofrom_user())
+What seems strange is that it is almost nowhere used (only used in 
+drivers/net/ethernet/ibm/emac/core.c)
 
-Applied to pci/misc for v3.20, thanks!
+I replaced all memcpy() in include/linux/skbuff.h and net/core/skbuff.c 
+by cacheable_memcpy() and I get around 8% improvement on FTP throughput 
+on MPC885.
 
-> ---
-> Hi Bjorn,
-> 
-> Here is the revised version with the update of the subject and commit log
-> in case that you want to take it for 3.20. Otherwise we will merge this
-> version to powerpc tree during the 3.21 cycle.
-> 
->  include/linux/pci.h | 2 ++
->  1 file changed, 2 insertions(+)
-> 
-> diff --git a/include/linux/pci.h b/include/linux/pci.h
-> index 8323cbf93913..421eb6a9e600 100644
-> --- a/include/linux/pci.h
-> +++ b/include/linux/pci.h
-> @@ -1863,6 +1863,8 @@ static inline void pci_set_of_node(struct pci_dev *dev) { }
->  static inline void pci_release_of_node(struct pci_dev *dev) { }
->  static inline void pci_set_bus_of_node(struct pci_bus *bus) { }
->  static inline void pci_release_bus_of_node(struct pci_bus *bus) { }
-> +static inline struct device_node *
-> +pci_device_to_OF_node(const struct pci_dev *pdev) { return NULL; }
->  #endif  /* CONFIG_OF */
->  
->  #ifdef CONFIG_EEH
-> -- 
-> 1.9.3
-> 
+What could be done to generalise the use of cacheable_memcpy() instead 
+of memcpy() whenever possible ?
+Indeed, in order to use cacheable_memcpy(), we need
+* The destination to be cacheable
+* The source and destination to not overlap on the same cachelines
+
+Could we check, when calling memcpy(), whether the destination is 
+cacheable or not, and if yes redirect the call to cacheable_memcpy() ?
+How can we check that ?
+
+Christophe
