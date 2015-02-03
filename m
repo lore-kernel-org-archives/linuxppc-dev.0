@@ -1,15 +1,14 @@
 Return-Path: <christophe.leroy@c-s.fr>
 Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id 243A01A0BC9
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Feb 2015 22:38:30 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id DADB41A0BF2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Feb 2015 22:38:35 +1100 (AEDT)
 From: Christophe Leroy <christophe.leroy@c-s.fr>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  scottwood@freescale.com
-Subject: [PATCH v3 01/11] powerpc/8xx: remove remaining unnecessary code in
- FixupDAR
-Message-Id: <20150203113816.E77811A5F13@localhost.localdomain>
-Date: Tue,  3 Feb 2015 12:38:16 +0100 (CET)
+Subject: [PATCH v3 08/11] powerpc/8xx: Handle CR out of exception PROLOG/EPILOG
+Message-Id: <20150203113818.2140F1A5F1A@localhost.localdomain>
+Date: Tue,  3 Feb 2015 12:38:18 +0100 (CET)
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -20,41 +19,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Since commit 33fb845a6f01 ("powerpc/8xx: Don't use MD_TWC for walk"), MD_EPN and
-MD_TWC are not writen anymore in FixupDAR so saving r3 has become useless.
+In order to be able to reduce scope during which CR is saved, we take
+CR saving/restoring out of exception PROLOG and EPILOG
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
 ---
 v2: no change
-v3: no change
+v3: no change (but impacted by patch 07)
 
- arch/powerpc/kernel/head_8xx.S | 6 ------
- 1 file changed, 6 deletions(-)
+ arch/powerpc/kernel/head_8xx.S | 10 +++++++---
+ 1 file changed, 7 insertions(+), 3 deletions(-)
 
 diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index 3d4b8ee..79b8a23 100644
+index 59039a6..429428c 100644
 --- a/arch/powerpc/kernel/head_8xx.S
 +++ b/arch/powerpc/kernel/head_8xx.S
-@@ -532,9 +532,6 @@ DARFixed:/* Return from dcbx instruction bug workaround */
-  /* define if you don't want to use self modifying code */
- #define NO_SELF_MODIFYING_CODE
- FixupDAR:/* Entry point for dcbx workaround. */
--#ifdef CONFIG_8xx_CPU6
--	mtspr	SPRN_DAR, r3
--#endif
+@@ -116,13 +116,13 @@ turn_on_mmu:
+  */
+ #define EXCEPTION_PROLOG	\
+ 	EXCEPTION_PROLOG_0;	\
++	mfcr	r10;		\
+ 	EXCEPTION_PROLOG_1;	\
+ 	EXCEPTION_PROLOG_2
+ 
+ #define EXCEPTION_PROLOG_0	\
+ 	mtspr	SPRN_SPRG_SCRATCH0,r10;	\
+-	mtspr	SPRN_SPRG_SCRATCH1,r11;	\
+-	mfcr	r10
++	mtspr	SPRN_SPRG_SCRATCH1,r11
+ 
+ #define EXCEPTION_PROLOG_1	\
+ 	mfspr	r11,SPRN_SRR1;		/* check whether user or kernel */ \
+@@ -162,7 +162,6 @@ turn_on_mmu:
+  * Exception exit code.
+  */
+ #define EXCEPTION_EPILOG_0	\
+-	mtcr	r10;		\
+ 	mfspr	r10,SPRN_SPRG_SCRATCH0;	\
+ 	mfspr	r11,SPRN_SPRG_SCRATCH1
+ 
+@@ -313,6 +312,7 @@ InstructionTLBMiss:
+ 	mtspr	SPRN_DAR, r3
+ #endif
+ 	EXCEPTION_PROLOG_0
++	mfcr	r10
  	mtspr	SPRN_SPRG_SCRATCH2, r10
- 	/* fetch instruction from memory. */
- 	mfspr	r10, SPRN_SRR0
-@@ -551,9 +548,6 @@ FixupDAR:/* Entry point for dcbx workaround. */
- 	/* Extract level 2 index */
- 	rlwinm	r11, r11, 32 - (PAGE_SHIFT - 2), 32 - PAGE_SHIFT, 29
- 	lwzx	r11, r10, r11	/* Get the pte */
--#ifdef CONFIG_8xx_CPU6
--	mfspr	r3, SPRN_DAR
--#endif
- 	/* concat physical page address(r11) and page offset(r10) */
- 	mfspr	r10, SPRN_SRR0
- 	rlwimi	r11, r10, 0, 32 - PAGE_SHIFT, 31
+ 	mfspr	r10, SPRN_SRR0	/* Get effective address of fault */
+ 	INVALIDATE_ADJACENT_PAGES_CPU15(r11, r10)
+@@ -363,6 +363,7 @@ InstructionTLBMiss:
+ 	mtspr	SPRN_DAR, r11	/* Tag DAR */
+ #endif
+ 	mfspr	r10, SPRN_SPRG_SCRATCH2
++	mtcr	r10
+ 	EXCEPTION_EPILOG_0
+ 	rfi
+ 
+@@ -372,6 +373,7 @@ DataStoreTLBMiss:
+ 	mtspr	SPRN_DAR, r3
+ #endif
+ 	EXCEPTION_PROLOG_0
++	mfcr	r10
+ 	mtspr	SPRN_SPRG_SCRATCH2, r10
+ 	mfspr	r10, SPRN_MD_EPN
+ 
+@@ -440,6 +442,7 @@ DataStoreTLBMiss:
+ #endif
+ 	mtspr	SPRN_DAR, r11	/* Tag DAR */
+ 	mfspr	r10, SPRN_SPRG_SCRATCH2
++	mtcr	r10
+ 	EXCEPTION_EPILOG_0
+ 	rfi
+ 
+@@ -465,6 +468,7 @@ InstructionTLBError:
+ 	. = 0x1400
+ DataTLBError:
+ 	EXCEPTION_PROLOG_0
++	mfcr	r10
+ 
+ 	mfspr	r11, SPRN_DAR
+ 	cmpwi	cr0, r11, RPN_PATTERN
 -- 
 2.1.0
