@@ -1,14 +1,13 @@
 Return-Path: <christophe.leroy@c-s.fr>
 Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id D6F0F1A0C2A
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Feb 2015 22:38:36 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 1CCB21A0C2A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Feb 2015 22:38:37 +1100 (AEDT)
 From: Christophe Leroy <christophe.leroy@c-s.fr>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  scottwood@freescale.com
-Subject: [PATCH v3 11/11] powerpc/8xx: Add support for TASK_SIZE greater than
- 0x80000000
-Message-Id: <20150203113818.97DAB1A5F1D@localhost.localdomain>
+Subject: [PATCH v3 10/11] powerpc/8xx: Use SPRG2 instead of DAR for saving r3
+Message-Id: <20150203113818.6F9551A5F1C@localhost.localdomain>
 Date: Tue,  3 Feb 2015 12:38:18 +0100 (CET)
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -20,78 +19,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-By default, TASK_SIZE is set to 0x80000000 for PPC_8xx, which is most likely
-sufficient for most cases. However, kernel configuration allows to set TASK_SIZE
-to another value, so the 8xx shall handle it.
+We now have SPRG2 available as in it not used anymore for saving CR, so we don't
+need to crash DAR anymore for saving r3 for CPU6 ERRATA handling.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
 ---
 v2: no change
-v3: no change (but impacted by patch 07)
+v3: no change
 
- arch/powerpc/kernel/head_8xx.S | 25 +++++++++++++++++++------
- 1 file changed, 19 insertions(+), 6 deletions(-)
+ arch/powerpc/kernel/head_8xx.S | 9 ++++-----
+ 1 file changed, 4 insertions(+), 5 deletions(-)
 
 diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index 663315c..7388e20 100644
+index e803ad0..ead6448 100644
 --- a/arch/powerpc/kernel/head_8xx.S
 +++ b/arch/powerpc/kernel/head_8xx.S
-@@ -48,6 +48,19 @@
- 	mtspr	spr, reg
- #endif
+@@ -309,7 +309,7 @@ SystemCall:
  
-+/* Macro to test if an address is a kernel address */
-+#if CONFIG_TASK_SIZE <= 0x80000000
-+#define IS_KERNEL(tmp, addr)		\
-+	andis.	tmp, addr, 0x8000	/* Address >= 0x80000000 */
-+#define BRANCH_UNLESS_KERNEL(label)	beq	label
-+#else
-+#define IS_KERNEL(tmp, addr)		\
-+	rlwinm	tmp, addr, 16, 16, 31;	\
-+	cmpli	cr0, tmp, PAGE_OFFSET >> 16
-+#define BRANCH_UNLESS_KERNEL(label)	blt	label
-+#endif
-+
-+
- /*
-  * Value for the bits that have fixed value in RPN entries.
-  * Also used for tagging DAR for DTLBerror.
-@@ -322,9 +335,9 @@ InstructionTLBMiss:
- 	mfspr	r11, SPRN_SRR0	/* Get effective address of fault */
- 	INVALIDATE_ADJACENT_PAGES_CPU15(r10, r11)
+ InstructionTLBMiss:
+ #ifdef CONFIG_8xx_CPU6
+-	mtspr	SPRN_DAR, r3
++	mtspr	SPRN_SPRG_SCRATCH2, r3
+ #endif
+ 	EXCEPTION_PROLOG_0
+ 
+@@ -362,8 +362,7 @@ InstructionTLBMiss:
+ 
+ 	/* Restore registers */
+ #ifdef CONFIG_8xx_CPU6
+-	mfspr	r3, SPRN_DAR
+-	mtspr	SPRN_DAR, r11	/* Tag DAR */
++	mfspr	r3, SPRN_SPRG_SCRATCH2
+ #endif
+ 	EXCEPTION_EPILOG_0
+ 	rfi
+@@ -371,7 +370,7 @@ InstructionTLBMiss:
+ 	. = 0x1200
+ DataStoreTLBMiss:
+ #ifdef CONFIG_8xx_CPU6
+-	mtspr	SPRN_DAR, r3
++	mtspr	SPRN_SPRG_SCRATCH2, r3
+ #endif
+ 	EXCEPTION_PROLOG_0
  	mfcr	r10
--	andis.	r11, r11, 0x8000	/* Address >= 0x80000000 */
-+	IS_KERNEL(r11, r11)
- 	mfspr	r11, SPRN_M_TW	/* Get level 1 table */
--	beq	3f
-+	BRANCH_UNLESS_KERNEL(3f)
- 	lis	r11, (swapper_pg_dir-PAGE_OFFSET)@ha
- 3:
- 	mtcr	r10
-@@ -379,9 +392,9 @@ DataStoreTLBMiss:
- 	 * kernel page tables.
- 	 */
- 	mfspr	r11, SPRN_MD_EPN
--	andis.	r11, r11, 0x8000
-+	IS_KERNEL(r11, r11)
- 	mfspr	r11, SPRN_M_TW	/* Get level 1 table */
--	beq	3f
-+	BRANCH_UNLESS_KERNEL(3f)
- 	lis	r11, (swapper_pg_dir-PAGE_OFFSET)@ha
- 3:
- 	mtcr	r10
-@@ -516,9 +529,9 @@ FixupDAR:/* Entry point for dcbx workaround. */
- 	mtspr	SPRN_SPRG_SCRATCH2, r10
- 	/* fetch instruction from memory. */
- 	mfspr	r10, SPRN_SRR0
--	andis.	r11, r10, 0x8000	/* Address >= 0x80000000 */
-+	IS_KERNEL(r11, r10)
- 	mfspr	r11, SPRN_M_TW	/* Get level 1 table */
--	beq	3f
-+	BRANCH_UNLESS_KERNEL(3f)
- 	lis	r11, (swapper_pg_dir-PAGE_OFFSET)@ha
- 	/* Insert level 1 index */
- 3:	rlwimi	r11, r10, 32 - ((PAGE_SHIFT - 2) << 1), (PAGE_SHIFT - 2) << 1, 29
+@@ -441,7 +440,7 @@ DataStoreTLBMiss:
+ 
+ 	/* Restore registers */
+ #ifdef CONFIG_8xx_CPU6
+-	mfspr	r3, SPRN_DAR
++	mfspr	r3, SPRN_SPRG_SCRATCH2
+ #endif
+ 	mtspr	SPRN_DAR, r11	/* Tag DAR */
+ 	EXCEPTION_EPILOG_0
 -- 
 2.1.0
