@@ -1,26 +1,37 @@
-Return-Path: <fthain@telegraphics.com.au>
-Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
- [98.124.60.144])
- by lists.ozlabs.org (Postfix) with ESMTP id B44171A0C78
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Feb 2015 17:11:56 +1100 (AEDT)
-Date: Tue, 3 Feb 2015 17:11:25 +1100 (AEDT)
-From: Finn Thain <fthain@telegraphics.com.au>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Subject: Re: nvram and generic_nvram modules are problematic, was Re: [PATCH]
- arch: m68k: mac: misc.c: Remove some unused functions
-In-Reply-To: <20150201084245.GF26493@n2100.arm.linux.org.uk>
-Message-ID: <alpine.LNX.2.00.1502031453160.21644@nippy.intranet>
-References: <1420131732-31039-1-git-send-email-rickard_strandqvist@spectrumdigital.se>
- <alpine.LNX.2.00.1501041045020.15927@nippy.intranet>
- <CAMuHMdXFu3n4d0dMZop186UF+QG=MtLHV=oQr+VszftpEA1kFQ@mail.gmail.com>
- <alpine.LNX.2.00.1502011230150.32582@nippy.intranet>
- <20150201084245.GF26493@n2100.arm.linux.org.uk>
+Return-Path: <preeti@linux.vnet.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1C18D1A0D15
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Feb 2015 17:20:28 +1100 (AEDT)
+Received: from /spool/local
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
+ Mon, 2 Feb 2015 23:20:25 -0700
+Received: from b03cxnp07028.gho.boulder.ibm.com
+ (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id B0E8619D8040
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Feb 2015 23:11:34 -0700 (MST)
+Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
+ by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with
+ ESMTP id t136J1h931326246
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 2 Feb 2015 23:19:01 -0700
+Received: from d03av05.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t136KNuk010103
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 2 Feb 2015 23:20:24 -0700
+Subject: [PATCH V4] cpuidle/powernv: Read target_residency value of idle
+ states from DT if available
+From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+To: mpe@ellerman.id.au
+Date: Tue, 03 Feb 2015 11:50:14 +0530
+Message-ID: <20150203061709.13097.7035.stgit@preeti.in.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Rickard Strandqvist <rickard_strandqvist@spectrumdigital.se>,
- linux-kernel@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
- Geert Uytterhoeven <geert@linux-m68k.org>, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset="utf-8"
+Cc: stewart@linux.vnet.ibm.com, rafael.j.wysocki@intel.com,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-pm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,80 +41,146 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+The device tree now exposes the residency values for different idle states. Read
+these values instead of calculating residency from the latency values. The values
+exposed in the DT are validated for optimal power efficiency. However to maintain
+compatibility with the older firmware code which does not expose residency
+values, use default values as a fallback mechanism. While at it, use better
+APIs to parse the powermgmt device tree node.
 
-On Sun, 1 Feb 2015, Russell King - ARM Linux wrote:
+Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Acked-by: Stewart Smith <stewart@linux.vnet.ibm.com>
+Acked-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+Changes from the previous versions: https://lkml.org/lkml/2015/2/2/12
+1. Used better APIs
+2. Code Cleanups
+3. Reverted back to the V2 of this patch as suggested in the above link,
+in addition to a few cleanups and carried forward the Acks from V2
 
-> On Sun, Feb 01, 2015 at 02:39:42PM +1100, Finn Thain wrote:
-> > I find the ARM support in drivers/char/nvram to be surprising, not to 
-> > say questionable. The /proc/driver/nvram implementation, given 
-> > defined(__arm__), decodes the NVRAM contents in exactly the same 
-> > format as when defined(__i386__) || defined(__x86_64__).
-> 
-> That's because it's used on the Netwinder and EBSA285 platforms, which 
-> are PCI-like, complete with a southbridge which makes them look like a 
-> PC.
+ drivers/cpuidle/cpuidle-powernv.c |   71 ++++++++++++++++++++++---------------
+ 1 file changed, 42 insertions(+), 29 deletions(-)
 
-Well, that explains the presence of RTC NVRAM, but the question was also 
-about the format of that NVRAM.
-
-The the code in question in drivers/char/nvram.c decodes RTC NVRAM on ARM 
-as if it took the same format as x86 PC RTC NVRAM. Apparently they are not 
-in the same format (for EBSA-285 at least).
-
-I downloaded the EBSA-285 BIOS,
-ftp://ftp.arm.linux.org.uk/pub/armlinux/source/boot/bios-1.11.tar.gz
-
-This is from bios/init/cfg.c --
-
-        img_nr = rtc_read_cmos(0);
-        root_dev = rtc_read_cmos(2) | rtc_read_cmos(3) << 8;
-
-        for (i = 0; i < 80; i++) {
-                extra_args[i] = rtc_read_cmos(128+i);
-                if (!extra_args[i])
-                        break;
-        }
-        extra_args[79] = '\0';
-
-(Like /dev/nvram, file offset 0 is actually device offset 14.)
-
-This EBSA-285 BIOS code uses bytes 128 through 208 as "extra_args", 
-whereas /dev/nvram has only 114 bytes in total. The EBSA-285 BIOS doesn't 
-read or write any checksum.
-
-The first two bytes aren't reported in /proc/driver/nvram, whereas 
-EBSA-285 BIOS uses them for img_nr and root_dev. The next one is reported 
-as "floppy type" on x86 PC, though the EBSA-285 BIOS uses it for 
-root_dev >> 8.
-
-This is from an x86 PC, for example:
-
-# cat /proc/driver/nvram 
-Checksum status: valid
-# floppies     : 1
-Floppy 0 type  : none
-Floppy 1 type  : none
-HD 0 type      : 01
-HD 1 type      : none
-HD type 48 data: 512/0/0 C/H/S, precomp 0, lz 256
-HD type 49 data: 1/124/0 C/H/S, precomp 0, lz 0
-DOS base memory: 640 kB
-Extended memory: 64512 kB (configured), 64512 kB (tested)
-Gfx adapter    : EGA, VGA, ... (with BIOS)
-FPU            : installed
-
-My original question was whether the CONFIG_PROC_FS support found in 
-drivers/char/nvram.c should be moved to arch/x86 and arch/m68k.
-
-So that question now seems to hinge on the Netwinder ROM ("nettrom") which 
-I gather is proprietary (I didn't find any source code). Does anyone know 
-what format the Netwinder NVRAM takes?
-
-If NVRAM on Netwinder has a different format to x86 PC, then the 
-CONFIG_PROC_FS code in drivers/char/nvram should go elsewhere.
-
-And if the NVRAM on Netwinder had no checksum, drivers/char/nvram.c would 
-become a generic /dev/nvram misc device, and drivers/char/generic_nvram.c 
-could go away, along with its inherent problems.
-
--- 
+diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
+index 2726663..3aa27a0 100644
+--- a/drivers/cpuidle/cpuidle-powernv.c
++++ b/drivers/cpuidle/cpuidle-powernv.c
+@@ -13,6 +13,7 @@
+ #include <linux/notifier.h>
+ #include <linux/clockchips.h>
+ #include <linux/of.h>
++#include <linux/slab.h>
+ 
+ #include <asm/machdep.h>
+ #include <asm/firmware.h>
+@@ -161,69 +162,81 @@ static int powernv_add_idle_states(void)
+ 	int nr_idle_states = 1; /* Snooze */
+ 	int dt_idle_states;
+ 	const __be32 *idle_state_flags;
+-	const __be32 *idle_state_latency;
+-	u32 len_flags, flags, latency_ns;
+-	int i;
++	u32 len_flags, flags;
++	u32 *latency_ns, *residency_ns;
++	int i, rc;
+ 
+ 	/* Currently we have snooze statically defined */
+ 
+ 	power_mgt = of_find_node_by_path("/ibm,opal/power-mgt");
+ 	if (!power_mgt) {
+ 		pr_warn("opal: PowerMgmt Node not found\n");
+-		return nr_idle_states;
++		goto out;
+ 	}
+ 
+-	idle_state_flags = of_get_property(power_mgt, "ibm,cpu-idle-state-flags", &len_flags);
++	idle_state_flags = of_get_property(power_mgt,
++				"ibm,cpu-idle-state-flags", &len_flags);
+ 	if (!idle_state_flags) {
+-		pr_warn("DT-PowerMgmt: missing ibm,cpu-idle-state-flags\n");
+-		return nr_idle_states;
++		pr_warn("cpuidle-powernv : missing
++				ibm,cpu-idle-state-flags in DT\n");
++		goto out;
+ 	}
+ 
+-	idle_state_latency = of_get_property(power_mgt,
+-			"ibm,cpu-idle-state-latencies-ns", NULL);
+-	if (!idle_state_latency) {
+-		pr_warn("DT-PowerMgmt: missing ibm,cpu-idle-state-latencies-ns\n");
+-		return nr_idle_states;
++	dt_idle_states = len_flags / sizeof(u32);
++
++	latency_ns = kzalloc(sizeof(*latency_ns) * dt_idle_states, GFP_KERNEL);
++	rc = of_property_read_u32_array(power_mgt,
++		"ibm,cpu-idle-state-latencies-ns", latency_ns, dt_idle_states);
++	if (rc) {
++		pr_warn("cpuidle-powernv: missing
++				ibm,cpu-idle-state-latencies-ns in DT\n");
++		goto out_free_latency;
+ 	}
+ 
+-	dt_idle_states = len_flags / sizeof(u32);
++	residency_ns = kzalloc(sizeof(*residency_ns) * dt_idle_states, GFP_KERNEL);
++	rc = of_property_read_u32_array(power_mgt,
++		"ibm,cpu-idle-state-residency-ns", residency_ns, dt_idle_states);
+ 
+ 	for (i = 0; i < dt_idle_states; i++) {
+ 
+ 		flags = be32_to_cpu(idle_state_flags[i]);
+ 
+-		/* Cpuidle accepts exit_latency in us and we estimate
+-		 * target residency to be 10x exit_latency
++		/*
++		 * Cpuidle accepts exit_latency and target_residency in us.
++		 * Use default target_residency values if f/w does not expose it.
+ 		 */
+-		latency_ns = be32_to_cpu(idle_state_latency[i]);
+ 		if (flags & OPAL_PM_NAP_ENABLED) {
+ 			/* Add NAP state */
+ 			strcpy(powernv_states[nr_idle_states].name, "Nap");
+ 			strcpy(powernv_states[nr_idle_states].desc, "Nap");
+ 			powernv_states[nr_idle_states].flags = 0;
+-			powernv_states[nr_idle_states].exit_latency =
+-					((unsigned int)latency_ns) / 1000;
+-			powernv_states[nr_idle_states].target_residency =
+-					((unsigned int)latency_ns / 100);
++			powernv_states[nr_idle_states].target_residency = 100;
+ 			powernv_states[nr_idle_states].enter = &nap_loop;
+-			nr_idle_states++;
+-		}
+-
+-		if (flags & OPAL_PM_SLEEP_ENABLED ||
++		} else if (flags & OPAL_PM_SLEEP_ENABLED ||
+ 			flags & OPAL_PM_SLEEP_ENABLED_ER1) {
+ 			/* Add FASTSLEEP state */
+ 			strcpy(powernv_states[nr_idle_states].name, "FastSleep");
+ 			strcpy(powernv_states[nr_idle_states].desc, "FastSleep");
+ 			powernv_states[nr_idle_states].flags = CPUIDLE_FLAG_TIMER_STOP;
+-			powernv_states[nr_idle_states].exit_latency =
+-					((unsigned int)latency_ns) / 1000;
+-			powernv_states[nr_idle_states].target_residency =
+-					((unsigned int)latency_ns / 100);
++			powernv_states[nr_idle_states].target_residency = 300000;
+ 			powernv_states[nr_idle_states].enter = &fastsleep_loop;
+-			nr_idle_states++;
+ 		}
++
++		powernv_states[nr_idle_states].exit_latency =
++				((unsigned int)latency_ns[i]) / 1000;
++
++		if (!rc) {
++			powernv_states[nr_idle_states].target_residency =
++				((unsigned int)residency_ns[i]) / 1000;
++		}
++
++		nr_idle_states++;
+ 	}
+ 
++	kfree(residency_ns);
++out_free_latency:
++	kfree(latency_ns);
++out:
+ 	return nr_idle_states;
+ }
+ 
