@@ -1,13 +1,13 @@
 Return-Path: <christophe.leroy@c-s.fr>
 Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id 4A5B91A0C19
+ by lists.ozlabs.org (Postfix) with ESMTP id BD4F11A0C27
  for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Feb 2015 22:38:36 +1100 (AEDT)
 From: Christophe Leroy <christophe.leroy@c-s.fr>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  scottwood@freescale.com
-Subject: [PATCH v3 06/11] powerpc/8xx: Remove duplicated code in set_context()
-Message-Id: <20150203113817.CA7371A5F18@localhost.localdomain>
+Subject: [PATCH v3 07/11] powerpc/8xx: macro for handling CPU15 errata
+Message-Id: <20150203113817.EF2D81A5F19@localhost.localdomain>
 Date: Tue,  3 Feb 2015 12:38:17 +0100 (CET)
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -19,46 +19,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Having a macro will help keep clear code.
+
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
 ---
 v2: no change
-v3: no change
+v3: Fixed the macro (missing -) and changed macro name to be more explicit
 
- arch/powerpc/kernel/head_8xx.S | 10 ++++------
- 1 file changed, 4 insertions(+), 6 deletions(-)
+ arch/powerpc/kernel/head_8xx.S | 18 ++++++++++++------
+ 1 file changed, 12 insertions(+), 6 deletions(-)
 
 diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index a485ad7..a1571b3 100644
+index 987a589..59039a6 100644
 --- a/arch/powerpc/kernel/head_8xx.S
 +++ b/arch/powerpc/kernel/head_8xx.S
-@@ -853,23 +853,21 @@ _GLOBAL(set_context)
- 	 */
- 	li	r5, (swapper_pg_dir-PAGE_OFFSET)@l
- 	sub	r4, r4, r5
-+	tophys	(r4, r4)
- #ifdef CONFIG_8xx_CPU6
- 	lis	r6, cpu6_errata_word@h
- 	ori	r6, r6, cpu6_errata_word@l
--	tophys	(r4, r4)
- 	li	r7, 0x3f80
- 	stw	r7, 12(r6)
- 	lwz	r7, 12(r6)
+@@ -297,6 +297,17 @@ SystemCall:
+  * We have to use the MD_xxx registers for the tablewalk because the
+  * equivalent MI_xxx registers only perform the attribute functions.
+  */
++
++#ifdef CONFIG_8xx_CPU15
++#define INVALIDATE_ADJACENT_PAGES_CPU15(tmp, addr)	\
++	addi	tmp, addr, PAGE_SIZE;	\
++	tlbie	tmp;			\
++	addi	tmp, addr, -PAGE_SIZE;	\
++	tlbie	tmp
++#else
++#define INVALIDATE_ADJACENT_PAGES_CPU15(tmp, addr)
 +#endif
- 	mtspr	SPRN_M_TW, r4		/* Update pointeur to level 1 table */
-+#ifdef CONFIG_8xx_CPU6
- 	li	r7, 0x3380
- 	stw	r7, 12(r6)
- 	lwz	r7, 12(r6)
--        mtspr   SPRN_M_CASID, r3             /* Update context */
--#else
--        mtspr   SPRN_M_CASID,r3		/* Update context */
--	tophys	(r4, r4)
--	mtspr	SPRN_M_TW, r4		/* and pgd */
- #endif
-+	mtspr	SPRN_M_CASID, r3	/* Update context */
- 	SYNC
- 	blr
++
+ InstructionTLBMiss:
+ #ifdef CONFIG_8xx_CPU6
+ 	mtspr	SPRN_DAR, r3
+@@ -304,12 +315,7 @@ InstructionTLBMiss:
+ 	EXCEPTION_PROLOG_0
+ 	mtspr	SPRN_SPRG_SCRATCH2, r10
+ 	mfspr	r10, SPRN_SRR0	/* Get effective address of fault */
+-#ifdef CONFIG_8xx_CPU15
+-	addi	r11, r10, PAGE_SIZE
+-	tlbie	r11
+-	addi	r11, r10, -PAGE_SIZE
+-	tlbie	r11
+-#endif
++	INVALIDATE_ADJACENT_PAGES_CPU15(r11, r10)
  
+ 	/* If we are faulting a kernel address, we have to use the
+ 	 * kernel page tables.
 -- 
 2.1.0
