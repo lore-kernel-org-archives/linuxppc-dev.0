@@ -1,24 +1,27 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <haokexin@gmail.com>
+Received: from mail-qc0-x22e.google.com (mail-qc0-x22e.google.com
+ [IPv6:2607:f8b0:400d:c01::22e])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 958CC1A0C0C
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Feb 2015 11:25:09 +1100 (AEDT)
-Message-ID: <1422923108.4625.2.camel@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 06A4A1A0631
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Feb 2015 12:02:39 +1100 (AEDT)
+Received: by mail-qc0-f174.google.com with SMTP id s11so33225203qcv.5
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 02 Feb 2015 17:02:36 -0800 (PST)
+Date: Tue, 3 Feb 2015 09:02:30 +0800
+From: Kevin Hao <haokexin@gmail.com>
+To: Bjorn Helgaas <bhelgaas@google.com>
 Subject: Re: [PATCH 01/15] PCI: introduce pci_device_to_OF_node() for
  !CONFIG_OF
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Bjorn Helgaas <bhelgaas@google.com>
-Date: Tue, 03 Feb 2015 11:25:08 +1100
-In-Reply-To: <CAErSpo7B3yDQiD0XA9nBxb4tFW0BktT0EZ3HCZENOYQqMy0m_Q@mail.gmail.com>
+Message-ID: <20150203010230.GA28170@pek-khao-d1.corp.ad.wrs.com>
 References: <1422712065-9403-1-git-send-email-haokexin@gmail.com>
  <1422712065-9403-2-git-send-email-haokexin@gmail.com>
  <1422844101.11325.4.camel@ellerman.id.au>
  <CAErSpo7B3yDQiD0XA9nBxb4tFW0BktT0EZ3HCZENOYQqMy0m_Q@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="8t9RHnE3ZwKMSgU+"
+In-Reply-To: <CAErSpo7B3yDQiD0XA9nBxb4tFW0BktT0EZ3HCZENOYQqMy0m_Q@mail.gmail.com>
 Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Kevin Hao <haokexin@gmail.com>,
  "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -29,37 +32,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2015-02-02 at 09:47 -0600, Bjorn Helgaas wrote:
-> On Sun, Feb 1, 2015 at 8:28 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
-> > On Sat, 2015-01-31 at 21:47 +0800, Kevin Hao wrote:
-> >> So we can avoid the ugly #ifdef in some drivers.
-> >>
-> >> Signed-off-by: Kevin Hao <haokexin@gmail.com>
-> >> ---
-> >>  include/linux/pci.h | 2 ++
-> >>  1 file changed, 2 insertions(+)
-> >
-> >
-> > Hi Bjorn,
-> >
-> > Do you mind putting this into your next for 3.20? Or giving us an ACK for it if
-> > you prefer.
-> 
+
+--8t9RHnE3ZwKMSgU+
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Mon, Feb 02, 2015 at 09:47:57AM -0600, Bjorn Helgaas wrote:
 > I think it makes more sense to merge this along with the other 14
 > patches that remove the #ifdefs (at least, I assume that's what they
 > do; I haven't seen them).
+>=20
+> Acked-by: Bjorn Helgaas <bhelgaas@google.com>
+>=20
+> But please edit the subject line so it is capitalized consistently
+> with the rest of the history.  And it'd be nice if the changelog were
+> a complete sentence all by itself, e.g.,
+>=20
+>     PCI: Add pci_device_to_OF_node() stub for !CONFIG_OF
+>=20
+>     Add a stub for pci_device_to_OF_node() so drivers don't need to use
+>     #ifdef CONFIG_OF around calls to it.
 
-Yeah that is what they do.
+Will update. Thanks Bjorn.
 
-The problem with doing it that way is the rest of the patches are splattered
-all across the tree, so getting them merged as a series will require a lot of
-searching for acks.
+Kevin
 
-If you merged this one for 3.20 we could then merge the rest of the series one
-at a time as the respective maintainers get around to it during the 3.21 cycle.
+--8t9RHnE3ZwKMSgU+
+Content-Type: application/pgp-signature
 
-I probably should have said all that in my original mail :)
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
 
-Anyway it's not a big deal, but that's why it'd be nice if you could take it.
+iQEcBAEBAgAGBQJU0B4mAAoJEJNY7TDerrFxhFsH/iR0SsCZ6DK6wrj8AE+Qb1yH
+yO4nPpZkoZzLMociB6IP9WmOAyQbGKy9IN2Sz8XO7DlB1ZRVYHqyWw1zyKmK9VDk
+Ja2j4srmqlhlm1vClCgfjxYEqnI9r2V8QR2mjwf5fVjDf76PXbdsDObMiN2aEJT1
+N7he2z+v9zrnw/1ELmBcZK0kHfPwINfdh4W6jWHEymrCFtciQ4W9vKuFE5OvYmWC
+jBYrT6i3ccvMmuXLgoxTGJkc3uL1lRn8tl9cZN6WcYiPG5DkY6a1r3E9kGJ3dbkK
+Hsirbkzep80nSbrtHi75/zE6uXxN8XhawSYcA/wDX1OW4wLwJ2hsIS0I+xwTV8s=
+=fM4q
+-----END PGP SIGNATURE-----
 
-cheers
+--8t9RHnE3ZwKMSgU+--
