@@ -2,17 +2,16 @@ Return-Path: <elfring@users.sourceforge.net>
 Received: from mout.web.de (mout.web.de [212.227.15.14])
  (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2825E1A116C
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Feb 2015 00:01:27 +1100 (AEDT)
-Message-ID: <54D0C683.70501@users.sourceforge.net>
-Date: Tue, 03 Feb 2015 14:00:51 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 86AC61A0DDB
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Feb 2015 00:39:09 +1100 (AEDT)
+Message-ID: <54D0CF65.50107@users.sourceforge.net>
+Date: Tue, 03 Feb 2015 14:38:45 +0100
 From: SF Markus Elfring <elfring@users.sourceforge.net>
 MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>,
- cbe-oss-dev@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] PowerPC-PCI: Delete unnecessary checks before the function
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] PowerPC-rheap: Delete an unnecessary check before the function
  call "kfree"
 References: <5307CAA2.8060406@users.sourceforge.net>
  <alpine.DEB.2.02.1402212321410.2043@localhost6.localdomain6>
@@ -45,7 +44,7 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 From: Markus Elfring <elfring@users.sourceforge.net>
-Date: Tue, 3 Feb 2015 13:55:53 +0100
+Date: Tue, 3 Feb 2015 14:34:10 +0100
 
 The kfree() function tests whether its argument is NULL and then
 returns immediately. Thus the test around the call is not needed.
@@ -54,26 +53,21 @@ This issue was detected by using the Coccinelle software.
 
 Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
 ---
- arch/powerpc/platforms/cell/celleb_pci.c | 5 ++---
- 1 file changed, 2 insertions(+), 3 deletions(-)
+ arch/powerpc/lib/rheap.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/platforms/cell/celleb_pci.c b/arch/powerpc/platforms/cell/celleb_pci.c
-index 3ce70de..9b11b5d 100644
---- a/arch/powerpc/platforms/cell/celleb_pci.c
-+++ b/arch/powerpc/platforms/cell/celleb_pci.c
-@@ -393,11 +393,10 @@ static int __init celleb_setup_fake_pci_device(struct device_node *node,
+diff --git a/arch/powerpc/lib/rheap.c b/arch/powerpc/lib/rheap.c
+index a1060a8..69abf84 100644
+--- a/arch/powerpc/lib/rheap.c
++++ b/arch/powerpc/lib/rheap.c
+@@ -284,7 +284,7 @@ EXPORT_SYMBOL_GPL(rh_create);
+  */
+ void rh_destroy(rh_info_t * info)
+ {
+-	if ((info->flags & RHIF_STATIC_BLOCK) == 0 && info->block != NULL)
++	if ((info->flags & RHIF_STATIC_BLOCK) == 0)
+ 		kfree(info->block);
  
- error:
- 	if (mem_init_done) {
--		if (config && *config)
-+		if (config)
- 			kfree(*config);
--		if (res && *res)
-+		if (res)
- 			kfree(*res);
--
- 	} else {
- 		if (config && *config) {
- 			size = 256;
+ 	if ((info->flags & RHIF_STATIC_INFO) == 0)
 -- 
 2.2.2
