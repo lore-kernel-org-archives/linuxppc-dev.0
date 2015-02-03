@@ -1,28 +1,27 @@
-Return-Path: <haokexin@gmail.com>
-Received: from mail-qc0-x22e.google.com (mail-qc0-x22e.google.com
- [IPv6:2607:f8b0:400d:c01::22e])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 06A4A1A0631
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Feb 2015 12:02:39 +1100 (AEDT)
-Received: by mail-qc0-f174.google.com with SMTP id s11so33225203qcv.5
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 02 Feb 2015 17:02:36 -0800 (PST)
-Date: Tue, 3 Feb 2015 09:02:30 +0800
-From: Kevin Hao <haokexin@gmail.com>
-To: Bjorn Helgaas <bhelgaas@google.com>
-Subject: Re: [PATCH 01/15] PCI: introduce pci_device_to_OF_node() for
- !CONFIG_OF
-Message-ID: <20150203010230.GA28170@pek-khao-d1.corp.ad.wrs.com>
-References: <1422712065-9403-1-git-send-email-haokexin@gmail.com>
- <1422712065-9403-2-git-send-email-haokexin@gmail.com>
- <1422844101.11325.4.camel@ellerman.id.au>
- <CAErSpo7B3yDQiD0XA9nBxb4tFW0BktT0EZ3HCZENOYQqMy0m_Q@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="8t9RHnE3ZwKMSgU+"
-In-Reply-To: <CAErSpo7B3yDQiD0XA9nBxb4tFW0BktT0EZ3HCZENOYQqMy0m_Q@mail.gmail.com>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0BA631A0B51
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Feb 2015 12:12:33 +1100 (AEDT)
+Message-ID: <1422925952.4625.3.camel@ellerman.id.au>
+Subject: Re: [1/3] powerpc/pmac: Fix DT refcount imbalance in
+ pmac_pic_probe_oldstyle
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Tue, 03 Feb 2015 12:12:32 +1100
+In-Reply-To: <CAMuHMdUwQ=K7SnFvpaHzL2dCyNXGR3w-_SzFOEWb3cYCiQJfHg@mail.gmail.com>
+References: <1421243519-6257-2-git-send-email-geert+renesas@glider.be>
+ <20150130040904.8F89D1402A7@ozlabs.org>
+ <CAMuHMdUwQ=K7SnFvpaHzL2dCyNXGR3w-_SzFOEWb3cYCiQJfHg@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ Bryan Wu <cooloney@gmail.com>, Geert Uytterhoeven <geert+renesas@glider.be>,
+ Jingoo Han <jg1.han@samsung.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Richard Purdie <rpurdie@rpsys.net>, Lee Jones <lee.jones@linaro.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,45 +31,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Fri, 2015-01-30 at 10:00 +0100, Geert Uytterhoeven wrote:
+> Hi Michael,
+> 
+> On Fri, Jan 30, 2015 at 5:09 AM, Michael Ellerman <mpe@ellerman.id.au> wrote:
+> > On Wed, 2015-14-01 at 13:51:57 UTC, Geert Uytterhoeven wrote:
+> >> of_find_node_by_name() calls of_node_put() on its "from" parameter,
+> >> which must not be done on "master", as it's still in use, and will be
+> >> released manually later.  This may cause a zero kref refcount.
+> >> Use of_get_child_by_name() instead to fix this.
+> >
+> > But of_find_node_by_name() searches *all* nodes, not just the children of the
+> > parameter.
+> 
+> That's correct. However, I guess the second mac-io will just be a direct child.
 
---8t9RHnE3ZwKMSgU+
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Yeah OK, I don't have a system or an example device tree to check.
 
-On Mon, Feb 02, 2015 at 09:47:57AM -0600, Bjorn Helgaas wrote:
-> I think it makes more sense to merge this along with the other 14
-> patches that remove the #ifdefs (at least, I assume that's what they
-> do; I haven't seen them).
->=20
-> Acked-by: Bjorn Helgaas <bhelgaas@google.com>
->=20
-> But please edit the subject line so it is capitalized consistently
-> with the rest of the history.  And it'd be nice if the changelog were
-> a complete sentence all by itself, e.g.,
->=20
->     PCI: Add pci_device_to_OF_node() stub for !CONFIG_OF
->=20
->     Add a stub for pci_device_to_OF_node() so drivers don't need to use
->     #ifdef CONFIG_OF around calls to it.
+> > So this is a logic change AFAICS, and I have no idea what machines we'd need to
+> > test on to check it.
+> 
+> Originally it comes from arch/ppc/platforms/pmac_pic.c, added in 2002 in
+> full-history-linux commit 5ea3254844ae344a
+> ("Import arch/ppc and include/asm-ppc changes from linuxppc_2_5 tree").
+> 
+> I've also checked my linuxppc mail archives from 1997-2002, but couldn't find
+> the actual patch and a description.
+> 
+> So I don't know on which machines it's needed.
 
-Will update. Thanks Bjorn.
+Yep. Ben or Paul might know, but even then their memory may not be perfect :)
+ 
+> > So I think an of_node_get(master) would be safer and also fix the refcounting.
+> 
+> If no one can confirm the above, that may indeed be the best solution.
 
-Kevin
+I think so. Given how few of these machines are around it's easy to break them
+with an inadvertent change like this, so I think it's better to be safe.
 
---8t9RHnE3ZwKMSgU+
-Content-Type: application/pgp-signature
+Wanna send a patch for that?
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBAgAGBQJU0B4mAAoJEJNY7TDerrFxhFsH/iR0SsCZ6DK6wrj8AE+Qb1yH
-yO4nPpZkoZzLMociB6IP9WmOAyQbGKy9IN2Sz8XO7DlB1ZRVYHqyWw1zyKmK9VDk
-Ja2j4srmqlhlm1vClCgfjxYEqnI9r2V8QR2mjwf5fVjDf76PXbdsDObMiN2aEJT1
-N7he2z+v9zrnw/1ELmBcZK0kHfPwINfdh4W6jWHEymrCFtciQ4W9vKuFE5OvYmWC
-jBYrT6i3ccvMmuXLgoxTGJkc3uL1lRn8tl9cZN6WcYiPG5DkY6a1r3E9kGJ3dbkK
-Hsirbkzep80nSbrtHi75/zE6uXxN8XhawSYcA/wDX1OW4wLwJ2hsIS0I+xwTV8s=
-=fM4q
------END PGP SIGNATURE-----
-
---8t9RHnE3ZwKMSgU+--
+cheers
