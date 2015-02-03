@@ -1,12 +1,12 @@
 Return-Path: <christophe.leroy@c-s.fr>
 Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id 892371A0C1A
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Feb 2015 22:39:34 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 8836A1A0D13
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Feb 2015 22:39:35 +1100 (AEDT)
 From: Christophe Leroy <christophe.leroy@c-s.fr>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, scottwood@freescale.com
-Subject: [PATCH] powerpc32: rearrange instructions order in ip_fast_csum()
-Message-Id: <20150203113927.B909E1A5F15@localhost.localdomain>
+Subject: [PATCH v2 2/2] powerpc32: add support for csum_add()
+Message-Id: <20150203113927.8604D1A5F14@localhost.localdomain>
 Date: Tue,  3 Feb 2015 12:39:27 +0100 (CET)
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -18,41 +18,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On PPC_8xx, lwz has a 2 cycles latency, and branching also takes 2 cycles.
-As the size of the header is minimum 5 words, we can unroll the loop for the
-first words to reduce number of branching, and we can re-order the instructions
-to limit loading latency.
+The C version of csum_add() as defined in include/net/checksum.h gives the
+following assembly:
+       0:       7c 04 1a 14     add     r0,r4,r3
+       4:       7c 64 00 10     subfc   r3,r4,r0
+       8:       7c 63 19 10     subfe   r3,r3,r3
+       c:       7c 63 00 50     subf    r3,r3,r0
+
+include/net/checksum.h also offers the possibility to define an arch specific
+function.
+This patch provides a ppc32 specific csum_add() inline function.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
 ---
- arch/powerpc/lib/checksum_32.S | 10 +++++++---
- 1 file changed, 7 insertions(+), 3 deletions(-)
+v2: changed constraints on the __asm__
 
-diff --git a/arch/powerpc/lib/checksum_32.S b/arch/powerpc/lib/checksum_32.S
-index 6d67e05..5500704 100644
---- a/arch/powerpc/lib/checksum_32.S
-+++ b/arch/powerpc/lib/checksum_32.S
-@@ -26,13 +26,17 @@
- _GLOBAL(ip_fast_csum)
- 	lwz	r0,0(r3)
- 	lwzu	r5,4(r3)
--	addic.	r4,r4,-2
-+	addic.	r4,r4,-4
- 	addc	r0,r0,r5
- 	mtctr	r4
- 	blelr-
--1:	lwzu	r4,4(r3)
--	adde	r0,r0,r4
-+	lwzu	r5,4(r3)
-+	lwzu	r4,4(r3)
-+	adde	r0,r0,r5
-+1:	adde	r0,r0,r4
-+	lwzu	r4,4(r3)
- 	bdnz	1b
-+	adde	r0,r0,r4
- 	addze	r0,r0		/* add in final carry */
- 	rlwinm	r3,r0,16,0,31	/* fold two halves together */
- 	add	r3,r0,r3
+ arch/powerpc/include/asm/checksum.h | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
+
+diff --git a/arch/powerpc/include/asm/checksum.h b/arch/powerpc/include/asm/checksum.h
+index cfe806a..1e48cc7 100644
+--- a/arch/powerpc/include/asm/checksum.h
++++ b/arch/powerpc/include/asm/checksum.h
+@@ -141,6 +141,18 @@ static inline __sum16 csum_tcpudp_magic(__be32 saddr, __be32 daddr,
+ {
+ 	return csum_fold(csum_tcpudp_nofold(saddr, daddr, len, proto, sum));
+ }
++
++#define HAVE_ARCH_CSUM_ADD
++static inline __wsum csum_add(__wsum csum, __wsum addend)
++{
++    __asm__("\n\
++	addc %0,%0,%1 \n\
++	addze %0,%0 \n\
++	"
++	: "+r" (csum) : "r" (addend));
++	return csum;
++}
++
+ #endif
+ #endif
+ #endif /* __KERNEL__ */
 -- 
 2.1.0
