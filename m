@@ -1,14 +1,40 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id 755831A0C70
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Feb 2015 22:39:35 +1100 (AEDT)
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, scottwood@freescale.com
-Subject: [PATCH v2 1/2] powerpc32: put csum_tcpudp_magic inline
-Message-Id: <20150203113927.52DA41A5F13@localhost.localdomain>
-Date: Tue,  3 Feb 2015 12:39:27 +0100 (CET)
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Return-Path: <elfring@users.sourceforge.net>
+Received: from mout.web.de (mout.web.de [212.227.15.14])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2825E1A116C
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Feb 2015 00:01:27 +1100 (AEDT)
+Message-ID: <54D0C683.70501@users.sourceforge.net>
+Date: Tue, 03 Feb 2015 14:00:51 +0100
+From: SF Markus Elfring <elfring@users.sourceforge.net>
+MIME-Version: 1.0
+To: Arnd Bergmann <arnd@arndb.de>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>,
+ cbe-oss-dev@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] PowerPC-PCI: Delete unnecessary checks before the function
+ call "kfree"
+References: <5307CAA2.8060406@users.sourceforge.net>
+ <alpine.DEB.2.02.1402212321410.2043@localhost6.localdomain6>
+ <530A086E.8010901@users.sourceforge.net>
+ <alpine.DEB.2.02.1402231635510.1985@localhost6.localdomain6>
+ <530A72AA.3000601@users.sourceforge.net>
+ <alpine.DEB.2.02.1402240658210.2090@localhost6.localdomain6>
+ <530B5FB6.6010207@users.sourceforge.net>
+ <alpine.DEB.2.10.1402241710370.2074@hadrien>
+ <530C5E18.1020800@users.sourceforge.net>
+ <alpine.DEB.2.10.1402251014170.2080@hadrien>
+ <530CD2C4.4050903@users.sourceforge.net>
+ <alpine.DEB.2.10.1402251840450.7035@hadrien>
+ <530CF8FF.8080600@users.sourceforge.net>
+ <alpine.DEB.2.02.1402252117150.2047@localhost6.localdomain6>
+ <530DD06F.4090703@users.sourceforge.net>
+ <alpine.DEB.2.02.1402262129250.2221@localhost6.localdomain6>
+ <5317A59D.4@users.sourceforge.net>
+In-Reply-To: <5317A59D.4@users.sourceforge.net>
+Content-Type: text/plain; charset=windows-1252
+Cc: Julia Lawall <julia.lawall@lip6.fr>, kernel-janitors@vger.kernel.org,
+ LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,87 +44,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-csum_tcpudp_magic() is only a few instructions, and does not modifies any other
-register than the returned result. So it is not worth having it as a separate
-function and suffer function branching and saving of volatile registers.
-This patch makes it inline by use of the already existing csum_tcpudp_nofold()
-function.
+From: Markus Elfring <elfring@users.sourceforge.net>
+Date: Tue, 3 Feb 2015 13:55:53 +0100
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+The kfree() function tests whether its argument is NULL and then
+returns immediately. Thus the test around the call is not needed.
 
+This issue was detected by using the Coccinelle software.
+
+Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
 ---
-v2: no change
+ arch/powerpc/platforms/cell/celleb_pci.c | 5 ++---
+ 1 file changed, 2 insertions(+), 3 deletions(-)
 
- arch/powerpc/include/asm/checksum.h | 15 +++++++++++++++
- arch/powerpc/lib/checksum_32.S      | 16 ----------------
- 2 files changed, 15 insertions(+), 16 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/checksum.h b/arch/powerpc/include/asm/checksum.h
-index 8251a3b..cfe806a 100644
---- a/arch/powerpc/include/asm/checksum.h
-+++ b/arch/powerpc/include/asm/checksum.h
-@@ -19,6 +19,7 @@
- #else
- extern __sum16 ip_fast_csum(const void *iph, unsigned int ihl);
+diff --git a/arch/powerpc/platforms/cell/celleb_pci.c b/arch/powerpc/platforms/cell/celleb_pci.c
+index 3ce70de..9b11b5d 100644
+--- a/arch/powerpc/platforms/cell/celleb_pci.c
++++ b/arch/powerpc/platforms/cell/celleb_pci.c
+@@ -393,11 +393,10 @@ static int __init celleb_setup_fake_pci_device(struct device_node *node,
  
-+#ifdef __powerpc64__
- /*
-  * computes the checksum of the TCP/UDP pseudo-header
-  * returns a 16-bit checksum, already complemented
-@@ -27,6 +28,7 @@ extern __sum16 csum_tcpudp_magic(__be32 saddr, __be32 daddr,
- 					unsigned short len,
- 					unsigned short proto,
- 					__wsum sum);
-+#endif
- 
- /*
-  * computes the checksum of a memory block at buff, length len,
-@@ -127,6 +129,19 @@ static inline __wsum csum_tcpudp_nofold(__be32 saddr, __be32 daddr,
- #endif
- }
- 
-+#ifndef __powerpc64__
-+/*
-+ * computes the checksum of the TCP/UDP pseudo-header
-+ * returns a 16-bit checksum, already complemented
-+ */
-+static inline __sum16 csum_tcpudp_magic(__be32 saddr, __be32 daddr,
-+					unsigned short len,
-+					unsigned short proto,
-+					__wsum sum)
-+{
-+	return csum_fold(csum_tcpudp_nofold(saddr, daddr, len, proto, sum));
-+}
-+#endif
- #endif
- #endif /* __KERNEL__ */
- #endif
-diff --git a/arch/powerpc/lib/checksum_32.S b/arch/powerpc/lib/checksum_32.S
-index 7874e8a..6d67e05 100644
---- a/arch/powerpc/lib/checksum_32.S
-+++ b/arch/powerpc/lib/checksum_32.S
-@@ -41,22 +41,6 @@ _GLOBAL(ip_fast_csum)
- 	blr
- 
- /*
-- * Compute checksum of TCP or UDP pseudo-header:
-- *   csum_tcpudp_magic(saddr, daddr, len, proto, sum)
-- */	
--_GLOBAL(csum_tcpudp_magic)
--	rlwimi	r5,r6,16,0,15	/* put proto in upper half of len */
--	addc	r0,r3,r4	/* add 4 32-bit words together */
--	adde	r0,r0,r5
--	adde	r0,r0,r7
--	addze	r0,r0		/* add in final carry */
--	rlwinm	r3,r0,16,0,31	/* fold two halves together */
--	add	r3,r0,r3
--	not	r3,r3
--	srwi	r3,r3,16
--	blr
+ error:
+ 	if (mem_init_done) {
+-		if (config && *config)
++		if (config)
+ 			kfree(*config);
+-		if (res && *res)
++		if (res)
+ 			kfree(*res);
 -
--/*
-  * computes the checksum of a memory block at buff, length len,
-  * and adds in "sum" (32-bit)
-  *
+ 	} else {
+ 		if (config && *config) {
+ 			size = 256;
 -- 
-2.1.0
+2.2.2
