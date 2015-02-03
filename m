@@ -1,39 +1,15 @@
-Return-Path: <gkurz@linux.vnet.ibm.com>
-Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id ED7C81A0C8D
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Feb 2015 18:46:53 +1100 (AEDT)
-Received: from /spool/local
- by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gkurz@linux.vnet.ibm.com>;
- Tue, 3 Feb 2015 07:46:48 -0000
-Received: from b06cxnps4074.portsmouth.uk.ibm.com
- (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
- by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id 816421B08061
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Feb 2015 07:46:52 +0000 (GMT)
-Received: from d06av07.portsmouth.uk.ibm.com (d06av07.portsmouth.uk.ibm.com
- [9.149.37.248])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t137kjvC10682638
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 3 Feb 2015 07:46:45 GMT
-Received: from d06av07.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av07.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t137kjmD023735
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 3 Feb 2015 02:46:45 -0500
-Date: Tue, 3 Feb 2015 08:46:40 +0100
-From: Greg Kurz <gkurz@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH v2 0/4] VPHN parsing fixes
-Message-ID: <20150203084640.70b60a7c@bahia.local>
-In-Reply-To: <1422931655.4625.6.camel@ellerman.id.au>
-References: <20141217094007.16957.70423.stgit@bahia.local>
- <20150129190353.401248ab@bahia.local>
- <1422931655.4625.6.camel@ellerman.id.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@lists.ozlabs.org
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ by lists.ozlabs.org (Postfix) with ESMTP id 203BB1A0BC7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Feb 2015 22:38:30 +1100 (AEDT)
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ scottwood@freescale.com
+Subject: [PATCH v3 04/11] powerpc/8xx: Take benefit of aligned PGDIR
+Message-Id: <20150203113817.814721A5F16@localhost.localdomain>
+Date: Tue,  3 Feb 2015 12:38:17 +0100 (CET)
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,46 +19,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 03 Feb 2015 13:47:35 +1100
-Michael Ellerman <mpe@ellerman.id.au> wrote:
+L1 base address is now aligned so we can insert L1 index into r11 directly and
+then preserve r10
 
-> On Thu, 2015-01-29 at 19:03 +0100, Greg Kurz wrote:
-> > On Wed, 17 Dec 2014 10:40:46 +0100
-> > Greg Kurz <gkurz@linux.vnet.ibm.com> wrote:
-> > > Hi,
-> > > 
-> > > This series addresses remarks from Ben and Michael (see individual patches).
-> > > The most notable changes are:
-> > > - the parsing code being pull out into a separate file in patch 3/4. This
-> > >   allows to write userland tests like the one below.
-> > > - a full rewrite of the parsing logic in patch 4/4
-> > > 
-> > 
-> > Ping ?
-> 
-> Sorry, lots of patches needing review.
-> 
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
-Heh, no problem. :) Since this isn't bugfix, I can even repost later, when
-the review pressure is lower.
+---
+v2: no change
+v3: no change
 
-> This looks pretty good at a glance, but did you actually write a userspace test
-> for it? If so please send it. I'm happy to rework it into something that can go
-> in selftests.
-> 
+ arch/powerpc/kernel/head_8xx.S | 34 +++++++++++++++-------------------
+ 1 file changed, 15 insertions(+), 19 deletions(-)
 
-Yes, I wrote the premise of a test program. You can find it in the cover mail of
-this series:
-
-https://lists.ozlabs.org/pipermail/linuxppc-dev/2014-December/123601.html
-
-I'll have a look at selftests.
-
-> cheers
-> 
-> 
-
-Thanks.
-
---
-Greg
+diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
+index 2c329f1..ae05f28 100644
+--- a/arch/powerpc/kernel/head_8xx.S
++++ b/arch/powerpc/kernel/head_8xx.S
+@@ -326,16 +326,15 @@ InstructionTLBMiss:
+ 	ori	r11, r11, (swapper_pg_dir-PAGE_OFFSET)@l
+ 3:
+ #endif
+-	/* Extract level 1 index */
+-	rlwinm	r10, r10, 32 - ((PAGE_SHIFT - 2) << 1), (PAGE_SHIFT - 2) << 1, 29
+-	lwzx	r11, r10, r11	/* Get the level 1 entry */
+-	rlwinm	r10, r11,0,0,19	/* Extract page descriptor page address */
++	/* Insert level 1 index */
++	rlwimi	r11, r10, 32 - ((PAGE_SHIFT - 2) << 1), (PAGE_SHIFT - 2) << 1, 29
++	lwz	r11, 0(r11)	/* Get the level 1 entry */
+ 
+ 	/* Load the MI_TWC with the attributes for this "segment." */
+ 	MTSPR_CPU6(SPRN_MI_TWC, r11, r3)	/* Set segment attributes */
+-	mfspr	r11, SPRN_SRR0	/* Get effective address of fault */
++	rlwinm	r11, r11,0,0,19	/* Extract page descriptor page address */
+ 	/* Extract level 2 index */
+-	rlwinm	r11, r11, 32 - (PAGE_SHIFT - 2), 32 - PAGE_SHIFT, 29
++	rlwinm	r10, r10, 32 - (PAGE_SHIFT - 2), 32 - PAGE_SHIFT, 29
+ 	lwzx	r10, r10, r11	/* Get the pte */
+ 
+ #ifdef CONFIG_SWAP
+@@ -380,13 +379,12 @@ DataStoreTLBMiss:
+ 	lis	r11, (swapper_pg_dir-PAGE_OFFSET)@h
+ 	ori	r11, r11, (swapper_pg_dir-PAGE_OFFSET)@l
+ 3:
+-	/* Extract level 1 index */
+-	rlwinm	r10, r10, 32 - ((PAGE_SHIFT - 2) << 1), (PAGE_SHIFT - 2) << 1, 29
+-	lwzx	r11, r10, r11	/* Get the level 1 entry */
++	/* Insert level 1 index */
++	rlwimi	r11, r10, 32 - ((PAGE_SHIFT - 2) << 1), (PAGE_SHIFT - 2) << 1, 29
++	lwz	r11, 0(r11)	/* Get the level 1 entry */
+ 
+ 	/* We have a pte table, so load fetch the pte from the table.
+ 	 */
+-	mfspr	r10, SPRN_MD_EPN	/* Get address of fault */
+ 	/* Extract level 2 index */
+ 	rlwinm	r10, r10, 32 - (PAGE_SHIFT - 2), 32 - PAGE_SHIFT, 29
+ 	rlwimi	r10, r11, 0, 0, 32 - PAGE_SHIFT - 1	/* Add level 2 base */
+@@ -515,16 +513,14 @@ FixupDAR:/* Entry point for dcbx workaround. */
+ 	beq-	3f		/* Branch if user space */
+ 	lis	r11, (swapper_pg_dir-PAGE_OFFSET)@h
+ 	ori	r11, r11, (swapper_pg_dir-PAGE_OFFSET)@l
+-	/* Extract level 1 index */
+-3:	rlwinm	r10, r10, 32 - ((PAGE_SHIFT - 2) << 1), (PAGE_SHIFT - 2) << 1, 29
+-	lwzx	r11, r10, r11	/* Get the level 1 entry */
+-	rlwinm	r10, r11,0,0,19	/* Extract page descriptor page address */
+-	mfspr	r11, SPRN_SRR0	/* Get effective address of fault */
+-	/* Extract level 2 index */
+-	rlwinm	r11, r11, 32 - (PAGE_SHIFT - 2), 32 - PAGE_SHIFT, 29
+-	lwzx	r11, r10, r11	/* Get the pte */
++	/* Insert level 1 index */
++3:	rlwimi	r11, r10, 32 - ((PAGE_SHIFT - 2) << 1), (PAGE_SHIFT - 2) << 1, 29
++	lwz	r11, 0(r11)	/* Get the level 1 entry */
++	rlwinm	r11, r11,0,0,19	/* Extract page descriptor page address */
++	/* Insert level 2 index */
++	rlwimi	r11, r10, 32 - (PAGE_SHIFT - 2), 32 - PAGE_SHIFT, 29
++	lwz	r11, 0(r11)	/* Get the pte */
+ 	/* concat physical page address(r11) and page offset(r10) */
+-	mfspr	r10, SPRN_SRR0
+ 	rlwimi	r11, r10, 0, 32 - PAGE_SHIFT, 31
+ 	lwz	r11,0(r11)
+ /* Check if it really is a dcbx instruction. */
+-- 
+2.1.0
