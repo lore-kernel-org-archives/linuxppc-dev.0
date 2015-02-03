@@ -1,32 +1,32 @@
 Return-Path: <preeti@linux.vnet.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1C18D1A0D15
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Feb 2015 17:20:28 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 164871A0D6A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Feb 2015 17:32:25 +1100 (AEDT)
 Received: from /spool/local
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
- Mon, 2 Feb 2015 23:20:25 -0700
-Received: from b03cxnp07028.gho.boulder.ibm.com
- (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id B0E8619D8040
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Feb 2015 23:11:34 -0700 (MST)
-Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
- by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with
- ESMTP id t136J1h931326246
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 2 Feb 2015 23:19:01 -0700
-Received: from d03av05.boulder.ibm.com (localhost [127.0.0.1])
- by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t136KNuk010103
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 2 Feb 2015 23:20:24 -0700
-Subject: [PATCH V4] cpuidle/powernv: Read target_residency value of idle
- states from DT if available
+ Mon, 2 Feb 2015 23:32:23 -0700
+Received: from b03cxnp08026.gho.boulder.ibm.com
+ (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 935871FF0046
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Feb 2015 23:23:32 -0700 (MST)
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+ by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t136WZpt40435752
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 2 Feb 2015 23:32:43 -0700
+Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t136VlnZ019042
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 2 Feb 2015 23:31:47 -0700
+Subject: [PATCH] driver/cpuidle-powernv: Avoid endianness conversions while
+ parsing DT
 From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
 To: mpe@ellerman.id.au
-Date: Tue, 03 Feb 2015 11:50:14 +0530
-Message-ID: <20150203061709.13097.7035.stgit@preeti.in.ibm.com>
+Date: Tue, 03 Feb 2015 12:01:15 +0530
+Message-ID: <20150203062810.13207.93694.stgit@preeti.in.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Cc: stewart@linux.vnet.ibm.com, rafael.j.wysocki@intel.com,
@@ -41,146 +41,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The device tree now exposes the residency values for different idle states. Read
-these values instead of calculating residency from the latency values. The values
-exposed in the DT are validated for optimal power efficiency. However to maintain
-compatibility with the older firmware code which does not expose residency
-values, use default values as a fallback mechanism. While at it, use better
-APIs to parse the powermgmt device tree node.
+We currently read the information about idle states from the DT
+so as to populate the cpuidle table. Use those APIs to read from
+the DT that can avoid endianness conversions of the property values
+in the cpuidle driver.
 
 Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Acked-by: Stewart Smith <stewart@linux.vnet.ibm.com>
-Acked-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
-Changes from the previous versions: https://lkml.org/lkml/2015/2/2/12
-1. Used better APIs
-2. Code Cleanups
-3. Reverted back to the V2 of this patch as suggested in the above link,
-in addition to a few cleanups and carried forward the Acks from V2
+This patch is based ontop of the mainline + V4 of "cpuidle/powernv:
+Read target_residency value of idle states from DT if available".
 
- drivers/cpuidle/cpuidle-powernv.c |   71 ++++++++++++++++++++++---------------
- 1 file changed, 42 insertions(+), 29 deletions(-)
+ drivers/cpuidle/cpuidle-powernv.c |   30 ++++++++++++++++--------------
+ 1 file changed, 16 insertions(+), 14 deletions(-)
 
 diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
-index 2726663..3aa27a0 100644
+index 3aa27a0..4f76fc7 100644
 --- a/drivers/cpuidle/cpuidle-powernv.c
 +++ b/drivers/cpuidle/cpuidle-powernv.c
-@@ -13,6 +13,7 @@
- #include <linux/notifier.h>
- #include <linux/clockchips.h>
- #include <linux/of.h>
-+#include <linux/slab.h>
- 
- #include <asm/machdep.h>
- #include <asm/firmware.h>
-@@ -161,69 +162,81 @@ static int powernv_add_idle_states(void)
+@@ -161,9 +161,7 @@ static int powernv_add_idle_states(void)
+ 	struct device_node *power_mgt;
  	int nr_idle_states = 1; /* Snooze */
  	int dt_idle_states;
- 	const __be32 *idle_state_flags;
--	const __be32 *idle_state_latency;
--	u32 len_flags, flags, latency_ns;
--	int i;
-+	u32 len_flags, flags;
-+	u32 *latency_ns, *residency_ns;
-+	int i, rc;
+-	const __be32 *idle_state_flags;
+-	u32 len_flags, flags;
+-	u32 *latency_ns, *residency_ns;
++	u32 *latency_ns, *residency_ns, *flags;
+ 	int i, rc;
  
  	/* Currently we have snooze statically defined */
- 
- 	power_mgt = of_find_node_by_path("/ibm,opal/power-mgt");
- 	if (!power_mgt) {
- 		pr_warn("opal: PowerMgmt Node not found\n");
--		return nr_idle_states;
-+		goto out;
+@@ -174,15 +172,19 @@ static int powernv_add_idle_states(void)
+ 		goto out;
  	}
  
--	idle_state_flags = of_get_property(power_mgt, "ibm,cpu-idle-state-flags", &len_flags);
-+	idle_state_flags = of_get_property(power_mgt,
-+				"ibm,cpu-idle-state-flags", &len_flags);
- 	if (!idle_state_flags) {
--		pr_warn("DT-PowerMgmt: missing ibm,cpu-idle-state-flags\n");
--		return nr_idle_states;
-+		pr_warn("cpuidle-powernv : missing
-+				ibm,cpu-idle-state-flags in DT\n");
-+		goto out;
- 	}
- 
--	idle_state_latency = of_get_property(power_mgt,
--			"ibm,cpu-idle-state-latencies-ns", NULL);
--	if (!idle_state_latency) {
--		pr_warn("DT-PowerMgmt: missing ibm,cpu-idle-state-latencies-ns\n");
--		return nr_idle_states;
-+	dt_idle_states = len_flags / sizeof(u32);
-+
-+	latency_ns = kzalloc(sizeof(*latency_ns) * dt_idle_states, GFP_KERNEL);
-+	rc = of_property_read_u32_array(power_mgt,
-+		"ibm,cpu-idle-state-latencies-ns", latency_ns, dt_idle_states);
-+	if (rc) {
-+		pr_warn("cpuidle-powernv: missing
-+				ibm,cpu-idle-state-latencies-ns in DT\n");
-+		goto out_free_latency;
+-	idle_state_flags = of_get_property(power_mgt,
+-				"ibm,cpu-idle-state-flags", &len_flags);
+-	if (!idle_state_flags) {
+-		pr_warn("cpuidle-powernv : missing
+-				ibm,cpu-idle-state-flags in DT\n");
++	/* Read values of any property to determine the num of idle states */
++	dt_idle_states = of_property_count_u32_elems(power_mgt, "ibm,cpu-idle-state-flags");
++	if (dt_idle_states < 0) {
++		pr_warn("cpuidle-powernv: no idle states found in the DT\n");
+ 		goto out;
  	}
  
 -	dt_idle_states = len_flags / sizeof(u32);
-+	residency_ns = kzalloc(sizeof(*residency_ns) * dt_idle_states, GFP_KERNEL);
-+	rc = of_property_read_u32_array(power_mgt,
-+		"ibm,cpu-idle-state-residency-ns", residency_ns, dt_idle_states);
++	flags = kzalloc(sizeof(*flags) * dt_idle_states, GFP_KERNEL);
++	if (of_property_read_u32_array(power_mgt,
++			"ibm,cpu-idle-state-flags", flags, dt_idle_states)) {
++		pr_warn("cpuidle-powernv : missing ibm,cpu-idle-state-flags in DT\n");
++		goto out_free_flags;
++ 	}
+ 
+ 	latency_ns = kzalloc(sizeof(*latency_ns) * dt_idle_states, GFP_KERNEL);
+ 	rc = of_property_read_u32_array(power_mgt,
+@@ -199,21 +201,19 @@ static int powernv_add_idle_states(void)
  
  	for (i = 0; i < dt_idle_states; i++) {
  
- 		flags = be32_to_cpu(idle_state_flags[i]);
- 
--		/* Cpuidle accepts exit_latency in us and we estimate
--		 * target residency to be 10x exit_latency
-+		/*
-+		 * Cpuidle accepts exit_latency and target_residency in us.
-+		 * Use default target_residency values if f/w does not expose it.
+-		flags = be32_to_cpu(idle_state_flags[i]);
+-
+ 		/*
+ 		 * Cpuidle accepts exit_latency and target_residency in us.
+ 		 * Use default target_residency values if f/w does not expose it.
  		 */
--		latency_ns = be32_to_cpu(idle_state_latency[i]);
- 		if (flags & OPAL_PM_NAP_ENABLED) {
+-		if (flags & OPAL_PM_NAP_ENABLED) {
++		if (flags[i] & OPAL_PM_NAP_ENABLED) {
  			/* Add NAP state */
  			strcpy(powernv_states[nr_idle_states].name, "Nap");
  			strcpy(powernv_states[nr_idle_states].desc, "Nap");
  			powernv_states[nr_idle_states].flags = 0;
--			powernv_states[nr_idle_states].exit_latency =
--					((unsigned int)latency_ns) / 1000;
--			powernv_states[nr_idle_states].target_residency =
--					((unsigned int)latency_ns / 100);
-+			powernv_states[nr_idle_states].target_residency = 100;
+ 			powernv_states[nr_idle_states].target_residency = 100;
  			powernv_states[nr_idle_states].enter = &nap_loop;
--			nr_idle_states++;
--		}
--
--		if (flags & OPAL_PM_SLEEP_ENABLED ||
-+		} else if (flags & OPAL_PM_SLEEP_ENABLED ||
- 			flags & OPAL_PM_SLEEP_ENABLED_ER1) {
+-		} else if (flags & OPAL_PM_SLEEP_ENABLED ||
+-			flags & OPAL_PM_SLEEP_ENABLED_ER1) {
++		} else if (flags[i] & OPAL_PM_SLEEP_ENABLED ||
++			flags[i] & OPAL_PM_SLEEP_ENABLED_ER1) {
  			/* Add FASTSLEEP state */
  			strcpy(powernv_states[nr_idle_states].name, "FastSleep");
  			strcpy(powernv_states[nr_idle_states].desc, "FastSleep");
- 			powernv_states[nr_idle_states].flags = CPUIDLE_FLAG_TIMER_STOP;
--			powernv_states[nr_idle_states].exit_latency =
--					((unsigned int)latency_ns) / 1000;
--			powernv_states[nr_idle_states].target_residency =
--					((unsigned int)latency_ns / 100);
-+			powernv_states[nr_idle_states].target_residency = 300000;
- 			powernv_states[nr_idle_states].enter = &fastsleep_loop;
--			nr_idle_states++;
- 		}
-+
-+		powernv_states[nr_idle_states].exit_latency =
-+				((unsigned int)latency_ns[i]) / 1000;
-+
-+		if (!rc) {
-+			powernv_states[nr_idle_states].target_residency =
-+				((unsigned int)residency_ns[i]) / 1000;
-+		}
-+
-+		nr_idle_states++;
- 	}
- 
-+	kfree(residency_ns);
-+out_free_latency:
-+	kfree(latency_ns);
-+out:
+@@ -236,6 +236,8 @@ static int powernv_add_idle_states(void)
+ 	kfree(residency_ns);
+ out_free_latency:
+ 	kfree(latency_ns);
++out_free_flags:
++	kfree(flags);
+ out:
  	return nr_idle_states;
  }
- 
