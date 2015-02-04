@@ -1,38 +1,35 @@
 Return-Path: <imunsie@au1.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6EDF41A09D7
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Feb 2015 19:10:26 +1100 (AEDT)
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 876B11A0C79
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Feb 2015 19:11:53 +1100 (AEDT)
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 453E8140272
- for <linuxppc-dev@ozlabs.org>; Wed,  4 Feb 2015 19:10:26 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPS id 2B9BE140218
+ for <linuxppc-dev@ozlabs.org>; Wed,  4 Feb 2015 19:11:53 +1100 (AEDT)
 Received: from /spool/local
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <imunsie@au1.ibm.com>;
- Wed, 4 Feb 2015 18:10:25 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id E05CC3578048
- for <linuxppc-dev@ozlabs.org>; Wed,  4 Feb 2015 19:10:23 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t148AF1333489146
- for <linuxppc-dev@ozlabs.org>; Wed, 4 Feb 2015 19:10:23 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t1489nFN005010
- for <linuxppc-dev@ozlabs.org>; Wed, 4 Feb 2015 19:09:50 +1100
+ Wed, 4 Feb 2015 18:11:52 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 639062BB0047
+ for <linuxppc-dev@ozlabs.org>; Wed,  4 Feb 2015 19:11:50 +1100 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t148BgJR39714882
+ for <linuxppc-dev@ozlabs.org>; Wed, 4 Feb 2015 19:11:50 +1100
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t148BGFf015307
+ for <linuxppc-dev@ozlabs.org>; Wed, 4 Feb 2015 19:11:17 +1100
 From: "Ian Munsie" <imunsie@au1.ibm.com>
 To: mpe <mpe@ellerman.id.au>
-Subject: [PATCH 2/2] cxl: Fail AFU initialisation if an invalid configuration
- record is found
-Date: Wed,  4 Feb 2015 19:09:02 +1100
-Message-Id: <1423037342-26753-2-git-send-email-imunsie@au.ibm.com>
-In-Reply-To: <1423037342-26753-1-git-send-email-imunsie@au.ibm.com>
-References: <1423037342-26753-1-git-send-email-imunsie@au.ibm.com>
+Subject: [PATCH] cxl: Add missing return statement after handling AFU errror
+Date: Wed,  4 Feb 2015 19:10:38 +1100
+Message-Id: <1423037438-27022-1-git-send-email-imunsie@au.ibm.com>
 Cc: mikey <mikey@neuling.org>, Vaibhav Jain <vajain21@in.ibm.com>,
  linux-kernel <linux-kernel@vger.kernel.org>,
  Ryan Grimm <grimm@linux.vnet.ibm.com>, linuxppc-dev <linuxppc-dev@ozlabs.org>,
@@ -50,44 +47,28 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Ian Munsie <imunsie@au1.ibm.com>
 
-If an AFU claims to have a configuration record but doesn't actually
-contain a vendor and device ID, fail the AFU initialisation. Right now
-this is just a way of politely letting AFU developers know that they
-need to fix their config space, but later on we may expose the AFUs as
-actual PCI devices in their own right and don't want to inadvertendly
-expose an AFU with a bad config space.
+We were missing a return statement in the PSL interrupt handler in the
+case of an AFU error, which would trigger an "Unhandled CXL PSL IRQ"
+warning. We do actually handle these type of errors (by notifying
+userspace), so add the missing return IRQ_HANDLED so we don't throw
+unecessary warnings.
 
 Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
 ---
- drivers/misc/cxl/pci.c | 9 +++++++++
- 1 file changed, 9 insertions(+)
+ drivers/misc/cxl/irq.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
-index 128481e..f7c01a9 100644
---- a/drivers/misc/cxl/pci.c
-+++ b/drivers/misc/cxl/pci.c
-@@ -599,6 +599,8 @@ static int cxl_read_afu_descriptor(struct cxl_afu *afu)
+diff --git a/drivers/misc/cxl/irq.c b/drivers/misc/cxl/irq.c
+index ef52af7..2a2e58a 100644
+--- a/drivers/misc/cxl/irq.c
++++ b/drivers/misc/cxl/irq.c
+@@ -170,6 +170,7 @@ static irqreturn_t cxl_irq(int irq, void *data, struct cxl_irq_info *irq_info)
+ 		}
  
- static int cxl_afu_descriptor_looks_ok(struct cxl_afu *afu)
- {
-+	int i;
-+
- 	if (afu->psa && afu->adapter->ps_size <
- 			(afu->pp_offset + afu->pp_size*afu->max_procs_virtualised)) {
- 		dev_err(&afu->dev, "per-process PSA can't fit inside the PSA!\n");
-@@ -608,6 +610,13 @@ static int cxl_afu_descriptor_looks_ok(struct cxl_afu *afu)
- 	if (afu->pp_psa && (afu->pp_size < PAGE_SIZE))
- 		dev_warn(&afu->dev, "AFU uses < PAGE_SIZE per-process PSA!");
- 
-+	for (i = 0; i < afu->crs_num; i++) {
-+		if ((cxl_afu_cr_read32(afu, i, 0) == 0)) {
-+			dev_err(&afu->dev, "ABORTING: AFU configuration record %i is invalid\n", i);
-+			return -EINVAL;
-+		}
-+	}
-+
- 	return 0;
- }
- 
+ 		cxl_ack_irq(ctx, CXL_PSL_TFC_An_A, 0);
++		return IRQ_HANDLED;
+ 	}
+ 	if (dsisr & CXL_PSL_DSISR_An_OC)
+ 		pr_devel("CXL interrupt: OS Context Warning\n");
 -- 
 2.1.4
