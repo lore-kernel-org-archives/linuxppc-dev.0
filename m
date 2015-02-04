@@ -1,20 +1,22 @@
 Return-Path: <Emilian.Medve@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0122.outbound.protection.outlook.com [65.55.169.122])
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1on0148.outbound.protection.outlook.com [157.56.110.148])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DEBD61A16AA
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Feb 2015 01:53:13 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 24AEF1A102A
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Feb 2015 01:53:14 +1100 (AEDT)
 From: Emil Medve <Emilian.Medve@Freescale.com>
 To: <devel@driverdev.osuosl.org>, <linuxppc-dev@lists.ozlabs.org>,
  <linux-kernel@vger.kernel.org>
-Subject: [RFC 09/10] fsl_bman: Add HOTPLUG_CPU support
-Date: Wed, 4 Feb 2015 08:48:41 -0600
-Message-ID: <1423061322-16059-10-git-send-email-Emilian.Medve@Freescale.com>
+Subject: [RFC 04/10] powerpc/mpc85xx: Add platform support for the Freescale
+ DPAA QMan
+Date: Wed, 4 Feb 2015 08:48:36 -0600
+Message-ID: <1423061322-16059-5-git-send-email-Emilian.Medve@Freescale.com>
 In-Reply-To: <1423061322-16059-1-git-send-email-Emilian.Medve@Freescale.com>
 References: <1423061322-16059-1-git-send-email-Emilian.Medve@Freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
+Cc: Geoff Thorpe <Geoff.Thorpe@Freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,89 +26,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Hai-Ying Wang <Haiying.Wang@freescale.com>
+From: Geoff Thorpe <Geoff.Thorpe@freescale.com>
 
-Change-Id: I863d5c15c7f35f9de4ea3d985e4ff467167924b7
-Signed-off-by: Hai-Ying Wang <Haiying.Wang@freescale.com>
+Change-Id: I59de17c040cdd304f86306336fcf89f130f7db2d
+Signed-off-by: Geoff Thorpe <Geoff.Thorpe@freescale.com>
 ---
- drivers/staging/fsl_qbman/bman_driver.c | 45 ++++++++++++++++++++++++++++++++-
- 1 file changed, 44 insertions(+), 1 deletion(-)
+ arch/powerpc/platforms/85xx/corenet_generic.c | 8 +++++++-
+ arch/powerpc/platforms/85xx/p1023_rdb.c       | 8 +++++++-
+ 2 files changed, 14 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/staging/fsl_qbman/bman_driver.c b/drivers/staging/fsl_qbman/bman_driver.c
-index bab2283..18a6cdd 100644
---- a/drivers/staging/fsl_qbman/bman_driver.c
-+++ b/drivers/staging/fsl_qbman/bman_driver.c
-@@ -30,6 +30,9 @@
+diff --git a/arch/powerpc/platforms/85xx/corenet_generic.c b/arch/powerpc/platforms/85xx/corenet_generic.c
+index 74faab7..20b8f9a 100644
+--- a/arch/powerpc/platforms/85xx/corenet_generic.c
++++ b/arch/powerpc/platforms/85xx/corenet_generic.c
+@@ -198,15 +198,21 @@ static int __init corenet_generic_probe(void)
+ }
+ 
+ /* Early setup is required for large chunks of contiguous (and coarsely-aligned)
+- * memory. The following shoe-horns Bman "init_early" calls into the
++ * memory. The following shoe-horns Q/Bman "init_early" calls into the
+  * platform setup to let them parse their CCSR nodes early on.
   */
- 
- #include "bman_private.h"
-+#ifdef CONFIG_HOTPLUG_CPU
-+#include <linux/cpu.h>
++#ifdef CONFIG_FSL_QMAN_CONFIG
++void __init qman_init_early(void);
 +#endif
+ #ifdef CONFIG_FSL_BMAN_CONFIG
+ void __init bman_init_early(void);
+ #endif
  
- /*
-  * Global variables of the max portal/pool number this bman version supported
-@@ -180,7 +183,7 @@ static int __init parse_bportals(char *str)
- }
- __setup("bportals=", parse_bportals);
- 
--static void bman_offline_cpu(unsigned int cpu)
-+static void __cold bman_offline_cpu(unsigned int cpu)
+ __init void corenet_ds_init_early(void)
  {
- 	struct bman_portal *p = (struct bman_portal *)affine_bportals[cpu];
- 	const struct bm_portal_config *pcfg;
-@@ -192,6 +195,42 @@ static void bman_offline_cpu(unsigned int cpu)
- 	}
- }
- 
-+#ifdef CONFIG_HOTPLUG_CPU
-+static void __cold bman_online_cpu(unsigned int cpu)
-+{
-+	struct bman_portal *p = (struct bman_portal *)affine_bportals[cpu];
-+	const struct bm_portal_config *pcfg;
-+
-+	if (p) {
-+		pcfg = bman_get_bm_portal_config(p);
-+		if (pcfg)
-+			irq_set_affinity(pcfg->public_cfg.irq, cpumask_of(cpu));
-+	}
-+}
-+
-+static int __cold bman_hotplug_cpu_callback(struct notifier_block *nfb,
-+					    unsigned long action, void *hcpu)
-+{
-+	unsigned int cpu = (unsigned long)hcpu;
-+
-+	switch (action) {
-+	case CPU_ONLINE:
-+	case CPU_ONLINE_FROZEN:
-+		bman_online_cpu(cpu);
-+		break;
-+	case CPU_DOWN_PREPARE:
-+	case CPU_DOWN_PREPARE_FROZEN:
-+		bman_offline_cpu(cpu);
-+	}
-+
-+	return NOTIFY_OK;
-+}
-+
-+static struct notifier_block bman_hotplug_cpu_notifier = {
-+	.notifier_call = bman_hotplug_cpu_callback,
-+};
-+#endif /* CONFIG_HOTPLUG_CPU */
-+
- /* Initialise the Bman driver. The meat of this function deals with portals. The
-  * following describes the flow of portal-handling, the code "steps" refer to
-  * this description;
-@@ -326,5 +365,9 @@ int __init bman_init(void)
- 	for_each_cpu(cpu, &offline_cpus)
- 		bman_offline_cpu(cpu);
- 
-+#ifdef CONFIG_HOTPLUG_CPU
-+	register_hotcpu_notifier(&bman_hotplug_cpu_notifier);
++#ifdef CONFIG_FSL_QMAN_CONFIG
++	qman_init_early();
 +#endif
-+
- 	return 0;
+ #ifdef CONFIG_FSL_BMAN_CONFIG
+ 	bman_init_early();
+ #endif
+diff --git a/arch/powerpc/platforms/85xx/p1023_rdb.c b/arch/powerpc/platforms/85xx/p1023_rdb.c
+index 624d3d6..dc69801 100644
+--- a/arch/powerpc/platforms/85xx/p1023_rdb.c
++++ b/arch/powerpc/platforms/85xx/p1023_rdb.c
+@@ -106,14 +106,20 @@ static int __init p1023_rdb_probe(void)
  }
+ 
+ /* Early setup is required for large chunks of contiguous (and coarsely-aligned)
+- * memory. The following shoe-horns Bman "init_early" calls into the
++ * memory. The following shoe-horns Q/Bman "init_early" calls into the
+  * platform setup to let them parse their CCSR nodes early on. */
++#ifdef CONFIG_FSL_QMAN_CONFIG
++void __init qman_init_early(void);
++#endif
+ #ifdef CONFIG_FSL_BMAN_CONFIG
+ void __init bman_init_early(void);
+ #endif
+ 
+ static __init void p1023_rdb_init_early(void)
+ {
++#ifdef CONFIG_FSL_QMAN_CONFIG
++	qman_init_early();
++#endif
+ #ifdef CONFIG_FSL_BMAN_CONFIG
+ 	bman_init_early();
+ #endif
 -- 
 2.2.2
