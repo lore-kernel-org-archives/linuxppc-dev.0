@@ -1,24 +1,38 @@
-Return-Path: <greg@kroah.com>
-Received: from out1-smtp.messagingengine.com (out1-smtp.messagingengine.com
- [66.111.4.25])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <elfring@users.sourceforge.net>
+Received: from mout.web.de (mout.web.de [212.227.17.12])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 83FB51A0374
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Feb 2015 05:48:05 +1100 (AEDT)
-Received: from compute3.internal (compute3.nyi.internal [10.202.2.43])
- by mailout.nyi.internal (Postfix) with ESMTP id 6B5DA2093D
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Feb 2015 13:40:29 -0500 (EST)
-Date: Wed, 4 Feb 2015 10:40:28 -0800
-From: Greg KH <greg@kroah.com>
-To: Emil Medve <Emilian.Medve@Freescale.com>
-Subject: Re: [RFC 00/10] Freescale DPAA B/QMan drivers
-Message-ID: <20150204184028.GA8061@kroah.com>
-References: <1423061322-16059-1-git-send-email-Emilian.Medve@Freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5B8CF1A0A20
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Feb 2015 07:41:28 +1100 (AEDT)
+Message-ID: <54D282B0.90907@users.sourceforge.net>
+Date: Wed, 04 Feb 2015 21:36:00 +0100
+From: SF Markus Elfring <elfring@users.sourceforge.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1423061322-16059-1-git-send-email-Emilian.Medve@Freescale.com>
-Cc: devel@driverdev.osuosl.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] macintosh: Delete an unnecessary check before the function
+ call "of_node_put"
+References: <5307CAA2.8060406@users.sourceforge.net>
+ <alpine.DEB.2.02.1402212321410.2043@localhost6.localdomain6>
+ <530A086E.8010901@users.sourceforge.net>
+ <alpine.DEB.2.02.1402231635510.1985@localhost6.localdomain6>
+ <530A72AA.3000601@users.sourceforge.net>
+ <alpine.DEB.2.02.1402240658210.2090@localhost6.localdomain6>
+ <530B5FB6.6010207@users.sourceforge.net>
+ <alpine.DEB.2.10.1402241710370.2074@hadrien>
+ <530C5E18.1020800@users.sourceforge.net>
+ <alpine.DEB.2.10.1402251014170.2080@hadrien>
+ <530CD2C4.4050903@users.sourceforge.net>
+ <alpine.DEB.2.10.1402251840450.7035@hadrien>
+ <530CF8FF.8080600@users.sourceforge.net>
+ <alpine.DEB.2.02.1402252117150.2047@localhost6.localdomain6>
+ <530DD06F.4090703@users.sourceforge.net>
+ <alpine.DEB.2.02.1402262129250.2221@localhost6.localdomain6>
+ <5317A59D.4@users.sourceforge.net>
+In-Reply-To: <5317A59D.4@users.sourceforge.net>
+Content-Type: text/plain; charset=utf-8
+Cc: Julia Lawall <julia.lawall@lip6.fr>, kernel-janitors@vger.kernel.org,
+ LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,33 +42,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Feb 04, 2015 at 08:48:32AM -0600, Emil Medve wrote:
-> 
-> Hello,
-> 
-> 
-> This is the first attempt to publish the Freescale DPAA B/QMan drivers. They are
-> not to be applied yet.  At this stage, this is more or less the drivers from the
-> Freescale PowerPC SDK roughly squashed and split in a sequence of component
-> patches. They still needs some work and cleanup before we expect to have them
-> applied, but we appreciate early feedback
+From: Markus Elfring <elfring@users.sourceforge.net>
+Date: Wed, 4 Feb 2015 21:32:27 +0100
 
-First off, why put these in staging?  What's keeping them from being
-merged "properly"?
+The of_node_put() function tests whether its argument is NULL and then
+returns immediately. Thus the test around the call is not needed.
 
-Secondly, if they are going to go into staging, then I need a TODO file
-in the directory of the driver listing what needs to be done to move the
-code out of staging, and who is responsible for the code.  Ideally a
-MAINTAINERS entry as well.
+This issue was detected by using the Coccinelle software.
 
-And finally, staging drivers should be self-contained, your .h files:
+Signed-off-by: Markus Elfring <elfring@users.sourceforge.net>
+---
+ drivers/macintosh/smu.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
->  include/linux/fsl_bman.h                        |  517 +++++
->  include/linux/fsl_qman.h                        | 1955 +++++++++++++++++
-
-Need to be in drivers/staging/<DRIVER_DIR>/ not in include/linux/
-espeically as nothing outside of your driver needs these .h files.
-
-thanks,
-
-greg k-h
+diff --git a/drivers/macintosh/smu.c b/drivers/macintosh/smu.c
+index 10ae69b..d531f80 100644
+--- a/drivers/macintosh/smu.c
++++ b/drivers/macintosh/smu.c
+@@ -557,8 +557,7 @@ int __init smu_init (void)
+ 	return 0;
+ 
+ fail_msg_node:
+-	if (smu->msg_node)
+-		of_node_put(smu->msg_node);
++	of_node_put(smu->msg_node);
+ fail_db_node:
+ 	of_node_put(smu->db_node);
+ fail_bootmem:
+-- 
+2.2.2
