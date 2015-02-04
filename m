@@ -1,13 +1,13 @@
 Return-Path: <christophe.leroy@c-s.fr>
 Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id 260351A014B
+ by lists.ozlabs.org (Postfix) with ESMTP id 2A11B1A0157
  for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Feb 2015 01:49:12 +1100 (AEDT)
 From: Christophe Leroy <christophe.leroy@c-s.fr>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  scottwood@freescale.com
-Subject: [PATCH v4 1/5] powerpc/8xx: macro for handling CPU15 errata
-Message-Id: <20150204144908.5BFD91A5E8E@localhost.localdomain>
+Subject: [PATCH v4 2/5] powerpc/8xx: Handle CR out of exception PROLOG/EPILOG
+Message-Id: <20150204144908.85FFC1A5F23@localhost.localdomain>
 Date: Wed,  4 Feb 2015 15:49:08 +0100 (CET)
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -19,53 +19,86 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Having a macro will help keep clear code.
+In order to be able to reduce scope during which CR is saved, we take
+CR saving/restoring out of exception PROLOG and EPILOG
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
 ---
 v2: no change
-v3: Fixed the macro (missing -) and changed macro name to be more explicit
+v3: no change (but impacted by patch 07)
 v4: Respined against scootwood.git next (0dc294f7)
 
- arch/powerpc/kernel/head_8xx.S | 18 ++++++++++++------
- 1 file changed, 12 insertions(+), 6 deletions(-)
+ arch/powerpc/kernel/head_8xx.S | 10 +++++++---
+ 1 file changed, 7 insertions(+), 3 deletions(-)
 
 diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index 9b53fe1..1279018 100644
+index 1279018..5a69c5e 100644
 --- a/arch/powerpc/kernel/head_8xx.S
 +++ b/arch/powerpc/kernel/head_8xx.S
-@@ -297,6 +297,17 @@ SystemCall:
-  * We have to use the MD_xxx registers for the tablewalk because the
-  * equivalent MI_xxx registers only perform the attribute functions.
+@@ -116,13 +116,13 @@ turn_on_mmu:
   */
-+
-+#ifdef CONFIG_8xx_CPU15
-+#define INVALIDATE_ADJACENT_PAGES_CPU15(tmp, addr)	\
-+	addi	tmp, addr, PAGE_SIZE;	\
-+	tlbie	tmp;			\
-+	addi	tmp, addr, -PAGE_SIZE;	\
-+	tlbie	tmp
-+#else
-+#define INVALIDATE_ADJACENT_PAGES_CPU15(tmp, addr)
-+#endif
-+
- InstructionTLBMiss:
- #ifdef CONFIG_8xx_CPU6
+ #define EXCEPTION_PROLOG	\
+ 	EXCEPTION_PROLOG_0;	\
++	mfcr	r10;		\
+ 	EXCEPTION_PROLOG_1;	\
+ 	EXCEPTION_PROLOG_2
+ 
+ #define EXCEPTION_PROLOG_0	\
+ 	mtspr	SPRN_SPRG_SCRATCH0,r10;	\
+-	mtspr	SPRN_SPRG_SCRATCH1,r11;	\
+-	mfcr	r10
++	mtspr	SPRN_SPRG_SCRATCH1,r11
+ 
+ #define EXCEPTION_PROLOG_1	\
+ 	mfspr	r11,SPRN_SRR1;		/* check whether user or kernel */ \
+@@ -162,7 +162,6 @@ turn_on_mmu:
+  * Exception exit code.
+  */
+ #define EXCEPTION_EPILOG_0	\
+-	mtcr	r10;		\
+ 	mfspr	r10,SPRN_SPRG_SCRATCH0;	\
+ 	mfspr	r11,SPRN_SPRG_SCRATCH1
+ 
+@@ -313,6 +312,7 @@ InstructionTLBMiss:
  	mtspr	SPRN_DAR, r3
-@@ -304,12 +315,7 @@ InstructionTLBMiss:
+ #endif
  	EXCEPTION_PROLOG_0
++	mfcr	r10
  	mtspr	SPRN_SPRG_SCRATCH2, r10
  	mfspr	r10, SPRN_SRR0	/* Get effective address of fault */
--#ifdef CONFIG_8xx_CPU15
--	addi	r11, r10, PAGE_SIZE
--	tlbie	r11
--	addi	r11, r10, -PAGE_SIZE
--	tlbie	r11
--#endif
-+	INVALIDATE_ADJACENT_PAGES_CPU15(r11, r10)
+ 	INVALIDATE_ADJACENT_PAGES_CPU15(r11, r10)
+@@ -363,6 +363,7 @@ InstructionTLBMiss:
+ 	mtspr	SPRN_DAR, r11	/* Tag DAR */
+ #endif
+ 	mfspr	r10, SPRN_SPRG_SCRATCH2
++	mtcr	r10
+ 	EXCEPTION_EPILOG_0
+ 	rfi
  
- 	/* If we are faulting a kernel address, we have to use the
- 	 * kernel page tables.
+@@ -372,6 +373,7 @@ DataStoreTLBMiss:
+ 	mtspr	SPRN_DAR, r3
+ #endif
+ 	EXCEPTION_PROLOG_0
++	mfcr	r10
+ 	mtspr	SPRN_SPRG_SCRATCH2, r10
+ 	mfspr	r10, SPRN_MD_EPN
+ 
+@@ -437,6 +439,7 @@ DataStoreTLBMiss:
+ #endif
+ 	mtspr	SPRN_DAR, r11	/* Tag DAR */
+ 	mfspr	r10, SPRN_SPRG_SCRATCH2
++	mtcr	r10
+ 	EXCEPTION_EPILOG_0
+ 	rfi
+ 
+@@ -462,6 +465,7 @@ InstructionTLBError:
+ 	. = 0x1400
+ DataTLBError:
+ 	EXCEPTION_PROLOG_0
++	mfcr	r10
+ 
+ 	mfspr	r11, SPRN_DAR
+ 	cmpwi	cr0, r11, RPN_PATTERN
 -- 
 2.1.0
