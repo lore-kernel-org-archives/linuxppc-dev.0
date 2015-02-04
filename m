@@ -1,26 +1,25 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from smtp-out4.electric.net (smtp-out4.electric.net
- [192.162.216.185])
- (using TLSv1.1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 480F81A09D9
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Feb 2015 22:55:29 +1100 (AEDT)
-From: David Laight <David.Laight@ACULAB.COM>
-To: 'David Gibson' <david@gibson.dropbear.id.au>, "benh@kernel.crashing.org"
- <benh@kernel.crashing.org>, "mpe@ellerman.id.au" <mpe@ellerman.id.au>,
- "paulus@samba.org" <paulus@samba.org>, "agraf@suse.de" <agraf@suse.de>
-Subject: RE: [PATCH 0/5] powerpc: Get rid of redundant arch specific swab
- functions
-Date: Wed, 4 Feb 2015 11:54:39 +0000
-Message-ID: <063D6719AE5E284EB5DD2968C1650D6D1CADA5A5@AcuExch.aculab.com>
-References: <1422941785-22557-1-git-send-email-david@gibson.dropbear.id.au>
-In-Reply-To: <1422941785-22557-1-git-send-email-david@gibson.dropbear.id.au>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9DB971A09DD
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Feb 2015 00:32:31 +1100 (AEDT)
+Message-ID: <54D21F67.70307@suse.de>
+Date: Wed, 04 Feb 2015 14:32:23 +0100
+From: Alexander Graf <agraf@suse.de>
 MIME-Version: 1.0
-Cc: "aik@ozlabs.ru" <aik@ozlabs.ru>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "mdroth@us.ibm.com" <mdroth@us.ibm.com>
+To: Alex Williamson <alex.williamson@redhat.com>,
+ Alexey Kardashevskiy <aik@ozlabs.ru>
+Subject: Re: [PATCH v3 08/24] powerpc/spapr: vfio: Switch from iommu_table
+ to new powerpc_iommu
+References: <1422523325-1389-1-git-send-email-aik@ozlabs.ru>	
+ <1422523325-1389-9-git-send-email-aik@ozlabs.ru>
+ <1422922365.22865.448.camel@redhat.com>
+In-Reply-To: <1422922365.22865.448.camel@redhat.com>
+Content-Type: text/plain; charset=utf-8
+Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+ Alexander Gordeev <agordeev@redhat.com>, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,16 +29,101 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-RnJvbTogRGF2aWQgR2lic29uDQo+IGFyY2gvcG93ZXJwYy9pbmNsdWRlL2FzbS9zd2FiLmggaW5j
-bHVkZXMgc29tZSBwb3dlcnBjIHNwZWNpZmljDQo+IGJ5dGVzd2FwcGluZyBmdW5jdGlvbnMsIHdo
-aWNoIGFyZSBpbXBsZW1lbnRlZCBpbiB0ZXJtcyBvZiBwb3dlcnBjJ3MNCj4gYnVpbHQgaW4gYnl0
-ZSByZXZlcnNlZCBsb2FkL3N0b3JlIGluc3RydWN0aW9ucy4gIFRoZXJlIGFyZSB0d28gcHJvYmxl
-bXMgd2l0aCB0aGlzOg0KPiANCj4gMSkgVGhleSdyZSBub3QgbmVjZXNzYXJ5IC0gZ2NjIGlzIHBl
-cmZlY3RseSBjYXBhYmxlIG9mIGdlbmVyYXRpbmcgdGhlDQo+ICAgIGJ5dGUtcmV2ZXJzZWQgbG9h
-ZCBhbmQgc3RvcmUgaW5zdHJ1Y3Rpb25zIHdoZW4gdXNpbmcgdGhlIG5vcm1hbCwNCj4gICAgZ2Vu
-ZXJpYyBieXRlc3dhcHBpbmcgZnVuY3Rpb25zICh0ZXN0ZWQgd2l0aCBnY2MgKEdDQykgNC44LjMN
-Cj4gICAgMjAxNDA5MTEgKFJlZCBIYXQgNC44LjMtOSkpDQoNClNob3VsZCB5b3UgYmUgd29ycnlp
-bmcgYWJvdXQgb2xkZXIgdmVyc2lvbnMgb2YgZ2NjPw0KSUlSQyB0aGUgaW50ZXJuYWwgYnl0ZXN3
-YXAgJ3N0dWZmJyBpcyByZWxhdGl2ZWx5IHJlY2VudCAobGlrZQ0KdGhlIGxhc3QgY291cGxlIG9m
-IHllYXJzKSBzbyBwZW9wbGUgYnVpbGRpbmcgY3VycmVudCBrZXJuZWxzDQpvbiBvbGRlciBkaXN0
-cmlidXRpb25zIG1pZ2h0IGhhdmUgaXNzdWVzLg0KDQoJRGF2aWQNCg0K
+
+
+On 03.02.15 01:12, Alex Williamson wrote:
+> On Thu, 2015-01-29 at 20:21 +1100, Alexey Kardashevskiy wrote:
+>> Modern IBM POWERPC systems support multiple (currently two) TCE tables
+>> per IOMMU group (a.k.a. PE). This adds a powerpc_iommu container
+>> for TCE tables. Right now just one table is supported.
+>>
+>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+>> ---
+>>  arch/powerpc/include/asm/iommu.h            |  18 ++--
+>>  arch/powerpc/kernel/eeh.c                   |   2 +-
+>>  arch/powerpc/kernel/iommu.c                 |  34 ++++----
+>>  arch/powerpc/platforms/powernv/pci-ioda.c   |  37 +++++---
+>>  arch/powerpc/platforms/powernv/pci-p5ioc2.c |  16 ++--
+>>  arch/powerpc/platforms/powernv/pci.c        |   2 +-
+>>  arch/powerpc/platforms/powernv/pci.h        |   4 +-
+>>  arch/powerpc/platforms/pseries/iommu.c      |   9 +-
+>>  drivers/vfio/vfio_iommu_spapr_tce.c         | 131 ++++++++++++++++++++--------
+>>  9 files changed, 170 insertions(+), 83 deletions(-)
+> [snip]
+>> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
+>> index 29d5708..28909e1 100644
+>> --- a/drivers/vfio/vfio_iommu_spapr_tce.c
+>> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
+>> @@ -84,7 +84,7 @@ static void decrement_locked_vm(long npages)
+>>   */
+>>  struct tce_container {
+>>  	struct mutex lock;
+>> -	struct iommu_table *tbl;
+>> +	struct iommu_group *grp;
+>>  	bool enabled;
+>>  };
+>>  
+>> @@ -104,16 +104,40 @@ static bool tce_check_page_size(struct page *page, unsigned page_shift)
+>>  	return false;
+>>  }
+>>  
+>> +static struct iommu_table *spapr_tce_find_table(
+>> +		struct tce_container *container,
+>> +		phys_addr_t ioba)
+>> +{
+>> +	long i;
+>> +	struct iommu_table *ret = NULL;
+>> +	struct powerpc_iommu *iommu = iommu_group_get_iommudata(container->grp);
+>> +
+>> +	mutex_lock(&container->lock);
+>> +	for (i = 0; i < POWERPC_IOMMU_MAX_TABLES; ++i) {
+>> +		struct iommu_table *tbl = &iommu->tables[i];
+>> +		unsigned long entry = ioba >> tbl->it_page_shift;
+>> +		unsigned long start = tbl->it_offset;
+>> +		unsigned long end = start + tbl->it_size;
+>> +
+>> +		if ((start <= entry) && (entry < end)) {
+>> +			ret = tbl;
+>> +			break;
+>> +		}
+>> +	}
+>> +	mutex_unlock(&container->lock);
+>> +
+>> +	return ret;
+>> +}
+>> +
+>>  static int tce_iommu_enable(struct tce_container *container)
+>>  {
+>>  	int ret = 0;
+>> +	struct powerpc_iommu *iommu;
+>> +	struct iommu_table *tbl;
+>>  
+>> -	if (!container->tbl)
+>> +	if (!container->grp)
+>>  		return -ENXIO;
+>>  
+>> -	if (!current->mm)
+>> -		return -ESRCH; /* process exited */
+>> -
+>>  	if (container->enabled)
+>>  		return -EBUSY;
+>>  
+>> @@ -142,7 +166,12 @@ static int tce_iommu_enable(struct tce_container *container)
+>>  	 * as this information is only available from KVM and VFIO is
+>>  	 * KVM agnostic.
+>>  	 */
+>> -	ret = try_increment_locked_vm(IOMMU_TABLE_PAGES(container->tbl));
+>> +	iommu = iommu_group_get_iommudata(container->grp);
+>> +	if (!iommu)
+>> +		return -EFAULT;
+>> +
+>> +	tbl = &iommu->tables[0];
+> 
+> 
+> There should probably be a comment somewhere documenting that tables[0]
+> is the small window and presumably [1] will be the DDW.
+
+Rather than a comment, how about an enum?
+
+
+Alex
