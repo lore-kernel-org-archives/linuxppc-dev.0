@@ -1,23 +1,15 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AB2B91A09D9
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Feb 2015 01:30:45 +1100 (AEDT)
-Message-ID: <54D22D10.2040502@suse.de>
-Date: Wed, 04 Feb 2015 15:30:40 +0100
-From: Alexander Graf <agraf@suse.de>
-MIME-Version: 1.0
-To: David Gibson <david@gibson.dropbear.id.au>, benh@kernel.crashing.org,
- mpe@ellerman.id.au, paulus@samba.org
-Subject: Re: [PATCH 4/5] powerpc: Cleanup KVM emulated load/store endian
- handling
-References: <1422941785-22557-1-git-send-email-david@gibson.dropbear.id.au>
- <1422941785-22557-5-git-send-email-david@gibson.dropbear.id.au>
-In-Reply-To: <1422941785-22557-5-git-send-email-david@gibson.dropbear.id.au>
-Content-Type: text/plain; charset=windows-1252
-Cc: aik@ozlabs.ru, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- mdroth@us.ibm.com
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ by lists.ozlabs.org (Postfix) with ESMTP id 240231A013C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Feb 2015 01:49:12 +1100 (AEDT)
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ scottwood@freescale.com
+Subject: [PATCH v4 0/5] powerpc8xx: Further optimisation of TLB handling
+Message-Id: <20150204144908.361E71A5F24@localhost.localdomain>
+Date: Wed,  4 Feb 2015 15:49:08 +0100 (CET)
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,27 +19,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+This patchset provides a further optimisation of TLB handling in the 8xx.
+Changes are:
+- Not saving registers like CR when not needed
+- Adding support to any TASK_SIZE
 
+Patchset:
+01 - powerpc/8xx: macro for handling CPU15 errata
+02 - powerpc/8xx: Handle CR out of exception PROLOG/EPILOG
+03 - powerpc/8xx: dont save CR in SCRATCH registers
+04 - powerpc/8xx: Use SPRG2 instead of DAR for saving r3
+05 - powerpc/8xx: Add support for TASK_SIZE greater than 0x80000000
 
-On 03.02.15 06:36, David Gibson wrote:
-> Sometimes the KVM code on powerpc needs to emulate load or store
-> instructions from the guest, which can include both normal and byte
-> reversed forms.
-> 
-> We currently (AFAICT) handle this correctly, but some variable names are
-> very misleading.  In particular we use "is_bigendian" in several places to
-> actually mean "is the IO the same endian as the host", but we now support
-> little-endian powerpc hosts.  This also ties into the misleadingly named
-> ld_le*() and st_le*() functions, which in fact always byteswap, even on
-> an LE host.
-> 
-> This patch cleans this up by renaming to more accurate "host_swabbed", and
-> uses the generic swab*() functions instead of the powerpc specific and
-> misleadingly named ld_le*() and st_le*() functions.
-> 
-> Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+All changes have been successfully tested on MPC885
 
-Reviewed-by: Alexander Graf <agraf@suse.de>
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+Tested-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
+---
+v3: 01-06 no change ; 07-11 changed
+v4: 01-06 removed (already in scootwood.git next) ; 07-11 renamed 01-05 and respined against scootwood.git next
 
-Alex
+ arch/powerpc/kernel/head_8xx.S | 79 +++++++++++++++++++++++++++---------------
+ 1 file changed, 51 insertions(+), 28 deletions(-)
