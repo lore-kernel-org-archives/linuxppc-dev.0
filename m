@@ -1,17 +1,16 @@
 Return-Path: <Emilian.Medve@freescale.com>
 Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bbn0109.outbound.protection.outlook.com [157.56.111.109])
+ (mail-bn1bn0109.outbound.protection.outlook.com [157.56.110.109])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2E4DD1A168C
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3B1F11A104A
  for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Feb 2015 01:53:14 +1100 (AEDT)
 From: Emil Medve <Emilian.Medve@Freescale.com>
 To: <devel@driverdev.osuosl.org>, <linuxppc-dev@lists.ozlabs.org>,
  <linux-kernel@vger.kernel.org>
-Subject: [RFC 03/10] powerpc/mpc85xx: Add platform support for the Freescale
- DPAA BMan
-Date: Wed, 4 Feb 2015 08:48:35 -0600
-Message-ID: <1423061322-16059-4-git-send-email-Emilian.Medve@Freescale.com>
+Subject: [RFC 05/10] fsl_bman: Add self-tester
+Date: Wed, 4 Feb 2015 08:48:37 -0600
+Message-ID: <1423061322-16059-6-git-send-email-Emilian.Medve@Freescale.com>
 In-Reply-To: <1423061322-16059-1-git-send-email-Emilian.Medve@Freescale.com>
 References: <1423061322-16059-1-git-send-email-Emilian.Medve@Freescale.com>
 MIME-Version: 1.0
@@ -28,259 +27,584 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Geoff Thorpe <Geoff.Thorpe@freescale.com>
 
-Change-Id: I59de17c040cdd304f86306336fcf89f130f7db2d
+Change-Id: If1b44bb013addc1e855c73a4e6ff74bc8b6e4829
 Signed-off-by: Geoff Thorpe <Geoff.Thorpe@freescale.com>
 ---
- arch/powerpc/Kconfig                          | 33 +++++++++++++++------------
- arch/powerpc/platforms/85xx/Kconfig           | 11 +++++----
- arch/powerpc/platforms/85xx/corenet_generic.c | 20 ++++++++++++++--
- arch/powerpc/platforms/85xx/p1023_rdb.c       | 20 +++++++++++++---
- 4 files changed, 60 insertions(+), 24 deletions(-)
+ drivers/staging/fsl_qbman/Kconfig            |  26 ++++
+ drivers/staging/fsl_qbman/Makefile           |  16 ++-
+ drivers/staging/fsl_qbman/bman_test.c        |  56 ++++++++
+ drivers/staging/fsl_qbman/bman_test.h        |  44 ++++++
+ drivers/staging/fsl_qbman/bman_test_high.c   | 181 +++++++++++++++++++++++++
+ drivers/staging/fsl_qbman/bman_test_thresh.c | 196 +++++++++++++++++++++++++++
+ 6 files changed, 513 insertions(+), 6 deletions(-)
+ create mode 100644 drivers/staging/fsl_qbman/bman_test.c
+ create mode 100644 drivers/staging/fsl_qbman/bman_test.h
+ create mode 100644 drivers/staging/fsl_qbman/bman_test_high.c
+ create mode 100644 drivers/staging/fsl_qbman/bman_test_thresh.c
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 89996f3..7b2e673 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -361,7 +361,7 @@ config PPC_TRANSACTIONAL_MEM
-        select VSX
-        default n
-        ---help---
--         Support user-mode Transactional Memory on POWERPC.
-+	 Support user-mode Transactional Memory on POWERPC.
+diff --git a/drivers/staging/fsl_qbman/Kconfig b/drivers/staging/fsl_qbman/Kconfig
+index db90fe5..1875dbf 100644
+--- a/drivers/staging/fsl_qbman/Kconfig
++++ b/drivers/staging/fsl_qbman/Kconfig
+@@ -48,6 +48,32 @@ config FSL_BMAN_CONFIG
+ 	  linux image is running as a guest OS under the hypervisor, only one
+ 	  guest OS ("the control plane") needs this option.
  
- config IOMMU_HELPER
- 	def_bool PPC64
-@@ -374,7 +374,7 @@ config SWIOTLB
- 	  Support for IO bounce buffering for systems without an IOMMU.
- 	  This allows us to DMA to the full physical address space on
- 	  platforms where the size of a physical address is larger
--	  than the bus address.  Not all platforms support this.
-+	  than the bus address.	 Not all platforms support this.
- 
- config HOTPLUG_CPU
- 	bool "Support for enabling/disabling CPUs"
-@@ -410,8 +410,8 @@ config KEXEC
- 	depends on (PPC_BOOK3S || FSL_BOOKE || (44x && !SMP))
- 	help
- 	  kexec is a system call that implements the ability to shutdown your
--	  current kernel, and to start another kernel.  It is like a reboot
--	  but it is independent of the system firmware.   And like a reboot
-+	  current kernel, and to start another kernel.	It is like a reboot
-+	  but it is independent of the system firmware.	  And like a reboot
- 	  you can start any kernel with it, not just Linux.
- 
- 	  The name comes from the similarity to the exec system call.
-@@ -450,7 +450,7 @@ config IRQ_ALL_CPUS
- 	help
- 	  This option gives the kernel permission to distribute IRQs across
- 	  multiple CPUs.  Saying N here will route all IRQs to the first
--	  CPU.  Generally saying Y is safe, although some problems have been
-+	  CPU.	Generally saying Y is safe, although some problems have been
- 	  reported with SMP Power Macintoshes with this option enabled.
- 
- config NUMA
-@@ -499,9 +499,9 @@ config ARCH_MEMORY_PROBE
- 	depends on MEMORY_HOTPLUG
- 
- # Some NUMA nodes have memory ranges that span
--# other nodes.  Even though a pfn is valid and
-+# other nodes.	Even though a pfn is valid and
- # between a node's start and end pfns, it may not
--# reside on that node.  See memmap_init_zone()
-+# reside on that node.	See memmap_init_zone()
- # for details.
- config NODES_SPAN_OTHER_NODES
- 	def_bool y
-@@ -600,8 +600,8 @@ config FORCE_MAX_ZONEORDER
- 	  This config option is actually maximum order plus one. For example,
- 	  a value of 11 means that the largest free memory block is 2^10 pages.
- 
--	  The page size is not necessarily 4KB.  For example, on 64-bit
--	  systems, 64KB pages can be enabled via CONFIG_PPC_64K_PAGES.  Keep
-+	  The page size is not necessarily 4KB.	 For example, on 64-bit
-+	  systems, 64KB pages can be enabled via CONFIG_PPC_64K_PAGES.	Keep
- 	  this in mind when choosing a value for this option.
- 
- config PPC_SUBPAGE_PROT
-@@ -630,7 +630,7 @@ config PPC_DENORMALISATION
- 	default "y" if PPC_POWERNV
- 	---help---
- 	  Add support for handling denormalisation of single precision
--	  values.  Useful for bare metal only.  If unsure say Y here.
-+	  values.  Useful for bare metal only.	If unsure say Y here.
- 
- config CMDLINE_BOOL
- 	bool "Default bootloader kernel arguments"
-@@ -740,7 +740,7 @@ config FSL_SOC
- 	bool
- 
- config FSL_PCI
-- 	bool
-+	bool
- 	select PPC_INDIRECT_PCI
- 	select PCI_QUIRKS
- 
-@@ -778,12 +778,17 @@ config FSL_GTM
- 	help
- 	  Freescale General-purpose Timers support
- 
-+config HAS_FSL_QBMAN
-+	bool "Datapath Acceleration Queue and Buffer management"
-+	help
-+	  Datapath Acceleration Queue and Buffer management
++config FSL_BMAN_TEST
++	tristate "BMan self-tests"
++	default n
++	---help---
++	  This option compiles self-test code for BMan.
 +
- # Yes MCA RS/6000s exist but Linux-PPC does not currently support any
- config MCA
- 	bool
++config FSL_BMAN_TEST_HIGH
++	bool "BMan high-level self-test"
++	depends on FSL_BMAN_TEST
++	default y
++	---help---
++	  This requires the presence of cpu-affine portals, and performs
++	  high-level API testing with them (whichever portal(s) are affine to
++	  the cpu(s) the test executes on).
++
++config FSL_BMAN_TEST_THRESH
++	bool "BMan threshold test"
++	depends on FSL_BMAN_TEST
++	default y
++	---help---
++	  Multi-threaded (SMP) test of BMan pool depletion. A pool is seeded
++	  before multiple threads (one per cpu) create pool objects to track
++	  depletion state changes. The pool is then drained to empty by a
++	  "drainer" thread, and the other threads that they observe exactly
++	  the depletion state changes that are expected.
++
+ endif # FSL_BMAN
  
- # Platforms that what PCI turned unconditionally just do select PCI
--# in their config node.  Platforms that want to choose at config
-+# in their config node.	 Platforms that want to choose at config
- # time should select PPC_PCI_CHOICE
- config PPC_PCI_CHOICE
- 	bool
-@@ -910,14 +915,14 @@ config DYNAMIC_MEMSTART
- 	select NONSTATIC_KERNEL
- 	help
- 	  This option enables the kernel to be loaded at any page aligned
--	  physical address. The kernel creates a mapping from KERNELBASE to 
-+	  physical address. The kernel creates a mapping from KERNELBASE to
- 	  the address where the kernel is loaded. The page size here implies
- 	  the TLB page size of the mapping for kernel on the particular platform.
- 	  Please refer to the init code for finding the TLB page size.
+ config FSL_QMAN
+diff --git a/drivers/staging/fsl_qbman/Makefile b/drivers/staging/fsl_qbman/Makefile
+index 399d87e..0fcdd84 100644
+--- a/drivers/staging/fsl_qbman/Makefile
++++ b/drivers/staging/fsl_qbman/Makefile
+@@ -1,11 +1,15 @@
+ # Common
+-obj-$(CONFIG_FSL_DPA)		+= dpa_alloc.o
+-obj-$(CONFIG_HAS_FSL_QBMAN)	+= qbman_driver.o
++obj-$(CONFIG_FSL_DPA)				+= dpa_alloc.o
++obj-$(CONFIG_HAS_FSL_QBMAN)			+= qbman_driver.o
  
- 	  DYNAMIC_MEMSTART is an easy way of implementing pseudo-RELOCATABLE
- 	  kernel image, where the only restriction is the page aligned kernel
--	  load address. When this option is enabled, the compile time physical 
-+	  load address. When this option is enabled, the compile time physical
- 	  address CONFIG_PHYSICAL_START is ignored.
+ # Bman
+-obj-$(CONFIG_FSL_BMAN)		+= bman_high.o
+-obj-$(CONFIG_FSL_BMAN_CONFIG)	+= bman_config.o bman_driver.o
++obj-$(CONFIG_FSL_BMAN)				+= bman_high.o
++obj-$(CONFIG_FSL_BMAN_CONFIG)			+= bman_config.o bman_driver.o
++obj-$(CONFIG_FSL_BMAN_TEST)			+= bman_tester.o
++bman_tester-y					 = bman_test.o
++bman_tester-$(CONFIG_FSL_BMAN_TEST_HIGH)	+= bman_test_high.o
++bman_tester-$(CONFIG_FSL_BMAN_TEST_THRESH)	+= bman_test_thresh.o
  
- 	  This option is overridden by CONFIG_RELOCATABLE
-diff --git a/arch/powerpc/platforms/85xx/Kconfig b/arch/powerpc/platforms/85xx/Kconfig
-index 0e72534..7f8c798 100644
---- a/arch/powerpc/platforms/85xx/Kconfig
-+++ b/arch/powerpc/platforms/85xx/Kconfig
-@@ -146,10 +146,10 @@ config SOCRATES
- 	  This option enables support for the Socrates board.
- 
- config KSI8560
--        bool "Emerson KSI8560"
--        select DEFAULT_UIMAGE
--        help
--          This option enables support for the Emerson KSI8560 board
-+	bool "Emerson KSI8560"
-+	select DEFAULT_UIMAGE
-+	help
-+	  This option enables support for the Emerson KSI8560 board
- 
- config XES_MPC85xx
- 	bool "X-ES single-board computer"
-@@ -249,7 +249,7 @@ config PPC_QEMU_E500
- 	select DEFAULT_UIMAGE
- 	help
- 	  This option enables support for running as a QEMU guest using
--	  QEMU's generic e500 machine.  This is not required if you're
-+	  QEMU's generic e500 machine.	This is not required if you're
- 	  using a QEMU machine that targets a specific board, such as
- 	  mpc8544ds.
- 
-@@ -270,6 +270,7 @@ config CORENET_GENERIC
- 	select GPIO_MPC8XXX
- 	select HAS_RAPIDIO
- 	select PPC_EPAPR_HV_PIC
-+	select HAS_FSL_QBMAN
- 	help
- 	  This option enables support for the FSL CoreNet based boards.
- 	  For 32bit kernel, the following boards are supported:
-diff --git a/arch/powerpc/platforms/85xx/corenet_generic.c b/arch/powerpc/platforms/85xx/corenet_generic.c
-index 63bef30..74faab7 100644
---- a/arch/powerpc/platforms/85xx/corenet_generic.c
-+++ b/arch/powerpc/platforms/85xx/corenet_generic.c
-@@ -5,8 +5,8 @@
-  *
-  * Copyright 2009-2011 Freescale Semiconductor Inc.
-  *
-- * This program is free software; you can redistribute  it and/or modify it
-- * under  the terms of  the GNU General  Public License as published by the
-+ * This program is free software; you can redistribute	it and/or modify it
-+ * under  the terms of	the GNU General	 Public License as published by the
-  * Free Software Foundation;  either version 2 of the  License, or (at your
-  * option) any later version.
-  */
-@@ -197,6 +197,21 @@ static int __init corenet_generic_probe(void)
- 	return 0;
- }
- 
-+/* Early setup is required for large chunks of contiguous (and coarsely-aligned)
-+ * memory. The following shoe-horns Bman "init_early" calls into the
-+ * platform setup to let them parse their CCSR nodes early on.
+ # Qman
+-obj-$(CONFIG_FSL_QMAN)		+= qman_high.o qman_utility.o
+-obj-$(CONFIG_FSL_QMAN_CONFIG)	+= qman_config.o qman_driver.o
++obj-$(CONFIG_FSL_QMAN)				+= qman_high.o qman_utility.o
++obj-$(CONFIG_FSL_QMAN_CONFIG)			+= qman_config.o qman_driver.o
+diff --git a/drivers/staging/fsl_qbman/bman_test.c b/drivers/staging/fsl_qbman/bman_test.c
+new file mode 100644
+index 0000000..1a261ee
+--- /dev/null
++++ b/drivers/staging/fsl_qbman/bman_test.c
+@@ -0,0 +1,56 @@
++/* Copyright 2008-2011 Freescale Semiconductor, Inc.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are met:
++ *     * Redistributions of source code must retain the above copyright
++ *	 notice, this list of conditions and the following disclaimer.
++ *     * Redistributions in binary form must reproduce the above copyright
++ *	 notice, this list of conditions and the following disclaimer in the
++ *	 documentation and/or other materials provided with the distribution.
++ *     * Neither the name of Freescale Semiconductor nor the
++ *	 names of its contributors may be used to endorse or promote products
++ *	 derived from this software without specific prior written permission.
++ *
++ *
++ * ALTERNATIVELY, this software may be distributed under the terms of the
++ * GNU General Public License ("GPL") as published by the Free Software
++ * Foundation, either version 2 of that License or (at your option) any
++ * later version.
++ *
++ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
++ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
++ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
++ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
++ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
++ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 + */
-+#ifdef CONFIG_FSL_BMAN_CONFIG
-+void __init bman_init_early(void);
-+#endif
 +
-+__init void corenet_ds_init_early(void)
++#include "bman_test.h"
++
++MODULE_AUTHOR("Geoff Thorpe");
++MODULE_LICENSE("Dual BSD/GPL");
++MODULE_DESCRIPTION("Bman testing");
++
++static int test_init(void)
 +{
-+#ifdef CONFIG_FSL_BMAN_CONFIG
-+	bman_init_early();
++#ifdef CONFIG_FSL_BMAN_TEST_HIGH
++	int loop = 1;
++	while (loop--)
++		bman_test_high();
 +#endif
++#ifdef CONFIG_FSL_BMAN_TEST_THRESH
++	bman_test_thresh();
++#endif
++	return 0;
 +}
 +
- define_machine(corenet_generic) {
- 	.name			= "CoreNet Generic",
- 	.probe			= corenet_generic_probe,
-@@ -215,6 +230,7 @@ define_machine(corenet_generic) {
- #else
- 	.power_save		= e500_idle,
- #endif
-+	.init_early		= corenet_ds_init_early,
- };
- 
- machine_arch_initcall(corenet_generic, corenet_gen_publish_devices);
-diff --git a/arch/powerpc/platforms/85xx/p1023_rdb.c b/arch/powerpc/platforms/85xx/p1023_rdb.c
-index d5b7509..624d3d6 100644
---- a/arch/powerpc/platforms/85xx/p1023_rdb.c
-+++ b/arch/powerpc/platforms/85xx/p1023_rdb.c
-@@ -6,8 +6,8 @@
-  * Description:
-  * P1023 RDB Board Setup
-  *
-- * This program is free software; you can redistribute  it and/or modify it
-- * under  the terms of  the GNU General  Public License as published by the
-+ * This program is free software; you can redistribute	it and/or modify it
-+ * under  the terms of	the GNU General	 Public License as published by the
-  * Free Software Foundation;  either version 2 of the  License, or (at your
-  * option) any later version.
-  */
-@@ -103,7 +103,20 @@ static int __init p1023_rdb_probe(void)
- 	unsigned long root = of_get_flat_dt_root();
- 
- 	return of_flat_dt_is_compatible(root, "fsl,P1023RDB");
++static void test_exit(void)
++{
 +}
 +
-+/* Early setup is required for large chunks of contiguous (and coarsely-aligned)
-+ * memory. The following shoe-horns Bman "init_early" calls into the
-+ * platform setup to let them parse their CCSR nodes early on. */
-+#ifdef CONFIG_FSL_BMAN_CONFIG
-+void __init bman_init_early(void);
-+#endif
- 
-+static __init void p1023_rdb_init_early(void)
++module_init(test_init);
++module_exit(test_exit);
+diff --git a/drivers/staging/fsl_qbman/bman_test.h b/drivers/staging/fsl_qbman/bman_test.h
+new file mode 100644
+index 0000000..25e43f0
+--- /dev/null
++++ b/drivers/staging/fsl_qbman/bman_test.h
+@@ -0,0 +1,44 @@
++/* Copyright 2008-2011 Freescale Semiconductor, Inc.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are met:
++ *     * Redistributions of source code must retain the above copyright
++ *	 notice, this list of conditions and the following disclaimer.
++ *     * Redistributions in binary form must reproduce the above copyright
++ *	 notice, this list of conditions and the following disclaimer in the
++ *	 documentation and/or other materials provided with the distribution.
++ *     * Neither the name of Freescale Semiconductor nor the
++ *	 names of its contributors may be used to endorse or promote products
++ *	 derived from this software without specific prior written permission.
++ *
++ *
++ * ALTERNATIVELY, this software may be distributed under the terms of the
++ * GNU General Public License ("GPL") as published by the Free Software
++ * Foundation, either version 2 of that License or (at your option) any
++ * later version.
++ *
++ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
++ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
++ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
++ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
++ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
++ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++#include <linux/kernel.h>
++#include <linux/errno.h>
++#include <linux/io.h>
++#include <linux/slab.h>
++#include <linux/module.h>
++#include <linux/interrupt.h>
++#include <linux/delay.h>
++#include <linux/kthread.h>
++
++#include <linux/fsl_bman.h>
++
++void bman_test_high(void);
++void bman_test_thresh(void);
+diff --git a/drivers/staging/fsl_qbman/bman_test_high.c b/drivers/staging/fsl_qbman/bman_test_high.c
+new file mode 100644
+index 0000000..abfe157
+--- /dev/null
++++ b/drivers/staging/fsl_qbman/bman_test_high.c
+@@ -0,0 +1,181 @@
++/* Copyright 2008-2011 Freescale Semiconductor, Inc.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are met:
++ *     * Redistributions of source code must retain the above copyright
++ *	 notice, this list of conditions and the following disclaimer.
++ *     * Redistributions in binary form must reproduce the above copyright
++ *	 notice, this list of conditions and the following disclaimer in the
++ *	 documentation and/or other materials provided with the distribution.
++ *     * Neither the name of Freescale Semiconductor nor the
++ *	 names of its contributors may be used to endorse or promote products
++ *	 derived from this software without specific prior written permission.
++ *
++ *
++ * ALTERNATIVELY, this software may be distributed under the terms of the
++ * GNU General Public License ("GPL") as published by the Free Software
++ * Foundation, either version 2 of that License or (at your option) any
++ * later version.
++ *
++ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
++ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
++ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
++ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
++ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
++ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++#include "bman_test.h"
++#include "bman_private.h"
++
++/*************/
++/* constants */
++/*************/
++
++#define PORTAL_OPAQUE	((void *)0xf00dbeef)
++#define POOL_OPAQUE	((void *)0xdeadabba)
++#define NUM_BUFS	93
++#define LOOPS		3
++#define BMAN_TOKEN_MASK 0x00FFFFFFFFFFLLU
++
++/***************/
++/* global vars */
++/***************/
++
++static struct bman_pool *pool;
++static int depleted;
++static struct bm_buffer bufs_in[NUM_BUFS] ____cacheline_aligned;
++static struct bm_buffer bufs_out[NUM_BUFS] ____cacheline_aligned;
++static int bufs_received;
++
++/* Predeclare the callback so we can instantiate pool parameters */
++static void depletion_cb(struct bman_portal *, struct bman_pool *, void *, int);
++
++/**********************/
++/* internal functions */
++/**********************/
++
++static void bufs_init(void)
 +{
-+#ifdef CONFIG_FSL_BMAN_CONFIG
-+	bman_init_early();
-+#endif
- }
- 
- define_machine(p1023_rdb) {
-@@ -117,6 +130,7 @@ define_machine(p1023_rdb) {
- 	.progress		= udbg_progress,
- #ifdef CONFIG_PCI
- 	.pcibios_fixup_bus	= fsl_pcibios_fixup_bus,
--	.pcibios_fixup_phb      = fsl_pcibios_fixup_phb,
-+	.pcibios_fixup_phb	= fsl_pcibios_fixup_phb,
- #endif
-+	.init_early		= p1023_rdb_init_early,
- };
++	int i;
++	for (i = 0; i < NUM_BUFS; i++)
++		bm_buffer_set64(&bufs_in[i], 0xfedc01234567LLU * i);
++	bufs_received = 0;
++}
++
++static inline int bufs_cmp(const struct bm_buffer *a, const struct bm_buffer *b)
++{
++	if ((bman_ip_rev == BMAN_REV20) || (bman_ip_rev == BMAN_REV21)) {
++
++		/* On SoCs with Bman revison 2.0, Bman only respects the 40
++		 * LS-bits of buffer addresses, masking off the upper 8-bits on
++		 * release commands. The API provides for 48-bit addresses
++		 * because some SoCs support all 48-bits. When generating
++		 * garbage addresses for testing, we either need to zero the
++		 * upper 8-bits when releasing to Bman (otherwise we'll be
++		 * disappointed when the buffers we acquire back from Bman
++		 * don't match), or we need to mask the upper 8-bits off when
++		 * comparing. We do the latter.
++		 */
++		if ((bm_buffer_get64(a) & BMAN_TOKEN_MASK)
++				< (bm_buffer_get64(b) & BMAN_TOKEN_MASK))
++			return -1;
++		if ((bm_buffer_get64(a) & BMAN_TOKEN_MASK)
++				> (bm_buffer_get64(b) & BMAN_TOKEN_MASK))
++			return 1;
++	} else {
++		if (bm_buffer_get64(a) < bm_buffer_get64(b))
++			return -1;
++		if (bm_buffer_get64(a) > bm_buffer_get64(b))
++			return 1;
++	}
++
++	return 0;
++}
++
++static void bufs_confirm(void)
++{
++	int i, j;
++	for (i = 0; i < NUM_BUFS; i++) {
++		int matches = 0;
++		for (j = 0; j < NUM_BUFS; j++)
++			if (!bufs_cmp(&bufs_in[i], &bufs_out[j]))
++				matches++;
++		BUG_ON(matches != 1);
++	}
++}
++
++/********/
++/* test */
++/********/
++
++static void depletion_cb(struct bman_portal *__portal, struct bman_pool *__pool,
++			void *pool_ctx, int __depleted)
++{
++	BUG_ON(__pool != pool);
++	BUG_ON(pool_ctx != POOL_OPAQUE);
++	depleted = __depleted;
++}
++
++void bman_test_high(void)
++{
++	struct bman_pool_params pparams = {
++		.flags = BMAN_POOL_FLAG_DEPLETION | BMAN_POOL_FLAG_DYNAMIC_BPID,
++		.cb = depletion_cb,
++		.cb_ctx = POOL_OPAQUE,
++	};
++	int i, loops = LOOPS;
++
++	bufs_init();
++
++	pr_info("BMAN:	--- starting high-level test ---\n");
++
++	pool = bman_new_pool(&pparams);
++	BUG_ON(!pool);
++
++	/*******************/
++	/* Release buffers */
++	/*******************/
++do_loop:
++	i = 0;
++	while (i < NUM_BUFS) {
++		u32 flags = BMAN_RELEASE_FLAG_WAIT;
++		int num = 8;
++		if ((i + num) > NUM_BUFS)
++			num = NUM_BUFS - i;
++		if ((i + num) == NUM_BUFS)
++			flags |= BMAN_RELEASE_FLAG_WAIT_SYNC;
++		if (bman_release(pool, bufs_in + i, num, flags))
++			panic("bman_release() failed\n");
++		i += num;
++	}
++
++	/*******************/
++	/* Acquire buffers */
++	/*******************/
++	while (i > 0) {
++		int tmp, num = 8;
++		if (num > i)
++			num = i;
++		tmp = bman_acquire(pool, bufs_out + i - num, num, 0);
++		BUG_ON(tmp != num);
++		i -= num;
++	}
++	i = bman_acquire(pool, NULL, 1, 0);
++	BUG_ON(i > 0);
++
++	bufs_confirm();
++
++	if (--loops)
++		goto do_loop;
++
++	/************/
++	/* Clean up */
++	/************/
++	bman_free_pool(pool);
++	pr_info("BMAN:	--- finished high-level test ---\n");
++}
+diff --git a/drivers/staging/fsl_qbman/bman_test_thresh.c b/drivers/staging/fsl_qbman/bman_test_thresh.c
+new file mode 100644
+index 0000000..c03db24
+--- /dev/null
++++ b/drivers/staging/fsl_qbman/bman_test_thresh.c
+@@ -0,0 +1,196 @@
++/* Copyright 2010-2011 Freescale Semiconductor, Inc.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are met:
++ *     * Redistributions of source code must retain the above copyright
++ *	 notice, this list of conditions and the following disclaimer.
++ *     * Redistributions in binary form must reproduce the above copyright
++ *	 notice, this list of conditions and the following disclaimer in the
++ *	 documentation and/or other materials provided with the distribution.
++ *     * Neither the name of Freescale Semiconductor nor the
++ *	 names of its contributors may be used to endorse or promote products
++ *	 derived from this software without specific prior written permission.
++ *
++ *
++ * ALTERNATIVELY, this software may be distributed under the terms of the
++ * GNU General Public License ("GPL") as published by the Free Software
++ * Foundation, either version 2 of that License or (at your option) any
++ * later version.
++ *
++ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
++ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
++ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
++ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
++ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
++ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++#include "bman_test.h"
++
++/* Test constants */
++#define TEST_NUMBUFS	129728
++#define TEST_EXIT	129536
++#define TEST_ENTRY	129024
++
++struct affine_test_data {
++	struct task_struct *t;
++	int cpu;
++	int expect_affinity;
++	int drain;
++	int num_enter;
++	int num_exit;
++	struct list_head node;
++	struct completion wakethread;
++	struct completion wakeparent;
++};
++
++static void cb_depletion(struct bman_portal *portal,
++			struct bman_pool *pool,
++			void *opaque,
++			int depleted)
++{
++	struct affine_test_data *data = opaque;
++	int c = smp_processor_id();
++	pr_info("cb_depletion: bpid=%d, depleted=%d, cpu=%d, original=%d\n",
++		bman_get_params(pool)->bpid, !!depleted, c, data->cpu);
++	/* We should be executing on the CPU of the thread that owns the pool if
++	 * and that CPU has an affine portal (ie. it isn't slaved). */
++	BUG_ON((c != data->cpu) && data->expect_affinity);
++	BUG_ON((c == data->cpu) && !data->expect_affinity);
++	if (depleted)
++		data->num_enter++;
++	else
++		data->num_exit++;
++}
++
++/* Params used to set up a pool, this also dynamically allocates a BPID */
++static const struct bman_pool_params params_nocb = {
++	.flags = BMAN_POOL_FLAG_DYNAMIC_BPID | BMAN_POOL_FLAG_THRESH,
++	.thresholds = { TEST_ENTRY, TEST_EXIT, 0, 0 }
++};
++
++/* Params used to set up each cpu's pool with callbacks enabled */
++static struct bman_pool_params params_cb = {
++	.bpid = 0, /* will be replaced to match pool_nocb */
++	.flags = BMAN_POOL_FLAG_DEPLETION,
++	.cb = cb_depletion
++};
++
++static struct bman_pool *pool_nocb;
++static LIST_HEAD(threads);
++
++static int affine_test(void *__data)
++{
++	struct bman_pool *pool;
++	struct affine_test_data *data = __data;
++	struct bman_pool_params my_params = params_cb;
++
++	pr_info("thread %d: starting\n", data->cpu);
++	/* create the pool */
++	my_params.cb_ctx = data;
++	pool = bman_new_pool(&my_params);
++	BUG_ON(!pool);
++	complete(&data->wakeparent);
++	wait_for_completion(&data->wakethread);
++	init_completion(&data->wakethread);
++
++	/* if we're the drainer, we get signalled for that */
++	if (data->drain) {
++		struct bm_buffer buf;
++		int ret;
++		pr_info("thread %d: draining...\n", data->cpu);
++		do {
++			ret = bman_acquire(pool, &buf, 1, 0);
++		} while (ret > 0);
++		pr_info("thread %d: draining done.\n", data->cpu);
++		complete(&data->wakeparent);
++		wait_for_completion(&data->wakethread);
++		init_completion(&data->wakethread);
++	}
++
++	/* cleanup */
++	bman_free_pool(pool);
++	while (!kthread_should_stop())
++		cpu_relax();
++	pr_info("thread %d: exiting\n", data->cpu);
++	return 0;
++}
++
++static struct affine_test_data *start_affine_test(int cpu, int drain)
++{
++	struct affine_test_data *data = kmalloc(sizeof(*data), GFP_KERNEL);
++
++	if (!data)
++		return NULL;
++	data->cpu = cpu;
++	data->expect_affinity = cpumask_test_cpu(cpu, bman_affine_cpus());
++	data->drain = drain;
++	data->num_enter = 0;
++	data->num_exit = 0;
++	init_completion(&data->wakethread);
++	init_completion(&data->wakeparent);
++	list_add_tail(&data->node, &threads);
++	data->t = kthread_create(affine_test, data, "threshtest%d", cpu);
++	BUG_ON(IS_ERR(data->t));
++	kthread_bind(data->t, cpu);
++	wake_up_process(data->t);
++	return data;
++}
++
++void bman_test_thresh(void)
++{
++	int loop = TEST_NUMBUFS;
++	int ret, num_cpus = 0;
++	struct affine_test_data *data, *drainer = NULL;
++
++	pr_info("bman_test_thresh: start\n");
++
++	/* allocate a BPID and seed it */
++	pool_nocb = bman_new_pool(&params_nocb);
++	BUG_ON(!pool_nocb);
++	while (loop--) {
++		struct bm_buffer buf;
++		bm_buffer_set64(&buf, 0x0badbeef + loop);
++		ret = bman_release(pool_nocb, &buf, 1,
++					BMAN_RELEASE_FLAG_WAIT);
++		BUG_ON(ret);
++	}
++	while (!bman_rcr_is_empty())
++		cpu_relax();
++	pr_info("bman_test_thresh: buffers are in\n");
++
++	/* create threads and wait for them to create pools */
++	params_cb.bpid = bman_get_params(pool_nocb)->bpid;
++	for_each_cpu(loop, cpu_online_mask) {
++		data = start_affine_test(loop, drainer ? 0 : 1);
++		BUG_ON(!data);
++		if (!drainer)
++			drainer = data;
++		num_cpus++;
++		wait_for_completion(&data->wakeparent);
++	}
++
++	/* signal the drainer to start draining */
++	complete(&drainer->wakethread);
++	wait_for_completion(&drainer->wakeparent);
++	init_completion(&drainer->wakeparent);
++
++	/* tear down */
++	list_for_each_entry_safe(data, drainer, &threads, node) {
++		complete(&data->wakethread);
++		ret = kthread_stop(data->t);
++		BUG_ON(ret);
++		list_del(&data->node);
++		/* check that we get the expected callbacks (and no others) */
++		BUG_ON(data->num_enter != 1);
++		BUG_ON(data->num_exit != 0);
++		kfree(data);
++	}
++	bman_free_pool(pool_nocb);
++
++	pr_info("bman_test_thresh: done\n");
++}
 -- 
 2.2.2
