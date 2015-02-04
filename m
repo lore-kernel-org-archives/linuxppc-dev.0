@@ -1,28 +1,23 @@
-Return-Path: <bhelgaas@google.com>
-Received: from mail-qg0-x22e.google.com (mail-qg0-x22e.google.com
- [IPv6:2607:f8b0:400d:c04::22e])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C57A01A09D3
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Feb 2015 01:19:38 +1100 (AEDT)
-Received: by mail-qg0-f46.google.com with SMTP id j5so1324280qga.5
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Feb 2015 06:19:35 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id AB2B91A09D9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Feb 2015 01:30:45 +1100 (AEDT)
+Message-ID: <54D22D10.2040502@suse.de>
+Date: Wed, 04 Feb 2015 15:30:40 +0100
+From: Alexander Graf <agraf@suse.de>
 MIME-Version: 1.0
-In-Reply-To: <20150204033409.GA11577@richard>
-References: <20150130230803.GA6795@google.com>
- <1422946903-12958-1-git-send-email-weiyang@linux.vnet.ibm.com>
- <20150204001926.GA19540@google.com> <20150204033409.GA11577@richard>
-From: Bjorn Helgaas <bhelgaas@google.com>
-Date: Wed, 4 Feb 2015 08:19:14 -0600
-Message-ID: <CAErSpo4nLEvL4XGvkvZbfy0dFQcRDHdn5aznkx2fRMMnt1_n4g@mail.gmail.com>
-Subject: Re: [PATCH] powerpc/powernv: make sure the IOV BAR will not exceed
- limit after shifting
-To: Wei Yang <weiyang@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- Benjamin Herrenschmidt <benh@au1.ibm.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: David Gibson <david@gibson.dropbear.id.au>, benh@kernel.crashing.org,
+ mpe@ellerman.id.au, paulus@samba.org
+Subject: Re: [PATCH 4/5] powerpc: Cleanup KVM emulated load/store endian
+ handling
+References: <1422941785-22557-1-git-send-email-david@gibson.dropbear.id.au>
+ <1422941785-22557-5-git-send-email-david@gibson.dropbear.id.au>
+In-Reply-To: <1422941785-22557-5-git-send-email-david@gibson.dropbear.id.au>
+Content-Type: text/plain; charset=windows-1252
+Cc: aik@ozlabs.ru, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ mdroth@us.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,33 +27,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Feb 3, 2015 at 9:34 PM, Wei Yang <weiyang@linux.vnet.ibm.com> wrote:
-> On Tue, Feb 03, 2015 at 06:19:26PM -0600, Bjorn Helgaas wrote:
->>On Tue, Feb 03, 2015 at 03:01:43PM +0800, Wei Yang wrote:
 
->>> +    vf_num = pdn->vf_pes;
->>
->>I can't actually build this, but I don't think pdn->vf_pes is defined yet.
->>
->
-> The pdn->vf_pes is defined in the next patch, it is not defined yet.
->
-> I thought the incremental patch means a patch on top of the current patch set,
-> so it is defined as the last patch.
 
-Yes, that's fine.  I want to keep the series bisectable, so I'll fold
-these patches together.
+On 03.02.15 06:36, David Gibson wrote:
+> Sometimes the KVM code on powerpc needs to emulate load or store
+> instructions from the guest, which can include both normal and byte
+> reversed forms.
+> 
+> We currently (AFAICT) handle this correctly, but some variable names are
+> very misleading.  In particular we use "is_bigendian" in several places to
+> actually mean "is the IO the same endian as the host", but we now support
+> little-endian powerpc hosts.  This also ties into the misleadingly named
+> ld_le*() and st_le*() functions, which in fact always byteswap, even on
+> an LE host.
+> 
+> This patch cleans this up by renaming to more accurate "host_swabbed", and
+> uses the generic swab*() functions instead of the powerpc specific and
+> misleadingly named ld_le*() and st_le*() functions.
+> 
+> Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 
->>I pushed an updated pci/virtualization branch with these updates.  I
->>think there's also a leak that needs to be fixed that Dan Carpenter
->>pointed out.
+Reviewed-by: Alexander Graf <agraf@suse.de>
 
->>+      vf_num = pdn->vf_pes;           // FIXME not defined yet
->
-> Do you want me poll your pci/virtualization branch and fix this?
 
-Don't worry about this FIXME; I can fix that by squashing two patches.
-But please do pull my pci/virtualization branch and fix this one (this
-is the one that I thought Dan Carpenter pointed out):
-
-  drivers/pci/iov.c:488 sriov_init() warn: possible memory leak of 'iov'
+Alex
