@@ -1,13 +1,13 @@
 Return-Path: <christophe.leroy@c-s.fr>
 Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id 240231A013C
+ by lists.ozlabs.org (Postfix) with ESMTP id 280A91A0156
  for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Feb 2015 01:49:12 +1100 (AEDT)
 From: Christophe Leroy <christophe.leroy@c-s.fr>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  scottwood@freescale.com
-Subject: [PATCH v4 0/5] powerpc8xx: Further optimisation of TLB handling
-Message-Id: <20150204144908.361E71A5F24@localhost.localdomain>
+Subject: [PATCH v4 4/5] powerpc/8xx: Use SPRG2 instead of DAR for saving r3
+Message-Id: <20150204144908.CBD491A5F28@localhost.localdomain>
 Date: Wed,  4 Feb 2015 15:49:08 +0100 (CET)
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -19,26 +19,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patchset provides a further optimisation of TLB handling in the 8xx.
-Changes are:
-- Not saving registers like CR when not needed
-- Adding support to any TASK_SIZE
-
-Patchset:
-01 - powerpc/8xx: macro for handling CPU15 errata
-02 - powerpc/8xx: Handle CR out of exception PROLOG/EPILOG
-03 - powerpc/8xx: dont save CR in SCRATCH registers
-04 - powerpc/8xx: Use SPRG2 instead of DAR for saving r3
-05 - powerpc/8xx: Add support for TASK_SIZE greater than 0x80000000
-
-All changes have been successfully tested on MPC885
+We now have SPRG2 available as in it not used anymore for saving CR, so we don't
+need to crash DAR anymore for saving r3 for CPU6 ERRATA handling.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-Tested-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
 ---
-v3: 01-06 no change ; 07-11 changed
-v4: 01-06 removed (already in scootwood.git next) ; 07-11 renamed 01-05 and respined against scootwood.git next
+v2: no change
+v3: no change
+v4: Respined against scootwood.git next (0dc294f7)
 
- arch/powerpc/kernel/head_8xx.S | 79 +++++++++++++++++++++++++++---------------
- 1 file changed, 51 insertions(+), 28 deletions(-)
+ arch/powerpc/kernel/head_8xx.S | 9 ++++-----
+ 1 file changed, 4 insertions(+), 5 deletions(-)
+
+diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
+index 150d03f..ba2dc53 100644
+--- a/arch/powerpc/kernel/head_8xx.S
++++ b/arch/powerpc/kernel/head_8xx.S
+@@ -309,7 +309,7 @@ SystemCall:
+ 
+ InstructionTLBMiss:
+ #ifdef CONFIG_8xx_CPU6
+-	mtspr	SPRN_DAR, r3
++	mtspr	SPRN_SPRG_SCRATCH2, r3
+ #endif
+ 	EXCEPTION_PROLOG_0
+ 
+@@ -362,8 +362,7 @@ InstructionTLBMiss:
+ 
+ 	/* Restore registers */
+ #ifdef CONFIG_8xx_CPU6
+-	mfspr	r3, SPRN_DAR
+-	mtspr	SPRN_DAR, r11	/* Tag DAR */
++	mfspr	r3, SPRN_SPRG_SCRATCH2
+ #endif
+ 	EXCEPTION_EPILOG_0
+ 	rfi
+@@ -371,7 +370,7 @@ InstructionTLBMiss:
+ 	. = 0x1200
+ DataStoreTLBMiss:
+ #ifdef CONFIG_8xx_CPU6
+-	mtspr	SPRN_DAR, r3
++	mtspr	SPRN_SPRG_SCRATCH2, r3
+ #endif
+ 	EXCEPTION_PROLOG_0
+ 	mfcr	r10
+@@ -438,7 +437,7 @@ DataStoreTLBMiss:
+ 
+ 	/* Restore registers */
+ #ifdef CONFIG_8xx_CPU6
+-	mfspr	r3, SPRN_DAR
++	mfspr	r3, SPRN_SPRG_SCRATCH2
+ #endif
+ 	mtspr	SPRN_DAR, r11	/* Tag DAR */
+ 	EXCEPTION_EPILOG_0
+-- 
+2.1.0
