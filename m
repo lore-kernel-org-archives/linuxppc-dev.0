@@ -2,18 +2,15 @@ Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E935F1A0B5B
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Feb 2015 11:42:38 +1100 (AEDT)
-Message-ID: <1423010557.7982.1.camel@ellerman.id.au>
-Subject: Re: [PATCH v2 0/4] VPHN parsing fixes
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1EE701A0BD3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Feb 2015 11:58:54 +1100 (AEDT)
+Message-ID: <1423011533.7982.3.camel@ellerman.id.au>
+Subject: Re: Pull request: scottwood/linux.git next
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Greg Kurz <gkurz@linux.vnet.ibm.com>
-Date: Wed, 04 Feb 2015 11:42:37 +1100
-In-Reply-To: <20150203084640.70b60a7c@bahia.local>
-References: <20141217094007.16957.70423.stgit@bahia.local>
- <20150129190353.401248ab@bahia.local>
- <1422931655.4625.6.camel@ellerman.id.au>
- <20150203084640.70b60a7c@bahia.local>
+To: Scott Wood <scottwood@freescale.com>
+Date: Wed, 04 Feb 2015 11:58:53 +1100
+In-Reply-To: <20150203172056.GA14407@SnaresPenguin>
+References: <20150203172056.GA14407@SnaresPenguin>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 Cc: linuxppc-dev@lists.ozlabs.org
@@ -26,47 +23,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-02-03 at 08:46 +0100, Greg Kurz wrote:
-> On Tue, 03 Feb 2015 13:47:35 +1100
-> Michael Ellerman <mpe@ellerman.id.au> wrote:
+On Tue, 2015-02-03 at 11:20 -0600, Scott Wood wrote:
+> Highlights include 8xx optimizations, some more work on datapath device
+> tree content, e300 machine check support, t1040 corenet error reporting,
+> and various cleanups and fixes.
 > 
-> > On Thu, 2015-01-29 at 19:03 +0100, Greg Kurz wrote:
-> > > On Wed, 17 Dec 2014 10:40:46 +0100
-> > > Greg Kurz <gkurz@linux.vnet.ibm.com> wrote:
-> > > > Hi,
-> > > > 
-> > > > This series addresses remarks from Ben and Michael (see individual patches).
-> > > > The most notable changes are:
-> > > > - the parsing code being pull out into a separate file in patch 3/4. This
-> > > >   allows to write userland tests like the one below.
-> > > > - a full rewrite of the parsing logic in patch 4/4
-> > > > 
-> > > 
-> > > Ping ?
-> > 
-> > Sorry, lots of patches needing review.
+> The following changes since commit 31494cf3532cfee0bf5c913ac9962971aab7b1d4:
 > 
-> Heh, no problem. :) Since this isn't bugfix, I can even repost later, when
-> the review pressure is lower.
+>   powerpc/powernv: Don't alloc IRQ map if necessary (2015-01-28 15:28:10 +1100)
+> 
+> are available in the git repository at:
+> 
+>   git://git.kernel.org/pub/scm/linux/kernel/git/scottwood/linux.git next
+> 
+> for you to fetch changes up to 0dc294f717d41bfbafc746a7a96a7bc0f114c20c:
+> 
+>   powerpc/mm: bail out early when flushing TLB page (2015-01-30 18:39:00 -0600)
 
-Yeah if you can repost in ~2 weeks that would be perfect.
- 
-> > This looks pretty good at a glance, but did you actually write a userspace test
-> > for it? If so please send it. I'm happy to rework it into something that can go
-> > in selftests.
-> > 
-> 
-> Yes, I wrote the premise of a test program. You can find it in the cover mail of
-> this series:
-> 
-> https://lists.ozlabs.org/pipermail/linuxppc-dev/2014-December/123601.html
-> 
-> I'll have a look at selftests.
 
-Thanks. That test looks like a good start, there might be some more cases to
-test though?
+Hi Scott,
 
-If you just copy the tools/testing/selftests/powerpc/tm directory and rename to
-vhpn, you can probably work out the rest.
+It's not a big deal but a few of the subjects are a bit off in here. I'm not
+going to ask you to respin or anything, but in general if we can stick with
+"powerpc[/topic]: ..." that'd be good.  
+
+>       perf/powerpc: reset event hw state when adding it to the PMU
+>       powerpc: defconfigs: add MTD_SPI_NOR (new dependency for M25P80)
+>       powerpc32: adds handling of _PAGE_RO
+>       powerpc32: Use kmem_cache memory for PGDIR
+>       PowerPC-83xx: Deletion of an unnecessary check before the function call "of_node_put"
+
+
+Also there was a v2 of this one:
+
+>       powerpc/mm: bail out early when flushing TLB page
+
+Do you want to merge that as an incremental fix, or I can, let me know?
 
 cheers
