@@ -1,20 +1,44 @@
-Return-Path: <ppc@mindchasers.com>
-Received: from resqmta-ch2-07v.sys.comcast.net
- (resqmta-ch2-07v.sys.comcast.net [IPv6:2001:558:fe21:29:69:252:207:39])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <hbathini@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48B641A02D1
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Feb 2015 02:56:42 +1100 (AEDT)
-Message-ID: <54D390BD.4060300@mindchasers.com>
-Date: Thu, 05 Feb 2015 10:48:13 -0500
-From: Bob Cochran <ppc@mindchasers.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 728751A0C49
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Feb 2015 05:41:45 +1100 (AEDT)
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 47AE1140273
+ for <linuxppc-dev@ozlabs.org>; Fri,  6 Feb 2015 05:41:45 +1100 (AEDT)
+Received: from /spool/local
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <hbathini@linux.vnet.ibm.com>;
+ Fri, 6 Feb 2015 04:41:44 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 58F12357804C
+ for <linuxppc-dev@ozlabs.org>; Fri,  6 Feb 2015 05:41:41 +1100 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t15IfWQa24182986
+ for <linuxppc-dev@ozlabs.org>; Fri, 6 Feb 2015 05:41:41 +1100
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t15If6h4008983
+ for <linuxppc-dev@ozlabs.org>; Fri, 6 Feb 2015 05:41:07 +1100
+Message-ID: <54D3B931.7090102@linux.vnet.ibm.com>
+Date: Fri, 06 Feb 2015 00:10:49 +0530
+From: Hari Bathini <hbathini@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Emil Medve <Emilian.Medve@Freescale.com>, devel@driverdev.osuosl.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [RFC 00/10] Freescale DPAA B/QMan drivers
-References: <1423061322-16059-1-git-send-email-Emilian.Medve@Freescale.com>
-In-Reply-To: <1423061322-16059-1-git-send-email-Emilian.Medve@Freescale.com>
+To: Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v4 1/3] powerpc/nvram: move generic code for nvram and
+ pstore
+References: <20150130151247.13976.88337.stgit@localhost.localdomain>
+ <20150130151400.13976.90106.stgit@localhost.localdomain>
+ <1939177.TRC136ehpt@wuerfel>
+In-Reply-To: <1939177.TRC136ehpt@wuerfel>
 Content-Type: text/plain; charset=utf-8; format=flowed
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>,
+ Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,120 +48,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 02/04/2015 09:48 AM, Emil Medve wrote:
+On 01/30/2015 10:12 PM, Arnd Bergmann wrote:
+> On Friday 30 January 2015 20:44:00 Hari Bathini wrote:
+>> With minor checks, we can move most of the code for nvram
+>> under pseries to a common place to be re-used by other
+>> powerpc platforms like powernv. This patch moves such
+>> common code to arch/powerpc/kernel/nvram_64.c file.
+>>
+>> Signed-off-by: Hari Bathini <hbathini@linux.vnet.ibm.com>
+> Can you make this y2038-safe in the process, possibly as a
+> follow-up patch?
+
+Arnd, sorry for the delayed response.
+I will add these changes to this patch-set and re-spin..
+
+Thanks
+Hari
+
+>> +extern unsigned long last_rtas_event;
+> time64_t
 >
-> Hello,
+>> +	}
+>> +	oops_hdr->version = cpu_to_be16(OOPS_HDR_VERSION);
+>> +	oops_hdr->report_length = cpu_to_be16(zipped_len);
+>> +	oops_hdr->timestamp = cpu_to_be64(get_seconds());
+>> +	return 0;
+> ktime_get_real_seconds()
 >
+>> +static ssize_t nvram_pstore_read(u64 *id, enum pstore_type_id *type,
+>> +				int *count, struct timespec *time, char **buf,
+>> +				bool *compressed, struct pstore_info *psi)
+> This has to remain timespec for now but can later be changed to timespec64
+> when the API gets changed.
 >
-> This is the first attempt to publish the Freescale DPAA B/QMan drivers. They are
-> not to be applied yet.  At this stage, this is more or less the drivers from the
-> Freescale PowerPC SDK roughly squashed and split in a sequence of component
-> patches. They still needs some work and cleanup before we expect to have them
-> applied, but we appreciate early feedback
-
-
-Hi Emil,
-
-I had thought to try to apply these patches and build it, but I won't 
-get very far using it without FMAN (on my t1040).   I searched through 
-the mail archives and didn't find FMAN patches other than for the device 
-tree.   I also don't see it in the mainline tree.
-
-If FMAN patches have already been submitted, please point me to it.
-
-If not, then please let me know when we will see code to support FMAN.
-
-Also, is it your intention for the same QMAN/BMAN drivers to be used 
-with both FMAN and the LS AIOP?
-
-Thank you,
-
-Bob
-
-
-
-
-
+>> +		oops_hdr->version = cpu_to_be16(OOPS_HDR_VERSION);
+>> +		oops_hdr->report_length = cpu_to_be16(text_len);
+>> +		oops_hdr->timestamp = cpu_to_be64(get_seconds());
+> ktime_get_real_seconds()
 >
->
-> Cheers,
->
->
-> Geoff Thorpe (8):
->    fsl_bman: Add drivers for the Freescale DPAA BMan
->    fsl_qman: Add drivers for the Freescale DPAA QMan
->    powerpc/mpc85xx: Add platform support for the Freescale DPAA BMan
->    powerpc/mpc85xx: Add platform support for the Freescale DPAA QMan
->    fsl_bman: Add self-tester
->    fsl_qman: Add self-tester
->    fsl_bman: Add debugfs support
->    fsl_qman: Add debugfs support
->
-> Hai-Ying Wang (2):
->    fsl_bman: Add HOTPLUG_CPU support
->    fsl_qman: Add HOTPLUG_CPU support
->
->   arch/powerpc/Kconfig                            |   33 +-
->   arch/powerpc/platforms/85xx/Kconfig             |   11 +-
->   arch/powerpc/platforms/85xx/corenet_generic.c   |   26 +-
->   arch/powerpc/platforms/85xx/p1023_rdb.c         |   26 +-
->   drivers/staging/Kconfig                         |    4 +-
->   drivers/staging/Makefile                        |    1 +
->   drivers/staging/fsl_qbman/Kconfig               |  188 ++
->   drivers/staging/fsl_qbman/Makefile              |   23 +
->   drivers/staging/fsl_qbman/bman_config.c         |  611 ++++++
->   drivers/staging/fsl_qbman/bman_debugfs.c        |  119 +
->   drivers/staging/fsl_qbman/bman_driver.c         |  373 ++++
->   drivers/staging/fsl_qbman/bman_high.c           | 1055 +++++++++
->   drivers/staging/fsl_qbman/bman_low.h            |  524 +++++
->   drivers/staging/fsl_qbman/bman_private.h        |  149 ++
->   drivers/staging/fsl_qbman/bman_test.c           |   56 +
->   drivers/staging/fsl_qbman/bman_test.h           |   44 +
->   drivers/staging/fsl_qbman/bman_test_high.c      |  181 ++
->   drivers/staging/fsl_qbman/bman_test_thresh.c    |  196 ++
->   drivers/staging/fsl_qbman/dpa_alloc.c           |  573 +++++
->   drivers/staging/fsl_qbman/dpa_sys.h             |  294 +++
->   drivers/staging/fsl_qbman/qbman_driver.c        |   85 +
->   drivers/staging/fsl_qbman/qman_config.c         |  991 +++++++++
->   drivers/staging/fsl_qbman/qman_debugfs.c        | 1326 ++++++++++++
->   drivers/staging/fsl_qbman/qman_driver.c         |  548 +++++
->   drivers/staging/fsl_qbman/qman_high.c           | 2624 +++++++++++++++++++++++
->   drivers/staging/fsl_qbman/qman_low.h            | 1302 +++++++++++
->   drivers/staging/fsl_qbman/qman_private.h        |  283 +++
->   drivers/staging/fsl_qbman/qman_test.c           |   57 +
->   drivers/staging/fsl_qbman/qman_test.h           |   43 +
->   drivers/staging/fsl_qbman/qman_test_high.c      |  213 ++
->   drivers/staging/fsl_qbman/qman_test_hotpotato.c |  497 +++++
->   drivers/staging/fsl_qbman/qman_utility.c        |  129 ++
->   include/linux/fsl_bman.h                        |  517 +++++
->   include/linux/fsl_qman.h                        | 1955 +++++++++++++++++
->   34 files changed, 15032 insertions(+), 25 deletions(-)
->   create mode 100644 drivers/staging/fsl_qbman/Kconfig
->   create mode 100644 drivers/staging/fsl_qbman/Makefile
->   create mode 100644 drivers/staging/fsl_qbman/bman_config.c
->   create mode 100644 drivers/staging/fsl_qbman/bman_debugfs.c
->   create mode 100644 drivers/staging/fsl_qbman/bman_driver.c
->   create mode 100644 drivers/staging/fsl_qbman/bman_high.c
->   create mode 100644 drivers/staging/fsl_qbman/bman_low.h
->   create mode 100644 drivers/staging/fsl_qbman/bman_private.h
->   create mode 100644 drivers/staging/fsl_qbman/bman_test.c
->   create mode 100644 drivers/staging/fsl_qbman/bman_test.h
->   create mode 100644 drivers/staging/fsl_qbman/bman_test_high.c
->   create mode 100644 drivers/staging/fsl_qbman/bman_test_thresh.c
->   create mode 100644 drivers/staging/fsl_qbman/dpa_alloc.c
->   create mode 100644 drivers/staging/fsl_qbman/dpa_sys.h
->   create mode 100644 drivers/staging/fsl_qbman/qbman_driver.c
->   create mode 100644 drivers/staging/fsl_qbman/qman_config.c
->   create mode 100644 drivers/staging/fsl_qbman/qman_debugfs.c
->   create mode 100644 drivers/staging/fsl_qbman/qman_driver.c
->   create mode 100644 drivers/staging/fsl_qbman/qman_high.c
->   create mode 100644 drivers/staging/fsl_qbman/qman_low.h
->   create mode 100644 drivers/staging/fsl_qbman/qman_private.h
->   create mode 100644 drivers/staging/fsl_qbman/qman_test.c
->   create mode 100644 drivers/staging/fsl_qbman/qman_test.h
->   create mode 100644 drivers/staging/fsl_qbman/qman_test_high.c
->   create mode 100644 drivers/staging/fsl_qbman/qman_test_hotpotato.c
->   create mode 100644 drivers/staging/fsl_qbman/qman_utility.c
->   create mode 100644 include/linux/fsl_bman.h
->   create mode 100644 include/linux/fsl_qman.h
->
+> 	Arnd
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
