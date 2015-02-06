@@ -1,53 +1,21 @@
-Return-Path: <ulrich.weigand@de.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <rdunlap@infradead.org>
+Received: from casper.infradead.org (casper.infradead.org [85.118.1.10])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 75B021A02AC
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Feb 2015 01:48:39 +1100 (AEDT)
-Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 5E4A814016A
- for <linuxppc-dev@ozlabs.org>; Sat,  7 Feb 2015 01:48:38 +1100 (AEDT)
-Received: from /spool/local
- by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <ulrich.weigand@de.ibm.com>;
- Fri, 6 Feb 2015 14:48:34 -0000
-Received: from b06cxnps4076.portsmouth.uk.ibm.com
- (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
- by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id B03DA1B08070
- for <linuxppc-dev@ozlabs.org>; Fri,  6 Feb 2015 14:48:40 +0000 (GMT)
-Received: from d06av08.portsmouth.uk.ibm.com (d06av08.portsmouth.uk.ibm.com
- [9.149.37.249])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t16EmWO74391268
- for <linuxppc-dev@ozlabs.org>; Fri, 6 Feb 2015 14:48:32 GMT
-Received: from d06av08.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av08.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t16EmUSL000894
- for <linuxppc-dev@ozlabs.org>; Fri, 6 Feb 2015 07:48:32 -0700
-In-Reply-To: <1422419289.9646.20.camel@neuling.org>
-References: <20141203052204.9DA8F1400DD@ozlabs.org>	
- <547EB253.5050307@linux.vnet.ibm.com> <548578A8.5020901@linux.vnet.ibm.com>
- <54947C64.4030206@linux.vnet.ibm.com> <54A50094.5070902@linux.vnet.ibm.com>
- <1421883597.30744.3.camel@neuling.org>	
- <OFC6CFC348.C619B89D-ONC1257DD5.0056279B-C1257DD5.00577002@de.ibm.com>
- <1421963049.30744.23.camel@neuling.org> <1422419289.9646.20.camel@neuling.org>
-Subject: Re: [V6,1/9] elf: Add new powerpc specifc core note sections
-To: Michael Neuling <mikey@neuling.org>
-Message-ID: <OFE5516C3F.3C4884DE-ONC1257DE4.004E7852-C1257DE4.00514232@de.ibm.com>
-From: Ulrich Weigand <Ulrich.Weigand@de.ibm.com>
-Date: Fri, 6 Feb 2015 15:47:33 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 36F351A0B1A
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Feb 2015 04:41:50 +1100 (AEDT)
+Message-ID: <54D4FCC9.80704@infradead.org>
+Date: Fri, 06 Feb 2015 09:41:29 -0800
+From: Randy Dunlap <rdunlap@infradead.org>
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
-Cc: shuahkh@osg.samsung.com, james.hogan@imgtec.com, avagin@openvz.org,
- Paul.Clothier@imgtec.com, peterz@infradead.org, linux-kernel@vger.kernel.org,
- davem@davemloft.net, dhowells@redhat.com, linuxppc-dev@ozlabs.org,
- kirjanov@gmail.com, tglx@linutronix.de, oleg@redhat.com,
- sukadev@linux.vnet.ibm.com, davej@redhat.com, akpm@linux-foundation.org,
- palves@redhat.com, Edjunior Barbosa Machado <emachado@linux.vnet.ibm.com>,
- sam.bobroff@au1.ibm.com, Anshuman Khandual <khandual@linux.vnet.ibm.com>
+To: Joseph Myers <joseph@codesourcery.com>, linux-kernel@vger.kernel.org,
+ linux-alpha@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
+ sparclinux@vger.kernel.org
+Subject: Re: [PATCH RFC] Update kernel math-emu code from current glibc soft-fp
+References: <alpine.DEB.2.10.1502061719210.27832@digraph.polyomino.org.uk>
+In-Reply-To: <alpine.DEB.2.10.1502061719210.27832@digraph.polyomino.org.uk>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -57,118 +25,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael Neuling <mikey@neuling.org> wrote on 28.01.2015 05:28:09:
+On 02/06/15 09:25, Joseph Myers wrote:
+> At this point this patch is an RFC rather than yet being ready for
+> inclusion, because I've only tested it for powerpc (both e500 and
+> emulation of classic hard float); it's quite likely there are bugs in
+> the changes for other architectures, quite possibly breaking the
+> build.  I've also posted it to libc-alpha
+> <https://sourceware.org/ml/libc-alpha/2015-02/msg00107.html> with a
+> call for testing and notes on what testing might be appropriate.
 
-> Sorry, I'm rethinking this as we didn't consider user suspended
-> transactions.
->
-> It makes sense for normal transactions but for user suspended
-> transactions the running values are the ones you want to modify since
-> that is where you'll end up restarting from.  The hardware will only
-> abort/rollback once a tresume is encountered.
-
-OK, I see.  I hadn't really looked into suspended transactions before ...
-
-> So we could do what you're talking about for normal transactions and
-> then switch them for suspended transactions.  But this just seems to be
-> making the kernel interface overly complicated.
-
-Agreed.  Given that there seems to be an inevitable difference in how
-transactions are seen by the debugger between Power and z (there are
-no suspended transactions on z), I guess it makes more sense to have
-the interface naturally model the hardware register sets on Power,
-and have GDB cope with the differences.
-
-> So I'm keen on just keeping it the way Anshuman has now and GDB has to
-> understand the program flow better to know which ones it wants to
-> modify.  The kernel always provides the "normal" set as running and the
-> new set as check pointed.  GDB then has to check the MSR to work out
-> what it wants to modify.
-
-So I'm thinking how this all would work out for the case of GDB wanting
-to call an inferior function while the process is stopped within a
-transaction (in either transactional or suspended state).
-
-(A) In suspended state, I guess GDB could modify the "normal" register
-set and ask the kernel to continue.  The kernel would then transfer
-control to the inferior function entry point while still in suspended
-state, and the inferior function would execute in suspended state until
-it hits the GDB-placed breakpoint at the end.  At this point, GDB would
-reload the original values to the "normal" register set, and ask the
-kernel to continue.  The kernel would then transfer control to the
-originally-interrupted piece of code in suspended state, which would
-continue to execute until the tresume, at which point the transaction
-would abort (due to TDOOMED).  Right?
-
-(B) In transactional state, GDB could modify the "checkpointed" register
-set and ask the kernel to continue.  The kernel would transfer control
-to the originally-interrupted code in transactional state.  At this
-point, the transaction would immediately abort, and control would
-transfer to the state specified in the checkpointed register set,
-and the inferior function would now execute in non-transactional
-state, until it hits the breakpoint.  At this point, GDB would now
-have to restore the original values of the *checkpointed* register
-set into the *normal* register set (a bit weird from a GDB internals
-perspective), and ask the kernel to continue.  Execution would now
-resume at the abort handler of the originally interrupted transaction.
-(Hmm.  Maybe GDB would also have to set cr0 or something?)
-
-Is it possible for GDB to change the state (transactional vs.
-suspended) where the kernel ought to let the application continue in?
-I guess via modifying the appropriate MSR bits via ptrace?
-
-If so, there would be other options to handle this:
-
-(A') In the transactional state, GDB could set the MSR to suspended,
-and modify the "normal" register set.  The inferior function would
-execute in the suspended state as in (A) above.  Upon return, GDB
-would restore the normal register set (including restoring the MSR
-to transactional state).  Once the kernel resumes the application,
-the transaction would abort at this point.
-
-(B') In the suspended state, GDB could set the MSR to transactional,
-and modify the "checkpointed" register set.  Once the kernel resumes
-the application, the transaction immediately aborts and control
-transfers to the inferior function, executing in nontransactional
-state as in (B).  Upon return, GDB would again need to restore the
-original checkpointed register set into the normal register set,
-set cr0 to indicate transactional abort, and continue.
+Is there a test suite?
 
 
-Using the combination of (A)+(A') would be easiest to implement
-in GDB without modifying a lot of common code, and would have the
-advantage that the inferior function always executes in the same
-state (suspended), while leaving information about the interrupted
-transaction visible.
+and a diffstat is good to see:
 
-Using the combination of (B)+(B') would be a bit more difficult
-to implement (but certainly feasible), and would have the advantage
-that the inferior function always executes in nontransactional state
-(which is what it would most likely expect, anyway).  However, the
-disadvantage is that after the inferior call returns, GDB is unable
-to fully restore the visible inferior state as it was before (since
-we're now in nontransactional state, and there is probably no way
-to force us back into transactional/suspended state ...).
+ arch/alpha/include/asm/sfp-machine.h    |    3 
+ arch/alpha/math-emu/math.c              |  131 -
+ arch/powerpc/include/asm/sfp-machine.h  |   39 
+ arch/powerpc/math-emu/fadd.c            |    6 
+ arch/powerpc/math-emu/fadds.c           |    6 
+ arch/powerpc/math-emu/fcmpo.c           |    2 
+ arch/powerpc/math-emu/fcmpu.c           |    2 
+ arch/powerpc/math-emu/fctiw.c           |    2 
+ arch/powerpc/math-emu/fctiwz.c          |    2 
+ arch/powerpc/math-emu/fmadd.c           |    8 
+ arch/powerpc/math-emu/fmadds.c          |    8 
+ arch/powerpc/math-emu/fmsub.c           |    8 
+ arch/powerpc/math-emu/fmsubs.c          |    8 
+ arch/powerpc/math-emu/fnmadd.c          |    8 
+ arch/powerpc/math-emu/fnmadds.c         |    8 
+ arch/powerpc/math-emu/fnmsub.c          |    8 
+ arch/powerpc/math-emu/fnmsubs.c         |    8 
+ arch/powerpc/math-emu/fsub.c            |    6 
+ arch/powerpc/math-emu/fsubs.c           |    6 
+ arch/powerpc/math-emu/lfs.c             |   11 
+ arch/powerpc/math-emu/math_efp.c        |  254 +-
+ arch/powerpc/math-emu/stfs.c            |    6 
+ arch/s390/include/asm/sfp-machine.h     |   10 
+ arch/s390/math-emu/math.c               |  278 +--
+ arch/sh/include/asm/sfp-machine.h       |   10 
+ arch/sh/math-emu/math.c                 |   51 
+ arch/sparc/include/asm/sfp-machine_32.h |    3 
+ arch/sparc/include/asm/sfp-machine_64.h |    3 
+ arch/sparc/math-emu/math_32.c           |  144 -
+ arch/sparc/math-emu/math_64.c           |  140 -
+ include/math-emu/double.h               |  391 ++--
+ include/math-emu/op-1.h                 |  546 +++---
+ include/math-emu/op-2.h                 | 1127 ++++++------
+ include/math-emu/op-4.h                 | 1449 ++++++++-------
+ include/math-emu/op-8.h                 |  205 +-
+ include/math-emu/op-common.h            | 2902 ++++++++++++++++++++++----------
+ include/math-emu/quad.h                 |  428 +++-
+ include/math-emu/single.h               |  225 +-
+ include/math-emu/soft-fp.h              |  342 ++-
+ 39 files changed, 5495 insertions(+), 3299 deletions(-)
 
-Am I missing something here?  Any additional thoughts?
 
 
-> > > - a new ptrace register set should allow access (read-only) to the
-> > >   *running* register values
-> >
-> > This is because changing them won't ever result in a side effect?
->
-> For the same reason as above, we need to be able to modify the running
-> values when it's a user suspended transaction.  So I don't agree with
-> this any more in the case of user suspended transaction.  We need to be
-> able to modify both sets of registers.
 
-So I guess the kernel, on resuming the application, first loads the
-checkpointed register set into normal registers, issues the trechkpt
-instruction to move them to the checkpointed register, and then loads
-the normal register set, before returning to user space?  Then it does
-indeed appear that both sets *are* modifyable, and thus the kernel
-interface should export them as such.
-
-Bye,
-Ulrich
+-- 
+~Randy
