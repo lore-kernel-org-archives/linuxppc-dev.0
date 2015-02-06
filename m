@@ -1,32 +1,24 @@
-Return-Path: <keescook@google.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 182D31A0AF2
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Feb 2015 08:28:30 +1100 (AEDT)
-Received: from mail-oi0-x233.google.com (mail-oi0-x233.google.com
- [IPv6:2607:f8b0:4003:c06::233])
+Return-Path: <computersforpeace@gmail.com>
+Received: from mail-pa0-x231.google.com (mail-pa0-x231.google.com
+ [IPv6:2607:f8b0:400e:c03::231])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 6D554140275
- for <linuxppc-dev@ozlabs.org>; Fri,  6 Feb 2015 08:28:29 +1100 (AEDT)
-Received: by mail-oi0-f51.google.com with SMTP id x69so8699758oia.10
- for <linuxppc-dev@ozlabs.org>; Thu, 05 Feb 2015 13:28:23 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 087261A08A3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Feb 2015 15:08:11 +1100 (AEDT)
+Received: by mail-pa0-f49.google.com with SMTP id fa1so14473812pad.8
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Feb 2015 20:08:08 -0800 (PST)
+Date: Thu, 5 Feb 2015 20:08:05 -0800
+From: Brian Norris <computersforpeace@gmail.com>
+To: Kevin Hao <haokexin@gmail.com>
+Subject: Re: [PATCH 12/15] mtd: kconfig: replace PPC_OF with PPC
+Message-ID: <20150206040805.GI18140@ld-irv-0074>
+References: <1422712065-9403-1-git-send-email-haokexin@gmail.com>
+ <1422712065-9403-13-git-send-email-haokexin@gmail.com>
 MIME-Version: 1.0
-Sender: keescook@google.com
-In-Reply-To: <20150205193412.24669.8648.stgit@localhost.localdomain>
-References: <20150205193412.24669.8648.stgit@localhost.localdomain>
-Date: Thu, 5 Feb 2015 13:28:22 -0800
-Message-ID: <CAGXu5jK-dRTBDkF_cfVuuQRXH80r2-TVTgPZ1fDqYoVMABfaHw@mail.gmail.com>
-Subject: Re: [PATCH v5 0/4] powerpc/pstore: Add pstore support for nvram
- partitions
-From: Kees Cook <keescook@chromium.org>
-To: Hari Bathini <hbathini@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: Tony Luck <tony.luck@intel.com>,
- Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>,
- Anton Vorontsov <anton@enomsg.org>, lkml <linux-kernel@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@ozlabs.org>, Colin Cross <ccross@android.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1422712065-9403-13-git-send-email-haokexin@gmail.com>
+Cc: linux-mtd@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
+ David Woodhouse <dwmw2@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,51 +28,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Feb 5, 2015 at 11:35 AM, Hari Bathini
-<hbathini@linux.vnet.ibm.com> wrote:
-> This patch series adds pstore support on powernv platform to
-> read different nvram partitions and write compressed data to
-> oops-log nvram partition. As pseries platform already has
-> pstore support, this series moves most of the common code
-> for pseries and powernv platforms to a common file. Tested
-> the patches successfully on both pseries and powernv
-> platforms. Also, tested the patches successfully, on a kernel
-> compiled with both CONFIG_PPC_PSERIES=y & CONFIG_PPC_POWERNV=y.
->
-> Changes from v4:
-> 1. Added a patch for y2038-safe code changes
->
-> ---
->
-> Hari Bathini (4):
->       powerpc/nvram: move generic code for nvram and pstore
->       pstore: Add pstore type id for PPC64 opal nvram partition
->       pstore: add pstore support on powernv
->       powerpc: make timestamp related code y2038-safe
+On Sat, Jan 31, 2015 at 09:47:42PM +0800, Kevin Hao wrote:
+> The PPC_OF is a ppc specific option which is used to mean that the
+> firmware device tree access functions are available. Since all the
+> ppc platforms have a device tree, it is aways set to 'y' for ppc.
+> So it makes no sense to keep a such option in the current kernel.
+> Replace it with PPC.
+> 
+> Signed-off-by: Kevin Hao <haokexin@gmail.com>
 
-Thanks! I skimmed this, and it looks good to me.
+Pushed to l2-mtd.git. Thanks.
 
-Reviewed-by: Kees Cook <keescook@chromium.org>
-
--Kees
-
->
->
->  arch/powerpc/include/asm/nvram.h            |   50 ++
->  arch/powerpc/include/asm/rtas.h             |    5
->  arch/powerpc/kernel/nvram_64.c              |  677 +++++++++++++++++++++++++++
->  arch/powerpc/platforms/powernv/opal-nvram.c |   10
->  arch/powerpc/platforms/pseries/nvram.c      |  673 ---------------------------
->  fs/pstore/inode.c                           |    3
->  include/linux/pstore.h                      |    1
->  7 files changed, 754 insertions(+), 665 deletions(-)
->
-> --
-> -Hari
->
-
-
-
--- 
-Kees Cook
-Chrome OS Security
+Brian
