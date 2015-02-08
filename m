@@ -1,22 +1,24 @@
-Return-Path: <tom.huynh@freescale.com>
+Return-Path: <Emilian.Medve@freescale.com>
 Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0109.outbound.protection.outlook.com [207.46.100.109])
+ (mail-by2on0120.outbound.protection.outlook.com [207.46.100.120])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DC5831A0F20
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Feb 2015 10:00:33 +1100 (AEDT)
-From: Tom Huynh <tom.huynh@freescale.com>
-To: <benh@kernel.crashing.org>, <paulus@samba.org>, <mpe@ellerman.id.au>,
- <a.p.zijlstra@chello.nl>, <mingo@redhat.com>, <acme@kernel.org>
-Subject: [PATCH 2/3] perf/e6500: Create a sysfs format entry for e6500 events
-Date: Fri, 6 Feb 2015 16:43:55 -0600
-Message-ID: <1423262636-12053-3-git-send-email-tom.huynh@freescale.com>
-In-Reply-To: <1423262636-12053-1-git-send-email-tom.huynh@freescale.com>
-References: <1423262636-12053-1-git-send-email-tom.huynh@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5F3561A01AA
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Feb 2015 00:28:58 +1100 (AEDT)
+Message-ID: <54D76435.9060206@Freescale.com>
+Date: Sun, 8 Feb 2015 07:27:17 -0600
+From: Emil Medve <Emilian.Medve@Freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Tom Huynh <tom.huynh@freescale.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+To: Scott Wood <scottwood@Freescale.com>, Liberman Igal-B31950
+ <Igal.Liberman@Freescale.com>
+Subject: Re: [PATCH] powerpc/dts: Update platform PLL node
+References: <1421042407-13921-1-git-send-email-igal.liberman@freescale.com>
+ <1421739810.4961.207.camel@freescale.com>
+ <DM2PR03MB3835E56F8A4080CB764E1FDE64B0@DM2PR03MB383.namprd03.prod.outlook.com>
+ <1422591130.10544.150.camel@freescale.com>
+In-Reply-To: <1422591130.10544.150.camel@freescale.com>
+Content-Type: text/plain; charset="utf-8"
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,46 +28,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Create a sysfs entry, '/sys/bus/event_source/devices/cpu/format/event'
-which describes the format of the e6500 PMU events. e6500 has <= 512
-events, so use the 9 lsb to specify the raw event code.
+Hello Scott,
 
-	$ cat /sys/devices/cpu/format/event
-	config:0-8
 
-Similar to commit 3bf7b07ece6e ("perf/POWER7: Create a sysfs format
-entry for Power7 events").
+On 01/29/2015 10:12 PM, Scott Wood wrote:
+>>>> From: Igal Liberman <Igal.Liberman@freescale.com>
+>>>>
+>>>> Signed-off-by: Igal Liberman <Igal.Liberman@freescale.com>
+>>>> Change-Id: I92d020651237041d3767aa35e9345439714f9831
+>>>> ---
+>>>>  arch/powerpc/boot/dts/fsl/qoriq-clockgen2.dtsi |    6 ++++--
+>>>>  1 file changed, 4 insertions(+), 2 deletions(-)
+>>>
+>>> Please explain this more.  Was it just wrong before?  Is this for a new chip?  If
+>>> the latter, what effect does this have on existing chips?
+>>
+>> It wasn't wrong, however it was missing some clocking options which
+>> might be used by some hardware accelerators available in T/B devices.
+>> I need this options for FMan, however it might be used for other
+>> accelerators too.
+> 
+> If the PLL had a div3 option and it wasn't described by the PLL node,
+> the node was wrong.
 
-Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
-Signed-off-by: Tom Huynh <tom.huynh@freescale.com>
----
- arch/powerpc/perf/e6500-pmu.c | 13 +++++++++++++
- 1 file changed, 13 insertions(+)
+Somewhere between early versions of the RM and the cores not using this
+PLL output, yes the node is incomplete/wrong
 
-diff --git a/arch/powerpc/perf/e6500-pmu.c b/arch/powerpc/perf/e6500-pmu.c
-index abaa6d7..4bbdbb0 100644
---- a/arch/powerpc/perf/e6500-pmu.c
-+++ b/arch/powerpc/perf/e6500-pmu.c
-@@ -133,7 +133,20 @@ static struct attribute_group e6500_pmu_events_group = {
- 	.attrs = e6500_events_attr,
- };
- 
-+PMU_FORMAT_ATTR(event, "config:0-8");
-+
-+static struct attribute *e6500_pmu_format_attr[] = {
-+	&format_attr_event.attr,
-+	NULL,
-+};
-+
-+struct attribute_group e6500_pmu_format_group = {
-+	.name = "format",
-+	.attrs = e6500_pmu_format_attr,
-+};
-+
- static const struct attribute_group *e6500_pmu_attr_groups[] = {
-+	&e6500_pmu_format_group,
- 	&e6500_pmu_events_group,
- 	NULL,
- };
--- 
-1.9.1
+> Do all chips that use this file have a div3?
+
+Yup. T1/2/4, B4, etc. It's used as an input clock to the various IP
+blocks on said SoC(es), FMan, eSDHC, PME, etc.
+
+>>>> diff --git a/arch/powerpc/boot/dts/fsl/qoriq-clockgen2.dtsi
+>>>> b/arch/powerpc/boot/dts/fsl/qoriq-clockgen2.dtsi
+>>>> index 48e0b6e..7e1f074 100644
+>>>> --- a/arch/powerpc/boot/dts/fsl/qoriq-clockgen2.dtsi
+>>>> +++ b/arch/powerpc/boot/dts/fsl/qoriq-clockgen2.dtsi
+>>>> @@ -49,14 +49,16 @@ global-utilities@e1000 {
+>>>>  		reg = <0x800 0x4>;
+>>>>  		compatible = "fsl,qoriq-core-pll-2.0";
+>>>>  		clocks = <&sysclk>;
+>>>> -		clock-output-names = "pll0", "pll0-div2", "pll0-div4";
+>>>> +		clock-output-names = "pll0", "pll0-div2", "pll0-div3",
+>>>> +				      "pll0-div4";
+>>>
+>>> You're changing the meaning of existing clock index 2.
+>>
+>> Yes, however this platform PLL is a new work which is not yet
+>> used, so we aren't breaking any functionality.
+> 
+> No, it's the core PLL node which is already in use.  However, it looks
+> like the driver already interprets clock index 2 differently based on
+> whether clock index 3 exists.  None of this is mentioned in the binding
+> document...
+
+Yes, it's a bit fishy and that clock registration (code) ends up
+working. However, I think we ought to key that code on the chassis
+version and not on the number of clock outputs in some (in/complete)
+node instance
+
+That being said, there are two outstanding issues:
+
+1. The core mux nodes need to be updated to get pllX-div4 from index 3
+not 2. Currently things work because our RCW(s) don't use pllX-div4 so
+the inconsistency goes unnoticed
+
+2. Chassis v2 supports frequency scaling for the HW accelerators (FMan
+in this particular case) much like it's supported for the cores (both
+chassis v1/2). This patch doesn't cover that
+
+
+Cheers,
