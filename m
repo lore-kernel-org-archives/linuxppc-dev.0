@@ -1,16 +1,18 @@
 Return-Path: <B43198@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0115.outbound.protection.outlook.com [157.56.110.115])
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0126.outbound.protection.outlook.com [207.46.100.126])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 291AF1A0406
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Feb 2015 19:10:09 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id F2A451A0739
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Feb 2015 19:10:44 +1100 (AEDT)
 From: Bogdan Purcareata <bogdan.purcareata@freescale.com>
 To: <benh@kernel.crashing.org>, <paulus@samba.org>,
  <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 0/3] powerpc: Enable seccomp filter support
-Date: Mon, 9 Feb 2015 07:55:13 +0000
-Message-ID: <1423468516-8688-1-git-send-email-bogdan.purcareata@freescale.com>
+Subject: [PATCH 2/3] powerpc: Relax secure computing on syscall entry trace
+Date: Mon, 9 Feb 2015 07:55:15 +0000
+Message-ID: <1423468516-8688-3-git-send-email-bogdan.purcareata@freescale.com>
+In-Reply-To: <1423468516-8688-1-git-send-email-bogdan.purcareata@freescale.com>
+References: <1423468516-8688-1-git-send-email-bogdan.purcareata@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: pmoore@redhat.com, linux-kernel@vger.kernel.org,
@@ -25,25 +27,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add the missing pieces in order to enable SECCOMP_FILTER on PowerPC
-architectures, and enable this support.
+The secure_computing_strict will just force the kernel to panic on
+secure_computing failure. Once SECCOMP_FILTER support is enabled in the kernel,
+syscalls can be denied without system failure.
 
-Testing has been pursued using libseccomp with the latest ppc support patches
-[1], on Freescale platforms for both ppc and ppc64. ppc64le support is
-untested.
+Signed-off-by: Bogdan Purcareata <bogdan.purcareata@freescale.com>
+---
+ arch/powerpc/kernel/ptrace.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-[1] https://groups.google.com/forum/#!topic/libseccomp/ktR-bQr1tGw
-
-Bogdan Purcareata (3):
-  powerpc: Don't force ENOSYS as error on syscall fail
-  powerpc: Relax secure computing on syscall entry trace
-  powerpc: Enable HAVE_ARCH_SECCOMP_FILTER
-
- arch/powerpc/Kconfig           | 1 +
- arch/powerpc/kernel/entry_32.S | 3 ++-
- arch/powerpc/kernel/entry_64.S | 2 +-
- arch/powerpc/kernel/ptrace.c   | 4 +++-
- 4 files changed, 7 insertions(+), 3 deletions(-)
-
+diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
+index 100e01c..5c654ac 100644
+--- a/arch/powerpc/kernel/ptrace.c
++++ b/arch/powerpc/kernel/ptrace.c
+@@ -1772,7 +1772,9 @@ long do_syscall_trace_enter(struct pt_regs *regs)
+ 
+ 	user_exit();
+ 
+-	secure_computing_strict(regs->gpr[0]);
++	/* Do the secure computing check first; failures should be fast. */
++	if (secure_computing(regs->gpr[0]) == -1)
++		return -1L;
+ 
+ 	if (test_thread_flag(TIF_SYSCALL_TRACE) &&
+ 	    tracehook_report_syscall_entry(regs))
 -- 
 2.1.4
