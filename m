@@ -1,19 +1,20 @@
-Return-Path: <prvs=47567d9d1=michael.tessier@axiontech.ca>
-Received: from mail.axiontech.ca (unknown [207.164.255.36])
- by lists.ozlabs.org (Postfix) with ESMTP id 829751A0257
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2015 10:21:48 +1100 (AEDT)
-From: Michael Tessier <michael.tessier@axiontech.ca>
-To: Alan Stern <stern@rowland.harvard.edu>
-Subject: RE: PROBLEM: USB isochronous urb leak on EHCI driver
-Date: Mon, 9 Feb 2015 23:21:45 +0000
-Message-ID: <66A26A9AA227D947AF088537F041526E224CCB@VSVR-EX10-MB1.pocatec.com>
-References: <66A26A9AA227D947AF088537F041526E2009E5@VSVR-EX10-MB1.pocatec.com>
- <Pine.LNX.4.44L0.1501061316030.1602-100000@iolanthe.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.1501061316030.1602-100000@iolanthe.rowland.org>
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40EFB1A028F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2015 10:33:48 +1100 (AEDT)
+Message-ID: <1423524827.19657.1.camel@ellerman.id.au>
+Subject: Re: [PATCH 1/1] powerpc: fix missing L2 cache size in
+ /sys/devices/system/cpu
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Dave Olson <olson@cumulusnetworks.com>
+Date: Tue, 10 Feb 2015 10:33:47 +1100
+In-Reply-To: <20150209221421.GA22286@cumulusnetworks.com>
+References: <20150209221421.GA22286@cumulusnetworks.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,52 +24,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Mon, 2015-02-09 at 14:14 -0800, Dave Olson wrote:
+> From: Dave Olson <olson@cumulusnetworks.com>
+> 
+> Fix missing L2 cache size in /sys/devices/system/cpu/cpu0/cache/index2/size
+> This bug appears to be introduced in 2.6.29 by 93197a36a9c16a85fb24cf5a8639f7bf9af838a3.
+> The missing entry caused lscpu to error out on e500v2 devices, and probably others
+>  error: cannot open /sys/devices/system/cpu/cpu0/cache/index2/size: No such file or directory
+> The DTS files we see use cache-size for the unified L2 cache size, not d-cache-size
 
-> > > > > > That is interresting, however, I have an older kernel running=20
-> > > > > > an OHCI driver which is able to handle 4 codecs. Same usb=20
-> > > > > > hardware (codecs and hub), but older kernel on a different=20
-> > > > > > CPU, with much less power. This makes me believe that there's a=
- solution to make it work...
-> > > > >=20
-> > > > > Of course there is: Install an OHCI host controller and use it to=
- drive your codecs.  It should work fine.
-> >=20
-> > What do you mean by that? The host controller is embedded in the i.MX C=
-PU...
-> > Changing the CPU is not really an option to me. Unless I am missing=20
-> > something?
->
-> I didn't realize you were talking about an i.MX-based system.  On a compu=
-ter with a free PCI slot, it's easy to add an OHCI controller. =20
-> iMX isn't as accomodating.
->
-> If there's no way to add an extra USB controller to your system then the =
-only choice is to upgrade the driver software.
->
-> Alan Stern
-
-Okay; I did my homeworks. We've loaded kernel V3.16 (Oct 14th, 2015) on an =
-i.MX51 plattform and the problem is still there. Unless an important change=
- occured in V3.19, it appears that the latest kernel is not the solution fo=
-r us. So we're still not able to use 4 codecs on our i.MX plattform.
-
-So just to make things clearer:
-- We have customers waiting for a solution with that hardware (this hardwar=
-e is already delivred AND used);
-- We have important comittments and severe penalties ($$$) if we're not abl=
-e to deliver on time (due for March 15th);
-- We've already looked at a hardware solution, which corresponds to replace=
- current units ($$$$$), so that is not really an option for us;
-
-So as a last resort, I'm wondering, where is the USB expert who could help =
-us solving our problem? Any suggestions?
-
-If we are to get into debugging the USB driver, we would do it with the cur=
-rent kernel used (V2.6.31). What are the better tools to get into that? I g=
-uess a USB analyzer (hardware) would be the smart thing? Any brand name to =
-suggest?
-
-Any other ideas for a solution will be really appreciated.
-
-Regards,
-Michael Tessier.
+Can you convince me that this is not going to break other machines that have
+"d-cache-size" but not "cache-size"?
+ 
+cheers
