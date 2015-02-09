@@ -1,36 +1,22 @@
-Return-Path: <stewart@linux.vnet.ibm.com>
-Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <olson@cumulusnetworks.com>
+Received: from mail-pd0-f177.google.com (mail-pd0-f177.google.com
+ [209.85.192.177])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1BE2D1A0146
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2015 08:03:33 +1100 (AEDT)
-Received: from /spool/local
- by e7.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <stewart@linux.vnet.ibm.com>;
- Mon, 9 Feb 2015 16:03:31 -0500
-Received: from b01cxnp22035.gho.pok.ibm.com (b01cxnp22035.gho.pok.ibm.com
- [9.57.198.25])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 835E9C90041
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Feb 2015 15:54:39 -0500 (EST)
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
- by b01cxnp22035.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t19L3RPN27066372
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Feb 2015 21:03:27 GMT
-Received: from d01av02.pok.ibm.com (localhost [127.0.0.1])
- by d01av02.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t19L3PT6008047
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Feb 2015 16:03:26 -0500
-From: Stewart Smith <stewart@linux.vnet.ibm.com>
-To: Joel Stanley <joel@jms.id.au>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v2] powernv: Add OPAL soft-poweroff routine
-In-Reply-To: <1422600188-27488-1-git-send-email-joel@jms.id.au>
-References: <1422600188-27488-1-git-send-email-joel@jms.id.au>
-Date: Tue, 10 Feb 2015 08:03:22 +1100
-Message-ID: <m3pp9iol0l.fsf@oc8180480414.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id E5B441A0281
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2015 09:14:24 +1100 (AEDT)
+Received: by pdno5 with SMTP id o5so11982599pdn.8
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Feb 2015 14:14:22 -0800 (PST)
+Date: Mon, 9 Feb 2015 14:14:21 -0800
+From: Dave Olson <olson@cumulusnetworks.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Subject: [PATCH 1/1] powerpc: fix missing L2 cache size in
+ /sys/devices/system/cpu
+Message-ID: <20150209221421.GA22286@cumulusnetworks.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Cc: jk@ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,16 +26,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Joel Stanley <joel@jms.id.au> writes:
-> Register a notifier for a OPAL message indicating that the machine
-> should prepare itself for a graceful power off.
->
-> OPAL will tell us if the power off is a reboot or shutdown, but for now
-> we perform the same orderly_poweroff action.
->
-> Signed-off-by: Joel Stanley <joel@jms.id.au>
+From: Dave Olson <olson@cumulusnetworks.com>
 
-I merged the firmware side of things, this looks like it implements what
-firmware exports.
+Fix missing L2 cache size in /sys/devices/system/cpu/cpu0/cache/index2/size
+This bug appears to be introduced in 2.6.29 by 93197a36a9c16a85fb24cf5a8639f7bf9af838a3.
+The missing entry caused lscpu to error out on e500v2 devices, and probably others
+ error: cannot open /sys/devices/system/cpu/cpu0/cache/index2/size: No such file or directory
+The DTS files we see use cache-size for the unified L2 cache size, not d-cache-size
 
-Acked-by: Stewart Smith <stewart@linux.vnet.ibm.com>
+Signed-off-by: Dave Olson <olson@cumulusnetworks.com>
+
+---
+
+diff --git a/arch/powerpc/kernel/cacheinfo.c b/arch/powerpc/kernel/cacheinfo.c
+index 40198d5..9ca1e9a 100644
+--- a/arch/powerpc/kernel/cacheinfo.c
++++ b/arch/powerpc/kernel/cacheinfo.c
+@@ -72,7 +72,7 @@ static const struct cache_type_info cache_type_info[] = {
+ 		 * must be equal on unified caches, so just use
+ 		 * d-cache properties. */
+ 		.name            = "Unified",
+-		.size_prop       = "d-cache-size",
++		.size_prop       = "cache-size",
+ 		.line_size_props = { "d-cache-line-size",
+ 				     "d-cache-block-size", },
+ 		.nr_sets_prop    = "d-cache-sets",
