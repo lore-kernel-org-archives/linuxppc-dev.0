@@ -1,39 +1,37 @@
-Return-Path: <nfont@linux.vnet.ibm.com>
-Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D9CAD1A1378
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Feb 2015 06:49:27 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3B9921A0394
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Feb 2015 10:06:57 +1100 (AEDT)
 Received: from /spool/local
- by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
- Tue, 10 Feb 2015 14:49:25 -0500
-Received: from b01cxnp22036.gho.pok.ibm.com (b01cxnp22036.gho.pok.ibm.com
- [9.57.198.26])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 5CF99C9003E
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2015 14:40:34 -0500 (EST)
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
- by b01cxnp22036.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t1AJnM1U24051962
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2015 19:49:23 GMT
-Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
- by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t1AJnMdb002077
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2015 14:49:22 -0500
-Received: from [9.41.149.215] (dhcp-9-41-149-215.austin.ibm.com [9.41.149.215])
- by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVin) with ESMTP id
- t1AJnMfF001987
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2015 14:49:22 -0500
-Message-ID: <54DA60C2.2010308@linux.vnet.ibm.com>
-Date: Tue, 10 Feb 2015 13:49:22 -0600
-From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Wed, 11 Feb 2015 09:06:55 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id B91A92CE8050
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Feb 2015 10:06:50 +1100 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t1AN6gin40108212
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Feb 2015 10:06:50 +1100
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t1AN6Gxx024945
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Feb 2015 10:06:17 +1100
+Date: Wed, 11 Feb 2015 10:05:52 +1100
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Subject: Re: [PATCH] powerpc/eeh: Drop delay in pcibios_set_pcie_reset_state()
+Message-ID: <20150210230552.GA9373@shangw>
+Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+References: <1421985702-18882-1-git-send-email-gwshan@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v3 5/5] pseries: Implement memory hotplug remove in the kernel
-References: <54DA5EC1.2060403@linux.vnet.ibm.com>
-In-Reply-To: <54DA5EC1.2060403@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1421985702-18882-1-git-send-email-gwshan@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, wenxiong@linux.vnet.ibm.com,
+ stable@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,245 +41,268 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch adds the ability to do memory hotplug remove in the kernel.
+On Fri, Jan 23, 2015 at 03:01:42PM +1100, Gavin Shan wrote:
+>pcibios_set_pcie_reset_state(), implemented based on platform's EEH reset
+>backends, helps to reset PCI adapters. IPR driver might call this function
+>in timer handler and it's hard to make reset assertion and settlement delays
+>with msleep() in the atomic context. The issue was caused by commit 26833a5
+>("powerpc/eeh: Make the delay for PE reset unified").
+>
+>The patch drops the reset assertion and settlement delays in the API and
+>caller will have to take corresponding delays. With the patch applied, the
+>reset assertion and settlement delays related to EEH reset become:
+>
+>  * Reset for EEH recovery: inband
+>  * Reset for Guest PE recovery: inband
+>  * pcibios_set_pcie_reset_state(): outband
+>
+>Cc: <stable@vger.kernel.org> # v3.15+
+>Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+>Tested-by: Wen Xiong <wenxiong@linux.vnet.ibm.com>
 
-Currently the operation to hotplug remove memory is handled by the drmgr
-command which performs the operation by performing some work in user-space
-and making requests to the kernel to handle other pieces. By moving all
-of the work to the kernel we can do the remove faster, and provide a common
-code path to do memory hotplug for both the PowerVM and PowerKVM environments.
+Ben and Michael, please ignore it: When rethinking the issue, I
+believe the driver need change to use non-atomic context to do
+reset. This function is still called by pci_reset_function() or
+pci_try_reset_function(), on which VFIO PCI driver depends to do
+reset and we need the delay for the case.
 
-Signed-off-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
----
-Changes from previous cversion:
-Changes from previous version:
-- converted uint32_t to u32
-- Updated the messaging to properly report the success/failure of memory adds
+Thanks,
+Gavin
 
- arch/powerpc/platforms/pseries/hotplug-memory.c |  192 +++++++++++++++++++++++
- 1 file changed, 191 insertions(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
-index f5eec0f..742ef88 100644
---- a/arch/powerpc/platforms/pseries/hotplug-memory.c
-+++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
-@@ -188,6 +188,173 @@ static int pseries_remove_mem_node(struct device_node *np)
- 	pseries_remove_memblock(base, lmb_size);
- 	return 0;
- }
-+
-+static bool lmb_is_removable(struct of_drconf_cell *lmb)
-+{
-+	int i, scns_per_block;
-+	int rc = 1;
-+	unsigned long pfn, block_sz;
-+	u64 phys_addr;
-+
-+	if (!(lmb->flags & DRCONF_MEM_ASSIGNED))
-+		return false;
-+
-+	block_sz = memory_block_size_bytes();
-+	scns_per_block = block_sz / MIN_MEMORY_BLOCK_SIZE;
-+	phys_addr = lmb->base_addr;
-+
-+	for (i = 0; i < scns_per_block; i++) {
-+		pfn = PFN_DOWN(phys_addr);
-+		if (!pfn_present(pfn))
-+			continue;
-+
-+		rc &= is_mem_section_removable(pfn, PAGES_PER_SECTION);
-+		phys_addr += MIN_MEMORY_BLOCK_SIZE;
-+	}
-+
-+	return rc ? true : false;
-+}
-+
-+static int dlpar_add_lmb(struct of_drconf_cell *);
-+
-+static int dlpar_remove_lmb(struct of_drconf_cell *lmb)
-+{
-+	struct memory_block *mem_block;
-+	unsigned long block_sz;
-+	int nid, rc;
-+
-+	if (!lmb_is_removable(lmb))
-+		return -EINVAL;
-+
-+	mem_block = lmb_to_memblock(lmb);
-+	if (!mem_block)
-+		return -EINVAL;
-+
-+	rc = device_offline(&mem_block->dev);
-+	put_device(&mem_block->dev);
-+	if (rc)
-+		return rc;
-+
-+	block_sz = pseries_memory_block_size();
-+	nid = memory_add_physaddr_to_nid(lmb->base_addr);
-+
-+	remove_memory(nid, lmb->base_addr, block_sz);
-+
-+	/* Update memory regions for memory remove */
-+	memblock_remove(lmb->base_addr, block_sz);
-+
-+	dlpar_release_drc(lmb->drc_index);
-+
-+	lmb->flags &= ~DRCONF_MEM_ASSIGNED;
-+	return 0;
-+}
-+
-+static int dlpar_memory_remove_by_count(u32 lmbs_to_remove,
-+					struct property *prop)
-+{
-+	struct of_drconf_cell *lmbs;
-+	int lmbs_removed = 0;
-+	int lmbs_available = 0;
-+	u32 num_lmbs, *p;
-+	int i, rc;
-+
-+	pr_info("Attempting to hot-remove %d LMB(s)\n", lmbs_to_remove);
-+
-+	if (lmbs_to_remove == 0)
-+		return -EINVAL;
-+
-+	p = prop->value;
-+	num_lmbs = *p++;
-+	lmbs = (struct of_drconf_cell *)p;
-+
-+	/* Validate that there are enough LMBs to satisfy the request */
-+	for (i = 0; i < num_lmbs; i++) {
-+		if (lmbs[i].flags & DRCONF_MEM_ASSIGNED)
-+			lmbs_available++;
-+	}
-+
-+	if (lmbs_available < lmbs_to_remove)
-+		return -EINVAL;
-+
-+	for (i = 0; i < num_lmbs && lmbs_removed < lmbs_to_remove; i++) {
-+		rc = dlpar_remove_lmb(&lmbs[i]);
-+		if (rc)
-+			continue;
-+
-+		lmbs_removed++;
-+
-+		/* Mark this lmb so we can add it later if all of the
-+		 * requested LMBs cannot be removed.
-+		 */
-+		lmbs[i].reserved = 1;
-+	}
-+
-+	if (lmbs_removed != lmbs_to_remove) {
-+		pr_err("Memory hot-remove failed, adding LMB's back\n");
-+
-+		for (i = 0; i < num_lmbs; i++) {
-+			if (!lmbs[i].reserved)
-+				continue;
-+
-+			rc = dlpar_add_lmb(&lmbs[i]);
-+			if (rc)
-+				pr_err("Failed to add LMB back, drc index %x\n",
-+				       lmbs[i].drc_index);
-+
-+			lmbs[i].reserved = 0;
-+		}
-+
-+		rc = -EINVAL;
-+	} else {
-+		for (i = 0; i < num_lmbs; i++) {
-+			if (!lmbs[i].reserved)
-+				continue;
-+
-+			pr_info("Memory at %llx was hot-removed\n",
-+				lmbs[i].base_addr);
-+
-+			lmbs[i].reserved = 0;
-+		}
-+		rc = 0;
-+	}
-+
-+	return rc;
-+}
-+
-+static int dlpar_memory_remove_by_index(u32 drc_index, struct property *prop)
-+{
-+	struct of_drconf_cell *lmbs;
-+	u32 num_lmbs, *p;
-+	int lmb_found;
-+	int i, rc;
-+
-+	pr_info("Attempting to hot-remove LMB, drc index %x\n", drc_index);
-+
-+	p = prop->value;
-+	num_lmbs = *p++;
-+	lmbs = (struct of_drconf_cell *)p;
-+
-+	lmb_found = 0;
-+	for (i = 0; i < num_lmbs; i++) {
-+		if (lmbs[i].drc_index == drc_index) {
-+			lmb_found = 1;
-+			rc = dlpar_remove_lmb(&lmbs[i]);
-+			break;
-+		}
-+	}
-+
-+	if (!lmb_found)
-+		rc = -EINVAL;
-+
-+	if (rc)
-+		pr_info("Failed to hot-remove memory at %llx\n",
-+			lmbs[i].base_addr);
-+	else
-+		pr_info("Memory at %llx was hot-removed\n", lmbs[i].base_addr);
-+
-+	return rc;
-+}
-+
- #else
- static inline int pseries_remove_memblock(unsigned long base,
- 					  unsigned int memblock_size)
-@@ -198,6 +365,11 @@ static inline int pseries_remove_mem_node(struct device_node *np)
- {
- 	return 0;
- }
-+static inline int dlpar_memory_remove(struct pseries_hp_errorlog *hp_elog)
-+{
-+	return -EOPNOTSUPP;
-+}
-+
- #endif /* CONFIG_MEMORY_HOTREMOVE */
- 
- static int dlpar_add_lmb(struct of_drconf_cell *lmb)
-@@ -292,7 +464,17 @@ static int dlpar_memory_add_by_count(u32 lmbs_to_add, struct property *prop)
- 	}
- 
- 	if (lmbs_added != lmbs_to_add) {
--		/* TODO: remove added lmbs */
-+		pr_err("Memory hot-add failed, removing any added LMBs\n");
-+
-+		for (i = 0; i < num_lmbs; i++) {
-+			if (!lmbs[i].reserved)
-+				continue;
-+
-+			rc = dlpar_remove_lmb(&lmbs[i]);
-+			if (rc)
-+				pr_err("Failed to remove LMB, drc index %x\n",
-+				       be32_to_cpu(lmbs[i].drc_index));
-+		}
- 		rc = -EINVAL;
- 	} else {
- 		for (i = 0; i < num_lmbs; i++) {
-@@ -398,6 +580,14 @@ int dlpar_memory(struct pseries_hp_errorlog *hp_elog)
- 		else
- 			rc = -EINVAL;
- 		break;
-+	case PSERIES_HP_ELOG_ACTION_REMOVE:
-+		if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_COUNT)
-+			rc = dlpar_memory_remove_by_count(count, prop);
-+		else if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_INDEX)
-+			rc = dlpar_memory_remove_by_index(drc_index, prop);
-+		else
-+			rc = -EINVAL;
-+		break;
- 	default:
- 		pr_err("Invalid action (%d) specified\n", hp_elog->action);
- 		rc = -EINVAL;
+>---
+> arch/powerpc/include/asm/eeh.h               |  2 +-
+> arch/powerpc/kernel/eeh.c                    | 16 +++++++--------
+> arch/powerpc/platforms/powernv/eeh-ioda.c    | 29 ++++++++++++++++------------
+> arch/powerpc/platforms/powernv/eeh-powernv.c |  4 ++--
+> arch/powerpc/platforms/powernv/pci.h         |  2 +-
+> arch/powerpc/platforms/pseries/eeh_pseries.c |  6 +++++-
+> 6 files changed, 34 insertions(+), 25 deletions(-)
+>
+>diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
+>index 55abfd0..0bc7d3f 100644
+>--- a/arch/powerpc/include/asm/eeh.h
+>+++ b/arch/powerpc/include/asm/eeh.h
+>@@ -205,7 +205,7 @@ struct eeh_ops {
+> 	int (*set_option)(struct eeh_pe *pe, int option);
+> 	int (*get_pe_addr)(struct eeh_pe *pe);
+> 	int (*get_state)(struct eeh_pe *pe, int *state);
+>-	int (*reset)(struct eeh_pe *pe, int option);
+>+	int (*reset)(struct eeh_pe *pe, int option, bool delay);
+> 	int (*wait_state)(struct eeh_pe *pe, int max_wait);
+> 	int (*get_log)(struct eeh_pe *pe, int severity, char *drv_log, unsigned long len);
+> 	int (*configure_bridge)(struct eeh_pe *pe);
+>diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
+>index 3b2252e..b0352b5c 100644
+>--- a/arch/powerpc/kernel/eeh.c
+>+++ b/arch/powerpc/kernel/eeh.c
+>@@ -688,16 +688,16 @@ int pcibios_set_pcie_reset_state(struct pci_dev *dev, enum pcie_reset_state stat
+>
+> 	switch (state) {
+> 	case pcie_deassert_reset:
+>-		eeh_ops->reset(pe, EEH_RESET_DEACTIVATE);
+>+		eeh_ops->reset(pe, EEH_RESET_DEACTIVATE, false);
+> 		eeh_pe_state_clear(pe, EEH_PE_CFG_BLOCKED);
+> 		break;
+> 	case pcie_hot_reset:
+> 		eeh_pe_state_mark(pe, EEH_PE_CFG_BLOCKED);
+>-		eeh_ops->reset(pe, EEH_RESET_HOT);
+>+		eeh_ops->reset(pe, EEH_RESET_HOT, false);
+> 		break;
+> 	case pcie_warm_reset:
+> 		eeh_pe_state_mark(pe, EEH_PE_CFG_BLOCKED);
+>-		eeh_ops->reset(pe, EEH_RESET_FUNDAMENTAL);
+>+		eeh_ops->reset(pe, EEH_RESET_FUNDAMENTAL, false);
+> 		break;
+> 	default:
+> 		eeh_pe_state_clear(pe, EEH_PE_CFG_BLOCKED);
+>@@ -749,11 +749,11 @@ static void eeh_reset_pe_once(struct eeh_pe *pe)
+> 	eeh_pe_dev_traverse(pe, eeh_set_dev_freset, &freset);
+>
+> 	if (freset)
+>-		eeh_ops->reset(pe, EEH_RESET_FUNDAMENTAL);
+>+		eeh_ops->reset(pe, EEH_RESET_FUNDAMENTAL, true);
+> 	else
+>-		eeh_ops->reset(pe, EEH_RESET_HOT);
+>+		eeh_ops->reset(pe, EEH_RESET_HOT, true);
+>
+>-	eeh_ops->reset(pe, EEH_RESET_DEACTIVATE);
+>+	eeh_ops->reset(pe, EEH_RESET_DEACTIVATE, true);
+> }
+>
+> /**
+>@@ -1547,7 +1547,7 @@ int eeh_pe_reset(struct eeh_pe *pe, int option)
+>
+> 	switch (option) {
+> 	case EEH_RESET_DEACTIVATE:
+>-		ret = eeh_ops->reset(pe, option);
+>+		ret = eeh_ops->reset(pe, option, true);
+> 		eeh_pe_state_clear(pe, EEH_PE_CFG_BLOCKED);
+> 		if (ret)
+> 			break;
+>@@ -1564,7 +1564,7 @@ int eeh_pe_reset(struct eeh_pe *pe, int option)
+> 		eeh_ops->set_option(pe, EEH_OPT_FREEZE_PE);
+>
+> 		eeh_pe_state_mark(pe, EEH_PE_CFG_BLOCKED);
+>-		ret = eeh_ops->reset(pe, option);
+>+		ret = eeh_ops->reset(pe, option, true);
+> 		break;
+> 	default:
+> 		pr_debug("%s: Unsupported option %d\n",
+>diff --git a/arch/powerpc/platforms/powernv/eeh-ioda.c b/arch/powerpc/platforms/powernv/eeh-ioda.c
+>index 2809c98..1a53cda 100644
+>--- a/arch/powerpc/platforms/powernv/eeh-ioda.c
+>+++ b/arch/powerpc/platforms/powernv/eeh-ioda.c
+>@@ -548,7 +548,8 @@ out:
+> 	return 0;
+> }
+>
+>-static int ioda_eeh_root_reset(struct pci_controller *hose, int option)
+>+static int ioda_eeh_root_reset(struct pci_controller *hose,
+>+			       int option, bool delay)
+> {
+> 	struct pnv_phb *phb = hose->private_data;
+> 	s64 rc = OPAL_SUCCESS;
+>@@ -578,7 +579,7 @@ static int ioda_eeh_root_reset(struct pci_controller *hose, int option)
+>
+> 	/* Poll state of the PHB until the request is done */
+> 	rc = ioda_eeh_phb_poll(phb);
+>-	if (option == EEH_RESET_DEACTIVATE)
+>+	if (delay && option == EEH_RESET_DEACTIVATE)
+> 		msleep(EEH_PE_RST_SETTLE_TIME);
+> out:
+> 	if (rc != OPAL_SUCCESS)
+>@@ -587,7 +588,7 @@ out:
+> 	return 0;
+> }
+>
+>-static int ioda_eeh_bridge_reset(struct pci_dev *dev, int option)
+>+static int ioda_eeh_bridge_reset(struct pci_dev *dev, int option, bool delay)
+>
+> {
+> 	struct device_node *dn = pci_device_to_OF_node(dev);
+>@@ -614,14 +615,18 @@ static int ioda_eeh_bridge_reset(struct pci_dev *dev, int option)
+> 		eeh_ops->read_config(dn, PCI_BRIDGE_CONTROL, 2, &ctrl);
+> 		ctrl |= PCI_BRIDGE_CTL_BUS_RESET;
+> 		eeh_ops->write_config(dn, PCI_BRIDGE_CONTROL, 2, ctrl);
+>-		msleep(EEH_PE_RST_HOLD_TIME);
+>+
+>+		if (delay)
+>+			msleep(EEH_PE_RST_HOLD_TIME);
+>
+> 		break;
+> 	case EEH_RESET_DEACTIVATE:
+> 		eeh_ops->read_config(dn, PCI_BRIDGE_CONTROL, 2, &ctrl);
+> 		ctrl &= ~PCI_BRIDGE_CTL_BUS_RESET;
+> 		eeh_ops->write_config(dn, PCI_BRIDGE_CONTROL, 2, ctrl);
+>-		msleep(EEH_PE_RST_SETTLE_TIME);
+>+
+>+		if (delay)
+>+			msleep(EEH_PE_RST_SETTLE_TIME);
+>
+> 		/* Continue reporting linkDown event */
+> 		if (aer) {
+>@@ -644,11 +649,11 @@ void pnv_pci_reset_secondary_bus(struct pci_dev *dev)
+>
+> 	if (pci_is_root_bus(dev->bus)) {
+> 		hose = pci_bus_to_host(dev->bus);
+>-		ioda_eeh_root_reset(hose, EEH_RESET_HOT);
+>-		ioda_eeh_root_reset(hose, EEH_RESET_DEACTIVATE);
+>+		ioda_eeh_root_reset(hose, EEH_RESET_HOT, true);
+>+		ioda_eeh_root_reset(hose, EEH_RESET_DEACTIVATE, true);
+> 	} else {
+>-		ioda_eeh_bridge_reset(dev, EEH_RESET_HOT);
+>-		ioda_eeh_bridge_reset(dev, EEH_RESET_DEACTIVATE);
+>+		ioda_eeh_bridge_reset(dev, EEH_RESET_HOT, true);
+>+		ioda_eeh_bridge_reset(dev, EEH_RESET_DEACTIVATE, true);
+> 	}
+> }
+>
+>@@ -664,7 +669,7 @@ void pnv_pci_reset_secondary_bus(struct pci_dev *dev)
+>  * through FLR. For now, we don't have OPAL APIs to do HARD
+>  * reset yet, so all reset would be SOFT (HOT) reset.
+>  */
+>-static int ioda_eeh_reset(struct eeh_pe *pe, int option)
+>+static int ioda_eeh_reset(struct eeh_pe *pe, int option, bool delay)
+> {
+> 	struct pci_controller *hose = pe->phb;
+> 	struct pci_bus *bus;
+>@@ -715,9 +720,9 @@ static int ioda_eeh_reset(struct eeh_pe *pe, int option)
+> 		bus = eeh_pe_bus_get(pe);
+> 		if (pci_is_root_bus(bus) ||
+> 		    pci_is_root_bus(bus->parent))
+>-			ret = ioda_eeh_root_reset(hose, option);
+>+			ret = ioda_eeh_root_reset(hose, option, delay);
+> 		else
+>-			ret = ioda_eeh_bridge_reset(bus->self, option);
+>+			ret = ioda_eeh_bridge_reset(bus->self, option, delay);
+> 	}
+>
+> 	return ret;
+>diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
+>index e261869..c89a7c4 100644
+>--- a/arch/powerpc/platforms/powernv/eeh-powernv.c
+>+++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
+>@@ -298,14 +298,14 @@ static int powernv_eeh_get_state(struct eeh_pe *pe, int *delay)
+>  *
+>  * Reset the specified PE
+>  */
+>-static int powernv_eeh_reset(struct eeh_pe *pe, int option)
+>+static int powernv_eeh_reset(struct eeh_pe *pe, int option, bool delay)
+> {
+> 	struct pci_controller *hose = pe->phb;
+> 	struct pnv_phb *phb = hose->private_data;
+> 	int ret = -EEXIST;
+>
+> 	if (phb->eeh_ops && phb->eeh_ops->reset)
+>-		ret = phb->eeh_ops->reset(pe, option);
+>+		ret = phb->eeh_ops->reset(pe, option, delay);
+>
+> 	return ret;
+> }
+>diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
+>index 6c02ff8..a998f2e 100644
+>--- a/arch/powerpc/platforms/powernv/pci.h
+>+++ b/arch/powerpc/platforms/powernv/pci.h
+>@@ -81,7 +81,7 @@ struct pnv_eeh_ops {
+> 	int (*post_init)(struct pci_controller *hose);
+> 	int (*set_option)(struct eeh_pe *pe, int option);
+> 	int (*get_state)(struct eeh_pe *pe);
+>-	int (*reset)(struct eeh_pe *pe, int option);
+>+	int (*reset)(struct eeh_pe *pe, int option, bool delay);
+> 	int (*get_log)(struct eeh_pe *pe, int severity,
+> 		       char *drv_log, unsigned long len);
+> 	int (*configure_bridge)(struct eeh_pe *pe);
+>diff --git a/arch/powerpc/platforms/pseries/eeh_pseries.c b/arch/powerpc/platforms/pseries/eeh_pseries.c
+>index a6c7e19..0c8d550 100644
+>--- a/arch/powerpc/platforms/pseries/eeh_pseries.c
+>+++ b/arch/powerpc/platforms/pseries/eeh_pseries.c
+>@@ -501,7 +501,7 @@ static int pseries_eeh_get_state(struct eeh_pe *pe, int *state)
+>  *
+>  * Reset the specified PE
+>  */
+>-static int pseries_eeh_reset(struct eeh_pe *pe, int option)
+>+static int pseries_eeh_reset(struct eeh_pe *pe, int option, bool delay)
+> {
+> 	int config_addr;
+> 	int ret;
+>@@ -525,6 +525,9 @@ static int pseries_eeh_reset(struct eeh_pe *pe, int option)
+> 				BUID_LO(pe->phb->buid), option);
+> 	}
+>
+>+	if (!delay)
+>+		goto out;
+>+
+> 	/* We need reset hold or settlement delay */
+> 	if (option == EEH_RESET_FUNDAMENTAL ||
+> 	    option == EEH_RESET_HOT)
+>@@ -532,6 +535,7 @@ static int pseries_eeh_reset(struct eeh_pe *pe, int option)
+> 	else
+> 		msleep(EEH_PE_RST_SETTLE_TIME);
+>
+>+out:
+> 	return ret;
+> }
+>
+>-- 
+>1.8.3.2
+>
