@@ -1,36 +1,24 @@
-Return-Path: <stewart@linux.vnet.ibm.com>
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BFCCF1A09D4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2015 13:28:15 +1100 (AEDT)
-Received: from /spool/local
- by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <stewart@linux.vnet.ibm.com>;
- Mon, 9 Feb 2015 19:28:13 -0700
-Received: from b03cxnp08026.gho.boulder.ibm.com
- (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id B3BAE3E40030
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Feb 2015 19:28:11 -0700 (MST)
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
- by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t1A2SOEv33161350
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Feb 2015 19:28:32 -0700
-Received: from d03av03.boulder.ibm.com (localhost [127.0.0.1])
- by d03av03.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t1A2RcOK020727
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Feb 2015 19:27:39 -0700
-From: Stewart Smith <stewart@linux.vnet.ibm.com>
-To: mpe@ellerman.id.au, benh@kernel.crashing.org
-Subject: [PATCH 14/18] powerpc/powernv: sync comments and whitespace in opal.h
- with firmware
-Date: Tue, 10 Feb 2015 13:26:56 +1100
-Message-Id: <1423535220-6322-15-git-send-email-stewart@linux.vnet.ibm.com>
-In-Reply-To: <1423535220-6322-1-git-send-email-stewart@linux.vnet.ibm.com>
-References: <1423535220-6322-1-git-send-email-stewart@linux.vnet.ibm.com>
-Cc: Stewart Smith <stewart@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5356A1A0045
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2015 14:30:26 +1100 (AEDT)
+Message-ID: <1423539025.19657.9.camel@ellerman.id.au>
+Subject: Re: [PATCH 1/1] powerpc: fix missing L2 cache size in
+ /sys/devices/system/cpu
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Tue, 10 Feb 2015 14:30:25 +1100
+In-Reply-To: <1423527151.4924.64.camel@kernel.crashing.org>
+References: <20150209221421.GA22286@cumulusnetworks.com>
+ <1423524827.19657.1.camel@ellerman.id.au>
+ <20150209234351.GC22286@cumulusnetworks.com>
+ <1423527151.4924.64.camel@kernel.crashing.org>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Paul Mackerras <paulus@samba.org>, Dave Olson <olson@cumulusnetworks.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,84 +28,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Stewart Smith <stewart@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/opal.h |   25 ++++++++++++++++---------
- 1 file changed, 16 insertions(+), 9 deletions(-)
+On Tue, 2015-02-10 at 11:12 +1100, Benjamin Herrenschmidt wrote:
+> On Mon, 2015-02-09 at 15:43 -0800, Dave Olson wrote:
+> > Michael Ellerman <mpe@ellerman.id.au> wrote:
+> > 
+> > > On Mon, 2015-02-09 at 14:14 -0800, Dave Olson wrote:
+> > > > From: Dave Olson <olson@cumulusnetworks.com>
+> > > > 
+> > > > Fix missing L2 cache size in /sys/devices/system/cpu/cpu0/cache/index2/size
+> > > > This bug appears to be introduced in 2.6.29 by 93197a36a9c16a85fb24cf5a8639f7bf9af838a3.
+> > > > The missing entry caused lscpu to error out on e500v2 devices, and probably others
+> > > >  error: cannot open /sys/devices/system/cpu/cpu0/cache/index2/size: No such file or directory
+> > > > The DTS files we see use cache-size for the unified L2 cache size, not d-cache-size
+> > > 
+> > > Can you convince me that this is not going to break other machines that have
+> > > "d-cache-size" but not "cache-size"?
+> > 
+> > I'm unable to find any dts file that uses d-cache-size for the L2
+> > unified cache.  All in the powerpc tree in arch/powerpc/boot/dts/*
+> > are using cache-size in the L2 description for the cache size.
+> > 
+> > As best as I can tell from looking around, this is universal.
+>
+> 
+> It may be universal for embedded machines using DTS in the kernel tree
+> but it's definitely not true of any Mac or server machine (from which
+> there is no DTS in the kernel as we get the DT from the firmware).
 
-diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
-index c09cf66..2aaa861 100644
---- a/arch/powerpc/include/asm/opal.h
-+++ b/arch/powerpc/include/asm/opal.h
-@@ -346,6 +346,11 @@ enum OpalPciResetScope {
- };
- 
- enum OpalPciReinitScope {
-+	/*
-+	 * Note: we chose values that do not overlap
-+	 * OpalPciResetScope as OPAL v2 used the same
-+	 * enum for both
-+	 */
- 	OPAL_REINIT_PCI_DEV = 1000
- };
- 
-@@ -423,10 +428,10 @@ enum {
- };
- 
- struct opal_ipmi_msg {
--	uint8_t		version;
--	uint8_t		netfn;
--	uint8_t		cmd;
--	uint8_t		data[];
-+	uint8_t version;
-+	uint8_t netfn;
-+	uint8_t cmd;
-+	uint8_t data[];
- };
- 
- /*
-@@ -477,7 +482,6 @@ enum OpalMemErr_Version {
- enum OpalMemErrType {
- 	OPAL_MEM_ERR_TYPE_RESILIENCE	= 0,
- 	OPAL_MEM_ERR_TYPE_DYN_DALLOC,
--	OPAL_MEM_ERR_TYPE_SCRUB,
- };
- 
- /* Memory Reilience error type */
-@@ -731,11 +735,10 @@ struct OpalIoPhb3ErrorData {
- 	__be64 errorClass;
- 	__be64 correlator;
- 
-+	/* PHB3 MMIO Error Regs */
- 	__be64 nFir;			/* 000 */
- 	__be64 nFirMask;		/* 003 */
- 	__be64 nFirWOF;		/* 008 */
--
--	/* PHB3 MMIO Error Regs */
- 	__be64 phbPlssr;		/* 120 */
- 	__be64 phbCsr;		/* 110 */
- 	__be64 lemFir;		/* C00 */
-@@ -772,7 +775,7 @@ typedef struct oppanel_line {
- } oppanel_line_t;
- 
- /*
-- * SG entry
-+ * SG entries
-  *
-  * WARNING: The current implementation requires each entry
-  * to represent a block that is 4k aligned *and* each block
-@@ -783,7 +786,11 @@ struct opal_sg_entry {
- 	__be64 length;
- };
- 
--/* SG list */
-+/*
-+ * Candiate image SG list.
-+ *
-+ * length = VER | length
-+ */
- struct opal_sg_list {
- 	__be64 length;
- 	__be64 next;
--- 
-1.7.10.4
+Right.
+
+$ grep machine /proc/cpuinfo 
+machine		: PowerNV 8247-22L
+
+$ lsprop /proc/device-tree/cpus/l2-cache@20000020
+name             "l2-cache"
+status           "okay"
+reg              20000020 (536870944)
+phandle          00000005
+linux,phandle    00000005
+l2-cache         00000006
+i-cache-size     00080000 (524288)
+i-cache-sets     00000008
+device_type      "cache"
+d-cache-size     00080000 (524288)
+d-cache-sets     00000008
+cache-unified   
+
+
+cheers
