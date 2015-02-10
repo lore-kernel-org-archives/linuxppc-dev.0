@@ -1,17 +1,15 @@
-Return-Path: <prvs=4765b6b91=michael.tessier@axiontech.ca>
-Received: from mail.axiontech.ca (unknown [207.164.255.36])
- by lists.ozlabs.org (Postfix) with ESMTP id 00B001A0283
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Feb 2015 02:11:03 +1100 (AEDT)
-From: Michael Tessier <michael.tessier@axiontech.ca>
-To: Alan Stern <stern@rowland.harvard.edu>
+Return-Path: <stern+54dcceda@rowland.harvard.edu>
+Received: from netrider.rowland.org (netrider.rowland.org [192.131.102.5])
+ by lists.ozlabs.org (Postfix) with SMTP id 0341C1A01E7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Feb 2015 03:01:34 +1100 (AEDT)
+Date: Tue, 10 Feb 2015 11:01:32 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+To: Michael Tessier <michael.tessier@axiontech.ca>
 Subject: RE: PROBLEM: USB isochronous urb leak on EHCI driver
-Date: Tue, 10 Feb 2015 15:11:00 +0000
-Message-ID: <66A26A9AA227D947AF088537F041526E224E0A@VSVR-EX10-MB1.pocatec.com>
-References: <66A26A9AA227D947AF088537F041526E224CCB@VSVR-EX10-MB1.pocatec.com>
- <Pine.LNX.4.44L0.1502092104180.3220-100000@netrider.rowland.org>
-In-Reply-To: <Pine.LNX.4.44L0.1502092104180.3220-100000@netrider.rowland.org>
-Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <66A26A9AA227D947AF088537F041526E224E0A@VSVR-EX10-MB1.pocatec.com>
+Message-ID: <Pine.LNX.4.44L0.1502101053480.18508-100000@netrider.rowland.org>
 MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
  "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -23,53 +21,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> > Okay; I did my homeworks. We've loaded kernel V3.16 (Oct 14th, 2015)=20
-> > on an i.MX51 plattform and the problem is still there. Unless an=20
-> > important change occured in V3.19, it appears that the latest kernel=20
-> > is not the solution for us. So we're still not able to use 4 codecs on=
-=20
-> > our i.MX plattform.
-> >=20
-> > So just to make things clearer:
-> > - We have customers waiting for a solution with that hardware (this=20
-> > hardware is already delivred AND used);
-> > - We have important comittments and severe penalties ($$$) if we're=20
-> > not able to deliver on time (due for March 15th);
-> > - We've already looked at a hardware solution, which corresponds to=20
-> > replace current units ($$$$$), so that is not really an option for us;
-> >=20
-> > So as a last resort, I'm wondering, where is the USB expert who could=20
-> > help us solving our problem? Any suggestions?
->
-> That would be me.
+On Tue, 10 Feb 2015, Michael Tessier wrote:
 
-Great. What do you need to make it a priority?
+> > > Okay; I did my homeworks. We've loaded kernel V3.16 (Oct 14th, 2015) 
+> > > on an i.MX51 plattform and the problem is still there. Unless an 
+> > > important change occured in V3.19, it appears that the latest kernel 
+> > > is not the solution for us. So we're still not able to use 4 codecs on 
+> > > our i.MX plattform.
+> > > 
+> > > So just to make things clearer:
+> > > - We have customers waiting for a solution with that hardware (this 
+> > > hardware is already delivred AND used);
+> > > - We have important comittments and severe penalties ($$$) if we're 
+> > > not able to deliver on time (due for March 15th);
+> > > - We've already looked at a hardware solution, which corresponds to 
+> > > replace current units ($$$$$), so that is not really an option for us;
+> > > 
+> > > So as a last resort, I'm wondering, where is the USB expert who could 
+> > > help us solving our problem? Any suggestions?
+> >
+> > That would be me.
+> 
+> Great. What do you need to make it a priority?
 
->
-> > If we are to get into debugging the USB driver, we would do it with=20
-> > the current kernel used (V2.6.31). What are the better tools to get=20
-> > into that? I guess a USB analyzer (hardware) would be the smart thing?=
-=20
-> > Any brand name to suggest?
->
-> It really would be better to start by debugging the most recent kernel po=
-ssible.  Once the problem has been solved there, it should be fairly straig=
-htforward to port it back.
+Let's put it this way: Fixing bugs in the ehci-hcd driver already is a
+priority for me.  But it takes second place to other priorities, such
+as my day job.
 
-How much time do you think you'd spend solving that kind of issue? Few days=
-? Few weeks, or few months? Could you commit on a certain number of hours? =
-(We are trying to evaluate a possible date where we could start delivering =
-products)
+(And incidentally, finding and fixing bugs in kernels as old as 2.6.31
+is _not_ a priority, since so many have already been found and fixed.  
+That is one important reason for my suggestion that you do the
+debugging with the most recent kernel version you can.)
 
-When you say "straightforward", again do you have an idea of the amount of =
-time to do such work?
+> > > If we are to get into debugging the USB driver, we would do it with 
+> > > the current kernel used (V2.6.31). What are the better tools to get 
+> > > into that? I guess a USB analyzer (hardware) would be the smart thing? 
+> > > Any brand name to suggest?
+> >
+> > It really would be better to start by debugging the most recent kernel possible.  Once the problem has been solved there, it should be fairly straightforward to port it back.
+> 
+> How much time do you think you'd spend solving that kind of issue?
+> Few days? Few weeks, or few months?
 
-> > Any other ideas for a solution will be really appreciated.
->
-> You should begin by using usbmon during a short test (one or two seconds =
-ought to be enough).  See the instructions in the kernel source file Docume=
-ntation/usb/usbmon.txt.
->
+No idea.  In the past, such things have taken a few days to a few 
+weeks, depending on lots of factors -- when they are solvable at all.
 
-Thanks for your support,
-Michael Tessier
+>  Could you commit on a certain
+> number of hours? (We are trying to evaluate a possible date where we
+> could start delivering products)
+
+No, I can't commit to anything specific.
+
+> When you say "straightforward", again do you have an idea of the
+> amount of time to do such work?
+
+Again, it all depends.  For example, it might turn out that the 
+hardware you are using contains a bug of a sort I have seen in the 
+past.  In that case, programming a workaround wouldn't take more than a 
+few hours, once I knew what was going on.
+
+Alan Stern
