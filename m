@@ -1,28 +1,32 @@
-Return-Path: <olson@cumulusnetworks.com>
-Received: from mail-pd0-f173.google.com (mail-pd0-f173.google.com
- [209.85.192.173])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <neelegup@linux.vnet.ibm.com>
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B44121A0287
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Feb 2015 03:56:12 +1100 (AEDT)
-Received: by pdbfl12 with SMTP id fl12so15502978pdb.2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2015 08:56:10 -0800 (PST)
-Date: Tue, 10 Feb 2015 08:55:42 -0800
-From: Dave Olson <olson@cumulusnetworks.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 1/1] powerpc: fix missing L2 cache size in
- /sys/devices/system/cpu
-Message-ID: <20150210165542.GB16682@cumulusnetworks.com>
-References: <20150209221421.GA22286@cumulusnetworks.com>
- <1423524827.19657.1.camel@ellerman.id.au>
- <20150209234351.GC22286@cumulusnetworks.com>
- <1423527151.4924.64.camel@kernel.crashing.org>
- <20150210080002.GA23291@cumulusnetworks.com>
- <1423556040.4924.90.camel@kernel.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9577C1A0292
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Feb 2015 04:17:05 +1100 (AEDT)
+Received: from /spool/local
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <neelegup@linux.vnet.ibm.com>;
+ Wed, 11 Feb 2015 03:17:04 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 2902A2BB0040
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Feb 2015 04:17:00 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t1AHGpnP46858386
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Feb 2015 04:17:00 +1100
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t1AHGQVq029356
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Feb 2015 04:16:26 +1100
+Subject: [PATCH 1/2] opal: Fix the overflow of message notifiers head array
+To: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org, benh@kernel.crashing.org
+From: Neelesh Gupta <neelegup@linux.vnet.ibm.com>
+Date: Tue, 10 Feb 2015 22:44:01 +0530
+Message-ID: <20150210171245.28320.53659.stgit@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1423556040.4924.90.camel@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,33 +36,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+Signed-off-by: Neelesh Gupta <neelegup@linux.vnet.ibm.com>
+Reviewed-by: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
+---
+ arch/powerpc/platforms/powernv/opal.c |   12 ++++--------
+ 1 file changed, 4 insertions(+), 8 deletions(-)
 
-> On Tue, 2015-02-10 at 00:00 -0800, Dave Olson wrote:
-> > 
-> > OK, now that I understand that's the case, I'll have to go back and
-> > re-do the patch to handle both cache-size and d-cache-size for the
-> > L2 cache (using whichever is present).
-> 
-> I notice that you also didn't modify all the other properties, I would
-> assume you need to also updates in that area ? Maybe you should
-> duplicate the whole structure and have the code look for both.
-
-Since we have line_size_props, I can bump that from 2 to 4
-entries, and add "cache_line_size" and "cache_block_size",
-instead of an explict check.
-
-I could change size_prop, and nr_sets_prop to be a structure like
-line_size_props, if you think that's cleaner than the explict
-check for "cache-size", and "cache-sets" in the functions.
-
-These 3 seem to be the only ones at issue, and I should have checked
-futher to realize that sets and line size were missing.
-
-What's the preference for the other 2 missing items?
-
-> > I don't have any power Macs to use for testing, would one of you be
-> > willing and able to verify the patch on a power Mac?
-
-Dave Olson
-olson@cumulusnetworks.com
+diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
+index f10b9ec..2651e22 100644
+--- a/arch/powerpc/platforms/powernv/opal.c
++++ b/arch/powerpc/platforms/powernv/opal.c
+@@ -305,16 +305,12 @@ void opal_notifier_disable(void)
+ int opal_message_notifier_register(enum OpalMessageType msg_type,
+ 					struct notifier_block *nb)
+ {
+-	if (!nb) {
+-		pr_warning("%s: Invalid argument (%p)\n",
+-			   __func__, nb);
+-		return -EINVAL;
+-	}
+-	if (msg_type > OPAL_MSG_TYPE_MAX) {
+-		pr_warning("%s: Invalid message type argument (%d)\n",
++	if (!nb || msg_type >= OPAL_MSG_TYPE_MAX) {
++		pr_warning("%s: Invalid arguments, msg_type:%d\n",
+ 			   __func__, msg_type);
+ 		return -EINVAL;
+ 	}
++
+ 	return atomic_notifier_chain_register(
+ 				&opal_msg_notifier_head[msg_type], nb);
+ }
+@@ -351,7 +347,7 @@ static void opal_handle_message(void)
+ 	type = be32_to_cpu(msg.msg_type);
+ 
+ 	/* Sanity check */
+-	if (type > OPAL_MSG_TYPE_MAX) {
++	if (type >= OPAL_MSG_TYPE_MAX) {
+ 		pr_warning("%s: Unknown message type: %u\n", __func__, type);
+ 		return;
+ 	}
