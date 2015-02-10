@@ -1,37 +1,36 @@
 Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7819F1A03B6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Feb 2015 10:21:55 +1100 (AEDT)
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3B9921A0394
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Feb 2015 10:06:57 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPS id 4D2DE14018C
+ for <linuxppc-dev@ozlabs.org>; Wed, 11 Feb 2015 10:21:55 +1100 (AEDT)
 Received: from /spool/local
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Wed, 11 Feb 2015 09:06:55 +1000
+ for <linuxppc-dev@ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Wed, 11 Feb 2015 09:21:50 +1000
 Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id B91A92CE8050
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Feb 2015 10:06:50 +1100 (EST)
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id C2348357804C
+ for <linuxppc-dev@ozlabs.org>; Wed, 11 Feb 2015 10:21:48 +1100 (EST)
 Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
  by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t1AN6gin40108212
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Feb 2015 10:06:50 +1100
+ t1ANLe6O46006354
+ for <linuxppc-dev@ozlabs.org>; Wed, 11 Feb 2015 10:21:48 +1100
 Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
  by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t1AN6Gxx024945
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Feb 2015 10:06:17 +1100
-Date: Wed, 11 Feb 2015 10:05:52 +1100
+ t1ANLEHt012079
+ for <linuxppc-dev@ozlabs.org>; Wed, 11 Feb 2015 10:21:14 +1100
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: Re: [PATCH] powerpc/eeh: Drop delay in pcibios_set_pcie_reset_state()
-Message-ID: <20150210230552.GA9373@shangw>
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <1421985702-18882-1-git-send-email-gwshan@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1421985702-18882-1-git-send-email-gwshan@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, wenxiong@linux.vnet.ibm.com,
- stable@vger.kernel.org
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc/eeh: Enhance pcibios_set_pcie_reset_state()
+Date: Wed, 11 Feb 2015 10:20:49 +1100
+Message-Id: <1423610449-14195-1-git-send-email-gwshan@linux.vnet.ibm.com>
+Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,268 +40,108 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jan 23, 2015 at 03:01:42PM +1100, Gavin Shan wrote:
->pcibios_set_pcie_reset_state(), implemented based on platform's EEH reset
->backends, helps to reset PCI adapters. IPR driver might call this function
->in timer handler and it's hard to make reset assertion and settlement delays
->with msleep() in the atomic context. The issue was caused by commit 26833a5
->("powerpc/eeh: Make the delay for PE reset unified").
->
->The patch drops the reset assertion and settlement delays in the API and
->caller will have to take corresponding delays. With the patch applied, the
->reset assertion and settlement delays related to EEH reset become:
->
->  * Reset for EEH recovery: inband
->  * Reset for Guest PE recovery: inband
->  * pcibios_set_pcie_reset_state(): outband
->
->Cc: <stable@vger.kernel.org> # v3.15+
->Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
->Tested-by: Wen Xiong <wenxiong@linux.vnet.ibm.com>
+Function pcibios_set_pcie_reset_state() is possibly called by
+pci_reset_function(), on which VFIO infrastructure depends to
+issue reset. pcibios_set_pcie_reset_state() is issuing reset
+on the parent PE of the indicated PCI device. The reset causes
+state lost on all PCI devices except the indicated one as the
+argument to pcibios_set_pcie_reset_state(). Also, sideband
+MMIO access from guest when issuing reset would cause unexpected
+EEH error.
 
-Ben and Michael, please ignore it: When rethinking the issue, I
-believe the driver need change to use non-atomic context to do
-reset. This function is still called by pci_reset_function() or
-pci_try_reset_function(), on which VFIO PCI driver depends to do
-reset and we need the delay for the case.
+For above two issues, the patch applies following enhancements
+to pcibios_set_pcie_reset_state():
 
-Thanks,
-Gavin
+   * For all PCI devices except the indicated one, save their
+     state prior to reset and restore state after that.
+   * Explicitly freeze PE prior to reset and unfreeze it after
+     that, in order to avoid unexpected EEH error.
 
->---
-> arch/powerpc/include/asm/eeh.h               |  2 +-
-> arch/powerpc/kernel/eeh.c                    | 16 +++++++--------
-> arch/powerpc/platforms/powernv/eeh-ioda.c    | 29 ++++++++++++++++------------
-> arch/powerpc/platforms/powernv/eeh-powernv.c |  4 ++--
-> arch/powerpc/platforms/powernv/pci.h         |  2 +-
-> arch/powerpc/platforms/pseries/eeh_pseries.c |  6 +++++-
-> 6 files changed, 34 insertions(+), 25 deletions(-)
->
->diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
->index 55abfd0..0bc7d3f 100644
->--- a/arch/powerpc/include/asm/eeh.h
->+++ b/arch/powerpc/include/asm/eeh.h
->@@ -205,7 +205,7 @@ struct eeh_ops {
-> 	int (*set_option)(struct eeh_pe *pe, int option);
-> 	int (*get_pe_addr)(struct eeh_pe *pe);
-> 	int (*get_state)(struct eeh_pe *pe, int *state);
->-	int (*reset)(struct eeh_pe *pe, int option);
->+	int (*reset)(struct eeh_pe *pe, int option, bool delay);
-> 	int (*wait_state)(struct eeh_pe *pe, int max_wait);
-> 	int (*get_log)(struct eeh_pe *pe, int severity, char *drv_log, unsigned long len);
-> 	int (*configure_bridge)(struct eeh_pe *pe);
->diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
->index 3b2252e..b0352b5c 100644
->--- a/arch/powerpc/kernel/eeh.c
->+++ b/arch/powerpc/kernel/eeh.c
->@@ -688,16 +688,16 @@ int pcibios_set_pcie_reset_state(struct pci_dev *dev, enum pcie_reset_state stat
->
-> 	switch (state) {
-> 	case pcie_deassert_reset:
->-		eeh_ops->reset(pe, EEH_RESET_DEACTIVATE);
->+		eeh_ops->reset(pe, EEH_RESET_DEACTIVATE, false);
-> 		eeh_pe_state_clear(pe, EEH_PE_CFG_BLOCKED);
-> 		break;
-> 	case pcie_hot_reset:
-> 		eeh_pe_state_mark(pe, EEH_PE_CFG_BLOCKED);
->-		eeh_ops->reset(pe, EEH_RESET_HOT);
->+		eeh_ops->reset(pe, EEH_RESET_HOT, false);
-> 		break;
-> 	case pcie_warm_reset:
-> 		eeh_pe_state_mark(pe, EEH_PE_CFG_BLOCKED);
->-		eeh_ops->reset(pe, EEH_RESET_FUNDAMENTAL);
->+		eeh_ops->reset(pe, EEH_RESET_FUNDAMENTAL, false);
-> 		break;
-> 	default:
-> 		eeh_pe_state_clear(pe, EEH_PE_CFG_BLOCKED);
->@@ -749,11 +749,11 @@ static void eeh_reset_pe_once(struct eeh_pe *pe)
-> 	eeh_pe_dev_traverse(pe, eeh_set_dev_freset, &freset);
->
-> 	if (freset)
->-		eeh_ops->reset(pe, EEH_RESET_FUNDAMENTAL);
->+		eeh_ops->reset(pe, EEH_RESET_FUNDAMENTAL, true);
-> 	else
->-		eeh_ops->reset(pe, EEH_RESET_HOT);
->+		eeh_ops->reset(pe, EEH_RESET_HOT, true);
->
->-	eeh_ops->reset(pe, EEH_RESET_DEACTIVATE);
->+	eeh_ops->reset(pe, EEH_RESET_DEACTIVATE, true);
-> }
->
-> /**
->@@ -1547,7 +1547,7 @@ int eeh_pe_reset(struct eeh_pe *pe, int option)
->
-> 	switch (option) {
-> 	case EEH_RESET_DEACTIVATE:
->-		ret = eeh_ops->reset(pe, option);
->+		ret = eeh_ops->reset(pe, option, true);
-> 		eeh_pe_state_clear(pe, EEH_PE_CFG_BLOCKED);
-> 		if (ret)
-> 			break;
->@@ -1564,7 +1564,7 @@ int eeh_pe_reset(struct eeh_pe *pe, int option)
-> 		eeh_ops->set_option(pe, EEH_OPT_FREEZE_PE);
->
-> 		eeh_pe_state_mark(pe, EEH_PE_CFG_BLOCKED);
->-		ret = eeh_ops->reset(pe, option);
->+		ret = eeh_ops->reset(pe, option, true);
-> 		break;
-> 	default:
-> 		pr_debug("%s: Unsupported option %d\n",
->diff --git a/arch/powerpc/platforms/powernv/eeh-ioda.c b/arch/powerpc/platforms/powernv/eeh-ioda.c
->index 2809c98..1a53cda 100644
->--- a/arch/powerpc/platforms/powernv/eeh-ioda.c
->+++ b/arch/powerpc/platforms/powernv/eeh-ioda.c
->@@ -548,7 +548,8 @@ out:
-> 	return 0;
-> }
->
->-static int ioda_eeh_root_reset(struct pci_controller *hose, int option)
->+static int ioda_eeh_root_reset(struct pci_controller *hose,
->+			       int option, bool delay)
-> {
-> 	struct pnv_phb *phb = hose->private_data;
-> 	s64 rc = OPAL_SUCCESS;
->@@ -578,7 +579,7 @@ static int ioda_eeh_root_reset(struct pci_controller *hose, int option)
->
-> 	/* Poll state of the PHB until the request is done */
-> 	rc = ioda_eeh_phb_poll(phb);
->-	if (option == EEH_RESET_DEACTIVATE)
->+	if (delay && option == EEH_RESET_DEACTIVATE)
-> 		msleep(EEH_PE_RST_SETTLE_TIME);
-> out:
-> 	if (rc != OPAL_SUCCESS)
->@@ -587,7 +588,7 @@ out:
-> 	return 0;
-> }
->
->-static int ioda_eeh_bridge_reset(struct pci_dev *dev, int option)
->+static int ioda_eeh_bridge_reset(struct pci_dev *dev, int option, bool delay)
->
-> {
-> 	struct device_node *dn = pci_device_to_OF_node(dev);
->@@ -614,14 +615,18 @@ static int ioda_eeh_bridge_reset(struct pci_dev *dev, int option)
-> 		eeh_ops->read_config(dn, PCI_BRIDGE_CONTROL, 2, &ctrl);
-> 		ctrl |= PCI_BRIDGE_CTL_BUS_RESET;
-> 		eeh_ops->write_config(dn, PCI_BRIDGE_CONTROL, 2, ctrl);
->-		msleep(EEH_PE_RST_HOLD_TIME);
->+
->+		if (delay)
->+			msleep(EEH_PE_RST_HOLD_TIME);
->
-> 		break;
-> 	case EEH_RESET_DEACTIVATE:
-> 		eeh_ops->read_config(dn, PCI_BRIDGE_CONTROL, 2, &ctrl);
-> 		ctrl &= ~PCI_BRIDGE_CTL_BUS_RESET;
-> 		eeh_ops->write_config(dn, PCI_BRIDGE_CONTROL, 2, ctrl);
->-		msleep(EEH_PE_RST_SETTLE_TIME);
->+
->+		if (delay)
->+			msleep(EEH_PE_RST_SETTLE_TIME);
->
-> 		/* Continue reporting linkDown event */
-> 		if (aer) {
->@@ -644,11 +649,11 @@ void pnv_pci_reset_secondary_bus(struct pci_dev *dev)
->
-> 	if (pci_is_root_bus(dev->bus)) {
-> 		hose = pci_bus_to_host(dev->bus);
->-		ioda_eeh_root_reset(hose, EEH_RESET_HOT);
->-		ioda_eeh_root_reset(hose, EEH_RESET_DEACTIVATE);
->+		ioda_eeh_root_reset(hose, EEH_RESET_HOT, true);
->+		ioda_eeh_root_reset(hose, EEH_RESET_DEACTIVATE, true);
-> 	} else {
->-		ioda_eeh_bridge_reset(dev, EEH_RESET_HOT);
->-		ioda_eeh_bridge_reset(dev, EEH_RESET_DEACTIVATE);
->+		ioda_eeh_bridge_reset(dev, EEH_RESET_HOT, true);
->+		ioda_eeh_bridge_reset(dev, EEH_RESET_DEACTIVATE, true);
-> 	}
-> }
->
->@@ -664,7 +669,7 @@ void pnv_pci_reset_secondary_bus(struct pci_dev *dev)
->  * through FLR. For now, we don't have OPAL APIs to do HARD
->  * reset yet, so all reset would be SOFT (HOT) reset.
->  */
->-static int ioda_eeh_reset(struct eeh_pe *pe, int option)
->+static int ioda_eeh_reset(struct eeh_pe *pe, int option, bool delay)
-> {
-> 	struct pci_controller *hose = pe->phb;
-> 	struct pci_bus *bus;
->@@ -715,9 +720,9 @@ static int ioda_eeh_reset(struct eeh_pe *pe, int option)
-> 		bus = eeh_pe_bus_get(pe);
-> 		if (pci_is_root_bus(bus) ||
-> 		    pci_is_root_bus(bus->parent))
->-			ret = ioda_eeh_root_reset(hose, option);
->+			ret = ioda_eeh_root_reset(hose, option, delay);
-> 		else
->-			ret = ioda_eeh_bridge_reset(bus->self, option);
->+			ret = ioda_eeh_bridge_reset(bus->self, option, delay);
-> 	}
->
-> 	return ret;
->diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
->index e261869..c89a7c4 100644
->--- a/arch/powerpc/platforms/powernv/eeh-powernv.c
->+++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
->@@ -298,14 +298,14 @@ static int powernv_eeh_get_state(struct eeh_pe *pe, int *delay)
->  *
->  * Reset the specified PE
->  */
->-static int powernv_eeh_reset(struct eeh_pe *pe, int option)
->+static int powernv_eeh_reset(struct eeh_pe *pe, int option, bool delay)
-> {
-> 	struct pci_controller *hose = pe->phb;
-> 	struct pnv_phb *phb = hose->private_data;
-> 	int ret = -EEXIST;
->
-> 	if (phb->eeh_ops && phb->eeh_ops->reset)
->-		ret = phb->eeh_ops->reset(pe, option);
->+		ret = phb->eeh_ops->reset(pe, option, delay);
->
-> 	return ret;
-> }
->diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
->index 6c02ff8..a998f2e 100644
->--- a/arch/powerpc/platforms/powernv/pci.h
->+++ b/arch/powerpc/platforms/powernv/pci.h
->@@ -81,7 +81,7 @@ struct pnv_eeh_ops {
-> 	int (*post_init)(struct pci_controller *hose);
-> 	int (*set_option)(struct eeh_pe *pe, int option);
-> 	int (*get_state)(struct eeh_pe *pe);
->-	int (*reset)(struct eeh_pe *pe, int option);
->+	int (*reset)(struct eeh_pe *pe, int option, bool delay);
-> 	int (*get_log)(struct eeh_pe *pe, int severity,
-> 		       char *drv_log, unsigned long len);
-> 	int (*configure_bridge)(struct eeh_pe *pe);
->diff --git a/arch/powerpc/platforms/pseries/eeh_pseries.c b/arch/powerpc/platforms/pseries/eeh_pseries.c
->index a6c7e19..0c8d550 100644
->--- a/arch/powerpc/platforms/pseries/eeh_pseries.c
->+++ b/arch/powerpc/platforms/pseries/eeh_pseries.c
->@@ -501,7 +501,7 @@ static int pseries_eeh_get_state(struct eeh_pe *pe, int *state)
->  *
->  * Reset the specified PE
->  */
->-static int pseries_eeh_reset(struct eeh_pe *pe, int option)
->+static int pseries_eeh_reset(struct eeh_pe *pe, int option, bool delay)
-> {
-> 	int config_addr;
-> 	int ret;
->@@ -525,6 +525,9 @@ static int pseries_eeh_reset(struct eeh_pe *pe, int option)
-> 				BUID_LO(pe->phb->buid), option);
-> 	}
->
->+	if (!delay)
->+		goto out;
->+
-> 	/* We need reset hold or settlement delay */
-> 	if (option == EEH_RESET_FUNDAMENTAL ||
-> 	    option == EEH_RESET_HOT)
->@@ -532,6 +535,7 @@ static int pseries_eeh_reset(struct eeh_pe *pe, int option)
-> 	else
-> 		msleep(EEH_PE_RST_SETTLE_TIME);
->
->+out:
-> 	return ret;
-> }
->
->-- 
->1.8.3.2
->
+Tested-by: Priya M. A <priyama2@in.ibm.com>
+Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+---
+ arch/powerpc/kernel/eeh.c | 55 +++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 55 insertions(+)
+
+diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
+index e1b6d8e..9c67538 100644
+--- a/arch/powerpc/kernel/eeh.c
++++ b/arch/powerpc/kernel/eeh.c
+@@ -660,6 +660,55 @@ int eeh_pci_enable(struct eeh_pe *pe, int function)
+ 	return rc;
+ }
+ 
++static void *eeh_disable_and_save_dev_state(void *data, void *userdata)
++{
++	struct eeh_dev *edev = data;
++	struct pci_dev *pdev = eeh_dev_to_pci_dev(edev);
++	struct pci_dev *dev = userdata;
++
++	/*
++	 * The caller should have disabled and saved the
++	 * state for the specified device
++	 */
++	if (!pdev || pdev == dev)
++		return NULL;
++
++	/* Ensure we have D0 power state */
++	pci_set_power_state(pdev, PCI_D0);
++
++	/* Save device state */
++	pci_save_state(pdev);
++
++	/*
++	 * Disable device to avoid any DMA traffic and
++	 * interrupt from the device
++	 */
++	pci_write_config_word(pdev, PCI_COMMAND, PCI_COMMAND_INTX_DISABLE);
++
++	return NULL;
++}
++
++static void *eeh_restore_dev_state(void *data, void *userdata)
++{
++	struct eeh_dev *edev = data;
++	struct device_node *dn = eeh_dev_to_of_node(edev);
++	struct pci_dev *pdev = eeh_dev_to_pci_dev(edev);
++	struct pci_dev *dev = userdata;
++
++	if (!pdev)
++		return NULL;
++
++	/* Apply customization from firmware */
++	if (dn && eeh_ops->restore_config)
++		eeh_ops->restore_config(dn);
++
++	/* The caller should restore state for the specified device */
++	if (pdev != dev)
++		pci_save_state(pdev);
++
++	return NULL;
++}
++
+ /**
+  * pcibios_set_pcie_slot_reset - Set PCI-E reset state
+  * @dev: pci device struct
+@@ -682,13 +731,19 @@ int pcibios_set_pcie_reset_state(struct pci_dev *dev, enum pcie_reset_state stat
+ 	switch (state) {
+ 	case pcie_deassert_reset:
+ 		eeh_ops->reset(pe, EEH_RESET_DEACTIVATE);
++		eeh_unfreeze_pe(pe, false);
+ 		eeh_pe_state_clear(pe, EEH_PE_CFG_BLOCKED);
++		eeh_pe_dev_traverse(pe, eeh_restore_dev_state, dev);
+ 		break;
+ 	case pcie_hot_reset:
++		eeh_ops->set_option(pe, EEH_OPT_FREEZE_PE);
++		eeh_pe_dev_traverse(pe, eeh_disable_and_save_dev_state, dev);
+ 		eeh_pe_state_mark(pe, EEH_PE_CFG_BLOCKED);
+ 		eeh_ops->reset(pe, EEH_RESET_HOT);
+ 		break;
+ 	case pcie_warm_reset:
++		eeh_ops->set_option(pe, EEH_OPT_FREEZE_PE);
++		eeh_pe_dev_traverse(pe, eeh_disable_and_save_dev_state, dev);
+ 		eeh_pe_state_mark(pe, EEH_PE_CFG_BLOCKED);
+ 		eeh_ops->reset(pe, EEH_RESET_FUNDAMENTAL);
+ 		break;
+-- 
+1.8.3.2
