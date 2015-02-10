@@ -1,36 +1,38 @@
 Return-Path: <nfont@linux.vnet.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 16A791A02E2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Feb 2015 06:40:55 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 401CA1A02E5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Feb 2015 06:44:27 +1100 (AEDT)
 Received: from /spool/local
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
- Tue, 10 Feb 2015 12:40:52 -0700
-Received: from b03cxnp08027.gho.boulder.ibm.com
- (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id A04E31FF002D
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2015 12:32:01 -0700 (MST)
-Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
- by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with
- ESMTP id t1AJenZM35455088
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2015 12:40:49 -0700
-Received: from d03av05.boulder.ibm.com (localhost [127.0.0.1])
- by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t1AJenUP026728
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2015 12:40:49 -0700
+ Tue, 10 Feb 2015 12:44:25 -0700
+Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
+ [9.57.198.29])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 124FE38C8041
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2015 14:44:22 -0500 (EST)
+Received: from d01av05.pok.ibm.com (d01av05.pok.ibm.com [9.56.224.195])
+ by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t1AJiDgm31850574
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2015 19:44:22 GMT
+Received: from d01av05.pok.ibm.com (localhost [127.0.0.1])
+ by d01av05.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t1AJhnkd032195
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2015 14:43:49 -0500
 Received: from [9.41.149.215] (dhcp-9-41-149-215.austin.ibm.com [9.41.149.215])
- by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVin) with ESMTP id
- t1AJen9T026709
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2015 12:40:49 -0700
-Message-ID: <54DA5EC1.2060403@linux.vnet.ibm.com>
-Date: Tue, 10 Feb 2015 13:40:49 -0600
+ by d01av05.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVin) with ESMTP id
+ t1AJhnvX031357
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2015 14:43:49 -0500
+Message-ID: <54DA5F5C.9010601@linux.vnet.ibm.com>
+Date: Tue, 10 Feb 2015 13:43:24 -0600
 From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH v3 0/5] pseries: Move memory hotplug to the kernel
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v3 1/5]pseries: Define rtas hotplug event sections
+References: <54DA5EC1.2060403@linux.vnet.ibm.com>
+In-Reply-To: <54DA5EC1.2060403@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -41,52 +43,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In order to improve hotplug support for cpus, memory, and pci devices in
-the PowerVM and PowerKVM environments, the handling of hotplugging devices
-should be updated to perform the hotplug operation entirely in the kernel.
-This patch set begins to address this by providing a framework and a common
-entry point for hotplug operations for the PowerVM anbd PowerKVM environments.
-This patch set also moves memory hotplug into the kernel. Patches to follow
-will do the same for cpus and pci devices.
+In order to handle device hotplug in the kernel on pseries the hotplug
+request will be communicated in the kernel in the form of a
+rtas hotplug event. This patch adds the definition of rtas hotplug event
+sections.
 
-To provide background, the current handling of memory hotplug is
-done by the drmgr command in user space. This command is invoked when memory
-add/remove requests are made at the HMC and conveyed to a partition
-through the RSCT framework. The drmgr command then performs parts
-of the hotplug in user-space and makes requests to the kernel to perform
-other pieces. This is not really ideal, we can do everything in the
-kernel and do it faster.
+Signed-off-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/rtas.h |   26 ++++++++++++++++++++++++++
+ 1 file changed, 26 insertions(+)
 
-In this patch set the handling of hotplug requests for pseries kernels
-uses rtas hotplug events to communicate the hotplug request. For PowerKVM
-systems the rtas hotplug request is communicated to the guest by qemu
-using the ras epow interrupt, the current scheme also used for pci hotplug.
-For PowerVM systems the drmgr command will be updated to communicate the
-hotplug request by writing to /sys/kernel/dlpar. The format for hotplug
-requests for this file is of the form "<resource> <action> <id_type> <id>".
-The kernel will parse this request and create a rtas hotplug section that
-can be passed to a common kernel hotplug entry point for PowerVM and PowerKVM
-environments.
-
--Nathan
-
-Patch 1/5
-- Add definition of hotplug rtas event sections.
-
-Patch 2/5
-- export the dlpar_[acquire|release]_drc() routines.
-
-Patch 3/5
-- Create the new /sys/kernel/dpar interface
-
-Patch 4/5
-- Implement memory hotplug add in the kernel.
-
-Patch 5/5
-- Implement memory hotplug remove in the kernel.
-
- include/asm/rtas.h                 |   26 ++
- platforms/pseries/dlpar.c          |  118 ++++++++-
- platforms/pseries/hotplug-memory.c |  477 ++++++++++++++++++++++++++++++++++++-
- platforms/pseries/pseries.h        |   12 
- 4 files changed, 629 insertions(+), 4 deletions(-)
+diff --git a/arch/powerpc/include/asm/rtas.h b/arch/powerpc/include/asm/rtas.h
+index 2e23e92..eddc846 100644
+--- a/arch/powerpc/include/asm/rtas.h
++++ b/arch/powerpc/include/asm/rtas.h
+@@ -273,6 +273,7 @@ inline uint32_t rtas_ext_event_company_id(struct rtas_ext_event_log_v6 *ext_log)
+ #define PSERIES_ELOG_SECT_ID_MANUFACT_INFO	(('M' << 8) | 'I')
+ #define PSERIES_ELOG_SECT_ID_CALL_HOME		(('C' << 8) | 'H')
+ #define PSERIES_ELOG_SECT_ID_USER_DEF		(('U' << 8) | 'D')
++#define PSERIES_ELOG_SECT_ID_HOTPLUG		(('H' << 8) | 'P')
+ 
+ /* Vendor specific Platform Event Log Format, Version 6, section header */
+ struct pseries_errorlog {
+@@ -296,6 +297,31 @@ inline uint16_t pseries_errorlog_length(struct pseries_errorlog *sect)
+ 	return be16_to_cpu(sect->length);
+ }
+ 
++/* RTAS pseries hotplug errorlog section */
++struct pseries_hp_errorlog {
++	u8	resource;
++	u8	action;
++	u8	id_type;
++	u8	reserved;
++	union {
++		__be32	drc_index;
++		__be32	drc_count;
++		char	drc_name[1];
++	} _drc_u;
++};
++
++#define PSERIES_HP_ELOG_RESOURCE_CPU	1
++#define PSERIES_HP_ELOG_RESOURCE_MEM	2
++#define PSERIES_HP_ELOG_RESOURCE_SLOT	3
++#define PSERIES_HP_ELOG_RESOURCE_PHB	4
++
++#define PSERIES_HP_ELOG_ACTION_ADD	1
++#define PSERIES_HP_ELOG_ACTION_REMOVE	2
++
++#define PSERIES_HP_ELOG_ID_DRC_NAME	1
++#define PSERIES_HP_ELOG_ID_DRC_INDEX	2
++#define PSERIES_HP_ELOG_ID_DRC_COUNT	3
++
+ struct pseries_errorlog *get_pseries_errorlog(struct rtas_error_log *log,
+ 					      uint16_t section_id);
+ 
