@@ -1,41 +1,17 @@
-Return-Path: <weiyang@linux.vnet.ibm.com>
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 63DA41A0073
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2015 12:52:17 +1100 (AEDT)
-Received: from /spool/local
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
- Tue, 10 Feb 2015 11:52:16 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id ABF532CE804E
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2015 12:52:13 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t1A1q5NN50397378
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2015 12:52:13 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t1A1pd1W008158
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2015 12:51:39 +1100
-Date: Tue, 10 Feb 2015 09:51:23 +0800
-From: Wei Yang <weiyang@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@au1.ibm.com>
-Subject: Re: [PATCH V11 07/17] powerpc/pci: Don't unset pci resources for VFs
-Message-ID: <20150210015123.GC6326@richard>
-Reply-To: Wei Yang <weiyang@linux.vnet.ibm.com>
-References: <20150113180502.GC2776@google.com>
- <1421288887-7765-1-git-send-email-weiyang@linux.vnet.ibm.com>
- <1421288887-7765-8-git-send-email-weiyang@linux.vnet.ibm.com>
- <1423528584.4924.70.camel@au1.ibm.com>
+Return-Path: <stern+54dcceda@rowland.harvard.edu>
+Received: from netrider.rowland.org (netrider.rowland.org [192.131.102.5])
+ by lists.ozlabs.org (Postfix) with SMTP id 7E1E31A012E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2015 13:09:30 +1100 (AEDT)
+Date: Mon, 9 Feb 2015 21:09:27 -0500 (EST)
+From: Alan Stern <stern@rowland.harvard.edu>
+To: Michael Tessier <michael.tessier@axiontech.ca>
+Subject: RE: PROBLEM: USB isochronous urb leak on EHCI driver
+In-Reply-To: <66A26A9AA227D947AF088537F041526E224CCB@VSVR-EX10-MB1.pocatec.com>
+Message-ID: <Pine.LNX.4.44L0.1502092104180.3220-100000@netrider.rowland.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1423528584.4924.70.camel@au1.ibm.com>
-Cc: bhelgaas@google.com, linux-pci@vger.kernel.org,
- Wei Yang <weiyang@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- gwshan@linux.vnet.ibm.com
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,52 +21,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Feb 10, 2015 at 11:36:24AM +1100, Benjamin Herrenschmidt wrote:
->On Thu, 2015-01-15 at 10:27 +0800, Wei Yang wrote:
->> If we're going to reassign resources with flag PCI_REASSIGN_ALL_RSRC, all
->> resources will be cleaned out during device header fixup time and then get
->> reassigned by PCI core. However, the VF resources won't be reassigned and
->> thus, we shouldn't clean them out.
->> 
->> This patch adds a condition. If the pci_dev is a VF, skip the resource
->> unset process.
->
->I don't understand this, can you elaborate ? Why wouldn't we reassign
->the IOV resource just like everything else ?
+On Mon, 9 Feb 2015, Michael Tessier wrote:
 
-Sure.
+> Okay; I did my homeworks. We've loaded kernel V3.16 (Oct 14th, 2015)
+> on an i.MX51 plattform and the problem is still there. Unless an
+> important change occured in V3.19, it appears that the latest kernel
+> is not the solution for us. So we're still not able to use 4 codecs
+> on our i.MX plattform.
+> 
+> So just to make things clearer:
+> - We have customers waiting for a solution with that hardware (this
+> hardware is already delivred AND used);
+> - We have important comittments and severe penalties ($$$) if we're
+> not able to deliver on time (due for March 15th);
+> - We've already looked at a hardware solution, which corresponds to
+> replace current units ($$$$$), so that is not really an option for
+> us;
+> 
+> So as a last resort, I'm wondering, where is the USB expert who could
+> help us solving our problem? Any suggestions?
 
-VFs work a little bit different from normal devices. On powernv platform, we
-have PCI_REASSIGN_ALL_RSRC set, which means all resource retrieved from
-hardware will be cleaned and re-assigned by kernel. While VF's resources are
-calculated from PF's IOV BAR, in virtfn_add(). And after this, there is not
-re-assign process for VFs.
+That would be me.
 
->
->Ben.
->
->> Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
->> ---
->>  arch/powerpc/kernel/pci-common.c |    4 ++++
->>  1 file changed, 4 insertions(+)
->> 
->> diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
->> index 37d512d..889f743 100644
->> --- a/arch/powerpc/kernel/pci-common.c
->> +++ b/arch/powerpc/kernel/pci-common.c
->> @@ -788,6 +788,10 @@ static void pcibios_fixup_resources(struct pci_dev *dev)
->>  		       pci_name(dev));
->>  		return;
->>  	}
->> +
->> +	if (dev->is_virtfn)
->> +		return;
->> +
->>  	for (i = 0; i < DEVICE_COUNT_RESOURCE; i++) {
->>  		struct resource *res = dev->resource + i;
->>  		struct pci_bus_region reg;
->
+> If we are to get into debugging the USB driver, we would do it with
+> the current kernel used (V2.6.31). What are the better tools to get
+> into that? I guess a USB analyzer (hardware) would be the smart
+> thing? Any brand name to suggest?
 
--- 
-Richard Yang
-Help you, Help me
+It really would be better to start by debugging the most recent kernel
+possible.  Once the problem has been solved there, it should be fairly
+straightforward to port it back.
+
+> Any other ideas for a solution will be really appreciated.
+
+You should begin by using usbmon during a short test (one or two 
+seconds ought to be enough).  See the instructions in the kernel source 
+file Documentation/usb/usbmon.txt.
+
+Alan Stern
