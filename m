@@ -1,32 +1,32 @@
 Return-Path: <stewart@linux.vnet.ibm.com>
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 91CBF1A03D7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2015 13:27:39 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id C37BA1A018F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2015 13:27:40 +1100 (AEDT)
 Received: from /spool/local
- by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e7.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <stewart@linux.vnet.ibm.com>;
- Mon, 9 Feb 2015 19:27:37 -0700
-Received: from b03cxnp08028.gho.boulder.ibm.com
- (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 8D0353E4003F
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Feb 2015 19:27:34 -0700 (MST)
-Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
- by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with
- ESMTP id t1A2Rdbd36634848
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Feb 2015 19:27:39 -0700
-Received: from d03av05.boulder.ibm.com (localhost [127.0.0.1])
- by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t1A2RX2f017522
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Feb 2015 19:27:34 -0700
+ Mon, 9 Feb 2015 21:27:38 -0500
+Received: from b01cxnp23032.gho.pok.ibm.com (b01cxnp23032.gho.pok.ibm.com
+ [9.57.198.27])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id BC7E938C8039
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Feb 2015 21:27:36 -0500 (EST)
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+ by b01cxnp23032.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t1A2RaNK20971612
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2015 02:27:36 GMT
+Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
+ by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t1A2RY2W007877
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Feb 2015 21:27:36 -0500
 From: Stewart Smith <stewart@linux.vnet.ibm.com>
 To: mpe@ellerman.id.au, benh@kernel.crashing.org
-Subject: [PATCH 17/18] powerpc/powernv: s/u8/uint8_t/ to match firmware in
- opal.h
-Date: Tue, 10 Feb 2015 13:26:59 +1100
-Message-Id: <1423535220-6322-18-git-send-email-stewart@linux.vnet.ibm.com>
+Subject: [PATCH 16/18] powerpc/powernv: move SG_ENTRIES_PER_NODE to
+ linux-specific opal-api.h
+Date: Tue, 10 Feb 2015 13:26:58 +1100
+Message-Id: <1423535220-6322-17-git-send-email-stewart@linux.vnet.ibm.com>
 In-Reply-To: <1423535220-6322-1-git-send-email-stewart@linux.vnet.ibm.com>
 References: <1423535220-6322-1-git-send-email-stewart@linux.vnet.ibm.com>
 Cc: Stewart Smith <stewart@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
@@ -42,28 +42,37 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Signed-off-by: Stewart Smith <stewart@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/opal.h |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ arch/powerpc/include/asm/opal-api.h |    4 ++++
+ arch/powerpc/include/asm/opal.h     |    4 ----
+ 2 files changed, 4 insertions(+), 4 deletions(-)
 
+diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
+index c4009dd..172d08e 100644
+--- a/arch/powerpc/include/asm/opal-api.h
++++ b/arch/powerpc/include/asm/opal-api.h
+@@ -237,4 +237,8 @@ extern void opal_lpc_init(void);
+ struct opal_sg_list *opal_vmalloc_to_sg_list(void *vmalloc_addr,
+ 					     unsigned long vmalloc_size);
+ void opal_free_sg_list(struct opal_sg_list *sg);
++
++/* We calculate number of sg entries based on PAGE_SIZE */
++#define SG_ENTRIES_PER_NODE ((PAGE_SIZE - 16) / sizeof(struct opal_sg_entry))
++
+ #endif /* __OPAL_API_H */
 diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
-index 2441f36..68ce7ef 100644
+index b60a25a..2441f36 100644
 --- a/arch/powerpc/include/asm/opal.h
 +++ b/arch/powerpc/include/asm/opal.h
-@@ -612,13 +612,13 @@ struct OpalIoP7IOCErrorData {
- 			__be64 biLdcp2;		/* 3C0110, 3C0128 */
- 			__be64 biFenceStatus;	/* 3C0130, 3C0130 */
+@@ -820,10 +820,6 @@ enum {
+ #define OPAL_PHB_CAPI_FLAG_SNOOP_CONTROL	0x00000001
+ #define OPAL_PHB_CAPI_FLAG_REVERT_TO_PCIE	0x00000002
  
--			    u8 biDownbound;	/* BI Downbound or Upbound */
-+			uint8_t biDownbound;	/* BI Downbound or Upbound */
- 		}bi;
- 		struct OpalIoP7IOCCiErrorData {
- 			__be64 ciPortStatus;	/* 3Dn008 */
- 			__be64 ciPortLdcp;	/* 3Dn010 */
- 
--			    u8 ciPort;		/* Index of CI port: 0/1 */
-+			uint8_t ciPort;		/* Index of CI port: 0/1 */
- 		}ci;
- 	};
- };
+-/* We calculate number of sg entries based on PAGE_SIZE */
+-#define SG_ENTRIES_PER_NODE ((PAGE_SIZE - 16) / sizeof(struct opal_sg_entry))
+-
+-
+ /* OPAL I2C request */
+ struct opal_i2c_request {
+ 	uint8_t	type;
 -- 
 1.7.10.4
