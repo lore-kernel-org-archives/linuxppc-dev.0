@@ -1,39 +1,36 @@
-Return-Path: <benh@au1.ibm.com>
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+Return-Path: <stewart@linux.vnet.ibm.com>
+Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AB8961A014C
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2015 13:15:12 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2364D1A014B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2015 13:27:21 +1100 (AEDT)
 Received: from /spool/local
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <benh@au1.ibm.com>;
- Tue, 10 Feb 2015 12:15:11 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id BC0DA2BB0047
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2015 13:15:08 +1100 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t1A2EulB48758962
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2015 13:15:04 +1100
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t1A2EZc2016220
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2015 13:14:35 +1100
-Message-ID: <1423534451.4924.79.camel@au1.ibm.com>
-Subject: Re: [PATCH V11 07/17] powerpc/pci: Don't unset pci resources for VFs
-From: Benjamin Herrenschmidt <benh@au1.ibm.com>
-To: Wei Yang <weiyang@linux.vnet.ibm.com>
-Date: Tue, 10 Feb 2015 13:14:11 +1100
-In-Reply-To: <20150210015123.GC6326@richard>
-References: <20150113180502.GC2776@google.com>
- <1421288887-7765-1-git-send-email-weiyang@linux.vnet.ibm.com>
- <1421288887-7765-8-git-send-email-weiyang@linux.vnet.ibm.com>
- <1423528584.4924.70.camel@au1.ibm.com> <20150210015123.GC6326@richard>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: bhelgaas@google.com, linux-pci@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, gwshan@linux.vnet.ibm.com
+ for <linuxppc-dev@lists.ozlabs.org> from <stewart@linux.vnet.ibm.com>;
+ Mon, 9 Feb 2015 21:27:19 -0500
+Received: from b01cxnp22036.gho.pok.ibm.com (b01cxnp22036.gho.pok.ibm.com
+ [9.57.198.26])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 32EB938C8026
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Feb 2015 21:27:15 -0500 (EST)
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+ by b01cxnp22036.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t1A2RFW727394160
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2015 02:27:15 GMT
+Received: from d01av04.pok.ibm.com (localhost [127.0.0.1])
+ by d01av04.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t1A2REO5023005
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Feb 2015 21:27:14 -0500
+From: Stewart Smith <stewart@linux.vnet.ibm.com>
+To: mpe@ellerman.id.au, benh@kernel.crashing.org
+Subject: [PATCH 02/18] powerpc/powernv: synchronize OPAL calls and return
+ codes with firmware
+Date: Tue, 10 Feb 2015 13:26:44 +1100
+Message-Id: <1423535220-6322-3-git-send-email-stewart@linux.vnet.ibm.com>
+In-Reply-To: <1423535220-6322-1-git-send-email-stewart@linux.vnet.ibm.com>
+References: <1423535220-6322-1-git-send-email-stewart@linux.vnet.ibm.com>
+Cc: Stewart Smith <stewart@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,55 +40,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-02-10 at 09:51 +0800, Wei Yang wrote:
-> On Tue, Feb 10, 2015 at 11:36:24AM +1100, Benjamin Herrenschmidt wrote:
-> >On Thu, 2015-01-15 at 10:27 +0800, Wei Yang wrote:
-> >> If we're going to reassign resources with flag PCI_REASSIGN_ALL_RSRC, all
-> >> resources will be cleaned out during device header fixup time and then get
-> >> reassigned by PCI core. However, the VF resources won't be reassigned and
-> >> thus, we shouldn't clean them out.
-> >> 
-> >> This patch adds a condition. If the pci_dev is a VF, skip the resource
-> >> unset process.
-> >
-> >I don't understand this, can you elaborate ? Why wouldn't we reassign
-> >the IOV resource just like everything else ?
-> 
-> Sure.
-> 
-> VFs work a little bit different from normal devices. On powernv platform, we
-> have PCI_REASSIGN_ALL_RSRC set, which means all resource retrieved from
-> hardware will be cleaned and re-assigned by kernel. While VF's resources are
-> calculated from PF's IOV BAR, in virtfn_add(). And after this, there is not
-> re-assign process for VFs.
+This just leaves us with CXL vs CAPI as differences in the list of OPAL
+calls between opal.h in firmware and opal.h in Linux.
 
-I still don't undertand, you mean SR-IOV is assigned before we assign
-everybody else ? That doesn't make sense to me...
+Signed-off-by: Stewart Smith <stewart@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/opal.h |    9 ++++++++-
+ 1 file changed, 8 insertions(+), 1 deletion(-)
 
-Ben.
-
-> >
-> >Ben.
-> >
-> >> Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
-> >> ---
-> >>  arch/powerpc/kernel/pci-common.c |    4 ++++
-> >>  1 file changed, 4 insertions(+)
-> >> 
-> >> diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
-> >> index 37d512d..889f743 100644
-> >> --- a/arch/powerpc/kernel/pci-common.c
-> >> +++ b/arch/powerpc/kernel/pci-common.c
-> >> @@ -788,6 +788,10 @@ static void pcibios_fixup_resources(struct pci_dev *dev)
-> >>  		       pci_name(dev));
-> >>  		return;
-> >>  	}
-> >> +
-> >> +	if (dev->is_virtfn)
-> >> +		return;
-> >> +
-> >>  	for (i = 0; i < DEVICE_COUNT_RESOURCE; i++) {
-> >>  		struct resource *res = dev->resource + i;
-> >>  		struct pci_bus_region reg;
-> >
-> 
+diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
+index 4694183..80cb4d3 100644
+--- a/arch/powerpc/include/asm/opal.h
++++ b/arch/powerpc/include/asm/opal.h
+@@ -56,6 +56,7 @@ struct opal_sg_list {
+ #define OPAL_HARDWARE_FROZEN	-13
+ #define OPAL_WRONG_STATE	-14
+ #define OPAL_ASYNC_COMPLETION	-15
++#define OPAL_EMPTY		-16
+ #define OPAL_I2C_TIMEOUT	-17
+ #define OPAL_I2C_INVALID_CMD	-18
+ #define OPAL_I2C_LBUS_PARITY	-19
+@@ -66,7 +67,8 @@ struct opal_sg_list {
+ #define OPAL_I2C_STOP_ERR	-24
+ 
+ /* API Tokens (in r0) */
+-#define OPAL_INVALID_CALL			-1
++#define OPAL_INVALID_CALL		       -1
++#define OPAL_TEST				0
+ #define OPAL_CONSOLE_WRITE			1
+ #define OPAL_CONSOLE_READ			2
+ #define OPAL_RTC_READ				3
+@@ -155,8 +157,10 @@ struct opal_sg_list {
+ #define OPAL_GET_PARAM				89
+ #define OPAL_SET_PARAM				90
+ #define OPAL_DUMP_RESEND			91
++#define OPAL_ELOG_SEND				92	/* Deprecated */
+ #define OPAL_PCI_SET_PHB_CXL_MODE		93
+ #define OPAL_DUMP_INFO2				94
++#define OPAL_WRITE_OPPANEL_ASYNC		95
+ #define OPAL_PCI_ERR_INJECT			96
+ #define OPAL_PCI_EEH_FREEZE_SET			97
+ #define OPAL_HANDLE_HMI				98
+@@ -166,9 +170,12 @@ struct opal_sg_list {
+ #define OPAL_UNREGISTER_DUMP_REGION		102
+ #define OPAL_WRITE_TPO				103
+ #define OPAL_READ_TPO				104
++#define OPAL_GET_DPO_STATUS			105
++#define OPAL_OLD_I2C_REQUEST			106	/* Deprecated */
+ #define OPAL_IPMI_SEND				107
+ #define OPAL_IPMI_RECV				108
+ #define OPAL_I2C_REQUEST			109
++#define OPAL_LAST				109
+ 
+ /* Device tree flags */
+ 
+-- 
+1.7.10.4
