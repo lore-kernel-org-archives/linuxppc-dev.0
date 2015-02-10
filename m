@@ -1,39 +1,26 @@
-Return-Path: <nfont@linux.vnet.ibm.com>
-Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 401CA1A02E5
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Feb 2015 06:44:27 +1100 (AEDT)
-Received: from /spool/local
- by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
- Tue, 10 Feb 2015 12:44:25 -0700
-Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
- [9.57.198.29])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 124FE38C8041
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2015 14:44:22 -0500 (EST)
-Received: from d01av05.pok.ibm.com (d01av05.pok.ibm.com [9.56.224.195])
- by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t1AJiDgm31850574
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2015 19:44:22 GMT
-Received: from d01av05.pok.ibm.com (localhost [127.0.0.1])
- by d01av05.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t1AJhnkd032195
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2015 14:43:49 -0500
-Received: from [9.41.149.215] (dhcp-9-41-149-215.austin.ibm.com [9.41.149.215])
- by d01av05.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVin) with ESMTP id
- t1AJhnvX031357
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2015 14:43:49 -0500
-Message-ID: <54DA5F5C.9010601@linux.vnet.ibm.com>
-Date: Tue, 10 Feb 2015 13:43:24 -0600
-From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v3 1/5]pseries: Define rtas hotplug event sections
-References: <54DA5EC1.2060403@linux.vnet.ibm.com>
-In-Reply-To: <54DA5EC1.2060403@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0F4841A02E5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Feb 2015 06:45:56 +1100 (AEDT)
+Message-ID: <1423597534.5891.3.camel@kernel.crashing.org>
+Subject: Re: [PATCH 1/1] powerpc: fix missing L2 cache size in
+ /sys/devices/system/cpu
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Dave Olson <olson@cumulusnetworks.com>
+Date: Wed, 11 Feb 2015 06:45:34 +1100
+In-Reply-To: <20150210165542.GB16682@cumulusnetworks.com>
+References: <20150209221421.GA22286@cumulusnetworks.com>
+ <1423524827.19657.1.camel@ellerman.id.au>
+ <20150209234351.GC22286@cumulusnetworks.com>
+ <1423527151.4924.64.camel@kernel.crashing.org>
+ <20150210080002.GA23291@cumulusnetworks.com>
+ <1423556040.4924.90.camel@kernel.crashing.org>
+ <20150210165542.GB16682@cumulusnetworks.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,57 +30,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In order to handle device hotplug in the kernel on pseries the hotplug
-request will be communicated in the kernel in the form of a
-rtas hotplug event. This patch adds the definition of rtas hotplug event
-sections.
+On Tue, 2015-02-10 at 08:55 -0800, Dave Olson wrote:
+> Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+> 
+> > On Tue, 2015-02-10 at 00:00 -0800, Dave Olson wrote:
+> > > 
+> > > OK, now that I understand that's the case, I'll have to go back and
+> > > re-do the patch to handle both cache-size and d-cache-size for the
+> > > L2 cache (using whichever is present).
+> > 
+> > I notice that you also didn't modify all the other properties, I would
+> > assume you need to also updates in that area ? Maybe you should
+> > duplicate the whole structure and have the code look for both.
+> 
+> Since we have line_size_props, I can bump that from 2 to 4
+> entries, and add "cache_line_size" and "cache_block_size",
+> instead of an explict check.
+> 
+> I could change size_prop, and nr_sets_prop to be a structure like
+> line_size_props, if you think that's cleaner than the explict
+> check for "cache-size", and "cache-sets" in the functions.
+> 
+> These 3 seem to be the only ones at issue, and I should have checked
+> futher to realize that sets and line size were missing.
+> 
+> What's the preference for the other 2 missing items?
 
-Signed-off-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/rtas.h |   26 ++++++++++++++++++++++++++
- 1 file changed, 26 insertions(+)
+Up to you, but I'm thinking at this point, isn't it worth duplicating
+the whole struct and using which ever matches on the first entry ?
 
-diff --git a/arch/powerpc/include/asm/rtas.h b/arch/powerpc/include/asm/rtas.h
-index 2e23e92..eddc846 100644
---- a/arch/powerpc/include/asm/rtas.h
-+++ b/arch/powerpc/include/asm/rtas.h
-@@ -273,6 +273,7 @@ inline uint32_t rtas_ext_event_company_id(struct rtas_ext_event_log_v6 *ext_log)
- #define PSERIES_ELOG_SECT_ID_MANUFACT_INFO	(('M' << 8) | 'I')
- #define PSERIES_ELOG_SECT_ID_CALL_HOME		(('C' << 8) | 'H')
- #define PSERIES_ELOG_SECT_ID_USER_DEF		(('U' << 8) | 'D')
-+#define PSERIES_ELOG_SECT_ID_HOTPLUG		(('H' << 8) | 'P')
- 
- /* Vendor specific Platform Event Log Format, Version 6, section header */
- struct pseries_errorlog {
-@@ -296,6 +297,31 @@ inline uint16_t pseries_errorlog_length(struct pseries_errorlog *sect)
- 	return be16_to_cpu(sect->length);
- }
- 
-+/* RTAS pseries hotplug errorlog section */
-+struct pseries_hp_errorlog {
-+	u8	resource;
-+	u8	action;
-+	u8	id_type;
-+	u8	reserved;
-+	union {
-+		__be32	drc_index;
-+		__be32	drc_count;
-+		char	drc_name[1];
-+	} _drc_u;
-+};
-+
-+#define PSERIES_HP_ELOG_RESOURCE_CPU	1
-+#define PSERIES_HP_ELOG_RESOURCE_MEM	2
-+#define PSERIES_HP_ELOG_RESOURCE_SLOT	3
-+#define PSERIES_HP_ELOG_RESOURCE_PHB	4
-+
-+#define PSERIES_HP_ELOG_ACTION_ADD	1
-+#define PSERIES_HP_ELOG_ACTION_REMOVE	2
-+
-+#define PSERIES_HP_ELOG_ID_DRC_NAME	1
-+#define PSERIES_HP_ELOG_ID_DRC_INDEX	2
-+#define PSERIES_HP_ELOG_ID_DRC_COUNT	3
-+
- struct pseries_errorlog *get_pseries_errorlog(struct rtas_error_log *log,
- 					      uint16_t section_id);
- 
+> > > I don't have any power Macs to use for testing, would one of you be
+> > > willing and able to verify the patch on a power Mac?
+> 
+> Dave Olson
+> olson@cumulusnetworks.com
