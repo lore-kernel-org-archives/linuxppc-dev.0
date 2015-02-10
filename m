@@ -1,37 +1,43 @@
-Return-Path: <stewart@linux.vnet.ibm.com>
-Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
+Return-Path: <weiyang@linux.vnet.ibm.com>
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C23CF1A0047
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2015 16:10:33 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id BA7A41A01A7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2015 17:19:51 +1100 (AEDT)
 Received: from /spool/local
- by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <stewart@linux.vnet.ibm.com>;
- Tue, 10 Feb 2015 00:10:30 -0500
-Received: from b01cxnp22035.gho.pok.ibm.com (b01cxnp22035.gho.pok.ibm.com
- [9.57.198.25])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id E85D238C8039
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2015 00:10:28 -0500 (EST)
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
- by b01cxnp22035.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t1A5ASSp29098158
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2015 05:10:28 GMT
-Received: from d01av04.pok.ibm.com (localhost [127.0.0.1])
- by d01av04.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t1A5ARju027240
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2015 00:10:28 -0500
-From: Stewart Smith <stewart@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH 00/18] sync opal.h with firmware
-In-Reply-To: <1423540744.19657.12.camel@ellerman.id.au>
-References: <1423535220-6322-1-git-send-email-stewart@linux.vnet.ibm.com>
- <1423540744.19657.12.camel@ellerman.id.au>
-Date: Tue, 10 Feb 2015 16:10:15 +1100
-Message-ID: <m3iofanyh4.fsf@oc8180480414.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
+ Tue, 10 Feb 2015 16:19:50 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 2044D2CE8052
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2015 17:19:49 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t1A6JeD834603128
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2015 17:19:49 +1100
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t1A6JEjm019012
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2015 17:19:15 +1100
+Date: Tue, 10 Feb 2015 14:18:57 +0800
+From: Wei Yang <weiyang@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@au1.ibm.com>
+Subject: Re: [PATCH V11 02/17] PCI/IOV: add VF enable/disable hook
+Message-ID: <20150210061857.GA31098@richard>
+Reply-To: Wei Yang <weiyang@linux.vnet.ibm.com>
+References: <20150113180502.GC2776@google.com>
+ <1421288887-7765-1-git-send-email-weiyang@linux.vnet.ibm.com>
+ <1421288887-7765-3-git-send-email-weiyang@linux.vnet.ibm.com>
+ <1423527979.4924.67.camel@au1.ibm.com>
+ <20150210013532.GA6326@richard>
+ <1423534394.4924.78.camel@au1.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+In-Reply-To: <1423534394.4924.78.camel@au1.ibm.com>
+Cc: bhelgaas@google.com, linux-pci@vger.kernel.org,
+ Wei Yang <weiyang@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ gwshan@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,38 +47,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael Ellerman <mpe@ellerman.id.au> writes:
-> I'm going to be a total pain, and suggest that this is the wrong approach :)
+On Tue, Feb 10, 2015 at 01:13:14PM +1100, Benjamin Herrenschmidt wrote:
+>On Tue, 2015-02-10 at 09:35 +0800, Wei Yang wrote:
+>> >Don't we want pcibios_sriov_enable() to be able to crop the number
+>> >of VFs or do we think any resource limits have been applied
+>> >already ?
+>> 
+>> The second parameter "initial" is the number of VFs will be enabled.
+>> Arch
+>> dependent function will check the resources for these number of VFs.
+>> 
+>> Do I catch your question correctly?
 >
-> I was on board until patch 15, where you have to add an #ifdef SKIBOOT to guard
-> an include, and you have to remove an include on the Linux side.
-
-(the Linux include was actually not used it seems)
-
-> I think the better solution would be to pull all the common parts out into a
-> new file, opal-api.h. That file would define the API between Linux & Skiboot,
-> and absolutely nothing else.
-
-Sounds fine.
-
-> Both Linux and Skiboot would continue to have an opal.h, which would include
-> opal-api.h, and then anything else needed on either side to make a functioning
-> opal.h - eg. other includes & definitions (SG_ENTRIES_PER_NODE).
+>I was wondering if the number of resource that can be enabled is
+>smaller, should the arch function be able to return that smaller
+>number and we would still enable that number ?
 >
-> It would also have the advantage that because opal-api.h is a new file, we can
-> get it synced from the beginning and not worry about all the whitespace &
-> rearranging patches. ie. there'd just be one patch on both sides to add the new
-> file and move definitions into it from opal.h.
+>Ie, have the arch function be able to "update" the value of
+>"initial" (by passing it by pointer for example).
 
-Sure. I was doing it bit by bit just so that it was reviewable that I
-didn't miss anything or violently screw anything up. Plus, there were
-things that should be changed in skiboot as well.
+This would increase the time to enable sriov and block others driver to enable
+sriov.
 
-> If you don't violently disagree I'll do a patch for that and we can see how it
-> looks?
+On powernv platform, those resources needed are M64 BAR and PE numbers.
+Currently they are acquired separately. We have a lock to protect those
+resources respectively. If we want to apply the logic you mentioned, we need
+to have a "bigger" lock to protect both of them and try different values,
+since at the same time, other driver may want to enable their sriov too. We
+have to protect this contention.
 
-Not violently :)
+Another example is PF has two IOV BAR but just one M64 BAR left in system.
+In this case, no matter how many VFs want to enable, it will fail.
 
-I'd go back and do a similar thing to skiboot to make them match again
-though, having linux/opal-api.h match skiboot/opal.h would just cause
-swearing fits :)
+>
+>Cheers,
+>Ben.
+>
+>
+>--
+>To unsubscribe from this list: send the line "unsubscribe linux-pci" in
+>the body of a message to majordomo@vger.kernel.org
+>More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
+-- 
+Richard Yang
+Help you, Help me
