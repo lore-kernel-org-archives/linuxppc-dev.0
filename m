@@ -1,24 +1,40 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <benh@au1.ibm.com>
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 641CB1A0060
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2015 19:14:12 +1100 (AEDT)
-Message-ID: <1423556040.4924.90.camel@kernel.crashing.org>
-Subject: Re: [PATCH 1/1] powerpc: fix missing L2 cache size in
- /sys/devices/system/cpu
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Dave Olson <olson@cumulusnetworks.com>
-Date: Tue, 10 Feb 2015 19:14:00 +1100
-In-Reply-To: <20150210080002.GA23291@cumulusnetworks.com>
-References: <20150209221421.GA22286@cumulusnetworks.com>
- <1423524827.19657.1.camel@ellerman.id.au>
- <20150209234351.GC22286@cumulusnetworks.com>
- <1423527151.4924.64.camel@kernel.crashing.org>
- <20150210080002.GA23291@cumulusnetworks.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5ECA41A00A2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2015 19:15:56 +1100 (AEDT)
+Received: from /spool/local
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <benh@au1.ibm.com>;
+ Tue, 10 Feb 2015 18:15:52 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id DA9C62BB004D
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2015 19:15:48 +1100 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t1A8FeiF47382776
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2015 19:15:48 +1100
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t1A8FFUK006992
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2015 19:15:15 +1100
+Message-ID: <1423556085.4924.91.camel@au1.ibm.com>
+Subject: Re: [PATCH V11 07/17] powerpc/pci: Don't unset pci resources for VFs
+From: Benjamin Herrenschmidt <benh@au1.ibm.com>
+To: Wei Yang <weiyang@linux.vnet.ibm.com>
+Date: Tue, 10 Feb 2015 19:14:45 +1100
+In-Reply-To: <20150210062544.GB31098@richard>
+References: <20150113180502.GC2776@google.com>
+ <1421288887-7765-1-git-send-email-weiyang@linux.vnet.ibm.com>
+ <1421288887-7765-8-git-send-email-weiyang@linux.vnet.ibm.com>
+ <1423528584.4924.70.camel@au1.ibm.com> <20150210015123.GC6326@richard>
+ <1423534451.4924.79.camel@au1.ibm.com> <20150210062544.GB31098@richard>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Cc: bhelgaas@google.com, linux-pci@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, gwshan@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,18 +44,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-02-10 at 00:00 -0800, Dave Olson wrote:
+On Tue, 2015-02-10 at 14:25 +0800, Wei Yang wrote:
+> PF's resource will be assigned first, including normal BARs and IOV
+> BARs.
 > 
-> OK, now that I understand that's the case, I'll have to go back and
-> re-do the patch to handle both cache-size and d-cache-size for the
-> L2 cache (using whichever is present).
-
-I notice that you also didn't modify all the other properties, I would
-assume you need to also updates in that area ? Maybe you should
-duplicate the whole structure and have the code look for both.
-
-> I don't have any power Macs to use for testing, would one of you be
-> willing and able to verify the patch on a power Mac?
+> Then PF's driver will create VFs, in virtfn_add(). In this function,
+> VF's
+> resources is calculated from its PF's IOV BAR.
 > 
-> The patch below fixes my problem, and I don't think it will break
-> platforms like the PowerPC Mac that use d-cache-size
+> If you reset VF's resource as PFs, no one will try to assign it again.
+
+So the problem is that the flag indicating VF is lost ? IE. We should
+still mark them unset, but preserve that flag ?
+
+Cheers,
+Ben.
