@@ -1,36 +1,36 @@
 Return-Path: <nfont@linux.vnet.ibm.com>
-Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
+Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 97CD71A048B
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Feb 2015 06:48:32 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id D9CAD1A1378
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Feb 2015 06:49:27 +1100 (AEDT)
 Received: from /spool/local
- by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
- Tue, 10 Feb 2015 12:48:30 -0700
-Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
- [9.57.198.29])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 3BE166E803F
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2015 14:40:19 -0500 (EST)
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
- by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t1AJmR9Q27590904
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2015 19:48:27 GMT
-Received: from d01av04.pok.ibm.com (localhost [127.0.0.1])
- by d01av04.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t1AJmREP003744
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2015 14:48:27 -0500
+ Tue, 10 Feb 2015 14:49:25 -0500
+Received: from b01cxnp22036.gho.pok.ibm.com (b01cxnp22036.gho.pok.ibm.com
+ [9.57.198.26])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 5CF99C9003E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2015 14:40:34 -0500 (EST)
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+ by b01cxnp22036.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t1AJnM1U24051962
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2015 19:49:23 GMT
+Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
+ by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t1AJnMdb002077
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2015 14:49:22 -0500
 Received: from [9.41.149.215] (dhcp-9-41-149-215.austin.ibm.com [9.41.149.215])
- by d01av04.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVin) with ESMTP id
- t1AJmQ1w003654
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2015 14:48:26 -0500
-Message-ID: <54DA6089.3030003@linux.vnet.ibm.com>
-Date: Tue, 10 Feb 2015 13:48:25 -0600
+ by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVin) with ESMTP id
+ t1AJnMfF001987
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2015 14:49:22 -0500
+Message-ID: <54DA60C2.2010308@linux.vnet.ibm.com>
+Date: Tue, 10 Feb 2015 13:49:22 -0600
 From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
 MIME-Version: 1.0
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v3 4/5] pseries: Implement memory hotplug add in the kernel
+Subject: [PATCH v3 5/5] pseries: Implement memory hotplug remove in the kernel
 References: <54DA5EC1.2060403@linux.vnet.ibm.com>
 In-Reply-To: <54DA5EC1.2060403@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=utf-8
@@ -43,180 +43,105 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch adds the ability to do memory hotplug add in the kernel.
+This patch adds the ability to do memory hotplug remove in the kernel.
 
-Currently the operation to hotplug add memory is handled by the drmgr
+Currently the operation to hotplug remove memory is handled by the drmgr
 command which performs the operation by performing some work in user-space
 and making requests to the kernel to handle other pieces. By moving all
-of the work to the kernel we can do the add faster, and provide a common
+of the work to the kernel we can do the remove faster, and provide a common
 code path to do memory hotplug for both the PowerVM and PowerKVM environments.
 
 Signed-off-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
 ---
+Changes from previous cversion:
 Changes from previous version:
 - converted uint32_t to u32
-- removed un-needed phys_addr/page_block checking
 - Updated the messaging to properly report the success/failure of memory adds
- 
- arch/powerpc/platforms/pseries/hotplug-memory.c |  266 +++++++++++++++++++++++
- 1 file changed, 265 insertions(+), 1 deletion(-)
+
+ arch/powerpc/platforms/pseries/hotplug-memory.c |  192 +++++++++++++++++++++++
+ 1 file changed, 191 insertions(+), 1 deletion(-)
 
 diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
-index 211d0bf..f5eec0f 100644
+index f5eec0f..742ef88 100644
 --- a/arch/powerpc/platforms/pseries/hotplug-memory.c
 +++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
-@@ -16,6 +16,7 @@
- #include <linux/memblock.h>
- #include <linux/memory.h>
- #include <linux/memory_hotplug.h>
-+#include <linux/slab.h>
- 
- #include <asm/firmware.h>
- #include <asm/machdep.h>
-@@ -23,6 +24,8 @@
- #include <asm/sparsemem.h>
- #include "pseries.h"
- 
-+static bool rtas_hp_event;
-+
- unsigned long pseries_memory_block_size(void)
- {
- 	struct device_node *np;
-@@ -66,6 +69,67 @@ unsigned long pseries_memory_block_size(void)
- 	return memblock_size;
+@@ -188,6 +188,173 @@ static int pseries_remove_mem_node(struct device_node *np)
+ 	pseries_remove_memblock(base, lmb_size);
+ 	return 0;
  }
- 
-+static void dlpar_free_drconf_property(struct property *prop)
++
++static bool lmb_is_removable(struct of_drconf_cell *lmb)
 +{
-+	kfree(prop->name);
-+	kfree(prop->value);
-+	kfree(prop);
-+}
++	int i, scns_per_block;
++	int rc = 1;
++	unsigned long pfn, block_sz;
++	u64 phys_addr;
 +
-+static struct property *dlpar_clone_drconf_property(struct device_node *dn)
-+{
-+	struct property *prop, *new_prop;
-+	struct of_drconf_cell *lmbs;
-+	u32 num_lmbs, *p;
-+	int i;
++	if (!(lmb->flags & DRCONF_MEM_ASSIGNED))
++		return false;
 +
-+	prop = of_find_property(dn, "ibm,dynamic-memory", NULL);
-+	if (!prop)
-+		return NULL;
++	block_sz = memory_block_size_bytes();
++	scns_per_block = block_sz / MIN_MEMORY_BLOCK_SIZE;
++	phys_addr = lmb->base_addr;
 +
-+	new_prop = kzalloc(sizeof(*new_prop), GFP_KERNEL);
-+	if (!new_prop)
-+		return NULL;
++	for (i = 0; i < scns_per_block; i++) {
++		pfn = PFN_DOWN(phys_addr);
++		if (!pfn_present(pfn))
++			continue;
 +
-+	new_prop->name = kstrdup(prop->name, GFP_KERNEL);
-+	new_prop->value = kmalloc(prop->length, GFP_KERNEL);
-+	if (!new_prop->name || !new_prop->value) {
-+		dlpar_free_drconf_property(new_prop);
-+		return NULL;
++		rc &= is_mem_section_removable(pfn, PAGES_PER_SECTION);
++		phys_addr += MIN_MEMORY_BLOCK_SIZE;
 +	}
 +
-+	memcpy(new_prop->value, prop->value, prop->length);
-+	new_prop->length = prop->length;
-+
-+	/* Convert the property to cpu endian-ness */
-+	p = new_prop->value;
-+	*p = be32_to_cpu(*p);
-+
-+	num_lmbs = *p++;
-+	lmbs = (struct of_drconf_cell *)p;
-+
-+	for (i = 0; i < num_lmbs; i++) {
-+		lmbs[i].base_addr = be64_to_cpu(lmbs[i].base_addr);
-+		lmbs[i].drc_index = be32_to_cpu(lmbs[i].drc_index);
-+		lmbs[i].flags = be32_to_cpu(lmbs[i].flags);
-+	}
-+
-+	return new_prop;
++	return rc ? true : false;
 +}
 +
-+static struct memory_block *lmb_to_memblock(struct of_drconf_cell *lmb)
-+{
-+	unsigned long section_nr;
-+	struct mem_section *mem_sect;
-+	struct memory_block *mem_block;
++static int dlpar_add_lmb(struct of_drconf_cell *);
 +
-+	section_nr = pfn_to_section_nr(PFN_DOWN(lmb->base_addr));
-+	mem_sect = __nr_to_section(section_nr);
-+
-+	mem_block = find_memory_block(mem_sect);
-+	return mem_block;
-+}
-+
- #ifdef CONFIG_MEMORY_HOTREMOVE
- static int pseries_remove_memblock(unsigned long base, unsigned int memblock_size)
- {
-@@ -136,19 +200,216 @@ static inline int pseries_remove_mem_node(struct device_node *np)
- }
- #endif /* CONFIG_MEMORY_HOTREMOVE */
- 
-+static int dlpar_add_lmb(struct of_drconf_cell *lmb)
++static int dlpar_remove_lmb(struct of_drconf_cell *lmb)
 +{
 +	struct memory_block *mem_block;
 +	unsigned long block_sz;
 +	int nid, rc;
 +
-+	if (lmb->flags & DRCONF_MEM_ASSIGNED)
++	if (!lmb_is_removable(lmb))
 +		return -EINVAL;
 +
-+	block_sz = memory_block_size_bytes();
++	mem_block = lmb_to_memblock(lmb);
++	if (!mem_block)
++		return -EINVAL;
 +
-+	rc = dlpar_acquire_drc(lmb->drc_index);
++	rc = device_offline(&mem_block->dev);
++	put_device(&mem_block->dev);
 +	if (rc)
 +		return rc;
 +
-+	/* Find the node id for this address */
++	block_sz = pseries_memory_block_size();
 +	nid = memory_add_physaddr_to_nid(lmb->base_addr);
 +
-+	/* Add the memory */
-+	rc = add_memory(nid, lmb->base_addr, block_sz);
-+	if (rc) {
-+		dlpar_release_drc(lmb->drc_index);
-+		return rc;
-+	}
++	remove_memory(nid, lmb->base_addr, block_sz);
 +
-+	/* Register this block of memory */
-+	rc = memblock_add(lmb->base_addr, block_sz);
-+	if (rc) {
-+		remove_memory(nid, lmb->base_addr, block_sz);
-+		dlpar_release_drc(lmb->drc_index);
-+		return rc;
-+	}
++	/* Update memory regions for memory remove */
++	memblock_remove(lmb->base_addr, block_sz);
 +
-+	mem_block = lmb_to_memblock(lmb);
-+	if (!mem_block) {
-+		remove_memory(nid, lmb->base_addr, block_sz);
-+		dlpar_release_drc(lmb->drc_index);
-+		return -EINVAL;
-+	}
++	dlpar_release_drc(lmb->drc_index);
 +
-+	rc = device_online(&mem_block->dev);
-+	put_device(&mem_block->dev);
-+	if (rc) {
-+		remove_memory(nid, lmb->base_addr, block_sz);
-+		dlpar_release_drc(lmb->drc_index);
-+		return rc;
-+	}
-+
-+	lmb->flags |= DRCONF_MEM_ASSIGNED;
++	lmb->flags &= ~DRCONF_MEM_ASSIGNED;
 +	return 0;
 +}
 +
-+static int dlpar_memory_add_by_count(u32 lmbs_to_add, struct property *prop)
++static int dlpar_memory_remove_by_count(u32 lmbs_to_remove,
++					struct property *prop)
 +{
 +	struct of_drconf_cell *lmbs;
-+	u32 num_lmbs, *p;
++	int lmbs_removed = 0;
 +	int lmbs_available = 0;
-+	int lmbs_added = 0;
++	u32 num_lmbs, *p;
 +	int i, rc;
 +
-+	pr_info("Attempting to hot-add %d LMB(s)\n", lmbs_to_add);
++	pr_info("Attempting to hot-remove %d LMB(s)\n", lmbs_to_remove);
 +
-+	if (lmbs_to_add == 0)
++	if (lmbs_to_remove == 0)
 +		return -EINVAL;
 +
 +	p = prop->value;
@@ -225,51 +150,66 @@ index 211d0bf..f5eec0f 100644
 +
 +	/* Validate that there are enough LMBs to satisfy the request */
 +	for (i = 0; i < num_lmbs; i++) {
-+		if (!(lmbs[i].flags & DRCONF_MEM_ASSIGNED))
++		if (lmbs[i].flags & DRCONF_MEM_ASSIGNED)
 +			lmbs_available++;
 +	}
 +
-+	if (lmbs_available < lmbs_to_add)
++	if (lmbs_available < lmbs_to_remove)
 +		return -EINVAL;
 +
-+	for (i = 0; i < num_lmbs && lmbs_to_add != lmbs_added; i++) {
-+		rc = dlpar_add_lmb(&lmbs[i]);
++	for (i = 0; i < num_lmbs && lmbs_removed < lmbs_to_remove; i++) {
++		rc = dlpar_remove_lmb(&lmbs[i]);
 +		if (rc)
 +			continue;
 +
-+		lmbs_added++;
++		lmbs_removed++;
 +
-+		/* Mark this lmb so we can remove it later if all of the
-+		 * requested LMBs cannot be added.
++		/* Mark this lmb so we can add it later if all of the
++		 * requested LMBs cannot be removed.
 +		 */
 +		lmbs[i].reserved = 1;
 +	}
 +
-+	if (lmbs_added != lmbs_to_add) {
-+		/* TODO: remove added lmbs */
++	if (lmbs_removed != lmbs_to_remove) {
++		pr_err("Memory hot-remove failed, adding LMB's back\n");
++
++		for (i = 0; i < num_lmbs; i++) {
++			if (!lmbs[i].reserved)
++				continue;
++
++			rc = dlpar_add_lmb(&lmbs[i]);
++			if (rc)
++				pr_err("Failed to add LMB back, drc index %x\n",
++				       lmbs[i].drc_index);
++
++			lmbs[i].reserved = 0;
++		}
++
 +		rc = -EINVAL;
 +	} else {
 +		for (i = 0; i < num_lmbs; i++) {
 +			if (!lmbs[i].reserved)
 +				continue;
 +
-+			pr_info("Memory at %llx (drc index %x) was hot-added\n",
-+				lmbs[i].base_addr, lmbs[i].drc_index);
++			pr_info("Memory at %llx was hot-removed\n",
++				lmbs[i].base_addr);
++
 +			lmbs[i].reserved = 0;
 +		}
++		rc = 0;
 +	}
 +
 +	return rc;
 +}
 +
-+static int dlpar_memory_add_by_index(u32 drc_index, struct property *prop)
++static int dlpar_memory_remove_by_index(u32 drc_index, struct property *prop)
 +{
 +	struct of_drconf_cell *lmbs;
 +	u32 num_lmbs, *p;
-+	int i, lmb_found;
-+	int rc;
++	int lmb_found;
++	int i, rc;
 +
-+	pr_info("Attempting to hot-add LMB, drc index %x\n", drc_index);
++	pr_info("Attempting to hot-remove LMB, drc index %x\n", drc_index);
 +
 +	p = prop->value;
 +	num_lmbs = *p++;
@@ -279,7 +219,7 @@ index 211d0bf..f5eec0f 100644
 +	for (i = 0; i < num_lmbs; i++) {
 +		if (lmbs[i].drc_index == drc_index) {
 +			lmb_found = 1;
-+			rc = dlpar_add_lmb(&lmbs[i]);
++			rc = dlpar_remove_lmb(&lmbs[i]);
 +			break;
 +		}
 +	}
@@ -288,93 +228,60 @@ index 211d0bf..f5eec0f 100644
 +		rc = -EINVAL;
 +
 +	if (rc)
-+		pr_info("Failed to hot-add memory, drc index %x\n", drc_index);
++		pr_info("Failed to hot-remove memory at %llx\n",
++			lmbs[i].base_addr);
 +	else
-+		pr_info("Memory at %llx (drc index %x) was hot-added\n",
-+			lmbs[i].base_addr, drc_index);
++		pr_info("Memory at %llx was hot-removed\n", lmbs[i].base_addr);
 +
 +	return rc;
 +}
 +
-+static void dlpar_update_drconf_property(struct device_node *dn,
-+					 struct property *prop)
+ #else
+ static inline int pseries_remove_memblock(unsigned long base,
+ 					  unsigned int memblock_size)
+@@ -198,6 +365,11 @@ static inline int pseries_remove_mem_node(struct device_node *np)
+ {
+ 	return 0;
+ }
++static inline int dlpar_memory_remove(struct pseries_hp_errorlog *hp_elog)
 +{
-+	struct of_drconf_cell *lmbs;
-+	u32 num_lmbs, *p;
-+	int i;
-+
-+	/* Convert the property back to BE */
-+	p = prop->value;
-+	num_lmbs = *p;
-+	*p = cpu_to_be32(*p);
-+	p++;
-+
-+	lmbs = (struct of_drconf_cell *)p;
-+	for (i = 0; i < num_lmbs; i++) {
-+		lmbs[i].base_addr = cpu_to_be64(lmbs[i].base_addr);
-+		lmbs[i].drc_index = cpu_to_be32(lmbs[i].drc_index);
-+		lmbs[i].flags = cpu_to_be32(lmbs[i].flags);
-+	}
-+
-+	rtas_hp_event = true;
-+	of_update_property(dn, prop);
-+	rtas_hp_event = false;
++	return -EOPNOTSUPP;
 +}
 +
- int dlpar_memory(struct pseries_hp_errorlog *hp_elog)
- {
--	int rc = 0;
-+	struct device_node *dn;
-+	struct property *prop;
-+	u32 count, drc_index;
-+	int rc;
-+
-+	count = hp_elog->_drc_u.drc_count;
-+	drc_index = hp_elog->_drc_u.drc_index;
+ #endif /* CONFIG_MEMORY_HOTREMOVE */
  
- 	lock_device_hotplug();
+ static int dlpar_add_lmb(struct of_drconf_cell *lmb)
+@@ -292,7 +464,17 @@ static int dlpar_memory_add_by_count(u32 lmbs_to_add, struct property *prop)
+ 	}
  
-+	dn = of_find_node_by_path("/ibm,dynamic-reconfiguration-memory");
-+	if (!dn)
-+		return -EINVAL;
+ 	if (lmbs_added != lmbs_to_add) {
+-		/* TODO: remove added lmbs */
++		pr_err("Memory hot-add failed, removing any added LMBs\n");
 +
-+	prop = dlpar_clone_drconf_property(dn);
-+	if (!prop) {
-+		of_node_put(dn);
-+		return -EINVAL;
-+	}
++		for (i = 0; i < num_lmbs; i++) {
++			if (!lmbs[i].reserved)
++				continue;
 +
- 	switch (hp_elog->action) {
-+	case PSERIES_HP_ELOG_ACTION_ADD:
++			rc = dlpar_remove_lmb(&lmbs[i]);
++			if (rc)
++				pr_err("Failed to remove LMB, drc index %x\n",
++				       be32_to_cpu(lmbs[i].drc_index));
++		}
+ 		rc = -EINVAL;
+ 	} else {
+ 		for (i = 0; i < num_lmbs; i++) {
+@@ -398,6 +580,14 @@ int dlpar_memory(struct pseries_hp_errorlog *hp_elog)
+ 		else
+ 			rc = -EINVAL;
+ 		break;
++	case PSERIES_HP_ELOG_ACTION_REMOVE:
 +		if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_COUNT)
-+			rc = dlpar_memory_add_by_count(count, prop);
++			rc = dlpar_memory_remove_by_count(count, prop);
 +		else if (hp_elog->id_type == PSERIES_HP_ELOG_ID_DRC_INDEX)
-+			rc = dlpar_memory_add_by_index(drc_index, prop);
++			rc = dlpar_memory_remove_by_index(drc_index, prop);
 +		else
 +			rc = -EINVAL;
 +		break;
  	default:
  		pr_err("Invalid action (%d) specified\n", hp_elog->action);
  		rc = -EINVAL;
- 		break;
- 	}
- 
-+	if (rc)
-+		dlpar_free_drconf_property(prop);
-+	else
-+		dlpar_update_drconf_property(dn, prop);
-+
-+	of_node_put(dn);
- 	unlock_device_hotplug();
- 	return rc;
- }
-@@ -193,6 +454,9 @@ static int pseries_update_drconf_memory(struct of_reconfig_data *pr)
- 	__be32 *p;
- 	int i, rc = -EINVAL;
- 
-+	if (rtas_hp_event)
-+		return 0;
-+
- 	memblock_size = pseries_memory_block_size();
- 	if (!memblock_size)
- 		return -EINVAL;
