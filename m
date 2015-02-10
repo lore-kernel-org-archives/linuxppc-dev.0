@@ -2,13 +2,13 @@ Return-Path: <jk@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D8DE81A01E7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2015 23:15:15 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0E2F71A0200
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2015 23:15:16 +1100 (AEDT)
 Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Subject: [PATCH 1/4] powerpc/boot/fdt: Add little-endian support to libfdt
- wrappers
-Message-Id: <1423570510.218330.214724142596.1.gpush@pablo>
+Subject: [PATCH 3/4] powerpc/boot: Fix stack corruption in epapr entry point
+Message-Id: <1423570510.219047.52227904007.3.gpush@pablo>
+In-Reply-To: <1423570510.218330.214724142596.1.gpush@pablo>
 To: linuxppc-dev@lists.ozlabs.org
 From: Jeremy Kerr <jk@ozlabs.org>
 Date: Tue, 10 Feb 2015 20:15:10 +0800
@@ -21,66 +21,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-For epapr-style boot, we may be little-endian. This change implements
-the proper conversion for fdt*_to_cpu and cpu_to_fdt*. We also need the
-full cpu_to_* and *_to_cpu macros for this.
+Currently, a 64-bit little-endian zImage.epapr won't boot in epapr mode,
+as as we never return from platform_init.
+
+Before entering C, we initialise our stack by setting r1 16 bytes below
+the end of the _bss_stack:
+
+  stwu	r0,-16(r1)	/* establish a stack frame */
+
+However, the called function will save the caller's lr in the caller's
+frame's lr save area, at -16(r1) to -32(r1).
+
+This means that writes to the fdt variable corrupt the saved link
+register:
+
+ 0000000020c06018 l     O .bss   0000000000001000 _bss_stack
+ 0000000020c07018 l     O .bss   0000000000000008 fdt
+
+This change allocates the minimum of 32 bytes for the base of the stack
+instead.
 
 Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
 
 ---
- arch/powerpc/boot/libfdt_env.h |   14 ++++++++------
- arch/powerpc/boot/of.h         |    8 ++++++++
- 2 files changed, 16 insertions(+), 6 deletions(-)
+ arch/powerpc/boot/crt0.S |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/boot/libfdt_env.h b/arch/powerpc/boot/libfdt_env.h
-index c89fdb1..8dcd744 100644
---- a/arch/powerpc/boot/libfdt_env.h
-+++ b/arch/powerpc/boot/libfdt_env.h
-@@ -4,15 +4,17 @@
- #include <types.h>
- #include <string.h>
- 
-+#include "of.h"
-+
- typedef u32 uint32_t;
- typedef u64 uint64_t;
- typedef unsigned long uintptr_t;
- 
--#define fdt16_to_cpu(x)		(x)
--#define cpu_to_fdt16(x)		(x)
--#define fdt32_to_cpu(x)		(x)
--#define cpu_to_fdt32(x)		(x)
--#define fdt64_to_cpu(x)		(x)
--#define cpu_to_fdt64(x)		(x)
-+#define fdt16_to_cpu(x)		be16_to_cpu(x)
-+#define cpu_to_fdt16(x)		cpu_to_be16(x)
-+#define fdt32_to_cpu(x)		be32_to_cpu(x)
-+#define cpu_to_fdt32(x)		cpu_to_be32(x)
-+#define fdt64_to_cpu(x)		be64_to_cpu(x)
-+#define cpu_to_fdt64(x)		cpu_to_be64(x)
- 
- #endif /* _ARCH_POWERPC_BOOT_LIBFDT_ENV_H */
-diff --git a/arch/powerpc/boot/of.h b/arch/powerpc/boot/of.h
-index c8c1750..5603320 100644
---- a/arch/powerpc/boot/of.h
-+++ b/arch/powerpc/boot/of.h
-@@ -24,11 +24,19 @@ void of_console_init(void);
- typedef u32			__be32;
- 
- #ifdef __LITTLE_ENDIAN__
-+#define cpu_to_be16(x) swab16(x)
-+#define be16_to_cpu(x) swab16(x)
- #define cpu_to_be32(x) swab32(x)
- #define be32_to_cpu(x) swab32(x)
-+#define cpu_to_be64(x) swab64(x)
-+#define be64_to_cpu(x) swab64(x)
- #else
-+#define cpu_to_be16(x) (x)
-+#define be16_to_cpu(x) (x)
- #define cpu_to_be32(x) (x)
- #define be32_to_cpu(x) (x)
-+#define cpu_to_be64(x) (x)
-+#define be64_to_cpu(x) (x)
- #endif
- 
- #define PROM_ERROR (-1u)
+diff --git a/arch/powerpc/boot/crt0.S b/arch/powerpc/boot/crt0.S
+index 14de4f8..bf8eeee 100644
+--- a/arch/powerpc/boot/crt0.S
++++ b/arch/powerpc/boot/crt0.S
+@@ -218,7 +218,7 @@ p_base:	mflr	r10		/* r10 now points to runtime addr of p_base */
+ 	beq	6f
+ 	ld	r1,0(r8)
+ 	li	r0,0
+-	stdu	r0,-16(r1)	/* establish a stack frame */
++	stdu	r0,-32(r1)	/* establish a stack frame */
+ 6:
+ #endif  /* __powerpc64__ */
+ 	/* Call platform_init() */
