@@ -1,34 +1,37 @@
-Return-Path: <neelegup@linux.vnet.ibm.com>
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+Return-Path: <nfont@linux.vnet.ibm.com>
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1040E1A0330
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Feb 2015 04:18:04 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 16A791A02E2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Feb 2015 06:40:55 +1100 (AEDT)
 Received: from /spool/local
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <neelegup@linux.vnet.ibm.com>;
- Wed, 11 Feb 2015 03:18:02 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id A6B9C2CE8052
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Feb 2015 04:18:00 +1100 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t1AHHq9s35455008
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Feb 2015 04:18:00 +1100
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t1AHHQ2a008444
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Feb 2015 04:17:27 +1100
-Subject: [PATCH 2/2] opal: Add message notifier unregister function
-To: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org, benh@kernel.crashing.org
-From: Neelesh Gupta <neelegup@linux.vnet.ibm.com>
-Date: Tue, 10 Feb 2015 22:45:02 +0530
-Message-ID: <20150210171425.28320.76626.stgit@localhost.localdomain>
-In-Reply-To: <20150210171245.28320.53659.stgit@localhost.localdomain>
-References: <20150210171245.28320.53659.stgit@localhost.localdomain>
+ for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
+ Tue, 10 Feb 2015 12:40:52 -0700
+Received: from b03cxnp08027.gho.boulder.ibm.com
+ (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id A04E31FF002D
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2015 12:32:01 -0700 (MST)
+Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
+ by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with
+ ESMTP id t1AJenZM35455088
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2015 12:40:49 -0700
+Received: from d03av05.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t1AJenUP026728
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2015 12:40:49 -0700
+Received: from [9.41.149.215] (dhcp-9-41-149-215.austin.ibm.com [9.41.149.215])
+ by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVin) with ESMTP id
+ t1AJen9T026709
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2015 12:40:49 -0700
+Message-ID: <54DA5EC1.2060403@linux.vnet.ibm.com>
+Date: Tue, 10 Feb 2015 13:40:49 -0600
+From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH v3 0/5] pseries: Move memory hotplug to the kernel
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,44 +41,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Provide an unregister interface for the opal message notifiers
-to be called when not needed like during driver unload/remove.
+In order to improve hotplug support for cpus, memory, and pci devices in
+the PowerVM and PowerKVM environments, the handling of hotplugging devices
+should be updated to perform the hotplug operation entirely in the kernel.
+This patch set begins to address this by providing a framework and a common
+entry point for hotplug operations for the PowerVM anbd PowerKVM environments.
+This patch set also moves memory hotplug into the kernel. Patches to follow
+will do the same for cpus and pci devices.
 
-Signed-off-by: Neelesh Gupta <neelegup@linux.vnet.ibm.com>
-Reviewed-by: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/opal.h       |    2 ++
- arch/powerpc/platforms/powernv/opal.c |    7 +++++++
- 2 files changed, 9 insertions(+)
+To provide background, the current handling of memory hotplug is
+done by the drmgr command in user space. This command is invoked when memory
+add/remove requests are made at the HMC and conveyed to a partition
+through the RSCT framework. The drmgr command then performs parts
+of the hotplug in user-space and makes requests to the kernel to perform
+other pieces. This is not really ideal, we can do everything in the
+kernel and do it faster.
 
-diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
-index eb95b67..70eb45f 100644
---- a/arch/powerpc/include/asm/opal.h
-+++ b/arch/powerpc/include/asm/opal.h
-@@ -940,6 +940,8 @@ extern int opal_notifier_unregister(struct notifier_block *nb);
- 
- extern int opal_message_notifier_register(enum OpalMessageType msg_type,
- 						struct notifier_block *nb);
-+extern int opal_message_notifier_unregister(enum OpalMessageType msg_type,
-+					    struct notifier_block *nb);
- extern void opal_notifier_enable(void);
- extern void opal_notifier_disable(void);
- extern void opal_notifier_update_evt(uint64_t evt_mask, uint64_t evt_val);
-diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
-index 2651e22..6c108ce 100644
---- a/arch/powerpc/platforms/powernv/opal.c
-+++ b/arch/powerpc/platforms/powernv/opal.c
-@@ -315,6 +315,13 @@ int opal_message_notifier_register(enum OpalMessageType msg_type,
- 				&opal_msg_notifier_head[msg_type], nb);
- }
- 
-+int opal_message_notifier_unregister(enum OpalMessageType msg_type,
-+				     struct notifier_block *nb)
-+{
-+	return atomic_notifier_chain_unregister(
-+			&opal_msg_notifier_head[msg_type], nb);
-+}
-+
- static void opal_message_do_notify(uint32_t msg_type, void *msg)
- {
- 	/* notify subscribers */
+In this patch set the handling of hotplug requests for pseries kernels
+uses rtas hotplug events to communicate the hotplug request. For PowerKVM
+systems the rtas hotplug request is communicated to the guest by qemu
+using the ras epow interrupt, the current scheme also used for pci hotplug.
+For PowerVM systems the drmgr command will be updated to communicate the
+hotplug request by writing to /sys/kernel/dlpar. The format for hotplug
+requests for this file is of the form "<resource> <action> <id_type> <id>".
+The kernel will parse this request and create a rtas hotplug section that
+can be passed to a common kernel hotplug entry point for PowerVM and PowerKVM
+environments.
+
+-Nathan
+
+Patch 1/5
+- Add definition of hotplug rtas event sections.
+
+Patch 2/5
+- export the dlpar_[acquire|release]_drc() routines.
+
+Patch 3/5
+- Create the new /sys/kernel/dpar interface
+
+Patch 4/5
+- Implement memory hotplug add in the kernel.
+
+Patch 5/5
+- Implement memory hotplug remove in the kernel.
+
+ include/asm/rtas.h                 |   26 ++
+ platforms/pseries/dlpar.c          |  118 ++++++++-
+ platforms/pseries/hotplug-memory.c |  477 ++++++++++++++++++++++++++++++++++++-
+ platforms/pseries/pseries.h        |   12 
+ 4 files changed, 629 insertions(+), 4 deletions(-)
