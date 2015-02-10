@@ -1,17 +1,28 @@
-Return-Path: <stern+54dcceda@rowland.harvard.edu>
-Received: from netrider.rowland.org (netrider.rowland.org [192.131.102.5])
- by lists.ozlabs.org (Postfix) with SMTP id 0341C1A01E7
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Feb 2015 03:01:34 +1100 (AEDT)
-Date: Tue, 10 Feb 2015 11:01:32 -0500 (EST)
-From: Alan Stern <stern@rowland.harvard.edu>
-To: Michael Tessier <michael.tessier@axiontech.ca>
-Subject: RE: PROBLEM: USB isochronous urb leak on EHCI driver
-In-Reply-To: <66A26A9AA227D947AF088537F041526E224E0A@VSVR-EX10-MB1.pocatec.com>
-Message-ID: <Pine.LNX.4.44L0.1502101053480.18508-100000@netrider.rowland.org>
+Return-Path: <olson@cumulusnetworks.com>
+Received: from mail-pd0-f173.google.com (mail-pd0-f173.google.com
+ [209.85.192.173])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id B44121A0287
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Feb 2015 03:56:12 +1100 (AEDT)
+Received: by pdbfl12 with SMTP id fl12so15502978pdb.2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2015 08:56:10 -0800 (PST)
+Date: Tue, 10 Feb 2015 08:55:42 -0800
+From: Dave Olson <olson@cumulusnetworks.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 1/1] powerpc: fix missing L2 cache size in
+ /sys/devices/system/cpu
+Message-ID: <20150210165542.GB16682@cumulusnetworks.com>
+References: <20150209221421.GA22286@cumulusnetworks.com>
+ <1423524827.19657.1.camel@ellerman.id.au>
+ <20150209234351.GC22286@cumulusnetworks.com>
+ <1423527151.4924.64.camel@kernel.crashing.org>
+ <20150210080002.GA23291@cumulusnetworks.com>
+ <1423556040.4924.90.camel@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-usb@vger.kernel.org" <linux-usb@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1423556040.4924.90.camel@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,63 +32,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 10 Feb 2015, Michael Tessier wrote:
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-> > > Okay; I did my homeworks. We've loaded kernel V3.16 (Oct 14th, 2015) 
-> > > on an i.MX51 plattform and the problem is still there. Unless an 
-> > > important change occured in V3.19, it appears that the latest kernel 
-> > > is not the solution for us. So we're still not able to use 4 codecs on 
-> > > our i.MX plattform.
-> > > 
-> > > So just to make things clearer:
-> > > - We have customers waiting for a solution with that hardware (this 
-> > > hardware is already delivred AND used);
-> > > - We have important comittments and severe penalties ($$$) if we're 
-> > > not able to deliver on time (due for March 15th);
-> > > - We've already looked at a hardware solution, which corresponds to 
-> > > replace current units ($$$$$), so that is not really an option for us;
-> > > 
-> > > So as a last resort, I'm wondering, where is the USB expert who could 
-> > > help us solving our problem? Any suggestions?
-> >
-> > That would be me.
+> On Tue, 2015-02-10 at 00:00 -0800, Dave Olson wrote:
+> > 
+> > OK, now that I understand that's the case, I'll have to go back and
+> > re-do the patch to handle both cache-size and d-cache-size for the
+> > L2 cache (using whichever is present).
 > 
-> Great. What do you need to make it a priority?
+> I notice that you also didn't modify all the other properties, I would
+> assume you need to also updates in that area ? Maybe you should
+> duplicate the whole structure and have the code look for both.
 
-Let's put it this way: Fixing bugs in the ehci-hcd driver already is a
-priority for me.  But it takes second place to other priorities, such
-as my day job.
+Since we have line_size_props, I can bump that from 2 to 4
+entries, and add "cache_line_size" and "cache_block_size",
+instead of an explict check.
 
-(And incidentally, finding and fixing bugs in kernels as old as 2.6.31
-is _not_ a priority, since so many have already been found and fixed.  
-That is one important reason for my suggestion that you do the
-debugging with the most recent kernel version you can.)
+I could change size_prop, and nr_sets_prop to be a structure like
+line_size_props, if you think that's cleaner than the explict
+check for "cache-size", and "cache-sets" in the functions.
 
-> > > If we are to get into debugging the USB driver, we would do it with 
-> > > the current kernel used (V2.6.31). What are the better tools to get 
-> > > into that? I guess a USB analyzer (hardware) would be the smart thing? 
-> > > Any brand name to suggest?
-> >
-> > It really would be better to start by debugging the most recent kernel possible.  Once the problem has been solved there, it should be fairly straightforward to port it back.
-> 
-> How much time do you think you'd spend solving that kind of issue?
-> Few days? Few weeks, or few months?
+These 3 seem to be the only ones at issue, and I should have checked
+futher to realize that sets and line size were missing.
 
-No idea.  In the past, such things have taken a few days to a few 
-weeks, depending on lots of factors -- when they are solvable at all.
+What's the preference for the other 2 missing items?
 
->  Could you commit on a certain
-> number of hours? (We are trying to evaluate a possible date where we
-> could start delivering products)
+> > I don't have any power Macs to use for testing, would one of you be
+> > willing and able to verify the patch on a power Mac?
 
-No, I can't commit to anything specific.
-
-> When you say "straightforward", again do you have an idea of the
-> amount of time to do such work?
-
-Again, it all depends.  For example, it might turn out that the 
-hardware you are using contains a bug of a sort I have seen in the 
-past.  In that case, programming a workaround wouldn't take more than a 
-few hours, once I knew what was going on.
-
-Alan Stern
+Dave Olson
+olson@cumulusnetworks.com
