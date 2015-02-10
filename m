@@ -1,40 +1,25 @@
-Return-Path: <benh@au1.ibm.com>
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <a13xp0p0v88@gmail.com>
+Received: from mail-la0-f44.google.com (mail-la0-f44.google.com
+ [209.85.215.44])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5ECA41A00A2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2015 19:15:56 +1100 (AEDT)
-Received: from /spool/local
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <benh@au1.ibm.com>;
- Tue, 10 Feb 2015 18:15:52 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id DA9C62BB004D
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2015 19:15:48 +1100 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t1A8FeiF47382776
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2015 19:15:48 +1100
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t1A8FFUK006992
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2015 19:15:15 +1100
-Message-ID: <1423556085.4924.91.camel@au1.ibm.com>
-Subject: Re: [PATCH V11 07/17] powerpc/pci: Don't unset pci resources for VFs
-From: Benjamin Herrenschmidt <benh@au1.ibm.com>
-To: Wei Yang <weiyang@linux.vnet.ibm.com>
-Date: Tue, 10 Feb 2015 19:14:45 +1100
-In-Reply-To: <20150210062544.GB31098@richard>
-References: <20150113180502.GC2776@google.com>
- <1421288887-7765-1-git-send-email-weiyang@linux.vnet.ibm.com>
- <1421288887-7765-8-git-send-email-weiyang@linux.vnet.ibm.com>
- <1423528584.4924.70.camel@au1.ibm.com> <20150210015123.GC6326@richard>
- <1423534451.4924.79.camel@au1.ibm.com> <20150210062544.GB31098@richard>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: bhelgaas@google.com, linux-pci@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, gwshan@linux.vnet.ibm.com
+ by lists.ozlabs.org (Postfix) with ESMTPS id 53B5B1A01DA
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2015 21:36:03 +1100 (AEDT)
+Received: by labpn19 with SMTP id pn19so13327255lab.4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2015 02:35:59 -0800 (PST)
+Message-ID: <54D9DF2B.6000709@linux.com>
+Date: Tue, 10 Feb 2015 13:36:27 +0300
+From: Alexander Popov <alex.popov@linux.com>
+Reply-To: alex.popov@linux.com
+MIME-Version: 1.0
+To: Matteo Facchinetti <matteo.facchinetti@sirius-es.it>
+Subject: Re: Disabled LocalPlus Controller (LPC) clock on MPC512x
+References: <5475BE5A.4090503@linux.com> <547D98DF.9000708@sirius-es.it>
+ <54901ED3.30207@linux.com> <5493F229.80605@sirius-es.it>
+In-Reply-To: <5493F229.80605@sirius-es.it>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Cc: Gerhard Sittig <gsi@denx.de>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,18 +29,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-02-10 at 14:25 +0800, Wei Yang wrote:
-> PF's resource will be assigned first, including normal BARs and IOV
-> BARs.
-> 
-> Then PF's driver will create VFs, in virtfn_add(). In this function,
-> VF's
-> resources is calculated from its PF's IOV BAR.
-> 
-> If you reset VF's resource as PFs, no one will try to assign it again.
+Hello Matteo,
+sorry for such a long delay in replying, now I have my board back again.
 
-So the problem is that the flag indicating VF is lost ? IE. We should
-still mark them unset, but preserve that flag ?
+19.12.2014 12:38, Matteo Facchinetti пишет:
+> On 16/12/2014 13:00, Alexander Popov wrote:
+>> In fact clk_ignore_unused bootparam helps to avoid disabling NFC clock.
+>> The board crash is reproduced again if I perform the following steps:
+>> 1. disable NFC clock in uboot by clearing NFC_EN bit in SCCR1 register,
+>> 2. boot Linux with clk_ignore_unused,
+>> 3. touch any LPB address.
+>
+> Could you see the Reset Status Register (RSR) after board crash?
+> When boad reset, you may stop uboot in console and then print the value
+> of this register.
+>
+> This could be help to see what happen internally to the microcontroller.
 
-Cheers,
-Ben.
+I've reproduced TWR-MPC5125 crash without Linux only in uboot.
+This is the annotated procedure:
+
+=> md.l 0x80000e10  /* Reset Status Register */
+80000e10: 60000000  /* All flags are cleared (just powered on) */
+
+=> md.l 0x80000f04  /* System Clock Control Register 1 */
+80000f04: e404b600  /* NFC clock is enabled */
+
+=> md.l 0xfff00000  /* Reading from MRAM living at LPB CS0 */
+fff00000: cafea134  /* Works fine */
+
+=> mw.l 0x80000f04 0xc404b600 1 /* Disable NFC clock */
+
+=> md.l 0x80000f04
+80000f04: c404b600  /* NFC clock is disabled now */
+
+=> md.l 0xfff00000  /* Reading from MRAM again */
+fff00000:
+
+/* The board has just reset */
+
+U-Boot 2009.03-00004-gd37ab38 (Apr 14 2010 - 10:48:22) MPC512X
+CPU:   MPC5125 rev. 1.0, Core e300c4 at 393.216 MHz, CSB at 196.608 MHz
+...
+
+=> md.l 0x80000e10  /* Read RSR */
+80000e10: 60000040  /* Only external HRESET1 event has occurred */
+
+But rising of EXT1HRS flag is not special for this crash.
+EXT1HRS is similarly set if I execute 'reset' command in uboot
+or call 'reboot' from Linux.
+
+Thanks.
+
+Best regards,
+Alexander
