@@ -1,40 +1,40 @@
 Return-Path: <weiyang@linux.vnet.ibm.com>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BA7A41A01A7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2015 17:19:51 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2795E1A01B2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2015 17:26:37 +1100 (AEDT)
 Received: from /spool/local
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
- Tue, 10 Feb 2015 16:19:50 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 2044D2CE8052
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2015 17:19:49 +1100 (EST)
+ Tue, 10 Feb 2015 16:26:35 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 1F5912CE8052
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2015 17:26:34 +1100 (EST)
 Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t1A6JeD834603128
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2015 17:19:49 +1100
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t1A6QQm748824472
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2015 17:26:34 +1100
 Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
  by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t1A6JEjm019012
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2015 17:19:15 +1100
-Date: Tue, 10 Feb 2015 14:18:57 +0800
+ t1A6Q06B028634
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2015 17:26:00 +1100
+Date: Tue, 10 Feb 2015 14:25:44 +0800
 From: Wei Yang <weiyang@linux.vnet.ibm.com>
 To: Benjamin Herrenschmidt <benh@au1.ibm.com>
-Subject: Re: [PATCH V11 02/17] PCI/IOV: add VF enable/disable hook
-Message-ID: <20150210061857.GA31098@richard>
+Subject: Re: [PATCH V11 07/17] powerpc/pci: Don't unset pci resources for VFs
+Message-ID: <20150210062544.GB31098@richard>
 Reply-To: Wei Yang <weiyang@linux.vnet.ibm.com>
 References: <20150113180502.GC2776@google.com>
  <1421288887-7765-1-git-send-email-weiyang@linux.vnet.ibm.com>
- <1421288887-7765-3-git-send-email-weiyang@linux.vnet.ibm.com>
- <1423527979.4924.67.camel@au1.ibm.com>
- <20150210013532.GA6326@richard>
- <1423534394.4924.78.camel@au1.ibm.com>
+ <1421288887-7765-8-git-send-email-weiyang@linux.vnet.ibm.com>
+ <1423528584.4924.70.camel@au1.ibm.com>
+ <20150210015123.GC6326@richard>
+ <1423534451.4924.79.camel@au1.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1423534394.4924.78.camel@au1.ibm.com>
+In-Reply-To: <1423534451.4924.79.camel@au1.ibm.com>
 Cc: bhelgaas@google.com, linux-pci@vger.kernel.org,
  Wei Yang <weiyang@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
  gwshan@linux.vnet.ibm.com
@@ -47,47 +47,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Feb 10, 2015 at 01:13:14PM +1100, Benjamin Herrenschmidt wrote:
->On Tue, 2015-02-10 at 09:35 +0800, Wei Yang wrote:
->> >Don't we want pcibios_sriov_enable() to be able to crop the number
->> >of VFs or do we think any resource limits have been applied
->> >already ?
+On Tue, Feb 10, 2015 at 01:14:11PM +1100, Benjamin Herrenschmidt wrote:
+>On Tue, 2015-02-10 at 09:51 +0800, Wei Yang wrote:
+>> On Tue, Feb 10, 2015 at 11:36:24AM +1100, Benjamin Herrenschmidt wrote:
+>> >On Thu, 2015-01-15 at 10:27 +0800, Wei Yang wrote:
+>> >> If we're going to reassign resources with flag PCI_REASSIGN_ALL_RSRC, all
+>> >> resources will be cleaned out during device header fixup time and then get
+>> >> reassigned by PCI core. However, the VF resources won't be reassigned and
+>> >> thus, we shouldn't clean them out.
+>> >> 
+>> >> This patch adds a condition. If the pci_dev is a VF, skip the resource
+>> >> unset process.
+>> >
+>> >I don't understand this, can you elaborate ? Why wouldn't we reassign
+>> >the IOV resource just like everything else ?
 >> 
->> The second parameter "initial" is the number of VFs will be enabled.
->> Arch
->> dependent function will check the resources for these number of VFs.
+>> Sure.
 >> 
->> Do I catch your question correctly?
+>> VFs work a little bit different from normal devices. On powernv platform, we
+>> have PCI_REASSIGN_ALL_RSRC set, which means all resource retrieved from
+>> hardware will be cleaned and re-assigned by kernel. While VF's resources are
+>> calculated from PF's IOV BAR, in virtfn_add(). And after this, there is not
+>> re-assign process for VFs.
 >
->I was wondering if the number of resource that can be enabled is
->smaller, should the arch function be able to return that smaller
->number and we would still enable that number ?
+>I still don't undertand, you mean SR-IOV is assigned before we assign
+>everybody else ? That doesn't make sense to me...
 >
->Ie, have the arch function be able to "update" the value of
->"initial" (by passing it by pointer for example).
 
-This would increase the time to enable sriov and block others driver to enable
-sriov.
+PF's resource will be assigned first, including normal BARs and IOV BARs.
 
-On powernv platform, those resources needed are M64 BAR and PE numbers.
-Currently they are acquired separately. We have a lock to protect those
-resources respectively. If we want to apply the logic you mentioned, we need
-to have a "bigger" lock to protect both of them and try different values,
-since at the same time, other driver may want to enable their sriov too. We
-have to protect this contention.
+Then PF's driver will create VFs, in virtfn_add(). In this function, VF's
+resources is calculated from its PF's IOV BAR.
 
-Another example is PF has two IOV BAR but just one M64 BAR left in system.
-In this case, no matter how many VFs want to enable, it will fail.
+If you reset VF's resource as PFs, no one will try to assign it again.
 
->
->Cheers,
 >Ben.
 >
+>> >
+>> >Ben.
+>> >
+>> >> Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
+>> >> ---
+>> >>  arch/powerpc/kernel/pci-common.c |    4 ++++
+>> >>  1 file changed, 4 insertions(+)
+>> >> 
+>> >> diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
+>> >> index 37d512d..889f743 100644
+>> >> --- a/arch/powerpc/kernel/pci-common.c
+>> >> +++ b/arch/powerpc/kernel/pci-common.c
+>> >> @@ -788,6 +788,10 @@ static void pcibios_fixup_resources(struct pci_dev *dev)
+>> >>  		       pci_name(dev));
+>> >>  		return;
+>> >>  	}
+>> >> +
+>> >> +	if (dev->is_virtfn)
+>> >> +		return;
+>> >> +
+>> >>  	for (i = 0; i < DEVICE_COUNT_RESOURCE; i++) {
+>> >>  		struct resource *res = dev->resource + i;
+>> >>  		struct pci_bus_region reg;
+>> >
+>> 
 >
->--
->To unsubscribe from this list: send the line "unsubscribe linux-pci" in
->the body of a message to majordomo@vger.kernel.org
->More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
 -- 
 Richard Yang
