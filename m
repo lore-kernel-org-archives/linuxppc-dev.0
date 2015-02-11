@@ -1,19 +1,19 @@
-Return-Path: <vinod.koul@intel.com>
-Received: from mga02.intel.com (mga02.intel.com [134.134.136.20])
- by lists.ozlabs.org (Postfix) with ESMTP id C953D1A0118
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Feb 2015 12:07:50 +1100 (AEDT)
-Date: Tue, 10 Feb 2015 17:05:30 -0800
-From: Vinod Koul <vinod.koul@intel.com>
-To: xuelin.shi@freescale.com
-Subject: Re: [PATCH v5] dmaengine: Driver support for FSL RaidEngine device.
-Message-ID: <20150211010530.GD21387@intel.com>
-References: <1418610748-3586-1-git-send-email-xuelin.shi@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1418610748-3586-1-git-send-email-xuelin.shi@freescale.com>
-Cc: dmaengine@vger.kernel.org, Harninder Rai <harninder.rai@freescale.com>,
- dan.j.williams@intel.com, linuxppc-dev@lists.ozlabs.org,
- Naveen Burmi <naveenburmi@freescale.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 99AE81A03D6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Feb 2015 13:09:51 +1100 (AEDT)
+Message-ID: <1423620585.5891.22.camel@kernel.crashing.org>
+Subject: Re: [PATCH 4/4] powerpc/boot: don't clobber r6 and r7 in epapr boot
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Jeremy Kerr <jk@ozlabs.org>
+Date: Wed, 11 Feb 2015 13:09:45 +1100
+In-Reply-To: <1423570510.219346.759068385066.4.gpush@pablo>
+References: <1423570510.219346.759068385066.4.gpush@pablo>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,160 +23,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Dec 15, 2014 at 10:32:28AM +0800, xuelin.shi@freescale.com wrote:
+On Tue, 2015-02-10 at 20:15 +0800, Jeremy Kerr wrote:
+> We use r6 and r7 for epapr boot, but the current pre-C init will clobber
+> both of these.
+> 
+> This change does a simple replacement, of r6 -> r12 and r7 -> r13, so
+> that we hit platform init with these registers intact.
+> 
+> Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
 
-> +/* Copy descriptor from per chan software queue into hardware job ring */
-> +static void fsl_re_issue_pending(struct dma_chan *chan)
-> +{
-> +	struct fsl_re_chan *re_chan;
-> +	int avail;
-> +	struct fsl_re_desc *desc, *_desc;
-> +	unsigned long flags;
-> +
-> +	re_chan = container_of(chan, struct fsl_re_chan, chan);
-> +
-> +	spin_lock_irqsave(&re_chan->desc_lock, flags);
-> +	avail = FSL_RE_SLOT_AVAIL(
-> +		in_be32(&re_chan->jrregs->inbring_slot_avail));
-okay this seems slots avail in hw
-> +
-> +	list_for_each_entry_safe(desc, _desc, &re_chan->submit_q, node) {
-> +		if (!avail)
-> +			break;
-and why break inside the loop. You shouldn't even enter this only to keep
-breaking!
+You might want to also remove the use of r8 and r9 which are supposed
+to contain the OPAL entry and base for debugging purposes. We would also
+have to restore them before booting the kernel.
 
+[ Note: kexec is also missing that ]
 
-> +static void fsl_re_dequeue(unsigned long data)
-> +{
-> +	struct fsl_re_chan *re_chan;
-> +	struct fsl_re_desc *desc, *_desc;
-> +	struct fsl_re_hw_desc *hwdesc;
-> +	unsigned long flags;
-> +	unsigned int count, oub_count;
-> +	int found;
-> +
-> +	re_chan = dev_get_drvdata((struct device *)data);
-> +
-> +	fsl_re_cleanup_descs(re_chan);
-> +
-> +	spin_lock_irqsave(&re_chan->desc_lock, flags);
-> +	count =	FSL_RE_SLOT_FULL(in_be32(&re_chan->jrregs->oubring_slot_full));
-> +	while (count--) {
-> +		found = 0;
-> +		hwdesc = &re_chan->oub_ring_virt_addr[re_chan->oub_count];
-> +		list_for_each_entry_safe(desc, _desc, &re_chan->active_q,
-> +					 node) {
-> +			/* compare the hw dma addr to find the completed */
-> +			if (desc->hwdesc.lbea32 == hwdesc->lbea32 &&
-> +			    desc->hwdesc.addr_low == hwdesc->addr_low) {
-> +				found = 1;
-> +				break;
-> +			}
-> +		}
-> +
-> +		BUG_ON(!found);
-you are killing the machine here. I don't think it too severe and can't be
-handled gracefully?
+Ben.
 
-> +static struct fsl_re_desc *fsl_re_chan_alloc_desc(struct fsl_re_chan *re_chan,
-> +						  unsigned long flags)
-> +{
-> +	struct fsl_re_desc *desc = NULL;
-> +	void *cf;
-> +	dma_addr_t paddr;
-> +	unsigned long lock_flag;
-> +
-> +	fsl_re_cleanup_descs(re_chan);
-> +
-> +	spin_lock_irqsave(&re_chan->desc_lock, lock_flag);
-> +	if (!list_empty(&re_chan->free_q)) {
-> +		/* take one desc from free_q */
-> +		desc = list_first_entry(&re_chan->free_q,
-> +					struct fsl_re_desc, node);
-> +		list_del(&desc->node);
-> +
-> +		desc->async_tx.flags = flags;
-> +	}
-> +	spin_unlock_irqrestore(&re_chan->desc_lock, lock_flag);
-> +
-> +	if (!desc) {
-> +		desc = kzalloc(sizeof(*desc), GFP_NOWAIT);
-> +		cf = dma_pool_alloc(re_chan->re_dev->cf_desc_pool, GFP_NOWAIT,
-> +				    &paddr);
-> +		if (!desc || !cf) {
-> +			kfree(desc);
-and this is buggy, you can fail in desc while cf is okay..!
-
-> +			return NULL;
-> +		}
-> +
-> +		desc = fsl_re_init_desc(re_chan, desc, cf, paddr);
-> +		desc->async_tx.flags = flags;
-> +
-> +		spin_lock_irqsave(&re_chan->desc_lock, lock_flag);
-> +		re_chan->alloc_count++;
-> +		spin_unlock_irqrestore(&re_chan->desc_lock, lock_flag);
-> +	}
-> +
-> +	return desc;
-> +}
-> +
-> +static struct dma_async_tx_descriptor *fsl_re_prep_dma_genq(
-> +		struct dma_chan *chan, dma_addr_t dest, dma_addr_t *src,
-> +		unsigned int src_cnt, const unsigned char *scf, size_t len,
-> +		unsigned long flags)
-> +{
-> +	struct fsl_re_chan *re_chan;
-> +	struct fsl_re_desc *desc;
-> +	struct fsl_re_xor_cdb *xor;
-> +	struct fsl_re_cmpnd_frame *cf;
-> +	u32 cdb;
-> +	unsigned int i, j;
-> +	unsigned int save_src_cnt = src_cnt;
-> +	int cont_q = 0;
-> +
-> +	if (len > FSL_RE_MAX_DATA_LEN) {
-> +		pr_err("Length greater than %d not supported\n",
-> +		       FSL_RE_MAX_DATA_LEN);
-printing length will be helpful
-
-btw whats wrong with dev_err. You do realize that someone who seems this will
-have no clue which device is reporting this
-
-> +
-> +static int fsl_re_alloc_chan_resources(struct dma_chan *chan)
-> +{
-> +	struct fsl_re_chan *re_chan;
-> +	struct fsl_re_desc *desc;
-> +	void *cf;
-> +	dma_addr_t paddr;
-> +	int i;
-> +
-> +	re_chan = container_of(chan, struct fsl_re_chan, chan);
-> +	for (i = 0; i < FSL_RE_MIN_DESCS; i++) {
-> +		desc = kzalloc(sizeof(*desc), GFP_KERNEL);
-> +		cf = dma_pool_alloc(re_chan->re_dev->cf_desc_pool, GFP_KERNEL,
-> +				    &paddr);
-> +		if (!desc || !cf) {
-> +			kfree(desc);
-> +			break;
-here as well...
-
-
-> +	/* Output Ring */
-> +	__be32 oubring_base_h;	/* Outbound Ring Base Address Register - High */
-> +	__be32 oubring_base_l;	/* Outbound Ring Base Address Register - Low */
-> +	__be32 oubring_size;	/* Outbound Ring Size Register */
-> +	u8     rsvd8[4];
-> +	__be32 oubring_job_rmvd; /* Outbound Ring Job Removed Register */
-> +	u8     rsvd9[4];
-> +	__be32 oubring_slot_full; /* Outbound Ring Slot Full Register */
-> +	u8     rsvd10[4];
-> +	__be32 oubring_prdcr_indx; /* Outbound Ring Producer Index */
-> +};
-is the dma BE always irresepective of CPU type or thats dependent on cpu type
-too?
-
--- 
-~Vinod
+> ---
+>  arch/powerpc/boot/crt0.S |   24 ++++++++++++------------
+>  1 file changed, 12 insertions(+), 12 deletions(-)
+> 
+> diff --git a/arch/powerpc/boot/crt0.S b/arch/powerpc/boot/crt0.S
+> index bf8eeee..7e50211 100644
+> --- a/arch/powerpc/boot/crt0.S
+> +++ b/arch/powerpc/boot/crt0.S
+> @@ -155,29 +155,29 @@ p_base:	mflr	r10		/* r10 now points to runtime addr of p_base */
+>  	ld	r9,(p_rela-p_base)(r10)
+>  	add	r9,r9,r10
+>  
+> -	li	r7,0
+> +	li	r13,0
+>  	li	r8,0
+> -9:	ld	r6,0(r11)       /* get tag */
+> -	cmpdi	r6,0
+> +9:	ld	r12,0(r11)       /* get tag */
+> +	cmpdi	r12,0
+>  	beq	12f              /* end of list */
+> -	cmpdi	r6,RELA
+> +	cmpdi	r12,RELA
+>  	bne	10f
+> -	ld	r7,8(r11)       /* get RELA pointer in r7 */
+> +	ld	r13,8(r11)       /* get RELA pointer in r13 */
+>  	b	11f
+> -10:	addis	r6,r6,(-RELACOUNT)@ha
+> -	cmpdi	r6,RELACOUNT@l
+> +10:	addis	r12,r12,(-RELACOUNT)@ha
+> +	cmpdi	r12,RELACOUNT@l
+>  	bne	11f
+>  	ld	r8,8(r11)       /* get RELACOUNT value in r8 */
+>  11:	addi	r11,r11,16
+>  	b	9b
+>  12:
+> -	cmpdi	r7,0            /* check we have both RELA and RELACOUNT */
+> +	cmpdi	r13,0            /* check we have both RELA and RELACOUNT */
+>  	cmpdi	cr1,r8,0
+>  	beq	3f
+>  	beq	cr1,3f
+>  
+>  	/* Calcuate the runtime offset. */
+> -	subf	r7,r7,r9
+> +	subf	r13,r13,r9
+>  
+>  	/* Run through the list of relocations and process the
+>  	 * R_PPC64_RELATIVE ones. */
+> @@ -185,10 +185,10 @@ p_base:	mflr	r10		/* r10 now points to runtime addr of p_base */
+>  13:	ld	r0,8(r9)        /* ELF64_R_TYPE(reloc->r_info) */
+>  	cmpdi	r0,22           /* R_PPC64_RELATIVE */
+>  	bne	3f
+> -	ld	r6,0(r9)        /* reloc->r_offset */
+> +	ld	r12,0(r9)        /* reloc->r_offset */
+>  	ld	r0,16(r9)       /* reloc->r_addend */
+> -	add	r0,r0,r7
+> -	stdx	r0,r7,r6
+> +	add	r0,r0,r13
+> +	stdx	r0,r13,r12
+>  	addi	r9,r9,24
+>  	bdnz	13b
+>  
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
