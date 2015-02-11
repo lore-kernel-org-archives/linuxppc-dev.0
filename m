@@ -1,22 +1,19 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C480D1A03D6
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Feb 2015 14:04:06 +1100 (AEDT)
-Message-ID: <1423623845.12568.1.camel@ellerman.id.au>
-Subject: Re: [RFC][PATCH 1/3] powerpc: Don't force ENOSYS as error on
- syscall fail
+ by lists.ozlabs.org (Postfix) with ESMTPS id 28A551A0508
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Feb 2015 14:14:39 +1100 (AEDT)
+Message-ID: <1423624478.12568.2.camel@ellerman.id.au>
+Subject: Re: [PATCH 1/2] opal: Fix the overflow of message notifiers head array
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Bogdan Purcareata <bogdan.purcareata@freescale.com>
-Date: Wed, 11 Feb 2015 14:04:05 +1100
-In-Reply-To: <1423468516-8688-2-git-send-email-bogdan.purcareata@freescale.com>
-References: <1423468516-8688-1-git-send-email-bogdan.purcareata@freescale.com>
- <1423468516-8688-2-git-send-email-bogdan.purcareata@freescale.com>
+To: Neelesh Gupta <neelegup@linux.vnet.ibm.com>
+Date: Wed, 11 Feb 2015 14:14:38 +1100
+In-Reply-To: <20150210171245.28320.53659.stgit@localhost.localdomain>
+References: <20150210171245.28320.53659.stgit@localhost.localdomain>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: linux-kernel@vger.kernel.org, pmoore@redhat.com, paulus@samba.org,
- strosake@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,50 +23,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2015-02-09 at 07:55 +0000, Bogdan Purcareata wrote:
-> In certain scenarios - e.g. seccomp filtering with ERRNO as default action -
-> the system call fails for other reasons than the syscall not being available.
-> The seccomp filter can be configured to store a user-defined error code on
-> return from a blacklisted syscall.
-> 
-> The RFC is this: are there currently any user-space scenarios where it is
-> required that the system call return ENOSYS as error code on failure, no matter
-> the circumstances? I don't want to break userspace requirements. I have not
-> added code to force this error code in situations different than
-> secure_computing failure, in order to keep overhead at a minimum.
-> 
-> Signed-off-by: Bogdan Purcareata <bogdan.purcareata@freescale.com>
+On Tue, 2015-02-10 at 22:44 +0530, Neelesh Gupta wrote:
+
+You forgot to write the changelog.
+
+> Signed-off-by: Neelesh Gupta <neelegup@linux.vnet.ibm.com>
+> Reviewed-by: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
 > ---
->  arch/powerpc/kernel/entry_32.S | 3 ++-
->  arch/powerpc/kernel/entry_64.S | 2 +-
->  2 files changed, 3 insertions(+), 2 deletions(-)
+>  arch/powerpc/platforms/powernv/opal.c |   12 ++++--------
+>  1 file changed, 4 insertions(+), 8 deletions(-)
 > 
-> diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
-> index 59848e5..52e48dd 100644
-> --- a/arch/powerpc/kernel/entry_32.S
-> +++ b/arch/powerpc/kernel/entry_32.S
-> @@ -425,7 +425,8 @@ END_FTR_SECTION_IFSET(CPU_FTR_NEED_PAIRED_STWCX)
->  	b	1b
->  #endif  /* CONFIG_44x */
+> diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
+> index f10b9ec..2651e22 100644
+> --- a/arch/powerpc/platforms/powernv/opal.c
+> +++ b/arch/powerpc/platforms/powernv/opal.c
+> @@ -305,16 +305,12 @@ void opal_notifier_disable(void)
+>  int opal_message_notifier_register(enum OpalMessageType msg_type,
+>  					struct notifier_block *nb)
+>  {
+> -	if (!nb) {
+> -		pr_warning("%s: Invalid argument (%p)\n",
+> -			   __func__, nb);
+> -		return -EINVAL;
+> -	}
+> -	if (msg_type > OPAL_MSG_TYPE_MAX) {
+> -		pr_warning("%s: Invalid message type argument (%d)\n",
+> +	if (!nb || msg_type >= OPAL_MSG_TYPE_MAX) {
+> +		pr_warning("%s: Invalid arguments, msg_type:%d\n",
+>  			   __func__, msg_type);
+>  		return -EINVAL;
+>  	}
+> +
+>  	return atomic_notifier_chain_register(
+>  				&opal_msg_notifier_head[msg_type], nb);
+>  }
+> @@ -351,7 +347,7 @@ static void opal_handle_message(void)
+>  	type = be32_to_cpu(msg.msg_type);
 >  
-> -66:	li	r3,-ENOSYS
-> +66:
-> +#	li	r3,-ENOSYS
->  	b	ret_from_syscall
->  
->  	.globl	ret_from_fork
-> diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-> index e6bfe8e..80db02e 100644
-> --- a/arch/powerpc/kernel/entry_64.S
-> +++ b/arch/powerpc/kernel/entry_64.S
-> @@ -269,7 +269,7 @@ syscall_dotrace:
->  	b	.Lsyscall_dotrace_cont
->  
->  syscall_enosys:
-> -	li	r3,-ENOSYS
-> +#	li	r3,-ENOSYS
->  	b	syscall_exit
-
-So what happens if you call this with a syscall number that's out of bounds?
-
-cheers
+>  	/* Sanity check */
+> -	if (type > OPAL_MSG_TYPE_MAX) {
+> +	if (type >= OPAL_MSG_TYPE_MAX) {
+>  		pr_warning("%s: Unknown message type: %u\n", __func__, type);
+>  		return;
+>  	}
+> 
