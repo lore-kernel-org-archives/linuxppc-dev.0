@@ -1,18 +1,37 @@
-Return-Path: <jk@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <stewart@linux.vnet.ibm.com>
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6EEC21A0150
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Feb 2015 15:55:49 +1100 (AEDT)
-Content-Type: text/plain; charset="us-ascii"
+ by lists.ozlabs.org (Postfix) with ESMTPS id E76AD1A019F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Feb 2015 16:03:03 +1100 (AEDT)
+Received: from /spool/local
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <stewart@linux.vnet.ibm.com>;
+ Tue, 10 Feb 2015 22:03:01 -0700
+Received: from b03cxnp08028.gho.boulder.ibm.com
+ (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 41C653E4003F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2015 22:02:59 -0700 (MST)
+Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
+ by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with
+ ESMTP id t1B533V529884426
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2015 22:03:03 -0700
+Received: from d03av05.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t1B52wr1023807
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2015 22:02:59 -0700
+From: Stewart Smith <stewart@linux.vnet.ibm.com>
+To: Vipin K Parashar <vipin@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH V4] powerpc, powernv: Add OPAL platform event driver
+In-Reply-To: <1423206522-18084-1-git-send-email-vipin@linux.vnet.ibm.com>
+References: <1423206522-18084-1-git-send-email-vipin@linux.vnet.ibm.com>
+Date: Wed, 11 Feb 2015 16:02:22 +1100
+Message-ID: <m31tlxniqp.fsf@oc8180480414.ibm.com>
 MIME-Version: 1.0
-Subject: [PATCH 5/5 v2] powerpc/boot: don't clobber r6 and r7 in epapr boot
-Message-Id: <1423630544.753549.978363345035.5.gpush@pablo>
-In-Reply-To: <1423630544.752188.889982625387.1.gpush@pablo>
-To: linuxppc-dev@lists.ozlabs.org
-From: Jeremy Kerr <jk@ozlabs.org>
-Date: Wed, 11 Feb 2015 12:55:44 +0800
-Cc: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@fr.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+Cc: Vipin K Parashar <vipin@linux.vnet.ibm.com>, Joel Stanley <joel@jms.id.au>,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,72 +41,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We use r6 and r7 for epapr boot, but the current pre-C init will clobber
-both of these.
+Vipin K Parashar <vipin@linux.vnet.ibm.com> writes:
+>	(1) Environmental and Power Warning (EPOW)
+>	(2) Delayed Power Off (DPO)
+> The user interface for this driver is /dev/opal_event character
+> device file where the user space clients can poll and read for
+> new opal platform events. The expected sequence of events driven
+> from user space should be like the following.
+>
+> 	(1) Open the character device file
+> 	(2) Poll on the file for POLLIN event
+> 	(3) When unblocked, must attempt to read OPAL_PLAT_EVENT_MAX_SIZE size
+> 	(4) Kernel driver will pass at most one opal_plat_event structure
+> 	(5) Poll again for more new events
 
-This change does a simple replacement, of r6 -> r12 and r7 -> r13, so
-that we hit platform init with these registers intact.
+A few thoughts from discussing with Michael and Joel:
+- not convinced that a chardev is the most ideal way to notify
+  userspace. It seems like yet-another powerpc specific notification
+  mechanism, which isn't ideal.
+- netlink probably isn't right either (although maybe *sligthtly*
+  better?)
+- it seems that the "standard" way is ACPI, so I wonder if we could emit
+  an ACPI event and essentially fake having ACPI... that would make all
+  existing userspace "just work", right?
+  Looking at acpi_bus_generate_netlink_event call in
+  drivers/acpi/button.c it looks possible that we may be able to
+  (relatively simply) do that?
+- What do UPSs do? It would seem that some common "this is what's about
+  to happen to your power" would almost *have* to exist somewhat
+  generically?
 
-Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
-
----
- arch/powerpc/boot/crt0.S |   24 ++++++++++++------------
- 1 file changed, 12 insertions(+), 12 deletions(-)
-
-diff --git a/arch/powerpc/boot/crt0.S b/arch/powerpc/boot/crt0.S
-index e004062..12866cc 100644
---- a/arch/powerpc/boot/crt0.S
-+++ b/arch/powerpc/boot/crt0.S
-@@ -155,29 +155,29 @@ p_base:	mflr	r10		/* r10 now points to runtime addr of p_base */
- 	ld	r9,(p_rela-p_base)(r10)
- 	add	r9,r9,r10
- 
--	li	r7,0
-+	li	r13,0
- 	li	r8,0
--9:	ld	r6,0(r11)       /* get tag */
--	cmpdi	r6,0
-+9:	ld	r12,0(r11)       /* get tag */
-+	cmpdi	r12,0
- 	beq	12f              /* end of list */
--	cmpdi	r6,RELA
-+	cmpdi	r12,RELA
- 	bne	10f
--	ld	r7,8(r11)       /* get RELA pointer in r7 */
-+	ld	r13,8(r11)       /* get RELA pointer in r13 */
- 	b	11f
--10:	addis	r6,r6,(-RELACOUNT)@ha
--	cmpdi	r6,RELACOUNT@l
-+10:	addis	r12,r12,(-RELACOUNT)@ha
-+	cmpdi	r12,RELACOUNT@l
- 	bne	11f
- 	ld	r8,8(r11)       /* get RELACOUNT value in r8 */
- 11:	addi	r11,r11,16
- 	b	9b
- 12:
--	cmpdi	r7,0            /* check we have both RELA and RELACOUNT */
-+	cmpdi	r13,0            /* check we have both RELA and RELACOUNT */
- 	cmpdi	cr1,r8,0
- 	beq	3f
- 	beq	cr1,3f
- 
- 	/* Calcuate the runtime offset. */
--	subf	r7,r7,r9
-+	subf	r13,r13,r9
- 
- 	/* Run through the list of relocations and process the
- 	 * R_PPC64_RELATIVE ones. */
-@@ -185,10 +185,10 @@ p_base:	mflr	r10		/* r10 now points to runtime addr of p_base */
- 13:	ld	r0,8(r9)        /* ELF64_R_TYPE(reloc->r_info) */
- 	cmpdi	r0,22           /* R_PPC64_RELATIVE */
- 	bne	3f
--	ld	r6,0(r9)        /* reloc->r_offset */
-+	ld	r12,0(r9)        /* reloc->r_offset */
- 	ld	r0,16(r9)       /* reloc->r_addend */
--	add	r0,r0,r7
--	stdx	r0,r7,r6
-+	add	r0,r0,r13
-+	stdx	r0,r13,r12
- 	addi	r9,r9,24
- 	bdnz	13b
- 
+I strongly advocate for anything that doesn't require custom userspace
+that's OPAL/POWER specific (that we then have to get into distros etc etc)
