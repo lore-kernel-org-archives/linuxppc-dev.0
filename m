@@ -1,37 +1,21 @@
-Return-Path: <stewart@linux.vnet.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <nicoleotsuka@gmail.com>
+Received: from mail-pa0-x22b.google.com (mail-pa0-x22b.google.com
+ [IPv6:2607:f8b0:400e:c03::22b])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E76AD1A019F
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Feb 2015 16:03:03 +1100 (AEDT)
-Received: from /spool/local
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <stewart@linux.vnet.ibm.com>;
- Tue, 10 Feb 2015 22:03:01 -0700
-Received: from b03cxnp08028.gho.boulder.ibm.com
- (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 41C653E4003F
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2015 22:02:59 -0700 (MST)
-Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
- by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with
- ESMTP id t1B533V529884426
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2015 22:03:03 -0700
-Received: from d03av05.boulder.ibm.com (localhost [127.0.0.1])
- by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t1B52wr1023807
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2015 22:02:59 -0700
-From: Stewart Smith <stewart@linux.vnet.ibm.com>
-To: Vipin K Parashar <vipin@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH V4] powerpc, powernv: Add OPAL platform event driver
-In-Reply-To: <1423206522-18084-1-git-send-email-vipin@linux.vnet.ibm.com>
-References: <1423206522-18084-1-git-send-email-vipin@linux.vnet.ibm.com>
-Date: Wed, 11 Feb 2015 16:02:22 +1100
-Message-ID: <m31tlxniqp.fsf@oc8180480414.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: Vipin K Parashar <vipin@linux.vnet.ibm.com>, Joel Stanley <joel@jms.id.au>,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8C1E81A0048
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Feb 2015 16:32:00 +1100 (AEDT)
+Received: by mail-pa0-f43.google.com with SMTP id fa1so1736528pad.2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2015 21:31:58 -0800 (PST)
+From: Nicolin Chen <nicoleotsuka@gmail.com>
+To: broonie@kernel.org,
+	timur@tabi.org
+Subject: [PATCH] ASoC: fsl_ssi: Fix the incorrect limitation of the bit clock
+ rate
+Date: Tue, 10 Feb 2015 21:31:43 -0800
+Message-Id: <1423632703-3683-1-git-send-email-nicoleotsuka@gmail.com>
+Cc: alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, scerveau@voxtok.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,35 +25,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Vipin K Parashar <vipin@linux.vnet.ibm.com> writes:
->	(1) Environmental and Power Warning (EPOW)
->	(2) Delayed Power Off (DPO)
-> The user interface for this driver is /dev/opal_event character
-> device file where the user space clients can poll and read for
-> new opal platform events. The expected sequence of events driven
-> from user space should be like the following.
->
-> 	(1) Open the character device file
-> 	(2) Poll on the file for POLLIN event
-> 	(3) When unblocked, must attempt to read OPAL_PLAT_EVENT_MAX_SIZE size
-> 	(4) Kernel driver will pass at most one opal_plat_event structure
-> 	(5) Poll again for more new events
+According to i.MX Reference Manual, the bit-clock frequency generated
+by SSI must be never greater than 1/5 of the peripheral clock frequency.
 
-A few thoughts from discussing with Michael and Joel:
-- not convinced that a chardev is the most ideal way to notify
-  userspace. It seems like yet-another powerpc specific notification
-  mechanism, which isn't ideal.
-- netlink probably isn't right either (although maybe *sligthtly*
-  better?)
-- it seems that the "standard" way is ACPI, so I wonder if we could emit
-  an ACPI event and essentially fake having ACPI... that would make all
-  existing userspace "just work", right?
-  Looking at acpi_bus_generate_netlink_event call in
-  drivers/acpi/button.c it looks possible that we may be able to
-  (relatively simply) do that?
-- What do UPSs do? It would seem that some common "this is what's about
-  to happen to your power" would almost *have* to exist somewhat
-  generically?
+This peripheral clock, however, is not baudclk but the IPG clock (i.e.
+ssi_private->clk in the fsl_ssi driver).
 
-I strongly advocate for anything that doesn't require custom userspace
-that's OPAL/POWER specific (that we then have to get into distros etc etc)
+So this patch just simply fixes the incorrect limitation applied to
+the bit clock (baudclk) rate.
+
+Signed-off-by: Nicolin Chen <nicoleotsuka@gmail.com>
+---
+ sound/soc/fsl/fsl_ssi.c | 11 +++++++----
+ 1 file changed, 7 insertions(+), 4 deletions(-)
+
+diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
+index 059496e..d7365c5 100644
+--- a/sound/soc/fsl/fsl_ssi.c
++++ b/sound/soc/fsl/fsl_ssi.c
+@@ -603,10 +603,6 @@ static int fsl_ssi_set_bclk(struct snd_pcm_substream *substream,
+ 	factor = (div2 + 1) * (7 * psr + 1) * 2;
+ 
+ 	for (i = 0; i < 255; i++) {
+-		/* The bclk rate must be smaller than 1/5 sysclk rate */
+-		if (factor * (i + 1) < 5)
+-			continue;
+-
+ 		tmprate = freq * factor * (i + 2);
+ 
+ 		if (baudclk_is_used)
+@@ -614,6 +610,13 @@ static int fsl_ssi_set_bclk(struct snd_pcm_substream *substream,
+ 		else
+ 			clkrate = clk_round_rate(ssi_private->baudclk, tmprate);
+ 
++		/*
++		 * Hardware limitation: The bclk rate must be
++		 * never greater than 1/5 IPG clock rate
++		 */
++		if (clkrate * 5 > clk_get_rate(ssi_private->clk))
++			continue;
++
+ 		clkrate /= factor;
+ 		afreq = clkrate / (i + 1);
+ 
+-- 
+1.9.1
