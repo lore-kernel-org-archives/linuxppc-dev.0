@@ -1,23 +1,21 @@
-Return-Path: <B43198@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0139.outbound.protection.outlook.com [157.56.111.139])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C11EE1A08E2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Feb 2015 19:36:39 +1100 (AEDT)
-From: Bogdan Purcareata <bogdan.purcareata@freescale.com>
-To: <benh@kernel.crashing.org>, <paulus@samba.org>,
- <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 3/3] powerpc: Enable HAVE_ARCH_SECCOMP_FILTER
-Date: Wed, 11 Feb 2015 08:36:18 +0000
-Message-ID: <1423643778-32525-4-git-send-email-bogdan.purcareata@freescale.com>
-In-Reply-To: <1423643778-32525-1-git-send-email-bogdan.purcareata@freescale.com>
-References: <1423643778-32525-1-git-send-email-bogdan.purcareata@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: pmoore@redhat.com, linux-kernel@vger.kernel.org,
- Bogdan Purcareata <bogdan.purcareata@freescale.com>,
- strosake@linux.vnet.ibm.com
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1077E1A075A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Feb 2015 20:33:57 +1100 (AEDT)
+Message-ID: <1423643596.5965.12.camel@kernel.crashing.org>
+Subject: Re: [QUESTION,RFC] cacheable_memcpy() versus memcpy() ==> 8%
+ improvment on FTP throughput
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: leroy christophe <christophe.leroy@c-s.fr>
+Date: Wed, 11 Feb 2015 19:33:16 +1100
+In-Reply-To: <54DB0A6E.7020105@c-s.fr>
+References: <54DB0A6E.7020105@c-s.fr>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Scott Wood <scottwood@freescale.com>, Anton Blanchard <anton@au1.ibm.com>,
+ LinuxPPC-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,22 +25,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Bogdan Purcareata <bogdan.purcareata@freescale.com>
----
- arch/powerpc/Kconfig | 1 +
- 1 file changed, 1 insertion(+)
+On Wed, 2015-02-11 at 08:53 +0100, leroy christophe wrote:
+> In powerpc32 architecture there is a function called cacheable_memcpy() 
+> which does same thing as memcpy() but using dcbz/dcbt instructions for 
+> an optimised copy (just like __copy_tofrom_user())
+> What seems strange is that it is almost nowhere used (only used in 
+> drivers/net/ethernet/ibm/emac/core.c)
+> 
+> For a try I replaced all memcpy() in include/linux/skbuff.h and 
+> net/core/skbuff.c by cacheable_memcpy() and I got around 8% improvement 
+> on FTP throughput on MPC885.
+> 
+> What could be done to generalise the use of cacheable_memcpy() instead 
+> of memcpy() whenever possible ?
+> Indeed, in order to use cacheable_memcpy(), we need
+> * The destination to be cacheable
+> * The source and destination to not overlap on the same cachelines
+> 
+> Could we check, when calling memcpy(), whether the destination is 
+> cacheable or not, and if yes redirect the call to cacheable_memcpy() ?
+> How can we check that ?
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index a2a168e..72f363e 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -104,6 +104,7 @@ config PPC
- 	select HAVE_EFFICIENT_UNALIGNED_ACCESS if !CPU_LITTLE_ENDIAN
- 	select HAVE_KPROBES
- 	select HAVE_ARCH_KGDB
-+	select HAVE_ARCH_SECCOMP_FILTER
- 	select HAVE_KRETPROBES
- 	select HAVE_ARCH_TRACEHOOK
- 	select HAVE_MEMBLOCK
--- 
-2.1.4
+Additionally we could have a P8 implementation that uses unaligned
+vectors. Adding Anton to the CC list.
+
+Cheers,
+Ben.
