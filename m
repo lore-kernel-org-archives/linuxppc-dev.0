@@ -2,15 +2,16 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 99AE81A03D6
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Feb 2015 13:09:51 +1100 (AEDT)
-Message-ID: <1423620585.5891.22.camel@kernel.crashing.org>
-Subject: Re: [PATCH 4/4] powerpc/boot: don't clobber r6 and r7 in epapr boot
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5AB0E1A03D6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Feb 2015 13:11:34 +1100 (AEDT)
+Message-ID: <1423620688.5891.30.camel@kernel.crashing.org>
+Subject: Re: [PATCH 1/4] powerpc/boot/fdt: Add little-endian support to
+ libfdt wrappers
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Jeremy Kerr <jk@ozlabs.org>
-Date: Wed, 11 Feb 2015 13:09:45 +1100
-In-Reply-To: <1423570510.219346.759068385066.4.gpush@pablo>
-References: <1423570510.219346.759068385066.4.gpush@pablo>
+Date: Wed, 11 Feb 2015 13:11:28 +1100
+In-Reply-To: <1423570510.218330.214724142596.1.gpush@pablo>
+References: <1423570510.218330.214724142596.1.gpush@pablo>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 Cc: linuxppc-dev@lists.ozlabs.org
@@ -24,83 +25,71 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On Tue, 2015-02-10 at 20:15 +0800, Jeremy Kerr wrote:
-> We use r6 and r7 for epapr boot, but the current pre-C init will clobber
-> both of these.
-> 
-> This change does a simple replacement, of r6 -> r12 and r7 -> r13, so
-> that we hit platform init with these registers intact.
+> For epapr-style boot, we may be little-endian. This change implements
+> the proper conversion for fdt*_to_cpu and cpu_to_fdt*. We also need the
+> full cpu_to_* and *_to_cpu macros for this.
 > 
 > Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
 
-You might want to also remove the use of r8 and r9 which are supposed
-to contain the OPAL entry and base for debugging purposes. We would also
-have to restore them before booting the kernel.
-
-[ Note: kexec is also missing that ]
-
-Ben.
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
 > ---
->  arch/powerpc/boot/crt0.S |   24 ++++++++++++------------
->  1 file changed, 12 insertions(+), 12 deletions(-)
+>  arch/powerpc/boot/libfdt_env.h |   14 ++++++++------
+>  arch/powerpc/boot/of.h         |    8 ++++++++
+>  2 files changed, 16 insertions(+), 6 deletions(-)
 > 
-> diff --git a/arch/powerpc/boot/crt0.S b/arch/powerpc/boot/crt0.S
-> index bf8eeee..7e50211 100644
-> --- a/arch/powerpc/boot/crt0.S
-> +++ b/arch/powerpc/boot/crt0.S
-> @@ -155,29 +155,29 @@ p_base:	mflr	r10		/* r10 now points to runtime addr of p_base */
->  	ld	r9,(p_rela-p_base)(r10)
->  	add	r9,r9,r10
+> diff --git a/arch/powerpc/boot/libfdt_env.h b/arch/powerpc/boot/libfdt_env.h
+> index c89fdb1..8dcd744 100644
+> --- a/arch/powerpc/boot/libfdt_env.h
+> +++ b/arch/powerpc/boot/libfdt_env.h
+> @@ -4,15 +4,17 @@
+>  #include <types.h>
+>  #include <string.h>
 >  
-> -	li	r7,0
-> +	li	r13,0
->  	li	r8,0
-> -9:	ld	r6,0(r11)       /* get tag */
-> -	cmpdi	r6,0
-> +9:	ld	r12,0(r11)       /* get tag */
-> +	cmpdi	r12,0
->  	beq	12f              /* end of list */
-> -	cmpdi	r6,RELA
-> +	cmpdi	r12,RELA
->  	bne	10f
-> -	ld	r7,8(r11)       /* get RELA pointer in r7 */
-> +	ld	r13,8(r11)       /* get RELA pointer in r13 */
->  	b	11f
-> -10:	addis	r6,r6,(-RELACOUNT)@ha
-> -	cmpdi	r6,RELACOUNT@l
-> +10:	addis	r12,r12,(-RELACOUNT)@ha
-> +	cmpdi	r12,RELACOUNT@l
->  	bne	11f
->  	ld	r8,8(r11)       /* get RELACOUNT value in r8 */
->  11:	addi	r11,r11,16
->  	b	9b
->  12:
-> -	cmpdi	r7,0            /* check we have both RELA and RELACOUNT */
-> +	cmpdi	r13,0            /* check we have both RELA and RELACOUNT */
->  	cmpdi	cr1,r8,0
->  	beq	3f
->  	beq	cr1,3f
+> +#include "of.h"
+> +
+>  typedef u32 uint32_t;
+>  typedef u64 uint64_t;
+>  typedef unsigned long uintptr_t;
 >  
->  	/* Calcuate the runtime offset. */
-> -	subf	r7,r7,r9
-> +	subf	r13,r13,r9
+> -#define fdt16_to_cpu(x)		(x)
+> -#define cpu_to_fdt16(x)		(x)
+> -#define fdt32_to_cpu(x)		(x)
+> -#define cpu_to_fdt32(x)		(x)
+> -#define fdt64_to_cpu(x)		(x)
+> -#define cpu_to_fdt64(x)		(x)
+> +#define fdt16_to_cpu(x)		be16_to_cpu(x)
+> +#define cpu_to_fdt16(x)		cpu_to_be16(x)
+> +#define fdt32_to_cpu(x)		be32_to_cpu(x)
+> +#define cpu_to_fdt32(x)		cpu_to_be32(x)
+> +#define fdt64_to_cpu(x)		be64_to_cpu(x)
+> +#define cpu_to_fdt64(x)		cpu_to_be64(x)
 >  
->  	/* Run through the list of relocations and process the
->  	 * R_PPC64_RELATIVE ones. */
-> @@ -185,10 +185,10 @@ p_base:	mflr	r10		/* r10 now points to runtime addr of p_base */
->  13:	ld	r0,8(r9)        /* ELF64_R_TYPE(reloc->r_info) */
->  	cmpdi	r0,22           /* R_PPC64_RELATIVE */
->  	bne	3f
-> -	ld	r6,0(r9)        /* reloc->r_offset */
-> +	ld	r12,0(r9)        /* reloc->r_offset */
->  	ld	r0,16(r9)       /* reloc->r_addend */
-> -	add	r0,r0,r7
-> -	stdx	r0,r7,r6
-> +	add	r0,r0,r13
-> +	stdx	r0,r13,r12
->  	addi	r9,r9,24
->  	bdnz	13b
+>  #endif /* _ARCH_POWERPC_BOOT_LIBFDT_ENV_H */
+> diff --git a/arch/powerpc/boot/of.h b/arch/powerpc/boot/of.h
+> index c8c1750..5603320 100644
+> --- a/arch/powerpc/boot/of.h
+> +++ b/arch/powerpc/boot/of.h
+> @@ -24,11 +24,19 @@ void of_console_init(void);
+>  typedef u32			__be32;
 >  
+>  #ifdef __LITTLE_ENDIAN__
+> +#define cpu_to_be16(x) swab16(x)
+> +#define be16_to_cpu(x) swab16(x)
+>  #define cpu_to_be32(x) swab32(x)
+>  #define be32_to_cpu(x) swab32(x)
+> +#define cpu_to_be64(x) swab64(x)
+> +#define be64_to_cpu(x) swab64(x)
+>  #else
+> +#define cpu_to_be16(x) (x)
+> +#define be16_to_cpu(x) (x)
+>  #define cpu_to_be32(x) (x)
+>  #define be32_to_cpu(x) (x)
+> +#define cpu_to_be64(x) (x)
+> +#define be64_to_cpu(x) (x)
+>  #endif
+>  
+>  #define PROM_ERROR (-1u)
 > _______________________________________________
 > Linuxppc-dev mailing list
 > Linuxppc-dev@lists.ozlabs.org
