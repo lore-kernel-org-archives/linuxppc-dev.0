@@ -1,18 +1,22 @@
-Return-Path: <intermediadc@hotmail.com>
-Received: from DUB004-OMC3S13.hotmail.com (dub004-omc3s13.hotmail.com
- [157.55.2.22])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <olson@cumulusnetworks.com>
+Received: from mail-pa0-x22e.google.com (mail-pa0-x22e.google.com
+ [IPv6:2607:f8b0:400e:c03::22e])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7E6AC1A03DB
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Feb 2015 06:01:53 +1100 (AEDT)
-Message-ID: <DUB117-W995B27E9B65C63AF31D392C8250@phx.gbl>
-Content-Type: multipart/alternative;
- boundary="_901a623b-7b2c-411e-9337-f35187015bce_"
-From: luigi burdo <intermediadc@hotmail.com>
-To: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Subject: ld: unrecognised emulation mode: -T
-Date: Wed, 11 Feb 2015 20:01:47 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id EFE0C1A08E2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Feb 2015 07:55:23 +1100 (AEDT)
+Received: by mail-pa0-f46.google.com with SMTP id bj1so6484214pad.5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Feb 2015 12:55:21 -0800 (PST)
+Date: Wed, 11 Feb 2015 12:55:06 -0800
+From: Dave Olson <olson@cumulusnetworks.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Subject: [PATCHv2 1/1] powerpc: fix missing L2 cache size, etc in
+ /sys/devices/system/cpu
+Message-ID: <20150211205506.GA24746@cumulusnetworks.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,51 +26,98 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---_901a623b-7b2c-411e-9337-f35187015bce_
-Content-Type: text/plain; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+From: Dave Olson <olson@cumulusnetworks.com>
 
-Sorry for this email . but im facing this error=20
-when try to build the kernel 3.19=20
+Fix missing L2 cache in /sys/devices/system/cpu/cpu0/cache/index2/size
+This appears to have been introduced in 2.6.29 by
+93197a36a9c16a85fb24cf5a8639f7bf9af838a3.
 
-  ld: unrecognised emulation mode: -T=20
+This caused lscpu to error out on e500v2 devices, and probably others
+ error: cannot open /sys/devices/system/cpu/cpu0/cache/index2/size: No such file or directory
 
+Some embedded powerpc sysystems use cache-size in DTS for the unified L2 cache
+size, not d-cache-size, so we need to allow for both DTS names.  Added a
+new CACHE_TYPE_UNIFIED_D cache_type_info structure to handle this.
 
-before with 3.19rc7 everything was build right without issues .
+Patch is againt URL: git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git
+master branch (which seems quite old, but is listed as the right branch in the current Linus
+MAINTAINERS file; "next" is also old, "test" is newer, but I wasn't sure I should use that).
+I can rebase, if desired.
 
-Im using the Ubuntu Mate 14.04 on Quad G5=20
-Gcc 4.8.2=20
+Signed-off-by: Dave Olson <olson@cumulusnetworks.com>
 
-Thanks and sorry=20
-Luigi Burdo
+---
 
-
- 		 	   		  =
-
---_901a623b-7b2c-411e-9337-f35187015bce_
-Content-Type: text/html; charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
-
-<html>
-<head>
-<style><!--
-.hmmessage P
-{
-margin:0px=3B
-padding:0px
-}
-body.hmmessage
-{
-font-size: 12pt=3B
-font-family:Calibri
-}
---></style></head>
-<body class=3D'hmmessage'><div dir=3D'ltr'>Sorry for this email . but im fa=
-cing this error <br>when try to build the kernel 3.19 <br><br>&nbsp=3B ld: =
-unrecognised emulation mode: -T <br><br><br>before with 3.19rc7 everything =
-was build right without issues .<br><br>Im using the Ubuntu Mate 14.04 on Q=
-uad G5 <br>Gcc 4.8.2 <br><br>Thanks and sorry <br>Luigi Burdo<br><br><br> 	=
-	 	   		  </div></body>
-</html>=
-
---_901a623b-7b2c-411e-9337-f35187015bce_--
+diff --git a/arch/powerpc/kernel/cacheinfo.c b/arch/powerpc/kernel/cacheinfo.c
+index a3c684b..c3971bc 100644
+--- a/arch/powerpc/kernel/cacheinfo.c
++++ b/arch/powerpc/kernel/cacheinfo.c
+@@ -62,12 +62,22 @@ struct cache_type_info {
+ };
+ 
+ /* These are used to index the cache_type_info array. */
+-#define CACHE_TYPE_UNIFIED     0
+-#define CACHE_TYPE_INSTRUCTION 1
+-#define CACHE_TYPE_DATA        2
++#define CACHE_TYPE_UNIFIED     0 /* cache-size, cache-block-size, etc. */
++#define CACHE_TYPE_UNIFIED_D   1 /* d-cache-size, d-cache-block-size, etc */
++#define CACHE_TYPE_INSTRUCTION 2
++#define CACHE_TYPE_DATA        3
+ 
+ static const struct cache_type_info cache_type_info[] = {
+ 	{
++		/* Embedded systems that use cache-size, cache-block-size,
++		 * etc. for the Unified (typically L2) cache. */
++		.name            = "Unified",
++		.size_prop       = "cache-size",
++		.line_size_props = { "cache-line-size",
++				     "cache-block-size", },
++		.nr_sets_prop    = "cache-sets",
++	},
++	{
+ 		/* PowerPC Processor binding says the [di]-cache-*
+ 		 * must be equal on unified caches, so just use
+ 		 * d-cache properties. */
+@@ -293,7 +303,8 @@ static struct cache *cache_find_first_sibling(struct cache *cache)
+ {
+ 	struct cache *iter;
+ 
+-	if (cache->type == CACHE_TYPE_UNIFIED)
++	if (cache->type == CACHE_TYPE_UNIFIED ||
++	    cache->type == CACHE_TYPE_UNIFIED_D)
+ 		return cache;
+ 
+ 	list_for_each_entry(iter, &cache_list, list)
+@@ -324,13 +335,31 @@ static bool cache_node_is_unified(const struct device_node *np)
+ 	return of_get_property(np, "cache-unified", NULL);
+ }
+ 
++/*
++ * Handle unified caches that have two different types of tags.  Most embedded
++ * use cache-size, etc. for the unified cache size, but open firmware systems
++ * use d-cache-size, etc.   Since they all appear to be consistent, check on
++ * initialization for which type we are, and use the appropriate structure.
++ */
+ static struct cache *__cpuinit cache_do_one_devnode_unified(struct device_node *node, int level)
+ {
+ 	struct cache *cache;
++	int ucache;
+ 
+ 	pr_debug("creating L%d ucache for %s\n", level, node->full_name);
+ 
+-	cache = new_cache(CACHE_TYPE_UNIFIED, level, node);
++	if (of_get_property(node,
++		cache_type_info[CACHE_TYPE_UNIFIED_D].size_prop, NULL)) {
++		ucache = CACHE_TYPE_UNIFIED_D;
++	} else {
++		ucache = CACHE_TYPE_UNIFIED; /* assume embedded */
++		if (of_get_property(node,
++			cache_type_info[CACHE_TYPE_UNIFIED].size_prop, NULL) ==
++			NULL)
++			printk(KERN_WARNING "Unified cache property missing\n");
++	}
++
++	cache = new_cache(ucache, level, node);
+ 
+ 	return cache;
+ }
