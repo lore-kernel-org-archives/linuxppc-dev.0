@@ -1,21 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <jk@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 48A4F1A054F
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Feb 2015 15:50:26 +1100 (AEDT)
-Message-ID: <1423630220.5965.2.camel@kernel.crashing.org>
-Subject: Re: [PATCH 4/4] powerpc/boot: don't clobber r6 and r7 in epapr boot
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Jeremy Kerr <jk@ozlabs.org>
-Date: Wed, 11 Feb 2015 15:50:20 +1100
-In-Reply-To: <54DADA1B.4060009@ozlabs.org>
-References: <1423570510.219346.759068385066.4.gpush@pablo>
- <1423620585.5891.22.camel@kernel.crashing.org>
- <54DADA1B.4060009@ozlabs.org>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 37EF61A056B
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Feb 2015 15:55:49 +1100 (AEDT)
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Subject: [PATCH 2/5 v2] powerpc/boot/fdt: Add little-endian support to libfdt
+ wrappers
+Message-Id: <1423630544.752438.317337864668.2.gpush@pablo>
+In-Reply-To: <1423630544.752188.889982625387.1.gpush@pablo>
+To: linuxppc-dev@lists.ozlabs.org
+From: Jeremy Kerr <jk@ozlabs.org>
+Date: Wed, 11 Feb 2015 12:55:44 +0800
+Cc: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@fr.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,17 +23,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2015-02-11 at 12:27 +0800, Jeremy Kerr wrote:
-> Hi Ben,
-> 
-> > You might want to also remove the use of r8 and r9 which are supposed
-> > to contain the OPAL entry and base for debugging purposes. We would also
-> > have to restore them before booting the kernel.
-> 
-> I'd prefer that to be a separate change, if that's okay - it'd require
-> us to change the kentry prototype, and would percolate to epapr_platform
-> init too.
+For epapr-style boot, we may be little-endian. This change implements
+the proper conversion for fdt*_to_cpu and cpu_to_fdt*. We also need the
+full cpu_to_* and *_to_cpu macros for this.
 
-Ok.
+Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-Ben.
+---
+ arch/powerpc/boot/libfdt_env.h |   14 ++++++++------
+ arch/powerpc/boot/of.h         |    8 ++++++++
+ 2 files changed, 16 insertions(+), 6 deletions(-)
+
+diff --git a/arch/powerpc/boot/libfdt_env.h b/arch/powerpc/boot/libfdt_env.h
+index c89fdb1..8dcd744 100644
+--- a/arch/powerpc/boot/libfdt_env.h
++++ b/arch/powerpc/boot/libfdt_env.h
+@@ -4,15 +4,17 @@
+ #include <types.h>
+ #include <string.h>
+ 
++#include "of.h"
++
+ typedef u32 uint32_t;
+ typedef u64 uint64_t;
+ typedef unsigned long uintptr_t;
+ 
+-#define fdt16_to_cpu(x)		(x)
+-#define cpu_to_fdt16(x)		(x)
+-#define fdt32_to_cpu(x)		(x)
+-#define cpu_to_fdt32(x)		(x)
+-#define fdt64_to_cpu(x)		(x)
+-#define cpu_to_fdt64(x)		(x)
++#define fdt16_to_cpu(x)		be16_to_cpu(x)
++#define cpu_to_fdt16(x)		cpu_to_be16(x)
++#define fdt32_to_cpu(x)		be32_to_cpu(x)
++#define cpu_to_fdt32(x)		cpu_to_be32(x)
++#define fdt64_to_cpu(x)		be64_to_cpu(x)
++#define cpu_to_fdt64(x)		cpu_to_be64(x)
+ 
+ #endif /* _ARCH_POWERPC_BOOT_LIBFDT_ENV_H */
+diff --git a/arch/powerpc/boot/of.h b/arch/powerpc/boot/of.h
+index c8c1750..5603320 100644
+--- a/arch/powerpc/boot/of.h
++++ b/arch/powerpc/boot/of.h
+@@ -24,11 +24,19 @@ void of_console_init(void);
+ typedef u32			__be32;
+ 
+ #ifdef __LITTLE_ENDIAN__
++#define cpu_to_be16(x) swab16(x)
++#define be16_to_cpu(x) swab16(x)
+ #define cpu_to_be32(x) swab32(x)
+ #define be32_to_cpu(x) swab32(x)
++#define cpu_to_be64(x) swab64(x)
++#define be64_to_cpu(x) swab64(x)
+ #else
++#define cpu_to_be16(x) (x)
++#define be16_to_cpu(x) (x)
+ #define cpu_to_be32(x) (x)
+ #define be32_to_cpu(x) (x)
++#define cpu_to_be64(x) (x)
++#define be64_to_cpu(x) (x)
+ #endif
+ 
+ #define PROM_ERROR (-1u)
