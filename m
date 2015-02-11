@@ -1,21 +1,23 @@
-Return-Path: <nicoleotsuka@gmail.com>
-Received: from mail-pa0-x22b.google.com (mail-pa0-x22b.google.com
- [IPv6:2607:f8b0:400e:c03::22b])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <broonie@sirena.org.uk>
+Received: from mezzanine.sirena.org.uk (mezzanine.sirena.org.uk
+ [IPv6:2400:8900::f03c:91ff:fedb:4f4])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8C1E81A0048
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Feb 2015 16:32:00 +1100 (AEDT)
-Received: by mail-pa0-f43.google.com with SMTP id fa1so1736528pad.2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Feb 2015 21:31:58 -0800 (PST)
-From: Nicolin Chen <nicoleotsuka@gmail.com>
-To: broonie@kernel.org,
-	timur@tabi.org
-Subject: [PATCH] ASoC: fsl_ssi: Fix the incorrect limitation of the bit clock
- rate
-Date: Tue, 10 Feb 2015 21:31:43 -0800
-Message-Id: <1423632703-3683-1-git-send-email-nicoleotsuka@gmail.com>
-Cc: alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, scerveau@voxtok.com
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6C1BA1A054F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Feb 2015 17:25:20 +1100 (AEDT)
+Date: Wed, 11 Feb 2015 13:46:16 +0800
+From: Mark Brown <broonie@kernel.org>
+To: Nicolin Chen <nicoleotsuka@gmail.com>
+Message-ID: <20150211054616.GR2593@finisterre.sirena.org.uk>
+References: <1423632703-3683-1-git-send-email-nicoleotsuka@gmail.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="tV/+6PImfyFtriLg"
+In-Reply-To: <1423632703-3683-1-git-send-email-nicoleotsuka@gmail.com>
+Subject: Re: [PATCH] ASoC: fsl_ssi: Fix the incorrect limitation of the bit
+ clock rate
+Cc: alsa-devel@alsa-project.org, scerveau@voxtok.com,
+ linuxppc-dev@lists.ozlabs.org, timur@tabi.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,48 +27,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-According to i.MX Reference Manual, the bit-clock frequency generated
-by SSI must be never greater than 1/5 of the peripheral clock frequency.
 
-This peripheral clock, however, is not baudclk but the IPG clock (i.e.
-ssi_private->clk in the fsl_ssi driver).
+--tV/+6PImfyFtriLg
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-So this patch just simply fixes the incorrect limitation applied to
-the bit clock (baudclk) rate.
+On Tue, Feb 10, 2015 at 09:31:43PM -0800, Nicolin Chen wrote:
+> According to i.MX Reference Manual, the bit-clock frequency generated
+> by SSI must be never greater than 1/5 of the peripheral clock frequency.
 
-Signed-off-by: Nicolin Chen <nicoleotsuka@gmail.com>
----
- sound/soc/fsl/fsl_ssi.c | 11 +++++++----
- 1 file changed, 7 insertions(+), 4 deletions(-)
+Applied, thanks.
 
-diff --git a/sound/soc/fsl/fsl_ssi.c b/sound/soc/fsl/fsl_ssi.c
-index 059496e..d7365c5 100644
---- a/sound/soc/fsl/fsl_ssi.c
-+++ b/sound/soc/fsl/fsl_ssi.c
-@@ -603,10 +603,6 @@ static int fsl_ssi_set_bclk(struct snd_pcm_substream *substream,
- 	factor = (div2 + 1) * (7 * psr + 1) * 2;
- 
- 	for (i = 0; i < 255; i++) {
--		/* The bclk rate must be smaller than 1/5 sysclk rate */
--		if (factor * (i + 1) < 5)
--			continue;
--
- 		tmprate = freq * factor * (i + 2);
- 
- 		if (baudclk_is_used)
-@@ -614,6 +610,13 @@ static int fsl_ssi_set_bclk(struct snd_pcm_substream *substream,
- 		else
- 			clkrate = clk_round_rate(ssi_private->baudclk, tmprate);
- 
-+		/*
-+		 * Hardware limitation: The bclk rate must be
-+		 * never greater than 1/5 IPG clock rate
-+		 */
-+		if (clkrate * 5 > clk_get_rate(ssi_private->clk))
-+			continue;
-+
- 		clkrate /= factor;
- 		afreq = clkrate / (i + 1);
- 
--- 
-1.9.1
+--tV/+6PImfyFtriLg
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBCAAGBQJU2uynAAoJECTWi3JdVIfQHZEH/jBxRyu9zzA7Jj8gey9y/UzC
+KLbbYSPkBtiuGMR8dy3UtgIRYRTPpYL7JZRllPxhbvVopRm6dly74XpK5yUm5YHn
+nQ+gn6y8IKLaIjC1+xu2OghuiFdcgXT4izCXuykMc06IThgg7OApAjFqRY1fOPKg
+NPM5s7g+01bhFUI93B6kLXULX6CbSDM9bOjQ8RmaJ9XCPh/WqCTpQ7JmDkxxTu63
+zwJrjT6hLhUcvHnvlnxuKyLrBiQzVdFtBY2nP0wpcXiMREydy3tDVhUrgbu42n6k
+KM+OzAyYNWRqYEqKTSkQHlQ4n1Fr2e2gNMi56/jUvfVGDjjvMouNI3Pnyrsj7zU=
+=rR+k
+-----END PGP SIGNATURE-----
+
+--tV/+6PImfyFtriLg--
