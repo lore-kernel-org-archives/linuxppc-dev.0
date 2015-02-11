@@ -1,16 +1,16 @@
 Return-Path: <B43198@freescale.com>
 Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0146.outbound.protection.outlook.com [157.56.110.146])
+ (mail-bn1bon0139.outbound.protection.outlook.com [157.56.111.139])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A0D6B1A08E2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Feb 2015 19:36:38 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id C11EE1A08E2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Feb 2015 19:36:39 +1100 (AEDT)
 From: Bogdan Purcareata <bogdan.purcareata@freescale.com>
 To: <benh@kernel.crashing.org>, <paulus@samba.org>,
  <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 2/3] powerpc: Relax secure computing on syscall entry trace
-Date: Wed, 11 Feb 2015 08:36:17 +0000
-Message-ID: <1423643778-32525-3-git-send-email-bogdan.purcareata@freescale.com>
+Subject: [PATCH 3/3] powerpc: Enable HAVE_ARCH_SECCOMP_FILTER
+Date: Wed, 11 Feb 2015 08:36:18 +0000
+Message-ID: <1423643778-32525-4-git-send-email-bogdan.purcareata@freescale.com>
 In-Reply-To: <1423643778-32525-1-git-send-email-bogdan.purcareata@freescale.com>
 References: <1423643778-32525-1-git-send-email-bogdan.purcareata@freescale.com>
 MIME-Version: 1.0
@@ -27,29 +27,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The secure_computing_strict will just force the kernel to panic on
-secure_computing failure. Once SECCOMP_FILTER support is enabled in the kernel,
-syscalls can be denied without system failure.
-
 Signed-off-by: Bogdan Purcareata <bogdan.purcareata@freescale.com>
 ---
- arch/powerpc/kernel/ptrace.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+ arch/powerpc/Kconfig | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
-index d82fd0b..d41faab 100644
---- a/arch/powerpc/kernel/ptrace.c
-+++ b/arch/powerpc/kernel/ptrace.c
-@@ -1772,7 +1772,9 @@ long do_syscall_trace_enter(struct pt_regs *regs)
- 
- 	user_exit();
- 
--	secure_computing_strict(regs->gpr[0]);
-+	/* Do the secure computing check first; failures should be fast. */
-+	if (secure_computing(regs->gpr[0]) == -1)
-+		return -1L;
- 
- 	if (test_thread_flag(TIF_SYSCALL_TRACE) &&
- 	    tracehook_report_syscall_entry(regs)) {
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index a2a168e..72f363e 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -104,6 +104,7 @@ config PPC
+ 	select HAVE_EFFICIENT_UNALIGNED_ACCESS if !CPU_LITTLE_ENDIAN
+ 	select HAVE_KPROBES
+ 	select HAVE_ARCH_KGDB
++	select HAVE_ARCH_SECCOMP_FILTER
+ 	select HAVE_KRETPROBES
+ 	select HAVE_ARCH_TRACEHOOK
+ 	select HAVE_MEMBLOCK
 -- 
 2.1.4
