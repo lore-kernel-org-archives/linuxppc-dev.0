@@ -1,23 +1,32 @@
-Return-Path: <broonie@sirena.org.uk>
-Received: from mezzanine.sirena.org.uk (mezzanine.sirena.org.uk
- [IPv6:2400:8900::f03c:91ff:fedb:4f4])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <neelegup@linux.vnet.ibm.com>
+Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6C1BA1A054F
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Feb 2015 17:25:20 +1100 (AEDT)
-Date: Wed, 11 Feb 2015 13:46:16 +0800
-From: Mark Brown <broonie@kernel.org>
-To: Nicolin Chen <nicoleotsuka@gmail.com>
-Message-ID: <20150211054616.GR2593@finisterre.sirena.org.uk>
-References: <1423632703-3683-1-git-send-email-nicoleotsuka@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id C1D6C1A054F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Feb 2015 17:29:20 +1100 (AEDT)
+Received: from /spool/local
+ by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <neelegup@linux.vnet.ibm.com>;
+ Wed, 11 Feb 2015 11:59:17 +0530
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 95422E0056
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Feb 2015 12:00:49 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay01.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t1B6TEii66256914
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Feb 2015 11:59:14 +0530
+Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t1B6TEma031160
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Feb 2015 11:59:14 +0530
+Subject: [PATCH v2 1/2] opal: Fix the overflow of message notifiers head array
+To: mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org, benh@kernel.crashing.org
+From: Neelesh Gupta <neelegup@linux.vnet.ibm.com>
+Date: Wed, 11 Feb 2015 11:57:06 +0530
+Message-ID: <20150211062616.3279.71632.stgit@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="tV/+6PImfyFtriLg"
-In-Reply-To: <1423632703-3683-1-git-send-email-nicoleotsuka@gmail.com>
-Subject: Re: [PATCH] ASoC: fsl_ssi: Fix the incorrect limitation of the bit
- clock rate
-Cc: alsa-devel@alsa-project.org, scerveau@voxtok.com,
- linuxppc-dev@lists.ozlabs.org, timur@tabi.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,31 +36,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Fixes the condition check of incoming message type which can
+otherwise shoot beyond the message notifiers head array.
 
---tV/+6PImfyFtriLg
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Signed-off-by: Neelesh Gupta <neelegup@linux.vnet.ibm.com>
+Reviewed-by: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
+---
+ arch/powerpc/platforms/powernv/opal.c |   12 ++++--------
+ 1 file changed, 4 insertions(+), 8 deletions(-)
 
-On Tue, Feb 10, 2015 at 09:31:43PM -0800, Nicolin Chen wrote:
-> According to i.MX Reference Manual, the bit-clock frequency generated
-> by SSI must be never greater than 1/5 of the peripheral clock frequency.
-
-Applied, thanks.
-
---tV/+6PImfyFtriLg
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBCAAGBQJU2uynAAoJECTWi3JdVIfQHZEH/jBxRyu9zzA7Jj8gey9y/UzC
-KLbbYSPkBtiuGMR8dy3UtgIRYRTPpYL7JZRllPxhbvVopRm6dly74XpK5yUm5YHn
-nQ+gn6y8IKLaIjC1+xu2OghuiFdcgXT4izCXuykMc06IThgg7OApAjFqRY1fOPKg
-NPM5s7g+01bhFUI93B6kLXULX6CbSDM9bOjQ8RmaJ9XCPh/WqCTpQ7JmDkxxTu63
-zwJrjT6hLhUcvHnvlnxuKyLrBiQzVdFtBY2nP0wpcXiMREydy3tDVhUrgbu42n6k
-KM+OzAyYNWRqYEqKTSkQHlQ4n1Fr2e2gNMi56/jUvfVGDjjvMouNI3Pnyrsj7zU=
-=rR+k
------END PGP SIGNATURE-----
-
---tV/+6PImfyFtriLg--
+diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
+index f10b9ec..2651e22 100644
+--- a/arch/powerpc/platforms/powernv/opal.c
++++ b/arch/powerpc/platforms/powernv/opal.c
+@@ -305,16 +305,12 @@ void opal_notifier_disable(void)
+ int opal_message_notifier_register(enum OpalMessageType msg_type,
+ 					struct notifier_block *nb)
+ {
+-	if (!nb) {
+-		pr_warning("%s: Invalid argument (%p)\n",
+-			   __func__, nb);
+-		return -EINVAL;
+-	}
+-	if (msg_type > OPAL_MSG_TYPE_MAX) {
+-		pr_warning("%s: Invalid message type argument (%d)\n",
++	if (!nb || msg_type >= OPAL_MSG_TYPE_MAX) {
++		pr_warning("%s: Invalid arguments, msg_type:%d\n",
+ 			   __func__, msg_type);
+ 		return -EINVAL;
+ 	}
++
+ 	return atomic_notifier_chain_register(
+ 				&opal_msg_notifier_head[msg_type], nb);
+ }
+@@ -351,7 +347,7 @@ static void opal_handle_message(void)
+ 	type = be32_to_cpu(msg.msg_type);
+ 
+ 	/* Sanity check */
+-	if (type > OPAL_MSG_TYPE_MAX) {
++	if (type >= OPAL_MSG_TYPE_MAX) {
+ 		pr_warning("%s: Unknown message type: %u\n", __func__, type);
+ 		return;
+ 	}
