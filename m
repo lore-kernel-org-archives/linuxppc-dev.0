@@ -1,32 +1,32 @@
 Return-Path: <stewart@linux.vnet.ibm.com>
-Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C36131A092A
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Feb 2015 16:25:44 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BDE91A0FBD
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Feb 2015 16:26:31 +1100 (AEDT)
 Received: from /spool/local
- by e7.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <stewart@linux.vnet.ibm.com>;
- Thu, 12 Feb 2015 00:25:42 -0500
-Received: from b01cxnp23032.gho.pok.ibm.com (b01cxnp23032.gho.pok.ibm.com
- [9.57.198.27])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 95D8638C8039
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Feb 2015 00:25:39 -0500 (EST)
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
- by b01cxnp23032.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t1C5Pdfx27656202
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Feb 2015 05:25:39 GMT
-Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
- by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t1C5Pdxr003447
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Feb 2015 00:25:39 -0500
+ Wed, 11 Feb 2015 22:26:29 -0700
+Received: from b03cxnp08025.gho.boulder.ibm.com
+ (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 8D6931FF0045
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Feb 2015 22:17:39 -0700 (MST)
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+ by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t1C5QLUv25231368
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Feb 2015 22:26:29 -0700
+Received: from d03av01.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av01.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t1C5PsNK027267
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Feb 2015 22:25:54 -0700
 From: Stewart Smith <stewart@linux.vnet.ibm.com>
 To: mpe@ellerman.id.au
-Subject: [PATCH 3/3] powerpc/powernv: only call OPAL_RESEND_DUMP if firmware
+Subject: [PATCH 2/3] powerpc/powernv: only call OPAL_ELOG_RESEND if firmware
  supports it
-Date: Thu, 12 Feb 2015 16:25:29 +1100
-Message-Id: <1423718729-17992-4-git-send-email-stewart@linux.vnet.ibm.com>
+Date: Thu, 12 Feb 2015 16:25:28 +1100
+Message-Id: <1423718729-17992-3-git-send-email-stewart@linux.vnet.ibm.com>
 In-Reply-To: <1423718729-17992-1-git-send-email-stewart@linux.vnet.ibm.com>
 References: <1423718729-17992-1-git-send-email-stewart@linux.vnet.ibm.com>
 Cc: Stewart Smith <stewart@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
@@ -40,27 +40,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Not all OPAL platforms support resending system dumps, so check
-that current firmware supports it first. Otherwise we get firmware
-complaining:
-"OPAL: Called with bad token 91 !"
+Otherwise firmware complains: "OPAL: Called with bad token 74 !"
+as not all OPAL systems have the ability to resend error logs.
 
 Signed-off-by: Stewart Smith <stewart@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/powernv/opal-dump.c |    3 ++-
+ arch/powerpc/platforms/powernv/opal-elog.c |    3 ++-
  1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/platforms/powernv/opal-dump.c b/arch/powerpc/platforms/powernv/opal-dump.c
-index 23260f7..5aa9c1c 100644
---- a/arch/powerpc/platforms/powernv/opal-dump.c
-+++ b/arch/powerpc/platforms/powernv/opal-dump.c
-@@ -452,5 +452,6 @@ void __init opal_platform_dump_init(void)
- 		return;
+diff --git a/arch/powerpc/platforms/powernv/opal-elog.c b/arch/powerpc/platforms/powernv/opal-elog.c
+index 518fe95..38ce757 100644
+--- a/arch/powerpc/platforms/powernv/opal-elog.c
++++ b/arch/powerpc/platforms/powernv/opal-elog.c
+@@ -313,7 +313,8 @@ int __init opal_elog_init(void)
  	}
  
--	opal_dump_resend_notification();
-+	if (opal_check_token(OPAL_DUMP_RESEND))
-+		opal_dump_resend_notification();
+ 	/* We are now ready to pull error logs from opal. */
+-	opal_resend_pending_logs();
++	if (opal_check_token(OPAL_ELOG_RESEND))
++		opal_resend_pending_logs();
+ 
+ 	return 0;
  }
 -- 
 1.7.10.4
