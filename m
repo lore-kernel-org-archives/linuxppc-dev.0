@@ -1,31 +1,34 @@
 Return-Path: <stewart@linux.vnet.ibm.com>
-Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 253B51A092A
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Feb 2015 16:25:41 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9363A1A0A2F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Feb 2015 16:25:42 +1100 (AEDT)
 Received: from /spool/local
- by e7.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <stewart@linux.vnet.ibm.com>;
- Thu, 12 Feb 2015 00:25:39 -0500
-Received: from b01cxnp23032.gho.pok.ibm.com (b01cxnp23032.gho.pok.ibm.com
- [9.57.198.27])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 9AF59C90041
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Feb 2015 00:16:48 -0500 (EST)
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
- by b01cxnp23032.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t1C5PbVT26214652
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Feb 2015 05:25:37 GMT
-Received: from d01av02.pok.ibm.com (localhost [127.0.0.1])
- by d01av02.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t1C5PZBG002083
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Feb 2015 00:25:36 -0500
+ Wed, 11 Feb 2015 22:25:40 -0700
+Received: from b03cxnp08025.gho.boulder.ibm.com
+ (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id B3EDC3E40041
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Feb 2015 22:25:38 -0700 (MST)
+Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
+ by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with
+ ESMTP id t1C5PeMM27132130
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Feb 2015 22:25:40 -0700
+Received: from d03av05.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t1C5PbOO021865
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Feb 2015 22:25:38 -0700
 From: Stewart Smith <stewart@linux.vnet.ibm.com>
 To: mpe@ellerman.id.au
-Subject: [PATCH 0/3] Silence "OPAL called with invalid token" errors
-Date: Thu, 12 Feb 2015 16:25:26 +1100
-Message-Id: <1423718729-17992-1-git-send-email-stewart@linux.vnet.ibm.com>
+Subject: [PATCH 1/3] powerpc/powernv: only register log if OPAL supports doing
+ so
+Date: Thu, 12 Feb 2015 16:25:27 +1100
+Message-Id: <1423718729-17992-2-git-send-email-stewart@linux.vnet.ibm.com>
+In-Reply-To: <1423718729-17992-1-git-send-email-stewart@linux.vnet.ibm.com>
+References: <1423718729-17992-1-git-send-email-stewart@linux.vnet.ibm.com>
 Cc: Stewart Smith <stewart@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
  linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -37,21 +40,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-If OPAL firmware is called with an invalid token, that is, one that
-the current running firmware does not support, it dumps an error into
-its log. For three calls we were making in Linux, we were not adequately
-checking that the current firmware supported them, so could get
-this warning spuriously.
+Correct use of REGISTER/UNREGISTER is to check if the token exists
+before calling. If we don't we get a "OPAL: Called with bad token 101 !"
+error, which is harmless but may be alarming to some.
 
-Stewart Smith (3):
-  powerpc/powernv: only register log if OPAL supports doing so
-  powerpc/powernv: only call OPAL_ELOG_RESEND if firmware supports it
-  powerpc/powernv: only call OPAL_RESEND_DUMP if firmware supports it
+Signed-off-by: Stewart Smith <stewart@linux.vnet.ibm.com>
+---
+ arch/powerpc/platforms/powernv/opal.c |    6 +++++-
+ 1 file changed, 5 insertions(+), 1 deletion(-)
 
- arch/powerpc/platforms/powernv/opal-dump.c |    3 ++-
- arch/powerpc/platforms/powernv/opal-elog.c |    3 ++-
- arch/powerpc/platforms/powernv/opal.c      |    6 +++++-
- 3 files changed, 9 insertions(+), 3 deletions(-)
-
+diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
+index f10b9ec..84ff20c 100644
+--- a/arch/powerpc/platforms/powernv/opal.c
++++ b/arch/powerpc/platforms/powernv/opal.c
+@@ -665,6 +665,9 @@ static void __init opal_dump_region_init(void)
+ 	uint64_t size;
+ 	int rc;
+ 
++	if (!opal_check_token(OPAL_REGISTER_DUMP_REGION))
++		return;
++
+ 	/* Register kernel log buffer */
+ 	addr = log_buf_addr_get();
+ 	size = log_buf_len_get();
+@@ -795,7 +798,8 @@ void opal_shutdown(void)
+ 	}
+ 
+ 	/* Unregister memory dump region */
+-	opal_unregister_dump_region(OPAL_DUMP_REGION_LOG_BUF);
++	if (opal_check_token(OPAL_UNREGISTER_DUMP_REGION))
++		opal_unregister_dump_region(OPAL_DUMP_REGION_LOG_BUF);
+ }
+ 
+ /* Export this so that test modules can use it */
 -- 
 1.7.10.4
