@@ -1,36 +1,46 @@
-Return-Path: <hegdevasant@linux.vnet.ibm.com>
-Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
+Return-Path: <paulmck@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id CDCC51A0C38
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Feb 2015 01:26:11 +1100 (AEDT)
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9E8EB1A0C4D
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Feb 2015 20:56:45 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPS id F10C41402EB
+ for <linuxppc-dev@ozlabs.org>; Sat, 14 Feb 2015 01:26:10 +1100 (AEDT)
 Received: from /spool/local
- by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <hegdevasant@linux.vnet.ibm.com>;
- Fri, 13 Feb 2015 15:26:43 +0530
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id EDB56125805B
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Feb 2015 15:27:49 +0530 (IST)
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t1D9uZoD5898730
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Feb 2015 15:26:35 +0530
-Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
- by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t1D9uYeu022687
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Feb 2015 15:26:35 +0530
-Subject: [PATCH v2] powerpc/powernv: Check image loaded or not before
- calling flash
-From: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Date: Fri, 13 Feb 2015 15:26:33 +0530
-Message-ID: <20150213095614.14277.31965.stgit@localhost.localdomain>
-In-Reply-To: <20150212095323.1829.45732.stgit@localhost.localdomain>
-References: <20150212095323.1829.45732.stgit@localhost.localdomain>
+ for <linuxppc-dev@ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
+ Fri, 13 Feb 2015 07:26:08 -0700
+Received: from b03cxnp08026.gho.boulder.ibm.com
+ (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 71F6119D8026
+ for <linuxppc-dev@ozlabs.org>; Fri, 13 Feb 2015 07:17:15 -0700 (MST)
+Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
+ by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with
+ ESMTP id t1DEQPWE47644678
+ for <linuxppc-dev@ozlabs.org>; Fri, 13 Feb 2015 07:26:25 -0700
+Received: from d03av05.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t1DEQ5rF005784
+ for <linuxppc-dev@ozlabs.org>; Fri, 13 Feb 2015 07:26:05 -0700
+Date: Fri, 13 Feb 2015 06:26:03 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Subject: Re: suspicious RCU usage clockevents_lock, tick_broadcast_lock,
+ hrtimer_bases.lock
+Message-ID: <20150213142603.GV4166@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <54DD4BF6.1070503@au1.ibm.com>
+ <54DD8B37.2040903@linux.vnet.ibm.com>
+ <54DDA645.6080600@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: benh@au1.ibm.com, sam.bobroff@au1.ibm.com
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <54DDA645.6080600@linux.vnet.ibm.com>
+Cc: Linux PPC dev <linuxppc-dev@ozlabs.org>,
+ Sam Bobroff <sam.bobroff@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,37 +50,103 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Present code checks for update_flash_data in opal_flash_term_callback().
-update_flash_data has been statically initialized to zero, and that
-is the value of FLASH_IMG_READY. Also code update initialization happens
-during subsys init.
+On Fri, Feb 13, 2015 at 12:52:45PM +0530, Preeti U Murthy wrote:
+> On 02/13/2015 10:57 AM, Preeti U Murthy wrote:
+> > On 02/13/2015 06:27 AM, Sam Bobroff wrote:
+> >> Hello,
+> >>
+> >> I'm receiving this while booting a vanilla 3.19 kernel on a Power 8 machine:
+> > 
+> > Does the below patch fix the issue ?
+> > 
+> > From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+> > 
+> > [PATCH] tick/hrtimer-broadcast: Fix a suspicious RCU usage in the tick broadcast path
+> > 
+> > ---
+> >  kernel/time/tick-broadcast-hrtimer.c | 2 +-
+> >  1 file changed, 1 insertion(+), 1 deletion(-)
+> > 
+> > diff --git a/kernel/time/tick-broadcast-hrtimer.c b/kernel/time/tick-broadcast-hrtimer.c
+> > index eb682d5..57b8e32 100644
+> > --- a/kernel/time/tick-broadcast-hrtimer.c
+> > +++ b/kernel/time/tick-broadcast-hrtimer.c
+> > @@ -62,7 +62,7 @@ static int bc_set_next(ktime_t expires, struct clock_event_device *bc)
+> >          * HRTIMER_RESTART.
+> >          */
+> >         if (hrtimer_try_to_cancel(&bctimer) >= 0) {
+> > -               hrtimer_start(&bctimer, expires, HRTIMER_MODE_ABS_PINNED);
+> > +               RCU_NONIDLE(hrtimer_start(&bctimer, expires, HRTIMER_MODE_ABS_PINNED));
+> >                 /* Bind the "device" to the cpu */
+> >                 bc->bound_on = smp_processor_id();
+> >         } else if (bc->bound_on == smp_processor_id()) {
+> > 
+> Actually the below patch is the complete fix. Paul can you please
+> review this ?  As an alternate solution I checked to see if its
+> possible to move rcu_idle_enter()/exit() closer to the
+> cpuidle_enter() call, but that won't work as you may have already
+> tried earlier.
+> 
+> -----------------------------------------------------------------
+> 
+> tick/broadcast-hrtimer : Fix suspicious RCU usage in idle loop
+> 
+> From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+> 
+> The hrtimer mode of broadcast queues hrtimers in the idle entry
+> path so as to wakeup cpus in deep idle states. hrtimer_{start/cancel}
+> functions call into tracing which uses RCU. But it is not legal to call
+> into RCU in cpuidle because it is one of the quiescent states. Hence
+> protect this region with RCU_NONIDLE which informs RCU that the cpu
+> is momentarily non-idle.
+> 
+> Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
 
-So if reboot is issued before the subsys init stage then we endup displaying
-"Flashing new firmware" message.. which may confuse end user.
+Reviewed-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 
-This patch fixes above described issue by initializes update_flash status
-to invalid state.
+Another alternative would be to change the hrtimer_{start/cancel}()
+functions' tracepoints to the _rcuidle form.  The advantage of this
+approach is less RCU-notification overhead when tracing is enabled.
 
-Reported-by: Sam Bobroff <sam.bobroff@au1.ibm.com>
-Signed-off-by: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
----
- arch/powerpc/platforms/powernv/opal-flash.c |    6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+							Thanx, Paul
 
-diff --git a/arch/powerpc/platforms/powernv/opal-flash.c b/arch/powerpc/platforms/powernv/opal-flash.c
-index 5c21d9c..0ff07ff 100644
---- a/arch/powerpc/platforms/powernv/opal-flash.c
-+++ b/arch/powerpc/platforms/powernv/opal-flash.c
-@@ -120,7 +120,11 @@ static struct image_header_t	image_header;
- static struct image_data_t	image_data;
- static struct validate_flash_t	validate_flash_data;
- static struct manage_flash_t	manage_flash_data;
--static struct update_flash_t	update_flash_data;
-+
-+/* Initialize update_flash_data status to No Operation */
-+static struct update_flash_t	update_flash_data = {
-+	.status = FLASH_NO_OP,
-+};
- 
- static DEFINE_MUTEX(image_data_mutex);
- 
+> ---
+>  kernel/time/tick-broadcast-hrtimer.c |   11 +++++++++--
+>  1 file changed, 9 insertions(+), 2 deletions(-)
+> 
+> diff --git a/kernel/time/tick-broadcast-hrtimer.c b/kernel/time/tick-broadcast-hrtimer.c
+> index eb682d5..d3dd564 100644
+> --- a/kernel/time/tick-broadcast-hrtimer.c
+> +++ b/kernel/time/tick-broadcast-hrtimer.c
+> @@ -49,6 +49,7 @@ static void bc_set_mode(enum clock_event_mode mode,
+>   */
+>  static int bc_set_next(ktime_t expires, struct clock_event_device *bc)
+>  {
+> +	int bc_moved;
+>  	/*
+>  	 * We try to cancel the timer first. If the callback is on
+>  	 * flight on some other cpu then we let it handle it. If we
+> @@ -60,9 +61,15 @@ static int bc_set_next(ktime_t expires, struct clock_event_device *bc)
+>  	 * restart the timer because we are in the callback, but we
+>  	 * can set the expiry time and let the callback return
+>  	 * HRTIMER_RESTART.
+> +	 *
+> +	 * Since we are in the idle loop at this point and because
+> +	 * hrtimer_{start/cancel} functions call into tracing,
+> +	 * calls to these functions must be bound within RCU_NONIDLE.
+>  	 */
+> -	if (hrtimer_try_to_cancel(&bctimer) >= 0) {
+> -		hrtimer_start(&bctimer, expires, HRTIMER_MODE_ABS_PINNED);
+> +	RCU_NONIDLE(bc_moved = (hrtimer_try_to_cancel(&bctimer) >= 0) ?
+> +                !hrtimer_start(&bctimer, expires, HRTIMER_MODE_ABS_PINNED) :
+> +                        0);
+> +	if (bc_moved) {
+>  		/* Bind the "device" to the cpu */
+>  		bc->bound_on = smp_processor_id();
+>  	} else if (bc->bound_on == smp_processor_id()) {
+> 
+> 
+> Thanks
+> 
+> Regards
+> Preeti U Murthy
