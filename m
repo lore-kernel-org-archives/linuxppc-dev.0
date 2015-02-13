@@ -2,30 +2,30 @@ Return-Path: <hegdevasant@linux.vnet.ibm.com>
 Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 002151A0C4A
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Feb 2015 20:48:49 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9E8EB1A0C4D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Feb 2015 20:56:45 +1100 (AEDT)
 Received: from /spool/local
  by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <hegdevasant@linux.vnet.ibm.com>;
- Fri, 13 Feb 2015 15:18:46 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id ECE2FE0056
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Feb 2015 15:20:19 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t1D9mhHa61538490
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Feb 2015 15:18:43 +0530
-Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t1D9mhQP021170
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Feb 2015 15:18:43 +0530
-Subject: [PATCH] powerpc/powernv: Check image loaded or not before calling
- flash
+ Fri, 13 Feb 2015 15:26:43 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id EDB56125805B
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Feb 2015 15:27:49 +0530 (IST)
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t1D9uZoD5898730
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Feb 2015 15:26:35 +0530
+Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t1D9uYeu022687
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Feb 2015 15:26:35 +0530
+Subject: [PATCH v2] powerpc/powernv: Check image loaded or not before
+ calling flash
 From: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Date: Fri, 13 Feb 2015 15:18:42 +0530
-Message-ID: <20150213094514.12351.11666.stgit@localhost.localdomain>
+Date: Fri, 13 Feb 2015 15:26:33 +0530
+Message-ID: <20150213095614.14277.31965.stgit@localhost.localdomain>
 In-Reply-To: <20150212095323.1829.45732.stgit@localhost.localdomain>
 References: <20150212095323.1829.45732.stgit@localhost.localdomain>
 MIME-Version: 1.0
@@ -54,16 +54,6 @@ to invalid state.
 Reported-by: Sam Bobroff <sam.bobroff@au1.ibm.com>
 Signed-off-by: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
 ---
-Ben, Sam,
-  How about this patch?
-
-  Initially I though of changing FLASH_IMG_READY value. But it has a impact
-  on user space tool. (update_flash checks this value before calling reboot.
-  See update_show function. Of course we can work around that .. But I thought
-  this one is simpler approach.
-
--Vasant
-
  arch/powerpc/platforms/powernv/opal-flash.c |    6 +++++-
  1 file changed, 5 insertions(+), 1 deletion(-)
 
