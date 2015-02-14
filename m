@@ -1,38 +1,17 @@
-Return-Path: <paulmck@linux.vnet.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 947981A0CC8
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Feb 2015 07:42:41 +1100 (AEDT)
-Received: from /spool/local
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
- Fri, 13 Feb 2015 13:42:39 -0700
-Received: from b03cxnp07029.gho.boulder.ibm.com
- (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 3279A19D803E
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Feb 2015 13:33:46 -0700 (MST)
-Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
- by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with
- ESMTP id t1DKgaqs50462774
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Feb 2015 13:42:36 -0700
-Received: from d03av05.boulder.ibm.com (localhost [127.0.0.1])
- by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t1DKgawd025273
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Feb 2015 13:42:36 -0700
-Date: Fri, 13 Feb 2015 12:42:35 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Paul Clarke <pc@us.ibm.com>
-Subject: Re: [PATCH] powerpc: re-enable dynticks
-Message-ID: <20150213204234.GA8884@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <54DE52BC.3020303@us.ibm.com>
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ by lists.ozlabs.org (Postfix) with ESMTP id CC3BA1A0C21
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Feb 2015 21:29:59 +1100 (AEDT)
+Message-ID: <54DF239E.6080705@c-s.fr>
+Date: Sat, 14 Feb 2015 11:29:50 +0100
+From: christophe leroy <christophe.leroy@c-s.fr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <54DE52BC.3020303@us.ibm.com>
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- linux-kernel@vger.kernel.org
+To: K Richard Pixley <rpixley@graphitesystems.com>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: embedding dtb file into kernel
+References: <54DE3732.2080707@graphitesystems.com>
+In-Reply-To: <54DE3732.2080707@graphitesystems.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,59 +21,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Feb 13, 2015 at 01:38:36PM -0600, Paul Clarke wrote:
-> implement arch_irq_work_has_interrupt() for powerpc
-> 
-> Commit 9b01f5bf3 introduced a dependency on "IRQ work self-IPIs" for
-> full dynamic ticks to be enabled, by expecting architectures to
-> implement a suitable arch_irq_work_has_interrupt() routine.
-> 
-> Several arches have implemented this routine, including x86
-> (3010279f) and arm (09f6edd4), but powerpc was omitted.
-> 
-> This patch implements this routine for powerpc.
-> 
-> The symptom, at boot (on powerpc arch systems) with "nohz_full=<CPU
-> list>" is displayed:
->     NO_HZ: Can't run full dynticks because arch doesn't support irq
-> work self-IPIs
-> 
-> after this patch:
->     NO_HZ: Full dynticks CPUs: <CPU list>.
-> 
-> Tested against 3.19.
-> 
-> CC: Frederic Weisbecker <fweisbec@gmail.com>
-> CC: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-> Signed-off-by: Paul A. Clarke <pc@us.ibm.com>
 
-Acked-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+Le 13/02/2015 18:41, K Richard Pixley a écrit :
+> I'm having trouble figuring out how to embed a dtb file into my 
+> kernel.  I'm thinking that there should be a standard, architecture 
+> independent facility for this akin to initramfs, yes?
+>
+> Could someone please either point me to the standard facility, 
+> relevant doc, a currently building board that uses the standard 
+> facility, or outline what needs to be done to do this with a new board?
+>
+> If it matters, (I can't think why it would), I'm working with powerpc 
+> on a 3.10 kernel.  But if there are better facilities in other 
+> versions I'd appreciate hearing about that too.
+>
+> Thank you in advance.
+>
 
-> diff --git a/arch/powerpc/include/asm/irq_work.h
-> b/arch/powerpc/include/asm/irq_work.h
-> new file mode 100644
-> index 0000000..18365ec
-> --- /dev/null
-> +++ b/arch/powerpc/include/asm/irq_work.h
-> @@ -0,0 +1,11 @@
-> +#ifndef _ASM_IRQ_WORK_H
-> +#define _ASM_IRQ_WORK_H
-> +
-> +#include <asm/processor.h>
-> +
-> +static inline bool arch_irq_work_has_interrupt(void)
-> +{
-> +	return 1;
-> +}
-> +
-> +#endif /* _ASM_IRQ_WORK_H */
-> 
-> --
-> Regards,
-> Paul Clarke, IBM
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+Hi,
+
+The device tree (DTB file) is not supposed to be embedded into the 
+kernel but loaded independently by the boot loader (for instance Uboot).
+Then a pointer to the device tree is handed over by Uboot to the kernel 
+when calling the _start function.
+
+You also have in arch/powerpc/boot/ a facility called cuboot which 
+allows to create a ppcboot image with kernel and device tree bound together.
+
+Christophe
+
+---
+L'absence de virus dans ce courrier électronique a été vérifiée par le logiciel antivirus Avast.
+http://www.avast.com
