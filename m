@@ -1,19 +1,18 @@
-Return-Path: <sbabic@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <kda@linux-powerpc.org>
+Received: from mail-lb0-f174.google.com (mail-lb0-f174.google.com
+ [209.85.217.174])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 65DFE1A0728
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Feb 2015 00:50:34 +1100 (AEDT)
-Message-ID: <54E0A2D7.8030700@denx.de>
-Date: Sun, 15 Feb 2015 14:44:55 +0100
-From: Stefano Babic <sbabic@denx.de>
-MIME-Version: 1.0
-To: K Richard Pixley <rpixley@graphitesystems.com>,
- linuxppc-dev@lists.ozlabs.org
-Subject: Re: embedding dtb file into kernel
-References: <54DE3732.2080707@graphitesystems.com>
-In-Reply-To: <54DE3732.2080707@graphitesystems.com>
-Content-Type: text/plain; charset=utf-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 59F541A0728
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Feb 2015 05:03:08 +1100 (AEDT)
+Received: by mail-lb0-f174.google.com with SMTP id z11so23551436lbi.5
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 Feb 2015 10:03:04 -0800 (PST)
+From: Denis Kirjanov <kda@linux-powerpc.org>
+To: netdev@vger.kernel.org
+Subject: [PATCH net-next 0/6] bpf: Enable BPF JIT on ppc32
+Date: Sun, 15 Feb 2015 21:06:39 +0300
+Message-Id: <1424023605-2416-1-git-send-email-kda@linux-powerpc.org>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,31 +22,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Richard,
+This patch series enables BPF JIT on ppc32. There are relatevily
+few chnages in the code to make it work.
 
-On 13/02/2015 18:41, K Richard Pixley wrote:
-> I'm having trouble figuring out how to embed a dtb file into my kernel. 
-> I'm thinking that there should be a standard, architecture independent
-> facility for this akin to initramfs, yes?
-> 
-> Could someone please either point me to the standard facility, relevant
-> doc, a currently building board that uses the standard facility, or
-> outline what needs to be done to do this with a new board?
-> 
-> If it matters, (I can't think why it would), I'm working with powerpc on
-> a 3.10 kernel.  But if there are better facilities in other versions I'd
-> appreciate hearing about that too.
-> 
+All test_bpf tests passed both on 7447a and P2041-based machines.
 
-Maybe it is worth to take a look at the fitImage, which can embed pretty
-much anything (including DTB).
-
-Best regards,
-Stefano Babic
-
--- 
-=====================================================================
-DENX Software Engineering GmbH,      Managing Director: Wolfgang Denk
-HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
-Phone: +49-8142-66989-53 Fax: +49-8142-66989-80 Email: sbabic@denx.de
-=====================================================================
+ arch/powerpc/Kconfig                  |   2 +-
+ arch/powerpc/include/asm/asm-compat.h |   4 +
+ arch/powerpc/include/asm/ppc-opcode.h |   2 +
+ arch/powerpc/net/Makefile             |   2 +-
+ arch/powerpc/net/bpf_jit.h            |  47 ++++++-
+ arch/powerpc/net/bpf_jit_64.S         | 229 ----------------------------------
+ arch/powerpc/net/bpf_jit_asm.S        | 229 ++++++++++++++++++++++++++++++++++
+ arch/powerpc/net/bpf_jit_comp.c       |  32 ++---
+ 8 files changed, 300 insertions(+), 247 deletions(-)
