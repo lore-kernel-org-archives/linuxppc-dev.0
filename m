@@ -1,22 +1,19 @@
-Return-Path: <alexei.starovoitov@gmail.com>
-Received: from mail-qg0-x236.google.com (mail-qg0-x236.google.com
- [IPv6:2607:f8b0:400d:c04::236])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <Emilian.Medve@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0142.outbound.protection.outlook.com [65.55.169.142])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E6D7E1A0409
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Feb 2015 02:03:04 +1100 (AEDT)
-Received: by mail-qg0-f54.google.com with SMTP id z60so23601878qgd.13
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Feb 2015 07:03:01 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id D222B1A0F24
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Feb 2015 02:51:28 +1100 (AEDT)
+From: Emil Medve <Emilian.Medve@Freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>
+Subject: [RFC v2 09/10] fsl_bman: Add HOTPLUG_CPU support
+Date: Mon, 16 Feb 2015 09:46:20 -0600
+Message-ID: <1424101581-22109-10-git-send-email-Emilian.Medve@Freescale.com>
+In-Reply-To: <1424101581-22109-1-git-send-email-Emilian.Medve@Freescale.com>
+References: <1424101581-22109-1-git-send-email-Emilian.Medve@Freescale.com>
 MIME-Version: 1.0
-From: Alexei Starovoitov <alexei.starovoitov@gmail.com>
-Date: Mon, 16 Feb 2015 10:02:40 -0500
-Message-ID: <CAADnVQJ2kONF03avXmcvKpwTaZ74wOLzcTjTOLKt1=XoY01Yqg@mail.gmail.com>
-Subject: Re: [PATCH net-next 0/6] bpf: Enable BPF JIT on ppc32
-To: Denis Kirjanov <kda@linux-powerpc.org>
-Content-Type: text/plain; charset=UTF-8
-Cc: Daniel Borkmann <daniel@iogearbox.net>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- Alexei Starovoitov <ast@kernel.org>, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,22 +23,89 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Feb 16, 2015 at 2:13 AM, Denis Kirjanov <kda@linux-powerpc.org> wrote:
-> On 2/15/15, Daniel Borkmann <daniel@iogearbox.net> wrote:
->> On 02/15/2015 07:06 PM, Denis Kirjanov wrote:
->>> This patch series enables BPF JIT on ppc32. There are relatevily
->>> few chnages in the code to make it work.
->>>
->>> All test_bpf tests passed both on 7447a and P2041-based machines.
->>
->> I'm just wondering, next to the feedback that has already been
->> provided, would opening this up for ppc32 make it significantly
->> more difficult in future to migrate from classic BPF JIT to eBPF
->> JIT eventually (which is what we want long-term)? Being curious,
->> is there any ongoing effort from ppc people?
->>
->
-> Well, I don't see significant challenges to enable eBPF on ppc64 in the future.
-> I'll start working on it after I get this merged
+From: Hai-Ying Wang <Haiying.Wang@freescale.com>
 
-sounds great. looking forward to it :)
+Change-Id: I863d5c15c7f35f9de4ea3d985e4ff467167924b7
+Signed-off-by: Hai-Ying Wang <Haiying.Wang@freescale.com>
+---
+ drivers/soc/freescale/bman_portal.c | 45 ++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 44 insertions(+), 1 deletion(-)
+
+diff --git a/drivers/soc/freescale/bman_portal.c b/drivers/soc/freescale/bman_portal.c
+index a91081c..f484a91 100644
+--- a/drivers/soc/freescale/bman_portal.c
++++ b/drivers/soc/freescale/bman_portal.c
+@@ -30,6 +30,9 @@
+  */
+ 
+ #include "bman_priv.h"
++#ifdef CONFIG_HOTPLUG_CPU
++#include <linux/cpu.h>
++#endif
+ 
+ /*
+  * Global variables of the max portal/pool number this bman version supported
+@@ -180,7 +183,7 @@ static int __init parse_bportals(char *str)
+ }
+ __setup("bportals=", parse_bportals);
+ 
+-static void bman_offline_cpu(unsigned int cpu)
++static void __cold bman_offline_cpu(unsigned int cpu)
+ {
+ 	struct bman_portal *p = (struct bman_portal *)affine_bportals[cpu];
+ 	const struct bm_portal_config *pcfg;
+@@ -192,6 +195,42 @@ static void bman_offline_cpu(unsigned int cpu)
+ 	}
+ }
+ 
++#ifdef CONFIG_HOTPLUG_CPU
++static void __cold bman_online_cpu(unsigned int cpu)
++{
++	struct bman_portal *p = (struct bman_portal *)affine_bportals[cpu];
++	const struct bm_portal_config *pcfg;
++
++	if (p) {
++		pcfg = bman_get_bm_portal_config(p);
++		if (pcfg)
++			irq_set_affinity(pcfg->public_cfg.irq, cpumask_of(cpu));
++	}
++}
++
++static int __cold bman_hotplug_cpu_callback(struct notifier_block *nfb,
++					    unsigned long action, void *hcpu)
++{
++	unsigned int cpu = (unsigned long)hcpu;
++
++	switch (action) {
++	case CPU_ONLINE:
++	case CPU_ONLINE_FROZEN:
++		bman_online_cpu(cpu);
++		break;
++	case CPU_DOWN_PREPARE:
++	case CPU_DOWN_PREPARE_FROZEN:
++		bman_offline_cpu(cpu);
++	}
++
++	return NOTIFY_OK;
++}
++
++static struct notifier_block bman_hotplug_cpu_notifier = {
++	.notifier_call = bman_hotplug_cpu_callback,
++};
++#endif /* CONFIG_HOTPLUG_CPU */
++
+ /* Initialise the BMan driver. The meat of this function deals with portals. The
+  * following describes the flow of portal-handling, the code "steps" refer to
+  * this description;
+@@ -326,5 +365,9 @@ int __init bman_init(void)
+ 	for_each_cpu(cpu, &offline_cpus)
+ 		bman_offline_cpu(cpu);
+ 
++#ifdef CONFIG_HOTPLUG_CPU
++	register_hotcpu_notifier(&bman_hotplug_cpu_notifier);
++#endif
++
+ 	return 0;
+ }
+-- 
+2.3.0
