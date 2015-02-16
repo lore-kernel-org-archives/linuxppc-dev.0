@@ -1,36 +1,21 @@
-Return-Path: <cascardo@linux.vnet.ibm.com>
-Received: from e24smtp03.br.ibm.com (e24smtp03.br.ibm.com [32.104.18.24])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from smtp-out4.electric.net (smtp-out4.electric.net
+ [192.162.216.182])
+ (using TLSv1.1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BABF61A0F82
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Feb 2015 00:14:47 +1100 (AEDT)
-Received: from /spool/local
- by e24smtp03.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <cascardo@linux.vnet.ibm.com>;
- Mon, 16 Feb 2015 11:14:41 -0200
-Received: from d24relay02.br.ibm.com (d24relay02.br.ibm.com [9.13.184.26])
- by d24dlp02.br.ibm.com (Postfix) with ESMTP id B028D1DC005C
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Feb 2015 08:13:40 -0500 (EST)
-Received: from d24av02.br.ibm.com (d24av02.br.ibm.com [9.8.31.93])
- by d24relay02.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t1GDDtjs42926134
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Feb 2015 10:13:55 -0300
-Received: from d24av02.br.ibm.com (localhost [127.0.0.1])
- by d24av02.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t1GDEZt7024169
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Feb 2015 11:14:35 -0200
-Date: Mon, 16 Feb 2015 11:14:27 -0200
-From: cascardo@linux.vnet.ibm.com
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: Re: [PATCH 0/4] Support registering specific reset handler
-Message-ID: <20150216131427.GA4840@oc0812247204.ltc.br.ibm.com>
-References: <1423803299-22356-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9CA521A0FC9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Feb 2015 01:20:18 +1100 (AEDT)
+From: David Laight <David.Laight@ACULAB.COM>
+To: 'Markus Stockhausen' <stockhausen@collogia.de>,
+ "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>
+Subject: RE: [PATCH v1 2/7] AES for PPC/SPE - aes tables
+Date: Mon, 16 Feb 2015 14:19:50 +0000
+Message-ID: <063D6719AE5E284EB5DD2968C1650D6D1CAE46B2@AcuExch.aculab.com>
+References: <cfb098e9-69ae-47ff-afa7-08c922accd31@EXCHANGE.collogia.de>
+In-Reply-To: <cfb098e9-69ae-47ff-afa7-08c922accd31@EXCHANGE.collogia.de>
+Content-Type: text/plain; charset="Windows-1252"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1423803299-22356-1-git-send-email-gwshan@linux.vnet.ibm.com>
-Cc: bhelgaas@google.com, linux-pci@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,45 +25,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Feb 13, 2015 at 03:54:55PM +1100, Gavin Shan wrote:
-> VFIO PCI infrastructure depends on pci_reset_function() to do reset on
-> PCI devices so that they would be in clean state when host or guest grabs
-> them. Unfortunately, the function doesn't work (or not well) on some PCI
-> devices that require EEH PE reset.
-> 
-> The patchset extends the quirk for PCI device speicific reset methods to
-> allow dynamically registration. With it, we can translate reset requests
-> for those special PCI devcies to EEH PE reset, which is only avaialble on
-> 64-bits PowerPC platforms.
-> 
+From:  Markus Stockhausen
+> 4K AES tables for big endian
 
-Hi, Gavin.
+I can't help feeling that you could give more information about how the
+values are generated.
 
-I like your approach overall. That allows us to confine these quirks to
-the platforms where they are relevant. I would make the quirks more
-specific, though, instead of doing them for all IBM and Mellanox
-devices.
+...
+> + * These big endian AES encryption/decryption tables are designed to be =
+simply
+> + * accessed by a combination of rlwimi/lwz instructions with a minimum
+> + * of table registers (usually only one required). Thus they are aligned=
+ to
+> + * 4K. The locality of rotated values is derived from the reduced offset=
+s that
+> + * are available in the SPE load instructions. E.g. evldw, evlwwsplat, .=
+..
+> + *
+> + */
+> +.data
+> +.align 12
+> +.globl PPC_AES_4K_ENCTAB
+> +PPC_AES_4K_ENCTAB:
+> +	.long 0xc66363a5,0xa5c66363,0x63a5c663,0x6363a5c6
 
-I wonder if we should not have some form of domain reset, where we would
-reset all the devices on the same group, and use that on vfio. Grouping
-the devices would then be made platform-dependent, as well as the reset
-method. On powernv, we would group by IOMMU group and issue a
-fundamental reset.
+These seem to be byte rotates (all down the table).
+If so then use a CPP define to generate the rotated values.
 
-Cascardo.
+I'd like to see a reference to where the values themselves come from.
 
-> Gavin Shan (4):
->   PCI: Rename struct pci_dev_reset_methods
->   PCI: Introduce list for device reset methods
->   PCI: Allow registering reset method
->   powerpc/powernv: Register PCI dev specific reset handlers
-> 
->  arch/powerpc/platforms/powernv/pci.c |  61 +++++++++++++++
->  drivers/pci/pci.h                    |   3 +-
->  drivers/pci/quirks.c                 | 139 ++++++++++++++++++++++++++++++-----
->  include/linux/pci.h                  |   9 +++
->  4 files changed, 192 insertions(+), 20 deletions(-)
-> 
-> -- 
-> 1.8.3.2
-> 
+> +	.long 0xf87c7c84,0x84f87c7c,0x7c84f87c,0x7c7c84f8
+...
+> +	.long 0x6dbbbbd6,0xd66dbbbb,0xbbd66dbb,0xbbbbd66d
+> +	.long 0x2c16163a,0x3a2c1616,0x163a2c16,0x16163a2c
+> +.globl PPC_AES_4K_DECTAB
+> +PPC_AES_4K_DECTAB:
+> +	.long 0x51f4a750,0x5051f4a7,0xa75051f4,0xf4a75051
+...
+> +	.long 0xd0b85742,0x42d0b857,0x5742d0b8,0xb85742d0
+
+Some explanation of this third dataset is also needed.
+
+> +	.byte 0x52, 0x09, 0x6a, 0xd5, 0x30, 0x36, 0xa5, 0x38
+...
+> +	.byte 0xe1, 0x69, 0x14, 0x63, 0x55, 0x21, 0x0c, 0x7d
+
+	David
