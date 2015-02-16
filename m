@@ -1,22 +1,48 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <paulmck@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id AFF2F1A0194
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Feb 2015 16:50:27 +1100 (AEDT)
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DEAFB1A020A
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Feb 2015 15:06:59 +1100 (AEDT)
-Message-ID: <1424059606.21410.41.camel@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: re-enable dynticks
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Date: Mon, 16 Feb 2015 15:06:46 +1100
-In-Reply-To: <1424045319.3018.2.camel@ellerman.id.au>
-References: <54DE52BC.3020303@us.ibm.com>
- <1424045319.3018.2.camel@ellerman.id.au>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Frederic Weisbecker <fweisbec@gmail.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Paul Clarke <pc@us.ibm.com>, linux-kernel@vger.kernel.org
+ by ozlabs.org (Postfix) with ESMTPS id 059591401F0
+ for <linuxppc-dev@ozlabs.org>; Mon, 16 Feb 2015 16:50:26 +1100 (AEDT)
+Received: from /spool/local
+ by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
+ Sun, 15 Feb 2015 22:50:25 -0700
+Received: from b03cxnp08026.gho.boulder.ibm.com
+ (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 47A3D3E4003F
+ for <linuxppc-dev@ozlabs.org>; Sun, 15 Feb 2015 22:45:56 -0700 (MST)
+Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
+ by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with
+ ESMTP id t1G5ofnA42991782
+ for <linuxppc-dev@ozlabs.org>; Sun, 15 Feb 2015 22:50:41 -0700
+Received: from d03av05.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t1G5oMpp004267
+ for <linuxppc-dev@ozlabs.org>; Sun, 15 Feb 2015 22:50:22 -0700
+Date: Sun, 15 Feb 2015 21:50:17 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Subject: Re: suspicious RCU usage clockevents_lock, tick_broadcast_lock,
+ hrtimer_bases.lock
+Message-ID: <20150216055017.GE4166@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <54DD4BF6.1070503@au1.ibm.com>
+ <54DD8B37.2040903@linux.vnet.ibm.com>
+ <54DDA645.6080600@linux.vnet.ibm.com>
+ <20150213142603.GV4166@linux.vnet.ibm.com>
+ <54E161B0.5020105@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <54E161B0.5020105@linux.vnet.ibm.com>
+Cc: Linux PPC dev <linuxppc-dev@ozlabs.org>,
+ Sam Bobroff <sam.bobroff@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,58 +52,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2015-02-16 at 11:08 +1100, Michael Ellerman wrote:
-> On Fri, 2015-02-13 at 13:38 -0600, Paul Clarke wrote:
-> > implement arch_irq_work_has_interrupt() for powerpc
+On Mon, Feb 16, 2015 at 08:49:12AM +0530, Preeti U Murthy wrote:
+> On 02/13/2015 07:56 PM, Paul E. McKenney wrote:
+> > On Fri, Feb 13, 2015 at 12:52:45PM +0530, Preeti U Murthy wrote:
+> >> On 02/13/2015 10:57 AM, Preeti U Murthy wrote:
+> >>> On 02/13/2015 06:27 AM, Sam Bobroff wrote:
+> >>>> Hello,
+> >>>>
+> >>>> I'm receiving this while booting a vanilla 3.19 kernel on a Power 8 machine:
+> >>>
+> >>> Does the below patch fix the issue ?
+> >>>
+> >>> From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+> >>>
+> >>> [PATCH] tick/hrtimer-broadcast: Fix a suspicious RCU usage in the tick broadcast path
+> >>>
+> >>> ---
+> >>>  kernel/time/tick-broadcast-hrtimer.c | 2 +-
+> >>>  1 file changed, 1 insertion(+), 1 deletion(-)
+> >>>
+> >>> diff --git a/kernel/time/tick-broadcast-hrtimer.c b/kernel/time/tick-broadcast-hrtimer.c
+> >>> index eb682d5..57b8e32 100644
+> >>> --- a/kernel/time/tick-broadcast-hrtimer.c
+> >>> +++ b/kernel/time/tick-broadcast-hrtimer.c
+> >>> @@ -62,7 +62,7 @@ static int bc_set_next(ktime_t expires, struct clock_event_device *bc)
+> >>>          * HRTIMER_RESTART.
+> >>>          */
+> >>>         if (hrtimer_try_to_cancel(&bctimer) >= 0) {
+> >>> -               hrtimer_start(&bctimer, expires, HRTIMER_MODE_ABS_PINNED);
+> >>> +               RCU_NONIDLE(hrtimer_start(&bctimer, expires, HRTIMER_MODE_ABS_PINNED));
+> >>>                 /* Bind the "device" to the cpu */
+> >>>                 bc->bound_on = smp_processor_id();
+> >>>         } else if (bc->bound_on == smp_processor_id()) {
+> >>>
+> >> Actually the below patch is the complete fix. Paul can you please
+> >> review this ?  As an alternate solution I checked to see if its
+> >> possible to move rcu_idle_enter()/exit() closer to the
+> >> cpuidle_enter() call, but that won't work as you may have already
+> >> tried earlier.
+> >>
+> >> -----------------------------------------------------------------
+> >>
+> >> tick/broadcast-hrtimer : Fix suspicious RCU usage in idle loop
+> >>
+> >> From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+> >>
+> >> The hrtimer mode of broadcast queues hrtimers in the idle entry
+> >> path so as to wakeup cpus in deep idle states. hrtimer_{start/cancel}
+> >> functions call into tracing which uses RCU. But it is not legal to call
+> >> into RCU in cpuidle because it is one of the quiescent states. Hence
+> >> protect this region with RCU_NONIDLE which informs RCU that the cpu
+> >> is momentarily non-idle.
+> >>
+> >> Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
 > > 
-> > Commit 9b01f5bf3 introduced a dependency on "IRQ work self-IPIs" for 
-> > full dynamic ticks to be enabled, by expecting architectures to 
-> > implement a suitable arch_irq_work_has_interrupt() routine.
+> > Reviewed-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 > > 
-> > Several arches have implemented this routine, including x86 (3010279f) 
-> > and arm (09f6edd4), but powerpc was omitted.
-> > 
-> > This patch implements this routine for powerpc.
-> > 
- .../...
+> > Another alternative would be to change the hrtimer_{start/cancel}()
+> > functions' tracepoints to the _rcuidle form.  The advantage of this
+> > approach is less RCU-notification overhead when tracing is enabled.
 > 
-> It makes the message change, but is that correct? ie. do we actually implement
-> "IRQ work self-IPIs"?
+> But since the hrtimer_{start/cancel} functions' tracepoints are more
+> often called from paths which are in the non-quiescent states, wouldn't
+> we be doing an rcu_irq_enter/exit() redundantly far too often in that case ?
 
-I think so... Fred, do you think what we do will work ? We hijack our
-decrementer (local timer) by making it shoot almost immediately (1 tick
-away) and run the irq work at the beginning of __timer_interrupt().
+And the other advantage of doing it the way you did (and I -did- give
+you a Reviewed-by!) is that you are incurring the extra overhead from
+the idle loop, where that extra overhead is less likely to be holding
+something else up.  So, yes, I do agree with your patch.
 
-At that point we are on our irq stack and have done irq_enter but that's
-about it.
-
-Cheers,
-Ben.
-
-> > diff --git a/arch/powerpc/include/asm/irq_work.h 
-> > b/arch/powerpc/include/asm/irq_work.h
-> > new file mode 100644
-> > index 0000000..18365ec
-> > --- /dev/null
-> > +++ b/arch/powerpc/include/asm/irq_work.h
-> > @@ -0,0 +1,11 @@
-> > +#ifndef _ASM_IRQ_WORK_H
-> > +#define _ASM_IRQ_WORK_H
-> > +
-> > +#include <asm/processor.h>
-> > +
-> > +static inline bool arch_irq_work_has_interrupt(void)
-> > +{
-> > +	return 1;
-> 
-> Should be "true";
-> 
-> > +}
-> 
-> cheers
-> 
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+							Thanx, Paul
