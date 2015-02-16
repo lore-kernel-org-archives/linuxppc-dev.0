@@ -1,37 +1,22 @@
-Return-Path: <clg@fr.ibm.com>
-Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 76F171A0CF3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Feb 2015 03:54:09 +1100 (AEDT)
-Received: from /spool/local
- by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <clg@fr.ibm.com>;
- Mon, 16 Feb 2015 16:54:04 -0000
-Received: from b06cxnps3074.portsmouth.uk.ibm.com
- (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
- by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id B6D73219007F
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Feb 2015 16:53:56 +0000 (GMT)
-Received: from d06av03.portsmouth.uk.ibm.com (d06av03.portsmouth.uk.ibm.com
- [9.149.37.213])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t1GGrfRp10944782
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Feb 2015 16:53:41 GMT
-Received: from d06av03.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av03.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t1GGreEC031813
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Feb 2015 09:53:40 -0700
-Message-ID: <54E2207D.3040605@fr.ibm.com>
-Date: Mon, 16 Feb 2015 17:53:17 +0100
-From: Cedric Le Goater <clg@fr.ibm.com>
+Return-Path: <stockhausen@collogia.de>
+Received: from mailrelay.collogia.de (mailrelay.collogia.de [194.8.207.98])
+ by lists.ozlabs.org (Postfix) with SMTP id 079C31A0047
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Feb 2015 04:19:02 +1100 (AEDT)
+From: Markus Stockhausen <stockhausen@collogia.de>
+To: Segher Boessenkool <segher@kernel.crashing.org>, David Laight
+ <David.Laight@ACULAB.COM>
+Subject: AW: [PATCH v1 2/7] AES for PPC/SPE - aes tables
+Date: Mon, 16 Feb 2015 17:18:48 +0000
+Message-ID: <12EF8D94C6F8734FB2FF37B9FBEDD1735F9DF098@EXCHANGE.collogia.de>
+References: <cfb098e9-69ae-47ff-afa7-08c922accd31@EXCHANGE.collogia.de>
+ <063D6719AE5E284EB5DD2968C1650D6D1CAE46B2@AcuExch.aculab.com>,
+ <20150216143706.GA3609@gate.crashing.org>
+In-Reply-To: <20150216143706.GA3609@gate.crashing.org>
+Content-Type: multipart/mixed;
+ boundary="----=_NextPartTM-000-d0fb26b8-9b33-4b13-a2b2-3b353007fa76"
 MIME-Version: 1.0
-To: Jeremy Kerr <jk@ozlabs.org>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 2/5 v2] powerpc/boot/fdt: Add little-endian support to
- libfdt wrappers
-References: <1423630544.752438.317337864668.2.gpush@pablo>
-In-Reply-To: <1423630544.752438.317337864668.2.gpush@pablo>
-Content-Type: text/plain; charset=windows-1252
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,23 +26,123 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 02/11/2015 05:55 AM, Jeremy Kerr wrote:
-> For epapr-style boot, we may be little-endian. This change implements
-> the proper conversion for fdt*_to_cpu and cpu_to_fdt*. We also need the
-> full cpu_to_* and *_to_cpu macros for this.
-> 
-> Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
-> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
+This is a multi-part message in MIME format.
 
-I did not work on the little endian epapr wrapper :/
+------=_NextPartTM-000-d0fb26b8-9b33-4b13-a2b2-3b353007fa76
+Content-Type: text/plain; charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-To test the patchset, I used the 'le' branch of git://github.com/jk-ozlabs/linux 
-and successfully booted a tuleta and an open-power system using the latest 
-skiboot and a LE zImage.epapr. Looks good to me. 
+> Von: linux-crypto-owner@vger.kernel.org [linux-crypto-owner@vger.kernel.o=
+rg]&quot; im Auftrag von &quot;Segher Boessenkool [segher@kernel.crashing.o=
+rg]=0A=
+> Gesendet: Montag, 16. Februar 2015 15:37=0A=
+> An: David Laight=0A=
+> Cc: Markus Stockhausen; linux-crypto@vger.kernel.org; linuxppc-dev@lists.=
+ozlabs.org=0A=
+> Betreff: Re: [PATCH v1 2/7] AES for PPC/SPE - aes tables=0A=
+> =0A=
+> On Mon, Feb 16, 2015 at 02:19:50PM +0000, David Laight wrote:=0A=
+> > From:  Markus Stockhausen=0A=
+> > > 4K AES tables for big endian=0A=
+> >=0A=
+> > I can't help feeling that you could give more information about how the=
+=0A=
+> > values are generated.=0A=
+> =0A=
+> ... and an explanation of why this does not open you up to a timing attac=
+k?=0A=
+=0A=
+Good points,=0A=
+=0A=
+the tables are only big endian reversed ones of those found in crypto/aes_g=
+eneric.c.=0A=
+=0A=
+Regarding timing attacks: I understand, that reducing AES table sizes for a=
+ constant =0A=
+AES processing time is important to avoid cache timing attacks. Hopefully t=
+he =0A=
+following points will mitigate the concern.=0A=
+=0A=
+Target architecture are low performance e500 cores without available caam =
+=0A=
+features. These can currently use only aes-generic module. That one depends=
+ =0A=
+on 16K T-tables. 2*4K for encryption and 2*4K for decryption. The new modul=
+e=0A=
+reduces the T-table sizes to 8K+256 bytes. Far away from a minimal 256 byte=
+=0A=
+S-BOX but at least an improvement.=0A=
+=0A=
+To narrow it down further. Intended use is for cheap routers. So no multius=
+er =0A=
+environments where a malicous process could drive complex flush+reload =0A=
+attacks. In case someone gains unallowed access there will be a lot of othe=
+r =0A=
+and simpler ways to compromise the system.=0A=
+=0A=
+In case that is sufficient for you I will add respective notes into a patch=
+ v2.=0A=
+=0A=
+Markus=
+------=_NextPartTM-000-d0fb26b8-9b33-4b13-a2b2-3b353007fa76
+Content-Type: text/plain;
+	name="InterScan_Disclaimer.txt"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+	filename="InterScan_Disclaimer.txt"
 
-You might want to add CONFIG_IPMI_WATCHDOG to openpower_defconfig 
+****************************************************************************
+Diese E-Mail enthält vertrauliche und/oder rechtlich geschützte
+Informationen. Wenn Sie nicht der richtige Adressat sind oder diese E-Mail
+irrtümlich erhalten haben, informieren Sie bitte sofort den Absender und
+vernichten Sie diese Mail. Das unerlaubte Kopieren sowie die unbefugte
+Weitergabe dieser Mail ist nicht gestattet.
 
-Thanks.
+Über das Internet versandte E-Mails können unter fremden Namen erstellt oder
+manipuliert werden. Deshalb ist diese als E-Mail verschickte Nachricht keine
+rechtsverbindliche Willenserklärung.
 
-C.
+Collogia
+Unternehmensberatung AG
+Ubierring 11
+D-50678 Köln
+
+Vorstand:
+Kadir Akin
+Dr. Michael Höhnerbach
+
+Vorsitzender des Aufsichtsrates:
+Hans Kristian Langva
+
+Registergericht: Amtsgericht Köln
+Registernummer: HRB 52 497
+
+This e-mail may contain confidential and/or privileged information. If you
+are not the intended recipient (or have received this e-mail in error)
+please notify the sender immediately and destroy this e-mail. Any
+unauthorized copying, disclosure or distribution of the material in this
+e-mail is strictly forbidden.
+
+e-mails sent over the internet may have been written under a wrong name or
+been manipulated. That is why this message sent as an e-mail is not a
+legally binding declaration of intention.
+
+Collogia
+Unternehmensberatung AG
+Ubierring 11
+D-50678 Köln
+
+executive board:
+Kadir Akin
+Dr. Michael Höhnerbach
+
+President of the supervisory board:
+Hans Kristian Langva
+
+Registry office: district court Cologne
+Register number: HRB 52 497
+
+****************************************************************************
+
+------=_NextPartTM-000-d0fb26b8-9b33-4b13-a2b2-3b353007fa76--
