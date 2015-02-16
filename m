@@ -1,19 +1,16 @@
-Return-Path: <asolokha@kb.kras.ru>
-Received: from ispman.iskranet.ru (ispman.iskranet.ru [62.213.33.10])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 93BA51A09D8
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Feb 2015 21:56:47 +1100 (AEDT)
-From: Arseny Solokha <asolokha@kb.kras.ru>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 4/4] powerpc/mpic: remove unused functions
-Date: Mon, 16 Feb 2015 17:56:28 +0700
-Message-Id: <1424084188-17097-5-git-send-email-asolokha@kb.kras.ru>
-In-Reply-To: <1424084188-17097-1-git-send-email-asolokha@kb.kras.ru>
-References: <1424084188-17097-1-git-send-email-asolokha@kb.kras.ru>
-Cc: linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- Scott Wood <scottwood@freescale.com>, Arseny Solokha <asolokha@kb.kras.ru>,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <stockhausen@collogia.de>
+Received: from mailrelay.collogia.de (mailrelay.collogia.de [194.8.207.98])
+ by lists.ozlabs.org (Postfix) with SMTP id 912241A04E0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Feb 2015 23:45:40 +1100 (AEDT)
+Subject: [PATCH v1 0/7] AES for PPC/SPE
+From: Markus Stockhausen <stockhausen@collogia.de>
+Date: Mon, 16 Feb 2015 13:45:29 +0100
+To: <linux-crypto@vger.kernel.org>
+MIME-Version: 1.0
+Content-Type: multipart/mixed;
+ boundary="----=_NextPartTM-000-7f55d32d-1c4b-44de-ad00-dd6bb494df2d"
+Message-ID: <67ff8bd2-f749-4773-a52a-3fd8a0bf74bf@EXCHANGE.collogia.de>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,100 +20,145 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Drop unused fsl_mpic_primary_get_version(), mpic_set_clk_ratio(),
-mpic_set_serial_int().
 
-Signed-off-by: Arseny Solokha <asolokha@kb.kras.ru>
----
- arch/powerpc/include/asm/mpic.h | 16 ----------------
- arch/powerpc/sysdev/mpic.c      | 35 -----------------------------------
- 2 files changed, 51 deletions(-)
+This is a multi-part message in MIME format.
 
-diff --git a/arch/powerpc/include/asm/mpic.h b/arch/powerpc/include/asm/mpic.h
-index 754f93d..3a2ab60 100644
---- a/arch/powerpc/include/asm/mpic.h
-+++ b/arch/powerpc/include/asm/mpic.h
-@@ -395,16 +395,6 @@ extern struct bus_type mpic_subsys;
- #define	MPIC_REGSET_STANDARD		MPIC_REGSET(0)	/* Original MPIC */
- #define	MPIC_REGSET_TSI108		MPIC_REGSET(1)	/* Tsi108/109 PIC */
- 
--/* Get the version of primary MPIC */
--#ifdef CONFIG_MPIC
--extern u32 fsl_mpic_primary_get_version(void);
--#else
--static inline u32 fsl_mpic_primary_get_version(void)
--{
--	return 0;
--}
--#endif
--
- /* Allocate the controller structure and setup the linux irq descs
-  * for the range if interrupts passed in. No HW initialization is
-  * actually performed.
-@@ -496,11 +486,5 @@ extern unsigned int mpic_get_coreint_irq(void);
- /* Fetch Machine Check interrupt from primary mpic */
- extern unsigned int mpic_get_mcirq(void);
- 
--/* Set the EPIC clock ratio */
--void mpic_set_clk_ratio(struct mpic *mpic, u32 clock_ratio);
--
--/* Enable/Disable EPIC serial interrupt mode */
--void mpic_set_serial_int(struct mpic *mpic, int enable);
--
- #endif /* __KERNEL__ */
- #endif	/* _ASM_POWERPC_MPIC_H */
-diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
-index bbfbbf2..f72b592 100644
---- a/arch/powerpc/sysdev/mpic.c
-+++ b/arch/powerpc/sysdev/mpic.c
-@@ -1219,16 +1219,6 @@ static u32 fsl_mpic_get_version(struct mpic *mpic)
-  * Exported functions
-  */
- 
--u32 fsl_mpic_primary_get_version(void)
--{
--	struct mpic *mpic = mpic_primary;
--
--	if (mpic)
--		return fsl_mpic_get_version(mpic);
--
--	return 0;
--}
--
- struct mpic * __init mpic_alloc(struct device_node *node,
- 				phys_addr_t phys_addr,
- 				unsigned int flags,
-@@ -1676,31 +1666,6 @@ void __init mpic_init(struct mpic *mpic)
- 		mpic_err_int_init(mpic, MPIC_FSL_ERR_INT);
- }
- 
--void __init mpic_set_clk_ratio(struct mpic *mpic, u32 clock_ratio)
--{
--	u32 v;
--
--	v = mpic_read(mpic->gregs, MPIC_GREG_GLOBAL_CONF_1);
--	v &= ~MPIC_GREG_GLOBAL_CONF_1_CLK_RATIO_MASK;
--	v |= MPIC_GREG_GLOBAL_CONF_1_CLK_RATIO(clock_ratio);
--	mpic_write(mpic->gregs, MPIC_GREG_GLOBAL_CONF_1, v);
--}
--
--void __init mpic_set_serial_int(struct mpic *mpic, int enable)
--{
--	unsigned long flags;
--	u32 v;
--
--	raw_spin_lock_irqsave(&mpic_lock, flags);
--	v = mpic_read(mpic->gregs, MPIC_GREG_GLOBAL_CONF_1);
--	if (enable)
--		v |= MPIC_GREG_GLOBAL_CONF_1_SIE;
--	else
--		v &= ~MPIC_GREG_GLOBAL_CONF_1_SIE;
--	mpic_write(mpic->gregs, MPIC_GREG_GLOBAL_CONF_1, v);
--	raw_spin_unlock_irqrestore(&mpic_lock, flags);
--}
--
- void mpic_irq_set_priority(unsigned int irq, unsigned int pri)
- {
- 	struct mpic *mpic = mpic_find(irq);
--- 
-2.3.0
+------=_NextPartTM-000-7f55d32d-1c4b-44de-ad00-dd6bb494df2d
+Content-Type: text/plain
+
+[PATCH v1 0/7] AES for PPC/SPE
+
+The following patches add support for 64bit accelerated AES
+calculation on PPC processors with SPE instruction set. Besides
+the AES core module it implements ECB/CBC/CTR/XTS as block
+ciphers. The implementation takes care of the following 
+constraints:
+
+- save SPE registers for interrupt context compatibility
+- disable preemption only for short intervals
+- endian independant
+
+Module passes tcrypt mode=10 tests. Synthethic AES speedup 
+factors from insmod tcrypt sec=3 mode=200 taken on e500v2 
+800 MHz (TP Link WDR4900) compared with the generic kernel 
+module.
+
+key bytes  ecb   ecb   cbc   cbc   ctr   ctr   xts   xts
+           enc   dec   enc   dec   enc   dec   enc   dec
+--- -----  ----  ----  ----  ----  ----  ----  ----  ----
+128    16  1.14  1.14  1.20  1.28  1.20  1.19  1.20  1.21
+128    64  1.35  1.36  1.48  1.51  1.50  1.50  1.41  1.41
+128   256  1.49  1.49  1.66  1.65  1.69  1.69  1.58  1.57
+128  1024  1.51  1.51  1.69  1.68  1.72  1.72  1.61  1.60
+128  8192  1.52  1.52  1.70  1.68  1.73  1.73  1.62  1.61
+192    16  1.14  1.15  1.22  1.28  1.21  1.21  1.22  1.23
+192    64  1.36  1.37  1.48  1.49  1.49  1.50  1.41  1.41
+192   256  1.48  1.48  1.63  1.63  1.65  1.65  1.56  1.55
+192  1024  1.50  1.50  1.65  1.64  1.68  1.68  1.59  1.58
+192  8192  1.52  1.52  1.67  1.66  1.68  1.68  1.60  1.59
+256    16  1.17  1.18  1.24  1.30  1.23  1.22  1.24  1.25
+256    64  1.37  1.37  1.47  1.50  1.49  1.49  1.42  1.41
+256   256  1.48  1.47  1.60  1.60  1.63  1.63  1.54  1.53
+256  1024  1.50  1.49  1.62  1.61  1.65  1.65  1.57  1.56
+256  8192  1.50  1.49  1.63  1.62  1.66  1.66  1.58  1.57
+
+Additionally numbers from an iperf transfer benchmark. They
+include the AES optimized and the SHA256 optimized module.
+
+- Server : Xeon X3470 2.93GHz
+- Client : Core I5 2.4GHz Windows (Shrew VPN client)
+- Gateway: e500v2 800 MHz (TP Link WDR4900)
+
+AES256 generic / SHA256 generic modules:
+> iperf.exe -c a.b.c.d -t 60 -i 10
+------------------------------------------------------------
+Client connecting to a.b.c.d, TCP port 5001
+TCP window size: 63.0 KByte (default)
+------------------------------------------------------------
+[  3] local u.v.w.x port 50730 connected with a.b.c.d port 5001
+[ ID] Interval       Transfer     Bandwidth
+[  3]  0.0-10.0 sec  51.1 MBytes  42.9 Mbits/sec
+[  3] 10.0-20.0 sec  51.9 MBytes  43.5 Mbits/sec
+[  3] 20.0-30.0 sec  51.5 MBytes  43.2 Mbits/sec
+[  3] 30.0-40.0 sec  51.5 MBytes  43.2 Mbits/sec
+[  3] 40.0-50.0 sec  51.2 MBytes  43.0 Mbits/sec
+[  3] 50.0-60.0 sec  50.6 MBytes  42.5 Mbits/sec
+[  3]  0.0-60.0 sec   308 MBytes  43.0 Mbits/sec
+
+AES256 (this patch) / SHA256 (my last patch)
+> iperf.exe -c a.b.c.d -t 60 -i 10
+------------------------------------------------------------
+Client connecting to a.b.c.d, TCP port 5001
+TCP window size: 63.0 KByte (default)
+------------------------------------------------------------
+[  3] local u.v.w.x port 50730 connected with a.b.c.d port 5001
+[ ID] Interval       Transfer     Bandwidth
+[  3]  0.0-10.0 sec  69.6 MBytes  58.4 Mbits/sec
+[  3] 10.0-20.0 sec  69.1 MBytes  58.0 Mbits/sec
+[  3] 20.0-30.0 sec  69.2 MBytes  58.1 Mbits/sec
+[  3] 30.0-40.0 sec  67.1 MBytes  56.3 Mbits/sec
+[  3] 40.0-50.0 sec  67.6 MBytes  56.7 Mbits/sec
+[  3] 50.0-60.0 sec  65.9 MBytes  55.3 Mbits/sec
+[  3]  0.0-60.0 sec   409 MBytes  57.1 Mbits/sec
+
+------=_NextPartTM-000-7f55d32d-1c4b-44de-ad00-dd6bb494df2d
+Content-Type: text/plain;
+	name="InterScan_Disclaimer.txt"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+	filename="InterScan_Disclaimer.txt"
+
+****************************************************************************
+Diese E-Mail enthält vertrauliche und/oder rechtlich geschützte
+Informationen. Wenn Sie nicht der richtige Adressat sind oder diese E-Mail
+irrtümlich erhalten haben, informieren Sie bitte sofort den Absender und
+vernichten Sie diese Mail. Das unerlaubte Kopieren sowie die unbefugte
+Weitergabe dieser Mail ist nicht gestattet.
+
+Über das Internet versandte E-Mails können unter fremden Namen erstellt oder
+manipuliert werden. Deshalb ist diese als E-Mail verschickte Nachricht keine
+rechtsverbindliche Willenserklärung.
+
+Collogia
+Unternehmensberatung AG
+Ubierring 11
+D-50678 Köln
+
+Vorstand:
+Kadir Akin
+Dr. Michael Höhnerbach
+
+Vorsitzender des Aufsichtsrates:
+Hans Kristian Langva
+
+Registergericht: Amtsgericht Köln
+Registernummer: HRB 52 497
+
+This e-mail may contain confidential and/or privileged information. If you
+are not the intended recipient (or have received this e-mail in error)
+please notify the sender immediately and destroy this e-mail. Any
+unauthorized copying, disclosure or distribution of the material in this
+e-mail is strictly forbidden.
+
+e-mails sent over the internet may have been written under a wrong name or
+been manipulated. That is why this message sent as an e-mail is not a
+legally binding declaration of intention.
+
+Collogia
+Unternehmensberatung AG
+Ubierring 11
+D-50678 Köln
+
+executive board:
+Kadir Akin
+Dr. Michael Höhnerbach
+
+President of the supervisory board:
+Hans Kristian Langva
+
+Registry office: district court Cologne
+Register number: HRB 52 497
+
+****************************************************************************
+
+------=_NextPartTM-000-7f55d32d-1c4b-44de-ad00-dd6bb494df2d--
