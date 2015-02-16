@@ -1,15 +1,15 @@
 Return-Path: <Emilian.Medve@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0136.outbound.protection.outlook.com [157.56.111.136])
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0144.outbound.protection.outlook.com [65.55.169.144])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DC6841A0F25
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Feb 2015 02:51:28 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id D67611A0F26
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Feb 2015 02:51:29 +1100 (AEDT)
 From: Emil Medve <Emilian.Medve@Freescale.com>
 To: <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>
-Subject: [RFC v2 06/10] fsl_qman: Add self-tester
-Date: Mon, 16 Feb 2015 09:46:17 -0600
-Message-ID: <1424101581-22109-7-git-send-email-Emilian.Medve@Freescale.com>
+Subject: [RFC v2 08/10] fsl_qman: Add debugfs support
+Date: Mon, 16 Feb 2015 09:46:19 -0600
+Message-ID: <1424101581-22109-9-git-send-email-Emilian.Medve@Freescale.com>
 In-Reply-To: <1424101581-22109-1-git-send-email-Emilian.Medve@Freescale.com>
 References: <1424101581-22109-1-git-send-email-Emilian.Medve@Freescale.com>
 MIME-Version: 1.0
@@ -26,182 +26,128 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Geoff Thorpe <Geoff.Thorpe@freescale.com>
 
-Change-Id: I314d36d94717cfc34053b6212899f71cb729d16c
+Change-Id: I59a75a91b289193b5ab1d30a08f60119dc4d7568
 Signed-off-by: Geoff Thorpe <Geoff.Thorpe@freescale.com>
 ---
- drivers/soc/freescale/Kconfig                      |  26 +-
- drivers/soc/freescale/Makefile                     |   4 +
- drivers/soc/freescale/bman_test.c                  |   2 +-
- drivers/soc/freescale/{bman_test.c => qman_test.c} |  15 +-
- drivers/soc/freescale/{bman_test.c => qman_test.h} |  33 +-
- drivers/soc/freescale/qman_test_api.c              | 213 +++++++++
- drivers/soc/freescale/qman_test_stash.c            | 497 +++++++++++++++++++++
- 7 files changed, 758 insertions(+), 32 deletions(-)
- copy drivers/soc/freescale/{bman_test.c => qman_test.c} (91%)
- copy drivers/soc/freescale/{bman_test.c => qman_test.h} (81%)
- create mode 100644 drivers/soc/freescale/qman_test_api.c
- create mode 100644 drivers/soc/freescale/qman_test_stash.c
+ drivers/soc/freescale/Kconfig        |    7 +
+ drivers/soc/freescale/Makefile       |    1 +
+ drivers/soc/freescale/qman_api.c     |   58 ++
+ drivers/soc/freescale/qman_debugfs.c | 1326 ++++++++++++++++++++++++++++++++++
+ drivers/soc/freescale/qman_priv.h    |    8 +
+ include/linux/fsl_qman.h             |    6 +
+ 6 files changed, 1406 insertions(+)
+ create mode 100644 drivers/soc/freescale/qman_debugfs.c
 
 diff --git a/drivers/soc/freescale/Kconfig b/drivers/soc/freescale/Kconfig
-index 6786b94..001999e 100644
+index f819671..5f683c8 100644
 --- a/drivers/soc/freescale/Kconfig
 +++ b/drivers/soc/freescale/Kconfig
-@@ -53,7 +53,7 @@ config FSL_BMAN_TEST
- 	---help---
- 	  This option compiles self-test code for BMan.
+@@ -124,6 +124,13 @@ config FSL_QMAN_TEST_STASH
+ 	  across a series of FQs scheduled to different portals (and cpus), with
+ 	  DQRR, data and context stashing always on.
  
--config FSL_BMAN_TEST_HIGH
-+config FSL_BMAN_TEST_API
- 	bool "BMan high-level self-test"
- 	depends on FSL_BMAN_TEST
- 	default y
-@@ -93,6 +93,30 @@ config FSL_QMAN_CONFIG
- 	  linux image is running as a guest OS under the hypervisor, only one
- 	  guest OS ("the control plane") needs this option.
- 
-+config FSL_QMAN_TEST
-+	tristate "QMan self-tests"
-+	default n
-+	---help---
-+	  This option compiles self-test code for QMan.
-+
-+config FSL_QMAN_TEST_API
-+	bool "QMan high-level self-test"
-+	depends on FSL_QMAN_TEST
++config FSL_QMAN_DEBUGFS
++	tristate "QMan debugfs interface"
++	depends on DEBUG_FS
 +	default y
 +	---help---
-+	  This requires the presence of cpu-affine portals, and performs
-+	  high-level API testing with them (whichever portal(s) are affine to
-+	  the cpu(s) the test executes on).
-+
-+config FSL_QMAN_TEST_STASH
-+	bool "QMan 'hot potato' data-stashing self-test"
-+	depends on FSL_QMAN_TEST
-+	default y
-+	---help---
-+	  This performs a "hot potato" style test enqueuing/dequeuing a frame
-+	  across a series of FQs scheduled to different portals (and cpus), with
-+	  DQRR, data and context stashing always on.
++	  This option compiles debugfs code for QMan.
 +
  # H/w settings that can be hard-coded for now.
  config FSL_QMAN_FQD_SZ
  	int "size of Frame Queue Descriptor region"
 diff --git a/drivers/soc/freescale/Makefile b/drivers/soc/freescale/Makefile
-index 09f31b0..1f59a6b 100644
+index c980dac..aac7cb2 100644
 --- a/drivers/soc/freescale/Makefile
 +++ b/drivers/soc/freescale/Makefile
-@@ -13,3 +13,7 @@ bman_tester-$(CONFIG_FSL_BMAN_TEST_THRESH)	+= bman_test_thresh.o
- # QMan
- obj-$(CONFIG_FSL_QMAN)				+= qman_api.o qman_utils.o
- obj-$(CONFIG_FSL_QMAN_CONFIG)			+= qman.o qman_portal.o
-+obj-$(CONFIG_FSL_QMAN_TEST)			+= qman_tester.o
-+qman_tester-y					 = qman_test.o
-+qman_tester-$(CONFIG_FSL_QMAN_TEST_API)		+= qman_test_api.o
-+qman_tester-$(CONFIG_FSL_QMAN_TEST_STASH)	+= qman_test_stash.o
-diff --git a/drivers/soc/freescale/bman_test.c b/drivers/soc/freescale/bman_test.c
-index 350f2f8..5d23752 100644
---- a/drivers/soc/freescale/bman_test.c
-+++ b/drivers/soc/freescale/bman_test.c
-@@ -37,7 +37,7 @@ MODULE_DESCRIPTION("BMan testing");
- 
- static int test_init(void)
- {
--#ifdef CONFIG_FSL_BMAN_TEST_HIGH
-+#ifdef CONFIG_FSL_BMAN_TEST_API
- 	int loop = 1;
- 	while (loop--)
- 		bman_test_api();
-diff --git a/drivers/soc/freescale/bman_test.c b/drivers/soc/freescale/qman_test.c
-similarity index 91%
-copy from drivers/soc/freescale/bman_test.c
-copy to drivers/soc/freescale/qman_test.c
-index 350f2f8..094d46d 100644
---- a/drivers/soc/freescale/bman_test.c
-+++ b/drivers/soc/freescale/qman_test.c
-@@ -29,22 +29,23 @@
-  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-  */
- 
--#include "bman_test.h"
-+#include "qman_test.h"
- 
- MODULE_AUTHOR("Geoff Thorpe");
- MODULE_LICENSE("Dual BSD/GPL");
--MODULE_DESCRIPTION("BMan testing");
-+MODULE_DESCRIPTION("QMan testing");
- 
- static int test_init(void)
- {
--#ifdef CONFIG_FSL_BMAN_TEST_HIGH
- 	int loop = 1;
--	while (loop--)
--		bman_test_api();
-+	while (loop--) {
-+#ifdef CONFIG_FSL_QMAN_TEST_STASH
-+		qman_test_stash();
- #endif
--#ifdef CONFIG_FSL_BMAN_TEST_THRESH
--	bman_test_thresh();
-+#ifdef CONFIG_FSL_QMAN_TEST_API
-+		qman_test_api();
- #endif
-+	}
- 	return 0;
+@@ -18,3 +18,4 @@ obj-$(CONFIG_FSL_QMAN_TEST)			+= qman_tester.o
+ qman_tester-y					 = qman_test.o
+ qman_tester-$(CONFIG_FSL_QMAN_TEST_API)		+= qman_test_api.o
+ qman_tester-$(CONFIG_FSL_QMAN_TEST_STASH)	+= qman_test_stash.o
++obj-$(CONFIG_FSL_QMAN_DEBUGFS)			+= qman_debugfs.o
+diff --git a/drivers/soc/freescale/qman_api.c b/drivers/soc/freescale/qman_api.c
+index 08dbb36..7556118 100644
+--- a/drivers/soc/freescale/qman_api.c
++++ b/drivers/soc/freescale/qman_api.c
+@@ -1765,6 +1765,37 @@ int qman_query_wq(u8 query_dedicated, struct qm_mcr_querywq *wq)
  }
+ EXPORT_SYMBOL(qman_query_wq);
  
-diff --git a/drivers/soc/freescale/bman_test.c b/drivers/soc/freescale/qman_test.h
-similarity index 81%
-copy from drivers/soc/freescale/bman_test.c
-copy to drivers/soc/freescale/qman_test.h
-index 350f2f8..4690376 100644
---- a/drivers/soc/freescale/bman_test.c
-+++ b/drivers/soc/freescale/qman_test.h
-@@ -29,28 +29,15 @@
-  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-  */
++int qman_testwrite_cgr(struct qman_cgr *cgr, u64 i_bcnt,
++			struct qm_mcr_cgrtestwrite *result)
++{
++	struct qm_mc_command *mcc;
++	struct qm_mc_result *mcr;
++	struct qman_portal *p = get_affine_portal();
++	unsigned long irqflags __maybe_unused;
++	u8 res;
++
++	PORTAL_IRQ_LOCK(p, irqflags);
++	mcc = qm_mc_start(&p->p);
++	mcc->cgrtestwrite.cgid = cgr->cgrid;
++	mcc->cgrtestwrite.i_bcnt_hi = (u8)(i_bcnt >> 32);
++	mcc->cgrtestwrite.i_bcnt_lo = (u32)i_bcnt;
++	qm_mc_commit(&p->p, QM_MCC_VERB_CGRTESTWRITE);
++	while (!(mcr = qm_mc_result(&p->p)))
++		cpu_relax();
++	DPA_ASSERT((mcr->verb & QM_MCR_VERB_MASK) == QM_MCC_VERB_CGRTESTWRITE);
++	res = mcr->result;
++	if (res == QM_MCR_RESULT_OK)
++		*result = mcr->cgrtestwrite;
++	PORTAL_IRQ_UNLOCK(p, irqflags);
++	put_affine_portal();
++	if (res != QM_MCR_RESULT_OK) {
++		pr_err("CGR TEST WRITE failed: %s\n", mcr_result_str(res));
++		return -EIO;
++	}
++	return 0;
++}
++EXPORT_SYMBOL(qman_testwrite_cgr);
++
+ int qman_query_cgr(struct qman_cgr *cgr, struct qm_mcr_querycgr *cgrd)
+ {
+ 	struct qm_mc_command *mcc;
+@@ -1793,6 +1824,33 @@ int qman_query_cgr(struct qman_cgr *cgr, struct qm_mcr_querycgr *cgrd)
+ }
+ EXPORT_SYMBOL(qman_query_cgr);
  
--#include "bman_test.h"
-+#include <linux/kernel.h>
-+#include <linux/errno.h>
-+#include <linux/io.h>
-+#include <linux/slab.h>
-+#include <linux/module.h>
-+#include <linux/interrupt.h>
-+#include <linux/delay.h>
- 
--MODULE_AUTHOR("Geoff Thorpe");
--MODULE_LICENSE("Dual BSD/GPL");
--MODULE_DESCRIPTION("BMan testing");
-+#include <linux/fsl_qman.h>
- 
--static int test_init(void)
--{
--#ifdef CONFIG_FSL_BMAN_TEST_HIGH
--	int loop = 1;
--	while (loop--)
--		bman_test_api();
--#endif
--#ifdef CONFIG_FSL_BMAN_TEST_THRESH
--	bman_test_thresh();
--#endif
--	return 0;
--}
--
--static void test_exit(void)
--{
--}
--
--module_init(test_init);
--module_exit(test_exit);
-+void qman_test_stash(void);
-+void qman_test_api(void);
-diff --git a/drivers/soc/freescale/qman_test_api.c b/drivers/soc/freescale/qman_test_api.c
++int qman_query_congestion(struct qm_mcr_querycongestion *congestion)
++{
++	struct qm_mc_result *mcr;
++	struct qman_portal *p = get_affine_portal();
++	unsigned long irqflags __maybe_unused;
++	u8 res;
++
++	PORTAL_IRQ_LOCK(p, irqflags);
++	qm_mc_start(&p->p);
++	qm_mc_commit(&p->p, QM_MCC_VERB_QUERYCONGESTION);
++	while (!(mcr = qm_mc_result(&p->p)))
++		cpu_relax();
++	DPA_ASSERT((mcr->verb & QM_MCR_VERB_MASK) ==
++			QM_MCC_VERB_QUERYCONGESTION);
++	res = mcr->result;
++	if (res == QM_MCR_RESULT_OK)
++		*congestion = mcr->querycongestion;
++	PORTAL_IRQ_UNLOCK(p, irqflags);
++	put_affine_portal();
++	if (res != QM_MCR_RESULT_OK) {
++		pr_err("QUERY_CONGESTION failed: %s\n", mcr_result_str(res));
++		return -EIO;
++	}
++	return 0;
++}
++EXPORT_SYMBOL(qman_query_congestion);
++
+ /* internal function used as a wait_event() expression */
+ static int set_p_vdqcr(struct qman_portal *p, struct qman_fq *fq, u32 vdqcr)
+ {
+diff --git a/drivers/soc/freescale/qman_debugfs.c b/drivers/soc/freescale/qman_debugfs.c
 new file mode 100644
-index 0000000..ab8ea41
+index 0000000..c09f88f
 --- /dev/null
-+++ b/drivers/soc/freescale/qman_test_api.c
-@@ -0,0 +1,213 @@
-+/* Copyright 2008-2011 Freescale Semiconductor, Inc.
++++ b/drivers/soc/freescale/qman_debugfs.c
+@@ -0,0 +1,1326 @@
++/* Copyright 2010-2011 Freescale Semiconductor, Inc.
 + *
 + * Redistribution and use in source and binary forms, with or without
 + * modification, are permitted provided that the following conditions are met:
@@ -231,691 +177,1337 @@ index 0000000..ab8ea41
 + * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 + * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 + */
++#include "qman_priv.h"
 +
-+#include "qman_test.h"
++#define MAX_FQID (0x00ffffff)
++#define QM_FQD_BLOCK_SIZE     64
++#define QM_FQD_AR	      (0xC10)
 +
-+/*************/
-+/* constants */
-+/*************/
++static u32 fqid_max;
++static u64 qman_ccsr_start;
++static u64 qman_ccsr_size;
 +
-+#define CGR_ID		27
-+#define POOL_ID		2
-+#define FQ_FLAGS	QMAN_FQ_FLAG_DYNAMIC_FQID
-+#define NUM_ENQUEUES	10
-+#define NUM_PARTIAL	4
-+#define PORTAL_SDQCR	(QM_SDQCR_SOURCE_CHANNELS | \
-+			QM_SDQCR_TYPE_PRIO_QOS | \
-+			QM_SDQCR_TOKEN_SET(0x98) | \
-+			QM_SDQCR_CHANNELS_DEDICATED | \
-+			QM_SDQCR_CHANNELS_POOL(POOL_ID))
-+#define PORTAL_OPAQUE	((void *)0xf00dbeef)
-+#define VDQCR_FLAGS	(QMAN_VOLATILE_FLAG_WAIT | QMAN_VOLATILE_FLAG_FINISH)
-+
-+/*************************************/
-+/* Predeclarations (eg. for fq_base) */
-+/*************************************/
-+
-+static enum qman_cb_dqrr_result cb_dqrr(struct qman_portal *,
-+					struct qman_fq *,
-+					const struct qm_dqrr_entry *);
-+static void cb_ern(struct qman_portal *, struct qman_fq *,
-+			const struct qm_mr_entry *);
-+static void cb_fqs(struct qman_portal *, struct qman_fq *,
-+			const struct qm_mr_entry *);
-+
-+/***************/
-+/* global vars */
-+/***************/
-+
-+static struct qm_fd fd, fd_dq;
-+static struct qman_fq fq_base = {
-+	.cb.dqrr = cb_dqrr,
-+	.cb.ern = cb_ern,
-+	.cb.fqs = cb_fqs
++static const char * const state_txt[] = {
++	"Out of Service",
++	"Retired",
++	"Tentatively Scheduled",
++	"Truly Scheduled",
++	"Parked",
++	"Active, Active Held or Held Suspended",
++	"Unknown State 6",
++	"Unknown State 7",
++	NULL,
 +};
-+static DECLARE_WAIT_QUEUE_HEAD(waitqueue);
-+static int retire_complete, sdqcr_complete;
 +
-+/**********************/
-+/* internal functions */
-+/**********************/
++static const u8 fqd_states[] = {
++	QM_MCR_NP_STATE_OOS, QM_MCR_NP_STATE_RETIRED, QM_MCR_NP_STATE_TEN_SCHED,
++	QM_MCR_NP_STATE_TRU_SCHED, QM_MCR_NP_STATE_PARKED,
++	QM_MCR_NP_STATE_ACTIVE};
 +
-+/* Helpers for initialising and "incrementing" a frame descriptor */
-+static void fd_init(struct qm_fd *__fd)
-+{
-+	qm_fd_addr_set64(__fd, 0xabdeadbeefLLU);
-+	__fd->format = qm_fd_contig_big;
-+	__fd->length29 = 0x0000ffff;
-+	__fd->cmd = 0xfeedf00d;
-+}
-+
-+static void fd_inc(struct qm_fd *__fd)
-+{
-+	u64 t = qm_fd_addr_get64(__fd);
-+	int z = t >> 40;
-+	t <<= 1;
-+	if (z)
-+		t |= 1;
-+	qm_fd_addr_set64(__fd, t);
-+	__fd->length29--;
-+	__fd->cmd++;
-+}
-+
-+/* The only part of the 'fd' we can't memcmp() is the ppid */
-+static int fd_cmp(const struct qm_fd *a, const struct qm_fd *b)
-+{
-+	int r = (qm_fd_addr_get64(a) == qm_fd_addr_get64(b)) ? 0 : -1;
-+	if (!r)
-+		r = a->format - b->format;
-+	if (!r)
-+		r = a->opaque - b->opaque;
-+	if (!r)
-+		r = a->cmd - b->cmd;
-+	return r;
-+}
-+
-+/********/
-+/* test */
-+/********/
-+
-+static void do_enqueues(struct qman_fq *fq)
-+{
-+	unsigned int loop;
-+	for (loop = 0; loop < NUM_ENQUEUES; loop++) {
-+		if (qman_enqueue(fq, &fd, QMAN_ENQUEUE_FLAG_WAIT |
-+				(((loop + 1) == NUM_ENQUEUES) ?
-+				QMAN_ENQUEUE_FLAG_WAIT_SYNC : 0)))
-+			panic("qman_enqueue() failed\n");
-+		fd_inc(&fd);
-+	}
-+}
-+
-+void qman_test_api(void)
-+{
-+	unsigned int flags;
-+	int res;
-+	struct qman_fq *fq = &fq_base;
-+
-+	pr_info("qman_test_api starting\n");
-+	fd_init(&fd);
-+	fd_init(&fd_dq);
-+
-+	/* Initialise (parked) FQ */
-+	if (qman_create_fq(0, FQ_FLAGS, fq))
-+		panic("qman_create_fq() failed\n");
-+	if (qman_init_fq(fq, QMAN_INITFQ_FLAG_LOCAL, NULL))
-+		panic("qman_init_fq() failed\n");
-+
-+	/* Do enqueues + VDQCR, twice. (Parked FQ) */
-+	do_enqueues(fq);
-+	pr_info("VDQCR (till-empty);\n");
-+	if (qman_volatile_dequeue(fq, VDQCR_FLAGS,
-+			QM_VDQCR_NUMFRAMES_TILLEMPTY))
-+		panic("qman_volatile_dequeue() failed\n");
-+	do_enqueues(fq);
-+	pr_info("VDQCR (%d of %d);\n", NUM_PARTIAL, NUM_ENQUEUES);
-+	if (qman_volatile_dequeue(fq, VDQCR_FLAGS,
-+			QM_VDQCR_NUMFRAMES_SET(NUM_PARTIAL)))
-+		panic("qman_volatile_dequeue() failed\n");
-+	pr_info("VDQCR (%d of %d);\n", NUM_ENQUEUES - NUM_PARTIAL,
-+					NUM_ENQUEUES);
-+	if (qman_volatile_dequeue(fq, VDQCR_FLAGS,
-+			QM_VDQCR_NUMFRAMES_SET(NUM_ENQUEUES - NUM_PARTIAL)))
-+		panic("qman_volatile_dequeue() failed\n");
-+
-+	do_enqueues(fq);
-+	pr_info("scheduled dequeue (till-empty)\n");
-+	if (qman_schedule_fq(fq))
-+		panic("qman_schedule_fq() failed\n");
-+	wait_event(waitqueue, sdqcr_complete);
-+
-+	/* Retire and OOS the FQ */
-+	res = qman_retire_fq(fq, &flags);
-+	if (res < 0)
-+		panic("qman_retire_fq() failed\n");
-+	wait_event(waitqueue, retire_complete);
-+	if (flags & QMAN_FQ_STATE_BLOCKOOS)
-+		panic("leaking frames\n");
-+	if (qman_oos_fq(fq))
-+		panic("qman_oos_fq() failed\n");
-+	qman_destroy_fq(fq, 0);
-+	pr_info("qman_test_api finished\n");
-+}
-+
-+static enum qman_cb_dqrr_result cb_dqrr(struct qman_portal *p,
-+					struct qman_fq *fq,
-+					const struct qm_dqrr_entry *dq)
-+{
-+	if (fd_cmp(&fd_dq, &dq->fd)) {
-+		pr_err("BADNESS: dequeued frame doesn't match;\n");
-+		BUG();
-+	}
-+	fd_inc(&fd_dq);
-+	if (!(dq->stat & QM_DQRR_STAT_UNSCHEDULED) && !fd_cmp(&fd_dq, &fd)) {
-+		sdqcr_complete = 1;
-+		wake_up(&waitqueue);
-+	}
-+	return qman_cb_dqrr_consume;
-+}
-+
-+static void cb_ern(struct qman_portal *p, struct qman_fq *fq,
-+			const struct qm_mr_entry *msg)
-+{
-+	panic("cb_ern() unimplemented");
-+}
-+
-+static void cb_fqs(struct qman_portal *p, struct qman_fq *fq,
-+			const struct qm_mr_entry *msg)
-+{
-+	u8 verb = (msg->verb & QM_MR_VERB_TYPE_MASK);
-+	if ((verb != QM_MR_VERB_FQRN) && (verb != QM_MR_VERB_FQRNI))
-+		panic("unexpected FQS message");
-+	pr_info("Retirement message received\n");
-+	retire_complete = 1;
-+	wake_up(&waitqueue);
-+}
-diff --git a/drivers/soc/freescale/qman_test_stash.c b/drivers/soc/freescale/qman_test_stash.c
-new file mode 100644
-index 0000000..bb17d98
---- /dev/null
-+++ b/drivers/soc/freescale/qman_test_stash.c
-@@ -0,0 +1,497 @@
-+/* Copyright 2009-2012 Freescale Semiconductor, Inc.
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions are met:
-+ *     * Redistributions of source code must retain the above copyright
-+ *	 notice, this list of conditions and the following disclaimer.
-+ *     * Redistributions in binary form must reproduce the above copyright
-+ *	 notice, this list of conditions and the following disclaimer in the
-+ *	 documentation and/or other materials provided with the distribution.
-+ *     * Neither the name of Freescale Semiconductor nor the
-+ *	 names of its contributors may be used to endorse or promote products
-+ *	 derived from this software without specific prior written permission.
-+ *
-+ *
-+ * ALTERNATIVELY, this software may be distributed under the terms of the
-+ * GNU General Public License ("GPL") as published by the Free Software
-+ * Foundation, either version 2 of that License or (at your option) any
-+ * later version.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
-+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ */
-+
-+#include <linux/kthread.h>
-+#include <linux/platform_device.h>
-+#include <linux/dma-mapping.h>
-+#include "qman_test.h"
-+
-+/* Algorithm:
-+ *
-+ * Each cpu will have HP_PER_CPU "handlers" set up, each of which incorporates
-+ * an rx/tx pair of FQ objects (both of which are stashed on dequeue). The
-+ * organisation of FQIDs is such that the HP_PER_CPU*NUM_CPUS handlers will
-+ * shuttle a "hot potato" frame around them such that every forwarding action
-+ * moves it from one cpu to another. (The use of more than one handler per cpu
-+ * is to allow enough handlers/FQs to truly test the significance of caching -
-+ * ie. when cache-expiries are occurring.)
-+ *
-+ * The "hot potato" frame content will be HP_NUM_WORDS*4 bytes in size, and the
-+ * first and last words of the frame data will undergo a transformation step on
-+ * each forwarding action. To achieve this, each handler will be assigned a
-+ * 32-bit "mixer", that is produced using a 32-bit LFSR. When a frame is
-+ * received by a handler, the mixer of the expected sender is XOR'd into all
-+ * words of the entire frame, which is then validated against the original
-+ * values. Then, before forwarding, the entire frame is XOR'd with the mixer of
-+ * the current handler. Apart from validating that the frame is taking the
-+ * expected path, this also provides some quasi-realistic overheads to each
-+ * forwarding action - dereferencing *all* the frame data, computation, and
-+ * conditional branching. There is a "special" handler designated to act as the
-+ * instigator of the test by creating an enqueuing the "hot potato" frame, and
-+ * to determine when the test has completed by counting HP_LOOPS iterations.
-+ *
-+ * Init phases:
-+ *
-+ * 1. prepare each cpu's 'hp_cpu' struct using on_each_cpu(,,1) and link them
-+ *    into 'hp_cpu_list'. Specifically, set processor_id, allocate HP_PER_CPU
-+ *    handlers and link-list them (but do no other handler setup).
-+ *
-+ * 2. scan over 'hp_cpu_list' HP_PER_CPU times, the first time sets each
-+ *    hp_cpu's 'iterator' to point to its first handler. With each loop,
-+ *    allocate rx/tx FQIDs and mixer values to the hp_cpu's iterator handler
-+ *    and advance the iterator for the next loop. This includes a final fixup,
-+ *    which connects the last handler to the first (and which is why phase 2
-+ *    and 3 are separate).
-+ *
-+ * 3. scan over 'hp_cpu_list' HP_PER_CPU times, the first time sets each
-+ *    hp_cpu's 'iterator' to point to its first handler. With each loop,
-+ *    initialise FQ objects and advance the iterator for the next loop.
-+ *    Moreover, do this initialisation on the cpu it applies to so that Rx FQ
-+ *    initialisation targets the correct cpu.
-+ */
-+
-+/* helper to run something on all cpus (can't use on_each_cpu(), as that invokes
-+ * the fn from irq context, which is too restrictive). */
-+struct bstrap {
-+	void (*fn)(void);
-+	atomic_t started;
++struct mask_to_text {
++	u16 mask;
++	const char *txt;
 +};
-+static int bstrap_fn(void *__bstrap)
-+{
-+	struct bstrap *bstrap = __bstrap;
-+	atomic_inc(&bstrap->started);
-+	bstrap->fn();
-+	while (!kthread_should_stop())
-+		msleep(1);
-+	return 0;
-+}
-+static int on_all_cpus(void (*fn)(void))
-+{
-+	int cpu;
-+	for_each_cpu(cpu, cpu_online_mask) {
-+		struct bstrap bstrap = {
-+			.fn = fn,
-+			.started = ATOMIC_INIT(0)
-+		};
-+		struct task_struct *k = kthread_create(bstrap_fn, &bstrap,
-+			"hotpotato%d", cpu);
-+		int ret;
-+		if (IS_ERR(k))
-+			return -ENOMEM;
-+		kthread_bind(k, cpu);
-+		wake_up_process(k);
-+		/* If we call kthread_stop() before the "wake up" has had an
-+		 * effect, then the thread may exit with -EINTR without ever
-+		 * running the function. So poll until it's started before
-+		 * requesting it to stop. */
-+		while (!atomic_read(&bstrap.started))
-+			msleep(10);
-+		ret = kthread_stop(k);
-+		if (ret)
-+			return ret;
++
++struct mask_filter_s {
++	u16 mask;
++	u8 filter;
++};
++
++static const struct mask_filter_s mask_filter[] = {
++	{QM_FQCTRL_PREFERINCACHE, 0},
++	{QM_FQCTRL_PREFERINCACHE, 1},
++	{QM_FQCTRL_HOLDACTIVE, 0},
++	{QM_FQCTRL_HOLDACTIVE, 1},
++	{QM_FQCTRL_AVOIDBLOCK, 0},
++	{QM_FQCTRL_AVOIDBLOCK, 1},
++	{QM_FQCTRL_FORCESFDR, 0},
++	{QM_FQCTRL_FORCESFDR, 1},
++	{QM_FQCTRL_CPCSTASH, 0},
++	{QM_FQCTRL_CPCSTASH, 1},
++	{QM_FQCTRL_CTXASTASHING, 0},
++	{QM_FQCTRL_CTXASTASHING, 1},
++	{QM_FQCTRL_ORP, 0},
++	{QM_FQCTRL_ORP, 1},
++	{QM_FQCTRL_TDE, 0},
++	{QM_FQCTRL_TDE, 1},
++	{QM_FQCTRL_CGE, 0},
++	{QM_FQCTRL_CGE, 1}
++};
++
++static const struct mask_to_text fq_ctrl_text_list[] = {
++	{
++		.mask = QM_FQCTRL_PREFERINCACHE,
++		.txt = "Prefer in cache",
++	},
++	{
++		.mask = QM_FQCTRL_HOLDACTIVE,
++		.txt =	"Hold active in portal",
++	},
++	{
++		.mask = QM_FQCTRL_AVOIDBLOCK,
++		.txt = "Avoid Blocking",
++	},
++	{
++		.mask = QM_FQCTRL_FORCESFDR,
++		.txt = "High-priority SFDRs",
++	},
++	{
++		.mask = QM_FQCTRL_CPCSTASH,
++		.txt = "CPC Stash Enable",
++	},
++	{
++		.mask = QM_FQCTRL_CTXASTASHING,
++		.txt =	"Context-A stashing",
++	},
++	{
++		.mask = QM_FQCTRL_ORP,
++		.txt =	"ORP Enable",
++	},
++	{
++		.mask = QM_FQCTRL_TDE,
++		.txt = "Tail-Drop Enable",
++	},
++	{
++		.mask = QM_FQCTRL_CGE,
++		.txt = "Congestion Group Enable",
++	},
++	{
++		.mask = 0,
++		.txt = NULL,
 +	}
++};
++
++static const char *get_fqd_ctrl_text(u16 mask)
++{
++	int i = 0;
++
++	while (fq_ctrl_text_list[i].txt != NULL) {
++		if (fq_ctrl_text_list[i].mask == mask)
++			return fq_ctrl_text_list[i].txt;
++		i++;
++	}
++	return NULL;
++}
++
++static const struct mask_to_text stashing_text_list[] = {
++	{
++		.mask = QM_STASHING_EXCL_CTX,
++		.txt = "FQ Ctx Stash"
++	},
++	{
++		.mask = QM_STASHING_EXCL_DATA,
++		.txt =	"Frame Data Stash",
++	},
++	{
++		.mask = QM_STASHING_EXCL_ANNOTATION,
++		.txt = "Frame Annotation Stash",
++	},
++	{
++		.mask = 0,
++		.txt = NULL,
++	},
++};
++
++static int user_input_convert(const char __user *user_buf, size_t count,
++				unsigned long *val)
++{
++	char buf[12];
++
++	if (count > sizeof(buf) - 1)
++		return -EINVAL;
++	if (copy_from_user(buf, user_buf, count))
++		return -EFAULT;
++	buf[count] = '\0';
++	if (kstrtoul(buf, 0, val))
++		return -EINVAL;
 +	return 0;
 +}
 +
-+struct hp_handler {
-+
-+	/* The following data is stashed when 'rx' is dequeued; */
-+	/* -------------- */
-+	/* The Rx FQ, dequeues of which will stash the entire hp_handler */
-+	struct qman_fq rx;
-+	/* The Tx FQ we should forward to */
-+	struct qman_fq tx;
-+	/* The value we XOR post-dequeue, prior to validating */
-+	u32 rx_mixer;
-+	/* The value we XOR pre-enqueue, after validating */
-+	u32 tx_mixer;
-+	/* what the hotpotato address should be on dequeue */
-+	dma_addr_t addr;
-+	u32 *frame_ptr;
-+
-+	/* The following data isn't (necessarily) stashed on dequeue; */
-+	/* -------------- */
-+	u32 fqid_rx, fqid_tx;
-+	/* list node for linking us into 'hp_cpu' */
-+	struct list_head node;
-+	/* Just to check ... */
-+	unsigned int processor_id;
-+} ____cacheline_aligned;
-+
-+struct hp_cpu {
-+	/* identify the cpu we run on; */
-+	unsigned int processor_id;
-+	/* root node for the per-cpu list of handlers */
-+	struct list_head handlers;
-+	/* list node for linking us into 'hp_cpu_list' */
-+	struct list_head node;
-+	/* when repeatedly scanning 'hp_list', each time linking the n'th
-+	 * handlers together, this is used as per-cpu iterator state */
-+	struct hp_handler *iterator;
++struct line_buffer_fq {
++	u32 buf[8];
++	u32 buf_cnt;
++	int line_cnt;
 +};
 +
-+/* Each cpu has one of these */
-+static DEFINE_PER_CPU(struct hp_cpu, hp_cpus);
-+
-+/* links together the hp_cpu structs, in first-come first-serve order. */
-+static LIST_HEAD(hp_cpu_list);
-+static spinlock_t hp_lock = __SPIN_LOCK_UNLOCKED(hp_lock);
-+
-+static unsigned int hp_cpu_list_length;
-+
-+/* the "special" handler, that starts and terminates the test. */
-+static struct hp_handler *special_handler;
-+static int loop_counter;
-+
-+/* handlers are allocated out of this, so they're properly aligned. */
-+static struct kmem_cache *hp_handler_slab;
-+
-+/* this is the frame data */
-+static void *__frame_ptr;
-+static u32 *frame_ptr;
-+static dma_addr_t frame_dma;
-+
-+/* the main function waits on this */
-+static DECLARE_WAIT_QUEUE_HEAD(queue);
-+
-+#define HP_PER_CPU	2
-+#define HP_LOOPS	8
-+/* 80 bytes, like a small ethernet frame, and bleeds into a second cacheline */
-+#define HP_NUM_WORDS	80
-+/* First word of the LFSR-based frame data */
-+#define HP_FIRST_WORD	0xabbaf00d
-+
-+static inline u32 do_lfsr(u32 prev)
++static void add_to_line_buffer(struct line_buffer_fq *line_buf, u32 fqid,
++			struct seq_file *file)
 +{
-+	return (prev >> 1) ^ (-(prev & 1u) & 0xd0000001u);
-+}
-+
-+static void allocate_frame_data(void)
-+{
-+	u32 lfsr = HP_FIRST_WORD;
-+	int loop;
-+	struct platform_device *pdev = platform_device_alloc("foobar", -1);
-+	if (!pdev)
-+		panic("platform_device_alloc() failed");
-+	if (platform_device_add(pdev))
-+		panic("platform_device_add() failed");
-+	__frame_ptr = kmalloc(4 * HP_NUM_WORDS, GFP_KERNEL);
-+	if (!__frame_ptr)
-+		panic("kmalloc() failed");
-+	frame_ptr = (void *)(((unsigned long)__frame_ptr + 63) &
-+				~(unsigned long)63);
-+	for (loop = 0; loop < HP_NUM_WORDS; loop++) {
-+		frame_ptr[loop] = lfsr;
-+		lfsr = do_lfsr(lfsr);
-+	}
-+	frame_dma = dma_map_single(&pdev->dev, frame_ptr, 4 * HP_NUM_WORDS,
-+					DMA_BIDIRECTIONAL);
-+	platform_device_del(pdev);
-+	platform_device_put(pdev);
-+}
-+
-+static void deallocate_frame_data(void)
-+{
-+	kfree(__frame_ptr);
-+}
-+
-+static inline void process_frame_data(struct hp_handler *handler,
-+				const struct qm_fd *fd)
-+{
-+	u32 *p = handler->frame_ptr;
-+	u32 lfsr = HP_FIRST_WORD;
-+	int loop;
-+	if (qm_fd_addr_get64(fd) != handler->addr)
-+		panic("bad frame address");
-+	for (loop = 0; loop < HP_NUM_WORDS; loop++, p++) {
-+		*p ^= handler->rx_mixer;
-+		if (*p != lfsr)
-+			panic("corrupt frame data");
-+		*p ^= handler->tx_mixer;
-+		lfsr = do_lfsr(lfsr);
++	line_buf->buf[line_buf->buf_cnt] = fqid;
++	line_buf->buf_cnt++;
++	if (line_buf->buf_cnt == 8) {
++		/* Buffer is full, flush it */
++		if (line_buf->line_cnt != 0)
++			seq_puts(file, ",\n");
++		seq_printf(file, "0x%06x,0x%06x,0x%06x,0x%06x,0x%06x,"
++			"0x%06x,0x%06x,0x%06x",
++			line_buf->buf[0], line_buf->buf[1], line_buf->buf[2],
++			line_buf->buf[3], line_buf->buf[4], line_buf->buf[5],
++			line_buf->buf[6], line_buf->buf[7]);
++		line_buf->buf_cnt = 0;
++		line_buf->line_cnt++;
 +	}
 +}
 +
-+static enum qman_cb_dqrr_result normal_dqrr(struct qman_portal *portal,
-+					struct qman_fq *fq,
-+					const struct qm_dqrr_entry *dqrr)
++static void flush_line_buffer(struct line_buffer_fq *line_buf,
++				struct seq_file *file)
 +{
-+	struct hp_handler *handler = (struct hp_handler *)fq;
-+
-+	process_frame_data(handler, &dqrr->fd);
-+	if (qman_enqueue(&handler->tx, &dqrr->fd, 0))
-+		panic("qman_enqueue() failed");
-+	return qman_cb_dqrr_consume;
++	if (line_buf->buf_cnt) {
++		int y = 0;
++		if (line_buf->line_cnt != 0)
++			seq_puts(file, ",\n");
++		while (y != line_buf->buf_cnt) {
++			if (y+1 == line_buf->buf_cnt)
++				seq_printf(file, "0x%06x", line_buf->buf[y]);
++			else
++				seq_printf(file, "0x%06x,", line_buf->buf[y]);
++			y++;
++		}
++		line_buf->line_cnt++;
++	}
++	if (line_buf->line_cnt)
++		seq_putc(file, '\n');
 +}
 +
-+static enum qman_cb_dqrr_result special_dqrr(struct qman_portal *portal,
-+					struct qman_fq *fq,
-+					const struct qm_dqrr_entry *dqrr)
-+{
-+	struct hp_handler *handler = (struct hp_handler *)fq;
++static struct dentry *dfs_root; /* debugfs root directory */
 +
-+	process_frame_data(handler, &dqrr->fd);
-+	if (++loop_counter < HP_LOOPS) {
-+		if (qman_enqueue(&handler->tx, &dqrr->fd, 0))
-+			panic("qman_enqueue() failed");
++/*******************************************************************************
++ *  Query Frame Queue Non Programmable Fields
++ ******************************************************************************/
++struct query_fq_np_fields_data_s {
++	u32 fqid;
++};
++static struct query_fq_np_fields_data_s query_fq_np_fields_data = {
++	.fqid = 1,
++};
++
++static int query_fq_np_fields_show(struct seq_file *file, void *offset)
++{
++	int ret;
++	struct qm_mcr_queryfq_np np;
++	struct qman_fq fq;
++
++	fq.fqid = query_fq_np_fields_data.fqid;
++	ret = qman_query_fq_np(&fq, &np);
++	if (ret)
++		return ret;
++	/* Print state */
++	seq_printf(file, "Query FQ Non Programmable Fields Result fqid 0x%x\n",
++			fq.fqid);
++	seq_printf(file, " force eligible pending: %s\n",
++		(np.state & QM_MCR_NP_STATE_FE) ? "yes" : "no");
++	seq_printf(file, " retirement pending: %s\n",
++		(np.state & QM_MCR_NP_STATE_R) ? "yes" : "no");
++	seq_printf(file, " state: %s\n",
++		state_txt[np.state & QM_MCR_NP_STATE_MASK]);
++	seq_printf(file, " fq_link: 0x%x\n", np.fqd_link);
++	seq_printf(file, " odp_seq: %u\n", np.odp_seq);
++	seq_printf(file, " orp_nesn: %u\n", np.orp_nesn);
++	seq_printf(file, " orp_ea_hseq: %u\n", np.orp_ea_hseq);
++	seq_printf(file, " orp_ea_tseq: %u\n", np.orp_ea_tseq);
++	seq_printf(file, " orp_ea_hptr: 0x%x\n", np.orp_ea_hptr);
++	seq_printf(file, " orp_ea_tptr: 0x%x\n", np.orp_ea_tptr);
++	seq_printf(file, " pfdr_hptr: 0x%x\n", np.pfdr_hptr);
++	seq_printf(file, " pfdr_tptr: 0x%x\n", np.pfdr_tptr);
++	seq_printf(file, " is: ics_surp contains a %s\n",
++		(np.is) ? "deficit" : "surplus");
++	seq_printf(file, " ics_surp: %u\n", np.ics_surp);
++	seq_printf(file, " byte_cnt: %u\n", np.byte_cnt);
++	seq_printf(file, " frm_cnt: %u\n", np.frm_cnt);
++	seq_printf(file, " ra1_sfdr: 0x%x\n", np.ra1_sfdr);
++	seq_printf(file, " ra2_sfdr: 0x%x\n", np.ra2_sfdr);
++	seq_printf(file, " od1_sfdr: 0x%x\n", np.od1_sfdr);
++	seq_printf(file, " od2_sfdr: 0x%x\n", np.od2_sfdr);
++	seq_printf(file, " od3_sfdr: 0x%x\n", np.od3_sfdr);
++	return 0;
++}
++
++static int query_fq_np_fields_open(struct inode *inode,
++					struct file *file)
++{
++	return single_open(file, query_fq_np_fields_show, NULL);
++}
++
++static ssize_t query_fq_np_fields_write(struct file *f,
++			const char __user *buf, size_t count, loff_t *off)
++{
++	int ret;
++	unsigned long val;
++
++	ret = user_input_convert(buf, count, &val);
++	if (ret)
++		return ret;
++	if (val > MAX_FQID)
++		return -EINVAL;
++	query_fq_np_fields_data.fqid = (u32)val;
++	return count;
++}
++
++static const struct file_operations query_fq_np_fields_fops = {
++	.owner		= THIS_MODULE,
++	.open		= query_fq_np_fields_open,
++	.read		= seq_read,
++	.write		= query_fq_np_fields_write,
++	.release	= single_release,
++};
++
++/*******************************************************************************
++ *  Frame Queue Programmable Fields
++ ******************************************************************************/
++struct query_fq_fields_data_s {
++	u32 fqid;
++};
++
++static struct query_fq_fields_data_s query_fq_fields_data = {
++	.fqid = 1,
++};
++
++static int query_fq_fields_show(struct seq_file *file, void *offset)
++{
++	int ret;
++	struct qm_fqd fqd;
++	struct qman_fq fq;
++	int i = 0;
++
++	memset(&fqd, 0, sizeof(struct qm_fqd));
++	fq.fqid = query_fq_fields_data.fqid;
++	ret = qman_query_fq(&fq, &fqd);
++	if (ret)
++		return ret;
++	seq_printf(file, "Query FQ Programmable Fields Result fqid 0x%x\n",
++			fq.fqid);
++	seq_printf(file, " orprws: %u\n", fqd.orprws);
++	seq_printf(file, " oa: %u\n", fqd.oa);
++	seq_printf(file, " olws: %u\n", fqd.olws);
++
++	seq_printf(file, " cgid: %u\n", fqd.cgid);
++
++	if ((fqd.fq_ctrl & QM_FQCTRL_MASK) == 0)
++		seq_puts(file, " fq_ctrl: None\n");
++	else {
++		i = 0;
++		seq_puts(file, " fq_ctrl:\n");
++		while (fq_ctrl_text_list[i].txt != NULL) {
++			if ((fqd.fq_ctrl & QM_FQCTRL_MASK) &
++					fq_ctrl_text_list[i].mask)
++				seq_printf(file, "  %s\n",
++					fq_ctrl_text_list[i].txt);
++			i++;
++		}
++	}
++	seq_printf(file, " dest_channel: %u\n", fqd.dest.channel);
++	seq_printf(file, " dest_wq: %u\n", fqd.dest.wq);
++	seq_printf(file, " ics_cred: %u\n", fqd.ics_cred);
++	seq_printf(file, " td_mant: %u\n", fqd.td.mant);
++	seq_printf(file, " td_exp: %u\n", fqd.td.exp);
++
++	seq_printf(file, " ctx_b: 0x%x\n", fqd.context_b);
++
++	seq_printf(file, " ctx_a: 0x%llx\n", qm_fqd_stashing_get64(&fqd));
++	/* Any stashing configured */
++	if ((fqd.context_a.stashing.exclusive & 0x7) == 0)
++		seq_puts(file, " ctx_a_stash_exclusive: None\n");
++	else {
++		seq_puts(file, " ctx_a_stash_exclusive:\n");
++		i = 0;
++		while (stashing_text_list[i].txt != NULL) {
++			if ((fqd.fq_ctrl & 0x7) & stashing_text_list[i].mask)
++				seq_printf(file, "  %s\n",
++					stashing_text_list[i].txt);
++			i++;
++		}
++	}
++	seq_printf(file, " ctx_a_stash_annotation_cl: %u\n",
++			fqd.context_a.stashing.annotation_cl);
++	seq_printf(file, " ctx_a_stash_data_cl: %u\n",
++			fqd.context_a.stashing.data_cl);
++	seq_printf(file, " ctx_a_stash_context_cl: %u\n",
++			fqd.context_a.stashing.context_cl);
++	return 0;
++}
++
++static int query_fq_fields_open(struct inode *inode,
++					struct file *file)
++{
++	return single_open(file, query_fq_fields_show, NULL);
++}
++
++static ssize_t query_fq_fields_write(struct file *f,
++			const char __user *buf, size_t count, loff_t *off)
++{
++	int ret;
++	unsigned long val;
++
++	ret = user_input_convert(buf, count, &val);
++	if (ret)
++		return ret;
++	if (val > MAX_FQID)
++		return -EINVAL;
++	query_fq_fields_data.fqid = (u32)val;
++	return count;
++}
++
++static const struct file_operations query_fq_fields_fops = {
++	.owner		= THIS_MODULE,
++	.open		= query_fq_fields_open,
++	.read		= seq_read,
++	.write		= query_fq_fields_write,
++	.release	= single_release,
++};
++
++/*******************************************************************************
++ * Query WQ lengths
++ ******************************************************************************/
++struct query_wq_lengths_data_s {
++	union {
++		u16 channel_wq; /* ignores wq (3 lsbits) */
++		struct {
++			u16 id:13; /* qm_channel */
++			u16 __reserved:3;
++		} __packed channel;
++	};
++};
++static struct query_wq_lengths_data_s query_wq_lengths_data;
++static int query_wq_lengths_show(struct seq_file *file, void *offset)
++{
++	int ret;
++	struct qm_mcr_querywq wq;
++	int i;
++
++	memset(&wq, 0, sizeof(struct qm_mcr_querywq));
++	wq.channel.id = query_wq_lengths_data.channel.id;
++	ret = qman_query_wq(0, &wq);
++	if (ret)
++		return ret;
++	seq_printf(file, "Query Result For Channel: 0x%x\n", wq.channel.id);
++	for (i = 0; i < 8; i++)
++		/* mask out upper 4 bits since they are not part of length */
++		seq_printf(file, " wq%d_len : %u\n", i, wq.wq_len[i] & 0x0fff);
++	return 0;
++}
++
++static int query_wq_lengths_open(struct inode *inode,
++					struct file *file)
++{
++	return single_open(file, query_wq_lengths_show, NULL);
++}
++
++static ssize_t query_wq_lengths_write(struct file *f,
++			const char __user *buf, size_t count, loff_t *off)
++{
++	int ret;
++	unsigned long val;
++
++	ret = user_input_convert(buf, count, &val);
++	if (ret)
++		return ret;
++	if (val > 0xfff8)
++		return -EINVAL;
++	query_wq_lengths_data.channel.id = (u16)val;
++	return count;
++}
++
++static const struct file_operations query_wq_lengths_fops = {
++	.owner		= THIS_MODULE,
++	.open		= query_wq_lengths_open,
++	.read		= seq_read,
++	.write		= query_wq_lengths_write,
++	.release	= single_release,
++};
++
++/*******************************************************************************
++ *  Query CGR
++ ******************************************************************************/
++struct query_cgr_s {
++	u8 cgid;
++};
++static struct query_cgr_s query_cgr_data;
++
++static int query_cgr_show(struct seq_file *file, void *offset)
++{
++	int ret;
++	struct qm_mcr_querycgr cgrd;
++	struct qman_cgr cgr;
++	int i, j;
++	u32 mask;
++
++	memset(&cgr, 0, sizeof(cgr));
++	memset(&cgrd, 0, sizeof(cgrd));
++	cgr.cgrid = query_cgr_data.cgid;
++	ret = qman_query_cgr(&cgr, &cgrd);
++	if (ret)
++		return ret;
++	seq_printf(file, "Query CGR id 0x%x\n", cgr.cgrid);
++	seq_printf(file, " wr_parm_g MA: %u, Mn: %u, SA: %u, Sn: %u, Pn: %u\n",
++		cgrd.cgr.wr_parm_g.MA, cgrd.cgr.wr_parm_g.Mn,
++		cgrd.cgr.wr_parm_g.SA, cgrd.cgr.wr_parm_g.Sn,
++		cgrd.cgr.wr_parm_g.Pn);
++
++	seq_printf(file, " wr_parm_y MA: %u, Mn: %u, SA: %u, Sn: %u, Pn: %u\n",
++		cgrd.cgr.wr_parm_y.MA, cgrd.cgr.wr_parm_y.Mn,
++		cgrd.cgr.wr_parm_y.SA, cgrd.cgr.wr_parm_y.Sn,
++		cgrd.cgr.wr_parm_y.Pn);
++
++	seq_printf(file, " wr_parm_r MA: %u, Mn: %u, SA: %u, Sn: %u, Pn: %u\n",
++		cgrd.cgr.wr_parm_r.MA, cgrd.cgr.wr_parm_r.Mn,
++		cgrd.cgr.wr_parm_r.SA, cgrd.cgr.wr_parm_r.Sn,
++		cgrd.cgr.wr_parm_r.Pn);
++
++	seq_printf(file, " wr_en_g: %u, wr_en_y: %u, we_en_r: %u\n",
++		cgrd.cgr.wr_en_g, cgrd.cgr.wr_en_y, cgrd.cgr.wr_en_r);
++
++	seq_printf(file, " cscn_en: %u\n", cgrd.cgr.cscn_en);
++	if ((qman_ip_rev & 0xFF00) >= QMAN_REV30) {
++		seq_puts(file, " cscn_targ_dcp:\n");
++		mask = 0x80000000;
++		for (i = 0; i < 32; i++) {
++			if (cgrd.cgr.cscn_targ & mask)
++				seq_printf(file, "  send CSCN to dcp %u\n",
++								(31 - i));
++			mask >>= 1;
++		}
++
++		seq_puts(file, " cscn_targ_swp:\n");
++		for (i = 0; i < 4; i++) {
++			mask = 0x80000000;
++			for (j = 0; j < 32; j++) {
++				if (cgrd.cscn_targ_swp[i] & mask)
++					seq_printf(file, "  send CSCN to swp"
++						" %u\n", (127 - (i * 32) - j));
++				mask >>= 1;
++			}
++		}
 +	} else {
-+		pr_info("Received final (%dth) frame\n", loop_counter);
-+		wake_up(&queue);
++		seq_printf(file, " cscn_targ: %u\n", cgrd.cgr.cscn_targ);
 +	}
-+	return qman_cb_dqrr_consume;
++	seq_printf(file, " cstd_en: %u\n", cgrd.cgr.cstd_en);
++	seq_printf(file, " cs: %u\n", cgrd.cgr.cs);
++
++	seq_printf(file, " cs_thresh_TA: %u, cs_thresh_Tn: %u\n",
++		cgrd.cgr.cs_thres.TA, cgrd.cgr.cs_thres.Tn);
++
++	seq_printf(file, " mode: %s\n",
++		(cgrd.cgr.mode & QMAN_CGR_MODE_FRAME) ?
++		"frame count" : "byte count");
++	seq_printf(file, " i_bcnt: %llu\n", qm_mcr_querycgr_i_get64(&cgrd));
++	seq_printf(file, " a_bcnt: %llu\n", qm_mcr_querycgr_a_get64(&cgrd));
++
++	return 0;
 +}
 +
-+static void create_per_cpu_handlers(void)
++static int query_cgr_open(struct inode *inode, struct file *file)
 +{
-+	struct hp_handler *handler;
-+	int loop;
-+	struct hp_cpu *hp_cpu = this_cpu_ptr(&hp_cpus);
-+
-+	hp_cpu->processor_id = smp_processor_id();
-+	spin_lock(&hp_lock);
-+	list_add_tail(&hp_cpu->node, &hp_cpu_list);
-+	hp_cpu_list_length++;
-+	spin_unlock(&hp_lock);
-+	INIT_LIST_HEAD(&hp_cpu->handlers);
-+	for (loop = 0; loop < HP_PER_CPU; loop++) {
-+		handler = kmem_cache_alloc(hp_handler_slab, GFP_KERNEL);
-+		if (!handler)
-+			panic("kmem_cache_alloc() failed");
-+		handler->processor_id = hp_cpu->processor_id;
-+		handler->addr = frame_dma;
-+		handler->frame_ptr = frame_ptr;
-+		list_add_tail(&handler->node, &hp_cpu->handlers);
-+	}
++	return single_open(file, query_cgr_show, NULL);
 +}
 +
-+static void destroy_per_cpu_handlers(void)
++static ssize_t query_cgr_write(struct file *f, const char __user *buf,
++				size_t count, loff_t *off)
 +{
-+	struct list_head *loop, *tmp;
-+	struct hp_cpu *hp_cpu = &this_cpu_ptr(&hp_cpus);
++	int ret;
++	unsigned long val;
 +
-+	spin_lock(&hp_lock);
-+	list_del(&hp_cpu->node);
-+	spin_unlock(&hp_lock);
-+	list_for_each_safe(loop, tmp, &hp_cpu->handlers) {
-+		u32 flags;
-+		struct hp_handler *handler = list_entry(loop, struct hp_handler,
-+							node);
-+		if (qman_retire_fq(&handler->rx, &flags))
-+			panic("qman_retire_fq(rx) failed");
-+		BUG_ON(flags & QMAN_FQ_STATE_BLOCKOOS);
-+		if (qman_oos_fq(&handler->rx))
-+			panic("qman_oos_fq(rx) failed");
-+		qman_destroy_fq(&handler->rx, 0);
-+		qman_destroy_fq(&handler->tx, 0);
-+		qman_release_fqid(handler->fqid_rx);
-+		list_del(&handler->node);
-+		kmem_cache_free(hp_handler_slab, handler);
-+	}
++	ret = user_input_convert(buf, count, &val);
++	if (ret)
++		return ret;
++	if (val > 0xff)
++		return -EINVAL;
++	query_cgr_data.cgid = (u8)val;
++	return count;
 +}
 +
-+static inline u8 num_cachelines(u32 offset)
++static const struct file_operations query_cgr_fops = {
++	.owner		= THIS_MODULE,
++	.open		= query_cgr_open,
++	.read		= seq_read,
++	.write		= query_cgr_write,
++	.release	= single_release,
++};
++
++/*******************************************************************************
++ *  Test Write CGR
++ ******************************************************************************/
++struct test_write_cgr_s {
++	u64 i_bcnt;
++	u8 cgid;
++};
++static struct test_write_cgr_s test_write_cgr_data;
++
++static int testwrite_cgr_show(struct seq_file *file, void *offset)
 +{
-+	u8 res = (offset + (L1_CACHE_BYTES - 1))
-+			 / (L1_CACHE_BYTES);
-+	if (res > 3)
-+		return 3;
-+	return res;
++	int ret;
++	struct qm_mcr_cgrtestwrite result;
++	struct qman_cgr cgr;
++	u64 i_bcnt;
++
++	memset(&cgr, 0, sizeof(struct qman_cgr));
++	memset(&result, 0, sizeof(struct qm_mcr_cgrtestwrite));
++	cgr.cgrid = test_write_cgr_data.cgid;
++	i_bcnt = test_write_cgr_data.i_bcnt;
++	ret = qman_testwrite_cgr(&cgr, i_bcnt, &result);
++	if (ret)
++		return ret;
++	seq_printf(file, "CGR Test Write CGR id 0x%x\n", cgr.cgrid);
++	seq_printf(file, " wr_parm_g MA: %u, Mn: %u, SA: %u, Sn: %u, Pn: %u\n",
++		result.cgr.wr_parm_g.MA, result.cgr.wr_parm_g.Mn,
++		result.cgr.wr_parm_g.SA, result.cgr.wr_parm_g.Sn,
++		result.cgr.wr_parm_g.Pn);
++	seq_printf(file, " wr_parm_y MA: %u, Mn: %u, SA: %u, Sn: %u, Pn: %u\n",
++		result.cgr.wr_parm_y.MA, result.cgr.wr_parm_y.Mn,
++		result.cgr.wr_parm_y.SA, result.cgr.wr_parm_y.Sn,
++		result.cgr.wr_parm_y.Pn);
++	seq_printf(file, " wr_parm_r MA: %u, Mn: %u, SA: %u, Sn: %u, Pn: %u\n",
++		result.cgr.wr_parm_r.MA, result.cgr.wr_parm_r.Mn,
++		result.cgr.wr_parm_r.SA, result.cgr.wr_parm_r.Sn,
++		result.cgr.wr_parm_r.Pn);
++	seq_printf(file, " wr_en_g: %u, wr_en_y: %u, we_en_r: %u\n",
++		result.cgr.wr_en_g, result.cgr.wr_en_y, result.cgr.wr_en_r);
++	seq_printf(file, " cscn_en: %u\n", result.cgr.cscn_en);
++	seq_printf(file, " cscn_targ: %u\n", result.cgr.cscn_targ);
++	seq_printf(file, " cstd_en: %u\n", result.cgr.cstd_en);
++	seq_printf(file, " cs: %u\n", result.cgr.cs);
++	seq_printf(file, " cs_thresh_TA: %u, cs_thresh_Tn: %u\n",
++		result.cgr.cs_thres.TA, result.cgr.cs_thres.Tn);
++
++	/* Add Mode for Si 2 */
++	seq_printf(file, " mode: %s\n",
++		(result.cgr.mode & QMAN_CGR_MODE_FRAME) ?
++		"frame count" : "byte count");
++
++	seq_printf(file, " i_bcnt: %llu\n",
++		qm_mcr_cgrtestwrite_i_get64(&result));
++	seq_printf(file, " a_bcnt: %llu\n",
++		qm_mcr_cgrtestwrite_a_get64(&result));
++	seq_printf(file, " wr_prob_g: %u\n", result.wr_prob_g);
++	seq_printf(file, " wr_prob_y: %u\n", result.wr_prob_y);
++	seq_printf(file, " wr_prob_r: %u\n", result.wr_prob_r);
++	return 0;
 +}
-+#define STASH_DATA_CL \
-+	num_cachelines(HP_NUM_WORDS * 4)
-+#define STASH_CTX_CL \
-+	num_cachelines(offsetof(struct hp_handler, fqid_rx))
 +
-+static void init_handler(void *__handler)
++static int testwrite_cgr_open(struct inode *inode, struct file *file)
 +{
-+	struct qm_mcc_initfq opts;
-+	struct hp_handler *handler = __handler;
-+	BUG_ON(handler->processor_id != smp_processor_id());
-+	/* Set up rx */
-+	memset(&handler->rx, 0, sizeof(handler->rx));
-+	if (handler == special_handler)
-+		handler->rx.cb.dqrr = special_dqrr;
-+	else
-+		handler->rx.cb.dqrr = normal_dqrr;
-+	if (qman_create_fq(handler->fqid_rx, 0, &handler->rx))
-+		panic("qman_create_fq(rx) failed");
-+	memset(&opts, 0, sizeof(opts));
-+	opts.we_mask = QM_INITFQ_WE_FQCTRL | QM_INITFQ_WE_CONTEXTA;
-+	opts.fqd.fq_ctrl = QM_FQCTRL_CTXASTASHING;
-+	opts.fqd.context_a.stashing.data_cl = STASH_DATA_CL;
-+	opts.fqd.context_a.stashing.context_cl = STASH_CTX_CL;
-+	if (qman_init_fq(&handler->rx, QMAN_INITFQ_FLAG_SCHED |
-+				QMAN_INITFQ_FLAG_LOCAL, &opts))
-+		panic("qman_init_fq(rx) failed");
-+	/* Set up tx */
-+	memset(&handler->tx, 0, sizeof(handler->tx));
-+	if (qman_create_fq(handler->fqid_tx, QMAN_FQ_FLAG_NO_MODIFY,
-+				&handler->tx))
-+		panic("qman_create_fq(tx) failed");
++	return single_open(file, testwrite_cgr_show, NULL);
 +}
 +
-+static void init_phase2(void)
-+{
-+	int loop;
-+	u32 fqid = 0;
-+	u32 lfsr = 0xdeadbeef;
-+	struct hp_cpu *hp_cpu;
-+	struct hp_handler *handler;
++static const struct file_operations testwrite_cgr_fops = {
++	.owner		= THIS_MODULE,
++	.open		= testwrite_cgr_open,
++	.read		= seq_read,
++	.release	= single_release,
++};
 +
-+	for (loop = 0; loop < HP_PER_CPU; loop++) {
-+		list_for_each_entry(hp_cpu, &hp_cpu_list, node) {
-+			int ret;
-+			if (!loop)
-+				hp_cpu->iterator = list_first_entry(
-+						&hp_cpu->handlers,
-+						struct hp_handler, node);
-+			else
-+				hp_cpu->iterator = list_entry(
-+						hp_cpu->iterator->node.next,
-+						struct hp_handler, node);
-+			/* Rx FQID is the previous handler's Tx FQID */
-+			hp_cpu->iterator->fqid_rx = fqid;
-+			/* Allocate new FQID for Tx */
-+			ret = qman_alloc_fqid(&fqid);
-+			if (ret)
-+				panic("qman_alloc_fqid() failed");
-+			hp_cpu->iterator->fqid_tx = fqid;
-+			/* Rx mixer is the previous handler's Tx mixer */
-+			hp_cpu->iterator->rx_mixer = lfsr;
-+			/* Get new mixer for Tx */
-+			lfsr = do_lfsr(lfsr);
-+			hp_cpu->iterator->tx_mixer = lfsr;
++
++static int testwrite_cgr_ibcnt_show(struct seq_file *file, void *offset)
++{
++	seq_printf(file, "i_bcnt: %llu\n", test_write_cgr_data.i_bcnt);
++	return 0;
++}
++static int testwrite_cgr_ibcnt_open(struct inode *inode, struct file *file)
++{
++	return single_open(file, testwrite_cgr_ibcnt_show, NULL);
++}
++
++static ssize_t testwrite_cgr_ibcnt_write(struct file *f, const char __user *buf,
++				size_t count, loff_t *off)
++{
++	int ret;
++	unsigned long val;
++
++	ret = user_input_convert(buf, count, &val);
++	if (ret)
++		return ret;
++	test_write_cgr_data.i_bcnt = val;
++	return count;
++}
++
++static const struct file_operations teswrite_cgr_ibcnt_fops = {
++	.owner		= THIS_MODULE,
++	.open		= testwrite_cgr_ibcnt_open,
++	.read		= seq_read,
++	.write		= testwrite_cgr_ibcnt_write,
++	.release	= single_release,
++};
++
++static int testwrite_cgr_cgrid_show(struct seq_file *file, void *offset)
++{
++	seq_printf(file, "cgrid: %u\n", (u32)test_write_cgr_data.cgid);
++	return 0;
++}
++static int testwrite_cgr_cgrid_open(struct inode *inode, struct file *file)
++{
++	return single_open(file, testwrite_cgr_cgrid_show, NULL);
++}
++
++static ssize_t testwrite_cgr_cgrid_write(struct file *f, const char __user *buf,
++				size_t count, loff_t *off)
++{
++	int ret;
++	unsigned long val;
++
++	ret = user_input_convert(buf, count, &val);
++	if (ret)
++		return ret;
++	if (val > 0xff)
++		return -EINVAL;
++	test_write_cgr_data.cgid = (u8)val;
++	return count;
++}
++
++static const struct file_operations teswrite_cgr_cgrid_fops = {
++	.owner		= THIS_MODULE,
++	.open		= testwrite_cgr_cgrid_open,
++	.read		= seq_read,
++	.write		= testwrite_cgr_cgrid_write,
++	.release	= single_release,
++};
++
++/*******************************************************************************
++ *  Query Congestion State
++ ******************************************************************************/
++static int query_congestion_show(struct seq_file *file, void *offset)
++{
++	int ret;
++	struct qm_mcr_querycongestion cs;
++	int i, j, in_cong = 0;
++	u32 mask;
++
++	memset(&cs, 0, sizeof(struct qm_mcr_querycongestion));
++	ret = qman_query_congestion(&cs);
++	if (ret)
++		return ret;
++	seq_puts(file, "Query Congestion Result\n");
++	for (i = 0; i < 8; i++) {
++		mask = 0x80000000;
++		for (j = 0; j < 32; j++) {
++			if (cs.state.__state[i] & mask) {
++				in_cong = 1;
++				seq_printf(file, " cg %u: %s\n", (i*32)+j,
++					"in congestion");
++			}
++			mask >>= 1;
 +		}
 +	}
-+	/* Fix up the first handler (fqid_rx==0, rx_mixer=0xdeadbeef) */
-+	hp_cpu = list_first_entry(&hp_cpu_list, struct hp_cpu, node);
-+	handler = list_first_entry(&hp_cpu->handlers, struct hp_handler, node);
-+	BUG_ON((handler->fqid_rx != 0) || (handler->rx_mixer != 0xdeadbeef));
-+	handler->fqid_rx = fqid;
-+	handler->rx_mixer = lfsr;
-+	/* and tag it as our "special" handler */
-+	special_handler = handler;
++	if (!in_cong)
++		seq_puts(file, " All congestion groups not congested.\n");
++	return 0;
 +}
 +
-+static void init_phase3(void)
++static int query_congestion_open(struct inode *inode, struct file *file)
 +{
-+	int loop;
-+	struct hp_cpu *hp_cpu;
-+
-+	for (loop = 0; loop < HP_PER_CPU; loop++) {
-+		list_for_each_entry(hp_cpu, &hp_cpu_list, node) {
-+			if (!loop)
-+				hp_cpu->iterator = list_first_entry(
-+						&hp_cpu->handlers,
-+						struct hp_handler, node);
-+			else
-+				hp_cpu->iterator = list_entry(
-+						hp_cpu->iterator->node.next,
-+						struct hp_handler, node);
-+			preempt_disable();
-+			if (hp_cpu->processor_id == smp_processor_id())
-+				init_handler(hp_cpu->iterator);
-+			else
-+				smp_call_function_single(hp_cpu->processor_id,
-+					init_handler, hp_cpu->iterator, 1);
-+			preempt_enable();
-+		}
-+	}
++	return single_open(file, query_congestion_show, NULL);
 +}
 +
-+static void send_first_frame(void *ignore)
-+{
-+	u32 *p = special_handler->frame_ptr;
-+	u32 lfsr = HP_FIRST_WORD;
-+	int loop;
-+	struct qm_fd fd;
++static const struct file_operations query_congestion_fops = {
++	.owner		= THIS_MODULE,
++	.open		= query_congestion_open,
++	.read		= seq_read,
++	.release	= single_release,
++};
 +
-+	BUG_ON(special_handler->processor_id != smp_processor_id());
-+	memset(&fd, 0, sizeof(fd));
-+	qm_fd_addr_set64(&fd, special_handler->addr);
-+	fd.format = qm_fd_contig_big;
-+	fd.length29 = HP_NUM_WORDS * 4;
-+	for (loop = 0; loop < HP_NUM_WORDS; loop++, p++) {
-+		if (*p != lfsr)
-+			panic("corrupt frame data");
-+		*p ^= special_handler->tx_mixer;
-+		lfsr = do_lfsr(lfsr);
-+	}
-+	pr_info("Sending first frame\n");
-+	if (qman_enqueue(&special_handler->tx, &fd, 0))
-+		panic("qman_enqueue() failed");
-+}
++/*******************************************************************************
++ *  QMan register
++ ******************************************************************************/
++struct qman_register_s {
++	u32 val;
++};
++static struct qman_register_s qman_register_data;
 +
-+void qman_test_stash(void)
++static void init_ccsrmempeek(void)
 +{
-+	if (cpumask_weight(cpu_online_mask) < 2) {
-+		pr_info("qman_test_stash, skip - only 1 CPU\n");
++	struct device_node *dn;
++	const u32 *regaddr_p;
++
++	dn = of_find_compatible_node(NULL, NULL, "fsl,qman");
++	if (!dn) {
++		pr_info("No fsl,qman node\n");
 +		return;
 +	}
-+
-+	pr_info("qman_test_stash starting\n");
-+
-+	hp_cpu_list_length = 0;
-+	loop_counter = 0;
-+	hp_handler_slab = kmem_cache_create("hp_handler_slab",
-+			sizeof(struct hp_handler), L1_CACHE_BYTES,
-+			SLAB_HWCACHE_ALIGN, NULL);
-+	if (!hp_handler_slab)
-+		panic("kmem_cache_create() failed");
-+
-+	allocate_frame_data();
-+
-+	/* Init phase 1 */
-+	pr_info("Creating %d handlers per cpu...\n", HP_PER_CPU);
-+	if (on_all_cpus(create_per_cpu_handlers))
-+		panic("on_each_cpu() failed");
-+	pr_info("Number of cpus: %d, total of %d handlers\n",
-+		hp_cpu_list_length, hp_cpu_list_length * HP_PER_CPU);
-+
-+	init_phase2();
-+
-+	init_phase3();
-+
-+	preempt_disable();
-+	if (special_handler->processor_id == smp_processor_id())
-+		send_first_frame(NULL);
-+	else
-+		smp_call_function_single(special_handler->processor_id,
-+			send_first_frame, NULL, 1);
-+	preempt_enable();
-+
-+	wait_event(queue, loop_counter == HP_LOOPS);
-+	deallocate_frame_data();
-+	if (on_all_cpus(destroy_per_cpu_handlers))
-+		panic("on_each_cpu() failed");
-+	kmem_cache_destroy(hp_handler_slab);
-+	pr_info("qman_test_stash finished\n");
++	regaddr_p = of_get_address(dn, 0, &qman_ccsr_size, NULL);
++	if (!regaddr_p) {
++		of_node_put(dn);
++		return;
++	}
++	qman_ccsr_start = of_translate_address(dn, regaddr_p);
++	of_node_put(dn);
 +}
++/* This function provides access to QMan ccsr memory map */
++static int qman_ccsrmempeek(u32 *val, u32 offset)
++{
++	void __iomem *addr;
++	u64 phys_addr;
++
++	if (!qman_ccsr_start)
++		return -EINVAL;
++
++	if (offset > (qman_ccsr_size - sizeof(u32)))
++		return -EINVAL;
++
++	phys_addr = qman_ccsr_start + offset;
++	addr = ioremap(phys_addr, sizeof(u32));
++	if (!addr) {
++		pr_err("ccsrmempeek, ioremap failed\n");
++		return -EINVAL;
++	}
++	*val = in_be32(addr);
++	iounmap(addr);
++	return 0;
++}
++
++static int qman_ccsrmempeek_show(struct seq_file *file, void *offset)
++{
++	u32 b;
++
++	qman_ccsrmempeek(&b, qman_register_data.val);
++	seq_printf(file, "QMan register offset = 0x%x\n",
++		   qman_register_data.val);
++	seq_printf(file, "value = 0x%08x\n", b);
++
++	return 0;
++}
++
++static int qman_ccsrmempeek_open(struct inode *inode, struct file *file)
++{
++	return single_open(file, qman_ccsrmempeek_show, NULL);
++}
++
++static ssize_t qman_ccsrmempeek_write(struct file *f, const char __user *buf,
++				size_t count, loff_t *off)
++{
++	int ret;
++	unsigned long val;
++
++	ret = user_input_convert(buf, count, &val);
++	if (ret)
++		return ret;
++	/* multiple of 4 */
++	if (val > (qman_ccsr_size - sizeof(u32))) {
++		pr_info("Input 0x%lx > 0x%llx\n",
++			val, (qman_ccsr_size - sizeof(u32)));
++		return -EINVAL;
++	}
++	if (val & 0x3) {
++		pr_info("Input 0x%lx not multiple of 4\n", val);
++		return -EINVAL;
++	}
++	qman_register_data.val = val;
++	return count;
++}
++
++static const struct file_operations qman_ccsrmempeek_fops = {
++	.owner		= THIS_MODULE,
++	.open		= qman_ccsrmempeek_open,
++	.read		= seq_read,
++	.write		= qman_ccsrmempeek_write,
++};
++
++/*******************************************************************************
++ *  QMan state
++ ******************************************************************************/
++static int qman_fqd_state_show(struct seq_file *file, void *offset)
++{
++	struct qm_mcr_queryfq_np np;
++	struct qman_fq fq;
++	struct line_buffer_fq line_buf;
++	int ret, i;
++	u8 *state = file->private;
++	u32 qm_fq_state_cnt[ARRAY_SIZE(fqd_states)];
++
++	memset(qm_fq_state_cnt, 0, sizeof(qm_fq_state_cnt));
++	memset(&line_buf, 0, sizeof(line_buf));
++
++	seq_printf(file, "List of fq ids in state: %s\n", state_txt[*state]);
++
++	for (i = 1; i < fqid_max; i++) {
++		fq.fqid = i;
++		ret = qman_query_fq_np(&fq, &np);
++		if (ret)
++			return ret;
++		if (*state == (np.state & QM_MCR_NP_STATE_MASK))
++			add_to_line_buffer(&line_buf, fq.fqid, file);
++		/* Keep a summary count of all states */
++		if ((np.state & QM_MCR_NP_STATE_MASK) < ARRAY_SIZE(fqd_states))
++			qm_fq_state_cnt[(np.state & QM_MCR_NP_STATE_MASK)]++;
++	}
++	flush_line_buffer(&line_buf, file);
++
++	for (i = 0; i < ARRAY_SIZE(fqd_states); i++) {
++		seq_printf(file, "%s count = %u\n", state_txt[i],
++			   qm_fq_state_cnt[i]);
++	}
++	return 0;
++}
++
++static int qman_fqd_state_open(struct inode *inode, struct file *file)
++{
++	return single_open(file, qman_fqd_state_show, inode->i_private);
++}
++
++static const struct file_operations qman_fqd_state_fops =  {
++	.owner		= THIS_MODULE,
++	.open		= qman_fqd_state_open,
++	.read		= seq_read,
++};
++
++static int qman_fqd_ctrl_show(struct seq_file *file, void *offset)
++{
++	struct qm_fqd fqd;
++	struct qman_fq fq;
++	u32 fq_en_cnt = 0, fq_di_cnt = 0;
++	int ret, i;
++	struct mask_filter_s *data = file->private;
++	const char *ctrl_txt = get_fqd_ctrl_text(data->mask);
++	struct line_buffer_fq line_buf;
++
++	memset(&line_buf, 0, sizeof(line_buf));
++	seq_printf(file, "List of fq ids with: %s :%s\n",
++		ctrl_txt, (data->filter) ? "enabled" : "disabled");
++	for (i = 1; i < fqid_max; i++) {
++		fq.fqid = i;
++		memset(&fqd, 0, sizeof(struct qm_fqd));
++		ret = qman_query_fq(&fq, &fqd);
++		if (ret)
++			return ret;
++		if (data->filter) {
++			if (fqd.fq_ctrl & data->mask)
++				add_to_line_buffer(&line_buf, fq.fqid, file);
++		} else {
++			if (!(fqd.fq_ctrl & data->mask))
++				add_to_line_buffer(&line_buf, fq.fqid, file);
++		}
++		if (fqd.fq_ctrl & data->mask)
++			fq_en_cnt++;
++		else
++			fq_di_cnt++;
++	}
++	flush_line_buffer(&line_buf, file);
++
++	seq_printf(file, "Total FQD with: %s :	enabled = %u\n",
++		   ctrl_txt, fq_en_cnt);
++	seq_printf(file, "Total FQD with: %s : disabled = %u\n",
++		   ctrl_txt, fq_di_cnt);
++	return 0;
++}
++
++/*******************************************************************************
++ *  QMan ctrl CGE, TDE, ORP, CTX, CPC, SFDR, BLOCK, HOLD, CACHE
++ ******************************************************************************/
++static int qman_fqd_ctrl_open(struct inode *inode, struct file *file)
++{
++	return single_open(file, qman_fqd_ctrl_show, inode->i_private);
++}
++
++static const struct file_operations qman_fqd_ctrl_fops =  {
++	.owner		= THIS_MODULE,
++	.open		= qman_fqd_ctrl_open,
++	.read		= seq_read,
++};
++
++/*******************************************************************************
++ *  QMan ctrl summary
++ ******************************************************************************/
++/*******************************************************************************
++ *  QMan summary state
++ ******************************************************************************/
++static int qman_fqd_non_prog_summary_show(struct seq_file *file, void *offset)
++{
++	struct qm_mcr_queryfq_np np;
++	struct qman_fq fq;
++	int ret, i;
++	u32 qm_fq_state_cnt[ARRAY_SIZE(fqd_states)];
++
++	memset(qm_fq_state_cnt, 0, sizeof(qm_fq_state_cnt));
++
++	for (i = 1; i < fqid_max; i++) {
++		fq.fqid = i;
++		ret = qman_query_fq_np(&fq, &np);
++		if (ret)
++			return ret;
++		/* Keep a summary count of all states */
++		if ((np.state & QM_MCR_NP_STATE_MASK) < ARRAY_SIZE(fqd_states))
++			qm_fq_state_cnt[(np.state & QM_MCR_NP_STATE_MASK)]++;
++	}
++
++	for (i = 0; i < ARRAY_SIZE(fqd_states); i++) {
++		seq_printf(file, "%s count = %u\n", state_txt[i],
++			   qm_fq_state_cnt[i]);
++	}
++	return 0;
++}
++
++static int qman_fqd_prog_summary_show(struct seq_file *file, void *offset)
++{
++	struct qm_fqd fqd;
++	struct qman_fq fq;
++	int ret, i , j;
++	u32 qm_prog_cnt[ARRAY_SIZE(mask_filter)/2];
++
++	memset(qm_prog_cnt, 0, sizeof(qm_prog_cnt));
++
++	for (i = 1; i < fqid_max; i++) {
++		memset(&fqd, 0, sizeof(struct qm_fqd));
++		fq.fqid = i;
++		ret = qman_query_fq(&fq, &fqd);
++		if (ret)
++			return ret;
++		/* Keep a summary count of all states */
++		for (j = 0; j < ARRAY_SIZE(mask_filter); j += 2)
++			if ((fqd.fq_ctrl & QM_FQCTRL_MASK) &
++					mask_filter[j].mask)
++				qm_prog_cnt[j/2]++;
++	}
++	for (i = 0; i < ARRAY_SIZE(mask_filter) / 2; i++) {
++		seq_printf(file, "%s count = %u\n",
++			get_fqd_ctrl_text(mask_filter[i*2].mask),
++			   qm_prog_cnt[i]);
++	}
++	return 0;
++}
++
++static int qman_fqd_summary_show(struct seq_file *file, void *offset)
++{
++	int ret;
++
++	/* Display summary of non programmable fields */
++	ret = qman_fqd_non_prog_summary_show(file, offset);
++	if (ret)
++		return ret;
++	seq_puts(file, "-----------------------------------------\n");
++	/* Display programmable fields */
++	ret = qman_fqd_prog_summary_show(file, offset);
++	if (ret)
++		return ret;
++	return 0;
++}
++
++static int qman_fqd_summary_open(struct inode *inode, struct file *file)
++{
++	return single_open(file, qman_fqd_summary_show, NULL);
++}
++
++static const struct file_operations qman_fqd_summary_fops =  {
++	.owner		= THIS_MODULE,
++	.open		= qman_fqd_summary_open,
++	.read		= seq_read,
++};
++
++/*******************************************************************************
++ *  QMan destination work queue
++ ******************************************************************************/
++struct qman_dest_wq_s {
++	u16 wq_id;
++};
++static struct qman_dest_wq_s qman_dest_wq_data = {
++	.wq_id = 0,
++};
++
++static int qman_fqd_dest_wq_show(struct seq_file *file, void *offset)
++{
++	struct qm_fqd fqd;
++	struct qman_fq fq;
++	int ret, i;
++	u16 *wq, wq_id = qman_dest_wq_data.wq_id;
++	struct line_buffer_fq line_buf;
++
++	memset(&line_buf, 0, sizeof(line_buf));
++	/* use vmalloc : need to allocate large memory region and don't
++	 * require the memory to be physically contiguous. */
++	wq = vzalloc(sizeof(u16) * (0xFFFF+1));
++	if (!wq)
++		return -ENOMEM;
++
++	seq_printf(file, "List of fq ids with destination work queue id"
++			" = 0x%x\n", wq_id);
++
++	for (i = 1; i < fqid_max; i++) {
++		fq.fqid = i;
++		memset(&fqd, 0, sizeof(struct qm_fqd));
++		ret = qman_query_fq(&fq, &fqd);
++		if (ret) {
++			vfree(wq);
++			return ret;
++		}
++		if (wq_id == fqd.dest_wq)
++			add_to_line_buffer(&line_buf, fq.fqid, file);
++		wq[fqd.dest_wq]++;
++	}
++	flush_line_buffer(&line_buf, file);
++
++	seq_puts(file, "Summary of all FQD destination work queue values\n");
++	for (i = 0; i < 0xFFFF; i++) {
++		if (wq[i])
++			seq_printf(file, "Channel: 0x%x WQ: 0x%x WQ_ID: 0x%x, "
++				"count = %u\n", i >> 3, i & 0x3, i, wq[i]);
++	}
++	vfree(wq);
++	return 0;
++}
++
++static ssize_t qman_fqd_dest_wq_write(struct file *f, const char __user *buf,
++				      size_t count, loff_t *off)
++{
++	int ret;
++	unsigned long val;
++
++	ret = user_input_convert(buf, count, &val);
++	if (ret)
++		return ret;
++	if (val > 0xFFFF)
++		return -EINVAL;
++	qman_dest_wq_data.wq_id = val;
++	return count;
++}
++
++static int qman_fqd_dest_wq_open(struct inode *inode, struct file *file)
++{
++	return single_open(file, qman_fqd_dest_wq_show, NULL);
++}
++
++static const struct file_operations qman_fqd_dest_wq_fops =  {
++	.owner		= THIS_MODULE,
++	.open		= qman_fqd_dest_wq_open,
++	.read		= seq_read,
++	.write		= qman_fqd_dest_wq_write,
++};
++
++/*******************************************************************************
++ *  QMan Intra-Class Scheduling Credit
++ ******************************************************************************/
++static int qman_fqd_cred_show(struct seq_file *file, void *offset)
++{
++	struct qm_fqd fqd;
++	struct qman_fq fq;
++	int ret, i;
++	u32 fq_cnt = 0;
++	struct line_buffer_fq line_buf;
++
++	memset(&line_buf, 0, sizeof(line_buf));
++	seq_puts(file, "List of fq ids with Intra-Class Scheduling Credit > 0"
++			"\n");
++
++	for (i = 1; i < fqid_max; i++) {
++		fq.fqid = i;
++		memset(&fqd, 0, sizeof(struct qm_fqd));
++		ret = qman_query_fq(&fq, &fqd);
++		if (ret)
++			return ret;
++		if (fqd.ics_cred > 0) {
++			add_to_line_buffer(&line_buf, fq.fqid, file);
++			fq_cnt++;
++		}
++	}
++	flush_line_buffer(&line_buf, file);
++
++	seq_printf(file, "Total FQD with ics_cred > 0 = %d\n", fq_cnt);
++	return 0;
++}
++
++static int qman_fqd_cred_open(struct inode *inode, struct file *file)
++{
++	return single_open(file, qman_fqd_cred_show, NULL);
++}
++
++static const struct file_operations qman_fqd_cred_fops =  {
++	.owner		= THIS_MODULE,
++	.open		= qman_fqd_cred_open,
++	.read		= seq_read,
++};
++
++/* helper macros used in qman_debugfs_module_init */
++#define QMAN_DBGFS_ENTRY(name, mode, parent, data, fops) \
++	do { \
++		d = debugfs_create_file(name, \
++			mode, parent, \
++			data, \
++			fops); \
++		if (d == NULL) { \
++			ret = -ENOMEM; \
++			goto _return; \
++		} \
++	} while (0)
++
++/* dfs_root as parent */
++#define QMAN_DBGFS_ENTRY_ROOT(name, mode, data, fops) \
++	QMAN_DBGFS_ENTRY(name, mode, dfs_root, data, fops)
++
++/* fqd_root as parent */
++#define QMAN_DBGFS_ENTRY_FQDROOT(name, mode, data, fops) \
++	QMAN_DBGFS_ENTRY(name, mode, fqd_root, data, fops)
++
++/* fqd state */
++#define QMAN_DBGFS_ENTRY_FQDSTATE(name, index) \
++	QMAN_DBGFS_ENTRY_FQDROOT(name, S_IRUGO, \
++	(void *)&mask_filter[index], &qman_fqd_ctrl_fops)
++
++static int __init qman_debugfs_module_init(void)
++{
++	int ret = 0;
++	struct dentry *d, *fqd_root;
++	u32 reg;
++
++	fqid_max = 0;
++	init_ccsrmempeek();
++	if (qman_ccsr_start) {
++		if (!qman_ccsrmempeek(&reg, QM_FQD_AR)) {
++			/* extract the size of the FQD window */
++			reg = reg & 0x3f;
++			/* calculate valid frame queue descriptor range */
++			fqid_max = (1 << (reg + 1)) / QM_FQD_BLOCK_SIZE;
++		}
++	}
++	dfs_root = debugfs_create_dir("qman", NULL);
++	fqd_root = debugfs_create_dir("fqd", dfs_root);
++	if (dfs_root == NULL || fqd_root == NULL) {
++		ret = -ENOMEM;
++		pr_err("Cannot create qman/fqd debugfs dir\n");
++		goto _return;
++	}
++	if (fqid_max) {
++		QMAN_DBGFS_ENTRY_ROOT("ccsrmempeek", S_IRUGO | S_IWUGO,
++				NULL, &qman_ccsrmempeek_fops);
++	}
++	QMAN_DBGFS_ENTRY_ROOT("query_fq_np_fields", S_IRUGO | S_IWUGO,
++		&query_fq_np_fields_data, &query_fq_np_fields_fops);
++
++	QMAN_DBGFS_ENTRY_ROOT("query_fq_fields", S_IRUGO | S_IWUGO,
++		&query_fq_fields_data, &query_fq_fields_fops);
++
++	QMAN_DBGFS_ENTRY_ROOT("query_wq_lengths", S_IRUGO | S_IWUGO,
++		&query_wq_lengths_data, &query_wq_lengths_fops);
++
++	QMAN_DBGFS_ENTRY_ROOT("query_cgr", S_IRUGO | S_IWUGO,
++		&query_cgr_data, &query_cgr_fops);
++
++	QMAN_DBGFS_ENTRY_ROOT("query_congestion", S_IRUGO,
++		NULL, &query_congestion_fops);
++
++	QMAN_DBGFS_ENTRY_ROOT("testwrite_cgr", S_IRUGO,
++		NULL, &testwrite_cgr_fops);
++
++	QMAN_DBGFS_ENTRY_ROOT("testwrite_cgr_cgrid", S_IRUGO | S_IWUGO,
++		NULL, &teswrite_cgr_cgrid_fops);
++
++	QMAN_DBGFS_ENTRY_ROOT("testwrite_cgr_ibcnt", S_IRUGO | S_IWUGO,
++		NULL, &teswrite_cgr_ibcnt_fops);
++
++	/* Create files with fqd_root as parent */
++
++	QMAN_DBGFS_ENTRY_FQDROOT("stateoos", S_IRUGO,
++		(void *)&fqd_states[QM_MCR_NP_STATE_OOS], &qman_fqd_state_fops);
++
++	QMAN_DBGFS_ENTRY_FQDROOT("state_retired", S_IRUGO,
++		(void *)&fqd_states[QM_MCR_NP_STATE_RETIRED],
++		&qman_fqd_state_fops);
++
++	QMAN_DBGFS_ENTRY_FQDROOT("state_tentatively_sched", S_IRUGO,
++		(void *)&fqd_states[QM_MCR_NP_STATE_TEN_SCHED],
++		&qman_fqd_state_fops);
++
++	QMAN_DBGFS_ENTRY_FQDROOT("state_truly_sched", S_IRUGO,
++		(void *)&fqd_states[QM_MCR_NP_STATE_TRU_SCHED],
++		&qman_fqd_state_fops);
++
++	QMAN_DBGFS_ENTRY_FQDROOT("state_parked", S_IRUGO,
++		(void *)&fqd_states[QM_MCR_NP_STATE_PARKED],
++		&qman_fqd_state_fops);
++
++	QMAN_DBGFS_ENTRY_FQDROOT("state_active", S_IRUGO,
++		(void *)&fqd_states[QM_MCR_NP_STATE_ACTIVE],
++		&qman_fqd_state_fops);
++
++	QMAN_DBGFS_ENTRY_FQDSTATE("cge_enable", 17);
++
++	QMAN_DBGFS_ENTRY_FQDSTATE("cge_disable", 16);
++
++	QMAN_DBGFS_ENTRY_FQDSTATE("tde_enable", 15);
++
++	QMAN_DBGFS_ENTRY_FQDSTATE("tde_disable", 14);
++
++	QMAN_DBGFS_ENTRY_FQDSTATE("orp_enable", 13);
++
++	QMAN_DBGFS_ENTRY_FQDSTATE("orp_disable", 12);
++
++	QMAN_DBGFS_ENTRY_FQDSTATE("ctx_a_stashing_enable", 11);
++
++	QMAN_DBGFS_ENTRY_FQDSTATE("ctx_a_stashing_disable", 10);
++
++	QMAN_DBGFS_ENTRY_FQDSTATE("cpc_enable", 9);
++
++	QMAN_DBGFS_ENTRY_FQDSTATE("cpc_disable", 8);
++
++	QMAN_DBGFS_ENTRY_FQDSTATE("sfdr_enable", 7);
++
++	QMAN_DBGFS_ENTRY_FQDSTATE("sfdr_disable", 6);
++
++	QMAN_DBGFS_ENTRY_FQDSTATE("avoid_blocking_enable", 5);
++
++	QMAN_DBGFS_ENTRY_FQDSTATE("avoid_blocking_disable", 4);
++
++	QMAN_DBGFS_ENTRY_FQDSTATE("hold_active_enable", 3);
++
++	QMAN_DBGFS_ENTRY_FQDSTATE("hold_active_disable", 2);
++
++	QMAN_DBGFS_ENTRY_FQDSTATE("prefer_in_cache_enable", 1);
++
++	QMAN_DBGFS_ENTRY_FQDSTATE("prefer_in_cache_disable", 0);
++
++	QMAN_DBGFS_ENTRY_FQDROOT("summary", S_IRUGO,
++		NULL, &qman_fqd_summary_fops);
++
++	QMAN_DBGFS_ENTRY_FQDROOT("wq", S_IRUGO | S_IWUGO,
++		NULL, &qman_fqd_dest_wq_fops);
++
++	QMAN_DBGFS_ENTRY_FQDROOT("cred", S_IRUGO,
++		NULL, &qman_fqd_cred_fops);
++
++	return 0;
++
++_return:
++	debugfs_remove_recursive(dfs_root);
++	return ret;
++}
++
++static void __exit qman_debugfs_module_exit(void)
++{
++	debugfs_remove_recursive(dfs_root);
++}
++
++module_init(qman_debugfs_module_init);
++module_exit(qman_debugfs_module_exit);
++MODULE_LICENSE("Dual BSD/GPL");
+diff --git a/drivers/soc/freescale/qman_priv.h b/drivers/soc/freescale/qman_priv.h
+index 2a5fa2d..217e947 100644
+--- a/drivers/soc/freescale/qman_priv.h
++++ b/drivers/soc/freescale/qman_priv.h
+@@ -153,6 +153,14 @@ struct qman_portal *qman_create_affine_slave(struct qman_portal *redirect,
+ const struct qm_portal_config *qman_destroy_affine_portal(void);
+ void qman_destroy_portal(struct qman_portal *qm);
+ 
++/* This CGR feature is supported by h/w and required by unit-tests and the
++ * debugfs hooks, so is implemented in the driver. However it allows an explicit
++ * corruption of h/w fields by s/w that are usually incorruptible (because the
++ * counters are usually maintained entirely within h/w). As such, we declare
++ * this API internally. */
++int qman_testwrite_cgr(struct qman_cgr *cgr, u64 i_bcnt,
++	struct qm_mcr_cgrtestwrite *result);
++
+ #ifdef CONFIG_FSL_QMAN_FQ_LOOKUP
+ /* If the fq object pointer is greater than the size of context_b field,
+  * than a lookup table is required. */
+diff --git a/include/linux/fsl_qman.h b/include/linux/fsl_qman.h
+index f52e919..f3650c5 100644
+--- a/include/linux/fsl_qman.h
++++ b/include/linux/fsl_qman.h
+@@ -1819,6 +1819,12 @@ int qman_modify_cgr(struct qman_cgr *cgr, u32 flags,
+ int qman_query_cgr(struct qman_cgr *cgr, struct qm_mcr_querycgr *result);
+ 
+ /**
++ * qman_query_congestion - Queries the state of all congestion groups
++ * @congestion: storage for the queried state of all congestion groups
++ */
++int qman_query_congestion(struct qm_mcr_querycongestion *congestion);
++
++/**
+  * qman_alloc_cgrid_range - Allocate a contiguous range of CGR IDs
+  * @result: is set by the API to the base CGR ID of the allocated range
+  * @count: the number of CGR IDs required
 -- 
 2.3.0
