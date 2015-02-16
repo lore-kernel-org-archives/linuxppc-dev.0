@@ -1,31 +1,30 @@
 Return-Path: <aik@ozlabs.ru>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5DB731A0150
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Feb 2015 21:07:26 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5E8F81A0152
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Feb 2015 21:07:25 +1100 (AEDT)
 Received: from /spool/local
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aik@ozlabs.ru>;
  Mon, 16 Feb 2015 20:07:24 +1000
 Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 1853D2BB0054
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 69D8D357805B
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Feb 2015 21:07:22 +1100 (EST)
 Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
  by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t1GA7DjG47382630
+ t1GA7El434930712
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Feb 2015 21:07:22 +1100
 Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
  by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t1GA6m5G007500
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Feb 2015 21:06:48 +1100
+ t1GA6m20007527
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Feb 2015 21:06:49 +1100
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v4 03/28] vfio: powerpc/spapr: Check that TCE page size is
- equal to it_page_size
-Date: Mon, 16 Feb 2015 21:05:55 +1100
-Message-Id: <1424081180-4494-4-git-send-email-aik@ozlabs.ru>
+Subject: [PATCH v4 04/28] vfio: powerpc/spapr: Use it_page_size
+Date: Mon, 16 Feb 2015 21:05:56 +1100
+Message-Id: <1424081180-4494-5-git-send-email-aik@ozlabs.ru>
 In-Reply-To: <1424081180-4494-1-git-send-email-aik@ozlabs.ru>
 References: <1424081180-4494-1-git-send-email-aik@ozlabs.ru>
 Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
@@ -41,63 +40,104 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This checks that the TCE table page size is not bigger that the size of
-a page we just pinned and going to put its physical address to the table.
+This makes use of the it_page_size from the iommu_table struct
+as page size can differ.
 
-Otherwise the hardware gets unwanted access to physical memory between
-the end of the actual page and the end of the aligned up TCE page.
-
-Since compound_order() and compound_head() work correctly on non-huge
-pages, there is no need for additional check whether the page is huge.
+This replaces missing IOMMU_PAGE_SHIFT macro in commented debug code
+as recently introduced IOMMU_PAGE_XXX macros do not include
+IOMMU_PAGE_SHIFT.
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 ---
-Changes:
-v4:
-* s/tce_check_page_size/tce_page_is_contained/
----
- drivers/vfio/vfio_iommu_spapr_tce.c | 22 ++++++++++++++++++++++
- 1 file changed, 22 insertions(+)
+ drivers/vfio/vfio_iommu_spapr_tce.c | 26 +++++++++++++-------------
+ 1 file changed, 13 insertions(+), 13 deletions(-)
 
 diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
-index daf2e2c..ce896244 100644
+index ce896244..c2ca38f 100644
 --- a/drivers/vfio/vfio_iommu_spapr_tce.c
 +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
-@@ -49,6 +49,22 @@ struct tce_container {
- 	bool enabled;
- };
+@@ -99,7 +99,7 @@ static int tce_iommu_enable(struct tce_container *container)
+ 	 * enforcing the limit based on the max that the guest can map.
+ 	 */
+ 	down_write(&current->mm->mmap_sem);
+-	npages = (tbl->it_size << IOMMU_PAGE_SHIFT_4K) >> PAGE_SHIFT;
++	npages = (tbl->it_size << tbl->it_page_shift) >> PAGE_SHIFT;
+ 	locked = current->mm->locked_vm + npages;
+ 	lock_limit = rlimit(RLIMIT_MEMLOCK) >> PAGE_SHIFT;
+ 	if (locked > lock_limit && !capable(CAP_IPC_LOCK)) {
+@@ -128,7 +128,7 @@ static void tce_iommu_disable(struct tce_container *container)
  
-+static bool tce_page_is_contained(struct page *page, unsigned page_shift)
-+{
-+	unsigned shift;
-+
-+	/*
-+	 * Check that the TCE table granularity is not bigger than the size of
-+	 * a page we just found. Otherwise the hardware can get access to
-+	 * a bigger memory chunk that it should.
-+	 */
-+	shift = PAGE_SHIFT + compound_order(compound_head(page));
-+	if (shift >= page_shift)
-+		return true;
-+
-+	return false;
-+}
-+
- static int tce_iommu_enable(struct tce_container *container)
- {
- 	int ret = 0;
-@@ -209,6 +225,12 @@ static long tce_iommu_build(struct tce_container *container,
- 			ret = -EFAULT;
+ 	down_write(&current->mm->mmap_sem);
+ 	current->mm->locked_vm -= (container->tbl->it_size <<
+-			IOMMU_PAGE_SHIFT_4K) >> PAGE_SHIFT;
++			container->tbl->it_page_shift) >> PAGE_SHIFT;
+ 	up_write(&current->mm->mmap_sem);
+ }
+ 
+@@ -242,7 +242,7 @@ static long tce_iommu_build(struct tce_container *container,
+ 					tce, ret);
  			break;
  		}
-+
-+		if (!tce_page_is_contained(page, tbl->it_page_shift)) {
-+			ret = -EPERM;
-+			break;
-+		}
-+
- 		hva = (unsigned long) page_address(page) +
- 			(tce & IOMMU_PAGE_MASK(tbl) & ~PAGE_MASK);
+-		tce += IOMMU_PAGE_SIZE_4K;
++		tce += IOMMU_PAGE_SIZE(tbl);
+ 	}
  
+ 	if (ret)
+@@ -287,8 +287,8 @@ static long tce_iommu_ioctl(void *iommu_data,
+ 		if (info.argsz < minsz)
+ 			return -EINVAL;
+ 
+-		info.dma32_window_start = tbl->it_offset << IOMMU_PAGE_SHIFT_4K;
+-		info.dma32_window_size = tbl->it_size << IOMMU_PAGE_SHIFT_4K;
++		info.dma32_window_start = tbl->it_offset << tbl->it_page_shift;
++		info.dma32_window_size = tbl->it_size << tbl->it_page_shift;
+ 		info.flags = 0;
+ 
+ 		if (copy_to_user((void __user *)arg, &info, minsz))
+@@ -318,8 +318,8 @@ static long tce_iommu_ioctl(void *iommu_data,
+ 				VFIO_DMA_MAP_FLAG_WRITE))
+ 			return -EINVAL;
+ 
+-		if ((param.size & ~IOMMU_PAGE_MASK_4K) ||
+-				(param.vaddr & ~IOMMU_PAGE_MASK_4K))
++		if ((param.size & ~IOMMU_PAGE_MASK(tbl)) ||
++				(param.vaddr & ~IOMMU_PAGE_MASK(tbl)))
+ 			return -EINVAL;
+ 
+ 		/* iova is checked by the IOMMU API */
+@@ -334,8 +334,8 @@ static long tce_iommu_ioctl(void *iommu_data,
+ 			return ret;
+ 
+ 		ret = tce_iommu_build(container, tbl,
+-				param.iova >> IOMMU_PAGE_SHIFT_4K,
+-				tce, param.size >> IOMMU_PAGE_SHIFT_4K);
++				param.iova >> tbl->it_page_shift,
++				tce, param.size >> tbl->it_page_shift);
+ 
+ 		iommu_flush_tce(tbl);
+ 
+@@ -361,17 +361,17 @@ static long tce_iommu_ioctl(void *iommu_data,
+ 		if (param.flags)
+ 			return -EINVAL;
+ 
+-		if (param.size & ~IOMMU_PAGE_MASK_4K)
++		if (param.size & ~IOMMU_PAGE_MASK(tbl))
+ 			return -EINVAL;
+ 
+ 		ret = iommu_tce_clear_param_check(tbl, param.iova, 0,
+-				param.size >> IOMMU_PAGE_SHIFT_4K);
++				param.size >> tbl->it_page_shift);
+ 		if (ret)
+ 			return ret;
+ 
+ 		ret = tce_iommu_clear(container, tbl,
+-				param.iova >> IOMMU_PAGE_SHIFT_4K,
+-				param.size >> IOMMU_PAGE_SHIFT_4K);
++				param.iova >> tbl->it_page_shift,
++				param.size >> tbl->it_page_shift);
+ 		iommu_flush_tce(tbl);
+ 
+ 		return ret;
 -- 
 2.0.0
