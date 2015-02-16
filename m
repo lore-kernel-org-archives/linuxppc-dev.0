@@ -2,13 +2,13 @@ Return-Path: <asolokha@kb.kras.ru>
 Received: from ispman.iskranet.ru (ispman.iskranet.ru [62.213.33.10])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3AA4C1A0214
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Feb 2015 21:56:43 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id DCDE81A0194
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Feb 2015 21:56:45 +1100 (AEDT)
 From: Arseny Solokha <asolokha@kb.kras.ru>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 1/4] powerpc/boot: drop planetcore_set_serial_speed
-Date: Mon, 16 Feb 2015 17:56:25 +0700
-Message-Id: <1424084188-17097-2-git-send-email-asolokha@kb.kras.ru>
+Subject: [PATCH 3/4] powrepc/qe: drop unused ucc_slow_poll_transmitter_now
+Date: Mon, 16 Feb 2015 17:56:27 +0700
+Message-Id: <1424084188-17097-4-git-send-email-asolokha@kb.kras.ru>
 In-Reply-To: <1424084188-17097-1-git-send-email-asolokha@kb.kras.ru>
 References: <1424084188-17097-1-git-send-email-asolokha@kb.kras.ru>
 Cc: linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
@@ -23,66 +23,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Drop planetcore_set_serial_speed() which had no users since its inception.
+Drop ucc_slow_poll_transmitter_now() which has no users.
 
 Signed-off-by: Arseny Solokha <asolokha@kb.kras.ru>
 ---
- arch/powerpc/boot/planetcore.c | 33 ---------------------------------
- arch/powerpc/boot/planetcore.h |  3 ---
- 2 files changed, 36 deletions(-)
+ arch/powerpc/include/asm/ucc_slow.h   | 13 -------------
+ arch/powerpc/sysdev/qe_lib/ucc_slow.c |  5 -----
+ 2 files changed, 18 deletions(-)
 
-diff --git a/arch/powerpc/boot/planetcore.c b/arch/powerpc/boot/planetcore.c
-index 0d8558a..75117e6 100644
---- a/arch/powerpc/boot/planetcore.c
-+++ b/arch/powerpc/boot/planetcore.c
-@@ -131,36 +131,3 @@ void planetcore_set_stdout_path(const char *table)
- 
- 	setprop_str(chosen, "linux,stdout-path", path);
- }
--
--void planetcore_set_serial_speed(const char *table)
--{
--	void *chosen, *stdout;
--	u64 baud;
--	u32 baud32;
--	int len;
--
--	chosen = finddevice("/chosen");
--	if (!chosen)
--		return;
--
--	len = getprop(chosen, "linux,stdout-path", prop_buf, MAX_PROP_LEN);
--	if (len <= 0)
--		return;
--
--	stdout = finddevice(prop_buf);
--	if (!stdout) {
--		printf("planetcore_set_serial_speed: "
--		       "Bad /chosen/linux,stdout-path.\r\n");
--
--		return;
--	}
--
--	if (!planetcore_get_decimal(table, PLANETCORE_KEY_SERIAL_BAUD,
--	                            &baud)) {
--		printf("planetcore_set_serial_speed: No SB tag.\r\n");
--		return;
--	}
--
--	baud32 = baud;
--	setprop(stdout, "current-speed", &baud32, 4);
--}
-diff --git a/arch/powerpc/boot/planetcore.h b/arch/powerpc/boot/planetcore.h
-index 0d4094f..d53c733 100644
---- a/arch/powerpc/boot/planetcore.h
-+++ b/arch/powerpc/boot/planetcore.h
-@@ -43,7 +43,4 @@ void planetcore_set_mac_addrs(const char *table);
+diff --git a/arch/powerpc/include/asm/ucc_slow.h b/arch/powerpc/include/asm/ucc_slow.h
+index c44131e..233ef5f 100644
+--- a/arch/powerpc/include/asm/ucc_slow.h
++++ b/arch/powerpc/include/asm/ucc_slow.h
+@@ -251,19 +251,6 @@ void ucc_slow_enable(struct ucc_slow_private * uccs, enum comm_dir mode);
   */
- void planetcore_set_stdout_path(const char *table);
+ void ucc_slow_disable(struct ucc_slow_private * uccs, enum comm_dir mode);
  
--/* Sets the current-speed property in the serial node. */
--void planetcore_set_serial_speed(const char *table);
+-/* ucc_slow_poll_transmitter_now
+- * Immediately forces a poll of the transmitter for data to be sent.
+- * Typically, the hardware performs a periodic poll for data that the
+- * transmit routine has set up to be transmitted. In cases where
+- * this polling cycle is not soon enough, this optional routine can
+- * be invoked to force a poll right away, instead. Proper use for
+- * each transmission for which this functionality is desired is to
+- * call the transmit routine and then this routine right after.
+- *
+- * uccs - (In) pointer to the slow UCC structure.
+- */
+-void ucc_slow_poll_transmitter_now(struct ucc_slow_private * uccs);
 -
- #endif
+ /* ucc_slow_graceful_stop_tx
+  * Smoothly stops transmission on a specified slow UCC.
+  *
+diff --git a/arch/powerpc/sysdev/qe_lib/ucc_slow.c b/arch/powerpc/sysdev/qe_lib/ucc_slow.c
+index befaf11..5f91628 100644
+--- a/arch/powerpc/sysdev/qe_lib/ucc_slow.c
++++ b/arch/powerpc/sysdev/qe_lib/ucc_slow.c
+@@ -43,11 +43,6 @@ u32 ucc_slow_get_qe_cr_subblock(int uccs_num)
+ }
+ EXPORT_SYMBOL(ucc_slow_get_qe_cr_subblock);
+ 
+-void ucc_slow_poll_transmitter_now(struct ucc_slow_private * uccs)
+-{
+-	out_be16(&uccs->us_regs->utodr, UCC_SLOW_TOD);
+-}
+-
+ void ucc_slow_graceful_stop_tx(struct ucc_slow_private * uccs)
+ {
+ 	struct ucc_slow_info *us_info = uccs->us_info;
 -- 
 2.3.0
