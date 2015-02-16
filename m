@@ -1,15 +1,15 @@
 Return-Path: <Emilian.Medve@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0144.outbound.protection.outlook.com [65.55.169.144])
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0137.outbound.protection.outlook.com [207.46.100.137])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D67611A0F26
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Feb 2015 02:51:29 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4A9101A0F1E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Feb 2015 02:51:30 +1100 (AEDT)
 From: Emil Medve <Emilian.Medve@Freescale.com>
 To: <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>
-Subject: [RFC v2 08/10] fsl_qman: Add debugfs support
-Date: Mon, 16 Feb 2015 09:46:19 -0600
-Message-ID: <1424101581-22109-9-git-send-email-Emilian.Medve@Freescale.com>
+Subject: [RFC v2 05/10] fsl_bman: Add self-tester
+Date: Mon, 16 Feb 2015 09:46:16 -0600
+Message-ID: <1424101581-22109-6-git-send-email-Emilian.Medve@Freescale.com>
 In-Reply-To: <1424101581-22109-1-git-send-email-Emilian.Medve@Freescale.com>
 References: <1424101581-22109-1-git-send-email-Emilian.Medve@Freescale.com>
 MIME-Version: 1.0
@@ -26,127 +26,599 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Geoff Thorpe <Geoff.Thorpe@freescale.com>
 
-Change-Id: I59a75a91b289193b5ab1d30a08f60119dc4d7568
+Change-Id: If1b44bb013addc1e855c73a4e6ff74bc8b6e4829
 Signed-off-by: Geoff Thorpe <Geoff.Thorpe@freescale.com>
 ---
- drivers/soc/freescale/Kconfig        |    7 +
- drivers/soc/freescale/Makefile       |    1 +
- drivers/soc/freescale/qman_api.c     |   58 ++
- drivers/soc/freescale/qman_debugfs.c | 1326 ++++++++++++++++++++++++++++++++++
- drivers/soc/freescale/qman_priv.h    |    8 +
- include/linux/fsl_qman.h             |    6 +
- 6 files changed, 1406 insertions(+)
- create mode 100644 drivers/soc/freescale/qman_debugfs.c
+ drivers/soc/freescale/Kconfig            |  26 ++++
+ drivers/soc/freescale/Makefile           |   8 +-
+ drivers/soc/freescale/bman.c             |  16 +--
+ drivers/soc/freescale/bman_api.c         |  14 +--
+ drivers/soc/freescale/bman_portal.c      |  18 +--
+ drivers/soc/freescale/bman_priv.h        |   2 +-
+ drivers/soc/freescale/bman_test.c        |  56 +++++++++
+ drivers/soc/freescale/bman_test.h        |  44 +++++++
+ drivers/soc/freescale/bman_test_api.c    | 181 ++++++++++++++++++++++++++++
+ drivers/soc/freescale/bman_test_thresh.c | 196 +++++++++++++++++++++++++++++++
+ drivers/soc/freescale/dpaa_alloc.c       |   2 +-
+ drivers/soc/freescale/dpaa_sys.h         |   2 +-
+ drivers/soc/freescale/qman.c             |  26 ++--
+ drivers/soc/freescale/qman_api.c         |  18 +--
+ drivers/soc/freescale/qman_portal.c      |  18 +--
+ drivers/soc/freescale/qman_priv.h        |   2 +-
+ include/linux/fsl_bman.h                 |  10 +-
+ include/linux/fsl_qman.h                 |  18 +--
+ 18 files changed, 582 insertions(+), 75 deletions(-)
+ create mode 100644 drivers/soc/freescale/bman_test.c
+ create mode 100644 drivers/soc/freescale/bman_test.h
+ create mode 100644 drivers/soc/freescale/bman_test_api.c
+ create mode 100644 drivers/soc/freescale/bman_test_thresh.c
 
 diff --git a/drivers/soc/freescale/Kconfig b/drivers/soc/freescale/Kconfig
-index f819671..5f683c8 100644
+index 9329c5c..6786b94 100644
 --- a/drivers/soc/freescale/Kconfig
 +++ b/drivers/soc/freescale/Kconfig
-@@ -124,6 +124,13 @@ config FSL_QMAN_TEST_STASH
- 	  across a series of FQs scheduled to different portals (and cpus), with
- 	  DQRR, data and context stashing always on.
+@@ -47,6 +47,32 @@ config FSL_BMAN_CONFIG
+ 	  linux image is running as a guest OS under the hypervisor, only one
+ 	  guest OS ("the control plane") needs this option.
  
-+config FSL_QMAN_DEBUGFS
-+	tristate "QMan debugfs interface"
-+	depends on DEBUG_FS
++config FSL_BMAN_TEST
++	tristate "BMan self-tests"
++	default n
++	---help---
++	  This option compiles self-test code for BMan.
++
++config FSL_BMAN_TEST_HIGH
++	bool "BMan high-level self-test"
++	depends on FSL_BMAN_TEST
 +	default y
 +	---help---
-+	  This option compiles debugfs code for QMan.
++	  This requires the presence of cpu-affine portals, and performs
++	  high-level API testing with them (whichever portal(s) are affine to
++	  the cpu(s) the test executes on).
 +
- # H/w settings that can be hard-coded for now.
- config FSL_QMAN_FQD_SZ
- 	int "size of Frame Queue Descriptor region"
++config FSL_BMAN_TEST_THRESH
++	bool "BMan threshold test"
++	depends on FSL_BMAN_TEST
++	default y
++	---help---
++	  Multi-threaded (SMP) test of BMan pool depletion. A pool is seeded
++	  before multiple threads (one per cpu) create pool objects to track
++	  depletion state changes. The pool is then drained to empty by a
++	  "drainer" thread, and the other threads that they observe exactly
++	  the depletion state changes that are expected.
++
+ endif # FSL_BMAN
+ 
+ config FSL_QMAN
 diff --git a/drivers/soc/freescale/Makefile b/drivers/soc/freescale/Makefile
-index c980dac..aac7cb2 100644
+index 69be592..09f31b0 100644
 --- a/drivers/soc/freescale/Makefile
 +++ b/drivers/soc/freescale/Makefile
-@@ -18,3 +18,4 @@ obj-$(CONFIG_FSL_QMAN_TEST)			+= qman_tester.o
- qman_tester-y					 = qman_test.o
- qman_tester-$(CONFIG_FSL_QMAN_TEST_API)		+= qman_test_api.o
- qman_tester-$(CONFIG_FSL_QMAN_TEST_STASH)	+= qman_test_stash.o
-+obj-$(CONFIG_FSL_QMAN_DEBUGFS)			+= qman_debugfs.o
-diff --git a/drivers/soc/freescale/qman_api.c b/drivers/soc/freescale/qman_api.c
-index 08dbb36..7556118 100644
---- a/drivers/soc/freescale/qman_api.c
-+++ b/drivers/soc/freescale/qman_api.c
-@@ -1765,6 +1765,37 @@ int qman_query_wq(u8 query_dedicated, struct qm_mcr_querywq *wq)
- }
- EXPORT_SYMBOL(qman_query_wq);
+@@ -2,10 +2,14 @@
+ obj-$(CONFIG_FSL_DPA)				+= dpaa_alloc.o
+ obj-$(CONFIG_HAS_FSL_QBMAN)			+= qbman_driver.o
  
-+int qman_testwrite_cgr(struct qman_cgr *cgr, u64 i_bcnt,
-+			struct qm_mcr_cgrtestwrite *result)
-+{
-+	struct qm_mc_command *mcc;
-+	struct qm_mc_result *mcr;
-+	struct qman_portal *p = get_affine_portal();
-+	unsigned long irqflags __maybe_unused;
-+	u8 res;
-+
-+	PORTAL_IRQ_LOCK(p, irqflags);
-+	mcc = qm_mc_start(&p->p);
-+	mcc->cgrtestwrite.cgid = cgr->cgrid;
-+	mcc->cgrtestwrite.i_bcnt_hi = (u8)(i_bcnt >> 32);
-+	mcc->cgrtestwrite.i_bcnt_lo = (u32)i_bcnt;
-+	qm_mc_commit(&p->p, QM_MCC_VERB_CGRTESTWRITE);
-+	while (!(mcr = qm_mc_result(&p->p)))
-+		cpu_relax();
-+	DPA_ASSERT((mcr->verb & QM_MCR_VERB_MASK) == QM_MCC_VERB_CGRTESTWRITE);
-+	res = mcr->result;
-+	if (res == QM_MCR_RESULT_OK)
-+		*result = mcr->cgrtestwrite;
-+	PORTAL_IRQ_UNLOCK(p, irqflags);
-+	put_affine_portal();
-+	if (res != QM_MCR_RESULT_OK) {
-+		pr_err("CGR TEST WRITE failed: %s\n", mcr_result_str(res));
-+		return -EIO;
-+	}
-+	return 0;
-+}
-+EXPORT_SYMBOL(qman_testwrite_cgr);
-+
- int qman_query_cgr(struct qman_cgr *cgr, struct qm_mcr_querycgr *cgrd)
- {
- 	struct qm_mc_command *mcc;
-@@ -1793,6 +1824,33 @@ int qman_query_cgr(struct qman_cgr *cgr, struct qm_mcr_querycgr *cgrd)
- }
- EXPORT_SYMBOL(qman_query_cgr);
+-# Bman
++# BMan
+ obj-$(CONFIG_FSL_BMAN)				+= bman_api.o
+ obj-$(CONFIG_FSL_BMAN_CONFIG)			+= bman.o bman_portal.o
++obj-$(CONFIG_FSL_BMAN_TEST)			+= bman_tester.o
++bman_tester-y					 = bman_test.o
++bman_tester-$(CONFIG_FSL_BMAN_TEST_API)		+= bman_test_api.o
++bman_tester-$(CONFIG_FSL_BMAN_TEST_THRESH)	+= bman_test_thresh.o
  
-+int qman_query_congestion(struct qm_mcr_querycongestion *congestion)
-+{
-+	struct qm_mc_result *mcr;
-+	struct qman_portal *p = get_affine_portal();
-+	unsigned long irqflags __maybe_unused;
-+	u8 res;
-+
-+	PORTAL_IRQ_LOCK(p, irqflags);
-+	qm_mc_start(&p->p);
-+	qm_mc_commit(&p->p, QM_MCC_VERB_QUERYCONGESTION);
-+	while (!(mcr = qm_mc_result(&p->p)))
-+		cpu_relax();
-+	DPA_ASSERT((mcr->verb & QM_MCR_VERB_MASK) ==
-+			QM_MCC_VERB_QUERYCONGESTION);
-+	res = mcr->result;
-+	if (res == QM_MCR_RESULT_OK)
-+		*congestion = mcr->querycongestion;
-+	PORTAL_IRQ_UNLOCK(p, irqflags);
-+	put_affine_portal();
-+	if (res != QM_MCR_RESULT_OK) {
-+		pr_err("QUERY_CONGESTION failed: %s\n", mcr_result_str(res));
-+		return -EIO;
-+	}
-+	return 0;
-+}
-+EXPORT_SYMBOL(qman_query_congestion);
-+
- /* internal function used as a wait_event() expression */
- static int set_p_vdqcr(struct qman_portal *p, struct qman_fq *fq, u32 vdqcr)
+-# Qman
++# QMan
+ obj-$(CONFIG_FSL_QMAN)				+= qman_api.o qman_utils.o
+ obj-$(CONFIG_FSL_QMAN_CONFIG)			+= qman.o qman_portal.o
+diff --git a/drivers/soc/freescale/bman.c b/drivers/soc/freescale/bman.c
+index fba6ae0..66986f2 100644
+--- a/drivers/soc/freescale/bman.c
++++ b/drivers/soc/freescale/bman.c
+@@ -275,7 +275,7 @@ static int __init fsl_bman_init(struct device_node *node)
+ 	BUG_ON(!bm);
+ 	bm_node = node;
+ 	bm_get_version(bm, &id, &major, &minor);
+-	pr_info("Bman ver:%04x,%02x,%02x\n", id, major, minor);
++	pr_info("BMan ver:%04x,%02x,%02x\n", id, major, minor);
+ 	if ((major == 1) && (minor == 0)) {
+ 		bman_ip_rev = BMAN_REV10;
+ 		bman_pool_max = 64;
+@@ -286,7 +286,7 @@ static int __init fsl_bman_init(struct device_node *node)
+ 		bman_ip_rev = BMAN_REV21;
+ 		bman_pool_max = 64;
+ 	} else {
+-		pr_warn("unknown Bman version, default to rev1.0\n");
++		pr_warn("unknown BMan version, default to rev1.0\n");
+ 	}
+ 
+ 	return 0;
+@@ -330,7 +330,7 @@ static void log_edata_bits(u32 bit_count)
  {
-diff --git a/drivers/soc/freescale/qman_debugfs.c b/drivers/soc/freescale/qman_debugfs.c
+ 	u32 i, j, mask = 0xffffffff;
+ 
+-	pr_warn("Bman ErrInt, EDATA:\n");
++	pr_warn("BMan ErrInt, EDATA:\n");
+ 	i = bit_count/32;
+ 	if (bit_count%32) {
+ 		i++;
+@@ -351,13 +351,13 @@ static void log_additional_error_info(u32 isr_val, u32 ecsr_val)
+ 	ecir_val.ecir_raw = bm_in(ECIR);
+ 	/* Is portal info valid */
+ 	if (ecsr_val & PORTAL_ECSR_ERR) {
+-		pr_warn("Bman ErrInt: SWP id %d, numb %d, pid %d\n",
++		pr_warn("BMan ErrInt: SWP id %d, numb %d, pid %d\n",
+ 			ecir_val.info.portal_num, ecir_val.info.numb,
+ 			ecir_val.info.pid);
+ 	}
+ 	if (ecsr_val & (BM_EIRQ_SBEI|BM_EIRQ_MBEI)) {
+ 		eadr_val.eadr_raw = bm_in(EADR);
+-		pr_warn("Bman ErrInt: EADR Memory: %s, 0x%x\n",
++		pr_warn("BMan ErrInt: EADR Memory: %s, 0x%x\n",
+ 			error_mdata[eadr_val.info.memid].txt,
+ 			error_mdata[eadr_val.info.memid].addr_mask
+ 				& eadr_val.info.eadr);
+@@ -365,7 +365,7 @@ static void log_additional_error_info(u32 isr_val, u32 ecsr_val)
+ 	}
+ }
+ 
+-/* Bman interrupt handler */
++/* BMan interrupt handler */
+ static irqreturn_t bman_isr(int irq, void *ptr)
+ {
+ 	u32 isr_val, ier_val, ecsr_val, isr_mask, i;
+@@ -379,14 +379,14 @@ static irqreturn_t bman_isr(int irq, void *ptr)
+ 		return IRQ_NONE;
+ 	for (i = 0; i < BMAN_HWE_COUNT; i++) {
+ 		if (bman_hwerr_txts[i].mask & isr_mask) {
+-			pr_warn("Bman ErrInt: %s\n", bman_hwerr_txts[i].txt);
++			pr_warn("BMan ErrInt: %s\n", bman_hwerr_txts[i].txt);
+ 			if (bman_hwerr_txts[i].mask & ecsr_val) {
+ 				log_additional_error_info(isr_mask, ecsr_val);
+ 				/* Re-arm error capture registers */
+ 				bm_out(ECSR, ecsr_val);
+ 			}
+ 			if (bman_hwerr_txts[i].mask & BMAN_ERRS_TO_UNENABLE) {
+-				pr_devel("Bman un-enabling error 0x%x\n",
++				pr_devel("BMan un-enabling error 0x%x\n",
+ 					bman_hwerr_txts[i].mask);
+ 				ier_val &= ~bman_hwerr_txts[i].mask;
+ 				bm_err_isr_enable_write(bm, ier_val);
+diff --git a/drivers/soc/freescale/bman_api.c b/drivers/soc/freescale/bman_api.c
+index ab16f16..7bb4840 100644
+--- a/drivers/soc/freescale/bman_api.c
++++ b/drivers/soc/freescale/bman_api.c
+@@ -66,8 +66,8 @@ struct bman_portal {
+ };
+ 
+ /* For an explanation of the locking, redirection, or affine-portal logic,
+- * please consult the Qman driver for details. This is the same, only simpler
+- * (no fiddly Qman-specific bits.) */
++ * please consult the QMan driver for details. This is the same, only simpler
++ * (no fiddly QMan-specific bits.) */
+ #ifdef CONFIG_FSL_DPA_PORTAL_SHARE
+ #define PORTAL_IRQ_LOCK(p, irqflags) \
+ 	do { \
+@@ -118,7 +118,7 @@ static inline struct bman_portal *get_poll_portal(void)
+ #define put_poll_portal()
+ 
+ /* GOTCHA: this object type refers to a pool, it isn't *the* pool. There may be
+- * more than one such object per Bman buffer pool, eg. if different users of the
++ * more than one such object per BMan buffer pool, eg. if different users of the
+  * pool are operating via different portals. */
+ struct bman_pool {
+ 	struct bman_pool_params params;
+@@ -219,15 +219,15 @@ struct bman_portal *bman_create_portal(
+ 	__p->addr.addr_ce = config->addr_virt[DPA_PORTAL_CE];
+ 	__p->addr.addr_ci = config->addr_virt[DPA_PORTAL_CI];
+ 	if (bm_rcr_init(__p, bm_rcr_pvb, bm_rcr_cce)) {
+-		pr_err("Bman RCR initialisation failed\n");
++		pr_err("BMan RCR initialisation failed\n");
+ 		goto fail_rcr;
+ 	}
+ 	if (bm_mc_init(__p)) {
+-		pr_err("Bman MC initialisation failed\n");
++		pr_err("BMan MC initialisation failed\n");
+ 		goto fail_mc;
+ 	}
+ 	if (bm_isr_init(__p)) {
+-		pr_err("Bman ISR initialisation failed\n");
++		pr_err("BMan ISR initialisation failed\n");
+ 		goto fail_isr;
+ 	}
+ 	portal->pools = kmalloc(2 * sizeof(*pools), GFP_KERNEL);
+@@ -273,7 +273,7 @@ struct bman_portal *bman_create_portal(
+ 	/* Need RCR to be empty before continuing */
+ 	ret = bm_rcr_get_fill(__p);
+ 	if (ret) {
+-		pr_err("Bman RCR unclean\n");
++		pr_err("BMan RCR unclean\n");
+ 		goto fail_rcr_empty;
+ 	}
+ 	/* Success */
+diff --git a/drivers/soc/freescale/bman_portal.c b/drivers/soc/freescale/bman_portal.c
+index 1c67065..a91081c 100644
+--- a/drivers/soc/freescale/bman_portal.c
++++ b/drivers/soc/freescale/bman_portal.c
+@@ -134,12 +134,12 @@ static struct bman_portal * __init init_pcfg(struct bm_portal_config *pcfg)
+ #ifdef CONFIG_FSL_DPA_PIRQ_SLOW
+ 		bman_p_irqsource_add(p, BM_PIRQ_RCRI | BM_PIRQ_BSCN);
+ #endif
+-		pr_info("Bman portal %s initialised, cpu %d\n",
++		pr_info("BMan portal %s initialised, cpu %d\n",
+ 			pcfg->public_cfg.is_shared ? "(shared) " : "",
+ 			pcfg->public_cfg.cpu);
+ 		affine_bportals[pcfg->public_cfg.cpu] = p;
+ 	} else
+-		pr_crit("Bman portal failure on cpu %d\n",
++		pr_crit("BMan portal failure on cpu %d\n",
+ 			pcfg->public_cfg.cpu);
+ 
+ 	return p;
+@@ -151,9 +151,9 @@ static void __init init_slave(int cpu)
+ 
+ 	p = bman_create_affine_slave(shared_portals[shared_portals_idx++], cpu);
+ 	if (!p)
+-		pr_err("Bman slave portal failure on cpu %d\n", cpu);
++		pr_err("BMan slave portal failure on cpu %d\n", cpu);
+ 	else
+-		pr_info("Bman portal %s initialised, cpu %d\n", "(slave) ", cpu);
++		pr_info("BMan portal %s initialised, cpu %d\n", "(slave) ", cpu);
+ 	if (shared_portals_idx >= num_shared_portals)
+ 		shared_portals_idx = 0;
+ 	affine_bportals[cpu] = p;
+@@ -192,7 +192,7 @@ static void bman_offline_cpu(unsigned int cpu)
+ 	}
+ }
+ 
+-/* Initialise the Bman driver. The meat of this function deals with portals. The
++/* Initialise the BMan driver. The meat of this function deals with portals. The
+  * following describes the flow of portal-handling, the code "steps" refer to
+  * this description;
+  * 1. Portal configs are parsed from the device-tree into 'unused_pcfgs', with
+@@ -231,12 +231,12 @@ int __init bman_init(void)
+ 	int cpu;
+ 	struct cpumask offline_cpus;
+ 
+-	/* Initialise the Bman (CCSR) device */
++	/* Initialise the BMan (CCSR) device */
+ 	for_each_compatible_node(dn, NULL, "fsl,bman") {
+ 		if (!bman_init_ccsr(dn))
+-			pr_info("Bman err interrupt handler present\n");
++			pr_info("BMan err interrupt handler present\n");
+ 		else
+-			pr_err("Bman CCSR setup failed\n");
++			pr_err("BMan CCSR setup failed\n");
+ 	}
+ 	/* Step 1. See comments at the beginning of the file. */
+ 	for_each_compatible_node(dn, NULL, "fsl,bman-portal") {
+@@ -321,7 +321,7 @@ int __init bman_init(void)
+ 	if (!cpumask_empty(&slave_cpus))
+ 		for_each_cpu(cpu, &slave_cpus)
+ 			init_slave(cpu);
+-	pr_info("Bman portals initialised\n");
++	pr_info("BMan portals initialised\n");
+ 	cpumask_andnot(&offline_cpus, cpu_possible_mask, cpu_online_mask);
+ 	for_each_cpu(cpu, &offline_cpus)
+ 		bman_offline_cpu(cpu);
+diff --git a/drivers/soc/freescale/bman_priv.h b/drivers/soc/freescale/bman_priv.h
+index a183cc6..842ec37 100644
+--- a/drivers/soc/freescale/bman_priv.h
++++ b/drivers/soc/freescale/bman_priv.h
+@@ -131,7 +131,7 @@ int bman_have_ccsr(void);
+ 
+ #ifdef CONFIG_FSL_BMAN_CONFIG
+ /* Set depletion thresholds associated with a buffer pool. Requires that the
+- * operating system have access to Bman CCSR (ie. compiled in support and
++ * operating system have access to BMan CCSR (ie. compiled in support and
+  * run-time access courtesy of the device-tree). */
+ int bm_pool_set(u32 bpid, const u32 *thresholds);
+ #define BM_POOL_THRESH_SW_ENTER 0
+diff --git a/drivers/soc/freescale/bman_test.c b/drivers/soc/freescale/bman_test.c
 new file mode 100644
-index 0000000..c09f88f
+index 0000000..350f2f8
 --- /dev/null
-+++ b/drivers/soc/freescale/qman_debugfs.c
-@@ -0,0 +1,1326 @@
++++ b/drivers/soc/freescale/bman_test.c
+@@ -0,0 +1,56 @@
++/* Copyright 2008-2011 Freescale Semiconductor, Inc.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are met:
++ *     * Redistributions of source code must retain the above copyright
++ *	 notice, this list of conditions and the following disclaimer.
++ *     * Redistributions in binary form must reproduce the above copyright
++ *	 notice, this list of conditions and the following disclaimer in the
++ *	 documentation and/or other materials provided with the distribution.
++ *     * Neither the name of Freescale Semiconductor nor the
++ *	 names of its contributors may be used to endorse or promote products
++ *	 derived from this software without specific prior written permission.
++ *
++ *
++ * ALTERNATIVELY, this software may be distributed under the terms of the
++ * GNU General Public License ("GPL") as published by the Free Software
++ * Foundation, either version 2 of that License or (at your option) any
++ * later version.
++ *
++ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
++ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
++ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
++ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
++ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
++ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++#include "bman_test.h"
++
++MODULE_AUTHOR("Geoff Thorpe");
++MODULE_LICENSE("Dual BSD/GPL");
++MODULE_DESCRIPTION("BMan testing");
++
++static int test_init(void)
++{
++#ifdef CONFIG_FSL_BMAN_TEST_HIGH
++	int loop = 1;
++	while (loop--)
++		bman_test_api();
++#endif
++#ifdef CONFIG_FSL_BMAN_TEST_THRESH
++	bman_test_thresh();
++#endif
++	return 0;
++}
++
++static void test_exit(void)
++{
++}
++
++module_init(test_init);
++module_exit(test_exit);
+diff --git a/drivers/soc/freescale/bman_test.h b/drivers/soc/freescale/bman_test.h
+new file mode 100644
+index 0000000..a0f5147
+--- /dev/null
++++ b/drivers/soc/freescale/bman_test.h
+@@ -0,0 +1,44 @@
++/* Copyright 2008-2011 Freescale Semiconductor, Inc.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are met:
++ *     * Redistributions of source code must retain the above copyright
++ *	 notice, this list of conditions and the following disclaimer.
++ *     * Redistributions in binary form must reproduce the above copyright
++ *	 notice, this list of conditions and the following disclaimer in the
++ *	 documentation and/or other materials provided with the distribution.
++ *     * Neither the name of Freescale Semiconductor nor the
++ *	 names of its contributors may be used to endorse or promote products
++ *	 derived from this software without specific prior written permission.
++ *
++ *
++ * ALTERNATIVELY, this software may be distributed under the terms of the
++ * GNU General Public License ("GPL") as published by the Free Software
++ * Foundation, either version 2 of that License or (at your option) any
++ * later version.
++ *
++ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
++ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
++ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
++ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
++ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
++ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++#include <linux/kernel.h>
++#include <linux/errno.h>
++#include <linux/io.h>
++#include <linux/slab.h>
++#include <linux/module.h>
++#include <linux/interrupt.h>
++#include <linux/delay.h>
++#include <linux/kthread.h>
++
++#include <linux/fsl_bman.h>
++
++void bman_test_api(void);
++void bman_test_thresh(void);
+diff --git a/drivers/soc/freescale/bman_test_api.c b/drivers/soc/freescale/bman_test_api.c
+new file mode 100644
+index 0000000..467cde7
+--- /dev/null
++++ b/drivers/soc/freescale/bman_test_api.c
+@@ -0,0 +1,181 @@
++/* Copyright 2008-2011 Freescale Semiconductor, Inc.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are met:
++ *     * Redistributions of source code must retain the above copyright
++ *	 notice, this list of conditions and the following disclaimer.
++ *     * Redistributions in binary form must reproduce the above copyright
++ *	 notice, this list of conditions and the following disclaimer in the
++ *	 documentation and/or other materials provided with the distribution.
++ *     * Neither the name of Freescale Semiconductor nor the
++ *	 names of its contributors may be used to endorse or promote products
++ *	 derived from this software without specific prior written permission.
++ *
++ *
++ * ALTERNATIVELY, this software may be distributed under the terms of the
++ * GNU General Public License ("GPL") as published by the Free Software
++ * Foundation, either version 2 of that License or (at your option) any
++ * later version.
++ *
++ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
++ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
++ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
++ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
++ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
++ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++#include "bman_test.h"
++#include "bman_priv.h"
++
++/*************/
++/* constants */
++/*************/
++
++#define PORTAL_OPAQUE	((void *)0xf00dbeef)
++#define POOL_OPAQUE	((void *)0xdeadabba)
++#define NUM_BUFS	93
++#define LOOPS		3
++#define BMAN_TOKEN_MASK 0x00FFFFFFFFFFLLU
++
++/***************/
++/* global vars */
++/***************/
++
++static struct bman_pool *pool;
++static int depleted;
++static struct bm_buffer bufs_in[NUM_BUFS] ____cacheline_aligned;
++static struct bm_buffer bufs_out[NUM_BUFS] ____cacheline_aligned;
++static int bufs_received;
++
++/* Predeclare the callback so we can instantiate pool parameters */
++static void depletion_cb(struct bman_portal *, struct bman_pool *, void *, int);
++
++/**********************/
++/* internal functions */
++/**********************/
++
++static void bufs_init(void)
++{
++	int i;
++	for (i = 0; i < NUM_BUFS; i++)
++		bm_buffer_set64(&bufs_in[i], 0xfedc01234567LLU * i);
++	bufs_received = 0;
++}
++
++static inline int bufs_cmp(const struct bm_buffer *a, const struct bm_buffer *b)
++{
++	if ((bman_ip_rev == BMAN_REV20) || (bman_ip_rev == BMAN_REV21)) {
++
++		/* On SoCs with BMan revison 2.0, BMan only respects the 40
++		 * LS-bits of buffer addresses, masking off the upper 8-bits on
++		 * release commands. The API provides for 48-bit addresses
++		 * because some SoCs support all 48-bits. When generating
++		 * garbage addresses for testing, we either need to zero the
++		 * upper 8-bits when releasing to BMan (otherwise we'll be
++		 * disappointed when the buffers we acquire back from BMan
++		 * don't match), or we need to mask the upper 8-bits off when
++		 * comparing. We do the latter.
++		 */
++		if ((bm_buffer_get64(a) & BMAN_TOKEN_MASK)
++				< (bm_buffer_get64(b) & BMAN_TOKEN_MASK))
++			return -1;
++		if ((bm_buffer_get64(a) & BMAN_TOKEN_MASK)
++				> (bm_buffer_get64(b) & BMAN_TOKEN_MASK))
++			return 1;
++	} else {
++		if (bm_buffer_get64(a) < bm_buffer_get64(b))
++			return -1;
++		if (bm_buffer_get64(a) > bm_buffer_get64(b))
++			return 1;
++	}
++
++	return 0;
++}
++
++static void bufs_confirm(void)
++{
++	int i, j;
++	for (i = 0; i < NUM_BUFS; i++) {
++		int matches = 0;
++		for (j = 0; j < NUM_BUFS; j++)
++			if (!bufs_cmp(&bufs_in[i], &bufs_out[j]))
++				matches++;
++		BUG_ON(matches != 1);
++	}
++}
++
++/********/
++/* test */
++/********/
++
++static void depletion_cb(struct bman_portal *__portal, struct bman_pool *__pool,
++			void *pool_ctx, int __depleted)
++{
++	BUG_ON(__pool != pool);
++	BUG_ON(pool_ctx != POOL_OPAQUE);
++	depleted = __depleted;
++}
++
++void bman_test_api(void)
++{
++	struct bman_pool_params pparams = {
++		.flags = BMAN_POOL_FLAG_DEPLETION | BMAN_POOL_FLAG_DYNAMIC_BPID,
++		.cb = depletion_cb,
++		.cb_ctx = POOL_OPAQUE,
++	};
++	int i, loops = LOOPS;
++
++	bufs_init();
++
++	pr_info("BMAN:	--- starting high-level test ---\n");
++
++	pool = bman_new_pool(&pparams);
++	BUG_ON(!pool);
++
++	/*******************/
++	/* Release buffers */
++	/*******************/
++do_loop:
++	i = 0;
++	while (i < NUM_BUFS) {
++		u32 flags = BMAN_RELEASE_FLAG_WAIT;
++		int num = 8;
++		if ((i + num) > NUM_BUFS)
++			num = NUM_BUFS - i;
++		if ((i + num) == NUM_BUFS)
++			flags |= BMAN_RELEASE_FLAG_WAIT_SYNC;
++		if (bman_release(pool, bufs_in + i, num, flags))
++			panic("bman_release() failed\n");
++		i += num;
++	}
++
++	/*******************/
++	/* Acquire buffers */
++	/*******************/
++	while (i > 0) {
++		int tmp, num = 8;
++		if (num > i)
++			num = i;
++		tmp = bman_acquire(pool, bufs_out + i - num, num, 0);
++		BUG_ON(tmp != num);
++		i -= num;
++	}
++	i = bman_acquire(pool, NULL, 1, 0);
++	BUG_ON(i > 0);
++
++	bufs_confirm();
++
++	if (--loops)
++		goto do_loop;
++
++	/************/
++	/* Clean up */
++	/************/
++	bman_free_pool(pool);
++	pr_info("BMAN:	--- finished high-level test ---\n");
++}
+diff --git a/drivers/soc/freescale/bman_test_thresh.c b/drivers/soc/freescale/bman_test_thresh.c
+new file mode 100644
+index 0000000..c03db24
+--- /dev/null
++++ b/drivers/soc/freescale/bman_test_thresh.c
+@@ -0,0 +1,196 @@
 +/* Copyright 2010-2011 Freescale Semiconductor, Inc.
 + *
 + * Redistribution and use in source and binary forms, with or without
@@ -177,1337 +649,570 @@ index 0000000..c09f88f
 + * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 + * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 + */
-+#include "qman_priv.h"
 +
-+#define MAX_FQID (0x00ffffff)
-+#define QM_FQD_BLOCK_SIZE     64
-+#define QM_FQD_AR	      (0xC10)
++#include "bman_test.h"
 +
-+static u32 fqid_max;
-+static u64 qman_ccsr_start;
-+static u64 qman_ccsr_size;
++/* Test constants */
++#define TEST_NUMBUFS	129728
++#define TEST_EXIT	129536
++#define TEST_ENTRY	129024
 +
-+static const char * const state_txt[] = {
-+	"Out of Service",
-+	"Retired",
-+	"Tentatively Scheduled",
-+	"Truly Scheduled",
-+	"Parked",
-+	"Active, Active Held or Held Suspended",
-+	"Unknown State 6",
-+	"Unknown State 7",
-+	NULL,
++struct affine_test_data {
++	struct task_struct *t;
++	int cpu;
++	int expect_affinity;
++	int drain;
++	int num_enter;
++	int num_exit;
++	struct list_head node;
++	struct completion wakethread;
++	struct completion wakeparent;
 +};
 +
-+static const u8 fqd_states[] = {
-+	QM_MCR_NP_STATE_OOS, QM_MCR_NP_STATE_RETIRED, QM_MCR_NP_STATE_TEN_SCHED,
-+	QM_MCR_NP_STATE_TRU_SCHED, QM_MCR_NP_STATE_PARKED,
-+	QM_MCR_NP_STATE_ACTIVE};
-+
-+struct mask_to_text {
-+	u16 mask;
-+	const char *txt;
-+};
-+
-+struct mask_filter_s {
-+	u16 mask;
-+	u8 filter;
-+};
-+
-+static const struct mask_filter_s mask_filter[] = {
-+	{QM_FQCTRL_PREFERINCACHE, 0},
-+	{QM_FQCTRL_PREFERINCACHE, 1},
-+	{QM_FQCTRL_HOLDACTIVE, 0},
-+	{QM_FQCTRL_HOLDACTIVE, 1},
-+	{QM_FQCTRL_AVOIDBLOCK, 0},
-+	{QM_FQCTRL_AVOIDBLOCK, 1},
-+	{QM_FQCTRL_FORCESFDR, 0},
-+	{QM_FQCTRL_FORCESFDR, 1},
-+	{QM_FQCTRL_CPCSTASH, 0},
-+	{QM_FQCTRL_CPCSTASH, 1},
-+	{QM_FQCTRL_CTXASTASHING, 0},
-+	{QM_FQCTRL_CTXASTASHING, 1},
-+	{QM_FQCTRL_ORP, 0},
-+	{QM_FQCTRL_ORP, 1},
-+	{QM_FQCTRL_TDE, 0},
-+	{QM_FQCTRL_TDE, 1},
-+	{QM_FQCTRL_CGE, 0},
-+	{QM_FQCTRL_CGE, 1}
-+};
-+
-+static const struct mask_to_text fq_ctrl_text_list[] = {
-+	{
-+		.mask = QM_FQCTRL_PREFERINCACHE,
-+		.txt = "Prefer in cache",
-+	},
-+	{
-+		.mask = QM_FQCTRL_HOLDACTIVE,
-+		.txt =	"Hold active in portal",
-+	},
-+	{
-+		.mask = QM_FQCTRL_AVOIDBLOCK,
-+		.txt = "Avoid Blocking",
-+	},
-+	{
-+		.mask = QM_FQCTRL_FORCESFDR,
-+		.txt = "High-priority SFDRs",
-+	},
-+	{
-+		.mask = QM_FQCTRL_CPCSTASH,
-+		.txt = "CPC Stash Enable",
-+	},
-+	{
-+		.mask = QM_FQCTRL_CTXASTASHING,
-+		.txt =	"Context-A stashing",
-+	},
-+	{
-+		.mask = QM_FQCTRL_ORP,
-+		.txt =	"ORP Enable",
-+	},
-+	{
-+		.mask = QM_FQCTRL_TDE,
-+		.txt = "Tail-Drop Enable",
-+	},
-+	{
-+		.mask = QM_FQCTRL_CGE,
-+		.txt = "Congestion Group Enable",
-+	},
-+	{
-+		.mask = 0,
-+		.txt = NULL,
-+	}
-+};
-+
-+static const char *get_fqd_ctrl_text(u16 mask)
++static void cb_depletion(struct bman_portal *portal,
++			struct bman_pool *pool,
++			void *opaque,
++			int depleted)
 +{
-+	int i = 0;
-+
-+	while (fq_ctrl_text_list[i].txt != NULL) {
-+		if (fq_ctrl_text_list[i].mask == mask)
-+			return fq_ctrl_text_list[i].txt;
-+		i++;
-+	}
-+	return NULL;
++	struct affine_test_data *data = opaque;
++	int c = smp_processor_id();
++	pr_info("cb_depletion: bpid=%d, depleted=%d, cpu=%d, original=%d\n",
++		bman_get_params(pool)->bpid, !!depleted, c, data->cpu);
++	/* We should be executing on the CPU of the thread that owns the pool if
++	 * and that CPU has an affine portal (ie. it isn't slaved). */
++	BUG_ON((c != data->cpu) && data->expect_affinity);
++	BUG_ON((c == data->cpu) && !data->expect_affinity);
++	if (depleted)
++		data->num_enter++;
++	else
++		data->num_exit++;
 +}
 +
-+static const struct mask_to_text stashing_text_list[] = {
-+	{
-+		.mask = QM_STASHING_EXCL_CTX,
-+		.txt = "FQ Ctx Stash"
-+	},
-+	{
-+		.mask = QM_STASHING_EXCL_DATA,
-+		.txt =	"Frame Data Stash",
-+	},
-+	{
-+		.mask = QM_STASHING_EXCL_ANNOTATION,
-+		.txt = "Frame Annotation Stash",
-+	},
-+	{
-+		.mask = 0,
-+		.txt = NULL,
-+	},
++/* Params used to set up a pool, this also dynamically allocates a BPID */
++static const struct bman_pool_params params_nocb = {
++	.flags = BMAN_POOL_FLAG_DYNAMIC_BPID | BMAN_POOL_FLAG_THRESH,
++	.thresholds = { TEST_ENTRY, TEST_EXIT, 0, 0 }
 +};
 +
-+static int user_input_convert(const char __user *user_buf, size_t count,
-+				unsigned long *val)
-+{
-+	char buf[12];
++/* Params used to set up each cpu's pool with callbacks enabled */
++static struct bman_pool_params params_cb = {
++	.bpid = 0, /* will be replaced to match pool_nocb */
++	.flags = BMAN_POOL_FLAG_DEPLETION,
++	.cb = cb_depletion
++};
 +
-+	if (count > sizeof(buf) - 1)
-+		return -EINVAL;
-+	if (copy_from_user(buf, user_buf, count))
-+		return -EFAULT;
-+	buf[count] = '\0';
-+	if (kstrtoul(buf, 0, val))
-+		return -EINVAL;
++static struct bman_pool *pool_nocb;
++static LIST_HEAD(threads);
++
++static int affine_test(void *__data)
++{
++	struct bman_pool *pool;
++	struct affine_test_data *data = __data;
++	struct bman_pool_params my_params = params_cb;
++
++	pr_info("thread %d: starting\n", data->cpu);
++	/* create the pool */
++	my_params.cb_ctx = data;
++	pool = bman_new_pool(&my_params);
++	BUG_ON(!pool);
++	complete(&data->wakeparent);
++	wait_for_completion(&data->wakethread);
++	init_completion(&data->wakethread);
++
++	/* if we're the drainer, we get signalled for that */
++	if (data->drain) {
++		struct bm_buffer buf;
++		int ret;
++		pr_info("thread %d: draining...\n", data->cpu);
++		do {
++			ret = bman_acquire(pool, &buf, 1, 0);
++		} while (ret > 0);
++		pr_info("thread %d: draining done.\n", data->cpu);
++		complete(&data->wakeparent);
++		wait_for_completion(&data->wakethread);
++		init_completion(&data->wakethread);
++	}
++
++	/* cleanup */
++	bman_free_pool(pool);
++	while (!kthread_should_stop())
++		cpu_relax();
++	pr_info("thread %d: exiting\n", data->cpu);
 +	return 0;
 +}
 +
-+struct line_buffer_fq {
-+	u32 buf[8];
-+	u32 buf_cnt;
-+	int line_cnt;
-+};
-+
-+static void add_to_line_buffer(struct line_buffer_fq *line_buf, u32 fqid,
-+			struct seq_file *file)
++static struct affine_test_data *start_affine_test(int cpu, int drain)
 +{
-+	line_buf->buf[line_buf->buf_cnt] = fqid;
-+	line_buf->buf_cnt++;
-+	if (line_buf->buf_cnt == 8) {
-+		/* Buffer is full, flush it */
-+		if (line_buf->line_cnt != 0)
-+			seq_puts(file, ",\n");
-+		seq_printf(file, "0x%06x,0x%06x,0x%06x,0x%06x,0x%06x,"
-+			"0x%06x,0x%06x,0x%06x",
-+			line_buf->buf[0], line_buf->buf[1], line_buf->buf[2],
-+			line_buf->buf[3], line_buf->buf[4], line_buf->buf[5],
-+			line_buf->buf[6], line_buf->buf[7]);
-+		line_buf->buf_cnt = 0;
-+		line_buf->line_cnt++;
++	struct affine_test_data *data = kmalloc(sizeof(*data), GFP_KERNEL);
++
++	if (!data)
++		return NULL;
++	data->cpu = cpu;
++	data->expect_affinity = cpumask_test_cpu(cpu, bman_affine_cpus());
++	data->drain = drain;
++	data->num_enter = 0;
++	data->num_exit = 0;
++	init_completion(&data->wakethread);
++	init_completion(&data->wakeparent);
++	list_add_tail(&data->node, &threads);
++	data->t = kthread_create(affine_test, data, "threshtest%d", cpu);
++	BUG_ON(IS_ERR(data->t));
++	kthread_bind(data->t, cpu);
++	wake_up_process(data->t);
++	return data;
++}
++
++void bman_test_thresh(void)
++{
++	int loop = TEST_NUMBUFS;
++	int ret, num_cpus = 0;
++	struct affine_test_data *data, *drainer = NULL;
++
++	pr_info("bman_test_thresh: start\n");
++
++	/* allocate a BPID and seed it */
++	pool_nocb = bman_new_pool(&params_nocb);
++	BUG_ON(!pool_nocb);
++	while (loop--) {
++		struct bm_buffer buf;
++		bm_buffer_set64(&buf, 0x0badbeef + loop);
++		ret = bman_release(pool_nocb, &buf, 1,
++					BMAN_RELEASE_FLAG_WAIT);
++		BUG_ON(ret);
 +	}
-+}
-+
-+static void flush_line_buffer(struct line_buffer_fq *line_buf,
-+				struct seq_file *file)
-+{
-+	if (line_buf->buf_cnt) {
-+		int y = 0;
-+		if (line_buf->line_cnt != 0)
-+			seq_puts(file, ",\n");
-+		while (y != line_buf->buf_cnt) {
-+			if (y+1 == line_buf->buf_cnt)
-+				seq_printf(file, "0x%06x", line_buf->buf[y]);
-+			else
-+				seq_printf(file, "0x%06x,", line_buf->buf[y]);
-+			y++;
-+		}
-+		line_buf->line_cnt++;
-+	}
-+	if (line_buf->line_cnt)
-+		seq_putc(file, '\n');
-+}
-+
-+static struct dentry *dfs_root; /* debugfs root directory */
-+
-+/*******************************************************************************
-+ *  Query Frame Queue Non Programmable Fields
-+ ******************************************************************************/
-+struct query_fq_np_fields_data_s {
-+	u32 fqid;
-+};
-+static struct query_fq_np_fields_data_s query_fq_np_fields_data = {
-+	.fqid = 1,
-+};
-+
-+static int query_fq_np_fields_show(struct seq_file *file, void *offset)
-+{
-+	int ret;
-+	struct qm_mcr_queryfq_np np;
-+	struct qman_fq fq;
-+
-+	fq.fqid = query_fq_np_fields_data.fqid;
-+	ret = qman_query_fq_np(&fq, &np);
-+	if (ret)
-+		return ret;
-+	/* Print state */
-+	seq_printf(file, "Query FQ Non Programmable Fields Result fqid 0x%x\n",
-+			fq.fqid);
-+	seq_printf(file, " force eligible pending: %s\n",
-+		(np.state & QM_MCR_NP_STATE_FE) ? "yes" : "no");
-+	seq_printf(file, " retirement pending: %s\n",
-+		(np.state & QM_MCR_NP_STATE_R) ? "yes" : "no");
-+	seq_printf(file, " state: %s\n",
-+		state_txt[np.state & QM_MCR_NP_STATE_MASK]);
-+	seq_printf(file, " fq_link: 0x%x\n", np.fqd_link);
-+	seq_printf(file, " odp_seq: %u\n", np.odp_seq);
-+	seq_printf(file, " orp_nesn: %u\n", np.orp_nesn);
-+	seq_printf(file, " orp_ea_hseq: %u\n", np.orp_ea_hseq);
-+	seq_printf(file, " orp_ea_tseq: %u\n", np.orp_ea_tseq);
-+	seq_printf(file, " orp_ea_hptr: 0x%x\n", np.orp_ea_hptr);
-+	seq_printf(file, " orp_ea_tptr: 0x%x\n", np.orp_ea_tptr);
-+	seq_printf(file, " pfdr_hptr: 0x%x\n", np.pfdr_hptr);
-+	seq_printf(file, " pfdr_tptr: 0x%x\n", np.pfdr_tptr);
-+	seq_printf(file, " is: ics_surp contains a %s\n",
-+		(np.is) ? "deficit" : "surplus");
-+	seq_printf(file, " ics_surp: %u\n", np.ics_surp);
-+	seq_printf(file, " byte_cnt: %u\n", np.byte_cnt);
-+	seq_printf(file, " frm_cnt: %u\n", np.frm_cnt);
-+	seq_printf(file, " ra1_sfdr: 0x%x\n", np.ra1_sfdr);
-+	seq_printf(file, " ra2_sfdr: 0x%x\n", np.ra2_sfdr);
-+	seq_printf(file, " od1_sfdr: 0x%x\n", np.od1_sfdr);
-+	seq_printf(file, " od2_sfdr: 0x%x\n", np.od2_sfdr);
-+	seq_printf(file, " od3_sfdr: 0x%x\n", np.od3_sfdr);
-+	return 0;
-+}
-+
-+static int query_fq_np_fields_open(struct inode *inode,
-+					struct file *file)
-+{
-+	return single_open(file, query_fq_np_fields_show, NULL);
-+}
-+
-+static ssize_t query_fq_np_fields_write(struct file *f,
-+			const char __user *buf, size_t count, loff_t *off)
-+{
-+	int ret;
-+	unsigned long val;
-+
-+	ret = user_input_convert(buf, count, &val);
-+	if (ret)
-+		return ret;
-+	if (val > MAX_FQID)
-+		return -EINVAL;
-+	query_fq_np_fields_data.fqid = (u32)val;
-+	return count;
-+}
-+
-+static const struct file_operations query_fq_np_fields_fops = {
-+	.owner		= THIS_MODULE,
-+	.open		= query_fq_np_fields_open,
-+	.read		= seq_read,
-+	.write		= query_fq_np_fields_write,
-+	.release	= single_release,
-+};
-+
-+/*******************************************************************************
-+ *  Frame Queue Programmable Fields
-+ ******************************************************************************/
-+struct query_fq_fields_data_s {
-+	u32 fqid;
-+};
-+
-+static struct query_fq_fields_data_s query_fq_fields_data = {
-+	.fqid = 1,
-+};
-+
-+static int query_fq_fields_show(struct seq_file *file, void *offset)
-+{
-+	int ret;
-+	struct qm_fqd fqd;
-+	struct qman_fq fq;
-+	int i = 0;
-+
-+	memset(&fqd, 0, sizeof(struct qm_fqd));
-+	fq.fqid = query_fq_fields_data.fqid;
-+	ret = qman_query_fq(&fq, &fqd);
-+	if (ret)
-+		return ret;
-+	seq_printf(file, "Query FQ Programmable Fields Result fqid 0x%x\n",
-+			fq.fqid);
-+	seq_printf(file, " orprws: %u\n", fqd.orprws);
-+	seq_printf(file, " oa: %u\n", fqd.oa);
-+	seq_printf(file, " olws: %u\n", fqd.olws);
-+
-+	seq_printf(file, " cgid: %u\n", fqd.cgid);
-+
-+	if ((fqd.fq_ctrl & QM_FQCTRL_MASK) == 0)
-+		seq_puts(file, " fq_ctrl: None\n");
-+	else {
-+		i = 0;
-+		seq_puts(file, " fq_ctrl:\n");
-+		while (fq_ctrl_text_list[i].txt != NULL) {
-+			if ((fqd.fq_ctrl & QM_FQCTRL_MASK) &
-+					fq_ctrl_text_list[i].mask)
-+				seq_printf(file, "  %s\n",
-+					fq_ctrl_text_list[i].txt);
-+			i++;
-+		}
-+	}
-+	seq_printf(file, " dest_channel: %u\n", fqd.dest.channel);
-+	seq_printf(file, " dest_wq: %u\n", fqd.dest.wq);
-+	seq_printf(file, " ics_cred: %u\n", fqd.ics_cred);
-+	seq_printf(file, " td_mant: %u\n", fqd.td.mant);
-+	seq_printf(file, " td_exp: %u\n", fqd.td.exp);
-+
-+	seq_printf(file, " ctx_b: 0x%x\n", fqd.context_b);
-+
-+	seq_printf(file, " ctx_a: 0x%llx\n", qm_fqd_stashing_get64(&fqd));
-+	/* Any stashing configured */
-+	if ((fqd.context_a.stashing.exclusive & 0x7) == 0)
-+		seq_puts(file, " ctx_a_stash_exclusive: None\n");
-+	else {
-+		seq_puts(file, " ctx_a_stash_exclusive:\n");
-+		i = 0;
-+		while (stashing_text_list[i].txt != NULL) {
-+			if ((fqd.fq_ctrl & 0x7) & stashing_text_list[i].mask)
-+				seq_printf(file, "  %s\n",
-+					stashing_text_list[i].txt);
-+			i++;
-+		}
-+	}
-+	seq_printf(file, " ctx_a_stash_annotation_cl: %u\n",
-+			fqd.context_a.stashing.annotation_cl);
-+	seq_printf(file, " ctx_a_stash_data_cl: %u\n",
-+			fqd.context_a.stashing.data_cl);
-+	seq_printf(file, " ctx_a_stash_context_cl: %u\n",
-+			fqd.context_a.stashing.context_cl);
-+	return 0;
-+}
-+
-+static int query_fq_fields_open(struct inode *inode,
-+					struct file *file)
-+{
-+	return single_open(file, query_fq_fields_show, NULL);
-+}
-+
-+static ssize_t query_fq_fields_write(struct file *f,
-+			const char __user *buf, size_t count, loff_t *off)
-+{
-+	int ret;
-+	unsigned long val;
-+
-+	ret = user_input_convert(buf, count, &val);
-+	if (ret)
-+		return ret;
-+	if (val > MAX_FQID)
-+		return -EINVAL;
-+	query_fq_fields_data.fqid = (u32)val;
-+	return count;
-+}
-+
-+static const struct file_operations query_fq_fields_fops = {
-+	.owner		= THIS_MODULE,
-+	.open		= query_fq_fields_open,
-+	.read		= seq_read,
-+	.write		= query_fq_fields_write,
-+	.release	= single_release,
-+};
-+
-+/*******************************************************************************
-+ * Query WQ lengths
-+ ******************************************************************************/
-+struct query_wq_lengths_data_s {
-+	union {
-+		u16 channel_wq; /* ignores wq (3 lsbits) */
-+		struct {
-+			u16 id:13; /* qm_channel */
-+			u16 __reserved:3;
-+		} __packed channel;
-+	};
-+};
-+static struct query_wq_lengths_data_s query_wq_lengths_data;
-+static int query_wq_lengths_show(struct seq_file *file, void *offset)
-+{
-+	int ret;
-+	struct qm_mcr_querywq wq;
-+	int i;
-+
-+	memset(&wq, 0, sizeof(struct qm_mcr_querywq));
-+	wq.channel.id = query_wq_lengths_data.channel.id;
-+	ret = qman_query_wq(0, &wq);
-+	if (ret)
-+		return ret;
-+	seq_printf(file, "Query Result For Channel: 0x%x\n", wq.channel.id);
-+	for (i = 0; i < 8; i++)
-+		/* mask out upper 4 bits since they are not part of length */
-+		seq_printf(file, " wq%d_len : %u\n", i, wq.wq_len[i] & 0x0fff);
-+	return 0;
-+}
-+
-+static int query_wq_lengths_open(struct inode *inode,
-+					struct file *file)
-+{
-+	return single_open(file, query_wq_lengths_show, NULL);
-+}
-+
-+static ssize_t query_wq_lengths_write(struct file *f,
-+			const char __user *buf, size_t count, loff_t *off)
-+{
-+	int ret;
-+	unsigned long val;
-+
-+	ret = user_input_convert(buf, count, &val);
-+	if (ret)
-+		return ret;
-+	if (val > 0xfff8)
-+		return -EINVAL;
-+	query_wq_lengths_data.channel.id = (u16)val;
-+	return count;
-+}
-+
-+static const struct file_operations query_wq_lengths_fops = {
-+	.owner		= THIS_MODULE,
-+	.open		= query_wq_lengths_open,
-+	.read		= seq_read,
-+	.write		= query_wq_lengths_write,
-+	.release	= single_release,
-+};
-+
-+/*******************************************************************************
-+ *  Query CGR
-+ ******************************************************************************/
-+struct query_cgr_s {
-+	u8 cgid;
-+};
-+static struct query_cgr_s query_cgr_data;
-+
-+static int query_cgr_show(struct seq_file *file, void *offset)
-+{
-+	int ret;
-+	struct qm_mcr_querycgr cgrd;
-+	struct qman_cgr cgr;
-+	int i, j;
-+	u32 mask;
-+
-+	memset(&cgr, 0, sizeof(cgr));
-+	memset(&cgrd, 0, sizeof(cgrd));
-+	cgr.cgrid = query_cgr_data.cgid;
-+	ret = qman_query_cgr(&cgr, &cgrd);
-+	if (ret)
-+		return ret;
-+	seq_printf(file, "Query CGR id 0x%x\n", cgr.cgrid);
-+	seq_printf(file, " wr_parm_g MA: %u, Mn: %u, SA: %u, Sn: %u, Pn: %u\n",
-+		cgrd.cgr.wr_parm_g.MA, cgrd.cgr.wr_parm_g.Mn,
-+		cgrd.cgr.wr_parm_g.SA, cgrd.cgr.wr_parm_g.Sn,
-+		cgrd.cgr.wr_parm_g.Pn);
-+
-+	seq_printf(file, " wr_parm_y MA: %u, Mn: %u, SA: %u, Sn: %u, Pn: %u\n",
-+		cgrd.cgr.wr_parm_y.MA, cgrd.cgr.wr_parm_y.Mn,
-+		cgrd.cgr.wr_parm_y.SA, cgrd.cgr.wr_parm_y.Sn,
-+		cgrd.cgr.wr_parm_y.Pn);
-+
-+	seq_printf(file, " wr_parm_r MA: %u, Mn: %u, SA: %u, Sn: %u, Pn: %u\n",
-+		cgrd.cgr.wr_parm_r.MA, cgrd.cgr.wr_parm_r.Mn,
-+		cgrd.cgr.wr_parm_r.SA, cgrd.cgr.wr_parm_r.Sn,
-+		cgrd.cgr.wr_parm_r.Pn);
-+
-+	seq_printf(file, " wr_en_g: %u, wr_en_y: %u, we_en_r: %u\n",
-+		cgrd.cgr.wr_en_g, cgrd.cgr.wr_en_y, cgrd.cgr.wr_en_r);
-+
-+	seq_printf(file, " cscn_en: %u\n", cgrd.cgr.cscn_en);
-+	if ((qman_ip_rev & 0xFF00) >= QMAN_REV30) {
-+		seq_puts(file, " cscn_targ_dcp:\n");
-+		mask = 0x80000000;
-+		for (i = 0; i < 32; i++) {
-+			if (cgrd.cgr.cscn_targ & mask)
-+				seq_printf(file, "  send CSCN to dcp %u\n",
-+								(31 - i));
-+			mask >>= 1;
-+		}
-+
-+		seq_puts(file, " cscn_targ_swp:\n");
-+		for (i = 0; i < 4; i++) {
-+			mask = 0x80000000;
-+			for (j = 0; j < 32; j++) {
-+				if (cgrd.cscn_targ_swp[i] & mask)
-+					seq_printf(file, "  send CSCN to swp"
-+						" %u\n", (127 - (i * 32) - j));
-+				mask >>= 1;
-+			}
-+		}
-+	} else {
-+		seq_printf(file, " cscn_targ: %u\n", cgrd.cgr.cscn_targ);
-+	}
-+	seq_printf(file, " cstd_en: %u\n", cgrd.cgr.cstd_en);
-+	seq_printf(file, " cs: %u\n", cgrd.cgr.cs);
-+
-+	seq_printf(file, " cs_thresh_TA: %u, cs_thresh_Tn: %u\n",
-+		cgrd.cgr.cs_thres.TA, cgrd.cgr.cs_thres.Tn);
-+
-+	seq_printf(file, " mode: %s\n",
-+		(cgrd.cgr.mode & QMAN_CGR_MODE_FRAME) ?
-+		"frame count" : "byte count");
-+	seq_printf(file, " i_bcnt: %llu\n", qm_mcr_querycgr_i_get64(&cgrd));
-+	seq_printf(file, " a_bcnt: %llu\n", qm_mcr_querycgr_a_get64(&cgrd));
-+
-+	return 0;
-+}
-+
-+static int query_cgr_open(struct inode *inode, struct file *file)
-+{
-+	return single_open(file, query_cgr_show, NULL);
-+}
-+
-+static ssize_t query_cgr_write(struct file *f, const char __user *buf,
-+				size_t count, loff_t *off)
-+{
-+	int ret;
-+	unsigned long val;
-+
-+	ret = user_input_convert(buf, count, &val);
-+	if (ret)
-+		return ret;
-+	if (val > 0xff)
-+		return -EINVAL;
-+	query_cgr_data.cgid = (u8)val;
-+	return count;
-+}
-+
-+static const struct file_operations query_cgr_fops = {
-+	.owner		= THIS_MODULE,
-+	.open		= query_cgr_open,
-+	.read		= seq_read,
-+	.write		= query_cgr_write,
-+	.release	= single_release,
-+};
-+
-+/*******************************************************************************
-+ *  Test Write CGR
-+ ******************************************************************************/
-+struct test_write_cgr_s {
-+	u64 i_bcnt;
-+	u8 cgid;
-+};
-+static struct test_write_cgr_s test_write_cgr_data;
-+
-+static int testwrite_cgr_show(struct seq_file *file, void *offset)
-+{
-+	int ret;
-+	struct qm_mcr_cgrtestwrite result;
-+	struct qman_cgr cgr;
-+	u64 i_bcnt;
-+
-+	memset(&cgr, 0, sizeof(struct qman_cgr));
-+	memset(&result, 0, sizeof(struct qm_mcr_cgrtestwrite));
-+	cgr.cgrid = test_write_cgr_data.cgid;
-+	i_bcnt = test_write_cgr_data.i_bcnt;
-+	ret = qman_testwrite_cgr(&cgr, i_bcnt, &result);
-+	if (ret)
-+		return ret;
-+	seq_printf(file, "CGR Test Write CGR id 0x%x\n", cgr.cgrid);
-+	seq_printf(file, " wr_parm_g MA: %u, Mn: %u, SA: %u, Sn: %u, Pn: %u\n",
-+		result.cgr.wr_parm_g.MA, result.cgr.wr_parm_g.Mn,
-+		result.cgr.wr_parm_g.SA, result.cgr.wr_parm_g.Sn,
-+		result.cgr.wr_parm_g.Pn);
-+	seq_printf(file, " wr_parm_y MA: %u, Mn: %u, SA: %u, Sn: %u, Pn: %u\n",
-+		result.cgr.wr_parm_y.MA, result.cgr.wr_parm_y.Mn,
-+		result.cgr.wr_parm_y.SA, result.cgr.wr_parm_y.Sn,
-+		result.cgr.wr_parm_y.Pn);
-+	seq_printf(file, " wr_parm_r MA: %u, Mn: %u, SA: %u, Sn: %u, Pn: %u\n",
-+		result.cgr.wr_parm_r.MA, result.cgr.wr_parm_r.Mn,
-+		result.cgr.wr_parm_r.SA, result.cgr.wr_parm_r.Sn,
-+		result.cgr.wr_parm_r.Pn);
-+	seq_printf(file, " wr_en_g: %u, wr_en_y: %u, we_en_r: %u\n",
-+		result.cgr.wr_en_g, result.cgr.wr_en_y, result.cgr.wr_en_r);
-+	seq_printf(file, " cscn_en: %u\n", result.cgr.cscn_en);
-+	seq_printf(file, " cscn_targ: %u\n", result.cgr.cscn_targ);
-+	seq_printf(file, " cstd_en: %u\n", result.cgr.cstd_en);
-+	seq_printf(file, " cs: %u\n", result.cgr.cs);
-+	seq_printf(file, " cs_thresh_TA: %u, cs_thresh_Tn: %u\n",
-+		result.cgr.cs_thres.TA, result.cgr.cs_thres.Tn);
-+
-+	/* Add Mode for Si 2 */
-+	seq_printf(file, " mode: %s\n",
-+		(result.cgr.mode & QMAN_CGR_MODE_FRAME) ?
-+		"frame count" : "byte count");
-+
-+	seq_printf(file, " i_bcnt: %llu\n",
-+		qm_mcr_cgrtestwrite_i_get64(&result));
-+	seq_printf(file, " a_bcnt: %llu\n",
-+		qm_mcr_cgrtestwrite_a_get64(&result));
-+	seq_printf(file, " wr_prob_g: %u\n", result.wr_prob_g);
-+	seq_printf(file, " wr_prob_y: %u\n", result.wr_prob_y);
-+	seq_printf(file, " wr_prob_r: %u\n", result.wr_prob_r);
-+	return 0;
-+}
-+
-+static int testwrite_cgr_open(struct inode *inode, struct file *file)
-+{
-+	return single_open(file, testwrite_cgr_show, NULL);
-+}
-+
-+static const struct file_operations testwrite_cgr_fops = {
-+	.owner		= THIS_MODULE,
-+	.open		= testwrite_cgr_open,
-+	.read		= seq_read,
-+	.release	= single_release,
-+};
-+
-+
-+static int testwrite_cgr_ibcnt_show(struct seq_file *file, void *offset)
-+{
-+	seq_printf(file, "i_bcnt: %llu\n", test_write_cgr_data.i_bcnt);
-+	return 0;
-+}
-+static int testwrite_cgr_ibcnt_open(struct inode *inode, struct file *file)
-+{
-+	return single_open(file, testwrite_cgr_ibcnt_show, NULL);
-+}
-+
-+static ssize_t testwrite_cgr_ibcnt_write(struct file *f, const char __user *buf,
-+				size_t count, loff_t *off)
-+{
-+	int ret;
-+	unsigned long val;
-+
-+	ret = user_input_convert(buf, count, &val);
-+	if (ret)
-+		return ret;
-+	test_write_cgr_data.i_bcnt = val;
-+	return count;
-+}
-+
-+static const struct file_operations teswrite_cgr_ibcnt_fops = {
-+	.owner		= THIS_MODULE,
-+	.open		= testwrite_cgr_ibcnt_open,
-+	.read		= seq_read,
-+	.write		= testwrite_cgr_ibcnt_write,
-+	.release	= single_release,
-+};
-+
-+static int testwrite_cgr_cgrid_show(struct seq_file *file, void *offset)
-+{
-+	seq_printf(file, "cgrid: %u\n", (u32)test_write_cgr_data.cgid);
-+	return 0;
-+}
-+static int testwrite_cgr_cgrid_open(struct inode *inode, struct file *file)
-+{
-+	return single_open(file, testwrite_cgr_cgrid_show, NULL);
-+}
-+
-+static ssize_t testwrite_cgr_cgrid_write(struct file *f, const char __user *buf,
-+				size_t count, loff_t *off)
-+{
-+	int ret;
-+	unsigned long val;
-+
-+	ret = user_input_convert(buf, count, &val);
-+	if (ret)
-+		return ret;
-+	if (val > 0xff)
-+		return -EINVAL;
-+	test_write_cgr_data.cgid = (u8)val;
-+	return count;
-+}
-+
-+static const struct file_operations teswrite_cgr_cgrid_fops = {
-+	.owner		= THIS_MODULE,
-+	.open		= testwrite_cgr_cgrid_open,
-+	.read		= seq_read,
-+	.write		= testwrite_cgr_cgrid_write,
-+	.release	= single_release,
-+};
-+
-+/*******************************************************************************
-+ *  Query Congestion State
-+ ******************************************************************************/
-+static int query_congestion_show(struct seq_file *file, void *offset)
-+{
-+	int ret;
-+	struct qm_mcr_querycongestion cs;
-+	int i, j, in_cong = 0;
-+	u32 mask;
-+
-+	memset(&cs, 0, sizeof(struct qm_mcr_querycongestion));
-+	ret = qman_query_congestion(&cs);
-+	if (ret)
-+		return ret;
-+	seq_puts(file, "Query Congestion Result\n");
-+	for (i = 0; i < 8; i++) {
-+		mask = 0x80000000;
-+		for (j = 0; j < 32; j++) {
-+			if (cs.state.__state[i] & mask) {
-+				in_cong = 1;
-+				seq_printf(file, " cg %u: %s\n", (i*32)+j,
-+					"in congestion");
-+			}
-+			mask >>= 1;
-+		}
-+	}
-+	if (!in_cong)
-+		seq_puts(file, " All congestion groups not congested.\n");
-+	return 0;
-+}
-+
-+static int query_congestion_open(struct inode *inode, struct file *file)
-+{
-+	return single_open(file, query_congestion_show, NULL);
-+}
-+
-+static const struct file_operations query_congestion_fops = {
-+	.owner		= THIS_MODULE,
-+	.open		= query_congestion_open,
-+	.read		= seq_read,
-+	.release	= single_release,
-+};
-+
-+/*******************************************************************************
-+ *  QMan register
-+ ******************************************************************************/
-+struct qman_register_s {
-+	u32 val;
-+};
-+static struct qman_register_s qman_register_data;
-+
-+static void init_ccsrmempeek(void)
-+{
-+	struct device_node *dn;
-+	const u32 *regaddr_p;
-+
-+	dn = of_find_compatible_node(NULL, NULL, "fsl,qman");
-+	if (!dn) {
-+		pr_info("No fsl,qman node\n");
-+		return;
-+	}
-+	regaddr_p = of_get_address(dn, 0, &qman_ccsr_size, NULL);
-+	if (!regaddr_p) {
-+		of_node_put(dn);
-+		return;
-+	}
-+	qman_ccsr_start = of_translate_address(dn, regaddr_p);
-+	of_node_put(dn);
-+}
-+/* This function provides access to QMan ccsr memory map */
-+static int qman_ccsrmempeek(u32 *val, u32 offset)
-+{
-+	void __iomem *addr;
-+	u64 phys_addr;
-+
-+	if (!qman_ccsr_start)
-+		return -EINVAL;
-+
-+	if (offset > (qman_ccsr_size - sizeof(u32)))
-+		return -EINVAL;
-+
-+	phys_addr = qman_ccsr_start + offset;
-+	addr = ioremap(phys_addr, sizeof(u32));
-+	if (!addr) {
-+		pr_err("ccsrmempeek, ioremap failed\n");
-+		return -EINVAL;
-+	}
-+	*val = in_be32(addr);
-+	iounmap(addr);
-+	return 0;
-+}
-+
-+static int qman_ccsrmempeek_show(struct seq_file *file, void *offset)
-+{
-+	u32 b;
-+
-+	qman_ccsrmempeek(&b, qman_register_data.val);
-+	seq_printf(file, "QMan register offset = 0x%x\n",
-+		   qman_register_data.val);
-+	seq_printf(file, "value = 0x%08x\n", b);
-+
-+	return 0;
-+}
-+
-+static int qman_ccsrmempeek_open(struct inode *inode, struct file *file)
-+{
-+	return single_open(file, qman_ccsrmempeek_show, NULL);
-+}
-+
-+static ssize_t qman_ccsrmempeek_write(struct file *f, const char __user *buf,
-+				size_t count, loff_t *off)
-+{
-+	int ret;
-+	unsigned long val;
-+
-+	ret = user_input_convert(buf, count, &val);
-+	if (ret)
-+		return ret;
-+	/* multiple of 4 */
-+	if (val > (qman_ccsr_size - sizeof(u32))) {
-+		pr_info("Input 0x%lx > 0x%llx\n",
-+			val, (qman_ccsr_size - sizeof(u32)));
-+		return -EINVAL;
-+	}
-+	if (val & 0x3) {
-+		pr_info("Input 0x%lx not multiple of 4\n", val);
-+		return -EINVAL;
-+	}
-+	qman_register_data.val = val;
-+	return count;
-+}
-+
-+static const struct file_operations qman_ccsrmempeek_fops = {
-+	.owner		= THIS_MODULE,
-+	.open		= qman_ccsrmempeek_open,
-+	.read		= seq_read,
-+	.write		= qman_ccsrmempeek_write,
-+};
-+
-+/*******************************************************************************
-+ *  QMan state
-+ ******************************************************************************/
-+static int qman_fqd_state_show(struct seq_file *file, void *offset)
-+{
-+	struct qm_mcr_queryfq_np np;
-+	struct qman_fq fq;
-+	struct line_buffer_fq line_buf;
-+	int ret, i;
-+	u8 *state = file->private;
-+	u32 qm_fq_state_cnt[ARRAY_SIZE(fqd_states)];
-+
-+	memset(qm_fq_state_cnt, 0, sizeof(qm_fq_state_cnt));
-+	memset(&line_buf, 0, sizeof(line_buf));
-+
-+	seq_printf(file, "List of fq ids in state: %s\n", state_txt[*state]);
-+
-+	for (i = 1; i < fqid_max; i++) {
-+		fq.fqid = i;
-+		ret = qman_query_fq_np(&fq, &np);
-+		if (ret)
-+			return ret;
-+		if (*state == (np.state & QM_MCR_NP_STATE_MASK))
-+			add_to_line_buffer(&line_buf, fq.fqid, file);
-+		/* Keep a summary count of all states */
-+		if ((np.state & QM_MCR_NP_STATE_MASK) < ARRAY_SIZE(fqd_states))
-+			qm_fq_state_cnt[(np.state & QM_MCR_NP_STATE_MASK)]++;
-+	}
-+	flush_line_buffer(&line_buf, file);
-+
-+	for (i = 0; i < ARRAY_SIZE(fqd_states); i++) {
-+		seq_printf(file, "%s count = %u\n", state_txt[i],
-+			   qm_fq_state_cnt[i]);
-+	}
-+	return 0;
-+}
-+
-+static int qman_fqd_state_open(struct inode *inode, struct file *file)
-+{
-+	return single_open(file, qman_fqd_state_show, inode->i_private);
-+}
-+
-+static const struct file_operations qman_fqd_state_fops =  {
-+	.owner		= THIS_MODULE,
-+	.open		= qman_fqd_state_open,
-+	.read		= seq_read,
-+};
-+
-+static int qman_fqd_ctrl_show(struct seq_file *file, void *offset)
-+{
-+	struct qm_fqd fqd;
-+	struct qman_fq fq;
-+	u32 fq_en_cnt = 0, fq_di_cnt = 0;
-+	int ret, i;
-+	struct mask_filter_s *data = file->private;
-+	const char *ctrl_txt = get_fqd_ctrl_text(data->mask);
-+	struct line_buffer_fq line_buf;
-+
-+	memset(&line_buf, 0, sizeof(line_buf));
-+	seq_printf(file, "List of fq ids with: %s :%s\n",
-+		ctrl_txt, (data->filter) ? "enabled" : "disabled");
-+	for (i = 1; i < fqid_max; i++) {
-+		fq.fqid = i;
-+		memset(&fqd, 0, sizeof(struct qm_fqd));
-+		ret = qman_query_fq(&fq, &fqd);
-+		if (ret)
-+			return ret;
-+		if (data->filter) {
-+			if (fqd.fq_ctrl & data->mask)
-+				add_to_line_buffer(&line_buf, fq.fqid, file);
-+		} else {
-+			if (!(fqd.fq_ctrl & data->mask))
-+				add_to_line_buffer(&line_buf, fq.fqid, file);
-+		}
-+		if (fqd.fq_ctrl & data->mask)
-+			fq_en_cnt++;
-+		else
-+			fq_di_cnt++;
-+	}
-+	flush_line_buffer(&line_buf, file);
-+
-+	seq_printf(file, "Total FQD with: %s :	enabled = %u\n",
-+		   ctrl_txt, fq_en_cnt);
-+	seq_printf(file, "Total FQD with: %s : disabled = %u\n",
-+		   ctrl_txt, fq_di_cnt);
-+	return 0;
-+}
-+
-+/*******************************************************************************
-+ *  QMan ctrl CGE, TDE, ORP, CTX, CPC, SFDR, BLOCK, HOLD, CACHE
-+ ******************************************************************************/
-+static int qman_fqd_ctrl_open(struct inode *inode, struct file *file)
-+{
-+	return single_open(file, qman_fqd_ctrl_show, inode->i_private);
-+}
-+
-+static const struct file_operations qman_fqd_ctrl_fops =  {
-+	.owner		= THIS_MODULE,
-+	.open		= qman_fqd_ctrl_open,
-+	.read		= seq_read,
-+};
-+
-+/*******************************************************************************
-+ *  QMan ctrl summary
-+ ******************************************************************************/
-+/*******************************************************************************
-+ *  QMan summary state
-+ ******************************************************************************/
-+static int qman_fqd_non_prog_summary_show(struct seq_file *file, void *offset)
-+{
-+	struct qm_mcr_queryfq_np np;
-+	struct qman_fq fq;
-+	int ret, i;
-+	u32 qm_fq_state_cnt[ARRAY_SIZE(fqd_states)];
-+
-+	memset(qm_fq_state_cnt, 0, sizeof(qm_fq_state_cnt));
-+
-+	for (i = 1; i < fqid_max; i++) {
-+		fq.fqid = i;
-+		ret = qman_query_fq_np(&fq, &np);
-+		if (ret)
-+			return ret;
-+		/* Keep a summary count of all states */
-+		if ((np.state & QM_MCR_NP_STATE_MASK) < ARRAY_SIZE(fqd_states))
-+			qm_fq_state_cnt[(np.state & QM_MCR_NP_STATE_MASK)]++;
++	while (!bman_rcr_is_empty())
++		cpu_relax();
++	pr_info("bman_test_thresh: buffers are in\n");
++
++	/* create threads and wait for them to create pools */
++	params_cb.bpid = bman_get_params(pool_nocb)->bpid;
++	for_each_cpu(loop, cpu_online_mask) {
++		data = start_affine_test(loop, drainer ? 0 : 1);
++		BUG_ON(!data);
++		if (!drainer)
++			drainer = data;
++		num_cpus++;
++		wait_for_completion(&data->wakeparent);
 +	}
 +
-+	for (i = 0; i < ARRAY_SIZE(fqd_states); i++) {
-+		seq_printf(file, "%s count = %u\n", state_txt[i],
-+			   qm_fq_state_cnt[i]);
++	/* signal the drainer to start draining */
++	complete(&drainer->wakethread);
++	wait_for_completion(&drainer->wakeparent);
++	init_completion(&drainer->wakeparent);
++
++	/* tear down */
++	list_for_each_entry_safe(data, drainer, &threads, node) {
++		complete(&data->wakethread);
++		ret = kthread_stop(data->t);
++		BUG_ON(ret);
++		list_del(&data->node);
++		/* check that we get the expected callbacks (and no others) */
++		BUG_ON(data->num_enter != 1);
++		BUG_ON(data->num_exit != 0);
++		kfree(data);
 +	}
-+	return 0;
++	bman_free_pool(pool_nocb);
++
++	pr_info("bman_test_thresh: done\n");
 +}
-+
-+static int qman_fqd_prog_summary_show(struct seq_file *file, void *offset)
-+{
-+	struct qm_fqd fqd;
-+	struct qman_fq fq;
-+	int ret, i , j;
-+	u32 qm_prog_cnt[ARRAY_SIZE(mask_filter)/2];
-+
-+	memset(qm_prog_cnt, 0, sizeof(qm_prog_cnt));
-+
-+	for (i = 1; i < fqid_max; i++) {
-+		memset(&fqd, 0, sizeof(struct qm_fqd));
-+		fq.fqid = i;
-+		ret = qman_query_fq(&fq, &fqd);
-+		if (ret)
-+			return ret;
-+		/* Keep a summary count of all states */
-+		for (j = 0; j < ARRAY_SIZE(mask_filter); j += 2)
-+			if ((fqd.fq_ctrl & QM_FQCTRL_MASK) &
-+					mask_filter[j].mask)
-+				qm_prog_cnt[j/2]++;
-+	}
-+	for (i = 0; i < ARRAY_SIZE(mask_filter) / 2; i++) {
-+		seq_printf(file, "%s count = %u\n",
-+			get_fqd_ctrl_text(mask_filter[i*2].mask),
-+			   qm_prog_cnt[i]);
-+	}
-+	return 0;
-+}
-+
-+static int qman_fqd_summary_show(struct seq_file *file, void *offset)
-+{
-+	int ret;
-+
-+	/* Display summary of non programmable fields */
-+	ret = qman_fqd_non_prog_summary_show(file, offset);
-+	if (ret)
-+		return ret;
-+	seq_puts(file, "-----------------------------------------\n");
-+	/* Display programmable fields */
-+	ret = qman_fqd_prog_summary_show(file, offset);
-+	if (ret)
-+		return ret;
-+	return 0;
-+}
-+
-+static int qman_fqd_summary_open(struct inode *inode, struct file *file)
-+{
-+	return single_open(file, qman_fqd_summary_show, NULL);
-+}
-+
-+static const struct file_operations qman_fqd_summary_fops =  {
-+	.owner		= THIS_MODULE,
-+	.open		= qman_fqd_summary_open,
-+	.read		= seq_read,
-+};
-+
-+/*******************************************************************************
-+ *  QMan destination work queue
-+ ******************************************************************************/
-+struct qman_dest_wq_s {
-+	u16 wq_id;
-+};
-+static struct qman_dest_wq_s qman_dest_wq_data = {
-+	.wq_id = 0,
-+};
-+
-+static int qman_fqd_dest_wq_show(struct seq_file *file, void *offset)
-+{
-+	struct qm_fqd fqd;
-+	struct qman_fq fq;
-+	int ret, i;
-+	u16 *wq, wq_id = qman_dest_wq_data.wq_id;
-+	struct line_buffer_fq line_buf;
-+
-+	memset(&line_buf, 0, sizeof(line_buf));
-+	/* use vmalloc : need to allocate large memory region and don't
-+	 * require the memory to be physically contiguous. */
-+	wq = vzalloc(sizeof(u16) * (0xFFFF+1));
-+	if (!wq)
-+		return -ENOMEM;
-+
-+	seq_printf(file, "List of fq ids with destination work queue id"
-+			" = 0x%x\n", wq_id);
-+
-+	for (i = 1; i < fqid_max; i++) {
-+		fq.fqid = i;
-+		memset(&fqd, 0, sizeof(struct qm_fqd));
-+		ret = qman_query_fq(&fq, &fqd);
-+		if (ret) {
-+			vfree(wq);
-+			return ret;
-+		}
-+		if (wq_id == fqd.dest_wq)
-+			add_to_line_buffer(&line_buf, fq.fqid, file);
-+		wq[fqd.dest_wq]++;
-+	}
-+	flush_line_buffer(&line_buf, file);
-+
-+	seq_puts(file, "Summary of all FQD destination work queue values\n");
-+	for (i = 0; i < 0xFFFF; i++) {
-+		if (wq[i])
-+			seq_printf(file, "Channel: 0x%x WQ: 0x%x WQ_ID: 0x%x, "
-+				"count = %u\n", i >> 3, i & 0x3, i, wq[i]);
-+	}
-+	vfree(wq);
-+	return 0;
-+}
-+
-+static ssize_t qman_fqd_dest_wq_write(struct file *f, const char __user *buf,
-+				      size_t count, loff_t *off)
-+{
-+	int ret;
-+	unsigned long val;
-+
-+	ret = user_input_convert(buf, count, &val);
-+	if (ret)
-+		return ret;
-+	if (val > 0xFFFF)
-+		return -EINVAL;
-+	qman_dest_wq_data.wq_id = val;
-+	return count;
-+}
-+
-+static int qman_fqd_dest_wq_open(struct inode *inode, struct file *file)
-+{
-+	return single_open(file, qman_fqd_dest_wq_show, NULL);
-+}
-+
-+static const struct file_operations qman_fqd_dest_wq_fops =  {
-+	.owner		= THIS_MODULE,
-+	.open		= qman_fqd_dest_wq_open,
-+	.read		= seq_read,
-+	.write		= qman_fqd_dest_wq_write,
-+};
-+
-+/*******************************************************************************
-+ *  QMan Intra-Class Scheduling Credit
-+ ******************************************************************************/
-+static int qman_fqd_cred_show(struct seq_file *file, void *offset)
-+{
-+	struct qm_fqd fqd;
-+	struct qman_fq fq;
-+	int ret, i;
-+	u32 fq_cnt = 0;
-+	struct line_buffer_fq line_buf;
-+
-+	memset(&line_buf, 0, sizeof(line_buf));
-+	seq_puts(file, "List of fq ids with Intra-Class Scheduling Credit > 0"
-+			"\n");
-+
-+	for (i = 1; i < fqid_max; i++) {
-+		fq.fqid = i;
-+		memset(&fqd, 0, sizeof(struct qm_fqd));
-+		ret = qman_query_fq(&fq, &fqd);
-+		if (ret)
-+			return ret;
-+		if (fqd.ics_cred > 0) {
-+			add_to_line_buffer(&line_buf, fq.fqid, file);
-+			fq_cnt++;
-+		}
-+	}
-+	flush_line_buffer(&line_buf, file);
-+
-+	seq_printf(file, "Total FQD with ics_cred > 0 = %d\n", fq_cnt);
-+	return 0;
-+}
-+
-+static int qman_fqd_cred_open(struct inode *inode, struct file *file)
-+{
-+	return single_open(file, qman_fqd_cred_show, NULL);
-+}
-+
-+static const struct file_operations qman_fqd_cred_fops =  {
-+	.owner		= THIS_MODULE,
-+	.open		= qman_fqd_cred_open,
-+	.read		= seq_read,
-+};
-+
-+/* helper macros used in qman_debugfs_module_init */
-+#define QMAN_DBGFS_ENTRY(name, mode, parent, data, fops) \
-+	do { \
-+		d = debugfs_create_file(name, \
-+			mode, parent, \
-+			data, \
-+			fops); \
-+		if (d == NULL) { \
-+			ret = -ENOMEM; \
-+			goto _return; \
-+		} \
-+	} while (0)
-+
-+/* dfs_root as parent */
-+#define QMAN_DBGFS_ENTRY_ROOT(name, mode, data, fops) \
-+	QMAN_DBGFS_ENTRY(name, mode, dfs_root, data, fops)
-+
-+/* fqd_root as parent */
-+#define QMAN_DBGFS_ENTRY_FQDROOT(name, mode, data, fops) \
-+	QMAN_DBGFS_ENTRY(name, mode, fqd_root, data, fops)
-+
-+/* fqd state */
-+#define QMAN_DBGFS_ENTRY_FQDSTATE(name, index) \
-+	QMAN_DBGFS_ENTRY_FQDROOT(name, S_IRUGO, \
-+	(void *)&mask_filter[index], &qman_fqd_ctrl_fops)
-+
-+static int __init qman_debugfs_module_init(void)
-+{
-+	int ret = 0;
-+	struct dentry *d, *fqd_root;
-+	u32 reg;
-+
-+	fqid_max = 0;
-+	init_ccsrmempeek();
-+	if (qman_ccsr_start) {
-+		if (!qman_ccsrmempeek(&reg, QM_FQD_AR)) {
-+			/* extract the size of the FQD window */
-+			reg = reg & 0x3f;
-+			/* calculate valid frame queue descriptor range */
-+			fqid_max = (1 << (reg + 1)) / QM_FQD_BLOCK_SIZE;
-+		}
-+	}
-+	dfs_root = debugfs_create_dir("qman", NULL);
-+	fqd_root = debugfs_create_dir("fqd", dfs_root);
-+	if (dfs_root == NULL || fqd_root == NULL) {
-+		ret = -ENOMEM;
-+		pr_err("Cannot create qman/fqd debugfs dir\n");
-+		goto _return;
-+	}
-+	if (fqid_max) {
-+		QMAN_DBGFS_ENTRY_ROOT("ccsrmempeek", S_IRUGO | S_IWUGO,
-+				NULL, &qman_ccsrmempeek_fops);
-+	}
-+	QMAN_DBGFS_ENTRY_ROOT("query_fq_np_fields", S_IRUGO | S_IWUGO,
-+		&query_fq_np_fields_data, &query_fq_np_fields_fops);
-+
-+	QMAN_DBGFS_ENTRY_ROOT("query_fq_fields", S_IRUGO | S_IWUGO,
-+		&query_fq_fields_data, &query_fq_fields_fops);
-+
-+	QMAN_DBGFS_ENTRY_ROOT("query_wq_lengths", S_IRUGO | S_IWUGO,
-+		&query_wq_lengths_data, &query_wq_lengths_fops);
-+
-+	QMAN_DBGFS_ENTRY_ROOT("query_cgr", S_IRUGO | S_IWUGO,
-+		&query_cgr_data, &query_cgr_fops);
-+
-+	QMAN_DBGFS_ENTRY_ROOT("query_congestion", S_IRUGO,
-+		NULL, &query_congestion_fops);
-+
-+	QMAN_DBGFS_ENTRY_ROOT("testwrite_cgr", S_IRUGO,
-+		NULL, &testwrite_cgr_fops);
-+
-+	QMAN_DBGFS_ENTRY_ROOT("testwrite_cgr_cgrid", S_IRUGO | S_IWUGO,
-+		NULL, &teswrite_cgr_cgrid_fops);
-+
-+	QMAN_DBGFS_ENTRY_ROOT("testwrite_cgr_ibcnt", S_IRUGO | S_IWUGO,
-+		NULL, &teswrite_cgr_ibcnt_fops);
-+
-+	/* Create files with fqd_root as parent */
-+
-+	QMAN_DBGFS_ENTRY_FQDROOT("stateoos", S_IRUGO,
-+		(void *)&fqd_states[QM_MCR_NP_STATE_OOS], &qman_fqd_state_fops);
-+
-+	QMAN_DBGFS_ENTRY_FQDROOT("state_retired", S_IRUGO,
-+		(void *)&fqd_states[QM_MCR_NP_STATE_RETIRED],
-+		&qman_fqd_state_fops);
-+
-+	QMAN_DBGFS_ENTRY_FQDROOT("state_tentatively_sched", S_IRUGO,
-+		(void *)&fqd_states[QM_MCR_NP_STATE_TEN_SCHED],
-+		&qman_fqd_state_fops);
-+
-+	QMAN_DBGFS_ENTRY_FQDROOT("state_truly_sched", S_IRUGO,
-+		(void *)&fqd_states[QM_MCR_NP_STATE_TRU_SCHED],
-+		&qman_fqd_state_fops);
-+
-+	QMAN_DBGFS_ENTRY_FQDROOT("state_parked", S_IRUGO,
-+		(void *)&fqd_states[QM_MCR_NP_STATE_PARKED],
-+		&qman_fqd_state_fops);
-+
-+	QMAN_DBGFS_ENTRY_FQDROOT("state_active", S_IRUGO,
-+		(void *)&fqd_states[QM_MCR_NP_STATE_ACTIVE],
-+		&qman_fqd_state_fops);
-+
-+	QMAN_DBGFS_ENTRY_FQDSTATE("cge_enable", 17);
-+
-+	QMAN_DBGFS_ENTRY_FQDSTATE("cge_disable", 16);
-+
-+	QMAN_DBGFS_ENTRY_FQDSTATE("tde_enable", 15);
-+
-+	QMAN_DBGFS_ENTRY_FQDSTATE("tde_disable", 14);
-+
-+	QMAN_DBGFS_ENTRY_FQDSTATE("orp_enable", 13);
-+
-+	QMAN_DBGFS_ENTRY_FQDSTATE("orp_disable", 12);
-+
-+	QMAN_DBGFS_ENTRY_FQDSTATE("ctx_a_stashing_enable", 11);
-+
-+	QMAN_DBGFS_ENTRY_FQDSTATE("ctx_a_stashing_disable", 10);
-+
-+	QMAN_DBGFS_ENTRY_FQDSTATE("cpc_enable", 9);
-+
-+	QMAN_DBGFS_ENTRY_FQDSTATE("cpc_disable", 8);
-+
-+	QMAN_DBGFS_ENTRY_FQDSTATE("sfdr_enable", 7);
-+
-+	QMAN_DBGFS_ENTRY_FQDSTATE("sfdr_disable", 6);
-+
-+	QMAN_DBGFS_ENTRY_FQDSTATE("avoid_blocking_enable", 5);
-+
-+	QMAN_DBGFS_ENTRY_FQDSTATE("avoid_blocking_disable", 4);
-+
-+	QMAN_DBGFS_ENTRY_FQDSTATE("hold_active_enable", 3);
-+
-+	QMAN_DBGFS_ENTRY_FQDSTATE("hold_active_disable", 2);
-+
-+	QMAN_DBGFS_ENTRY_FQDSTATE("prefer_in_cache_enable", 1);
-+
-+	QMAN_DBGFS_ENTRY_FQDSTATE("prefer_in_cache_disable", 0);
-+
-+	QMAN_DBGFS_ENTRY_FQDROOT("summary", S_IRUGO,
-+		NULL, &qman_fqd_summary_fops);
-+
-+	QMAN_DBGFS_ENTRY_FQDROOT("wq", S_IRUGO | S_IWUGO,
-+		NULL, &qman_fqd_dest_wq_fops);
-+
-+	QMAN_DBGFS_ENTRY_FQDROOT("cred", S_IRUGO,
-+		NULL, &qman_fqd_cred_fops);
-+
-+	return 0;
-+
-+_return:
-+	debugfs_remove_recursive(dfs_root);
-+	return ret;
-+}
-+
-+static void __exit qman_debugfs_module_exit(void)
-+{
-+	debugfs_remove_recursive(dfs_root);
-+}
-+
-+module_init(qman_debugfs_module_init);
-+module_exit(qman_debugfs_module_exit);
-+MODULE_LICENSE("Dual BSD/GPL");
+diff --git a/drivers/soc/freescale/dpaa_alloc.c b/drivers/soc/freescale/dpaa_alloc.c
+index 0215477..88a4786 100644
+--- a/drivers/soc/freescale/dpaa_alloc.c
++++ b/drivers/soc/freescale/dpaa_alloc.c
+@@ -365,7 +365,7 @@ static u32 release_id_range(struct dpa_alloc *alloc, u32 id, u32 count,
+ 	return total_invalid;
+ }
+ 
+-/* Bman APIs are front-ends to the common code */
++/* BMan APIs are front-ends to the common code */
+ 
+ #ifdef CONFIG_FSL_BMAN
+ static DECLARE_DPA_ALLOC(bpalloc); /* BPID allocator */
+diff --git a/drivers/soc/freescale/dpaa_sys.h b/drivers/soc/freescale/dpaa_sys.h
+index 86b280c..6631b2a 100644
+--- a/drivers/soc/freescale/dpaa_sys.h
++++ b/drivers/soc/freescale/dpaa_sys.h
+@@ -240,7 +240,7 @@ static inline type *name##_find(struct dpa_rbtree *tree, u32 val) \
+ /* Bootargs */
+ /************/
+ 
+-/* Qman has "qportals=" and Bman has "bportals=", they use the same syntax
++/* QMan has "qportals=" and BMan has "bportals=", they use the same syntax
+  * though; a comma-separated list of items, each item being a cpu index and/or a
+  * range of cpu indices, and each item optionally be prefixed by "s" to indicate
+  * that the portal associated with that cpu should be shared. See bman_driver.c
+diff --git a/drivers/soc/freescale/qman.c b/drivers/soc/freescale/qman.c
+index 3d7d02e..f791884 100644
+--- a/drivers/soc/freescale/qman.c
++++ b/drivers/soc/freescale/qman.c
+@@ -259,7 +259,7 @@ static const struct qman_error_info_mdata error_mdata[] = {
+ /*
+  * TODO: unimplemented registers
+  *
+- * Keeping a list here of Qman registers I have not yet covered;
++ * Keeping a list here of QMan registers I have not yet covered;
+  * QCSP_DD_IHRSR, QCSP_DD_IHRFR, QCSP_DD_HASR,
+  * DCP_DD_IHRSR, DCP_DD_IHRFR, DCP_DD_HASR, CM_CFG,
+  * QMAN_EECC, QMAN_SBET, QMAN_EINJ, QMAN_SBEC0-12
+@@ -476,7 +476,7 @@ static int __init fsl_qman_init(struct device_node *node)
+ 	qm = qm_create(regs);
+ 	qm_node = node;
+ 	qm_get_version(qm, &id, &major, &minor);
+-	pr_info("Qman ver:%04x,%02x,%02x\n", id, major, minor);
++	pr_info("QMan ver:%04x,%02x,%02x\n", id, major, minor);
+ 	if (!qman_ip_rev) {
+ 		if ((major == 1) && (minor == 0)) {
+ 			pr_err("QMAN rev1.0 on P4080 rev1 is not supported!\n");
+@@ -493,7 +493,7 @@ static int __init fsl_qman_init(struct device_node *node)
+ 		else if ((major == 3) && (minor == 1))
+ 			qman_ip_rev = QMAN_REV31;
+ 		else {
+-			pr_warn("unknown Qman version, default to rev1.1\n");
++			pr_warn("unknown QMan version, default to rev1.1\n");
+ 			qman_ip_rev = QMAN_REV11;
+ 		}
+ 	}
+@@ -529,7 +529,7 @@ static void log_edata_bits(u32 bit_count)
+ {
+ 	u32 i, j, mask = 0xffffffff;
+ 
+-	pr_warn("Qman ErrInt, EDATA:\n");
++	pr_warn("QMan ErrInt, EDATA:\n");
+ 	i = bit_count/32;
+ 	if (bit_count%32) {
+ 		i++;
+@@ -553,17 +553,17 @@ static void log_additional_error_info(u32 isr_val, u32 ecsr_val)
+ 		union qman_ecir2 ecir2_val;
+ 		ecir2_val.ecir2_raw = qm_in(ECIR2);
+ 		if (ecsr_val & PORTAL_ECSR_ERR) {
+-			pr_warn("Qman ErrInt: %s id %d\n",
++			pr_warn("QMan ErrInt: %s id %d\n",
+ 				(ecir2_val.info.portal_type) ?
+ 				"DCP" : "SWP", ecir2_val.info.portal_num);
+ 		}
+ 		if (ecsr_val & (FQID_ECSR_ERR | QM_EIRQ_IECE)) {
+-			pr_warn("Qman ErrInt: ecir.fqid 0x%x\n",
++			pr_warn("QMan ErrInt: ecir.fqid 0x%x\n",
+ 				ecir_val.info.fqid);
+ 		}
+ 		if (ecsr_val & (QM_EIRQ_SBEI|QM_EIRQ_MBEI)) {
+ 			eadr_val.eadr_raw = qm_in(EADR);
+-			pr_warn("Qman ErrInt: EADR Memory: %s, 0x%x\n",
++			pr_warn("QMan ErrInt: EADR Memory: %s, 0x%x\n",
+ 				error_mdata[eadr_val.info_rev3.memid].txt,
+ 				error_mdata[eadr_val.info_rev3.memid].addr_mask
+ 					& eadr_val.info_rev3.eadr);
+@@ -572,17 +572,17 @@ static void log_additional_error_info(u32 isr_val, u32 ecsr_val)
+ 		}
+ 	} else {
+ 		if (ecsr_val & PORTAL_ECSR_ERR) {
+-			pr_warn("Qman ErrInt: %s id %d\n",
++			pr_warn("QMan ErrInt: %s id %d\n",
+ 				(ecir_val.info.portal_type) ?
+ 				"DCP" : "SWP", ecir_val.info.portal_num);
+ 		}
+ 		if (ecsr_val & FQID_ECSR_ERR) {
+-			pr_warn("Qman ErrInt: ecir.fqid 0x%x\n",
++			pr_warn("QMan ErrInt: ecir.fqid 0x%x\n",
+ 				ecir_val.info.fqid);
+ 		}
+ 		if (ecsr_val & (QM_EIRQ_SBEI|QM_EIRQ_MBEI)) {
+ 			eadr_val.eadr_raw = qm_in(EADR);
+-			pr_warn("Qman ErrInt: EADR Memory: %s, 0x%x\n",
++			pr_warn("QMan ErrInt: EADR Memory: %s, 0x%x\n",
+ 				error_mdata[eadr_val.info.memid].txt,
+ 				error_mdata[eadr_val.info.memid].addr_mask
+ 					& eadr_val.info.eadr);
+@@ -591,7 +591,7 @@ static void log_additional_error_info(u32 isr_val, u32 ecsr_val)
+ 	}
+ }
+ 
+-/* Qman interrupt handler */
++/* QMan interrupt handler */
+ static irqreturn_t qman_isr(int irq, void *ptr)
+ {
+ 	u32 isr_val, ier_val, ecsr_val, isr_mask, i;
+@@ -605,14 +605,14 @@ static irqreturn_t qman_isr(int irq, void *ptr)
+ 		return IRQ_NONE;
+ 	for (i = 0; i < QMAN_HWE_COUNT; i++) {
+ 		if (qman_hwerr_txts[i].mask & isr_mask) {
+-			pr_warn("Qman ErrInt: %s\n", qman_hwerr_txts[i].txt);
++			pr_warn("QMan ErrInt: %s\n", qman_hwerr_txts[i].txt);
+ 			if (qman_hwerr_txts[i].mask & ecsr_val) {
+ 				log_additional_error_info(isr_mask, ecsr_val);
+ 				/* Re-arm error capture registers */
+ 				qm_out(ECSR, ecsr_val);
+ 			}
+ 			if (qman_hwerr_txts[i].mask & QMAN_ERRS_TO_UNENABLE) {
+-				pr_devel("Qman un-enabling error 0x%x\n",
++				pr_devel("QMan un-enabling error 0x%x\n",
+ 					qman_hwerr_txts[i].mask);
+ 				ier_val &= ~qman_hwerr_txts[i].mask;
+ 				qm_err_isr_enable_write(qm, ier_val);
+diff --git a/drivers/soc/freescale/qman_api.c b/drivers/soc/freescale/qman_api.c
+index 2d980b3..08dbb36 100644
+--- a/drivers/soc/freescale/qman_api.c
++++ b/drivers/soc/freescale/qman_api.c
+@@ -388,24 +388,24 @@ struct qman_portal *qman_create_portal(
+ 	 */
+ 	if (qm_eqcr_init(__p, qm_eqcr_pvb,
+ 			portal->use_eqcr_ci_stashing ? 3 : 0, 1)) {
+-		pr_err("Qman EQCR initialisation failed\n");
++		pr_err("QMan EQCR initialisation failed\n");
+ 		goto fail_eqcr;
+ 	}
+ 	if (qm_dqrr_init(__p, config, qm_dqrr_dpush, qm_dqrr_pvb,
+ 			qm_dqrr_cdc, DQRR_MAXFILL)) {
+-		pr_err("Qman DQRR initialisation failed\n");
++		pr_err("QMan DQRR initialisation failed\n");
+ 		goto fail_dqrr;
+ 	}
+ 	if (qm_mr_init(__p, qm_mr_pvb, qm_mr_cci)) {
+-		pr_err("Qman MR initialisation failed\n");
++		pr_err("QMan MR initialisation failed\n");
+ 		goto fail_mr;
+ 	}
+ 	if (qm_mc_init(__p)) {
+-		pr_err("Qman MC initialisation failed\n");
++		pr_err("QMan MC initialisation failed\n");
+ 		goto fail_mc;
+ 	}
+ 	if (qm_isr_init(__p)) {
+-		pr_err("Qman ISR initialisation failed\n");
++		pr_err("QMan ISR initialisation failed\n");
+ 		goto fail_isr;
+ 	}
+ 	/* static interrupt-gating controls */
+@@ -473,20 +473,20 @@ struct qman_portal *qman_create_portal(
+ 	qm_isr_disable_write(__p, isdr);
+ 	ret = qm_eqcr_get_fill(__p);
+ 	if (ret) {
+-		pr_err("Qman EQCR unclean\n");
++		pr_err("QMan EQCR unclean\n");
+ 		goto fail_eqcr_empty;
+ 	}
+ 	isdr ^= (QM_PIRQ_DQRI | QM_PIRQ_MRI);
+ 	qm_isr_disable_write(__p, isdr);
+ 	if (qm_dqrr_current(__p) != NULL) {
+-		pr_err("Qman DQRR unclean\n");
++		pr_err("QMan DQRR unclean\n");
+ 		qm_dqrr_cdc_consume_n(__p, 0xffff);
+ 	}
+ 	if (qm_mr_current(__p) != NULL) {
+ 		/* special handling, drain just in case it's a few FQRNIs */
+ 		if (drain_mr_fqrni(__p)) {
+ 			const struct qm_mr_entry *e = qm_mr_current(__p);
+-			pr_err("Qman MR unclean, MR VERB 0x%x, "
++			pr_err("QMan MR unclean, MR VERB 0x%x, "
+ 			       "rc 0x%x\n, addr 0x%x",
+ 			       e->verb, e->ern.rc, e->ern.fd.addr_lo);
+ 			goto fail_dqrr_mr_empty;
+@@ -841,7 +841,7 @@ static noinline void clear_vdqcr(struct qman_portal *p, struct qman_fq *fq)
+  * above potential conflicts, but that this function itself is not re-entrant
+  * (this is because the function tracks one end of each FIFO in the portal and
+  * we do *not* want to lock that). So the consequence is that it is safe for
+- * user callbacks to call into any Qman API *except* qman_poll() (as that's the
++ * user callbacks to call into any QMan API *except* qman_poll() (as that's the
+  * sole API that could be invoking the callback through this function).
+  */
+ static inline unsigned int __poll_portal_fast(struct qman_portal *p,
+diff --git a/drivers/soc/freescale/qman_portal.c b/drivers/soc/freescale/qman_portal.c
+index ac1b80f..7216de1 100644
+--- a/drivers/soc/freescale/qman_portal.c
++++ b/drivers/soc/freescale/qman_portal.c
+@@ -109,7 +109,7 @@ static void qman_get_ip_revision(struct device_node *dn)
+ 			if (ip_rev) {
+ 				qman_ip_rev = ip_rev;
+ 			} else {
+-				pr_warn("unknown Qman version,"
++				pr_warn("unknown QMan version,"
+ 					" default to rev1.1\n");
+ 				qman_ip_rev = QMAN_REV11;
+ 			}
+@@ -311,11 +311,11 @@ static struct qman_portal *init_pcfg(struct qm_portal_config *pcfg)
+ 		irq_sources |= QM_PIRQ_DQRI;
+ #endif
+ 		qman_p_irqsource_add(p, irq_sources);
+-		pr_info("Qman portal %sinitialised, cpu %d\n",
++		pr_info("QMan portal %sinitialised, cpu %d\n",
+ 			pcfg->public_cfg.is_shared ? "(shared) " : "",
+ 			pcfg->public_cfg.cpu);
+ 	} else
+-		pr_crit("Qman portal failure on cpu %d\n",
++		pr_crit("QMan portal failure on cpu %d\n",
+ 			pcfg->public_cfg.cpu);
+ 	return p;
+ }
+@@ -327,9 +327,9 @@ static void init_slave(int cpu)
+ 	set_cpus_allowed_ptr(current, get_cpu_mask(cpu));
+ 	p = qman_create_affine_slave(shared_portals[shared_portals_idx++], cpu);
+ 	if (!p)
+-		pr_err("Qman slave portal failure on cpu %d\n", cpu);
++		pr_err("QMan slave portal failure on cpu %d\n", cpu);
+ 	else
+-		pr_info("Qman portal %sinitialised, cpu %d\n", "(slave) ", cpu);
++		pr_info("QMan portal %sinitialised, cpu %d\n", "(slave) ", cpu);
+ 	set_cpus_allowed_ptr(current, &oldmask);
+ 	if (shared_portals_idx >= num_shared_portals)
+ 		shared_portals_idx = 0;
+@@ -397,12 +397,12 @@ __init int qman_init(void)
+ #endif
+ 	struct cpumask offline_cpus;
+ 
+-	/* Initialise the Qman (CCSR) device */
++	/* Initialise the QMan (CCSR) device */
+ 	for_each_compatible_node(dn, NULL, "fsl,qman") {
+ 		if (!qman_init_ccsr(dn))
+-			pr_info("Qman err interrupt handler present\n");
++			pr_info("QMan err interrupt handler present\n");
+ 		else
+-			pr_err("Qman CCSR setup failed\n");
++			pr_err("QMan CCSR setup failed\n");
+ 	}
+ #ifdef CONFIG_FSL_QMAN_FQ_LOOKUP
+ 	/* Setup lookup table for FQ demux */
+@@ -495,7 +495,7 @@ __init int qman_init(void)
+ 	if (!cpumask_empty(&slave_cpus))
+ 		for_each_cpu(cpu, &slave_cpus)
+ 			init_slave(cpu);
+-	pr_info("Qman portals initialised\n");
++	pr_info("QMan portals initialised\n");
+ 	cpumask_andnot(&offline_cpus, cpu_possible_mask, cpu_online_mask);
+ 	for_each_cpu(cpu, &offline_cpus)
+ 		qman_offline_cpu(cpu);
 diff --git a/drivers/soc/freescale/qman_priv.h b/drivers/soc/freescale/qman_priv.h
-index 2a5fa2d..217e947 100644
+index da9021b..2a5fa2d 100644
 --- a/drivers/soc/freescale/qman_priv.h
 +++ b/drivers/soc/freescale/qman_priv.h
-@@ -153,6 +153,14 @@ struct qman_portal *qman_create_affine_slave(struct qman_portal *redirect,
- const struct qm_portal_config *qman_destroy_affine_portal(void);
- void qman_destroy_portal(struct qman_portal *qm);
+@@ -41,7 +41,7 @@
+ 	/* ----------------- */
+ 	/* Congestion Groups */
+ 	/* ----------------- */
+-/* This wrapper represents a bit-array for the state of the 256 Qman congestion
++/* This wrapper represents a bit-array for the state of the 256 QMan congestion
+  * groups. Is also used as a *mask* for congestion groups, eg. so we ignore
+  * those that don't concern us. We harness the structure and accessor details
+  * already used in the management command to query congestion groups. */
+diff --git a/include/linux/fsl_bman.h b/include/linux/fsl_bman.h
+index 16845d3..5883453 100644
+--- a/include/linux/fsl_bman.h
++++ b/include/linux/fsl_bman.h
+@@ -42,7 +42,7 @@ extern "C" {
+ #define BM_PIRQ_RCRI	0x00000002	/* RCR Ring (below threshold) */
+ #define BM_PIRQ_BSCN	0x00000001	/* Buffer depletion State Change */
  
-+/* This CGR feature is supported by h/w and required by unit-tests and the
-+ * debugfs hooks, so is implemented in the driver. However it allows an explicit
-+ * corruption of h/w fields by s/w that are usually incorruptible (because the
-+ * counters are usually maintained entirely within h/w). As such, we declare
-+ * this API internally. */
-+int qman_testwrite_cgr(struct qman_cgr *cgr, u64 i_bcnt,
-+	struct qm_mcr_cgrtestwrite *result);
-+
- #ifdef CONFIG_FSL_QMAN_FQ_LOOKUP
- /* If the fq object pointer is greater than the size of context_b field,
-  * than a lookup table is required. */
+-/* This wrapper represents a bit-array for the depletion state of the 64 Bman
++/* This wrapper represents a bit-array for the depletion state of the 64 BMan
+  * buffer pools. */
+ struct bman_depletion {
+ 	u32 __state[2];
+@@ -74,7 +74,7 @@ static inline void bman_depletion_unset(struct bman_depletion *c, u8 bpid)
+ }
+ 
+ /* ------------------------------------------------------- */
+-/* --- Bman data structures (and associated constants) --- */
++/* --- BMan data structures (and associated constants) --- */
+ 
+ /* Represents s/w corenet portal mapped data structures */
+ struct bm_rcr_entry;	/* RCR (Release Command Ring) entries */
+@@ -204,7 +204,7 @@ struct bm_mc_result {
+ /* Represents a managed portal */
+ struct bman_portal;
+ 
+-/* This object type represents Bman buffer pools. */
++/* This object type represents BMan buffer pools. */
+ struct bman_pool;
+ 
+ struct bman_portal_config {
+@@ -241,7 +241,7 @@ struct bman_pool_params {
+ 	void *cb_ctx;
+ 	/* depletion-entry/exit thresholds, if BMAN_POOL_FLAG_THRESH is set. NB:
+ 	 * this is only allowed if BMAN_POOL_FLAG_DYNAMIC_BPID is used *and*
+-	 * when run in the control plane (which controls Bman CCSR). This array
++	 * when run in the control plane (which controls BMan CCSR). This array
+ 	 * matches the definition of bm_pool_set(). */
+ 	u32 thresholds[4];
+ };
+@@ -350,7 +350,7 @@ void bman_poll(void);
+  * bman_rcr_is_empty - Determine if portal's RCR is empty
+  *
+  * For use in situations where a cpu-affine caller needs to determine when all
+- * releases for the local portal have been processed by Bman but can't use the
++ * releases for the local portal have been processed by BMan but can't use the
+  * BMAN_RELEASE_FLAG_WAIT_SYNC flag to do this from the final bman_release().
+  * The function forces tracking of RCR consumption (which normally doesn't
+  * happen until release processing needs to find space to put new release
 diff --git a/include/linux/fsl_qman.h b/include/linux/fsl_qman.h
-index f52e919..f3650c5 100644
+index c12cbd3..f52e919 100644
 --- a/include/linux/fsl_qman.h
 +++ b/include/linux/fsl_qman.h
-@@ -1819,6 +1819,12 @@ int qman_modify_cgr(struct qman_cgr *cgr, u32 flags,
- int qman_query_cgr(struct qman_cgr *cgr, struct qm_mcr_querycgr *result);
+@@ -109,7 +109,7 @@ static inline u32 QM_SDQCR_CHANNELS_POOL_CONV(u16 channel)
  
- /**
-+ * qman_query_congestion - Queries the state of all congestion groups
-+ * @congestion: storage for the queried state of all congestion groups
-+ */
-+int qman_query_congestion(struct qm_mcr_querycongestion *congestion);
-+
-+/**
-  * qman_alloc_cgrid_range - Allocate a contiguous range of CGR IDs
-  * @result: is set by the API to the base CGR ID of the allocated range
-  * @count: the number of CGR IDs required
+ 
+ /* ------------------------------------------------------- */
+-/* --- Qman data structures (and associated constants) --- */
++/* --- QMan data structures (and associated constants) --- */
+ 
+ /* Represents s/w corenet portal mapped data structures */
+ struct qm_eqcr_entry;	/* EQCR (EnQueue Command Ring) entries */
+@@ -978,12 +978,12 @@ u32 qman_fqid_pool_used(struct qman_fqid_pool *pool);
+ /* Represents a managed portal */
+ struct qman_portal;
+ 
+-/* This object type represents Qman frame queue descriptors (FQD), it is
++/* This object type represents QMan frame queue descriptors (FQD), it is
+  * cacheline-aligned, and initialised by qman_create_fq(). The structure is
+  * defined further down. */
+ struct qman_fq;
+ 
+-/* This object type represents a Qman congestion group, it is defined further
++/* This object type represents a QMan congestion group, it is defined further
+  * down. */
+ struct qman_cgr;
+ 
+@@ -1083,7 +1083,7 @@ enum qman_fq_state {
+  *
+  * (b) when and if configuring the FQ for context stashing, specify how ever
+  *     many cachelines are required to stash 'struct my_fq', to accelerate not
+- *     only the Qman driver but the callback as well.
++ *     only the QMan driver but the callback as well.
+  */
+ 
+ struct qman_fq_cb {
+@@ -1358,7 +1358,7 @@ void qman_dca(struct qm_dqrr_entry *dq, int park_request);
+  * qman_eqcr_is_empty - Determine if portal's EQCR is empty
+  *
+  * For use in situations where a cpu-affine caller needs to determine when all
+- * enqueues for the local portal have been processed by Qman but can't use the
++ * enqueues for the local portal have been processed by QMan but can't use the
+  * QMAN_ENQUEUE_FLAG_WAIT_SYNC flag to do this from the final qman_enqueue().
+  * The function forces tracking of EQCR consumption (which normally doesn't
+  * happen until enqueue processing needs to find space to put new enqueue
+@@ -1372,7 +1372,7 @@ int qman_eqcr_is_empty(void);
+  * @handler: callback for processing DCP ERNs
+  * @affine: whether this handler is specific to the locally affine portal
+  *
+- * If a hardware block's interface to Qman (ie. its direct-connect portal, or
++ * If a hardware block's interface to QMan (ie. its direct-connect portal, or
+  * DCP) is configured not to receive enqueue rejections, then any enqueues
+  * through that DCP that are rejected will be sent to a given software portal.
+  * If @affine is non-zero, then this handler will only be used for DCP ERNs
+@@ -1582,13 +1582,13 @@ int qman_volatile_dequeue(struct qman_fq *fq, u32 flags, u32 vdqcr);
+  * (and FLAG_WAIT not specified), congestion avoidance (FLAG_WATCH_CGR
+  * specified), etc. If the ring is full and FLAG_WAIT is specified, this
+  * function will block. If FLAG_INTERRUPT is set, the EQCI bit of the portal
+- * interrupt will assert when Qman consumes the EQCR entry (subject to "status
+- * disable", "enable", and "inhibit" registers). If FLAG_DCA is set, Qman will
++ * interrupt will assert when QMan consumes the EQCR entry (subject to "status
++ * disable", "enable", and "inhibit" registers). If FLAG_DCA is set, QMan will
+  * perform an implied "discrete consumption acknowledgement" on the dequeue
+  * ring's (DQRR) entry, at the ring index specified by the FLAG_DCA_IDX(x)
+  * macro. (As an alternative to issuing explicit DCA actions on DQRR entries,
+  * this implicit DCA can delay the release of a "held active" frame queue
+- * corresponding to a DQRR entry until Qman consumes the EQCR entry - providing
++ * corresponding to a DQRR entry until QMan consumes the EQCR entry - providing
+  * order-preservation semantics in packet-forwarding scenarios.) If FLAG_DCA is
+  * set, then FLAG_DCA_PARK can also be set to imply that the DQRR consumption
+  * acknowledgement should "park request" the "held active" frame queue. Ie.
 -- 
 2.3.0
