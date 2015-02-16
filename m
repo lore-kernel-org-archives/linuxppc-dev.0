@@ -1,27 +1,38 @@
-Return-Path: <tom.huynh@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bn0108.outbound.protection.outlook.com [157.56.110.108])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B87741A0F26
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Feb 2015 03:12:40 +1100 (AEDT)
-Date: Mon, 16 Feb 2015 10:10:45 -0600
-From: Tom Huynh <tommy.xhuynh@gmail.com>
-To: Andi Kleen <andi@firstfloor.org>
-Subject: Re: [PATCH 1/3] perf/e6500: Make event translations available in sysfs
-Message-ID: <20150216161045.GA32564@rivendell>
-References: <1423262636-12053-1-git-send-email-tom.huynh@freescale.com>
- <1423262636-12053-2-git-send-email-tom.huynh@freescale.com>
- <20150209100242.GM23123@twins.programming.kicks-ass.net>
- <20150209100738.GA5461@gmail.com> <20150209121132.GB3952@krava.redhat.com>
- <20150209132557.GA8099@gmail.com> <20150209204019.GA13991@two.firstfloor.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1F5DA1A0191
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Feb 2015 09:37:49 +1100 (AEDT)
+Received: from /spool/local
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Tue, 17 Feb 2015 08:37:47 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 6074B2CE8052
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Feb 2015 09:37:45 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t1GMbaXm47513668
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Feb 2015 09:37:45 +1100
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t1GMbBwo011137
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Feb 2015 09:37:11 +1100
+Date: Tue, 17 Feb 2015 09:36:47 +1100
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: cascardo@linux.vnet.ibm.com
+Subject: Re: [PATCH 0/4] Support registering specific reset handler
+Message-ID: <20150216223647.GA5758@shangw>
+Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+References: <1423803299-22356-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <20150216131427.GA4840@oc0812247204.ltc.br.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <20150209204019.GA13991@two.firstfloor.org>
-Cc: Tom Huynh <tom.huynh@freescale.com>, Peter
- Zijlstra <peterz@infradead.org>, linuxppc-dev@lists.ozlabs.org, acme@kernel.org,
- linux-kernel@vger.kernel.org, mingo@redhat.com, paulus@samba.org,
- Jiri Olsa <jolsa@redhat.com>, Ingo Molnar <mingo@kernel.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20150216131427.GA4840@oc0812247204.ltc.br.ibm.com>
+Cc: bhelgaas@google.com, linux-pci@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, Gavin Shan <gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,41 +42,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Feb 09, 2015 at 09:40:19PM +0100, Andi Kleen wrote:
-> > I'll NAK any external 'download area' (and I told that Andi 
-> > before): tools/perf/event-tables/ or so is a good enough 
-> > 'download area' with fast enough update cycles.
-> 
-> The proposal was to put it on kernel.org, similar to how
-> external firmware blobs are distributed. CPU event lists
-> are data sheets, so are like firmware. They do not
-> follow the normal kernel code licenses. They are not 
-> source code. They cannot be reviewed in the normal way.
- 
-Could you provide more details about the license and review 
-concern? How are the event list files different from hardware-
-specific information (e.g. reg mapping) in header files?
+On Mon, Feb 16, 2015 at 11:14:27AM -0200, cascardo@linux.vnet.ibm.com wrote:
+>On Fri, Feb 13, 2015 at 03:54:55PM +1100, Gavin Shan wrote:
+>> VFIO PCI infrastructure depends on pci_reset_function() to do reset on
+>> PCI devices so that they would be in clean state when host or guest grabs
+>> them. Unfortunately, the function doesn't work (or not well) on some PCI
+>> devices that require EEH PE reset.
+>> 
+>> The patchset extends the quirk for PCI device speicific reset methods to
+>> allow dynamically registration. With it, we can translate reset requests
+>> for those special PCI devcies to EEH PE reset, which is only avaialble on
+>> 64-bits PowerPC platforms.
+>> 
+>
+>Hi, Gavin.
+>
+>I like your approach overall. That allows us to confine these quirks to
+>the platforms where they are relevant. I would make the quirks more
+>specific, though, instead of doing them for all IBM and Mellanox
+>devices.
+>
 
-> > If any 'update' of event descriptions is needed it can 
-> > happen through the distro package mechanism, or via a 
-> > simple 'git pull' if it's compiled directly.
-> > 
-> > Lets not overengineer this with any dependence on an 
-> > external site and with a separate update mechanism - lets 
-> > just get the tables into tools/ and see it from there...
-> 
-> That experiment has been already done for oprofile,
-> didn't work very well.
+Yeah, we need have more specific vendor/device IDs for PATCH[4/4]. Could
+you please take a look on PATCH[4/4] and then suggest the specific devices
+that requries the platform-dependent reset quirk? Especially the device IDs
+for IBM/Mellanox we need put add quirks for.
 
-Please excuse my ignorance, could you say exactly what didn't
-work well for oprofile?
+>I wonder if we should not have some form of domain reset, where we would
+>reset all the devices on the same group, and use that on vfio. Grouping
+>the devices would then be made platform-dependent, as well as the reset
+>method. On powernv, we would group by IOMMU group and issue a
+>fundamental reset.
+>
 
-Ingo's suggestion seems good to me because these event files 
-will be transparent to the users, and it's just more 
-convenient not having to go to a website to look for 
-the event file that matches the machine to download.
-The distro package or the perf make mechanism can put these
-files into the appropriate directory. The users who are not
-perf developers won't need to know about these files.
+I'm assuming "domain reset" is PE reset, which is the specific reset handler
+tries to do on PowerNV platform. The reason why we need platform specific
+reset handler is some adapters can't support function level reset methods
+(except pci_dev_specific_reset()) in __pci_dev_reset().
 
-- Tom
+Thanks,
+Gavin
+
+>Cascardo.
+>
+>> Gavin Shan (4):
+>>   PCI: Rename struct pci_dev_reset_methods
+>>   PCI: Introduce list for device reset methods
+>>   PCI: Allow registering reset method
+>>   powerpc/powernv: Register PCI dev specific reset handlers
+>> 
+>>  arch/powerpc/platforms/powernv/pci.c |  61 +++++++++++++++
+>>  drivers/pci/pci.h                    |   3 +-
+>>  drivers/pci/quirks.c                 | 139 ++++++++++++++++++++++++++++++-----
+>>  include/linux/pci.h                  |   9 +++
+>>  4 files changed, 192 insertions(+), 20 deletions(-)
+>> 
+>> -- 
+>> 1.8.3.2
+>> 
