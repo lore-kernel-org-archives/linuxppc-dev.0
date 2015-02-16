@@ -1,35 +1,35 @@
 Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E02751A0268
+ by lists.ozlabs.org (Postfix) with ESMTPS id E3D9C1A0BEB
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Feb 2015 14:47:25 +1100 (AEDT)
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id AC763140213
+ by ozlabs.org (Postfix) with ESMTPS id C013E14021A
  for <linuxppc-dev@ozlabs.org>; Mon, 16 Feb 2015 14:47:25 +1100 (AEDT)
 Received: from /spool/local
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
  Mon, 16 Feb 2015 13:47:25 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 11BFE2CE8050
- for <linuxppc-dev@ozlabs.org>; Mon, 16 Feb 2015 14:47:24 +1100 (EST)
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 20153357804C
+ for <linuxppc-dev@ozlabs.org>; Mon, 16 Feb 2015 14:47:23 +1100 (EST)
 Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t1G3lFKk28639396
- for <linuxppc-dev@ozlabs.org>; Mon, 16 Feb 2015 14:47:24 +1100
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t1G3lEs732374824
+ for <linuxppc-dev@ozlabs.org>; Mon, 16 Feb 2015 14:47:23 +1100
 Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
  by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t1G3kobN031083
- for <linuxppc-dev@ozlabs.org>; Mon, 16 Feb 2015 14:46:50 +1100
+ t1G3knqQ031062
+ for <linuxppc-dev@ozlabs.org>; Mon, 16 Feb 2015 14:46:49 +1100
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 10/10] powerpc/powernv: Remove unused file
-Date: Mon, 16 Feb 2015 14:45:48 +1100
-Message-Id: <1424058348-28951-11-git-send-email-gwshan@linux.vnet.ibm.com>
+Subject: [PATCH 08/10] powerpc/powernv: Drop PHB operation next_error()
+Date: Mon, 16 Feb 2015 14:45:46 +1100
+Message-Id: <1424058348-28951-9-git-send-email-gwshan@linux.vnet.ibm.com>
 In-Reply-To: <1424058348-28951-1-git-send-email-gwshan@linux.vnet.ibm.com>
 References: <1424058348-28951-1-git-send-email-gwshan@linux.vnet.ibm.com>
 Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
@@ -42,128 +42,754 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The patch removes unused file eeh-ioda.c and updates makefile
-accordingly. Besides, the definition of "struct pnv_eeh_ops" and
-the instances are all removed. Until now, the chip layer of EEH
-implementation for PowerNV platform is removed completely.
+The patch drops PHB EEH operation next_error() and merges its
+logic to eeh_ops::next_error().
 
 Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/powernv/Makefile   |  2 +-
- arch/powerpc/platforms/powernv/eeh-ioda.c | 38 -------------------------------
- arch/powerpc/platforms/powernv/pci-ioda.c |  3 ---
- arch/powerpc/platforms/powernv/pci.h      | 13 -----------
- 4 files changed, 1 insertion(+), 55 deletions(-)
- delete mode 100644 arch/powerpc/platforms/powernv/eeh-ioda.c
+ arch/powerpc/platforms/powernv/eeh-ioda.c    | 351 ---------------------------
+ arch/powerpc/platforms/powernv/eeh-powernv.c | 334 ++++++++++++++++++++++++-
+ arch/powerpc/platforms/powernv/pci.h         |   1 -
+ 3 files changed, 327 insertions(+), 359 deletions(-)
 
-diff --git a/arch/powerpc/platforms/powernv/Makefile b/arch/powerpc/platforms/powernv/Makefile
-index 6f3c5d3..33e44f3 100644
---- a/arch/powerpc/platforms/powernv/Makefile
-+++ b/arch/powerpc/platforms/powernv/Makefile
-@@ -5,7 +5,7 @@ obj-y			+= opal-msglog.o opal-hmi.o opal-power.o
- 
- obj-$(CONFIG_SMP)	+= smp.o subcore.o subcore-asm.o
- obj-$(CONFIG_PCI)	+= pci.o pci-p5ioc2.o pci-ioda.o
--obj-$(CONFIG_EEH)	+= eeh-ioda.o eeh-powernv.o
-+obj-$(CONFIG_EEH)	+= eeh-powernv.o
- obj-$(CONFIG_PPC_SCOM)	+= opal-xscom.o
- obj-$(CONFIG_MEMORY_FAILURE)	+= opal-memory-errors.o
- obj-$(CONFIG_TRACEPOINTS)	+= opal-tracepoints.o
 diff --git a/arch/powerpc/platforms/powernv/eeh-ioda.c b/arch/powerpc/platforms/powernv/eeh-ioda.c
-deleted file mode 100644
-index 9fcfc45..0000000
+index dc34c36..94d94b4 100644
 --- a/arch/powerpc/platforms/powernv/eeh-ioda.c
-+++ /dev/null
-@@ -1,38 +0,0 @@
--/*
-- * The file intends to implement the functions needed by EEH, which is
-- * built on IODA compliant chip. Actually, lots of functions related
-- * to EEH would be built based on the OPAL APIs.
-- *
-- * Copyright Benjamin Herrenschmidt & Gavin Shan, IBM Corporation 2013.
-- *
-- * This program is free software; you can redistribute it and/or modify
-- * it under the terms of the GNU General Public License as published by
-- * the Free Software Foundation; either version 2 of the License, or
-- * (at your option) any later version.
-- */
--
--#include <linux/debugfs.h>
--#include <linux/delay.h>
--#include <linux/io.h>
--#include <linux/irq.h>
--#include <linux/kernel.h>
--#include <linux/msi.h>
--#include <linux/notifier.h>
--#include <linux/pci.h>
--#include <linux/string.h>
--
--#include <asm/eeh.h>
--#include <asm/eeh_event.h>
--#include <asm/io.h>
--#include <asm/iommu.h>
--#include <asm/msi_bitmap.h>
--#include <asm/opal.h>
--#include <asm/pci-bridge.h>
--#include <asm/ppc-pci.h>
--#include <asm/tce.h>
--
--#include "powernv.h"
--#include "pci.h"
--
--struct pnv_eeh_ops ioda_eeh_ops = {
--};
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index 4e21596..26fe099 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -2078,9 +2078,6 @@ static void __init pnv_pci_init_ioda_phb(struct device_node *np,
- 	phb->get_pe_state = pnv_ioda_get_pe_state;
- 	phb->freeze_pe = pnv_ioda_freeze_pe;
- 	phb->unfreeze_pe = pnv_ioda_unfreeze_pe;
--#ifdef CONFIG_EEH
--	phb->eeh_ops = &ioda_eeh_ops;
--#endif
++++ b/arch/powerpc/platforms/powernv/eeh-ioda.c
+@@ -34,18 +34,6 @@
+ #include "powernv.h"
+ #include "pci.h"
  
- 	/* Setup RID -> PE mapping function */
- 	phb->bdfn_to_pe = pnv_ioda_bdfn_to_pe;
+-static void ioda_eeh_phb_diag(struct eeh_pe *pe)
+-{
+-	struct pnv_phb *phb = pe->phb->private_data;
+-	long rc;
+-
+-	rc = opal_pci_get_phb_diag_data2(phb->opal_id, pe->data,
+-					 PNV_PCI_DIAG_BUF_SIZE);
+-	if (rc != OPAL_SUCCESS)
+-		pr_warn("%s: Failed to get diag-data for PHB#%x (%ld)\n",
+-			__func__, pe->phb->global_number, rc);
+-}
+-
+ static s64 ioda_eeh_phb_poll(struct pnv_phb *phb)
+ {
+ 	s64 rc = OPAL_HARDWARE;
+@@ -280,345 +268,6 @@ static int ioda_eeh_reset(struct eeh_pe *pe, int option)
+ 	return ret;
+ }
+ 
+-static void ioda_eeh_hub_diag_common(struct OpalIoP7IOCErrorData *data)
+-{
+-	/* GEM */
+-	if (data->gemXfir || data->gemRfir ||
+-	    data->gemRirqfir || data->gemMask || data->gemRwof)
+-		pr_info("  GEM: %016llx %016llx %016llx %016llx %016llx\n",
+-			be64_to_cpu(data->gemXfir),
+-			be64_to_cpu(data->gemRfir),
+-			be64_to_cpu(data->gemRirqfir),
+-			be64_to_cpu(data->gemMask),
+-			be64_to_cpu(data->gemRwof));
+-
+-	/* LEM */
+-	if (data->lemFir || data->lemErrMask ||
+-	    data->lemAction0 || data->lemAction1 || data->lemWof)
+-		pr_info("  LEM: %016llx %016llx %016llx %016llx %016llx\n",
+-			be64_to_cpu(data->lemFir),
+-			be64_to_cpu(data->lemErrMask),
+-			be64_to_cpu(data->lemAction0),
+-			be64_to_cpu(data->lemAction1),
+-			be64_to_cpu(data->lemWof));
+-}
+-
+-static void ioda_eeh_hub_diag(struct pci_controller *hose)
+-{
+-	struct pnv_phb *phb = hose->private_data;
+-	struct OpalIoP7IOCErrorData *data = &phb->diag.hub_diag;
+-	long rc;
+-
+-	rc = opal_pci_get_hub_diag_data(phb->hub_id, data, sizeof(*data));
+-	if (rc != OPAL_SUCCESS) {
+-		pr_warn("%s: Failed to get HUB#%llx diag-data (%ld)\n",
+-			__func__, phb->hub_id, rc);
+-		return;
+-	}
+-
+-	switch (data->type) {
+-	case OPAL_P7IOC_DIAG_TYPE_RGC:
+-		pr_info("P7IOC diag-data for RGC\n\n");
+-		ioda_eeh_hub_diag_common(data);
+-		if (data->rgc.rgcStatus || data->rgc.rgcLdcp)
+-			pr_info("  RGC: %016llx %016llx\n",
+-				be64_to_cpu(data->rgc.rgcStatus),
+-				be64_to_cpu(data->rgc.rgcLdcp));
+-		break;
+-	case OPAL_P7IOC_DIAG_TYPE_BI:
+-		pr_info("P7IOC diag-data for BI %s\n\n",
+-			data->bi.biDownbound ? "Downbound" : "Upbound");
+-		ioda_eeh_hub_diag_common(data);
+-		if (data->bi.biLdcp0 || data->bi.biLdcp1 ||
+-		    data->bi.biLdcp2 || data->bi.biFenceStatus)
+-			pr_info("  BI:  %016llx %016llx %016llx %016llx\n",
+-				be64_to_cpu(data->bi.biLdcp0),
+-				be64_to_cpu(data->bi.biLdcp1),
+-				be64_to_cpu(data->bi.biLdcp2),
+-				be64_to_cpu(data->bi.biFenceStatus));
+-		break;
+-	case OPAL_P7IOC_DIAG_TYPE_CI:
+-		pr_info("P7IOC diag-data for CI Port %d\n\n",
+-			data->ci.ciPort);
+-		ioda_eeh_hub_diag_common(data);
+-		if (data->ci.ciPortStatus || data->ci.ciPortLdcp)
+-			pr_info("  CI:  %016llx %016llx\n",
+-				be64_to_cpu(data->ci.ciPortStatus),
+-				be64_to_cpu(data->ci.ciPortLdcp));
+-		break;
+-	case OPAL_P7IOC_DIAG_TYPE_MISC:
+-		pr_info("P7IOC diag-data for MISC\n\n");
+-		ioda_eeh_hub_diag_common(data);
+-		break;
+-	case OPAL_P7IOC_DIAG_TYPE_I2C:
+-		pr_info("P7IOC diag-data for I2C\n\n");
+-		ioda_eeh_hub_diag_common(data);
+-		break;
+-	default:
+-		pr_warn("%s: Invalid type of HUB#%llx diag-data (%d)\n",
+-			__func__, phb->hub_id, data->type);
+-	}
+-}
+-
+-static int ioda_eeh_get_pe(struct pci_controller *hose,
+-			   u16 pe_no, struct eeh_pe **pe)
+-{
+-	struct pnv_phb *phb = hose->private_data;
+-	struct pnv_ioda_pe *pnv_pe;
+-	struct eeh_pe *dev_pe;
+-	struct eeh_dev edev;
+-
+-	/*
+-	 * If PHB supports compound PE, to fetch
+-	 * the master PE because slave PE is invisible
+-	 * to EEH core.
+-	 */
+-	pnv_pe = &phb->ioda.pe_array[pe_no];
+-	if (pnv_pe->flags & PNV_IODA_PE_SLAVE) {
+-		pnv_pe = pnv_pe->master;
+-		WARN_ON(!pnv_pe ||
+-			!(pnv_pe->flags & PNV_IODA_PE_MASTER));
+-		pe_no = pnv_pe->pe_number;
+-	}
+-
+-	/* Find the PE according to PE# */
+-	memset(&edev, 0, sizeof(struct eeh_dev));
+-	edev.phb = hose;
+-	edev.pe_config_addr = pe_no;
+-	dev_pe = eeh_pe_get(&edev);
+-	if (!dev_pe)
+-		return -EEXIST;
+-
+-	/* Freeze the (compound) PE */
+-	*pe = dev_pe;
+-	if (!(dev_pe->state & EEH_PE_ISOLATED))
+-		phb->freeze_pe(phb, pe_no);
+-
+-	/*
+-	 * At this point, we're sure the (compound) PE should
+-	 * have been frozen. However, we still need poke until
+-	 * hitting the frozen PE on top level.
+-	 */
+-	dev_pe = dev_pe->parent;
+-	while (dev_pe && !(dev_pe->type & EEH_PE_PHB)) {
+-		int ret;
+-		int active_flags = (EEH_STATE_MMIO_ACTIVE |
+-				    EEH_STATE_DMA_ACTIVE);
+-
+-		ret = eeh_ops->get_state(dev_pe, NULL);
+-		if (ret <= 0 || (ret & active_flags) == active_flags) {
+-			dev_pe = dev_pe->parent;
+-			continue;
+-		}
+-
+-		/* Frozen parent PE */
+-		*pe = dev_pe;
+-		if (!(dev_pe->state & EEH_PE_ISOLATED))
+-			phb->freeze_pe(phb, dev_pe->addr);
+-
+-		/* Next one */
+-		dev_pe = dev_pe->parent;
+-	}
+-
+-	return 0;
+-}
+-
+-/**
+- * ioda_eeh_next_error - Retrieve next error for EEH core to handle
+- * @pe: The affected PE
+- *
+- * The function is expected to be called by EEH core while it gets
+- * special EEH event (without binding PE). The function calls to
+- * OPAL APIs for next error to handle. The informational error is
+- * handled internally by platform. However, the dead IOC, dead PHB,
+- * fenced PHB and frozen PE should be handled by EEH core eventually.
+- */
+-static int ioda_eeh_next_error(struct eeh_pe **pe)
+-{
+-	struct pci_controller *hose;
+-	struct pnv_phb *phb;
+-	struct eeh_pe *phb_pe, *parent_pe;
+-	__be64 frozen_pe_no;
+-	__be16 err_type, severity;
+-	int active_flags = (EEH_STATE_MMIO_ACTIVE | EEH_STATE_DMA_ACTIVE);
+-	long rc;
+-	int state, ret = EEH_NEXT_ERR_NONE;
+-
+-	/*
+-	 * While running here, it's safe to purge the event queue.
+-	 * And we should keep the cached OPAL notifier event sychronized
+-	 * between the kernel and firmware.
+-	 */
+-	eeh_remove_event(NULL, false);
+-	opal_notifier_update_evt(OPAL_EVENT_PCI_ERROR, 0x0ul);
+-
+-	list_for_each_entry(hose, &hose_list, list_node) {
+-		/*
+-		 * If the subordinate PCI buses of the PHB has been
+-		 * removed or is exactly under error recovery, we
+-		 * needn't take care of it any more.
+-		 */
+-		phb = hose->private_data;
+-		phb_pe = eeh_phb_pe_get(hose);
+-		if (!phb_pe || (phb_pe->state & EEH_PE_ISOLATED))
+-			continue;
+-
+-		rc = opal_pci_next_error(phb->opal_id,
+-				&frozen_pe_no, &err_type, &severity);
+-
+-		/* If OPAL API returns error, we needn't proceed */
+-		if (rc != OPAL_SUCCESS) {
+-			pr_devel("%s: Invalid return value on "
+-				 "PHB#%x (0x%lx) from opal_pci_next_error",
+-				 __func__, hose->global_number, rc);
+-			continue;
+-		}
+-
+-		/* If the PHB doesn't have error, stop processing */
+-		if (be16_to_cpu(err_type) == OPAL_EEH_NO_ERROR ||
+-		    be16_to_cpu(severity) == OPAL_EEH_SEV_NO_ERROR) {
+-			pr_devel("%s: No error found on PHB#%x\n",
+-				 __func__, hose->global_number);
+-			continue;
+-		}
+-
+-		/*
+-		 * Processing the error. We're expecting the error with
+-		 * highest priority reported upon multiple errors on the
+-		 * specific PHB.
+-		 */
+-		pr_devel("%s: Error (%d, %d, %llu) on PHB#%x\n",
+-			 __func__, be16_to_cpu(err_type), be16_to_cpu(severity),
+-			 be64_to_cpu(frozen_pe_no), hose->global_number);
+-		switch (be16_to_cpu(err_type)) {
+-		case OPAL_EEH_IOC_ERROR:
+-			if (be16_to_cpu(severity) == OPAL_EEH_SEV_IOC_DEAD) {
+-				pr_err("EEH: dead IOC detected\n");
+-				ret = EEH_NEXT_ERR_DEAD_IOC;
+-			} else if (be16_to_cpu(severity) == OPAL_EEH_SEV_INF) {
+-				pr_info("EEH: IOC informative error "
+-					"detected\n");
+-				ioda_eeh_hub_diag(hose);
+-				ret = EEH_NEXT_ERR_NONE;
+-			}
+-
+-			break;
+-		case OPAL_EEH_PHB_ERROR:
+-			if (be16_to_cpu(severity) == OPAL_EEH_SEV_PHB_DEAD) {
+-				*pe = phb_pe;
+-				pr_err("EEH: dead PHB#%x detected, "
+-				       "location: %s\n",
+-				       hose->global_number,
+-				       eeh_pe_loc_get(phb_pe));
+-				ret = EEH_NEXT_ERR_DEAD_PHB;
+-			} else if (be16_to_cpu(severity) ==
+-						OPAL_EEH_SEV_PHB_FENCED) {
+-				*pe = phb_pe;
+-				pr_err("EEH: Fenced PHB#%x detected, "
+-				       "location: %s\n",
+-				       hose->global_number,
+-				       eeh_pe_loc_get(phb_pe));
+-				ret = EEH_NEXT_ERR_FENCED_PHB;
+-			} else if (be16_to_cpu(severity) == OPAL_EEH_SEV_INF) {
+-				pr_info("EEH: PHB#%x informative error "
+-					"detected, location: %s\n",
+-					hose->global_number,
+-					eeh_pe_loc_get(phb_pe));
+-				ioda_eeh_phb_diag(phb_pe);
+-				pnv_pci_dump_phb_diag_data(hose, phb_pe->data);
+-				ret = EEH_NEXT_ERR_NONE;
+-			}
+-
+-			break;
+-		case OPAL_EEH_PE_ERROR:
+-			/*
+-			 * If we can't find the corresponding PE, we
+-			 * just try to unfreeze.
+-			 */
+-			if (ioda_eeh_get_pe(hose,
+-					    be64_to_cpu(frozen_pe_no), pe)) {
+-				/* Try best to clear it */
+-				pr_info("EEH: Clear non-existing PHB#%x-PE#%llx\n",
+-					hose->global_number, frozen_pe_no);
+-				pr_info("EEH: PHB location: %s\n",
+-					eeh_pe_loc_get(phb_pe));
+-				opal_pci_eeh_freeze_clear(phb->opal_id, frozen_pe_no,
+-					OPAL_EEH_ACTION_CLEAR_FREEZE_ALL);
+-				ret = EEH_NEXT_ERR_NONE;
+-			} else if ((*pe)->state & EEH_PE_ISOLATED ||
+-				   eeh_pe_passed(*pe)) {
+-				ret = EEH_NEXT_ERR_NONE;
+-			} else {
+-				pr_err("EEH: Frozen PE#%x on PHB#%x detected\n",
+-					(*pe)->addr, (*pe)->phb->global_number);
+-				pr_err("EEH: PE location: %s, PHB location: %s\n",
+-					eeh_pe_loc_get(*pe), eeh_pe_loc_get(phb_pe));
+-				ret = EEH_NEXT_ERR_FROZEN_PE;
+-			}
+-
+-			break;
+-		default:
+-			pr_warn("%s: Unexpected error type %d\n",
+-				__func__, be16_to_cpu(err_type));
+-		}
+-
+-		/*
+-		 * EEH core will try recover from fenced PHB or
+-		 * frozen PE. In the time for frozen PE, EEH core
+-		 * enable IO path for that before collecting logs,
+-		 * but it ruins the site. So we have to dump the
+-		 * log in advance here.
+-		 */
+-		if ((ret == EEH_NEXT_ERR_FROZEN_PE  ||
+-		    ret == EEH_NEXT_ERR_FENCED_PHB) &&
+-		    !((*pe)->state & EEH_PE_ISOLATED)) {
+-			eeh_pe_state_mark(*pe, EEH_PE_ISOLATED);
+-			ioda_eeh_phb_diag(*pe);
+-
+-			if (eeh_has_flag(EEH_EARLY_DUMP_LOG))
+-				pnv_pci_dump_phb_diag_data((*pe)->phb,
+-							   (*pe)->data);
+-		}
+-
+-		/*
+-		 * We probably have the frozen parent PE out there and
+-		 * we need have to handle frozen parent PE firstly.
+-		 */
+-		if (ret == EEH_NEXT_ERR_FROZEN_PE) {
+-			parent_pe = (*pe)->parent;
+-			while (parent_pe) {
+-				/* Hit the ceiling ? */
+-				if (parent_pe->type & EEH_PE_PHB)
+-					break;
+-
+-				/* Frozen parent PE ? */
+-				state = eeh_ops->get_state(parent_pe, NULL);
+-				if (state > 0 &&
+-				    (state & active_flags) != active_flags)
+-					*pe = parent_pe;
+-
+-				/* Next parent level */
+-				parent_pe = parent_pe->parent;
+-			}
+-
+-			/* We possibly migrate to another PE */
+-			eeh_pe_state_mark(*pe, EEH_PE_ISOLATED);
+-		}
+-
+-		/*
+-		 * If we have no errors on the specific PHB or only
+-		 * informative error there, we continue poking it.
+-		 * Otherwise, we need actions to be taken by upper
+-		 * layer.
+-		 */
+-		if (ret > EEH_NEXT_ERR_INF)
+-			break;
+-	}
+-
+-	return ret;
+-}
+-
+ struct pnv_eeh_ops ioda_eeh_ops = {
+ 	.reset			= ioda_eeh_reset,
+-	.next_error		= ioda_eeh_next_error
+ };
+diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
+index 127ef0c..e51ac2d 100644
+--- a/arch/powerpc/platforms/powernv/eeh-powernv.c
++++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
+@@ -840,26 +840,346 @@ static int pnv_eeh_write_config(struct device_node *dn,
+ 	return pnv_pci_cfg_write(dn, where, size, val);
+ }
+ 
++static void pnv_eeh_dump_hub_diag_common(struct OpalIoP7IOCErrorData *data)
++{
++	/* GEM */
++	if (data->gemXfir || data->gemRfir ||
++	    data->gemRirqfir || data->gemMask || data->gemRwof)
++		pr_info("  GEM: %016llx %016llx %016llx %016llx %016llx\n",
++			be64_to_cpu(data->gemXfir),
++			be64_to_cpu(data->gemRfir),
++			be64_to_cpu(data->gemRirqfir),
++			be64_to_cpu(data->gemMask),
++			be64_to_cpu(data->gemRwof));
++
++	/* LEM */
++	if (data->lemFir || data->lemErrMask ||
++	    data->lemAction0 || data->lemAction1 || data->lemWof)
++		pr_info("  LEM: %016llx %016llx %016llx %016llx %016llx\n",
++			be64_to_cpu(data->lemFir),
++			be64_to_cpu(data->lemErrMask),
++			be64_to_cpu(data->lemAction0),
++			be64_to_cpu(data->lemAction1),
++			be64_to_cpu(data->lemWof));
++}
++
++static void pnv_eeh_get_and_dump_hub_diag(struct pci_controller *hose)
++{
++	struct pnv_phb *phb = hose->private_data;
++	struct OpalIoP7IOCErrorData *data = &phb->diag.hub_diag;
++	long rc;
++
++	rc = opal_pci_get_hub_diag_data(phb->hub_id, data, sizeof(*data));
++	if (rc != OPAL_SUCCESS) {
++		pr_warn("%s: Failed to get HUB#%llx diag-data (%ld)\n",
++			__func__, phb->hub_id, rc);
++		return;
++	}
++
++	switch (data->type) {
++	case OPAL_P7IOC_DIAG_TYPE_RGC:
++		pr_info("P7IOC diag-data for RGC\n\n");
++		pnv_eeh_dump_hub_diag_common(data);
++		if (data->rgc.rgcStatus || data->rgc.rgcLdcp)
++			pr_info("  RGC: %016llx %016llx\n",
++				be64_to_cpu(data->rgc.rgcStatus),
++				be64_to_cpu(data->rgc.rgcLdcp));
++		break;
++	case OPAL_P7IOC_DIAG_TYPE_BI:
++		pr_info("P7IOC diag-data for BI %s\n\n",
++			data->bi.biDownbound ? "Downbound" : "Upbound");
++		pnv_eeh_dump_hub_diag_common(data);
++		if (data->bi.biLdcp0 || data->bi.biLdcp1 ||
++		    data->bi.biLdcp2 || data->bi.biFenceStatus)
++			pr_info("  BI:  %016llx %016llx %016llx %016llx\n",
++				be64_to_cpu(data->bi.biLdcp0),
++				be64_to_cpu(data->bi.biLdcp1),
++				be64_to_cpu(data->bi.biLdcp2),
++				be64_to_cpu(data->bi.biFenceStatus));
++		break;
++	case OPAL_P7IOC_DIAG_TYPE_CI:
++		pr_info("P7IOC diag-data for CI Port %d\n\n",
++			data->ci.ciPort);
++		pnv_eeh_dump_hub_diag_common(data);
++		if (data->ci.ciPortStatus || data->ci.ciPortLdcp)
++			pr_info("  CI:  %016llx %016llx\n",
++				be64_to_cpu(data->ci.ciPortStatus),
++				be64_to_cpu(data->ci.ciPortLdcp));
++		break;
++	case OPAL_P7IOC_DIAG_TYPE_MISC:
++		pr_info("P7IOC diag-data for MISC\n\n");
++		pnv_eeh_dump_hub_diag_common(data);
++		break;
++	case OPAL_P7IOC_DIAG_TYPE_I2C:
++		pr_info("P7IOC diag-data for I2C\n\n");
++		pnv_eeh_dump_hub_diag_common(data);
++		break;
++	default:
++		pr_warn("%s: Invalid type of HUB#%llx diag-data (%d)\n",
++			__func__, phb->hub_id, data->type);
++	}
++}
++
++static int pnv_eeh_get_pe(struct pci_controller *hose,
++			  u16 pe_no, struct eeh_pe **pe)
++{
++	struct pnv_phb *phb = hose->private_data;
++	struct pnv_ioda_pe *pnv_pe;
++	struct eeh_pe *dev_pe;
++	struct eeh_dev edev;
++
++	/*
++	 * If PHB supports compound PE, to fetch
++	 * the master PE because slave PE is invisible
++	 * to EEH core.
++	 */
++	pnv_pe = &phb->ioda.pe_array[pe_no];
++	if (pnv_pe->flags & PNV_IODA_PE_SLAVE) {
++		pnv_pe = pnv_pe->master;
++		WARN_ON(!pnv_pe ||
++			!(pnv_pe->flags & PNV_IODA_PE_MASTER));
++		pe_no = pnv_pe->pe_number;
++	}
++
++	/* Find the PE according to PE# */
++	memset(&edev, 0, sizeof(struct eeh_dev));
++	edev.phb = hose;
++	edev.pe_config_addr = pe_no;
++	dev_pe = eeh_pe_get(&edev);
++	if (!dev_pe)
++		return -EEXIST;
++
++	/* Freeze the (compound) PE */
++	*pe = dev_pe;
++	if (!(dev_pe->state & EEH_PE_ISOLATED))
++		phb->freeze_pe(phb, pe_no);
++
++	/*
++	 * At this point, we're sure the (compound) PE should
++	 * have been frozen. However, we still need poke until
++	 * hitting the frozen PE on top level.
++	 */
++	dev_pe = dev_pe->parent;
++	while (dev_pe && !(dev_pe->type & EEH_PE_PHB)) {
++		int ret;
++		int active_flags = (EEH_STATE_MMIO_ACTIVE |
++				    EEH_STATE_DMA_ACTIVE);
++
++		ret = eeh_ops->get_state(dev_pe, NULL);
++		if (ret <= 0 || (ret & active_flags) == active_flags) {
++			dev_pe = dev_pe->parent;
++			continue;
++		}
++
++		/* Frozen parent PE */
++		*pe = dev_pe;
++		if (!(dev_pe->state & EEH_PE_ISOLATED))
++			phb->freeze_pe(phb, dev_pe->addr);
++
++		/* Next one */
++		dev_pe = dev_pe->parent;
++	}
++
++	return 0;
++}
++
+ /**
+  * pnv_eeh_next_error - Retrieve next EEH error to handle
+  * @pe: Affected PE
+  *
+- * Using OPAL API, to retrieve next EEH error for EEH core to handle
++ * The function is expected to be called by EEH core while it gets
++ * special EEH event (without binding PE). The function calls to
++ * OPAL APIs for next error to handle. The informational error is
++ * handled internally by platform. However, the dead IOC, dead PHB,
++ * fenced PHB and frozen PE should be handled by EEH core eventually.
+  */
+ static int pnv_eeh_next_error(struct eeh_pe **pe)
+ {
+ 	struct pci_controller *hose;
+-	struct pnv_phb *phb = NULL;
++	struct pnv_phb *phb;
++	struct eeh_pe *phb_pe, *parent_pe;
++	__be64 frozen_pe_no;
++	__be16 err_type, severity;
++	int active_flags = (EEH_STATE_MMIO_ACTIVE | EEH_STATE_DMA_ACTIVE);
++	long rc;
++	int state, ret = EEH_NEXT_ERR_NONE;
++
++	/*
++	 * While running here, it's safe to purge the event queue.
++	 * And we should keep the cached OPAL notifier event sychronized
++	 * between the kernel and firmware.
++	 */
++	eeh_remove_event(NULL, false);
++	opal_notifier_update_evt(OPAL_EVENT_PCI_ERROR, 0x0ul);
+ 
+ 	list_for_each_entry(hose, &hose_list, list_node) {
++		/*
++		 * If the subordinate PCI buses of the PHB has been
++		 * removed or is exactly under error recovery, we
++		 * needn't take care of it any more.
++		 */
+ 		phb = hose->private_data;
+-		break;
+-	}
++		phb_pe = eeh_phb_pe_get(hose);
++		if (!phb_pe || (phb_pe->state & EEH_PE_ISOLATED))
++			continue;
++
++		rc = opal_pci_next_error(phb->opal_id,
++					 &frozen_pe_no, &err_type, &severity);
++		if (rc != OPAL_SUCCESS) {
++			pr_devel("%s: Invalid return value on "
++				 "PHB#%x (0x%lx) from opal_pci_next_error",
++				 __func__, hose->global_number, rc);
++			continue;
++		}
++
++		/* If the PHB doesn't have error, stop processing */
++		if (be16_to_cpu(err_type) == OPAL_EEH_NO_ERROR ||
++		    be16_to_cpu(severity) == OPAL_EEH_SEV_NO_ERROR) {
++			pr_devel("%s: No error found on PHB#%x\n",
++				 __func__, hose->global_number);
++			continue;
++		}
+ 
+-	if (phb && phb->eeh_ops->next_error)
+-		return phb->eeh_ops->next_error(pe);
++		/*
++		 * Processing the error. We're expecting the error with
++		 * highest priority reported upon multiple errors on the
++		 * specific PHB.
++		 */
++		pr_devel("%s: Error (%d, %d, %llu) on PHB#%x\n",
++			__func__, be16_to_cpu(err_type),
++			be16_to_cpu(severity), be64_to_cpu(frozen_pe_no),
++			hose->global_number);
++		switch (be16_to_cpu(err_type)) {
++		case OPAL_EEH_IOC_ERROR:
++			if (be16_to_cpu(severity) == OPAL_EEH_SEV_IOC_DEAD) {
++				pr_err("EEH: dead IOC detected\n");
++				ret = EEH_NEXT_ERR_DEAD_IOC;
++			} else if (be16_to_cpu(severity) == OPAL_EEH_SEV_INF) {
++				pr_info("EEH: IOC informative error "
++					"detected\n");
++				pnv_eeh_get_and_dump_hub_diag(hose);
++				ret = EEH_NEXT_ERR_NONE;
++			}
++
++			break;
++		case OPAL_EEH_PHB_ERROR:
++			if (be16_to_cpu(severity) == OPAL_EEH_SEV_PHB_DEAD) {
++				*pe = phb_pe;
++				pr_err("EEH: dead PHB#%x detected, "
++				       "location: %s\n",
++					hose->global_number,
++					eeh_pe_loc_get(phb_pe));
++				ret = EEH_NEXT_ERR_DEAD_PHB;
++			} else if (be16_to_cpu(severity) ==
++				   OPAL_EEH_SEV_PHB_FENCED) {
++				*pe = phb_pe;
++				pr_err("EEH: Fenced PHB#%x detected, "
++				       "location: %s\n",
++					hose->global_number,
++					eeh_pe_loc_get(phb_pe));
++				ret = EEH_NEXT_ERR_FENCED_PHB;
++			} else if (be16_to_cpu(severity) == OPAL_EEH_SEV_INF) {
++				pr_info("EEH: PHB#%x informative error "
++					"detected, location: %s\n",
++					hose->global_number,
++					eeh_pe_loc_get(phb_pe));
++				pnv_eeh_get_phb_diag(phb_pe);
++				pnv_pci_dump_phb_diag_data(hose, phb_pe->data);
++				ret = EEH_NEXT_ERR_NONE;
++			}
+ 
+-	return -EEXIST;
++			break;
++		case OPAL_EEH_PE_ERROR:
++			/*
++			 * If we can't find the corresponding PE, we
++			 * just try to unfreeze.
++			 */
++			if (pnv_eeh_get_pe(hose,
++				be64_to_cpu(frozen_pe_no), pe)) {
++				/* Try best to clear it */
++				pr_info("EEH: Clear non-existing PHB#%x-PE#%llx\n",
++					hose->global_number, frozen_pe_no);
++				pr_info("EEH: PHB location: %s\n",
++					eeh_pe_loc_get(phb_pe));
++				opal_pci_eeh_freeze_clear(phb->opal_id,
++					frozen_pe_no,
++					OPAL_EEH_ACTION_CLEAR_FREEZE_ALL);
++				ret = EEH_NEXT_ERR_NONE;
++			} else if ((*pe)->state & EEH_PE_ISOLATED ||
++				   eeh_pe_passed(*pe)) {
++				ret = EEH_NEXT_ERR_NONE;
++			} else {
++				pr_err("EEH: Frozen PE#%x "
++				       "on PHB#%x detected\n",
++				       (*pe)->addr,
++					(*pe)->phb->global_number);
++				pr_err("EEH: PE location: %s, "
++				       "PHB location: %s\n",
++				       eeh_pe_loc_get(*pe),
++				       eeh_pe_loc_get(phb_pe));
++				ret = EEH_NEXT_ERR_FROZEN_PE;
++			}
++
++			break;
++		default:
++			pr_warn("%s: Unexpected error type %d\n",
++				__func__, be16_to_cpu(err_type));
++		}
++
++		/*
++		 * EEH core will try recover from fenced PHB or
++		 * frozen PE. In the time for frozen PE, EEH core
++		 * enable IO path for that before collecting logs,
++		 * but it ruins the site. So we have to dump the
++		 * log in advance here.
++		 */
++		if ((ret == EEH_NEXT_ERR_FROZEN_PE  ||
++		    ret == EEH_NEXT_ERR_FENCED_PHB) &&
++		    !((*pe)->state & EEH_PE_ISOLATED)) {
++			eeh_pe_state_mark(*pe, EEH_PE_ISOLATED);
++			pnv_eeh_get_phb_diag(*pe);
++
++			if (eeh_has_flag(EEH_EARLY_DUMP_LOG))
++				pnv_pci_dump_phb_diag_data((*pe)->phb,
++							   (*pe)->data);
++		}
++
++		/*
++		 * We probably have the frozen parent PE out there and
++		 * we need have to handle frozen parent PE firstly.
++		 */
++		if (ret == EEH_NEXT_ERR_FROZEN_PE) {
++			parent_pe = (*pe)->parent;
++			while (parent_pe) {
++				/* Hit the ceiling ? */
++				if (parent_pe->type & EEH_PE_PHB)
++					break;
++
++				/* Frozen parent PE ? */
++				state = eeh_ops->get_state(parent_pe, NULL);
++				if (state > 0 &&
++				    (state & active_flags) != active_flags)
++					*pe = parent_pe;
++
++				/* Next parent level */
++				parent_pe = parent_pe->parent;
++			}
++
++			/* We possibly migrate to another PE */
++			eeh_pe_state_mark(*pe, EEH_PE_ISOLATED);
++		}
++
++		/*
++		 * If we have no errors on the specific PHB or only
++		 * informative error there, we continue poking it.
++		 * Otherwise, we need actions to be taken by upper
++		 * layer.
++		 */
++		if (ret > EEH_NEXT_ERR_INF)
++			break;
++	}
++
++	return ret;
+ }
+ 
+ static int pnv_eeh_restore_config(struct device_node *dn)
 diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
-index 39f2ca3..18ae927 100644
+index 773a026..5275d89 100644
 --- a/arch/powerpc/platforms/powernv/pci.h
 +++ b/arch/powerpc/platforms/powernv/pci.h
-@@ -75,12 +75,6 @@ struct pnv_ioda_pe {
- 	struct list_head	list;
+@@ -79,7 +79,6 @@ struct pnv_ioda_pe {
+ #ifdef CONFIG_EEH
+ struct pnv_eeh_ops {
+ 	int (*reset)(struct eeh_pe *pe, int option);
+-	int (*next_error)(struct eeh_pe **pe);
  };
+ #endif /* CONFIG_EEH */
  
--/* IOC dependent EEH operations */
--#ifdef CONFIG_EEH
--struct pnv_eeh_ops {
--};
--#endif /* CONFIG_EEH */
--
- #define PNV_PHB_FLAG_EEH	(1 << 0)
- 
- struct pnv_phb {
-@@ -94,10 +88,6 @@ struct pnv_phb {
- 	int			initialized;
- 	spinlock_t		lock;
- 
--#ifdef CONFIG_EEH
--	struct pnv_eeh_ops	*eeh_ops;
--#endif
--
- #ifdef CONFIG_DEBUG_FS
- 	int			has_dbgfs;
- 	struct dentry		*dbgfs;
-@@ -203,9 +193,6 @@ struct pnv_phb {
- };
- 
- extern struct pci_ops pnv_pci_ops;
--#ifdef CONFIG_EEH
--extern struct pnv_eeh_ops ioda_eeh_ops;
--#endif
- 
- void pnv_pci_dump_phb_diag_data(struct pci_controller *hose,
- 				unsigned char *log_buff);
 -- 
 1.8.3.2
