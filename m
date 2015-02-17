@@ -1,36 +1,39 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+Return-Path: <preeti@linux.vnet.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B0A0C1A0CCC
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Feb 2015 13:31:21 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 28D161A0479
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Feb 2015 15:09:50 +1100 (AEDT)
 Received: from /spool/local
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Tue, 17 Feb 2015 12:31:20 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id B537D2CE8050
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Feb 2015 13:31:17 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t1H2V9Df50462942
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Feb 2015 13:31:17 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t1H2Uhja026366
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Feb 2015 13:30:44 +1100
-Date: Tue, 17 Feb 2015 13:30:19 +1100
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2 0/5] PCI Hotplug Driver for PowerPC PowerNV
-Message-ID: <20150217023019.GC17352@shangw>
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <1417672488-27341-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
+ Mon, 16 Feb 2015 21:09:49 -0700
+Received: from b03cxnp08025.gho.boulder.ibm.com
+ (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 6FDE13E40047
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Feb 2015 21:06:41 -0700 (MST)
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+ by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t1H49cni21037236
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Feb 2015 21:09:48 -0700
+Received: from d03av03.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av03.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t1H49CqM028779
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Feb 2015 21:09:13 -0700
+Message-ID: <54E2BECD.3050301@linux.vnet.ibm.com>
+Date: Tue, 17 Feb 2015 09:38:45 +0530
+From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1417672488-27341-1-git-send-email-gwshan@linux.vnet.ibm.com>
-Cc: linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH V4] tick/hotplug: Handover time related duties before
+ cpu offline
+References: <20150131041342.17103.30020.stgit@preeti.in.ibm.com>
+ <1424138284.1808.5.camel@ellerman.id.au>
+In-Reply-To: <1424138284.1808.5.camel@ellerman.id.au>
+Content-Type: text/plain; charset=UTF-8
+Cc: aik@ozlabs.ru, shreyas@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
+ anton@samba.org, tglx@linutronix.de, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,124 +43,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Dec 04, 2014 at 04:54:43PM +1100, Gavin Shan wrote:
+On 02/17/2015 07:28 AM, Michael Ellerman wrote:
+> On Sat, 2015-01-31 at 09:44 +0530, Preeti U Murthy wrote:
+>> These duties include do_timer to update jiffies and broadcast wakeups on those
+>> platforms which do not have an external device to handle wakeup of cpus from deep
+>> idle states. The handover of these duties is not robust against a cpu offline
+>> operation today.
+>>
+>> The do_timer duty is handed over in the CPU_DYING phase today to one of the online
+>> cpus. This relies on the fact that *all* cpus participate in stop_machine phase.
+>> But if this design is to change in the future, i.e. if all cpus are not
+>> required to participate in stop_machine, the freshly nominated do_timer cpu
+>> could be idle at the time of handover. In that case, unless its interrupted,
+>> it will not wakeup to update jiffies and timekeeping will hang.
+>>
+>> With regard to broadcast wakeups, today if the cpu handling broadcast of wakeups
+>> goes offline, the job of broadcasting is handed over to another cpu in the CPU_DEAD
+>> phase. The CPU_DEAD notifiers are run only after the offline cpu sets its state as
+>> CPU_DEAD. Meanwhile, the kthread doing the offline is scheduled out while waiting for
+>> this transition by queuing a timer. This is fatal because if the cpu on which
+>> this kthread was running has no other work queued on it, it can re-enter deep
+>> idle state, since it sees that a broadcast cpu still exists. However the broadcast
+>> wakeup will never come since the cpu which was handling it is offline, and the cpu
+>> on which the kthread doing the hotplug operation was running never wakes up to see
+>> this because its in deep idle state.
+>>
+>> Fix these issues by handing over the do_timer and broadcast wakeup duties just before
+>> the offline cpu kills itself, to the cpu performing the hotplug operation. Since the
+>> cpu performing the hotplug operation is up and running, it becomes aware of the handover
+>> of do_timer duty and queues the broadcast timer upon itself so as to seamlessly
+>> continue both these operations.
+>>
+>> It fixes the bug reported here:
+>> http://linuxppc.10917.n7.nabble.com/offlining-cpus-breakage-td88619.html
+>>
+>> Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+>> ---
+>> Changes from V3: https://lkml.org/lkml/2015/1/20/236
+>> 1. Move handover of broadcast duty away from CPU_DYING phase to just before
+>> the cpu kills itself.
+>> 2. Club the handover of timekeeping duty along with broadcast duty to make
+>> timekeeping robust against hotplug.
+> 
+> Hi Preeti,
+> 
+> This bug is still causing breakage for people on Power8 machines.
+> 
+> Are we just waiting for Thomas to take the patch?
 
-Please ignore this one. I'll rebase the repost new revision later.
+Hi mpe,
 
-Thanks,
-Gavin
+Thomas has included the patch for fixing this issue in a recent patchset
+that he posted for cleaning up tick/clockevents related code.
 
->The series of patches depends on the OPAL firmware changes. If the firmware
->doesn't have the changes, PCI hotplug slots won't be populated properly.
->Other than that, no more problems found.
->
->A new driver "powernv-php.ko" is introduced by the patchset to support
->PCI hotplug for PowerNV platform. The device tree is scanned when the
->driver is loaded. If any PCI device node is equipped with property "ibm,
->slot-pluggable" and "ibm,reset-by-firmware", it's regarded as hotpluggable
->slot and the driver creates/registers slot for it. After that, the sysfs
->entries can be used to operate the slot.
->
->PATCH[1-4]: Necessary code changes to PPC PCI subsystem in order to
->            support PCI slots for PPC PowerNV platform.
->PATCH[5]  : powernv-php driver to support PCI hotplug for PowerNV
->            platform.
->
->Testing
->=======
-># cat /proc/cpuinfo | grep -i powernv
->platform        : PowerNV
->machine         : PowerNV 8286-41A
->
-># pwd
->/sys/bus/pci/slots
-># ls
->C10  C11  C12  C14  C15  C6  C7  C8  C9
->
-># lspci -s 0003::.
->0003:00:00.0 PCI bridge: IBM Device 03dc
->0003:01:00.0 PCI bridge: PLX Technology, Inc. Device 8748 (rev ca)
->0003:02:01.0 PCI bridge: PLX Technology, Inc. Device 8748 (rev ca)
->0003:02:08.0 PCI bridge: PLX Technology, Inc. Device 8748 (rev ca)
->0003:02:09.0 PCI bridge: PLX Technology, Inc. Device 8748 (rev ca)
->0003:02:10.0 PCI bridge: PLX Technology, Inc. Device 8748 (rev ca)
->0003:02:11.0 PCI bridge: PLX Technology, Inc. Device 8748 (rev ca)
->0003:03:00.0 USB controller: Texas Instruments TUSB73x0 SuperSpeed USB 3.0 xHCI Host Controller (rev 02)
->0003:09:00.0 Ethernet controller: Broadcom Corporation NetXtreme BCM5719 Gigabit Ethernet PCIe (rev 01)
->0003:09:00.1 Ethernet controller: Broadcom Corporation NetXtreme BCM5719 Gigabit Ethernet PCIe (rev 01)
->0003:09:00.2 Ethernet controller: Broadcom Corporation NetXtreme BCM5719 Gigabit Ethernet PCIe (rev 01)
->0003:09:00.3 Ethernet controller: Broadcom Corporation NetXtreme BCM5719 Gigabit Ethernet PCIe (rev 01)
->0003:0f:00.0 Network controller: Mellanox Technologies MT27500 Family [ConnectX-3]
-># pwd
->/sys/bus/pci/slots/C10
-># cat address
->0003:09:00
-># cat cur_bus_speed
->5.0 GT/s PCIe
-># cat max_bus_speed
->8.0 GT/s PCIe
-># cat power
->1
-># echo 0 > power
-># lspci -s 0003::.
->0003:00:00.0 PCI bridge: IBM Device 03dc
->0003:01:00.0 PCI bridge: PLX Technology, Inc. Device 8748 (rev ca)
->0003:02:01.0 PCI bridge: PLX Technology, Inc. Device 8748 (rev ca)
->0003:02:08.0 PCI bridge: PLX Technology, Inc. Device 8748 (rev ca)
->0003:02:09.0 PCI bridge: PLX Technology, Inc. Device 8748 (rev ca)
->0003:02:10.0 PCI bridge: PLX Technology, Inc. Device 8748 (rev ca)
->0003:02:11.0 PCI bridge: PLX Technology, Inc. Device 8748 (rev ca)
->0003:03:00.0 USB controller: Texas Instruments TUSB73x0 SuperSpeed USB 3.0 xHCI Host Controller (rev 02)
->0003:0f:00.0 Network controller: Mellanox Technologies MT27500 Family [ConnectX-3]
-># echo 1 > power
-># lspci -s 0003::.
->0003:00:00.0 PCI bridge: IBM Device 03dc
->0003:01:00.0 PCI bridge: PLX Technology, Inc. Device 8748 (rev ca)
->0003:02:01.0 PCI bridge: PLX Technology, Inc. Device 8748 (rev ca)
->0003:02:08.0 PCI bridge: PLX Technology, Inc. Device 8748 (rev ca)
->0003:02:09.0 PCI bridge: PLX Technology, Inc. Device 8748 (rev ca)
->0003:02:10.0 PCI bridge: PLX Technology, Inc. Device 8748 (rev ca)
->0003:02:11.0 PCI bridge: PLX Technology, Inc. Device 8748 (rev ca)
->0003:03:00.0 USB controller: Texas Instruments TUSB73x0 SuperSpeed USB 3.0 xHCI Host Controller (rev 02)
->0003:09:00.0 Ethernet controller: Broadcom Corporation NetXtreme BCM5719 Gigabit Ethernet PCIe (rev 01)
->0003:09:00.1 Ethernet controller: Broadcom Corporation NetXtreme BCM5719 Gigabit Ethernet PCIe (rev 01)
->0003:09:00.2 Ethernet controller: Broadcom Corporation NetXtreme BCM5719 Gigabit Ethernet PCIe (rev 01)
->0003:09:00.3 Ethernet controller: Broadcom Corporation NetXtreme BCM5719 Gigabit Ethernet PCIe (rev 01)
->0003:0f:00.0 Network controller: Mellanox Technologies MT27500 Family [ConnectX-3]
->
->Changelog
->=========
->v1 -> v2:
->        * Separate powernv-php driver to support PCI hotplug for
->	  PowerNV platform.
->	* Check if the OPAL API supported by firmware before calling
->          into it, which is necessary for back-compability.
->        * Separate patch for factoring pnv_pci_poll().
->
->Gavin Shan (5):
->  powerpc/pci: Move pcibios_find_pci_bus() around
->  powerpc/pci: Don't scan empty slot
->  powerpc/powernv: Introduce pnv_pci_poll()
->  powerpc/powernv: Functions to retrieve PCI slot status
->  PCI/hotplug: PowerPC PowerNV PCI hotplug driver
->
-> arch/powerpc/include/asm/opal.h                |   4 +
-> arch/powerpc/include/asm/pnv-pci.h             |   3 +
-> arch/powerpc/kernel/pci-hotplug.c              |  39 ++-
-> arch/powerpc/platforms/powernv/eeh-ioda.c      |  28 +-
-> arch/powerpc/platforms/powernv/opal-wrappers.S |   2 +
-> arch/powerpc/platforms/powernv/pci.c           |  43 +++
-> arch/powerpc/platforms/powernv/pci.h           |   1 +
-> arch/powerpc/platforms/pseries/pci_dlpar.c     |  32 ---
-> drivers/pci/hotplug/Kconfig                    |  12 +
-> drivers/pci/hotplug/Makefile                   |   4 +
-> drivers/pci/hotplug/powernv_php.c              | 126 ++++++++
-> drivers/pci/hotplug/powernv_php.h              |  70 +++++
-> drivers/pci/hotplug/powernv_php_slot.c         | 382 +++++++++++++++++++++++++
-> 13 files changed, 687 insertions(+), 59 deletions(-)
-> create mode 100644 drivers/pci/hotplug/powernv_php.c
-> create mode 100644 drivers/pci/hotplug/powernv_php.h
-> create mode 100644 drivers/pci/hotplug/powernv_php_slot.c
->
->Thanks,
->Gavin
+https://lkml.org/lkml/2015/2/16/213. I think it will go into this
+merge-window. There are a couple of issues there, once that is fixed I
+will remind him to mark it for stable.
+
+Regards
+Preeti U Murthy
+
+> 
+> cheers
+> 
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+> 
