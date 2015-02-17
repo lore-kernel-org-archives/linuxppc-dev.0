@@ -1,23 +1,18 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <kda@linux-powerpc.org>
+Received: from mail-la0-f51.google.com (mail-la0-f51.google.com
+ [209.85.215.51])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1F4691A04BC
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Feb 2015 15:55:17 +1100 (AEDT)
-Message-ID: <1424148916.31713.1.camel@ellerman.id.au>
-Subject: Re: [PATCH V4] tick/hotplug: Handover time related duties before
- cpu offline
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Date: Tue, 17 Feb 2015 15:55:16 +1100
-In-Reply-To: <54E2BECD.3050301@linux.vnet.ibm.com>
-References: <20150131041342.17103.30020.stgit@preeti.in.ibm.com>
- <1424138284.1808.5.camel@ellerman.id.au>
- <54E2BECD.3050301@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: aik@ozlabs.ru, shreyas@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
- anton@samba.org, tglx@linutronix.de, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 018031A025C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Feb 2015 18:00:49 +1100 (AEDT)
+Received: by labpn19 with SMTP id pn19so33986699lab.4
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Feb 2015 23:00:46 -0800 (PST)
+From: Denis Kirjanov <kda@linux-powerpc.org>
+To: netdev@vger.kernel.org
+Subject: bpf: Enable BPF JIT on ppc32
+Date: Tue, 17 Feb 2015 10:04:37 +0300
+Message-Id: <1424156683-2682-1-git-send-email-kda@linux-powerpc.org>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,29 +22,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-02-17 at 09:38 +0530, Preeti U Murthy wrote:
-> On 02/17/2015 07:28 AM, Michael Ellerman wrote:
-> > On Sat, 2015-01-31 at 09:44 +0530, Preeti U Murthy wrote:
-> >> These duties include do_timer to update jiffies and broadcast wakeups on those
-> >> platforms which do not have an external device to handle wakeup of cpus from deep
-> >> idle states. The handover of these duties is not robust against a cpu offline
-> >> operation today.
-> > 
-> > Hi Preeti,
-> > 
-> > This bug is still causing breakage for people on Power8 machines.
-> > 
-> > Are we just waiting for Thomas to take the patch?
-> 
-> Hi mpe,
-> 
-> Thomas has included the patch for fixing this issue in a recent patchset
-> that he posted for cleaning up tick/clockevents related code.
+This patch series enables BPF JIT on ppc32. There are relatevily
+few chnages in the code to make it work.
 
-> https://lkml.org/lkml/2015/2/16/213. I think it will go into this
-> merge-window. There are a couple of issues there, once that is fixed I
-> will remind him to mark it for stable.
+All test_bpf tests passed both on 7447a and P2041-based machines.
 
-Ah thanks. I missed it when searching LKML because it was posted by Peter.
+Changelog:
+v1 - > v2: Reordered Kconfig patch in the series
 
-cheers
+Denis Kirjanov (6):
+      ppc: bpf: add required compatibility macros for jit
+      ppc: bpf: add reqired opcodes for ppc32
+      ppc: bpf: update jit to use compatibility macros
+      ppc: bpf: rename bpf_jit_64.S to bpf_jit_asm.S
+      ppc: bpf: Add SKF_AD_CPU for ppc32
+      ppc: Kconfig: Enable BPF JIT on ppc32
+
+ arch/powerpc/include/asm/asm-compat.h |   4 +
+ arch/powerpc/include/asm/ppc-opcode.h |   2 +
+ arch/powerpc/net/Makefile             |   2 +-
+ arch/powerpc/net/bpf_jit.h            |  64 +++++++++-
+ arch/powerpc/net/bpf_jit_64.S         | 229 ----------------------------------
+ arch/powerpc/net/bpf_jit_asm.S        | 229 ++++++++++++++++++++++++++++++++++
+ arch/powerpc/net/bpf_jit_comp.c       |  46 +++----
+ 7 files changed, 317 insertions(+), 259 deletions(-)
