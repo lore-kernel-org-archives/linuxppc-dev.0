@@ -1,35 +1,29 @@
-Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <bhelgaas@google.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 176ED1A09C5
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Feb 2015 09:01:25 +1100 (AEDT)
-Received: from /spool/local
- by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Tue, 17 Feb 2015 17:01:23 -0500
-Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
- [9.57.198.24])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 2874538C8039
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Feb 2015 16:57:36 -0500 (EST)
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
- by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t1HM1Lmf27590718
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Feb 2015 22:01:21 GMT
-Received: from d01av02.pok.ibm.com (localhost [127.0.0.1])
- by d01av02.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t1HM1J3P000876
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Feb 2015 17:01:19 -0500
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 9/9] powerpc/hv-24x7: Add missing put_cpu_var()
-Date: Tue, 17 Feb 2015 14:00:34 -0800
-Message-Id: <1424210434-28070-10-git-send-email-sukadev@linux.vnet.ibm.com>
-In-Reply-To: <1424210434-28070-1-git-send-email-sukadev@linux.vnet.ibm.com>
-References: <1424210434-28070-1-git-send-email-sukadev@linux.vnet.ibm.com>
-Cc: peterz@infradead.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 24B361A09D4
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Feb 2015 09:09:22 +1100 (AEDT)
+Received: from mail-ob0-x232.google.com (mail-ob0-x232.google.com
+ [IPv6:2607:f8b0:4003:c01::232])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 950251401AF
+ for <linuxppc-dev@ozlabs.org>; Wed, 18 Feb 2015 09:09:21 +1100 (AEDT)
+Received: by mail-ob0-f178.google.com with SMTP id uz6so58530982obc.9
+ for <linuxppc-dev@ozlabs.org>; Tue, 17 Feb 2015 14:09:19 -0800 (PST)
+Date: Tue, 17 Feb 2015 16:09:16 -0600
+From: Bjorn Helgaas <bhelgaas@google.com>
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Subject: Re: [PATCH RESEND v2 7/7] PCI/hotplug: PowerPC PowerNV PCI hotplug
+ driver
+Message-ID: <20150217220916.GA26424@google.com>
+References: <1424157203-691-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <1424157203-691-8-git-send-email-gwshan@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1424157203-691-8-git-send-email-gwshan@linux.vnet.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, linux-pci@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,34 +33,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add missing put_cpu_var() for 24x7 requests.
+On Tue, Feb 17, 2015 at 06:13:23PM +1100, Gavin Shan wrote:
+> The patch intends to add standalone driver to support PCI hotplug
+> for PowerPC PowerNV platform, which runs on top of skiboot firmware.
+> The firmware identified hotpluggable slots and marked their device
+> tree node with proper "ibm,slot-pluggable" and "ibm,reset-by-firmware".
+> The driver simply scans device-tree to create/register PCI hotplug slot
+> accordingly.
+> 
+> If the skiboot firmware doesn't support slot status retrieval, the PCI
+> slot device node shouldn't have property "ibm,reset-by-firmware". In
+> that case, none of valid PCI slots will be detected from device tree.
+> The skiboot firmware doesn't export the capability to access attention
+> LEDs yet and it's something for TBD.
+> 
+> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+> ...
 
-Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
----
- arch/powerpc/perf/hv-24x7.c | 4 +++-
- 1 file changed, 3 insertions(+), 1 deletion(-)
+> +static int disable_slot(struct hotplug_slot *php_slot)
+> +{
+> +	struct powernv_php_slot *slot = php_slot->private;
+> +
+> +	if (slot->state != POWERNV_PHP_SLOT_STATE_POPULATED)
+> +		return 0;
+> +
+> +	pci_lock_rescan_remove();
+> +	pcibios_remove_pci_devices(slot->bus);
+> +	pci_unlock_rescan_remove();
+> +	vm_unmap_aliases();
 
-diff --git a/arch/powerpc/perf/hv-24x7.c b/arch/powerpc/perf/hv-24x7.c
-index fde6211..7d578d6 100644
---- a/arch/powerpc/perf/hv-24x7.c
-+++ b/arch/powerpc/perf/hv-24x7.c
-@@ -1094,7 +1094,7 @@ static unsigned long single_24x7_request(struct perf_event *event, u64 *count)
- 
- 	ret = add_event_to_24x7_request(event, request_buffer);
- 	if (ret)
--		return ret;
-+		goto out;
- 
- 	ret = commit_24x7_get_data(request_buffer, result_buffer);
- 	if (ret) {
-@@ -1107,6 +1107,8 @@ static unsigned long single_24x7_request(struct perf_event *event, u64 *count)
- 	*count = be64_to_cpu(resb->elements[0].element_data[0]);
- 
- out:
-+	put_cpu_var(hv_24x7_reqb);
-+	put_cpu_var(hv_24x7_resb);
- 	return ret;
- }
- 
--- 
-1.8.3.1
+What is vm_unmap_aliases() for?  I see this is probably copied from
+rpaphp_core.c, where it was added by b4a26be9f6f8 ("powerpc/pseries: Flush
+lazy kernel mappings after unplug operations").
+
+But I don't know whether:
+
+  - this is something specific to powerpc,
+  - the lack of vm_unmap_aliases() in other hotplug paths is a bug,
+  - the fact that we only do this on powerpc is covering up a
+    powerpc bug somewhere
+
+> +
+> +	/* Detach the child hotpluggable slots */
+> +	powernv_php_unregister(slot->dn);
+> +
+> +	/* Update slot state */
+> +	slot->state = POWERNV_PHP_SLOT_STATE_REGISTER;
+> +	return 0;
+> +}
+> 
