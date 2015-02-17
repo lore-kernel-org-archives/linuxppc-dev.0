@@ -2,34 +2,34 @@ Return-Path: <gwshan@linux.vnet.ibm.com>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 864F61A0EEE
+ by lists.ozlabs.org (Postfix) with ESMTPS id CC9E11A0DC7
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Feb 2015 18:14:51 +1100 (AEDT)
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3E5D914029C
+ by ozlabs.org (Postfix) with ESMTPS id 87FC414029C
  for <linuxppc-dev@ozlabs.org>; Tue, 17 Feb 2015 18:14:51 +1100 (AEDT)
 Received: from /spool/local
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
  Tue, 17 Feb 2015 17:14:50 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id DAAAD2CE8052
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id E55D43578054
  for <linuxppc-dev@ozlabs.org>; Tue, 17 Feb 2015 18:14:47 +1100 (EST)
 Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t1H7EduI42860712
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t1H7Edgw18415628
  for <linuxppc-dev@ozlabs.org>; Tue, 17 Feb 2015 18:14:47 +1100
 Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
  by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t1H7EEav027376
+ t1H7ED0N027368
  for <linuxppc-dev@ozlabs.org>; Tue, 17 Feb 2015 18:14:14 +1100
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH RESEND v2 5/7] powerpc/powernv: Introduce pnv_pci_poll()
-Date: Tue, 17 Feb 2015 18:13:21 +1100
-Message-Id: <1424157203-691-6-git-send-email-gwshan@linux.vnet.ibm.com>
+Subject: [PATCH RESEND v2 4/7] powerpc/pci: Don't scan empty slot
+Date: Tue, 17 Feb 2015 18:13:20 +1100
+Message-Id: <1424157203-691-5-git-send-email-gwshan@linux.vnet.ibm.com>
 In-Reply-To: <1424157203-691-1-git-send-email-gwshan@linux.vnet.ibm.com>
 References: <1424157203-691-1-git-send-email-gwshan@linux.vnet.ibm.com>
 Cc: bhelgaas@google.com, linux-pci@vger.kernel.org,
@@ -43,114 +43,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We might not get some PCI slot information (e.g. power status)
-immediately by OPAL API. Instead, opal_pci_poll() need to be called
-for the required information.
-
-The patch introduces pnv_pci_poll(), which bases on original
-pnv_eeh_poll(), to cover the above case
+In hotplug case, function pcibios_add_pci_devices() is called to
+rescan the specified PCI bus, which might not have any child devices.
+Access to the PCI bus's child device node will cause kernel crash
+without exception. The patch adds condition of skipping scanning
+PCI bus without child devices, in order to avoid kernel crash.
 
 Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/powernv/eeh-powernv.c | 28 ++--------------------------
- arch/powerpc/platforms/powernv/pci.c         | 19 +++++++++++++++++++
- arch/powerpc/platforms/powernv/pci.h         |  1 +
- 3 files changed, 22 insertions(+), 26 deletions(-)
+ arch/powerpc/kernel/pci-hotplug.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
-index eeda6e1..81a9cb2 100644
---- a/arch/powerpc/platforms/powernv/eeh-powernv.c
-+++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
-@@ -665,24 +665,6 @@ static int pnv_eeh_get_state(struct eeh_pe *pe, int *delay)
- 	return ret;
- }
- 
--static s64 pnv_eeh_poll(uint64_t id)
--{
--	s64 rc = OPAL_HARDWARE;
--
--	while (1) {
--		rc = opal_pci_poll(id, NULL);
--		if (rc <= 0)
--			break;
--
--		if (system_state < SYSTEM_RUNNING)
--			udelay(1000 * rc);
--		else
--			msleep(rc);
--	}
--
--	return rc;
--}
--
- int pnv_eeh_phb_reset(struct pci_controller *hose, int option)
- {
- 	struct pnv_phb *phb = hose->private_data;
-@@ -711,10 +693,7 @@ int pnv_eeh_phb_reset(struct pci_controller *hose, int option)
- 
- 	/* Issue reset and poll until it's completed */
- 	rc = opal_pci_reset(phb->opal_id, scope, OPAL_ASSERT_RESET);
--	if (rc > 0)
--		rc = pnv_eeh_poll(phb->opal_id);
--
--	return (rc == OPAL_SUCCESS) ? 0 : -EIO;
-+	return pnv_pci_poll(phb->opal_id, rc, NULL);
- }
- 
- static int __pnv_eeh_bridge_reset(struct pci_dev *dev, int option)
-@@ -805,10 +784,7 @@ static int pnv_eeh_bridge_reset(struct pci_dev *dev, int option)
- 	phb = hose->private_data;
- 	id |= (dev->bus->number << 24) | (dev->devfn << 16) | phb->opal_id;
- 	rc = opal_pci_reset(id, scope, OPAL_ASSERT_RESET);
--	if (rc > 0)
--		pnv_eeh_poll(id);
--
--	return (rc == OPAL_SUCCESS) ? 0 : -EIO;
-+	return pnv_pci_poll(id, rc, NULL);
- }
- 
- static int pnv_pci_dev_reset_type(struct pci_dev *pdev, void *data)
-diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
-index c68d508..a0ffae2 100644
---- a/arch/powerpc/platforms/powernv/pci.c
-+++ b/arch/powerpc/platforms/powernv/pci.c
-@@ -44,6 +44,25 @@
- #define cfg_dbg(fmt...)	do { } while(0)
- //#define cfg_dbg(fmt...)	printk(fmt)
- 
-+int pnv_pci_poll(uint64_t id, int64_t rval, uint8_t *pval)
-+{
-+	while (rval > 0) {
-+		rval = opal_pci_poll(id, pval);
-+		if (rval == OPAL_SUCCESS && pval)
-+			rval = opal_pci_poll(id, pval);
-+
-+		if (rval <= 0)
-+			break;
-+
-+		if (system_state < SYSTEM_RUNNING)
-+			udelay(1000 * rval);
-+		else
-+			msleep(rval);
-+	}
-+
-+	return rval ? -EIO : 0;
-+}
-+
- #ifdef CONFIG_PCI_MSI
- static int pnv_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type)
- {
-diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
-index 18ae927..19f532b 100644
---- a/arch/powerpc/platforms/powernv/pci.h
-+++ b/arch/powerpc/platforms/powernv/pci.h
-@@ -194,6 +194,7 @@ struct pnv_phb {
- 
- extern struct pci_ops pnv_pci_ops;
- 
-+int pnv_pci_poll(uint64_t id, int64_t rval, uint8_t *pval);
- void pnv_pci_dump_phb_diag_data(struct pci_controller *hose,
- 				unsigned char *log_buff);
- int pnv_pci_cfg_read(struct device_node *dn,
+diff --git a/arch/powerpc/kernel/pci-hotplug.c b/arch/powerpc/kernel/pci-hotplug.c
+index 6e2b4e3..270a26d 100644
+--- a/arch/powerpc/kernel/pci-hotplug.c
++++ b/arch/powerpc/kernel/pci-hotplug.c
+@@ -120,7 +120,8 @@ void pcibios_add_pci_devices(struct pci_bus * bus)
+ 	if (mode == PCI_PROBE_DEVTREE) {
+ 		/* use ofdt-based probe */
+ 		of_rescan_bus(dn, bus);
+-	} else if (mode == PCI_PROBE_NORMAL) {
++	} else if (mode == PCI_PROBE_NORMAL &&
++		   dn->child && PCI_DN(dn->child)) {
+ 		/*
+ 		 * Use legacy probe. In the partial hotplug case, we
+ 		 * probably have grandchildren devices unplugged. So
 -- 
 1.8.3.2
