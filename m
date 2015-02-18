@@ -1,40 +1,40 @@
-Return-Path: <strosake@linux.vnet.ibm.com>
-Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
+Return-Path: <preeti@linux.vnet.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 783941A08BD
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Feb 2015 14:01:30 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id AC5D41A092A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Feb 2015 15:44:27 +1100 (AEDT)
 Received: from /spool/local
- by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <strosake@linux.vnet.ibm.com>;
- Tue, 17 Feb 2015 22:01:27 -0500
-Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
- [9.57.198.23])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id C70C138C8052
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Feb 2015 21:57:49 -0500 (EST)
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
- by b01cxnp22033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t1I31OCb30605444
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Feb 2015 03:01:25 GMT
-Received: from d01av03.pok.ibm.com (localhost [127.0.0.1])
- by d01av03.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t1I31N8K019274
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Feb 2015 22:01:24 -0500
-Message-ID: <54E4007F.5080603@linux.vnet.ibm.com>
-Date: Tue, 17 Feb 2015 21:01:19 -0600
-From: Mike Strosaker <strosake@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
+ Tue, 17 Feb 2015 21:44:26 -0700
+Received: from b03cxnp08026.gho.boulder.ibm.com
+ (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 24EDC3E40030
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Feb 2015 21:42:45 -0700 (MST)
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+ by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t1I4iXe542467544
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Feb 2015 21:44:41 -0700
+Received: from d03av03.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av03.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t1I4hnqp022366
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Feb 2015 21:43:50 -0700
+Message-ID: <54E4186B.40605@linux.vnet.ibm.com>
+Date: Wed, 18 Feb 2015 10:13:23 +0530
+From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Bogdan Purcareata <bogdan.purcareata@freescale.com>,
- benh@kernel.crashing.org, paulus@samba.org,
- linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
-Subject: Re: [PATCH v3 1/3] powerpc: Don't force ENOSYS as error on syscall
- fail
-References: <1423815752-3013-1-git-send-email-bogdan.purcareata@freescale.com>
- <1423815752-3013-2-git-send-email-bogdan.purcareata@freescale.com>
-In-Reply-To: <1423815752-3013-2-git-send-email-bogdan.purcareata@freescale.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Cc: pmoore@redhat.com, linux-kernel@vger.kernel.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH V4] cpuidle/powernv: Read target_residency value of idle
+ states from DT if available
+References: <20150203061709.13097.7035.stgit@preeti.in.ibm.com>
+ <54E2F4CE.2090205@linux.vnet.ibm.com> <4031451.QMQakQrpsN@vostro.rjw.lan>
+In-Reply-To: <4031451.QMQakQrpsN@vostro.rjw.lan>
+Content-Type: text/plain; charset=UTF-8
+Cc: stewart@linux.vnet.ibm.com, linux-pm@vger.kernel.org,
+ rafael.j.wysocki@intel.com, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,113 +44,177 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch failed to build using pseries_le_defconfig.  With the change 
-noted below in entry_64.S, the build succeeded and seccomp mode 2 worked 
-correctly.
 
-Best,
-Mike Strosaker
 
-On 02/13/2015 02:22 AM, Bogdan Purcareata wrote:
-> In certain scenarios - e.g. seccomp filtering with ERRNO as default action -
-> the system call fails for other reasons than the syscall not being available.
-> The seccomp filter can be configured to store a user-defined error code on
-> return from a blacklisted syscall. Don't always set ENOSYS on
-> do_syscall_trace_enter failure.
->
-> Delegate setting ENOSYS in case of failure, where appropriate, to
-> do_syscall_trace_enter.
->
-> v3:
-> - keep setting ENOSYS in the syscall entry assembly for scenarios without
->    syscall tracing
->
-> v2:
-> - move setting ENOSYS as errno from the syscall entry assembly to
->    do_syscall_trace_enter, only in the specific case
->
-> Signed-off-by: Bogdan Purcareata <bogdan.purcareata@freescale.com>
-> ---
->   arch/powerpc/kernel/entry_32.S | 7 ++++++-
->   arch/powerpc/kernel/entry_64.S | 5 +++--
->   arch/powerpc/kernel/ptrace.c   | 4 +++-
->   3 files changed, 12 insertions(+), 4 deletions(-)
->
-> diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
-> index 46fc0f4..b2f88cd 100644
-> --- a/arch/powerpc/kernel/entry_32.S
-> +++ b/arch/powerpc/kernel/entry_32.S
-> @@ -333,12 +333,12 @@ _GLOBAL(DoSyscall)
->   	lwz	r11,TI_FLAGS(r10)
->   	andi.	r11,r11,_TIF_SYSCALL_DOTRACE
->   	bne-	syscall_dotrace
-> -syscall_dotrace_cont:
->   	cmplwi	0,r0,NR_syscalls
->   	lis	r10,sys_call_table@h
->   	ori	r10,r10,sys_call_table@l
->   	slwi	r0,r0,2
->   	bge-	66f
-> +syscall_dotrace_cont:
->   	lwzx	r10,r10,r0	/* Fetch system call handler [ptr] */
->   	mtlr	r10
->   	addi	r9,r1,STACK_FRAME_OVERHEAD
-> @@ -457,6 +457,11 @@ syscall_dotrace:
->   	lwz	r7,GPR7(r1)
->   	lwz	r8,GPR8(r1)
->   	REST_NVGPRS(r1)
-> +	cmplwi	0,r0,NR_syscalls
-> +	lis	r10,sys_call_table@h
-> +	ori	r10,r10,sys_call_table@l
-> +	slwi	r0,r0,2
-> +	bge-	ret_from_syscall
->   	b	syscall_dotrace_cont
->
->   syscall_exit_work:
-> diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-> index d180caf2..0d22fa8 100644
-> --- a/arch/powerpc/kernel/entry_64.S
-> +++ b/arch/powerpc/kernel/entry_64.S
-> @@ -144,7 +144,6 @@ END_FW_FTR_SECTION_IFSET(FW_FEATURE_SPLPAR)
->   	ld	r10,TI_FLAGS(r11)
->   	andi.	r11,r10,_TIF_SYSCALL_DOTRACE
->   	bne	syscall_dotrace
-> -.Lsyscall_dotrace_cont:
->   	cmpldi	0,r0,NR_syscalls
->   	bge-	syscall_enosys
->
-> @@ -253,7 +252,9 @@ syscall_dotrace:
->   	addi	r9,r1,STACK_FRAME_OVERHEAD
->   	CURRENT_THREAD_INFO(r10, r1)
->   	ld	r10,TI_FLAGS(r10)
-> -	b	.Lsyscall_dotrace_cont
-> +	cmpldi	0,r0,NR_syscalls
-> +	bge-	syscall_exit
+On 02/17/2015 11:23 PM, Rafael J. Wysocki wrote:
+> On Tuesday, February 17, 2015 01:29:10 PM Preeti U Murthy wrote:
+>> Hi Rafael,
+> 
+> Hi,
+> 
+>> Can you please pull this patch ?
+> 
+> Sorry, I wasn't sure whether or not the patch was for me to take and then
+> I've been traveling lately.  Applied now.
 
-Shouldn't this be .Lsyscall_exit?
+Hi Rafael,
 
-> +	b	system_call
->
->   syscall_enosys:
->   	li	r3,-ENOSYS
-> diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
-> index f21897b..2edae06 100644
-> --- a/arch/powerpc/kernel/ptrace.c
-> +++ b/arch/powerpc/kernel/ptrace.c
-> @@ -1775,13 +1775,15 @@ long do_syscall_trace_enter(struct pt_regs *regs)
->   	secure_computing_strict(regs->gpr[0]);
->
->   	if (test_thread_flag(TIF_SYSCALL_TRACE) &&
-> -	    tracehook_report_syscall_entry(regs))
-> +	    tracehook_report_syscall_entry(regs)) {
->   		/*
->   		 * Tracing decided this syscall should not happen.
->   		 * We'll return a bogus call number to get an ENOSYS
->   		 * error, but leave the original number in regs->gpr[0].
->   		 */
->   		ret = -1L;
-> +		syscall_set_return_value(current, regs, ENOSYS, 0);
-> +	}
->
->   	if (unlikely(test_thread_flag(TIF_SYSCALL_TRACEPOINT)))
->   		trace_sys_enter(regs, regs->gpr[0]);
->
+I saw that the kbuild bot reported build issues around pr_warn() in this patch.
+I have fixed this and below is the corrected patch. Do let me know if I have
+to send it out as a separate version/RESEND tag.
+
+> 
+>> Another patch based on top of this is waiting to be pulled:
+>> [PATCH] driver/cpuidle-powernv: Avoid endianness conversions while parsing DT
+> 
+> OK, have you posted it already?
+Yes I have. https://lkml.org/lkml/2015/2/3/24. This patch is also waiting to
+be pulled by you. There was some confusion around who should pull this, but
+since it all the code is in the driver, we thought it would be best if you pulled it.
+
+Thanks
+
+--------------------------- PATCH -------------------------------------
+
+[PATCH V4] cpuidle/powernv: Read target_residency value of idle states from DT if available
+
+From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+
+The device tree now exposes the residency values for different idle states. Read
+these values instead of calculating residency from the latency values. The values
+exposed in the DT are validated for optimal power efficiency. However to maintain
+compatibility with the older firmware code which does not expose residency
+values, use default values as a fallback mechanism. While at it, use better
+APIs to parse the powermgmt device tree node.
+
+Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Acked-by: Stewart Smith <stewart@linux.vnet.ibm.com>
+Acked-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ drivers/cpuidle/cpuidle-powernv.c |   69 +++++++++++++++++++++----------------
+ 1 file changed, 40 insertions(+), 29 deletions(-)
+
+diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
+index aedec09..30d4229 100644
+--- a/drivers/cpuidle/cpuidle-powernv.c
++++ b/drivers/cpuidle/cpuidle-powernv.c
+@@ -13,6 +13,7 @@
+ #include <linux/notifier.h>
+ #include <linux/clockchips.h>
+ #include <linux/of.h>
++#include <linux/slab.h>
+ 
+ #include <asm/machdep.h>
+ #include <asm/firmware.h>
+@@ -159,69 +160,79 @@ static int powernv_add_idle_states(void)
+ 	int nr_idle_states = 1; /* Snooze */
+ 	int dt_idle_states;
+ 	const __be32 *idle_state_flags;
+-	const __be32 *idle_state_latency;
+-	u32 len_flags, flags, latency_ns;
+-	int i;
++	u32 len_flags, flags;
++	u32 *latency_ns, *residency_ns;
++	int i, rc;
+ 
+ 	/* Currently we have snooze statically defined */
+ 
+ 	power_mgt = of_find_node_by_path("/ibm,opal/power-mgt");
+ 	if (!power_mgt) {
+ 		pr_warn("opal: PowerMgmt Node not found\n");
+-		return nr_idle_states;
++		goto out;
+ 	}
+ 
+-	idle_state_flags = of_get_property(power_mgt, "ibm,cpu-idle-state-flags", &len_flags);
++	idle_state_flags = of_get_property(power_mgt,
++				"ibm,cpu-idle-state-flags", &len_flags);
+ 	if (!idle_state_flags) {
+-		pr_warn("DT-PowerMgmt: missing ibm,cpu-idle-state-flags\n");
+-		return nr_idle_states;
++		pr_warn("cpuidle-powernv: missing ibm,cpu-idle-state-flags in DT\n");
++		goto out;
+ 	}
+ 
+-	idle_state_latency = of_get_property(power_mgt,
+-			"ibm,cpu-idle-state-latencies-ns", NULL);
+-	if (!idle_state_latency) {
+-		pr_warn("DT-PowerMgmt: missing ibm,cpu-idle-state-latencies-ns\n");
+-		return nr_idle_states;
++	dt_idle_states = len_flags / sizeof(u32);
++
++	latency_ns = kzalloc(sizeof(*latency_ns) * dt_idle_states, GFP_KERNEL);
++	rc = of_property_read_u32_array(power_mgt,
++		"ibm,cpu-idle-state-latencies-ns", latency_ns, dt_idle_states);
++	if (rc) {
++		pr_warn("cpuidle-powernv: missing ibm,cpu-idle-state-latencies-ns in DT\n");
++		goto out_free_latency;
+ 	}
+ 
+-	dt_idle_states = len_flags / sizeof(u32);
++	residency_ns = kzalloc(sizeof(*residency_ns) * dt_idle_states, GFP_KERNEL);
++	rc = of_property_read_u32_array(power_mgt,
++		"ibm,cpu-idle-state-residency-ns", residency_ns, dt_idle_states);
+ 
+ 	for (i = 0; i < dt_idle_states; i++) {
+ 
+ 		flags = be32_to_cpu(idle_state_flags[i]);
+ 
+-		/* Cpuidle accepts exit_latency in us and we estimate
+-		 * target residency to be 10x exit_latency
++		/*
++		 * Cpuidle accepts exit_latency and target_residency in us.
++		 * Use default target_residency values if f/w does not expose it.
+ 		 */
+-		latency_ns = be32_to_cpu(idle_state_latency[i]);
+ 		if (flags & OPAL_PM_NAP_ENABLED) {
+ 			/* Add NAP state */
+ 			strcpy(powernv_states[nr_idle_states].name, "Nap");
+ 			strcpy(powernv_states[nr_idle_states].desc, "Nap");
+ 			powernv_states[nr_idle_states].flags = 0;
+-			powernv_states[nr_idle_states].exit_latency =
+-					((unsigned int)latency_ns) / 1000;
+-			powernv_states[nr_idle_states].target_residency =
+-					((unsigned int)latency_ns / 100);
++			powernv_states[nr_idle_states].target_residency = 100;
+ 			powernv_states[nr_idle_states].enter = &nap_loop;
+-			nr_idle_states++;
+-		}
+-
+-		if (flags & OPAL_PM_SLEEP_ENABLED ||
++		} else if (flags & OPAL_PM_SLEEP_ENABLED ||
+ 			flags & OPAL_PM_SLEEP_ENABLED_ER1) {
+ 			/* Add FASTSLEEP state */
+ 			strcpy(powernv_states[nr_idle_states].name, "FastSleep");
+ 			strcpy(powernv_states[nr_idle_states].desc, "FastSleep");
+ 			powernv_states[nr_idle_states].flags = CPUIDLE_FLAG_TIMER_STOP;
+-			powernv_states[nr_idle_states].exit_latency =
+-					((unsigned int)latency_ns) / 1000;
+-			powernv_states[nr_idle_states].target_residency =
+-					((unsigned int)latency_ns / 100);
++			powernv_states[nr_idle_states].target_residency = 300000;
+ 			powernv_states[nr_idle_states].enter = &fastsleep_loop;
+-			nr_idle_states++;
+ 		}
++
++		powernv_states[nr_idle_states].exit_latency =
++				((unsigned int)latency_ns[i]) / 1000;
++
++		if (!rc) {
++			powernv_states[nr_idle_states].target_residency =
++				((unsigned int)residency_ns[i]) / 1000;
++		}
++
++		nr_idle_states++;
+ 	}
+ 
++	kfree(residency_ns);
++out_free_latency:
++	kfree(latency_ns);
++out:
+ 	return nr_idle_states;
+ }
+ 
+
+Regards
+Preeti U Murthy
