@@ -1,29 +1,31 @@
-Return-Path: <runaway@candw.ms>
-Received: from mail-yh0-f51.google.com (mail-yh0-f51.google.com
- [209.85.213.51])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <andi@firstfloor.org>
+Received: from one.firstfloor.org (one.firstfloor.org [193.170.194.197])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 882B01A0A07
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Feb 2015 07:14:06 +1100 (AEDT)
-Received: by yhai57 with SMTP id i57so2448060yha.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Feb 2015 12:14:04 -0800 (PST)
-Received: from [192.168.1.10] ([209.59.111.79])
- by mx.google.com with ESMTPSA id lp17sm931882vdb.19.2015.02.18.12.14.03
- for <linuxppc-dev@lists.ozlabs.org>
- (version=TLSv1.2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
- Wed, 18 Feb 2015 12:14:03 -0800 (PST)
-Message-ID: <54E4F287.8070602@candw.ms>
-Date: Wed, 18 Feb 2015 16:13:59 -0400
-From: Julian Margetson <runaway@candw.ms>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9354B1A01A3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Feb 2015 08:31:40 +1100 (AEDT)
+Date: Wed, 18 Feb 2015 22:31:34 +0100
+From: Andi Kleen <andi@firstfloor.org>
+To: Ingo Molnar <mingo@kernel.org>
+Subject: Re: [PATCH 1/3] perf/e6500: Make event translations available in sysfs
+Message-ID: <20150218213134.GA823@two.firstfloor.org>
+References: <1423262636-12053-1-git-send-email-tom.huynh@freescale.com>
+ <1423262636-12053-2-git-send-email-tom.huynh@freescale.com>
+ <20150209100242.GM23123@twins.programming.kicks-ass.net>
+ <20150209100738.GA5461@gmail.com>
+ <20150209121132.GB3952@krava.redhat.com>
+ <20150209132557.GA8099@gmail.com>
+ <20150209204019.GA13991@two.firstfloor.org>
+ <1423613998.2713.16.camel@aoeu.buserror.net>
+ <20150218205603.GA21074@gmail.com>
 MIME-Version: 1.0
-To: linuxppc-dev@lists.ozlabs.org
-Subject: Re: Problems with Kernels 3.17-rc1 and onwards on Acube Sam460 AMCC
- 460ex board
-References: <54E08E06.8060607@candw.ms>
- <1424045921.3018.4.camel@ellerman.id.au>
-In-Reply-To: <1424045921.3018.4.camel@ellerman.id.au>
-Content-Type: multipart/alternative;
- boundary="------------080809060400050605000502"
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20150218205603.GA21074@gmail.com>
+Cc: Tom Huynh <tom.huynh@freescale.com>, Peter Zijlstra <peterz@infradead.org>,
+ Jiri Olsa <jolsa@redhat.com>, linux-kernel@vger.kernel.org, acme@kernel.org,
+ Andi Kleen <andi@firstfloor.org>, paulus@samba.org,
+ Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org,
+ mingo@redhat.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,169 +35,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------080809060400050605000502
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
 
-On 2/15/2015 8:18 PM, Michael Ellerman wrote:
-> On Sun, 2015-02-15 at 08:16 -0400, Julian Margetson wrote:
->> Hi
->>
->> I am unable to get any kernel beyond  the 3.16 branch working on an
->> Acube Sam460ex
->>   AMCC 460ex based motherboard. Kernel  up 3.16.7-ckt6 working.
-> Does reverting b0345bbc6d09 change anything?
->
->> [    6.364350] snd_hda_intel 0001:81:00.1: enabling device (0000 -> 0002)
->> [    6.453794] snd_hda_intel 0001:81:00.1: ppc4xx_setup_msi_irqs: fail mapping irq
->> [    6.487530] Unable to handle kernel paging request for data at address 0x0fa06c7c
->> [    6.495055] Faulting instruction address: 0xc032202c
->> [    6.500033] Vector: 300 (Data Access) at [efa31cf0]
->> [    6.504922]     pc: c032202c: __reg_op+0xe8/0x100
->> [    6.509697]     lr: c0014f88: msi_bitmap_free_hwirqs+0x50/0x94
->> [    6.515600]     sp: efa31da0
->> [    6.518491]    msr: 21000
->> [    6.521112]    dar: fa06c7c
->> [    6.523915]  dsisr: 0
->> [    6.526190]   current = 0xef8bab00
->> [    6.529603]     pid   = 115, comm = kworker/0:1
->> [    6.534163] enter ? for help
->> [    6.537054] [link register   ] c0014f88 msi_bitmap_free_hwirqs+0x50/0x94
->> [    6.543811] [efa31da0] c0014f78 msi_bitmap_free_hwirqs+0x40/0x94 (unreliable)
->> [    6.551001] [efa31dc0] c001aee8 ppc4xx_setup_msi_irqs+0xac/0xf4
->> [    6.556973] [efa31e00] c03503a4 pci_enable_msi_range+0x1e0/0x280
->> [    6.563032] [efa31e40] f92c2f74 azx_probe_work+0xe0/0x57c [snd_hda_intel]
->> [    6.569906] [efa31e80] c0036344 process_one_work+0x1e8/0x2f0
->> [    6.575627] [efa31eb0] c003677c worker_thread+0x2f4/0x438
->> [    6.581079] [efa31ef0] c003a3e4 kthread+0xc8/0xcc
->> [    6.585844] [efa31f40] c000aec4 ret_from_kernel_thread+0x5c/0x64
->> [    6.591910] mon>  <no input ...>
-> cheers
->
->
->
-Managed to do a third git bisect  with the following results .
+Well I'm tired of discussing this. I don't think what you
+proposed makes sense, putting 3.4MB[1] of changing blob into perf.
 
-git bisect bad
-9279d3286e10736766edcaf815ae10e00856e448 is the first bad commit
-commit 9279d3286e10736766edcaf815ae10e00856e448
-Author: Rasmus Villemoes<linux@rasmusvillemoes.dk>
-Date:   Wed Aug 6 16:10:16 2014 -0700
+I'll resubmit the JSON parser without the downloader. Then users
+have the option to get their own events and use that.
 
-     lib: bitmap: change parameter of bitmap_*_region to unsigned
-     
-     Changing the pos parameter of __reg_op to unsigned allows the compiler
-     to generate slightly smaller and simpler code.  Also update its callers
-     bitmap_*_region to receive and pass unsigned int.  The return types of
-     bitmap_find_free_region and bitmap_allocate_region are still int to
-     allow a negative error code to be returned.  An int is certainly capable
-     of representing any realistic return value.
-     
-     Signed-off-by: Rasmus Villemoes<linux@rasmusvillemoes.dk>
-     Signed-off-by: Andrew Morton<akpm@linux-foundation.org>
-     Signed-off-by: Linus Torvalds<torvalds@linux-foundation.org>
+If you don't like that, standard perf just has to stay with limited 
+events and rXXXX as before, with users having to use external
+tools or libraries for names for more events[2][3].
 
-:040000 040000 4f560a7caaba2d05c146a3cea27e0d93739d950c c3d4539acad26667a2d78844ead7b75af753f41e M	include
-:040000 040000 7a6fb894aac2a1d4e72f8e36b7c6de3c24509ad3 31d756da185e07d2de090c9e6aeb12689d58d310 M	lib
+-Andi
 
-
-
---------------080809060400050605000502
-Content-Type: text/html; charset=utf-8
-Content-Transfer-Encoding: 8bit
-
-<html>
-  <head>
-    <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
-  </head>
-  <body bgcolor="#FFFFFF" text="#000000">
-    <div class="moz-cite-prefix">On 2/15/2015 8:18 PM, Michael Ellerman
-      wrote:<br>
-    </div>
-    <blockquote cite="mid:1424045921.3018.4.camel@ellerman.id.au"
-      type="cite">
-      <pre wrap="">On Sun, 2015-02-15 at 08:16 -0400, Julian Margetson wrote:
-</pre>
-      <blockquote type="cite">
-        <pre wrap="">Hi
-
-I am unable to get any kernel beyond  the 3.16 branch working on an
-Acube Sam460ex
- AMCC 460ex based motherboard. Kernel  up 3.16.7-ckt6 working.
-</pre>
-      </blockquote>
-      <pre wrap="">Does reverting b0345bbc6d09 change anything?
-
-</pre>
-      <blockquote type="cite">
-        <pre wrap="">[    6.364350] snd_hda_intel 0001:81:00.1: enabling device (0000 -&gt; 0002)
-[    6.453794] snd_hda_intel 0001:81:00.1: ppc4xx_setup_msi_irqs: fail mapping irq
-[    6.487530] Unable to handle kernel paging request for data at address 0x0fa06c7c
-[    6.495055] Faulting instruction address: 0xc032202c
-[    6.500033] Vector: 300 (Data Access) at [efa31cf0]
-[    6.504922]     pc: c032202c: __reg_op+0xe8/0x100
-[    6.509697]     lr: c0014f88: msi_bitmap_free_hwirqs+0x50/0x94
-[    6.515600]     sp: efa31da0
-[    6.518491]    msr: 21000
-[    6.521112]    dar: fa06c7c
-[    6.523915]  dsisr: 0
-[    6.526190]   current = 0xef8bab00
-[    6.529603]     pid   = 115, comm = kworker/0:1
-[    6.534163] enter ? for help
-[    6.537054] [link register   ] c0014f88 msi_bitmap_free_hwirqs+0x50/0x94
-[    6.543811] [efa31da0] c0014f78 msi_bitmap_free_hwirqs+0x40/0x94 (unreliable)
-[    6.551001] [efa31dc0] c001aee8 ppc4xx_setup_msi_irqs+0xac/0xf4
-[    6.556973] [efa31e00] c03503a4 pci_enable_msi_range+0x1e0/0x280
-[    6.563032] [efa31e40] f92c2f74 azx_probe_work+0xe0/0x57c [snd_hda_intel]
-[    6.569906] [efa31e80] c0036344 process_one_work+0x1e8/0x2f0
-[    6.575627] [efa31eb0] c003677c worker_thread+0x2f4/0x438
-[    6.581079] [efa31ef0] c003a3e4 kthread+0xc8/0xcc
-[    6.585844] [efa31f40] c000aec4 ret_from_kernel_thread+0x5c/0x64
-[    6.591910] mon&gt;  &lt;no input ...&gt;
-</pre>
-      </blockquote>
-      <pre wrap="">
-cheers
-
-
-
-</pre>
-    </blockquote>
-    Managed to do a third git bisect  with the following results .<br>
-    <br>
-    <meta http-equiv="content-type" content="text/html; charset=utf-8">
-    <pre class="western">git bisect bad
-9279d3286e10736766edcaf815ae10e00856e448 is the first bad commit
-commit 9279d3286e10736766edcaf815ae10e00856e448
-Author: Rasmus Villemoes <a class="moz-txt-link-rfc2396E" href="mailto:linux@rasmusvillemoes.dk">&lt;linux@rasmusvillemoes.dk&gt;</a>
-Date:   Wed Aug 6 16:10:16 2014 -0700
-
-    lib: bitmap: change parameter of bitmap_*_region to unsigned
-    
-    Changing the pos parameter of __reg_op to unsigned allows the compiler
-    to generate slightly smaller and simpler code.  Also update its callers
-    bitmap_*_region to receive and pass unsigned int.  The return types of
-    bitmap_find_free_region and bitmap_allocate_region are still int to
-    allow a negative error code to be returned.  An int is certainly capable
-    of representing any realistic return value.
-    
-    Signed-off-by: Rasmus Villemoes <a class="moz-txt-link-rfc2396E" href="mailto:linux@rasmusvillemoes.dk">&lt;linux@rasmusvillemoes.dk&gt;</a>
-    Signed-off-by: Andrew Morton <a class="moz-txt-link-rfc2396E" href="mailto:akpm@linux-foundation.org">&lt;akpm@linux-foundation.org&gt;</a>
-    Signed-off-by: Linus Torvalds <a class="moz-txt-link-rfc2396E" href="mailto:torvalds@linux-foundation.org">&lt;torvalds@linux-foundation.org&gt;</a>
-
-:040000 040000 4f560a7caaba2d05c146a3cea27e0d93739d950c c3d4539acad26667a2d78844ead7b75af753f41e M	include
-:040000 040000 7a6fb894aac2a1d4e72f8e36b7c6de3c24509ad3 31d756da185e07d2de090c9e6aeb12689d58d310 M	lib
-
-</pre>
-    <title></title>
-    <meta name="generator" content="LibreOffice 4.3.5.2 (Windows)">
-    <style type="text/css">
-		@page { margin: 0.79in }
-		pre.cjk { font-family: "NSimSun", monospace }
-		p { margin-bottom: 0.1in; line-height: 120% }
-	</style><br>
-  </body>
-</html>
-
---------------080809060400050605000502--
+[1] Current size of https://download.01.org/perfmon/
+[2] ocperf in https://github.com/andikleen/pmu-tools
+[3] http://perfmon2.sourceforge.net/
+-- 
+ak@linux.intel.com -- Speaking for myself only.
