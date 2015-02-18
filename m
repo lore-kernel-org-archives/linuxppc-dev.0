@@ -1,16 +1,18 @@
 Return-Path: <B43198@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0101.outbound.protection.outlook.com [207.46.100.101])
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0120.outbound.protection.outlook.com [65.55.169.120])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4A9111A0A07
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Feb 2015 19:17:18 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id C17201A0A07
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Feb 2015 19:17:19 +1100 (AEDT)
 From: Bogdan Purcareata <bogdan.purcareata@freescale.com>
 To: <benh@kernel.crashing.org>, <paulus@samba.org>,
  <linuxppc-dev@lists.ozlabs.org>, <mpe@ellerman.id.au>
-Subject: [PATCH v4 0/3] powerpc: Enable seccomp filter support
-Date: Wed, 18 Feb 2015 08:16:50 +0000
-Message-ID: <1424247413-20753-1-git-send-email-bogdan.purcareata@freescale.com>
+Subject: [PATCH v4 1/3] powerpc: Don't force ENOSYS as error on syscall fail
+Date: Wed, 18 Feb 2015 08:16:51 +0000
+Message-ID: <1424247413-20753-2-git-send-email-bogdan.purcareata@freescale.com>
+In-Reply-To: <1424247413-20753-1-git-send-email-bogdan.purcareata@freescale.com>
+References: <1424247413-20753-1-git-send-email-bogdan.purcareata@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: pmoore@redhat.com, linux-kernel@vger.kernel.org,
@@ -25,35 +27,106 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add the missing pieces in order to enable SECCOMP_FILTER on PowerPC
-architectures, and enable this support.
+In certain scenarios - e.g. seccomp filtering with ERRNO as default action -
+the system call fails for other reasons than the syscall not being available.
+The seccomp filter can be configured to store a user-defined error code on
+return from a blacklisted syscall. Don't always set ENOSYS on
+do_syscall_trace_enter failure.
 
-Testing has been pursued using libseccomp with the latest ppc support patches
-[1][2], on Freescale platforms for both ppc and ppc64. Support on ppc64le has
-also been tested, courtesy of Mike Strosaker.
-
-[1] https://groups.google.com/forum/#!topic/libseccomp/oz42LfMDsxg
-[2] https://groups.google.com/forum/#!topic/libseccomp/TQWfCt_nD7c
+Delegate setting ENOSYS in case of failure, where appropriate, to
+do_syscall_trace_enter.
 
 v4:
-- rebased on top of 3.19
+- update syscall_exit to be local label on 64bit, after rebasing on top of 3.19
 
 v3:
-- keep setting ENOSYS in syscall entry assembly when syscall tracing is disabled
+- keep setting ENOSYS in the syscall entry assembly for scenarios without
+  syscall tracing
 
 v2:
-- move setting ENOSYS from syscall entry assembly to do_syscall_trace_enter
+- move setting ENOSYS as errno from the syscall entry assembly to
+  do_syscall_trace_enter, only in the specific case
 
-Bogdan Purcareata (3):
-  powerpc: Don't force ENOSYS as error on syscall fail
-  powerpc: Relax secure computing on syscall entry trace
-  powerpc: Enable HAVE_ARCH_SECCOMP_FILTER
-
- arch/powerpc/Kconfig           | 1 +
+Signed-off-by: Bogdan Purcareata <bogdan.purcareata@freescale.com>
+---
  arch/powerpc/kernel/entry_32.S | 7 ++++++-
  arch/powerpc/kernel/entry_64.S | 5 +++--
- arch/powerpc/kernel/ptrace.c   | 8 ++++++--
- 4 files changed, 16 insertions(+), 5 deletions(-)
+ arch/powerpc/kernel/ptrace.c   | 4 +++-
+ 3 files changed, 12 insertions(+), 4 deletions(-)
 
+diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
+index 46fc0f4..b2f88cd 100644
+--- a/arch/powerpc/kernel/entry_32.S
++++ b/arch/powerpc/kernel/entry_32.S
+@@ -333,12 +333,12 @@ _GLOBAL(DoSyscall)
+ 	lwz	r11,TI_FLAGS(r10)
+ 	andi.	r11,r11,_TIF_SYSCALL_DOTRACE
+ 	bne-	syscall_dotrace
+-syscall_dotrace_cont:
+ 	cmplwi	0,r0,NR_syscalls
+ 	lis	r10,sys_call_table@h
+ 	ori	r10,r10,sys_call_table@l
+ 	slwi	r0,r0,2
+ 	bge-	66f
++syscall_dotrace_cont:
+ 	lwzx	r10,r10,r0	/* Fetch system call handler [ptr] */
+ 	mtlr	r10
+ 	addi	r9,r1,STACK_FRAME_OVERHEAD
+@@ -457,6 +457,11 @@ syscall_dotrace:
+ 	lwz	r7,GPR7(r1)
+ 	lwz	r8,GPR8(r1)
+ 	REST_NVGPRS(r1)
++	cmplwi	0,r0,NR_syscalls
++	lis	r10,sys_call_table@h
++	ori	r10,r10,sys_call_table@l
++	slwi	r0,r0,2
++	bge-	ret_from_syscall
+ 	b	syscall_dotrace_cont
+ 
+ syscall_exit_work:
+diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+index d180caf2..5e7434e 100644
+--- a/arch/powerpc/kernel/entry_64.S
++++ b/arch/powerpc/kernel/entry_64.S
+@@ -144,7 +144,6 @@ END_FW_FTR_SECTION_IFSET(FW_FEATURE_SPLPAR)
+ 	ld	r10,TI_FLAGS(r11)
+ 	andi.	r11,r10,_TIF_SYSCALL_DOTRACE
+ 	bne	syscall_dotrace
+-.Lsyscall_dotrace_cont:
+ 	cmpldi	0,r0,NR_syscalls
+ 	bge-	syscall_enosys
+ 
+@@ -253,7 +252,9 @@ syscall_dotrace:
+ 	addi	r9,r1,STACK_FRAME_OVERHEAD
+ 	CURRENT_THREAD_INFO(r10, r1)
+ 	ld	r10,TI_FLAGS(r10)
+-	b	.Lsyscall_dotrace_cont
++	cmpldi	0,r0,NR_syscalls
++	bge-	.Lsyscall_exit
++	b	system_call
+ 
+ syscall_enosys:
+ 	li	r3,-ENOSYS
+diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
+index f21897b..2edae06 100644
+--- a/arch/powerpc/kernel/ptrace.c
++++ b/arch/powerpc/kernel/ptrace.c
+@@ -1775,13 +1775,15 @@ long do_syscall_trace_enter(struct pt_regs *regs)
+ 	secure_computing_strict(regs->gpr[0]);
+ 
+ 	if (test_thread_flag(TIF_SYSCALL_TRACE) &&
+-	    tracehook_report_syscall_entry(regs))
++	    tracehook_report_syscall_entry(regs)) {
+ 		/*
+ 		 * Tracing decided this syscall should not happen.
+ 		 * We'll return a bogus call number to get an ENOSYS
+ 		 * error, but leave the original number in regs->gpr[0].
+ 		 */
+ 		ret = -1L;
++		syscall_set_return_value(current, regs, ENOSYS, 0);
++	}
+ 
+ 	if (unlikely(test_thread_flag(TIF_SYSCALL_TRACEPOINT)))
+ 		trace_sys_enter(regs, regs->gpr[0]);
 -- 
 2.1.4
