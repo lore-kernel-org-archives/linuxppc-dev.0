@@ -1,42 +1,25 @@
-Return-Path: <preeti@linux.vnet.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <B43198@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bon0117.outbound.protection.outlook.com [157.56.111.117])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DCEEC1A09D4
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Feb 2015 17:20:11 +1100 (AEDT)
-Received: from /spool/local
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
- Tue, 17 Feb 2015 23:20:09 -0700
-Received: from b03cxnp08026.gho.boulder.ibm.com
- (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 507C119D8041
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Feb 2015 23:11:15 -0700 (MST)
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
- by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t1I6KGaw46006274
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Feb 2015 23:20:24 -0700
-Received: from d03av03.boulder.ibm.com (localhost [127.0.0.1])
- by d03av03.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t1I6JXlm017304
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Feb 2015 23:19:33 -0700
-Message-ID: <54E42EAF.1080609@linux.vnet.ibm.com>
-Date: Wed, 18 Feb 2015 11:48:23 +0530
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 941011A0A03
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Feb 2015 17:51:20 +1100 (AEDT)
+Message-ID: <54E43650.20901@freescale.com>
+Date: Wed, 18 Feb 2015 08:50:56 +0200
+From: Purcareata Bogdan <b43198@freescale.com>
 MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH V4] cpuidle/powernv: Read target_residency value of idle
- states from DT if available
-References: <20150203061709.13097.7035.stgit@preeti.in.ibm.com>
- <4031451.QMQakQrpsN@vostro.rjw.lan> <54E4186B.40605@linux.vnet.ibm.com>
- <3335960.mm4nUDCbyI@vostro.rjw.lan>
-In-Reply-To: <3335960.mm4nUDCbyI@vostro.rjw.lan>
-Content-Type: text/plain; charset=UTF-8
-Cc: stewart@linux.vnet.ibm.com, rafael.j.wysocki@intel.com,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-pm@vger.kernel.org
+To: Mike Strosaker <strosake@linux.vnet.ibm.com>, Bogdan Purcareata
+ <bogdan.purcareata@freescale.com>, <benh@kernel.crashing.org>,
+ <paulus@samba.org>, <linuxppc-dev@lists.ozlabs.org>, <mpe@ellerman.id.au>
+Subject: Re: [PATCH v3 1/3] powerpc: Don't force ENOSYS as error on syscall
+ fail
+References: <1423815752-3013-1-git-send-email-bogdan.purcareata@freescale.com>
+ <1423815752-3013-2-git-send-email-bogdan.purcareata@freescale.com>
+ <54E4007F.5080603@linux.vnet.ibm.com>
+In-Reply-To: <54E4007F.5080603@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="windows-1252"; format=flowed
+Cc: pmoore@redhat.com, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,57 +29,123 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-
-On 02/18/2015 11:21 AM, Rafael J. Wysocki wrote:
-> On Wednesday, February 18, 2015 10:13:23 AM Preeti U Murthy wrote:
+On 18.02.2015 05:01, Mike Strosaker wrote:
+> This patch failed to build using pseries_le_defconfig.  With the change
+> noted below in entry_64.S, the build succeeded and seccomp mode 2 worked
+> correctly.
+>
+> Best,
+> Mike Strosaker
+>
+> On 02/13/2015 02:22 AM, Bogdan Purcareata wrote:
+>> In certain scenarios - e.g. seccomp filtering with ERRNO as default action -
+>> the system call fails for other reasons than the syscall not being available.
+>> The seccomp filter can be configured to store a user-defined error code on
+>> return from a blacklisted syscall. Don't always set ENOSYS on
+>> do_syscall_trace_enter failure.
 >>
->> On 02/17/2015 11:23 PM, Rafael J. Wysocki wrote:
->>> On Tuesday, February 17, 2015 01:29:10 PM Preeti U Murthy wrote:
->>>> Hi Rafael,
->>>
->>> Hi,
->>>
->>>> Can you please pull this patch ?
->>>
->>> Sorry, I wasn't sure whether or not the patch was for me to take and then
->>> I've been traveling lately.  Applied now.
+>> Delegate setting ENOSYS in case of failure, where appropriate, to
+>> do_syscall_trace_enter.
 >>
->> Hi Rafael,
+>> v3:
+>> - keep setting ENOSYS in the syscall entry assembly for scenarios without
+>>     syscall tracing
 >>
->> I saw that the kbuild bot reported build issues around pr_warn() in this patch.
->> I have fixed this and below is the corrected patch. Do let me know if I have
->> to send it out as a separate version/RESEND tag.
-> 
-> I've applied it, thanks!
-> 
->>>> Another patch based on top of this is waiting to be pulled:
->>>> [PATCH] driver/cpuidle-powernv: Avoid endianness conversions while parsing DT
->>>
->>> OK, have you posted it already?
->> Yes I have. https://lkml.org/lkml/2015/2/3/24.
-> 
-> OK, so this one does not apply for me on top of the other.  Can you rebase it
-> on top of my current linux-next branch and resend it, please?
-> 
-> Also I'd appreciate it if someone could ACK DT-related stuff for me.
+>> v2:
+>> - move setting ENOSYS as errno from the syscall entry assembly to
+>>     do_syscall_trace_enter, only in the specific case
+>>
+>> Signed-off-by: Bogdan Purcareata <bogdan.purcareata@freescale.com>
+>> ---
+>>    arch/powerpc/kernel/entry_32.S | 7 ++++++-
+>>    arch/powerpc/kernel/entry_64.S | 5 +++--
+>>    arch/powerpc/kernel/ptrace.c   | 4 +++-
+>>    3 files changed, 12 insertions(+), 4 deletions(-)
+>>
+>> diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
+>> index 46fc0f4..b2f88cd 100644
+>> --- a/arch/powerpc/kernel/entry_32.S
+>> +++ b/arch/powerpc/kernel/entry_32.S
+>> @@ -333,12 +333,12 @@ _GLOBAL(DoSyscall)
+>>    	lwz	r11,TI_FLAGS(r10)
+>>    	andi.	r11,r11,_TIF_SYSCALL_DOTRACE
+>>    	bne-	syscall_dotrace
+>> -syscall_dotrace_cont:
+>>    	cmplwi	0,r0,NR_syscalls
+>>    	lis	r10,sys_call_table@h
+>>    	ori	r10,r10,sys_call_table@l
+>>    	slwi	r0,r0,2
+>>    	bge-	66f
+>> +syscall_dotrace_cont:
+>>    	lwzx	r10,r10,r0	/* Fetch system call handler [ptr] */
+>>    	mtlr	r10
+>>    	addi	r9,r1,STACK_FRAME_OVERHEAD
+>> @@ -457,6 +457,11 @@ syscall_dotrace:
+>>    	lwz	r7,GPR7(r1)
+>>    	lwz	r8,GPR8(r1)
+>>    	REST_NVGPRS(r1)
+>> +	cmplwi	0,r0,NR_syscalls
+>> +	lis	r10,sys_call_table@h
+>> +	ori	r10,r10,sys_call_table@l
+>> +	slwi	r0,r0,2
+>> +	bge-	ret_from_syscall
+>>    	b	syscall_dotrace_cont
+>>
+>>    syscall_exit_work:
+>> diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+>> index d180caf2..0d22fa8 100644
+>> --- a/arch/powerpc/kernel/entry_64.S
+>> +++ b/arch/powerpc/kernel/entry_64.S
+>> @@ -144,7 +144,6 @@ END_FW_FTR_SECTION_IFSET(FW_FEATURE_SPLPAR)
+>>    	ld	r10,TI_FLAGS(r11)
+>>    	andi.	r11,r10,_TIF_SYSCALL_DOTRACE
+>>    	bne	syscall_dotrace
+>> -.Lsyscall_dotrace_cont:
+>>    	cmpldi	0,r0,NR_syscalls
+>>    	bge-	syscall_enosys
+>>
+>> @@ -253,7 +252,9 @@ syscall_dotrace:
+>>    	addi	r9,r1,STACK_FRAME_OVERHEAD
+>>    	CURRENT_THREAD_INFO(r10, r1)
+>>    	ld	r10,TI_FLAGS(r10)
+>> -	b	.Lsyscall_dotrace_cont
+>> +	cmpldi	0,r0,NR_syscalls
+>> +	bge-	syscall_exit
+>
+> Shouldn't this be .Lsyscall_exit?
 
-Yes Ill get this done.
-> 
->> This patch is also waiting to be pulled by you. There was some confusion
->> around who should pull this, but since it all the code is in the driver, we
->> thought it would be best if you pulled it.
-> 
-> Well, OK.  If you want me to apply a patch, send it To: me and not To: someone
-> else.  If you send it To: someone else, I'll ignore it.
-> 
-> Also ask people to review and ACK things you want me to pull, especially if
-> that's not stuff I'm particularly familiar with (like related to DT bindings
-> specific to your platform etc.).
-> 
+Thanks for testing and spotting this! The kernel I tested with didn't 
+have syscall_exit converted to a local label (commit 
+4c3b21686111e0ac6018469dacbc5549f9915cf8).
 
-Sure Ill do that. Thanks!
+Will resend with this change.
 
-Regards
-Preeti U Murthy
-> 
+Bogdan P.
+
+>> +	b	system_call
+>>
+>>    syscall_enosys:
+>>    	li	r3,-ENOSYS
+>> diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
+>> index f21897b..2edae06 100644
+>> --- a/arch/powerpc/kernel/ptrace.c
+>> +++ b/arch/powerpc/kernel/ptrace.c
+>> @@ -1775,13 +1775,15 @@ long do_syscall_trace_enter(struct pt_regs *regs)
+>>    	secure_computing_strict(regs->gpr[0]);
+>>
+>>    	if (test_thread_flag(TIF_SYSCALL_TRACE) &&
+>> -	    tracehook_report_syscall_entry(regs))
+>> +	    tracehook_report_syscall_entry(regs)) {
+>>    		/*
+>>    		 * Tracing decided this syscall should not happen.
+>>    		 * We'll return a bogus call number to get an ENOSYS
+>>    		 * error, but leave the original number in regs->gpr[0].
+>>    		 */
+>>    		ret = -1L;
+>> +		syscall_set_return_value(current, regs, ENOSYS, 0);
+>> +	}
+>>
+>>    	if (unlikely(test_thread_flag(TIF_SYSCALL_TRACEPOINT)))
+>>    		trace_sys_enter(regs, regs->gpr[0]);
+>>
+>
