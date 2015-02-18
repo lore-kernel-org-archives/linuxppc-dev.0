@@ -1,28 +1,40 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 117FB1A04E0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Feb 2015 11:30:44 +1100 (AEDT)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <strosake@linux.vnet.ibm.com>
+Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 538FD1401DE
- for <linuxppc-dev@ozlabs.org>; Wed, 18 Feb 2015 11:30:42 +1100 (AEDT)
-Message-ID: <1424219432.21410.113.camel@kernel.crashing.org>
-Subject: Re: [PATCH RESEND v2 7/7] PCI/hotplug: PowerPC PowerNV PCI hotplug
- driver
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Date: Wed, 18 Feb 2015 11:30:32 +1100
-In-Reply-To: <20150218001620.GA22042@shangw>
-References: <1424157203-691-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1424157203-691-8-git-send-email-gwshan@linux.vnet.ibm.com>
- <20150217220916.GA26424@google.com> <20150218001620.GA22042@shangw>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Bjorn Helgaas <bhelgaas@google.com>, linuxppc-dev@ozlabs.org,
- linux-pci@vger.kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 783941A08BD
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Feb 2015 14:01:30 +1100 (AEDT)
+Received: from /spool/local
+ by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <strosake@linux.vnet.ibm.com>;
+ Tue, 17 Feb 2015 22:01:27 -0500
+Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
+ [9.57.198.23])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id C70C138C8052
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Feb 2015 21:57:49 -0500 (EST)
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+ by b01cxnp22033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t1I31OCb30605444
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Feb 2015 03:01:25 GMT
+Received: from d01av03.pok.ibm.com (localhost [127.0.0.1])
+ by d01av03.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t1I31N8K019274
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Feb 2015 22:01:24 -0500
+Message-ID: <54E4007F.5080603@linux.vnet.ibm.com>
+Date: Tue, 17 Feb 2015 21:01:19 -0600
+From: Mike Strosaker <strosake@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: Bogdan Purcareata <bogdan.purcareata@freescale.com>,
+ benh@kernel.crashing.org, paulus@samba.org,
+ linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
+Subject: Re: [PATCH v3 1/3] powerpc: Don't force ENOSYS as error on syscall
+ fail
+References: <1423815752-3013-1-git-send-email-bogdan.purcareata@freescale.com>
+ <1423815752-3013-2-git-send-email-bogdan.purcareata@freescale.com>
+In-Reply-To: <1423815752-3013-2-git-send-email-bogdan.purcareata@freescale.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Cc: pmoore@redhat.com, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,46 +44,113 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2015-02-18 at 11:16 +1100, Gavin Shan wrote:
-> >What is vm_unmap_aliases() for?  I see this is probably copied from
-> >rpaphp_core.c, where it was added by b4a26be9f6f8 ("powerpc/pseries:
-> Flush
-> >lazy kernel mappings after unplug operations").
-> >
-> >But I don't know whether:
-> >
-> >  - this is something specific to powerpc,
-> >  - the lack of vm_unmap_aliases() in other hotplug paths is a bug,
-> >  - the fact that we only do this on powerpc is covering up a
-> >    powerpc bug somewhere
-> >
-> 
-> Yes, I copied this piece of code from rpaphp_core.c. I think Ben might
-> help to answer the questions as he added the patch. I had very quick
-> check on mm/vmalloc.c and it's reasonable to have vm_unmap_aliases()
-> here to flush TLB entries for ioremap() regions, which were unmapped
-> previously. if I'm correct. I don't think it's powerpc specific.
+This patch failed to build using pseries_le_defconfig.  With the change 
+noted below in entry_64.S, the build succeeded and seccomp mode 2 worked 
+correctly.
 
-It's specific to running under the PowerVM hypervisor, and thus doesn't
-affect PowerNV, just don't copy it over.
+Best,
+Mike Strosaker
 
-It comes from the fact that the generic ioremap code nowadays delays
-TLB flushing on unmap. The TLB flushing code is what, on powerpc,
-ensures that we remove the translations from the MMU hash table (the
-hash table is essentially treated as an extended in-memory TLB), which
-on pseries turns into hypervisor calls.
+On 02/13/2015 02:22 AM, Bogdan Purcareata wrote:
+> In certain scenarios - e.g. seccomp filtering with ERRNO as default action -
+> the system call fails for other reasons than the syscall not being available.
+> The seccomp filter can be configured to store a user-defined error code on
+> return from a blacklisted syscall. Don't always set ENOSYS on
+> do_syscall_trace_enter failure.
+>
+> Delegate setting ENOSYS in case of failure, where appropriate, to
+> do_syscall_trace_enter.
+>
+> v3:
+> - keep setting ENOSYS in the syscall entry assembly for scenarios without
+>    syscall tracing
+>
+> v2:
+> - move setting ENOSYS as errno from the syscall entry assembly to
+>    do_syscall_trace_enter, only in the specific case
+>
+> Signed-off-by: Bogdan Purcareata <bogdan.purcareata@freescale.com>
+> ---
+>   arch/powerpc/kernel/entry_32.S | 7 ++++++-
+>   arch/powerpc/kernel/entry_64.S | 5 +++--
+>   arch/powerpc/kernel/ptrace.c   | 4 +++-
+>   3 files changed, 12 insertions(+), 4 deletions(-)
+>
+> diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
+> index 46fc0f4..b2f88cd 100644
+> --- a/arch/powerpc/kernel/entry_32.S
+> +++ b/arch/powerpc/kernel/entry_32.S
+> @@ -333,12 +333,12 @@ _GLOBAL(DoSyscall)
+>   	lwz	r11,TI_FLAGS(r10)
+>   	andi.	r11,r11,_TIF_SYSCALL_DOTRACE
+>   	bne-	syscall_dotrace
+> -syscall_dotrace_cont:
+>   	cmplwi	0,r0,NR_syscalls
+>   	lis	r10,sys_call_table@h
+>   	ori	r10,r10,sys_call_table@l
+>   	slwi	r0,r0,2
+>   	bge-	66f
+> +syscall_dotrace_cont:
+>   	lwzx	r10,r10,r0	/* Fetch system call handler [ptr] */
+>   	mtlr	r10
+>   	addi	r9,r1,STACK_FRAME_OVERHEAD
+> @@ -457,6 +457,11 @@ syscall_dotrace:
+>   	lwz	r7,GPR7(r1)
+>   	lwz	r8,GPR8(r1)
+>   	REST_NVGPRS(r1)
+> +	cmplwi	0,r0,NR_syscalls
+> +	lis	r10,sys_call_table@h
+> +	ori	r10,r10,sys_call_table@l
+> +	slwi	r0,r0,2
+> +	bge-	ret_from_syscall
+>   	b	syscall_dotrace_cont
+>
+>   syscall_exit_work:
+> diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
+> index d180caf2..0d22fa8 100644
+> --- a/arch/powerpc/kernel/entry_64.S
+> +++ b/arch/powerpc/kernel/entry_64.S
+> @@ -144,7 +144,6 @@ END_FW_FTR_SECTION_IFSET(FW_FEATURE_SPLPAR)
+>   	ld	r10,TI_FLAGS(r11)
+>   	andi.	r11,r10,_TIF_SYSCALL_DOTRACE
+>   	bne	syscall_dotrace
+> -.Lsyscall_dotrace_cont:
+>   	cmpldi	0,r0,NR_syscalls
+>   	bge-	syscall_enosys
+>
+> @@ -253,7 +252,9 @@ syscall_dotrace:
+>   	addi	r9,r1,STACK_FRAME_OVERHEAD
+>   	CURRENT_THREAD_INFO(r10, r1)
+>   	ld	r10,TI_FLAGS(r10)
+> -	b	.Lsyscall_dotrace_cont
+> +	cmpldi	0,r0,NR_syscalls
+> +	bge-	syscall_exit
 
-When running under that hypervisor, the HV ensures that no translation
-still exists in the hash before allowing a device to be removed from
-a partition. If translations still exist, the removal fails.
+Shouldn't this be .Lsyscall_exit?
 
-So we need to force the generic ioremap code to perform all the TLB
-flushes for iounmap'ed regions before we "complete" the unplug operation
-from a kernel perspective so that the device can be re-assigned to
-another partition.
-
-This is thus useless on platforms like powernv which do not run under
-such a hypervisor.
-
-Cheers,
-Ben.
+> +	b	system_call
+>
+>   syscall_enosys:
+>   	li	r3,-ENOSYS
+> diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
+> index f21897b..2edae06 100644
+> --- a/arch/powerpc/kernel/ptrace.c
+> +++ b/arch/powerpc/kernel/ptrace.c
+> @@ -1775,13 +1775,15 @@ long do_syscall_trace_enter(struct pt_regs *regs)
+>   	secure_computing_strict(regs->gpr[0]);
+>
+>   	if (test_thread_flag(TIF_SYSCALL_TRACE) &&
+> -	    tracehook_report_syscall_entry(regs))
+> +	    tracehook_report_syscall_entry(regs)) {
+>   		/*
+>   		 * Tracing decided this syscall should not happen.
+>   		 * We'll return a bogus call number to get an ENOSYS
+>   		 * error, but leave the original number in regs->gpr[0].
+>   		 */
+>   		ret = -1L;
+> +		syscall_set_return_value(current, regs, ENOSYS, 0);
+> +	}
+>
+>   	if (unlikely(test_thread_flag(TIF_SYSCALL_TRACEPOINT)))
+>   		trace_sys_enter(regs, regs->gpr[0]);
+>
