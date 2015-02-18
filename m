@@ -1,35 +1,21 @@
-Return-Path: <hegdevasant@linux.vnet.ibm.com>
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <B43198@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0101.outbound.protection.outlook.com [207.46.100.101])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 10B251A09D0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Feb 2015 18:57:54 +1100 (AEDT)
-Received: from /spool/local
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <hegdevasant@linux.vnet.ibm.com>;
- Wed, 18 Feb 2015 17:57:52 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id C82E22CE8040
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Feb 2015 18:57:50 +1100 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t1I7vgNl44630166
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Feb 2015 18:57:50 +1100
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t1I7vG7d007120
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Feb 2015 18:57:17 +1100
-Message-ID: <54E445CC.9090304@linux.vnet.ibm.com>
-Date: Wed, 18 Feb 2015 13:27:00 +0530
-From: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4A9111A0A07
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Feb 2015 19:17:18 +1100 (AEDT)
+From: Bogdan Purcareata <bogdan.purcareata@freescale.com>
+To: <benh@kernel.crashing.org>, <paulus@samba.org>,
+ <linuxppc-dev@lists.ozlabs.org>, <mpe@ellerman.id.au>
+Subject: [PATCH v4 0/3] powerpc: Enable seccomp filter support
+Date: Wed, 18 Feb 2015 08:16:50 +0000
+Message-ID: <1424247413-20753-1-git-send-email-bogdan.purcareata@freescale.com>
 MIME-Version: 1.0
-To: Stewart Smith <stewart@linux.vnet.ibm.com>, mpe@ellerman.id.au
-Subject: Re: [PATCH 0/3] powerpc/powernv: Correctly detect optional OPAL calls
-References: <1424217824-30596-1-git-send-email-stewart@linux.vnet.ibm.com>
-In-Reply-To: <1424217824-30596-1-git-send-email-stewart@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Cc: pmoore@redhat.com, linux-kernel@vger.kernel.org,
+ Bogdan Purcareata <bogdan.purcareata@freescale.com>,
+ strosake@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,19 +25,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 02/18/2015 05:33 AM, Stewart Smith wrote:
-> This series fixes three possible warnings that OPAL firmware would emit
-> when booting on hardware/simulator that didn't support certain functionality.
-> 
-> The correct thing for Linux to do is to detect firmware capability
-> by using the OPAL_CHECK_TOKEN call or examining device tree. In the case
-> of these three warnings, it was OPAL_CHECK_TOKEN.
+Add the missing pieces in order to enable SECCOMP_FILTER on PowerPC
+architectures, and enable this support.
 
-Stewart,
-  Sorry.. I couldn't makeout any difference between this patchset and earlier
-patchset which I had Acked except the update in cover page... (sub: Silence
-"OPAL called with invalid token" errors ).
+Testing has been pursued using libseccomp with the latest ppc support patches
+[1][2], on Freescale platforms for both ppc and ppc64. Support on ppc64le has
+also been tested, courtesy of Mike Strosaker.
 
-  Did I miss anything ?
+[1] https://groups.google.com/forum/#!topic/libseccomp/oz42LfMDsxg
+[2] https://groups.google.com/forum/#!topic/libseccomp/TQWfCt_nD7c
 
--Vasant
+v4:
+- rebased on top of 3.19
+
+v3:
+- keep setting ENOSYS in syscall entry assembly when syscall tracing is disabled
+
+v2:
+- move setting ENOSYS from syscall entry assembly to do_syscall_trace_enter
+
+Bogdan Purcareata (3):
+  powerpc: Don't force ENOSYS as error on syscall fail
+  powerpc: Relax secure computing on syscall entry trace
+  powerpc: Enable HAVE_ARCH_SECCOMP_FILTER
+
+ arch/powerpc/Kconfig           | 1 +
+ arch/powerpc/kernel/entry_32.S | 7 ++++++-
+ arch/powerpc/kernel/entry_64.S | 5 +++--
+ arch/powerpc/kernel/ptrace.c   | 8 ++++++--
+ 4 files changed, 16 insertions(+), 5 deletions(-)
+
+-- 
+2.1.4
