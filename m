@@ -1,25 +1,29 @@
 Return-Path: <runaway@candw.ms>
-Received: from mail-yk0-f179.google.com (mail-yk0-f179.google.com
- [209.85.160.179])
+Received: from mail-yh0-f51.google.com (mail-yh0-f51.google.com
+ [209.85.213.51])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9975C1A09C5
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Feb 2015 06:45:35 +1100 (AEDT)
-Received: by mail-yk0-f179.google.com with SMTP id 9so1915035ykp.10
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Feb 2015 11:45:33 -0800 (PST)
-Message-ID: <54E4EBD7.5000307@candw.ms>
-Date: Wed, 18 Feb 2015 15:45:27 -0400
+ by lists.ozlabs.org (Postfix) with ESMTPS id 882B01A0A07
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Feb 2015 07:14:06 +1100 (AEDT)
+Received: by yhai57 with SMTP id i57so2448060yha.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Feb 2015 12:14:04 -0800 (PST)
+Received: from [192.168.1.10] ([209.59.111.79])
+ by mx.google.com with ESMTPSA id lp17sm931882vdb.19.2015.02.18.12.14.03
+ for <linuxppc-dev@lists.ozlabs.org>
+ (version=TLSv1.2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128/128);
+ Wed, 18 Feb 2015 12:14:03 -0800 (PST)
+Message-ID: <54E4F287.8070602@candw.ms>
+Date: Wed, 18 Feb 2015 16:13:59 -0400
 From: Julian Margetson <runaway@candw.ms>
 MIME-Version: 1.0
-To: Michael Ellerman <mpe@ellerman.id.au>
+To: linuxppc-dev@lists.ozlabs.org
 Subject: Re: Problems with Kernels 3.17-rc1 and onwards on Acube Sam460 AMCC
  460ex board
 References: <54E08E06.8060607@candw.ms>
  <1424045921.3018.4.camel@ellerman.id.au>
 In-Reply-To: <1424045921.3018.4.camel@ellerman.id.au>
 Content-Type: multipart/alternative;
- boundary="------------090000010205050302050700"
-Cc: linuxppc-dev@lists.ozlabs.org, Ian Munsie <imunsie@au1.ibm.com>
+ boundary="------------080809060400050605000502"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,7 +34,7 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 This is a multi-part message in MIME format.
---------------090000010205050302050700
+--------------080809060400050605000502
 Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 7bit
 
@@ -67,7 +71,6 @@ On 2/15/2015 8:18 PM, Michael Ellerman wrote:
 >> [    6.581079] [efa31ef0] c003a3e4 kthread+0xc8/0xcc
 >> [    6.585844] [efa31f40] c000aec4 ret_from_kernel_thread+0x5c/0x64
 >> [    6.591910] mon>  <no input ...>
->
 > cheers
 >
 >
@@ -77,7 +80,7 @@ Managed to do a third git bisect  with the following results .
 git bisect bad
 9279d3286e10736766edcaf815ae10e00856e448 is the first bad commit
 commit 9279d3286e10736766edcaf815ae10e00856e448
-Author: Rasmus Villemoes <linux@rasmusvillemoes.dk>
+Author: Rasmus Villemoes<linux@rasmusvillemoes.dk>
 Date:   Wed Aug 6 16:10:16 2014 -0700
 
      lib: bitmap: change parameter of bitmap_*_region to unsigned
@@ -89,16 +92,16 @@ Date:   Wed Aug 6 16:10:16 2014 -0700
      allow a negative error code to be returned.  An int is certainly capable
      of representing any realistic return value.
      
-     Signed-off-by: Rasmus Villemoes <linux@rasmusvillemoes.dk>
-     Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
-     Signed-off-by: Linus Torvalds <torvalds@linux-foundation.org>
+     Signed-off-by: Rasmus Villemoes<linux@rasmusvillemoes.dk>
+     Signed-off-by: Andrew Morton<akpm@linux-foundation.org>
+     Signed-off-by: Linus Torvalds<torvalds@linux-foundation.org>
 
 :040000 040000 4f560a7caaba2d05c146a3cea27e0d93739d950c c3d4539acad26667a2d78844ead7b75af753f41e M	include
 :040000 040000 7a6fb894aac2a1d4e72f8e36b7c6de3c24509ad3 31d756da185e07d2de090c9e6aeb12689d58d310 M	lib
 
 
 
---------------090000010205050302050700
+--------------080809060400050605000502
 Content-Type: text/html; charset=utf-8
 Content-Transfer-Encoding: 8bit
 
@@ -122,8 +125,7 @@ Acube Sam460ex
  AMCC 460ex based motherboard. Kernel  up 3.16.7-ckt6 working.
 </pre>
       </blockquote>
-      <pre wrap="">
-Does reverting b0345bbc6d09 change anything?
+      <pre wrap="">Does reverting b0345bbc6d09 change anything?
 
 </pre>
       <blockquote type="cite">
@@ -154,7 +156,6 @@ Does reverting b0345bbc6d09 change anything?
 </pre>
       </blockquote>
       <pre wrap="">
-
 cheers
 
 
@@ -197,4 +198,4 @@ Date:   Wed Aug 6 16:10:16 2014 -0700
   </body>
 </html>
 
---------------090000010205050302050700--
+--------------080809060400050605000502--
