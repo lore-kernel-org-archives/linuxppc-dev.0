@@ -1,24 +1,34 @@
-Return-Path: <joseph_myers@mentor.com>
-Received: from relay1.mentorg.com (relay1.mentorg.com [192.94.38.131])
+Return-Path: <nacc@linux.vnet.ibm.com>
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6FF1D1A0D07
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Feb 2015 05:40:42 +1100 (AEDT)
-Date: Thu, 19 Feb 2015 18:40:34 +0000
-From: Joseph Myers <joseph@codesourcery.com>
-To: David Miller <davem@davemloft.net>
-Subject: Re: [PATCH RFC] Update kernel math-emu code from current glibc soft-fp
-In-Reply-To: <20150219.132122.204795202277130266.davem@davemloft.net>
-Message-ID: <alpine.DEB.2.10.1502191835490.22905@digraph.polyomino.org.uk>
-References: <alpine.DEB.2.10.1502061719210.27832@digraph.polyomino.org.uk>
- <20150219.132122.204795202277130266.davem@davemloft.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 37FFC1A0E06
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Feb 2015 05:41:12 +1100 (AEDT)
+Received: from /spool/local
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
+ Thu, 19 Feb 2015 11:41:09 -0700
+Received: from b03cxnp07028.gho.boulder.ibm.com
+ (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id BA0CC3E4003F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Feb 2015 11:41:08 -0700 (MST)
+Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
+ by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with
+ ESMTP id t1JIdanK21954578
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Feb 2015 11:39:36 -0700
+Received: from d03av05.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t1JIf5KX020632
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Feb 2015 11:41:05 -0700
+Date: Thu, 19 Feb 2015 10:41:03 -0800
+From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: [PATCH] pseries/iommu: remove iommu device references via bus notifier
+Message-ID: <20150219184103.GB13745@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: multipart/mixed;
- boundary="-1152306461-273902004-1424371234=:22905"
-Cc: linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org,
- sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- kkojima@rr.iij4u.or.jp
+Content-Type: text/plain; charset=us-ascii
+Cc: Alexey Kardashevskiy <aik@au1.ibm.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,51 +38,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
----1152306461-273902004-1424371234=:22905
-Content-Type: text/plain; charset="iso-8859-7"
-Content-Transfer-Encoding: 8BIT
+After d905c5df9aef ("PPC: POWERNV: move iommu_add_device earlier"), the
+refcnt on the kobject backing the IOMMU group for a PCI device is
+elevated by each call to pci_dma_dev_setup_pSeriesLP() (via
+set_iommu_table_base_and_group). When we go to dlpar a multi-function
+PCI device out:
 
-On Thu, 19 Feb 2015, David Miller wrote:
+	iommu_reconfig_notifier ->
+		iommu_free_table ->
+			iommu_group_put
+			BUG_ON(tbl->it_group)
 
-> From: Joseph Myers <joseph@codesourcery.com>
-> Date: Fri, 6 Feb 2015 17:25:29 +0000
-> 
-> > * On SPARC, comparisons now use raw unpacking (this should not in fact
-> >   change how the emulation behaves, just make it more efficient).
-> 
-> I did a sparc64 test build and it failed like so:
-> 
-> arch/sparc/math-emu/math_64.c: In function ¡do_mathemu¢:
-> arch/sparc/math-emu/math_64.c:487:1: error: expected expression before ¡return¢
-> arch/sparc/math-emu/math_64.c:488:1: error: expected expression before ¡return¢
-> arch/sparc/math-emu/math_64.c:490:1: error: expected expression before ¡return¢
-> arch/sparc/math-emu/math_64.c:491:1: error: expected expression before ¡return¢
-> arch/sparc/math-emu/math_64.c:495:1: error: expected expression before ¡return¢
-> 
-> I'm attaching a CPP processed math_64.c for your convenience:
+We trip this BUG_ON, because there are still references on the table, so
+it is not freed. Fix this by also adding a bus notifier identical to
+PowerNV for pSeries. Tested a remove -> add -> remove cycle without
+issue where it always hit the BUG_ON without the changes.
 
-Please try this patch on top of the previous one.  The way abort is 
-redefined in the kernel code doesn't work for one place using it in an 
-expression; this patch changes a comma expression to a statement 
-expression.  This didn't appear in my powerpc testing because the powerpc 
-emulation never uses FP_FROM_INT; I'm not sure how Kaz's sh testing 
-avoided the problem appearing there.
+Fixes: d905c5df9aef ("PPC: POWERNV: move iommu_add_device earlier")
+Signed-off-by: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+Cc: stable@kernel.org (3.13+)
 
-diff --git a/include/math-emu/op-common.h b/include/math-emu/op-common.h
-index b9f5e1a..8c059c3 100644
---- a/include/math-emu/op-common.h
-+++ b/include/math-emu/op-common.h
-@@ -1818,7 +1818,7 @@
- 			 X##_e = (_FP_EXPBIAS_##fs + 2 * _FP_W_TYPE_SIZE - 1 \
- 				  - _FP_FROM_INT_lz);			\
- 		       })						\
--		     : (abort (), 0)));					\
-+		     : ({ abort (); 0; })));				\
- 									\
- 	  if ((rsize) - 1 + _FP_EXPBIAS_##fs >= _FP_EXPMAX_##fs		\
- 	      && X##_e >= _FP_EXPMAX_##fs)				\
-
--- 
-Joseph S. Myers
-joseph@codesourcery.com
----1152306461-273902004-1424371234=:22905--
+diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
+index 1d3d52dc3ff3..f77fb02f4710 100644
+--- a/arch/powerpc/platforms/pseries/iommu.c
++++ b/arch/powerpc/platforms/pseries/iommu.c
+@@ -1340,3 +1340,31 @@ static int __init disable_multitce(char *str)
+ }
+ 
+ __setup("multitce=", disable_multitce);
++
++static int tce_iommu_bus_notifier(struct notifier_block *nb,
++                unsigned long action, void *data)
++{
++        struct device *dev = data;
++
++        switch (action) {
++        case BUS_NOTIFY_ADD_DEVICE:
++                return iommu_add_device(dev);
++        case BUS_NOTIFY_DEL_DEVICE:
++                if (dev->iommu_group)
++                        iommu_del_device(dev);
++                return 0;
++        default:
++                return 0;
++        }
++}
++
++static struct notifier_block tce_iommu_bus_nb = {
++        .notifier_call = tce_iommu_bus_notifier,
++};
++
++static int __init tce_iommu_bus_notifier_init(void)
++{
++        bus_register_notifier(&pci_bus_type, &tce_iommu_bus_nb);
++        return 0;
++}
++machine_subsys_initcall_sync(pseries, tce_iommu_bus_notifier_init);
