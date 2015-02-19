@@ -1,35 +1,23 @@
-Return-Path: <preeti@linux.vnet.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <asolokha@kb.kras.ru>
+Received: from ispman.iskranet.ru (ispman.iskranet.ru [62.213.33.10])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 89C701A086D
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Feb 2015 16:26:48 +1100 (AEDT)
-Received: from /spool/local
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
- Wed, 18 Feb 2015 22:26:46 -0700
-Received: from b03cxnp08028.gho.boulder.ibm.com
- (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 10A713E4003E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Feb 2015 22:26:35 -0700 (MST)
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
- by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t1J5QbrU28836028
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Feb 2015 22:26:46 -0700
-Received: from d03av03.boulder.ibm.com (localhost [127.0.0.1])
- by d03av03.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t1J5QBXn004186
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Feb 2015 22:26:11 -0700
-Subject: [RESEND PATCH] driver/cpuidle-powernv: Avoid endianness conversions
- while parsing DT
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-To: rjw@rjwysocki.net
-Date: Wed, 18 Feb 2015 23:24:53 -0600
-Message-ID: <20150219052419.11015.43106.stgit@perfhull-ltc.austin.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id DB94E1A0C04
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Feb 2015 23:26:45 +1100 (AEDT)
+From: Arseny Solokha <asolokha@kb.kras.ru>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH 4/4] powerpc/mpic: remove unused functions
+References: <1424084188-17097-1-git-send-email-asolokha@kb.kras.ru>
+ <1424084188-17097-5-git-send-email-asolokha@kb.kras.ru>
+ <1424307520.22020.5.camel@ellerman.id.au>
+Date: Thu, 19 Feb 2015 19:26:39 +0700
+In-Reply-To: <1424307520.22020.5.camel@ellerman.id.au> (Michael Ellerman's
+ message of "Thu, 19 Feb 2015 11:58:40 +1100")
+Message-ID: <87d256kry8.fsf@KB00016249.iskra.kb>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=utf-8
+Cc: Scott Wood <scottwood@freescale.com>, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,90 +27,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We currently read the information about idle states from the DT
-so as to populate the cpuidle table. Use those APIs to read from
-the DT that can avoid endianness conversions of the property values
-in the cpuidle driver.
+> On Mon, 2015-02-16 at 17:56 +0700, Arseny Solokha wrote:
+>> Drop unused fsl_mpic_primary_get_version(), mpic_set_clk_ratio(),
+>> mpic_set_serial_int().
+>
+> I'm always happy to remove unused code, but the interesting question is w=
+hy are
+> they unused? Please tell me in the changelog.
 
-Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Acked-by: Michael Ellerman <mpe@ellerman.id.au>
----
-Based on top of linux-pm/linux-next
+To being able to give a definitive answer, it's necessary to understand
+the intentions of original developers of these pieces. I just can tell
+these functions have no users and trivial grepping easily proves it;
+I've got the impression they are here only for the sake of
+implementation completeness.
 
- drivers/cpuidle/cpuidle-powernv.c |   29 ++++++++++++++++-------------
- 1 file changed, 16 insertions(+), 13 deletions(-)
+Two machines at hands, e300 and e500 based, boot and run without
+regressions on my workload with this series applied. The removed code
+seems also been rarely touched, so it seems the series is safe at least
+in general. But I can't obviously express any strong point in support of
+the series, so it's completely OK to leave things as is.
 
-diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
-index 30d4229..5937207 100644
---- a/drivers/cpuidle/cpuidle-powernv.c
-+++ b/drivers/cpuidle/cpuidle-powernv.c
-@@ -159,9 +159,7 @@ static int powernv_add_idle_states(void)
- 	struct device_node *power_mgt;
- 	int nr_idle_states = 1; /* Snooze */
- 	int dt_idle_states;
--	const __be32 *idle_state_flags;
--	u32 len_flags, flags;
--	u32 *latency_ns, *residency_ns;
-+	u32 *latency_ns, *residency_ns, *flags;
- 	int i, rc;
- 
- 	/* Currently we have snooze statically defined */
-@@ -172,14 +170,19 @@ static int powernv_add_idle_states(void)
- 		goto out;
- 	}
- 
--	idle_state_flags = of_get_property(power_mgt,
--				"ibm,cpu-idle-state-flags", &len_flags);
--	if (!idle_state_flags) {
--		pr_warn("cpuidle-powernv: missing ibm,cpu-idle-state-flags in DT\n");
-+	/* Read values of any property to determine the num of idle states */
-+	dt_idle_states = of_property_count_u32_elems(power_mgt, "ibm,cpu-idle-state-flags");
-+	if (dt_idle_states < 0) {
-+		pr_warn("cpuidle-powernv: no idle states found in the DT\n");
- 		goto out;
- 	}
- 
--	dt_idle_states = len_flags / sizeof(u32);
-+	flags = kzalloc(sizeof(*flags) * dt_idle_states, GFP_KERNEL);
-+	if (of_property_read_u32_array(power_mgt,
-+			"ibm,cpu-idle-state-flags", flags, dt_idle_states)) {
-+		pr_warn("cpuidle-powernv : missing ibm,cpu-idle-state-flags in DT\n");
-+		goto out_free_flags;
-+	}
- 
- 	latency_ns = kzalloc(sizeof(*latency_ns) * dt_idle_states, GFP_KERNEL);
- 	rc = of_property_read_u32_array(power_mgt,
-@@ -195,21 +198,19 @@ static int powernv_add_idle_states(void)
- 
- 	for (i = 0; i < dt_idle_states; i++) {
- 
--		flags = be32_to_cpu(idle_state_flags[i]);
--
- 		/*
- 		 * Cpuidle accepts exit_latency and target_residency in us.
- 		 * Use default target_residency values if f/w does not expose it.
- 		 */
--		if (flags & OPAL_PM_NAP_ENABLED) {
-+		if (flags[i] & OPAL_PM_NAP_ENABLED) {
- 			/* Add NAP state */
- 			strcpy(powernv_states[nr_idle_states].name, "Nap");
- 			strcpy(powernv_states[nr_idle_states].desc, "Nap");
- 			powernv_states[nr_idle_states].flags = 0;
- 			powernv_states[nr_idle_states].target_residency = 100;
- 			powernv_states[nr_idle_states].enter = &nap_loop;
--		} else if (flags & OPAL_PM_SLEEP_ENABLED ||
--			flags & OPAL_PM_SLEEP_ENABLED_ER1) {
-+		} else if (flags[i] & OPAL_PM_SLEEP_ENABLED ||
-+			flags[i] & OPAL_PM_SLEEP_ENABLED_ER1) {
- 			/* Add FASTSLEEP state */
- 			strcpy(powernv_states[nr_idle_states].name, "FastSleep");
- 			strcpy(powernv_states[nr_idle_states].desc, "FastSleep");
-@@ -232,6 +233,8 @@ static int powernv_add_idle_states(void)
- 	kfree(residency_ns);
- out_free_latency:
- 	kfree(latency_ns);
-+out_free_flags:
-+	kfree(flags);
- out:
- 	return nr_idle_states;
- }
+  + fsl_mpic_primary_get_version() is just a safe wrapper around
+fsl_mpic_get_version() for SMP configurations. While the latter is
+called explicitly for handling PIC initialization and setting up error
+interrupt vector depending on PIC hardware version, the former isn't
+used for anything.
+
+  + As for mpic_set_clk_ratio() and mpic_set_serial_int(), they both
+are almost nine years old[1] but still have no chance to be called even
+from out-of-tree modules because they both are __init and of course
+aren't exported. Non-demanded functionality?
+
+Of course I'll include the last two paragraphs into the V2 patch
+description if the explanation is convincing enough and you ACK it. If
+the patch is safe it's also necessary to extend it a bit, making its
+second part actually a complete revert of [1].
+
+
+[1] https://lists.ozlabs.org/pipermail/linuxppc-dev/2006-June/023867.html
+
+
+Ars=C3=A9ny
+
+
+> cheers
