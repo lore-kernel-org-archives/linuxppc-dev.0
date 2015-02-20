@@ -2,21 +2,21 @@ Return-Path: <linux@roeck-us.net>
 Received: from bh-25.webhostbox.net (bh-25.webhostbox.net [208.91.199.152])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id EF7B11A0B5B
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Feb 2015 03:52:20 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 01B171A0FC3
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Feb 2015 03:53:13 +1100 (AEDT)
 Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
- (envelope-from <linux@roeck-us.net>) id 1YOqoL-001y8F-SM
- for linuxppc-dev@lists.ozlabs.org; Fri, 20 Feb 2015 16:52:18 +0000
-Date: Fri, 20 Feb 2015 08:52:12 -0800
+ (envelope-from <linux@roeck-us.net>) id 1YOqpC-001ySk-SK
+ for linuxppc-dev@lists.ozlabs.org; Fri, 20 Feb 2015 16:53:11 +0000
+Date: Fri, 20 Feb 2015 08:53:06 -0800
 From: Guenter Roeck <linux@roeck-us.net>
 To: =?iso-8859-1?Q?C=E9dric?= Le Goater <clg@fr.ibm.com>
-Subject: Re: [RFC PATCH 0/3] hwmon: (ibmpowernv) add DTS support
-Message-ID: <20150220165212.GE22752@roeck-us.net>
+Subject: Re: [RFC PATCH 1/3] powerpc/powernv: Check OPAL sensor calls exist
+Message-ID: <20150220165306.GF22752@roeck-us.net>
 References: <1423117857-32759-1-git-send-email-clg@fr.ibm.com>
- <1424444857-13805-1-git-send-email-clg@fr.ibm.com>
+ <1424444857-13805-2-git-send-email-clg@fr.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <1424444857-13805-1-git-send-email-clg@fr.ibm.com>
+In-Reply-To: <1424444857-13805-2-git-send-email-clg@fr.ibm.com>
 Cc: Stewart Smith <stewart@linux.vnet.ibm.com>, lm-sensors@lm-sensors.org,
  Neelesh Gupta <neelegup@linux.vnet.ibm.com>, skiboot@lists.ozlabs.org,
  linuxppc-dev@lists.ozlabs.org, Jean Delvare <jdelvare@suse.de>
@@ -29,23 +29,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Feb 20, 2015 at 04:07:34PM +0100, Cédric Le Goater wrote:
-> Hello !
-> 
-> These patches rework the ibmpowernv driver to support the new device 
-> tree as proposed by this patchset on the skiboot mailing list :
-> 
->   https://lists.ozlabs.org/pipermail/skiboot/2015-February/000457.html
-> 
-> They are based on Linux 3.19 and were tested on IBM Power and Open Power 
-> systems running trusty.
-> 
-> The main issue is that the new device tree is incompatible with the 
-> previous ibmpowernv drivers. The consequence is no powernv sensors 
-> on systems with such a opal/linux configuration.
-> 
-I don't think that would be acceptable. There must be lots of such
-systems out there. Why does it have to be incompatible ?
-Can't it support both the old and new versions ?
+On Fri, Feb 20, 2015 at 04:07:35PM +0100, Cédric Le Goater wrote:
 
-Guenter
+You should explain here why this patch is needed.
+
+> Signed-off-by: Cédric Le Goater <clg@fr.ibm.com>
+> ---
+>  arch/powerpc/platforms/powernv/opal-sensor.c |    3 +++
+>  1 file changed, 3 insertions(+)
+> 
+> diff --git a/arch/powerpc/platforms/powernv/opal-sensor.c b/arch/powerpc/platforms/powernv/opal-sensor.c
+> index 4ab67ef7abc9..544292f2020f 100644
+> --- a/arch/powerpc/platforms/powernv/opal-sensor.c
+> +++ b/arch/powerpc/platforms/powernv/opal-sensor.c
+> @@ -72,6 +72,9 @@ static __init int opal_sensor_init(void)
+>  	struct platform_device *pdev;
+>  	struct device_node *sensor;
+>  
+> +	if (!opal_check_token(OPAL_SENSOR_READ))
+> +		return -ENODEV;
+> +
+>  	sensor = of_find_node_by_path("/ibm,opal/sensors");
+>  	if (!sensor) {
+>  		pr_err("Opal node 'sensors' not found\n");
+> -- 
+> 1.7.10.4
+> 
