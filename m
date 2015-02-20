@@ -1,25 +1,30 @@
 Return-Path: <bhelgaas@google.com>
-Received: from mail-ob0-x22d.google.com (mail-ob0-x22d.google.com
- [IPv6:2607:f8b0:4003:c01::22d])
+Received: from mail-oi0-x230.google.com (mail-oi0-x230.google.com
+ [IPv6:2607:f8b0:4003:c06::230])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B5DC61A0FA7
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Feb 2015 10:19:23 +1100 (AEDT)
-Received: by mail-ob0-f173.google.com with SMTP id uy5so27438758obc.4
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Feb 2015 15:19:21 -0800 (PST)
-Date: Fri, 20 Feb 2015 17:19:17 -0600
+ by lists.ozlabs.org (Postfix) with ESMTPS id 84A051A0FAB
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Feb 2015 10:47:14 +1100 (AEDT)
+Received: by mail-oi0-f48.google.com with SMTP id a3so5306225oib.7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Feb 2015 15:47:12 -0800 (PST)
+Date: Fri, 20 Feb 2015 17:47:09 -0600
 From: Bjorn Helgaas <bhelgaas@google.com>
-To: Wei Yang <weiyang@linux.vnet.ibm.com>
-Subject: Re: [PATCH V11 08/17] powrepc/pci: Refactor pci_dn
-Message-ID: <20150220231917.GC21131@google.com>
+To: Benjamin Herrenschmidt <benh@au1.ibm.com>
+Subject: Re: [PATCH V11 07/17] powerpc/pci: Don't unset pci resources for VFs
+Message-ID: <20150220234709.GD21131@google.com>
 References: <20150113180502.GC2776@google.com>
  <1421288887-7765-1-git-send-email-weiyang@linux.vnet.ibm.com>
- <1421288887-7765-9-git-send-email-weiyang@linux.vnet.ibm.com>
+ <1421288887-7765-8-git-send-email-weiyang@linux.vnet.ibm.com>
+ <1423528584.4924.70.camel@au1.ibm.com>
+ <20150210015123.GC6326@richard>
+ <1423534451.4924.79.camel@au1.ibm.com>
+ <20150210062544.GB31098@richard>
+ <1423556085.4924.91.camel@au1.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1421288887-7765-9-git-send-email-weiyang@linux.vnet.ibm.com>
-Cc: linux-pci@vger.kernel.org, benh@au1.ibm.com, linuxppc-dev@lists.ozlabs.org,
- gwshan@linux.vnet.ibm.com
+In-Reply-To: <1423556085.4924.91.camel@au1.ibm.com>
+Cc: linux-pci@vger.kernel.org, Wei Yang <weiyang@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, gwshan@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,159 +34,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Jan 15, 2015 at 10:27:58AM +0800, Wei Yang wrote:
-> From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+On Tue, Feb 10, 2015 at 07:14:45PM +1100, Benjamin Herrenschmidt wrote:
+> On Tue, 2015-02-10 at 14:25 +0800, Wei Yang wrote:
+> > PF's resource will be assigned first, including normal BARs and IOV
+> > BARs.
+> > 
+> > Then PF's driver will create VFs, in virtfn_add(). In this function,
+> > VF's
+> > resources is calculated from its PF's IOV BAR.
+> > 
+> > If you reset VF's resource as PFs, no one will try to assign it again.
 > 
-> pci_dn is the extension of PCI device node and it's created from
-> device node. Unfortunately, VFs that are enabled dynamically by
-> PF's driver and they don't have corresponding device nodes, and
-> pci_dn. The patch refactors pci_dn to support VFs:
-> 
->    * pci_dn is organized as a hierarchy tree. VF's pci_dn is put
->      to the child list of pci_dn of PF's bridge. pci_dn of other
->      device put to the child list of pci_dn of its upstream bridge.
-> 
->    * VF's pci_dn is expected to be created dynamically when PF
->      enabling VFs. VF's pci_dn will be destroyed when PF disabling
->      VFs. pci_dn of other device is still created from device node
->      as before.
-> 
->    * For one particular PCI device (VF or not), its pci_dn can be
->      found from pdev->dev.archdata.firmware_data, PCI_DN(devnode),
->      or parent's list. The fast path (fetching pci_dn through PCI
->      device instance) is populated during early fixup time.
-> 
-> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/include/asm/device.h         |    3 +
->  arch/powerpc/include/asm/pci-bridge.h     |   14 +-
->  arch/powerpc/kernel/pci_dn.c              |  242 ++++++++++++++++++++++++++++-
->  arch/powerpc/platforms/powernv/pci-ioda.c |   16 ++
->  4 files changed, 270 insertions(+), 5 deletions(-)
-> ...
+> So the problem is that the flag indicating VF is lost ? IE. We should
+> still mark them unset, but preserve that flag ?
 
-> +#ifdef CONFIG_PCI_IOV
-> +static struct pci_dn *add_one_dev_pci_info(struct pci_dn *parent,
-> +					   struct pci_dev *pdev,
-> +					   int busno, int devfn)
-> +{
-> +	struct pci_dn *pdn;
-> +
-> +	/* Except PHB, we always have parent firmware data */
-> +	if (!parent)
-> +		return NULL;
-> +
-> +	pdn = kzalloc(sizeof(*pdn), GFP_KERNEL);
-> +	if (!pdn) {
-> +		pr_warn("%s: Out of memory !\n", __func__);
-> +		return NULL;
-> +	}
-> +
-> +	pdn->phb = parent->phb;
-> +	pdn->parent = parent;
-> +	pdn->busno = busno;
-> +	pdn->devfn = devfn;
-> +#ifdef CONFIG_PPC_POWERNV
-> +	pdn->pe_number = IODA_INVALID_PE;
-> +#endif
-> +	INIT_LIST_HEAD(&pdn->child_list);
-> +	INIT_LIST_HEAD(&pdn->list);
-> +	list_add_tail(&pdn->list, &parent->child_list);
-> +
-> +	/*
-> +	 * If we already have PCI device instance, lets
-> +	 * bind them.
-> +	 */
-> +	if (pdev)
-> +		pdev->dev.archdata.firmware_data = pdn;
-> +
-> +	return pdn;
+I think the problem is that the normal path for PCI_REASSIGN_ALL_RSRC is
+at boot-time, where we do this:
 
-I'd like to see this done in pcibios_add_device(), as I mentioned in
-response to "[PATCH V11 01/17] PCI/IOV: Export interface for retrieve VF's
-BDF".  Maybe that's not feasible for some reason, but it would be a nicer
-design if it's possible.
+    pcibios_init
+      pcibios_scan_phb
+        pci_scan_child_bus
+          ...
+            pci_device_add
+              pci_fixup_device(pci_fixup_header)
+		pcibios_fixup_resources                       # header fixup
+		  for (i = 0; i < DEVICE_COUNT_RESOURCE; i++)
+		    dev->resource[i].start = 0
+      pcibios_resource_survey
+        pcibios_allocate_resources
 
-The remove_dev_pci_info() work would be done in pcibios_release_device()
-then, of course.
+and we assign dev->resource[] for everything in
+pcibios_allocate_resources().
 
-> +}
-> +#endif // CONFIG_PCI_IOV
-> +
-> +struct pci_dn *add_dev_pci_info(struct pci_dev *pdev, u16 vf_num)
-> +{
-> +#ifdef CONFIG_PCI_IOV
-> +	struct pci_dn *parent, *pdn;
-> +	int i;
-> +
-> +	/* Only support IOV for now */
-> +	if (!pdev->is_physfn)
-> +		return pci_get_pdn(pdev);
-> +
-> +	/* Check if VFs have been populated */
-> +	pdn = pci_get_pdn(pdev);
-> +	if (!pdn || (pdn->flags & PCI_DN_FLAG_IOV_VF))
-> +		return NULL;
-> +
-> +	pdn->flags |= PCI_DN_FLAG_IOV_VF;
-> +	parent = pci_bus_to_pdn(pdev->bus);
-> +	if (!parent)
->  		return NULL;
-> -	return PCI_DN(dn);
-> +
-> +	for (i = 0; i < vf_num; i++) {
-> +		pdn = add_one_dev_pci_info(parent, NULL,
-> +					   pci_iov_virtfn_bus(pdev, i),
-> +					   pci_iov_virtfn_devfn(pdev, i));
-> +		if (!pdn) {
-> +			pr_warn("%s: Cannot create firmware data "
-> +				"for VF#%d of %s\n",
-> +				__func__, i, pci_name(pdev));
-> +			return NULL;
-> +		}
-> +	}
-> +#endif
-> +
-> +	return pci_get_pdn(pdev);
-> +}
-> +
-> +void remove_dev_pci_info(struct pci_dev *pdev, u16 vf_num)
-> +{
-> +#ifdef CONFIG_PCI_IOV
-> +	struct pci_dn *parent;
-> +	struct pci_dn *pdn, *tmp;
-> +	int i;
-> +
-> +	/* Only support IOV PF for now */
-> +	if (!pdev->is_physfn)
-> +		return;
-> +
-> +	/* Check if VFs have been populated */
-> +	pdn = pci_get_pdn(pdev);
-> +	if (!pdn || !(pdn->flags & PCI_DN_FLAG_IOV_VF))
-> +		return;
-> +
-> +	pdn->flags &= ~PCI_DN_FLAG_IOV_VF;
-> +	parent = pci_bus_to_pdn(pdev->bus);
-> +	if (!parent)
-> +		return;
-> +
-> +	/*
-> +	 * We might introduce flag to pci_dn in future
-> +	 * so that we can release VF's firmware data in
-> +	 * a batch mode.
-> +	 */
-> +	for (i = 0; i < vf_num; i++) {
-> +		list_for_each_entry_safe(pdn, tmp,
-> +			&parent->child_list, list) {
-> +			if (pdn->busno != pci_iov_virtfn_bus(pdev, i) ||
-> +			    pdn->devfn != pci_iov_virtfn_devfn(pdev, i))
-> +				continue;
-> +
-> +			if (!list_empty(&pdn->list))
-> +				list_del(&pdn->list);
-> +			kfree(pdn);
-> +		}
-> +	}
-> +#endif
->  }
+But VFs are enumerated later, when they are enabled by the PF driver after
+boot, so we have this path:
+
+    pci_enable_sriov
+      sriov_enable
+        virtfn_add(vf_id)
+          for (i = 0; i < 6; i++)
+            vf->resource[i].start = pf->resource[IOV + i].start + (size * vf_id)
+          pci_device_add
+            pci_fixup_device(pci_fixup_header)
+              pcibios_fixup_resources                   # header fixup
+                for (i = 0; i < DEVICE_COUNT_RESOURCE; i++)
+                  vf->resource[i].start = 0
+
+Here, we clear out vf->resource[0..5] in the header fixup, but we're not
+going to call pcibios_allocate_resources() again to reassign them.
+
+So I think the *intent* of PCI_REASSIGN_ALL_RSRC is preserved if
+pcibios_fixup_resources() leaves the VF resources alone, because the VF
+resources are completely determined by the PF resources, and the PF
+resources have already been reassigned.
+
+If my understanding is correct, I think the patch is reasonable, and I
+would try to put some of this explanation into the changelog.
+
+Bjorn
