@@ -1,20 +1,27 @@
-Return-Path: <fabf@skynet.be>
-Received: from mailrelay107.isp.belgacom.be (mailrelay107.isp.belgacom.be
- [195.238.20.134])
- by lists.ozlabs.org (Postfix) with ESMTP id 1E49F1A0DC3
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Feb 2015 05:13:10 +1100 (AEDT)
-From: Fabian Frederick <fabf@skynet.be>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 3/7 linux-next] powerpc/pmac: replace current->state by
- set_current_state()
-Date: Fri, 20 Feb 2015 19:12:53 +0100
-Message-Id: <1424455977-21903-3-git-send-email-fabf@skynet.be>
-In-Reply-To: <1424455977-21903-1-git-send-email-fabf@skynet.be>
-References: <1424455977-21903-1-git-send-email-fabf@skynet.be>
-Cc: Peter Zijlstra <peterz@infradead.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Fabian Frederick <fabf@skynet.be>, Ingo Molnar <mingo@redhat.com>,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <mohicks@gmail.com>
+Received: from mail-ig0-x232.google.com (mail-ig0-x232.google.com
+ [IPv6:2607:f8b0:4001:c05::232])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id AB4211A0F02
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Feb 2015 05:26:23 +1100 (AEDT)
+Received: by mail-ig0-f178.google.com with SMTP id hl2so5132871igb.5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Feb 2015 10:26:21 -0800 (PST)
+MIME-Version: 1.0
+Sender: mohicks@gmail.com
+In-Reply-To: <CAJUS3XmnuUhgezxhBKeu2QLk-QqGVf3ZuwSycs_w=J3KC3BATg@mail.gmail.com>
+References: <1424449276-5288-1-git-send-email-mort@bork.org>
+ <CAJUS3XmnuUhgezxhBKeu2QLk-QqGVf3ZuwSycs_w=J3KC3BATg@mail.gmail.com>
+Date: Fri, 20 Feb 2015 13:26:21 -0500
+Message-ID: <CAJUS3XmPLvU2cWBJV0dVzQErVumaS+dVj+WzOfBKuKwT0wL-Mg@mail.gmail.com>
+Subject: Re: [PATCH 0/5] crypto: talitos: Add crypto async queue handling
+From: Martin Hicks <mort@bork.org>
+To: Kim Phillips <kim.phillips@freescale.com>,
+ Scott Wood <scottwood@freescale.com>,
+ Kumar Gala <galak@kernel.crashing.org>
+Content-Type: text/plain; charset=UTF-8
+Cc: Martin Hicks <mort@bork.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-crypto@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,40 +31,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Use helper functions to access current->state.
-Direct assignments are prone to races and therefore buggy.
+Resending to linux-crypto in plain text.
+Sorry to everyone else for the duplication.
+mh
 
-current->state = TASK_RUNNING can be replaced by __set_current_state()
+On Fri, Feb 20, 2015 at 1:23 PM, Martin Hicks <mort@bork.org> wrote:
+>
+> I've just noticed that performance is pretty terrible with maxcpus=1, so
+> I'll investigate that.
+> mh
+>
+> On Fri, Feb 20, 2015 at 11:21 AM, Martin Hicks <mort@bork.org> wrote:
+>>
+>> I was testing dm-crypt performance with a Freescale P1022 board with
+>> a recent kernel and was getting IO errors while doing testing with LUKS.
+>> Investigation showed that all hardware FIFO slots were filling and
+>> the driver was returning EAGAIN to the block layer, which is not an
+>> expected response for an async crypto implementation.
+>>
+>> The following patch series adds a few small fixes, and reworks the
+>> submission path to use the crypto_queue mechanism to handle the
+>> request backlog.
+>>
+>>
+>> Martin Hicks (5):
+>>   crypto: talitos: Simplify per-channel initialization
+>>   crypto: talitos: Remove MD5_BLOCK_SIZE
+>>   crypto: talitos: Fix off-by-one and use all hardware slots
+>>   crypto: talitos: Reorganize request submission data structures
+>>   crypto: talitos: Add software backlog queue handling
+>>
+>>  drivers/crypto/talitos.c |  189
+>> ++++++++++++++++++++++++----------------------
+>>  drivers/crypto/talitos.h |   44 +++++++++--
+>>  2 files changed, 137 insertions(+), 96 deletions(-)
+>>
+>> --
+>> 1.7.10.4
+>>
+>
+>
+>
+> --
+> Martin Hicks P.Eng.      |         mort@bork.org
+> Bork Consulting Inc.     |   +1 (613) 266-2296
 
-Thanks to Peter Zijlstra for the exact definition of the problem.
 
-Suggested-By: Peter Zijlstra <peterz@infradead.org>
-Signed-off-by: Fabian Frederick <fabf@skynet.be>
----
- drivers/macintosh/via-pmu.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/macintosh/via-pmu.c b/drivers/macintosh/via-pmu.c
-index dee88e5..3c608d4 100644
---- a/drivers/macintosh/via-pmu.c
-+++ b/drivers/macintosh/via-pmu.c
-@@ -2109,7 +2109,7 @@ pmu_read(struct file *file, char __user *buf,
- 
- 	spin_lock_irqsave(&pp->lock, flags);
- 	add_wait_queue(&pp->wait, &wait);
--	current->state = TASK_INTERRUPTIBLE;
-+	set_current_state(TASK_INTERRUPTIBLE);
- 
- 	for (;;) {
- 		ret = -EAGAIN;
-@@ -2138,7 +2138,7 @@ pmu_read(struct file *file, char __user *buf,
- 		schedule();
- 		spin_lock_irqsave(&pp->lock, flags);
- 	}
--	current->state = TASK_RUNNING;
-+	__set_current_state(TASK_RUNNING);
- 	remove_wait_queue(&pp->wait, &wait);
- 	spin_unlock_irqrestore(&pp->lock, flags);
- 	
 -- 
-2.1.0
+Martin Hicks P.Eng.      |         mort@bork.org
+Bork Consulting Inc.     |   +1 (613) 266-2296
