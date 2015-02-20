@@ -1,27 +1,28 @@
-Return-Path: <mohicks@gmail.com>
-Received: from mail-ig0-x232.google.com (mail-ig0-x232.google.com
- [IPv6:2607:f8b0:4001:c05::232])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <clg@fr.ibm.com>
+Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AB4211A0F02
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Feb 2015 05:26:23 +1100 (AEDT)
-Received: by mail-ig0-f178.google.com with SMTP id hl2so5132871igb.5
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Feb 2015 10:26:21 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5CDA01A0EE2
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Feb 2015 07:16:24 +1100 (AEDT)
+Received: from /spool/local
+ by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <clg@fr.ibm.com>;
+ Fri, 20 Feb 2015 20:16:20 -0000
+Message-ID: <54E795FA.1090005@fr.ibm.com>
+Date: Fri, 20 Feb 2015 21:15:54 +0100
+From: Cedric Le Goater <clg@fr.ibm.com>
 MIME-Version: 1.0
-Sender: mohicks@gmail.com
-In-Reply-To: <CAJUS3XmnuUhgezxhBKeu2QLk-QqGVf3ZuwSycs_w=J3KC3BATg@mail.gmail.com>
-References: <1424449276-5288-1-git-send-email-mort@bork.org>
- <CAJUS3XmnuUhgezxhBKeu2QLk-QqGVf3ZuwSycs_w=J3KC3BATg@mail.gmail.com>
-Date: Fri, 20 Feb 2015 13:26:21 -0500
-Message-ID: <CAJUS3XmPLvU2cWBJV0dVzQErVumaS+dVj+WzOfBKuKwT0wL-Mg@mail.gmail.com>
-Subject: Re: [PATCH 0/5] crypto: talitos: Add crypto async queue handling
-From: Martin Hicks <mort@bork.org>
-To: Kim Phillips <kim.phillips@freescale.com>,
- Scott Wood <scottwood@freescale.com>,
- Kumar Gala <galak@kernel.crashing.org>
-Content-Type: text/plain; charset=UTF-8
-Cc: Martin Hicks <mort@bork.org>, linuxppc-dev@lists.ozlabs.org,
- linux-crypto@vger.kernel.org
+To: Guenter Roeck <linux@roeck-us.net>
+Subject: Re: [RFC PATCH 0/3] hwmon: (ibmpowernv) add DTS support
+References: <1423117857-32759-1-git-send-email-clg@fr.ibm.com>
+ <1424444857-13805-1-git-send-email-clg@fr.ibm.com>
+ <20150220165212.GE22752@roeck-us.net>
+In-Reply-To: <20150220165212.GE22752@roeck-us.net>
+Content-Type: text/plain; charset=windows-1252
+Cc: Stewart Smith <stewart@linux.vnet.ibm.com>, lm-sensors@lm-sensors.org,
+ Neelesh Gupta <neelegup@linux.vnet.ibm.com>, skiboot@lists.ozlabs.org,
+ linuxppc-dev@lists.ozlabs.org, Jean Delvare <jdelvare@suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,53 +32,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Resending to linux-crypto in plain text.
-Sorry to everyone else for the duplication.
-mh
+On 02/20/2015 05:52 PM, Guenter Roeck wrote:
+> On Fri, Feb 20, 2015 at 04:07:34PM +0100, Cédric Le Goater wrote:
+>> Hello !
+>>
+>> These patches rework the ibmpowernv driver to support the new device 
+>> tree as proposed by this patchset on the skiboot mailing list :
+>>
+>>   https://lists.ozlabs.org/pipermail/skiboot/2015-February/000457.html
+>>
+>> They are based on Linux 3.19 and were tested on IBM Power and Open Power 
+>> systems running trusty.
+>>
+>> The main issue is that the new device tree is incompatible with the 
+>> previous ibmpowernv drivers. The consequence is no powernv sensors 
+>> on systems with such a opal/linux configuration.
+>>
+> I don't think that would be acceptable. There must be lots of such
+> systems out there. Why does it have to be incompatible ?
+> Can't it support both the old and new versions ?
 
-On Fri, Feb 20, 2015 at 1:23 PM, Martin Hicks <mort@bork.org> wrote:
->
-> I've just noticed that performance is pretty terrible with maxcpus=1, so
-> I'll investigate that.
-> mh
->
-> On Fri, Feb 20, 2015 at 11:21 AM, Martin Hicks <mort@bork.org> wrote:
->>
->> I was testing dm-crypt performance with a Freescale P1022 board with
->> a recent kernel and was getting IO errors while doing testing with LUKS.
->> Investigation showed that all hardware FIFO slots were filling and
->> the driver was returning EAGAIN to the block layer, which is not an
->> expected response for an async crypto implementation.
->>
->> The following patch series adds a few small fixes, and reworks the
->> submission path to use the crypto_queue mechanism to handle the
->> request backlog.
->>
->>
->> Martin Hicks (5):
->>   crypto: talitos: Simplify per-channel initialization
->>   crypto: talitos: Remove MD5_BLOCK_SIZE
->>   crypto: talitos: Fix off-by-one and use all hardware slots
->>   crypto: talitos: Reorganize request submission data structures
->>   crypto: talitos: Add software backlog queue handling
->>
->>  drivers/crypto/talitos.c |  189
->> ++++++++++++++++++++++++----------------------
->>  drivers/crypto/talitos.h |   44 +++++++++--
->>  2 files changed, 137 insertions(+), 96 deletions(-)
->>
->> --
->> 1.7.10.4
->>
->
->
->
-> --
-> Martin Hicks P.Eng.      |         mort@bork.org
-> Bork Consulting Inc.     |   +1 (613) 266-2296
+I should have provided more explanation in the Linux patchset. Sorry 
+for that. Here is the rationale behind this brutal code change.
+
+The initial ibmpowernv driver was designed in the early days of the
+powernv platform and the device tree it is using to expose the sensors 
+has some limitations that makes it difficult to add new ones. The current 
+layout of the device tree is also tightly coupled to IBM Power systems 
+and their service processor (FSP). Open Power systems are different and 
+need a different solution.
+
+It is to get more sensors out the P8 (and there are quite a few) that 
+the OPAL patchset [1] proposes a new device tree. On the Linux side, it 
+feels simpler to make a jump forward and break the compatibility than 
+to maintain multiple branches of code just to keep alive an early v1 
+of the ibmpowernv driver.    
+
+Open Power systems won't be impacted as ibmpowernv does not support them.
 
 
+Cheers,
 
--- 
-Martin Hicks P.Eng.      |         mort@bork.org
-Bork Consulting Inc.     |   +1 (613) 266-2296
+C.
+
+
+[1] https://lists.ozlabs.org/pipermail/skiboot/2015-February/000457.html
