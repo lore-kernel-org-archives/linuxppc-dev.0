@@ -1,25 +1,22 @@
-Return-Path: <linux@roeck-us.net>
-Received: from bh-25.webhostbox.net (bh-25.webhostbox.net [208.91.199.152])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mohicks@gmail.com>
+Received: from mail-ie0-x231.google.com (mail-ie0-x231.google.com
+ [IPv6:2607:f8b0:4001:c03::231])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 01B171A0FC3
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Feb 2015 03:53:13 +1100 (AEDT)
-Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
- (envelope-from <linux@roeck-us.net>) id 1YOqpC-001ySk-SK
- for linuxppc-dev@lists.ozlabs.org; Fri, 20 Feb 2015 16:53:11 +0000
-Date: Fri, 20 Feb 2015 08:53:06 -0800
-From: Guenter Roeck <linux@roeck-us.net>
-To: =?iso-8859-1?Q?C=E9dric?= Le Goater <clg@fr.ibm.com>
-Subject: Re: [RFC PATCH 1/3] powerpc/powernv: Check OPAL sensor calls exist
-Message-ID: <20150220165306.GF22752@roeck-us.net>
-References: <1423117857-32759-1-git-send-email-clg@fr.ibm.com>
- <1424444857-13805-2-git-send-email-clg@fr.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <1424444857-13805-2-git-send-email-clg@fr.ibm.com>
-Cc: Stewart Smith <stewart@linux.vnet.ibm.com>, lm-sensors@lm-sensors.org,
- Neelesh Gupta <neelegup@linux.vnet.ibm.com>, skiboot@lists.ozlabs.org,
- linuxppc-dev@lists.ozlabs.org, Jean Delvare <jdelvare@suse.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id C36671A0EBF
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Feb 2015 04:00:19 +1100 (AEDT)
+Received: by iecrd18 with SMTP id rd18so9285216iec.5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Feb 2015 09:00:17 -0800 (PST)
+Sender: Martin Hicks <mohicks@gmail.com>
+From: Martin Hicks <mort@bork.org>
+To: Kim Phillips <kim.phillips@freescale.com>,
+ Scott Wood <scottwood@freescale.com>,
+ Kumar Gala <galak@kernel.crashing.org>
+Subject: [PATCH 0/2] crypto: talitos: Add AES-XTS mode
+Date: Fri, 20 Feb 2015 12:00:08 -0500
+Message-Id: <1424451610-5786-1-git-send-email-mort@bork.org>
+Cc: Martin Hicks <mort@bork.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-crypto@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,29 +26,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Feb 20, 2015 at 04:07:35PM +0100, Cédric Le Goater wrote:
+This adds the AES-XTS mode, supported by the Freescale SEC 3.3.2.
 
-You should explain here why this patch is needed.
+One of the nice things about this hardware is that it knows how to deal
+with encrypt/decrypt requests that are larger than sector size, but that 
+also requires that that the sector size be passed into the crypto engine
+as an XTS cipher context parameter.
 
-> Signed-off-by: Cédric Le Goater <clg@fr.ibm.com>
-> ---
->  arch/powerpc/platforms/powernv/opal-sensor.c |    3 +++
->  1 file changed, 3 insertions(+)
-> 
-> diff --git a/arch/powerpc/platforms/powernv/opal-sensor.c b/arch/powerpc/platforms/powernv/opal-sensor.c
-> index 4ab67ef7abc9..544292f2020f 100644
-> --- a/arch/powerpc/platforms/powernv/opal-sensor.c
-> +++ b/arch/powerpc/platforms/powernv/opal-sensor.c
-> @@ -72,6 +72,9 @@ static __init int opal_sensor_init(void)
->  	struct platform_device *pdev;
->  	struct device_node *sensor;
->  
-> +	if (!opal_check_token(OPAL_SENSOR_READ))
-> +		return -ENODEV;
-> +
->  	sensor = of_find_node_by_path("/ibm,opal/sensors");
->  	if (!sensor) {
->  		pr_err("Opal node 'sensors' not found\n");
-> -- 
-> 1.7.10.4
-> 
+When a request is larger than the sector size the sector number is
+incremented by the talitos engine and the tweak key is re-calculated
+for the new sector.
+
+I've tested this with 256bit and 512bit keys (tweak and data keys of 128bit
+and 256bit) to ensure interoperability with the software AES-XTS
+implementation.  All testing was done using dm-crypt/LUKS with
+aes-xts-plain64.
+
+Is there a better solution that just hard coding the sector size to
+(1<<SECTOR_SHIFT)?  Maybe dm-crypt should be modified to pass the
+sector size along with the plain/plain64 IV to an XTS algorithm?
+
+Martin Hicks (2):
+  crypto: talitos: Clean ups and comment fixes for ablkcipher commands
+  crypto: talitos: Add AES-XTS Support
+
+ drivers/crypto/talitos.c |   45 +++++++++++++++++++++++++++++++++++++--------
+ drivers/crypto/talitos.h |    1 +
+ 2 files changed, 38 insertions(+), 8 deletions(-)
+
+-- 
+1.7.10.4
