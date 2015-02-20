@@ -1,18 +1,26 @@
-Return-Path: <davem@davemloft.net>
-Received: from shards.monkeyblade.net (shards.monkeyblade.net
- [IPv6:2001:4f8:3:36:211:85ff:fe63:a549])
- by lists.ozlabs.org (Postfix) with ESMTP id 17BFF1A0F76
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Feb 2015 07:20:26 +1100 (AEDT)
-Date: Fri, 20 Feb 2015 15:20:21 -0500 (EST)
-Message-Id: <20150220.152021.2226608147725066444.davem@davemloft.net>
-To: kda@linux-powerpc.org
-Subject: Re: bpf: Enable BPF JIT on ppc32
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1424156683-2682-1-git-send-email-kda@linux-powerpc.org>
-References: <1424156683-2682-1-git-send-email-kda@linux-powerpc.org>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Return-Path: <mohicks@gmail.com>
+Received: from mail-ig0-x231.google.com (mail-ig0-x231.google.com
+ [IPv6:2607:f8b0:4001:c05::231])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id C611C1A0F02
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Feb 2015 05:23:32 +1100 (AEDT)
+Received: by mail-ig0-f177.google.com with SMTP id z20so5092079igj.4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Feb 2015 10:23:28 -0800 (PST)
+MIME-Version: 1.0
+Sender: mohicks@gmail.com
+In-Reply-To: <1424449276-5288-1-git-send-email-mort@bork.org>
+References: <1424449276-5288-1-git-send-email-mort@bork.org>
+Date: Fri, 20 Feb 2015 13:23:28 -0500
+Message-ID: <CAJUS3XmnuUhgezxhBKeu2QLk-QqGVf3ZuwSycs_w=J3KC3BATg@mail.gmail.com>
+Subject: Re: [PATCH 0/5] crypto: talitos: Add crypto async queue handling
+From: Martin Hicks <mort@bork.org>
+To: Kim Phillips <kim.phillips@freescale.com>,
+ Scott Wood <scottwood@freescale.com>,
+ Kumar Gala <galak@kernel.crashing.org>
+Content-Type: multipart/alternative; boundary=047d7bdca5b629ab7b050f89263d
+Cc: Martin Hicks <mort@bork.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-crypto@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,15 +30,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-aFrom: Denis Kirjanov <kda@linux-powerpc.org>
-Date: Tue, 17 Feb 2015 10:04:37 +0300
+--047d7bdca5b629ab7b050f89263d
+Content-Type: text/plain; charset=UTF-8
 
-> This patch series enables BPF JIT on ppc32. There are relatevily
-> few chnages in the code to make it work.
-> 
-> All test_bpf tests passed both on 7447a and P2041-based machines.
-> 
-> Changelog:
-> v1 - > v2: Reordered Kconfig patch in the series
+I've just noticed that performance is pretty terrible with maxcpus=1, so
+I'll investigate that.
+mh
 
-Series applied to net-next, thanks.
+On Fri, Feb 20, 2015 at 11:21 AM, Martin Hicks <mort@bork.org> wrote:
+
+> I was testing dm-crypt performance with a Freescale P1022 board with
+> a recent kernel and was getting IO errors while doing testing with LUKS.
+> Investigation showed that all hardware FIFO slots were filling and
+> the driver was returning EAGAIN to the block layer, which is not an
+> expected response for an async crypto implementation.
+>
+> The following patch series adds a few small fixes, and reworks the
+> submission path to use the crypto_queue mechanism to handle the
+> request backlog.
+>
+>
+> Martin Hicks (5):
+>   crypto: talitos: Simplify per-channel initialization
+>   crypto: talitos: Remove MD5_BLOCK_SIZE
+>   crypto: talitos: Fix off-by-one and use all hardware slots
+>   crypto: talitos: Reorganize request submission data structures
+>   crypto: talitos: Add software backlog queue handling
+>
+>  drivers/crypto/talitos.c |  189
+> ++++++++++++++++++++++++----------------------
+>  drivers/crypto/talitos.h |   44 +++++++++--
+>  2 files changed, 137 insertions(+), 96 deletions(-)
+>
+> --
+> 1.7.10.4
+>
+>
+
+
+-- 
+Martin Hicks P.Eng.      |         mort@bork.org
+Bork Consulting Inc.     |   +1 (613) 266-2296
+
+--047d7bdca5b629ab7b050f89263d
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+
+<div dir=3D"ltr"><div class=3D"gmail_extra"><br></div><div class=3D"gmail_e=
+xtra">I&#39;ve just noticed that performance is pretty terrible with maxcpu=
+s=3D1, so I&#39;ll investigate that.</div><div class=3D"gmail_extra">mh</di=
+v><div class=3D"gmail_extra"><br><div class=3D"gmail_quote">On Fri, Feb 20,=
+ 2015 at 11:21 AM, Martin Hicks <span dir=3D"ltr">&lt;<a href=3D"mailto:mor=
+t@bork.org" target=3D"_blank">mort@bork.org</a>&gt;</span> wrote:<br><block=
+quote class=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;border-left:1px #ccc=
+ solid;padding-left:1ex">I was testing dm-crypt performance with a Freescal=
+e P1022 board with<br>
+a recent kernel and was getting IO errors while doing testing with LUKS.<br=
+>
+Investigation showed that all hardware FIFO slots were filling and<br>
+the driver was returning EAGAIN to the block layer, which is not an<br>
+expected response for an async crypto implementation.<br>
+<br>
+The following patch series adds a few small fixes, and reworks the<br>
+submission path to use the crypto_queue mechanism to handle the<br>
+request backlog.<br>
+<br>
+<br>
+Martin Hicks (5):<br>
+=C2=A0 crypto: talitos: Simplify per-channel initialization<br>
+=C2=A0 crypto: talitos: Remove MD5_BLOCK_SIZE<br>
+=C2=A0 crypto: talitos: Fix off-by-one and use all hardware slots<br>
+=C2=A0 crypto: talitos: Reorganize request submission data structures<br>
+=C2=A0 crypto: talitos: Add software backlog queue handling<br>
+<br>
+=C2=A0drivers/crypto/talitos.c |=C2=A0 189 ++++++++++++++++++++++++--------=
+--------------<br>
+=C2=A0drivers/crypto/talitos.h |=C2=A0 =C2=A044 +++++++++--<br>
+=C2=A02 files changed, 137 insertions(+), 96 deletions(-)<br>
+<span class=3D"HOEnZb"><font color=3D"#888888"><br>
+--<br>
+1.7.10.4<br>
+<br>
+</font></span></blockquote></div><br><br clear=3D"all"><div><br></div>-- <b=
+r><div class=3D"gmail_signature"><div dir=3D"ltr">Martin Hicks P.Eng. =C2=
+=A0=C2=A0 =C2=A0 | =C2=A0 =C2=A0 =C2=A0 =C2=A0 <a href=3D"mailto:mort@bork.=
+org" target=3D"_blank">mort@bork.org</a><br>Bork Consulting Inc. =C2=A0 =C2=
+=A0 | =C2=A0 +1 (613) 266-2296<div></div><div></div><div></div></div></div>
+</div></div>
+
+--047d7bdca5b629ab7b050f89263d--
