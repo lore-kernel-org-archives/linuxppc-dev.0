@@ -1,29 +1,38 @@
-Return-Path: <haokexin@gmail.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <nacc@linux.vnet.ibm.com>
+Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 75E4B1A0CC2
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Feb 2015 22:26:18 +1100 (AEDT)
-Received: from mail-qg0-x231.google.com (mail-qg0-x231.google.com
- [IPv6:2607:f8b0:400d:c04::231])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id D8F9914017F
- for <linuxppc-dev@ozlabs.org>; Sat, 21 Feb 2015 22:26:17 +1100 (AEDT)
-Received: by mail-qg0-f49.google.com with SMTP id q107so18006842qgd.8
- for <linuxppc-dev@ozlabs.org>; Sat, 21 Feb 2015 03:26:16 -0800 (PST)
-Date: Sat, 21 Feb 2015 19:26:07 +0800
-From: Kevin Hao <haokexin@gmail.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 1/3] powerpc/dma: Always configure ZONE_DMA32 correctly
-Message-ID: <20150221112607.GA5321@pek-khao-d1.corp.ad.wrs.com>
-References: <1424421325.27448.41.camel@kernel.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3E89E1A0E53
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 22 Feb 2015 06:00:59 +1100 (AEDT)
+Received: from /spool/local
+ by e7.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
+ Sat, 21 Feb 2015 14:00:56 -0500
+Received: from b01cxnp23032.gho.pok.ibm.com (b01cxnp23032.gho.pok.ibm.com
+ [9.57.198.27])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 3722438C8026
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Feb 2015 14:01:13 -0500 (EST)
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+ by b01cxnp23032.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t1LJ0qsq19595364
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Feb 2015 19:00:53 GMT
+Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
+ by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t1LJ0pJS025278
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Feb 2015 14:00:52 -0500
+Date: Sat, 21 Feb 2015 11:00:50 -0800
+From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: [PATCH v2] pseries/iommu: remove iommu device references via bus
+ notifier
+Message-ID: <20150221190050.GA20184@linux.vnet.ibm.com>
+References: <20150219184103.GB13745@linux.vnet.ibm.com>
+ <1424406689.11680.3.camel@ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="bp/iNruPH9dso1Pn"
-In-Reply-To: <1424421325.27448.41.camel@kernel.crashing.org>
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
- Anton Blanchard <anton@au1.ibm.com>, Brian J King <bjking1@us.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1424406689.11680.3.camel@ellerman.id.au>
+Cc: Alexey Kardashevskiy <aik@au1.ibm.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,74 +42,153 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 20.02.2015 [15:31:29 +1100], Michael Ellerman wrote:
+> On Thu, 2015-02-19 at 10:41 -0800, Nishanth Aravamudan wrote:
+> > After d905c5df9aef ("PPC: POWERNV: move iommu_add_device earlier"), the
+> > refcnt on the kobject backing the IOMMU group for a PCI device is
+> > elevated by each call to pci_dma_dev_setup_pSeriesLP() (via
+> > set_iommu_table_base_and_group). When we go to dlpar a multi-function
+> > PCI device out:
+> > 
+> > 	iommu_reconfig_notifier ->
+> > 		iommu_free_table ->
+> > 			iommu_group_put
+> > 			BUG_ON(tbl->it_group)
+> > 
+> > We trip this BUG_ON, because there are still references on the table, so
+> > it is not freed. Fix this by also adding a bus notifier identical to
+> > PowerNV for pSeries.
+> 
+> Please put it somewhere common, arch/powerpc/kernel/iommu.c perhaps, and just
+> add a second machine_init_call() for pseries.
 
---bp/iNruPH9dso1Pn
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+How does this look? Only compile-tested with CONFIG_IOMMU_API on/off so
+far, waiting for access to the test LPAR (should have it on Monday).
 
-On Fri, Feb 20, 2015 at 07:35:25PM +1100, Benjamin Herrenschmidt wrote:
-> We do this for consistency and also in order to support the use of a
-> consistent mask smaller than the dma mask in subsequent patches.
->=20
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> ---
->  arch/powerpc/kernel/dma-swiotlb.c | 3 ---
->  arch/powerpc/mm/mem.c             | 6 ++++++
->  2 files changed, 6 insertions(+), 3 deletions(-)
->=20
-> diff --git a/arch/powerpc/kernel/dma-swiotlb.c b/arch/powerpc/kernel/dma-=
-swiotlb.c
-> index 7359797..cb92f94 100644
-> --- a/arch/powerpc/kernel/dma-swiotlb.c
-> +++ b/arch/powerpc/kernel/dma-swiotlb.c
-> @@ -110,9 +110,6 @@ void __init swiotlb_detect_4g(void)
->  {
->  	if ((memblock_end_of_DRAM() - 1) > 0xffffffff) {
->  		ppc_swiotlb_enable =3D 1;
-> -#ifdef CONFIG_ZONE_DMA32
-> -		limit_zone_pfn(ZONE_DMA32, (1ULL << 32) >> PAGE_SHIFT);
-> -#endif
->  	}
->  }
-> =20
-> diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-> index b7285a5..f146ef0 100644
-> --- a/arch/powerpc/mm/mem.c
-> +++ b/arch/powerpc/mm/mem.c
-> @@ -307,6 +307,12 @@ void __init paging_init(void)
->  	printk(KERN_DEBUG "Memory hole size: %ldMB\n",
->  	       (long int)((top_of_ram - total_ram) >> 20));
-> =20
-> +#ifdef CONFIG_ZONE_DMA32
-> +	/* Default limit for ZONE_DMA32, platform might limit it
-> +	 * further due to PCI bridge addressing limitations
-> +	 */
-> +	limit_zone_pfn(ZONE_DMA32, (1ULL << 32) >> PAGE_SHIFT);
-> +#endif
->  #ifdef CONFIG_HIGHMEM
 
-Hmm, won't this break the PCI on the fsl SoCs? The ZONE_DMA32 is set to
-2GB due to the PCI inbound window limitation on fsl SoCs. This will override
-that unconditionally. Please see the commit 84f44cc56c09 ("powerpc/fsl-pci:
-Limit ZONE_DMA32 to 2GiB on 64-bit platforms") for more detail.
+After d905c5df9aef ("PPC: POWERNV: move iommu_add_device earlier"), the
+refcnt on the kobject backing the IOMMU group for a PCI device is
+elevated by each call to pci_dma_dev_setup_pSeriesLP() (via
+set_iommu_table_base_and_group). When we go to dlpar a multi-function
+PCI device out:
 
-Thanks,
-Kevin
+        iommu_reconfig_notifier ->
+                iommu_free_table ->
+                        iommu_group_put
+                        BUG_ON(tbl->it_group)
 
---bp/iNruPH9dso1Pn
-Content-Type: application/pgp-signature
+We trip this BUG_ON, because there are still references on the table, so
+it is not freed. Fix this by moving the PowerNV bus notifier to common
+code and calling it for both PowerNV and pSeries.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+Fixes: d905c5df9aef ("PPC: POWERNV: move iommu_add_device earlier")
+Signed-off-by: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+Cc: stable@kernel.org (3.13+)
 
-iQEcBAEBAgAGBQJU6GtPAAoJEJNY7TDerrFxPgkH/RKUpc6iR6HJte05sj3ejMz5
-hAierSXSR+OcwqYReMQ3MNyvJYGjAO4DY93QquOiePO+0I6YkFRocd4rwhXcwwEl
-YoYuSqhDLq31Cc5EfLCs8Xkd5fbEjWIsPaz9LgGY8GeTuuQNnRREWwnf7Bx5Xdss
-ygYin0dzwn+kJH/Ou0tenCqiyX9lFl1NMBhumibT6ULJLRHgnDDmo0jU1X/NhVxH
-orDFV+6xzCCYW1+wstw3QhaW8b62AH44b0vuoq8JEcvdUSrQ1uHYEdrfY0th4yVn
-KOff8hXIg7GYdp/tPEoro8IDU3ZuJPnGJlwViADpK0TubcPPsaiw4Q2gf1PfXv4=
-=wv2J
------END PGP SIGNATURE-----
+---
+v1 -> v2:
+  Move powernv code to common file, just add machine_init_call for pseries.
+  Suggested by Michael Ellerman.
 
---bp/iNruPH9dso1Pn--
+Michael, I'll send another update once I have testing results.
+
+diff -urpN linux-3.19/arch/powerpc/include/asm/iommu.h linux-3.19-dev/arch/powerpc/include/asm/iommu.h
+--- linux-3.19/arch/powerpc/include/asm/iommu.h	2015-02-08 18:54:22.000000000 -0800
++++ linux-3.19-dev/arch/powerpc/include/asm/iommu.h	2015-02-21 09:03:55.960995053 -0800
+@@ -113,6 +113,7 @@ extern void iommu_register_group(struct
+ 				 int pci_domain_number, unsigned long pe_num);
+ extern int iommu_add_device(struct device *dev);
+ extern void iommu_del_device(struct device *dev);
++extern int __init tce_iommu_bus_notifier_init(void);
+ #else
+ static inline void iommu_register_group(struct iommu_table *tbl,
+ 					int pci_domain_number,
+@@ -128,6 +129,11 @@ static inline int iommu_add_device(struc
+ static inline void iommu_del_device(struct device *dev)
+ {
+ }
++
++static inline int __init tce_iommu_bus_notifier_init(void) 
++{ 
++        return 0; 
++} 
+ #endif /* !CONFIG_IOMMU_API */
+ 
+ static inline void set_iommu_table_base_and_group(struct device *dev,
+diff -urpN linux-3.19/arch/powerpc/kernel/iommu.c linux-3.19-dev/arch/powerpc/kernel/iommu.c
+--- linux-3.19/arch/powerpc/kernel/iommu.c	2015-02-08 18:54:22.000000000 -0800
++++ linux-3.19-dev/arch/powerpc/kernel/iommu.c	2015-02-20 17:50:19.229927080 -0800
+@@ -1175,4 +1175,30 @@ void iommu_del_device(struct device *dev
+ }
+ EXPORT_SYMBOL_GPL(iommu_del_device);
+ 
++static int tce_iommu_bus_notifier(struct notifier_block *nb,
++                unsigned long action, void *data)
++{
++        struct device *dev = data;
++
++        switch (action) {
++        case BUS_NOTIFY_ADD_DEVICE:
++                return iommu_add_device(dev);
++        case BUS_NOTIFY_DEL_DEVICE:
++                if (dev->iommu_group)
++                        iommu_del_device(dev);
++                return 0;
++        default:
++                return 0;
++        }
++}
++
++static struct notifier_block tce_iommu_bus_nb = {
++        .notifier_call = tce_iommu_bus_notifier,
++};
++
++int __init tce_iommu_bus_notifier_init(void)
++{
++        bus_register_notifier(&pci_bus_type, &tce_iommu_bus_nb);
++        return 0;
++}
+ #endif /* CONFIG_IOMMU_API */
+diff -urpN linux-3.19/arch/powerpc/platforms/powernv/pci.c linux-3.19-dev/arch/powerpc/platforms/powernv/pci.c
+--- linux-3.19/arch/powerpc/platforms/powernv/pci.c	2015-02-08 18:54:22.000000000 -0800
++++ linux-3.19-dev/arch/powerpc/platforms/powernv/pci.c	2015-02-20 17:50:33.917927464 -0800
+@@ -866,30 +866,4 @@ void __init pnv_pci_init(void)
+ #endif
+ }
+ 
+-static int tce_iommu_bus_notifier(struct notifier_block *nb,
+-		unsigned long action, void *data)
+-{
+-	struct device *dev = data;
+-
+-	switch (action) {
+-	case BUS_NOTIFY_ADD_DEVICE:
+-		return iommu_add_device(dev);
+-	case BUS_NOTIFY_DEL_DEVICE:
+-		if (dev->iommu_group)
+-			iommu_del_device(dev);
+-		return 0;
+-	default:
+-		return 0;
+-	}
+-}
+-
+-static struct notifier_block tce_iommu_bus_nb = {
+-	.notifier_call = tce_iommu_bus_notifier,
+-};
+-
+-static int __init tce_iommu_bus_notifier_init(void)
+-{
+-	bus_register_notifier(&pci_bus_type, &tce_iommu_bus_nb);
+-	return 0;
+-}
+ machine_subsys_initcall_sync(powernv, tce_iommu_bus_notifier_init);
+diff -urpN linux-3.19/arch/powerpc/platforms/pseries/iommu.c linux-3.19-dev/arch/powerpc/platforms/pseries/iommu.c
+--- linux-3.19/arch/powerpc/platforms/pseries/iommu.c	2015-02-08 18:54:22.000000000 -0800
++++ linux-3.19-dev/arch/powerpc/platforms/pseries/iommu.c	2015-02-20 17:51:23.265928866 -0800
+@@ -1340,3 +1340,5 @@ static int __init disable_multitce(char
+ }
+ 
+ __setup("multitce=", disable_multitce);
++
++machine_subsys_initcall_sync(pseries, tce_iommu_bus_notifier_init);
