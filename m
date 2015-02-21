@@ -1,26 +1,40 @@
-Return-Path: <linux@roeck-us.net>
-Received: from bh-25.webhostbox.net (bh-25.webhostbox.net [208.91.199.152])
+Return-Path: <paulmck@linux.vnet.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 28B441A0FB0
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Feb 2015 10:53:45 +1100 (AEDT)
-Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
- (envelope-from <linux@roeck-us.net>) id 1YOxOB-000gVo-Dq
- for linuxppc-dev@lists.ozlabs.org; Fri, 20 Feb 2015 23:53:43 +0000
-Message-ID: <54E7C8C7.40001@roeck-us.net>
-Date: Fri, 20 Feb 2015 15:52:39 -0800
-From: Guenter Roeck <linux@roeck-us.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id A36EA1A0F56
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Feb 2015 16:18:52 +1100 (AEDT)
+Received: from /spool/local
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
+ Fri, 20 Feb 2015 22:18:49 -0700
+Received: from b03cxnp08025.gho.boulder.ibm.com
+ (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 6E6E51FF0021
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Feb 2015 22:09:59 -0700 (MST)
+Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
+ by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with
+ ESMTP id t1L5IlO635455110
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Feb 2015 22:18:47 -0700
+Received: from d03av05.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t1L5IlIQ003214
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Feb 2015 22:18:47 -0700
+Date: Fri, 20 Feb 2015 21:18:45 -0800
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: Paul Clarke <pc@us.ibm.com>
+Subject: Re: [PATCH v2] powerpc: re-enable dynticks
+Message-ID: <20150221051845.GS5745@linux.vnet.ibm.com>
+Reply-To: paulmck@linux.vnet.ibm.com
+References: <54DE52BC.3020303@us.ibm.com>
+ <1424045319.3018.2.camel@ellerman.id.au>
+ <54E76B3D.1010909@us.ibm.com>
 MIME-Version: 1.0
-To: Cedric Le Goater <clg@fr.ibm.com>
-Subject: Re: [RFC PATCH 0/3] hwmon: (ibmpowernv) add DTS support
-References: <1423117857-32759-1-git-send-email-clg@fr.ibm.com>
- <1424444857-13805-1-git-send-email-clg@fr.ibm.com>
- <20150220165212.GE22752@roeck-us.net> <54E795FA.1090005@fr.ibm.com>
-In-Reply-To: <54E795FA.1090005@fr.ibm.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Cc: Stewart Smith <stewart@linux.vnet.ibm.com>, lm-sensors@lm-sensors.org,
- Neelesh Gupta <neelegup@linux.vnet.ibm.com>, skiboot@lists.ozlabs.org,
- linuxppc-dev@lists.ozlabs.org, Jean Delvare <jdelvare@suse.de>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <54E76B3D.1010909@us.ibm.com>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ linux-kernel@vger.kernel.org, Frederic Weisbecker <fweisbec@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,45 +44,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 02/20/2015 12:15 PM, Cedric Le Goater wrote:
-> On 02/20/2015 05:52 PM, Guenter Roeck wrote:
->> On Fri, Feb 20, 2015 at 04:07:34PM +0100, Cédric Le Goater wrote:
->>> Hello !
->>>
->>> These patches rework the ibmpowernv driver to support the new device
->>> tree as proposed by this patchset on the skiboot mailing list :
->>>
->>>    https://lists.ozlabs.org/pipermail/skiboot/2015-February/000457.html
->>>
->>> They are based on Linux 3.19 and were tested on IBM Power and Open Power
->>> systems running trusty.
->>>
->>> The main issue is that the new device tree is incompatible with the
->>> previous ibmpowernv drivers. The consequence is no powernv sensors
->>> on systems with such a opal/linux configuration.
->>>
->> I don't think that would be acceptable. There must be lots of such
->> systems out there. Why does it have to be incompatible ?
->> Can't it support both the old and new versions ?
->
-> I should have provided more explanation in the Linux patchset. Sorry
-> for that. Here is the rationale behind this brutal code change.
->
-> The initial ibmpowernv driver was designed in the early days of the
-> powernv platform and the device tree it is using to expose the sensors
-> has some limitations that makes it difficult to add new ones. The current
-> layout of the device tree is also tightly coupled to IBM Power systems
-> and their service processor (FSP). Open Power systems are different and
-> need a different solution.
->
-> It is to get more sensors out the P8 (and there are quite a few) that
-> the OPAL patchset [1] proposes a new device tree. On the Linux side, it
-> feels simpler to make a jump forward and break the compatibility than
-> to maintain multiple branches of code just to keep alive an early v1
-> of the ibmpowernv driver.
->
+On Fri, Feb 20, 2015 at 11:13:33AM -0600, Paul Clarke wrote:
+> 
+> implement arch_irq_work_has_interrupt() for powerpc
+> 
+> (resending because I messed up the e-mail addresses)
+> 
+> Commit 9b01f5bf3 introduced a dependency on "IRQ work self-IPIs" for
+> full dynamic ticks to be enabled, by expecting architectures to
+> implement a suitable arch_irq_work_has_interrupt() routine.
+> 
+> Several arches have implemented this routine, including x86
+> (3010279f) and arm (09f6edd4), but powerpc was omitted.
+> 
+> This patch implements this routine for powerpc.
+> 
+> The symptom, at boot (on powerpc arch systems) with "nohz_full=<CPU
+> list>" is displayed:
+>     NO_HZ: Can't run full dynticks because arch doesn't support irq
+> work self-IPIs
+> 
+> after this patch:
+>     NO_HZ: Full dynticks CPUs: <CPU list>.
+> 
+> Tested against 3.19.
+> 
+> v2: changed "return 1" to "return true", per Michael Ellerman
+> 
+> CC: Frederic Weisbecker <fweisbec@gmail.com>
+> CC: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+> Signed-off-by: Paul A. Clarke <pc@us.ibm.com>
 
-Would it possibly be appropriate to write a different driver for the new
-device tree ?
+Reviewed-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
 
-Guenter
+> diff --git a/arch/powerpc/include/asm/irq_work.h
+> b/arch/powerpc/include/asm/irq_work.h
+> new file mode 100644
+> index 0000000..99cc0aa
+> --- /dev/null
+> +++ b/arch/powerpc/include/asm/irq_work.h
+> @@ -0,0 +1,11 @@
+> +#ifndef _ASM_IRQ_WORK_H
+> +#define _ASM_IRQ_WORK_H
+> +
+> +#include <asm/processor.h>
+> +
+> +static inline bool arch_irq_work_has_interrupt(void)
+> +{
+> +    return true;
+> +}
+> +
+> +#endif /* _ASM_IRQ_WORK_H */
