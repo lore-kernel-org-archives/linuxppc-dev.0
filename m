@@ -1,27 +1,29 @@
-Return-Path: <linux@roeck-us.net>
-Received: from bh-25.webhostbox.net (bh-25.webhostbox.net [208.91.199.152])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <haokexin@gmail.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 568FD1A0E4F
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Feb 2015 22:04:12 +1100 (AEDT)
-Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
- (envelope-from <linux@roeck-us.net>) id 1YP7r0-00340u-DI
- for linuxppc-dev@lists.ozlabs.org; Sat, 21 Feb 2015 11:04:10 +0000
-Message-ID: <54E865EC.60101@roeck-us.net>
-Date: Sat, 21 Feb 2015 03:03:08 -0800
-From: Guenter Roeck <linux@roeck-us.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 75E4B1A0CC2
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Feb 2015 22:26:18 +1100 (AEDT)
+Received: from mail-qg0-x231.google.com (mail-qg0-x231.google.com
+ [IPv6:2607:f8b0:400d:c04::231])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id D8F9914017F
+ for <linuxppc-dev@ozlabs.org>; Sat, 21 Feb 2015 22:26:17 +1100 (AEDT)
+Received: by mail-qg0-f49.google.com with SMTP id q107so18006842qgd.8
+ for <linuxppc-dev@ozlabs.org>; Sat, 21 Feb 2015 03:26:16 -0800 (PST)
+Date: Sat, 21 Feb 2015 19:26:07 +0800
+From: Kevin Hao <haokexin@gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 1/3] powerpc/dma: Always configure ZONE_DMA32 correctly
+Message-ID: <20150221112607.GA5321@pek-khao-d1.corp.ad.wrs.com>
+References: <1424421325.27448.41.camel@kernel.crashing.org>
 MIME-Version: 1.0
-To: Cedric Le Goater <clg@fr.ibm.com>
-Subject: Re: [RFC PATCH 0/3] hwmon: (ibmpowernv) add DTS support
-References: <1423117857-32759-1-git-send-email-clg@fr.ibm.com>
- <1424444857-13805-1-git-send-email-clg@fr.ibm.com>
- <20150220165212.GE22752@roeck-us.net> <54E795FA.1090005@fr.ibm.com>
- <54E7C8C7.40001@roeck-us.net> <54E83051.9080107@fr.ibm.com>
-In-Reply-To: <54E83051.9080107@fr.ibm.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Cc: Stewart Smith <stewart@linux.vnet.ibm.com>, lm-sensors@lm-sensors.org,
- Neelesh Gupta <neelegup@linux.vnet.ibm.com>, skiboot@lists.ozlabs.org,
- linuxppc-dev@lists.ozlabs.org, Jean Delvare <jdelvare@suse.de>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="bp/iNruPH9dso1Pn"
+In-Reply-To: <1424421325.27448.41.camel@kernel.crashing.org>
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
+ Anton Blanchard <anton@au1.ibm.com>, Brian J King <bjking1@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,63 +33,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 02/20/2015 11:14 PM, Cedric Le Goater wrote:
-> On 02/21/2015 12:52 AM, Guenter Roeck wrote:
->> On 02/20/2015 12:15 PM, Cedric Le Goater wrote:
->>> On 02/20/2015 05:52 PM, Guenter Roeck wrote:
->>>> On Fri, Feb 20, 2015 at 04:07:34PM +0100, Cédric Le Goater wrote:
->>>>> Hello !
->>>>>
->>>>> These patches rework the ibmpowernv driver to support the new device
->>>>> tree as proposed by this patchset on the skiboot mailing list :
->>>>>
->>>>>     https://lists.ozlabs.org/pipermail/skiboot/2015-February/000457.html
->>>>>
->>>>> They are based on Linux 3.19 and were tested on IBM Power and Open Power
->>>>> systems running trusty.
->>>>>
->>>>> The main issue is that the new device tree is incompatible with the
->>>>> previous ibmpowernv drivers. The consequence is no powernv sensors
->>>>> on systems with such a opal/linux configuration.
->>>>>
->>>> I don't think that would be acceptable. There must be lots of such
->>>> systems out there. Why does it have to be incompatible ?
->>>> Can't it support both the old and new versions ?
->>>
->>> I should have provided more explanation in the Linux patchset. Sorry
->>> for that. Here is the rationale behind this brutal code change.
->>>
->>> The initial ibmpowernv driver was designed in the early days of the
->>> powernv platform and the device tree it is using to expose the sensors
->>> has some limitations that makes it difficult to add new ones. The current
->>> layout of the device tree is also tightly coupled to IBM Power systems
->>> and their service processor (FSP). Open Power systems are different and
->>> need a different solution.
->>>
->>> It is to get more sensors out the P8 (and there are quite a few) that
->>> the OPAL patchset [1] proposes a new device tree. On the Linux side, it
->>> feels simpler to make a jump forward and break the compatibility than
->>> to maintain multiple branches of code just to keep alive an early v1
->>> of the ibmpowernv driver.
->>>
->>
->> Would it possibly be appropriate to write a different driver for the new
->> device tree ?
->
-> Sure. That is an option.
->
-> There are no conflicts between the trees so we can live with two drivers
-> using the same sensors/ root node. With time we will deprecate the initial
-> one.
->
-You lost me a bit. Are you saying you are going to replace the devicetree
-properties with something that is incompatible but retain the same
-compatible properties ? If so, how do you expect this to work ?
-How do you expect to be able to determine which version of devicetree
-is loaded, and thus which driver is needed ?
 
-I'll have to understand this way better. The link above doesn't explain
-what the differences are, nor how the driver is supposed to know what
-to do.
+--bp/iNruPH9dso1Pn
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Guenter
+On Fri, Feb 20, 2015 at 07:35:25PM +1100, Benjamin Herrenschmidt wrote:
+> We do this for consistency and also in order to support the use of a
+> consistent mask smaller than the dma mask in subsequent patches.
+>=20
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> ---
+>  arch/powerpc/kernel/dma-swiotlb.c | 3 ---
+>  arch/powerpc/mm/mem.c             | 6 ++++++
+>  2 files changed, 6 insertions(+), 3 deletions(-)
+>=20
+> diff --git a/arch/powerpc/kernel/dma-swiotlb.c b/arch/powerpc/kernel/dma-=
+swiotlb.c
+> index 7359797..cb92f94 100644
+> --- a/arch/powerpc/kernel/dma-swiotlb.c
+> +++ b/arch/powerpc/kernel/dma-swiotlb.c
+> @@ -110,9 +110,6 @@ void __init swiotlb_detect_4g(void)
+>  {
+>  	if ((memblock_end_of_DRAM() - 1) > 0xffffffff) {
+>  		ppc_swiotlb_enable =3D 1;
+> -#ifdef CONFIG_ZONE_DMA32
+> -		limit_zone_pfn(ZONE_DMA32, (1ULL << 32) >> PAGE_SHIFT);
+> -#endif
+>  	}
+>  }
+> =20
+> diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+> index b7285a5..f146ef0 100644
+> --- a/arch/powerpc/mm/mem.c
+> +++ b/arch/powerpc/mm/mem.c
+> @@ -307,6 +307,12 @@ void __init paging_init(void)
+>  	printk(KERN_DEBUG "Memory hole size: %ldMB\n",
+>  	       (long int)((top_of_ram - total_ram) >> 20));
+> =20
+> +#ifdef CONFIG_ZONE_DMA32
+> +	/* Default limit for ZONE_DMA32, platform might limit it
+> +	 * further due to PCI bridge addressing limitations
+> +	 */
+> +	limit_zone_pfn(ZONE_DMA32, (1ULL << 32) >> PAGE_SHIFT);
+> +#endif
+>  #ifdef CONFIG_HIGHMEM
+
+Hmm, won't this break the PCI on the fsl SoCs? The ZONE_DMA32 is set to
+2GB due to the PCI inbound window limitation on fsl SoCs. This will override
+that unconditionally. Please see the commit 84f44cc56c09 ("powerpc/fsl-pci:
+Limit ZONE_DMA32 to 2GiB on 64-bit platforms") for more detail.
+
+Thanks,
+Kevin
+
+--bp/iNruPH9dso1Pn
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBAgAGBQJU6GtPAAoJEJNY7TDerrFxPgkH/RKUpc6iR6HJte05sj3ejMz5
+hAierSXSR+OcwqYReMQ3MNyvJYGjAO4DY93QquOiePO+0I6YkFRocd4rwhXcwwEl
+YoYuSqhDLq31Cc5EfLCs8Xkd5fbEjWIsPaz9LgGY8GeTuuQNnRREWwnf7Bx5Xdss
+ygYin0dzwn+kJH/Ou0tenCqiyX9lFl1NMBhumibT6ULJLRHgnDDmo0jU1X/NhVxH
+orDFV+6xzCCYW1+wstw3QhaW8b62AH44b0vuoq8JEcvdUSrQ1uHYEdrfY0th4yVn
+KOff8hXIg7GYdp/tPEoro8IDU3ZuJPnGJlwViADpK0TubcPPsaiw4Q2gf1PfXv4=
+=wv2J
+-----END PGP SIGNATURE-----
+
+--bp/iNruPH9dso1Pn--
