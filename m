@@ -1,25 +1,25 @@
-Return-Path: <dev@codyps.com>
+Return-Path: <fweisbec@gmail.com>
 Received: from mail-ie0-x233.google.com (mail-ie0-x233.google.com
  [IPv6:2607:f8b0:4001:c03::233])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 433901A0D5C
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Feb 2015 08:21:21 +1100 (AEDT)
-Received: by iecrp18 with SMTP id rp18so19137616iec.9
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 22 Feb 2015 13:21:18 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id A37521A0B95
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Feb 2015 09:14:00 +1100 (AEDT)
+Received: by iecar1 with SMTP id ar1so19447372iec.0
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 22 Feb 2015 14:13:58 -0800 (PST)
 MIME-Version: 1.0
-In-Reply-To: <1422654363-2035-8-git-send-email-sukadev@linux.vnet.ibm.com>
-References: <1422654363-2035-1-git-send-email-sukadev@linux.vnet.ibm.com>
- <1422654363-2035-8-git-send-email-sukadev@linux.vnet.ibm.com>
-Date: Sun, 22 Feb 2015 16:21:18 -0500
-Message-ID: <CAPoQQ-0qXbDD=oi8owb+KpV8M3ttWrdMirNZknwkSGQ8teQVkQ@mail.gmail.com>
-Subject: Re: [PATCH v7 7/7] powerpc/perf/hv-24x7: Document sysfs event
- description entries
-From: Cody P Schafer <dev@codyps.com>
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+In-Reply-To: <1424059606.21410.41.camel@kernel.crashing.org>
+References: <54DE52BC.3020303@us.ibm.com>
+ <1424045319.3018.2.camel@ellerman.id.au>
+ <1424059606.21410.41.camel@kernel.crashing.org>
+Date: Sun, 22 Feb 2015 23:13:58 +0100
+Message-ID: <CAFTL4hw_caOPUPwkgDst=gwtT1wh_DUmL-djF43DJC5at=7+Jg@mail.gmail.com>
+Subject: Re: [PATCH] powerpc: re-enable dynticks
+From: Frederic Weisbecker <fweisbec@gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Content-Type: text/plain; charset=UTF-8
-Cc: Linux PPC <linuxppc-dev@lists.ozlabs.org>, Jiri Olsa <jolsa@redhat.com>,
- LKML <linux-kernel@vger.kernel.org>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Paul Clarke <pc@us.ibm.com>, LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,43 +29,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jan 30, 2015 at 4:46 PM, Sukadev Bhattiprolu
-<sukadev@linux.vnet.ibm.com> wrote:
-> From: Cody P Schafer <cody@linux.vnet.ibm.com>
->
-> Signed-off-by: Cody P Schafer <cody@linux.vnet.ibm.com>
-> Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-> ---
-> Changelog[v6]
->         Update Contact info to Linux on Power Developer list
->
->  .../testing/sysfs-bus-event_source-devices-hv_24x7 | 22 ++++++++++++++++++++++
->  1 file changed, 22 insertions(+)
->
-> diff --git a/Documentation/ABI/testing/sysfs-bus-event_source-devices-hv_24x7 b/Documentation/ABI/testing/sysfs-bus-event_source-devices-hv_24x7
-> index 32f3f5f..f893337 100644
-> --- a/Documentation/ABI/testing/sysfs-bus-event_source-devices-hv_24x7
-> +++ b/Documentation/ABI/testing/sysfs-bus-event_source-devices-hv_24x7
-> @@ -21,3 +21,25 @@ Contact:     Linux on PowerPC Developer List <linuxppc-dev@lists.ozlabs.org>
->  Description:
->                 Exposes the "version" field of the 24x7 catalog. This is also
->                 extractable from the provided binary "catalog" sysfs entry.
-> +
-> +What:          /sys/bus/event_source/devices/hv_24x7/event_descs/<event-name>
-> +Date:          February 2014
-> +Contact:       Linux on PowerPC Developer List <linuxppc-dev@lists.ozlabs.org>
-> +Description:
-> +               Provides the description of a particular event as provided by
-> +               the firmware. If firmware does not provide a description, no
-> +               file will be created.
-> +
-> +               Note that the event-name lacks the domain suffix appended for
-> +               events in the events/ dir.
+Hi Ben,
 
-I'm probably a bit late on this, but:
+2015-02-16 5:06 GMT+01:00 Benjamin Herrenschmidt <benh@kernel.crashing.org>:
+> On Mon, 2015-02-16 at 11:08 +1100, Michael Ellerman wrote:
+>> On Fri, 2015-02-13 at 13:38 -0600, Paul Clarke wrote:
+>> > implement arch_irq_work_has_interrupt() for powerpc
+>> >
+>> > Commit 9b01f5bf3 introduced a dependency on "IRQ work self-IPIs" for
+>> > full dynamic ticks to be enabled, by expecting architectures to
+>> > implement a suitable arch_irq_work_has_interrupt() routine.
+>> >
+>> > Several arches have implemented this routine, including x86 (3010279f)
+>> > and arm (09f6edd4), but powerpc was omitted.
+>> >
+>> > This patch implements this routine for powerpc.
+>> >
+>  .../...
+>>
+>> It makes the message change, but is that correct? ie. do we actually implement
+>> "IRQ work self-IPIs"?
+>
+> I think so... Fred, do you think what we do will work ? We hijack our
+> decrementer (local timer) by making it shoot almost immediately (1 tick
+> away) and run the irq work at the beginning of __timer_interrupt().
+>
+> At that point we are on our irq stack and have done irq_enter but that's
+> about it.
 
-Please consider removing the need for a user to know about the "domain
-suffixes" (which, as far as I know are 24x7 specific).
-If anyone else ever wants to add firmware/hardware/kernel provided
-event descriptions, they'll need to special case these ones as they
-don't match up with the actual event names.
+Yes that should work. After all "self-IPI" is an oxymoron. One would
+expect an IPI to be triggered by an irq controller but if such
+operation isn't supported with the current CPU being both source and
+destination, anything triggering the desired callback in an interrupt
+context in a reasonable amount of time ahead does the job here.
+
+I thought well that's what powerpc was doing for irq work but I wasn't
+sure I understood the code correctly. I should have pinged people
+about that, sorry.
+
+Thanks.
+
+>
+> Cheers,
+> Ben.
+>
+>> > diff --git a/arch/powerpc/include/asm/irq_work.h
+>> > b/arch/powerpc/include/asm/irq_work.h
+>> > new file mode 100644
+>> > index 0000000..18365ec
+>> > --- /dev/null
+>> > +++ b/arch/powerpc/include/asm/irq_work.h
+>> > @@ -0,0 +1,11 @@
+>> > +#ifndef _ASM_IRQ_WORK_H
+>> > +#define _ASM_IRQ_WORK_H
+>> > +
+>> > +#include <asm/processor.h>
+>> > +
+>> > +static inline bool arch_irq_work_has_interrupt(void)
+>> > +{
+>> > +   return 1;
+>>
+>> Should be "true";
+>>
+>> > +}
+>>
+>> cheers
+>>
+>>
+>> _______________________________________________
+>> Linuxppc-dev mailing list
+>> Linuxppc-dev@lists.ozlabs.org
+>> https://lists.ozlabs.org/listinfo/linuxppc-dev
+>
+>
