@@ -1,31 +1,16 @@
-Return-Path: <haokexin@gmail.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E87551A0CBE
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 22 Feb 2015 10:17:51 +1100 (AEDT)
-Received: from mail-qa0-x233.google.com (mail-qa0-x233.google.com
- [IPv6:2607:f8b0:400d:c00::233])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 5BD1314012E
- for <linuxppc-dev@ozlabs.org>; Sun, 22 Feb 2015 10:17:51 +1100 (AEDT)
-Received: by mail-qa0-f51.google.com with SMTP id i13so17493959qae.10
- for <linuxppc-dev@ozlabs.org>; Sat, 21 Feb 2015 15:17:48 -0800 (PST)
-Date: Sun, 22 Feb 2015 07:17:40 +0800
-From: Kevin Hao <haokexin@gmail.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 1/3] powerpc/dma: Always configure ZONE_DMA32 correctly
-Message-ID: <20150221231740.GA3255@pek-khao-d1.corp.ad.wrs.com>
-References: <1424421325.27448.41.camel@kernel.crashing.org>
- <20150221112607.GA5321@pek-khao-d1.corp.ad.wrs.com>
- <1424557431.4980.4.camel@kernel.crashing.org>
+Return-Path: <stockhausen@collogia.de>
+Received: from mailrelay.collogia.de (mailrelay.collogia.de [194.8.207.98])
+ by lists.ozlabs.org (Postfix) with SMTP id ACD401A0BF9
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 22 Feb 2015 19:59:46 +1100 (AEDT)
+Subject: [PATCH v2 0/7] AES for PPC/SPE
+From: Markus Stockhausen <stockhausen@collogia.de>
+Date: Sun, 22 Feb 2015 09:59:32 +0100
+To: <linux-crypto@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="azLHFNyN32YCQGCU"
-In-Reply-To: <1424557431.4980.4.camel@kernel.crashing.org>
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
- Anton Blanchard <anton@au1.ibm.com>, Brian J King <bjking1@us.ibm.com>
+Content-Type: multipart/mixed;
+ boundary="----=_NextPartTM-000-4c8d15d4-fd13-4621-af0b-01be93c120d3"
+Message-ID: <192d96a4-bc3b-4b5e-9fe4-485996341ede@EXCHANGE.collogia.de>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,32 +21,144 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---azLHFNyN32YCQGCU
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+This is a multi-part message in MIME format.
 
-On Sun, Feb 22, 2015 at 09:23:51AM +1100, Benjamin Herrenschmidt wrote:
-> No it won't, or am I missing something ? Ie, limit_zone_pfn() will only
-> reduce the size of the window, never increase it.
+------=_NextPartTM-000-4c8d15d4-fd13-4621-af0b-01be93c120d3
+Content-Type: text/plain
 
-Yes, you are right. Just overlook this. Sorry for the noise.
+[PATCH v2 0/7] AES for PPC/SPE
 
-Thanks,
-Kevin
+The following patches add support for 64bit accelerated AES
+calculation on PPC processors with SPE instruction set. Besides
+the AES core module it implements ECB/CBC/CTR/XTS as block
+ciphers. The implementation takes care of the following 
+constraints:
 
---azLHFNyN32YCQGCU
-Content-Type: application/pgp-signature
+- save SPE registers for interrupt context compatibility
+- disable preemption only for short intervals
+- endian independant
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+Module passes tcrypt mode=10 tests. Synthethic AES speedup 
+factors from insmod tcrypt sec=3 mode=200 taken on e500v2 
+800 MHz (TP Link WDR4900) compared with the generic kernel 
+module.
 
-iQEcBAEBAgAGBQJU6RIUAAoJEJNY7TDerrFx3sEIAMI0WxmCnQ0tF3pbG+JVQpwF
-0AfjQmOa0zzn5UmUWp2oNJ5tXnSMLWTAxQfZpn5KasQZYfEuN73w8JvjsfgJX7QC
-1z19GYXdhVlwpOpYOAsXb1wPhUymVwyP5FRpgLOHy9KFi+yd0CT17gi8lsu3gV8+
-fjIqrAg39pErNjDZDoDUihz207GN6mWEMaAUkmrQ+vCm5WuQbwcCJ9COwIeAGbRA
-HPfW7qQk+Qaxr18wY6eFjEmInw++vUy4gaH+I9ZcIJA4JtEL9gJoU9HexNqly5BU
-JXJ6TtYHCM48S84bLtdoI9DSlYIG+I6rEL6hVU20+U0XvrblTAYzS4e+o/6Qd8Q=
-=rfzY
------END PGP SIGNATURE-----
+key bytes  ecb   ecb   cbc   cbc   ctr   ctr   xts   xts
+           enc   dec   enc   dec   enc   dec   enc   dec
+--- -----  ----  ----  ----  ----  ----  ----  ----  ----
+128    16  1.14  1.14  1.20  1.28  1.20  1.19  1.20  1.21
+128    64  1.35  1.36  1.48  1.51  1.50  1.50  1.41  1.41
+128   256  1.49  1.49  1.66  1.65  1.69  1.69  1.58  1.57
+128  1024  1.51  1.51  1.69  1.68  1.72  1.72  1.61  1.60
+128  8192  1.52  1.52  1.70  1.68  1.73  1.73  1.62  1.61
+192    16  1.14  1.15  1.22  1.28  1.21  1.21  1.22  1.23
+192    64  1.36  1.37  1.48  1.49  1.49  1.50  1.41  1.41
+192   256  1.48  1.48  1.63  1.63  1.65  1.65  1.56  1.55
+192  1024  1.50  1.50  1.65  1.64  1.68  1.68  1.59  1.58
+192  8192  1.52  1.52  1.67  1.66  1.68  1.68  1.60  1.59
+256    16  1.17  1.18  1.24  1.30  1.23  1.22  1.24  1.25
+256    64  1.37  1.37  1.47  1.50  1.49  1.49  1.42  1.41
+256   256  1.48  1.47  1.60  1.60  1.63  1.63  1.54  1.53
+256  1024  1.50  1.49  1.62  1.61  1.65  1.65  1.57  1.56
+256  8192  1.50  1.49  1.63  1.62  1.66  1.66  1.58  1.57
 
---azLHFNyN32YCQGCU--
+Additionally numbers from an iperf transfer benchmark. They
+include the AES optimized and the SHA256 optimized module.
+
+- Server : Xeon X3470 2.93GHz
+- Client : Core I5 2.4GHz Windows (Shrew VPN client)
+- Gateway: e500v2 800 MHz (TP Link WDR4900)
+
+AES256 generic / SHA256 generic modules:
+> iperf.exe -c a.b.c.d -t 60 -i 10
+------------------------------------------------------------
+Client connecting to a.b.c.d, TCP port 5001
+TCP window size: 63.0 KByte (default)
+------------------------------------------------------------
+[  3] local u.v.w.x port 50730 connected with a.b.c.d port 5001
+[ ID] Interval       Transfer     Bandwidth
+[  3]  0.0-10.0 sec  51.1 MBytes  42.9 Mbits/sec
+[  3] 10.0-20.0 sec  51.9 MBytes  43.5 Mbits/sec
+[  3] 20.0-30.0 sec  51.5 MBytes  43.2 Mbits/sec
+[  3] 30.0-40.0 sec  51.5 MBytes  43.2 Mbits/sec
+[  3] 40.0-50.0 sec  51.2 MBytes  43.0 Mbits/sec
+[  3] 50.0-60.0 sec  50.6 MBytes  42.5 Mbits/sec
+[  3]  0.0-60.0 sec   308 MBytes  43.0 Mbits/sec
+
+AES256 (this patch) / SHA256 (my last patch)
+> iperf.exe -c a.b.c.d -t 60 -i 10
+------------------------------------------------------------
+Client connecting to a.b.c.d, TCP port 5001
+TCP window size: 63.0 KByte (default)
+------------------------------------------------------------
+[  3] local u.v.w.x port 50730 connected with a.b.c.d port 5001
+[ ID] Interval       Transfer     Bandwidth
+[  3]  0.0-10.0 sec  69.6 MBytes  58.4 Mbits/sec
+[  3] 10.0-20.0 sec  69.1 MBytes  58.0 Mbits/sec
+[  3] 20.0-30.0 sec  69.2 MBytes  58.1 Mbits/sec
+[  3] 30.0-40.0 sec  67.1 MBytes  56.3 Mbits/sec
+[  3] 40.0-50.0 sec  67.6 MBytes  56.7 Mbits/sec
+[  3] 50.0-60.0 sec  65.9 MBytes  55.3 Mbits/sec
+[  3]  0.0-60.0 sec   409 MBytes  57.1 Mbits/sec
+
+------=_NextPartTM-000-4c8d15d4-fd13-4621-af0b-01be93c120d3
+Content-Type: text/plain;
+	name="InterScan_Disclaimer.txt"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+	filename="InterScan_Disclaimer.txt"
+
+****************************************************************************
+Diese E-Mail enthält vertrauliche und/oder rechtlich geschützte
+Informationen. Wenn Sie nicht der richtige Adressat sind oder diese E-Mail
+irrtümlich erhalten haben, informieren Sie bitte sofort den Absender und
+vernichten Sie diese Mail. Das unerlaubte Kopieren sowie die unbefugte
+Weitergabe dieser Mail ist nicht gestattet.
+
+Über das Internet versandte E-Mails können unter fremden Namen erstellt oder
+manipuliert werden. Deshalb ist diese als E-Mail verschickte Nachricht keine
+rechtsverbindliche Willenserklärung.
+
+Collogia
+Unternehmensberatung AG
+Ubierring 11
+D-50678 Köln
+
+Vorstand:
+Kadir Akin
+Dr. Michael Höhnerbach
+
+Vorsitzender des Aufsichtsrates:
+Hans Kristian Langva
+
+Registergericht: Amtsgericht Köln
+Registernummer: HRB 52 497
+
+This e-mail may contain confidential and/or privileged information. If you
+are not the intended recipient (or have received this e-mail in error)
+please notify the sender immediately and destroy this e-mail. Any
+unauthorized copying, disclosure or distribution of the material in this
+e-mail is strictly forbidden.
+
+e-mails sent over the internet may have been written under a wrong name or
+been manipulated. That is why this message sent as an e-mail is not a
+legally binding declaration of intention.
+
+Collogia
+Unternehmensberatung AG
+Ubierring 11
+D-50678 Köln
+
+executive board:
+Kadir Akin
+Dr. Michael Höhnerbach
+
+President of the supervisory board:
+Hans Kristian Langva
+
+Registry office: district court Cologne
+Register number: HRB 52 497
+
+****************************************************************************
+
+------=_NextPartTM-000-4c8d15d4-fd13-4621-af0b-01be93c120d3--
