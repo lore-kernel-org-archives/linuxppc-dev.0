@@ -1,27 +1,22 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0140.outbound.protection.outlook.com [157.56.110.140])
+Return-Path: <Emilian.Medve@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0106.outbound.protection.outlook.com [207.46.100.106])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 85B2B1A0D2C
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Feb 2015 09:48:45 +1100 (AEDT)
-Message-ID: <1424731710.4698.15.camel@freescale.com>
-Subject: Re: [PATCH 2/2] powerpc/kvm: Limit MAX_VCPUS for guests running on
- RT Linux
-From: Scott Wood <scottwood@freescale.com>
-To: Alexander Graf <agraf@suse.de>
-Date: Mon, 23 Feb 2015 16:48:30 -0600
-In-Reply-To: <54E73A64.5020608@suse.de>
-References: <1424251955-308-1-git-send-email-bogdan.purcareata@freescale.com>
- <1424251955-308-3-git-send-email-bogdan.purcareata@freescale.com>
- <54E73A64.5020608@suse.de>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id E79441A0C18
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Feb 2015 10:26:37 +1100 (AEDT)
+Message-ID: <54EBB6BF.4080900@Freescale.com>
+Date: Mon, 23 Feb 2015 17:24:47 -0600
+From: Emil Medve <Emilian.Medve@Freescale.com>
 MIME-Version: 1.0
-Cc: linux-rt-users@vger.kernel.org, bigeasy@linutronix.de,
- linux-kernel@vger.kernel.org,
- Bogdan Purcareata <bogdan.purcareata@freescale.com>,
- mihai.caraman@freescale.com, pbonzini@redhat.com,
- linuxppc-dev@lists.ozlabs.org
+To: Scott Wood <scottwood@Freescale.com>, Igal.Liberman
+ <igal.liberman@Freescale.com>
+Subject: Re: [PATCH][v3] powerpc/mpc85xx: Add FMan platform support
+References: <1424268285-8491-1-git-send-email-igal.liberman@freescale.com>
+ <1424728915.4698.8.camel@freescale.com>
+In-Reply-To: <1424728915.4698.8.camel@freescale.com>
+Content-Type: text/plain; charset="utf-8"
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,38 +26,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2015-02-20 at 14:45 +0100, Alexander Graf wrote:
+Hello Scott,
+
+
+On 02/23/2015 04:01 PM, Scott Wood wrote:
+> On Wed, 2015-02-18 at 16:04 +0200, Igal.Liberman wrote:
+>> From: Igal Liberman <Igal.Liberman@freescale.com>
+>>
+>> Get the FMan devices/sub-nodes (MAC, MDIO, etc.) auto-probed
+>>
+>> Signed-off-by: Igal Liberman <Igal.Liberman@freescale.com>
+>> ---
+>>  arch/powerpc/platforms/85xx/common.c          |    1 +
+>>  arch/powerpc/platforms/85xx/corenet_generic.c |    3 +++
+>>  2 files changed, 4 insertions(+)
 > 
-> On 18.02.15 10:32, Bogdan Purcareata wrote:
-> > Due to the introduction of the raw_spinlock for the KVM openpic, guests with a
-> > high number of VCPUs may induce great latencies on the underlying RT Linux
-> > system (e.g. cyclictest reports latencies of ~15ms for guests with 24 VCPUs).
-> > This can be further aggravated by sending a lot of external interrupts to the
-> > guest.
-> > 
-> > A malicious app can abuse this scenario, causing a DoS of the host Linux.
-> > Until the KVM openpic code is refactored to use finer lock granularity, impose
-> > a limitation on the number of VCPUs a guest can have when running on a
-> > PREEMPT_RT_FULL system with KVM_MPIC emulation.
-> > 
-> > Signed-off-by: Mihai Caraman <mihai.caraman@freescale.com>
-> > Signed-off-by: Bogdan Purcareata <bogdan.purcareata@freescale.com>
-> > Reviewed-by: Scott Wood <scottwood@freescale.com>
-> 
-> I don't think this patch is reasonable to take upstream.
+> What changed from v2?
 
-I agree (or at least, I don't think the raw lock conversion should be
-separated from the vcpu limitation that makes it clear that it's a
-temporary hack), because it ought to be fixed properly.
+v1,2 were based on an internal tree/branch and had some reference to
+'fsl,dpaa':
 
->  If we have a
-> latency issue, whoever spawned KVM VMs made a decision to spawn such big
-> VMs.
+>  	{ .compatible = "fsl,dpaa", },
 
-I disagree.  The point of PREEMPT_RT is to prevent the majority of
-kernel code from excessively impacting latency.  When you start using
-raw locks you're stepping outside those bounds and need to ensure that
-you don't hand things within those bounds (which includes userspace) the
-ability to excessively impact latency.
 
--Scott
+Cheers,
