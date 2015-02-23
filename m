@@ -1,18 +1,19 @@
-Return-Path: <michael@ozlabs.org>
+Return-Path: <benh@kernel.crashing.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8A0491A0184
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Feb 2015 13:27:24 +1100 (AEDT)
-In-Reply-To: <20150221190050.GA20184@linux.vnet.ibm.com>
-To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>
-From: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [v2] pseries/iommu: remove iommu device references via bus
- notifier
-Message-Id: <20150223022724.7884914012C@ozlabs.org>
-Date: Mon, 23 Feb 2015 13:27:24 +1100 (AEDT)
-Cc: linuxppc-dev@lists.ozlabs.org, Alexey Kardashevskiy <aik@au1.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8A0FE1A0BD1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Feb 2015 14:40:13 +1100 (AEDT)
+Message-ID: <1424662801.7419.1.camel@kernel.crashing.org>
+Subject: Re: powerpc/powernv: Add debugfs file to grab opalv3 trace data
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Date: Mon, 23 Feb 2015 14:40:01 +1100
+In-Reply-To: <20141128001131.F199414019D@ozlabs.org>
+References: <20141128001131.F199414019D@ozlabs.org>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Rusty Russell <rusty@rustcorp.com.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,33 +23,428 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2015-21-02 at 19:00:50 UTC, Nishanth Aravamudan wrote:
-> On 20.02.2015 [15:31:29 +1100], Michael Ellerman wrote:
-> > On Thu, 2015-02-19 at 10:41 -0800, Nishanth Aravamudan wrote:
-> > > After d905c5df9aef ("PPC: POWERNV: move iommu_add_device earlier"), the
-> > > refcnt on the kobject backing the IOMMU group for a PCI device is
-> > > elevated by each call to pci_dma_dev_setup_pSeriesLP() (via
-> > > set_iommu_table_base_and_group). When we go to dlpar a multi-function
-> > > PCI device out:
-> > > 
-> > > 	iommu_reconfig_notifier ->
-> > > 		iommu_free_table ->
-> > > 			iommu_group_put
-> > > 			BUG_ON(tbl->it_group)
-> > > 
-> > > We trip this BUG_ON, because there are still references on the table, so
-> > > it is not freed. Fix this by also adding a bus notifier identical to
-> > > PowerNV for pSeries.
+On Fri, 2014-11-28 at 11:11 +1100, Michael Ellerman wrote:
+> On Wed, 2014-26-11 at 04:10:04 UTC, Benjamin Herrenschmidt wrote:
+> > This adds files in debugfs that can be used to retrieve the
+> > OPALv3 firmware "live binary traces" which can then be parsed
+> > using a userspace tool.
 > > 
-> > Please put it somewhere common, arch/powerpc/kernel/iommu.c perhaps, and just
-> > add a second machine_init_call() for pseries.
+> > Mostly from Rusty with some updates by myself (BenH)
+> > 
+> > Signed-off-by: Rusty Russell <rusty@rustcorp.com.au>
+> > Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 > 
-> How does this look? Only compile-tested with CONFIG_IOMMU_API on/off so
-> far, waiting for access to the test LPAR (should have it on Monday).
+> Conspicuous review of patch from maintainer follows ...
+> 
+> Meta-comment: given we need a userspace tool to read the trace anyway, could we
+> make this a lot simpler by just letting userspace mmap the trace buffers?
 
-Yeah that looks better, thanks.
+We could, but we'd still need a kernel driver to mmap it and in the end,
+I like being able to ask a user to "cat" the trace into a file, which
+can then be parsed by the tool offline or on a different machine. It's
+a nicer interface.
 
-It probably doesn't build with CONFIG_PCI=n though, but I don't think
-CONFIG_PCI=n builds anyway.
+> > diff --git a/arch/powerpc/platforms/powernv/Makefile b/arch/powerpc/platforms/powernv/Makefile
+> > index f241acc..315a825 100644
+> > --- a/arch/powerpc/platforms/powernv/Makefile
+> > +++ b/arch/powerpc/platforms/powernv/Makefile
+> > @@ -1,7 +1,7 @@
+> >  obj-y			+= setup.o opal-wrappers.o opal.o opal-async.o
+> >  obj-y			+= opal-rtc.o opal-nvram.o opal-lpc.o opal-flash.o
+> >  obj-y			+= rng.o opal-elog.o opal-dump.o opal-sysparam.o opal-sensor.o
+> > -obj-y			+= opal-msglog.o opal-hmi.o
+> > +obj-y			+= opal-msglog.o opal-hmi.o opal-trace.o
+> 
+> Should depend on CONFIG_DEBUG_FS at least no?
 
-cheers
+Yes.
+
+> > diff --git a/arch/powerpc/platforms/powernv/opal-trace-types.h b/arch/powerpc/platforms/powernv/opal-trace-types.h
+> > new file mode 100644
+> > index 0000000..3bd8ac2
+> > --- /dev/null
+> > +++ b/arch/powerpc/platforms/powernv/opal-trace-types.h
+> > @@ -0,0 +1,58 @@
+> > +/* API for kernel to read trace buffer. */
+> 
+> Copyright/GPL header ?
+
+ :-)
+
+> /*
+>  * Copyright 201x, Purple Monkey Dishwasher, IBM Corporation.
+>  *
+>  * This program is free software; you can redistribute it and/or
+>  * modify it under the terms of the GNU General Public License
+>  * as published by the Free Software Foundation; either version
+>  * 2 of the License, or (at your option) any later version.
+>  */
+> 
+> > +#ifndef __OPAL_TRACE_TYPES_H
+> > +#define __OPAL_TRACE_TYPES_H
+> 
+> We usually do __POWERNV_FOO_H for these. But they're all a bit of a mess.
+
+Right, that file comes from OPAL and I kept it as-is (well mostly, this
+is a subset since the kernel doesn't need the definition of the
+individual trace entries). We could just move the whole lot to the new
+OPAL API stuff.
+
+> > +#define TRACE_REPEAT 1
+> > +#define TRACE_OVERFLOW 2
+> > +#define TRACE_OPAL 3
+> > +#define TRACE_FSP 4
+> 
+> Linux tracepoints defines a bunch of TRACE_FOO macros, obviously REPEAT is the
+> only one that's likely to clash. But still might be worth namespacing.
+
+Ack.
+
+> > +/* One per cpu, plus one for NMIs */
+> > +struct tracebuf {
+> > +	/* Mask to apply to get buffer offset. */
+> > +	__be64 mask;
+> > +	/* This where the buffer starts. */
+> > +	__be64 start;
+> > +	/* This is where writer has written to. */
+> > +	__be64 end;
+> > +	/* This is where the writer wrote to previously. */
+> > +	__be64 last;
+> > +	/* This is where the reader is up to. */
+> > +	__be64 rpos;
+> > +	/* If the last one we read was a repeat, this shows how many. */
+> > +	__be32 last_repeat;
+> 
+> So I think start/end/last/rpos/last_repeat are all full virtual addresses right?
+
+Offsets.
+
+> > +	/* Maximum possible size of a record. */
+> > +	__be32 max_size;
+> > +
+> > +	char buf[/* TBUF_SZ + max_size */];
+> 
+> We don't have TBUF_SZ.
+
+Right, it's just a comment but yes it could be nicer
+
+> > +};
+> > +
+> > +/* Common header for all trace entries. */
+> > +struct trace_hdr {
+> > +	__be64 timestamp;
+> > +	u8 type;
+> > +	u8 len_div_8;
+> > +	__be16 cpu;
+> > +	u8 unused[4];
+> > +};
+> > +
+> 
+> The comment below is attached to trace_repeat, but it seems like it should go
+> with hdr no ?
+> 
+> > +/* Note: all other entries must be at least as large as this! */
+
+Well... so all entries should be at least as large as a trace_repeat,
+which happens to "fit" in the trace_hdr because of the 4 unused...
+
+> > +struct trace_repeat {
+> > +	__be64 timestamp; /* Last repeat happened at this timestamp */
+> > +	u8 type; /* == TRACE_REPEAT */
+> > +	u8 len_div_8;
+> > +	__be16 cpu;
+> > +	__be16 prev_len;
+> > +	__be16 num; /* Starts at 1, ie. 1 repeat, or two traces. */
+> > +	/* Note that the count can be one short, if read races a repeat. */
+> > +};
+> > +
+> > +struct trace_overflow {
+> > +	__be64 unused64; /* Timestamp is unused */
+> > +	u8 type; /* == TRACE_OVERFLOW */
+> > +	u8 len_div_8;
+> > +	u8 unused[6]; /* ie. hdr.cpu is indeterminate */
+> > +	__be64 bytes_missed;
+> > +};
+> 
+> Some lining up of comments would help readability of those.
+
+Ok.
+
+> > diff --git a/arch/powerpc/platforms/powernv/opal-trace.c b/arch/powerpc/platforms/powernv/opal-trace.c
+> > new file mode 100644
+> > index 0000000..6529756
+> > --- /dev/null
+> > +++ b/arch/powerpc/platforms/powernv/opal-trace.c
+> > @@ -0,0 +1,202 @@
+> > +/*
+> > + * Copyright (C) 2013 Rusty Russell, IBM Corporation
+> > + *
+> 
+> GPL ?
+
+I tend to (incorrectly ?) assume that a .c file in the kernel tree, in
+absence of other mention, is covered by the top level GPL but it's
+probably better to make it explicit.
+
+> > + * Simple debugfs file firmware_trace to read out OPALv3 trace
+>                           ^
+> 			  now called opal-trace
+> > + * ringbuffers.
+> > + */
+> 
+> <blank>
+
+It's pretty isn't it ? :-)
+
+> > +#include <linux/mutex.h>
+> > +#include <linux/debugfs.h>
+> > +#include <linux/uaccess.h>
+> > +#include <linux/of.h>
+> > +#include <linux/slab.h>
+> > +#include <asm/debug.h>
+> > +#include <asm/opal.h>
+> > +
+> > +#include "opal-trace-types.h"
+> > +
+> > +static DEFINE_MUTEX(tracelock);
+> > +static struct tracebuf **opal_tb;
+> > +static size_t opal_num_tb;
+> > +static __be64 *opal_tmask_p;
+> 
+> _p ? pointer, or phys?
+
+I don't remember, read the code :-)
+
+> > +
+> > +/* Maximum possible size of record (since len is 8 bits). */
+> > +union max_trace {
+> > +	struct trace_hdr hdr;
+> > +	struct trace_overflow overflow;
+> > +	struct trace_repeat repeat;
+> > +	char buf[255 * 8];
+> > +};
+> > +static union max_trace trace;
+> 
+> I *think* this is only used in opal_trace_read(), so it'd be nice if it was in
+> there.
+
+I'll have a look.
+
+> > +static bool trace_empty(const struct tracebuf *tb)
+> > +{
+> > +	const struct trace_repeat *rep;
+> > +
+> > +	if (tb->rpos == tb->end)
+> > +		return true;
+> > +
+> > +	/*
+> > +	 * If we have a single element only, and it's a repeat buffer
+> > +	 * we've already seen every repeat for (yet which may be
+> > +	 * incremented in future), we're also empty.
+> > +	 */
+> > +	rep = (void *)tb->buf + (be64_to_cpu(tb->rpos & tb->mask));
+> > +	if (be64_to_cpu(tb->end) != be64_to_cpu(tb->rpos) + sizeof(*rep))
+> > +		return false;
+> > +
+> > +	if (rep->type != TRACE_REPEAT)
+> > +		return false;
+> > +
+> > +	if (be16_to_cpu(rep->num) != be32_to_cpu(tb->last_repeat))
+> > +		return false;
+> > +
+> > +	return true;
+> > +}
+> > +
+> > +/* You can't read in parallel, so some locking required in caller. */
+> > +static bool trace_get(union max_trace *t, struct tracebuf *tb)
+> > +{
+> > +	u64 start, rpos;
+> > +
+> > +	if (trace_empty(tb))
+> > +		return false;
+> > +
+> > +again:
+> > +	/*
+> > +	 * The actual buffer is slightly larger than tbsize, so this
+> > +	 * memcpy is always valid.
+> 
+> We don't seem to have tbsize anymore?
+
+Indeed, I'll have a look.
+
+> > +	 */
+> > +	memcpy(t, tb->buf + be64_to_cpu(tb->rpos & tb->mask),
+> > +	       be32_to_cpu(tb->max_size));
+> > +
+> > +	rmb(); /* read barrier, so we read tb->start after copying record. */
+> > +
+> > +	start = be64_to_cpu(tb->start);
+> > +	rpos = be64_to_cpu(tb->rpos);
+> > +
+> > +	/* Now, was that overwritten? */
+> > +	if (rpos < start) {
+> > +		/* Create overflow record. */
+> > +		t->overflow.unused64 = 0;
+> > +		t->overflow.type = TRACE_OVERFLOW;
+> > +		t->overflow.len_div_8 = sizeof(t->overflow) / 8;
+> > +		t->overflow.bytes_missed = cpu_to_be64(start - rpos);
+> > +		tb->rpos = cpu_to_be64(start);
+> > +		return true;
+> > +	}
+> > +
+> > +	/* Repeat entries need special handling */
+> > +	if (t->hdr.type == TRACE_REPEAT) {
+> > +		u32 num = be16_to_cpu(t->repeat.num);
+> > +
+> > +		/* In case we've read some already... */
+> > +		t->repeat.num = cpu_to_be16(num - be32_to_cpu(tb->last_repeat));
+> > +
+> > +		/* Record how many repeats we saw this time. */
+> > +		tb->last_repeat = cpu_to_be32(num);
+> > +
+> > +		/* Don't report an empty repeat buffer. */
+> > +		if (t->repeat.num == 0) {
+> > +			/*
+> > +			 * This can't be the last buffer, otherwise
+> > +			 * trace_empty would have returned true.
+> > +			 */
+> > +			BUG_ON(be64_to_cpu(tb->end) <= rpos + t->hdr.len_div_8 * 8);
+> 
+> Can we just WARN_ON() and bail, seeing as this is for debug. I'd hate to panic
+> a customer system by dumping the trace buffer.
+
+Yup.
+
+> > +			/* Skip to next entry. */
+> > +			tb->rpos = cpu_to_be64(rpos + t->hdr.len_div_8 * 8);
+> > +			goto again;
+> > +		}
+> > +	} else {
+> > +		tb->last_repeat = 0;
+> > +		tb->rpos = cpu_to_be64(rpos + t->hdr.len_div_8 * 8);
+> > +	}
+> > +
+> > +	return true;
+> > +}
+> > +
+> > +/* Horrible polling interface, designed for dumping. */
+> > +static ssize_t opal_trace_read(struct file *file, char __user *ubuf,
+> > +			       size_t count, loff_t *ppos)
+> > +{
+> > +	ssize_t err;
+> > +	unsigned int i;
+> > +
+> > +	err = mutex_lock_interruptible(&tracelock);
+> > +	if (err)
+> > +		return err;
+> > +
+> > +	for (i = 0; i < opal_num_tb; i++) {
+> 
+> OK so I understand this now. You have multiple trace buffers, but you don't
+> care about maintaining that separation. You just merge all the streams here
+> into a single output stream.
+
+Correct, the trace buffers can be per-cpu on the OPAL side.
+
+> > +		if (trace_get(&trace, opal_tb[i])) {
+> > +			size_t len = trace.hdr.len_div_8 * 8;
+> > +			if (len > count)
+> > +				len = count;
+> > +			if (copy_to_user(ubuf, &trace, len) != 0)
+> > +				err = -EFAULT;
+> > +			else
+> > +				err = len;
+> > +			break;
+> > +		}
+> > +	}
+> > +
+> > +	mutex_unlock(&tracelock);
+> > +	return err;
+> > +}
+> > +
+> > +static const struct file_operations opal_trace_fops = {
+> > +	.read =		opal_trace_read,
+> > +	.open =		simple_open,
+> > +	.llseek =	noop_llseek,
+> > +};
+> > +
+> > +static int opal_tmask_set(void *data, u64 val)
+> > +{
+> > +	*(__be64 *)data = cpu_to_be64(val);
+> > +	return 0;
+> > +}
+> > +static int opal_tmask_get(void *data, u64 *val)
+> > +{
+> > +	*val = be64_to_cpup((__be64 *)data);
+> > +	return 0;
+> > +}
+> > +DEFINE_SIMPLE_ATTRIBUTE(opal_tmask, opal_tmask_get, opal_tmask_set, "%llx\n");
+> 
+> What is a tmask ?
+
+Trace mask, it's a bitmask to enable individual tracers inside OPAL.
+
+> I assume it's some mask of things we want traced?
+
+Yes.
+
+> > +static int opal_trace_init(void)
+> > +{
+> > +	const __be64 *traces;
+> > +	int len, i, rc;
+> > +	u64 tmask_phys;
+> > +
+> > +	if (!opal_node)
+> > +		return -ENODEV;
+> > +
+> > +	traces = of_get_property(opal_node, "ibm,opal-traces", &len);
+> > +	if (!traces) {
+> > +		pr_warning("%s: OPAL node property \"ibm,opal-traces\""
+> > +			   " not found\n", __func__);
+> > +		return -ENODEV;
+> > +	}
+> > +
+> > +	opal_num_tb = len / (sizeof(__be64) * 2);
+> 
+> So I won't say the "b" word, but it'd be nice to have at least a comment on
+> what the device tree property contains.
+
+Hehe, allright :)
+
+> > +	if (!opal_num_tb) {
+> > +		pr_warning("%s: OPAL traces property has invalid length %i\n",
+> > +			   __func__, len);
+> > +		return -EINVAL;
+> > +	}
+> > +	opal_tb = kmalloc(sizeof(*opal_tb) * opal_num_tb, GFP_KERNEL);
+> > +	for (i = 0; i < opal_num_tb; i++)
+> > +		opal_tb[i] = __va(be64_to_cpu(traces[i*2]));
+> 
+> Just __va() ? ie. it's already in the linear mapping somewhere?
+
+All memory is. This is just part of one of the areas reserved by OPAL
+but it's in memory.
+
+> > +	debugfs_create_file("opal-trace", S_IRUSR, powerpc_debugfs_root,
+> > +			    NULL, &opal_trace_fops);
+> > +	rc = of_property_read_u64(opal_node, "ibm,opal-trace-mask",
+> > +				  &tmask_phys);
+> > +	if (!rc)
+> > +		opal_tmask_p = __va(tmask_phys);
+> > +	if (opal_tmask_p)
+> 
+> If tmask_phys was 0, opal_tmask_p is now 0xc00..00, so is that what we want to check?
+
+No, that's fishy indeed.
+
+> > +		debugfs_create_file("opal-trace-mask", S_IRUSR | S_IWUSR,
+> > +				    powerpc_debugfs_root, opal_tmask_p,
+> > +				    &opal_tmask);
+> > +	return 0;
+> > +}
+> > +module_init(opal_trace_init);
+> > +
+> 
+> cheers
+
+Ben.
