@@ -1,38 +1,34 @@
-Return-Path: <nacc@linux.vnet.ibm.com>
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+Return-Path: <shreyas@linux.vnet.ibm.com>
+Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0B06D1A0CEB
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Feb 2015 05:55:34 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5AEEB1A0CCD
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Feb 2015 06:09:00 +1100 (AEDT)
 Received: from /spool/local
- by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
- Mon, 23 Feb 2015 11:55:32 -0700
-Received: from b03cxnp07029.gho.boulder.ibm.com
- (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 9FE743E40041
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Feb 2015 11:55:30 -0700 (MST)
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
- by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t1NItMCZ54067220
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Feb 2015 11:55:30 -0700
-Received: from d03av03.boulder.ibm.com (localhost [127.0.0.1])
- by d03av03.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t1NIst1M031666
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Feb 2015 11:54:57 -0700
-Date: Mon, 23 Feb 2015 10:54:29 -0800
-From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [v2] pseries/iommu: remove iommu device references via bus
- notifier
-Message-ID: <20150223185429.GA54252@linux.vnet.ibm.com>
-References: <20150221190050.GA20184@linux.vnet.ibm.com>
- <20150223022724.7884914012C@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150223022724.7884914012C@ozlabs.org>
-Cc: linuxppc-dev@lists.ozlabs.org, Alexey Kardashevskiy <aik@au1.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <shreyas@linux.vnet.ibm.com>;
+ Mon, 23 Feb 2015 14:08:57 -0500
+Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com
+ [9.57.198.28])
+ by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 1EF1E6E8041
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Feb 2015 14:00:46 -0500 (EST)
+Received: from d01av05.pok.ibm.com (d01av05.pok.ibm.com [9.56.224.195])
+ by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t1NJ8kaJ27983966
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Feb 2015 19:08:54 GMT
+Received: from d01av05.pok.ibm.com (localhost [127.0.0.1])
+ by d01av05.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t1NJ8LiJ001798
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Feb 2015 14:08:22 -0500
+From: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH RFC] powerpc/powernv: Introduce kernel param to control
+ fastsleep workaround behavior
+Date: Tue, 24 Feb 2015 00:37:57 +0530
+Message-Id: <1424718477-29786-1-git-send-email-shreyas@linux.vnet.ibm.com>
+Cc: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,54 +38,159 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 23.02.2015 [13:27:24 +1100], Michael Ellerman wrote:
-> On Sat, 2015-21-02 at 19:00:50 UTC, Nishanth Aravamudan wrote:
-> > On 20.02.2015 [15:31:29 +1100], Michael Ellerman wrote:
-> > > On Thu, 2015-02-19 at 10:41 -0800, Nishanth Aravamudan wrote:
-> > > > After d905c5df9aef ("PPC: POWERNV: move iommu_add_device earlier"), the
-> > > > refcnt on the kobject backing the IOMMU group for a PCI device is
-> > > > elevated by each call to pci_dma_dev_setup_pSeriesLP() (via
-> > > > set_iommu_table_base_and_group). When we go to dlpar a multi-function
-> > > > PCI device out:
-> > > > 
-> > > > 	iommu_reconfig_notifier ->
-> > > > 		iommu_free_table ->
-> > > > 			iommu_group_put
-> > > > 			BUG_ON(tbl->it_group)
-> > > > 
-> > > > We trip this BUG_ON, because there are still references on the table, so
-> > > > it is not freed. Fix this by also adding a bus notifier identical to
-> > > > PowerNV for pSeries.
-> > > 
-> > > Please put it somewhere common, arch/powerpc/kernel/iommu.c perhaps, and just
-> > > add a second machine_init_call() for pseries.
-> > 
-> > How does this look? Only compile-tested with CONFIG_IOMMU_API on/off so
-> > far, waiting for access to the test LPAR (should have it on Monday).
-> 
-> Yeah that looks better, thanks.
-> 
-> It probably doesn't build with CONFIG_PCI=n though, but I don't think
-> CONFIG_PCI=n builds anyway.
+Fastsleep is one of the idle state which cpuidle subsystem currently
+uses on power8 machines. In this state L2 cache is brought down to a
+threshold voltage. Therefore when the core is in fastsleep, the
+communication between L2 and L3 needs to be fenced. But there is a bug
+in the current power8 chips surrounding this fencing. OPAL provides an
+interface to workaround this bug, and in the current implementation,
+every time before a core enters fastsleep OPAL call is made to 'apply'
+the workarond and when the core wakes up from fastsleep OPAL call is
+made to 'undo' the workaround. These OPAL calls account for roughly
+4000 cycles everytime the core has to enter or wakeup from fastsleep.
+The other alternative is to apply this workaround once at boot, and not
+undo it at all. While this would quicken fastsleep entry/wakeup path,
+running with workaround applied always can delay L2 fault detection.
 
-Indeed it doesn't. Started looking at CONFIG_PCI=n and immediately hit
-the following:
+This patch adds a new kernel paramerter
+pnv_fastsleep_workaround_once, which can be used to override
+the default behavior and apply the workaround once at boot and not undo
+it.
 
-PCI_MSI depends on PCI
+Signed-off-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
+CC: Michael Ellerman <mpe@ellerman.id.au>
+CC: Paul Mackerras <paulus@samba.org>
+CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+CC: linuxppc-dev@lists.ozlabs.org
+---
+ Documentation/kernel-parameters.txt            |  4 +++
+ arch/powerpc/include/asm/opal.h                |  8 +++++
+ arch/powerpc/platforms/powernv/opal-wrappers.S |  1 +
+ arch/powerpc/platforms/powernv/setup.c         | 45 +++++++++++++++++++++++++-
+ 4 files changed, 57 insertions(+), 1 deletion(-)
 
-PCI can be manually turned off
-
-PSERIES (and a bunch of other platforms) select PCI_MSI
-
-So you end up with PCI_MSI on and PCI off and the build breaks.
-
-Should the platforms depend on PCI_MSI instead?
-
-Per the Documentation:
-"        select should be used with care. select will force
-        a symbol to a value without visiting the dependencies.
-        By abusing select you are able to select a symbol FOO even
-        if FOO depends on BAR that is not set."
-
-Thanks,
-Nish
+diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
+index bfcb1a6..006863b 100644
+--- a/Documentation/kernel-parameters.txt
++++ b/Documentation/kernel-parameters.txt
+@@ -2857,6 +2857,10 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
+ 			autoconfiguration.
+ 			Ranges are in pairs (memory base and size).
+ 
++	pnv_fastsleep_workaround_once=
++			[BUGS=ppc64] Tells kernel to apply fastsleep workaround
++			once at boot.
++
+ 	ports=		[IP_VS_FTP] IPVS ftp helper module
+ 			Default is 21.
+ 			Up to 8 (IP_VS_APP_MAX_PORTS) ports
+diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
+index 9ee0a30..8bea8fc 100644
+--- a/arch/powerpc/include/asm/opal.h
++++ b/arch/powerpc/include/asm/opal.h
+@@ -180,6 +180,13 @@ struct opal_sg_list {
+ #define OPAL_PM_WINKLE_ENABLED	0x00040000
+ #define OPAL_PM_SLEEP_ENABLED_ER1	0x00080000
+ 
++/*
++ * OPAL_CONFIG_CPU_IDLE_STATE parameters
++ */
++#define OPAL_CONFIG_IDLE_FASTSLEEP	1
++#define OPAL_CONFIG_IDLE_UNDO		0
++#define OPAL_CONFIG_IDLE_APPLY		1
++
+ #ifndef __ASSEMBLY__
+ 
+ #include <linux/notifier.h>
+@@ -924,6 +931,7 @@ int64_t opal_handle_hmi(void);
+ int64_t opal_register_dump_region(uint32_t id, uint64_t start, uint64_t end);
+ int64_t opal_unregister_dump_region(uint32_t id);
+ int64_t opal_slw_set_reg(uint64_t cpu_pir, uint64_t sprn, uint64_t val);
++int64_t opal_config_cpu_idle_state(uint64_t state, uint64_t flag);
+ int64_t opal_pci_set_phb_cxl_mode(uint64_t phb_id, uint64_t mode, uint64_t pe_number);
+ int64_t opal_ipmi_send(uint64_t interface, struct opal_ipmi_msg *msg,
+ 		uint64_t msg_len);
+diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
+index 0509bca..84a20bb 100644
+--- a/arch/powerpc/platforms/powernv/opal-wrappers.S
++++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
+@@ -283,6 +283,7 @@ OPAL_CALL(opal_sensor_read,			OPAL_SENSOR_READ);
+ OPAL_CALL(opal_get_param,			OPAL_GET_PARAM);
+ OPAL_CALL(opal_set_param,			OPAL_SET_PARAM);
+ OPAL_CALL(opal_handle_hmi,			OPAL_HANDLE_HMI);
++OPAL_CALL(opal_config_cpu_idle_state,		OPAL_CONFIG_CPU_IDLE_STATE);
+ OPAL_CALL(opal_slw_set_reg,			OPAL_SLW_SET_REG);
+ OPAL_CALL(opal_register_dump_region,		OPAL_REGISTER_DUMP_REGION);
+ OPAL_CALL(opal_unregister_dump_region,		OPAL_UNREGISTER_DUMP_REGION);
+diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
+index d2de7d5..21dde6c 100644
+--- a/arch/powerpc/platforms/powernv/setup.c
++++ b/arch/powerpc/platforms/powernv/setup.c
+@@ -28,6 +28,7 @@
+ #include <linux/bug.h>
+ #include <linux/pci.h>
+ #include <linux/cpufreq.h>
++#include <linux/cpumask.h>
+ 
+ #include <asm/machdep.h>
+ #include <asm/firmware.h>
+@@ -405,6 +406,20 @@ u32 pnv_get_supported_cpuidle_states(void)
+ }
+ EXPORT_SYMBOL_GPL(pnv_get_supported_cpuidle_states);
+ 
++u8 pnv_apply_fastsleep_workaround_once;
++
++static int __init pnv_fastsleep_workaround_once(char *str)
++{
++	pnv_apply_fastsleep_workaround_once = 1;
++	return 0;
++}
++early_param("pnv_fastsleep_workaround_once", pnv_fastsleep_workaround_once);
++
++static void __init pnv_fastsleep_workaround_apply(void *info)
++{
++	opal_config_cpu_idle_state(OPAL_CONFIG_IDLE_FASTSLEEP,
++					OPAL_CONFIG_IDLE_APPLY);
++}
+ static int __init pnv_init_idle_states(void)
+ {
+ 	struct device_node *power_mgt;
+@@ -440,7 +455,35 @@ static int __init pnv_init_idle_states(void)
+ 		flags = be32_to_cpu(idle_state_flags[i]);
+ 		supported_cpuidle_states |= flags;
+ 	}
+-	if (!(supported_cpuidle_states & OPAL_PM_SLEEP_ENABLED_ER1)) {
++
++	/*
++	 * If OPAL_PM_SLEEP_ENABLED_ER1 is set, it indicates that workaround is
++	 * needed to use fastsleep. Check whether the workaround has to be
++	 * applied only once.
++	 */
++	if ((supported_cpuidle_states & OPAL_PM_SLEEP_ENABLED_ER1)
++			&& pnv_apply_fastsleep_workaround_once) {
++		/*
++		 * Workaround needs to be applied by one thread in each core
++		 */
++		cpumask_t primary_thread_mask = cpu_thread_mask_to_cores(cpu_online_mask);
++
++		on_each_cpu_mask(&primary_thread_mask,
++					pnv_fastsleep_workaround_apply,
++					NULL, 1);
++	}
++
++	/*
++	 * In the fastsleep entry/exit path, calls to workaround are always
++	 * made with an expectation that they will be patched out when not
++	 * needed.
++	 * Patch out these calls in following scenarios-
++	 * 1. OPAL_PM_SLEEP_ENABLED_ER1 is not set. Indicating the underlying
++	 * hardware does not have the bug.
++	 * 2. Kernel is running with workaround always applied.
++	 */
++	if (!(supported_cpuidle_states & OPAL_PM_SLEEP_ENABLED_ER1)
++			|| pnv_apply_fastsleep_workaround_once) {
+ 		patch_instruction(
+ 			(unsigned int *)pnv_fastsleep_workaround_at_entry,
+ 			PPC_INST_NOP);
+-- 
+1.9.3
