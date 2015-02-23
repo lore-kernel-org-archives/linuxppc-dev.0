@@ -1,22 +1,25 @@
-Return-Path: <linux@rasmusvillemoes.dk>
-Received: from mail-la0-x22d.google.com (mail-la0-x22d.google.com
- [IPv6:2a00:1450:4010:c03::22d])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <arnd@arndb.de>
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.131])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5F1031A0BF3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Feb 2015 21:55:59 +1100 (AEDT)
-Received: by labge10 with SMTP id ge10so17435853lab.12
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Feb 2015 02:55:55 -0800 (PST)
-From: Rasmus Villemoes <linux@rasmusvillemoes.dk>
-To: Ian Munsie <imunsie@au1.ibm.com>,
-	Michael Neuling <mikey@neuling.org>
-Subject: [PATCH v2] cxl: Add explicit precision specifiers
-Date: Mon, 23 Feb 2015 11:55:34 +0100
-Message-Id: <1424688935-6645-1-git-send-email-linux@rasmusvillemoes.dk>
-In-Reply-To: <1424662685-sup-6648@delenn.ozlabs.ibm.com>
-References: <1424662685-sup-6648@delenn.ozlabs.ibm.com>
-Cc: Joe Perches <joe@perches.com>, linuxppc-dev@lists.ozlabs.org,
- Rasmus Villemoes <linux@rasmusvillemoes.dk>, linux-kernel@vger.kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 774601A0BF4
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Feb 2015 22:25:28 +1100 (AEDT)
+From: Arnd Bergmann <arnd@arndb.de>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: Build regressions/improvements in v4.0-rc1
+Date: Mon, 23 Feb 2015 12:24:38 +0100
+Message-ID: <6141970.YzWJy8akUr@wuerfel>
+In-Reply-To: <CAMuHMdUTCvQw1q-dJcx9dAnFEXtfJYs+rbVS4KdZgi-3cbSC7g@mail.gmail.com>
+References: <1424680402-3477-1-git-send-email-geert@linux-m68k.org>
+ <5721217.aGU5oqfDWo@wuerfel>
+ <CAMuHMdUTCvQw1q-dJcx9dAnFEXtfJYs+rbVS4KdZgi-3cbSC7g@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Cc: Matthew Wilcox <willy@linux.intel.com>,
+ ALSA Development Mailing List <alsa-devel@alsa-project.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,44 +29,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-C99 says that a precision given as simply '.' with no following digits
-or * should be interpreted as 0. The kernel's printf implementation,
-however, treats this case as if the precision was omitted. C99 also
-says that if both the precision and value are 0, no digits should be
-printed. Even if the kernel followed C99 to the letter, I don't think
-that would be particularly useful in these cases. For consistency with
-most other format strings in the file, use an explicit precision of 16
-and add a 0x prefix.
+On Monday 23 February 2015 11:28:12 Geert Uytterhoeven wrote:
+> On Mon, Feb 23, 2015 at 11:24 AM, Arnd Bergmann <arnd@arndb.de> wrote:
+> > On Monday 23 February 2015 10:14:55 Geert Uytterhoeven wrote:
+> >> On Mon, Feb 23, 2015 at 10:03 AM, Arnd Bergmann <arnd@arndb.de> wrote:
+> >> >> >   + /home/kisskb/slave/src/fs/dax.c: error: implicit declaration of function 'copy_user_page' [-Werror=implicit-function-declaration]:  => 266:2
+> 
+> > I checked the other architectures, and found that the same is missing on
+> > ARC, so we should add both:
+> >
+> > diff --git a/fs/Kconfig b/fs/Kconfig
+> > index ec35851e5b71..a24d496787d6 100644
+> > --- a/fs/Kconfig
+> > +++ b/fs/Kconfig
+> > @@ -36,7 +36,7 @@ source "fs/nilfs2/Kconfig"
+> >  config FS_DAX
+> >         bool "Direct Access (DAX) support"
+> >         depends on MMU
+> > -       depends on !(ARM || MIPS || SPARC)
+> > +       depends on !(ARC || ARM || MIPS || SH || SPARC)
+> >         help
+> >           Direct Access (DAX) can be used on memory-backed block devices.
+> >           If the block device supports DAX and the filesystem supports DAX,
+> >
+> >
+> > It's also not implemented on c6x and blackfin, but both of them have
+> > MMU=n, so they are already excluded.
+> 
+> Exactly.
+> 
+> Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
 
-Signed-off-by: Rasmus Villemoes <linux@rasmusvillemoes.dk>
----
-What Joe said is of course technically true, but 24 of the %.16llx
-matches are in drivers/misc/cxl/, so internal consistency wins.
+Thanks, let me submit that as a proper patch with a changelog then.
 
- drivers/misc/cxl/irq.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/misc/cxl/irq.c b/drivers/misc/cxl/irq.c
-index c8929c526691..4b73f4b9e7f1 100644
---- a/drivers/misc/cxl/irq.c
-+++ b/drivers/misc/cxl/irq.c
-@@ -147,7 +147,7 @@ static irqreturn_t cxl_irq(int irq, void *data, struct cxl_irq_info *irq_info)
- 	if (dsisr & CXL_PSL_DSISR_An_PE)
- 		return handle_psl_slice_error(ctx, dsisr, irq_info->errstat);
- 	if (dsisr & CXL_PSL_DSISR_An_AE) {
--		pr_devel("CXL interrupt: AFU Error %.llx\n", irq_info->afu_err);
-+		pr_devel("CXL interrupt: AFU Error 0x%.16llx\n", irq_info->afu_err);
- 
- 		if (ctx->pending_afu_err) {
- 			/*
-@@ -158,7 +158,7 @@ static irqreturn_t cxl_irq(int irq, void *data, struct cxl_irq_info *irq_info)
- 			 * probably best that we log them somewhere:
- 			 */
- 			dev_err_ratelimited(&ctx->afu->dev, "CXL AFU Error "
--					    "undelivered to pe %i: %.llx\n",
-+					    "undelivered to pe %i: 0x%.16llx\n",
- 					    ctx->pe, irq_info->afu_err);
- 		} else {
- 			spin_lock(&ctx->lock);
--- 
-2.1.3
+	Arnd
