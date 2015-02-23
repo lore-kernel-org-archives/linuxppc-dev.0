@@ -1,30 +1,25 @@
-Return-Path: <geert.uytterhoeven@gmail.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <arnd@arndb.de>
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.13])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 10A2E1A0A0E
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Feb 2015 20:59:47 +1100 (AEDT)
-Received: from mail-oi0-x22a.google.com (mail-oi0-x22a.google.com
- [IPv6:2607:f8b0:4003:c06::22a])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 83A5F14012C
- for <linuxppc-dev@ozlabs.org>; Mon, 23 Feb 2015 20:59:46 +1100 (AEDT)
-Received: by mail-oi0-f42.google.com with SMTP id h136so12582691oig.1
- for <linuxppc-dev@ozlabs.org>; Mon, 23 Feb 2015 01:59:45 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id E5E911A0BF0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Feb 2015 21:25:25 +1100 (AEDT)
+From: Arnd Bergmann <arnd@arndb.de>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: Re: Build regressions/improvements in v4.0-rc1
+Date: Mon, 23 Feb 2015 11:24:46 +0100
+Message-ID: <5721217.aGU5oqfDWo@wuerfel>
+In-Reply-To: <CAMuHMdVMCvw1euM0c2AYrYibO4ObZLV6F_-CDPZZ6x44D6Hwug@mail.gmail.com>
+References: <1424680402-3477-1-git-send-email-geert@linux-m68k.org>
+ <5900255.NhXvduRnha@wuerfel>
+ <CAMuHMdVMCvw1euM0c2AYrYibO4ObZLV6F_-CDPZZ6x44D6Hwug@mail.gmail.com>
 MIME-Version: 1.0
-Sender: geert.uytterhoeven@gmail.com
-In-Reply-To: <1421737558-14756-1-git-send-email-mpe@ellerman.id.au>
-References: <1421737558-14756-1-git-send-email-mpe@ellerman.id.au>
-Date: Mon, 23 Feb 2015 10:59:44 +0100
-Message-ID: <CAMuHMdXXoqhwEf6P0pbJb_JkEKkK4bOGBVt8jG-gqKYBBDeHQA@mail.gmail.com>
-Subject: Re: [PATCH] powerpc: Update all configs using savedefconfig
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Content-Type: text/plain; charset=UTF-8
-Cc: Linuxppc-dev <linuxppc-dev@ozlabs.org>,
+Content-Type: text/plain; charset="us-ascii"
+Cc: willy@linux.intel.com,
+ ALSA Development Mailing List <alsa-devel@alsa-project.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
  "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- linux-kbuild <linux-kbuild@vger.kernel.org>
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,50 +29,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Michael,
+On Monday 23 February 2015 10:14:55 Geert Uytterhoeven wrote:
+> On Mon, Feb 23, 2015 at 10:03 AM, Arnd Bergmann <arnd@arndb.de> wrote:
+> >> >   + /home/kisskb/slave/src/fs/dax.c: error: implicit declaration of function 'copy_user_page' [-Werror=implicit-function-declaration]:  => 266:2
+> >
+> > DAX support was merged with 'depends on !(ARM || MIPS || SPARC)', so I don't
+> > see how this could happen.
+> 
+> sh is not ARM, not MIPS, not SPARC, so...?
 
-On Tue, Jan 20, 2015 at 8:05 AM, Michael Ellerman <mpe@ellerman.id.au> wrote:
-> It looks like it's ~4 years since we updated some of these, so do a bulk
-> update.
->
-> Verified that the before and after generated configs are exactly the
-> same.
+I misread your email and thought this was still under arm-randconfig.
 
-Yep, that's guaranteed by the tool (modulo bugs).
+I checked the other architectures, and found that the same is missing on
+ARC, so we should add both:
 
-> Which begs the question why update them? The answer is that it can be
-> confusing when the stored defconfig drifts too far from the generated
-> result.
+diff --git a/fs/Kconfig b/fs/Kconfig
+index ec35851e5b71..a24d496787d6 100644
+--- a/fs/Kconfig
++++ b/fs/Kconfig
+@@ -36,7 +36,7 @@ source "fs/nilfs2/Kconfig"
+ config FS_DAX
+ 	bool "Direct Access (DAX) support"
+ 	depends on MMU
+-	depends on !(ARM || MIPS || SPARC)
++	depends on !(ARC || ARM || MIPS || SH || SPARC)
+ 	help
+ 	  Direct Access (DAX) can be used on memory-backed block devices.
+ 	  If the block device supports DAX and the filesystem supports DAX,
 
-And it becomes hard to update them, e.g. for enabling or disabling a single
-option.
 
-Now the big question is: do they still work?
-Plainly ignoring any bugs introduced in the code, there are probably several
-"select" statements that have been removed. 4 years ago, they automatically
-selected some critical options, while now, they're no longer selected, causing
-breakage.
+It's also not implemented on c6x and blackfin, but both of them have
+MMU=n, so they are already excluded.
 
-I'm afraid the only safe way is (for all 108 defconfig files):
-  - start from the full .config file, as generated from the minimal defconfig
-    file in a source tree from 4 years ago,
-  - run "make oldconfig" (boring),
-  - run "make savedefconfig",
-  - update the minimal defconfig.
+> >> sh-randconfig
+> 
+> >> >   + /home/kisskb/slave/src/sound/soc/codecs/max98357a.c: error: implicit declaration of function 'devm_gpiod_get' [-Werror=implicit-function-declaration]:  => 55:2
+> >> >   + /home/kisskb/slave/src/sound/soc/codecs/max98357a.c: error: implicit declaration of function 'gpiod_direction_output' [-Werror=implicit-function-declaration]:  => 61:2
+> >> >   + /home/kisskb/slave/src/sound/soc/codecs/max98357a.c: error: implicit declaration of function 'gpiod_set_value' [-Werror=implicit-function-declaration]:  => 30:3
+> >
+> > Something wrong in arch/sh/include/asm/gpio.h? the codec is only
+> > selectable when gpiolib is enabled, but the consumer.h header
+> > apparently does not get included here.
+> 
+> I think it's an bad select, for which a patch has been available since
+> about 2 weeks.
 
-The boring step can be made a little bit less boring by making a diff between
-the .config versions before and after running the first "make oldconfig",
-and applying that to the later .config files first, but it's still a tedious
-task, especially after 4 years. That's why I do this (for m68k) on every rc
-release.
+Ah, right. I was looking at linux-next, which has the fix, so I did not
+see the problem at first.
 
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+	Arnd
