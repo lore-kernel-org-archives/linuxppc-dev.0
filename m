@@ -1,39 +1,19 @@
-Return-Path: <nacc@linux.vnet.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 276781A0D50
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Feb 2015 07:45:00 +1100 (AEDT)
-Received: from /spool/local
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
- Mon, 23 Feb 2015 13:44:58 -0700
-Received: from b03cxnp08025.gho.boulder.ibm.com
- (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 0C4821FF001F
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Feb 2015 13:36:07 -0700 (MST)
-Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
- by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with
- ESMTP id t1NKirE832833576
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Feb 2015 13:44:53 -0700
-Received: from d03av05.boulder.ibm.com (localhost [127.0.0.1])
- by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t1NKisVs028605
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Feb 2015 13:44:55 -0700
-Date: Mon, 23 Feb 2015 12:44:53 -0800
-From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH v2] pseries/iommu: remove iommu device references via bus
- notifier
-Message-ID: <20150223204453.GA39962@linux.vnet.ibm.com>
-References: <20150219184103.GB13745@linux.vnet.ibm.com>
- <1424406689.11680.3.camel@ellerman.id.au>
- <20150221190050.GA20184@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150221190050.GA20184@linux.vnet.ibm.com>
-Cc: Alexey Kardashevskiy <aik@au1.ibm.com>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 195191A0CD7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Feb 2015 08:18:52 +1100 (AEDT)
+Message-ID: <1424726318.12891.1.camel@kernel.crashing.org>
+Subject: Re: [PATCH 1/1]: thermal driver therm_adt746.c
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Thomas Haschka <haschka@gmail.com>
+Date: Tue, 24 Feb 2015 08:18:38 +1100
+In-Reply-To: <CADAoK=UH4q9x-OMyOpqCmGpNwDo3vey41xajBw-PDdupmEHnAA@mail.gmail.com>
+References: <CADAoK=UH4q9x-OMyOpqCmGpNwDo3vey41xajBw-PDdupmEHnAA@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,51 +23,277 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 21.02.2015 [11:00:50 -0800], Nishanth Aravamudan wrote:
-> On 20.02.2015 [15:31:29 +1100], Michael Ellerman wrote:
-> > On Thu, 2015-02-19 at 10:41 -0800, Nishanth Aravamudan wrote:
-> > > After d905c5df9aef ("PPC: POWERNV: move iommu_add_device earlier"), the
-> > > refcnt on the kobject backing the IOMMU group for a PCI device is
-> > > elevated by each call to pci_dma_dev_setup_pSeriesLP() (via
-> > > set_iommu_table_base_and_group). When we go to dlpar a multi-function
-> > > PCI device out:
-> > > 
-> > > 	iommu_reconfig_notifier ->
-> > > 		iommu_free_table ->
-> > > 			iommu_group_put
-> > > 			BUG_ON(tbl->it_group)
-> > > 
-> > > We trip this BUG_ON, because there are still references on the table, so
-> > > it is not freed. Fix this by also adding a bus notifier identical to
-> > > PowerNV for pSeries.
-> > 
-> > Please put it somewhere common, arch/powerpc/kernel/iommu.c perhaps, and just
-> > add a second machine_init_call() for pseries.
-> 
-> How does this look? Only compile-tested with CONFIG_IOMMU_API on/off so
-> far, waiting for access to the test LPAR (should have it on Monday).
-> 
-> 
-> After d905c5df9aef ("PPC: POWERNV: move iommu_add_device earlier"), the
-> refcnt on the kobject backing the IOMMU group for a PCI device is
-> elevated by each call to pci_dma_dev_setup_pSeriesLP() (via
-> set_iommu_table_base_and_group). When we go to dlpar a multi-function
-> PCI device out:
-> 
->         iommu_reconfig_notifier ->
->                 iommu_free_table ->
->                         iommu_group_put
->                         BUG_ON(tbl->it_group)
-> 
-> We trip this BUG_ON, because there are still references on the table, so
-> it is not freed. Fix this by moving the PowerNV bus notifier to common
-> code and calling it for both PowerNV and pSeries.
+Hi ! Please try sending patches inline rather than as attachments, it
+makes replying a bit easier... Also don't CC stable, we can shoot to
+stable later on if we think it's justified but first we need to get the
+patch upstream
 
-Survived a remove -> add -> remove cycle, which always resulted in the
-BUG_ON without the change.
+A few comments:
 
-> Fixes: d905c5df9aef ("PPC: POWERNV: move iommu_add_device earlier")
-> Signed-off-by: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-> Cc: stable@kernel.org (3.13+)
+On Mon, 2015-02-23 at 12:58 +0100, Thomas Haschka wrote:
+> --- linux/drivers/macintosh/therm_adt746x.c.orig        2015-02-23 12:19:03.984000000 +0100
+> +++ linux/drivers/macintosh/therm_adt746x.c     2015-02-23 12:22:34.980000000 +0100
+> @@ -1,7 +1,8 @@
+>  /*
+>   * Device driver for the i2c thermostat found on the iBook G4, Albook G4
+>   *
+> - * Copyright (C) 2003, 2004 Colin Leroy, Rasmus Rohde, Benjamin Herrenschmidt
+> + * Copyright (C) 2003, 2004, 2015 
+> + *   Colin Leroy, Rasmus Rohde, Benjamin Herrenschmidt, Thomas Haschka
+>   *
+>   * Documentation from 115254175ADT7467_pra.pdf and 3686221171167ADT7460_b.pdf
+>   * http://www.onsemi.com/PowerSolutions/product.do?id=ADT7467
+> @@ -45,7 +46,7 @@ static u8 REM_CONTROL[2] = {0x00, 0x40};
+>  static u8 FAN_SPEED[2]   = {0x28, 0x2a};
+>  static u8 FAN_SPD_SET[2] = {0x30, 0x31};
+>  
+> -static u8 default_limits_local[3] = {70, 50, 70};    /* local, sensor1, sensor2 */
+> +static u8 default_limits_local[3] = {45, 50, 70};    /* local, sensor1, sensor2 */
 
-Tested-by: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+Here you change the limit for the local sensor for existing machines,
+care to explain ? I *think* that got adjusted a while back due to
+a bunch of bogus error on some machines.
+
+>  static u8 default_limits_chip[3] = {80, 65, 80};    /* local, sensor1, sensor2 */
+>  static const char *sensor_location[3] = { "?", "?", "?" };
+>  
+> @@ -225,59 +226,123 @@ static void display_stats(struct thermos
+>  
+>  static void update_fans_speed (struct thermostat *th)
+>  {
+> -       int lastvar = 0; /* last variation, for iBook */
+> -       int i = 0;
+> -
+> -       /* we don't care about local sensor, so we start at sensor 1 */
+> -       for (i = 1; i < 3; i++) {
+> -               int started = 0;
+> -               int fan_number = (th->type == ADT7460 && i == 2);
+> -               int var = th->temps[i] - th->limits[i];
+> -
+> -               if (var > -1) {
+> -                       int step = (255 - fan_speed) / 7;
+> -                       int new_speed = 0;
+> +       
+> +       /* Multfan Laptops */
+> +       if ( th->type == ADT7460 ) {
+> +                int lastvar = 0; /* last variation, for iBook */
+> +               int i = 0;
+> +                /* we don't care about local sensor, so we start at sensor 1 */
+> +               for (i = 1; i < 3; i++) {
+> +                       int started = 0;
+> +                       int fan_number = (th->type == ADT7460 && i == 2);
+> +                       int var = th->temps[i] - th->limits[i];
+> +
+> +                       if (var > -1) {
+> +                               int step = (255 - fan_speed) / 7;
+> +                               int new_speed = 0;
+
+The function is too big, please break it down into two sub functions,
+one for multifan and one for single fan.
+
+It is also unclear due to the indentation changes whether you changed
+the behaviour on "other" laptops. makes the review a bit harder.
+
+>                         /* hysteresis : change fan speed only if variation is
+>                          * more than two degrees */
+> -                       if (abs(var - th->last_var[fan_number]) < 2)
+> -                               continue;
+> -
+> -                       started = 1;
+> -                       new_speed = fan_speed + ((var-1)*step);
+> +                               if (abs(var - th->last_var[fan_number]) < 2)
+> +                                       continue;
+>  
+> -                       if (new_speed < fan_speed)
+> -                               new_speed = fan_speed;
+> -                       if (new_speed > 255)
+> -                               new_speed = 255;
+> +                               started = 1;
+> +                               new_speed = fan_speed + ((var-1)*step);
+>  
+> -                       if (verbose)
+> -                               printk(KERN_DEBUG "adt746x: Setting fans speed to %d "
+> -                                                "(limit exceeded by %d on %s)\n",
+> -                                               new_speed, var,
+> -                                               sensor_location[fan_number+1]);
+> -                       write_both_fan_speed(th, new_speed);
+> -                       th->last_var[fan_number] = var;
+> -               } else if (var < -2) {
+> +                               if (new_speed < fan_speed)
+> +                                       new_speed = fan_speed;
+> +                               if (new_speed > 255)
+> +                                       new_speed = 255;
+> +
+> +                               if (verbose)
+> +                                       printk(KERN_DEBUG "adt746x: Setting fans speed to %d "
+> +                                                        "(limit exceeded by %d on %s)\n",
+> +                                                       new_speed, var,
+> +                                                       sensor_location[fan_number+1]);
+> +                               write_both_fan_speed(th, new_speed);
+> +                               th->last_var[fan_number] = var;
+> +                       } else if (var < -2) {
+>                         /* don't stop fan if sensor2 is cold and sensor1 is not
+>                          * so cold (lastvar >= -1) */
+> -                       if (i == 2 && lastvar < -1) {
+> -                               if (th->last_speed[fan_number] != 0)
+> -                                       if (verbose)
+> +                               if (i == 2 && lastvar < -1) {
+> +                                       if (th->last_speed[fan_number] != 0)
+> +                                               if (verbose)
+> +                                                       printk(KERN_DEBUG "adt746x: Stopping "
+> +                                                               "fans.\n");
+> +                                       write_both_fan_speed(th, 0);
+> +                               }
+> +                       }
+> +
+> +                       lastvar = var;
+> +
+> +                       if (started)
+> +                               return; /* we don't want to re-stop the fan
+> +                               * if sensor1 is heating and sensor2 is not */
+> +               }
+> +       
+> +       } else {
+> +               /*single fan laptops i.e. 12 inch powerbook/ibook*/
+> +                int lastvar = 0; /* last variation, for iBook */
+> +               int i = 0;
+> +               int var = 0;
+> +               int var_sensor[3];
+> +               int started = 0;
+> +               int fan_number = 0;
+> +               for (i = 0; i < 3; i++) {
+> +                       var_sensor[i] = th->temps[i] - th->limits[i];
+> +               }
+> +               var = var_sensor[0];
+> +               for (i = 1; i < 3; i++) {
+> +                       if (var_sensor[i] > var) {
+> +                               var = var_sensor[i]; 
+> +                       }
+> +               }
+> +               if (var > -1) {
+> +                       int step = (255 - fan_speed) / 7;
+> +                       int new_speed = 0;
+> +
+> +                       /* hysteresis : change fan speed only if variation is
+> +                        * more than two degrees */
+> +                       if (abs(var - th->last_var[fan_number]) > 2) { 
+> +
+> +                       started = 1;
+> +                       new_speed = fan_speed + ((var-1)*step);
+> +
+> +                       if (new_speed < fan_speed)
+> +                               new_speed = fan_speed;
+> +                       if (new_speed > 255)
+> +                               new_speed = 255;
+> +
+> +                       if (verbose)
+> +                               printk(
+> +                                      KERN_DEBUG "adt746x: Setting fans speed to %d "
+> +                                                "(limit exceeded by %d on %s)\n",
+> +                              new_speed, var,
+> +                              sensor_location[fan_number+1]);
+> +                       write_both_fan_speed(th, new_speed);
+> +                       th->last_var[fan_number] = var; 
+> +                        }
+> +               } else if (var < -2) {
+> +         /* don't stop fan if sensor2 is cold and sensor1 is not
+> +          * so cold (lastvar >= -1) */
+> +                        if (i == 2 && lastvar < -1) {
+> +                               if (th->last_speed[fan_number] != 0)
+> +                                       if (verbose)
+>                                                 printk(KERN_DEBUG "adt746x: Stopping "
+>                                                         "fans.\n");
+> -                               write_both_fan_speed(th, 0);
+> +                                       write_both_fan_speed(th, 0);
+>                         }
+>                 }
+>  
+> -               lastvar = var;
+> +               lastvar = var;
+>  
+>                 if (started)
+> -                       return; /* we don't want to re-stop the fan
+> -                               * if sensor1 is heating and sensor2 is not */
+> +               return; /* we don't want to re-stop the fan
+> +                        * if sensor1 is heating and sensor2 is not */
+>         }
+>  }
+>  
+> +
+>  static int monitor_task(void *arg)
+>  {
+>         struct thermostat* th = arg;
+> @@ -371,10 +436,13 @@ static ssize_t store_##name(struct devic
+>         return n;                                               \
+>  }
+>  
+> -BUILD_SHOW_FUNC_INT(sensor1_temperature,        (read_reg(th, TEMP_REG[1])))
+> -BUILD_SHOW_FUNC_INT(sensor2_temperature,        (read_reg(th, TEMP_REG[2])))
+> -BUILD_SHOW_FUNC_INT(sensor1_limit,              th->limits[1])
+> -BUILD_SHOW_FUNC_INT(sensor2_limit,              th->limits[2])
+> +BUILD_SHOW_FUNC_INT(sensor0_temperature,         (read_reg(th, TEMP_REG[0]))*1000)
+> +BUILD_SHOW_FUNC_INT(sensor1_temperature,        (read_reg(th, TEMP_REG[1]))*1000)
+> +BUILD_SHOW_FUNC_INT(sensor2_temperature,        (read_reg(th, TEMP_REG[2]))*1000)
+> +BUILD_SHOW_FUNC_INT(sensor0_limit,               (th->limits[0])*1000)
+> +BUILD_SHOW_FUNC_INT(sensor1_limit,              (th->limits[1])*1000)
+> +BUILD_SHOW_FUNC_INT(sensor2_limit,              (th->limits[2])*1000)
+
+You changed the units here, that should be documented and why.
+
+> +BUILD_SHOW_FUNC_STR(sensor0_location,            sensor_location[0])
+>  BUILD_SHOW_FUNC_STR(sensor1_location,           sensor_location[1])
+>  BUILD_SHOW_FUNC_STR(sensor2_location,           sensor_location[2])
+>  
+> @@ -387,14 +455,20 @@ BUILD_SHOW_FUNC_FAN(sensor2_fan_speed,
+>  BUILD_SHOW_FUNC_INT_LITE(limit_adjust,  limit_adjust)
+>  BUILD_STORE_FUNC_DEG(limit_adjust,      th)
+>                 
+> +static DEVICE_ATTR(sensor0_temperature,        S_IRUGO,
+> +                  show_sensor0_temperature,NULL);
+>  static DEVICE_ATTR(sensor1_temperature,        S_IRUGO,
+>                    show_sensor1_temperature,NULL);
+>  static DEVICE_ATTR(sensor2_temperature,        S_IRUGO,
+>                    show_sensor2_temperature,NULL);
+> +static DEVICE_ATTR(sensor0_limit, S_IRUGO,
+> +                  show_sensor0_limit,  NULL);
+>  static DEVICE_ATTR(sensor1_limit, S_IRUGO,
+>                    show_sensor1_limit,  NULL);
+>  static DEVICE_ATTR(sensor2_limit, S_IRUGO,
+>                    show_sensor2_limit,  NULL);
+> +static DEVICE_ATTR(sensor0_location, S_IRUGO,
+> +                  show_sensor0_location, NULL);
+>  static DEVICE_ATTR(sensor1_location, S_IRUGO,
+>                    show_sensor1_location, NULL);
+>  static DEVICE_ATTR(sensor2_location, S_IRUGO,
+> @@ -426,10 +500,13 @@ static void thermostat_create_files(stru
+>                 return;
+>         dev = &th->pdev->dev;
+>         dev_set_drvdata(dev, th);
+> -       err = device_create_file(dev, &dev_attr_sensor1_temperature);
+> +       err = device_create_file(dev, &dev_attr_sensor0_temperature);
+> +       err |= device_create_file(dev, &dev_attr_sensor1_temperature);
+>         err |= device_create_file(dev, &dev_attr_sensor2_temperature);
+> +       err |= device_create_file(dev, &dev_attr_sensor0_limit);
+>         err |= device_create_file(dev, &dev_attr_sensor1_limit);
+>         err |= device_create_file(dev, &dev_attr_sensor2_limit);
+> +       err |= device_create_file(dev, &dev_attr_sensor0_location);
+>         err |= device_create_file(dev, &dev_attr_sensor1_location);
+>         err |= device_create_file(dev, &dev_attr_sensor2_location);
+>         err |= device_create_file(dev, &dev_attr_limit_adjust);
+> @@ -449,10 +526,13 @@ static void thermostat_remove_files(stru
+>         if (!th->pdev)
+>                 return;
+>         dev = &th->pdev->dev;
+> +       device_remove_file(dev, &dev_attr_sensor0_temperature);
+>         device_remove_file(dev, &dev_attr_sensor1_temperature);
+>         device_remove_file(dev, &dev_attr_sensor2_temperature);
+> +       device_remove_file(dev, &dev_attr_sensor0_limit);
+>         device_remove_file(dev, &dev_attr_sensor1_limit);
+>         device_remove_file(dev, &dev_attr_sensor2_limit);
+> +       device_remove_file(dev, &dev_attr_sensor0_location);
+>         device_remove_file(dev, &dev_attr_sensor1_location);
+>         device_remove_file(dev, &dev_attr_sensor2_location);
+>         device_remove_file(dev, &dev_attr_limit_adjust);
+
+Cheers,
+Ben.
