@@ -1,25 +1,20 @@
-Return-Path: <arnd@arndb.de>
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.131])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <haschka@gmail.com>
+Received: from mail-lb0-x233.google.com (mail-lb0-x233.google.com
+ [IPv6:2a00:1450:4010:c04::233])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 774601A0BF4
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Feb 2015 22:25:28 +1100 (AEDT)
-From: Arnd Bergmann <arnd@arndb.de>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: Build regressions/improvements in v4.0-rc1
-Date: Mon, 23 Feb 2015 12:24:38 +0100
-Message-ID: <6141970.YzWJy8akUr@wuerfel>
-In-Reply-To: <CAMuHMdUTCvQw1q-dJcx9dAnFEXtfJYs+rbVS4KdZgi-3cbSC7g@mail.gmail.com>
-References: <1424680402-3477-1-git-send-email-geert@linux-m68k.org>
- <5721217.aGU5oqfDWo@wuerfel>
- <CAMuHMdUTCvQw1q-dJcx9dAnFEXtfJYs+rbVS4KdZgi-3cbSC7g@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 916B81A0C4D
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Feb 2015 22:59:02 +1100 (AEDT)
+Received: by lbjb6 with SMTP id b6so17947659lbj.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Feb 2015 03:58:57 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Cc: Matthew Wilcox <willy@linux.intel.com>,
- ALSA Development Mailing List <alsa-devel@alsa-project.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Date: Mon, 23 Feb 2015 12:58:56 +0100
+Message-ID: <CADAoK=UH4q9x-OMyOpqCmGpNwDo3vey41xajBw-PDdupmEHnAA@mail.gmail.com>
+Subject: [PATCH 1/1]: thermal driver therm_adt746.c
+From: Thomas Haschka <haschka@gmail.com>
+To: stable@vger.kernel.org, benh@kernel.crashing.org,
+ linuxppc-dev@lists.ozlabs.org
+Content-Type: multipart/mixed; boundary=001a11c242de80546a050fc02015
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,37 +24,261 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Monday 23 February 2015 11:28:12 Geert Uytterhoeven wrote:
-> On Mon, Feb 23, 2015 at 11:24 AM, Arnd Bergmann <arnd@arndb.de> wrote:
-> > On Monday 23 February 2015 10:14:55 Geert Uytterhoeven wrote:
-> >> On Mon, Feb 23, 2015 at 10:03 AM, Arnd Bergmann <arnd@arndb.de> wrote:
-> >> >> >   + /home/kisskb/slave/src/fs/dax.c: error: implicit declaration of function 'copy_user_page' [-Werror=implicit-function-declaration]:  => 266:2
-> 
-> > I checked the other architectures, and found that the same is missing on
-> > ARC, so we should add both:
-> >
-> > diff --git a/fs/Kconfig b/fs/Kconfig
-> > index ec35851e5b71..a24d496787d6 100644
-> > --- a/fs/Kconfig
-> > +++ b/fs/Kconfig
-> > @@ -36,7 +36,7 @@ source "fs/nilfs2/Kconfig"
-> >  config FS_DAX
-> >         bool "Direct Access (DAX) support"
-> >         depends on MMU
-> > -       depends on !(ARM || MIPS || SPARC)
-> > +       depends on !(ARC || ARM || MIPS || SH || SPARC)
-> >         help
-> >           Direct Access (DAX) can be used on memory-backed block devices.
-> >           If the block device supports DAX and the filesystem supports DAX,
-> >
-> >
-> > It's also not implemented on c6x and blackfin, but both of them have
-> > MMU=n, so they are already excluded.
-> 
-> Exactly.
-> 
-> Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
+--001a11c242de80546a050fc02015
+Content-Type: multipart/alternative; boundary=001a11c242de805465050fc02013
 
-Thanks, let me submit that as a proper patch with a changelog then.
+--001a11c242de805465050fc02013
+Content-Type: text/plain; charset=UTF-8
 
-	Arnd
+Hi everyone,
+
+The current driver linux/drivers/macintosh/therm_adt746x.c does not take
+the HDD BUTTOMSIDE sensor into account. It actually should as the 12"
+Powerbooks and IBooks are build in a way that the airflow cools the
+harddrive and components around it. Actually there are air intake openings
+just beneath the Harddrive. If you experiance hot enviromental temperatures
+as I did in summer on certain occations, you will find out that in MacOSX
+the fan spins up while it doesn't in linux. As this probably causes
+harddrives, and maybe other components to fail early I think this should be
+regarded as a fix to a severe bug.
+
+Hence, I created this patch for single fan 12" Albooks, Ibooks etc.
+
+Further I changed the output /sys/devices/temperatures so that all 3
+sensors are readable from this locations. The output is furhter multiplied
+by 1000 in order correspond to the ranges printed by other sensor readings.
+( This also makes the readings monitorable with tools such as xosview )
+
+I sign this contribution as demanded, and hope that it will help keeping
+several Powerbooks and Ibooks out there running a bit longer:
+
+(a) The contribution was created in whole by me and I
+            have the right to submit it under the GPLv2
+            (Gnu Public License version 2)
+
+(b) The contribution is based upon previous work that, to the best
+            of my knowledge, is covered under an appropriate open source
+            license and I have the right under that license to submit that
+            work with modifications, whether created in whole or in part
+            by me, under the same open source license
+
+ (d) I understand and agree that this project and the contribution
+            are public and that a record of the contribution (including all
+            personal information I submit with it, including my sign-off) is
+            maintained indefinitely and may be redistributed consistent with
+            this project or the open source license(s) involved.
+
+Signed-off-by: Thomas Haschka (haschka@gmail.com)
+
+--001a11c242de805465050fc02013
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+
+<div dir=3D"ltr"><div><div>Hi everyone, <br><br></div>The current driver li=
+nux/drivers/macintosh/therm_adt746x.c does not take the HDD BUTTOMSIDE sens=
+or into account. It actually should as the 12&quot; Powerbooks and IBooks a=
+re build in a way that the airflow cools the harddrive and components aroun=
+d it. Actually there are air intake openings just beneath the Harddrive. If=
+ you experiance hot enviromental temperatures as I did in summer on certain=
+ occations, you will find out that in MacOSX the fan spins up while it does=
+n&#39;t in linux. As this probably causes harddrives, and maybe other compo=
+nents to fail early I think this should be regarded as a fix to a severe bu=
+g.<br><br></div><div>Hence, I created this patch for single fan 12&quot; Al=
+books, Ibooks etc. <br><br></div><div>Further I changed the output /sys/dev=
+ices/temperatures so that all 3 sensors are readable from this locations. T=
+he output is furhter multiplied by 1000 in order correspond to the ranges p=
+rinted by other sensor readings. ( This also makes the readings monitorable=
+ with tools such as xosview ) <br></div><div><br></div><div>I sign this con=
+tribution as demanded, and hope that it will help keeping several Powerbook=
+s and Ibooks out there running a bit longer: <br><br><pre>(a) The contribut=
+ion was created in whole by me and I
+            have the right to submit it under the GPLv2 <br>            (Gn=
+u Public License version 2)<br></pre></div><div><pre>(b) The contribution i=
+s based upon previous work that, to the best
+            of my knowledge, is covered under an appropriate open source
+            license and I have the right under that license to submit that
+            work with modifications, whether created in whole or in part
+            by me, under the same open source license<br><br> (d) I underst=
+and and agree that this project and the contribution
+            are public and that a record of the contribution (including all
+            personal information I submit with it, including my sign-off) i=
+s
+            maintained indefinitely and may be redistributed consistent wit=
+h
+            this project or the open source license(s) involved.<br><br></p=
+re><pre>Signed-off-by: Thomas Haschka (<a href=3D"mailto:haschka@gmail.com"=
+>haschka@gmail.com</a>)<br></pre></div></div>
+
+--001a11c242de805465050fc02013--
+
+--001a11c242de80546a050fc02015
+Content-Type: text/x-patch; charset=US-ASCII; name="therm_adt746x.patch"
+Content-Disposition: attachment; filename="therm_adt746x.patch"
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_i6hslhke0
+
+LS0tIGxpbnV4L2RyaXZlcnMvbWFjaW50b3NoL3RoZXJtX2FkdDc0NnguYy5vcmlnCTIwMTUtMDIt
+MjMgMTI6MTk6MDMuOTg0MDAwMDAwICswMTAwCisrKyBsaW51eC9kcml2ZXJzL21hY2ludG9zaC90
+aGVybV9hZHQ3NDZ4LmMJMjAxNS0wMi0yMyAxMjoyMjozNC45ODAwMDAwMDAgKzAxMDAKQEAgLTEs
+NyArMSw4IEBACiAvKgogICogRGV2aWNlIGRyaXZlciBmb3IgdGhlIGkyYyB0aGVybW9zdGF0IGZv
+dW5kIG9uIHRoZSBpQm9vayBHNCwgQWxib29rIEc0CiAgKgotICogQ29weXJpZ2h0IChDKSAyMDAz
+LCAyMDA0IENvbGluIExlcm95LCBSYXNtdXMgUm9oZGUsIEJlbmphbWluIEhlcnJlbnNjaG1pZHQK
+KyAqIENvcHlyaWdodCAoQykgMjAwMywgMjAwNCwgMjAxNSAKKyAqICAgQ29saW4gTGVyb3ksIFJh
+c211cyBSb2hkZSwgQmVuamFtaW4gSGVycmVuc2NobWlkdCwgVGhvbWFzIEhhc2Noa2EKICAqCiAg
+KiBEb2N1bWVudGF0aW9uIGZyb20gMTE1MjU0MTc1QURUNzQ2N19wcmEucGRmIGFuZCAzNjg2MjIx
+MTcxMTY3QURUNzQ2MF9iLnBkZgogICogaHR0cDovL3d3dy5vbnNlbWkuY29tL1Bvd2VyU29sdXRp
+b25zL3Byb2R1Y3QuZG8/aWQ9QURUNzQ2NwpAQCAtNDUsNyArNDYsNyBAQCBzdGF0aWMgdTggUkVN
+X0NPTlRST0xbMl0gPSB7MHgwMCwgMHg0MH07CiBzdGF0aWMgdTggRkFOX1NQRUVEWzJdICAgPSB7
+MHgyOCwgMHgyYX07CiBzdGF0aWMgdTggRkFOX1NQRF9TRVRbMl0gPSB7MHgzMCwgMHgzMX07CiAK
+LXN0YXRpYyB1OCBkZWZhdWx0X2xpbWl0c19sb2NhbFszXSA9IHs3MCwgNTAsIDcwfTsgICAgLyog
+bG9jYWwsIHNlbnNvcjEsIHNlbnNvcjIgKi8KK3N0YXRpYyB1OCBkZWZhdWx0X2xpbWl0c19sb2Nh
+bFszXSA9IHs0NSwgNTAsIDcwfTsgICAgLyogbG9jYWwsIHNlbnNvcjEsIHNlbnNvcjIgKi8KIHN0
+YXRpYyB1OCBkZWZhdWx0X2xpbWl0c19jaGlwWzNdID0gezgwLCA2NSwgODB9OyAgICAvKiBsb2Nh
+bCwgc2Vuc29yMSwgc2Vuc29yMiAqLwogc3RhdGljIGNvbnN0IGNoYXIgKnNlbnNvcl9sb2NhdGlv
+blszXSA9IHsgIj8iLCAiPyIsICI/IiB9OwogCkBAIC0yMjUsNTkgKzIyNiwxMjMgQEAgc3RhdGlj
+IHZvaWQgZGlzcGxheV9zdGF0cyhzdHJ1Y3QgdGhlcm1vcwogCiBzdGF0aWMgdm9pZCB1cGRhdGVf
+ZmFuc19zcGVlZCAoc3RydWN0IHRoZXJtb3N0YXQgKnRoKQogewotCWludCBsYXN0dmFyID0gMDsg
+LyogbGFzdCB2YXJpYXRpb24sIGZvciBpQm9vayAqLwotCWludCBpID0gMDsKLQotCS8qIHdlIGRv
+bid0IGNhcmUgYWJvdXQgbG9jYWwgc2Vuc29yLCBzbyB3ZSBzdGFydCBhdCBzZW5zb3IgMSAqLwot
+CWZvciAoaSA9IDE7IGkgPCAzOyBpKyspIHsKLQkJaW50IHN0YXJ0ZWQgPSAwOwotCQlpbnQgZmFu
+X251bWJlciA9ICh0aC0+dHlwZSA9PSBBRFQ3NDYwICYmIGkgPT0gMik7Ci0JCWludCB2YXIgPSB0
+aC0+dGVtcHNbaV0gLSB0aC0+bGltaXRzW2ldOwotCi0JCWlmICh2YXIgPiAtMSkgewotCQkJaW50
+IHN0ZXAgPSAoMjU1IC0gZmFuX3NwZWVkKSAvIDc7Ci0JCQlpbnQgbmV3X3NwZWVkID0gMDsKKwkK
+KwkvKiBNdWx0ZmFuIExhcHRvcHMgKi8KKwlpZiAoIHRoLT50eXBlID09IEFEVDc0NjAgKSB7Cisg
+ICAgICAgICAgICAgICAgaW50IGxhc3R2YXIgPSAwOyAvKiBsYXN0IHZhcmlhdGlvbiwgZm9yIGlC
+b29rICovCisJICAgICAgICBpbnQgaSA9IDA7CisgICAgICAgICAgICAgICAgLyogd2UgZG9uJ3Qg
+Y2FyZSBhYm91dCBsb2NhbCBzZW5zb3IsIHNvIHdlIHN0YXJ0IGF0IHNlbnNvciAxICovCisJICAg
+ICAgICBmb3IgKGkgPSAxOyBpIDwgMzsgaSsrKSB7CisJCSAgICAgICAgaW50IHN0YXJ0ZWQgPSAw
+OworCQkgICAgICAgIGludCBmYW5fbnVtYmVyID0gKHRoLT50eXBlID09IEFEVDc0NjAgJiYgaSA9
+PSAyKTsKKwkJICAgICAgICBpbnQgdmFyID0gdGgtPnRlbXBzW2ldIC0gdGgtPmxpbWl0c1tpXTsK
+KworCQkgICAgICAgIGlmICh2YXIgPiAtMSkgeworCQkJICAgICAgICBpbnQgc3RlcCA9ICgyNTUg
+LSBmYW5fc3BlZWQpIC8gNzsKKwkJCSAgICAgICAgaW50IG5ld19zcGVlZCA9IDA7CiAKIAkJCS8q
+IGh5c3RlcmVzaXMgOiBjaGFuZ2UgZmFuIHNwZWVkIG9ubHkgaWYgdmFyaWF0aW9uIGlzCiAJCQkg
+KiBtb3JlIHRoYW4gdHdvIGRlZ3JlZXMgKi8KLQkJCWlmIChhYnModmFyIC0gdGgtPmxhc3RfdmFy
+W2Zhbl9udW1iZXJdKSA8IDIpCi0JCQkJY29udGludWU7Ci0KLQkJCXN0YXJ0ZWQgPSAxOwotCQkJ
+bmV3X3NwZWVkID0gZmFuX3NwZWVkICsgKCh2YXItMSkqc3RlcCk7CisJCQkgICAgICAgIGlmIChh
+YnModmFyIC0gdGgtPmxhc3RfdmFyW2Zhbl9udW1iZXJdKSA8IDIpCisJCQkJICAgICAgICBjb250
+aW51ZTsKIAotCQkJaWYgKG5ld19zcGVlZCA8IGZhbl9zcGVlZCkKLQkJCQluZXdfc3BlZWQgPSBm
+YW5fc3BlZWQ7Ci0JCQlpZiAobmV3X3NwZWVkID4gMjU1KQotCQkJCW5ld19zcGVlZCA9IDI1NTsK
+KwkJCSAgICAgICAgc3RhcnRlZCA9IDE7CisJCQkgICAgICAgIG5ld19zcGVlZCA9IGZhbl9zcGVl
+ZCArICgodmFyLTEpKnN0ZXApOwogCi0JCQlpZiAodmVyYm9zZSkKLQkJCQlwcmludGsoS0VSTl9E
+RUJVRyAiYWR0NzQ2eDogU2V0dGluZyBmYW5zIHNwZWVkIHRvICVkICIKLQkJCQkJCSAiKGxpbWl0
+IGV4Y2VlZGVkIGJ5ICVkIG9uICVzKVxuIiwKLQkJCQkJCW5ld19zcGVlZCwgdmFyLAotCQkJCQkJ
+c2Vuc29yX2xvY2F0aW9uW2Zhbl9udW1iZXIrMV0pOwotCQkJd3JpdGVfYm90aF9mYW5fc3BlZWQo
+dGgsIG5ld19zcGVlZCk7Ci0JCQl0aC0+bGFzdF92YXJbZmFuX251bWJlcl0gPSB2YXI7Ci0JCX0g
+ZWxzZSBpZiAodmFyIDwgLTIpIHsKKwkJCSAgICAgICAgaWYgKG5ld19zcGVlZCA8IGZhbl9zcGVl
+ZCkKKwkJCQkgICAgICAgIG5ld19zcGVlZCA9IGZhbl9zcGVlZDsKKwkJCSAgICAgICAgaWYgKG5l
+d19zcGVlZCA+IDI1NSkKKwkJCQkgICAgICAgIG5ld19zcGVlZCA9IDI1NTsKKworCQkJICAgICAg
+ICBpZiAodmVyYm9zZSkKKwkJCQkgICAgICAgIHByaW50ayhLRVJOX0RFQlVHICJhZHQ3NDZ4OiBT
+ZXR0aW5nIGZhbnMgc3BlZWQgdG8gJWQgIgorCQkJCQkJICAgICAgICAgIihsaW1pdCBleGNlZWRl
+ZCBieSAlZCBvbiAlcylcbiIsCisJCQkJCQkgICAgICAgIG5ld19zcGVlZCwgdmFyLAorCQkJCQkJ
+ICAgICAgICBzZW5zb3JfbG9jYXRpb25bZmFuX251bWJlcisxXSk7CisJCQkgICAgICAgIHdyaXRl
+X2JvdGhfZmFuX3NwZWVkKHRoLCBuZXdfc3BlZWQpOworCQkJICAgICAgICB0aC0+bGFzdF92YXJb
+ZmFuX251bWJlcl0gPSB2YXI7CisJCSAgICAgICAgfSBlbHNlIGlmICh2YXIgPCAtMikgewogCQkJ
+LyogZG9uJ3Qgc3RvcCBmYW4gaWYgc2Vuc29yMiBpcyBjb2xkIGFuZCBzZW5zb3IxIGlzIG5vdAog
+CQkJICogc28gY29sZCAobGFzdHZhciA+PSAtMSkgKi8KLQkJCWlmIChpID09IDIgJiYgbGFzdHZh
+ciA8IC0xKSB7Ci0JCQkJaWYgKHRoLT5sYXN0X3NwZWVkW2Zhbl9udW1iZXJdICE9IDApCi0JCQkJ
+CWlmICh2ZXJib3NlKQorCQkJICAgICAgICBpZiAoaSA9PSAyICYmIGxhc3R2YXIgPCAtMSkgewor
+CQkJCSAgICAgICAgaWYgKHRoLT5sYXN0X3NwZWVkW2Zhbl9udW1iZXJdICE9IDApCisJCQkJCSAg
+ICAgICAgaWYgKHZlcmJvc2UpCisJCQkJCQkgICAgICAgIHByaW50ayhLRVJOX0RFQlVHICJhZHQ3
+NDZ4OiBTdG9wcGluZyAiCisJCQkJCQkJICAgICAgICAiZmFucy5cbiIpOworCQkJCSAgICAgICAg
+d3JpdGVfYm90aF9mYW5fc3BlZWQodGgsIDApOworCQkJICAgICAgICB9CisJCSAgICAgICAgfQor
+CisJCSAgICAgICAgbGFzdHZhciA9IHZhcjsKKworCQkgICAgICAgIGlmIChzdGFydGVkKQorCQkJ
+ICAgICAgICByZXR1cm47IC8qIHdlIGRvbid0IHdhbnQgdG8gcmUtc3RvcCB0aGUgZmFuCisJCQkJ
+KiBpZiBzZW5zb3IxIGlzIGhlYXRpbmcgYW5kIHNlbnNvcjIgaXMgbm90ICovCisJICAgICAgICB9
+CisJCisJfSBlbHNlIHsKKwkgICAgICAgIC8qc2luZ2xlIGZhbiBsYXB0b3BzIGkuZS4gMTIgaW5j
+aCBwb3dlcmJvb2svaWJvb2sqLworICAgICAgICAgICAgICAgIGludCBsYXN0dmFyID0gMDsgLyog
+bGFzdCB2YXJpYXRpb24sIGZvciBpQm9vayAqLworCQlpbnQgaSA9IDA7CisJCWludCB2YXIgPSAw
+OworCQlpbnQgdmFyX3NlbnNvclszXTsKKwkJaW50IHN0YXJ0ZWQgPSAwOworCQlpbnQgZmFuX251
+bWJlciA9IDA7CisJCWZvciAoaSA9IDA7IGkgPCAzOyBpKyspIHsKKwkgICAgICAgICAgICAgICAg
+dmFyX3NlbnNvcltpXSA9IHRoLT50ZW1wc1tpXSAtIHRoLT5saW1pdHNbaV07CisJICAgICAgICB9
+CisJICAgICAgICB2YXIgPSB2YXJfc2Vuc29yWzBdOworCSAgICAgICAgZm9yIChpID0gMTsgaSA8
+IDM7IGkrKykgeworCSAgICAgICAgICAgICAgICBpZiAodmFyX3NlbnNvcltpXSA+IHZhcikgewor
+CQkgICAgICAgICAgICAgICAgdmFyID0gdmFyX3NlbnNvcltpXTsgCisJCSAgICAgICAgfQorCSAg
+ICAgICAgfQorCSAgICAgICAgaWYgKHZhciA+IC0xKSB7CisJICAgICAgICAgICAgICAgIGludCBz
+dGVwID0gKDI1NSAtIGZhbl9zcGVlZCkgLyA3OworCQkgICAgICAgIGludCBuZXdfc3BlZWQgPSAw
+OworCisJCSAgICAgICAgLyogaHlzdGVyZXNpcyA6IGNoYW5nZSBmYW4gc3BlZWQgb25seSBpZiB2
+YXJpYXRpb24gaXMKKwkJICAgICAgICAgKiBtb3JlIHRoYW4gdHdvIGRlZ3JlZXMgKi8KKwkJICAg
+ICAgICBpZiAoYWJzKHZhciAtIHRoLT5sYXN0X3ZhcltmYW5fbnVtYmVyXSkgPiAyKSB7IAorCisJ
+CSAgICAgICAgc3RhcnRlZCA9IDE7CisJCSAgICAgICAgbmV3X3NwZWVkID0gZmFuX3NwZWVkICsg
+KCh2YXItMSkqc3RlcCk7CisKKwkJICAgICAgICBpZiAobmV3X3NwZWVkIDwgZmFuX3NwZWVkKQor
+CQkgICAgICAgICAgICAgICAgbmV3X3NwZWVkID0gZmFuX3NwZWVkOworCQkgICAgICAgIGlmIChu
+ZXdfc3BlZWQgPiAyNTUpCisJCSAgICAgICAgICAgICAgICBuZXdfc3BlZWQgPSAyNTU7CisKKwkJ
+ICAgICAgICBpZiAodmVyYm9zZSkKKwkJICAgICAgICAgICAgICAgIHByaW50aygKKwkJCQkgICAg
+ICAgS0VSTl9ERUJVRyAiYWR0NzQ2eDogU2V0dGluZyBmYW5zIHNwZWVkIHRvICVkICIKKwkJCQkJ
+CSAiKGxpbWl0IGV4Y2VlZGVkIGJ5ICVkIG9uICVzKVxuIiwKKwkJCSAgICAgICBuZXdfc3BlZWQs
+IHZhciwKKwkJCSAgICAgICBzZW5zb3JfbG9jYXRpb25bZmFuX251bWJlcisxXSk7CisJCSAgICAg
+ICAgd3JpdGVfYm90aF9mYW5fc3BlZWQodGgsIG5ld19zcGVlZCk7CisJCSAgICAgICAgdGgtPmxh
+c3RfdmFyW2Zhbl9udW1iZXJdID0gdmFyOyAKKyAgICAgICAgICAgICAgICAgICAgICAgIH0KKwkg
+ICAgICAgIH0gZWxzZSBpZiAodmFyIDwgLTIpIHsKKwkgIC8qIGRvbid0IHN0b3AgZmFuIGlmIHNl
+bnNvcjIgaXMgY29sZCBhbmQgc2Vuc29yMSBpcyBub3QKKwkgICAqIHNvIGNvbGQgKGxhc3R2YXIg
+Pj0gLTEpICovCisJICAgICAgICAgICAgICAgICBpZiAoaSA9PSAyICYmIGxhc3R2YXIgPCAtMSkg
+eworCQkgICAgICAgICAgICAgICAgaWYgKHRoLT5sYXN0X3NwZWVkW2Zhbl9udW1iZXJdICE9IDAp
+CisJCQkJICAgICAgICBpZiAodmVyYm9zZSkKIAkJCQkJCXByaW50ayhLRVJOX0RFQlVHICJhZHQ3
+NDZ4OiBTdG9wcGluZyAiCiAJCQkJCQkJImZhbnMuXG4iKTsKLQkJCQl3cml0ZV9ib3RoX2Zhbl9z
+cGVlZCh0aCwgMCk7CisJCQkJICAgICAgICB3cml0ZV9ib3RoX2Zhbl9zcGVlZCh0aCwgMCk7CiAJ
+CQl9CiAJCX0KIAotCQlsYXN0dmFyID0gdmFyOworCSAgICAgICAgbGFzdHZhciA9IHZhcjsKIAog
+CQlpZiAoc3RhcnRlZCkKLQkJCXJldHVybjsgLyogd2UgZG9uJ3Qgd2FudCB0byByZS1zdG9wIHRo
+ZSBmYW4KLQkJCQkqIGlmIHNlbnNvcjEgaXMgaGVhdGluZyBhbmQgc2Vuc29yMiBpcyBub3QgKi8K
+KwkJcmV0dXJuOyAvKiB3ZSBkb24ndCB3YW50IHRvIHJlLXN0b3AgdGhlIGZhbgorCQkJICogaWYg
+c2Vuc29yMSBpcyBoZWF0aW5nIGFuZCBzZW5zb3IyIGlzIG5vdCAqLwogCX0KIH0KIAorCiBzdGF0
+aWMgaW50IG1vbml0b3JfdGFzayh2b2lkICphcmcpCiB7CiAJc3RydWN0IHRoZXJtb3N0YXQqIHRo
+ID0gYXJnOwpAQCAtMzcxLDEwICs0MzYsMTMgQEAgc3RhdGljIHNzaXplX3Qgc3RvcmVfIyNuYW1l
+KHN0cnVjdCBkZXZpYwogCXJldHVybiBuOwkJCQkJCVwKIH0KIAotQlVJTERfU0hPV19GVU5DX0lO
+VChzZW5zb3IxX3RlbXBlcmF0dXJlLAkgKHJlYWRfcmVnKHRoLCBURU1QX1JFR1sxXSkpKQotQlVJ
+TERfU0hPV19GVU5DX0lOVChzZW5zb3IyX3RlbXBlcmF0dXJlLAkgKHJlYWRfcmVnKHRoLCBURU1Q
+X1JFR1syXSkpKQotQlVJTERfU0hPV19GVU5DX0lOVChzZW5zb3IxX2xpbWl0LAkJIHRoLT5saW1p
+dHNbMV0pCi1CVUlMRF9TSE9XX0ZVTkNfSU5UKHNlbnNvcjJfbGltaXQsCQkgdGgtPmxpbWl0c1sy
+XSkKK0JVSUxEX1NIT1dfRlVOQ19JTlQoc2Vuc29yMF90ZW1wZXJhdHVyZSwgICAgICAgICAocmVh
+ZF9yZWcodGgsIFRFTVBfUkVHWzBdKSkqMTAwMCkKK0JVSUxEX1NIT1dfRlVOQ19JTlQoc2Vuc29y
+MV90ZW1wZXJhdHVyZSwJIChyZWFkX3JlZyh0aCwgVEVNUF9SRUdbMV0pKSoxMDAwKQorQlVJTERf
+U0hPV19GVU5DX0lOVChzZW5zb3IyX3RlbXBlcmF0dXJlLAkgKHJlYWRfcmVnKHRoLCBURU1QX1JF
+R1syXSkpKjEwMDApCitCVUlMRF9TSE9XX0ZVTkNfSU5UKHNlbnNvcjBfbGltaXQsICAgICAgICAg
+ICAgICAgKHRoLT5saW1pdHNbMF0pKjEwMDApCitCVUlMRF9TSE9XX0ZVTkNfSU5UKHNlbnNvcjFf
+bGltaXQsCQkgKHRoLT5saW1pdHNbMV0pKjEwMDApCitCVUlMRF9TSE9XX0ZVTkNfSU5UKHNlbnNv
+cjJfbGltaXQsCQkgKHRoLT5saW1pdHNbMl0pKjEwMDApCitCVUlMRF9TSE9XX0ZVTkNfU1RSKHNl
+bnNvcjBfbG9jYXRpb24sICAgICAgICAgICAgc2Vuc29yX2xvY2F0aW9uWzBdKQogQlVJTERfU0hP
+V19GVU5DX1NUUihzZW5zb3IxX2xvY2F0aW9uLAkJIHNlbnNvcl9sb2NhdGlvblsxXSkKIEJVSUxE
+X1NIT1dfRlVOQ19TVFIoc2Vuc29yMl9sb2NhdGlvbiwJCSBzZW5zb3JfbG9jYXRpb25bMl0pCiAK
+QEAgLTM4NywxNCArNDU1LDIwIEBAIEJVSUxEX1NIT1dfRlVOQ19GQU4oc2Vuc29yMl9mYW5fc3Bl
+ZWQsCiBCVUlMRF9TSE9XX0ZVTkNfSU5UX0xJVEUobGltaXRfYWRqdXN0LAkgbGltaXRfYWRqdXN0
+KQogQlVJTERfU1RPUkVfRlVOQ19ERUcobGltaXRfYWRqdXN0LAkgdGgpCiAJCQorc3RhdGljIERF
+VklDRV9BVFRSKHNlbnNvcjBfdGVtcGVyYXR1cmUsCVNfSVJVR08sCisJCSAgIHNob3dfc2Vuc29y
+MF90ZW1wZXJhdHVyZSxOVUxMKTsKIHN0YXRpYyBERVZJQ0VfQVRUUihzZW5zb3IxX3RlbXBlcmF0
+dXJlLAlTX0lSVUdPLAogCQkgICBzaG93X3NlbnNvcjFfdGVtcGVyYXR1cmUsTlVMTCk7CiBzdGF0
+aWMgREVWSUNFX0FUVFIoc2Vuc29yMl90ZW1wZXJhdHVyZSwJU19JUlVHTywKIAkJICAgc2hvd19z
+ZW5zb3IyX3RlbXBlcmF0dXJlLE5VTEwpOworc3RhdGljIERFVklDRV9BVFRSKHNlbnNvcjBfbGlt
+aXQsIFNfSVJVR08sCisJCSAgIHNob3dfc2Vuc29yMF9saW1pdCwJTlVMTCk7CiBzdGF0aWMgREVW
+SUNFX0FUVFIoc2Vuc29yMV9saW1pdCwgU19JUlVHTywKIAkJICAgc2hvd19zZW5zb3IxX2xpbWl0
+LAlOVUxMKTsKIHN0YXRpYyBERVZJQ0VfQVRUUihzZW5zb3IyX2xpbWl0LCBTX0lSVUdPLAogCQkg
+ICBzaG93X3NlbnNvcjJfbGltaXQsCU5VTEwpOworc3RhdGljIERFVklDRV9BVFRSKHNlbnNvcjBf
+bG9jYXRpb24sIFNfSVJVR08sCisJCSAgIHNob3dfc2Vuc29yMF9sb2NhdGlvbiwgTlVMTCk7CiBz
+dGF0aWMgREVWSUNFX0FUVFIoc2Vuc29yMV9sb2NhdGlvbiwgU19JUlVHTywKIAkJICAgc2hvd19z
+ZW5zb3IxX2xvY2F0aW9uLCBOVUxMKTsKIHN0YXRpYyBERVZJQ0VfQVRUUihzZW5zb3IyX2xvY2F0
+aW9uLCBTX0lSVUdPLApAQCAtNDI2LDEwICs1MDAsMTMgQEAgc3RhdGljIHZvaWQgdGhlcm1vc3Rh
+dF9jcmVhdGVfZmlsZXMoc3RydQogCQlyZXR1cm47CiAJZGV2ID0gJnRoLT5wZGV2LT5kZXY7CiAJ
+ZGV2X3NldF9kcnZkYXRhKGRldiwgdGgpOwotCWVyciA9IGRldmljZV9jcmVhdGVfZmlsZShkZXYs
+ICZkZXZfYXR0cl9zZW5zb3IxX3RlbXBlcmF0dXJlKTsKKwllcnIgPSBkZXZpY2VfY3JlYXRlX2Zp
+bGUoZGV2LCAmZGV2X2F0dHJfc2Vuc29yMF90ZW1wZXJhdHVyZSk7CisJZXJyIHw9IGRldmljZV9j
+cmVhdGVfZmlsZShkZXYsICZkZXZfYXR0cl9zZW5zb3IxX3RlbXBlcmF0dXJlKTsKIAllcnIgfD0g
+ZGV2aWNlX2NyZWF0ZV9maWxlKGRldiwgJmRldl9hdHRyX3NlbnNvcjJfdGVtcGVyYXR1cmUpOwor
+CWVyciB8PSBkZXZpY2VfY3JlYXRlX2ZpbGUoZGV2LCAmZGV2X2F0dHJfc2Vuc29yMF9saW1pdCk7
+CiAJZXJyIHw9IGRldmljZV9jcmVhdGVfZmlsZShkZXYsICZkZXZfYXR0cl9zZW5zb3IxX2xpbWl0
+KTsKIAllcnIgfD0gZGV2aWNlX2NyZWF0ZV9maWxlKGRldiwgJmRldl9hdHRyX3NlbnNvcjJfbGlt
+aXQpOworCWVyciB8PSBkZXZpY2VfY3JlYXRlX2ZpbGUoZGV2LCAmZGV2X2F0dHJfc2Vuc29yMF9s
+b2NhdGlvbik7CiAJZXJyIHw9IGRldmljZV9jcmVhdGVfZmlsZShkZXYsICZkZXZfYXR0cl9zZW5z
+b3IxX2xvY2F0aW9uKTsKIAllcnIgfD0gZGV2aWNlX2NyZWF0ZV9maWxlKGRldiwgJmRldl9hdHRy
+X3NlbnNvcjJfbG9jYXRpb24pOwogCWVyciB8PSBkZXZpY2VfY3JlYXRlX2ZpbGUoZGV2LCAmZGV2
+X2F0dHJfbGltaXRfYWRqdXN0KTsKQEAgLTQ0OSwxMCArNTI2LDEzIEBAIHN0YXRpYyB2b2lkIHRo
+ZXJtb3N0YXRfcmVtb3ZlX2ZpbGVzKHN0cnUKIAlpZiAoIXRoLT5wZGV2KQogCQlyZXR1cm47CiAJ
+ZGV2ID0gJnRoLT5wZGV2LT5kZXY7CisJZGV2aWNlX3JlbW92ZV9maWxlKGRldiwgJmRldl9hdHRy
+X3NlbnNvcjBfdGVtcGVyYXR1cmUpOwogCWRldmljZV9yZW1vdmVfZmlsZShkZXYsICZkZXZfYXR0
+cl9zZW5zb3IxX3RlbXBlcmF0dXJlKTsKIAlkZXZpY2VfcmVtb3ZlX2ZpbGUoZGV2LCAmZGV2X2F0
+dHJfc2Vuc29yMl90ZW1wZXJhdHVyZSk7CisJZGV2aWNlX3JlbW92ZV9maWxlKGRldiwgJmRldl9h
+dHRyX3NlbnNvcjBfbGltaXQpOwogCWRldmljZV9yZW1vdmVfZmlsZShkZXYsICZkZXZfYXR0cl9z
+ZW5zb3IxX2xpbWl0KTsKIAlkZXZpY2VfcmVtb3ZlX2ZpbGUoZGV2LCAmZGV2X2F0dHJfc2Vuc29y
+Ml9saW1pdCk7CisJZGV2aWNlX3JlbW92ZV9maWxlKGRldiwgJmRldl9hdHRyX3NlbnNvcjBfbG9j
+YXRpb24pOwogCWRldmljZV9yZW1vdmVfZmlsZShkZXYsICZkZXZfYXR0cl9zZW5zb3IxX2xvY2F0
+aW9uKTsKIAlkZXZpY2VfcmVtb3ZlX2ZpbGUoZGV2LCAmZGV2X2F0dHJfc2Vuc29yMl9sb2NhdGlv
+bik7CiAJZGV2aWNlX3JlbW92ZV9maWxlKGRldiwgJmRldl9hdHRyX2xpbWl0X2FkanVzdCk7Cg==
+--001a11c242de80546a050fc02015--
