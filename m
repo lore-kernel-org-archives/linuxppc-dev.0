@@ -1,24 +1,24 @@
 Return-Path: <bhelgaas@google.com>
-Received: from mail-pa0-x22f.google.com (mail-pa0-x22f.google.com
- [IPv6:2607:f8b0:400e:c03::22f])
+Received: from mail-pa0-x233.google.com (mail-pa0-x233.google.com
+ [IPv6:2607:f8b0:400e:c03::233])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C25721A1416
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Feb 2015 19:52:39 +1100 (AEDT)
-Received: by padfa1 with SMTP id fa1so34570591pad.2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Feb 2015 00:52:37 -0800 (PST)
-Date: Tue, 24 Feb 2015 02:52:34 -0600
+ by lists.ozlabs.org (Postfix) with ESMTPS id C3C251A0EDD
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Feb 2015 20:00:42 +1100 (AEDT)
+Received: by pablf10 with SMTP id lf10so34482232pab.12
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Feb 2015 01:00:40 -0800 (PST)
+Date: Tue, 24 Feb 2015 03:00:37 -0600
 From: Bjorn Helgaas <bhelgaas@google.com>
 To: Wei Yang <weiyang@linux.vnet.ibm.com>, benh@au1.ibm.com,
  gwshan@linux.vnet.ibm.com
-Subject: Re: [PATCH v12 15/21] powerpc/powernv: Reserve additional space for
- IOV BAR according to the number of total_pe
-Message-ID: <20150224085234.GJ6220@google.com>
+Subject: Re: [PATCH v12 17/21] powerpc/powernv: Shift VF resource with an
+ offset
+Message-ID: <20150224090037.GK6220@google.com>
 References: <20150224082939.32124.45744.stgit@bhelgaas-glaptop2.roam.corp.google.com>
- <20150224083442.32124.96716.stgit@bhelgaas-glaptop2.roam.corp.google.com>
+ <20150224083457.32124.55534.stgit@bhelgaas-glaptop2.roam.corp.google.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150224083442.32124.96716.stgit@bhelgaas-glaptop2.roam.corp.google.com>
+In-Reply-To: <20150224083457.32124.55534.stgit@bhelgaas-glaptop2.roam.corp.google.com>
 Cc: linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -29,176 +29,101 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Feb 24, 2015 at 02:34:42AM -0600, Bjorn Helgaas wrote:
+On Tue, Feb 24, 2015 at 02:34:57AM -0600, Bjorn Helgaas wrote:
 > From: Wei Yang <weiyang@linux.vnet.ibm.com>
 > 
-> On PHB3, PF IOV BAR will be covered by M64 window to have better PE
-> isolation.  The total_pe number is usually different from total_VFs, which
-> can lead to a conflict between MMIO space and the PE number.
+> On PowerNV platform, resource position in M64 implies the PE# the resource
+> belongs to.  In some cases, adjustment of a resource is necessary to locate
+> it to a correct position in M64.
 > 
-> For example, if total_VFs is 128 and total_pe is 256, the second half of
-> M64 window will be part of other PCI device, which may already belong
-> to other PEs.
-
-I'm still trying to wrap my mind around the explanation here.
-
-I *think* what's going on is that the M64 window must be a power-of-two
-size.  If the VF(n) BAR space doesn't completely fill it, we might allocate
-the leftover space to another device.  Then the M64 window for *this*
-device may cause the other device to be associated with a PE it didn't
-expect.
-
-But I don't understand this well enough to describe it clearly.
-
-More serious code question below...
-
-> Prevent the conflict by reserving additional space for the PF IOV BAR,
-> which is total_pe number of VF's BAR size.
+> Add pnv_pci_vf_resource_shift() to shift the 'real' PF IOV BAR address
+> according to an offset.
 > 
-> [bhelgaas: make dev_printk() output more consistent, index resource[]
-> conventionally]
+> [bhelgaas: rework loops, rework overlap check, index resource[]
+> conventionally, remove pci_regs.h include, squashed with next patch]
 > Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
 > Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
-> ---
->  arch/powerpc/include/asm/machdep.h        |    4 ++
->  arch/powerpc/include/asm/pci-bridge.h     |    3 ++
->  arch/powerpc/kernel/pci-common.c          |    5 +++
->  arch/powerpc/platforms/powernv/pci-ioda.c |   58 +++++++++++++++++++++++++++++
->  4 files changed, 70 insertions(+)
-> 
-> diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
-> index c8175a3fe560..965547c58497 100644
-> --- a/arch/powerpc/include/asm/machdep.h
-> +++ b/arch/powerpc/include/asm/machdep.h
-> @@ -250,6 +250,10 @@ struct machdep_calls {
->  	/* Reset the secondary bus of bridge */
->  	void  (*pcibios_reset_secondary_bus)(struct pci_dev *dev);
->  
+
+...
+
 > +#ifdef CONFIG_PCI_IOV
-> +	void (*pcibios_fixup_sriov)(struct pci_bus *bus);
-> +#endif /* CONFIG_PCI_IOV */
-> +
->  	/* Called to shutdown machine specific hardware not already controlled
->  	 * by other drivers.
->  	 */
-> diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
-> index 513f8f27060d..de11de7d4547 100644
-> --- a/arch/powerpc/include/asm/pci-bridge.h
-> +++ b/arch/powerpc/include/asm/pci-bridge.h
-> @@ -175,6 +175,9 @@ struct pci_dn {
->  #define IODA_INVALID_PE		(-1)
->  #ifdef CONFIG_PPC_POWERNV
->  	int	pe_number;
-> +#ifdef CONFIG_PCI_IOV
-> +	u16     max_vfs;		/* number of VFs IOV BAR expended */
-> +#endif /* CONFIG_PCI_IOV */
->  #endif
->  	struct list_head child_list;
->  	struct list_head list;
-> diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
-> index 82031011522f..022e9feeb1f2 100644
-> --- a/arch/powerpc/kernel/pci-common.c
-> +++ b/arch/powerpc/kernel/pci-common.c
-> @@ -1646,6 +1646,11 @@ void pcibios_scan_phb(struct pci_controller *hose)
->  	if (ppc_md.pcibios_fixup_phb)
->  		ppc_md.pcibios_fixup_phb(hose);
->  
-> +#ifdef CONFIG_PCI_IOV
-> +	if (ppc_md.pcibios_fixup_sriov)
-> +		ppc_md.pcibios_fixup_sriov(bus);
-> +#endif /* CONFIG_PCI_IOV */
-> +
->  	/* Configure PCI Express settings */
->  	if (bus && !pci_has_flag(PCI_PROBE_ONLY)) {
->  		struct pci_bus *child;
-> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-> index cd1a56160ded..36c533da5ccb 100644
-> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
-> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-> @@ -1749,6 +1749,61 @@ static void pnv_pci_init_ioda_msis(struct pnv_phb *phb)
->  static void pnv_pci_init_ioda_msis(struct pnv_phb *phb) { }
->  #endif /* CONFIG_PCI_MSI */
->  
-> +#ifdef CONFIG_PCI_IOV
-> +static void pnv_pci_ioda_fixup_iov_resources(struct pci_dev *pdev)
+> +static int pnv_pci_vf_resource_shift(struct pci_dev *dev, int offset)
 > +{
-> +	struct pci_controller *hose;
-> +	struct pnv_phb *phb;
-> +	struct resource *res;
+> +	struct pci_dn *pdn = pci_get_pdn(dev);
 > +	int i;
+> +	struct resource *res, res2;
 > +	resource_size_t size;
-> +	struct pci_dn *pdn;
+> +	u16 vf_num;
 > +
-> +	if (!pdev->is_physfn || pdev->is_added)
-> +		return;
+> +	if (!dev->is_physfn)
+> +		return -EINVAL;
 > +
-> +	hose = pci_bus_to_host(pdev->bus);
-> +	phb = hose->private_data;
+> +	/*
+> +	 * "offset" is in VFs.  The M64 windows are sized so that when they
+> +	 * are segmented, each segment is the same size as the IOV BAR.
+> +	 * Each segment is in a separate PE, and the high order bits of the
+> +	 * address are the PE number.  Therefore, each VF's BAR is in a
+> +	 * separate PE, and changing the IOV BAR start address changes the
+> +	 * range of PEs the VFs are in.
+> +	 */
+> +	vf_num = pdn->vf_pes;
+> +	for (i = 0; i < PCI_SRIOV_NUM_BARS; i++) {
+> +		res = &dev->resource[i + PCI_IOV_RESOURCES];
+> +		if (!res->flags || !res->parent)
+> +			continue;
 > +
-> +	pdn = pci_get_pdn(pdev);
-> +	pdn->max_vfs = 0;
+> +		if (!pnv_pci_is_mem_pref_64(res->flags))
+> +			continue;
+> +
+> +		/*
+> +		 * The actual IOV BAR range is determined by the start address
+> +		 * and the actual size for vf_num VFs BAR.  This check is to
+> +		 * make sure that after shifting, the range will not overlap
+> +		 * with another device.
+> +		 */
+> +		size = pci_iov_resource_size(dev, i + PCI_IOV_RESOURCES);
+> +		res2.flags = res->flags;
+> +		res2.start = res->start + (size * offset);
+> +		res2.end = res2.start + (size * vf_num) - 1;
+> +
+> +		if (res2.end > res->end) {
+> +			dev_err(&dev->dev, "VF BAR%d: %pR would extend past %pR (trying to enable %d VFs shifted by %d)\n",
+> +				i, &res2, res, vf_num, offset);
+> +			return -EBUSY;
+> +		}
+> +	}
 > +
 > +	for (i = 0; i < PCI_SRIOV_NUM_BARS; i++) {
-> +		res = &pdev->resource[i + PCI_IOV_RESOURCES];
-> +		if (!res->flags || res->parent)
+> +		res = &dev->resource[i + PCI_IOV_RESOURCES];
+> +		if (!res->flags || !res->parent)
 > +			continue;
-> +		if (!pnv_pci_is_mem_pref_64(res->flags)) {
-> +			dev_warn(&pdev->dev, "Skipping expanding VF BAR%d: %pR\n",
-> +				 i, res);
+> +
+> +		if (!pnv_pci_is_mem_pref_64(res->flags))
 > +			continue;
-> +		}
 > +
-> +		dev_dbg(&pdev->dev, " Fixing VF BAR%d: %pR to\n", i, res);
-> +		size = pci_iov_resource_size(pdev, i + PCI_IOV_RESOURCES);
-> +		res->end = res->start + size * phb->ioda.total_pe - 1;
-> +		dev_dbg(&pdev->dev, "                       %pR\n", res);
-> +		dev_info(&pdev->dev, "VF BAR%d: %pR (expanded to %d VFs for PE alignment)",
-> +				i, res, phb->ioda.total_pe);
+> +		size = pci_iov_resource_size(dev, i + PCI_IOV_RESOURCES);
+> +		res2 = *res;
+> +		res->start += size * offset;
+
+I'm still not happy about this fiddling with res->start.
+
+Increasing res->start means that in principle, the "size * offset" bytes
+that we just removed from res are now available for allocation to somebody
+else.  I don't think we *will* give that space to anything else because of
+the alignment restrictions you're enforcing, but "res" now doesn't
+correctly describe the real resource map.
+
+Would you be able to just update the BAR here while leaving the struct
+resource alone?  In that case, it would look a little funny that lspci
+would show a BAR value in the middle of the region in /proc/iomem, but
+the /proc/iomem region would be more correct.
+
+> +
+> +		dev_info(&dev->dev, "VF BAR%d: %pR shifted to %pR (enabling %d VFs shifted by %d)\n",
+> +			 i, &res2, res, vf_num, offset);
+> +		pci_update_resource(dev, i + PCI_IOV_RESOURCES);
 > +	}
-> +	pdn->max_vfs = phb->ioda.total_pe;
-> +}
-> +
-> +static void pnv_pci_ioda_fixup_sriov(struct pci_bus *bus)
-> +{
-> +	struct pci_dev *pdev;
-> +	struct pci_bus *b;
-> +
-> +	list_for_each_entry(pdev, &bus->devices, bus_list) {
-> +		b = pdev->subordinate;
-> +
-> +		if (b)
-> +			pnv_pci_ioda_fixup_sriov(b);
-> +
-> +		pnv_pci_ioda_fixup_iov_resources(pdev);
-
-I'm not sure this happens at the right time.  We have this call chain:
-
-  pcibios_scan_phb
-    pci_create_root_bus
-    pci_scan_child_bus
-    pnv_pci_ioda_fixup_sriov
-      pnv_pci_ioda_fixup_iov_resources
-	for (i = 0; i < PCI_SRIOV_NUM_BARS; i++)
-	  increase res->size to accomodate 256 PEs (or roundup(totalVFs)
-
-so we only do the fixup_iov_resources() when we scan the PHB, and we
-wouldn't do it at all for hot-added devices.
-
-> +	}
+> +	pdn->max_vfs -= offset;
+> +	return 0;
 > +}
 > +#endif /* CONFIG_PCI_IOV */
-> +
->  /*
->   * This function is supposed to be called on basis of PE from top
->   * to bottom style. So the the I/O or MMIO segment assigned to
-> @@ -2125,6 +2180,9 @@ static void __init pnv_pci_init_ioda_phb(struct device_node *np,
->  	ppc_md.pcibios_enable_device_hook = pnv_pci_enable_device_hook;
->  	ppc_md.pcibios_window_alignment = pnv_pci_window_alignment;
->  	ppc_md.pcibios_reset_secondary_bus = pnv_pci_reset_secondary_bus;
-> +#ifdef CONFIG_PCI_IOV
-> +	ppc_md.pcibios_fixup_sriov = pnv_pci_ioda_fixup_sriov;
-> +#endif /* CONFIG_PCI_IOV */
->  	pci_add_flags(PCI_REASSIGN_ALL_RSRC);
->  
->  	/* Reset IODA tables to a clean state */
-> 
