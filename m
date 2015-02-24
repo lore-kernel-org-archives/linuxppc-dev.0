@@ -1,39 +1,22 @@
-Return-Path: <imunsie@au1.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1230B1A014C
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Feb 2015 15:29:57 +1100 (AEDT)
-Received: from /spool/local
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <imunsie@au1.ibm.com>;
- Tue, 24 Feb 2015 14:29:55 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id D43E42CE8040
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Feb 2015 15:29:51 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t1O4ThgM40632406
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Feb 2015 15:29:51 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t1O4TI0O004301
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Feb 2015 15:29:18 +1100
-Content-Type: text/plain; charset=UTF-8
-From: Ian Munsie <imunsie@au1.ibm.com>
-To: Joe Perches <joe@perches.com>
-Subject: Re: [PATCH v2] cxl: Add explicit precision specifiers
-In-reply-to: <1424703585.20944.28.camel@perches.com>
-References: <1424662685-sup-6648@delenn.ozlabs.ibm.com>
- <1424688935-6645-1-git-send-email-linux@rasmusvillemoes.dk>
- <1424703585.20944.28.camel@perches.com>
-Date: Tue, 24 Feb 2015 15:28:54 +1100
-Message-Id: <1424751969-sup-7377@delenn.ozlabs.ibm.com>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Michael Neuling <mikey@neuling.org>,
- Rasmus Villemoes <linux@rasmusvillemoes.dk>,
- linux-kernel <linux-kernel@vger.kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 785181A0D74
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Feb 2015 15:42:16 +1100 (AEDT)
+Message-ID: <1424752935.2318.4.camel@ellerman.id.au>
+Subject: Re: [v2] pseries/iommu: remove iommu device references via bus
+ notifier
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+Date: Tue, 24 Feb 2015 15:42:15 +1100
+In-Reply-To: <20150223185429.GA54252@linux.vnet.ibm.com>
+References: <20150221190050.GA20184@linux.vnet.ibm.com>
+ <20150223022724.7884914012C@ozlabs.org>
+ <20150223185429.GA54252@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org, Alexey Kardashevskiy <aik@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,16 +26,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Excerpts from Joe Perches's message of 2015-02-24 01:59:45 +1100:
-> On Mon, 2015-02-23 at 11:55 +0100, Rasmus Villemoes wrote:
-> > 24 of the %.16llx
-> > matches are in drivers/misc/cxl/, so internal consistency wins.
+On Mon, 2015-02-23 at 10:54 -0800, Nishanth Aravamudan wrote:
+> On 23.02.2015 [13:27:24 +1100], Michael Ellerman wrote:
+> > On Sat, 2015-21-02 at 19:00:50 UTC, Nishanth Aravamudan wrote:
+> > > On 20.02.2015 [15:31:29 +1100], Michael Ellerman wrote:
+> > > > On Thu, 2015-02-19 at 10:41 -0800, Nishanth Aravamudan wrote:
+> > > > > After d905c5df9aef ("PPC: POWERNV: move iommu_add_device earlier"), the
+> > > > > refcnt on the kobject backing the IOMMU group for a PCI device is
+> > > > > elevated by each call to pci_dma_dev_setup_pSeriesLP() (via
+> > > > > set_iommu_table_base_and_group). When we go to dlpar a multi-function
+> > > > > PCI device out:
+> > > > > 
+> > > > > 	iommu_reconfig_notifier ->
+> > > > > 		iommu_free_table ->
+> > > > > 			iommu_group_put
+> > > > > 			BUG_ON(tbl->it_group)
+> > > > > 
+> > > > > We trip this BUG_ON, because there are still references on the table, so
+> > > > > it is not freed. Fix this by also adding a bus notifier identical to
+> > > > > PowerNV for pSeries.
+> > > > 
+> > > > Please put it somewhere common, arch/powerpc/kernel/iommu.c perhaps, and just
+> > > > add a second machine_init_call() for pseries.
+> > > 
+> > > How does this look? Only compile-tested with CONFIG_IOMMU_API on/off so
+> > > far, waiting for access to the test LPAR (should have it on Monday).
+> > 
+> > Yeah that looks better, thanks.
+> > 
+> > It probably doesn't build with CONFIG_PCI=n though, but I don't think
+> > CONFIG_PCI=n builds anyway.
 > 
-> I think that's more an argument for changing all of the
-> cx1 uses to "%016llx".
+> Indeed it doesn't. Started looking at CONFIG_PCI=n and immediately hit
+> the following:
+> 
+> PCI_MSI depends on PCI
+> 
+> PCI can be manually turned off
+> 
+> PSERIES (and a bunch of other platforms) select PCI_MSI
+> 
+> So you end up with PCI_MSI on and PCI off and the build breaks.
+> 
+> Should the platforms depend on PCI_MSI instead?
 
-I would not object if someone submitted a patch that makes this change
-across the whole driver.
+No, they don't depend on it, they would just like it if PCI is enabled.
 
-Cheers,
--Ian
+That can be fixed fairly easily by making it:
+
+config PSERIES
+	select PCI_MSI if PCI
+
+
+But you then discover that there are ten other places where the build breaks
+for PCI=n.
+
+I'm starting to think we should just force PCI on for PSERIES and be done with
+it, we could all spend less of our time chasing build breaks for configurations
+no one actually cares about in practice (ie. PSERIES=y PCI=n).
+
+cheers
