@@ -1,28 +1,28 @@
-Return-Path: <bhelgaas@google.com>
-Received: from mail-qg0-x22c.google.com (mail-qg0-x22c.google.com
- [IPv6:2607:f8b0:400d:c04::22c])
+Return-Path: <runaway@candw.ms>
+Received: from mail-vc0-f179.google.com (mail-vc0-f179.google.com
+ [209.85.220.179])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 93C2E1A108D
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Feb 2015 04:10:56 +1100 (AEDT)
-Received: by mail-qg0-f44.google.com with SMTP id j5so31065098qga.3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Feb 2015 09:10:54 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id DBDD01A0FD2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Feb 2015 06:05:52 +1100 (AEDT)
+Received: by mail-vc0-f179.google.com with SMTP id hy4so10797757vcb.10
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Feb 2015 11:05:49 -0800 (PST)
+Message-ID: <54ECCB89.9060309@candw.ms>
+Date: Tue, 24 Feb 2015 15:05:45 -0400
+From: Julian Margetson <runaway@candw.ms>
 MIME-Version: 1.0
-In-Reply-To: <20150224090037.GK6220@google.com>
-References: <20150224082939.32124.45744.stgit@bhelgaas-glaptop2.roam.corp.google.com>
- <20150224083457.32124.55534.stgit@bhelgaas-glaptop2.roam.corp.google.com>
- <20150224090037.GK6220@google.com>
-From: Bjorn Helgaas <bhelgaas@google.com>
-Date: Tue, 24 Feb 2015 11:10:33 -0600
-Message-ID: <CAErSpo7Yce518DXejsZW0cS34GFKYLxhctSoqk0y_C5UAiDQ9A@mail.gmail.com>
-Subject: Re: [PATCH v12 17/21] powerpc/powernv: Shift VF resource with an
- offset
-To: Wei Yang <weiyang@linux.vnet.ibm.com>,
- Benjamin Herrenschmidt <benh@au1.ibm.com>,
- Gavin Shan <gwshan@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: Problems with Kernels 3.17-rc1 and onwards on Acube Sam460 AMCC
+ 460ex board
+References: <54E08E06.8060607@candw.ms>
+ <1424045921.3018.4.camel@ellerman.id.au> <54E4EBD7.5000307@candw.ms>
+ <1424304787.22020.4.camel@ellerman.id.au> <54E53E07.60609@candw.ms>
+ <1424314594.22408.1.camel@ellerman.id.au> <54E55796.6000401@candw.ms>
+ <54E78A12.7080409@candw.ms> <1424737962.2318.2.camel@ellerman.id.au>
+ <45dfe4c8990.73f22654@smtp.gmail.com>
+In-Reply-To: <45dfe4c8990.73f22654@smtp.gmail.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Cc: linuxppc-dev@lists.ozlabs.org, Ian Munsie <imunsie@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,107 +32,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Feb 24, 2015 at 3:00 AM, Bjorn Helgaas <bhelgaas@google.com> wrote:
-> On Tue, Feb 24, 2015 at 02:34:57AM -0600, Bjorn Helgaas wrote:
->> From: Wei Yang <weiyang@linux.vnet.ibm.com>
+On 2/24/2015 7:10 AM, Julian Margetson wrote:
+> Problems with  the Gib bisect
+> Kernel wont compile after 10th bisect .
+>
+> drivers/built-in.o: In function `drm_mode_atomic_ioctl':
+> (.text+0x865dc): undefined reference to `__get_user_bad'
+> make: *** [vmlinux] Error 1
+> root@julian-VirtualBox:/usr/src/linux# git bisect log
+> git bisect start
+> # bad: [c517d838eb7d07bbe9507871fab3931deccff539] Linux 4.0-rc1
+> git bisect bad c517d838eb7d07bbe9507871fab3931deccff539
+> # good: [bfa76d49576599a4b9f9b7a71f23d73d6dcff735] Linux 3.19
+> git bisect good bfa76d49576599a4b9f9b7a71f23d73d6dcff735
+> # good: [02f1f2170d2831b3233e91091c60a66622f29e82] kernel.h: remove ancient __FUNCTION__ hack
+> git bisect good 02f1f2170d2831b3233e91091c60a66622f29e82
+> # bad: [796e1c55717e9a6ff5c81b12289ffa1ffd919b6f] Merge branch 'drm-next' of git://people.freedesktop.org/~airlied/linux
+> git bisect bad 796e1c55717e9a6ff5c81b12289ffa1ffd919b6f
+> # good: [9682ec9692e5ac11c6caebd079324e727b19e7ce] Merge tag 'driver-core-3.20-rc1' of git://git.kernel.org/pub/scm/linux/kernel/git/gregkh/driver-core
+> git bisect good 9682ec9692e5ac11c6caebd079324e727b19e7ce
+> # good: [a9724125ad014decf008d782e60447c811391326] Merge tag 'tty-3.20-rc1' of git://git.kernel.org/pub/scm/linux/kernel/git/gregkh/tty
+> git bisect good a9724125ad014decf008d782e60447c811391326
+> # good: [f43dff0ee00a259f524ce17ba4f8030553c66590] Merge tag 'drm-amdkfd-next-fixes-2015-01-25' of git://people.freedesktop.org/~gabbayo/linux into drm-next
+> git bisect good f43dff0ee00a259f524ce17ba4f8030553c66590
+> # bad: [cffe1e89dc9bf541a39d9287ced7c5addff07084] drm: sti: HDMI add audio infoframe
+> git bisect bad cffe1e89dc9bf541a39d9287ced7c5addff07084
+> # good: [2f5b4ef15c60bc5292a3f006c018acb3da53737b] Merge tag 'drm/tegra/for-3.20-rc1' of git://anongit.freedesktop.org/tegra/linux into drm-next
+> git bisect good 2f5b4ef15c60bc5292a3f006c018acb3da53737b
+> # bad: [865844448ce80ccd714793e9ba4140d7ae214229] drm/udl: optimize udl_compress_hline16 (v2)
+> git bisect bad 865844448ce80ccd714793e9ba4140d7ae214229
+> # bad: [d47df63393ed81977e0f6435988d9cbd70c867f7] drm/panel: simple: Add AVIC TM070DDH03 panel support
+> git bisect bad d47df63393ed81977e0f6435988d9cbd70c867f7
+> # bad: [9469244d869623e8b54d9f3d4d00737e377af273] drm/atomic: Fix potential use of state after free
+> git bisect bad 9469244d869623e8b54d9f3d4d00737e377af273
+> root@julian-VirtualBox:/usr/src/linux#
+>
+>
+>
+> On 02/24/2015, you wrote:
+>
+>> On Fri, 2015-02-20 at 15:25 -0400, Julian Margetson wrote:
+>>> On 2/18/2015 11:25 PM, Julian Margetson wrote:
+>>>   re PPC4XX PCI(E) MSI support.
+>>> https://lists.ozlabs.org/pipermail/linuxppc-dev/2010-November/087273.html
+>> Hmm, I think all those comments were addressed before it was merged.
 >>
->> On PowerNV platform, resource position in M64 implies the PE# the resource
->> belongs to.  In some cases, adjustment of a resource is necessary to locate
->> it to a correct position in M64.
+>> I tried to get a 4xx board going here last week, but it doesn't seem happy. I
+>> can get a bit of uboot but then it hangs, might be overheating.
 >>
->> Add pnv_pci_vf_resource_shift() to shift the 'real' PF IOV BAR address
->> according to an offset.
+>> cheers
 >>
->> [bhelgaas: rework loops, rework overlap check, index resource[]
->> conventionally, remove pci_regs.h include, squashed with next patch]
->> Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
->> Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
->
-> ...
->
->> +#ifdef CONFIG_PCI_IOV
->> +static int pnv_pci_vf_resource_shift(struct pci_dev *dev, int offset)
->> +{
->> +     struct pci_dn *pdn = pci_get_pdn(dev);
->> +     int i;
->> +     struct resource *res, res2;
->> +     resource_size_t size;
->> +     u16 vf_num;
->> +
->> +     if (!dev->is_physfn)
->> +             return -EINVAL;
->> +
->> +     /*
->> +      * "offset" is in VFs.  The M64 windows are sized so that when they
->> +      * are segmented, each segment is the same size as the IOV BAR.
->> +      * Each segment is in a separate PE, and the high order bits of the
->> +      * address are the PE number.  Therefore, each VF's BAR is in a
->> +      * separate PE, and changing the IOV BAR start address changes the
->> +      * range of PEs the VFs are in.
->> +      */
->> +     vf_num = pdn->vf_pes;
->> +     for (i = 0; i < PCI_SRIOV_NUM_BARS; i++) {
->> +             res = &dev->resource[i + PCI_IOV_RESOURCES];
->> +             if (!res->flags || !res->parent)
->> +                     continue;
->> +
->> +             if (!pnv_pci_is_mem_pref_64(res->flags))
->> +                     continue;
->> +
->> +             /*
->> +              * The actual IOV BAR range is determined by the start address
->> +              * and the actual size for vf_num VFs BAR.  This check is to
->> +              * make sure that after shifting, the range will not overlap
->> +              * with another device.
->> +              */
->> +             size = pci_iov_resource_size(dev, i + PCI_IOV_RESOURCES);
->> +             res2.flags = res->flags;
->> +             res2.start = res->start + (size * offset);
->> +             res2.end = res2.start + (size * vf_num) - 1;
->> +
->> +             if (res2.end > res->end) {
->> +                     dev_err(&dev->dev, "VF BAR%d: %pR would extend past %pR (trying to enable %d VFs shifted by %d)\n",
->> +                             i, &res2, res, vf_num, offset);
->> +                     return -EBUSY;
->> +             }
->> +     }
->> +
->> +     for (i = 0; i < PCI_SRIOV_NUM_BARS; i++) {
->> +             res = &dev->resource[i + PCI_IOV_RESOURCES];
->> +             if (!res->flags || !res->parent)
->> +                     continue;
->> +
->> +             if (!pnv_pci_is_mem_pref_64(res->flags))
->> +                     continue;
->> +
->> +             size = pci_iov_resource_size(dev, i + PCI_IOV_RESOURCES);
->> +             res2 = *res;
->> +             res->start += size * offset;
->
-> I'm still not happy about this fiddling with res->start.
->
-> Increasing res->start means that in principle, the "size * offset" bytes
-> that we just removed from res are now available for allocation to somebody
-> else.  I don't think we *will* give that space to anything else because of
-> the alignment restrictions you're enforcing, but "res" now doesn't
-> correctly describe the real resource map.
->
-> Would you be able to just update the BAR here while leaving the struct
-> resource alone?  In that case, it would look a little funny that lspci
-> would show a BAR value in the middle of the region in /proc/iomem, but
-> the /proc/iomem region would be more correct.
-
-I guess this would also require a tweak where we compute the addresses
-of each of the VF resources.  Today it's probably just "base + VF_num
-* size", where "base" is res->start.  We'd have to account for the
-offset there if we don't adjust it here.
-
->> +
->> +             dev_info(&dev->dev, "VF BAR%d: %pR shifted to %pR (enabling %d VFs shifted by %d)\n",
->> +                      i, &res2, res, vf_num, offset);
->> +             pci_update_resource(dev, i + PCI_IOV_RESOURCES);
->> +     }
->> +     pdn->max_vfs -= offset;
->> +     return 0;
->> +}
->> +#endif /* CONFIG_PCI_IOV */
+>>
+>>
+Kernel 4.0.0-rc1 boots ok when  DVI output used but not when HDMI output 
+used.
