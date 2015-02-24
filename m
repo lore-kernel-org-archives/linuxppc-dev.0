@@ -1,27 +1,26 @@
-Return-Path: <runaway@candw.ms>
-Received: from mail-vc0-f179.google.com (mail-vc0-f179.google.com
- [209.85.220.179])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <wsa@the-dreams.de>
+Received: from pokefinder.org (sauhun.de [89.238.76.85])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8017A1A148E
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Feb 2015 22:08:57 +1100 (AEDT)
-Received: by mail-vc0-f179.google.com with SMTP id hy4so9726229vcb.10
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Feb 2015 03:08:55 -0800 (PST)
-From: Julian Margetson <runaway@candw.ms>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Date: Tue, 24 Feb 2015 07:08:47 -0400 (AST)
-Message-ID: <45dfe45093f.4ef2935f@smtp.gmail.com>
-In-Reply-To: <1424737962.2318.2.camel@ellerman.id.au>
-References: <54E08E06.8060607@candw.ms>
- <1424045921.3018.4.camel@ellerman.id.au> <54E4EBD7.5000307@candw.ms>
- <1424304787.22020.4.camel@ellerman.id.au> <54E53E07.60609@candw.ms>
- <1424314594.22408.1.camel@ellerman.id.au> <54E55796.6000401@candw.ms>
- <54E78A12.7080409@candw.ms> <1424737962.2318.2.camel@ellerman.id.au>
-Subject: Re: Problems with Kernels 3.17-rc1 and onwards on Acube Sam460
- AMCC 460ex board
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9BC241A1137
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Feb 2015 01:17:02 +1100 (AEDT)
+Date: Tue, 24 Feb 2015 15:16:44 +0100
+From: Wolfram Sang <wsa@the-dreams.de>
+To: Matthias Brugger <matthias.bgg@gmail.com>
+Subject: Re: [RFC 02/11] i2c: add quirk checks to core
+Message-ID: <20150224141644.GA18301@katana>
+References: <1420824103-24169-1-git-send-email-wsa@the-dreams.de>
+ <1420824103-24169-3-git-send-email-wsa@the-dreams.de>
+ <CABuKBe++yut6ZfhPrsWXGA4fZRvum6WOuRxHucM0gBJCGuou5A@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: linuxppc-dev@lists.ozlabs.org, Ian Munsie <imunsie@au1.ibm.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="FCuugMFkClbJLl1L"
+In-Reply-To: <CABuKBe++yut6ZfhPrsWXGA4fZRvum6WOuRxHucM0gBJCGuou5A@mail.gmail.com>
+Cc: linux-mips@linux-mips.org,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Ludovic Desroches <ludovic.desroches@atmel.com>, linux-i2c@vger.kernel.org,
+ Yingjoe Chen <yingjoe.chen@mediatek.com>, linuxppc-dev@lists.ozlabs.org,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,55 +30,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Problems with  the Gib bisect
-Kernel wont compile after 10th bisect .
 
-drivers/built-in.o: In function `drm_mode_atomic_ioctl':
-(.text+0x865dc): undefined reference to `__get_user_bad'
-make: *** [vmlinux] Error 1
-root@julian-VirtualBox:/usr/src/linux# git bisect log
-git bisect start
-# bad: [c517d838eb7d07bbe9507871fab3931deccff539] Linux 4.0-rc1
-git bisect bad c517d838eb7d07bbe9507871fab3931deccff539
-# good: [bfa76d49576599a4b9f9b7a71f23d73d6dcff735] Linux 3.19
-git bisect good bfa76d49576599a4b9f9b7a71f23d73d6dcff735
-# good: [02f1f2170d2831b3233e91091c60a66622f29e82] kernel.h: remove ancient __FUNCTION__ hack
-git bisect good 02f1f2170d2831b3233e91091c60a66622f29e82
-# bad: [796e1c55717e9a6ff5c81b12289ffa1ffd919b6f] Merge branch 'drm-next' of git://people.freedesktop.org/~airlied/linux
-git bisect bad 796e1c55717e9a6ff5c81b12289ffa1ffd919b6f
-# good: [9682ec9692e5ac11c6caebd079324e727b19e7ce] Merge tag 'driver-core-3.20-rc1' of git://git.kernel.org/pub/scm/linux/kernel/git/gregkh/driver-core
-git bisect good 9682ec9692e5ac11c6caebd079324e727b19e7ce
-# good: [a9724125ad014decf008d782e60447c811391326] Merge tag 'tty-3.20-rc1' of git://git.kernel.org/pub/scm/linux/kernel/git/gregkh/tty
-git bisect good a9724125ad014decf008d782e60447c811391326
-# good: [f43dff0ee00a259f524ce17ba4f8030553c66590] Merge tag 'drm-amdkfd-next-fixes-2015-01-25' of git://people.freedesktop.org/~gabbayo/linux into drm-next
-git bisect good f43dff0ee00a259f524ce17ba4f8030553c66590
-# bad: [cffe1e89dc9bf541a39d9287ced7c5addff07084] drm: sti: HDMI add audio infoframe
-git bisect bad cffe1e89dc9bf541a39d9287ced7c5addff07084
-# good: [2f5b4ef15c60bc5292a3f006c018acb3da53737b] Merge tag 'drm/tegra/for-3.20-rc1' of git://anongit.freedesktop.org/tegra/linux into drm-next
-git bisect good 2f5b4ef15c60bc5292a3f006c018acb3da53737b
-# bad: [865844448ce80ccd714793e9ba4140d7ae214229] drm/udl: optimize udl_compress_hline16 (v2)
-git bisect bad 865844448ce80ccd714793e9ba4140d7ae214229
-# bad: [d47df63393ed81977e0f6435988d9cbd70c867f7] drm/panel: simple: Add AVIC TM070DDH03 panel support
-git bisect bad d47df63393ed81977e0f6435988d9cbd70c867f7
-# bad: [9469244d869623e8b54d9f3d4d00737e377af273] drm/atomic: Fix potential use of state after free
-git bisect bad 9469244d869623e8b54d9f3d4d00737e377af273
-root@julian-VirtualBox:/usr/src/linux# 
+--FCuugMFkClbJLl1L
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
 
+> > +               if (msgs[i].flags & I2C_M_RD) {
+> > +                       if (i2c_quirk_exceeded(len, max_read))
+> > +                               return i2c_quirk_error(adap, &msgs[i], =
+"msg too long");
+> > +               } else {
+> > +                       if (i2c_quirk_exceeded(len, max_write))
+> > +                               return i2c_quirk_error(adap, &msgs[i], =
+"msg too long");
+> > +               }
+>=20
+> What about being more verbose in the error message, specifying if it
+> was a read or a write message that failed?
 
-On 02/24/2015, you wrote:
+Yes, done now. Thanks!
 
-> On Fri, 2015-02-20 at 15:25 -0400, Julian Margetson wrote:
->> On 2/18/2015 11:25 PM, Julian Margetson wrote:
->
->>  re PPC4XX PCI(E) MSI support.
->> https://lists.ozlabs.org/pipermail/linuxppc-dev/2010-November/087273.html
->
-> Hmm, I think all those comments were addressed before it was merged.
->
-> I tried to get a 4xx board going here last week, but it doesn't seem happy. I
-> can get a bit of uboot but then it hangs, might be overheating.
->
-> cheers
->
->
+
+--FCuugMFkClbJLl1L
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJU7IfLAAoJEBQN5MwUoCm2eM4P+wQZaq6QCo0vjXPKuf28kwn7
+pE8alO7Mref/hDPDtJr/f7wFWnZkhQm0frwFxkMjkk7AXU/423Hr+WaynTn2muPU
+JsQCTXbHJ7FRk9I/k0ZlRyxDhOYM5pAX4y/M+L5rA9HvNFWDcchOaiq4ep3BpyDB
+xRRdXwMJHDylJJnbq/HEuXbNBXOex4qvCrAhXemdR9XYLCVenhMnBjztvkB48XDQ
+PXCBuf43NtjY3C0P7fbFnnGUP+t+Zhdzup9JYJKaroJKd8XgrViSCv9qog6xgUO2
+n5QzR5RwQCy4dQ8fhNteNJ5xJpTEQfV0qrTpGqqOBOtyZLtj+hjeEk8tBI4c+DJ2
+24Z4rVc3q0QfyL8o2T4IbIg7kRxlk+8M2RzEVy2tRpNmUlKtW8hLVrRADTJGyLR/
+XntU9Afl+qBnRwaP8IodZDE2xD5wTCwyo8L/4+/+q3Bo6mYxKkpOl43yDbDwJX6S
+c5c9K+ueyWxILGkmJ+dgHMNySI5G0uDq8BG5dLpbx5iDUZfZBZ/TZtrpnrl5PiR5
+kYkWJQ2L/P9CIer+v2Ia0e2XrYu8sVP/Cm38MsDRCiFHYj2qXREPMH6wY5Rf/wpH
+0hvntc8pvr1YkMMD4aOaeQAdsSXe63P/4Q4pjaWbqupdW5cWgzelSUJoLVc3Lhil
+2bx8Bd80/Y1UvyJBIbgi
+=ERJg
+-----END PGP SIGNATURE-----
+
+--FCuugMFkClbJLl1L--
