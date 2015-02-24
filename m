@@ -2,8 +2,8 @@ Return-Path: <anton@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6BEE91A0D93
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Feb 2015 14:30:51 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 71C9D1A0DC7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Feb 2015 14:30:53 +1100 (AEDT)
 From: Anton Blanchard <anton@samba.org>
 To: Andrew Morton <akpm@linux-foundation.org>,
  Steven Rostedt <rostedt@goodmis.org>,
@@ -12,10 +12,10 @@ To: Andrew Morton <akpm@linux-foundation.org>,
  Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
  hpa@zytor.com, Russell King <linux@arm.linux.org.uk>, peterz@infradead.org,
  Don Zickus <dzickus@redhat.com>
-Subject: [PATCH 6/7] dump_stack: Serialise dump_stack with
+Subject: [PATCH 7/7] powerpc: Serialise BUG and WARNs with
  die_spin_lock_{irqsave, irqrestore}
-Date: Tue, 24 Feb 2015 14:30:33 +1100
-Message-Id: <1424748634-9153-7-git-send-email-anton@samba.org>
+Date: Tue, 24 Feb 2015 14:30:34 +1100
+Message-Id: <1424748634-9153-8-git-send-email-anton@samba.org>
 In-Reply-To: <1424748634-9153-1-git-send-email-anton@samba.org>
 References: <1424748634-9153-1-git-send-email-anton@samba.org>
 Cc: x86@kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
@@ -29,73 +29,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Remove another version of a recursive lock in dump_stack.
+A simple kernel module was used to create concurrent WARNs and BUGs:
+
+http://ozlabs.org/~anton/junkcode/warnstorm.tar.gz
 
 Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
- lib/dump_stack.c | 40 ++++------------------------------------
- 1 file changed, 4 insertions(+), 36 deletions(-)
+ arch/powerpc/kernel/traps.c | 44 ++++++++++++++++++++++++++++++++++++--------
+ 1 file changed, 36 insertions(+), 8 deletions(-)
 
-diff --git a/lib/dump_stack.c b/lib/dump_stack.c
-index 6745c62..f64ee3c 100644
---- a/lib/dump_stack.c
-+++ b/lib/dump_stack.c
-@@ -7,7 +7,7 @@
- #include <linux/export.h>
- #include <linux/sched.h>
- #include <linux/smp.h>
--#include <linux/atomic.h>
-+#include <linux/die_lock.h>
+diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+index 4cc1e72..f779557 100644
+--- a/arch/powerpc/kernel/traps.c
++++ b/arch/powerpc/kernel/traps.c
+@@ -1114,6 +1114,39 @@ static int emulate_math(struct pt_regs *regs)
+ static inline int emulate_math(struct pt_regs *regs) { return -1; }
+ #endif
  
- static void __dump_stack(void)
- {
-@@ -20,44 +20,12 @@ static void __dump_stack(void)
-  *
-  * Architectures can override this implementation by implementing its own.
-  */
--#ifdef CONFIG_SMP
--static atomic_t dump_lock = ATOMIC_INIT(-1);
--
- asmlinkage __visible void dump_stack(void)
- {
--	int was_locked;
--	int old;
--	int cpu;
--
--	/*
--	 * Permit this cpu to perform nested stack dumps while serialising
--	 * against other CPUs
--	 */
--	preempt_disable();
--
--retry:
--	cpu = smp_processor_id();
--	old = atomic_cmpxchg(&dump_lock, -1, cpu);
--	if (old == -1) {
--		was_locked = 0;
--	} else if (old == cpu) {
--		was_locked = 1;
--	} else {
--		cpu_relax();
--		goto retry;
--	}
--
--	__dump_stack();
++static bool __report_bug(unsigned long bugaddr, struct pt_regs *regs)
++{
++	const struct bug_entry *bug;
 +	unsigned long flags;
++	int err;
++
++	if (!is_valid_bugaddr(bugaddr))
++		return false;
++
++	bug = find_bug(bugaddr);
++	if (!bug)
++		return false;
++
++	if (is_warning_bug(bug)) {
++		die_spin_lock_irqsave(flags);
++		report_bug(bugaddr, regs);
++		die_spin_unlock_irqrestore(flags);
++
++		regs->nip += 4;
++
++		return true;
++	}
++
++	flags = oops_begin(regs);
++	report_bug(bugaddr, regs);
++	err = SIGTRAP;
++	if (__die("Exception in kernel mode", regs, err))
++		err = 0;
++	oops_end(flags, regs, err);
++
++	return true;
++}
++
+ void __kprobes program_check_exception(struct pt_regs *regs)
+ {
+ 	enum ctx_state prev_state = exception_enter();
+@@ -1138,11 +1171,9 @@ void __kprobes program_check_exception(struct pt_regs *regs)
+ 				== NOTIFY_STOP)
+ 			goto bail;
  
--	if (!was_locked)
--		atomic_set(&dump_lock, -1);
--
--	preempt_enable();
--}
--#else
--asmlinkage __visible void dump_stack(void)
--{
-+	die_spin_lock_irqsave(flags);
- 	__dump_stack();
-+	die_spin_unlock_irqrestore(flags);
- }
--#endif
- EXPORT_SYMBOL(dump_stack);
+-		if (!(regs->msr & MSR_PR) &&  /* not user-mode */
+-		    report_bug(regs->nip, regs) == BUG_TRAP_TYPE_WARN) {
+-			regs->nip += 4;
++		if (!user_mode(regs) && __report_bug(regs->nip, regs))
+ 			goto bail;
+-		}
++
+ 		_exception(SIGTRAP, regs, TRAP_BRKPT, regs->nip);
+ 		goto bail;
+ 	}
+@@ -1157,11 +1188,8 @@ void __kprobes program_check_exception(struct pt_regs *regs)
+ 		 * -  A tend is illegally attempted.
+ 		 * -  writing a TM SPR when transactional.
+ 		 */
+-		if (!user_mode(regs) &&
+-		    report_bug(regs->nip, regs) == BUG_TRAP_TYPE_WARN) {
+-			regs->nip += 4;
++		if (!user_mode(regs) && __report_bug(regs->nip, regs))
+ 			goto bail;
+-		}
+ 		/* If usermode caused this, it's done something illegal and
+ 		 * gets a SIGILL slap on the wrist.  We call it an illegal
+ 		 * operand to distinguish from the instruction just being bad
 -- 
 2.1.0
