@@ -1,23 +1,24 @@
 Return-Path: <bhelgaas@google.com>
-Received: from mail-pa0-x236.google.com (mail-pa0-x236.google.com
- [IPv6:2607:f8b0:400e:c03::236])
+Received: from mail-pd0-x22c.google.com (mail-pd0-x22c.google.com
+ [IPv6:2607:f8b0:400e:c02::22c])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AC53F1A2A6A
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Feb 2015 19:44:55 +1100 (AEDT)
-Received: by padhz1 with SMTP id hz1so34434258pad.9
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Feb 2015 00:44:53 -0800 (PST)
-Date: Tue, 24 Feb 2015 02:44:50 -0600
+ by lists.ozlabs.org (Postfix) with ESMTPS id 51AE21A2DA3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Feb 2015 19:47:00 +1100 (AEDT)
+Received: by pdjy10 with SMTP id y10so31907079pdj.6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Feb 2015 00:46:58 -0800 (PST)
+Date: Tue, 24 Feb 2015 02:46:53 -0600
 From: Bjorn Helgaas <bhelgaas@google.com>
 To: Wei Yang <weiyang@linux.vnet.ibm.com>, benh@au1.ibm.com,
  gwshan@linux.vnet.ibm.com
-Subject: Re: [PATCH v12 11/21] powerpc/pci: Don't unset PCI resources for VFs
-Message-ID: <20150224084450.GH6220@google.com>
+Subject: Re: [PATCH v12 14/21] powerpc/powernv: Allocate struct pnv_ioda_pe
+ iommu_table dynamically
+Message-ID: <20150224084653.GI6220@google.com>
 References: <20150224082939.32124.45744.stgit@bhelgaas-glaptop2.roam.corp.google.com>
- <20150224083413.32124.11968.stgit@bhelgaas-glaptop2.roam.corp.google.com>
+ <20150224083435.32124.65099.stgit@bhelgaas-glaptop2.roam.corp.google.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150224083413.32124.11968.stgit@bhelgaas-glaptop2.roam.corp.google.com>
+In-Reply-To: <20150224083435.32124.65099.stgit@bhelgaas-glaptop2.roam.corp.google.com>
 Cc: linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -28,39 +29,150 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Feb 24, 2015 at 02:34:13AM -0600, Bjorn Helgaas wrote:
+On Tue, Feb 24, 2015 at 02:34:35AM -0600, Bjorn Helgaas wrote:
 > From: Wei Yang <weiyang@linux.vnet.ibm.com>
 > 
-> If we're going to reassign resources with flag PCI_REASSIGN_ALL_RSRC, all
-> resources will be cleaned out during device header fixup time and then get
-> reassigned by PCI core.  However, the VF resources won't be reassigned and
-> thus, we shouldn't clean them out.
+> Current iommu_table of a PE is a static field.  This will have a problem
+> when iommu_free_table() is called.
 > 
-> If the pci_dev is a VF, skip the resource unset process.
+> Allocate iommu_table dynamically.
 
-I think this patch is correct, but we should include a little more detail
-in the changelog to answer questions like mine and Ben's
-(http://lkml.kernel.org/r/1423528584.4924.70.camel@au1.ibm.com).
+I'd like a little more explanation about why we're calling
+iommu_free_table() now when we didn't call it before.  Maybe this happens
+when we disable SR-IOV and the VFs go away?
+
+Is there a hotplug remove path where we should also be calling
+iommu_free_table()?
 
 > Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
 > Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
 > ---
->  arch/powerpc/kernel/pci-common.c |    4 ++++
->  1 file changed, 4 insertions(+)
+>  arch/powerpc/include/asm/iommu.h          |    3 +++
+>  arch/powerpc/platforms/powernv/pci-ioda.c |   26 ++++++++++++++------------
+>  arch/powerpc/platforms/powernv/pci.h      |    2 +-
+>  3 files changed, 18 insertions(+), 13 deletions(-)
 > 
-> diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
-> index 2a525c938158..82031011522f 100644
-> --- a/arch/powerpc/kernel/pci-common.c
-> +++ b/arch/powerpc/kernel/pci-common.c
-> @@ -788,6 +788,10 @@ static void pcibios_fixup_resources(struct pci_dev *dev)
->  		       pci_name(dev));
+> diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
+> index 9cfa3706a1b8..5574eeb97634 100644
+> --- a/arch/powerpc/include/asm/iommu.h
+> +++ b/arch/powerpc/include/asm/iommu.h
+> @@ -78,6 +78,9 @@ struct iommu_table {
+>  	struct iommu_group *it_group;
+>  #endif
+>  	void (*set_bypass)(struct iommu_table *tbl, bool enable);
+> +#ifdef CONFIG_PPC_POWERNV
+> +	void           *data;
+> +#endif
+>  };
+>  
+>  /* Pure 2^n version of get_order */
+> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+> index 58c4fc4ab63c..cd1a56160ded 100644
+> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+> @@ -916,6 +916,10 @@ static void pnv_ioda_setup_bus_PE(struct pci_bus *bus, int all)
 >  		return;
 >  	}
+>  
+> +	pe->tce32_table = kzalloc_node(sizeof(struct iommu_table),
+> +			GFP_KERNEL, hose->node);
+> +	pe->tce32_table->data = pe;
 > +
-> +	if (dev->is_virtfn)
-> +		return;
-> +
->  	for (i = 0; i < DEVICE_COUNT_RESOURCE; i++) {
->  		struct resource *res = dev->resource + i;
->  		struct pci_bus_region reg;
+>  	/* Associate it with all child devices */
+>  	pnv_ioda_setup_same_PE(bus, pe);
+>  
+> @@ -1005,7 +1009,7 @@ static void pnv_pci_ioda_dma_dev_setup(struct pnv_phb *phb, struct pci_dev *pdev
+>  
+>  	pe = &phb->ioda.pe_array[pdn->pe_number];
+>  	WARN_ON(get_dma_ops(&pdev->dev) != &dma_iommu_ops);
+> -	set_iommu_table_base_and_group(&pdev->dev, &pe->tce32_table);
+> +	set_iommu_table_base_and_group(&pdev->dev, pe->tce32_table);
+>  }
+>  
+>  static int pnv_pci_ioda_dma_set_mask(struct pnv_phb *phb,
+> @@ -1032,7 +1036,7 @@ static int pnv_pci_ioda_dma_set_mask(struct pnv_phb *phb,
+>  	} else {
+>  		dev_info(&pdev->dev, "Using 32-bit DMA via iommu\n");
+>  		set_dma_ops(&pdev->dev, &dma_iommu_ops);
+> -		set_iommu_table_base(&pdev->dev, &pe->tce32_table);
+> +		set_iommu_table_base(&pdev->dev, pe->tce32_table);
+>  	}
+>  	*pdev->dev.dma_mask = dma_mask;
+>  	return 0;
+> @@ -1069,9 +1073,9 @@ static void pnv_ioda_setup_bus_dma(struct pnv_ioda_pe *pe,
+>  	list_for_each_entry(dev, &bus->devices, bus_list) {
+>  		if (add_to_iommu_group)
+>  			set_iommu_table_base_and_group(&dev->dev,
+> -						       &pe->tce32_table);
+> +						       pe->tce32_table);
+>  		else
+> -			set_iommu_table_base(&dev->dev, &pe->tce32_table);
+> +			set_iommu_table_base(&dev->dev, pe->tce32_table);
+>  
+>  		if (dev->subordinate)
+>  			pnv_ioda_setup_bus_dma(pe, dev->subordinate,
+> @@ -1161,8 +1165,7 @@ static void pnv_pci_ioda2_tce_invalidate(struct pnv_ioda_pe *pe,
+>  void pnv_pci_ioda_tce_invalidate(struct iommu_table *tbl,
+>  				 __be64 *startp, __be64 *endp, bool rm)
+>  {
+> -	struct pnv_ioda_pe *pe = container_of(tbl, struct pnv_ioda_pe,
+> -					      tce32_table);
+> +	struct pnv_ioda_pe *pe = tbl->data;
+>  	struct pnv_phb *phb = pe->phb;
+>  
+>  	if (phb->type == PNV_PHB_IODA1)
+> @@ -1228,7 +1231,7 @@ static void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
+>  	}
+>  
+>  	/* Setup linux iommu table */
+> -	tbl = &pe->tce32_table;
+> +	tbl = pe->tce32_table;
+>  	pnv_pci_setup_iommu_table(tbl, addr, TCE32_TABLE_SIZE * segs,
+>  				  base << 28, IOMMU_PAGE_SHIFT_4K);
+>  
+> @@ -1266,8 +1269,7 @@ static void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
+>  
+>  static void pnv_pci_ioda2_set_bypass(struct iommu_table *tbl, bool enable)
+>  {
+> -	struct pnv_ioda_pe *pe = container_of(tbl, struct pnv_ioda_pe,
+> -					      tce32_table);
+> +	struct pnv_ioda_pe *pe = tbl->data;
+>  	uint16_t window_id = (pe->pe_number << 1 ) + 1;
+>  	int64_t rc;
+>  
+> @@ -1312,10 +1314,10 @@ static void pnv_pci_ioda2_setup_bypass_pe(struct pnv_phb *phb,
+>  	pe->tce_bypass_base = 1ull << 59;
+>  
+>  	/* Install set_bypass callback for VFIO */
+> -	pe->tce32_table.set_bypass = pnv_pci_ioda2_set_bypass;
+> +	pe->tce32_table->set_bypass = pnv_pci_ioda2_set_bypass;
+>  
+>  	/* Enable bypass by default */
+> -	pnv_pci_ioda2_set_bypass(&pe->tce32_table, true);
+> +	pnv_pci_ioda2_set_bypass(pe->tce32_table, true);
+>  }
+>  
+>  static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
+> @@ -1363,7 +1365,7 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
+>  	}
+>  
+>  	/* Setup linux iommu table */
+> -	tbl = &pe->tce32_table;
+> +	tbl = pe->tce32_table;
+>  	pnv_pci_setup_iommu_table(tbl, addr, tce_table_size, 0,
+>  			IOMMU_PAGE_SHIFT_4K);
+>  
+> diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
+> index e5b75b298d95..731777734bca 100644
+> --- a/arch/powerpc/platforms/powernv/pci.h
+> +++ b/arch/powerpc/platforms/powernv/pci.h
+> @@ -53,7 +53,7 @@ struct pnv_ioda_pe {
+>  	/* "Base" iommu table, ie, 4K TCEs, 32-bit DMA */
+>  	int			tce32_seg;
+>  	int			tce32_segcount;
+> -	struct iommu_table	tce32_table;
+> +	struct iommu_table	*tce32_table;
+>  	phys_addr_t		tce_inval_reg_phys;
+>  
+>  	/* 64-bit TCE bypass region */
 > 
