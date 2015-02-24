@@ -1,25 +1,37 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 27ADD1A0D14
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Feb 2015 14:38:49 +1100 (AEDT)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <imunsie@au1.ibm.com>
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 6E1F61400DE
- for <linuxppc-dev@ozlabs.org>; Tue, 24 Feb 2015 14:38:48 +1100 (AEDT)
-Message-ID: <1424749119.12891.20.camel@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: Export __spin_yield
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Suresh E. Warrier" <warrier@linux.vnet.ibm.com>
-Date: Tue, 24 Feb 2015 14:38:39 +1100
-In-Reply-To: <54EBC165.3020708@linux.vnet.ibm.com>
-References: <1424477465-9199-2-git-send-email-warrier@linux.vnet.ibm.com>
- <54EBC165.3020708@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2E8C01A014C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Feb 2015 15:26:59 +1100 (AEDT)
+Received: from /spool/local
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <imunsie@au1.ibm.com>;
+ Tue, 24 Feb 2015 14:26:57 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id AAB202CE8040
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Feb 2015 15:26:53 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t1O4QjjP35782744
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Feb 2015 15:26:53 +1100
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t1O4QJGL001310
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Feb 2015 15:26:19 +1100
+Content-Type: text/plain; charset=UTF-8
+From: Ian Munsie <imunsie@au1.ibm.com>
+To: Rasmus Villemoes <linux@rasmusvillemoes.dk>
+Subject: Re: [PATCH v2] cxl: Add explicit precision specifiers
+In-reply-to: <1424688935-6645-1-git-send-email-linux@rasmusvillemoes.dk>
+References: <1424662685-sup-6648@delenn.ozlabs.ibm.com>
+ <1424688935-6645-1-git-send-email-linux@rasmusvillemoes.dk>
+Date: Tue, 24 Feb 2015 15:25:55 +1100
+Message-Id: <1424751936-sup-5016@delenn.ozlabs.ibm.com>
+Cc: Joe Perches <joe@perches.com>, Michael Neuling <mikey@neuling.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ linux-kernel <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,26 +41,4 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2015-02-23 at 18:10 -0600, Suresh E. Warrier wrote:
-> Export __spin_yield so that the arch_spin_unlock() function
-> can be invoked from a module.
-
-Make it EXPORT_SYMBOL_GPL. Also explain why a module might need it
-
-> Signed-off-by: Suresh Warrier <warrier@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/lib/locks.c | 1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff --git a/arch/powerpc/lib/locks.c b/arch/powerpc/lib/locks.c
-> index bb7cfec..d100de8 100644
-> --- a/arch/powerpc/lib/locks.c
-> +++ b/arch/powerpc/lib/locks.c
-> @@ -41,6 +41,7 @@ void __spin_yield(arch_spinlock_t *lock)
->  	plpar_hcall_norets(H_CONFER,
->  		get_hard_smp_processor_id(holder_cpu), yield_count);
->  }
-> +EXPORT_SYMBOL(__spin_yield);
-> 
->  /*
->   * Waiting for a read lock or a write lock on a rwlock...
+Acked-by: Ian Munsie <imunsie@au1.ibm.com>
