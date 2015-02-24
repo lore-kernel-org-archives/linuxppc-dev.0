@@ -1,35 +1,27 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from smtp-out6.electric.net (smtp-out6.electric.net
- [192.162.217.182])
- (using TLSv1.1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <runaway@candw.ms>
+Received: from mail-vc0-f170.google.com (mail-vc0-f170.google.com
+ [209.85.220.170])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id ECA0B1A12F6
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Feb 2015 20:57:18 +1100 (AEDT)
-From: David Laight <David.Laight@ACULAB.COM>
-To: 'Ingo Molnar' <mingo@kernel.org>, Anton Blanchard <anton@samba.org>
-Subject: RE: [PATCH 1/7] Add die_spin_lock_{irqsave,irqrestore}
-Date: Tue, 24 Feb 2015 09:56:14 +0000
-Message-ID: <063D6719AE5E284EB5DD2968C1650D6D1CAE9BD3@AcuExch.aculab.com>
-References: <1424748634-9153-1-git-send-email-anton@samba.org>
- <1424748634-9153-2-git-send-email-anton@samba.org>
- <20150224064107.GB15387@gmail.com>
-In-Reply-To: <20150224064107.GB15387@gmail.com>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0BBC71A1047
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Feb 2015 21:30:23 +1100 (AEDT)
+Received: by mail-vc0-f170.google.com with SMTP id hq12so9640903vcb.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Feb 2015 02:30:20 -0800 (PST)
+From: Julian Margetson <runaway@candw.ms>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Date: Mon, 23 Feb 2015 22:22:32 -0400 (AST)
+Message-ID: <45df690866b.32811198@smtp.gmail.com>
+In-Reply-To: <1424737962.2318.2.camel@ellerman.id.au>
+References: <54E08E06.8060607@candw.ms>
+ <1424045921.3018.4.camel@ellerman.id.au> <54E4EBD7.5000307@candw.ms>
+ <1424304787.22020.4.camel@ellerman.id.au> <54E53E07.60609@candw.ms>
+ <1424314594.22408.1.camel@ellerman.id.au> <54E55796.6000401@candw.ms>
+ <54E78A12.7080409@candw.ms> <1424737962.2318.2.camel@ellerman.id.au>
+Subject: Re: Problems with Kernels 3.17-rc1 and onwards on Acube Sam460
+ AMCC 460ex board
 MIME-Version: 1.0
-Cc: Don Zickus <dzickus@redhat.com>, Russell King <linux@arm.linux.org.uk>,
- Peter Zijlstra <a.p.zijlstra@chello.nl>,
- "peterz@infradead.org" <peterz@infradead.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "x86@kernel.org" <x86@kernel.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Steven Rostedt <rostedt@goodmis.org>, Ingo Molnar <mingo@redhat.com>,
- Paul Mackerras <paulus@samba.org>,
- "sam.bobroff@au1.ibm.com" <sam.bobroff@au1.ibm.com>,
- "hpa@zytor.com" <hpa@zytor.com>, Andrew Morton <akpm@linux-foundation.org>,
- Linus
- Torvalds <torvalds@linux-foundation.org>, Thomas Gleixner <tglx@linutronix.de>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- Arjan van de Ven <arjan@infradead.org>
+Content-Type: text/plain
+Cc: linuxppc-dev@lists.ozlabs.org, Ian Munsie <imunsie@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,15 +31,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-RnJvbTogSW5nbyBNb2xuYXINCi4uLg0KPiBTbyB3aHkgbm90IHRyeWxvY2sgYW5kIHRpbWUgb3V0
-IGhlcmUgYWZ0ZXIgYSBmZXcgc2Vjb25kcywNCj4gaW5zdGVhZCBvZiBpbmRlZmluaXRlbHkgc3Vw
-cmVzc2luZyBzb21lIHBvdGVudGlhbGx5IHZpdGFsDQo+IG91dHB1dCBkdWUgdG8gc29tZSBvdGhl
-ciBDUFUgY3Jhc2hpbmcvbG9ja2luZyB3aXRoIHRoZSBsb2NrDQo+IGhlbGQ/DQoNCkkndmUgdXNl
-ZCB0aGF0IGZvciBzdGF0dXMgcmVxdWVzdHMgdGhhdCB1c3VhbGx5IGxvY2sgYSB0YWJsZQ0KdG8g
-Z2V0IGEgY29uc2lzdGVudCB2aWV3Lg0KSWYgdHJ5bG9jayB0aW1lcyBvdXQgYXNzdW1lIHRoYXQg
-dGhlIGRhdGEgaXMgYWN0dWFsbHkgc3RhYmxlDQphbmQgYWNjZXNzIGl0IGFueXdheS4gUmVtZW1i
-ZXIgdGhlIHBpZCBkb2luZyB0aGUgYWNjZXNzIGFuZA0KbmV4dCB0aW1lIGl0IHRyaWVzIHRvIGFj
-cXVpcmUgdGhlIHNhbWUgbG9jayBkbyBhIHRyeWxvY2sgd2l0aA0Kbm8gdGltZW91dC4NClRoYXQg
-d2F5IGlmICh3aGVuKSB0aGVyZSBpcyBhIGxvY2tpbmcgZnViYXIgKG9yIGEgZHJpdmVyIG9vcHMN
-CndpdGggYSBsb2NrIGhlbGQpIGF0IGxlYXN0IHNvbWUgb2YgdGhlIHJlbGV2YW50IHN0YXR1cyBj
-b21tYW5kcw0Kd2lsbCB3b3JrLg0KDQoJRGF2aWQNCg0K
+I had  a hanging Uboot problem with a Sam440ep board.Never figured the problem out but
+It workedd for another two years after the problems began. Died for good last September with the hanging becoming  a daily issue.
+Dont think that it was overheating. I thought that it could have been a problem with  the on board  ethernet.
+
+anyway I am still not giving up hopes of DRI and future kernals working, only into my second year of trying so too soon to give up .
+Doing a git bisect on the 4.00-rc1 now.
+
+On 02/24/2015, you wrote:
+
+> On Fri, 2015-02-20 at 15:25 -0400, Julian Margetson wrote:
+>> On 2/18/2015 11:25 PM, Julian Margetson wrote:
+>
+>>  re PPC4XX PCI(E) MSI support.
+>> https://lists.ozlabs.org/pipermail/linuxppc-dev/2010-November/087273.html
+>
+> Hmm, I think all those comments were addressed before it was merged.
+>
+> I tried to get a 4xx board going here last week, but it doesn't seem happy. I
+> can get a bit of uboot but then it hangs, might be overheating.
+>
+> cheers
+>
+>
