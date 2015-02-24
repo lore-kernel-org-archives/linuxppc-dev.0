@@ -1,18 +1,31 @@
-Return-Path: <mpe@ellerman.id.au>
-Message-ID: <1424753699.2318.8.camel@ellerman.id.au>
-Subject: Re: [RFC PATCH 1/3] powerpc/powernv: Check OPAL sensor calls exist
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: =?ISO-8859-1?Q?C=E9dric?= Le Goater <clg@fr.ibm.com>
-Date: Tue, 24 Feb 2015 15:54:59 +1100
-In-Reply-To: <1424444857-13805-2-git-send-email-clg@fr.ibm.com>
-References: <1423117857-32759-1-git-send-email-clg@fr.ibm.com>
- <1424444857-13805-2-git-send-email-clg@fr.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Stewart Smith <stewart@linux.vnet.ibm.com>, lm-sensors@lm-sensors.org,
- Guenter Roeck <linux@roeck-us.net>,
- Neelesh Gupta <neelegup@linux.vnet.ibm.com>, skiboot@lists.ozlabs.org,
- linuxppc-dev@lists.ozlabs.org, Jean Delvare <jdelvare@suse.de>
+Return-Path: <mingo.kernel.org@gmail.com>
+Received: from mail-wi0-x234.google.com (mail-wi0-x234.google.com
+ [IPv6:2a00:1450:400c:c05::234])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id CA4241A0D1E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Feb 2015 17:35:21 +1100 (AEDT)
+Received: by mail-wi0-f180.google.com with SMTP id h11so22688884wiw.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Feb 2015 22:35:18 -0800 (PST)
+Sender: Ingo Molnar <mingo.kernel.org@gmail.com>
+Date: Tue, 24 Feb 2015 07:35:14 +0100
+From: Ingo Molnar <mingo@kernel.org>
+To: Anton Blanchard <anton@samba.org>
+Subject: Re: [PATCH 0/7] Serialise oopses, BUGs, WARNs, dump_stack, soft
+ lockups and hard lockups
+Message-ID: <20150224063513.GA15387@gmail.com>
+References: <1424748634-9153-1-git-send-email-anton@samba.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1424748634-9153-1-git-send-email-anton@samba.org>
+Cc: Don Zickus <dzickus@redhat.com>, x86@kernel.org,
+ Russell King <linux@arm.linux.org.uk>, peterz@infradead.org, hpa@zytor.com,
+ linux-kernel@vger.kernel.org, Steven Rostedt <rostedt@goodmis.org>,
+ Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@redhat.com>,
+ Paul Mackerras <paulus@samba.org>, linux-arm-kernel@lists.infradead.org,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ Thomas Gleixner <tglx@linutronix.de>, sam.bobroff@au1.ibm.com,
+ Arjan van de Ven <arjan@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,30 +35,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2015-02-20 at 16:07 +0100, Cédric Le Goater wrote:
-> Signed-off-by: Cédric Le Goater <clg@fr.ibm.com>
-> ---
->  arch/powerpc/platforms/powernv/opal-sensor.c |    3 +++
->  1 file changed, 3 insertions(+)
+
+* Anton Blanchard <anton@samba.org> wrote:
+
+> Every now and then I end up with an undebuggable issue 
+> because multiple CPUs hit something at the same time and 
+> everything is interleaved:
 > 
-> diff --git a/arch/powerpc/platforms/powernv/opal-sensor.c b/arch/powerpc/platforms/powernv/opal-sensor.c
-> index 4ab67ef7abc9..544292f2020f 100644
-> --- a/arch/powerpc/platforms/powernv/opal-sensor.c
-> +++ b/arch/powerpc/platforms/powernv/opal-sensor.c
-> @@ -72,6 +72,9 @@ static __init int opal_sensor_init(void)
->  	struct platform_device *pdev;
->  	struct device_node *sensor;
->  
-> +	if (!opal_check_token(OPAL_SENSOR_READ))
-> +		return -ENODEV;
-> +
->  	sensor = of_find_node_by_path("/ibm,opal/sensors");
->  	if (!sensor) {
->  		pr_err("Opal node 'sensors' not found\n");
+>         CR: 48000082  XER: 00000000
+>         ,RI
+>         c0000003dc72fd10
+>         ,LE
+>         d0000000065b84e8
+>         Instruction dump:
+>         MSR: 8000000100029033
+> 
+> Very annoying.
+> 
+> Some architectures already have their own recursive 
+> locking for oopses and we have another version for 
+> serialising dump_stack.
+> 
+> Create a common version and use it everywhere (oopses, 
+> BUGs, WARNs, dump_stack, soft lockups and hard lockups). 
 
-Are you actually seeing this in practice?
+Dunno. I've had cases where the simultaneity of the oopses 
+(i.e. their garbled nature) gave me the clue about the type 
+of race to expect.
 
-It's a bit annoying that we have to check for the token, and then also check
-the device tree. It would be nice if one implied the presence of the other.
+To still get that information: instead of taking a 
+serializing spinlock (or in addition to it), it would be 
+nice to at least preserve the true time order of the 
+incidents, at minimum by generating a global count for 
+oopses/warnings (a bit like the oops count # currently), 
+and to gather it first - before taking any spinlocks.
 
-cheers
+Thanks,
+
+	Ingo
