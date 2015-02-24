@@ -1,18 +1,19 @@
 Return-Path: <bhelgaas@google.com>
-Received: from mail-pa0-x230.google.com (mail-pa0-x230.google.com
- [IPv6:2607:f8b0:400e:c03::230])
+Received: from mail-pa0-x234.google.com (mail-pa0-x234.google.com
+ [IPv6:2607:f8b0:400e:c03::234])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1BB741A0FB0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Feb 2015 19:33:06 +1100 (AEDT)
-Received: by pabrd3 with SMTP id rd3so34385879pab.4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Feb 2015 00:33:04 -0800 (PST)
-Subject: [PATCH v12 01/21] PCI: Print more info in sriov_enable() error message
+ by lists.ozlabs.org (Postfix) with ESMTPS id D98001A1081
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Feb 2015 19:33:12 +1100 (AEDT)
+Received: by padet14 with SMTP id et14so34314183pad.11
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Feb 2015 00:33:11 -0800 (PST)
+Subject: [PATCH v12 02/21] PCI: Print PF SR-IOV resource that contains all
+ VF(n) BAR space
 To: Wei Yang <weiyang@linux.vnet.ibm.com>, benh@au1.ibm.com,
  gwshan@linux.vnet.ibm.com
 From: Bjorn Helgaas <bhelgaas@google.com>
-Date: Tue, 24 Feb 2015 02:33:02 -0600
-Message-ID: <20150224083302.32124.13369.stgit@bhelgaas-glaptop2.roam.corp.google.com>
+Date: Tue, 24 Feb 2015 02:33:09 -0600
+Message-ID: <20150224083309.32124.29690.stgit@bhelgaas-glaptop2.roam.corp.google.com>
 In-Reply-To: <20150224082939.32124.45744.stgit@bhelgaas-glaptop2.roam.corp.google.com>
 References: <20150224082939.32124.45744.stgit@bhelgaas-glaptop2.roam.corp.google.com>
 MIME-Version: 1.0
@@ -27,38 +28,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-If we don't have space for all the bus numbers required to enable VFs,
-print the largest bus number required and the range available.
+From: Wei Yang <weiyang@linux.vnet.ibm.com>
 
-No functional change; improved error message only.
+When we size VF BAR0, VF BAR1, etc., from the SR-IOV Capability of a PF, we
+learn the alignment requirement and amount of space consumed by a single
+VF.  But when VFs are enabled, *each* of the NumVFs consumes that amount of
+space, so the total size of the PF resource is "VF BAR size * NumVFs".
 
+Add a printk of the total space consumed by the VFs corresponding to what
+we already do for normal non-IOV BARs.
+
+No functional change; new message only.
+
+[bhelgaas: split out into its own patch]
+Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
 Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
 ---
- drivers/pci/iov.c |    7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
+ drivers/pci/iov.c |    2 ++
+ 1 file changed, 2 insertions(+)
 
 diff --git a/drivers/pci/iov.c b/drivers/pci/iov.c
-index 4b3a4eaad996..c4c33ead03bc 100644
+index c4c33ead03bc..05f9d97e4175 100644
 --- a/drivers/pci/iov.c
 +++ b/drivers/pci/iov.c
-@@ -180,6 +180,7 @@ static int sriov_enable(struct pci_dev *dev, int nr_virtfn)
- 	struct pci_dev *pdev;
- 	struct pci_sriov *iov = dev->sriov;
- 	int bars = 0;
-+	u8 bus;
- 
- 	if (!nr_virtfn)
- 		return 0;
-@@ -216,8 +217,10 @@ static int sriov_enable(struct pci_dev *dev, int nr_virtfn)
- 	iov->offset = offset;
- 	iov->stride = stride;
- 
--	if (virtfn_bus(dev, nr_virtfn - 1) > dev->bus->busn_res.end) {
--		dev_err(&dev->dev, "SR-IOV: bus number out of range\n");
-+	bus = virtfn_bus(dev, nr_virtfn - 1);
-+	if (bus > dev->bus->busn_res.end) {
-+		dev_err(&dev->dev, "can't enable %d VFs (bus %02x out of range of %pR)\n",
-+			nr_virtfn, bus, &dev->bus->busn_res);
- 		return -ENOMEM;
+@@ -372,6 +372,8 @@ found:
+ 			goto failed;
+ 		}
+ 		res->end = res->start + resource_size(res) * total - 1;
++		dev_info(&dev->dev, "VF(n) BAR%d space: %pR (contains BAR%d for %d VFs)\n",
++			 i, res, i, total);
+ 		nres++;
  	}
  
