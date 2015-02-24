@@ -1,17 +1,14 @@
-Return-Path: <runaway@candw.ms>
-Received: from mail-vc0-f179.google.com (mail-vc0-f179.google.com
- [209.85.220.179])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <gerhard_pircher@gmx.net>
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.15])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DBDD01A0FD2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Feb 2015 06:05:52 +1100 (AEDT)
-Received: by mail-vc0-f179.google.com with SMTP id hy4so10797757vcb.10
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Feb 2015 11:05:49 -0800 (PST)
-Message-ID: <54ECCB89.9060309@candw.ms>
-Date: Tue, 24 Feb 2015 15:05:45 -0400
-From: Julian Margetson <runaway@candw.ms>
+ by lists.ozlabs.org (Postfix) with ESMTPS id E9F211A0E0E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Feb 2015 06:19:56 +1100 (AEDT)
+Message-ID: <54ECCD8A.3060708@gmx.net>
+Date: Tue, 24 Feb 2015 20:14:18 +0100
+From: Gerhard Pircher <gerhard_pircher@gmx.net>
 MIME-Version: 1.0
-To: Michael Ellerman <mpe@ellerman.id.au>
+To: Julian Margetson <runaway@candw.ms>, Michael Ellerman <mpe@ellerman.id.au>
 Subject: Re: Problems with Kernels 3.17-rc1 and onwards on Acube Sam460 AMCC
  460ex board
 References: <54E08E06.8060607@candw.ms>
@@ -19,9 +16,9 @@ References: <54E08E06.8060607@candw.ms>
  <1424304787.22020.4.camel@ellerman.id.au> <54E53E07.60609@candw.ms>
  <1424314594.22408.1.camel@ellerman.id.au> <54E55796.6000401@candw.ms>
  <54E78A12.7080409@candw.ms> <1424737962.2318.2.camel@ellerman.id.au>
- <45dfe4c8990.73f22654@smtp.gmail.com>
-In-Reply-To: <45dfe4c8990.73f22654@smtp.gmail.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
+ <45dfe45093f.4ef2935f@smtp.gmail.com>
+In-Reply-To: <45dfe45093f.4ef2935f@smtp.gmail.com>
+Content-Type: text/plain; charset=utf-8
 Cc: linuxppc-dev@lists.ozlabs.org, Ian Munsie <imunsie@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -32,10 +29,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2/24/2015 7:10 AM, Julian Margetson wrote:
+Am 2015-02-24 um 12:08 schrieb Julian Margetson:
 > Problems with  the Gib bisect
 > Kernel wont compile after 10th bisect .
->
+You can try "git bisect skip" to select another commit for testing.
+Hopefully that one compiles fine then.
+
+Gerhard
+
 > drivers/built-in.o: In function `drm_mode_atomic_ioctl':
 > (.text+0x865dc): undefined reference to `__get_user_bad'
 > make: *** [vmlinux] Error 1
@@ -65,16 +66,18 @@ On 2/24/2015 7:10 AM, Julian Margetson wrote:
 > git bisect bad d47df63393ed81977e0f6435988d9cbd70c867f7
 > # bad: [9469244d869623e8b54d9f3d4d00737e377af273] drm/atomic: Fix potential use of state after free
 > git bisect bad 9469244d869623e8b54d9f3d4d00737e377af273
-> root@julian-VirtualBox:/usr/src/linux#
->
->
->
+> root@julian-VirtualBox:/usr/src/linux# 
+> 
+> 
+> 
 > On 02/24/2015, you wrote:
->
+> 
 >> On Fri, 2015-02-20 at 15:25 -0400, Julian Margetson wrote:
 >>> On 2/18/2015 11:25 PM, Julian Margetson wrote:
->>>   re PPC4XX PCI(E) MSI support.
+>>
+>>>  re PPC4XX PCI(E) MSI support.
 >>> https://lists.ozlabs.org/pipermail/linuxppc-dev/2010-November/087273.html
+>>
 >> Hmm, I think all those comments were addressed before it was merged.
 >>
 >> I tried to get a 4xx board going here last week, but it doesn't seem happy. I
@@ -83,6 +86,10 @@ On 2/24/2015 7:10 AM, Julian Margetson wrote:
 >> cheers
 >>
 >>
->>
-Kernel 4.0.0-rc1 boots ok when  DVI output used but not when HDMI output 
-used.
+> 
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+> 
