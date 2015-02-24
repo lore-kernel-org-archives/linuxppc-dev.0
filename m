@@ -2,20 +2,21 @@ Return-Path: <wsa@the-dreams.de>
 Received: from pokefinder.org (sauhun.de [89.238.76.85])
  (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 994E81A126F
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Feb 2015 01:25:30 +1100 (AEDT)
-Date: Tue, 24 Feb 2015 15:25:24 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 34DC01A0A03
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Feb 2015 03:04:56 +1100 (AEDT)
+Date: Tue, 24 Feb 2015 17:04:46 +0100
 From: Wolfram Sang <wsa@the-dreams.de>
-To: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Subject: Re: [RFC 02/11] i2c: add quirk checks to core
-Message-ID: <20150224142524.GB18301@katana>
+To: Eddie Huang <eddie.huang@mediatek.com>
+Subject: Re: [RFC 01/11] i2c: add quirk structure to describe adapter flaws
+Message-ID: <20150224160446.GB19444@katana>
 References: <1420824103-24169-1-git-send-email-wsa@the-dreams.de>
- <1420824103-24169-3-git-send-email-wsa@the-dreams.de>
- <20150112120814.GE12302@n2100.arm.linux.org.uk>
+ <1420824103-24169-2-git-send-email-wsa@the-dreams.de>
+ <1421387408.9323.10.camel@mtksdaap41>
+ <20150119150514.GB3820@katana>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="7iMSBzlTiPOCCT2k"
-In-Reply-To: <20150112120814.GE12302@n2100.arm.linux.org.uk>
+ protocol="application/pgp-signature"; boundary="1UWUbFP1cBYEclgG"
+In-Reply-To: <20150119150514.GB3820@katana>
 Cc: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org,
  Ludovic Desroches <ludovic.desroches@atmel.com>, linux-i2c@vger.kernel.org,
  Yingjoe Chen <yingjoe.chen@mediatek.com>, linuxppc-dev@lists.ozlabs.org,
@@ -30,48 +31,49 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---7iMSBzlTiPOCCT2k
+--1UWUbFP1cBYEclgG
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Mon, Jan 12, 2015 at 12:08:14PM +0000, Russell King - ARM Linux wrote:
-> On Fri, Jan 09, 2015 at 06:21:32PM +0100, Wolfram Sang wrote:
-> > +static int i2c_quirk_error(struct i2c_adapter *adap, struct i2c_msg *m=
-sg, char *err_msg)
-> > +{
-> > +	dev_err(&adap->dev, "quirk: %s (addr 0x%04x, size %u)\n", err_msg, ms=
-g->addr, msg->len);
-> > +	return -EOPNOTSUPP;
-> > +}
+On Mon, Jan 19, 2015 at 04:05:15PM +0100, Wolfram Sang wrote:
 >=20
-> So, what happens if I open an I2C adapter, find a message which causes
-> i2c_quirk_error() to be called, and then spin repeatedly calling that...
-> Shouldn't there be some rate limiting to this?
+> > > +	struct i2c_adapter_quirks *quirks;
+> > >  };
+> > >  #define to_i2c_adapter(d) container_of(d, struct i2c_adapter, dev)
+> > > =20
+> >=20
+> > I suggest to add const.
+> > 	const struct i2c_adapter_quirks *quirks;
+> >=20
+> > also, in i2c-core.c, should modify:
+> > 	const struct i2c_adapter_quirks *q =3D adap->quirks;
+>=20
+> Thanks, I'll think about it.
 
-Can be argued. Changed to dev_err_ratelimited(). Thanks!
+And added it...
 
 
---7iMSBzlTiPOCCT2k
+--1UWUbFP1cBYEclgG
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBAgAGBQJU7InUAAoJEBQN5MwUoCm2FyMP/396wTJ79mIvC6SMKh0qHIIy
-lfoEi7z+j7FXG1auWe/Jg0Zl8AdNVlmXuwo6XX/BHWyuj2ZUTSU6I0VikqzbyoRQ
-CX9TDFWvPIKxw72LUNSIQjWuflc1xUL57vRHjnamEuASwPp97url6/qMFSQiRZhy
-4REikDaClN3m/HlSH86r+EH/UbXdLA182nOinmuzzt4wED0EMNN8pGlj/kY2Mlgr
-F1EJL71+lWetbWvwGD+OQlJyGwf/spro+5d/pJ9onbg98lKRV72HBkqx3idxfZEM
-t1UDwJVCl3tUwpFY26GTenUBmnGjxjRxgiSJMPBhdaW+L5GqFh1rbmfVfT41o7Yf
-dE32o1O4UO9L8IkRMw/+nKJ0xfQza1Gihskq2Q0n8rkNpg9G8lH+KGqhYK+dzTlT
-W5MzoLnyzv6QvP5RB7LXdUA6g4vciaeoNOynd21r4otmNLAPR00m6OkY2FZTtsqt
-M40if2xDZlY56y9Shy7oXiglC/Dw4PsjmKPuy7gV7F1K99nsXM1gNzhwjnanOyBL
-FDWif4e9gEBrCONre9IRMZ3351GZEtkDGPnTWHAwF8ncgILzA/nGr4gkQDBVt00w
-K5Pdo1CHdZqxzXeh8/S8u4kxOVQYyx81FJ+6mnQFhbn4TtV8Q5qQL2oh3W71eehh
-5BkNrvM/ikWNOgDBUAAi
-=Er7l
+iQIcBAEBAgAGBQJU7KEeAAoJEBQN5MwUoCm2jRYQAITq2tQyrAoIW8anKxRI8hOl
+dpQG58/aM6kUwQVPbU3OJVTN+///VI2KPqKDg6rbTVDCePMKgyCr/kYCCfOxJbkr
+xSUR9csPjPmsJn2ZeQW2VE1OoOBQeC27rOj4qpZ3qJu9Fc9vNi+8Ze64OStsLEw4
+P+ZEAunCNvAhU777LBsU/MuAeKZTNvV6bKwOMR3nxfedMQt9zBMFPGYi2C78N5T/
+gb/j4W+QVnoDQrvebUeWlbZeKIDgQgP/ychMHFAQ2QKLlRIuCIFFjg2jWYkRUK1I
+qm4zuCji8pKs0StD3xrZpOb5MndO6EEjm8xyTbgtCmMwE81FdUwORmuauyeULjzH
+ArNxETpZI2YYhtmtkiynfWPXMv/s62gAP+wLt28o7f1IIpJPMryQedYmIxHmIskq
+CeBsqwlYUSIyiFoGVkWsC7AkcEoRcpDkSVdHtkVN+o2LjDxwGengcb7MdXNgt/xJ
+j1eqZ7d1XQ3DzHMNvYfEwDE8gZPnzx3cIo/7aqfXSl8gx1hT+FvjSSHpZcvf1zqb
+OihC3ZEQdsgreaP1qhSJriv3EAdZvhTlY2YOsKxjPONtDYpObSgoBpM1gXZCLfuf
+ysRev2E8GhzoB5QFIAmJYbhRE5lJ9IXRKovz8wg+lO55tP0lJCYJPXtUIFhjgH21
+nxtKytmO2wMfl25NQ2KZ
+=dDPf
 -----END PGP SIGNATURE-----
 
---7iMSBzlTiPOCCT2k--
+--1UWUbFP1cBYEclgG--
