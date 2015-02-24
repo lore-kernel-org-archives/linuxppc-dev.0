@@ -1,25 +1,16 @@
-Return-Path: <gerhard_pircher@gmx.net>
-Received: from mout.gmx.net (mout.gmx.net [212.227.15.15])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E9F211A0E0E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Feb 2015 06:19:56 +1100 (AEDT)
-Message-ID: <54ECCD8A.3060708@gmx.net>
-Date: Tue, 24 Feb 2015 20:14:18 +0100
-From: Gerhard Pircher <gerhard_pircher@gmx.net>
+Return-Path: <stockhausen@collogia.de>
+Received: from mailrelay.collogia.de (mailrelay.collogia.de [194.8.207.98])
+ by lists.ozlabs.org (Postfix) with SMTP id 631471A1008
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Feb 2015 06:36:48 +1100 (AEDT)
+Subject: [PATCH v1 0/3] SHA1 for PPC/SPE
+From: Markus Stockhausen <stockhausen@collogia.de>
+Date: Tue, 24 Feb 2015 20:36:34 +0100
+To: <linux-crypto@vger.kernel.org>
 MIME-Version: 1.0
-To: Julian Margetson <runaway@candw.ms>, Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: Problems with Kernels 3.17-rc1 and onwards on Acube Sam460 AMCC
- 460ex board
-References: <54E08E06.8060607@candw.ms>
- <1424045921.3018.4.camel@ellerman.id.au> <54E4EBD7.5000307@candw.ms>
- <1424304787.22020.4.camel@ellerman.id.au> <54E53E07.60609@candw.ms>
- <1424314594.22408.1.camel@ellerman.id.au> <54E55796.6000401@candw.ms>
- <54E78A12.7080409@candw.ms> <1424737962.2318.2.camel@ellerman.id.au>
- <45dfe45093f.4ef2935f@smtp.gmail.com>
-In-Reply-To: <45dfe45093f.4ef2935f@smtp.gmail.com>
-Content-Type: text/plain; charset=utf-8
-Cc: linuxppc-dev@lists.ozlabs.org, Ian Munsie <imunsie@au1.ibm.com>
+Content-Type: multipart/mixed;
+ boundary="----=_NextPartTM-000-ad571de8-39c6-422f-a465-6d3358857ac4"
+Message-ID: <894f2b07-c86f-4857-8855-0718e21e9e1b@EXCHANGE.collogia.de>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,67 +20,100 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Am 2015-02-24 um 12:08 schrieb Julian Margetson:
-> Problems with  the Gib bisect
-> Kernel wont compile after 10th bisect .
-You can try "git bisect skip" to select another commit for testing.
-Hopefully that one compiles fine then.
 
-Gerhard
+This is a multi-part message in MIME format.
 
-> drivers/built-in.o: In function `drm_mode_atomic_ioctl':
-> (.text+0x865dc): undefined reference to `__get_user_bad'
-> make: *** [vmlinux] Error 1
-> root@julian-VirtualBox:/usr/src/linux# git bisect log
-> git bisect start
-> # bad: [c517d838eb7d07bbe9507871fab3931deccff539] Linux 4.0-rc1
-> git bisect bad c517d838eb7d07bbe9507871fab3931deccff539
-> # good: [bfa76d49576599a4b9f9b7a71f23d73d6dcff735] Linux 3.19
-> git bisect good bfa76d49576599a4b9f9b7a71f23d73d6dcff735
-> # good: [02f1f2170d2831b3233e91091c60a66622f29e82] kernel.h: remove ancient __FUNCTION__ hack
-> git bisect good 02f1f2170d2831b3233e91091c60a66622f29e82
-> # bad: [796e1c55717e9a6ff5c81b12289ffa1ffd919b6f] Merge branch 'drm-next' of git://people.freedesktop.org/~airlied/linux
-> git bisect bad 796e1c55717e9a6ff5c81b12289ffa1ffd919b6f
-> # good: [9682ec9692e5ac11c6caebd079324e727b19e7ce] Merge tag 'driver-core-3.20-rc1' of git://git.kernel.org/pub/scm/linux/kernel/git/gregkh/driver-core
-> git bisect good 9682ec9692e5ac11c6caebd079324e727b19e7ce
-> # good: [a9724125ad014decf008d782e60447c811391326] Merge tag 'tty-3.20-rc1' of git://git.kernel.org/pub/scm/linux/kernel/git/gregkh/tty
-> git bisect good a9724125ad014decf008d782e60447c811391326
-> # good: [f43dff0ee00a259f524ce17ba4f8030553c66590] Merge tag 'drm-amdkfd-next-fixes-2015-01-25' of git://people.freedesktop.org/~gabbayo/linux into drm-next
-> git bisect good f43dff0ee00a259f524ce17ba4f8030553c66590
-> # bad: [cffe1e89dc9bf541a39d9287ced7c5addff07084] drm: sti: HDMI add audio infoframe
-> git bisect bad cffe1e89dc9bf541a39d9287ced7c5addff07084
-> # good: [2f5b4ef15c60bc5292a3f006c018acb3da53737b] Merge tag 'drm/tegra/for-3.20-rc1' of git://anongit.freedesktop.org/tegra/linux into drm-next
-> git bisect good 2f5b4ef15c60bc5292a3f006c018acb3da53737b
-> # bad: [865844448ce80ccd714793e9ba4140d7ae214229] drm/udl: optimize udl_compress_hline16 (v2)
-> git bisect bad 865844448ce80ccd714793e9ba4140d7ae214229
-> # bad: [d47df63393ed81977e0f6435988d9cbd70c867f7] drm/panel: simple: Add AVIC TM070DDH03 panel support
-> git bisect bad d47df63393ed81977e0f6435988d9cbd70c867f7
-> # bad: [9469244d869623e8b54d9f3d4d00737e377af273] drm/atomic: Fix potential use of state after free
-> git bisect bad 9469244d869623e8b54d9f3d4d00737e377af273
-> root@julian-VirtualBox:/usr/src/linux# 
-> 
-> 
-> 
-> On 02/24/2015, you wrote:
-> 
->> On Fri, 2015-02-20 at 15:25 -0400, Julian Margetson wrote:
->>> On 2/18/2015 11:25 PM, Julian Margetson wrote:
->>
->>>  re PPC4XX PCI(E) MSI support.
->>> https://lists.ozlabs.org/pipermail/linuxppc-dev/2010-November/087273.html
->>
->> Hmm, I think all those comments were addressed before it was merged.
->>
->> I tried to get a 4xx board going here last week, but it doesn't seem happy. I
->> can get a bit of uboot but then it hangs, might be overheating.
->>
->> cheers
->>
->>
-> 
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
-> 
+------=_NextPartTM-000-ad571de8-39c6-422f-a465-6d3358857ac4
+Content-Type: text/plain
+
+[PATCH v1 0/3] SHA1 for PPC/SPE
+
+The following patches add support for SIMD accelerated SHA1
+calculation on PPC processors with SPE instruction set. The 
+implementation takes care of the following constraints:
+
+- independant of processor endianess
+- save SPE registers for interrupt context compatibility
+- disable preemtion only for short intervals
+
+Performance numbers from insmod tcrypt sec=3 mode=303 taken
+on e500v2 800 MHz (TP Link WDR4900)
+
+data    per     sha1-ppc     this patch   speedup  cycles
+length  update  bytes/sec    bytes/sec    factor   per byte
+------  ------  -----------  -----------  -------  --------
+    16      16    9,686,688   13,195,285   x1.36      60.63
+    64      16   18,769,344   21,886,122   x1.17      36.55
+    64      64   26,187,712   33,181,184   x1.27      24.11
+   256      16   27,461,120   29,614,080   x1.08      27.01
+   256      64   45,257,898   52,748,373   x1.17      15.17
+   256     256   56,050,773   68,863,061   x1.23      11.62
+  1024      16   30,863,360   32,438,272   x1.05      24.66
+  1024     256   72,531,626   85,434,709   x1.18       9.36
+  1024    1024   78,640,469   94,731,605   x1.20       8.44
+  2048      16   31,771,989   32,970,752   x1.04      24.26
+  2048     256   76,478,464   89,234,090   x1.17       8.97
+  2048    1024   83,010,218   98,902,698   x1.19       8.09
+  2048    2048   84,336,640  101,038,762   x1.19       7.92
+
+------=_NextPartTM-000-ad571de8-39c6-422f-a465-6d3358857ac4
+Content-Type: text/plain;
+	name="InterScan_Disclaimer.txt"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+	filename="InterScan_Disclaimer.txt"
+
+****************************************************************************
+Diese E-Mail enthält vertrauliche und/oder rechtlich geschützte
+Informationen. Wenn Sie nicht der richtige Adressat sind oder diese E-Mail
+irrtümlich erhalten haben, informieren Sie bitte sofort den Absender und
+vernichten Sie diese Mail. Das unerlaubte Kopieren sowie die unbefugte
+Weitergabe dieser Mail ist nicht gestattet.
+
+Über das Internet versandte E-Mails können unter fremden Namen erstellt oder
+manipuliert werden. Deshalb ist diese als E-Mail verschickte Nachricht keine
+rechtsverbindliche Willenserklärung.
+
+Collogia
+Unternehmensberatung AG
+Ubierring 11
+D-50678 Köln
+
+Vorstand:
+Kadir Akin
+Dr. Michael Höhnerbach
+
+Vorsitzender des Aufsichtsrates:
+Hans Kristian Langva
+
+Registergericht: Amtsgericht Köln
+Registernummer: HRB 52 497
+
+This e-mail may contain confidential and/or privileged information. If you
+are not the intended recipient (or have received this e-mail in error)
+please notify the sender immediately and destroy this e-mail. Any
+unauthorized copying, disclosure or distribution of the material in this
+e-mail is strictly forbidden.
+
+e-mails sent over the internet may have been written under a wrong name or
+been manipulated. That is why this message sent as an e-mail is not a
+legally binding declaration of intention.
+
+Collogia
+Unternehmensberatung AG
+Ubierring 11
+D-50678 Köln
+
+executive board:
+Kadir Akin
+Dr. Michael Höhnerbach
+
+President of the supervisory board:
+Hans Kristian Langva
+
+Registry office: district court Cologne
+Register number: HRB 52 497
+
+****************************************************************************
+
+------=_NextPartTM-000-ad571de8-39c6-422f-a465-6d3358857ac4--
