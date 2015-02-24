@@ -1,26 +1,33 @@
-Return-Path: <geert.uytterhoeven@gmail.com>
-Received: from mail-ob0-x229.google.com (mail-ob0-x229.google.com
- [IPv6:2607:f8b0:4003:c01::229])
+Return-Path: <arjanvandeven@gmail.com>
+Received: from mail-we0-x229.google.com (mail-we0-x229.google.com
+ [IPv6:2a00:1450:400c:c03::229])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B3B911A0F4F
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Feb 2015 20:38:56 +1100 (AEDT)
-Received: by mail-ob0-f169.google.com with SMTP id wp4so42256168obc.0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Feb 2015 01:38:54 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3C7371A1EBA
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Feb 2015 20:39:50 +1100 (AEDT)
+Received: by wesw62 with SMTP id w62so23896409wes.12
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Feb 2015 01:39:46 -0800 (PST)
 MIME-Version: 1.0
-Sender: geert.uytterhoeven@gmail.com
-In-Reply-To: <1424753526.2318.6.camel@ellerman.id.au>
-References: <1424680402-3477-1-git-send-email-geert@linux-m68k.org>
- <CAMuHMdXnVLtiSxqwz7ah5faPUx_8piN5eOdNKQtKNwOgT73FqA@mail.gmail.com>
- <1424753526.2318.6.camel@ellerman.id.au>
-Date: Tue, 24 Feb 2015 10:38:54 +0100
-Message-ID: <CAMuHMdU7Tkoqe0V=feX_P85MJqNQjh7k6XCh+5ZH=zOKTAb__w@mail.gmail.com>
-Subject: Re: Build regressions/improvements in v4.0-rc1
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
+In-Reply-To: <20150224063513.GA15387@gmail.com>
+References: <1424748634-9153-1-git-send-email-anton@samba.org>
+ <20150224063513.GA15387@gmail.com>
+Date: Tue, 24 Feb 2015 01:39:46 -0800
+Message-ID: <CADyApD06_0uf4QgGVWRQyBP9pb2VRQnCOGK7M7K9kTti52usoQ@mail.gmail.com>
+Subject: Re: [PATCH 0/7] Serialise oopses, BUGs, WARNs, dump_stack, soft
+ lockups and hard lockups
+From: Arjan van de Ven <arjanvandeven@gmail.com>
+To: Ingo Molnar <mingo@kernel.org>
 Content-Type: text/plain; charset=UTF-8
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Cc: Don Zickus <dzickus@redhat.com>, X86 ML <x86@kernel.org>,
+ Russell King <linux@arm.linux.org.uk>, Peter Zijlstra <peterz@infradead.org>,
+ "H. Peter Anvin" <hpa@zytor.com>, LKML <linux-kernel@vger.kernel.org>,
+ Steven Rostedt <rostedt@goodmis.org>,
+ Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@redhat.com>,
+ Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Arjan van de Ven <arjan@infradead.org>,
+ ppc-dev <linuxppc-dev@lists.ozlabs.org>, Thomas Gleixner <tglx@linutronix.de>,
+ sam.bobroff@au1.ibm.com, linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,31 +37,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Michael,
-
-On Tue, Feb 24, 2015 at 5:52 AM, Michael Ellerman <mpe@ellerman.id.au> wrote:
->> >   + error: book3s_64_vio_hv.c: undefined reference to `power7_wakeup_loss':  => .text+0x408)
+>> Some architectures already have their own recursive
+>> locking for oopses and we have another version for
+>> serialising dump_stack.
 >>
->> pseries_defconfig
+>> Create a common version and use it everywhere (oopses,
+>> BUGs, WARNs, dump_stack, soft lockups and hard lockups).
 >
-> This one is actually from pseries_defconfig+POWERNV=n, so I think I
+> Dunno. I've had cases where the simultaneity of the oopses
+> (i.e. their garbled nature) gave me the clue about the type
+> of race to expect.
+>
 
-Thanks!
 
-> broke your script with the + notation in the config name :)
-
-Nope, my brain used the wrong separator.
-
-However, my scripts do have a problem with the subdirectories
-in arch/powerpc/configs/ (4xx/currituck_defconfig)...
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+one of the question is if you want to serialize, or if you just want to label.
+If you take a cookie (could just be a monotonic increasing number) at
+the start of the oops
+and then prefix/postfix the stack printing with that number, you don't
+serialize (risk of locking up),
+but you can pretty trivially see which line  came from where..
+if you do the monotonic increasing number approach, you even get an
+ordering out of it.
+it does mean changing the dump_stack() and co function fingerprint to
+take an extra argument,
+but that is not TOO insane.
