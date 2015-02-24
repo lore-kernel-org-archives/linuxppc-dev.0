@@ -1,9 +1,9 @@
 Return-Path: <anton@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 846EF1A0D77
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Feb 2015 14:30:49 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6BEE91A0D93
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Feb 2015 14:30:51 +1100 (AEDT)
 From: Anton Blanchard <anton@samba.org>
 To: Andrew Morton <akpm@linux-foundation.org>,
  Steven Rostedt <rostedt@goodmis.org>,
@@ -12,10 +12,10 @@ To: Andrew Morton <akpm@linux-foundation.org>,
  Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
  hpa@zytor.com, Russell King <linux@arm.linux.org.uk>, peterz@infradead.org,
  Don Zickus <dzickus@redhat.com>
-Subject: [PATCH 5/7] watchdog: Serialise soft lockup errors with
+Subject: [PATCH 6/7] dump_stack: Serialise dump_stack with
  die_spin_lock_{irqsave, irqrestore}
-Date: Tue, 24 Feb 2015 14:30:32 +1100
-Message-Id: <1424748634-9153-6-git-send-email-anton@samba.org>
+Date: Tue, 24 Feb 2015 14:30:33 +1100
+Message-Id: <1424748634-9153-7-git-send-email-anton@samba.org>
 In-Reply-To: <1424748634-9153-1-git-send-email-anton@samba.org>
 References: <1424748634-9153-1-git-send-email-anton@samba.org>
 Cc: x86@kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
@@ -29,51 +29,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-A simple kernel module was used to create concurrent soft and
-hard lockups:
-
-http://ozlabs.org/~anton/junkcode/badguy.tar.gz
+Remove another version of a recursive lock in dump_stack.
 
 Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
- kernel/watchdog.c | 4 ++++
- 1 file changed, 4 insertions(+)
+ lib/dump_stack.c | 40 ++++------------------------------------
+ 1 file changed, 4 insertions(+), 36 deletions(-)
 
-diff --git a/kernel/watchdog.c b/kernel/watchdog.c
-index 70bf118..dd161e3 100644
---- a/kernel/watchdog.c
-+++ b/kernel/watchdog.c
-@@ -19,6 +19,7 @@
- #include <linux/sysctl.h>
- #include <linux/smpboot.h>
- #include <linux/sched/rt.h>
+diff --git a/lib/dump_stack.c b/lib/dump_stack.c
+index 6745c62..f64ee3c 100644
+--- a/lib/dump_stack.c
++++ b/lib/dump_stack.c
+@@ -7,7 +7,7 @@
+ #include <linux/export.h>
+ #include <linux/sched.h>
+ #include <linux/smp.h>
+-#include <linux/atomic.h>
 +#include <linux/die_lock.h>
  
- #include <asm/irq_regs.h>
- #include <linux/kvm_para.h>
-@@ -313,6 +314,7 @@ static enum hrtimer_restart watchdog_timer_fn(struct hrtimer *hrtimer)
- 	struct pt_regs *regs = get_irq_regs();
- 	int duration;
- 	int softlockup_all_cpu_backtrace = sysctl_softlockup_all_cpu_backtrace;
+ static void __dump_stack(void)
+ {
+@@ -20,44 +20,12 @@ static void __dump_stack(void)
+  *
+  * Architectures can override this implementation by implementing its own.
+  */
+-#ifdef CONFIG_SMP
+-static atomic_t dump_lock = ATOMIC_INIT(-1);
+-
+ asmlinkage __visible void dump_stack(void)
+ {
+-	int was_locked;
+-	int old;
+-	int cpu;
+-
+-	/*
+-	 * Permit this cpu to perform nested stack dumps while serialising
+-	 * against other CPUs
+-	 */
+-	preempt_disable();
+-
+-retry:
+-	cpu = smp_processor_id();
+-	old = atomic_cmpxchg(&dump_lock, -1, cpu);
+-	if (old == -1) {
+-		was_locked = 0;
+-	} else if (old == cpu) {
+-		was_locked = 1;
+-	} else {
+-		cpu_relax();
+-		goto retry;
+-	}
+-
+-	__dump_stack();
 +	unsigned long flags;
  
- 	/* kick the hardlockup detector */
- 	watchdog_interrupt_count();
-@@ -384,6 +386,7 @@ static enum hrtimer_restart watchdog_timer_fn(struct hrtimer *hrtimer)
- 			}
- 		}
- 
-+		die_spin_lock_irqsave(flags);
- 		pr_emerg("BUG: soft lockup - CPU#%d stuck for %us! [%s:%d]\n",
- 			smp_processor_id(), duration,
- 			current->comm, task_pid_nr(current));
-@@ -394,6 +397,7 @@ static enum hrtimer_restart watchdog_timer_fn(struct hrtimer *hrtimer)
- 			show_regs(regs);
- 		else
- 			dump_stack();
-+		die_spin_unlock_irqrestore(flags);
- 
- 		if (softlockup_all_cpu_backtrace) {
- 			/* Avoid generating two back traces for current
+-	if (!was_locked)
+-		atomic_set(&dump_lock, -1);
+-
+-	preempt_enable();
+-}
+-#else
+-asmlinkage __visible void dump_stack(void)
+-{
++	die_spin_lock_irqsave(flags);
+ 	__dump_stack();
++	die_spin_unlock_irqrestore(flags);
+ }
+-#endif
+ EXPORT_SYMBOL(dump_stack);
 -- 
 2.1.0
