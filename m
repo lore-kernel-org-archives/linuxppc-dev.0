@@ -1,21 +1,18 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D54771A0BD8
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Feb 2015 15:52:07 +1100 (AEDT)
-Message-ID: <1424753526.2318.6.camel@ellerman.id.au>
-Subject: Re: Build regressions/improvements in v4.0-rc1
+Message-ID: <1424753699.2318.8.camel@ellerman.id.au>
+Subject: Re: [RFC PATCH 1/3] powerpc/powernv: Check OPAL sensor calls exist
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Tue, 24 Feb 2015 15:52:06 +1100
-In-Reply-To: <CAMuHMdXnVLtiSxqwz7ah5faPUx_8piN5eOdNKQtKNwOgT73FqA@mail.gmail.com>
-References: <1424680402-3477-1-git-send-email-geert@linux-m68k.org>
- <CAMuHMdXnVLtiSxqwz7ah5faPUx_8piN5eOdNKQtKNwOgT73FqA@mail.gmail.com>
+To: =?ISO-8859-1?Q?C=E9dric?= Le Goater <clg@fr.ibm.com>
+Date: Tue, 24 Feb 2015 15:54:59 +1100
+In-Reply-To: <1424444857-13805-2-git-send-email-clg@fr.ibm.com>
+References: <1423117857-32759-1-git-send-email-clg@fr.ibm.com>
+ <1424444857-13805-2-git-send-email-clg@fr.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Cc: Stewart Smith <stewart@linux.vnet.ibm.com>, lm-sensors@lm-sensors.org,
+ Guenter Roeck <linux@roeck-us.net>,
+ Neelesh Gupta <neelegup@linux.vnet.ibm.com>, skiboot@lists.ozlabs.org,
+ linuxppc-dev@lists.ozlabs.org, Jean Delvare <jdelvare@suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,27 +22,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2015-02-23 at 09:45 +0100, Geert Uytterhoeven wrote:
-> On Mon, Feb 23, 2015 at 9:33 AM, Geert Uytterhoeven
-> <geert@linux-m68k.org> wrote:
-> > Below is the list of build error/warning regressions/improvements in
-> > v4.0-rc1[1] compared to v3.19[2].
-> >
-> > Summarized:
-> >   - build errors: +11/-10
+On Fri, 2015-02-20 at 16:07 +0100, Cédric Le Goater wrote:
+> Signed-off-by: Cédric Le Goater <clg@fr.ibm.com>
+> ---
+>  arch/powerpc/platforms/powernv/opal-sensor.c |    3 +++
+>  1 file changed, 3 insertions(+)
 > 
-> > [1] http://kisskb.ellerman.id.au/kisskb/head/8494/ (256 out of 257 configs)
-> > [2] http://kisskb.ellerman.id.au/kisskb/head/8427/ (255 out of 257 configs)
- 
-...
+> diff --git a/arch/powerpc/platforms/powernv/opal-sensor.c b/arch/powerpc/platforms/powernv/opal-sensor.c
+> index 4ab67ef7abc9..544292f2020f 100644
+> --- a/arch/powerpc/platforms/powernv/opal-sensor.c
+> +++ b/arch/powerpc/platforms/powernv/opal-sensor.c
+> @@ -72,6 +72,9 @@ static __init int opal_sensor_init(void)
+>  	struct platform_device *pdev;
+>  	struct device_node *sensor;
+>  
+> +	if (!opal_check_token(OPAL_SENSOR_READ))
+> +		return -ENODEV;
+> +
+>  	sensor = of_find_node_by_path("/ibm,opal/sensors");
+>  	if (!sensor) {
+>  		pr_err("Opal node 'sensors' not found\n");
 
-> >   + error: book3s_64_vio_hv.c: undefined reference to `power7_wakeup_loss':  => .text+0x408)
-> 
-> pseries_defconfig
+Are you actually seeing this in practice?
 
-This one is actually from pseries_defconfig+POWERNV=n, so I think I
-broke your script with the + notation in the config name :)
-
-http://kisskb.ellerman.id.au/kisskb/buildresult/12372031/
+It's a bit annoying that we have to check for the token, and then also check
+the device tree. It would be nice if one implied the presence of the other.
 
 cheers
