@@ -1,24 +1,23 @@
-Return-Path: <mpe@ellerman.id.au>
+Return-Path: <anton@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9FD461A0BA2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Feb 2015 11:32:43 +1100 (AEDT)
-Message-ID: <1424737962.2318.2.camel@ellerman.id.au>
-Subject: Re: Problems with Kernels 3.17-rc1 and onwards on Acube Sam460 AMCC
- 460ex board
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Julian Margetson <runaway@candw.ms>
-Date: Tue, 24 Feb 2015 11:32:42 +1100
-In-Reply-To: <54E78A12.7080409@candw.ms>
-References: <54E08E06.8060607@candw.ms>
- <1424045921.3018.4.camel@ellerman.id.au> <54E4EBD7.5000307@candw.ms>
- <1424304787.22020.4.camel@ellerman.id.au> <54E53E07.60609@candw.ms>
- <1424314594.22408.1.camel@ellerman.id.au> <54E55796.6000401@candw.ms>
- <54E78A12.7080409@candw.ms>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, Ian Munsie <imunsie@au1.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 603B91A05B9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Feb 2015 14:30:37 +1100 (AEDT)
+From: Anton Blanchard <anton@samba.org>
+To: Andrew Morton <akpm@linux-foundation.org>,
+ Steven Rostedt <rostedt@goodmis.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>, sam.bobroff@au1.ibm.com,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+ hpa@zytor.com, Russell King <linux@arm.linux.org.uk>, peterz@infradead.org,
+ Don Zickus <dzickus@redhat.com>
+Subject: [PATCH 0/7] Serialise oopses, BUGs, WARNs, dump_stack,
+ soft lockups and hard lockups
+Date: Tue, 24 Feb 2015 14:30:27 +1100
+Message-Id: <1424748634-9153-1-git-send-email-anton@samba.org>
+Cc: x86@kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,15 +27,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2015-02-20 at 15:25 -0400, Julian Margetson wrote:
-> On 2/18/2015 11:25 PM, Julian Margetson wrote:
+Every now and then I end up with an undebuggable issue because multiple
+CPUs hit something at the same time and everything is interleaved:
 
->  re PPC4XX PCI(E) MSI support.
-> https://lists.ozlabs.org/pipermail/linuxppc-dev/2010-November/087273.html
+        CR: 48000082  XER: 00000000
+        ,RI
+        c0000003dc72fd10
+        ,LE
+        d0000000065b84e8
+        Instruction dump:
+        MSR: 8000000100029033
 
-Hmm, I think all those comments were addressed before it was merged.
+Very annoying.
 
-I tried to get a 4xx board going here last week, but it doesn't seem happy. I
-can get a bit of uboot but then it hangs, might be overheating.
+Some architectures already have their own recursive locking for oopses
+and we have another version for serialising dump_stack.
 
-cheers
+Create a common version and use it everywhere (oopses, BUGs, WARNs,
+dump_stack, soft lockups and hard lockups). A few testcases were
+used to verify the series:
+
+A trivial module to create concurrent WARNs, BUGs and oopses:
+
+http://ozlabs.org/~anton/junkcode/warnstorm.tar.gz
+
+And one to create concurrent soft and hard lockups:
+
+http://ozlabs.org/~anton/junkcode/badguy.tar.gz
+
+Anton Blanchard (7):
+  Add die_spin_lock_{irqsave,irqrestore}
+  powerpc: Use die_spin_lock_{irqsave,irqrestore}
+  arm: Use die_spin_lock_{irqsave,irqrestore}
+  x86: Use die_spin_lock_{irqsave,irqrestore}
+  watchdog: Serialise soft lockup errors with
+    die_spin_lock_{irqsave,irqrestore}
+  dump_stack: Serialise dump_stack with
+    die_spin_lock_{irqsave,irqrestore}
+  powerpc: Serialise BUG and WARNs with
+    die_spin_lock_{irqsave,irqrestore}
+
+ arch/arm/kernel/traps.c     | 26 ++---------------
+ arch/powerpc/kernel/traps.c | 68 ++++++++++++++++++++++++++-------------------
+ arch/x86/kernel/dumpstack.c | 26 ++---------------
+ include/linux/die_lock.h    | 23 +++++++++++++++
+ kernel/watchdog.c           |  4 +++
+ lib/Makefile                |  1 +
+ lib/die_lock.c              | 43 ++++++++++++++++++++++++++++
+ lib/dump_stack.c            | 40 +++-----------------------
+ 8 files changed, 120 insertions(+), 111 deletions(-)
+ create mode 100644 include/linux/die_lock.h
+ create mode 100644 lib/die_lock.c
+
+-- 
+2.1.0
