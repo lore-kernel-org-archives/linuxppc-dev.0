@@ -1,25 +1,25 @@
-Return-Path: <anton@ozlabs.org>
+Return-Path: <benh@kernel.crashing.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 71C9D1A0DC7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Feb 2015 14:30:53 +1100 (AEDT)
-From: Anton Blanchard <anton@samba.org>
-To: Andrew Morton <akpm@linux-foundation.org>,
- Steven Rostedt <rostedt@goodmis.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>, sam.bobroff@au1.ibm.com,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- hpa@zytor.com, Russell King <linux@arm.linux.org.uk>, peterz@infradead.org,
- Don Zickus <dzickus@redhat.com>
-Subject: [PATCH 7/7] powerpc: Serialise BUG and WARNs with
- die_spin_lock_{irqsave, irqrestore}
-Date: Tue, 24 Feb 2015 14:30:34 +1100
-Message-Id: <1424748634-9153-8-git-send-email-anton@samba.org>
-In-Reply-To: <1424748634-9153-1-git-send-email-anton@samba.org>
-References: <1424748634-9153-1-git-send-email-anton@samba.org>
-Cc: x86@kernel.org, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 27ADD1A0D14
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Feb 2015 14:38:49 +1100 (AEDT)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 6E1F61400DE
+ for <linuxppc-dev@ozlabs.org>; Tue, 24 Feb 2015 14:38:48 +1100 (AEDT)
+Message-ID: <1424749119.12891.20.camel@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: Export __spin_yield
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: "Suresh E. Warrier" <warrier@linux.vnet.ibm.com>
+Date: Tue, 24 Feb 2015 14:38:39 +1100
+In-Reply-To: <54EBC165.3020708@linux.vnet.ibm.com>
+References: <1424477465-9199-2-git-send-email-warrier@linux.vnet.ibm.com>
+ <54EBC165.3020708@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,85 +29,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-A simple kernel module was used to create concurrent WARNs and BUGs:
+On Mon, 2015-02-23 at 18:10 -0600, Suresh E. Warrier wrote:
+> Export __spin_yield so that the arch_spin_unlock() function
+> can be invoked from a module.
 
-http://ozlabs.org/~anton/junkcode/warnstorm.tar.gz
+Make it EXPORT_SYMBOL_GPL. Also explain why a module might need it
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
- arch/powerpc/kernel/traps.c | 44 ++++++++++++++++++++++++++++++++++++--------
- 1 file changed, 36 insertions(+), 8 deletions(-)
-
-diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index 4cc1e72..f779557 100644
---- a/arch/powerpc/kernel/traps.c
-+++ b/arch/powerpc/kernel/traps.c
-@@ -1114,6 +1114,39 @@ static int emulate_math(struct pt_regs *regs)
- static inline int emulate_math(struct pt_regs *regs) { return -1; }
- #endif
- 
-+static bool __report_bug(unsigned long bugaddr, struct pt_regs *regs)
-+{
-+	const struct bug_entry *bug;
-+	unsigned long flags;
-+	int err;
-+
-+	if (!is_valid_bugaddr(bugaddr))
-+		return false;
-+
-+	bug = find_bug(bugaddr);
-+	if (!bug)
-+		return false;
-+
-+	if (is_warning_bug(bug)) {
-+		die_spin_lock_irqsave(flags);
-+		report_bug(bugaddr, regs);
-+		die_spin_unlock_irqrestore(flags);
-+
-+		regs->nip += 4;
-+
-+		return true;
-+	}
-+
-+	flags = oops_begin(regs);
-+	report_bug(bugaddr, regs);
-+	err = SIGTRAP;
-+	if (__die("Exception in kernel mode", regs, err))
-+		err = 0;
-+	oops_end(flags, regs, err);
-+
-+	return true;
-+}
-+
- void __kprobes program_check_exception(struct pt_regs *regs)
- {
- 	enum ctx_state prev_state = exception_enter();
-@@ -1138,11 +1171,9 @@ void __kprobes program_check_exception(struct pt_regs *regs)
- 				== NOTIFY_STOP)
- 			goto bail;
- 
--		if (!(regs->msr & MSR_PR) &&  /* not user-mode */
--		    report_bug(regs->nip, regs) == BUG_TRAP_TYPE_WARN) {
--			regs->nip += 4;
-+		if (!user_mode(regs) && __report_bug(regs->nip, regs))
- 			goto bail;
--		}
-+
- 		_exception(SIGTRAP, regs, TRAP_BRKPT, regs->nip);
- 		goto bail;
- 	}
-@@ -1157,11 +1188,8 @@ void __kprobes program_check_exception(struct pt_regs *regs)
- 		 * -  A tend is illegally attempted.
- 		 * -  writing a TM SPR when transactional.
- 		 */
--		if (!user_mode(regs) &&
--		    report_bug(regs->nip, regs) == BUG_TRAP_TYPE_WARN) {
--			regs->nip += 4;
-+		if (!user_mode(regs) && __report_bug(regs->nip, regs))
- 			goto bail;
--		}
- 		/* If usermode caused this, it's done something illegal and
- 		 * gets a SIGILL slap on the wrist.  We call it an illegal
- 		 * operand to distinguish from the instruction just being bad
--- 
-2.1.0
+> Signed-off-by: Suresh Warrier <warrier@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/lib/locks.c | 1 +
+>  1 file changed, 1 insertion(+)
+> 
+> diff --git a/arch/powerpc/lib/locks.c b/arch/powerpc/lib/locks.c
+> index bb7cfec..d100de8 100644
+> --- a/arch/powerpc/lib/locks.c
+> +++ b/arch/powerpc/lib/locks.c
+> @@ -41,6 +41,7 @@ void __spin_yield(arch_spinlock_t *lock)
+>  	plpar_hcall_norets(H_CONFER,
+>  		get_hard_smp_processor_id(holder_cpu), yield_count);
+>  }
+> +EXPORT_SYMBOL(__spin_yield);
+> 
+>  /*
+>   * Waiting for a read lock or a write lock on a rwlock...
