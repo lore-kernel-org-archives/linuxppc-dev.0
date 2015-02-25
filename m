@@ -1,42 +1,20 @@
-Return-Path: <warrier@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bn0101.outbound.protection.outlook.com [157.56.110.101])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7D9861A0008
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Feb 2015 10:24:57 +1100 (AEDT)
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id B01EB1400B6
- for <linuxppc-dev@ozlabs.org>; Thu, 26 Feb 2015 10:24:56 +1100 (AEDT)
-Received: from /spool/local
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <warrier@linux.vnet.ibm.com>;
- Wed, 25 Feb 2015 16:24:54 -0700
-Received: from b03cxnp08025.gho.boulder.ibm.com
- (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 7A4D619D8026
- for <linuxppc-dev@ozlabs.org>; Wed, 25 Feb 2015 16:16:00 -0700 (MST)
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
- by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t1PNOfGi31129822
- for <linuxppc-dev@ozlabs.org>; Wed, 25 Feb 2015 16:24:49 -0700
-Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
- by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t1PNOJUm007871
- for <linuxppc-dev@ozlabs.org>; Wed, 25 Feb 2015 16:24:19 -0700
-Received: from oc2861555856.ibm.com (sig-9-77-143-41.ibm.com [9.77.143.41])
- by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVin) with ESMTP id
- t1PNOIIa006905
- for <linuxppc-dev@ozlabs.org>; Wed, 25 Feb 2015 16:24:18 -0700
-Message-ID: <54EE5989.7010800@linux.vnet.ibm.com>
-Date: Wed, 25 Feb 2015 17:23:53 -0600
-From: "Suresh E. Warrier" <warrier@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 65F0B1A0008
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Feb 2015 10:44:25 +1100 (AEDT)
+Message-ID: <1424907851.4698.63.camel@freescale.com>
+Subject: Re: [PATCH] clk: ppc-corenet: Add support for the FMD clock
+From: Scott Wood <scottwood@freescale.com>
+To: Igal.Liberman <igal.liberman@freescale.com>
+Date: Wed, 25 Feb 2015 17:44:11 -0600
+In-Reply-To: <1421755411-26357-1-git-send-email-igal.liberman@freescale.com>
+References: <1421755411-26357-1-git-send-email-igal.liberman@freescale.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] powerpc: Export __spin_yield
-Content-Type: text/plain; charset=windows-1252
+Cc: linuxppc-dev@lists.ozlabs.org, Emilian.Medve@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,33 +24,83 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Export __spin_yield so that the arch_spin_unlock() function can
-be invoked from a module. This will be required for modules where
-we want to take a lock that is also is acquired in hypervisor
-real mode. Because we want to avoid running any lockdep code
-(which may not be safe in real mode), this lock needs to be 
-an arch_spinlock_t instead of a normal spinlock.
+On Tue, 2015-01-20 at 14:03 +0200, Igal.Liberman wrote:
+> +static u8 get_fm_clk_parent(struct clk_hw *hw)
+> +{
+> +	struct ccsr_guts __iomem *guts_regs = NULL;
+> +	struct device_node *guts;
+> +	uint32_t reg = 0;
+> +	int clk_src = 0;
+> +	int fm_clk_select = -EINVAL;
+> +	int fm_id = 0;
+> +
+> +	guts = of_find_matching_node(NULL, guts_device_ids);
+> +	if (!guts) {
+> +		pr_err("could not find GUTS node\n");
+> +		return -EINVAL;
+> +	}
 
-Signed-off-by: Suresh Warrier <warrier@linux.vnet.ibm.com>
----
-Replaced export to EXPORT_SYMBOL_GPL
-Updated commit log to explain what kind of modules will need
-to use the arch_spin_unlock() function
+Error message lacks context (here and elsewhere).
 
- arch/powerpc/lib/locks.c | 1 +
- 1 file changed, 1 insertion(+)
+Why are you going this on demand rather than in an init function
+(specifically, a CLK_OF_DECLARE)?  You should not register this clock
+handler in the first place if the hardware doesn't exist.
 
-diff --git a/arch/powerpc/lib/locks.c b/arch/powerpc/lib/locks.c
-index bb7cfec..f31bcee 100644
---- a/arch/powerpc/lib/locks.c
-+++ b/arch/powerpc/lib/locks.c
-@@ -41,6 +41,7 @@ void __spin_yield(arch_spinlock_t *lock)
- 	plpar_hcall_norets(H_CONFER,
- 		get_hard_smp_processor_id(holder_cpu), yield_count);
- }
-+EXPORT_SYMBOL_GPL(__spin_yield);
- 
- /*
-  * Waiting for a read lock or a write lock on a rwlock...
--- 
-1.8.3.4
+-EINVAL doesn't fit in u8.  Neither would the more appropriate -ENODEV.
+
+> +	guts_regs = of_iomap(guts, 0);
+> +	of_node_put(guts);
+> +	if (!guts_regs) {
+> +		pr_err("ioremap of GUTS node failed\n");
+> +		return -EINVAL;
+> +	}
+> +
+> +	if (!strcmp(__clk_get_name(hw->clk), "fm1-clk"))
+> +		fm_id = 1;
+> +
+> +	/* The FM clock provider is SoC dependent and it's determened by the
+
+determined
+
+> +	 * reset configuration word (RCW). We need to map the RCW options to
+> +	 * the order of the providers in the device tree.
+> +	 * This code makes assumptions about the clock provider order:
+> +	 * In the PXXXX family:
+> +	 *	0 - platform clock/2
+> +	 *	1 - PLLx /2
+> +	 *	2 - PLLx /4 (if possible).
+> +	 * In B/T family:
+> +	 *	The same order in which the clock providers are described in
+> +	 *	the Reference Manual, starting from 0.
+
+This belongs in a device tree binding document and should not
+incorporate portions of the reference manual by reference -- what if a
+new version of the reference manual changes the order in which clock
+providers are described?  Or do you mean that the order corresponds to a
+register value?
+
+
+> +	 *
+> +	 * In a case of only one possible provider, the index is 0.
+> +	 */
+> +
+> +	if (of_device_is_compatible(guts, "fsl,p1023-guts") ||
+> +		of_device_is_compatible(guts, "fsl,t1040-device-config"))
+> +		/* P1023 and T1040 have only one optional clock source */
+> +		fm_clk_select = 0;
+> +	else if (of_device_is_compatible(guts, "fsl,p2041-device-config") ||
+> +		 of_device_is_compatible(guts, "fsl,p3041-device-config") ||
+> +		 of_device_is_compatible(guts, "fsl,p4080-device-config")) {
+> +		/* Read RCW*/
+
+/* Read RCW */
+
+> @@ -352,3 +601,4 @@ CLK_OF_DECLARE(qoriq_core_mux_1, "fsl,qoriq-core-mux-1.0", core_mux_init);
+>  CLK_OF_DECLARE(qoriq_core_mux_2, "fsl,qoriq-core-mux-2.0", core_mux_init);
+>  CLK_OF_DECLARE(qoriq_pltfrm_pll_1, "fsl,qoriq-platform-pll-1.0", pltfrm_pll_init);
+>  CLK_OF_DECLARE(qoriq_pltfrm_pll_2, "fsl,qoriq-platform-pll-2.0", pltfrm_pll_init);
+> +CLK_OF_DECLARE(qoriq_fm_mux, "fsl,fman-clk-mux", fm_mux_init);
+
+Where is the binding for this node?
+
+-Scott
