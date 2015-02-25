@@ -1,42 +1,38 @@
 Return-Path: <stewart@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BC45A1A0015
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Feb 2015 08:52:09 +1100 (AEDT)
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id D70E4140082
- for <linuxppc-dev@ozlabs.org>; Thu, 26 Feb 2015 08:52:08 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id CC4FD1A0015
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Feb 2015 08:54:01 +1100 (AEDT)
 Received: from /spool/local
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <stewart@linux.vnet.ibm.com>;
- Wed, 25 Feb 2015 14:52:06 -0700
-Received: from b03cxnp08028.gho.boulder.ibm.com
- (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 125F019D803E
- for <linuxppc-dev@ozlabs.org>; Wed, 25 Feb 2015 14:43:12 -0700 (MST)
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
- by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t1PLptBk35389498
- for <linuxppc-dev@ozlabs.org>; Wed, 25 Feb 2015 14:52:03 -0700
-Received: from d03av03.boulder.ibm.com (localhost [127.0.0.1])
- by d03av03.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t1PLpUa5030875
- for <linuxppc-dev@ozlabs.org>; Wed, 25 Feb 2015 14:51:30 -0700
+ for <linuxppc-dev@lists.ozlabs.org> from <stewart@linux.vnet.ibm.com>;
+ Wed, 25 Feb 2015 16:53:59 -0500
+Received: from b01cxnp22036.gho.pok.ibm.com (b01cxnp22036.gho.pok.ibm.com
+ [9.57.198.26])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 4B5F838C8046
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Feb 2015 16:53:57 -0500 (EST)
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+ by b01cxnp22036.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t1PLrtK224445010
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Feb 2015 21:53:55 GMT
+Received: from d01av04.pok.ibm.com (localhost [127.0.0.1])
+ by d01av04.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t1PLrtXU032687
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Feb 2015 16:53:55 -0500
 From: Stewart Smith <stewart@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] powerpc/smp: Wait until secondaries are active & online
-In-Reply-To: <1424761082-29938-1-git-send-email-mpe@ellerman.id.au>
-References: <1424761082-29938-1-git-send-email-mpe@ellerman.id.au>
-Date: Thu, 26 Feb 2015 08:51:10 +1100
-Message-ID: <m3sidtek35.fsf@oc8180480414.ibm.com>
+To: Cedric Le Goater <clg@fr.ibm.com>, mpe@ellerman.id.au
+Subject: Re: [PATCH] powerpc/powernv: check OPAL_REGISTER_DUMP_REGION calls
+ exist
+In-Reply-To: <54EE3E93.6070001@fr.ibm.com>
+References: <1424886188-32068-1-git-send-email-clg@fr.ibm.com>
+ <m3vbipeloe.fsf@oc8180480414.ibm.com> <54EE3E93.6070001@fr.ibm.com>
+Date: Thu, 26 Feb 2015 08:53:52 +1100
+Message-ID: <m3pp8xejyn.fsf@oc8180480414.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linux-kernel@vger.kernel.org, tglx@linutronix.de, mingo@kernel.org,
- Anton Blanchard <anton@samba.org>
+Content-Type: text/plain; charset=utf-8
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,22 +42,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael Ellerman <mpe@ellerman.id.au> writes:
-> Anton has a busy ppc64le KVM box where guests sometimes hit the infamous
-> "kernel BUG at kernel/smpboot.c:134!" issue during boot:
+Cedric Le Goater <clg@fr.ibm.com> writes:
+> On 02/25/2015 10:16 PM, Stewart Smith wrote:
+>> C=C3=A9dric Le Goater <clg@fr.ibm.com> writes:
+>>> On Open Power systems, such call fails in OPAL :=20
+>>>
+>>>    OPAL: Called with bad token 101 !
+>>>
+>>> The check on the OPAL_UNREGISTER_DUMP_REGION call is added for=20
+>>> symmetry. I did not see any errors for it.
+>>=20
+>> I've already put in a patch to squash this:
+>> Message-Id:
+>> <1423718729-17992-2-git-send-email-stewart@linux.vnet.ibm.com>
+>>=20
+>> Just waiting on mpe to merge :)
 >
->   BUG_ON(td->cpu != smp_processor_id());
+> ok fine, I missed it :)=20
 >
-> Basically a per CPU hotplug thread scheduled on the wrong CPU. The oops
-> output confirms it:
->
->   CPU: 0
->   Comm: watchdog/130
+> I am also tempted to fix OPAL_READ_TPO but the proper way to do this=20
+> would be to move the lowlevel OPAL code from drivers/rtc/rtc-opal.c to=20
+> a new file under arch/powerpc/platforms/powernv/. How does that sound ?=20
 
-Has anyone seen this on powernv before?
-
-I seem to be able to very reliably get such crashes with my
-(experimental) gcov enabled skiboot on P7 (and P8, but I've had more
-time on P7 than P8).
-
-Hoping to try the patch later today.
+shouldn't we be detecting things from DT and acting on it? From a quick
+glance perhaps we're not quite doing the checks in all the right places?
