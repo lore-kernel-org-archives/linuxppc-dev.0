@@ -1,23 +1,21 @@
 Return-Path: <scottwood@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0108.outbound.protection.outlook.com [65.55.169.108])
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0114.outbound.protection.outlook.com [207.46.100.114])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9541F1A0025
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Feb 2015 12:30:35 +1100 (AEDT)
-Message-ID: <1424827820.4698.49.camel@freescale.com>
-Subject: Re: [PATCH v6 1/2] powerpc/mpc85xx: Add FSL QorIQ DPAA BMan support
- to device tree(s)
+ by lists.ozlabs.org (Postfix) with ESMTPS id F27B51A0013
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Feb 2015 13:29:59 +1100 (AEDT)
+Message-ID: <1424831385.4698.53.camel@freescale.com>
+Subject: Re: [PATCH] powerpc/fsl: add power_off support for fsl platform
 From: Scott Wood <scottwood@freescale.com>
-To: Emil Medve <Emilian.Medve@Freescale.com>
-Date: Tue, 24 Feb 2015 19:30:20 -0600
-In-Reply-To: <1422860013-23624-1-git-send-email-Emilian.Medve@Freescale.com>
-References: <1422860013-23624-1-git-send-email-Emilian.Medve@Freescale.com>
+To: Dongsheng Wang <dongsheng.wang@freescale.com>
+Date: Tue, 24 Feb 2015 20:29:45 -0600
+In-Reply-To: <1423032421-31561-1-git-send-email-dongsheng.wang@freescale.com>
+References: <1423032421-31561-1-git-send-email-dongsheng.wang@freescale.com>
 Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Cc: devicetree@vger.kernel.org, Poonam Aggrwal <poonam.aggrwal@Freescale.com>,
- Geoff Thorpe <Geoff.Thorpe@Freescale.com>, linuxppc-dev@lists.ozlabs.org,
- Chunhe Lan <Chunhe.Lan@Freescale.com>
+Cc: linuxppc-dev@lists.ozlabs.org, hongtao.jia@freescale.com,
+ jason.jin@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,11 +25,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2015-02-02 at 00:53 -0600, Emil Medve wrote:
-> From: Kumar Gala <galak@kernel.crashing.org>
-> 
-> Change-Id: If643fa5ba0a903aef8f5056a2c90ebecc995b760
+On Wed, 2015-02-04 at 14:47 +0800, Dongsheng Wang wrote:
+> +void ppc_md_fixup(void)
+> +{
 
-Remove these.
+This name is way too generic (though it's moot since you shouldn't use
+ppc_md for this).
+
+> +	struct device_node *np;
+> +
+> +	np = of_find_compatible_node(NULL, NULL, "fsl,fpga-qixis");
+> +	if (!np)
+> +		return;
+> +
+> +	of_node_put(np);
+> +
+> +	pm_power_off = fsl_power_off;
+> +	ppc_md.halt = fsl_power_off;
+> +}
+
+Please implement this as a drivers/power/reset driver, and consider
+basing on top of
+http://lists.infradead.org/pipermail/linux-arm-kernel/2014-October/293089.html
 
 -Scott
