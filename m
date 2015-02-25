@@ -2,13 +2,13 @@ Return-Path: <wsa@the-dreams.de>
 Received: from pokefinder.org (sauhun.de [89.238.76.85])
  (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C1CB11A0015
+ by lists.ozlabs.org (Postfix) with ESMTPS id C30641A001E
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Feb 2015 03:02:33 +1100 (AEDT)
 From: Wolfram Sang <wsa@the-dreams.de>
 To: linux-i2c@vger.kernel.org
-Subject: [RFC V2 02/12] i2c: add quirk checks to core
-Date: Wed, 25 Feb 2015 17:01:53 +0100
-Message-Id: <1424880126-15047-3-git-send-email-wsa@the-dreams.de>
+Subject: [RFC V2 01/12] i2c: add quirk structure to describe adapter flaws
+Date: Wed, 25 Feb 2015 17:01:52 +0100
+Message-Id: <1424880126-15047-2-git-send-email-wsa@the-dreams.de>
 In-Reply-To: <1424880126-15047-1-git-send-email-wsa@the-dreams.de>
 References: <1424880126-15047-1-git-send-email-wsa@the-dreams.de>
 Cc: linux-mips@linux-mips.org, Wolfram Sang <wsa@the-dreams.de>,
@@ -27,93 +27,81 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Wolfram Sang <wsa+renesas@sang-engineering.com>
 
-Let the core do the checks if HW quirks prevent a transfer. Saves code
-from drivers and adds consistency.
+The number of I2C adapters which are not fully I2C compatible is rising,
+sadly. Drivers usually do handle the flaws, still the user receives only
+some errno for a transfer which normally can be expected to work. This
+patch introduces a formal description of flaws. One advantage is that
+the core can check before the actual transfer if the messages could be
+transferred at all. This is done in the next patch. Another advantage is
+that we can pass this information to the user so the restrictions are
+exactly known and further actions can be based on that. This will be
+done later after some stabilization period for this description.
 
 Signed-off-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
 ---
- drivers/i2c/i2c-core.c | 62 ++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 62 insertions(+)
+ include/linux/i2c.h | 43 +++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 43 insertions(+)
 
-diff --git a/drivers/i2c/i2c-core.c b/drivers/i2c/i2c-core.c
-index 210cf4874cb7ea..c5ca0e4006edb7 100644
---- a/drivers/i2c/i2c-core.c
-+++ b/drivers/i2c/i2c-core.c
-@@ -1929,6 +1929,65 @@ module_exit(i2c_exit);
-  * ----------------------------------------------------
-  */
+diff --git a/include/linux/i2c.h b/include/linux/i2c.h
+index f17da50402a4da..243d1a1d78b248 100644
+--- a/include/linux/i2c.h
++++ b/include/linux/i2c.h
+@@ -449,6 +449,48 @@ int i2c_recover_bus(struct i2c_adapter *adap);
+ int i2c_generic_gpio_recovery(struct i2c_adapter *adap);
+ int i2c_generic_scl_recovery(struct i2c_adapter *adap);
  
-+/* Check if val is exceeding the quirk IFF quirk is non 0 */
-+#define i2c_quirk_exceeded(val, quirk) ((quirk) && ((val) > (quirk)))
++/**
++ * struct i2c_adapter_quirks - describe flaws of an i2c adapter
++ * @flags: see I2C_AQ_* for possible flags and read below
++ * @max_num_msgs: maximum number of messages per transfer
++ * @max_write_len: maximum length of a write message
++ * @max_read_len: maximum length of a read message
++ * @max_comb_1st_msg_len: maximum length of the first msg in a combined message
++ * @max_comb_2nd_msg_len: maximum length of the second msg in a combined message
++ *
++ * Note about combined messages: Some I2C controllers can only send one message
++ * per transfer, plus something called combined message or write-then-read.
++ * This is (usually) a small write message followed by a read message and
++ * barely enough to access register based devices like EEPROMs. There is a flag
++ * to support this mode. It implies max_num_msg = 2 and does the length checks
++ * with max_comb_*_len because combined message mode usually has its own
++ * limitations. Because of HW implementations, some controllers can actually do
++ * write-then-anything or other variants. To support that, write-then-read has
++ * been broken out into smaller bits like write-first and read-second which can
++ * be combined as needed.
++ */
 +
-+static int i2c_quirk_error(struct i2c_adapter *adap, struct i2c_msg *msg, char *err_msg)
-+{
-+	dev_err_ratelimited(&adap->dev, "quirk: %s (addr 0x%04x, size %u, %s)\n",
-+			    err_msg, msg->addr, msg->len,
-+			    msg->flags & I2C_M_RD ? "read" : "write");
-+	return -EOPNOTSUPP;
-+}
++struct i2c_adapter_quirks {
++	u64 flags;
++	int max_num_msgs;
++	u16 max_write_len;
++	u16 max_read_len;
++	u16 max_comb_1st_msg_len;
++	u16 max_comb_2nd_msg_len;
++};
 +
-+static int i2c_check_for_quirks(struct i2c_adapter *adap, struct i2c_msg *msgs, int num)
-+{
-+	const struct i2c_adapter_quirks *q = adap->quirks;
-+	int max_num = q->max_num_msgs, i;
-+	bool do_len_check = true;
++/* enforce max_num_msgs = 2 and use max_comb_*_len for length checks */
++#define I2C_AQ_COMB			BIT(0)
++/* first combined message must be write */
++#define I2C_AQ_COMB_WRITE_FIRST		BIT(1)
++/* second combined message must be read */
++#define I2C_AQ_COMB_READ_SECOND		BIT(2)
++/* both combined messages must have the same target address */
++#define I2C_AQ_COMB_SAME_ADDR		BIT(3)
++/* convenience macro for typical write-then read case */
++#define I2C_AQ_COMB_WRITE_THEN_READ	(I2C_AQ_COMB | I2C_AQ_COMB_WRITE_FIRST | \
++					 I2C_AQ_COMB_READ_SECOND | I2C_AQ_COMB_SAME_ADDR)
 +
-+	if (q->flags & I2C_AQ_COMB) {
-+		max_num = 2;
-+
-+		/* special checks for combined messages */
-+		if (num == 2) {
-+			if (q->flags & I2C_AQ_COMB_WRITE_FIRST && msgs[0].flags & I2C_M_RD)
-+				return i2c_quirk_error(adap, &msgs[0], "1st comb msg not write");
-+
-+			if (q->flags & I2C_AQ_COMB_READ_SECOND && !(msgs[1].flags & I2C_M_RD))
-+				return i2c_quirk_error(adap, &msgs[1], "2nd comb msg not read");
-+
-+			if (q->flags & I2C_AQ_COMB_SAME_ADDR && msgs[0].addr != msgs[1].addr)
-+				return i2c_quirk_error(adap, &msgs[0], "addresses do not match");
-+
-+			if (i2c_quirk_exceeded(msgs[0].len, q->max_comb_1st_msg_len))
-+				return i2c_quirk_error(adap, &msgs[0], "msg too long");
-+
-+			if (i2c_quirk_exceeded(msgs[1].len, q->max_comb_2nd_msg_len))
-+				return i2c_quirk_error(adap, &msgs[1], "msg too long");
-+
-+			do_len_check = false;
-+		}
-+	}
-+
-+	if (i2c_quirk_exceeded(num, max_num))
-+		return i2c_quirk_error(adap, &msgs[0], "too many messages");
-+
-+	for (i = 0; i < num; i++) {
-+		u16 len = msgs[i].len;
-+
-+		if (msgs[i].flags & I2C_M_RD) {
-+			if (do_len_check && i2c_quirk_exceeded(len, q->max_read_len))
-+				return i2c_quirk_error(adap, &msgs[i], "msg too long");
-+		} else {
-+			if (do_len_check && i2c_quirk_exceeded(len, q->max_write_len))
-+				return i2c_quirk_error(adap, &msgs[i], "msg too long");
-+		}
-+	}
-+
-+	return 0;
-+}
-+
- /**
-  * __i2c_transfer - unlocked flavor of i2c_transfer
-  * @adap: Handle to I2C bus
-@@ -1946,6 +2005,9 @@ int __i2c_transfer(struct i2c_adapter *adap, struct i2c_msg *msgs, int num)
- 	unsigned long orig_jiffies;
- 	int ret, try;
+ /*
+  * i2c_adapter is the structure used to identify a physical i2c bus along
+  * with the access algorithms necessary to access it.
+@@ -474,6 +516,7 @@ struct i2c_adapter {
+ 	struct list_head userspace_clients;
  
-+	if (adap->quirks && i2c_check_for_quirks(adap, msgs, num))
-+		return -EOPNOTSUPP;
-+
- 	/* i2c_trace_msg gets enabled when tracepoint i2c_transfer gets
- 	 * enabled.  This is an efficient way of keeping the for-loop from
- 	 * being executed when not needed.
+ 	struct i2c_bus_recovery_info *bus_recovery_info;
++	const struct i2c_adapter_quirks *quirks;
+ };
+ #define to_i2c_adapter(d) container_of(d, struct i2c_adapter, dev)
+ 
 -- 
 2.1.4
