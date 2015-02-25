@@ -2,14 +2,14 @@ Return-Path: <wsa@the-dreams.de>
 Received: from pokefinder.org (sauhun.de [89.238.76.85])
  (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A9E9F1A00EE
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Feb 2015 03:02:45 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 645D41A0061
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Feb 2015 03:02:49 +1100 (AEDT)
 From: Wolfram Sang <wsa@the-dreams.de>
 To: linux-i2c@vger.kernel.org
-Subject: [RFC V2 07/12] i2c: axxia: make use of the new infrastructure for
+Subject: [RFC V2 08/12] i2c: dln2: make use of the new infrastructure for
  quirks
-Date: Wed, 25 Feb 2015 17:01:58 +0100
-Message-Id: <1424880126-15047-8-git-send-email-wsa@the-dreams.de>
+Date: Wed, 25 Feb 2015 17:01:59 +0100
+Message-Id: <1424880126-15047-9-git-send-email-wsa@the-dreams.de>
 In-Reply-To: <1424880126-15047-1-git-send-email-wsa@the-dreams.de>
 References: <1424880126-15047-1-git-send-email-wsa@the-dreams.de>
 Cc: linux-mips@linux-mips.org, Wolfram Sang <wsa@the-dreams.de>,
@@ -30,44 +30,52 @@ From: Wolfram Sang <wsa+renesas@sang-engineering.com>
 
 Signed-off-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
 ---
- drivers/i2c/busses/i2c-axxia.c | 11 ++++++-----
- 1 file changed, 6 insertions(+), 5 deletions(-)
+ drivers/i2c/busses/i2c-dln2.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/i2c/busses/i2c-axxia.c b/drivers/i2c/busses/i2c-axxia.c
-index 768a598d8d03ad..488c5d3bf9dba7 100644
---- a/drivers/i2c/busses/i2c-axxia.c
-+++ b/drivers/i2c/busses/i2c-axxia.c
-@@ -336,11 +336,6 @@ static int axxia_i2c_xfer_msg(struct axxia_i2c_dev *idev, struct i2c_msg *msg)
- 	u32 addr_1, addr_2;
- 	int ret;
+diff --git a/drivers/i2c/busses/i2c-dln2.c b/drivers/i2c/busses/i2c-dln2.c
+index b3fb86af4cbb14..b6f9ba7eb17564 100644
+--- a/drivers/i2c/busses/i2c-dln2.c
++++ b/drivers/i2c/busses/i2c-dln2.c
+@@ -144,7 +144,6 @@ static int dln2_i2c_xfer(struct i2c_adapter *adapter,
+ {
+ 	struct dln2_i2c *dln2 = i2c_get_adapdata(adapter);
+ 	struct i2c_msg *pmsg;
+-	struct device *dev = &dln2->adapter.dev;
+ 	int i;
  
--	if (msg->len > 255) {
--		dev_warn(idev->dev, "unsupported length %u\n", msg->len);
--		return -EINVAL;
--	}
+ 	for (i = 0; i < num; i++) {
+@@ -152,11 +151,6 @@ static int dln2_i2c_xfer(struct i2c_adapter *adapter,
+ 
+ 		pmsg = &msgs[i];
+ 
+-		if (pmsg->len > DLN2_I2C_MAX_XFER_SIZE) {
+-			dev_warn(dev, "maximum transfer size exceeded\n");
+-			return -EOPNOTSUPP;
+-		}
 -
- 	idev->msg = msg;
- 	idev->msg_xfrd = 0;
- 	idev->msg_err = 0;
-@@ -454,6 +449,11 @@ static const struct i2c_algorithm axxia_i2c_algo = {
- 	.functionality = axxia_i2c_func,
+ 		if (pmsg->flags & I2C_M_RD) {
+ 			ret = dln2_i2c_read(dln2, pmsg->addr, pmsg->buf,
+ 					    pmsg->len);
+@@ -187,6 +181,11 @@ static const struct i2c_algorithm dln2_i2c_usb_algorithm = {
+ 	.functionality = dln2_i2c_func,
  };
  
-+static struct i2c_adapter_quirks axxia_i2c_quirks = {
-+	.max_read_len = 255,
-+	.max_write_len = 255,
++static struct i2c_adapter_quirks dln2_i2c_quirks = {
++	.max_read_len = DLN2_I2C_MAX_XFER_SIZE,
++	.max_write_len = DLN2_I2C_MAX_XFER_SIZE,
 +};
 +
- static int axxia_i2c_probe(struct platform_device *pdev)
+ static int dln2_i2c_probe(struct platform_device *pdev)
  {
- 	struct device_node *np = pdev->dev.of_node;
-@@ -511,6 +511,7 @@ static int axxia_i2c_probe(struct platform_device *pdev)
- 	strlcpy(idev->adapter.name, pdev->name, sizeof(idev->adapter.name));
- 	idev->adapter.owner = THIS_MODULE;
- 	idev->adapter.algo = &axxia_i2c_algo;
-+	idev->adapter.quirks = &axxia_i2c_quirks;
- 	idev->adapter.dev.parent = &pdev->dev;
- 	idev->adapter.dev.of_node = pdev->dev.of_node;
- 
+ 	int ret;
+@@ -209,6 +208,7 @@ static int dln2_i2c_probe(struct platform_device *pdev)
+ 	dln2->adapter.owner = THIS_MODULE;
+ 	dln2->adapter.class = I2C_CLASS_HWMON;
+ 	dln2->adapter.algo = &dln2_i2c_usb_algorithm;
++	dln2->adapter.quirks = &dln2_i2c_quirks;
+ 	dln2->adapter.dev.parent = dev;
+ 	i2c_set_adapdata(&dln2->adapter, dln2);
+ 	snprintf(dln2->adapter.name, sizeof(dln2->adapter.name), "%s-%s-%d",
 -- 
 2.1.4
