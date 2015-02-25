@@ -1,20 +1,20 @@
-Return-Path: <stockhausen@collogia.de>
-Received: from mailrelay.collogia.de (mailrelay.collogia.de [194.8.207.98])
- by lists.ozlabs.org (Postfix) with SMTP id BB3D21A0013
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Feb 2015 23:21:41 +1100 (AEDT)
-From: Markus Stockhausen <stockhausen@collogia.de>
-To: David Laight <David.Laight@ACULAB.COM>, "linux-crypto@vger.kernel.org"
- <linux-crypto@vger.kernel.org>
-Subject: AW: [PATCH v1 1/3] SHA1 for PPC/SPE - assembler
-Date: Wed, 25 Feb 2015 12:21:30 +0000
-Message-ID: <12EF8D94C6F8734FB2FF37B9FBEDD1735F9E1F02@EXCHANGE.collogia.de>
-References: <ce3e5ff2-5904-4e1c-bfa9-e37c9682f961@EXCHANGE.collogia.de>,
- <063D6719AE5E284EB5DD2968C1650D6D1CAEBB2D@AcuExch.aculab.com>
-In-Reply-To: <063D6719AE5E284EB5DD2968C1650D6D1CAEBB2D@AcuExch.aculab.com>
-Content-Type: multipart/mixed;
- boundary="----=_NextPartTM-000-e47ad864-244c-46c4-863b-689f4a55c786"
-MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <wsa@the-dreams.de>
+Received: from pokefinder.org (sauhun.de [89.238.76.85])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id C26661A001D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Feb 2015 03:02:33 +1100 (AEDT)
+From: Wolfram Sang <wsa@the-dreams.de>
+To: linux-i2c@vger.kernel.org
+Subject: [RFC V2 00/12] i2c: describe adapter quirks in a generic way
+Date: Wed, 25 Feb 2015 17:01:51 +0100
+Message-Id: <1424880126-15047-1-git-send-email-wsa@the-dreams.de>
+Cc: linux-mips@linux-mips.org, Wolfram Sang <wsa@the-dreams.de>,
+ linux-kernel@vger.kernel.org, Ludovic Desroches <ludovic.desroches@atmel.com>,
+ bcm-kernel-feedback-list@broadcom.com,
+ Yingjoe Chen <yingjoe.chen@mediatek.com>,
+ Eddie Huang <eddie.huang@mediatek.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,112 +24,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+From: Wolfram Sang <wsa+renesas@sang-engineering.com>
 
-This is a multi-part message in MIME format.
+Here is the second version of the patch series to describe i2c adapter quirks
+in a generic way. For the motivation, please read description of patch 1. This
+is still RFC because I would like to do some more tests on my own, but I need
+to write a tool for that. However, I'd really like to have the driver authors
+to have a look already. Actual testing is very much appreciated. Thanks to the
+Mediatek guys for rebasing their new driver to this framework. That helps, too!
 
-------=_NextPartTM-000-e47ad864-244c-46c4-863b-689f4a55c786
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+The branch is also here:
 
-> Von: David Laight [David.Laight@ACULAB.COM]=0A=
-> Gesendet: Mittwoch, 25. Februar 2015 13:01=0A=
-> An: Markus Stockhausen; linux-crypto@vger.kernel.org=0A=
-> Cc: linuxppc-dev@lists.ozlabs.org=0A=
-> Betreff: RE: [PATCH v1 1/3] SHA1 for PPC/SPE - assembler=0A=
-> =0A=
-> From: Markus Stockhausen=0A=
-> > [PATCH v1 1/3] SHA1 for PPC/SPE - assembler=0A=
-> >=0A=
-> > This is the assembler code for SHA1 implementation with=0A=
-> > the SIMD SPE instruction set. With the enhanced instruction=0A=
-> > set we can operate on 2 32 bit words in parallel. That helps=0A=
-> > reducing the time to calculate W16-W79. For increasing=0A=
-> > performance even more the assembler function can compute=0A=
-> > hashes for more than one 64 byte input block.=0A=
-> >=0A=
-> > The state of the used SPE registers is preserved via the=0A=
-> > stack so we can run from interrupt context=0A=
-> =0A=
-> Does the ppc use the same kind of delayed state save for the SPE=0A=
-> resisters that x86 uses (at least on the BSDs) for its FP (etc) regs.=0A=
-> =0A=
-> That would mean that the registers might contain values for=0A=
-> a different process, and that the cpu could receive an IPI=0A=
-> requesting they be written to the processes normal save area=0A=
-> so that they can be reloaded onto a different cpu.=0A=
-=0A=
-Indeed SPE registers are lazy switched. enable_kernel_spe()=0A=
-will take care of that. Additionally I had some discussions about =0A=
-interrupt context and its limitations. So=0A=
-=0A=
-1) I implemented register saving in all patches (see AES & SHA256). =0A=
-This is because I know which registers I will overwrite. One should =0A=
-remember that SPE registers are shared with normal registers. So =0A=
-no big impact to save 32 bit or 64 bit of the non-volatile PPC =0A=
-registers.=0A=
-=0A=
-2) And used disabling of preemption. But in contrast to other =0A=
-crypto algorithm implementations only for reasonable time intervals =0A=
-=0A=
-Markus=0A=
-------=_NextPartTM-000-e47ad864-244c-46c4-863b-689f4a55c786
-Content-Type: text/plain;
-	name="InterScan_Disclaimer.txt"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
-	filename="InterScan_Disclaimer.txt"
+git://git.kernel.org/pub/scm/linux/kernel/git/wsa/linux.git i2c/quirks
 
-****************************************************************************
-Diese E-Mail enthält vertrauliche und/oder rechtlich geschützte
-Informationen. Wenn Sie nicht der richtige Adressat sind oder diese E-Mail
-irrtümlich erhalten haben, informieren Sie bitte sofort den Absender und
-vernichten Sie diese Mail. Das unerlaubte Kopieren sowie die unbefugte
-Weitergabe dieser Mail ist nicht gestattet.
+Thanks,
 
-Über das Internet versandte E-Mails können unter fremden Namen erstellt oder
-manipuliert werden. Deshalb ist diese als E-Mail verschickte Nachricht keine
-rechtsverbindliche Willenserklärung.
+   Wolfram
 
-Collogia
-Unternehmensberatung AG
-Ubierring 11
-D-50678 Köln
+Major changes since V1:
 
-Vorstand:
-Kadir Akin
-Dr. Michael Höhnerbach
+* more fine-grained options to describe modes with combined messages.
+  This should also cover the Mediatek HW now as well as all other
+  permutations I can think of.
 
-Vorsitzender des Aufsichtsrates:
-Hans Kristian Langva
+* the core code and at91 driver had to be refactored to reflect the
+  above change
 
-Registergericht: Amtsgericht Köln
-Registernummer: HRB 52 497
+* added the bcm-iproc driver which came to mainline recently
 
-This e-mail may contain confidential and/or privileged information. If you
-are not the intended recipient (or have received this e-mail in error)
-please notify the sender immediately and destroy this e-mail. Any
-unauthorized copying, disclosure or distribution of the material in this
-e-mail is strictly forbidden.
+Wolfram Sang (12):
+  i2c: add quirk structure to describe adapter flaws
+  i2c: add quirk checks to core
+  i2c: at91: make use of the new infrastructure for quirks
+  i2c: opal: make use of the new infrastructure for quirks
+  i2c: qup: make use of the new infrastructure for quirks
+  i2c: cpm: make use of the new infrastructure for quirks
+  i2c: axxia: make use of the new infrastructure for quirks
+  i2c: dln2: make use of the new infrastructure for quirks
+  i2c: powermac: make use of the new infrastructure for quirks
+  i2c: viperboard: make use of the new infrastructure for quirks
+  i2c: pmcmsp: make use of the new infrastructure for quirks
+  i2c: bcm-iproc: make use of the new infrastructure for quirks
 
-e-mails sent over the internet may have been written under a wrong name or
-been manipulated. That is why this message sent as an e-mail is not a
-legally binding declaration of intention.
+ drivers/i2c/busses/i2c-at91.c       | 32 +++++++------------
+ drivers/i2c/busses/i2c-axxia.c      | 11 ++++---
+ drivers/i2c/busses/i2c-bcm-iproc.c  | 15 +++++----
+ drivers/i2c/busses/i2c-cpm.c        | 20 ++++++------
+ drivers/i2c/busses/i2c-dln2.c       | 12 +++----
+ drivers/i2c/busses/i2c-opal.c       | 22 ++++++-------
+ drivers/i2c/busses/i2c-pmcmsp.c     | 42 ++++++++++---------------
+ drivers/i2c/busses/i2c-powermac.c   | 10 +++---
+ drivers/i2c/busses/i2c-qup.c        | 21 ++++++-------
+ drivers/i2c/busses/i2c-viperboard.c | 10 +++---
+ drivers/i2c/i2c-core.c              | 62 +++++++++++++++++++++++++++++++++++++
+ include/linux/i2c.h                 | 43 +++++++++++++++++++++++++
+ 12 files changed, 191 insertions(+), 109 deletions(-)
 
-Collogia
-Unternehmensberatung AG
-Ubierring 11
-D-50678 Köln
-
-executive board:
-Kadir Akin
-Dr. Michael Höhnerbach
-
-President of the supervisory board:
-Hans Kristian Langva
-
-Registry office: district court Cologne
-Register number: HRB 52 497
-
-****************************************************************************
-
-------=_NextPartTM-000-e47ad864-244c-46c4-863b-689f4a55c786--
+-- 
+2.1.4
