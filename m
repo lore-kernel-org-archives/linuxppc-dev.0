@@ -2,14 +2,14 @@ Return-Path: <wsa@the-dreams.de>
 Received: from pokefinder.org (sauhun.de [89.238.76.85])
  (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C12421A0013
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Feb 2015 03:02:32 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id C39C61A0023
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Feb 2015 03:02:33 +1100 (AEDT)
 From: Wolfram Sang <wsa@the-dreams.de>
 To: linux-i2c@vger.kernel.org
-Subject: [RFC V2 03/12] i2c: at91: make use of the new infrastructure for
+Subject: [RFC V2 04/12] i2c: opal: make use of the new infrastructure for
  quirks
-Date: Wed, 25 Feb 2015 17:01:54 +0100
-Message-Id: <1424880126-15047-4-git-send-email-wsa@the-dreams.de>
+Date: Wed, 25 Feb 2015 17:01:55 +0100
+Message-Id: <1424880126-15047-5-git-send-email-wsa@the-dreams.de>
 In-Reply-To: <1424880126-15047-1-git-send-email-wsa@the-dreams.de>
 References: <1424880126-15047-1-git-send-email-wsa@the-dreams.de>
 Cc: linux-mips@linux-mips.org, Wolfram Sang <wsa@the-dreams.de>,
@@ -30,68 +30,55 @@ From: Wolfram Sang <wsa+renesas@sang-engineering.com>
 
 Signed-off-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
 ---
- drivers/i2c/busses/i2c-at91.c | 32 +++++++++++---------------------
- 1 file changed, 11 insertions(+), 21 deletions(-)
+ drivers/i2c/busses/i2c-opal.c | 22 +++++++++++-----------
+ 1 file changed, 11 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/i2c/busses/i2c-at91.c b/drivers/i2c/busses/i2c-at91.c
-index 636fd2efad8850..b3a70e8fc653c5 100644
---- a/drivers/i2c/busses/i2c-at91.c
-+++ b/drivers/i2c/busses/i2c-at91.c
-@@ -487,30 +487,10 @@ static int at91_twi_xfer(struct i2c_adapter *adap, struct i2c_msg *msg, int num)
- 	if (ret < 0)
- 		goto out;
+diff --git a/drivers/i2c/busses/i2c-opal.c b/drivers/i2c/busses/i2c-opal.c
+index 16f90b1a750894..b2788ecad5b3cb 100644
+--- a/drivers/i2c/busses/i2c-opal.c
++++ b/drivers/i2c/busses/i2c-opal.c
+@@ -104,17 +104,6 @@ static int i2c_opal_master_xfer(struct i2c_adapter *adap, struct i2c_msg *msgs,
+ 		req.buffer_ra = cpu_to_be64(__pa(msgs[0].buf));
+ 		break;
+ 	case 2:
+-		/* For two messages, we basically support only simple
+-		 * smbus transactions of a write plus a read. We might
+-		 * want to allow also two writes but we'd have to bounce
+-		 * the data into a single buffer.
+-		 */
+-		if ((msgs[0].flags & I2C_M_RD) || !(msgs[1].flags & I2C_M_RD))
+-			return -EOPNOTSUPP;
+-		if (msgs[0].len > 4)
+-			return -EOPNOTSUPP;
+-		if (msgs[0].addr != msgs[1].addr)
+-			return -EOPNOTSUPP;
+ 		req.type = OPAL_I2C_SM_READ;
+ 		req.addr = cpu_to_be16(msgs[0].addr);
+ 		req.subaddr_sz = msgs[0].len;
+@@ -210,6 +199,16 @@ static const struct i2c_algorithm i2c_opal_algo = {
+ 	.functionality	= i2c_opal_func,
+ };
  
--	/*
--	 * The hardware can handle at most two messages concatenated by a
--	 * repeated start via it's internal address feature.
--	 */
--	if (num > 2) {
--		dev_err(dev->dev,
--			"cannot handle more than two concatenated messages.\n");
--		ret = 0;
--		goto out;
--	} else if (num == 2) {
-+	if (num == 2) {
- 		int internal_address = 0;
- 		int i;
- 
--		if (msg->flags & I2C_M_RD) {
--			dev_err(dev->dev, "first transfer must be write.\n");
--			ret = -EINVAL;
--			goto out;
--		}
--		if (msg->len > 3) {
--			dev_err(dev->dev, "first message size must be <= 3.\n");
--			ret = -EINVAL;
--			goto out;
--		}
--
- 		/* 1st msg is put into the internal address, start with 2nd */
- 		m_start = &msg[1];
- 		for (i = 0; i < msg->len; ++i) {
-@@ -540,6 +520,15 @@ out:
- 	return ret;
- }
- 
-+/*
-+ * The hardware can handle at most two messages concatenated by a
-+ * repeated start via it's internal address feature.
++/* For two messages, we basically support only simple
++ * smbus transactions of a write plus a read. We might
++ * want to allow also two writes but we'd have to bounce
++ * the data into a single buffer.
 + */
-+static struct i2c_adapter_quirks at91_twi_quirks = {
-+	.flags = I2C_AQ_COMB | I2C_AQ_COMB_WRITE_FIRST | I2C_AQ_COMB_SAME_ADDR,
-+	.max_comb_1st_msg_len = 3,
++static struct i2c_adapter_quirks i2c_opal_quirks = {
++	.flags = I2C_AQ_COMB_WRITE_THEN_READ,
++	.max_comb_1st_msg_len = 4,
 +};
 +
- static u32 at91_twi_func(struct i2c_adapter *adapter)
+ static int i2c_opal_probe(struct platform_device *pdev)
  {
- 	return I2C_FUNC_I2C | I2C_FUNC_SMBUS_EMUL
-@@ -777,6 +766,7 @@ static int at91_twi_probe(struct platform_device *pdev)
- 	dev->adapter.owner = THIS_MODULE;
- 	dev->adapter.class = I2C_CLASS_DEPRECATED;
- 	dev->adapter.algo = &at91_twi_algorithm;
-+	dev->adapter.quirks = &at91_twi_quirks;
- 	dev->adapter.dev.parent = dev->dev;
- 	dev->adapter.nr = pdev->id;
- 	dev->adapter.timeout = AT91_I2C_TIMEOUT;
+ 	struct i2c_adapter	*adapter;
+@@ -232,6 +231,7 @@ static int i2c_opal_probe(struct platform_device *pdev)
+ 
+ 	adapter->algo = &i2c_opal_algo;
+ 	adapter->algo_data = (void *)(unsigned long)opal_id;
++	adapter->quirks = &i2c_opal_quirks;
+ 	adapter->dev.parent = &pdev->dev;
+ 	adapter->dev.of_node = of_node_get(pdev->dev.of_node);
+ 	pname = of_get_property(pdev->dev.of_node, "ibm,port-name", NULL);
 -- 
 2.1.4
