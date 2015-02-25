@@ -1,31 +1,21 @@
-Return-Path: <runaway@candw.ms>
-Received: from mail-vc0-f176.google.com (mail-vc0-f176.google.com
- [209.85.220.176])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B8F821A0013
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Feb 2015 00:32:37 +1100 (AEDT)
-Received: by mail-vc0-f176.google.com with SMTP id la4so1301934vcb.7
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Feb 2015 05:32:34 -0800 (PST)
-Message-ID: <54EDCEED.2070008@candw.ms>
-Date: Wed, 25 Feb 2015 09:32:29 -0400
-From: Julian Margetson <runaway@candw.ms>
-MIME-Version: 1.0
-To: Gerhard Pircher <gerhard_pircher@gmx.net>,
- Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: Problems with Kernels 3.17-rc1 and onwards on Acube Sam460 AMCC
- 460ex board
-References: <54E08E06.8060607@candw.ms>
- <1424045921.3018.4.camel@ellerman.id.au> <54E4EBD7.5000307@candw.ms>
- <1424304787.22020.4.camel@ellerman.id.au> <54E53E07.60609@candw.ms>
- <1424314594.22408.1.camel@ellerman.id.au> <54E55796.6000401@candw.ms>
- <54E78A12.7080409@candw.ms> <1424737962.2318.2.camel@ellerman.id.au>
- <45dfe45093f.4ef2935f@smtp.gmail.com> <54ECCD8A.3060708@gmx.net>
- <54ECDE7D.6070303@candw.ms> <54EDCD9E.5010104@candw.ms>
-In-Reply-To: <54EDCD9E.5010104@candw.ms>
-Content-Type: multipart/alternative;
- boundary="------------070303020201050909050901"
-Cc: linuxppc-dev@lists.ozlabs.org, Ian Munsie <imunsie@au1.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id E64251A001D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Feb 2015 08:13:00 +1100 (AEDT)
+Message-ID: <1424898763.12891.77.camel@kernel.crashing.org>
+Subject: Re: [PATCH 1/1]: thermal driver therm_adt746.c
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Thomas Haschka <haschka@gmail.com>
+Date: Thu, 26 Feb 2015 08:12:43 +1100
+In-Reply-To: <20150225112457.GA3491@gmail.com>
+References: <CADAoK=UH4q9x-OMyOpqCmGpNwDo3vey41xajBw-PDdupmEHnAA@mail.gmail.com>
+ <1424726318.12891.1.camel@kernel.crashing.org>
+ <20150225112457.GA3491@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,251 +25,508 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------070303020201050909050901
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+On Wed, 2015-02-25 at 12:24 +0100, Thomas Haschka wrote:
+> Hi,
+> 
+> Thanks for your comments. Here's a new patch taking them into account.
 
-Problem also seems to exist with P1022 based board as well .
-https://community.freescale.com/thread/339022
+Thanks. Note that this legalese boilerplate is not useful, the
+Signed-off-by: is enough to indicate your acceptance of the Linux
+licencing terms. However I do need a properly formatted changeset
+comment.
 
-On 2/25/2015 9:26 AM, Julian Margetson wrote:
-> Verified that the problems with the
-> radeon: ring 0 test failed error
-> go back to at least  Kernel 3.0.1
->
-> On 2/24/2015 4:26 PM, Julian Margetson wrote:
->> Thanks
->>
->> after skipping several times :
->>
->> git bisect skip
->>
->> There are only 'skip'ped commits left to test.
->> The first bad commit could be any of:
->> b486e0e6d599b9ca8667fb9a7d49b7383ee963c7
->> eab3bbeffd152125ae0f90863b8e9bc8eef49423
->> 960cd9d4fef6dd9e235c0e5c0d4ed027f8a48025
->> f02ad907cd9e7fe3a6405d2d005840912f1ed258
->> 6a425c2a9b37ca3d2c37e3c1cdf973dba53eaa79
->> ee0a89cf3c2c550e6d877dda21dd2947afb90cb6
->> 92890583627ee2a0518e55b063fcff86826fef96
->> 95d6eb3b134e1826ed04cc92b224d93de13e281f
->> 9469244d869623e8b54d9f3d4d00737e377af273
->> We cannot bisect more!
->>
->>
->>
->> On 2/24/2015 3:14 PM, Gerhard Pircher wrote:
->>> Am 2015-02-24 um 12:08 schrieb Julian Margetson:
->>>> Problems with  the Gib bisect
->>>> Kernel wont compile after 10th bisect .
->>> You can try "git bisect skip" to select another commit for testing.
->>> Hopefully that one compiles fine then.
->>>
->>> Gerhard
->>>
->>>> drivers/built-in.o: In function `drm_mode_atomic_ioctl':
->>>> (.text+0x865dc): undefined reference to `__get_user_bad'
->>>> make: *** [vmlinux] Error 1
->>>> root@julian-VirtualBox:/usr/src/linux# git bisect log
->>>> git bisect start
->>>> # bad: [c517d838eb7d07bbe9507871fab3931deccff539] Linux 4.0-rc1
->>>> git bisect bad c517d838eb7d07bbe9507871fab3931deccff539
->>>> # good: [bfa76d49576599a4b9f9b7a71f23d73d6dcff735] Linux 3.19
->>>> git bisect good bfa76d49576599a4b9f9b7a71f23d73d6dcff735
->>>> # good: [02f1f2170d2831b3233e91091c60a66622f29e82] kernel.h: remove ancient __FUNCTION__ hack
->>>> git bisect good 02f1f2170d2831b3233e91091c60a66622f29e82
->>>> # bad: [796e1c55717e9a6ff5c81b12289ffa1ffd919b6f] Merge branch 'drm-next' of git://people.freedesktop.org/~airlied/linux
->>>> git bisect bad 796e1c55717e9a6ff5c81b12289ffa1ffd919b6f
->>>> # good: [9682ec9692e5ac11c6caebd079324e727b19e7ce] Merge tag 'driver-core-3.20-rc1' of git://git.kernel.org/pub/scm/linux/kernel/git/gregkh/driver-core
->>>> git bisect good 9682ec9692e5ac11c6caebd079324e727b19e7ce
->>>> # good: [a9724125ad014decf008d782e60447c811391326] Merge tag 'tty-3.20-rc1' of git://git.kernel.org/pub/scm/linux/kernel/git/gregkh/tty
->>>> git bisect good a9724125ad014decf008d782e60447c811391326
->>>> # good: [f43dff0ee00a259f524ce17ba4f8030553c66590] Merge tag 'drm-amdkfd-next-fixes-2015-01-25' of git://people.freedesktop.org/~gabbayo/linux into drm-next
->>>> git bisect good f43dff0ee00a259f524ce17ba4f8030553c66590
->>>> # bad: [cffe1e89dc9bf541a39d9287ced7c5addff07084] drm: sti: HDMI add audio infoframe
->>>> git bisect bad cffe1e89dc9bf541a39d9287ced7c5addff07084
->>>> # good: [2f5b4ef15c60bc5292a3f006c018acb3da53737b] Merge tag 'drm/tegra/for-3.20-rc1' of git://anongit.freedesktop.org/tegra/linux into drm-next
->>>> git bisect good 2f5b4ef15c60bc5292a3f006c018acb3da53737b
->>>> # bad: [865844448ce80ccd714793e9ba4140d7ae214229] drm/udl: optimize udl_compress_hline16 (v2)
->>>> git bisect bad 865844448ce80ccd714793e9ba4140d7ae214229
->>>> # bad: [d47df63393ed81977e0f6435988d9cbd70c867f7] drm/panel: simple: Add AVIC TM070DDH03 panel support
->>>> git bisect bad d47df63393ed81977e0f6435988d9cbd70c867f7
->>>> # bad: [9469244d869623e8b54d9f3d4d00737e377af273] drm/atomic: Fix potential use of state after free
->>>> git bisect bad 9469244d869623e8b54d9f3d4d00737e377af273
->>>> root@julian-VirtualBox:/usr/src/linux#
->>>>
->>>>
->>>>
->>>> On 02/24/2015, you wrote:
->>>>
->>>>> On Fri, 2015-02-20 at 15:25 -0400, Julian Margetson wrote:
->>>>>> On 2/18/2015 11:25 PM, Julian Margetson wrote:
->>>>>>   re PPC4XX PCI(E) MSI support.
->>>>>> https://lists.ozlabs.org/pipermail/linuxppc-dev/2010-November/087273.html
->>>>> Hmm, I think all those comments were addressed before it was merged.
->>>>>
->>>>> I tried to get a 4xx board going here last week, but it doesn't seem happy. I
->>>>> can get a bit of uboot but then it hangs, might be overheating.
->>>>>
->>>>> cheers
->>>>>
->>>>>
->>>> _______________________________________________
->>>> Linuxppc-dev mailing list
->>>> Linuxppc-dev@lists.ozlabs.org
->>>> https://lists.ozlabs.org/listinfo/linuxppc-dev
->>>>
->>
->
+Cheers,
+Ben.
 
-
---------------070303020201050909050901
-Content-Type: text/html; charset=utf-8
-Content-Transfer-Encoding: 8bit
-
-<html>
-  <head>
-    <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
-  </head>
-  <body bgcolor="#FFFFFF" text="#000000">
-    <div class="moz-cite-prefix">Problem also seems to exist with P1022
-      based board as well .<br>
-      <a class="moz-txt-link-freetext" href="https://community.freescale.com/thread/339022">https://community.freescale.com/thread/339022</a><br>
-      <br>
-      On 2/25/2015 9:26 AM, Julian Margetson wrote:<br>
-    </div>
-    <blockquote cite="mid:54EDCD9E.5010104@candw.ms" type="cite">
-      <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
-      <div class="moz-cite-prefix">Verified that the problems with the <br>
-        <pre class="western">radeon: ring 0 test failed error</pre>
-        go back to at least  Kernel 3.0.1<br>
-        <br>
-        On 2/24/2015 4:26 PM, Julian Margetson wrote:<br>
-      </div>
-      <blockquote cite="mid:54ECDE7D.6070303@candw.ms" type="cite">
-        <meta content="text/html; charset=utf-8"
-          http-equiv="Content-Type">
-        <div class="moz-cite-prefix">Thanks<br>
-          <br>
-          after skipping several times :<br>
-          <br>
-          <meta http-equiv="content-type" content="text/html;
-            charset=utf-8">
-          <p style="margin-bottom: 0in; line-height: 100%">git bisect
-            skip</p>
-          <pre class="western">There are only 'skip'ped commits left to test.
-The first bad commit could be any of:
-b486e0e6d599b9ca8667fb9a7d49b7383ee963c7
-eab3bbeffd152125ae0f90863b8e9bc8eef49423
-960cd9d4fef6dd9e235c0e5c0d4ed027f8a48025
-f02ad907cd9e7fe3a6405d2d005840912f1ed258
-6a425c2a9b37ca3d2c37e3c1cdf973dba53eaa79
-ee0a89cf3c2c550e6d877dda21dd2947afb90cb6
-92890583627ee2a0518e55b063fcff86826fef96
-95d6eb3b134e1826ed04cc92b224d93de13e281f
-9469244d869623e8b54d9f3d4d00737e377af273
-We cannot bisect more!</pre>
-          <title></title>
-          <meta name="generator" content="LibreOffice 4.3.5.2 (Windows)">
-          <style type="text/css">
-		@page { margin: 0.79in }
-		pre.cjk { font-family: "NSimSun", monospace }
-		p { margin-bottom: 0.1in; line-height: 120% }
-		a:link { so-language: zxx }
-	</style><br>
-          <br>
-          <br>
-          On 2/24/2015 3:14 PM, Gerhard Pircher wrote:<br>
-        </div>
-        <blockquote cite="mid:54ECCD8A.3060708@gmx.net" type="cite">
-          <pre wrap="">Am 2015-02-24 um 12:08 schrieb Julian Margetson:
-</pre>
-          <blockquote type="cite">
-            <pre wrap="">Problems with  the Gib bisect
-Kernel wont compile after 10th bisect .
-</pre>
-          </blockquote>
-          <pre wrap="">You can try "git bisect skip" to select another commit for testing.
-Hopefully that one compiles fine then.
-
-Gerhard
-
-</pre>
-          <blockquote type="cite">
-            <pre wrap="">drivers/built-in.o: In function `drm_mode_atomic_ioctl':
-(.text+0x865dc): undefined reference to `__get_user_bad'
-make: *** [vmlinux] Error 1
-root@julian-VirtualBox:/usr/src/linux# git bisect log
-git bisect start
-# bad: [c517d838eb7d07bbe9507871fab3931deccff539] Linux 4.0-rc1
-git bisect bad c517d838eb7d07bbe9507871fab3931deccff539
-# good: [bfa76d49576599a4b9f9b7a71f23d73d6dcff735] Linux 3.19
-git bisect good bfa76d49576599a4b9f9b7a71f23d73d6dcff735
-# good: [02f1f2170d2831b3233e91091c60a66622f29e82] kernel.h: remove ancient __FUNCTION__ hack
-git bisect good 02f1f2170d2831b3233e91091c60a66622f29e82
-# bad: [796e1c55717e9a6ff5c81b12289ffa1ffd919b6f] Merge branch 'drm-next' of git://people.freedesktop.org/~airlied/linux
-git bisect bad 796e1c55717e9a6ff5c81b12289ffa1ffd919b6f
-# good: [9682ec9692e5ac11c6caebd079324e727b19e7ce] Merge tag 'driver-core-3.20-rc1' of git://git.kernel.org/pub/scm/linux/kernel/git/gregkh/driver-core
-git bisect good 9682ec9692e5ac11c6caebd079324e727b19e7ce
-# good: [a9724125ad014decf008d782e60447c811391326] Merge tag 'tty-3.20-rc1' of git://git.kernel.org/pub/scm/linux/kernel/git/gregkh/tty
-git bisect good a9724125ad014decf008d782e60447c811391326
-# good: [f43dff0ee00a259f524ce17ba4f8030553c66590] Merge tag 'drm-amdkfd-next-fixes-2015-01-25' of git://people.freedesktop.org/~gabbayo/linux into drm-next
-git bisect good f43dff0ee00a259f524ce17ba4f8030553c66590
-# bad: [cffe1e89dc9bf541a39d9287ced7c5addff07084] drm: sti: HDMI add audio infoframe
-git bisect bad cffe1e89dc9bf541a39d9287ced7c5addff07084
-# good: [2f5b4ef15c60bc5292a3f006c018acb3da53737b] Merge tag 'drm/tegra/for-3.20-rc1' of git://anongit.freedesktop.org/tegra/linux into drm-next
-git bisect good 2f5b4ef15c60bc5292a3f006c018acb3da53737b
-# bad: [865844448ce80ccd714793e9ba4140d7ae214229] drm/udl: optimize udl_compress_hline16 (v2)
-git bisect bad 865844448ce80ccd714793e9ba4140d7ae214229
-# bad: [d47df63393ed81977e0f6435988d9cbd70c867f7] drm/panel: simple: Add AVIC TM070DDH03 panel support
-git bisect bad d47df63393ed81977e0f6435988d9cbd70c867f7
-# bad: [9469244d869623e8b54d9f3d4d00737e377af273] drm/atomic: Fix potential use of state after free
-git bisect bad 9469244d869623e8b54d9f3d4d00737e377af273
-root@julian-VirtualBox:/usr/src/linux# 
-
-
-
-On 02/24/2015, you wrote:
-
-</pre>
-            <blockquote type="cite">
-              <pre wrap="">On Fri, 2015-02-20 at 15:25 -0400, Julian Margetson wrote:
-</pre>
-              <blockquote type="cite">
-                <pre wrap="">On 2/18/2015 11:25 PM, Julian Margetson wrote:
-</pre>
-              </blockquote>
-              <blockquote type="cite">
-                <pre wrap=""> re PPC4XX PCI(E) MSI support.
-<a moz-do-not-send="true" class="moz-txt-link-freetext" href="https://lists.ozlabs.org/pipermail/linuxppc-dev/2010-November/087273.html">https://lists.ozlabs.org/pipermail/linuxppc-dev/2010-November/087273.html</a>
-</pre>
-              </blockquote>
-              <pre wrap="">Hmm, I think all those comments were addressed before it was merged.
-
-I tried to get a 4xx board going here last week, but it doesn't seem happy. I
-can get a bit of uboot but then it hangs, might be overheating.
-
-cheers
-
-
-</pre>
-            </blockquote>
-            <pre wrap="">_______________________________________________
-Linuxppc-dev mailing list
-<a moz-do-not-send="true" class="moz-txt-link-abbreviated" href="mailto:Linuxppc-dev@lists.ozlabs.org">Linuxppc-dev@lists.ozlabs.org</a>
-<a moz-do-not-send="true" class="moz-txt-link-freetext" href="https://lists.ozlabs.org/listinfo/linuxppc-dev">https://lists.ozlabs.org/listinfo/linuxppc-dev</a>
-
-</pre>
-          </blockquote>
-        </blockquote>
-        <br>
-      </blockquote>
-      <br>
-    </blockquote>
-    <br>
-  </body>
-</html>
-
---------------070303020201050909050901--
+> Cheers,
+> 
+>  
+>         (a) The contribution was created in whole or in part by me and I
+>             have the right to submit it under the GPL v2 
+> 	    (Gnu Public License Version 2) 
+> 
+>         (b) The contribution is based upon previous work that, to the best
+>             of my knowledge, is covered under an appropriate open source
+>             license and I have the right under that license to submit that
+>             work with modifications, whether created in whole or in part
+>             by me, under the same open source license (unless I am
+>             permitted to submit under a different license), as indicated
+>             in the file; or
+> 
+>         (c) I understand and agree that this project and the contribution
+>             are public and that a record of the contribution (including all
+>             personal information I submit with it, including my sign-off) is
+>             maintained indefinitely and may be redistributed consistent with
+>             this project or the open source license(s) involved.
+> 
+> 	Signed-off-by: Thomas Haschka <haschka@gmail.com>
+> 
+> --- linux/drivers/macintosh/therm_adt746x.c.orig	2015-02-25 11:26:43.164000000 +0100
+> +++ linux/drivers/macintosh/therm_adt746x.c	2015-02-25 11:40:54.240000000 +0100
+> @@ -1,7 +1,8 @@
+>  /*
+>   * Device driver for the i2c thermostat found on the iBook G4, Albook G4
+>   *
+> - * Copyright (C) 2003, 2004 Colin Leroy, Rasmus Rohde, Benjamin Herrenschmidt
+> + * Copyright (C) 2003, 2004, 2015 
+> + *   Colin Leroy, Rasmus Rohde, Benjamin Herrenschmidt, Thomas Haschka
+>   *
+>   * Documentation from 115254175ADT7467_pra.pdf and 3686221171167ADT7460_b.pdf
+>   * http://www.onsemi.com/PowerSolutions/product.do?id=ADT7467
+> @@ -45,8 +46,10 @@ static u8 REM_CONTROL[2] = {0x00, 0x40};
+>  static u8 FAN_SPEED[2]   = {0x28, 0x2a};
+>  static u8 FAN_SPD_SET[2] = {0x30, 0x31};
+>  
+> -static u8 default_limits_local[3] = {70, 50, 70};    /* local, sensor1, sensor2 */
+> -static u8 default_limits_chip[3] = {80, 65, 80};    /* local, sensor1, sensor2 */
+> +/* Local sensor is down to 45 in order to assure stable harddrive and 
+> + * components temperature on single fan machines */
+> +static u8 default_limits_local[3] = {45, 50, 70}; /* local, sensor1, sensor2 */
+> +static u8 default_limits_chip[3] = {80, 65, 80}; /* local, sensor1, sensor2 */
+>  static const char *sensor_location[3] = { "?", "?", "?" };
+>  
+>  static int limit_adjust;
+> @@ -223,7 +226,7 @@ static void display_stats(struct thermos
+>  }
+>  #endif
+>  
+> -static void update_fans_speed (struct thermostat *th)
+> +static void update_fans_speed_multifan (struct thermostat *th)
+>  {
+>  	int lastvar = 0; /* last variation, for iBook */
+>  	int i = 0;
+> @@ -278,6 +281,83 @@ static void update_fans_speed (struct th
+>  	}
+>  }
+>  
+> +static void update_fans_speed_singlefan (struct thermostat *th) {
+> +
+> +	/* Single Fan Laptops i.e. 12 inch Powerbook, Ibook etc.
+> +	 * Necessites the readout of all three thermal sensors
+> +	 * in order to avoid the harddisk and other components to overheat
+> +	 * in the case of cold CPU. */
+> +	
+> +	int lastvar = 0; /* last variation, for iBook */
+> +	int i = 0;
+> +	int var = 0;
+> +	int var_sensor[3];
+> +	int started = 0;
+> +	int fan_number = 0;
+> +	for (i = 0; i < 3; i++) {
+> +		var_sensor[i] = th->temps[i] - th->limits[i];
+> +	}
+> +	var = var_sensor[0];
+> +	for (i = 1; i < 3; i++) {
+> +		if (var_sensor[i] > var) {
+> +			var = var_sensor[i]; 
+> +		}
+> +	}
+> +	if (var > -1) {
+> +		int step = (255 - fan_speed) / 7;
+> +		int new_speed = 0;
+> +		/* hysteresis : change fan speed only if variation is
+> +		 * more than two degrees */
+> +		if (abs(var - th->last_var[fan_number]) > 2) { 
+> +
+> +			started = 1;
+> +			new_speed = fan_speed + ((var-1)*step);
+> +
+> +			if (new_speed < fan_speed)
+> +				new_speed = fan_speed;
+> +			if (new_speed > 255)
+> +				new_speed = 255;
+> +
+> +			if (verbose)
+> +				printk(KERN_DEBUG "adt746x:"
+> +				       " Setting fans speed to %d "
+> +				       "(limit exceeded by %d on %s)\n",
+> +				       new_speed, var,
+> +				       sensor_location[fan_number+1]);
+> +			write_both_fan_speed(th, new_speed);
+> +			th->last_var[fan_number] = var; 
+> +		}
+> +	} else if (var < -2) {
+> +		/* don't stop fan if sensor2 is cold and sensor1 is not
+> +		 * so cold (lastvar >= -1) */
+> +		if (i == 2 && lastvar < -1) {
+> +			if (th->last_speed[fan_number] != 0)
+> +				if (verbose)
+> +					printk(KERN_DEBUG "adt746x:"
+> +					       " Stopping "
+> +					       "fans.\n");
+> +			write_both_fan_speed(th, 0);
+> +		}
+> +	}
+> +
+> +	lastvar = var;
+> +
+> +	if (started)
+> +		return; /* we don't want to re-stop the fan
+> +			 * if sensor1 is heating and sensor2 is not */
+> +}
+> +
+> +static void update_fans_speed(struct thermostat *th) {
+> +
+> +	if (th->type == ADT7460) {
+> +		/* Multifan Laptops */
+> +		update_fans_speed_multifan(th);
+> +	} else {
+> +		/* Singlefan Laptops i.e. 12 inch Powerbook, Ibook etc. */
+> +		update_fans_speed_singlefan(th);
+> +	}
+> +}
+> +
+>  static int monitor_task(void *arg)
+>  {
+>  	struct thermostat* th = arg;
+> @@ -371,10 +451,18 @@ static ssize_t store_##name(struct devic
+>  	return n;						\
+>  }
+>  
+> -BUILD_SHOW_FUNC_INT(sensor1_temperature,	 (read_reg(th, TEMP_REG[1])))
+> -BUILD_SHOW_FUNC_INT(sensor2_temperature,	 (read_reg(th, TEMP_REG[2])))
+> -BUILD_SHOW_FUNC_INT(sensor1_limit,		 th->limits[1])
+> -BUILD_SHOW_FUNC_INT(sensor2_limit,		 th->limits[2])
+> +/* Several nits are multiplied by 1000 in order to have
+> + * coherent readings with other 
+> + * temperature sensors such as intel coretemp. This further
+> + * allows programs such as xosview to read these sensors correctly */
+> +
+> +BUILD_SHOW_FUNC_INT(sensor0_temperature,       (read_reg(th, TEMP_REG[0]))*1000)
+> +BUILD_SHOW_FUNC_INT(sensor1_temperature,       (read_reg(th, TEMP_REG[1]))*1000)
+> +BUILD_SHOW_FUNC_INT(sensor2_temperature,       (read_reg(th, TEMP_REG[2]))*1000)
+> +BUILD_SHOW_FUNC_INT(sensor0_limit,               (th->limits[0])*1000)
+> +BUILD_SHOW_FUNC_INT(sensor1_limit,		 (th->limits[1])*1000)
+> +BUILD_SHOW_FUNC_INT(sensor2_limit,		 (th->limits[2])*1000)
+> +BUILD_SHOW_FUNC_STR(sensor0_location,            sensor_location[0])
+>  BUILD_SHOW_FUNC_STR(sensor1_location,		 sensor_location[1])
+>  BUILD_SHOW_FUNC_STR(sensor2_location,		 sensor_location[2])
+>  
+> @@ -387,14 +475,20 @@ BUILD_SHOW_FUNC_FAN(sensor2_fan_speed,
+>  BUILD_SHOW_FUNC_INT_LITE(limit_adjust,	 limit_adjust)
+>  BUILD_STORE_FUNC_DEG(limit_adjust,	 th)
+>  		
+> +static DEVICE_ATTR(sensor0_temperature,	S_IRUGO,
+> +		   show_sensor0_temperature,NULL);
+>  static DEVICE_ATTR(sensor1_temperature,	S_IRUGO,
+>  		   show_sensor1_temperature,NULL);
+>  static DEVICE_ATTR(sensor2_temperature,	S_IRUGO,
+>  		   show_sensor2_temperature,NULL);
+> +static DEVICE_ATTR(sensor0_limit, S_IRUGO,
+> +		   show_sensor0_limit,	NULL);
+>  static DEVICE_ATTR(sensor1_limit, S_IRUGO,
+>  		   show_sensor1_limit,	NULL);
+>  static DEVICE_ATTR(sensor2_limit, S_IRUGO,
+>  		   show_sensor2_limit,	NULL);
+> +static DEVICE_ATTR(sensor0_location, S_IRUGO,
+> +		   show_sensor0_location, NULL);
+>  static DEVICE_ATTR(sensor1_location, S_IRUGO,
+>  		   show_sensor1_location, NULL);
+>  static DEVICE_ATTR(sensor2_location, S_IRUGO,
+> @@ -426,10 +520,13 @@ static void thermostat_create_files(stru
+>  		return;
+>  	dev = &th->pdev->dev;
+>  	dev_set_drvdata(dev, th);
+> -	err = device_create_file(dev, &dev_attr_sensor1_temperature);
+> +	err = device_create_file(dev, &dev_attr_sensor0_temperature);
+> +	err |= device_create_file(dev, &dev_attr_sensor1_temperature);
+>  	err |= device_create_file(dev, &dev_attr_sensor2_temperature);
+> +	err |= device_create_file(dev, &dev_attr_sensor0_limit);
+>  	err |= device_create_file(dev, &dev_attr_sensor1_limit);
+>  	err |= device_create_file(dev, &dev_attr_sensor2_limit);
+> +	err |= device_create_file(dev, &dev_attr_sensor0_location);
+>  	err |= device_create_file(dev, &dev_attr_sensor1_location);
+>  	err |= device_create_file(dev, &dev_attr_sensor2_location);
+>  	err |= device_create_file(dev, &dev_attr_limit_adjust);
+> @@ -449,10 +546,13 @@ static void thermostat_remove_files(stru
+>  	if (!th->pdev)
+>  		return;
+>  	dev = &th->pdev->dev;
+> +	device_remove_file(dev, &dev_attr_sensor0_temperature);
+>  	device_remove_file(dev, &dev_attr_sensor1_temperature);
+>  	device_remove_file(dev, &dev_attr_sensor2_temperature);
+> +	device_remove_file(dev, &dev_attr_sensor0_limit);
+>  	device_remove_file(dev, &dev_attr_sensor1_limit);
+>  	device_remove_file(dev, &dev_attr_sensor2_limit);
+> +	device_remove_file(dev, &dev_attr_sensor0_location);
+>  	device_remove_file(dev, &dev_attr_sensor1_location);
+>  	device_remove_file(dev, &dev_attr_sensor2_location);
+>  	device_remove_file(dev, &dev_attr_limit_adjust);
+> 
+> On Tue, Feb 24, 2015 at 08:18:38AM +1100, Benjamin Herrenschmidt wrote:
+> > Hi ! Please try sending patches inline rather than as attachments, it
+> > makes replying a bit easier... Also don't CC stable, we can shoot to
+> > stable later on if we think it's justified but first we need to get the
+> > patch upstream
+> > 
+> > A few comments:
+> > 
+> > On Mon, 2015-02-23 at 12:58 +0100, Thomas Haschka wrote:
+> > > --- linux/drivers/macintosh/therm_adt746x.c.orig        2015-02-23 12:19:03.984000000 +0100
+> > > +++ linux/drivers/macintosh/therm_adt746x.c     2015-02-23 12:22:34.980000000 +0100
+> > > @@ -1,7 +1,8 @@
+> > >  /*
+> > >   * Device driver for the i2c thermostat found on the iBook G4, Albook G4
+> > >   *
+> > > - * Copyright (C) 2003, 2004 Colin Leroy, Rasmus Rohde, Benjamin Herrenschmidt
+> > > + * Copyright (C) 2003, 2004, 2015 
+> > > + *   Colin Leroy, Rasmus Rohde, Benjamin Herrenschmidt, Thomas Haschka
+> > >   *
+> > >   * Documentation from 115254175ADT7467_pra.pdf and 3686221171167ADT7460_b.pdf
+> > >   * http://www.onsemi.com/PowerSolutions/product.do?id=ADT7467
+> > > @@ -45,7 +46,7 @@ static u8 REM_CONTROL[2] = {0x00, 0x40};
+> > >  static u8 FAN_SPEED[2]   = {0x28, 0x2a};
+> > >  static u8 FAN_SPD_SET[2] = {0x30, 0x31};
+> > >  
+> > > -static u8 default_limits_local[3] = {70, 50, 70};    /* local, sensor1, sensor2 */
+> > > +static u8 default_limits_local[3] = {45, 50, 70};    /* local, sensor1, sensor2 */
+> > 
+> > Here you change the limit for the local sensor for existing machines,
+> > care to explain ? I *think* that got adjusted a while back due to
+> > a bunch of bogus error on some machines.
+> > 
+> > >  static u8 default_limits_chip[3] = {80, 65, 80};    /* local, sensor1, sensor2 */
+> > >  static const char *sensor_location[3] = { "?", "?", "?" };
+> > >  
+> > > @@ -225,59 +226,123 @@ static void display_stats(struct thermos
+> > >  
+> > >  static void update_fans_speed (struct thermostat *th)
+> > >  {
+> > > -       int lastvar = 0; /* last variation, for iBook */
+> > > -       int i = 0;
+> > > -
+> > > -       /* we don't care about local sensor, so we start at sensor 1 */
+> > > -       for (i = 1; i < 3; i++) {
+> > > -               int started = 0;
+> > > -               int fan_number = (th->type == ADT7460 && i == 2);
+> > > -               int var = th->temps[i] - th->limits[i];
+> > > -
+> > > -               if (var > -1) {
+> > > -                       int step = (255 - fan_speed) / 7;
+> > > -                       int new_speed = 0;
+> > > +       
+> > > +       /* Multfan Laptops */
+> > > +       if ( th->type == ADT7460 ) {
+> > > +                int lastvar = 0; /* last variation, for iBook */
+> > > +               int i = 0;
+> > > +                /* we don't care about local sensor, so we start at sensor 1 */
+> > > +               for (i = 1; i < 3; i++) {
+> > > +                       int started = 0;
+> > > +                       int fan_number = (th->type == ADT7460 && i == 2);
+> > > +                       int var = th->temps[i] - th->limits[i];
+> > > +
+> > > +                       if (var > -1) {
+> > > +                               int step = (255 - fan_speed) / 7;
+> > > +                               int new_speed = 0;
+> > 
+> > The function is too big, please break it down into two sub functions,
+> > one for multifan and one for single fan.
+> > 
+> > It is also unclear due to the indentation changes whether you changed
+> > the behaviour on "other" laptops. makes the review a bit harder.
+> > 
+> > >                         /* hysteresis : change fan speed only if variation is
+> > >                          * more than two degrees */
+> > > -                       if (abs(var - th->last_var[fan_number]) < 2)
+> > > -                               continue;
+> > > -
+> > > -                       started = 1;
+> > > -                       new_speed = fan_speed + ((var-1)*step);
+> > > +                               if (abs(var - th->last_var[fan_number]) < 2)
+> > > +                                       continue;
+> > >  
+> > > -                       if (new_speed < fan_speed)
+> > > -                               new_speed = fan_speed;
+> > > -                       if (new_speed > 255)
+> > > -                               new_speed = 255;
+> > > +                               started = 1;
+> > > +                               new_speed = fan_speed + ((var-1)*step);
+> > >  
+> > > -                       if (verbose)
+> > > -                               printk(KERN_DEBUG "adt746x: Setting fans speed to %d "
+> > > -                                                "(limit exceeded by %d on %s)\n",
+> > > -                                               new_speed, var,
+> > > -                                               sensor_location[fan_number+1]);
+> > > -                       write_both_fan_speed(th, new_speed);
+> > > -                       th->last_var[fan_number] = var;
+> > > -               } else if (var < -2) {
+> > > +                               if (new_speed < fan_speed)
+> > > +                                       new_speed = fan_speed;
+> > > +                               if (new_speed > 255)
+> > > +                                       new_speed = 255;
+> > > +
+> > > +                               if (verbose)
+> > > +                                       printk(KERN_DEBUG "adt746x: Setting fans speed to %d "
+> > > +                                                        "(limit exceeded by %d on %s)\n",
+> > > +                                                       new_speed, var,
+> > > +                                                       sensor_location[fan_number+1]);
+> > > +                               write_both_fan_speed(th, new_speed);
+> > > +                               th->last_var[fan_number] = var;
+> > > +                       } else if (var < -2) {
+> > >                         /* don't stop fan if sensor2 is cold and sensor1 is not
+> > >                          * so cold (lastvar >= -1) */
+> > > -                       if (i == 2 && lastvar < -1) {
+> > > -                               if (th->last_speed[fan_number] != 0)
+> > > -                                       if (verbose)
+> > > +                               if (i == 2 && lastvar < -1) {
+> > > +                                       if (th->last_speed[fan_number] != 0)
+> > > +                                               if (verbose)
+> > > +                                                       printk(KERN_DEBUG "adt746x: Stopping "
+> > > +                                                               "fans.\n");
+> > > +                                       write_both_fan_speed(th, 0);
+> > > +                               }
+> > > +                       }
+> > > +
+> > > +                       lastvar = var;
+> > > +
+> > > +                       if (started)
+> > > +                               return; /* we don't want to re-stop the fan
+> > > +                               * if sensor1 is heating and sensor2 is not */
+> > > +               }
+> > > +       
+> > > +       } else {
+> > > +               /*single fan laptops i.e. 12 inch powerbook/ibook*/
+> > > +                int lastvar = 0; /* last variation, for iBook */
+> > > +               int i = 0;
+> > > +               int var = 0;
+> > > +               int var_sensor[3];
+> > > +               int started = 0;
+> > > +               int fan_number = 0;
+> > > +               for (i = 0; i < 3; i++) {
+> > > +                       var_sensor[i] = th->temps[i] - th->limits[i];
+> > > +               }
+> > > +               var = var_sensor[0];
+> > > +               for (i = 1; i < 3; i++) {
+> > > +                       if (var_sensor[i] > var) {
+> > > +                               var = var_sensor[i]; 
+> > > +                       }
+> > > +               }
+> > > +               if (var > -1) {
+> > > +                       int step = (255 - fan_speed) / 7;
+> > > +                       int new_speed = 0;
+> > > +
+> > > +                       /* hysteresis : change fan speed only if variation is
+> > > +                        * more than two degrees */
+> > > +                       if (abs(var - th->last_var[fan_number]) > 2) { 
+> > > +
+> > > +                       started = 1;
+> > > +                       new_speed = fan_speed + ((var-1)*step);
+> > > +
+> > > +                       if (new_speed < fan_speed)
+> > > +                               new_speed = fan_speed;
+> > > +                       if (new_speed > 255)
+> > > +                               new_speed = 255;
+> > > +
+> > > +                       if (verbose)
+> > > +                               printk(
+> > > +                                      KERN_DEBUG "adt746x: Setting fans speed to %d "
+> > > +                                                "(limit exceeded by %d on %s)\n",
+> > > +                              new_speed, var,
+> > > +                              sensor_location[fan_number+1]);
+> > > +                       write_both_fan_speed(th, new_speed);
+> > > +                       th->last_var[fan_number] = var; 
+> > > +                        }
+> > > +               } else if (var < -2) {
+> > > +         /* don't stop fan if sensor2 is cold and sensor1 is not
+> > > +          * so cold (lastvar >= -1) */
+> > > +                        if (i == 2 && lastvar < -1) {
+> > > +                               if (th->last_speed[fan_number] != 0)
+> > > +                                       if (verbose)
+> > >                                                 printk(KERN_DEBUG "adt746x: Stopping "
+> > >                                                         "fans.\n");
+> > > -                               write_both_fan_speed(th, 0);
+> > > +                                       write_both_fan_speed(th, 0);
+> > >                         }
+> > >                 }
+> > >  
+> > > -               lastvar = var;
+> > > +               lastvar = var;
+> > >  
+> > >                 if (started)
+> > > -                       return; /* we don't want to re-stop the fan
+> > > -                               * if sensor1 is heating and sensor2 is not */
+> > > +               return; /* we don't want to re-stop the fan
+> > > +                        * if sensor1 is heating and sensor2 is not */
+> > >         }
+> > >  }
+> > >  
+> > > +
+> > >  static int monitor_task(void *arg)
+> > >  {
+> > >         struct thermostat* th = arg;
+> > > @@ -371,10 +436,13 @@ static ssize_t store_##name(struct devic
+> > >         return n;                                               \
+> > >  }
+> > >  
+> > > -BUILD_SHOW_FUNC_INT(sensor1_temperature,        (read_reg(th, TEMP_REG[1])))
+> > > -BUILD_SHOW_FUNC_INT(sensor2_temperature,        (read_reg(th, TEMP_REG[2])))
+> > > -BUILD_SHOW_FUNC_INT(sensor1_limit,              th->limits[1])
+> > > -BUILD_SHOW_FUNC_INT(sensor2_limit,              th->limits[2])
+> > > +BUILD_SHOW_FUNC_INT(sensor0_temperature,         (read_reg(th, TEMP_REG[0]))*1000)
+> > > +BUILD_SHOW_FUNC_INT(sensor1_temperature,        (read_reg(th, TEMP_REG[1]))*1000)
+> > > +BUILD_SHOW_FUNC_INT(sensor2_temperature,        (read_reg(th, TEMP_REG[2]))*1000)
+> > > +BUILD_SHOW_FUNC_INT(sensor0_limit,               (th->limits[0])*1000)
+> > > +BUILD_SHOW_FUNC_INT(sensor1_limit,              (th->limits[1])*1000)
+> > > +BUILD_SHOW_FUNC_INT(sensor2_limit,              (th->limits[2])*1000)
+> > 
+> > You changed the units here, that should be documented and why.
+> > 
+> > > +BUILD_SHOW_FUNC_STR(sensor0_location,            sensor_location[0])
+> > >  BUILD_SHOW_FUNC_STR(sensor1_location,           sensor_location[1])
+> > >  BUILD_SHOW_FUNC_STR(sensor2_location,           sensor_location[2])
+> > >  
+> > > @@ -387,14 +455,20 @@ BUILD_SHOW_FUNC_FAN(sensor2_fan_speed,
+> > >  BUILD_SHOW_FUNC_INT_LITE(limit_adjust,  limit_adjust)
+> > >  BUILD_STORE_FUNC_DEG(limit_adjust,      th)
+> > >                 
+> > > +static DEVICE_ATTR(sensor0_temperature,        S_IRUGO,
+> > > +                  show_sensor0_temperature,NULL);
+> > >  static DEVICE_ATTR(sensor1_temperature,        S_IRUGO,
+> > >                    show_sensor1_temperature,NULL);
+> > >  static DEVICE_ATTR(sensor2_temperature,        S_IRUGO,
+> > >                    show_sensor2_temperature,NULL);
+> > > +static DEVICE_ATTR(sensor0_limit, S_IRUGO,
+> > > +                  show_sensor0_limit,  NULL);
+> > >  static DEVICE_ATTR(sensor1_limit, S_IRUGO,
+> > >                    show_sensor1_limit,  NULL);
+> > >  static DEVICE_ATTR(sensor2_limit, S_IRUGO,
+> > >                    show_sensor2_limit,  NULL);
+> > > +static DEVICE_ATTR(sensor0_location, S_IRUGO,
+> > > +                  show_sensor0_location, NULL);
+> > >  static DEVICE_ATTR(sensor1_location, S_IRUGO,
+> > >                    show_sensor1_location, NULL);
+> > >  static DEVICE_ATTR(sensor2_location, S_IRUGO,
+> > > @@ -426,10 +500,13 @@ static void thermostat_create_files(stru
+> > >                 return;
+> > >         dev = &th->pdev->dev;
+> > >         dev_set_drvdata(dev, th);
+> > > -       err = device_create_file(dev, &dev_attr_sensor1_temperature);
+> > > +       err = device_create_file(dev, &dev_attr_sensor0_temperature);
+> > > +       err |= device_create_file(dev, &dev_attr_sensor1_temperature);
+> > >         err |= device_create_file(dev, &dev_attr_sensor2_temperature);
+> > > +       err |= device_create_file(dev, &dev_attr_sensor0_limit);
+> > >         err |= device_create_file(dev, &dev_attr_sensor1_limit);
+> > >         err |= device_create_file(dev, &dev_attr_sensor2_limit);
+> > > +       err |= device_create_file(dev, &dev_attr_sensor0_location);
+> > >         err |= device_create_file(dev, &dev_attr_sensor1_location);
+> > >         err |= device_create_file(dev, &dev_attr_sensor2_location);
+> > >         err |= device_create_file(dev, &dev_attr_limit_adjust);
+> > > @@ -449,10 +526,13 @@ static void thermostat_remove_files(stru
+> > >         if (!th->pdev)
+> > >                 return;
+> > >         dev = &th->pdev->dev;
+> > > +       device_remove_file(dev, &dev_attr_sensor0_temperature);
+> > >         device_remove_file(dev, &dev_attr_sensor1_temperature);
+> > >         device_remove_file(dev, &dev_attr_sensor2_temperature);
+> > > +       device_remove_file(dev, &dev_attr_sensor0_limit);
+> > >         device_remove_file(dev, &dev_attr_sensor1_limit);
+> > >         device_remove_file(dev, &dev_attr_sensor2_limit);
+> > > +       device_remove_file(dev, &dev_attr_sensor0_location);
+> > >         device_remove_file(dev, &dev_attr_sensor1_location);
+> > >         device_remove_file(dev, &dev_attr_sensor2_location);
+> > >         device_remove_file(dev, &dev_attr_limit_adjust);
+> > 
+> > Cheers,
+> > Ben.
+> > 
+> > 
