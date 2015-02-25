@@ -1,40 +1,36 @@
 Return-Path: <imunsie@au1.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AA6571A0013
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Feb 2015 15:42:00 +1100 (AEDT)
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 813381A0013
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Feb 2015 16:13:45 +1100 (AEDT)
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 8261B1400F1
- for <linuxppc-dev@ozlabs.org>; Wed, 25 Feb 2015 15:42:00 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPS id 397881400D5
+ for <linuxppc-dev@ozlabs.org>; Wed, 25 Feb 2015 16:13:45 +1100 (AEDT)
 Received: from /spool/local
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <imunsie@au1.ibm.com>;
- Wed, 25 Feb 2015 14:41:59 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id C36772BB0051
- for <linuxppc-dev@ozlabs.org>; Wed, 25 Feb 2015 15:41:54 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t1P4fkH836438126
- for <linuxppc-dev@ozlabs.org>; Wed, 25 Feb 2015 15:41:54 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t1P4fK8r023259
- for <linuxppc-dev@ozlabs.org>; Wed, 25 Feb 2015 15:41:21 +1100
-Content-Type: text/plain; charset=UTF-8
-From: Ian Munsie <imunsie@au1.ibm.com>
-To: Greg KH <gregkh@linuxfoundation.org>
-Subject: Re: [PATCH 1/3] cxl: Use image state defaults for reloading FPGA
-In-reply-to: <20150225003229.GA10806@kroah.com>
-References: <1424665281-25431-1-git-send-email-mpe@ellerman.id.au>
- <20150225003229.GA10806@kroah.com>
-Date: Wed, 25 Feb 2015 15:40:56 +1100
-Message-Id: <1424839211-sup-7519@delenn.ozlabs.ibm.com>
-Cc: grimm <grimm@linux.vnet.ibm.com>, stable <stable@vger.kernel.org>,
+ Wed, 25 Feb 2015 15:13:44 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 02E3F2BB004D
+ for <linuxppc-dev@ozlabs.org>; Wed, 25 Feb 2015 16:13:41 +1100 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t1P5DWsN40763580
+ for <linuxppc-dev@ozlabs.org>; Wed, 25 Feb 2015 16:13:40 +1100
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t1P5D7rI025603
+ for <linuxppc-dev@ozlabs.org>; Wed, 25 Feb 2015 16:13:07 +1100
+From: "Ian Munsie" <imunsie@au1.ibm.com>
+To: stable <stable@vger.kernel.org>
+Subject: [PATCH] cxl: Fix issues when unmapping contexts
+Date: Wed, 25 Feb 2015 16:12:21 +1100
+Message-Id: <1424841141-11783-1-git-send-email-imunsie@au.ibm.com>
+Cc: Michael Neuling <mikey@neuling.org>, Ian Munsie <imunsie@au1.ibm.com>,
  linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -45,12 +41,190 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Excerpts from Greg KH's message of 2015-02-25 11:32:29 +1100:
-> What stable kernel(s) are you wanting this series to go into?
+From: Ian Munsie <imunsie@au1.ibm.com>
 
-Hi Greg,
+commit 0712dc7e73e59d79bcead5d5520acf4e9e917e87 upstream.
+for the 3.18 stable series
 
-These three patches are for 3.18 and 3.19.
+An issue was introduced with "cxl: Unmap MMIO regions when detaching a
+context" (b123429e6a9e8d03aacf888d23262835f0081448) where closing a
+context normally could also unmap the problem state area of other
+contexts currently using the AFU.
 
-Cheers,
--Ian
+It was also discovered that after a context's MMIO space had been
+unmapped it would read 0s when accessing it, whereas the expected
+behaviour was for the access to fail altogether.
+
+In order to address these issues, this patch does two things:
+
+- Forced mmap unmapping is only done when we are forcefully detaching
+  all contexts, and not in the normal detach path. Since the normal
+  context close path is tied to the file release any mmaps must have
+  already been released so we don't need to worry in that case.
+
+- The mmap path now uses a vm_operations_struct with a fault handler.
+  The fault handler ensures that the context is in started state,
+  otherwise it fails the access attempt with a SIGBUS.
+
+Fixes: b123429e6a9e ("cxl: Unmap MMIO regions when detaching a context")
+Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ drivers/misc/cxl/context.c | 82 +++++++++++++++++++++++++++++++++++-----------
+ drivers/misc/cxl/file.c    | 14 ++++----
+ 2 files changed, 71 insertions(+), 25 deletions(-)
+
+diff --git a/drivers/misc/cxl/context.c b/drivers/misc/cxl/context.c
+index 51fd6b5..d1b55fe 100644
+--- a/drivers/misc/cxl/context.c
++++ b/drivers/misc/cxl/context.c
+@@ -100,6 +100,46 @@ int cxl_context_init(struct cxl_context *ctx, struct cxl_afu *afu, bool master,
+ 	return 0;
+ }
+ 
++static int cxl_mmap_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
++{
++	struct cxl_context *ctx = vma->vm_file->private_data;
++	unsigned long address = (unsigned long)vmf->virtual_address;
++	u64 area, offset;
++
++	offset = vmf->pgoff << PAGE_SHIFT;
++
++	pr_devel("%s: pe: %i address: 0x%lx offset: 0x%llx\n",
++			__func__, ctx->pe, address, offset);
++
++	if (ctx->afu->current_mode == CXL_MODE_DEDICATED) {
++		area = ctx->afu->psn_phys;
++		if (offset > ctx->afu->adapter->ps_size)
++			return VM_FAULT_SIGBUS;
++	} else {
++		area = ctx->psn_phys;
++		if (offset > ctx->psn_size)
++			return VM_FAULT_SIGBUS;
++	}
++
++	mutex_lock(&ctx->status_mutex);
++
++	if (ctx->status != STARTED) {
++		mutex_unlock(&ctx->status_mutex);
++		pr_devel("%s: Context not started, failing problem state access\n", __func__);
++		return VM_FAULT_SIGBUS;
++	}
++
++	vm_insert_pfn(vma, address, (area + offset) >> PAGE_SHIFT);
++
++	mutex_unlock(&ctx->status_mutex);
++
++	return VM_FAULT_NOPAGE;
++}
++
++static const struct vm_operations_struct cxl_mmap_vmops = {
++	.fault = cxl_mmap_fault,
++};
++
+ /*
+  * Map a per-context mmio space into the given vma.
+  */
+@@ -108,26 +148,25 @@ int cxl_context_iomap(struct cxl_context *ctx, struct vm_area_struct *vma)
+ 	u64 len = vma->vm_end - vma->vm_start;
+ 	len = min(len, ctx->psn_size);
+ 
+-	if (ctx->afu->current_mode == CXL_MODE_DEDICATED) {
+-		vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
+-		return vm_iomap_memory(vma, ctx->afu->psn_phys, ctx->afu->adapter->ps_size);
+-	}
++	if (ctx->afu->current_mode != CXL_MODE_DEDICATED) {
++		/* make sure there is a valid per process space for this AFU */
++		if ((ctx->master && !ctx->afu->psa) || (!ctx->afu->pp_psa)) {
++			pr_devel("AFU doesn't support mmio space\n");
++			return -EINVAL;
++		}
+ 
+-	/* make sure there is a valid per process space for this AFU */
+-	if ((ctx->master && !ctx->afu->psa) || (!ctx->afu->pp_psa)) {
+-		pr_devel("AFU doesn't support mmio space\n");
+-		return -EINVAL;
++		/* Can't mmap until the AFU is enabled */
++		if (!ctx->afu->enabled)
++			return -EBUSY;
+ 	}
+ 
+-	/* Can't mmap until the AFU is enabled */
+-	if (!ctx->afu->enabled)
+-		return -EBUSY;
+-
+ 	pr_devel("%s: mmio physical: %llx pe: %i master:%i\n", __func__,
+ 		 ctx->psn_phys, ctx->pe , ctx->master);
+ 
++	vma->vm_flags |= VM_IO | VM_PFNMAP;
+ 	vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
+-	return vm_iomap_memory(vma, ctx->psn_phys, len);
++	vma->vm_ops = &cxl_mmap_vmops;
++	return 0;
+ }
+ 
+ /*
+@@ -150,12 +189,6 @@ static void __detach_context(struct cxl_context *ctx)
+ 	afu_release_irqs(ctx);
+ 	flush_work(&ctx->fault_work); /* Only needed for dedicated process */
+ 	wake_up_all(&ctx->wq);
+-
+-	/* Release Problem State Area mapping */
+-	mutex_lock(&ctx->mapping_lock);
+-	if (ctx->mapping)
+-		unmap_mapping_range(ctx->mapping, 0, 0, 1);
+-	mutex_unlock(&ctx->mapping_lock);
+ }
+ 
+ /*
+@@ -184,6 +217,17 @@ void cxl_context_detach_all(struct cxl_afu *afu)
+ 		 * created and torn down after the IDR removed
+ 		 */
+ 		__detach_context(ctx);
++
++		/*
++		 * We are force detaching - remove any active PSA mappings so
++		 * userspace cannot interfere with the card if it comes back.
++		 * Easiest way to exercise this is to unbind and rebind the
++		 * driver via sysfs while it is in use.
++		 */
++		mutex_lock(&ctx->mapping_lock);
++		if (ctx->mapping)
++			unmap_mapping_range(ctx->mapping, 0, 0, 1);
++		mutex_unlock(&ctx->mapping_lock);
+ 	}
+ 	mutex_unlock(&afu->contexts_lock);
+ }
+diff --git a/drivers/misc/cxl/file.c b/drivers/misc/cxl/file.c
+index e9f2f10..b15d811 100644
+--- a/drivers/misc/cxl/file.c
++++ b/drivers/misc/cxl/file.c
+@@ -140,18 +140,20 @@ static long afu_ioctl_start_work(struct cxl_context *ctx,
+ 
+ 	pr_devel("%s: pe: %i\n", __func__, ctx->pe);
+ 
+-	mutex_lock(&ctx->status_mutex);
+-	if (ctx->status != OPENED) {
+-		rc = -EIO;
+-		goto out;
+-	}
+-
++	/* Do this outside the status_mutex to avoid a circular dependency with
++	 * the locking in cxl_mmap_fault() */
+ 	if (copy_from_user(&work, uwork,
+ 			   sizeof(struct cxl_ioctl_start_work))) {
+ 		rc = -EFAULT;
+ 		goto out;
+ 	}
+ 
++	mutex_lock(&ctx->status_mutex);
++	if (ctx->status != OPENED) {
++		rc = -EIO;
++		goto out;
++	}
++
+ 	/*
+ 	 * if any of the reserved fields are set or any of the unused
+ 	 * flags are set it's invalid
+-- 
+2.1.4
