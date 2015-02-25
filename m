@@ -1,29 +1,36 @@
 Return-Path: <clg@fr.ibm.com>
-Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
+Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4F7111A0035
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Feb 2015 04:28:38 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8AAA51A0140
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Feb 2015 04:43:42 +1100 (AEDT)
 Received: from /spool/local
- by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <clg@fr.ibm.com>;
- Wed, 25 Feb 2015 17:28:35 -0000
-Message-ID: <54EE0625.7050604@fr.ibm.com>
-Date: Wed, 25 Feb 2015 18:28:05 +0100
-From: Cedric Le Goater <clg@fr.ibm.com>
+ Wed, 25 Feb 2015 17:43:38 -0000
+Received: from b06cxnps4076.portsmouth.uk.ibm.com
+ (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
+ by d06dlp01.portsmouth.uk.ibm.com (Postfix) with ESMTP id 06C5117D8042
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Feb 2015 17:43:52 +0000 (GMT)
+Received: from d06av12.portsmouth.uk.ibm.com (d06av12.portsmouth.uk.ibm.com
+ [9.149.37.247])
+ by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t1PHhZ6r9568706
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Feb 2015 17:43:35 GMT
+Received: from d06av12.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av12.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t1PHhYuD002604
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Feb 2015 10:43:34 -0700
+From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@fr.ibm.com>
+To: mpe@ellerman.id.au
+Subject: =?UTF-8?q?=5BPATCH=5D=20powerpc/powernv=3A=20check=20OPAL=5FREGISTER=5FDUMP=5FREGION=20calls=20exist?=
+Date: Wed, 25 Feb 2015 18:43:08 +0100
+Message-Id: <1424886188-32068-1-git-send-email-clg@fr.ibm.com>
 MIME-Version: 1.0
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [RFC PATCH 1/3] powerpc/powernv: Check OPAL sensor calls exist
-References: <1423117857-32759-1-git-send-email-clg@fr.ibm.com>
- <1424444857-13805-2-git-send-email-clg@fr.ibm.com>
- <1424753699.2318.8.camel@ellerman.id.au>
-In-Reply-To: <1424753699.2318.8.camel@ellerman.id.au>
-Content-Type: text/plain; charset=utf-8
-Cc: Stewart Smith <stewart@linux.vnet.ibm.com>, lm-sensors@lm-sensors.org,
- Guenter Roeck <linux@roeck-us.net>,
- Neelesh Gupta <neelegup@linux.vnet.ibm.com>, skiboot@lists.ozlabs.org,
- linuxppc-dev@lists.ozlabs.org, Jean Delvare <jdelvare@suse.de>
+Content-Type: text/plain; charset=UTF-8
+Cc: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@fr.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,38 +40,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 02/24/2015 05:54 AM, Michael Ellerman wrote:
-> On Fri, 2015-02-20 at 16:07 +0100, Cédric Le Goater wrote:
->> Signed-off-by: Cédric Le Goater <clg@fr.ibm.com>
->> ---
->>  arch/powerpc/platforms/powernv/opal-sensor.c |    3 +++
->>  1 file changed, 3 insertions(+)
->>
->> diff --git a/arch/powerpc/platforms/powernv/opal-sensor.c b/arch/powerpc/platforms/powernv/opal-sensor.c
->> index 4ab67ef7abc9..544292f2020f 100644
->> --- a/arch/powerpc/platforms/powernv/opal-sensor.c
->> +++ b/arch/powerpc/platforms/powernv/opal-sensor.c
->> @@ -72,6 +72,9 @@ static __init int opal_sensor_init(void)
->>  	struct platform_device *pdev;
->>  	struct device_node *sensor;
->>  
->> +	if (!opal_check_token(OPAL_SENSOR_READ))
->> +		return -ENODEV;
->> +
->>  	sensor = of_find_node_by_path("/ibm,opal/sensors");
->>  	if (!sensor) {
->>  		pr_err("Opal node 'sensors' not found\n");
-> 
-> Are you actually seeing this in practice?
+On Open Power systems, such call fails in OPAL : 
 
-No. Not this one. I have seen others though. I will send you patches.
+   OPAL: Called with bad token 101 !
 
-> It's a bit annoying that we have to check for the token, and then also check
-> the device tree. It would be nice if one implied the presence of the other.
+The check on the OPAL_UNREGISTER_DUMP_REGION call is added for 
+symmetry. I did not see any errors for it.
 
-Should we expose the OPAL call token in the device tree ? 
+Signed-off-by: Cédric Le Goater <clg@fr.ibm.com>
+---
+ arch/powerpc/platforms/powernv/opal.c |    8 ++++++++
+ 1 file changed, 8 insertions(+)
 
-Cheers,
-
-C. 
+Index: linux.git/arch/powerpc/platforms/powernv/opal.c
+===================================================================
+--- linux.git.orig/arch/powerpc/platforms/powernv/opal.c
++++ linux.git/arch/powerpc/platforms/powernv/opal.c
+@@ -665,6 +665,11 @@ static void __init opal_dump_region_init
+ 	uint64_t size;
+ 	int rc;
  
++	if (!opal_check_token(OPAL_REGISTER_DUMP_REGION)) {
++		pr_warn("Firmware doesn't support dump region buffers\n");
++		return;
++	}
++
+ 	/* Register kernel log buffer */
+ 	addr = log_buf_addr_get();
+ 	size = log_buf_len_get();
+@@ -794,6 +799,9 @@ void opal_shutdown(void)
+ 			mdelay(10);
+ 	}
+ 
++	if (!opal_check_token(OPAL_UNREGISTER_DUMP_REGION))
++		return;
++
+ 	/* Unregister memory dump region */
+ 	opal_unregister_dump_region(OPAL_DUMP_REGION_LOG_BUF);
+ }
