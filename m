@@ -1,24 +1,27 @@
-Return-Path: <wsa@the-dreams.de>
-Received: from pokefinder.org (sauhun.de [89.238.76.85])
+Return-Path: <bigeasy@linutronix.de>
+Received: from Galois.linutronix.de (Galois.linutronix.de
+ [IPv6:2001:470:1f0b:db:abcd:42:0:1])
  (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4D8081A0013
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Feb 2015 03:03:04 +1100 (AEDT)
-From: Wolfram Sang <wsa@the-dreams.de>
-To: linux-i2c@vger.kernel.org
-Subject: [RFC V2 12/12] i2c: bcm-iproc: make use of the new infrastructure for
- quirks
-Date: Wed, 25 Feb 2015 17:02:03 +0100
-Message-Id: <1424880126-15047-13-git-send-email-wsa@the-dreams.de>
-In-Reply-To: <1424880126-15047-1-git-send-email-wsa@the-dreams.de>
-References: <1424880126-15047-1-git-send-email-wsa@the-dreams.de>
-Cc: linux-mips@linux-mips.org, Scott Branden <sbranden@broadcom.com>,
- Wolfram Sang <wsa@the-dreams.de>, linux-kernel@vger.kernel.org,
- Ludovic Desroches <ludovic.desroches@atmel.com>,
- bcm-kernel-feedback-list@broadcom.com, Ray Jui <rjui@broadcom.com>,
- Yingjoe Chen <yingjoe.chen@mediatek.com>,
- Eddie Huang <eddie.huang@mediatek.com>, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5B70B1A02E4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Feb 2015 03:36:58 +1100 (AEDT)
+Date: Wed, 25 Feb 2015 17:36:49 +0100
+From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 0/2] powerpc/kvm: Enable running guests on RT Linux
+Message-ID: <20150225163649.GD6823@linutronix.de>
+References: <1424251955-308-1-git-send-email-bogdan.purcareata@freescale.com>
+ <54E73A6C.9080500@suse.de> <54E740E7.5090806@redhat.com>
+ <54E74A8C.30802@linutronix.de>
+ <1424734051.4698.17.camel@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <1424734051.4698.17.camel@freescale.com>
+Cc: linux-rt-users@vger.kernel.org, Alexander Graf <agraf@suse.de>,
+ linux-kernel@vger.kernel.org,
+ Bogdan Purcareata <bogdan.purcareata@freescale.com>,
+ mihai.caraman@freescale.com, Paolo Bonzini <pbonzini@redhat.com>,
+ Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,52 +31,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Wolfram Sang <wsa+renesas@sang-engineering.com>
+* Scott Wood | 2015-02-23 17:27:31 [-0600]:
 
-Signed-off-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
----
- drivers/i2c/busses/i2c-bcm-iproc.c | 15 +++++++--------
- 1 file changed, 7 insertions(+), 8 deletions(-)
+>This isn't a host PIC driver.  It's guest PIC emulation, some of which
+>is indeed not suitable for a rawlock (in particular, openpic_update_irq
+>which loops on the number of vcpus, with a loop body that calls
+>IRQ_check() which loops over all pending IRQs).  The vcpu limits are a
+>temporary bandaid to avoid the worst latencies, but I'm still skeptical
+>about this being upstream material.
 
-diff --git a/drivers/i2c/busses/i2c-bcm-iproc.c b/drivers/i2c/busses/i2c-bcm-iproc.c
-index d3c89157b33774..f9f2c2082151e2 100644
---- a/drivers/i2c/busses/i2c-bcm-iproc.c
-+++ b/drivers/i2c/busses/i2c-bcm-iproc.c
-@@ -160,14 +160,6 @@ static int bcm_iproc_i2c_xfer_single_msg(struct bcm_iproc_i2c_dev *iproc_i2c,
- 	u32 val;
- 	unsigned long time_left = msecs_to_jiffies(I2C_TIMEOUT_MESC);
- 
--	/* need to reserve one byte in the FIFO for the slave address */
--	if (msg->len > M_TX_RX_FIFO_SIZE - 1) {
--		dev_err(iproc_i2c->device,
--			"only support data length up to %u bytes\n",
--			M_TX_RX_FIFO_SIZE - 1);
--		return -EOPNOTSUPP;
--	}
--
- 	/* check if bus is busy */
- 	if (!!(readl(iproc_i2c->base + M_CMD_OFFSET) &
- 	       BIT(M_CMD_START_BUSY_SHIFT))) {
-@@ -287,6 +279,12 @@ static const struct i2c_algorithm bcm_iproc_algo = {
- 	.functionality = bcm_iproc_i2c_functionality,
- };
- 
-+static struct i2c_adapter_quirks bcm_iproc_i2c_quirks = {
-+	/* need to reserve one byte in the FIFO for the slave address */
-+	.max_read_len = M_TX_RX_FIFO_SIZE - 1,
-+	.max_write_len = M_TX_RX_FIFO_SIZE - 1,
-+};
-+
- static int bcm_iproc_i2c_cfg_speed(struct bcm_iproc_i2c_dev *iproc_i2c)
- {
- 	unsigned int bus_speed;
-@@ -413,6 +411,7 @@ static int bcm_iproc_i2c_probe(struct platform_device *pdev)
- 	i2c_set_adapdata(adap, iproc_i2c);
- 	strlcpy(adap->name, "Broadcom iProc I2C adapter", sizeof(adap->name));
- 	adap->algo = &bcm_iproc_algo;
-+	adap->quirks = &bcm_iproc_i2c_quirks;
- 	adap->dev.parent = &pdev->dev;
- 	adap->dev.of_node = pdev->dev.of_node;
- 
--- 
-2.1.4
+Okay.
+
+>-Scott
+
+Sebastian
