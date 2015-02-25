@@ -1,23 +1,41 @@
-Return-Path: <mpe@ellerman.id.au>
+Return-Path: <imunsie@au1.ibm.com>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 415EE1A0013
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Feb 2015 13:44:36 +1100 (AEDT)
-Message-ID: <1424832275.1459.4.camel@ellerman.id.au>
-Subject: Re: Build regressions/improvements in v4.0-rc1
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Wed, 25 Feb 2015 13:44:35 +1100
-In-Reply-To: <CAMuHMdU7Tkoqe0V=feX_P85MJqNQjh7k6XCh+5ZH=zOKTAb__w@mail.gmail.com>
-References: <1424680402-3477-1-git-send-email-geert@linux-m68k.org>
- <CAMuHMdXnVLtiSxqwz7ah5faPUx_8piN5eOdNKQtKNwOgT73FqA@mail.gmail.com>
- <1424753526.2318.6.camel@ellerman.id.au>
- <CAMuHMdU7Tkoqe0V=feX_P85MJqNQjh7k6XCh+5ZH=zOKTAb__w@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id AA6571A0013
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Feb 2015 15:42:00 +1100 (AEDT)
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 8261B1400F1
+ for <linuxppc-dev@ozlabs.org>; Wed, 25 Feb 2015 15:42:00 +1100 (AEDT)
+Received: from /spool/local
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <imunsie@au1.ibm.com>;
+ Wed, 25 Feb 2015 14:41:59 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id C36772BB0051
+ for <linuxppc-dev@ozlabs.org>; Wed, 25 Feb 2015 15:41:54 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t1P4fkH836438126
+ for <linuxppc-dev@ozlabs.org>; Wed, 25 Feb 2015 15:41:54 +1100
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t1P4fK8r023259
+ for <linuxppc-dev@ozlabs.org>; Wed, 25 Feb 2015 15:41:21 +1100
+Content-Type: text/plain; charset=UTF-8
+From: Ian Munsie <imunsie@au1.ibm.com>
+To: Greg KH <gregkh@linuxfoundation.org>
+Subject: Re: [PATCH 1/3] cxl: Use image state defaults for reloading FPGA
+In-reply-to: <20150225003229.GA10806@kroah.com>
+References: <1424665281-25431-1-git-send-email-mpe@ellerman.id.au>
+ <20150225003229.GA10806@kroah.com>
+Date: Wed, 25 Feb 2015 15:40:56 +1100
+Message-Id: <1424839211-sup-7519@delenn.ozlabs.ibm.com>
+Cc: grimm <grimm@linux.vnet.ibm.com>, stable <stable@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,28 +45,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-02-24 at 10:38 +0100, Geert Uytterhoeven wrote:
-> Hi Michael,
-> 
-> On Tue, Feb 24, 2015 at 5:52 AM, Michael Ellerman <mpe@ellerman.id.au> wrote:
-> >> >   + error: book3s_64_vio_hv.c: undefined reference to `power7_wakeup_loss':  => .text+0x408)
-> >>
-> >> pseries_defconfig
-> >
-> > This one is actually from pseries_defconfig+POWERNV=n, so I think I
-> 
-> Thanks!
-> 
-> > broke your script with the + notation in the config name :)
-> 
-> Nope, my brain used the wrong separator.
+Excerpts from Greg KH's message of 2015-02-25 11:32:29 +1100:
+> What stable kernel(s) are you wanting this series to go into?
 
-I can't help with that :)
+Hi Greg,
 
-> However, my scripts do have a problem with the subdirectories
-> in arch/powerpc/configs/ (4xx/currituck_defconfig)...
+These three patches are for 3.18 and 3.19.
 
-Yeah sorry, they are a bit of a pain. I'm sure some horrible regexp can deal
-with it ;)
-
-cheers
+Cheers,
+-Ian
