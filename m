@@ -1,37 +1,23 @@
-Return-Path: <imunsie@au1.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <haschka@gmail.com>
+Received: from mail-we0-x236.google.com (mail-we0-x236.google.com
+ [IPv6:2a00:1450:400c:c03::236])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 813381A0013
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Feb 2015 16:13:45 +1100 (AEDT)
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 397881400D5
- for <linuxppc-dev@ozlabs.org>; Wed, 25 Feb 2015 16:13:45 +1100 (AEDT)
-Received: from /spool/local
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <imunsie@au1.ibm.com>;
- Wed, 25 Feb 2015 15:13:44 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 02E3F2BB004D
- for <linuxppc-dev@ozlabs.org>; Wed, 25 Feb 2015 16:13:41 +1100 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t1P5DWsN40763580
- for <linuxppc-dev@ozlabs.org>; Wed, 25 Feb 2015 16:13:40 +1100
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t1P5D7rI025603
- for <linuxppc-dev@ozlabs.org>; Wed, 25 Feb 2015 16:13:07 +1100
-From: "Ian Munsie" <imunsie@au1.ibm.com>
-To: stable <stable@vger.kernel.org>
-Subject: [PATCH] cxl: Fix issues when unmapping contexts
-Date: Wed, 25 Feb 2015 16:12:21 +1100
-Message-Id: <1424841141-11783-1-git-send-email-imunsie@au.ibm.com>
-Cc: Michael Neuling <mikey@neuling.org>, Ian Munsie <imunsie@au1.ibm.com>,
- linuxppc-dev <linuxppc-dev@ozlabs.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7062A1A0013
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Feb 2015 22:24:25 +1100 (AEDT)
+Received: by wevk48 with SMTP id k48so2951837wev.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Feb 2015 03:24:21 -0800 (PST)
+Date: Wed, 25 Feb 2015 12:24:57 +0100
+From: Thomas Haschka <haschka@gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 1/1]: thermal driver therm_adt746.c
+Message-ID: <20150225112457.GA3491@gmail.com>
+References: <CADAoK=UH4q9x-OMyOpqCmGpNwDo3vey41xajBw-PDdupmEHnAA@mail.gmail.com>
+ <1424726318.12891.1.camel@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1424726318.12891.1.camel@kernel.crashing.org>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,190 +27,499 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Ian Munsie <imunsie@au1.ibm.com>
+Hi,
 
-commit 0712dc7e73e59d79bcead5d5520acf4e9e917e87 upstream.
-for the 3.18 stable series
+Thanks for your comments. Here's a new patch taking them into account.
 
-An issue was introduced with "cxl: Unmap MMIO regions when detaching a
-context" (b123429e6a9e8d03aacf888d23262835f0081448) where closing a
-context normally could also unmap the problem state area of other
-contexts currently using the AFU.
+Cheers,
 
-It was also discovered that after a context's MMIO space had been
-unmapped it would read 0s when accessing it, whereas the expected
-behaviour was for the access to fail altogether.
+ 
+        (a) The contribution was created in whole or in part by me and I
+            have the right to submit it under the GPL v2 
+	    (Gnu Public License Version 2) 
 
-In order to address these issues, this patch does two things:
+        (b) The contribution is based upon previous work that, to the best
+            of my knowledge, is covered under an appropriate open source
+            license and I have the right under that license to submit that
+            work with modifications, whether created in whole or in part
+            by me, under the same open source license (unless I am
+            permitted to submit under a different license), as indicated
+            in the file; or
 
-- Forced mmap unmapping is only done when we are forcefully detaching
-  all contexts, and not in the normal detach path. Since the normal
-  context close path is tied to the file release any mmaps must have
-  already been released so we don't need to worry in that case.
+        (c) I understand and agree that this project and the contribution
+            are public and that a record of the contribution (including all
+            personal information I submit with it, including my sign-off) is
+            maintained indefinitely and may be redistributed consistent with
+            this project or the open source license(s) involved.
 
-- The mmap path now uses a vm_operations_struct with a fault handler.
-  The fault handler ensures that the context is in started state,
-  otherwise it fails the access attempt with a SIGBUS.
+	Signed-off-by: Thomas Haschka <haschka@gmail.com>
 
-Fixes: b123429e6a9e ("cxl: Unmap MMIO regions when detaching a context")
-Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- drivers/misc/cxl/context.c | 82 +++++++++++++++++++++++++++++++++++-----------
- drivers/misc/cxl/file.c    | 14 ++++----
- 2 files changed, 71 insertions(+), 25 deletions(-)
-
-diff --git a/drivers/misc/cxl/context.c b/drivers/misc/cxl/context.c
-index 51fd6b5..d1b55fe 100644
---- a/drivers/misc/cxl/context.c
-+++ b/drivers/misc/cxl/context.c
-@@ -100,6 +100,46 @@ int cxl_context_init(struct cxl_context *ctx, struct cxl_afu *afu, bool master,
- 	return 0;
+--- linux/drivers/macintosh/therm_adt746x.c.orig	2015-02-25 11:26:43.164000000 +0100
++++ linux/drivers/macintosh/therm_adt746x.c	2015-02-25 11:40:54.240000000 +0100
+@@ -1,7 +1,8 @@
+ /*
+  * Device driver for the i2c thermostat found on the iBook G4, Albook G4
+  *
+- * Copyright (C) 2003, 2004 Colin Leroy, Rasmus Rohde, Benjamin Herrenschmidt
++ * Copyright (C) 2003, 2004, 2015 
++ *   Colin Leroy, Rasmus Rohde, Benjamin Herrenschmidt, Thomas Haschka
+  *
+  * Documentation from 115254175ADT7467_pra.pdf and 3686221171167ADT7460_b.pdf
+  * http://www.onsemi.com/PowerSolutions/product.do?id=ADT7467
+@@ -45,8 +46,10 @@ static u8 REM_CONTROL[2] = {0x00, 0x40};
+ static u8 FAN_SPEED[2]   = {0x28, 0x2a};
+ static u8 FAN_SPD_SET[2] = {0x30, 0x31};
+ 
+-static u8 default_limits_local[3] = {70, 50, 70};    /* local, sensor1, sensor2 */
+-static u8 default_limits_chip[3] = {80, 65, 80};    /* local, sensor1, sensor2 */
++/* Local sensor is down to 45 in order to assure stable harddrive and 
++ * components temperature on single fan machines */
++static u8 default_limits_local[3] = {45, 50, 70}; /* local, sensor1, sensor2 */
++static u8 default_limits_chip[3] = {80, 65, 80}; /* local, sensor1, sensor2 */
+ static const char *sensor_location[3] = { "?", "?", "?" };
+ 
+ static int limit_adjust;
+@@ -223,7 +226,7 @@ static void display_stats(struct thermos
+ }
+ #endif
+ 
+-static void update_fans_speed (struct thermostat *th)
++static void update_fans_speed_multifan (struct thermostat *th)
+ {
+ 	int lastvar = 0; /* last variation, for iBook */
+ 	int i = 0;
+@@ -278,6 +281,83 @@ static void update_fans_speed (struct th
+ 	}
  }
  
-+static int cxl_mmap_fault(struct vm_area_struct *vma, struct vm_fault *vmf)
-+{
-+	struct cxl_context *ctx = vma->vm_file->private_data;
-+	unsigned long address = (unsigned long)vmf->virtual_address;
-+	u64 area, offset;
++static void update_fans_speed_singlefan (struct thermostat *th) {
 +
-+	offset = vmf->pgoff << PAGE_SHIFT;
++	/* Single Fan Laptops i.e. 12 inch Powerbook, Ibook etc.
++	 * Necessites the readout of all three thermal sensors
++	 * in order to avoid the harddisk and other components to overheat
++	 * in the case of cold CPU. */
++	
++	int lastvar = 0; /* last variation, for iBook */
++	int i = 0;
++	int var = 0;
++	int var_sensor[3];
++	int started = 0;
++	int fan_number = 0;
++	for (i = 0; i < 3; i++) {
++		var_sensor[i] = th->temps[i] - th->limits[i];
++	}
++	var = var_sensor[0];
++	for (i = 1; i < 3; i++) {
++		if (var_sensor[i] > var) {
++			var = var_sensor[i]; 
++		}
++	}
++	if (var > -1) {
++		int step = (255 - fan_speed) / 7;
++		int new_speed = 0;
++		/* hysteresis : change fan speed only if variation is
++		 * more than two degrees */
++		if (abs(var - th->last_var[fan_number]) > 2) { 
 +
-+	pr_devel("%s: pe: %i address: 0x%lx offset: 0x%llx\n",
-+			__func__, ctx->pe, address, offset);
++			started = 1;
++			new_speed = fan_speed + ((var-1)*step);
 +
-+	if (ctx->afu->current_mode == CXL_MODE_DEDICATED) {
-+		area = ctx->afu->psn_phys;
-+		if (offset > ctx->afu->adapter->ps_size)
-+			return VM_FAULT_SIGBUS;
-+	} else {
-+		area = ctx->psn_phys;
-+		if (offset > ctx->psn_size)
-+			return VM_FAULT_SIGBUS;
++			if (new_speed < fan_speed)
++				new_speed = fan_speed;
++			if (new_speed > 255)
++				new_speed = 255;
++
++			if (verbose)
++				printk(KERN_DEBUG "adt746x:"
++				       " Setting fans speed to %d "
++				       "(limit exceeded by %d on %s)\n",
++				       new_speed, var,
++				       sensor_location[fan_number+1]);
++			write_both_fan_speed(th, new_speed);
++			th->last_var[fan_number] = var; 
++		}
++	} else if (var < -2) {
++		/* don't stop fan if sensor2 is cold and sensor1 is not
++		 * so cold (lastvar >= -1) */
++		if (i == 2 && lastvar < -1) {
++			if (th->last_speed[fan_number] != 0)
++				if (verbose)
++					printk(KERN_DEBUG "adt746x:"
++					       " Stopping "
++					       "fans.\n");
++			write_both_fan_speed(th, 0);
++		}
 +	}
 +
-+	mutex_lock(&ctx->status_mutex);
++	lastvar = var;
 +
-+	if (ctx->status != STARTED) {
-+		mutex_unlock(&ctx->status_mutex);
-+		pr_devel("%s: Context not started, failing problem state access\n", __func__);
-+		return VM_FAULT_SIGBUS;
-+	}
-+
-+	vm_insert_pfn(vma, address, (area + offset) >> PAGE_SHIFT);
-+
-+	mutex_unlock(&ctx->status_mutex);
-+
-+	return VM_FAULT_NOPAGE;
++	if (started)
++		return; /* we don't want to re-stop the fan
++			 * if sensor1 is heating and sensor2 is not */
 +}
 +
-+static const struct vm_operations_struct cxl_mmap_vmops = {
-+	.fault = cxl_mmap_fault,
-+};
++static void update_fans_speed(struct thermostat *th) {
 +
- /*
-  * Map a per-context mmio space into the given vma.
-  */
-@@ -108,26 +148,25 @@ int cxl_context_iomap(struct cxl_context *ctx, struct vm_area_struct *vma)
- 	u64 len = vma->vm_end - vma->vm_start;
- 	len = min(len, ctx->psn_size);
- 
--	if (ctx->afu->current_mode == CXL_MODE_DEDICATED) {
--		vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
--		return vm_iomap_memory(vma, ctx->afu->psn_phys, ctx->afu->adapter->ps_size);
--	}
-+	if (ctx->afu->current_mode != CXL_MODE_DEDICATED) {
-+		/* make sure there is a valid per process space for this AFU */
-+		if ((ctx->master && !ctx->afu->psa) || (!ctx->afu->pp_psa)) {
-+			pr_devel("AFU doesn't support mmio space\n");
-+			return -EINVAL;
-+		}
- 
--	/* make sure there is a valid per process space for this AFU */
--	if ((ctx->master && !ctx->afu->psa) || (!ctx->afu->pp_psa)) {
--		pr_devel("AFU doesn't support mmio space\n");
--		return -EINVAL;
-+		/* Can't mmap until the AFU is enabled */
-+		if (!ctx->afu->enabled)
-+			return -EBUSY;
- 	}
- 
--	/* Can't mmap until the AFU is enabled */
--	if (!ctx->afu->enabled)
--		return -EBUSY;
--
- 	pr_devel("%s: mmio physical: %llx pe: %i master:%i\n", __func__,
- 		 ctx->psn_phys, ctx->pe , ctx->master);
- 
-+	vma->vm_flags |= VM_IO | VM_PFNMAP;
- 	vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
--	return vm_iomap_memory(vma, ctx->psn_phys, len);
-+	vma->vm_ops = &cxl_mmap_vmops;
-+	return 0;
- }
- 
- /*
-@@ -150,12 +189,6 @@ static void __detach_context(struct cxl_context *ctx)
- 	afu_release_irqs(ctx);
- 	flush_work(&ctx->fault_work); /* Only needed for dedicated process */
- 	wake_up_all(&ctx->wq);
--
--	/* Release Problem State Area mapping */
--	mutex_lock(&ctx->mapping_lock);
--	if (ctx->mapping)
--		unmap_mapping_range(ctx->mapping, 0, 0, 1);
--	mutex_unlock(&ctx->mapping_lock);
- }
- 
- /*
-@@ -184,6 +217,17 @@ void cxl_context_detach_all(struct cxl_afu *afu)
- 		 * created and torn down after the IDR removed
- 		 */
- 		__detach_context(ctx);
-+
-+		/*
-+		 * We are force detaching - remove any active PSA mappings so
-+		 * userspace cannot interfere with the card if it comes back.
-+		 * Easiest way to exercise this is to unbind and rebind the
-+		 * driver via sysfs while it is in use.
-+		 */
-+		mutex_lock(&ctx->mapping_lock);
-+		if (ctx->mapping)
-+			unmap_mapping_range(ctx->mapping, 0, 0, 1);
-+		mutex_unlock(&ctx->mapping_lock);
- 	}
- 	mutex_unlock(&afu->contexts_lock);
- }
-diff --git a/drivers/misc/cxl/file.c b/drivers/misc/cxl/file.c
-index e9f2f10..b15d811 100644
---- a/drivers/misc/cxl/file.c
-+++ b/drivers/misc/cxl/file.c
-@@ -140,18 +140,20 @@ static long afu_ioctl_start_work(struct cxl_context *ctx,
- 
- 	pr_devel("%s: pe: %i\n", __func__, ctx->pe);
- 
--	mutex_lock(&ctx->status_mutex);
--	if (ctx->status != OPENED) {
--		rc = -EIO;
--		goto out;
--	}
--
-+	/* Do this outside the status_mutex to avoid a circular dependency with
-+	 * the locking in cxl_mmap_fault() */
- 	if (copy_from_user(&work, uwork,
- 			   sizeof(struct cxl_ioctl_start_work))) {
- 		rc = -EFAULT;
- 		goto out;
- 	}
- 
-+	mutex_lock(&ctx->status_mutex);
-+	if (ctx->status != OPENED) {
-+		rc = -EIO;
-+		goto out;
++	if (th->type == ADT7460) {
++		/* Multifan Laptops */
++		update_fans_speed_multifan(th);
++	} else {
++		/* Singlefan Laptops i.e. 12 inch Powerbook, Ibook etc. */
++		update_fans_speed_singlefan(th);
 +	}
++}
 +
- 	/*
- 	 * if any of the reserved fields are set or any of the unused
- 	 * flags are set it's invalid
--- 
-2.1.4
+ static int monitor_task(void *arg)
+ {
+ 	struct thermostat* th = arg;
+@@ -371,10 +451,18 @@ static ssize_t store_##name(struct devic
+ 	return n;						\
+ }
+ 
+-BUILD_SHOW_FUNC_INT(sensor1_temperature,	 (read_reg(th, TEMP_REG[1])))
+-BUILD_SHOW_FUNC_INT(sensor2_temperature,	 (read_reg(th, TEMP_REG[2])))
+-BUILD_SHOW_FUNC_INT(sensor1_limit,		 th->limits[1])
+-BUILD_SHOW_FUNC_INT(sensor2_limit,		 th->limits[2])
++/* Several nits are multiplied by 1000 in order to have
++ * coherent readings with other 
++ * temperature sensors such as intel coretemp. This further
++ * allows programs such as xosview to read these sensors correctly */
++
++BUILD_SHOW_FUNC_INT(sensor0_temperature,       (read_reg(th, TEMP_REG[0]))*1000)
++BUILD_SHOW_FUNC_INT(sensor1_temperature,       (read_reg(th, TEMP_REG[1]))*1000)
++BUILD_SHOW_FUNC_INT(sensor2_temperature,       (read_reg(th, TEMP_REG[2]))*1000)
++BUILD_SHOW_FUNC_INT(sensor0_limit,               (th->limits[0])*1000)
++BUILD_SHOW_FUNC_INT(sensor1_limit,		 (th->limits[1])*1000)
++BUILD_SHOW_FUNC_INT(sensor2_limit,		 (th->limits[2])*1000)
++BUILD_SHOW_FUNC_STR(sensor0_location,            sensor_location[0])
+ BUILD_SHOW_FUNC_STR(sensor1_location,		 sensor_location[1])
+ BUILD_SHOW_FUNC_STR(sensor2_location,		 sensor_location[2])
+ 
+@@ -387,14 +475,20 @@ BUILD_SHOW_FUNC_FAN(sensor2_fan_speed,
+ BUILD_SHOW_FUNC_INT_LITE(limit_adjust,	 limit_adjust)
+ BUILD_STORE_FUNC_DEG(limit_adjust,	 th)
+ 		
++static DEVICE_ATTR(sensor0_temperature,	S_IRUGO,
++		   show_sensor0_temperature,NULL);
+ static DEVICE_ATTR(sensor1_temperature,	S_IRUGO,
+ 		   show_sensor1_temperature,NULL);
+ static DEVICE_ATTR(sensor2_temperature,	S_IRUGO,
+ 		   show_sensor2_temperature,NULL);
++static DEVICE_ATTR(sensor0_limit, S_IRUGO,
++		   show_sensor0_limit,	NULL);
+ static DEVICE_ATTR(sensor1_limit, S_IRUGO,
+ 		   show_sensor1_limit,	NULL);
+ static DEVICE_ATTR(sensor2_limit, S_IRUGO,
+ 		   show_sensor2_limit,	NULL);
++static DEVICE_ATTR(sensor0_location, S_IRUGO,
++		   show_sensor0_location, NULL);
+ static DEVICE_ATTR(sensor1_location, S_IRUGO,
+ 		   show_sensor1_location, NULL);
+ static DEVICE_ATTR(sensor2_location, S_IRUGO,
+@@ -426,10 +520,13 @@ static void thermostat_create_files(stru
+ 		return;
+ 	dev = &th->pdev->dev;
+ 	dev_set_drvdata(dev, th);
+-	err = device_create_file(dev, &dev_attr_sensor1_temperature);
++	err = device_create_file(dev, &dev_attr_sensor0_temperature);
++	err |= device_create_file(dev, &dev_attr_sensor1_temperature);
+ 	err |= device_create_file(dev, &dev_attr_sensor2_temperature);
++	err |= device_create_file(dev, &dev_attr_sensor0_limit);
+ 	err |= device_create_file(dev, &dev_attr_sensor1_limit);
+ 	err |= device_create_file(dev, &dev_attr_sensor2_limit);
++	err |= device_create_file(dev, &dev_attr_sensor0_location);
+ 	err |= device_create_file(dev, &dev_attr_sensor1_location);
+ 	err |= device_create_file(dev, &dev_attr_sensor2_location);
+ 	err |= device_create_file(dev, &dev_attr_limit_adjust);
+@@ -449,10 +546,13 @@ static void thermostat_remove_files(stru
+ 	if (!th->pdev)
+ 		return;
+ 	dev = &th->pdev->dev;
++	device_remove_file(dev, &dev_attr_sensor0_temperature);
+ 	device_remove_file(dev, &dev_attr_sensor1_temperature);
+ 	device_remove_file(dev, &dev_attr_sensor2_temperature);
++	device_remove_file(dev, &dev_attr_sensor0_limit);
+ 	device_remove_file(dev, &dev_attr_sensor1_limit);
+ 	device_remove_file(dev, &dev_attr_sensor2_limit);
++	device_remove_file(dev, &dev_attr_sensor0_location);
+ 	device_remove_file(dev, &dev_attr_sensor1_location);
+ 	device_remove_file(dev, &dev_attr_sensor2_location);
+ 	device_remove_file(dev, &dev_attr_limit_adjust);
+
+On Tue, Feb 24, 2015 at 08:18:38AM +1100, Benjamin Herrenschmidt wrote:
+> Hi ! Please try sending patches inline rather than as attachments, it
+> makes replying a bit easier... Also don't CC stable, we can shoot to
+> stable later on if we think it's justified but first we need to get the
+> patch upstream
+> 
+> A few comments:
+> 
+> On Mon, 2015-02-23 at 12:58 +0100, Thomas Haschka wrote:
+> > --- linux/drivers/macintosh/therm_adt746x.c.orig        2015-02-23 12:19:03.984000000 +0100
+> > +++ linux/drivers/macintosh/therm_adt746x.c     2015-02-23 12:22:34.980000000 +0100
+> > @@ -1,7 +1,8 @@
+> >  /*
+> >   * Device driver for the i2c thermostat found on the iBook G4, Albook G4
+> >   *
+> > - * Copyright (C) 2003, 2004 Colin Leroy, Rasmus Rohde, Benjamin Herrenschmidt
+> > + * Copyright (C) 2003, 2004, 2015 
+> > + *   Colin Leroy, Rasmus Rohde, Benjamin Herrenschmidt, Thomas Haschka
+> >   *
+> >   * Documentation from 115254175ADT7467_pra.pdf and 3686221171167ADT7460_b.pdf
+> >   * http://www.onsemi.com/PowerSolutions/product.do?id=ADT7467
+> > @@ -45,7 +46,7 @@ static u8 REM_CONTROL[2] = {0x00, 0x40};
+> >  static u8 FAN_SPEED[2]   = {0x28, 0x2a};
+> >  static u8 FAN_SPD_SET[2] = {0x30, 0x31};
+> >  
+> > -static u8 default_limits_local[3] = {70, 50, 70};    /* local, sensor1, sensor2 */
+> > +static u8 default_limits_local[3] = {45, 50, 70};    /* local, sensor1, sensor2 */
+> 
+> Here you change the limit for the local sensor for existing machines,
+> care to explain ? I *think* that got adjusted a while back due to
+> a bunch of bogus error on some machines.
+> 
+> >  static u8 default_limits_chip[3] = {80, 65, 80};    /* local, sensor1, sensor2 */
+> >  static const char *sensor_location[3] = { "?", "?", "?" };
+> >  
+> > @@ -225,59 +226,123 @@ static void display_stats(struct thermos
+> >  
+> >  static void update_fans_speed (struct thermostat *th)
+> >  {
+> > -       int lastvar = 0; /* last variation, for iBook */
+> > -       int i = 0;
+> > -
+> > -       /* we don't care about local sensor, so we start at sensor 1 */
+> > -       for (i = 1; i < 3; i++) {
+> > -               int started = 0;
+> > -               int fan_number = (th->type == ADT7460 && i == 2);
+> > -               int var = th->temps[i] - th->limits[i];
+> > -
+> > -               if (var > -1) {
+> > -                       int step = (255 - fan_speed) / 7;
+> > -                       int new_speed = 0;
+> > +       
+> > +       /* Multfan Laptops */
+> > +       if ( th->type == ADT7460 ) {
+> > +                int lastvar = 0; /* last variation, for iBook */
+> > +               int i = 0;
+> > +                /* we don't care about local sensor, so we start at sensor 1 */
+> > +               for (i = 1; i < 3; i++) {
+> > +                       int started = 0;
+> > +                       int fan_number = (th->type == ADT7460 && i == 2);
+> > +                       int var = th->temps[i] - th->limits[i];
+> > +
+> > +                       if (var > -1) {
+> > +                               int step = (255 - fan_speed) / 7;
+> > +                               int new_speed = 0;
+> 
+> The function is too big, please break it down into two sub functions,
+> one for multifan and one for single fan.
+> 
+> It is also unclear due to the indentation changes whether you changed
+> the behaviour on "other" laptops. makes the review a bit harder.
+> 
+> >                         /* hysteresis : change fan speed only if variation is
+> >                          * more than two degrees */
+> > -                       if (abs(var - th->last_var[fan_number]) < 2)
+> > -                               continue;
+> > -
+> > -                       started = 1;
+> > -                       new_speed = fan_speed + ((var-1)*step);
+> > +                               if (abs(var - th->last_var[fan_number]) < 2)
+> > +                                       continue;
+> >  
+> > -                       if (new_speed < fan_speed)
+> > -                               new_speed = fan_speed;
+> > -                       if (new_speed > 255)
+> > -                               new_speed = 255;
+> > +                               started = 1;
+> > +                               new_speed = fan_speed + ((var-1)*step);
+> >  
+> > -                       if (verbose)
+> > -                               printk(KERN_DEBUG "adt746x: Setting fans speed to %d "
+> > -                                                "(limit exceeded by %d on %s)\n",
+> > -                                               new_speed, var,
+> > -                                               sensor_location[fan_number+1]);
+> > -                       write_both_fan_speed(th, new_speed);
+> > -                       th->last_var[fan_number] = var;
+> > -               } else if (var < -2) {
+> > +                               if (new_speed < fan_speed)
+> > +                                       new_speed = fan_speed;
+> > +                               if (new_speed > 255)
+> > +                                       new_speed = 255;
+> > +
+> > +                               if (verbose)
+> > +                                       printk(KERN_DEBUG "adt746x: Setting fans speed to %d "
+> > +                                                        "(limit exceeded by %d on %s)\n",
+> > +                                                       new_speed, var,
+> > +                                                       sensor_location[fan_number+1]);
+> > +                               write_both_fan_speed(th, new_speed);
+> > +                               th->last_var[fan_number] = var;
+> > +                       } else if (var < -2) {
+> >                         /* don't stop fan if sensor2 is cold and sensor1 is not
+> >                          * so cold (lastvar >= -1) */
+> > -                       if (i == 2 && lastvar < -1) {
+> > -                               if (th->last_speed[fan_number] != 0)
+> > -                                       if (verbose)
+> > +                               if (i == 2 && lastvar < -1) {
+> > +                                       if (th->last_speed[fan_number] != 0)
+> > +                                               if (verbose)
+> > +                                                       printk(KERN_DEBUG "adt746x: Stopping "
+> > +                                                               "fans.\n");
+> > +                                       write_both_fan_speed(th, 0);
+> > +                               }
+> > +                       }
+> > +
+> > +                       lastvar = var;
+> > +
+> > +                       if (started)
+> > +                               return; /* we don't want to re-stop the fan
+> > +                               * if sensor1 is heating and sensor2 is not */
+> > +               }
+> > +       
+> > +       } else {
+> > +               /*single fan laptops i.e. 12 inch powerbook/ibook*/
+> > +                int lastvar = 0; /* last variation, for iBook */
+> > +               int i = 0;
+> > +               int var = 0;
+> > +               int var_sensor[3];
+> > +               int started = 0;
+> > +               int fan_number = 0;
+> > +               for (i = 0; i < 3; i++) {
+> > +                       var_sensor[i] = th->temps[i] - th->limits[i];
+> > +               }
+> > +               var = var_sensor[0];
+> > +               for (i = 1; i < 3; i++) {
+> > +                       if (var_sensor[i] > var) {
+> > +                               var = var_sensor[i]; 
+> > +                       }
+> > +               }
+> > +               if (var > -1) {
+> > +                       int step = (255 - fan_speed) / 7;
+> > +                       int new_speed = 0;
+> > +
+> > +                       /* hysteresis : change fan speed only if variation is
+> > +                        * more than two degrees */
+> > +                       if (abs(var - th->last_var[fan_number]) > 2) { 
+> > +
+> > +                       started = 1;
+> > +                       new_speed = fan_speed + ((var-1)*step);
+> > +
+> > +                       if (new_speed < fan_speed)
+> > +                               new_speed = fan_speed;
+> > +                       if (new_speed > 255)
+> > +                               new_speed = 255;
+> > +
+> > +                       if (verbose)
+> > +                               printk(
+> > +                                      KERN_DEBUG "adt746x: Setting fans speed to %d "
+> > +                                                "(limit exceeded by %d on %s)\n",
+> > +                              new_speed, var,
+> > +                              sensor_location[fan_number+1]);
+> > +                       write_both_fan_speed(th, new_speed);
+> > +                       th->last_var[fan_number] = var; 
+> > +                        }
+> > +               } else if (var < -2) {
+> > +         /* don't stop fan if sensor2 is cold and sensor1 is not
+> > +          * so cold (lastvar >= -1) */
+> > +                        if (i == 2 && lastvar < -1) {
+> > +                               if (th->last_speed[fan_number] != 0)
+> > +                                       if (verbose)
+> >                                                 printk(KERN_DEBUG "adt746x: Stopping "
+> >                                                         "fans.\n");
+> > -                               write_both_fan_speed(th, 0);
+> > +                                       write_both_fan_speed(th, 0);
+> >                         }
+> >                 }
+> >  
+> > -               lastvar = var;
+> > +               lastvar = var;
+> >  
+> >                 if (started)
+> > -                       return; /* we don't want to re-stop the fan
+> > -                               * if sensor1 is heating and sensor2 is not */
+> > +               return; /* we don't want to re-stop the fan
+> > +                        * if sensor1 is heating and sensor2 is not */
+> >         }
+> >  }
+> >  
+> > +
+> >  static int monitor_task(void *arg)
+> >  {
+> >         struct thermostat* th = arg;
+> > @@ -371,10 +436,13 @@ static ssize_t store_##name(struct devic
+> >         return n;                                               \
+> >  }
+> >  
+> > -BUILD_SHOW_FUNC_INT(sensor1_temperature,        (read_reg(th, TEMP_REG[1])))
+> > -BUILD_SHOW_FUNC_INT(sensor2_temperature,        (read_reg(th, TEMP_REG[2])))
+> > -BUILD_SHOW_FUNC_INT(sensor1_limit,              th->limits[1])
+> > -BUILD_SHOW_FUNC_INT(sensor2_limit,              th->limits[2])
+> > +BUILD_SHOW_FUNC_INT(sensor0_temperature,         (read_reg(th, TEMP_REG[0]))*1000)
+> > +BUILD_SHOW_FUNC_INT(sensor1_temperature,        (read_reg(th, TEMP_REG[1]))*1000)
+> > +BUILD_SHOW_FUNC_INT(sensor2_temperature,        (read_reg(th, TEMP_REG[2]))*1000)
+> > +BUILD_SHOW_FUNC_INT(sensor0_limit,               (th->limits[0])*1000)
+> > +BUILD_SHOW_FUNC_INT(sensor1_limit,              (th->limits[1])*1000)
+> > +BUILD_SHOW_FUNC_INT(sensor2_limit,              (th->limits[2])*1000)
+> 
+> You changed the units here, that should be documented and why.
+> 
+> > +BUILD_SHOW_FUNC_STR(sensor0_location,            sensor_location[0])
+> >  BUILD_SHOW_FUNC_STR(sensor1_location,           sensor_location[1])
+> >  BUILD_SHOW_FUNC_STR(sensor2_location,           sensor_location[2])
+> >  
+> > @@ -387,14 +455,20 @@ BUILD_SHOW_FUNC_FAN(sensor2_fan_speed,
+> >  BUILD_SHOW_FUNC_INT_LITE(limit_adjust,  limit_adjust)
+> >  BUILD_STORE_FUNC_DEG(limit_adjust,      th)
+> >                 
+> > +static DEVICE_ATTR(sensor0_temperature,        S_IRUGO,
+> > +                  show_sensor0_temperature,NULL);
+> >  static DEVICE_ATTR(sensor1_temperature,        S_IRUGO,
+> >                    show_sensor1_temperature,NULL);
+> >  static DEVICE_ATTR(sensor2_temperature,        S_IRUGO,
+> >                    show_sensor2_temperature,NULL);
+> > +static DEVICE_ATTR(sensor0_limit, S_IRUGO,
+> > +                  show_sensor0_limit,  NULL);
+> >  static DEVICE_ATTR(sensor1_limit, S_IRUGO,
+> >                    show_sensor1_limit,  NULL);
+> >  static DEVICE_ATTR(sensor2_limit, S_IRUGO,
+> >                    show_sensor2_limit,  NULL);
+> > +static DEVICE_ATTR(sensor0_location, S_IRUGO,
+> > +                  show_sensor0_location, NULL);
+> >  static DEVICE_ATTR(sensor1_location, S_IRUGO,
+> >                    show_sensor1_location, NULL);
+> >  static DEVICE_ATTR(sensor2_location, S_IRUGO,
+> > @@ -426,10 +500,13 @@ static void thermostat_create_files(stru
+> >                 return;
+> >         dev = &th->pdev->dev;
+> >         dev_set_drvdata(dev, th);
+> > -       err = device_create_file(dev, &dev_attr_sensor1_temperature);
+> > +       err = device_create_file(dev, &dev_attr_sensor0_temperature);
+> > +       err |= device_create_file(dev, &dev_attr_sensor1_temperature);
+> >         err |= device_create_file(dev, &dev_attr_sensor2_temperature);
+> > +       err |= device_create_file(dev, &dev_attr_sensor0_limit);
+> >         err |= device_create_file(dev, &dev_attr_sensor1_limit);
+> >         err |= device_create_file(dev, &dev_attr_sensor2_limit);
+> > +       err |= device_create_file(dev, &dev_attr_sensor0_location);
+> >         err |= device_create_file(dev, &dev_attr_sensor1_location);
+> >         err |= device_create_file(dev, &dev_attr_sensor2_location);
+> >         err |= device_create_file(dev, &dev_attr_limit_adjust);
+> > @@ -449,10 +526,13 @@ static void thermostat_remove_files(stru
+> >         if (!th->pdev)
+> >                 return;
+> >         dev = &th->pdev->dev;
+> > +       device_remove_file(dev, &dev_attr_sensor0_temperature);
+> >         device_remove_file(dev, &dev_attr_sensor1_temperature);
+> >         device_remove_file(dev, &dev_attr_sensor2_temperature);
+> > +       device_remove_file(dev, &dev_attr_sensor0_limit);
+> >         device_remove_file(dev, &dev_attr_sensor1_limit);
+> >         device_remove_file(dev, &dev_attr_sensor2_limit);
+> > +       device_remove_file(dev, &dev_attr_sensor0_location);
+> >         device_remove_file(dev, &dev_attr_sensor1_location);
+> >         device_remove_file(dev, &dev_attr_sensor2_location);
+> >         device_remove_file(dev, &dev_attr_limit_adjust);
+> 
+> Cheers,
+> Ben.
+> 
+> 
