@@ -2,14 +2,14 @@ Return-Path: <wsa@the-dreams.de>
 Received: from pokefinder.org (sauhun.de [89.238.76.85])
  (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 754561A012A
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Feb 2015 03:02:56 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2C5791A0191
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Feb 2015 03:03:00 +1100 (AEDT)
 From: Wolfram Sang <wsa@the-dreams.de>
 To: linux-i2c@vger.kernel.org
-Subject: [RFC V2 10/12] i2c: viperboard: make use of the new infrastructure
- for quirks
-Date: Wed, 25 Feb 2015 17:02:01 +0100
-Message-Id: <1424880126-15047-11-git-send-email-wsa@the-dreams.de>
+Subject: [RFC V2 11/12] i2c: pmcmsp: make use of the new infrastructure for
+ quirks
+Date: Wed, 25 Feb 2015 17:02:02 +0100
+Message-Id: <1424880126-15047-12-git-send-email-wsa@the-dreams.de>
 In-Reply-To: <1424880126-15047-1-git-send-email-wsa@the-dreams.de>
 References: <1424880126-15047-1-git-send-email-wsa@the-dreams.de>
 Cc: linux-mips@linux-mips.org, Wolfram Sang <wsa@the-dreams.de>,
@@ -30,43 +30,83 @@ From: Wolfram Sang <wsa+renesas@sang-engineering.com>
 
 Signed-off-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
 ---
- drivers/i2c/busses/i2c-viperboard.c | 10 ++++++----
- 1 file changed, 6 insertions(+), 4 deletions(-)
+ drivers/i2c/busses/i2c-pmcmsp.c | 42 ++++++++++++++++-------------------------
+ 1 file changed, 16 insertions(+), 26 deletions(-)
 
-diff --git a/drivers/i2c/busses/i2c-viperboard.c b/drivers/i2c/busses/i2c-viperboard.c
-index 7533fa34d73711..47e88adf2011e1 100644
---- a/drivers/i2c/busses/i2c-viperboard.c
-+++ b/drivers/i2c/busses/i2c-viperboard.c
-@@ -288,10 +288,6 @@ static int vprbrd_i2c_xfer(struct i2c_adapter *i2c, struct i2c_msg *msgs,
- 			i, pmsg->flags & I2C_M_RD ? "read" : "write",
- 			pmsg->flags, pmsg->len, pmsg->addr);
+diff --git a/drivers/i2c/busses/i2c-pmcmsp.c b/drivers/i2c/busses/i2c-pmcmsp.c
+index d37d9db6681e7b..2c40edbf6224eb 100644
+--- a/drivers/i2c/busses/i2c-pmcmsp.c
++++ b/drivers/i2c/busses/i2c-pmcmsp.c
+@@ -456,14 +456,6 @@ static enum pmcmsptwi_xfer_result pmcmsptwi_xfer_cmd(
+ 		return -EINVAL;
+ 	}
  
--		/* msgs longer than 2048 bytes are not supported by adapter */
--		if (pmsg->len > 2048)
--			return -EINVAL;
+-	if (cmd->read_len > MSP_MAX_BYTES_PER_RW ||
+-	    cmd->write_len > MSP_MAX_BYTES_PER_RW) {
+-		dev_err(&pmcmsptwi_adapter.dev,
+-			"%s: Cannot transfer more than %d bytes\n",
+-			__func__, MSP_MAX_BYTES_PER_RW);
+-		return -EINVAL;
+-	}
 -
- 		mutex_lock(&vb->lock);
- 		/* directly send the message */
- 		if (pmsg->flags & I2C_M_RD) {
-@@ -358,6 +354,11 @@ static const struct i2c_algorithm vprbrd_algorithm = {
- 	.functionality	= vprbrd_i2c_func,
- };
+ 	mutex_lock(&data->lock);
+ 	dev_dbg(&pmcmsptwi_adapter.dev,
+ 		"Setting address to 0x%04x\n", cmd->addr);
+@@ -520,25 +512,14 @@ static int pmcmsptwi_master_xfer(struct i2c_adapter *adap,
+ 	struct pmcmsptwi_cfg oldcfg, newcfg;
+ 	int ret;
  
-+static struct i2c_adapter_quirks vprbrd_quirks = {
-+	.max_read_len = 2048,
-+	.max_write_len = 2048,
+-	if (num > 2) {
+-		dev_dbg(&adap->dev, "%d messages unsupported\n", num);
+-		return -EINVAL;
+-	} else if (num == 2) {
+-		/* Check for a dual write-then-read command */
++	if (num == 2) {
+ 		struct i2c_msg *nextmsg = msg + 1;
+-		if (!(msg->flags & I2C_M_RD) &&
+-		    (nextmsg->flags & I2C_M_RD) &&
+-		    msg->addr == nextmsg->addr) {
+-			cmd.type = MSP_TWI_CMD_WRITE_READ;
+-			cmd.write_len = msg->len;
+-			cmd.write_data = msg->buf;
+-			cmd.read_len = nextmsg->len;
+-			cmd.read_data = nextmsg->buf;
+-		} else {
+-			dev_dbg(&adap->dev,
+-				"Non write-read dual messages unsupported\n");
+-			return -EINVAL;
+-		}
++
++		cmd.type = MSP_TWI_CMD_WRITE_READ;
++		cmd.write_len = msg->len;
++		cmd.write_data = msg->buf;
++		cmd.read_len = nextmsg->len;
++		cmd.read_data = nextmsg->buf;
+ 	} else if (msg->flags & I2C_M_RD) {
+ 		cmd.type = MSP_TWI_CMD_READ;
+ 		cmd.read_len = msg->len;
+@@ -598,6 +579,14 @@ static u32 pmcmsptwi_i2c_func(struct i2c_adapter *adapter)
+ 		I2C_FUNC_SMBUS_WORD_DATA | I2C_FUNC_SMBUS_PROC_CALL;
+ }
+ 
++static struct i2c_adapter_quirks pmcmsptwi_i2c_quirks = {
++	.flags = I2C_AQ_COMB_WRITE_THEN_READ,
++	.max_write_len = MSP_MAX_BYTES_PER_RW,
++	.max_read_len = MSP_MAX_BYTES_PER_RW,
++	.max_comb_1st_msg_len = MSP_MAX_BYTES_PER_RW,
++	.max_comb_2nd_msg_len = MSP_MAX_BYTES_PER_RW,
 +};
 +
- static int vprbrd_i2c_probe(struct platform_device *pdev)
- {
- 	struct vprbrd *vb = dev_get_drvdata(pdev->dev.parent);
-@@ -373,6 +374,7 @@ static int vprbrd_i2c_probe(struct platform_device *pdev)
- 	vb_i2c->i2c.owner = THIS_MODULE;
- 	vb_i2c->i2c.class = I2C_CLASS_HWMON;
- 	vb_i2c->i2c.algo = &vprbrd_algorithm;
-+	vb_i2c->i2c.quirks = &vprbrd_quirks;
- 	vb_i2c->i2c.algo_data = vb;
- 	/* save the param in usb capabable memory */
- 	vb_i2c->bus_freq_param = i2c_bus_param;
+ /* -- Initialization -- */
+ 
+ static struct i2c_algorithm pmcmsptwi_algo = {
+@@ -609,6 +598,7 @@ static struct i2c_adapter pmcmsptwi_adapter = {
+ 	.owner		= THIS_MODULE,
+ 	.class		= I2C_CLASS_HWMON | I2C_CLASS_SPD,
+ 	.algo		= &pmcmsptwi_algo,
++	.quirks		= &pmcmsptwi_i2c_quirks,
+ 	.name		= DRV_NAME,
+ };
+ 
 -- 
 2.1.4
