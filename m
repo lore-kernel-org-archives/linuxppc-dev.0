@@ -1,29 +1,26 @@
-Return-Path: <scottwood@freescale.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <gregkh@linuxfoundation.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3D6661A000B
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Feb 2015 10:05:23 +1100 (AEDT)
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bbn0107.outbound.protection.outlook.com [157.56.111.107])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+ by lists.ozlabs.org (Postfix) with ESMTPS id 37C1A1A000B
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Feb 2015 11:32:32 +1100 (AEDT)
+Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
+ [140.211.169.12])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 4929D140083
- for <linuxppc-dev@ozlabs.org>; Wed, 25 Feb 2015 10:05:21 +1100 (AEDT)
-Message-ID: <1424819106.4698.32.camel@freescale.com>
-Subject: Re: [PATCH 2/3] powerpc/dma: Support 32-bit coherent mask with
- 64-bit dma_mask
-From: Scott Wood <scottwood@freescale.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Tue, 24 Feb 2015 17:05:06 -0600
-In-Reply-To: <1424810457.12891.49.camel@kernel.crashing.org>
-References: <1424421330.27448.42.camel@kernel.crashing.org>
- <1424810077.4698.30.camel@freescale.com>
- <1424810457.12891.49.camel@kernel.crashing.org>
-Content-Type: text/plain; charset="UTF-8"
+ by ozlabs.org (Postfix) with ESMTPS id E1ACE140111
+ for <linuxppc-dev@ozlabs.org>; Wed, 25 Feb 2015 11:32:31 +1100 (AEDT)
+Date: Tue, 24 Feb 2015 16:32:29 -0800
+From: Greg KH <gregkh@linuxfoundation.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH 1/3] cxl: Use image state defaults for reloading FPGA
+Message-ID: <20150225003229.GA10806@kroah.com>
+References: <1424665281-25431-1-git-send-email-mpe@ellerman.id.au>
 MIME-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Anton Blanchard <anton@au1.ibm.com>, Brian J
- King <bjking1@us.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1424665281-25431-1-git-send-email-mpe@ellerman.id.au>
+Cc: grimm@linux.vnet.ibm.com, linuxppc-dev@ozlabs.org, imunsie@au.ibm.com,
+ stable@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,30 +30,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2015-02-25 at 07:40 +1100, Benjamin Herrenschmidt wrote:
-> On Tue, 2015-02-24 at 14:34 -0600, Scott Wood wrote:
-> > On Fri, 2015-02-20 at 19:35 +1100, Benjamin Herrenschmidt wrote:
-> > >  static u64 dma_direct_get_required_mask(struct device *dev)
-> > > diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-> > > index f146ef0..a7f15e2 100644
-> > > --- a/arch/powerpc/mm/mem.c
-> > > +++ b/arch/powerpc/mm/mem.c
-> > > @@ -277,6 +277,11 @@ int dma_pfn_limit_to_zone(u64 pfn_limit)
-> > >  	return -EPERM;
-> > >  }
-> > >  
-> > > +u64 dma_get_zone_limit(int zone)
-> > > +{
-> > > +	return max_zone_pfns[zone] << PAGE_SHIFT;
-> > > +}
-> > 
-> > If you must do this in terms of bytes rather than pfn, cast to u64
-> > before shifting -- and even then the result will be PAGE_SIZE - 1 too
-> > small.
+On Mon, Feb 23, 2015 at 03:21:19PM +1100, Michael Ellerman wrote:
+> From: Ryan Grimm <grimm@linux.vnet.ibm.com>
 > 
-> Do we have RAM above what a unsigned long can hold ? I think I'll just
-> make it a pfn and respin...
+> Commit 4beb5421babee1204757b877622830c6aa31be6d upstream.
+> 
+> Select defaults such that a PERST causes flash image reload.  Select which
+> image based on what the card is set up to load.
+> 
+> CXL_VSEC_PERST_LOADS_IMAGE selects whether PERST assertion causes flash image
+> load.
+> 
+> CXL_VSEC_PERST_SELECT_USER selects which image is loaded on the next PERST.
+> 
+> cxl_update_image_control writes these bits into the VSEC.
+> 
+> Signed-off-by: Ryan Grimm <grimm@linux.vnet.ibm.com>
+> Acked-by: Ian Munsie <imunsie@au1.ibm.com>
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> ---
+>  drivers/misc/cxl/cxl.h |  1 +
+>  drivers/misc/cxl/pci.c | 42 ++++++++++++++++++++++++++++++++++++++++--
+>  2 files changed, 41 insertions(+), 2 deletions(-)
 
-Yes, we can have over 4 GiB RAM on 32-bit.
+What stable kernel(s) are you wanting this series to go into?
 
--Scott
+thanks,
+
+greg k-h
