@@ -1,20 +1,22 @@
 Return-Path: <haokexin@gmail.com>
-Received: from mail-yh0-x22d.google.com (mail-yh0-x22d.google.com
- [IPv6:2607:f8b0:4002:c01::22d])
+Received: from mail-yh0-x229.google.com (mail-yh0-x229.google.com
+ [IPv6:2607:f8b0:4002:c01::229])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1CFF91A002B
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Feb 2015 23:09:18 +1100 (AEDT)
-Received: by yhl29 with SMTP id 29so4203690yhl.0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Feb 2015 04:09:16 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 72F9A1A00A5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Feb 2015 23:09:23 +1100 (AEDT)
+Received: by yhzz6 with SMTP id z6so4205138yhz.5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Feb 2015 04:09:21 -0800 (PST)
 From: Kevin Hao <haokexin@gmail.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH v2 01/11] sata_svw: remove the dependency on PPC_OF
-Date: Thu, 26 Feb 2015 20:08:13 +0800
-Message-Id: <1424952503-8247-2-git-send-email-haokexin@gmail.com>
+Subject: [PATCH v2 02/11] fbdev: aty128fb: replace PPC_OF with PPC
+Date: Thu, 26 Feb 2015 20:08:14 +0800
+Message-Id: <1424952503-8247-3-git-send-email-haokexin@gmail.com>
 In-Reply-To: <1424952503-8247-1-git-send-email-haokexin@gmail.com>
 References: <1424952503-8247-1-git-send-email-haokexin@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Paul Mackerras <paulus@samba.org>, Tomi Valkeinen <tomi.valkeinen@ti.com>,
+ Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-fbdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,58 +26,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The OF functionality has moved to a common place and be used by many
-archs. So we don't need to include the ppc arch specific header files
-and depend on PPC_OF option any more. This is a preparation for
-killing PPC_OF.
+The PPC_OF is a ppc specific option which is used to mean that the
+firmware device tree access functions are available. Since all the
+ppc platforms have a device tree, it is aways set to 'y' for ppc.
+So it makes no sense to keep a such option in the current kernel.
+Replace it with PPC.
 
 Signed-off-by: Kevin Hao <haokexin@gmail.com>
-Acked-by: Tejun Heo <tj@kernel.org>
 ---
-v2: Add the ack from Tejun Heo.
+v2: No change.
 
- drivers/ata/sata_svw.c | 11 +----------
- 1 file changed, 1 insertion(+), 10 deletions(-)
+ drivers/video/fbdev/aty/aty128fb.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/ata/sata_svw.c b/drivers/ata/sata_svw.c
-index c630fa812624..4c06f6281d74 100644
---- a/drivers/ata/sata_svw.c
-+++ b/drivers/ata/sata_svw.c
-@@ -47,11 +47,7 @@
- #include <scsi/scsi_cmnd.h>
- #include <scsi/scsi.h>
- #include <linux/libata.h>
--
--#ifdef CONFIG_PPC_OF
--#include <asm/prom.h>
--#include <asm/pci-bridge.h>
--#endif /* CONFIG_PPC_OF */
-+#include <linux/of.h>
- 
- #define DRV_NAME	"sata_svw"
- #define DRV_VERSION	"2.3"
-@@ -320,7 +316,6 @@ static u8 k2_stat_check_status(struct ata_port *ap)
- 	return readl(ap->ioaddr.status_addr);
- }
- 
--#ifdef CONFIG_PPC_OF
- static int k2_sata_show_info(struct seq_file *m, struct Scsi_Host *shost)
+diff --git a/drivers/video/fbdev/aty/aty128fb.c b/drivers/video/fbdev/aty/aty128fb.c
+index aedf2fbf9bf6..0156954bf340 100644
+--- a/drivers/video/fbdev/aty/aty128fb.c
++++ b/drivers/video/fbdev/aty/aty128fb.c
+@@ -965,7 +965,7 @@ static void __iomem *aty128_find_mem_vbios(struct aty128fb_par *par)
+ /* fill in known card constants if pll_block is not available */
+ static void aty128_timings(struct aty128fb_par *par)
  {
- 	struct ata_port *ap;
-@@ -350,14 +345,10 @@ static int k2_sata_show_info(struct seq_file *m, struct Scsi_Host *shost)
- 	}
- 	return 0;
- }
--#endif /* CONFIG_PPC_OF */
--
- 
- static struct scsi_host_template k2_sata_sht = {
- 	ATA_BMDMA_SHT(DRV_NAME),
 -#ifdef CONFIG_PPC_OF
- 	.show_info		= k2_sata_show_info,
--#endif
- };
++#ifdef CONFIG_PPC
+ 	/* instead of a table lookup, assume OF has properly
+ 	 * setup the PLL registers and use their values
+ 	 * to set the XCLK values and reference divider values */
+@@ -979,7 +979,7 @@ static void aty128_timings(struct aty128fb_par *par)
+ 	if (!par->constants.ref_clk)
+ 		par->constants.ref_clk = 2950;
  
- 
+-#ifdef CONFIG_PPC_OF
++#ifdef CONFIG_PPC
+ 	x_mpll_ref_fb_div = aty_ld_pll(X_MPLL_REF_FB_DIV);
+ 	xclk_cntl = aty_ld_pll(XCLK_CNTL) & 0x7;
+ 	Nx = (x_mpll_ref_fb_div & 0x00ff00) >> 8;
 -- 
 1.9.3
