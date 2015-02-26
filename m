@@ -1,18 +1,32 @@
-Return-Path: <olson@cumulusnetworks.com>
-Received: from mail-pd0-x236.google.com (mail-pd0-x236.google.com
- [IPv6:2607:f8b0:400e:c02::236])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <tlfalcon@linux.vnet.ibm.com>
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1FD161A0008
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Feb 2015 11:05:10 +1100 (AEDT)
-Received: by pdbfp1 with SMTP id fp1so8558766pdb.5
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Feb 2015 16:05:07 -0800 (PST)
-From: olson@cumulusnetworks.com
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v3] Fix missing L2 cache size in /sys/devices/system/cpu
-Date: Wed, 25 Feb 2015 16:04:47 -0800
-Message-Id: <1424909087-2819-1-git-send-email-olson@cumulusnetworks.com>
-Cc: Dave Olson <olson@cumulusnetworks.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 642581A0008
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Feb 2015 11:35:28 +1100 (AEDT)
+Received: from /spool/local
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <tlfalcon@linux.vnet.ibm.com>;
+ Wed, 25 Feb 2015 17:35:25 -0700
+Received: from b03cxnp07029.gho.boulder.ibm.com
+ (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id F067B3E4003F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Feb 2015 17:35:22 -0700 (MST)
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+ by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t1Q0ZE2s43122896
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Feb 2015 17:35:22 -0700
+Received: from d03av01.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av01.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t1Q0YonP022317
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Feb 2015 17:34:50 -0700
+From: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
+To: netdev@vger.kernel.org
+Subject: [PATCH] ibmveth: Add function to enable live MAC address changes
+Date: Wed, 25 Feb 2015 18:34:24 -0600
+Message-Id: <1424910864-32266-1-git-send-email-tlfalcon@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,100 +36,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Dave Olson <olson@cumulusnetworks.com>
+Add a function that will enable changing the MAC address
+of an ibmveth interface while it is still running.
 
-This problem appears to have been introduced in 2.6.29 by
-93197a36a9c16a85fb24cf5a8639f7bf9af838a3.
-
-This caused lscpu to error out on e500v2 devices, and probably others
- error: cannot open /sys/devices/system/cpu/cpu0/cache/index2/size: No such file or directory
-
-Some embedded powerpc systems use cache-size in DTS for the unified L2 cache
-size, not d-cache-size, so we need to allow for both DTS names.  Added a
-new CACHE_TYPE_UNIFIED_D cache_type_info structure to handle this.
-
-This patch is against git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git
-next branch.  It is the same as the v2 patch, but against next, rather than master.
-I can rebase, if desired.
-
-Signed-off-by: Dave Olson <olson@cumulusnetworks.com>
+Signed-off-by: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
 ---
- arch/powerpc/kernel/cacheinfo.c |   38 ++++++++++++++++++++++++++++++++++----
- 1 file changed, 34 insertions(+), 4 deletions(-)
+ drivers/net/ethernet/ibm/ibmveth.c | 20 +++++++++++++++++++-
+ 1 file changed, 19 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/kernel/cacheinfo.c b/arch/powerpc/kernel/cacheinfo.c
-index ae77b7e..860ed54 100644
---- a/arch/powerpc/kernel/cacheinfo.c
-+++ b/arch/powerpc/kernel/cacheinfo.c
-@@ -61,12 +61,22 @@ struct cache_type_info {
- };
- 
- /* These are used to index the cache_type_info array. */
--#define CACHE_TYPE_UNIFIED     0
--#define CACHE_TYPE_INSTRUCTION 1
--#define CACHE_TYPE_DATA        2
-+#define CACHE_TYPE_UNIFIED     0 /* cache-size, cache-block-size, etc. */
-+#define CACHE_TYPE_UNIFIED_D   1 /* d-cache-size, d-cache-block-size, etc */
-+#define CACHE_TYPE_INSTRUCTION 2
-+#define CACHE_TYPE_DATA        3
- 
- static const struct cache_type_info cache_type_info[] = {
- 	{
-+		/* Embedded systems that use cache-size, cache-block-size,
-+		 * etc. for the Unified (typically L2) cache. */
-+		.name            = "Unified",
-+		.size_prop       = "cache-size",
-+		.line_size_props = { "cache-line-size",
-+				     "cache-block-size", },
-+		.nr_sets_prop    = "cache-sets",
-+	},
-+	{
- 		/* PowerPC Processor binding says the [di]-cache-*
- 		 * must be equal on unified caches, so just use
- 		 * d-cache properties. */
-@@ -293,7 +303,8 @@ static struct cache *cache_find_first_sibling(struct cache *cache)
- {
- 	struct cache *iter;
- 
--	if (cache->type == CACHE_TYPE_UNIFIED)
-+	if (cache->type == CACHE_TYPE_UNIFIED ||
-+	    cache->type == CACHE_TYPE_UNIFIED_D)
- 		return cache;
- 
- 	list_for_each_entry(iter, &cache_list, list)
-@@ -324,14 +335,33 @@ static bool cache_node_is_unified(const struct device_node *np)
- 	return of_get_property(np, "cache-unified", NULL);
+diff --git a/drivers/net/ethernet/ibm/ibmveth.c b/drivers/net/ethernet/ibm/ibmveth.c
+index 21978cc..6e44357 100644
+--- a/drivers/net/ethernet/ibm/ibmveth.c
++++ b/drivers/net/ethernet/ibm/ibmveth.c
+@@ -1327,6 +1327,24 @@ static unsigned long ibmveth_get_desired_dma(struct vio_dev *vdev)
+ 	return ret;
  }
  
-+/*
-+ * Handle unified caches that have two different types of tags.  Most embedded
-+ * use cache-size, etc. for the unified cache size, but open firmware systems
-+ * use d-cache-size, etc.   Since they all appear to be consistent, check on
-+ * initialization for which type we are, and use the appropriate structure.
-+ */
- static struct cache *cache_do_one_devnode_unified(struct device_node *node,
- 						  int level)
- {
- 	struct cache *cache;
-+	int ucache;
- 
- 	pr_debug("creating L%d ucache for %s\n", level, node->full_name);
- 
- 	cache = new_cache(CACHE_TYPE_UNIFIED, level, node);
-+	if (of_get_property(node,
-+		cache_type_info[CACHE_TYPE_UNIFIED_D].size_prop, NULL)) {
-+		ucache = CACHE_TYPE_UNIFIED_D;
-+	} else {
-+		ucache = CACHE_TYPE_UNIFIED; /* assume embedded */
-+		if (of_get_property(node,
-+			cache_type_info[CACHE_TYPE_UNIFIED].size_prop, NULL) ==
-+			NULL)
-+			printk(KERN_WARNING "Unified cache property missing\n");
-+	}
++static int ibmveth_set_mac_addr(struct net_device *dev, void *p)
++{
++	struct ibmveth_adapter *adapter = netdev_priv(dev);
++	struct sockaddr *addr = p;
++	u64 mac_address;
++	int rc;
 +
-+	cache = new_cache(ucache, level, node);
- 
- 	return cache;
- }
++	if (!is_valid_ether_addr(addr->sa_data))
++		return -EADDRNOTAVAIL;
++
++	ether_addr_copy(dev->dev_addr, addr->sa_data);
++
++	mac_address = ibmveth_encode_mac_addr(dev->dev_addr);
++	rc = h_change_logical_lan_mac(adapter->vdev->unit_address, mac_address);
++
++	return rc;
++}
++
+ static const struct net_device_ops ibmveth_netdev_ops = {
+ 	.ndo_open		= ibmveth_open,
+ 	.ndo_stop		= ibmveth_close,
+@@ -1337,7 +1355,7 @@ static const struct net_device_ops ibmveth_netdev_ops = {
+ 	.ndo_fix_features	= ibmveth_fix_features,
+ 	.ndo_set_features	= ibmveth_set_features,
+ 	.ndo_validate_addr	= eth_validate_addr,
+-	.ndo_set_mac_address	= eth_mac_addr,
++	.ndo_set_mac_address    = ibmveth_set_mac_addr,
+ #ifdef CONFIG_NET_POLL_CONTROLLER
+ 	.ndo_poll_controller	= ibmveth_poll_controller,
+ #endif
 -- 
-1.7.10.4
+1.9.3
