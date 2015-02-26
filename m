@@ -1,20 +1,26 @@
-Return-Path: <haokexin@gmail.com>
-Received: from mail-yh0-x230.google.com (mail-yh0-x230.google.com
- [IPv6:2607:f8b0:4002:c01::230])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <pbonzini@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8A96D1A01AA
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Feb 2015 23:10:01 +1100 (AEDT)
-Received: by yhaf73 with SMTP id f73so4199445yha.3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Feb 2015 04:09:59 -0800 (PST)
-From: Kevin Hao <haokexin@gmail.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH v2 11/11] powerpc: kill PPC_OF
-Date: Thu, 26 Feb 2015 20:08:23 +0800
-Message-Id: <1424952503-8247-12-git-send-email-haokexin@gmail.com>
-In-Reply-To: <1424952503-8247-1-git-send-email-haokexin@gmail.com>
-References: <1424952503-8247-1-git-send-email-haokexin@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 845B41A08A9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Feb 2015 00:03:05 +1100 (AEDT)
+Message-ID: <54EF196E.4090805@redhat.com>
+Date: Thu, 26 Feb 2015 14:02:38 +0100
+From: Paolo Bonzini <pbonzini@redhat.com>
+MIME-Version: 1.0
+To: Scott Wood <scottwood@freescale.com>,
+ Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Subject: Re: [PATCH 0/2] powerpc/kvm: Enable running guests on RT Linux
+References: <1424251955-308-1-git-send-email-bogdan.purcareata@freescale.com>	
+ <54E73A6C.9080500@suse.de> <54E740E7.5090806@redhat.com>	
+ <54E74A8C.30802@linutronix.de> <1424734051.4698.17.camel@freescale.com>
+In-Reply-To: <1424734051.4698.17.camel@freescale.com>
+Content-Type: text/plain; charset=windows-1252
+Cc: linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Alexander Graf <agraf@suse.de>,
+ Bogdan Purcareata <bogdan.purcareata@freescale.com>,
+ mihai.caraman@freescale.com, Thomas Gleixner <tglx@linutronix.de>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,70 +30,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We have set CONFIG_PPC_OF to always 'y' in commit 0a498d96a332
-("powerpc: set CONFIG_PPC_OF=y always for ARCH=powerpc") nine years
-ago. And the arch/ppc also has gone away for many years. The OF
-functionality was also moved to a common place and be used by many
-archs. So it does make no sense to keep such a option in the current
-kernel. Just kill it.
 
-Signed-off-by: Kevin Hao <haokexin@gmail.com>
----
-v2: No change.
 
- arch/powerpc/Kconfig         | 3 ---
- arch/powerpc/Kconfig.debug   | 2 +-
- arch/powerpc/kernel/Makefile | 4 ++--
- 3 files changed, 3 insertions(+), 6 deletions(-)
+On 24/02/2015 00:27, Scott Wood wrote:
+> This isn't a host PIC driver.  It's guest PIC emulation, some of which
+> is indeed not suitable for a rawlock (in particular, openpic_update_irq
+> which loops on the number of vcpus, with a loop body that calls
+> IRQ_check() which loops over all pending IRQs).
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 5084bdcc6046..1734f8a338eb 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -189,9 +189,6 @@ config ARCH_MAY_HAVE_PC_FDC
- 	bool
- 	default PCI
- 
--config PPC_OF
--	def_bool y
--
- config PPC_UDBG_16550
- 	bool
- 	default n
-diff --git a/arch/powerpc/Kconfig.debug b/arch/powerpc/Kconfig.debug
-index ec2e40f2cc11..bfd823abff93 100644
---- a/arch/powerpc/Kconfig.debug
-+++ b/arch/powerpc/Kconfig.debug
-@@ -117,7 +117,7 @@ config BDI_SWITCH
- 
- config BOOTX_TEXT
- 	bool "Support for early boot text console (BootX or OpenFirmware only)"
--	depends on PPC_OF && PPC_BOOK3S
-+	depends on PPC_BOOK3S
- 	help
- 	  Say Y here to see progress messages from the boot firmware in text
- 	  mode. Requires either BootX or Open Firmware.
-diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-index 502cf69b6c89..c1ebbdaac28f 100644
---- a/arch/powerpc/kernel/Makefile
-+++ b/arch/powerpc/kernel/Makefile
-@@ -33,7 +33,8 @@ obj-y				:= cputable.o ptrace.o syscalls.o \
- 				   signal.o sysfs.o cacheinfo.o time.o \
- 				   prom.o traps.o setup-common.o \
- 				   udbg.o misc.o io.o dma.o \
--				   misc_$(CONFIG_WORD_SIZE).o vdso32/
-+				   misc_$(CONFIG_WORD_SIZE).o vdso32/ \
-+				   of_platform.o prom_parse.o
- obj-$(CONFIG_PPC64)		+= setup_64.o sys_ppc32.o \
- 				   signal_64.o ptrace32.o \
- 				   paca.o nvram_64.o firmware.o
-@@ -47,7 +48,6 @@ obj-$(CONFIG_PPC64)		+= vdso64/
- obj-$(CONFIG_ALTIVEC)		+= vecemu.o
- obj-$(CONFIG_PPC_970_NAP)	+= idle_power4.o
- obj-$(CONFIG_PPC_P7_NAP)	+= idle_power7.o
--obj-$(CONFIG_PPC_OF)		+= of_platform.o prom_parse.o
- procfs-y			:= proc_powerpc.o
- obj-$(CONFIG_PROC_FS)		+= $(procfs-y)
- rtaspci-$(CONFIG_PPC64)-$(CONFIG_PCI)	:= rtas_pci.o
--- 
-1.9.3
+The question is what behavior is wanted of code that isn't quite
+RT-ready.  What is preferred, bugs or bad latency?
+
+If the answer is bad latency (which can be avoided simply by not running
+KVM on a RT kernel in production), patch 1 can be applied.  If the
+answer is bugs, patch 1 is not upstream material.
+
+I myself prefer to have bad latency; if something takes a spinlock in
+atomic context, that spinlock should be raw.  If it hurts (latency),
+don't do it (use the affected code).
+
+Paolo
+
+> The vcpu limits are a
+> temporary bandaid to avoid the worst latencies, but I'm still skeptical
+> about this being upstream material.
