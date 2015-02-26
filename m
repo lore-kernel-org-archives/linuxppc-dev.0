@@ -1,19 +1,29 @@
-Return-Path: <hongtao.jia@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0114.outbound.protection.outlook.com [65.55.169.114])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <wangyijing@huawei.com>
+Received: from szxga03-in.huawei.com (szxga03-in.huawei.com [119.145.14.66])
+ (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id ED4B11A002B
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Feb 2015 18:40:33 +1100 (AEDT)
-From: Jia Hongtao <hongtao.jia@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>, <B07421@freescale.com>,
- <asolokha@kb.kras.ru>
-Subject: [PATCH V3] powerpc/85xx: workaround for chips with MSI hardware errata
-Date: Thu, 26 Feb 2015 15:23:08 +0800
-Message-ID: <1424935388-49100-1-git-send-email-hongtao.jia@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id DD0CE1A002B
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Feb 2015 19:16:04 +1100 (AEDT)
+From: Yijing Wang <wangyijing@huawei.com>
+To: Bjorn Helgaas <bhelgaas@google.com>
+Subject: [PATCH v4 17/30] PCI/powerpc: Rename pcibios_root_bridge_prepare()
+Date: Thu, 26 Feb 2015 16:12:11 +0800
+Message-ID: <1424938344-4017-18-git-send-email-wangyijing@huawei.com>
+In-Reply-To: <1424938344-4017-1-git-send-email-wangyijing@huawei.com>
+References: <1424938344-4017-1-git-send-email-wangyijing@huawei.com>
 MIME-Version: 1.0
 Content-Type: text/plain
-Cc: hongtao.jia@freescale.com
+Cc: linux-ia64@vger.kernel.org, linux-pci@vger.kernel.org,
+ Yijing Wang <wangyijing@huawei.com>, Guan
+ Xuetao <gxt@mprc.pku.edu.cn>, Russell King <linux@arm.linux.org.uk>,
+ x86@kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>, Arnd
+ Bergmann <arnd@arndb.de>, Marc Zyngier <marc.zyngier@arm.com>,
+ Rusty Russell <rusty@rustcorp.com.au>, linux-m68k@lists.linux-m68k.org,
+ Thomas Gleixner <tglx@linutronix.de>, Yinghai Lu <yinghai@kernel.org>,
+ linux-arm-kernel@lists.infradead.org, Liviu Dudau <liviu@dudau.co.uk>,
+ Tony Luck <tony.luck@intel.com>, linux-kernel@vger.kernel.org,
+ Jiang Liu <jiang.liu@linux.intel.com>, linux-alpha@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,94 +33,89 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Hongtao Jia <hongtao.jia@freescale.com>
+Pcibios_root_bridge_prepare() in powerpc is used
+to set root bus speed. Rename it to
+pcibios_set_root_bus_speed() for better readability.
 
-The MPIC version 2.0 has a MSI errata (errata PIC1 of mpc8544), It causes
-that neither MSI nor MSI-X can work fine. This is a workaround to allow
-MSI-X to function properly.
-
-Signed-off-by: Liu Shuo <soniccat.liu@gmail.com>
-Signed-off-by: Li Yang <leoli@freescale.com>
-Signed-off-by: Jia Hongtao <hongtao.jia@freescale.com>
+Signed-off-by: Yijing Wang <wangyijing@huawei.com>
+CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+CC: linuxppc-dev@lists.ozlabs.org
 ---
-Changes for V3:
-* remove mpic_has_erratum_pic1() function. Test erratum directly.
-* rebase on latest kernel update.
+ arch/powerpc/include/asm/machdep.h       |    2 +-
+ arch/powerpc/kernel/pci-common.c         |    6 +++---
+ arch/powerpc/platforms/pseries/pci.c     |    2 +-
+ arch/powerpc/platforms/pseries/pseries.h |    2 +-
+ arch/powerpc/platforms/pseries/setup.c   |    2 +-
+ 5 files changed, 7 insertions(+), 7 deletions(-)
 
-Changes for V2:
-* change the name of function mpic_has_errata() to mpic_has_erratum_pic1().
-* move MSI_HW_ERRATA_ENDIAN define to fsl_msi.h with all other defines.
-
- arch/powerpc/sysdev/fsl_msi.c | 29 ++++++++++++++++++++++++++---
- arch/powerpc/sysdev/fsl_msi.h |  2 ++
- 2 files changed, 28 insertions(+), 3 deletions(-)
-
-diff --git a/arch/powerpc/sysdev/fsl_msi.c b/arch/powerpc/sysdev/fsl_msi.c
-index 4bbb4b8..f086c6f 100644
---- a/arch/powerpc/sysdev/fsl_msi.c
-+++ b/arch/powerpc/sysdev/fsl_msi.c
-@@ -162,7 +162,17 @@ static void fsl_compose_msi_msg(struct pci_dev *pdev, int hwirq,
- 	msg->address_lo = lower_32_bits(address);
- 	msg->address_hi = upper_32_bits(address);
+diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
+index c8175a3..8e7f2a8 100644
+--- a/arch/powerpc/include/asm/machdep.h
++++ b/arch/powerpc/include/asm/machdep.h
+@@ -129,7 +129,7 @@ struct machdep_calls {
+ 	void		(*pcibios_fixup)(void);
+ 	int		(*pci_probe_mode)(struct pci_bus *);
+ 	void		(*pci_irq_fixup)(struct pci_dev *dev);
+-	int		(*pcibios_root_bridge_prepare)(struct pci_host_bridge
++	int		(*pcibios_set_root_bus_speed)(struct pci_host_bridge
+ 				*bridge);
  
--	msg->data = hwirq;
-+	/*
-+	 * MPIC version 2.0 has erratum PIC1. It causes
-+	 * that neither MSI nor MSI-X can work fine.
-+	 * This is a workaround to allow MSI-X to function
-+	 * properly. It only works for MSI-X, we prevent
-+	 * MSI on buggy chips in fsl_setup_msi_irqs().
-+	 */
-+	if (msi_data->feature & MSI_HW_ERRATA_ENDIAN)
-+		msg->data = __swab32(hwirq);
-+	else
-+		msg->data = hwirq;
+ 	/* To setup PHBs when using automatic OF platform driver for PCI */
+diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
+index 78cd41b..4401b6a 100644
+--- a/arch/powerpc/kernel/pci-common.c
++++ b/arch/powerpc/kernel/pci-common.c
+@@ -769,9 +769,9 @@ int pci_proc_domain(struct pci_bus *bus)
  
- 	pr_debug("%s: allocated srs: %d, ibs: %d\n", __func__,
- 		 (hwirq >> msi_data->srs_shift) & MSI_SRS_MASK,
-@@ -180,8 +190,16 @@ static int fsl_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type)
- 	struct msi_msg msg;
- 	struct fsl_msi *msi_data;
+ int pcibios_root_bridge_prepare(struct pci_host_bridge *bridge)
+ {
+-	if (ppc_md.pcibios_root_bridge_prepare)
+-		return ppc_md.pcibios_root_bridge_prepare(bridge);
+-
++	if (ppc_md.pcibios_set_root_bus_speed)
++		return ppc_md.pcibios_set_root_bus_speed(bridge);
++	
+ 	return 0;
+ }
  
--	if (type == PCI_CAP_ID_MSIX)
--		pr_debug("fslmsi: MSI-X untested, trying anyway.\n");
-+	if (type == PCI_CAP_ID_MSI) {
-+		/*
-+		 * MPIC version 2.0 has erratum PIC1. For now MSI
-+		 * could not work. So check to prevent MSI from
-+		 * being used on the board with this erratum.
-+		 */
-+		list_for_each_entry(msi_data, &msi_head, list)
-+			if (msi_data->feature & MSI_HW_ERRATA_ENDIAN)
-+				return -EINVAL;
-+	}
+diff --git a/arch/powerpc/platforms/pseries/pci.c b/arch/powerpc/platforms/pseries/pci.c
+index fe16a50..af685d6 100644
+--- a/arch/powerpc/platforms/pseries/pci.c
++++ b/arch/powerpc/platforms/pseries/pci.c
+@@ -110,7 +110,7 @@ static void fixup_winbond_82c105(struct pci_dev* dev)
+ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_WINBOND, PCI_DEVICE_ID_WINBOND_82C105,
+ 			 fixup_winbond_82c105);
  
- 	/*
- 	 * If the PCI node has an fsl,msi property, then we need to use it
-@@ -446,6 +464,11 @@ static int fsl_of_msi_probe(struct platform_device *dev)
+-int pseries_root_bridge_prepare(struct pci_host_bridge *bridge)
++int pseries_set_root_bus_speed(struct pci_host_bridge *bridge)
+ {
+ 	struct device_node *dn, *pdn;
+ 	struct pci_bus *bus;
+diff --git a/arch/powerpc/platforms/pseries/pseries.h b/arch/powerpc/platforms/pseries/pseries.h
+index 1796c54..5d0be3a 100644
+--- a/arch/powerpc/platforms/pseries/pseries.h
++++ b/arch/powerpc/platforms/pseries/pseries.h
+@@ -63,7 +63,7 @@ extern int dlpar_detach_node(struct device_node *);
  
- 	msi->feature = features->fsl_pic_ip;
+ /* PCI root bridge prepare function override for pseries */
+ struct pci_host_bridge;
+-int pseries_root_bridge_prepare(struct pci_host_bridge *bridge);
++int pseries_set_root_bus_speed(struct pci_host_bridge *bridge);
  
-+	/* For erratum PIC1 on MPIC version 2.0*/
-+	if ((features->fsl_pic_ip & FSL_PIC_IP_MASK) == FSL_PIC_IP_MPIC
-+			&& (fsl_mpic_primary_get_version() == 0x0200))
-+		msi->feature |= MSI_HW_ERRATA_ENDIAN;
-+
- 	/*
- 	 * Remember the phandle, so that we can match with any PCI nodes
- 	 * that have an "fsl,msi" property.
-diff --git a/arch/powerpc/sysdev/fsl_msi.h b/arch/powerpc/sysdev/fsl_msi.h
-index 420cfcb..a67359d 100644
---- a/arch/powerpc/sysdev/fsl_msi.h
-+++ b/arch/powerpc/sysdev/fsl_msi.h
-@@ -27,6 +27,8 @@
- #define FSL_PIC_IP_IPIC   0x00000002
- #define FSL_PIC_IP_VMPIC  0x00000003
+ unsigned long pseries_memory_block_size(void);
  
-+#define MSI_HW_ERRATA_ENDIAN 0x00000010
-+
- struct fsl_msi_cascade_data;
+diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
+index e445b67..b196c0d 100644
+--- a/arch/powerpc/platforms/pseries/setup.c
++++ b/arch/powerpc/platforms/pseries/setup.c
+@@ -496,7 +496,7 @@ static void __init pSeries_setup_arch(void)
+ 		ppc_md.enable_pmcs = power4_enable_pmcs;
+ 	}
  
- struct fsl_msi {
+-	ppc_md.pcibios_root_bridge_prepare = pseries_root_bridge_prepare;
++	ppc_md.pcibios_set_root_bus_speed = pseries_set_root_bus_speed;
+ 
+ 	if (firmware_has_feature(FW_FEATURE_SET_MODE)) {
+ 		long rc;
 -- 
-2.1.0.27.g96db324
+1.7.1
