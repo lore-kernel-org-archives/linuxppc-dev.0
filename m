@@ -1,20 +1,18 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bn0101.outbound.protection.outlook.com [157.56.110.101])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <olson@cumulusnetworks.com>
+Received: from mail-pd0-x236.google.com (mail-pd0-x236.google.com
+ [IPv6:2607:f8b0:400e:c02::236])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 65F0B1A0008
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Feb 2015 10:44:25 +1100 (AEDT)
-Message-ID: <1424907851.4698.63.camel@freescale.com>
-Subject: Re: [PATCH] clk: ppc-corenet: Add support for the FMD clock
-From: Scott Wood <scottwood@freescale.com>
-To: Igal.Liberman <igal.liberman@freescale.com>
-Date: Wed, 25 Feb 2015 17:44:11 -0600
-In-Reply-To: <1421755411-26357-1-git-send-email-igal.liberman@freescale.com>
-References: <1421755411-26357-1-git-send-email-igal.liberman@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
-MIME-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, Emilian.Medve@freescale.com
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1FD161A0008
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Feb 2015 11:05:10 +1100 (AEDT)
+Received: by pdbfp1 with SMTP id fp1so8558766pdb.5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Feb 2015 16:05:07 -0800 (PST)
+From: olson@cumulusnetworks.com
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v3] Fix missing L2 cache size in /sys/devices/system/cpu
+Date: Wed, 25 Feb 2015 16:04:47 -0800
+Message-Id: <1424909087-2819-1-git-send-email-olson@cumulusnetworks.com>
+Cc: Dave Olson <olson@cumulusnetworks.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,83 +22,100 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-01-20 at 14:03 +0200, Igal.Liberman wrote:
-> +static u8 get_fm_clk_parent(struct clk_hw *hw)
-> +{
-> +	struct ccsr_guts __iomem *guts_regs = NULL;
-> +	struct device_node *guts;
-> +	uint32_t reg = 0;
-> +	int clk_src = 0;
-> +	int fm_clk_select = -EINVAL;
-> +	int fm_id = 0;
-> +
-> +	guts = of_find_matching_node(NULL, guts_device_ids);
-> +	if (!guts) {
-> +		pr_err("could not find GUTS node\n");
-> +		return -EINVAL;
-> +	}
+From: Dave Olson <olson@cumulusnetworks.com>
 
-Error message lacks context (here and elsewhere).
+This problem appears to have been introduced in 2.6.29 by
+93197a36a9c16a85fb24cf5a8639f7bf9af838a3.
 
-Why are you going this on demand rather than in an init function
-(specifically, a CLK_OF_DECLARE)?  You should not register this clock
-handler in the first place if the hardware doesn't exist.
+This caused lscpu to error out on e500v2 devices, and probably others
+ error: cannot open /sys/devices/system/cpu/cpu0/cache/index2/size: No such file or directory
 
--EINVAL doesn't fit in u8.  Neither would the more appropriate -ENODEV.
+Some embedded powerpc systems use cache-size in DTS for the unified L2 cache
+size, not d-cache-size, so we need to allow for both DTS names.  Added a
+new CACHE_TYPE_UNIFIED_D cache_type_info structure to handle this.
 
-> +	guts_regs = of_iomap(guts, 0);
-> +	of_node_put(guts);
-> +	if (!guts_regs) {
-> +		pr_err("ioremap of GUTS node failed\n");
-> +		return -EINVAL;
-> +	}
-> +
-> +	if (!strcmp(__clk_get_name(hw->clk), "fm1-clk"))
-> +		fm_id = 1;
-> +
-> +	/* The FM clock provider is SoC dependent and it's determened by the
+This patch is against git://git.kernel.org/pub/scm/linux/kernel/git/benh/powerpc.git
+next branch.  It is the same as the v2 patch, but against next, rather than master.
+I can rebase, if desired.
 
-determined
+Signed-off-by: Dave Olson <olson@cumulusnetworks.com>
+---
+ arch/powerpc/kernel/cacheinfo.c |   38 ++++++++++++++++++++++++++++++++++----
+ 1 file changed, 34 insertions(+), 4 deletions(-)
 
-> +	 * reset configuration word (RCW). We need to map the RCW options to
-> +	 * the order of the providers in the device tree.
-> +	 * This code makes assumptions about the clock provider order:
-> +	 * In the PXXXX family:
-> +	 *	0 - platform clock/2
-> +	 *	1 - PLLx /2
-> +	 *	2 - PLLx /4 (if possible).
-> +	 * In B/T family:
-> +	 *	The same order in which the clock providers are described in
-> +	 *	the Reference Manual, starting from 0.
-
-This belongs in a device tree binding document and should not
-incorporate portions of the reference manual by reference -- what if a
-new version of the reference manual changes the order in which clock
-providers are described?  Or do you mean that the order corresponds to a
-register value?
-
-
-> +	 *
-> +	 * In a case of only one possible provider, the index is 0.
-> +	 */
-> +
-> +	if (of_device_is_compatible(guts, "fsl,p1023-guts") ||
-> +		of_device_is_compatible(guts, "fsl,t1040-device-config"))
-> +		/* P1023 and T1040 have only one optional clock source */
-> +		fm_clk_select = 0;
-> +	else if (of_device_is_compatible(guts, "fsl,p2041-device-config") ||
-> +		 of_device_is_compatible(guts, "fsl,p3041-device-config") ||
-> +		 of_device_is_compatible(guts, "fsl,p4080-device-config")) {
-> +		/* Read RCW*/
-
-/* Read RCW */
-
-> @@ -352,3 +601,4 @@ CLK_OF_DECLARE(qoriq_core_mux_1, "fsl,qoriq-core-mux-1.0", core_mux_init);
->  CLK_OF_DECLARE(qoriq_core_mux_2, "fsl,qoriq-core-mux-2.0", core_mux_init);
->  CLK_OF_DECLARE(qoriq_pltfrm_pll_1, "fsl,qoriq-platform-pll-1.0", pltfrm_pll_init);
->  CLK_OF_DECLARE(qoriq_pltfrm_pll_2, "fsl,qoriq-platform-pll-2.0", pltfrm_pll_init);
-> +CLK_OF_DECLARE(qoriq_fm_mux, "fsl,fman-clk-mux", fm_mux_init);
-
-Where is the binding for this node?
-
--Scott
+diff --git a/arch/powerpc/kernel/cacheinfo.c b/arch/powerpc/kernel/cacheinfo.c
+index ae77b7e..860ed54 100644
+--- a/arch/powerpc/kernel/cacheinfo.c
++++ b/arch/powerpc/kernel/cacheinfo.c
+@@ -61,12 +61,22 @@ struct cache_type_info {
+ };
+ 
+ /* These are used to index the cache_type_info array. */
+-#define CACHE_TYPE_UNIFIED     0
+-#define CACHE_TYPE_INSTRUCTION 1
+-#define CACHE_TYPE_DATA        2
++#define CACHE_TYPE_UNIFIED     0 /* cache-size, cache-block-size, etc. */
++#define CACHE_TYPE_UNIFIED_D   1 /* d-cache-size, d-cache-block-size, etc */
++#define CACHE_TYPE_INSTRUCTION 2
++#define CACHE_TYPE_DATA        3
+ 
+ static const struct cache_type_info cache_type_info[] = {
+ 	{
++		/* Embedded systems that use cache-size, cache-block-size,
++		 * etc. for the Unified (typically L2) cache. */
++		.name            = "Unified",
++		.size_prop       = "cache-size",
++		.line_size_props = { "cache-line-size",
++				     "cache-block-size", },
++		.nr_sets_prop    = "cache-sets",
++	},
++	{
+ 		/* PowerPC Processor binding says the [di]-cache-*
+ 		 * must be equal on unified caches, so just use
+ 		 * d-cache properties. */
+@@ -293,7 +303,8 @@ static struct cache *cache_find_first_sibling(struct cache *cache)
+ {
+ 	struct cache *iter;
+ 
+-	if (cache->type == CACHE_TYPE_UNIFIED)
++	if (cache->type == CACHE_TYPE_UNIFIED ||
++	    cache->type == CACHE_TYPE_UNIFIED_D)
+ 		return cache;
+ 
+ 	list_for_each_entry(iter, &cache_list, list)
+@@ -324,14 +335,33 @@ static bool cache_node_is_unified(const struct device_node *np)
+ 	return of_get_property(np, "cache-unified", NULL);
+ }
+ 
++/*
++ * Handle unified caches that have two different types of tags.  Most embedded
++ * use cache-size, etc. for the unified cache size, but open firmware systems
++ * use d-cache-size, etc.   Since they all appear to be consistent, check on
++ * initialization for which type we are, and use the appropriate structure.
++ */
+ static struct cache *cache_do_one_devnode_unified(struct device_node *node,
+ 						  int level)
+ {
+ 	struct cache *cache;
++	int ucache;
+ 
+ 	pr_debug("creating L%d ucache for %s\n", level, node->full_name);
+ 
+ 	cache = new_cache(CACHE_TYPE_UNIFIED, level, node);
++	if (of_get_property(node,
++		cache_type_info[CACHE_TYPE_UNIFIED_D].size_prop, NULL)) {
++		ucache = CACHE_TYPE_UNIFIED_D;
++	} else {
++		ucache = CACHE_TYPE_UNIFIED; /* assume embedded */
++		if (of_get_property(node,
++			cache_type_info[CACHE_TYPE_UNIFIED].size_prop, NULL) ==
++			NULL)
++			printk(KERN_WARNING "Unified cache property missing\n");
++	}
++
++	cache = new_cache(ucache, level, node);
+ 
+ 	return cache;
+ }
+-- 
+1.7.10.4
