@@ -1,21 +1,23 @@
 Return-Path: <haokexin@gmail.com>
-Received: from mail-yk0-x229.google.com (mail-yk0-x229.google.com
- [IPv6:2607:f8b0:4002:c07::229])
+Received: from mail-yk0-x22f.google.com (mail-yk0-x22f.google.com
+ [IPv6:2607:f8b0:4002:c07::22f])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A90201A0174
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Feb 2015 23:09:53 +1100 (AEDT)
-Received: by ykq142 with SMTP id 142so3820167ykq.13
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Feb 2015 04:09:51 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5C5781A014D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Feb 2015 23:09:58 +1100 (AEDT)
+Received: by yks20 with SMTP id 20so3835941yks.8
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Feb 2015 04:09:56 -0800 (PST)
 From: Kevin Hao <haokexin@gmail.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH v2 09/11] mmc: kconfig: replace PPC_OF with PPC
-Date: Thu, 26 Feb 2015 20:08:21 +0800
-Message-Id: <1424952503-8247-10-git-send-email-haokexin@gmail.com>
+Subject: [PATCH v2 10/11] tty: kconfig: remove the superfluous dependency on
+ PPC_OF
+Date: Thu, 26 Feb 2015 20:08:22 +0800
+Message-Id: <1424952503-8247-11-git-send-email-haokexin@gmail.com>
 In-Reply-To: <1424952503-8247-1-git-send-email-haokexin@gmail.com>
 References: <1424952503-8247-1-git-send-email-haokexin@gmail.com>
-Cc: linux-mmc@vger.kernel.org, Ulf Hansson <ulf.hansson@linaro.org>,
- linuxppc-dev@lists.ozlabs.org, Chris Ball <chris@printf.net>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Jiri Slaby <jslaby@suse.cz>, linuxppc-dev@lists.ozlabs.org,
+ linux-serial@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,40 +27,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The PPC_OF is a ppc specific option which is used to mean that the
-firmware device tree access functions are available. Since all the
-ppc platforms have a device tree, it is aways set to 'y' for ppc.
-So it makes no sense to keep a such option in the current kernel.
-Replace it with PPC.
+In the current kernel, the CONFIG_PPC_OF is always 'y' for the ppc
+arch. So we don't need to check it with other ppc specific options.
 
 Signed-off-by: Kevin Hao <haokexin@gmail.com>
 ---
 v2: No change.
 
- drivers/mmc/host/Kconfig | 4 ++--
+ drivers/tty/serial/Kconfig | 4 ++--
  1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/mmc/host/Kconfig b/drivers/mmc/host/Kconfig
-index 61ac63a3776a..7858d7a52818 100644
---- a/drivers/mmc/host/Kconfig
-+++ b/drivers/mmc/host/Kconfig
-@@ -132,7 +132,7 @@ config MMC_SDHCI_OF_ARASAN
- config MMC_SDHCI_OF_ESDHC
- 	tristate "SDHCI OF support for the Freescale eSDHC controller"
- 	depends on MMC_SDHCI_PLTFM
--	depends on PPC_OF
-+	depends on PPC
- 	select MMC_SDHCI_BIG_ENDIAN_32BIT_BYTE_SWAPPER
+diff --git a/drivers/tty/serial/Kconfig b/drivers/tty/serial/Kconfig
+index d2501f01cd03..77471d3db8d3 100644
+--- a/drivers/tty/serial/Kconfig
++++ b/drivers/tty/serial/Kconfig
+@@ -835,7 +835,7 @@ config SERIAL_MCF_CONSOLE
+ 
+ config SERIAL_PMACZILOG
+ 	tristate "Mac or PowerMac z85c30 ESCC support"
+-	depends on (M68K && MAC) || (PPC_OF && PPC_PMAC)
++	depends on (M68K && MAC) || PPC_PMAC
+ 	select SERIAL_CORE
  	help
- 	  This selects the Freescale eSDHC controller support.
-@@ -144,7 +144,7 @@ config MMC_SDHCI_OF_ESDHC
- config MMC_SDHCI_OF_HLWD
- 	tristate "SDHCI OF support for the Nintendo Wii SDHCI controllers"
- 	depends on MMC_SDHCI_PLTFM
--	depends on PPC_OF
-+	depends on PPC
- 	select MMC_SDHCI_BIG_ENDIAN_32BIT_BYTE_SWAPPER
- 	help
- 	  This selects the Secure Digital Host Controller Interface (SDHCI)
+ 	  This driver supports the Zilog z85C30 serial ports found on
+@@ -1153,7 +1153,7 @@ config SERIAL_OMAP_CONSOLE
+ 
+ config SERIAL_OF_PLATFORM_NWPSERIAL
+ 	tristate "NWP serial port driver"
+-	depends on PPC_OF && PPC_DCR
++	depends on PPC_DCR
+ 	select SERIAL_OF_PLATFORM
+ 	select SERIAL_CORE_CONSOLE
+ 	select SERIAL_CORE
 -- 
 1.9.3
