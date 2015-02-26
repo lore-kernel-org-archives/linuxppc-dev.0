@@ -1,26 +1,36 @@
-Return-Path: <pbonzini@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <brking@linux.vnet.ibm.com>
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 845B41A08A9
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Feb 2015 00:03:05 +1100 (AEDT)
-Message-ID: <54EF196E.4090805@redhat.com>
-Date: Thu, 26 Feb 2015 14:02:38 +0100
-From: Paolo Bonzini <pbonzini@redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id E58991A08A9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Feb 2015 00:08:11 +1100 (AEDT)
+Received: from /spool/local
+ by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <brking@linux.vnet.ibm.com>;
+ Thu, 26 Feb 2015 06:08:09 -0700
+Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
+ [9.57.198.24])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 12EEDC90041
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Feb 2015 07:59:19 -0500 (EST)
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+ by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t1QD881U25100418
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Feb 2015 13:08:08 GMT
+Received: from d01av03.pok.ibm.com (localhost [127.0.0.1])
+ by d01av03.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t1QD87rC032300
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Feb 2015 08:08:07 -0500
+Message-ID: <54EF1AB6.5010004@linux.vnet.ibm.com>
+Date: Thu, 26 Feb 2015 07:08:06 -0600
+From: Brian King <brking@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>,
- Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-Subject: Re: [PATCH 0/2] powerpc/kvm: Enable running guests on RT Linux
-References: <1424251955-308-1-git-send-email-bogdan.purcareata@freescale.com>	
- <54E73A6C.9080500@suse.de> <54E740E7.5090806@redhat.com>	
- <54E74A8C.30802@linutronix.de> <1424734051.4698.17.camel@freescale.com>
-In-Reply-To: <1424734051.4698.17.camel@freescale.com>
+To: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>, netdev@vger.kernel.org
+Subject: Re: [PATCH] ibmveth: Add function to enable live MAC address changes
+References: <1424910864-32266-1-git-send-email-tlfalcon@linux.vnet.ibm.com>
+In-Reply-To: <1424910864-32266-1-git-send-email-tlfalcon@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=windows-1252
-Cc: linux-rt-users@vger.kernel.org, linux-kernel@vger.kernel.org,
- Alexander Graf <agraf@suse.de>,
- Bogdan Purcareata <bogdan.purcareata@freescale.com>,
- mihai.caraman@freescale.com, Thomas Gleixner <tglx@linutronix.de>,
- linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,27 +40,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 02/25/2015 06:34 PM, Thomas Falcon wrote:
+> @@ -1327,6 +1327,24 @@ static unsigned long ibmveth_get_desired_dma(struct vio_dev *vdev)
+>  	return ret;
+>  }
+> 
+> +static int ibmveth_set_mac_addr(struct net_device *dev, void *p)
+> +{
+> +	struct ibmveth_adapter *adapter = netdev_priv(dev);
+> +	struct sockaddr *addr = p;
+> +	u64 mac_address;
+> +	int rc;
+> +
+> +	if (!is_valid_ether_addr(addr->sa_data))
+> +		return -EADDRNOTAVAIL;
+> +
+> +	ether_addr_copy(dev->dev_addr, addr->sa_data);
+> +
+> +	mac_address = ibmveth_encode_mac_addr(dev->dev_addr);
+> +	rc = h_change_logical_lan_mac(adapter->vdev->unit_address, mac_address);
+> +
+> +	return rc;
 
+Do you still want to be changing dev->dev_addr if h_change_logical_lan_mac
+returns a failure?
 
-On 24/02/2015 00:27, Scott Wood wrote:
-> This isn't a host PIC driver.  It's guest PIC emulation, some of which
-> is indeed not suitable for a rawlock (in particular, openpic_update_irq
-> which loops on the number of vcpus, with a loop body that calls
-> IRQ_check() which loops over all pending IRQs).
+-Brian
 
-The question is what behavior is wanted of code that isn't quite
-RT-ready.  What is preferred, bugs or bad latency?
-
-If the answer is bad latency (which can be avoided simply by not running
-KVM on a RT kernel in production), patch 1 can be applied.  If the
-answer is bugs, patch 1 is not upstream material.
-
-I myself prefer to have bad latency; if something takes a spinlock in
-atomic context, that spinlock should be raw.  If it hurts (latency),
-don't do it (use the affected code).
-
-Paolo
-
-> The vcpu limits are a
-> temporary bandaid to avoid the worst latencies, but I'm still skeptical
-> about this being upstream material.
+-- 
+Brian King
+Power Linux I/O
+IBM Linux Technology Center
