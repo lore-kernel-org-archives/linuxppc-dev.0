@@ -1,25 +1,22 @@
-Return-Path: <rjui@broadcom.com>
-Received: from mail-gw3-out.broadcom.com (mail-gw3-out.broadcom.com
- [216.31.210.64])
- by lists.ozlabs.org (Postfix) with ESMTP id 6FCF81A0052
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Feb 2015 10:43:39 +1100 (AEDT)
-Message-ID: <54EFAD2A.9060501@broadcom.com>
-Date: Thu, 26 Feb 2015 15:32:58 -0800
-From: Ray Jui <rjui@broadcom.com>
-MIME-Version: 1.0
-To: Wolfram Sang <wsa@the-dreams.de>, <linux-i2c@vger.kernel.org>
-Subject: Re: [RFC V2 12/12] i2c: bcm-iproc: make use of the new infrastructure
- for quirks
-References: <1424880126-15047-1-git-send-email-wsa@the-dreams.de>
- <1424880126-15047-13-git-send-email-wsa@the-dreams.de>
-In-Reply-To: <1424880126-15047-13-git-send-email-wsa@the-dreams.de>
-Content-Type: text/plain; charset="windows-1252"
-Cc: linux-mips@linux-mips.org, Scott Branden <sbranden@broadcom.com>,
- linux-kernel@vger.kernel.org, Ludovic Desroches <ludovic.desroches@atmel.com>,
- bcm-kernel-feedback-list@broadcom.com,
- Yingjoe Chen <yingjoe.chen@mediatek.com>,
- Eddie Huang <eddie.huang@mediatek.com>, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8CA111A0007
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Feb 2015 11:11:40 +1100 (AEDT)
+Message-ID: <1424995875.4645.42.camel@kernel.crashing.org>
+Subject: Re: [PATCH 03/15] fbdev: aty128fb: replace PPC_OF with PPC
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Kevin Hao <haokexin@gmail.com>
+Date: Fri, 27 Feb 2015 11:11:15 +1100
+In-Reply-To: <1422712065-9403-4-git-send-email-haokexin@gmail.com>
+References: <1422712065-9403-1-git-send-email-haokexin@gmail.com>
+ <1422712065-9403-4-git-send-email-haokexin@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linux-fbdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Tomi Valkeinen <tomi.valkeinen@ti.com>, Paul Mackerras <paulus@samba.org>,
+ Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,69 +26,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-
-On 2/25/2015 8:02 AM, Wolfram Sang wrote:
-> From: Wolfram Sang <wsa+renesas@sang-engineering.com>
+On Sat, 2015-01-31 at 21:47 +0800, Kevin Hao wrote:
+> The PPC_OF is a ppc specific option which is used to mean that the
+> firmware device tree access functions are available. Since all the
+> ppc platforms have a device tree, it is aways set to 'y' for ppc.
+> So it makes no sense to keep a such option in the current kernel.
+> Replace it with PPC.
 > 
-> Signed-off-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
+> Signed-off-by: Kevin Hao <haokexin@gmail.com>
+
+For this and generally the whole series,
+
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+
+Which tree do we expect this to go through ?
+
+Cheers,
+Ben.
+
 > ---
->  drivers/i2c/busses/i2c-bcm-iproc.c | 15 +++++++--------
->  1 file changed, 7 insertions(+), 8 deletions(-)
+>  drivers/video/fbdev/aty/aty128fb.c | 4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
 > 
-> diff --git a/drivers/i2c/busses/i2c-bcm-iproc.c b/drivers/i2c/busses/i2c-bcm-iproc.c
-> index d3c89157b33774..f9f2c2082151e2 100644
-> --- a/drivers/i2c/busses/i2c-bcm-iproc.c
-> +++ b/drivers/i2c/busses/i2c-bcm-iproc.c
-> @@ -160,14 +160,6 @@ static int bcm_iproc_i2c_xfer_single_msg(struct bcm_iproc_i2c_dev *iproc_i2c,
->  	u32 val;
->  	unsigned long time_left = msecs_to_jiffies(I2C_TIMEOUT_MESC);
->  
-> -	/* need to reserve one byte in the FIFO for the slave address */
-> -	if (msg->len > M_TX_RX_FIFO_SIZE - 1) {
-> -		dev_err(iproc_i2c->device,
-> -			"only support data length up to %u bytes\n",
-> -			M_TX_RX_FIFO_SIZE - 1);
-> -		return -EOPNOTSUPP;
-> -	}
-> -
->  	/* check if bus is busy */
->  	if (!!(readl(iproc_i2c->base + M_CMD_OFFSET) &
->  	       BIT(M_CMD_START_BUSY_SHIFT))) {
-> @@ -287,6 +279,12 @@ static const struct i2c_algorithm bcm_iproc_algo = {
->  	.functionality = bcm_iproc_i2c_functionality,
->  };
->  
-> +static struct i2c_adapter_quirks bcm_iproc_i2c_quirks = {
-> +	/* need to reserve one byte in the FIFO for the slave address */
-> +	.max_read_len = M_TX_RX_FIFO_SIZE - 1,
-> +	.max_write_len = M_TX_RX_FIFO_SIZE - 1,
-> +};
-> +
->  static int bcm_iproc_i2c_cfg_speed(struct bcm_iproc_i2c_dev *iproc_i2c)
+> diff --git a/drivers/video/fbdev/aty/aty128fb.c b/drivers/video/fbdev/aty/aty128fb.c
+> index aedf2fbf9bf6..0156954bf340 100644
+> --- a/drivers/video/fbdev/aty/aty128fb.c
+> +++ b/drivers/video/fbdev/aty/aty128fb.c
+> @@ -965,7 +965,7 @@ static void __iomem *aty128_find_mem_vbios(struct aty128fb_par *par)
+>  /* fill in known card constants if pll_block is not available */
+>  static void aty128_timings(struct aty128fb_par *par)
 >  {
->  	unsigned int bus_speed;
-> @@ -413,6 +411,7 @@ static int bcm_iproc_i2c_probe(struct platform_device *pdev)
->  	i2c_set_adapdata(adap, iproc_i2c);
->  	strlcpy(adap->name, "Broadcom iProc I2C adapter", sizeof(adap->name));
->  	adap->algo = &bcm_iproc_algo;
-> +	adap->quirks = &bcm_iproc_i2c_quirks;
->  	adap->dev.parent = &pdev->dev;
->  	adap->dev.of_node = pdev->dev.of_node;
+> -#ifdef CONFIG_PPC_OF
+> +#ifdef CONFIG_PPC
+>  	/* instead of a table lookup, assume OF has properly
+>  	 * setup the PLL registers and use their values
+>  	 * to set the XCLK values and reference divider values */
+> @@ -979,7 +979,7 @@ static void aty128_timings(struct aty128fb_par *par)
+>  	if (!par->constants.ref_clk)
+>  		par->constants.ref_clk = 2950;
 >  
-> 
-
-Change on the iproc i2c driver looks good to me. Sanity tested the
-change from Wolfram's i2c/quirks branch on Cygnus 958300K combo board.
-Sanity tested with an attempt to transfer large amount of I2C data to
-ensure the transfer is denied by the i2c-core:
-
-/ # cat /dev/i2c-0
-[  657.310261] i2c i2c-0: quirk: msg too long (addr 0x0000, size 4096, read)
-
-Reviewed-by: Ray Jui <rjui@broadcom.com>
-Tested-by: Ray Jui <rjui@broadcom.com>
-
-Thanks,
-
-Ray
+> -#ifdef CONFIG_PPC_OF
+> +#ifdef CONFIG_PPC
+>  	x_mpll_ref_fb_div = aty_ld_pll(X_MPLL_REF_FB_DIV);
+>  	xclk_cntl = aty_ld_pll(XCLK_CNTL) & 0x7;
+>  	Nx = (x_mpll_ref_fb_div & 0x00ff00) >> 8;
