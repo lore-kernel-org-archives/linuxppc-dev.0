@@ -1,22 +1,43 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mingo.kernel.org@gmail.com>
+Received: from mail-we0-x22d.google.com (mail-we0-x22d.google.com
+ [IPv6:2a00:1450:400c:c03::22d])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C86911A014B
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Feb 2015 14:48:45 +1100 (AEDT)
-Message-ID: <1425008902.4645.52.camel@kernel.crashing.org>
-Subject: Re: [3/3] powerpc/dma: Remove ZONE_DMA completely
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Date: Fri, 27 Feb 2015 14:48:22 +1100
-In-Reply-To: <1425008369.26070.6.camel@ellerman.id.au>
-References: <20150226063844.4C8A31400EA@ozlabs.org>
- <1425008369.26070.6.camel@ellerman.id.au>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Scott Wood <scottwood@freescale.com>, Anton Blanchard <anton@au1.ibm.com>,
- linuxppc dev list <linuxppc-dev@lists.ozlabs.org>,
- Brian J King <bjking1@us.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 070B21A006F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Feb 2015 17:20:00 +1100 (AEDT)
+Received: by wesp10 with SMTP id p10so15350278wes.12
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Feb 2015 22:19:54 -0800 (PST)
+Sender: Ingo Molnar <mingo.kernel.org@gmail.com>
+Date: Fri, 27 Feb 2015 07:19:49 +0100
+From: Ingo Molnar <mingo@kernel.org>
+To: Kees Cook <keescook@chromium.org>
+Subject: Re: [PATCH 0/5] split ET_DYN ASLR from mmap ASLR
+Message-ID: <20150227061949.GA25810@gmail.com>
+References: <1425006434-3106-1-git-send-email-keescook@chromium.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1425006434-3106-1-git-send-email-keescook@chromium.org>
+Cc: linux-mips@linux-mips.org, Arun Chandran <achandran@mvista.com>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, linux-kernel@vger.kernel.org,
+ Min-Hua Chen <orca.chen@gmail.com>, Paul Mackerras <paulus@samba.org>,
+ Ismael Ripoll <iripoll@upv.es>, Yann Droneaud <ydroneaud@opteya.com>,
+ linux-s390@vger.kernel.org, Russell King <linux@arm.linux.org.uk>,
+ Andrey Ryabinin <a.ryabinin@samsung.com>,
+ Behan Webster <behanw@converseincode.com>, x86@kernel.org,
+ Hector Marco-Gisbert <hecmargi@upv.es>, "David A. Long" <dave.long@linaro.org>,
+ Ben Hutchings <ben@decadent.org.uk>, Will Deacon <will.deacon@arm.com>,
+ linux-fsdevel@vger.kernel.org, Alex Smith <alex@alex-smith.me.uk>,
+ Michael Holzheu <holzheu@linux.vnet.ibm.com>,
+ linux-arm-kernel@lists.infradead.org, Jeff Bailey <jeffbailey@google.com>,
+ Paul Burton <paul.burton@imgtec.com>, Oleg Nesterov <oleg@redhat.com>,
+ Ralf Baechle <ralf@linux-mips.org>, Andy Lutomirski <luto@amacapital.net>,
+ Vineeth Vijayan <vvijayan@mvista.com>,
+ Markos Chandras <markos.chandras@imgtec.com>,
+ Jan-Simon =?iso-8859-1?Q?M=F6ller?= <dl9pf@gmx.de>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>, linux390@de.ibm.com,
+ akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
+ Alexander Viro <viro@zeniv.linux.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,42 +47,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2015-02-27 at 14:39 +1100, Michael Ellerman wrote:
-> On Thu, 2015-02-26 at 17:38 +1100, Michael Ellerman wrote:
-> > On Fri, 2015-20-02 at 08:35:44 UTC, Benjamin Herrenschmidt wrote:
-> > > diff --git a/arch/powerpc/kernel/dma.c b/arch/powerpc/kernel/dma.c
-> > > index e24e0ae..6306d4e 100644
-> > > --- a/arch/powerpc/kernel/dma.c
-> > > +++ b/arch/powerpc/kernel/dma.c
-> > > @@ -63,16 +63,8 @@ void *dma_direct_alloc_coherent(struct device *dev, size_t size,
-> > >  		return NULL;
-> > >  	}
-> > >  
-> > > -	switch (zone) {
-> > > -	case ZONE_DMA:
-> > > -		flag |= GFP_DMA;
-> > > -		break;
-> > > -#ifdef CONFIG_ZONE_DMA32
-> > > -	case ZONE_DMA32:
-> > > +	if (zone == ZONE_DMA32)
-> > >  		flag |= GFP_DMA32;
-> > > -		break;
-> > > -#endif
-> > > -	};
-> > 
-> > You still need the ifdef, else eg. ppc6xx_defconfig:
-> > 
-> >   arch/powerpc/kernel/dma.c:66:14: error: 'ZONE_DMA32' undeclared (first use in this function)
-> 
-> And the rest :)
-> 
->   http://kisskb.ellerman.id.au/kisskb/head/8505/
-> 
->   Successful:	45% 49/109
 
-Yup, I forgot I didn't have it unconditionally on ppc32 :-)
+* Kees Cook <keescook@chromium.org> wrote:
 
-I'll respin some time next week.
+> This separates ET_DYN ASLR from mmap ASLR, as already 
+> done on s390. The various architectures that are already 
+> randomizing mmap (arm, arm64, mips, powerpc, s390, and 
+> x86), have their various forms of arch_mmap_rnd() made 
+> available via the new CONFIG_ARCH_HAS_ELF_RANDOMIZE. For 
+> these architectures, arch_randomize_brk() is collapsed as 
+> well.
+> 
+> This is an alternative to the solutions in: 
+> https://lkml.org/lkml/2015/2/23/442
 
-Cheers,
-Ben.
+Nice!
+
+Acked-by: Ingo Molnar <mingo@kernel.org>
+
+Thanks,
+
+	Ingo
