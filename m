@@ -1,24 +1,18 @@
-Return-Path: <asolokha@kb.kras.ru>
-Received: from ispman.iskranet.ru (ispman.iskranet.ru [62.213.33.10])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 496AF1A0058
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Feb 2015 13:25:36 +1100 (AEDT)
-From: Arseny Solokha <asolokha@kb.kras.ru>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 4/4] powerpc/mpic: remove unused functions
-References: <1424084188-17097-1-git-send-email-asolokha@kb.kras.ru>
- <1424768706-23150-1-git-send-email-asolokha@kb.kras.ru>
- <1424768706-23150-5-git-send-email-asolokha@kb.kras.ru>
-Date: Fri, 27 Feb 2015 09:25:28 +0700
-In-Reply-To: <1424768706-23150-5-git-send-email-asolokha@kb.kras.ru> (Arseny
- Solokha's message of "Tue, 24 Feb 2015 16:05:06 +0700")
-Message-ID: <87zj80jdk7.fsf@KB00016249.iskra.kb>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: hongtao.jia@freescale.com, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, Scott Wood <scottwood@freescale.com>,
- linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id B6F8F1A0058
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Feb 2015 14:10:04 +1100 (AEDT)
+Message-ID: <1425006577.4645.51.camel@kernel.crashing.org>
+Subject: [PATCH] powerpc: Make corenet64_defconfig a bit more useful
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc-dev@lists.ozlabs.org
+Date: Fri, 27 Feb 2015 14:09:37 +1100
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Scott Wood <scottwood@freescale.com>,
+ Michael Ellerman <michaele@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,42 +22,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> @@ -1676,31 +1666,6 @@ void __init mpic_init(struct mpic *mpic)
->  		mpic_err_int_init(mpic, MPIC_FSL_ERR_INT);
->  }
->  
-> -void __init mpic_set_clk_ratio(struct mpic *mpic, u32 clock_ratio)
-> -{
-> -	u32 v;
-> -
-> -	v = mpic_read(mpic->gregs, MPIC_GREG_GLOBAL_CONF_1);
-> -	v &= ~MPIC_GREG_GLOBAL_CONF_1_CLK_RATIO_MASK;
-> -	v |= MPIC_GREG_GLOBAL_CONF_1_CLK_RATIO(clock_ratio);
-> -	mpic_write(mpic->gregs, MPIC_GREG_GLOBAL_CONF_1, v);
-> -}
-> -
-> -void __init mpic_set_serial_int(struct mpic *mpic, int enable)
-> -{
-> -	unsigned long flags;
-> -	u32 v;
-> -
-> -	raw_spin_lock_irqsave(&mpic_lock, flags);
-> -	v = mpic_read(mpic->gregs, MPIC_GREG_GLOBAL_CONF_1);
-> -	if (enable)
-> -		v |= MPIC_GREG_GLOBAL_CONF_1_SIE;
-> -	else
-> -		v &= ~MPIC_GREG_GLOBAL_CONF_1_SIE;
-> -	mpic_write(mpic->gregs, MPIC_GREG_GLOBAL_CONF_1, v);
-> -	raw_spin_unlock_irqrestore(&mpic_lock, flags);
-> -}
-> -
->  void mpic_irq_set_priority(unsigned int irq, unsigned int pri)
->  {
->  	struct mpic *mpic = mpic_find(irq);
+CONFIG_BLK_DEV_SD, SR, ... are needed for pretty much any SATA or USB
+storage device (corenet32_defconfig has them) and modern any with
+systemd needs the CGROUPS gunk.
 
-Thinking about it some more, I wonder whether it makes sense to propagate these
-values through device tree (and refuse to apply them if they are 0), just like
-what timer_group_get_freq() and timer_group_get_irq() in
-arch/powerpc/sysdev/mpic_timer.c do.
-
-Does it have any real use?
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+ diff --git a/arch/powerpc/configs/corenet64_smp_defconfig b/arch/powerpc/configs/corenet64_smp_defconfig
+index 04737aa..066eb45 100644
+--- a/arch/powerpc/configs/corenet64_smp_defconfig
++++ b/arch/powerpc/configs/corenet64_smp_defconfig
+@@ -12,6 +12,10 @@ CONFIG_BSD_PROCESS_ACCT=y
+ CONFIG_IKCONFIG=y
+ CONFIG_IKCONFIG_PROC=y
+ CONFIG_LOG_BUF_SHIFT=14
++CONFIG_CGROUPS=y
++CONFIG_CPUSETS=y
++CONFIG_CGROUP_CPUACCT=y
++CONFIG_CGROUP_SCHED=y
+ CONFIG_BLK_DEV_INITRD=y
+ CONFIG_EXPERT=y
+ CONFIG_KALLSYMS_ALL=y
+@@ -75,6 +79,10 @@ CONFIG_BLK_DEV_LOOP=y
+ CONFIG_BLK_DEV_RAM=y
+ CONFIG_BLK_DEV_RAM_SIZE=131072
+ CONFIG_EEPROM_LEGACY=y
++CONFIG_BLK_DEV_SD=y
++CONFIG_BLK_DEV_SR=y
++CONFIG_BLK_DEV_SR_VENDOR=y
++CONFIG_CHR_DEV_SG=y
+ CONFIG_ATA=y
+ CONFIG_SATA_FSL=y
+ CONFIG_SATA_SIL24=y
