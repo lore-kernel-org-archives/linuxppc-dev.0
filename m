@@ -1,23 +1,35 @@
-Return-Path: <B43198@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0128.outbound.protection.outlook.com [65.55.169.128])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <hemant@linux.vnet.ibm.com>
+Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D03CD1A006F
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Feb 2015 18:28:32 +1100 (AEDT)
-Message-ID: <54F01C85.2020602@freescale.com>
-Date: Fri, 27 Feb 2015 09:28:05 +0200
-From: Purcareata Bogdan <b43198@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id CA2F71A006F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Feb 2015 20:43:36 +1100 (AEDT)
+Received: from /spool/local
+ by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <hemant@linux.vnet.ibm.com>;
+ Fri, 27 Feb 2015 15:13:34 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id BC855125805B
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Feb 2015 15:14:49 +0530 (IST)
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t1R9hSX751249174
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Feb 2015 15:13:29 +0530
+Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t1R9hRnR023900
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Feb 2015 15:13:27 +0530
+Subject: [PATCH v1 0/2] perf/kvm: perf-kvm-stat on powerpc
+From: Hemant Kumar <hemant@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Date: Fri, 27 Feb 2015 15:13:26 +0530
+Message-ID: <20150227093649.6367.15679.stgit@localhost.localdomain>
 MIME-Version: 1.0
-To: Bogdan Purcareata <bogdan.purcareata@freescale.com>,
- <benh@kernel.crashing.org>, <paulus@samba.org>,
- <linuxppc-dev@lists.ozlabs.org>, <mpe@ellerman.id.au>
-Subject: Re: [PATCH v4 0/3] powerpc: Enable seccomp filter support
-References: <1424247413-20753-1-git-send-email-bogdan.purcareata@freescale.com>
-In-Reply-To: <1424247413-20753-1-git-send-email-bogdan.purcareata@freescale.com>
-Content-Type: text/plain; charset="windows-1252"; format=flowed
-Cc: pmoore@redhat.com, linux-kernel@vger.kernel.org,
- strosake@linux.vnet.ibm.com
+Content-Type: text/plain; charset="utf-8"
+Cc: maddy@linux.vnet.ibm.com, srikar@linux.vnet.ibm.com, anton@au1.ibm.com,
+ linux-kernel@vger.kernel.org, agraf@suse.de, paulus@samba.org,
+ warrier@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,36 +39,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Ping?
+perf kvm stat record/report which can be used to analyze KVM related statistics
+isn't enabled on powerpc. This patchset enables "perf kvm stat" on powerpc.
+The first patch enables perf kvm stat record and report to report kvm exits.
 
-On 18.02.2015 10:16, Bogdan Purcareata wrote:
-> Add the missing pieces in order to enable SECCOMP_FILTER on PowerPC
-> architectures, and enable this support.
->
-> Testing has been pursued using libseccomp with the latest ppc support patches
-> [1][2], on Freescale platforms for both ppc and ppc64. Support on ppc64le has
-> also been tested, courtesy of Mike Strosaker.
->
-> [1] https://groups.google.com/forum/#!topic/libseccomp/oz42LfMDsxg
-> [2] https://groups.google.com/forum/#!topic/libseccomp/TQWfCt_nD7c
->
-> v4:
-> - rebased on top of 3.19
->
-> v3:
-> - keep setting ENOSYS in syscall entry assembly when syscall tracing is disabled
->
-> v2:
-> - move setting ENOSYS from syscall entry assembly to do_syscall_trace_enter
->
-> Bogdan Purcareata (3):
->    powerpc: Don't force ENOSYS as error on syscall fail
->    powerpc: Relax secure computing on syscall entry trace
->    powerpc: Enable HAVE_ARCH_SECCOMP_FILTER
->
->   arch/powerpc/Kconfig           | 1 +
->   arch/powerpc/kernel/entry_32.S | 7 ++++++-
->   arch/powerpc/kernel/entry_64.S | 5 +++--
->   arch/powerpc/kernel/ptrace.c   | 8 ++++++--
->   4 files changed, 16 insertions(+), 5 deletions(-)
->
+"record" enables recording of the tracepoints: kvm_hv:kvm_guest_enter and
+kvm_hv:kvm_guest_exit in the first patch and kvm_hv:kvm_hcall_enter and
+kvm_hv:kvm_hcall_exit in the second patch.
+
+This command can be used to record kvm events on the host:
+# perf kvm stat record -a
+
+To report the kvm guest related exit events, use:
+# perf kvm stat report
+or
+# perf kvm stat report --event=vmexit
+
+This should show the exit events along with the exit reasons.
+
+The second patch in this series adds support to show the hcall events too with:
+# perf kvm stat report --event=syscall
+
+---
+
+Hemant Kumar (1):
+      perf/kvm: perf-kvm-stat to report syscalls
+
+Srikar Dronamraju (1):
+      perf/kvm: Enable perf-kvm-stat record/report on powerpc
+
+
+ arch/powerpc/include/asm/hvcall.h            |  120 -------------------------
+ arch/powerpc/include/uapi/asm/hcall_codes.h  |  123 ++++++++++++++++++++++++++
+ arch/powerpc/include/uapi/asm/kvm_perf.h     |   19 ++++
+ arch/powerpc/include/uapi/asm/trace_book3s.h |   33 +++++++
+ arch/powerpc/include/uapi/asm/trace_hcall.h  |  122 ++++++++++++++++++++++++++
+ arch/powerpc/kvm/trace_book3s.h              |   32 -------
+ arch/powerpc/kvm/trace_hv.h                  |  119 -------------------------
+ arch/powerpc/kvm/trace_pr.h                  |    2 
+ tools/perf/arch/powerpc/Makefile             |    1 
+ tools/perf/arch/powerpc/util/Build           |    1 
+ tools/perf/arch/powerpc/util/kvm-stat.c      |   94 ++++++++++++++++++++
+ 11 files changed, 398 insertions(+), 268 deletions(-)
+ create mode 100644 arch/powerpc/include/uapi/asm/hcall_codes.h
+ create mode 100644 arch/powerpc/include/uapi/asm/kvm_perf.h
+ create mode 100644 arch/powerpc/include/uapi/asm/trace_book3s.h
+ create mode 100644 arch/powerpc/include/uapi/asm/trace_hcall.h
+ delete mode 100644 arch/powerpc/kvm/trace_book3s.h
+ create mode 100644 tools/perf/arch/powerpc/util/kvm-stat.c
+
+--
