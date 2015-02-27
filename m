@@ -1,19 +1,18 @@
-Return-Path: <herbert@gondor.apana.org.au>
-Received: from helcar.apana.org.au (helcar.apana.org.au [209.40.204.226])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <Yanjiang.Jin@windriver.com>
+Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
+ (using TLSv1.1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 845691A0079
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Feb 2015 20:51:32 +1100 (AEDT)
-Date: Fri, 27 Feb 2015 22:51:21 +1300
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Markus Stockhausen <stockhausen@collogia.de>
-Subject: Re: [v2,1/3] crypto: ppc/sha256 - assembler
-Message-ID: <20150227095120.GA29140@gondor.apana.org.au>
-References: <fc802923-6dbf-4fba-b6fe-5af360ca48c4@EXCHANGE.collogia.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7D9941A006F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Feb 2015 19:07:37 +1100 (AEDT)
+From: <yanjiang.jin@windriver.com>
+To: <mpe@ellerman.id.au>
+Subject: [PATCH] ppc: mm: free memory after creating kmem cache
+Date: Fri, 27 Feb 2015 13:30:34 +0800
+Message-ID: <1425015034-26419-1-git-send-email-yanjiang.jin@windriver.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <fc802923-6dbf-4fba-b6fe-5af360ca48c4@EXCHANGE.collogia.de>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-crypto@vger.kernel.org
+Content-Type: text/plain
+Cc: jinyanjiang@gmail.com, linuxppc-dev@lists.ozlabs.org,
+ yanjiang.jin@windriver.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,29 +22,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Jan 30, 2015 at 03:39:23PM +0100, Markus Stockhausen wrote:
-> This is the assembler code for SHA256 implementation with
-> the SIMD SPE instruction set. Although being only a 32 bit
-> architecture GPRs are extended to 64 bit presenting two
-> 32 bit values. With the enhanced instruction set we can
-> operate on them in parallel. That helps reducing the time
-> to calculate W16-W64. For increasing performance even more 
-> the assembler function can compute hashes for more than 
-> one 64 byte input block. That saves a lot of register
-> saving/restoring
-> 
-> The state of the used SPE registers is preserved via the 
-> stack so we can run from interrupt context. There might 
-> be the case that we interrupt ourselves and push sensitive 
-> data from another context onto our stack. Clear this area
-> in the stack afterwards to avoid information leakage.
-> 
-> The code is endian independant.
-> 
-> Signed-off-by: Markus Stockhausen <stockhausen@collogia.de>
+From: Yanjiang Jin <yanjiang.jin@windriver.com>
 
-All applied.  Thanks!
+kmem_cache_create()->kmem_cache_create_memcg()->kstrdup() allocates new space
+and copy name's content, so it is safe to free name memory after
+calling kmem_cache_create(). Else kmemleak would report the below warning:
+
+unreferenced object 0xc0000000f9002160 (size 16):
+  comm "swapper/0", pid 0, jiffies 4294892296 (age 1386.640s)
+  hex dump (first 16 bytes):
+    70 67 74 61 62 6c 65 2d 32 5e 39 00 de ad be ef  pgtable-2^9.....
+  backtrace:
+    [<c0000000004e03ec>] .kvasprintf+0x5c/0xa0
+    [<c0000000004e045c>] .kasprintf+0x2c/0x50
+    [<c00000000002e36c>] .pgtable_cache_add+0xac/0x100
+    [<c00000000002e3e4>] .pgtable_cache_init+0x24/0x80
+    [<c000000000c6c67c>] .start_kernel+0x228/0x4c8
+    [<c000000000000594>] .start_here_common+0x24/0x90
+
+Signed-off-by: Yanjiang Jin <yanjiang.jin@windriver.com>
+---
+ arch/powerpc/mm/init_64.c | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/arch/powerpc/mm/init_64.c b/arch/powerpc/mm/init_64.c
+index a90b9c4..fe0631f 100644
+--- a/arch/powerpc/mm/init_64.c
++++ b/arch/powerpc/mm/init_64.c
+@@ -129,6 +129,7 @@ void pgtable_cache_add(unsigned shift, void (*ctor)(void *))
+ 	align = max_t(unsigned long, align, minalign);
+ 	name = kasprintf(GFP_KERNEL, "pgtable-2^%d", shift);
+ 	new = kmem_cache_create(name, table_size, align, 0, ctor);
++	kfree(name);
+ 	pgtable_cache[shift - 1] = new;
+ 	pr_debug("Allocated pgtable cache for order %d\n", shift);
+ }
 -- 
-Email: Herbert Xu <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+1.9.1
