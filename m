@@ -3,13 +3,13 @@ Received: from smtp.outflux.net (smtp.outflux.net
  [IPv6:2001:19d0:2:6:c0de:0:736d:7470])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E61F01A0058
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Feb 2015 14:14:46 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id C5FB71A02D2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Feb 2015 14:15:13 +1100 (AEDT)
 From: Kees Cook <keescook@chromium.org>
 To: akpm@linux-foundation.org
-Subject: [PATCH 1/5] arm: factor out mmap ASLR into mmap_rnd
-Date: Thu, 26 Feb 2015 19:07:10 -0800
-Message-Id: <1425006434-3106-2-git-send-email-keescook@chromium.org>
+Subject: [PATCH 3/5] mm: move randomize_et_dyn into ELF_ET_DYN_BASE
+Date: Thu, 26 Feb 2015 19:07:12 -0800
+Message-Id: <1425006434-3106-4-git-send-email-keescook@chromium.org>
 In-Reply-To: <1425006434-3106-1-git-send-email-keescook@chromium.org>
 References: <1425006434-3106-1-git-send-email-keescook@chromium.org>
 Cc: linux-mips@linux-mips.org, Arun Chandran <achandran@mvista.com>,
@@ -42,41 +42,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Move logic for mmap ASLR into separate function.
+This moves s390's randomize_et_dyn base into ELF_ET_DYN_BASE, and removes
+an unused arm64 extern.
 
 Signed-off-by: Kees Cook <keescook@chromium.org>
 ---
- arch/arm/mm/mmap.c | 13 ++++++++++---
- 1 file changed, 10 insertions(+), 3 deletions(-)
+ arch/arm64/include/asm/elf.h |  1 -
+ arch/s390/include/asm/elf.h  |  9 +++++----
+ arch/s390/mm/mmap.c          | 11 -----------
+ 3 files changed, 5 insertions(+), 16 deletions(-)
 
-diff --git a/arch/arm/mm/mmap.c b/arch/arm/mm/mmap.c
-index 5e85ed371364..0f8bc158f2c6 100644
---- a/arch/arm/mm/mmap.c
-+++ b/arch/arm/mm/mmap.c
-@@ -169,14 +169,21 @@ arch_get_unmapped_area_topdown(struct file *filp, const unsigned long addr0,
+diff --git a/arch/arm64/include/asm/elf.h b/arch/arm64/include/asm/elf.h
+index 1f65be393139..f724db00b235 100644
+--- a/arch/arm64/include/asm/elf.h
++++ b/arch/arm64/include/asm/elf.h
+@@ -125,7 +125,6 @@ typedef struct user_fpsimd_state elf_fpregset_t;
+  * the loader.  We need to make sure that it is out of the way of the program
+  * that it will "exec", and that there is sufficient room for the brk.
+  */
+-extern unsigned long randomize_et_dyn(unsigned long base);
+ #define ELF_ET_DYN_BASE	(2 * TASK_SIZE_64 / 3)
+ 
+ /*
+diff --git a/arch/s390/include/asm/elf.h b/arch/s390/include/asm/elf.h
+index c9df40b5c0ac..9ed68e7ee856 100644
+--- a/arch/s390/include/asm/elf.h
++++ b/arch/s390/include/asm/elf.h
+@@ -161,10 +161,11 @@ extern unsigned int vdso_enabled;
+ /* This is the location that an ET_DYN program is loaded if exec'ed.  Typical
+    use of this is to invoke "./ld.so someprog" to test out a new version of
+    the loader.  We need to make sure that it is out of the way of the program
+-   that it will "exec", and that there is sufficient room for the brk.  */
+-
+-extern unsigned long randomize_et_dyn(void);
+-#define ELF_ET_DYN_BASE		randomize_et_dyn()
++   that it will "exec", and that there is sufficient room for the brk. 64-bit
++   tasks are aligned to 4GB. */
++#define ELF_ET_DYN_BASE (arch_mmap_rnd() + (is_32bit_task() ? \
++				(STACK_TOP / 3 * 2) : \
++				(STACK_TOP / 3 * 2) & ~((1UL << 32) - 1)))
+ 
+ /* This yields a mask that user programs can use to figure out what
+    instruction set this CPU supports. */
+diff --git a/arch/s390/mm/mmap.c b/arch/s390/mm/mmap.c
+index 77759e35671b..ec4c20448aef 100644
+--- a/arch/s390/mm/mmap.c
++++ b/arch/s390/mm/mmap.c
+@@ -179,17 +179,6 @@ arch_get_unmapped_area_topdown(struct file *filp, const unsigned long addr0,
  	return addr;
  }
  
--void arch_pick_mmap_layout(struct mm_struct *mm)
-+static unsigned long mmap_rnd(void)
- {
--	unsigned long random_factor = 0UL;
-+	unsigned long rnd = 0UL;
+-unsigned long randomize_et_dyn(void)
+-{
+-	unsigned long base;
+-
+-	base = STACK_TOP / 3 * 2;
+-	if (!is_32bit_task())
+-		/* Align to 4GB */
+-		base &= ~((1UL << 32) - 1);
+-	return base + arch_mmap_rnd();
+-}
+-
+ #ifndef CONFIG_64BIT
  
- 	/* 8 bits of randomness in 20 address space bits */
- 	if ((current->flags & PF_RANDOMIZE) &&
- 	    !(current->personality & ADDR_NO_RANDOMIZE))
--		random_factor = (get_random_int() % (1 << 8)) << PAGE_SHIFT;
-+		rnd = (get_random_int() % (1 << 8)) << PAGE_SHIFT;
-+
-+	return rnd;
-+}
-+
-+void arch_pick_mmap_layout(struct mm_struct *mm)
-+{
-+	unsigned long random_factor = mmap_rnd();
- 
- 	if (mmap_is_legacy()) {
- 		mm->mmap_base = TASK_UNMAPPED_BASE + random_factor;
+ /*
 -- 
 1.9.1
