@@ -1,16 +1,17 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2A4F21A0061
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Feb 2015 14:39:30 +1100 (AEDT)
-Message-ID: <1425008369.26070.6.camel@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id C86911A014B
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Feb 2015 14:48:45 +1100 (AEDT)
+Message-ID: <1425008902.4645.52.camel@kernel.crashing.org>
 Subject: Re: [3/3] powerpc/dma: Remove ZONE_DMA completely
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Fri, 27 Feb 2015 14:39:29 +1100
-In-Reply-To: <20150226063844.4C8A31400EA@ozlabs.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Date: Fri, 27 Feb 2015 14:48:22 +1100
+In-Reply-To: <1425008369.26070.6.camel@ellerman.id.au>
 References: <20150226063844.4C8A31400EA@ozlabs.org>
+ <1425008369.26070.6.camel@ellerman.id.au>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 Cc: Scott Wood <scottwood@freescale.com>, Anton Blanchard <anton@au1.ibm.com>,
@@ -25,36 +26,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2015-02-26 at 17:38 +1100, Michael Ellerman wrote:
-> On Fri, 2015-20-02 at 08:35:44 UTC, Benjamin Herrenschmidt wrote:
-> > diff --git a/arch/powerpc/kernel/dma.c b/arch/powerpc/kernel/dma.c
-> > index e24e0ae..6306d4e 100644
-> > --- a/arch/powerpc/kernel/dma.c
-> > +++ b/arch/powerpc/kernel/dma.c
-> > @@ -63,16 +63,8 @@ void *dma_direct_alloc_coherent(struct device *dev, size_t size,
-> >  		return NULL;
-> >  	}
-> >  
-> > -	switch (zone) {
-> > -	case ZONE_DMA:
-> > -		flag |= GFP_DMA;
-> > -		break;
-> > -#ifdef CONFIG_ZONE_DMA32
-> > -	case ZONE_DMA32:
-> > +	if (zone == ZONE_DMA32)
-> >  		flag |= GFP_DMA32;
-> > -		break;
-> > -#endif
-> > -	};
+On Fri, 2015-02-27 at 14:39 +1100, Michael Ellerman wrote:
+> On Thu, 2015-02-26 at 17:38 +1100, Michael Ellerman wrote:
+> > On Fri, 2015-20-02 at 08:35:44 UTC, Benjamin Herrenschmidt wrote:
+> > > diff --git a/arch/powerpc/kernel/dma.c b/arch/powerpc/kernel/dma.c
+> > > index e24e0ae..6306d4e 100644
+> > > --- a/arch/powerpc/kernel/dma.c
+> > > +++ b/arch/powerpc/kernel/dma.c
+> > > @@ -63,16 +63,8 @@ void *dma_direct_alloc_coherent(struct device *dev, size_t size,
+> > >  		return NULL;
+> > >  	}
+> > >  
+> > > -	switch (zone) {
+> > > -	case ZONE_DMA:
+> > > -		flag |= GFP_DMA;
+> > > -		break;
+> > > -#ifdef CONFIG_ZONE_DMA32
+> > > -	case ZONE_DMA32:
+> > > +	if (zone == ZONE_DMA32)
+> > >  		flag |= GFP_DMA32;
+> > > -		break;
+> > > -#endif
+> > > -	};
+> > 
+> > You still need the ifdef, else eg. ppc6xx_defconfig:
+> > 
+> >   arch/powerpc/kernel/dma.c:66:14: error: 'ZONE_DMA32' undeclared (first use in this function)
 > 
-> You still need the ifdef, else eg. ppc6xx_defconfig:
+> And the rest :)
 > 
->   arch/powerpc/kernel/dma.c:66:14: error: 'ZONE_DMA32' undeclared (first use in this function)
+>   http://kisskb.ellerman.id.au/kisskb/head/8505/
+> 
+>   Successful:	45% 49/109
 
-And the rest :)
+Yup, I forgot I didn't have it unconditionally on ppc32 :-)
 
-  http://kisskb.ellerman.id.au/kisskb/head/8505/
+I'll respin some time next week.
 
-  Successful:	45% 49/109
-
-cheers
+Cheers,
+Ben.
