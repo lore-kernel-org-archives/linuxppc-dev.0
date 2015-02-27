@@ -1,27 +1,27 @@
-Return-Path: <haokexin@gmail.com>
-Received: from mail-qa0-x230.google.com (mail-qa0-x230.google.com
- [IPv6:2607:f8b0:400d:c00::230])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bon0137.outbound.protection.outlook.com [157.56.111.137])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6C2531A0001
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Feb 2015 12:06:02 +1100 (AEDT)
-Received: by mail-qa0-f48.google.com with SMTP id dc16so10635312qab.7
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Feb 2015 17:05:59 -0800 (PST)
-Date: Fri, 27 Feb 2015 09:05:49 +0800
-From: Kevin Hao <haokexin@gmail.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 03/15] fbdev: aty128fb: replace PPC_OF with PPC
-Message-ID: <20150227010549.GA10596@pek-khao-d1.corp.ad.wrs.com>
-References: <1422712065-9403-1-git-send-email-haokexin@gmail.com>
- <1422712065-9403-4-git-send-email-haokexin@gmail.com>
- <1424995875.4645.42.camel@kernel.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7F1551A0152
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Feb 2015 12:06:15 +1100 (AEDT)
+Message-ID: <1424999159.4698.78.camel@freescale.com>
+Subject: Re: [PATCH 0/2] powerpc/kvm: Enable running guests on RT Linux
+From: Scott Wood <scottwood@freescale.com>
+To: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Date: Thu, 26 Feb 2015 19:05:59 -0600
+In-Reply-To: <54EF2025.80404@linutronix.de>
+References: <1424251955-308-1-git-send-email-bogdan.purcareata@freescale.com>
+ <54E73A6C.9080500@suse.de> <54E740E7.5090806@redhat.com>
+ <54E74A8C.30802@linutronix.de> <1424734051.4698.17.camel@freescale.com>
+ <54EF196E.4090805@redhat.com> <54EF2025.80404@linutronix.de>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="d6Gm4EdcadzBjdND"
-In-Reply-To: <1424995875.4645.42.camel@kernel.crashing.org>
-Cc: linux-fbdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Tomi Valkeinen <tomi.valkeinen@ti.com>, Paul Mackerras <paulus@samba.org>,
- Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
+Cc: linux-rt-users@vger.kernel.org, Alexander Graf <agraf@suse.de>,
+ linux-kernel@vger.kernel.org,
+ Bogdan Purcareata <bogdan.purcareata@freescale.com>,
+ mihai.caraman@freescale.com, Paolo Bonzini <pbonzini@redhat.com>, Thomas
+ Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,56 +31,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Thu, 2015-02-26 at 14:31 +0100, Sebastian Andrzej Siewior wrote:
+> On 02/26/2015 02:02 PM, Paolo Bonzini wrote:
+> > 
+> > 
+> > On 24/02/2015 00:27, Scott Wood wrote:
+> >> This isn't a host PIC driver.  It's guest PIC emulation, some of which
+> >> is indeed not suitable for a rawlock (in particular, openpic_update_irq
+> >> which loops on the number of vcpus, with a loop body that calls
+> >> IRQ_check() which loops over all pending IRQs).
+> > 
+> > The question is what behavior is wanted of code that isn't quite
+> > RT-ready.  What is preferred, bugs or bad latency?
+> > 
+> > If the answer is bad latency (which can be avoided simply by not running
+> > KVM on a RT kernel in production), patch 1 can be applied.  If the
+> can be applied *but* makes no difference if applied or not.
+> 
+> > answer is bugs, patch 1 is not upstream material.
+> > 
+> > I myself prefer to have bad latency; if something takes a spinlock in
+> > atomic context, that spinlock should be raw.  If it hurts (latency),
+> > don't do it (use the affected code).
+> 
+> The problem, that is fixed by this s/spin_lock/raw_spin_lock/, exists
+> only in -RT. There is no change upstream. In general we fix such things
+> in -RT first and forward the patches upstream if possible. This convert
+> thingy would be possible.
+> Bug fixing comes before latency no matter if RT or not. Converting
+> every lock into a rawlock is not always the answer.
+> Last thing I read from Scott is that he is not entirely sure if this is
+> the right approach or not and patch #1 was not acked-by him either.
+> 
+> So for now I wait for Scott's feedback and maybe a backtrace :)
 
---d6Gm4EdcadzBjdND
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Obviously leaving it in a buggy state is not what we want -- but I lean
+towards a short term "fix" of putting "depends on !PREEMPT_RT" on the
+in-kernel MPIC emulation (which is itself just an optimization -- you
+can still use KVM without it).  This way people don't enable it with RT
+without being aware of the issue, and there's more of an incentive to
+fix it properly.
 
-On Fri, Feb 27, 2015 at 11:11:15AM +1100, Benjamin Herrenschmidt wrote:
-> On Sat, 2015-01-31 at 21:47 +0800, Kevin Hao wrote:
-> > The PPC_OF is a ppc specific option which is used to mean that the
-> > firmware device tree access functions are available. Since all the
-> > ppc platforms have a device tree, it is aways set to 'y' for ppc.
-> > So it makes no sense to keep a such option in the current kernel.
-> > Replace it with PPC.
-> >=20
-> > Signed-off-by: Kevin Hao <haokexin@gmail.com>
->=20
-> For this and generally the whole series,
->=20
-> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+I'll let Bogdan supply the backtrace.
 
-Thanks Ben.
-
->=20
-> Which tree do we expect this to go through ?
-
-I just sent out a v2 [1] a few hours earlier with some minor updates. We pl=
-an
-to merge this patch series via the powerpc tree in 4.1 cycle if I can colle=
-ct
-all the acks from the corresponding driver maintainers.
-
-[1] https://lists.ozlabs.org/pipermail/linuxppc-dev/2015-February/125331.ht=
-ml
-
-Thanks,
-Kevin
-
---d6Gm4EdcadzBjdND
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBAgAGBQJU78LtAAoJEJNY7TDerrFxz1wH/RHF9qNesB2DqntsnRqlVQiG
-t7aFJPo+T8IHvGKlt6w8RXMoUHFHj7hB9jjB86s+Pfl63eB6qIc5qvD8ty8eBk4a
-98hzmB8RuyEsKu0mC9bZVSYLYFr9wkbNhHMJNRAlmndk08shS82JNVU3bmLQXQOG
-z2CheuW1l7x6N508hTWgeXPZd8aHHwsZAVwdC3Wm9YLxPnvwWiWS05wNKvzyk5NI
-NSZ2drghdtATkSTrBLCaHVwl4P3ksKnK/KsX0lm+r9pMzh+4grqmoKejJRwEtWa4
-k5soQWcl4fTwV6ein/X8QgMPbR6uShsXjFbi0qDDnlrEm+6+Ev+HfvXQGEBUIMA=
-=cfO6
------END PGP SIGNATURE-----
-
---d6Gm4EdcadzBjdND--
+-Scott
