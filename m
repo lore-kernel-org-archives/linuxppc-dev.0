@@ -1,18 +1,20 @@
-Return-Path: <davem@davemloft.net>
-Received: from shards.monkeyblade.net (shards.monkeyblade.net
- [IPv6:2001:4f8:3:36:211:85ff:fe63:a549])
- by lists.ozlabs.org (Postfix) with ESMTP id 646AF1A0052
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Feb 2015 09:22:09 +1100 (AEDT)
-Date: Fri, 27 Feb 2015 17:22:06 -0500 (EST)
-Message-Id: <20150227.172206.206607639934597507.davem@davemloft.net>
-To: tlfalcon@linux.vnet.ibm.com
-Subject: Re: [PATCH] ibmveth: Add function to enable live MAC address changes
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1424910864-32266-1-git-send-email-tlfalcon@linux.vnet.ibm.com>
-References: <1424910864-32266-1-git-send-email-tlfalcon@linux.vnet.ibm.com>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Return-Path: <yguerrini@purch.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0111.outbound.protection.outlook.com [207.46.100.111])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id A95D11A0052
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Feb 2015 09:39:26 +1100 (AEDT)
+From: Yannick Guerrini <yguerrini@tomshardware.fr>
+To: <benh@kernel.crashing.org>
+Subject: [PATCH] powerpc: Fix trivial typo in comment
+Date: Fri, 27 Feb 2015 23:22:54 +0100
+Message-ID: <1425075774-15308-1-git-send-email-yguerrini@tomshardware.fr>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: trivial@kernel.org, Yannick
+ Guerrini <yguerrini@tomshardware.fr>, linux-kernel@vger.kernel.org,
+ paulus@samba.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,39 +24,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
-Date: Wed, 25 Feb 2015 18:34:24 -0600
+Change 'Kenrel' to 'Kernel'
 
-> Add a function that will enable changing the MAC address
-> of an ibmveth interface while it is still running.
-> 
-> Signed-off-by: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
-> ---
->  drivers/net/ethernet/ibm/ibmveth.c | 20 +++++++++++++++++++-
->  1 file changed, 19 insertions(+), 1 deletion(-)
-> 
-> diff --git a/drivers/net/ethernet/ibm/ibmveth.c b/drivers/net/ethernet/ibm/ibmveth.c
-> index 21978cc..6e44357 100644
-> --- a/drivers/net/ethernet/ibm/ibmveth.c
-> +++ b/drivers/net/ethernet/ibm/ibmveth.c
-> @@ -1327,6 +1327,24 @@ static unsigned long ibmveth_get_desired_dma(struct vio_dev *vdev)
->  	return ret;
->  }
->  
-> +static int ibmveth_set_mac_addr(struct net_device *dev, void *p)
-> +{
-> +	struct ibmveth_adapter *adapter = netdev_priv(dev);
-> +	struct sockaddr *addr = p;
-> +	u64 mac_address;
-> +	int rc;
-> +
-> +	if (!is_valid_ether_addr(addr->sa_data))
-> +		return -EADDRNOTAVAIL;
-> +
-> +	ether_addr_copy(dev->dev_addr, addr->sa_data);
-> +
-> +	mac_address = ibmveth_encode_mac_addr(dev->dev_addr);
-> +	rc = h_change_logical_lan_mac(adapter->vdev->unit_address, mac_address);
+Signed-off-by: Yannick Guerrini <yguerrini@tomshardware.fr>
+---
+ arch/powerpc/include/asm/smu.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-As others have said, if this hypervisor call fails you must not change
-dev->dev_addr.  It must always be in sync with "the hardware."
+diff --git a/arch/powerpc/include/asm/smu.h b/arch/powerpc/include/asm/smu.h
+index 6e909f3..37d2da6 100644
+--- a/arch/powerpc/include/asm/smu.h
++++ b/arch/powerpc/include/asm/smu.h
+@@ -478,7 +478,7 @@ extern unsigned long smu_cmdbuf_abs;
+ 
+ 
+ /*
+- * Kenrel asynchronous i2c interface
++ * Kernel asynchronous i2c interface
+  */
+ 
+ #define SMU_I2C_READ_MAX	0x1d
+-- 
+1.9.5.msysgit.0
