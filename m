@@ -1,37 +1,36 @@
-Return-Path: <keescook@google.com>
-Received: from mail-vc0-x235.google.com (mail-vc0-x235.google.com
- [IPv6:2607:f8b0:400c:c03::235])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <tyreld@linux.vnet.ibm.com>
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1068C1A000C
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Feb 2015 13:01:15 +1100 (AEDT)
-Received: by mail-vc0-f181.google.com with SMTP id le20so889677vcb.12
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Feb 2015 18:01:11 -0800 (PST)
-MIME-Version: 1.0
-Sender: keescook@google.com
-In-Reply-To: <20150228123656.538301ef@canb.auug.org.au>
-References: <20150228005228.GA23638@www.outflux.net>
- <20150228123656.538301ef@canb.auug.org.au>
-Date: Fri, 27 Feb 2015 18:01:11 -0800
-Message-ID: <CAGXu5jLgbzzYQkeLmpgSGu7w7DKKTHpFE=F2_a=ayjkU6atBQQ@mail.gmail.com>
-Subject: Re: [PATCH] seccomp: switch to using asm-generic for seccomp.h
-From: Kees Cook <keescook@chromium.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Content-Type: text/plain; charset=UTF-8
-Cc: Linux MIPS Mailing List <linux-mips@linux-mips.org>,
- linux-sh@vger.kernel.org, Heiko Carstens <heiko.carstens@de.ibm.com>,
- Paul Mackerras <paulus@samba.org>, sparclinux@vger.kernel.org,
- linux-s390@vger.kernel.org, Russell King <linux@arm.linux.org.uk>,
- Helge Deller <deller@gmx.de>, "x86@kernel.org" <x86@kernel.org>,
- "James E.J. Bottomley" <jejb@parisc-linux.org>,
- AKASHI Takahiro <takahiro.akashi@linaro.org>,
- James Hogan <james.hogan@imgtec.com>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- Michal Simek <monstr@monstr.eu>, linux-parisc@vger.kernel.org,
- LKML <linux-kernel@vger.kernel.org>, Ralf Baechle <ralf@linux-mips.org>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>, linux390@de.ibm.com,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- "David S. Miller" <davem@davemloft.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 051E41A000C
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Feb 2015 13:24:59 +1100 (AEDT)
+Received: from /spool/local
+ by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
+ Fri, 27 Feb 2015 19:24:58 -0700
+Received: from b03cxnp07028.gho.boulder.ibm.com
+ (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id AC6043E40041
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Feb 2015 19:24:56 -0700 (MST)
+Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
+ by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with
+ ESMTP id t1S2NNPp24576112
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Feb 2015 19:23:23 -0700
+Received: from d03av05.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t1S2Otbo025384
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Feb 2015 19:24:56 -0700
+From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 3/3] powerpc/pseries: Expose post-migration in kernel device
+ tree update to drmgr
+Date: Fri, 27 Feb 2015 18:24:43 -0800
+Message-Id: <1425090283-27694-4-git-send-email-tyreld@linux.vnet.ibm.com>
+In-Reply-To: <1425090283-27694-1-git-send-email-tyreld@linux.vnet.ibm.com>
+References: <1425090283-27694-1-git-send-email-tyreld@linux.vnet.ibm.com>
+Cc: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>, cyrilbur@gmail.com,
+ nfont@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,43 +40,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Feb 27, 2015 at 5:36 PM, Stephen Rothwell <sfr@canb.auug.org.au> wrote:
-> Hi Kees,
->
-> On Fri, 27 Feb 2015 16:52:29 -0800 Kees Cook <keescook@chromium.org> wrote:
->>
->> diff --git a/arch/arm/include/asm/seccomp.h b/arch/arm/include/asm/seccomp.h
->> index 52b156b341f5..66ca6a30bf5c 100644
->> --- a/arch/arm/include/asm/seccomp.h
->> +++ b/arch/arm/include/asm/seccomp.h
->> @@ -1,11 +1 @@
->> -#ifndef _ASM_ARM_SECCOMP_H
->> -#define _ASM_ARM_SECCOMP_H
->> -
->> -#include <linux/unistd.h>
->> -
->> -#define __NR_seccomp_read __NR_read
->> -#define __NR_seccomp_write __NR_write
->> -#define __NR_seccomp_exit __NR_exit
->> -#define __NR_seccomp_sigreturn __NR_rt_sigreturn
->> -
->> -#endif /* _ASM_ARM_SECCOMP_H */
->> +#include <asm-generic/seccomp.h>
->
-> I think that these cases (where you replace the file by a stub that
-> just include <asm-generic/seccomp.h>) can be replaced by removing the
-> file completely and adding
->
-> generic-y = seccomp.h
->
-> to <ARCH>/include/asm/Kbuild
+Traditionally after a migration operation drmgr has coordinated the device tree
+update with the kernel in userspace via the ugly /proc/ppc64/ofdt interface. This
+can be better done fully in the kernel where support already exists. Currently,
+drmgr makes a faux ibm,suspend-me RTAS call which we intercept in the kernel so
+that we can check VASI state for suspendability. After the LPAR resumes and
+returns to drmgr that is followed by the necessary update-nodes and
+update-properties RTAS calls which are parsed and communitated back to the kernel
+through /proc/ppc64/ofdt for the device tree update. The drmgr tool should
+instead initiate the migration using the already existing
+/sysfs/kernel/mobility/migration entry that performs all this work in the kernel.
 
-Ah-ha! I thought total removal was possible, but I lacked the Kbuild
-piece. There are a lot of arch/ headers that are just the one line.
-Maybe I should send a another patch to clean up those?
+This patch adds a show function to the sysfs "migration" attribute that returns
+1 to indicate the kernel will perform the device tree update after a migration
+operation and that drmgr should initiated the migration through the sysfs
+"migration" attribute.
 
--Kees
+Signed-off-by: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+---
+ arch/powerpc/platforms/pseries/mobility.c | 11 ++++++++++-
+ 1 file changed, 10 insertions(+), 1 deletion(-)
 
+diff --git a/arch/powerpc/platforms/pseries/mobility.c b/arch/powerpc/platforms/pseries/mobility.c
+index 0b1f70e..a689f74 100644
+--- a/arch/powerpc/platforms/pseries/mobility.c
++++ b/arch/powerpc/platforms/pseries/mobility.c
+@@ -40,6 +40,9 @@ struct update_props_workarea {
+ 
+ #define MIGRATION_SCOPE	(1)
+ 
++#define USER_DT_UPDATE  0
++#define KERN_DT_UPDATE  1
++
+ static int mobility_rtas_call(int token, char *buf, s32 scope)
+ {
+ 	int rc;
+@@ -339,7 +342,13 @@ static ssize_t migrate_store(struct class *class, struct class_attribute *attr,
+ 	return count;
+ }
+ 
+-static CLASS_ATTR(migration, S_IWUSR, NULL, migrate_store);
++static ssize_t migrate_show(struct class *class, struct class_attribute *attr,
++			    char *buf)
++{
++	return sprintf(buf, "%d\n", KERN_DT_UPDATE);
++}
++
++static CLASS_ATTR(migration, S_IWUSR | S_IRUGO, migrate_show, migrate_store);
+ 
+ static int __init mobility_sysfs_init(void)
+ {
 -- 
-Kees Cook
-Chrome OS Security
+1.7.12.2
