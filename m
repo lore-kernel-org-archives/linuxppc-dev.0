@@ -1,32 +1,34 @@
 Return-Path: <tyreld@linux.vnet.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E4B421A00A2
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Feb 2015 13:25:00 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 378CA1A00A5
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Feb 2015 13:25:01 +1100 (AEDT)
 Received: from /spool/local
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
  Fri, 27 Feb 2015 19:24:58 -0700
-Received: from b03cxnp08028.gho.boulder.ibm.com
- (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 66CAF19D8026
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Feb 2015 19:16:03 -0700 (MST)
+Received: from b03cxnp07028.gho.boulder.ibm.com
+ (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id C0D061FF0026
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Feb 2015 19:16:07 -0700 (MST)
 Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
- by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with
- ESMTP id t1S2OrWQ42795194
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Feb 2015 19:24:53 -0700
+ by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with
+ ESMTP id t1S2NNOg29360360
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Feb 2015 19:23:23 -0700
 Received: from d03av05.boulder.ibm.com (localhost [127.0.0.1])
  by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t1S2Osqq025302
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Feb 2015 19:24:54 -0700
+ t1S2OtKm025361
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Feb 2015 19:24:56 -0700
 From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 0/3] powerpc/pseries: Fixes and cleanup of suspend/migration
- code
-Date: Fri, 27 Feb 2015 18:24:40 -0800
-Message-Id: <1425090283-27694-1-git-send-email-tyreld@linux.vnet.ibm.com>
+Subject: [PATCH 2/3] powerpc/pseries: Little endian fixes for post mobility
+ device tree update
+Date: Fri, 27 Feb 2015 18:24:42 -0800
+Message-Id: <1425090283-27694-3-git-send-email-tyreld@linux.vnet.ibm.com>
+In-Reply-To: <1425090283-27694-1-git-send-email-tyreld@linux.vnet.ibm.com>
+References: <1425090283-27694-1-git-send-email-tyreld@linux.vnet.ibm.com>
 Cc: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>, cyrilbur@gmail.com,
  nfont@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -38,23 +40,128 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patchset simplifies the usage of rtas_ibm_suspend_me() by removing an
-extraneous function parameter, fixes device tree updating on little endian
-platforms, and adds a mechanism for informing drmgr that the kernel is cabable of
-performing the whole migration including device tree update itself.
+We currently use the device tree update code in the kernel after resuming
+from a suspend operation to re-sync the kernels view of the device tree with
+that of the hypervisor. The code as it stands is not endian safe as it relies
+on parsing buffers returned by RTAS calls that thusly contains data in big
+endian format.
 
-Tyrel Datwyler (3):
-  powerpc/pseries: Simplify check for suspendability during
-    suspend/migration
-  powerpc/pseries: Little endian fixes for post mobility device tree
-    update
-  powerpc/pseries: Expose post-migration in kernel device tree update
-    to drmgr
+This patch annotates variables and structure members with __be types as well
+as performing necessary byte swaps to cpu endian for data that needs to be
+parsed.
 
- arch/powerpc/include/asm/rtas.h           |  2 +-
- arch/powerpc/kernel/rtas.c                | 15 ++++-----
- arch/powerpc/platforms/pseries/mobility.c | 55 ++++++++++++++++++-------------
- 3 files changed, 40 insertions(+), 32 deletions(-)
+Signed-off-by: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+---
+ arch/powerpc/platforms/pseries/mobility.c | 36 ++++++++++++++++---------------
+ 1 file changed, 19 insertions(+), 17 deletions(-)
 
+diff --git a/arch/powerpc/platforms/pseries/mobility.c b/arch/powerpc/platforms/pseries/mobility.c
+index 29e4f04..0b1f70e 100644
+--- a/arch/powerpc/platforms/pseries/mobility.c
++++ b/arch/powerpc/platforms/pseries/mobility.c
+@@ -25,10 +25,10 @@
+ static struct kobject *mobility_kobj;
+ 
+ struct update_props_workarea {
+-	u32 phandle;
+-	u32 state;
+-	u64 reserved;
+-	u32 nprops;
++	__be32 phandle;
++	__be32 state;
++	__be64 reserved;
++	__be32 nprops;
+ } __packed;
+ 
+ #define NODE_ACTION_MASK	0xff000000
+@@ -127,7 +127,7 @@ static int update_dt_property(struct device_node *dn, struct property **prop,
+ 	return 0;
+ }
+ 
+-static int update_dt_node(u32 phandle, s32 scope)
++static int update_dt_node(__be32 phandle, s32 scope)
+ {
+ 	struct update_props_workarea *upwa;
+ 	struct device_node *dn;
+@@ -136,6 +136,7 @@ static int update_dt_node(u32 phandle, s32 scope)
+ 	char *prop_data;
+ 	char *rtas_buf;
+ 	int update_properties_token;
++	u32 nprops;
+ 	u32 vd;
+ 
+ 	update_properties_token = rtas_token("ibm,update-properties");
+@@ -162,6 +163,7 @@ static int update_dt_node(u32 phandle, s32 scope)
+ 			break;
+ 
+ 		prop_data = rtas_buf + sizeof(*upwa);
++		nprops = be32_to_cpu(upwa->nprops);
+ 
+ 		/* On the first call to ibm,update-properties for a node the
+ 		 * the first property value descriptor contains an empty
+@@ -170,17 +172,17 @@ static int update_dt_node(u32 phandle, s32 scope)
+ 		 */
+ 		if (*prop_data == 0) {
+ 			prop_data++;
+-			vd = *(u32 *)prop_data;
++			vd = be32_to_cpu(*(__be32 *)prop_data);
+ 			prop_data += vd + sizeof(vd);
+-			upwa->nprops--;
++			nprops--;
+ 		}
+ 
+-		for (i = 0; i < upwa->nprops; i++) {
++		for (i = 0; i < nprops; i++) {
+ 			char *prop_name;
+ 
+ 			prop_name = prop_data;
+ 			prop_data += strlen(prop_name) + 1;
+-			vd = *(u32 *)prop_data;
++			vd = be32_to_cpu(*(__be32 *)prop_data);
+ 			prop_data += sizeof(vd);
+ 
+ 			switch (vd) {
+@@ -212,7 +214,7 @@ static int update_dt_node(u32 phandle, s32 scope)
+ 	return 0;
+ }
+ 
+-static int add_dt_node(u32 parent_phandle, u32 drc_index)
++static int add_dt_node(__be32 parent_phandle, __be32 drc_index)
+ {
+ 	struct device_node *dn;
+ 	struct device_node *parent_dn;
+@@ -237,7 +239,7 @@ static int add_dt_node(u32 parent_phandle, u32 drc_index)
+ int pseries_devicetree_update(s32 scope)
+ {
+ 	char *rtas_buf;
+-	u32 *data;
++	__be32 *data;
+ 	int update_nodes_token;
+ 	int rc;
+ 
+@@ -254,17 +256,17 @@ int pseries_devicetree_update(s32 scope)
+ 		if (rc && rc != 1)
+ 			break;
+ 
+-		data = (u32 *)rtas_buf + 4;
+-		while (*data & NODE_ACTION_MASK) {
++		data = (__be32 *)rtas_buf + 4;
++		while (be32_to_cpu(*data) & NODE_ACTION_MASK) {
+ 			int i;
+-			u32 action = *data & NODE_ACTION_MASK;
+-			int node_count = *data & NODE_COUNT_MASK;
++			u32 action = be32_to_cpu(*data) & NODE_ACTION_MASK;
++			u32 node_count = be32_to_cpu(*data) & NODE_COUNT_MASK;
+ 
+ 			data++;
+ 
+ 			for (i = 0; i < node_count; i++) {
+-				u32 phandle = *data++;
+-				u32 drc_index;
++				__be32 phandle = *data++;
++				__be32 drc_index;
+ 
+ 				switch (action) {
+ 				case DELETE_DT_NODE:
 -- 
 1.7.12.2
