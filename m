@@ -1,19 +1,16 @@
-Return-Path: <herbert@gondor.apana.org.au>
-Received: from helcar.apana.org.au (helcar.apana.org.au [209.40.204.226])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AE83E1A01E4
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  1 Mar 2015 21:05:19 +1100 (AEDT)
-Date: Sun, 1 Mar 2015 23:04:47 +1300
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Markus Stockhausen <stockhausen@collogia.de>
-Subject: Re: [v2,1/7] crypto: powerpc/aes - register defines
-Message-ID: <20150301100447.GA16494@gondor.apana.org.au>
-References: <466c99e5-b9d2-4312-b8a4-f0233d9d3f3c@EXCHANGE.collogia.de>
+Return-Path: <stockhausen@collogia.de>
+Received: from mailrelay.collogia.de (mailrelay.collogia.de [194.8.207.98])
+ by lists.ozlabs.org (Postfix) with SMTP id 6E9961A0C2A
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Mar 2015 05:30:46 +1100 (AEDT)
+Subject: [PATCH v1 0/3] crypto: powerpc/md5
+From: Markus Stockhausen <stockhausen@collogia.de>
+Date: Sun, 1 Mar 2015 19:30:30 +0100
+To: <linux-crypto@vger.kernel.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <466c99e5-b9d2-4312-b8a4-f0233d9d3f3c@EXCHANGE.collogia.de>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-crypto@vger.kernel.org
+Content-Type: multipart/mixed;
+ boundary="----=_NextPartTM-000-e636df0e-66ba-4052-bcc6-3ec38228b06a"
+Message-ID: <4fc2d70a-8d5b-495b-babc-d1236781b2f0@EXCHANGE.collogia.de>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,13 +20,99 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Feb 22, 2015 at 09:59:38AM +0100, Markus Stockhausen wrote:
-> Define some register aliases for better readability.
-> 
-> Signed-off-by: Markus Stockhausen <stockhausen@collogia.de>
 
-All applied.  Thanks!
--- 
-Email: Herbert Xu <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+This is a multi-part message in MIME format.
+
+------=_NextPartTM-000-e636df0e-66ba-4052-bcc6-3ec38228b06a
+Content-Type: text/plain
+
+[PATCH v1 0/3] crypto: powerpc/md5
+
+The following patches add support for optimized MD5
+calculation on PPC processors. It completes the previous
+patches to provide a comprehensive IPsec algorithm support
+for low power routers without hardware crypto acceleration. 
+The implementation is endian independant. Although only 
+tested on 32 bit CPU it should run on 64 bit too.
+
+Performance numbers from insmod tcrypt sec=3 mode=302 taken
+on e500v2 800 MHz (TP Link WDR4900)
+
+data    per     generic      this patch  speedup  cycles
+length  update  bytes/sec    bytes/sec   factor   per byte
+------  ------  -----------  ----------  -------  --------
+    16      16   14,131,578   16,019,173   x1.13     49.94
+    64      16   24,003,093   25,642,282   x1.07     31.20
+    64      64   36,445,269   43,124,074   x1.18     18.55
+   256      16   32,454,144   33,569,194   x1.03     23.83
+   256      64   57,306,965   67,855,104   x1.18     11.79
+   256     256   71,010,304   91,093,333   x1.28      8.78
+  1024      16   35,902,122   36,451,328   x1.02     21.95
+  1024     256   86,229,674  113,111,722   x1.31      7.07
+  1024    1024   93,883,733  127,357,952   x1.36      6.28
+  2048      16   36,175,189   36,937,728   x1.02     21.66
+  2048     256   89,539,242  118,392,832   x1.32      6.76
+  2048    1024   97,499,136  133,113,856   x1.37      6.01
+  2048    2048   99,198,976  136,406,357   x1.38      5.86
+
+------=_NextPartTM-000-e636df0e-66ba-4052-bcc6-3ec38228b06a
+Content-Type: text/plain;
+	name="InterScan_Disclaimer.txt"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+	filename="InterScan_Disclaimer.txt"
+
+****************************************************************************
+Diese E-Mail enthält vertrauliche und/oder rechtlich geschützte
+Informationen. Wenn Sie nicht der richtige Adressat sind oder diese E-Mail
+irrtümlich erhalten haben, informieren Sie bitte sofort den Absender und
+vernichten Sie diese Mail. Das unerlaubte Kopieren sowie die unbefugte
+Weitergabe dieser Mail ist nicht gestattet.
+
+Über das Internet versandte E-Mails können unter fremden Namen erstellt oder
+manipuliert werden. Deshalb ist diese als E-Mail verschickte Nachricht keine
+rechtsverbindliche Willenserklärung.
+
+Collogia
+Unternehmensberatung AG
+Ubierring 11
+D-50678 Köln
+
+Vorstand:
+Kadir Akin
+Dr. Michael Höhnerbach
+
+Vorsitzender des Aufsichtsrates:
+Hans Kristian Langva
+
+Registergericht: Amtsgericht Köln
+Registernummer: HRB 52 497
+
+This e-mail may contain confidential and/or privileged information. If you
+are not the intended recipient (or have received this e-mail in error)
+please notify the sender immediately and destroy this e-mail. Any
+unauthorized copying, disclosure or distribution of the material in this
+e-mail is strictly forbidden.
+
+e-mails sent over the internet may have been written under a wrong name or
+been manipulated. That is why this message sent as an e-mail is not a
+legally binding declaration of intention.
+
+Collogia
+Unternehmensberatung AG
+Ubierring 11
+D-50678 Köln
+
+executive board:
+Kadir Akin
+Dr. Michael Höhnerbach
+
+President of the supervisory board:
+Hans Kristian Langva
+
+Registry office: district court Cologne
+Register number: HRB 52 497
+
+****************************************************************************
+
+------=_NextPartTM-000-e636df0e-66ba-4052-bcc6-3ec38228b06a--
