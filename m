@@ -1,18 +1,19 @@
-Return-Path: <Yanjiang.Jin@windriver.com>
-Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
- (using TLSv1.1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <herbert@gondor.apana.org.au>
+Received: from helcar.apana.org.au (helcar.apana.org.au [209.40.204.226])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1280A1A03BD
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Mar 2015 19:35:51 +1100 (AEDT)
-From: <yanjiang.jin@windriver.com>
-To: <mpe@ellerman.id.au>, <scottwood@freescale.com>
-Subject: [PATCH] fsl: mpc85xx: call k(un)map_atomic other than k(un)map
-Date: Mon, 2 Mar 2015 16:35:35 +0800
-Message-ID: <1425285335-21753-1-git-send-email-yanjiang.jin@windriver.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 699571A0196
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Mar 2015 21:26:12 +1100 (AEDT)
+Date: Mon, 2 Mar 2015 23:25:59 +1300
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Markus Stockhausen <stockhausen@collogia.de>
+Subject: Re: [v1,1/3] crypto: powerpc/sha1 - assembler
+Message-ID: <20150302102559.GA24450@gondor.apana.org.au>
+References: <ce3e5ff2-5904-4e1c-bfa9-e37c9682f961@EXCHANGE.collogia.de>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: msm@freescale.com, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <ce3e5ff2-5904-4e1c-bfa9-e37c9682f961@EXCHANGE.collogia.de>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-crypto@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,54 +23,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Yanjiang Jin <yanjiang.jin@windriver.com>
+On Tue, Feb 24, 2015 at 08:36:40PM +0100, Markus Stockhausen wrote:
+> This is the assembler code for SHA1 implementation with
+> the SIMD SPE instruction set. With the enhanced instruction 
+> set we can operate on 2 32 bit words in parallel. That helps 
+> reducing the time to calculate W16-W79. For increasing 
+> performance even more the assembler function can compute 
+> hashes for more than one 64 byte input block. 
+> 
+> The state of the used SPE registers is preserved via the 
+> stack so we can run from interrupt context. There might 
+> be the case that we interrupt ourselves and push sensitive 
+> data from another context onto our stack. Clear this area
+> in the stack afterwards to avoid information leakage.
+> 
+> The code is endian independant.
+> 
+> Signed-off-by: Markus Stockhausen <stockhausen@collogia.de>
 
-The k(un)map function may be called in atomic context in the
-function map_and_flush(), so use k(un)map_atomic to replace it,
-else we would get the below warning during kdump:
-
-BUG: sleeping function called from invalid context at include/linux/highmem.h:58
-in_atomic(): 1, irqs_disabled(): 1, pid: 736, name: sh
-INFO: lockdep is turned off.
-irq event stamp: 0
-hardirqs last  enabled at (0): [<          (null)>]           (null)
-hardirqs last disabled at (0): [<c000000000066d1c>] .copy_process.part.44+0x50c/0x1360
-softirqs last  enabled at (0): [<c000000000066d1c>] .copy_process.part.44+0x50c/0x1360
-softirqs last disabled at (0): [<          (null)>]           (null)
-CPU: 1 PID: 736 Comm: sh Tainted: G      D W    3.10.62-ltsi-WR6.0.0.0_standard #2
-Call Trace:
-[c0000000f47cf120] [c00000000000b150] .show_stack+0x170/0x290 (unreliable)
-[c0000000f47cf210] [c000000000b71334] .dump_stack+0x28/0x3c
-[c0000000f47cf280] [c0000000000bb5d8] .__might_sleep+0x1a8/0x270
-[c0000000f47cf310] [c0000000000440cc] .map_and_flush+0x4c/0xc0
-[c0000000f47cf390] [c0000000000441cc] .mpc85xx_smp_machine_kexec+0x8c/0xec0
-[c0000000f47cf420] [c00000000002ae00] .machine_kexec+0x60/0x90
-[c0000000f47cf4b0] [c00000000010957c] .crash_kexec+0x8c/0x100
-[c0000000f47cf6a0] [c000000000015df8] .die+0x348/0x450
-[c0000000f47cf740] [c00000000002f3a0] .bad_page_fault+0xe0/0x130
-[c0000000f47cf7c0] [c00000000001f3e4] storage_fault_common+0x40/0x44
-
-Signed-off-by: Yanjiang Jin <yanjiang.jin@windriver.com>
----
- arch/powerpc/platforms/85xx/smp.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/arch/powerpc/platforms/85xx/smp.c b/arch/powerpc/platforms/85xx/smp.c
-index d7c1e69..8631ac5 100644
---- a/arch/powerpc/platforms/85xx/smp.c
-+++ b/arch/powerpc/platforms/85xx/smp.c
-@@ -360,10 +360,10 @@ static void mpc85xx_smp_kexec_down(void *arg)
- static void map_and_flush(unsigned long paddr)
- {
- 	struct page *page = pfn_to_page(paddr >> PAGE_SHIFT);
--	unsigned long kaddr  = (unsigned long)kmap(page);
-+	unsigned long kaddr  = (unsigned long)kmap_atomic(page);
- 
- 	flush_dcache_range(kaddr, kaddr + PAGE_SIZE);
--	kunmap(page);
-+	kunmap_atomic((void *)kaddr);
- }
- 
- /**
+All applied.  Thanks!
 -- 
-1.9.1
+Email: Herbert Xu <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
