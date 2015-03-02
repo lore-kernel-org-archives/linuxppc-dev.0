@@ -1,39 +1,22 @@
-Return-Path: <tyreld@linux.vnet.ibm.com>
-Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mort@bork.org>
+Received: from darwin.bork.org (darwin.bork.org [IPv6:2001:470:1f05:998::1])
+ (using TLSv1 with cipher ADH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 72FB61A01BA
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Mar 2015 08:30:12 +1100 (AEDT)
-Received: from /spool/local
- by e7.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
- Mon, 2 Mar 2015 16:30:09 -0500
-Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
- [9.57.198.23])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 5624AC90057
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Mar 2015 16:21:18 -0500 (EST)
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
- by b01cxnp22033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t22LU7c720250712
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 2 Mar 2015 21:30:07 GMT
-Received: from d01av03.pok.ibm.com (localhost [127.0.0.1])
- by d01av03.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t22LU6iT003221
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 2 Mar 2015 16:30:07 -0500
-Message-ID: <54F4D65B.5080603@linux.vnet.ibm.com>
-Date: Mon, 02 Mar 2015 13:30:03 -0800
-From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5620A1A01DA
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Mar 2015 08:44:29 +1100 (AEDT)
+Date: Mon, 2 Mar 2015 16:44:19 -0500
+From: Martin Hicks <mort@bork.org>
+To: Horia =?utf-8?Q?Geant=C4=83?= <horia.geanta@freescale.com>
+Subject: Re: [PATCH 0/2] crypto: talitos: Add AES-XTS mode
+Message-ID: <20150302214419.GA30523@darwin.bork.org>
+References: <1424451610-5786-1-git-send-email-mort@bork.org>
+ <54F464E4.8080204@freescale.com>
 MIME-Version: 1.0
-To: Cyril Bur <cyrilbur@gmail.com>
-Subject: Re: [PATCH 1/3] powerpc/pseries: Simplify check for suspendability
- during suspend/migration
-References: <1425090283-27694-1-git-send-email-tyreld@linux.vnet.ibm.com>
- <1425090283-27694-2-git-send-email-tyreld@linux.vnet.ibm.com>
- <1425269985.2919.29.camel@cyril>
-In-Reply-To: <1425269985.2919.29.camel@cyril>
 Content-Type: text/plain; charset=utf-8
-Cc: linuxppc-dev@lists.ozlabs.org, nfont@linux.vnet.ibm.com
+In-Reply-To: <54F464E4.8080204@freescale.com>
+Cc: Herbert Xu <herbert@gondor.apana.org.au>, Martin Hicks <mort@bork.org>,
+ linux-crypto@vger.kernel.org, Scott Wood <scottwood@freescale.com>,
+ linuxppc-dev@lists.ozlabs.org, Milan Broz <gmazyland@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,201 +26,207 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03/01/2015 08:19 PM, Cyril Bur wrote:
-> On Fri, 2015-02-27 at 18:24 -0800, Tyrel Datwyler wrote:
->> During suspend/migration operation we must wait for the VASI state reported
->> by the hypervisor to become Suspending prior to making the ibm,suspend-me
->> RTAS call. Calling routines to rtas_ibm_supend_me() pass a vasi_state variable
->> that exposes the VASI state to the caller. This is unnecessary as the caller
->> only really cares about the following three conditions; if there is an error
->> we should bailout, success indicating we have suspended and woken back up so
->> proceed to device tree updated, or we are not suspendable yet so try calling
->> rtas_ibm_suspend_me again shortly.
->>
->> This patch removes the extraneous vasi_state variable and simply uses the
->> return code to communicate how to proceed. We either succeed, fail, or get
->> -EAGAIN in which case we sleep for a second before trying to call
->> rtas_ibm_suspend_me again.
->>
->> Signed-off-by: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
->> ---
->>  arch/powerpc/include/asm/rtas.h           |  2 +-
->>  arch/powerpc/kernel/rtas.c                | 15 +++++++--------
->>  arch/powerpc/platforms/pseries/mobility.c |  8 +++-----
->>  3 files changed, 11 insertions(+), 14 deletions(-)
->>
->> diff --git a/arch/powerpc/include/asm/rtas.h b/arch/powerpc/include/asm/rtas.h
->> index 2e23e92..fc85eb0 100644
->> --- a/arch/powerpc/include/asm/rtas.h
->> +++ b/arch/powerpc/include/asm/rtas.h
->> @@ -327,7 +327,7 @@ extern int rtas_suspend_cpu(struct rtas_suspend_me_data *data);
->>  extern int rtas_suspend_last_cpu(struct rtas_suspend_me_data *data);
->>  extern int rtas_online_cpus_mask(cpumask_var_t cpus);
->>  extern int rtas_offline_cpus_mask(cpumask_var_t cpus);
->> -extern int rtas_ibm_suspend_me(u64 handle, int *vasi_return);
->> +extern int rtas_ibm_suspend_me(u64 handle);
->>  
-> I like ditching vasi_return, I was never happy with myself for doing
-> that!
+On Mon, Mar 02, 2015 at 03:25:56PM +0200, Horia Geantă wrote:
+> On 2/20/2015 7:00 PM, Martin Hicks wrote:
+> > This adds the AES-XTS mode, supported by the Freescale SEC 3.3.2.
+> > 
+> > One of the nice things about this hardware is that it knows how to deal
+> > with encrypt/decrypt requests that are larger than sector size, but that 
+> > also requires that that the sector size be passed into the crypto engine
+> > as an XTS cipher context parameter.
+> > 
+> > When a request is larger than the sector size the sector number is
+> > incremented by the talitos engine and the tweak key is re-calculated
+> > for the new sector.
+> > 
+> > I've tested this with 256bit and 512bit keys (tweak and data keys of 128bit
+> > and 256bit) to ensure interoperability with the software AES-XTS
+> > implementation.  All testing was done using dm-crypt/LUKS with
+> > aes-xts-plain64.
+> > 
+> > Is there a better solution that just hard coding the sector size to
+> > (1<<SECTOR_SHIFT)?  Maybe dm-crypt should be modified to pass the
+> > sector size along with the plain/plain64 IV to an XTS algorithm?
 > 
->>  struct rtc_time;
->>  extern unsigned long rtas_get_boot_time(void);
->> diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
->> index 21c45a2..603b928 100644
->> --- a/arch/powerpc/kernel/rtas.c
->> +++ b/arch/powerpc/kernel/rtas.c
->> @@ -897,7 +897,7 @@ int rtas_offline_cpus_mask(cpumask_var_t cpus)
->>  }
->>  EXPORT_SYMBOL(rtas_offline_cpus_mask);
->>  
->> -int rtas_ibm_suspend_me(u64 handle, int *vasi_return)
->> +int rtas_ibm_suspend_me(u64 handle)
+> AFAICT, SW implementation of xts mode in kernel (crypto/xts.c) is not
+> aware of a sector size ("data unit size" in IEEE P1619 terminology):
+> There's a hidden assumption that all the data send to xts in one request
+> belongs to a single sector. Even more, it's supposed that the first
+> 16-byte block in the request is "block 0" in the sector. These can be
+> seen from the way the tweak ("T") value is computed.
+> (Side note: there's no support of ciphertext stealing in crypto/xts.c -
+> i.e. sector sizes must be a multiple of underlying block cipher size -
+> that is 16B.)
 > 
-> That definition is actually in an #ifdef CONFIG_PPC_PSERIES, you'll need
-> to change the definition for !CONFIG_PPC_PSERIES
+> If dm-crypt would be modified to pass sector size somehow, all in-kernel
+> xts implementations would have to be made aware of the change.
+> I have nothing against this, but let's see what crypto maintainers have
+> to say...
 
-Good catch. I'll fix it there too.
+Right.  Additionally, there may be some requirement for the encryption
+implementation to broadcast the maximum size that can be handled in a single
+request.  For example Talitos could handle XTS encrypt/decrypt requests of
+up to 64kB (regardless of the block device's sector size).
 
->>  {
->>  	long state;
->>  	long rc;
->> @@ -919,13 +919,11 @@ int rtas_ibm_suspend_me(u64 handle, int *vasi_return)
->>  		printk(KERN_ERR "rtas_ibm_suspend_me: vasi_state returned %ld\n",rc);
->>  		return rc;
->>  	} else if (state == H_VASI_ENABLED) {
->> -		*vasi_return = RTAS_NOT_SUSPENDABLE;
->> -		return 0;
->> +		return -EAGAIN;
->>  	} else if (state != H_VASI_SUSPENDING) {
->>  		printk(KERN_ERR "rtas_ibm_suspend_me: vasi_state returned state %ld\n",
->>  		       state);
->> -		*vasi_return = -1;
->> -		return 0;
->> +		return -EIO;
+> BTW, there were some discussions back in 2013 wrt. being able to
+> configure / increase sector size, smth. crypto engines would benefit from:
+> http://www.saout.de/pipermail/dm-crypt/2013-January/003125.html
+> (experimental patch)
+> http://www.saout.de/pipermail/dm-crypt/2013-March/003202.html
 > 
-> I've had a look as to how these return values get passed back up the
-> stack and admittedly were dealing with a confusing mess, I've compared
-> back to before my patch (which wasn't perfect either it seems).
-> Both the state == H_VASI_ENABLED and state == H_VASI_SUSPENDING cause
-> ppc_rtas to go to the copy_return and return 0 (albeit with an error
-> code in args.rets[0]), because rtas_ppc goes back to out userland, I
-> hesitate to change any of that.
+> The experimental patch sends sector size as the req->nbytes - hidden
+> assumption: data size sent in an xts crypto request equals a sector.
 
-Agreed, that this is a bit of a mess. The problem is we have two call
-paths into rtas_ibm_suspend_me(). The one from migrate_store() and one
-from ppc_rtas(). I'll address each with your other comments below.
+I found this last week, and used it as a starting point for some testing.  I
+modified it to keep the underlying sector size of the dm-crypt mapping as
+512byte, but allowed the code to combine requests in IOs up to 4kB.  Doing
+greater request sizes would require allocating additional pages...I plan to
+implement that to see how much extra performance can be squeezed out.
 
->>  	}
->>  
->>  	if (!alloc_cpumask_var(&offline_mask, GFP_TEMPORARY))
->> @@ -1060,9 +1058,10 @@ asmlinkage int ppc_rtas(struct rtas_args __user *uargs)
->>  		int vasi_rc = 0;
-> 
-> This generates unused variable warning.
+patch below...
 
-Sloppy on my part. Will remove.
+With regards to performance, with my low-powered Freescale P1022 board, I see
+performance numbers like this on ext4, as measured by bonnie++.
 
-> 
->>  		u64 handle = ((u64)be32_to_cpu(args.args[0]) << 32)
->>  		              | be32_to_cpu(args.args[1]);
->> -		rc = rtas_ibm_suspend_me(handle, &vasi_rc);
->> -		args.rets[0] = cpu_to_be32(vasi_rc);
->> -		if (rc)
->> +		rc = rtas_ibm_suspend_me(handle);
->> +		if (rc == -EAGAIN)
->> +			args.rets[0] = cpu_to_be32(RTAS_NOT_SUSPENDABLE);
-> 
-> (continuing on...) so perhaps here have
-> 	rc = 0;
-> else if (rc == -EIO)
-> 	args.rets[0] = cpu_to_be32(-1);
-> 	rc = 0;
-> Which should keep the original behaviour, the last thing we want to do
-> is break BE.
+			Write (MB/s)	Read (MB/s)
+Unencrypted		140		176
+aes-xts-plain64 512b	113		115
+aes-xts-plain64 4kB	71		56
 
-The biggest problem here is we are making what basically equates to a
-fake rtas call from drmgr which we intercept in ppc_rtas(). From there
-we make this special call to rtas_ibm_suspend_me() to check VASI state
-and do a bunch of other specialized work that needs to be setup prior to
-making the actual ibm,suspend-me rtas call. Since, we are cheating PAPR
-here I guess we can really handle it however we want. I chose to simply
-fail the rtas call in the case where rtas_ibm_suspend_me() fails with
-something other than -EAGAIN. In user space librtas will log errno for
-the failure and return RTAS_IO_ASSERT to drmgr which in turn will log
-that error and fail.
+The more detailed bonnie++ output is here:
+http://www.bork.org/~mort/dm-crypt-enc-blksize.html
 
-Going forward we want to move drmgr to initiating migration through
-sysfs and not this clunky highway robbery of the rtas interface. So, for
-legacy purpose does it matter how we fail the call here? I'm open to
-either solution. If we choose to pass the error back through args.ret[0]
-what value do we choose? The following are all pretty standardized, but
-I don't think make sense here:
+The larger IO sizes is a huge win for this board.
 
--1: Hardware error
--2: Busy
--3: Parameter error
-9000: Suspension Aborted
+The patch I'm using to send IOs up to 4kB to talitos follows.
 
-The 9000 code maybe makes sense, but doesn't really convey that
-something bad a happened. In the end whatever value is passed in
-args.ret[0] drmgr will simply log.
+Thanks,
+mh
 
-While I agree about not breaking BE I'm not sure how it would. All i've
-done is added the -EIO case to explicit failure.
 
-> 
-> Might be worth checking that rc from rtas_ibm_suspend_me will only be
-> -EAGAIN and -EIO when they are explicitly set in rtas_ibm_suspend_me and
-> can't come back out from the hcall.
-> From reading PAPR we're ok there but just as a thought it might be worth
-> returning errno as positive because hcall errors are going to be
-> negative, to make life easier at some point... but then we'll have to
-> remember to make them negative when going back to userland (and there
-> are two places...) so there's no perfect win here.
-> 
+diff --git a/drivers/md/dm-crypt.c b/drivers/md/dm-crypt.c
+index 08981be..88e95b5 100644
+--- a/drivers/md/dm-crypt.c
++++ b/drivers/md/dm-crypt.c
+@@ -42,6 +42,7 @@ struct convert_context {
+ 	struct bvec_iter iter_out;
+ 	sector_t cc_sector;
+ 	atomic_t cc_pending;
++	unsigned int block_size;
+ 	struct ablkcipher_request *req;
+ };
+ 
+@@ -142,6 +143,8 @@ struct crypt_config {
+ 	sector_t iv_offset;
+ 	unsigned int iv_size;
+ 
++	unsigned int block_size;
++
+ 	/* ESSIV: struct crypto_cipher *essiv_tfm */
+ 	void *iv_private;
+ 	struct crypto_ablkcipher **tfms;
+@@ -801,10 +804,17 @@ static void crypt_convert_init(struct crypt_config *cc,
+ {
+ 	ctx->bio_in = bio_in;
+ 	ctx->bio_out = bio_out;
+-	if (bio_in)
++	ctx->block_size = 0;
++	if (bio_in) {
+ 		ctx->iter_in = bio_in->bi_iter;
+-	if (bio_out)
++		ctx->block_size = max(ctx->block_size, bio_cur_bytes(bio_in));
++	}
++	if (bio_out) {
+ 		ctx->iter_out = bio_out->bi_iter;
++		ctx->block_size = max(ctx->block_size, bio_cur_bytes(bio_out));
++	}
++	if (ctx->block_size > cc->block_size)
++		ctx->block_size = cc->block_size;
+ 	ctx->cc_sector = sector + cc->iv_offset;
+ 	init_completion(&ctx->restart);
+ }
+@@ -844,15 +854,15 @@ static int crypt_convert_block(struct crypt_config *cc,
+ 	dmreq->iv_sector = ctx->cc_sector;
+ 	dmreq->ctx = ctx;
+ 	sg_init_table(&dmreq->sg_in, 1);
+-	sg_set_page(&dmreq->sg_in, bv_in.bv_page, 1 << SECTOR_SHIFT,
++	sg_set_page(&dmreq->sg_in, bv_in.bv_page, ctx->block_size,
+ 		    bv_in.bv_offset);
+ 
+ 	sg_init_table(&dmreq->sg_out, 1);
+-	sg_set_page(&dmreq->sg_out, bv_out.bv_page, 1 << SECTOR_SHIFT,
++	sg_set_page(&dmreq->sg_out, bv_out.bv_page, ctx->block_size,
+ 		    bv_out.bv_offset);
+ 
+-	bio_advance_iter(ctx->bio_in, &ctx->iter_in, 1 << SECTOR_SHIFT);
+-	bio_advance_iter(ctx->bio_out, &ctx->iter_out, 1 << SECTOR_SHIFT);
++	bio_advance_iter(ctx->bio_in, &ctx->iter_in, ctx->block_size);
++	bio_advance_iter(ctx->bio_out, &ctx->iter_out, ctx->block_size);
+ 
+ 	if (cc->iv_gen_ops) {
+ 		r = cc->iv_gen_ops->generator(cc, iv, dmreq);
+@@ -861,7 +871,7 @@ static int crypt_convert_block(struct crypt_config *cc,
+ 	}
+ 
+ 	ablkcipher_request_set_crypt(req, &dmreq->sg_in, &dmreq->sg_out,
+-				     1 << SECTOR_SHIFT, iv);
++				     ctx->block_size, iv);
+ 
+ 	if (bio_data_dir(ctx->bio_in) == WRITE)
+ 		r = crypto_ablkcipher_encrypt(req);
+@@ -926,13 +936,13 @@ static int crypt_convert(struct crypt_config *cc,
+ 			/* fall through*/
+ 		case -EINPROGRESS:
+ 			ctx->req = NULL;
+-			ctx->cc_sector++;
++			ctx->cc_sector += ctx->block_size / (1<<SECTOR_SHIFT);
+ 			continue;
+ 
+ 		/* sync */
+ 		case 0:
+ 			atomic_dec(&ctx->cc_pending);
+-			ctx->cc_sector++;
++			ctx->cc_sector += ctx->block_size / (1<<SECTOR_SHIFT);
+ 			cond_resched();
+ 			continue;
+ 
+@@ -1814,6 +1824,9 @@ static int crypt_ctr(struct dm_target *ti, unsigned int argc, char **argv)
+ 		goto bad;
+ 	}
+ 
++	/* PAGE_SIZE? */
++	cc->block_size = 4096;
++
+ 	ti->num_flush_bios = 1;
+ 	ti->discard_zeroes_data_unsupported = true;
+ 
+@@ -1974,9 +1987,16 @@ static int crypt_iterate_devices(struct dm_target *ti,
+ 	return fn(ti, cc->dev, cc->start, ti->len, data);
+ }
+ 
++static void crypt_io_hints(struct dm_target *ti,
++                           struct queue_limits *limits)
++{
++	/* PAGE_SIZE? */
++	blk_limits_io_min(limits, 4096);
++}
++
+ static struct target_type crypt_target = {
+ 	.name   = "crypt",
+-	.version = {1, 13, 0},
++	.version = {1, 14, 0},
+ 	.module = THIS_MODULE,
+ 	.ctr    = crypt_ctr,
+ 	.dtr    = crypt_dtr,
+@@ -1988,6 +2008,7 @@ static struct target_type crypt_target = {
+ 	.message = crypt_message,
+ 	.merge  = crypt_merge,
+ 	.iterate_devices = crypt_iterate_devices,
++	.io_hints = crypt_io_hints,
+ };
+ 
+ static int __init dm_crypt_init(void)
 
-There are a variety of things that could go wrong that aren't directly
-related to rtas. This is why I chose to explicitly fail the rtas call if
-we get anything other than 0 or -EAGAIN.
-
->> +		else if (rc)
->>  			return rc;
->>  		goto copy_return;
->>  	}
->> diff --git a/arch/powerpc/platforms/pseries/mobility.c b/arch/powerpc/platforms/pseries/mobility.c
->> index 90cf3dc..29e4f04 100644
->> --- a/arch/powerpc/platforms/pseries/mobility.c
->> +++ b/arch/powerpc/platforms/pseries/mobility.c
->> @@ -325,15 +325,13 @@ static ssize_t migrate_store(struct class *class, struct class_attribute *attr,
->>  		return rc;
->>  
->>  	do {
->> -		rc = rtas_ibm_suspend_me(streamid, &vasi_rc);
->> -		if (!rc && vasi_rc == RTAS_NOT_SUSPENDABLE)
->> +		rc = rtas_ibm_suspend_me(streamid);
->> +		if (rc == -EAGAIN)
->>  			ssleep(1);
->> -	} while (!rc && vasi_rc == RTAS_NOT_SUSPENDABLE);
->> +	} while (rc == -EAGAIN);
-> 
-> This is going to change the value of the error code.
-
-Here drmgr assumes a zero or greater value to mean success, and anything
-negative failure. It logs errno in failure case.
-
--Tyrel
-
->>  
->>  	if (rc)
->>  		return rc;
->> -	if (vasi_rc)
->> -		return vasi_rc;
->>  
->>  	post_mobility_fixup();
->>  	return count;
-> 
-> Thanks for taking it, it looks nicer now.
-> 
-> Cyril
-> 
-> 
+-- 
+Martin Hicks P.Eng.    |      mort@bork.org
+Bork Consulting Inc.   |  +1 (613) 266-2296
