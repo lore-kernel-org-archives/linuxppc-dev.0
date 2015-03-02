@@ -1,37 +1,39 @@
-Return-Path: <vipin@linux.vnet.ibm.com>
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
+Return-Path: <tlfalcon@linux.vnet.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46EC11A019A
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Mar 2015 04:23:27 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9F9E41A01A3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Mar 2015 04:53:43 +1100 (AEDT)
 Received: from /spool/local
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <vipin@linux.vnet.ibm.com>;
- Mon, 2 Mar 2015 22:53:23 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id AA7C8394005C
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Mar 2015 22:53:20 +0530 (IST)
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t22HNGUj63701162
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 2 Mar 2015 22:53:17 +0530
-Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
- by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t22HNG2l029295
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 2 Mar 2015 22:53:16 +0530
-Message-ID: <54F49C83.20007@linux.vnet.ibm.com>
-Date: Mon, 02 Mar 2015 22:53:15 +0530
-From: Vipin K Parashar <vipin@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <tlfalcon@linux.vnet.ibm.com>;
+ Mon, 2 Mar 2015 10:53:41 -0700
+Received: from b03cxnp07029.gho.boulder.ibm.com
+ (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 04EAD19D8026
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Mar 2015 10:44:46 -0700 (MST)
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+ by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t22HrTBv53870676
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 2 Mar 2015 10:53:37 -0700
+Received: from d03av03.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av03.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t22Hr47p004923
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 2 Mar 2015 10:53:04 -0700
+Message-ID: <54F4A366.90005@linux.vnet.ibm.com>
+Date: Mon, 02 Mar 2015 11:52:38 -0600
+From: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Stewart Smith <stewart@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH V4] powerpc, powernv: Add OPAL platform event driver
-References: <1423206522-18084-1-git-send-email-vipin@linux.vnet.ibm.com>
- <m31tlxniqp.fsf@oc8180480414.ibm.com> <54EC47E8.4090003@linux.vnet.ibm.com>
-In-Reply-To: <54EC47E8.4090003@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Cc: Joel Stanley <joel@jms.id.au>,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>
+To: Jiri Pirko <jiri@resnulli.us>
+Subject: Re: [PATCHi v2] ibmveth: Add function to enable live MAC address
+ changes
+References: <1425102964-3131-1-git-send-email-tlfalcon@linux.vnet.ibm.com>
+ <20150228085932.GA2012@nanopsycho.orion>
+In-Reply-To: <20150228085932.GA2012@nanopsycho.orion>
+Content-Type: text/plain; charset=windows-1252
+Cc: brking@linux.vnet.ibm.com, netdev@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,165 +43,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Stewart,
-               Tried to fake ACPI via acpi_bus_generate_netlink_event 
-and found that
-it needs other files which arch specific and use x86 assembly.
-
-Regards,
-Vipin
-
-
-On 02/24/2015 03:14 PM, Vipin K Parashar wrote:
-> Hi Stewart,
->          I looked into ACPI and found details about it. But before we 
-> go into
-> discussing more details of it, would like to  share a brief about OPAL 
-> platform
-> events (EPOW/DPO) work and original design proposed.
->
-> As if now OPAL platform events work supports two events:
-> EPOW (Early Power Off Warning) and DPO (Delayed Power Off).
->
-> On FSP based systems FSP notifies OPAL about EPOW and DPO events via mbox
-> mechanism. Subsequently OPAL sends notifications for these events to 
-> pkvm kernel.
-> Original design is to have a kernel driver maintain a queue and add 
-> these events
-> to queue upon arrival. pkvm driver also provides a character device 
-> for host to consume
-> these events. A daemon is proposed for pkvm host to poll/read these 
-> events from
-> char device. This daemon would process these events and take action to 
-> log
-> and shutdown host. Apart from this it would also send these event info 
-> to VMs
-> which is handled by OSes running on VMs. Linux on VMs already has code 
-> in place
-> to handle these events as it expects this info to reach it in PAPR 
-> format under
-> EPOW (Environmental and Power Warnings) category.
->
-> EPOW mbox msgs are received for below events:
-> 1. UPS events - UPS Battery Low, UPS Bypassed, UPS Utility Failure, 
-> UPS On
-> 2. SPCN events - Configuration Change, Log SPCN Fault, Impending Power 
-> Failure, Power Incomplete
-> 3. Temprature events - Over Ambient temperature, Over internal 
-> temperature.
->
-> Now ACPI:
->
-> Looked into ACPI and tried to figure out how ACPI userspace/kernel 
-> framework
-> can be helpful for our work.
->
-> ACPI user space consists of below components.
-> acpid - ACPI daemon to receive events from kernel
-> acpid provides events and actions files in /etc/acpi dir to configure 
-> actions
-> for various events.
->
-> acpi, acpi_listen, acpitool - Commands to query and set various ACPI 
-> supported parameters.
-> These tools work with various sysfs files to show/set various 
-> parameter values.
->
-> As if today acpid and other tools don't exist for POWER so would need 
-> to be ported.
-> acpid is useful for our work but other tools might not be helpful as 
-> they look into
-> various sysfs files created by various ACPI kernel drivers which we 
-> won't have.
-> Also we would need to map our EPOW/DPO events to acpid supported events
-> and few events link SPCN ones won't map straight away and might need 
-> to be
-> added in acpid as new events.
->
-> ACPI in kernel has various drivers for fan, battery, laptop buttons 
-> etc. They handle events
-> and uses netlink mechanism to sent out these events to userspace. Now 
-> looking into ACPI
-> code it seems that we would be reusing a small chunk of acpi code but 
-> instead end up adding
-> unnecessary complexity due to support a lot of stuff than needed by 
-> us. Here too mapping our
->  EPOW/DPO events to ACPI defined structures in needed and we would 
-> need to add
-> new member varaibles in ACPI event structures for unmapped events like 
-> SPCN ones.
->
-> In nutshell it seems that by using ACPI we would end up adding lot 
-> more complexity with a little
-> gain of code reuse.
->
-> Netlink:
->
-> On technology side netlink seems to be a faster method compared to 
-> character driver. So that could be
-> a good alternative to use as a method of communication between our 
-> pkvm driver and userspace.
-> But EPOW/DPO events occur at very low rate unlike network subsystem 
-> which receive data packets
-> at a very high rate. So probably netlink could be a faster method but 
-> due to slow EPOW/DPO event
-> traffic a character driver might be sufficient.
->
-> We already have ppc64-diag package which is part of various distros so 
-> would be used for hosting
-> daemon code. Thus it takes off overhead of convincing distros for 
-> adding something extra.
->
-> This was my findings and opinions on alternatives. Apologies for a 
-> little lengthy text :-)
->
-> Let me know if i missed out anything and any suggestions that you 
-> would have.
->
-> Regards,
-> Vipin
->
-> On 02/11/2015 10:32 AM, Stewart Smith wrote:
->> Vipin K Parashar <vipin@linux.vnet.ibm.com> writes:
->>>     (1) Environmental and Power Warning (EPOW)
->>>     (2) Delayed Power Off (DPO)
->>> The user interface for this driver is /dev/opal_event character
->>> device file where the user space clients can poll and read for
->>> new opal platform events. The expected sequence of events driven
->>> from user space should be like the following.
->>>
->>>     (1) Open the character device file
->>>     (2) Poll on the file for POLLIN event
->>>     (3) When unblocked, must attempt to read 
->>> OPAL_PLAT_EVENT_MAX_SIZE size
->>>     (4) Kernel driver will pass at most one opal_plat_event structure
->>>     (5) Poll again for more new events
->> A few thoughts from discussing with Michael and Joel:
->> - not convinced that a chardev is the most ideal way to notify
->>    userspace. It seems like yet-another powerpc specific notification
->>    mechanism, which isn't ideal.
->> - netlink probably isn't right either (although maybe *sligthtly*
->>    better?)
->> - it seems that the "standard" way is ACPI, so I wonder if we could emit
->>    an ACPI event and essentially fake having ACPI... that would make all
->>    existing userspace "just work", right?
->>    Looking at acpi_bus_generate_netlink_event call in
->>    drivers/acpi/button.c it looks possible that we may be able to
->>    (relatively simply) do that?
->> - What do UPSs do? It would seem that some common "this is what's about
->>    to happen to your power" would almost *have* to exist somewhat
->>    generically?
+On 02/28/2015 02:59 AM, Jiri Pirko wrote:
+> Sat, Feb 28, 2015 at 06:56:04AM CET, tlfalcon@linux.vnet.ibm.com wrote:
+>> Add a function that will enable changing the MAC address
+>> of an ibmveth interface while it is still running.
 >>
->> I strongly advocate for anything that doesn't require custom userspace
->> that's OPAL/POWER specific (that we then have to get into distros etc 
->> etc)
+>> Signed-off-by: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
+>> ---
+>> v2:
+>>   If h_change_logical_lan_mac fails, dev->dev_addr will not be changed.
 >>
->> _______________________________________________
->> Linuxppc-dev mailing list
->> Linuxppc-dev@lists.ozlabs.org
->> https://lists.ozlabs.org/listinfo/linuxppc-dev
+>> drivers/net/ethernet/ibm/ibmveth.c | 25 ++++++++++++++++++++++++-
+>> 1 file changed, 24 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/drivers/net/ethernet/ibm/ibmveth.c b/drivers/net/ethernet/ibm/ibmveth.c
+>> index 21978cc..b6ac676 100644
+>> --- a/drivers/net/ethernet/ibm/ibmveth.c
+>> +++ b/drivers/net/ethernet/ibm/ibmveth.c
+>> @@ -1327,6 +1327,29 @@ static unsigned long ibmveth_get_desired_dma(struct vio_dev *vdev)
+>> 	return ret;
+>> }
+>>
+>> +static int ibmveth_set_mac_addr(struct net_device *dev, void *p)
+>> +{
+>> +	struct ibmveth_adapter *adapter = netdev_priv(dev);
+>> +	struct sockaddr *addr = p;
+>> +	u64 mac_address;
+>> +	int rc;
+>> +
+>> +	if (!is_valid_ether_addr(addr->sa_data))
+>> +		return -EADDRNOTAVAIL;
+>> +
+>> +	mac_address = ibmveth_encode_mac_addr(addr->sa_data);
+>> +	rc = h_change_logical_lan_mac(adapter->vdev->unit_address, mac_address);
+>> +	if (rc) {
+>> +		netdev_err(adapter->netdev, "h_change_logical_lan_mac failed "
+>> +			   "with rc=%d\n", rc);
+> Please do not wrap text in message. For that, 80-char limit does not apply.
+
+I will send a new patch fixing this shortly.  Thanks to you, Brian, and Dave for reviewing this patch.
+
 >
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+>
+>> +		return rc;
+>> +	}
+>> +
+>> +	ether_addr_copy(dev->dev_addr, addr->sa_data);
+>> +
+>> +	return 0;
+>> +}
+>> +
+>> static const struct net_device_ops ibmveth_netdev_ops = {
+>> 	.ndo_open		= ibmveth_open,
+>> 	.ndo_stop		= ibmveth_close,
+>> @@ -1337,7 +1360,7 @@ static const struct net_device_ops ibmveth_netdev_ops = {
+>> 	.ndo_fix_features	= ibmveth_fix_features,
+>> 	.ndo_set_features	= ibmveth_set_features,
+>> 	.ndo_validate_addr	= eth_validate_addr,
+>> -	.ndo_set_mac_address	= eth_mac_addr,
+>> +	.ndo_set_mac_address    = ibmveth_set_mac_addr,
+>> #ifdef CONFIG_NET_POLL_CONTROLLER
+>> 	.ndo_poll_controller	= ibmveth_poll_controller,
+>> #endif
+>> -- 
+>> 1.8.3.1
+>>
