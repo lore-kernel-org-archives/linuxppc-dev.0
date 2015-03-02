@@ -1,42 +1,18 @@
-Return-Path: <weiyang@linux.vnet.ibm.com>
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <Yanjiang.Jin@windriver.com>
+Received: from mail.windriver.com (mail.windriver.com [147.11.1.11])
+ (using TLSv1.1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5AC2C1A0196
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Mar 2015 19:03:25 +1100 (AEDT)
-Received: from /spool/local
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
- Mon, 2 Mar 2015 18:03:24 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 2FD2E2BB005B
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Mar 2015 19:03:22 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t2283EMk41484478
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 2 Mar 2015 19:03:22 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t2282mpt013381
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 2 Mar 2015 19:02:48 +1100
-Date: Mon, 2 Mar 2015 16:02:31 +0800
-From: Wei Yang <weiyang@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@au1.ibm.com>
-Subject: Re: [PATCH v12 14/21] powerpc/powernv: Allocate struct pnv_ioda_pe
- iommu_table dynamically
-Message-ID: <20150302080231.GK21571@richard>
-Reply-To: Wei Yang <weiyang@linux.vnet.ibm.com>
-References: <20150224082939.32124.45744.stgit@bhelgaas-glaptop2.roam.corp.google.com>
- <20150224083435.32124.65099.stgit@bhelgaas-glaptop2.roam.corp.google.com>
- <20150224084653.GI6220@google.com> <20150302075036.GH21571@richard>
- <1425282979.4636.10.camel@au1.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1280A1A03BD
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  2 Mar 2015 19:35:51 +1100 (AEDT)
+From: <yanjiang.jin@windriver.com>
+To: <mpe@ellerman.id.au>, <scottwood@freescale.com>
+Subject: [PATCH] fsl: mpc85xx: call k(un)map_atomic other than k(un)map
+Date: Mon, 2 Mar 2015 16:35:35 +0800
+Message-ID: <1425285335-21753-1-git-send-email-yanjiang.jin@windriver.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1425282979.4636.10.camel@au1.ibm.com>
-Cc: Bjorn Helgaas <bhelgaas@google.com>, linux-pci@vger.kernel.org,
- Wei Yang <weiyang@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- gwshan@linux.vnet.ibm.com
+Content-Type: text/plain
+Cc: msm@freescale.com, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,36 +22,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Mar 02, 2015 at 06:56:19PM +1100, Benjamin Herrenschmidt wrote:
->On Mon, 2015-03-02 at 15:50 +0800, Wei Yang wrote:
->> >
->> >Is there a hotplug remove path where we should also be calling
->> >iommu_free_table()?
->> 
->> When VF is not introduced, no one calls this on powernv platform.
->> 
->> Each PCI bus is a PE and it has its own iommu table, even a device is
->> hotpluged, the iommu table will not be released.
->
->Actually, I believe Alexey patches to add support for dynamic DMA
->windows for KVM guests using VFIO will also alloc/free iommu tables. In
->fact his patches somewhat change quite a few things in that area, and
->I'm currently reviewing them.
+From: Yanjiang Jin <yanjiang.jin@windriver.com>
 
-Yes, I see these changes before.
+The k(un)map function may be called in atomic context in the
+function map_and_flush(), so use k(un)map_atomic to replace it,
+else we would get the below warning during kdump:
 
->
->Wei, can you post a new series when you've finished sync'ing with
->Bjorn ? At that point, I'll try to work with Alexey to evaluate the
->impact of his changes on your patches.
+BUG: sleeping function called from invalid context at include/linux/highmem.h:58
+in_atomic(): 1, irqs_disabled(): 1, pid: 736, name: sh
+INFO: lockdep is turned off.
+irq event stamp: 0
+hardirqs last  enabled at (0): [<          (null)>]           (null)
+hardirqs last disabled at (0): [<c000000000066d1c>] .copy_process.part.44+0x50c/0x1360
+softirqs last  enabled at (0): [<c000000000066d1c>] .copy_process.part.44+0x50c/0x1360
+softirqs last disabled at (0): [<          (null)>]           (null)
+CPU: 1 PID: 736 Comm: sh Tainted: G      D W    3.10.62-ltsi-WR6.0.0.0_standard #2
+Call Trace:
+[c0000000f47cf120] [c00000000000b150] .show_stack+0x170/0x290 (unreliable)
+[c0000000f47cf210] [c000000000b71334] .dump_stack+0x28/0x3c
+[c0000000f47cf280] [c0000000000bb5d8] .__might_sleep+0x1a8/0x270
+[c0000000f47cf310] [c0000000000440cc] .map_and_flush+0x4c/0xc0
+[c0000000f47cf390] [c0000000000441cc] .mpc85xx_smp_machine_kexec+0x8c/0xec0
+[c0000000f47cf420] [c00000000002ae00] .machine_kexec+0x60/0x90
+[c0000000f47cf4b0] [c00000000010957c] .crash_kexec+0x8c/0x100
+[c0000000f47cf6a0] [c000000000015df8] .die+0x348/0x450
+[c0000000f47cf740] [c00000000002f3a0] .bad_page_fault+0xe0/0x130
+[c0000000f47cf7c0] [c00000000001f3e4] storage_fault_common+0x40/0x44
 
-Sure, I will do it ASAP.
+Signed-off-by: Yanjiang Jin <yanjiang.jin@windriver.com>
+---
+ arch/powerpc/platforms/85xx/smp.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
->
->Cheers,
->Ben.
->
-
+diff --git a/arch/powerpc/platforms/85xx/smp.c b/arch/powerpc/platforms/85xx/smp.c
+index d7c1e69..8631ac5 100644
+--- a/arch/powerpc/platforms/85xx/smp.c
++++ b/arch/powerpc/platforms/85xx/smp.c
+@@ -360,10 +360,10 @@ static void mpc85xx_smp_kexec_down(void *arg)
+ static void map_and_flush(unsigned long paddr)
+ {
+ 	struct page *page = pfn_to_page(paddr >> PAGE_SHIFT);
+-	unsigned long kaddr  = (unsigned long)kmap(page);
++	unsigned long kaddr  = (unsigned long)kmap_atomic(page);
+ 
+ 	flush_dcache_range(kaddr, kaddr + PAGE_SIZE);
+-	kunmap(page);
++	kunmap_atomic((void *)kaddr);
+ }
+ 
+ /**
 -- 
-Richard Yang
-Help you, Help me
+1.9.1
