@@ -1,20 +1,22 @@
 Return-Path: <mohicks@gmail.com>
-Received: from mail-ie0-x22b.google.com (mail-ie0-x22b.google.com
- [IPv6:2607:f8b0:4001:c03::22b])
+Received: from mail-ig0-x233.google.com (mail-ig0-x233.google.com
+ [IPv6:2607:f8b0:4001:c05::233])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 963751A0214
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Mar 2015 00:21:51 +1100 (AEDT)
-Received: by iecrd18 with SMTP id rd18so57740706iec.5
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Mar 2015 05:21:48 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id A9BA71A0259
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Mar 2015 00:21:52 +1100 (AEDT)
+Received: by igdh15 with SMTP id h15so27163909igd.4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Mar 2015 05:21:50 -0800 (PST)
 Sender: Martin Hicks <mohicks@gmail.com>
 From: Martin Hicks <mort@bork.org>
 To: Kim Phillips <kim.phillips@freescale.com>,
  Scott Wood <scottwood@freescale.com>,
  Kumar Gala <galak@kernel.crashing.org>
-Subject: [PATCH v2 0/5] crypto: talitos: Add crypto async queue handling
-Date: Tue,  3 Mar 2015 08:21:32 -0500
-Message-Id: <1425388897-5434-1-git-send-email-mort@bork.org>
+Subject: [PATCH v2 2/5] crypto: talitos: Remove MD5_BLOCK_SIZE
+Date: Tue,  3 Mar 2015 08:21:34 -0500
+Message-Id: <1425388897-5434-3-git-send-email-mort@bork.org>
+In-Reply-To: <1425388897-5434-1-git-send-email-mort@bork.org>
+References: <1425388897-5434-1-git-send-email-mort@bork.org>
 Cc: Martin Hicks <mort@bork.org>, linuxppc-dev@lists.ozlabs.org,
  linux-crypto@vger.kernel.org,
  =?UTF-8?q?Horia=20Geant=C4=83?= <horia.geanta@freescale.com>
@@ -27,35 +29,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-I was testing dm-crypt performance with a Freescale P1022 board with 
-a recent kernel and was getting IO errors while doing testing with LUKS.
-Investigation showed that all hardware FIFO slots were filling and
-the driver was returning EAGAIN to the block layer, which is not an
-expected response for an async crypto implementation.
+This is properly defined in the md5 header file.
 
-The following patch series adds a few small fixes, and reworks the
-submission path to use the crypto_queue mechanism to handle the
-request backlog.
+Signed-off-by: Martin Hicks <mort@bork.org>
+---
+ drivers/crypto/talitos.c |    6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
-Changes since v1:
-
-- Ran checkpatch.pl
-- Split the path for submitting new requests vs. issuing backlogged
-  requests.
-- Avoid enqueuing a submitted request to the crypto queue unnecessarily.
-- Fix return paths where CRYPTO_TFM_REQ_MAY_BACKLOG is not set.
-
-
-Martin Hicks (5):
-  crypto: talitos: Simplify per-channel initialization
-  crypto: talitos: Remove MD5_BLOCK_SIZE
-  crypto: talitos: Fix off-by-one and use all hardware slots
-  crypto: talitos: Reorganize request submission data structures
-  crypto: talitos: Add software backlog queue handling
-
- drivers/crypto/talitos.c |  240 +++++++++++++++++++++++++++-------------------
- drivers/crypto/talitos.h |   44 +++++++--
- 2 files changed, 177 insertions(+), 107 deletions(-)
-
+diff --git a/drivers/crypto/talitos.c b/drivers/crypto/talitos.c
+index c49d977..89cf4d5 100644
+--- a/drivers/crypto/talitos.c
++++ b/drivers/crypto/talitos.c
+@@ -637,8 +637,6 @@ static void talitos_unregister_rng(struct device *dev)
+ #define TALITOS_MAX_KEY_SIZE		96
+ #define TALITOS_MAX_IV_LENGTH		16 /* max of AES_BLOCK_SIZE, DES3_EDE_BLOCK_SIZE */
+ 
+-#define MD5_BLOCK_SIZE    64
+-
+ struct talitos_ctx {
+ 	struct device *dev;
+ 	int ch;
+@@ -2195,7 +2193,7 @@ static struct talitos_alg_template driver_algs[] = {
+ 			.halg.base = {
+ 				.cra_name = "md5",
+ 				.cra_driver_name = "md5-talitos",
+-				.cra_blocksize = MD5_BLOCK_SIZE,
++				.cra_blocksize = MD5_HMAC_BLOCK_SIZE,
+ 				.cra_flags = CRYPTO_ALG_TYPE_AHASH |
+ 					     CRYPTO_ALG_ASYNC,
+ 			}
+@@ -2285,7 +2283,7 @@ static struct talitos_alg_template driver_algs[] = {
+ 			.halg.base = {
+ 				.cra_name = "hmac(md5)",
+ 				.cra_driver_name = "hmac-md5-talitos",
+-				.cra_blocksize = MD5_BLOCK_SIZE,
++				.cra_blocksize = MD5_HMAC_BLOCK_SIZE,
+ 				.cra_flags = CRYPTO_ALG_TYPE_AHASH |
+ 					     CRYPTO_ALG_ASYNC,
+ 			}
 -- 
 1.7.10.4
