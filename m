@@ -3,15 +3,13 @@ Received: from smtp.outflux.net (smtp.outflux.net
  [IPv6:2001:19d0:2:6:c0de:0:736d:7470])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 634921A01E7
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6158E1A01BA
  for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Mar 2015 11:21:08 +1100 (AEDT)
 From: Kees Cook <keescook@chromium.org>
 To: akpm@linux-foundation.org
-Subject: [PATCH 1/5] arm: factor out mmap ASLR into mmap_rnd
-Date: Mon,  2 Mar 2015 16:19:44 -0800
-Message-Id: <1425341988-1599-2-git-send-email-keescook@chromium.org>
-In-Reply-To: <1425341988-1599-1-git-send-email-keescook@chromium.org>
-References: <1425341988-1599-1-git-send-email-keescook@chromium.org>
+Subject: [PATCH v2 0/5] split ET_DYN ASLR from mmap ASLR
+Date: Mon,  2 Mar 2015 16:19:43 -0800
+Message-Id: <1425341988-1599-1-git-send-email-keescook@chromium.org>
 Cc: linux-mips@linux-mips.org, Arun Chandran <achandran@mvista.com>,
  Catalin Marinas <catalin.marinas@arm.com>,
  Heiko Carstens <heiko.carstens@de.ibm.com>, Oleg Nesterov <oleg@redhat.com>,
@@ -41,42 +39,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In preparation for exporting per-arch mmap randomization functions,
-this moves the ASLR calculations for mmap on ARM into a separate routine.
+To address the "offset2lib" ASLR weakness[1], this separates ET_DYN
+ASLR from mmap ASLR, as already done on s390. The architectures
+that are already randomizing mmap (arm, arm64, mips, powerpc, s390,
+and x86), have their various forms of arch_mmap_rnd() made available
+via the new CONFIG_ARCH_HAS_ELF_RANDOMIZE. For these architectures,
+arch_randomize_brk() is collapsed as well.
 
-Signed-off-by: Kees Cook <keescook@chromium.org>
+This is an alternative to the solutions in:
+https://lkml.org/lkml/2015/2/23/442
+
+Thanks!
+
+-Kees
+
+[1] http://cybersecurity.upv.es/attacks/offset2lib/offset2lib.html
+
 ---
- arch/arm/mm/mmap.c | 13 ++++++++++---
- 1 file changed, 10 insertions(+), 3 deletions(-)
-
-diff --git a/arch/arm/mm/mmap.c b/arch/arm/mm/mmap.c
-index 5e85ed371364..0f8bc158f2c6 100644
---- a/arch/arm/mm/mmap.c
-+++ b/arch/arm/mm/mmap.c
-@@ -169,14 +169,21 @@ arch_get_unmapped_area_topdown(struct file *filp, const unsigned long addr0,
- 	return addr;
- }
- 
--void arch_pick_mmap_layout(struct mm_struct *mm)
-+static unsigned long mmap_rnd(void)
- {
--	unsigned long random_factor = 0UL;
-+	unsigned long rnd = 0UL;
- 
- 	/* 8 bits of randomness in 20 address space bits */
- 	if ((current->flags & PF_RANDOMIZE) &&
- 	    !(current->personality & ADDR_NO_RANDOMIZE))
--		random_factor = (get_random_int() % (1 << 8)) << PAGE_SHIFT;
-+		rnd = (get_random_int() % (1 << 8)) << PAGE_SHIFT;
-+
-+	return rnd;
-+}
-+
-+void arch_pick_mmap_layout(struct mm_struct *mm)
-+{
-+	unsigned long random_factor = mmap_rnd();
- 
- 	if (mmap_is_legacy()) {
- 		mm->mmap_base = TASK_UNMAPPED_BASE + random_factor;
--- 
-1.9.1
+v2:
+- verbosified the commit logs, especially 4/5 (akpm)
