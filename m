@@ -1,48 +1,22 @@
-Return-Path: <keescook@google.com>
-Received: from mail-vc0-x22b.google.com (mail-vc0-x22b.google.com
- [IPv6:2607:f8b0:400c:c03::22b])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <broonie@sirena.org.uk>
+Received: from mezzanine.sirena.org.uk (mezzanine.sirena.org.uk
+ [IPv6:2400:8900::f03c:91ff:fedb:4f4])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4C6191A0279
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Mar 2015 05:03:26 +1100 (AEDT)
-Received: by mail-vc0-f171.google.com with SMTP id hy10so4480905vcb.2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Mar 2015 10:03:23 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 24E581A026F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Mar 2015 05:46:16 +1100 (AEDT)
+Date: Tue, 3 Mar 2015 18:44:03 +0000
+From: Mark Brown <broonie@kernel.org>
+To: Christophe Leroy <christophe.leroy@c-s.fr>
+Message-ID: <20150303184403.GE21293@sirena.org.uk>
+References: <20150226161142.D08681A2360@localhost.localdomain>
 MIME-Version: 1.0
-Sender: keescook@google.com
-In-Reply-To: <20150303073132.GA30602@gmail.com>
-References: <1425341988-1599-1-git-send-email-keescook@chromium.org>
- <20150303073132.GA30602@gmail.com>
-Date: Tue, 3 Mar 2015 10:03:22 -0800
-Message-ID: <CAGXu5j+qJLeRx2xx=890OxHp8kjd=ws8zg3_JYPNJd_6p2xoYQ@mail.gmail.com>
-Subject: Re: [PATCH v2 0/5] split ET_DYN ASLR from mmap ASLR
-From: Kees Cook <keescook@chromium.org>
-To: Ingo Molnar <mingo@kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Cc: Linux MIPS Mailing List <linux-mips@linux-mips.org>,
- Arun Chandran <achandran@mvista.com>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, Oleg Nesterov <oleg@redhat.com>,
- Min-Hua Chen <orca.chen@gmail.com>, Paul Mackerras <paulus@samba.org>,
- "H. Peter Anvin" <hpa@zytor.com>, Yann Droneaud <ydroneaud@opteya.com>,
- linux-s390@vger.kernel.org, Russell King <linux@arm.linux.org.uk>,
- Andrey Ryabinin <a.ryabinin@samsung.com>, "x86@kernel.org" <x86@kernel.org>,
- Hector Marco-Gisbert <hecmargi@upv.es>, "David A. Long" <dave.long@linaro.org>,
- Borislav Petkov <bp@suse.de>, Ben Hutchings <ben@decadent.org.uk>,
- Will Deacon <will.deacon@arm.com>,
- "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
- Borislav Petkov <bp@alien8.de>, Alexander Viro <viro@zeniv.linux.org.uk>,
- Thomas Gleixner <tglx@linutronix.de>,
- Michael Holzheu <holzheu@linux.vnet.ibm.com>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- Jeff Bailey <jeffbailey@google.com>, Paul Burton <paul.burton@imgtec.com>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- LKML <linux-kernel@vger.kernel.org>, Ralf Baechle <ralf@linux-mips.org>,
- Andy Lutomirski <luto@amacapital.net>, Vineeth Vijayan <vvijayan@mvista.com>,
- Markos Chandras <markos.chandras@imgtec.com>,
- =?UTF-8?Q?Jan=2DSimon_M=C3=B6ller?= <dl9pf@gmx.de>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>, linux390@de.ibm.com,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- Alex Smith <alex@alex-smith.me.uk>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="BPgJ2GbR8X7BKSc9"
+In-Reply-To: <20150226161142.D08681A2360@localhost.localdomain>
+Subject: Re: [PATCH] spi: fsl-spi: use of_iomap() to map parameter ram on CPM1
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-spi@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,67 +26,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Mar 2, 2015 at 11:31 PM, Ingo Molnar <mingo@kernel.org> wrote:
->
-> * Kees Cook <keescook@chromium.org> wrote:
->
->> To address the "offset2lib" ASLR weakness[1], this separates ET_DYN
->> ASLR from mmap ASLR, as already done on s390. The architectures
->> that are already randomizing mmap (arm, arm64, mips, powerpc, s390,
->> and x86), have their various forms of arch_mmap_rnd() made available
->> via the new CONFIG_ARCH_HAS_ELF_RANDOMIZE. For these architectures,
->> arch_randomize_brk() is collapsed as well.
->>
->> This is an alternative to the solutions in:
->> https://lkml.org/lkml/2015/2/23/442
->
-> Looks good so far:
->
-> Reviewed-by: Ingo Molnar <mingo@kernel.org>
->
-> While reviewing this series I also noticed that the following code
-> could be factored out from architecture mmap code as well:
->
->   - arch_pick_mmap_layout() uses very similar patterns across the
->     platforms, with only few variations. Many architectures use
->     the same duplicated mmap_is_legacy() helper as well. There's
->     usually just trivial differences between mmap_legacy_base()
->     approaches as well.
 
-I was nervous to start refactoring this code, but it's true: most of
-it is the same.
+--BPgJ2GbR8X7BKSc9
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
->   - arch_mmap_rnd(): the PF_RANDOMIZE checks are needlessly
->     exposed to the arch routine - the arch routine should only
->     concentrate on arch details, not generic flags like
->     PF_RANDOMIZE.
+On Thu, Feb 26, 2015 at 05:11:42PM +0100, Christophe Leroy wrote:
+> On CPM2, the SPI parameter RAM is dynamically allocated in the dualport RAM
+> whereas in CPM1, it is statically allocated to a default address with
+> capability to relocate it somewhere else via the use of CPM micropatch.
+> The address of the parameter RAM is given by the boot loader and expected
+> to be mapped via of_iomap()
 
-Yeah, excellent point. I will send a follow-up patch to move this into
-binfmt_elf instead. I'd like to avoid removing it in any of the other
-patches since each was attempting a single step in the refactoring.
+Why are we using of_iomap() rather than a generic I/O mapping function
+here?
 
-> In theory the mmap layout could be fully parametrized as well: i.e. no
-> callback functions to architectures by default at all: just
-> declarations of bits of randomization desired (or, available address
-> space bits), and perhaps an arch helper to allow 32-bit vs. 64-bit
-> address space distinctions.
+--BPgJ2GbR8X7BKSc9
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
-Yeah, I was considering that too, since each architecture has a nearly
-identical arch_mmap_rnd() at this point. Only the size of the entropy
-was changing.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
 
-> 'Weird' architectures could provide special routines, but only by
-> overriding the default behavior, which should be generic, safe and
-> robust.
+iQEcBAEBCAAGBQJU9gDyAAoJECTWi3JdVIfQZeYH/0iTYbCGDUqESLRuSfhDbpdi
+mPGeWIAHENbJODx9JOsTepCbk3sQ2fdmWq7LCmlv/j412/9LPSk8Y0X7GsC73tE0
+vueM2sEm4ZAlo+FbfUg2dx4xqtc9aTj8sX75CkTNL/U4ZAhvc60Q/DK56qmE+JEQ
+8D95NxXQxJER2AqSAA/GUOwXpLAM01eRDKFEI6Ap+TOM3pNGeTjCJUxmlf4EJuHR
+8Xy9nOUpE8QaMPDFx1hprNZdSXz0xZ5AjrLqgS3tQVE5WxHcc7VdOUQBbQ0L9pLO
+idvttOchxPldNxLhuBAQki7tyOETNUSOFhPf74x9FrOwGWSeV9cN4jdI9vzzMJ8=
+=1Xz7
+-----END PGP SIGNATURE-----
 
-Yeah, quite true. Should entropy size be a #define like
-ELF_ET_DYN_BASE? Something like ASLR_MMAP_ENTROPY and
-ASLR_MMAP_ENTROPY_32? Is there a common function for determining a
-compat task? That seemed to be per-arch too. Maybe
-arch_mmap_entropy()?
-
--Kees
-
--- 
-Kees Cook
-Chrome OS Security
+--BPgJ2GbR8X7BKSc9--
