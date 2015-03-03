@@ -1,38 +1,16 @@
-Return-Path: <tyreld@linux.vnet.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 67F161A026F
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Mar 2015 07:38:25 +1100 (AEDT)
-Received: from /spool/local
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
- Tue, 3 Mar 2015 13:38:23 -0700
-Received: from b03cxnp08027.gho.boulder.ibm.com
- (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id CCC9D19D8042
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Mar 2015 13:29:28 -0700 (MST)
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
- by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t23KcKJp29425918
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 3 Mar 2015 13:38:20 -0700
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
- by d03av04.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t23Kbs2C026229
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 3 Mar 2015 13:37:55 -0700
-Message-ID: <54F61B90.7090004@linux.vnet.ibm.com>
-Date: Tue, 03 Mar 2015 12:37:36 -0800
-From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH 0/3] powerpc/pseries: Fixes and cleanup of
- suspend/migration code
-References: <1425090283-27694-1-git-send-email-tyreld@linux.vnet.ibm.com>
- <1425363044.20929.0.camel@ellerman.id.au>
-In-Reply-To: <1425363044.20929.0.camel@ellerman.id.au>
-Content-Type: text/plain; charset=utf-8
-Cc: linuxppc-dev@lists.ozlabs.org, cyrilbur@gmail.com, nfont@linux.vnet.ibm.com
+Return-Path: <andriy.shevchenko@linux.intel.com>
+Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
+ by lists.ozlabs.org (Postfix) with ESMTP id 36B2B1A026F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Mar 2015 07:41:28 +1100 (AEDT)
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+To: Tejun Heo <tj@kernel.org>, linux-ide@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>, rsarmah@amcc.com,
+ Alexey Brodkin <Alexey.Brodkin@synopsys.com>
+Subject: [PATCH v1 0/2] sata_dwc_460ex: move to generic DMA driver
+Date: Tue,  3 Mar 2015 22:41:20 +0200
+Message-Id: <1425415282-3750-1-git-send-email-andriy.shevchenko@linux.intel.com>
+Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,43 +20,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03/02/2015 10:10 PM, Michael Ellerman wrote:
-> On Fri, 2015-02-27 at 18:24 -0800, Tyrel Datwyler wrote:
->> This patchset simplifies the usage of rtas_ibm_suspend_me() by removing an
->> extraneous function parameter, fixes device tree updating on little endian
->> platforms, and adds a mechanism for informing drmgr that the kernel is cabable of
->> performing the whole migration including device tree update itself.
->>
->> Tyrel Datwyler (3):
->>   powerpc/pseries: Simplify check for suspendability during
->>     suspend/migration
->>   powerpc/pseries: Little endian fixes for post mobility device tree
->>     update
->>   powerpc/pseries: Expose post-migration in kernel device tree update
->>     to drmgr
-> 
-> Hi Tyrel,
-> 
-> Firstly let me say how much I hate this code, so thanks for working on it :)
+The SATA implementation based on two actually different devices, i.e. SATA and
+DMA controllers.
 
-I did it once. Might as well sacrifice my sanity a second time. :)
+For Synopsys DesignWare DMA we have already a generic implementation of the
+driver. Thus, the patch 1/2 converts the code to use DMAEngine framework and
+dw_dmac driver.
 
-> 
-> But I need you to split this series, into 1) fixes for 4.0 (and stable?), and
-> 2) the rest.
-> 
-> I *think* that would be patch 2, and then patches 1 & 3, but I don't want to
-> guess. So please resend.
+In future it will be better to split the devices inside DTS as well like it's
+done on other platforms and remove hardcoded parameters of DMA controller.
 
-Sure. Your split seems correct as patch 2 is fixes while 1 and 3 are
-cosmetic/new feature. Seeing as patch 1 is endian fixes I'll Cc -stable
-as well.
+Besides it's a nice clean up it removes a lot of warnings produced by the
+original code, that pissed off even Linus [1]. Though, this series doesn't
+re-enable COMPILE_TEST for this module.
 
--Tyrel
+The driver is compile tested only on x86. So, it would be nice if anyone who
+has either AMCC 460EX Canyonlands board or similar SATA controller in
+possession can test this.
 
-> 
-> cheers
-> 
-> 
-> 
-> 
+[1] http://www.spinics.net/lists/linux-ide/msg50334.html
+
+Andy Shevchenko (2):
+  sata_dwc_460ex: move to generic DMA driver
+  sata_dwc_460ex: re-use hsdev->dev instead of dwc_dev
+
+ drivers/ata/sata_dwc_460ex.c | 753 ++++++++-----------------------------------
+ 1 file changed, 130 insertions(+), 623 deletions(-)
+
+-- 
+2.1.4
