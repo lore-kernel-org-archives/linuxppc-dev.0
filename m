@@ -1,21 +1,20 @@
 Return-Path: <mohicks@gmail.com>
-Received: from mail-ig0-x231.google.com (mail-ig0-x231.google.com
- [IPv6:2607:f8b0:4001:c05::231])
+Received: from mail-ig0-x22f.google.com (mail-ig0-x22f.google.com
+ [IPv6:2607:f8b0:4001:c05::22f])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1CB5F1A0214
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Mar 2015 00:21:55 +1100 (AEDT)
-Received: by igbhl2 with SMTP id hl2so25017016igb.0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Mar 2015 05:21:53 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 84EF11A0260
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Mar 2015 00:21:56 +1100 (AEDT)
+Received: by igbhl2 with SMTP id hl2so27286507igb.5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Mar 2015 05:21:54 -0800 (PST)
 Sender: Martin Hicks <mohicks@gmail.com>
 From: Martin Hicks <mort@bork.org>
 To: Kim Phillips <kim.phillips@freescale.com>,
  Scott Wood <scottwood@freescale.com>,
  Kumar Gala <galak@kernel.crashing.org>
-Subject: [PATCH v2 4/5] crypto: talitos: Reorganize request submission data
- structures
-Date: Tue,  3 Mar 2015 08:21:36 -0500
-Message-Id: <1425388897-5434-5-git-send-email-mort@bork.org>
+Subject: [PATCH v2 5/5] crypto: talitos: Add software backlog queue handling
+Date: Tue,  3 Mar 2015 08:21:37 -0500
+Message-Id: <1425388897-5434-6-git-send-email-mort@bork.org>
 In-Reply-To: <1425388897-5434-1-git-send-email-mort@bork.org>
 References: <1425388897-5434-1-git-send-email-mort@bork.org>
 Cc: Martin Hicks <mort@bork.org>, linuxppc-dev@lists.ozlabs.org,
@@ -30,286 +29,284 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is preparatory work for moving to using the crypto async queue
-handling code.  A talitos_request structure is buried into each
-talitos_edesc so that when talitos_submit() is called, everything required
-to defer the submission to the hardware is contained within talitos_edesc.
+I was running into situations where the hardware FIFO was filling up, and
+the code was returning EAGAIN to dm-crypt and just dropping the submitted
+crypto request.
+
+This adds support in talitos for a software backlog queue.  When requests
+can't be queued to the hardware immediately EBUSY is returned.  The queued
+requests are dispatched to the hardware in received order as hardware FIFO
+slots become available.
 
 Signed-off-by: Martin Hicks <mort@bork.org>
 ---
- drivers/crypto/talitos.c |   95 +++++++++++++++-------------------------------
- drivers/crypto/talitos.h |   41 +++++++++++++++++---
- 2 files changed, 66 insertions(+), 70 deletions(-)
+ drivers/crypto/talitos.c |  135 ++++++++++++++++++++++++++++++++++++----------
+ drivers/crypto/talitos.h |    3 ++
+ 2 files changed, 110 insertions(+), 28 deletions(-)
 
 diff --git a/drivers/crypto/talitos.c b/drivers/crypto/talitos.c
-index 7709805..b0c85ce 100644
+index b0c85ce..bb7fba0 100644
 --- a/drivers/crypto/talitos.c
 +++ b/drivers/crypto/talitos.c
-@@ -186,22 +186,16 @@ static int init_device(struct device *dev)
-  * talitos_submit - submits a descriptor to the device for processing
-  * @dev:	the SEC device to be used
-  * @ch:		the SEC device channel to be used
-- * @desc:	the descriptor to be processed by the device
-- * @callback:	whom to call when processing is complete
-- * @context:	a handle for use by caller (optional)
-+ * @edesc:	the descriptor to be processed by the device
-  *
-  * desc must contain valid dma-mapped (bus physical) address pointers.
-  * callback must check err and feedback in descriptor header
-  * for device processing status.
-  */
--int talitos_submit(struct device *dev, int ch, struct talitos_desc *desc,
--		   void (*callback)(struct device *dev,
--				    struct talitos_desc *desc,
--				    void *context, int error),
--		   void *context)
-+int talitos_submit(struct device *dev, int ch, struct talitos_edesc *edesc)
+@@ -182,55 +182,118 @@ static int init_device(struct device *dev)
+ 	return 0;
+ }
+ 
+-/**
+- * talitos_submit - submits a descriptor to the device for processing
+- * @dev:	the SEC device to be used
+- * @ch:		the SEC device channel to be used
+- * @edesc:	the descriptor to be processed by the device
+- *
+- * desc must contain valid dma-mapped (bus physical) address pointers.
+- * callback must check err and feedback in descriptor header
+- * for device processing status.
+- */
+-int talitos_submit(struct device *dev, int ch, struct talitos_edesc *edesc)
++/* Dispatch 'request' if provided, otherwise a backlogged request */
++static int __talitos_handle_queue(struct device *dev, int ch,
++				  struct talitos_edesc *edesc,
++				  unsigned long *irq_flags)
  {
  	struct talitos_private *priv = dev_get_drvdata(dev);
--	struct talitos_request *request;
-+	struct talitos_request *request = &edesc->req;
- 	unsigned long flags;
+-	struct talitos_request *request = &edesc->req;
+-	unsigned long flags;
++	struct talitos_request *request;
++	struct crypto_async_request *areq;
  	int head;
++	int ret = -EINPROGRESS;
  
-@@ -214,19 +208,15 @@ int talitos_submit(struct device *dev, int ch, struct talitos_desc *desc,
+-	spin_lock_irqsave(&priv->chan[ch].head_lock, flags);
+-
+-	if (!atomic_inc_not_zero(&priv->chan[ch].submit_count)) {
++	if (!atomic_inc_not_zero(&priv->chan[ch].submit_count))
+ 		/* h/w fifo is full */
+-		spin_unlock_irqrestore(&priv->chan[ch].head_lock, flags);
+-		return -EAGAIN;
++		return -EBUSY;
++
++	if (!edesc) {
++		/* Dequeue the oldest request */
++		areq = crypto_dequeue_request(&priv->chan[ch].queue);
++		request = container_of(areq, struct talitos_request, base);
++	} else {
++		request = &edesc->req;
  	}
  
- 	head = priv->chan[ch].head;
--	request = &priv->chan[ch].fifo[head];
--
--	/* map descriptor and save caller data */
--	request->dma_desc = dma_map_single(dev, desc, sizeof(*desc),
-+	request->dma_desc = dma_map_single(dev, request->desc,
-+					   sizeof(*request->desc),
+-	head = priv->chan[ch].head;
+ 	request->dma_desc = dma_map_single(dev, request->desc,
+ 					   sizeof(*request->desc),
  					   DMA_BIDIRECTIONAL);
--	request->callback = callback;
--	request->context = context;
  
  	/* increment fifo head */
++	head = priv->chan[ch].head;
  	priv->chan[ch].head = (priv->chan[ch].head + 1) & (priv->fifo_len - 1);
  
- 	smp_wmb();
--	request->desc = desc;
-+	priv->chan[ch].fifo[head] = request;
+-	smp_wmb();
+-	priv->chan[ch].fifo[head] = request;
++	spin_unlock_irqrestore(&priv->chan[ch].head_lock, *irq_flags);
++
++	/*
++	 * Mark a backlogged request as in-progress.
++	 */
++	if (!edesc) {
++		areq = request->context;
++		areq->complete(areq, -EINPROGRESS);
++	}
++
++	spin_lock_irqsave(&priv->chan[ch].head_lock, *irq_flags);
  
  	/* GO! */
++	priv->chan[ch].fifo[head] = request;
  	wmb();
-@@ -247,15 +237,16 @@ EXPORT_SYMBOL(talitos_submit);
- static void flush_channel(struct device *dev, int ch, int error, int reset_ch)
- {
- 	struct talitos_private *priv = dev_get_drvdata(dev);
--	struct talitos_request *request, saved_req;
-+	struct talitos_request *request;
- 	unsigned long flags;
- 	int tail, status;
+ 	out_be32(priv->chan[ch].reg + TALITOS_FF,
+ 		 upper_32_bits(request->dma_desc));
+ 	out_be32(priv->chan[ch].reg + TALITOS_FF_LO,
+ 		 lower_32_bits(request->dma_desc));
  
- 	spin_lock_irqsave(&priv->chan[ch].tail_lock, flags);
- 
- 	tail = priv->chan[ch].tail;
--	while (priv->chan[ch].fifo[tail].desc) {
--		request = &priv->chan[ch].fifo[tail];
-+	while (priv->chan[ch].fifo[tail]) {
-+		request = priv->chan[ch].fifo[tail];
-+		status = 0;
- 
- 		/* descriptors with their done bits set don't get the error */
- 		rmb();
-@@ -271,14 +262,9 @@ static void flush_channel(struct device *dev, int ch, int error, int reset_ch)
- 				 sizeof(struct talitos_desc),
- 				 DMA_BIDIRECTIONAL);
- 
--		/* copy entries so we can call callback outside lock */
--		saved_req.desc = request->desc;
--		saved_req.callback = request->callback;
--		saved_req.context = request->context;
--
- 		/* release request entry in fifo */
- 		smp_wmb();
--		request->desc = NULL;
-+		priv->chan[ch].fifo[tail] = NULL;
- 
- 		/* increment fifo tail */
- 		priv->chan[ch].tail = (tail + 1) & (priv->fifo_len - 1);
-@@ -287,8 +273,8 @@ static void flush_channel(struct device *dev, int ch, int error, int reset_ch)
- 
- 		atomic_dec(&priv->chan[ch].submit_count);
- 
--		saved_req.callback(dev, saved_req.desc, saved_req.context,
--				   status);
-+		request->callback(dev, request->desc, request->context, status);
++	return ret;
++}
 +
- 		/* channel may resume processing in single desc error case */
- 		if (error && !reset_ch && status == error)
- 			return;
-@@ -352,7 +338,8 @@ static u32 current_desc_hdr(struct device *dev, int ch)
- 	tail = priv->chan[ch].tail;
++/**
++ * talitos_submit - performs submissions of a new descriptors
++ *
++ * @dev:	the SEC device to be used
++ * @ch:		the SEC device channel to be used
++ * @edesc:	the request to be processed by the device
++ *
++ * edesc->req must contain valid dma-mapped (bus physical) address pointers.
++ * callback must check err and feedback in descriptor header
++ * for device processing status upon completion.
++ */
++int talitos_submit(struct device *dev, int ch, struct talitos_edesc *edesc)
++{
++	struct talitos_private *priv = dev_get_drvdata(dev);
++	struct talitos_request *request = &edesc->req;
++	unsigned long flags;
++	int ret = -EINPROGRESS;
++
++	spin_lock_irqsave(&priv->chan[ch].head_lock, flags);
++
++	if (priv->chan[ch].queue.qlen) {
++		/*
++		 * There are backlogged requests.  Just queue this new request
++		 * and dispatch the oldest backlogged request to the hardware.
++		 */
++		crypto_enqueue_request(&priv->chan[ch].queue,
++				       &request->base);
++		__talitos_handle_queue(dev, ch, NULL, &flags);
++		ret = -EBUSY;
++	} else {
++		ret = __talitos_handle_queue(dev, ch, edesc, &flags);
++		if (ret == -EBUSY)
++			/* Hardware FIFO is full */
++			crypto_enqueue_request(&priv->chan[ch].queue,
++					       &request->base);
++	}
++
+ 	spin_unlock_irqrestore(&priv->chan[ch].head_lock, flags);
  
- 	iter = tail;
--	while (priv->chan[ch].fifo[iter].dma_desc != cur_desc) {
-+	while (priv->chan[ch].fifo[iter] &&
-+	       priv->chan[ch].fifo[iter]->dma_desc != cur_desc) {
- 		iter = (iter + 1) & (priv->fifo_len - 1);
- 		if (iter == tail) {
- 			dev_err(dev, "couldn't locate current descriptor\n");
-@@ -360,7 +347,8 @@ static u32 current_desc_hdr(struct device *dev, int ch)
- 		}
+-	return -EINPROGRESS;
++	return ret;
+ }
+ EXPORT_SYMBOL(talitos_submit);
+ 
++static int talitos_handle_queue(struct device *dev, int ch)
++{
++	struct talitos_private *priv = dev_get_drvdata(dev);
++	unsigned long flags;
++	int ret = -EINPROGRESS;
++
++	spin_lock_irqsave(&priv->chan[ch].head_lock, flags);
++	/* Queue backlogged requests as long as the hardware has room */
++	while (priv->chan[ch].queue.qlen && ret == -EINPROGRESS)
++		ret = __talitos_handle_queue(dev, ch, NULL, &flags);
++	spin_unlock_irqrestore(&priv->chan[ch].head_lock, flags);
++
++	return 0;
++}
++
+ /*
+  * process what was done, notify callback of error if not
+  */
+@@ -283,6 +346,8 @@ static void flush_channel(struct device *dev, int ch, int error, int reset_ch)
  	}
  
--	return priv->chan[ch].fifo[iter].desc->hdr;
-+	return priv->chan[ch].fifo[iter] ?
-+		priv->chan[ch].fifo[iter]->desc->hdr : 0;
+ 	spin_unlock_irqrestore(&priv->chan[ch].tail_lock, flags);
++
++	talitos_handle_queue(dev, ch);
  }
  
  /*
-@@ -702,37 +690,6 @@ badkey:
- 	return -EINVAL;
- }
+@@ -1039,7 +1104,8 @@ static int ipsec_esp(struct talitos_edesc *edesc, struct aead_request *areq,
+ 	edesc->req.context = areq;
  
--/*
-- * talitos_edesc - s/w-extended descriptor
-- * @assoc_nents: number of segments in associated data scatterlist
-- * @src_nents: number of segments in input scatterlist
-- * @dst_nents: number of segments in output scatterlist
-- * @assoc_chained: whether assoc is chained or not
-- * @src_chained: whether src is chained or not
-- * @dst_chained: whether dst is chained or not
-- * @iv_dma: dma address of iv for checking continuity and link table
-- * @dma_len: length of dma mapped link_tbl space
-- * @dma_link_tbl: bus physical address of link_tbl
-- * @desc: h/w descriptor
-- * @link_tbl: input and output h/w link tables (if {src,dst}_nents > 1)
-- *
-- * if decrypting (with authcheck), or either one of src_nents or dst_nents
-- * is greater than 1, an integrity check value is concatenated to the end
-- * of link_tbl data
-- */
--struct talitos_edesc {
--	int assoc_nents;
--	int src_nents;
--	int dst_nents;
--	bool assoc_chained;
--	bool src_chained;
--	bool dst_chained;
--	dma_addr_t iv_dma;
--	int dma_len;
--	dma_addr_t dma_link_tbl;
--	struct talitos_desc desc;
--	struct talitos_ptr link_tbl[0];
--};
- 
- static int talitos_map_sg(struct device *dev, struct scatterlist *sg,
- 			  unsigned int nents, enum dma_data_direction dir,
-@@ -1078,7 +1035,10 @@ static int ipsec_esp(struct talitos_edesc *edesc, struct aead_request *areq,
- 	map_single_talitos_ptr(dev, &desc->ptr[6], ivsize, ctx->iv, 0,
- 			       DMA_FROM_DEVICE);
- 
--	ret = talitos_submit(dev, ctx->ch, desc, callback, areq);
-+	edesc->req.callback = callback;
-+	edesc->req.context = areq;
-+
-+	ret = talitos_submit(dev, ctx->ch, edesc);
- 	if (ret != -EINPROGRESS) {
+ 	ret = talitos_submit(dev, ctx->ch, edesc);
+-	if (ret != -EINPROGRESS) {
++	if (ret != -EINPROGRESS &&
++	    !(ret == -EBUSY && areq->base.flags & CRYPTO_TFM_REQ_MAY_BACKLOG)) {
  		ipsec_esp_unmap(dev, edesc, areq);
  		kfree(edesc);
-@@ -1209,6 +1169,7 @@ static struct talitos_edesc *talitos_edesc_alloc(struct device *dev,
- 		edesc->dma_link_tbl = dma_map_single(dev, &edesc->link_tbl[0],
+ 	}
+@@ -1080,6 +1146,7 @@ static struct talitos_edesc *talitos_edesc_alloc(struct device *dev,
+ 						 unsigned int ivsize,
+ 						 int icv_stashing,
+ 						 u32 cryptoflags,
++						 struct crypto_async_request *areq,
+ 						 bool encrypt)
+ {
+ 	struct talitos_edesc *edesc;
+@@ -1170,6 +1237,8 @@ static struct talitos_edesc *talitos_edesc_alloc(struct device *dev,
  						     edesc->dma_len,
  						     DMA_BIDIRECTIONAL);
-+	edesc->req.desc = &edesc->desc;
+ 	edesc->req.desc = &edesc->desc;
++	/* A copy of the crypto_async_request to use the crypto_queue backlog */
++	memcpy(&edesc->req.base, areq, sizeof(struct crypto_async_request));
  
  	return edesc;
  }
-@@ -1449,7 +1410,10 @@ static int common_nonsnoop(struct talitos_edesc *edesc,
- 	to_talitos_ptr(&desc->ptr[6], 0);
- 	desc->ptr[6].j_extent = 0;
+@@ -1184,7 +1253,7 @@ static struct talitos_edesc *aead_edesc_alloc(struct aead_request *areq, u8 *iv,
+ 	return talitos_edesc_alloc(ctx->dev, areq->assoc, areq->src, areq->dst,
+ 				   iv, areq->assoclen, areq->cryptlen,
+ 				   ctx->authsize, ivsize, icv_stashing,
+-				   areq->base.flags, encrypt);
++				   areq->base.flags, &areq->base, encrypt);
+ }
  
--	ret = talitos_submit(dev, ctx->ch, desc, callback, areq);
-+	edesc->req.callback = callback;
-+	edesc->req.context = areq;
-+
-+	ret = talitos_submit(dev, ctx->ch, edesc);
- 	if (ret != -EINPROGRESS) {
+ static int aead_encrypt(struct aead_request *req)
+@@ -1414,7 +1483,8 @@ static int common_nonsnoop(struct talitos_edesc *edesc,
+ 	edesc->req.context = areq;
+ 
+ 	ret = talitos_submit(dev, ctx->ch, edesc);
+-	if (ret != -EINPROGRESS) {
++	if (ret != -EINPROGRESS &&
++	    !(ret == -EBUSY && areq->base.flags & CRYPTO_TFM_REQ_MAY_BACKLOG)) {
  		common_nonsnoop_unmap(dev, edesc, areq);
  		kfree(edesc);
-@@ -1629,7 +1593,10 @@ static int common_nonsnoop_hash(struct talitos_edesc *edesc,
- 	/* last DWORD empty */
- 	desc->ptr[6] = zero_entry;
+ 	}
+@@ -1430,7 +1500,7 @@ static struct talitos_edesc *ablkcipher_edesc_alloc(struct ablkcipher_request *
  
--	ret = talitos_submit(dev, ctx->ch, desc, callback, areq);
-+	edesc->req.callback = callback;
-+	edesc->req.context = areq;
-+
-+	ret = talitos_submit(dev, ctx->ch, edesc);
- 	if (ret != -EINPROGRESS) {
+ 	return talitos_edesc_alloc(ctx->dev, NULL, areq->src, areq->dst,
+ 				   areq->info, 0, areq->nbytes, 0, ivsize, 0,
+-				   areq->base.flags, encrypt);
++				   areq->base.flags, &areq->base, encrypt);
+ }
+ 
+ static int ablkcipher_encrypt(struct ablkcipher_request *areq)
+@@ -1597,7 +1667,8 @@ static int common_nonsnoop_hash(struct talitos_edesc *edesc,
+ 	edesc->req.context = areq;
+ 
+ 	ret = talitos_submit(dev, ctx->ch, edesc);
+-	if (ret != -EINPROGRESS) {
++	if (ret != -EINPROGRESS &&
++	    !(ret == -EBUSY && areq->base.flags & CRYPTO_TFM_REQ_MAY_BACKLOG)) {
  		common_nonsnoop_hash_unmap(dev, edesc, areq);
  		kfree(edesc);
-@@ -2714,7 +2681,7 @@ static int talitos_probe(struct platform_device *ofdev)
- 		spin_lock_init(&priv->chan[i].head_lock);
- 		spin_lock_init(&priv->chan[i].tail_lock);
+ 	}
+@@ -1612,7 +1683,8 @@ static struct talitos_edesc *ahash_edesc_alloc(struct ahash_request *areq,
+ 	struct talitos_ahash_req_ctx *req_ctx = ahash_request_ctx(areq);
  
--		priv->chan[i].fifo = kzalloc(sizeof(struct talitos_request) *
-+		priv->chan[i].fifo = kzalloc(sizeof(struct talitos_request *) *
- 					     priv->fifo_len, GFP_KERNEL);
- 		if (!priv->chan[i].fifo) {
- 			dev_err(dev, "failed to allocate request fifo %d\n", i);
+ 	return talitos_edesc_alloc(ctx->dev, NULL, req_ctx->psrc, NULL, NULL, 0,
+-				   nbytes, 0, 0, 0, areq->base.flags, false);
++				   nbytes, 0, 0, 0, areq->base.flags,
++				   &areq->base, false);
+ }
+ 
+ static int ahash_init(struct ahash_request *areq)
+@@ -2690,6 +2762,13 @@ static int talitos_probe(struct platform_device *ofdev)
+ 		}
+ 
+ 		atomic_set(&priv->chan[i].submit_count, -priv->chfifo_len);
++
++		/*
++		 * The crypto_queue is used to manage the backlog only.  While
++		 * the hardware FIFO has space requests are dispatched
++		 * immediately.
++		 */
++		crypto_init_queue(&priv->chan[i].queue, 0);
+ 	}
+ 
+ 	dma_set_mask(dev, DMA_BIT_MASK(36));
 diff --git a/drivers/crypto/talitos.h b/drivers/crypto/talitos.h
-index 61a1405..914eb15 100644
+index 914eb15..2762e47 100644
 --- a/drivers/crypto/talitos.h
 +++ b/drivers/crypto/talitos.h
-@@ -77,7 +77,7 @@ struct talitos_channel {
- 	void __iomem *reg;
- 
- 	/* request fifo */
--	struct talitos_request *fifo;
-+	struct talitos_request **fifo;
- 
- 	/* number of requests pending in channel h/w fifo */
- 	atomic_t submit_count ____cacheline_aligned;
-@@ -133,11 +133,40 @@ struct talitos_private {
- 	struct hwrng rng;
+@@ -65,6 +65,7 @@ struct talitos_desc {
+  * @context: caller context (optional)
+  */
+ struct talitos_request {
++	struct crypto_async_request base;
+ 	struct talitos_desc *desc;
+ 	dma_addr_t dma_desc;
+ 	void (*callback) (struct device *dev, struct talitos_desc *desc,
+@@ -91,6 +92,8 @@ struct talitos_channel {
+ 	spinlock_t tail_lock ____cacheline_aligned;
+ 	/* index to next in-progress/done descriptor request */
+ 	int tail;
++
++	struct crypto_queue queue;
  };
  
--extern int talitos_submit(struct device *dev, int ch, struct talitos_desc *desc,
--			  void (*callback)(struct device *dev,
--					   struct talitos_desc *desc,
--					   void *context, int error),
--			  void *context);
-+/*
-+ * talitos_edesc - s/w-extended descriptor
-+ * @assoc_nents: number of segments in associated data scatterlist
-+ * @src_nents: number of segments in input scatterlist
-+ * @dst_nents: number of segments in output scatterlist
-+ * @assoc_chained: whether assoc is chained or not
-+ * @src_chained: whether src is chained or not
-+ * @dst_chained: whether dst is chained or not
-+ * @iv_dma: dma address of iv for checking continuity and link table
-+ * @dma_len: length of dma mapped link_tbl space
-+ * @dma_link_tbl: bus physical address of link_tbl
-+ * @desc: h/w descriptor
-+ * @link_tbl: input and output h/w link tables (if {src,dst}_nents > 1)
-+ *
-+ * if decrypting (with authcheck), or either one of src_nents or dst_nents
-+ * is greater than 1, an integrity check value is concatenated to the end
-+ * of link_tbl data
-+ */
-+struct talitos_edesc {
-+	struct talitos_request req;
-+	int assoc_nents;
-+	int src_nents;
-+	int dst_nents;
-+	bool assoc_chained;
-+	bool src_chained;
-+	bool dst_chained;
-+	dma_addr_t iv_dma;
-+	int dma_len;
-+	dma_addr_t dma_link_tbl;
-+	struct talitos_desc desc;
-+	struct talitos_ptr link_tbl[0];
-+};
-+
-+int talitos_submit(struct device *dev, int ch, struct talitos_edesc *edesc);
- 
- /* .features flag */
- #define TALITOS_FTR_SRC_LINK_TBL_LEN_INCLUDES_EXTENT 0x00000001
+ struct talitos_private {
 -- 
 1.7.10.4
