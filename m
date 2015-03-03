@@ -3,13 +3,13 @@ Received: from smtp.outflux.net (smtp.outflux.net
  [IPv6:2001:19d0:2:6:c0de:0:736d:7470])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C348B1A01E7
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Mar 2015 11:21:08 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2A2D91A0352
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Mar 2015 11:25:02 +1100 (AEDT)
 From: Kees Cook <keescook@chromium.org>
 To: akpm@linux-foundation.org
-Subject: [PATCH 5/5] mm: fold arch_randomize_brk into ARCH_HAS_ELF_RANDOMIZE
-Date: Mon,  2 Mar 2015 16:19:48 -0800
-Message-Id: <1425341988-1599-6-git-send-email-keescook@chromium.org>
+Subject: [PATCH 4/5] mm: split ET_DYN ASLR from mmap ASLR
+Date: Mon,  2 Mar 2015 16:19:47 -0800
+Message-Id: <1425341988-1599-5-git-send-email-keescook@chromium.org>
 In-Reply-To: <1425341988-1599-1-git-send-email-keescook@chromium.org>
 References: <1425341988-1599-1-git-send-email-keescook@chromium.org>
 Cc: linux-mips@linux-mips.org, Arun Chandran <achandran@mvista.com>,
@@ -41,171 +41,169 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The arch_randomize_brk() function is used on several architectures,
-even those that don't support ET_DYN ASLR. To avoid bulky extern/#define
-tricks, consolidate the support under CONFIG_ARCH_HAS_ELF_RANDOMIZE for
-the architectures that support it, while still handling CONFIG_COMPAT_BRK.
+This fixes the "offset2lib" weakness in ASLR for arm, arm64, mips,
+powerpc, and x86. The problem is that if there is a leak of ASLR from
+the executable (ET_DYN), it means a leak of shared library offset as
+well (mmap), and vice versa. Further details and a PoC of this attack
+are available here:
+http://cybersecurity.upv.es/attacks/offset2lib/offset2lib.html
 
+With this patch, a PIE linked executable (ET_DYN) has its own ASLR region:
+
+$ ./show_mmaps_pie
+54859ccd6000-54859ccd7000 r-xp  ...  /tmp/show_mmaps_pie
+54859ced6000-54859ced7000 r--p  ...  /tmp/show_mmaps_pie
+54859ced7000-54859ced8000 rw-p  ...  /tmp/show_mmaps_pie
+7f75be764000-7f75be91f000 r-xp  ...  /lib/x86_64-linux-gnu/libc.so.6
+7f75be91f000-7f75beb1f000 ---p  ...  /lib/x86_64-linux-gnu/libc.so.6
+7f75beb1f000-7f75beb23000 r--p  ...  /lib/x86_64-linux-gnu/libc.so.6
+7f75beb23000-7f75beb25000 rw-p  ...  /lib/x86_64-linux-gnu/libc.so.6
+7f75beb25000-7f75beb2a000 rw-p  ...
+7f75beb2a000-7f75beb4d000 r-xp  ...  /lib64/ld-linux-x86-64.so.2
+7f75bed45000-7f75bed46000 rw-p  ...
+7f75bed46000-7f75bed47000 r-xp  ...
+7f75bed47000-7f75bed4c000 rw-p  ...
+7f75bed4c000-7f75bed4d000 r--p  ...  /lib64/ld-linux-x86-64.so.2
+7f75bed4d000-7f75bed4e000 rw-p  ...  /lib64/ld-linux-x86-64.so.2
+7f75bed4e000-7f75bed4f000 rw-p  ...
+7fffb3741000-7fffb3762000 rw-p  ...  [stack]
+7fffb377b000-7fffb377d000 r--p  ...  [vvar]
+7fffb377d000-7fffb377f000 r-xp  ...  [vdso]
+
+The change is to add a call the newly created arch_mmap_rnd() into the
+ELF loader for handling ET_DYN ASLR in a separate region from mmap ASLR,
+as already done on s390. Removes CONFIG_BINFMT_ELF_RANDOMIZE_PIE, which
+is no longer needed.
+
+Reported-by: Hector Marco-Gisbert <hecmargi@upv.es>
 Signed-off-by: Kees Cook <keescook@chromium.org>
 ---
- arch/Kconfig                   |  1 +
- arch/arm/include/asm/elf.h     |  4 ----
- arch/arm64/include/asm/elf.h   |  4 ----
- arch/mips/include/asm/elf.h    |  4 ----
- arch/powerpc/include/asm/elf.h |  4 ----
- arch/s390/include/asm/elf.h    |  3 ---
- arch/x86/include/asm/elf.h     |  3 ---
- fs/binfmt_elf.c                |  4 +---
- include/linux/elf-randomize.h  | 12 ++++++++++++
- 9 files changed, 14 insertions(+), 25 deletions(-)
+ arch/arm/Kconfig            |  1 -
+ arch/arm64/Kconfig          |  1 -
+ arch/mips/Kconfig           |  1 -
+ arch/powerpc/Kconfig        |  1 -
+ arch/s390/include/asm/elf.h |  4 ++--
+ arch/x86/Kconfig            |  1 -
+ fs/Kconfig.binfmt           |  3 ---
+ fs/binfmt_elf.c             | 17 ++---------------
+ 8 files changed, 4 insertions(+), 25 deletions(-)
 
-diff --git a/arch/Kconfig b/arch/Kconfig
-index e315cc79ebe7..1c7e98f137db 100644
---- a/arch/Kconfig
-+++ b/arch/Kconfig
-@@ -490,6 +490,7 @@ config ARCH_HAS_ELF_RANDOMIZE
- 	  An architecture supports choosing randomized locations for
- 	  stack, mmap, brk, and ET_DYN. Defined functions:
- 	  - arch_mmap_rnd(), must respect (current->flags & PF_RANDOMIZE)
-+	  - arch_randomize_brk()
- 
- #
- # ABI hall of shame
-diff --git a/arch/arm/include/asm/elf.h b/arch/arm/include/asm/elf.h
-index afb9cafd3786..c1ff8ab12914 100644
---- a/arch/arm/include/asm/elf.h
-+++ b/arch/arm/include/asm/elf.h
-@@ -125,10 +125,6 @@ int dump_task_regs(struct task_struct *t, elf_gregset_t *elfregs);
- extern void elf_set_personality(const struct elf32_hdr *);
- #define SET_PERSONALITY(ex)	elf_set_personality(&(ex))
- 
--struct mm_struct;
--extern unsigned long arch_randomize_brk(struct mm_struct *mm);
--#define arch_randomize_brk arch_randomize_brk
--
- #ifdef CONFIG_MMU
- #define ARCH_HAS_SETUP_ADDITIONAL_PAGES 1
- struct linux_binprm;
-diff --git a/arch/arm64/include/asm/elf.h b/arch/arm64/include/asm/elf.h
-index f724db00b235..faad6df49e5b 100644
---- a/arch/arm64/include/asm/elf.h
-+++ b/arch/arm64/include/asm/elf.h
-@@ -156,10 +156,6 @@ extern int arch_setup_additional_pages(struct linux_binprm *bprm,
- #define STACK_RND_MASK			(0x3ffff >> (PAGE_SHIFT - 12))
- #endif
- 
--struct mm_struct;
--extern unsigned long arch_randomize_brk(struct mm_struct *mm);
--#define arch_randomize_brk arch_randomize_brk
--
- #ifdef CONFIG_COMPAT
- 
- #ifdef __AARCH64EB__
-diff --git a/arch/mips/include/asm/elf.h b/arch/mips/include/asm/elf.h
-index 535f196ffe02..31d747d46a23 100644
---- a/arch/mips/include/asm/elf.h
-+++ b/arch/mips/include/asm/elf.h
-@@ -410,10 +410,6 @@ struct linux_binprm;
- extern int arch_setup_additional_pages(struct linux_binprm *bprm,
- 				       int uses_interp);
- 
--struct mm_struct;
--extern unsigned long arch_randomize_brk(struct mm_struct *mm);
--#define arch_randomize_brk arch_randomize_brk
--
- struct arch_elf_state {
- 	int fp_abi;
- 	int interp_fp_abi;
-diff --git a/arch/powerpc/include/asm/elf.h b/arch/powerpc/include/asm/elf.h
-index 57d289acb803..ee46ffef608e 100644
---- a/arch/powerpc/include/asm/elf.h
-+++ b/arch/powerpc/include/asm/elf.h
-@@ -128,10 +128,6 @@ extern int arch_setup_additional_pages(struct linux_binprm *bprm,
- 	(0x7ff >> (PAGE_SHIFT - 12)) : \
- 	(0x3ffff >> (PAGE_SHIFT - 12)))
- 
--extern unsigned long arch_randomize_brk(struct mm_struct *mm);
--#define arch_randomize_brk arch_randomize_brk
--
--
- #ifdef CONFIG_SPU_BASE
- /* Notes used in ET_CORE. Note name is "SPU/<fd>/<filename>". */
- #define NT_SPU		1
+diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
+index 248d99cabaa8..e2f0ef9c6ee3 100644
+--- a/arch/arm/Kconfig
++++ b/arch/arm/Kconfig
+@@ -1,7 +1,6 @@
+ config ARM
+ 	bool
+ 	default y
+-	select ARCH_BINFMT_ELF_RANDOMIZE_PIE
+ 	select ARCH_HAS_ATOMIC64_DEC_IF_POSITIVE
+ 	select ARCH_HAS_ELF_RANDOMIZE
+ 	select ARCH_HAS_TICK_BROADCAST if GENERIC_CLOCKEVENTS_BROADCAST
+diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
+index 5f469095e0e2..07e0fc7adc88 100644
+--- a/arch/arm64/Kconfig
++++ b/arch/arm64/Kconfig
+@@ -1,6 +1,5 @@
+ config ARM64
+ 	def_bool y
+-	select ARCH_BINFMT_ELF_RANDOMIZE_PIE
+ 	select ARCH_HAS_ATOMIC64_DEC_IF_POSITIVE
+ 	select ARCH_HAS_ELF_RANDOMIZE
+ 	select ARCH_HAS_GCOV_PROFILE_ALL
+diff --git a/arch/mips/Kconfig b/arch/mips/Kconfig
+index 72ce5cece768..557c5f1772c1 100644
+--- a/arch/mips/Kconfig
++++ b/arch/mips/Kconfig
+@@ -23,7 +23,6 @@ config MIPS
+ 	select HAVE_KRETPROBES
+ 	select HAVE_DEBUG_KMEMLEAK
+ 	select HAVE_SYSCALL_TRACEPOINTS
+-	select ARCH_BINFMT_ELF_RANDOMIZE_PIE
+ 	select ARCH_HAS_ELF_RANDOMIZE
+ 	select HAVE_ARCH_TRANSPARENT_HUGEPAGE if CPU_SUPPORTS_HUGEPAGES && 64BIT
+ 	select RTC_LIB if !MACH_LOONGSON
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 14fe1c411489..910fa4f9ad1e 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -88,7 +88,6 @@ config PPC
+ 	select ARCH_MIGHT_HAVE_PC_PARPORT
+ 	select ARCH_MIGHT_HAVE_PC_SERIO
+ 	select BINFMT_ELF
+-	select ARCH_BINFMT_ELF_RANDOMIZE_PIE
+ 	select ARCH_HAS_ELF_RANDOMIZE
+ 	select OF
+ 	select OF_EARLY_FLATTREE
 diff --git a/arch/s390/include/asm/elf.h b/arch/s390/include/asm/elf.h
-index 617f7fabdb0a..7cc271003ff6 100644
+index 9ed68e7ee856..617f7fabdb0a 100644
 --- a/arch/s390/include/asm/elf.h
 +++ b/arch/s390/include/asm/elf.h
-@@ -226,9 +226,6 @@ struct linux_binprm;
- #define ARCH_HAS_SETUP_ADDITIONAL_PAGES 1
- int arch_setup_additional_pages(struct linux_binprm *, int);
+@@ -163,9 +163,9 @@ extern unsigned int vdso_enabled;
+    the loader.  We need to make sure that it is out of the way of the program
+    that it will "exec", and that there is sufficient room for the brk. 64-bit
+    tasks are aligned to 4GB. */
+-#define ELF_ET_DYN_BASE (arch_mmap_rnd() + (is_32bit_task() ? \
++#define ELF_ET_DYN_BASE	(is_32bit_task() ? \
+ 				(STACK_TOP / 3 * 2) : \
+-				(STACK_TOP / 3 * 2) & ~((1UL << 32) - 1)))
++				(STACK_TOP / 3 * 2) & ~((1UL << 32) - 1))
  
--extern unsigned long arch_randomize_brk(struct mm_struct *mm);
--#define arch_randomize_brk arch_randomize_brk
+ /* This yields a mask that user programs can use to figure out what
+    instruction set this CPU supports. */
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index 9aa91727fbf8..328be0fab910 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -87,7 +87,6 @@ config X86
+ 	select HAVE_ARCH_KMEMCHECK
+ 	select HAVE_ARCH_KASAN if X86_64 && SPARSEMEM_VMEMMAP
+ 	select HAVE_USER_RETURN_NOTIFIER
+-	select ARCH_BINFMT_ELF_RANDOMIZE_PIE
+ 	select ARCH_HAS_ELF_RANDOMIZE
+ 	select HAVE_ARCH_JUMP_LABEL
+ 	select ARCH_HAS_ATOMIC64_DEC_IF_POSITIVE
+diff --git a/fs/Kconfig.binfmt b/fs/Kconfig.binfmt
+index 270c48148f79..2d0cbbd14cfc 100644
+--- a/fs/Kconfig.binfmt
++++ b/fs/Kconfig.binfmt
+@@ -27,9 +27,6 @@ config COMPAT_BINFMT_ELF
+ 	bool
+ 	depends on COMPAT && BINFMT_ELF
+ 
+-config ARCH_BINFMT_ELF_RANDOMIZE_PIE
+-	bool
 -
- void *fill_cpu_elf_notes(void *ptr, struct save_area *sa, __vector128 *vxrs);
+ config ARCH_BINFMT_ELF_STATE
+ 	bool
  
- #endif
-diff --git a/arch/x86/include/asm/elf.h b/arch/x86/include/asm/elf.h
-index ca3347a9dab5..bbdace22daf8 100644
---- a/arch/x86/include/asm/elf.h
-+++ b/arch/x86/include/asm/elf.h
-@@ -338,9 +338,6 @@ extern int compat_arch_setup_additional_pages(struct linux_binprm *bprm,
- 					      int uses_interp);
- #define compat_arch_setup_additional_pages compat_arch_setup_additional_pages
- 
--extern unsigned long arch_randomize_brk(struct mm_struct *mm);
--#define arch_randomize_brk arch_randomize_brk
--
- /*
-  * True on X86_32 or when emulating IA32 on X86_64
-  */
 diff --git a/fs/binfmt_elf.c b/fs/binfmt_elf.c
-index 203c2e6f9a25..96459c18d1eb 100644
+index b1c5ef5d9322..203c2e6f9a25 100644
 --- a/fs/binfmt_elf.c
 +++ b/fs/binfmt_elf.c
-@@ -1041,15 +1041,13 @@ static int load_elf_binary(struct linux_binprm *bprm)
- 	current->mm->end_data = end_data;
- 	current->mm->start_stack = bprm->p;
- 
--#ifdef arch_randomize_brk
- 	if ((current->flags & PF_RANDOMIZE) && (randomize_va_space > 1)) {
- 		current->mm->brk = current->mm->start_brk =
- 			arch_randomize_brk(current->mm);
--#ifdef CONFIG_COMPAT_BRK
-+#ifdef compat_brk_randomized
- 		current->brk_randomized = 1;
- #endif
- 	}
+@@ -910,21 +910,8 @@ static int load_elf_binary(struct linux_binprm *bprm)
+ 			 * default mmap base, as well as whatever program they
+ 			 * might try to exec.  This is because the brk will
+ 			 * follow the loader, and is not movable.  */
+-#ifdef CONFIG_ARCH_BINFMT_ELF_RANDOMIZE_PIE
+-			/* Memory randomization might have been switched off
+-			 * in runtime via sysctl or explicit setting of
+-			 * personality flags.
+-			 * If that is the case, retain the original non-zero
+-			 * load_bias value in order to establish proper
+-			 * non-randomized mappings.
+-			 */
+-			if (current->flags & PF_RANDOMIZE)
+-				load_bias = 0;
+-			else
+-				load_bias = ELF_PAGESTART(ELF_ET_DYN_BASE - vaddr);
+-#else
+-			load_bias = ELF_PAGESTART(ELF_ET_DYN_BASE - vaddr);
 -#endif
++			load_bias = ELF_ET_DYN_BASE + arch_mmap_rnd() - vaddr;
++			load_bias = ELF_PAGESTART(load_bias);
+ 		}
  
- 	if (current->personality & MMAP_PAGE_ZERO) {
- 		/* Why this, you ask???  Well SVr4 maps page 0 as read-only,
-diff --git a/include/linux/elf-randomize.h b/include/linux/elf-randomize.h
-index 7a4eda02d2b1..b5f0bda9472e 100644
---- a/include/linux/elf-randomize.h
-+++ b/include/linux/elf-randomize.h
-@@ -1,10 +1,22 @@
- #ifndef _ELF_RANDOMIZE_H
- #define _ELF_RANDOMIZE_H
- 
-+struct mm_struct;
-+
- #ifndef CONFIG_ARCH_HAS_ELF_RANDOMIZE
- static inline unsigned long arch_mmap_rnd(void) { return 0; }
-+# if defined(arch_randomize_brk) && defined(CONFIG_COMPAT_BRK)
-+#  define compat_brk_randomized
-+# endif
-+# ifndef arch_randomize_brk
-+#  define arch_randomize_brk(mm)	(mm->brk)
-+# endif
- #else
- extern unsigned long arch_mmap_rnd(void);
-+extern unsigned long arch_randomize_brk(struct mm_struct *mm);
-+# ifdef CONFIG_COMPAT_BRK
-+#  define compat_brk_randomized
-+# endif
- #endif
- 
- #endif
+ 		error = elf_map(bprm->file, load_bias + vaddr, elf_ppnt,
 -- 
 1.9.1
