@@ -1,45 +1,33 @@
-Return-Path: <hbathini@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3AE2B1A02E2
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Mar 2015 17:13:36 +1100 (AEDT)
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+Return-Path: <sukadev@linux.vnet.ibm.com>
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 0C3CF14016B
- for <linuxppc-dev@ozlabs.org>; Wed,  4 Mar 2015 17:13:36 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7C6471A08CB
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Mar 2015 19:35:54 +1100 (AEDT)
 Received: from /spool/local
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <hbathini@linux.vnet.ibm.com>;
- Wed, 4 Mar 2015 16:13:34 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 615442CE8054
- for <linuxppc-dev@ozlabs.org>; Wed,  4 Mar 2015 17:13:31 +1100 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t246DHFI28573924
- for <linuxppc-dev@ozlabs.org>; Wed, 4 Mar 2015 17:13:26 +1100
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t246Cuh3028573
- for <linuxppc-dev@ozlabs.org>; Wed, 4 Mar 2015 17:12:57 +1100
-Message-ID: <54F6A258.2080402@linux.vnet.ibm.com>
-Date: Wed, 04 Mar 2015 11:42:40 +0530
-From: Hari Bathini <hbathini@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: linuxppc-dev <linuxppc-dev@ozlabs.org>
-Subject: Re: [PATCH v5 2/4] pstore: Add pstore type id for PPC64 opal nvram
- partition
-References: <20150205193412.24669.8648.stgit@localhost.localdomain>
- <20150205193628.24669.79936.stgit@localhost.localdomain>
-In-Reply-To: <20150205193628.24669.79936.stgit@localhost.localdomain>
-Content-Type: multipart/alternative;
- boundary="------------040506030609070809090807"
-Cc: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>,
- Tony Luck <tony.luck@intel.com>, Kees Cook <keescook@chromium.org>,
- Anton Vorontsov <anton@enomsg.org>, Colin Cross <ccross@android.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
+ Wed, 4 Mar 2015 01:35:52 -0700
+Received: from b01cxnp22035.gho.pok.ibm.com (b01cxnp22035.gho.pok.ibm.com
+ [9.57.198.25])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 3522738C8026
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Mar 2015 03:35:49 -0500 (EST)
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+ by b01cxnp22035.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t248ZnSP28901606
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Mar 2015 08:35:49 GMT
+Received: from d01av02.pok.ibm.com (localhost [127.0.0.1])
+ by d01av02.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t248ZlV9011087
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Mar 2015 03:35:48 -0500
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>,
+ peterz@infradead.org
+Subject: [PATCH 0/4] perf: Implement event group read using txn interface
+Date: Wed,  4 Mar 2015 00:35:04 -0800
+Message-Id: <1425458108-3341-1-git-send-email-sukadev@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, dev@codyps.com, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,138 +37,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------040506030609070809090807
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Unlike normal hardware PMCs, the 24x7 counters[1] in Power8 are stored in
+memory and accessed via a hypervisor call (HCALL).  A major aspect of the
+HCALL is that it allows retireving _SEVERAL_ counters at once (unlike
+regular PMCs, which are read one at a time). By reading several counters
+at once, we can get a more consistent snapshot of the system.
 
-On 02/06/2015 01:06 AM, Hari Bathini wrote:
-> This patch adds a new PPC64 partition type to be used for opal
-> specific nvram partition. A new partition type is needed as none
-> of the existing type matches this partition type.
->
-> Signed-off-by: Hari Bathini <hbathini@linux.vnet.ibm.com>
+This patchset explores the possibility of using the transaction interface
+to accomplish submitting several "events" to the PMU and have the PMU read
+them all at once. User is expected to submit the set of events they want
+to read as an "event group".
 
-This patch series is reviewed by Kees.
-Reference link: https://lkml.org/lkml/2015/2/5/651
+In the kernel, we submit each event to the PMU using the following logic
+(from Peter Zijlstra).
+	
+	pmu->start_txn(pmu, PMU_TXN_READ);
 
-Reviewed-by: Kees Cook <keescook@chromium.org>
+	leader->read();
+	for_each_sibling()
+		sibling->read();
+	pmu->commit_txn();
 
-Thanks
-Hari
+where:
+	- the ->read()s queue events to be submitted to the hypervisor, and,
+	- the ->commit_txn() issues the HCALL, retrieves the result and
+	  updates the event count.
 
-> ---
->   fs/pstore/inode.c      |    3 +++
->   include/linux/pstore.h |    1 +
->   2 files changed, 4 insertions(+)
->
-> diff --git a/fs/pstore/inode.c b/fs/pstore/inode.c
-> index 5041660..8e0c009 100644
-> --- a/fs/pstore/inode.c
-> +++ b/fs/pstore/inode.c
-> @@ -359,6 +359,9 @@ int pstore_mkfile(enum pstore_type_id type, char *psname, u64 id, int count,
->   	case PSTORE_TYPE_PPC_COMMON:
->   		sprintf(name, "powerpc-common-%s-%lld", psname, id);
->   		break;
-> +	case PSTORE_TYPE_PPC_OPAL:
-> +		sprintf(name, "powerpc-opal-%s-%lld", psname, id);
-> +		break;
->   	case PSTORE_TYPE_UNKNOWN:
->   		sprintf(name, "unknown-%s-%lld", psname, id);
->   		break;
-> diff --git a/include/linux/pstore.h b/include/linux/pstore.h
-> index ece0c6b..af44980 100644
-> --- a/include/linux/pstore.h
-> +++ b/include/linux/pstore.h
-> @@ -39,6 +39,7 @@ enum pstore_type_id {
->   	PSTORE_TYPE_PPC_RTAS	= 4,
->   	PSTORE_TYPE_PPC_OF	= 5,
->   	PSTORE_TYPE_PPC_COMMON	= 6,
-> +	PSTORE_TYPE_PPC_OPAL	= 7,
->   	PSTORE_TYPE_UNKNOWN	= 255
->   };
->   
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+Since the ->commit_txn() updates the event count, perf subsystem can use
+the event count directly and skip the a ->read() call immediately after
+the transaction.
 
+TODO: 
+	- Lightly tested on Powerpc; Needs more testing on Power and x86.
+	- Need to review/update txn and perf_event_read_value() interfaces
+	  for other architectures.
 
---------------040506030609070809090807
-Content-Type: text/html; charset=utf-8
-Content-Transfer-Encoding: 7bit
+Thanks to Peter Zijlstra for his input.
 
-<html>
-  <head>
-    <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
-  </head>
-  <body bgcolor="#FFFFFF" text="#000000">
-    <div class="moz-cite-prefix">On 02/06/2015 01:06 AM, Hari Bathini
-      wrote:<br>
-    </div>
-    <blockquote
-      cite="mid:20150205193628.24669.79936.stgit@localhost.localdomain"
-      type="cite">
-      <pre wrap="">This patch adds a new PPC64 partition type to be used for opal
-specific nvram partition. A new partition type is needed as none
-of the existing type matches this partition type.
+Sukadev Bhattiprolu (4):
+  perf: Add 'flags' parameter to pmu txn interfaces
+  perf: Split perf_event_read() and perf_event_count()
+  perf: Add 'update' parameter to perf_event_read_value()
+  perf/powerpc: Implement group_read() txn interface for 24x7 counters
 
-Signed-off-by: Hari Bathini <a class="moz-txt-link-rfc2396E" href="mailto:hbathini@linux.vnet.ibm.com">&lt;hbathini@linux.vnet.ibm.com&gt;</a></pre>
-    </blockquote>
-    <br>
-    This patch series is reviewed by Kees.<br>
-    Reference link: <a class="moz-txt-link-freetext" href="https://lkml.org/lkml/2015/2/5/651">https://lkml.org/lkml/2015/2/5/651</a><br>
-    <br>
-    Reviewed-by: Kees Cook <a class="moz-txt-link-rfc2396E" href="mailto:keescook@chromium.org">&lt;keescook@chromium.org&gt;</a><br>
-    <br>
-    Thanks<font face="sans-serif"><br>
-      Hari</font><br>
-    <pre itemprop="articleBody">
-</pre>
-    <blockquote
-      cite="mid:20150205193628.24669.79936.stgit@localhost.localdomain"
-      type="cite">
-      <pre wrap="">
----
- fs/pstore/inode.c      |    3 +++
- include/linux/pstore.h |    1 +
- 2 files changed, 4 insertions(+)
+ arch/powerpc/perf/core-book3s.c  |  15 +++-
+ arch/powerpc/perf/hv-24x7.c      | 171 +++++++++++++++++++++++++++++++++++++++
+ arch/x86/kernel/cpu/perf_event.c |  15 +++-
+ arch/x86/kvm/pmu.c               |   2 +-
+ include/linux/perf_event.h       |  17 +++-
+ kernel/events/core.c             |  93 ++++++++++++++++-----
+ 6 files changed, 281 insertions(+), 32 deletions(-)
 
-diff --git a/fs/pstore/inode.c b/fs/pstore/inode.c
-index 5041660..8e0c009 100644
---- a/fs/pstore/inode.c
-+++ b/fs/pstore/inode.c
-@@ -359,6 +359,9 @@ int pstore_mkfile(enum pstore_type_id type, char *psname, u64 id, int count,
- 	case PSTORE_TYPE_PPC_COMMON:
- 		sprintf(name, "powerpc-common-%s-%lld", psname, id);
- 		break;
-+	case PSTORE_TYPE_PPC_OPAL:
-+		sprintf(name, "powerpc-opal-%s-%lld", psname, id);
-+		break;
- 	case PSTORE_TYPE_UNKNOWN:
- 		sprintf(name, "unknown-%s-%lld", psname, id);
- 		break;
-diff --git a/include/linux/pstore.h b/include/linux/pstore.h
-index ece0c6b..af44980 100644
---- a/include/linux/pstore.h
-+++ b/include/linux/pstore.h
-@@ -39,6 +39,7 @@ enum pstore_type_id {
- 	PSTORE_TYPE_PPC_RTAS	= 4,
- 	PSTORE_TYPE_PPC_OF	= 5,
- 	PSTORE_TYPE_PPC_COMMON	= 6,
-+	PSTORE_TYPE_PPC_OPAL	= 7,
- 	PSTORE_TYPE_UNKNOWN	= 255
- };
- 
-
-_______________________________________________
-Linuxppc-dev mailing list
-<a class="moz-txt-link-abbreviated" href="mailto:Linuxppc-dev@lists.ozlabs.org">Linuxppc-dev@lists.ozlabs.org</a>
-<a class="moz-txt-link-freetext" href="https://lists.ozlabs.org/listinfo/linuxppc-dev">https://lists.ozlabs.org/listinfo/linuxppc-dev</a></pre>
-    </blockquote>
-    <br>
-  </body>
-</html>
-
---------------040506030609070809090807--
+-- 
+1.8.3.1
