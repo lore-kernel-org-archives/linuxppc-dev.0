@@ -1,38 +1,27 @@
-Return-Path: <keescook@www.outflux.net>
-Received: from smtp.outflux.net (smtp.outflux.net
- [IPv6:2001:19d0:2:6:c0de:0:736d:7470])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 45A631A090E
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Mar 2015 09:14:23 +1100 (AEDT)
-From: Kees Cook <keescook@chromium.org>
-To: akpm@linux-foundation.org
-Subject: [PATCH v4 08/10] s390: redefine randomize_et_dyn for ELF_ET_DYN_BASE
-Date: Wed,  4 Mar 2015 13:10:52 -0800
-Message-Id: <1425503454-7531-9-git-send-email-keescook@chromium.org>
-In-Reply-To: <1425503454-7531-1-git-send-email-keescook@chromium.org>
-References: <1425503454-7531-1-git-send-email-keescook@chromium.org>
-Cc: linux-mips@linux-mips.org, Arun Chandran <achandran@mvista.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, linux-kernel@vger.kernel.org,
- Min-Hua Chen <orca.chen@gmail.com>, Paul Mackerras <paulus@samba.org>,
- Ismael Ripoll <iripoll@upv.es>, Yann Droneaud <ydroneaud@opteya.com>,
- linux-s390@vger.kernel.org, Russell King <linux@arm.linux.org.uk>,
- Andrey Ryabinin <a.ryabinin@samsung.com>, x86@kernel.org,
- Hector Marco-Gisbert <hecmargi@upv.es>, Ingo Molnar <mingo@redhat.com>,
- "David A. Long" <dave.long@linaro.org>,
- Catalin Marinas <catalin.marinas@arm.com>, Borislav Petkov <bp@suse.de>,
- Ben Hutchings <ben@decadent.org.uk>, Kees Cook <keescook@chromium.org>,
- Will Deacon <will.deacon@arm.com>, linux-fsdevel@vger.kernel.org,
- Alexander Viro <viro@zeniv.linux.org.uk>,
- Michael Holzheu <holzheu@linux.vnet.ibm.com>,
- linux-arm-kernel@lists.infradead.org, Jeff Bailey <jeffbailey@google.com>,
- Paul Burton <paul.burton@imgtec.com>, Oleg Nesterov <oleg@redhat.com>,
- Ralf Baechle <ralf@linux-mips.org>, Andy Lutomirski <luto@amacapital.net>,
- Vineeth Vijayan <vvijayan@mvista.com>,
- Markos Chandras <markos.chandras@imgtec.com>,
- =?UTF-8?q?Jan-Simon=20M=C3=B6ller?= <dl9pf@gmx.de>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>, linux390@de.ibm.com,
- linuxppc-dev@lists.ozlabs.org, Alex Smith <alex@alex-smith.me.uk>
+ by lists.ozlabs.org (Postfix) with ESMTPS id CC6D81A02E5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Mar 2015 10:52:34 +1100 (AEDT)
+Message-ID: <1425513154.32154.12.camel@ellerman.id.au>
+Subject: Re: Problems with Kernels 3.17-rc1 and onwards on Acube Sam460 AMCC
+ 460ex board
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Julian Margetson <runaway@candw.ms>
+Date: Thu, 05 Mar 2015 10:52:34 +1100
+In-Reply-To: <54F6F081.9060007@candw.ms>
+References: <54E08E06.8060607@candw.ms>
+ <1424045921.3018.4.camel@ellerman.id.au> <54E4EBD7.5000307@candw.ms>
+ <1424304787.22020.4.camel@ellerman.id.au> <54E53E07.60609@candw.ms>
+ <1424314594.22408.1.camel@ellerman.id.au> <54E55796.6000401@candw.ms>
+ <54E78A12.7080409@candw.ms> <1424737962.2318.2.camel@ellerman.id.au>
+ <45dfe45093f.4ef2935f@smtp.gmail.com> <54ECCD8A.3060708@gmx.net>
+ <54ECDE7D.6070303@candw.ms> <54EDCD9E.5010104@candw.ms>
+ <54F6F081.9060007@candw.ms>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,60 +31,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In preparation for moving ET_DYN randomization into the ELF loader (which
-requires a static ELF_ET_DYN_BASE), this redefines s390's existing ET_DYN
-randomization in a call to arch_mmap_rnd(). This refactoring results in
-the same ET_DYN randomization on s390.
+On Wed, 2015-03-04 at 07:46 -0400, Julian Margetson wrote:
+> Still stuck.
+> Problem still exist with 4.0.0-rc2 and I cant finish the bisect.
+> Triggered when using HDMI. No problem when using DVI.
 
-Signed-off-by: Kees Cook <keescook@chromium.org>
----
- arch/s390/include/asm/elf.h |  8 +++++---
- arch/s390/mm/mmap.c         | 11 ++---------
- 2 files changed, 7 insertions(+), 12 deletions(-)
+> [   33.535692] Unable to handle kernel paging request for data at address 0x00000008
+> [   33.566786] Faulting instruction address: 0xc049db84
+> [   33.574188] Vector: 300 (Data Access) at [eeb13c20]
+> [   33.579086]     pc: c049db84: radeon_audio_enable+0x4/0x18
+> [   33.584630]     lr: c049e2f4: radeon_audio_detect+0x288/0x290
+> [   33.590429]     sp: eeb13cd0
+> [   33.593310]    msr: 29000
+> [   33.595931]    dar: 8
+> [   33.598207]  dsisr: 0
+> [   33.600480]   current = 0xeea93ac0
+> [   33.603885]     pid   = 2311, comm = Xorg
+> [   33.607922] enter ? for help
+> [   33.610806] [link register   ] c049e2f4 radeon_audio_detect+0x288/0x290
+> [   33.617469] [eeb13cd0] c049e254 radeon_audio_detect+0x1e8/0x290 (unreliable)
+> [   33.624571] [eeb13d00] c03dfe7c radeon_dvi_detect+0x388/0x3ac
+> [   33.630369] [eeb13d30] c038b9d4 drm_helper_probe_single_connector_modes_merge_bits+0xf4/0x434
+> [   33.638954] [eeb13d70] c03a7670 drm_mode_getconnector+0xf4/0x334
+> [   33.645022] [eeb13e10] c039a8c0 drm_ioctl+0x348/0x464
+> [   33.650135] [eeb13ed0] c00d0ca0 do_vfs_ioctl+0x52c/0x6e8
+> [   33.655507] [eeb13f20] c00d0e9c SyS_ioctl+0x40/0x68
+> [   33.660438] [eeb13f40] c000ab04 ret_from_syscall+0x0/0x3c
+> [   33.665896] --- Exception: c01 (System Call) at 6fb1b8dc
+> [   33.671253] SP (bfa56d20) is in userspace
+> [   33.675263] mon>  <no input ...>
 
-diff --git a/arch/s390/include/asm/elf.h b/arch/s390/include/asm/elf.h
-index c9df40b5c0ac..2e63de8aac7c 100644
---- a/arch/s390/include/asm/elf.h
-+++ b/arch/s390/include/asm/elf.h
-@@ -161,10 +161,12 @@ extern unsigned int vdso_enabled;
- /* This is the location that an ET_DYN program is loaded if exec'ed.  Typical
-    use of this is to invoke "./ld.so someprog" to test out a new version of
-    the loader.  We need to make sure that it is out of the way of the program
--   that it will "exec", and that there is sufficient room for the brk.  */
--
-+   that it will "exec", and that there is sufficient room for the brk. 64-bit
-+   tasks are aligned to 4GB. */
- extern unsigned long randomize_et_dyn(void);
--#define ELF_ET_DYN_BASE		randomize_et_dyn()
-+#define ELF_ET_DYN_BASE (randomize_et_dyn() + (is_32bit_task() ? \
-+				(STACK_TOP / 3 * 2) : \
-+				(STACK_TOP / 3 * 2) & ~((1UL << 32) - 1)))
- 
- /* This yields a mask that user programs can use to figure out what
-    instruction set this CPU supports. */
-diff --git a/arch/s390/mm/mmap.c b/arch/s390/mm/mmap.c
-index a94504d99c47..8c11536f972d 100644
---- a/arch/s390/mm/mmap.c
-+++ b/arch/s390/mm/mmap.c
-@@ -179,17 +179,10 @@ arch_get_unmapped_area_topdown(struct file *filp, const unsigned long addr0,
- 
- unsigned long randomize_et_dyn(void)
- {
--	unsigned long base;
--
--	base = STACK_TOP / 3 * 2;
--	if (!is_32bit_task())
--		/* Align to 4GB */
--		base &= ~((1UL << 32) - 1);
--
- 	if (current->flags & PF_RANDOMIZE)
--		base += arch_mmap_rnd();
-+		return arch_mmap_rnd();
- 
--	return base;
-+	return 0UL;
- }
- 
- #ifndef CONFIG_64BIT
--- 
-1.9.1
+This just looks like a missing NULL check in the radeon code. Probably here:
+
+void radeon_audio_detect(struct drm_connector *connector,
+	enum drm_connector_status status)
+{
+	struct radeon_device *rdev;
+	struct radeon_encoder *radeon_encoder;
+	struct radeon_encoder_atom_dig *dig;
+
+	if (!connector || !connector->encoder)
+		return;
+
+	rdev = connector->encoder->dev->dev_private;
+	                           ^
+
+So you could try adding "!connector->encoder->dev" to the if there.
+
+cheers
