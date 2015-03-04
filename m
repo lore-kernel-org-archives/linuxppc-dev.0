@@ -1,28 +1,42 @@
-Return-Path: <mohicks@gmail.com>
-Received: from mail-ig0-x22c.google.com (mail-ig0-x22c.google.com
- [IPv6:2607:f8b0:4001:c05::22c])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <nfont@linux.vnet.ibm.com>
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id EB46E1A0140
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Mar 2015 01:46:21 +1100 (AEDT)
-Received: by igkb16 with SMTP id b16so37079533igk.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Mar 2015 06:46:19 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id D97FF1A0140
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Mar 2015 02:58:56 +1100 (AEDT)
+Received: from /spool/local
+ by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
+ Wed, 4 Mar 2015 08:58:54 -0700
+Received: from b01cxnp22035.gho.pok.ibm.com (b01cxnp22035.gho.pok.ibm.com
+ [9.57.198.25])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id A508038C8052
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Mar 2015 10:58:51 -0500 (EST)
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+ by b01cxnp22035.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t24FwpXL24117302
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Mar 2015 15:58:51 GMT
+Received: from d01av04.pok.ibm.com (localhost [127.0.0.1])
+ by d01av04.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t24FwnbV018287
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Mar 2015 10:58:51 -0500
+Message-ID: <54F72BB8.2080001@linux.vnet.ibm.com>
+Date: Wed, 04 Mar 2015 09:58:48 -0600
+From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Sender: mohicks@gmail.com
-In-Reply-To: <20150303183531.312a8d332b1b776764a15a47@freescale.com>
-References: <1425388897-5434-1-git-send-email-mort@bork.org>
- <1425388897-5434-4-git-send-email-mort@bork.org>
- <20150303183531.312a8d332b1b776764a15a47@freescale.com>
-Date: Wed, 4 Mar 2015 09:46:19 -0500
-Message-ID: <CAJUS3XmuKBRAjGmGuKKASKUZ=WZjnJvKQ9-53SHsqMFzmEoEug@mail.gmail.com>
-Subject: Re: [PATCH v2 3/5] crypto: talitos: Fix off-by-one and use all
- hardware slots
-From: Martin Hicks <mort@bork.org>
-To: Kim Phillips <kim.phillips@freescale.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org,
- =?UTF-8?Q?Horia_Geant=C4=83?= <horia.geanta@freescale.com>,
- linux-crypto@vger.kernel.org
+To: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH 1/3] powerpc/pseries: Simplify check for suspendability
+ during suspend/migration
+References: <1425090283-27694-1-git-send-email-tyreld@linux.vnet.ibm.com>
+ <1425090283-27694-2-git-send-email-tyreld@linux.vnet.ibm.com>
+ <1425269985.2919.29.camel@cyril> <54F4D65B.5080603@linux.vnet.ibm.com>
+ <1425363332.20929.1.camel@ellerman.id.au>
+ <54F616A3.9030807@linux.vnet.ibm.com>
+In-Reply-To: <54F616A3.9030807@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8
+Cc: linuxppc-dev@lists.ozlabs.org, Cyril Bur <cyrilbur@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,44 +46,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Ok, I'm fine dropping this patch.  I'm sure it doesn't affect
-performance in a measurable way.
-
-mh
-
-On Tue, Mar 3, 2015 at 7:35 PM, Kim Phillips <kim.phillips@freescale.com> wrote:
-> On Tue,  3 Mar 2015 08:21:35 -0500
-> Martin Hicks <mort@bork.org> wrote:
->
->> The submission count was off by one.
+On 03/03/2015 02:16 PM, Tyrel Datwyler wrote:
+> On 03/02/2015 10:15 PM, Michael Ellerman wrote:
+>> On Mon, 2015-03-02 at 13:30 -0800, Tyrel Datwyler wrote:
+>>> On 03/01/2015 08:19 PM, Cyril Bur wrote:
+>>>> On Fri, 2015-02-27 at 18:24 -0800, Tyrel Datwyler wrote:
+>>>>> During suspend/migration operation we must wait for the VASI state reported
+>>>>> by the hypervisor to become Suspending prior to making the ibm,suspend-me
+>>>>> RTAS call. Calling routines to rtas_ibm_supend_me() pass a vasi_state variable
+>>>>> that exposes the VASI state to the caller. This is unnecessary as the caller
+>>>>> only really cares about the following three conditions; if there is an error
+>>>>> we should bailout, success indicating we have suspended and woken back up so
+>>>>> proceed to device tree updated, or we are not suspendable yet so try calling
+>>>>> rtas_ibm_suspend_me again shortly.
+>>>>>
+>>>>> This patch removes the extraneous vasi_state variable and simply uses the
+>>>>> return code to communicate how to proceed. We either succeed, fail, or get
+>>>>> -EAGAIN in which case we sleep for a second before trying to call
+>>>>> rtas_ibm_suspend_me again.
+>>>>>
+>>>>>  		u64 handle = ((u64)be32_to_cpu(args.args[0]) << 32)
+>>>>>  		              | be32_to_cpu(args.args[1]);
+>>>>> -		rc = rtas_ibm_suspend_me(handle, &vasi_rc);
+>>>>> -		args.rets[0] = cpu_to_be32(vasi_rc);
+>>>>> -		if (rc)
+>>>>> +		rc = rtas_ibm_suspend_me(handle);
+>>>>> +		if (rc == -EAGAIN)
+>>>>> +			args.rets[0] = cpu_to_be32(RTAS_NOT_SUSPENDABLE);
+>>>>
+>>>> (continuing on...) so perhaps here have
+>>>> 	rc = 0;
+>>>> else if (rc == -EIO)
+>>>> 	args.rets[0] = cpu_to_be32(-1);
+>>>> 	rc = 0;
+>>>> Which should keep the original behaviour, the last thing we want to do
+>>>> is break BE.
+>>>
+>>> The biggest problem here is we are making what basically equates to a
+>>> fake rtas call from drmgr which we intercept in ppc_rtas(). From there
+>>> we make this special call to rtas_ibm_suspend_me() to check VASI state
+>>> and do a bunch of other specialized work that needs to be setup prior to
+>>> making the actual ibm,suspend-me rtas call. Since, we are cheating PAPR
+>>> here I guess we can really handle it however we want. I chose to simply
+>>> fail the rtas call in the case where rtas_ibm_suspend_me() fails with
+>>> something other than -EAGAIN. In user space librtas will log errno for
+>>> the failure and return RTAS_IO_ASSERT to drmgr which in turn will log
+>>> that error and fail.
 >>
->> Signed-off-by: Martin Hicks <mort@bork.org>
->> ---
-> sadly, this directly contradicts:
->
-> commit 4b24ea971a93f5d0bec34bf7bfd0939f70cfaae6
-> Author: Vishnu Suresh <Vishnu@freescale.com>
-> Date:   Mon Oct 20 21:06:18 2008 +0800
->
->     crypto: talitos - Preempt overflow interrupts off-by-one fix
->
-> My guess is your request submission pattern differs from that of
-> Vishnu's (probably IPSec and/or tcrypt), or later h/w versions have
-> gotten better about dealing with channel near-overflow conditions.
-> Either way, I'd prefer we not do this: it might break others, and
-> I'm guessing doesn't improve performance _that_ much?
->
-> If it does, we could risk it and restrict it to SEC versions 3.3 and
-> above maybe?  Not sure what to do here exactly, barring digging up
-> and old 2.x SEC and testing.
->
-> Kim
->
-> p.s. I checked, Vishnu isn't with Freescale anymore, so I can't
-> cc him.
+>> We don't want to change the return values of the syscall unless we absolutely
+>> have to. And I don't think that's the case here.
+> 
+> I'd like to argue that the one case I changed makes sense, but its just
+> as easy to keep the original behavior.
+> 
+>>
+>> Sure we think drmgr is the only thing that uses this crap, but we don't know
+>> for sure.
+> 
+> I can't imagine how anybody else could possibly use this hack without a
+> streamid from the hmc/hypervisor, but I've been wrong in the past more
+> times than I can count. :)
 
+Correct, this will fail if called with a random streamid. The streamid has
+to match what is handed to us from the HMC when a migration request is
+initiated.
 
-
--- 
-Martin Hicks P.Eng.      |         mort@bork.org
-Bork Consulting Inc.     |   +1 (613) 266-2296
+-Nathan
+ 
+> 
+> -Tyrel
+> 
+>>
+>> cheers
+>>
+>>
+> 
