@@ -1,49 +1,20 @@
-Return-Path: <mingo.kernel.org@gmail.com>
-Received: from mail-we0-x22d.google.com (mail-we0-x22d.google.com
- [IPv6:2a00:1450:400c:c03::22d])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 917DE1A0140
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Mar 2015 15:20:53 +1100 (AEDT)
-Received: by wesw62 with SMTP id w62so43834231wes.9
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 03 Mar 2015 20:20:50 -0800 (PST)
-Sender: Ingo Molnar <mingo.kernel.org@gmail.com>
-Date: Wed, 4 Mar 2015 05:20:45 +0100
-From: Ingo Molnar <mingo@kernel.org>
-To: Kees Cook <keescook@chromium.org>
-Subject: Re: [PATCH v2 0/5] split ET_DYN ASLR from mmap ASLR
-Message-ID: <20150304042044.GA25354@gmail.com>
-References: <1425341988-1599-1-git-send-email-keescook@chromium.org>
- <20150303073132.GA30602@gmail.com>
- <CAGXu5j+qJLeRx2xx=890OxHp8kjd=ws8zg3_JYPNJd_6p2xoYQ@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CAGXu5j+qJLeRx2xx=890OxHp8kjd=ws8zg3_JYPNJd_6p2xoYQ@mail.gmail.com>
-Cc: Linux MIPS Mailing List <linux-mips@linux-mips.org>,
- Arun Chandran <achandran@mvista.com>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, Oleg Nesterov <oleg@redhat.com>,
- Min-Hua Chen <orca.chen@gmail.com>, Paul Mackerras <paulus@samba.org>,
- "H. Peter Anvin" <hpa@zytor.com>, Yann Droneaud <ydroneaud@opteya.com>,
- linux-s390@vger.kernel.org, Russell King <linux@arm.linux.org.uk>,
- Andrey Ryabinin <a.ryabinin@samsung.com>, "x86@kernel.org" <x86@kernel.org>,
- Hector Marco-Gisbert <hecmargi@upv.es>, "David A. Long" <dave.long@linaro.org>,
- Borislav Petkov <bp@suse.de>, Ben Hutchings <ben@decadent.org.uk>,
- Will Deacon <will.deacon@arm.com>,
- "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
- Borislav Petkov <bp@alien8.de>, Alexander Viro <viro@zeniv.linux.org.uk>,
- Thomas Gleixner <tglx@linutronix.de>,
- Michael Holzheu <holzheu@linux.vnet.ibm.com>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- Jeff Bailey <jeffbailey@google.com>, Paul Burton <paul.burton@imgtec.com>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- LKML <linux-kernel@vger.kernel.org>, Ralf Baechle <ralf@linux-mips.org>,
- Andy Lutomirski <luto@amacapital.net>, Vineeth Vijayan <vvijayan@mvista.com>,
- Markos Chandras <markos.chandras@imgtec.com>,
- Jan-Simon =?iso-8859-1?Q?M=F6ller?= <dl9pf@gmx.de>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>, linux390@de.ibm.com,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- Alex Smith <alex@alex-smith.me.uk>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4A0BC1A02D2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Mar 2015 15:21:18 +1100 (AEDT)
+Message-ID: <1425442860.9084.11.camel@ellerman.id.au>
+Subject: [git pull] Please pull mpe/linux.git powerpc-4.0-2 tag
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Wed, 04 Mar 2015 15:21:00 +1100
+Content-Type: multipart/signed; micalg="pgp-sha1";
+ protocol="application/pgp-signature";
+ boundary="=-Z0ls2Pa0r1I08AFhkb1I"
+Mime-Version: 1.0
+Cc: nacc@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, pc@us.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -54,89 +25,79 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-* Kees Cook <keescook@chromium.org> wrote:
+--=-Z0ls2Pa0r1I08AFhkb1I
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-> On Mon, Mar 2, 2015 at 11:31 PM, Ingo Molnar <mingo@kernel.org> wrote:
-> >
-> > * Kees Cook <keescook@chromium.org> wrote:
-> >
-> >> To address the "offset2lib" ASLR weakness[1], this separates ET_DYN
-> >> ASLR from mmap ASLR, as already done on s390. The architectures
-> >> that are already randomizing mmap (arm, arm64, mips, powerpc, s390,
-> >> and x86), have their various forms of arch_mmap_rnd() made available
-> >> via the new CONFIG_ARCH_HAS_ELF_RANDOMIZE. For these architectures,
-> >> arch_randomize_brk() is collapsed as well.
-> >>
-> >> This is an alternative to the solutions in:
-> >> https://lkml.org/lkml/2015/2/23/442
-> >
-> > Looks good so far:
-> >
-> > Reviewed-by: Ingo Molnar <mingo@kernel.org>
-> >
-> > While reviewing this series I also noticed that the following code
-> > could be factored out from architecture mmap code as well:
-> >
-> >   - arch_pick_mmap_layout() uses very similar patterns across the
-> >     platforms, with only few variations. Many architectures use
-> >     the same duplicated mmap_is_legacy() helper as well. There's
-> >     usually just trivial differences between mmap_legacy_base()
-> >     approaches as well.
-> 
-> I was nervous to start refactoring this code, but it's true: most of 
-> it is the same.
+Hi Linus,
 
-Well, it still needs to be done if we want to add new randomization 
-features: code fractured over multiple architectures is a receipe for 
-bugs, as this series demonstrates. So it first has to be made more 
-maintainable.
+Please pull some powerpc fixes for 4.0:
 
-> >   - arch_mmap_rnd(): the PF_RANDOMIZE checks are needlessly
-> >     exposed to the arch routine - the arch routine should only
-> >     concentrate on arch details, not generic flags like
-> >     PF_RANDOMIZE.
-> 
-> Yeah, excellent point. I will send a follow-up patch to move this 
-> into binfmt_elf instead. I'd like to avoid removing it in any of the 
-> other patches since each was attempting a single step in the 
-> refactoring.
+The following changes since commit c517d838eb7d07bbe9507871fab3931deccff539=
+:
 
-Finegrained patches are ideal!
+  Linux 4.0-rc1 (2015-02-22 18:21:14 -0800)
 
-> > In theory the mmap layout could be fully parametrized as well: 
-> > i.e. no callback functions to architectures by default at all: 
-> > just declarations of bits of randomization desired (or, available 
-> > address space bits), and perhaps an arch helper to allow 32-bit 
-> > vs. 64-bit address space distinctions.
-> 
-> Yeah, I was considering that too, since each architecture has a 
-> nearly identical arch_mmap_rnd() at this point. Only the size of the 
-> entropy was changing.
->
-> > 'Weird' architectures could provide special routines, but only by 
-> > overriding the default behavior, which should be generic, safe and 
-> > robust.
-> 
-> Yeah, quite true. Should entropy size be a #define like 
-> ELF_ET_DYN_BASE? Something like ASLR_MMAP_ENTROPY and 
-> ASLR_MMAP_ENTROPY_32? [...]
+are available in the git repository at:
 
-That would work I suspect.
+  git://git.kernel.org/pub/scm/linux/kernel/git/mpe/linux.git tags/powerpc-=
+4.0-2
 
-> [...] Is there a common function for determining a compat task? That 
-> seemed to be per-arch too. Maybe arch_mmap_entropy()?
+for you to fetch changes up to 4ad04e5987115ece5fa8a0cf1dc72fcd4707e33e:
 
-Compat flags are a bit of a mess, and since they often tie into arch 
-low level assembly code, they are hard to untangle. So maybe as an 
-intermediate step add an is_compat() generic method, and make that 
-obvious and self-defined function a per arch thing?
+  powerpc/iommu: Remove IOMMU device references via bus notifier (2015-03-0=
+4 13:19:33 +1100)
 
-But I'm just handwaving here - I suspect it has to be tried to see all 
-the complications and to determine whether that's the best structure 
-and whether it's a win ... Only one thing is certain: the current code 
-is not compact and reviewable enough, and VM bits hiding in 
-arch/*/mm/mmap.c tends to reduce net attention paid to these details.
+----------------------------------------------------------------
+powerpc fixes for 4.0
 
-Thanks,
+- Fix for dynticks.
+- Fix for smpboot bug.
+- Fix for IOMMU group refcounting.
+----------------------------------------------------------------
 
-	Ingo
+Michael Ellerman (1):
+      powerpc/smp: Wait until secondaries are active & online
+
+Nishanth Aravamudan (1):
+      powerpc/iommu: Remove IOMMU device references via bus notifier
+
+Paul Clarke (1):
+      powerpc: Re-enable dynticks
+
+ arch/powerpc/include/asm/iommu.h       |  6 ++++++
+ arch/powerpc/include/asm/irq_work.h    |  9 +++++++++
+ arch/powerpc/kernel/iommu.c            | 26 ++++++++++++++++++++++++++
+ arch/powerpc/kernel/smp.c              |  4 ++--
+ arch/powerpc/platforms/powernv/pci.c   | 26 --------------------------
+ arch/powerpc/platforms/pseries/iommu.c |  2 ++
+ 6 files changed, 45 insertions(+), 28 deletions(-)
+ create mode 100644 arch/powerpc/include/asm/irq_work.h
+
+
+
+
+--=-Z0ls2Pa0r1I08AFhkb1I
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+Content-Transfer-Encoding: 7bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAABAgAGBQJU9og9AAoJEFHr6jzI4aWA3QoP/34ZH3zrKNLvIWxMugGRsIt6
+2G20lbIJUWhfDreOrlHfPwTtVh1x7MX90ehsINZYg/fIZ8Lzpjcdfw+eZxd2rl8E
+Vx8Fv5LDAtKWg6dQ5GJaWQLdSjhZHCRWW7Sk7MP1dv5Z+PgXyBafAGXqMB2CZCm8
+zWWlKeyGqxjiLt+V3FS8ozefoFDTElyPvSOeF1LvJFmznQKfgROcrvhVwUsHpSZE
+Qs1m4VhVzW5LLDYeUJO0u+lXVAIu5GgC2q8OyemPdy3WhjOAfquHxg2Fq+1MBUWK
+evWJotmeNQ26e6wAYFv0ILne6C7Q0dXxj5nRF80a+6wg9riDxPtwnHnfGd0NIFqA
+m6sF6EL9vNBP3deemVY3O1M8YDsLSm8LszhKzADCmUHQ7NnRFIekKPG1qYlSj7dI
+iRXdTZmoqMPcRj9x2fiUPlUtJ6Spo4Lo5+OtILyViNGty2kI5oBPerVXcyxtBK2g
+4bMDfnKPmrbC7IpJGkav/+lar8a0zzj/Vx41dYJfLAK/EW7Ye65hf/0hZXGnKOhG
+vZpzwtSHH0F2nUTtKuVl6fpQ3tHEwojo3nQd1o1XCpH6zJJFlaUmB4+mnHJs4fJp
+5HV6xuMIioXLszzRjbmqwObXjPRGGRI5atLAIPikRwwvYNgp3q/hWvbzV+tT/Rap
+HxYWx9bSHta9X3PgrgVX
+=0Laf
+-----END PGP SIGNATURE-----
+
+--=-Z0ls2Pa0r1I08AFhkb1I--
