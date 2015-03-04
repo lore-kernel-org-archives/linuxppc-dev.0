@@ -1,40 +1,40 @@
-Return-Path: <weiyang@linux.vnet.ibm.com>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B81A1A0006
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Mar 2015 14:02:18 +1100 (AEDT)
-Received: from /spool/local
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
- Wed, 4 Mar 2015 13:02:17 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 077B82BB0040
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Mar 2015 14:02:16 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t24327PT29950026
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Mar 2015 14:02:16 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t2431gtt022363
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Mar 2015 14:01:42 +1100
-Date: Wed, 4 Mar 2015 11:01:24 +0800
-From: Wei Yang <weiyang@linux.vnet.ibm.com>
-To: Bjorn Helgaas <bhelgaas@google.com>
-Subject: Re: [PATCH v12 17/21] powerpc/powernv: Shift VF resource with an
- offset
-Message-ID: <20150304030051.GA10797@richard>
-Reply-To: Wei Yang <weiyang@linux.vnet.ibm.com>
-References: <20150224082939.32124.45744.stgit@bhelgaas-glaptop2.roam.corp.google.com>
- <20150224083457.32124.55534.stgit@bhelgaas-glaptop2.roam.corp.google.com>
- <20150224090037.GK6220@google.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150224090037.GK6220@google.com>
-Cc: linux-pci@vger.kernel.org, Wei Yang <weiyang@linux.vnet.ibm.com>,
- benh@au1.ibm.com, linuxppc-dev@lists.ozlabs.org, gwshan@linux.vnet.ibm.com
+ by lists.ozlabs.org (Postfix) with ESMTPS id E929E1A0140
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Mar 2015 15:16:43 +1100 (AEDT)
+Message-ID: <1425442601.9084.9.camel@ellerman.id.au>
+Subject: Re: [PATCH 4/5] mm: split ET_DYN ASLR from mmap ASLR
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Kees Cook <keescook@chromium.org>
+Date: Wed, 04 Mar 2015 15:16:41 +1100
+In-Reply-To: <1425341988-1599-5-git-send-email-keescook@chromium.org>
+References: <1425341988-1599-1-git-send-email-keescook@chromium.org>
+ <1425341988-1599-5-git-send-email-keescook@chromium.org>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linux-mips@linux-mips.org, Arun Chandran <achandran@mvista.com>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, Oleg Nesterov <oleg@redhat.com>,
+ Min-Hua Chen <orca.chen@gmail.com>, Paul Mackerras <paulus@samba.org>,
+ Yann Droneaud <ydroneaud@opteya.com>, linux-s390@vger.kernel.org,
+ Russell King <linux@arm.linux.org.uk>,
+ Andrey Ryabinin <a.ryabinin@samsung.com>, x86@kernel.org,
+ Hector Marco-Gisbert <hecmargi@upv.es>, "David A. Long" <dave.long@linaro.org>,
+ Borislav Petkov <bp@suse.de>, Ben Hutchings <ben@decadent.org.uk>,
+ Will Deacon <will.deacon@arm.com>, linux-fsdevel@vger.kernel.org,
+ Alex Smith <alex@alex-smith.me.uk>,
+ Michael Holzheu <holzheu@linux.vnet.ibm.com>,
+ linux-arm-kernel@lists.infradead.org, Jeff Bailey <jeffbailey@google.com>,
+ Paul Burton <paul.burton@imgtec.com>, linux-kernel@vger.kernel.org,
+ Ralf Baechle <ralf@linux-mips.org>, Andy Lutomirski <luto@amacapital.net>,
+ Vineeth Vijayan <vvijayan@mvista.com>,
+ Markos Chandras <markos.chandras@imgtec.com>,
+ Jan-Simon =?ISO-8859-1?Q?M=F6ller?= <dl9pf@gmx.de>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>, linux390@de.ibm.com,
+ akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
+ Alexander Viro <viro@zeniv.linux.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,122 +44,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Feb 24, 2015 at 03:00:37AM -0600, Bjorn Helgaas wrote:
->On Tue, Feb 24, 2015 at 02:34:57AM -0600, Bjorn Helgaas wrote:
->> From: Wei Yang <weiyang@linux.vnet.ibm.com>
->> 
->> On PowerNV platform, resource position in M64 implies the PE# the resource
->> belongs to.  In some cases, adjustment of a resource is necessary to locate
->> it to a correct position in M64.
->> 
->> Add pnv_pci_vf_resource_shift() to shift the 'real' PF IOV BAR address
->> according to an offset.
->> 
->> [bhelgaas: rework loops, rework overlap check, index resource[]
->> conventionally, remove pci_regs.h include, squashed with next patch]
->> Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
->> Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
->
->...
->
->> +#ifdef CONFIG_PCI_IOV
->> +static int pnv_pci_vf_resource_shift(struct pci_dev *dev, int offset)
->> +{
->> +	struct pci_dn *pdn = pci_get_pdn(dev);
->> +	int i;
->> +	struct resource *res, res2;
->> +	resource_size_t size;
->> +	u16 vf_num;
->> +
->> +	if (!dev->is_physfn)
->> +		return -EINVAL;
->> +
->> +	/*
->> +	 * "offset" is in VFs.  The M64 windows are sized so that when they
->> +	 * are segmented, each segment is the same size as the IOV BAR.
->> +	 * Each segment is in a separate PE, and the high order bits of the
->> +	 * address are the PE number.  Therefore, each VF's BAR is in a
->> +	 * separate PE, and changing the IOV BAR start address changes the
->> +	 * range of PEs the VFs are in.
->> +	 */
->> +	vf_num = pdn->vf_pes;
->> +	for (i = 0; i < PCI_SRIOV_NUM_BARS; i++) {
->> +		res = &dev->resource[i + PCI_IOV_RESOURCES];
->> +		if (!res->flags || !res->parent)
->> +			continue;
->> +
->> +		if (!pnv_pci_is_mem_pref_64(res->flags))
->> +			continue;
->> +
->> +		/*
->> +		 * The actual IOV BAR range is determined by the start address
->> +		 * and the actual size for vf_num VFs BAR.  This check is to
->> +		 * make sure that after shifting, the range will not overlap
->> +		 * with another device.
->> +		 */
->> +		size = pci_iov_resource_size(dev, i + PCI_IOV_RESOURCES);
->> +		res2.flags = res->flags;
->> +		res2.start = res->start + (size * offset);
->> +		res2.end = res2.start + (size * vf_num) - 1;
->> +
->> +		if (res2.end > res->end) {
->> +			dev_err(&dev->dev, "VF BAR%d: %pR would extend past %pR (trying to enable %d VFs shifted by %d)\n",
->> +				i, &res2, res, vf_num, offset);
->> +			return -EBUSY;
->> +		}
->> +	}
->> +
->> +	for (i = 0; i < PCI_SRIOV_NUM_BARS; i++) {
->> +		res = &dev->resource[i + PCI_IOV_RESOURCES];
->> +		if (!res->flags || !res->parent)
->> +			continue;
->> +
->> +		if (!pnv_pci_is_mem_pref_64(res->flags))
->> +			continue;
->> +
->> +		size = pci_iov_resource_size(dev, i + PCI_IOV_RESOURCES);
->> +		res2 = *res;
->> +		res->start += size * offset;
->
->I'm still not happy about this fiddling with res->start.
->
->Increasing res->start means that in principle, the "size * offset" bytes
->that we just removed from res are now available for allocation to somebody
->else.  I don't think we *will* give that space to anything else because of
->the alignment restrictions you're enforcing, but "res" now doesn't
->correctly describe the real resource map.
->
->Would you be able to just update the BAR here while leaving the struct
->resource alone?  In that case, it would look a little funny that lspci
->would show a BAR value in the middle of the region in /proc/iomem, but
->the /proc/iomem region would be more correct.
+On Mon, 2015-03-02 at 16:19 -0800, Kees Cook wrote:
+> This fixes the "offset2lib" weakness in ASLR for arm, arm64, mips,
+> powerpc, and x86. The problem is that if there is a leak of ASLR from
+> the executable (ET_DYN), it means a leak of shared library offset as
+> well (mmap), and vice versa. Further details and a PoC of this attack
+> are available here:
+> http://cybersecurity.upv.es/attacks/offset2lib/offset2lib.html
+> 
+> With this patch, a PIE linked executable (ET_DYN) has its own ASLR region:
+> 
+> $ ./show_mmaps_pie
+> 54859ccd6000-54859ccd7000 r-xp  ...  /tmp/show_mmaps_pie
+> 54859ced6000-54859ced7000 r--p  ...  /tmp/show_mmaps_pie
+> 54859ced7000-54859ced8000 rw-p  ...  /tmp/show_mmaps_pie
 
-Bjorn,
+Just to be clear, it's the fact that the above vmas are in a different
+address range to those below that shows the patch is working, right?
 
-I did some tests, while the result is not good.
+> 7f75be764000-7f75be91f000 r-xp  ...  /lib/x86_64-linux-gnu/libc.so.6
+> 7f75be91f000-7f75beb1f000 ---p  ...  /lib/x86_64-linux-gnu/libc.so.6
 
-What I did is still write the shifted resource address to the device by
-pci_update_resource(), but I revert the res->start to the original one. If
-this step is not correct, please let me know.
 
-This can't work since after we revert the res->start, those VFs will be given
-resources from res->start instead of (res->start + offset * size). This is not
-what we expect.
+On powerpc I'm seeing:
 
-I have rebased/clean/change the code according to your comments based on this
-patch set. Will send it out v13 soon.
+# /bin/dash
+# cat /proc/$$/maps
+524e0000-52510000 r-xp 00000000 08:03 129814                             /bin/dash
+52510000-52520000 rw-p 00020000 08:03 129814                             /bin/dash
+10034f20000-10034f50000 rw-p 00000000 00:00 0                            [heap]
+3fffaeaf0000-3fffaeca0000 r-xp 00000000 08:03 13529                      /lib/powerpc64le-linux-gnu/libc-2.19.so
+3fffaeca0000-3fffaecb0000 rw-p 001a0000 08:03 13529                      /lib/powerpc64le-linux-gnu/libc-2.19.so
+3fffaecc0000-3fffaecd0000 rw-p 00000000 00:00 0 
+3fffaecd0000-3fffaecf0000 r-xp 00000000 00:00 0                          [vdso]
+3fffaecf0000-3fffaed20000 r-xp 00000000 08:03 13539                      /lib/powerpc64le-linux-gnu/ld-2.19.so
+3fffaed20000-3fffaed30000 rw-p 00020000 08:03 13539                      /lib/powerpc64le-linux-gnu/ld-2.19.so
+3fffc7070000-3fffc70a0000 rw-p 00000000 00:00 0                          [stack]
 
->
->> +
->> +		dev_info(&dev->dev, "VF BAR%d: %pR shifted to %pR (enabling %d VFs shifted by %d)\n",
->> +			 i, &res2, res, vf_num, offset);
->> +		pci_update_resource(dev, i + PCI_IOV_RESOURCES);
->> +	}
->> +	pdn->max_vfs -= offset;
->> +	return 0;
->> +}
->> +#endif /* CONFIG_PCI_IOV */
 
--- 
-Richard Yang
-Help you, Help me
+Whereas previously the /bin/dash vmas were up at 3fff..
+
+So looks good to me for powerpc.
+
+Acked-by: Michael Ellerman <mpe@ellerman.id.au>
+
+cheers
