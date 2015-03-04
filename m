@@ -3,13 +3,15 @@ Received: from smtp.outflux.net (smtp.outflux.net
  [IPv6:2001:19d0:2:6:c0de:0:736d:7470])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4E5C61A0007
+ by lists.ozlabs.org (Postfix) with ESMTPS id 66D011A005A
  for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Mar 2015 13:12:20 +1100 (AEDT)
 From: Kees Cook <keescook@chromium.org>
 To: akpm@linux-foundation.org
-Subject: [PATCH v3 0/10] split ET_DYN ASLR from mmap ASLR
-Date: Tue,  3 Mar 2015 18:10:15 -0800
-Message-Id: <1425435025-30284-1-git-send-email-keescook@chromium.org>
+Subject: [PATCH v3 08/10] s390: redefine randomize_et_dyn for ELF_ET_DYN_BASE
+Date: Tue,  3 Mar 2015 18:10:23 -0800
+Message-Id: <1425435025-30284-9-git-send-email-keescook@chromium.org>
+In-Reply-To: <1425435025-30284-1-git-send-email-keescook@chromium.org>
+References: <1425435025-30284-1-git-send-email-keescook@chromium.org>
 Cc: linux-mips@linux-mips.org, Arun Chandran <achandran@mvista.com>,
  Catalin Marinas <catalin.marinas@arm.com>,
  Heiko Carstens <heiko.carstens@de.ibm.com>, Oleg Nesterov <oleg@redhat.com>,
@@ -40,27 +42,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-To address the "offset2lib" ASLR weakness[1], this separates ET_DYN
-ASLR from mmap ASLR, as already done on s390. The architectures
-that are already randomizing mmap (arm, arm64, mips, powerpc, s390,
-and x86), have their various forms of arch_mmap_rnd() made available
-via the new CONFIG_ARCH_HAS_ELF_RANDOMIZE. For these architectures,
-arch_randomize_brk() is collapsed as well.
+In preparation for moving ET_DYN randomization into the ELF loader (which
+requires a static ELF_ET_DYN_BASE), this redefines s390's existing ET_DYN
+randomization in a call to arch_mmap_rnd(). This refactoring results in
+the same ET_DYN randomization on s390.
 
-This is an alternative to the solutions in:
-https://lkml.org/lkml/2015/2/23/442
+Signed-off-by: Kees Cook <keescook@chromium.org>
+---
+ arch/s390/include/asm/elf.h |  8 +++++---
+ arch/s390/mm/mmap.c         | 11 ++---------
+ 2 files changed, 7 insertions(+), 12 deletions(-)
 
-I've been able to test x86 and arm, and the buildbot (so far) seems
-happy with building the rest.
-
-Thanks!
-
--Kees
-
-[1] http://cybersecurity.upv.es/attacks/offset2lib/offset2lib.html
-
-v3:
-- split change on a per-arch basis for easier review
-- moved PF_RANDOMIZE check out of per-arch code (ingo)
-v2:
-- verbosified the commit logs, especially 4/5 (akpm)
+diff --git a/arch/s390/include/asm/elf.h b/arch/s390/include/asm/elf.h
+index c9df40b5c0ac..2e63de8aac7c 100644
+--- a/arch/s390/include/asm/elf.h
++++ b/arch/s390/include/asm/elf.h
+@@ -161,10 +161,12 @@ extern unsigned int vdso_enabled;
+ /* This is the location that an ET_DYN program is loaded if exec'ed.  Typical
+    use of this is to invoke "./ld.so someprog" to test out a new version of
+    the loader.  We need to make sure that it is out of the way of the program
+-   that it will "exec", and that there is sufficient room for the brk.  */
+-
++   that it will "exec", and that there is sufficient room for the brk. 64-bit
++   tasks are aligned to 4GB. */
+ extern unsigned long randomize_et_dyn(void);
+-#define ELF_ET_DYN_BASE		randomize_et_dyn()
++#define ELF_ET_DYN_BASE (randomize_et_dyn() + (is_32bit_task() ? \
++				(STACK_TOP / 3 * 2) : \
++				(STACK_TOP / 3 * 2) & ~((1UL << 32) - 1)))
+ 
+ /* This yields a mask that user programs can use to figure out what
+    instruction set this CPU supports. */
+diff --git a/arch/s390/mm/mmap.c b/arch/s390/mm/mmap.c
+index a94504d99c47..8c11536f972d 100644
+--- a/arch/s390/mm/mmap.c
++++ b/arch/s390/mm/mmap.c
+@@ -179,17 +179,10 @@ arch_get_unmapped_area_topdown(struct file *filp, const unsigned long addr0,
+ 
+ unsigned long randomize_et_dyn(void)
+ {
+-	unsigned long base;
+-
+-	base = STACK_TOP / 3 * 2;
+-	if (!is_32bit_task())
+-		/* Align to 4GB */
+-		base &= ~((1UL << 32) - 1);
+-
+ 	if (current->flags & PF_RANDOMIZE)
+-		base += arch_mmap_rnd();
++		return arch_mmap_rnd();
+ 
+-	return base;
++	return 0UL;
+ }
+ 
+ #ifndef CONFIG_64BIT
+-- 
+1.9.1
