@@ -1,41 +1,27 @@
-Return-Path: <nacc@linux.vnet.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <rientjes@google.com>
+Received: from mail-ie0-x22a.google.com (mail-ie0-x22a.google.com
+ [IPv6:2607:f8b0:4001:c03::22a])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 39AB11A0008
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Mar 2015 10:28:33 +1100 (AEDT)
-Received: from /spool/local
- by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
- Thu, 5 Mar 2015 16:28:31 -0700
-Received: from b03cxnp08026.gho.boulder.ibm.com
- (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 4AD6D1FF001F
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Mar 2015 16:19:41 -0700 (MST)
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
- by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t25NSYgY46268576
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Mar 2015 16:28:42 -0700
-Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
- by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t25NRv9c012863
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Mar 2015 16:27:57 -0700
-Date: Thu, 5 Mar 2015 15:27:31 -0800
-From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-To: Tejun Heo <tj@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 71E041A05B9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Mar 2015 10:29:05 +1100 (AEDT)
+Received: by iecar1 with SMTP id ar1so81222604iec.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Mar 2015 15:29:02 -0800 (PST)
+Date: Thu, 5 Mar 2015 15:29:00 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
 Subject: Re: [RFC PATCH] powerpc/numa: reset node_possible_map to only
  node_online_map
-Message-ID: <20150305232731.GF30570@linux.vnet.ibm.com>
+In-Reply-To: <20150305231555.GB30570@linux.vnet.ibm.com>
+Message-ID: <alpine.DEB.2.10.1503051527281.2184@chino.kir.corp.google.com>
 References: <20150305180549.GA29601@linux.vnet.ibm.com>
- <20150305221308.GG23912@htj.duckdns.org>
+ <alpine.DEB.2.10.1503051315270.25235@chino.kir.corp.google.com>
+ <20150305231555.GB30570@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150305221308.GG23912@htj.duckdns.org>
-Cc: linuxppc-dev@lists.ozlabs.org,
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Tejun Heo <tj@kernel.org>, linuxppc-dev@lists.ozlabs.org,
  Raghavendra K T <raghavendra.kt@linux.vnet.ibm.com>,
- Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
- David Rientjes <rientjes@google.com>
+ Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,46 +31,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05.03.2015 [17:13:08 -0500], Tejun Heo wrote:
-> On Thu, Mar 05, 2015 at 10:05:49AM -0800, Nishanth Aravamudan wrote:
-> > While looking at this, I noticed that nr_node_ids is actually a
-> > misnomer, it seems. It's not the number, but the maximum_node_id, as
-> > with sparse NUMA nodes, you might only have two NUMA nodes possible, but
-> > to make certain loops work, nr_node_ids will be, e.g., 17. Should it be
-> > changed?
+On Thu, 5 Mar 2015, Nishanth Aravamudan wrote:
+
+> So if we compare to x86:
 > 
-> It's the same for nr_cpu_ids.  It's counting the number of valid IDs
-> during that boot instance.  In the above case, whether the nodes are
-> sparse or not, there exist 17 node ids - 0 to 16.  Maybe numa_max_id
-> had been a better name (but would that equal the highest number or
-> +1?) but nr_node_ids != nr_nodes so I don't think it's a misnomer
-> either.  Doesn't really matter at this point.  Maybe add comments on
-> top of both?
+> arch/x86/mm/numa.c::numa_init():
+> 
+>         nodes_clear(numa_nodes_parsed);
+>         nodes_clear(node_possible_map);
+>         nodes_clear(node_online_map);
+> 	...
+> 	numa_register_memblks(...);
+> 
+> arch/x86/mm/numa.c::numa_register_memblks():
+> 
+> 	node_possible_map = numa_nodes_parsed;
+> 
+> Basically, it looks like x86 NUMA init clears out possible map and
+> online map, probably for a similar reason to what I gave in the
+> changelog that by default, the possible map seems to be based off
+> MAX_NUMNODES, rather than nr_node_ids or anything dynamic.
+> 
+> My patch was an attempt to emulate the same thing on powerpc. You are
+> right that there is a window in which the node_possible_map and
+> node_online_map are out of sync with my patch. It seems like it
+> shouldn't matter given how early in boot we are, but perhaps the
+> following would have been clearer:
+> 
+> diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+> index 0257a7d659ef..1a118b08fad2 100644
+> --- a/arch/powerpc/mm/numa.c
+> +++ b/arch/powerpc/mm/numa.c
+> @@ -958,6 +958,13 @@ void __init initmem_init(void)
+>  
+>         memblock_dump_all();
+>  
+> +       /*
+> +        * Reduce the possible NUMA nodes to the online NUMA nodes,
+> +        * since we do not support node hotplug. This ensures that  we
+> +        * lower the maximum NUMA node ID to what is actually present.
+> +        */
+> +       nodes_and(node_possible_map, node_possible_map, node_online_map);
 
-Yes, I will consider that. To me, I guess it's more a matter of:
+If you don't support node hotplug, then a node should always be possible 
+if it's online unless there are other tricks powerpc plays with 
+node_possible_map.  Shouldn't this just be 
+node_possible_map = node_online_map?
 
-a) How does nr_node_ids relate to the number of possible NUMA node IDs
-at runtime?
-
-They are identical.
-
-b) How does nr_node_ids relate to the number of NUMA node IDs in use?
-
-There is no relation.
-
-c) How does nr_node_ids relate to the maximum NUMA node ID in use?
-
-It is one larger than that value.
-
-However, for a), at least, we don't care about that on power, really. We
-don't have node hotplug, so the "possible" is the "online" in practice,
-for a given system.
-
-Iteration seems to generally not be a problem (since we have sparse
-iterators anyways) and we shouldn't be allocating for non-present nodes.
-
-But we run into excessive allocations (I'm looking into a few others
-Dipankar has found now) with array allocations based of nr_node_ids or
-MAX_NUMNODES when the NUMA topology is sparse..
-
--Nish
+> +
+>         for_each_online_node(nid) {
+>                 unsigned long start_pfn, end_pfn;
+>  
+> 
+> 
