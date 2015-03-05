@@ -1,22 +1,31 @@
-Return-Path: <rostedt@goodmis.org>
-Received: from smtprelay.hostedemail.com (smtprelay0058.hostedemail.com
- [216.40.44.58])
- by lists.ozlabs.org (Postfix) with ESMTP id 0D1601A02AE
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Mar 2015 09:18:00 +1100 (AEDT)
-Received: from smtprelay.hostedemail.com (10.5.19.251.rfc1918.com
- [10.5.19.251])
- by smtpgrave07.hostedemail.com (Postfix) with ESMTP id 64DCC11A6C0
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Mar 2015 22:12:46 +0000 (UTC)
-Date: Thu, 5 Mar 2015 17:12:39 -0500
-From: Steven Rostedt <rostedt@goodmis.org>
-To: LKML <linux-kernel@vger.kernel.org>
-Subject: [REGRESSION in 3.18][PPC] PA Semi fails to boot after: of/base: Fix
- PowerPC address parsing hack
-Message-ID: <20150305171239.3a8135e6@gandalf.local.home>
+Return-Path: <htejun@gmail.com>
+Received: from mail-qc0-x22e.google.com (mail-qc0-x22e.google.com
+ [IPv6:2607:f8b0:400d:c01::22e])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9BA741A04B2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Mar 2015 09:18:12 +1100 (AEDT)
+Received: by qcxn11 with SMTP id n11so24335076qcx.3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Mar 2015 14:18:10 -0800 (PST)
+Sender: Tejun Heo <htejun@gmail.com>
+Date: Thu, 5 Mar 2015 17:18:07 -0500
+From: Tejun Heo <tj@kernel.org>
+To: David Rientjes <rientjes@google.com>
+Subject: Re: [RFC PATCH] powerpc/numa: reset node_possible_map to only
+ node_online_map
+Message-ID: <20150305221807.GH23912@htj.duckdns.org>
+References: <20150305180549.GA29601@linux.vnet.ibm.com>
+ <alpine.DEB.2.10.1503051315270.25235@chino.kir.corp.google.com>
+ <1425592132.13327.0.camel@ellerman.id.au>
+ <alpine.DEB.2.10.1503051352540.25375@chino.kir.corp.google.com>
+ <20150305220804.GF23912@htj.duckdns.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Grant Likely <grant.likely@linaro.org>, Olof Johansson <olof@lixom.net>,
- linuxppc-dev@lists.ozlabs.org, Rob Herring <robh@kernel.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20150305220804.GF23912@htj.duckdns.org>
+Cc: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>,
+ Raghavendra K T <raghavendra.kt@linux.vnet.ibm.com>,
+ Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,54 +35,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Thu, Mar 05, 2015 at 05:08:04PM -0500, Tejun Heo wrote:
+> It can be argued that we should always stick to the online masks for
+> allocation and iteration; however, that usually requires more
+> complexity and the only cases where this mattered have been when the
+> boot code got it wrong and failed to set the possible masks correctly,
+> which also seems to be the case here.  I don't see any reason to
+> deviate here.
 
-A bug in ftrace was reported to me that affects ARM and ARM64 but not
-x86. Looking at the code it appears to affect PowerPC as well. So I
-booted up my old PA Semi, to give it a try. The last time I booted it
-was for a 3.17 kernel. Unfortunately, for 4.0-rc2 it crashed with:
+Hmm... but yeah, as you wrote, keeping the allocation local could be a
+reason but let's please not do this just to reduce memory consumption.
+If memory locality of the field affects performance noticeably, sure.
 
-Unable to handle kernel paging request for data at address 0x00000000
-Faulting instruction address: 0xc0000000005cef88
-Oops: Kernel access of bad area, sig: 11 [#1]
-SMP NR_CPUS=2 PA Semi PWRficient
-Modules linked in:
-CPU: 1 PID: 0 Comm: swapper/1 Not tainted 4.0.0-rc2-test #50
-task: c00000003816cb60 ti: c0000000381a4000 task.ti: c0000000381a4000
-NIP: c0000000005cef88 LR: c00000000007c1a0 CTR: c00000000007c184
-REGS: c0000000381a7a00 TRAP: 0300   Not tainted  (4.0.0-rc2-test)
-MSR: 9000000000009032 <SF,HV,EE,ME,IR,DR,RI>  CR: 22000028  XER: 00000000
-DAR: 0000000000000000 DSISR: 40000000 SOFTE: 0 
-GPR00: c00000000007c1a0 c0000000381a7c80 c000000000af4b98 0000000000000001 
-GPR04: 0000000000000000 0000000000000000 00000000000004ba 000000003d6de000 
-GPR08: 0100000000000000 0000000000000000 c0000000381a4080 0000000000000000 
-GPR12: 0000000024044042 c00000000ffff300 ffffffffffffffed 0000000000000000 
-GPR16: c000000000afb920 c0000000381a4000 c0000000009ad648 c0000000009ae580 
-GPR20: c0000000381a4080 c0000000381a4000 c0000000381a4080 c0000000381a4000 
-GPR24: c0000000381a4000 c0000000381a4000 c000000000afb880 c0000000381a4000 
-GPR28: c0000000009f8790 0000000000000000 c0000000381a4000 c000000000b02168 
-NIP [c0000000005cef88] .check_astate+0x28/0x50
-LR [c00000000007c1a0] sleep_common+0x14/0x74
-Call Trace:
-[c0000000381a7c80] [c000000000afb880] 0xc000000000afb880 (unreliable)
-[c0000000381a7cf0] [c00000000007c1a0] sleep_common+0x14/0x74
-[c0000000381a7d30] [c0000000000130f0] .arch_cpu_idle+0x70/0x160
-[c0000000381a7db0] [c0000000000d6660] .cpu_startup_entry+0x320/0x5a0
-[c0000000381a7ee0] [c000000000034570] .start_secondary+0x290/0x2c0
-[c0000000381a7f90] [c000000000008bfc] start_secondary_prolog+0x10/0x14
-Instruction dump:
-60000000 60000000 7c0802a6 f8010010 f821ff91 60000000 60000000 3d220003 
-39296870 a86d0038 e9290010 7c0004ac <7c004c2c> 0c000000 4c00012c 5463103a 
----[ end trace 40e864a431826b26 ]---
+Thanks.
 
-I kicked off a ktest bisect, and it came down to this commit:
-
-commit 746c9e9f92dde2789908e51a354ba90a1962a2eb
-Author: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date:   Fri Nov 14 17:55:03 2014 +1100
-
-    of/base: Fix PowerPC address parsing hack
-
-When I revert this from v4.0-rc2, I can successfully boot my PA Semi
-again.
-
--- Steve
+-- 
+tejun
