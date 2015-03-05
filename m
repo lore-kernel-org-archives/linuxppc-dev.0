@@ -1,15 +1,15 @@
 Return-Path: <christophe.leroy@c-s.fr>
 Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id CBA851A0326
+ by lists.ozlabs.org (Postfix) with ESMTP id 1A3351A0352
  for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Mar 2015 03:46:22 +1100 (AEDT)
 From: Christophe Leroy <christophe.leroy@c-s.fr>
 To: Kim Phillips <kim.phillips@freescale.com>,
  Herbert Xu <herbert@gondor.apana.org.au>,
  "David S. Miller" <davem@davemloft.net>
-Subject: [PATCH 09/17] crypto: talitos - Move reset/init helpers into
- talitos2.h
-Message-Id: <20150305164606.D789C1A2423@localhost.localdomain>
-Date: Thu,  5 Mar 2015 17:46:06 +0100 (CET)
+Subject: [PATCH 12/17] crypto: talitos - Define compatible in talitos2.h
+ instead of talitos.c
+Message-Id: <20150305164607.111B81A2426@localhost.localdomain>
+Date: Thu,  5 Mar 2015 17:46:07 +0100 (CET)
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  linux-crypto@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -21,79 +21,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Move reset/init helpers init talitos2.h as they are specific to SEC2
-
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
 ---
- drivers/crypto/talitos.c  | 19 -------------------
- drivers/crypto/talitos2.h | 20 ++++++++++++++++++++
- 2 files changed, 20 insertions(+), 19 deletions(-)
+ drivers/crypto/talitos.c  | 4 +---
+ drivers/crypto/talitos2.h | 2 ++
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/crypto/talitos.c b/drivers/crypto/talitos.c
-index de31ab0..d15cf83 100644
+index 6c1f6f1..9f75ec9 100644
 --- a/drivers/crypto/talitos.c
 +++ b/drivers/crypto/talitos.c
-@@ -55,19 +55,6 @@
+@@ -1979,9 +1979,7 @@ err_out:
+ }
  
- #include "talitos.h"
- 
--static unsigned int do_reset_channel(struct talitos_private *priv, int ch)
--{
--	unsigned int timeout = TALITOS_TIMEOUT;
--
--	setbits32(priv->chan[ch].reg + TALITOS_CCCR, TALITOS_CCCR_RESET);
--
--	while ((in_be32(priv->chan[ch].reg + TALITOS_CCCR) & TALITOS_CCCR_RESET)
--	       && --timeout)
--		cpu_relax();
--
--	return timeout;
--}
--
- int talitos_reset_channel(struct device *dev, int ch)
- {
- 	struct talitos_private *priv = dev_get_drvdata(dev);
-@@ -118,12 +105,6 @@ static int reset_device(struct device *dev)
- /*
-  * Reset and initialize the device
-  */
--static void do_init_device(struct talitos_private *priv)
--{
--	setbits32(priv->reg + TALITOS_IMR, TALITOS_IMR_INIT);
--	setbits32(priv->reg + TALITOS_IMR_LO, TALITOS_IMR_LO_INIT);
--}
--
- int talitos_init_device(struct device *dev)
- {
- 	struct talitos_private *priv = dev_get_drvdata(dev);
+ static const struct of_device_id talitos_match[] = {
+-	{
+-		.compatible = "fsl,sec2.0",
+-	},
++	TALITOS_OF_COMPATIBLE,
+ 	{},
+ };
+ MODULE_DEVICE_TABLE(of, talitos_match);
 diff --git a/drivers/crypto/talitos2.h b/drivers/crypto/talitos2.h
-index e7a91cf..f9da9f2 100644
+index 7edc563..7177088 100644
 --- a/drivers/crypto/talitos2.h
 +++ b/drivers/crypto/talitos2.h
-@@ -202,3 +202,23 @@ extern int talitos_alg_alloc_aead(struct crypto_alg *alg);
- #define DESC_PTR_LNKTBL_JUMP			0x80
- #define DESC_PTR_LNKTBL_RETURN			0x02
- #define DESC_PTR_LNKTBL_NEXT			0x01
+@@ -316,3 +316,5 @@ static irqreturn_t talitos_interrupt_##name(int irq, void *data)	       \
+ 	return (isr & (ch_done_mask | ch_err_mask) || isr_lo) ? IRQ_HANDLED :  \
+ 								IRQ_NONE;      \
+ }
 +
-+static inline unsigned int do_reset_channel(struct talitos_private *priv,
-+					    int ch)
-+{
-+	unsigned int timeout = TALITOS_TIMEOUT;
-+
-+	setbits32(priv->chan[ch].reg + TALITOS_CCCR, TALITOS_CCCR_RESET);
-+
-+	while ((in_be32(priv->chan[ch].reg + TALITOS_CCCR) & TALITOS_CCCR_RESET)
-+	       && --timeout)
-+		cpu_relax();
-+
-+	return timeout;
-+}
-+
-+static inline void do_init_device(struct talitos_private *priv)
-+{
-+	setbits32(priv->reg + TALITOS_IMR, TALITOS_IMR_INIT);
-+	setbits32(priv->reg + TALITOS_IMR_LO, TALITOS_IMR_LO_INIT);
-+}
++#define TALITOS_OF_COMPATIBLE	{.compatible = "fsl,sec2.0",}
 -- 
 2.1.0
