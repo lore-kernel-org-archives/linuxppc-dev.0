@@ -3,13 +3,13 @@ Received: from smtp.outflux.net (smtp.outflux.net
  [IPv6:2001:19d0:2:6:c0de:0:736d:7470])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 379141A0326
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Mar 2015 12:28:52 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 82DC61A0352
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Mar 2015 12:28:53 +1100 (AEDT)
 From: Kees Cook <keescook@chromium.org>
 To: akpm@linux-foundation.org
-Subject: [PATCH v3 2/8] arm: use asm-generic for seccomp.h
-Date: Wed,  4 Mar 2015 17:27:02 -0800
-Message-Id: <1425518828-16017-3-git-send-email-keescook@chromium.org>
+Subject: [PATCH v3 3/8] microblaze: use asm-generic for seccomp.h
+Date: Wed,  4 Mar 2015 17:27:03 -0800
+Message-Id: <1425518828-16017-4-git-send-email-keescook@chromium.org>
 In-Reply-To: <1425518828-16017-1-git-send-email-keescook@chromium.org>
 References: <1425518828-16017-1-git-send-email-keescook@chromium.org>
 Cc: linux-mips@linux-mips.org, Peter Zijlstra <peterz@infradead.org>,
@@ -34,43 +34,35 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 Switch to using the newly created asm-generic/seccomp.h for the seccomp
-strict mode syscall definitions. Definitions were identical.
+strict mode syscall definitions. Since microblaze is 32-bit, the COMPAT
+seccomp defines are unused and can be dropped. The obsolete sigreturn
+for seccomp strict mode is retained as an override. Remaining definitions
+are identical.
 
 Signed-off-by: Kees Cook <keescook@chromium.org>
 ---
- arch/arm/include/asm/Kbuild    |  1 +
- arch/arm/include/asm/seccomp.h | 11 -----------
- 2 files changed, 1 insertion(+), 11 deletions(-)
- delete mode 100644 arch/arm/include/asm/seccomp.h
+ arch/microblaze/include/asm/seccomp.h | 8 +-------
+ 1 file changed, 1 insertion(+), 7 deletions(-)
 
-diff --git a/arch/arm/include/asm/Kbuild b/arch/arm/include/asm/Kbuild
-index fe74c0d1e485..d7be5a9fd171 100644
---- a/arch/arm/include/asm/Kbuild
-+++ b/arch/arm/include/asm/Kbuild
-@@ -22,6 +22,7 @@ generic-y += preempt.h
- generic-y += resource.h
- generic-y += rwsem.h
- generic-y += scatterlist.h
-+generic-y += seccomp.h
- generic-y += sections.h
- generic-y += segment.h
- generic-y += sembuf.h
-diff --git a/arch/arm/include/asm/seccomp.h b/arch/arm/include/asm/seccomp.h
-deleted file mode 100644
-index 52b156b341f5..000000000000
---- a/arch/arm/include/asm/seccomp.h
-+++ /dev/null
-@@ -1,11 +0,0 @@
--#ifndef _ASM_ARM_SECCOMP_H
--#define _ASM_ARM_SECCOMP_H
--
--#include <linux/unistd.h>
--
--#define __NR_seccomp_read __NR_read
--#define __NR_seccomp_write __NR_write
--#define __NR_seccomp_exit __NR_exit
--#define __NR_seccomp_sigreturn __NR_rt_sigreturn
--
--#endif /* _ASM_ARM_SECCOMP_H */
+diff --git a/arch/microblaze/include/asm/seccomp.h b/arch/microblaze/include/asm/seccomp.h
+index 0d912758a0d7..204618a2ce84 100644
+--- a/arch/microblaze/include/asm/seccomp.h
++++ b/arch/microblaze/include/asm/seccomp.h
+@@ -3,14 +3,8 @@
+ 
+ #include <linux/unistd.h>
+ 
+-#define __NR_seccomp_read		__NR_read
+-#define __NR_seccomp_write		__NR_write
+-#define __NR_seccomp_exit		__NR_exit
+ #define __NR_seccomp_sigreturn		__NR_sigreturn
+ 
+-#define __NR_seccomp_read_32		__NR_read
+-#define __NR_seccomp_write_32		__NR_write
+-#define __NR_seccomp_exit_32		__NR_exit
+-#define __NR_seccomp_sigreturn_32	__NR_sigreturn
++#include <asm-generic/seccomp.h>
+ 
+ #endif	/* _ASM_MICROBLAZE_SECCOMP_H */
 -- 
 1.9.1
