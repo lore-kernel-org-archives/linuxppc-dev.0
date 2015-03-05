@@ -1,44 +1,22 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bn0102.outbound.protection.outlook.com [157.56.110.102])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 871CF1A02FA
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Mar 2015 10:56:20 +1100 (AEDT)
-Message-ID: <1425513380.32154.13.camel@ellerman.id.au>
-Subject: Re: [PATCH 4/5] mm: split ET_DYN ASLR from mmap ASLR
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Kees Cook <keescook@chromium.org>
-Date: Thu, 05 Mar 2015 10:56:20 +1100
-In-Reply-To: <CAGXu5j+Pu-xeCBcMZZqTgLfKss7Er0pfCxp04a4eWDWhuDryTQ@mail.gmail.com>
-References: <1425341988-1599-1-git-send-email-keescook@chromium.org>
- <1425341988-1599-5-git-send-email-keescook@chromium.org>
- <1425442601.9084.9.camel@ellerman.id.au>
- <CAGXu5j+Pu-xeCBcMZZqTgLfKss7Er0pfCxp04a4eWDWhuDryTQ@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id C2CAF1A02E5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Mar 2015 11:30:43 +1100 (AEDT)
+Message-ID: <1425515430.4698.126.camel@freescale.com>
+Subject: Re: [PATCH] clk: ppc-corenet: Add support for the FMD clock
+From: Scott Wood <scottwood@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Date: Wed, 4 Mar 2015 18:30:30 -0600
+In-Reply-To: <0E6E0DAF-6DDC-4E36-BAFE-392F1BB091FC@kernel.crashing.org>
+References: <1421755411-26357-1-git-send-email-igal.liberman@freescale.com>
+ <0E6E0DAF-6DDC-4E36-BAFE-392F1BB091FC@kernel.crashing.org>
 Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Linux MIPS Mailing List <linux-mips@linux-mips.org>,
- Arun Chandran <achandran@mvista.com>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, Oleg Nesterov <oleg@redhat.com>,
- Min-Hua Chen <orca.chen@gmail.com>, Paul Mackerras <paulus@samba.org>,
- Yann Droneaud <ydroneaud@opteya.com>, linux-s390@vger.kernel.org,
- Russell King <linux@arm.linux.org.uk>,
- Andrey Ryabinin <a.ryabinin@samsung.com>, "x86@kernel.org" <x86@kernel.org>,
- Hector Marco-Gisbert <hecmargi@upv.es>, "David A. Long" <dave.long@linaro.org>,
- Borislav Petkov <bp@suse.de>, Ben Hutchings <ben@decadent.org.uk>,
- Will Deacon <will.deacon@arm.com>,
- "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
- Alex Smith <alex@alex-smith.me.uk>,
- Michael Holzheu <holzheu@linux.vnet.ibm.com>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- Jeff Bailey <jeffbailey@google.com>, Paul Burton <paul.burton@imgtec.com>,
- LKML <linux-kernel@vger.kernel.org>, Ralf Baechle <ralf@linux-mips.org>,
- Andy Lutomirski <luto@amacapital.net>, Vineeth Vijayan <vvijayan@mvista.com>,
- Markos Chandras <markos.chandras@imgtec.com>,
- Jan-Simon =?ISO-8859-1?Q?M=F6ller?= <dl9pf@gmx.de>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>, linux390@de.ibm.com,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- Alexander Viro <viro@zeniv.linux.org.uk>
+MIME-Version: 1.0
+Cc: "Igal.Liberman" <igal.liberman@freescale.com>,
+ linuxppc-dev@lists.ozlabs.org, Emilian.Medve@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,19 +26,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2015-03-04 at 13:13 -0800, Kees Cook wrote:
+On Fri, 2015-02-27 at 10:02 -0600, Kumar Gala wrote:
+> On Jan 20, 2015, at 6:03 AM, Igal.Liberman <igal.liberman@freescale.com> wrote:
+> > +	guts_regs = of_iomap(guts, 0);
+> > +	of_node_put(guts);
+> > +	if (!guts_regs) {
+> > +		pr_err("ioremap of GUTS node failed\n");
+> > +		return -EINVAL;
+> > +	}
 > 
-> I had a question in the powerpc-specific change that may have gone unnoticed:
-> 
-> Can mmap ASLR be safely enabled in the legacy mmap case here? Other archs
-> use "mm->mmap_base = TASK_UNMAPPED_BASE + random_factor".
-> 
-> Separate from this series, do you happen to know if this improvement
-> can be made, or if the legacy mmap on powerpc can't handle this?
+> Have you guys looked at using drivers/mfd/syscon.c for GUTS access.
 
-Yeah I saw that. The short answer is I'm not sure.
+Given the lack of documentation, could you explain what that file
+offers?  Other than a requirement to modify existing device trees to do
+something other than describe the hardware (that file won't touch
+anything that isn't compatible with "syscon").
 
-I assume we have that distinction for some good reason, but whether we still
-need it I don't know. I'll dig a bit and see if anyone can remember the details.
-
-cheers
+-Scott
