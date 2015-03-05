@@ -1,35 +1,25 @@
-Return-Path: <mingo.kernel.org@gmail.com>
-Received: from mail-we0-x22b.google.com (mail-we0-x22b.google.com
- [IPv6:2a00:1450:400c:c03::22b])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <Horia.Geanta@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bbn0106.outbound.protection.outlook.com [157.56.111.106])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8EAD41A0352
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Mar 2015 17:31:52 +1100 (AEDT)
-Received: by wevm14 with SMTP id m14so50825702wev.13
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 04 Mar 2015 22:31:47 -0800 (PST)
-Sender: Ingo Molnar <mingo.kernel.org@gmail.com>
-Date: Thu, 5 Mar 2015 07:31:43 +0100
-From: Ingo Molnar <mingo@kernel.org>
-To: Kees Cook <keescook@chromium.org>
-Subject: Re: [PATCH v3 8/8] x86: switch to using asm-generic for seccomp.h
-Message-ID: <20150305063143.GA23023@gmail.com>
-References: <1425518828-16017-1-git-send-email-keescook@chromium.org>
- <1425518828-16017-9-git-send-email-keescook@chromium.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id ADA451A0477
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Mar 2015 20:35:42 +1100 (AEDT)
+Message-ID: <54F8235B.5080301@freescale.com>
+Date: Thu, 5 Mar 2015 11:35:23 +0200
+From: =?UTF-8?B?SG9yaWEgR2VhbnTEgw==?= <horia.geanta@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1425518828-16017-9-git-send-email-keescook@chromium.org>
-Cc: linux-mips@linux-mips.org, Peter Zijlstra <peterz@infradead.org>,
- Will Deacon <will.deacon@arm.com>, Paul Mackerras <paulus@samba.org>,
- sparclinux@vger.kernel.org, linux-arch@vger.kernel.org,
- Russell King <linux@arm.linux.org.uk>, Helge Deller <deller@gmx.de>,
- x86@kernel.org, "James E.J. Bottomley" <jejb@parisc-linux.org>,
- Ingo Molnar <mingo@redhat.com>, Frederic Weisbecker <fweisbec@gmail.com>,
- James Hogan <james.hogan@imgtec.com>, Laura Abbott <lauraa@codeaurora.org>,
- Arnd Bergmann <arnd@arndb.de>, linux-arm-kernel@lists.infradead.org,
- Michal Simek <monstr@monstr.eu>, linux-parisc@vger.kernel.org,
- linux-kernel@vger.kernel.org, Ralf Baechle <ralf@linux-mips.org>,
- Daniel Borkmann <dborkman@redhat.com>, akpm@linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
+To: Kim Phillips <kim.phillips@freescale.com>, Martin Hicks <mort@bork.org>,
+ Herbert Xu <herbert@gondor.apana.org.au>
+Subject: Re: [PATCH v2 5/5] crypto: talitos: Add software backlog queue
+ handling
+References: <1425388897-5434-1-git-send-email-mort@bork.org>
+ <1425388897-5434-6-git-send-email-mort@bork.org>
+ <20150303182332.546523088b5891a776880c0f@freescale.com>
+In-Reply-To: <20150303182332.546523088b5891a776880c0f@freescale.com>
+Content-Type: text/plain; charset="UTF-8"
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-crypto@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,19 +29,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-* Kees Cook <keescook@chromium.org> wrote:
-
-> Switch to using the newly created asm-generic/seccomp.h for the 
-> seccomp strict mode syscall definitions. The obsolete sigreturn 
-> syscall override is retained in 32-bit mode, and the ia32 syscall 
-> overrides are used in the compat case. Remaining definitions were 
-> identical.
+On 3/4/2015 2:23 AM, Kim Phillips wrote:
+> On Tue,  3 Mar 2015 08:21:37 -0500
+> Martin Hicks <mort@bork.org> wrote:
 > 
-> Signed-off-by: Kees Cook <keescook@chromium.org>
+>> @@ -1170,6 +1237,8 @@ static struct talitos_edesc *talitos_edesc_alloc(struct device *dev,
+>>  						     edesc->dma_len,
+>>  						     DMA_BIDIRECTIONAL);
+>>  	edesc->req.desc = &edesc->desc;
+>> +	/* A copy of the crypto_async_request to use the crypto_queue backlog */
+>> +	memcpy(&edesc->req.base, areq, sizeof(struct crypto_async_request));
+> 
+> this seems backward, or, at least can be done more efficiently IMO:
+> talitos_cra_init should set the tfm's reqsize so the rest of
+> the driver can wholly embed its talitos_edesc (which should also
+> wholly encapsulate its talitos_request (i.e., not via a pointer))
+> into the crypto API's request handle allocation.  This
+> would absorb and eliminate the talitos_edesc kmalloc and frees, the
+> above memcpy, and replace the container_of after the
+> crypto_dequeue_request with an offset_of, right?
+> 
+> When scatter-gather buffers are needed, we can assume a slower-path
+> and make them do their own allocations, since their sizes vary
+> depending on each request.  Of course, a pointer to those
+> allocations would need to be retained somewhere in the request
+> handle.
 
-Acked-by: Ingo Molnar <mingo@kernel.org>
+Unfortunately talitos_edesc structure size is most of the times
+variable. Its exact size can only be established at "request time", and
+not at "tfm init time".
+
+Fixed size would be sizeof(talitos_edesc).
+Below are factors that influence the variable part, i.e. link_tbl in
+talitos_edesc:
+- whether any assoc / src / dst data is scattered
+- icv_stashing (case when ICV checking is done in SW)
+
+Still we'd be better with:
+-crypto API allocates request + request context (i.e.
+sizeof(talitos_edesc) + any alignment required)
+-talitos driver allocates variable part of talitos_edesc (if needed)
+
+instead of:
+-crypto API allocates request
+-talitos driver allocates talitos_edesc (fixed + variable)
+-memcopy of the req.base (crypto_async_request) into talitos_edesc
+
+both in terms of performance and readability.
+
+At first look, the driver wouldn't change that much:
+-talitos_cra_init() callback would have to set tfm.reqsize to
+sizeof(talitos_edesc) + padding and also add the CRYPTO_TFM_REQ_DMA
+indication in tfm.crt_flags
+-talitos_edesc_alloc() logic would be pretty much the same, but would
+allocate memory only for the link_tbl
+
+I'm willing to do these changes if needed.
+
+> 
+> Only potential problem is getting the crypto API to set the GFP_DMA
+> flag in the allocation request, but presumably a
+> CRYPTO_TFM_REQ_DMA crt_flag can be made to handle that.
+
+Right. And this flag would apply only to request __ctx[].
+
+Herbert, would this be an acceptable addition to crypto API?
 
 Thanks,
-
-	Ingo
+Horia
