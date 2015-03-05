@@ -1,24 +1,25 @@
-Return-Path: <iivanov@mm-sol.com>
-Received: from extserv.mm-sol.com (ns.mm-sol.com [37.157.136.199])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <rientjes@google.com>
+Received: from mail-ie0-x22b.google.com (mail-ie0-x22b.google.com
+ [IPv6:2607:f8b0:4001:c03::22b])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5A0FE1A0174
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Mar 2015 00:34:20 +1100 (AEDT)
-Message-ID: <1425562025.5705.24.camel@mm-sol.com>
-Subject: Re: [RFC V2 00/12] i2c: describe adapter quirks in a generic way
-From: "Ivan T. Ivanov" <iivanov@mm-sol.com>
-To: Wolfram Sang <wsa@the-dreams.de>
-Date: Thu, 05 Mar 2015 15:27:05 +0200
-In-Reply-To: <1424880126-15047-1-git-send-email-wsa@the-dreams.de>
-References: <1424880126-15047-1-git-send-email-wsa@the-dreams.de>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org,
- Ludovic Desroches <ludovic.desroches@atmel.com>,
- bcm-kernel-feedback-list@broadcom.com, linux-i2c@vger.kernel.org,
- Yingjoe Chen <yingjoe.chen@mediatek.com>,
- Eddie Huang <eddie.huang@mediatek.com>, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id BE7101A02AE
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Mar 2015 08:16:39 +1100 (AEDT)
+Received: by iecrp18 with SMTP id rp18so12448914iec.10
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Mar 2015 13:16:37 -0800 (PST)
+Date: Thu, 5 Mar 2015 13:16:35 -0800 (PST)
+From: David Rientjes <rientjes@google.com>
+To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+Subject: Re: [RFC PATCH] powerpc/numa: reset node_possible_map to only
+ node_online_map
+In-Reply-To: <20150305180549.GA29601@linux.vnet.ibm.com>
+Message-ID: <alpine.DEB.2.10.1503051315270.25235@chino.kir.corp.google.com>
+References: <20150305180549.GA29601@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Raghavendra K T <raghavendra.kt@linux.vnet.ibm.com>,
+ Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
+ Tejun Heo <tj@kernel.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,48 +29,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Thu, 5 Mar 2015, Nishanth Aravamudan wrote:
 
-On Wed, 2015-02-25 at 17:01 +0100, Wolfram Sang wrote:
-> From: Wolfram Sang <wsa+renesas@sang-engineering.com>
-> 
-> Here is the second version of the patch series to describe i2c adapter quirks
-> in a generic way. For the motivation, please read description of patch 1. This
-> is still RFC because I would like to do some more tests on my own, but I need
-> to write a tool for that. However, I'd really like to have the driver authors
-> to have a look already. Actual testing is very much appreciated. Thanks to the
-> Mediatek guys for rebasing their new driver to this framework. That helps, too!
-> 
-> The branch is also here:
-> 
-> git://git.kernel.org/pub/scm/linux/kernel/git/wsa/linux.git i2c/quirks
-> 
-> Thanks,
-> 
->    Wolfram
-> 
-> Major changes since V1:
-> 
-> * more fine-grained options to describe modes with combined messages.
->   This should also cover the Mediatek HW now as well as all other
->   permutations I can think of.
-> 
-> * the core code and at91 driver had to be refactored to reflect the
->   above change
-> 
-> * added the bcm-iproc driver which came to mainline recently
-> 
-> Wolfram Sang (12):
->   i2c: add quirk structure to describe adapter flaws
->   i2c: add quirk checks to core
->   i2c: at91: make use of the new infrastructure for quirks
->   i2c: opal: make use of the new infrastructure for quirks
->   i2c: qup: make use of the new infrastructure for quirks
-> 
+> diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+> index 0257a7d659ef..24de29b3651b 100644
+> --- a/arch/powerpc/mm/numa.c
+> +++ b/arch/powerpc/mm/numa.c
+> @@ -958,9 +958,17 @@ void __init initmem_init(void)
+>  
+>  	memblock_dump_all();
+>  
+> +	/*
+> +	 * zero out the possible nodes after we parse the device-tree,
+> +	 * so that we lower the maximum NUMA node ID to what is actually
+> +	 * present.
+> +	 */
+> +	nodes_clear(node_possible_map);
+> +
+>  	for_each_online_node(nid) {
+>  		unsigned long start_pfn, end_pfn;
+>  
+> +		node_set(nid, node_possible_map);
+>  		get_pfn_range_for_nid(nid, &start_pfn, &end_pfn);
+>  		setup_node_data(nid, start_pfn, end_pfn);
+>  		sparse_memory_present_with_active_regions(nid);
 
-For QUP driver. 
-
-Reviewed-by: Ivan T. Ivanov <iivanov@mm-sol.com>
-Tested-by: Ivan T. Ivanov <iivanov@mm-sol.com>
-
-Thanks,
-Ivan
+This seems a bit strange, node_possible_map is supposed to be a superset 
+of node_online_map and this loop is iterating over node_online_map to set 
+nodes in node_possible_map.
