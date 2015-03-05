@@ -1,25 +1,25 @@
-Return-Path: <ulf.hansson@linaro.org>
-Received: from mail-qc0-f181.google.com (mail-qc0-f181.google.com
- [209.85.216.181])
+Return-Path: <jhs@mojatatu.com>
+Received: from mail-ie0-f178.google.com (mail-ie0-f178.google.com
+ [209.85.223.178])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B4001A01DC
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Mar 2015 00:50:17 +1100 (AEDT)
-Received: by qcxr5 with SMTP id r5so43039632qcx.10
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Mar 2015 05:50:15 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id CDACC1A0310
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Mar 2015 01:36:02 +1100 (AEDT)
+Received: by iery20 with SMTP id y20so23380531ier.13
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Mar 2015 06:36:00 -0800 (PST)
+Message-ID: <54F869CE.1080701@mojatatu.com>
+Date: Thu, 05 Mar 2015 09:35:58 -0500
+From: Jamal Hadi Salim <jhs@mojatatu.com>
 MIME-Version: 1.0
-In-Reply-To: <1424952503-8247-10-git-send-email-haokexin@gmail.com>
-References: <1424952503-8247-1-git-send-email-haokexin@gmail.com>
- <1424952503-8247-10-git-send-email-haokexin@gmail.com>
-Date: Thu, 5 Mar 2015 14:50:15 +0100
-Message-ID: <CAPDyKFpRcoXOvnvoiDx72nVsvrADODDCncdAz=YP19kRM99Ucw@mail.gmail.com>
-Subject: Re: [PATCH v2 09/11] mmc: kconfig: replace PPC_OF with PPC
-From: Ulf Hansson <ulf.hansson@linaro.org>
-To: Kevin Hao <haokexin@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: linux-mmc <linux-mmc@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Chris Ball <chris@printf.net>
+To: Emil Medve <Emilian.Medve@Freescale.com>,
+ linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 0/7] Freescale DPAA FMan FLIB(s)
+References: <1425534351-1065-1-git-send-email-Emilian.Medve@Freescale.com>
+ <54F84CF1.80702@mojatatu.com> <54F85ECB.3070200@Freescale.com>
+In-Reply-To: <54F85ECB.3070200@Freescale.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Cc: Igal Liberman <Igal.Liberman@Freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,49 +29,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 26 February 2015 at 13:08, Kevin Hao <haokexin@gmail.com> wrote:
-> The PPC_OF is a ppc specific option which is used to mean that the
-> firmware device tree access functions are available. Since all the
-> ppc platforms have a device tree, it is aways set to 'y' for ppc.
-> So it makes no sense to keep a such option in the current kernel.
-> Replace it with PPC.
->
-> Signed-off-by: Kevin Hao <haokexin@gmail.com>
+Hi Emil,
 
-Applied, thanks!
+On 03/05/15 08:48, Emil Medve wrote:
 
-Kind regards
-Uffe
+> The intent is to upstream the entire suite of the DPAA drivers. All the
+> drivers are still WIP, but B/QMan have been already presented to the
+> upstream community and this is the first attempt to publish (some low
+> level code of) the FMan driver. As we go through our internal checklist
+> and in the same time address community feedback we'll soon get the
+> drivers to be acceptable for the upstream trees
+>
+> The first version of the actual Ethernet driver will follow imminently
+>
+> SDK enablement is a side-effect
+>
 
+Meaning? Let me ask the question differently:
+Do i need your sdk to use the features exposed or can i use something
+like tc to set up the deficit rr or wred or the exposed classifiers
+and associated actions?
+Would your sdk (via user space direct programming) benefit because you
+have pushed these pieces into the kernel?
 
-> ---
-> v2: No change.
+>> How are you planning to
+>> add support for your classifiers, queue schedulers etc?
 >
->  drivers/mmc/host/Kconfig | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+> Yes
 >
-> diff --git a/drivers/mmc/host/Kconfig b/drivers/mmc/host/Kconfig
-> index 61ac63a3776a..7858d7a52818 100644
-> --- a/drivers/mmc/host/Kconfig
-> +++ b/drivers/mmc/host/Kconfig
-> @@ -132,7 +132,7 @@ config MMC_SDHCI_OF_ARASAN
->  config MMC_SDHCI_OF_ESDHC
->         tristate "SDHCI OF support for the Freescale eSDHC controller"
->         depends on MMC_SDHCI_PLTFM
-> -       depends on PPC_OF
-> +       depends on PPC
->         select MMC_SDHCI_BIG_ENDIAN_32BIT_BYTE_SWAPPER
->         help
->           This selects the Freescale eSDHC controller support.
-> @@ -144,7 +144,7 @@ config MMC_SDHCI_OF_ESDHC
->  config MMC_SDHCI_OF_HLWD
->         tristate "SDHCI OF support for the Nintendo Wii SDHCI controllers"
->         depends on MMC_SDHCI_PLTFM
-> -       depends on PPC_OF
-> +       depends on PPC
->         select MMC_SDHCI_BIG_ENDIAN_32BIT_BYTE_SWAPPER
->         help
->           This selects the Secure Digital Host Controller Interface (SDHCI)
-> --
-> 1.9.3
+
+Yes as in these will be available via linux kernel or via your sdk?
+
+>> Is that a patch
+>> on top of this or it is something that sits on user space?
 >
+> Both. Full DPAA/Ethernet enablement will be present in the kernel. We
+> also have support for user-space based approach. I'm unsure where/when
+> we might publish that. Of course the SDK is always a place you can turn
+> to for all the code we have (in whatever state it might be)
+>
+
+the sdk is open source?
+
+cheers,
+jamal
