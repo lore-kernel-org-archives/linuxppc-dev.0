@@ -1,23 +1,17 @@
-Return-Path: <Emilian.Medve@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0132.outbound.protection.outlook.com [157.56.111.132])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 81EF61A09AE
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Mar 2015 02:04:37 +1100 (AEDT)
-Message-ID: <54F87096.2070709@Freescale.com>
-Date: Thu, 5 Mar 2015 09:04:54 -0600
-From: Emil Medve <Emilian.Medve@Freescale.com>
-MIME-Version: 1.0
-To: Jamal Hadi Salim <jhs@mojatatu.com>, <linuxppc-dev@lists.ozlabs.org>,
- <netdev@vger.kernel.org>, <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH 0/7] Freescale DPAA FMan FLIB(s)
-References: <1425534351-1065-1-git-send-email-Emilian.Medve@Freescale.com>
- <54F84CF1.80702@mojatatu.com> <54F85ECB.3070200@Freescale.com>
- <54F869CE.1080701@mojatatu.com>
-In-Reply-To: <54F869CE.1080701@mojatatu.com>
-Content-Type: text/plain; charset="windows-1252"
-Cc: Igal Liberman <Igal.Liberman@Freescale.com>
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ by lists.ozlabs.org (Postfix) with ESMTP id D58391A02E2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Mar 2015 03:46:14 +1100 (AEDT)
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+To: Kim Phillips <kim.phillips@freescale.com>,
+ Herbert Xu <herbert@gondor.apana.org.au>,
+ "David S. Miller" <davem@davemloft.net>
+Subject: [PATCH 01/17] crypto: talitos - base address for Execution Units and
+ macro for ISR masks
+Message-Id: <20150305164606.2815B1A2418@localhost.localdomain>
+Date: Thu,  5 Mar 2015 17:46:05 +0100 (CET)
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-crypto@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,72 +21,131 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello Jamal,
+SEC1 and SEC2 have different EU base addresses, so define base addresses
+as #define
+SEC1 and SEC2 have different bit masks for ISR registers, so create a
+macro to define them
 
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
-On 03/05/2015 08:35 AM, Jamal Hadi Salim wrote:
-> Hi Emil,
-> 
-> On 03/05/15 08:48, Emil Medve wrote:
-> 
->> The intent is to upstream the entire suite of the DPAA drivers. All the
->> drivers are still WIP, but B/QMan have been already presented to the
->> upstream community and this is the first attempt to publish (some low
->> level code of) the FMan driver. As we go through our internal checklist
->> and in the same time address community feedback we'll soon get the
->> drivers to be acceptable for the upstream trees
->>
->> The first version of the actual Ethernet driver will follow imminently
->>
->> SDK enablement is a side-effect
-> 
-> Meaning? Let me ask the question differently:
-> Do i need your sdk to use the features exposed
+---
+ drivers/crypto/talitos.h | 85 ++++++++++++++++++++++++++++++------------------
+ 1 file changed, 53 insertions(+), 32 deletions(-)
 
-No. All the kernel drivers/code we want to upstream is meant to stand on
-its own and be used the "normal" Linux/Unix way
-
-> or can i use something
-> like tc to set up the deficit rr or wred or the exposed classifiers
-> and associated actions?
-
-The SDK doesn't currently support the enablement of any HW QoS features
-via standard Linux user-space tools. The SDK contains some FSL tools for
-that. As a time moving target we intend to support lots of the DPAA
-features via standard kernel/user-space means: ethtool, iptables,
-iproute2, etc.
-
-> Would your sdk (via user space direct programming) benefit because you
-> have pushed these pieces into the kernel?
-
-Not specifically because of the kernel drivers. In support for the
-user-space DPAA the kernel will have some UIO/VFIO drivers to allow the
-user-space to "mmap" these devices (portals, ports, MAC(s), etc.). The
-intent is to use the same driver sources for the kernel- and user-space
-drivers
-
->>> How are you planning to
->>> add support for your classifiers, queue schedulers etc?
->>
->> Yes
-> 
-> Yes as in these will be available via linux kernel or via your sdk?
-
-As in these will be available via familiar kernel-/user-space tools
-
->>> Is that a patch
->>> on top of this or it is something that sits on user space?
->>
->> Both. Full DPAA/Ethernet enablement will be present in the kernel. We
->> also have support for user-space based approach. I'm unsure where/when
->> we might publish that. Of course the SDK is always a place you can turn
->> to for all the code we have (in whatever state it might be)
-> 
-> the sdk is open source?
-
-I'm uncertain about *all* the licenses included, but you can look into
-it and download the SDK via git.freescale.com and/or
-http://www.freescale.com/webapp/sps/site/prod_summary.jsp?code=SDKLINUX
-
-
-Cheers,
+diff --git a/drivers/crypto/talitos.h b/drivers/crypto/talitos.h
+index 61a1405..102dc99 100644
+--- a/drivers/crypto/talitos.h
++++ b/drivers/crypto/talitos.h
+@@ -149,6 +149,8 @@ extern int talitos_submit(struct device *dev, int ch, struct talitos_desc *desc,
+  * TALITOS_xxx_LO addresses point to the low data bits (32-63) of the register
+  */
+ 
++#define ISR_FORMAT(x)			(((x) << 4) | (x))
++
+ /* global register offset addresses */
+ #define TALITOS_MCR			0x1030  /* master control register */
+ #define   TALITOS_MCR_RCA0		(1 << 15) /* remap channel 0 */
+@@ -163,12 +165,12 @@ extern int talitos_submit(struct device *dev, int ch, struct talitos_desc *desc,
+ #define TALITOS_IMR_LO			0x100C
+ #define   TALITOS_IMR_LO_INIT		0x20000 /* allow RNGU error IRQs */
+ #define TALITOS_ISR			0x1010  /* interrupt status register */
+-#define   TALITOS_ISR_4CHERR		0xaa    /* 4 channel errors mask */
+-#define   TALITOS_ISR_4CHDONE		0x55    /* 4 channel done mask */
+-#define   TALITOS_ISR_CH_0_2_ERR	0x22    /* channels 0, 2 errors mask */
+-#define   TALITOS_ISR_CH_0_2_DONE	0x11    /* channels 0, 2 done mask */
+-#define   TALITOS_ISR_CH_1_3_ERR	0x88    /* channels 1, 3 errors mask */
+-#define   TALITOS_ISR_CH_1_3_DONE	0x44    /* channels 1, 3 done mask */
++#define   TALITOS_ISR_4CHERR		ISR_FORMAT(0xa)	/* 4 ch errors mask */
++#define   TALITOS_ISR_4CHDONE		ISR_FORMAT(0x5)	/* 4 ch done mask */
++#define   TALITOS_ISR_CH_0_2_ERR	ISR_FORMAT(0x2)	/* ch 0, 2 err mask */
++#define   TALITOS_ISR_CH_0_2_DONE	ISR_FORMAT(0x1)	/* ch 0, 2 done mask */
++#define   TALITOS_ISR_CH_1_3_ERR	ISR_FORMAT(0x8)	/* ch 1, 3 err mask */
++#define   TALITOS_ISR_CH_1_3_DONE	ISR_FORMAT(0x4)	/* ch 1, 3 done mask */
+ #define TALITOS_ISR_LO			0x1014
+ #define TALITOS_ICR			0x1018  /* interrupt clear register */
+ #define TALITOS_ICR_LO			0x101C
+@@ -224,37 +226,56 @@ extern int talitos_submit(struct device *dev, int ch, struct talitos_desc *desc,
+ #define TALITOS_SCATTER			0xe0
+ #define TALITOS_SCATTER_LO		0xe4
+ 
++/* execution unit registers base */
++#define TALITOS_DEU			0x2000
++#define TALITOS_AESU			0x4000
++#define TALITOS_MDEU			0x6000
++#define TALITOS_AFEU			0x8000
++#define TALITOS_RNGU			0xa000
++#define TALITOS_PKEU			0xc000
++#define TALITOS_KEU			0xe000
++#define TALITOS_CRCU			0xf000
++
+ /* execution unit interrupt status registers */
+-#define TALITOS_DEUISR			0x2030 /* DES unit */
+-#define TALITOS_DEUISR_LO		0x2034
+-#define TALITOS_AESUISR			0x4030 /* AES unit */
+-#define TALITOS_AESUISR_LO		0x4034
+-#define TALITOS_MDEUISR			0x6030 /* message digest unit */
+-#define TALITOS_MDEUISR_LO		0x6034
+-#define TALITOS_MDEUICR			0x6038 /* interrupt control */
+-#define TALITOS_MDEUICR_LO		0x603c
++/* DES unit */
++#define TALITOS_DEUISR			(TALITOS_DEU + 0x30)
++#define TALITOS_DEUISR_LO		(TALITOS_DEU + 0x34)
++#define TALITOS_DEUICR			(TALITOS_DEU + 0x38) /* int. control */
++/* AES unit */
++#define TALITOS_AESUISR			(TALITOS_AESU + 0x30)
++#define TALITOS_AESUISR_LO		(TALITOS_AESU + 0x34)
++/* message digest unit */
++#define TALITOS_MDEUISR			(TALITOS_MDEU + 0x30)
++#define TALITOS_MDEUISR_LO		(TALITOS_MDEU + 0x34)
++#define TALITOS_MDEUICR			(TALITOS_MDEU + 0x38) /* int. control */
++#define TALITOS_MDEUICR_LO		(TALITOS_MDEU + 0x3c)
+ #define   TALITOS_MDEUICR_LO_ICE	0x4000 /* integrity check IRQ enable */
+-#define TALITOS_AFEUISR			0x8030 /* arc4 unit */
+-#define TALITOS_AFEUISR_LO		0x8034
+-#define TALITOS_RNGUISR			0xa030 /* random number unit */
+-#define TALITOS_RNGUISR_LO		0xa034
+-#define TALITOS_RNGUSR			0xa028 /* rng status */
+-#define TALITOS_RNGUSR_LO		0xa02c
++/* arc4 unit */
++#define TALITOS_AFEUISR			(TALITOS_AFEU + 0x30)
++#define TALITOS_AFEUISR_LO		(TALITOS_AFEU + 0x34)
++/* random number unit */
++#define TALITOS_RNGUISR			(TALITOS_RNGU + 0x30)
++#define TALITOS_RNGUISR_LO		(TALITOS_RNGU + 0x34)
++#define TALITOS_RNGUSR			(TALITOS_RNGU + 0x28) /* rng status */
++#define TALITOS_RNGUSR_LO		(TALITOS_RNGU + 0x2c)
+ #define   TALITOS_RNGUSR_LO_RD		0x1	/* reset done */
+ #define   TALITOS_RNGUSR_LO_OFL		0xff0000/* output FIFO length */
+-#define TALITOS_RNGUDSR			0xa010	/* data size */
+-#define TALITOS_RNGUDSR_LO		0xa014
+-#define TALITOS_RNGU_FIFO		0xa800	/* output FIFO */
+-#define TALITOS_RNGU_FIFO_LO		0xa804	/* output FIFO */
+-#define TALITOS_RNGURCR			0xa018	/* reset control */
+-#define TALITOS_RNGURCR_LO		0xa01c
++#define TALITOS_RNGUDSR			(TALITOS_RNGU + 0x10)	/* data size */
++#define TALITOS_RNGUDSR_LO		(TALITOS_RNGU + 0x14)
++#define TALITOS_RNGU_FIFO		(TALITOS_RNGU + 0x800) /* output FIFO */
++#define TALITOS_RNGU_FIFO_LO		(TALITOS_RNGU + 0x804) /* output FIFO */
++#define TALITOS_RNGURCR			(TALITOS_RNGU + 0x18) /* reset control*/
++#define TALITOS_RNGURCR_LO		(TALITOS_RNGU + 0x1c)
+ #define   TALITOS_RNGURCR_LO_SR		0x1	/* software reset */
+-#define TALITOS_PKEUISR			0xc030 /* public key unit */
+-#define TALITOS_PKEUISR_LO		0xc034
+-#define TALITOS_KEUISR			0xe030 /* kasumi unit */
+-#define TALITOS_KEUISR_LO		0xe034
+-#define TALITOS_CRCUISR			0xf030 /* cyclic redundancy check unit*/
+-#define TALITOS_CRCUISR_LO		0xf034
++/* public key unit */
++#define TALITOS_PKEUISR			(TALITOS_PKEU + 0x30)
++#define TALITOS_PKEUISR_LO		(TALITOS_PKEU + 0x34)
++/* kasumi unit */
++#define TALITOS_KEUISR			(TALITOS_KEU + 0x30)
++#define TALITOS_KEUISR_LO		(TALITOS_KEU + 0x34)
++/* cyclic redundancy check unit */
++#define TALITOS_CRCUISR			(TALITOS_CRCU + 0x30)
++#define TALITOS_CRCUISR_LO		(TALITOS_CRCU + 0x34)
+ 
+ #define TALITOS_MDEU_CONTEXT_SIZE_MD5_SHA1_SHA256	0x28
+ #define TALITOS_MDEU_CONTEXT_SIZE_SHA384_SHA512		0x48
+-- 
+2.1.0
