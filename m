@@ -1,29 +1,34 @@
-Return-Path: <keescook@www.outflux.net>
-Received: from smtp.outflux.net (smtp.outflux.net
- [IPv6:2001:19d0:2:6:c0de:0:736d:7470])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <tyreld@linux.vnet.ibm.com>
+Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 896CE1A09D8
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Mar 2015 12:30:39 +1100 (AEDT)
-From: Kees Cook <keescook@chromium.org>
-To: akpm@linux-foundation.org
-Subject: [PATCH v3 8/8] x86: switch to using asm-generic for seccomp.h
-Date: Wed,  4 Mar 2015 17:27:08 -0800
-Message-Id: <1425518828-16017-9-git-send-email-keescook@chromium.org>
-In-Reply-To: <1425518828-16017-1-git-send-email-keescook@chromium.org>
-References: <1425518828-16017-1-git-send-email-keescook@chromium.org>
-Cc: linux-mips@linux-mips.org, Peter Zijlstra <peterz@infradead.org>,
- Will Deacon <will.deacon@arm.com>, Paul Mackerras <paulus@samba.org>,
- sparclinux@vger.kernel.org, linux-arch@vger.kernel.org,
- Russell King <linux@arm.linux.org.uk>, Helge Deller <deller@gmx.de>,
- x86@kernel.org, "James E.J. Bottomley" <jejb@parisc-linux.org>,
- Ingo Molnar <mingo@redhat.com>, Frederic Weisbecker <fweisbec@gmail.com>,
- James Hogan <james.hogan@imgtec.com>, Laura Abbott <lauraa@codeaurora.org>,
- Kees Cook <keescook@chromium.org>, Arnd Bergmann <arnd@arndb.de>,
- linux-arm-kernel@lists.infradead.org, Michal Simek <monstr@monstr.eu>,
- linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org,
- Ralf Baechle <ralf@linux-mips.org>, Daniel Borkmann <dborkman@redhat.com>,
- linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 084DA1A03B9
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Mar 2015 13:25:50 +1100 (AEDT)
+Received: from /spool/local
+ by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
+ Wed, 4 Mar 2015 21:25:47 -0500
+Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com
+ [9.57.198.28])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id A0F32C9003E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  4 Mar 2015 21:16:54 -0500 (EST)
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+ by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t252PhOj25296998
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 5 Mar 2015 02:25:43 GMT
+Received: from d01av02.pok.ibm.com (localhost [127.0.0.1])
+ by d01av02.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t252Pg5x018066
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 4 Mar 2015 21:25:42 -0500
+From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc/pseries: Introduce api_version to migration sysfs
+ interface
+Date: Wed,  4 Mar 2015 18:25:38 -0800
+Message-Id: <1425522338-14271-1-git-send-email-tyreld@linux.vnet.ibm.com>
+Cc: Cyril Bur <cyrilbur@gmail.com>, Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,87 +38,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Switch to using the newly created asm-generic/seccomp.h for the seccomp
-strict mode syscall definitions. The obsolete sigreturn syscall override
-is retained in 32-bit mode, and the ia32 syscall overrides are used in
-the compat case. Remaining definitions were identical.
+The /sys/kernel/mobility/migration interface was added all the way back
+in 2.6.37. However, the drmgr userspace tool was never augmented to use
+this interface to perfrom migrations. Instead it has continued using a
+faux rtas call coupled with performing the device tree update processing
+in userspace and communicating it back to the kernel via the ugly
+/proc/ppc64/ofdt interface.
 
-Signed-off-by: Kees Cook <keescook@chromium.org>
+Up until 3.12 the device tree update code in the kernel was badly broken
+and bit rotting. This code was fixed in 3.12 and is now utilized by the
+kernel suspend code as of 3.15. The kernel is now better suited to
+handle the post-mobility fixup of the device tree and drmgr should be
+transitioned to using the sysfs migration interface.
+
+This patch introduces the api_version sysfs file to /sys/kernel/mobility
+as a means for drmgr to query the current implementation level of the
+kernel migration code. This initial versioning indicates it is capable
+of perfroming all current PAPR requirements for migration including the
+post-mobility firmware activation and device tree update.
+
+Signed-off-by: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+Cc: Cyril Bur <cyrilbur@gmail.com>
 ---
- arch/x86/include/asm/seccomp.h    | 21 ++++++++++++++++++---
- arch/x86/include/asm/seccomp_32.h | 11 -----------
- arch/x86/include/asm/seccomp_64.h | 17 -----------------
- 3 files changed, 18 insertions(+), 31 deletions(-)
- delete mode 100644 arch/x86/include/asm/seccomp_32.h
- delete mode 100644 arch/x86/include/asm/seccomp_64.h
+ arch/powerpc/platforms/pseries/mobility.c | 17 ++++++++++++++++-
+ 1 file changed, 16 insertions(+), 1 deletion(-)
 
-diff --git a/arch/x86/include/asm/seccomp.h b/arch/x86/include/asm/seccomp.h
-index 0f3d7f099224..0c8c7c8861b4 100644
---- a/arch/x86/include/asm/seccomp.h
-+++ b/arch/x86/include/asm/seccomp.h
-@@ -1,5 +1,20 @@
-+#ifndef _ASM_X86_SECCOMP_H
-+#define _ASM_X86_SECCOMP_H
+diff --git a/arch/powerpc/platforms/pseries/mobility.c b/arch/powerpc/platforms/pseries/mobility.c
+index bdf62c1..ceb18d3 100644
+--- a/arch/powerpc/platforms/pseries/mobility.c
++++ b/arch/powerpc/platforms/pseries/mobility.c
+@@ -338,7 +338,16 @@ static ssize_t migrate_store(struct class *class, struct class_attribute *attr,
+ 	return count;
+ }
+ 
++/*
++ * Used by drmgr to determine the kernel behavior of the migration interface.
++ *
++ * Version 1: Performs all PAPR requirements for migration including
++ *	firmware activation and device tree update.
++ */
++#define MIGRATION_API_VERSION	1
 +
-+#include <asm/unistd.h>
+ static CLASS_ATTR(migration, S_IWUSR, NULL, migrate_store);
++static CLASS_ATTR_STRING(api_version, S_IRUGO, __stringify(MIGRATION_API_VERSION));
+ 
+ static int __init mobility_sysfs_init(void)
+ {
+@@ -349,7 +358,13 @@ static int __init mobility_sysfs_init(void)
+ 		return -ENOMEM;
+ 
+ 	rc = sysfs_create_file(mobility_kobj, &class_attr_migration.attr);
++	if (rc)
++		pr_err("mobility: unable to create migration sysfs file (%d)\n", rc);
+ 
+-	return rc;
++	rc = sysfs_create_file(mobility_kobj, &class_attr_api_version.attr.attr);
++	if (rc)
++		pr_err("mobility: unable to create api_version sysfs file (%d)\n", rc);
 +
- #ifdef CONFIG_X86_32
--# include <asm/seccomp_32.h>
--#else
--# include <asm/seccomp_64.h>
-+#define __NR_seccomp_sigreturn		__NR_sigreturn
- #endif
-+
-+#ifdef CONFIG_COMPAT
-+#include <asm/ia32_unistd.h>
-+#define __NR_seccomp_read_32		__NR_ia32_read
-+#define __NR_seccomp_write_32		__NR_ia32_write
-+#define __NR_seccomp_exit_32		__NR_ia32_exit
-+#define __NR_seccomp_sigreturn_32	__NR_ia32_sigreturn
-+#endif
-+
-+#include <asm-generic/seccomp.h>
-+
-+#endif /* _ASM_X86_SECCOMP_H */
-diff --git a/arch/x86/include/asm/seccomp_32.h b/arch/x86/include/asm/seccomp_32.h
-deleted file mode 100644
-index b811d6f5780c..000000000000
---- a/arch/x86/include/asm/seccomp_32.h
-+++ /dev/null
-@@ -1,11 +0,0 @@
--#ifndef _ASM_X86_SECCOMP_32_H
--#define _ASM_X86_SECCOMP_32_H
--
--#include <linux/unistd.h>
--
--#define __NR_seccomp_read __NR_read
--#define __NR_seccomp_write __NR_write
--#define __NR_seccomp_exit __NR_exit
--#define __NR_seccomp_sigreturn __NR_sigreturn
--
--#endif /* _ASM_X86_SECCOMP_32_H */
-diff --git a/arch/x86/include/asm/seccomp_64.h b/arch/x86/include/asm/seccomp_64.h
-deleted file mode 100644
-index 84ec1bd161a5..000000000000
---- a/arch/x86/include/asm/seccomp_64.h
-+++ /dev/null
-@@ -1,17 +0,0 @@
--#ifndef _ASM_X86_SECCOMP_64_H
--#define _ASM_X86_SECCOMP_64_H
--
--#include <linux/unistd.h>
--#include <asm/ia32_unistd.h>
--
--#define __NR_seccomp_read __NR_read
--#define __NR_seccomp_write __NR_write
--#define __NR_seccomp_exit __NR_exit
--#define __NR_seccomp_sigreturn __NR_rt_sigreturn
--
--#define __NR_seccomp_read_32 __NR_ia32_read
--#define __NR_seccomp_write_32 __NR_ia32_write
--#define __NR_seccomp_exit_32 __NR_ia32_exit
--#define __NR_seccomp_sigreturn_32 __NR_ia32_sigreturn
--
--#endif /* _ASM_X86_SECCOMP_64_H */
++	return 0;
+ }
+ machine_device_initcall(pseries, mobility_sysfs_init);
 -- 
-1.9.1
+1.7.12.2
