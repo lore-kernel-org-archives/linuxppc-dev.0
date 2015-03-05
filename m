@@ -1,27 +1,22 @@
-Return-Path: <rientjes@google.com>
-Received: from mail-ie0-x22a.google.com (mail-ie0-x22a.google.com
- [IPv6:2607:f8b0:4001:c03::22a])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mgorman@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 71E041A05B9
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Mar 2015 10:29:05 +1100 (AEDT)
-Received: by iecar1 with SMTP id ar1so81222604iec.0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Mar 2015 15:29:02 -0800 (PST)
-Date: Thu, 5 Mar 2015 15:29:00 -0800 (PST)
-From: David Rientjes <rientjes@google.com>
-To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-Subject: Re: [RFC PATCH] powerpc/numa: reset node_possible_map to only
- node_online_map
-In-Reply-To: <20150305231555.GB30570@linux.vnet.ibm.com>
-Message-ID: <alpine.DEB.2.10.1503051527281.2184@chino.kir.corp.google.com>
-References: <20150305180549.GA29601@linux.vnet.ibm.com>
- <alpine.DEB.2.10.1503051315270.25235@chino.kir.corp.google.com>
- <20150305231555.GB30570@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Tejun Heo <tj@kernel.org>, linuxppc-dev@lists.ozlabs.org,
- Raghavendra K T <raghavendra.kt@linux.vnet.ibm.com>,
- Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8225B1A0015
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Mar 2015 10:54:59 +1100 (AEDT)
+From: Mel Gorman <mgorman@suse.de>
+To: Dave Chinner <david@fromorbit.com>
+Subject: [PATCH 1/2] mm: thp: Return the correct value for change_huge_pmd
+Date: Thu,  5 Mar 2015 23:54:51 +0000
+Message-Id: <1425599692-32445-2-git-send-email-mgorman@suse.de>
+In-Reply-To: <1425599692-32445-1-git-send-email-mgorman@suse.de>
+References: <1425599692-32445-1-git-send-email-mgorman@suse.de>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com,
+ Linux-MM <linux-mm@kvack.org>, Aneesh Kumar <aneesh.kumar@linux.vnet.ibm.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@kernel.org>,
+ Mel Gorman <mgorman@suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,56 +26,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 5 Mar 2015, Nishanth Aravamudan wrote:
+The wrong value is being returned by change_huge_pmd since commit
+10c1045f28e8 ("mm: numa: avoid unnecessary TLB flushes when setting
+NUMA hinting entries") which allows a fallthrough that tries to adjust
+non-existent PTEs. This patch corrects it.
 
-> So if we compare to x86:
-> 
-> arch/x86/mm/numa.c::numa_init():
-> 
->         nodes_clear(numa_nodes_parsed);
->         nodes_clear(node_possible_map);
->         nodes_clear(node_online_map);
-> 	...
-> 	numa_register_memblks(...);
-> 
-> arch/x86/mm/numa.c::numa_register_memblks():
-> 
-> 	node_possible_map = numa_nodes_parsed;
-> 
-> Basically, it looks like x86 NUMA init clears out possible map and
-> online map, probably for a similar reason to what I gave in the
-> changelog that by default, the possible map seems to be based off
-> MAX_NUMNODES, rather than nr_node_ids or anything dynamic.
-> 
-> My patch was an attempt to emulate the same thing on powerpc. You are
-> right that there is a window in which the node_possible_map and
-> node_online_map are out of sync with my patch. It seems like it
-> shouldn't matter given how early in boot we are, but perhaps the
-> following would have been clearer:
-> 
-> diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-> index 0257a7d659ef..1a118b08fad2 100644
-> --- a/arch/powerpc/mm/numa.c
-> +++ b/arch/powerpc/mm/numa.c
-> @@ -958,6 +958,13 @@ void __init initmem_init(void)
->  
->         memblock_dump_all();
->  
-> +       /*
-> +        * Reduce the possible NUMA nodes to the online NUMA nodes,
-> +        * since we do not support node hotplug. This ensures that  we
-> +        * lower the maximum NUMA node ID to what is actually present.
-> +        */
-> +       nodes_and(node_possible_map, node_possible_map, node_online_map);
+Signed-off-by: Mel Gorman <mgorman@suse.de>
+---
+ mm/huge_memory.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-If you don't support node hotplug, then a node should always be possible 
-if it's online unless there are other tricks powerpc plays with 
-node_possible_map.  Shouldn't this just be 
-node_possible_map = node_online_map?
-
-> +
->         for_each_online_node(nid) {
->                 unsigned long start_pfn, end_pfn;
->  
-> 
-> 
+diff --git a/mm/huge_memory.c b/mm/huge_memory.c
+index fc00c8cb5a82..194c0f019774 100644
+--- a/mm/huge_memory.c
++++ b/mm/huge_memory.c
+@@ -1482,6 +1482,7 @@ int change_huge_pmd(struct vm_area_struct *vma, pmd_t *pmd,
+ 
+ 	if (__pmd_trans_huge_lock(pmd, vma, &ptl) == 1) {
+ 		pmd_t entry;
++		ret = 1;
+ 
+ 		/*
+ 		 * Avoid trapping faults against the zero page. The read-only
+@@ -1490,11 +1491,10 @@ int change_huge_pmd(struct vm_area_struct *vma, pmd_t *pmd,
+ 		 */
+ 		if (prot_numa && is_huge_zero_pmd(*pmd)) {
+ 			spin_unlock(ptl);
+-			return 0;
++			return ret;
+ 		}
+ 
+ 		if (!prot_numa || !pmd_protnone(*pmd)) {
+-			ret = 1;
+ 			entry = pmdp_get_and_clear_notify(mm, addr, pmd);
+ 			entry = pmd_modify(entry, newprot);
+ 			ret = HPAGE_PMD_NR;
+-- 
+2.1.2
