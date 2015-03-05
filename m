@@ -1,15 +1,14 @@
 Return-Path: <christophe.leroy@c-s.fr>
 Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id CB9B71A0310
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Mar 2015 03:46:22 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 672A71A0310
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Mar 2015 03:46:24 +1100 (AEDT)
 From: Christophe Leroy <christophe.leroy@c-s.fr>
 To: Kim Phillips <kim.phillips@freescale.com>,
  Herbert Xu <herbert@gondor.apana.org.au>,
  "David S. Miller" <davem@davemloft.net>
-Subject: [PATCH 10/17] crypto: talitos - Move interrupt related macros in
- talitos2.h
-Message-Id: <20150305164606.E70261A2424@localhost.localdomain>
-Date: Thu,  5 Mar 2015 17:46:06 +0100 (CET)
+Subject: [PATCH 16/17] crypto: talitos - SEC1 bugs on 0 data hash
+Message-Id: <20150305164607.554531A242A@localhost.localdomain>
+Date: Thu,  5 Mar 2015 17:46:07 +0100 (CET)
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  linux-crypto@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -21,158 +20,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Move interrupt related macros in talitos2.h as they are specific to SEC2
+SEC1 bugs on 0 data hash, so we submit an already padded block representing 0 data
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
 ---
- drivers/crypto/talitos.c  | 58 ---------------------------------------------
- drivers/crypto/talitos2.h | 60 +++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 60 insertions(+), 58 deletions(-)
+ drivers/crypto/talitos.c  |  3 +++
+ drivers/crypto/talitos1.c | 21 +++++++++++++++++++++
+ drivers/crypto/talitos1.h |  4 ++++
+ drivers/crypto/talitos2.h |  6 ++++++
+ 4 files changed, 34 insertions(+)
 
 diff --git a/drivers/crypto/talitos.c b/drivers/crypto/talitos.c
-index d15cf83..3190762 100644
+index 112a25a..464338c 100644
 --- a/drivers/crypto/talitos.c
 +++ b/drivers/crypto/talitos.c
-@@ -262,32 +262,6 @@ void talitos_flush_channel(struct device *dev, int ch, int error, int reset_ch)
- /*
-  * process completed requests for channels that have done status
-  */
--#define DEF_TALITOS_DONE(name, ch_done_mask)				\
--static void talitos_done_##name(unsigned long data)			\
--{									\
--	struct device *dev = (struct device *)data;			\
--	struct talitos_private *priv = dev_get_drvdata(dev);		\
--	unsigned long flags;						\
--									\
--	if (ch_done_mask & 1)						\
--		talitos_flush_channel(dev, 0, 0, 0);			\
--	if (priv->num_channels == 1)					\
--		goto out;						\
--	if (ch_done_mask & (1 << 2))					\
--		talitos_flush_channel(dev, 1, 0, 0);			\
--	if (ch_done_mask & (1 << 4))					\
--		talitos_flush_channel(dev, 2, 0, 0);			\
--	if (ch_done_mask & (1 << 6))					\
--		talitos_flush_channel(dev, 3, 0, 0);			\
--									\
--out:									\
--	/* At this point, all completed channels have been processed */	\
--	/* Unmask done interrupts for channels completed later on. */	\
--	spin_lock_irqsave(&priv->reg_lock, flags);			\
--	setbits32(priv->reg + TALITOS_IMR, ch_done_mask);		\
--	setbits32(priv->reg + TALITOS_IMR_LO, TALITOS_IMR_LO_INIT);	\
--	spin_unlock_irqrestore(&priv->reg_lock, flags);			\
--}
- DEF_TALITOS_DONE(4ch, TALITOS_ISR_4CHDONE)
- DEF_TALITOS_DONE(ch0_2, TALITOS_ISR_CH_0_2_DONE)
- DEF_TALITOS_DONE(ch1_3, TALITOS_ISR_CH_1_3_DONE)
-@@ -399,38 +373,6 @@ void talitos_report_eu_error(struct device *dev, int ch)
- 			in_be32(priv->chan[ch].reg + TALITOS_DESCBUF_LO + 8*i));
+@@ -817,6 +817,9 @@ static int common_nonsnoop_hash(struct talitos_edesc *edesc,
+ 
+ 	to_talitos_next_desc_clear(desc);
+ 
++	if (desc->ptr[3].len == 0)
++		talitos_handle_buggy_hash(ctx, edesc, &desc->ptr[3]);
++
+ 	ret = talitos_submit(dev, ctx->ch, desc, callback, areq);
+ 	if (ret != -EINPROGRESS) {
+ 		common_nonsnoop_hash_unmap(dev, edesc, areq);
+diff --git a/drivers/crypto/talitos1.c b/drivers/crypto/talitos1.c
+index c1a8e9e..1edaa68 100644
+--- a/drivers/crypto/talitos1.c
++++ b/drivers/crypto/talitos1.c
+@@ -174,3 +174,24 @@ void talitos_error(struct device *dev, u32 isr, u32 isr_lo)
+ 		talitos_init_device(dev);
+ 	}
+ }
++
++/*
++ * SEC1 doesn't like hashing of 0 sized message, so we do the padding
++ * ourself and submit a padded block
++ */
++void talitos_handle_buggy_hash(struct talitos_ctx *ctx,
++			       struct talitos_edesc *edesc,
++			       struct talitos_ptr *ptr)
++{
++	static u8 padded_hash[64] = {
++		0x80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
++		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
++		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
++		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
++	};
++
++	pr_err_once("Bug in SEC1, padding ourself\n");
++	edesc->desc.hdr &= ~DESC_HDR_MODE0_MDEU_PAD;
++	map_single_talitos_ptr(ctx->dev, ptr, sizeof(padded_hash),
++			       (char *)padded_hash, 0, DMA_TO_DEVICE);
++}
+diff --git a/drivers/crypto/talitos1.h b/drivers/crypto/talitos1.h
+index f78d89d..a9e0619 100644
+--- a/drivers/crypto/talitos1.h
++++ b/drivers/crypto/talitos1.h
+@@ -277,6 +277,10 @@ static inline void ahash_process_chain(struct scatterlist *src, int nbytes,
+ 	}
  }
  
--#define DEF_TALITOS_INTERRUPT(name, ch_done_mask, ch_err_mask, tlet)	       \
--static irqreturn_t talitos_interrupt_##name(int irq, void *data)	       \
--{									       \
--	struct device *dev = data;					       \
--	struct talitos_private *priv = dev_get_drvdata(dev);		       \
--	u32 isr, isr_lo;						       \
--	unsigned long flags;						       \
--									       \
--	spin_lock_irqsave(&priv->reg_lock, flags);			       \
--	isr = in_be32(priv->reg + TALITOS_ISR);				       \
--	isr_lo = in_be32(priv->reg + TALITOS_ISR_LO);			       \
--	/* Acknowledge interrupt */					       \
--	out_be32(priv->reg + TALITOS_ICR, isr & (ch_done_mask | ch_err_mask)); \
--	out_be32(priv->reg + TALITOS_ICR_LO, isr_lo);			       \
--									       \
--	if (unlikely(isr & ch_err_mask || isr_lo)) {			       \
--		spin_unlock_irqrestore(&priv->reg_lock, flags);		       \
--		talitos_error(dev, isr & ch_err_mask, isr_lo);		       \
--	}								       \
--	else {								       \
--		if (likely(isr & ch_done_mask)) {			       \
--			/* mask further done interrupts. */		       \
--			clrbits32(priv->reg + TALITOS_IMR, ch_done_mask);      \
--			/* done_task will unmask done interrupts at exit */    \
--			tasklet_schedule(&priv->done_task[tlet]);	       \
--		}							       \
--		spin_unlock_irqrestore(&priv->reg_lock, flags);		       \
--	}								       \
--									       \
--	return (isr & (ch_done_mask | ch_err_mask) || isr_lo) ? IRQ_HANDLED :  \
--								IRQ_NONE;      \
--}
- DEF_TALITOS_INTERRUPT(4ch, TALITOS_ISR_4CHDONE, TALITOS_ISR_4CHERR, 0)
- DEF_TALITOS_INTERRUPT(ch0_2, TALITOS_ISR_CH_0_2_DONE, TALITOS_ISR_CH_0_2_ERR, 0)
- DEF_TALITOS_INTERRUPT(ch1_3, TALITOS_ISR_CH_1_3_DONE, TALITOS_ISR_CH_1_3_ERR, 1)
++extern void talitos_handle_buggy_hash(struct talitos_ctx *ctx,
++			       struct talitos_edesc *edesc,
++			       struct talitos_ptr *ptr);
++
+ #define DEF_TALITOS_DONE(name, ch_done_mask)				\
+ static void talitos_done_##name(unsigned long data)			\
+ {									\
 diff --git a/drivers/crypto/talitos2.h b/drivers/crypto/talitos2.h
-index f9da9f2..10c7313 100644
+index 2715c72..de0c8f4 100644
 --- a/drivers/crypto/talitos2.h
 +++ b/drivers/crypto/talitos2.h
-@@ -222,3 +222,63 @@ static inline void do_init_device(struct talitos_private *priv)
- 	setbits32(priv->reg + TALITOS_IMR, TALITOS_IMR_INIT);
- 	setbits32(priv->reg + TALITOS_IMR_LO, TALITOS_IMR_LO_INIT);
+@@ -266,6 +266,12 @@ static inline void ahash_process_chain(struct scatterlist *src, int nbytes,
+ 		req_ctx->psrc = src;
  }
-+
-+#define DEF_TALITOS_DONE(name, ch_done_mask)				\
-+static void talitos_done_##name(unsigned long data)			\
-+{									\
-+	struct device *dev = (struct device *)data;			\
-+	struct talitos_private *priv = dev_get_drvdata(dev);		\
-+	unsigned long flags;						\
-+									\
-+	if (ch_done_mask & 1)						\
-+		talitos_flush_channel(dev, 0, 0, 0);			\
-+	if (priv->num_channels == 1)					\
-+		goto out;						\
-+	if (ch_done_mask & (1 << 2))					\
-+		talitos_flush_channel(dev, 1, 0, 0);			\
-+	if (ch_done_mask & (1 << 4))					\
-+		talitos_flush_channel(dev, 2, 0, 0);			\
-+	if (ch_done_mask & (1 << 6))					\
-+		talitos_flush_channel(dev, 3, 0, 0);			\
-+									\
-+out:									\
-+	/* At this point, all completed channels have been processed */	\
-+	/* Unmask done interrupts for channels completed later on. */	\
-+	spin_lock_irqsave(&priv->reg_lock, flags);			\
-+	setbits32(priv->reg + TALITOS_IMR, ch_done_mask);		\
-+	setbits32(priv->reg + TALITOS_IMR_LO, TALITOS_IMR_LO_INIT);	\
-+	spin_unlock_irqrestore(&priv->reg_lock, flags);			\
+ 
++static inline void talitos_handle_buggy_hash(struct talitos_ctx *ctx,
++			       struct talitos_edesc *edesc,
++			       struct talitos_ptr *ptr)
++{
 +}
 +
-+#define DEF_TALITOS_INTERRUPT(name, ch_done_mask, ch_err_mask, tlet)	       \
-+static irqreturn_t talitos_interrupt_##name(int irq, void *data)	       \
-+{									       \
-+	struct device *dev = data;					       \
-+	struct talitos_private *priv = dev_get_drvdata(dev);		       \
-+	u32 isr, isr_lo;						       \
-+	unsigned long flags;						       \
-+									       \
-+	spin_lock_irqsave(&priv->reg_lock, flags);			       \
-+	isr = in_be32(priv->reg + TALITOS_ISR);				       \
-+	isr_lo = in_be32(priv->reg + TALITOS_ISR_LO);			       \
-+	/* Acknowledge interrupt */					       \
-+	out_be32(priv->reg + TALITOS_ICR, isr & (ch_done_mask | ch_err_mask)); \
-+	out_be32(priv->reg + TALITOS_ICR_LO, isr_lo);			       \
-+									       \
-+	if (unlikely(isr & ch_err_mask || isr_lo)) {			       \
-+		spin_unlock_irqrestore(&priv->reg_lock, flags);		       \
-+		talitos_error(dev, isr & ch_err_mask, isr_lo);		       \
-+	}								       \
-+	else {								       \
-+		if (likely(isr & ch_done_mask)) {			       \
-+			/* mask further done interrupts. */		       \
-+			clrbits32(priv->reg + TALITOS_IMR, ch_done_mask);      \
-+			/* done_task will unmask done interrupts at exit */    \
-+			tasklet_schedule(&priv->done_task[tlet]);	       \
-+		}							       \
-+		spin_unlock_irqrestore(&priv->reg_lock, flags);		       \
-+	}								       \
-+									       \
-+	return (isr & (ch_done_mask | ch_err_mask) || isr_lo) ? IRQ_HANDLED :  \
-+								IRQ_NONE;      \
-+}
+ #define DEF_TALITOS_DONE(name, ch_done_mask)				\
+ static void talitos_done_##name(unsigned long data)			\
+ {									\
 -- 
 2.1.0
