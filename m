@@ -1,16 +1,18 @@
 Return-Path: <Emilian.Medve@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0115.outbound.protection.outlook.com [65.55.169.115])
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0118.outbound.protection.outlook.com [207.46.100.118])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BDCAD1A03CA
+ by lists.ozlabs.org (Postfix) with ESMTPS id E024C1A03D3
  for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Mar 2015 16:30:55 +1100 (AEDT)
 From: Emil Medve <Emilian.Medve@Freescale.com>
 To: <linuxppc-dev@lists.ozlabs.org>, <netdev@vger.kernel.org>,
  <linux-kernel@vger.kernel.org>
-Subject: [PATCH 0/7] Freescale DPAA FMan FLIB(s)
-Date: Wed, 4 Mar 2015 23:45:44 -0600
-Message-ID: <1425534351-1065-1-git-send-email-Emilian.Medve@Freescale.com>
+Subject: [PATCH 6/7] soc/fman: Add the FMan RTC FLIB
+Date: Wed, 4 Mar 2015 23:45:50 -0600
+Message-ID: <1425534351-1065-7-git-send-email-Emilian.Medve@Freescale.com>
+In-Reply-To: <1425534351-1065-1-git-send-email-Emilian.Medve@Freescale.com>
+References: <1425534351-1065-1-git-send-email-Emilian.Medve@Freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: Igal Liberman <Igal.Liberman@Freescale.com>
@@ -25,105 +27,420 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Igal Liberman <Igal.Liberman@freescale.com>
 
-The Freescale Data Path Acceleration Architecture (DPAA) is a set of
-hardware components on specific QorIQ P and T series multicore processors.
-This architecture provides the infrastructure to support simplified
-sharing of networking interfaces and accelerators by multiple CPU cores,
-and the accelerators themselves.
-
-One of the DPAA accelerators is the Frame Manager (FMan), which
-combines the Ethernet network interfaces with packet distribution
-logic to provide intelligent distribution and queuing decisions for
-incoming traffic at line rate.
-
-This patch presents the FMan Foundation Libraries (FLIB) headers.
-The FMan FLIB suite adds basic support for the DPAA FMan hardware register access.
-The FMan FLIB suite is used in Freescale's SDK Releases.
-
-Igal Liberman (7):
-  soc/fman: Add the FMan FLIB headers
-  soc/fman: Add the FMan FLIB
-  soc/fman: Add the FMan port FLIB
-  soc/fman: Add the FMan MAC FLIB
-  soc/fman: Add the FMan parser and KeyGen FLIB(s)
-  soc/fman: Add the FMan RTC FLIB
-  soc/fman: Add the FMan SP FLIB
-
- drivers/soc/Kconfig                                |    1 +
- drivers/soc/Makefile                               |    1 +
- drivers/soc/fsl/Kconfig                            |    1 +
- drivers/soc/fsl/Makefile                           |    1 +
- drivers/soc/fsl/fman/Kconfig                       |   35 +
- drivers/soc/fsl/fman/Makefile                      |   19 +
- drivers/soc/fsl/fman/flib/common/general.h         |   45 +
- drivers/soc/fsl/fman/flib/fman_common.h            |   74 +
- drivers/soc/fsl/fman/flib/fsl_enet.h               |  276 ++++
- drivers/soc/fsl/fman/flib/fsl_fman.h               |  801 ++++++++++
- drivers/soc/fsl/fman/flib/fsl_fman_dtsec.h         | 1017 +++++++++++++
- drivers/soc/fsl/fman/flib/fsl_fman_dtsec_mii_acc.h |  104 ++
- drivers/soc/fsl/fman/flib/fsl_fman_kg.h            |  506 +++++++
- drivers/soc/fsl/fman/flib/fsl_fman_memac.h         |  492 +++++++
- drivers/soc/fsl/fman/flib/fsl_fman_memac_mii_acc.h |   77 +
- drivers/soc/fsl/fman/flib/fsl_fman_port.h          |  602 ++++++++
- drivers/soc/fsl/fman/flib/fsl_fman_prs.h           |  106 ++
- drivers/soc/fsl/fman/flib/fsl_fman_rtc.h           |  415 ++++++
- drivers/soc/fsl/fman/flib/fsl_fman_sp.h            |  133 ++
- drivers/soc/fsl/fman/flib/fsl_fman_tgec.h          |  484 ++++++
- drivers/soc/fsl/fman/fman.c                        | 1396 ++++++++++++++++++
- drivers/soc/fsl/fman/mac/Makefile                  |   15 +
- drivers/soc/fsl/fman/mac/fman_crc32.c              |  117 ++
- drivers/soc/fsl/fman/mac/fman_crc32.h              |   40 +
- drivers/soc/fsl/fman/mac/fman_dtsec.c              |  844 +++++++++++
- drivers/soc/fsl/fman/mac/fman_dtsec_mii_acc.c      |  169 +++
- drivers/soc/fsl/fman/mac/fman_memac.c              |  504 +++++++
- drivers/soc/fsl/fman/mac/fman_memac_mii_acc.c      |  218 +++
- drivers/soc/fsl/fman/mac/fman_tgec.c               |  372 +++++
- drivers/soc/fsl/fman/pcd/Makefile                  |   13 +
- drivers/soc/fsl/fman/pcd/fman_kg.c                 |  850 +++++++++++
- drivers/soc/fsl/fman/pcd/fman_prs.c                |  127 ++
- drivers/soc/fsl/fman/port/Makefile                 |   13 +
- drivers/soc/fsl/fman/port/fman_port.c              | 1536 ++++++++++++++++++++
- drivers/soc/fsl/fman/rtc/Makefile                  |   13 +
- drivers/soc/fsl/fman/rtc/fman_rtc.c                |  354 +++++
- drivers/soc/fsl/fman/sp/Makefile                   |   13 +
- drivers/soc/fsl/fman/sp/fman_sp.c                  |  204 +++
- 38 files changed, 11988 insertions(+)
- create mode 100644 drivers/soc/fsl/Kconfig
- create mode 100644 drivers/soc/fsl/Makefile
- create mode 100644 drivers/soc/fsl/fman/Kconfig
- create mode 100644 drivers/soc/fsl/fman/Makefile
- create mode 100644 drivers/soc/fsl/fman/flib/common/general.h
- create mode 100644 drivers/soc/fsl/fman/flib/fman_common.h
- create mode 100644 drivers/soc/fsl/fman/flib/fsl_enet.h
- create mode 100644 drivers/soc/fsl/fman/flib/fsl_fman.h
- create mode 100644 drivers/soc/fsl/fman/flib/fsl_fman_dtsec.h
- create mode 100644 drivers/soc/fsl/fman/flib/fsl_fman_dtsec_mii_acc.h
- create mode 100644 drivers/soc/fsl/fman/flib/fsl_fman_kg.h
- create mode 100644 drivers/soc/fsl/fman/flib/fsl_fman_memac.h
- create mode 100644 drivers/soc/fsl/fman/flib/fsl_fman_memac_mii_acc.h
- create mode 100644 drivers/soc/fsl/fman/flib/fsl_fman_port.h
- create mode 100644 drivers/soc/fsl/fman/flib/fsl_fman_prs.h
- create mode 100644 drivers/soc/fsl/fman/flib/fsl_fman_rtc.h
- create mode 100644 drivers/soc/fsl/fman/flib/fsl_fman_sp.h
- create mode 100644 drivers/soc/fsl/fman/flib/fsl_fman_tgec.h
- create mode 100644 drivers/soc/fsl/fman/fman.c
- create mode 100644 drivers/soc/fsl/fman/mac/Makefile
- create mode 100644 drivers/soc/fsl/fman/mac/fman_crc32.c
- create mode 100644 drivers/soc/fsl/fman/mac/fman_crc32.h
- create mode 100644 drivers/soc/fsl/fman/mac/fman_dtsec.c
- create mode 100644 drivers/soc/fsl/fman/mac/fman_dtsec_mii_acc.c
- create mode 100644 drivers/soc/fsl/fman/mac/fman_memac.c
- create mode 100644 drivers/soc/fsl/fman/mac/fman_memac_mii_acc.c
- create mode 100644 drivers/soc/fsl/fman/mac/fman_tgec.c
- create mode 100644 drivers/soc/fsl/fman/pcd/Makefile
- create mode 100644 drivers/soc/fsl/fman/pcd/fman_kg.c
- create mode 100644 drivers/soc/fsl/fman/pcd/fman_prs.c
- create mode 100644 drivers/soc/fsl/fman/port/Makefile
- create mode 100644 drivers/soc/fsl/fman/port/fman_port.c
+Signed-off-by: Igal Liberman <Igal.Liberman@freescale.com>
+---
+ drivers/soc/fsl/fman/Kconfig        |   6 +
+ drivers/soc/fsl/fman/Makefile       |   1 +
+ drivers/soc/fsl/fman/rtc/Makefile   |  13 ++
+ drivers/soc/fsl/fman/rtc/fman_rtc.c | 354 ++++++++++++++++++++++++++++++++++++
+ 4 files changed, 374 insertions(+)
  create mode 100644 drivers/soc/fsl/fman/rtc/Makefile
  create mode 100644 drivers/soc/fsl/fman/rtc/fman_rtc.c
- create mode 100644 drivers/soc/fsl/fman/sp/Makefile
- create mode 100644 drivers/soc/fsl/fman/sp/fman_sp.c
 
+diff --git a/drivers/soc/fsl/fman/Kconfig b/drivers/soc/fsl/fman/Kconfig
+index 2559ee9..a144eb5 100644
+--- a/drivers/soc/fsl/fman/Kconfig
++++ b/drivers/soc/fsl/fman/Kconfig
+@@ -26,4 +26,10 @@ config FSL_FMAN_PCD
+ 	help
+ 		Freescale DPAA FMan Parse, Classify and Distribute support
+ 
++config FSL_FMAN_RTC
++	bool "FMan RTC"
++	default n
++	help
++		Freescale DPAA FMan Real Time Clock (PTP) support
++
+ endif	# FSL_FMAN
+diff --git a/drivers/soc/fsl/fman/Makefile b/drivers/soc/fsl/fman/Makefile
+index dc37f35..f415188 100644
+--- a/drivers/soc/fsl/fman/Makefile
++++ b/drivers/soc/fsl/fman/Makefile
+@@ -13,5 +13,6 @@ fsl_fman-objs			:= fman.o
+ obj-$(CONFIG_FSL_FMAN_PORT)	+= port/
+ obj-$(CONFIG_FSL_FMAN_MAC)	+= mac/
+ obj-$(CONFIG_FSL_FMAN_PCD)	+= pcd/
++obj-$(CONFIG_FSL_FMAN_RTC)	+= rtc/
+ 
+ endif
+diff --git a/drivers/soc/fsl/fman/rtc/Makefile b/drivers/soc/fsl/fman/rtc/Makefile
+new file mode 100644
+index 0000000..69a92fb
+--- /dev/null
++++ b/drivers/soc/fsl/fman/rtc/Makefile
+@@ -0,0 +1,13 @@
++ccflags-y += -DVERSION=\"\"
++
++ifeq ($(CONFIG_FSL_FMAN_RTC),y)
++
++FMAN = $(srctree)/drivers/soc/fsl/fman
++
++ccflags-y += -I$(FMAN)/flib
++
++obj-$(CONFIG_FSL_FMAN_RTC)	+= fsl_fman_rtc.o
++
++fsl_fman_rtc-objs		:= fman_rtc.o
++
++endif
+diff --git a/drivers/soc/fsl/fman/rtc/fman_rtc.c b/drivers/soc/fsl/fman/rtc/fman_rtc.c
+new file mode 100644
+index 0000000..e6d6dae
+--- /dev/null
++++ b/drivers/soc/fsl/fman/rtc/fman_rtc.c
+@@ -0,0 +1,354 @@
++/*
++ * Copyright 2008-2015 Freescale Semiconductor Inc.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are met:
++ *     * Redistributions of source code must retain the above copyright
++ *       notice, this list of conditions and the following disclaimer.
++ *     * Redistributions in binary form must reproduce the above copyright
++ *       notice, this list of conditions and the following disclaimer in the
++ *       documentation and/or other materials provided with the distribution.
++ *     * Neither the name of Freescale Semiconductor nor the
++ *       names of its contributors may be used to endorse or promote products
++ *       derived from this software without specific prior written permission.
++ *
++ *
++ * ALTERNATIVELY, this software may be distributed under the terms of the
++ * GNU General Public License ("GPL") as published by the Free Software
++ * Foundation, either version 2 of that License or (at your option) any
++ * later version.
++ *
++ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
++ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
++ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
++ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
++ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
++ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++#include "fsl_fman_rtc.h"
++
++void fman_rtc_defconfig(struct rtc_cfg *cfg)
++{
++	int i;
++
++	cfg->src_clk = DEFAULT_SRC_CLOCK;
++	cfg->invert_input_clk_phase = DEFAULT_INVERT_INPUT_CLK_PHASE;
++	cfg->invert_output_clk_phase = DEFAULT_INVERT_OUTPUT_CLK_PHASE;
++	cfg->pulse_realign = DEFAULT_PULSE_REALIGN;
++	for (i = 0; i < FMAN_RTC_MAX_NUM_OF_ALARMS; i++)
++		cfg->alarm_polarity[i] = DEFAULT_ALARM_POLARITY;
++	for (i = 0; i < FMAN_RTC_MAX_NUM_OF_EXT_TRIGGERS; i++)
++		cfg->trigger_polarity[i] = DEFAULT_TRIGGER_POLARITY;
++}
++
++uint32_t fman_rtc_get_events(struct rtc_regs __iomem *regs)
++{
++	return ioread32be(&regs->tmr_tevent);
++}
++
++uint32_t fman_rtc_get_event(struct rtc_regs __iomem *regs, uint32_t ev_mask)
++{
++	return ioread32be(&regs->tmr_tevent) & ev_mask;
++}
++
++uint32_t fman_rtc_get_interrupt_mask(struct rtc_regs __iomem *regs)
++{
++	return ioread32be(&regs->tmr_temask);
++}
++
++void fman_rtc_set_interrupt_mask(struct rtc_regs __iomem *regs, uint32_t mask)
++{
++	iowrite32be(mask, &regs->tmr_temask);
++}
++
++void fman_rtc_ack_event(struct rtc_regs __iomem *regs, uint32_t events)
++{
++	iowrite32be(events, &regs->tmr_tevent);
++}
++
++uint32_t fman_rtc_check_and_clear_event(struct rtc_regs __iomem *regs)
++{
++	uint32_t event;
++
++	event = ioread32be(&regs->tmr_tevent);
++	event &= ioread32be(&regs->tmr_temask);
++
++	if (event)
++		iowrite32be(event, &regs->tmr_tevent);
++	return event;
++}
++
++uint32_t fman_rtc_get_frequency_compensation(struct rtc_regs __iomem *regs)
++{
++	return ioread32be(&regs->tmr_add);
++}
++
++void fman_rtc_set_frequency_compensation(struct rtc_regs __iomem *regs,
++					 uint32_t val)
++{
++	iowrite32be(val, &regs->tmr_add);
++}
++
++void fman_rtc_enable_interrupt(struct rtc_regs __iomem *regs, uint32_t events)
++{
++	fman_rtc_set_interrupt_mask(regs,
++				    fman_rtc_get_interrupt_mask(regs) | events);
++}
++
++void fman_rtc_disable_interrupt(struct rtc_regs __iomem *regs, uint32_t events)
++{
++	fman_rtc_set_interrupt_mask(regs,
++				    fman_rtc_get_interrupt_mask(regs) &
++				    ~events);
++}
++
++void fman_rtc_set_timer_alarm_l(struct rtc_regs __iomem *regs, int index,
++				uint32_t val)
++{
++	iowrite32be(val, &regs->tmr_alarm[index].tmr_alarm_l);
++}
++
++void fman_rtc_set_timer_fiper(struct rtc_regs __iomem *regs, int index,
++			      uint32_t val)
++{
++	iowrite32be(val, &regs->tmr_fiper[index]);
++}
++
++void fman_rtc_set_timer_alarm(struct rtc_regs __iomem *regs, int index,
++			      int64_t val)
++{
++	iowrite32be((uint32_t)val, &regs->tmr_alarm[index].tmr_alarm_l);
++	iowrite32be((uint32_t)(val >> 32),
++		    &regs->tmr_alarm[index].tmr_alarm_h);
++}
++
++void fman_rtc_set_timer_offset(struct rtc_regs __iomem *regs, int64_t val)
++{
++	iowrite32be((uint32_t)val, &regs->tmr_off_l);
++	iowrite32be((uint32_t)(val >> 32), &regs->tmr_off_h);
++}
++
++uint64_t fman_rtc_get_trigger_stamp(struct rtc_regs __iomem *regs, int id)
++{
++	uint64_t time;
++	/* TMR_CNT_L must be read first to get an accurate value */
++	time = (uint64_t)ioread32be(&regs->tmr_etts[id].tmr_etts_l);
++	time |= ((uint64_t)ioread32be(&regs->tmr_etts[id].tmr_etts_h)
++		 << 32);
++
++	return time;
++}
++
++uint32_t fman_rtc_get_timer_ctrl(struct rtc_regs __iomem *regs)
++{
++	return ioread32be(&regs->tmr_ctrl);
++}
++
++void fman_rtc_set_timer_ctrl(struct rtc_regs __iomem *regs, uint32_t val)
++{
++	iowrite32be(val, &regs->tmr_ctrl);
++}
++
++void fman_rtc_timers_soft_reset(struct rtc_regs __iomem *regs)
++{
++	fman_rtc_set_timer_ctrl(regs, FMAN_RTC_TMR_CTRL_TMSR);
++	udelay(10);
++	fman_rtc_set_timer_ctrl(regs, 0);
++}
++
++void fman_rtc_init(struct rtc_cfg *cfg, struct rtc_regs __iomem *regs,
++		   int num_alarms, int num_fipers, int num_ext_triggers,
++		   bool init_freq_comp, uint32_t freq_compensation,
++		   uint32_t output_clock_divisor)
++{
++	uint32_t tmr_ctrl;
++	int i;
++
++	fman_rtc_timers_soft_reset(regs);
++
++	/* Set the source clock */
++	switch (cfg->src_clk) {
++	case FMAN_RTC_SOURCE_CLOCK_SYSTEM:
++		tmr_ctrl = FMAN_RTC_TMR_CTRL_CKSEL_MAC_CLK;
++		break;
++	case FMAN_RTC_SOURCE_CLOCK_OSCILATOR:
++		tmr_ctrl = FMAN_RTC_TMR_CTRL_CKSEL_OSC_CLK;
++		break;
++	default:
++		/* Use a clock from the External TMR reference clock. */
++		tmr_ctrl = FMAN_RTC_TMR_CTRL_CKSEL_EXT_CLK;
++		break;
++	}
++
++	/* whatever period the user picked, the timestamp will advance in '1'
++	 * every time the period passed.
++	 **/
++	tmr_ctrl |= ((1 << FMAN_RTC_TMR_CTRL_TCLK_PERIOD_SHIFT) &
++		     FMAN_RTC_TMR_CTRL_TCLK_PERIOD_MASK);
++
++	if (cfg->invert_input_clk_phase)
++		tmr_ctrl |= FMAN_RTC_TMR_CTRL_CIPH;
++	if (cfg->invert_output_clk_phase)
++		tmr_ctrl |= FMAN_RTC_TMR_CTRL_COPH;
++
++	for (i = 0; i < num_alarms; i++) {
++		if (cfg->alarm_polarity[i] ==
++		    FMAN_RTC_ALARM_POLARITY_ACTIVE_LOW)
++			tmr_ctrl |= (FMAN_RTC_TMR_CTRL_ALMP1 >> i);
++	}
++
++	for (i = 0; i < num_ext_triggers; i++)
++		if (cfg->trigger_polarity[i] ==
++		    FMAN_RTC_TRIGGER_ON_FALLING_EDGE)
++			tmr_ctrl |= (FMAN_RTC_TMR_CTRL_ETEP1 << i);
++
++	if (!cfg->timer_slave_mode && cfg->bypass)
++		tmr_ctrl |= FMAN_RTC_TMR_CTRL_BYP;
++
++	fman_rtc_set_timer_ctrl(regs, tmr_ctrl);
++	if (init_freq_comp)
++		fman_rtc_set_frequency_compensation(regs, freq_compensation);
++
++	/* Clear TMR_ALARM registers */
++	for (i = 0; i < num_alarms; i++)
++		fman_rtc_set_timer_alarm(regs, i, 0xFFFFFFFFFFFFFFFFLL);
++
++	/* Clear TMR_TEVENT */
++	fman_rtc_ack_event(regs, FMAN_RTC_TMR_TEVENT_ALL);
++
++	/* Initialize TMR_TEMASK */
++	fman_rtc_set_interrupt_mask(regs, 0);
++
++	/* Clear TMR_FIPER registers */
++	for (i = 0; i < num_fipers; i++)
++		fman_rtc_set_timer_fiper(regs, i, 0xFFFFFFFF);
++
++	/* Initialize TMR_PRSC */
++	iowrite32be(output_clock_divisor, &regs->tmr_prsc);
++
++	/* Clear TMR_OFF */
++	fman_rtc_set_timer_offset(regs, 0);
++}
++
++bool fman_rtc_is_enabled(struct rtc_regs __iomem *regs)
++{
++	return (bool)(fman_rtc_get_timer_ctrl(regs) & FMAN_RTC_TMR_CTRL_TE);
++}
++
++void fman_rtc_enable(struct rtc_regs __iomem *regs, bool reset_clock)
++{
++	uint32_t tmr_ctrl = fman_rtc_get_timer_ctrl(regs);
++
++	/* TODO check that no timestamping MACs are working in this stage. */
++	if (reset_clock) {
++		fman_rtc_set_timer_ctrl(regs,
++					(tmr_ctrl | FMAN_RTC_TMR_CTRL_TMSR));
++
++		udelay(10);
++		/* Clear TMR_OFF */
++		fman_rtc_set_timer_offset(regs, 0);
++	}
++
++	fman_rtc_set_timer_ctrl(regs, (tmr_ctrl | FMAN_RTC_TMR_CTRL_TE));
++}
++
++void fman_rtc_disable(struct rtc_regs __iomem *regs)
++{
++	fman_rtc_set_timer_ctrl(regs,
++				(fman_rtc_get_timer_ctrl(regs) &
++				~(FMAN_RTC_TMR_CTRL_TE)));
++}
++
++void fman_rtc_clear_periodic_pulse(struct rtc_regs __iomem *regs, int id)
++{
++	uint32_t tmp_reg;
++
++	if (id == 0)
++		tmp_reg = FMAN_RTC_TMR_TEVENT_PP1;
++	else
++		tmp_reg = FMAN_RTC_TMR_TEVENT_PP2;
++	fman_rtc_disable_interrupt(regs, tmp_reg);
++
++	tmp_reg = fman_rtc_get_timer_ctrl(regs);
++	if (tmp_reg & FMAN_RTC_TMR_CTRL_FS)
++		fman_rtc_set_timer_ctrl(regs, tmp_reg & ~FMAN_RTC_TMR_CTRL_FS);
++
++	fman_rtc_set_timer_fiper(regs, id, 0xFFFFFFFF);
++}
++
++void fman_rtc_clear_external_trigger(struct rtc_regs __iomem *regs, int id)
++{
++	uint32_t tmp_reg, tmp_ctrl;
++
++	if (id == 0)
++		tmp_reg = FMAN_RTC_TMR_TEVENT_ETS1;
++	else
++		tmp_reg = FMAN_RTC_TMR_TEVENT_ETS2;
++	fman_rtc_disable_interrupt(regs, tmp_reg);
++
++	if (id == 0)
++		tmp_reg = FMAN_RTC_TMR_CTRL_PP1L;
++	else
++		tmp_reg = FMAN_RTC_TMR_CTRL_PP2L;
++	tmp_ctrl = fman_rtc_get_timer_ctrl(regs);
++	if (tmp_ctrl & tmp_reg)
++		fman_rtc_set_timer_ctrl(regs, tmp_ctrl & ~tmp_reg);
++}
++
++void fman_rtc_set_alarm(struct rtc_regs __iomem *regs, int id, uint32_t val,
++			bool enable)
++{
++	uint32_t tmp_reg;
++
++	fman_rtc_set_timer_alarm(regs, id, val);
++	if (enable) {
++		if (id == 0)
++			tmp_reg = FMAN_RTC_TMR_TEVENT_ALM1;
++		else
++			tmp_reg = FMAN_RTC_TMR_TEVENT_ALM2;
++		fman_rtc_enable_interrupt(regs, tmp_reg);
++	}
++}
++
++void fman_rtc_set_periodic_pulse(struct rtc_regs __iomem *regs, int id,
++				 uint32_t val, bool enable)
++{
++	uint32_t tmp_reg;
++
++	fman_rtc_set_timer_fiper(regs, id, val);
++	if (enable) {
++		if (id == 0)
++			tmp_reg = FMAN_RTC_TMR_TEVENT_PP1;
++		else
++			tmp_reg = FMAN_RTC_TMR_TEVENT_PP2;
++		fman_rtc_enable_interrupt(regs, tmp_reg);
++	}
++}
++
++void fman_rtc_set_ext_trigger(struct rtc_regs __iomem *regs, int id,
++			      bool enable, bool use_pulse_as_input)
++{
++	uint32_t tmp_reg;
++
++	if (enable) {
++		if (id == 0)
++			tmp_reg = FMAN_RTC_TMR_TEVENT_ETS1;
++		else
++			tmp_reg = FMAN_RTC_TMR_TEVENT_ETS2;
++		fman_rtc_enable_interrupt(regs, tmp_reg);
++	}
++	if (use_pulse_as_input) {
++		if (id == 0)
++			tmp_reg = FMAN_RTC_TMR_CTRL_PP1L;
++		else
++			tmp_reg = FMAN_RTC_TMR_CTRL_PP2L;
++		fman_rtc_set_timer_ctrl(regs,
++					fman_rtc_get_timer_ctrl(regs) |
++					tmp_reg);
++	}
++}
 -- 
 2.3.1
