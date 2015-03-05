@@ -3,13 +3,13 @@ Received: from smtp.outflux.net (smtp.outflux.net
  [IPv6:2001:19d0:2:6:c0de:0:736d:7470])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9A0FC1A0330
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Mar 2015 12:28:54 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 856241A08B4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Mar 2015 12:30:38 +1100 (AEDT)
 From: Kees Cook <keescook@chromium.org>
 To: akpm@linux-foundation.org
-Subject: [PATCH v3 1/8] seccomp: allow COMPAT sigreturn overrides
-Date: Wed,  4 Mar 2015 17:27:01 -0800
-Message-Id: <1425518828-16017-2-git-send-email-keescook@chromium.org>
+Subject: [PATCH v3 5/8] parisc: switch to using asm-generic for seccomp.h
+Date: Wed,  4 Mar 2015 17:27:05 -0800
+Message-Id: <1425518828-16017-6-git-send-email-keescook@chromium.org>
 In-Reply-To: <1425518828-16017-1-git-send-email-keescook@chromium.org>
 References: <1425518828-16017-1-git-send-email-keescook@chromium.org>
 Cc: linux-mips@linux-mips.org, Peter Zijlstra <peterz@infradead.org>,
@@ -33,27 +33,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Some architectures may need to override the compat sigreturn definition,
-as is already possible in the non-compat case.
+Switch to using the newly created asm-generic/seccomp.h for the seccomp
+strict mode syscall definitions. Definitions were identical.
 
 Signed-off-by: Kees Cook <keescook@chromium.org>
 ---
- include/asm-generic/seccomp.h | 2 ++
- 1 file changed, 2 insertions(+)
+ arch/parisc/include/asm/Kbuild    |  1 +
+ arch/parisc/include/asm/seccomp.h | 16 ----------------
+ 2 files changed, 1 insertion(+), 16 deletions(-)
+ delete mode 100644 arch/parisc/include/asm/seccomp.h
 
-diff --git a/include/asm-generic/seccomp.h b/include/asm-generic/seccomp.h
-index 9fa1f653ed3b..c9ccafa0d99a 100644
---- a/include/asm-generic/seccomp.h
-+++ b/include/asm-generic/seccomp.h
-@@ -17,7 +17,9 @@
- #define __NR_seccomp_read_32		__NR_read
- #define __NR_seccomp_write_32		__NR_write
- #define __NR_seccomp_exit_32		__NR_exit
-+#ifndef __NR_seccomp_sigreturn_32
- #define __NR_seccomp_sigreturn_32	__NR_rt_sigreturn
-+#endif
- #endif /* CONFIG_COMPAT && ! already defined */
- 
- #define __NR_seccomp_read		__NR_read
+diff --git a/arch/parisc/include/asm/Kbuild b/arch/parisc/include/asm/Kbuild
+index 8686237a3c3c..12b341d04f88 100644
+--- a/arch/parisc/include/asm/Kbuild
++++ b/arch/parisc/include/asm/Kbuild
+@@ -20,6 +20,7 @@ generic-y += param.h
+ generic-y += percpu.h
+ generic-y += poll.h
+ generic-y += preempt.h
++generic-y += seccomp.h
+ generic-y += segment.h
+ generic-y += topology.h
+ generic-y += trace_clock.h
+diff --git a/arch/parisc/include/asm/seccomp.h b/arch/parisc/include/asm/seccomp.h
+deleted file mode 100644
+index 015f7887aa29..000000000000
+--- a/arch/parisc/include/asm/seccomp.h
++++ /dev/null
+@@ -1,16 +0,0 @@
+-#ifndef _ASM_PARISC_SECCOMP_H
+-#define _ASM_PARISC_SECCOMP_H
+-
+-#include <linux/unistd.h>
+-
+-#define __NR_seccomp_read __NR_read
+-#define __NR_seccomp_write __NR_write
+-#define __NR_seccomp_exit __NR_exit
+-#define __NR_seccomp_sigreturn __NR_rt_sigreturn
+-
+-#define __NR_seccomp_read_32 __NR_read
+-#define __NR_seccomp_write_32 __NR_write
+-#define __NR_seccomp_exit_32 __NR_exit
+-#define __NR_seccomp_sigreturn_32 __NR_rt_sigreturn
+-
+-#endif	/* _ASM_PARISC_SECCOMP_H */
 -- 
 1.9.1
