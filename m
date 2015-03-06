@@ -1,24 +1,24 @@
-Return-Path: <Kim.Phillips@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bn0107.outbound.protection.outlook.com [157.56.110.107])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <herbert@gondor.apana.org.au>
+Received: from helcar.apana.org.au (helcar.apana.org.au [209.40.204.226])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5EBE61A02E2
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Mar 2015 11:27:57 +1100 (AEDT)
-Date: Thu, 5 Mar 2015 18:06:37 -0600
-From: Kim Phillips <kim.phillips@freescale.com>
-To: Martin Hicks <mort@bork.org>
-Subject: Re: [PATCH v2 1/5] crypto: talitos: Simplify per-channel
- initialization
-Message-ID: <20150305180637.e64ed8b57ec79620cbb3ac4b@freescale.com>
-In-Reply-To: <1425388897-5434-2-git-send-email-mort@bork.org>
-References: <1425388897-5434-1-git-send-email-mort@bork.org>
- <1425388897-5434-2-git-send-email-mort@bork.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8E5251A0371
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Mar 2015 11:29:11 +1100 (AEDT)
+Date: Fri, 6 Mar 2015 11:28:31 +1100
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Kim Phillips <kim.phillips@freescale.com>
+Subject: Re: [PATCH 0/17] crypto: talitos - Add support for SEC1
+Message-ID: <20150306002831.GA30947@gondor.apana.org.au>
+References: <20150305164605.E65D81A241C@localhost.localdomain>
+ <20150305182101.6db66e228f519476f0751c13@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org,
- Horia =?UTF-8?Q?Geant=C4=83?= <horia.geanta@freescale.com>,
- linux-crypto@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20150305182101.6db66e228f519476f0751c13@freescale.com>
+Cc: Mark Rutland <mark.rutland@arm.com>, Pawel Moll <pawel.moll@arm.com>,
+ Ian Campbell <ijc+devicetree@hellion.org.uk>, linux-kernel@vger.kernel.org,
+ devicetree@vger.kernel.org, Rob Herring <robh+dt@kernel.org>,
+ linux-crypto@vger.kernel.org, Kumar Gala <galak@codeaurora.org>,
+ linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,15 +28,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue,  3 Mar 2015 08:21:33 -0500
-Martin Hicks <mort@bork.org> wrote:
-
-> There were multiple loops in a row, for each separate step of the
-> initialization of the channels.  Simplify to a single loop.
+On Thu, Mar 05, 2015 at 06:21:01PM -0600, Kim Phillips wrote:
+> On Thu, 5 Mar 2015 17:46:05 +0100
+> Christophe Leroy <christophe.leroy@c-s.fr> wrote:
 > 
-> Signed-off-by: Martin Hicks <mort@bork.org>
-> ---
+> > [15/17] crypto: talitos - Implementation of SEC1
+> 
+> ...
+> 
+> > [16/17] crypto: talitos - SEC1 bugs on 0 data hash
+> > [17/17] crypto: talitos - Update DT bindings with SEC1
+> 
+> This patchseries doesn't apply, at least on top of Herbert's
+> cryptodev-2.6 tree, as of today:
+> 
+> Applying: crypto: talitos - Implementation of SEC1
+> error: patch failed: drivers/crypto/talitos.c:655
+> error: drivers/crypto/talitos.c: patch does not apply
 
-Acked-by: Kim Phillips <kim.phillips@freescale.com>
+Also the patches are coming in a random order.  Please send them
+one at a time to ensure proper ordering.
 
-Kim
+Thanks,
+-- 
+Email: Herbert Xu <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
