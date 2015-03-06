@@ -1,21 +1,17 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 037D81A0358
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Mar 2015 03:32:39 +1100 (AEDT)
-Content-Type: text/plain; charset=windows-1252
-Mime-Version: 1.0 (Mac OS X Mail 7.3 \(1878.6\))
-Subject: Re: [PATCH 1/7] soc/fman: Add the FMan FLIB headers
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1425534351-1065-2-git-send-email-Emilian.Medve@Freescale.com>
-Date: Fri, 6 Mar 2015 10:32:18 -0600
-Message-Id: <6250951C-902C-49D3-9730-756EE611AF3B@kernel.crashing.org>
-References: <1425534351-1065-1-git-send-email-Emilian.Medve@Freescale.com>
- <1425534351-1065-2-git-send-email-Emilian.Medve@Freescale.com>
-To: Emil Medve <Emilian.Medve@freescale.com>
-Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Igal Liberman <Igal.Liberman@freescale.com>
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ by lists.ozlabs.org (Postfix) with ESMTP id 97F481A0358
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Mar 2015 03:37:48 +1100 (AEDT)
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+To: Kim Phillips <kim.phillips@freescale.com>,
+ Herbert Xu <herbert@gondor.apana.org.au>,
+ "David S. Miller" <davem@davemloft.net>
+Subject: [PATCH v2 01/17] crypto: talitos - base address for Execution Units
+ and macro for ISR masks
+Message-Id: <20150306163745.66B581A241C@localhost.localdomain>
+Date: Fri,  6 Mar 2015 17:37:45 +0100 (CET)
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-crypto@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,147 +21,131 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+SEC1 and SEC2 have different EU base addresses, so define base addresses
+as #define
+SEC1 and SEC2 have different bit masks for ISR registers, so create a
+macro to define them
 
-On Mar 4, 2015, at 11:45 PM, Emil Medve <Emilian.Medve@freescale.com> =
-wrote:
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
-> From: Igal Liberman <Igal.Liberman@freescale.com>
->=20
-> The Freescale Data Path Acceleration Architecture (DPAA) is a set of
-> hardware components on specific QorIQ P and T series multicore =
-processors.
-> This architecture provides the infrastructure to support simplified
-> sharing of networking interfaces and accelerators by multiple CPU =
-cores,
-> and the accelerators themselves.
->=20
-> One of the DPAA accelerators is the Frame Manager (FMan), which
-> combines the Ethernet network interfaces with packet distribution
-> logic to provide intelligent distribution and queuing decisions for
-> incoming traffic at line rate.
->=20
-> This patch presents the FMan Foundation Libraries (FLIB) headers.
-> The FMan FLIB suite adds basic support for the DPAA FMan hardware =
-register access.
-> The FMan FLIB suite is used in Freescale's SDK Releases.
->=20
-> Signed-off-by: Igal Liberman <Igal.Liberman@freescale.com>
-> ---
-> drivers/soc/fsl/fman/flib/common/general.h         |   45 +
-> drivers/soc/fsl/fman/flib/fman_common.h            |   74 ++
-> drivers/soc/fsl/fman/flib/fsl_enet.h               |  276 ++++++
-> drivers/soc/fsl/fman/flib/fsl_fman.h               |  801 =
-+++++++++++++++
-> drivers/soc/fsl/fman/flib/fsl_fman_dtsec.h         | 1017 =
-++++++++++++++++++++
-> drivers/soc/fsl/fman/flib/fsl_fman_dtsec_mii_acc.h |  104 ++
-> drivers/soc/fsl/fman/flib/fsl_fman_kg.h            |  506 ++++++++++
-> drivers/soc/fsl/fman/flib/fsl_fman_memac.h         |  492 ++++++++++
-> drivers/soc/fsl/fman/flib/fsl_fman_memac_mii_acc.h |   77 ++
-> drivers/soc/fsl/fman/flib/fsl_fman_port.h          |  602 ++++++++++++
-> drivers/soc/fsl/fman/flib/fsl_fman_prs.h           |  106 ++
-> drivers/soc/fsl/fman/flib/fsl_fman_rtc.h           |  415 ++++++++
-> drivers/soc/fsl/fman/flib/fsl_fman_sp.h            |  133 +++
-> drivers/soc/fsl/fman/flib/fsl_fman_tgec.h          |  484 ++++++++++
-> 14 files changed, 5132 insertions(+)
-> create mode 100644 drivers/soc/fsl/fman/flib/common/general.h
-> create mode 100644 drivers/soc/fsl/fman/flib/fman_common.h
-> create mode 100644 drivers/soc/fsl/fman/flib/fsl_enet.h
-> create mode 100644 drivers/soc/fsl/fman/flib/fsl_fman.h
-> create mode 100644 drivers/soc/fsl/fman/flib/fsl_fman_dtsec.h
-> create mode 100644 drivers/soc/fsl/fman/flib/fsl_fman_dtsec_mii_acc.h
-> create mode 100644 drivers/soc/fsl/fman/flib/fsl_fman_kg.h
-> create mode 100644 drivers/soc/fsl/fman/flib/fsl_fman_memac.h
-> create mode 100644 drivers/soc/fsl/fman/flib/fsl_fman_memac_mii_acc.h
-> create mode 100644 drivers/soc/fsl/fman/flib/fsl_fman_port.h
-> create mode 100644 drivers/soc/fsl/fman/flib/fsl_fman_prs.h
-> create mode 100644 drivers/soc/fsl/fman/flib/fsl_fman_rtc.h
-> create mode 100644 drivers/soc/fsl/fman/flib/fsl_fman_sp.h
-> create mode 100644 drivers/soc/fsl/fman/flib/fsl_fman_tgec.h
+---
+ drivers/crypto/talitos.h | 85 ++++++++++++++++++++++++++++++------------------
+ 1 file changed, 53 insertions(+), 32 deletions(-)
 
-1. this is way to big of patch to reasonable review
-2. can some of these headers be associated with the code patches that =
-use them instead
-
->=20
-> diff --git a/drivers/soc/fsl/fman/flib/common/general.h =
-b/drivers/soc/fsl/fman/flib/common/general.h
-> new file mode 100644
-> index 0000000..e5f56af
-> --- /dev/null
-> +++ b/drivers/soc/fsl/fman/flib/common/general.h
-> @@ -0,0 +1,45 @@
-> +/*
-> + * Copyright 2008-2015 Freescale Semiconductor Inc.
-> + *
-> + * Redistribution and use in source and binary forms, with or without
-> + * modification, are permitted provided that the following conditions =
-are met:
-> + *     * Redistributions of source code must retain the above =
-copyright
-> + *       notice, this list of conditions and the following =
-disclaimer.
-> + *     * Redistributions in binary form must reproduce the above =
-copyright
-> + *       notice, this list of conditions and the following disclaimer =
-in the
-> + *       documentation and/or other materials provided with the =
-distribution.
-> + *     * Neither the name of Freescale Semiconductor nor the
-> + *       names of its contributors may be used to endorse or promote =
-products
-> + *       derived from this software without specific prior written =
-permission.
-> + *
-> + *
-> + * ALTERNATIVELY, this software may be distributed under the terms of =
-the
-> + * GNU General Public License ("GPL") as published by the Free =
-Software
-> + * Foundation, either version 2 of that License or (at your option) =
-any
-> + * later version.
-> + *
-> + * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND =
-ANY
-> + * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE =
-IMPLIED
-> + * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE =
-ARE
-> + * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE =
-FOR ANY
-> + * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL =
-DAMAGES
-> + * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR =
-SERVICES;
-> + * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER =
-CAUSED AND
-> + * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, =
-OR TORT
-> + * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE =
-USE OF THIS
-> + * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-> + */
-> +
-> +#ifndef __GENERAL_H
-> +#define __GENERAL_H
-> +
-> +#include <linux/types.h>
-> +#include <linux/io.h>
-> +
-> +#define UNUSED(X)	(X =3D X)
-
-Don=92t we already have a kernel mechanism to mark something unused for =
-gcc to be quiet?
-
-> +#define KILOBYTE	0x400UL	/* 1024 */
-
-Really? I saw one usage, in which you could easily do (5 * 1024).
-
-> +
-> +#define iowrite32be(val, addr)		out_be32(&(*addr), val)
-> +#define ioread32be(addr)		in_be32(&(*addr))
-> +
-> +#endif /* __GENERAL_H */
-
-- k=
+diff --git a/drivers/crypto/talitos.h b/drivers/crypto/talitos.h
+index 61a1405..102dc99 100644
+--- a/drivers/crypto/talitos.h
++++ b/drivers/crypto/talitos.h
+@@ -149,6 +149,8 @@ extern int talitos_submit(struct device *dev, int ch, struct talitos_desc *desc,
+  * TALITOS_xxx_LO addresses point to the low data bits (32-63) of the register
+  */
+ 
++#define ISR_FORMAT(x)			(((x) << 4) | (x))
++
+ /* global register offset addresses */
+ #define TALITOS_MCR			0x1030  /* master control register */
+ #define   TALITOS_MCR_RCA0		(1 << 15) /* remap channel 0 */
+@@ -163,12 +165,12 @@ extern int talitos_submit(struct device *dev, int ch, struct talitos_desc *desc,
+ #define TALITOS_IMR_LO			0x100C
+ #define   TALITOS_IMR_LO_INIT		0x20000 /* allow RNGU error IRQs */
+ #define TALITOS_ISR			0x1010  /* interrupt status register */
+-#define   TALITOS_ISR_4CHERR		0xaa    /* 4 channel errors mask */
+-#define   TALITOS_ISR_4CHDONE		0x55    /* 4 channel done mask */
+-#define   TALITOS_ISR_CH_0_2_ERR	0x22    /* channels 0, 2 errors mask */
+-#define   TALITOS_ISR_CH_0_2_DONE	0x11    /* channels 0, 2 done mask */
+-#define   TALITOS_ISR_CH_1_3_ERR	0x88    /* channels 1, 3 errors mask */
+-#define   TALITOS_ISR_CH_1_3_DONE	0x44    /* channels 1, 3 done mask */
++#define   TALITOS_ISR_4CHERR		ISR_FORMAT(0xa)	/* 4 ch errors mask */
++#define   TALITOS_ISR_4CHDONE		ISR_FORMAT(0x5)	/* 4 ch done mask */
++#define   TALITOS_ISR_CH_0_2_ERR	ISR_FORMAT(0x2)	/* ch 0, 2 err mask */
++#define   TALITOS_ISR_CH_0_2_DONE	ISR_FORMAT(0x1)	/* ch 0, 2 done mask */
++#define   TALITOS_ISR_CH_1_3_ERR	ISR_FORMAT(0x8)	/* ch 1, 3 err mask */
++#define   TALITOS_ISR_CH_1_3_DONE	ISR_FORMAT(0x4)	/* ch 1, 3 done mask */
+ #define TALITOS_ISR_LO			0x1014
+ #define TALITOS_ICR			0x1018  /* interrupt clear register */
+ #define TALITOS_ICR_LO			0x101C
+@@ -224,37 +226,56 @@ extern int talitos_submit(struct device *dev, int ch, struct talitos_desc *desc,
+ #define TALITOS_SCATTER			0xe0
+ #define TALITOS_SCATTER_LO		0xe4
+ 
++/* execution unit registers base */
++#define TALITOS_DEU			0x2000
++#define TALITOS_AESU			0x4000
++#define TALITOS_MDEU			0x6000
++#define TALITOS_AFEU			0x8000
++#define TALITOS_RNGU			0xa000
++#define TALITOS_PKEU			0xc000
++#define TALITOS_KEU			0xe000
++#define TALITOS_CRCU			0xf000
++
+ /* execution unit interrupt status registers */
+-#define TALITOS_DEUISR			0x2030 /* DES unit */
+-#define TALITOS_DEUISR_LO		0x2034
+-#define TALITOS_AESUISR			0x4030 /* AES unit */
+-#define TALITOS_AESUISR_LO		0x4034
+-#define TALITOS_MDEUISR			0x6030 /* message digest unit */
+-#define TALITOS_MDEUISR_LO		0x6034
+-#define TALITOS_MDEUICR			0x6038 /* interrupt control */
+-#define TALITOS_MDEUICR_LO		0x603c
++/* DES unit */
++#define TALITOS_DEUISR			(TALITOS_DEU + 0x30)
++#define TALITOS_DEUISR_LO		(TALITOS_DEU + 0x34)
++#define TALITOS_DEUICR			(TALITOS_DEU + 0x38) /* int. control */
++/* AES unit */
++#define TALITOS_AESUISR			(TALITOS_AESU + 0x30)
++#define TALITOS_AESUISR_LO		(TALITOS_AESU + 0x34)
++/* message digest unit */
++#define TALITOS_MDEUISR			(TALITOS_MDEU + 0x30)
++#define TALITOS_MDEUISR_LO		(TALITOS_MDEU + 0x34)
++#define TALITOS_MDEUICR			(TALITOS_MDEU + 0x38) /* int. control */
++#define TALITOS_MDEUICR_LO		(TALITOS_MDEU + 0x3c)
+ #define   TALITOS_MDEUICR_LO_ICE	0x4000 /* integrity check IRQ enable */
+-#define TALITOS_AFEUISR			0x8030 /* arc4 unit */
+-#define TALITOS_AFEUISR_LO		0x8034
+-#define TALITOS_RNGUISR			0xa030 /* random number unit */
+-#define TALITOS_RNGUISR_LO		0xa034
+-#define TALITOS_RNGUSR			0xa028 /* rng status */
+-#define TALITOS_RNGUSR_LO		0xa02c
++/* arc4 unit */
++#define TALITOS_AFEUISR			(TALITOS_AFEU + 0x30)
++#define TALITOS_AFEUISR_LO		(TALITOS_AFEU + 0x34)
++/* random number unit */
++#define TALITOS_RNGUISR			(TALITOS_RNGU + 0x30)
++#define TALITOS_RNGUISR_LO		(TALITOS_RNGU + 0x34)
++#define TALITOS_RNGUSR			(TALITOS_RNGU + 0x28) /* rng status */
++#define TALITOS_RNGUSR_LO		(TALITOS_RNGU + 0x2c)
+ #define   TALITOS_RNGUSR_LO_RD		0x1	/* reset done */
+ #define   TALITOS_RNGUSR_LO_OFL		0xff0000/* output FIFO length */
+-#define TALITOS_RNGUDSR			0xa010	/* data size */
+-#define TALITOS_RNGUDSR_LO		0xa014
+-#define TALITOS_RNGU_FIFO		0xa800	/* output FIFO */
+-#define TALITOS_RNGU_FIFO_LO		0xa804	/* output FIFO */
+-#define TALITOS_RNGURCR			0xa018	/* reset control */
+-#define TALITOS_RNGURCR_LO		0xa01c
++#define TALITOS_RNGUDSR			(TALITOS_RNGU + 0x10)	/* data size */
++#define TALITOS_RNGUDSR_LO		(TALITOS_RNGU + 0x14)
++#define TALITOS_RNGU_FIFO		(TALITOS_RNGU + 0x800) /* output FIFO */
++#define TALITOS_RNGU_FIFO_LO		(TALITOS_RNGU + 0x804) /* output FIFO */
++#define TALITOS_RNGURCR			(TALITOS_RNGU + 0x18) /* reset control*/
++#define TALITOS_RNGURCR_LO		(TALITOS_RNGU + 0x1c)
+ #define   TALITOS_RNGURCR_LO_SR		0x1	/* software reset */
+-#define TALITOS_PKEUISR			0xc030 /* public key unit */
+-#define TALITOS_PKEUISR_LO		0xc034
+-#define TALITOS_KEUISR			0xe030 /* kasumi unit */
+-#define TALITOS_KEUISR_LO		0xe034
+-#define TALITOS_CRCUISR			0xf030 /* cyclic redundancy check unit*/
+-#define TALITOS_CRCUISR_LO		0xf034
++/* public key unit */
++#define TALITOS_PKEUISR			(TALITOS_PKEU + 0x30)
++#define TALITOS_PKEUISR_LO		(TALITOS_PKEU + 0x34)
++/* kasumi unit */
++#define TALITOS_KEUISR			(TALITOS_KEU + 0x30)
++#define TALITOS_KEUISR_LO		(TALITOS_KEU + 0x34)
++/* cyclic redundancy check unit */
++#define TALITOS_CRCUISR			(TALITOS_CRCU + 0x30)
++#define TALITOS_CRCUISR_LO		(TALITOS_CRCU + 0x34)
+ 
+ #define TALITOS_MDEU_CONTEXT_SIZE_MD5_SHA1_SHA256	0x28
+ #define TALITOS_MDEU_CONTEXT_SIZE_SHA384_SHA512		0x48
+-- 
+2.1.0
