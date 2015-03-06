@@ -1,27 +1,24 @@
-Return-Path: <mohicks@gmail.com>
-Received: from mail-ie0-x232.google.com (mail-ie0-x232.google.com
- [IPv6:2607:f8b0:4001:c03::232])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0F9B51A0133
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Mar 2015 06:28:16 +1100 (AEDT)
-Received: by iecvy18 with SMTP id vy18so24088456iec.9
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Mar 2015 11:28:13 -0800 (PST)
-MIME-Version: 1.0
-Sender: mohicks@gmail.com
-In-Reply-To: <CAJUS3XmfcJCiBMnsiXKpc=QXE-YxTQy67wZyAXgKjtY_DN0CDQ@mail.gmail.com>
-References: <1424451610-5786-1-git-send-email-mort@bork.org>
- <1424451610-5786-3-git-send-email-mort@bork.org>
- <20150305181615.493b173d43249548fae29203@freescale.com>
- <CAJUS3XmfcJCiBMnsiXKpc=QXE-YxTQy67wZyAXgKjtY_DN0CDQ@mail.gmail.com>
-Date: Fri, 6 Mar 2015 14:28:12 -0500
-Message-ID: <CAJUS3X=-mPs+xrJLcs6QsLzmTpnT1mmtVXJw1Cxuy-cS1i-pkQ@mail.gmail.com>
-Subject: Re: [PATCH 2/2] crypto: talitos: Add AES-XTS Support
-From: Martin Hicks <mort@bork.org>
-To: Kim Phillips <kim.phillips@freescale.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org,
- linux-crypto@vger.kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id B943C1A018B
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Mar 2015 10:00:54 +1100 (AEDT)
+Message-ID: <1425682582.4636.197.camel@kernel.crashing.org>
+Subject: Re: [REGRESSION in 3.18][PPC] PA Semi fails to boot after: of/base:
+ Fix PowerPC address parsing hack
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Steven Rostedt <rostedt@goodmis.org>
+Date: Sat, 07 Mar 2015 09:56:22 +1100
+In-Reply-To: <20150306100021.5637d790@gandalf.local.home>
+References: <20150305171239.3a8135e6@gandalf.local.home>
+ <1425615522.4636.173.camel@kernel.crashing.org>
+ <20150306100021.5637d790@gandalf.local.home>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Grant Likely <grant.likely@linaro.org>, Rob Herring <robh@kernel.org>,
+ Olof Johansson <olof@lixom.net>, linuxppc-dev@lists.ozlabs.org,
+ LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,87 +28,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Kim,
+On Fri, 2015-03-06 at 10:00 -0500, Steven Rostedt wrote:
+> On Fri, 06 Mar 2015 15:18:42 +1100
+> Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+> 
+>  
+> > Can you shoot me the DT (/proc/device-tree in a tarball) ?
+> 
+> Attached.
 
-On Fri, Mar 6, 2015 at 11:49 AM, Martin Hicks <mort@bork.org> wrote:
-> On Thu, Mar 5, 2015 at 7:16 PM, Kim Phillips <kim.phillips@freescale.com> wrote:
->> On Fri, 20 Feb 2015 12:00:10 -0500
->> Martin Hicks <mort@bork.org> wrote:
->>
->>> The newer talitos hardware has support for AES in XTS mode.
->>
->> Assuming it's the same thing, AES-XCBC gets added with SEC v3.0
->> h/w.  Assuming hw_supports() doesn't already support this algorithm
->
-> AES-XCBC isn't the same thing as AES-XTS.
->
->> combination (technically via the mode bit), this needs to be
->> reflected in the patch so the driver doesn't think SEC 2.x devices
->> can do XTS, too.
->
-> Right.  I hadn't looked into how exactly hw_supports() works.  It only
-> indicates which execution units are present (in this case the AES
-> unit).  I actually think XTS gets introduced in SEC v3.3.2.  I also
-> have an MPC8379 (sec3.3) and it does not have XTS.
->
+This is indeed a bug in their DT. We might want to add quirks for
+that unless it can be fixed (or has been via FW update). Olof ?
 
-I'm wrong about the 8379.  It's SEC3.0.  So XTS was introduced
-somewhere between 3.0 and 3.3.2
+In the meantime, try that patch:
 
-> Can you look internally to find out in which hardware it was
-> introduced?  Is there a SEC 3.3.1 that also has XTS?
-
-Can you still look into where XTS was added?  I'm not even sure how
-many versions of hardware exist between 3.0 and 3.3.2
-
-Thanks,
-mh
-
->
-> I guess I just need a ->features flag to conditionally register the
-> XTS algorithm for 3.3.x and newer.  Adding anything more complicated
-> doesn't seem warranted at this time, although that could change if
-> someone came along and needed to add a whole whack more of the AES
-> modes that were introduced at various times in the different SEC
-> revisions.
->
->>
->>> +             .desc_hdr_template = DESC_HDR_TYPE_COMMON_NONSNOOP_NO_AFEU |
->>> +                                     DESC_HDR_SEL0_AESU |
->>> +                                     DESC_HDR_MODE0_AESU_XTS,
->>
->> ...
->>
->>>  /* primary execution unit mode (MODE0) and derivatives */
->>>  #define      DESC_HDR_MODE0_ENCRYPT          cpu_to_be32(0x00100000)
->>>  #define      DESC_HDR_MODE0_AESU_CBC         cpu_to_be32(0x00200000)
->>> +#define      DESC_HDR_MODE0_AESU_XTS         cpu_to_be32(0x04200000)
->>
->> I'd prefer these defines be kept as single bit definitions, and keep
->> their names from the manual.  An XTS-specific definition can be
->> composed from them either after this, or manually in the
->> desc_hdr_template assignment above.
->
-> It doesn't look like there are divisible single-bit definitions for
-> the MODE0 bits. The AES Cipher modes are composed of 5 bits called
-> CipherMode, Extended CipherMode and Aux2.  Individually they don't
-> seem to mean anything.  Unless you want something like:
->
-> #define AES_MODE(cm, ecm, aux2)   cpu_to_be32(((ecm<<6) | (aux2<<5) |
-> (cm<<1)) << 20)
->
-> #define DESC_HDR_MODE0_AESU_CBC  AES_MODE(1, 0, 0)
-> #define DESC_HDR_MODE0_AESU_XTS   AES_MODE(1, 1, 0)
->
-> Thanks,
-> mh
->
-> --
-> Martin Hicks P.Eng.      |         mort@bork.org
-> Bork Consulting Inc.     |   +1 (613) 266-2296
-
-
-
--- 
-Martin Hicks P.Eng.      |         mort@bork.org
-Bork Consulting Inc.     |   +1 (613) 266-2296
+diff --git a/drivers/of/address.c b/drivers/of/address.c
+index ad29069..78a7dcb 100644
+--- a/drivers/of/address.c
++++ b/drivers/of/address.c
+@@ -450,12 +450,17 @@ static struct of_bus *of_match_bus(struct device_node *np)
+ 	return NULL;
+ }
+ 
+-static int of_empty_ranges_quirk(void)
++static int of_empty_ranges_quirk(struct device_node *np)
+ {
+ 	if (IS_ENABLED(CONFIG_PPC)) {
+-		/* To save cycles, we cache the result */
++		/* To save cycles, we cache the result for global "Mac" setting */
+ 		static int quirk_state = -1;
+ 
++		/* PA-SEMI sdc DT bug */
++		if (of_device_is_compatible(np, "1682m-sdc"))
++			return true;
++
++		/* Make quirk cached */
+ 		if (quirk_state < 0)
+ 			quirk_state =
+ 				of_machine_is_compatible("Power Macintosh") ||
+@@ -490,7 +495,7 @@ static int of_translate_one(struct device_node *parent, struct of_bus *bus,
+ 	 * This code is only enabled on powerpc. --gcl
+ 	 */
+ 	ranges = of_get_property(parent, rprop, &rlen);
+-	if (ranges == NULL && !of_empty_ranges_quirk()) {
++	if (ranges == NULL && !of_empty_ranges_quirk(parent)) {
+ 		pr_debug("OF: no ranges; cannot translate\n");
+ 		return 1;
+ 	}
