@@ -1,24 +1,30 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id 10EB41A0358
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Mar 2015 19:39:48 +1100 (AEDT)
-Message-ID: <54F967D0.5030209@c-s.fr>
-Date: Fri, 06 Mar 2015 09:39:44 +0100
-From: leroy christophe <christophe.leroy@c-s.fr>
+Return-Path: <wangyijing@huawei.com>
+Received: from szxga03-in.huawei.com (szxga03-in.huawei.com [119.145.14.66])
+ (using TLSv1 with cipher RC4-SHA (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 52E3C1A0001
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Mar 2015 20:36:42 +1100 (AEDT)
+From: Yijing Wang <wangyijing@huawei.com>
+To: Bjorn Helgaas <bhelgaas@google.com>
+Subject: [PATCH v5 15/29] powerpc/pci: Rename pcibios_root_bridge_prepare()
+Date: Fri, 6 Mar 2015 17:33:32 +0800
+Message-ID: <1425634426-437-16-git-send-email-wangyijing@huawei.com>
+In-Reply-To: <1425634426-437-1-git-send-email-wangyijing@huawei.com>
+References: <1425634426-437-1-git-send-email-wangyijing@huawei.com>
 MIME-Version: 1.0
-To: Herbert Xu <herbert@gondor.apana.org.au>,
- Kim Phillips <kim.phillips@freescale.com>
-Subject: Re: [PATCH 0/17] crypto: talitos - Add support for SEC1
-References: <20150305164605.E65D81A241C@localhost.localdomain>
- <20150305182101.6db66e228f519476f0751c13@freescale.com>
- <20150306002831.GA30947@gondor.apana.org.au>
-In-Reply-To: <20150306002831.GA30947@gondor.apana.org.au>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org,
- Pawel Moll <pawel.moll@arm.com>, Ian Campbell <ijc+devicetree@hellion.org.uk>,
- linux-kernel@vger.kernel.org, Rob Herring <robh+dt@kernel.org>,
- linux-crypto@vger.kernel.org, Kumar Gala <galak@codeaurora.org>,
- linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
+Content-Type: text/plain
+Cc: linux-ia64@vger.kernel.org, linux-pci@vger.kernel.org,
+ Yijing Wang <wangyijing@huawei.com>, Guan
+ Xuetao <gxt@mprc.pku.edu.cn>, Russell King <linux@arm.linux.org.uk>,
+ x86@kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>, Arnd
+ Bergmann <arnd@arndb.de>, Marc Zyngier <marc.zyngier@arm.com>,
+ Rusty Russell <rusty@rustcorp.com.au>, linux-m68k@lists.linux-m68k.org,
+ Bjorn Helgaas <bhelgaas@google.com>, Thomas Gleixner <tglx@linutronix.de>,
+ Yinghai Lu <yinghai@kernel.org>, linux-arm-kernel@lists.infradead.org,
+ Liviu Dudau <liviu@dudau.co.uk>, Tony Luck <tony.luck@intel.com>,
+ linux-kernel@vger.kernel.org, Jiang Liu <jiang.liu@linux.intel.com>,
+ linux-alpha@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,67 +34,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Le 06/03/2015 01:28, Herbert Xu a écrit :
-> On Thu, Mar 05, 2015 at 06:21:01PM -0600, Kim Phillips wrote:
->> On Thu, 5 Mar 2015 17:46:05 +0100
->> Christophe Leroy <christophe.leroy@c-s.fr> wrote:
->>
->>> [15/17] crypto: talitos - Implementation of SEC1
->> ...
->>
->>> [16/17] crypto: talitos - SEC1 bugs on 0 data hash
->>> [17/17] crypto: talitos - Update DT bindings with SEC1
->> This patchseries doesn't apply, at least on top of Herbert's
->> cryptodev-2.6 tree, as of today:
->>
->> Applying: crypto: talitos - Implementation of SEC1
->> error: patch failed: drivers/crypto/talitos.c:655
->> error: drivers/crypto/talitos.c: patch does not apply
-> Also the patches are coming in a random order.  Please send them
-> one at a time to ensure proper ordering.
->
-> Thanks,
-Kim, I have now tried on top of cryptodev-2.6 tree, and for me it works 
-(see below).
-Do I clone cryptodev-2.6 from the wrong place ?
-On that clone, the latest commit on talitos.c is commit 
-5be4d4c94b1f98b839344fda7a8752a4a09d0ef5 "crypto: replace 
-scatterwalk_sg_next with sg_next"
+Pcibios_root_bridge_prepare() in powerpc is used
+to set root bus speed. Rename it to
+pcibios_set_root_bus_speed() for better readability.
 
-[root@localhost ~]# git clone 
-https://www.kernel.org/pub/scm/linux/kernel/git/herbert/cryptodev-2.6.git
-Cloning into 'cryptodev-2.6'...
-remote: Counting objects: 4043448, done.
-remote: Compressing objects: 100% (682829/682829), done.
-Receiving objects: 100% (4043448/4043448), 893.52 MiB | 258.00 KiB/s, done.
-remote: Total 4043448 (delta 3330215), reused 4043104 (delta 3329977)
-Resolving deltas: 100% (3330215/3330215), done.
-Checking connectivity... done.
-Checking out files: 100% (48971/48971), done.
-[root@localhost ~]# cd cryptodev-2.6/
-[root@localhost cryptodev-2.6]# git branch test
-[root@localhost cryptodev-2.6]# git checkout test
-Switched to branch 'test'
-[root@localhost cryptodev-2.6]# git am 
-/root/gen/trunk/submitted_patches/talitos/0*
-Applying: crypto: talitos - base address for Execution Units and macro 
-for ISR masks
-Applying: crypto: talitos - Externalise specific SEC2 reset actions
-Applying: crypto: talitos - Use zero entry to init descriptors ptrs to zero
-Applying: crypto: talitos - Refactor the sg in/out chain allocation
-Applying: crypto: talitos - isolate scatter/gather handling for ahash
-Applying: crypto: talitos - Add talitos2.c to isolate SEC2 specific 
-functions
-Applying: crypto: talitos - Split talitos.h into 2 parts
-Applying: crypto: talitos - Deport SEC2 error handling
-Applying: crypto: talitos - Move reset/init helpers into talitos2.h
-Applying: crypto: talitos - Move interrupt related macros in talitos2.h
-Applying: crypto: talitos - Move hash chain handling into talitos2.h
-Applying: crypto: talitos - Define compatible in talitos2.h instead of 
-talitos.c
-Applying: crypto: talitos - move sg_count() helper into talitos.h
-Applying: crypto: talitos - Add a helper function to clear j_extent field
-Applying: crypto: talitos - Implementation of SEC1
-Applying: crypto: talitos - SEC1 bugs on 0 data hash
-Applying: crypto: talitos - Update DT bindings with SEC1
-[root@localhost cryptodev-2.6]#
+Signed-off-by: Yijing Wang <wangyijing@huawei.com>
+CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+CC: linuxppc-dev@lists.ozlabs.org
+Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
+---
+ arch/powerpc/include/asm/machdep.h       |    2 +-
+ arch/powerpc/kernel/pci-common.c         |    4 ++--
+ arch/powerpc/platforms/pseries/pci.c     |    2 +-
+ arch/powerpc/platforms/pseries/pseries.h |    2 +-
+ arch/powerpc/platforms/pseries/setup.c   |    2 +-
+ 5 files changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
+index c8175a3..8e7f2a8 100644
+--- a/arch/powerpc/include/asm/machdep.h
++++ b/arch/powerpc/include/asm/machdep.h
+@@ -129,7 +129,7 @@ struct machdep_calls {
+ 	void		(*pcibios_fixup)(void);
+ 	int		(*pci_probe_mode)(struct pci_bus *);
+ 	void		(*pci_irq_fixup)(struct pci_dev *dev);
+-	int		(*pcibios_root_bridge_prepare)(struct pci_host_bridge
++	int		(*pcibios_set_root_bus_speed)(struct pci_host_bridge
+ 				*bridge);
+ 
+ 	/* To setup PHBs when using automatic OF platform driver for PCI */
+diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
+index a467aca..0d8b369 100644
+--- a/arch/powerpc/kernel/pci-common.c
++++ b/arch/powerpc/kernel/pci-common.c
+@@ -769,8 +769,8 @@ int pci_proc_domain(struct pci_bus *bus)
+ 
+ int pcibios_root_bridge_prepare(struct pci_host_bridge *bridge)
+ {
+-	if (ppc_md.pcibios_root_bridge_prepare)
+-		return ppc_md.pcibios_root_bridge_prepare(bridge);
++	if (ppc_md.pcibios_set_root_bus_speed)
++		return ppc_md.pcibios_set_root_bus_speed(bridge);
+ 
+ 	return 0;
+ }
+diff --git a/arch/powerpc/platforms/pseries/pci.c b/arch/powerpc/platforms/pseries/pci.c
+index fe16a50..af685d6 100644
+--- a/arch/powerpc/platforms/pseries/pci.c
++++ b/arch/powerpc/platforms/pseries/pci.c
+@@ -110,7 +110,7 @@ static void fixup_winbond_82c105(struct pci_dev* dev)
+ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_WINBOND, PCI_DEVICE_ID_WINBOND_82C105,
+ 			 fixup_winbond_82c105);
+ 
+-int pseries_root_bridge_prepare(struct pci_host_bridge *bridge)
++int pseries_set_root_bus_speed(struct pci_host_bridge *bridge)
+ {
+ 	struct device_node *dn, *pdn;
+ 	struct pci_bus *bus;
+diff --git a/arch/powerpc/platforms/pseries/pseries.h b/arch/powerpc/platforms/pseries/pseries.h
+index 1796c54..5d0be3a 100644
+--- a/arch/powerpc/platforms/pseries/pseries.h
++++ b/arch/powerpc/platforms/pseries/pseries.h
+@@ -63,7 +63,7 @@ extern int dlpar_detach_node(struct device_node *);
+ 
+ /* PCI root bridge prepare function override for pseries */
+ struct pci_host_bridge;
+-int pseries_root_bridge_prepare(struct pci_host_bridge *bridge);
++int pseries_set_root_bus_speed(struct pci_host_bridge *bridge);
+ 
+ unsigned long pseries_memory_block_size(void);
+ 
+diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
+index e445b67..b196c0d 100644
+--- a/arch/powerpc/platforms/pseries/setup.c
++++ b/arch/powerpc/platforms/pseries/setup.c
+@@ -496,7 +496,7 @@ static void __init pSeries_setup_arch(void)
+ 		ppc_md.enable_pmcs = power4_enable_pmcs;
+ 	}
+ 
+-	ppc_md.pcibios_root_bridge_prepare = pseries_root_bridge_prepare;
++	ppc_md.pcibios_set_root_bus_speed = pseries_set_root_bus_speed;
+ 
+ 	if (firmware_has_feature(FW_FEATURE_SET_MODE)) {
+ 		long rc;
+-- 
+1.7.1
