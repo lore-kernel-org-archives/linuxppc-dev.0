@@ -1,27 +1,27 @@
-Return-Path: <bhelgaas@google.com>
-Received: from mail-oi0-x235.google.com (mail-oi0-x235.google.com
- [IPv6:2607:f8b0:4003:c06::235])
+Return-Path: <mohicks@gmail.com>
+Received: from mail-ie0-x232.google.com (mail-ie0-x232.google.com
+ [IPv6:2607:f8b0:4001:c03::232])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 343CC1A0246
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Mar 2015 05:39:05 +1100 (AEDT)
-Received: by oifz81 with SMTP id z81so19126091oif.0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Mar 2015 10:39:02 -0800 (PST)
-Date: Fri, 6 Mar 2015 12:38:59 -0600
-From: Bjorn Helgaas <bhelgaas@google.com>
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: Re: [PATCH 0/4] Support registering specific reset handler
-Message-ID: <20150306183859.GH20077@google.com>
-References: <1423803299-22356-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <20150216131427.GA4840@oc0812247204.ltc.br.ibm.com>
- <20150216223647.GA5758@shangw>
- <20150219185746.GA4440@oc0812247204.ltc.br.ibm.com>
- <20150220055308.GA26047@shangw>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0F9B51A0133
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Mar 2015 06:28:16 +1100 (AEDT)
+Received: by iecvy18 with SMTP id vy18so24088456iec.9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 06 Mar 2015 11:28:13 -0800 (PST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150220055308.GA26047@shangw>
-Cc: linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- cascardo@linux.vnet.ibm.com
+Sender: mohicks@gmail.com
+In-Reply-To: <CAJUS3XmfcJCiBMnsiXKpc=QXE-YxTQy67wZyAXgKjtY_DN0CDQ@mail.gmail.com>
+References: <1424451610-5786-1-git-send-email-mort@bork.org>
+ <1424451610-5786-3-git-send-email-mort@bork.org>
+ <20150305181615.493b173d43249548fae29203@freescale.com>
+ <CAJUS3XmfcJCiBMnsiXKpc=QXE-YxTQy67wZyAXgKjtY_DN0CDQ@mail.gmail.com>
+Date: Fri, 6 Mar 2015 14:28:12 -0500
+Message-ID: <CAJUS3X=-mPs+xrJLcs6QsLzmTpnT1mmtVXJw1Cxuy-cS1i-pkQ@mail.gmail.com>
+Subject: Re: [PATCH 2/2] crypto: talitos: Add AES-XTS Support
+From: Martin Hicks <mort@bork.org>
+To: Kim Phillips <kim.phillips@freescale.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-crypto@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,79 +31,87 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Feb 20, 2015 at 04:53:08PM +1100, Gavin Shan wrote:
-> On Thu, Feb 19, 2015 at 04:57:47PM -0200, cascardo@linux.vnet.ibm.com wrote:
-> >On Tue, Feb 17, 2015 at 09:36:47AM +1100, Gavin Shan wrote:
-> >> On Mon, Feb 16, 2015 at 11:14:27AM -0200, cascardo@linux.vnet.ibm.com wrote:
-> >> >On Fri, Feb 13, 2015 at 03:54:55PM +1100, Gavin Shan wrote:
-> >> >> VFIO PCI infrastructure depends on pci_reset_function() to do reset on
-> >> >> PCI devices so that they would be in clean state when host or guest grabs
-> >> >> them. Unfortunately, the function doesn't work (or not well) on some PCI
-> >> >> devices that require EEH PE reset.
-> >> >> 
-> >> >> The patchset extends the quirk for PCI device speicific reset methods to
-> >> >> allow dynamically registration. With it, we can translate reset requests
-> >> >> for those special PCI devcies to EEH PE reset, which is only avaialble on
-> >> >> 64-bits PowerPC platforms.
-> >> >> 
-> >> >
-> >> >Hi, Gavin.
-> >> >
-> >> >I like your approach overall. That allows us to confine these quirks to
-> >> >the platforms where they are relevant. I would make the quirks more
-> >> >specific, though, instead of doing them for all IBM and Mellanox
-> >> >devices.
-> >> >
-> >> 
-> >> Yeah, we need have more specific vendor/device IDs for PATCH[4/4]. Could
-> >> you please take a look on PATCH[4/4] and then suggest the specific devices
-> >> that requries the platform-dependent reset quirk? Especially the device IDs
-> >> for IBM/Mellanox we need put add quirks for.
-> >> 
-> >> >I wonder if we should not have some form of domain reset, where we would
-> >> >reset all the devices on the same group, and use that on vfio. Grouping
-> >> >the devices would then be made platform-dependent, as well as the reset
-> >> >method. On powernv, we would group by IOMMU group and issue a
-> >> >fundamental reset.
-> >> >
-> >> 
-> >> I'm assuming "domain reset" is PE reset, which is the specific reset handler
-> >> tries to do on PowerNV platform. The reason why we need platform specific
-> >> reset handler is some adapters can't support function level reset methods
-> >> (except pci_dev_specific_reset()) in __pci_dev_reset().
-> >> 
-> >
-> >Well, in the case of Power servers, this would be the PE reset, I am not
-> >sure what this would be on other platforms. No other platform implements
-> >pci_set_pcie_reset_state, which I think would be one possible to
-> >implement such a reset.
-> >
-> >What I am saying is that we should consider doing this on all platforms
-> >and for all adapters, because this is not specific to Power and this is
-> >not specific to this particular set of adapters. Otherwise, one can
-> >simply program one adapter in the guest to write to host memory,
-> >shutdown, and since no reset will take place, the card will simply write
-> >to host memory when the guest is finished with and IOMMU is off.
-> >
-> 
-> Yes, I believe your way will make things simpler and we don't need the
-> code to support registering reset handler dynamically at atll. Please
-> confirm if following idea is what you're suggesting: 
-> 
-> - Introduce function drivers/pci/quirks.c::pci_dev_specific_reset(), which
->   will be added to pci_dev_reset_methods[] for various vendor/device IDs.
-> - pci_dev_specific_reset() routes the reset (or probe) request to
->   pci_set_pcie_reset_state(), which needs one more syntax for reset probing.
->   In turn, pci_set_pcie_reset_state() calls pcibios_set_pcie_reset_state(),
->   which returns -ETTY by default.
-> 
-> For PowerPC, pcibios_set_pcie_reset_state() will do PE reset, which can't
-> be ported to other platforms as it depends on PowerPC unique EEH feature.
-> So other platforms have to override this function and do things similar to
-> PowerPC PE reset there.
+Hi Kim,
 
-Dropping for now because it sounds like you are considering reworking based
-on Cascardo's ideas.  If not, please re-post these so they show up in
-patchwork again.
+On Fri, Mar 6, 2015 at 11:49 AM, Martin Hicks <mort@bork.org> wrote:
+> On Thu, Mar 5, 2015 at 7:16 PM, Kim Phillips <kim.phillips@freescale.com> wrote:
+>> On Fri, 20 Feb 2015 12:00:10 -0500
+>> Martin Hicks <mort@bork.org> wrote:
+>>
+>>> The newer talitos hardware has support for AES in XTS mode.
+>>
+>> Assuming it's the same thing, AES-XCBC gets added with SEC v3.0
+>> h/w.  Assuming hw_supports() doesn't already support this algorithm
+>
+> AES-XCBC isn't the same thing as AES-XTS.
+>
+>> combination (technically via the mode bit), this needs to be
+>> reflected in the patch so the driver doesn't think SEC 2.x devices
+>> can do XTS, too.
+>
+> Right.  I hadn't looked into how exactly hw_supports() works.  It only
+> indicates which execution units are present (in this case the AES
+> unit).  I actually think XTS gets introduced in SEC v3.3.2.  I also
+> have an MPC8379 (sec3.3) and it does not have XTS.
+>
 
-Bjorn
+I'm wrong about the 8379.  It's SEC3.0.  So XTS was introduced
+somewhere between 3.0 and 3.3.2
+
+> Can you look internally to find out in which hardware it was
+> introduced?  Is there a SEC 3.3.1 that also has XTS?
+
+Can you still look into where XTS was added?  I'm not even sure how
+many versions of hardware exist between 3.0 and 3.3.2
+
+Thanks,
+mh
+
+>
+> I guess I just need a ->features flag to conditionally register the
+> XTS algorithm for 3.3.x and newer.  Adding anything more complicated
+> doesn't seem warranted at this time, although that could change if
+> someone came along and needed to add a whole whack more of the AES
+> modes that were introduced at various times in the different SEC
+> revisions.
+>
+>>
+>>> +             .desc_hdr_template = DESC_HDR_TYPE_COMMON_NONSNOOP_NO_AFEU |
+>>> +                                     DESC_HDR_SEL0_AESU |
+>>> +                                     DESC_HDR_MODE0_AESU_XTS,
+>>
+>> ...
+>>
+>>>  /* primary execution unit mode (MODE0) and derivatives */
+>>>  #define      DESC_HDR_MODE0_ENCRYPT          cpu_to_be32(0x00100000)
+>>>  #define      DESC_HDR_MODE0_AESU_CBC         cpu_to_be32(0x00200000)
+>>> +#define      DESC_HDR_MODE0_AESU_XTS         cpu_to_be32(0x04200000)
+>>
+>> I'd prefer these defines be kept as single bit definitions, and keep
+>> their names from the manual.  An XTS-specific definition can be
+>> composed from them either after this, or manually in the
+>> desc_hdr_template assignment above.
+>
+> It doesn't look like there are divisible single-bit definitions for
+> the MODE0 bits. The AES Cipher modes are composed of 5 bits called
+> CipherMode, Extended CipherMode and Aux2.  Individually they don't
+> seem to mean anything.  Unless you want something like:
+>
+> #define AES_MODE(cm, ecm, aux2)   cpu_to_be32(((ecm<<6) | (aux2<<5) |
+> (cm<<1)) << 20)
+>
+> #define DESC_HDR_MODE0_AESU_CBC  AES_MODE(1, 0, 0)
+> #define DESC_HDR_MODE0_AESU_XTS   AES_MODE(1, 1, 0)
+>
+> Thanks,
+> mh
+>
+> --
+> Martin Hicks P.Eng.      |         mort@bork.org
+> Bork Consulting Inc.     |   +1 (613) 266-2296
+
+
+
+-- 
+Martin Hicks P.Eng.      |         mort@bork.org
+Bork Consulting Inc.     |   +1 (613) 266-2296
