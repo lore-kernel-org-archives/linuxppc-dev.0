@@ -1,24 +1,26 @@
-Return-Path: <herbert@gondor.apana.org.au>
-Received: from helcar.apana.org.au (helcar.apana.org.au [209.40.204.226])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <Kim.Phillips@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bon0132.outbound.protection.outlook.com [157.56.111.132])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8E5251A0371
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Mar 2015 11:29:11 +1100 (AEDT)
-Date: Fri, 6 Mar 2015 11:28:31 +1100
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Kim Phillips <kim.phillips@freescale.com>
-Subject: Re: [PATCH 0/17] crypto: talitos - Add support for SEC1
-Message-ID: <20150306002831.GA30947@gondor.apana.org.au>
-References: <20150305164605.E65D81A241C@localhost.localdomain>
- <20150305182101.6db66e228f519476f0751c13@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 093AA1A0008
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Mar 2015 11:40:26 +1100 (AEDT)
+Date: Thu, 5 Mar 2015 18:34:58 -0600
+From: Kim Phillips <kim.phillips@freescale.com>
+To: Horia =?UTF-8?B?R2VhbnTEgw==?= <horia.geanta@freescale.com>
+Subject: Re: [PATCH v2 5/5] crypto: talitos: Add software backlog queue
+ handling
+Message-ID: <20150305183458.a7ce24358ba2b8cc92f261d9@freescale.com>
+In-Reply-To: <54F8235B.5080301@freescale.com>
+References: <1425388897-5434-1-git-send-email-mort@bork.org>
+ <1425388897-5434-6-git-send-email-mort@bork.org>
+ <20150303182332.546523088b5891a776880c0f@freescale.com>
+ <54F8235B.5080301@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150305182101.6db66e228f519476f0751c13@freescale.com>
-Cc: Mark Rutland <mark.rutland@arm.com>, Pawel Moll <pawel.moll@arm.com>,
- Ian Campbell <ijc+devicetree@hellion.org.uk>, linux-kernel@vger.kernel.org,
- devicetree@vger.kernel.org, Rob Herring <robh+dt@kernel.org>,
- linux-crypto@vger.kernel.org, Kumar Gala <galak@codeaurora.org>,
- linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
+Content-Type: text/plain; charset="UTF-8"
+Cc: Herbert Xu <herbert@gondor.apana.org.au>, Martin Hicks <mort@bork.org>,
+ linux-crypto@vger.kernel.org, Scott Wood <scottwood@freescale.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,29 +30,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Mar 05, 2015 at 06:21:01PM -0600, Kim Phillips wrote:
-> On Thu, 5 Mar 2015 17:46:05 +0100
-> Christophe Leroy <christophe.leroy@c-s.fr> wrote:
-> 
-> > [15/17] crypto: talitos - Implementation of SEC1
-> 
-> ...
-> 
-> > [16/17] crypto: talitos - SEC1 bugs on 0 data hash
-> > [17/17] crypto: talitos - Update DT bindings with SEC1
-> 
-> This patchseries doesn't apply, at least on top of Herbert's
-> cryptodev-2.6 tree, as of today:
-> 
-> Applying: crypto: talitos - Implementation of SEC1
-> error: patch failed: drivers/crypto/talitos.c:655
-> error: drivers/crypto/talitos.c: patch does not apply
+On Thu, 5 Mar 2015 11:35:23 +0200
+Horia Geantă <horia.geanta@freescale.com> wrote:
 
-Also the patches are coming in a random order.  Please send them
-one at a time to ensure proper ordering.
+> On 3/4/2015 2:23 AM, Kim Phillips wrote:
+> > On Tue,  3 Mar 2015 08:21:37 -0500
+> > Martin Hicks <mort@bork.org> wrote:
+> > 
+> >> @@ -1170,6 +1237,8 @@ static struct talitos_edesc *talitos_edesc_alloc(struct device *dev,
+> >>  						     edesc->dma_len,
+> >>  						     DMA_BIDIRECTIONAL);
+> >>  	edesc->req.desc = &edesc->desc;
+> >> +	/* A copy of the crypto_async_request to use the crypto_queue backlog */
+> >> +	memcpy(&edesc->req.base, areq, sizeof(struct crypto_async_request));
+> > 
+> > this seems backward, or, at least can be done more efficiently IMO:
+> > talitos_cra_init should set the tfm's reqsize so the rest of
+> > the driver can wholly embed its talitos_edesc (which should also
+> > wholly encapsulate its talitos_request (i.e., not via a pointer))
+> > into the crypto API's request handle allocation.  This
+> > would absorb and eliminate the talitos_edesc kmalloc and frees, the
+> > above memcpy, and replace the container_of after the
+> > crypto_dequeue_request with an offset_of, right?
+> > 
+> > When scatter-gather buffers are needed, we can assume a slower-path
+> > and make them do their own allocations, since their sizes vary
+> > depending on each request.  Of course, a pointer to those
+> > allocations would need to be retained somewhere in the request
+> > handle.
+> 
+> Unfortunately talitos_edesc structure size is most of the times
+> variable. Its exact size can only be established at "request time", and
+> not at "tfm init time".
 
-Thanks,
--- 
-Email: Herbert Xu <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+yes, I was suggesting a common minimum should be set in cra_init.
+
+> Fixed size would be sizeof(talitos_edesc).
+> Below are factors that influence the variable part, i.e. link_tbl in
+> talitos_edesc:
+> - whether any assoc / src / dst data is scattered
+> - icv_stashing (case when ICV checking is done in SW)
+
+both being slow(er) paths, IMO.
+
+> Still we'd be better with:
+> -crypto API allocates request + request context (i.e.
+> sizeof(talitos_edesc) + any alignment required)
+> -talitos driver allocates variable part of talitos_edesc (if needed)
+> 
+> instead of:
+> -crypto API allocates request
+> -talitos driver allocates talitos_edesc (fixed + variable)
+> -memcopy of the req.base (crypto_async_request) into talitos_edesc
+> 
+> both in terms of performance and readability.
+
+indeed.
+
+> At first look, the driver wouldn't change that much:
+> -talitos_cra_init() callback would have to set tfm.reqsize to
+> sizeof(talitos_edesc) + padding and also add the CRYPTO_TFM_REQ_DMA
+> indication in tfm.crt_flags
+> -talitos_edesc_alloc() logic would be pretty much the same, but would
+> allocate memory only for the link_tbl
+> 
+> I'm willing to do these changes if needed.
+
+Please coordinate with Martin.
+
+fwiw, caam could use this, too.
+
+Kim
