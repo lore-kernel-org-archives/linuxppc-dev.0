@@ -1,42 +1,22 @@
-Return-Path: <raghavendra.kt@linux.vnet.ibm.com>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 06DFD1A0358
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Mar 2015 22:29:55 +1100 (AEDT)
-Received: from /spool/local
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <raghavendra.kt@linux.vnet.ibm.com>;
- Fri, 6 Mar 2015 21:29:53 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 87B7E2BB0040
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Mar 2015 22:29:50 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t26BTfki42467384
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 6 Mar 2015 22:29:50 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t26BTFho030611
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 6 Mar 2015 22:29:16 +1100
-Message-ID: <54F98FA9.1010900@linux.vnet.ibm.com>
-Date: Fri, 06 Mar 2015 16:59:45 +0530
-From: Raghavendra K T <raghavendra.kt@linux.vnet.ibm.com>
+Return-Path: <rostedt@goodmis.org>
+Received: from smtprelay.hostedemail.com (smtprelay0169.hostedemail.com
+ [216.40.44.169])
+ by lists.ozlabs.org (Postfix) with ESMTP id 1A9DD1A0371
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Mar 2015 02:00:25 +1100 (AEDT)
+Date: Fri, 6 Mar 2015 10:00:21 -0500
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [REGRESSION in 3.18][PPC] PA Semi fails to boot after: of/base:
+ Fix PowerPC address parsing hack
+Message-ID: <20150306100021.5637d790@gandalf.local.home>
+In-Reply-To: <1425615522.4636.173.camel@kernel.crashing.org>
+References: <20150305171239.3a8135e6@gandalf.local.home>
+ <1425615522.4636.173.camel@kernel.crashing.org>
 MIME-Version: 1.0
-To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2] powerpc/numa: set node_possible_map to only
- node_online_map during boot
-References: <20150305180549.GA29601@linux.vnet.ibm.com>
- <alpine.DEB.2.10.1503051315270.25235@chino.kir.corp.google.com>
- <20150305231555.GB30570@linux.vnet.ibm.com>
- <alpine.DEB.2.10.1503051527281.2184@chino.kir.corp.google.com>
- <20150306052750.GA9576@linux.vnet.ibm.com>
-In-Reply-To: <20150306052750.GA9576@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Tejun Heo <tj@kernel.org>, linuxppc-dev@lists.ozlabs.org,
- Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
- David Rientjes <rientjes@google.com>
+Content-Type: multipart/mixed; boundary="MP_/SsFao_2ST2R=m4xLQ7CwW_j"
+Cc: Grant Likely <grant.likely@linaro.org>, Rob Herring <robh@kernel.org>,
+ Olof Johansson <olof@lixom.net>, linuxppc-dev@lists.ozlabs.org,
+ LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,122 +26,140 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03/06/2015 10:57 AM, Nishanth Aravamudan wrote:
-> On 05.03.2015 [15:29:00 -0800], David Rientjes wrote:
->> On Thu, 5 Mar 2015, Nishanth Aravamudan wrote:
->>
->>> So if we compare to x86:
->>>
->>> arch/x86/mm/numa.c::numa_init():
->>>
->>>          nodes_clear(numa_nodes_parsed);
->>>          nodes_clear(node_possible_map);
->>>          nodes_clear(node_online_map);
->>> 	...
->>> 	numa_register_memblks(...);
->>>
->>> arch/x86/mm/numa.c::numa_register_memblks():
->>>
->>> 	node_possible_map = numa_nodes_parsed;
->>>
->>> Basically, it looks like x86 NUMA init clears out possible map and
->>> online map, probably for a similar reason to what I gave in the
->>> changelog that by default, the possible map seems to be based off
->>> MAX_NUMNODES, rather than nr_node_ids or anything dynamic.
->>>
->>> My patch was an attempt to emulate the same thing on powerpc. You are
->>> right that there is a window in which the node_possible_map and
->>> node_online_map are out of sync with my patch. It seems like it
->>> shouldn't matter given how early in boot we are, but perhaps the
->>> following would have been clearer:
->>>
->>> diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
->>> index 0257a7d659ef..1a118b08fad2 100644
->>> --- a/arch/powerpc/mm/numa.c
->>> +++ b/arch/powerpc/mm/numa.c
->>> @@ -958,6 +958,13 @@ void __init initmem_init(void)
->>>
->>>          memblock_dump_all();
->>>
->>> +       /*
->>> +        * Reduce the possible NUMA nodes to the online NUMA nodes,
->>> +        * since we do not support node hotplug. This ensures that  we
->>> +        * lower the maximum NUMA node ID to what is actually present.
->>> +        */
->>> +       nodes_and(node_possible_map, node_possible_map, node_online_map);
->>
->> If you don't support node hotplug, then a node should always be possible
->> if it's online unless there are other tricks powerpc plays with
->> node_possible_map.  Shouldn't this just be
->> node_possible_map = node_online_map?
->
-> Yeah, but I was too dumb to think of that before sending :)
->
-> Updated version follows...
->
-> -Nish
->
----8<---
->
-> Raghu noticed an issue with excessive memory allocation on power with a
-> simple cgroup test, specifically, in mem_cgroup_css_alloc ->
-> for_each_node -> alloc_mem_cgroup_per_zone_info(), which ends up blowing
-> up the kmalloc-2048 slab (to the order of 200MB for 400 cgroup
-> directories).
-should we also add after this patch it has reduced to around 2MB?
->
-> The underlying issue is that NODES_SHIFT on power is 8 (256 NUMA nodes
-> possible), which defines node_possible_map, which in turn defines the
-> value of nr_node_ids in setup_nr_node_ids and the iteration of
-> for_each_node.
->
-> In practice, we never see a system with 256 NUMA nodes, and in fact, we
-> do not support node hotplug on power in the first place, so the nodes
-> that are online when we come up are the nodes that will be present for
-> the lifetime of this kernel. So let's, at least, drop the NUMA possible
-> map down to the online map at runtime. This is similar to what x86 does
-> in its initialization routines.
->
-> mem_cgroup_css_alloc should also be fixed to only iterate over
-> memory-populated nodes and handle hotplug, but that is a separate
-> change.
->
-Maybe we could fomally add
-Reported-by: Raghavendra K T <raghavendra.kt@linux.vnet.ibm.com>
-> Signed-off-by: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-> To: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Cc: Tejun Heo <tj@kernel.org>
-> Cc: David Rientjes <rientjes@google.com>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: Anton Blanchard <anton@samba.org>
-> Cc: Raghavendra K T <raghavendra.kt@linux.vnet.ibm.com>
->
-> ---
-> v1 -> v2:
->    Rather than clear node_possible_map and set it nid-by-nid, just
->    directly assign node_online_map to it, as suggested by Michael
->    Ellerman and Tejun Heo.
->
-> diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-> index 0257a7d659ef..0c1716cd271f 100644
-> --- a/arch/powerpc/mm/numa.c
-> +++ b/arch/powerpc/mm/numa.c
-> @@ -958,6 +958,13 @@ void __init initmem_init(void)
->
->   	memblock_dump_all();
->
-> +	/*
-> +	 * Reduce the possible NUMA nodes to the online NUMA nodes,
-> +	 * since we do not support node hotplug. This ensures that  we
-> +	 * lower the maximum NUMA node ID to what is actually present.
-> +	 */
+--MP_/SsFao_2ST2R=m4xLQ7CwW_j
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-  Hope we remember this change when we add hotplug :)
+On Fri, 06 Mar 2015 15:18:42 +1100
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-> +	node_possible_map = node_online_map;
-> +
->   	for_each_online_node(nid) {
->   		unsigned long start_pfn, end_pfn;
->
+ 
+> Can you shoot me the DT (/proc/device-tree in a tarball) ?
+
+Attached.
+
+-- Steve
+
+
+--MP_/SsFao_2ST2R=m4xLQ7CwW_j
+Content-Type: application/x-bzip
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename=device-tree.tar.bz2
+
+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
+
+--MP_/SsFao_2ST2R=m4xLQ7CwW_j--
