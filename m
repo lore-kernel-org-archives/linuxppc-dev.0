@@ -1,26 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 839B41A0198
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Mar 2015 15:02:22 +1100 (AEDT)
-Message-ID: <1425700921.4636.213.camel@kernel.crashing.org>
-Subject: Re: [REGRESSION in 3.18][PPC] PA Semi fails to boot after: of/base:
- Fix PowerPC address parsing hack
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Olof Johansson <olof@lixom.net>
-Date: Sat, 07 Mar 2015 15:02:01 +1100
-In-Reply-To: <CAOesGMjBjmVQtdA85Uc2QrVT6enVShOx-iyXdZLvH9vuq8t=wQ@mail.gmail.com>
-References: <20150305171239.3a8135e6@gandalf.local.home>
- <1425615522.4636.173.camel@kernel.crashing.org>
- <20150306100021.5637d790@gandalf.local.home>
- <1425682582.4636.197.camel@kernel.crashing.org>
- <CAOesGMjBjmVQtdA85Uc2QrVT6enVShOx-iyXdZLvH9vuq8t=wQ@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Grant Likely <grant.likely@linaro.org>, Rob Herring <robh@kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- LKML <linux-kernel@vger.kernel.org>, Steven Rostedt <rostedt@goodmis.org>
+Return-Path: <stockhausen@collogia.de>
+Received: from mailrelay.collogia.de (mailrelay.collogia.de [194.8.207.98])
+ by lists.ozlabs.org (Postfix) with SMTP id 4261C1A018B
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  7 Mar 2015 18:33:07 +1100 (AEDT)
+From: Markus Stockhausen <stockhausen@collogia.de>
+To: Kim Phillips <kim.phillips@freescale.com>, Herbert Xu
+ <herbert@gondor.apana.org.au>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>, "Michael
+ Ellerman" <mpe@ellerman.id.au>
+Subject: AW: [PATCH] crypto: powerpc - move files to fix build error
+Date: Sat, 7 Mar 2015 07:32:44 +0000
+Message-ID: <12EF8D94C6F8734FB2FF37B9FBEDD1735F9E571F@EXCHANGE.collogia.de>
+References: <20150306184621.c2d277457bb1b3112b1d3a64@freescale.com>
+In-Reply-To: <20150306184621.c2d277457bb1b3112b1d3a64@freescale.com>
+Content-Type: multipart/mixed;
+ boundary="----=_NextPartTM-000-23dc74a4-eafd-4069-80b3-de2ba29c5542"
+MIME-Version: 1.0
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,35 +27,103 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2015-03-06 at 15:50 -0800, Olof Johansson wrote:
-> On Fri, Mar 6, 2015 at 2:56 PM, Benjamin Herrenschmidt
-> <benh@kernel.crashing.org> wrote:
-> > On Fri, 2015-03-06 at 10:00 -0500, Steven Rostedt wrote:
-> >> On Fri, 06 Mar 2015 15:18:42 +1100
-> >> Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-> >>
-> >>
-> >> > Can you shoot me the DT (/proc/device-tree in a tarball) ?
-> >>
-> >> Attached.
-> >
-> > This is indeed a bug in their DT. We might want to add quirks for
-> > that unless it can be fixed (or has been via FW update). Olof ?
-> 
-> FW updates on this platform are highly unlikely. Quirk it is.
 
-Oh I was not expecting a new FW, I was mostly wondering whether Steven
-had the latest one since I *think* Michael has been testing with the
-PA board we got here and didn't see that problem ... anyway, I'll check
-with him early next week and clean up / submit that patch.
+This is a multi-part message in MIME format.
 
-Cheers,
-Ben.
+------=_NextPartTM-000-23dc74a4-eafd-4069-80b3-de2ba29c5542
+Content-Type: text/plain; charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-> 
-> -Olof
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> Von: Kim Phillips [kim.phillips@freescale.com]=0A=
+> Gesendet: Samstag, 7. M=E4rz 2015 01:46=0A=
+> An: Herbert Xu; Benjamin Herrenschmidt; Paul Mackerras; Michael Ellerman=
+=0A=
+> Cc: Markus Stockhausen; linux-crypto@vger.kernel.org; linuxppc-dev@lists.=
+ozlabs.org; linux-kernel@vger.kernel.org=0A=
+> Betreff: [PATCH] crypto: powerpc - move files to fix build error=0A=
+> =0A=
+> The current cryptodev-2.6 tree commits:=0A=
+> =0A=
+> d9850fc529ef ("crypto: powerpc/sha1 - kernel config")=0A=
+> 50ba29aaa7b0 ("crypto: powerpc/sha1 - glue")=0A=
+> =0A=
+> failed to properly place files under arch/powerpc/crypto, which=0A=
+> leads to build errors:=0A=
+> =0A=
+> make[1]: *** No rule to make target 'arch/powerpc/crypto/sha1-spe-asm.o',=
+ needed by 'arch/powerpc/crypto/sha1-ppc-spe.o'.  Stop.=0A=
+> make[1]: *** No rule to make target 'arch/powerpc/crypto/sha1_spe_glue.o'=
+, needed by 'arch/powerpc/crypto/sha1-ppc-spe.o'.  Stop.=0A=
+> Makefile:947: recipe for target 'arch/powerpc/crypto' failed=0A=
+> =0A=
+> Move the two sha1 spe files under crypto/, and whilst there, rename=0A=
+> other powerpc crypto files with underscores to use dashes for=0A=
+> consistency.=0A=
+=0A=
+Sorry for the glitches. Did not notice that I had the files in adjacent fol=
+ders=0A=
+and finally added the wrong ones to my git. Thanks a lot for fixing that. =
+=0A=
+=0A=
+Markus=
+------=_NextPartTM-000-23dc74a4-eafd-4069-80b3-de2ba29c5542
+Content-Type: text/plain;
+	name="InterScan_Disclaimer.txt"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+	filename="InterScan_Disclaimer.txt"
+
+****************************************************************************
+Diese E-Mail enthält vertrauliche und/oder rechtlich geschützte
+Informationen. Wenn Sie nicht der richtige Adressat sind oder diese E-Mail
+irrtümlich erhalten haben, informieren Sie bitte sofort den Absender und
+vernichten Sie diese Mail. Das unerlaubte Kopieren sowie die unbefugte
+Weitergabe dieser Mail ist nicht gestattet.
+
+Über das Internet versandte E-Mails können unter fremden Namen erstellt oder
+manipuliert werden. Deshalb ist diese als E-Mail verschickte Nachricht keine
+rechtsverbindliche Willenserklärung.
+
+Collogia
+Unternehmensberatung AG
+Ubierring 11
+D-50678 Köln
+
+Vorstand:
+Kadir Akin
+Dr. Michael Höhnerbach
+
+Vorsitzender des Aufsichtsrates:
+Hans Kristian Langva
+
+Registergericht: Amtsgericht Köln
+Registernummer: HRB 52 497
+
+This e-mail may contain confidential and/or privileged information. If you
+are not the intended recipient (or have received this e-mail in error)
+please notify the sender immediately and destroy this e-mail. Any
+unauthorized copying, disclosure or distribution of the material in this
+e-mail is strictly forbidden.
+
+e-mails sent over the internet may have been written under a wrong name or
+been manipulated. That is why this message sent as an e-mail is not a
+legally binding declaration of intention.
+
+Collogia
+Unternehmensberatung AG
+Ubierring 11
+D-50678 Köln
+
+executive board:
+Kadir Akin
+Dr. Michael Höhnerbach
+
+President of the supervisory board:
+Hans Kristian Langva
+
+Registry office: district court Cologne
+Register number: HRB 52 497
+
+****************************************************************************
+
+------=_NextPartTM-000-23dc74a4-eafd-4069-80b3-de2ba29c5542--
