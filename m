@@ -1,19 +1,19 @@
 Return-Path: <linus971@gmail.com>
-Received: from mail-ig0-x22b.google.com (mail-ig0-x22b.google.com
- [IPv6:2607:f8b0:4001:c05::22b])
+Received: from mail-ie0-x22a.google.com (mail-ie0-x22a.google.com
+ [IPv6:2607:f8b0:4001:c03::22a])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9451E1A0292
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  8 Mar 2015 07:13:29 +1100 (AEDT)
-Received: by igdh15 with SMTP id h15so11872001igd.4
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 07 Mar 2015 12:13:27 -0800 (PST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id D1A531A03B9
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  8 Mar 2015 07:31:06 +1100 (AEDT)
+Received: by iebtr6 with SMTP id tr6so20760331ieb.4
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 07 Mar 2015 12:31:03 -0800 (PST)
 MIME-Version: 1.0
 Sender: linus971@gmail.com
 In-Reply-To: <1425741651-29152-2-git-send-email-mgorman@suse.de>
 References: <1425741651-29152-1-git-send-email-mgorman@suse.de>
  <1425741651-29152-2-git-send-email-mgorman@suse.de>
-Date: Sat, 7 Mar 2015 12:13:27 -0800
-Message-ID: <CA+55aFwGLOfmBMHsFzuqKbJqR43+SVydv5zxh-KWMPD=fQG1UQ@mail.gmail.com>
+Date: Sat, 7 Mar 2015 12:31:03 -0800
+Message-ID: <CA+55aFyCgzNGU-VAaKvwTYFhtJc_ugLK6hRzZBCxMYdAt5TVuA@mail.gmail.com>
 Subject: Re: [PATCH 1/4] mm: thp: Return the correct value for change_huge_pmd
 From: Linus Torvalds <torvalds@linux-foundation.org>
 To: Mel Gorman <mgorman@suse.de>
@@ -32,49 +32,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Looks obviously correct. The old code was just very wrong.
-
-Acked-by: Linus Torvalds <torvalds@linux-foundation.org>
-
-                     Linus
-
-
 On Sat, Mar 7, 2015 at 7:20 AM, Mel Gorman <mgorman@suse.de> wrote:
-> The wrong value is being returned by change_huge_pmd since commit
-> 10c1045f28e8 ("mm: numa: avoid unnecessary TLB flushes when setting
-> NUMA hinting entries") which allows a fallthrough that tries to adjust
-> non-existent PTEs. This patch corrects it.
->
-> Signed-off-by: Mel Gorman <mgorman@suse.de>
-> ---
->  mm/huge_memory.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
->
-> diff --git a/mm/huge_memory.c b/mm/huge_memory.c
-> index fc00c8cb5a82..194c0f019774 100644
-> --- a/mm/huge_memory.c
-> +++ b/mm/huge_memory.c
-> @@ -1482,6 +1482,7 @@ int change_huge_pmd(struct vm_area_struct *vma, pmd_t *pmd,
->
->         if (__pmd_trans_huge_lock(pmd, vma, &ptl) == 1) {
->                 pmd_t entry;
-> +               ret = 1;
->
->                 /*
->                  * Avoid trapping faults against the zero page. The read-only
-> @@ -1490,11 +1491,10 @@ int change_huge_pmd(struct vm_area_struct *vma, pmd_t *pmd,
->                  */
->                 if (prot_numa && is_huge_zero_pmd(*pmd)) {
->                         spin_unlock(ptl);
-> -                       return 0;
-> +                       return ret;
->                 }
 >
 >                 if (!prot_numa || !pmd_protnone(*pmd)) {
 > -                       ret = 1;
 >                         entry = pmdp_get_and_clear_notify(mm, addr, pmd);
 >                         entry = pmd_modify(entry, newprot);
 >                         ret = HPAGE_PMD_NR;
-> --
-> 2.1.2
->
+
+Hmm. I know I acked this already, but the return value - which correct
+- is still potentially something we could improve upon.
+
+In particular, we don't need to flush the TLB's if the old entry was
+not present. Sadly, we don't have a helper function for that.
+
+But the code *could* do something like
+
+    entry = pmdp_get_and_clear_notify(mm, addr, pmd);
+    ret = pmd_tlb_cacheable(entry) ? HPAGE_PMD_NR : 1;
+    entry = pmd_modify(entry, newprot);
+
+where pmd_tlb_cacheable() on x86 would test if _PAGE_PRESENT (bit #0) is set.
+
+In particular, that would mean that as we change *from* a protnone
+(whether NUMA or really protnone) we wouldn't need to flush the TLB.
+
+In fact, we could make it even more aggressive: it's not just an old
+non-present TLB entry that doesn't need flushing - we can avoid the
+flushing whenever we strictly increase the access rigths. So we could
+have something that takes the old entry _and_ the new protections into
+account, and avoids the TLB flush if the new entry is strictly more
+permissive.
+
+This doesn't explain the extra TLB flushes Dave sees, though, because
+the old code didn't make those kinds of optimizations either. But
+maybe something like this is worth doing.
+
+                            Linus
