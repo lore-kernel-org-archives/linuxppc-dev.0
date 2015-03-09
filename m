@@ -1,35 +1,36 @@
 Return-Path: <schwidefsky@de.ibm.com>
-Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
+Received: from e06smtp16.uk.ibm.com (e06smtp16.uk.ibm.com [195.75.94.112])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 008381A0008
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Mar 2015 04:41:52 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45AE81A075B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Mar 2015 04:42:21 +1100 (AEDT)
 Received: from /spool/local
- by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp16.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <schwidefsky@de.ibm.com>;
- Mon, 9 Mar 2015 17:41:48 -0000
+ Mon, 9 Mar 2015 17:42:18 -0000
 Received: from b06cxnps4075.portsmouth.uk.ibm.com
  (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
- by d06dlp01.portsmouth.uk.ibm.com (Postfix) with ESMTP id E1DFB17D8059
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Mar 2015 17:42:07 +0000 (GMT)
-Received: from d06av03.portsmouth.uk.ibm.com (d06av03.portsmouth.uk.ibm.com
- [9.149.37.213])
+ by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id 304E91B08061
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Mar 2015 17:42:36 +0000 (GMT)
+Received: from d06av01.portsmouth.uk.ibm.com (d06av01.portsmouth.uk.ibm.com
+ [9.149.37.212])
  by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t29HfkhQ7733688
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Mar 2015 17:41:46 GMT
-Received: from d06av03.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av03.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t29Hfdkp032715
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Mar 2015 11:41:46 -0600
-Date: Mon, 9 Mar 2015 10:41:36 -0700
+ t29HgGXP47906880
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Mar 2015 17:42:16 GMT
+Received: from d06av01.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av01.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t29Hg5fZ024891
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Mar 2015 11:42:15 -0600
+Date: Mon, 9 Mar 2015 10:42:03 -0700
 From: Martin Schwidefsky <schwidefsky@de.ibm.com>
 To: Kees Cook <keescook@chromium.org>
-Subject: Re: [PATCH v4 06/10] s390: standardize mmap_rnd() usage
-Message-ID: <20150309104136.4abdf1bd@mschwide>
-In-Reply-To: <1425503454-7531-7-git-send-email-keescook@chromium.org>
+Subject: Re: [PATCH v4 08/10] s390: redefine randomize_et_dyn for
+ ELF_ET_DYN_BASE
+Message-ID: <20150309104203.7767babc@mschwide>
+In-Reply-To: <1425503454-7531-9-git-send-email-keescook@chromium.org>
 References: <1425503454-7531-1-git-send-email-keescook@chromium.org>
- <1425503454-7531-7-git-send-email-keescook@chromium.org>
+ <1425503454-7531-9-git-send-email-keescook@chromium.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Cc: linux-mips@linux-mips.org, Min-Hua Chen <orca.chen@gmail.com>,
@@ -61,17 +62,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed,  4 Mar 2015 13:10:50 -0800
+On Wed,  4 Mar 2015 13:10:52 -0800
 Kees Cook <keescook@chromium.org> wrote:
 
-> In preparation for splitting out ET_DYN ASLR, this refactors the use of
-> mmap_rnd() to be used similarly to arm and x86, and extracts the checking
-> of PF_RANDOMIZE.
+> In preparation for moving ET_DYN randomization into the ELF loader (which
+> requires a static ELF_ET_DYN_BASE), this redefines s390's existing ET_DYN
+> randomization in a call to arch_mmap_rnd(). This refactoring results in
+> the same ET_DYN randomization on s390.
 > 
 > Signed-off-by: Kees Cook <keescook@chromium.org>
 > ---
->  arch/s390/mm/mmap.c | 34 +++++++++++++++++++++++-----------
->  1 file changed, 23 insertions(+), 11 deletions(-)
+>  arch/s390/include/asm/elf.h |  8 +++++---
+>  arch/s390/mm/mmap.c         | 11 ++---------
+>  2 files changed, 7 insertions(+), 12 deletions(-)
 
 Patch series including this patch works fine
 Acked-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
