@@ -1,33 +1,18 @@
-Return-Path: <weiyang@linux.vnet.ibm.com>
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <bharata.rao@gmail.com>
+Received: from mail-pa0-x231.google.com (mail-pa0-x231.google.com
+ [IPv6:2607:f8b0:400e:c03::231])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C2B761A0C23
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Mar 2015 14:20:10 +1100 (AEDT)
-Received: from /spool/local
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
- Mon, 9 Mar 2015 13:20:08 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 6DBA92BB0051
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Mar 2015 14:20:05 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t293Jv5630605358
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Mar 2015 14:20:05 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t293JVWA030787
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Mar 2015 14:19:31 +1100
-From: Wei Yang <weiyang@linux.vnet.ibm.com>
-To: gwshan@linux.vnet.ibm.com
-Subject: [PATCH 4/4] powerpc/eeh: remove unused macro IS_BRIDGE
-Date: Mon,  9 Mar 2015 11:17:32 +0800
-Message-Id: <1425871052-13118-5-git-send-email-weiyang@linux.vnet.ibm.com>
-In-Reply-To: <1425871052-13118-1-git-send-email-weiyang@linux.vnet.ibm.com>
-References: <1425871052-13118-1-git-send-email-weiyang@linux.vnet.ibm.com>
-Cc: Wei Yang <weiyang@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id A4B4A1A0246
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Mar 2015 16:31:18 +1100 (AEDT)
+Received: by padet14 with SMTP id et14so73348418pad.0
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 08 Mar 2015 22:31:16 -0700 (PDT)
+From: bharata.rao@gmail.com
+To: linux-kernel@vger.kernel.org
+Subject: [RFC v0 PATCH] kvm: powerpc: Allow reuse of vCPU object
+Date: Mon,  9 Mar 2015 11:00:55 +0530
+Message-Id: <1425879055-20628-1-git-send-email-bharata.rao@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, bharata@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,26 +22,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently, the macro IS_BRIDGE is not used any where.
-This patch just removes it.
+From: Bharata B Rao <bharata@linux.vnet.ibm.com>
 
-Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
+Since KVM isn't equipped to handle closure of vcpu fd from userspace(QEMU)
+correctly, certain work arounds have to be employed to allow reuse of
+vcpu array slot in KVM during cpu hot plug/unplug from guest. One such
+proposed workaround is to park the vcpu fd in userspace during cpu unplug
+and reuse it later during next hotplug.
+
+More details can be found here:
+KVM: https://www.mail-archive.com/kvm@vger.kernel.org/msg102839.html
+QEMU: http://lists.gnu.org/archive/html/qemu-devel/2014-12/msg00859.html
+
+In order to support this workaround with PowerPC KVM, don't create or
+initialize ICP if the vCPU is found to be already associated with an ICP.
+
+Signed-off-by: Bharata B Rao <bharata@linux.vnet.ibm.com>
 ---
- arch/powerpc/kernel/eeh.c |    2 --
- 1 file changed, 2 deletions(-)
+Note: It is not sure at the moment if "park vcpu and reuse" approach will
+be acceptable to KVM/QEMU community, but nevertheless I wanted to check
+if this little patch is harmful or not.
 
-diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
-index 3b2252e..60df70c 100644
---- a/arch/powerpc/kernel/eeh.c
-+++ b/arch/powerpc/kernel/eeh.c
-@@ -144,8 +144,6 @@ struct eeh_stats {
+ arch/powerpc/kvm/book3s_xics.c | 9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/kvm/book3s_xics.c b/arch/powerpc/kvm/book3s_xics.c
+index a4a8d9f..ead3a35 100644
+--- a/arch/powerpc/kvm/book3s_xics.c
++++ b/arch/powerpc/kvm/book3s_xics.c
+@@ -1313,8 +1313,13 @@ int kvmppc_xics_connect_vcpu(struct kvm_device *dev, struct kvm_vcpu *vcpu,
+ 		return -EPERM;
+ 	if (xics->kvm != vcpu->kvm)
+ 		return -EPERM;
+-	if (vcpu->arch.irq_type)
+-		return -EBUSY;
++
++	/*
++	 * If irq_type is already set, don't reinialize but
++	 * return success allowing this vcpu to be reused.
++	 */
++	if (vcpu->arch.irq_type != KVMPPC_IRQ_DEFAULT)
++		return 0;
  
- static struct eeh_stats eeh_stats;
- 
--#define IS_BRIDGE(class_code) (((class_code)<<16) == PCI_BASE_CLASS_BRIDGE)
--
- static int __init eeh_setup(char *str)
- {
- 	if (!strcmp(str, "off"))
+ 	r = kvmppc_xics_create_icp(vcpu, xcpu);
+ 	if (!r)
 -- 
-1.7.9.5
+2.1.0
