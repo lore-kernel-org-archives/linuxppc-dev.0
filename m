@@ -1,28 +1,25 @@
-Return-Path: <mgorman@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <haokexin@gmail.com>
+Received: from mail-qg0-x22b.google.com (mail-qg0-x22b.google.com
+ [IPv6:2607:f8b0:400d:c04::22b])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 37BD21A0007
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Mar 2015 07:41:04 +1100 (AEDT)
-Date: Sun, 8 Mar 2015 20:40:25 +0000
-From: Mel Gorman <mgorman@suse.de>
-To: Ingo Molnar <mingo@kernel.org>
-Subject: Re: [PATCH 4/4] mm: numa: Slow PTE scan rate if migration failures
- occur
-Message-ID: <20150308203145.GA4038@suse.de>
-References: <1425741651-29152-1-git-send-email-mgorman@suse.de>
- <1425741651-29152-5-git-send-email-mgorman@suse.de>
- <20150307163657.GA9702@gmail.com>
- <CA+55aFwDuzpL-k8LsV3touhNLh+TFSLKP8+-nPwMXkWXDYPhrg@mail.gmail.com>
- <20150308100223.GC15487@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 97C2E1A0008
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Mar 2015 12:13:24 +1100 (AEDT)
+Received: by qgdz60 with SMTP id z60so25140712qgd.5
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 08 Mar 2015 18:13:22 -0700 (PDT)
+Date: Mon, 9 Mar 2015 09:13:14 +0800
+From: Kevin Hao <haokexin@gmail.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: book3e_64: fix the align size for paca_struct
+Message-ID: <20150309011314.GA13617@pek-khao-d1.corp.ad.wrs.com>
+References: <1425726893-30605-1-git-send-email-haokexin@gmail.com>
+ <1425806006.4636.223.camel@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-In-Reply-To: <20150308100223.GC15487@gmail.com>
-Cc: ppc-dev <linuxppc-dev@lists.ozlabs.org>, Dave Chinner <david@fromorbit.com>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com,
- Linux-MM <linux-mm@kvack.org>, Aneesh Kumar <aneesh.kumar@linux.vnet.ibm.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Linus Torvalds <torvalds@linux-foundation.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="Q68bSM7Ycu6FN28Q"
+In-Reply-To: <1425806006.4636.223.camel@kernel.crashing.org>
+Cc: Scott Wood <scottwood@freescale.com>, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,102 +29,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Mar 08, 2015 at 11:02:23AM +0100, Ingo Molnar wrote:
-> 
-> * Linus Torvalds <torvalds@linux-foundation.org> wrote:
-> 
-> > On Sat, Mar 7, 2015 at 8:36 AM, Ingo Molnar <mingo@kernel.org> wrote:
-> > >
-> > > And the patch Dave bisected to is a relatively simple patch. Why 
-> > > not simply revert it to see whether that cures much of the 
-> > > problem?
-> > 
-> > So the problem with that is that "pmd_set_numa()" and friends simply 
-> > no longer exist. So we can't just revert that one patch, it's the 
-> > whole series, and the whole point of the series.
-> 
-> Yeah.
-> 
-> > What confuses me is that the only real change that I can see in that 
-> > patch is the change to "change_huge_pmd()". Everything else is 
-> > pretty much a 100% equivalent transformation, afaik. Of course, I 
-> > may be wrong about that, and missing something silly.
-> 
-> Well, there's a difference in what we write to the pte:
-> 
->  #define _PAGE_BIT_NUMA          (_PAGE_BIT_GLOBAL+1)
->  #define _PAGE_BIT_PROTNONE      _PAGE_BIT_GLOBAL
-> 
-> and our expectation was that the two should be equivalent methods from 
-> the POV of the NUMA balancing code, right?
-> 
 
-Functionally yes but performance-wise no. We are now using the global bit
-for NUMA faults at the very least.
+--Q68bSM7Ycu6FN28Q
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> > And the changes to "change_huge_pmd()" were basically re-done
-> > differently by subsequent patches anyway.
-> > 
-> > The *only* change I see remaining is that change_huge_pmd() now does
-> > 
-> >    entry = pmdp_get_and_clear_notify(mm, addr, pmd);
-> >    entry = pmd_modify(entry, newprot);
-> >    set_pmd_at(mm, addr, pmd, entry);
-> > 
-> > for all changes. It used to do that "pmdp_set_numa()" for the
-> > prot_numa case, which did just
-> > 
-> >    pmd_t pmd = *pmdp;
-> >    pmd = pmd_mknuma(pmd);
-> >    set_pmd_at(mm, addr, pmdp, pmd);
-> > 
-> > instead.
-> > 
-> > I don't like the old pmdp_set_numa() because it can drop dirty bits,
-> > so I think the old code was actively buggy.
-> 
-> Could we, as a silly testing hack not to be applied, write a 
-> hack-patch that re-introduces the racy way of setting the NUMA bit, to 
-> confirm that it is indeed this difference that changes pte visibility 
-> across CPUs enough to create so many more faults?
-> 
+On Sun, Mar 08, 2015 at 08:13:26PM +1100, Benjamin Herrenschmidt wrote:
+> On Sat, 2015-03-07 at 19:14 +0800, Kevin Hao wrote:
+> > All the cache line size of the current book3e 64bit SoCs are 64 bytes.
+> > So we should use this size to align the member of paca_struct.
+> > With this change we save 192 bytes. Also change it to __aligned(size)
+> > since it is preferred over __attribute__((aligned(size))).
+>=20
+> Why should we favor the book3e CPUs over the book3s ones ?
 
-This was already done and tested by Dave but while it helped, it was
-not enough.  As the approach was inherently unsafe it was dropped and the
-throttling approach taken. However, the fact it made little difference
-may indicate that this is somehow related to the global bit being used.
+Why do you think so? This only change the align size of the paca_struct's
+members which are private to book3e CPUs, and should not have any effect
+to book3s ones. Did I miss something?
 
-> Because if the answer is 'yes', then we can safely say: 'we regressed 
-> performance because correctness [not dropping dirty bits] comes before 
-> performance'.
-> 
-> If the answer is 'no', then we still have a mystery (and a regression) 
-> to track down.
-> 
-> As a second hack (not to be applied), could we change:
-> 
->  #define _PAGE_BIT_PROTNONE      _PAGE_BIT_GLOBAL
-> 
-> to:
-> 
->  #define _PAGE_BIT_PROTNONE      (_PAGE_BIT_GLOBAL+1)
-> 
+Thanks,
+Kevin
 
-In itself, that's not enough. The SWP_OFFSET_SHIFT would also need updating
-as a partial revert of 21d9ee3eda7792c45880b2f11bff8e95c9a061fb but it
-can be done.
+--Q68bSM7Ycu6FN28Q
+Content-Type: application/pgp-signature
 
-> to double check that the position of the bit does not matter?
-> 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
 
-It's worth checking in case it's a case of how the global bit is
-treated. However, note that Dave is currently travelling for LSF/MM in
-Boston and there is a chance he cannot test this week at all. I'm just
-after landing in the hotel myself. I'll try find time during during one
-of the breaks tomorrow but if the wireless is too crap then accessing the
-test machine remotely might be an issue.
+iQEcBAEBAgAGBQJU/POqAAoJEJNY7TDerrFxPx4H/Rv8AmHkBOnJhrK0ueNJuDp+
+orOQUt3+HHHDSUmtxA2eplWbf/s7S/U+s97QyzITFB/H9PGVO7ymrSm1aNiXCK/2
+bpMxMcYMXG8q/0KDgbrfJNKRBakb+7lLo3VqwTe1PUN3nOFI8yE5mLeZA+kjstqA
+OvYgki26m/ZynMEeZZrkbQhBXNgtRyBLiWO9qnjp8AKJzcqbZgZLYMTXswUntTx5
+abwgQ+OmMwrlaHpGEXXxY+aHJpm/IfTX4ZTc0J6/fkCPqk2WOu7wFnNJN05kzpRw
+PA9NTLtLlQ5DAe/wCMkg5aNet6QU4/U5IZDxgeOEa/gWTezXaeyD5B28JjOwDnM=
+=ixj+
+-----END PGP SIGNATURE-----
 
-> I don't think we've exhaused all avenues of analysis here.
-> 
-
-True.
+--Q68bSM7Ycu6FN28Q--
