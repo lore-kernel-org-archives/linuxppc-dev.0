@@ -1,31 +1,30 @@
 Return-Path: <weiyang@linux.vnet.ibm.com>
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5F2DB1A084E
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Mar 2015 14:18:46 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id B1B8C1A084C
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Mar 2015 14:19:07 +1100 (AEDT)
 Received: from /spool/local
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
- Mon, 9 Mar 2015 13:18:44 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 3BD422BB0047
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Mar 2015 14:18:41 +1100 (EST)
+ Mon, 9 Mar 2015 13:19:07 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 629952BB0040
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Mar 2015 14:19:04 +1100 (EST)
 Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t293IWGF40632366
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Mar 2015 14:18:41 +1100
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t293IupL56295466
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Mar 2015 14:19:04 +1100
 Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
  by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t293I7cP028832
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Mar 2015 14:18:07 +1100
+ t293IUCO029284
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 9 Mar 2015 14:18:31 +1100
 From: Wei Yang <weiyang@linux.vnet.ibm.com>
 To: gwshan@linux.vnet.ibm.com
-Subject: [PATCH 1/4] powerpc/eeh: fix start/end/flags type in struct
- pci_io_addr_range{}
-Date: Mon,  9 Mar 2015 11:17:29 +0800
-Message-Id: <1425871052-13118-2-git-send-email-weiyang@linux.vnet.ibm.com>
+Subject: [PATCH 2/4] powerpc/eeh: fix comment for wait_state()
+Date: Mon,  9 Mar 2015 11:17:30 +0800
+Message-Id: <1425871052-13118-3-git-send-email-weiyang@linux.vnet.ibm.com>
 In-Reply-To: <1425871052-13118-1-git-send-email-weiyang@linux.vnet.ibm.com>
 References: <1425871052-13118-1-git-send-email-weiyang@linux.vnet.ibm.com>
 Cc: Wei Yang <weiyang@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
@@ -38,60 +37,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-struct pci_io_addr_range{} stores the information of pci resources. It
-would be better to keep these related fields have the same type as in
-struct resource{}.
+To retrieve the PCI slot state, EEH driver would set a timeout for that.
+While current comment is not aligned to what the code does.
 
-This patch fixes the start/end/flags type in struct pci_io_addr_range{} to
-have the same type as in struct resource{}.
+This patch fixes those comments according to the code.
 
 Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
 ---
- arch/powerpc/kernel/eeh_cache.c |   16 ++++++++--------
- 1 file changed, 8 insertions(+), 8 deletions(-)
+ arch/powerpc/kernel/eeh_driver.c             |    2 +-
+ arch/powerpc/platforms/powernv/eeh-powernv.c |    2 +-
+ arch/powerpc/platforms/pseries/eeh_pseries.c |    2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/kernel/eeh_cache.c b/arch/powerpc/kernel/eeh_cache.c
-index 07d8a24..a30ed67 100644
---- a/arch/powerpc/kernel/eeh_cache.c
-+++ b/arch/powerpc/kernel/eeh_cache.c
-@@ -48,11 +48,11 @@
-  */
- struct pci_io_addr_range {
- 	struct rb_node rb_node;
--	unsigned long addr_lo;
--	unsigned long addr_hi;
-+	resource_size_t addr_lo;
-+	resource_size_t addr_hi;
- 	struct eeh_dev *edev;
- 	struct pci_dev *pcidev;
--	unsigned int flags;
-+	unsigned long flags;
- };
+diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
+index d099540..cc8d1db 100644
+--- a/arch/powerpc/kernel/eeh_driver.c
++++ b/arch/powerpc/kernel/eeh_driver.c
+@@ -682,7 +682,7 @@ static void eeh_handle_normal_event(struct eeh_pe *pe)
+ 	eeh_pe_dev_traverse(pe, eeh_report_error, &result);
  
- static struct pci_io_addr_cache {
-@@ -125,8 +125,8 @@ static void eeh_addr_cache_print(struct pci_io_addr_cache *cache)
- 
- /* Insert address range into the rb tree. */
- static struct pci_io_addr_range *
--eeh_addr_cache_insert(struct pci_dev *dev, unsigned long alo,
--		      unsigned long ahi, unsigned int flags)
-+eeh_addr_cache_insert(struct pci_dev *dev, resource_size_t alo,
-+		      resource_size_t ahi, unsigned long flags)
- {
- 	struct rb_node **p = &pci_io_addr_cache_root.rb_root.rb_node;
- 	struct rb_node *parent = NULL;
-@@ -200,9 +200,9 @@ static void __eeh_addr_cache_insert_dev(struct pci_dev *dev)
- 
- 	/* Walk resources on this device, poke them into the tree */
- 	for (i = 0; i < DEVICE_COUNT_RESOURCE; i++) {
--		unsigned long start = pci_resource_start(dev,i);
--		unsigned long end = pci_resource_end(dev,i);
--		unsigned int flags = pci_resource_flags(dev,i);
-+		resource_size_t start = pci_resource_start(dev,i);
-+		resource_size_t end = pci_resource_end(dev,i);
-+		unsigned long flags = pci_resource_flags(dev,i);
- 
- 		/* We are interested only bus addresses, not dma or other stuff */
- 		if (0 == (flags & (IORESOURCE_IO | IORESOURCE_MEM)))
+ 	/* Get the current PCI slot state. This can take a long time,
+-	 * sometimes over 3 seconds for certain systems.
++	 * sometimes over 300 seconds for certain systems.
+ 	 */
+ 	rc = eeh_ops->wait_state(pe, MAX_WAIT_FOR_RECOVERY*1000);
+ 	if (rc < 0 || rc == EEH_STATE_NOT_SUPPORT) {
+diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
+index 7a5021b..5abb4c2 100644
+--- a/arch/powerpc/platforms/powernv/eeh-powernv.c
++++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
+@@ -313,7 +313,7 @@ static int powernv_eeh_reset(struct eeh_pe *pe, int option)
+ /**
+  * powernv_eeh_wait_state - Wait for PE state
+  * @pe: EEH PE
+- * @max_wait: maximal period in microsecond
++ * @max_wait: maximal period in millisecond
+  *
+  * Wait for the state of associated PE. It might take some time
+  * to retrieve the PE's state.
+diff --git a/arch/powerpc/platforms/pseries/eeh_pseries.c b/arch/powerpc/platforms/pseries/eeh_pseries.c
+index a6c7e19..9de46c5 100644
+--- a/arch/powerpc/platforms/pseries/eeh_pseries.c
++++ b/arch/powerpc/platforms/pseries/eeh_pseries.c
+@@ -538,7 +538,7 @@ static int pseries_eeh_reset(struct eeh_pe *pe, int option)
+ /**
+  * pseries_eeh_wait_state - Wait for PE state
+  * @pe: EEH PE
+- * @max_wait: maximal period in microsecond
++ * @max_wait: maximal period in millisecond
+  *
+  * Wait for the state of associated PE. It might take some time
+  * to retrieve the PE's state.
 -- 
 1.7.9.5
