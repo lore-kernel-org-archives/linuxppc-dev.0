@@ -1,24 +1,28 @@
-Return-Path: <geert.uytterhoeven@gmail.com>
-Received: from mail-ob0-x234.google.com (mail-ob0-x234.google.com
- [IPv6:2607:f8b0:4003:c01::234])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 23CC71A020A
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Mar 2015 21:56:26 +1100 (AEDT)
-Received: by obbgq1 with SMTP id gq1so32631711obb.2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Mar 2015 03:56:23 -0700 (PDT)
+Return-Path: <david@fromorbit.com>
+Received: from ipmail06.adl2.internode.on.net (ipmail06.adl2.internode.on.net
+ [150.101.137.129])
+ by lists.ozlabs.org (Postfix) with ESMTP id D9F6B1A0008
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Mar 2015 22:29:42 +1100 (AEDT)
+Date: Mon, 9 Mar 2015 22:29:36 +1100
+From: Dave Chinner <david@fromorbit.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 4/4] mm: numa: Slow PTE scan rate if migration failures
+ occur
+Message-ID: <20150309112936.GD26657@destitution>
+References: <1425741651-29152-1-git-send-email-mgorman@suse.de>
+ <1425741651-29152-5-git-send-email-mgorman@suse.de>
+ <20150307163657.GA9702@gmail.com>
+ <CA+55aFwDuzpL-k8LsV3touhNLh+TFSLKP8+-nPwMXkWXDYPhrg@mail.gmail.com>
+ <20150308100223.GC15487@gmail.com>
+ <CA+55aFyQyZXu2fi7X9bWdSX0utk8=sccfBwFaSoToROXoE_PLA@mail.gmail.com>
 MIME-Version: 1.0
-Sender: geert.uytterhoeven@gmail.com
-In-Reply-To: <1425898222-19721-1-git-send-email-geert@linux-m68k.org>
-References: <1425898222-19721-1-git-send-email-geert@linux-m68k.org>
-Date: Mon, 9 Mar 2015 11:56:22 +0100
-Message-ID: <CAMuHMdVNWVKA0iuTMABQPzJJtjCAD_Ey7w1gx2ojYzG4TscyKA@mail.gmail.com>
-Subject: Re: Build regressions/improvements in v4.0-rc3
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Content-Type: text/plain; charset=UTF-8
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Arnd Bergmann <arnd@arndb.de>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <CA+55aFyQyZXu2fi7X9bWdSX0utk8=sccfBwFaSoToROXoE_PLA@mail.gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com,
+ Linux-MM <linux-mm@kvack.org>, Aneesh Kumar <aneesh.kumar@linux.vnet.ibm.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ ppc-dev <linuxppc-dev@lists.ozlabs.org>, Ingo Molnar <mingo@kernel.org>,
+ Mel Gorman <mgorman@suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,82 +32,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Mar 9, 2015 at 11:50 AM, Geert Uytterhoeven
-<geert@linux-m68k.org> wrote:
-> JFYI, when comparing v4.0-rc3[1] to v4.0-rc2[3], the summaries are:
->   - build errors: +18/-7
+On Sun, Mar 08, 2015 at 11:35:59AM -0700, Linus Torvalds wrote:
+> On Sun, Mar 8, 2015 at 3:02 AM, Ingo Molnar <mingo@kernel.org> wrote:
+> But:
+> 
+> > As a second hack (not to be applied), could we change:
+> >
+> >  #define _PAGE_BIT_PROTNONE      _PAGE_BIT_GLOBAL
+> >
+> > to:
+> >
+> >  #define _PAGE_BIT_PROTNONE      (_PAGE_BIT_GLOBAL+1)
+> >
+> > to double check that the position of the bit does not matter?
+> 
+> Agreed. We should definitely try that.
+> 
+> Dave?
 
-  + /home/kisskb/slave/src/arch/arm/mach-pxa/idp.c: error:
-'SMC91X_NOWAIT' undeclared here (not in a function):  => 85:47
-  + /home/kisskb/slave/src/arch/arm/mach-pxa/idp.c: error:
-'SMC91X_USE_32BIT' undeclared here (not in a function):  => 85:11
-  + /home/kisskb/slave/src/arch/arm/mach-pxa/idp.c: error:
-'SMC91X_USE_DMA' undeclared here (not in a function):  => 85:30
-  + /home/kisskb/slave/src/arch/arm/mach-pxa/idp.c: error: unknown
-field 'flags' specified in initializer:  => 85:2
-  + /home/kisskb/slave/src/arch/arm/mach-pxa/idp.c: error: variable
-'smc91x_platdata' has initializer but incomplete type:  => 84:15
+As Mel has already mentioned, I'm in Boston for LSFMM and don't have
+access to the test rig I've used to generate this.
 
-pxa255-idp_defconfig
+> Also, is there some sane way for me to actually see this behavior on a
+> regular machine with just a single socket? Dave is apparently running
+> in some fake-numa setup, I'm wondering if this is easy enough to
+> reproduce that I could see it myself.
 
-  + /home/kisskb/slave/src/arch/arm/mach-pxa/lpd270.c: error: expected
-'}' before ';' token:  => 198:43
+Should be - I don't actually use 500TB of storage to generate this -
+50GB on an SSD is all you need from the storage side. I just use a
+sparse backing file to make it look like a 500TB device. :P
 
-lpd270_defconfig
+i.e. create an XFS filesystem on a 500TB sparse file with "mkfs.xfs
+-d size=500t,file=1 /path/to/file.img", mount it on loopback or as a
+virtio,cache=none device for the guest vm and then use fsmark to
+generate several million files spread across many, many directories
+such as:
 
-  + /home/kisskb/slave/src/arch/arm/mach-sa1100/neponset.c: error:
-'smc91c_platdata' undeclared (first use in this function):  => 271:12
+$  fs_mark -D 10000 -S0 -n 100000 -s 1 -L 32 -d \
+/mnt/scratch/0 -d /mnt/scratch/1 -d /mnt/scratch/2 -d \
+/mnt/scratch/3 -d /mnt/scratch/4 -d /mnt/scratch/5 -d \
+/mnt/scratch/6 -d /mnt/scratch/7
 
-neponset_defconfig
+That should only take a few minutes to run - if you throw 8p at it
+then it should run at >100k files/s being created.
 
-  + /home/kisskb/slave/src/arch/arm/mach-sa1100/pleb.c: error:
-'smc91c_platdata' undeclared here (not in a function):  => 57:22
+Then unmount and run "xfs_repair -o bhash=101703 /path/to/file.img"
+on the resultant image file.
 
-pleb_defconfig
+Cheers,
 
-  + /home/kisskb/slave/src/drivers/net/ethernet/smsc/smc91x.c: error:
-implicit declaration of function 'machine_has_neponset'
-[-Werror=implicit-function-declaration]:  => 2363:2
-
-neponset_defconfig
-
-smc91x fallout. The lpd270_defconfig failure looks like not covered by
-"ARM: fix typos in smc91x platform data" yet?
-
-  + /home/kisskb/slave/src/arch/powerpc/platforms/pseries/hotplug-memory.c:
-error: 'SECTION_SIZE_BITS' undeclared (first use in this function):
-=> 27:31
-  + /home/kisskb/slave/src/mm/memory_hotplug.c: error:
-'PAGES_PER_SECTION' undeclared (first use in this function):  =>
-1836:46, 1178:18
-  + /home/kisskb/slave/src/mm/memory_hotplug.c: error:
-'PAGE_SECTION_MASK' undeclared (first use in this function):  =>
-1177:20
-  + /home/kisskb/slave/src/mm/memory_hotplug.c: error: implicit
-declaration of function '__nr_to_section'
-[-Werror=implicit-function-declaration]:  => 1841:3
-  + /home/kisskb/slave/src/mm/memory_hotplug.c: error: implicit
-declaration of function 'find_memory_block_hinted'
-[-Werror=implicit-function-declaration]:  => 1848:3
-  + /home/kisskb/slave/src/mm/memory_hotplug.c: error: implicit
-declaration of function 'pfn_to_section_nr'
-[-Werror=implicit-function-declaration]:  => 1837:3
-  + /home/kisskb/slave/src/mm/memory_hotplug.c: error: implicit
-declaration of function 'present_section_nr'
-[-Werror=implicit-function-declaration]:  => 1838:3
-
-powerpc-randconfig
-
-> [1] http://kisskb.ellerman.id.au/kisskb/head/8557/ (255 out of 257 configs)
-> [3] http://kisskb.ellerman.id.au/kisskb/head/8529/ (256 out of 257 configs)
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Dave.
+-- 
+Dave Chinner
+david@fromorbit.com
