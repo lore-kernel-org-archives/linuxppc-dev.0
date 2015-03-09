@@ -1,26 +1,22 @@
-Return-Path: <geert.uytterhoeven@gmail.com>
-Received: from mail-ob0-x22d.google.com (mail-ob0-x22d.google.com
- [IPv6:2607:f8b0:4003:c01::22d])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <Emilian.Medve@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1on0147.outbound.protection.outlook.com [157.56.110.147])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7ADE61A20D1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Mar 2015 01:27:26 +1100 (AEDT)
-Received: by obbnt9 with SMTP id nt9so9228238obb.12
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Mar 2015 07:27:22 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id D66391A30E4
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Mar 2015 01:47:48 +1100 (AEDT)
+From: Emil Medve <Emilian.Medve@Freescale.com>
+To: <scottwood@Freescale.com>, <linuxppc-dev@lists.ozlabs.org>,
+ <linux-kernel@vger.kernel.org>
+Subject: [RFC v3 04/10] powerpc/mpc85xx: Add platform support for the
+ Freescale DPAA QMan
+Date: Mon, 9 Mar 2015 09:41:49 -0500
+Message-ID: <1425912115-27398-5-git-send-email-Emilian.Medve@Freescale.com>
+In-Reply-To: <1425912115-27398-1-git-send-email-Emilian.Medve@Freescale.com>
+References: <1425912115-27398-1-git-send-email-Emilian.Medve@Freescale.com>
 MIME-Version: 1.0
-Sender: geert.uytterhoeven@gmail.com
-In-Reply-To: <4677994.NrntHOKO7A@wuerfel>
-References: <1425898222-19721-1-git-send-email-geert@linux-m68k.org>
- <CAMuHMdVNWVKA0iuTMABQPzJJtjCAD_Ey7w1gx2ojYzG4TscyKA@mail.gmail.com>
- <4677994.NrntHOKO7A@wuerfel>
-Date: Mon, 9 Mar 2015 15:27:22 +0100
-Message-ID: <CAMuHMdXK6dVfMhMTepr2cfVfDVaLpoA9vPn-c=FNkM0dmxin9A@mail.gmail.com>
-Subject: Re: Build regressions/improvements in v4.0-rc3
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Arnd Bergmann <arnd@arndb.de>
-Content-Type: text/plain; charset=UTF-8
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Cc: Geoff Thorpe <Geoff.Thorpe@Freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,34 +26,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Arnd,
+From: Geoff Thorpe <Geoff.Thorpe@freescale.com>
 
-On Mon, Mar 9, 2015 at 3:10 PM, Arnd Bergmann <arnd@arndb.de> wrote:
->> smc91x fallout. The lpd270_defconfig failure looks like not covered by
->> "ARM: fix typos in smc91x platform data" yet?
->
-> It's not?
->
-> This should be part of that patch:
->
-> --- a/arch/arm/mach-pxa/lpd270.c
-> +++ b/arch/arm/mach-pxa/lpd270.c
-> @@ -195,7 +195,7 @@ static struct resource smc91x_resources[] = {
->  };
->
->  struct smc91x_platdata smc91x_platdata = {
-> -       .flags = SMC91X_USE_16BIT | SMC91X_NOWAIT;
-> +       .flags = SMC91X_USE_16BIT | SMC91X_NOWAIT,
+Signed-off-by: Geoff Thorpe <Geoff.Thorpe@freescale.com>
+---
+ arch/powerpc/platforms/85xx/corenet_generic.c | 8 +++++++-
+ arch/powerpc/platforms/85xx/p1023_rdb.c       | 8 +++++++-
+ 2 files changed, 14 insertions(+), 2 deletions(-)
 
-Ah OK. Sorry, I thought there was a different reason.
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+diff --git a/arch/powerpc/platforms/85xx/corenet_generic.c b/arch/powerpc/platforms/85xx/corenet_generic.c
+index c5a82c9..255f542 100644
+--- a/arch/powerpc/platforms/85xx/corenet_generic.c
++++ b/arch/powerpc/platforms/85xx/corenet_generic.c
+@@ -201,15 +201,21 @@ static int __init corenet_generic_probe(void)
+ }
+ 
+ /* Early setup is required for large chunks of contiguous (and coarsely-aligned)
+- * memory. The following shoe-horns BMan "init_early" calls into the
++ * memory. The following shoe-horns Q/BMan "init_early" calls into the
+  * platform setup to let them parse their CCSR nodes early on.
+  */
++#ifdef CONFIG_FSL_QMAN_CONFIG
++void __init qman_init_early(void);
++#endif
+ #ifdef CONFIG_FSL_BMAN_CONFIG
+ void __init bman_init_early(void);
+ #endif
+ 
+ __init void corenet_ds_init_early(void)
+ {
++#ifdef CONFIG_FSL_QMAN_CONFIG
++	qman_init_early();
++#endif
+ #ifdef CONFIG_FSL_BMAN_CONFIG
+ 	bman_init_early();
+ #endif
+diff --git a/arch/powerpc/platforms/85xx/p1023_rdb.c b/arch/powerpc/platforms/85xx/p1023_rdb.c
+index e629394..ab06296 100644
+--- a/arch/powerpc/platforms/85xx/p1023_rdb.c
++++ b/arch/powerpc/platforms/85xx/p1023_rdb.c
+@@ -106,14 +106,20 @@ static int __init p1023_rdb_probe(void)
+ }
+ 
+ /* Early setup is required for large chunks of contiguous (and coarsely-aligned)
+- * memory. The following shoe-horns BMan "init_early" calls into the
++ * memory. The following shoe-horns Q/BMan "init_early" calls into the
+  * platform setup to let them parse their CCSR nodes early on. */
++#ifdef CONFIG_FSL_QMAN_CONFIG
++void __init qman_init_early(void);
++#endif
+ #ifdef CONFIG_FSL_BMAN_CONFIG
+ void __init bman_init_early(void);
+ #endif
+ 
+ static __init void p1023_rdb_init_early(void)
+ {
++#ifdef CONFIG_FSL_QMAN_CONFIG
++	qman_init_early();
++#endif
+ #ifdef CONFIG_FSL_BMAN_CONFIG
+ 	bman_init_early();
+ #endif
+-- 
+2.3.0
