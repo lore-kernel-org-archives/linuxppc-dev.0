@@ -1,30 +1,31 @@
 Return-Path: <aik@ozlabs.ru>
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 058EC1A0427
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0573D1A0415
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Mar 2015 01:08:52 +1100 (AEDT)
 Received: from /spool/local
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aik@ozlabs.ru>;
  Tue, 10 Mar 2015 00:08:50 +1000
 Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id A562D2BB004D
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 98BAA2CE8054
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Mar 2015 01:08:48 +1100 (EST)
 Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
  by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t29E8eJf40501304
+ t29E8ekU31457520
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Mar 2015 01:08:48 +1100
 Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
  by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t29E8FrW005850
+ t29E8F9g005834
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Mar 2015 01:08:15 +1100
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v5 19/29] poweppc/powernv/ioda2: Rework iommu_table creation
-Date: Tue, 10 Mar 2015 01:07:15 +1100
-Message-Id: <1425910045-26167-20-git-send-email-aik@ozlabs.ru>
+Subject: [PATCH v5 06/29] vfio: powerpc/spapr: Disable DMA mappings on
+ disabled container
+Date: Tue, 10 Mar 2015 01:07:02 +1100
+Message-Id: <1425910045-26167-7-git-send-email-aik@ozlabs.ru>
 In-Reply-To: <1425910045-26167-1-git-send-email-aik@ozlabs.ru>
 References: <1425910045-26167-1-git-send-email-aik@ozlabs.ru>
 Cc: kvm@vger.kernel.org, Alexey Kardashevskiy <aik@ozlabs.ru>,
@@ -39,76 +40,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This moves iommu_table creation to the beginning. This is a mechanical
-patch.
+At the moment DMA map/unmap requests are handled irrespective to
+the container's state. This allows the user space to pin memory which
+it might not be allowed to pin.
+
+This adds checks to MAP/UNMAP that the container is enabled, otherwise
+-EPERM is returned.
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 ---
- arch/powerpc/platforms/powernv/pci-ioda.c | 30 ++++++++++++++++--------------
- 1 file changed, 16 insertions(+), 14 deletions(-)
+ drivers/vfio/vfio_iommu_spapr_tce.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index 3703098..d05abaf 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -1429,27 +1429,31 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
- 	addr = page_address(tce_mem);
- 	memset(addr, 0, tce_table_size);
+diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
+index 432a0de..d3ab34f 100644
+--- a/drivers/vfio/vfio_iommu_spapr_tce.c
++++ b/drivers/vfio/vfio_iommu_spapr_tce.c
+@@ -333,6 +333,9 @@ static long tce_iommu_ioctl(void *iommu_data,
+ 		struct iommu_table *tbl = container->tbl;
+ 		unsigned long tce;
  
-+	/* Setup iommu */
-+	pe->table_group.tables[0].it_group = &pe->table_group;
++		if (!container->enabled)
++			return -EPERM;
 +
-+	/* Setup linux iommu table */
-+	tbl = &pe->table_group.tables[0];
-+	pnv_pci_setup_iommu_table(tbl, addr, tce_table_size, 0,
-+			IOMMU_PAGE_SHIFT_4K);
-+
-+	tbl->it_ops = &pnv_ioda2_iommu_ops;
-+	iommu_init_table(tbl, phb->hose->node);
-+	pe->table_group.ops = &pnv_pci_ioda2_ops;
-+
- 	/*
- 	 * Map TCE table through TVT. The TVE index is the PE number
- 	 * shifted by 1 bit for 32-bits DMA space.
- 	 */
- 	rc = opal_pci_map_pe_dma_window(phb->opal_id, pe->pe_number,
--					pe->pe_number << 1, 1, __pa(addr),
--					tce_table_size, 0x1000);
-+			pe->pe_number << 1, 1, __pa(tbl->it_base),
-+			tbl->it_size << 3, 1ULL << tbl->it_page_shift);
- 	if (rc) {
- 		pe_err(pe, "Failed to configure 32-bit TCE table,"
- 		       " err %ld\n", rc);
- 		goto fail;
- 	}
+ 		if (!tbl)
+ 			return -ENXIO;
  
--	/* Setup iommu */
--	pe->table_group.tables[0].it_group = &pe->table_group;
--
--	/* Setup linux iommu table */
--	tbl = &pe->table_group.tables[0];
--	pnv_pci_setup_iommu_table(tbl, addr, tce_table_size, 0,
--			IOMMU_PAGE_SHIFT_4K);
--
- 	/* OPAL variant of PHB3 invalidated TCEs */
- 	swinvp = of_get_property(phb->hose->dn, "ibm,opal-tce-kill", NULL);
- 	if (swinvp) {
-@@ -1463,14 +1467,12 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
- 				8);
- 		tbl->it_type |= (TCE_PCI_SWINV_CREATE | TCE_PCI_SWINV_FREE);
- 	}
--	tbl->it_ops = &pnv_ioda2_iommu_ops;
--	iommu_init_table(tbl, phb->hose->node);
--	pe->table_group.ops = &pnv_pci_ioda2_ops;
- 	iommu_register_group(&pe->table_group, phb->hose->global_number,
- 			pe->pe_number);
+@@ -377,6 +380,9 @@ static long tce_iommu_ioctl(void *iommu_data,
+ 		struct vfio_iommu_type1_dma_unmap param;
+ 		struct iommu_table *tbl = container->tbl;
  
- 	if (pe->pdev)
--		set_iommu_table_base_and_group(&pe->pdev->dev, tbl);
-+		set_iommu_table_base_and_group(&pe->pdev->dev,
-+				&pe->table_group.tables[0]);
- 	else
- 		pnv_ioda_setup_bus_dma(pe, pe->pbus, true);
++		if (!container->enabled)
++			return -EPERM;
++
+ 		if (WARN_ON(!tbl))
+ 			return -ENXIO;
  
 -- 
 2.0.0
