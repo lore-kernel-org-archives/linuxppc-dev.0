@@ -1,42 +1,30 @@
-Return-Path: <linux+linuxppc-dev=lists.ozlabs.org@arm.linux.org.uk>
-Received: from pandora.arm.linux.org.uk (pandora.arm.linux.org.uk
- [IPv6:2001:4d48:ad52:3201:214:fdff:fe10:1be6])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mohicks@gmail.com>
+Received: from mail-ie0-x235.google.com (mail-ie0-x235.google.com
+ [IPv6:2607:f8b0:4001:c03::235])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5765B1A32AA
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Mar 2015 01:51:28 +1100 (AEDT)
-Date: Mon, 9 Mar 2015 14:51:02 +0000
-From: Russell King - ARM Linux <linux@arm.linux.org.uk>
-To: Kees Cook <keescook@chromium.org>
-Subject: Re: [PATCH 5/5] mm: fold arch_randomize_brk into
- ARCH_HAS_ELF_RANDOMIZE
-Message-ID: <20150309145101.GO8656@n2100.arm.linux.org.uk>
-References: <1425341988-1599-1-git-send-email-keescook@chromium.org>
- <1425341988-1599-6-git-send-email-keescook@chromium.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id A2C2A1A3F0A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Mar 2015 02:08:45 +1100 (AEDT)
+Received: by iecar1 with SMTP id ar1so8547402iec.3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Mar 2015 08:08:42 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1425341988-1599-6-git-send-email-keescook@chromium.org>
-Sender: Russell King - ARM Linux <linux@arm.linux.org.uk>
-Cc: linux-mips@linux-mips.org, Arun Chandran <achandran@mvista.com>,
- Catalin Marinas <catalin.marinas@arm.com>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, Oleg Nesterov <oleg@redhat.com>,
- Min-Hua Chen <orca.chen@gmail.com>, Paul Mackerras <paulus@samba.org>,
- Yann Droneaud <ydroneaud@opteya.com>, linux-s390@vger.kernel.org,
- Andrey Ryabinin <a.ryabinin@samsung.com>, x86@kernel.org,
- Hector Marco-Gisbert <hecmargi@upv.es>, "David A. Long" <dave.long@linaro.org>,
- Borislav Petkov <bp@suse.de>, Ben Hutchings <ben@decadent.org.uk>,
- Will Deacon <will.deacon@arm.com>, linux-fsdevel@vger.kernel.org,
- Alex Smith <alex@alex-smith.me.uk>,
- Michael Holzheu <holzheu@linux.vnet.ibm.com>,
- linux-arm-kernel@lists.infradead.org, Jeff Bailey <jeffbailey@google.com>,
- Paul Burton <paul.burton@imgtec.com>, linux-kernel@vger.kernel.org,
- Ralf Baechle <ralf@linux-mips.org>, Andy Lutomirski <luto@amacapital.net>,
- Vineeth Vijayan <vvijayan@mvista.com>,
- Markos Chandras <markos.chandras@imgtec.com>,
- Jan-Simon =?iso-8859-1?Q?M=F6ller?= <dl9pf@gmx.de>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>, linux390@de.ibm.com,
- akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
- Alexander Viro <viro@zeniv.linux.org.uk>
+Sender: mohicks@gmail.com
+In-Reply-To: <54FD72E4.1060701@freescale.com>
+References: <1424451610-5786-1-git-send-email-mort@bork.org>
+ <54F464E4.8080204@freescale.com> <54F475A8.6030105@gmail.com>
+ <20150302220923.GC30523@darwin.bork.org>
+ <54F5D6D5.8070407@freescale.com>
+ <CAJUS3Xnw66Eu6tvGPpdcet6KLjhKM=ptj8NRaztAVr0h_r+LqQ@mail.gmail.com>
+ <54FD72E4.1060701@freescale.com>
+Date: Mon, 9 Mar 2015 11:08:42 -0400
+Message-ID: <CAJUS3XkY0tbYqBbU5HR7NT63UPFi5DO6XWuymbZnQaJEA5kkBw@mail.gmail.com>
+Subject: Re: [PATCH 0/2] crypto: talitos: Add AES-XTS mode
+From: Martin Hicks <mort@bork.org>
+To: =?UTF-8?Q?Horia_Geant=C4=83?= <horia.geanta@freescale.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: Scott Wood <scottwood@freescale.com>,
+ Herbert Xu <herbert@gondor.apana.org.au>, linuxppc-dev@lists.ozlabs.org,
+ linux-crypto@vger.kernel.org, Milan Broz <gmazyland@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,25 +34,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Mar 02, 2015 at 04:19:48PM -0800, Kees Cook wrote:
-> diff --git a/arch/arm/include/asm/elf.h b/arch/arm/include/asm/elf.h
-> index afb9cafd3786..c1ff8ab12914 100644
-> --- a/arch/arm/include/asm/elf.h
-> +++ b/arch/arm/include/asm/elf.h
-> @@ -125,10 +125,6 @@ int dump_task_regs(struct task_struct *t, elf_gregset_t *elfregs);
->  extern void elf_set_personality(const struct elf32_hdr *);
->  #define SET_PERSONALITY(ex)	elf_set_personality(&(ex))
->  
-> -struct mm_struct;
-> -extern unsigned long arch_randomize_brk(struct mm_struct *mm);
-> -#define arch_randomize_brk arch_randomize_brk
-> -
->  #ifdef CONFIG_MMU
->  #define ARCH_HAS_SETUP_ADDITIONAL_PAGES 1
->  struct linux_binprm;
+On Mon, Mar 9, 2015 at 6:16 AM, Horia Geant=C4=83 <horia.geanta@freescale.c=
+om> wrote:
+> On 3/3/2015 7:44 PM, Martin Hicks wrote:
+>> On Tue, Mar 3, 2015 at 10:44 AM, Horia Geant=C4=83
+>> <horia.geanta@freescale.com> wrote:
+>>>
+>>> For talitos, there are two cases:
+>>>
+>>> 1. request data size is <=3D data unit / sector size
+>>> talitos can handle any IV / tweak scheme
+>>>
+>>> 2. request data size > sector size
+>>> since talitos internally generates the IV for the next sector by
+>>> incrementing the previous IV, only IV schemes that allocate consecutive
+>>> IV to consecutive sectors will function correctly.
+>>>
+>>
+>> it's not clear to me that #1 is right.  I guess it could be, but the
+>> IV length would be limited to 8 bytes.
+>
+> Yes, there's a limitation in talitos wrt. XTS IV / tweak size - it's up
+> to 8 bytes.
+> So I guess ESSIV won't work with talitos-xts, since the encrypted IV
+> output is 16 bytes.
+> But as previously said, ESSIV breaks the XTS standard requirement for
+> having a consecutive IV for consecutive blocks. ESSIV should really be
+> used only with disk-level encryption schemes that require an
+> unpredictable IV.
 
-Acked-by: Russell King <rmk+kernel@arm.linux.org.uk>
+Ok.  I'll verify that the second half of the IV is zeroed.
 
--- 
-FTTC broadband for 0.8mile line: currently at 10.5Mbps down 400kbps up
-according to speedtest.net.
+One last thing that I'm not sure of is what string to place in
+cra_ablkcipher.geniv field.   "eseqiv" seems wrong if plain/plain64
+are the IVs that XTS is designed for.
+
+Thanks,
+mh
+
+--=20
+Martin Hicks P.Eng.      |         mort@bork.org
+Bork Consulting Inc.     |   +1 (613) 266-2296
