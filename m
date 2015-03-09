@@ -3,18 +3,17 @@ Received: from pandora.arm.linux.org.uk (pandora.arm.linux.org.uk
  [IPv6:2001:4d48:ad52:3201:214:fdff:fe10:1be6])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 474141A0CAE
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Mar 2015 02:13:49 +1100 (AEDT)
-Date: Mon, 9 Mar 2015 15:13:19 +0000
+ by lists.ozlabs.org (Postfix) with ESMTPS id C10891A10D2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Mar 2015 02:15:46 +1100 (AEDT)
+Date: Mon, 9 Mar 2015 15:15:26 +0000
 From: Russell King - ARM Linux <linux@arm.linux.org.uk>
 To: Kees Cook <keescook@chromium.org>
-Subject: Re: [PATCH 4/5] mm: split ET_DYN ASLR from mmap ASLR
-Message-ID: <20150309151319.GP8656@n2100.arm.linux.org.uk>
+Subject: Re: [PATCH v2 0/5] split ET_DYN ASLR from mmap ASLR
+Message-ID: <20150309151526.GQ8656@n2100.arm.linux.org.uk>
 References: <1425341988-1599-1-git-send-email-keescook@chromium.org>
- <1425341988-1599-5-git-send-email-keescook@chromium.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1425341988-1599-5-git-send-email-keescook@chromium.org>
+In-Reply-To: <1425341988-1599-1-git-send-email-keescook@chromium.org>
 Sender: Russell King - ARM Linux <linux@arm.linux.org.uk>
 Cc: linux-mips@linux-mips.org, Arun Chandran <achandran@mvista.com>,
  Catalin Marinas <catalin.marinas@arm.com>,
@@ -45,23 +44,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Mar 02, 2015 at 04:19:47PM -0800, Kees Cook wrote:
-> diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
-> index 248d99cabaa8..e2f0ef9c6ee3 100644
-> --- a/arch/arm/Kconfig
-> +++ b/arch/arm/Kconfig
-> @@ -1,7 +1,6 @@
->  config ARM
->  	bool
->  	default y
-> -	select ARCH_BINFMT_ELF_RANDOMIZE_PIE
->  	select ARCH_HAS_ATOMIC64_DEC_IF_POSITIVE
->  	select ARCH_HAS_ELF_RANDOMIZE
->  	select ARCH_HAS_TICK_BROADCAST if GENERIC_CLOCKEVENTS_BROADCAST
+On Mon, Mar 02, 2015 at 04:19:43PM -0800, Kees Cook wrote:
+> To address the "offset2lib" ASLR weakness[1], this separates ET_DYN
+> ASLR from mmap ASLR, as already done on s390. The architectures
+> that are already randomizing mmap (arm, arm64, mips, powerpc, s390,
+> and x86), have their various forms of arch_mmap_rnd() made available
+> via the new CONFIG_ARCH_HAS_ELF_RANDOMIZE. For these architectures,
+> arch_randomize_brk() is collapsed as well.
+> 
+> This is an alternative to the solutions in:
+> https://lkml.org/lkml/2015/2/23/442
 
-This doesn't mean much on its own...
+I've run this on one of my ARM platforms, and it looks fine.
 
-Acked-by: Russell King <rmk+kernel@arm.linux.org.uk>
+2a05e000-2a05f000 r-xp 00000000 00:10 7750376    /root/offset2lib/get_offset2lib
+2a066000-2a067000 r--p 00000000 00:10 7750376    /root/offset2lib/get_offset2lib
+2a067000-2a068000 rw-p 00001000 00:10 7750376    /root/offset2lib/get_offset2lib
+b6dfd000-b6ed3000 r-xp 00000000 00:10 1376508    /lib/arm-linux-gnueabihf/libc-2.15.so
+b6ed3000-b6eda000 ---p 000d6000 00:10 1376508    /lib/arm-linux-gnueabihf/libc-2.15.so
+b6eda000-b6edc000 r--p 000d5000 00:10 1376508    /lib/arm-linux-gnueabihf/libc-2.15.so
+b6edc000-b6edd000 rw-p 000d7000 00:10 1376508    /lib/arm-linux-gnueabihf/libc-2.15.so
+b6edd000-b6ee0000 rw-p 00000000 00:00 0
+b6ef9000-b6f10000 r-xp 00000000 00:10 1376509    /lib/arm-linux-gnueabihf/ld-2.15.so
+b6f13000-b6f17000 rw-p 00000000 00:00 0
+b6f17000-b6f18000 r--p 00016000 00:10 1376509    /lib/arm-linux-gnueabihf/ld-2.15.so
+b6f18000-b6f19000 rw-p 00017000 00:10 1376509    /lib/arm-linux-gnueabihf/ld-2.15.so
+bea3b000-bea5c000 rw-p 00000000 00:00 0          [stack]
+bec22000-bec23000 r-xp 00000000 00:00 0          [sigpage]
+ffff0000-ffff1000 r-xp 00000000 00:00 0          [vectors]
+
+And offset2lib shows a random offset:
+
+Offset2lib (libc): 0xffffffff73261000
+Offset2lib (libc): 0xffffffff732ce000
+Offset2lib (libc): 0xffffffff731b1000
+Offset2lib (libc): 0xffffffff73252000
+
+So, for ARM:
+
+Tested-by: Russell King <rmk+kernel@arm.linux.org.uk>
+
+Thanks.
 
 -- 
 FTTC broadband for 0.8mile line: currently at 10.5Mbps down 400kbps up
