@@ -2,15 +2,17 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8C4AD1A0008
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Mar 2015 17:53:57 +1100 (AEDT)
-Message-ID: <1425884006.4636.234.camel@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc64: use fixed lock token for !CONFIG_PPC_SPLPAR
+ by lists.ozlabs.org (Postfix) with ESMTPS id 029DD1A0008
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Mar 2015 18:31:43 +1100 (AEDT)
+Message-ID: <1425886285.4636.241.camel@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: book3e_64: fix the align size for paca_struct
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Kevin Hao <haokexin@gmail.com>
-Date: Mon, 09 Mar 2015 17:53:26 +1100
-In-Reply-To: <1425727183-30880-1-git-send-email-haokexin@gmail.com>
-References: <1425727183-30880-1-git-send-email-haokexin@gmail.com>
+Date: Mon, 09 Mar 2015 18:31:25 +1100
+In-Reply-To: <20150309011314.GA13617@pek-khao-d1.corp.ad.wrs.com>
+References: <1425726893-30605-1-git-send-email-haokexin@gmail.com>
+ <1425806006.4636.223.camel@kernel.crashing.org>
+ <20150309011314.GA13617@pek-khao-d1.corp.ad.wrs.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 Cc: Scott Wood <scottwood@freescale.com>, Paul Mackerras <paulus@samba.org>,
@@ -24,48 +26,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2015-03-07 at 19:19 +0800, Kevin Hao wrote:
-> It makes no sense to use a variant lock token on a platform which
-> doesn't support for shared-processor logical partitions. Actually we
-> can eliminate a memory load by using a fixed lock token on these
-> platforms.
-
-Does this provide an actual measurable benefit ? I found that the lock
-token was quite handy for debugging ...
-
-Cheers,
-Ben.
-
-> Signed-off-by: Kevin Hao <haokexin@gmail.com>
-> ---
->  arch/powerpc/include/asm/spinlock.h | 8 ++++++--
->  1 file changed, 6 insertions(+), 2 deletions(-)
+On Mon, 2015-03-09 at 09:13 +0800, Kevin Hao wrote:
+> On Sun, Mar 08, 2015 at 08:13:26PM +1100, Benjamin Herrenschmidt wrote:
+> > On Sat, 2015-03-07 at 19:14 +0800, Kevin Hao wrote:
+> > > All the cache line size of the current book3e 64bit SoCs are 64 bytes.
+> > > So we should use this size to align the member of paca_struct.
+> > > With this change we save 192 bytes. Also change it to __aligned(size)
+> > > since it is preferred over __attribute__((aligned(size))).
+> > 
+> > Why should we favor the book3e CPUs over the book3s ones ?
 > 
-> diff --git a/arch/powerpc/include/asm/spinlock.h b/arch/powerpc/include/asm/spinlock.h
-> index 4dbe072eecbe..d303cdad2519 100644
-> --- a/arch/powerpc/include/asm/spinlock.h
-> +++ b/arch/powerpc/include/asm/spinlock.h
-> @@ -30,7 +30,7 @@
->  
->  #define smp_mb__after_unlock_lock()	smp_mb()  /* Full ordering for lock. */
->  
-> -#ifdef CONFIG_PPC64
-> +#ifdef CONFIG_PPC_SPLPAR
->  /* use 0x800000yy when locked, where yy == CPU number */
->  #ifdef __BIG_ENDIAN__
->  #define LOCK_TOKEN	(*(u32 *)(&get_paca()->lock_token))
-> @@ -187,9 +187,13 @@ extern void arch_spin_unlock_wait(arch_spinlock_t *lock);
->  
->  #ifdef CONFIG_PPC64
->  #define __DO_SIGN_EXTEND	"extsw	%0,%0\n"
-> -#define WRLOCK_TOKEN		LOCK_TOKEN	/* it's negative */
->  #else
->  #define __DO_SIGN_EXTEND
-> +#endif
-> +
-> +#ifdef CONFIG_PPC_SPLPAR
-> +#define WRLOCK_TOKEN		LOCK_TOKEN	/* it's negative */
-> +#else
->  #define WRLOCK_TOKEN		(-1)
->  #endif
->  
+> Why do you think so? This only change the align size of the paca_struct's
+> members which are private to book3e CPUs, and should not have any effect
+> to book3s ones. Did I miss something?
+
+No, your explanation was lacking that important detail :-)
+
+> Thanks,
+> Kevin
