@@ -3,18 +3,19 @@ Received: from pandora.arm.linux.org.uk (pandora.arm.linux.org.uk
  [IPv6:2001:4d48:ad52:3201:214:fdff:fe10:1be6])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 563141A22AC
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Mar 2015 01:50:16 +1100 (AEDT)
-Date: Mon, 9 Mar 2015 14:49:44 +0000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5765B1A32AA
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Mar 2015 01:51:28 +1100 (AEDT)
+Date: Mon, 9 Mar 2015 14:51:02 +0000
 From: Russell King - ARM Linux <linux@arm.linux.org.uk>
 To: Kees Cook <keescook@chromium.org>
-Subject: Re: [PATCH 2/5] mm: expose arch_mmap_rnd when available
-Message-ID: <20150309144944.GN8656@n2100.arm.linux.org.uk>
+Subject: Re: [PATCH 5/5] mm: fold arch_randomize_brk into
+ ARCH_HAS_ELF_RANDOMIZE
+Message-ID: <20150309145101.GO8656@n2100.arm.linux.org.uk>
 References: <1425341988-1599-1-git-send-email-keescook@chromium.org>
- <1425341988-1599-3-git-send-email-keescook@chromium.org>
+ <1425341988-1599-6-git-send-email-keescook@chromium.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1425341988-1599-3-git-send-email-keescook@chromium.org>
+In-Reply-To: <1425341988-1599-6-git-send-email-keescook@chromium.org>
 Sender: Russell King - ARM Linux <linux@arm.linux.org.uk>
 Cc: linux-mips@linux-mips.org, Arun Chandran <achandran@mvista.com>,
  Catalin Marinas <catalin.marinas@arm.com>,
@@ -45,43 +46,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Mar 02, 2015 at 04:19:45PM -0800, Kees Cook wrote:
-> diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
-> index 9f1f09a2bc9b..248d99cabaa8 100644
-> --- a/arch/arm/Kconfig
-> +++ b/arch/arm/Kconfig
-> @@ -3,6 +3,7 @@ config ARM
->  	default y
->  	select ARCH_BINFMT_ELF_RANDOMIZE_PIE
->  	select ARCH_HAS_ATOMIC64_DEC_IF_POSITIVE
-> +	select ARCH_HAS_ELF_RANDOMIZE
->  	select ARCH_HAS_TICK_BROADCAST if GENERIC_CLOCKEVENTS_BROADCAST
->  	select ARCH_HAVE_CUSTOM_GPIO_H
->  	select ARCH_HAS_GCOV_PROFILE_ALL
-> diff --git a/arch/arm/mm/mmap.c b/arch/arm/mm/mmap.c
-> index 0f8bc158f2c6..3c1fedb034bb 100644
-> --- a/arch/arm/mm/mmap.c
-> +++ b/arch/arm/mm/mmap.c
-> @@ -169,7 +169,7 @@ arch_get_unmapped_area_topdown(struct file *filp, const unsigned long addr0,
->  	return addr;
->  }
+On Mon, Mar 02, 2015 at 04:19:48PM -0800, Kees Cook wrote:
+> diff --git a/arch/arm/include/asm/elf.h b/arch/arm/include/asm/elf.h
+> index afb9cafd3786..c1ff8ab12914 100644
+> --- a/arch/arm/include/asm/elf.h
+> +++ b/arch/arm/include/asm/elf.h
+> @@ -125,10 +125,6 @@ int dump_task_regs(struct task_struct *t, elf_gregset_t *elfregs);
+>  extern void elf_set_personality(const struct elf32_hdr *);
+>  #define SET_PERSONALITY(ex)	elf_set_personality(&(ex))
 >  
-> -static unsigned long mmap_rnd(void)
-> +unsigned long arch_mmap_rnd(void)
->  {
->  	unsigned long rnd = 0UL;
->  
-> @@ -183,7 +183,7 @@ static unsigned long mmap_rnd(void)
->  
->  void arch_pick_mmap_layout(struct mm_struct *mm)
->  {
-> -	unsigned long random_factor = mmap_rnd();
-> +	unsigned long random_factor = arch_mmap_rnd();
->  
->  	if (mmap_is_legacy()) {
->  		mm->mmap_base = TASK_UNMAPPED_BASE + random_factor;
-
-For the above,
+> -struct mm_struct;
+> -extern unsigned long arch_randomize_brk(struct mm_struct *mm);
+> -#define arch_randomize_brk arch_randomize_brk
+> -
+>  #ifdef CONFIG_MMU
+>  #define ARCH_HAS_SETUP_ADDITIONAL_PAGES 1
+>  struct linux_binprm;
 
 Acked-by: Russell King <rmk+kernel@arm.linux.org.uk>
 
