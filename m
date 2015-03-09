@@ -1,30 +1,30 @@
 Return-Path: <aik@ozlabs.ru>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C5D571A0467
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Mar 2015 01:08:52 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 789A11A04BC
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Mar 2015 01:08:53 +1100 (AEDT)
 Received: from /spool/local
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aik@ozlabs.ru>;
- Tue, 10 Mar 2015 00:08:52 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 39CCC2CE8059
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Mar 2015 01:08:50 +1100 (EST)
+ Tue, 10 Mar 2015 00:08:51 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 1BA342CE8060
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Mar 2015 01:08:49 +1100 (EST)
 Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t29E8g4Z42532988
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Mar 2015 01:08:50 +1100
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t29E8e0G27197494
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Mar 2015 01:08:48 +1100
 Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
  by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t29E8Gvr013910
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Mar 2015 01:08:17 +1100
+ t29E8FSq013829
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Mar 2015 01:08:15 +1100
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v5 12/29] powerpc/iommu: Introduce iommu_table_alloc() helper
-Date: Tue, 10 Mar 2015 01:07:08 +1100
-Message-Id: <1425910045-26167-13-git-send-email-aik@ozlabs.ru>
+Subject: [PATCH v5 26/29] vfio: powerpc/spapr: Define v2 IOMMU
+Date: Tue, 10 Mar 2015 01:07:22 +1100
+Message-Id: <1425910045-26167-27-git-send-email-aik@ozlabs.ru>
 In-Reply-To: <1425910045-26167-1-git-send-email-aik@ozlabs.ru>
 References: <1425910045-26167-1-git-send-email-aik@ozlabs.ru>
 Cc: kvm@vger.kernel.org, Alexey Kardashevskiy <aik@ozlabs.ru>,
@@ -39,110 +39,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This replaces multiple calls of kzalloc_node() with a new
-iommu_table_alloc() helper. Right now it calls kzalloc_node() but
-later it will be modified to allocate a iommu_table_group struct with
-a single iommu_table in it.
+The existing IOMMU code takes/releases ownership over the existing IOMMU
+tables created by the platform code, i.e. the tables remain in memory
+all the time. Also, the existing IOMMU requires VFIO_IOMMU_ENABLE call to
+start working as that's where we check the rlimit for locked pages.
 
-Later the helper will allocate a iommu_table_group struct which embeds
-the iommu table(s).
+New IOMMU will take over the IOMMU group completely which means the IOMMU
+tables created by the platform code are going to be disposed and VFIO
+will create its own tables. Also, with the DMA memory pre-registration
+feature, the userspace will not need to call VFIO_IOMMU_ENABLE as
+the locked pages accounting will be done by
+VFIO_IOMMU_SPAPR_REGISTER_MEMORY.
+
+In order to inform the userspace that VFIO supports new capabilities,
+this adds a new SPAPR TCE IOMMU v2 type.
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 ---
- arch/powerpc/include/asm/iommu.h       |  1 +
- arch/powerpc/kernel/iommu.c            |  9 +++++++++
- arch/powerpc/platforms/powernv/pci.c   |  2 +-
- arch/powerpc/platforms/pseries/iommu.c | 12 ++++--------
- 4 files changed, 15 insertions(+), 9 deletions(-)
+ drivers/vfio/vfio_iommu_spapr_tce.c | 3 ++-
+ include/uapi/linux/vfio.h           | 2 ++
+ 2 files changed, 4 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
-index d909e2a..eb75726 100644
---- a/arch/powerpc/include/asm/iommu.h
-+++ b/arch/powerpc/include/asm/iommu.h
-@@ -117,6 +117,7 @@ static inline void *get_iommu_table_base(struct device *dev)
- 	return dev->archdata.dma_data.iommu_table_base;
- }
- 
-+extern struct iommu_table *iommu_table_alloc(int node);
- /* Frees table for an individual device node */
- extern void iommu_free_table(struct iommu_table *tbl, const char *node_name);
- 
-diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
-index 57cb615..dbc5d8d 100644
---- a/arch/powerpc/kernel/iommu.c
-+++ b/arch/powerpc/kernel/iommu.c
-@@ -710,6 +710,15 @@ struct iommu_table *iommu_init_table(struct iommu_table *tbl, int nid)
- 	return tbl;
- }
- 
-+struct iommu_table *iommu_table_alloc(int node)
-+{
-+	struct iommu_table *tbl;
-+
-+	tbl = kzalloc_node(sizeof(struct iommu_table), GFP_KERNEL, node);
-+
-+	return tbl;
-+}
-+
- void iommu_free_table(struct iommu_table *tbl, const char *node_name)
+diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
+index e572c28..d665ddc 100644
+--- a/drivers/vfio/vfio_iommu_spapr_tce.c
++++ b/drivers/vfio/vfio_iommu_spapr_tce.c
+@@ -404,7 +404,7 @@ static void *tce_iommu_open(unsigned long arg)
  {
- 	unsigned long bitmap_sz;
-diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
-index c619ec6..1c31ac8 100644
---- a/arch/powerpc/platforms/powernv/pci.c
-+++ b/arch/powerpc/platforms/powernv/pci.c
-@@ -680,7 +680,7 @@ static struct iommu_table *pnv_pci_setup_bml_iommu(struct pci_controller *hose)
- 		       hose->dn->full_name);
- 		return NULL;
+ 	struct tce_container *container;
+ 
+-	if (arg != VFIO_SPAPR_TCE_IOMMU) {
++	if ((arg != VFIO_SPAPR_TCE_IOMMU) && (arg != VFIO_SPAPR_TCE_v2_IOMMU)) {
+ 		pr_err("tce_vfio: Wrong IOMMU type\n");
+ 		return ERR_PTR(-EINVAL);
  	}
--	tbl = kzalloc_node(sizeof(struct iommu_table), GFP_KERNEL, hose->node);
-+	tbl = iommu_table_alloc(hose->node);
- 	if (WARN_ON(!tbl))
- 		return NULL;
- 	pnv_pci_setup_iommu_table(tbl, __va(be64_to_cpup(basep)),
-diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
-index 48d1fde..41a8b14 100644
---- a/arch/powerpc/platforms/pseries/iommu.c
-+++ b/arch/powerpc/platforms/pseries/iommu.c
-@@ -617,8 +617,7 @@ static void pci_dma_bus_setup_pSeries(struct pci_bus *bus)
- 	pci->phb->dma_window_size = 0x8000000ul;
- 	pci->phb->dma_window_base_cur = 0x8000000ul;
+@@ -588,6 +588,7 @@ static long tce_iommu_ioctl(void *iommu_data,
+ 	case VFIO_CHECK_EXTENSION:
+ 		switch (arg) {
+ 		case VFIO_SPAPR_TCE_IOMMU:
++		case VFIO_SPAPR_TCE_v2_IOMMU:
+ 			ret = 1;
+ 			break;
+ 		default:
+diff --git a/include/uapi/linux/vfio.h b/include/uapi/linux/vfio.h
+index b17e120..fbc5286 100644
+--- a/include/uapi/linux/vfio.h
++++ b/include/uapi/linux/vfio.h
+@@ -36,6 +36,8 @@
+ /* Two-stage IOMMU */
+ #define VFIO_TYPE1_NESTING_IOMMU	6	/* Implies v2 */
  
--	tbl = kzalloc_node(sizeof(struct iommu_table), GFP_KERNEL,
--			   pci->phb->node);
-+	tbl = iommu_table_alloc(pci->phb->node);
- 
- 	iommu_table_setparms(pci->phb, dn, tbl);
- 	tbl->it_ops = &iommu_table_pseries_ops;
-@@ -669,8 +668,7 @@ static void pci_dma_bus_setup_pSeriesLP(struct pci_bus *bus)
- 		 pdn->full_name, ppci->iommu_table);
- 
- 	if (!ppci->iommu_table) {
--		tbl = kzalloc_node(sizeof(struct iommu_table), GFP_KERNEL,
--				   ppci->phb->node);
-+		tbl = iommu_table_alloc(ppci->phb->node);
- 		iommu_table_setparms_lpar(ppci->phb, pdn, tbl, dma_window);
- 		tbl->it_ops = &iommu_table_lpar_multi_ops;
- 		ppci->iommu_table = iommu_init_table(tbl, ppci->phb->node);
-@@ -697,8 +695,7 @@ static void pci_dma_dev_setup_pSeries(struct pci_dev *dev)
- 		struct pci_controller *phb = PCI_DN(dn)->phb;
- 
- 		pr_debug(" --> first child, no bridge. Allocating iommu table.\n");
--		tbl = kzalloc_node(sizeof(struct iommu_table), GFP_KERNEL,
--				   phb->node);
-+		tbl = iommu_table_alloc(phb->node);
- 		iommu_table_setparms(phb, dn, tbl);
- 		tbl->it_ops = &iommu_table_pseries_ops;
- 		PCI_DN(dn)->iommu_table = iommu_init_table(tbl, phb->node);
-@@ -1120,8 +1117,7 @@ static void pci_dma_dev_setup_pSeriesLP(struct pci_dev *dev)
- 
- 	pci = PCI_DN(pdn);
- 	if (!pci->iommu_table) {
--		tbl = kzalloc_node(sizeof(struct iommu_table), GFP_KERNEL,
--				   pci->phb->node);
-+		tbl = iommu_table_alloc(pci->phb->node);
- 		iommu_table_setparms_lpar(pci->phb, pdn, tbl, dma_window);
- 		tbl->it_ops = &iommu_table_lpar_multi_ops;
- 		pci->iommu_table = iommu_init_table(tbl, pci->phb->node);
++#define VFIO_SPAPR_TCE_v2_IOMMU		7
++
+ /*
+  * The IOCTL interface is designed for extensibility by embedding the
+  * structure length (argsz) and flags into structures passed between
 -- 
 2.0.0
