@@ -1,20 +1,25 @@
-Return-Path: <arnd@arndb.de>
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.24])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <geert.uytterhoeven@gmail.com>
+Received: from mail-ob0-x22d.google.com (mail-ob0-x22d.google.com
+ [IPv6:2607:f8b0:4003:c01::22d])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8E4541A0B9A
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Mar 2015 01:10:56 +1100 (AEDT)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: Re: Build regressions/improvements in v4.0-rc3
-Date: Mon, 09 Mar 2015 15:10:49 +0100
-Message-ID: <4677994.NrntHOKO7A@wuerfel>
-In-Reply-To: <CAMuHMdVNWVKA0iuTMABQPzJJtjCAD_Ey7w1gx2ojYzG4TscyKA@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7ADE61A20D1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Mar 2015 01:27:26 +1100 (AEDT)
+Received: by obbnt9 with SMTP id nt9so9228238obb.12
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 09 Mar 2015 07:27:22 -0700 (PDT)
+MIME-Version: 1.0
+Sender: geert.uytterhoeven@gmail.com
+In-Reply-To: <4677994.NrntHOKO7A@wuerfel>
 References: <1425898222-19721-1-git-send-email-geert@linux-m68k.org>
  <CAMuHMdVNWVKA0iuTMABQPzJJtjCAD_Ey7w1gx2ojYzG4TscyKA@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Cc: Geert Uytterhoeven <geert@linux-m68k.org>,
+ <4677994.NrntHOKO7A@wuerfel>
+Date: Mon, 9 Mar 2015 15:27:22 +0100
+Message-ID: <CAMuHMdXK6dVfMhMTepr2cfVfDVaLpoA9vPn-c=FNkM0dmxin9A@mail.gmail.com>
+Subject: Re: Build regressions/improvements in v4.0-rc3
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Arnd Bergmann <arnd@arndb.de>
+Content-Type: text/plain; charset=UTF-8
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
  "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -25,67 +30,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Monday 09 March 2015 11:56:22 Geert Uytterhoeven wrote:
-> On Mon, Mar 9, 2015 at 11:50 AM, Geert Uytterhoeven
-> <geert@linux-m68k.org> wrote:
-> > JFYI, when comparing v4.0-rc3[1] to v4.0-rc2[3], the summaries are:
-> >   - build errors: +18/-7
-> 
->   + /home/kisskb/slave/src/arch/arm/mach-pxa/idp.c: error:
-> 'SMC91X_NOWAIT' undeclared here (not in a function):  => 85:47
->   + /home/kisskb/slave/src/arch/arm/mach-pxa/idp.c: error:
-> 'SMC91X_USE_32BIT' undeclared here (not in a function):  => 85:11
->   + /home/kisskb/slave/src/arch/arm/mach-pxa/idp.c: error:
-> 'SMC91X_USE_DMA' undeclared here (not in a function):  => 85:30
->   + /home/kisskb/slave/src/arch/arm/mach-pxa/idp.c: error: unknown
-> field 'flags' specified in initializer:  => 85:2
->   + /home/kisskb/slave/src/arch/arm/mach-pxa/idp.c: error: variable
-> 'smc91x_platdata' has initializer but incomplete type:  => 84:15
-> 
-> pxa255-idp_defconfig
-> 
->   + /home/kisskb/slave/src/arch/arm/mach-pxa/lpd270.c: error: expected
-> '}' before ';' token:  => 198:43
-> 
-> lpd270_defconfig
-> 
->   + /home/kisskb/slave/src/arch/arm/mach-sa1100/neponset.c: error:
-> 'smc91c_platdata' undeclared (first use in this function):  => 271:12
-> 
-> neponset_defconfig
-> 
->   + /home/kisskb/slave/src/arch/arm/mach-sa1100/pleb.c: error:
-> 'smc91c_platdata' undeclared here (not in a function):  => 57:22
-> 
-> pleb_defconfig
-> 
->   + /home/kisskb/slave/src/drivers/net/ethernet/smsc/smc91x.c: error:
-> implicit declaration of function 'machine_has_neponset'
-> [-Werror=implicit-function-declaration]:  => 2363:2
-> 
-> neponset_defconfig
-> 
-> smc91x fallout. The lpd270_defconfig failure looks like not covered by
-> "ARM: fix typos in smc91x platform data" yet?
+Hi Arnd,
 
-It's not?
+On Mon, Mar 9, 2015 at 3:10 PM, Arnd Bergmann <arnd@arndb.de> wrote:
+>> smc91x fallout. The lpd270_defconfig failure looks like not covered by
+>> "ARM: fix typos in smc91x platform data" yet?
+>
+> It's not?
+>
+> This should be part of that patch:
+>
+> --- a/arch/arm/mach-pxa/lpd270.c
+> +++ b/arch/arm/mach-pxa/lpd270.c
+> @@ -195,7 +195,7 @@ static struct resource smc91x_resources[] = {
+>  };
+>
+>  struct smc91x_platdata smc91x_platdata = {
+> -       .flags = SMC91X_USE_16BIT | SMC91X_NOWAIT;
+> +       .flags = SMC91X_USE_16BIT | SMC91X_NOWAIT,
 
-This should be part of that patch:
+Ah OK. Sorry, I thought there was a different reason.
 
---- a/arch/arm/mach-pxa/lpd270.c
-+++ b/arch/arm/mach-pxa/lpd270.c
-@@ -195,7 +195,7 @@ static struct resource smc91x_resources[] = {
- };
- 
- struct smc91x_platdata smc91x_platdata = {
--       .flags = SMC91X_USE_16BIT | SMC91X_NOWAIT;
-+       .flags = SMC91X_USE_16BIT | SMC91X_NOWAIT,
- };
- 
- static struct platform_device smc91x_device = {
+Gr{oetje,eeting}s,
 
-and I thought I had tested all defconfigs as well as hundreds of randconfigs
-(the right ones) successfully this time.
+                        Geert
 
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
 
-	Arnd
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
