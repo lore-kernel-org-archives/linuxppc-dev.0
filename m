@@ -1,33 +1,30 @@
 Return-Path: <aik@ozlabs.ru>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 04A4E1A03DF
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Mar 2015 01:08:52 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id B06C51A0008
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Mar 2015 01:08:30 +1100 (AEDT)
 Received: from /spool/local
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aik@ozlabs.ru>;
- Tue, 10 Mar 2015 00:08:50 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 83B19357804C
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Mar 2015 01:08:48 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t29E8erF38404224
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Mar 2015 01:08:48 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t29E8FRA013799
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Mar 2015 01:08:15 +1100
+ Tue, 10 Mar 2015 00:08:28 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id DF65A2CE8050
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Mar 2015 01:08:25 +1100 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t29E8G2B38993940
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Mar 2015 01:08:25 +1100
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t29E7oNc021626
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Mar 2015 01:07:51 +1100
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v5 05/29] vfio: powerpc/spapr: Move locked_vm accounting to
- helpers
-Date: Tue, 10 Mar 2015 01:07:01 +1100
-Message-Id: <1425910045-26167-6-git-send-email-aik@ozlabs.ru>
-In-Reply-To: <1425910045-26167-1-git-send-email-aik@ozlabs.ru>
-References: <1425910045-26167-1-git-send-email-aik@ozlabs.ru>
+Subject: [PATCH v5 00/29] powerpc/iommu/vfio: Enable Dynamic DMA windows
+Date: Tue, 10 Mar 2015 01:06:56 +1100
+Message-Id: <1425910045-26167-1-git-send-email-aik@ozlabs.ru>
 Cc: kvm@vger.kernel.org, Alexey Kardashevskiy <aik@ozlabs.ru>,
  linux-kernel@vger.kernel.org, Alex Williamson <alex.williamson@redhat.com>,
  Paul Mackerras <paulus@samba.org>
@@ -40,156 +37,125 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-There moves locked pages accounting to helpers.
-Later they will be reused for Dynamic DMA windows (DDW).
 
-This reworks debug messages to show the current value and the limit.
+This enables sPAPR defined feature called Dynamic DMA windows (DDW).
 
-This stores the locked pages number in the container so when unlocking
-the iommu table pointer won't be needed. This does not have an effect
-now but it will with the multiple tables per container as then we will
-allow attaching/detaching groups on fly and we may end up having
-a container with no group attached but with the counter incremented.
+Each Partitionable Endpoint (IOMMU group) has an address range on a PCI bus
+where devices are allowed to do DMA. These ranges are called DMA windows.
+By default, there is a single DMA window, 1 or 2GB big, mapped at zero
+on a PCI bus.
 
-While we are here, update the comment explaining why RLIMIT_MEMLOCK
-might be required to be bigger than the guest RAM. This also prints
-pid of the current process in pr_warn/pr_debug.
+Hi-speed devices may suffer from the limited size of the window.
+The recent host kernels use a TCE bypass window on POWER8 CPU which implements
+direct PCI bus address range mapping (with offset of 1<<59) to the host memory.
 
-Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
----
+For guests, PAPR defines a DDW RTAS API which allows pseries guests
+querying the hypervisor about DDW support and capabilities (page size mask
+for now). A pseries guest may request an additional (to the default)
+DMA windows using this RTAS API.
+The existing pseries Linux guests request an additional window as big as
+the guest RAM and map the entire guest window which effectively creates
+direct mapping of the guest memory to a PCI bus.
+
+The multiple DMA windows feature is supported by POWER7/POWER8 CPUs; however
+this patchset only adds support for POWER8 as TCE tables are implemented
+in POWER7 in a quite different way ans POWER7 is not the highest priority.
+
+This patchset reworks PPC64 IOMMU code and adds necessary structures
+to support big windows.
+
+Once a Linux guest discovers the presence of DDW, it does:
+1. query hypervisor about number of available windows and page size masks;
+2. create a window with the biggest possible page size (today 4K/64K/16M);
+3. map the entire guest RAM via H_PUT_TCE* hypercalls;
+4. switche dma_ops to direct_dma_ops on the selected PE.
+
+Once this is done, H_PUT_TCE is not called anymore for 64bit devices and
+the guest does not waste time on DMA map/unmap operations.
+
+Note that 32bit devices won't use DDW and will keep using the default
+DMA window so KVM optimizations will be required (to be posted later).
+
 Changes:
-v4:
-* new helpers do nothing if @npages == 0
-* tce_iommu_disable() now can decrement the counter if the group was
-detached (not possible now but will be in the future)
----
- drivers/vfio/vfio_iommu_spapr_tce.c | 82 ++++++++++++++++++++++++++++---------
- 1 file changed, 63 insertions(+), 19 deletions(-)
+v5:
+* added SPAPR_TCE_IOMMU_v2 to tell the userspace that there is a memory
+pre-registration feature
+* added backward compatibility
+* renamed few things (mostly powerpc_iommu -> iommu_table_group)
 
-diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
-index 0e37400..432a0de 100644
---- a/drivers/vfio/vfio_iommu_spapr_tce.c
-+++ b/drivers/vfio/vfio_iommu_spapr_tce.c
-@@ -31,6 +31,51 @@
- static void tce_iommu_detach_group(void *iommu_data,
- 		struct iommu_group *iommu_group);
- 
-+static long try_increment_locked_vm(long npages)
-+{
-+	long ret = 0, locked, lock_limit;
-+
-+	if (!current || !current->mm)
-+		return -ESRCH; /* process exited */
-+
-+	if (!npages)
-+		return 0;
-+
-+	down_write(&current->mm->mmap_sem);
-+	locked = current->mm->locked_vm + npages;
-+	lock_limit = rlimit(RLIMIT_MEMLOCK) >> PAGE_SHIFT;
-+	if (locked > lock_limit && !capable(CAP_IPC_LOCK))
-+		ret = -ENOMEM;
-+	else
-+		current->mm->locked_vm += npages;
-+
-+	pr_debug("[%d] RLIMIT_MEMLOCK +%ld %ld/%ld%s\n", current->pid,
-+			npages << PAGE_SHIFT,
-+			current->mm->locked_vm << PAGE_SHIFT,
-+			rlimit(RLIMIT_MEMLOCK),
-+			ret ? " - exceeded" : "");
-+
-+	up_write(&current->mm->mmap_sem);
-+
-+	return ret;
-+}
-+
-+static void decrement_locked_vm(long npages)
-+{
-+	if (!current || !current->mm || !npages)
-+		return; /* process exited */
-+
-+	down_write(&current->mm->mmap_sem);
-+	if (npages > current->mm->locked_vm)
-+		npages = current->mm->locked_vm;
-+	current->mm->locked_vm -= npages;
-+	pr_debug("[%d] RLIMIT_MEMLOCK -%ld %ld/%ld\n", current->pid,
-+			npages << PAGE_SHIFT,
-+			current->mm->locked_vm << PAGE_SHIFT,
-+			rlimit(RLIMIT_MEMLOCK));
-+	up_write(&current->mm->mmap_sem);
-+}
-+
- /*
-  * VFIO IOMMU fd for SPAPR_TCE IOMMU implementation
-  *
-@@ -47,6 +92,7 @@ struct tce_container {
- 	struct mutex lock;
- 	struct iommu_table *tbl;
- 	bool enabled;
-+	unsigned long locked_pages;
- };
- 
- static bool tce_page_is_contained(struct page *page, unsigned page_shift)
-@@ -68,7 +114,7 @@ static bool tce_page_is_contained(struct page *page, unsigned page_shift)
- static int tce_iommu_enable(struct tce_container *container)
- {
- 	int ret = 0;
--	unsigned long locked, lock_limit, npages;
-+	unsigned long locked;
- 	struct iommu_table *tbl = container->tbl;
- 
- 	if (!container->tbl)
-@@ -97,21 +143,22 @@ static int tce_iommu_enable(struct tce_container *container)
- 	 * Also we don't have a nice way to fail on H_PUT_TCE due to ulimits,
- 	 * that would effectively kill the guest at random points, much better
- 	 * enforcing the limit based on the max that the guest can map.
-+	 *
-+	 * Unfortunately at the moment it counts whole tables, no matter how
-+	 * much memory the guest has. I.e. for 4GB guest and 4 IOMMU groups
-+	 * each with 2GB DMA window, 8GB will be counted here. The reason for
-+	 * this is that we cannot tell here the amount of RAM used by the guest
-+	 * as this information is only available from KVM and VFIO is
-+	 * KVM agnostic.
- 	 */
--	down_write(&current->mm->mmap_sem);
--	npages = (tbl->it_size << tbl->it_page_shift) >> PAGE_SHIFT;
--	locked = current->mm->locked_vm + npages;
--	lock_limit = rlimit(RLIMIT_MEMLOCK) >> PAGE_SHIFT;
--	if (locked > lock_limit && !capable(CAP_IPC_LOCK)) {
--		pr_warn("RLIMIT_MEMLOCK (%ld) exceeded\n",
--				rlimit(RLIMIT_MEMLOCK));
--		ret = -ENOMEM;
--	} else {
-+	locked = (tbl->it_size << tbl->it_page_shift) >> PAGE_SHIFT;
-+	ret = try_increment_locked_vm(locked);
-+	if (ret)
-+		return ret;
- 
--		current->mm->locked_vm += npages;
--		container->enabled = true;
--	}
--	up_write(&current->mm->mmap_sem);
-+	container->locked_pages = locked;
-+
-+	container->enabled = true;
- 
- 	return ret;
- }
-@@ -123,13 +170,10 @@ static void tce_iommu_disable(struct tce_container *container)
- 
- 	container->enabled = false;
- 
--	if (!container->tbl || !current->mm)
-+	if (!current->mm)
- 		return;
- 
--	down_write(&current->mm->mmap_sem);
--	current->mm->locked_vm -= (container->tbl->it_size <<
--			container->tbl->it_page_shift) >> PAGE_SHIFT;
--	up_write(&current->mm->mmap_sem);
-+	decrement_locked_vm(container->locked_pages);
- }
- 
- static void *tce_iommu_open(unsigned long arg)
+v4:
+* moved patches around to have VFIO and PPC patches separated as much as
+possible
+* now works with the existing upstream QEMU
+
+v3:
+* redesigned the whole thing
+* multiple IOMMU groups per PHB -> one PHB is needed for VFIO in the guest ->
+no problems with locked_vm counting; also we save memory on actual tables
+* guest RAM preregistration is required for DDW
+* PEs (IOMMU groups) are passed to VFIO with no DMA windows at all so
+we do not bother with iommu_table::it_map anymore
+* added multilevel TCE tables support to support really huge guests
+
+v2:
+* added missing __pa() in "powerpc/powernv: Release replaced TCE"
+* reposted to make some noise
+
+
+
+
+Alexey Kardashevskiy (29):
+  vfio: powerpc/spapr: Move page pinning from arch code to VFIO IOMMU
+    driver
+  vfio: powerpc/spapr: Do cleanup when releasing the group
+  vfio: powerpc/spapr: Check that TCE page size is equal to it_page_size
+  vfio: powerpc/spapr: Use it_page_size
+  vfio: powerpc/spapr: Move locked_vm accounting to helpers
+  vfio: powerpc/spapr: Disable DMA mappings on disabled container
+  vfio: powerpc/spapr: Moving pinning/unpinning to helpers
+  vfio: powerpc/spapr: Register memory
+  vfio: powerpc/spapr: Rework attach/detach
+  powerpc/powernv: Do not set "read" flag if direction==DMA_NONE
+  powerpc/iommu: Move tce_xxx callbacks from ppc_md to iommu_table
+  powerpc/iommu: Introduce iommu_table_alloc() helper
+  powerpc/spapr: vfio: Switch from iommu_table to new iommu_table_group
+  vfio: powerpc/spapr: powerpc/iommu: Rework IOMMU ownership control
+  vfio: powerpc/spapr: powerpc/powernv/ioda2: Rework IOMMU ownership
+    control
+  powerpc/iommu: Fix IOMMU ownership control functions
+  powerpc/powernv/ioda/ioda2: Rework tce_build()/tce_free()
+  powerpc/iommu/powernv: Release replaced TCE
+  poweppc/powernv/ioda2: Rework iommu_table creation
+  powerpc/powernv/ioda2: Introduce
+    pnv_pci_ioda2_create_table/pnc_pci_free_table
+  powerpc/powernv/ioda2: Introduce pnv_pci_ioda2_set_window
+  powerpc/iommu: Split iommu_free_table into 2 helpers
+  powerpc/powernv: Implement multilevel TCE tables
+  powerpc/powernv: Change prototypes to receive iommu
+  powerpc/powernv/ioda: Define and implement DMA table/window management
+    callbacks
+  vfio: powerpc/spapr: Define v2 IOMMU
+  vfio: powerpc/spapr: powerpc/powernv/ioda2: Rework ownership
+  vfio: powerpc/spapr: Support multiple groups in one container if
+    possible
+  vfio: powerpc/spapr: Support Dynamic DMA windows
+
+ Documentation/vfio.txt                      |   38 +
+ arch/powerpc/include/asm/iommu.h            |  109 ++-
+ arch/powerpc/include/asm/machdep.h          |   25 -
+ arch/powerpc/kernel/iommu.c                 |  327 +++++----
+ arch/powerpc/kernel/vio.c                   |    5 +
+ arch/powerpc/platforms/cell/iommu.c         |    8 +-
+ arch/powerpc/platforms/pasemi/iommu.c       |    7 +-
+ arch/powerpc/platforms/powernv/pci-ioda.c   |  500 ++++++++++---
+ arch/powerpc/platforms/powernv/pci-p5ioc2.c |   34 +-
+ arch/powerpc/platforms/powernv/pci.c        |  114 ++-
+ arch/powerpc/platforms/powernv/pci.h        |   12 +-
+ arch/powerpc/platforms/pseries/iommu.c      |   55 +-
+ arch/powerpc/sysdev/dart_iommu.c            |   12 +-
+ drivers/vfio/vfio_iommu_spapr_tce.c         | 1001 ++++++++++++++++++++++++---
+ include/uapi/linux/vfio.h                   |   51 +-
+ 15 files changed, 1816 insertions(+), 482 deletions(-)
+
 -- 
 2.0.0
