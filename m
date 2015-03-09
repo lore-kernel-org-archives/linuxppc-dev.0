@@ -1,24 +1,25 @@
-Return-Path: <B43198@freescale.com>
+Return-Path: <Horia.Geanta@freescale.com>
 Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0112.outbound.protection.outlook.com [157.56.110.112])
+ (mail-bn1bon0130.outbound.protection.outlook.com [157.56.111.130])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9DC0B1A0008
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Mar 2015 19:26:48 +1100 (AEDT)
-Message-ID: <54FD592F.7080202@freescale.com>
-Date: Mon, 9 Mar 2015 10:26:23 +0200
-From: Purcareata Bogdan <b43198@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id D93D61A0008
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Mar 2015 20:37:09 +1100 (AEDT)
+Message-ID: <54FD6657.9000703@freescale.com>
+Date: Mon, 9 Mar 2015 11:22:31 +0200
+From: =?UTF-8?B?SG9yaWEgR2VhbnTEgw==?= <horia.geanta@freescale.com>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH v4 0/3] powerpc: Enable seccomp filter support
-References: <1424247413-20753-1-git-send-email-bogdan.purcareata@freescale.com>	
- <54F01C85.2020602@freescale.com>
- <1425070490.4645.86.camel@kernel.crashing.org>
-In-Reply-To: <1425070490.4645.86.camel@kernel.crashing.org>
-Content-Type: text/plain; charset="utf-8"; format=flowed
-Cc: linux-kernel@vger.kernel.org, pmoore@redhat.com, paulus@samba.org,
- Bogdan Purcareata <bogdan.purcareata@freescale.com>,
- linuxppc-dev@lists.ozlabs.org, strosake@linux.vnet.ibm.com
+To: Kim Phillips <kim.phillips@freescale.com>, Martin Hicks <mort@bork.org>
+Subject: Re: [PATCH 2/2] crypto: talitos: Add AES-XTS Support
+References: <1424451610-5786-1-git-send-email-mort@bork.org>
+ <1424451610-5786-3-git-send-email-mort@bork.org>
+ <20150305181615.493b173d43249548fae29203@freescale.com>
+ <CAJUS3XmfcJCiBMnsiXKpc=QXE-YxTQy67wZyAXgKjtY_DN0CDQ@mail.gmail.com>
+ <20150306191617.bbc38506ae2242dc20fdfee4@freescale.com>
+In-Reply-To: <20150306191617.bbc38506ae2242dc20fdfee4@freescale.com>
+Content-Type: text/plain; charset="UTF-8"
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-crypto@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,51 +29,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 27.02.2015 22:54, Benjamin Herrenschmidt wrote:
-> On Fri, 2015-02-27 at 09:28 +0200, Purcareata Bogdan wrote:
->> Ping?
->
-> What is the ping for ?
->
-> Ben.
+On 3/7/2015 3:16 AM, Kim Phillips wrote:
+> On Fri, 6 Mar 2015 11:49:43 -0500
+> Martin Hicks <mort@bork.org> wrote:
+> 
+>> On Thu, Mar 5, 2015 at 7:16 PM, Kim Phillips <kim.phillips@freescale.com> wrote:
+>>> On Fri, 20 Feb 2015 12:00:10 -0500
+>>> Martin Hicks <mort@bork.org> wrote:
+>>>
+>>>> The newer talitos hardware has support for AES in XTS mode.
+>>>
+>>> Assuming it's the same thing, AES-XCBC gets added with SEC v3.0
+>>> h/w.  Assuming hw_supports() doesn't already support this algorithm
+>>
+>> AES-XCBC isn't the same thing as AES-XTS.
+> 
+> Thanks.
+> 
+>>> combination (technically via the mode bit), this needs to be
+>>> reflected in the patch so the driver doesn't think SEC 2.x devices
+>>> can do XTS, too.
+>>
+>> Right.  I hadn't looked into how exactly hw_supports() works.  It only
+>> indicates which execution units are present (in this case the AES
+>> unit).  I actually think XTS gets introduced in SEC v3.3.2.  I also
+>> have an MPC8379 (sec3.3) and it does not have XTS.
+>>
+>> Can you look internally to find out in which hardware it was
+>> introduced?  Is there a SEC 3.3.1 that also has XTS?
+> 
+> later MPC8315Es had a SEC v3.3.1, but AFAICT, it doesn't support
+> XTS, so, yes, it's likely v3.3.2 and above (if any).
 
-Making sure the patches are not lost on the mailing lists :) Didn't 
-receive any feedback on v4 and just wanted to check if there's anything 
-more I can do.
+There's a public application note on freescale.com:
+"AN3645 - SEC 2x/3x Descriptor Programmer's Guide" (Rev.3/2010)
 
-Thank you,
-Bogdan P.
+"Table 4 - EUs Supported in Each SEC Version" summarizes which
+algorithms / modes are supported for every talitos version.
+Unfortunately this goes up to SEC 3.3.1.
+Since XTS doesn't show up, 3.3.2 would be the first supporting it.
 
->> On 18.02.2015 10:16, Bogdan Purcareata wrote:
->>> Add the missing pieces in order to enable SECCOMP_FILTER on PowerPC
->>> architectures, and enable this support.
->>>
->>> Testing has been pursued using libseccomp with the latest ppc support patches
->>> [1][2], on Freescale platforms for both ppc and ppc64. Support on ppc64le has
->>> also been tested, courtesy of Mike Strosaker.
->>>
->>> [1] https://groups.google.com/forum/#!topic/libseccomp/oz42LfMDsxg
->>> [2] https://groups.google.com/forum/#!topic/libseccomp/TQWfCt_nD7c
->>>
->>> v4:
->>> - rebased on top of 3.19
->>>
->>> v3:
->>> - keep setting ENOSYS in syscall entry assembly when syscall tracing is disabled
->>>
->>> v2:
->>> - move setting ENOSYS from syscall entry assembly to do_syscall_trace_enter
->>>
->>> Bogdan Purcareata (3):
->>>     powerpc: Don't force ENOSYS as error on syscall fail
->>>     powerpc: Relax secure computing on syscall entry trace
->>>     powerpc: Enable HAVE_ARCH_SECCOMP_FILTER
->>>
->>>    arch/powerpc/Kconfig           | 1 +
->>>    arch/powerpc/kernel/entry_32.S | 7 ++++++-
->>>    arch/powerpc/kernel/entry_64.S | 5 +++--
->>>    arch/powerpc/kernel/ptrace.c   | 8 ++++++--
->>>    4 files changed, 16 insertions(+), 5 deletions(-)
->>>
->
->
+Horia
