@@ -1,28 +1,25 @@
-Return-Path: <david@fromorbit.com>
-Received: from ipmail06.adl2.internode.on.net (ipmail06.adl2.internode.on.net
- [150.101.137.129])
- by lists.ozlabs.org (Postfix) with ESMTP id D9F6B1A0008
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Mar 2015 22:29:42 +1100 (AEDT)
-Date: Mon, 9 Mar 2015 22:29:36 +1100
-From: Dave Chinner <david@fromorbit.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 4/4] mm: numa: Slow PTE scan rate if migration failures
- occur
-Message-ID: <20150309112936.GD26657@destitution>
-References: <1425741651-29152-1-git-send-email-mgorman@suse.de>
- <1425741651-29152-5-git-send-email-mgorman@suse.de>
- <20150307163657.GA9702@gmail.com>
- <CA+55aFwDuzpL-k8LsV3touhNLh+TFSLKP8+-nPwMXkWXDYPhrg@mail.gmail.com>
- <20150308100223.GC15487@gmail.com>
- <CA+55aFyQyZXu2fi7X9bWdSX0utk8=sccfBwFaSoToROXoE_PLA@mail.gmail.com>
+Return-Path: <Horia.Geanta@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bbn0105.outbound.protection.outlook.com [157.56.111.105])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id A42C41A0008
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Mar 2015 23:08:44 +1100 (AEDT)
+Message-ID: <54FD8D3B.5040409@freescale.com>
+Date: Mon, 9 Mar 2015 14:08:27 +0200
+From: =?UTF-8?B?SG9yaWEgR2VhbnTEgw==?= <horia.geanta@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CA+55aFyQyZXu2fi7X9bWdSX0utk8=sccfBwFaSoToROXoE_PLA@mail.gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com,
- Linux-MM <linux-mm@kvack.org>, Aneesh Kumar <aneesh.kumar@linux.vnet.ibm.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- ppc-dev <linuxppc-dev@lists.ozlabs.org>, Ingo Molnar <mingo@kernel.org>,
- Mel Gorman <mgorman@suse.de>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Subject: Re: [PATCH v2 5/5] crypto: talitos: Add software backlog queue
+ handling
+References: <1425388897-5434-1-git-send-email-mort@bork.org>
+ <1425388897-5434-6-git-send-email-mort@bork.org>
+ <20150303182332.546523088b5891a776880c0f@freescale.com>
+ <54F8235B.5080301@freescale.com> <20150306044821.GA1411@gondor.apana.org.au>
+In-Reply-To: <20150306044821.GA1411@gondor.apana.org.au>
+Content-Type: text/plain; charset="utf-8"
+Cc: Martin Hicks <mort@bork.org>, linux-crypto@vger.kernel.org,
+ Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,56 +29,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, Mar 08, 2015 at 11:35:59AM -0700, Linus Torvalds wrote:
-> On Sun, Mar 8, 2015 at 3:02 AM, Ingo Molnar <mingo@kernel.org> wrote:
-> But:
+On 3/6/2015 6:48 AM, Herbert Xu wrote:
+> On Thu, Mar 05, 2015 at 11:35:23AM +0200, Horia Geantă wrote:
+>>
+>>> Only potential problem is getting the crypto API to set the GFP_DMA
+>>> flag in the allocation request, but presumably a
+>>> CRYPTO_TFM_REQ_DMA crt_flag can be made to handle that.
+>>
+>> Right. And this flag would apply only to request __ctx[].
+>>
+>> Herbert, would this be an acceptable addition to crypto API?
 > 
-> > As a second hack (not to be applied), could we change:
-> >
-> >  #define _PAGE_BIT_PROTNONE      _PAGE_BIT_GLOBAL
-> >
-> > to:
-> >
-> >  #define _PAGE_BIT_PROTNONE      (_PAGE_BIT_GLOBAL+1)
-> >
-> > to double check that the position of the bit does not matter?
-> 
-> Agreed. We should definitely try that.
-> 
-> Dave?
+> How would such a flag work?
 
-As Mel has already mentioned, I'm in Boston for LSFMM and don't have
-access to the test rig I've used to generate this.
+Hm, I thought that GFP_DMA memory could be allocated only for request
+private ctx. This is obviously not the case.
 
-> Also, is there some sane way for me to actually see this behavior on a
-> regular machine with just a single socket? Dave is apparently running
-> in some fake-numa setup, I'm wondering if this is easy enough to
-> reproduce that I could see it myself.
+*_request_alloc(tfm, gfp) crypto API functions would do:
+if (crypto_tfm_get_flags(tfm) & CRYPTO_TFM_REQ_DMA)
+        gfp |= GFP_DMA;
 
-Should be - I don't actually use 500TB of storage to generate this -
-50GB on an SSD is all you need from the storage side. I just use a
-sparse backing file to make it look like a 500TB device. :P
-
-i.e. create an XFS filesystem on a 500TB sparse file with "mkfs.xfs
--d size=500t,file=1 /path/to/file.img", mount it on loopback or as a
-virtio,cache=none device for the guest vm and then use fsmark to
-generate several million files spread across many, many directories
-such as:
-
-$  fs_mark -D 10000 -S0 -n 100000 -s 1 -L 32 -d \
-/mnt/scratch/0 -d /mnt/scratch/1 -d /mnt/scratch/2 -d \
-/mnt/scratch/3 -d /mnt/scratch/4 -d /mnt/scratch/5 -d \
-/mnt/scratch/6 -d /mnt/scratch/7
-
-That should only take a few minutes to run - if you throw 8p at it
-then it should run at >100k files/s being created.
-
-Then unmount and run "xfs_repair -o bhash=101703 /path/to/file.img"
-on the resultant image file.
-
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-david@fromorbit.com
+Thanks,
+Horia
