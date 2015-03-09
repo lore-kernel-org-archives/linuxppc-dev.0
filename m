@@ -1,25 +1,25 @@
 Return-Path: <Horia.Geanta@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0130.outbound.protection.outlook.com [157.56.111.130])
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0121.outbound.protection.outlook.com [65.55.169.121])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D93D61A0008
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Mar 2015 20:37:09 +1100 (AEDT)
-Message-ID: <54FD6657.9000703@freescale.com>
-Date: Mon, 9 Mar 2015 11:22:31 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0C2BE1A0008
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Mar 2015 21:16:20 +1100 (AEDT)
+Message-ID: <54FD72E4.1060701@freescale.com>
+Date: Mon, 9 Mar 2015 12:16:04 +0200
 From: =?UTF-8?B?SG9yaWEgR2VhbnTEgw==?= <horia.geanta@freescale.com>
 MIME-Version: 1.0
-To: Kim Phillips <kim.phillips@freescale.com>, Martin Hicks <mort@bork.org>
-Subject: Re: [PATCH 2/2] crypto: talitos: Add AES-XTS Support
+To: Martin Hicks <mort@bork.org>
+Subject: Re: [PATCH 0/2] crypto: talitos: Add AES-XTS mode
 References: <1424451610-5786-1-git-send-email-mort@bork.org>
- <1424451610-5786-3-git-send-email-mort@bork.org>
- <20150305181615.493b173d43249548fae29203@freescale.com>
- <CAJUS3XmfcJCiBMnsiXKpc=QXE-YxTQy67wZyAXgKjtY_DN0CDQ@mail.gmail.com>
- <20150306191617.bbc38506ae2242dc20fdfee4@freescale.com>
-In-Reply-To: <20150306191617.bbc38506ae2242dc20fdfee4@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org,
- linux-crypto@vger.kernel.org
+ <54F464E4.8080204@freescale.com>	<54F475A8.6030105@gmail.com>
+ <20150302220923.GC30523@darwin.bork.org>	<54F5D6D5.8070407@freescale.com>
+ <CAJUS3Xnw66Eu6tvGPpdcet6KLjhKM=ptj8NRaztAVr0h_r+LqQ@mail.gmail.com>
+In-Reply-To: <CAJUS3Xnw66Eu6tvGPpdcet6KLjhKM=ptj8NRaztAVr0h_r+LqQ@mail.gmail.com>
+Content-Type: text/plain; charset="utf-8"
+Cc: linux-crypto@vger.kernel.org, Scott Wood <scottwood@freescale.com>,
+ linuxppc-dev@lists.ozlabs.org, Milan Broz <gmazyland@gmail.com>,
+ Herbert Xu <herbert@gondor.apana.org.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,44 +29,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 3/7/2015 3:16 AM, Kim Phillips wrote:
-> On Fri, 6 Mar 2015 11:49:43 -0500
-> Martin Hicks <mort@bork.org> wrote:
-> 
->> On Thu, Mar 5, 2015 at 7:16 PM, Kim Phillips <kim.phillips@freescale.com> wrote:
->>> On Fri, 20 Feb 2015 12:00:10 -0500
->>> Martin Hicks <mort@bork.org> wrote:
+On 3/3/2015 7:44 PM, Martin Hicks wrote:
+> On Tue, Mar 3, 2015 at 10:44 AM, Horia Geantă
+> <horia.geanta@freescale.com> wrote:
+>> On 3/3/2015 12:09 AM, Martin Hicks wrote:
 >>>
->>>> The newer talitos hardware has support for AES in XTS mode.
+>>> On Mon, Mar 02, 2015 at 03:37:28PM +0100, Milan Broz wrote:
+>>>>
+>>>> If crypto API allows to encrypt more sectors in one run
+>>>> (handling IV internally) dmcrypt can be modified of course.
+>>>>
+>>>> But do not forget we can use another IV (not only sequential number)
+>>>> e.g. ESSIV with XTS as well (even if it doesn't make much sense, some people
+>>>> are using it).
 >>>
->>> Assuming it's the same thing, AES-XCBC gets added with SEC v3.0
->>> h/w.  Assuming hw_supports() doesn't already support this algorithm
+>>> Interesting, I'd not considered using XTS with an IV other than plain/64.
+>>> The talitos hardware would not support aes/xts in any mode other than
+>>> plain/plain64 I don't think...Although perhaps you could push in an 8-byte
+>>> IV and the hardware would interpret it as the sector #.
+>>>
 >>
->> AES-XCBC isn't the same thing as AES-XTS.
-> 
-> Thanks.
-> 
->>> combination (technically via the mode bit), this needs to be
->>> reflected in the patch so the driver doesn't think SEC 2.x devices
->>> can do XTS, too.
+>> For talitos, there are two cases:
 >>
->> Right.  I hadn't looked into how exactly hw_supports() works.  It only
->> indicates which execution units are present (in this case the AES
->> unit).  I actually think XTS gets introduced in SEC v3.3.2.  I also
->> have an MPC8379 (sec3.3) and it does not have XTS.
+>> 1. request data size is <= data unit / sector size
+>> talitos can handle any IV / tweak scheme
 >>
->> Can you look internally to find out in which hardware it was
->> introduced?  Is there a SEC 3.3.1 that also has XTS?
+>> 2. request data size > sector size
+>> since talitos internally generates the IV for the next sector by
+>> incrementing the previous IV, only IV schemes that allocate consecutive
+>> IV to consecutive sectors will function correctly.
+>>
 > 
-> later MPC8315Es had a SEC v3.3.1, but AFAICT, it doesn't support
-> XTS, so, yes, it's likely v3.3.2 and above (if any).
+> it's not clear to me that #1 is right.  I guess it could be, but the
+> IV length would be limited to 8 bytes.
 
-There's a public application note on freescale.com:
-"AN3645 - SEC 2x/3x Descriptor Programmer's Guide" (Rev.3/2010)
+Yes, there's a limitation in talitos wrt. XTS IV / tweak size - it's up
+to 8 bytes.
+So I guess ESSIV won't work with talitos-xts, since the encrypted IV
+output is 16 bytes.
+But as previously said, ESSIV breaks the XTS standard requirement for
+having a consecutive IV for consecutive blocks. ESSIV should really be
+used only with disk-level encryption schemes that require an
+unpredictable IV.
 
-"Table 4 - EUs Supported in Each SEC Version" summarizes which
-algorithms / modes are supported for every talitos version.
-Unfortunately this goes up to SEC 3.3.1.
-Since XTS doesn't show up, 3.3.2 would be the first supporting it.
+> 
+> This also points out that claiming that the XTS IV size is 16 bytes,
+> as my current patch does, could be problematic.  It's handy because
+> the first 8 bytes should contain a plain64 sector #, and the second
+> u64 can be used to encode the sector size but it would be a mistake
+> for someone to use the second 8 bytes for the rest of a 16byte IV.
+
+XTS IV *is* 16 bytes. The fact that xts-talitos can handle only 8 bytes
+is a problem indeed, but for plain and plain64 should not matter.
 
 Horia
