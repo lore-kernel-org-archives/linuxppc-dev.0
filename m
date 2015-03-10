@@ -1,27 +1,26 @@
-Return-Path: <tomi.valkeinen@ti.com>
-Received: from comal.ext.ti.com (comal.ext.ti.com [198.47.26.152])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <haokexin@gmail.com>
+Received: from mail-qg0-x22f.google.com (mail-qg0-x22f.google.com
+ [IPv6:2607:f8b0:400d:c04::22f])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id F3B5E1A03B6
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Mar 2015 23:32:15 +1100 (AEDT)
-Message-ID: <54FEE230.6030006@ti.com>
-Date: Tue, 10 Mar 2015 14:23:12 +0200
-From: Tomi Valkeinen <tomi.valkeinen@ti.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3816D1A0B83
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Mar 2015 23:32:55 +1100 (AEDT)
+Received: by qgfh3 with SMTP id h3so1255277qgf.2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Mar 2015 05:32:52 -0700 (PDT)
+Date: Tue, 10 Mar 2015 20:32:44 +0800
+From: Kevin Hao <haokexin@gmail.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH] powerpc64: use fixed lock token for !CONFIG_PPC_SPLPAR
+Message-ID: <20150310123244.GC8745@pek-khao-d1.corp.ad.wrs.com>
+References: <1425727183-30880-1-git-send-email-haokexin@gmail.com>
+ <1425884006.4636.234.camel@kernel.crashing.org>
+ <1425946518.19022.5.camel@ellerman.id.au>
 MIME-Version: 1.0
-To: Kevin Hao <haokexin@gmail.com>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>
-Subject: Re: [PATCH 03/15] fbdev: aty128fb: replace PPC_OF with PPC
-References: <1422712065-9403-1-git-send-email-haokexin@gmail.com>
- <1422712065-9403-4-git-send-email-haokexin@gmail.com>
- <1424995875.4645.42.camel@kernel.crashing.org>
- <20150227010549.GA10596@pek-khao-d1.corp.ad.wrs.com>
-In-Reply-To: <20150227010549.GA10596@pek-khao-d1.corp.ad.wrs.com>
 Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature";
- boundary="5NpOSDLisjqi9JIadBmijFVpT0jJBaQKv"
-Cc: linux-fbdev@vger.kernel.org,
- Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>,
- linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>
+ protocol="application/pgp-signature"; boundary="s9fJI615cBHmzTOP"
+In-Reply-To: <1425946518.19022.5.camel@ellerman.id.au>
+Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org,
+ Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,64 +30,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---5NpOSDLisjqi9JIadBmijFVpT0jJBaQKv
-Content-Type: text/plain; charset=windows-1252
+
+--s9fJI615cBHmzTOP
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On 27/02/15 03:05, Kevin Hao wrote:
-> On Fri, Feb 27, 2015 at 11:11:15AM +1100, Benjamin Herrenschmidt wrote:=
-
->> On Sat, 2015-01-31 at 21:47 +0800, Kevin Hao wrote:
->>> The PPC_OF is a ppc specific option which is used to mean that the
->>> firmware device tree access functions are available. Since all the
->>> ppc platforms have a device tree, it is aways set to 'y' for ppc.
->>> So it makes no sense to keep a such option in the current kernel.
->>> Replace it with PPC.
->>>
->>> Signed-off-by: Kevin Hao <haokexin@gmail.com>
->>
->> For this and generally the whole series,
->>
->> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+On Tue, Mar 10, 2015 at 11:15:18AM +1100, Michael Ellerman wrote:
+> On Mon, 2015-03-09 at 17:53 +1100, Benjamin Herrenschmidt wrote:
+> > On Sat, 2015-03-07 at 19:19 +0800, Kevin Hao wrote:
+> > > It makes no sense to use a variant lock token on a platform which
+> > > doesn't support for shared-processor logical partitions. Actually we
+> > > can eliminate a memory load by using a fixed lock token on these
+> > > platforms.
+> >=20
+> > Does this provide an actual measurable benefit ? I found that the lock
+> > token was quite handy for debugging ...
 >=20
-> Thanks Ben.
+> Yeah. It can be very useful to know which cpu holds a lock when you get i=
+nto a
+> dead lock.
 >=20
->>
->> Which tree do we expect this to go through ?
->=20
-> I just sent out a v2 [1] a few hours earlier with some minor updates. W=
-e plan
-> to merge this patch series via the powerpc tree in 4.1 cycle if I can c=
-ollect
-> all the acks from the corresponding driver maintainers.
+> Unless you can show this is a performance boost I'm inclined to leave it =
+as-is.
 
-Fbdev changes look ok to me.
+I am not sure if there is more suitable benchmark for spinlock. I tried the
+perf locking benchmark got from here [1]. The test was running on a t4240rdb
+board with xfs rootfs. I have run the following commands four times before =
+and
+after applying this patch.
+    ./perf record ./perf bench locking vfs; ./perf report
 
- Tomi
+Before:
+3.06%  locking-vfs  [kernel.kallsyms]   [k] ._raw_spin_lock
+3.04%  locking-vfs  [kernel.kallsyms]   [k] ._raw_spin_lock
+3.03%  locking-vfs  [kernel.kallsyms]   [k] ._raw_spin_lock
+3.00%  locking-vfs  [kernel.kallsyms]   [k] ._raw_spin_lock
 
+After:
+3.05%  locking-vfs  [kernel.kallsyms]   [k] ._raw_spin_lock=20
+2.97%  locking-vfs  [kernel.kallsyms]   [k] ._raw_spin_lock
+2.96%  locking-vfs  [kernel.kallsyms]   [k] ._raw_spin_lock
+2.97%  locking-vfs  [kernel.kallsyms]   [k] ._raw_spin_lock
 
+[1] http://lkml.iu.edu/hypermail/linux/kernel/1412.1/01419.html
 
---5NpOSDLisjqi9JIadBmijFVpT0jJBaQKv
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: OpenPGP digital signature
-Content-Disposition: attachment; filename="signature.asc"
+Thanks,
+Kevin
+
+--s9fJI615cBHmzTOP
+Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+Version: GnuPG v2
 
-iQIcBAEBAgAGBQJU/uIwAAoJEPo9qoy8lh7146YP/1UP6V+PcgFZzDtryhJp/v9I
-vxA3G94XsL1+GZrNvz6CSnl17SS0nytds4UJikLSyvmQ2AjAKCkCcX2HsVq8kF4K
-e1eo+rePMNPI7OUrdjt00rbauT2onn8Jhbm8ERHVNbnEjaK+OiZkC+54XatXjhmp
-ReuSPRBmnIPgbLV2gLSxBQktPLz9jfrlJwwOa0TvaM8C/SkvZp6nZu9iptCUCAIV
-Blx8nzUoSU4ojwAwDSKMDtmKodhb/L9FwKczQ1WYXgCiE/grWmb5tKJd62MKNmWc
-2Km4zNwCueYY0n2msDsDN+Fc0d+wmANJB3U0f141povu+24oJ+w67nr1DxMk24dh
-sDnu5/ZRIHVRfBxFmZrWkLB8KH2/Cm6LwFIpHUgp93XNe8efqFSbVxP3VNI7Z2oW
-zKx58o23eDV0CO0vVFparDA3uxtjA+4Ch06NqjxCszAegAWcHwGgE8oMZzfjDMB7
-r+hCtBiTR8uiDjZk5JKL/iy7/SqXLqbiUIgtPpALOGzUiPyDFUMchyeHfFvhphWR
-fG0UBNPaeMP9IJstvsSYRd7iWJIj6SniwW4LiXq+tS3n5EXwYGPNPaeZKcgGFnJH
-aVsciAtRV6YD02qda9590AMmI9m3vXHobv3uvTl+2hHVKgOTtr2XYXXd1DgWASSg
-NQyWV7HjxQ0t852gIZqf
-=FZKQ
+iQEcBAEBAgAGBQJU/uRsAAoJEJNY7TDerrFx3h8IAMwCqnIqQVW1DNUXCgI0jjpU
+XRx5us3iIOo2+YbdYwW17Fva5tEFLjmt/8Ambs2zZWe071cdHPkkfhsud8juI0jj
+eQbWeVlpfR+7OqcKSsPkO5ekAIuMpdkplWo7H+E1cNGadEezhHIkfJ7plZZYcJ2e
+LDlOZhQDatIFmo4RMEJM/hxRec7hDrWkKEJHUPHst/lfw1lm0YjjruYmWsMCQKYz
+YwkISPzvH7ED5pixOWF1Ib+fnFyMkM6DnnTj97A3gzt6zMRjywn3M6rovmnS/NxI
+Boevqr98VCjngS3UwCHNC9x2HqxPgBCoHj+mzEmBB1ahSj8BOEwvypPJ9BKJzUI=
+=bx1R
 -----END PGP SIGNATURE-----
 
---5NpOSDLisjqi9JIadBmijFVpT0jJBaQKv--
+--s9fJI615cBHmzTOP--
