@@ -1,20 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <alex.williamson@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5119F1A020A
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2015 10:15:03 +1100 (AEDT)
-Message-ID: <1426029296.17565.11.camel@kernel.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 073751A0631
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2015 10:34:23 +1100 (AEDT)
+Message-ID: <1426030457.25026.87.camel@redhat.com>
 Subject: Re: [PATCH v5 03/29] vfio: powerpc/spapr: Check that TCE page size
  is equal to it_page_size
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Alex Williamson <alex.williamson@redhat.com>
-Date: Wed, 11 Mar 2015 10:14:56 +1100
-In-Reply-To: <1426028606.25026.86.camel@redhat.com>
+From: Alex Williamson <alex.williamson@redhat.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Tue, 10 Mar 2015 17:34:17 -0600
+In-Reply-To: <1426029296.17565.11.camel@kernel.crashing.org>
 References: <1425910045-26167-1-git-send-email-aik@ozlabs.ru>
  <1425910045-26167-4-git-send-email-aik@ozlabs.ru>
  <1426017408.25026.79.camel@redhat.com> <54FF76F4.5020503@ozlabs.ru>
  <1426028606.25026.86.camel@redhat.com>
+ <1426029296.17565.11.camel@kernel.crashing.org>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, Paul Mackerras <paulus@samba.org>,
@@ -29,16 +30,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-03-10 at 17:03 -0600, Alex Williamson wrote:
-> > > return (PAGE_SHIFT + compound_order(compound_head(page) >= page_shift);
+On Wed, 2015-03-11 at 10:14 +1100, Benjamin Herrenschmidt wrote:
+> On Tue, 2015-03-10 at 17:03 -0600, Alex Williamson wrote:
+> > > > return (PAGE_SHIFT + compound_order(compound_head(page) >= page_shift);
+> > > 
+> > > This won't be "bool" though.
 > > 
-> > This won't be "bool" though.
+> > Yes, it will.
 > 
-> Yes, it will.
+> Don't you have your parenthesis in the wrong place, Alex ? :-)
 
-Don't you have your parenthesis in the wrong place, Alex ? :-)
+Probably, but the compiler will warn about that.
 
-> >  This will (I'll do this)
-> > 
-> > shift = PAGE_SHIFT + compound_order(compound_head(page));
-> > return (shift >= page_shift);
+> > >  This will (I'll do this)
+> > > 
+> > > shift = PAGE_SHIFT + compound_order(compound_head(page));
+> > > return (shift >= page_shift);
+> 
+> 
