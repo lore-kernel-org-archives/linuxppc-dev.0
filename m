@@ -1,27 +1,45 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pa0-f48.google.com (mail-pa0-f48.google.com
- [209.85.220.48])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <nacc@linux.vnet.ibm.com>
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AF5E71A0631
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2015 10:45:29 +1100 (AEDT)
-Received: by pabli10 with SMTP id li10so6296476pab.2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Mar 2015 16:45:27 -0700 (PDT)
-Message-ID: <54FF8211.5020001@ozlabs.ru>
-Date: Wed, 11 Mar 2015 10:45:21 +1100
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 02E211A005A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2015 10:52:01 +1100 (AEDT)
+Received: from /spool/local
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
+ Tue, 10 Mar 2015 17:51:59 -0600
+Received: from b03cxnp08025.gho.boulder.ibm.com
+ (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 3443BC40004
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Mar 2015 17:43:09 -0600 (MDT)
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+ by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t2ANphfa33554550
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Mar 2015 16:51:51 -0700
+Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t2ANpOYb015192
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Mar 2015 17:51:25 -0600
+Date: Tue, 10 Mar 2015 16:50:59 -0700
+From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: [PATCH v3] powerpc/numa: set node_possible_map to only
+ node_online_map during boot
+Message-ID: <20150310235059.GA40490@linux.vnet.ibm.com>
+References: <20150305180549.GA29601@linux.vnet.ibm.com>
+ <alpine.DEB.2.10.1503051315270.25235@chino.kir.corp.google.com>
+ <20150305231555.GB30570@linux.vnet.ibm.com>
+ <alpine.DEB.2.10.1503051527281.2184@chino.kir.corp.google.com>
+ <20150306052750.GA9576@linux.vnet.ibm.com>
+ <1425945305.19022.4.camel@ellerman.id.au>
 MIME-Version: 1.0
-To: Alex Williamson <alex.williamson@redhat.com>
-Subject: Re: [PATCH v5 03/29] vfio: powerpc/spapr: Check that TCE page size
- is equal to it_page_size
-References: <1425910045-26167-1-git-send-email-aik@ozlabs.ru>		
- <1425910045-26167-4-git-send-email-aik@ozlabs.ru>	
- <1426017408.25026.79.camel@redhat.com> <54FF76F4.5020503@ozlabs.ru>
- <1426028606.25026.86.camel@redhat.com>
-In-Reply-To: <1426028606.25026.86.camel@redhat.com>
-Content-Type: text/plain; charset=koi8-r; format=flowed
-Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1425945305.19022.4.camel@ellerman.id.au>
+Cc: Raghavendra K T <raghavendra.kt@linux.vnet.ibm.com>,
+ Paul Mackerras <paulus@samba.org>, Anton Blanchard <anton@samba.org>,
+ David Rientjes <rientjes@google.com>, Tejun Heo <tj@kernel.org>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,99 +49,99 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03/11/2015 10:03 AM, Alex Williamson wrote:
-> On Wed, 2015-03-11 at 09:57 +1100, Alexey Kardashevskiy wrote:
->> On 03/11/2015 06:56 AM, Alex Williamson wrote:
->>> On Tue, 2015-03-10 at 01:06 +1100, Alexey Kardashevskiy wrote:
->>>> This checks that the TCE table page size is not bigger that the size of
->>>> a page we just pinned and going to put its physical address to the table.
->>>>
->>>> Otherwise the hardware gets unwanted access to physical memory between
->>>> the end of the actual page and the end of the aligned up TCE page.
->>>>
->>>> Since compound_order() and compound_head() work correctly on non-huge
->>>> pages, there is no need for additional check whether the page is huge.
->>>>
->>>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
->>>> ---
->>>> Changes:
->>>> v4:
->>>> * s/tce_check_page_size/tce_page_is_contained/
->>>> ---
->>>>    drivers/vfio/vfio_iommu_spapr_tce.c | 22 ++++++++++++++++++++++
->>>>    1 file changed, 22 insertions(+)
->>>>
->>>> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
->>>> index 756831f..91e7599 100644
->>>> --- a/drivers/vfio/vfio_iommu_spapr_tce.c
->>>> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
->>>> @@ -49,6 +49,22 @@ struct tce_container {
->>>>    	bool enabled;
->>>>    };
->>>>
->>>> +static bool tce_page_is_contained(struct page *page, unsigned page_shift)
->>>> +{
->>>> +	unsigned shift;
->>>> +
->>>> +	/*
->>>> +	 * Check that the TCE table granularity is not bigger than the size of
->>>> +	 * a page we just found. Otherwise the hardware can get access to
->>>> +	 * a bigger memory chunk that it should.
->>>> +	 */
->>>> +	shift = PAGE_SHIFT + compound_order(compound_head(page));
->>>> +	if (shift >= page_shift)
->>>> +		return true;
->>>> +
->>>> +	return false;
->>>
->>> nit, simplified:
->>>
->>> return (PAGE_SHIFT + compound_order(compound_head(page) >= page_shift);
->>
->> This won't be "bool" though.
->
-> Yes, it will.
+On 10.03.2015 [10:55:05 +1100], Michael Ellerman wrote:
+> On Thu, 2015-03-05 at 21:27 -0800, Nishanth Aravamudan wrote:
+> > diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+> > index 0257a7d659ef..0c1716cd271f 100644
+> > --- a/arch/powerpc/mm/numa.c
+> > +++ b/arch/powerpc/mm/numa.c
+> > @@ -958,6 +958,13 @@ void __init initmem_init(void)
+> >  
+> >  	memblock_dump_all();
+> >  
+> > +	/*
+> > +	 * Reduce the possible NUMA nodes to the online NUMA nodes,
+> > +	 * since we do not support node hotplug. This ensures that  we
+> > +	 * lower the maximum NUMA node ID to what is actually present.
+> > +	 */
+> > +	node_possible_map = node_online_map;
+> 
+> That looks nice, but is it generating what we want?
+> 
+> ie. is the content of node_online_map being *copied* into node_possible_map.
+> 
+> Or are we changing node_possible_map to point at node_online_map?
 
-Ah, misread as "... - page_shift". And you missed one bracket :)
+I think it ends up being the latter, which is probably fine in practice
+(I think node_online_map is static on power after boot), but perhaps it
+would be better to do:
+
+nodes_and(node_possible_map, node_possible_map, node_online_map);
+
+?
+
+e.g.:
 
 
->
->>   This will (I'll do this)
->>
->> shift = PAGE_SHIFT + compound_order(compound_head(page));
->> return (shift >= page_shift);
->>
->>
->>
->>
->>>
->>>> +}
->>>> +
->>>>    static int tce_iommu_enable(struct tce_container *container)
->>>>    {
->>>>    	int ret = 0;
->>>> @@ -197,6 +213,12 @@ static long tce_iommu_build(struct tce_container *container,
->>>>    			ret = -EFAULT;
->>>>    			break;
->>>>    		}
->>>> +
->>>> +		if (!tce_page_is_contained(page, tbl->it_page_shift)) {
->>>> +			ret = -EPERM;
->>>> +			break;
->>>> +		}
->>>> +
->>>>    		hva = (unsigned long) page_address(page) +
->>>>    			(tce & IOMMU_PAGE_MASK(tbl) & ~PAGE_MASK);
->>>>
->>>
->>>
->>>
->>
->>
->
->
->
+powerpc/numa: reset node_possible_map to only node_online_map
 
+Raghu noticed an issue with excessive memory allocation on power with a
+simple cgroup test, specifically, in mem_cgroup_css_alloc ->
+for_each_node -> alloc_mem_cgroup_per_zone_info(), which ends up blowing
+up the kmalloc-2048 slab (to the order of 200MB for 400 cgroup
+directories).
 
--- 
-Alexey
+The underlying issue is that NODES_SHIFT on power is 8 (256 NUMA nodes
+possible), which defines node_possible_map, which in turn defines the
+value of nr_node_ids in setup_nr_node_ids and the iteration of
+for_each_node.
+
+In practice, we never see a system with 256 NUMA nodes, and in fact, we
+do not support node hotplug on power in the first place, so the nodes
+that are online when we come up are the nodes that will be present for
+the lifetime of this kernel. So let's, at least, drop the NUMA possible
+map down to the online map at runtime. This is similar to what x86 does
+in its initialization routines.
+
+mem_cgroup_css_alloc should also be fixed to only iterate over
+memory-populated nodes and handle hotplug, but that is a separate
+change.
+
+Signed-off-by: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: Tejun Heo <tj@kernel.org>
+Cc: David Rientjes <rientjes@google.com>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Anton Blanchard <anton@samba.org>
+Cc: Raghavendra K T <raghavendra.kt@linux.vnet.ibm.com>
+    
+---
+v1 -> v2:
+  Rather than clear node_possible_map and set it nid-by-nid, just
+  directly assign node_online_map to it, as suggested by Michael
+  Ellerman and Tejun Heo.
+
+v2 -> v3:
+  Rather than direct assignment (which is just repointing the pointer),
+  modify node_possible_map in-place.
+
+diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
+index 0257a7d659ef..1a118b08fad2 100644
+--- a/arch/powerpc/mm/numa.c
++++ b/arch/powerpc/mm/numa.c
+@@ -958,6 +958,13 @@ void __init initmem_init(void)
+ 
+ 	memblock_dump_all();
+ 
++	/*
++	 * Reduce the possible NUMA nodes to the online NUMA nodes,
++	 * since we do not support node hotplug. This ensures that  we
++	 * lower the maximum NUMA node ID to what is actually present.
++	 */
++	nodes_and(node_possible_map, node_possible_map, node_online_map);
++
+ 	for_each_online_node(nid) {
+ 		unsigned long start_pfn, end_pfn;
+ 
