@@ -1,27 +1,27 @@
-Return-Path: <haokexin@gmail.com>
-Received: from mail-qg0-x22b.google.com (mail-qg0-x22b.google.com
- [IPv6:2607:f8b0:400d:c04::22b])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <tomi.valkeinen@ti.com>
+Received: from comal.ext.ti.com (comal.ext.ti.com [198.47.26.152])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 027B41A03A0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Mar 2015 23:21:57 +1100 (AEDT)
-Received: by qgdz60 with SMTP id z60so1194451qgd.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Mar 2015 05:21:55 -0700 (PDT)
-Date: Tue, 10 Mar 2015 20:21:47 +0800
-From: Kevin Hao <haokexin@gmail.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: book3e_64: fix the align size for paca_struct
-Message-ID: <20150310122147.GB8745@pek-khao-d1.corp.ad.wrs.com>
-References: <1425726893-30605-1-git-send-email-haokexin@gmail.com>
- <1425806006.4636.223.camel@kernel.crashing.org>
- <20150309011314.GA13617@pek-khao-d1.corp.ad.wrs.com>
- <1425886285.4636.241.camel@kernel.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id F3B5E1A03B6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Mar 2015 23:32:15 +1100 (AEDT)
+Message-ID: <54FEE230.6030006@ti.com>
+Date: Tue, 10 Mar 2015 14:23:12 +0200
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
 MIME-Version: 1.0
+To: Kevin Hao <haokexin@gmail.com>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>
+Subject: Re: [PATCH 03/15] fbdev: aty128fb: replace PPC_OF with PPC
+References: <1422712065-9403-1-git-send-email-haokexin@gmail.com>
+ <1422712065-9403-4-git-send-email-haokexin@gmail.com>
+ <1424995875.4645.42.camel@kernel.crashing.org>
+ <20150227010549.GA10596@pek-khao-d1.corp.ad.wrs.com>
+In-Reply-To: <20150227010549.GA10596@pek-khao-d1.corp.ad.wrs.com>
 Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="0eh6TmSyL6TZE2Uz"
-In-Reply-To: <1425886285.4636.241.camel@kernel.crashing.org>
-Cc: Scott Wood <scottwood@freescale.com>, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev@lists.ozlabs.org
+ protocol="application/pgp-signature";
+ boundary="5NpOSDLisjqi9JIadBmijFVpT0jJBaQKv"
+Cc: linux-fbdev@vger.kernel.org,
+ Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>,
+ linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,50 +31,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
---0eh6TmSyL6TZE2Uz
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+--5NpOSDLisjqi9JIadBmijFVpT0jJBaQKv
+Content-Type: text/plain; charset=windows-1252
 Content-Transfer-Encoding: quoted-printable
 
-On Mon, Mar 09, 2015 at 06:31:25PM +1100, Benjamin Herrenschmidt wrote:
-> On Mon, 2015-03-09 at 09:13 +0800, Kevin Hao wrote:
-> > On Sun, Mar 08, 2015 at 08:13:26PM +1100, Benjamin Herrenschmidt wrote:
-> > > On Sat, 2015-03-07 at 19:14 +0800, Kevin Hao wrote:
-> > > > All the cache line size of the current book3e 64bit SoCs are 64 byt=
-es.
-> > > > So we should use this size to align the member of paca_struct.
-> > > > With this change we save 192 bytes. Also change it to __aligned(siz=
-e)
-> > > > since it is preferred over __attribute__((aligned(size))).
-> > >=20
-> > > Why should we favor the book3e CPUs over the book3s ones ?
-> >=20
-> > Why do you think so? This only change the align size of the paca_struct=
-'s
-> > members which are private to book3e CPUs, and should not have any effect
-> > to book3s ones. Did I miss something?
+On 27/02/15 03:05, Kevin Hao wrote:
+> On Fri, Feb 27, 2015 at 11:11:15AM +1100, Benjamin Herrenschmidt wrote:=
+
+>> On Sat, 2015-01-31 at 21:47 +0800, Kevin Hao wrote:
+>>> The PPC_OF is a ppc specific option which is used to mean that the
+>>> firmware device tree access functions are available. Since all the
+>>> ppc platforms have a device tree, it is aways set to 'y' for ppc.
+>>> So it makes no sense to keep a such option in the current kernel.
+>>> Replace it with PPC.
+>>>
+>>> Signed-off-by: Kevin Hao <haokexin@gmail.com>
+>>
+>> For this and generally the whole series,
+>>
+>> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 >=20
-> No, your explanation was lacking that important detail :-)
+> Thanks Ben.
+>=20
+>>
+>> Which tree do we expect this to go through ?
+>=20
+> I just sent out a v2 [1] a few hours earlier with some minor updates. W=
+e plan
+> to merge this patch series via the powerpc tree in 4.1 cycle if I can c=
+ollect
+> all the acks from the corresponding driver maintainers.
 
-Sorry for the confusion, I will add this information in the commit log.
+Fbdev changes look ok to me.
 
-Thanks,
-Kevin
+ Tomi
 
---0eh6TmSyL6TZE2Uz
-Content-Type: application/pgp-signature
+
+
+--5NpOSDLisjqi9JIadBmijFVpT0jJBaQKv
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+Version: GnuPG v1
 
-iQEcBAEBAgAGBQJU/uHbAAoJEJNY7TDerrFxERgH/3qvBHYIIA3HzW+DbV8k7zcc
-jMP84zm+WQFFqYwYIGCjpTSGWNaM+eUJzuRgvBjVT420SwqJ0aI7bkRS4q92XeM7
-O2O27BN9y0qORddL0Xyn7L/LbxRl5GK16EVB1NhZEIqfythTJz1FXHuJQ5Wu/izS
-ZkbbbgagKHHyHHGJQtZxkYG5VU3V/aj+34XCaQ9OwBHa4tmF4Eq9pgkw1jr6JAhK
-UQmycxDQFVpEd0LaTldbPj8AgaX5dvXryMBwDvzB/+xdtM+HAlBqGgHmcDPt/+SN
-lYuGd7AWiSeBR1pa1/GY98z2qh2GxeW8tvSQe2Og40DagkA6HZ89slUaIU2G+3I=
-=88Ij
+iQIcBAEBAgAGBQJU/uIwAAoJEPo9qoy8lh7146YP/1UP6V+PcgFZzDtryhJp/v9I
+vxA3G94XsL1+GZrNvz6CSnl17SS0nytds4UJikLSyvmQ2AjAKCkCcX2HsVq8kF4K
+e1eo+rePMNPI7OUrdjt00rbauT2onn8Jhbm8ERHVNbnEjaK+OiZkC+54XatXjhmp
+ReuSPRBmnIPgbLV2gLSxBQktPLz9jfrlJwwOa0TvaM8C/SkvZp6nZu9iptCUCAIV
+Blx8nzUoSU4ojwAwDSKMDtmKodhb/L9FwKczQ1WYXgCiE/grWmb5tKJd62MKNmWc
+2Km4zNwCueYY0n2msDsDN+Fc0d+wmANJB3U0f141povu+24oJ+w67nr1DxMk24dh
+sDnu5/ZRIHVRfBxFmZrWkLB8KH2/Cm6LwFIpHUgp93XNe8efqFSbVxP3VNI7Z2oW
+zKx58o23eDV0CO0vVFparDA3uxtjA+4Ch06NqjxCszAegAWcHwGgE8oMZzfjDMB7
+r+hCtBiTR8uiDjZk5JKL/iy7/SqXLqbiUIgtPpALOGzUiPyDFUMchyeHfFvhphWR
+fG0UBNPaeMP9IJstvsSYRd7iWJIj6SniwW4LiXq+tS3n5EXwYGPNPaeZKcgGFnJH
+aVsciAtRV6YD02qda9590AMmI9m3vXHobv3uvTl+2hHVKgOTtr2XYXXd1DgWASSg
+NQyWV7HjxQ0t852gIZqf
+=FZKQ
 -----END PGP SIGNATURE-----
 
---0eh6TmSyL6TZE2Uz--
+--5NpOSDLisjqi9JIadBmijFVpT0jJBaQKv--
