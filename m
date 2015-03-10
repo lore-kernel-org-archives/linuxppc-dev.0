@@ -1,18 +1,22 @@
-Return-Path: <Igal.Liberman@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0130.outbound.protection.outlook.com [157.56.110.130])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <alex.williamson@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 08FDD1A0629
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2015 04:38:46 +1100 (AEDT)
-From: Igal.Liberman <igal.liberman@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] powerpc/fsl-booke: Add T4080 SVR value
-Date: Tue, 10 Mar 2015 15:19:42 +0200
-Message-ID: <1425993582-21754-1-git-send-email-igal.liberman@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: scottwood@freescale.com, Madalin Bucur <madalin.bucur@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id A43111A0629
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2015 06:56:58 +1100 (AEDT)
+Message-ID: <1426017408.25026.79.camel@redhat.com>
+Subject: Re: [PATCH v5 03/29] vfio: powerpc/spapr: Check that TCE page size
+ is equal to it_page_size
+From: Alex Williamson <alex.williamson@redhat.com>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Date: Tue, 10 Mar 2015 13:56:48 -0600
+In-Reply-To: <1425910045-26167-4-git-send-email-aik@ozlabs.ru>
+References: <1425910045-26167-1-git-send-email-aik@ozlabs.ru>
+ <1425910045-26167-4-git-send-email-aik@ozlabs.ru>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,24 +26,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Madalin Bucur <madalin.bucur@freescale.com>
+On Tue, 2015-03-10 at 01:06 +1100, Alexey Kardashevskiy wrote:
+> This checks that the TCE table page size is not bigger that the size of
+> a page we just pinned and going to put its physical address to the table.
+> 
+> Otherwise the hardware gets unwanted access to physical memory between
+> the end of the actual page and the end of the aligned up TCE page.
+> 
+> Since compound_order() and compound_head() work correctly on non-huge
+> pages, there is no need for additional check whether the page is huge.
+> 
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> ---
+> Changes:
+> v4:
+> * s/tce_check_page_size/tce_page_is_contained/
+> ---
+>  drivers/vfio/vfio_iommu_spapr_tce.c | 22 ++++++++++++++++++++++
+>  1 file changed, 22 insertions(+)
+> 
+> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
+> index 756831f..91e7599 100644
+> --- a/drivers/vfio/vfio_iommu_spapr_tce.c
+> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
+> @@ -49,6 +49,22 @@ struct tce_container {
+>  	bool enabled;
+>  };
+>  
+> +static bool tce_page_is_contained(struct page *page, unsigned page_shift)
+> +{
+> +	unsigned shift;
+> +
+> +	/*
+> +	 * Check that the TCE table granularity is not bigger than the size of
+> +	 * a page we just found. Otherwise the hardware can get access to
+> +	 * a bigger memory chunk that it should.
+> +	 */
+> +	shift = PAGE_SHIFT + compound_order(compound_head(page));
+> +	if (shift >= page_shift)
+> +		return true;
+> +
+> +	return false;
 
-Signed-off-by: Madalin Bucur <madalin.bucur@freescale.com>
----
- arch/powerpc/include/asm/mpc85xx.h |    1 +
- 1 file changed, 1 insertion(+)
+nit, simplified:
 
-diff --git a/arch/powerpc/include/asm/mpc85xx.h b/arch/powerpc/include/asm/mpc85xx.h
-index 3bef74a..213f3a8 100644
---- a/arch/powerpc/include/asm/mpc85xx.h
-+++ b/arch/powerpc/include/asm/mpc85xx.h
-@@ -61,6 +61,7 @@
- #define SVR_T4240	0x824000
- #define SVR_T4120	0x824001
- #define SVR_T4160	0x824100
-+#define SVR_T4080	0x824102
- #define SVR_C291	0x850000
- #define SVR_C292	0x850020
- #define SVR_C293	0x850030
--- 
-1.7.9.5
+return (PAGE_SHIFT + compound_order(compound_head(page) >= page_shift);
+
+> +}
+> +
+>  static int tce_iommu_enable(struct tce_container *container)
+>  {
+>  	int ret = 0;
+> @@ -197,6 +213,12 @@ static long tce_iommu_build(struct tce_container *container,
+>  			ret = -EFAULT;
+>  			break;
+>  		}
+> +
+> +		if (!tce_page_is_contained(page, tbl->it_page_shift)) {
+> +			ret = -EPERM;
+> +			break;
+> +		}
+> +
+>  		hva = (unsigned long) page_address(page) +
+>  			(tce & IOMMU_PAGE_MASK(tbl) & ~PAGE_MASK);
+>  
