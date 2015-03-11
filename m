@@ -1,41 +1,28 @@
-Return-Path: <weiyang@linux.vnet.ibm.com>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+Return-Path: <tomi.valkeinen@ti.com>
+Received: from devils.ext.ti.com (devils.ext.ti.com [198.47.26.153])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 93AB31A0631
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2015 17:43:10 +1100 (AEDT)
-Received: from /spool/local
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
- Wed, 11 Mar 2015 16:43:08 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id C58EC2BB0047
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2015 17:43:05 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t2B6gvDJ43778162
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2015 17:43:05 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t2B6gVdA005132
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2015 17:42:32 +1100
-Date: Wed, 11 Mar 2015 14:42:15 +0800
-From: Wei Yang <weiyang@linux.vnet.ibm.com>
-To: Bjorn Helgaas <bhelgaas@google.com>
-Subject: Re: [PATCH v12 17/21] powerpc/powernv: Shift VF resource with an
- offset
-Message-ID: <20150311064215.GD5826@richard>
-Reply-To: Wei Yang <weiyang@linux.vnet.ibm.com>
-References: <20150224082939.32124.45744.stgit@bhelgaas-glaptop2.roam.corp.google.com>
- <20150224083457.32124.55534.stgit@bhelgaas-glaptop2.roam.corp.google.com>
- <20150224090037.GK6220@google.com> <20150304030051.GA10797@richard>
- <20150311025519.GD10994@google.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 59A781A0631
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2015 18:51:31 +1100 (AEDT)
+Message-ID: <54FFF3EE.3070400@ti.com>
+Date: Wed, 11 Mar 2015 09:51:10 +0200
+From: Tomi Valkeinen <tomi.valkeinen@ti.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150311025519.GD10994@google.com>
-Cc: linux-pci@vger.kernel.org, Wei Yang <weiyang@linux.vnet.ibm.com>,
- benh@au1.ibm.com, linuxppc-dev@lists.ozlabs.org, gwshan@linux.vnet.ibm.com
+To: Kevin Hao <haokexin@gmail.com>
+Subject: Re: [PATCH 03/15] fbdev: aty128fb: replace PPC_OF with PPC
+References: <1422712065-9403-1-git-send-email-haokexin@gmail.com>
+ <1422712065-9403-4-git-send-email-haokexin@gmail.com>
+ <1424995875.4645.42.camel@kernel.crashing.org>
+ <20150227010549.GA10596@pek-khao-d1.corp.ad.wrs.com>
+ <54FEE230.6030006@ti.com>
+ <20150311043811.GF28582@pek-khao-d1.corp.ad.wrs.com>
+In-Reply-To: <20150311043811.GF28582@pek-khao-d1.corp.ad.wrs.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature";
+ boundary="oGwk8lbKunKadRHJ00277hRp59sVMXKAR"
+Cc: linux-fbdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Paul Mackerras <paulus@samba.org>,
+ Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,140 +32,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Mar 10, 2015 at 09:55:19PM -0500, Bjorn Helgaas wrote:
->On Wed, Mar 04, 2015 at 11:01:24AM +0800, Wei Yang wrote:
->> On Tue, Feb 24, 2015 at 03:00:37AM -0600, Bjorn Helgaas wrote:
->> >On Tue, Feb 24, 2015 at 02:34:57AM -0600, Bjorn Helgaas wrote:
->> >> From: Wei Yang <weiyang@linux.vnet.ibm.com>
->> >> 
->> >> On PowerNV platform, resource position in M64 implies the PE# the resource
->> >> belongs to.  In some cases, adjustment of a resource is necessary to locate
->> >> it to a correct position in M64.
->> >> 
->> >> Add pnv_pci_vf_resource_shift() to shift the 'real' PF IOV BAR address
->> >> according to an offset.
->> >> 
->> >> [bhelgaas: rework loops, rework overlap check, index resource[]
->> >> conventionally, remove pci_regs.h include, squashed with next patch]
->> >> Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
->> >> Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
->> >
->> >...
->> >
->> >> +#ifdef CONFIG_PCI_IOV
->> >> +static int pnv_pci_vf_resource_shift(struct pci_dev *dev, int offset)
->> >> +{
->> >> +	struct pci_dn *pdn = pci_get_pdn(dev);
->> >> +	int i;
->> >> +	struct resource *res, res2;
->> >> +	resource_size_t size;
->> >> +	u16 vf_num;
->> >> +
->> >> +	if (!dev->is_physfn)
->> >> +		return -EINVAL;
->> >> +
->> >> +	/*
->> >> +	 * "offset" is in VFs.  The M64 windows are sized so that when they
->> >> +	 * are segmented, each segment is the same size as the IOV BAR.
->> >> +	 * Each segment is in a separate PE, and the high order bits of the
->> >> +	 * address are the PE number.  Therefore, each VF's BAR is in a
->> >> +	 * separate PE, and changing the IOV BAR start address changes the
->> >> +	 * range of PEs the VFs are in.
->> >> +	 */
->> >> +	vf_num = pdn->vf_pes;
->> >> +	for (i = 0; i < PCI_SRIOV_NUM_BARS; i++) {
->> >> +		res = &dev->resource[i + PCI_IOV_RESOURCES];
->> >> +		if (!res->flags || !res->parent)
->> >> +			continue;
->> >> +
->> >> +		if (!pnv_pci_is_mem_pref_64(res->flags))
->> >> +			continue;
->> >> +
->> >> +		/*
->> >> +		 * The actual IOV BAR range is determined by the start address
->> >> +		 * and the actual size for vf_num VFs BAR.  This check is to
->> >> +		 * make sure that after shifting, the range will not overlap
->> >> +		 * with another device.
->> >> +		 */
->> >> +		size = pci_iov_resource_size(dev, i + PCI_IOV_RESOURCES);
->> >> +		res2.flags = res->flags;
->> >> +		res2.start = res->start + (size * offset);
->> >> +		res2.end = res2.start + (size * vf_num) - 1;
->> >> +
->> >> +		if (res2.end > res->end) {
->> >> +			dev_err(&dev->dev, "VF BAR%d: %pR would extend past %pR (trying to enable %d VFs shifted by %d)\n",
->> >> +				i, &res2, res, vf_num, offset);
->> >> +			return -EBUSY;
->> >> +		}
->> >> +	}
->> >> +
->> >> +	for (i = 0; i < PCI_SRIOV_NUM_BARS; i++) {
->> >> +		res = &dev->resource[i + PCI_IOV_RESOURCES];
->> >> +		if (!res->flags || !res->parent)
->> >> +			continue;
->> >> +
->> >> +		if (!pnv_pci_is_mem_pref_64(res->flags))
->> >> +			continue;
->> >> +
->> >> +		size = pci_iov_resource_size(dev, i + PCI_IOV_RESOURCES);
->> >> +		res2 = *res;
->> >> +		res->start += size * offset;
->> >
->> >I'm still not happy about this fiddling with res->start.
->> >
->> >Increasing res->start means that in principle, the "size * offset" bytes
->> >that we just removed from res are now available for allocation to somebody
->> >else.  I don't think we *will* give that space to anything else because of
->> >the alignment restrictions you're enforcing, but "res" now doesn't
->> >correctly describe the real resource map.
->> >
->> >Would you be able to just update the BAR here while leaving the struct
->> >resource alone?  In that case, it would look a little funny that lspci
->> >would show a BAR value in the middle of the region in /proc/iomem, but
->> >the /proc/iomem region would be more correct.
->> 
->> Bjorn,
->> 
->> I did some tests, while the result is not good.
->> 
->> What I did is still write the shifted resource address to the device by
->> pci_update_resource(), but I revert the res->start to the original one. If
->> this step is not correct, please let me know.
->> 
->> This can't work since after we revert the res->start, those VFs will be given
->> resources from res->start instead of (res->start + offset * size). This is not
->> what we expect.
->
->Hmm, yes, I suppose we'd have to have a hook in pci_bus_alloc_from_region()
->or something.  That's getting a little messy.  I still don't like messing
->with the resource after it's in the resource tree, but I don't have a
->better idea right now.  So let's just go with what you have.
->
+--oGwk8lbKunKadRHJ00277hRp59sVMXKAR
+Content-Type: text/plain; charset=windows-1252
+Content-Transfer-Encoding: quoted-printable
 
-Thanks  :-)
+On 11/03/15 06:38, Kevin Hao wrote:
+> On Tue, Mar 10, 2015 at 02:23:12PM +0200, Tomi Valkeinen wrote:
+>>> I just sent out a v2 [1] a few hours earlier with some minor updates.=
+ We plan
+>>> to merge this patch series via the powerpc tree in 4.1 cycle if I can=
+ collect
+>>> all the acks from the corresponding driver maintainers.
+>>
+>> Fbdev changes look ok to me.
+>=20
+> Hi Tomi,
+>=20
+> I assume that I can add a "Acked-by: Tomi Valkeinen <tomi.valkeinen@ti.=
+com>"
+> for all the following patches, right?
+>   http://patchwork.ozlabs.org/patch/443890/
+>   http://patchwork.ozlabs.org/patch/443891/
+>   http://patchwork.ozlabs.org/patch/443892/
+>   http://patchwork.ozlabs.org/patch/443893/
+>   http://patchwork.ozlabs.org/patch/443894/
+>   http://patchwork.ozlabs.org/patch/443895/
+>   http://patchwork.ozlabs.org/patch/443897/
 
-I would state this in the change log and add a comment in the code to note
-this down. Hope this would be a little helpful.
+Yes, that's right. Sorry for not being clear on the ack.
 
->> >> +
->> >> +		dev_info(&dev->dev, "VF BAR%d: %pR shifted to %pR (enabling %d VFs shifted by %d)\n",
->> >> +			 i, &res2, res, vf_num, offset);
->> >> +		pci_update_resource(dev, i + PCI_IOV_RESOURCES);
->> >> +	}
->> >> +	pdn->max_vfs -= offset;
->> >> +	return 0;
->> >> +}
->> >> +#endif /* CONFIG_PCI_IOV */
->> 
->> -- 
->> Richard Yang
->> Help you, Help me
->> 
->> --
->> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
->> the body of a message to majordomo@vger.kernel.org
->> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+ Tomi
 
--- 
-Richard Yang
-Help you, Help me
+
+
+--oGwk8lbKunKadRHJ00277hRp59sVMXKAR
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJU//PxAAoJEPo9qoy8lh719t0P/jVOSwn7WVlpsLLqEezSiLCH
+kB/+E6GQ5OGW82TjvhZYIA553eci7OeeY+Vvuj4lfkojV/kJVTBWaUCpZNbT+CmN
+agsrSLkr379YcSPITWoZg6je74a+jEzh6Fq0KViRL+xjgSQ6p14VTkRaz5oMeLVB
+qqZHYSS1HpXmQZQc5dB3TekeVumGH6jWNVM+YjC68yks0/TWXikA4XG15QVQkPIB
+LtsFOw0RlLuSAXXm6TClaQCPfbI3aj69TdSJG6Ge2syit/wURlbMSBTkVrmKgyjF
+f7vquy/VHeIYKr5wR2N31x7fcG1hDac5gxmaaulhiA/YgVPuuZBrGlMrgCTSfIpQ
+O30cpPKgXNJJmttH0XZjZzflVQesxQjVal1GAKbW/jvf8mHMCh1h06QwYTyH5nrJ
+lWtRux5VCOr68yYUU7h+uiRmYJZbSlvIJFjtKF1Q7V4sAmHZ4qzij+r6lb8QPFID
+HaOi+cd1d37AKUJNCBtRGGeR8Y4cc54HXxauQz96vTq5zaYpXOpr5me/uUjcZpGe
+vSEzEpvtzrXQm6KXqj0pvaIHDgL5DEzXr7PTJQL8QHpph52/8tSTbBJnG/YwsfVT
+jUYyny8OUs0fkIZ9opsFGFVp+nUT3UvnSxCQBjQ7lZ8Qi3c/XVMRS/sevKD2rMna
+J87o9N22U+lkFLe7l+VL
+=Z6JI
+-----END PGP SIGNATURE-----
+
+--oGwk8lbKunKadRHJ00277hRp59sVMXKAR--
