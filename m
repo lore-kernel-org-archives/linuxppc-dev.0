@@ -1,38 +1,41 @@
 Return-Path: <weiyang@linux.vnet.ibm.com>
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C304C1A0631
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2015 16:48:17 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0A8DE1A0631
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2015 17:14:46 +1100 (AEDT)
 Received: from /spool/local
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
- Wed, 11 Mar 2015 15:48:17 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 53B632BB0047
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2015 16:48:16 +1100 (EST)
+ Wed, 11 Mar 2015 16:14:44 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id B6FE33578048
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2015 17:14:41 +1100 (EST)
 Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t2B5m8q939256226
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2015 16:48:16 +1100
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t2B6EXNH41877576
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2015 17:14:41 +1100
 Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
  by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t2B5lgKH015208
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2015 16:47:42 +1100
-Date: Wed, 11 Mar 2015 13:47:26 +0800
+ t2B6E7lC024229
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2015 17:14:08 +1100
+Date: Wed, 11 Mar 2015 14:13:51 +0800
 From: Wei Yang <weiyang@linux.vnet.ibm.com>
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: Re: [PATCH 3/4] powerpc/eeh: fix powernv_eeh_wait_state delay logic
-Message-ID: <20150311054726.GA5826@richard>
+To: Bjorn Helgaas <bhelgaas@google.com>
+Subject: Re: [PATCH v12 14/21] powerpc/powernv: Allocate struct pnv_ioda_pe
+ iommu_table dynamically
+Message-ID: <20150311061351.GB5826@richard>
 Reply-To: Wei Yang <weiyang@linux.vnet.ibm.com>
-References: <1425871052-13118-1-git-send-email-weiyang@linux.vnet.ibm.com>
- <1425871052-13118-4-git-send-email-weiyang@linux.vnet.ibm.com>
- <20150311051346.GC6906@shangw>
+References: <20150224082939.32124.45744.stgit@bhelgaas-glaptop2.roam.corp.google.com>
+ <20150224083435.32124.65099.stgit@bhelgaas-glaptop2.roam.corp.google.com>
+ <20150224084653.GI6220@google.com> <20150302075036.GH21571@richard>
+ <20150311024737.GB10994@google.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150311051346.GC6906@shangw>
-Cc: Wei Yang <weiyang@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20150311024737.GB10994@google.com>
+Cc: linux-pci@vger.kernel.org, Wei Yang <weiyang@linux.vnet.ibm.com>,
+ benh@au1.ibm.com, linuxppc-dev@lists.ozlabs.org, gwshan@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,58 +45,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Mar 11, 2015 at 04:13:46PM +1100, Gavin Shan wrote:
->On Mon, Mar 09, 2015 at 11:17:31AM +0800, Wei Yang wrote:
->>As the comment indicates, powernv_eeh_get_state() will inform EEH core to
->>delay 1 second. This means the delay doesn't happen when
->>powernv_eeh_get_state() returns.
->>
->>This patch moves the delay subtraction just before msleep(), which is the
->>same logic in pseries_eeh_wait_state().
->>
->>Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
+On Tue, Mar 10, 2015 at 09:47:37PM -0500, Bjorn Helgaas wrote:
+>On Mon, Mar 02, 2015 at 03:50:37PM +0800, Wei Yang wrote:
+>> On Tue, Feb 24, 2015 at 02:46:53AM -0600, Bjorn Helgaas wrote:
+>> >On Tue, Feb 24, 2015 at 02:34:35AM -0600, Bjorn Helgaas wrote:
+>> >> From: Wei Yang <weiyang@linux.vnet.ibm.com>
+>> >> 
+>> >> Current iommu_table of a PE is a static field.  This will have a problem
+>> >> when iommu_free_table() is called.
+>> >> 
+>> >> Allocate iommu_table dynamically.
+>> >
+>> >I'd like a little more explanation about why we're calling
+>> >iommu_free_table() now when we didn't call it before.  Maybe this happens
+>> >when we disable SR-IOV and the VFs go away?
+>> 
+>> Yes, it is called in disable path.
+>> 
+>> pcibios_sriov_disable
+>>     pnv_pci_sriov_disable
+>>         pnv_ioda_release_vf_PE
+>> 	    pnv_pci_ioda2_release_dma_pe
+>> 	        iommu_free_table            <--- here it is invoked
+>> 
+>> 
+>> >
+>> >Is there a hotplug remove path where we should also be calling
+>> >iommu_free_table()?
+>> 
+>> When VF is not introduced, no one calls this on powernv platform.
+>> 
+>> Each PCI bus is a PE and it has its own iommu table, even a device is
+>> hotpluged, the iommu table will not be released.
 >
->The patch would conflict with the patches to remove EEH chip layer done
->in https://patchwork.ozlabs.org/patch/439956/. Could you please repost
->with corrected function names in commit log when the dependent patches
->show up in Michael's next branch?
+>None of this explanation made it into the v13 patch.  And I don't quite
+>understand it anyway.
 >
->Except that, the changes look ok to me:
->
->Acked-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+>Something like "Previously the iommu_table had the same lifetime as a
+>struct pnv_ioda_pe and was embedded in it.  The pnv_ioda_pe was allocated
+>when XXX and freed when YYY.  This no longer works: we can't allocate the
+>iommu_table at the same time as the pnv_ioda_pe because XXX, so we allocate
+>it when XXX and free it when YYY."
 
-Thanks, I will repost it accordingly.
+Got it, I have put the explanation in change log in next version.
 
 >
->Thanks,
->Gavin
->
->>---
->> arch/powerpc/platforms/powernv/eeh-powernv.c |    2 +-
->> 1 file changed, 1 insertion(+), 1 deletion(-)
->>
->>diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
->>index 5abb4c2..af1be8f 100644
->>--- a/arch/powerpc/platforms/powernv/eeh-powernv.c
->>+++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
->>@@ -334,13 +334,13 @@ static int powernv_eeh_wait_state(struct eeh_pe *pe, int max_wait)
->> 		if (ret != EEH_STATE_UNAVAILABLE)
->> 			return ret;
->>
->>-		max_wait -= mwait;
->> 		if (max_wait <= 0) {
->> 			pr_warn("%s: Timeout getting PE#%x's state (%d)\n",
->> 				__func__, pe->addr, max_wait);
->> 			return EEH_STATE_NOT_SUPPORT;
->> 		}
->>
->>+		max_wait -= mwait;
->> 		msleep(mwait);
->> 	}
->>
->>-- 
->>1.7.9.5
->>
+>Bjorn
+>_______________________________________________
+>Linuxppc-dev mailing list
+>Linuxppc-dev@lists.ozlabs.org
+>https://lists.ozlabs.org/listinfo/linuxppc-dev
 
 -- 
 Richard Yang
