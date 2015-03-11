@@ -1,34 +1,33 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id E476A1A0631
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2015 17:32:22 +1100 (AEDT)
+Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 291A31A0631
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2015 17:27:34 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPS id 0CDA614016A
+ for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2015 17:32:21 +1100 (AEDT)
 Received: from /spool/local
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aik@ozlabs.ru>;
- Wed, 11 Mar 2015 16:27:32 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 28D82357805C
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2015 17:27:31 +1100 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t2B6RMi820906154
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2015 17:27:31 +1100
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t2B6QvCn018956
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2015 17:26:57 +1100
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH SLOF] pci-properties: Remove redundant call to device-type
-Date: Wed, 11 Mar 2015 17:26:32 +1100
-Message-Id: <1426055192-28691-1-git-send-email-aik@ozlabs.ru>
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
- Thomas Huth <thuth@linux.vnet.ibm.com>,
- Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>,
- David Gibson <david@gibson.dropbear.id.au>
+ for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Wed, 11 Mar 2015 12:02:19 +0530
+Message-ID: <54FFE16F.5050106@linux.vnet.ibm.com>
+Date: Wed, 11 Mar 2015 12:02:15 +0530
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: Benjamin Herrenschmidt <benh@au1.ibm.com>
+Subject: Re: [RFC PATCH 1/2] powerpc: Add a proper syscall for switching
+ endianness
+References: <1425973006-22759-1-git-send-email-mpe@ellerman.id.au>
+ <1425980077.4636.265.camel@au1.ibm.com>
+ <1425984912.1920.4.camel@ellerman.id.au>
+ <54FFD4C4.5040407@linux.vnet.ibm.com> <1426052605.17565.21.camel@au1.ibm.com>
+In-Reply-To: <1426052605.17565.21.camel@au1.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@ozlabs.org, Jeremy Kerr <jk@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,42 +37,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-At the moment SLOF adds a "device_type" property automatically for
-every single PCI device based on its class even if there is no SLOF
-driver for such a device. OF1275 says that "device_type" is for
-implemented interfaces only. A side effect of this is virtio-balloon
-getting device_type=="memory" while it should not have.
+On 03/11/2015 11:13 AM, Benjamin Herrenschmidt wrote:
+> On Wed, 2015-03-11 at 11:08 +0530, Anshuman Khandual wrote:
+>> On 03/10/2015 04:25 PM, Michael Ellerman wrote:
+>>> On Tue, 2015-03-10 at 20:34 +1100, Benjamin Herrenschmidt wrote:
+>>>> On Tue, 2015-03-10 at 18:36 +1100, Michael Ellerman wrote:
+>>>>> We currently have a "special" syscall for switching endianness. This is
+>>>>> syscall number 0x1ebe, which is handled explicitly in the 64-bit syscall
+>>>>> exception entry.
+>>>>>
+>>>>> That has a few problems, firstly the syscall number is outside of the
+>>>>> usual range, which confuses various tools. For example strace doesn't
+>>>>> recognise the syscalls at all.
+>>>>>
+>>>>> Secondly it's handled explicitly as a special case in the syscall
+>>>>> exception entry, which is complicated enough without it.
+>>>>>
+>>>>> As a first step toward removing the special syscall, we need to add a
+>>>>> regular syscall that implements the same functionality.
+>>>>>
+>>>>> The logic is simple, it simply toggles the MSR_LE bit in the userspace
+>>>>> MSR. This is the same as the special syscall, with the caveat that the
+>>>>> special syscall clobbers fewer registers.
+>>>>
+>>>> You can set _TIF_RESTOREALL to force a restore of all the registers on
+>>>> the way back which should do the job.
+>>>
+>>> Right, I'd forgotten we talked about that.
+>>>
+>>> I'll try that tomorrow.
+>>
+>> The test fails when we add set_thread_flag(TIF_RESTOREALL) after the MSR flip.
+>> Though the test passes with the original patch.
+> 
+> We also need to wrap the syscall like we do for fork() etc... to
+> save_nvgpr's.
 
-This removes automatic call to device-type from the common PCI code.
-Since now, we rely on existing SLOF PCI drivers to call device-type if
-needed. virtio-blk/net, e1000, ohci/ehci/xhci do this. virtio-scsi
-does not create the property for itself but disks on its bus do.
-virtio-ballon won't get the device_type property as there is no driver
-for it.
-
-Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
----
-
-I'll wait for a couple of days and push it to github if nobody objects.
-Ben suggested that the linux guest must not rely on device_type in the common
-case.
-
----
- slof/fs/pci-properties.fs | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/slof/fs/pci-properties.fs b/slof/fs/pci-properties.fs
-index a19c651..9efa87e 100644
---- a/slof/fs/pci-properties.fs
-+++ b/slof/fs/pci-properties.fs
-@@ -565,7 +565,7 @@
- \ ***************************************************************************************
- \ set up common properties for devices and bridges
- : pci-common-props ( addr -- )
--        dup pci-class-name 2dup device-name device-type
-+        dup pci-class-name device-name
-         dup pci-vendor@    encode-int s" vendor-id"      property
-         dup pci-device@    encode-int s" device-id"      property
-         dup pci-revision@  encode-int s" revision-id"    property
--- 
-2.0.0
+Yeah right, replacing SYSCALL(switch_endian) with PPC_SYS(switch_endian)
+in systbl.h does the trick and the test passes again.
