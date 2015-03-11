@@ -1,16 +1,16 @@
 Return-Path: <Igal.Liberman@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0133.outbound.protection.outlook.com [207.46.100.133])
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1on0139.outbound.protection.outlook.com [157.56.110.139])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A89C31A0BC3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2015 20:10:34 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0FD201A0BE7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2015 20:10:53 +1100 (AEDT)
 From: Igal.Liberman <igal.liberman@freescale.com>
 To: <linuxppc-dev@lists.ozlabs.org>, <netdev@vger.kernel.org>,
  <linux-kernel@vger.kernel.org>
-Subject: [v2,07/11] soc/fman: Add the FMan parser and KeyGen FLIB headers
-Date: Wed, 11 Mar 2015 07:05:55 +0200
-Message-ID: <1426050355-12308-1-git-send-email-igal.liberman@freescale.com>
+Subject: [v2,09/11] soc/fman: Add the FMan RTC FLIB header
+Date: Wed, 11 Mar 2015 07:06:15 +0200
+Message-ID: <1426050375-12374-1-git-send-email-igal.liberman@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: scottwood@freescale.com, Madalin Bucur <madalin.bucur@freescale.com>
@@ -26,18 +26,16 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 From: Madalin Bucur <madalin.bucur@freescale.com>
 
 ---
- drivers/soc/fsl/fman/flib/fsl_fman_kg.h  |  505 ++++++++++++++++++++++++++++++
- drivers/soc/fsl/fman/flib/fsl_fman_prs.h |  106 +++++++
- 2 files changed, 611 insertions(+)
- create mode 100644 drivers/soc/fsl/fman/flib/fsl_fman_kg.h
- create mode 100644 drivers/soc/fsl/fman/flib/fsl_fman_prs.h
+ drivers/soc/fsl/fman/flib/fsl_fman_rtc.h |  414 ++++++++++++++++++++++++++++++
+ 1 file changed, 414 insertions(+)
+ create mode 100644 drivers/soc/fsl/fman/flib/fsl_fman_rtc.h
 
-diff --git a/drivers/soc/fsl/fman/flib/fsl_fman_kg.h b/drivers/soc/fsl/fman/flib/fsl_fman_kg.h
+diff --git a/drivers/soc/fsl/fman/flib/fsl_fman_rtc.h b/drivers/soc/fsl/fman/flib/fsl_fman_rtc.h
 new file mode 100644
-index 0000000..782a50b
+index 0000000..a084b11
 --- /dev/null
-+++ b/drivers/soc/fsl/fman/flib/fsl_fman_kg.h
-@@ -0,0 +1,505 @@
++++ b/drivers/soc/fsl/fman/flib/fsl_fman_rtc.h
+@@ -0,0 +1,414 @@
 +/*
 + * Copyright 2008 - 2015 Freescale Semiconductor Inc.
 + *
@@ -69,591 +67,388 @@ index 0000000..782a50b
 + * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 + */
 +
-+#ifndef __FSL_FMAN_KG_H
-+#define __FSL_FMAN_KG_H
++#ifndef __FSL_FMAN_RTC_H
++#define __FSL_FMAN_RTC_H
 +
 +#include "common/general.h"
 +
-+#define FM_KG_NUM_OF_GENERIC_REGS	8 /* Num of generic KeyGen regs */
-+#define FMAN_MAX_NUM_OF_HW_PORTS	64
-+/* Total num of masks allowed on KG extractions */
-+#define FM_KG_EXTRACT_MASKS_NUM		4
-+#define FM_KG_NUM_CLS_PLAN_ENTR		8 /* Num of class. plan regs */
-+#define FM_KG_CLS_PLAN_GRPS_NUM		32 /* Max num of class. groups */
++/* FM RTC Registers definitions */
++#define FMAN_RTC_TMR_CTRL_ALMP1			 0x80000000
++#define FMAN_RTC_TMR_CTRL_ALMP2			 0x40000000
++#define FMAN_RTC_TMR_CTRL_FS			 0x10000000
++#define FMAN_RTC_TMR_CTRL_PP1L			 0x08000000
++#define FMAN_RTC_TMR_CTRL_PP2L			 0x04000000
++#define FMAN_RTC_TMR_CTRL_TCLK_PERIOD_MASK	 0x03FF0000
++#define FMAN_RTC_TMR_CTRL_FRD			 0x00004000
++#define FMAN_RTC_TMR_CTRL_SLV			 0x00002000
++#define FMAN_RTC_TMR_CTRL_ETEP1			 0x00000100
++#define FMAN_RTC_TMR_CTRL_COPH			 0x00000080
++#define FMAN_RTC_TMR_CTRL_CIPH			 0x00000040
++#define FMAN_RTC_TMR_CTRL_TMSR			 0x00000020
++#define FMAN_RTC_TMR_CTRL_DBG			 0x00000010
++#define FMAN_RTC_TMR_CTRL_BYP			 0x00000008
++#define FMAN_RTC_TMR_CTRL_TE			 0x00000004
++#define FMAN_RTC_TMR_CTRL_CKSEL_OSC_CLK		 0x00000003
++#define FMAN_RTC_TMR_CTRL_CKSEL_MAC_CLK		 0x00000001
++#define FMAN_RTC_TMR_CTRL_CKSEL_EXT_CLK		 0x00000000
++#define FMAN_RTC_TMR_CTRL_TCLK_PERIOD_SHIFT	 16
 +
-+struct fman_kg_regs {
-+	uint32_t fmkg_gcr;
-+	uint32_t res004;
-+	uint32_t res008;
-+	uint32_t fmkg_eer;
-+	uint32_t fmkg_eeer;
-+	uint32_t res014;
-+	uint32_t res018;
-+	uint32_t fmkg_seer;
-+	uint32_t fmkg_seeer;
-+	uint32_t fmkg_gsr;
-+	uint32_t fmkg_tpc;
-+	uint32_t fmkg_serc;
-+	uint32_t res030[4];
-+	uint32_t fmkg_fdor;
-+	uint32_t fmkg_gdv0r;
-+	uint32_t fmkg_gdv1r;
-+	uint32_t res04c[6];
-+	uint32_t fmkg_feer;
-+	uint32_t res068[38];
-+	uint32_t fmkg_indirect[63];
-+	uint32_t fmkg_ar;
++#define FMAN_RTC_TMR_TEVENT_ETS2		 0x02000000
++#define FMAN_RTC_TMR_TEVENT_ETS1		 0x01000000
++#define FMAN_RTC_TMR_TEVENT_ALM2		 0x00020000
++#define FMAN_RTC_TMR_TEVENT_ALM1		 0x00010000
++#define FMAN_RTC_TMR_TEVENT_PP1			 0x00000080
++#define FMAN_RTC_TMR_TEVENT_PP2			 0x00000040
++#define FMAN_RTC_TMR_TEVENT_PP3			 0x00000020
++#define FMAN_RTC_TMR_TEVENT_ALL			 (FMAN_RTC_TMR_TEVENT_ETS2 |\
++						FMAN_RTC_TMR_TEVENT_ETS1 |\
++						FMAN_RTC_TMR_TEVENT_ALM2 |\
++						FMAN_RTC_TMR_TEVENT_ALM1 |\
++						FMAN_RTC_TMR_TEVENT_PP1 |\
++						FMAN_RTC_TMR_TEVENT_PP2 |\
++						FMAN_RTC_TMR_TEVENT_PP3)
++
++#define FMAN_RTC_TMR_PRSC_OCK_MASK		 0x0000FFFF
++
++/* FM RTC Alarm Polarity Options. */
++enum fman_rtc_alarm_polarity {
++	FMAN_RTC_ALARM_POLARITY_ACTIVE_HIGH,
++					    /* Active-high output polarity */
++	FMAN_RTC_ALARM_POLARITY_ACTIVE_LOW/* Active-low output polarity */
 +};
 +
-+struct fman_kg_scheme_regs {
-+	uint32_t kgse_mode; /* MODE */
-+	uint32_t kgse_ekfc; /* Extract Known Fields Command */
-+	uint32_t kgse_ekdv; /* Extract Known Default Value */
-+	uint32_t kgse_bmch; /* Bit Mask Command High */
-+	uint32_t kgse_bmcl; /* Bit Mask Command Low */
-+	uint32_t kgse_fqb; /* Frame Queue Base */
-+	uint32_t kgse_hc; /* Hash Command */
-+	uint32_t kgse_ppc; /* Policer Profile Command */
-+	uint32_t kgse_gec[FM_KG_NUM_OF_GENERIC_REGS];
-+				/* Generic Extract Command */
-+	uint32_t kgse_spc; /* KeyGen Scheme Entry Statistic Packet Counter */
-+	uint32_t kgse_dv0; /* KeyGen Scheme Entry Default Value 0 */
-+	uint32_t kgse_dv1; /* KeyGen Scheme Entry Default Value 1 */
-+	uint32_t kgse_ccbs; /* KeyGen Scheme Entry Coarse Classification Bit*/
-+	uint32_t kgse_mv; /* KeyGen Scheme Entry Match vector */
-+	uint32_t kgse_om; /* KeyGen Scheme Entry Operation Mode bits */
-+	uint32_t kgse_vsp; /* KeyGen Scheme Entry Virtual Storage Profile */
++/* FM RTC Trigger Polarity Options. */
++enum fman_rtc_trigger_polarity {
++	FMAN_RTC_TRIGGER_ON_RISING_EDGE,/* Trigger on rising edge */
++	FMAN_RTC_TRIGGER_ON_FALLING_EDGE/* Trigger on falling edge */
 +};
 +
-+struct fman_kg_pe_regs {
-+	uint32_t fmkg_pe_sp;
-+	uint32_t fmkg_pe_cpp;
++/* IEEE1588 Timer Module FM RTC Optional Clock Sources. */
++enum fman_src_clock {
++	FMAN_RTC_SOURCE_CLOCK_EXTERNAL,
++				       /* external high precision timer
++					* reference clock
++					*/
++	FMAN_RTC_SOURCE_CLOCK_SYSTEM,/* MAC system clock */
++	FMAN_RTC_SOURCE_CLOCK_OSCILATOR
++				       /* RTC clock oscilator */
 +};
 +
-+struct fman_kg_cp_regs {
-+	uint32_t kgcpe[FM_KG_NUM_CLS_PLAN_ENTR];
++/* RTC default values */
++#define DEFAULT_SRC_CLOCK		 FMAN_RTC_SOURCE_CLOCK_SYSTEM
++#define DEFAULT_INVERT_INPUT_CLK_PHASE	 false
++#define DEFAULT_INVERT_OUTPUT_CLK_PHASE	 false
++#define DEFAULT_ALARM_POLARITY		 FMAN_RTC_ALARM_POLARITY_ACTIVE_HIGH
++#define DEFAULT_TRIGGER_POLARITY	 FMAN_RTC_TRIGGER_ON_FALLING_EDGE
++#define DEFAULT_PULSE_REALIGN		 false
++
++#define FMAN_RTC_MAX_NUM_OF_ALARMS 3
++#define FMAN_RTC_MAX_NUM_OF_PERIODIC_PULSES 4
++#define FMAN_RTC_MAX_NUM_OF_EXT_TRIGGERS 3
++
++/*  FM RTC timer alarm */
++struct tmr_alarm_t {
++	uint32_t tmr_alarm_h;  /*  */
++	uint32_t tmr_alarm_l;  /*  */
 +};
 +
-+#define FM_KG_KGAR_GO				0x80000000
-+#define FM_KG_KGAR_READ				0x40000000
-+#define FM_KG_KGAR_WRITE			0x00000000
-+#define FM_KG_KGAR_SEL_SCHEME_ENTRY		0x00000000
-+#define FM_KG_KGAR_SCM_WSEL_UPDATE_CNT		0x00008000
-+
-+#define KG_SCH_PP_SHIFT_HIGH			0x80000000
-+#define KG_SCH_PP_NO_GEN			0x10000000
-+#define KG_SCH_PP_SHIFT_LOW			0x0000F000
-+#define KG_SCH_MODE_NIA_PLCR			0x40000000
-+#define KG_SCH_GEN_EXTRACT_TYPE			0x00008000
-+#define KG_SCH_BITMASK_MASK			0x000000FF
-+#define KG_SCH_GEN_VALID			0x80000000
-+#define KG_SCH_GEN_MASK				0x00FF0000
-+#define FM_PCD_KG_KGAR_ERR			0x20000000
-+#define FM_PCD_KG_KGAR_SEL_CLS_PLAN_ENTRY	0x01000000
-+#define FM_PCD_KG_KGAR_SEL_PORT_ENTRY		0x02000000
-+#define FM_PCD_KG_KGAR_SEL_PORT_WSEL_SP		0x00008000
-+#define FM_PCD_KG_KGAR_SEL_PORT_WSEL_CPP	0x00004000
-+#define FM_PCD_KG_KGAR_WSEL_MASK		0x0000FF00
-+#define KG_SCH_HASH_CONFIG_NO_FQID		0x80000000
-+#define KG_SCH_HASH_CONFIG_SYM			0x40000000
-+
-+#define FM_EX_KG_DOUBLE_ECC			0x80000000
-+#define FM_EX_KG_KEYSIZE_OVERFLOW		0x40000000
-+
-+/* ECC capture register */
-+#define KG_FMKG_SERC_CAP			0x80000000
-+#define KG_FMKG_SERC_CET			0x40000000
-+#define KG_FMKG_SERC_CNT_MSK			0x00FF0000
-+#define KG_FMKG_SERC_CNT_SHIFT			16
-+#define KG_FMKG_SERC_ADDR_MSK			0x000003FF
-+
-+/* Masks */
-+#define FM_KG_KGGCR_EN				0x80000000
-+#define KG_SCH_GEN_VALID			0x80000000
-+#define KG_SCH_GEN_EXTRACT_TYPE			0x00008000
-+#define KG_ERR_TYPE_DOUBLE			0x40000000
-+#define KG_ERR_ADDR_MASK			0x00000FFF
-+#define KG_SCH_MODE_EN				0x80000000
-+
-+/* shifts */
-+#define FM_KG_KGAR_NUM_SHIFT			16
-+#define FM_KG_PE_CPP_MASK_SHIFT			16
-+#define FM_KG_KGAR_WSEL_SHIFT			8
-+
-+#define FM_KG_SCH_GEN_HT_INVALID		0
-+
-+#define FM_KG_MASK_SEL_GEN_BASE			0x20
-+
-+#define KG_GET_MASK_SEL_SHIFT(shift, i) do {\
-+switch (i) {				\
-+case 0: \
-+	(shift) = 26; \
-+		  break;	\
-+case 1: \
-+	(shift) = 20; break;	\
-+case 2: \
-+	(shift) = 10; break;	\
-+case 3: \
-+	(shift) = 4; break;	\
-+default: \
-+	(shift) = 0;		\
-+} \
-+} while (0)
-+
-+#define KG_GET_MASK_OFFSET_SHIFT(shift, i) do {\
-+switch (i) {				\
-+case 0: \
-+	(shift) = 16; break;	\
-+case 1: \
-+	(shift) = 0; break;	\
-+case 2: \
-+	(shift) = 28; break;	\
-+case 3: \
-+	(shift) = 24; break;	\
-+default: \
-+	(shift) = 0;		\
-+} \
-+} while (0)
-+
-+#define KG_GET_MASK_SHIFT(shift, i) do {\
-+switch (i) {				\
-+case 0: \
-+	shift = 24; break;	\
-+case 1: \
-+	shift = 16; break;	\
-+case 2: \
-+	shift = 8;  break;	\
-+case 3: \
-+	shift = 0;  break;	\
-+default: \
-+	shift = 0;		\
-+} \
-+} while (0)
-+
-+/* Port entry CPP register */
-+#define FMAN_KG_PE_CPP_MASK_SHIFT	16
-+
-+/* Scheme registers */
-+#define FMAN_KG_SCH_MODE_EN		0x80000000
-+#define FMAN_KG_SCH_MODE_NIA_PLCR	0x40000000
-+#define FMAN_KG_SCH_MODE_CCOBASE_SHIFT	24
-+
-+#define FMAN_KG_SCH_DEF_MAC_ADDR_SHIFT	30
-+#define FMAN_KG_SCH_DEF_VLAN_TCI_SHIFT	28
-+#define FMAN_KG_SCH_DEF_ETYPE_SHIFT	26
-+#define FMAN_KG_SCH_DEF_PPP_SID_SHIFT	24
-+#define FMAN_KG_SCH_DEF_PPP_PID_SHIFT	22
-+#define FMAN_KG_SCH_DEF_MPLS_SHIFT	20
-+#define FMAN_KG_SCH_DEF_IP_ADDR_SHIFT	18
-+#define FMAN_KG_SCH_DEF_PTYPE_SHIFT	16
-+#define FMAN_KG_SCH_DEF_IP_TOS_TC_SHIFT	14
-+#define FMAN_KG_SCH_DEF_IPV6_FL_SHIFT	12
-+#define FMAN_KG_SCH_DEF_IPSEC_SPI_SHIFT	10
-+#define FMAN_KG_SCH_DEF_L4_PORT_SHIFT	8
-+#define FMAN_KG_SCH_DEF_TCP_FLG_SHIFT	6
-+
-+#define FMAN_KG_SCH_GEN_VALID		0x80000000
-+#define FMAN_KG_SCH_GEN_SIZE_MAX	16
-+#define FMAN_KG_SCH_GEN_OR		0x00008000
-+
-+#define FMAN_KG_SCH_GEN_DEF_SHIFT	29
-+#define FMAN_KG_SCH_GEN_SIZE_SHIFT	24
-+#define FMAN_KG_SCH_GEN_MASK_SHIFT	16
-+#define FMAN_KG_SCH_GEN_HT_SHIFT	8
-+
-+#define FMAN_KG_SCH_HASH_HSHIFT_SHIFT	24
-+#define FMAN_KG_SCH_HASH_HSHIFT_MAX	0x28
-+#define FMAN_KG_SCH_HASH_SYM		0x40000000
-+#define FMAN_KG_SCH_HASH_NO_FQID_GEN	0x80000000
-+
-+#define FMAN_KG_SCH_PP_SH_SHIFT		27
-+#define FMAN_KG_SCH_PP_SL_SHIFT		12
-+#define FMAN_KG_SCH_PP_SH_MASK		0x80000000
-+#define FMAN_KG_SCH_PP_SL_MASK		0x0000F000
-+#define FMAN_KG_SCH_PP_SHIFT_MAX	0x17
-+#define FMAN_KG_SCH_PP_MASK_SHIFT	16
-+#define FMAN_KG_SCH_PP_NO_GEN		0x10000000
-+
-+enum fman_kg_gen_extract_src {
-+	E_FMAN_KG_GEN_EXTRACT_ETH,
-+	E_FMAN_KG_GEN_EXTRACT_ETYPE,
-+	E_FMAN_KG_GEN_EXTRACT_SNAP,
-+	E_FMAN_KG_GEN_EXTRACT_VLAN_TCI_1,
-+	E_FMAN_KG_GEN_EXTRACT_VLAN_TCI_N,
-+	E_FMAN_KG_GEN_EXTRACT_PPPOE,
-+	E_FMAN_KG_GEN_EXTRACT_MPLS_1,
-+	E_FMAN_KG_GEN_EXTRACT_MPLS_2,
-+	E_FMAN_KG_GEN_EXTRACT_MPLS_3,
-+	E_FMAN_KG_GEN_EXTRACT_MPLS_N,
-+	E_FMAN_KG_GEN_EXTRACT_IPV4_1,
-+	E_FMAN_KG_GEN_EXTRACT_IPV6_1,
-+	E_FMAN_KG_GEN_EXTRACT_IPV4_2,
-+	E_FMAN_KG_GEN_EXTRACT_IPV6_2,
-+	E_FMAN_KG_GEN_EXTRACT_MINENCAP,
-+	E_FMAN_KG_GEN_EXTRACT_IP_PID,
-+	E_FMAN_KG_GEN_EXTRACT_GRE,
-+	E_FMAN_KG_GEN_EXTRACT_TCP,
-+	E_FMAN_KG_GEN_EXTRACT_UDP,
-+	E_FMAN_KG_GEN_EXTRACT_SCTP,
-+	E_FMAN_KG_GEN_EXTRACT_DCCP,
-+	E_FMAN_KG_GEN_EXTRACT_IPSEC_AH,
-+	E_FMAN_KG_GEN_EXTRACT_IPSEC_ESP,
-+	E_FMAN_KG_GEN_EXTRACT_SHIM_1,
-+	E_FMAN_KG_GEN_EXTRACT_SHIM_2,
-+	E_FMAN_KG_GEN_EXTRACT_FROM_DFLT,
-+	E_FMAN_KG_GEN_EXTRACT_FROM_FRAME_START,
-+	E_FMAN_KG_GEN_EXTRACT_FROM_PARSE_RESULT,
-+	E_FMAN_KG_GEN_EXTRACT_FROM_END_OF_PARSE,
-+	E_FMAN_KG_GEN_EXTRACT_FROM_FQID
++/* FM RTC timer Ex trigger */
++struct tmr_ext_trigger_t {
++	uint32_t tmr_etts_h;   /*  */
++	uint32_t tmr_etts_l;   /*  */
 +};
 +
-+struct fman_kg_ex_ecc_attr {
-+	bool valid;
-+	bool double_ecc;
-+	uint16_t addr;
-+	uint8_t single_ecc_count;
++struct rtc_regs {
++	uint32_t tmr_id;	/* 0x000 Module ID register */
++	uint32_t tmr_id2;	/* 0x004 Controller ID register */
++	uint32_t reserved0008[30];
++	uint32_t tmr_ctrl;	/* 0x0080 timer control register */
++	uint32_t tmr_tevent;	/* 0x0084 timer event register */
++	uint32_t tmr_temask;	/* 0x0088 timer event mask register */
++	uint32_t reserved008c[3];
++	uint32_t tmr_cnt_h;	/* 0x0098 timer counter high register */
++	uint32_t tmr_cnt_l;	/* 0x009c timer counter low register */
++	/* 0x00a0 timer drift compensation addend register */
++	uint32_t tmr_add;
++	uint32_t tmr_acc;	/* 0x00a4 timer accumulator register */
++	uint32_t tmr_prsc;	/* 0x00a8 timer prescale */
++	uint32_t reserved00ac;
++	uint32_t tmr_off_h;	/* 0x00b0 timer offset high */
++	uint32_t tmr_off_l;	/* 0x00b4 timer offset low  */
++	/* 0x00b8 timer alarm */
++	struct tmr_alarm_t tmr_alarm[FMAN_RTC_MAX_NUM_OF_ALARMS];
++	/* 0x00d0 timer fixed period interval */
++	uint32_t tmr_fiper[FMAN_RTC_MAX_NUM_OF_PERIODIC_PULSES];
++	struct tmr_ext_trigger_t tmr_etts[FMAN_RTC_MAX_NUM_OF_EXT_TRIGGERS];
++	/* 0x00e0 time stamp general purpose external */
++	uint32_t reserved00f0[4];
 +};
 +
-+enum fman_kg_def_select {
-+	E_FMAN_KG_DEF_GLOBAL_0,
-+	E_FMAN_KG_DEF_GLOBAL_1,
-+	E_FMAN_KG_DEF_SCHEME_0,
-+	E_FMAN_KG_DEF_SCHEME_1
++struct rtc_cfg {
++	enum fman_src_clock src_clk;
++	uint32_t ext_src_clk_freq;
++	uint32_t rtc_freq_hz;
++	bool timer_slave_mode;
++	bool invert_input_clk_phase;
++	bool invert_output_clk_phase;
++	uint32_t events_mask;
++	bool bypass;		    /* Indicates if frequency compensation
++				     * is bypassed
++				     */
++	bool pulse_realign;
++	enum fman_rtc_alarm_polarity alarm_polarity[FMAN_RTC_MAX_NUM_OF_ALARMS];
++	enum fman_rtc_trigger_polarity trigger_polarity
++	    [FMAN_RTC_MAX_NUM_OF_EXT_TRIGGERS];
 +};
 +
-+struct fman_kg_extract_def {
-+	enum fman_kg_def_select mac_addr;
-+	enum fman_kg_def_select vlan_tci;
-+	enum fman_kg_def_select etype;
-+	enum fman_kg_def_select ppp_sid;
-+	enum fman_kg_def_select ppp_pid;
-+	enum fman_kg_def_select mpls;
-+	enum fman_kg_def_select ip_addr;
-+	enum fman_kg_def_select ptype;
-+	enum fman_kg_def_select ip_tos_tc;
-+	enum fman_kg_def_select ipv6_fl;
-+	enum fman_kg_def_select ipsec_spi;
-+	enum fman_kg_def_select l4_port;
-+	enum fman_kg_def_select tcp_flg;
-+};
++/* fman_rtc_defconfig() - Get default RTC configuration
++ * cfg:	pointer to configuration structure.
++ * Call this function to obtain a default set of configuration values for
++ * initializing RTC.  The user can overwrite any of the values before calling
++ * fman_rtc_init(), if specific configuration needs to be applied.
++ */
++void fman_rtc_defconfig(struct rtc_cfg *cfg);
 +
-+enum fman_kg_gen_extract_type {
-+	E_FMAN_KG_HASH_EXTRACT,
-+	E_FMAN_KG_OR_EXTRACT
-+};
++/* fman_rtc_get_events() - Get the events
++ * regs:		Pointer to RTC register block
++ * Returns: The events
++ */
++uint32_t fman_rtc_get_events(struct rtc_regs __iomem *regs);
 +
-+struct fman_kg_gen_extract_params {
-+	/* Hash or Or-ed extract */
-+	enum fman_kg_gen_extract_type type;
-+	enum fman_kg_gen_extract_src src;
-+	bool no_validation;
-+	/* Extraction offset from the header location specified above */
-+	uint8_t offset;
-+	/* Size of extraction for FMAN_KG_HASH_EXTRACT,
-+	 * hash result shift for FMAN_KG_OR_EXTRACT
-+	 */
-+	uint8_t extract;
-+	uint8_t mask;
-+	/* Default value to use when header specified
-+	 * by fman_kg_gen_extract_src doesn't present
-+	 */
-+	enum fman_kg_def_select def_val;
-+};
++/* fman_rtc_get_interrupt_mask() - Get the events mask
++ * regs:		Pointer to RTC register block
++ * Returns: The events mask
++ */
++uint32_t fman_rtc_get_interrupt_mask(struct rtc_regs __iomem *regs);
 +
-+struct fman_kg_extract_mask {
-+	/* Indication if mask is on known field extraction or
-+	 * on general extraction; true for known field
-+	 */
-+	bool is_known;
-+	/* One of FMAN_KG_EXTRACT_xxx defines for known fields mask and
-+	 * generic register index for generic extracts mask
-+	 */
-+	uint32_t field_or_gen_idx;
-+	/* Byte offset from start of the extracted data specified
-+	 * by field_or_gen_idx
-+	 */
-+	uint8_t offset;
-+	/* Byte mask (selected bits will be used) */
-+	uint8_t mask;
-+};
++/* fman_rtc_set_interrupt_mask() - Set the events mask
++ * regs:		Pointer to RTC register block
++ * mask:		The mask to set
++ */
++void fman_rtc_set_interrupt_mask(struct rtc_regs __iomem *regs, uint32_t mask);
 +
-+struct fman_kg_extract_params {
-+	/* Or-ed mask of FMAN_KG_EXTRACT_xxx defines */
-+	uint32_t known_fields;
-+	struct fman_kg_extract_def known_fields_def;
-+	/* Number of entries in gen_extract */
-+	uint8_t gen_extract_num;
-+	struct fman_kg_gen_extract_params
-+	    gen_extract[FM_KG_NUM_OF_GENERIC_REGS];
-+	/* Number of entries in masks */
-+	uint8_t masks_num;
-+	struct fman_kg_extract_mask masks[FM_KG_EXTRACT_MASKS_NUM];
-+	uint32_t def_scheme_0;
-+	uint32_t def_scheme_1;
-+};
++/* fman_rtc_get_event() - Check if specific events occurred
++ * regs:		Pointer to RTC register block
++ * ev_mask:	a mask of the events to check
++ * Returns: 0 if the events did not occur.
++ * Non zero if one of the events occurred
++ */
++uint32_t fman_rtc_get_event(struct rtc_regs __iomem *regs, uint32_t ev_mask);
 +
-+struct fman_kg_hash_params {
-+	bool use_hash;
-+	uint8_t shift_r;
-+	uint32_t mask;	      /* 24-bit mask */
-+	bool sym;	     /* Symmetric hash for src and dest pairs */
-+};
++/* fman_rtc_check_and_clear_event() - Clear events which are on
++ * regs:		Pointer to RTC register block
++ * Returns: A mask of the events which were cleared
++ */
++uint32_t fman_rtc_check_and_clear_event(struct rtc_regs __iomem *regs);
 +
-+struct fman_kg_pp_params {
-+	uint8_t base;
-+	uint8_t shift;
-+	uint8_t mask;
-+	bool bypass_pp_gen;
-+};
++/* fman_rtc_ack_event() - Clear events
++ * regs:		Pointer to RTC register block
++ * events:		The events to disable
++ */
++void fman_rtc_ack_event(struct rtc_regs __iomem *regs, uint32_t events);
 +
-+struct fman_kg_cc_params {
-+	uint8_t base_offset;
-+	uint32_t qlcv_bits_sel;
-+};
++/* fman_rtc_enable_interrupt() - Enable events interrupts
++ * regs:		Pointer to RTC register block
++ * mask:		The events to disable
++ */
++void fman_rtc_enable_interrupt(struct rtc_regs __iomem *regs, uint32_t mask);
 +
-+enum fman_pcd_engine {
-+	E_FMAN_PCD_INVALID = 0,	/* Invalid PCD engine indicated*/
-+	E_FMAN_PCD_DONE,	/* No PCD Engine indicated */
-+	E_FMAN_PCD_KG,		/* Keygen indicated */
-+	E_FMAN_PCD_CC,		/* Coarse classification indicated */
-+	E_FMAN_PCD_PLCR,	/* Policer indicated */
-+	E_FMAN_PCD_PRS		/* Parser indicated */
-+};
++/* fman_rtc_disable_interrupt() - Disable events interrupts
++ * regs:		Pointer to RTC register block
++ * mask:		The events to disable
++ */
++void fman_rtc_disable_interrupt(struct rtc_regs __iomem *regs, uint32_t mask);
 +
-+struct fman_kg_cls_plan_params {
-+	uint8_t entries_mask;
-+	uint32_t mask_vector[FM_KG_NUM_CLS_PLAN_ENTR];
-+};
++/* fman_rtc_get_timer_ctrl() - Get the control register
++ * regs:		Pointer to RTC register block
++ * Returns: The control register value
++ */
++uint32_t fman_rtc_get_timer_ctrl(struct rtc_regs __iomem *regs);
 +
-+struct fman_kg_scheme_params {
-+	uint32_t match_vector;
-+	struct fman_kg_extract_params extract_params;
-+	struct fman_kg_hash_params hash_params;
-+	uint32_t base_fqid;
-+	/* What we do w/features supported per FM version ?? */
-+	bool bypass_fqid_gen;
-+	struct fman_kg_pp_params policer_params;
-+	struct fman_kg_cc_params cc_params;
-+	bool update_counter;
-+	/* counter_value: Set scheme counter to the specified value;
-+	 * relevant only when update_counter = true.
-+	 */
-+	uint32_t counter_value;
-+	enum fman_pcd_engine next_engine;
-+	/* Next engine action code */
-+	uint32_t next_engine_action;
-+};
++/* fman_rtc_set_timer_ctrl() - Set timer control register
++ * regs:		Pointer to RTC register block
++ * val:		The value to set
++ */
++void fman_rtc_set_timer_ctrl(struct rtc_regs __iomem *regs, uint32_t val);
 +
-+int fman_kg_write_ar_wait(struct fman_kg_regs __iomem *regs, uint32_t fmkg_ar);
-+void fman_kg_write_sp(struct fman_kg_regs __iomem *regs, uint32_t sp, bool add);
-+void fman_kg_write_cpp(struct fman_kg_regs __iomem *regs, uint32_t cpp);
-+void fman_kg_get_event(struct fman_kg_regs __iomem *regs,
-+		       uint32_t *event, uint32_t *scheme_idx);
-+void fman_kg_init(struct fman_kg_regs __iomem *regs,
-+		  uint32_t exceptions, uint32_t dflt_nia);
-+void fman_kg_enable_scheme_interrupts(struct fman_kg_regs __iomem *regs);
-+void fman_kg_enable(struct fman_kg_regs __iomem *regs);
-+void fman_kg_disable(struct fman_kg_regs __iomem *regs);
-+int fman_kg_write_bind_cls_plans(struct fman_kg_regs __iomem *regs,
-+				 uint8_t hwport_id, uint32_t bind_cls_plans);
-+int fman_kg_build_bind_cls_plans(uint8_t grp_base,
-+				 uint8_t grp_mask, uint32_t *bind_cls_plans);
-+int fman_kg_write_bind_schemes(struct fman_kg_regs __iomem *regs,
-+			       uint8_t hwport_id, uint32_t schemes);
-+int fman_kg_write_cls_plan(struct fman_kg_regs __iomem *regs,
-+			   uint8_t grp_id,
-+			   uint8_t entries_mask,
-+			   uint8_t hwport_id,
-+			   struct fman_kg_cp_regs __iomem *cls_plan_regs);
-+int fman_kg_build_cls_plan(struct fman_kg_cls_plan_params *params,
-+			   struct fman_kg_cp_regs *cls_plan_regs);
-+uint32_t fman_kg_get_schemes_total_counter(struct fman_kg_regs __iomem *regs);
-+int fman_kg_set_scheme_counter(struct fman_kg_regs __iomem *regs,
-+			       uint8_t scheme_id,
-+			       uint8_t hwport_id, uint32_t counter);
-+int fman_kg_get_scheme_counter(struct fman_kg_regs __iomem *regs,
-+			       uint8_t scheme_id,
-+			       uint8_t hwport_id, uint32_t *counter);
-+int fman_kg_delete_scheme(struct fman_kg_regs __iomem *regs,
-+			  uint8_t scheme_id, uint8_t hwport_id);
-+int fman_kg_write_scheme(struct fman_kg_regs __iomem *regs,
-+			 uint8_t scheme_id,
-+			 uint8_t hwport_id,
-+			 struct fman_kg_scheme_regs *scheme_regs,
-+			 bool update_counter);
-+int fman_kg_build_scheme(struct fman_kg_scheme_params *params,
-+			 struct fman_kg_scheme_regs *scheme_regs);
-+void fman_kg_get_capture(struct fman_kg_regs __iomem *regs,
-+			 struct fman_kg_ex_ecc_attr *ecc_attr, bool clear);
-+void fman_kg_get_exception(struct fman_kg_regs __iomem *regs,
-+			   uint32_t *events,
-+			   uint32_t *scheme_ids, bool clear);
-+void fman_kg_set_exception(struct fman_kg_regs __iomem *regs,
-+			   uint32_t exception, bool enable);
-+void fman_kg_set_dflt_val(struct fman_kg_regs __iomem *regs,
-+			  uint8_t def_id, uint32_t val);
-+void fman_kg_set_data_after_prs(struct fman_kg_regs __iomem *regs,
-+				uint8_t offset);
++/* fman_rtc_get_frequency_compensation() - Get the frequency compensation
++ * regs:		Pointer to RTC register block
++ *
++ * Returns: The timer counter
++ */
++uint32_t fman_rtc_get_frequency_compensation(struct rtc_regs __iomem *regs);
 +
-+/* NIA Description */
-+#define KG_NIA_ORDER_RESTOR	0x00800000
-+#define KG_NIA_ENG_FM_CTL	0x00000000
-+#define KG_NIA_ENG_PRS		0x00440000
-+#define KG_NIA_ENG_KG		0x00480000
-+#define KG_NIA_ENG_PLCR		0x004C0000
-+#define KG_NIA_ENG_BMI		0x00500000
-+#define KG_NIA_ENG_QMI_ENQ	0x00540000
-+#define KG_NIA_ENG_QMI_DEQ	0x00580000
-+#define KG_NIA_ENG_MASK		0x007C0000
++/* fman_rtc_set_frequency_compensation() - Set frequency compensation
++ * regs:		Pointer to RTC register block
++ * val:		The value to set
++ */
++void fman_rtc_set_frequency_compensation(struct rtc_regs __iomem *regs,
++					 uint32_t val);
 +
-+#define KG_NIA_AC_MASK		0x0003FFFF
++/* fman_rtc_get_trigger_stamp() - Get a trigger stamp
++ * regs:		Pointer to RTC register block
++ * id:	The id of the trigger stamp
++ *
++ * Returns: The time stamp
++ */
++uint64_t fman_rtc_get_trigger_stamp(struct rtc_regs __iomem *regs, int id);
 +
-+#define KG_NIA_INVALID		0xFFFFFFFF
++/* fman_rtc_set_timer_alarm_l() - Set timer alarm low register
++ * regs:		Pointer to RTC register block
++ * index:		The index of alarm to set
++ * val:		The value to set
++ */
++void fman_rtc_set_timer_alarm_l(struct rtc_regs __iomem *regs, int index,
++				uint32_t val);
 +
-+static inline uint32_t fm_kg_build_nia(enum fman_pcd_engine next_engine,
-+				       uint32_t next_engine_action)
++/* fman_rtc_set_timer_alarm() - Set timer alarm
++ * regs:		Pointer to RTC register block
++ * index:		The index of alarm to set
++ * val:		The value to set
++ */
++void fman_rtc_set_timer_alarm(struct rtc_regs __iomem *regs, int index,
++			      int64_t val);
++
++/* fman_rtc_set_timer_fiper() - Set timer fiper
++ * regs:		Pointer to RTC register block
++ * index:		The index of fiper to set
++ * val:		The value to set
++ */
++void fman_rtc_set_timer_fiper(struct rtc_regs __iomem *regs, int index,
++			      uint32_t val);
++
++/* fman_rtc_set_timer_offset() - Set timer offset
++ * regs:		Pointer to RTC register block
++ * val:		The value to set
++ */
++void fman_rtc_set_timer_offset(struct rtc_regs __iomem *regs, int64_t val);
++
++/* fman_rtc_get_timer() - Get the timer counter
++ * regs:		Pointer to RTC register block
++ * Returns: The timer counter
++ */
++static inline uint64_t fman_rtc_get_timer(struct rtc_regs __iomem *regs)
 +{
-+	uint32_t nia;
++	uint64_t time;
++	/* TMR_CNT_L must be read first to get an accurate value */
++	time = (uint64_t)ioread32be(&regs->tmr_cnt_l);
++	time |= ((uint64_t)ioread32be(&regs->tmr_cnt_h) << 32);
 +
-+	if (next_engine_action & ~KG_NIA_AC_MASK)
-+		return KG_NIA_INVALID;
-+
-+	switch (next_engine) {
-+	case E_FMAN_PCD_DONE:
-+		nia = KG_NIA_ENG_BMI | next_engine_action;
-+		break;
-+
-+	case E_FMAN_PCD_KG:
-+		nia = KG_NIA_ENG_KG | next_engine_action;
-+		break;
-+
-+	case E_FMAN_PCD_CC:
-+		nia = KG_NIA_ENG_FM_CTL | next_engine_action;
-+		break;
-+
-+	case E_FMAN_PCD_PLCR:
-+		nia = KG_NIA_ENG_PLCR | next_engine_action;
-+		break;
-+
-+	default:
-+		nia = KG_NIA_INVALID;
-+	}
-+
-+	return nia;
++	return time;
 +}
 +
-+#endif	/* __FSL_FMAN_KG_H */
-diff --git a/drivers/soc/fsl/fman/flib/fsl_fman_prs.h b/drivers/soc/fsl/fman/flib/fsl_fman_prs.h
-new file mode 100644
-index 0000000..b08188a
---- /dev/null
-+++ b/drivers/soc/fsl/fman/flib/fsl_fman_prs.h
-@@ -0,0 +1,106 @@
-+/*
-+ * Copyright 2008 - 2015 Freescale Semiconductor Inc.
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions are met:
-+ *     * Redistributions of source code must retain the above copyright
-+ *	 notice, this list of conditions and the following disclaimer.
-+ *     * Redistributions in binary form must reproduce the above copyright
-+ *	 notice, this list of conditions and the following disclaimer in the
-+ *	 documentation and/or other materials provided with the distribution.
-+ *     * Neither the name of Freescale Semiconductor nor the
-+ *	 names of its contributors may be used to endorse or promote products
-+ *	 derived from this software without specific prior written permission.
-+ *
-+ * ALTERNATIVELY, this software may be distributed under the terms of the
-+ * GNU General Public License ("GPL") as published by the Free Software
-+ * Foundation, either version 2 of that License or (at your option) any
-+ * later version.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
-+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++/* fman_rtc_set_timer() - Set timer counter
++ * regs:		Pointer to RTC register block
++ * val:		The value to set
 + */
++static inline void fman_rtc_set_timer(struct rtc_regs __iomem *regs,
++				      int64_t val)
++{
++	iowrite32be((uint32_t)val, &regs->tmr_cnt_l);
++	iowrite32be((uint32_t)(val >> 32), &regs->tmr_cnt_h);
++}
 +
-+#ifndef __FSL_FMAN_PRS_H
-+#define __FSL_FMAN_PRS_H
++/* fman_rtc_timers_soft_reset() - Soft reset
++ * regs:		Pointer to RTC register block
++ * Resets all the timer registers and state machines for the 1588 IP and
++ * the attached client 1588
++ */
++void fman_rtc_timers_soft_reset(struct rtc_regs __iomem *regs);
 +
-+#include "common/general.h"
++/* fman_rtc_clear_external_trigger() - Clear an external trigger
++ * regs:		Pointer to RTC register block
++ * id: The id of the trigger to clear
++ */
++void fman_rtc_clear_external_trigger(struct rtc_regs __iomem *regs, int id);
 +
-+#define FM_PCD_EX_PRS_DOUBLE_ECC	0x02000000
-+#define FM_PCD_EX_PRS_SINGLE_ECC	0x01000000
++/* fman_rtc_clear_periodic_pulse() - Clear periodic pulse
++ * regs:		Pointer to RTC register block
++ * id: The id of the fiper to clear
++ */
++void fman_rtc_clear_periodic_pulse(struct rtc_regs __iomem *regs, int id);
 +
-+#define FM_PCD_PRS_PPSC_ALL_PORTS	0xffff0000
-+#define FM_PCD_PRS_RPIMAC_EN		0x00000001
-+#define FM_PCD_PRS_PORT_IDLE_STS	0xffff0000
-+#define FM_PCD_PRS_SINGLE_ECC		0x00004000
-+#define FM_PCD_PRS_DOUBLE_ECC		0x00004000
-+#define PRS_MAX_CYCLE_LIMIT		8191
++/* fman_rtc_enable() - Enable RTC hardware block
++ * regs:		Pointer to RTC register block
++ */
++void fman_rtc_enable(struct rtc_regs __iomem *regs, bool reset_clock);
 +
-+#define DEFAULT_MAX_PRS_CYC_LIM		0
++/* fman_rtc_is_enabled() - Is RTC hardware block enabled
++ * regs:		Pointer to RTC register block
++ * Return: true if enabled
++ */
++bool fman_rtc_is_enabled(struct rtc_regs __iomem *regs);
 +
-+struct fman_prs_regs {
-+	uint32_t fmpr_rpclim;
-+	uint32_t fmpr_rpimac;
-+	uint32_t pmeec;
-+	uint32_t res00c[5];
-+	uint32_t fmpr_pevr;
-+	uint32_t fmpr_pever;
-+	uint32_t res028;
-+	uint32_t fmpr_perr;
-+	uint32_t fmpr_perer;
-+	uint32_t res034;
-+	uint32_t res038[10];
-+	uint32_t fmpr_ppsc;
-+	uint32_t res064;
-+	uint32_t fmpr_pds;
-+	uint32_t fmpr_l2rrs;
-+	uint32_t fmpr_l3rrs;
-+	uint32_t fmpr_l4rrs;
-+	uint32_t fmpr_srrs;
-+	uint32_t fmpr_l2rres;
-+	uint32_t fmpr_l3rres;
-+	uint32_t fmpr_l4rres;
-+	uint32_t fmpr_srres;
-+	uint32_t fmpr_spcs;
-+	uint32_t fmpr_spscs;
-+	uint32_t fmpr_hxscs;
-+	uint32_t fmpr_mrcs;
-+	uint32_t fmpr_mwcs;
-+	uint32_t fmpr_mrscs;
-+	uint32_t fmpr_mwscs;
-+	uint32_t fmpr_fcscs;
++/* fman_rtc_disable() - Disable RTC hardware block
++ * regs:		Pointer to RTC register block
++ */
++void fman_rtc_disable(struct rtc_regs __iomem *regs);
++
++/* fman_rtc_init() - Init RTC hardware block
++ * cfg:		RTC configuration data
++ * regs:		Pointer to RTC register block
++ * num_alarms:		Number of alarms in RTC
++ * num_fipers:		Number of fipers in RTC
++ * num_ext_triggers:	Number of external triggers in RTC
++ * freq_compensation:		Frequency compensation
++ * output_clock_divisor:		Output clock divisor
++ * This function initializes RTC and applies basic configuration.
++ */
++void fman_rtc_init(struct rtc_cfg *cfg, struct rtc_regs __iomem *regs,
++		   int num_alarms, int num_fipers, int num_ext_triggers,
++		   bool init_freq_comp, uint32_t freq_compensation,
++		   uint32_t output_clock_divisor);
++
++/* fman_rtc_set_alarm() - Set an alarm
++ * regs:		Pointer to RTC register block
++ * id:			id of alarm
++ * val:		value to write
++ * enable:		should interrupt be enabled
++ */
++void fman_rtc_set_alarm(struct rtc_regs __iomem *regs, int id, uint32_t val,
++			bool enable);
++
++/* fman_rtc_set_periodic_pulse() - Set an alarm
++ * regs:		Pointer to RTC register block
++ * id:			id of fiper
++ * val:		value to write
++ * enable:		should interrupt be enabled
++ */
++void fman_rtc_set_periodic_pulse(struct rtc_regs __iomem *regs, int id,
++				 uint32_t val, bool enable);
++
++/* fman_rtc_set_ext_trigger() - Set an external trigger
++ * regs:		Pointer to RTC register block
++ * id:			id of trigger
++ * enable:		should interrupt be enabled
++ * use_pulse_as_input: use the pulse as input
++ */
++void fman_rtc_set_ext_trigger(struct rtc_regs __iomem *regs, int id,
++			      bool enable, bool use_pulse_as_input);
++
++struct fm_rtc_alarm_params {
++	uint8_t alarm_id;		/* 0 or 1 */
++	uint64_t alarm_time;		/* In nanoseconds, the time when the
++					 * alarm should go off - must be a
++					 * multiple of the RTC period
++					 */
++	void (*f_alarm_callback)(void *app, uint8_t id);/* This routine will
++							 * be called when RTC
++							 * reaches alarm_time
++							 */
++	bool clear_on_expiration;	/* true to turn off the alarm once
++					 * expired.
++					 */
 +};
 +
-+struct fman_prs_cfg {
-+	uint32_t port_id_stat;
-+	uint16_t max_prs_cyc_lim;
-+	uint32_t prs_exceptions;
++struct fm_rtc_periodic_pulse_params {
++	uint8_t periodic_pulse_id;	/* 0 or 1 */
++	uint64_t periodic_pulse_period;	/* In Nanoseconds. Must be a multiple
++					 * of the RTC period
++					 */
++	/* This routine will be called every periodic_pulse_period. */
++	void (*f_periodic_pulse_callback)(void *app, uint8_t id);
 +};
 +
-+uint32_t fman_prs_get_err_event(struct fman_prs_regs __iomem *regs,
-+				uint32_t ev_mask);
-+uint32_t fman_prs_get_err_ev_mask(struct fman_prs_regs __iomem *regs);
-+void fman_prs_ack_err_event(struct fman_prs_regs __iomem *regs,
-+			    uint32_t event);
-+uint32_t fman_prs_get_expt_event(struct fman_prs_regs __iomem *regs,
-+				 uint32_t ev_mask);
-+uint32_t fman_prs_get_expt_ev_mask(struct fman_prs_regs __iomem *regs);
-+void fman_prs_ack_expt_event(struct fman_prs_regs __iomem *regs,
-+			     uint32_t event);
-+void fman_prs_defconfig(struct fman_prs_cfg *cfg);
-+int fman_prs_init(struct fman_prs_regs __iomem *regs, struct fman_prs_cfg *cfg);
-+void fman_prs_enable(struct fman_prs_regs __iomem *regs);
-+void fman_prs_disable(struct fman_prs_regs __iomem *regs);
-+void fman_prs_set_stst_port_msk(struct fman_prs_regs __iomem *regs,
-+				uint32_t pid_msk);
-+void fman_prs_set_stst(struct fman_prs_regs __iomem *regs, bool enable);
-+
-+#endif	/* __FSL_FMAN_PRS_H */
++#endif	/* __FSL_FMAN_RTC_H */
 -- 
 1.7.9.5
