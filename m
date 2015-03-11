@@ -1,16 +1,16 @@
 Return-Path: <Igal.Liberman@freescale.com>
 Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0132.outbound.protection.outlook.com [65.55.169.132])
+ (mail-bl2on0118.outbound.protection.outlook.com [65.55.169.118])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 944DF1A211C
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2015 20:24:52 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id F3B731A1623
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2015 20:27:17 +1100 (AEDT)
 From: Igal.Liberman <igal.liberman@freescale.com>
 To: <linuxppc-dev@lists.ozlabs.org>, <netdev@vger.kernel.org>,
  <linux-kernel@vger.kernel.org>
-Subject: [v2,08/11] soc/fman: Add the FMan parser and KeyGen FLIB(s)
-Date: Wed, 11 Mar 2015 07:06:05 +0200
-Message-ID: <1426050365-12341-1-git-send-email-igal.liberman@freescale.com>
+Subject: [RFC,3/8] soc/fman: Add FMan Real Time Clock support
+Date: Wed, 11 Mar 2015 07:08:18 +0200
+Message-ID: <1426050498-12573-1-git-send-email-igal.liberman@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: scottwood@freescale.com, Igal Liberman <Igal.Liberman@freescale.com>
@@ -27,910 +27,619 @@ From: Igal Liberman <Igal.Liberman@freescale.com>
 
 Signed-off-by: Igal Liberman <Igal.Liberman@freescale.com>
 ---
- drivers/soc/fsl/fman/Kconfig        |    6 +
- drivers/soc/fsl/fman/Makefile       |    1 +
- drivers/soc/fsl/fman/pcd/Makefile   |    3 +
- drivers/soc/fsl/fman/pcd/fman_kg.c  |  849 +++++++++++++++++++++++++++++++++++
- drivers/soc/fsl/fman/pcd/fman_prs.c |  126 ++++++
- 5 files changed, 985 insertions(+)
- create mode 100644 drivers/soc/fsl/fman/pcd/Makefile
- create mode 100644 drivers/soc/fsl/fman/pcd/fman_kg.c
- create mode 100644 drivers/soc/fsl/fman/pcd/fman_prs.c
+ drivers/soc/fsl/fman/fm_drv.c           |   98 ++++
+ drivers/soc/fsl/fman/fm_drv.h           |    9 +-
+ drivers/soc/fsl/fman/inc/fm_rtc_ext.h   |  398 ++++++++++++++++
+ drivers/soc/fsl/fman/inc/fsl_fman_drv.h |    3 +
+ drivers/soc/fsl/fman/rtc/Makefile       |    2 +-
+ drivers/soc/fsl/fman/rtc/fm_rtc.c       |  763 +++++++++++++++++++++++++++++++
+ drivers/soc/fsl/fman/rtc/fm_rtc.h       |   89 ++++
+ 7 files changed, 1360 insertions(+), 2 deletions(-)
+ create mode 100644 drivers/soc/fsl/fman/inc/fm_rtc_ext.h
+ create mode 100644 drivers/soc/fsl/fman/rtc/fm_rtc.c
+ create mode 100644 drivers/soc/fsl/fman/rtc/fm_rtc.h
 
-diff --git a/drivers/soc/fsl/fman/Kconfig b/drivers/soc/fsl/fman/Kconfig
-index 7489ff6..f057b15 100644
---- a/drivers/soc/fsl/fman/Kconfig
-+++ b/drivers/soc/fsl/fman/Kconfig
-@@ -20,4 +20,10 @@ config FSL_FMAN_MAC
- 	help
- 		Freescale DPAA FMan MAC support
+diff --git a/drivers/soc/fsl/fman/fm_drv.c b/drivers/soc/fsl/fman/fm_drv.c
+index 9859ac6..ffeb223 100644
+--- a/drivers/soc/fsl/fman/fm_drv.c
++++ b/drivers/soc/fsl/fman/fm_drv.c
+@@ -423,6 +423,32 @@ static struct lnx_wrp_fm_dev_t *read_fm_dev_tree_node(struct platform_device
+ 		}
+ 	}
  
-+config FSL_FMAN_PCD
-+	bool "FMan PCD"
-+	default n
-+	help
-+		Freescale DPAA FMan Parse, Classify and Distribute support
-+
- endif	# FSL_FMAN
-diff --git a/drivers/soc/fsl/fman/Makefile b/drivers/soc/fsl/fman/Makefile
-index a0f396f..2bb0e13 100644
---- a/drivers/soc/fsl/fman/Makefile
-+++ b/drivers/soc/fsl/fman/Makefile
-@@ -6,3 +6,4 @@ fsl_fman-objs			:= fman.o
- 
- obj-$(CONFIG_FSL_FMAN_PORT)	+= port/
- obj-$(CONFIG_FSL_FMAN_MAC)	+= mac/
-+obj-$(CONFIG_FSL_FMAN_PCD)	+= pcd/
-diff --git a/drivers/soc/fsl/fman/pcd/Makefile b/drivers/soc/fsl/fman/pcd/Makefile
-new file mode 100644
-index 0000000..b50aeac
---- /dev/null
-+++ b/drivers/soc/fsl/fman/pcd/Makefile
-@@ -0,0 +1,3 @@
-+obj-$(CONFIG_FSL_FMAN_PCD)	+= fsl_fman_pcd.o
-+
-+fsl_fman_pcd-objs		:= fman_kg.o fman_prs.o
-diff --git a/drivers/soc/fsl/fman/pcd/fman_kg.c b/drivers/soc/fsl/fman/pcd/fman_kg.c
-new file mode 100644
-index 0000000..a140adf
---- /dev/null
-+++ b/drivers/soc/fsl/fman/pcd/fman_kg.c
-@@ -0,0 +1,849 @@
-+/*
-+ * Copyright 2008 - 2015 Freescale Semiconductor Inc.
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions are met:
-+ *     * Redistributions of source code must retain the above copyright
-+ *	 notice, this list of conditions and the following disclaimer.
-+ *     * Redistributions in binary form must reproduce the above copyright
-+ *	 notice, this list of conditions and the following disclaimer in the
-+ *	 documentation and/or other materials provided with the distribution.
-+ *     * Neither the name of Freescale Semiconductor nor the
-+ *	 names of its contributors may be used to endorse or promote products
-+ *	 derived from this software without specific prior written permission.
-+ *
-+ * ALTERNATIVELY, this software may be distributed under the terms of the
-+ * GNU General Public License ("GPL") as published by the Free Software
-+ * Foundation, either version 2 of that License or (at your option) any
-+ * later version.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
-+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ */
-+
-+#include "fsl_fman_kg.h"
-+
-+/* static functions */
-+
-+static uint32_t build_ar_bind_scheme(uint8_t hwport_id, bool write)
-+{
-+	uint32_t rw;
-+
-+	rw = write ? (uint32_t)FM_KG_KGAR_WRITE : (uint32_t)FM_KG_KGAR_READ;
-+
-+	return (uint32_t)(FM_KG_KGAR_GO | rw | FM_PCD_KG_KGAR_SEL_PORT_ENTRY |
-+			  hwport_id | FM_PCD_KG_KGAR_SEL_PORT_WSEL_SP);
-+}
-+
-+static void clear_pe_all_scheme(struct fman_kg_regs __iomem *regs,
-+				uint8_t hwport_id)
-+{
-+	uint32_t ar;
-+
-+	fman_kg_write_sp(regs, 0xffffffff, 0);
-+
-+	ar = build_ar_bind_scheme(hwport_id, true);
-+	fman_kg_write_ar_wait(regs, ar);
-+}
-+
-+static uint32_t build_ar_bind_cls_plan(uint8_t hwport_id, bool write)
-+{
-+	uint32_t rw;
-+
-+	rw = write ? (uint32_t)FM_KG_KGAR_WRITE : (uint32_t)FM_KG_KGAR_READ;
-+
-+	return (uint32_t)(FM_KG_KGAR_GO | rw | FM_PCD_KG_KGAR_SEL_PORT_ENTRY |
-+			  hwport_id | FM_PCD_KG_KGAR_SEL_PORT_WSEL_CPP);
-+}
-+
-+static void clear_pe_all_cls_plan(struct fman_kg_regs __iomem *regs,
-+				  uint8_t hwport_id)
-+{
-+	uint32_t ar;
-+
-+	fman_kg_write_cpp(regs, 0);
-+
-+	ar = build_ar_bind_cls_plan(hwport_id, true);
-+	fman_kg_write_ar_wait(regs, ar);
-+}
-+
-+static uint8_t get_gen_ht_code(enum fman_kg_gen_extract_src src,
-+			       bool no_validation, uint8_t *offset)
-+{
-+	int code;
-+
-+	switch (src) {
-+	case E_FMAN_KG_GEN_EXTRACT_ETH:
-+		code = no_validation ? 0x73 : 0x3;
-+		break;
-+
-+	case E_FMAN_KG_GEN_EXTRACT_ETYPE:
-+		code = no_validation ? 0x77 : 0x7;
-+		break;
-+
-+	case E_FMAN_KG_GEN_EXTRACT_SNAP:
-+		code = no_validation ? 0x74 : 0x4;
-+		break;
-+
-+	case E_FMAN_KG_GEN_EXTRACT_VLAN_TCI_1:
-+		code = no_validation ? 0x75 : 0x5;
-+		break;
-+
-+	case E_FMAN_KG_GEN_EXTRACT_VLAN_TCI_N:
-+		code = no_validation ? 0x76 : 0x6;
-+		break;
-+
-+	case E_FMAN_KG_GEN_EXTRACT_PPPOE:
-+		code = no_validation ? 0x78 : 0x8;
-+		break;
-+
-+	case E_FMAN_KG_GEN_EXTRACT_MPLS_1:
-+		code = no_validation ? 0x79 : 0x9;
-+		break;
-+
-+	case E_FMAN_KG_GEN_EXTRACT_MPLS_2:
-+		code = no_validation ? FM_KG_SCH_GEN_HT_INVALID : 0x19;
-+		break;
-+
-+	case E_FMAN_KG_GEN_EXTRACT_MPLS_3:
-+		code = no_validation ? FM_KG_SCH_GEN_HT_INVALID : 0x29;
-+		break;
-+
-+	case E_FMAN_KG_GEN_EXTRACT_MPLS_N:
-+		code = no_validation ? 0x7a : 0xa;
-+		break;
-+
-+	case E_FMAN_KG_GEN_EXTRACT_IPV4_1:
-+		code = no_validation ? 0x7b : 0xb;
-+		break;
-+
-+	case E_FMAN_KG_GEN_EXTRACT_IPV6_1:
-+		code = no_validation ? 0x7b : 0x1b;
-+		break;
-+
-+	case E_FMAN_KG_GEN_EXTRACT_IPV4_2:
-+		code = no_validation ? 0x7c : 0xc;
-+		break;
-+
-+	case E_FMAN_KG_GEN_EXTRACT_IPV6_2:
-+		code = no_validation ? 0x7c : 0x1c;
-+		break;
-+
-+	case E_FMAN_KG_GEN_EXTRACT_MINENCAP:
-+		code = no_validation ? 0x7c : 0x2c;
-+		break;
-+
-+	case E_FMAN_KG_GEN_EXTRACT_IP_PID:
-+		code = no_validation ? 0x72 : 0x2;
-+		break;
-+
-+	case E_FMAN_KG_GEN_EXTRACT_GRE:
-+		code = no_validation ? 0x7d : 0xd;
-+		break;
-+
-+	case E_FMAN_KG_GEN_EXTRACT_TCP:
-+		code = no_validation ? 0x7e : 0xe;
-+		break;
-+
-+	case E_FMAN_KG_GEN_EXTRACT_UDP:
-+		code = no_validation ? 0x7e : 0x1e;
-+		break;
-+
-+	case E_FMAN_KG_GEN_EXTRACT_SCTP:
-+		code = no_validation ? 0x7e : 0x3e;
-+		break;
-+
-+	case E_FMAN_KG_GEN_EXTRACT_DCCP:
-+		code = no_validation ? 0x7e : 0x4e;
-+		break;
-+
-+	case E_FMAN_KG_GEN_EXTRACT_IPSEC_AH:
-+		code = no_validation ? 0x7e : 0x2e;
-+		break;
-+
-+	case E_FMAN_KG_GEN_EXTRACT_IPSEC_ESP:
-+		code = no_validation ? 0x7e : 0x6e;
-+		break;
-+
-+	case E_FMAN_KG_GEN_EXTRACT_SHIM_1:
-+		code = 0x70;
-+		break;
-+
-+	case E_FMAN_KG_GEN_EXTRACT_SHIM_2:
-+		code = 0x71;
-+		break;
-+
-+	case E_FMAN_KG_GEN_EXTRACT_FROM_DFLT:
-+		code = 0x10;
-+		break;
-+
-+	case E_FMAN_KG_GEN_EXTRACT_FROM_FRAME_START:
-+		code = 0x40;
-+		break;
-+
-+	case E_FMAN_KG_GEN_EXTRACT_FROM_PARSE_RESULT:
-+		code = 0x20;
-+		break;
-+
-+	case E_FMAN_KG_GEN_EXTRACT_FROM_END_OF_PARSE:
-+		code = 0x7f;
-+		break;
-+
-+	case E_FMAN_KG_GEN_EXTRACT_FROM_FQID:
-+		code = 0x20;
-+		*offset += 0x20;
-+		break;
-+
-+	default:
-+		code = FM_KG_SCH_GEN_HT_INVALID;
-+	}
-+
-+	return (uint8_t)code;
-+}
-+
-+static uint32_t build_ar_scheme(uint8_t scheme,
-+				uint8_t hwport_id,
-+				bool update_counter, bool write)
-+{
-+	uint32_t rw;
-+
-+	rw = (uint32_t)(write ? FM_KG_KGAR_WRITE : FM_KG_KGAR_READ);
-+
-+	return (uint32_t)(FM_KG_KGAR_GO | rw | FM_KG_KGAR_SEL_SCHEME_ENTRY |
-+			  hwport_id |
-+			  ((uint32_t)scheme << FM_KG_KGAR_NUM_SHIFT) |
-+			  (update_counter ? FM_KG_KGAR_SCM_WSEL_UPDATE_CNT :
-+			  0));
-+}
-+
-+static uint32_t build_ar_cls_plan(uint8_t grp,
-+				  uint8_t entries_mask,
-+				  uint8_t hwport_id, bool write)
-+{
-+	uint32_t rw;
-+
-+	rw = (uint32_t)(write ? FM_KG_KGAR_WRITE : FM_KG_KGAR_READ);
-+
-+	return (uint32_t)(FM_KG_KGAR_GO | rw |
-+			  FM_PCD_KG_KGAR_SEL_CLS_PLAN_ENTRY | hwport_id |
-+			  ((uint32_t)grp << FM_KG_KGAR_NUM_SHIFT) |
-+			  ((uint32_t)entries_mask << FM_KG_KGAR_WSEL_SHIFT));
-+}
-+
-+int fman_kg_write_ar_wait(struct fman_kg_regs __iomem *regs, uint32_t fmkg_ar)
-+{
-+	iowrite32be(fmkg_ar, &regs->fmkg_ar);
-+	/* Wait for GO to be idle and read error */
-+	while ((fmkg_ar = ioread32be(&regs->fmkg_ar)) & FM_KG_KGAR_GO)
-+		;
-+	if (fmkg_ar & FM_PCD_KG_KGAR_ERR)
-+		return -EINVAL;
-+	return 0;
-+}
-+
-+void fman_kg_write_sp(struct fman_kg_regs __iomem *regs, uint32_t sp, bool add)
-+{
-+	struct fman_kg_pe_regs __iomem *kgpe_regs;
-+	uint32_t tmp;
-+
-+	kgpe_regs = (struct fman_kg_pe_regs __iomem *)&regs->fmkg_indirect[0];
-+	tmp = ioread32be(&kgpe_regs->fmkg_pe_sp);
-+
-+	if (add)
-+		tmp |= sp;
-+	else			/* clear */
-+		tmp &= ~sp;
-+
-+	iowrite32be(tmp, &kgpe_regs->fmkg_pe_sp);
-+}
-+
-+void fman_kg_write_cpp(struct fman_kg_regs __iomem *regs, uint32_t cpp)
-+{
-+	struct fman_kg_pe_regs __iomem *kgpe_regs;
-+
-+	kgpe_regs = (struct fman_kg_pe_regs __iomem *)&regs->fmkg_indirect[0];
-+
-+	iowrite32be(cpp, &kgpe_regs->fmkg_pe_cpp);
-+}
-+
-+void fman_kg_get_event(struct fman_kg_regs __iomem *regs,
-+		       uint32_t *event, uint32_t *scheme_idx)
-+{
-+	uint32_t mask, force;
-+
-+	*event = ioread32be(&regs->fmkg_eer);
-+	mask = ioread32be(&regs->fmkg_eeer);
-+	*scheme_idx = ioread32be(&regs->fmkg_seer);
-+	*scheme_idx &= ioread32be(&regs->fmkg_seeer);
-+
-+	*event &= mask;
-+
-+	/* clear the forced events */
-+	force = ioread32be(&regs->fmkg_feer);
-+	if (force & *event)
-+		iowrite32be(force & ~*event, &regs->fmkg_feer);
-+
-+	iowrite32be(*event, &regs->fmkg_eer);
-+	iowrite32be(*scheme_idx, &regs->fmkg_seer);
-+}
-+
-+void fman_kg_init(struct fman_kg_regs __iomem *regs,
-+		  uint32_t exceptions, uint32_t dflt_nia)
-+{
-+	uint32_t tmp;
-+	int i;
-+
-+	iowrite32be(FM_EX_KG_DOUBLE_ECC | FM_EX_KG_KEYSIZE_OVERFLOW,
-+		    &regs->fmkg_eer);
-+
-+	tmp = 0;
-+	if (exceptions & FM_EX_KG_DOUBLE_ECC)
-+		tmp |= FM_EX_KG_DOUBLE_ECC;
-+
-+	if (exceptions & FM_EX_KG_KEYSIZE_OVERFLOW)
-+		tmp |= FM_EX_KG_KEYSIZE_OVERFLOW;
-+
-+	iowrite32be(tmp, &regs->fmkg_eeer);
-+	iowrite32be(0, &regs->fmkg_fdor);
-+	iowrite32be(0, &regs->fmkg_gdv0r);
-+	iowrite32be(0, &regs->fmkg_gdv1r);
-+	iowrite32be(dflt_nia, &regs->fmkg_gcr);
-+
-+	/* Clear binding between ports to schemes and classification plans
-+	 * so that all ports are not bound to any scheme/classification plan
-+	 */
-+	for (i = 0; i < FMAN_MAX_NUM_OF_HW_PORTS; i++) {
-+		clear_pe_all_scheme(regs, (uint8_t)i);
-+		clear_pe_all_cls_plan(regs, (uint8_t)i);
-+	}
-+}
-+
-+void fman_kg_enable_scheme_interrupts(struct fman_kg_regs __iomem *regs)
-+{
-+	/* enable and enable all scheme interrupts */
-+	iowrite32be(0xFFFFFFFF, &regs->fmkg_seer);
-+	iowrite32be(0xFFFFFFFF, &regs->fmkg_seeer);
-+}
-+
-+void fman_kg_enable(struct fman_kg_regs __iomem *regs)
-+{
-+	iowrite32be(ioread32be(&regs->fmkg_gcr) | FM_KG_KGGCR_EN,
-+		    &regs->fmkg_gcr);
-+}
-+
-+void fman_kg_disable(struct fman_kg_regs __iomem *regs)
-+{
-+	iowrite32be(ioread32be(&regs->fmkg_gcr) & ~FM_KG_KGGCR_EN,
-+		    &regs->fmkg_gcr);
-+}
-+
-+void fman_kg_set_data_after_prs(struct fman_kg_regs __iomem *regs,
-+				uint8_t offset)
-+{
-+	iowrite32be(offset, &regs->fmkg_fdor);
-+}
-+
-+void fman_kg_set_dflt_val(struct fman_kg_regs __iomem *regs,
-+			  uint8_t def_id, uint32_t val)
-+{
-+	if (def_id == 0)
-+		iowrite32be(val, &regs->fmkg_gdv0r);
-+	else
-+		iowrite32be(val, &regs->fmkg_gdv1r);
-+}
-+
-+void fman_kg_set_exception(struct fman_kg_regs __iomem *regs,
-+			   uint32_t exception, bool enable)
-+{
-+	uint32_t tmp;
-+
-+	tmp = ioread32be(&regs->fmkg_eeer);
-+
-+	if (enable)
-+		tmp |= exception;
-+	else
-+		tmp &= ~exception;
-+
-+	iowrite32be(tmp, &regs->fmkg_eeer);
-+}
-+
-+void fman_kg_get_exception(struct fman_kg_regs __iomem *regs,
-+			   uint32_t *events, uint32_t *scheme_ids, bool clear)
-+{
-+	uint32_t mask;
-+
-+	*events = ioread32be(&regs->fmkg_eer);
-+	mask = ioread32be(&regs->fmkg_eeer);
-+	*events &= mask;
-+
-+	*scheme_ids = 0;
-+
-+	if (*events & FM_EX_KG_KEYSIZE_OVERFLOW) {
-+		*scheme_ids = ioread32be(&regs->fmkg_seer);
-+		mask = ioread32be(&regs->fmkg_seeer);
-+		*scheme_ids &= mask;
-+	}
-+
-+	if (clear) {
-+		iowrite32be(*scheme_ids, &regs->fmkg_seer);
-+		iowrite32be(*events, &regs->fmkg_eer);
-+	}
-+}
-+
-+void fman_kg_get_capture(struct fman_kg_regs __iomem *regs,
-+			 struct fman_kg_ex_ecc_attr *ecc_attr, bool clear)
-+{
-+	uint32_t tmp;
-+
-+	tmp = ioread32be(&regs->fmkg_serc);
-+
-+	if (tmp & KG_FMKG_SERC_CAP) {
-+		/* Captured data is valid */
-+		ecc_attr->valid = true;
-+		ecc_attr->double_ecc =
-+		    (bool)((tmp & KG_FMKG_SERC_CET) ? true : false);
-+		ecc_attr->single_ecc_count =
-+		    (uint8_t)((tmp & KG_FMKG_SERC_CNT_MSK) >>
-+			       KG_FMKG_SERC_CNT_SHIFT);
-+		ecc_attr->addr = (uint16_t)(tmp & KG_FMKG_SERC_ADDR_MSK);
-+
-+		if (clear)
-+			iowrite32be(KG_FMKG_SERC_CAP, &regs->fmkg_serc);
-+	} else {
-+		/* No ECC error is captured */
-+		ecc_attr->valid = false;
-+	}
-+}
-+
-+int fman_kg_build_scheme(struct fman_kg_scheme_params *params,
-+			 struct fman_kg_scheme_regs *scheme_regs)
-+{
-+	struct fman_kg_extract_params *extract_params;
-+	struct fman_kg_gen_extract_params *gen_params;
-+	uint32_t tmp_reg, i, select, mask, fqb;
-+	uint8_t offset, shift, ht;
-+
-+	/* Zero out all registers so no need to care about unused ones */
-+	memset(scheme_regs, 0, sizeof(struct fman_kg_scheme_regs));
-+
-+	/* Mode register */
-+	tmp_reg = fm_kg_build_nia(params->next_engine,
-+				  params->next_engine_action);
-+	if (tmp_reg == KG_NIA_INVALID)
-+		return -EINVAL;
-+
-+	if (params->next_engine == E_FMAN_PCD_PLCR) {
-+		tmp_reg |= FMAN_KG_SCH_MODE_NIA_PLCR;
-+	} else if (params->next_engine == E_FMAN_PCD_CC) {
-+		tmp_reg |= (uint32_t)params->cc_params.base_offset <<
-+		   FMAN_KG_SCH_MODE_CCOBASE_SHIFT;
-+	}
-+
-+	tmp_reg |= FMAN_KG_SCH_MODE_EN;
-+	scheme_regs->kgse_mode = tmp_reg;
-+
-+	/* Match vector */
-+	scheme_regs->kgse_mv = params->match_vector;
-+
-+	extract_params = &params->extract_params;
-+
-+	/* Scheme default values registers */
-+	scheme_regs->kgse_dv0 = extract_params->def_scheme_0;
-+	scheme_regs->kgse_dv1 = extract_params->def_scheme_1;
-+
-+	/* Extract Known Fields Command register */
-+	scheme_regs->kgse_ekfc = extract_params->known_fields;
-+
-+	/* Entry Extract Known Default Value register */
-+	tmp_reg = 0;
-+	tmp_reg |= extract_params->known_fields_def.mac_addr <<
-+	    FMAN_KG_SCH_DEF_MAC_ADDR_SHIFT;
-+	tmp_reg |= extract_params->known_fields_def.vlan_tci <<
-+	    FMAN_KG_SCH_DEF_VLAN_TCI_SHIFT;
-+	tmp_reg |= extract_params->known_fields_def.etype <<
-+	    FMAN_KG_SCH_DEF_ETYPE_SHIFT;
-+	tmp_reg |= extract_params->known_fields_def.ppp_sid <<
-+	    FMAN_KG_SCH_DEF_PPP_SID_SHIFT;
-+	tmp_reg |= extract_params->known_fields_def.ppp_pid <<
-+	    FMAN_KG_SCH_DEF_PPP_PID_SHIFT;
-+	tmp_reg |= extract_params->known_fields_def.mpls <<
-+	    FMAN_KG_SCH_DEF_MPLS_SHIFT;
-+	tmp_reg |= extract_params->known_fields_def.ip_addr <<
-+	    FMAN_KG_SCH_DEF_IP_ADDR_SHIFT;
-+	tmp_reg |= extract_params->known_fields_def.ptype <<
-+	    FMAN_KG_SCH_DEF_PTYPE_SHIFT;
-+	tmp_reg |= extract_params->known_fields_def.ip_tos_tc <<
-+	    FMAN_KG_SCH_DEF_IP_TOS_TC_SHIFT;
-+	tmp_reg |= extract_params->known_fields_def.ipv6_fl <<
-+	    FMAN_KG_SCH_DEF_IPV6_FL_SHIFT;
-+	tmp_reg |= extract_params->known_fields_def.ipsec_spi <<
-+	    FMAN_KG_SCH_DEF_IPSEC_SPI_SHIFT;
-+	tmp_reg |= extract_params->known_fields_def.l4_port <<
-+	    FMAN_KG_SCH_DEF_L4_PORT_SHIFT;
-+	tmp_reg |= extract_params->known_fields_def.tcp_flg <<
-+	    FMAN_KG_SCH_DEF_TCP_FLG_SHIFT;
-+
-+	scheme_regs->kgse_ekdv = tmp_reg;
-+
-+	/* Generic extract registers */
-+	if (extract_params->gen_extract_num > FM_KG_NUM_OF_GENERIC_REGS)
-+		return -EINVAL;
-+
-+	for (i = 0; i < extract_params->gen_extract_num; i++) {
-+		gen_params = extract_params->gen_extract + i;
-+
-+		tmp_reg = FMAN_KG_SCH_GEN_VALID;
-+		tmp_reg |= (uint32_t)gen_params->def_val <<
-+		    FMAN_KG_SCH_GEN_DEF_SHIFT;
-+
-+		if (gen_params->type == E_FMAN_KG_HASH_EXTRACT) {
-+			if ((gen_params->extract > FMAN_KG_SCH_GEN_SIZE_MAX) ||
-+			    (gen_params->extract == 0)) {
-+				return -EINVAL;
++#ifdef CONFIG_FSL_FMAN_RTC
++	/* Get the RTC base address and size */
++	memset(&name, 0, sizeof(name));
++	if (WARN_ON(strlen("ptp-timer") >= sizeof(name.name)))
++		return NULL;
++	strcpy(name.name, "ptp-timer");
++	if (WARN_ON(strlen("fsl,fman-ptp-timer") >= sizeof(name.compatible)))
++		return NULL;
++	strcpy(name.compatible, "fsl,fman-ptp-timer");
++	for_each_child_of_node(fm_node, dev_node) {
++		if (likely(of_match_node(&name, dev_node) != NULL)) {
++			err = of_address_to_resource(dev_node, 0, &res);
++			if (unlikely(err < 0)) {
++				pr_err("of_address_to_resource() = %d",
++				       err);
++				goto _return_null;
 +			}
-+		} else {
-+			tmp_reg |= FMAN_KG_SCH_GEN_OR;
++
++			p_lnx_wrp_fm_dev->fm_rtc_base_addr = 0;
++			p_lnx_wrp_fm_dev->fm_rtc_phys_base_addr = res.start;
++			p_lnx_wrp_fm_dev->fm_rtc_mem_size = res.end + 1 -
++							    res.start;
++		}
++	}
++#endif
++
+ 	of_node_put(fm_node);
+ 
+ 	p_lnx_wrp_fm_dev->active = true;
+@@ -485,6 +511,9 @@ uint32_t get_qman_channel_id(struct lnx_wrp_fm_dev_t *p_lnx_wrp_fm_dev,
+ 
+ static int configure_fm_dev(struct lnx_wrp_fm_dev_t *p_lnx_wrp_fm_dev)
+ {
++#ifdef CONFIG_FSL_FMAN_RTC
++	struct resource *dev_res;
++#endif
+ 	int err;
+ 
+ 	if (!p_lnx_wrp_fm_dev->active) {
+@@ -551,6 +580,32 @@ static int configure_fm_dev(struct lnx_wrp_fm_dev_t *p_lnx_wrp_fm_dev)
+ 		return -ENOSYS;
+ 	}
+ 
++#ifdef CONFIG_FSL_FMAN_RTC
++	if (p_lnx_wrp_fm_dev->fm_rtc_phys_base_addr) {
++		dev_res =
++		    __devm_request_region(p_lnx_wrp_fm_dev->dev,
++					  p_lnx_wrp_fm_dev->res,
++					  p_lnx_wrp_fm_dev->
++						fm_rtc_phys_base_addr,
++					  p_lnx_wrp_fm_dev->fm_rtc_mem_size,
++					  "fman-ptp-timer");
++		if (unlikely(!dev_res)) {
++			pr_err("__devm_request_region() failed\n");
++			return -ENOSYS;
 +		}
 +
-+		tmp_reg |= (uint32_t)gen_params->extract <<
-+		    FMAN_KG_SCH_GEN_SIZE_SHIFT;
-+		tmp_reg |= (uint32_t)gen_params->mask <<
-+		    FMAN_KG_SCH_GEN_MASK_SHIFT;
-+
-+		offset = gen_params->offset;
-+		ht = get_gen_ht_code(gen_params->src,
-+				     gen_params->no_validation, &offset);
-+		tmp_reg |= (uint32_t)ht << FMAN_KG_SCH_GEN_HT_SHIFT;
-+		tmp_reg |= offset;
-+
-+		scheme_regs->kgse_gec[i] = tmp_reg;
++		p_lnx_wrp_fm_dev->fm_rtc_base_addr =
++		    PTR_TO_UINT(devm_ioremap
++				(p_lnx_wrp_fm_dev->dev,
++				 p_lnx_wrp_fm_dev->fm_rtc_phys_base_addr,
++				 p_lnx_wrp_fm_dev->fm_rtc_mem_size));
++		if (unlikely(p_lnx_wrp_fm_dev->fm_rtc_base_addr == 0)) {
++			pr_err("devm_ioremap() failed\n");
++			return -ENOSYS;
++		}
 +	}
++#endif
 +
-+	/* Masks registers */
-+	if (extract_params->masks_num > FM_KG_EXTRACT_MASKS_NUM)
-+		return -EINVAL;
+ 	p_lnx_wrp_fm_dev->params.base_addr = p_lnx_wrp_fm_dev->fm_base_addr;
+ 	p_lnx_wrp_fm_dev->params.fm_id = p_lnx_wrp_fm_dev->id;
+ 	p_lnx_wrp_fm_dev->params.f_exception = lnxwrp_fm_dev_exceptions_cb;
+@@ -669,6 +724,34 @@ static int init_fm_dev(struct lnx_wrp_fm_dev_t *p_lnx_wrp_fm_dev)
+ 		 */
+ 	}
+ 
++#ifdef CONFIG_FSL_FMAN_RTC
++	if (p_lnx_wrp_fm_dev->fm_rtc_base_addr) {
++		struct fm_rtc_params_t fm_rtc_param;
 +
-+	select = 0;
-+	mask = 0;
-+	fqb = 0;
-+	for (i = 0; i < extract_params->masks_num; i++) {
-+		/* MCSx fields */
-+		KG_GET_MASK_SEL_SHIFT(shift, i);
-+		if (extract_params->masks[i].is_known) {
-+			/* Mask known field */
-+			select |= extract_params->masks[i].field_or_gen_idx <<
-+			    shift;
-+		} else {
-+			/* Mask generic extract */
-+			select |= (extract_params->masks[i].field_or_gen_idx +
-+				   FM_KG_MASK_SEL_GEN_BASE) << shift;
++		memset(&fm_rtc_param, 0, sizeof(fm_rtc_param));
++		fm_rtc_param.h_app = p_lnx_wrp_fm_dev;
++		fm_rtc_param.h_fm = p_lnx_wrp_fm_dev->h_dev;
++		fm_rtc_param.base_address = p_lnx_wrp_fm_dev->fm_rtc_base_addr;
++		p_lnx_wrp_fm_dev->h_rtc_dev = fm_rtc_config(&fm_rtc_param);
++
++		if (!(p_lnx_wrp_fm_dev->h_rtc_dev)) {
++			pr_err("FM-RTC\n");
++			return -ENOSYS;
 +		}
 +
-+		/* MOx fields - spread between se_bmch and se_fqb registers */
-+		KG_GET_MASK_OFFSET_SHIFT(shift, i);
-+		if (i < 2) {
-+			select |= (uint32_t)extract_params->masks[i].offset <<
-+			    shift;
-+		} else {
-+			fqb |= (uint32_t)extract_params->masks[i].offset <<
-+			    shift;
++		if (fm_rtc_cfg_period((struct fm *)p_lnx_wrp_fm_dev,
++			DPA_PTP_NOMINAL_FREQ_PERIOD_NS) != 0) {
++			pr_err("FM-RTC\n");
++			return -ENOSYS;
 +		}
 +
-+		/* BMx fields */
-+		KG_GET_MASK_SHIFT(shift, i);
-+		mask |= (uint32_t)extract_params->masks[i].mask << shift;
++		if (fm_rtc_init((struct fm *)p_lnx_wrp_fm_dev) != 0) {
++			pr_err("FM-RTC\n");
++			return -ENOSYS;
++		}
 +	}
++#endif
 +
-+	/* Finish with rest of BMx fileds -
-+	 * don't mask bits for unused masks by setting
-+	 * corresponding BMx field = 0xFF
-+	 */
-+	for (i = extract_params->masks_num; i < FM_KG_EXTRACT_MASKS_NUM; i++) {
-+		KG_GET_MASK_SHIFT(shift, i);
-+		mask |= 0xFF << shift;
-+	}
+ 	if (unlikely(fill_qman_channhels_info(p_lnx_wrp_fm_dev) < 0)) {
+ 		pr_err("can't fill qman channel info\n");
+ 		return -ENOSYS;
+@@ -682,6 +765,11 @@ static void free_fm_dev(struct lnx_wrp_fm_dev_t *p_lnx_wrp_fm_dev)
+ 	if (!p_lnx_wrp_fm_dev->active)
+ 		return;
+ 
++#ifdef CONFIG_FSL_FMAN_RTC
++	if (p_lnx_wrp_fm_dev->h_rtc_dev)
++		fm_rtc_free((struct fm *)p_lnx_wrp_fm_dev);
++#endif
 +
-+	scheme_regs->kgse_bmch = select;
-+	scheme_regs->kgse_bmcl = mask;
-+
-+	/* Finish with FQB register initialization.
-+	 * Check fqid is 24-bit value.
-+	 */
-+	if (params->base_fqid & ~0x00FFFFFF)
-+		return -EINVAL;
-+
-+	fqb |= params->base_fqid;
-+	scheme_regs->kgse_fqb = fqb;
-+
-+	/* Hash Configuration register */
-+	tmp_reg = 0;
-+	if (params->hash_params.use_hash) {
-+		/* Check hash mask is 24-bit value */
-+		if (params->hash_params.mask & ~0x00FFFFFF)
-+			return -EINVAL;
-+
-+		/* Hash function produces 64-bit value, 24 bits of that
-+		 * are used to generate fq_id and policer profile.
-+		 * Thus, maximal shift is 40 bits to allow 24 bits out of 64.
-+		 */
-+		if (params->hash_params.shift_r > FMAN_KG_SCH_HASH_HSHIFT_MAX)
-+			return -EINVAL;
-+
-+		tmp_reg |= params->hash_params.mask;
-+		tmp_reg |= (uint32_t)params->hash_params.shift_r <<
-+		    FMAN_KG_SCH_HASH_HSHIFT_SHIFT;
-+
-+		if (params->hash_params.sym)
-+			tmp_reg |= FMAN_KG_SCH_HASH_SYM;
-+	}
-+
-+	if (params->bypass_fqid_gen)
-+		tmp_reg |= FMAN_KG_SCH_HASH_NO_FQID_GEN;
-+
-+	scheme_regs->kgse_hc = tmp_reg;
-+
-+	/* Policer Profile register */
-+	if (params->policer_params.bypass_pp_gen) {
-+		tmp_reg = FMAN_KG_SCH_PP_NO_GEN;
-+	} else {
-+		/* Lower 8 bits of 24-bits extracted from hash result
-+		* are used for policer profile generation.
-+		* That leaves maximum shift value = 23.
-+		*/
-+		if (params->policer_params.shift > FMAN_KG_SCH_PP_SHIFT_MAX)
-+			return -EINVAL;
-+
-+		tmp_reg = params->policer_params.base;
-+		tmp_reg |= ((uint32_t)params->policer_params.shift <<
-+			    FMAN_KG_SCH_PP_SH_SHIFT) & FMAN_KG_SCH_PP_SH_MASK;
-+		tmp_reg |= ((uint32_t)params->policer_params.shift <<
-+			    FMAN_KG_SCH_PP_SL_SHIFT) & FMAN_KG_SCH_PP_SL_MASK;
-+		tmp_reg |= (uint32_t)params->policer_params.mask <<
-+		    FMAN_KG_SCH_PP_MASK_SHIFT;
-+	}
-+
-+	scheme_regs->kgse_ppc = tmp_reg;
-+
-+	/* Coarse Classification Bit Select register */
-+	if (params->next_engine == E_FMAN_PCD_CC)
-+		scheme_regs->kgse_ccbs = params->cc_params.qlcv_bits_sel;
-+
-+	/* Packets Counter register */
-+	if (params->update_counter)
-+		scheme_regs->kgse_spc = params->counter_value;
-+	return 0;
-+}
-+
-+int fman_kg_write_scheme(struct fman_kg_regs __iomem *regs,
-+			 uint8_t scheme_id,
-+			 uint8_t hwport_id,
-+			 struct fman_kg_scheme_regs *scheme_regs,
-+			 bool update_counter)
+ 	if (p_lnx_wrp_fm_dev->h_dev)
+ 		fm_free(p_lnx_wrp_fm_dev->h_dev);
+ 
+@@ -813,6 +901,16 @@ void *fm_get_handle(struct fm *fm)
+ }
+ EXPORT_SYMBOL(fm_get_handle);
+ 
++#ifdef CONFIG_FSL_FMAN_RTC
++void *fm_get_rtc_handle(struct fm *fm)
 +{
-+	struct fman_kg_scheme_regs __iomem *kgse_regs;
-+	uint32_t tmp_reg;
-+	int err, i;
++	struct lnx_wrp_fm_dev_t *p_lnx_wrp_fm_dev =
++		(struct lnx_wrp_fm_dev_t *)fm;
 +
-+	/* Write indirect scheme registers */
-+	kgse_regs =
-+		(struct fman_kg_scheme_regs __iomem *)&regs->fmkg_indirect[0];
-+
-+	iowrite32be(scheme_regs->kgse_mode, &kgse_regs->kgse_mode);
-+	iowrite32be(scheme_regs->kgse_ekfc, &kgse_regs->kgse_ekfc);
-+	iowrite32be(scheme_regs->kgse_ekdv, &kgse_regs->kgse_ekdv);
-+	iowrite32be(scheme_regs->kgse_bmch, &kgse_regs->kgse_bmch);
-+	iowrite32be(scheme_regs->kgse_bmcl, &kgse_regs->kgse_bmcl);
-+	iowrite32be(scheme_regs->kgse_fqb, &kgse_regs->kgse_fqb);
-+	iowrite32be(scheme_regs->kgse_hc, &kgse_regs->kgse_hc);
-+	iowrite32be(scheme_regs->kgse_ppc, &kgse_regs->kgse_ppc);
-+	iowrite32be(scheme_regs->kgse_spc, &kgse_regs->kgse_spc);
-+	iowrite32be(scheme_regs->kgse_dv0, &kgse_regs->kgse_dv0);
-+	iowrite32be(scheme_regs->kgse_dv1, &kgse_regs->kgse_dv1);
-+	iowrite32be(scheme_regs->kgse_ccbs, &kgse_regs->kgse_ccbs);
-+	iowrite32be(scheme_regs->kgse_mv, &kgse_regs->kgse_mv);
-+
-+	for (i = 0; i < FM_KG_NUM_OF_GENERIC_REGS; i++)
-+		iowrite32be(scheme_regs->kgse_gec[i], &kgse_regs->kgse_gec[i]);
-+
-+	/* Write AR (Action register) */
-+	tmp_reg = build_ar_scheme(scheme_id, hwport_id, update_counter, true);
-+	err = fman_kg_write_ar_wait(regs, tmp_reg);
-+	return err;
++	return (void *)p_lnx_wrp_fm_dev->h_rtc_dev;
 +}
-+
-+int fman_kg_delete_scheme(struct fman_kg_regs __iomem *regs,
-+			  uint8_t scheme_id, uint8_t hwport_id)
-+{
-+	struct fman_kg_scheme_regs __iomem *kgse_regs;
-+	uint32_t tmp_reg;
-+	int err, i;
-+
-+	kgse_regs =
-+		(struct fman_kg_scheme_regs __iomem *)&regs->fmkg_indirect[0];
-+
-+	/* Clear all registers including enable bit in mode register */
-+	for (i = 0; i < (sizeof(struct fman_kg_scheme_regs)) / 4; ++i)
-+		iowrite32be(0, ((uint32_t __iomem *)kgse_regs + i));
-+
-+	/* Write AR (Action register) */
-+	tmp_reg = build_ar_scheme(scheme_id, hwport_id, false, true);
-+	err = fman_kg_write_ar_wait(regs, tmp_reg);
-+	return err;
-+}
-+
-+int fman_kg_get_scheme_counter(struct fman_kg_regs __iomem *regs,
-+			       uint8_t scheme_id,
-+			       uint8_t hwport_id, uint32_t *counter)
-+{
-+	struct fman_kg_scheme_regs __iomem *kgse_regs;
-+	uint32_t tmp_reg;
-+	int err;
-+
-+	kgse_regs =
-+		(struct fman_kg_scheme_regs __iomem *)&regs->fmkg_indirect[0];
-+
-+	tmp_reg = build_ar_scheme(scheme_id, hwport_id, true, false);
-+	err = fman_kg_write_ar_wait(regs, tmp_reg);
-+
-+	if (err != 0)
-+		return err;
-+
-+	*counter = ioread32be(&kgse_regs->kgse_spc);
-+
-+	return 0;
-+}
-+
-+int fman_kg_set_scheme_counter(struct fman_kg_regs __iomem *regs,
-+			       uint8_t scheme_id,
-+			       uint8_t hwport_id, uint32_t counter)
-+{
-+	struct fman_kg_scheme_regs __iomem *kgse_regs;
-+	uint32_t tmp_reg;
-+	int err;
-+
-+	kgse_regs =
-+		(struct fman_kg_scheme_regs __iomem *)&regs->fmkg_indirect[0];
-+
-+	tmp_reg = build_ar_scheme(scheme_id, hwport_id, true, false);
-+
-+	err = fman_kg_write_ar_wait(regs, tmp_reg);
-+	if (err != 0)
-+		return err;
-+
-+	/* Keygen indirect access memory contains all scheme_id registers
-+	 * by now. Change only counter value.
-+	 */
-+	iowrite32be(counter, &kgse_regs->kgse_spc);
-+
-+	/* Write back scheme registers */
-+	tmp_reg = build_ar_scheme(scheme_id, hwport_id, true, true);
-+	err = fman_kg_write_ar_wait(regs, tmp_reg);
-+
-+	return err;
-+}
-+
-+uint32_t fman_kg_get_schemes_total_counter(struct fman_kg_regs __iomem *regs)
-+{
-+	return ioread32be(&regs->fmkg_tpc);
-+}
-+
-+int fman_kg_build_cls_plan(struct fman_kg_cls_plan_params *params,
-+			   struct fman_kg_cp_regs *cls_plan_regs)
-+{
-+	uint8_t entries_set, entry_bit;
-+	int i;
-+
-+	/* Zero out all group's register */
-+	memset(cls_plan_regs, 0, sizeof(struct fman_kg_cp_regs));
-+
-+	/* Go over all classification entries in params->entries_mask and
-+	 * configure the corresponding cpe register
-+	 */
-+	entries_set = params->entries_mask;
-+	for (i = 0; entries_set; i++) {
-+		entry_bit = (uint8_t)(0x80 >> i);
-+		if ((entry_bit & entries_set) == 0)
-+			continue;
-+		entries_set ^= entry_bit;
-+		cls_plan_regs->kgcpe[i] = params->mask_vector[i];
-+	}
-+
-+	return 0;
-+}
-+
-+int fman_kg_write_cls_plan(struct fman_kg_regs __iomem *regs,
-+			   uint8_t grp_id,
-+			   uint8_t entries_mask,
-+			   uint8_t hwport_id,
-+			   struct fman_kg_cp_regs __iomem *cls_plan_regs)
-+{
-+	struct fman_kg_cp_regs __iomem *kgcpe_regs;
-+	uint32_t tmp_reg;
-+	int i, err;
-+
-+	/* Check group index is valid and the group isn't empty */
-+	if (grp_id >= FM_KG_CLS_PLAN_GRPS_NUM)
-+		return -EINVAL;
-+
-+	/* Write indirect classification plan registers */
-+	kgcpe_regs = (struct fman_kg_cp_regs __iomem *)&regs->fmkg_indirect[0];
-+
-+	for (i = 0; i < FM_KG_NUM_CLS_PLAN_ENTR; i++)
-+		iowrite32be(cls_plan_regs->kgcpe[i], &kgcpe_regs->kgcpe[i]);
-+
-+	tmp_reg = build_ar_cls_plan(grp_id, entries_mask, hwport_id, true);
-+	err = fman_kg_write_ar_wait(regs, tmp_reg);
-+	return err;
-+}
-+
-+int fman_kg_write_bind_schemes(struct fman_kg_regs __iomem *regs,
-+			       uint8_t hwport_id, uint32_t schemes)
-+{
-+	struct fman_kg_pe_regs __iomem *kg_pe_regs;
-+	uint32_t tmp_reg;
-+	int err;
-+
-+	kg_pe_regs = (struct fman_kg_pe_regs __iomem *)&regs->fmkg_indirect[0];
-+
-+	iowrite32be(schemes, &kg_pe_regs->fmkg_pe_sp);
-+
-+	tmp_reg = build_ar_bind_scheme(hwport_id, true);
-+	err = fman_kg_write_ar_wait(regs, tmp_reg);
-+	return err;
-+}
-+
-+int fman_kg_build_bind_cls_plans(uint8_t grp_base,
-+				 uint8_t grp_mask, uint32_t *bind_cls_plans)
-+{
-+	/* Check grp_base and grp_mask are 5-bits values */
-+	if ((grp_base & ~0x0000001F) || (grp_mask & ~0x0000001F))
-+		return -EINVAL;
-+
-+	*bind_cls_plans =
-+	    (uint32_t)((grp_mask << FMAN_KG_PE_CPP_MASK_SHIFT) | grp_base);
-+	return 0;
-+}
-+
-+int fman_kg_write_bind_cls_plans(struct fman_kg_regs __iomem *regs,
-+				 uint8_t hwport_id, uint32_t bind_cls_plans)
-+{
-+	struct fman_kg_pe_regs __iomem *kg_pe_regs;
-+	uint32_t tmp_reg;
-+	int err;
-+
-+	kg_pe_regs = (struct fman_kg_pe_regs __iomem *)&regs->fmkg_indirect[0];
-+
-+	iowrite32be(bind_cls_plans, &kg_pe_regs->fmkg_pe_cpp);
-+
-+	tmp_reg = build_ar_bind_cls_plan(hwport_id, true);
-+	err = fman_kg_write_ar_wait(regs, tmp_reg);
-+	return err;
-+}
-diff --git a/drivers/soc/fsl/fman/pcd/fman_prs.c b/drivers/soc/fsl/fman/pcd/fman_prs.c
++EXPORT_SYMBOL(fm_get_rtc_handle);
++#endif
+ 
+ void fm_mutex_lock(void)
+ {
+diff --git a/drivers/soc/fsl/fman/fm_drv.h b/drivers/soc/fsl/fman/fm_drv.h
+index e0be922..c2831a7 100644
+--- a/drivers/soc/fsl/fman/fm_drv.h
++++ b/drivers/soc/fsl/fman/fm_drv.h
+@@ -92,11 +92,18 @@ struct lnx_wrp_fm_dev_t {
+ 	phys_addr_t fm_muram_phys_base_addr;
+ 	uint64_t fm_muram_base_addr;
+ 	resource_size_t fm_muram_mem_size;
++#ifdef CONFIG_FSL_FMAN_RTC
++	uint64_t fm_rtc_phys_base_addr;
++	uint64_t fm_rtc_base_addr;
++	resource_size_t fm_rtc_mem_size;
++#endif
+ 	int irq;
+ 	int err_irq;
+ 	struct fm_params_t params;
+ 	void *h_dev;
+-
++#ifdef CONFIG_FSL_FMAN_RTC
++	void *h_rtc_dev;
++#endif
+ 	struct muram_info *p_muram;
+ 
+ 	struct lnx_wrp_fm_port_dev_t ports[NUM_OF_FM_PORTS];
+diff --git a/drivers/soc/fsl/fman/inc/fm_rtc_ext.h b/drivers/soc/fsl/fman/inc/fm_rtc_ext.h
 new file mode 100644
-index 0000000..db3f38d
+index 0000000..46768c6
 --- /dev/null
-+++ b/drivers/soc/fsl/fman/pcd/fman_prs.c
-@@ -0,0 +1,126 @@
++++ b/drivers/soc/fsl/fman/inc/fm_rtc_ext.h
+@@ -0,0 +1,398 @@
++/*
++ * Copyright 2008-2015 Freescale Semiconductor Inc.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are met:
++ *     * Redistributions of source code must retain the above copyright
++ *       notice, this list of conditions and the following disclaimer.
++ *     * Redistributions in binary form must reproduce the above copyright
++ *       notice, this list of conditions and the following disclaimer in the
++ *       documentation and/or other materials provided with the distribution.
++ *     * Neither the name of Freescale Semiconductor nor the
++ *       names of its contributors may be used to endorse or promote products
++ *       derived from this software without specific prior written permission.
++ *
++ *
++ * ALTERNATIVELY, this software may be distributed under the terms of the
++ * GNU General Public License ("GPL") as published by the Free Software
++ * Foundation, either version 2 of that License or (at your option) any
++ * later version.
++ *
++ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
++ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
++ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
++ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
++ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
++ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++/*File          fm_rtc_ext.h
++ *External definitions and API for FM RTC IEEE1588 Timer Module.
++ */
++
++#ifndef __FM_RTC_EXT_H__
++#define __FM_RTC_EXT_H__
++
++#include "service.h"
++#include "fsl_fman_rtc.h"
++
++struct fm;
++
++/* FM RTC functions, definitions and enums. */
++
++/* FM RTC initialization API. */
++
++/* FM RTC Alarm Polarity Options.*/
++enum fm_rtc_alarm_polarity {
++	FM_RTC_ALARM_POLARITY_ACTIVE_HIGH =
++		/*< Active-high output polarity */
++		FMAN_RTC_ALARM_POLARITY_ACTIVE_HIGH,
++	FM_RTC_ALARM_POLARITY_ACTIVE_LOW =
++		/*< Active-low output polarity */
++		FMAN_RTC_ALARM_POLARITY_ACTIVE_LOW
++};
++
++/* FM RTC Trigger Polarity Options.*/
++enum fm_rtc_trigger_polarity {
++	FM_RTC_TRIGGER_ON_RISING_EDGE =
++		/*< Trigger on rising edge */
++		FMAN_RTC_TRIGGER_ON_RISING_EDGE,
++	FM_RTC_TRIGGER_ON_FALLING_EDGE =
++		/*< Trigger on falling edge */
++		FMAN_RTC_TRIGGER_ON_FALLING_EDGE
++};
++
++/* IEEE1588 Timer Module FM RTC Optional Clock Sources.*/
++enum fm_src_clock {
++	/* external high precision timer reference clock */
++	FM_RTC_SOURCE_CLOCK_EXTERNAL = FMAN_RTC_SOURCE_CLOCK_EXTERNAL,
++	/* MAC system clock */
++	FM_RTC_SOURCE_CLOCK_SYSTEM = FMAN_RTC_SOURCE_CLOCK_SYSTEM,
++	/* RTC clock oscilator */
++	FM_RTC_SOURCE_CLOCK_OSCILATOR = FMAN_RTC_SOURCE_CLOCK_OSCILATOR
++};
++
++/* FM RTC configuration parameters structure.
++ * This structure should be passed to fm_rtc_config().
++ */
++struct fm_rtc_params_t {
++	void *h_fm;		/* FM Handle*/
++	uintptr_t base_address;	/* Base address of FM RTC registers */
++	/* A handle to an application layer object; This handle will
++	 * be passed by the driver upon calling the above callbacks
++	 */
++	void *h_app;
++};
++
++/* Function	fm_rtc_config
++ * Description	  Configures the FM RTC module according to user's parameters.
++ *		  The driver assigns default values to some FM RTC parameters.
++ *		  These parameters can be overwritten using the advanced
++ *		  configuration routines.
++ * Param[in]	  p_fm_rtc_param - FM RTC configuration parameters.
++ * Return	  Handle to the new FM RTC object; NULL pointer on failure.
++ * Cautions	  None
++ */
++void *fm_rtc_config(struct fm_rtc_params_t *p_fm_rtc_param);
++
++/* Function	fm_rtc_init
++ * Description	  Initializes the FM RTC driver and hardware.
++ * Param[in]	  fm_dev - Pointer to FM object
++ * Return	  0 on success; Error code otherwise.
++ * Cautions	  Must be called after fm_rtc_config and before fm_rt_init ().
++ */
++int fm_rtc_init(struct fm *fm_dev);
++
++/*Function	fm_rtc_free
++ *Description	  Frees the FM RTC object and all allocated resources.
++ * Param[in]	  fm_dev - Pointer to FM object
++ * Return	  0 on success; Error code otherwise.
++ * Cautions	  Must be called after fm_rtc_config and before fm_rt_init ().
++ */
++int fm_rtc_free(struct fm *fm_dev);
++
++/* FM RTC advanced configuration functions. */
++
++/* Function	fm_rtc_cfg_period
++ * Description	  Configures the period of the timestamp if different than
++ *		  default [DEFAULT_clockPeriod].
++ * Param[in]	  fm_dev - Pointer to FM object
++ * Param[in]	  period - Period in nano-seconds.
++ * Return	  0 on success; Error code otherwise.
++ * Cautions	  Must be called after fm_rtc_config and before fm_rt_init ().
++ */
++int fm_rtc_cfg_period(struct fm *fm_dev, uint32_t period);
++
++/* Function	fm_rtc_cfg_src_clk
++ * Description	  Configures the source clock of the RTC.
++ * Param[in]	  fm_dev - Pointer to FM object
++ * Param[in]	  src_clk - Source clock selection.
++ * Param[in]	  freq_in_mhz - the source-clock frequency (in MHz).
++ * Return	  0 on success; Error code otherwise.
++ * Cautions	  Must be called after fm_rtc_config and before fm_rt_init ().
++ */
++int fm_rtc_cfg_src_clk(struct fm *fm_dev, enum fm_src_clock src_clk,
++		       uint32_t freq_in_mhz);
++
++/* Function	fm_rtc_cfg_pulse_realign
++ * Description	  Configures the RTC to automatic FIPER pulse realignment in
++ *		  response to timer adjustments [DEFAULT_pulseRealign]
++ *		  In this mode, the RTC clock is identical to the source clock.
++ *		  This feature can be useful when the system contains an
++ *		  external RTC with inherent frequency compensation.
++ * Param[in]	  fm_dev - Pointer to FM object
++ * Param[in]	  enable - true to enable automatic realignment.
++ * Return	  0 on success; Error code otherwise.
++ * Cautions	  Must be called after fm_rtc_config and before fm_rt_init ().
++ */
++int fm_rtc_cfg_pulse_realign(struct fm *fm_dev, bool enable);
++
++/* Function	fm_rtc_cfg_freq_bypass
++ * Description	  Configures the RTC to bypass the frequency compensation
++ *		  mechanism. [DEFAULT_bypass]
++ *		  In this mode, the RTC clock is identical to the source clock.
++ *		  This feature can be useful when the system contains an
++ *		  external RTC with inherent frequency compensation.
++ * Param[in]	  fm_dev - Pointer to FM object
++ * Param[in]	  enabled - true to bypass frequency compensation;
++ * Return	  0 on success; Error code otherwise.
++ * Cautions	  Must be called after fm_rtc_config and before fm_rt_init ().
++ */
++int fm_rtc_cfg_freq_bypass(struct fm *fm_dev, bool enabled);
++
++/* Function      fm_rtc_cfg_inverted_in_clk_phase
++ * Description	  Configures the RTC to invert the source clock phase on input.
++ *		  [DEFAULT_invertInputClkPhase]
++ * Param[in]	  fm_dev - Pointer to FM object
++ * Param[in]	  inverted - true to invert the source clock phase on input.
++ *		  false otherwise.
++ * Return	  0 on success; Error code otherwise.
++ * Cautions	  Must be called after fm_rtc_config and before fm_rt_init ().
++ */
++int fm_rtc_cfg_inverted_in_clk_phase(struct fm *fm_dev, bool inverted);
++
++/* Function	fm_rtc_cfg_inverted_out_clk_phase
++ * Description	  Configures the RTC to invert the output clock phase.
++ *		  [DEFAULT_invertOutputClkPhase]
++ * Param[in]	  fm_dev - Pointer to FM object
++ * Param[in]	  inverted - true to invert the output clock phase.
++ * Return	  0 on success; Error code otherwise.
++ * Cautions	  Must be called after fm_rtc_config and before fm_rt_init ().
++ */
++int fm_rtc_cfg_inverted_out_clk_phase(struct fm *fm_dev, bool inverted);
++
++/* Function	  fm_rtc_cfg_out_clk_div
++ * Description	  Configures the divisor for generating the output clock from
++ *		  the RTC clock. [DEFAULT_output_clock_divisor]
++ * Param[in]	  fm_dev - Pointer to FM object
++ * Param[in]	  divisor - Divisor for generation of the output clock.
++ * Return	  0 on success; Error code otherwise.
++ * Cautions	  Must be called after fm_rtc_config and before fm_rt_init ().
++ */
++int fm_rtc_cfg_out_clk_div(struct fm *fm_dev, uint16_t div);
++
++/* Function	fm_rtc_cfg_alarm_polarity
++ * Description	  Configures the polarity (active-high/active-low) of a
++ *		  specific alarm signal. [DEFAULT_alarm_polarity]
++ * Param[in]	  fm_dev - Pointer to FM object
++ * Param[in]	  alarm_id - Alarm ID.
++ * Param[in]	  alarm_polarity - Alarm polarity.
++ * Return	  0 on success; Error code otherwise.
++ * Cautions	  Must be called after fm_rtc_config and before fm_rt_init ().
++ */
++int fm_rtc_cfg_alarm_polarity(struct fm *fm_dev, uint8_t alarm_id,
++			      enum fm_rtc_alarm_polarity alarm_polarity);
++
++/* Function	fm_rtc_cfg_extern_trigger_polarity
++ * Description	  Configures the polarity (rising/falling edge) of a specific
++ *		  external trigger signal. [DEFAULT_trigger_polarity]
++ * Param[in]	  fm_dev - Pointer to FM object
++ * Param[in]	  trigger_id - Trigger ID.
++ * Param[in]	  trigger_polarity - Trigger polarity.
++ * Return	  0 on success; Error code otherwise.
++ * Cautions	  Must be called after fm_rtc_config and before fm_rt_init ().
++ */
++int fm_rtc_cfg_extern_trigger_polarity(struct fm *fm_dev, uint8_t trigger_id,
++				       enum fm_rtc_trigger_polarity
++				       trigger_polarity);
++
++/* FM RTC runtime control API. */
++
++/* Function	  fm_rtc_exceptions_cb
++ * Description	  Exceptions user callback routine, used for RTC different
++ *		  mechanisms.
++ * Param[in]	  h_app - User's application descriptor.
++ * Param[in]	  id - source id.
++ */
++typedef void (fm_rtc_exceptions_cb) (void *h_app, uint8_t id);
++
++/* FM RTC alarm parameters */
++struct fm_rtc_alarm_params_t {
++	uint8_t alarm_id;   /*< 0 or 1 */
++	uint64_t alarm_time; /* In nanoseconds, the time when the alarm
++			      * should go off - must be a multiple of
++			      * the RTC period
++			      */
++	/* This routine will be called when RTC reaches alarm_time */
++	fm_rtc_exceptions_cb *f_alarm_callback;
++	bool clear_on_expiration; /* true to turn off the alarm once expired.*/
++};
++
++/* FM RTC Periodic Pulse parameters. */
++struct fm_rtc_periodic_pulse_params_t {
++	/* 0 or 1 */
++	uint8_t periodic_pulse_id;
++	/* In Nanoseconds. Must be a multiple of the RTC period */
++	uint64_t periodic_pulse_period;
++	/* This routine will be called every periodic_pulse_period. */
++	fm_rtc_exceptions_cb *f_periodic_pulse_callback;
++};
++
++/* FM RTC Periodic Pulse parameters. */
++struct fm_rtc_external_trigger_params_t {
++	uint8_t external_trigger_id; /* 0 or 1 */
++	bool use_pulse_as_input; /* Use the pulse interrupt instead of
++				  * an external signal
++				  */
++	/* This routine will be called every periodic_pulse_period. */
++	fm_rtc_exceptions_cb *f_external_trigger_callback;
++};
++
++/* Function	fm_rtc_enable
++ * Description	  Enable the RTC (time count is started).
++ * Param[in]	  fm_dev - Pointer to FM object
++ * Return	  0 on success; Error code otherwise.
++ * Cautions	  Must be called only after fm_rtc_init().
++ */
++int fm_rtc_enable(struct fm *fm_dev);
++
++/* Function	fm_rtc_disable
++ * Description	  Disable the RTC (time count is stopped).
++ * Param[in]	  fm_dev - Pointer to FM object
++ * Return	  0 on success; Error code otherwise.
++ * Cautions	  Must be called only after fm_rtc_init().
++ */
++int fm_rtc_disable(struct fm *fm_dev);
++
++/* Function	fm_rtc_set_clk_offset
++ * Description	  Sets the clock offset (usually relative to another clock).
++ *		  The user can pass a negative offset value.
++ * Param[in]	  fm_dev - Pointer to FM object
++ * Param[in]	  offset - New clock offset (in nanoseconds).
++ * Return	  0 on success; Error code otherwise.
++ * Cautions	  Must be called only after fm_rtc_init().
++ */
++int fm_rtc_set_clk_offset(struct fm *fm_dev, int64_t offset);
++
++/* Function	fm_rtc_set_alarm
++ * Description	  schedules an alarm event to a given RTC time.
++ * Param[in]	  fm_dev - Pointer to FM object
++ * Param[in]	  p_fm_rtc_alarm_params - Alarm parameters.
++ * Return	  0 on success; Error code otherwise.
++ * Cautions	  Must be called only after fm_rtc_init() and prior
++ *		  to fm_rtc_enable().
++ */
++int fm_rtc_set_alarm(struct fm *fm_dev,
++		     struct fm_rtc_alarm_params_t *p_fm_rtc_alarm_params);
++
++/* Function	fm_rtc_set_periodic_pulse
++ * Description	  Sets a periodic pulse.
++ * Param[in]	  fm_dev - Pointer to FM object
++ * Param[in]	  p_fm_rtc_periodic_pulse_params - Periodic pulse parameters.
++ * Return	  0 on success; Error code otherwise.
++ * Cautions	  Must be called only after fm_rtc_init() and prior
++ *		  to fm_rtc_enable().
++ */
++int fm_rtc_set_periodic_pulse(struct fm *fm_dev,
++			      struct fm_rtc_periodic_pulse_params_t *
++			      p_fm_rtc_periodic_pulse_params);
++
++/* Function	  fm_rtc_clear_periodic_pulse
++ * Description	  Clears a periodic pulse.
++ * Param[in]	  fm_dev - Pointer to FM object
++ * Param[in]	  periodic_pulse_id                 - Periodic pulse id.
++ * Return	  0 on success; Error code otherwise.
++ * Cautions	  Must be called only after fm_rtc_init().
++ */
++int fm_rtc_clear_periodic_pulse(struct fm *fm_dev,
++				uint8_t periodic_pulse_id);
++
++/* Function	fm_rtc_set_external_trigger
++ * Description	  Sets an external trigger indication and define a callback
++ *		  routine to be called on such event.
++ * Param[in]	  fm_dev - Pointer to FM object
++ * Param[in]	  p_fm_rtc_external_trigger_params- External Trigger
++ *		  parameters.
++ * Return	  0 on success; Error code otherwise.
++ * Cautions	  Must be called only after fm_rtc_init().
++ */
++int fm_rtc_set_external_trigger(struct fm *fm_dev,
++				struct fm_rtc_external_trigger_params_t *
++				p_fm_rtc_external_trigger_params);
++
++/* Function	fm_rtc_clear_external_trigger
++ * Description	  Clears external trigger indication.
++ * Param[in]	  fm_dev - Pointer to FM object
++ * Param[in]	  id - External Trigger id.
++ * Return	  0 on success; Error code otherwise.
++ * Cautions	  Must be called only after fm_rtc_init().
++ */
++int fm_rtc_clear_external_trigger(struct fm *fm_dev, uint8_t id);
++
++/* Function	  fm_rtc_get_external_trigger_time_stamp
++ * Description	  Reads the External Trigger TimeStamp.
++ * Param[in]	  fm_dev - Pointer to FM object
++ * Param[in]	  trigger_id - External Trigger id.
++ * Param[out]	  p_time_stamp - External Trigger timestamp
++ * Return	  0 on success; Error code otherwise.
++ * Cautions	  Must be called only after fm_rtc_init().
++ */
++int fm_rtc_get_external_trigger_time_stamp(struct fm *fm_dev,
++					   uint8_t trigger_id,
++					   uint64_t *p_time_stamp);
++
++/* Function	fm_rtc_get_cnt
++ * Description	  Returns the current RTC time.
++ * Param[in]	  fm_dev - Pointer to FM object
++ * Param[out]	  p_ts - returned time stamp (in nanoseconds).
++ * Return	  0 on success; Error code otherwise.
++ * Cautions	  Must be called only after fm_rtc_init().
++ */
++int fm_rtc_get_current_time(struct fm *fm_dev, uint64_t *p_ts);
++
++/* Function	  fm_rtc_set_current_time
++ * Description	  Sets the current RTC time.
++ * Param[in]	  fm_dev - Pointer to FM object
++ * Param[in]	  ts - The new time stamp (in nanoseconds).
++ * Return	  0 on success; Error code otherwise.
++ * Cautions	  Must be called only after fm_rtc_init().
++ */
++int fm_rtc_set_current_time(struct fm *fm_dev, uint64_t ts);
++
++/* Function	fm_rtc_get_freq_compensation
++ * Description	  Retrieves the frequency compensation value
++ * Param[in]	  fm_dev - Pointer to FM object
++ * Param[out]	  p_compensation - A pointer to the returned value of
++ *		  compensation.
++ * Return	  0 on success; Error code otherwise.
++ * Cautions	  Must be called only after fm_rtc_init().
++ */
++int fm_rtc_get_freq_compensation(struct fm *fm_dev,
++				 uint32_t *p_compensation);
++
++/* Function	fm_rtc_set_freq_compensation
++ * Description	  Sets a new frequency compensation value.
++ * Param[in]	  fm_dev - Pointer to FM object
++ * Param[in]	  freq_compensation - The new frequency compensation value
++ *		  to set.
++ * Return	  0 on success; Error code otherwise.
++ * Cautions	  Must be called only after fm_rtc_init().
++ */
++int fm_rtc_set_freq_compensation(struct fm *fm_dev,
++				 uint32_t freq_compensation);
++
++#endif /* __FM_RTC_EXT_H__ */
+diff --git a/drivers/soc/fsl/fman/inc/fsl_fman_drv.h b/drivers/soc/fsl/fman/inc/fsl_fman_drv.h
+index a0b88c2..4bef301 100644
+--- a/drivers/soc/fsl/fman/inc/fsl_fman_drv.h
++++ b/drivers/soc/fsl/fman/inc/fsl_fman_drv.h
+@@ -62,6 +62,9 @@ struct fm *fm_bind(struct device *fm_dev);
+ void fm_unbind(struct fm *fm);
+ 
+ void *fm_get_handle(struct fm *fm);
++#ifdef CONFIG_FSL_FMAN_RTC
++void *fm_get_rtc_handle(struct fm *fm);
++#endif
+ struct resource *fm_get_mem_region(struct fm *fm);
+ 
+ /*	fm_mutex_lock
+diff --git a/drivers/soc/fsl/fman/rtc/Makefile b/drivers/soc/fsl/fman/rtc/Makefile
+index c8b4477..b4b2fce 100644
+--- a/drivers/soc/fsl/fman/rtc/Makefile
++++ b/drivers/soc/fsl/fman/rtc/Makefile
+@@ -1,3 +1,3 @@
+ obj-$(CONFIG_FSL_FMAN_RTC)	+= fsl_fman_rtc.o
+ 
+-fsl_fman_rtc-objs		:= fman_rtc.o
++fsl_fman_rtc-objs		:= fman_rtc.o fm_rtc.o
+diff --git a/drivers/soc/fsl/fman/rtc/fm_rtc.c b/drivers/soc/fsl/fman/rtc/fm_rtc.c
+new file mode 100644
+index 0000000..dc64527
+--- /dev/null
++++ b/drivers/soc/fsl/fman/rtc/fm_rtc.c
+@@ -0,0 +1,763 @@
 +/*
 + * Copyright 2008 - 2015 Freescale Semiconductor Inc.
 + *
@@ -962,100 +671,832 @@ index 0000000..db3f38d
 + * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 + */
 +
-+#include "fsl_fman_prs.h"
++#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
 +
-+uint32_t fman_prs_get_err_event(struct fman_prs_regs __iomem *regs,
-+				uint32_t ev_mask)
++#include "service.h"
++
++#include "fm_rtc.h"
++#include "fm_common.h"
++
++#include <linux/string.h>
++#include <linux/slab.h>
++
++static int check_init_parameters(struct fm_rtc_t *p_rtc)
 +{
-+	return ioread32be(&regs->fmpr_perr) & ev_mask;
-+}
++	struct rtc_cfg *p_rtc_drv_param = p_rtc->p_rtc_drv_param;
++	int i;
 +
-+uint32_t fman_prs_get_err_ev_mask(struct fman_prs_regs __iomem *regs)
-+{
-+	return ioread32be(&regs->fmpr_perer);
-+}
++	if ((p_rtc_drv_param->src_clk != FMAN_RTC_SOURCE_CLOCK_EXTERNAL) &&
++	    (p_rtc_drv_param->src_clk != FMAN_RTC_SOURCE_CLOCK_SYSTEM) &&
++	    (p_rtc_drv_param->src_clk != FMAN_RTC_SOURCE_CLOCK_OSCILATOR)) {
++		pr_err("Source clock undefined\n");
++		return -EINVAL;
++	}
++	if (p_rtc->output_clock_divisor == 0) {
++		pr_err("Divisor for output clock (should be positive)\n");
++		return -EDOM;
++	}
 +
-+void fman_prs_ack_err_event(struct fman_prs_regs __iomem *regs, uint32_t event)
-+{
-+	iowrite32be(event, &regs->fmpr_perr);
-+}
-+
-+uint32_t fman_prs_get_expt_event(struct fman_prs_regs __iomem *regs,
-+				 uint32_t ev_mask)
-+{
-+	return ioread32be(&regs->fmpr_pevr) & ev_mask;
-+}
-+
-+uint32_t fman_prs_get_expt_ev_mask(struct fman_prs_regs __iomem *regs)
-+{
-+	return ioread32be(&regs->fmpr_pever);
-+}
-+
-+void fman_prs_ack_expt_event(struct fman_prs_regs __iomem *regs, uint32_t event)
-+{
-+	iowrite32be(event, &regs->fmpr_pevr);
-+}
-+
-+void fman_prs_defconfig(struct fman_prs_cfg *cfg)
-+{
-+	cfg->port_id_stat = 0;
-+	cfg->max_prs_cyc_lim = DEFAULT_MAX_PRS_CYC_LIM;
-+	cfg->prs_exceptions = 0x03000000;
-+}
-+
-+int fman_prs_init(struct fman_prs_regs __iomem *regs, struct fman_prs_cfg *cfg)
-+{
-+	uint32_t tmp;
-+
-+	iowrite32be(cfg->max_prs_cyc_lim, &regs->fmpr_rpclim);
-+	iowrite32be((FM_PCD_PRS_SINGLE_ECC | FM_PCD_PRS_PORT_IDLE_STS),
-+		    &regs->fmpr_pevr);
-+
-+	if (cfg->prs_exceptions & FM_PCD_EX_PRS_SINGLE_ECC)
-+		iowrite32be(FM_PCD_PRS_SINGLE_ECC, &regs->fmpr_pever);
-+	else
-+		iowrite32be(0, &regs->fmpr_pever);
-+
-+	iowrite32be(FM_PCD_PRS_DOUBLE_ECC, &regs->fmpr_perr);
-+
-+	tmp = 0;
-+	if (cfg->prs_exceptions & FM_PCD_EX_PRS_DOUBLE_ECC)
-+		tmp |= FM_PCD_PRS_DOUBLE_ECC;
-+	iowrite32be(tmp, &regs->fmpr_perer);
-+
-+	iowrite32be(cfg->port_id_stat, &regs->fmpr_ppsc);
++	for (i = 0; i < p_rtc->rtc_intg.fm_rtc_num_of_alarms; i++) {
++		if ((p_rtc_drv_param->alarm_polarity[i] !=
++		     FMAN_RTC_ALARM_POLARITY_ACTIVE_LOW) &&
++		    (p_rtc_drv_param->alarm_polarity[i] !=
++		     FMAN_RTC_ALARM_POLARITY_ACTIVE_HIGH)) {
++			pr_err("Alarm %d signal polarity\n", i);
++			return -EBADRQC;
++		}
++	}
++	for (i = 0; i < p_rtc->rtc_intg.fm_rtc_num_of_ext_triggers; i++) {
++		if ((p_rtc_drv_param->trigger_polarity[i] !=
++		     FMAN_RTC_TRIGGER_ON_FALLING_EDGE) &&
++		     (p_rtc_drv_param->trigger_polarity[i] !=
++			FMAN_RTC_TRIGGER_ON_RISING_EDGE)) {
++			pr_err("Trigger %d signal polarity\n", i);
++			return -EBADRQC;
++		}
++	}
 +
 +	return 0;
 +}
 +
-+void fman_prs_enable(struct fman_prs_regs __iomem *regs)
++/* Checks if p_rtc driver parameters were initialized
++ * returns 0 if success else returns error code
++ */
++static int is_init_done(struct rtc_cfg *p_rtc_drv_parameters)
 +{
-+	uint32_t tmp;
-+
-+	tmp = ioread32be(&regs->fmpr_rpimac) | FM_PCD_PRS_RPIMAC_EN;
-+	iowrite32be(tmp, &regs->fmpr_rpimac);
++	if (!p_rtc_drv_parameters)
++		return 0;
++	return -ENOSYS;
 +}
 +
-+void fman_prs_disable(struct fman_prs_regs __iomem *regs)
++static void rtc_exceptions(void *h_fm_rtc)
 +{
-+	uint32_t tmp;
++	struct fm_rtc_t *p_rtc = (struct fm_rtc_t *)h_fm_rtc;
++	struct rtc_regs __iomem *p_mem_map;
 +
-+	tmp = ioread32be(&regs->fmpr_rpimac) & ~FM_PCD_PRS_RPIMAC_EN;
-+	iowrite32be(tmp, &regs->fmpr_rpimac);
++	register uint32_t events;
++
++	p_mem_map = p_rtc->p_mem_map;
++
++	events = fman_rtc_check_and_clear_event(p_mem_map);
++	if (events&FMAN_RTC_TMR_TEVENT_ALM1) {
++		if (p_rtc->alarm_params[0].clear_on_expiration) {
++			fman_rtc_set_timer_alarm_l(p_mem_map, 0, 0);
++			fman_rtc_disable_interrupt(p_mem_map,
++						   FMAN_RTC_TMR_TEVENT_ALM1);
++		}
++		ASSERT(p_rtc->alarm_params[0].f_alarm_callback);
++		p_rtc->alarm_params[0].f_alarm_callback(p_rtc->h_app, 0);
++	}
++	if (events&FMAN_RTC_TMR_TEVENT_ALM2) {
++		if (p_rtc->alarm_params[1].clear_on_expiration) {
++			fman_rtc_set_timer_alarm_l(p_mem_map, 1, 0);
++			fman_rtc_disable_interrupt(p_mem_map,
++						   FMAN_RTC_TMR_TEVENT_ALM2);
++		}
++		ASSERT(p_rtc->alarm_params[1].f_alarm_callback);
++		p_rtc->alarm_params[1].f_alarm_callback(p_rtc->h_app, 1);
++	}
++	if (events&FMAN_RTC_TMR_TEVENT_PP1) {
++		ASSERT(p_rtc->periodic_pulse_params[0].
++			    f_periodic_pulse_callback);
++		p_rtc->
++		periodic_pulse_params[0].f_periodic_pulse_callback(p_rtc->
++								   h_app, 0);
++	}
++	if (events&FMAN_RTC_TMR_TEVENT_PP2) {
++		ASSERT(p_rtc->periodic_pulse_params[1].
++			    f_periodic_pulse_callback);
++		p_rtc->
++		periodic_pulse_params[1].f_periodic_pulse_callback(p_rtc->
++								   h_app, 1);
++	}
++	if (events&FMAN_RTC_TMR_TEVENT_ETS1) {
++		ASSERT(p_rtc->external_trigger_params[0].
++			    f_external_trigger_callback);
++		p_rtc->external_trigger_params[0].
++		    f_external_trigger_callback(p_rtc->h_app, 0);
++	}
++	if (events&FMAN_RTC_TMR_TEVENT_ETS2) {
++		ASSERT(p_rtc->external_trigger_params[1].
++			    f_external_trigger_callback);
++		p_rtc->external_trigger_params[1].
++		    f_external_trigger_callback(p_rtc->h_app, 1);
++	}
 +}
 +
-+void fman_prs_set_stst_port_msk(struct fman_prs_regs __iomem *regs,
-+				uint32_t pid_msk)
++static void set_rtc_intg_params(struct fm_rtc_t *p_rtc)
 +{
-+	iowrite32be(pid_msk, &regs->fmpr_ppsc);
-+}
++	struct fm_revision_info_t rev_info;
 +
-+void fman_prs_set_stst(struct fman_prs_regs __iomem *regs, bool enable)
-+{
-+	if (enable)
-+		iowrite32be(FM_PCD_PRS_PPSC_ALL_PORTS, &regs->fmpr_ppsc);
++	fm_get_revision(p_rtc->h_fm, &rev_info);
++
++	p_rtc->rtc_intg.fm_rtc_num_of_alarms = 2;
++	p_rtc->rtc_intg.fm_rtc_num_of_ext_triggers = 2;
++
++	if (rev_info.major_rev == 6)
++		p_rtc->rtc_intg.fm_rtc_num_of_periodic_pulses = 3;
 +	else
-+		iowrite32be(0, &regs->fmpr_ppsc);
++		p_rtc->rtc_intg.fm_rtc_num_of_periodic_pulses = 2;
 +}
++
++void *fm_get_rtc_handle(struct fm *fm);
++
++void *fm_rtc_config(struct fm_rtc_params_t *p_fm_rtc_param)
++{
++	struct fm_rtc_t *p_rtc;
++
++	/* Allocate memory for the FM RTC driver parameters */
++	p_rtc = kzalloc(sizeof(*p_rtc), GFP_KERNEL);
++	if (!p_rtc)
++		return NULL;
++
++	/* Allocate memory for the FM RTC driver parameters */
++	p_rtc->p_rtc_drv_param = kzalloc(sizeof(*p_rtc->p_rtc_drv_param),
++					  GFP_KERNEL);
++	if (!p_rtc->p_rtc_drv_param) {
++		kfree(p_rtc);
++		return NULL;
++	}
++
++	/* Store RTC configuration parameters */
++	p_rtc->h_fm = p_fm_rtc_param->h_fm;
++
++	/* Set default RTC configuration parameters */
++	fman_rtc_defconfig(p_rtc->p_rtc_drv_param);
++
++	p_rtc->output_clock_divisor = DEFAULT_OUTPUT_CLOCK_DIVISOR;
++	p_rtc->p_rtc_drv_param->bypass = DEFAULT_BYPASS;
++	p_rtc->clk_period_nano_sec = DEFAULT_CLOCK_PERIOD;	/* 1 usec */
++
++	/* Store RTC parameters in the RTC control structure */
++	p_rtc->p_mem_map = (struct rtc_regs __iomem *)
++	    UINT_TO_PTR(p_fm_rtc_param->base_address);
++	p_rtc->h_app = p_fm_rtc_param->h_app;
++
++	set_rtc_intg_params(p_rtc);
++
++	return p_rtc;
++}
++
++int fm_rtc_init(struct fm *fm_dev)
++{
++	struct fm_rtc_t *p_rtc = fm_get_rtc_handle(fm_dev);
++	struct rtc_cfg *p_rtc_drv_param;
++	struct rtc_regs __iomem *p_mem_map;
++	uint32_t freq_compensation = 0;
++	uint64_t tmp_double;
++	bool init_freq_comp = false;
++
++	p_rtc_drv_param = p_rtc->p_rtc_drv_param;
++	p_mem_map = p_rtc->p_mem_map;
++
++	if (check_init_parameters(p_rtc) != 0) {
++		pr_err("Init Parameters are not Valid\n");
++		return -EINVAL;
++	}
++	/* TODO check that no timestamping MACs are working in this stage. */
++
++	/* find source clock frequency in Mhz */
++	if (p_rtc->p_rtc_drv_param->src_clk != FMAN_RTC_SOURCE_CLOCK_SYSTEM)
++		p_rtc->src_clk_freq_mhz =
++		    p_rtc->p_rtc_drv_param->ext_src_clk_freq;
++	else
++		p_rtc->src_clk_freq_mhz =
++		    (uint32_t)(fm_get_clock_freq(p_rtc->h_fm) / 2);
++
++	/* if timer in Master mode Initialize TMR_CTRL */
++	/* We want the counter (TMR_CNT) to count in nano-seconds */
++	if (!p_rtc_drv_param->timer_slave_mode &&
++	    p_rtc->p_rtc_drv_param->bypass)
++		p_rtc->clk_period_nano_sec = (1000 / p_rtc->src_clk_freq_mhz);
++	else {
++		/* Initialize TMR_ADD with the initial frequency compensation
++		 * value:freq_compensation = (2^32 / frequency ratio)
++		 * frequency ratio = sorce clock/rtc clock =
++		 * (p_rtc->src_clk_freq_mhz*1000000))/ 1/(p_rtc->
++		 * clk_period_nano_sec*1000000000)
++		 */
++		init_freq_comp = true;
++		freq_compensation =
++		    (uint32_t)DIV_CEIL(ACCUMULATOR_OVERFLOW*1000,
++					p_rtc->clk_period_nano_sec *
++					p_rtc->src_clk_freq_mhz);
++	}
++
++	/* check the legality of the relation between source
++	 * and destination clocks
++	 */
++	/* should be larger than 1.0001 */
++	tmp_double = 10000*(uint64_t)p_rtc->clk_period_nano_sec *
++					(uint64_t)p_rtc->src_clk_freq_mhz;
++	if ((tmp_double) <= 10001) {
++		pr_err("Relation bet src, dest clk should be >1.0001\n");
++		return -EINVAL;
++	}
++	fman_rtc_init(p_rtc_drv_param,
++		      p_mem_map,
++		      p_rtc->rtc_intg.fm_rtc_num_of_alarms,
++		      p_rtc->rtc_intg.fm_rtc_num_of_periodic_pulses,
++		      p_rtc->rtc_intg.fm_rtc_num_of_ext_triggers,
++		      init_freq_comp,
++		      freq_compensation,
++		      p_rtc->output_clock_divisor);
++
++	/* Register the FM RTC interrupt */
++	fm_register_intr(p_rtc->h_fm, FM_MOD_TMR, 0, FM_INTR_TYPE_NORMAL,
++			 rtc_exceptions, p_rtc);
++
++	/* Free parameters structures */
++	kfree(p_rtc->p_rtc_drv_param);
++	p_rtc->p_rtc_drv_param = NULL;
++
++	return 0;
++}
++
++int fm_rtc_free(struct fm *fm_dev)
++{
++	struct fm_rtc_t *p_rtc = fm_get_rtc_handle(fm_dev);
++
++	if (!p_rtc->p_rtc_drv_param)
++		fman_rtc_disable(p_rtc->p_mem_map);
++	else
++		kfree(p_rtc->p_rtc_drv_param);
++
++	/* Unregister FM RTC interrupt */
++	fm_unregister_intr(p_rtc->h_fm, FM_MOD_TMR, 0, FM_INTR_TYPE_NORMAL);
++	kfree(p_rtc);
++
++	return 0;
++}
++
++int fm_rtc_cfg_src_clk(struct fm *fm_dev, enum fm_src_clock src_clk,
++		       uint32_t freq_in_mhz)
++{
++	struct fm_rtc_t *p_rtc = fm_get_rtc_handle(fm_dev);
++	int ret;
++
++	ret = is_init_done(p_rtc->p_rtc_drv_param);
++	if (!ret)
++		return -ENOSYS;
++
++	p_rtc->p_rtc_drv_param->src_clk = (enum fman_src_clock)src_clk;
++	if (src_clk != FM_RTC_SOURCE_CLOCK_SYSTEM)
++		p_rtc->p_rtc_drv_param->ext_src_clk_freq = freq_in_mhz;
++
++	return 0;
++}
++
++int fm_rtc_cfg_period(struct fm *fm_dev, uint32_t period)
++{
++	struct fm_rtc_t *p_rtc = fm_get_rtc_handle(fm_dev);
++	int ret;
++
++	ret = is_init_done(p_rtc->p_rtc_drv_param);
++	if (!ret)
++		return -ENOSYS;
++
++	p_rtc->clk_period_nano_sec = period;
++
++	return 0;
++}
++
++int fm_rtc_cfg_freq_bypass(struct fm *fm_dev, bool enabled)
++{
++	struct fm_rtc_t *p_rtc = fm_get_rtc_handle(fm_dev);
++	int ret;
++
++	ret = is_init_done(p_rtc->p_rtc_drv_param);
++	if (!ret)
++		return -ENOSYS;
++
++	p_rtc->p_rtc_drv_param->bypass = enabled;
++
++	return 0;
++}
++
++int fm_rtc_cfg_inverted_in_clk_phase(struct fm *fm_dev, bool inverted)
++{
++	struct fm_rtc_t *p_rtc = fm_get_rtc_handle(fm_dev);
++	int ret;
++
++	ret = is_init_done(p_rtc->p_rtc_drv_param);
++	if (!ret)
++		return -ENOSYS;
++
++	p_rtc->p_rtc_drv_param->invert_input_clk_phase = inverted;
++
++	return 0;
++}
++
++int fm_rtc_cfg_inverted_out_clk_phase(struct fm *fm_dev, bool inverted)
++{
++	struct fm_rtc_t *p_rtc = fm_get_rtc_handle(fm_dev);
++	int ret;
++
++	ret = is_init_done(p_rtc->p_rtc_drv_param);
++	if (!ret)
++		return -ENOSYS;
++
++	p_rtc->p_rtc_drv_param->invert_output_clk_phase = inverted;
++
++	return 0;
++}
++
++int fm_rtc_cfg_out_clk_div(struct fm *fm_dev, uint16_t div)
++{
++	struct fm_rtc_t *p_rtc = fm_get_rtc_handle(fm_dev);
++	int ret;
++
++	ret = is_init_done(p_rtc->p_rtc_drv_param);
++	if (!ret)
++		return -ENOSYS;
++
++	p_rtc->output_clock_divisor = div;
++
++	return 0;
++}
++
++int fm_rtc_cfg_pulse_realign(struct fm *fm_dev, bool enable)
++{
++	struct fm_rtc_t *p_rtc = fm_get_rtc_handle(fm_dev);
++	int ret;
++
++	ret = is_init_done(p_rtc->p_rtc_drv_param);
++	if (!ret)
++		return -ENOSYS;
++
++	p_rtc->p_rtc_drv_param->pulse_realign = enable;
++
++	return 0;
++}
++
++int fm_rtc_cfg_alarm_polarity(struct fm *fm_dev, uint8_t alarm_id,
++			      enum fm_rtc_alarm_polarity alarm_polarity)
++{
++	struct fm_rtc_t *p_rtc = fm_get_rtc_handle(fm_dev);
++	int ret;
++
++	ret = is_init_done(p_rtc->p_rtc_drv_param);
++	if (!ret)
++		return -ENOSYS;
++
++	if (alarm_id >= p_rtc->rtc_intg.fm_rtc_num_of_alarms) {
++		pr_err("Alarm ID\n");
++		return -EBADRQC;
++	}
++
++	p_rtc->p_rtc_drv_param->alarm_polarity[alarm_id] =
++	    (enum fman_rtc_alarm_polarity)alarm_polarity;
++
++	return 0;
++}
++
++int fm_rtc_cfg_extern_trigger_polarity(struct fm *fm_dev, uint8_t trigger_id,
++				       enum fm_rtc_trigger_polarity
++				       trigger_polarity)
++{
++	struct fm_rtc_t *p_rtc = fm_get_rtc_handle(fm_dev);
++	int ret;
++
++	ret = is_init_done(p_rtc->p_rtc_drv_param);
++	if (!ret)
++		return -ENOSYS;
++
++	if (trigger_id >= p_rtc->rtc_intg.fm_rtc_num_of_ext_triggers) {
++		pr_err("External trigger ID\n");
++		return -EBADRQC;
++	}
++
++	p_rtc->p_rtc_drv_param->trigger_polarity[trigger_id] =
++	    (enum fman_rtc_trigger_polarity)trigger_polarity;
++
++	return 0;
++}
++
++int fm_rtc_enable(struct fm *fm_dev)
++{
++	bool reset_clock = 0;
++	struct fm_rtc_t *p_rtc = fm_get_rtc_handle(fm_dev);
++	int ret;
++
++	ret = is_init_done(p_rtc->p_rtc_drv_param);
++	if (ret)
++		return ret;
++
++	fman_rtc_enable(p_rtc->p_mem_map, reset_clock);
++	return 0;
++}
++EXPORT_SYMBOL(fm_rtc_enable);
++
++int fm_rtc_disable(struct fm *fm_dev)
++{
++	struct fm_rtc_t *p_rtc = fm_get_rtc_handle(fm_dev);
++	int ret;
++
++	ret = is_init_done(p_rtc->p_rtc_drv_param);
++	if (ret)
++		return ret;
++
++	/* TODO A check must be added here, that no timestamping MAC's
++	 * are working in this stage.
++	 */
++	fman_rtc_disable(p_rtc->p_mem_map);
++	return 0;
++}
++EXPORT_SYMBOL(fm_rtc_disable);
++
++int fm_rtc_set_clk_offset(struct fm *fm_dev, int64_t offset)
++{
++	struct fm_rtc_t *p_rtc = fm_get_rtc_handle(fm_dev);
++	int ret;
++
++	ret = is_init_done(p_rtc->p_rtc_drv_param);
++	if (ret)
++		return ret;
++
++	fman_rtc_set_timer_offset(p_rtc->p_mem_map, offset);
++	return 0;
++}
++
++int fm_rtc_set_alarm(struct fm *fm_dev,
++		     struct fm_rtc_alarm_params_t *p_fm_rtc_alarm_params)
++{
++	struct fm_rtc_t *p_rtc = fm_get_rtc_handle(fm_dev);
++	uint64_t tmp_alarm;
++	bool enable = false;
++	int ret;
++	u64 reminder;
++
++	ret = is_init_done(p_rtc->p_rtc_drv_param);
++	if (ret)
++		return ret;
++
++	if (p_fm_rtc_alarm_params->alarm_id >=
++		p_rtc->rtc_intg.fm_rtc_num_of_alarms) {
++		pr_err("Alarm ID\n");
++		return -EBADRQC;
++	}
++	if (p_fm_rtc_alarm_params->alarm_time < p_rtc->clk_period_nano_sec) {
++		pr_err("Alarm time must be >= RTC period - %d ns\n",
++		       p_rtc->clk_period_nano_sec);
++		return -EBADRQC;
++	}
++
++	div64_u64_rem(p_fm_rtc_alarm_params->alarm_time,
++		      (uint64_t)p_rtc->clk_period_nano_sec,
++		      &reminder);
++
++	if (reminder) {
++		pr_err("Alarm time must be multiple of RTCperiod-%d ns\n",
++		       p_rtc->clk_period_nano_sec);
++		return -EBADRQC;
++	}
++	tmp_alarm = div64_u64(p_fm_rtc_alarm_params->alarm_time,
++			      (uint64_t)p_rtc->clk_period_nano_sec);
++
++	if (p_fm_rtc_alarm_params->f_alarm_callback) {
++		p_rtc->alarm_params[p_fm_rtc_alarm_params->alarm_id].
++		    f_alarm_callback = p_fm_rtc_alarm_params->f_alarm_callback;
++		p_rtc->alarm_params[p_fm_rtc_alarm_params->alarm_id].
++		    clear_on_expiration = p_fm_rtc_alarm_params->
++					  clear_on_expiration;
++		enable = true;
++	}
++
++	fman_rtc_set_alarm(p_rtc->p_mem_map, p_fm_rtc_alarm_params->alarm_id,
++			   (unsigned long)tmp_alarm, enable);
++
++	return 0;
++}
++EXPORT_SYMBOL(fm_rtc_set_alarm);
++
++int fm_rtc_set_periodic_pulse(struct fm *fm_dev,
++			      struct fm_rtc_periodic_pulse_params_t *
++			      p_fm_rtc_periodic_pulse_params)
++{
++	struct fm_rtc_t *p_rtc = fm_get_rtc_handle(fm_dev);
++	bool enable = false;
++	uint64_t tmp_fiper;
++	int ret;
++	u64 reminder;
++
++	ret = is_init_done(p_rtc->p_rtc_drv_param);
++	if (ret)
++		return ret;
++
++	if (p_fm_rtc_periodic_pulse_params->periodic_pulse_id >=
++	    p_rtc->rtc_intg.fm_rtc_num_of_periodic_pulses) {
++		pr_err("Periodic pulse ID\n");
++		return -EBADRQC;
++	}
++	if (fman_rtc_is_enabled(p_rtc->p_mem_map)) {
++		pr_err("Can't set Periodic pulse when RTC is enable.\n");
++		return -EBADRQC;
++	}
++	if (p_fm_rtc_periodic_pulse_params->periodic_pulse_period <
++	      p_rtc->clk_period_nano_sec) {
++		pr_err("Periodic pulse must be >= RTC period - %d ns\n",
++		       p_rtc->clk_period_nano_sec);
++		return -EBADRQC;
++	}
++	div64_u64_rem(p_fm_rtc_periodic_pulse_params->periodic_pulse_period,
++		      (uint64_t)p_rtc->clk_period_nano_sec,
++		      &reminder);
++	if (reminder) {
++		pr_err("Periodic pulse is multiple of RTC period-%dns\n",
++		       p_rtc->clk_period_nano_sec);
++		return -EBADRQC;
++	}
++	tmp_fiper = div64_u64(
++			p_fm_rtc_periodic_pulse_params->periodic_pulse_period,
++			(uint64_t)p_rtc->clk_period_nano_sec);
++	if (tmp_fiper&0xffffffff00000000LL) {
++		pr_err("Periodic pulse/RTC Period (=%d) > 4294967296\n",
++		       p_rtc->clk_period_nano_sec);
++		return -EBADRQC;
++	}
++	if (p_fm_rtc_periodic_pulse_params->f_periodic_pulse_callback) {
++		p_rtc->periodic_pulse_params[p_fm_rtc_periodic_pulse_params->
++		periodic_pulse_id].f_periodic_pulse_callback =
++		    p_fm_rtc_periodic_pulse_params->f_periodic_pulse_callback;
++		    enable = true;
++	}
++	fman_rtc_set_periodic_pulse(p_rtc->p_mem_map,
++				    p_fm_rtc_periodic_pulse_params->
++				    periodic_pulse_id,
++				    (uint32_t)tmp_fiper, enable);
++	return 0;
++}
++EXPORT_SYMBOL(fm_rtc_set_periodic_pulse);
++
++int fm_rtc_clear_periodic_pulse(struct fm *fm_dev,
++				uint8_t periodic_pulse_id)
++{
++	struct fm_rtc_t *p_rtc = fm_get_rtc_handle(fm_dev);
++	int ret;
++
++	ret = is_init_done(p_rtc->p_rtc_drv_param);
++	if (ret)
++		return ret;
++
++	if (periodic_pulse_id >=
++		p_rtc->rtc_intg.fm_rtc_num_of_periodic_pulses) {
++		pr_err("Periodic pulse ID\n");
++		return -EBADRQC;
++	}
++
++	p_rtc->
++	periodic_pulse_params[periodic_pulse_id].f_periodic_pulse_callback =
++	    NULL;
++	fman_rtc_clear_periodic_pulse(p_rtc->p_mem_map, periodic_pulse_id);
++
++	return 0;
++}
++
++int fm_rtc_set_external_trigger(struct fm *fm_dev,
++				struct fm_rtc_external_trigger_params_t *
++				p_fm_rtc_external_trigger_params)
++{
++	struct fm_rtc_t *p_rtc = fm_get_rtc_handle(fm_dev);
++	bool enable = false;
++	int ret;
++
++	ret = is_init_done(p_rtc->p_rtc_drv_param);
++	if (ret)
++		return ret;
++
++	if (p_fm_rtc_external_trigger_params->external_trigger_id >=
++	    p_rtc->rtc_intg.fm_rtc_num_of_ext_triggers) {
++		pr_err("External Trigger ID\n");
++		return -EBADRQC;
++	}
++
++	if (p_fm_rtc_external_trigger_params->f_external_trigger_callback) {
++		p_rtc->
++		external_trigger_params[p_fm_rtc_external_trigger_params->
++					     external_trigger_id].
++		    f_external_trigger_callback =
++		    p_fm_rtc_external_trigger_params->
++		    f_external_trigger_callback;
++		enable = true;
++	}
++
++	fman_rtc_set_ext_trigger(p_rtc->p_mem_map,
++				 p_fm_rtc_external_trigger_params->
++				 external_trigger_id, enable,
++				 p_fm_rtc_external_trigger_params->
++				 use_pulse_as_input);
++	return 0;
++}
++
++int fm_rtc_clear_external_trigger(struct fm *fm_dev,
++				  uint8_t external_trigger_id)
++{
++	struct fm_rtc_t *p_rtc = fm_get_rtc_handle(fm_dev);
++	int ret;
++
++	ret = is_init_done(p_rtc->p_rtc_drv_param);
++	if (ret)
++		return ret;
++
++	if (external_trigger_id >= p_rtc->rtc_intg.
++	    fm_rtc_num_of_ext_triggers) {
++		pr_err("External Trigger ID\n");
++		return -EBADRQC;
++	}
++
++	p_rtc->external_trigger_params[external_trigger_id].
++	    f_external_trigger_callback = NULL;
++
++	fman_rtc_clear_external_trigger(p_rtc->p_mem_map, external_trigger_id);
++
++	return 0;
++}
++
++int fm_rtc_get_external_trigger_time_stamp(struct fm *fm_dev,
++					   uint8_t trigger_id,
++					   uint64_t *p_time_stamp)
++{
++	struct fm_rtc_t *p_rtc = fm_get_rtc_handle(fm_dev);
++	int ret;
++
++	ret = is_init_done(p_rtc->p_rtc_drv_param);
++	if (ret)
++		return ret;
++
++	if (trigger_id >= p_rtc->rtc_intg.fm_rtc_num_of_ext_triggers) {
++		pr_err("External trigger ID");
++		return -EBADRQC;
++	}
++	*p_time_stamp =
++	    fman_rtc_get_trigger_stamp(p_rtc->p_mem_map,
++				       trigger_id)*p_rtc->
++				       clk_period_nano_sec;
++
++	return 0;
++}
++
++int fm_rtc_get_current_time(struct fm *fm_dev, uint64_t *p_ts)
++{
++	struct fm_rtc_t *p_rtc = fm_get_rtc_handle(fm_dev);
++	int ret;
++
++	ret = is_init_done(p_rtc->p_rtc_drv_param);
++	if (ret)
++		return ret;
++
++	*p_ts = fman_rtc_get_timer(p_rtc->p_mem_map) *
++						p_rtc->clk_period_nano_sec;
++
++	return 0;
++}
++EXPORT_SYMBOL(fm_rtc_get_current_time);
++
++int fm_rtc_set_current_time(struct fm *fm_dev, uint64_t ts)
++{
++	struct fm_rtc_t *p_rtc = fm_get_rtc_handle(fm_dev);
++	int ret;
++
++	ret = is_init_done(p_rtc->p_rtc_drv_param);
++	if (ret)
++		return ret;
++
++	ts = div64_u64(ts, p_rtc->clk_period_nano_sec);
++	fman_rtc_set_timer(p_rtc->p_mem_map, (unsigned long)ts);
++
++	return 0;
++}
++EXPORT_SYMBOL(fm_rtc_set_current_time);
++
++int fm_rtc_get_freq_compensation(struct fm *fm_dev,
++				 uint32_t *p_compensation)
++{
++	struct fm_rtc_t *p_rtc = fm_get_rtc_handle(fm_dev);
++	int ret;
++
++	ret = is_init_done(p_rtc->p_rtc_drv_param);
++	if (ret)
++		return ret;
++
++	*p_compensation =
++			fman_rtc_get_frequency_compensation(p_rtc->p_mem_map);
++
++	return 0;
++}
++EXPORT_SYMBOL(fm_rtc_get_freq_compensation);
++
++int fm_rtc_set_freq_compensation(struct fm *fm_dev,
++				 uint32_t freq_compensation)
++{
++	struct fm_rtc_t *p_rtc = fm_get_rtc_handle(fm_dev);
++	int ret;
++
++	ret = is_init_done(p_rtc->p_rtc_drv_param);
++	if (ret)
++		return ret;
++
++	/* set the new freq_compensation */
++	fman_rtc_set_frequency_compensation(p_rtc->p_mem_map,
++					    freq_compensation);
++
++	return 0;
++}
++EXPORT_SYMBOL(fm_rtc_set_freq_compensation);
+diff --git a/drivers/soc/fsl/fman/rtc/fm_rtc.h b/drivers/soc/fsl/fman/rtc/fm_rtc.h
+new file mode 100644
+index 0000000..c4774e7
+--- /dev/null
++++ b/drivers/soc/fsl/fman/rtc/fm_rtc.h
+@@ -0,0 +1,89 @@
++/*
++ * Copyright 2008 - 2015 Freescale Semiconductor Inc.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are met:
++ *     * Redistributions of source code must retain the above copyright
++ *	 notice, this list of conditions and the following disclaimer.
++ *     * Redistributions in binary form must reproduce the above copyright
++ *	 notice, this list of conditions and the following disclaimer in the
++ *	 documentation and/or other materials provided with the distribution.
++ *     * Neither the name of Freescale Semiconductor nor the
++ *	 names of its contributors may be used to endorse or promote products
++ *	 derived from this software without specific prior written permission.
++ *
++ * ALTERNATIVELY, this software may be distributed under the terms of the
++ * GNU General Public License ("GPL") as published by the Free Software
++ * Foundation, either version 2 of that License or (at your option) any
++ * later version.
++ *
++ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
++ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
++ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
++ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
++ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
++ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++/* Memory map and internal definitions for FM RTC IEEE1588 Timer driver. */
++
++#ifndef __FM_RTC_H__
++#define __FM_RTC_H__
++
++#include "service.h"
++#include "fm_rtc_ext.h"
++#include "dpaa_integration_ext.h"
++
++/* General definitions */
++
++#define ACCUMULATOR_OVERFLOW            ((uint64_t)(1LL << 32))
++#define DEFAULT_OUTPUT_CLOCK_DIVISOR     0x00000002
++#define DEFAULT_BYPASS			 false
++#define DEFAULT_CLOCK_PERIOD             1000
++
++struct fm_rtc_alarm_t {
++	fm_rtc_exceptions_cb *f_alarm_callback;
++	bool clear_on_expiration;
++};
++
++struct fm_rtc_periodic_pulse_t {
++	fm_rtc_exceptions_cb *f_periodic_pulse_callback;
++};
++
++struct fm_rtc_external_trigger_t {
++	fm_rtc_exceptions_cb *f_external_trigger_callback;
++};
++
++struct fm_rtc_intg_t {
++	uint32_t fm_rtc_num_of_alarms;
++	uint32_t fm_rtc_num_of_periodic_pulses;
++	uint32_t fm_rtc_num_of_ext_triggers;
++};
++
++/* RTC FM driver control structure. */
++struct fm_rtc_t {
++	void *h_fm;
++	/* Application handle */
++	void *h_app;
++	struct rtc_regs __iomem *p_mem_map;
++	/* RTC clock period in nano-seconds (for FS mode) */
++	uint32_t clk_period_nano_sec;
++	uint32_t src_clk_freq_mhz;
++	/* Output clock divisor (for FS mode) */
++	uint16_t output_clock_divisor;
++	struct fm_rtc_alarm_t alarm_params[FM_RTC_NUM_OF_ALARMS];
++	struct fm_rtc_periodic_pulse_t
++	    periodic_pulse_params[FM_RTC_NUM_OF_PERIODIC_PULSES];
++	struct fm_rtc_external_trigger_t
++	    external_trigger_params[FM_RTC_NUM_OF_EXT_TRIGGERS];
++	/* RTC Driver parameters (for Init phase) */
++	struct rtc_cfg *p_rtc_drv_param;
++	/* RTC Driver integration params */
++	struct fm_rtc_intg_t rtc_intg;
++};
++
++#endif /* __FM_RTC_H__ */
 -- 
 1.7.9.5
