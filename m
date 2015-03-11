@@ -1,43 +1,29 @@
-Return-Path: <neelegup@linux.vnet.ibm.com>
-Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <haokexin@gmail.com>
+Received: from mail-qg0-x22c.google.com (mail-qg0-x22c.google.com
+ [IPv6:2607:f8b0:400d:c04::22c])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7F0221A0631
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2015 15:28:59 +1100 (AEDT)
-Received: from /spool/local
- by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <neelegup@linux.vnet.ibm.com>;
- Wed, 11 Mar 2015 09:58:56 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id AEB643940049
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2015 09:58:51 +0530 (IST)
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t2B4Sobp64028718
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2015 09:58:51 +0530
-Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t2B4Snj3027642
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2015 09:58:50 +0530
-Message-ID: <54FFC3EC.7020708@linux.vnet.ibm.com>
-Date: Wed, 11 Mar 2015 09:56:20 +0530
-From: Neelesh Gupta <neelegup@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1D6991A0701
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2015 15:38:30 +1100 (AEDT)
+Received: by qgfh3 with SMTP id h3so7345076qgf.13
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Mar 2015 21:38:28 -0700 (PDT)
+Date: Wed, 11 Mar 2015 12:38:11 +0800
+From: Kevin Hao <haokexin@gmail.com>
+To: Tomi Valkeinen <tomi.valkeinen@ti.com>
+Subject: Re: [PATCH 03/15] fbdev: aty128fb: replace PPC_OF with PPC
+Message-ID: <20150311043811.GF28582@pek-khao-d1.corp.ad.wrs.com>
+References: <1422712065-9403-1-git-send-email-haokexin@gmail.com>
+ <1422712065-9403-4-git-send-email-haokexin@gmail.com>
+ <1424995875.4645.42.camel@kernel.crashing.org>
+ <20150227010549.GA10596@pek-khao-d1.corp.ad.wrs.com>
+ <54FEE230.6030006@ti.com>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [RFC V2 04/12] i2c: opal: make use of the new infrastructure
- for quirks
-References: <1424880126-15047-1-git-send-email-wsa@the-dreams.de>
- <1424880126-15047-5-git-send-email-wsa@the-dreams.de>
- <54FF2631.9050006@linux.vnet.ibm.com>
- <1426029133.17565.9.camel@kernel.crashing.org>
-In-Reply-To: <1426029133.17565.9.camel@kernel.crashing.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linux-mips@linux-mips.org, Wolfram Sang <wsa@the-dreams.de>,
- linux-kernel@vger.kernel.org, Ludovic Desroches <ludovic.desroches@atmel.com>,
- linux-i2c@vger.kernel.org, Yingjoe Chen <yingjoe.chen@mediatek.com>,
- Eddie Huang <eddie.huang@mediatek.com>, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="jaoouwwPWoQSJZYp"
+In-Reply-To: <54FEE230.6030006@ti.com>
+Cc: linux-fbdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Paul Mackerras <paulus@samba.org>,
+ Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,139 +34,48 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-On 03/11/2015 04:42 AM, Benjamin Herrenschmidt wrote:
-> On Tue, 2015-03-10 at 22:43 +0530, Neelesh Gupta wrote:
->> I tested the i2c opal driver after updating the patch as below.
->> Basically I think we can also support write-then-{read/write}
->> for the number of messages = 2.
->> Ben, any issues if we support both write plus read/write in the
->> opal driver ?
-> Nope, in fact it's a good idea, I found myself having to expoes such
-> an interface to some userspace tool of ours.
->
-> However...
->
->> diff --git a/drivers/i2c/busses/i2c-opal.c b/drivers/i2c/busses/i2c-opal.c
->> index 16f90b1..85412ba 100644
->> --- a/drivers/i2c/busses/i2c-opal.c
->> +++ b/drivers/i2c/busses/i2c-opal.c
->> @@ -104,18 +104,8 @@ static int i2c_opal_master_xfer(struct i2c_adapter *adap, struct i2c_msg *msgs,
->>    		req.buffer_ra = cpu_to_be64(__pa(msgs[0].buf));
->>    		break;
->>    	case 2:
->> -		/* For two messages, we basically support only simple
->> -		 * smbus transactions of a write plus a read. We might
->> -		 * want to allow also two writes but we'd have to bounce
->> -		 * the data into a single buffer.
->> -		 */
->> -		if ((msgs[0].flags & I2C_M_RD) || !(msgs[1].flags & I2C_M_RD))
->> -			return -EOPNOTSUPP;
-> Don't we still want to enforce that the first message is a write ?
-> Somebody may not be looking at the quirks...
->
->> -		if (msgs[0].len > 4)
->> -			return -EOPNOTSUPP;
-> And that the len is supported...
->
->> -		if (msgs[0].addr != msgs[1].addr)
->> -			return -EOPNOTSUPP;
-> Same...
->
-> Ie, the quirk indicates to the callers what we support, but we should
-> still check that we aren't called with something that doesn't match.
+--jaoouwwPWoQSJZYp
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Quirk *also* return error to the user if any of the conditions mismatch with
-what we have indicated through the quriks structure...
+On Tue, Mar 10, 2015 at 02:23:12PM +0200, Tomi Valkeinen wrote:
+> > I just sent out a v2 [1] a few hours earlier with some minor updates. W=
+e plan
+> > to merge this patch series via the powerpc tree in 4.1 cycle if I can c=
+ollect
+> > all the acks from the corresponding driver maintainers.
+>=20
+> Fbdev changes look ok to me.
 
-I think we can't land up here by-passing the check for quirks so above 
-checks
-are duplicated here..
+Hi Tomi,
 
-Neelesh.
+I assume that I can add a "Acked-by: Tomi Valkeinen <tomi.valkeinen@ti.com>"
+for all the following patches, right?
+  http://patchwork.ozlabs.org/patch/443890/
+  http://patchwork.ozlabs.org/patch/443891/
+  http://patchwork.ozlabs.org/patch/443892/
+  http://patchwork.ozlabs.org/patch/443893/
+  http://patchwork.ozlabs.org/patch/443894/
+  http://patchwork.ozlabs.org/patch/443895/
+  http://patchwork.ozlabs.org/patch/443897/
 
->
->> -		req.type = OPAL_I2C_SM_READ;
->> +		req.type = (msgs[1].flags & I2C_M_RD) ?
->> +			OPAL_I2C_SM_READ : OPAL_I2C_SM_WRITE;
->>    		req.addr = cpu_to_be16(msgs[0].addr);
->>    		req.subaddr_sz = msgs[0].len;
->>    		for (i = 0; i < msgs[0].len; i++)
->> @@ -210,6 +200,11 @@ static const struct i2c_algorithm i2c_opal_algo = {
->>    	.functionality	= i2c_opal_func,
->>    };
->>
->> +static struct i2c_adapter_quirks i2c_opal_quirks = {
->> +	.flags = I2C_AQ_COMB | I2C_AQ_COMB_WRITE_FIRST | I2C_AQ_COMB_SAME_ADDR,
->> +	.max_comb_1st_msg_len = 4,
->> +};
->> +
->>    static int i2c_opal_probe(struct platform_device *pdev)
->>    {
->>    	struct i2c_adapter	*adapter;
->> @@ -232,6 +227,7 @@ static int i2c_opal_probe(struct platform_device *pdev)
->>
->>    	adapter->algo = &i2c_opal_algo;
->>    	adapter->algo_data = (void *)(unsigned long)opal_id;
->> +	adapter->quirks = &i2c_opal_quirks;
->>    	adapter->dev.parent = &pdev->dev;
->>    	adapter->dev.of_node = of_node_get(pdev->dev.of_node);
->>    	pname = of_get_property(pdev->dev.of_node, "ibm,port-name", NULL);
->>
->>
->>
->> On 02/25/2015 09:31 PM, Wolfram Sang wrote:
->>> From: Wolfram Sang <wsa+renesas@sang-engineering.com>
->>>
->>> Signed-off-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
->>> ---
->>>    drivers/i2c/busses/i2c-opal.c | 22 +++++++++++-----------
->>>    1 file changed, 11 insertions(+), 11 deletions(-)
->>>
->>> diff --git a/drivers/i2c/busses/i2c-opal.c b/drivers/i2c/busses/i2c-opal.c
->>> index 16f90b1a750894..b2788ecad5b3cb 100644
->>> --- a/drivers/i2c/busses/i2c-opal.c
->>> +++ b/drivers/i2c/busses/i2c-opal.c
->>> @@ -104,17 +104,6 @@ static int i2c_opal_master_xfer(struct i2c_adapter *adap, struct i2c_msg *msgs,
->>>    		req.buffer_ra = cpu_to_be64(__pa(msgs[0].buf));
->>>    		break;
->>>    	case 2:
->>> -		/* For two messages, we basically support only simple
->>> -		 * smbus transactions of a write plus a read. We might
->>> -		 * want to allow also two writes but we'd have to bounce
->>> -		 * the data into a single buffer.
->>> -		 */
->>> -		if ((msgs[0].flags & I2C_M_RD) || !(msgs[1].flags & I2C_M_RD))
->>> -			return -EOPNOTSUPP;
->>> -		if (msgs[0].len > 4)
->>> -			return -EOPNOTSUPP;
->>> -		if (msgs[0].addr != msgs[1].addr)
->>> -			return -EOPNOTSUPP;
->>>    		req.type = OPAL_I2C_SM_READ;
->>>    		req.addr = cpu_to_be16(msgs[0].addr);
->>>    		req.subaddr_sz = msgs[0].len;
->>> @@ -210,6 +199,16 @@ static const struct i2c_algorithm i2c_opal_algo = {
->>>    	.functionality	= i2c_opal_func,
->>>    };
->>>    
->>> +/* For two messages, we basically support only simple
->>> + * smbus transactions of a write plus a read. We might
->>> + * want to allow also two writes but we'd have to bounce
->>> + * the data into a single buffer.
->>> + */
->>> +static struct i2c_adapter_quirks i2c_opal_quirks = {
->>> +	.flags = I2C_AQ_COMB_WRITE_THEN_READ,
->>> +	.max_comb_1st_msg_len = 4,
->>> +};
->>> +
->>>    static int i2c_opal_probe(struct platform_device *pdev)
->>>    {
->>>    	struct i2c_adapter	*adapter;
->>> @@ -232,6 +231,7 @@ static int i2c_opal_probe(struct platform_device *pdev)
->>>    
->>>    	adapter->algo = &i2c_opal_algo;
->>>    	adapter->algo_data = (void *)(unsigned long)opal_id;
->>> +	adapter->quirks = &i2c_opal_quirks;
->>>    	adapter->dev.parent = &pdev->dev;
->>>    	adapter->dev.of_node = of_node_get(pdev->dev.of_node);
->>>    	pname = of_get_property(pdev->dev.of_node, "ibm,port-name", NULL);
->
+Thanks,
+Kevin
+
+--jaoouwwPWoQSJZYp
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBAgAGBQJU/8azAAoJEJNY7TDerrFxM0gIAMU/onSFczQCkrA765tFAUmb
+MeySoXOfj1z6FI2aU65Buylgo9Q7J1AUoj3wLlKHVPhNVaXKM8jJFVl+ovs87adf
+8GERHXxa1x7lxuEuBQEoK/NUF8wUY5RzHBDbKkf3pPIDBj9P0y1mL/LXftQxi0mg
+2/Nyjg9qxkarMStPerflmY7mLHnHgGKD/jwyqSJZugI1nwPh3iVJtodl2i2FKj20
+qjuk/xb9zw67VMrUdUmdRq2OzRe930YcW54psQYknWuya9NqIVQSyTCgeI4SqJZM
+YE2iC9wOzP/G7WfCLYJYzdU2dN0UiY/tKnd0D8Fy8ru/n2w0z7VEM3xc0ZerdRo=
+=i1Om
+-----END PGP SIGNATURE-----
+
+--jaoouwwPWoQSJZYp--
