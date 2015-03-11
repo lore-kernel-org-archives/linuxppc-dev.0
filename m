@@ -1,20 +1,36 @@
-Return-Path: <Julia.Lawall@lip6.fr>
-Received: from mail3-relais-sop.national.inria.fr
- (mail3-relais-sop.national.inria.fr [192.134.164.104])
- (using TLSv1 with cipher RC4-SHA (128/128 bits))
+Return-Path: <keescook@google.com>
+Received: from mail-vc0-x229.google.com (mail-vc0-x229.google.com
+ [IPv6:2607:f8b0:400c:c03::229])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0F1491A083A
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Mar 2015 04:15:25 +1100 (AEDT)
-From: Julia Lawall <Julia.Lawall@lip6.fr>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 2/15] powerpc: don't export static symbol
-Date: Wed, 11 Mar 2015 17:56:24 +0100
-Message-Id: <1426092997-30605-3-git-send-email-Julia.Lawall@lip6.fr>
-In-Reply-To: <1426092997-30605-1-git-send-email-Julia.Lawall@lip6.fr>
-References: <1426092997-30605-1-git-send-email-Julia.Lawall@lip6.fr>
-Cc: daniel@iogearbox.net, kernel-janitors@vger.kernel.org,
- linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 569591A078D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Mar 2015 05:59:57 +1100 (AEDT)
+Received: by mail-vc0-f169.google.com with SMTP id im6so3762291vcb.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2015 11:59:55 -0700 (PDT)
+MIME-Version: 1.0
+Sender: keescook@google.com
+In-Reply-To: <1425518828-16017-1-git-send-email-keescook@chromium.org>
+References: <1425518828-16017-1-git-send-email-keescook@chromium.org>
+Date: Wed, 11 Mar 2015 11:59:55 -0700
+Message-ID: <CAGXu5j+PMBEPLTLiDVZ9XvnT9a2P+tOGPLXfE865crteeChDFQ@mail.gmail.com>
+Subject: Re: [PATCH v3 0/8] switch to using asm-generic for seccomp.h
+From: Kees Cook <keescook@chromium.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain; charset=UTF-8
+Cc: Linux MIPS Mailing List <linux-mips@linux-mips.org>,
+ Peter Zijlstra <peterz@infradead.org>, Will Deacon <will.deacon@arm.com>,
+ Paul Mackerras <paulus@samba.org>, sparclinux <sparclinux@vger.kernel.org>,
+ linux-arch <linux-arch@vger.kernel.org>, Russell King <linux@arm.linux.org.uk>,
+ Helge Deller <deller@gmx.de>, "x86@kernel.org" <x86@kernel.org>,
+ "James E.J. Bottomley" <jejb@parisc-linux.org>, Ingo Molnar <mingo@redhat.com>,
+ Frederic Weisbecker <fweisbec@gmail.com>, James Hogan <james.hogan@imgtec.com>,
+ Laura Abbott <lauraa@codeaurora.org>, Kees Cook <keescook@chromium.org>,
+ Arnd Bergmann <arnd@arndb.de>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ Michal Simek <monstr@monstr.eu>, linux-parisc <linux-parisc@vger.kernel.org>,
+ LKML <linux-kernel@vger.kernel.org>, Ralf Baechle <ralf@linux-mips.org>,
+ Daniel Borkmann <dborkman@redhat.com>, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,66 +40,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Julia Lawall <Julia.Lawall@lip6.fr>
+On Wed, Mar 4, 2015 at 5:27 PM, Kees Cook <keescook@chromium.org> wrote:
+> Most architectures don't need to do much special for the strict-mode
+> seccomp syscall entries. Remove the redundant headers and reduce the
+> others.
+>
+> Signed-off-by: Kees Cook <keescook@chromium.org>
 
-The semantic patch that fixes this problem is as follows:
-(http://coccinelle.lip6.fr/)
+Hi Andrew,
 
-// <smpl>
-@r@
-type T;
-identifier f;
-@@
+Just a quick ping: are you able to pick up this series, or should I
+try to get this in on a per-arch basis?
 
-static T f (...) { ... }
+Thanks!
 
-@@
-identifier r.f;
-declarer name EXPORT_SYMBOL;
-@@
+-Kees
 
--EXPORT_SYMBOL(f);
-// </smpl>
+> ---
+> v3:
+> - split patch series by architecture
+> - fix up architectures that need sigreturn overrides (ingo)
+> v2:
+> - use Kbuild "generic-y" instead of explicit #include lines (sfr)
+>
 
-Furthermore, the function is never used, so its definition is dropped as
-well.
 
-Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
 
----
- arch/powerpc/sysdev/qe_lib/qe_io.c |   25 -------------------------
- 1 file changed, 25 deletions(-)
-
-diff --git a/arch/powerpc/sysdev/qe_lib/qe_io.c b/arch/powerpc/sysdev/qe_lib/qe_io.c
-index d099941..7ea0174 100644
---- a/arch/powerpc/sysdev/qe_lib/qe_io.c
-+++ b/arch/powerpc/sysdev/qe_lib/qe_io.c
-@@ -190,28 +190,3 @@ int par_io_of_config(struct device_node *np)
- 	return 0;
- }
- EXPORT_SYMBOL(par_io_of_config);
--
--#ifdef DEBUG
--static void dump_par_io(void)
--{
--	unsigned int i;
--
--	printk(KERN_INFO "%s: par_io=%p\n", __func__, par_io);
--	for (i = 0; i < num_par_io_ports; i++) {
--		printk(KERN_INFO "	cpodr[%u]=%08x\n", i,
--			in_be32(&par_io[i].cpodr));
--		printk(KERN_INFO "	cpdata[%u]=%08x\n", i,
--			in_be32(&par_io[i].cpdata));
--		printk(KERN_INFO "	cpdir1[%u]=%08x\n", i,
--			in_be32(&par_io[i].cpdir1));
--		printk(KERN_INFO "	cpdir2[%u]=%08x\n", i,
--			in_be32(&par_io[i].cpdir2));
--		printk(KERN_INFO "	cppar1[%u]=%08x\n", i,
--			in_be32(&par_io[i].cppar1));
--		printk(KERN_INFO "	cppar2[%u]=%08x\n", i,
--			in_be32(&par_io[i].cppar2));
--	}
--
--}
--EXPORT_SYMBOL(dump_par_io);
--#endif /* DEBUG */
+-- 
+Kees Cook
+Chrome OS Security
