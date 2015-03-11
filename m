@@ -1,19 +1,41 @@
-Return-Path: <Igal.Liberman@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0122.outbound.protection.outlook.com [207.46.100.122])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <weiyang@linux.vnet.ibm.com>
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 495A71A1185
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2015 20:13:49 +1100 (AEDT)
-From: Igal.Liberman <igal.liberman@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>, <netdev@vger.kernel.org>,
- <linux-kernel@vger.kernel.org>
-Subject: [RFC,8/8] soc/fman: Add FMan MAC driver
-Date: Wed, 11 Mar 2015 07:09:11 +0200
-Message-ID: <1426050551-12740-1-git-send-email-igal.liberman@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 613A21A15BA
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2015 20:18:30 +1100 (AEDT)
+Received: from /spool/local
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
+ Wed, 11 Mar 2015 19:18:29 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 7A69A357804C
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2015 20:18:26 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t2B9II7N26804276
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2015 20:18:26 +1100
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t2B9Hq4j015808
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2015 20:17:52 +1100
+Date: Wed, 11 Mar 2015 17:17:35 +0800
+From: Wei Yang <weiyang@linux.vnet.ibm.com>
+To: Bjorn Helgaas <bhelgaas@google.com>
+Subject: Re: [PATCH v12 10/21] PCI: Consider additional PF's IOV BAR
+ alignment in sizing and assigning
+Message-ID: <20150311091735.GE5826@richard>
+Reply-To: Wei Yang <weiyang@linux.vnet.ibm.com>
+References: <20150224082939.32124.45744.stgit@bhelgaas-glaptop2.roam.corp.google.com>
+ <20150224083406.32124.65957.stgit@bhelgaas-glaptop2.roam.corp.google.com>
+ <20150224084152.GG6220@google.com> <20150302073247.GE21571@richard>
+ <20150311023658.GA10994@google.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: scottwood@freescale.com, Igal Liberman <Igal.Liberman@freescale.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20150311023658.GA10994@google.com>
+Cc: linux-pci@vger.kernel.org, Wei Yang <weiyang@linux.vnet.ibm.com>,
+ benh@au1.ibm.com, linuxppc-dev@lists.ozlabs.org, gwshan@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,1408 +45,153 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Igal Liberman <Igal.Liberman@freescale.com>
+On Tue, Mar 10, 2015 at 09:36:58PM -0500, Bjorn Helgaas wrote:
+>On Mon, Mar 02, 2015 at 03:32:47PM +0800, Wei Yang wrote:
+>> On Tue, Feb 24, 2015 at 02:41:52AM -0600, Bjorn Helgaas wrote:
+>> >On Tue, Feb 24, 2015 at 02:34:06AM -0600, Bjorn Helgaas wrote:
+>> >> From: Wei Yang <weiyang@linux.vnet.ibm.com>
+>> >> 
+>> >> When sizing and assigning resources, we divide the resources into two
+>> >> lists: the requested list and the additional list.  We don't consider the
+>> >> alignment of additional VF(n) BAR space.
+>> >> 
+>> >> This is reasonable because the alignment required for the VF(n) BAR space
+>> >> is the size of an individual VF BAR, not the size of the space for *all*
+>> >> VFs.  But some platforms, e.g., PowerNV, require additional alignment.
+>> >> 
+>> >> Consider the additional IOV BAR alignment when sizing and assigning
+>> >> resources.  When there is not enough system MMIO space, the PF's IOV BAR
+>> >> alignment will not contribute to the bridge.  When there is enough system
+>> >> MMIO space, the additional alignment will contribute to the bridge.
+>> >
+>> >I don't understand the ""when there is not enough system MMIO space" part.
+>> >How do we tell if there's enough MMIO space?
+>> >
+>> 
+>> In __assign_resources_sorted(), it has two resources list, one for requested
+>> (head) and one for additional (realloc_head). This function will first try to
+>> combine them and assign. If failed, this means we don't have enough MMIO
+>> space.
+>
+>How about this text:
+>
+>  This is because the alignment required for the VF(n) BAR space is the size
+>  of an individual VF BAR, not the size of the space for *all* VFs.  But we
+>  want additional alignment to support partitioning on PowerNV.
+>
+>  Consider the additional IOV BAR alignment when sizing and assigning
+>  resources.  When there is not enough system MMIO space to accomodate both
+>  the requested list and the additional list, the PF's IOV BAR alignment will
+>  not contribute to the bridge.  When there is enough system MMIO space for
+>  both lists, the additional alignment will contribute to the bridge.
+>
+>We're doing something specifically for PowerNV.  I would really like to be
+>able to read this patch and say "Oh, here's the hook where we get the
+>PowerNV behavior, and it's obvious that other platforms are unaffected."
+>But I don't see a pcibios or similar hook, so I don't know where that
+>PowerNV behavior is.
+>
+>Is it something to do with get_res_add_align()?  That uses min_align, but I
+>don't know how that's connected ...  ah, I see, "add_align" is computed
+>from pci_resource_alignment(), which has this path:
+>
+>  pci_resource_alignment
+>    pci_sriov_resource_alignment
+>      pcibios_iov_resource_alignment
+>
+>and powerpc has a special pcibios_iov_resource_alignment() for PowerNV.
+>
 
-Signed-off-by: Igal Liberman <Igal.Liberman@freescale.com>
----
- drivers/soc/fsl/fman/Kconfig       |   10 +
- drivers/soc/fsl/fman/inc/mac.h     |  142 ++++++++
- drivers/soc/fsl/fman/mac/Makefile  |    3 +-
- drivers/soc/fsl/fman/mac/mac-api.c |  671 ++++++++++++++++++++++++++++++++++++
- drivers/soc/fsl/fman/mac/mac.c     |  522 ++++++++++++++++++++++++++++
- 5 files changed, 1347 insertions(+), 1 deletion(-)
- create mode 100644 drivers/soc/fsl/fman/inc/mac.h
- create mode 100644 drivers/soc/fsl/fman/mac/mac-api.c
- create mode 100644 drivers/soc/fsl/fman/mac/mac.c
+Thanks for the text. I have added these in the change log and some description
+about how it give arch a chance to be involved.
 
-diff --git a/drivers/soc/fsl/fman/Kconfig b/drivers/soc/fsl/fman/Kconfig
-index c0b989b..c9f266c 100644
---- a/drivers/soc/fsl/fman/Kconfig
-+++ b/drivers/soc/fsl/fman/Kconfig
-@@ -35,6 +35,16 @@ config FSL_FMAN_RTC
- 
- if FSL_FMAN_MAC
- 
-+config FMAN_MIB_CNT_OVF_IRQ_EN
-+	bool "Enable the dTSEC MIB counters overflow interrupt"
-+	depends on FSL_FMAN_MAC
-+	default n
-+	help
-+		Enable the dTSEC MIB counters overflow interrupt to get
-+		accurate MIB counters values. Enabled it compensates
-+		for the counters overflow but reduces performance and
-+		triggers error messages in HV setups.
-+
- config FMAN_PFC
- 	bool "FMan v3 PFC support (EXPERIMENTAL)"
- 	depends on FSL_FMAN_MAC
-diff --git a/drivers/soc/fsl/fman/inc/mac.h b/drivers/soc/fsl/fman/inc/mac.h
-new file mode 100644
-index 0000000..8d2d2ee
---- /dev/null
-+++ b/drivers/soc/fsl/fman/inc/mac.h
-@@ -0,0 +1,142 @@
-+/* Copyright 2008-2015 Freescale Semiconductor, Inc.
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions are met:
-+ *     * Redistributions of source code must retain the above copyright
-+ *	 notice, this list of conditions and the following disclaimer.
-+ *     * Redistributions in binary form must reproduce the above copyright
-+ *	 notice, this list of conditions and the following disclaimer in the
-+ *	 documentation and/or other materials provided with the distribution.
-+ *     * Neither the name of Freescale Semiconductor nor the
-+ *	 names of its contributors may be used to endorse or promote products
-+ *	 derived from this software without specific prior written permission.
-+ *
-+ *
-+ * ALTERNATIVELY, this software may be distributed under the terms of the
-+ * GNU General Public License ("GPL") as published by the Free Software
-+ * Foundation, either version 2 of that License or (at your option) any
-+ * later version.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
-+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ */
-+
-+#ifndef __MAC_H
-+#define __MAC_H
-+
-+#include <linux/device.h>	/* struct device, BUS_ID_SIZE */
-+#include <linux/if_ether.h>	/* ETH_ALEN */
-+#include <linux/phy.h>		/* phy_interface_t, struct phy_device */
-+#include <linux/list.h>
-+
-+#include "fsl_fman_drv.h"	/* struct port_device */
-+#include "fm_mac_ext.h"		/* FM MAC API */
-+
-+enum {DTSEC, XGMAC, MEMAC};
-+
-+struct mac_device {
-+	struct device		*dev;
-+	void			*priv;
-+	u8			 cell_index;
-+	struct resource		*res;
-+	void __iomem		*vaddr;
-+	u8			 addr[ETH_ALEN];
-+	bool			 promisc;
-+
-+	struct fm		*fm_dev;
-+	struct fm_port		*port_dev[2];
-+
-+	phy_interface_t		 phy_if;
-+	u32			 if_support;
-+	bool			 link;
-+	bool			 half_duplex;
-+	u16		 speed;
-+	u16		 max_speed;
-+	struct device_node	*phy_node;
-+	char			 fixed_bus_id[MII_BUS_ID_SIZE + 3];
-+	struct device_node	*tbi_node;
-+	struct phy_device	*phy_dev;
-+	void			*fm;
-+	/* List of multicast addresses */
-+	struct list_head	 mc_addr_list;
-+	struct platform_device	*eth_dev;
-+
-+	bool autoneg_pause;
-+	bool rx_pause_req;
-+	bool tx_pause_req;
-+	bool rx_pause_active;
-+	bool tx_pause_active;
-+
-+	struct fm_mac_dev * (*get_mac_handle)(struct mac_device *mac_dev);
-+	int (*init_phy)(struct net_device *net_dev, struct mac_device *mac_dev);
-+	int (*init)(struct mac_device *mac_dev);
-+	int (*start)(struct mac_device *mac_dev);
-+	int (*stop)(struct mac_device *mac_dev);
-+	int (*set_promisc)(struct fm_mac_dev *fm_mac_dev, bool enable);
-+	int (*change_addr)(struct fm_mac_dev *fm_mac_dev,
-+			   enet_addr_t *p_enet_addr);
-+	int (*set_multi)(struct net_device *net_dev,
-+			 struct mac_device *mac_dev);
-+	int (*uninit)(struct fm_mac_dev *fm_mac_dev);
-+	int (*ptp_enable)(struct fm_mac_dev *fm_mac_dev);
-+	int (*ptp_disable)(struct fm_mac_dev *fm_mac_dev);
-+	int (*set_rx_pause)(struct fm_mac_dev *fm_mac_dev, bool en);
-+	int (*set_tx_pause)(struct fm_mac_dev *fm_mac_dev, u8 priority,
-+			    u16 pause_time, u16 thresh_time);
-+	int (*fm_rtc_enable)(struct fm *fm_dev);
-+	int (*fm_rtc_disable)(struct fm *fm_dev);
-+	int (*fm_rtc_get_current_time)(struct fm *fm_dev, uint64_t *ts);
-+	int (*fm_rtc_set_current_time)(struct fm *fm_dev, uint64_t ts);
-+	int (*fm_rtc_get_freq_compensation)(struct fm *fm_dev,
-+					    u32 *drift);
-+	int (*fm_rtc_set_freq_compensation)(struct fm *fm_dev,
-+					    u32 drift);
-+	int (*fm_rtc_set_alarm)(struct fm *fm_dev,
-+				struct fm_rtc_alarm_params_t
-+				*p_fm_rtc_alarm_params);
-+	int (*fm_rtc_set_periodic_pulse)(struct fm *fm_dev,
-+					 struct fm_rtc_periodic_pulse_params_t *
-+					 p_fm_rtc_periodic_pulse_params);
-+	int (*set_wol)(struct fm_mac_dev *fm_mac_dev, bool en);
-+};
-+
-+struct mac_address {
-+	u8 addr[ETH_ALEN];
-+	struct list_head list;
-+};
-+
-+struct dpaa_eth_data {
-+	struct device_node *mac_node;
-+	struct mac_device *mac_dev;
-+	int mac_hw_id;
-+	int fman_hw_id;
-+};
-+
-+#define get_fm_handle(net_dev) \
-+	(((struct dpa_priv_s *)netdev_priv(net_dev))->mac_dev->fm_dev)
-+
-+#define for_each_port_device(i, port_dev)	\
-+	for (i = 0; i < ARRAY_SIZE(port_dev); i++)
-+
-+static inline __attribute((nonnull)) void *macdev_priv(
-+		const struct mac_device *mac_dev)
-+{
-+	return (void *)mac_dev + sizeof(*mac_dev);
-+}
-+
-+extern const char	*mac_driver_description;
-+extern const size_t	 mac_sizeof_priv[];
-+extern void (*const mac_setup[])(struct mac_device *mac_dev);
-+
-+int set_mac_active_pause(struct mac_device *mac_dev, bool rx, bool tx);
-+void get_pause_cfg(struct mac_device *mac_dev, bool *rx_pause, bool *tx_pause);
-+
-+#endif	/* __MAC_H */
-diff --git a/drivers/soc/fsl/fman/mac/Makefile b/drivers/soc/fsl/fman/mac/Makefile
-index 042a1f7..d136c15 100644
---- a/drivers/soc/fsl/fman/mac/Makefile
-+++ b/drivers/soc/fsl/fman/mac/Makefile
-@@ -1,4 +1,4 @@
--obj-$(CONFIG_FSL_FMAN_MAC)	+= fsl_fman_mac.o
-+obj-$(CONFIG_FSL_FMAN_MAC)	+= fsl_fman_mac.o  fsl_mac.o
- 
- fsl_fman_mac-objs		:= fman_dtsec.o fman_dtsec_mii_acc.o	\
- 				    dtsec.o dtsec_mii_acc.o		\
-@@ -6,3 +6,4 @@ fsl_fman_mac-objs		:= fman_dtsec.o fman_dtsec_mii_acc.o	\
- 				   memac.o memac_mii_acc.o		\
- 				   fman_tgec.o tgec.o			\
- 				   fman_crc32.o fm_mac.o
-+fsl_mac-objs += mac.o mac-api.o
-diff --git a/drivers/soc/fsl/fman/mac/mac-api.c b/drivers/soc/fsl/fman/mac/mac-api.c
-new file mode 100644
-index 0000000..5d38257
---- /dev/null
-+++ b/drivers/soc/fsl/fman/mac/mac-api.c
-@@ -0,0 +1,671 @@
-+/* Copyright 2008-2015 Freescale Semiconductor, Inc.
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions are met:
-+ *     * Redistributions of source code must retain the above copyright
-+ *	 notice, this list of conditions and the following disclaimer.
-+ *     * Redistributions in binary form must reproduce the above copyright
-+ *	 notice, this list of conditions and the following disclaimer in the
-+ *	 documentation and/or other materials provided with the distribution.
-+ *     * Neither the name of Freescale Semiconductor nor the
-+ *	 names of its contributors may be used to endorse or promote products
-+ *	 derived from this software without specific prior written permission.
-+ *
-+ *
-+ * ALTERNATIVELY, this software may be distributed under the terms of the
-+ * GNU General Public License ("GPL") as published by the Free Software
-+ * Foundation, either version 2 of that License or (at your option) any
-+ * later version.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
-+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ */
-+
-+#ifdef CONFIG_FSL_DPAA_ETH_DEBUG
-+#define pr_fmt(fmt) \
-+	KBUILD_MODNAME ": %s:%hu:%s() " fmt, \
-+	KBUILD_BASENAME ".c", __LINE__, __func__
-+#else
-+#define pr_fmt(fmt) \
-+	KBUILD_MODNAME ": " fmt
-+#endif
-+
-+#include <linux/init.h>
-+#include <linux/module.h>
-+#include <linux/of_platform.h>
-+#include <linux/of_mdio.h>
-+#include <linux/phy.h>
-+#include <linux/netdevice.h>
-+#include <linux/etherdevice.h>
-+
-+#include "mac.h"
-+#include "fsl_fman_drv.h"
-+#include "fm_mac_ext.h"
-+
-+#include "../fman/flib/fsl_fman_dtsec.h"
-+#include "../fman/flib/fsl_fman_tgec.h"
-+#include "../fman/flib/fsl_fman_memac.h"
-+
-+#define MAC_DESCRIPTION "FSL FMan MAC API based driver"
-+
-+MODULE_LICENSE("Dual BSD/GPL");
-+
-+MODULE_AUTHOR("Emil Medve <Emilian.Medve@Freescale.com>");
-+
-+MODULE_DESCRIPTION(MAC_DESCRIPTION);
-+
-+struct mac_priv_s {
-+	struct fm_mac_dev *fm_mac;
-+};
-+
-+const char	*mac_driver_description __initconst = MAC_DESCRIPTION;
-+const size_t	 mac_sizeof_priv[] = {
-+	[DTSEC] = sizeof(struct mac_priv_s),
-+	[XGMAC] = sizeof(struct mac_priv_s),
-+	[MEMAC] = sizeof(struct mac_priv_s)
-+};
-+
-+static const enet_mode_t _100[] = {
-+	[PHY_INTERFACE_MODE_MII]	= ENET_MODE_MII_100,
-+	[PHY_INTERFACE_MODE_RMII]	= ENET_MODE_RMII_100
-+};
-+
-+static const enet_mode_t _1000[] = {
-+	[PHY_INTERFACE_MODE_GMII]	= ENET_MODE_GMII_1000,
-+	[PHY_INTERFACE_MODE_SGMII]	= ENET_MODE_SGMII_1000,
-+	[PHY_INTERFACE_MODE_TBI]	= ENET_MODE_TBI_1000,
-+	[PHY_INTERFACE_MODE_RGMII]	= ENET_MODE_RGMII_1000,
-+	[PHY_INTERFACE_MODE_RGMII_ID]	= ENET_MODE_RGMII_1000,
-+	[PHY_INTERFACE_MODE_RGMII_RXID]	= ENET_MODE_RGMII_1000,
-+	[PHY_INTERFACE_MODE_RGMII_TXID]	= ENET_MODE_RGMII_1000,
-+	[PHY_INTERFACE_MODE_RTBI]	= ENET_MODE_RTBI_1000
-+};
-+
-+static enet_mode_t __cold __attribute__((nonnull))
-+macdev2enetinterface(const struct mac_device *mac_dev)
-+{
-+	switch (mac_dev->max_speed) {
-+	case SPEED_100:
-+		return _100[mac_dev->phy_if];
-+	case SPEED_1000:
-+		return _1000[mac_dev->phy_if];
-+	case SPEED_10000:
-+		return ENET_MODE_XGMII_10000;
-+	default:
-+		return ENET_MODE_MII_100;
-+	}
-+}
-+
-+static void mac_exception(void *_mac_dev, enum fm_mac_exceptions ex)
-+{
-+	struct mac_device	*mac_dev;
-+
-+	mac_dev = (struct mac_device *)_mac_dev;
-+
-+	if (FM_MAC_EX_10G_RX_FIFO_OVFL == ex) {
-+		/* don't flag RX FIFO after the first */
-+		fm_mac_set_exception(mac_dev->get_mac_handle(mac_dev),
-+				     FM_MAC_EX_10G_RX_FIFO_OVFL, false);
-+		dev_err(mac_dev->dev, "10G MAC got RX FIFO Error = %x\n",
-+			ex);
-+	}
-+
-+	dev_dbg(mac_dev->dev, "%s:%s() -> %d\n", KBUILD_BASENAME ".c",
-+		__func__, ex);
-+}
-+
-+static int __cold init(struct mac_device *mac_dev)
-+{
-+	int					_errno;
-+	struct mac_priv_s	*priv;
-+	struct fm_mac_params_t		param;
-+	u32			version;
-+
-+	priv = macdev_priv(mac_dev);
-+
-+	param.base_addr =  (typeof(param.base_addr))(uintptr_t)devm_ioremap(
-+		mac_dev->dev, mac_dev->res->start, 0x2000);
-+	param.enet_mode	= macdev2enetinterface(mac_dev);
-+	memcpy(&param.addr, mac_dev->addr,
-+	       min(sizeof(param.addr), sizeof(mac_dev->addr)));
-+	param.mac_id		= mac_dev->cell_index;
-+	param.h_fm		= (void *)mac_dev->fm;
-+	param.mdio_irq		= NO_IRQ;
-+	param.f_exception	= mac_exception;
-+	param.f_event		= mac_exception;
-+	param.h_app		= mac_dev;
-+
-+	priv->fm_mac = fm_mac_config(&param);
-+	if (unlikely(!priv->fm_mac)) {
-+		_errno = -EINVAL;
-+		goto _return;
-+	}
-+
-+	_errno = fm_mac_cfg_max_frame_len(priv->fm_mac, fm_get_max_frm());
-+	if (unlikely(_errno < 0))
-+		goto _return_fm_mac_free;
-+
-+	if (macdev2enetinterface(mac_dev) != ENET_MODE_XGMII_10000) {
-+		/* 10G always works with pad and CRC */
-+		_errno = fm_mac_cfg_pad_and_crc(priv->fm_mac, true);
-+		if (unlikely(_errno < 0))
-+			goto _return_fm_mac_free;
-+
-+		_errno = fm_mac_cfg_half_duplex(priv->fm_mac,
-+						mac_dev->half_duplex);
-+		if (unlikely(_errno < 0))
-+			goto _return_fm_mac_free;
-+	} else {
-+		_errno = fm_mac_cfg_reset_on_init(priv->fm_mac, true);
-+		if (unlikely(_errno < 0))
-+			goto _return_fm_mac_free;
-+	}
-+
-+	_errno = fm_mac_init(priv->fm_mac);
-+	if (unlikely(_errno < 0))
-+		goto _return_fm_mac_free;
-+
-+#ifndef CONFIG_FMAN_MIB_CNT_OVF_IRQ_EN
-+	/* For 1G MAC, disable by default the MIB counters overflow interrupt */
-+	if (macdev2enetinterface(mac_dev) != ENET_MODE_XGMII_10000) {
-+		_errno = fm_mac_set_exception(mac_dev->get_mac_handle(mac_dev),
-+					      FM_MAC_EX_1G_RX_MIB_CNT_OVFL,
-+					      false);
-+		if (unlikely(_errno < 0))
-+			goto _return_fm_mac_free;
-+	}
-+#endif /* !CONFIG_FMAN_MIB_CNT_OVF_IRQ_EN */
-+
-+	/* For 10G MAC, disable Tx ECC exception */
-+	if (macdev2enetinterface(mac_dev) == ENET_MODE_XGMII_10000) {
-+		_errno = fm_mac_set_exception(mac_dev->get_mac_handle(mac_dev),
-+					      FM_MAC_EX_10G_1TX_ECC_ER, false);
-+		if (unlikely(_errno < 0))
-+			goto _return_fm_mac_free;
-+	}
-+
-+	_errno = fm_mac_get_version(priv->fm_mac, &version);
-+	if (unlikely(_errno < 0))
-+		goto _return_fm_mac_free;
-+
-+	dev_info(mac_dev->dev, "FMan %s version: 0x%08x\n",
-+		 ((macdev2enetinterface(mac_dev) != ENET_MODE_XGMII_10000) ?
-+		  "dTSEC" : "XGEC"), version);
-+
-+	goto _return;
-+
-+_return_fm_mac_free:
-+	fm_mac_free(mac_dev->get_mac_handle(mac_dev));
-+
-+_return:
-+	return _errno;
-+}
-+
-+static int __cold memac_init(struct mac_device *mac_dev)
-+{
-+	int			_errno;
-+	struct mac_priv_s	*priv;
-+	struct fm_mac_params_t		param;
-+
-+	priv = macdev_priv(mac_dev);
-+
-+	param.base_addr =  (typeof(param.base_addr))(uintptr_t)devm_ioremap(
-+		mac_dev->dev, mac_dev->res->start, 0x2000);
-+	param.enet_mode	= macdev2enetinterface(mac_dev);
-+	memcpy(&param.addr, mac_dev->addr, sizeof(mac_dev->addr));
-+	param.mac_id		= mac_dev->cell_index;
-+	param.h_fm		= (void *)mac_dev->fm;
-+	param.mdio_irq		= NO_IRQ;
-+	param.f_exception	= mac_exception;
-+	param.f_event		= mac_exception;
-+	param.h_app		= mac_dev;
-+
-+	priv->fm_mac = fm_mac_config(&param);
-+	if (unlikely(!priv->fm_mac)) {
-+		_errno = -EINVAL;
-+		goto _return;
-+	}
-+
-+	_errno = fm_mac_cfg_max_frame_len(priv->fm_mac, fm_get_max_frm());
-+	if (unlikely(_errno < 0))
-+		goto _return_fm_mac_free;
-+
-+	_errno = fm_mac_cfg_reset_on_init(priv->fm_mac, true);
-+	if (unlikely(_errno < 0))
-+		goto _return_fm_mac_free;
-+
-+	_errno = fm_mac_init(priv->fm_mac);
-+	if (unlikely(_errno < 0))
-+		goto _return_fm_mac_free;
-+
-+	dev_info(mac_dev->dev, "FMan MEMAC\n");
-+
-+	goto _return;
-+
-+_return_fm_mac_free:
-+	fm_mac_free(priv->fm_mac);
-+
-+_return:
-+	return _errno;
-+}
-+
-+static int __cold start(struct mac_device *mac_dev)
-+{
-+	int	 _errno;
-+	struct phy_device *phy_dev = mac_dev->phy_dev;
-+
-+	_errno = fm_mac_enable(mac_dev->get_mac_handle(mac_dev),
-+			       COMM_MODE_RX_AND_TX);
-+
-+	if (!_errno && phy_dev) {
-+		if (macdev2enetinterface(mac_dev) != ENET_MODE_XGMII_10000)
-+			phy_start(phy_dev);
-+		else if (phy_dev->drv->read_status)
-+			phy_dev->drv->read_status(phy_dev);
-+	}
-+
-+	return _errno;
-+}
-+
-+static int __cold stop(struct mac_device *mac_dev)
-+{
-+	if (mac_dev->phy_dev && (macdev2enetinterface(mac_dev) !=
-+				 ENET_MODE_XGMII_10000))
-+		phy_stop(mac_dev->phy_dev);
-+
-+	return fm_mac_disable(mac_dev->get_mac_handle(mac_dev),
-+			      COMM_MODE_RX_AND_TX);
-+}
-+
-+static int __cold set_multi(struct net_device *net_dev,
-+			    struct mac_device *mac_dev)
-+{
-+	struct mac_priv_s	*mac_priv;
-+	struct mac_address	*old_addr, *tmp;
-+	struct netdev_hw_addr	*ha;
-+	int			_errno;
-+	enet_addr_t		*addr;
-+
-+	mac_priv = macdev_priv(mac_dev);
-+
-+	/* Clear previous address list */
-+	list_for_each_entry_safe(old_addr, tmp, &mac_dev->mc_addr_list, list) {
-+		addr = (enet_addr_t *)old_addr->addr;
-+		_errno = fm_mac_remove_hash_mac_addr(mac_priv->fm_mac, addr);
-+		if (_errno < 0)
-+			return _errno;
-+
-+		list_del(&old_addr->list);
-+		kfree(old_addr);
-+	}
-+
-+	/* Add all the addresses from the new list */
-+	netdev_for_each_mc_addr(ha, net_dev) {
-+		addr = (enet_addr_t *)ha->addr;
-+		_errno = fm_mac_add_hash_mac_addr(mac_priv->fm_mac, addr);
-+		if (_errno < 0)
-+			return _errno;
-+
-+		tmp = kmalloc(sizeof(*tmp), GFP_ATOMIC);
-+		if (!tmp)
-+			return -ENOMEM;
-+
-+		ether_addr_copy(tmp->addr, ha->addr);
-+		list_add(&tmp->list, &mac_dev->mc_addr_list);
-+	}
-+	return 0;
-+}
-+
-+#ifdef CONFIG_FMAN_PFC
-+int fsl_fm_pfc_quanta[] = {
-+		CONFIG_FMAN_PFC_QUANTA_0,
-+		CONFIG_FMAN_PFC_QUANTA_1,
-+		CONFIG_FMAN_PFC_QUANTA_2,
-+		CONFIG_FMAN_PFC_QUANTA_3
-+};
-+#endif
-+
-+/* Avoid redundant calls to FMD, if the MAC driver already contains the desired
-+ * active PAUSE settings. Otherwise, the new active settings should be reflected
-+ * in FMan.
-+ */
-+int set_mac_active_pause(struct mac_device *mac_dev, bool rx, bool tx)
-+{
-+	struct fm_mac_dev *fm_mac_dev = mac_dev->get_mac_handle(mac_dev);
-+	int _errno = 0;
-+
-+	if (unlikely(rx != mac_dev->rx_pause_active)) {
-+		_errno = fm_mac_set_rx_pause_frames(fm_mac_dev, rx);
-+		if (likely(_errno == 0))
-+			mac_dev->rx_pause_active = rx;
-+	}
-+
-+	if (unlikely(tx != mac_dev->tx_pause_active)) {
-+#ifdef CONFIG_FMAN_PFC
-+		int i;
-+
-+		if (tx) {
-+			for (i = 0; i < CONFIG_FMAN_PFC_COS_COUNT; i++) {
-+				_errno = fm_mac_set_tx_pause_frames(
-+					fm_mac_dev,
-+						i,
-+						fsl_fm_pfc_quanta[i],
-+						FSL_FM_PAUSE_THRESH_DEFAULT);
-+				if (_errno < 0) {
-+					pr_err("fm_mac_set_tx_pause_frames() = 0x%08x\n",
-+					       _errno);
-+					return _errno;
-+				}
-+			}
-+		} else {
-+			for (i = 0; i < CONFIG_FMAN_PFC_COS_COUNT; i++) {
-+				_errno = fm_mac_set_tx_pause_frames(
-+				     fm_mac_dev,
-+				     i,
-+				     FSL_FM_PAUSE_TIME_DISABLE,
-+				     FSL_FM_PAUSE_THRESH_DEFAULT);
-+				if (_errno < 0) {
-+					pr_err("FM_MAC_SetTxPauseFrames() = 0x%08x\n",
-+					       _errno);
-+					return _errno;
-+				}
-+			}
-+		}
-+#else
-+		u16 pause_time = (tx ? FSL_FM_PAUSE_TIME_ENABLE :
-+					 FSL_FM_PAUSE_TIME_DISABLE);
-+
-+		_errno = fm_mac_set_tx_pause_frames(fm_mac_dev, 0,
-+						    pause_time, 0);
-+#endif
-+		if (likely(_errno == 0))
-+			mac_dev->tx_pause_active = tx;
-+	}
-+
-+	return _errno;
-+}
-+EXPORT_SYMBOL(set_mac_active_pause);
-+
-+/* Determine the MAC RX/TX PAUSE frames settings based on PHY
-+ * autonegotiation or values set by eththool.
-+ */
-+void get_pause_cfg(struct mac_device *mac_dev, bool *rx_pause, bool *tx_pause)
-+{
-+	struct phy_device *phy_dev = mac_dev->phy_dev;
-+	u16 lcl_adv, rmt_adv;
-+	u8 flowctrl;
-+
-+	*rx_pause = *tx_pause = false;
-+
-+	if (!phy_dev->duplex)
-+		return;
-+
-+	/* If PAUSE autonegotiation is disabled, the TX/RX PAUSE settings
-+	 * are those set by ethtool.
-+	 */
-+	if (!mac_dev->autoneg_pause) {
-+		*rx_pause = mac_dev->rx_pause_req;
-+		*tx_pause = mac_dev->tx_pause_req;
-+		return;
-+	}
-+
-+	/* Else if PAUSE autonegotiation is enabled, the TX/RX PAUSE
-+	 * settings depend on the result of the link negotiation.
-+	 */
-+
-+	/* get local capabilities */
-+	lcl_adv = 0;
-+	if (phy_dev->advertising & ADVERTISED_Pause)
-+		lcl_adv |= ADVERTISE_PAUSE_CAP;
-+	if (phy_dev->advertising & ADVERTISED_Asym_Pause)
-+		lcl_adv |= ADVERTISE_PAUSE_ASYM;
-+
-+	/* get link partner capabilities */
-+	rmt_adv = 0;
-+	if (phy_dev->pause)
-+		rmt_adv |= LPA_PAUSE_CAP;
-+	if (phy_dev->asym_pause)
-+		rmt_adv |= LPA_PAUSE_ASYM;
-+
-+	/* Calculate TX/RX settings based on local and peer advertised
-+	 * symmetric/asymmetric PAUSE capabilities.
-+	 */
-+	flowctrl = mii_resolve_flowctrl_fdx(lcl_adv, rmt_adv);
-+	if (flowctrl & FLOW_CTRL_RX)
-+		*rx_pause = true;
-+	if (flowctrl & FLOW_CTRL_TX)
-+		*tx_pause = true;
-+}
-+EXPORT_SYMBOL(get_pause_cfg);
-+
-+static void adjust_link(struct net_device *net_dev)
-+{
-+	struct device *dev = net_dev->dev.parent;
-+	struct dpaa_eth_data *eth_data = dev->platform_data;
-+	struct mac_device *mac_dev = eth_data->mac_dev;
-+	struct phy_device *phy_dev = mac_dev->phy_dev;
-+	struct fm_mac_dev *fm_mac_dev;
-+	bool rx_pause, tx_pause;
-+	int _errno;
-+
-+	fm_mac_dev = mac_dev->get_mac_handle(mac_dev);
-+	fm_mac_adjust_link(fm_mac_dev, phy_dev->link, phy_dev->speed,
-+			   phy_dev->duplex);
-+
-+	get_pause_cfg(mac_dev, &rx_pause, &tx_pause);
-+	_errno = set_mac_active_pause(mac_dev, rx_pause, tx_pause);
-+	if (unlikely(_errno < 0))
-+		netdev_err(net_dev, "set_mac_active_pause() = %d\n", _errno);
-+}
-+
-+/* Initializes driver's PHY state, and attaches to the PHY.
-+ * Returns 0 on success.
-+ */
-+static int dtsec_init_phy(struct net_device *net_dev,
-+			  struct mac_device *mac_dev)
-+{
-+	struct phy_device	*phy_dev;
-+
-+	if (!mac_dev->phy_node)
-+		phy_dev = phy_connect(net_dev, mac_dev->fixed_bus_id,
-+				      &adjust_link, mac_dev->phy_if);
-+	else
-+		phy_dev = of_phy_connect(net_dev, mac_dev->phy_node,
-+					 &adjust_link, 0, mac_dev->phy_if);
-+	if (unlikely(!phy_dev) || IS_ERR(phy_dev)) {
-+		netdev_err(net_dev, "Could not connect to PHY %s\n",
-+			   mac_dev->phy_node ?
-+				mac_dev->phy_node->full_name :
-+				mac_dev->fixed_bus_id);
-+		return (!phy_dev) ? -ENODEV : PTR_ERR(phy_dev);
-+	}
-+
-+	/* Remove any features not supported by the controller */
-+	phy_dev->supported &= mac_dev->if_support;
-+	/* Enable the symmetric and asymmetric PAUSE frame advertisements,
-+	 * as most of the PHY drivers do not enable them by default.
-+	 */
-+	phy_dev->supported |= (SUPPORTED_Pause | SUPPORTED_Asym_Pause);
-+	phy_dev->advertising = phy_dev->supported;
-+
-+	mac_dev->phy_dev = phy_dev;
-+
-+	return 0;
-+}
-+
-+static int xgmac_init_phy(struct net_device *net_dev,
-+			  struct mac_device *mac_dev)
-+{
-+	struct phy_device *phy_dev;
-+
-+	if (!mac_dev->phy_node)
-+		phy_dev = phy_attach(net_dev, mac_dev->fixed_bus_id,
-+				     mac_dev->phy_if);
-+	else
-+		phy_dev = of_phy_attach(net_dev, mac_dev->phy_node, 0,
-+					mac_dev->phy_if);
-+	if (unlikely(!phy_dev) || IS_ERR(phy_dev)) {
-+		netdev_err(net_dev, "Could not attach to PHY %s\n",
-+			   mac_dev->phy_node ?
-+				mac_dev->phy_node->full_name :
-+				mac_dev->fixed_bus_id);
-+		return (!phy_dev) ? -ENODEV : PTR_ERR(phy_dev);
-+	}
-+
-+	phy_dev->supported &= mac_dev->if_support;
-+	/* Enable the symmetric and asymmetric PAUSE frame advertisements,
-+	 * as most of the PHY drivers do not enable them by default.
-+	 */
-+	phy_dev->supported |= (SUPPORTED_Pause | SUPPORTED_Asym_Pause);
-+	phy_dev->advertising = phy_dev->supported;
-+
-+	mac_dev->phy_dev = phy_dev;
-+
-+	return 0;
-+}
-+
-+static int memac_init_phy(struct net_device *net_dev,
-+			  struct mac_device *mac_dev)
-+{
-+	struct phy_device       *phy_dev;
-+
-+	if (macdev2enetinterface(mac_dev) == ENET_MODE_XGMII_10000) {
-+		if (!mac_dev->phy_node) {
-+			mac_dev->phy_dev = NULL;
-+			return 0;
-+		}
-+
-+		phy_dev = of_phy_attach(net_dev, mac_dev->phy_node, 0,
-+					mac_dev->phy_if);
-+	} else {
-+		if (!mac_dev->phy_node)
-+			phy_dev = phy_connect(net_dev, mac_dev->fixed_bus_id,
-+					      &adjust_link, mac_dev->phy_if);
-+		else
-+			phy_dev = of_phy_connect(net_dev, mac_dev->phy_node,
-+						 &adjust_link, 0,
-+						 mac_dev->phy_if);
-+	}
-+
-+	if (unlikely(!phy_dev) || IS_ERR(phy_dev)) {
-+		netdev_err(net_dev, "Could not connect to PHY %s\n",
-+			   mac_dev->phy_node ?
-+				mac_dev->phy_node->full_name :
-+				mac_dev->fixed_bus_id);
-+		return (!phy_dev) ? -ENODEV : PTR_ERR(phy_dev);
-+	}
-+
-+	/* Remove any features not supported by the controller */
-+	phy_dev->supported &= mac_dev->if_support;
-+	/* Enable the symmetric and asymmetric PAUSE frame advertisements,
-+	 * as most of the PHY drivers do not enable them by default.
-+	 */
-+	phy_dev->supported |= (SUPPORTED_Pause | SUPPORTED_Asym_Pause);
-+	phy_dev->advertising = phy_dev->supported;
-+
-+	mac_dev->phy_dev = phy_dev;
-+
-+	return 0;
-+}
-+
-+static int __cold uninit(struct fm_mac_dev *fm_mac_dev)
-+{
-+	int			 _errno, __errno;
-+
-+	_errno = fm_mac_disable(fm_mac_dev, COMM_MODE_RX_AND_TX);
-+	__errno = fm_mac_free(fm_mac_dev);
-+
-+	if (unlikely(__errno < 0))
-+		_errno = __errno;
-+
-+	return _errno;
-+}
-+
-+static struct fm_mac_dev *get_mac_handle(struct mac_device *mac_dev)
-+{
-+	const struct mac_priv_s	*priv;
-+
-+	priv = macdev_priv(mac_dev);
-+
-+	return priv->fm_mac;
-+}
-+
-+static void __cold setup_dtsec(struct mac_device *mac_dev)
-+{
-+	mac_dev->init_phy	= dtsec_init_phy;
-+	mac_dev->init		= init;
-+	mac_dev->start		= start;
-+	mac_dev->stop		= stop;
-+	mac_dev->set_promisc	= fm_mac_set_promiscuous;
-+	mac_dev->change_addr    = fm_mac_modify_mac_addr;
-+	mac_dev->set_multi      = set_multi;
-+	mac_dev->uninit		= uninit;
-+	mac_dev->ptp_enable		= fm_mac_enable_1588_time_stamp;
-+	mac_dev->ptp_disable		= fm_mac_disable_1588_time_stamp;
-+	mac_dev->get_mac_handle		= get_mac_handle;
-+	mac_dev->set_tx_pause		= fm_mac_set_tx_pause_frames;
-+	mac_dev->set_rx_pause		= fm_mac_set_rx_pause_frames;
-+	mac_dev->fm_rtc_enable		= fm_rtc_enable;
-+	mac_dev->fm_rtc_disable		= fm_rtc_disable;
-+	mac_dev->fm_rtc_get_current_time	= fm_rtc_get_current_time;
-+	mac_dev->fm_rtc_set_current_time	= fm_rtc_set_current_time;
-+	mac_dev->fm_rtc_get_freq_compensation	= fm_rtc_get_freq_compensation;
-+	mac_dev->fm_rtc_set_freq_compensation	= fm_rtc_set_freq_compensation;
-+	mac_dev->fm_rtc_set_alarm		= fm_rtc_set_alarm;
-+	mac_dev->fm_rtc_set_periodic_pulse	= fm_rtc_set_periodic_pulse;
-+	mac_dev->set_wol			= fm_mac_set_wake_on_lan;
-+}
-+
-+static void __cold setup_xgmac(struct mac_device *mac_dev)
-+{
-+	mac_dev->init_phy	= xgmac_init_phy;
-+	mac_dev->init		= init;
-+	mac_dev->start		= start;
-+	mac_dev->stop		= stop;
-+	mac_dev->set_promisc	= fm_mac_set_promiscuous;
-+	mac_dev->change_addr    = fm_mac_modify_mac_addr;
-+	mac_dev->set_multi      = set_multi;
-+	mac_dev->uninit		= uninit;
-+	mac_dev->get_mac_handle	= get_mac_handle;
-+	mac_dev->set_tx_pause	= fm_mac_set_tx_pause_frames;
-+	mac_dev->set_rx_pause	= fm_mac_set_rx_pause_frames;
-+	mac_dev->set_wol	= fm_mac_set_wake_on_lan;
-+}
-+
-+static void __cold setup_memac(struct mac_device *mac_dev)
-+{
-+	mac_dev->init_phy	= memac_init_phy;
-+	mac_dev->init		= memac_init;
-+	mac_dev->start		= start;
-+	mac_dev->stop		= stop;
-+	mac_dev->set_promisc	= fm_mac_set_promiscuous;
-+	mac_dev->change_addr    = fm_mac_modify_mac_addr;
-+	mac_dev->set_multi      = set_multi;
-+	mac_dev->uninit		= uninit;
-+	mac_dev->get_mac_handle		= get_mac_handle;
-+	mac_dev->set_tx_pause		= fm_mac_set_tx_pause_frames;
-+	mac_dev->set_rx_pause		= fm_mac_set_rx_pause_frames;
-+	mac_dev->fm_rtc_enable		= fm_rtc_enable;
-+	mac_dev->fm_rtc_disable		= fm_rtc_disable;
-+	mac_dev->fm_rtc_get_current_time	= fm_rtc_get_current_time;
-+	mac_dev->fm_rtc_set_current_time	= fm_rtc_set_current_time;
-+	mac_dev->fm_rtc_get_freq_compensation	= fm_rtc_get_freq_compensation;
-+	mac_dev->fm_rtc_set_freq_compensation	= fm_rtc_set_freq_compensation;
-+	mac_dev->fm_rtc_set_alarm		= fm_rtc_set_alarm;
-+	mac_dev->fm_rtc_set_periodic_pulse	= fm_rtc_set_periodic_pulse;
-+	mac_dev->set_wol			= fm_mac_set_wake_on_lan;
-+}
-+
-+void (*const mac_setup[])(struct mac_device *mac_dev) = {
-+	[DTSEC] = setup_dtsec,
-+	[XGMAC] = setup_xgmac,
-+	[MEMAC] = setup_memac
-+};
-diff --git a/drivers/soc/fsl/fman/mac/mac.c b/drivers/soc/fsl/fman/mac/mac.c
-new file mode 100644
-index 0000000..400121e
---- /dev/null
-+++ b/drivers/soc/fsl/fman/mac/mac.c
-@@ -0,0 +1,522 @@
-+/* Copyright 2008-2015 Freescale Semiconductor, Inc.
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions are met:
-+ *     * Redistributions of source code must retain the above copyright
-+ *	 notice, this list of conditions and the following disclaimer.
-+ *     * Redistributions in binary form must reproduce the above copyright
-+ *	 notice, this list of conditions and the following disclaimer in the
-+ *	 documentation and/or other materials provided with the distribution.
-+ *     * Neither the name of Freescale Semiconductor nor the
-+ *	 names of its contributors may be used to endorse or promote products
-+ *	 derived from this software without specific prior written permission.
-+ *
-+ *
-+ * ALTERNATIVELY, this software may be distributed under the terms of the
-+ * GNU General Public License ("GPL") as published by the Free Software
-+ * Foundation, either version 2 of that License or (at your option) any
-+ * later version.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
-+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ */
-+
-+#ifdef CONFIG_FSL_DPAA_ETH_DEBUG
-+#define pr_fmt(fmt) \
-+	KBUILD_MODNAME ": %s:%hu:%s() " fmt, \
-+	KBUILD_BASENAME ".c", __LINE__, __func__
-+#else
-+#define pr_fmt(fmt) \
-+	KBUILD_MODNAME ": " fmt
-+#endif
-+
-+#include <linux/init.h>
-+#include <linux/module.h>
-+#include <linux/of_address.h>
-+#include <linux/of_platform.h>
-+#include <linux/of_net.h>
-+#include <linux/device.h>
-+#include <linux/phy.h>
-+
-+#include "mac.h"
-+
-+#define DTSEC_SUPPORTED \
-+	(SUPPORTED_10baseT_Half \
-+	| SUPPORTED_10baseT_Full \
-+	| SUPPORTED_100baseT_Half \
-+	| SUPPORTED_100baseT_Full \
-+	| SUPPORTED_Autoneg \
-+	| SUPPORTED_Pause \
-+	| SUPPORTED_Asym_Pause \
-+	| SUPPORTED_MII)
-+
-+static DEFINE_MUTEX(eth_lock);
-+
-+static const char phy_str[][11] = {
-+	[PHY_INTERFACE_MODE_MII]	= "mii",
-+	[PHY_INTERFACE_MODE_GMII]	= "gmii",
-+	[PHY_INTERFACE_MODE_SGMII]	= "sgmii",
-+	[PHY_INTERFACE_MODE_TBI]	= "tbi",
-+	[PHY_INTERFACE_MODE_RMII]	= "rmii",
-+	[PHY_INTERFACE_MODE_RGMII]	= "rgmii",
-+	[PHY_INTERFACE_MODE_RGMII_ID]	= "rgmii-id",
-+	[PHY_INTERFACE_MODE_RGMII_RXID]	= "rgmii-rxid",
-+	[PHY_INTERFACE_MODE_RGMII_TXID]	= "rgmii-txid",
-+	[PHY_INTERFACE_MODE_RTBI]	= "rtbi",
-+	[PHY_INTERFACE_MODE_XGMII]	= "xgmii"
-+};
-+
-+static phy_interface_t __pure __attribute__((nonnull)) str2phy(const char *str)
-+{
-+	int i;
-+
-+	for (i = 0; i < ARRAY_SIZE(phy_str); i++)
-+		if (strcmp(str, phy_str[i]) == 0)
-+			return (phy_interface_t)i;
-+
-+	return PHY_INTERFACE_MODE_MII;
-+}
-+
-+static const u16 phy2speed[] = {
-+	[PHY_INTERFACE_MODE_MII]	= SPEED_100,
-+	[PHY_INTERFACE_MODE_GMII]	= SPEED_1000,
-+	[PHY_INTERFACE_MODE_SGMII]	= SPEED_1000,
-+	[PHY_INTERFACE_MODE_TBI]	= SPEED_1000,
-+	[PHY_INTERFACE_MODE_RMII]	= SPEED_100,
-+	[PHY_INTERFACE_MODE_RGMII]	= SPEED_1000,
-+	[PHY_INTERFACE_MODE_RGMII_ID]	= SPEED_1000,
-+	[PHY_INTERFACE_MODE_RGMII_RXID]	= SPEED_1000,
-+	[PHY_INTERFACE_MODE_RGMII_TXID]	= SPEED_1000,
-+	[PHY_INTERFACE_MODE_RTBI]	= SPEED_1000,
-+	[PHY_INTERFACE_MODE_XGMII]	= SPEED_10000
-+};
-+
-+static struct mac_device * __cold
-+alloc_macdev(struct device *dev, size_t sizeof_priv,
-+	     void (*setup)(struct mac_device *mac_dev))
-+{
-+	struct mac_device	*mac_dev;
-+
-+	mac_dev = devm_kzalloc(dev, sizeof(*mac_dev) + sizeof_priv, GFP_KERNEL);
-+	if (unlikely(!mac_dev)) {
-+		mac_dev = ERR_PTR(-ENOMEM);
-+	} else {
-+		mac_dev->dev = dev;
-+		dev_set_drvdata(dev, mac_dev);
-+		setup(mac_dev);
-+	}
-+
-+	return mac_dev;
-+}
-+
-+static int __cold free_macdev(struct mac_device *mac_dev)
-+{
-+	dev_set_drvdata(mac_dev->dev, NULL);
-+
-+	return mac_dev->uninit(mac_dev->get_mac_handle(mac_dev));
-+}
-+
-+static struct platform_device *dpaa_eth_add_device(int fman_id,
-+						   struct mac_device *mac_dev,
-+						   struct device_node *node)
-+{
-+	struct platform_device *pdev;
-+	struct dpaa_eth_data data;
-+	static int dpaa_eth_dev_cnt;
-+	int ret;
-+
-+	data.mac_dev = mac_dev;
-+	data.mac_hw_id = mac_dev->cell_index;
-+	data.fman_hw_id = fman_id;
-+	data.mac_node = node;
-+
-+	mutex_lock(&eth_lock);
-+
-+	pdev = platform_device_alloc("dpaa-ethernet", dpaa_eth_dev_cnt);
-+	if (!pdev)
-+		return ERR_PTR(-ENOMEM);
-+
-+	ret = platform_device_add_data(pdev, &data, sizeof(data));
-+	if (ret)
-+		goto err;
-+
-+	ret = platform_device_add(pdev);
-+	if (ret)
-+		goto err;
-+
-+	dpaa_eth_dev_cnt++;
-+	mutex_unlock(&eth_lock);
-+
-+	return pdev;
-+err:
-+	platform_device_put(pdev);
-+	return ERR_PTR(ret);
-+}
-+
-+static void dpaa_eth_remove_device(struct platform_device *pdev)
-+{
-+	platform_device_unregister(pdev);
-+}
-+
-+static const struct of_device_id mac_match[] = {
-+	[DTSEC] = {
-+		.compatible	= "fsl,fman-dtsec"
-+	},
-+	[XGMAC] = {
-+		.compatible	= "fsl,fman-xgec"
-+	},
-+	[MEMAC] = {
-+		.compatible	= "fsl,fman-memac"
-+	},
-+	{}
-+};
-+MODULE_DEVICE_TABLE(of, mac_match);
-+
-+static int __cold mac_probe(struct platform_device *_of_dev)
-+{
-+	int			 _errno, i, lenp;
-+	struct device		*dev;
-+	struct device_node	*mac_node, *dev_node;
-+	struct mac_device	*mac_dev;
-+	struct platform_device	*of_dev;
-+	struct resource		 res;
-+	const u8		*mac_addr;
-+	const char		*char_prop;
-+	const u32		*uint32_prop;
-+	const struct of_device_id *match;
-+	u8			 fman_id;
-+
-+	const phandle           *phandle_prop;
-+
-+	dev = &_of_dev->dev;
-+	mac_node = dev->of_node;
-+
-+	match = of_match_device(mac_match, dev);
-+	if (!match)
-+		return -EINVAL;
-+
-+	for (i = 0; i < ARRAY_SIZE(mac_match) - 1 && match != mac_match + i;
-+			i++)
-+		;
-+	BUG_ON(i >= ARRAY_SIZE(mac_match) - 1);
-+
-+	mac_dev = alloc_macdev(dev, mac_sizeof_priv[i], mac_setup[i]);
-+	if (IS_ERR(mac_dev)) {
-+		_errno = PTR_ERR(mac_dev);
-+		dev_err(dev, "alloc_macdev() = %d\n", _errno);
-+		goto _return;
-+	}
-+
-+	INIT_LIST_HEAD(&mac_dev->mc_addr_list);
-+
-+	/* Get the FM node */
-+	dev_node = of_get_parent(mac_node);
-+	if (unlikely(!dev_node)) {
-+		dev_err(dev, "of_get_parent(%s) failed\n",
-+			mac_node->full_name);
-+		_errno = -EINVAL;
-+		goto _return_dev_set_drvdata;
-+	}
-+
-+	of_dev = of_find_device_by_node(dev_node);
-+	if (unlikely(!of_dev)) {
-+		dev_err(dev, "of_find_device_by_node(%s) failed\n",
-+			dev_node->full_name);
-+		_errno = -EINVAL;
-+		goto _return_of_node_put;
-+	}
-+
-+	/* Get the FMan cell-index */
-+	uint32_prop = of_get_property(dev_node, "cell-index", &lenp);
-+	if (unlikely(!uint32_prop)) {
-+		dev_err(dev, "of_get_property(%s, cell-index) failed\n",
-+			dev_node->full_name);
-+		_errno = -EINVAL;
-+		goto _return_of_node_put;
-+	}
-+	BUG_ON(lenp != sizeof(u32));
-+	fman_id = (u8)*uint32_prop + 1; /* cell-index 0 => FMan id 1 */
-+
-+	mac_dev->fm_dev = fm_bind(&of_dev->dev);
-+	if (unlikely(!mac_dev->fm_dev)) {
-+		dev_err(dev, "fm_bind(%s) failed\n", dev_node->full_name);
-+		_errno = -ENODEV;
-+		goto _return_of_node_put;
-+	}
-+
-+	mac_dev->fm = (void *)fm_get_handle(mac_dev->fm_dev);
-+	of_node_put(dev_node);
-+
-+	/* Get the address of the memory mapped registers */
-+	_errno = of_address_to_resource(mac_node, 0, &res);
-+	if (unlikely(_errno < 0)) {
-+		dev_err(dev, "of_address_to_resource(%s) = %d\n",
-+			mac_node->full_name, _errno);
-+		goto _return_dev_set_drvdata;
-+	}
-+
-+	mac_dev->res =
-+		__devm_request_region(dev, fm_get_mem_region(mac_dev->fm_dev),
-+				      res.start, res.end + 1 - res.start,
-+				      "mac");
-+	if (unlikely(!mac_dev->res)) {
-+		dev_err(dev, "__devm_request_mem_region(mac) failed\n");
-+		_errno = -EBUSY;
-+		goto _return_dev_set_drvdata;
-+	}
-+
-+	mac_dev->vaddr = devm_ioremap(dev, mac_dev->res->start,
-+				      mac_dev->res->end + 1
-+				      - mac_dev->res->start);
-+	if (unlikely(!mac_dev->vaddr)) {
-+		dev_err(dev, "devm_ioremap() failed\n");
-+		_errno = -EIO;
-+		goto _return_dev_set_drvdata;
-+	}
-+
-+#define TBIPA_OFFSET		0x1c
-+#define TBIPA_DEFAULT_ADDR	5 /* override if used as external PHY addr. */
-+	mac_dev->tbi_node = of_parse_phandle(mac_node, "tbi-handle", 0);
-+	if (mac_dev->tbi_node) {
-+		u32 tbiaddr = TBIPA_DEFAULT_ADDR;
-+
-+		uint32_prop = of_get_property(mac_dev->tbi_node, "reg", NULL);
-+		if (uint32_prop)
-+			tbiaddr = *uint32_prop;
-+		out_be32(mac_dev->vaddr + TBIPA_OFFSET, tbiaddr);
-+	}
-+
-+	if (!of_device_is_available(mac_node)) {
-+		devm_iounmap(dev, mac_dev->vaddr);
-+		__devm_release_region(dev, fm_get_mem_region(mac_dev->fm_dev),
-+				      res.start, res.end + 1 - res.start);
-+		fm_unbind(mac_dev->fm_dev);
-+		devm_kfree(dev, mac_dev);
-+		dev_set_drvdata(dev, NULL);
-+		return -ENODEV;
-+	}
-+
-+	/* Get the cell-index */
-+	uint32_prop = of_get_property(mac_node, "cell-index", &lenp);
-+	if (unlikely(!uint32_prop)) {
-+		dev_err(dev, "of_get_property(%s, cell-index) failed\n",
-+			mac_node->full_name);
-+		_errno = -EINVAL;
-+		goto _return_dev_set_drvdata;
-+	}
-+	BUG_ON(lenp != sizeof(u32));
-+	mac_dev->cell_index = (u8)*uint32_prop;
-+
-+	/* Get the MAC address */
-+	mac_addr = of_get_mac_address(mac_node);
-+	if (unlikely(!mac_addr)) {
-+		dev_err(dev, "of_get_mac_address(%s) failed\n",
-+			mac_node->full_name);
-+		_errno = -EINVAL;
-+		goto _return_dev_set_drvdata;
-+	}
-+	memcpy(mac_dev->addr, mac_addr, sizeof(mac_dev->addr));
-+
-+	/* Get the port handles */
-+	phandle_prop = of_get_property(mac_node, "fsl,fman-ports", &lenp);
-+	if (unlikely(!phandle_prop)) {
-+		dev_err(dev, "of_get_property(%s, fsl,fman-ports) failed\n",
-+			mac_node->full_name);
-+		_errno = -EINVAL;
-+		goto _return_dev_set_drvdata;
-+	}
-+	BUG_ON(lenp != sizeof(phandle) * ARRAY_SIZE(mac_dev->port_dev));
-+
-+	for_each_port_device(i, mac_dev->port_dev) {
-+		/* Find the port node */
-+		dev_node = of_find_node_by_phandle(phandle_prop[i]);
-+		if (unlikely(!dev_node)) {
-+			dev_err(dev, "of_find_node_by_phandle() failed\n");
-+			_errno = -EINVAL;
-+			goto _return_of_node_put;
-+		}
-+
-+		of_dev = of_find_device_by_node(dev_node);
-+		if (unlikely(!of_dev)) {
-+			dev_err(dev, "of_find_device_by_node(%s) failed\n",
-+				dev_node->full_name);
-+			_errno = -EINVAL;
-+			goto _return_of_node_put;
-+		}
-+
-+		mac_dev->port_dev[i] = fm_port_bind(&of_dev->dev);
-+		if (unlikely(!mac_dev->port_dev[i])) {
-+			dev_err(dev, "dev_get_drvdata(%s) failed\n",
-+				dev_node->full_name);
-+			_errno = -EINVAL;
-+			goto _return_of_node_put;
-+		}
-+		of_node_put(dev_node);
-+	}
-+
-+	/* Get the PHY connection type */
-+	char_prop = (const char *)of_get_property(mac_node,
-+						"phy-connection-type", NULL);
-+	if (unlikely(!char_prop)) {
-+		dev_warn(dev,
-+			 "of_get_property(%s, phy-connection-type) failed. Defaulting to MII\n",
-+			 mac_node->full_name);
-+		mac_dev->phy_if = PHY_INTERFACE_MODE_MII;
-+	} else {
-+		mac_dev->phy_if = str2phy(char_prop);
-+	}
-+
-+	mac_dev->link		= false;
-+	mac_dev->half_duplex	= false;
-+	mac_dev->speed		= phy2speed[mac_dev->phy_if];
-+	mac_dev->max_speed	= mac_dev->speed;
-+	mac_dev->if_support = DTSEC_SUPPORTED;
-+	/* We don't support half-duplex in SGMII mode */
-+	if (strstr(char_prop, "sgmii"))
-+		mac_dev->if_support &= ~(SUPPORTED_10baseT_Half |
-+					SUPPORTED_100baseT_Half);
-+
-+	/* Gigabit support (no half-duplex) */
-+	if (mac_dev->max_speed == 1000)
-+		mac_dev->if_support |= SUPPORTED_1000baseT_Full;
-+
-+	/* The 10G interface only supports one mode */
-+	if (strstr(char_prop, "xgmii"))
-+		mac_dev->if_support = SUPPORTED_10000baseT_Full;
-+
-+	/* Get the rest of the PHY information */
-+	mac_dev->phy_node = of_parse_phandle(mac_node, "phy-handle", 0);
-+	if (!mac_dev->phy_node) {
-+		int sz;
-+		const u32 *phy_id = of_get_property(mac_node, "fixed-link",
-+							&sz);
-+		if (!phy_id || sz < sizeof(*phy_id)) {
-+			dev_err(dev, "No PHY (or fixed link) found\n");
-+			_errno = -EINVAL;
-+			goto _return_dev_set_drvdata;
-+		}
-+
-+		sprintf(mac_dev->fixed_bus_id, PHY_ID_FMT, "fixed-0",
-+			phy_id[0]);
-+	}
-+
-+	_errno = mac_dev->init(mac_dev);
-+	if (unlikely(_errno < 0)) {
-+		dev_err(dev, "mac_dev->init() = %d\n", _errno);
-+		goto _return_dev_set_drvdata;
-+	}
-+
-+	/* pause frame autonegotiation enabled*/
-+	mac_dev->autoneg_pause = true;
-+
-+	/* by intializing the values to false, force FMD to enable PAUSE frames
-+	 * on RX and TX
-+	 */
-+	mac_dev->rx_pause_req = true;
-+	mac_dev->tx_pause_req = true;
-+	mac_dev->rx_pause_active = false;
-+	mac_dev->tx_pause_active = false;
-+	_errno = set_mac_active_pause(mac_dev, true, true);
-+	if (unlikely(_errno < 0))
-+		dev_err(dev, "set_mac_active_pause() = %d\n", _errno);
-+
-+	dev_info(dev,
-+		 "FMan MAC address: %02hx:%02hx:%02hx:%02hx:%02hx:%02hx\n",
-+		     mac_dev->addr[0], mac_dev->addr[1], mac_dev->addr[2],
-+		     mac_dev->addr[3], mac_dev->addr[4], mac_dev->addr[5]);
-+
-+	mac_dev->eth_dev = dpaa_eth_add_device(fman_id, mac_dev,
-+					       mac_node);
-+	if (IS_ERR(mac_dev->eth_dev)) {
-+		dev_err(dev, "failed to add Ethernet platform device for MAC %d\n",
-+			mac_dev->cell_index);
-+		mac_dev->eth_dev = NULL;
-+	}
-+
-+	goto _return;
-+
-+_return_of_node_put:
-+	of_node_put(dev_node);
-+_return_dev_set_drvdata:
-+	dev_set_drvdata(dev, NULL);
-+_return:
-+	return _errno;
-+}
-+
-+static int __cold mac_remove(struct platform_device *of_dev)
-+{
-+	int			 i, _errno;
-+	struct device		*dev;
-+	struct mac_device	*mac_dev;
-+
-+	dev = &of_dev->dev;
-+	mac_dev = (struct mac_device *)dev_get_drvdata(dev);
-+
-+	dpaa_eth_remove_device(mac_dev->eth_dev);
-+
-+	for_each_port_device(i, mac_dev->port_dev)
-+		fm_port_unbind(mac_dev->port_dev[i]);
-+
-+	fm_unbind(mac_dev->fm_dev);
-+
-+	_errno = free_macdev(mac_dev);
-+
-+	return _errno;
-+}
-+
-+static struct platform_driver mac_driver = {
-+	.driver = {
-+		.name		= KBUILD_MODNAME,
-+		.of_match_table	= mac_match,
-+		.owner		= THIS_MODULE,
-+	},
-+	.probe		= mac_probe,
-+	.remove		= mac_remove
-+};
-+
-+static int __init __cold mac_load(void)
-+{
-+	int	 _errno;
-+
-+	pr_debug(KBUILD_MODNAME ": -> %s:%s()\n",
-+		 KBUILD_BASENAME ".c", __func__);
-+
-+	pr_info(KBUILD_MODNAME ": %s\n",
-+		mac_driver_description);
-+
-+	_errno = platform_driver_register(&mac_driver);
-+	if (unlikely(_errno < 0)) {
-+		pr_err(KBUILD_MODNAME ": %s:%hu:%s(): platform_driver_register() = %d\n",
-+		       KBUILD_BASENAME ".c", __LINE__, __func__, _errno);
-+		goto _return;
-+	}
-+
-+	goto _return;
-+
-+_return:
-+	pr_debug(KBUILD_MODNAME ": %s:%s() ->\n",
-+		 KBUILD_BASENAME ".c", __func__);
-+
-+	return _errno;
-+}
-+module_init(mac_load);
-+
-+static void __exit __cold mac_unload(void)
-+{
-+	pr_debug(KBUILD_MODNAME ": -> %s:%s()\n",
-+		 KBUILD_BASENAME ".c", __func__);
-+
-+	platform_driver_unregister(&mac_driver);
-+
-+	pr_debug(KBUILD_MODNAME ": %s:%s() ->\n",
-+		 KBUILD_BASENAME ".c", __func__);
-+}
-+module_exit(mac_unload);
+>> >> Also, take advantage of pci_dev_resource::min_align to store this
+>> >> additional alignment.
+>> >
+>> >This comment doesn't seem to make sense; this patch doesn't save anything
+>> >in min_align.
+>> 
+>> At the end of this patch:
+>> 
+>>    add_to_list(realloc_head, bus->self, b_res, size1-size0, add_align);
+>> 
+>> The add_align is stored in pci_dev_resource::min_align in add_to_list(). And
+>> retrieved by get_res_add_align() in below code. This field is not used
+>> previously, so I took advantage of this field to store the alignment of the
+>> additional resources.
+>
+>Hmm.  pci_dev_resource::min_align *is* already used in
+>reassign_resources_sorted().  Maybe there's no overlap; I gave up the
+>analysis before I could convince myself.
+>
+
+Bjorn,
+
+I know you may have some concern on this, let me try to explain how I
+understand the code. If my understanding is not correct, please let me know.
+
+In __assign_resources_sorted(), we pass two resources list, one is required
+and the other is the additional. First, we try our best to assigned both of
+them by merge them together. If this fails, we will assign the required list
+first and then take care of the additional list.
+
+There is one interesting thing in the first step. We merge these two list to
+the required list and in this patch I fix the alignment in required list.
+(Which is the "head" list in code.) And before doing so, we save the original
+information in "save_head". When we fail to assign the merged list, we will
+restore the required list, this mean we clean the alignment done in this patch
+and make sure we assign the required resource just with basic alignment.
+
+The usage of the min_align in reassign_resources_sorted() happens in the
+second part to assign the additional list individually. In the realloc_head
+list, those resources still have the add_align which is calculated in
+pbus_size_mem(). And we try to allocate it with this alignment, which is
+exactly what we want.
+
+BTW, by reading the code again, it looks I missed to change one place in
+reassign_resources_sorted(). In condition when (!resource_size(res)) is true,
+we rely on the res->start to be the alignment. Since the alignment is no
+longer the start address, we need to fix this part too.
+
+I may miss some background of the code, if my understanding is not correct,
+glad to hear from you.
+
+>The changelog needs to mention the add_to_list() connection.
+>
+
+Added in the change log.
+
+>> >> +		/*
+>> >> +		 * There are two kinds of additional resources in the list:
+>> >> +		 * 1. bridge resource  -- IORESOURCE_STARTALIGN
+>> >> +		 * 2. SR-IOV resource   -- IORESOURCE_SIZEALIGN
+>> >> +		 * Here just fix the additional alignment for bridge
+>> >> +		 */
+>> >> +		if (!(dev_res->res->flags & IORESOURCE_STARTALIGN))
+>> >> +			continue;
+>> >> +
+>> >> +		add_align = get_res_add_align(realloc_head, dev_res->res);
+>> >> +
+>> >> +		/* Reorder the list by their alignment */
+>> >
+>> >Why do we need to reorder the list by alignment?
+>> 
+>> Resource list "head" is sorted by the alignment, while the alignment would be
+>> changed after we considering the additional resource.
+>> 
+>> Take powernv platform as an example. The IOV BAR is expanded and need to be
+>> aligned with its total size instead of the individual VF BAR size. If we don't
+>> reorder it, the IOV BAR would be assigned after some other resources, which
+>> may cause the real assignment fail even the total size is enough.
+>
+>This is worthy of a comment in the code.
+>
+>Bjorn
+>--
+>To unsubscribe from this list: send the line "unsubscribe linux-pci" in
+>the body of a message to majordomo@vger.kernel.org
+>More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
 -- 
-1.7.9.5
+Richard Yang
+Help you, Help me
