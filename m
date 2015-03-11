@@ -1,16 +1,16 @@
 Return-Path: <Igal.Liberman@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0135.outbound.protection.outlook.com [207.46.100.135])
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1on0139.outbound.protection.outlook.com [157.56.110.139])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6C13F1A0E65
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2015 20:11:22 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id EA1BD1A10B6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2015 20:12:27 +1100 (AEDT)
 From: Igal.Liberman <igal.liberman@freescale.com>
 To: <linuxppc-dev@lists.ozlabs.org>, <netdev@vger.kernel.org>,
  <linux-kernel@vger.kernel.org>
-Subject: [v2,11/11] soc/fman: Add the FMan SP FLIB
-Date: Wed, 11 Mar 2015 07:06:46 +0200
-Message-ID: <1426050406-12440-1-git-send-email-igal.liberman@freescale.com>
+Subject: [RFC,1/8] soc/fman: Add FMan MURAM support
+Date: Wed, 11 Mar 2015 07:07:49 +0200
+Message-ID: <1426050469-12507-1-git-send-email-igal.liberman@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: scottwood@freescale.com, Igal Liberman <Igal.Liberman@freescale.com>
@@ -25,52 +25,66 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Igal Liberman <Igal.Liberman@freescale.com>
 
+Add Frame Manager Multi-User RAM support.
+
 Signed-off-by: Igal Liberman <Igal.Liberman@freescale.com>
 ---
- drivers/soc/fsl/fman/Makefile     |    1 +
- drivers/soc/fsl/fman/sp/Makefile  |    3 +
- drivers/soc/fsl/fman/sp/fman_sp.c |  203 +++++++++++++++++++++++++++++++++++++
- 3 files changed, 207 insertions(+)
- create mode 100644 drivers/soc/fsl/fman/sp/Makefile
- create mode 100644 drivers/soc/fsl/fman/sp/fman_sp.c
+ drivers/soc/fsl/fman/Kconfig            |    1 +
+ drivers/soc/fsl/fman/Makefile           |    5 +-
+ drivers/soc/fsl/fman/fm_muram.c         |  174 +++++++++++++++++++++++++++++++
+ drivers/soc/fsl/fman/inc/fm_muram_ext.h |   98 +++++++++++++++++
+ 4 files changed, 276 insertions(+), 2 deletions(-)
+ create mode 100644 drivers/soc/fsl/fman/fm_muram.c
+ create mode 100644 drivers/soc/fsl/fman/inc/fm_muram_ext.h
 
+diff --git a/drivers/soc/fsl/fman/Kconfig b/drivers/soc/fsl/fman/Kconfig
+index 4a9f672..92593b7 100644
+--- a/drivers/soc/fsl/fman/Kconfig
++++ b/drivers/soc/fsl/fman/Kconfig
+@@ -1,6 +1,7 @@
+ menuconfig FSL_FMAN
+ 	bool "Freescale DPAA Frame Manager"
+ 	depends on FSL_SOC || COMPILE_TEST
++	select PPC_LIB_RHEAP
+ 	default n
+ 	help
+ 		Freescale Data-Path Acceleration Architecture Frame Manager
 diff --git a/drivers/soc/fsl/fman/Makefile b/drivers/soc/fsl/fman/Makefile
-index 487f221..b5ea613 100644
+index b5ea613..89a84a7 100644
 --- a/drivers/soc/fsl/fman/Makefile
 +++ b/drivers/soc/fsl/fman/Makefile
-@@ -8,3 +8,4 @@ obj-$(CONFIG_FSL_FMAN_PORT)	+= port/
+@@ -1,8 +1,9 @@
+-subdir-ccflags-$(CONFIG_FSL_FMAN) += -I$(srctree)/drivers/soc/fsl/fman/flib
++subdir-ccflags-$(CONFIG_FSL_FMAN) += -I$(srctree)/drivers/soc/fsl/fman/flib \
++				     -I$(srctree)/drivers/soc/fsl/fman/inc
+ 
+ obj-$(CONFIG_FSL_FMAN)		+= fsl_fman.o
+ 
+-fsl_fman-objs			:= fman.o
++fsl_fman-objs	:= fman.o fm_muram.o
+ 
+ obj-$(CONFIG_FSL_FMAN_PORT)	+= port/
  obj-$(CONFIG_FSL_FMAN_MAC)	+= mac/
- obj-$(CONFIG_FSL_FMAN_PCD)	+= pcd/
- obj-$(CONFIG_FSL_FMAN_RTC)	+= rtc/
-+obj-$(CONFIG_FSL_FMAN)		+= sp/
-diff --git a/drivers/soc/fsl/fman/sp/Makefile b/drivers/soc/fsl/fman/sp/Makefile
+diff --git a/drivers/soc/fsl/fman/fm_muram.c b/drivers/soc/fsl/fman/fm_muram.c
 new file mode 100644
-index 0000000..97e89c9
+index 0000000..2a67a2e
 --- /dev/null
-+++ b/drivers/soc/fsl/fman/sp/Makefile
-@@ -0,0 +1,3 @@
-+obj-$(CONFIG_FSL_FMAN)	+= fsl_fman_sp.o
-+
-+fsl_fman_sp-objs	:= fman_sp.o
-diff --git a/drivers/soc/fsl/fman/sp/fman_sp.c b/drivers/soc/fsl/fman/sp/fman_sp.c
-new file mode 100644
-index 0000000..02e82c6
---- /dev/null
-+++ b/drivers/soc/fsl/fman/sp/fman_sp.c
-@@ -0,0 +1,203 @@
++++ b/drivers/soc/fsl/fman/fm_muram.c
+@@ -0,0 +1,174 @@
 +/*
-+ * Copyright 2008 - 2015 Freescale Semiconductor Inc.
++ * Copyright 2008-2015 Freescale Semiconductor Inc.
 + *
 + * Redistribution and use in source and binary forms, with or without
 + * modification, are permitted provided that the following conditions are met:
 + *     * Redistributions of source code must retain the above copyright
-+ *	 notice, this list of conditions and the following disclaimer.
++ *       notice, this list of conditions and the following disclaimer.
 + *     * Redistributions in binary form must reproduce the above copyright
-+ *	 notice, this list of conditions and the following disclaimer in the
-+ *	 documentation and/or other materials provided with the distribution.
++ *       notice, this list of conditions and the following disclaimer in the
++ *       documentation and/or other materials provided with the distribution.
 + *     * Neither the name of Freescale Semiconductor nor the
-+ *	 names of its contributors may be used to endorse or promote products
-+ *	 derived from this software without specific prior written permission.
++ *       names of its contributors may be used to endorse or promote products
++ *       derived from this software without specific prior written permission.
++ *
 + *
 + * ALTERNATIVELY, this software may be distributed under the terms of the
 + * GNU General Public License ("GPL") as published by the Free Software
@@ -89,177 +103,251 @@ index 0000000..02e82c6
 + * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 + */
 +
-+#include "fsl_fman_sp.h"
++/* FM MURAM ... */
++#include "fm_muram_ext.h"
 +
-+uint32_t fman_vsp_get_statistics(struct fm_pcd_storage_profile_regs *regs,
-+				 uint16_t index)
++#include <linux/io.h>
++#include <linux/string.h>
++#include <linux/slab.h>
++
++struct muram_info {
++	rh_block_t	fm_boot_muram_rh_block[16];
++	rh_info_t	*fm_muram_info;
++	void __iomem *fm_muram_vbase;
++	/* Spinlock for MURAM accesses */
++	spinlock_t	fm_muram_lock;
++	uint64_t	size;
++};
++
++static void __iomem *fm_muram_addr(struct muram_info *p_muram,
++				   unsigned long offset)
 +{
-+	struct fm_pcd_storage_profile_regs *sp_regs;
-+
-+	sp_regs = &regs[index];
-+	return ioread32be(&sp_regs->fm_sp_acnt);
++	return p_muram->fm_muram_vbase + offset;
 +}
 +
-+void fman_vsp_set_statistics(struct fm_pcd_storage_profile_regs *regs,
-+			     uint16_t index, uint32_t value)
++static unsigned long fm_muram_offset(struct muram_info *p_muram,
++				     void __iomem *addr)
 +{
-+	struct fm_pcd_storage_profile_regs *sp_regs;
-+
-+	sp_regs = &regs[index];
-+	iowrite32be(value, &sp_regs->fm_sp_acnt);
++	return addr - p_muram->fm_muram_vbase;
 +}
 +
-+void fman_vsp_defconfig(struct fm_storage_profile_params *cfg)
++void fm_muram_clear(struct muram_info *p_muram)
 +{
-+	cfg->dma_swap_data = DEFAULT_FMAN_SP_DMA_SWAP_DATA;
-+	cfg->int_context_cache_attr =
-+	    DEFAULT_FMAN_SP_DMA_INT_CONTEXT_CACHE_ATTR;
-+	cfg->header_cache_attr = DEFAULT_FMAN_SP_DMA_HEADER_CACHE_ATTR;
-+	cfg->scatter_gather_cache_attr =
-+	    DEFAULT_FMAN_SP_DMA_SCATTER_GATHER_CACHE_ATTR;
-+	cfg->dma_write_optimize = DEFAULT_FMAN_SP_DMA_WRITE_OPTIMIZE;
-+	cfg->no_scather_gather = DEFAULT_FMAN_SP_NO_SCATTER_GATHER;
++	memset_io(p_muram->fm_muram_vbase, 0, p_muram->size);
 +}
 +
-+static inline uint32_t calc_vec_dep(int max_pools, bool *pools,
-+				    struct fman_ext_pools *ext_buf_pools,
-+				    uint32_t mask)
++struct muram_info *fm_muram_init(phys_addr_t base_address, uint64_t size)
 +{
-+	int i, j;
-+	uint32_t vector = 0;
++	int ret;
++	struct muram_info *p_muram;
 +
-+	for (i = 0; i < max_pools; i++)
-+		if (pools[i])
-+			for (j = 0; j < ext_buf_pools->num_pools_used; j++)
-+				if (i == ext_buf_pools->ext_buf_pool[j].id) {
-+					vector |= mask >> j;
-+					break;
-+				}
-+	return vector;
-+}
++	p_muram = kzalloc(sizeof(*p_muram), GFP_KERNEL);
++	if (!p_muram)
++		return NULL;
++	/* Create remote heap */
++	p_muram->fm_muram_info = rh_create(sizeof(unsigned int));
 +
-+void fman_vsp_init(struct fm_pcd_storage_profile_regs *regs,
-+		   uint16_t index,
-+		   struct fm_storage_profile_params *fm_vsp_params,
-+		   int port_max_num_of_ext_pools, int bm_max_num_of_pools,
-+		   int max_num_of_pfc_priorities)
-+{
-+	int i = 0, j = 0;
-+	struct fm_pcd_storage_profile_regs *sp_regs;
-+	uint32_t tmp_reg, vector;
-+	struct fman_ext_pools *ext_buf_pools = &fm_vsp_params->fm_ext_pools;
-+	struct fman_buf_pool_depletion *buf_pool_depletion =
-+	    &fm_vsp_params->buf_pool_depletion;
-+	struct fman_backup_bm_pools *backup_pools =
-+	    &fm_vsp_params->backup_pools;
-+	struct fman_sp_int_context_data_copy *int_context_data_copy =
-+	    fm_vsp_params->int_context;
-+	struct fman_sp_buf_margins *external_buffer_margins =
-+	    fm_vsp_params->buf_margins;
-+	bool no_scather_gather = fm_vsp_params->no_scather_gather;
-+	uint16_t liodn_offset = fm_vsp_params->liodn_offset;
++	/* Spinlock for MURAM accesses */
++	spin_lock_init(&p_muram->fm_muram_lock);
 +
-+	sp_regs = &regs[index];
++	/* Initialize the info header */
++	rh_init(p_muram->fm_muram_info, 1,
++		sizeof(p_muram->fm_boot_muram_rh_block) /
++		sizeof(p_muram->fm_boot_muram_rh_block[0]),
++		p_muram->fm_boot_muram_rh_block);
 +
-+	/* fill external buffers manager pool information register */
-+	for (i = 0; i < ext_buf_pools->num_pools_used; i++) {
-+		tmp_reg = FMAN_SP_EXT_BUF_POOL_VALID |
-+		    FMAN_SP_EXT_BUF_POOL_EN_COUNTER;
-+		tmp_reg |= ((uint32_t)ext_buf_pools->ext_buf_pool[i].id <<
-+			    FMAN_SP_EXT_BUF_POOL_ID_SHIFT);
-+		tmp_reg |= ext_buf_pools->ext_buf_pool[i].size;
-+		/* functionality available only for some deriviatives
-+		 * (limited by config)
-+		 **/
-+		for (j = 0; j < backup_pools->num_backup_pools; j++)
-+			if (ext_buf_pools->ext_buf_pool[i].id ==
-+			    backup_pools->pool_ids[j]) {
-+				tmp_reg |= FMAN_SP_EXT_BUF_POOL_BACKUP;
-+				break;
-+			}
-+		iowrite32be(tmp_reg, &sp_regs->fm_sp_ebmpi[i]);
++	/* Attach region */
++	ret = rh_attach_region(p_muram->fm_muram_info,
++			       0,
++			       size);
++	if (ret) {
++		pr_err("Cannot attach region\n");
++		return NULL;
 +	}
 +
-+	/* clear unused pools */
-+	for (i = ext_buf_pools->num_pools_used;
-+	     i < port_max_num_of_ext_pools; i++)
-+		iowrite32be(0, &sp_regs->fm_sp_ebmpi[i]);
++	/* Save MURAM size */
++	p_muram->size = size;
 +
-+	/* fill pool depletion register */
-+	tmp_reg = 0;
-+	if (buf_pool_depletion->buf_pool_depletion_enabled &&
-+	    buf_pool_depletion->pools_grp_mode_enable) {
-+		/* calculate vector for number of pools depletion */
-+		vector =
-+		    calc_vec_dep(bm_max_num_of_pools,
-+				 buf_pool_depletion->pools_to_consider,
-+				 ext_buf_pools, 0x80000000);
-+
-+		/* configure num of pools and vector for number of pools mode */
-+		tmp_reg |= (((uint32_t)buf_pool_depletion->num_pools - 1) <<
-+			    FMAN_SP_POOL_DEP_NUM_OF_POOLS_SHIFT);
-+		tmp_reg |= vector;
++	/* ioremap physical address */
++	p_muram->fm_muram_vbase = ioremap(base_address, size);
++	if (!p_muram->fm_muram_vbase) {
++		pr_err("Cannot map FM MURAM\n");
++		return NULL;
 +	}
 +
-+	if (buf_pool_depletion->buf_pool_depletion_enabled &&
-+	    buf_pool_depletion->single_pool_mode_enable) {
-+		/* calculate vector for number of pools depletion */
-+		vector =
-+		    calc_vec_dep(bm_max_num_of_pools,
-+				 buf_pool_depletion->
-+				 pools_to_consider_for_single_mode,
-+				 ext_buf_pools, 0x00000080);
-+
-+		/* configure num of pools and vector for number of pools mode */
-+		tmp_reg |= vector;
-+	}
-+
-+	/* fill QbbPEV */
-+	if (buf_pool_depletion->buf_pool_depletion_enabled) {
-+		vector = 0;
-+		for (i = 0; i < max_num_of_pfc_priorities; i++)
-+			if (buf_pool_depletion->pfc_priorities_en[i])
-+				vector |= 0x00000100 << i;
-+		tmp_reg |= vector;
-+	}
-+	iowrite32be(tmp_reg, &sp_regs->fm_sp_mpd);
-+
-+	/* fill dma attributes register */
-+	tmp_reg = 0;
-+	tmp_reg |= (uint32_t)fm_vsp_params->dma_swap_data <<
-+	    FMAN_SP_DMA_ATTR_SWP_SHIFT;
-+	tmp_reg |= (uint32_t)fm_vsp_params->int_context_cache_attr <<
-+	    FMAN_SP_DMA_ATTR_IC_CACHE_SHIFT;
-+	tmp_reg |= (uint32_t)fm_vsp_params->header_cache_attr <<
-+	    FMAN_SP_DMA_ATTR_HDR_CACHE_SHIFT;
-+	tmp_reg |= (uint32_t)fm_vsp_params->scatter_gather_cache_attr <<
-+	    FMAN_SP_DMA_ATTR_SG_CACHE_SHIFT;
-+	if (fm_vsp_params->dma_write_optimize)
-+		tmp_reg |= FMAN_SP_DMA_ATTR_WRITE_OPTIMIZE;
-+	iowrite32be(tmp_reg, &sp_regs->fm_sp_da);
-+
-+	/* IC parameters - fill internal context parameters register */
-+	tmp_reg = 0;
-+	tmp_reg |= (((uint32_t)int_context_data_copy->ext_buf_offset /
-+		     OFFSET_UNITS) << FMAN_SP_IC_TO_EXT_SHIFT);
-+	tmp_reg |= (((uint32_t)int_context_data_copy->int_context_offset /
-+		     OFFSET_UNITS) << FMAN_SP_IC_FROM_INT_SHIFT);
-+	tmp_reg |= (((uint32_t)int_context_data_copy->size / OFFSET_UNITS) <<
-+		    FMAN_SP_IC_SIZE_SHIFT);
-+	iowrite32be(tmp_reg, &sp_regs->fm_sp_icp);
-+
-+	/* buffer margins - fill external buffer margins register */
-+	tmp_reg = 0;
-+	tmp_reg |= (((uint32_t)external_buffer_margins->start_margins) <<
-+		    FMAN_SP_EXT_BUF_MARG_START_SHIFT);
-+	tmp_reg |= (((uint32_t)external_buffer_margins->end_margins) <<
-+		    FMAN_SP_EXT_BUF_MARG_END_SHIFT);
-+	if (no_scather_gather)
-+		tmp_reg |= FMAN_SP_SG_DISABLE;
-+	iowrite32be(tmp_reg, &sp_regs->fm_sp_ebm);
-+
-+	/* buffer margins - fill spliodn register */
-+	iowrite32be(liodn_offset, &sp_regs->fm_sp_spliodn);
++	return p_muram;
 +}
++
++int fm_muram_free(struct muram_info *p_muram)
++{
++	/* Detach region */
++	rh_detach_region(p_muram->fm_muram_info, 0, (int)p_muram->size);
++	/* Destroy remote heap */
++	rh_destroy(p_muram->fm_muram_info);
++	/* Unmap memory */
++	iounmap(p_muram->fm_muram_vbase);
++	/* Free pointer */
++	kfree(p_muram);
++
++	return 0;
++}
++
++void __iomem *fm_muram_alloc(struct muram_info *p_muram, uint32_t size,
++			     uint32_t align)
++{
++	unsigned long start;
++	unsigned long flags;
++
++	spin_lock_irqsave(&p_muram->fm_muram_lock, flags);
++	p_muram->fm_muram_info->alignment = align;
++	start = rh_alloc(p_muram->fm_muram_info, size, "fman");
++
++	if (IS_ERR((void *)start)) {
++		pr_err("FM MURAM cannot allocate memory\n");
++		spin_unlock_irqrestore(&p_muram->fm_muram_lock, flags);
++		return NULL;
++	}
++
++	memset(fm_muram_addr(p_muram, start), 0, size);
++	spin_unlock_irqrestore(&p_muram->fm_muram_lock, flags);
++
++	return fm_muram_addr(p_muram, start);
++}
++
++void __iomem *fm_muram_alloc_fixed(struct muram_info *p_muram, uint32_t offset,
++				   uint32_t size)
++{
++	unsigned long start;
++	unsigned long flags;
++
++	spin_lock_irqsave(&p_muram->fm_muram_lock, flags);
++	p_muram->fm_muram_info->alignment = 1;
++	start = rh_alloc_fixed(p_muram->fm_muram_info, offset, size, "fman");
++
++	if (IS_ERR((void *)start)) {
++		spin_unlock_irqrestore(&p_muram->fm_muram_lock, flags);
++		return NULL;
++	}
++
++	memset(fm_muram_addr(p_muram, start), 0, size);
++	spin_unlock_irqrestore(&p_muram->fm_muram_lock, flags);
++
++	return fm_muram_addr(p_muram, start);
++}
++
++int fm_muram_free_mem(struct muram_info *p_muram, void __iomem *ptr)
++{
++	int ret;
++	unsigned long flags;
++
++	spin_lock_irqsave(&p_muram->fm_muram_lock, flags);
++	ret = rh_free(p_muram->fm_muram_info, fm_muram_offset(p_muram, ptr));
++	spin_unlock_irqrestore(&p_muram->fm_muram_lock, flags);
++	return ret;
++}
+diff --git a/drivers/soc/fsl/fman/inc/fm_muram_ext.h b/drivers/soc/fsl/fman/inc/fm_muram_ext.h
+new file mode 100644
+index 0000000..57bb502
+--- /dev/null
++++ b/drivers/soc/fsl/fman/inc/fm_muram_ext.h
+@@ -0,0 +1,98 @@
++/*
++ * Copyright 2008-2015 Freescale Semiconductor Inc.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are met:
++ *     * Redistributions of source code must retain the above copyright
++ *       notice, this list of conditions and the following disclaimer.
++ *     * Redistributions in binary form must reproduce the above copyright
++ *       notice, this list of conditions and the following disclaimer in the
++ *       documentation and/or other materials provided with the distribution.
++ *     * Neither the name of Freescale Semiconductor nor the
++ *       names of its contributors may be used to endorse or promote products
++ *       derived from this software without specific prior written permission.
++ *
++ *
++ * ALTERNATIVELY, this software may be distributed under the terms of the
++ * GNU General Public License ("GPL") as published by the Free Software
++ * Foundation, either version 2 of that License or (at your option) any
++ * later version.
++ *
++ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
++ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
++ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
++ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
++ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
++ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
++
++/* File          fm_muram_ext.h
++ * Description   FM MURAM Application Programming Interface.
++ */
++#ifndef __FM_MURAM_EXT
++#define __FM_MURAM_EXT
++
++#include "asm/rheap.h"
++
++/* Structure for FM MURAM information */
++struct muram_info;
++
++/* FM MURAM initialization API functions, definitions and enums */
++
++/* Function	fm_muram_init
++ * Description	Creates partition in the MURAM.
++ *		The routine returns a pointer to the MURAM partition.
++ *		This pointer must be passed as first parameter to all other
++ *		FM-MURAM function calls.
++ *		No actual initialization or configuration of FM_MURAM hardware
++ *		is done by this routine.
++ * Param[in]	base_address - Pointer to base of memory mapped FM-MURAM.
++ * Param[in]	size        - Size of the FM-MURAM partition.
++ * Return	pointer to FM-MURAM object, or NULL for Failure.
++ */
++struct muram_info *fm_muram_init(phys_addr_t base_address, uint64_t size);
++
++/*Function	fm_muram_free
++ *Description	Frees all resources that were assigned to FM-MURAM module.
++ *		Calling this routine invalidates the pointer.
++ *Param[in]	p_muram - FM-MURAM module pointer.
++ *Return	0 on success; Error code otherwise.
++ */
++int fm_muram_free(struct muram_info *p_muram);
++
++/* FM MURAM control API functions, definitions and enums */
++
++/*Function	fm_muram_alloc
++ *Description	Allocate some memory from FM-MURAM partition.
++ *Param[in]	p_muram   - FM-MURAM module pointer.
++ *Param[in]	size      - size of the memory to be allocated.
++ *Param[in]	align     - Alignment of the memory.
++ *Return	address of the allocated memory; NULL otherwise.
++ */
++void __iomem *fm_muram_alloc(struct muram_info *p_muram, uint32_t size,
++			     uint32_t align);
++
++/*Function	fm_muram_alloc_fixed
++ *Description	Allocate some specific memory from FM-MURAM partition (according
++ *		to base).
++ *Param[in]	p_muram    - FM-MURAM module pointer.
++ *Param[in]	offset     - the desired base-address to be allocated.
++ *Param[in]	size       - size of the memory to be allocated.
++ *Return	address of the allocated memory; NULL otherwise.
++ */
++void __iomem *fm_muram_alloc_fixed(struct muram_info *p_muram, uint32_t offset,
++				   uint32_t size);
++
++/*Function	fm_muram_free_mem
++ *Description	Free an allocated memory from FM-MURAM partition.
++ *Param[in]	p_muram   - FM-MURAM module pointer.
++ *Param[in]	ptr       - A pointer to an allocated memory.
++ *Return	0 on success; Error code otherwise.
++ */
++int fm_muram_free_mem(struct muram_info *p_muram, void __iomem *ptr);
++
++#endif /* __FM_MURAM_EXT */
 -- 
 1.7.9.5
