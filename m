@@ -1,37 +1,41 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5D6ED1A0631
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2015 17:35:15 +1100 (AEDT)
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+Return-Path: <weiyang@linux.vnet.ibm.com>
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 2BF89140172
- for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2015 17:35:15 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 93AB31A0631
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2015 17:43:10 +1100 (AEDT)
 Received: from /spool/local
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Wed, 11 Mar 2015 16:35:14 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 5C4362CE8050
- for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2015 17:35:10 +1100 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t2B6Z2sg51511544
- for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2015 17:35:10 +1100
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t2B6YaLU031608
- for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2015 17:34:37 +1100
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 1/2] powerpc/eeh: Introduce eeh_pe_inject_err()
-Date: Wed, 11 Mar 2015 17:34:10 +1100
-Message-Id: <1426055651-22925-1-git-send-email-gwshan@linux.vnet.ibm.com>
-Cc: kvm@vger.kernel.org, aik@ozlabs.ru, Gavin Shan <gwshan@linux.vnet.ibm.com>,
- agraf@suse.de, alex.williamson@redhat.com, david@gibson.dropbear.id.au
+ for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
+ Wed, 11 Mar 2015 16:43:08 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id C58EC2BB0047
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2015 17:43:05 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t2B6gvDJ43778162
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2015 17:43:05 +1100
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t2B6gVdA005132
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2015 17:42:32 +1100
+Date: Wed, 11 Mar 2015 14:42:15 +0800
+From: Wei Yang <weiyang@linux.vnet.ibm.com>
+To: Bjorn Helgaas <bhelgaas@google.com>
+Subject: Re: [PATCH v12 17/21] powerpc/powernv: Shift VF resource with an
+ offset
+Message-ID: <20150311064215.GD5826@richard>
+Reply-To: Wei Yang <weiyang@linux.vnet.ibm.com>
+References: <20150224082939.32124.45744.stgit@bhelgaas-glaptop2.roam.corp.google.com>
+ <20150224083457.32124.55534.stgit@bhelgaas-glaptop2.roam.corp.google.com>
+ <20150224090037.GK6220@google.com> <20150304030051.GA10797@richard>
+ <20150311025519.GD10994@google.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20150311025519.GD10994@google.com>
+Cc: linux-pci@vger.kernel.org, Wei Yang <weiyang@linux.vnet.ibm.com>,
+ benh@au1.ibm.com, linuxppc-dev@lists.ozlabs.org, gwshan@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,132 +45,140 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The patch defines PCI error types and functions in eeh.h and
-exports function eeh_pe_inject_err(), which will be called by
-VFIO driver to inject the specified PCI error to the indicated
-PE for testing purpose.
+On Tue, Mar 10, 2015 at 09:55:19PM -0500, Bjorn Helgaas wrote:
+>On Wed, Mar 04, 2015 at 11:01:24AM +0800, Wei Yang wrote:
+>> On Tue, Feb 24, 2015 at 03:00:37AM -0600, Bjorn Helgaas wrote:
+>> >On Tue, Feb 24, 2015 at 02:34:57AM -0600, Bjorn Helgaas wrote:
+>> >> From: Wei Yang <weiyang@linux.vnet.ibm.com>
+>> >> 
+>> >> On PowerNV platform, resource position in M64 implies the PE# the resource
+>> >> belongs to.  In some cases, adjustment of a resource is necessary to locate
+>> >> it to a correct position in M64.
+>> >> 
+>> >> Add pnv_pci_vf_resource_shift() to shift the 'real' PF IOV BAR address
+>> >> according to an offset.
+>> >> 
+>> >> [bhelgaas: rework loops, rework overlap check, index resource[]
+>> >> conventionally, remove pci_regs.h include, squashed with next patch]
+>> >> Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
+>> >> Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
+>> >
+>> >...
+>> >
+>> >> +#ifdef CONFIG_PCI_IOV
+>> >> +static int pnv_pci_vf_resource_shift(struct pci_dev *dev, int offset)
+>> >> +{
+>> >> +	struct pci_dn *pdn = pci_get_pdn(dev);
+>> >> +	int i;
+>> >> +	struct resource *res, res2;
+>> >> +	resource_size_t size;
+>> >> +	u16 vf_num;
+>> >> +
+>> >> +	if (!dev->is_physfn)
+>> >> +		return -EINVAL;
+>> >> +
+>> >> +	/*
+>> >> +	 * "offset" is in VFs.  The M64 windows are sized so that when they
+>> >> +	 * are segmented, each segment is the same size as the IOV BAR.
+>> >> +	 * Each segment is in a separate PE, and the high order bits of the
+>> >> +	 * address are the PE number.  Therefore, each VF's BAR is in a
+>> >> +	 * separate PE, and changing the IOV BAR start address changes the
+>> >> +	 * range of PEs the VFs are in.
+>> >> +	 */
+>> >> +	vf_num = pdn->vf_pes;
+>> >> +	for (i = 0; i < PCI_SRIOV_NUM_BARS; i++) {
+>> >> +		res = &dev->resource[i + PCI_IOV_RESOURCES];
+>> >> +		if (!res->flags || !res->parent)
+>> >> +			continue;
+>> >> +
+>> >> +		if (!pnv_pci_is_mem_pref_64(res->flags))
+>> >> +			continue;
+>> >> +
+>> >> +		/*
+>> >> +		 * The actual IOV BAR range is determined by the start address
+>> >> +		 * and the actual size for vf_num VFs BAR.  This check is to
+>> >> +		 * make sure that after shifting, the range will not overlap
+>> >> +		 * with another device.
+>> >> +		 */
+>> >> +		size = pci_iov_resource_size(dev, i + PCI_IOV_RESOURCES);
+>> >> +		res2.flags = res->flags;
+>> >> +		res2.start = res->start + (size * offset);
+>> >> +		res2.end = res2.start + (size * vf_num) - 1;
+>> >> +
+>> >> +		if (res2.end > res->end) {
+>> >> +			dev_err(&dev->dev, "VF BAR%d: %pR would extend past %pR (trying to enable %d VFs shifted by %d)\n",
+>> >> +				i, &res2, res, vf_num, offset);
+>> >> +			return -EBUSY;
+>> >> +		}
+>> >> +	}
+>> >> +
+>> >> +	for (i = 0; i < PCI_SRIOV_NUM_BARS; i++) {
+>> >> +		res = &dev->resource[i + PCI_IOV_RESOURCES];
+>> >> +		if (!res->flags || !res->parent)
+>> >> +			continue;
+>> >> +
+>> >> +		if (!pnv_pci_is_mem_pref_64(res->flags))
+>> >> +			continue;
+>> >> +
+>> >> +		size = pci_iov_resource_size(dev, i + PCI_IOV_RESOURCES);
+>> >> +		res2 = *res;
+>> >> +		res->start += size * offset;
+>> >
+>> >I'm still not happy about this fiddling with res->start.
+>> >
+>> >Increasing res->start means that in principle, the "size * offset" bytes
+>> >that we just removed from res are now available for allocation to somebody
+>> >else.  I don't think we *will* give that space to anything else because of
+>> >the alignment restrictions you're enforcing, but "res" now doesn't
+>> >correctly describe the real resource map.
+>> >
+>> >Would you be able to just update the BAR here while leaving the struct
+>> >resource alone?  In that case, it would look a little funny that lspci
+>> >would show a BAR value in the middle of the region in /proc/iomem, but
+>> >the /proc/iomem region would be more correct.
+>> 
+>> Bjorn,
+>> 
+>> I did some tests, while the result is not good.
+>> 
+>> What I did is still write the shifted resource address to the device by
+>> pci_update_resource(), but I revert the res->start to the original one. If
+>> this step is not correct, please let me know.
+>> 
+>> This can't work since after we revert the res->start, those VFs will be given
+>> resources from res->start instead of (res->start + offset * size). This is not
+>> what we expect.
+>
+>Hmm, yes, I suppose we'd have to have a hook in pci_bus_alloc_from_region()
+>or something.  That's getting a little messy.  I still don't like messing
+>with the resource after it's in the resource tree, but I don't have a
+>better idea right now.  So let's just go with what you have.
+>
 
-Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/eeh.h | 24 ++++++++++++++++
- arch/powerpc/kernel/eeh.c      | 63 ++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 87 insertions(+)
+Thanks  :-)
 
-diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
-index 9de87ce..eb20c62 100644
---- a/arch/powerpc/include/asm/eeh.h
-+++ b/arch/powerpc/include/asm/eeh.h
-@@ -196,6 +196,28 @@ enum {
- #define EEH_RESET_COMPLETE	4	/* PHB complete reset		*/
- #define EEH_LOG_TEMP		1	/* EEH temporary error log	*/
- #define EEH_LOG_PERM		2	/* EEH permanent error log	*/
-+#define EEH_ERR_TYPE_32		0	/* 32-bits PCI error	*/
-+#define EEH_ERR_TYPE_64		1	/* 64-bits PCI error	*/
-+#define EEH_ERR_FUNC_LD_MEM_ADDR	0	/* Memory load	*/
-+#define EEH_ERR_FUNC_LD_MEM_DATA	1
-+#define EEH_ERR_FUNC_LD_IO_ADDR		2	/* IO load	*/
-+#define EEH_ERR_FUNC_LD_IO_DATA		3
-+#define EEH_ERR_FUNC_LD_CFG_ADDR	4	/* Config load	*/
-+#define EEH_ERR_FUNC_LD_CFG_DATA	5
-+#define EEH_ERR_FUNC_ST_MEM_ADDR	6	/* Memory store	*/
-+#define EEH_ERR_FUNC_ST_MEM_DATA	7
-+#define EEH_ERR_FUNC_ST_IO_ADDR		8	/* IO store	*/
-+#define EEH_ERR_FUNC_ST_IO_DATA		9
-+#define EEH_ERR_FUNC_ST_CFG_ADDR	10	/* Config store	*/
-+#define EEH_ERR_FUNC_ST_CFG_DATA	11
-+#define EEH_ERR_FUNC_DMA_RD_ADDR	12	/* DMA read	*/
-+#define EEH_ERR_FUNC_DMA_RD_DATA	13
-+#define EEH_ERR_FUNC_DMA_RD_MASTER	14
-+#define EEH_ERR_FUNC_DMA_RD_TARGET	15
-+#define EEH_ERR_FUNC_DMA_WR_ADDR	16	/* DMA write	*/
-+#define EEH_ERR_FUNC_DMA_WR_DATA	17
-+#define EEH_ERR_FUNC_DMA_WR_MASTER	18
-+#define EEH_ERR_FUNC_DMA_WR_TARGET	19
- 
- struct eeh_ops {
- 	char *name;
-@@ -296,6 +318,8 @@ int eeh_pe_set_option(struct eeh_pe *pe, int option);
- int eeh_pe_get_state(struct eeh_pe *pe);
- int eeh_pe_reset(struct eeh_pe *pe, int option);
- int eeh_pe_configure(struct eeh_pe *pe);
-+int eeh_pe_inject_err(struct eeh_pe *pe, int type, int func,
-+		      unsigned long addr, unsigned long mask);
- 
- /**
-  * EEH_POSSIBLE_ERROR() -- test for possible MMIO failure.
-diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
-index 60a0f15ce..dbab1a4 100644
---- a/arch/powerpc/kernel/eeh.c
-+++ b/arch/powerpc/kernel/eeh.c
-@@ -1657,6 +1657,69 @@ int eeh_pe_configure(struct eeh_pe *pe)
- }
- EXPORT_SYMBOL_GPL(eeh_pe_configure);
- 
-+/**
-+ * eeh_pe_inject_err - Injecting the specified PCI error to the indicated PE
-+ * @pe: the indicated PE
-+ * @type: error type
-+ * @function: error function
-+ * @addr: address
-+ * @mask: address mask
-+ *
-+ * The routine is called to inject the specified PCI error, which
-+ * is determined by @type and @function, to the indicated PE for
-+ * testing purpose.
-+ */
-+int eeh_pe_inject_err(struct eeh_pe *pe, int type, int func,
-+		      unsigned long addr, unsigned long mask)
-+{
-+	/* Invalid PE ? */
-+	if (!pe)
-+		return -ENODEV;
-+
-+	/* Unsupported operation ? */
-+	if (!eeh_ops || !eeh_ops->err_inject)
-+		return -ENOENT;
-+
-+	/* Check on PCI error type */
-+	switch (type) {
-+	case EEH_ERR_TYPE_32:
-+	case EEH_ERR_TYPE_64:
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	/* Check on PCI error function */
-+	switch (func) {
-+	case EEH_ERR_FUNC_LD_MEM_ADDR:
-+	case EEH_ERR_FUNC_LD_MEM_DATA:
-+	case EEH_ERR_FUNC_LD_IO_ADDR:
-+	case EEH_ERR_FUNC_LD_IO_DATA:
-+	case EEH_ERR_FUNC_LD_CFG_ADDR:
-+	case EEH_ERR_FUNC_LD_CFG_DATA:
-+	case EEH_ERR_FUNC_ST_MEM_ADDR:
-+	case EEH_ERR_FUNC_ST_MEM_DATA:
-+	case EEH_ERR_FUNC_ST_IO_ADDR:
-+	case EEH_ERR_FUNC_ST_IO_DATA:
-+	case EEH_ERR_FUNC_ST_CFG_ADDR:
-+	case EEH_ERR_FUNC_ST_CFG_DATA:
-+	case EEH_ERR_FUNC_DMA_RD_ADDR:
-+	case EEH_ERR_FUNC_DMA_RD_DATA:
-+	case EEH_ERR_FUNC_DMA_RD_MASTER:
-+	case EEH_ERR_FUNC_DMA_RD_TARGET:
-+	case EEH_ERR_FUNC_DMA_WR_ADDR:
-+	case EEH_ERR_FUNC_DMA_WR_DATA:
-+	case EEH_ERR_FUNC_DMA_WR_MASTER:
-+	case EEH_ERR_FUNC_DMA_WR_TARGET:
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	return eeh_ops->err_inject(pe, type, func, addr, mask);
-+}
-+EXPORT_SYMBOL_GPL(eeh_pe_inject_err);
-+
- static int proc_eeh_show(struct seq_file *m, void *v)
- {
- 	if (!eeh_enabled()) {
+I would state this in the change log and add a comment in the code to note
+this down. Hope this would be a little helpful.
+
+>> >> +
+>> >> +		dev_info(&dev->dev, "VF BAR%d: %pR shifted to %pR (enabling %d VFs shifted by %d)\n",
+>> >> +			 i, &res2, res, vf_num, offset);
+>> >> +		pci_update_resource(dev, i + PCI_IOV_RESOURCES);
+>> >> +	}
+>> >> +	pdn->max_vfs -= offset;
+>> >> +	return 0;
+>> >> +}
+>> >> +#endif /* CONFIG_PCI_IOV */
+>> 
+>> -- 
+>> Richard Yang
+>> Help you, Help me
+>> 
+>> --
+>> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
+>> the body of a message to majordomo@vger.kernel.org
+>> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
 -- 
-1.8.3.2
+Richard Yang
+Help you, Help me
