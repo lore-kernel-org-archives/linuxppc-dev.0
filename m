@@ -1,26 +1,43 @@
-Return-Path: <bhelgaas@google.com>
-Received: from mail-oi0-x236.google.com (mail-oi0-x236.google.com
- [IPv6:2607:f8b0:4003:c06::236])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <neelegup@linux.vnet.ibm.com>
+Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CA45B1A0631
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2015 13:55:24 +1100 (AEDT)
-Received: by oiav63 with SMTP id v63so5316031oia.9
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Mar 2015 19:55:22 -0700 (PDT)
-Date: Tue, 10 Mar 2015 21:55:19 -0500
-From: Bjorn Helgaas <bhelgaas@google.com>
-To: Wei Yang <weiyang@linux.vnet.ibm.com>
-Subject: Re: [PATCH v12 17/21] powerpc/powernv: Shift VF resource with an
- offset
-Message-ID: <20150311025519.GD10994@google.com>
-References: <20150224082939.32124.45744.stgit@bhelgaas-glaptop2.roam.corp.google.com>
- <20150224083457.32124.55534.stgit@bhelgaas-glaptop2.roam.corp.google.com>
- <20150224090037.GK6220@google.com> <20150304030051.GA10797@richard>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7F0221A0631
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2015 15:28:59 +1100 (AEDT)
+Received: from /spool/local
+ by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <neelegup@linux.vnet.ibm.com>;
+ Wed, 11 Mar 2015 09:58:56 +0530
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id AEB643940049
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2015 09:58:51 +0530 (IST)
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t2B4Sobp64028718
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2015 09:58:51 +0530
+Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t2B4Snj3027642
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2015 09:58:50 +0530
+Message-ID: <54FFC3EC.7020708@linux.vnet.ibm.com>
+Date: Wed, 11 Mar 2015 09:56:20 +0530
+From: Neelesh Gupta <neelegup@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150304030051.GA10797@richard>
-Cc: linux-pci@vger.kernel.org, benh@au1.ibm.com, linuxppc-dev@lists.ozlabs.org,
- gwshan@linux.vnet.ibm.com
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [RFC V2 04/12] i2c: opal: make use of the new infrastructure
+ for quirks
+References: <1424880126-15047-1-git-send-email-wsa@the-dreams.de>
+ <1424880126-15047-5-git-send-email-wsa@the-dreams.de>
+ <54FF2631.9050006@linux.vnet.ibm.com>
+ <1426029133.17565.9.camel@kernel.crashing.org>
+In-Reply-To: <1426029133.17565.9.camel@kernel.crashing.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linux-mips@linux-mips.org, Wolfram Sang <wsa@the-dreams.de>,
+ linux-kernel@vger.kernel.org, Ludovic Desroches <ludovic.desroches@atmel.com>,
+ linux-i2c@vger.kernel.org, Yingjoe Chen <yingjoe.chen@mediatek.com>,
+ Eddie Huang <eddie.huang@mediatek.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,129 +47,140 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Mar 04, 2015 at 11:01:24AM +0800, Wei Yang wrote:
-> On Tue, Feb 24, 2015 at 03:00:37AM -0600, Bjorn Helgaas wrote:
-> >On Tue, Feb 24, 2015 at 02:34:57AM -0600, Bjorn Helgaas wrote:
-> >> From: Wei Yang <weiyang@linux.vnet.ibm.com>
-> >> 
-> >> On PowerNV platform, resource position in M64 implies the PE# the resource
-> >> belongs to.  In some cases, adjustment of a resource is necessary to locate
-> >> it to a correct position in M64.
-> >> 
-> >> Add pnv_pci_vf_resource_shift() to shift the 'real' PF IOV BAR address
-> >> according to an offset.
-> >> 
-> >> [bhelgaas: rework loops, rework overlap check, index resource[]
-> >> conventionally, remove pci_regs.h include, squashed with next patch]
-> >> Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
-> >> Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
-> >
-> >...
-> >
-> >> +#ifdef CONFIG_PCI_IOV
-> >> +static int pnv_pci_vf_resource_shift(struct pci_dev *dev, int offset)
-> >> +{
-> >> +	struct pci_dn *pdn = pci_get_pdn(dev);
-> >> +	int i;
-> >> +	struct resource *res, res2;
-> >> +	resource_size_t size;
-> >> +	u16 vf_num;
-> >> +
-> >> +	if (!dev->is_physfn)
-> >> +		return -EINVAL;
-> >> +
-> >> +	/*
-> >> +	 * "offset" is in VFs.  The M64 windows are sized so that when they
-> >> +	 * are segmented, each segment is the same size as the IOV BAR.
-> >> +	 * Each segment is in a separate PE, and the high order bits of the
-> >> +	 * address are the PE number.  Therefore, each VF's BAR is in a
-> >> +	 * separate PE, and changing the IOV BAR start address changes the
-> >> +	 * range of PEs the VFs are in.
-> >> +	 */
-> >> +	vf_num = pdn->vf_pes;
-> >> +	for (i = 0; i < PCI_SRIOV_NUM_BARS; i++) {
-> >> +		res = &dev->resource[i + PCI_IOV_RESOURCES];
-> >> +		if (!res->flags || !res->parent)
-> >> +			continue;
-> >> +
-> >> +		if (!pnv_pci_is_mem_pref_64(res->flags))
-> >> +			continue;
-> >> +
-> >> +		/*
-> >> +		 * The actual IOV BAR range is determined by the start address
-> >> +		 * and the actual size for vf_num VFs BAR.  This check is to
-> >> +		 * make sure that after shifting, the range will not overlap
-> >> +		 * with another device.
-> >> +		 */
-> >> +		size = pci_iov_resource_size(dev, i + PCI_IOV_RESOURCES);
-> >> +		res2.flags = res->flags;
-> >> +		res2.start = res->start + (size * offset);
-> >> +		res2.end = res2.start + (size * vf_num) - 1;
-> >> +
-> >> +		if (res2.end > res->end) {
-> >> +			dev_err(&dev->dev, "VF BAR%d: %pR would extend past %pR (trying to enable %d VFs shifted by %d)\n",
-> >> +				i, &res2, res, vf_num, offset);
-> >> +			return -EBUSY;
-> >> +		}
-> >> +	}
-> >> +
-> >> +	for (i = 0; i < PCI_SRIOV_NUM_BARS; i++) {
-> >> +		res = &dev->resource[i + PCI_IOV_RESOURCES];
-> >> +		if (!res->flags || !res->parent)
-> >> +			continue;
-> >> +
-> >> +		if (!pnv_pci_is_mem_pref_64(res->flags))
-> >> +			continue;
-> >> +
-> >> +		size = pci_iov_resource_size(dev, i + PCI_IOV_RESOURCES);
-> >> +		res2 = *res;
-> >> +		res->start += size * offset;
-> >
-> >I'm still not happy about this fiddling with res->start.
-> >
-> >Increasing res->start means that in principle, the "size * offset" bytes
-> >that we just removed from res are now available for allocation to somebody
-> >else.  I don't think we *will* give that space to anything else because of
-> >the alignment restrictions you're enforcing, but "res" now doesn't
-> >correctly describe the real resource map.
-> >
-> >Would you be able to just update the BAR here while leaving the struct
-> >resource alone?  In that case, it would look a little funny that lspci
-> >would show a BAR value in the middle of the region in /proc/iomem, but
-> >the /proc/iomem region would be more correct.
-> 
-> Bjorn,
-> 
-> I did some tests, while the result is not good.
-> 
-> What I did is still write the shifted resource address to the device by
-> pci_update_resource(), but I revert the res->start to the original one. If
-> this step is not correct, please let me know.
-> 
-> This can't work since after we revert the res->start, those VFs will be given
-> resources from res->start instead of (res->start + offset * size). This is not
-> what we expect.
 
-Hmm, yes, I suppose we'd have to have a hook in pci_bus_alloc_from_region()
-or something.  That's getting a little messy.  I still don't like messing
-with the resource after it's in the resource tree, but I don't have a
-better idea right now.  So let's just go with what you have.
+On 03/11/2015 04:42 AM, Benjamin Herrenschmidt wrote:
+> On Tue, 2015-03-10 at 22:43 +0530, Neelesh Gupta wrote:
+>> I tested the i2c opal driver after updating the patch as below.
+>> Basically I think we can also support write-then-{read/write}
+>> for the number of messages = 2.
+>> Ben, any issues if we support both write plus read/write in the
+>> opal driver ?
+> Nope, in fact it's a good idea, I found myself having to expoes such
+> an interface to some userspace tool of ours.
+>
+> However...
+>
+>> diff --git a/drivers/i2c/busses/i2c-opal.c b/drivers/i2c/busses/i2c-opal.c
+>> index 16f90b1..85412ba 100644
+>> --- a/drivers/i2c/busses/i2c-opal.c
+>> +++ b/drivers/i2c/busses/i2c-opal.c
+>> @@ -104,18 +104,8 @@ static int i2c_opal_master_xfer(struct i2c_adapter *adap, struct i2c_msg *msgs,
+>>    		req.buffer_ra = cpu_to_be64(__pa(msgs[0].buf));
+>>    		break;
+>>    	case 2:
+>> -		/* For two messages, we basically support only simple
+>> -		 * smbus transactions of a write plus a read. We might
+>> -		 * want to allow also two writes but we'd have to bounce
+>> -		 * the data into a single buffer.
+>> -		 */
+>> -		if ((msgs[0].flags & I2C_M_RD) || !(msgs[1].flags & I2C_M_RD))
+>> -			return -EOPNOTSUPP;
+> Don't we still want to enforce that the first message is a write ?
+> Somebody may not be looking at the quirks...
+>
+>> -		if (msgs[0].len > 4)
+>> -			return -EOPNOTSUPP;
+> And that the len is supported...
+>
+>> -		if (msgs[0].addr != msgs[1].addr)
+>> -			return -EOPNOTSUPP;
+> Same...
+>
+> Ie, the quirk indicates to the callers what we support, but we should
+> still check that we aren't called with something that doesn't match.
 
-> >> +
-> >> +		dev_info(&dev->dev, "VF BAR%d: %pR shifted to %pR (enabling %d VFs shifted by %d)\n",
-> >> +			 i, &res2, res, vf_num, offset);
-> >> +		pci_update_resource(dev, i + PCI_IOV_RESOURCES);
-> >> +	}
-> >> +	pdn->max_vfs -= offset;
-> >> +	return 0;
-> >> +}
-> >> +#endif /* CONFIG_PCI_IOV */
-> 
-> -- 
-> Richard Yang
-> Help you, Help me
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Quirk *also* return error to the user if any of the conditions mismatch with
+what we have indicated through the quriks structure...
+
+I think we can't land up here by-passing the check for quirks so above 
+checks
+are duplicated here..
+
+Neelesh.
+
+>
+>> -		req.type = OPAL_I2C_SM_READ;
+>> +		req.type = (msgs[1].flags & I2C_M_RD) ?
+>> +			OPAL_I2C_SM_READ : OPAL_I2C_SM_WRITE;
+>>    		req.addr = cpu_to_be16(msgs[0].addr);
+>>    		req.subaddr_sz = msgs[0].len;
+>>    		for (i = 0; i < msgs[0].len; i++)
+>> @@ -210,6 +200,11 @@ static const struct i2c_algorithm i2c_opal_algo = {
+>>    	.functionality	= i2c_opal_func,
+>>    };
+>>
+>> +static struct i2c_adapter_quirks i2c_opal_quirks = {
+>> +	.flags = I2C_AQ_COMB | I2C_AQ_COMB_WRITE_FIRST | I2C_AQ_COMB_SAME_ADDR,
+>> +	.max_comb_1st_msg_len = 4,
+>> +};
+>> +
+>>    static int i2c_opal_probe(struct platform_device *pdev)
+>>    {
+>>    	struct i2c_adapter	*adapter;
+>> @@ -232,6 +227,7 @@ static int i2c_opal_probe(struct platform_device *pdev)
+>>
+>>    	adapter->algo = &i2c_opal_algo;
+>>    	adapter->algo_data = (void *)(unsigned long)opal_id;
+>> +	adapter->quirks = &i2c_opal_quirks;
+>>    	adapter->dev.parent = &pdev->dev;
+>>    	adapter->dev.of_node = of_node_get(pdev->dev.of_node);
+>>    	pname = of_get_property(pdev->dev.of_node, "ibm,port-name", NULL);
+>>
+>>
+>>
+>> On 02/25/2015 09:31 PM, Wolfram Sang wrote:
+>>> From: Wolfram Sang <wsa+renesas@sang-engineering.com>
+>>>
+>>> Signed-off-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
+>>> ---
+>>>    drivers/i2c/busses/i2c-opal.c | 22 +++++++++++-----------
+>>>    1 file changed, 11 insertions(+), 11 deletions(-)
+>>>
+>>> diff --git a/drivers/i2c/busses/i2c-opal.c b/drivers/i2c/busses/i2c-opal.c
+>>> index 16f90b1a750894..b2788ecad5b3cb 100644
+>>> --- a/drivers/i2c/busses/i2c-opal.c
+>>> +++ b/drivers/i2c/busses/i2c-opal.c
+>>> @@ -104,17 +104,6 @@ static int i2c_opal_master_xfer(struct i2c_adapter *adap, struct i2c_msg *msgs,
+>>>    		req.buffer_ra = cpu_to_be64(__pa(msgs[0].buf));
+>>>    		break;
+>>>    	case 2:
+>>> -		/* For two messages, we basically support only simple
+>>> -		 * smbus transactions of a write plus a read. We might
+>>> -		 * want to allow also two writes but we'd have to bounce
+>>> -		 * the data into a single buffer.
+>>> -		 */
+>>> -		if ((msgs[0].flags & I2C_M_RD) || !(msgs[1].flags & I2C_M_RD))
+>>> -			return -EOPNOTSUPP;
+>>> -		if (msgs[0].len > 4)
+>>> -			return -EOPNOTSUPP;
+>>> -		if (msgs[0].addr != msgs[1].addr)
+>>> -			return -EOPNOTSUPP;
+>>>    		req.type = OPAL_I2C_SM_READ;
+>>>    		req.addr = cpu_to_be16(msgs[0].addr);
+>>>    		req.subaddr_sz = msgs[0].len;
+>>> @@ -210,6 +199,16 @@ static const struct i2c_algorithm i2c_opal_algo = {
+>>>    	.functionality	= i2c_opal_func,
+>>>    };
+>>>    
+>>> +/* For two messages, we basically support only simple
+>>> + * smbus transactions of a write plus a read. We might
+>>> + * want to allow also two writes but we'd have to bounce
+>>> + * the data into a single buffer.
+>>> + */
+>>> +static struct i2c_adapter_quirks i2c_opal_quirks = {
+>>> +	.flags = I2C_AQ_COMB_WRITE_THEN_READ,
+>>> +	.max_comb_1st_msg_len = 4,
+>>> +};
+>>> +
+>>>    static int i2c_opal_probe(struct platform_device *pdev)
+>>>    {
+>>>    	struct i2c_adapter	*adapter;
+>>> @@ -232,6 +231,7 @@ static int i2c_opal_probe(struct platform_device *pdev)
+>>>    
+>>>    	adapter->algo = &i2c_opal_algo;
+>>>    	adapter->algo_data = (void *)(unsigned long)opal_id;
+>>> +	adapter->quirks = &i2c_opal_quirks;
+>>>    	adapter->dev.parent = &pdev->dev;
+>>>    	adapter->dev.of_node = of_node_get(pdev->dev.of_node);
+>>>    	pname = of_get_property(pdev->dev.of_node, "ibm,port-name", NULL);
+>
