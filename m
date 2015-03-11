@@ -1,33 +1,38 @@
-Return-Path: <benh@au1.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7BA851A0631
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2015 16:44:25 +1100 (AEDT)
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+Return-Path: <weiyang@linux.vnet.ibm.com>
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 424521400DE
- for <linuxppc-dev@ozlabs.org>; Wed, 11 Mar 2015 16:44:25 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id C304C1A0631
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2015 16:48:17 +1100 (AEDT)
 Received: from /spool/local
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <benh@au1.ibm.com>;
- Wed, 11 Mar 2015 15:44:24 +1000
-Message-ID: <1426052605.17565.21.camel@au1.ibm.com>
-Subject: Re: [RFC PATCH 1/2] powerpc: Add a proper syscall for switching
- endianness
-From: Benjamin Herrenschmidt <benh@au1.ibm.com>
-To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Date: Wed, 11 Mar 2015 16:43:25 +1100
-In-Reply-To: <54FFD4C4.5040407@linux.vnet.ibm.com>
-References: <1425973006-22759-1-git-send-email-mpe@ellerman.id.au>
- <1425980077.4636.265.camel@au1.ibm.com>
- <1425984912.1920.4.camel@ellerman.id.au>
- <54FFD4C4.5040407@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Jeremy Kerr <jk@ozlabs.org>, linuxppc-dev@ozlabs.org
+ for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
+ Wed, 11 Mar 2015 15:48:17 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 53B632BB0047
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2015 16:48:16 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t2B5m8q939256226
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2015 16:48:16 +1100
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t2B5lgKH015208
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2015 16:47:42 +1100
+Date: Wed, 11 Mar 2015 13:47:26 +0800
+From: Wei Yang <weiyang@linux.vnet.ibm.com>
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Subject: Re: [PATCH 3/4] powerpc/eeh: fix powernv_eeh_wait_state delay logic
+Message-ID: <20150311054726.GA5826@richard>
+Reply-To: Wei Yang <weiyang@linux.vnet.ibm.com>
+References: <1425871052-13118-1-git-send-email-weiyang@linux.vnet.ibm.com>
+ <1425871052-13118-4-git-send-email-weiyang@linux.vnet.ibm.com>
+ <20150311051346.GC6906@shangw>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20150311051346.GC6906@shangw>
+Cc: Wei Yang <weiyang@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,40 +42,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2015-03-11 at 11:08 +0530, Anshuman Khandual wrote:
-> On 03/10/2015 04:25 PM, Michael Ellerman wrote:
-> > On Tue, 2015-03-10 at 20:34 +1100, Benjamin Herrenschmidt wrote:
-> >> On Tue, 2015-03-10 at 18:36 +1100, Michael Ellerman wrote:
-> >>> We currently have a "special" syscall for switching endianness. This is
-> >>> syscall number 0x1ebe, which is handled explicitly in the 64-bit syscall
-> >>> exception entry.
-> >>>
-> >>> That has a few problems, firstly the syscall number is outside of the
-> >>> usual range, which confuses various tools. For example strace doesn't
-> >>> recognise the syscalls at all.
-> >>>
-> >>> Secondly it's handled explicitly as a special case in the syscall
-> >>> exception entry, which is complicated enough without it.
-> >>>
-> >>> As a first step toward removing the special syscall, we need to add a
-> >>> regular syscall that implements the same functionality.
-> >>>
-> >>> The logic is simple, it simply toggles the MSR_LE bit in the userspace
-> >>> MSR. This is the same as the special syscall, with the caveat that the
-> >>> special syscall clobbers fewer registers.
-> >>
-> >> You can set _TIF_RESTOREALL to force a restore of all the registers on
-> >> the way back which should do the job.
-> > 
-> > Right, I'd forgotten we talked about that.
-> > 
-> > I'll try that tomorrow.
-> 
-> The test fails when we add set_thread_flag(TIF_RESTOREALL) after the MSR flip.
-> Though the test passes with the original patch.
+On Wed, Mar 11, 2015 at 04:13:46PM +1100, Gavin Shan wrote:
+>On Mon, Mar 09, 2015 at 11:17:31AM +0800, Wei Yang wrote:
+>>As the comment indicates, powernv_eeh_get_state() will inform EEH core to
+>>delay 1 second. This means the delay doesn't happen when
+>>powernv_eeh_get_state() returns.
+>>
+>>This patch moves the delay subtraction just before msleep(), which is the
+>>same logic in pseries_eeh_wait_state().
+>>
+>>Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
+>
+>The patch would conflict with the patches to remove EEH chip layer done
+>in https://patchwork.ozlabs.org/patch/439956/. Could you please repost
+>with corrected function names in commit log when the dependent patches
+>show up in Michael's next branch?
+>
+>Except that, the changes look ok to me:
+>
+>Acked-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 
-We also need to wrap the syscall like we do for fork() etc... to
-save_nvgpr's.
+Thanks, I will repost it accordingly.
 
-Cheers,
-Ben.
+>
+>Thanks,
+>Gavin
+>
+>>---
+>> arch/powerpc/platforms/powernv/eeh-powernv.c |    2 +-
+>> 1 file changed, 1 insertion(+), 1 deletion(-)
+>>
+>>diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
+>>index 5abb4c2..af1be8f 100644
+>>--- a/arch/powerpc/platforms/powernv/eeh-powernv.c
+>>+++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
+>>@@ -334,13 +334,13 @@ static int powernv_eeh_wait_state(struct eeh_pe *pe, int max_wait)
+>> 		if (ret != EEH_STATE_UNAVAILABLE)
+>> 			return ret;
+>>
+>>-		max_wait -= mwait;
+>> 		if (max_wait <= 0) {
+>> 			pr_warn("%s: Timeout getting PE#%x's state (%d)\n",
+>> 				__func__, pe->addr, max_wait);
+>> 			return EEH_STATE_NOT_SUPPORT;
+>> 		}
+>>
+>>+		max_wait -= mwait;
+>> 		msleep(mwait);
+>> 	}
+>>
+>>-- 
+>>1.7.9.5
+>>
+
+-- 
+Richard Yang
+Help you, Help me
