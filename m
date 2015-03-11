@@ -1,25 +1,27 @@
-Return-Path: <bhelgaas@google.com>
-Received: from mail-oi0-x22f.google.com (mail-oi0-x22f.google.com
- [IPv6:2607:f8b0:4003:c06::22f])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <Horia.Geanta@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bon0132.outbound.protection.outlook.com [157.56.111.132])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4EE151A0008
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Mar 2015 00:55:12 +1100 (AEDT)
-Received: by oibg201 with SMTP id g201so7844731oib.10
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Mar 2015 06:55:10 -0700 (PDT)
-Date: Wed, 11 Mar 2015 08:55:07 -0500
-From: Bjorn Helgaas <bhelgaas@google.com>
-To: Wei Yang <weiyang@linux.vnet.ibm.com>
-Subject: Re: [PATCH V13 15/21] powerpc/powernv: Reserve additional space for
- IOV BAR according to the number of total_pe
-Message-ID: <20150311135507.GA16664@google.com>
-References: <1425446353-30513-1-git-send-email-weiyang@linux.vnet.ibm.com>
- <1425446353-30513-16-git-send-email-weiyang@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 927301A078C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Mar 2015 02:48:59 +1100 (AEDT)
+Message-ID: <550063D1.2070105@freescale.com>
+Date: Wed, 11 Mar 2015 17:48:33 +0200
+From: =?UTF-8?B?SG9yaWEgR2VhbnTEgw==?= <horia.geanta@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1425446353-30513-16-git-send-email-weiyang@linux.vnet.ibm.com>
-Cc: linux-pci@vger.kernel.org, benh@au1.ibm.com, linuxppc-dev@lists.ozlabs.org,
- gwshan@linux.vnet.ibm.com
+To: Martin Hicks <mort@bork.org>
+Subject: Re: [PATCH 0/2] crypto: talitos: Add AES-XTS mode
+References: <1424451610-5786-1-git-send-email-mort@bork.org>
+ <54F464E4.8080204@freescale.com>	<54F475A8.6030105@gmail.com>
+ <20150302220923.GC30523@darwin.bork.org>	<54F5D6D5.8070407@freescale.com>
+ <CAJUS3Xnw66Eu6tvGPpdcet6KLjhKM=ptj8NRaztAVr0h_r+LqQ@mail.gmail.com>
+ <54FD72E4.1060701@freescale.com>
+ <CAJUS3XkY0tbYqBbU5HR7NT63UPFi5DO6XWuymbZnQaJEA5kkBw@mail.gmail.com>
+In-Reply-To: <CAJUS3XkY0tbYqBbU5HR7NT63UPFi5DO6XWuymbZnQaJEA5kkBw@mail.gmail.com>
+Content-Type: text/plain; charset="utf-8"
+Cc: Scott Wood <scottwood@freescale.com>,
+ Herbert Xu <herbert@gondor.apana.org.au>, linuxppc-dev@lists.ozlabs.org,
+ linux-crypto@vger.kernel.org, Milan Broz <gmazyland@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,180 +31,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Mar 04, 2015 at 01:19:07PM +0800, Wei Yang wrote:
-> On PHB3, PF IOV BAR will be covered by M64 window to have better PE
-> isolation.  The total_pe number is usually different from total_VFs, which
-> can lead to a conflict between MMIO space and the PE number.
+On 3/9/2015 5:08 PM, Martin Hicks wrote:
+> On Mon, Mar 9, 2015 at 6:16 AM, Horia Geantă <horia.geanta@freescale.com> wrote:
+>> On 3/3/2015 7:44 PM, Martin Hicks wrote:
+>>> On Tue, Mar 3, 2015 at 10:44 AM, Horia Geantă
+>>> <horia.geanta@freescale.com> wrote:
+>>>>
+>>>> For talitos, there are two cases:
+>>>>
+>>>> 1. request data size is <= data unit / sector size
+>>>> talitos can handle any IV / tweak scheme
+>>>>
+>>>> 2. request data size > sector size
+>>>> since talitos internally generates the IV for the next sector by
+>>>> incrementing the previous IV, only IV schemes that allocate consecutive
+>>>> IV to consecutive sectors will function correctly.
+>>>>
+>>>
+>>> it's not clear to me that #1 is right.  I guess it could be, but the
+>>> IV length would be limited to 8 bytes.
+>>
+>> Yes, there's a limitation in talitos wrt. XTS IV / tweak size - it's up
+>> to 8 bytes.
+>> So I guess ESSIV won't work with talitos-xts, since the encrypted IV
+>> output is 16 bytes.
+>> But as previously said, ESSIV breaks the XTS standard requirement for
+>> having a consecutive IV for consecutive blocks. ESSIV should really be
+>> used only with disk-level encryption schemes that require an
+>> unpredictable IV.
 > 
-> For example, if total_VFs is 128 and total_pe is 256, the second half of
-> M64 window will be part of other PCI device, which may already belong
-> to other PEs.
+> Ok.  I'll verify that the second half of the IV is zeroed.
 > 
-> Prevent the conflict by reserving additional space for the PF IOV BAR,
-> which is total_pe number of VF's BAR size.
-> 
-> [bhelgaas: make dev_printk() output more consistent, index resource[]
-> conventionally]
-> Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/include/asm/machdep.h        |    4 ++
->  arch/powerpc/include/asm/pci-bridge.h     |    3 ++
->  arch/powerpc/kernel/pci-common.c          |    5 +++
->  arch/powerpc/kernel/pci-hotplug.c         |    4 ++
->  arch/powerpc/platforms/powernv/pci-ioda.c |   61 +++++++++++++++++++++++++++++
->  5 files changed, 77 insertions(+)
-> 
-> diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
-> index c8175a3..965547c 100644
-> --- a/arch/powerpc/include/asm/machdep.h
-> +++ b/arch/powerpc/include/asm/machdep.h
-> @@ -250,6 +250,10 @@ struct machdep_calls {
->  	/* Reset the secondary bus of bridge */
->  	void  (*pcibios_reset_secondary_bus)(struct pci_dev *dev);
->  
-> +#ifdef CONFIG_PCI_IOV
-> +	void (*pcibios_fixup_sriov)(struct pci_bus *bus);
-> +#endif /* CONFIG_PCI_IOV */
-> +
->  	/* Called to shutdown machine specific hardware not already controlled
->  	 * by other drivers.
->  	 */
-> diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
-> index 513f8f2..de11de7 100644
-> --- a/arch/powerpc/include/asm/pci-bridge.h
-> +++ b/arch/powerpc/include/asm/pci-bridge.h
-> @@ -175,6 +175,9 @@ struct pci_dn {
->  #define IODA_INVALID_PE		(-1)
->  #ifdef CONFIG_PPC_POWERNV
->  	int	pe_number;
-> +#ifdef CONFIG_PCI_IOV
-> +	u16     max_vfs;		/* number of VFs IOV BAR expended */
-> +#endif /* CONFIG_PCI_IOV */
->  #endif
->  	struct list_head child_list;
->  	struct list_head list;
-> diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
-> index 8203101..022e9fe 100644
-> --- a/arch/powerpc/kernel/pci-common.c
-> +++ b/arch/powerpc/kernel/pci-common.c
-> @@ -1646,6 +1646,11 @@ void pcibios_scan_phb(struct pci_controller *hose)
->  	if (ppc_md.pcibios_fixup_phb)
->  		ppc_md.pcibios_fixup_phb(hose);
->  
-> +#ifdef CONFIG_PCI_IOV
-> +	if (ppc_md.pcibios_fixup_sriov)
-> +		ppc_md.pcibios_fixup_sriov(bus);
-> +#endif /* CONFIG_PCI_IOV */
+> One last thing that I'm not sure of is what string to place in
+> cra_ablkcipher.geniv field.   "eseqiv" seems wrong if plain/plain64
+> are the IVs that XTS is designed for.
 
-Here, and ...
+Right. But since currently dm-crypt does not use .givencrypt and deals
+with IV generation by itself, we're safe.
+When dm-crypt IV generation will be moved to crypto, we'll have to
+revisit this.
 
-> +
->  	/* Configure PCI Express settings */
->  	if (bus && !pci_has_flag(PCI_PROBE_ONLY)) {
->  		struct pci_bus *child;
-> diff --git a/arch/powerpc/kernel/pci-hotplug.c b/arch/powerpc/kernel/pci-hotplug.c
-> index 5b78917..7d238ae 100644
-> --- a/arch/powerpc/kernel/pci-hotplug.c
-> +++ b/arch/powerpc/kernel/pci-hotplug.c
-> @@ -94,6 +94,10 @@ void pcibios_add_pci_devices(struct pci_bus * bus)
->  		 */
->  		slotno = PCI_SLOT(PCI_DN(dn->child)->devfn);
->  		pci_scan_slot(bus, PCI_DEVFN(slotno, 0));
-> +#ifdef CONFIG_PCI_IOV
-> +		if (ppc_md.pcibios_fixup_sriov)
-> +			ppc_md.pcibios_fixup_sriov(bus);
-> +#endif /* CONFIG_PCI_IOV */
+While here: note that xts-talitos supports only two key lengths - 256
+and 512 bits. There are tcrypt speed tests that check also for 384-bit
+keys (which is out-of-spec, but still...), leading to a "Key Size Error"
+- see below (KSE bit in AESU Interrupt Status Register is set)
 
-here, you have the same code.  It's good that we now do it for hot-added
-devices as well as those present at boot.  But it's bad that it happens in
-two different paths.
+testing speed of async xts(aes) (xts-aes-talitos) encryption
+[...]
+test 5 (384 bit key, 16 byte blocks):
+talitos ffe30000.crypto: CDPR is NULL, giving up search for offending
+descriptor
+talitos ffe30000.crypto: AESUISR 0x00000000_00000200
+talitos ffe30000.crypto: DESCBUF 0x64300011_00000000
+talitos ffe30000.crypto: DESCBUF 0x00000000_00000000
+talitos ffe30000.crypto: DESCBUF 0x00100000_00000000
+talitos ffe30000.crypto: DESCBUF 0x00300000_00000000
+talitos ffe30000.crypto: DESCBUF 0x00100000_00000000
+talitos ffe30000.crypto: DESCBUF 0x00100000_00000000
+talitos ffe30000.crypto: DESCBUF 0x00100000_00000000
+talitos ffe30000.crypto: DESCBUF 0x00000000_00000000
+encryption() failed flags=0
 
-Isn't there some way we can unify this so the same path is used for the
-initial pcibios_scan_phb() and also the hot-add case?  Maybe call
-pcibios_fixup_sriov() from pcibios_add_device()?
+So for xts, driver must enforce 256/512 bit key lengths and return
+CRYPTO_TFM_RES_BAD_KEY_LEN in all other cases.
+Or a SW fallback could be used for the other cases, but I don't think
+it's worth the effort since these are non-standard.
 
->  		pcibios_setup_bus_devices(bus);
->  		max = bus->busn_res.start;
->  		for (pass = 0; pass < 2; pass++) {
-> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-> index 1b37066..958c7a3 100644
-> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
-> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-> @@ -1749,6 +1749,64 @@ static void pnv_pci_init_ioda_msis(struct pnv_phb *phb)
->  static void pnv_pci_init_ioda_msis(struct pnv_phb *phb) { }
->  #endif /* CONFIG_PCI_MSI */
->  
-> +#ifdef CONFIG_PCI_IOV
-> +static void pnv_pci_ioda_fixup_iov_resources(struct pci_dev *pdev)
-> +{
-> +	struct pci_controller *hose;
-> +	struct pnv_phb *phb;
-> +	struct resource *res;
-> +	int i;
-> +	resource_size_t size;
-> +	struct pci_dn *pdn;
-> +
-> +	if (!pdev->is_physfn || pdev->is_added)
-> +		return;
-> +
-> +	hose = pci_bus_to_host(pdev->bus);
-> +	phb = hose->private_data;
-> +
-> +	pdn = pci_get_pdn(pdev);
-> +	pdn->max_vfs = 0;
-> +
-> +	for (i = 0; i < PCI_SRIOV_NUM_BARS; i++) {
-> +		res = &pdev->resource[i + PCI_IOV_RESOURCES];
-> +		if (!res->flags || res->parent)
-> +			continue;
-> +		if (!pnv_pci_is_mem_pref_64(res->flags)) {
-> +			dev_warn(&pdev->dev, "Skipping expanding VF BAR%d: %pR\n",
-> +				 i, res);
-> +			continue;
-> +		}
-> +
-> +		dev_dbg(&pdev->dev, " Fixing VF BAR%d: %pR to\n", i, res);
-> +		size = pci_iov_resource_size(pdev, i + PCI_IOV_RESOURCES);
-> +		res->end = res->start + size * phb->ioda.total_pe - 1;
-> +		dev_dbg(&pdev->dev, "                       %pR\n", res);
-> +		dev_info(&pdev->dev, "VF BAR%d: %pR (expanded to %d VFs for PE alignment)",
-> +				i, res, phb->ioda.total_pe);
-> +	}
-> +	pdn->max_vfs = phb->ioda.total_pe;
-> +}
-> +
-> +static void pnv_pci_ioda_fixup_sriov(struct pci_bus *bus)
-> +{
-> +	struct pci_dev *pdev;
-> +	struct pci_bus *b;
-> +
-> +	list_for_each_entry(pdev, &bus->devices, bus_list) {
-> +		b = pdev->subordinate;
-> +
-> +		if (b)
-> +			pnv_pci_ioda_fixup_sriov(b);
-> +
-> +		if (pdev->is_added)
-> +			continue;
-> +
-> +		pnv_pci_ioda_fixup_iov_resources(pdev);
-> +	}
-> +}
-> +#endif /* CONFIG_PCI_IOV */
-> +
->  /*
->   * This function is supposed to be called on basis of PE from top
->   * to bottom style. So the the I/O or MMIO segment assigned to
-> @@ -2125,6 +2183,9 @@ static void __init pnv_pci_init_ioda_phb(struct device_node *np,
->  	ppc_md.pcibios_enable_device_hook = pnv_pci_enable_device_hook;
->  	ppc_md.pcibios_window_alignment = pnv_pci_window_alignment;
->  	ppc_md.pcibios_reset_secondary_bus = pnv_pci_reset_secondary_bus;
-> +#ifdef CONFIG_PCI_IOV
-> +	ppc_md.pcibios_fixup_sriov = pnv_pci_ioda_fixup_sriov;
-> +#endif /* CONFIG_PCI_IOV */
->  	pci_add_flags(PCI_REASSIGN_ALL_RSRC);
->  
->  	/* Reset IODA tables to a clean state */
-> -- 
-> 1.7.9.5
-> 
+Horia
