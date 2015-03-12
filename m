@@ -1,38 +1,19 @@
-Return-Path: <geert.uytterhoeven@gmail.com>
-Received: from mail-ob0-x236.google.com (mail-ob0-x236.google.com
- [IPv6:2607:f8b0:4003:c01::236])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8552D1A0407
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Mar 2015 07:20:04 +1100 (AEDT)
-Received: by obbnt9 with SMTP id nt9so16507979obb.9
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Mar 2015 13:20:01 -0700 (PDT)
+Return-Path: <acme@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
+ by lists.ozlabs.org (Postfix) with ESMTP id 168601A0407
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Mar 2015 07:23:47 +1100 (AEDT)
+Date: Thu, 12 Mar 2015 17:23:40 -0300
+From: Arnaldo Carvalho de Melo <acme@kernel.org>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Subject: Re: [PATCHv2 3/8] perf probe powerpc: Fix symbol fixup issues due to
+ ELF type
+Message-ID: <20150312202340.GC3550@kernel.org>
+References: <cover.1418654435.git.naveen.n.rao@linux.vnet.ibm.com>
+ <a31f3cfd0841bea8e615ebd6f8f0ec5a0d1f1eaa.1418654436.git.naveen.n.rao@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Sender: geert.uytterhoeven@gmail.com
-In-Reply-To: <20150312152420.11C821A2425@localhost.localdomain>
-References: <20150312152420.11C821A2425@localhost.localdomain>
-Date: Thu, 12 Mar 2015 21:20:01 +0100
-Message-ID: <CAMuHMdVuECs41hdUfdK9Q6-Kf53C874RC7PuvoqU8LieqgmDug@mail.gmail.com>
-Subject: Re: [PATCH 0/8] powerpc/8xx: Getting rid of CONFIG_8xx
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Christophe Leroy <christophe.leroy@c-s.fr>
-Content-Type: text/plain; charset=UTF-8
-Cc: Linux Fbdev development list <linux-fbdev@vger.kernel.org>,
- Paul Mackerras <paulus@samba.org>, Jiri Slaby <jslaby@suse.cz>,
- Richard Weinberger <richard@nod.at>, Tomi Valkeinen <tomi.valkeinen@ti.com>,
- "linux-serial@vger.kernel.org" <linux-serial@vger.kernel.org>,
- Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>,
- David Woodhouse <dwmw2@infradead.org>,
- uml-devel <user-mode-linux-devel@lists.sourceforge.net>,
- Jeff Dike <jdike@addtoit.com>,
- uml-user <user-mode-linux-user@lists.sourceforge.net>,
- Scott Wood <scottwood@freescale.com>, Karsten Keil <isdn@linux-pingi.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- MTD Maling List <linux-mtd@lists.infradead.org>,
- Brian Norris <computersforpeace@gmail.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <a31f3cfd0841bea8e615ebd6f8f0ec5a0d1f1eaa.1418654436.git.naveen.n.rao@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,33 +23,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Mar 12, 2015 at 4:24 PM, Christophe Leroy
-<christophe.leroy@c-s.fr> wrote:
-> Two config options exist to define powerpc MPC8xx:
-> * CONFIG_PPC_8xx
-> * CONFIG_8xx
-> In addition, CONFIG_PPC_8xx also defines CONFIG_CPM1 as
-> communication co-processor
->
-> arch/powerpc/platforms/Kconfig.cputype has contained the following
-> comment about CONFIG_8xx item for some years:
-> "# this is temp to handle compat with arch=ppc"
->
-> It looks like not many places still have that old CONFIG_8xx used,
-> so it is likely to be a good time to get rid of it completely ?
+Em Mon, Dec 15, 2014 at 08:20:33PM +0530, Naveen N. Rao escreveu:
+> If using the symbol table, symbol addresses are not being fixed up
+> properly, resulting in probes being placed at wrong addresses:
+> 
+>   # perf probe do_fork
+>   Added new event:
+>     probe:do_fork        (on do_fork)
+> 
+>   You can now use it in all perf tools, such as:
+> 
+> 	  perf record -e probe:do_fork -aR sleep 1
+> 
+>   # cat /sys/kernel/debug/tracing/kprobe_events
+>   p:probe/do_fork _text+635952
+>   # printf "%x" 635952
+>   9b430
+>   # grep do_fork /boot/System.map
+>   c0000000000ab430 T .do_fork
+> 
+> Fix by checking for ELF type ET_DYN used by ppc64 kernels.
 
-We also have CONFIG_40x,. CONFIG_44x, and CONFIG_4xx.
-There's no CONFIG_PPC_4* though.
+Sorry if this was answered already, its been a while since this was
+posted/discussed... Are you completely sure this is not a problem on
+!ppc?
 
-Do we want (some) consistency?
+Woudln't it be more conservative to somehow only adjust symbols for this
+ET_DYN type if the arch is ppc? I.e. something like moving that
+adjust_symbols logic to be arch_adjust_symbols(), provide a default and
+then override it for ppc to include also ET_DYN?
 
-Gr{oetje,eeting}s,
+Looking at the other patches...
 
-                        Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+- Arnaldo
+ 
+> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+> ---
+>  tools/perf/util/symbol-elf.c | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+> 
+> diff --git a/tools/perf/util/symbol-elf.c b/tools/perf/util/symbol-elf.c
+> index 06fcd1b..7ac4e4c 100644
+> --- a/tools/perf/util/symbol-elf.c
+> +++ b/tools/perf/util/symbol-elf.c
+> @@ -683,7 +683,8 @@ int symsrc__init(struct symsrc *ss, struct dso *dso, const char *name,
+>  						     NULL) != NULL);
+>  	} else {
+>  		ss->adjust_symbols = ehdr.e_type == ET_EXEC ||
+> -				     ehdr.e_type == ET_REL;
+> +				     ehdr.e_type == ET_REL ||
+> +				     ehdr.e_type == ET_DYN;
+>  	}
+>  
+>  	ss->name   = strdup(name);
+> -- 
+> 2.1.3
