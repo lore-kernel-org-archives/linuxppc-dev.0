@@ -1,20 +1,38 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <linus971@gmail.com>
+Received: from mail-ie0-x22c.google.com (mail-ie0-x22c.google.com
+ [IPv6:2607:f8b0:4001:c03::22c])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D81D91A08EB
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Mar 2015 03:05:03 +1100 (AEDT)
-Content-Type: text/plain; charset=us-ascii
-Mime-Version: 1.0 (Mac OS X Mail 7.3 \(1878.6\))
-Subject: Re: [v2,00/11] Freescale DPAA FMan FLIB(s)
-From: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <1426050232-12075-1-git-send-email-igal.liberman@freescale.com>
-Date: Thu, 12 Mar 2015 10:57:32 -0500
-Message-Id: <E454F6B7-4DEB-446C-8077-F8495D51B834@kernel.crashing.org>
-References: <1426050232-12075-1-git-send-email-igal.liberman@freescale.com>
-To: "Igal.Liberman" <igal.liberman@freescale.com>
-Cc: scottwood@freescale.com, netdev@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8E8F81A0A08
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Mar 2015 03:20:50 +1100 (AEDT)
+Received: by ieclw3 with SMTP id lw3so47753205iec.2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Mar 2015 09:20:48 -0700 (PDT)
+MIME-Version: 1.0
+Sender: linus971@gmail.com
+In-Reply-To: <20150312131045.GE3406@suse.de>
+References: <1425741651-29152-1-git-send-email-mgorman@suse.de>
+ <1425741651-29152-5-git-send-email-mgorman@suse.de>
+ <20150307163657.GA9702@gmail.com>
+ <CA+55aFwDuzpL-k8LsV3touhNLh+TFSLKP8+-nPwMXkWXDYPhrg@mail.gmail.com>
+ <20150308100223.GC15487@gmail.com>
+ <CA+55aFyQyZXu2fi7X9bWdSX0utk8=sccfBwFaSoToROXoE_PLA@mail.gmail.com>
+ <20150309112936.GD26657@destitution>
+ <CA+55aFywW5JLq=BU_qb2OG5+pJ-b1v9tiS5Ygi-vtEKbEZ_T5Q@mail.gmail.com>
+ <20150309191943.GF26657@destitution>
+ <CA+55aFzFt-vX5Jerci0Ty4Uf7K4_nQ7wyCp8hhU_dB0X4cBpVQ@mail.gmail.com>
+ <20150312131045.GE3406@suse.de>
+Date: Thu, 12 Mar 2015 09:20:36 -0700
+Message-ID: <CA+55aFx=81BGnQFNhnAGu6CetL7yifPsnD-+v7Y6QRqwgH47gQ@mail.gmail.com>
+Subject: Re: [PATCH 4/4] mm: numa: Slow PTE scan rate if migration failures
+ occur
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Mel Gorman <mgorman@suse.de>
+Content-Type: text/plain; charset=UTF-8
+Cc: Dave Chinner <david@fromorbit.com>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com,
+ Linux-MM <linux-mm@kvack.org>, Aneesh Kumar <aneesh.kumar@linux.vnet.ibm.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ ppc-dev <linuxppc-dev@lists.ozlabs.org>, Ingo Molnar <mingo@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,122 +42,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Thu, Mar 12, 2015 at 6:10 AM, Mel Gorman <mgorman@suse.de> wrote:
+>
+> I believe you're correct and it matches what was observed. I'm still
+> travelling and wireless is dirt but managed to queue a test using pmd_dirty
 
-On Mar 11, 2015, at 12:03 AM, Igal.Liberman =
-<igal.liberman@freescale.com> wrote:
+Ok, thanks.
 
-> From: Igal Liberman <Igal.Liberman@freescale.com>
->=20
-> The Freescale Data Path Acceleration Architecture (DPAA) is a set of
-> hardware components on specific QorIQ multicore processors. This
-> architecture provides the infrastructure to support simplified
-> sharing of networking interfaces and accelerators by multiple CPU
-> cores and the accelerators.
->=20
-> One of the DPAA accelerators is the Frame Manager (FMan) which
-> enables the Ethernet network interfaces.
->=20
-> This patch presents the FMan Foundation Libraries (FLIB) headers.
-> The FMan FLIB adds basic support for the DPAA FMan hardware register
-> access.
->=20
-> Igal Liberman (7):
->  soc/fman: Add the FMan FLIB headers
->  soc/fman: Add the FMan FLIB
->  soc/fman: Add the FMan port FLIB
->  soc/fman: Add the FMan MAC FLIB
->  soc/fman: Add the FMan parser and KeyGen FLIB(s)
->  soc/fman: Add the FMan RTC FLIB
->  soc/fman: Add the FMan SP FLIB
->=20
-> Madalin Bucur (4):
->  soc/fman: Add the FMan port FLIB headers
->  soc/fman: Add the FMan MAC FLIB headers
->  soc/fman: Add the FMan parser and KeyGen FLIB headers
->  soc/fman: Add the FMan RTC FLIB header
->=20
-> drivers/soc/Kconfig                                |    1 +
-> drivers/soc/Makefile                               |    1 +
-> drivers/soc/fsl/Kconfig                            |    1 +
-> drivers/soc/fsl/Makefile                           |    1 +
-> drivers/soc/fsl/fman/Kconfig                       |   35 +
-> drivers/soc/fsl/fman/Makefile                      |   11 +
-> drivers/soc/fsl/fman/flib/common/general.h         |   41 +
-> drivers/soc/fsl/fman/flib/fman_common.h            |   73 +
-> drivers/soc/fsl/fman/flib/fsl_enet.h               |  275 ++++
-> drivers/soc/fsl/fman/flib/fsl_fman.h               |  802 ++++++++++
-> drivers/soc/fsl/fman/flib/fsl_fman_dtsec.h         | 1016 =
-+++++++++++++
-> drivers/soc/fsl/fman/flib/fsl_fman_dtsec_mii_acc.h |  103 ++
-> drivers/soc/fsl/fman/flib/fsl_fman_kg.h            |  505 +++++++
-> drivers/soc/fsl/fman/flib/fsl_fman_memac.h         |  494 +++++++
-> drivers/soc/fsl/fman/flib/fsl_fman_memac_mii_acc.h |   76 +
-> drivers/soc/fsl/fman/flib/fsl_fman_port.h          |  601 ++++++++
-> drivers/soc/fsl/fman/flib/fsl_fman_prs.h           |  106 ++
-> drivers/soc/fsl/fman/flib/fsl_fman_rtc.h           |  414 ++++++
-> drivers/soc/fsl/fman/flib/fsl_fman_sp.h            |  132 ++
-> drivers/soc/fsl/fman/flib/fsl_fman_tgec.h          |  483 ++++++
-> drivers/soc/fsl/fman/fman.c                        | 1355 =
-+++++++++++++++++
-> drivers/soc/fsl/fman/mac/Makefile                  |    5 +
-> drivers/soc/fsl/fman/mac/fman_crc32.c              |  116 ++
-> drivers/soc/fsl/fman/mac/fman_crc32.h              |   39 +
-> drivers/soc/fsl/fman/mac/fman_dtsec.c              |  838 +++++++++++
-> drivers/soc/fsl/fman/mac/fman_dtsec_mii_acc.c      |  168 +++
-> drivers/soc/fsl/fman/mac/fman_memac.c              |  510 +++++++
-> drivers/soc/fsl/fman/mac/fman_memac_mii_acc.c      |  217 +++
-> drivers/soc/fsl/fman/mac/fman_tgec.c               |  371 +++++
-> drivers/soc/fsl/fman/pcd/Makefile                  |    3 +
-> drivers/soc/fsl/fman/pcd/fman_kg.c                 |  849 +++++++++++
-> drivers/soc/fsl/fman/pcd/fman_prs.c                |  126 ++
-> drivers/soc/fsl/fman/port/Makefile                 |    3 +
-> drivers/soc/fsl/fman/port/fman_port.c              | 1535 =
-++++++++++++++++++++
-> drivers/soc/fsl/fman/rtc/Makefile                  |    3 +
-> drivers/soc/fsl/fman/rtc/fman_rtc.c                |  353 +++++
-> drivers/soc/fsl/fman/sp/Makefile                   |    3 +
-> drivers/soc/fsl/fman/sp/fman_sp.c                  |  203 +++
-> 38 files changed, 11868 insertions(+)
-> create mode 100644 drivers/soc/fsl/Kconfig
-> create mode 100644 drivers/soc/fsl/Makefile
-> create mode 100644 drivers/soc/fsl/fman/Kconfig
-> create mode 100644 drivers/soc/fsl/fman/Makefile
-> create mode 100644 drivers/soc/fsl/fman/flib/common/general.h
-> create mode 100644 drivers/soc/fsl/fman/flib/fman_common.h
-> create mode 100644 drivers/soc/fsl/fman/flib/fsl_enet.h
-> create mode 100644 drivers/soc/fsl/fman/flib/fsl_fman.h
-> create mode 100644 drivers/soc/fsl/fman/flib/fsl_fman_dtsec.h
-> create mode 100644 drivers/soc/fsl/fman/flib/fsl_fman_dtsec_mii_acc.h
-> create mode 100644 drivers/soc/fsl/fman/flib/fsl_fman_kg.h
-> create mode 100644 drivers/soc/fsl/fman/flib/fsl_fman_memac.h
-> create mode 100644 drivers/soc/fsl/fman/flib/fsl_fman_memac_mii_acc.h
-> create mode 100644 drivers/soc/fsl/fman/flib/fsl_fman_port.h
-> create mode 100644 drivers/soc/fsl/fman/flib/fsl_fman_prs.h
-> create mode 100644 drivers/soc/fsl/fman/flib/fsl_fman_rtc.h
-> create mode 100644 drivers/soc/fsl/fman/flib/fsl_fman_sp.h
-> create mode 100644 drivers/soc/fsl/fman/flib/fsl_fman_tgec.h
-> create mode 100644 drivers/soc/fsl/fman/fman.c
-> create mode 100644 drivers/soc/fsl/fman/mac/Makefile
-> create mode 100644 drivers/soc/fsl/fman/mac/fman_crc32.c
-> create mode 100644 drivers/soc/fsl/fman/mac/fman_crc32.h
-> create mode 100644 drivers/soc/fsl/fman/mac/fman_dtsec.c
-> create mode 100644 drivers/soc/fsl/fman/mac/fman_dtsec_mii_acc.c
-> create mode 100644 drivers/soc/fsl/fman/mac/fman_memac.c
-> create mode 100644 drivers/soc/fsl/fman/mac/fman_memac_mii_acc.c
-> create mode 100644 drivers/soc/fsl/fman/mac/fman_tgec.c
-> create mode 100644 drivers/soc/fsl/fman/pcd/Makefile
-> create mode 100644 drivers/soc/fsl/fman/pcd/fman_kg.c
-> create mode 100644 drivers/soc/fsl/fman/pcd/fman_prs.c
-> create mode 100644 drivers/soc/fsl/fman/port/Makefile
-> create mode 100644 drivers/soc/fsl/fman/port/fman_port.c
-> create mode 100644 drivers/soc/fsl/fman/rtc/Makefile
-> create mode 100644 drivers/soc/fsl/fman/rtc/fman_rtc.c
-> create mode 100644 drivers/soc/fsl/fman/sp/Makefile
-> create mode 100644 drivers/soc/fsl/fman/sp/fman_sp.c
->=20
-> --=20
-> 1.7.9.5
+I'm not entirely happy with that change, and I suspect the whole
+heuristic should be looked at much more (maybe it should also look at
+whether it's executable, for example), but it's a step in the right
+direction.
 
-What changed in v2?
+So I committed it and added a comment, and wrote a commit log about
+it. I suspect any further work is post-4.0-release, unless somebody
+comes up with something small and simple and obviously better.
 
-- k
+                                 Linus
