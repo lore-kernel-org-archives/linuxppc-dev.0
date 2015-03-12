@@ -1,46 +1,19 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
+Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E092A1A0196
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Mar 2015 16:02:10 +1100 (AEDT)
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id AFF2F1401AC
- for <linuxppc-dev@ozlabs.org>; Thu, 12 Mar 2015 16:02:10 +1100 (AEDT)
-Received: from /spool/local
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Thu, 12 Mar 2015 15:02:08 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id AFEB22BB004D
- for <linuxppc-dev@ozlabs.org>; Thu, 12 Mar 2015 16:02:03 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t2C51tII40370230
- for <linuxppc-dev@ozlabs.org>; Thu, 12 Mar 2015 16:02:03 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t2C51TBB027177
- for <linuxppc-dev@ozlabs.org>; Thu, 12 Mar 2015 16:01:30 +1100
-Date: Thu, 12 Mar 2015 16:01:05 +1100
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: [PATCH 2/2] drivers/vfio: Support EEH error injection
-Message-ID: <20150312050105.GB28256@shangw>
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <1426055651-22925-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1426055651-22925-2-git-send-email-gwshan@linux.vnet.ibm.com>
- <20150312005721.GP11973@voom.redhat.com>
- <20150312031642.GA15888@shangw>
- <20150312042129.GS11973@voom.redhat.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150312042129.GS11973@voom.redhat.com>
-Cc: kvm@vger.kernel.org, aik@ozlabs.ru, Gavin Shan <gwshan@linux.vnet.ibm.com>,
- agraf@suse.de, linuxppc-dev@ozlabs.org, alex.williamson@redhat.com
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45F0D1A0198
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Mar 2015 17:15:14 +1100 (AEDT)
+Message-ID: <1426140913.25936.11.camel@ellerman.id.au>
+Subject: Re: [PATCH] powerpc: comvert relocs_check to a shell script using grep
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Thu, 12 Mar 2015 17:15:13 +1100
+In-Reply-To: <20150312151009.18077d0c@canb.auug.org.au>
+References: <20150312151009.18077d0c@canb.auug.org.au>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,78 +23,87 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Mar 12, 2015 at 03:21:29PM +1100, David Gibson wrote:
->On Thu, Mar 12, 2015 at 02:16:42PM +1100, Gavin Shan wrote:
->> On Thu, Mar 12, 2015 at 11:57:21AM +1100, David Gibson wrote:
->> >On Wed, Mar 11, 2015 at 05:34:11PM +1100, Gavin Shan wrote:
->> >> The patch adds one more EEH sub-command (VFIO_EEH_PE_INJECT_ERR)
->> >> to inject the specified EEH error, which is represented by
->> >> (struct vfio_eeh_pe_err), to the indicated PE for testing purpose.
->> >> 
->> >> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
->> >> ---
->> >>  Documentation/vfio.txt        | 47 ++++++++++++++++++++++++++++++-------------
->> >>  drivers/vfio/vfio_spapr_eeh.c | 14 +++++++++++++
->> >>  include/uapi/linux/vfio.h     | 34 ++++++++++++++++++++++++++++++-
->> >>  3 files changed, 80 insertions(+), 15 deletions(-)
->> >> 
->> >> diff --git a/Documentation/vfio.txt b/Documentation/vfio.txt
->> >> index 96978ec..2e7f736 100644
->> >> --- a/Documentation/vfio.txt
->> >> +++ b/Documentation/vfio.txt
->> >> @@ -328,7 +328,13 @@ So 4 additional ioctls have been added:
->> >>  
->> >>  The code flow from the example above should be slightly changed:
->> >>  
->> >> -	struct vfio_eeh_pe_op pe_op = { .argsz = sizeof(pe_op), .flags = 0 };
->> >> +	struct vfio_eeh_pe_op *pe_op;
->> >> +	struct vfio_eeh_pe_err *pe_err;
->> >> +
->> >> +	pe_op = malloc(sizeof(*pe_op) + sizeof(*pe_err));
->> >> +	pe_err = (void *)pe_op + sizeof(*pe_op);
->> >> +	pe_op->argsz = sizeof(*pe_op) + sizeof(*pe_err);
->> >
->> >Surely that argsz can't be correct for most of the operations.  The
->> >extended structure should only be there for the error inject ioctl,
->> >yes?
->> >
->> 
->> argsz isn't appropriate for most cases because kernel has the check
->> "expected_argsz < passed_argsz", not "expected_argsz ==
->> passed_argsz".
->
->It works for now, but if any of those calls was extended with more
->data, it would break horribly.  By setting the argsz greater than
->necessary, you're effectively passing uninitialized data to the
->ioctl().  At the moment, the ioctl() ignores it, but the whole point
->of the argsz value is that in the future, it might not.
->
+On Thu, 2015-03-12 at 15:10 +1100, Stephen Rothwell wrote:
+> This runs a bit faster and removes another use of perl from
+> the kernel build.
+> 
+> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+> ---
+>  arch/powerpc/Makefile        |  4 +--
+>  arch/powerpc/relocs_check.pl | 66 --------------------------------------------
+>  arch/powerpc/relocs_check.sh | 58 ++++++++++++++++++++++++++++++++++++++
 
-Thank you for more explanation. I agree that it's worthy to pass precise
-argument size. I'll fix it as below in next revision:
+Always good to see less Perl!
 
->> However, I'll fix it as follows to avoid confusion after collecting
->> more comments:
->> 
->> 	struct vfio_eeh_pe_op *pe_op;
->> 	struct vfio_eeh_pe_err *pe_err;
->> 
->> 	/* For all cases except error injection */
->> 	pe_op = malloc(sizeof(*pe_op));
->> 	pe_op->argsz = sizeof(*pe_op);
->> 
->> 	/* For error injection case here */
->> 	pe_op = realloc(sizeof(*pe_op) + sizeof(*pe_err));
->> 	pe_op->argsz = sizeof(*pe_op) + sizeof(*pe_err);
->> 	pe_err = (void *)pe_op + sizeof(*pe_op);
->> 
+ShellCheck says:
 
-Thanks,
-Gavin
+   1  #!/bin/sh
+   2  
+   3  # Copyright © 2015 IBM Corporation
+   4  
+   5  # This program is free software; you can redistribute it and/or
+   6  # modify it under the terms of the GNU General Public License
+   7  # as published by the Free Software Foundation; either version
+   8  # 2 of the License, or (at your option) any later version.
+   9  
+  10  # This script checks the relocations of a vmlinux for "suspicious"
+  11  # relocations.
+  12  
+  13  # based on relocs_check.pl
+  14  # Copyright © 2009 IBM Corporation
+  15  
+  16  if [ ${#*} -lt 2 ]; then
+  17         printf "%s [path to objdump] [path to vmlinux]\n" $0 1>&2
+                                                               ^––SC2086 Double quote to prevent globbing and word splitting.
+  							       https://github.com/koalaman/shellcheck/wiki/SC2086
 
->
->-- 
->David Gibson			| I'll have my music baroque, and my code
->david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
->				| _way_ _around_!
->http://www.ozlabs.org/~dgibson
+  18         exit 1
+  19  fi
+  20  
+  21  # Have Kbuild supply the path to objdump so we handle cross compilation.
+  22  objdump="$1"
+  23  vmlinux="$2"
+  24  
+  25  bad_relocs=$(
+  26  "$objdump" -R "$vmlinux" |
+  27         # Only look at relocation lines.
+  28         grep -E '\<R_' |
+  29         # These relocations are okay
+  30         # On PPC64:
+  31         #       R_PPC64_RELATIVE, R_PPC64_NONE
+  32         #       R_PPC64_ADDR64 mach_<name>
+  33         # On PPC:
+  34         #       R_PPC_RELATIVE, R_PPC_ADDR16_HI,
+  35         #       R_PPC_ADDR16_HA,R_PPC_ADDR16_LO,
+  36         #       R_PPC_NONE
+  37         grep -F -w -v 'R_PPC64_RELATIVE
+  38  R_PPC64_NONE
+  39  R_PPC_ADDR16_LO
+  40  R_PPC_ADDR16_HI
+  41  R_PPC_ADDR16_HA
+  42  R_PPC_RELATIVE
+  43  R_PPC_NONE' |
+  44         grep -E -v '\<R_PPC64_ADDR64[[:space:]]+mach_'
+  45  )
+  46  
+  47  if [ -z "$bad_relocs" ]; then
+  48         exit 0
+  49  fi
+  50  
+  51  printf "WARNING: %d bad relocations\n" $(printf "$bad_relocs\n" | wc -l)
+                                             ^––SC2046 Quote this to prevent word splitting.
+					     https://github.com/koalaman/shellcheck/wiki/SC2046
+                                                      ^––SC2059 Don't use variables in the printf format string. Use printf "..%s.." "$foo".
+						      https://github.com/koalaman/shellcheck/wiki/SC2059
+  52  printf "$bad_relocs\n"
+             ^––SC2059 Don't use variables in the printf format string. Use printf "..%s.." "$foo".
+	     https://github.com/koalaman/shellcheck/wiki/SC2059
+  53  
+  54  # If we see this type of relocation it's an idication that
+  55  # we /may/ be using an old version of binutils.
+  56  if echo "$bad_relocs\n" | grep -q -F -w R_PPC64_UADDR64; then
+                          ^––SC2028 echo won't expand escape sequences. Consider printf.
+			  https://github.com/koalaman/shellcheck/wiki/SC2028
+  57         printf "WARNING: You need at least binutils >= 2.19 to build a CONFIG_RELOCATABLE kernel\n"
+  58  fi
+  59
