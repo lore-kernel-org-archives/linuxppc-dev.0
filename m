@@ -1,106 +1,33 @@
-Return-Path: <sasha.levin@oracle.com>
-Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mgorman@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 912F81A0745
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Mar 2015 23:52:38 +1100 (AEDT)
-Message-ID: <55018BBC.6010903@oracle.com>
-Date: Thu, 12 Mar 2015 08:51:08 -0400
-From: Sasha Levin <sasha.levin@oracle.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id A6D2C1A0AAA
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Mar 2015 00:10:56 +1100 (AEDT)
+Date: Thu, 12 Mar 2015 13:10:46 +0000
+From: Mel Gorman <mgorman@suse.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 4/4] mm: numa: Slow PTE scan rate if migration failures
+ occur
+Message-ID: <20150312131045.GE3406@suse.de>
+References: <1425741651-29152-1-git-send-email-mgorman@suse.de>
+ <1425741651-29152-5-git-send-email-mgorman@suse.de>
+ <20150307163657.GA9702@gmail.com>
+ <CA+55aFwDuzpL-k8LsV3touhNLh+TFSLKP8+-nPwMXkWXDYPhrg@mail.gmail.com>
+ <20150308100223.GC15487@gmail.com>
+ <CA+55aFyQyZXu2fi7X9bWdSX0utk8=sccfBwFaSoToROXoE_PLA@mail.gmail.com>
+ <20150309112936.GD26657@destitution>
+ <CA+55aFywW5JLq=BU_qb2OG5+pJ-b1v9tiS5Ygi-vtEKbEZ_T5Q@mail.gmail.com>
+ <20150309191943.GF26657@destitution>
+ <CA+55aFzFt-vX5Jerci0Ty4Uf7K4_nQ7wyCp8hhU_dB0X4cBpVQ@mail.gmail.com>
 MIME-Version: 1.0
-To: Pekka Enberg <penberg@iki.fi>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] mm: kill kmemcheck
-References: <1426074547-21888-1-git-send-email-sasha.levin@oracle.com>
- <55013B38.6040100@iki.fi>
-In-Reply-To: <55013B38.6040100@iki.fi>
-Content-Type: text/plain; charset=windows-1252
-Cc: Vladimir Davydov <vdavydov@parallels.com>,
- Geert Uytterhoeven <geert+renesas@glider.be>,
- SUPERH <linux-sh@vger.kernel.org>, Catalin Marinas <catalin.marinas@arm.com>,
- Will Deacon <will.deacon@arm.com>, Jianyu Zhan <nasa4836@gmail.com>,
- Paul Mackerras <paulus@samba.org>, Pavel Machek <pavel@ucw.cz>,
- Miklos Szeredi <mszeredi@suse.cz>, Christoph Lameter <cl@linux.com>,
- Marek Szyprowski <m.szyprowski@samsung.com>,
- "open list:GENERIC INCLUDE/A..." <linux-arch@vger.kernel.org>,
- Andi Kleen <ak@linux.intel.com>, Russell King <linux@arm.linux.org.uk>,
- Jingoo Han <jg1.han@samsung.com>, James Morris <jmorris@namei.org>,
- Chris Bainbridge <chris.bainbridge@gmail.com>, Antti Palosaari <crope@iki.fi>,
- Mel Gorman <mgorman@suse.de>, Ritesh Harjani <ritesh.harjani@gmail.com>,
- Shaohua Li <shli@kernel.org>, Alexander Duyck <alexander.h.duyck@intel.com>,
- Wang Nan <wangnan0@huawei.com>, Jiri Pirko <jiri@resnulli.us>,
- Daniel J Blueman <daniel@numascale.com>, Rusty Russell <rusty@rustcorp.com.au>,
- Jens Axboe <axboe@fb.com>, Alexander Viro <viro@zeniv.linux.org.uk>,
- Thomas Gleixner <tglx@linutronix.de>, Konstantin Khlebnikov <koct9i@gmail.com>,
- Willem de Bruijn <willemb@google.com>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Randy Dunlap <rdunlap@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- Rabin Vincent <rabin@rab.in>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- Jiri Kosina <jkosina@suse.cz>, Tejun Heo <tj@kernel.org>,
- Andrew Morton <akpm@linux-foundation.org>, Patrick McHardy <kaber@trash.net>,
- Christoffer Dall <christoffer.dall@linaro.org>,
- Mark Rutland <mark.rutland@arm.com>, DOCUMENTATION <linux-doc@vger.kernel.org>,
- Dave Hansen <dave.hansen@linux.intel.com>, Eric Dumazet <edumazet@google.com>,
- Jungseung Lee <js07.lee@gmail.com>,
- Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>,
- Stephen Rothwell <sfr@canb.auug.org.au>, Qiaowei Ren <qiaowei.ren@intel.com>,
- Prarit Bhargava <prarit@redhat.com>, bob picco <bpicco@meloft.net>,
- Sungjinn Chung <sungjinn.chung@samsung.com>,
- Quentin Lambert <lambert.quentin@gmail.com>, Hugh Dickins <hughd@google.com>,
- Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>,
- Kukjin Kim <kgene@kernel.org>, Pranith Kumar <bobby.prani@gmail.com>,
- Tom Herbert <therbert@google.com>, CRYPTO API <linux-crypto@vger.kernel.org>,
- Rik van Riel <riel@redhat.com>, Johannes Berg <johannes.berg@intel.com>,
- Mauro Carvalho Chehab <mchehab@osg.samsung.com>,
- Eyal Perry <eyalpe@mellanox.com>, Joe Perches <joe@perches.com>,
- chishanmingshen <chishanmingshen@gmail.com>,
- Cyrill Gorcunov <gorcunov@openvz.org>,
- Boris Ostrovsky <boris.ostrovsky@oracle.com>, Yinghai Lu <yinghai@kernel.org>,
- Steven Honeyman <stevenhoneyman@gmail.com>,
- ARM PORT <linux-arm-kernel@lists.infradead.org>, Theodore Ts'o <tytso@mit.edu>,
- Pekka Enberg <penberg@kernel.org>, David Vrabel <david.vrabel@citrix.com>,
- David Rientjes <rientjes@google.com>, Joonsoo Kim <iamjoonsoo.kim@lge.com>,
- Michal Hocko <mhocko@suse.cz>, Paul Gortmaker <paul.gortmaker@windriver.com>,
- Jan Beulich <JBeulich@suse.com>,
- "moderated list:OPENRISC ARCHITEC..." <linux@lists.openrisc.net>,
- Guan Xuetao <gxt@mprc.pku.edu.cn>, Sam Ravnborg <sam@ravnborg.org>,
- Jonathan Corbet <corbet@lwn.net>, Andrey Ryabinin <a.ryabinin@samsung.com>,
- Dexuan Cui <decui@microsoft.com>, Vegard Nossum <vegardno@ifi.uio.no>,
- Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- Fenghua Yu <fenghua.yu@intel.com>, Kees Cook <keescook@chromium.org>,
- Arnd Bergmann <arnd@arndb.de>, Suresh Siddha <sbsiddha@gmail.com>,
- Josh Triplett <josh@joshtriplett.org>, Steven Rostedt <rostedt@goodmis.org>,
- Borislav Petkov <bp@alien8.de>, Andrey Konovalov <adech.fo@gmail.com>,
- Scott Wood <scottwood@freescale.com>,
- Bryan O'Donoghue <pure.logic@nexus-software.ie>,
- Dan Streetman <ddstreet@ieee.org>, Oleg Nesterov <oleg@redhat.com>,
- Andy Lutomirski <luto@amacapital.net>,
- Hannes Frederic Sowa <hannes@stressinduktion.org>,
- linux-fsdevel@vger.kernel.org, "David S. Miller" <davem@davemloft.net>,
- "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>,
- "Michael S. Tsirkin" <mst@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
- MEMORY MANAGEMENT <linux-mm@kvack.org>, Davidlohr Bueso <davidlohr@hp.com>,
- Paul Cassella <cassella@cray.com>, "H. Peter Anvin" <hpa@zytor.com>,
- "open list:SPARC + UltraSPAR..." <sparclinux@vger.kernel.org>,
- Xishi Qiu <qiuxishi@huawei.com>, Alexei Starovoitov <ast@plumgrid.com>,
- Jonas Bonn <jonas@southpole.se>, Herbert Xu <herbert@gondor.apana.org.au>,
- Richard Weinberger <richard@nod.at>,
- "maintainer:X86 ARCHITECTURE..." <x86@kernel.org>,
- Ingo Molnar <mingo@redhat.com>, Aaron Tomlin <atomlin@redhat.com>,
- Greg Thelen <gthelen@google.com>, "Eric W. Biederman" <ebiederm@xmission.com>,
- Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
- Fabian Frederick <fabf@skynet.be>, Michal Marek <mmarek@suse.cz>,
- Jungseok Lee <jays.lee@samsung.com>, Dave Jones <davej@redhat.com>,
- Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
- Vlastimil Babka <vbabka@suse.cz>, Juergen Gross <jgross@suse.com>,
- Hideaki YOSHIFUJI <yoshfuji@linux-ipv6.org>,
- "open list:NETWORKING \[GENERAL\]" <netdev@vger.kernel.org>,
- Daniel Borkmann <dborkman@redhat.com>,
- Horia Geanta <horia.geanta@freescale.com>,
- Johannes Weiner <hannes@cmpxchg.org>,
- "open list:LINUX FOR POWERPC..." <linuxppc-dev@lists.ozlabs.org>,
- Anton Blanchard <anton@samba.org>
+Content-Type: text/plain; charset=iso-8859-15
+In-Reply-To: <CA+55aFzFt-vX5Jerci0Ty4Uf7K4_nQ7wyCp8hhU_dB0X4cBpVQ@mail.gmail.com>
+Cc: Dave Chinner <david@fromorbit.com>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com,
+ Linux-MM <linux-mm@kvack.org>, Aneesh Kumar <aneesh.kumar@linux.vnet.ibm.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ ppc-dev <linuxppc-dev@lists.ozlabs.org>, Ingo Molnar <mingo@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -110,36 +37,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03/12/2015 03:07 AM, Pekka Enberg wrote:
-> Hi Sasha,
+On Tue, Mar 10, 2015 at 04:55:52PM -0700, Linus Torvalds wrote:
+> On Mon, Mar 9, 2015 at 12:19 PM, Dave Chinner <david@fromorbit.com> wrote:
+> > On Mon, Mar 09, 2015 at 09:52:18AM -0700, Linus Torvalds wrote:
+> >>
+> >> What's your virtual environment setup? Kernel config, and
+> >> virtualization environment to actually get that odd fake NUMA thing
+> >> happening?
+> >
+> > I don't have the exact .config with me (test machines at home
+> > are shut down because I'm half a world away), but it's pretty much
+> > this (copied and munged from a similar test vm on my laptop):
 > 
-> On 3/11/15 1:43 PM, Sasha Levin wrote:
->> As discussed on LSF/MM, kill kmemcheck.
->>
->> KASan is a replacement that is able to work without the limitation of
->> kmemcheck (single CPU, slow). KASan is already upstream.
->>
->> We are also not aware of any users of kmemcheck (or users who don't consider
->> KASan as a suitable replacement).
->>
->> I've build tested it using all[yes,no,mod]config and fuzzed a bit with this
->> patch applied, didn't notice any bad behaviour.
->>
->> Signed-off-by: Sasha Levin <sasha.levin@oracle.com>
+> [ snip snip ]
 > 
-> Can you elaborate on what exactly was discussed at LSF/MM? Preferably in the commit log. ;-)
+> Ok, I hate debugging by symptoms anyway, so I didn't do any of this,
+> and went back to actually *thinking* about the code instead of trying
+> to reproduce this and figure things out by trial and error.
+> 
+> And I think I figured it out.
+> <SNIP>
 
-There wasn't a long discussion about removing kmemcheck, it just followed up
-a KASan topic and the question of whether kmemcheck can be deprecated now
-that KASan is merged came up.
+I believe you're correct and it matches what was observed. I'm still
+travelling and wireless is dirt but managed to queue a test using pmd_dirty
 
-No one at the room didn't use it, knew a user of it, or couldn't describe a
-usecase where kmemcheck was superior to KASan - so the conclusion was to try
-and replace it.
+                                              3.19.0             4.0.0-rc1             4.0.0-rc1
+                                             vanilla               vanilla        ptewrite-v1r20
+Time User-NUMA01                  25695.96 (  0.00%)    32883.59 (-27.97%)    24012.80 (  6.55%)
+Time User-NUMA01_THEADLOCAL       17404.36 (  0.00%)    17453.20 ( -0.28%)    17950.54 ( -3.14%)
+Time User-NUMA02                   2037.65 (  0.00%)     2063.70 ( -1.28%)     2046.88 ( -0.45%)
+Time User-NUMA02_SMT                981.02 (  0.00%)      983.70 ( -0.27%)      983.68 ( -0.27%)
+Time System-NUMA01                  194.70 (  0.00%)      602.44 (-209.42%)      158.90 ( 18.39%)
+Time System-NUMA01_THEADLOCAL        98.52 (  0.00%)       78.10 ( 20.73%)      107.66 ( -9.28%)
+Time System-NUMA02                    9.28 (  0.00%)        6.47 ( 30.28%)        9.25 (  0.32%)
+Time System-NUMA02_SMT                3.79 (  0.00%)        5.06 (-33.51%)        3.92 ( -3.43%)
+Time Elapsed-NUMA01                 558.84 (  0.00%)      755.96 (-35.27%)      532.41 (  4.73%)
+Time Elapsed-NUMA01_THEADLOCAL      382.54 (  0.00%)      382.22 (  0.08%)      390.48 ( -2.08%)
+Time Elapsed-NUMA02                  49.83 (  0.00%)       49.38 (  0.90%)       49.79 (  0.08%)
+Time Elapsed-NUMA02_SMT              46.59 (  0.00%)       47.70 ( -2.38%)       47.77 ( -2.53%)
+Time CPU-NUMA01                    4632.00 (  0.00%)     4429.00 (  4.38%)     4539.00 (  2.01%)
+Time CPU-NUMA01_THEADLOCAL         4575.00 (  0.00%)     4586.00 ( -0.24%)     4624.00 ( -1.07%)
+Time CPU-NUMA02                    4107.00 (  0.00%)     4191.00 ( -2.05%)     4129.00 ( -0.54%)
+Time CPU-NUMA02_SMT                2113.00 (  0.00%)     2072.00 (  1.94%)     2067.00 (  2.18%)
 
-The only thing I can really put in the changelog is a reference to the KASan
-docs and to ask folks to complain loudly if we missed a usecase.
+              3.19.0   4.0.0-rc1   4.0.0-rc1
+             vanilla     vanillaptewrite-v1r20
+User        46119.12    53384.29    44994.10
+System        306.41      692.14      279.78
+Elapsed      1039.88     1236.87     1022.92
 
+There are still some difference but it's much closer to what it was.
+The balancing stats are almost looking similar to 3.19
 
-Thanks,
-Sasha
+NUMA base PTE updates        222840103   304513172   230724075
+NUMA huge PMD updates           434894      594467      450274
+NUMA page range updates      445505831   608880276   461264363
+NUMA hint faults                601358      733491      626176
+NUMA hint local faults          371571      511530      359215
+NUMA hint local percent             61          69          57
+NUMA pages migrated            7073177    26366701     6829196
+
+XFS repair on the same machine is not fully restore either but a big
+enough move in the right direction to indicate this was the relevant
+change.
+
+xfsrepair
+                                       3.19.0             4.0.0-rc1             4.0.0-rc1
+                                      vanilla               vanilla        ptewrite-v1r20
+Amean    real-fsmark        1166.28 (  0.00%)     1166.63 ( -0.03%)     1184.97 ( -1.60%)
+Amean    syst-fsmark        4025.87 (  0.00%)     4020.94 (  0.12%)     4071.10 ( -1.12%)
+Amean    real-xfsrepair      447.66 (  0.00%)      507.85 (-13.45%)      460.94 ( -2.97%)
+Amean    syst-xfsrepair      202.93 (  0.00%)      519.88 (-156.19%)      282.45 (-39.19%)
