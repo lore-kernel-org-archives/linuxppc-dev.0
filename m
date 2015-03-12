@@ -1,27 +1,20 @@
-Return-Path: <Bharat.Bhushan@freescale.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <galak@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B42711A0196
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Mar 2015 02:51:05 +1100 (AEDT)
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0133.outbound.protection.outlook.com [157.56.110.133])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 99E0E1400DE
- for <linuxppc-dev@ozlabs.org>; Fri, 13 Mar 2015 02:51:04 +1100 (AEDT)
-From: "Bharat.Bhushan@freescale.com" <Bharat.Bhushan@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: RE: [PATCH 4/4 RFC] fsl/msi: Add interface to reserve/free msi bank
-Date: Thu, 12 Mar 2015 15:50:58 +0000
-Message-ID: <CY1PR0301MB12768329EDAB0997B7C1BA4890060@CY1PR0301MB1276.namprd03.prod.outlook.com>
-References: <1425359866-31049-1-git-send-email-Bharat.Bhushan@freescale.com>
- <1425359866-31049-4-git-send-email-Bharat.Bhushan@freescale.com>
- <1426119490.30327.99.camel@freescale.com>
-In-Reply-To: <1426119490.30327.99.camel@freescale.com>
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0AB911A08FF
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Mar 2015 02:57:13 +1100 (AEDT)
+Content-Type: text/plain; charset=us-ascii
+Mime-Version: 1.0 (Mac OS X Mail 7.3 \(1878.6\))
+Subject: Re: [RFC,1/8] soc/fman: Add FMan MURAM support
+From: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1426050469-12507-1-git-send-email-igal.liberman@freescale.com>
+Date: Thu, 12 Mar 2015 10:56:55 -0500
+Message-Id: <32CF85E2-A8AA-454D-A46F-0E778DAF97ED@kernel.crashing.org>
+References: <1426050469-12507-1-git-send-email-igal.liberman@freescale.com>
+To: "Igal.Liberman" <igal.liberman@freescale.com>
+Cc: scottwood@freescale.com, netdev@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,105 +24,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
-MjENCj4gU2VudDogVGh1cnNkYXksIE1hcmNoIDEyLCAyMDE1IDU6NDggQU0NCj4gVG86IEJodXNo
-YW4gQmhhcmF0LVI2NTc3Nw0KPiBDYzogbGludXhwcGMtZGV2QG96bGFicy5vcmcNCj4gU3ViamVj
-dDogUmU6IFtQQVRDSCA0LzQgUkZDXSBmc2wvbXNpOiBBZGQgaW50ZXJmYWNlIHRvIHJlc2VydmUv
-ZnJlZSBtc2kNCj4gYmFuaw0KPiANCj4gT24gVHVlLCAyMDE1LTAzLTAzIGF0IDEwOjQ3ICswNTMw
-LCBCaGFyYXQgQmh1c2hhbiB3cm90ZToNCj4gPiBUaGlzIHBhdGNoIGFsbG93cyBhIGNvbnRleHQg
-KGRpZmZlcmVudCBmcm9tIGtlcm5lbCBjb250ZXh0KSB0byByZXNlcnZlDQo+ID4gYSBNU0kgYmFu
-ayBmb3IgaXRzZWxmLiBBbmQgdGhlbiB0aGUgZGV2aWNlcyBpbiB0aGUgY29udGV4dCB3aWxsIHNo
-YXJlDQo+ID4gdGhlIE1TSSBiYW5rLg0KPiA+DQo+ID4gVkZJTyBtZXRhIGRyaXZlciBpcyBvbmUg
-b2YgdHlwaWNhbCB1c2VyIG9mIHRoZXNlIEFQSXMuIEl0IHdpbGwgcmVzZXJ2ZQ0KPiA+IGEgTVNJ
-IGJhbmsgZm9yIE1TSSBpbnRlcnJ1cHQgc3VwcG9ydCBvZiBkaXJlY3QgYXNzaWdubWVudCBQQ0kg
-ZGV2aWNlcw0KPiA+IHRvIGEgR3Vlc3QuIFBhdGNoZXMgZm9yIHNhbWUgd2lsbCBmb2xsb3cgdGhp
-cyBwYXRjaC4NCj4gPg0KPiA+IFNpZ25lZC1vZmYtYnk6IEJoYXJhdCBCaHVzaGFuIDxCaGFyYXQu
-Qmh1c2hhbkBmcmVlc2NhbGUuY29tPg0KPiA+IC0tLQ0KPiA+ICBhcmNoL3Bvd2VycGMvaW5jbHVk
-ZS9hc20vZGV2aWNlLmggIHwgICAyICsNCj4gPiAgYXJjaC9wb3dlcnBjL2luY2x1ZGUvYXNtL2Zz
-bF9tc2kuaCB8ICAyNiArKysrKysNCj4gPiAgYXJjaC9wb3dlcnBjL3N5c2Rldi9mc2xfbXNpLmMg
-ICAgICB8IDE2OQ0KPiArKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrLS0tLS0tDQo+ID4g
-IGFyY2gvcG93ZXJwYy9zeXNkZXYvZnNsX21zaS5oICAgICAgfCAgIDEgKw0KPiA+ICA0IGZpbGVz
-IGNoYW5nZWQsIDE3MyBpbnNlcnRpb25zKCspLCAyNSBkZWxldGlvbnMoLSkgIGNyZWF0ZSBtb2Rl
-DQo+ID4gMTAwNjQ0IGFyY2gvcG93ZXJwYy9pbmNsdWRlL2FzbS9mc2xfbXNpLmgNCj4gPg0KPiA+
-IGRpZmYgLS1naXQgYS9hcmNoL3Bvd2VycGMvaW5jbHVkZS9hc20vZGV2aWNlLmgNCj4gPiBiL2Fy
-Y2gvcG93ZXJwYy9pbmNsdWRlL2FzbS9kZXZpY2UuaA0KPiA+IGluZGV4IDM4ZmFlZGUuLjFjMmJm
-ZDcgMTAwNjQ0DQo+ID4gLS0tIGEvYXJjaC9wb3dlcnBjL2luY2x1ZGUvYXNtL2RldmljZS5oDQo+
-ID4gKysrIGIvYXJjaC9wb3dlcnBjL2luY2x1ZGUvYXNtL2RldmljZS5oDQo+ID4gQEAgLTQwLDYg
-KzQwLDggQEAgc3RydWN0IGRldl9hcmNoZGF0YSB7ICAjaWZkZWYgQ09ORklHX0ZBSUxfSU9NTVUN
-Cj4gPiAgCWludCBmYWlsX2lvbW11Ow0KPiA+ICAjZW5kaWYNCj4gPiArDQo+ID4gKwl2b2lkICpj
-b250ZXh0Ow0KPiA+ICB9Ow0KPiANCj4gVGhpcyBuZWVkcyBhIGNvbW1lbnQgYW5kIHByb2JhYmx5
-IGEgbW9yZSBzcGVjaWZpYyBuYW1lLg0KDQpPaw0KDQo+IA0KPiA+IEBAIC0yMDAsNiArMTg1LDEy
-IEBAIHN0YXRpYyBzdHJ1Y3QgZnNsX21zaQ0KPiA+ICpmc2xfbXNpX2dldF9yZXNlcnZlZF9tc2lf
-YmFuayhzdHJ1Y3QgcGNpX2RldiAqcGRldikgIHsNCj4gPiAgCXN0cnVjdCBmc2xfbXNpICptc2lf
-ZGF0YSA9IE5VTEw7DQo+ID4gIAl2b2lkICpjb250ZXh0ID0gTlVMTDsNCj4gPiArCXN0cnVjdCBk
-ZXZpY2UgKmRldiA9ICZwZGV2LT5kZXY7DQo+ID4gKw0KPiA+ICsJLyogRGV2aWNlIGFzc2lnbmVk
-IHRvIHVzZXJzcGFjZSBpZiB0aGVyZSBpcyB2YWxpZCBjb250ZXh0ICovDQo+ID4gKwlpZiAoZGV2
-LT5hcmNoZGF0YS5jb250ZXh0KSB7DQo+ID4gKwkJY29udGV4dCA9IGRldi0+YXJjaGRhdGEuY29u
-dGV4dDsNCj4gPiArCX0NCj4gDQo+IE5vIHt9DQoNCk9rLCBsZWZ0b3ZlciBvZiBwcmludCBkZWJ1
-Z2dpbmcgOikNCg0KPiANCj4gPg0KPiA+ICAJbGlzdF9mb3JfZWFjaF9lbnRyeShtc2lfZGF0YSwg
-Jm1zaV9oZWFkLCBsaXN0KSB7DQo+ID4gIAkJaWYgKChtc2lfZGF0YS0+cmVzZXJ2ZWQgPT0gTVNJ
-X1JFU0VSVkVEKSAmJiBAQCAtMjA4LDEzDQo+ICsxOTksMTMzIEBADQo+ID4gc3RhdGljIHN0cnVj
-dCBmc2xfbXNpICpmc2xfbXNpX2dldF9yZXNlcnZlZF9tc2lfYmFuayhzdHJ1Y3QgcGNpX2Rldg0K
-PiAqcGRldikNCj4gPiAgCX0NCj4gPg0KPiA+ICAJLyogSWYgbm8gTVNJIGJhbmsgYWxsb2NhdGVk
-IGZvciBrZXJuZWwgb3duZWQgZGV2aWNlLCBhbGxvY2F0ZSBvbmUNCj4gKi8NCj4gPiAtCW1zaV9k
-YXRhID0gZnNsX21zaV9hbGxvY2F0ZV9tc2lfYmFuayhOVUxMKTsNCj4gPiAtCWlmIChtc2lfZGF0
-YSkNCj4gPiAtCQlyZXR1cm4gbXNpX2RhdGE7DQo+ID4gKwlpZiAoIWNvbnRleHQpIHsNCj4gPiAr
-CQltc2lfZGF0YSA9IGZzbF9tc2lfYWxsb2NhdGVfbXNpX2JhbmsoTlVMTCk7DQo+ID4gKwkJaWYg
-KG1zaV9kYXRhKQ0KPiA+ICsJCQlyZXR1cm4gbXNpX2RhdGE7DQo+ID4gKwl9DQo+ID4NCj4gPiAg
-CXJldHVybiBOVUxMOw0KPiA+ICB9DQo+ID4NCj4gPiArLyogQVBJIHRvIHNldCAiY29udGV4dCIg
-dG8gd2hpY2ggdGhlIGRldmljZSBiZWxvbmdzICovIGludA0KPiA+ICtmc2xfbXNpX3NldF9tc2lf
-YmFua19pbl9kZXYoc3RydWN0IGRldmljZSAqZGV2LCB2b2lkICpkYXRhKSB7DQo+ID4gKwlkZXYt
-PmFyY2hkYXRhLmNvbnRleHQgPSBkYXRhOw0KPiA+ICsJcmV0dXJuIDA7DQo+ID4gK30NCj4gDQo+
-IERvIHdlIHJlYWxseSBuZWVkICJtc2kiIHRvIGFwcGVhciB0d2ljZSBpbiBldmVyeSBmdW5jdGlv
-biBuYW1lPw0KDQpObywgd2lsbCByZW1vdmUgbGF0ZXIgIm1zaSIuDQoNCj4gDQo+ID4gKw0KPiA+
-ICsvKiAgVGhpcyBBUEkgQWxsb3dzIGEgTVNJIGJhbmsgdG8gYmUgcmVzZXJ2ZWQgZm9yIGEgImNv
-bnRleHQiLg0KPiA+ICsgKiAgQWxsIGRldmljZXMgaW4gc2FtZSAiY29udGV4dCIgd2lsbCBzaGFy
-ZSB0aGUgYWxsb2NhdGVkDQo+ID4gKyAqICBNU0kgYmFuay4NCj4gPiArICogIFR5cGljYWxseSB0
-aGlzIGZ1bmN0aW9uIHdpbGwgYmUgY2FsbGVkIGZyb20gbWV0YQ0KPiA+ICsgKiAgZHJpdmVyIGxp
-a2UgVkZJTyB3aXRoIGEgdmFsaWQgImNvbnRleHQiLg0KPiA+ICsgKi8NCj4gPiArc3RydWN0IGZz
-bF9tc2kgKmZzbF9tc2lfcmVzZXJ2ZV9tc2lfYmFuayh2b2lkICpjb250ZXh0KSB7DQo+ID4gKwlz
-dHJ1Y3QgZnNsX21zaSAqbXNpX2RhdGE7DQo+ID4gKw0KPiA+ICsJaWYgKCFjb250ZXh0KQ0KPiA+
-ICsJCXJldHVybiBOVUxMOw0KPiA+ICsNCj4gPiArCS8qIENoZWNrIGlmIG1zaS1iYW5rIGFscmVh
-ZHkgYWxsb2NhdGVkIGZvciB0aGUgY29udGV4dCAqLw0KPiA+ICsJbGlzdF9mb3JfZWFjaF9lbnRy
-eShtc2lfZGF0YSwgJm1zaV9oZWFkLCBsaXN0KSB7DQo+ID4gKwkJaWYgKG1zaV9kYXRhLT5yZXNl
-cnZlZCA9PSBNU0lfRlJFRSkNCj4gPiArCQkJY29udGludWU7DQo+ID4gKw0KPiA+ICsJCWlmIChj
-b250ZXh0ID09IG1zaV9kYXRhLT5jb250ZXh0KQ0KPiA+ICsJCQlyZXR1cm4gbXNpX2RhdGE7DQo+
-IA0KPiBUaGUgcmVzZXJ2ZWQgPT0gTVNJX0ZSRUUgY2hlY2sgZG9lc24ndCBhZGQgYW55dGhpbmcg
-YmVjYXVzZSBpZiBpdCdzIGZyZWUNCj4gdGhlbiB0aGUgY29udGV4dCBjaGVjayB3aWxsIGZhaWwu
-DQoNCm9rDQoNCj4gDQo+ID4gK3N0YXRpYyBpbnQgaXNfbXNpX2JhbmtfcmVzZXJ2ZWQoc3RydWN0
-IGZzbF9tc2kgKm1zaSkNCj4gDQo+IHMvaW50L2Jvb2wvDQoNCk9rDQoNCj4gDQo+IA0KPiA+ICsv
-Kg0KPiA+ICsgKiBUaGlzIGZ1bmN0aW9uIGNvbmZpZ3VyZXMgUEFNVSB3aW5kb3cgZm9yIE1TSSBw
-YWdlIHdpdGgNCj4gPiArICogZ2l2ZW4gaW92YS4gQWxzbyBzYW1lIGlvdmEgd2lsbCBiZSB1c2Vk
-IGFzICJtc2ktYWRkcmVzcyINCj4gPiArICogd2hlbiBjb25maWd1cmluZyBtc2ktbWVzc2FnZSBp
-biB0aGUgZGV2aWNlcyB1c2luZyB0aGlzDQo+ID4gKyAqIG1zaSBiYW5rLg0KPiA+ICsgKi8NCj4g
-PiAraW50IGZzbF9tc2lfc2V0X21zaV9iYW5rX3JlZ2lvbihzdHJ1Y3QgaW9tbXVfZG9tYWluICpk
-b21haW4sDQo+ID4gKwkJCQl2b2lkICpjb250ZXh0ICwgaW50IHdpbiwNCj4gDQo+IFdoaXRlc3Bh
-Y2UNCj4gDQo+ID4gQEAgLTIyNSwxMiArMzM2LDE3IEBAIHN0YXRpYyB2b2lkIGZzbF9jb21wb3Nl
-X21zaV9tc2coc3RydWN0IHBjaV9kZXYNCj4gKnBkZXYsIGludCBod2lycSwNCj4gPiAgCWludCBs
-ZW47DQo+ID4gIAljb25zdCBfX2JlNjQgKnJlZzsNCj4gPg0KPiA+IC0JLyogSWYgdGhlIG1zaS1h
-ZGRyZXNzLTY0IHByb3BlcnR5IGV4aXN0cywgdGhlbiB1c2UgaXQgKi8NCj4gPiAtCXJlZyA9IG9m
-X2dldF9wcm9wZXJ0eShob3NlLT5kbiwgIm1zaS1hZGRyZXNzLTY0IiwgJmxlbik7DQo+ID4gLQlp
-ZiAocmVnICYmIChsZW4gPT0gc2l6ZW9mKHU2NCkpKQ0KPiA+IC0JCWFkZHJlc3MgPSBiZTY0X3Rv
-X2NwdXAocmVnKTsNCj4gPiAtCWVsc2UNCj4gPiAtCQlhZGRyZXNzID0gbXNpX2RhdGEtPm1zaWly
-Ow0KPiA+ICsJaWYgKHBkZXYtPmRldi5hcmNoZGF0YS5jb250ZXh0KSB7DQo+ID4gKwkJYWRkcmVz
-cyA9IG1zaV9kYXRhLT5pb3ZhOw0KPiA+ICsJfSBlbHNlIHsNCj4gPiArCQkvKiBJZiB0aGUgbXNp
-LWFkZHJlc3MtNjQgcHJvcGVydHkgZXhpc3RzLCB0aGVuIHVzZSBpdCAqLw0KPiA+ICsJCXJlZyA9
-IG9mX2dldF9wcm9wZXJ0eShob3NlLT5kbiwgIm1zaS1hZGRyZXNzLTY0IiwgJmxlbik7DQo+ID4g
-KwkJaWYgKHJlZyAmJiAobGVuID09IHNpemVvZih1NjQpKSkNCj4gPiArCQkJYWRkcmVzcyA9IGJl
-NjRfdG9fY3B1cChyZWcpOw0KPiA+ICsJCWVsc2UNCj4gPiArCQkJYWRkcmVzcyA9IGZzbF9wY2lf
-aW1tcmJhcl9iYXNlKGhvc2UpICsNCj4gPiArCQkJCQkobXNpX2RhdGEtPm1zaWlyICYgMHhmZmZm
-Zik7DQo+ID4gKwl9DQo+IA0KPiBZb3UgcmVtb3ZlZCB0aGUgY2FsbCB0byBmc2xfcGNpX2ltbXJi
-YXJfYmFzZSBpbiBwYXRjaCAxLzQgYW5kIGFyZQ0KPiByZWludHJvZHVjaW5nIGl0IGhlcmUuICBJ
-ZiB0aGlzIGNhbGwgaXMgbmVlZGVkLCBob3cgZG9lcyBpdCB3b3JrIGluDQo+IGJldHdlZW4gdGhv
-c2UgdHdvIHBhdGNoZXM/DQoNCk5vdCBuZWVkZWQsIHdpbGwgdXNlIHRoZSBtc2lfZGF0YS0+bXNp
-aXIgYXMgcGVyIHBhdGNoIDEvNDsNCg0KPiANCj4gPiBAQCAtNDAxLDYgKzUxNyw5IEBAIHN0YXRp
-YyBpbnQgZnNsX29mX21zaV9yZW1vdmUoc3RydWN0IHBsYXRmb3JtX2RldmljZQ0KPiAqb2ZkZXYp
-DQo+ID4gIAlzdHJ1Y3QgZnNsX21zaSAqbXNpID0gcGxhdGZvcm1fZ2V0X2RydmRhdGEob2ZkZXYp
-Ow0KPiA+ICAJaW50IHZpcnEsIGk7DQo+ID4NCj4gPiArCWlmIChpc19tc2lfYmFua19yZXNlcnZl
-ZChtc2kpKQ0KPiA+ICsJCXJldHVybiAtRUJVU1k7DQo+IA0KPiBBcyBJIG1lbnRpb25lZCBpbiBk
-aXNjdXNzaW9uIG9mIGEgcHJpb3IgdmVyc2lvbiBvZiB0aGlzLCB0aGUgZHJpdmVyIGNvcmUNCj4g
-aWdub3JlcyBlcnJvciBjb2RlcyBpbiAucmVtb3ZlKCkuICBTaW5jZSB0aGVyZSdzIG5vIHJlYXNv
-biB0byByZW1vdmUgdGhpcw0KPiBwaWVjZSBvZiBwbGF0Zm9ybSBpbmZyYXN0cnVjdHVyZSwgYW5k
-IHRoZSByZW1vdmUgcGF0aCBoYXMgcHJvYmFibHkgbmV2ZXINCj4gYmVlbiB0ZXN0ZWQsIEknZCBq
-dXN0IHJlcGxhY2UgdGhlIHdob2xlIHRoaW5nIHdpdGggQlVHKCkuDQoNCk9rLA0KDQpUaGFua3Mg
-YSBsb3QNCi1CaGFyYXQNCg0KPiANCj4gLVNjb3R0DQo+IA0KDQo=
+
+On Mar 11, 2015, at 12:07 AM, Igal.Liberman =
+<igal.liberman@freescale.com> wrote:
+
+> From: Igal Liberman <Igal.Liberman@freescale.com>
+>=20
+> Add Frame Manager Multi-User RAM support.
+>=20
+> Signed-off-by: Igal Liberman <Igal.Liberman@freescale.com>
+> ---
+> drivers/soc/fsl/fman/Kconfig            |    1 +
+> drivers/soc/fsl/fman/Makefile           |    5 +-
+> drivers/soc/fsl/fman/fm_muram.c         |  174 =
++++++++++++++++++++++++++++++++
+> drivers/soc/fsl/fman/inc/fm_muram_ext.h |   98 +++++++++++++++++
+> 4 files changed, 276 insertions(+), 2 deletions(-)
+> create mode 100644 drivers/soc/fsl/fman/fm_muram.c
+> create mode 100644 drivers/soc/fsl/fman/inc/fm_muram_ext.h
+>=20
+
+use lib/genalloc instead of rheap
+
+- k=
