@@ -1,12 +1,14 @@
 Return-Path: <christophe.leroy@c-s.fr>
 Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id C44871A075A
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Mar 2015 02:35:41 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id C9E571A018B
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Mar 2015 02:35:45 +1100 (AEDT)
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-To: Jeff Dike <jdike@addtoit.com>, Richard Weinberger <richard@nod.at>
-Subject: [PATCH 2/8] um: replace CONFIG_8xx by CONFIG_PPC_8xx
-Message-Id: <20150312152344.83BA31A241D@localhost.localdomain>
-Date: Thu, 12 Mar 2015 16:23:44 +0100 (CET)
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Vitaly Bordug <vitb@kernel.crashing.org>, scottwood@freescale.com
+Subject: [PATCH 8/8] powerpc: get rid of CONFIG_8xx
+Message-Id: <20150312152415.01E7C1A2423@localhost.localdomain>
+Date: Thu, 12 Mar 2015 16:24:14 +0100 (CET)
 Cc: linux-fbdev@vger.kernel.org, linux-serial@vger.kernel.org,
  user-mode-linux-devel@lists.sourceforge.net, netdev@vger.kernel.org,
  linux-kernel@vger.kernel.org, linux-mtd@lists.infradead.org,
@@ -36,63 +38,31 @@ so it is likely to be a good time to get rid of it completely ?
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
 ---
- arch/um/sys-ppc/misc.S | 12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
+ arch/powerpc/platforms/Kconfig.cputype | 5 -----
+ 1 file changed, 5 deletions(-)
 
-diff --git a/arch/um/sys-ppc/misc.S b/arch/um/sys-ppc/misc.S
-index 1364b7d..163e0b2 100644
---- a/arch/um/sys-ppc/misc.S
-+++ b/arch/um/sys-ppc/misc.S
-@@ -18,7 +18,7 @@
- #include <asm/processor.h>
- #include "ppc_asm.h"
+diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
+index 6d481ff..beca3ce 100644
+--- a/arch/powerpc/platforms/Kconfig.cputype
++++ b/arch/powerpc/platforms/Kconfig.cputype
+@@ -32,7 +32,6 @@ config PPC_85xx
+ config PPC_8xx
+ 	bool "Freescale 8xx"
+ 	select FSL_SOC
+-	select 8xx
+ 	select PPC_LIB_RHEAP
  
--#if defined(CONFIG_4xx) || defined(CONFIG_8xx)
-+#if defined(CONFIG_4xx) || defined(CONFIG_PPC_8xx)
- #define CACHE_LINE_SIZE		16
- #define LG_CACHE_LINE_SIZE	4
- #define MAX_COPY_PREFETCH	1
-@@ -26,7 +26,7 @@
- #define CACHE_LINE_SIZE		32
- #define LG_CACHE_LINE_SIZE	5
- #define MAX_COPY_PREFETCH	4
--#endif /* CONFIG_4xx || CONFIG_8xx */
-+#endif /* CONFIG_4xx || CONFIG_PPC_8xx */
+ config 40x
+@@ -157,10 +156,6 @@ config TUNE_CELL
+ 	  itself, so the resulting kernel will keep running on all other
+ 	  machines.
  
- 	.text
- 
-@@ -38,7 +38,7 @@
- _GLOBAL(clear_page)
- 	li	r0,4096/CACHE_LINE_SIZE
- 	mtctr	r0
--#ifdef CONFIG_8xx
-+#ifdef CONFIG_PPC_8xx
- 	li	r4, 0
- 1:	stw	r4, 0(r3)
- 	stw	r4, 4(r3)
-@@ -72,7 +72,7 @@ _GLOBAL(copy_page)
- 	addi	r4,r4,-4
- 	li	r5,4
- 
--#ifndef CONFIG_8xx
-+#ifndef CONFIG_PPC_8xx
- #if MAX_COPY_PREFETCH > 1
- 	li	r0,MAX_COPY_PREFETCH
- 	li	r11,4
-@@ -84,12 +84,12 @@ _GLOBAL(copy_page)
- 	dcbt	r5,r4
- 	li	r11,CACHE_LINE_SIZE+4
- #endif /* MAX_COPY_PREFETCH */
--#endif /* CONFIG_8xx */
-+#endif /* CONFIG_PPC_8xx */
- 
- 	li	r0,4096/CACHE_LINE_SIZE
- 	mtctr	r0
- 1:
--#ifndef CONFIG_8xx
-+#ifndef CONFIG_PPC_8xx
- 	dcbt	r11,r4
- 	dcbz	r5,r3
- #endif
+-# this is temp to handle compat with arch=ppc
+-config 8xx
+-	bool
+-
+ config E500
+ 	select FSL_EMB_PERFMON
+ 	select PPC_FSL_BOOK3E
 -- 
 2.1.0
