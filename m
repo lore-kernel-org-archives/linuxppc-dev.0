@@ -1,33 +1,26 @@
-Return-Path: <mgorman@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <sergei.shtylyov@cogentembedded.com>
+Received: from mail-lb0-f176.google.com (mail-lb0-f176.google.com
+ [209.85.217.176])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id F12E91A078D
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Mar 2015 05:49:36 +1100 (AEDT)
-Date: Thu, 12 Mar 2015 18:49:26 +0000
-From: Mel Gorman <mgorman@suse.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 4/4] mm: numa: Slow PTE scan rate if migration failures
- occur
-Message-ID: <20150312184925.GH3406@suse.de>
-References: <20150307163657.GA9702@gmail.com>
- <CA+55aFwDuzpL-k8LsV3touhNLh+TFSLKP8+-nPwMXkWXDYPhrg@mail.gmail.com>
- <20150308100223.GC15487@gmail.com>
- <CA+55aFyQyZXu2fi7X9bWdSX0utk8=sccfBwFaSoToROXoE_PLA@mail.gmail.com>
- <20150309112936.GD26657@destitution>
- <CA+55aFywW5JLq=BU_qb2OG5+pJ-b1v9tiS5Ygi-vtEKbEZ_T5Q@mail.gmail.com>
- <20150309191943.GF26657@destitution>
- <CA+55aFzFt-vX5Jerci0Ty4Uf7K4_nQ7wyCp8hhU_dB0X4cBpVQ@mail.gmail.com>
- <20150312131045.GE3406@suse.de>
- <CA+55aFx=81BGnQFNhnAGu6CetL7yifPsnD-+v7Y6QRqwgH47gQ@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id DC97C1A078D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Mar 2015 05:53:02 +1100 (AEDT)
+Received: by lbiz12 with SMTP id z12so18041372lbi.12
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Mar 2015 11:52:59 -0700 (PDT)
+Message-ID: <5501E088.6020502@cogentembedded.com>
+Date: Thu, 12 Mar 2015 21:52:56 +0300
+From: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-In-Reply-To: <CA+55aFx=81BGnQFNhnAGu6CetL7yifPsnD-+v7Y6QRqwgH47gQ@mail.gmail.com>
-Cc: Dave Chinner <david@fromorbit.com>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com,
- Linux-MM <linux-mm@kvack.org>, Aneesh Kumar <aneesh.kumar@linux.vnet.ibm.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- ppc-dev <linuxppc-dev@lists.ozlabs.org>, Ingo Molnar <mingo@kernel.org>
+To: Christophe Leroy <christophe.leroy@c-s.fr>,
+ Karsten Keil <isdn@linux-pingi.de>
+Subject: Re: [PATCH 7/8] isdn: replace CONFIG_8xx by CONFIG_PPC_8xx
+References: <20150312152409.E7B5C1A2422@localhost.localdomain>
+In-Reply-To: <20150312152409.E7B5C1A2422@localhost.localdomain>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Cc: linux-fbdev@vger.kernel.org, linux-serial@vger.kernel.org,
+ user-mode-linux-devel@lists.sourceforge.net, netdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-mtd@lists.infradead.org,
+ user-mode-linux-user@lists.sourceforge.net, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,21 +30,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Mar 12, 2015 at 09:20:36AM -0700, Linus Torvalds wrote:
-> On Thu, Mar 12, 2015 at 6:10 AM, Mel Gorman <mgorman@suse.de> wrote:
-> >
-> > I believe you're correct and it matches what was observed. I'm still
-> > travelling and wireless is dirt but managed to queue a test using pmd_dirty
-> 
-> Ok, thanks.
-> 
-> I'm not entirely happy with that change, and I suspect the whole
-> heuristic should be looked at much more (maybe it should also look at
-> whether it's executable, for example), but it's a step in the right
-> direction.
-> 
+Hello.
 
-I can follow up when I'm back in work properly. As you have already pulled
-this in directly, can you also consider pulling in "mm: thp: return the
-correct value for change_huge_pmd" please? The other two patches were very
-minor can be resent through the normal paths later.
+On 03/12/2015 06:24 PM, Christophe Leroy wrote:
+
+> Two config options exist to define powerpc MPC8xx:
+> * CONFIG_PPC_8xx
+> * CONFIG_8xx
+> In addition, CONFIG_PPC_8xx also defines CONFIG_CPM1 as
+> communication co-processor
+
+> arch/powerpc/platforms/Kconfig.cputype has contained the following
+> comment about CONFIG_8xx item for some years:
+> "# this is temp to handle compat with arch=ppc"
+
+> It looks like not many places still have that old CONFIG_8xx used,
+> so it is likely to be a good time to get rid of it completely ?
+
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+
+[...]
+
+> diff --git a/drivers/isdn/hardware/mISDN/Kconfig b/drivers/isdn/hardware/mISDN/Kconfig
+> index 09df54f..ad9deab 100644
+> --- a/drivers/isdn/hardware/mISDN/Kconfig
+> +++ b/drivers/isdn/hardware/mISDN/Kconfig
+[...]
+> @@ -28,7 +28,7 @@ config MISDN_HFCMULTI_8xx
+>   	depends on MISDN
+>   	depends on MISDN_HFCMULTI
+>   	depends on 8xx
+
+    Eh, how about this one?
+
+> -	default 8xx
+> +	default PPC_8xx
+>   	help
+>   	  Enable support for the XHFC embedded solution from Speech Design.
+
+WBR, Sergei
