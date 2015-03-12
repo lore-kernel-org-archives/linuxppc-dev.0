@@ -1,26 +1,21 @@
-Return-Path: <wsa@the-dreams.de>
-Received: from pokefinder.org (sauhun.de [89.238.76.85])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <duwe@lst.de>
+Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
+ (using TLSv1 with cipher DHE-RSA-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B7AB71A0C21
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Mar 2015 01:56:19 +1100 (AEDT)
-Date: Thu, 12 Mar 2015 15:56:33 +0100
-From: Wolfram Sang <wsa@the-dreams.de>
-To: "Ivan T. Ivanov" <iivanov@mm-sol.com>
-Subject: Re: [RFC V2 00/12] i2c: describe adapter quirks in a generic way
-Message-ID: <20150312145633.GD9572@katana>
-References: <1424880126-15047-1-git-send-email-wsa@the-dreams.de>
- <1425562025.5705.24.camel@mm-sol.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 269571A09D4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Mar 2015 02:31:03 +1100 (AEDT)
+Date: Thu, 12 Mar 2015 16:24:10 +0100
+From: Torsten Duwe <duwe@lst.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [RFC] powerpc: use ticket spin lock for !CONFIG_PPC_SPLPAR
+Message-ID: <20150312152410.GA12372@lst.de>
+References: <1426157723-28548-1-git-send-email-haokexin@gmail.com>
+ <1426158807.17565.131.camel@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="ZJcv+A0YCCLh2VIg"
-In-Reply-To: <1425562025.5705.24.camel@mm-sol.com>
-Cc: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org,
- Ludovic Desroches <ludovic.desroches@atmel.com>,
- bcm-kernel-feedback-list@broadcom.com, linux-i2c@vger.kernel.org,
- Yingjoe Chen <yingjoe.chen@mediatek.com>,
- Eddie Huang <eddie.huang@mediatek.com>, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1426158807.17565.131.camel@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>, Kevin Hao <haokexin@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,41 +25,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Thu, Mar 12, 2015 at 10:13:27PM +1100, Benjamin Herrenschmidt wrote:
+> On Thu, 2015-03-12 at 18:55 +0800, Kevin Hao wrote:
+> > I know Torsten Duwe has tried to add the ticket spinlock for powerpc
+> > one year ago [1]. But it make no progress due to the conflict between
 
---ZJcv+A0YCCLh2VIg
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+OMG, time flies.
 
+> > PPC_SPLPAR and lockref. We still don't find a better way to handle
+> > this. But instead of waiting forever for a perfect solution, can't we
+> > just use the ticket spinlock for the !CONFIG_PPC_SPLPAR?
 
-> For QUP driver.=20
->=20
-> Reviewed-by: Ivan T. Ivanov <iivanov@mm-sol.com>
-> Tested-by: Ivan T. Ivanov <iivanov@mm-sol.com>
+I was actually thinking about squeezing it all (incl. lockref) into 64 bits,
+or making it a bit larger, keeping the holder outside the cache line, or ...
+Then priorities shifted.
 
-Great, thanks for testing!
+> I would do the ifdef'ing differently, something like
+> 
+> CONFIG_PPC_HAS_LOCK_OWNER
+> 
+> CONFIG_PPC_TICKET_LOCKS depends on !PPC_HAS_LOCK_OWNER
+> 
+> and use these two in the code... with SPLPAR select'ing HAS_LOCK_OWNER
 
+Or avoid ifdef'ing and give pseries its own, platform-specific lock implementation?
+It's more work in the build framework but clearer in the C source. Just a though.
 
---ZJcv+A0YCCLh2VIg
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+But generally, which platforms would benefit most from this change?
+I must admit my access to hardware variety is somewhat limited ;-)
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJVAakhAAoJEBQN5MwUoCm2twwP/A2zoANciZOEjLldTBsHZdK7
-+RM4ElSlRH3OXmsCp3kxLxVkAUexy3GltZOrVdTDlfUm7JiATCRV64Jy2YSabwu1
-9quPEDF7TRO3qJEohSMelqa2F7R8C0LrTRMANDS0b8QuxUsqF7hsESbRxKEw4Bdd
-/RoTKz4En5F0mg+Tu5hL8rwwxK+D+84e+bm0Qvgd0Jg6POOuVl3gqFScpbFlQYi6
-6HWlaeUFQUHrZGKZhn6oxgUdwEybv/NWtM20nSSMaFz9Bana9+foT6oEVx7g3rU7
-ornBH9QUAdsXc9zZcoWizaCVmLXklD9cZGZYQReN1iMfdelpV8j4I+e/2O8C0T7b
-F6ygM/AJVBe2+6GKM+e+vX/P82XTPoIPj7zXlHReUR58tGwrAQl/cXkHfx35zuVy
-llDaXAbB2lCWPDPemtqRevzEFBCjrC3g4ZD7uTobEtgdoNdZ2+KNswWachaDHPhA
-/z909WpzkEHu4i7l7AUrVjRCv7OyZgvxkgg1EHGlJO9jdPWLTkhfnUSxBkILr6sK
-ar8yulEi8o1FvW6MXIzAinbNs/MKok73qn0Qr/6C3JP6mfoYFo15EEU/y5Vu/25O
-i2+kzLhrd09BUl1XxRYxG674+Xa4Ej0kdYAZWgkHh/NWky3HpWgmKk3TSlcvXK1l
-IuPw9mhSbJEzc6bQOOqz
-=Ko6C
------END PGP SIGNATURE-----
-
---ZJcv+A0YCCLh2VIg--
+	Torsten
