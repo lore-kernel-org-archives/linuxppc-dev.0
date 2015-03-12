@@ -1,20 +1,21 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id 579F11A0198
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Mar 2015 17:52:58 +1100 (AEDT)
-Message-ID: <550137C5.1020109@c-s.fr>
-Date: Thu, 12 Mar 2015 07:52:53 +0100
-From: leroy christophe <christophe.leroy@c-s.fr>
+Return-Path: <hongtao.jia@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0147.outbound.protection.outlook.com [65.55.169.147])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 889061A0008
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Mar 2015 18:03:25 +1100 (AEDT)
+From: Jia Hongtao <hongtao.jia@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <B07421@freescale.com>
+Subject: [PATCH 2/2] powerpc: Enable power monitor feature in defconfig for
+ supported platforms
+Date: Thu, 12 Mar 2015 15:00:14 +0800
+Message-ID: <1426143614-24958-2-git-send-email-hongtao.jia@freescale.com>
+In-Reply-To: <1426143614-24958-1-git-send-email-hongtao.jia@freescale.com>
+References: <1426143614-24958-1-git-send-email-hongtao.jia@freescale.com>
 MIME-Version: 1.0
-To: Mark Brown <broonie@kernel.org>
-Subject: Re: [PATCH] spi: fsl-spi: use of_iomap() to map parameter ram on CPM1
-References: <20150226161142.D08681A2360@localhost.localdomain>
- <20150303184403.GE21293@sirena.org.uk> <54F6BBA7.8040008@c-s.fr>
- <20150306114413.GM21293@sirena.org.uk>
-In-Reply-To: <20150306114413.GM21293@sirena.org.uk>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-spi@vger.kernel.org
+Content-Type: text/plain
+Cc: hongtao.jia@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,23 +25,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Signed-off-by: Jia Hongtao <hongtao.jia@freescale.com>
+---
+ arch/powerpc/configs/corenet32_smp_defconfig | 1 +
+ arch/powerpc/configs/corenet64_smp_defconfig | 1 +
+ 2 files changed, 2 insertions(+)
 
-Le 06/03/2015 12:44, Mark Brown a écrit :
-> On Wed, Mar 04, 2015 at 09:00:39AM +0100, leroy christophe wrote:
->> Le 03/03/2015 19:44, Mark Brown a écrit :
->>> Why are we using of_iomap() rather than a generic I/O mapping function
->>> here?
->> because all drivers for powerpc seems to be using of_iomap(), as on powerpc
->> the HW is described by the bootloader in a OF device tree.
->> Today, of_iomap() is at least used in FSL SPI, FSL UART, SPI mpc52xx, UART
->> mpc52xx, i2c-mpc, i2c-cpm, freescale ethernet drivers, etc ....
->> Is it not correct ?
-> It's legacy, all that code is really old.  Modern code is written in as
-> architecture and firmware neutral a fashion as possible to make things
-> more consistent and maintainable.
-This patch is only a small bug fix.
-That driver already contains calls to of_iomap() and other related of_ 
-functions.
-Is it worth rewriting the driver for just a small bug fix ?
-
-Christophe
+diff --git a/arch/powerpc/configs/corenet32_smp_defconfig b/arch/powerpc/configs/corenet32_smp_defconfig
+index 7370990..36970c8 100644
+--- a/arch/powerpc/configs/corenet32_smp_defconfig
++++ b/arch/powerpc/configs/corenet32_smp_defconfig
+@@ -119,6 +119,7 @@ CONFIG_SPI_GPIO=y
+ CONFIG_SPI_FSL_SPI=y
+ CONFIG_SPI_FSL_ESPI=y
+ CONFIG_SENSORS_LM90=y
++CONFIG_SENSORS_INA2XX=y
+ CONFIG_USB_HID=m
+ CONFIG_USB=y
+ CONFIG_USB_MON=y
+diff --git a/arch/powerpc/configs/corenet64_smp_defconfig b/arch/powerpc/configs/corenet64_smp_defconfig
+index 4cfc3e8..6194a11 100644
+--- a/arch/powerpc/configs/corenet64_smp_defconfig
++++ b/arch/powerpc/configs/corenet64_smp_defconfig
+@@ -104,6 +104,7 @@ CONFIG_SPI_GPIO=y
+ CONFIG_SPI_FSL_SPI=y
+ CONFIG_SPI_FSL_ESPI=y
+ CONFIG_SENSORS_LM90=y
++CONFIG_SENSORS_INA2XX=y
+ CONFIG_USB_HID=m
+ CONFIG_USB=y
+ CONFIG_USB_MON=y
+-- 
+2.1.0.27.g96db324
