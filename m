@@ -2,23 +2,21 @@ Return-Path: <wsa@the-dreams.de>
 Received: from pokefinder.org (sauhun.de [89.238.76.85])
  (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 080BD1A0AD3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Mar 2015 01:55:57 +1100 (AEDT)
-Date: Thu, 12 Mar 2015 15:56:07 +0100
+ by lists.ozlabs.org (Postfix) with ESMTPS id B7AB71A0C21
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Mar 2015 01:56:19 +1100 (AEDT)
+Date: Thu, 12 Mar 2015 15:56:33 +0100
 From: Wolfram Sang <wsa@the-dreams.de>
-To: Ray Jui <rjui@broadcom.com>
-Subject: Re: [RFC V2 12/12] i2c: bcm-iproc: make use of the new
- infrastructure for quirks
-Message-ID: <20150312145607.GC9572@katana>
+To: "Ivan T. Ivanov" <iivanov@mm-sol.com>
+Subject: Re: [RFC V2 00/12] i2c: describe adapter quirks in a generic way
+Message-ID: <20150312145633.GD9572@katana>
 References: <1424880126-15047-1-git-send-email-wsa@the-dreams.de>
- <1424880126-15047-13-git-send-email-wsa@the-dreams.de>
- <54EFAD2A.9060501@broadcom.com>
+ <1425562025.5705.24.camel@mm-sol.com>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="5G06lTa6Jq83wMTw"
-In-Reply-To: <54EFAD2A.9060501@broadcom.com>
-Cc: linux-mips@linux-mips.org, Scott Branden <sbranden@broadcom.com>,
- linux-kernel@vger.kernel.org, Ludovic Desroches <ludovic.desroches@atmel.com>,
+ protocol="application/pgp-signature"; boundary="ZJcv+A0YCCLh2VIg"
+In-Reply-To: <1425562025.5705.24.camel@mm-sol.com>
+Cc: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org,
+ Ludovic Desroches <ludovic.desroches@atmel.com>,
  bcm-kernel-feedback-list@broadcom.com, linux-i2c@vger.kernel.org,
  Yingjoe Chen <yingjoe.chen@mediatek.com>,
  Eddie Huang <eddie.huang@mediatek.com>, linuxppc-dev@lists.ozlabs.org,
@@ -33,48 +31,40 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---5G06lTa6Jq83wMTw
+--ZJcv+A0YCCLh2VIg
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
 
-> Change on the iproc i2c driver looks good to me. Sanity tested the
-> change from Wolfram's i2c/quirks branch on Cygnus 958300K combo board.
-> Sanity tested with an attempt to transfer large amount of I2C data to
-> ensure the transfer is denied by the i2c-core:
+> For QUP driver.=20
 >=20
-> / # cat /dev/i2c-0
-> [  657.310261] i2c i2c-0: quirk: msg too long (addr 0x0000, size 4096, re=
-ad)
->=20
-> Reviewed-by: Ray Jui <rjui@broadcom.com>
-> Tested-by: Ray Jui <rjui@broadcom.com>
+> Reviewed-by: Ivan T. Ivanov <iivanov@mm-sol.com>
+> Tested-by: Ivan T. Ivanov <iivanov@mm-sol.com>
 
-Thanks for testing, and especially describing your test! Much
-appreciated.
+Great, thanks for testing!
 
 
---5G06lTa6Jq83wMTw
+--ZJcv+A0YCCLh2VIg
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: Digital signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBAgAGBQJVAakHAAoJEBQN5MwUoCm2fhkP/RegkbE8DFbXjl3zsQrI3uCi
-znNLVQG8LUjRJlC8YsLgcQsC7ph6BQjCTYtkLQGpz6zxn0SGR3T4lJmzakfbFCuy
-NMt4yuUdpktXE3ARA7k0u2DG8J0LTzeYo0MIBaWlwtitswmEhGuTkfkXif2iGOBq
-ddquZ3SRzWPFo4m7/9FgCYMwR4EPi8NKUor4QZ4R866oug2uWX/IOr/gPtsrIwM5
-BbFoysprOtmwFNfaCEBCNvKKWGG8HJFHOzITj+s6BpG9Z0xxyilKoTBtCkef/jA2
-qj0fhLVP3DvjjLLPcb2oZuF0NNvpP6KEeGwWEtXYiqwkUVXaSXfIn6OkuikGj8eB
-sW/DEyjvyo6U2VZvXX5SdW/HDk7m52mmhvOMNMJ+ZDxfMxIVr/lmIS8YMcQDMXPa
-I85vlFW4/1hbwIttfG71b9AEdgCVOzWH3GrgsFjP3dGhi1y3H+r8pCwsI8Q6lOTi
-mgWWm6vZ6Oup9xEp0D8YJZIlCqRUAeF4vJ0EbqKZ4/58wUH+kYy/svAViHdYJ5hr
-frDuQVqRFN0eIxQ/QIP8qTWUqrjVx6wObvFw4I/jrg6aWwfZ6wrPWAhO5xbY4QRl
-CDQs7/236BZ4GpSRbvwosdwP2le6xxuRs7CtWnxshV3cHTVakYBiDRwTswybHfZl
-YSE/CSiPwPrn28XdxMfY
-=qVbz
+iQIcBAEBAgAGBQJVAakhAAoJEBQN5MwUoCm2twwP/A2zoANciZOEjLldTBsHZdK7
++RM4ElSlRH3OXmsCp3kxLxVkAUexy3GltZOrVdTDlfUm7JiATCRV64Jy2YSabwu1
+9quPEDF7TRO3qJEohSMelqa2F7R8C0LrTRMANDS0b8QuxUsqF7hsESbRxKEw4Bdd
+/RoTKz4En5F0mg+Tu5hL8rwwxK+D+84e+bm0Qvgd0Jg6POOuVl3gqFScpbFlQYi6
+6HWlaeUFQUHrZGKZhn6oxgUdwEybv/NWtM20nSSMaFz9Bana9+foT6oEVx7g3rU7
+ornBH9QUAdsXc9zZcoWizaCVmLXklD9cZGZYQReN1iMfdelpV8j4I+e/2O8C0T7b
+F6ygM/AJVBe2+6GKM+e+vX/P82XTPoIPj7zXlHReUR58tGwrAQl/cXkHfx35zuVy
+llDaXAbB2lCWPDPemtqRevzEFBCjrC3g4ZD7uTobEtgdoNdZ2+KNswWachaDHPhA
+/z909WpzkEHu4i7l7AUrVjRCv7OyZgvxkgg1EHGlJO9jdPWLTkhfnUSxBkILr6sK
+ar8yulEi8o1FvW6MXIzAinbNs/MKok73qn0Qr/6C3JP6mfoYFo15EEU/y5Vu/25O
+i2+kzLhrd09BUl1XxRYxG674+Xa4Ej0kdYAZWgkHh/NWky3HpWgmKk3TSlcvXK1l
+IuPw9mhSbJEzc6bQOOqz
+=Ko6C
 -----END PGP SIGNATURE-----
 
---5G06lTa6Jq83wMTw--
+--ZJcv+A0YCCLh2VIg--
