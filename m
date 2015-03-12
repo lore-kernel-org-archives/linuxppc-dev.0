@@ -1,18 +1,108 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from pide.tip.net.au (pide.tip.net.au [IPv6:2401:fc00:0:107::2])
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 859E51A0196
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Mar 2015 15:10:20 +1100 (AEDT)
-Date: Thu, 12 Mar 2015 15:10:09 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH] powerpc: comvert relocs_check to a shell script using grep
-Message-ID: <20150312151009.18077d0c@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- boundary="Sig_/2SF1h=8P.u7r8cvyec_ITW6"; protocol="application/pgp-signature"
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id A35181A0196
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Mar 2015 14:49:53 +1100 (AEDT)
+Message-ID: <1426132192.25936.7.camel@ellerman.id.au>
+Subject: Re: [PATCH] mm: kill kmemcheck
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Sasha Levin <sasha.levin@oracle.com>
+Date: Thu, 12 Mar 2015 14:49:52 +1100
+In-Reply-To: <1426074547-21888-1-git-send-email-sasha.levin@oracle.com>
+References: <1426074547-21888-1-git-send-email-sasha.levin@oracle.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Vladimir Davydov <vdavydov@parallels.com>,
+ Geert Uytterhoeven <geert+renesas@glider.be>,
+ "open list:SUPERH" <linux-sh@vger.kernel.org>,
+ Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>,
+ Jianyu Zhan <nasa4836@gmail.com>, Paul Mackerras <paulus@samba.org>,
+ Pavel Machek <pavel@ucw.cz>, Miklos Szeredi <mszeredi@suse.cz>,
+ Christoph Lameter <cl@linux.com>, Marek Szyprowski <m.szyprowski@samsung.com>,
+ "open list:GENERIC INCLUDE/A..." <linux-arch@vger.kernel.org>,
+ Andi Kleen <ak@linux.intel.com>, Russell King <linux@arm.linux.org.uk>,
+ Jingoo Han <jg1.han@samsung.com>, James Morris <jmorris@namei.org>,
+ Chris Bainbridge <chris.bainbridge@gmail.com>, Antti Palosaari <crope@iki.fi>,
+ Mel Gorman <mgorman@suse.de>, Ritesh Harjani <ritesh.harjani@gmail.com>,
+ Shaohua Li <shli@kernel.org>, Alexander Duyck <alexander.h.duyck@intel.com>,
+ Wang Nan <wangnan0@huawei.com>, Jiri Pirko <jiri@resnulli.us>,
+ Daniel J Blueman <daniel@numascale.com>, Rusty Russell <rusty@rustcorp.com.au>,
+ Jens Axboe <axboe@fb.com>, Alexander Viro <viro@zeniv.linux.org.uk>,
+ Thomas Gleixner <tglx@linutronix.de>, Konstantin Khlebnikov <koct9i@gmail.com>,
+ Willem de Bruijn <willemb@google.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Randy Dunlap <rdunlap@infradead.org>, "Rafael J.
+ Wysocki" <rjw@rjwysocki.net>, linux-kernel@vger.kernel.org,
+ Rabin Vincent <rabin@rab.in>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Jiri Kosina <jkosina@suse.cz>, Tejun Heo <tj@kernel.org>,
+ Andrew Morton <akpm@linux-foundation.org>, Patrick McHardy <kaber@trash.net>,
+ Christoffer Dall <christoffer.dall@linaro.org>,
+ Mark Rutland <mark.rutland@arm.com>,
+ "open list:DOCUMENTATION" <linux-doc@vger.kernel.org>,
+ Dave Hansen <dave.hansen@linux.intel.com>, Eric Dumazet <edumazet@google.com>,
+ Jungseung Lee <js07.lee@gmail.com>,
+ Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>,
+ Stephen Rothwell <sfr@canb.auug.org.au>, Qiaowei Ren <qiaowei.ren@intel.com>,
+ Prarit Bhargava <prarit@redhat.com>, bob picco <bpicco@meloft.net>,
+ Sungjinn Chung <sungjinn.chung@samsung.com>,
+ Quentin Lambert <lambert.quentin@gmail.com>, Hugh Dickins <hughd@google.com>,
+ Yasuaki Ishimatsu <isimatu.yasuaki@jp.fujitsu.com>,
+ Kukjin Kim <kgene@kernel.org>, Pranith Kumar <bobby.prani@gmail.com>,
+ Tom Herbert <therbert@google.com>,
+ "open list:CRYPTO API" <linux-crypto@vger.kernel.org>,
+ Rik van Riel <riel@redhat.com>, Johannes Berg <johannes.berg@intel.com>,
+ Mauro Carvalho Chehab <mchehab@osg.samsung.com>,
+ Eyal Perry <eyalpe@mellanox.com>, Joe Perches <joe@perches.com>,
+ chishanmingshen <chishanmingshen@gmail.com>,
+ Cyrill Gorcunov <gorcunov@openvz.org>,
+ Boris Ostrovsky <boris.ostrovsky@oracle.com>, Yinghai Lu <yinghai@kernel.org>,
+ Steven Honeyman <stevenhoneyman@gmail.com>, "moderated list:ARM
+ PORT" <linux-arm-kernel@lists.infradead.org>, Theodore Ts'o <tytso@mit.edu>,
+ Pekka Enberg <penberg@kernel.org>, David Vrabel <david.vrabel@citrix.com>,
+ David Rientjes <rientjes@google.com>, Joonsoo Kim <iamjoonsoo.kim@lge.com>,
+ Michal Hocko <mhocko@suse.cz>, Paul Gortmaker <paul.gortmaker@windriver.com>,
+ Jan Beulich <JBeulich@suse.com>, "moderated list:OPENRISC
+ ARCHITEC..." <linux@lists.openrisc.net>, Guan Xuetao <gxt@mprc.pku.edu.cn>,
+ Sam Ravnborg <sam@ravnborg.org>, Jonathan Corbet <corbet@lwn.net>,
+ Andrey Ryabinin <a.ryabinin@samsung.com>, Dexuan Cui <decui@microsoft.com>,
+ Suresh Siddha <sbsiddha@gmail.com>, Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>,
+ "Paul E.
+ McKenney" <paulmck@linux.vnet.ibm.com>, Fenghua Yu <fenghua.yu@intel.com>,
+ Kees Cook <keescook@chromium.org>, Arnd Bergmann <arnd@arndb.de>,
+ Vegard Nossum <vegardno@ifi.uio.no>, Josh Triplett <josh@joshtriplett.org>,
+ Steven Rostedt <rostedt@goodmis.org>, Borislav Petkov <bp@alien8.de>,
+ Andrey Konovalov <adech.fo@gmail.com>, Scott Wood <scottwood@freescale.com>,
+ Bryan O'Donoghue <pure.logic@nexus-software.ie>,
+ Dan Streetman <ddstreet@ieee.org>, Oleg Nesterov <oleg@redhat.com>,
+ Andy Lutomirski <luto@amacapital.net>,
+ Hannes Frederic Sowa <hannes@stressinduktion.org>,
+ linux-fsdevel@vger.kernel.org, "David S. Miller" <davem@davemloft.net>,
+ "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>,
+ "Michael S. Tsirkin" <mst@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
+ "open list:MEMORY
+ MANAGEMENT" <linux-mm@kvack.org>, Davidlohr Bueso <davidlohr@hp.com>,
+ Paul Cassella <cassella@cray.com>, "H. Peter Anvin" <hpa@zytor.com>,
+ "open list:SPARC + UltraSPAR..." <sparclinux@vger.kernel.org>,
+ Xishi Qiu <qiuxishi@huawei.com>, Alexei Starovoitov <ast@plumgrid.com>,
+ Jonas Bonn <jonas@southpole.se>, Herbert Xu <herbert@gondor.apana.org.au>,
+ Richard Weinberger <richard@nod.at>, "maintainer:X86
+ ARCHITECTURE..." <x86@kernel.org>, Ingo Molnar <mingo@redhat.com>,
+ Aaron Tomlin <atomlin@redhat.com>, Greg Thelen <gthelen@google.com>,
+ "Eric W. Biederman" <ebiederm@xmission.com>,
+ Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
+ Fabian Frederick <fabf@skynet.be>, Michal Marek <mmarek@suse.cz>,
+ Jungseok Lee <jays.lee@samsung.com>, Dave Jones <davej@redhat.com>,
+ Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+ Vlastimil Babka <vbabka@suse.cz>, Juergen Gross <jgross@suse.com>,
+ Hideaki YOSHIFUJI <yoshfuji@linux-ipv6.org>,
+ "open list:NETWORKING \[GENERAL\]" <netdev@vger.kernel.org>,
+ Daniel Borkmann <dborkman@redhat.com>,
+ Horia Geanta <horia.geanta@freescale.com>,
+ Johannes Weiner <hannes@cmpxchg.org>,
+ "open list:LINUX FOR POWERPC..." <linuxppc-dev@lists.ozlabs.org>,
+ Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,204 +112,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Sig_/2SF1h=8P.u7r8cvyec_ITW6
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+On Wed, 2015-03-11 at 07:43 -0400, Sasha Levin wrote:
+> As discussed on LSF/MM, kill kmemcheck.
+> 
+> KASan is a replacement that is able to work without the limitation of
+> kmemcheck (single CPU, slow). KASan is already upstream.
+> 
+> We are also not aware of any users of kmemcheck (or users who don't consider
+> KASan as a suitable replacement).
 
-This runs a bit faster and removes another use of perl from
-the kernel build.
+>From Documentation/kasan.txt:
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- arch/powerpc/Makefile        |  4 +--
- arch/powerpc/relocs_check.pl | 66 ----------------------------------------=
-----
- arch/powerpc/relocs_check.sh | 58 ++++++++++++++++++++++++++++++++++++++
- 3 files changed, 60 insertions(+), 68 deletions(-)
- delete mode 100755 arch/powerpc/relocs_check.pl
- create mode 100755 arch/powerpc/relocs_check.sh
+    therefore you will need a certain version of GCC > 4.9.2
 
-diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-index 132d9c681d6a..1e868023b2c3 100644
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -248,10 +248,10 @@ boot :=3D arch/$(ARCH)/boot
-=20
- ifeq ($(CONFIG_RELOCATABLE),y)
- quiet_cmd_relocs_check =3D CALL    $<
--      cmd_relocs_check =3D perl $< "$(OBJDUMP)" "$(obj)/vmlinux"
-+      cmd_relocs_check =3D $(CONFIG_SHELL) $< "$(OBJDUMP)" "$(obj)/vmlinux"
-=20
- PHONY +=3D relocs_check
--relocs_check: arch/powerpc/relocs_check.pl vmlinux
-+relocs_check: arch/powerpc/relocs_check.sh vmlinux
- 	$(call cmd,relocs_check)
-=20
- zImage: relocs_check
-diff --git a/arch/powerpc/relocs_check.pl b/arch/powerpc/relocs_check.pl
-deleted file mode 100755
-index 3f46e8b9c56d..000000000000
---- a/arch/powerpc/relocs_check.pl
-+++ /dev/null
-@@ -1,66 +0,0 @@
--#!/usr/bin/perl
--
--# Copyright =C2=A9 2009 IBM Corporation
--
--# This program is free software; you can redistribute it and/or
--# modify it under the terms of the GNU General Public License
--# as published by the Free Software Foundation; either version
--# 2 of the License, or (at your option) any later version.
--
--# This script checks the relocations of a vmlinux for "suspicious"
--# relocations.
--
--use strict;
--use warnings;
--
--if ($#ARGV !=3D 1) {
--	die "$0 [path to objdump] [path to vmlinux]\n";
--}
--
--# Have Kbuild supply the path to objdump so we handle cross compilation.
--my $objdump =3D shift;
--my $vmlinux =3D shift;
--my $bad_relocs_count =3D 0;
--my $bad_relocs =3D "";
--my $old_binutils =3D 0;
--
--open(FD, "$objdump -R $vmlinux|") or die;
--while (<FD>) {
--	study $_;
--
--	# Only look at relocation lines.
--	next if (!/\s+R_/);
--
--	# These relocations are okay
--	# On PPC64:
--	# 	R_PPC64_RELATIVE, R_PPC64_NONE, R_PPC64_ADDR64
--	# On PPC:
--	# 	R_PPC_RELATIVE, R_PPC_ADDR16_HI,=20
--	# 	R_PPC_ADDR16_HA,R_PPC_ADDR16_LO,
--	# 	R_PPC_NONE
--
--	next if (/\bR_PPC64_RELATIVE\b/ or /\bR_PPC64_NONE\b/ or
--	         /\bR_PPC64_ADDR64\s+mach_/);
--	next if (/\bR_PPC_ADDR16_LO\b/ or /\bR_PPC_ADDR16_HI\b/ or
--		 /\bR_PPC_ADDR16_HA\b/ or /\bR_PPC_RELATIVE\b/ or
--		 /\bR_PPC_NONE\b/);
--
--	# If we see this type of relocation it's an idication that
--	# we /may/ be using an old version of binutils.
--	if (/R_PPC64_UADDR64/) {
--		$old_binutils++;
--	}
--
--	$bad_relocs_count++;
--	$bad_relocs .=3D $_;
--}
--
--if ($bad_relocs_count) {
--	print "WARNING: $bad_relocs_count bad relocations\n";
--	print $bad_relocs;
--}
--
--if ($old_binutils) {
--	print "WARNING: You need at least binutils >=3D 2.19 to build a ".
--	      "CONFIG_RELOCATABLE kernel\n";
--}
-diff --git a/arch/powerpc/relocs_check.sh b/arch/powerpc/relocs_check.sh
-new file mode 100755
-index 000000000000..8747dd9f7202
---- /dev/null
-+++ b/arch/powerpc/relocs_check.sh
-@@ -0,0 +1,58 @@
-+#!/bin/sh
-+
-+# Copyright =C2=A9 2015 IBM Corporation
-+
-+# This program is free software; you can redistribute it and/or
-+# modify it under the terms of the GNU General Public License
-+# as published by the Free Software Foundation; either version
-+# 2 of the License, or (at your option) any later version.
-+
-+# This script checks the relocations of a vmlinux for "suspicious"
-+# relocations.
-+
-+# based on relocs_check.pl
-+# Copyright =C2=A9 2009 IBM Corporation
-+
-+if [ ${#*} -lt 2 ]; then
-+	printf "%s [path to objdump] [path to vmlinux]\n" $0 1>&2
-+	exit 1
-+fi
-+
-+# Have Kbuild supply the path to objdump so we handle cross compilation.
-+objdump=3D"$1"
-+vmlinux=3D"$2"
-+
-+bad_relocs=3D$(
-+"$objdump" -R "$vmlinux" |
-+	# Only look at relocation lines.
-+	grep -E '\<R_' |
-+	# These relocations are okay
-+	# On PPC64:
-+	#	R_PPC64_RELATIVE, R_PPC64_NONE
-+	#	R_PPC64_ADDR64 mach_<name>
-+	# On PPC:
-+	#	R_PPC_RELATIVE, R_PPC_ADDR16_HI,
-+	#	R_PPC_ADDR16_HA,R_PPC_ADDR16_LO,
-+	#	R_PPC_NONE
-+	grep -F -w -v 'R_PPC64_RELATIVE
-+R_PPC64_NONE
-+R_PPC_ADDR16_LO
-+R_PPC_ADDR16_HI
-+R_PPC_ADDR16_HA
-+R_PPC_RELATIVE
-+R_PPC_NONE' |
-+	grep -E -v '\<R_PPC64_ADDR64[[:space:]]+mach_'
-+)
-+
-+if [ -z "$bad_relocs" ]; then
-+	exit 0
-+fi
-+
-+printf "WARNING: %d bad relocations\n" $(printf "$bad_relocs\n" | wc -l)
-+printf "$bad_relocs\n"
-+
-+# If we see this type of relocation it's an idication that
-+# we /may/ be using an old version of binutils.
-+if echo "$bad_relocs\n" | grep -q -F -w R_PPC64_UADDR64; then
-+	printf "WARNING: You need at least binutils >=3D 2.19 to build a CONFIG_R=
-ELOCATABLE kernel\n"
-+fi
---=20
-2.1.4
+AFAIK gcc 4.9.3 hasn't been released yet. (Or does it mean >= 4.9.2 ?)
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+Can we perhaps wait until there is a released version of GCC that supports
+KASan? And maybe then a touch longer so folks can test it works on their
+platforms?
 
---Sig_/2SF1h=8P.u7r8cvyec_ITW6
-Content-Type: application/pgp-signature
-Content-Description: OpenPGP digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJVARGmAAoJEMDTa8Ir7ZwVPmQP/2kLABBgaeYzlaZ9IorTVQ08
-0DALjkf7UEUWu6LX5MMJCar/dQawR2i6zA8BHyeOaju09Mz6f0DGpb+ywGFQMYWx
-+0RItZo5TO1FMWqEnA5ySJYpzWk+qx5Pk2WZreTPYKvwoGpgWrl/1XF5vW+iJSc8
-mFALjGDE/y234oopDojn4VAGcqEeTw0jdgbigur/26I2TfPg/jtK0gLE7tM12C0o
-T+WCSnhRHGtKwOlJIHKyCt3hjFleCmSmuC/mEf9QFUl2B0kcuMoNnfD9VbiWTwOY
-612612F8MOejllvdLHeCsNuY4pE0UuxBcIElJcsHdaUD+p7DoBan97PTaJWly8Ko
-QdmIQZhyEJ+PHryr8o6pAGAW8dC7eqkQKT2efSdkFF0mYwotw8+Skf/KfCykZ4m2
-h9R6jhCw3ov4pvRKSmmGIbvfxpztXHUTBKzNRTLX6cIQjDOK0GQSl8GJ4OKoUGFn
-m6ifMd2I0attu50RhKg7d4BMZBOMjzeAjbDjO2LQ5saUZuCeE6PVQnDaJSfsmXJe
-vgBahIG9r8trKUYpWzcDIFimABVIJCN2Lji9I33YjZrD1jDOdonPRvWyVQ/qY2k4
-lDAzMYyPmrcFyeoX7/n6OOtgLT+gpkqmCXgUMsjthgHHPQqgPyWzMZy8A+l/MdDc
-kuycwTe9ZyF6C5F/s2yz
-=ETsN
------END PGP SIGNATURE-----
-
---Sig_/2SF1h=8P.u7r8cvyec_ITW6--
+cheers
