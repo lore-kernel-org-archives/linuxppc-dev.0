@@ -1,44 +1,18 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <sfr@canb.auug.org.au>
+Received: from pide.tip.net.au (pide.tip.net.au [IPv6:2401:fc00:0:107::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 960EE1A019A
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Mar 2015 14:17:45 +1100 (AEDT)
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 4A58A14007D
- for <linuxppc-dev@ozlabs.org>; Thu, 12 Mar 2015 14:17:45 +1100 (AEDT)
-Received: from /spool/local
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Thu, 12 Mar 2015 13:17:43 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 9DBA82CE8054
- for <linuxppc-dev@ozlabs.org>; Thu, 12 Mar 2015 14:17:40 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t2C3HWse50397196
- for <linuxppc-dev@ozlabs.org>; Thu, 12 Mar 2015 14:17:40 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t2C3H6U1003085
- for <linuxppc-dev@ozlabs.org>; Thu, 12 Mar 2015 14:17:07 +1100
-Date: Thu, 12 Mar 2015 14:16:42 +1100
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: [PATCH 2/2] drivers/vfio: Support EEH error injection
-Message-ID: <20150312031642.GA15888@shangw>
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <1426055651-22925-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1426055651-22925-2-git-send-email-gwshan@linux.vnet.ibm.com>
- <20150312005721.GP11973@voom.redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 859E51A0196
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Mar 2015 15:10:20 +1100 (AEDT)
+Date: Thu, 12 Mar 2015 15:10:09 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: [PATCH] powerpc: comvert relocs_check to a shell script using grep
+Message-ID: <20150312151009.18077d0c@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150312005721.GP11973@voom.redhat.com>
-Cc: kvm@vger.kernel.org, aik@ozlabs.ru, Gavin Shan <gwshan@linux.vnet.ibm.com>,
- agraf@suse.de, linuxppc-dev@ozlabs.org, alex.williamson@redhat.com
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ boundary="Sig_/2SF1h=8P.u7r8cvyec_ITW6"; protocol="application/pgp-signature"
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,62 +22,204 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Mar 12, 2015 at 11:57:21AM +1100, David Gibson wrote:
->On Wed, Mar 11, 2015 at 05:34:11PM +1100, Gavin Shan wrote:
->> The patch adds one more EEH sub-command (VFIO_EEH_PE_INJECT_ERR)
->> to inject the specified EEH error, which is represented by
->> (struct vfio_eeh_pe_err), to the indicated PE for testing purpose.
->> 
->> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
->> ---
->>  Documentation/vfio.txt        | 47 ++++++++++++++++++++++++++++++-------------
->>  drivers/vfio/vfio_spapr_eeh.c | 14 +++++++++++++
->>  include/uapi/linux/vfio.h     | 34 ++++++++++++++++++++++++++++++-
->>  3 files changed, 80 insertions(+), 15 deletions(-)
->> 
->> diff --git a/Documentation/vfio.txt b/Documentation/vfio.txt
->> index 96978ec..2e7f736 100644
->> --- a/Documentation/vfio.txt
->> +++ b/Documentation/vfio.txt
->> @@ -328,7 +328,13 @@ So 4 additional ioctls have been added:
->>  
->>  The code flow from the example above should be slightly changed:
->>  
->> -	struct vfio_eeh_pe_op pe_op = { .argsz = sizeof(pe_op), .flags = 0 };
->> +	struct vfio_eeh_pe_op *pe_op;
->> +	struct vfio_eeh_pe_err *pe_err;
->> +
->> +	pe_op = malloc(sizeof(*pe_op) + sizeof(*pe_err));
->> +	pe_err = (void *)pe_op + sizeof(*pe_op);
->> +	pe_op->argsz = sizeof(*pe_op) + sizeof(*pe_err);
->
->Surely that argsz can't be correct for most of the operations.  The
->extended structure should only be there for the error inject ioctl,
->yes?
->
+--Sig_/2SF1h=8P.u7r8cvyec_ITW6
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-argsz isn't appropriate for most cases because kernel has the check
-"expected_argsz < passed_argsz", not "expected_argsz == passed_argsz".
-However, I'll fix it as follows to avoid confusion after collecting
-more comments:
+This runs a bit faster and removes another use of perl from
+the kernel build.
 
-	struct vfio_eeh_pe_op *pe_op;
-	struct vfio_eeh_pe_err *pe_err;
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ arch/powerpc/Makefile        |  4 +--
+ arch/powerpc/relocs_check.pl | 66 ----------------------------------------=
+----
+ arch/powerpc/relocs_check.sh | 58 ++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 60 insertions(+), 68 deletions(-)
+ delete mode 100755 arch/powerpc/relocs_check.pl
+ create mode 100755 arch/powerpc/relocs_check.sh
 
-	/* For all cases except error injection */
-	pe_op = malloc(sizeof(*pe_op));
-	pe_op->argsz = sizeof(*pe_op);
+diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
+index 132d9c681d6a..1e868023b2c3 100644
+--- a/arch/powerpc/Makefile
++++ b/arch/powerpc/Makefile
+@@ -248,10 +248,10 @@ boot :=3D arch/$(ARCH)/boot
+=20
+ ifeq ($(CONFIG_RELOCATABLE),y)
+ quiet_cmd_relocs_check =3D CALL    $<
+-      cmd_relocs_check =3D perl $< "$(OBJDUMP)" "$(obj)/vmlinux"
++      cmd_relocs_check =3D $(CONFIG_SHELL) $< "$(OBJDUMP)" "$(obj)/vmlinux"
+=20
+ PHONY +=3D relocs_check
+-relocs_check: arch/powerpc/relocs_check.pl vmlinux
++relocs_check: arch/powerpc/relocs_check.sh vmlinux
+ 	$(call cmd,relocs_check)
+=20
+ zImage: relocs_check
+diff --git a/arch/powerpc/relocs_check.pl b/arch/powerpc/relocs_check.pl
+deleted file mode 100755
+index 3f46e8b9c56d..000000000000
+--- a/arch/powerpc/relocs_check.pl
++++ /dev/null
+@@ -1,66 +0,0 @@
+-#!/usr/bin/perl
+-
+-# Copyright =C2=A9 2009 IBM Corporation
+-
+-# This program is free software; you can redistribute it and/or
+-# modify it under the terms of the GNU General Public License
+-# as published by the Free Software Foundation; either version
+-# 2 of the License, or (at your option) any later version.
+-
+-# This script checks the relocations of a vmlinux for "suspicious"
+-# relocations.
+-
+-use strict;
+-use warnings;
+-
+-if ($#ARGV !=3D 1) {
+-	die "$0 [path to objdump] [path to vmlinux]\n";
+-}
+-
+-# Have Kbuild supply the path to objdump so we handle cross compilation.
+-my $objdump =3D shift;
+-my $vmlinux =3D shift;
+-my $bad_relocs_count =3D 0;
+-my $bad_relocs =3D "";
+-my $old_binutils =3D 0;
+-
+-open(FD, "$objdump -R $vmlinux|") or die;
+-while (<FD>) {
+-	study $_;
+-
+-	# Only look at relocation lines.
+-	next if (!/\s+R_/);
+-
+-	# These relocations are okay
+-	# On PPC64:
+-	# 	R_PPC64_RELATIVE, R_PPC64_NONE, R_PPC64_ADDR64
+-	# On PPC:
+-	# 	R_PPC_RELATIVE, R_PPC_ADDR16_HI,=20
+-	# 	R_PPC_ADDR16_HA,R_PPC_ADDR16_LO,
+-	# 	R_PPC_NONE
+-
+-	next if (/\bR_PPC64_RELATIVE\b/ or /\bR_PPC64_NONE\b/ or
+-	         /\bR_PPC64_ADDR64\s+mach_/);
+-	next if (/\bR_PPC_ADDR16_LO\b/ or /\bR_PPC_ADDR16_HI\b/ or
+-		 /\bR_PPC_ADDR16_HA\b/ or /\bR_PPC_RELATIVE\b/ or
+-		 /\bR_PPC_NONE\b/);
+-
+-	# If we see this type of relocation it's an idication that
+-	# we /may/ be using an old version of binutils.
+-	if (/R_PPC64_UADDR64/) {
+-		$old_binutils++;
+-	}
+-
+-	$bad_relocs_count++;
+-	$bad_relocs .=3D $_;
+-}
+-
+-if ($bad_relocs_count) {
+-	print "WARNING: $bad_relocs_count bad relocations\n";
+-	print $bad_relocs;
+-}
+-
+-if ($old_binutils) {
+-	print "WARNING: You need at least binutils >=3D 2.19 to build a ".
+-	      "CONFIG_RELOCATABLE kernel\n";
+-}
+diff --git a/arch/powerpc/relocs_check.sh b/arch/powerpc/relocs_check.sh
+new file mode 100755
+index 000000000000..8747dd9f7202
+--- /dev/null
++++ b/arch/powerpc/relocs_check.sh
+@@ -0,0 +1,58 @@
++#!/bin/sh
++
++# Copyright =C2=A9 2015 IBM Corporation
++
++# This program is free software; you can redistribute it and/or
++# modify it under the terms of the GNU General Public License
++# as published by the Free Software Foundation; either version
++# 2 of the License, or (at your option) any later version.
++
++# This script checks the relocations of a vmlinux for "suspicious"
++# relocations.
++
++# based on relocs_check.pl
++# Copyright =C2=A9 2009 IBM Corporation
++
++if [ ${#*} -lt 2 ]; then
++	printf "%s [path to objdump] [path to vmlinux]\n" $0 1>&2
++	exit 1
++fi
++
++# Have Kbuild supply the path to objdump so we handle cross compilation.
++objdump=3D"$1"
++vmlinux=3D"$2"
++
++bad_relocs=3D$(
++"$objdump" -R "$vmlinux" |
++	# Only look at relocation lines.
++	grep -E '\<R_' |
++	# These relocations are okay
++	# On PPC64:
++	#	R_PPC64_RELATIVE, R_PPC64_NONE
++	#	R_PPC64_ADDR64 mach_<name>
++	# On PPC:
++	#	R_PPC_RELATIVE, R_PPC_ADDR16_HI,
++	#	R_PPC_ADDR16_HA,R_PPC_ADDR16_LO,
++	#	R_PPC_NONE
++	grep -F -w -v 'R_PPC64_RELATIVE
++R_PPC64_NONE
++R_PPC_ADDR16_LO
++R_PPC_ADDR16_HI
++R_PPC_ADDR16_HA
++R_PPC_RELATIVE
++R_PPC_NONE' |
++	grep -E -v '\<R_PPC64_ADDR64[[:space:]]+mach_'
++)
++
++if [ -z "$bad_relocs" ]; then
++	exit 0
++fi
++
++printf "WARNING: %d bad relocations\n" $(printf "$bad_relocs\n" | wc -l)
++printf "$bad_relocs\n"
++
++# If we see this type of relocation it's an idication that
++# we /may/ be using an old version of binutils.
++if echo "$bad_relocs\n" | grep -q -F -w R_PPC64_UADDR64; then
++	printf "WARNING: You need at least binutils >=3D 2.19 to build a CONFIG_R=
+ELOCATABLE kernel\n"
++fi
+--=20
+2.1.4
 
-	/* For error injection case here */
-	pe_op = realloc(sizeof(*pe_op) + sizeof(*pe_err));
-	pe_op->argsz = sizeof(*pe_op) + sizeof(*pe_err);
-	pe_err = (void *)pe_op + sizeof(*pe_op);
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
-Thanks,
-Gavin
+--Sig_/2SF1h=8P.u7r8cvyec_ITW6
+Content-Type: application/pgp-signature
+Content-Description: OpenPGP digital signature
 
->-- 
->David Gibson			| I'll have my music baroque, and my code
->david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
->				| _way_ _around_!
->http://www.ozlabs.org/~dgibson
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBCAAGBQJVARGmAAoJEMDTa8Ir7ZwVPmQP/2kLABBgaeYzlaZ9IorTVQ08
+0DALjkf7UEUWu6LX5MMJCar/dQawR2i6zA8BHyeOaju09Mz6f0DGpb+ywGFQMYWx
++0RItZo5TO1FMWqEnA5ySJYpzWk+qx5Pk2WZreTPYKvwoGpgWrl/1XF5vW+iJSc8
+mFALjGDE/y234oopDojn4VAGcqEeTw0jdgbigur/26I2TfPg/jtK0gLE7tM12C0o
+T+WCSnhRHGtKwOlJIHKyCt3hjFleCmSmuC/mEf9QFUl2B0kcuMoNnfD9VbiWTwOY
+612612F8MOejllvdLHeCsNuY4pE0UuxBcIElJcsHdaUD+p7DoBan97PTaJWly8Ko
+QdmIQZhyEJ+PHryr8o6pAGAW8dC7eqkQKT2efSdkFF0mYwotw8+Skf/KfCykZ4m2
+h9R6jhCw3ov4pvRKSmmGIbvfxpztXHUTBKzNRTLX6cIQjDOK0GQSl8GJ4OKoUGFn
+m6ifMd2I0attu50RhKg7d4BMZBOMjzeAjbDjO2LQ5saUZuCeE6PVQnDaJSfsmXJe
+vgBahIG9r8trKUYpWzcDIFimABVIJCN2Lji9I33YjZrD1jDOdonPRvWyVQ/qY2k4
+lDAzMYyPmrcFyeoX7/n6OOtgLT+gpkqmCXgUMsjthgHHPQqgPyWzMZy8A+l/MdDc
+kuycwTe9ZyF6C5F/s2yz
+=ETsN
+-----END PGP SIGNATURE-----
+
+--Sig_/2SF1h=8P.u7r8cvyec_ITW6--
