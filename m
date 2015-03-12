@@ -1,19 +1,31 @@
-Return-Path: <acme@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
- by lists.ozlabs.org (Postfix) with ESMTP id ACE511A04B7
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Mar 2015 07:37:15 +1100 (AEDT)
-Date: Thu, 12 Mar 2015 17:37:11 -0300
-From: Arnaldo Carvalho de Melo <acme@kernel.org>
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Subject: Re: [PATCHv2 8/8] perf probe powerpc: Fixup function entry if using
- kallsyms lookup
-Message-ID: <20150312203711.GI3550@kernel.org>
-References: <cover.1418654435.git.naveen.n.rao@linux.vnet.ibm.com>
- <e27b74c5d94b240cb72ce0c7d6221acf758ebc8a.1418654436.git.naveen.n.rao@linux.vnet.ibm.com>
+Return-Path: <robherring2@gmail.com>
+Received: from mail-wg0-x233.google.com (mail-wg0-x233.google.com
+ [IPv6:2a00:1450:400c:c00::233])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 000BE1A0407
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Mar 2015 08:54:37 +1100 (AEDT)
+Received: by wggx13 with SMTP id x13so19351322wgg.4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Mar 2015 14:54:33 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <e27b74c5d94b240cb72ce0c7d6221acf758ebc8a.1418654436.git.naveen.n.rao@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Sender: robherring2@gmail.com
+In-Reply-To: <1426089620-9459-2-git-send-email-ard.biesheuvel@linaro.org>
+References: <1426089620-9459-1-git-send-email-ard.biesheuvel@linaro.org>
+ <1426089620-9459-2-git-send-email-ard.biesheuvel@linaro.org>
+From: Rob Herring <robh@kernel.org>
+Date: Thu, 12 Mar 2015 16:54:13 -0500
+Message-ID: <CAL_JsqL0vfut2BLxd2G=+AiRURHcygRro1n5k37wbCdW_N77Vg@mail.gmail.com>
+Subject: Re: [PATCH v2 1/5] of/fdt: split off FDT self reservation from
+ memreserve processing
+To: Ard Biesheuvel <ard.biesheuvel@linaro.org>
+Content-Type: text/plain; charset=UTF-8
+Cc: Mark Rutland <mark.rutland@arm.com>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ Russell King - ARM Linux <linux@arm.linux.org.uk>,
+ Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will.deacon@arm.com>,
+ Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,82 +35,131 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Em Mon, Dec 15, 2014 at 08:20:38PM +0530, Naveen N. Rao escreveu:
-> On powerpc ABIv2, if no debug-info is found and we use kallsyms, we need
-> to fixup the function entry to point to the local entry point. Use
-> offset of 8 since current toolchains always generate 2 instructions (8
-> bytes).
- 
+On Wed, Mar 11, 2015 at 11:00 AM, Ard Biesheuvel
+<ard.biesheuvel@linaro.org> wrote:
+> This splits off the reservation of the memory occupied by the FDT
+> binary itself from the processing of the memory reservations it
+> contains. This is necessary because the physical address of the FDT,
+> which is needed to perform the reservation, may not be known to the
+> FDT driver core, i.e., it may be mapped outside the linear direct
+> mapping, in which case __pa() returns a bogus value.
+>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Signed-off-by: Ard Biesheuvel <ard.biesheuvel@linaro.org>
 
-So perhaps we should rename ARCH_SYMBOL_HANDLING to ARCH_ABI_SYMBOL_FIXUPS?
+Not really the direction I like going by moving more things back to
+arch code, but I haven't come up with any better suggestion so:
 
-> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+Acked-by: Rob Herring <robh@kernel.org>
+
+BTW, I do want to move early_init_fdt_scan_reserved_mem out of the
+arch code as well. Other arches don't call it, but it should be
+harmless if they never use the reserved memory regions.
+
+Rob
+
 > ---
-> Changes:
-> Generalize and introduce helper to post-process trace point.
-> 
->  tools/perf/arch/powerpc/util/sym-handling.c | 17 +++++++++++++++++
->  tools/perf/util/probe-event.c               |  1 +
->  tools/perf/util/probe-event.h               | 10 ++++++++++
->  3 files changed, 28 insertions(+)
-> 
-> diff --git a/tools/perf/arch/powerpc/util/sym-handling.c b/tools/perf/arch/powerpc/util/sym-handling.c
-> index 22fc2e6..30c8797 100644
-> --- a/tools/perf/arch/powerpc/util/sym-handling.c
-> +++ b/tools/perf/arch/powerpc/util/sym-handling.c
-> @@ -45,3 +45,20 @@ inline bool prefer_symtab(void)
->  	return false;
+>  arch/arm/mm/init.c         |  1 +
+>  arch/arm64/mm/init.c       |  1 +
+>  arch/powerpc/kernel/prom.c |  1 +
+>  drivers/of/fdt.c           | 19 ++++++++++++++-----
+>  include/linux/of_fdt.h     |  2 ++
+>  5 files changed, 19 insertions(+), 5 deletions(-)
+>
+> diff --git a/arch/arm/mm/init.c b/arch/arm/mm/init.c
+> index 1609b022a72f..0b8657c36fe4 100644
+> --- a/arch/arm/mm/init.c
+> +++ b/arch/arm/mm/init.c
+> @@ -317,6 +317,7 @@ void __init arm_memblock_init(const struct machine_desc *mdesc)
+>         if (mdesc->reserve)
+>                 mdesc->reserve();
+>
+> +       early_init_fdt_reserve_self();
+>         early_init_fdt_scan_reserved_mem();
+>
+>         /* reserve memory for DMA contiguous allocations */
+> diff --git a/arch/arm64/mm/init.c b/arch/arm64/mm/init.c
+> index ae85da6307bb..fa2389b0f7f0 100644
+> --- a/arch/arm64/mm/init.c
+> +++ b/arch/arm64/mm/init.c
+> @@ -170,6 +170,7 @@ void __init arm64_memblock_init(void)
+>                 memblock_reserve(__virt_to_phys(initrd_start), initrd_end - initrd_start);
 >  #endif
+>
+> +       early_init_fdt_reserve_self();
+>         early_init_fdt_scan_reserved_mem();
+>
+>         /* 4GB maximum for 32-bit only capable devices */
+> diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+> index b8e15c678960..093ccfb384af 100644
+> --- a/arch/powerpc/kernel/prom.c
+> +++ b/arch/powerpc/kernel/prom.c
+> @@ -573,6 +573,7 @@ static void __init early_reserve_mem_dt(void)
+>         int len;
+>         const __be32 *prop;
+>
+> +       early_init_fdt_reserve_self();
+>         early_init_fdt_scan_reserved_mem();
+>
+>         dt_root = of_get_flat_dt_root();
+> diff --git a/drivers/of/fdt.c b/drivers/of/fdt.c
+> index 3a896c9aeb74..bbb35cdb06e8 100644
+> --- a/drivers/of/fdt.c
+> +++ b/drivers/of/fdt.c
+> @@ -561,11 +561,6 @@ void __init early_init_fdt_scan_reserved_mem(void)
+>         if (!initial_boot_params)
+>                 return;
+>
+> -       /* Reserve the dtb region */
+> -       early_init_dt_reserve_memory_arch(__pa(initial_boot_params),
+> -                                         fdt_totalsize(initial_boot_params),
+> -                                         0);
+> -
+>         /* Process header /memreserve/ fields */
+>         for (n = 0; ; n++) {
+>                 fdt_get_mem_rsv(initial_boot_params, n, &base, &size);
+> @@ -579,6 +574,20 @@ void __init early_init_fdt_scan_reserved_mem(void)
 >  }
-> +
-> +void arch_fix_tev_from_maps(struct perf_probe_event *pev __maybe_unused,
-> +			    struct probe_trace_event *tev __maybe_unused,
-> +			    struct map *map __maybe_unused)
+>
+>  /**
+> + * early_init_fdt_reserve_self() - reserve the memory used by the FDT blob
+> + */
+> +void __init early_init_fdt_reserve_self(void)
 > +{
-> +#if defined(_CALL_ELF) && _CALL_ELF == 2
-> +	/*
-> +	 * If we used kallsyms, we should fixup the function entry address here.
-> +	 * ppc64 ABIv2 local entry point is currently always 2 instructions (8 bytes)
-> +	 * after the global entry point. Fix this if it ever changes.
-> +	 */
-> +	if (!pev->uprobes && map->dso->symtab_type == DSO_BINARY_TYPE__KALLSYMS) {
-> +		tev->point.address += 8;
-> +		tev->point.offset += 8;
-> +	}
-> +#endif
-> +}
-> diff --git a/tools/perf/util/probe-event.c b/tools/perf/util/probe-event.c
-> index dfc3151..85f37a4 100644
-> --- a/tools/perf/util/probe-event.c
-> +++ b/tools/perf/util/probe-event.c
-> @@ -2340,6 +2340,7 @@ static int find_probe_trace_events_from_map(struct perf_probe_event *pev,
->  					strdup_or_goto(pev->args[i].type,
->  							nomem_out);
->  		}
-> +		arch_fix_tev_from_maps(pev, tev, map);
->  	}
->  
->  out:
-> diff --git a/tools/perf/util/probe-event.h b/tools/perf/util/probe-event.h
-> index 5f92906..335a6a4 100644
-> --- a/tools/perf/util/probe-event.h
-> +++ b/tools/perf/util/probe-event.h
-> @@ -147,6 +147,16 @@ extern bool prefer_symtab(void);
->  static inline bool prefer_symtab(void) { return false; };
->  #endif
->  
-> +#ifdef HAVE_ARCH_SYMBOL_HANDLING
-> +extern void arch_fix_tev_from_maps(struct perf_probe_event *pev __maybe_unused,
-> +				   struct probe_trace_event *tev __maybe_unused,
-> +				   struct map *map __maybe_unused);
-> +#else
-> +static inline void arch_fix_tev_from_maps(struct perf_probe_event *pev __maybe_unused,
-> +					  struct probe_trace_event *tev __maybe_unused,
-> +					  struct map *map __maybe_unused) { }
-> +#endif
+> +       if (!initial_boot_params)
+> +               return;
 > +
->  /* Maximum index number of event-name postfix */
->  #define MAX_EVENT_INDEX	1024
->  
-> -- 
-> 2.1.3
+> +       /* Reserve the dtb region */
+> +       early_init_dt_reserve_memory_arch(__pa(initial_boot_params),
+> +                                         fdt_totalsize(initial_boot_params),
+> +                                         0);
+> +}
+> +
+> +/**
+>   * of_scan_flat_dt - scan flattened tree blob and call callback on each.
+>   * @it: callback function
+>   * @data: context data pointer
+> diff --git a/include/linux/of_fdt.h b/include/linux/of_fdt.h
+> index 0ff360d5b3b3..6ef6b33238d3 100644
+> --- a/include/linux/of_fdt.h
+> +++ b/include/linux/of_fdt.h
+> @@ -62,6 +62,7 @@ extern int early_init_dt_scan_chosen(unsigned long node, const char *uname,
+>  extern int early_init_dt_scan_memory(unsigned long node, const char *uname,
+>                                      int depth, void *data);
+>  extern void early_init_fdt_scan_reserved_mem(void);
+> +extern void early_init_fdt_reserve_self(void);
+>  extern void early_init_dt_add_memory_arch(u64 base, u64 size);
+>  extern int early_init_dt_reserve_memory_arch(phys_addr_t base, phys_addr_t size,
+>                                              bool no_map);
+> @@ -89,6 +90,7 @@ extern u64 fdt_translate_address(const void *blob, int node_offset);
+>  extern void of_fdt_limit_memory(int limit);
+>  #else /* CONFIG_OF_FLATTREE */
+>  static inline void early_init_fdt_scan_reserved_mem(void) {}
+> +static inline void early_init_fdt_reserve_self(void) {}
+>  static inline const char *of_flat_dt_get_machine_name(void) { return NULL; }
+>  static inline void unflatten_device_tree(void) {}
+>  static inline void unflatten_and_copy_device_tree(void) {}
+> --
+> 1.8.3.2
+>
