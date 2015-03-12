@@ -1,21 +1,17 @@
-Return-Path: <duwe@lst.de>
-Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
- (using TLSv1 with cipher DHE-RSA-CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 269571A09D4
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Mar 2015 02:31:03 +1100 (AEDT)
-Date: Thu, 12 Mar 2015 16:24:10 +0100
-From: Torsten Duwe <duwe@lst.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [RFC] powerpc: use ticket spin lock for !CONFIG_PPC_SPLPAR
-Message-ID: <20150312152410.GA12372@lst.de>
-References: <1426157723-28548-1-git-send-email-haokexin@gmail.com>
- <1426158807.17565.131.camel@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1426158807.17565.131.camel@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>, Kevin Hao <haokexin@gmail.com>,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ by lists.ozlabs.org (Postfix) with ESMTP id E0C6D1A078D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Mar 2015 02:35:41 +1100 (AEDT)
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+To: David Woodhouse <dwmw2@infradead.org>,
+ Brian Norris <computersforpeace@gmail.com>
+Subject: [PATCH 6/8] mtd: replace CONFIG_8xx by CONFIG_PPC_8xx
+Message-Id: <20150312152404.D6C391A2421@localhost.localdomain>
+Date: Thu, 12 Mar 2015 16:24:04 +0100 (CET)
+Cc: linux-fbdev@vger.kernel.org, linux-serial@vger.kernel.org,
+ user-mode-linux-devel@lists.sourceforge.net, netdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-mtd@lists.infradead.org,
+ user-mode-linux-user@lists.sourceforge.net, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,33 +21,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Mar 12, 2015 at 10:13:27PM +1100, Benjamin Herrenschmidt wrote:
-> On Thu, 2015-03-12 at 18:55 +0800, Kevin Hao wrote:
-> > I know Torsten Duwe has tried to add the ticket spinlock for powerpc
-> > one year ago [1]. But it make no progress due to the conflict between
+Two config options exist to define powerpc MPC8xx:
+* CONFIG_PPC_8xx
+* CONFIG_8xx
+In addition, CONFIG_PPC_8xx also defines CONFIG_CPM1 as
+communication co-processor
 
-OMG, time flies.
+arch/powerpc/platforms/Kconfig.cputype has contained the following
+comment about CONFIG_8xx item for some years:
+"# this is temp to handle compat with arch=ppc"
 
-> > PPC_SPLPAR and lockref. We still don't find a better way to handle
-> > this. But instead of waiting forever for a perfect solution, can't we
-> > just use the ticket spinlock for the !CONFIG_PPC_SPLPAR?
+It looks like not many places still have that old CONFIG_8xx used,
+so it is likely to be a good time to get rid of it completely ?
 
-I was actually thinking about squeezing it all (incl. lockref) into 64 bits,
-or making it a bit larger, keeping the holder outside the cache line, or ...
-Then priorities shifted.
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
-> I would do the ifdef'ing differently, something like
-> 
-> CONFIG_PPC_HAS_LOCK_OWNER
-> 
-> CONFIG_PPC_TICKET_LOCKS depends on !PPC_HAS_LOCK_OWNER
-> 
-> and use these two in the code... with SPLPAR select'ing HAS_LOCK_OWNER
+---
+ drivers/mtd/maps/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Or avoid ifdef'ing and give pseries its own, platform-specific lock implementation?
-It's more work in the build framework but clearer in the C source. Just a though.
-
-But generally, which platforms would benefit most from this change?
-I must admit my access to hardware variety is somewhat limited ;-)
-
-	Torsten
+diff --git a/drivers/mtd/maps/Kconfig b/drivers/mtd/maps/Kconfig
+index ba801d2..e715ae9 100644
+--- a/drivers/mtd/maps/Kconfig
++++ b/drivers/mtd/maps/Kconfig
+@@ -242,7 +242,7 @@ config MTD_L440GX
+ 
+ config MTD_CFI_FLAGADM
+ 	tristate "CFI Flash device mapping on FlagaDM"
+-	depends on 8xx && MTD_CFI
++	depends on PPC_8xx && MTD_CFI
+ 	help
+ 	  Mapping for the Flaga digital module. If you don't have one, ignore
+ 	  this setting.
+-- 
+2.1.0
