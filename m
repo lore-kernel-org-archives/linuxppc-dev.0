@@ -1,17 +1,16 @@
-Return-Path: <corbet@lwn.net>
-Received: from vena.lwn.net (tex.lwn.net [70.33.254.29])
- (using TLSv1 with cipher ADH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DA1651A0BD7
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Mar 2015 00:27:32 +1100 (AEDT)
-Date: Thu, 12 Mar 2015 09:00:15 -0400
-From: Jonathan Corbet <corbet@lwn.net>
-To: Pekka Enberg <penberg@iki.fi>
+Return-Path: <rostedt@goodmis.org>
+Received: from smtprelay.hostedemail.com (smtprelay0138.hostedemail.com
+ [216.40.44.138])
+ by lists.ozlabs.org (Postfix) with ESMTP id 2A1381A084C
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Mar 2015 00:48:10 +1100 (AEDT)
+Date: Thu, 12 Mar 2015 09:47:54 -0400
+From: Steven Rostedt <rostedt@goodmis.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
 Subject: Re: [PATCH] mm: kill kmemcheck
-Message-ID: <20150312090015.656c2f9c@lwn.net>
-In-Reply-To: <55013B38.6040100@iki.fi>
+Message-ID: <20150312094754.458606bb@gandalf.local.home>
+In-Reply-To: <1426132192.25936.7.camel@ellerman.id.au>
 References: <1426074547-21888-1-git-send-email-sasha.levin@oracle.com>
- <55013B38.6040100@iki.fi>
+ <1426132192.25936.7.camel@ellerman.id.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Cc: Vladimir Davydov <vdavydov@parallels.com>,
@@ -67,14 +66,15 @@ Cc: Vladimir Davydov <vdavydov@parallels.com>,
  Paul Gortmaker <paul.gortmaker@windriver.com>, Jan Beulich <JBeulich@suse.com>,
  "moderated list:OPENRISC
  ARCHITEC..." <linux@lists.openrisc.net>, Guan Xuetao <gxt@mprc.pku.edu.cn>,
- Sam Ravnborg <sam@ravnborg.org>, Andrey Ryabinin <a.ryabinin@samsung.com>,
- Dexuan Cui <decui@microsoft.com>, Suresh Siddha <sbsiddha@gmail.com>,
- Sasha Levin <sasha.levin@oracle.com>, "Paul E.
+ Sam Ravnborg <sam@ravnborg.org>, Jonathan Corbet <corbet@lwn.net>,
+ Andrey Ryabinin <a.ryabinin@samsung.com>, Dexuan Cui <decui@microsoft.com>,
+ Suresh Siddha <sbsiddha@gmail.com>, Sasha Levin <sasha.levin@oracle.com>,
+ "Paul E.
  McKenney" <paulmck@linux.vnet.ibm.com>, Fenghua Yu <fenghua.yu@intel.com>,
  Kees Cook <keescook@chromium.org>, Arnd Bergmann <arnd@arndb.de>,
  Vegard Nossum <vegardno@ifi.uio.no>, Josh Triplett <josh@joshtriplett.org>,
- Steven Rostedt <rostedt@goodmis.org>, Borislav Petkov <bp@alien8.de>,
- Andrey Konovalov <adech.fo@gmail.com>, Scott Wood <scottwood@freescale.com>,
+ Borislav Petkov <bp@alien8.de>, Andrey Konovalov <adech.fo@gmail.com>,
+ Scott Wood <scottwood@freescale.com>,
  Bryan O'Donoghue <pure.logic@nexus-software.ie>,
  Dan Streetman <ddstreet@ieee.org>, Oleg Nesterov <oleg@redhat.com>,
  Andy Lutomirski <luto@amacapital.net>,
@@ -88,10 +88,10 @@ Cc: Vladimir Davydov <vdavydov@parallels.com>,
  "open list:SPARC + UltraSPAR..." <sparclinux@vger.kernel.org>,
  Xishi Qiu <qiuxishi@huawei.com>, Alexei Starovoitov <ast@plumgrid.com>,
  Jonas Bonn <jonas@southpole.se>, Herbert Xu <herbert@gondor.apana.org.au>,
- Richard Weinberger <richard@nod.at>,
- "maintainer:X86 ARCHITECTURE..." <x86@kernel.org>,
- Ingo Molnar <mingo@redhat.com>, Aaron Tomlin <atomlin@redhat.com>,
- Greg Thelen <gthelen@google.com>, Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>,
+ Richard Weinberger <richard@nod.at>, "maintainer:X86
+ ARCHITECTURE..." <x86@kernel.org>, Ingo Molnar <mingo@redhat.com>,
+ Aaron Tomlin <atomlin@redhat.com>, Greg Thelen <gthelen@google.com>,
+ Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>,
  "Eric W. Biederman" <ebiederm@xmission.com>,
  Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
  Fabian Frederick <fabf@skynet.be>, Michal Marek <mmarek@suse.cz>,
@@ -114,15 +114,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 12 Mar 2015 09:07:36 +0200
-Pekka Enberg <penberg@iki.fi> wrote:
+On Thu, 12 Mar 2015 14:49:52 +1100
+Michael Ellerman <mpe@ellerman.id.au> wrote:
+> 
+> >From Documentation/kasan.txt:
+> 
+>     therefore you will need a certain version of GCC > 4.9.2
+> 
+> AFAIK gcc 4.9.3 hasn't been released yet. (Or does it mean >= 4.9.2 ?)
 
-> Can you elaborate on what exactly was discussed at LSF/MM? Preferably in 
-> the commit log. ;-)
+It means 4.9.2. I also feel that this makes it too premature to remove
+kmemcheck, as not everyone (including myself) has the latest and
+greatest gcc on their systems.
 
-I'll have the report from that session up, hopefully by the end of the
-week.
+> 
+> Can we perhaps wait until there is a released version of GCC that supports
+> KASan? And maybe then a touch longer so folks can test it works on their
+> platforms?
+> 
 
-Thanks,
+Note, I replied to this cutting out the Cc's to the individuals so that
+it can have a wider audience! (figure out what I mean by that). You can
+see my reply on LKML (hint, you wont see the original email, or this
+current thread for that matter).
 
-jon
+-- Steve
