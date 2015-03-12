@@ -1,18 +1,18 @@
 Return-Path: <acme@kernel.org>
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
- by lists.ozlabs.org (Postfix) with ESMTP id 77BD21A0407
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Mar 2015 07:31:04 +1100 (AEDT)
-Date: Thu, 12 Mar 2015 17:30:59 -0300
+ by lists.ozlabs.org (Postfix) with ESMTP id E4B9C1A0407
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Mar 2015 07:35:05 +1100 (AEDT)
+Date: Thu, 12 Mar 2015 17:35:00 -0300
 From: Arnaldo Carvalho de Melo <acme@kernel.org>
 To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Subject: Re: [PATCHv2 5/8] perf probe powerpc: Allow matching against dot
- symbols
-Message-ID: <20150312203059.GG3550@kernel.org>
+Subject: Re: [PATCHv2 6/8] perf tools powerpc: Fix PPC64 ELF ABIv2 symbol
+ decoding
+Message-ID: <20150312203500.GH3550@kernel.org>
 References: <cover.1418654435.git.naveen.n.rao@linux.vnet.ibm.com>
- <062b1dbee6747d8013ea91d7020216969aefb128.1418654436.git.naveen.n.rao@linux.vnet.ibm.com>
+ <c81364f6bd46c9ab9074fcb107fccf7de63cc56e.1418654436.git.naveen.n.rao@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <062b1dbee6747d8013ea91d7020216969aefb128.1418654436.git.naveen.n.rao@linux.vnet.ibm.com>
+In-Reply-To: <c81364f6bd46c9ab9074fcb107fccf7de63cc56e.1418654436.git.naveen.n.rao@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -23,160 +23,86 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Em Mon, Dec 15, 2014 at 08:20:35PM +0530, Naveen N. Rao escreveu:
-> Allow perf probe to work on powerpc ABIv1 without the need to specify
-> the leading dot '.' for functions. 'perf probe do_fork' works with this
-> patch.
+Em Mon, Dec 15, 2014 at 08:20:36PM +0530, Naveen N. Rao escreveu:
+> PPC64 ELF ABIv2 has a Global Entry Point (GEP) and a Local Entry Point
+> (LEP). For purposes of probing, we need the LEP. Offset to the LEP is
+> encoded in st_other.
 > 
-> Introduce HAVE_ARCH_SYMBOL_HANDLING to indicate need for special
-> handling of symbols. In this patch, we override probe_function_filter()
-> on powerpc to account for dot symbols.
-
-This one looks better, does arch specific stuff in tools/perf/arch,
-good, some nits below.
- 
+> Signed-off-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
 > Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
 > ---
-> Changes from the previous patchset:
-> Introduced arch helper to override the way probe function filter works.
+> Changes from previous patchset:
+> Simplified logic by adding dependancy on HAVE_ARCH_SYMBOL_HANDLING. Also
+> generalized arch_elf_sym_decode() to be suitable for other architectures in
+> future.
 > 
->  tools/perf/arch/powerpc/Makefile            |  1 +
->  tools/perf/arch/powerpc/util/sym-handling.c | 28 ++++++++++++++++++++++++++++
->  tools/perf/config/Makefile                  |  1 +
->  tools/perf/util/probe-event.c               | 10 +++++-----
->  tools/perf/util/probe-event.h               |  5 +++++
->  5 files changed, 40 insertions(+), 5 deletions(-)
->  create mode 100644 tools/perf/arch/powerpc/util/sym-handling.c
+>  tools/perf/arch/powerpc/util/sym-handling.c | 10 ++++++++++
+>  tools/perf/util/symbol-elf.c                |  2 ++
+>  tools/perf/util/symbol.h                    |  6 ++++++
+>  3 files changed, 18 insertions(+)
 > 
-> diff --git a/tools/perf/arch/powerpc/Makefile b/tools/perf/arch/powerpc/Makefile
-> index 6f7782b..1c3d435 100644
-> --- a/tools/perf/arch/powerpc/Makefile
-> +++ b/tools/perf/arch/powerpc/Makefile
-> @@ -3,4 +3,5 @@ PERF_HAVE_DWARF_REGS := 1
->  LIB_OBJS += $(OUTPUT)arch/$(ARCH)/util/dwarf-regs.o
->  LIB_OBJS += $(OUTPUT)arch/$(ARCH)/util/skip-callchain-idx.o
->  endif
-> +LIB_OBJS += $(OUTPUT)arch/$(ARCH)/util/sym-handling.o
->  LIB_OBJS += $(OUTPUT)arch/$(ARCH)/util/header.o
 > diff --git a/tools/perf/arch/powerpc/util/sym-handling.c b/tools/perf/arch/powerpc/util/sym-handling.c
-> new file mode 100644
-> index 0000000..0a77825
-> --- /dev/null
+> index 0a77825..a27bfaf 100644
+> --- a/tools/perf/arch/powerpc/util/sym-handling.c
 > +++ b/tools/perf/arch/powerpc/util/sym-handling.c
-> @@ -0,0 +1,28 @@
-> +/*
-> + * Special symbol handling for PowerPC:
-> + * - Handle dot symbols on ABIv1
-> + *
-> + * Copyright (C) 2014 Naveen N Rao, IBM Corporation.
-> + *
-> + * This program is free software; you can redistribute it and/or
-> + * modify it under the terms of the GNU General Public License
-> + * as published by the Free Software Foundation; either version
-> + * 2 of the License, or (at your option) any later version.
-> + */
-> +
-> +#include "map.h"
-> +#include "symbol.h"
-> +#include "probe-event.h"
-> +
-> +int probe_function_filter(struct map *map __maybe_unused, struct symbol *sym)
-> +{
-> +	if (sym->binding == STB_GLOBAL || sym->binding == STB_LOCAL) {
-> +		if ((strcmp(looking_function_name, sym->name) == 0) ||
-> +		    (sym->name[0] == '.' && looking_function_name[0] != '.' &&
-> +		     strcmp(looking_function_name, sym->name+1) == 0)) {
-> +			num_matched_functions++;
-> +			return 0;
-> +		}
-> +	}
-> +	return 1;
-> +}
-> diff --git a/tools/perf/config/Makefile b/tools/perf/config/Makefile
-> index 5d4b039..35cf934 100644
-> --- a/tools/perf/config/Makefile
-> +++ b/tools/perf/config/Makefile
-> @@ -383,6 +383,7 @@ ifeq ($(ARCH),powerpc)
->    ifndef NO_DWARF
->      CFLAGS += -DHAVE_SKIP_CALLCHAIN_IDX
->    endif
-> +  CFLAGS += -DHAVE_ARCH_SYMBOL_HANDLING
-
-
-Dunno about this naming, looks too general: SYMBOL_HANDLING, but can't
-come to some better one now, anyone?
-
->  endif
->  
->  ifndef NO_LIBUNWIND
-> diff --git a/tools/perf/util/probe-event.c b/tools/perf/util/probe-event.c
-> index 74b7fef..7eb9b27 100644
-> --- a/tools/perf/util/probe-event.c
-> +++ b/tools/perf/util/probe-event.c
-> @@ -50,6 +50,8 @@
->  #define PERFPROBE_GROUP "probe"
->  
->  bool probe_event_dry_run;	/* Dry run flag */
-> +char *looking_function_name;
-> +int num_matched_functions;
->  
->  #define semantic_error(msg ...) pr_err("Semantic error :" msg)
->  
-> @@ -2210,11 +2212,8 @@ static int __add_probe_trace_events(struct perf_probe_event *pev,
->  	return ret;
->  }
->  
-> -static char *looking_function_name;
-> -static int num_matched_functions;
-> -
-> -static int probe_function_filter(struct map *map __maybe_unused,
-> -				      struct symbol *sym)
-> +#ifndef HAVE_ARCH_SYMBOL_HANDLING
-> +int probe_function_filter(struct map *map __maybe_unused, struct symbol *sym)
->  {
->  	if ((sym->binding == STB_GLOBAL || sym->binding == STB_LOCAL) &&
->  	    strcmp(looking_function_name, sym->name) == 0) {
-> @@ -2223,6 +2222,7 @@ static int probe_function_filter(struct map *map __maybe_unused,
+> @@ -1,8 +1,10 @@
+>  /*
+>   * Special symbol handling for PowerPC:
+>   * - Handle dot symbols on ABIv1
+> + * - Decode offset from Global entry point to Local entry point on ABIv2
+>   *
+>   * Copyright (C) 2014 Naveen N Rao, IBM Corporation.
+> + * Copyright (C) 2014 Ananth N Mavinakayanahalli, IBM Corporation.
+>   *
+>   * This program is free software; you can redistribute it and/or
+>   * modify it under the terms of the GNU General Public License
+> @@ -26,3 +28,11 @@ int probe_function_filter(struct map *map __maybe_unused, struct symbol *sym)
 >  	}
 >  	return 1;
 >  }
-> +#endif /* HAVE_ARCH_SYMBOL_HANDLING */
-
-Can't we do something like providing a weak function and let the linked
-to its work? I guess we have cases like this in tools/ already. I.e. not
-using the ifndef block. Minor nit tho.
-
+> +
+> +inline void arch_elf_sym_decode(GElf_Sym *sym __maybe_unused)
+> +{
+> +#if defined(_CALL_ELF) && _CALL_ELF == 2
+> +	if (sym && sym->st_other)
+> +		sym->st_value += PPC64_LOCAL_ENTRY_OFFSET(sym->st_other);
+> +#endif
+> +}
+> diff --git a/tools/perf/util/symbol-elf.c b/tools/perf/util/symbol-elf.c
+> index 7ac4e4c..557b63b 100644
+> --- a/tools/perf/util/symbol-elf.c
+> +++ b/tools/perf/util/symbol-elf.c
+> @@ -902,6 +902,8 @@ int dso__load_sym(struct dso *dso, struct map *map,
+>  		    (sym.st_value & 1))
+>  			--sym.st_value;
 >  
->  #define strdup_or_goto(str, label)	\
->  	({ char *__p = strdup(str); if (!__p) goto label; __p; })
-> diff --git a/tools/perf/util/probe-event.h b/tools/perf/util/probe-event.h
-> index e01e994..8564451 100644
-> --- a/tools/perf/util/probe-event.h
-> +++ b/tools/perf/util/probe-event.h
-> @@ -7,6 +7,8 @@
->  #include "strfilter.h"
->  
->  extern bool probe_event_dry_run;
-> +extern char *looking_function_name;
-> +extern int num_matched_functions;
-
->  
->  /* kprobe-tracer and uprobe-tracer tracing point */
->  struct probe_trace_point {
-> @@ -136,6 +138,9 @@ extern int show_available_vars(struct perf_probe_event *pevs, int npevs,
->  extern int show_available_funcs(const char *module, struct strfilter *filter,
->  				bool user);
->  
-> +extern int probe_function_filter(struct map *map __maybe_unused,
-> +					struct symbol *sym);
+> +		arch_elf_sym_decode(&sym);
 > +
 
-Please do not prefix function declarations with 'extern', even when we
-have one just before, its not needed, patches removing the existing ones
-would be accepted.
+arch_elf_sym_adjust()? 
 
->  /* Maximum index number of event-name postfix */
->  #define MAX_EVENT_INDEX	1024
+But this is done the right way, i.e. provide a way for arches to do
+adjustments specific to their ABIs, thanks!
+
+- Arnaldo
+
+>  		if (dso->kernel || kmodule) {
+>  			char dso_name[PATH_MAX];
 >  
+> diff --git a/tools/perf/util/symbol.h b/tools/perf/util/symbol.h
+> index 9d602e9..9e03cdf 100644
+> --- a/tools/perf/util/symbol.h
+> +++ b/tools/perf/util/symbol.h
+> @@ -294,4 +294,10 @@ int compare_proc_modules(const char *from, const char *to);
+>  int setup_list(struct strlist **list, const char *list_str,
+>  	       const char *list_name);
+>  
+> +#ifdef HAVE_ARCH_SYMBOL_HANDLING
+> +extern void arch_elf_sym_decode(GElf_Sym *sym __maybe_unused);
+> +#else
+> +static inline void arch_elf_sym_decode(GElf_Sym *sym __maybe_unused) { }
+> +#endif
+> +
+>  #endif /* __PERF_SYMBOL */
 > -- 
 > 2.1.3
