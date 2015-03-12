@@ -1,23 +1,24 @@
-Return-Path: <rjw@rjwysocki.net>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <linux@rasmusvillemoes.dk>
+Received: from mail-la0-x233.google.com (mail-la0-x233.google.com
+ [IPv6:2a00:1450:4010:c03::233])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 965F71A0394
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Mar 2015 10:01:27 +1100 (AEDT)
-Received: from v094114.home.net.pl (v094114.home.net.pl [79.96.170.134])
- by ozlabs.org (Postfix) with SMTP id DE3241400EA
- for <linuxppc-dev@ozlabs.org>; Fri, 13 Mar 2015 10:01:22 +1100 (AEDT)
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To: Yuantian.Tang@freescale.com
-Subject: Re: [PATCH 1/2 v4] cpufreq: qoriq: Make the driver usable on all
- QorIQ platforms
-Date: Fri, 13 Mar 2015 00:18:29 +0100
-Message-ID: <2439490.9WNany9TAP@vostro.rjw.lan>
-In-Reply-To: <1425353932-713-1-git-send-email-Yuantian.Tang@freescale.com>
-References: <1425353932-713-1-git-send-email-Yuantian.Tang@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8B2B71A0394
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Mar 2015 10:09:26 +1100 (AEDT)
+Received: by lams18 with SMTP id s18so19232790lam.2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Mar 2015 16:09:21 -0700 (PDT)
+Received: from morgan.rasmusvillemoes.dk (ip-21-165.bnaa.dk. [84.238.21.165])
+ by mx.google.com with ESMTPSA id k3sm47607lah.40.2015.03.12.16.09.20
+ for <linuxppc-dev@lists.ozlabs.org>
+ (version=TLSv1.2 cipher=RC4-SHA bits=128/128);
+ Thu, 12 Mar 2015 16:09:20 -0700 (PDT)
+From: Rasmus Villemoes <linux@rasmusvillemoes.dk>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: new decimal conversion - seeking testers
+Date: Fri, 13 Mar 2015 00:09:19 +0100
+Message-ID: <87fv99x17k.fsf@rasmusvillemoes.dk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: linuxppc-dev@ozlabs.org, viresh.kumar@linaro.org, linux-pm@vger.kernel.org
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,25 +28,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tuesday, March 03, 2015 11:38:51 AM Yuantian.Tang@freescale.com wrote:
-> From: Tang Yuantian <Yuantian.Tang@freescale.com>
-> 
-> Freescale introduced new ARM core-based SoCs which support dynamic
-> frequency switch feature. DFS on new SoCs are compatible with current
-> PowerPC CoreNet platforms. In order to support those new platforms,
-> this driver needs to be updated. The main changes include:
-> 
-> 1. Changed the names of functions in driver.
-> 2. Added two new functions get_cpu_physical_id() and get_bus_freq().
-> 3. Used a new way to get the CPU mask which share clock wire.
-> 
-> Signed-off-by: Tang Yuantian <Yuantian.Tang@freescale.com>
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+Hi,
 
-That doesn't apply for me on top of 4.0-rc3.  Can you please rebase and
-resubmit?
+I've proposed a new implementation of decimal conversion for
+lib/vsprintf.c; see
+<http://thread.gmane.org/gmane.linux.kernel/1892035/focus=1905478>.
+Benchmarking so far shows 25-50% (depending on distribution of input
+numbers) improvement on x86_64 and 10-30% on various 32 bit platforms.
 
+Since the new code plays a little endianness game I would really
+appreciate it if someone here would run the test and verification code
+on ppc.
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+The code is on github, https://github.com/Villemoes/dec, and it should
+be as simple as
+
+   git clone https://github.com/Villemoes/dec.git
+   cd dec
+   make
+   ./test   # benchmark
+   ./verify # correctness
+
+though I can't blame you if you want to inspect the code before
+compiling and running something some stranger asks you to download :-)
+See also the README file.
+
+If 'make' doesn't work out-of-the-box, I'd also like to hear from you.
+
+Thanks,
+Rasmus
