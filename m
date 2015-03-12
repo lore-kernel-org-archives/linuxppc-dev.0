@@ -1,24 +1,19 @@
 Return-Path: <sasha.levin@oracle.com>
-Received: from aserp1050.oracle.com (aserp1050.oracle.com [141.146.126.70])
+Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 35EB61A0CC8
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Mar 2015 23:41:57 +1100 (AEDT)
-Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
- by aserp1050.oracle.com (Sentrion-MTA-4.3.2/Sentrion-MTA-4.3.2) with ESMTP id
- t2CCfs3T022537
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Mar 2015 12:41:55 GMT
-Message-ID: <55018936.5080805@oracle.com>
-Date: Thu, 12 Mar 2015 08:40:22 -0400
+ by lists.ozlabs.org (Postfix) with ESMTPS id 912F81A0745
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Mar 2015 23:52:38 +1100 (AEDT)
+Message-ID: <55018BBC.6010903@oracle.com>
+Date: Thu, 12 Mar 2015 08:51:08 -0400
 From: Sasha Levin <sasha.levin@oracle.com>
 MIME-Version: 1.0
-To: Michael Ellerman <mpe@ellerman.id.au>
+To: Pekka Enberg <penberg@iki.fi>, linux-kernel@vger.kernel.org
 Subject: Re: [PATCH] mm: kill kmemcheck
 References: <1426074547-21888-1-git-send-email-sasha.levin@oracle.com>
- <1426132192.25936.7.camel@ellerman.id.au>
-In-Reply-To: <1426132192.25936.7.camel@ellerman.id.au>
-Content-Type: text/plain; charset=utf-8
+ <55013B38.6040100@iki.fi>
+In-Reply-To: <55013B38.6040100@iki.fi>
+Content-Type: text/plain; charset=windows-1252
 Cc: Vladimir Davydov <vdavydov@parallels.com>,
  Geert Uytterhoeven <geert+renesas@glider.be>,
  SUPERH <linux-sh@vger.kernel.org>, Catalin Marinas <catalin.marinas@arm.com>,
@@ -39,7 +34,7 @@ Cc: Vladimir Davydov <vdavydov@parallels.com>,
  Willem de Bruijn <willemb@google.com>,
  Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
  Randy Dunlap <rdunlap@infradead.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- linux-kernel@vger.kernel.org, Rabin Vincent <rabin@rab.in>,
+ Rabin Vincent <rabin@rab.in>,
  "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
  Jiri Kosina <jkosina@suse.cz>, Tejun Heo <tj@kernel.org>,
  Andrew Morton <akpm@linux-foundation.org>, Patrick McHardy <kaber@trash.net>,
@@ -70,11 +65,11 @@ Cc: Vladimir Davydov <vdavydov@parallels.com>,
  "moderated list:OPENRISC ARCHITEC..." <linux@lists.openrisc.net>,
  Guan Xuetao <gxt@mprc.pku.edu.cn>, Sam Ravnborg <sam@ravnborg.org>,
  Jonathan Corbet <corbet@lwn.net>, Andrey Ryabinin <a.ryabinin@samsung.com>,
- Dexuan Cui <decui@microsoft.com>, Suresh Siddha <sbsiddha@gmail.com>,
+ Dexuan Cui <decui@microsoft.com>, Vegard Nossum <vegardno@ifi.uio.no>,
  Alexey Kuznetsov <kuznet@ms2.inr.ac.ru>,
  "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
  Fenghua Yu <fenghua.yu@intel.com>, Kees Cook <keescook@chromium.org>,
- Arnd Bergmann <arnd@arndb.de>, Vegard Nossum <vegardno@ifi.uio.no>,
+ Arnd Bergmann <arnd@arndb.de>, Suresh Siddha <sbsiddha@gmail.com>,
  Josh Triplett <josh@joshtriplett.org>, Steven Rostedt <rostedt@goodmis.org>,
  Borislav Petkov <bp@alien8.de>, Andrey Konovalov <adech.fo@gmail.com>,
  Scott Wood <scottwood@freescale.com>,
@@ -115,8 +110,10 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03/11/2015 11:49 PM, Michael Ellerman wrote:
-> On Wed, 2015-03-11 at 07:43 -0400, Sasha Levin wrote:
+On 03/12/2015 03:07 AM, Pekka Enberg wrote:
+> Hi Sasha,
+> 
+> On 3/11/15 1:43 PM, Sasha Levin wrote:
 >> As discussed on LSF/MM, kill kmemcheck.
 >>
 >> KASan is a replacement that is able to work without the limitation of
@@ -124,22 +121,24 @@ On 03/11/2015 11:49 PM, Michael Ellerman wrote:
 >>
 >> We are also not aware of any users of kmemcheck (or users who don't consider
 >> KASan as a suitable replacement).
+>>
+>> I've build tested it using all[yes,no,mod]config and fuzzed a bit with this
+>> patch applied, didn't notice any bad behaviour.
+>>
+>> Signed-off-by: Sasha Levin <sasha.levin@oracle.com>
 > 
-> From Documentation/kasan.txt:
-> 
->     therefore you will need a certain version of GCC > 4.9.2
-> 
-> AFAIK gcc 4.9.3 hasn't been released yet. (Or does it mean >= 4.9.2 ?)
-> 
-> Can we perhaps wait until there is a released version of GCC that supports
-> KASan? And maybe then a touch longer so folks can test it works on their
-> platforms?
+> Can you elaborate on what exactly was discussed at LSF/MM? Preferably in the commit log. ;-)
 
-I think this is just an off-by-one in the documentation. The cover letter for
-the KASan patchset stated:
+There wasn't a long discussion about removing kmemcheck, it just followed up
+a KASan topic and the question of whether kmemcheck can be deprecated now
+that KASan is merged came up.
 
-	KASAN uses compile-time instrumentation for checking every memory access, therefore you
-	will need a fresh GCC >= v4.9.2
+No one at the room didn't use it, knew a user of it, or couldn't describe a
+usecase where kmemcheck was superior to KASan - so the conclusion was to try
+and replace it.
+
+The only thing I can really put in the changelog is a reference to the KASan
+docs and to ask folks to complain loudly if we missed a usecase.
 
 
 Thanks,
