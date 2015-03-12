@@ -1,13 +1,21 @@
 Return-Path: <christophe.leroy@c-s.fr>
 Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id 48C2B1A075A
+ by lists.ozlabs.org (Postfix) with ESMTP id 48BCA1A0196
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Mar 2015 02:35:46 +1100 (AEDT)
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-To: Vitaly Bordug <vitb@kernel.crashing.org>,
- Pantelis Antoniou <pantelis.antoniou@gmail.com>
-Subject: [PATCH 4/8] net: freescale: replace CONFIG_8xx by CONFIG_PPC_8xx
-Message-Id: <20150312152354.A47721A241F@localhost.localdomain>
-Date: Thu, 12 Mar 2015 16:23:54 +0100 (CET)
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Vitaly Bordug <vitb@kernel.crashing.org>, scottwood@freescale.com,
+ Jeff Dike <jdike@addtoit.com>, Richard Weinberger <richard@nod.at>,
+ Jean-Christophe Plagniol-Villard <plagnioj@jcrosoft.com>,
+ Tomi Valkeinen <tomi.valkeinen@ti.com>,
+ Pantelis Antoniou <pantelis.antoniou@gmail.com>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby <jslaby@suse.cz>,
+ David Woodhouse <dwmw2@infradead.org>,
+ Brian Norris <computersforpeace@gmail.com>, Karsten Keil <isdn@linux-pingi.de>
+Subject: [PATCH 0/8] powerpc/8xx: Getting rid of CONFIG_8xx
+Message-Id: <20150312152420.11C821A2425@localhost.localdomain>
+Date: Thu, 12 Mar 2015 16:24:20 +0100 (CET)
 Cc: linux-fbdev@vger.kernel.org, linux-serial@vger.kernel.org,
  user-mode-linux-devel@lists.sourceforge.net, netdev@vger.kernel.org,
  linux-kernel@vger.kernel.org, linux-mtd@lists.infradead.org,
@@ -34,38 +42,58 @@ comment about CONFIG_8xx item for some years:
 It looks like not many places still have that old CONFIG_8xx used,
 so it is likely to be a good time to get rid of it completely ?
 
+Patchset is composed of the following patches:
+[1/8] powerpc: replace CONFIG_8xx by CONFIG_PPC_8xx
+[2/8] um: replace CONFIG_8xx by CONFIG_PPC_8xx
+[3/8] video: replace CONFIG_8xx by CONFIG_PPC_8xx
+[4/8] net: freescale: replace CONFIG_8xx by CONFIG_PPC_8xx
+[5/8] tty: cpm_uart: replace CONFIG_8xx by CONFIG_CPM1
+[6/8] mtd: replace CONFIG_8xx by CONFIG_PPC_8xx
+[7/8] isdn: replace CONFIG_8xx by CONFIG_PPC_8xx
+[8/8] powerpc: get rid of CONFIG_8xx
+
+All but the last one are independant and can be applied in any
+order. Only the 8th one requires the first 7 patches to be applied.
+
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
 ---
- drivers/net/ethernet/freescale/fs_enet/mac-fec.c | 2 +-
- drivers/net/ethernet/freescale/fs_enet/mac-scc.c | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/net/ethernet/freescale/fs_enet/mac-fec.c b/drivers/net/ethernet/freescale/fs_enet/mac-fec.c
-index b34214e..0e02bb4 100644
---- a/drivers/net/ethernet/freescale/fs_enet/mac-fec.c
-+++ b/drivers/net/ethernet/freescale/fs_enet/mac-fec.c
-@@ -38,7 +38,7 @@
- #include <asm/irq.h>
- #include <asm/uaccess.h>
- 
--#ifdef CONFIG_8xx
-+#ifdef CONFIG_PPC_8xx
- #include <asm/8xx_immap.h>
- #include <asm/pgtable.h>
- #include <asm/cpm1.h>
-diff --git a/drivers/net/ethernet/freescale/fs_enet/mac-scc.c b/drivers/net/ethernet/freescale/fs_enet/mac-scc.c
-index 7a184e8..eec8963 100644
---- a/drivers/net/ethernet/freescale/fs_enet/mac-scc.c
-+++ b/drivers/net/ethernet/freescale/fs_enet/mac-scc.c
-@@ -37,7 +37,7 @@
- #include <asm/irq.h>
- #include <asm/uaccess.h>
- 
--#ifdef CONFIG_8xx
-+#ifdef CONFIG_PPC_8xx
- #include <asm/8xx_immap.h>
- #include <asm/pgtable.h>
- #include <asm/cpm1.h>
--- 
-2.1.0
+ arch/powerpc/Kconfig                             | 10 +++++-----
+ arch/powerpc/Makefile                            |  2 +-
+ arch/powerpc/boot/Makefile                       |  4 ++--
+ arch/powerpc/boot/util.S                         |  6 +++---
+ arch/powerpc/include/asm/cache.h                 |  2 +-
+ arch/powerpc/include/asm/cputable.h              |  4 ++--
+ arch/powerpc/include/asm/fs_pd.h                 |  2 +-
+ arch/powerpc/include/asm/pgtable-ppc32.h         |  2 +-
+ arch/powerpc/include/asm/ppc_asm.h               |  4 ++--
+ arch/powerpc/include/asm/reg.h                   | 10 +++++-----
+ arch/powerpc/include/asm/timex.h                 |  4 ++--
+ arch/powerpc/kernel/Makefile                     |  2 +-
+ arch/powerpc/kernel/cputable.c                   |  4 ++--
+ arch/powerpc/kernel/irq.c                        |  2 +-
+ arch/powerpc/kernel/kgdb.c                       |  4 ++--
+ arch/powerpc/kernel/misc_32.S                    |  4 ++--
+ arch/powerpc/kernel/traps.c                      |  6 +++---
+ arch/powerpc/kernel/vdso32/gettimeofday.S        |  2 +-
+ arch/powerpc/mm/fault.c                          |  4 ++--
+ arch/powerpc/mm/init_32.c                        |  4 ++--
+ arch/powerpc/mm/mem.c                            |  2 +-
+ arch/powerpc/mm/mmu_decl.h                       | 12 ++++++------
+ arch/powerpc/mm/tlb_nohash_low.S                 |  2 +-
+ arch/powerpc/platforms/8xx/Kconfig               |  3 +--
+ arch/powerpc/platforms/Kconfig.cputype           |  7 +------
+ arch/powerpc/sysdev/Makefile                     |  2 +-
+ arch/powerpc/sysdev/fsl_soc.c                    |  3 ++-
+ arch/powerpc/sysdev/fsl_soc.h                    |  3 ++-
+ arch/powerpc/xmon/xmon.c                         |  2 +-
+ arch/um/sys-ppc/misc.S                           | 12 ++++++------
+ drivers/isdn/hardware/mISDN/Kconfig              |  4 ++--
+ drivers/mtd/maps/Kconfig                         |  2 +-
+ drivers/net/ethernet/freescale/fs_enet/mac-fec.c |  2 +-
+ drivers/net/ethernet/freescale/fs_enet/mac-scc.c |  2 +-
+ drivers/tty/serial/Kconfig                       |  2 +-
+ drivers/tty/serial/cpm_uart/Makefile             |  2 +-
+ drivers/tty/serial/cpm_uart/cpm_uart.h           |  2 +-
+ drivers/video/console/Kconfig                    |  2 +-
+ 38 files changed, 72 insertions(+), 76 deletions(-)
