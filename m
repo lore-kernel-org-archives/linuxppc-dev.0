@@ -1,24 +1,21 @@
-Return-Path: <linux@rasmusvillemoes.dk>
-Received: from mail-la0-x233.google.com (mail-la0-x233.google.com
- [IPv6:2a00:1450:4010:c03::233])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8B2B71A0394
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Mar 2015 10:09:26 +1100 (AEDT)
-Received: by lams18 with SMTP id s18so19232790lam.2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Mar 2015 16:09:21 -0700 (PDT)
-Received: from morgan.rasmusvillemoes.dk (ip-21-165.bnaa.dk. [84.238.21.165])
- by mx.google.com with ESMTPSA id k3sm47607lah.40.2015.03.12.16.09.20
- for <linuxppc-dev@lists.ozlabs.org>
- (version=TLSv1.2 cipher=RC4-SHA bits=128/128);
- Thu, 12 Mar 2015 16:09:20 -0700 (PDT)
-From: Rasmus Villemoes <linux@rasmusvillemoes.dk>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: new decimal conversion - seeking testers
-Date: Fri, 13 Mar 2015 00:09:19 +0100
-Message-ID: <87fv99x17k.fsf@rasmusvillemoes.dk>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 86A9A1A0394
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Mar 2015 10:26:32 +1100 (AEDT)
+Message-ID: <1426202791.2772.1.camel@ellerman.id.au>
+Subject: Re: [RFC] powerpc: e6500 optimised copy_to_user/copy_from_user
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Kim Phillips <kim.phillips@freescale.com>
+Date: Fri, 13 Mar 2015 10:26:31 +1100
+In-Reply-To: <20150312174549.2b735117897e772bc91e29a4@freescale.com>
+References: <20150312174549.2b735117897e772bc91e29a4@freescale.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ Anton Blanchard <anton@samba.org>, scottwood@freescale.com,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,32 +25,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi,
+On Thu, 2015-03-12 at 17:45 -0500, Kim Phillips wrote:
+> This mimics commit a66086b8197da8dc83b698642d5947ff850e708d "powerpc:
+> POWER7 optimised copy_to_user/copy_from_user using VMX", but for
+> the e6500, or BOOK3S_64.  Changes have been made for the smaller
+> cacheline size (64 bytes on e6500), and data cache block touch (dcbt)
+> instructions have been rewritten to prefetch 8 lines ahead, based
+> on preliminary benchmark results and perf -e L1-dcache-prefetches
+> and misses observations.
+> 
+> We see a gain of 5% in large netperf benchmarks between two T4240s,
+> both in terms of throughput, and latency.  The same netperf
+> lo(opback) test improves 27%.
+> 
+> Anton's microbenchmark results show a clear linear improvement path
+> with sizes 32KB and above, where, below that, the additional overhead
+> over the existing copyuser_64 implementation shows its head: e.g., 6%
+> for 1448 byte copies.  The observed transfer sizes under large,
+> netperf benchmarks show the TCP stack is invoking copies on the
+> order of a few 10's of KB, however. 1MB transfers are 30% better-off
+> on wall clock time.
+> 
+> RFC because of the following known issues:
+> - unsure if PPC_BOOK3E_64 vs. PPC_BOOK3S_64 build-time switch to
+>   re-target __copy_tofrom_user_vmx is appropriate (ppc64_defconfig
+>   builds fine, however)
 
-I've proposed a new implementation of decimal conversion for
-lib/vsprintf.c; see
-<http://thread.gmane.org/gmane.linux.kernel/1892035/focus=1905478>.
-Benchmarking so far shows 25-50% (depending on distribution of input
-numbers) improvement on x86_64 and 10-30% on various 32 bit platforms.
+That's fine, a combined kernel is not really on the horizon.
 
-Since the new code plays a little endianness game I would really
-appreciate it if someone here would run the test and verification code
-on ppc.
+> - syscalls report deficits when folding vmx_unaligned_copy to a 64B
+>   cacheline (undone for this RFC)
+> - any consideration for the e5500?
+> - asm branch label re-enumeration
+> - ..I'm sure I've missed another couple of things, possibly
+> including how to fix lower-sized transfer performance
 
-The code is on github, https://github.com/Villemoes/dec, and it should
-be as simple as
+Well the big issue for me is the code duplication. The diff between the
+original and yours is not small, but it looks like doing a combined version
+*should* be possible?
 
-   git clone https://github.com/Villemoes/dec.git
-   cd dec
-   make
-   ./test   # benchmark
-   ./verify # correctness
+If you take out the 8 line prefetch changes it looks like it's just the
+cacheline size that is the issue?
 
-though I can't blame you if you want to inspect the code before
-compiling and running something some stranger asks you to download :-)
-See also the README file.
-
-If 'make' doesn't work out-of-the-box, I'd also like to hear from you.
-
-Thanks,
-Rasmus
+cheers
