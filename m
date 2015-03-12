@@ -1,17 +1,19 @@
 Return-Path: <haokexin@gmail.com>
-Received: from mail-yh0-x22d.google.com (mail-yh0-x22d.google.com
- [IPv6:2607:f8b0:4002:c01::22d])
+Received: from mail-yh0-x233.google.com (mail-yh0-x233.google.com
+ [IPv6:2607:f8b0:4002:c01::233])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E94FE1A019A
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Mar 2015 23:33:07 +1100 (AEDT)
-Received: by yhl29 with SMTP id 29so8058020yhl.0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Mar 2015 05:33:04 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id EC07C1A019A
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Mar 2015 23:33:09 +1100 (AEDT)
+Received: by yhai57 with SMTP id i57so8028268yha.6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Mar 2015 05:33:07 -0700 (PDT)
 From: Kevin Hao <haokexin@gmail.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH v3 0/9] powerpc: kill PPC_OF
-Date: Thu, 12 Mar 2015 20:32:41 +0800
-Message-Id: <1426163570-10281-1-git-send-email-haokexin@gmail.com>
+Subject: [PATCH v3 1/9] sata_svw: remove the dependency on PPC_OF
+Date: Thu, 12 Mar 2015 20:32:42 +0800
+Message-Id: <1426163570-10281-2-git-send-email-haokexin@gmail.com>
+In-Reply-To: <1426163570-10281-1-git-send-email-haokexin@gmail.com>
+References: <1426163570-10281-1-git-send-email-haokexin@gmail.com>
 Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -22,46 +24,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Michael,
+The OF functionality has moved to a common place and be used by many
+archs. So we don't need to include the ppc arch specific header files
+and depend on PPC_OF option any more. This is a preparation for
+killing PPC_OF.
 
-Finally I got all the acks for these patches. The following two patches in v2
-were merged into next now.
-	213dce3c17a6 ("tty: kconfig: remove the superfluous dependency on PPC_OF")
-	f4e074f20cad ("mmc: kconfig: replace PPC_OF with PPC")
+Signed-off-by: Kevin Hao <haokexin@gmail.com>
+Acked-by: Tejun Heo <tj@kernel.org>
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+ drivers/ata/sata_svw.c | 11 +----------
+ 1 file changed, 1 insertion(+), 10 deletions(-)
 
-So we may have dependency issue if we put this series into 4.1.
-
-v3: No codes change, just add the acks from Ben and Tomi.
-
-Kevin Hao (9):
-  sata_svw: remove the dependency on PPC_OF
-  fbdev: aty128fb: replace PPC_OF with PPC
-  fbdev: radeon: replace PPC_OF with PPC
-  fbdev: imsttfb: remove the dependency on PPC_OF
-  fbdev: nvidia: remove the dependency on PPC_OF
-  fbdev: riva: remove the dependency on PPC_OF
-  fbdev: remove the unnecessary includes of ppc specific header files
-  fbdev: kconfig: replace PPC_OF with PPC
-  powerpc: kill PPC_OF
-
- arch/powerpc/Kconfig                     |  3 ---
- arch/powerpc/Kconfig.debug               |  2 +-
- arch/powerpc/kernel/Makefile             |  4 ++--
- drivers/ata/sata_svw.c                   | 11 +----------
- drivers/video/fbdev/Kconfig              |  4 ++--
- drivers/video/fbdev/aty/aty128fb.c       |  4 ++--
- drivers/video/fbdev/aty/radeon_base.c    | 24 ++++++++++++------------
- drivers/video/fbdev/aty/radeon_monitor.c | 20 ++++++++++----------
- drivers/video/fbdev/aty/radeon_pm.c      | 16 ++++++++--------
- drivers/video/fbdev/aty/radeonfb.h       |  4 ++--
- drivers/video/fbdev/core/fbmon.c         |  4 ----
- drivers/video/fbdev/imsttfb.c            |  6 +-----
- drivers/video/fbdev/nvidia/Makefile      |  3 +--
- drivers/video/fbdev/nvidia/nv_of.c       |  3 ---
- drivers/video/fbdev/nvidia/nv_proto.h    |  8 --------
- drivers/video/fbdev/nvidia/nvidia.c      |  4 ----
- drivers/video/fbdev/riva/fbdev.c         | 17 +++++++----------
- 17 files changed, 49 insertions(+), 88 deletions(-)
-
+diff --git a/drivers/ata/sata_svw.c b/drivers/ata/sata_svw.c
+index c630fa812624..4c06f6281d74 100644
+--- a/drivers/ata/sata_svw.c
++++ b/drivers/ata/sata_svw.c
+@@ -47,11 +47,7 @@
+ #include <scsi/scsi_cmnd.h>
+ #include <scsi/scsi.h>
+ #include <linux/libata.h>
+-
+-#ifdef CONFIG_PPC_OF
+-#include <asm/prom.h>
+-#include <asm/pci-bridge.h>
+-#endif /* CONFIG_PPC_OF */
++#include <linux/of.h>
+ 
+ #define DRV_NAME	"sata_svw"
+ #define DRV_VERSION	"2.3"
+@@ -320,7 +316,6 @@ static u8 k2_stat_check_status(struct ata_port *ap)
+ 	return readl(ap->ioaddr.status_addr);
+ }
+ 
+-#ifdef CONFIG_PPC_OF
+ static int k2_sata_show_info(struct seq_file *m, struct Scsi_Host *shost)
+ {
+ 	struct ata_port *ap;
+@@ -350,14 +345,10 @@ static int k2_sata_show_info(struct seq_file *m, struct Scsi_Host *shost)
+ 	}
+ 	return 0;
+ }
+-#endif /* CONFIG_PPC_OF */
+-
+ 
+ static struct scsi_host_template k2_sata_sht = {
+ 	ATA_BMDMA_SHT(DRV_NAME),
+-#ifdef CONFIG_PPC_OF
+ 	.show_info		= k2_sata_show_info,
+-#endif
+ };
+ 
+ 
 -- 
 2.1.0
