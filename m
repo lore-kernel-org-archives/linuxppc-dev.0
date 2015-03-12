@@ -1,21 +1,19 @@
 Return-Path: <acme@kernel.org>
 Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
- by lists.ozlabs.org (Postfix) with ESMTP id 9B1B51A0D10
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Mar 2015 07:25:16 +1100 (AEDT)
-Date: Thu, 12 Mar 2015 17:25:11 -0300
+ by lists.ozlabs.org (Postfix) with ESMTP id 107D21A04B7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Mar 2015 07:28:23 +1100 (AEDT)
+Date: Thu, 12 Mar 2015 17:26:50 -0300
 From: Arnaldo Carvalho de Melo <acme@kernel.org>
-To: Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>
-Subject: Re: [PATCHv2 2/8] perf probe: Improve detection of file/function
- name in the probe pattern
-Message-ID: <20150312202511.GE3550@kernel.org>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Subject: Re: [PATCHv2 4/8] perf probe powerpc: Handle powerpc dot symbols
+Message-ID: <20150312202650.GF3550@kernel.org>
 References: <cover.1418654435.git.naveen.n.rao@linux.vnet.ibm.com>
- <d60cf320bc3d51ca8980e48bc31044cacba8a920.1418654436.git.naveen.n.rao@linux.vnet.ibm.com>
- <20150312202414.GD3550@kernel.org>
+ <09c7f8741ea27aea8666f9d0e9caa828ff40fba9.1418654436.git.naveen.n.rao@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150312202414.GD3550@kernel.org>
+In-Reply-To: <09c7f8741ea27aea8666f9d0e9caa828ff40fba9.1418654436.git.naveen.n.rao@linux.vnet.ibm.com>
 Cc: linux-kernel@vger.kernel.org, David Ahern <dsahern@gmail.com>,
- "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>,
  linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -26,75 +24,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Em Thu, Mar 12, 2015 at 05:24:14PM -0300, Arnaldo Carvalho de Melo escreveu:
-> Em Mon, Dec 15, 2014 at 08:20:32PM +0530, Naveen N. Rao escreveu:
-> > Currently, perf probe considers patterns including a '.' to be a file.
-> > However, this causes problems on powerpc ABIv1 where all functions have
-> > a leading '.':
-> > 
-> >   $ perf probe -F | grep schedule_timeout_interruptible
-> >   .schedule_timeout_interruptible
-> >   $ perf probe .schedule_timeout_interruptible
-> >   Semantic error :File always requires line number or lazy pattern.
-> >     Error: Command Parse Error.
-> > 
-> > Fix this by checking the probe pattern in more detail.
+Em Mon, Dec 15, 2014 at 08:20:34PM +0530, Naveen N. Rao escreveu:
+> Fix up various perf aspects related to ppc64's usage of dot functions:
+> - ignore leading '.' when generating event names and when looking for
+>   existing events.
+> - use the proper prefix when ignoring SyS symbol lookups.
 > 
-> Masami, can I have your Acked-by or Reviewed-by?
+> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+> ---
+>  tools/perf/util/probe-event.c | 8 ++++++++
+>  tools/perf/util/symbol.c      | 6 ++++++
+>  2 files changed, 14 insertions(+)
+> 
+> diff --git a/tools/perf/util/probe-event.c b/tools/perf/util/probe-event.c
+> index 9943ff3..74b7fef 100644
+> --- a/tools/perf/util/probe-event.c
+> +++ b/tools/perf/util/probe-event.c
+> @@ -2080,6 +2080,10 @@ static int get_new_event_name(char *buf, size_t len, const char *base,
+>  {
+>  	int i, ret;
+>  
+> +	/* Skip the leading dot on powerpc */
+> +	if (*base == '.')
+> +		base++;
+> +
+>  	/* Try no suffix */
+>  	ret = e_snprintf(buf, len, "%s", base);
+>  	if (ret < 0) {
+> @@ -2538,6 +2542,10 @@ int del_perf_probe_events(struct strlist *dellist)
+>  			event = str;
+>  		}
+>  
+> +		/* Skip the leading dot on powerpc */
 
-It is limited to powerpc, but I would even so be happy if you could look
-at it,
+Ok, but this is not powerpc specific code, is it?
 
-Thanks,
-
-- Arnaldo
- 
-> > Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
-> > ---
-> >  tools/perf/util/probe-event.c | 23 ++++++++++++++++++++---
-> >  1 file changed, 20 insertions(+), 3 deletions(-)
-> > 
-> > diff --git a/tools/perf/util/probe-event.c b/tools/perf/util/probe-event.c
-> > index 28eb141..9943ff3 100644
-> > --- a/tools/perf/util/probe-event.c
-> > +++ b/tools/perf/util/probe-event.c
-> > @@ -999,6 +999,24 @@ static int parse_perf_probe_point(char *arg, struct perf_probe_event *pev)
-> >  		arg = tmp;
-> >  	}
-> >  
-> > +	/*
-> > +	 * Check arg is function or file name and copy it.
-> > +	 *
-> > +	 * We consider arg to be a file spec if and only if it satisfies
-> > +	 * all of the below criteria::
-> > +	 * - it does not include any of "+@%",
-> > +	 * - it includes one of ":;", and
-> > +	 * - it has a period '.' in the name.
-> > +	 *
-> > +	 * Otherwise, we consider arg to be a function specification.
-> > +	 */
-> > +	c = 0;
-> > +	if (!strpbrk(arg, "+@%") && (ptr = strpbrk(arg, ";:")) != NULL) {
-> > +		/* This is a file spec if it includes a '.' before ; or : */
-> > +		if (memchr(arg, '.', ptr-arg))
-> > +			c = 1;
-> > +	}
-> > +
-> >  	ptr = strpbrk(arg, ";:+@%");
-> >  	if (ptr) {
-> >  		nc = *ptr;
-> > @@ -1009,10 +1027,9 @@ static int parse_perf_probe_point(char *arg, struct perf_probe_event *pev)
-> >  	if (tmp == NULL)
-> >  		return -ENOMEM;
-> >  
-> > -	/* Check arg is function or file and copy it */
-> > -	if (strchr(tmp, '.'))	/* File */
-> > +	if (c == 1)
-> >  		pp->file = tmp;
-> > -	else			/* Function */
-> > +	else
-> >  		pp->function = tmp;
-> >  
-> >  	/* Parse other options */
-> > -- 
-> > 2.1.3
+> +		if (event && *event == '.')
+> +			event++;
+> +
+>  		ret = e_snprintf(buf, 128, "%s:%s", group, event);
+>  		if (ret < 0) {
+>  			pr_err("Failed to copy event.");
+> diff --git a/tools/perf/util/symbol.c b/tools/perf/util/symbol.c
+> index c24c5b8..e7b9bae 100644
+> --- a/tools/perf/util/symbol.c
+> +++ b/tools/perf/util/symbol.c
+> @@ -139,6 +139,12 @@ static int choose_best_symbol(struct symbol *syma, struct symbol *symb)
+>  	if (na >= 10 && !strncmp(syma->name, "compat_SyS", 10))
+>  		return SYMBOL_B;
+>  
+> +	/* On powerpc, ignore the dot variants */
+> +	if (na >= 4 && !strncmp(syma->name, ".SyS", 4))
+> +		return SYMBOL_B;
+> +	if (na >= 11 && !strncmp(syma->name, ".compat_SyS", 11))
+> +		return SYMBOL_B;
+> +
+>  	return SYMBOL_A;
+>  }
+>  
+> -- 
+> 2.1.3
