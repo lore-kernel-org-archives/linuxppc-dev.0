@@ -1,22 +1,22 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B7CAB1A074A
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Mar 2015 18:15:08 +1100 (AEDT)
-Message-ID: <1426230888.17565.164.camel@kernel.crashing.org>
-Subject: Re: [RFC] powerpc: use ticket spin lock for !CONFIG_PPC_SPLPAR
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Date: Fri, 13 Mar 2015 18:14:48 +1100
-In-Reply-To: <1426230541.23806.5.camel@ellerman.id.au>
-References: <1426157723-28548-1-git-send-email-haokexin@gmail.com>
- <1426158807.17565.131.camel@kernel.crashing.org>
- <1426230541.23806.5.camel@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id DE4C91A084B
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Mar 2015 18:16:42 +1100 (AEDT)
+Message-ID: <1426231002.23806.6.camel@ellerman.id.au>
+Subject: Re: [PATCH 2/2] selftests/powerpc: Add a test of the
+ switch_endian() syscall
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Ram Pai <linuxram@us.ibm.com>
+Date: Fri, 13 Mar 2015 18:16:42 +1100
+In-Reply-To: <20150313071054.GA5064@ram.oc3035372033.ibm.com>
+References: <1426221564-15086-1-git-send-email-mpe@ellerman.id.au>
+ <1426221564-15086-2-git-send-email-mpe@ellerman.id.au>
+ <20150313071054.GA5064@ram.oc3035372033.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, Kevin Hao <haokexin@gmail.com>,
- Sam Bobroff <sam.bobroff@au1.ibm.com>, Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@ozlabs.org, Jeremy Kerr <jk@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,53 +26,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2015-03-13 at 18:09 +1100, Michael Ellerman wrote:
-> On Thu, 2015-03-12 at 22:13 +1100, Benjamin Herrenschmidt wrote:
-> > On Thu, 2015-03-12 at 18:55 +0800, Kevin Hao wrote:
-> > > I know Torsten Duwe has tried to add the ticket spinlock for powerpc
-> > > one year ago [1]. But it make no progress due to the conflict between
-> > > PPC_SPLPAR and lockref. We still don't find a better way to handle
-> > > this. But instead of waiting forever for a perfect solution, can't we
-> > > just use the ticket spinlock for the !CONFIG_PPC_SPLPAR?
-> > > 
-> > > This is a very rough patch based on arm64 codes. I want to make sure
-> > > that this is acceptable before going step further. This just passed
-> > > build and boot test on a fsl t4240rdb board. I have done a simple
-> > > performance benchmark by running the following command ten times before
-> > > and after applying this patch:
-> > > 	./perf bench sched messaging
-> > > 
-> > >                                 Before        After
-> > >     Averaged total time [sec]:  0.403         0.367
-> > > 
-> > > So we can see a ~9% performance enhancing. This patch depends on this
-> > > one [2].
+On Fri, 2015-03-13 at 00:10 -0700, Ram Pai wrote:
+> On Fri, Mar 13, 2015 at 03:39:24PM +1100, Michael Ellerman wrote:
+> > This adds a test of the switch_endian() syscall we added in the previous
+> > commit.
 > > 
-> > I would do the ifdef'ing differently, something like
+> > We test it by calling the endian switch syscall, and then executing some
+> > code in the other endian to check everything went as expected. That code
+> > checks registers we expect to be maintained are, and then writes to
+> > stdout and then does exit(0).
 > > 
-> > CONFIG_PPC_HAS_LOCK_OWNER
+> > If the endian switch failed to happen that code sequence will be illegal
+> > and cause the test to abort.
 > > 
-> > CONFIG_PPC_TICKET_LOCKS depends on !PPC_HAS_LOCK_OWNER
-> > 
-> > and use these two in the code... with SPLPAR select'ing HAS_LOCK_OWNER
->  
+> > Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> > ---
+> ..snip..
+> > +	.long 0x04000038
+> > +	# li      r3,1
+> > +	.long 0x01006038
+> > +	# mr      r4,r14
+> > +	.long 0x7873c47d
+> > +	# li      r5,21
+> > +	.long 0x1500a038
+> > +	# sc
+> > +	.long 0x02000044
+> > +	# li      r3,0
+> > +	.long 0x00006038
+> > +	# 1:
+> > +	# li      r0, __NR_exit
 > 
-> Sam was doing some work looking at CONFER, and I think so far he hasn't found
-> that it is much of a benefit. Hopefully he can chime in with his observations.
+> Would it make sense to toggle the endianness here,
+> checking for the same register sanity before exiting?
 > 
-> So the question is, should we just drop the directed CONFER and switch
-> wholesale to ticket locks?
-> 
-> We can still do CONFER on SPLPAR, we just tell the hypervisor we don't know who
-> to confer to.
-> 
-> There is still the drawback that we loose the lock owner for debugging, but
-> that might be worth it. And I think you can get it back with appropriate debug
-> options?
+> That way endian switching is tested both ways?
 
-Another possibility would be to change the order of the count and the
-lock in lockref and defined it to be packed. That might allow us to have
-our lock contain the ticket first and the count next and "fit" ...
+Yeah that is a good idea.
 
-> cheers
-> 
+/me keeps working on this "trivial" patch ;)
+
+cheers
