@@ -1,31 +1,30 @@
 Return-Path: <aik@ozlabs.ru>
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 300F21A2852
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Mar 2015 19:37:56 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 37D781A2AEC
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Mar 2015 19:41:22 +1100 (AEDT)
 Received: from /spool/local
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aik@ozlabs.ru>;
- Fri, 13 Mar 2015 18:37:52 +1000
+ Fri, 13 Mar 2015 18:41:21 +1000
 Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id D072F2CE804E
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Mar 2015 19:37:50 +1100 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 154422CE8052
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Mar 2015 19:41:19 +1100 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
  by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t2D8bgKa49741894
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Mar 2015 19:37:50 +1100
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t2D8bHAP026810
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Mar 2015 19:37:17 +1100
+ t2D8fATK45547522
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Mar 2015 19:41:18 +1100
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t2D8ejcE005386
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Mar 2015 19:40:45 +1100
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH slof] helpers: Fix SLOF_alloc_mem_aligned to meet callers
- expectation
-Date: Fri, 13 Mar 2015 19:36:52 +1100
-Message-Id: <1426235812-3749-1-git-send-email-aik@ozlabs.ru>
+Subject: [PATCH slof] virtio: Fix vring allocation
+Date: Fri, 13 Mar 2015 19:40:20 +1100
+Message-Id: <1426236020-10278-1-git-send-email-aik@ozlabs.ru>
 Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
  Thomas Huth <thuth@linux.vnet.ibm.com>,
  Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>
@@ -38,50 +37,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Every caller of SLOF_alloc_mem_aligned() assumes the size is the first
-argument while it is not.
+The value returned by virtio_vring_size() is used to allocate memory
+for vring. The used descriptor list (array of vring_used_elem) is
+counted by the header - vring_used struct - is not.
 
-This switches align and size and fixes random memory corruptions.
-
-This is grep for SLOF_alloc_mem_aligned with this patch applied:
-
-include/helpers.h|27| extern void *SLOF_alloc_mem_aligned(long size, long align);
-lib/libveth/veth.c|103| buffer_list = SLOF_alloc_mem_aligned(8192, 4096);
-lib/libveth/veth.c|105| rx_queue = SLOF_alloc_mem_aligned(rx_queue_len, 16);
-lib/libvirtio/virtio-net.c|101| vq[i].desc = SLOF_alloc_mem_aligned(virtio_vring_size(vq[i].size), 4096);
-slof/helpers.c|70| void *SLOF_alloc_mem_aligned(long size, long align)
+This fixes virtio_vring_size() to return the correct size.
+At the moment rings are quite small (256) and allocated with
+4096 alignment, this is why we have not been having issues with
+this so far.
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 ---
- include/helpers.h | 2 +-
- slof/helpers.c    | 2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ lib/libvirtio/virtio.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/include/helpers.h b/include/helpers.h
-index f6d4375..fb10534 100644
---- a/include/helpers.h
-+++ b/include/helpers.h
-@@ -24,7 +24,7 @@ extern void SLOF_usleep(uint32_t time);
- extern void *SLOF_dma_alloc(long size);
- extern void SLOF_dma_free(void *virt, long size);
- extern void *SLOF_alloc_mem(long size);
--extern void *SLOF_alloc_mem_aligned(long align, long size);
-+extern void *SLOF_alloc_mem_aligned(long size, long align);
- extern void SLOF_free_mem(void *addr, long size);
- extern long SLOF_dma_map_in(void *virt, long size, int cacheable);
- extern void SLOF_dma_map_out(long phys, void *virt, long size);
-diff --git a/slof/helpers.c b/slof/helpers.c
-index c582996..d7c1888 100644
---- a/slof/helpers.c
-+++ b/slof/helpers.c
-@@ -67,7 +67,7 @@ void *SLOF_alloc_mem(long size)
- 	return (void *)forth_pop();
+diff --git a/lib/libvirtio/virtio.c b/lib/libvirtio/virtio.c
+index b010796..22615c4 100644
+--- a/lib/libvirtio/virtio.c
++++ b/lib/libvirtio/virtio.c
+@@ -33,7 +33,8 @@
+ unsigned long virtio_vring_size(unsigned int qsize)
+ {
+ 	return VQ_ALIGN(sizeof(struct vring_desc) * qsize + 2 * (2 + qsize))
+-		+ VQ_ALIGN(sizeof(struct vring_used_elem) * qsize);
++               + VQ_ALIGN(sizeof(struct vring_used) +
++                          sizeof(struct vring_used_elem) * qsize);
  }
  
--void *SLOF_alloc_mem_aligned(long align, long size)
-+void *SLOF_alloc_mem_aligned(long size, long align)
- {
- 	unsigned long addr = (unsigned long)SLOF_alloc_mem(size + align - 1);
- 	addr = addr + align - 1;
+ 
 -- 
 2.0.0
