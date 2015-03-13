@@ -1,20 +1,36 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <nacc@linux.vnet.ibm.com>
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6C5781A019A
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Mar 2015 10:34:32 +1100 (AEDT)
-Message-ID: <1426203271.2772.3.camel@ellerman.id.au>
-Subject: Re: [PATCH 0/8] powerpc/8xx: Getting rid of CONFIG_8xx
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Christophe Leroy <christophe.leroy@c-s.fr>
-Date: Fri, 13 Mar 2015 10:34:31 +1100
-In-Reply-To: <20150312152420.11C821A2425@localhost.localdomain>
-References: <20150312152420.11C821A2425@localhost.localdomain>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Paul Mackerras <paulus@samba.org>,
- linuxppc-dev list <linuxppc-dev@ozlabs.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 94FE91A0371
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Mar 2015 12:06:05 +1100 (AEDT)
+Received: from /spool/local
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
+ Thu, 12 Mar 2015 19:06:03 -0600
+Received: from b03cxnp08027.gho.boulder.ibm.com
+ (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 8C8BAC40002
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Mar 2015 18:57:12 -0600 (MDT)
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+ by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t2D160jT37093392
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Mar 2015 18:06:01 -0700
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av04.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t2D15xUp025243
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Mar 2015 19:05:59 -0600
+Date: Thu, 12 Mar 2015 18:05:57 -0700
+From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+To: Rasmus Villemoes <linux@rasmusvillemoes.dk>
+Subject: Re: new decimal conversion - seeking testers
+Message-ID: <20150313010557.GA23117@linux.vnet.ibm.com>
+References: <87fv99x17k.fsf@rasmusvillemoes.dk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <87fv99x17k.fsf@rasmusvillemoes.dk>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,39 +40,213 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2015-03-12 at 16:24 +0100, Christophe Leroy wrote:
-> Two config options exist to define powerpc MPC8xx:
-> * CONFIG_PPC_8xx
-> * CONFIG_8xx
-> In addition, CONFIG_PPC_8xx also defines CONFIG_CPM1 as
-> communication co-processor
+On 13.03.2015 [00:09:19 +0100], Rasmus Villemoes wrote:
+> Hi,
 > 
-> arch/powerpc/platforms/Kconfig.cputype has contained the following
-> comment about CONFIG_8xx item for some years:
-> "# this is temp to handle compat with arch=ppc"
+> I've proposed a new implementation of decimal conversion for
+> lib/vsprintf.c; see
+> <http://thread.gmane.org/gmane.linux.kernel/1892035/focus=1905478>.
+> Benchmarking so far shows 25-50% (depending on distribution of input
+> numbers) improvement on x86_64 and 10-30% on various 32 bit platforms.
 > 
-> It looks like not many places still have that old CONFIG_8xx used,
-> so it is likely to be a good time to get rid of it completely ?
+> Since the new code plays a little endianness game I would really
+> appreciate it if someone here would run the test and verification code
+> on ppc.
 > 
-> Patchset is composed of the following patches:
-> [1/8] powerpc: replace CONFIG_8xx by CONFIG_PPC_8xx
-> [2/8] um: replace CONFIG_8xx by CONFIG_PPC_8xx
-> [3/8] video: replace CONFIG_8xx by CONFIG_PPC_8xx
-> [4/8] net: freescale: replace CONFIG_8xx by CONFIG_PPC_8xx
-> [5/8] tty: cpm_uart: replace CONFIG_8xx by CONFIG_CPM1
-> [6/8] mtd: replace CONFIG_8xx by CONFIG_PPC_8xx
-> [7/8] isdn: replace CONFIG_8xx by CONFIG_PPC_8xx
-> [8/8] powerpc: get rid of CONFIG_8xx
+> The code is on github, https://github.com/Villemoes/dec, and it should
+> be as simple as
 > 
-> All but the last one are independant and can be applied in any
-> order. Only the 8th one requires the first 7 patches to be applied.
+>    git clone https://github.com/Villemoes/dec.git
+>    cd dec
+>    make
+>    ./test   # benchmark
+>    ./verify # correctness
+> 
+> though I can't blame you if you want to inspect the code before
+> compiling and running something some stranger asks you to download :-)
+> See also the README file.
+> 
+> If 'make' doesn't work out-of-the-box, I'd also like to hear from you.
 
-Sounds good.
+On a ppc64le box:
 
-I only see 0, 4 and 7 on linuxppc-dev for some reason.
+./test 
+Distribution              Function         nsecs/conv   Conv/1 sec      
+uniform([10, 2^64-1])     linux_put_dec           56.04         17785895
+uniform([10, 2^64-1])     rv_put_dec              31.97         31190888
+                          +/-                   -42.94%          +75.37%
+3 + neg_binom(0.05)       linux_put_dec           29.55         32986465
+3 + neg_binom(0.05)       rv_put_dec              24.61         39416630
+                          +/-                   -16.71%          +19.49%
+3 + neg_binom(0.10)       linux_put_dec           22.16         43993836
+3 + neg_binom(0.10)       rv_put_dec              18.76         50767222
+                          +/-                   -15.34%          +15.40%
+3 + neg_binom(0.15)       linux_put_dec           18.97         51272565
+3 + neg_binom(0.15)       rv_put_dec              16.18         58328176
+                          +/-                   -14.70%          +13.76%
+3 + neg_binom(0.20)       linux_put_dec           16.79         57792783
+3 + neg_binom(0.20)       rv_put_dec              14.03         66418077
+                          +/-                   -16.45%          +14.92%
+3 + neg_binom(0.50)       linux_put_dec           10.81         89762669
+3 + neg_binom(0.50)       rv_put_dec               9.40        104336963
+                          +/-                   -13.08%          +16.24%
 
-You'll need to collect ACKs, or get the individual patches merged, and then we
-can take patch 8 through the powerpc tree once those are all in - probably for
-4.2.
+./verify 
+Using 16 threads
+Checking [10, 10000000000] and [18446744063709551615,
+18446744073709551615]
+Thread 9: low range ok
+Thread 13: low range ok
+Thread 10: low range ok
+Thread 15: low range ok
+Thread 7: low range ok
+Thread 5: low range ok
+Thread 14: low range ok
+Thread 0: low range ok
+Thread 3: low range ok
+Thread 1: low range ok
+Thread 2: low range ok
+Thread 4: low range ok
+Thread 8: low range ok
+Thread 12: low range ok
+Thread 6: low range ok
+Thread 11: low range ok
+Thread 9: high range ok
+Thread 10: high range ok
+Thread 7: high range ok
+Thread 13: high range ok
+Thread 0: high range ok
+Thread 14: high range ok
+Thread 15: high range ok
+Thread 5: high range ok
+Thread 1: high range ok
+Thread 8: high range ok
+Thread 11: high range ok
+Thread 6: high range ok
+Thread 2: high range ok
+Thread 12: high range ok
+Thread 3: high range ok
+Thread 4: high range ok
+Thread 9: mid range ok
+Thread 0: mid range ok
+Thread 14: mid range ok
+Thread 7: mid range ok
+Thread 10: mid range ok
+Thread 8: mid range ok
+Thread 2: mid range ok
+Thread 11: mid range ok
+Thread 13: mid range ok
+Thread 1: mid range ok
+Thread 6: mid range ok
+Thread 15: mid range ok
+Thread 5: mid range ok
+Thread 4: mid range ok
+Thread 3: mid range ok
+Thread 12: mid range ok
+Distribution of lengths checked:
+1	5
+2	101
+3	900
+4	9000
+5	90000
+6	900000
+7	9000000
+8	90000000
+9	900000000
+10	9000000000
+11	81
+12	848
+13	8384
+14	83808
+15	838192
+16	8381904
+17	83819040
+18	838190304
+19	8381903184
+20	17866643425
 
-cheers
+On a ppc64 box:
+
+./test 
+Distribution              Function         nsecs/conv   Conv/1 sec      
+uniform([10, 2^64-1])     linux_put_dec           48.97         20478528
+uniform([10, 2^64-1])     rv_put_dec              32.14         31915074
+                          +/-                   -34.37%          +55.85%
+3 + neg_binom(0.05)       linux_put_dec           25.60         38732189
+3 + neg_binom(0.05)       rv_put_dec              20.18         48828445
+                          +/-                   -21.18%          +26.07%
+3 + neg_binom(0.10)       linux_put_dec           18.70         52648284
+3 + neg_binom(0.10)       rv_put_dec              15.60         62915143
+                          +/-                   -16.56%          +19.50%
+3 + neg_binom(0.15)       linux_put_dec           15.27         64695363
+3 + neg_binom(0.15)       rv_put_dec              13.34         73279482
+                          +/-                   -12.62%          +13.27%
+3 + neg_binom(0.20)       linux_put_dec           13.25         74240237
+3 + neg_binom(0.20)       rv_put_dec              11.52         83711009
+                          +/-                   -13.04%          +12.76%
+3 + neg_binom(0.50)       linux_put_dec            9.14        106966472
+3 + neg_binom(0.50)       rv_put_dec               7.59        126799499
+                          +/-                   -16.92%          +18.54%
+./verify 
+Using 12 threads
+Checking [10, 10000000000] and [18446744063709551615,
+18446744073709551615]
+Thread 5: low range ok
+Thread 10: low range ok
+Thread 0: low range ok
+Thread 4: low range ok
+Thread 1: low range ok
+Thread 2: low range ok
+Thread 7: low range ok
+Thread 8: low range ok
+Thread 3: low range ok
+Thread 9: low range ok
+Thread 11: low range ok
+Thread 6: low range ok
+Thread 5: high range ok
+Thread 10: high range ok
+Thread 0: high range ok
+Thread 7: high range ok
+Thread 2: high range ok
+Thread 4: high range ok
+Thread 1: high range ok
+Thread 8: high range ok
+Thread 3: high range ok
+Thread 9: high range ok
+Thread 11: high range ok
+Thread 6: high range ok
+Thread 0: mid range ok
+Thread 11: mid range ok
+Thread 10: mid range ok
+Thread 7: mid range ok
+Thread 2: mid range ok
+Thread 3: mid range ok
+Thread 5: mid range ok
+Thread 8: mid range ok
+Thread 4: mid range ok
+Thread 6: mid range ok
+Thread 1: mid range ok
+Thread 9: mid range ok
+Distribution of lengths checked:
+1	5
+2	97
+3	900
+4	9000
+5	90000
+6	900000
+7	9000000
+8	90000000
+9	900000000
+10	9000000000
+11	61
+12	636
+13	6288
+14	62856
+15	628644
+16	6286428
+17	62864280
+18	628642728
+19	6286427388
+20	15899982569
+
+-Nish
