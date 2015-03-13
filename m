@@ -1,42 +1,18 @@
-Return-Path: <ananth@in.ibm.com>
-Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <sfr@canb.auug.org.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 01EC81A0371
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Mar 2015 13:02:02 +1100 (AEDT)
-Received: from /spool/local
- by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ananth@in.ibm.com>;
- Thu, 12 Mar 2015 22:02:00 -0400
-Received: from b01cxnp22036.gho.pok.ibm.com (b01cxnp22036.gho.pok.ibm.com
- [9.57.198.26])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 6B70438C8026
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Mar 2015 22:01:57 -0400 (EDT)
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
- by b01cxnp22036.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t2D21vl428246184
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Mar 2015 02:01:57 GMT
-Received: from d01av02.pok.ibm.com (localhost [127.0.0.1])
- by d01av02.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t2D21tBQ011159
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Mar 2015 22:01:56 -0400
-Date: Fri, 13 Mar 2015 07:33:19 +0530
-From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-To: Arnaldo Carvalho de Melo <acme@kernel.org>
-Subject: Re: [PATCHv2 2/8] perf probe: Improve detection of file/function
- name in the probe pattern
-Message-ID: <20150313020319.GB14092@in.ibm.com>
-Reply-To: ananth@in.ibm.com
-References: <cover.1418654435.git.naveen.n.rao@linux.vnet.ibm.com>
- <d60cf320bc3d51ca8980e48bc31044cacba8a920.1418654436.git.naveen.n.rao@linux.vnet.ibm.com>
- <20150312202414.GD3550@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4F7F21A0371
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Mar 2015 13:19:54 +1100 (AEDT)
+Date: Fri, 13 Mar 2015 13:19:49 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: [PATCHv2] powerpc: comvert relocs_check to a shell script using grep
+Message-ID: <20150313131949.3e9d2b11@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150312202414.GD3550@kernel.org>
-Cc: Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>,
- "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ boundary="Sig_/wZ4JVJDhaZO_6TKFZwHAGg0"; protocol="application/pgp-signature"
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,78 +22,208 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Mar 12, 2015 at 05:24:14PM -0300, Arnaldo Carvalho de Melo wrote:
-> Em Mon, Dec 15, 2014 at 08:20:32PM +0530, Naveen N. Rao escreveu:
-> > Currently, perf probe considers patterns including a '.' to be a file.
-> > However, this causes problems on powerpc ABIv1 where all functions have
-> > a leading '.':
-> > 
-> >   $ perf probe -F | grep schedule_timeout_interruptible
-> >   .schedule_timeout_interruptible
-> >   $ perf probe .schedule_timeout_interruptible
-> >   Semantic error :File always requires line number or lazy pattern.
-> >     Error: Command Parse Error.
-> > 
-> > Fix this by checking the probe pattern in more detail.
-> 
-> Masami, can I have your Acked-by or Reviewed-by?
+--Sig_/wZ4JVJDhaZO_6TKFZwHAGg0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-Arnaldo,
+This runs a bit faster and removes another use of perl from
+the kernel build.
 
-FWIW, I have reviewed this code...
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
 
-Reviewed-by: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+v2: address ShellCheck comments from Michael
 
-> 
-> 
-> - Arnaldo
-> 
-> > Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
-> > ---
-> >  tools/perf/util/probe-event.c | 23 ++++++++++++++++++++---
-> >  1 file changed, 20 insertions(+), 3 deletions(-)
-> > 
-> > diff --git a/tools/perf/util/probe-event.c b/tools/perf/util/probe-event.c
-> > index 28eb141..9943ff3 100644
-> > --- a/tools/perf/util/probe-event.c
-> > +++ b/tools/perf/util/probe-event.c
-> > @@ -999,6 +999,24 @@ static int parse_perf_probe_point(char *arg, struct perf_probe_event *pev)
-> >  		arg = tmp;
-> >  	}
-> >  
-> > +	/*
-> > +	 * Check arg is function or file name and copy it.
-> > +	 *
-> > +	 * We consider arg to be a file spec if and only if it satisfies
-> > +	 * all of the below criteria::
-> > +	 * - it does not include any of "+@%",
-> > +	 * - it includes one of ":;", and
-> > +	 * - it has a period '.' in the name.
-> > +	 *
-> > +	 * Otherwise, we consider arg to be a function specification.
-> > +	 */
-> > +	c = 0;
-> > +	if (!strpbrk(arg, "+@%") && (ptr = strpbrk(arg, ";:")) != NULL) {
-> > +		/* This is a file spec if it includes a '.' before ; or : */
-> > +		if (memchr(arg, '.', ptr-arg))
-> > +			c = 1;
-> > +	}
-> > +
-> >  	ptr = strpbrk(arg, ";:+@%");
-> >  	if (ptr) {
-> >  		nc = *ptr;
-> > @@ -1009,10 +1027,9 @@ static int parse_perf_probe_point(char *arg, struct perf_probe_event *pev)
-> >  	if (tmp == NULL)
-> >  		return -ENOMEM;
-> >  
-> > -	/* Check arg is function or file and copy it */
-> > -	if (strchr(tmp, '.'))	/* File */
-> > +	if (c == 1)
-> >  		pp->file = tmp;
-> > -	else			/* Function */
-> > +	else
-> >  		pp->function = tmp;
-> >  
-> >  	/* Parse other options */
-> > -- 
-> > 2.1.3
+ arch/powerpc/Makefile        |  4 +--
+ arch/powerpc/relocs_check.pl | 66 ----------------------------------------=
+----
+ arch/powerpc/relocs_check.sh | 59 +++++++++++++++++++++++++++++++++++++++
+ 3 files changed, 61 insertions(+), 68 deletions(-)
+ delete mode 100755 arch/powerpc/relocs_check.pl
+ create mode 100755 arch/powerpc/relocs_check.sh
+
+diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
+index 132d9c681d6a..1e868023b2c3 100644
+--- a/arch/powerpc/Makefile
++++ b/arch/powerpc/Makefile
+@@ -248,10 +248,10 @@ boot :=3D arch/$(ARCH)/boot
+=20
+ ifeq ($(CONFIG_RELOCATABLE),y)
+ quiet_cmd_relocs_check =3D CALL    $<
+-      cmd_relocs_check =3D perl $< "$(OBJDUMP)" "$(obj)/vmlinux"
++      cmd_relocs_check =3D $(CONFIG_SHELL) $< "$(OBJDUMP)" "$(obj)/vmlinux"
+=20
+ PHONY +=3D relocs_check
+-relocs_check: arch/powerpc/relocs_check.pl vmlinux
++relocs_check: arch/powerpc/relocs_check.sh vmlinux
+ 	$(call cmd,relocs_check)
+=20
+ zImage: relocs_check
+diff --git a/arch/powerpc/relocs_check.pl b/arch/powerpc/relocs_check.pl
+deleted file mode 100755
+index 3f46e8b9c56d..000000000000
+--- a/arch/powerpc/relocs_check.pl
++++ /dev/null
+@@ -1,66 +0,0 @@
+-#!/usr/bin/perl
+-
+-# Copyright =C2=A9 2009 IBM Corporation
+-
+-# This program is free software; you can redistribute it and/or
+-# modify it under the terms of the GNU General Public License
+-# as published by the Free Software Foundation; either version
+-# 2 of the License, or (at your option) any later version.
+-
+-# This script checks the relocations of a vmlinux for "suspicious"
+-# relocations.
+-
+-use strict;
+-use warnings;
+-
+-if ($#ARGV !=3D 1) {
+-	die "$0 [path to objdump] [path to vmlinux]\n";
+-}
+-
+-# Have Kbuild supply the path to objdump so we handle cross compilation.
+-my $objdump =3D shift;
+-my $vmlinux =3D shift;
+-my $bad_relocs_count =3D 0;
+-my $bad_relocs =3D "";
+-my $old_binutils =3D 0;
+-
+-open(FD, "$objdump -R $vmlinux|") or die;
+-while (<FD>) {
+-	study $_;
+-
+-	# Only look at relocation lines.
+-	next if (!/\s+R_/);
+-
+-	# These relocations are okay
+-	# On PPC64:
+-	# 	R_PPC64_RELATIVE, R_PPC64_NONE, R_PPC64_ADDR64
+-	# On PPC:
+-	# 	R_PPC_RELATIVE, R_PPC_ADDR16_HI,=20
+-	# 	R_PPC_ADDR16_HA,R_PPC_ADDR16_LO,
+-	# 	R_PPC_NONE
+-
+-	next if (/\bR_PPC64_RELATIVE\b/ or /\bR_PPC64_NONE\b/ or
+-	         /\bR_PPC64_ADDR64\s+mach_/);
+-	next if (/\bR_PPC_ADDR16_LO\b/ or /\bR_PPC_ADDR16_HI\b/ or
+-		 /\bR_PPC_ADDR16_HA\b/ or /\bR_PPC_RELATIVE\b/ or
+-		 /\bR_PPC_NONE\b/);
+-
+-	# If we see this type of relocation it's an idication that
+-	# we /may/ be using an old version of binutils.
+-	if (/R_PPC64_UADDR64/) {
+-		$old_binutils++;
+-	}
+-
+-	$bad_relocs_count++;
+-	$bad_relocs .=3D $_;
+-}
+-
+-if ($bad_relocs_count) {
+-	print "WARNING: $bad_relocs_count bad relocations\n";
+-	print $bad_relocs;
+-}
+-
+-if ($old_binutils) {
+-	print "WARNING: You need at least binutils >=3D 2.19 to build a ".
+-	      "CONFIG_RELOCATABLE kernel\n";
+-}
+diff --git a/arch/powerpc/relocs_check.sh b/arch/powerpc/relocs_check.sh
+new file mode 100755
+index 000000000000..182eae9cc40d
+--- /dev/null
++++ b/arch/powerpc/relocs_check.sh
+@@ -0,0 +1,59 @@
++#!/bin/sh
++
++# Copyright =C2=A9 2015 IBM Corporation
++
++# This program is free software; you can redistribute it and/or
++# modify it under the terms of the GNU General Public License
++# as published by the Free Software Foundation; either version
++# 2 of the License, or (at your option) any later version.
++
++# This script checks the relocations of a vmlinux for "suspicious"
++# relocations.
++
++# based on relocs_check.pl
++# Copyright =C2=A9 2009 IBM Corporation
++
++if [ ${#*} -lt 2 ]; then
++	echo "$0 [path to objdump] [path to vmlinux]" 1>&2
++	exit 1
++fi
++
++# Have Kbuild supply the path to objdump so we handle cross compilation.
++objdump=3D"$1"
++vmlinux=3D"$2"
++
++bad_relocs=3D$(
++"$objdump" -R "$vmlinux" |
++	# Only look at relocation lines.
++	grep -E '\<R_' |
++	# These relocations are okay
++	# On PPC64:
++	#	R_PPC64_RELATIVE, R_PPC64_NONE
++	#	R_PPC64_ADDR64 mach_<name>
++	# On PPC:
++	#	R_PPC_RELATIVE, R_PPC_ADDR16_HI,
++	#	R_PPC_ADDR16_HA,R_PPC_ADDR16_LO,
++	#	R_PPC_NONE
++	grep -F -w -v 'R_PPC64_RELATIVE
++R_PPC64_NONE
++R_PPC_ADDR16_LO
++R_PPC_ADDR16_HI
++R_PPC_ADDR16_HA
++R_PPC_RELATIVE
++R_PPC_NONE' |
++	grep -E -v '\<R_PPC64_ADDR64[[:space:]]+mach_'
++)
++
++if [ -z "$bad_relocs" ]; then
++	exit 0
++fi
++
++num_bad=3D$(echo "$bad_relocs" | wc -l)
++echo "WARNING: $num_bad bad relocations"
++echo "$bad_relocs"
++
++# If we see this type of relocation it's an idication that
++# we /may/ be using an old version of binutils.
++if echo "$bad_relocs" | grep -q -F -w R_PPC64_UADDR64; then
++	echo "WARNING: You need at least binutils >=3D 2.19 to build a CONFIG_REL=
+OCATABLE kernel"
++fi
+--=20
+2.1.4
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+--Sig_/wZ4JVJDhaZO_6TKFZwHAGg0
+Content-Type: application/pgp-signature
+Content-Description: OpenPGP digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBCAAGBQJVAklJAAoJEMDTa8Ir7ZwV3RUP/1Aq+Uj9Xdlzpx6RsITVktpm
+QqowmVxnHA0mvTqbmmNhS4QhOUkqiuQWaYzr+7FaJ6EMiYcxjK4J6pYTRgh/oNde
+UK9rvTP7Lp9m2Wyp+/r+4UN4xAxlItE5lmsBp8PI+GfxLWZJMU0319TKSEX1a+6T
+CvBASBTTMEw+bDwhbySgfhBzW0tcf2I1SWfp7wYXL6wJxrUkf1y56zUadeA7qfVj
+RVv6UQvHLD4UUzygW2dlp8D3opE1A+kWYwwvP0GBTQQ3Er0R1dWBDLMzzHsqSVCP
+uVqKdtOMWJ/FBmI/1qOF6n/0GUuHY2qYWw4kNLxfFUfv7NMpGXH0FvtLu2CRlcaW
+YoruWoJjKaX+t2u+jssbFgeIWxIF6nqj23rPpRovmThUXdayrogbl/uREWsRElKs
+SmHoIIFqXhFXi2W16PC18wZaxfbEfuHNS4xofJk0CGNYvaIRDHoRJ4p0221YtCCX
+04V4e3DI7hXkp18IEL3A/g/DozdaUJMzQpd50qpG4Od4zHWMKmgQciJGdfyQqO75
+5DAGvoV5ebBwMUYQH7LNmlAfU9ugDYpBCe5hAQAwr6pwIgBRXBOdVC3FGemHMQrE
+9UMGGRzyHeWu3vaGUentJ6U7Q8L+E9YPBE0exbYlbVODYruGGdm3lF44EZTJ1CZk
+Lm9Lpg1/2S4MFATw3Z7L
+=7xf1
+-----END PGP SIGNATURE-----
+
+--Sig_/wZ4JVJDhaZO_6TKFZwHAGg0--
