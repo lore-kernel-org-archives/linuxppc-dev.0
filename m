@@ -1,19 +1,23 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7A85A1A051E
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Mar 2015 17:38:47 +1100 (AEDT)
-Message-ID: <1426228726.23806.3.camel@ellerman.id.au>
-Subject: Re: [PATCH 1/2] powerpc: Add a proper syscall for switching endianness
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev@ozlabs.org
-Date: Fri, 13 Mar 2015 17:38:46 +1100
-In-Reply-To: <1426221564-15086-1-git-send-email-mpe@ellerman.id.au>
-References: <1426221564-15086-1-git-send-email-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id AB6711A074A
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Mar 2015 18:07:28 +1100 (AEDT)
+Message-ID: <1426230438.17565.162.camel@kernel.crashing.org>
+Subject: Re: [RFC] powerpc: use ticket spin lock for !CONFIG_PPC_SPLPAR
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Kevin Hao <haokexin@gmail.com>
+Date: Fri, 13 Mar 2015 18:07:18 +1100
+In-Reply-To: <20150313060913.GC24485@pek-khao-d1.corp.ad.wrs.com>
+References: <1426157723-28548-1-git-send-email-haokexin@gmail.com>
+ <1426158807.17565.131.camel@kernel.crashing.org>
+ <20150312152410.GA12372@lst.de>
+ <20150313060913.GC24485@pek-khao-d1.corp.ad.wrs.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: Scott Wood <scottwood@freescale.com>, Jeremy Kerr <jk@ozlabs.org>
+Cc: Paul Mackerras <paulus@samba.org>, Torsten Duwe <duwe@lst.de>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,26 +27,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2015-03-13 at 15:39 +1100, Michael Ellerman wrote:
-> We currently have a "special" syscall for switching endianness. This is
-> syscall number 0x1ebe, which is handled explicitly in the 64-bit syscall
-> exception entry.
+On Fri, 2015-03-13 at 14:09 +0800, Kevin Hao wrote:
+> On Thu, Mar 12, 2015 at 04:24:10PM +0100, Torsten Duwe wrote:
+> > But generally, which platforms would benefit most from this change?
 > 
-> diff --git a/arch/powerpc/include/asm/systbl.h b/arch/powerpc/include/asm/systbl.h
-> index 91062eef582f..c3ee21a1d9cf 100644
-> --- a/arch/powerpc/include/asm/systbl.h
-> +++ b/arch/powerpc/include/asm/systbl.h
-> @@ -367,3 +367,4 @@ SYSCALL_SPU(getrandom)
->  SYSCALL_SPU(memfd_create)
->  SYSCALL_SPU(bpf)
->  COMPAT_SYS(execveat)
-> +PPC_SYS(switch_endian)
+> In theory, the more cpus the platform has, the more serious the thundering
+> herd problem is. So the latest platforms which has more cpus would benefit
+> most.
 
-And of course I forgot about 32-bit.
+In fact, pseries would be one to benefit ... it would be nice to find a
+way to sort out the lock owner problem.
 
-According to Paul there are no working implementations of LE on 32-bit cpus, so
-the syscall doesn't really make sense there.
+One idea I had was to keep the owners elsewhere, some kind of hash chain
+of "taken locks" hashed on the lock address. There shouldn't be *that*
+many locks held at a given point in time.
 
-Scott does that sound right to you for FSL stuff?
+Trying to keep the owner in a separate & non-atomic part of the lock
+proved being too hard due to how the lockref and generic code are
+interwined, though maybe somebody smarter can find a trick :-)
 
-cheers
+Cheers,
+Ben.
