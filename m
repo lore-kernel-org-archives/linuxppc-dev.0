@@ -1,23 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AB6711A074A
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Mar 2015 18:07:28 +1100 (AEDT)
-Message-ID: <1426230438.17565.162.camel@kernel.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id EED7D1A086D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Mar 2015 18:09:01 +1100 (AEDT)
+Message-ID: <1426230541.23806.5.camel@ellerman.id.au>
 Subject: Re: [RFC] powerpc: use ticket spin lock for !CONFIG_PPC_SPLPAR
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kevin Hao <haokexin@gmail.com>
-Date: Fri, 13 Mar 2015 18:07:18 +1100
-In-Reply-To: <20150313060913.GC24485@pek-khao-d1.corp.ad.wrs.com>
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Fri, 13 Mar 2015 18:09:01 +1100
+In-Reply-To: <1426158807.17565.131.camel@kernel.crashing.org>
 References: <1426157723-28548-1-git-send-email-haokexin@gmail.com>
  <1426158807.17565.131.camel@kernel.crashing.org>
- <20150312152410.GA12372@lst.de>
- <20150313060913.GC24485@pek-khao-d1.corp.ad.wrs.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: Paul Mackerras <paulus@samba.org>, Torsten Duwe <duwe@lst.de>,
- linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, Kevin Hao <haokexin@gmail.com>,
+ Sam Bobroff <sam.bobroff@au1.ibm.com>, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,24 +25,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2015-03-13 at 14:09 +0800, Kevin Hao wrote:
-> On Thu, Mar 12, 2015 at 04:24:10PM +0100, Torsten Duwe wrote:
-> > But generally, which platforms would benefit most from this change?
+On Thu, 2015-03-12 at 22:13 +1100, Benjamin Herrenschmidt wrote:
+> On Thu, 2015-03-12 at 18:55 +0800, Kevin Hao wrote:
+> > I know Torsten Duwe has tried to add the ticket spinlock for powerpc
+> > one year ago [1]. But it make no progress due to the conflict between
+> > PPC_SPLPAR and lockref. We still don't find a better way to handle
+> > this. But instead of waiting forever for a perfect solution, can't we
+> > just use the ticket spinlock for the !CONFIG_PPC_SPLPAR?
+> > 
+> > This is a very rough patch based on arm64 codes. I want to make sure
+> > that this is acceptable before going step further. This just passed
+> > build and boot test on a fsl t4240rdb board. I have done a simple
+> > performance benchmark by running the following command ten times before
+> > and after applying this patch:
+> > 	./perf bench sched messaging
+> > 
+> >                                 Before        After
+> >     Averaged total time [sec]:  0.403         0.367
+> > 
+> > So we can see a ~9% performance enhancing. This patch depends on this
+> > one [2].
 > 
-> In theory, the more cpus the platform has, the more serious the thundering
-> herd problem is. So the latest platforms which has more cpus would benefit
-> most.
+> I would do the ifdef'ing differently, something like
+> 
+> CONFIG_PPC_HAS_LOCK_OWNER
+> 
+> CONFIG_PPC_TICKET_LOCKS depends on !PPC_HAS_LOCK_OWNER
+> 
+> and use these two in the code... with SPLPAR select'ing HAS_LOCK_OWNER
+ 
 
-In fact, pseries would be one to benefit ... it would be nice to find a
-way to sort out the lock owner problem.
+Sam was doing some work looking at CONFER, and I think so far he hasn't found
+that it is much of a benefit. Hopefully he can chime in with his observations.
 
-One idea I had was to keep the owners elsewhere, some kind of hash chain
-of "taken locks" hashed on the lock address. There shouldn't be *that*
-many locks held at a given point in time.
+So the question is, should we just drop the directed CONFER and switch
+wholesale to ticket locks?
 
-Trying to keep the owner in a separate & non-atomic part of the lock
-proved being too hard due to how the lockref and generic code are
-interwined, though maybe somebody smarter can find a trick :-)
+We can still do CONFER on SPLPAR, we just tell the hypervisor we don't know who
+to confer to.
 
-Cheers,
-Ben.
+There is still the drawback that we loose the lock owner for debugging, but
+that might be worth it. And I think you can get it back with appropriate debug
+options?
+
+cheers
