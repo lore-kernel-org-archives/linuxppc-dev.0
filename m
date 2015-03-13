@@ -1,32 +1,23 @@
-Return-Path: <mohicks@gmail.com>
-Received: from mail-ie0-x230.google.com (mail-ie0-x230.google.com
- [IPv6:2607:f8b0:4001:c03::230])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from smtp-out6.electric.net (smtp-out6.electric.net
+ [192.162.217.182])
+ (using TLSv1.1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2BC9D1A078D
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Mar 2015 01:08:51 +1100 (AEDT)
-Received: by ieclw3 with SMTP id lw3so107412197iec.2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Mar 2015 07:08:47 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 45DF61A078D
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Mar 2015 01:19:10 +1100 (AEDT)
+From: David Laight <David.Laight@ACULAB.COM>
+To: 'Stephen Rothwell' <sfr@canb.auug.org.au>, Michael Ellerman
+ <mpe@ellerman.id.au>
+Subject: RE: [PATCHv2] powerpc: comvert relocs_check to a shell script using
+ grep
+Date: Fri, 13 Mar 2015 14:18:10 +0000
+Message-ID: <063D6719AE5E284EB5DD2968C1650D6D1CAFEAE2@AcuExch.aculab.com>
+References: <20150313131949.3e9d2b11@canb.auug.org.au>
+In-Reply-To: <20150313131949.3e9d2b11@canb.auug.org.au>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Sender: mohicks@gmail.com
-In-Reply-To: <550063D1.2070105@freescale.com>
-References: <1424451610-5786-1-git-send-email-mort@bork.org>
- <54F464E4.8080204@freescale.com> <54F475A8.6030105@gmail.com>
- <20150302220923.GC30523@darwin.bork.org>
- <54F5D6D5.8070407@freescale.com>
- <CAJUS3Xnw66Eu6tvGPpdcet6KLjhKM=ptj8NRaztAVr0h_r+LqQ@mail.gmail.com>
- <54FD72E4.1060701@freescale.com>
- <CAJUS3XkY0tbYqBbU5HR7NT63UPFi5DO6XWuymbZnQaJEA5kkBw@mail.gmail.com>
- <550063D1.2070105@freescale.com>
-Date: Fri, 13 Mar 2015 10:08:29 -0400
-Message-ID: <CAJUS3Xmv3atWu=-ydYrSVe+5PON7SM22hoXDQ1_5_ULM_zKvbQ@mail.gmail.com>
-Subject: Re: [PATCH 0/2] crypto: talitos: Add AES-XTS mode
-From: Martin Hicks <mort@bork.org>
-To: =?UTF-8?Q?Horia_Geant=C4=83?= <horia.geanta@freescale.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: Scott Wood <scottwood@freescale.com>,
- Herbert Xu <herbert@gondor.apana.org.au>, linuxppc-dev@lists.ozlabs.org,
- linux-crypto@vger.kernel.org, Milan Broz <gmazyland@gmail.com>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,59 +27,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Horia,
-
-On Wed, Mar 11, 2015 at 11:48 AM, Horia Geant=C4=83
-<horia.geanta@freescale.com> wrote:
->
-> While here: note that xts-talitos supports only two key lengths - 256
-> and 512 bits. There are tcrypt speed tests that check also for 384-bit
-> keys (which is out-of-spec, but still...), leading to a "Key Size Error"
-> - see below (KSE bit in AESU Interrupt Status Register is set)
-
-Ok.  I've limited the keysize to 32 or 64 bytes for AES-XTS in the
-talitos driver.
-
-This was my first experiments with the tcrypt module.  It also brought
-up another issue related to the IV limitations of this hardware.  The
-latest patch that I have returns an error when there is a non-zero
-value in the second 8 bytes of the IV:
-
-+       /*
-+        * AES-XTS uses the first two AES Context registers for:
-+        *
-+        *     Register 1:   Sector Number (Little Endian)
-+        *     Register 2:   Sector Size   (Big Endian)
-+        *
-+        * Whereas AES-CBC uses registers 1/2 as a 16-byte IV.
-+        */
-+       if ((ctx->desc_hdr_template &
-+            (DESC_HDR_SEL0_MASK | DESC_HDR_MODE0_MASK)) =3D=3D
-+            (DESC_HDR_SEL0_AESU | DESC_HDR_MODE0_AESU_XTS)) {
-+               u64 *aesctx2 =3D (u64 *)areq->info + 1;
-+
-+               if (*aesctx2 !=3D 0) {
-+                       dev_err(ctx->dev,
-+                               "IV length limited to the first 8 bytes.");
-+                       return ERR_PTR(-EINVAL);
-+               }
-+
-+               /* Fixed sized sector */
-+               *aesctx2 =3D cpu_to_be64(1 << SECTOR_SHIFT);
-+       }
-
-
-This approach causes the tcrypt tests to fail because tcrypt sets all
-16 bytes of the IV to 0xff.  I think returning an error is the right
-approach for the talitos module, but it would be nice if tcrypt still
-worked.  Should tcrypt just set the IV bytes to 0 instead of 0xff?
-Isn't one IV just as good as another?  I think adding exceptions to
-the tcrypt code would be ugly, but maybe one should be made for XTS
-since the standard dictates that the IV should be plain or plain64?
-
-Thanks,
-mh
-
---=20
-Martin Hicks P.Eng.      |         mort@bork.org
-Bork Consulting Inc.     |   +1 (613) 266-2296
+RnJvbTogU3RlcGhlbiBSb3Rod2VsbA0KPiBUaGlzIHJ1bnMgYSBiaXQgZmFzdGVyIGFuZCByZW1v
+dmVzIGFub3RoZXIgdXNlIG9mIHBlcmwgZnJvbQ0KPiB0aGUga2VybmVsIGJ1aWxkLg0KLi4uDQo+
+IGRpZmYgLS1naXQgYS9hcmNoL3Bvd2VycGMvcmVsb2NzX2NoZWNrLnNoIGIvYXJjaC9wb3dlcnBj
+L3JlbG9jc19jaGVjay5zaA0KPiBuZXcgZmlsZSBtb2RlIDEwMDc1NQ0KPiBpbmRleCAwMDAwMDAw
+MDAwMDAuLjE4MmVhZTljYzQwZA0KPiAtLS0gL2Rldi9udWxsDQo+ICsrKyBiL2FyY2gvcG93ZXJw
+Yy9yZWxvY3NfY2hlY2suc2gNCj4gQEAgLTAsMCArMSw1OSBAQA0KPiArIyEvYmluL3NoDQouLi4N
+Cj4gK2lmIFsgJHsjKn0gLWx0IDIgXTsgdGhlbg0KPiArCWVjaG8gIiQwIFtwYXRoIHRvIG9iamR1
+bXBdIFtwYXRoIHRvIHZtbGludXhdIiAxPiYyDQo+ICsJZXhpdCAxDQo+ICtmaQ0KPiArDQo+ICsj
+IEhhdmUgS2J1aWxkIHN1cHBseSB0aGUgcGF0aCB0byBvYmpkdW1wIHNvIHdlIGhhbmRsZSBjcm9z
+cyBjb21waWxhdGlvbi4NCj4gK29iamR1bXA9IiQxIg0KPiArdm1saW51eD0iJDIiDQoNCkknbSBu
+b3QgMTAwJSBzdXJlIG9mIHRoZSByZXF1aXJlbWVudHMgb24gL2Jpbi9zaCBmb3Iga2VybmVsIGJ1
+aWxkcy4NCkJ1dCAkeyMqfSBpcyBwcm9iYWJseSBub3QgY29tcGxldGVseSBwb3J0YWJsZSAoYW5k
+IG1heSBub3QgYmUgc2FmZQ0KaWYgdGhlcmUgYXJlIGVtYmVkZGVkIHNwYWNlcyBpbiB0aGUgYXJn
+dW1lbnRzKS4NCg0KTWlnaHQgYmUgYmV0dGVyIHRvIGNoZWNrOg0KCWlmIFsgLXogIiRvYmpkdW1w
+IiAtbyAteiAiJHZtbGludXgiIF0NCmluc3RlYWQuDQoNCk9yIGV2ZW46DQoJaWYgWyAhIC14ICIk
+b2JqZHVtcCIgLW8gISAtciAiJHZtbGludXgiIF0NCg0KCURhdmlkDQoNCg==
