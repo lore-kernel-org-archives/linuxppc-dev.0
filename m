@@ -1,31 +1,31 @@
 Return-Path: <aik@ozlabs.ru>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 837271A0AD3
+ by lists.ozlabs.org (Postfix) with ESMTPS id 810581A0AC6
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Mar 2015 19:09:03 +1100 (AEDT)
 Received: from /spool/local
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aik@ozlabs.ru>;
- Fri, 13 Mar 2015 18:09:01 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 4963A2CE8057
+ Fri, 13 Mar 2015 18:09:03 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 6D89F2CE8058
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Mar 2015 19:09:00 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t2D88qAl38141996
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t2D88qeQ26935310
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Mar 2015 19:09:00 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t2D88Qj9016574
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t2D88R43013906
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Mar 2015 19:08:27 +1100
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH kernel v6 16/29] powerpc/iommu: Fix IOMMU ownership control
- functions
-Date: Fri, 13 Mar 2015 19:07:24 +1100
-Message-Id: <1426234057-16165-17-git-send-email-aik@ozlabs.ru>
+Subject: [PATCH kernel v6 22/29] powerpc/iommu: Split iommu_free_table into 2
+ helpers
+Date: Fri, 13 Mar 2015 19:07:30 +1100
+Message-Id: <1426234057-16165-23-git-send-email-aik@ozlabs.ru>
 In-Reply-To: <1426234057-16165-1-git-send-email-aik@ozlabs.ru>
 References: <1426234057-16165-1-git-send-email-aik@ozlabs.ru>
 Cc: kvm@vger.kernel.org, Alexey Kardashevskiy <aik@ozlabs.ru>,
@@ -40,86 +40,108 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This adds missing locks in iommu_take_ownership()/
-iommu_release_ownership().
-
-This marks all pages busy in iommu_table::it_map in order to catch
-errors if there is an attempt to use this table while ownership over it
-is taken.
-
-This only clears TCE content if there is no page marked busy in it_map.
-Clearing must be done outside of the table locks as iommu_clear_tce()
-called from iommu_clear_tces_and_put_pages() does this.
+The iommu_free_table helper release memory it is using (the TCE table and
+@it_map) and release the iommu_table struct as well. We might not want
+the very last step as we store iommu_table in parent structures.
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 ---
-Changes:
-v5:
-* do not store bit#0 value, it has to be set for zero-based table
-anyway
-* removed test_and_clear_bit
----
- arch/powerpc/kernel/iommu.c | 26 ++++++++++++++++++++++----
- 1 file changed, 22 insertions(+), 4 deletions(-)
+ arch/powerpc/include/asm/iommu.h |  1 +
+ arch/powerpc/kernel/iommu.c      | 57 ++++++++++++++++++++++++----------------
+ 2 files changed, 35 insertions(+), 23 deletions(-)
 
+diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
+index 6af22a4..fd118ea 100644
+--- a/arch/powerpc/include/asm/iommu.h
++++ b/arch/powerpc/include/asm/iommu.h
+@@ -125,6 +125,7 @@ static inline void *get_iommu_table_base(struct device *dev)
+ 
+ extern struct iommu_table *iommu_table_alloc(int node);
+ /* Frees table for an individual device node */
++extern void iommu_reset_table(struct iommu_table *tbl, const char *node_name);
+ extern void iommu_free_table(struct iommu_table *tbl, const char *node_name);
+ 
+ /* Initializes an iommu_table based in values set in the passed-in
 diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
-index 8358631..df888a7 100644
+index 2856a4a..3500bd0 100644
 --- a/arch/powerpc/kernel/iommu.c
 +++ b/arch/powerpc/kernel/iommu.c
-@@ -1052,17 +1052,28 @@ EXPORT_SYMBOL_GPL(iommu_tce_build);
+@@ -721,24 +721,46 @@ struct iommu_table *iommu_table_alloc(int node)
+ 	return &table_group->tables[0];
+ }
  
- static int iommu_table_take_ownership(struct iommu_table *tbl)
- {
--	unsigned long sz = (tbl->it_size + 7) >> 3;
-+	unsigned long flags, i, sz = (tbl->it_size + 7) >> 3;
-+	int ret = 0;
++void iommu_reset_table(struct iommu_table *tbl, const char *node_name)
++{
++	if (!tbl)
++		return;
 +
-+	spin_lock_irqsave(&tbl->large_pool.lock, flags);
-+	for (i = 0; i < tbl->nr_pools; i++)
-+		spin_lock(&tbl->pools[i].lock);
- 
- 	if (tbl->it_offset == 0)
- 		clear_bit(0, tbl->it_map);
- 
- 	if (!bitmap_empty(tbl->it_map, tbl->it_size)) {
- 		pr_err("iommu_tce: it_map is not empty");
--		return -EBUSY;
-+		ret = -EBUSY;
++	if (tbl->it_map) {
++		unsigned long bitmap_sz;
++		unsigned int order;
++
++		/*
++		 * In case we have reserved the first bit, we should not emit
++		 * the warning below.
++		 */
 +		if (tbl->it_offset == 0)
-+			set_bit(0, tbl->it_map);
-+	} else {
-+		memset(tbl->it_map, 0xff, sz);
- 	}
- 
--	memset(tbl->it_map, 0xff, sz);
-+	for (i = 0; i < tbl->nr_pools; i++)
-+		spin_unlock(&tbl->pools[i].lock);
-+	spin_unlock_irqrestore(&tbl->large_pool.lock, flags);
- 
- 	return 0;
- }
-@@ -1095,7 +1106,11 @@ EXPORT_SYMBOL_GPL(iommu_take_ownership);
- 
- static void iommu_table_release_ownership(struct iommu_table *tbl)
- {
--	unsigned long sz = (tbl->it_size + 7) >> 3;
-+	unsigned long flags, i, sz = (tbl->it_size + 7) >> 3;
++			clear_bit(0, tbl->it_map);
 +
-+	spin_lock_irqsave(&tbl->large_pool.lock, flags);
-+	for (i = 0; i < tbl->nr_pools; i++)
-+		spin_lock(&tbl->pools[i].lock);
++		/* verify that table contains no entries */
++		if (!bitmap_empty(tbl->it_map, tbl->it_size))
++			pr_warn("%s: Unexpected TCEs for %s\n", __func__,
++					node_name);
++
++		/* calculate bitmap size in bytes */
++		bitmap_sz = BITS_TO_LONGS(tbl->it_size) * sizeof(unsigned long);
++
++		/* free bitmap */
++		order = get_order(bitmap_sz);
++		free_pages((unsigned long) tbl->it_map, order);
++	}
++
++	memset(tbl, 0, sizeof(*tbl));
++}
++
+ void iommu_free_table(struct iommu_table *tbl, const char *node_name)
+ {
+-	unsigned long bitmap_sz;
+-	unsigned int order;
+ 	struct iommu_table_group *table_group = tbl->it_group;
  
- 	memset(tbl->it_map, 0, sz);
+-	if (!tbl || !tbl->it_map) {
+-		printk(KERN_ERR "%s: expected TCE map for %s\n", __func__,
+-				node_name);
++	if (!tbl)
+ 		return;
+-	}
  
-@@ -1103,6 +1118,9 @@ static void iommu_table_release_ownership(struct iommu_table *tbl)
- 	if (tbl->it_offset == 0)
- 		set_bit(0, tbl->it_map);
+-	/*
+-	 * In case we have reserved the first bit, we should not emit
+-	 * the warning below.
+-	 */
+-	if (tbl->it_offset == 0)
+-		clear_bit(0, tbl->it_map);
++	iommu_reset_table(tbl, node_name);
  
-+	for (i = 0; i < tbl->nr_pools; i++)
-+		spin_unlock(&tbl->pools[i].lock);
-+	spin_unlock_irqrestore(&tbl->large_pool.lock, flags);
+ #ifdef CONFIG_IOMMU_API
+ 	if (table_group->group) {
+@@ -747,17 +769,6 @@ void iommu_free_table(struct iommu_table *tbl, const char *node_name)
+ 	}
+ #endif
+ 
+-	/* verify that table contains no entries */
+-	if (!bitmap_empty(tbl->it_map, tbl->it_size))
+-		pr_warn("%s: Unexpected TCEs for %s\n", __func__, node_name);
+-
+-	/* calculate bitmap size in bytes */
+-	bitmap_sz = BITS_TO_LONGS(tbl->it_size) * sizeof(unsigned long);
+-
+-	/* free bitmap */
+-	order = get_order(bitmap_sz);
+-	free_pages((unsigned long) tbl->it_map, order);
+-
+ 	/* free table */
+ 	kfree(table_group);
  }
- 
- extern void iommu_release_ownership(struct iommu_table_group *table_group)
 -- 
 2.0.0
