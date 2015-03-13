@@ -1,25 +1,19 @@
-Return-Path: <haokexin@gmail.com>
-Received: from mail-qg0-x22b.google.com (mail-qg0-x22b.google.com
- [IPv6:2607:f8b0:400d:c04::22b])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D19AD1A051E
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Mar 2015 17:09:22 +1100 (AEDT)
-Received: by qgdz107 with SMTP id z107so23722769qgd.3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Mar 2015 23:09:20 -0700 (PDT)
-Date: Fri, 13 Mar 2015 14:09:13 +0800
-From: Kevin Hao <haokexin@gmail.com>
-To: Torsten Duwe <duwe@lst.de>
-Subject: Re: [RFC] powerpc: use ticket spin lock for !CONFIG_PPC_SPLPAR
-Message-ID: <20150313060913.GC24485@pek-khao-d1.corp.ad.wrs.com>
-References: <1426157723-28548-1-git-send-email-haokexin@gmail.com>
- <1426158807.17565.131.camel@kernel.crashing.org>
- <20150312152410.GA12372@lst.de>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="7qSK/uQB79J36Y4o"
-In-Reply-To: <20150312152410.GA12372@lst.de>
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7A85A1A051E
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Mar 2015 17:38:47 +1100 (AEDT)
+Message-ID: <1426228726.23806.3.camel@ellerman.id.au>
+Subject: Re: [PATCH 1/2] powerpc: Add a proper syscall for switching endianness
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: linuxppc-dev@ozlabs.org
+Date: Fri, 13 Mar 2015 17:38:46 +1100
+In-Reply-To: <1426221564-15086-1-git-send-email-mpe@ellerman.id.au>
+References: <1426221564-15086-1-git-send-email-mpe@ellerman.id.au>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Scott Wood <scottwood@freescale.com>, Jeremy Kerr <jk@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,34 +23,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Fri, 2015-03-13 at 15:39 +1100, Michael Ellerman wrote:
+> We currently have a "special" syscall for switching endianness. This is
+> syscall number 0x1ebe, which is handled explicitly in the 64-bit syscall
+> exception entry.
+> 
+> diff --git a/arch/powerpc/include/asm/systbl.h b/arch/powerpc/include/asm/systbl.h
+> index 91062eef582f..c3ee21a1d9cf 100644
+> --- a/arch/powerpc/include/asm/systbl.h
+> +++ b/arch/powerpc/include/asm/systbl.h
+> @@ -367,3 +367,4 @@ SYSCALL_SPU(getrandom)
+>  SYSCALL_SPU(memfd_create)
+>  SYSCALL_SPU(bpf)
+>  COMPAT_SYS(execveat)
+> +PPC_SYS(switch_endian)
 
---7qSK/uQB79J36Y4o
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+And of course I forgot about 32-bit.
 
-On Thu, Mar 12, 2015 at 04:24:10PM +0100, Torsten Duwe wrote:
-> But generally, which platforms would benefit most from this change?
+According to Paul there are no working implementations of LE on 32-bit cpus, so
+the syscall doesn't really make sense there.
 
-In theory, the more cpus the platform has, the more serious the thundering
-herd problem is. So the latest platforms which has more cpus would benefit
-most.
+Scott does that sound right to you for FSL stuff?
 
-Thanks,
-Keivn
-
---7qSK/uQB79J36Y4o
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBAgAGBQJVAn8JAAoJEJNY7TDerrFx+DMH/js7mUGgmeuJfooGibhxVpkw
-HoH3suDEw0PDS8r65bDlLIjAHab+BbvS2K7XJTkCJzF38XcxTE2IOadCSaoEBAbe
-Sge8clWnXQwjXLpqq+dfwlBerLRzihWfOJ7vE4fhAFoeNJmszHwKTg63ahd8NUE6
-3JUF3kK9nqsHJujPwHca5JvQCqbyc3fiXRhpwYOtPCtPd7WWLaDWP76kdJerXiex
-HDRyK54ZNyCxYRL4ps/72wZJPVP0ghy8xGYpIYTAcrrcfb140tznAyz/nQbCMYd1
-efsHPBhrf4yeDJHtLJ1EUESukE1pj7AU7WADzEj9OfBVKXR5N6YBauz5nSc6+q4=
-=1gzv
------END PGP SIGNATURE-----
-
---7qSK/uQB79J36Y4o--
+cheers
