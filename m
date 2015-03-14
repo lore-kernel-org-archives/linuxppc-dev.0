@@ -1,29 +1,25 @@
-Return-Path: <scottwood@freescale.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <wsa@the-dreams.de>
+Received: from pokefinder.org (sauhun.de [89.238.76.85])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 130331A04ED
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Mar 2015 09:38:01 +1100 (AEDT)
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0114.outbound.protection.outlook.com [157.56.111.114])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 973651400B7
- for <linuxppc-dev@ozlabs.org>; Sat, 14 Mar 2015 09:37:58 +1100 (AEDT)
-Message-ID: <1426286261.27998.28.camel@freescale.com>
-Subject: Re: [PATCH 3/4 RFC] fsl/msi: Add MSI bank allocation for kernel
- owned devices
-From: Scott Wood <scottwood@freescale.com>
-To: Bhushan Bharat-R65777 <Bharat.Bhushan@freescale.com>
-Date: Fri, 13 Mar 2015 17:37:41 -0500
-In-Reply-To: <CY1PR0301MB127628300C11CAF7ED4EE27390060@CY1PR0301MB1276.namprd03.prod.outlook.com>
-References: <1425359866-31049-1-git-send-email-Bharat.Bhushan@freescale.com>
- <1425359866-31049-3-git-send-email-Bharat.Bhushan@freescale.com>
- <1426116178.30327.88.camel@freescale.com>
- <CY1PR0301MB127628300C11CAF7ED4EE27390060@CY1PR0301MB1276.namprd03.prod.outlook.com>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5F5471A08EC
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 14 Mar 2015 22:14:52 +1100 (AEDT)
+Date: Sat, 14 Mar 2015 12:14:51 +0100
+From: Wolfram Sang <wsa@the-dreams.de>
+To: linux-i2c@vger.kernel.org
+Subject: Re: [RFC V2 00/12] i2c: describe adapter quirks in a generic way
+Message-ID: <20150314111450.GC970@katana>
+References: <1424880126-15047-1-git-send-email-wsa@the-dreams.de>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="nmemrqcdn5VTmUEE"
+In-Reply-To: <1424880126-15047-1-git-send-email-wsa@the-dreams.de>
+Cc: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org,
+ Ludovic Desroches <ludovic.desroches@atmel.com>,
+ bcm-kernel-feedback-list@broadcom.com,
+ Yingjoe Chen <yingjoe.chen@mediatek.com>,
+ Eddie Huang <eddie.huang@mediatek.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,65 +29,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2015-03-12 at 10:46 -0500, Bhushan Bharat-R65777 wrote:
-> 
-> 
-> > -----Original Message-----
-> > From: Wood Scott-B07421
-> > Sent: Thursday, March 12, 2015 4:53 AM
-> > To: Bhushan Bharat-R65777
-> > Cc: linuxppc-dev@ozlabs.org
-> > Subject: Re: [PATCH 3/4 RFC] fsl/msi: Add MSI bank allocation for kernel
-> > owned devices
-> > 
-> > With the patchset as is, how would one indicate whether kernel devices
-> > should get a bank?
-> 
-> For kernel owned device, in fsl_setup_msi_irqs() we check if there is
-> a reserved MSI bank, if not then reserve a msi bank. If reserve fails
-> then setup_msi_irq() fails. I think there is no fallback to Legacy
-> interrupt.
 
-If enabling MSI fails, it's up to the driver to fall back to legacy
-interrupts (grep drivers for pci_enable_msi for examples).
+--nmemrqcdn5VTmUEE
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> >  Specifically, when the kernel does have an MSI-
-> > capable device but we'd prefer to use legacy interrupts to keep MSIs
-> > available to VFIO.
-> 
-> Do we want this?
+On Wed, Feb 25, 2015 at 05:01:51PM +0100, Wolfram Sang wrote:
+> From: Wolfram Sang <wsa+renesas@sang-engineering.com>
+>=20
+> Here is the second version of the patch series to describe i2c adapter qu=
+irks
+> in a generic way. For the motivation, please read description of patch 1.=
+ This
+> is still RFC because I would like to do some more tests on my own, but I =
+need
+> to write a tool for that. However, I'd really like to have the driver aut=
+hors
+> to have a look already. Actual testing is very much appreciated. Thanks t=
+o the
+> Mediatek guys for rebasing their new driver to this framework. That helps=
+, too!
 
-You'd previously raised concern about wanting to give all MSI banks to
-VFIO.  The kernel might still have PCIe devices that are not
-performance-critical.  That said, I'm not going to nack the patchset if
-it requires the kernel to allocate a bank for itself.
+Thanks for all the testing. Merged this branch now into for-next!
 
-> > > @@ -231,15 +304,12 @@ static int fsl_setup_msi_irqs(struct pci_dev
-> > *pdev, int nvec, int type)
-> > >  		if (specific_msi_bank) {
-> > >  			hwirq = msi_bitmap_alloc_hwirqs(&msi_data->bitmap, 1);
-> > >  		} else {
-> > > -			/*
-> > > -			 * Loop over all the MSI devices until we find one that
-> > has an
-> > > -			 * available interrupt.
-> > > -			 */
-> > > -			list_for_each_entry(msi_data, &msi_head, list) {
-> > > -				hwirq = msi_bitmap_alloc_hwirqs(&msi_data-
-> > >bitmap, 1);
-> > > -				if (hwirq >= 0)
-> > > -					break;
-> > > +			msi_data = fsl_msi_get_reserved_msi_bank(pdev);
-> > > +			if (!msi_data) {
-> > > +				dev_err(&pdev->dev, "No MSI Bank allocated\n");
-> > > +				goto out_free;
-> > 
-> > Is this really an error?  Seems like dev_info() would be more appropriate
-> > to indicate the absence of a resource where you can fall back to another
-> > option.
-> 
-> There is no fallback in fsl_setup_msi_irqs(), We have to error out from fsl_setup_msi_irqs(), no?
 
-I meant as far as the user is concerned, not whether you return an error from the function.
+--nmemrqcdn5VTmUEE
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
 
--Scott
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJVBBgqAAoJEBQN5MwUoCm2fQAQAI1w0/RXIcR5OoBFBLw5DkCr
+vA2Ou1OG9x9M2FP29hco4AzXRaRRHqe9hFRl31Adm0YoQF41/nf+7z4g1VveN4hD
+P+ocEWMvzHnafbwGO0+QIYY4nhBVN+/a8eg+j4+AbKdQBLL2+b0I9uwpL1uwdiCY
+ceRhoMrrg1oHcFUNKErXyuzA/t0dNq5ekx3z8iqpjjXjp3JRVmfpeueCzD6Gv0zg
+HkXAC+U9Ur2gLvBpSRhadn9/Cy6cvOeuIF8Jq2wMOKDUM54Z1HwttT7dTiW8IGXo
+xgXFaimc4StYeR1JQEyGLYUATfhXlOKPFOXrUktTwWLlGbgjKUqB3KKGDzR9XXB+
+NvtWekSj9+h/c0hHYOiezMV21AIzr7n3c3cmAoK9XYMRz/NeTseC1jG4EgSVCQr1
+Vl+QgAgOiOcSNJ3BPfLStNM0kAyPov0UB41EP25fWq3eOJMWUzUEvlLkJMadmPbL
+ucvuLhMUvI1jp8EdTEiBltQuukM4tlHgp/tQrK245vO1s0NHnbOdgy68Lab7RfFp
+KxbBwIQ1DOhMin80xOC9AUkkYbBppbqhCUc79Fpufx5FYSd+tS3dTLAdwOErmmSh
+7YbWXMOdscAUD3+vuDYTWn4gPJGDtzM4MaYn2AAbGVchPa6UR/W1UZDKlpTDLcV/
+wvo+3WNDb7KyV+YGySP4
+=KnPk
+-----END PGP SIGNATURE-----
+
+--nmemrqcdn5VTmUEE--
