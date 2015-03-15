@@ -1,19 +1,43 @@
-Return-Path: <sfr@canb.auug.org.au>
+Return-Path: <gwshan@linux.vnet.ibm.com>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 08D431A03BD
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 15 Mar 2015 22:08:55 +1100 (AEDT)
-Date: Sun, 15 Mar 2015 22:08:47 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCHv3] powerpc: convert relocs_check to a shell script using grep
-Message-ID: <20150315220847.1ecfe174@canb.auug.org.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id AB57B1A02E8
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Mar 2015 09:40:58 +1100 (AEDT)
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 3C883140119
+ for <linuxppc-dev@ozlabs.org>; Mon, 16 Mar 2015 09:40:58 +1100 (AEDT)
+Received: from /spool/local
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Mon, 16 Mar 2015 08:40:57 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 7CC0D3578047
+ for <linuxppc-dev@ozlabs.org>; Mon, 16 Mar 2015 09:40:55 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t2FMelNQ39583858
+ for <linuxppc-dev@ozlabs.org>; Mon, 16 Mar 2015 09:40:55 +1100
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t2FMeLfi008905
+ for <linuxppc-dev@ozlabs.org>; Mon, 16 Mar 2015 09:40:21 +1100
+Date: Mon, 16 Mar 2015 09:39:57 +1100
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: Alex Williamson <alex.williamson@redhat.com>
+Subject: Re: [PATCH 1/2] powerpc/eeh: Introduce eeh_pe_inject_err()
+Message-ID: <20150315223957.GA4438@shangw>
+Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+References: <1426055651-22925-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <1426278513.3643.117.camel@redhat.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- boundary="Sig_/g.=81wo1Wgt/W=xTLWWFeFS"; protocol="application/pgp-signature"
-Cc: linuxppc-dev@lists.ozlabs.org, David Laight <David.Laight@ACULAB.COM>,
- Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1426278513.3643.117.camel@redhat.com>
+Cc: kvm@vger.kernel.org, aik@ozlabs.ru, Gavin Shan <gwshan@linux.vnet.ibm.com>,
+ agraf@suse.de, linuxppc-dev@ozlabs.org, david@gibson.dropbear.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,220 +47,159 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Sig_/g.=81wo1Wgt/W=xTLWWFeFS
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+On Fri, Mar 13, 2015 at 02:28:33PM -0600, Alex Williamson wrote:
+>On Wed, 2015-03-11 at 17:34 +1100, Gavin Shan wrote:
+>> The patch defines PCI error types and functions in eeh.h and
+>> exports function eeh_pe_inject_err(), which will be called by
+>> VFIO driver to inject the specified PCI error to the indicated
+>> PE for testing purpose.
+>> 
+>> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+>> ---
+>>  arch/powerpc/include/asm/eeh.h | 24 ++++++++++++++++
+>>  arch/powerpc/kernel/eeh.c      | 63 ++++++++++++++++++++++++++++++++++++++++++
+>>  2 files changed, 87 insertions(+)
+>> 
+>> diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
+>> index 9de87ce..eb20c62 100644
+>> --- a/arch/powerpc/include/asm/eeh.h
+>> +++ b/arch/powerpc/include/asm/eeh.h
+>> @@ -196,6 +196,28 @@ enum {
+>>  #define EEH_RESET_COMPLETE	4	/* PHB complete reset		*/
+>>  #define EEH_LOG_TEMP		1	/* EEH temporary error log	*/
+>>  #define EEH_LOG_PERM		2	/* EEH permanent error log	*/
+>> +#define EEH_ERR_TYPE_32		0	/* 32-bits PCI error	*/
+>> +#define EEH_ERR_TYPE_64		1	/* 64-bits PCI error	*/
+>> +#define EEH_ERR_FUNC_LD_MEM_ADDR	0	/* Memory load	*/
+>> +#define EEH_ERR_FUNC_LD_MEM_DATA	1
+>> +#define EEH_ERR_FUNC_LD_IO_ADDR		2	/* IO load	*/
+>> +#define EEH_ERR_FUNC_LD_IO_DATA		3
+>> +#define EEH_ERR_FUNC_LD_CFG_ADDR	4	/* Config load	*/
+>> +#define EEH_ERR_FUNC_LD_CFG_DATA	5
+>> +#define EEH_ERR_FUNC_ST_MEM_ADDR	6	/* Memory store	*/
+>> +#define EEH_ERR_FUNC_ST_MEM_DATA	7
+>> +#define EEH_ERR_FUNC_ST_IO_ADDR		8	/* IO store	*/
+>> +#define EEH_ERR_FUNC_ST_IO_DATA		9
+>> +#define EEH_ERR_FUNC_ST_CFG_ADDR	10	/* Config store	*/
+>> +#define EEH_ERR_FUNC_ST_CFG_DATA	11
+>> +#define EEH_ERR_FUNC_DMA_RD_ADDR	12	/* DMA read	*/
+>> +#define EEH_ERR_FUNC_DMA_RD_DATA	13
+>> +#define EEH_ERR_FUNC_DMA_RD_MASTER	14
+>> +#define EEH_ERR_FUNC_DMA_RD_TARGET	15
+>> +#define EEH_ERR_FUNC_DMA_WR_ADDR	16	/* DMA write	*/
+>> +#define EEH_ERR_FUNC_DMA_WR_DATA	17
+>> +#define EEH_ERR_FUNC_DMA_WR_MASTER	18
+>> +#define EEH_ERR_FUNC_DMA_WR_TARGET	19
+>>  
+>>  struct eeh_ops {
+>>  	char *name;
+>> @@ -296,6 +318,8 @@ int eeh_pe_set_option(struct eeh_pe *pe, int option);
+>>  int eeh_pe_get_state(struct eeh_pe *pe);
+>>  int eeh_pe_reset(struct eeh_pe *pe, int option);
+>>  int eeh_pe_configure(struct eeh_pe *pe);
+>> +int eeh_pe_inject_err(struct eeh_pe *pe, int type, int func,
+>> +		      unsigned long addr, unsigned long mask);
+>>  
+>>  /**
+>>   * EEH_POSSIBLE_ERROR() -- test for possible MMIO failure.
+>> diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
+>> index 60a0f15ce..dbab1a4 100644
+>> --- a/arch/powerpc/kernel/eeh.c
+>> +++ b/arch/powerpc/kernel/eeh.c
+>> @@ -1657,6 +1657,69 @@ int eeh_pe_configure(struct eeh_pe *pe)
+>>  }
+>>  EXPORT_SYMBOL_GPL(eeh_pe_configure);
+>>  
+>> +/**
+>> + * eeh_pe_inject_err - Injecting the specified PCI error to the indicated PE
+>> + * @pe: the indicated PE
+>> + * @type: error type
+>> + * @function: error function
+>> + * @addr: address
+>> + * @mask: address mask
+>> + *
+>> + * The routine is called to inject the specified PCI error, which
+>> + * is determined by @type and @function, to the indicated PE for
+>> + * testing purpose.
+>> + */
+>> +int eeh_pe_inject_err(struct eeh_pe *pe, int type, int func,
+>> +		      unsigned long addr, unsigned long mask)
+>> +{
+>> +	/* Invalid PE ? */
+>> +	if (!pe)
+>> +		return -ENODEV;
+>> +
+>> +	/* Unsupported operation ? */
+>> +	if (!eeh_ops || !eeh_ops->err_inject)
+>> +		return -ENOENT;
+>> +
+>> +	/* Check on PCI error type */
+>> +	switch (type) {
+>> +	case EEH_ERR_TYPE_32:
+>> +	case EEH_ERR_TYPE_64:
+>> +		break;
+>> +	default:
+>> +		return -EINVAL;
+>> +	}
+>> +
+>> +	/* Check on PCI error function */
+>> +	switch (func) {
+>> +	case EEH_ERR_FUNC_LD_MEM_ADDR:
+>> +	case EEH_ERR_FUNC_LD_MEM_DATA:
+>> +	case EEH_ERR_FUNC_LD_IO_ADDR:
+>> +	case EEH_ERR_FUNC_LD_IO_DATA:
+>> +	case EEH_ERR_FUNC_LD_CFG_ADDR:
+>> +	case EEH_ERR_FUNC_LD_CFG_DATA:
+>> +	case EEH_ERR_FUNC_ST_MEM_ADDR:
+>> +	case EEH_ERR_FUNC_ST_MEM_DATA:
+>> +	case EEH_ERR_FUNC_ST_IO_ADDR:
+>> +	case EEH_ERR_FUNC_ST_IO_DATA:
+>> +	case EEH_ERR_FUNC_ST_CFG_ADDR:
+>> +	case EEH_ERR_FUNC_ST_CFG_DATA:
+>> +	case EEH_ERR_FUNC_DMA_RD_ADDR:
+>> +	case EEH_ERR_FUNC_DMA_RD_DATA:
+>> +	case EEH_ERR_FUNC_DMA_RD_MASTER:
+>> +	case EEH_ERR_FUNC_DMA_RD_TARGET:
+>> +	case EEH_ERR_FUNC_DMA_WR_ADDR:
+>> +	case EEH_ERR_FUNC_DMA_WR_DATA:
+>> +	case EEH_ERR_FUNC_DMA_WR_MASTER:
+>> +	case EEH_ERR_FUNC_DMA_WR_TARGET:
+>> +		break;
+>> +	default:
+>> +		return -EINVAL;
+>> +	}
+>
+>Potentially a good use case for an enum for both type and func.  Then
+>you could close each enum with a "MAX" entry and simply test type/func <
+>MAX.  Thanks,
+>
 
-This runs a bit faster and removes another use of perl from
-the kernel build.
+Yes, It's reasonable to have following macro as all constants in eeh.h
+are represented by macros.
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
+#define EEH_ERR_FUNC_MAX 19
 
-v3: use $# instead of ${#*} (thanks David Laight)
-    also added check on vmlinux and objdump
-v2: address ShellCheck comments from Michael
+	if (func > 19)
+		return -EINVAL;
 
- arch/powerpc/Makefile        |  4 +--
- arch/powerpc/relocs_check.pl | 66 ----------------------------------------=
---
- arch/powerpc/relocs_check.sh | 68 ++++++++++++++++++++++++++++++++++++++++=
-++++
- 3 files changed, 70 insertions(+), 68 deletions(-)
- delete mode 100755 arch/powerpc/relocs_check.pl
- create mode 100755 arch/powerpc/relocs_check.sh
-
-diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-index 132d9c681d6a..1e868023b2c3 100644
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -248,10 +248,10 @@ boot :=3D arch/$(ARCH)/boot
-=20
- ifeq ($(CONFIG_RELOCATABLE),y)
- quiet_cmd_relocs_check =3D CALL    $<
--      cmd_relocs_check =3D perl $< "$(OBJDUMP)" "$(obj)/vmlinux"
-+      cmd_relocs_check =3D $(CONFIG_SHELL) $< "$(OBJDUMP)" "$(obj)/vmlinux"
-=20
- PHONY +=3D relocs_check
--relocs_check: arch/powerpc/relocs_check.pl vmlinux
-+relocs_check: arch/powerpc/relocs_check.sh vmlinux
- 	$(call cmd,relocs_check)
-=20
- zImage: relocs_check
-diff --git a/arch/powerpc/relocs_check.pl b/arch/powerpc/relocs_check.pl
-deleted file mode 100755
-index 3f46e8b9c56d..000000000000
---- a/arch/powerpc/relocs_check.pl
-+++ /dev/null
-@@ -1,66 +0,0 @@
--#!/usr/bin/perl
--
--# Copyright =C2=A9 2009 IBM Corporation
--
--# This program is free software; you can redistribute it and/or
--# modify it under the terms of the GNU General Public License
--# as published by the Free Software Foundation; either version
--# 2 of the License, or (at your option) any later version.
--
--# This script checks the relocations of a vmlinux for "suspicious"
--# relocations.
--
--use strict;
--use warnings;
--
--if ($#ARGV !=3D 1) {
--	die "$0 [path to objdump] [path to vmlinux]\n";
--}
--
--# Have Kbuild supply the path to objdump so we handle cross compilation.
--my $objdump =3D shift;
--my $vmlinux =3D shift;
--my $bad_relocs_count =3D 0;
--my $bad_relocs =3D "";
--my $old_binutils =3D 0;
--
--open(FD, "$objdump -R $vmlinux|") or die;
--while (<FD>) {
--	study $_;
--
--	# Only look at relocation lines.
--	next if (!/\s+R_/);
--
--	# These relocations are okay
--	# On PPC64:
--	# 	R_PPC64_RELATIVE, R_PPC64_NONE, R_PPC64_ADDR64
--	# On PPC:
--	# 	R_PPC_RELATIVE, R_PPC_ADDR16_HI,=20
--	# 	R_PPC_ADDR16_HA,R_PPC_ADDR16_LO,
--	# 	R_PPC_NONE
--
--	next if (/\bR_PPC64_RELATIVE\b/ or /\bR_PPC64_NONE\b/ or
--	         /\bR_PPC64_ADDR64\s+mach_/);
--	next if (/\bR_PPC_ADDR16_LO\b/ or /\bR_PPC_ADDR16_HI\b/ or
--		 /\bR_PPC_ADDR16_HA\b/ or /\bR_PPC_RELATIVE\b/ or
--		 /\bR_PPC_NONE\b/);
--
--	# If we see this type of relocation it's an idication that
--	# we /may/ be using an old version of binutils.
--	if (/R_PPC64_UADDR64/) {
--		$old_binutils++;
--	}
--
--	$bad_relocs_count++;
--	$bad_relocs .=3D $_;
--}
--
--if ($bad_relocs_count) {
--	print "WARNING: $bad_relocs_count bad relocations\n";
--	print $bad_relocs;
--}
--
--if ($old_binutils) {
--	print "WARNING: You need at least binutils >=3D 2.19 to build a ".
--	      "CONFIG_RELOCATABLE kernel\n";
--}
-diff --git a/arch/powerpc/relocs_check.sh b/arch/powerpc/relocs_check.sh
-new file mode 100755
-index 000000000000..bdc5cc639569
---- /dev/null
-+++ b/arch/powerpc/relocs_check.sh
-@@ -0,0 +1,68 @@
-+#!/bin/sh
-+
-+# Copyright =C2=A9 2015 IBM Corporation
-+
-+# This program is free software; you can redistribute it and/or
-+# modify it under the terms of the GNU General Public License
-+# as published by the Free Software Foundation; either version
-+# 2 of the License, or (at your option) any later version.
-+
-+# This script checks the relocations of a vmlinux for "suspicious"
-+# relocations.
-+
-+# based on relocs_check.pl
-+# Copyright =C2=A9 2009 IBM Corporation
-+
-+if [ $# -lt 2 ]; then
-+	echo "$0 [path to objdump] [path to vmlinux]" 1>&2
-+	exit 1
-+fi
-+
-+# Have Kbuild supply the path to objdump so we handle cross compilation.
-+objdump=3D"$1"
-+vmlinux=3D"$2"
-+
-+if [ ! -x "$objdump" ]; then
-+	echo "$0: objdump ($objdump) is not executable" 1>&2
-+	exit 1
-+fi
-+if [ ! -r "$vmlinux" ]; then
-+	echo "$0: vmlinux ($vmlinux) is not readable" 1>&2
-+	exit 1
-+fi
-+
-+bad_relocs=3D$(
-+"$objdump" -R "$vmlinux" |
-+	# Only look at relocation lines.
-+	grep -E '\<R_' |
-+	# These relocations are okay
-+	# On PPC64:
-+	#	R_PPC64_RELATIVE, R_PPC64_NONE
-+	#	R_PPC64_ADDR64 mach_<name>
-+	# On PPC:
-+	#	R_PPC_RELATIVE, R_PPC_ADDR16_HI,
-+	#	R_PPC_ADDR16_HA,R_PPC_ADDR16_LO,
-+	#	R_PPC_NONE
-+	grep -F -w -v 'R_PPC64_RELATIVE
-+R_PPC64_NONE
-+R_PPC_ADDR16_LO
-+R_PPC_ADDR16_HI
-+R_PPC_ADDR16_HA
-+R_PPC_RELATIVE
-+R_PPC_NONE' |
-+	grep -E -v '\<R_PPC64_ADDR64[[:space:]]+mach_'
-+)
-+
-+if [ -z "$bad_relocs" ]; then
-+	exit 0
-+fi
-+
-+num_bad=3D$(echo "$bad_relocs" | wc -l)
-+echo "WARNING: $num_bad bad relocations"
-+echo "$bad_relocs"
-+
-+# If we see this type of relocation it's an idication that
-+# we /may/ be using an old version of binutils.
-+if echo "$bad_relocs" | grep -q -F -w R_PPC64_UADDR64; then
-+	echo "WARNING: You need at least binutils >=3D 2.19 to build a CONFIG_REL=
-OCATABLE kernel"
-+fi
---=20
-2.1.4
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
---Sig_/g.=81wo1Wgt/W=xTLWWFeFS
-Content-Type: application/pgp-signature
-Content-Description: OpenPGP digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJVBWhFAAoJEMDTa8Ir7ZwV67kP/RNglZe4Djh2QVDR89BLctGg
-FzRUMKVZHoIirKkMzEkcV3tzV3P0xWYQJbgPRfablWNryyzduNp0nVTKW3MAm192
-ou2ALNIHa6Hhz+ukWzyAKQVDaqXzCkcWF5WTvhpNlsHSMQ7oZo8JMRT/qJrC4mmV
-62C/izQIW4UvX2EHT9p1lK7gL20cj+/Ljc2fEhZqGmBbO3fDrB+5psjuaFtHuLn9
-j7P9Mn1jRZ+t8wI8A2ZTgGSjQ15AmhFtgjurzYFhaQXaXYvSayIyLBgkyg97+bMl
-z1kq68/y7KRE6z2Uq/ect2Jbl/EenLn2auLgLBa8Vu7SkqZN3J4XMTaWcORebMkw
-nveblxXiEpxbI9L6KJ6a97YXF3nxTd19KZL2bDhEiuq1Bx7b/DrS09rsV9BhbG9c
-Lv9vO4DUvOiRC2Udk0gtcHYMlD09VYVprxsZJVUzbkXx/BOtUmfcG1Pam7SWmDPL
-8VsniFUv5yfpVLzMDtaYGJK7/S3Z7tHTeU0x63h5qdks/lpPSw2QnJNm2P8gvG0L
-GfhzDPXWujEgcnQC3R0pUDIM+7SrAbmmJwXnMDokMP5r/P/d6Xz1K+RAMpb2nP/d
-+pzBx1CABCm+jKQBSzoDUV0/BADEKFvkuS1CSzZ1zRT00Irs+m7flRaPFi+DquwB
-EZahKKmQXAr8ZDG2lmGX
-=OX6z
------END PGP SIGNATURE-----
-
---Sig_/g.=81wo1Wgt/W=xTLWWFeFS--
+Thanks,
+Gavin
+ 
+>Alex
+>
+>> +
+>> +	return eeh_ops->err_inject(pe, type, func, addr, mask);
+>> +}
+>> +EXPORT_SYMBOL_GPL(eeh_pe_inject_err);
+>> +
+>>  static int proc_eeh_show(struct seq_file *m, void *v)
+>>  {
+>>  	if (!eeh_enabled()) {
+>
+>
+>
+>--
+>To unsubscribe from this list: send the line "unsubscribe kvm" in
+>the body of a message to majordomo@vger.kernel.org
+>More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
