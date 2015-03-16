@@ -1,21 +1,18 @@
 Return-Path: <fabf@skynet.be>
 Received: from mailrelay118.isp.belgacom.be (mailrelay118.isp.belgacom.be
  [195.238.20.145])
- by lists.ozlabs.org (Postfix) with ESMTP id 311441A0B83
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Mar 2015 06:18:56 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 4F0201A0B92
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Mar 2015 06:21:14 +1100 (AEDT)
 From: Fabian Frederick <fabf@skynet.be>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 07/35 linux-next] char: constify of_device_id array
-Date: Mon, 16 Mar 2015 20:17:13 +0100
-Message-Id: <1426533469-25458-8-git-send-email-fabf@skynet.be>
-In-Reply-To: <1426533469-25458-1-git-send-email-fabf@skynet.be>
+Subject: [PATCH 18/35 linux-next] macintosh: constify of_device_id array
+Date: Mon, 16 Mar 2015 20:20:34 +0100
+Message-Id: <1426533651-25586-9-git-send-email-fabf@skynet.be>
+In-Reply-To: <1426533651-25586-1-git-send-email-fabf@skynet.be>
 References: <1426533469-25458-1-git-send-email-fabf@skynet.be>
-Cc: Herbert Xu <herbert@gondor.apana.org.au>, Corey Minyard <minyard@acm.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Eli Billauer <eli.billauer@gmail.com>, Fabian Frederick <fabf@skynet.be>,
- linux-crypto@vger.kernel.org, Matt Mackall <mpm@selenic.com>,
- Olof Johansson <olof@lixom.net>, openipmi-developer@lists.sourceforge.net,
- linuxppc-dev@lists.ozlabs.org
+ <1426533651-25586-1-git-send-email-fabf@skynet.be>
+Cc: Fabian Frederick <fabf@skynet.be>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,86 +27,35 @@ of_device_id is always used as const.
 
 Signed-off-by: Fabian Frederick <fabf@skynet.be>
 ---
- drivers/char/hw_random/pasemi-rng.c  | 2 +-
- drivers/char/hw_random/powernv-rng.c | 2 +-
- drivers/char/hw_random/ppc4xx-rng.c  | 2 +-
- drivers/char/ipmi/ipmi_si_intf.c     | 4 ++--
- drivers/char/xillybus/xillybus_of.c  | 2 +-
- 5 files changed, 6 insertions(+), 6 deletions(-)
+ drivers/macintosh/mediabay.c   | 2 +-
+ drivers/macintosh/rack-meter.c | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/char/hw_random/pasemi-rng.c b/drivers/char/hw_random/pasemi-rng.c
-index 3eb7bdd..51cb1d5 100644
---- a/drivers/char/hw_random/pasemi-rng.c
-+++ b/drivers/char/hw_random/pasemi-rng.c
-@@ -133,7 +133,7 @@ static int rng_remove(struct platform_device *dev)
- 	return 0;
- }
+diff --git a/drivers/macintosh/mediabay.c b/drivers/macintosh/mediabay.c
+index d98e566..2ddbe87 100644
+--- a/drivers/macintosh/mediabay.c
++++ b/drivers/macintosh/mediabay.c
+@@ -707,7 +707,7 @@ static const struct mb_ops keylargo_mb_ops = {
+  * Therefore we do it all by polling the media bay once each tick.
+  */
  
--static struct of_device_id rng_match[] = {
-+static const struct of_device_id rng_match[] = {
- 	{ .compatible      = "1682m-rng", },
- 	{ .compatible      = "pasemi,pwrficient-rng", },
- 	{ },
-diff --git a/drivers/char/hw_random/powernv-rng.c b/drivers/char/hw_random/powernv-rng.c
-index 3f4f632..263a5bb 100644
---- a/drivers/char/hw_random/powernv-rng.c
-+++ b/drivers/char/hw_random/powernv-rng.c
-@@ -61,7 +61,7 @@ static int powernv_rng_probe(struct platform_device *pdev)
- 	return 0;
- }
- 
--static struct of_device_id powernv_rng_match[] = {
-+static const struct of_device_id powernv_rng_match[] = {
- 	{ .compatible	= "ibm,power-rng",},
- 	{},
- };
-diff --git a/drivers/char/hw_random/ppc4xx-rng.c b/drivers/char/hw_random/ppc4xx-rng.c
-index c85d31a..b2cfda0 100644
---- a/drivers/char/hw_random/ppc4xx-rng.c
-+++ b/drivers/char/hw_random/ppc4xx-rng.c
-@@ -123,7 +123,7 @@ static int ppc4xx_rng_remove(struct platform_device *dev)
- 	return 0;
- }
- 
--static struct of_device_id ppc4xx_rng_match[] = {
-+static const struct of_device_id ppc4xx_rng_match[] = {
- 	{ .compatible = "ppc4xx-rng", },
- 	{ .compatible = "amcc,ppc460ex-rng", },
- 	{ .compatible = "amcc,ppc440epx-rng", },
-diff --git a/drivers/char/ipmi/ipmi_si_intf.c b/drivers/char/ipmi/ipmi_si_intf.c
-index 003b4c1..97cf9c2 100644
---- a/drivers/char/ipmi/ipmi_si_intf.c
-+++ b/drivers/char/ipmi/ipmi_si_intf.c
-@@ -2664,7 +2664,7 @@ static struct pci_driver ipmi_pci_driver = {
- };
- #endif /* CONFIG_PCI */
- 
--static struct of_device_id ipmi_match[];
-+static const struct of_device_id ipmi_match[];
- static int ipmi_probe(struct platform_device *dev)
+-static struct of_device_id media_bay_match[] =
++static const struct of_device_id media_bay_match[] =
  {
- #ifdef CONFIG_OF
-@@ -2761,7 +2761,7 @@ static int ipmi_remove(struct platform_device *dev)
+ 	{
+ 	.name		= "media-bay",
+diff --git a/drivers/macintosh/rack-meter.c b/drivers/macintosh/rack-meter.c
+index 4192901..4585f70 100644
+--- a/drivers/macintosh/rack-meter.c
++++ b/drivers/macintosh/rack-meter.c
+@@ -578,7 +578,7 @@ static int rackmeter_shutdown(struct macio_dev* mdev)
  	return 0;
  }
  
--static struct of_device_id ipmi_match[] =
-+static const struct of_device_id ipmi_match[] =
- {
- 	{ .type = "ipmi", .compatible = "ipmi-kcs",
- 	  .data = (void *)(unsigned long) SI_KCS },
-diff --git a/drivers/char/xillybus/xillybus_of.c b/drivers/char/xillybus/xillybus_of.c
-index 2002a3a..7818650 100644
---- a/drivers/char/xillybus/xillybus_of.c
-+++ b/drivers/char/xillybus/xillybus_of.c
-@@ -31,7 +31,7 @@ MODULE_LICENSE("GPL v2");
- static const char xillyname[] = "xillybus_of";
- 
- /* Match table for of_platform binding */
--static struct of_device_id xillybus_of_match[] = {
-+static const struct of_device_id xillybus_of_match[] = {
- 	{ .compatible = "xillybus,xillybus-1.00.a", },
- 	{ .compatible = "xlnx,xillybus-1.00.a", }, /* Deprecated */
- 	{}
+-static struct of_device_id rackmeter_match[] = {
++static const struct of_device_id rackmeter_match[] = {
+ 	{ .name = "i2s" },
+ 	{ }
+ };
 -- 
 2.1.0
