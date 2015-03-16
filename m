@@ -2,34 +2,36 @@ Return-Path: <gwshan@linux.vnet.ibm.com>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C59721A06F5
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Mar 2015 18:02:50 +1100 (AEDT)
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 672501A06F5
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Mar 2015 18:02:51 +1100 (AEDT)
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 73C581400B7
- for <linuxppc-dev@ozlabs.org>; Mon, 16 Mar 2015 18:02:50 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPS id 293BF1400DD
+ for <linuxppc-dev@ozlabs.org>; Mon, 16 Mar 2015 18:02:51 +1100 (AEDT)
 Received: from /spool/local
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
  Mon, 16 Mar 2015 17:02:49 +1000
 Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 94D3B2BB004D
- for <linuxppc-dev@ozlabs.org>; Mon, 16 Mar 2015 18:02:45 +1100 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 50FCA3578054
+ for <linuxppc-dev@ozlabs.org>; Mon, 16 Mar 2015 18:02:46 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
  by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t2G72bLM52494402
- for <linuxppc-dev@ozlabs.org>; Mon, 16 Mar 2015 18:02:45 +1100
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t2G72Cxg008701
- for <linuxppc-dev@ozlabs.org>; Mon, 16 Mar 2015 18:02:12 +1100
+ t2G72c7D20774988
+ for <linuxppc-dev@ozlabs.org>; Mon, 16 Mar 2015 18:02:46 +1100
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t2G72Cof016842
+ for <linuxppc-dev@ozlabs.org>; Mon, 16 Mar 2015 18:02:13 +1100
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH v2 1/2] powerpc/eeh: Introduce eeh_pe_inject_err()
-Date: Mon, 16 Mar 2015 18:01:21 +1100
-Message-Id: <1426489282-16725-1-git-send-email-gwshan@linux.vnet.ibm.com>
+Subject: [PATCH v2 2/2] drivers/vfio: Support EEH error injection
+Date: Mon, 16 Mar 2015 18:01:22 +1100
+Message-Id: <1426489282-16725-2-git-send-email-gwshan@linux.vnet.ibm.com>
+In-Reply-To: <1426489282-16725-1-git-send-email-gwshan@linux.vnet.ibm.com>
+References: <1426489282-16725-1-git-send-email-gwshan@linux.vnet.ibm.com>
 Cc: kvm@vger.kernel.org, aik@ozlabs.ru, Gavin Shan <gwshan@linux.vnet.ibm.com>,
  agraf@suse.de, alex.williamson@redhat.com, david@gibson.dropbear.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -41,113 +43,121 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The patch defines PCI error types and functions in eeh.h and
-exports function eeh_pe_inject_err(), which will be called by
-VFIO driver to inject the specified PCI error to the indicated
-PE for testing purpose.
+The patch adds one more EEH sub-command (VFIO_EEH_PE_INJECT_ERR)
+to inject the specified EEH error, which is represented by
+(struct vfio_eeh_pe_err), to the indicated PE for testing purpose.
 
 Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 ---
-v2: Use EEH_ERR_FUNC_{MIN,MAX} to validate PCI error function
+v2: Put additional arguments for error injection to union
 ---
- arch/powerpc/include/asm/eeh.h | 26 ++++++++++++++++++++++++++
- arch/powerpc/kernel/eeh.c      | 40 ++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 66 insertions(+)
+ Documentation/vfio.txt        | 12 ++++++++++++
+ drivers/vfio/vfio_spapr_eeh.c | 10 ++++++++++
+ include/uapi/linux/vfio.h     | 36 +++++++++++++++++++++++++++++++++++-
+ 3 files changed, 57 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
-index 55abfd0..44366fa 100644
---- a/arch/powerpc/include/asm/eeh.h
-+++ b/arch/powerpc/include/asm/eeh.h
-@@ -195,6 +195,30 @@ enum {
- #define EEH_RESET_FUNDAMENTAL	3	/* Fundamental reset		*/
- #define EEH_LOG_TEMP		1	/* EEH temporary error log	*/
- #define EEH_LOG_PERM		2	/* EEH permanent error log	*/
-+#define EEH_ERR_TYPE_32			0	/* 32-bits PCI error	*/
-+#define EEH_ERR_TYPE_64			1       /* 64-bits PCI error	*/
-+#define EEH_ERR_FUNC_MIN		0
-+#define EEH_ERR_FUNC_LD_MEM_ADDR	0	/* Memory load	*/
-+#define EEH_ERR_FUNC_LD_MEM_DATA	1
-+#define EEH_ERR_FUNC_LD_IO_ADDR		2	/* IO load	*/
-+#define EEH_ERR_FUNC_LD_IO_DATA		3
-+#define EEH_ERR_FUNC_LD_CFG_ADDR	4	/* Config load	*/
-+#define EEH_ERR_FUNC_LD_CFG_DATA	5
-+#define EEH_ERR_FUNC_ST_MEM_ADDR	6	/* Memory store	*/
-+#define EEH_ERR_FUNC_ST_MEM_DATA	7
-+#define EEH_ERR_FUNC_ST_IO_ADDR		8	/* IO store	*/
-+#define EEH_ERR_FUNC_ST_IO_DATA		9
-+#define EEH_ERR_FUNC_ST_CFG_ADDR	10	/* Config store	*/
-+#define EEH_ERR_FUNC_ST_CFG_DATA	11
-+#define EEH_ERR_FUNC_DMA_RD_ADDR	12	/* DMA read	*/
-+#define EEH_ERR_FUNC_DMA_RD_DATA	13
-+#define EEH_ERR_FUNC_DMA_RD_MASTER	14
-+#define EEH_ERR_FUNC_DMA_RD_TARGET	15
-+#define EEH_ERR_FUNC_DMA_WR_ADDR	16	/* DMA write	*/
-+#define EEH_ERR_FUNC_DMA_WR_DATA	17
-+#define EEH_ERR_FUNC_DMA_WR_MASTER	18
-+#define EEH_ERR_FUNC_DMA_WR_TARGET	19
-+#define EEH_ERR_FUNC_MAX		19
+diff --git a/Documentation/vfio.txt b/Documentation/vfio.txt
+index 96978ec..c6e11a3 100644
+--- a/Documentation/vfio.txt
++++ b/Documentation/vfio.txt
+@@ -385,6 +385,18 @@ The code flow from the example above should be slightly changed:
  
- struct eeh_ops {
- 	char *name;
-@@ -295,6 +319,8 @@ int eeh_pe_set_option(struct eeh_pe *pe, int option);
- int eeh_pe_get_state(struct eeh_pe *pe);
- int eeh_pe_reset(struct eeh_pe *pe, int option);
- int eeh_pe_configure(struct eeh_pe *pe);
-+int eeh_pe_inject_err(struct eeh_pe *pe, int type, int func,
-+		      unsigned long addr, unsigned long mask);
+ 	....
  
- /**
-  * EEH_POSSIBLE_ERROR() -- test for possible MMIO failure.
-diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
-index 19a897c..55083e5 100644
---- a/arch/powerpc/kernel/eeh.c
-+++ b/arch/powerpc/kernel/eeh.c
-@@ -1651,6 +1651,46 @@ int eeh_pe_configure(struct eeh_pe *pe)
- }
- EXPORT_SYMBOL_GPL(eeh_pe_configure);
++	/* Inject EEH error, which is expected to be caused by 32-bits
++	 * config load.
++	 */
++	pe_op.op = VFIO_EEH_PE_INJECT_ERR;
++	pe_op.err.type = VFIO_EEH_ERR_TYPE_32;
++	pe_op.err.func = VFIO_EEH_ERR_FUNC_LD_CFG_ADDR;
++	pe_op.err.addr = 0ul;
++	pe_op.err.mask = 0ul;
++	ioctl(container, VFIO_EEH_PE_OP, &pe_op);
++
++	....
++
+ 	/* When 0xFF's returned from reading PCI config space or IO BARs
+ 	 * of the PCI device. Check the PE's state to see if that has been
+ 	 * frozen.
+diff --git a/drivers/vfio/vfio_spapr_eeh.c b/drivers/vfio/vfio_spapr_eeh.c
+index 5fa42db..25ca634 100644
+--- a/drivers/vfio/vfio_spapr_eeh.c
++++ b/drivers/vfio/vfio_spapr_eeh.c
+@@ -85,6 +85,16 @@ long vfio_spapr_iommu_eeh_ioctl(struct iommu_group *group,
+ 		case VFIO_EEH_PE_CONFIGURE:
+ 			ret = eeh_pe_configure(pe);
+ 			break;
++		case VFIO_EEH_PE_INJECT_ERR:
++			if (op.argsz < sizeof(struct vfio_eeh_pe_op))
++				return -EINVAL;
++			if (copy_from_user(&op, (void __user *)arg,
++					   sizeof(struct vfio_eeh_pe_op)))
++				return -EFAULT;
++
++			ret = eeh_pe_inject_err(pe, op.err.type, op.err.func,
++						op.err.addr, op.err.mask);
++			break;
+ 		default:
+ 			ret = -EINVAL;
+ 		}
+diff --git a/include/uapi/linux/vfio.h b/include/uapi/linux/vfio.h
+index 82889c3..f68e962 100644
+--- a/include/uapi/linux/vfio.h
++++ b/include/uapi/linux/vfio.h
+@@ -468,12 +468,23 @@ struct vfio_iommu_spapr_tce_info {
+  * - unfreeze IO/DMA for frozen PE;
+  * - read PE state;
+  * - reset PE;
+- * - configure PE.
++ * - configure PE;
++ * - inject EEH error.
+  */
++struct vfio_eeh_pe_err {
++	__u32 type;
++	__u32 func;
++	__u64 addr;
++	__u64 mask;
++};
++
+ struct vfio_eeh_pe_op {
+ 	__u32 argsz;
+ 	__u32 flags;
+ 	__u32 op;
++	union {
++		struct vfio_eeh_pe_err err;
++	};
+ };
  
-+/**
-+ * eeh_pe_inject_err - Injecting the specified PCI error to the indicated PE
-+ * @pe: the indicated PE
-+ * @type: error type
-+ * @function: error function
-+ * @addr: address
-+ * @mask: address mask
-+ *
-+ * The routine is called to inject the specified PCI error, which
-+ * is determined by @type and @function, to the indicated PE for
-+ * testing purpose.
-+ */
-+int eeh_pe_inject_err(struct eeh_pe *pe, int type, int func,
-+		      unsigned long addr, unsigned long mask)
-+{
-+	/* Invalid PE ? */
-+	if (!pe)
-+		return -ENODEV;
-+
-+	/* Unsupported operation ? */
-+	if (!eeh_ops || !eeh_ops->err_inject)
-+		return -ENOENT;
-+
-+	/* Check on PCI error type */
-+	switch (type) {
-+	case EEH_ERR_TYPE_32:
-+	case EEH_ERR_TYPE_64:
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	/* Check on PCI error function */
-+	if (func < EEH_ERR_FUNC_MIN || func > EEH_ERR_FUNC_MAX)
-+		return -EINVAL;
-+
-+	return eeh_ops->err_inject(pe, type, func, addr, mask);
-+}
-+EXPORT_SYMBOL_GPL(eeh_pe_inject_err);
-+
- static int proc_eeh_show(struct seq_file *m, void *v)
- {
- 	if (!eeh_enabled()) {
+ #define VFIO_EEH_PE_DISABLE		0	/* Disable EEH functionality */
+@@ -490,6 +501,29 @@ struct vfio_eeh_pe_op {
+ #define VFIO_EEH_PE_RESET_HOT		6	/* Assert hot reset          */
+ #define VFIO_EEH_PE_RESET_FUNDAMENTAL	7	/* Assert fundamental reset  */
+ #define VFIO_EEH_PE_CONFIGURE		8	/* PE configuration          */
++#define VFIO_EEH_PE_INJECT_ERR		9	/* Inject EEH error          */
++#define  VFIO_EEH_ERR_TYPE_32		0	/* 32-bits EEH error type    */
++#define  VFIO_EEH_ERR_TYPE_64		1	/* 64-bits EEH error type    */
++#define  VFIO_EEH_ERR_FUNC_LD_MEM_ADDR		0	/* Memory load  */
++#define  VFIO_EEH_ERR_FUNC_LD_MEM_DATA		1
++#define  VFIO_EEH_ERR_FUNC_LD_IO_ADDR		2	/* IO load      */
++#define  VFIO_EEH_ERR_FUNC_LD_IO_DATA		3
++#define  VFIO_EEH_ERR_FUNC_LD_CFG_ADDR		4	/* Config load  */
++#define  VFIO_EEH_ERR_FUNC_LD_CFG_DATA		5
++#define  VFIO_EEH_ERR_FUNC_ST_MEM_ADDR		6	/* Memory store */
++#define  VFIO_EEH_ERR_FUNC_ST_MEM_DATA		7
++#define  VFIO_EEH_ERR_FUNC_ST_IO_ADDR		8	/* IO store     */
++#define  VFIO_EEH_ERR_FUNC_ST_IO_DATA		9
++#define  VFIO_EEH_ERR_FUNC_ST_CFG_ADDR		10	/* Config store */
++#define  VFIO_EEH_ERR_FUNC_ST_CFG_DATA		11
++#define  VFIO_EEH_ERR_FUNC_DMA_RD_ADDR		12	/* DMA read     */
++#define  VFIO_EEH_ERR_FUNC_DMA_RD_DATA		13
++#define  VFIO_EEH_ERR_FUNC_DMA_RD_MASTER	14
++#define  VFIO_EEH_ERR_FUNC_DMA_RD_TARGET	15
++#define  VFIO_EEH_ERR_FUNC_DMA_WR_ADDR		16	/* DMA write    */
++#define  VFIO_EEH_ERR_FUNC_DMA_WR_DATA		17
++#define  VFIO_EEH_ERR_FUNC_DMA_WR_MASTER	18
++#define  VFIO_EEH_ERR_FUNC_DMA_WR_TARGET	19
+ 
+ #define VFIO_EEH_PE_OP			_IO(VFIO_TYPE, VFIO_BASE + 21)
+ 
 -- 
 1.8.3.2
