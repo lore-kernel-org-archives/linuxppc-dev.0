@@ -1,24 +1,31 @@
-Return-Path: <Horia.Geanta@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0115.outbound.protection.outlook.com [65.55.169.115])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 388BB1A06F7
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Mar 2015 21:03:12 +1100 (AEDT)
-Message-ID: <5506AA4B.303@freescale.com>
-Date: Mon, 16 Mar 2015 12:02:51 +0200
-From: =?UTF-8?B?SG9yaWEgR2VhbnTEgw==?= <horia.geanta@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id CAAE11A06F5
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Mar 2015 22:01:46 +1100 (AEDT)
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 8FEC51400D5
+ for <linuxppc-dev@ozlabs.org>; Mon, 16 Mar 2015 22:01:46 +1100 (AEDT)
+Received: from /spool/local
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Mon, 16 Mar 2015 21:01:45 +1000
+Message-ID: <5506B7DC.80702@linux.vnet.ibm.com>
+Date: Mon, 16 Mar 2015 16:30:44 +0530
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Kim Phillips <kim.phillips@freescale.com>, Martin Hicks <mort@bork.org>
-Subject: Re: [PATCH v2 5/5] crypto: talitos: Add software backlog queue
- handling
-References: <1425388897-5434-1-git-send-email-mort@bork.org>
- <1425388897-5434-6-git-send-email-mort@bork.org>
- <20150303182332.546523088b5891a776880c0f@freescale.com>
-In-Reply-To: <20150303182332.546523088b5891a776880c0f@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org,
- linux-crypto@vger.kernel.org
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH v3 2/2] selftests/powerpc: Add a test of the
+ switch_endian() syscall
+References: <1426489030-26025-1-git-send-email-mpe@ellerman.id.au>
+ <1426489030-26025-2-git-send-email-mpe@ellerman.id.au>
+In-Reply-To: <1426489030-26025-2-git-send-email-mpe@ellerman.id.au>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxram@us.ibm.com, Jeremy Kerr <jk@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,25 +35,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 3/4/2015 2:23 AM, Kim Phillips wrote:
-> Only potential problem is getting the crypto API to set the GFP_DMA
-> flag in the allocation request, but presumably a
-> CRYPTO_TFM_REQ_DMA crt_flag can be made to handle that.
+On 03/16/2015 12:27 PM, Michael Ellerman wrote:
+> This adds a test of the switch_endian() syscall we added in the previous
+> commit.
+> 
+> We test it by calling the endian switch syscall, and then executing some
+> code in the other endian to check everything went as expected. That code
+> checks registers we expect to be maintained are, and then writes to
+> stdout. If the endian switch failed to happen that code sequence will be
+> illegal and cause the test to abort.
+> 
+> We then switch back to the original endian, do the same checks and
+> finally write a success message and exit(0).
+> 
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 
-Seems there are quite a few places that do not use the
-{aead,ablkcipher_ahash}_request_alloc() API to allocate crypto requests.
-Among them, IPsec and dm-crypt.
-I've looked at the code and I don't think it can be converted to use
-crypto API.
+Hey Michael,
 
-This means that the CRYPTO_TFM_REQ_DMA would be visible to all of these
-places. Some of the maintainers do not agree, as you've seen.
+Did a quick test, passes on LE but seems like failing on BE.
 
-An alternative would be for talitos to use the page allocator to get 1 /
-2 pages at probe time (4 channels x 32 entries/channel x 64B/descriptor
-= 8 kB), dma_map_page the area and manage it internally for talitos_desc
-hw descriptors.
-What do you think?
+On LE:
 
-Thanks,
-Horia
+Hello wrong-endian world
+Hello right-endian world
+success: switch_endian_test
+
+
+on BE:
+
+Hello wrong-endian world (returns 176)
+
+The previous version of the test was passing both on LE
+and BE (after applying the compiler trick in the assembly)
