@@ -1,39 +1,21 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 672501A06F5
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Mar 2015 18:02:51 +1100 (AEDT)
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 293BF1400DD
- for <linuxppc-dev@ozlabs.org>; Mon, 16 Mar 2015 18:02:51 +1100 (AEDT)
-Received: from /spool/local
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Mon, 16 Mar 2015 17:02:49 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 50FCA3578054
- for <linuxppc-dev@ozlabs.org>; Mon, 16 Mar 2015 18:02:46 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t2G72c7D20774988
- for <linuxppc-dev@ozlabs.org>; Mon, 16 Mar 2015 18:02:46 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t2G72Cof016842
- for <linuxppc-dev@ozlabs.org>; Mon, 16 Mar 2015 18:02:13 +1100
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH v2 2/2] drivers/vfio: Support EEH error injection
-Date: Mon, 16 Mar 2015 18:01:22 +1100
-Message-Id: <1426489282-16725-2-git-send-email-gwshan@linux.vnet.ibm.com>
-In-Reply-To: <1426489282-16725-1-git-send-email-gwshan@linux.vnet.ibm.com>
-References: <1426489282-16725-1-git-send-email-gwshan@linux.vnet.ibm.com>
-Cc: kvm@vger.kernel.org, aik@ozlabs.ru, Gavin Shan <gwshan@linux.vnet.ibm.com>,
- agraf@suse.de, alex.williamson@redhat.com, david@gibson.dropbear.id.au
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6661E1A06F5
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Mar 2015 19:16:51 +1100 (AEDT)
+Message-ID: <1426493810.4716.0.camel@ellerman.id.au>
+Subject: Re: linux panic on 4.0.0-rc4
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Pranith Kumar <bobby.prani@gmail.com>
+Date: Mon, 16 Mar 2015 19:16:50 +1100
+In-Reply-To: <CAJhHMCBcyVbNRQSpsyVfk8HMzZ=NXKkknjDRuch+e+yJGB3T5Q@mail.gmail.com>
+References: <CAJhHMCC+BJWBo3=XbLf2L_kpOTqR==ee667+TpnFdk3DRT3o+Q@mail.gmail.com>
+ <CAJhHMCBcyVbNRQSpsyVfk8HMzZ=NXKkknjDRuch+e+yJGB3T5Q@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: "open list:LINUX FOR POWERPC..." <linuxppc-dev@lists.ozlabs.org>,
+ LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,121 +25,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The patch adds one more EEH sub-command (VFIO_EEH_PE_INJECT_ERR)
-to inject the specified EEH error, which is represented by
-(struct vfio_eeh_pe_err), to the indicated PE for testing purpose.
+On Mon, 2015-03-16 at 01:34 -0400, Pranith Kumar wrote:
+> On Mon, Mar 16, 2015 at 1:11 AM, Pranith Kumar <bobby.prani@gmail.com> wrote:
+> > Hello,
+> >
+> > I have a power mac mini 32-bit system.
+> >
+> ...
+> > You can see the panic message here: http://imgur.com/s1lH15g. (there
+> > is no log and I have no serial console).
+> 
+> There was some debug code in there when it hit. The actual hang seems
+> to be in printk_late_init(). It does not return from this. May be this
+> is a hint?
 
-Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
----
-v2: Put additional arguments for error injection to union
----
- Documentation/vfio.txt        | 12 ++++++++++++
- drivers/vfio/vfio_spapr_eeh.c | 10 ++++++++++
- include/uapi/linux/vfio.h     | 36 +++++++++++++++++++++++++++++++++++-
- 3 files changed, 57 insertions(+), 1 deletion(-)
+That is where the boot consoles get disabled and it switches to the "real"
+console. It suggests that the system is not "hung" there but you just lost
+output.
 
-diff --git a/Documentation/vfio.txt b/Documentation/vfio.txt
-index 96978ec..c6e11a3 100644
---- a/Documentation/vfio.txt
-+++ b/Documentation/vfio.txt
-@@ -385,6 +385,18 @@ The code flow from the example above should be slightly changed:
- 
- 	....
- 
-+	/* Inject EEH error, which is expected to be caused by 32-bits
-+	 * config load.
-+	 */
-+	pe_op.op = VFIO_EEH_PE_INJECT_ERR;
-+	pe_op.err.type = VFIO_EEH_ERR_TYPE_32;
-+	pe_op.err.func = VFIO_EEH_ERR_FUNC_LD_CFG_ADDR;
-+	pe_op.err.addr = 0ul;
-+	pe_op.err.mask = 0ul;
-+	ioctl(container, VFIO_EEH_PE_OP, &pe_op);
-+
-+	....
-+
- 	/* When 0xFF's returned from reading PCI config space or IO BARs
- 	 * of the PCI device. Check the PE's state to see if that has been
- 	 * frozen.
-diff --git a/drivers/vfio/vfio_spapr_eeh.c b/drivers/vfio/vfio_spapr_eeh.c
-index 5fa42db..25ca634 100644
---- a/drivers/vfio/vfio_spapr_eeh.c
-+++ b/drivers/vfio/vfio_spapr_eeh.c
-@@ -85,6 +85,16 @@ long vfio_spapr_iommu_eeh_ioctl(struct iommu_group *group,
- 		case VFIO_EEH_PE_CONFIGURE:
- 			ret = eeh_pe_configure(pe);
- 			break;
-+		case VFIO_EEH_PE_INJECT_ERR:
-+			if (op.argsz < sizeof(struct vfio_eeh_pe_op))
-+				return -EINVAL;
-+			if (copy_from_user(&op, (void __user *)arg,
-+					   sizeof(struct vfio_eeh_pe_op)))
-+				return -EFAULT;
-+
-+			ret = eeh_pe_inject_err(pe, op.err.type, op.err.func,
-+						op.err.addr, op.err.mask);
-+			break;
- 		default:
- 			ret = -EINVAL;
- 		}
-diff --git a/include/uapi/linux/vfio.h b/include/uapi/linux/vfio.h
-index 82889c3..f68e962 100644
---- a/include/uapi/linux/vfio.h
-+++ b/include/uapi/linux/vfio.h
-@@ -468,12 +468,23 @@ struct vfio_iommu_spapr_tce_info {
-  * - unfreeze IO/DMA for frozen PE;
-  * - read PE state;
-  * - reset PE;
-- * - configure PE.
-+ * - configure PE;
-+ * - inject EEH error.
-  */
-+struct vfio_eeh_pe_err {
-+	__u32 type;
-+	__u32 func;
-+	__u64 addr;
-+	__u64 mask;
-+};
-+
- struct vfio_eeh_pe_op {
- 	__u32 argsz;
- 	__u32 flags;
- 	__u32 op;
-+	union {
-+		struct vfio_eeh_pe_err err;
-+	};
- };
- 
- #define VFIO_EEH_PE_DISABLE		0	/* Disable EEH functionality */
-@@ -490,6 +501,29 @@ struct vfio_eeh_pe_op {
- #define VFIO_EEH_PE_RESET_HOT		6	/* Assert hot reset          */
- #define VFIO_EEH_PE_RESET_FUNDAMENTAL	7	/* Assert fundamental reset  */
- #define VFIO_EEH_PE_CONFIGURE		8	/* PE configuration          */
-+#define VFIO_EEH_PE_INJECT_ERR		9	/* Inject EEH error          */
-+#define  VFIO_EEH_ERR_TYPE_32		0	/* 32-bits EEH error type    */
-+#define  VFIO_EEH_ERR_TYPE_64		1	/* 64-bits EEH error type    */
-+#define  VFIO_EEH_ERR_FUNC_LD_MEM_ADDR		0	/* Memory load  */
-+#define  VFIO_EEH_ERR_FUNC_LD_MEM_DATA		1
-+#define  VFIO_EEH_ERR_FUNC_LD_IO_ADDR		2	/* IO load      */
-+#define  VFIO_EEH_ERR_FUNC_LD_IO_DATA		3
-+#define  VFIO_EEH_ERR_FUNC_LD_CFG_ADDR		4	/* Config load  */
-+#define  VFIO_EEH_ERR_FUNC_LD_CFG_DATA		5
-+#define  VFIO_EEH_ERR_FUNC_ST_MEM_ADDR		6	/* Memory store */
-+#define  VFIO_EEH_ERR_FUNC_ST_MEM_DATA		7
-+#define  VFIO_EEH_ERR_FUNC_ST_IO_ADDR		8	/* IO store     */
-+#define  VFIO_EEH_ERR_FUNC_ST_IO_DATA		9
-+#define  VFIO_EEH_ERR_FUNC_ST_CFG_ADDR		10	/* Config store */
-+#define  VFIO_EEH_ERR_FUNC_ST_CFG_DATA		11
-+#define  VFIO_EEH_ERR_FUNC_DMA_RD_ADDR		12	/* DMA read     */
-+#define  VFIO_EEH_ERR_FUNC_DMA_RD_DATA		13
-+#define  VFIO_EEH_ERR_FUNC_DMA_RD_MASTER	14
-+#define  VFIO_EEH_ERR_FUNC_DMA_RD_TARGET	15
-+#define  VFIO_EEH_ERR_FUNC_DMA_WR_ADDR		16	/* DMA write    */
-+#define  VFIO_EEH_ERR_FUNC_DMA_WR_DATA		17
-+#define  VFIO_EEH_ERR_FUNC_DMA_WR_MASTER	18
-+#define  VFIO_EEH_ERR_FUNC_DMA_WR_TARGET	19
- 
- #define VFIO_EEH_PE_OP			_IO(VFIO_TYPE, VFIO_BASE + 21)
- 
--- 
-1.8.3.2
+Try booting with "keep_bootcon" ?
+
+If that doesn't help try booting with "udbg-immortal".
+
+cheers
