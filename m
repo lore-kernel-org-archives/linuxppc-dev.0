@@ -1,34 +1,17 @@
-Return-Path: <shreyas@linux.vnet.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2DF9B1A0299
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Mar 2015 15:14:57 +1100 (AEDT)
-Received: from /spool/local
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <shreyas@linux.vnet.ibm.com>;
- Mon, 16 Mar 2015 22:14:55 -0600
-Received: from b03cxnp07028.gho.boulder.ibm.com
- (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 0978419D8026
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Mar 2015 22:06:00 -0600 (MDT)
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
- by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t2H4D4fn34013224
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Mar 2015 21:13:12 -0700
-Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
- by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t2H4EJFs012212
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Mar 2015 22:14:20 -0600
-From: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH RFC v2] powerpc/powernv: Introduce kernel param to control
- fastsleep workaround behavior
-Date: Tue, 17 Mar 2015 09:43:53 +0530
-Message-Id: <1426565633-7415-1-git-send-email-shreyas@linux.vnet.ibm.com>
-Cc: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 369F51A09A6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Mar 2015 15:21:34 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: <linuxppc-dev@ozlabs.org>
+Subject: [PATCH v4 5/5] selftests/powerpc: Add test for VPHN
+Date: Tue, 17 Mar 2015 15:21:29 +1100
+Message-Id: <1426566089-1351-1-git-send-email-mpe@ellerman.id.au>
+In-Reply-To: <20150223151444.21565.65452.stgit@bahia.local>
+References: <20150223151444.21565.65452.stgit@bahia.local>
+Cc: gkurz@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,164 +21,523 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Fastsleep is one of the idle state which cpuidle subsystem currently
-uses on power8 machines. In this state L2 cache is brought down to a
-threshold voltage. Therefore when the core is in fastsleep, the
-communication between L2 and L3 needs to be fenced. But there is a bug
-in the current power8 chips surrounding this fencing. OPAL provides an
-interface to workaround this bug, and in the current implementation,
-every time before a core enters fastsleep OPAL call is made to 'apply'
-the workarond and when the core wakes up from fastsleep OPAL call is
-made to 'undo' the workaround. These OPAL calls account for roughly
-4000 cycles everytime the core has to enter or wakeup from fastsleep.
-The other alternative is to apply this workaround once at boot, and not
-undo it at all. While this would quicken fastsleep entry/wakeup path,
-downside is, any correctable error detected in L2 directory will result
-in a checkstop.
+From: Greg Kurz <gkurz@linux.vnet.ibm.com>
 
-This patch adds a new kernel paramerter
-pnv_fastsleep_workaround_once, which can be used to override
-the default behavior and apply the workaround once at boot and not undo
-it.
+The goal is to verify vphn_unpack_associativity() parses VPHN numbers
+correctly. We feed it with a variety of input values and compare with
+expected results.
 
-Signed-off-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
-CC: Michael Ellerman <mpe@ellerman.id.au>
-CC: Paul Mackerras <paulus@samba.org>
-CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-CC: linuxppc-dev@lists.ozlabs.org
+PAPR+ does not say much about VPHN parsing: I came up with a list of
+tests that check many simple cases and some corner ones. I wouldn't
+dare to say the list is exhaustive though.
+
+Signed-off-by: Greg Kurz <gkurz@linux.vnet.ibm.com>
+[mpe: Rework harness logic and rename to test-vphn]
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
-Changes in v2:
---------------
-Accurately describes the downside of running workaround always applied.
 
- Documentation/kernel-parameters.txt            |  4 +++
- arch/powerpc/include/asm/opal.h                |  8 +++++
- arch/powerpc/platforms/powernv/opal-wrappers.S |  1 +
- arch/powerpc/platforms/powernv/setup.c         | 45 +++++++++++++++++++++++++-
- 4 files changed, 57 insertions(+), 1 deletion(-)
+I reworked this a little bit, let me know if it looks OK to you.
 
-diff --git a/Documentation/kernel-parameters.txt b/Documentation/kernel-parameters.txt
-index bfcb1a6..006863b 100644
---- a/Documentation/kernel-parameters.txt
-+++ b/Documentation/kernel-parameters.txt
-@@ -2857,6 +2857,10 @@ bytes respectively. Such letter suffixes can also be entirely omitted.
- 			autoconfiguration.
- 			Ranges are in pairs (memory base and size).
+I renamed the test to test-vphn, and I changed the test loop to only call the
+harness once, but report all the individual test results as well.
+
+
+ tools/testing/selftests/powerpc/Makefile         |   2 +-
+ tools/testing/selftests/powerpc/utils.h          |   1 +
+ tools/testing/selftests/powerpc/vphn/.gitignore  |   1 +
+ tools/testing/selftests/powerpc/vphn/Makefile    |  13 +
+ tools/testing/selftests/powerpc/vphn/test-vphn.c | 410 +++++++++++++++++++++++
+ tools/testing/selftests/powerpc/vphn/vphn.c      |   1 +
+ tools/testing/selftests/powerpc/vphn/vphn.h      |   1 +
+ 7 files changed, 428 insertions(+), 1 deletion(-)
+ create mode 100644 tools/testing/selftests/powerpc/vphn/.gitignore
+ create mode 100644 tools/testing/selftests/powerpc/vphn/Makefile
+ create mode 100644 tools/testing/selftests/powerpc/vphn/test-vphn.c
+ create mode 120000 tools/testing/selftests/powerpc/vphn/vphn.c
+ create mode 120000 tools/testing/selftests/powerpc/vphn/vphn.h
+
+diff --git a/tools/testing/selftests/powerpc/Makefile b/tools/testing/selftests/powerpc/Makefile
+index 1d5e7ad2c460..476b8dd9275f 100644
+--- a/tools/testing/selftests/powerpc/Makefile
++++ b/tools/testing/selftests/powerpc/Makefile
+@@ -13,7 +13,7 @@ CFLAGS := -Wall -O2 -flto -Wall -Werror -DGIT_VERSION='"$(GIT_VERSION)"' -I$(CUR
  
-+	pnv_fastsleep_workaround_once=
-+			[BUGS=ppc64] Tells kernel to apply fastsleep workaround
-+			once at boot.
-+
- 	ports=		[IP_VS_FTP] IPVS ftp helper module
- 			Default is 21.
- 			Up to 8 (IP_VS_APP_MAX_PORTS) ports
-diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
-index 9ee0a30..8bea8fc 100644
---- a/arch/powerpc/include/asm/opal.h
-+++ b/arch/powerpc/include/asm/opal.h
-@@ -180,6 +180,13 @@ struct opal_sg_list {
- #define OPAL_PM_WINKLE_ENABLED	0x00040000
- #define OPAL_PM_SLEEP_ENABLED_ER1	0x00080000
+ export CC CFLAGS
  
-+/*
-+ * OPAL_CONFIG_CPU_IDLE_STATE parameters
-+ */
-+#define OPAL_CONFIG_IDLE_FASTSLEEP	1
-+#define OPAL_CONFIG_IDLE_UNDO		0
-+#define OPAL_CONFIG_IDLE_APPLY		1
-+
- #ifndef __ASSEMBLY__
+-TARGETS = pmu copyloops mm tm primitives stringloops
++TARGETS = pmu copyloops mm tm primitives stringloops vphn
  
- #include <linux/notifier.h>
-@@ -924,6 +931,7 @@ int64_t opal_handle_hmi(void);
- int64_t opal_register_dump_region(uint32_t id, uint64_t start, uint64_t end);
- int64_t opal_unregister_dump_region(uint32_t id);
- int64_t opal_slw_set_reg(uint64_t cpu_pir, uint64_t sprn, uint64_t val);
-+int64_t opal_config_cpu_idle_state(uint64_t state, uint64_t flag);
- int64_t opal_pci_set_phb_cxl_mode(uint64_t phb_id, uint64_t mode, uint64_t pe_number);
- int64_t opal_ipmi_send(uint64_t interface, struct opal_ipmi_msg *msg,
- 		uint64_t msg_len);
-diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
-index 0509bca..84a20bb 100644
---- a/arch/powerpc/platforms/powernv/opal-wrappers.S
-+++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
-@@ -283,6 +283,7 @@ OPAL_CALL(opal_sensor_read,			OPAL_SENSOR_READ);
- OPAL_CALL(opal_get_param,			OPAL_GET_PARAM);
- OPAL_CALL(opal_set_param,			OPAL_SET_PARAM);
- OPAL_CALL(opal_handle_hmi,			OPAL_HANDLE_HMI);
-+OPAL_CALL(opal_config_cpu_idle_state,		OPAL_CONFIG_CPU_IDLE_STATE);
- OPAL_CALL(opal_slw_set_reg,			OPAL_SLW_SET_REG);
- OPAL_CALL(opal_register_dump_region,		OPAL_REGISTER_DUMP_REGION);
- OPAL_CALL(opal_unregister_dump_region,		OPAL_UNREGISTER_DUMP_REGION);
-diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
-index d2de7d5..21dde6c 100644
---- a/arch/powerpc/platforms/powernv/setup.c
-+++ b/arch/powerpc/platforms/powernv/setup.c
-@@ -28,6 +28,7 @@
- #include <linux/bug.h>
- #include <linux/pci.h>
- #include <linux/cpufreq.h>
-+#include <linux/cpumask.h>
+ endif
  
- #include <asm/machdep.h>
- #include <asm/firmware.h>
-@@ -405,6 +406,20 @@ u32 pnv_get_supported_cpuidle_states(void)
- }
- EXPORT_SYMBOL_GPL(pnv_get_supported_cpuidle_states);
+diff --git a/tools/testing/selftests/powerpc/utils.h b/tools/testing/selftests/powerpc/utils.h
+index a93777ae0684..2ec455e37792 100644
+--- a/tools/testing/selftests/powerpc/utils.h
++++ b/tools/testing/selftests/powerpc/utils.h
+@@ -15,6 +15,7 @@ typedef   signed long long s64;
  
-+u8 pnv_apply_fastsleep_workaround_once;
+ /* Just for familiarity */
+ typedef uint32_t u32;
++typedef uint16_t u16;
+ typedef uint8_t u8;
+ 
+ 
+diff --git a/tools/testing/selftests/powerpc/vphn/.gitignore b/tools/testing/selftests/powerpc/vphn/.gitignore
+new file mode 100644
+index 000000000000..dd3039a0f638
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/vphn/.gitignore
+@@ -0,0 +1 @@
++parse-vphn
+diff --git a/tools/testing/selftests/powerpc/vphn/Makefile b/tools/testing/selftests/powerpc/vphn/Makefile
+new file mode 100644
+index 000000000000..4bce3ca9d140
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/vphn/Makefile
+@@ -0,0 +1,13 @@
++PROG := test-vphn
 +
-+static int __init pnv_fastsleep_workaround_once(char *str)
-+{
-+	pnv_apply_fastsleep_workaround_once = 1;
-+	return 0;
-+}
-+early_param("pnv_fastsleep_workaround_once", pnv_fastsleep_workaround_once);
++all: $(PROG)
 +
-+static void __init pnv_fastsleep_workaround_apply(void *info)
-+{
-+	opal_config_cpu_idle_state(OPAL_CONFIG_IDLE_FASTSLEEP,
-+					OPAL_CONFIG_IDLE_APPLY);
-+}
- static int __init pnv_init_idle_states(void)
- {
- 	struct device_node *power_mgt;
-@@ -440,7 +455,35 @@ static int __init pnv_init_idle_states(void)
- 		flags = be32_to_cpu(idle_state_flags[i]);
- 		supported_cpuidle_states |= flags;
- 	}
--	if (!(supported_cpuidle_states & OPAL_PM_SLEEP_ENABLED_ER1)) {
++$(PROG): ../harness.c
 +
-+	/*
-+	 * If OPAL_PM_SLEEP_ENABLED_ER1 is set, it indicates that workaround is
-+	 * needed to use fastsleep. Check whether the workaround has to be
-+	 * applied only once.
-+	 */
-+	if ((supported_cpuidle_states & OPAL_PM_SLEEP_ENABLED_ER1)
-+			&& pnv_apply_fastsleep_workaround_once) {
-+		/*
-+		 * Workaround needs to be applied by one thread in each core
++run_tests: all
++	./$(PROG)
++
++clean:
++	rm -f $(PROG)
++
++.PHONY: all run_tests clean
+diff --git a/tools/testing/selftests/powerpc/vphn/test-vphn.c b/tools/testing/selftests/powerpc/vphn/test-vphn.c
+new file mode 100644
+index 000000000000..5742f6876b25
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/vphn/test-vphn.c
+@@ -0,0 +1,410 @@
++#include <stdio.h>
++#include <byteswap.h>
++#include "utils.h"
++#include "subunit.h"
++
++#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
++#define cpu_to_be32(x)		bswap_32(x)
++#define be32_to_cpu(x)		bswap_32(x)
++#define be16_to_cpup(x)		bswap_16(*x)
++#define cpu_to_be64(x)		bswap_64(x)
++#else
++#define cpu_to_be32(x)		(x)
++#define be32_to_cpu(x)		(x)
++#define be16_to_cpup(x)		(*x)
++#define cpu_to_be64(x)		(x)
++#endif
++
++#include "vphn.c"
++
++static struct test {
++	char *descr;
++	long input[VPHN_REGISTER_COUNT];
++	u32 expected[VPHN_ASSOC_BUFSIZE];
++} all_tests[] = {
++	{
++		"vphn: no data",
++		{
++			0xffffffffffffffff,
++			0xffffffffffffffff,
++			0xffffffffffffffff,
++			0xffffffffffffffff,
++			0xffffffffffffffff,
++			0xffffffffffffffff,
++		},
++		{
++			0x00000000
++		}
++	},
++	{
++		"vphn: 1 x 16-bit value",
++		{
++			0x8001ffffffffffff,
++			0xffffffffffffffff,
++			0xffffffffffffffff,
++			0xffffffffffffffff,
++			0xffffffffffffffff,
++			0xffffffffffffffff,
++		},
++		{
++			0x00000001,
++			0x00000001
++		}
++	},
++	{
++		"vphn: 2 x 16-bit values",
++		{
++			0x80018002ffffffff,
++			0xffffffffffffffff,
++			0xffffffffffffffff,
++			0xffffffffffffffff,
++			0xffffffffffffffff,
++			0xffffffffffffffff,
++		},
++		{
++			0x00000002,
++			0x00000001,
++			0x00000002
++		}
++	},
++	{
++		"vphn: 3 x 16-bit values",
++		{
++			0x800180028003ffff,
++			0xffffffffffffffff,
++			0xffffffffffffffff,
++			0xffffffffffffffff,
++			0xffffffffffffffff,
++			0xffffffffffffffff,
++		},
++		{
++			0x00000003,
++			0x00000001,
++			0x00000002,
++			0x00000003
++		}
++	},
++	{
++		"vphn: 4 x 16-bit values",
++		{
++			0x8001800280038004,
++			0xffffffffffffffff,
++			0xffffffffffffffff,
++			0xffffffffffffffff,
++			0xffffffffffffffff,
++			0xffffffffffffffff,
++		},
++		{
++			0x00000004,
++			0x00000001,
++			0x00000002,
++			0x00000003,
++			0x00000004
++		}
++	},
++	{
++		/* Parsing the next 16-bit value out of the next 64-bit input
++		 * value.
 +		 */
-+		cpumask_t primary_thread_mask = cpu_thread_mask_to_cores(cpu_online_mask);
++		"vphn: 5 x 16-bit values",
++		{
++			0x8001800280038004,
++			0x8005ffffffffffff,
++			0xffffffffffffffff,
++			0xffffffffffffffff,
++			0xffffffffffffffff,
++			0xffffffffffffffff,
++		},
++		{
++			0x00000005,
++			0x00000001,
++			0x00000002,
++			0x00000003,
++			0x00000004,
++			0x00000005
++		}
++	},
++	{
++		/* Parse at most 6 x 64-bit input values */
++		"vphn: 24 x 16-bit values",
++		{
++			0x8001800280038004,
++			0x8005800680078008,
++			0x8009800a800b800c,
++			0x800d800e800f8010,
++			0x8011801280138014,
++			0x8015801680178018
++		},
++		{
++			0x00000018,
++			0x00000001,
++			0x00000002,
++			0x00000003,
++			0x00000004,
++			0x00000005,
++			0x00000006,
++			0x00000007,
++			0x00000008,
++			0x00000009,
++			0x0000000a,
++			0x0000000b,
++			0x0000000c,
++			0x0000000d,
++			0x0000000e,
++			0x0000000f,
++			0x00000010,
++			0x00000011,
++			0x00000012,
++			0x00000013,
++			0x00000014,
++			0x00000015,
++			0x00000016,
++			0x00000017,
++			0x00000018
++		}
++	},
++	{
++		"vphn: 1 x 32-bit value",
++		{
++			0x00000001ffffffff,
++			0xffffffffffffffff,
++			0xffffffffffffffff,
++			0xffffffffffffffff,
++			0xffffffffffffffff,
++			0xffffffffffffffff
++		},
++		{
++			0x00000001,
++			0x00000001
++		}
++	},
++	{
++		"vphn: 2 x 32-bit values",
++		{
++			0x0000000100000002,
++			0xffffffffffffffff,
++			0xffffffffffffffff,
++			0xffffffffffffffff,
++			0xffffffffffffffff,
++			0xffffffffffffffff
++		},
++		{
++			0x00000002,
++			0x00000001,
++			0x00000002
++		}
++	},
++	{
++		/* Parsing the next 32-bit value out of the next 64-bit input
++		 * value.
++		 */
++		"vphn: 3 x 32-bit values",
++		{
++			0x0000000100000002,
++			0x00000003ffffffff,
++			0xffffffffffffffff,
++			0xffffffffffffffff,
++			0xffffffffffffffff,
++			0xffffffffffffffff
++		},
++		{
++			0x00000003,
++			0x00000001,
++			0x00000002,
++			0x00000003
++		}
++	},
++	{
++		/* Parse at most 6 x 64-bit input values */
++		"vphn: 12 x 32-bit values",
++		{
++			0x0000000100000002,
++			0x0000000300000004,
++			0x0000000500000006,
++			0x0000000700000008,
++			0x000000090000000a,
++			0x0000000b0000000c
++		},
++		{
++			0x0000000c,
++			0x00000001,
++			0x00000002,
++			0x00000003,
++			0x00000004,
++			0x00000005,
++			0x00000006,
++			0x00000007,
++			0x00000008,
++			0x00000009,
++			0x0000000a,
++			0x0000000b,
++			0x0000000c
++		}
++	},
++	{
++		"vphn: 16-bit value followed by 32-bit value",
++		{
++			0x800100000002ffff,
++			0xffffffffffffffff,
++			0xffffffffffffffff,
++			0xffffffffffffffff,
++			0xffffffffffffffff,
++			0xffffffffffffffff
++		},
++		{
++			0x00000002,
++			0x00000001,
++			0x00000002
++		}
++	},
++	{
++		"vphn: 32-bit value followed by 16-bit value",
++		{
++			0x000000018002ffff,
++			0xffffffffffffffff,
++			0xffffffffffffffff,
++			0xffffffffffffffff,
++			0xffffffffffffffff,
++			0xffffffffffffffff
++		},
++		{
++			0x00000002,
++			0x00000001,
++			0x00000002
++		}
++	},
++	{
++		/* Parse a 32-bit value split accross two consecutives 64-bit
++		 * input values.
++		 */
++		"vphn: 16-bit value followed by 2 x 32-bit values",
++		{
++			0x8001000000020000,
++			0x0003ffffffffffff,
++			0xffffffffffffffff,
++			0xffffffffffffffff,
++			0xffffffffffffffff,
++			0xffffffffffffffff
++		},
++		{
++			0x00000003,
++			0x00000001,
++			0x00000002,
++			0x00000003,
++			0x00000004,
++			0x00000005
++		}
++	},
++	{
++		/* The lower bits in 0x0001ffff don't get mixed up with the
++		 * 0xffff terminator.
++		 */
++		"vphn: 32-bit value has all ones in 16 lower bits",
++		{
++			0x0001ffff80028003,
++			0xffffffffffffffff,
++			0xffffffffffffffff,
++			0xffffffffffffffff,
++			0xffffffffffffffff,
++			0xffffffffffffffff
++		},
++		{
++			0x00000003,
++			0x0001ffff,
++			0x00000002,
++			0x00000003
++		}
++	},
++	{
++		/* The following input doesn't follow the specification.
++		 */
++		"vphn: last 32-bit value is truncated",
++		{
++			0x0000000100000002,
++			0x0000000300000004,
++			0x0000000500000006,
++			0x0000000700000008,
++			0x000000090000000a,
++			0x0000000b800c2bad
++		},
++		{
++			0x0000000c,
++			0x00000001,
++			0x00000002,
++			0x00000003,
++			0x00000004,
++			0x00000005,
++			0x00000006,
++			0x00000007,
++			0x00000008,
++			0x00000009,
++			0x0000000a,
++			0x0000000b,
++			0x0000000c
++		}
++	},
++	{
++		"vphn: garbage after terminator",
++		{
++			0xffff2bad2bad2bad,
++			0x2bad2bad2bad2bad,
++			0x2bad2bad2bad2bad,
++			0x2bad2bad2bad2bad,
++			0x2bad2bad2bad2bad,
++			0x2bad2bad2bad2bad
++		},
++		{
++			0x00000000
++		}
++	},
++	{
++		NULL
++	}
++};
 +
-+		on_each_cpu_mask(&primary_thread_mask,
-+					pnv_fastsleep_workaround_apply,
-+					NULL, 1);
++static int test_one(struct test *test)
++{
++	__be32 output[VPHN_ASSOC_BUFSIZE] = { 0 };
++	int i, len;
++
++	vphn_unpack_associativity(test->input, output);
++
++	len = be32_to_cpu(output[0]);
++	if (len != test->expected[0]) {
++		printf("expected %d elements, got %d\n", test->expected[0],
++		       len);
++		return 1;
 +	}
 +
-+	/*
-+	 * In the fastsleep entry/exit path, calls to workaround are always
-+	 * made with an expectation that they will be patched out when not
-+	 * needed.
-+	 * Patch out these calls in following scenarios-
-+	 * 1. OPAL_PM_SLEEP_ENABLED_ER1 is not set. Indicating the underlying
-+	 * hardware does not have the bug.
-+	 * 2. Kernel is running with workaround always applied.
-+	 */
-+	if (!(supported_cpuidle_states & OPAL_PM_SLEEP_ENABLED_ER1)
-+			|| pnv_apply_fastsleep_workaround_once) {
- 		patch_instruction(
- 			(unsigned int *)pnv_fastsleep_workaround_at_entry,
- 			PPC_INST_NOP);
++	for (i = 1; i < len; i++) {
++		u32 val = be32_to_cpu(output[i]);
++		if (val != test->expected[i]) {
++			printf("element #%d is 0x%x, should be 0x%x\n", i, val,
++			       test->expected[i]);
++			return 1;
++		}
++	}
++
++	return 0;
++}
++
++static int test_vphn(void)
++{
++	static struct test *test;
++
++	for (test = all_tests; test->descr; test++) {
++		int ret;
++
++		ret = test_one(test);
++		test_finish(test->descr, ret);
++		if (ret)
++			return ret;
++	}
++
++	return 0;
++}
++
++int main(int argc, char **argv)
++{
++	return test_harness(test_vphn, "test-vphn");
++}
+diff --git a/tools/testing/selftests/powerpc/vphn/vphn.c b/tools/testing/selftests/powerpc/vphn/vphn.c
+new file mode 120000
+index 000000000000..186b906e66d5
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/vphn/vphn.c
+@@ -0,0 +1 @@
++../../../../../arch/powerpc/mm/vphn.c
+\ No newline at end of file
+diff --git a/tools/testing/selftests/powerpc/vphn/vphn.h b/tools/testing/selftests/powerpc/vphn/vphn.h
+new file mode 120000
+index 000000000000..7131efe38c65
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/vphn/vphn.h
+@@ -0,0 +1 @@
++../../../../../arch/powerpc/mm/vphn.h
+\ No newline at end of file
 -- 
-1.9.3
+2.1.0
