@@ -1,26 +1,39 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pd0-f180.google.com (mail-pd0-f180.google.com
- [209.85.192.180])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 127CC1A0008
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Mar 2015 12:02:58 +1100 (AEDT)
-Received: by pdbcz9 with SMTP id cz9so73633557pdb.3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Mar 2015 18:02:56 -0700 (PDT)
-Message-ID: <55077D38.1020404@ozlabs.ru>
-Date: Tue, 17 Mar 2015 12:02:48 +1100
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-MIME-Version: 1.0
-To: Alex Williamson <alex.williamson@redhat.com>
-Subject: Re: [PATCH kernel v6 29/29] vfio: powerpc/spapr: Support Dynamic
- DMA windows
-References: <1426234057-16165-1-git-send-email-aik@ozlabs.ru>	
- <1426234057-16165-30-git-send-email-aik@ozlabs.ru>
- <1426534686.3643.266.camel@redhat.com>
-In-Reply-To: <1426534686.3643.266.camel@redhat.com>
-Content-Type: text/plain; charset=koi8-r; format=flowed
-Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id CA07B1A012C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Mar 2015 12:44:07 +1100 (AEDT)
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id D3FA814009B
+ for <linuxppc-dev@ozlabs.org>; Tue, 17 Mar 2015 12:44:04 +1100 (AEDT)
+Received: from /spool/local
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Tue, 17 Mar 2015 11:44:02 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 98B9A2CE8040
+ for <linuxppc-dev@ozlabs.org>; Tue, 17 Mar 2015 12:44:00 +1100 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t2H1hqiC43319320
+ for <linuxppc-dev@ozlabs.org>; Tue, 17 Mar 2015 12:44:00 +1100
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t2H1hQhb020006
+ for <linuxppc-dev@ozlabs.org>; Tue, 17 Mar 2015 12:43:26 +1100
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH 4/7] powerpc/eeh: Create eeh_dev from pci_dn instead of
+ device_node
+Date: Tue, 17 Mar 2015 12:37:21 +1100
+Message-Id: <1426556244-30066-5-git-send-email-gwshan@linux.vnet.ibm.com>
+In-Reply-To: <1426556244-30066-1-git-send-email-gwshan@linux.vnet.ibm.com>
+References: <1426556244-30066-1-git-send-email-gwshan@linux.vnet.ibm.com>
+Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,480 +43,211 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03/17/2015 06:38 AM, Alex Williamson wrote:
-> On Fri, 2015-03-13 at 19:07 +1100, Alexey Kardashevskiy wrote:
->> This adds create/remove window ioctls to create and remove DMA windows.
->> sPAPR defines a Dynamic DMA windows capability which allows
->> para-virtualized guests to create additional DMA windows on a PCI bus.
->> The existing linux kernels use this new window to map the entire guest
->> memory and switch to the direct DMA operations saving time on map/unmap
->> requests which would normally happen in a big amounts.
->>
->> This adds 2 ioctl handlers - VFIO_IOMMU_SPAPR_TCE_CREATE and
->> VFIO_IOMMU_SPAPR_TCE_REMOVE - to create and remove windows.
->> Up to 2 windows are supported now by the hardware and by this driver.
->>
->> This changes VFIO_IOMMU_SPAPR_TCE_GET_INFO handler to return additional
->> information such as a number of supported windows and maximum number
->> levels of TCE tables.
->>
->> DDW is added as a capability, not as a SPAPR TCE IOMMU v2 unique feature
->> as we still want to support v2 on platforms which cannot do DDW for
->> the sake of TCE acceleration in KVM (coming soon).
->>
->> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
->> ---
->> Changes:
->> v6:
->> * added explicit VFIO_IOMMU_INFO_DDW flag to vfio_iommu_spapr_tce_info,
->> it used to be page mask flags from platform code
->> * added explicit pgsizes field
->> * added cleanup if tce_iommu_create_window() failed in a middle
->> * added checks for callbacks in tce_iommu_create_window and remove those
->> from tce_iommu_remove_window when it is too late to test anyway
->> * spapr_tce_find_free_table returns sensible error code now
->> * updated description of VFIO_IOMMU_SPAPR_TCE_CREATE/
->> VFIO_IOMMU_SPAPR_TCE_REMOVE
->>
->> v4:
->> * moved code to tce_iommu_create_window()/tce_iommu_remove_window()
->> helpers
->> * added docs
->> ---
->>   Documentation/vfio.txt              |  19 ++++
->>   arch/powerpc/include/asm/iommu.h    |   2 +-
->>   drivers/vfio/vfio_iommu_spapr_tce.c | 206 +++++++++++++++++++++++++++++++++++-
->>   include/uapi/linux/vfio.h           |  41 ++++++-
->>   4 files changed, 265 insertions(+), 3 deletions(-)
->>
->> diff --git a/Documentation/vfio.txt b/Documentation/vfio.txt
->> index 791e85c..61ce393 100644
->> --- a/Documentation/vfio.txt
->> +++ b/Documentation/vfio.txt
->> @@ -446,6 +446,25 @@ the memory block.
->>   The user space is not expected to call these often and the block descriptors
->>   are stored in a linked list in the kernel.
->>
->> +6) sPAPR specification allows guests to have an ddditional DMA window(s) on
->
->
-> s/ddditional/additional/
->
->> +a PCI bus with a variable page size. Two ioctls have been added to support
->> +this: VFIO_IOMMU_SPAPR_TCE_CREATE and VFIO_IOMMU_SPAPR_TCE_REMOVE.
->> +The platform has to support the functionality or error will be returned to
->> +the userspace. The existing hardware supports up to 2 DMA windows, one is
->> +2GB long, uses 4K pages and called "default 32bit window"; the other can
->> +be as big as entire RAM, use different page size, it is optional - guests
->> +create those in run-time if the guest driver supports 64bit DMA.
->> +
->> +VFIO_IOMMU_SPAPR_TCE_CREATE receives a page shift, a DMA window size and
->> +a number of TCE table levels (if a TCE table is going to be big enough and
->> +the kernel may not be able to allocate enough of physicall contiguous memory).
->
-> s/physicall/physically/
->
->> +It creates a new window in the available slot and returns the bus address where
->> +the new window starts. Due to hardware limitation, the user space cannot choose
->> +the location of DMA windows.
->> +
->> +VFIO_IOMMU_SPAPR_TCE_REMOVE receives the bus start address of the window
->> +and removes it.
->> +
->>   -------------------------------------------------------------------------------
->>
->>   [1] VFIO was originally an acronym for "Virtual Function I/O" in its
->> diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
->> index 13145a2..bac02bf 100644
->> --- a/arch/powerpc/include/asm/iommu.h
->> +++ b/arch/powerpc/include/asm/iommu.h
->> @@ -138,7 +138,7 @@ extern void iommu_free_table(struct iommu_table *tbl, const char *node_name);
->>   extern struct iommu_table *iommu_init_table(struct iommu_table * tbl,
->>   					    int nid);
->>
->> -#define IOMMU_TABLE_GROUP_MAX_TABLES	1
->> +#define IOMMU_TABLE_GROUP_MAX_TABLES	2
->>
->>   struct iommu_table_group;
->>
->> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
->> index d94116b..0129a4f 100644
->> --- a/drivers/vfio/vfio_iommu_spapr_tce.c
->> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
->> @@ -600,11 +600,137 @@ static long tce_iommu_build(struct tce_container *container,
->>   	return ret;
->>   }
->>
->> +static int spapr_tce_find_free_table(struct tce_container *container)
->> +{
->> +	int i;
->> +
->> +	for (i = 0; i < IOMMU_TABLE_GROUP_MAX_TABLES; ++i) {
->> +		struct iommu_table *tbl = &container->tables[i];
->> +
->> +		if (!tbl->it_size)
->> +			return i;
->> +	}
->> +
->> +	return -ENOSPC;
->> +}
->> +
->> +static long tce_iommu_create_window(struct tce_container *container,
->> +		__u32 page_shift, __u64 window_size, __u32 levels,
->> +		__u64 *start_addr)
->> +{
->> +	struct tce_iommu_group *tcegrp;
->> +	struct iommu_table_group *table_group;
->> +	struct iommu_table *tbl;
->> +	int num;
->> +	long ret;
->> +
->> +	num = spapr_tce_find_free_table(container);
->> +	if (num < 0)
->> +		return num;
->> +
->> +	tbl = &container->tables[num];
->> +
->> +	/* Get the first group for ops::create_table */
->> +	tcegrp = list_first_entry(&container->group_list,
->> +			struct tce_iommu_group, next);
->> +	table_group = iommu_group_get_iommudata(tcegrp->grp);
->> +	if (!table_group)
->> +		return -EFAULT;
->> +
->> +	if (!(table_group->pgsizes & (1ULL << page_shift)))
->> +		return -EINVAL;
->> +
->> +	if (!table_group->ops->set_window || !table_group->ops->unset_window ||
->> +			!table_group->ops->create_table)
->> +		return -EPERM;
->> +
->> +	/* Create TCE table */
->> +	ret = table_group->ops->create_table(table_group, num,
->> +			page_shift, window_size, levels, tbl);
->> +	if (ret)
->> +		return ret;
->> +
->> +	BUG_ON(!tbl->it_ops->free);
->> +
->> +	/*
->> +	 * Program the table to every group.
->> +	 * Groups have been tested for compatibility at the attach time.
->> +	 */
->> +	list_for_each_entry(tcegrp, &container->group_list, next) {
->> +		table_group = iommu_group_get_iommudata(tcegrp->grp);
->> +
->> +		ret = table_group->ops->set_window(table_group, num, tbl);
->> +		if (ret)
->> +			goto unset_exit;
->> +	}
->> +
->> +	/* Return start address assigned by platform in create_table() */
->> +	*start_addr = tbl->it_offset << tbl->it_page_shift;
->> +
->> +	return 0;
->> +
->> +unset_exit:
->> +	list_for_each_entry(tcegrp, &container->group_list, next) {
->> +		table_group = iommu_group_get_iommudata(tcegrp->grp);
->> +		table_group->ops->unset_window(table_group, num);
->> +	}
->> +	tbl->it_ops->free(tbl);
->> +	memset(tbl, 0, sizeof(*tbl));
->> +
->> +	return ret;
->> +}
->> +
->> +static long tce_iommu_remove_window(struct tce_container *container,
->> +		__u64 start_addr)
->> +{
->> +	struct iommu_table_group *table_group = NULL;
->> +	struct iommu_table *tbl;
->> +	struct tce_iommu_group *tcegrp;
->> +	int num;
->> +
->> +	tbl = spapr_tce_find_table(container, start_addr);
->> +	if (!tbl)
->> +		return -EINVAL;
->> +
->> +	/* Detach groups from IOMMUs */
->> +	num = tbl - container->tables;
->> +	list_for_each_entry(tcegrp, &container->group_list, next) {
->> +		table_group = iommu_group_get_iommudata(tcegrp->grp);
->> +
->> +		/*
->> +		 * When a group is attached, a window might be set if DDW
->> +		 * is supported by the platform. If it is not, VFIO will
->> +		 * use the existing window created by the platform code
->> +		 * so spapr_tce_find_table() will find a table but
->> +		 * since it is owned by the platform code, ops or unset_window()
->> +		 * will not be defined. If in this situation a broken
->> +		 * guest calls VFIO_IOMMU_SPAPR_TCE_REMOVE, we crash here
->> +		 * without the check.
->> +		 */
->
-> Doesn't this indicate a more serious issue if a user can remove windows
-> that they didn't create?  It seems like that would open us to all sorts
- > of inconsistent state, if not exploits.
+The patch adds function traverse_pci_dn(), which is similar to
+traverse_pci_devices() except it takes pci_dn, not device_node
+as parameter. The pci_dev.c has been reworked to create eeh_dev
+from pci_dn, instead of device_node.
 
+Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/eeh.h         | 10 +++++++--
+ arch/powerpc/include/asm/pci-bridge.h  |  8 ++++++-
+ arch/powerpc/include/asm/ppc-pci.h     |  3 +++
+ arch/powerpc/kernel/eeh_dev.c          | 14 ++++++------
+ arch/powerpc/kernel/pci_dn.c           | 40 ++++++++++++++++++++++++++++++++++
+ arch/powerpc/platforms/pseries/setup.c |  2 +-
+ 6 files changed, 66 insertions(+), 11 deletions(-)
 
-The existing upstream QEMU expects the default window to exits. So there is 
-at least one situation when there is a window which the user did not create.
-
-1. A window can be owned by the "powernv" platform or VFIO. If it is 
-"powernv" (old power7 IO chips) - removal of a window is not enabled, 
-otherwise (new power8 chip) it is.
-
-2. Old QEMU expects the default window to exist. If it is "powernv" owned 
-window, then VFIO just reuses it, otherwise it creates one.
-
-What is inconsistent about the state? Or I just document it in 
-Documentation/vfio.txt and that's it?
-
->
->> +		if (!table_group->ops || !table_group->ops->unset_window)
->> +			return -EPERM;
->> +
->> +		if (container->tables[num].it_size)
->> +			table_group->ops->unset_window(table_group, num);
->> +	}
->> +
->> +	/* Free table */
->> +	tcegrp = list_first_entry(&container->group_list,
->> +			struct tce_iommu_group, next);
->> +	table_group = iommu_group_get_iommudata(tcegrp->grp);
->> +
->> +	tce_iommu_clear(container, tbl, tbl->it_offset, tbl->it_size);
->> +	tbl->it_ops->free(tbl);
->> +	memset(tbl, 0, sizeof(*tbl));
->> +
->> +	return 0;
->> +}
->> +
->>   static long tce_iommu_ioctl(void *iommu_data,
->>   				 unsigned int cmd, unsigned long arg)
->>   {
->>   	struct tce_container *container = iommu_data;
->> -	unsigned long minsz;
->> +	unsigned long minsz, ddwsz;
->>   	long ret;
->>
->>   	switch (cmd) {
->> @@ -645,9 +771,24 @@ static long tce_iommu_ioctl(void *iommu_data,
->>   		if (info.argsz < minsz)
->>   			return -EINVAL;
->>
->> +		info.flags = 0;
->
-> This should not have been removed in the previous patch
-
-Ouch. Multiple rebase result :)
-
-
->>   		info.dma32_window_start = table_group->tce32_start;
->>   		info.dma32_window_size = table_group->tce32_size;
->>
->> +		if (table_group->max_dynamic_windows_supported) {
->> +			info.flags = VFIO_IOMMU_INFO_DDW;
->
-> Shouldn't this be |= ?
->
->> +			info.pgsizes = table_group->pgsizes;
->> +			info.max_dynamic_windows_supported =
->> +				table_group->max_dynamic_windows_supported;
->> +			info.levels = table_group->max_levels;
->> +		}
->> +
->> +		ddwsz = offsetofend(struct vfio_iommu_spapr_tce_info,
->> +				levels);
->> +
->> +		if (info.argsz == ddwsz)
->> +			minsz = ddwsz;
->> +
->
-> How about >= ?  Requiring == means that a new userspace that might know
-> about a new field added to a later kernel will break on this kernel.
->
-> Also, if DDW is not supported, you're just about to write uninitialized
-> kernel data to userspace :-\
->
->>   		if (copy_to_user((void __user *)arg, &info, minsz))
-
-
-then copy_to_user(..., info.argsz) is the answer, no? I do not really want 
-to touch the area of the struct I do not support in this call, unless there 
-is some code guideline for ioctl implementation.
-
-
->>   			return -EFAULT;
->>
->> @@ -830,6 +971,69 @@ static long tce_iommu_ioctl(void *iommu_data,
->>   		return ret;
->>   	}
->>
->> +	case VFIO_IOMMU_SPAPR_TCE_CREATE: {
->> +		struct vfio_iommu_spapr_tce_create create;
->> +
->> +		if (!tce_preregistered(container))
->> +			return -EPERM;
->> +
->> +		if (!tce_groups_attached(container))
->> +			return -ENXIO;
->> +
->> +		minsz = offsetofend(struct vfio_iommu_spapr_tce_create,
->> +				start_addr);
->> +
->> +		if (copy_from_user(&create, (void __user *)arg, minsz))
->> +			return -EFAULT;
->> +
->> +		if (create.argsz < minsz)
->> +			return -EINVAL;
->> +
->> +		if (create.flags)
->> +			return -EINVAL;
->> +
->> +		mutex_lock(&container->lock);
->> +
->> +		ret = tce_iommu_create_window(container, create.page_shift,
->> +				create.window_size, create.levels,
->> +				&create.start_addr);
->> +
->> +		if (!ret && copy_to_user((void __user *)arg, &create, minsz))
->> +			ret = -EFAULT;
->> +
->> +		mutex_unlock(&container->lock);
->
-> Even easier would be to move the unlock up, we probably don't need to
-> protect the copy_to_user().
- >
->> +
->> +		return ret;
->> +	}
->> +	case VFIO_IOMMU_SPAPR_TCE_REMOVE: {
->> +		struct vfio_iommu_spapr_tce_remove remove;
->> +
->> +		if (!tce_preregistered(container))
->> +			return -EPERM;
->> +
->> +		if (!tce_groups_attached(container))
->> +			return -ENXIO;
->> +
->> +		minsz = offsetofend(struct vfio_iommu_spapr_tce_remove,
->> +				start_addr);
->> +
->> +		if (copy_from_user(&remove, (void __user *)arg, minsz))
->> +			return -EFAULT;
->> +
->> +		if (remove.argsz < minsz)
->> +			return -EINVAL;
->> +
->> +		if (remove.flags)
->> +			return -EINVAL;
->> +
->> +		mutex_lock(&container->lock);
->> +
->> +		ret = tce_iommu_remove_window(container, remove.start_addr);
->> +
->> +		mutex_unlock(&container->lock);
->> +
->> +		return ret;
->> +	}
->>   	}
->>
->>   	return -ENOTTY;
->> diff --git a/include/uapi/linux/vfio.h b/include/uapi/linux/vfio.h
->> index fbc5286..7fa02e1 100644
->> --- a/include/uapi/linux/vfio.h
->> +++ b/include/uapi/linux/vfio.h
->> @@ -457,9 +457,13 @@ struct vfio_iommu_type1_dma_unmap {
->>    */
->>   struct vfio_iommu_spapr_tce_info {
->>   	__u32 argsz;
->> -	__u32 flags;			/* reserved for future use */
->> +	__u32 flags;
->> +#define VFIO_IOMMU_INFO_DDW	(1 << 0)	/* DDW supported */
->
-> s/VFIO_IOMMU_INFO_DDW/VFIO_IOMMU_SPAPR_INFO_DDW/
-
-VFIO_IOMMU_INFO_PGSIZES is not VFIO_IOMMU_TYPE1_INFO_PGSIZES ;-) but I'll fix.
-
-
->
->>   	__u32 dma32_window_start;	/* 32 bit window start (bytes) */
->>   	__u32 dma32_window_size;	/* 32 bit window size (bytes) */
->> +	__u64 pgsizes;			/* Bitmap of supported page sizes */
->> +	__u32 max_dynamic_windows_supported;
->> +	__u32 levels;
->
-> Please indicate that the last 3 fields are only supported with DDW.
-
-
-Like this?
-
-===
-- * A flag will need to be added if other page sizes are supported,
-- * so as defined here, it is always 4k.
-+ * Flags supported:
-+ * - VFIO_IOMMU_INFO_DDW: informs the userspace that dynamic DMA windows
-+ *   (DDW) support is present. @pgsizes, @max_dynamic_windows_supported,
-+ *   @levels are only supported when DDW is present.
-   */
-  struct vfio_iommu_spapr_tce_info {
-         __u32 argsz;
-
-===
-
-
->
->>   };
->>
->>   #define VFIO_IOMMU_SPAPR_TCE_GET_INFO	_IO(VFIO_TYPE, VFIO_BASE + 12)
->> @@ -520,6 +524,41 @@ struct vfio_iommu_spapr_register_memory {
->>    */
->>   #define VFIO_IOMMU_SPAPR_UNREGISTER_MEMORY	_IO(VFIO_TYPE, VFIO_BASE + 18)
->>
->> +/**
->> + * VFIO_IOMMU_SPAPR_TCE_CREATE - _IOWR(VFIO_TYPE, VFIO_BASE + 19, struct vfio_iommu_spapr_tce_create)
->> + *
->> + * Creates an additional TCE table and programs it (sets a new DMA window)
->> + * to every IOMMU group in the container. It receives page shift, window
->> + * size and number of levels in the TCE table being created.
->> + *
->> + * It allocates and returns an offset on a PCI bus of the new DMA window.
->> + */
->> +struct vfio_iommu_spapr_tce_create {
->> +	__u32 argsz;
->> +	__u32 flags;
->> +	/* in */
->> +	__u32 page_shift;
->> +	__u64 window_size;
->> +	__u32 levels;
->> +	/* out */
->> +	__u64 start_addr;
->> +};
->> +#define VFIO_IOMMU_SPAPR_TCE_CREATE	_IO(VFIO_TYPE, VFIO_BASE + 19)
->> +
->> +/**
->> + * VFIO_IOMMU_SPAPR_TCE_REMOVE - _IOW(VFIO_TYPE, VFIO_BASE + 20, struct vfio_iommu_spapr_tce_remove)
->> + *
->> + * Unprograms a TCE table from all groups in the container and destroys it.
->> + * It receives a PCI bus offset as a window id.
->> + */
->> +struct vfio_iommu_spapr_tce_remove {
->> +	__u32 argsz;
->> +	__u32 flags;
->> +	/* in */
->> +	__u64 start_addr;
->> +};
->> +#define VFIO_IOMMU_SPAPR_TCE_REMOVE	_IO(VFIO_TYPE, VFIO_BASE + 20)
->> +
->>   /* ***************************************************************** */
->>
->>   #endif /* _UAPIVFIO_H */
->
->
->
-
-
+diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
+index 55abfd0..bb24172 100644
+--- a/arch/powerpc/include/asm/eeh.h
++++ b/arch/powerpc/include/asm/eeh.h
+@@ -137,6 +137,7 @@ struct eeh_dev {
+ 	struct list_head list;		/* Form link list in the PE	*/
+ 	struct pci_controller *phb;	/* Associated PHB		*/
+ 	struct device_node *dn;		/* Associated device node	*/
++	struct pci_dn *pdn;		/* Associated PCI device node	*/
+ 	struct pci_dev *pdev;		/* Associated PCI device	*/
+ 	struct pci_bus *bus;		/* PCI bus for partial hotplug	*/
+ };
+@@ -146,6 +147,11 @@ static inline struct device_node *eeh_dev_to_of_node(struct eeh_dev *edev)
+ 	return edev ? edev->dn : NULL;
+ }
+ 
++static inline struct pci_dn *eeh_dev_to_pdn(struct eeh_dev *edev)
++{
++	return edev ? edev->pdn : NULL;
++}
++
+ static inline struct pci_dev *eeh_dev_to_pci_dev(struct eeh_dev *edev)
+ {
+ 	return edev ? edev->pdev : NULL;
+@@ -272,7 +278,7 @@ void eeh_pe_restore_bars(struct eeh_pe *pe);
+ const char *eeh_pe_loc_get(struct eeh_pe *pe);
+ struct pci_bus *eeh_pe_bus_get(struct eeh_pe *pe);
+ 
+-void *eeh_dev_init(struct device_node *dn, void *data);
++void *eeh_dev_init(struct pci_dn *pdn, void *data);
+ void eeh_dev_phb_init_dynamic(struct pci_controller *phb);
+ int eeh_init(void);
+ int __init eeh_ops_register(struct eeh_ops *ops);
+@@ -323,7 +329,7 @@ static inline int eeh_init(void)
+ 	return 0;
+ }
+ 
+-static inline void *eeh_dev_init(struct device_node *dn, void *data)
++static inline void *eeh_dev_init(struct pci_dn *pdn, void *data)
+ {
+ 	return NULL;
+ }
+diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
+index 2ab6c4a..23558bc 100644
+--- a/arch/powerpc/include/asm/pci-bridge.h
++++ b/arch/powerpc/include/asm/pci-bridge.h
+@@ -216,8 +216,14 @@ static inline struct eeh_dev *of_node_to_eeh_dev(struct device_node *dn)
+ 
+ 	return PCI_DN(dn)->edev;
+ }
++
++static inline struct eeh_dev *pdn_to_eeh_dev(struct pci_dn *pdn)
++{
++	return pdn ? pdn->edev : NULL;
++}
+ #else
+-#define of_node_to_eeh_dev(x) (NULL)
++#define of_node_to_eeh_dev(x)	(NULL)
++#define pdn_to_eeh_dev(x)	(NULL)
+ #endif
+ 
+ /** Find the bus corresponding to the indicated device node */
+diff --git a/arch/powerpc/include/asm/ppc-pci.h b/arch/powerpc/include/asm/ppc-pci.h
+index db1e2b8..eef127e 100644
+--- a/arch/powerpc/include/asm/ppc-pci.h
++++ b/arch/powerpc/include/asm/ppc-pci.h
+@@ -36,6 +36,9 @@ struct device_node;
+ typedef void *(*traverse_func)(struct device_node *me, void *data);
+ void *traverse_pci_devices(struct device_node *start, traverse_func pre,
+ 		void *data);
++void *traverse_pci_dn(struct pci_dn *root,
++		      void *(*fn)(struct pci_dn *, void *),
++		      void *data);
+ 
+ extern void pci_devs_phb_init(void);
+ extern void pci_devs_phb_init_dynamic(struct pci_controller *phb);
+diff --git a/arch/powerpc/kernel/eeh_dev.c b/arch/powerpc/kernel/eeh_dev.c
+index e5274ee..9acfba9 100644
+--- a/arch/powerpc/kernel/eeh_dev.c
++++ b/arch/powerpc/kernel/eeh_dev.c
+@@ -43,13 +43,13 @@
+ 
+ /**
+  * eeh_dev_init - Create EEH device according to OF node
+- * @dn: device node
++ * @pdn: PCI device node
+  * @data: PHB
+  *
+  * It will create EEH device according to the given OF node. The function
+  * might be called by PCI emunation, DR, PHB hotplug.
+  */
+-void *eeh_dev_init(struct device_node *dn, void *data)
++void *eeh_dev_init(struct pci_dn *pdn, void *data)
+ {
+ 	struct pci_controller *phb = data;
+ 	struct eeh_dev *edev;
+@@ -63,8 +63,8 @@ void *eeh_dev_init(struct device_node *dn, void *data)
+ 	}
+ 
+ 	/* Associate EEH device with OF node */
+-	PCI_DN(dn)->edev = edev;
+-	edev->dn  = dn;
++	pdn->edev = edev;
++	edev->pdn = pdn;
+ 	edev->phb = phb;
+ 	INIT_LIST_HEAD(&edev->list);
+ 
+@@ -80,16 +80,16 @@ void *eeh_dev_init(struct device_node *dn, void *data)
+  */
+ void eeh_dev_phb_init_dynamic(struct pci_controller *phb)
+ {
+-	struct device_node *dn = phb->dn;
++	struct pci_dn *root = phb->firmware_data;
+ 
+ 	/* EEH PE for PHB */
+ 	eeh_phb_pe_create(phb);
+ 
+ 	/* EEH device for PHB */
+-	eeh_dev_init(dn, phb);
++	eeh_dev_init(root, phb);
+ 
+ 	/* EEH devices for children OF nodes */
+-	traverse_pci_devices(dn, eeh_dev_init, phb);
++	traverse_pci_dn(root, eeh_dev_init, phb);
+ }
+ 
+ /**
+diff --git a/arch/powerpc/kernel/pci_dn.c b/arch/powerpc/kernel/pci_dn.c
+index c990275..bdfdebb 100644
+--- a/arch/powerpc/kernel/pci_dn.c
++++ b/arch/powerpc/kernel/pci_dn.c
+@@ -361,6 +361,46 @@ void *traverse_pci_devices(struct device_node *start, traverse_func pre,
+ 	return NULL;
+ }
+ 
++static struct pci_dn *pci_dn_next_one(struct pci_dn *root,
++				      struct pci_dn *pdn)
++{
++	struct list_head *next = pdn->child_list.next;
++
++	if (next != &pdn->child_list)
++		return list_entry(next, struct pci_dn, list);
++
++	while (1) {
++		if (pdn == root)
++			return NULL;
++
++		next = pdn->list.next;
++		if (next != &pdn->parent->child_list)
++			break;
++
++		pdn = pdn->parent;
++	}
++
++	return list_entry(next, struct pci_dn, list);
++}
++
++void *traverse_pci_dn(struct pci_dn *root,
++		      void *(*fn)(struct pci_dn *, void *),
++		      void *data)
++{
++	struct pci_dn *pdn = root;
++	void *ret;
++
++	/* Only scan the child nodes */
++	for (pdn = pci_dn_next_one(root, pdn); pdn;
++	     pdn = pci_dn_next_one(root, pdn)) {
++		ret = fn(pdn, data);
++		if (ret)
++			return ret;
++	}
++
++	return NULL;
++}
++
+ /** 
+  * pci_devs_phb_init_dynamic - setup pci devices under this PHB
+  * phb: pci-to-host bridge (top-level bridge connecting to cpu)
+diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
+index e445b67..7030407 100644
+--- a/arch/powerpc/platforms/pseries/setup.c
++++ b/arch/powerpc/platforms/pseries/setup.c
+@@ -265,7 +265,7 @@ static int pci_dn_reconfig_notifier(struct notifier_block *nb, unsigned long act
+ 			update_dn_pci_info(np, pci->phb);
+ 
+ 			/* Create EEH device for the OF node */
+-			eeh_dev_init(np, pci->phb);
++			eeh_dev_init(PCI_DN(np), pci->phb);
+ 		}
+ 		break;
+ 	default:
 -- 
-Alexey
+1.8.3.2
