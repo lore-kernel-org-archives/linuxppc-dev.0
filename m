@@ -1,27 +1,18 @@
-Return-Path: <bobby.prani@gmail.com>
-Received: from mail-vc0-x22f.google.com (mail-vc0-x22f.google.com
- [IPv6:2607:f8b0:400c:c03::22f])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3FCD91A0A06
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Mar 2015 13:03:08 +1100 (AEDT)
-Received: by mail-vc0-f175.google.com with SMTP id hq11so13683019vcb.6
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Mar 2015 19:03:04 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <1426548151.31646.4.camel@ellerman.id.au>
-References: <CAJhHMCC+BJWBo3=XbLf2L_kpOTqR==ee667+TpnFdk3DRT3o+Q@mail.gmail.com>
- <CAJhHMCBcyVbNRQSpsyVfk8HMzZ=NXKkknjDRuch+e+yJGB3T5Q@mail.gmail.com>
- <1426493810.4716.0.camel@ellerman.id.au>
- <CAJhHMCC06H-BRFBBcD_PfumyvHoFAjbi_MOn7gSeq5y093FSEQ@mail.gmail.com>
- <1426548151.31646.4.camel@ellerman.id.au>
-From: Pranith Kumar <bobby.prani@gmail.com>
-Date: Mon, 16 Mar 2015 22:02:34 -0400
-Message-ID: <CAJhHMCDCoo7g5WrXKPEbemoChQn6BGZOXD00z4kZqVE5boEBhA@mail.gmail.com>
-Subject: Re: linux panic on 4.0.0-rc4
-To: Michael Ellerman <mpe@ellerman.id.au>
-Content-Type: text/plain; charset=UTF-8
-Cc: "open list:LINUX FOR POWERPC..." <linuxppc-dev@lists.ozlabs.org>,
- LKML <linux-kernel@vger.kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8555B1A09AA
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Mar 2015 13:16:02 +1100 (AEDT)
+In-Reply-To: <1424210434-28070-4-git-send-email-sukadev@linux.vnet.ibm.com>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+ Paul Mackerras <paulus@samba.org>
+From: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [3/9] powerpc/hv-24x7: Drop event_24x7_request()
+Message-Id: <20150317021602.6BCFE14010F@ozlabs.org>
+Date: Tue, 17 Mar 2015 13:16:02 +1100 (AEDT)
+Cc: peterz@infradead.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,22 +22,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Mar 16, 2015 at 7:22 PM, Michael Ellerman <mpe@ellerman.id.au> wrote:
->
-> The log shows that init is being killed, that's what's causing the panic.
->
-> The exitcode of init is 0x200, which due to the vagaries of UNIX is I think an
-> "exit status" of 2 in the common usage.
->
-> But it suggests that your init is just exiting for some reason?
->
+On Tue, 2015-17-02 at 22:00:28 UTC, Sukadev Bhattiprolu wrote:
+> The function event_24x7_request() is essentially a wrapper to the
+> function single_24x7_request() and can be dropped to simplify code.
+> 
+> diff --git a/arch/powerpc/perf/hv-24x7.c b/arch/powerpc/perf/hv-24x7.c
+> index 7856e38..c189e75 100644
+> --- a/arch/powerpc/perf/hv-24x7.c
+> +++ b/arch/powerpc/perf/hv-24x7.c
+> @@ -1004,17 +1004,22 @@ static unsigned long single_24x7_request(u8 domain, u32 offset, u16 ix,
+>  	memset(request_buffer, 0, 4096);
+>  	memset(result_buffer, 0, 4096);
+>  
+> +	if (is_physical_domain(event_get_domain(event)))
+> +		idx = event_get_core(event);
+> +	else
+> +		idx = event_get_vcpu(event);
+> +
+>  	request_buffer->interface_version = HV_24X7_IF_VERSION_CURRENT;
+>  	request_buffer->num_requests = 1;
+>  
+>  	req = &request_buffer->requests[0];
+>  
+> -	req->performance_domain = domain;
+> +	req->performance_domain = event_get_domain(event);
+>  	req->data_size = cpu_to_be16(8);
+> -	req->data_offset = cpu_to_be32(offset);
+> -	req->starting_lpar_ix = cpu_to_be16(lpar),
+> +	req->data_offset = cpu_to_be32(event_get_offset(event));
+> +	req->starting_lpar_ix = cpu_to_be16(event_get_lpar(event)),
+>  	req->max_num_lpars = cpu_to_be16(1);
+> -	req->starting_ix = cpu_to_be16(ix);
+> +	req->starting_ix = cpu_to_be16(idx);
+>  	req->max_ix = cpu_to_be16(1);
+>  
+>  	/*
+> @@ -1029,7 +1034,9 @@ static unsigned long single_24x7_request(u8 domain, u32 offset, u16 ix,
+>  	if (ret) {
+>  		pr_notice_ratelimited("hcall failed: %d %#x %#x %d => "
+>  				"0x%lx (%ld) detail=0x%x failing ix=%x\n",
+> -				domain, offset, ix, lpar, ret, ret,
+> +				(int)event_get_domain(event),
+> +				(unsigned int)event_get_offset(event),
+> +				idx, (int)event_get_lpar(event), ret, ret,
 
-Yeah, seems like that. Not sure why though. git bisect seems to be the
-only option.
+It seems more natural here to print the req->performance_domain etc. rather
+then re-extracting them from the event?
 
-> What is your init?
-
-I am using systemd from debian unstable.
-
--- 
-Pranith
+cheers
