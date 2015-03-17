@@ -1,23 +1,32 @@
-Return-Path: <peterz@infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2001:1868:205::9])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8E4191A08FB
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Mar 2015 17:57:41 +1100 (AEDT)
-Date: Tue, 17 Mar 2015 07:57:33 +0100
-From: Peter Zijlstra <peterz@infradead.org>
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Subject: Re: [PATCH 4/4] perf/powerpc: Implement group_read() txn interface
- for 24x7 counters
-Message-ID: <20150317065733.GN2896@worktop.programming.kicks-ass.net>
-References: <1425458108-3341-1-git-send-email-sukadev@linux.vnet.ibm.com>
- <1425458108-3341-5-git-send-email-sukadev@linux.vnet.ibm.com>
+Return-Path: <david@fromorbit.com>
+Received: from ipmail07.adl2.internode.on.net (ipmail07.adl2.internode.on.net
+ [150.101.137.131])
+ by lists.ozlabs.org (Postfix) with ESMTP id 4C26F1A0BAF
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Mar 2015 18:07:33 +1100 (AEDT)
+Date: Tue, 17 Mar 2015 18:06:55 +1100
+From: Dave Chinner <david@fromorbit.com>
+To: Mel Gorman <mgorman@suse.de>
+Subject: Re: [PATCH 4/4] mm: numa: Slow PTE scan rate if migration failures
+ occur
+Message-ID: <20150317070655.GB10105@dastard>
+References: <CA+55aFwDuzpL-k8LsV3touhNLh+TFSLKP8+-nPwMXkWXDYPhrg@mail.gmail.com>
+ <20150308100223.GC15487@gmail.com>
+ <CA+55aFyQyZXu2fi7X9bWdSX0utk8=sccfBwFaSoToROXoE_PLA@mail.gmail.com>
+ <20150309112936.GD26657@destitution>
+ <CA+55aFywW5JLq=BU_qb2OG5+pJ-b1v9tiS5Ygi-vtEKbEZ_T5Q@mail.gmail.com>
+ <20150309191943.GF26657@destitution>
+ <CA+55aFzFt-vX5Jerci0Ty4Uf7K4_nQ7wyCp8hhU_dB0X4cBpVQ@mail.gmail.com>
+ <20150312131045.GE3406@suse.de>
+ <CA+55aFx=81BGnQFNhnAGu6CetL7yifPsnD-+v7Y6QRqwgH47gQ@mail.gmail.com>
+ <20150312184925.GH3406@suse.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1425458108-3341-5-git-send-email-sukadev@linux.vnet.ibm.com>
-Cc: dev@codyps.com, Paul Mackerras <paulus@samba.org>,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20150312184925.GH3406@suse.de>
+Cc: ppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com,
+ Linux-MM <linux-mm@kvack.org>, Aneesh Kumar <aneesh.kumar@linux.vnet.ibm.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,65 +36,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Mar 04, 2015 at 12:35:08AM -0800, Sukadev Bhattiprolu wrote:
-> +++ b/kernel/events/core.c
-> @@ -3677,11 +3677,34 @@ u64 perf_event_read_value(struct perf_event *event, u64 *enabled, u64 *running,
->  }
->  EXPORT_SYMBOL_GPL(perf_event_read_value);
->  
-> +static int do_pmu_group_read(struct perf_event *leader)
-> +{
-> +	int ret;
-> +	struct pmu *pmu;
-> +	struct perf_event *sub;
-> +
-> +	pmu = leader->pmu;
-> +	pmu->start_txn(pmu, PERF_PMU_TXN_READ);
-> +
-> +	pmu->read(leader);
-> +	list_for_each_entry(sub, &leader->sibling_list, group_entry)
-> +		pmu->read(sub);
-> +
-> +	/*
-> +	 * Commit_txn submits the transaction to read all the counters
-> +	 * in the group _and_ updates the event count.
-> +	 */
-> +	ret = pmu->commit_txn(pmu, PERF_PMU_TXN_READ);
-> +
-> +	return ret;
-> +}
-> +
->  static int perf_event_read_group(struct perf_event *event,
->  				   u64 read_format, char __user *buf)
->  {
->  	struct perf_event *leader = event->group_leader, *sub;
->  	struct perf_event_context *ctx = leader->ctx;
-> +	struct pmu *pmu;
->  	int n = 0, size = 0, ret;
->  	u64 count, enabled, running;
->  	u64 values[5];
-> @@ -3690,7 +3713,21 @@ static int perf_event_read_group(struct perf_event *event,
->  
->  	lockdep_assert_held(&ctx->mutex);
->  
-> +	pmu = event->pmu;
->  	update = 1;
-> +
-> +	if ((read_format & PERF_FORMAT_GROUP) &&
-> +			(pmu->capabilities & PERF_PMU_CAP_GROUP_READ)) {
-> +		ret = do_pmu_group_read(event);
-> +		if (ret)
-> +			return ret;
-> +		/*
-> +		 * ->commit_txn() would have updated the event count,
-> +		 * so we don't have to consult the PMU again.
-> +		 */
-> +		update = 0;
-> +	}
-> +
+On Thu, Mar 12, 2015 at 06:49:26PM +0000, Mel Gorman wrote:
+> On Thu, Mar 12, 2015 at 09:20:36AM -0700, Linus Torvalds wrote:
+> > On Thu, Mar 12, 2015 at 6:10 AM, Mel Gorman <mgorman@suse.de> wrote:
+> > >
+> > > I believe you're correct and it matches what was observed. I'm still
+> > > travelling and wireless is dirt but managed to queue a test using pmd_dirty
+> > 
+> > Ok, thanks.
+> > 
+> > I'm not entirely happy with that change, and I suspect the whole
+> > heuristic should be looked at much more (maybe it should also look at
+> > whether it's executable, for example), but it's a step in the right
+> > direction.
+> > 
+> 
+> I can follow up when I'm back in work properly. As you have already pulled
+> this in directly, can you also consider pulling in "mm: thp: return the
+> correct value for change_huge_pmd" please? The other two patches were very
+> minor can be resent through the normal paths later.
 
-Is there a down-side to always doing the txn based group read? If an
-arch does not implement the read txn support it'll fall back to doing
-independent read ops, but we end up doing those anyway.
+TO close the loop here, now I'm back home and can run tests:
 
-That way we get less special case code.
+config                            3.19      4.0-rc1     4.0-rc4
+defaults                         8m08s        9m34s       9m14s
+-o ag_stride=-1                  4m04s        4m38s       4m11s
+-o bhash=101073                  6m04s       17m43s       7m35s
+-o ag_stride=-1,bhash=101073     4m54s        9m58s       7m50s
+
+It's better but there are still significant regressions, especially
+for the large memory footprint cases. I haven't had a chance to look
+at any stats or profiles yet, so I don't know yet whether this is
+still page fault related or some other problem....
+
+Cheers,
+
+Dave
+-- 
+Dave Chinner
+david@fromorbit.com
