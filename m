@@ -1,39 +1,37 @@
-Return-Path: <shreyas@linux.vnet.ibm.com>
-Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <linus971@gmail.com>
+Received: from mail-ig0-x22c.google.com (mail-ig0-x22c.google.com
+ [IPv6:2607:f8b0:4001:c05::22c])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0938D1A0008
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Mar 2015 02:49:42 +1100 (AEDT)
-Received: from /spool/local
- by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <shreyas@linux.vnet.ibm.com>;
- Tue, 17 Mar 2015 21:19:40 +0530
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 80E0C394004E
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Mar 2015 21:19:37 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay01.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t2HFna8934340958
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Mar 2015 21:19:37 +0530
-Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t2HFnau4025605
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Mar 2015 21:19:36 +0530
-Message-ID: <55084D0C.1040309@linux.vnet.ibm.com>
-Date: Tue, 17 Mar 2015 21:19:32 +0530
-From: Shreyas B Prabhu <shreyas@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7F04E1A013C
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Mar 2015 03:53:59 +1100 (AEDT)
+Received: by igbue6 with SMTP id ue6so76847289igb.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Mar 2015 09:53:57 -0700 (PDT)
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [RFC, v2] powerpc/powernv: Introduce kernel param to control
- fastsleep workaround behavior
-References: <20150317085708.7102714017B@ozlabs.org>
- <1426585198.4770.23.camel@kernel.crashing.org>
-In-Reply-To: <1426585198.4770.23.camel@kernel.crashing.org>
-Content-Type: text/plain; charset=utf-8
-Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
- linux-kernel@vger.kernel.org
+Sender: linus971@gmail.com
+In-Reply-To: <20150317070655.GB10105@dastard>
+References: <CA+55aFwDuzpL-k8LsV3touhNLh+TFSLKP8+-nPwMXkWXDYPhrg@mail.gmail.com>
+ <20150308100223.GC15487@gmail.com>
+ <CA+55aFyQyZXu2fi7X9bWdSX0utk8=sccfBwFaSoToROXoE_PLA@mail.gmail.com>
+ <20150309112936.GD26657@destitution>
+ <CA+55aFywW5JLq=BU_qb2OG5+pJ-b1v9tiS5Ygi-vtEKbEZ_T5Q@mail.gmail.com>
+ <20150309191943.GF26657@destitution>
+ <CA+55aFzFt-vX5Jerci0Ty4Uf7K4_nQ7wyCp8hhU_dB0X4cBpVQ@mail.gmail.com>
+ <20150312131045.GE3406@suse.de>
+ <CA+55aFx=81BGnQFNhnAGu6CetL7yifPsnD-+v7Y6QRqwgH47gQ@mail.gmail.com>
+ <20150312184925.GH3406@suse.de> <20150317070655.GB10105@dastard>
+Date: Tue, 17 Mar 2015 09:53:57 -0700
+Message-ID: <CA+55aFzdLnFdku-gnm3mGbeS=QauYBNkFQKYXJAGkrMd2jKXhw@mail.gmail.com>
+Subject: Re: [PATCH 4/4] mm: numa: Slow PTE scan rate if migration failures
+ occur
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Dave Chinner <david@fromorbit.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com,
+ Linux-MM <linux-mm@kvack.org>, Aneesh Kumar <aneesh.kumar@linux.vnet.ibm.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ ppc-dev <linuxppc-dev@lists.ozlabs.org>, Ingo Molnar <mingo@kernel.org>,
+ Mel Gorman <mgorman@suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,66 +41,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Tue, Mar 17, 2015 at 12:06 AM, Dave Chinner <david@fromorbit.com> wrote:
+>
+> TO close the loop here, now I'm back home and can run tests:
+>
+> config                            3.19      4.0-rc1     4.0-rc4
+> defaults                         8m08s        9m34s       9m14s
+> -o ag_stride=-1                  4m04s        4m38s       4m11s
+> -o bhash=101073                  6m04s       17m43s       7m35s
+> -o ag_stride=-1,bhash=101073     4m54s        9m58s       7m50s
+>
+> It's better but there are still significant regressions, especially
+> for the large memory footprint cases. I haven't had a chance to look
+> at any stats or profiles yet, so I don't know yet whether this is
+> still page fault related or some other problem....
 
+Ok. I'd love to see some data on what changed between 3.19 and rc4 in
+the profiles, just to see whether it's "more page faults due to extra
+COW", or whether it's due to "more TLB flushes because of the
+pte_write() vs pte_dirty()" differences. I'm *guessing*  lot of the
+remaining issues are due to extra page fault overhead because I'd
+expect write/dirty to be fairly 1:1, but there could be differences
+due to shared memory use and/or just writebacks of dirty pages that
+become clean.
 
-On Tuesday 17 March 2015 03:09 PM, Benjamin Herrenschmidt wrote:
-> On Tue, 2015-03-17 at 19:57 +1100, Michael Ellerman wrote:
->>
->> So my first preference is that you just bite the bullet and decide to either
->> always apply the workaround, or just stick with the current behaviour. That's a
->> trade-off between (I think) better idle latency but a risk of checkstops, vs.
->> slower idle latency but less (how much less?) risk of checkstops.
->>
->> I think the reason you're proposing a kernel parameter is because we aren't
->> willing to make that decision, ie. we're saying that users should decide. Is
->> that right?
-> 
-> Correct. More specifically, a fairly high profile user that I will not
-> name here has expressed interest in such a feature...
-> 
->> I'm not a big fan of kernel parameters. They are a pain to use, and are often
->> just pushing a decision down one layer for no reason. What I mean is that
->> individual users are probably just going to accept whatever the default value
->> is from their distro.
-> 
-> Right. This is quite an obscure tunable.
-> 
->> But anyway, that's a bit of a rant.
->>
->> As far as this patch is concerned, I don't think it actually needs to be a
->> kernel parameter.
->>
->> >From what I can see below, the decision as to whether you apply the workaround
->> or not doesn't affect the list of idle states. So this could just as well be a
->> runtime parameter, ie. a sysfs file, which can then be set by the user whenever
->> they like? They might do it in a boot script, but that's up to them.
-> 
-> Right, that would work too.
+I guess you can also see in vmstat.mm_migrate_pages whether it's
+because of excessive migration (because of bad grouping) or not. So
+not just profiles data.
 
-Okay. I'll send a patch with this design.
-> 
->> For simplicity I think it would also be fine to make it a write-once parameter,
->> ie. you don't need to handle undoing it.
-> 
-> It would be easy enough to make it rw using stop machine I think... 
-> 
->> I think the only complication that would add is that you'd need to be a little
->> careful about the order in which you nop out the calls vs applying the
->> workaround, in case some threads are idle when you're called.
+At the same time, I feel fairly happy about the situation - we at
+least understand what is going on, and the "3x worse performance" case
+is at least gone.  Even if that last case still looks horrible.
 
-Right, we should be safe with this sequence-
-- NOP call to undo workaround
-- Apply workaround on all cores.
-- NOP call to apply workaround
+So it's still a bad performance regression, but at the same time I
+think your test setup (big 500 TB filesystem, but then a fake-numa
+thing with just 4GB per node) is specialized and unrealistic enough
+that I don't feel it's all that relevant from a *real-world*
+standpoint, and so I wouldn't be uncomfortable saying "ok, the page
+table handling cleanup caused some issues, but we know about them and
+how to fix them longer-term".  So I don't consider this a 4.0
+showstopper or a "we need to revert for now" issue.
 
-> 
-> I wouldn't bother with NOP'ing in that case, a runtime test will probably be noise
-> in the measurement.
-> 
+If it's a case of "we take a lot more page faults because we handle
+the NUMA fault and then have a COW fault almost immediately", then the
+fix is likely to do the same early-cow that the normal non-numa-fault
+case does. In fact, my gut feel is that we should try to unify that
+numa/regula fault handling path a bit more, but that would be a pretty
+invasive patch.
 
-Didn't get your point here. Do you mean, ignore the request if some
-cores are in sleep or deeper state?
-> Cheers,
-> Ben.
-> 
-> 
+                     Linus
