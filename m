@@ -1,21 +1,19 @@
 Return-Path: <madalin.bucur@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0135.outbound.protection.outlook.com [207.46.100.135])
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bbn0108.outbound.protection.outlook.com [157.56.111.108])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4809B1A0BC3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Mar 2015 06:14:11 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 36F121A0DC1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Mar 2015 06:14:14 +1100 (AEDT)
 From: Madalin Bucur <madalin.bucur@freescale.com>
 To: <netdev@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
  <linux-kernel@vger.kernel.org>
-Subject: [PATCH RFC 05/11] dpaa_eth: add support for S/G frames
-Date: Tue, 17 Mar 2015 20:58:23 +0200
-Message-ID: <1426618709-19004-5-git-send-email-madalin.bucur@freescale.com>
-In-Reply-To: <1426618709-19004-4-git-send-email-madalin.bucur@freescale.com>
+Subject: [PATCH RFC 03/11] dpaa_eth: add PM ops
+Date: Tue, 17 Mar 2015 20:58:21 +0200
+Message-ID: <1426618709-19004-3-git-send-email-madalin.bucur@freescale.com>
+In-Reply-To: <1426618709-19004-2-git-send-email-madalin.bucur@freescale.com>
 References: <1426618709-19004-1-git-send-email-madalin.bucur@freescale.com>
  <1426618709-19004-2-git-send-email-madalin.bucur@freescale.com>
- <1426618709-19004-3-git-send-email-madalin.bucur@freescale.com>
- <1426618709-19004-4-git-send-email-madalin.bucur@freescale.com>
 Reply-To: <madalin.bucur@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
@@ -29,545 +27,174 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add support for Scater/Gather (S/G) frames. The FMan can place
-the frame content into multiple buffers and provide a S/G Table
-(SGT) into one first buffer with references to the others.
+Add suspend and resume functionality.
 
 Signed-off-by: Madalin Bucur <madalin.bucur@freescale.com>
 ---
- drivers/net/ethernet/freescale/dpaa/dpaa_eth.c     |   6 +
- .../net/ethernet/freescale/dpaa/dpaa_eth_common.c  |  34 +-
- .../net/ethernet/freescale/dpaa/dpaa_eth_common.h  |   2 +
- drivers/net/ethernet/freescale/dpaa/dpaa_eth_sg.c  | 356 +++++++++++++++++++--
- 4 files changed, 367 insertions(+), 31 deletions(-)
+ drivers/net/ethernet/freescale/dpaa/dpaa_eth.c | 109 +++++++++++++++++++++++++
+ drivers/net/ethernet/freescale/dpaa/dpaa_eth.h |   9 ++
+ 2 files changed, 118 insertions(+)
 
 diff --git a/drivers/net/ethernet/freescale/dpaa/dpaa_eth.c b/drivers/net/ethernet/freescale/dpaa/dpaa_eth.c
-index efa9711..ebd50f3 100644
+index 96a7cee..76b05c1 100644
 --- a/drivers/net/ethernet/freescale/dpaa/dpaa_eth.c
 +++ b/drivers/net/ethernet/freescale/dpaa/dpaa_eth.c
-@@ -574,6 +574,12 @@ static int dpa_private_netdev_init(struct net_device *net_dev)
- 	net_dev->hw_features |= (NETIF_F_IP_CSUM | NETIF_F_IPV6_CSUM |
- 		NETIF_F_LLTX);
+@@ -87,6 +87,110 @@ MODULE_PARM_DESC(tx_timeout, "The Tx timeout in ms");
  
-+	/* Advertise S/G and HIGHDMA support for private interfaces */
-+	net_dev->hw_features |= NETIF_F_SG | NETIF_F_HIGHDMA;
-+	/* Recent kernels enable GSO automatically, if
-+	 * we declare NETIF_F_SG. For conformity, we'll
-+	 * still declare GSO explicitly.
-+	 */
- 	net_dev->features |= NETIF_F_GSO;
+ static u8 dpa_priv_common_bpid;
  
- 	return dpa_netdev_init(net_dev, mac_addr, tx_timeout);
-diff --git a/drivers/net/ethernet/freescale/dpaa/dpaa_eth_common.c b/drivers/net/ethernet/freescale/dpaa/dpaa_eth_common.c
-index 7094a45..1fdb35d 100644
---- a/drivers/net/ethernet/freescale/dpaa/dpaa_eth_common.c
-+++ b/drivers/net/ethernet/freescale/dpaa/dpaa_eth_common.c
-@@ -1162,9 +1162,38 @@ void dpaa_eth_init_ports(struct mac_device *mac_dev,
- }
- EXPORT_SYMBOL(dpaa_eth_init_ports);
- 
-+void dpa_release_sgt(struct qm_sg_entry *sgt)
++#ifdef CONFIG_PM
++
++static int dpaa_suspend(struct device *dev)
 +{
-+	struct dpa_bp *dpa_bp;
-+	struct bm_buffer bmb[DPA_BUFF_RELEASE_MAX];
-+	u8 i = 0, j;
++	struct net_device	*net_dev;
++	struct dpa_priv_s	*priv;
++	struct mac_device	*mac_dev;
++	int			err = 0;
 +
-+	do {
-+		dpa_bp = dpa_bpid2pool(sgt[i].bpid);
-+		DPA_ERR_ON(!dpa_bp);
++	net_dev = dev_get_drvdata(dev);
 +
-+		j = 0;
-+		do {
-+			DPA_ERR_ON(sgt[i].extension);
++	if (net_dev->flags & IFF_UP) {
++		priv = netdev_priv(net_dev);
++		mac_dev = priv->mac_dev;
 +
-+			bmb[j].hi = sgt[i].addr_hi;
-+			bmb[j].lo = sgt[i].addr_lo;
-+
-+			j++; i++;
-+		} while (j < ARRAY_SIZE(bmb) &&
-+				!sgt[i - 1].final &&
-+				sgt[i - 1].bpid == sgt[i].bpid);
-+
-+		while (bman_release(dpa_bp->pool, bmb, j, 0))
-+			cpu_relax();
-+	} while (!sgt[i - 1].final);
-+}
-+EXPORT_SYMBOL(dpa_release_sgt);
-+
- void __attribute__((nonnull))
- dpa_fd_release(const struct net_device *net_dev, const struct qm_fd *fd)
- {
-+	struct qm_sg_entry		*sgt;
- 	struct dpa_bp			*_dpa_bp;
- 	struct bm_buffer		 _bmb;
- 
-@@ -1174,7 +1203,10 @@ dpa_fd_release(const struct net_device *net_dev, const struct qm_fd *fd)
- 	_dpa_bp = dpa_bpid2pool(fd->bpid);
- 	DPA_ERR_ON(!_dpa_bp);
- 
--	DPA_ERR_ON(fd->format == qm_fd_sg);
-+	if (fd->format == qm_fd_sg) {
-+		sgt = (phys_to_virt(bm_buf_addr(&_bmb)) + dpa_fd_offset(fd));
-+		dpa_release_sgt(sgt);
-+	}
- 
- 	while (bman_release(_dpa_bp->pool, &_bmb, 1, 0))
- 		cpu_relax();
-diff --git a/drivers/net/ethernet/freescale/dpaa/dpaa_eth_common.h b/drivers/net/ethernet/freescale/dpaa/dpaa_eth_common.h
-index 96bc63e..9b1774e 100644
---- a/drivers/net/ethernet/freescale/dpaa/dpaa_eth_common.h
-+++ b/drivers/net/ethernet/freescale/dpaa/dpaa_eth_common.h
-@@ -52,6 +52,7 @@
- 	fm_set_##type##_port_params(port, &param); \
- }
- 
-+#define DPA_SGT_MAX_ENTRIES 16 /* maximum number of entries in SG Table */
- #define DPA_BUFF_RELEASE_MAX 8 /* maximum number of buffers released at once */
- 
- /* used in napi related functions */
-@@ -110,6 +111,7 @@ void dpaa_eth_init_ports(struct mac_device *mac_dev,
- 			 struct fm_port_fqs *port_fqs,
- 			 struct dpa_buffer_layout_s *buf_layout,
- 			 struct device *dev);
-+void dpa_release_sgt(struct qm_sg_entry *sgt);
- void __attribute__((nonnull))
- dpa_fd_release(const struct net_device *net_dev, const struct qm_fd *fd);
- int dpa_enable_tx_csum(struct dpa_priv_s *priv,
-diff --git a/drivers/net/ethernet/freescale/dpaa/dpaa_eth_sg.c b/drivers/net/ethernet/freescale/dpaa/dpaa_eth_sg.c
-index 1b3dc28..410effd 100644
---- a/drivers/net/ethernet/freescale/dpaa/dpaa_eth_sg.c
-+++ b/drivers/net/ethernet/freescale/dpaa/dpaa_eth_sg.c
-@@ -54,6 +54,31 @@
- 		skb = *(skbh + (off)); \
- 	}
- 
-+/* DMA map and add a page frag back into the bpool.
-+ * @vaddr fragment must have been allocated with netdev_alloc_frag(),
-+ * specifically for fitting into @dpa_bp.
-+ */
-+static void dpa_bp_recycle_frag(struct dpa_bp *dpa_bp, unsigned long vaddr,
-+				int *count_ptr)
-+{
-+	struct bm_buffer bmb;
-+	dma_addr_t addr;
-+
-+	addr = dma_map_single(dpa_bp->dev, (void *)vaddr, dpa_bp->size,
-+			      DMA_BIDIRECTIONAL);
-+	if (unlikely(dma_mapping_error(dpa_bp->dev, addr))) {
-+		dev_err(dpa_bp->dev, "DMA mapping failed");
-+		return;
-+	}
-+
-+	bm_buffer_set64(&bmb, addr);
-+
-+	while (bman_release(dpa_bp->pool, &bmb, 1, 0))
-+		cpu_relax();
-+
-+	(*count_ptr)++;
-+}
-+
- static int _dpa_bp_add_8_bufs(const struct dpa_bp *dpa_bp)
- {
- 	struct bm_buffer bmb[8];
-@@ -188,6 +213,8 @@ EXPORT_SYMBOL(dpaa_eth_refill_bpools);
- struct sk_buff *_dpa_cleanup_tx_fd(const struct dpa_priv_s *priv,
- 				   const struct qm_fd *fd)
- {
-+	const struct qm_sg_entry *sgt;
-+	int i;
- 	struct dpa_bp *dpa_bp = priv->dpa_bp;
- 	dma_addr_t addr = qm_fd_addr(fd);
- 	struct sk_buff **skbh;
-@@ -201,6 +228,28 @@ struct sk_buff *_dpa_cleanup_tx_fd(const struct dpa_priv_s *priv,
- 	DPA_READ_SKB_PTR(skb, skbh, phys_to_virt(addr), 0);
- 	nr_frags = skb_shinfo(skb)->nr_frags;
- 
-+	if (fd->format == qm_fd_sg) {
-+		/* The sgt buffer has been allocated with netdev_alloc_frag(),
-+		 * it's from lowmem.
-+		 */
-+		sgt = phys_to_virt(addr + dpa_fd_offset(fd));
-+
-+		/* sgt[0] is from lowmem, was dma_map_single()-ed */
-+		dma_unmap_single(dpa_bp->dev, (dma_addr_t)sgt[0].addr,
-+				 sgt[0].length, dma_dir);
-+
-+		/* remaining pages were mapped with dma_map_page() */
-+		for (i = 1; i < nr_frags; i++) {
-+			DPA_ERR_ON(sgt[i].extension);
-+
-+			dma_unmap_page(dpa_bp->dev, (dma_addr_t)sgt[i].addr,
-+				       sgt[i].length, dma_dir);
++		if (priv->wol & DPAA_WOL_MAGIC) {
++			err = priv->mac_dev->set_wol(
++				priv->mac_dev->get_mac_handle(mac_dev), true);
++			if (err) {
++				netdev_err(net_dev, "set_wol() = %d\n", err);
++				goto set_wol_failed;
++			}
 +		}
 +
-+		/* Free the page frag that we allocated on Tx */
-+		put_page(virt_to_head_page(sgt));
-+	}
-+
- 	return skb;
- }
- 
-@@ -234,6 +283,107 @@ static struct sk_buff *__hot contig_fd_to_skb(const struct dpa_priv_s *priv,
- 	return skb;
- }
- 
-+/* Build an skb with the data of the first S/G entry in the linear portion and
-+ * the rest of the frame as skb fragments.
-+ *
-+ * The page fragment holding the S/G Table is recycled here.
-+ */
-+static struct sk_buff *__hot sg_fd_to_skb(const struct dpa_priv_s *priv,
-+			       const struct qm_fd *fd,
-+			       int *count_ptr)
-+{
-+	const struct qm_sg_entry *sgt;
-+	dma_addr_t addr = qm_fd_addr(fd);
-+	ssize_t fd_off = dpa_fd_offset(fd);
-+	dma_addr_t sg_addr;
-+	void *vaddr, *sg_vaddr;
-+	struct dpa_bp *dpa_bp;
-+	struct page *page, *head_page;
-+	int frag_offset, frag_len;
-+	int page_offset;
-+	int i;
-+	struct sk_buff *skb = NULL, *skb_tmp, **skbh;
-+
-+	vaddr = phys_to_virt(addr);
-+	DPA_ERR_ON(!IS_ALIGNED((unsigned long)vaddr, SMP_CACHE_BYTES));
-+
-+	dpa_bp = priv->dpa_bp;
-+	/* Iterate through the SGT entries and add data buffers to the skb */
-+	sgt = vaddr + fd_off;
-+	for (i = 0; i < DPA_SGT_MAX_ENTRIES; i++) {
-+		/* Extension bit is not supported */
-+		DPA_ERR_ON(sgt[i].extension);
-+
-+		/* We use a single global Rx pool */
-+		DPA_ERR_ON(dpa_bp != dpa_bpid2pool(sgt[i].bpid));
-+
-+		sg_addr = qm_sg_addr(&sgt[i]);
-+		sg_vaddr = phys_to_virt(sg_addr);
-+		DPA_ERR_ON(!IS_ALIGNED((unsigned long)sg_vaddr,
-+				       SMP_CACHE_BYTES));
-+
-+		dma_unmap_single(dpa_bp->dev, sg_addr, dpa_bp->size,
-+				 DMA_BIDIRECTIONAL);
-+		if (i == 0) {
-+			DPA_READ_SKB_PTR(skb, skbh, sg_vaddr, -1);
-+			DPA_ERR_ON(skb->head != sg_vaddr);
-+
-+			skb->ip_summed = CHECKSUM_NONE;
-+
-+			/* Make sure forwarded skbs will have enough space
-+			 * on Tx, if extra headers are added.
-+			 */
-+			DPA_ERR_ON(fd_off != priv->rx_headroom);
-+			skb_reserve(skb, fd_off);
-+			skb_put(skb, sgt[i].length);
-+		} else {
-+			/* Not the first S/G entry; all data from buffer will
-+			 * be added in an skb fragment; fragment index is offset
-+			 * by one since first S/G entry was incorporated in the
-+			 * linear part of the skb.
-+			 *
-+			 * Caution: 'page' may be a tail page.
-+			 */
-+			DPA_READ_SKB_PTR(skb_tmp, skbh, sg_vaddr, -1);
-+			page = virt_to_page(sg_vaddr);
-+			head_page = virt_to_head_page(sg_vaddr);
-+
-+			/* Free (only) the skbuff shell because its data buffer
-+			 * is already a frag in the main skb.
-+			 */
-+			get_page(head_page);
-+			dev_kfree_skb(skb_tmp);
-+
-+			/* Compute offset in (possibly tail) page */
-+			page_offset = ((unsigned long)sg_vaddr &
-+					(PAGE_SIZE - 1)) +
-+				(page_address(page) - page_address(head_page));
-+			/* page_offset only refers to the beginning of sgt[i];
-+			 * but the buffer itself may have an internal offset.
-+			 */
-+			frag_offset = sgt[i].offset + page_offset;
-+			frag_len = sgt[i].length;
-+			/* skb_add_rx_frag() does no checking on the page; if
-+			 * we pass it a tail page, we'll end up with
-+			 * bad page accounting and eventually with segafults.
-+			 */
-+			skb_add_rx_frag(skb, i - 1, head_page, frag_offset,
-+					frag_len, dpa_bp->size);
-+		}
-+		/* Update the pool count for the current {cpu x bpool} */
-+		(*count_ptr)--;
-+
-+		if (sgt[i].final)
-+			break;
-+	}
-+	WARN_ONCE(i == DPA_SGT_MAX_ENTRIES, "No final bit on SGT\n");
-+
-+	/* recycle the SGT fragment */
-+	DPA_ERR_ON(dpa_bp != dpa_bpid2pool(fd->bpid));
-+	dpa_bp_recycle_frag(dpa_bp, (unsigned long)vaddr, count_ptr);
-+	return skb;
-+}
-+
- void __hot _dpa_rx(struct net_device *net_dev,
- 		   struct qman_portal *portal,
- 		   const struct dpa_priv_s *priv,
-@@ -261,17 +411,20 @@ void __hot _dpa_rx(struct net_device *net_dev,
- 	dpa_bp = priv->dpa_bp;
- 	DPA_ERR_ON(dpa_bp != dpa_bpid2pool(fd->bpid));
- 
--	/* prefetch the first 64 bytes of the frame */
-+	/* prefetch the first 64 bytes of the frame or the SGT start */
- 	dma_unmap_single(dpa_bp->dev, addr, dpa_bp->size, DMA_BIDIRECTIONAL);
- 	prefetch(phys_to_virt(addr) + dpa_fd_offset(fd));
- 
--	/* The only FD type that we may receive is contig */
--	DPA_ERR_ON((fd->format != qm_fd_contig));
-+	/* The only FD types that we may receive are contig and S/G */
-+	DPA_ERR_ON((fd->format != qm_fd_contig) && (fd->format != qm_fd_sg));
- 
--	skb = contig_fd_to_skb(priv, fd);
-+	if (likely(fd->format == qm_fd_contig))
-+		skb = contig_fd_to_skb(priv, fd);
-+	else
-+		skb = sg_fd_to_skb(priv, fd, count_ptr);
- 
--	/* Account for the contig buffer
--	 * having been removed from the pool.
-+	/* Account for either the contig buffer or the SGT buffer (depending on
-+	 * which case we were in) having been removed from the pool.
- 	 */
- 	(*count_ptr)--;
- 	skb->protocol = eth_type_trans(skb, net_dev);
-@@ -358,13 +511,132 @@ static int __hot skb_to_contig_fd(struct dpa_priv_s *priv,
- 	return 0;
- }
- 
-+static int __hot skb_to_sg_fd(struct dpa_priv_s *priv,
-+			      struct sk_buff *skb, struct qm_fd *fd)
-+{
-+	struct dpa_bp *dpa_bp = priv->dpa_bp;
-+	dma_addr_t addr;
-+	struct sk_buff **skbh;
-+	struct net_device *net_dev = priv->net_dev;
-+	int err;
-+
-+	struct qm_sg_entry *sgt;
-+	void *sgt_buf;
-+	void *buffer_start;
-+	skb_frag_t *frag;
-+	int i, j;
-+	const enum dma_data_direction dma_dir = DMA_TO_DEVICE;
-+	const int nr_frags = skb_shinfo(skb)->nr_frags;
-+
-+	fd->format = qm_fd_sg;
-+
-+	/* get a page frag to store the SGTable */
-+	sgt_buf = netdev_alloc_frag(priv->tx_headroom +
-+		sizeof(struct qm_sg_entry) * (1 + nr_frags));
-+	if (unlikely(!sgt_buf)) {
-+		dev_err(dpa_bp->dev, "netdev_alloc_frag() failed\n");
-+		return -ENOMEM;
-+	}
-+
-+	/* Enable L3/L4 hardware checksum computation.
-+	 *
-+	 * We must do this before dma_map_single(DMA_TO_DEVICE), because we may
-+	 * need to write into the skb.
-+	 */
-+	err = dpa_enable_tx_csum(priv, skb, fd,
-+				 sgt_buf + DPA_TX_PRIV_DATA_SIZE);
-+	if (unlikely(err < 0)) {
-+		if (netif_msg_tx_err(priv) && net_ratelimit())
-+			netdev_err(net_dev, "HW csum error: %d\n", err);
-+		goto csum_failed;
-+	}
-+
-+	sgt = (struct qm_sg_entry *)(sgt_buf + priv->tx_headroom);
-+	sgt[0].bpid = 0xff;
-+	sgt[0].offset = 0;
-+	sgt[0].length = skb_headlen(skb);
-+	sgt[0].extension = 0;
-+	sgt[0].final = 0;
-+	addr = dma_map_single(dpa_bp->dev, skb->data, sgt[0].length, dma_dir);
-+	if (unlikely(dma_mapping_error(dpa_bp->dev, addr))) {
-+		dev_err(dpa_bp->dev, "DMA mapping failed");
-+		err = -EINVAL;
-+		goto sg0_map_failed;
-+	}
-+	sgt[0].addr_hi = (u8)upper_32_bits(addr);
-+	sgt[0].addr_lo = lower_32_bits(addr);
-+
-+	/* populate the rest of SGT entries */
-+	for (i = 1; i <= nr_frags; i++) {
-+		frag = &skb_shinfo(skb)->frags[i - 1];
-+		sgt[i].bpid = 0xff;
-+		sgt[i].offset = 0;
-+		sgt[i].length = frag->size;
-+		sgt[i].extension = 0;
-+		sgt[i].final = 0;
-+
-+		DPA_ERR_ON(!skb_frag_page(frag));
-+		addr = skb_frag_dma_map(dpa_bp->dev, frag, 0, sgt[i].length,
-+					dma_dir);
-+		if (unlikely(dma_mapping_error(dpa_bp->dev, addr))) {
-+			dev_err(dpa_bp->dev, "DMA mapping failed");
-+			err = -EINVAL;
-+			goto sg_map_failed;
++		err = fm_port_suspend(mac_dev->port_dev[RX]);
++		if (err) {
++			netdev_err(net_dev, "fm_port_suspend(RX) = %d\n", err);
++			goto rx_port_suspend_failed;
 +		}
 +
-+		/* keep the offset in the address */
-+		sgt[i].addr_hi = (u8)upper_32_bits(addr);
-+		sgt[i].addr_lo = lower_32_bits(addr);
++		err = fm_port_suspend(mac_dev->port_dev[TX]);
++		if (err) {
++			netdev_err(net_dev, "fm_port_suspend(TX) = %d\n", err);
++			goto tx_port_suspend_failed;
++		}
 +	}
-+	sgt[i - 1].final = 1;
-+
-+	fd->length20 = skb->len;
-+	fd->offset = priv->tx_headroom;
-+
-+	/* DMA map the SGT page */
-+	buffer_start = (void *)sgt - dpa_fd_offset(fd);
-+	/* Can't write at "negative" offset in buffer_start, because this skb
-+	 * may not have been allocated by us.
-+	 */
-+	DPA_WRITE_SKB_PTR(skb, skbh, buffer_start, 0);
-+
-+	addr = dma_map_single(dpa_bp->dev, buffer_start,
-+			      skb_end_pointer(skb) -
-+			      (unsigned char *)buffer_start, dma_dir);
-+	if (unlikely(dma_mapping_error(dpa_bp->dev, addr))) {
-+		dev_err(dpa_bp->dev, "DMA mapping failed");
-+		err = -EINVAL;
-+		goto sgt_map_failed;
-+	}
-+
-+	fd->bpid = 0xff;
-+	fd->cmd |= FM_FD_CMD_FCO;
-+	fd->addr_hi = (u8)upper_32_bits(addr);
-+	fd->addr_lo = lower_32_bits(addr);
 +
 +	return 0;
 +
-+sgt_map_failed:
-+sg_map_failed:
-+	for (j = 0; j < i; j++)
-+		dma_unmap_page(dpa_bp->dev, qm_sg_addr(&sgt[j]),
-+			       sgt[j].length, dma_dir);
-+sg0_map_failed:
-+csum_failed:
-+	put_page(virt_to_head_page(sgt_buf));
-+
++tx_port_suspend_failed:
++	fm_port_resume(mac_dev->port_dev[RX]);
++rx_port_suspend_failed:
++	if (priv->wol & DPAA_WOL_MAGIC) {
++		priv->mac_dev->set_wol(priv->mac_dev->get_mac_handle(mac_dev),
++				       false);
++	}
++set_wol_failed:
 +	return err;
 +}
 +
- int __hot dpa_tx(struct sk_buff *skb, struct net_device *net_dev)
- {
- 	struct dpa_priv_s	*priv;
- 	struct qm_fd		 fd;
- 	struct dpa_percpu_priv_s *percpu_priv;
- 	struct rtnl_link_stats64 *percpu_stats;
-+	int err = 0;
- 	const int queue_mapping = dpa_get_queue_mapping(skb);
-+	const bool nonlinear = skb_is_nonlinear(skb);
- 	int *countptr, offset = 0;
- 
- 	priv = netdev_priv(net_dev);
-@@ -375,38 +647,60 @@ int __hot dpa_tx(struct sk_buff *skb, struct net_device *net_dev)
- 
- 	clear_fd(&fd);
- 
--	/* Make sure we have enough headroom to accommodate private
--	 * data, parse results, etc. Normally this shouldn't happen if
--	 * we're here via the standard kernel stack.
-+	/* MAX_SKB_FRAGS is larger than our DPA_SGT_MAX_ENTRIES; make sure
-+	 * we don't feed FMan with more fragments than it supports.
-+	 * Btw, we're using the first sgt entry to store the linear part of
-+	 * the skb, so we're one extra frag short.
- 	 */
--	if (unlikely(skb_headroom(skb) < priv->tx_headroom)) {
--		struct sk_buff *skb_new;
--
--		skb_new = skb_realloc_headroom(skb, priv->tx_headroom);
--		if (unlikely(!skb_new)) {
-+	if (nonlinear &&
-+	    likely(skb_shinfo(skb)->nr_frags < DPA_SGT_MAX_ENTRIES)) {
-+		/* Just create a S/G fd based on the skb */
-+		err = skb_to_sg_fd(priv, skb, &fd);
-+	} else {
-+		/* Make sure we have enough headroom to accommodate private
-+		 * data, parse results, etc. Normally this shouldn't happen if
-+		 * we're here via the standard kernel stack.
-+		 */
-+		if (unlikely(skb_headroom(skb) < priv->tx_headroom)) {
-+			struct sk_buff *skb_new;
++static int dpaa_resume(struct device *dev)
++{
++	struct net_device	*net_dev;
++	struct dpa_priv_s	*priv;
++	struct mac_device	*mac_dev;
++	int			err = 0;
 +
-+			skb_new = skb_realloc_headroom(skb, priv->tx_headroom);
-+			if (unlikely(!skb_new)) {
-+				dev_kfree_skb(skb);
-+				percpu_stats->tx_errors++;
-+				return NETDEV_TX_OK;
-+			}
- 			dev_kfree_skb(skb);
--			percpu_stats->tx_errors++;
--			return NETDEV_TX_OK;
-+			skb = skb_new;
- 		}
--		dev_kfree_skb(skb);
--		skb = skb_new;
--	}
- 
--	/* We're going to store the skb backpointer at the beginning
--	 * of the data buffer, so we need a privately owned skb
--	 */
-+		/* We're going to store the skb backpointer at the beginning
-+		 * of the data buffer, so we need a privately owned skb
-+		 */
- 
--	/* Code borrowed from skb_unshare(). */
--	if (skb_cloned(skb)) {
--		struct sk_buff *nskb = skb_copy(skb, GFP_ATOMIC);
-+		/* Code borrowed from skb_unshare(). */
-+		if (skb_cloned(skb)) {
-+			struct sk_buff *nskb = skb_copy(skb, GFP_ATOMIC);
++	net_dev = dev_get_drvdata(dev);
 +
-+			kfree_skb(skb);
-+			skb = nskb;
-+			/* skb_copy() has now linearized the skbuff. */
-+		} else if (unlikely(nonlinear)) {
-+			/* We are here because the egress skb contains
-+			 * more fragments than we support. In this case,
-+			 * we have no choice but to linearize it ourselves.
-+			 */
-+			err = __skb_linearize(skb);
++	if (net_dev->flags & IFF_UP) {
++		priv = netdev_priv(net_dev);
++		mac_dev = priv->mac_dev;
++
++		err = fm_port_resume(mac_dev->port_dev[TX]);
++		if (err) {
++			netdev_err(net_dev, "fm_port_resume(TX) = %d\n", err);
++			goto resume_failed;
 +		}
-+		if (unlikely(!skb || err < 0))
-+			/* Common out-of-memory error path */
-+			goto enomem;
++
++		err = fm_port_resume(mac_dev->port_dev[RX]);
++		if (err) {
++			netdev_err(net_dev, "fm_port_resume(RX) = %d\n", err);
++			goto resume_failed;
++		}
++
++		if (priv->wol & DPAA_WOL_MAGIC) {
++			err = priv->mac_dev->set_wol(
++				priv->mac_dev->get_mac_handle(mac_dev), false);
++			if (err) {
++				netdev_err(net_dev, "set_wol() = %d\n", err);
++				goto resume_failed;
++			}
++		}
++	}
++
++	return 0;
++
++resume_failed:
++	return err;
++}
++
++static const struct dev_pm_ops dpaa_pm_ops = {
++	.suspend = dpaa_suspend,
++	.resume = dpaa_resume,
++};
++
++#define DPAA_PM_OPS (&dpaa_pm_ops)
++
++#else /* CONFIG_PM */
++
++#define DPAA_PM_OPS NULL
++
++#endif /* CONFIG_PM */
++
+ static void _dpa_rx_error(struct net_device *net_dev,
+ 			  const struct dpa_priv_s	*priv,
+ 			  struct dpa_percpu_priv_s *percpu_priv,
+@@ -744,6 +848,10 @@ dpaa_eth_priv_probe(struct platform_device *pdev)
+ 	if (err < 0)
+ 		goto netdev_init_failed;
  
- 		/* Finally, create a contig FD from this skb */
--		skb_to_contig_fd(priv, skb, &fd, countptr, &offset);
--
--		kfree_skb(skb);
--		skb = nskb;
--		/* skb_copy() has now linearized the skbuff. */
-+		err = skb_to_contig_fd(priv, skb, &fd, countptr, &offset);
- 	}
-+	if (unlikely(err < 0))
-+		goto skb_to_fd_failed;
++#ifdef CONFIG_PM
++	device_set_wakeup_capable(dev, true);
++#endif
++
+ 	pr_info("Probed interface %s\n", net_dev->name);
  
- 	if (unlikely(dpa_xmit(priv, percpu_stats, queue_mapping, &fd) < 0))
- 		goto xmit_failed;
-@@ -422,6 +716,8 @@ xmit_failed:
- 		return NETDEV_TX_OK;
- 	}
- 	_dpa_cleanup_tx_fd(priv, &fd);
-+skb_to_fd_failed:
-+enomem:
- 	percpu_stats->tx_errors++;
- 	dev_kfree_skb(skb);
- 	return NETDEV_TX_OK;
+ 	return 0;
+@@ -789,6 +897,7 @@ static struct platform_driver dpa_driver = {
+ 	.driver = {
+ 		.name		= KBUILD_MODNAME,
+ 		.owner		= THIS_MODULE,
++		.pm		= DPAA_PM_OPS,
+ 	},
+ 	.id_table	= dpa_devtype,
+ 	.probe		= dpaa_eth_priv_probe,
+diff --git a/drivers/net/ethernet/freescale/dpaa/dpaa_eth.h b/drivers/net/ethernet/freescale/dpaa/dpaa_eth.h
+index 793491f..9b70c5a 100644
+--- a/drivers/net/ethernet/freescale/dpaa/dpaa_eth.h
++++ b/drivers/net/ethernet/freescale/dpaa/dpaa_eth.h
+@@ -128,6 +128,11 @@ struct dpa_buffer_layout_s {
+ #define FSL_DPAA_ETH_MAX_BUF_COUNT	128
+ #define FSL_DPAA_ETH_REFILL_THRESHOLD	80
+ 
++#ifdef CONFIG_PM
++/* Magic Packet wakeup */
++#define DPAA_WOL_MAGIC		0x00000001
++#endif
++
+ /* More detailed FQ types - used for fine-grained WQ assignments */
+ enum dpa_fq_type {
+ 	FQ_TYPE_RX_DEFAULT = 1, /* Rx Default FQs */
+@@ -244,6 +249,10 @@ struct dpa_priv_s {
+ 
+ 	struct dpa_buffer_layout_s *buf_layout;
+ 	u16 rx_headroom;
++
++#ifdef CONFIG_PM
++	u32 wol;
++#endif
+ };
+ 
+ struct fm_port_fqs {
 -- 
 1.7.11.7
