@@ -1,19 +1,22 @@
 Return-Path: <madalin.bucur@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bbn0108.outbound.protection.outlook.com [157.56.111.108])
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0148.outbound.protection.outlook.com [207.46.100.148])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 36F121A0DC1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Mar 2015 06:14:14 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7DE1C1A09FD
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Mar 2015 06:14:32 +1100 (AEDT)
 From: Madalin Bucur <madalin.bucur@freescale.com>
 To: <netdev@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
  <linux-kernel@vger.kernel.org>
-Subject: [PATCH RFC 03/11] dpaa_eth: add PM ops
-Date: Tue, 17 Mar 2015 20:58:21 +0200
-Message-ID: <1426618709-19004-3-git-send-email-madalin.bucur@freescale.com>
-In-Reply-To: <1426618709-19004-2-git-send-email-madalin.bucur@freescale.com>
+Subject: [PATCH RFC 06/11] dpaa_eth: add driver's Tx queue selection mechanism
+Date: Tue, 17 Mar 2015 20:58:24 +0200
+Message-ID: <1426618709-19004-6-git-send-email-madalin.bucur@freescale.com>
+In-Reply-To: <1426618709-19004-5-git-send-email-madalin.bucur@freescale.com>
 References: <1426618709-19004-1-git-send-email-madalin.bucur@freescale.com>
  <1426618709-19004-2-git-send-email-madalin.bucur@freescale.com>
+ <1426618709-19004-3-git-send-email-madalin.bucur@freescale.com>
+ <1426618709-19004-4-git-send-email-madalin.bucur@freescale.com>
+ <1426618709-19004-5-git-send-email-madalin.bucur@freescale.com>
 Reply-To: <madalin.bucur@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
@@ -27,174 +30,107 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add suspend and resume functionality.
+Allow the selection of the transmission queue based on the CPU id.
 
 Signed-off-by: Madalin Bucur <madalin.bucur@freescale.com>
 ---
- drivers/net/ethernet/freescale/dpaa/dpaa_eth.c | 109 +++++++++++++++++++++++++
- drivers/net/ethernet/freescale/dpaa/dpaa_eth.h |   9 ++
- 2 files changed, 118 insertions(+)
+ drivers/net/ethernet/freescale/dpaa/Kconfig           | 11 +++++++++++
+ drivers/net/ethernet/freescale/dpaa/dpaa_eth.c        |  3 +++
+ drivers/net/ethernet/freescale/dpaa/dpaa_eth.h        |  6 ++++++
+ drivers/net/ethernet/freescale/dpaa/dpaa_eth_common.c |  9 +++++++++
+ drivers/net/ethernet/freescale/dpaa/dpaa_eth_common.h |  4 ++++
+ 5 files changed, 33 insertions(+)
 
+diff --git a/drivers/net/ethernet/freescale/dpaa/Kconfig b/drivers/net/ethernet/freescale/dpaa/Kconfig
+index 9db7d25..a124639 100644
+--- a/drivers/net/ethernet/freescale/dpaa/Kconfig
++++ b/drivers/net/ethernet/freescale/dpaa/Kconfig
+@@ -11,6 +11,17 @@ menuconfig FSL_DPAA_ETH
+ 
+ if FSL_DPAA_ETH
+ 
++config FSL_DPAA_ETH_USE_NDO_SELECT_QUEUE
++	bool "Use driver's Tx queue selection mechanism"
++	default y
++	depends on FSL_DPAA_ETH
++	---help---
++	  The DPAA-Ethernet driver defines a ndo_select_queue() callback for optimal selection
++	  of the egress FQ. That will override the XPS support for this netdevice.
++	  If for whatever reason you want to be in control of the egress FQ-to-CPU selection and mapping,
++	  or simply don't want to use the driver's ndo_select_queue() callback, then unselect this
++	  and use the standard XPS support instead.
++
+ config FSL_DPAA_ETH_MAX_BUF_COUNT
+ 	int "Maximum nuber of buffers in private bpool"
+ 	depends on FSL_DPAA_ETH
 diff --git a/drivers/net/ethernet/freescale/dpaa/dpaa_eth.c b/drivers/net/ethernet/freescale/dpaa/dpaa_eth.c
-index 96a7cee..76b05c1 100644
+index ebd50f3..63d7e90 100644
 --- a/drivers/net/ethernet/freescale/dpaa/dpaa_eth.c
 +++ b/drivers/net/ethernet/freescale/dpaa/dpaa_eth.c
-@@ -87,6 +87,110 @@ MODULE_PARM_DESC(tx_timeout, "The Tx timeout in ms");
- 
- static u8 dpa_priv_common_bpid;
- 
-+#ifdef CONFIG_PM
-+
-+static int dpaa_suspend(struct device *dev)
-+{
-+	struct net_device	*net_dev;
-+	struct dpa_priv_s	*priv;
-+	struct mac_device	*mac_dev;
-+	int			err = 0;
-+
-+	net_dev = dev_get_drvdata(dev);
-+
-+	if (net_dev->flags & IFF_UP) {
-+		priv = netdev_priv(net_dev);
-+		mac_dev = priv->mac_dev;
-+
-+		if (priv->wol & DPAA_WOL_MAGIC) {
-+			err = priv->mac_dev->set_wol(
-+				priv->mac_dev->get_mac_handle(mac_dev), true);
-+			if (err) {
-+				netdev_err(net_dev, "set_wol() = %d\n", err);
-+				goto set_wol_failed;
-+			}
-+		}
-+
-+		err = fm_port_suspend(mac_dev->port_dev[RX]);
-+		if (err) {
-+			netdev_err(net_dev, "fm_port_suspend(RX) = %d\n", err);
-+			goto rx_port_suspend_failed;
-+		}
-+
-+		err = fm_port_suspend(mac_dev->port_dev[TX]);
-+		if (err) {
-+			netdev_err(net_dev, "fm_port_suspend(TX) = %d\n", err);
-+			goto tx_port_suspend_failed;
-+		}
-+	}
-+
-+	return 0;
-+
-+tx_port_suspend_failed:
-+	fm_port_resume(mac_dev->port_dev[RX]);
-+rx_port_suspend_failed:
-+	if (priv->wol & DPAA_WOL_MAGIC) {
-+		priv->mac_dev->set_wol(priv->mac_dev->get_mac_handle(mac_dev),
-+				       false);
-+	}
-+set_wol_failed:
-+	return err;
-+}
-+
-+static int dpaa_resume(struct device *dev)
-+{
-+	struct net_device	*net_dev;
-+	struct dpa_priv_s	*priv;
-+	struct mac_device	*mac_dev;
-+	int			err = 0;
-+
-+	net_dev = dev_get_drvdata(dev);
-+
-+	if (net_dev->flags & IFF_UP) {
-+		priv = netdev_priv(net_dev);
-+		mac_dev = priv->mac_dev;
-+
-+		err = fm_port_resume(mac_dev->port_dev[TX]);
-+		if (err) {
-+			netdev_err(net_dev, "fm_port_resume(TX) = %d\n", err);
-+			goto resume_failed;
-+		}
-+
-+		err = fm_port_resume(mac_dev->port_dev[RX]);
-+		if (err) {
-+			netdev_err(net_dev, "fm_port_resume(RX) = %d\n", err);
-+			goto resume_failed;
-+		}
-+
-+		if (priv->wol & DPAA_WOL_MAGIC) {
-+			err = priv->mac_dev->set_wol(
-+				priv->mac_dev->get_mac_handle(mac_dev), false);
-+			if (err) {
-+				netdev_err(net_dev, "set_wol() = %d\n", err);
-+				goto resume_failed;
-+			}
-+		}
-+	}
-+
-+	return 0;
-+
-+resume_failed:
-+	return err;
-+}
-+
-+static const struct dev_pm_ops dpaa_pm_ops = {
-+	.suspend = dpaa_suspend,
-+	.resume = dpaa_resume,
-+};
-+
-+#define DPAA_PM_OPS (&dpaa_pm_ops)
-+
-+#else /* CONFIG_PM */
-+
-+#define DPAA_PM_OPS NULL
-+
-+#endif /* CONFIG_PM */
-+
- static void _dpa_rx_error(struct net_device *net_dev,
- 			  const struct dpa_priv_s	*priv,
- 			  struct dpa_percpu_priv_s *percpu_priv,
-@@ -744,6 +848,10 @@ dpaa_eth_priv_probe(struct platform_device *pdev)
- 	if (err < 0)
- 		goto netdev_init_failed;
- 
-+#ifdef CONFIG_PM
-+	device_set_wakeup_capable(dev, true);
+@@ -498,6 +498,9 @@ static const struct net_device_ops dpa_private_ops = {
+ 	.ndo_get_stats64 = dpa_get_stats64,
+ 	.ndo_set_mac_address = dpa_set_mac_address,
+ 	.ndo_validate_addr = eth_validate_addr,
++#ifdef CONFIG_FSL_DPAA_ETH_USE_NDO_SELECT_QUEUE
++	.ndo_select_queue = dpa_select_queue,
 +#endif
-+
- 	pr_info("Probed interface %s\n", net_dev->name);
- 
- 	return 0;
-@@ -789,6 +897,7 @@ static struct platform_driver dpa_driver = {
- 	.driver = {
- 		.name		= KBUILD_MODNAME,
- 		.owner		= THIS_MODULE,
-+		.pm		= DPAA_PM_OPS,
- 	},
- 	.id_table	= dpa_devtype,
- 	.probe		= dpaa_eth_priv_probe,
+ 	.ndo_change_mtu = dpa_change_mtu,
+ 	.ndo_set_rx_mode = dpa_set_rx_mode,
+ 	.ndo_init = dpa_ndo_init,
 diff --git a/drivers/net/ethernet/freescale/dpaa/dpaa_eth.h b/drivers/net/ethernet/freescale/dpaa/dpaa_eth.h
-index 793491f..9b70c5a 100644
+index 19e9068..0f216f6 100644
 --- a/drivers/net/ethernet/freescale/dpaa/dpaa_eth.h
 +++ b/drivers/net/ethernet/freescale/dpaa/dpaa_eth.h
-@@ -128,6 +128,11 @@ struct dpa_buffer_layout_s {
- #define FSL_DPAA_ETH_MAX_BUF_COUNT	128
- #define FSL_DPAA_ETH_REFILL_THRESHOLD	80
+@@ -440,9 +440,15 @@ static inline void _dpa_assign_wq(struct dpa_fq *fq)
+ 	}
+ }
  
-+#ifdef CONFIG_PM
-+/* Magic Packet wakeup */
-+#define DPAA_WOL_MAGIC		0x00000001
++#ifdef CONFIG_FSL_DPAA_ETH_USE_NDO_SELECT_QUEUE
++/* Use in lieu of skb_get_queue_mapping() */
++#define dpa_get_queue_mapping(skb) \
++	smp_processor_id()
++#else
+ /* Use the queue selected by XPS */
+ #define dpa_get_queue_mapping(skb) \
+ 	skb_get_queue_mapping(skb)
++#endif
+ 
+ static inline void _dpa_bp_free_pf(void *addr)
+ {
+diff --git a/drivers/net/ethernet/freescale/dpaa/dpaa_eth_common.c b/drivers/net/ethernet/freescale/dpaa/dpaa_eth_common.c
+index 1fdb35d..eb7a4a0 100644
+--- a/drivers/net/ethernet/freescale/dpaa/dpaa_eth_common.c
++++ b/drivers/net/ethernet/freescale/dpaa/dpaa_eth_common.c
+@@ -615,6 +615,15 @@ bool dpa_bpid2pool_use(int bpid)
+ 	return false;
+ }
+ 
++#ifdef CONFIG_FSL_DPAA_ETH_USE_NDO_SELECT_QUEUE
++u16 dpa_select_queue(struct net_device *net_dev, struct sk_buff *skb,
++		     void *accel_priv, select_queue_fallback_t fallback)
++{
++	return dpa_get_queue_mapping(skb);
++}
++EXPORT_SYMBOL(dpa_select_queue);
 +#endif
 +
- /* More detailed FQ types - used for fine-grained WQ assignments */
- enum dpa_fq_type {
- 	FQ_TYPE_RX_DEFAULT = 1, /* Rx Default FQs */
-@@ -244,6 +249,10 @@ struct dpa_priv_s {
- 
- 	struct dpa_buffer_layout_s *buf_layout;
- 	u16 rx_headroom;
-+
-+#ifdef CONFIG_PM
-+	u32 wol;
+ struct dpa_fq *dpa_fq_alloc(struct device *dev,
+ 			    const struct fqid_cell *fqids,
+ 			    struct list_head *list,
+diff --git a/drivers/net/ethernet/freescale/dpaa/dpaa_eth_common.h b/drivers/net/ethernet/freescale/dpaa/dpaa_eth_common.h
+index 9b1774e..de5b68e 100644
+--- a/drivers/net/ethernet/freescale/dpaa/dpaa_eth_common.h
++++ b/drivers/net/ethernet/freescale/dpaa/dpaa_eth_common.h
+@@ -89,6 +89,10 @@ struct dpa_bp *dpa_bpid2pool(int bpid);
+ void dpa_bpid2pool_map(int bpid, struct dpa_bp *dpa_bp);
+ bool dpa_bpid2pool_use(int bpid);
+ void dpa_bp_drain(struct dpa_bp *bp);
++#ifdef CONFIG_FSL_DPAA_ETH_USE_NDO_SELECT_QUEUE
++u16 dpa_select_queue(struct net_device *net_dev, struct sk_buff *skb,
++		     void *accel_priv, select_queue_fallback_t fallback);
 +#endif
- };
- 
- struct fm_port_fqs {
+ struct dpa_fq *dpa_fq_alloc(struct device *dev,
+ 			    const struct fqid_cell *fqids,
+ 			    struct list_head *list,
 -- 
 1.7.11.7
