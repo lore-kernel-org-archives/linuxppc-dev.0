@@ -1,32 +1,31 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <bobby.prani@gmail.com>
+Received: from mail-vc0-x22e.google.com (mail-vc0-x22e.google.com
+ [IPv6:2607:f8b0:400c:c03::22e])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5EC901A0C0F
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Mar 2015 17:06:46 +1100 (AEDT)
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 2AA5514009B
- for <linuxppc-dev@ozlabs.org>; Tue, 17 Mar 2015 17:06:46 +1100 (AEDT)
-Received: from /spool/local
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Tue, 17 Mar 2015 16:06:45 +1000
-Message-ID: <5507C437.3020203@linux.vnet.ibm.com>
-Date: Tue, 17 Mar 2015 11:35:43 +0530
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5677B1A0008
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Mar 2015 17:33:36 +1100 (AEDT)
+Received: by mail-vc0-f174.google.com with SMTP id la4so13946395vcb.5
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 16 Mar 2015 23:33:33 -0700 (PDT)
 MIME-Version: 1.0
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH v3 2/2] selftests/powerpc: Add a test of the
- switch_endian() syscall
-References: <1426489030-26025-1-git-send-email-mpe@ellerman.id.au>
- <1426489030-26025-2-git-send-email-mpe@ellerman.id.au>
- <5506B7DC.80702@linux.vnet.ibm.com> <1426547040.31646.2.camel@ellerman.id.au>
-In-Reply-To: <1426547040.31646.2.camel@ellerman.id.au>
+In-Reply-To: <55079D05.8020302@hurleysoftware.com>
+References: <CAJhHMCC+BJWBo3=XbLf2L_kpOTqR==ee667+TpnFdk3DRT3o+Q@mail.gmail.com>
+ <CAJhHMCBcyVbNRQSpsyVfk8HMzZ=NXKkknjDRuch+e+yJGB3T5Q@mail.gmail.com>
+ <1426493810.4716.0.camel@ellerman.id.au>
+ <CAJhHMCC06H-BRFBBcD_PfumyvHoFAjbi_MOn7gSeq5y093FSEQ@mail.gmail.com>
+ <1426548151.31646.4.camel@ellerman.id.au>
+ <CAJhHMCDCoo7g5WrXKPEbemoChQn6BGZOXD00z4kZqVE5boEBhA@mail.gmail.com>
+ <55079859.1020205@hurleysoftware.com>
+ <CAJhHMCBzFfKxubMLkrSwCwqs5q494-kD2=a_n+tGHXAp6qgXDg@mail.gmail.com>
+ <55079D05.8020302@hurleysoftware.com>
+From: Pranith Kumar <bobby.prani@gmail.com>
+Date: Tue, 17 Mar 2015 02:33:03 -0400
+Message-ID: <CAJhHMCDNRCUY-H_DzrDf+9LYZOiiEVLW_f7ygp6mRKx-ho7OeA@mail.gmail.com>
+Subject: Re: linux panic on 4.0.0-rc4
+To: Peter Hurley <peter@hurleysoftware.com>
 Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org, linuxram@us.ibm.com, Jeremy Kerr <jk@ozlabs.org>
+Cc: "open list:LINUX FOR POWERPC..." <linuxppc-dev@lists.ozlabs.org>,
+ LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,68 +35,102 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03/17/2015 04:34 AM, Michael Ellerman wrote:
-> On Mon, 2015-03-16 at 16:30 +0530, Anshuman Khandual wrote:
->> On 03/16/2015 12:27 PM, Michael Ellerman wrote:
->>> This adds a test of the switch_endian() syscall we added in the previous
->>> commit.
+On Mon, Mar 16, 2015 at 11:18 PM, Peter Hurley <peter@hurleysoftware.com> wrote:
+> On 03/16/2015 11:12 PM, Pranith Kumar wrote:
+>> On Mon, Mar 16, 2015 at 10:58 PM, Peter Hurley <peter@hurleysoftware.com> wrote:
+>>>>> What is your init?
+>>>>
+>>>> I am using systemd from debian unstable.
 >>>
->>> We test it by calling the endian switch syscall, and then executing some
->>> code in the other endian to check everything went as expected. That code
->>> checks registers we expect to be maintained are, and then writes to
->>> stdout. If the endian switch failed to happen that code sequence will be
->>> illegal and cause the test to abort.
+>>> Do you have a stdout-path property defined in your dts to a serial
+>>> console you're not actually using?
 >>>
->>> We then switch back to the original endian, do the same checks and
->>> finally write a success message and exit(0).
->>>
->>> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 >>
->> Hey Michael,
+>> I am using tty0 as my console. From the config which I posted, it has:
 >>
->> Did a quick test, passes on LE but seems like failing on BE.
+>> CONFIG_CMDLINE="console=ttyS0,9600 console=tty0"
 >>
->> On LE:
->>
->> Hello wrong-endian world
->> Hello right-endian world
->> success: switch_endian_test
->>
->> on BE:
->>
->> Hello wrong-endian world (returns 176)
->>
->> The previous version of the test was passing both on LE
->> and BE (after applying the compiler trick in the assembly)
-> 
-> Hmm, odd. Works for me:
-> 
-> $ uname -a
-> Linux bebuntu 4.0.0-rc3-00002-g9dd2601a490a #1 SMP Fri Mar 13 15:52:11 AEDT 2015 ppc64 ppc64 ppc64 GNU/Linux
-> $ make
-> cc -O2 -Wall -g -nostdlib -m64   -c -o check.o check.S
-> objcopy -j .text --reverse-bytes=4 -O binary check.o check-reversed.o
-> hexdump -v -e '/1 ".byte 0x%02X\n"' check-reversed.o > check-reversed.S
-> cc -O2 -Wall -g -nostdlib -m64    switch_endian_test.S check-reversed.S   -o switch_endian_test
-> $ ./switch_endian_test 
-> Hello wrong-endian world
-> Hello right-endian world
-> success: switch_endian_test
-> 
-> 
-> What are you seeing exactly?
+>> I am not using any device tree file.
+>
+> Ok; there was some reported breakage on PowerMac wrt to 'stdout-path'
+> changes I made, so I thought I'd check if that might have affected
+> your setup as well.
+>
 
-I am running on a BE PKVM guest but compiling the test case on
-a different BE machine which has newer version of the compiler.
+And the painful slow bisecting did lead to that commit:
 
-cc (GCC) 4.8.3 20140624
+Bisecting: 0 revisions left to test after this (roughly 0 steps)
+[2fa645cb2703d9b3786d850db815414dfeefa51d] of: Fix premature
+bootconsole disable with 'stdout-path'
 
-cc -O2 -Wall -g -nostdlib -m64   -c -o check.o check.S
-objcopy -j .text --reverse-bytes=4 -O binary check.o check-reversed.o
-hexdump -v -e '/1 ".byte 0x%02X\n"' check-reversed.o > check-reversed.S
-cc -O2 -Wall -g -nostdlib -m64    switch_endian_test.S check-reversed.S   -o switch_endian_test
+$ git show 2fa645cb2703d9b3786d850db815414dfeefa51d
+commit 2fa645cb2703d9b3786d850db815414dfeefa51d
+Author: Peter Hurley <peter@hurleysoftware.com>
+Date:   Sun Mar 1 12:21:22 2015 -0500
 
-which looks very similar to the details you have provided above.
-Running on guest or host should not make any difference.
+    of: Fix premature bootconsole disable with 'stdout-path'
 
-BTW, we need to add one .gitignore file to this new test directory.
+    Support for devicetree serial consoles via 'stdout-path' causes
+    bootconsoles to be disabled when the vt dummy console loads, since
+    there is no preferred console (the preferred console is not added
+    until the device is probed).
+
+    Ensure there is at least a preferred console, even if never matched.
+
+
+More info:
+
+$ git bisect log
+git bisect start
+# bad: [06e5801b8cb3fc057d88cb4dc03c0b64b2744cda] Linux 4.0-rc4
+git bisect bad 06e5801b8cb3fc057d88cb4dc03c0b64b2744cda
+# good: [bfa76d49576599a4b9f9b7a71f23d73d6dcff735] Linux 3.19
+git bisect good bfa76d49576599a4b9f9b7a71f23d73d6dcff735
+# good: [1a67e256dbd80f47f339c4a88c34deee12489aa0] ARM: mvebu:
+ISL12057 rtc chip can now wake up RN102, RN102 and RN2120
+git bisect good 1a67e256dbd80f47f339c4a88c34deee12489aa0
+# good: [878ba61aa98cbb97a513757800e77613f856a029] Merge tag
+'soc-for-linus' of
+git://git.kernel.org/pub/scm/linux/kernel/git/arm/arm-soc
+git bisect good 878ba61aa98cbb97a513757800e77613f856a029
+# good: [18a8d49973667aa016e68826eeb374788b7c63b0] Merge tag
+'clk-for-linus-3.20' of
+git://git.linaro.org/people/mike.turquette/linux
+git bisect good 18a8d49973667aa016e68826eeb374788b7c63b0
+# good: [bfda4031621b048ca634abc5f6bce1aa490ac4e5] MAINTAINERS: Add
+myself as co-maintainer to the legacy support of the mvebu SoCs
+git bisect good bfda4031621b048ca634abc5f6bce1aa490ac4e5
+# good: [29191c7f71aa55401c83df60482417d3c511edde] Merge tag
+'char-misc-4.0-rc3' of
+git://git.kernel.org/pub/scm/linux/kernel/git/gregkh/char-misc
+git bisect good 29191c7f71aa55401c83df60482417d3c511edde
+# good: [36bef88380037288d5b575ed2029de694533b1ec] Merge
+git://git.kernel.org/pub/scm/linux/kernel/git/davem/net
+git bisect good 36bef88380037288d5b575ed2029de694533b1ec
+# bad: [3d52c5bdbe57e2b45d9cc8da930b9ab42b5198c4] Merge tag
+'devicetree-fixes-for-4.0' of
+git://git.kernel.org/pub/scm/linux/kernel/git/robh/linux
+git bisect bad 3d52c5bdbe57e2b45d9cc8da930b9ab42b5198c4
+# good: [91e9134eda82b57952fdbdb0c5990a7a6609ff13] Merge tag
+'pci-v4.0-fixes-2' of
+git://git.kernel.org/pub/scm/linux/kernel/git/helgaas/pci
+git bisect good 91e9134eda82b57952fdbdb0c5990a7a6609ff13
+# good: [c202baf017aea0c860e53131bc55bb1af7177e76] Merge branch 'akpm'
+(patches from Andrew)
+git bisect good c202baf017aea0c860e53131bc55bb1af7177e76
+# bad: [649022e08e4798ffb6e9b11c56ee6b2c62465d11] of/unittest: Fix the
+wrong expected value in of_selftest_property_string
+git bisect bad 649022e08e4798ffb6e9b11c56ee6b2c62465d11
+# good: [2c192699a7050ef5bdf1e2cc95fdddfbcf524509] Merge tag
+'v4.0-rc3' into HEAD
+git bisect good 2c192699a7050ef5bdf1e2cc95fdddfbcf524509
+# bad: [d3a891652adb82e1973348c703a597cb54e41dea] of/overlay: Remove
+unused variable
+git bisect bad d3a891652adb82e1973348c703a597cb54e41dea
+# bad: [20aa4d8ae8d2ada8f959364ebc096b8841245456] Documentation: DT:
+Renamed of-serial.txt to 8250.txt
+git bisect bad 20aa4d8ae8d2ada8f959364ebc096b8841245456
+
+Thanks!
+-- 
+Pranith
