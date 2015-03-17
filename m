@@ -1,40 +1,22 @@
-Return-Path: <mahesh@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5CB5E1A013C
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Mar 2015 20:27:57 +1100 (AEDT)
-Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 8D11E14010F
- for <linuxppc-dev@ozlabs.org>; Tue, 17 Mar 2015 20:27:56 +1100 (AEDT)
-Received: from /spool/local
- by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
- Tue, 17 Mar 2015 14:57:54 +0530
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id B9639E0045
- for <linuxppc-dev@ozlabs.org>; Tue, 17 Mar 2015 14:59:57 +0530 (IST)
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t2H9RnGh24772702
- for <linuxppc-dev@ozlabs.org>; Tue, 17 Mar 2015 14:57:49 +0530
-Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
- by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t2H9Rn02016811
- for <linuxppc-dev@ozlabs.org>; Tue, 17 Mar 2015 14:57:49 +0530
-Subject: [RESEND PATCH] For machine check occurring while in guest,
- KVM layer tries recovery
-From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
-To: linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>
-Date: Tue, 17 Mar 2015 14:57:48 +0530
-Message-ID: <20150317092707.16806.62378.stgit@mars>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: David Gibson <dgibson@redhat.com>, Alexander Graf <agraf@suse.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 32F251A0163
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Mar 2015 20:40:15 +1100 (AEDT)
+Message-ID: <1426585198.4770.23.camel@kernel.crashing.org>
+Subject: Re: [RFC, v2] powerpc/powernv: Introduce kernel param to control
+ fastsleep workaround behavior
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Date: Tue, 17 Mar 2015 20:39:58 +1100
+In-Reply-To: <20150317085708.7102714017B@ozlabs.org>
+References: <20150317085708.7102714017B@ozlabs.org>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,60 +26,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+On Tue, 2015-03-17 at 19:57 +1100, Michael Ellerman wrote:
+> 
+> So my first preference is that you just bite the bullet and decide to either
+> always apply the workaround, or just stick with the current behaviour. That's a
+> trade-off between (I think) better idle latency but a risk of checkstops, vs.
+> slower idle latency but less (how much less?) risk of checkstops.
+> 
+> I think the reason you're proposing a kernel parameter is because we aren't
+> willing to make that decision, ie. we're saying that users should decide. Is
+> that right?
 
-and deliver MCE to guest if recovery is failed. For recovered errors
-we just go back to normal functioning of guest. But there are cases
-where we may hit MCE in guest with MSR(RI=0), which means MCE interrupt is
-not recoverable and guest can not function normally it should go down to
-panic path. The current implementation does not have check for MSR(RI=0)
-which can cause guest to crash with Bad kernel stack pointer instead of
-machine check oops message.
+Correct. More specifically, a fairly high profile user that I will not
+name here has expressed interest in such a feature...
 
-[26281.490060] Bad kernel stack pointer 3fff9ccce5b0 at c00000000000490c
-[26281.490434] Oops: Bad kernel stack pointer, sig: 6 [#1]
-[26281.490472] SMP NR_CPUS=2048 NUMA pSeries
+> I'm not a big fan of kernel parameters. They are a pain to use, and are often
+> just pushing a decision down one layer for no reason. What I mean is that
+> individual users are probably just going to accept whatever the default value
+> is from their distro.
 
-This patch fixes this issue by checking MSR(RI=0) in KVM layer and forwarding
-unrecoverable interrupt to guest which then panics with proper machine check
-Oops message.
+Right. This is quite an obscure tunable.
 
-Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
----
- arch/powerpc/kvm/book3s_hv_rmhandlers.S |   12 ++++++++----
- 1 file changed, 8 insertions(+), 4 deletions(-)
+> But anyway, that's a bit of a rant.
+> 
+> As far as this patch is concerned, I don't think it actually needs to be a
+> kernel parameter.
+> 
+> >From what I can see below, the decision as to whether you apply the workaround
+> or not doesn't affect the list of idle states. So this could just as well be a
+> runtime parameter, ie. a sysfs file, which can then be set by the user whenever
+> they like? They might do it in a boot script, but that's up to them.
 
-diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-index bb94e6f..258f46d 100644
---- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-+++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-@@ -2063,7 +2063,6 @@ machine_check_realmode:
- 	mr	r3, r9		/* get vcpu pointer */
- 	bl	kvmppc_realmode_machine_check
- 	nop
--	cmpdi	r3, 0		/* Did we handle MCE ? */
- 	ld	r9, HSTATE_KVM_VCPU(r13)
- 	li	r12, BOOK3S_INTERRUPT_MACHINE_CHECK
- 	/*
-@@ -2076,13 +2075,18 @@ machine_check_realmode:
- 	 * The old code used to return to host for unhandled errors which
- 	 * was causing guest to hang with soft lockups inside guest and
- 	 * makes it difficult to recover guest instance.
-+	 *
-+	 * if we receive machine check with MSR(RI=0) then deliver it to
-+	 * guest as machine check causing guest to crash.
- 	 */
--	ld	r10, VCPU_PC(r9)
- 	ld	r11, VCPU_MSR(r9)
-+	andi.	r10, r11, MSR_RI	/* check for unrecoverable exception */
-+	beq	1f			/* Deliver a machine check to guest */
-+	ld	r10, VCPU_PC(r9)
-+	cmpdi	r3, 0		/* Did we handle MCE ? */
- 	bne	2f	/* Continue guest execution. */
- 	/* If not, deliver a machine check.  SRR0/1 are already set */
--	li	r10, BOOK3S_INTERRUPT_MACHINE_CHECK
--	ld	r11, VCPU_MSR(r9)
-+1:	li	r10, BOOK3S_INTERRUPT_MACHINE_CHECK
- 	bl	kvmppc_msr_interrupt
- 2:	b	fast_interrupt_c_return
- 
+Right, that would work too.
+
+> For simplicity I think it would also be fine to make it a write-once parameter,
+> ie. you don't need to handle undoing it.
+
+It would be easy enough to make it rw using stop machine I think... 
+
+> I think the only complication that would add is that you'd need to be a little
+> careful about the order in which you nop out the calls vs applying the
+> workaround, in case some threads are idle when you're called.
+
+I wouldn't bother with NOP'ing in that case, a runtime test will probably be noise
+in the measurement.
+
+Cheers,
+Ben.
