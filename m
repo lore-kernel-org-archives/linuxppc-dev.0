@@ -1,32 +1,32 @@
-Return-Path: <madalin.bucur@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0114.outbound.protection.outlook.com [157.56.111.114])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <peter@hurleysoftware.com>
+Received: from mail-qg0-f53.google.com (mail-qg0-f53.google.com
+ [209.85.192.53])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0B26B1A0DD0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Mar 2015 06:32:54 +1100 (AEDT)
-From: Madalin Bucur <madalin.bucur@freescale.com>
-To: <netdev@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
- <linux-kernel@vger.kernel.org>
-Subject: [PATCH RFC 11/11] dpaa_eth: add trace points
-Date: Tue, 17 Mar 2015 20:58:29 +0200
-Message-ID: <1426618709-19004-11-git-send-email-madalin.bucur@freescale.com>
-In-Reply-To: <1426618709-19004-10-git-send-email-madalin.bucur@freescale.com>
-References: <1426618709-19004-1-git-send-email-madalin.bucur@freescale.com>
- <1426618709-19004-2-git-send-email-madalin.bucur@freescale.com>
- <1426618709-19004-3-git-send-email-madalin.bucur@freescale.com>
- <1426618709-19004-4-git-send-email-madalin.bucur@freescale.com>
- <1426618709-19004-5-git-send-email-madalin.bucur@freescale.com>
- <1426618709-19004-6-git-send-email-madalin.bucur@freescale.com>
- <1426618709-19004-7-git-send-email-madalin.bucur@freescale.com>
- <1426618709-19004-8-git-send-email-madalin.bucur@freescale.com>
- <1426618709-19004-9-git-send-email-madalin.bucur@freescale.com>
- <1426618709-19004-10-git-send-email-madalin.bucur@freescale.com>
-Reply-To: <madalin.bucur@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1459A1A0A02
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Mar 2015 07:03:11 +1100 (AEDT)
+Received: by qgf3 with SMTP id 3so18885771qgf.3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Mar 2015 13:03:09 -0700 (PDT)
+Message-ID: <5508887B.8080008@hurleysoftware.com>
+Date: Tue, 17 Mar 2015 16:03:07 -0400
+From: Peter Hurley <peter@hurleysoftware.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Ruxandra Ioana Radulescu <ruxandra.radulescu@freescale.com>,
- Madalin Bucur <madalin.bucur@freescale.com>
+To: Pranith Kumar <bobby.prani@gmail.com>
+Subject: Re: linux panic on 4.0.0-rc4
+References: <CAJhHMCC+BJWBo3=XbLf2L_kpOTqR==ee667+TpnFdk3DRT3o+Q@mail.gmail.com>
+ <CAJhHMCBcyVbNRQSpsyVfk8HMzZ=NXKkknjDRuch+e+yJGB3T5Q@mail.gmail.com>
+ <1426493810.4716.0.camel@ellerman.id.au>
+ <CAJhHMCC06H-BRFBBcD_PfumyvHoFAjbi_MOn7gSeq5y093FSEQ@mail.gmail.com>
+ <1426548151.31646.4.camel@ellerman.id.au>
+ <CAJhHMCDCoo7g5WrXKPEbemoChQn6BGZOXD00z4kZqVE5boEBhA@mail.gmail.com>
+ <55079859.1020205@hurleysoftware.com>
+ <CAJhHMCBzFfKxubMLkrSwCwqs5q494-kD2=a_n+tGHXAp6qgXDg@mail.gmail.com>
+ <55079D05.8020302@hurleysoftware.com>
+ <CAJhHMCDNRCUY-H_DzrDf+9LYZOiiEVLW_f7ygp6mRKx-ho7OeA@mail.gmail.com>
+In-Reply-To: <CAJhHMCDNRCUY-H_DzrDf+9LYZOiiEVLW_f7ygp6mRKx-ho7OeA@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8
+Cc: "open list:LINUX FOR POWERPC..." <linuxppc-dev@lists.ozlabs.org>,
+ LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,236 +36,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add trace points on the hot processing path.
+On 03/17/2015 02:33 AM, Pranith Kumar wrote:
+> On Mon, Mar 16, 2015 at 11:18 PM, Peter Hurley <peter@hurleysoftware.com> wrote:
+>> On 03/16/2015 11:12 PM, Pranith Kumar wrote:
+>>> On Mon, Mar 16, 2015 at 10:58 PM, Peter Hurley <peter@hurleysoftware.com> wrote:
+>>>>>> What is your init?
+>>>>>
+>>>>> I am using systemd from debian unstable.
+>>>>
+>>>> Do you have a stdout-path property defined in your dts to a serial
+>>>> console you're not actually using?
+>>>>
+>>>
+>>> I am using tty0 as my console. From the config which I posted, it has:
+>>>
+>>> CONFIG_CMDLINE="console=ttyS0,9600 console=tty0"
+>>>
+>>> I am not using any device tree file.
+>>
+>> Ok; there was some reported breakage on PowerMac wrt to 'stdout-path'
+>> changes I made, so I thought I'd check if that might have affected
+>> your setup as well.
+>>
+> 
+> And the painful slow bisecting did lead to that commit:
+> 
+> Bisecting: 0 revisions left to test after this (roughly 0 steps)
+> [2fa645cb2703d9b3786d850db815414dfeefa51d] of: Fix premature
+> bootconsole disable with 'stdout-path'
+> 
+> $ git show 2fa645cb2703d9b3786d850db815414dfeefa51d
+> commit 2fa645cb2703d9b3786d850db815414dfeefa51d
+> Author: Peter Hurley <peter@hurleysoftware.com>
+> Date:   Sun Mar 1 12:21:22 2015 -0500
+> 
+>     of: Fix premature bootconsole disable with 'stdout-path'
 
-Signed-off-by: Ruxandra Ioana Radulescu <ruxandra.radulescu@freescale.com>
----
- drivers/net/ethernet/freescale/dpaa/Makefile       |   1 +
- drivers/net/ethernet/freescale/dpaa/dpaa_eth.c     |  12 ++
- drivers/net/ethernet/freescale/dpaa/dpaa_eth.h     |   4 +
- .../net/ethernet/freescale/dpaa/dpaa_eth_trace.h   | 143 +++++++++++++++++++++
- 4 files changed, 160 insertions(+)
- create mode 100644 drivers/net/ethernet/freescale/dpaa/dpaa_eth_trace.h
-
-diff --git a/drivers/net/ethernet/freescale/dpaa/Makefile b/drivers/net/ethernet/freescale/dpaa/Makefile
-index b881dd2..2e35ecd 100644
---- a/drivers/net/ethernet/freescale/dpaa/Makefile
-+++ b/drivers/net/ethernet/freescale/dpaa/Makefile
-@@ -12,6 +12,7 @@ ccflags-y += -I$(FMAN)/flib
- obj-$(CONFIG_FSL_DPAA_ETH) += fsl_dpa.o
- 
- fsl_dpa-objs += dpaa_eth.o dpaa_eth_sg.o dpaa_eth_common.o dpaa_ethtool.o dpaa_eth_sysfs.o
-+CFLAGS_dpaa_eth.o := -I$(src)
- ifeq ($(CONFIG_FSL_DPAA_ETH_DEBUGFS),y)
- fsl_dpa-objs += dpaa_debugfs.o
- endif
-diff --git a/drivers/net/ethernet/freescale/dpaa/dpaa_eth.c b/drivers/net/ethernet/freescale/dpaa/dpaa_eth.c
-index 72844c3..6512530 100644
---- a/drivers/net/ethernet/freescale/dpaa/dpaa_eth.c
-+++ b/drivers/net/ethernet/freescale/dpaa/dpaa_eth.c
-@@ -62,6 +62,12 @@
- #include "dpaa_debugfs.h"
- #endif /* CONFIG_FSL_DPAA_ETH_DEBUGFS */
- 
-+/* CREATE_TRACE_POINTS only needs to be defined once. Other dpa files
-+ * using trace events only need to #include <trace/events/sched.h>
-+ */
-+#define CREATE_TRACE_POINTS
-+#include "dpaa_eth_trace.h"
-+
- #define DPA_NAPI_WEIGHT		64
- 
- /* Valid checksum indication */
-@@ -337,6 +343,9 @@ priv_rx_default_dqrr(struct qman_portal		*portal,
- 	priv = netdev_priv(net_dev);
- 	dpa_bp = priv->dpa_bp;
- 
-+	/* Trace the Rx fd */
-+	trace_dpa_rx_fd(net_dev, fq, &dq->fd);
-+
- 	/* IRQ handler, non-migratable; safe to use raw_cpu_ptr here */
- 	percpu_priv = raw_cpu_ptr(priv->percpu_priv);
- 	count_ptr = raw_cpu_ptr(dpa_bp->percpu_count);
-@@ -393,6 +402,9 @@ priv_tx_conf_default_dqrr(struct qman_portal		*portal,
- 	net_dev = ((struct dpa_fq *)fq)->net_dev;
- 	priv = netdev_priv(net_dev);
- 
-+	/* Trace the fd */
-+	trace_dpa_tx_conf_fd(net_dev, fq, &dq->fd);
-+
- 	/* Non-migratable context, safe to use raw_cpu_ptr */
- 	percpu_priv = raw_cpu_ptr(priv->percpu_priv);
- 
-diff --git a/drivers/net/ethernet/freescale/dpaa/dpaa_eth.h b/drivers/net/ethernet/freescale/dpaa/dpaa_eth.h
-index ace665f..6f83899 100644
---- a/drivers/net/ethernet/freescale/dpaa/dpaa_eth.h
-+++ b/drivers/net/ethernet/freescale/dpaa/dpaa_eth.h
-@@ -35,6 +35,7 @@
- #include <soc/fsl/qman.h>	/* struct qman_fq */
- 
- #include "fm_ext.h"
-+#include "dpaa_eth_trace.h"
- 
- extern int dpa_rx_extra_headroom;
- extern int dpa_max_frm;
-@@ -431,6 +432,9 @@ static inline int __hot dpa_xmit(struct dpa_priv_s *priv,
- 				_dpa_get_tx_conf_queue(priv, egress_fq)
- 				);
- 
-+	/* Trace this Tx fd */
-+	trace_dpa_tx_fd(priv->net_dev, egress_fq, fd);
-+
- 	for (i = 0; i < 100000; i++) {
- 		err = qman_enqueue(egress_fq, fd, 0);
- 		if (err != -EBUSY)
-diff --git a/drivers/net/ethernet/freescale/dpaa/dpaa_eth_trace.h b/drivers/net/ethernet/freescale/dpaa/dpaa_eth_trace.h
-new file mode 100644
-index 0000000..e00d116
---- /dev/null
-+++ b/drivers/net/ethernet/freescale/dpaa/dpaa_eth_trace.h
-@@ -0,0 +1,143 @@
-+/* Copyright 2013-2015 Freescale Semiconductor Inc.
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions are met:
-+ *     * Redistributions of source code must retain the above copyright
-+ *	 notice, this list of conditions and the following disclaimer.
-+ *     * Redistributions in binary form must reproduce the above copyright
-+ *	 notice, this list of conditions and the following disclaimer in the
-+ *	 documentation and/or other materials provided with the distribution.
-+ *     * Neither the name of Freescale Semiconductor nor the
-+ *	 names of its contributors may be used to endorse or promote products
-+ *	 derived from this software without specific prior written permission.
-+ *
-+ *
-+ * ALTERNATIVELY, this software may be distributed under the terms of the
-+ * GNU General Public License ("GPL") as published by the Free Software
-+ * Foundation, either version 2 of that License or (at your option) any
-+ * later version.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
-+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ */
-+
-+#undef TRACE_SYSTEM
-+#define TRACE_SYSTEM	dpaa_eth
-+
-+#if !defined(_DPAA_ETH_TRACE_H) || defined(TRACE_HEADER_MULTI_READ)
-+#define _DPAA_ETH_TRACE_H
-+
-+#include <linux/skbuff.h>
-+#include <linux/netdevice.h>
-+#include "dpaa_eth.h"
-+#include <linux/tracepoint.h>
-+
-+#define fd_format_name(format)	{ qm_fd_##format, #format }
-+#define fd_format_list	\
-+	fd_format_name(contig),	\
-+	fd_format_name(sg)
-+#define TR_FMT "[%s] fqid=%d, fd: addr=0x%llx, format=%s, off=%u, len=%u," \
-+	" status=0x%08x"
-+
-+/* This is used to declare a class of events.
-+ * individual events of this type will be defined below.
-+ */
-+
-+/* Store details about a frame descriptor and the FQ on which it was
-+ * transmitted/received.
-+ */
-+DECLARE_EVENT_CLASS(dpaa_eth_fd,
-+	/* Trace function prototype */
-+	TP_PROTO(struct net_device *netdev,
-+		 struct qman_fq *fq,
-+		 const struct qm_fd *fd),
-+
-+	/* Repeat argument list here */
-+	TP_ARGS(netdev, fq, fd),
-+
-+	/* A structure containing the relevant information we want to record.
-+	 * Declare name and type for each normal element, name, type and size
-+	 * for arrays. Use __string for variable length strings.
-+	 */
-+	TP_STRUCT__entry(
-+		__field(u32,	fqid)
-+		__field(u64,	fd_addr)
-+		__field(u8,	fd_format)
-+		__field(u16,	fd_offset)
-+		__field(u32,	fd_length)
-+		__field(u32,	fd_status)
-+		__string(name,	netdev->name)
-+	),
-+
-+	/* The function that assigns values to the above declared fields */
-+	TP_fast_assign(
-+		__entry->fqid = fq->fqid;
-+		__entry->fd_addr = qm_fd_addr_get64(fd);
-+		__entry->fd_format = fd->format;
-+		__entry->fd_offset = dpa_fd_offset(fd);
-+		__entry->fd_length = dpa_fd_length(fd);
-+		__entry->fd_status = fd->status;
-+		__assign_str(name, netdev->name);
-+	),
-+
-+	/* This is what gets printed when the trace event is triggered */
-+	TP_printk(TR_FMT,
-+		  __get_str(name), __entry->fqid, __entry->fd_addr,
-+		  __print_symbolic(__entry->fd_format, fd_format_list),
-+		  __entry->fd_offset, __entry->fd_length, __entry->fd_status)
-+);
-+
-+/* Now declare events of the above type. Format is:
-+ * DEFINE_EVENT(class, name, proto, args), with proto and args same as for class
-+ */
-+
-+/* Tx (egress) fd */
-+DEFINE_EVENT(dpaa_eth_fd, dpa_tx_fd,
-+
-+	TP_PROTO(struct net_device *netdev,
-+		 struct qman_fq *fq,
-+		 const struct qm_fd *fd),
-+
-+	TP_ARGS(netdev, fq, fd)
-+);
-+
-+/* Rx fd */
-+DEFINE_EVENT(dpaa_eth_fd, dpa_rx_fd,
-+
-+	TP_PROTO(struct net_device *netdev,
-+		 struct qman_fq *fq,
-+		 const struct qm_fd *fd),
-+
-+	TP_ARGS(netdev, fq, fd)
-+);
-+
-+/* Tx confirmation fd */
-+DEFINE_EVENT(dpaa_eth_fd, dpa_tx_conf_fd,
-+
-+	TP_PROTO(struct net_device *netdev,
-+		 struct qman_fq *fq,
-+		 const struct qm_fd *fd),
-+
-+	TP_ARGS(netdev, fq, fd)
-+);
-+
-+/* If only one event of a certain type needs to be declared, use TRACE_EVENT().
-+ * The syntax is the same as for DECLARE_EVENT_CLASS().
-+ */
-+
-+#endif /* _DPAA_ETH_TRACE_H */
-+
-+/* This must be outside ifdef _DPAA_ETH_TRACE_H */
-+#undef TRACE_INCLUDE_PATH
-+#define TRACE_INCLUDE_PATH .
-+#undef TRACE_INCLUDE_FILE
-+#define TRACE_INCLUDE_FILE	dpaa_eth_trace
-+#include <trace/define_trace.h>
--- 
-1.7.11.7
+Can you send me a complete dmesg capture from a boot with
+this commit reverted?
