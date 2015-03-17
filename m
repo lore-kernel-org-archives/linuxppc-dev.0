@@ -1,42 +1,39 @@
-Return-Path: <mahesh@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A7FD81A012C
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Mar 2015 21:44:51 +1100 (AEDT)
-Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
+Return-Path: <gkurz@linux.vnet.ibm.com>
+Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id C2C9314008F
- for <linuxppc-dev@ozlabs.org>; Tue, 17 Mar 2015 21:44:49 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 76B681A012C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Mar 2015 21:48:19 +1100 (AEDT)
 Received: from /spool/local
- by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
- Tue, 17 Mar 2015 16:14:46 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id EA119E0044
- for <linuxppc-dev@ozlabs.org>; Tue, 17 Mar 2015 16:16:50 +0530 (IST)
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t2HAiiCW30146768
- for <linuxppc-dev@ozlabs.org>; Tue, 17 Mar 2015 16:14:44 +0530
-Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t2HAihUC010014
- for <linuxppc-dev@ozlabs.org>; Tue, 17 Mar 2015 16:14:43 +0530
-Subject: [PATCH v2] powerpc/book3s: Fix the MCE code to use
- CONFIG_KVM_BOOK3S_64_HANDLER
-From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
-To: linuxppc-dev <linuxppc-dev@ozlabs.org>,
- Michael Ellerman <mpe@ellerman.id.au>
-Date: Tue, 17 Mar 2015 16:14:41 +0530
-Message-ID: <20150317103356.27872.65515.stgit@mars>
+ for <linuxppc-dev@lists.ozlabs.org> from <gkurz@linux.vnet.ibm.com>;
+ Tue, 17 Mar 2015 10:48:14 -0000
+Received: from b06cxnps4076.portsmouth.uk.ibm.com
+ (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
+ by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id C0FA21B08061
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Mar 2015 10:48:35 +0000 (GMT)
+Received: from d06av12.portsmouth.uk.ibm.com (d06av12.portsmouth.uk.ibm.com
+ [9.149.37.247])
+ by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t2HAmCCG10355180
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Mar 2015 10:48:12 GMT
+Received: from d06av12.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av12.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t2HAmBkh024885
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Mar 2015 04:48:12 -0600
+Date: Tue, 17 Mar 2015 11:48:09 +0100
+From: Greg Kurz <gkurz@linux.vnet.ibm.com>
+To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Subject: Re: [PATCH v3 4/5] powerpc/vphn: parsing code rewrite
+Message-ID: <20150317114809.2be01a40@bahia.local>
+In-Reply-To: <5507F8FA.7040004@linux.vnet.ibm.com>
+References: <20150223151412.21565.2251.stgit@bahia.local>
+ <20150223151437.21565.8231.stgit@bahia.local>
+ <5507F8FA.7040004@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: David Gibson <dgibson@redhat.com>, Paul Mackerras <paulus@samba.org>,
- Alexander Graf <agraf@suse.de>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,36 +43,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+On Tue, 17 Mar 2015 15:20:50 +0530
+Anshuman Khandual <khandual@linux.vnet.ibm.com> wrote:
 
-commit id 2ba9f0d has changed CONFIG_KVM_BOOK3S_64_HV to tristate to allow
-HV/PR bits to be built as modules. But the MCE code still depends on
-CONFIG_KVM_BOOK3S_64_HV which is wrong. When user selects
-CONFIG_KVM_BOOK3S_64_HV=m to build HV/PR bits as a separate module the
-relevant MCE code gets excluded.
+> > diff --git a/arch/powerpc/mm/vphn.h b/arch/powerpc/mm/vphn.h
+> > index 96af9a4..fe8b780 100644
+> > --- a/arch/powerpc/mm/vphn.h
+> > +++ b/arch/powerpc/mm/vphn.h
+> > @@ -6,10 +6,10 @@
+> >  #define VPHN_REGISTER_COUNT 6
+> >  
+> >  /*
+> > - * 6 64-bit registers unpacked into 12 32-bit associativity values. To form
+> > - * the complete property we have to add the length in the first cell.
+> > + * 6 64-bit registers unpacked into up to 24 be32 associativity values. To
+> 
+> I guess its be16 instead of be32 here		^^^^
 
-This patch fixes the MCE code to use CONFIG_KVM_BOOK3S_64_HANDLER. This
-makes sure that the relevant MCE code is included when HV/PR bits
-are built as a separate modules.
+The output array is supposed to mimic the ibm,associativity property in the
+device tree. It is hence an array of be32 values, even if the hypervisor
+passes them as be16 values.
 
-Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
----
-Hi Michael,
-	This patch should also goto stable.
+Cheers.
 
- arch/powerpc/kernel/exceptions-64s.S |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-index c2df815..9519e6b 100644
---- a/arch/powerpc/kernel/exceptions-64s.S
-+++ b/arch/powerpc/kernel/exceptions-64s.S
-@@ -1408,7 +1408,7 @@ machine_check_handle_early:
- 	bne	9f			/* continue in V mode if we are. */
- 
- 5:
--#ifdef CONFIG_KVM_BOOK3S_64_HV
-+#ifdef CONFIG_KVM_BOOK3S_64_HANDLER
- 	/*
- 	 * We are coming from kernel context. Check if we are coming from
- 	 * guest. if yes, then we can continue. We will fall through
+--
+Greg
