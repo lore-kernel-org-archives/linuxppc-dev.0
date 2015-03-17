@@ -1,35 +1,35 @@
 Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5B6301A0C7F
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6520D1A0BBD
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Mar 2015 16:16:35 +1100 (AEDT)
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 2B45714011D
+ by ozlabs.org (Postfix) with ESMTPS id 3B93F140140
  for <linuxppc-dev@ozlabs.org>; Tue, 17 Mar 2015 16:16:35 +1100 (AEDT)
 Received: from /spool/local
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
  Tue, 17 Mar 2015 15:16:34 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 08E283578053
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id B135B2CE804E
  for <linuxppc-dev@ozlabs.org>; Tue, 17 Mar 2015 16:16:32 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t2H5GN6A47120402
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t2H5GOkK25493554
  for <linuxppc-dev@ozlabs.org>; Tue, 17 Mar 2015 16:16:32 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t2H5FwvX011952
- for <linuxppc-dev@ozlabs.org>; Tue, 17 Mar 2015 16:15:58 +1100
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t2H5FxnP009001
+ for <linuxppc-dev@ozlabs.org>; Tue, 17 Mar 2015 16:15:59 +1100
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH v2 5/7] powerpc/eeh: Do probe on pci_dn
-Date: Tue, 17 Mar 2015 16:15:06 +1100
-Message-Id: <1426569308-9470-6-git-send-email-gwshan@linux.vnet.ibm.com>
+Subject: [PATCH v2 7/7] powerpc/eeh: Remove device_node dependency
+Date: Tue, 17 Mar 2015 16:15:08 +1100
+Message-Id: <1426569308-9470-8-git-send-email-gwshan@linux.vnet.ibm.com>
 In-Reply-To: <1426569308-9470-1-git-send-email-gwshan@linux.vnet.ibm.com>
 References: <1426569308-9470-1-git-send-email-gwshan@linux.vnet.ibm.com>
 Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
@@ -42,623 +42,381 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Originally, EEH core probes on device_node or pci_dev to populate
-EEH devices and PEs, which conflicts with the fact: SRIOV VFs are
-usually enabled and created by PF's driver and they don't have the
-corresponding device_nodes. Instead, SRIOV VFs have dynamically
-created pci_dn, which can be used for EEH probe.
-
-The patch reworks EEH probe for PowerNV and pSeries platforms to
-do probing based on pci_dn, instead of pci_dev or device_node any
-more.
+The patch removes struct eeh_dev::dn and the corresponding helper
+functions: eeh_dev_to_of_node() and of_node_to_eeh_dev(). Instead,
+eeh_dev_to_pdn() and pdn_to_eeh_dev() should be used to get the
+pdn, which might contain device_node on PowerNV platform.
 
 Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/eeh.h               |  11 +-
- arch/powerpc/kernel/eeh.c                    |  63 ++++--------
- arch/powerpc/kernel/of_platform.c            |   2 +-
- arch/powerpc/kernel/pci-hotplug.c            |   2 +-
- arch/powerpc/platforms/powernv/eeh-powernv.c | 146 ++++++++++++++++++++-------
- arch/powerpc/platforms/pseries/eeh_pseries.c |  82 ++++++---------
- arch/powerpc/platforms/pseries/pci_dlpar.c   |   2 +-
- drivers/pci/hotplug/rpadlpar_core.c          |   2 +-
- 8 files changed, 172 insertions(+), 138 deletions(-)
+ arch/powerpc/include/asm/eeh.h        |  7 -------
+ arch/powerpc/include/asm/pci-bridge.h | 14 --------------
+ arch/powerpc/kernel/eeh.c             | 24 +++++++++++++-----------
+ arch/powerpc/kernel/eeh_cache.c       | 25 +++++++++++--------------
+ arch/powerpc/kernel/eeh_driver.c      | 22 ----------------------
+ arch/powerpc/kernel/eeh_pe.c          | 34 +++++++++++++++++++++++++---------
+ arch/powerpc/kernel/pci_of_scan.c     |  2 +-
+ arch/powerpc/kernel/rtas_pci.c        |  2 +-
+ arch/powerpc/platforms/pseries/msi.c  |  6 ++++--
+ 9 files changed, 55 insertions(+), 81 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
-index bb24172..eefff1f 100644
+index 2540ad8..61912fc 100644
 --- a/arch/powerpc/include/asm/eeh.h
 +++ b/arch/powerpc/include/asm/eeh.h
-@@ -206,8 +206,7 @@ struct eeh_ops {
- 	char *name;
- 	int (*init)(void);
- 	int (*post_init)(void);
--	void* (*of_probe)(struct device_node *dn, void *flag);
--	int (*dev_probe)(struct pci_dev *dev, void *flag);
-+	void* (*probe)(struct pci_dn *pdn, void *data);
- 	int (*set_option)(struct eeh_pe *pe, int option);
- 	int (*get_pe_addr)(struct eeh_pe *pe);
- 	int (*get_state)(struct eeh_pe *pe, int *state);
-@@ -286,8 +285,8 @@ int __exit eeh_ops_unregister(const char *name);
- int eeh_check_failure(const volatile void __iomem *token);
- int eeh_dev_check_failure(struct eeh_dev *edev);
- void eeh_addr_cache_build(void);
--void eeh_add_device_early(struct device_node *);
--void eeh_add_device_tree_early(struct device_node *);
-+void eeh_add_device_early(struct pci_dn *);
-+void eeh_add_device_tree_early(struct pci_dn *);
- void eeh_add_device_late(struct pci_dev *);
- void eeh_add_device_tree_late(struct pci_bus *);
- void eeh_add_sysfs_files(struct pci_bus *);
-@@ -345,9 +344,9 @@ static inline int eeh_check_failure(const volatile void __iomem *token)
+@@ -29,7 +29,6 @@
  
- static inline void eeh_addr_cache_build(void) { }
+ struct pci_dev;
+ struct pci_bus;
+-struct device_node;
  
--static inline void eeh_add_device_early(struct device_node *dn) { }
-+static inline void eeh_add_device_early(struct pci_dn *pdn) { }
+ #ifdef CONFIG_EEH
  
--static inline void eeh_add_device_tree_early(struct device_node *dn) { }
-+static inline void eeh_add_device_tree_early(struct pci_dn *pdn) { }
+@@ -136,17 +135,11 @@ struct eeh_dev {
+ 	struct eeh_pe *pe;		/* Associated PE		*/
+ 	struct list_head list;		/* Form link list in the PE	*/
+ 	struct pci_controller *phb;	/* Associated PHB		*/
+-	struct device_node *dn;		/* Associated device node	*/
+ 	struct pci_dn *pdn;		/* Associated PCI device node	*/
+ 	struct pci_dev *pdev;		/* Associated PCI device	*/
+ 	struct pci_bus *bus;		/* PCI bus for partial hotplug	*/
+ };
  
- static inline void eeh_add_device_late(struct pci_dev *dev) { }
+-static inline struct device_node *eeh_dev_to_of_node(struct eeh_dev *edev)
+-{
+-	return edev ? edev->dn : NULL;
+-}
+-
+ static inline struct pci_dn *eeh_dev_to_pdn(struct eeh_dev *edev)
+ {
+ 	return edev ? edev->pdn : NULL;
+diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
+index 7b74499..2c6dc2a 100644
+--- a/arch/powerpc/include/asm/pci-bridge.h
++++ b/arch/powerpc/include/asm/pci-bridge.h
+@@ -201,25 +201,11 @@ static inline int pci_device_from_OF_node(struct device_node *np,
+ }
+ 
+ #if defined(CONFIG_EEH)
+-static inline struct eeh_dev *of_node_to_eeh_dev(struct device_node *dn)
+-{
+-	/*
+-	 * For those OF nodes whose parent isn't PCI bridge, they
+-	 * don't have PCI_DN actually. So we have to skip them for
+-	 * any EEH operations.
+-	 */
+-	if (!dn || !PCI_DN(dn))
+-		return NULL;
+-
+-	return PCI_DN(dn)->edev;
+-}
+-
+ static inline struct eeh_dev *pdn_to_eeh_dev(struct pci_dn *pdn)
+ {
+ 	return pdn ? pdn->edev : NULL;
+ }
+ #else
+-#define of_node_to_eeh_dev(x)	(NULL)
+ #define pdn_to_eeh_dev(x)	(NULL)
+ #endif
  
 diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
-index 19a897c..9504c2f 100644
+index 1fd2566..76253eb 100644
 --- a/arch/powerpc/kernel/eeh.c
 +++ b/arch/powerpc/kernel/eeh.c
-@@ -969,7 +969,7 @@ static struct notifier_block eeh_reboot_nb = {
- int eeh_init(void)
- {
- 	struct pci_controller *hose, *tmp;
--	struct device_node *phb;
+@@ -418,11 +418,11 @@ int eeh_dev_check_failure(struct eeh_dev *edev)
+ 	int ret;
+ 	int active_flags = (EEH_STATE_MMIO_ACTIVE | EEH_STATE_DMA_ACTIVE);
+ 	unsigned long flags;
+-	struct device_node *dn;
 +	struct pci_dn *pdn;
- 	static int cnt = 0;
- 	int ret = 0;
+ 	struct pci_dev *dev;
+ 	struct eeh_pe *pe, *parent_pe, *phb_pe;
+ 	int rc = 0;
+-	const char *location;
++	const char *location = NULL;
  
-@@ -1004,20 +1004,9 @@ int eeh_init(void)
- 		return ret;
+ 	eeh_stats.total_mmio_ffs++;
  
- 	/* Enable EEH for all adapters */
--	if (eeh_has_flag(EEH_PROBE_MODE_DEVTREE)) {
--		list_for_each_entry_safe(hose, tmp,
--			&hose_list, list_node) {
--			phb = hose->dn;
--			traverse_pci_devices(phb, eeh_ops->of_probe, NULL);
--		}
--	} else if (eeh_has_flag(EEH_PROBE_MODE_DEV)) {
--		list_for_each_entry_safe(hose, tmp,
--			&hose_list, list_node)
--			pci_walk_bus(hose->bus, eeh_ops->dev_probe, NULL);
--	} else {
--		pr_warn("%s: Invalid probe mode %x",
--			__func__, eeh_subsystem_flags);
--		return -EINVAL;
-+	list_for_each_entry_safe(hose, tmp, &hose_list, list_node) {
-+		pdn = hose->pci_data;
-+		traverse_pci_dn(pdn, eeh_ops->probe, NULL);
+@@ -433,15 +433,14 @@ int eeh_dev_check_failure(struct eeh_dev *edev)
+ 		eeh_stats.no_dn++;
+ 		return 0;
+ 	}
+-	dn = eeh_dev_to_of_node(edev);
+ 	dev = eeh_dev_to_pci_dev(edev);
+ 	pe = eeh_dev_to_pe(edev);
+ 
+ 	/* Access to IO BARs might get this far and still not want checking. */
+ 	if (!pe) {
+ 		eeh_stats.ignored_check++;
+-		pr_debug("EEH: Ignored check for %s %s\n",
+-			eeh_pci_name(dev), dn->full_name);
++		pr_debug("EEH: Ignored check for %s\n",
++			eeh_pci_name(dev));
+ 		return 0;
  	}
  
- 	/*
-@@ -1043,7 +1032,7 @@ core_initcall_sync(eeh_init);
+@@ -477,10 +476,13 @@ int eeh_dev_check_failure(struct eeh_dev *edev)
+ 	if (pe->state & EEH_PE_ISOLATED) {
+ 		pe->check_count++;
+ 		if (pe->check_count % EEH_MAX_FAILS == 0) {
+-			location = of_get_property(dn, "ibm,loc-code", NULL);
++			pdn = eeh_dev_to_pdn(edev);
++			if (pdn->node)
++				location = of_get_property(pdn->node, "ibm,loc-code", NULL);
+ 			printk(KERN_ERR "EEH: %d reads ignored for recovering device at "
+ 				"location=%s driver=%s pci addr=%s\n",
+-				pe->check_count, location,
++				pe->check_count,
++				location ? location : "unknown",
+ 				eeh_driver_name(dev), eeh_pci_name(dev));
+ 			printk(KERN_ERR "EEH: Might be infinite loop in %s driver\n",
+ 				eeh_driver_name(dev));
+@@ -1035,7 +1037,7 @@ int eeh_init(void)
+ core_initcall_sync(eeh_init);
  
  /**
-  * eeh_add_device_early - Enable EEH for the indicated device_node
-- * @dn: device node for which to set up EEH
-+ * @pdn: PCI device node for which to set up EEH
+- * eeh_add_device_early - Enable EEH for the indicated device_node
++ * eeh_add_device_early - Enable EEH for the indicated device node
+  * @pdn: PCI device node for which to set up EEH
   *
   * This routine must be used to perform EEH initialization for PCI
-  * devices that were added after system boot (e.g. hotplug, dlpar).
-@@ -1053,44 +1042,41 @@ core_initcall_sync(eeh_init);
-  * on the CEC architecture, type of the device, on earlier boot
-  * command-line arguments & etc.
+@@ -1093,7 +1095,7 @@ EXPORT_SYMBOL_GPL(eeh_add_device_tree_early);
   */
--void eeh_add_device_early(struct device_node *dn)
-+void eeh_add_device_early(struct pci_dn *pdn)
+ void eeh_add_device_late(struct pci_dev *dev)
  {
- 	struct pci_controller *phb;
-+	struct eeh_dev *edev = pdn_to_eeh_dev(pdn);
- 
--	/*
--	 * If we're doing EEH probe based on PCI device, we
--	 * would delay the probe until late stage because
--	 * the PCI device isn't available this moment.
--	 */
--	if (!eeh_has_flag(EEH_PROBE_MODE_DEVTREE))
--		return;
--
--	if (!of_node_to_eeh_dev(dn))
-+	if (!edev)
- 		return;
--	phb = of_node_to_eeh_dev(dn)->phb;
- 
- 	/* USB Bus children of PCI devices will not have BUID's */
--	if (NULL == phb || 0 == phb->buid)
-+	phb = edev->phb;
-+	if (NULL == phb ||
-+	    (eeh_has_flag(EEH_PROBE_MODE_DEVTREE) && 0 == phb->buid))
- 		return;
- 
--	eeh_ops->of_probe(dn, NULL);
-+	eeh_ops->probe(pdn, NULL);
- }
- 
- /**
-  * eeh_add_device_tree_early - Enable EEH for the indicated device
-- * @dn: device node
-+ * @pdn: PCI device node
-  *
-  * This routine must be used to perform EEH initialization for the
-  * indicated PCI device that was added after system boot (e.g.
-  * hotplug, dlpar).
-  */
--void eeh_add_device_tree_early(struct device_node *dn)
-+void eeh_add_device_tree_early(struct pci_dn *pdn)
- {
--	struct device_node *sib;
-+	struct pci_dn *n;
-+
-+	if (!pdn)
-+		return;
- 
--	for_each_child_of_node(dn, sib)
--		eeh_add_device_tree_early(sib);
--	eeh_add_device_early(dn);
-+	list_for_each_entry(n, &pdn->child_list, list)
-+		eeh_add_device_tree_early(n);
-+	eeh_add_device_early(pdn);
- }
- EXPORT_SYMBOL_GPL(eeh_add_device_tree_early);
- 
-@@ -1144,13 +1130,6 @@ void eeh_add_device_late(struct pci_dev *dev)
- 	edev->pdev = dev;
- 	dev->dev.archdata.edev = edev;
- 
--	/*
--	 * We have to do the EEH probe here because the PCI device
--	 * hasn't been created yet in the early stage.
--	 */
--	if (eeh_has_flag(EEH_PROBE_MODE_DEV))
--		eeh_ops->dev_probe(dev, NULL);
--
- 	eeh_addr_cache_insert_dev(dev);
- }
- 
-diff --git a/arch/powerpc/kernel/of_platform.c b/arch/powerpc/kernel/of_platform.c
-index 2f35a72..b60a67d 100644
---- a/arch/powerpc/kernel/of_platform.c
-+++ b/arch/powerpc/kernel/of_platform.c
-@@ -72,7 +72,7 @@ static int of_pci_phb_probe(struct platform_device *dev)
- 
- 	/* Register devices with EEH */
- 	if (dev->dev.of_node->child)
--		eeh_add_device_tree_early(dev->dev.of_node);
-+		eeh_add_device_tree_early(PCI_DN(dev->dev.of_node));
- 
- 	/* Scan the bus */
- 	pcibios_scan_phb(phb);
-diff --git a/arch/powerpc/kernel/pci-hotplug.c b/arch/powerpc/kernel/pci-hotplug.c
-index 5b78917..18d9575 100644
---- a/arch/powerpc/kernel/pci-hotplug.c
-+++ b/arch/powerpc/kernel/pci-hotplug.c
-@@ -75,7 +75,7 @@ void pcibios_add_pci_devices(struct pci_bus * bus)
- 	struct pci_dev *dev;
- 	struct device_node *dn = pci_bus_to_OF_node(bus);
- 
--	eeh_add_device_tree_early(dn);
-+	eeh_add_device_tree_early(PCI_DN(dn));
- 
- 	mode = PCI_PROBE_NORMAL;
- 	if (ppc_md.pci_probe_mode)
-diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
-index 8eac8c5..dcc524f 100644
---- a/arch/powerpc/platforms/powernv/eeh-powernv.c
-+++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
-@@ -286,10 +286,82 @@ static int pnv_eeh_post_init(void)
- 	return ret;
- }
- 
-+static int pnv_eeh_cap_start(struct pci_dn *pdn)
-+{
-+	u32 status;
-+
-+	if (!pdn)
-+		return 0;
-+
-+	pnv_pci_cfg_read(pdn, PCI_STATUS, 2, &status);
-+	if (!(status & PCI_STATUS_CAP_LIST))
-+		return 0;
-+
-+	return PCI_CAPABILITY_LIST;
-+}
-+
-+static int pnv_eeh_find_cap(struct pci_dn *pdn, int cap)
-+{
-+	int pos = pnv_eeh_cap_start(pdn);
-+	int cnt = 48;   /* Maximal number of capabilities */
-+	u32 id;
-+
-+	if (!pos)
-+		return 0;
-+
-+	while (cnt--) {
-+		pnv_pci_cfg_read(pdn, pos, 1, &pos);
-+		if (pos < 0x40)
-+			break;
-+
-+		pos &= ~3;
-+		pnv_pci_cfg_read(pdn, pos + PCI_CAP_LIST_ID, 1, &id);
-+		if (id == 0xff)
-+			break;
-+
-+		/* Found */
-+		if (id == cap)
-+			return pos;
-+
-+		/* Next one */
-+		pos += PCI_CAP_LIST_NEXT;
-+	}
-+
-+	return 0;
-+}
-+
-+static int pnv_eeh_find_ecap(struct pci_dn *pdn, int cap)
-+{
-+	struct eeh_dev *edev = pdn_to_eeh_dev(pdn);
-+	u32 header;
-+	int pos = 256, ttl = (4096 - 256) / 8;
-+
-+	if (!edev || !edev->pcie_cap)
-+		return 0;
-+	if (pnv_pci_cfg_read(pdn, pos, 4, &header) != PCIBIOS_SUCCESSFUL)
-+		return 0;
-+	else if (!header)
-+		return 0;
-+
-+	while (ttl-- > 0) {
-+		if (PCI_EXT_CAP_ID(header) == cap && pos)
-+			return pos;
-+
-+		pos = PCI_EXT_CAP_NEXT(header);
-+		if (pos < 256)
-+			break;
-+
-+		if (pnv_pci_cfg_read(pdn, pos, 4, &header) != PCIBIOS_SUCCESSFUL)
-+			break;
-+	}
-+
-+	return 0;
-+}
-+
- /**
-- * pnv_eeh_dev_probe - Do probe on PCI device
-- * @dev: PCI device
-- * @flag: unused
-+ * pnv_eeh_probe - Do probe on PCI device
-+ * @pdn: PCI device node
-+ * @data: unused
-  *
-  * When EEH module is installed during system boot, all PCI devices
-  * are checked one by one to see if it supports EEH. The function
-@@ -303,12 +375,12 @@ static int pnv_eeh_post_init(void)
-  * was possiblly triggered by EEH core, the binding between EEH device
-  * and the PCI device isn't built yet.
-  */
--static int pnv_eeh_dev_probe(struct pci_dev *dev, void *flag)
-+static void *pnv_eeh_probe(struct pci_dn *pdn, void *data)
- {
--	struct pci_controller *hose = pci_bus_to_host(dev->bus);
-+	struct pci_controller *hose = pdn->phb;
- 	struct pnv_phb *phb = hose->private_data;
--	struct device_node *dn = pci_device_to_OF_node(dev);
--	struct eeh_dev *edev = of_node_to_eeh_dev(dn);
-+	struct eeh_dev *edev = pdn_to_eeh_dev(pdn);
-+	uint32_t pcie_flags;
- 	int ret;
- 
- 	/*
-@@ -317,40 +389,42 @@ static int pnv_eeh_dev_probe(struct pci_dev *dev, void *flag)
- 	 * the root bridge. So it's not reasonable to continue
- 	 * the probing.
- 	 */
--	if (!dn || !edev || edev->pe)
--		return 0;
-+	if (!edev || edev->pe)
-+		return NULL;
- 
- 	/* Skip for PCI-ISA bridge */
--	if ((dev->class >> 8) == PCI_CLASS_BRIDGE_ISA)
--		return 0;
-+	if ((pdn->class_code >> 8) == PCI_CLASS_BRIDGE_ISA)
-+		return NULL;
- 
- 	/* Initialize eeh device */
--	edev->class_code = dev->class;
-+	edev->class_code = pdn->class_code;
- 	edev->mode	&= 0xFFFFFF00;
--	if (dev->hdr_type == PCI_HEADER_TYPE_BRIDGE)
-+	edev->pcix_cap = pnv_eeh_find_cap(pdn, PCI_CAP_ID_PCIX);
-+	edev->pcie_cap = pnv_eeh_find_cap(pdn, PCI_CAP_ID_EXP);
-+	edev->aer_cap  = pnv_eeh_find_ecap(pdn, PCI_EXT_CAP_ID_ERR);
-+	if ((edev->class_code >> 8) == PCI_CLASS_BRIDGE_PCI) {
- 		edev->mode |= EEH_DEV_BRIDGE;
--	edev->pcix_cap = pci_find_capability(dev, PCI_CAP_ID_PCIX);
--	if (pci_is_pcie(dev)) {
--		edev->pcie_cap = pci_pcie_cap(dev);
--
--		if (pci_pcie_type(dev) == PCI_EXP_TYPE_ROOT_PORT)
--			edev->mode |= EEH_DEV_ROOT_PORT;
--		else if (pci_pcie_type(dev) == PCI_EXP_TYPE_DOWNSTREAM)
--			edev->mode |= EEH_DEV_DS_PORT;
--
--		edev->aer_cap = pci_find_ext_capability(dev,
--							PCI_EXT_CAP_ID_ERR);
-+		if (edev->pcie_cap) {
-+			pnv_pci_cfg_read(pdn, edev->pcie_cap + PCI_EXP_FLAGS,
-+					 2, &pcie_flags);
-+			pcie_flags = (pcie_flags & PCI_EXP_FLAGS_TYPE) >> 4;
-+			if (pcie_flags == PCI_EXP_TYPE_ROOT_PORT)
-+				edev->mode |= EEH_DEV_ROOT_PORT;
-+			else if (pcie_flags == PCI_EXP_TYPE_DOWNSTREAM)
-+				edev->mode |= EEH_DEV_DS_PORT;
-+		}
- 	}
- 
--	edev->config_addr	= ((dev->bus->number << 8) | dev->devfn);
--	edev->pe_config_addr	= phb->bdfn_to_pe(phb, dev->bus, dev->devfn & 0xff);
-+	edev->config_addr    = (pdn->busno << 8) | (pdn->devfn);
-+	edev->pe_config_addr = phb->ioda.pe_rmap[edev->config_addr];
- 
- 	/* Create PE */
- 	ret = eeh_add_to_parent_pe(edev);
- 	if (ret) {
--		pr_warn("%s: Can't add PCI dev %s to parent PE (%d)\n",
--			__func__, pci_name(dev), ret);
--		return ret;
-+		pr_warn("%s: Can't add PCI dev %04x:%02x:%02x.%01x to parent PE (%d)\n",
-+			__func__, hose->global_number, pdn->busno,
-+			PCI_SLOT(pdn->devfn), PCI_FUNC(pdn->devfn), ret);
-+		return NULL;
- 	}
- 
- 	/*
-@@ -369,8 +443,10 @@ static int pnv_eeh_dev_probe(struct pci_dev *dev, void *flag)
- 	 * Broadcom Austin 4-ports NICs (14e4:1657)
- 	 * Broadcom Shiner 2-ports 10G NICs (14e4:168e)
- 	 */
--	if ((dev->vendor == PCI_VENDOR_ID_BROADCOM && dev->device == 0x1657) ||
--	    (dev->vendor == PCI_VENDOR_ID_BROADCOM && dev->device == 0x168e))
-+	if ((pdn->vendor_id == PCI_VENDOR_ID_BROADCOM &&
-+	     pdn->device_id == 0x1657) ||
-+	    (pdn->vendor_id == PCI_VENDOR_ID_BROADCOM &&
-+	     pdn->device_id == 0x168e))
- 		edev->pe->state |= EEH_PE_CFG_RESTRICTED;
- 
- 	/*
-@@ -380,7 +456,8 @@ static int pnv_eeh_dev_probe(struct pci_dev *dev, void *flag)
- 	 * to PE reset.
- 	 */
- 	if (!edev->pe->bus)
--		edev->pe->bus = dev->bus;
-+		edev->pe->bus = pci_find_bus(hose->global_number,
-+					     pdn->busno);
- 
- 	/*
- 	 * Enable EEH explicitly so that we will do EEH check
-@@ -391,7 +468,7 @@ static int pnv_eeh_dev_probe(struct pci_dev *dev, void *flag)
- 	/* Save memory bars */
- 	eeh_save_bars(edev);
- 
--	return 0;
-+	return NULL;
- }
- 
- /**
-@@ -1432,8 +1509,7 @@ static struct eeh_ops pnv_eeh_ops = {
- 	.name                   = "powernv",
- 	.init                   = pnv_eeh_init,
- 	.post_init              = pnv_eeh_post_init,
--	.of_probe               = NULL,
--	.dev_probe              = pnv_eeh_dev_probe,
-+	.probe			= pnv_eeh_probe,
- 	.set_option             = pnv_eeh_set_option,
- 	.get_pe_addr            = pnv_eeh_get_pe_addr,
- 	.get_state              = pnv_eeh_get_state,
-diff --git a/arch/powerpc/platforms/pseries/eeh_pseries.c b/arch/powerpc/platforms/pseries/eeh_pseries.c
-index a6c7e19..a2946f7 100644
---- a/arch/powerpc/platforms/pseries/eeh_pseries.c
-+++ b/arch/powerpc/platforms/pseries/eeh_pseries.c
-@@ -118,9 +118,8 @@ static int pseries_eeh_init(void)
- 	return 0;
- }
- 
--static int pseries_eeh_cap_start(struct device_node *dn)
-+static int pseries_eeh_cap_start(struct pci_dn *pdn)
- {
--	struct pci_dn *pdn = PCI_DN(dn);
- 	u32 status;
- 
- 	if (!pdn)
-@@ -134,10 +133,9 @@ static int pseries_eeh_cap_start(struct device_node *dn)
- }
- 
- 
--static int pseries_eeh_find_cap(struct device_node *dn, int cap)
-+static int pseries_eeh_find_cap(struct pci_dn *pdn, int cap)
- {
--	struct pci_dn *pdn = PCI_DN(dn);
--	int pos = pseries_eeh_cap_start(dn);
-+	int pos = pseries_eeh_cap_start(pdn);
- 	int cnt = 48;	/* Maximal number of capabilities */
- 	u32 id;
- 
-@@ -160,10 +158,9 @@ static int pseries_eeh_find_cap(struct device_node *dn, int cap)
- 	return 0;
- }
- 
--static int pseries_eeh_find_ecap(struct device_node *dn, int cap)
-+static int pseries_eeh_find_ecap(struct pci_dn *pdn, int cap)
- {
--	struct pci_dn *pdn = PCI_DN(dn);
--	struct eeh_dev *edev = of_node_to_eeh_dev(dn);
-+	struct eeh_dev *edev = pdn_to_eeh_dev(pdn);
- 	u32 header;
- 	int pos = 256;
- 	int ttl = (4096 - 256) / 8;
-@@ -191,53 +188,44 @@ static int pseries_eeh_find_ecap(struct device_node *dn, int cap)
- }
- 
- /**
-- * pseries_eeh_of_probe - EEH probe on the given device
-- * @dn: OF node
-- * @flag: Unused
-+ * pseries_eeh_probe - EEH probe on the given device
-+ * @pdn: PCI device node
-+ * @data: Unused
-  *
-  * When EEH module is installed during system boot, all PCI devices
-  * are checked one by one to see if it supports EEH. The function
-  * is introduced for the purpose.
-  */
--static void *pseries_eeh_of_probe(struct device_node *dn, void *flag)
-+static void *pseries_eeh_probe(struct pci_dn *pdn, void *data)
- {
+-	struct device_node *dn;
++	struct pci_dn *pdn;
  	struct eeh_dev *edev;
- 	struct eeh_pe pe;
--	struct pci_dn *pdn = PCI_DN(dn);
--	const __be32 *classp, *vendorp, *devicep;
--	u32 class_code;
--	const __be32 *regs;
- 	u32 pcie_flags;
- 	int enable = 0;
- 	int ret;
  
- 	/* Retrieve OF node and eeh device */
+ 	if (!dev || !eeh_enabled())
+@@ -1101,8 +1103,8 @@ void eeh_add_device_late(struct pci_dev *dev)
+ 
+ 	pr_debug("EEH: Adding device %s\n", pci_name(dev));
+ 
+-	dn = pci_device_to_OF_node(dev);
 -	edev = of_node_to_eeh_dev(dn);
--	if (edev->pe || !of_device_is_available(dn))
++	pdn = pci_get_pdn_by_devfn(dev->bus, dev->devfn);
 +	edev = pdn_to_eeh_dev(pdn);
-+	if (!edev || edev->pe)
- 		return NULL;
+ 	if (edev->pdev == dev) {
+ 		pr_debug("EEH: Already referenced !\n");
+ 		return;
+diff --git a/arch/powerpc/kernel/eeh_cache.c b/arch/powerpc/kernel/eeh_cache.c
+index 07d8a24..eeabeab 100644
+--- a/arch/powerpc/kernel/eeh_cache.c
++++ b/arch/powerpc/kernel/eeh_cache.c
+@@ -171,30 +171,27 @@ eeh_addr_cache_insert(struct pci_dev *dev, unsigned long alo,
  
--	/* Retrieve class/vendor/device IDs */
--	classp = of_get_property(dn, "class-code", NULL);
--	vendorp = of_get_property(dn, "vendor-id", NULL);
--	devicep = of_get_property(dn, "device-id", NULL);
--
--	/* Skip for bad OF node or PCI-ISA bridge */
--	if (!classp || !vendorp || !devicep)
--		return NULL;
--	if (dn->type && !strcmp(dn->type, "isa"))
-+	/* Check class/vendor/device IDs */
-+	if (!pdn->vendor_id || !pdn->device_id || !pdn->class_code)
- 		return NULL;
+ static void __eeh_addr_cache_insert_dev(struct pci_dev *dev)
+ {
+-	struct device_node *dn;
++	struct pci_dn *pdn;
+ 	struct eeh_dev *edev;
+ 	int i;
  
--	class_code = of_read_number(classp, 1);
-+	/* Skip for PCI-ISA bridge */
-+        if ((pdn->class_code >> 8) == PCI_CLASS_BRIDGE_ISA)
-+		return NULL;
- 
- 	/*
- 	 * Update class code and mode of eeh device. We need
- 	 * correctly reflects that current device is root port
- 	 * or PCIe switch downstream port.
- 	 */
--	edev->class_code = class_code;
--	edev->pcix_cap = pseries_eeh_find_cap(dn, PCI_CAP_ID_PCIX);
--	edev->pcie_cap = pseries_eeh_find_cap(dn, PCI_CAP_ID_EXP);
--	edev->aer_cap = pseries_eeh_find_ecap(dn, PCI_EXT_CAP_ID_ERR);
-+	edev->class_code = pdn->class_code;
-+	edev->pcix_cap = pseries_eeh_find_cap(pdn, PCI_CAP_ID_PCIX);
-+	edev->pcie_cap = pseries_eeh_find_cap(pdn, PCI_CAP_ID_EXP);
-+	edev->aer_cap = pseries_eeh_find_ecap(pdn, PCI_EXT_CAP_ID_ERR);
- 	edev->mode &= 0xFFFFFF00;
- 	if ((edev->class_code >> 8) == PCI_CLASS_BRIDGE_PCI) {
- 		edev->mode |= EEH_DEV_BRIDGE;
-@@ -252,24 +240,16 @@ static void *pseries_eeh_of_probe(struct device_node *dn, void *flag)
- 		}
+-	dn = pci_device_to_OF_node(dev);
+-	if (!dn) {
++	pdn = pci_get_pdn_by_devfn(dev->bus, dev->devfn);
++	if (!pdn) {
+ 		pr_warn("PCI: no pci dn found for dev=%s\n",
+ 			pci_name(dev));
+ 		return;
  	}
  
--	/* Retrieve the device address */
--	regs = of_get_property(dn, "reg", NULL);
--	if (!regs) {
--		pr_warn("%s: OF node property %s::reg not found\n",
--			__func__, dn->full_name);
--		return NULL;
--	}
--
- 	/* Initialize the fake PE */
- 	memset(&pe, 0, sizeof(struct eeh_pe));
- 	pe.phb = edev->phb;
--	pe.config_addr = of_read_number(regs, 1);
-+	pe.config_addr = (pdn->busno << 16) | (pdn->devfn << 8);
- 
- 	/* Enable EEH on the device */
- 	ret = eeh_ops->set_option(&pe, EEH_OPT_ENABLE);
- 	if (!ret) {
--		edev->config_addr = of_read_number(regs, 1);
- 		/* Retrieve PE address */
-+		edev->config_addr = (pdn->busno << 16) | (pdn->devfn << 8);
- 		edev->pe_config_addr = eeh_ops->get_pe_addr(&pe);
- 		pe.addr = edev->pe_config_addr;
- 
-@@ -285,16 +265,17 @@ static void *pseries_eeh_of_probe(struct device_node *dn, void *flag)
- 			eeh_add_flag(EEH_ENABLED);
- 			eeh_add_to_parent_pe(edev);
- 
--			pr_debug("%s: EEH enabled on %s PHB#%d-PE#%x, config addr#%x\n",
--				__func__, dn->full_name, pe.phb->global_number,
--				pe.addr, pe.config_addr);
--		} else if (dn->parent && of_node_to_eeh_dev(dn->parent) &&
--			   (of_node_to_eeh_dev(dn->parent))->pe) {
-+			pr_debug("%s: EEH enabled on %02x:%02x.%01x PHB#%d-PE#%x\n",
-+				__func__, pdn->busno, PCI_SLOT(pdn->devfn),
-+				PCI_FUNC(pdn->devfn), pe.phb->global_number,
-+				pe.addr);
-+		} else if (pdn->parent && pdn_to_eeh_dev(pdn->parent) &&
-+			   (pdn_to_eeh_dev(pdn->parent))->pe) {
- 			/* This device doesn't support EEH, but it may have an
- 			 * EEH parent, in which case we mark it as supported.
- 			 */
--			edev->config_addr = of_node_to_eeh_dev(dn->parent)->config_addr;
--			edev->pe_config_addr = of_node_to_eeh_dev(dn->parent)->pe_config_addr;
-+			edev->config_addr = pdn_to_eeh_dev(pdn->parent)->config_addr;
-+			edev->pe_config_addr = pdn_to_eeh_dev(pdn->parent)->pe_config_addr;
- 			eeh_add_to_parent_pe(edev);
- 		}
+-	edev = of_node_to_eeh_dev(dn);
++	edev = pdn_to_eeh_dev(pdn);
+ 	if (!edev) {
+-		pr_warn("PCI: no EEH dev found for dn=%s\n",
+-			dn->full_name);
++		pr_warn("PCI: no EEH dev found for %s\n",
++			pci_name(dev));
+ 		return;
  	}
-@@ -707,8 +688,7 @@ static int pseries_eeh_write_config(struct device_node *dn, int where, int size,
- static struct eeh_ops pseries_eeh_ops = {
- 	.name			= "pseries",
- 	.init			= pseries_eeh_init,
--	.of_probe		= pseries_eeh_of_probe,
--	.dev_probe		= NULL,
-+	.probe			= pseries_eeh_probe,
- 	.set_option		= pseries_eeh_set_option,
- 	.get_pe_addr		= pseries_eeh_get_pe_addr,
- 	.get_state		= pseries_eeh_get_state,
-diff --git a/arch/powerpc/platforms/pseries/pci_dlpar.c b/arch/powerpc/platforms/pseries/pci_dlpar.c
-index 89e2381..f735f4f 100644
---- a/arch/powerpc/platforms/pseries/pci_dlpar.c
-+++ b/arch/powerpc/platforms/pseries/pci_dlpar.c
-@@ -82,7 +82,7 @@ struct pci_controller *init_phb_dynamic(struct device_node *dn)
- 	eeh_dev_phb_init_dynamic(phb);
  
- 	if (dn->child)
--		eeh_add_device_tree_early(dn);
-+		eeh_add_device_tree_early(PCI_DN(dn));
+ 	/* Skip any devices for which EEH is not enabled. */
+ 	if (!edev->pe) {
+-#ifdef DEBUG
+-		pr_info("PCI: skip building address cache for=%s - %s\n",
+-			pci_name(dev), dn->full_name);
+-#endif
++		dev_dbg(&dev->dev, "EEH: Skip building address cache\n");
+ 		return;
+ 	}
  
- 	pcibios_scan_phb(phb);
- 	pcibios_finish_adding_to_bus(phb->bus);
-diff --git a/drivers/pci/hotplug/rpadlpar_core.c b/drivers/pci/hotplug/rpadlpar_core.c
-index 7660232..e12bafd 100644
---- a/drivers/pci/hotplug/rpadlpar_core.c
-+++ b/drivers/pci/hotplug/rpadlpar_core.c
-@@ -146,7 +146,7 @@ static void dlpar_pci_add_bus(struct device_node *dn)
- 	struct pci_controller *phb = pdn->phb;
+@@ -282,18 +279,18 @@ void eeh_addr_cache_rmv_dev(struct pci_dev *dev)
+  */
+ void eeh_addr_cache_build(void)
+ {
+-	struct device_node *dn;
++	struct pci_dn *pdn;
+ 	struct eeh_dev *edev;
  	struct pci_dev *dev = NULL;
  
--	eeh_add_device_tree_early(dn);
-+	eeh_add_device_tree_early(pdn);
+ 	spin_lock_init(&pci_io_addr_cache_root.piar_lock);
  
- 	/* Add EADS device to PHB bus, adding new entry to bus->devices */
- 	dev = of_create_pci_dev(dn, phb->bus, pdn->devfn);
+ 	for_each_pci_dev(dev) {
+-		dn = pci_device_to_OF_node(dev);
+-		if (!dn)
++		pdn = pci_get_pdn_by_devfn(dev->bus, dev->devfn);
++		if (!pdn)
+ 			continue;
+ 
+-		edev = of_node_to_eeh_dev(dn);
++		edev = pdn_to_eeh_dev(pdn);
+ 		if (!edev)
+ 			continue;
+ 
+diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
+index d099540..24768ff 100644
+--- a/arch/powerpc/kernel/eeh_driver.c
++++ b/arch/powerpc/kernel/eeh_driver.c
+@@ -83,28 +83,6 @@ static inline void eeh_pcid_put(struct pci_dev *pdev)
+ 	module_put(pdev->driver->driver.owner);
+ }
+ 
+-#if 0
+-static void print_device_node_tree(struct pci_dn *pdn, int dent)
+-{
+-	int i;
+-	struct device_node *pc;
+-
+-	if (!pdn)
+-		return;
+-	for (i = 0; i < dent; i++)
+-		printk(" ");
+-	printk("dn=%s mode=%x \tcfg_addr=%x pe_addr=%x \tfull=%s\n",
+-		pdn->node->name, pdn->eeh_mode, pdn->eeh_config_addr,
+-		pdn->eeh_pe_config_addr, pdn->node->full_name);
+-	dent += 3;
+-	pc = pdn->node->child;
+-	while (pc) {
+-		print_device_node_tree(PCI_DN(pc), dent);
+-		pc = pc->sibling;
+-	}
+-}
+-#endif
+-
+ /**
+  * eeh_disable_irq - Disable interrupt for the recovering device
+  * @dev: PCI device
+diff --git a/arch/powerpc/kernel/eeh_pe.c b/arch/powerpc/kernel/eeh_pe.c
+index 209cd75..f33cecc 100644
+--- a/arch/powerpc/kernel/eeh_pe.c
++++ b/arch/powerpc/kernel/eeh_pe.c
+@@ -348,9 +348,12 @@ int eeh_add_to_parent_pe(struct eeh_dev *edev)
+ 
+ 		/* Put the edev to PE */
+ 		list_add_tail(&edev->list, &pe->edevs);
+-		pr_debug("EEH: Add %s to Bus PE#%x\n",
+-			edev->dn->full_name, pe->addr);
+-
++		pr_debug("EEH: Add %04x:%02x:%02x.%01x to Bus PE#%x\n",
++			edev->phb->global_number,
++			edev->config_addr >> 8,
++			PCI_SLOT(edev->config_addr & 0xFF),
++			PCI_FUNC(edev->config_addr & 0xFF),
++			pe->addr);
+ 		return 0;
+ 	} else if (pe && (pe->type & EEH_PE_INVALID)) {
+ 		list_add_tail(&edev->list, &pe->edevs);
+@@ -366,9 +369,14 @@ int eeh_add_to_parent_pe(struct eeh_dev *edev)
+ 			parent->type &= ~(EEH_PE_INVALID | EEH_PE_KEEP);
+ 			parent = parent->parent;
+ 		}
+-		pr_debug("EEH: Add %s to Device PE#%x, Parent PE#%x\n",
+-			edev->dn->full_name, pe->addr, pe->parent->addr);
+ 
++		pr_debug("EEH: Add %04x:%02x:%02x.%01x to Device "
++			 "PE#%x, Parent PE#%x\n",
++			edev->phb->global_number,
++			edev->config_addr >> 8,
++                        PCI_SLOT(edev->config_addr & 0xFF),
++                        PCI_FUNC(edev->config_addr & 0xFF),
++			pe->addr, pe->parent->addr);
+ 		return 0;
+ 	}
+ 
+@@ -407,8 +415,13 @@ int eeh_add_to_parent_pe(struct eeh_dev *edev)
+ 	list_add_tail(&pe->child, &parent->child_list);
+ 	list_add_tail(&edev->list, &pe->edevs);
+ 	edev->pe = pe;
+-	pr_debug("EEH: Add %s to Device PE#%x, Parent PE#%x\n",
+-		edev->dn->full_name, pe->addr, pe->parent->addr);
++	pr_debug("EEH: Add %04x:%02x:%02x.%01x to "
++		 "Device PE#%x, Parent PE#%x\n",
++		 edev->phb->global_number,
++		 edev->config_addr >> 8,
++		 PCI_SLOT(edev->config_addr & 0xFF),
++		 PCI_FUNC(edev->config_addr & 0xFF),
++		 pe->addr, pe->parent->addr);
+ 
+ 	return 0;
+ }
+@@ -428,8 +441,11 @@ int eeh_rmv_from_parent_pe(struct eeh_dev *edev)
+ 	int cnt;
+ 
+ 	if (!edev->pe) {
+-		pr_debug("%s: No PE found for EEH device %s\n",
+-			 __func__, edev->dn->full_name);
++		pr_debug("%s: No PE found for device %04x:%02x:%02x.%01x\n",
++			 __func__,  edev->phb->global_number,
++			 edev->config_addr >> 8,
++			 PCI_SLOT(edev->config_addr & 0xFF),
++			 PCI_FUNC(edev->config_addr & 0xFF));
+ 		return -EEXIST;
+ 	}
+ 
+diff --git a/arch/powerpc/kernel/pci_of_scan.c b/arch/powerpc/kernel/pci_of_scan.c
+index e6245e9..7122dfe 100644
+--- a/arch/powerpc/kernel/pci_of_scan.c
++++ b/arch/powerpc/kernel/pci_of_scan.c
+@@ -305,7 +305,7 @@ static struct pci_dev *of_scan_pci_dev(struct pci_bus *bus,
+ 	const __be32 *reg;
+ 	int reglen, devfn;
+ #ifdef CONFIG_EEH
+-	struct eeh_dev *edev = of_node_to_eeh_dev(dn);
++	struct eeh_dev *edev = pdn_to_eeh_dev(PCI_DN(dn));
+ #endif
+ 
+ 	pr_debug("  * %s\n", dn->full_name);
+diff --git a/arch/powerpc/kernel/rtas_pci.c b/arch/powerpc/kernel/rtas_pci.c
+index ce230da..af29df2 100644
+--- a/arch/powerpc/kernel/rtas_pci.c
++++ b/arch/powerpc/kernel/rtas_pci.c
+@@ -113,7 +113,7 @@ static int rtas_pci_read_config(struct pci_bus *bus,
+ 
+ 	ret = rtas_read_config(pdn, where, size, val);
+ 	if (*val == EEH_IO_ERROR_VALUE(size) &&
+-	    eeh_dev_check_failure(of_node_to_eeh_dev(dn)))
++	    eeh_dev_check_failure(pdn_to_eeh_dev(pdn)))
+ 		return PCIBIOS_DEVICE_NOT_FOUND;
+ 
+ 	return ret;
+diff --git a/arch/powerpc/platforms/pseries/msi.c b/arch/powerpc/platforms/pseries/msi.c
+index 691a154..c8d24f9 100644
+--- a/arch/powerpc/platforms/pseries/msi.c
++++ b/arch/powerpc/platforms/pseries/msi.c
+@@ -195,6 +195,7 @@ static struct device_node *find_pe_total_msi(struct pci_dev *dev, int *total)
+ static struct device_node *find_pe_dn(struct pci_dev *dev, int *total)
+ {
+ 	struct device_node *dn;
++	struct pci_dn *pdn;
+ 	struct eeh_dev *edev;
+ 
+ 	/* Found our PE and assume 8 at that point. */
+@@ -204,10 +205,11 @@ static struct device_node *find_pe_dn(struct pci_dev *dev, int *total)
+ 		return NULL;
+ 
+ 	/* Get the top level device in the PE */
+-	edev = of_node_to_eeh_dev(dn);
++	edev = pdn_to_eeh_dev(PCI_DN(dn));
+ 	if (edev->pe)
+ 		edev = list_first_entry(&edev->pe->edevs, struct eeh_dev, list);
+-	dn = eeh_dev_to_of_node(edev);
++	pdn = eeh_dev_to_pdn(edev);
++	dn = pdn ? pdn->node : NULL;
+ 	if (!dn)
+ 		return NULL;
+ 
 -- 
 1.8.3.2
