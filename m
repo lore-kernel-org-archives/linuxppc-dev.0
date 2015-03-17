@@ -1,38 +1,34 @@
-Return-Path: <gkurz@linux.vnet.ibm.com>
-Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 76B681A012C
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Mar 2015 21:48:19 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4C23F1A012C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Mar 2015 22:12:53 +1100 (AEDT)
 Received: from /spool/local
- by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gkurz@linux.vnet.ibm.com>;
- Tue, 17 Mar 2015 10:48:14 -0000
-Received: from b06cxnps4076.portsmouth.uk.ibm.com
- (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
- by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id C0FA21B08061
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Mar 2015 10:48:35 +0000 (GMT)
-Received: from d06av12.portsmouth.uk.ibm.com (d06av12.portsmouth.uk.ibm.com
- [9.149.37.247])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t2HAmCCG10355180
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Mar 2015 10:48:12 GMT
-Received: from d06av12.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av12.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t2HAmBkh024885
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Mar 2015 04:48:12 -0600
-Date: Tue, 17 Mar 2015 11:48:09 +0100
-From: Greg Kurz <gkurz@linux.vnet.ibm.com>
-To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Subject: Re: [PATCH v3 4/5] powerpc/vphn: parsing code rewrite
-Message-ID: <20150317114809.2be01a40@bahia.local>
-In-Reply-To: <5507F8FA.7040004@linux.vnet.ibm.com>
-References: <20150223151412.21565.2251.stgit@bahia.local>
- <20150223151437.21565.8231.stgit@bahia.local>
- <5507F8FA.7040004@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Tue, 17 Mar 2015 21:12:52 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id B33C22CE8040
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Mar 2015 22:12:49 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t2HBCehK51118152
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Mar 2015 22:12:49 +1100
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t2HBCFt4008424
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Mar 2015 22:12:15 +1100
+Message-ID: <55080BEB.6010701@linux.vnet.ibm.com>
+Date: Tue, 17 Mar 2015 16:41:39 +0530
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+To: Greg Kurz <gkurz@linux.vnet.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH v3 0/5] VPHN parsing fixes
+References: <20150223151412.21565.2251.stgit@bahia.local>
+In-Reply-To: <20150223151412.21565.2251.stgit@bahia.local>
+Content-Type: text/plain; charset=UTF-8
 Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -43,28 +39,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 17 Mar 2015 15:20:50 +0530
-Anshuman Khandual <khandual@linux.vnet.ibm.com> wrote:
-
-> > diff --git a/arch/powerpc/mm/vphn.h b/arch/powerpc/mm/vphn.h
-> > index 96af9a4..fe8b780 100644
-> > --- a/arch/powerpc/mm/vphn.h
-> > +++ b/arch/powerpc/mm/vphn.h
-> > @@ -6,10 +6,10 @@
-> >  #define VPHN_REGISTER_COUNT 6
-> >  
-> >  /*
-> > - * 6 64-bit registers unpacked into 12 32-bit associativity values. To form
-> > - * the complete property we have to add the length in the first cell.
-> > + * 6 64-bit registers unpacked into up to 24 be32 associativity values. To
+On 02/23/2015 08:44 PM, Greg Kurz wrote:
+> Michael,
 > 
-> I guess its be16 instead of be32 here		^^^^
+> As suggested in...
+> 
+> https://lists.ozlabs.org/pipermail/linuxppc-dev/2015-February/124647.html
+> 
+> ... I repost the whole series with an extra patch to implement selftests
+> for VPHN (this is the only change between v2 and v3).
+> 
+> Please review.
 
-The output array is supposed to mimic the ibm,associativity property in the
-device tree. It is hence an array of be32 values, even if the hypervisor
-passes them as be16 values.
+[Including the reworked test case from Michael]
 
-Cheers.
-
---
-Greg
+Reviewed-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Tested-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
