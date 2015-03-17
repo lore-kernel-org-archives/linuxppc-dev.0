@@ -1,18 +1,18 @@
 Return-Path: <fabf@skynet.be>
 Received: from mailrelay119.isp.belgacom.be (mailrelay119.isp.belgacom.be
  [195.238.20.146])
- by lists.ozlabs.org (Postfix) with ESMTP id 2E7301A09A6
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Mar 2015 05:38:08 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 8E8E61A09A6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Mar 2015 05:38:12 +1100 (AEDT)
 From: Fabian Frederick <fabf@skynet.be>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 00/16 linux-next] drivers/net: constify of_device_id array
-Date: Tue, 17 Mar 2015 19:37:31 +0100
-Message-Id: <1426617469-781-1-git-send-email-fabf@skynet.be>
-Cc: netdev@vger.kernel.org, linux-wireless@vger.kernel.org,
- linux-can@vger.kernel.org, Fabian Frederick <fabf@skynet.be>,
- =?UTF-8?q?S=C3=B6ren=20Brinkmann?= <soren.brinkmann@xilinx.com>,
- nios2-dev@lists.rocketboards.org, linuxppc-dev@lists.ozlabs.org,
- davem@davemloft.net, linux-arm-kernel@lists.infradead.org
+Subject: [PATCH 03/16 linux-next] net/fsl: constify of_device_id array
+Date: Tue, 17 Mar 2015 19:37:34 +0100
+Message-Id: <1426617469-781-4-git-send-email-fabf@skynet.be>
+In-Reply-To: <1426617469-781-1-git-send-email-fabf@skynet.be>
+References: <1426617469-781-1-git-send-email-fabf@skynet.be>
+Cc: netdev@vger.kernel.org, Richard Cochran <richardcochran@gmail.com>,
+ Fabian Frederick <fabf@skynet.be>, Vitaly Bordug <vbordug@ru.mvista.com>,
+ linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,38 +22,11 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This small patchset adds const to of_device_id arrays in
-drivers/net branch.
+of_device_id is always used as const.
+(See driver.of_match_table and open firmware functions)
 
-Fabian Frederick (16):
-  net: netcp: constify of_device_id array
-  Altera TSE: constify of_device_id array
-  net/fsl: constify of_device_id array
-  net: ethoc: constify of_device_id array
-  drivers: net: xgene: constify of_device_id array
-  net: ethernet: apple: constify of_device_id array
-  netdev: octeon_mgmt: constify of_device_id array
-  net: greth: constify of_device_id array
-  net: xilinx: constify of_device_id array
-  orinoco: constify of_device_id array
-  net: phy: constify of_device_id array
-  can: constify of_device_id array
-  IBM-EMAC: constify of_device_id array
-  ehea: constify of_device_id array
-  net: via-rhine: constify of_device_id array
-  via-velocity: constify of_device_id array
-
- drivers/net/can/cc770/cc770_platform.c                | 2 +-
- drivers/net/can/grcan.c                               | 2 +-
- drivers/net/can/mscan/mpc5xxx_can.c                   | 2 +-
- drivers/net/can/sja1000/sja1000_platform.c            | 2 +-
- drivers/net/can/xilinx_can.c                          | 2 +-
- drivers/net/ethernet/aeroflex/greth.c                 | 2 +-
- drivers/net/ethernet/altera/altera_tse_main.c         | 4 ++--
- drivers/net/ethernet/apm/xgene/xgene_enet_main.c      | 2 +-
- drivers/net/ethernet/apple/bmac.c                     | 2 +-
- drivers/net/ethernet/apple/mace.c                     | 2 +-
- drivers/net/ethernet/ethoc.c                          | 2 +-
+Signed-off-by: Fabian Frederick <fabf@skynet.be>
+---
  drivers/net/ethernet/freescale/fec_mpc52xx.c          | 2 +-
  drivers/net/ethernet/freescale/fec_mpc52xx_phy.c      | 2 +-
  drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c | 4 ++--
@@ -64,26 +37,155 @@ Fabian Frederick (16):
  drivers/net/ethernet/freescale/gianfar_ptp.c          | 2 +-
  drivers/net/ethernet/freescale/ucc_geth.c             | 2 +-
  drivers/net/ethernet/freescale/xgmac_mdio.c           | 2 +-
- drivers/net/ethernet/ibm/ehea/ehea_main.c             | 4 ++--
- drivers/net/ethernet/ibm/emac/core.c                  | 2 +-
- drivers/net/ethernet/ibm/emac/mal.c                   | 2 +-
- drivers/net/ethernet/ibm/emac/rgmii.c                 | 2 +-
- drivers/net/ethernet/ibm/emac/tah.c                   | 2 +-
- drivers/net/ethernet/ibm/emac/zmii.c                  | 2 +-
- drivers/net/ethernet/octeon/octeon_mgmt.c             | 2 +-
- drivers/net/ethernet/ti/netcp_core.c                  | 2 +-
- drivers/net/ethernet/via/via-rhine.c                  | 2 +-
- drivers/net/ethernet/via/via-velocity.c               | 2 +-
- drivers/net/ethernet/xilinx/ll_temac_main.c           | 2 +-
- drivers/net/ethernet/xilinx/xilinx_axienet_main.c     | 2 +-
- drivers/net/ethernet/xilinx/xilinx_emaclite.c         | 2 +-
- drivers/net/phy/mdio-bcm-unimac.c                     | 2 +-
- drivers/net/phy/mdio-gpio.c                           | 2 +-
- drivers/net/phy/mdio-mux-gpio.c                       | 2 +-
- drivers/net/phy/mdio-mux-mmioreg.c                    | 2 +-
- drivers/net/phy/mdio-octeon.c                         | 2 +-
- drivers/net/wireless/orinoco/airport.c                | 2 +-
- 40 files changed, 44 insertions(+), 44 deletions(-)
+ 10 files changed, 12 insertions(+), 12 deletions(-)
 
+diff --git a/drivers/net/ethernet/freescale/fec_mpc52xx.c b/drivers/net/ethernet/freescale/fec_mpc52xx.c
+index f495796..afe7f39 100644
+--- a/drivers/net/ethernet/freescale/fec_mpc52xx.c
++++ b/drivers/net/ethernet/freescale/fec_mpc52xx.c
+@@ -1057,7 +1057,7 @@ static int mpc52xx_fec_of_resume(struct platform_device *op)
+ }
+ #endif
+ 
+-static struct of_device_id mpc52xx_fec_match[] = {
++static const struct of_device_id mpc52xx_fec_match[] = {
+ 	{ .compatible = "fsl,mpc5200b-fec", },
+ 	{ .compatible = "fsl,mpc5200-fec", },
+ 	{ .compatible = "mpc5200-fec", },
+diff --git a/drivers/net/ethernet/freescale/fec_mpc52xx_phy.c b/drivers/net/ethernet/freescale/fec_mpc52xx_phy.c
+index e052890..1e647be 100644
+--- a/drivers/net/ethernet/freescale/fec_mpc52xx_phy.c
++++ b/drivers/net/ethernet/freescale/fec_mpc52xx_phy.c
+@@ -134,7 +134,7 @@ static int mpc52xx_fec_mdio_remove(struct platform_device *of)
+ 	return 0;
+ }
+ 
+-static struct of_device_id mpc52xx_fec_mdio_match[] = {
++static const struct of_device_id mpc52xx_fec_mdio_match[] = {
+ 	{ .compatible = "fsl,mpc5200b-mdio", },
+ 	{ .compatible = "fsl,mpc5200-mdio", },
+ 	{ .compatible = "mpc5200b-fec-phy", },
+diff --git a/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c b/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
+index a176287..9b3639e 100644
+--- a/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
++++ b/drivers/net/ethernet/freescale/fs_enet/fs_enet-main.c
+@@ -916,7 +916,7 @@ static const struct net_device_ops fs_enet_netdev_ops = {
+ #endif
+ };
+ 
+-static struct of_device_id fs_enet_match[];
++static const struct of_device_id fs_enet_match[];
+ static int fs_enet_probe(struct platform_device *ofdev)
+ {
+ 	const struct of_device_id *match;
+@@ -1082,7 +1082,7 @@ static int fs_enet_remove(struct platform_device *ofdev)
+ 	return 0;
+ }
+ 
+-static struct of_device_id fs_enet_match[] = {
++static const struct of_device_id fs_enet_match[] = {
+ #ifdef CONFIG_FS_ENET_HAS_SCC
+ 	{
+ 		.compatible = "fsl,cpm1-scc-enet",
+diff --git a/drivers/net/ethernet/freescale/fs_enet/mii-bitbang.c b/drivers/net/ethernet/freescale/fs_enet/mii-bitbang.c
+index 1d5617d..68a428d 100644
+--- a/drivers/net/ethernet/freescale/fs_enet/mii-bitbang.c
++++ b/drivers/net/ethernet/freescale/fs_enet/mii-bitbang.c
+@@ -213,7 +213,7 @@ static int fs_enet_mdio_remove(struct platform_device *ofdev)
+ 	return 0;
+ }
+ 
+-static struct of_device_id fs_enet_mdio_bb_match[] = {
++static const struct of_device_id fs_enet_mdio_bb_match[] = {
+ 	{
+ 		.compatible = "fsl,cpm2-mdio-bitbang",
+ 	},
+diff --git a/drivers/net/ethernet/freescale/fs_enet/mii-fec.c b/drivers/net/ethernet/freescale/fs_enet/mii-fec.c
+index 1648e35..2be383e 100644
+--- a/drivers/net/ethernet/freescale/fs_enet/mii-fec.c
++++ b/drivers/net/ethernet/freescale/fs_enet/mii-fec.c
+@@ -95,7 +95,7 @@ static int fs_enet_fec_mii_write(struct mii_bus *bus, int phy_id, int location,
+ 
+ }
+ 
+-static struct of_device_id fs_enet_mdio_fec_match[];
++static const struct of_device_id fs_enet_mdio_fec_match[];
+ static int fs_enet_mdio_probe(struct platform_device *ofdev)
+ {
+ 	const struct of_device_id *match;
+@@ -208,7 +208,7 @@ static int fs_enet_mdio_remove(struct platform_device *ofdev)
+ 	return 0;
+ }
+ 
+-static struct of_device_id fs_enet_mdio_fec_match[] = {
++static const struct of_device_id fs_enet_mdio_fec_match[] = {
+ 	{
+ 		.compatible = "fsl,pq1-fec-mdio",
+ 	},
+diff --git a/drivers/net/ethernet/freescale/fsl_pq_mdio.c b/drivers/net/ethernet/freescale/fsl_pq_mdio.c
+index d1a91e3..3c40f6b 100644
+--- a/drivers/net/ethernet/freescale/fsl_pq_mdio.c
++++ b/drivers/net/ethernet/freescale/fsl_pq_mdio.c
+@@ -294,7 +294,7 @@ static void ucc_configure(phys_addr_t start, phys_addr_t end)
+ 
+ #endif
+ 
+-static struct of_device_id fsl_pq_mdio_match[] = {
++static const struct of_device_id fsl_pq_mdio_match[] = {
+ #if defined(CONFIG_GIANFAR) || defined(CONFIG_GIANFAR_MODULE)
+ 	{
+ 		.compatible = "fsl,gianfar-tbi",
+diff --git a/drivers/net/ethernet/freescale/gianfar.c b/drivers/net/ethernet/freescale/gianfar.c
+index 70fa688..4ee080d 100644
+--- a/drivers/net/ethernet/freescale/gianfar.c
++++ b/drivers/net/ethernet/freescale/gianfar.c
+@@ -3594,7 +3594,7 @@ static noinline void gfar_update_link_state(struct gfar_private *priv)
+ 		phy_print_status(phydev);
+ }
+ 
+-static struct of_device_id gfar_match[] =
++static const struct of_device_id gfar_match[] =
+ {
+ 	{
+ 		.type = "network",
+diff --git a/drivers/net/ethernet/freescale/gianfar_ptp.c b/drivers/net/ethernet/freescale/gianfar_ptp.c
+index 1682634..77353366 100644
+--- a/drivers/net/ethernet/freescale/gianfar_ptp.c
++++ b/drivers/net/ethernet/freescale/gianfar_ptp.c
+@@ -554,7 +554,7 @@ static int gianfar_ptp_remove(struct platform_device *dev)
+ 	return 0;
+ }
+ 
+-static struct of_device_id match_table[] = {
++static const struct of_device_id match_table[] = {
+ 	{ .compatible = "fsl,etsec-ptp" },
+ 	{},
+ };
+diff --git a/drivers/net/ethernet/freescale/ucc_geth.c b/drivers/net/ethernet/freescale/ucc_geth.c
+index 357e8b57..bfdccbd 100644
+--- a/drivers/net/ethernet/freescale/ucc_geth.c
++++ b/drivers/net/ethernet/freescale/ucc_geth.c
+@@ -3930,7 +3930,7 @@ static int ucc_geth_remove(struct platform_device* ofdev)
+ 	return 0;
+ }
+ 
+-static struct of_device_id ucc_geth_match[] = {
++static const struct of_device_id ucc_geth_match[] = {
+ 	{
+ 		.type = "network",
+ 		.compatible = "ucc_geth",
+diff --git a/drivers/net/ethernet/freescale/xgmac_mdio.c b/drivers/net/ethernet/freescale/xgmac_mdio.c
+index cd40b68..7b8fe86 100644
+--- a/drivers/net/ethernet/freescale/xgmac_mdio.c
++++ b/drivers/net/ethernet/freescale/xgmac_mdio.c
+@@ -307,7 +307,7 @@ static int xgmac_mdio_remove(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
+-static struct of_device_id xgmac_mdio_match[] = {
++static const struct of_device_id xgmac_mdio_match[] = {
+ 	{
+ 		.compatible = "fsl,fman-xmdio",
+ 	},
 -- 
 2.1.0
