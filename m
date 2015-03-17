@@ -1,35 +1,36 @@
 Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CF9861A0BD1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Mar 2015 16:16:11 +1100 (AEDT)
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0C6141A0BB2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Mar 2015 16:16:13 +1100 (AEDT)
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 96CC514011D
- for <linuxppc-dev@ozlabs.org>; Tue, 17 Mar 2015 16:16:11 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPS id ABE3314011D
+ for <linuxppc-dev@ozlabs.org>; Tue, 17 Mar 2015 16:16:12 +1100 (AEDT)
 Received: from /spool/local
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Tue, 17 Mar 2015 15:16:10 +1000
+ Tue, 17 Mar 2015 15:16:11 +1000
 Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 300042BB0052
- for <linuxppc-dev@ozlabs.org>; Tue, 17 Mar 2015 16:16:08 +1100 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 61926357804C
+ for <linuxppc-dev@ozlabs.org>; Tue, 17 Mar 2015 16:16:10 +1100 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
  by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t2H5G09W46596328
- for <linuxppc-dev@ozlabs.org>; Tue, 17 Mar 2015 16:16:08 +1100
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t2H5FYCP026004
- for <linuxppc-dev@ozlabs.org>; Tue, 17 Mar 2015 16:15:34 +1100
+ t2H5G2Fc44826646
+ for <linuxppc-dev@ozlabs.org>; Tue, 17 Mar 2015 16:16:10 +1100
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t2H5FaXa001553
+ for <linuxppc-dev@ozlabs.org>; Tue, 17 Mar 2015 16:15:37 +1100
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH v2 1/7] powerpc/pci: Refactor pci_dn
-Date: Tue, 17 Mar 2015 16:15:02 +1100
-Message-Id: <1426569308-9470-2-git-send-email-gwshan@linux.vnet.ibm.com>
+Subject: [PATCH v2 4/7] powerpc/eeh: Create eeh_dev from pci_dn instead of
+ device_node
+Date: Tue, 17 Mar 2015 16:15:05 +1100
+Message-Id: <1426569308-9470-5-git-send-email-gwshan@linux.vnet.ibm.com>
 In-Reply-To: <1426569308-9470-1-git-send-email-gwshan@linux.vnet.ibm.com>
 References: <1426569308-9470-1-git-send-email-gwshan@linux.vnet.ibm.com>
 Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
@@ -42,273 +43,211 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently, the PCI config accessors are implemented based on device node.
-Unfortunately, SRIOV VFs won't have the corresponding device nodes. pci_dn
-will be used in replacement with device node for SRIOV VFs. So we have to
-use pci_dn in PCI config accessors.
+The patch adds function traverse_pci_dn(), which is similar to
+traverse_pci_devices() except it takes pci_dn, not device_node
+as parameter. The pci_dev.c has been reworked to create eeh_dev
+from pci_dn, instead of device_node.
 
-The patch refactors pci_dn in following aspects to make it ready to be used
-in PCI config accessors as we do in subsequent patch:
-
-   * pci_dn is organized as a hierarchy tree.  PCI device's pci_dn is
-     put to the child list of pci_dn of its upstream bridge or PHB. VF's
-     pci_dn will be put to the child list of pci_dn of PF's bridge.
-
-   * For one particular PCI device (VF or not), its pci_dn can be
-     found from pdev->dev.archdata.pci_data, PCI_DN(devnode), or
-     parent's list.  The fast path (fetching pci_dn through PCI device
-     instance) is populated during early fixup time.
-
-[bhelgaas: changelog]
 Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 ---
-v2: Put SRIOV related logic into separate patch. "struct pci_controller"
-    and "struct dev_archdata" dereferences "struct pci_dn *pci_data",
-    not "void *firmware_data".
----
- arch/powerpc/include/asm/device.h     |   6 ++
- arch/powerpc/include/asm/pci-bridge.h |  11 ++-
- arch/powerpc/kernel/pci_dn.c          | 130 ++++++++++++++++++++++++++++++++--
- 3 files changed, 141 insertions(+), 6 deletions(-)
+ arch/powerpc/include/asm/eeh.h         | 10 +++++++--
+ arch/powerpc/include/asm/pci-bridge.h  |  8 ++++++-
+ arch/powerpc/include/asm/ppc-pci.h     |  3 +++
+ arch/powerpc/kernel/eeh_dev.c          | 14 ++++++------
+ arch/powerpc/kernel/pci_dn.c           | 40 ++++++++++++++++++++++++++++++++++
+ arch/powerpc/platforms/pseries/setup.c |  2 +-
+ 6 files changed, 66 insertions(+), 11 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/device.h b/arch/powerpc/include/asm/device.h
-index 38faede..9f1371b 100644
---- a/arch/powerpc/include/asm/device.h
-+++ b/arch/powerpc/include/asm/device.h
-@@ -8,6 +8,9 @@
- 
- struct dma_map_ops;
- struct device_node;
-+#ifdef CONFIG_PPC64
-+struct pci_dn;
-+#endif
- 
- /*
-  * Arch extensions to struct device.
-@@ -34,6 +37,9 @@ struct dev_archdata {
- #ifdef CONFIG_SWIOTLB
- 	dma_addr_t		max_direct_dma_addr;
- #endif
-+#ifdef CONFIG_PPC64
-+	struct pci_dn		*pci_data;
-+#endif
- #ifdef CONFIG_EEH
- 	struct eeh_dev		*edev;
- #endif
-diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
-index 546d036..706710b 100644
---- a/arch/powerpc/include/asm/pci-bridge.h
-+++ b/arch/powerpc/include/asm/pci-bridge.h
-@@ -89,6 +89,7 @@ struct pci_controller {
- 
- #ifdef CONFIG_PPC64
- 	unsigned long buid;
-+	struct pci_dn *pci_data;
- #endif	/* CONFIG_PPC64 */
- 
- 	void *private_data;
-@@ -154,9 +155,12 @@ static inline int isa_vaddr_is_ioport(void __iomem *address)
- struct iommu_table;
- 
- struct pci_dn {
-+	int     flags;
-+
- 	int	busno;			/* pci bus number */
- 	int	devfn;			/* pci device and function number */
- 
-+	struct  pci_dn *parent;
- 	struct  pci_controller *phb;	/* for pci devices */
- 	struct	iommu_table *iommu_table;	/* for phb's or bridges */
- 	struct	device_node *node;	/* back-pointer to the device_node */
-@@ -171,14 +175,17 @@ struct pci_dn {
- #ifdef CONFIG_PPC_POWERNV
- 	int	pe_number;
- #endif
-+	struct list_head child_list;
-+	struct list_head list;
+diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
+index 55abfd0..bb24172 100644
+--- a/arch/powerpc/include/asm/eeh.h
++++ b/arch/powerpc/include/asm/eeh.h
+@@ -137,6 +137,7 @@ struct eeh_dev {
+ 	struct list_head list;		/* Form link list in the PE	*/
+ 	struct pci_controller *phb;	/* Associated PHB		*/
+ 	struct device_node *dn;		/* Associated device node	*/
++	struct pci_dn *pdn;		/* Associated PCI device node	*/
+ 	struct pci_dev *pdev;		/* Associated PCI device	*/
+ 	struct pci_bus *bus;		/* PCI bus for partial hotplug	*/
  };
- 
- /* Get the pointer to a device_node's pci_dn */
- #define PCI_DN(dn)	((struct pci_dn *) (dn)->data)
- 
-+extern struct pci_dn *pci_get_pdn_by_devfn(struct pci_bus *bus,
-+					   int devfn);
- extern struct pci_dn *pci_get_pdn(struct pci_dev *pdev);
--
--extern void * update_dn_pci_info(struct device_node *dn, void *data);
-+extern void *update_dn_pci_info(struct device_node *dn, void *data);
- 
- static inline int pci_device_from_OF_node(struct device_node *np,
- 					  u8 *bus, u8 *devfn)
-diff --git a/arch/powerpc/kernel/pci_dn.c b/arch/powerpc/kernel/pci_dn.c
-index 83df307..0ab2dad 100644
---- a/arch/powerpc/kernel/pci_dn.c
-+++ b/arch/powerpc/kernel/pci_dn.c
-@@ -32,12 +32,108 @@
- #include <asm/ppc-pci.h>
- #include <asm/firmware.h>
- 
-+/*
-+ * The function is used to find the firmware data of one
-+ * specific PCI device, which is attached to the indicated
-+ * PCI bus. For VFs, their firmware data is linked to that
-+ * one of PF's bridge. For other devices, their firmware
-+ * data is linked to that of their bridge.
-+ */
-+static struct pci_dn *pci_bus_to_pdn(struct pci_bus *bus)
-+{
-+	struct pci_bus *pbus;
-+	struct device_node *dn;
-+	struct pci_dn *pdn;
-+
-+	/*
-+	 * We probably have virtual bus which doesn't
-+	 * have associated bridge.
-+	 */
-+	pbus = bus;
-+	while (pbus) {
-+		if (pci_is_root_bus(pbus) || pbus->self)
-+			break;
-+
-+		pbus = pbus->parent;
-+	}
-+
-+	/*
-+	 * Except virtual bus, all PCI buses should
-+	 * have device nodes.
-+	 */
-+	dn = pci_bus_to_OF_node(pbus);
-+	pdn = dn ? PCI_DN(dn) : NULL;
-+
-+	return pdn;
-+}
-+
-+struct pci_dn *pci_get_pdn_by_devfn(struct pci_bus *bus,
-+				    int devfn)
-+{
-+	struct device_node *dn = NULL;
-+	struct pci_dn *parent, *pdn;
-+	struct pci_dev *pdev = NULL;
-+
-+	/* Fast path: fetch from PCI device */
-+	list_for_each_entry(pdev, &bus->devices, bus_list) {
-+		if (pdev->devfn == devfn) {
-+			if (pdev->dev.archdata.pci_data)
-+				return pdev->dev.archdata.pci_data;
-+
-+			dn = pci_device_to_OF_node(pdev);
-+			break;
-+		}
-+	}
-+
-+	/* Fast path: fetch from device node */
-+	pdn = dn ? PCI_DN(dn) : NULL;
-+	if (pdn)
-+		return pdn;
-+
-+	/* Slow path: fetch from firmware data hierarchy */
-+	parent = pci_bus_to_pdn(bus);
-+	if (!parent)
-+		return NULL;
-+
-+	list_for_each_entry(pdn, &parent->child_list, list) {
-+		if (pdn->busno == bus->number &&
-+                    pdn->devfn == devfn)
-+                        return pdn;
-+        }
-+
-+	return NULL;
-+}
-+
- struct pci_dn *pci_get_pdn(struct pci_dev *pdev)
- {
--	struct device_node *dn = pci_device_to_OF_node(pdev);
--	if (!dn)
-+	struct device_node *dn;
-+	struct pci_dn *parent, *pdn;
-+
-+	/* Search device directly */
-+	if (pdev->dev.archdata.pci_data)
-+		return pdev->dev.archdata.pci_data;
-+
-+	/* Check device node */
-+	dn = pci_device_to_OF_node(pdev);
-+	pdn = dn ? PCI_DN(dn) : NULL;
-+	if (pdn)
-+		return pdn;
-+
-+	/*
-+	 * VFs don't have device nodes. We hook their
-+	 * firmware data to PF's bridge.
-+	 */
-+	parent = pci_bus_to_pdn(pdev->bus);
-+	if (!parent)
- 		return NULL;
--	return PCI_DN(dn);
-+
-+	list_for_each_entry(pdn, &parent->child_list, list) {
-+		if (pdn->busno == pdev->bus->number &&
-+		    pdn->devfn == pdev->devfn)
-+			return pdn;
-+	}
-+
-+	return NULL;
+@@ -146,6 +147,11 @@ static inline struct device_node *eeh_dev_to_of_node(struct eeh_dev *edev)
+ 	return edev ? edev->dn : NULL;
  }
  
- /*
-@@ -49,6 +145,7 @@ void *update_dn_pci_info(struct device_node *dn, void *data)
- 	struct pci_controller *phb = data;
- 	const __be32 *type = of_get_property(dn, "ibm,pci-config-space-type", NULL);
- 	const __be32 *regs;
-+	struct device_node *parent;
- 	struct pci_dn *pdn;
++static inline struct pci_dn *eeh_dev_to_pdn(struct eeh_dev *edev)
++{
++	return edev ? edev->pdn : NULL;
++}
++
+ static inline struct pci_dev *eeh_dev_to_pci_dev(struct eeh_dev *edev)
+ {
+ 	return edev ? edev->pdev : NULL;
+@@ -272,7 +278,7 @@ void eeh_pe_restore_bars(struct eeh_pe *pe);
+ const char *eeh_pe_loc_get(struct eeh_pe *pe);
+ struct pci_bus *eeh_pe_bus_get(struct eeh_pe *pe);
  
- 	pdn = zalloc_maybe_bootmem(sizeof(*pdn), GFP_KERNEL);
-@@ -70,6 +167,15 @@ void *update_dn_pci_info(struct device_node *dn, void *data)
+-void *eeh_dev_init(struct device_node *dn, void *data);
++void *eeh_dev_init(struct pci_dn *pdn, void *data);
+ void eeh_dev_phb_init_dynamic(struct pci_controller *phb);
+ int eeh_init(void);
+ int __init eeh_ops_register(struct eeh_ops *ops);
+@@ -323,7 +329,7 @@ static inline int eeh_init(void)
+ 	return 0;
+ }
+ 
+-static inline void *eeh_dev_init(struct device_node *dn, void *data)
++static inline void *eeh_dev_init(struct pci_dn *pdn, void *data)
+ {
+ 	return NULL;
+ }
+diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
+index 01b730a..7b74499 100644
+--- a/arch/powerpc/include/asm/pci-bridge.h
++++ b/arch/powerpc/include/asm/pci-bridge.h
+@@ -213,8 +213,14 @@ static inline struct eeh_dev *of_node_to_eeh_dev(struct device_node *dn)
+ 
+ 	return PCI_DN(dn)->edev;
+ }
++
++static inline struct eeh_dev *pdn_to_eeh_dev(struct pci_dn *pdn)
++{
++	return pdn ? pdn->edev : NULL;
++}
+ #else
+-#define of_node_to_eeh_dev(x) (NULL)
++#define of_node_to_eeh_dev(x)	(NULL)
++#define pdn_to_eeh_dev(x)	(NULL)
+ #endif
+ 
+ /** Find the bus corresponding to the indicated device node */
+diff --git a/arch/powerpc/include/asm/ppc-pci.h b/arch/powerpc/include/asm/ppc-pci.h
+index db1e2b8..eef127e 100644
+--- a/arch/powerpc/include/asm/ppc-pci.h
++++ b/arch/powerpc/include/asm/ppc-pci.h
+@@ -36,6 +36,9 @@ struct device_node;
+ typedef void *(*traverse_func)(struct device_node *me, void *data);
+ void *traverse_pci_devices(struct device_node *start, traverse_func pre,
+ 		void *data);
++void *traverse_pci_dn(struct pci_dn *root,
++		      void *(*fn)(struct pci_dn *, void *),
++		      void *data);
+ 
+ extern void pci_devs_phb_init(void);
+ extern void pci_devs_phb_init_dynamic(struct pci_controller *phb);
+diff --git a/arch/powerpc/kernel/eeh_dev.c b/arch/powerpc/kernel/eeh_dev.c
+index e5274ee..aabba94 100644
+--- a/arch/powerpc/kernel/eeh_dev.c
++++ b/arch/powerpc/kernel/eeh_dev.c
+@@ -43,13 +43,13 @@
+ 
+ /**
+  * eeh_dev_init - Create EEH device according to OF node
+- * @dn: device node
++ * @pdn: PCI device node
+  * @data: PHB
+  *
+  * It will create EEH device according to the given OF node. The function
+  * might be called by PCI emunation, DR, PHB hotplug.
+  */
+-void *eeh_dev_init(struct device_node *dn, void *data)
++void *eeh_dev_init(struct pci_dn *pdn, void *data)
+ {
+ 	struct pci_controller *phb = data;
+ 	struct eeh_dev *edev;
+@@ -63,8 +63,8 @@ void *eeh_dev_init(struct device_node *dn, void *data)
  	}
  
- 	pdn->pci_ext_config_space = (type && of_read_number(type, 1) == 1);
-+
-+	/* Attach to parent node */
-+	INIT_LIST_HEAD(&pdn->child_list);
-+	INIT_LIST_HEAD(&pdn->list);
-+	parent = of_get_parent(dn);
-+	pdn->parent = parent ? PCI_DN(parent) : NULL;
-+	if (pdn->parent)
-+		list_add_tail(&pdn->list, &pdn->parent->child_list);
-+
+ 	/* Associate EEH device with OF node */
+-	PCI_DN(dn)->edev = edev;
+-	edev->dn  = dn;
++	pdn->edev = edev;
++	edev->pdn = pdn;
+ 	edev->phb = phb;
+ 	INIT_LIST_HEAD(&edev->list);
+ 
+@@ -80,16 +80,16 @@ void *eeh_dev_init(struct device_node *dn, void *data)
+  */
+ void eeh_dev_phb_init_dynamic(struct pci_controller *phb)
+ {
+-	struct device_node *dn = phb->dn;
++	struct pci_dn *root = phb->pci_data;
+ 
+ 	/* EEH PE for PHB */
+ 	eeh_phb_pe_create(phb);
+ 
+ 	/* EEH device for PHB */
+-	eeh_dev_init(dn, phb);
++	eeh_dev_init(root, phb);
+ 
+ 	/* EEH devices for children OF nodes */
+-	traverse_pci_devices(dn, eeh_dev_init, phb);
++	traverse_pci_dn(root, eeh_dev_init, phb);
+ }
+ 
+ /**
+diff --git a/arch/powerpc/kernel/pci_dn.c b/arch/powerpc/kernel/pci_dn.c
+index d139f72f..65b9836 100644
+--- a/arch/powerpc/kernel/pci_dn.c
++++ b/arch/powerpc/kernel/pci_dn.c
+@@ -246,6 +246,46 @@ void *traverse_pci_devices(struct device_node *start, traverse_func pre,
  	return NULL;
  }
  
-@@ -147,8 +253,11 @@ void pci_devs_phb_init_dynamic(struct pci_controller *phb)
- 	/* PHB nodes themselves must not match */
- 	update_dn_pci_info(dn, phb);
- 	pdn = dn->data;
--	if (pdn)
-+	if (pdn) {
- 		pdn->devfn = pdn->busno = -1;
-+		pdn->phb = phb;
-+		phb->pci_data = pdn;
-+	}
- 
- 	/* Update dn->phb ptrs for new phb and children devices */
- 	traverse_pci_devices(dn, update_dn_pci_info, phb);
-@@ -171,3 +280,16 @@ void __init pci_devs_phb_init(void)
- 	list_for_each_entry_safe(phb, tmp, &hose_list, list_node)
- 		pci_devs_phb_init_dynamic(phb);
- }
-+
-+static void pci_dev_pdn_setup(struct pci_dev *pdev)
++static struct pci_dn *pci_dn_next_one(struct pci_dn *root,
++				      struct pci_dn *pdn)
 +{
-+	struct pci_dn *pdn;
++	struct list_head *next = pdn->child_list.next;
 +
-+	if (pdev->dev.archdata.pci_data)
-+		return;
++	if (next != &pdn->child_list)
++		return list_entry(next, struct pci_dn, list);
 +
-+	/* Setup the fast path */
-+	pdn = pci_get_pdn(pdev);
-+	pdev->dev.archdata.pci_data = pdn;
++	while (1) {
++		if (pdn == root)
++			return NULL;
++
++		next = pdn->list.next;
++		if (next != &pdn->parent->child_list)
++			break;
++
++		pdn = pdn->parent;
++	}
++
++	return list_entry(next, struct pci_dn, list);
 +}
-+DECLARE_PCI_FIXUP_EARLY(PCI_ANY_ID, PCI_ANY_ID, pci_dev_pdn_setup);
++
++void *traverse_pci_dn(struct pci_dn *root,
++		      void *(*fn)(struct pci_dn *, void *),
++		      void *data)
++{
++	struct pci_dn *pdn = root;
++	void *ret;
++
++	/* Only scan the child nodes */
++	for (pdn = pci_dn_next_one(root, pdn); pdn;
++	     pdn = pci_dn_next_one(root, pdn)) {
++		ret = fn(pdn, data);
++		if (ret)
++			return ret;
++	}
++
++	return NULL;
++}
++
+ /** 
+  * pci_devs_phb_init_dynamic - setup pci devices under this PHB
+  * phb: pci-to-host bridge (top-level bridge connecting to cpu)
+diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
+index e445b67..7030407 100644
+--- a/arch/powerpc/platforms/pseries/setup.c
++++ b/arch/powerpc/platforms/pseries/setup.c
+@@ -265,7 +265,7 @@ static int pci_dn_reconfig_notifier(struct notifier_block *nb, unsigned long act
+ 			update_dn_pci_info(np, pci->phb);
+ 
+ 			/* Create EEH device for the OF node */
+-			eeh_dev_init(np, pci->phb);
++			eeh_dev_init(PCI_DN(np), pci->phb);
+ 		}
+ 		break;
+ 	default:
 -- 
 1.8.3.2
