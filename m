@@ -1,50 +1,39 @@
-Return-Path: <keescook@google.com>
-Received: from mail-vc0-x22f.google.com (mail-vc0-x22f.google.com
- [IPv6:2607:f8b0:400c:c03::22f])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <shreyas@linux.vnet.ibm.com>
+Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BADBE1A012C
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Mar 2015 02:19:23 +1100 (AEDT)
-Received: by mail-vc0-f175.google.com with SMTP id hy4so198096vcb.6
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Mar 2015 08:19:21 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0938D1A0008
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Mar 2015 02:49:42 +1100 (AEDT)
+Received: from /spool/local
+ by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <shreyas@linux.vnet.ibm.com>;
+ Tue, 17 Mar 2015 21:19:40 +0530
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 80E0C394004E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Mar 2015 21:19:37 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay01.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t2HFna8934340958
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Mar 2015 21:19:37 +0530
+Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t2HFnau4025605
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Mar 2015 21:19:36 +0530
+Message-ID: <55084D0C.1040309@linux.vnet.ibm.com>
+Date: Tue, 17 Mar 2015 21:19:32 +0530
+From: Shreyas B Prabhu <shreyas@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Sender: keescook@google.com
-In-Reply-To: <20150317144702.GN8399@arm.com>
-References: <1425503454-7531-1-git-send-email-keescook@chromium.org>
- <1425503454-7531-4-git-send-email-keescook@chromium.org>
- <20150317144702.GN8399@arm.com>
-Date: Tue, 17 Mar 2015 08:19:20 -0700
-Message-ID: <CAGXu5jKHPL1V81wQ-gLAmGeMD9miM73X-QAL_RHbt+6hAEaAKg@mail.gmail.com>
-Subject: Re: [PATCH v4 03/10] arm64: standardize mmap_rnd() usage
-From: Kees Cook <keescook@chromium.org>
-To: Will Deacon <will.deacon@arm.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>,
- Min-Hua Chen <orca.chen@gmail.com>, Heiko Carstens <heiko.carstens@de.ibm.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Arun Chandran <achandran@mvista.com>, Paul Mackerras <paulus@samba.org>,
- Ismael Ripoll <iripoll@upv.es>, Yann Droneaud <ydroneaud@opteya.com>,
- "linux-s390@vger.kernel.org" <linux-s390@vger.kernel.org>,
- Russell King <linux@arm.linux.org.uk>,
- Andrey Ryabinin <a.ryabinin@samsung.com>, "x86@kernel.org" <x86@kernel.org>,
- Hector Marco-Gisbert <hecmargi@upv.es>, Ingo Molnar <mingo@redhat.com>,
- "David A. Long" <dave.long@linaro.org>,
- Catalin Marinas <Catalin.Marinas@arm.com>, Borislav Petkov <bp@suse.de>,
- Ben Hutchings <ben@decadent.org.uk>,
- "linux-fsdevel@vger.kernel.org" <linux-fsdevel@vger.kernel.org>,
- Alexander Viro <viro@zeniv.linux.org.uk>,
- Michael Holzheu <holzheu@linux.vnet.ibm.com>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- Jeff Bailey <jeffbailey@google.com>, Paul Burton <paul.burton@imgtec.com>,
- Oleg Nesterov <oleg@redhat.com>, Ralf Baechle <ralf@linux-mips.org>,
- Andy Lutomirski <luto@amacapital.net>, Vineeth Vijayan <vvijayan@mvista.com>,
- Markos Chandras <markos.chandras@imgtec.com>,
- =?UTF-8?Q?Jan=2DSimon_M=C3=B6ller?= <dl9pf@gmx.de>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- "linux390@de.ibm.com" <linux390@de.ibm.com>,
- "akpm@linux-foundation.org" <akpm@linux-foundation.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Alex Smith <alex@alex-smith.me.uk>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [RFC, v2] powerpc/powernv: Introduce kernel param to control
+ fastsleep workaround behavior
+References: <20150317085708.7102714017B@ozlabs.org>
+ <1426585198.4770.23.camel@kernel.crashing.org>
+In-Reply-To: <1426585198.4770.23.camel@kernel.crashing.org>
+Content-Type: text/plain; charset=utf-8
+Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -54,32 +43,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Mar 17, 2015 at 7:47 AM, Will Deacon <will.deacon@arm.com> wrote:
-> On Wed, Mar 04, 2015 at 09:10:47PM +0000, Kees Cook wrote:
->> In preparation for splitting out ET_DYN ASLR, this refactors the use of
->> mmap_rnd() to be used similarly to arm and x86. This additionally enables
->> mmap ASLR on legacy mmap layouts, which appeared to be missing on arm64,
->> and was already supported on arm. Additionally removes a copy/pasted
->> declaration of an unused function.
+
+
+On Tuesday 17 March 2015 03:09 PM, Benjamin Herrenschmidt wrote:
+> On Tue, 2015-03-17 at 19:57 +1100, Michael Ellerman wrote:
 >>
->> Signed-off-by: Kees Cook <keescook@chromium.org>
->> ---
->>  arch/arm64/include/asm/elf.h |  1 -
->>  arch/arm64/mm/mmap.c         | 18 +++++++++++-------
->>  2 files changed, 11 insertions(+), 8 deletions(-)
->
-> Looks fine to me:
->
->   Acked-by: Will Deacon <will.deacon@arm.com>
->
-> Do you want me to pick this up, or are you taking it along with the rest of
-> your series (it doesn't have any obvious dependencies to me)?
+>> So my first preference is that you just bite the bullet and decide to either
+>> always apply the workaround, or just stick with the current behaviour. That's a
+>> trade-off between (I think) better idle latency but a risk of checkstops, vs.
+>> slower idle latency but less (how much less?) risk of checkstops.
+>>
+>> I think the reason you're proposing a kernel parameter is because we aren't
+>> willing to make that decision, ie. we're saying that users should decide. Is
+>> that right?
+> 
+> Correct. More specifically, a fairly high profile user that I will not
+> name here has expressed interest in such a feature...
+> 
+>> I'm not a big fan of kernel parameters. They are a pain to use, and are often
+>> just pushing a decision down one layer for no reason. What I mean is that
+>> individual users are probably just going to accept whatever the default value
+>> is from their distro.
+> 
+> Right. This is quite an obscure tunable.
+> 
+>> But anyway, that's a bit of a rant.
+>>
+>> As far as this patch is concerned, I don't think it actually needs to be a
+>> kernel parameter.
+>>
+>> >From what I can see below, the decision as to whether you apply the workaround
+>> or not doesn't affect the list of idle states. So this could just as well be a
+>> runtime parameter, ie. a sysfs file, which can then be set by the user whenever
+>> they like? They might do it in a boot script, but that's up to them.
+> 
+> Right, that would work too.
 
-Thanks! Right now akpm is carrying it, since the series ends with
-changes that depend on all the per-arch refactoring.
+Okay. I'll send a patch with this design.
+> 
+>> For simplicity I think it would also be fine to make it a write-once parameter,
+>> ie. you don't need to handle undoing it.
+> 
+> It would be easy enough to make it rw using stop machine I think... 
+> 
+>> I think the only complication that would add is that you'd need to be a little
+>> careful about the order in which you nop out the calls vs applying the
+>> workaround, in case some threads are idle when you're called.
 
--Kees
+Right, we should be safe with this sequence-
+- NOP call to undo workaround
+- Apply workaround on all cores.
+- NOP call to apply workaround
 
--- 
-Kees Cook
-Chrome OS Security
+> 
+> I wouldn't bother with NOP'ing in that case, a runtime test will probably be noise
+> in the measurement.
+> 
+
+Didn't get your point here. Do you mean, ignore the request if some
+cores are in sleep or deeper state?
+> Cheers,
+> Ben.
+> 
+> 
