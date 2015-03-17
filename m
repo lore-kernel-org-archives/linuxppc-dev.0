@@ -1,36 +1,24 @@
-Return-Path: <peter@hurleysoftware.com>
-Received: from mail-qc0-f182.google.com (mail-qc0-f182.google.com
- [209.85.216.182])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <madalin.bucur@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0113.outbound.protection.outlook.com [65.55.169.113])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C62E61A0CD7
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Mar 2015 07:23:53 +1100 (AEDT)
-Received: by qcyi15 with SMTP id i15so20406711qcy.0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 17 Mar 2015 13:23:51 -0700 (PDT)
-Message-ID: <55088D56.1010903@hurleysoftware.com>
-Date: Tue, 17 Mar 2015 16:23:50 -0400
-From: Peter Hurley <peter@hurleysoftware.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id EA8BE1A0E06
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Mar 2015 07:33:24 +1100 (AEDT)
+From: Madalin Bucur <madalin.bucur@freescale.com>
+To: <netdev@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
+ <linux-kernel@vger.kernel.org>
+Subject: [PATCH RFC 04/11] dpaa_eth: add configurable bpool thresholds
+Date: Tue, 17 Mar 2015 20:58:22 +0200
+Message-ID: <1426618709-19004-4-git-send-email-madalin.bucur@freescale.com>
+In-Reply-To: <1426618709-19004-3-git-send-email-madalin.bucur@freescale.com>
+References: <1426618709-19004-1-git-send-email-madalin.bucur@freescale.com>
+ <1426618709-19004-2-git-send-email-madalin.bucur@freescale.com>
+ <1426618709-19004-3-git-send-email-madalin.bucur@freescale.com>
+Reply-To: <madalin.bucur@freescale.com>
 MIME-Version: 1.0
-To: Pranith Kumar <bobby.prani@gmail.com>
-Subject: Re: linux panic on 4.0.0-rc4
-References: <CAJhHMCC+BJWBo3=XbLf2L_kpOTqR==ee667+TpnFdk3DRT3o+Q@mail.gmail.com>
- <CAJhHMCBcyVbNRQSpsyVfk8HMzZ=NXKkknjDRuch+e+yJGB3T5Q@mail.gmail.com>
- <1426493810.4716.0.camel@ellerman.id.au>
- <CAJhHMCC06H-BRFBBcD_PfumyvHoFAjbi_MOn7gSeq5y093FSEQ@mail.gmail.com>
- <1426548151.31646.4.camel@ellerman.id.au>
- <CAJhHMCDCoo7g5WrXKPEbemoChQn6BGZOXD00z4kZqVE5boEBhA@mail.gmail.com>
- <55079859.1020205@hurleysoftware.com>
- <CAJhHMCBzFfKxubMLkrSwCwqs5q494-kD2=a_n+tGHXAp6qgXDg@mail.gmail.com>
- <55079D05.8020302@hurleysoftware.com>
- <CAJhHMCDNRCUY-H_DzrDf+9LYZOiiEVLW_f7ygp6mRKx-ho7OeA@mail.gmail.com>
- <5508887B.8080008@hurleysoftware.com>
- <CAJhHMCDWJZR0rgfMzNKX=btMPCmFfBH-WU0fY3oo0G8TtpdSBA@mail.gmail.com>
- <55088AF1.5040305@hurleysoftware.com>
- <CAJhHMCDXQSAiSSpv2=O9V+ezo6a5QPvEjaPLVaymiart_fOTaQ@mail.gmail.com>
-In-Reply-To: <CAJhHMCDXQSAiSSpv2=O9V+ezo6a5QPvEjaPLVaymiart_fOTaQ@mail.gmail.com>
-Content-Type: text/plain; charset=utf-8
-Cc: "open list:LINUX FOR POWERPC..." <linuxppc-dev@lists.ozlabs.org>,
- LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Cc: Madalin Bucur <madalin.bucur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,42 +28,100 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03/17/2015 04:16 PM, Pranith Kumar wrote:
-> On Tue, Mar 17, 2015 at 4:13 PM, Peter Hurley <peter@hurleysoftware.com> wrote:
->> On 03/17/2015 04:07 PM, Pranith Kumar wrote:
->>> On Tue, Mar 17, 2015 at 4:03 PM, Peter Hurley <peter@hurleysoftware.com> wrote:
->>>>
->>>> Can you send me a complete dmesg capture from a boot with
->>>> this commit reverted?
->>>>
->>>
->>> Here it is. Let me know if you want any boot options enabled. I
->>> removed both debug and verbose boot options.
->>
->> Ok, thanks.
->>
->> This is just like Andreas' problem: with my patch, there is _no_ console.
->>
->> Note those console command line options in your config aren't actually
->> in your kernel command line. That really threw me; I couldn't figure out
->> how you didn't have a tty0 console.
->>
->>> [    0.000000] Kernel command line:
->>> root=UUID=7252209a-6106-41c2-90a3-45b85ac47837 ro video=radeonfb:off
->>> video=offb:off radeon.modeset=1 radeon.agpmode=-1
->>
-> 
-> Hmm, interesting. These arguments are passed from the yaboot.conf
-> which has a line as follows:
-> 
-> append="video=radeonfb:off video=offb:off radeon.modeset=1 radeon.agpmode=-1"
-> 
-> I thought this would append these arguments to the default kernel
-> command line argument in the config. Apparently it is not. So, the
-> resolution for this is to add the console argument to yaboot.conf I
-> guess, right?
+Allow the user to tweak the refill threshold and the total number
+of buffers in the buffer pool. The provided values are for one CPU.
 
-No, I'm sending a revert anyway, but I thought I'd let you know.
+Signed-off-by: Madalin Bucur <madalin.bucur@freescale.com>
+---
+ drivers/net/ethernet/freescale/dpaa/Kconfig       | 20 ++++++++++++++++++++
+ drivers/net/ethernet/freescale/dpaa/dpaa_eth.c    |  2 +-
+ drivers/net/ethernet/freescale/dpaa/dpaa_eth.h    |  3 ---
+ drivers/net/ethernet/freescale/dpaa/dpaa_eth_sg.c |  6 +++---
+ 4 files changed, 24 insertions(+), 7 deletions(-)
 
-Regards,
-Peter Hurley
+diff --git a/drivers/net/ethernet/freescale/dpaa/Kconfig b/drivers/net/ethernet/freescale/dpaa/Kconfig
+index 7ef703c..9db7d25 100644
+--- a/drivers/net/ethernet/freescale/dpaa/Kconfig
++++ b/drivers/net/ethernet/freescale/dpaa/Kconfig
+@@ -11,6 +11,26 @@ menuconfig FSL_DPAA_ETH
+ 
+ if FSL_DPAA_ETH
+ 
++config FSL_DPAA_ETH_MAX_BUF_COUNT
++	int "Maximum nuber of buffers in private bpool"
++	depends on FSL_DPAA_ETH
++	range 64 2048
++	default "128"
++	---help---
++	  The maximum number of buffers to be by default allocated in the DPAA-Ethernet private port's
++	  buffer pool. One needn't normally modify this, as it has probably been tuned for performance
++	  already. This cannot be lower than DPAA_ETH_REFILL_THRESHOLD.
++
++config FSL_DPAA_ETH_REFILL_THRESHOLD
++	int "Private bpool refill threshold"
++	depends on FSL_DPAA_ETH
++	range 32 FSL_DPAA_ETH_MAX_BUF_COUNT
++	default "80"
++	---help---
++	  The DPAA-Ethernet driver will start replenishing buffer pools whose count
++	  falls below this threshold. This must be related to DPAA_ETH_MAX_BUF_COUNT. One needn't normally
++	  modify this value unless one has very specific performance reasons.
++
+ config FSL_DPAA_CS_THRESHOLD_1G
+ 	hex "Egress congestion threshold on 1G ports"
+ 	depends on FSL_DPAA_ETH
+diff --git a/drivers/net/ethernet/freescale/dpaa/dpaa_eth.c b/drivers/net/ethernet/freescale/dpaa/dpaa_eth.c
+index 76b05c1..efa9711 100644
+--- a/drivers/net/ethernet/freescale/dpaa/dpaa_eth.c
++++ b/drivers/net/ethernet/freescale/dpaa/dpaa_eth.c
+@@ -591,7 +591,7 @@ dpa_priv_bp_probe(struct device *dev)
+ 	}
+ 
+ 	dpa_bp->percpu_count = devm_alloc_percpu(dev, *dpa_bp->percpu_count);
+-	dpa_bp->target_count = FSL_DPAA_ETH_MAX_BUF_COUNT;
++	dpa_bp->target_count = CONFIG_FSL_DPAA_ETH_MAX_BUF_COUNT;
+ 
+ 	dpa_bp->seed_cb = dpa_bp_priv_seed;
+ 	dpa_bp->free_buf_cb = _dpa_bp_free_pf;
+diff --git a/drivers/net/ethernet/freescale/dpaa/dpaa_eth.h b/drivers/net/ethernet/freescale/dpaa/dpaa_eth.h
+index 9b70c5a..19e9068 100644
+--- a/drivers/net/ethernet/freescale/dpaa/dpaa_eth.h
++++ b/drivers/net/ethernet/freescale/dpaa/dpaa_eth.h
+@@ -125,9 +125,6 @@ struct dpa_buffer_layout_s {
+ 
+ #define DPAA_ETH_RX_QUEUES	128
+ 
+-#define FSL_DPAA_ETH_MAX_BUF_COUNT	128
+-#define FSL_DPAA_ETH_REFILL_THRESHOLD	80
+-
+ #ifdef CONFIG_PM
+ /* Magic Packet wakeup */
+ #define DPAA_WOL_MAGIC		0x00000001
+diff --git a/drivers/net/ethernet/freescale/dpaa/dpaa_eth_sg.c b/drivers/net/ethernet/freescale/dpaa/dpaa_eth_sg.c
+index ef3117e..1b3dc28 100644
+--- a/drivers/net/ethernet/freescale/dpaa/dpaa_eth_sg.c
++++ b/drivers/net/ethernet/freescale/dpaa/dpaa_eth_sg.c
+@@ -153,7 +153,7 @@ int dpaa_eth_refill_bpools(struct dpa_bp *dpa_bp, int *countptr)
+ 	int count = *countptr;
+ 	int new_bufs;
+ 
+-	if (unlikely(count < FSL_DPAA_ETH_REFILL_THRESHOLD)) {
++	if (unlikely(count < CONFIG_FSL_DPAA_ETH_REFILL_THRESHOLD)) {
+ 		do {
+ 			new_bufs = _dpa_bp_add_8_bufs(dpa_bp);
+ 			if (unlikely(!new_bufs)) {
+@@ -164,10 +164,10 @@ int dpaa_eth_refill_bpools(struct dpa_bp *dpa_bp, int *countptr)
+ 				break;
+ 			}
+ 			count += new_bufs;
+-		} while (count < FSL_DPAA_ETH_MAX_BUF_COUNT);
++		} while (count < CONFIG_FSL_DPAA_ETH_MAX_BUF_COUNT);
+ 
+ 		*countptr = count;
+-		if (unlikely(count < FSL_DPAA_ETH_MAX_BUF_COUNT))
++		if (unlikely(count < CONFIG_FSL_DPAA_ETH_MAX_BUF_COUNT))
+ 			return -ENOMEM;
+ 	}
+ 
+-- 
+1.7.11.7
