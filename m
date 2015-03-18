@@ -1,19 +1,19 @@
 Return-Path: <clg@fr.ibm.com>
-Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
+Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9151C1A04E6
+ by lists.ozlabs.org (Postfix) with ESMTPS id C7C261A0629
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Mar 2015 02:47:57 +1100 (AEDT)
 Received: from /spool/local
- by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <clg@fr.ibm.com>;
  Wed, 18 Mar 2015 15:47:53 -0000
 From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@fr.ibm.com>
 To: lm-sensors@lm-sensors.org
-Subject: [PATCH 0/5] hwmon: (ibmpowernv) remove dependency on OPAL index
-Date: Wed, 18 Mar 2015 16:47:40 +0100
-Message-Id: <1426693665-10797-1-git-send-email-clg@fr.ibm.com>
+Subject: [PATCH 2/5] hwmon: (ibmpowernv) add a get_sensor_type() routine
+Date: Wed, 18 Mar 2015 16:47:42 +0100
+Message-Id: <1426693665-10797-3-git-send-email-clg@fr.ibm.com>
 In-Reply-To: <1423117857-32759-1-git-send-email-clg@fr.ibm.com>
 References: <1423117857-32759-1-git-send-email-clg@fr.ibm.com>
 MIME-Version: 1.0
@@ -32,42 +32,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello !
+It will help in adding different compatible properties, coming from a
+new device tree layout for example.
 
-The current implementation of the driver uses an index for the hwmon 
-attribute which is extracted from the device node name. This index
-is calculated by the OPAL firmware and its usage creates a dependency 
-with the driver which makes changes a little more complex in OPAL.
+Signed-off-by: Cédric Le Goater <clg@fr.ibm.com>
+---
+ drivers/hwmon/ibmpowernv.c |   26 +++++++++++++++-----------
+ 1 file changed, 15 insertions(+), 11 deletions(-)
 
-This patchset changes the ibmpowernv code to use its own index. It 
-starts with a few cleanups, mostly code shuffling around the creation 
-of the hwmon sysfs attributes and completes by removing the dependency.
-
-It also prepares ground for future OPAL changes :  
-
-   https://lists.ozlabs.org/pipermail/skiboot/2015-March/000639.html
-
-which will be addressed in a other small patchset.
-
-
-The patches are based on Linux 4.0.0-rc4 and were tested on IBM Power 
-and Open Power systems running Trusty. 
-
-Cheers,
-
-C.
-
-
-Cédric Le Goater (5):
-  hwmon: (ibmpowernv) replace AMBIENT_TEMP by TEMP
-  hwmon: (ibmpowernv) add a get_sensor_type() routine
-  hwmon: (ibmpowernv) add a convert_opal_attr_name() routine
-  hwmon: (ibmpowernv) change create_hwmon_attr_name() prototype
-  hwmon: (ibmpowernv) do not use the OPAL index for hwmon attribute
-    names
-
- drivers/hwmon/ibmpowernv.c |  122 +++++++++++++++++++++++++++++---------------
- 1 file changed, 81 insertions(+), 41 deletions(-)
-
+diff --git a/drivers/hwmon/ibmpowernv.c b/drivers/hwmon/ibmpowernv.c
+index f691e18df16b..07a8219b7f4e 100644
+--- a/drivers/hwmon/ibmpowernv.c
++++ b/drivers/hwmon/ibmpowernv.c
+@@ -169,6 +169,17 @@ static int create_hwmon_attr_name(struct device *dev, enum sensors type,
+ 	return 0;
+ }
+ 
++static int get_sensor_type(struct device_node *np)
++{
++	enum sensors type;
++
++	for (type = 0; type < MAX_SENSOR_TYPE; type++) {
++		if (of_device_is_compatible(np, sensor_groups[type].compatible))
++			return type;
++	}
++	return MAX_SENSOR_TYPE;
++}
++
+ static int populate_attr_groups(struct platform_device *pdev)
+ {
+ 	struct platform_data *pdata = platform_get_drvdata(pdev);
+@@ -181,12 +192,9 @@ static int populate_attr_groups(struct platform_device *pdev)
+ 		if (np->name == NULL)
+ 			continue;
+ 
+-		for (type = 0; type < MAX_SENSOR_TYPE; type++)
+-			if (of_device_is_compatible(np,
+-					sensor_groups[type].compatible)) {
+-				sensor_groups[type].attr_count++;
+-				break;
+-			}
++		type = get_sensor_type(np);
++		if (type != MAX_SENSOR_TYPE)
++			sensor_groups[type].attr_count++;
+ 	}
+ 
+ 	of_node_put(opal);
+@@ -236,11 +244,7 @@ static int create_device_attrs(struct platform_device *pdev)
+ 		if (np->name == NULL)
+ 			continue;
+ 
+-		for (type = 0; type < MAX_SENSOR_TYPE; type++)
+-			if (of_device_is_compatible(np,
+-					sensor_groups[type].compatible))
+-				break;
+-
++		type = get_sensor_type(np);
+ 		if (type == MAX_SENSOR_TYPE)
+ 			continue;
+ 
 -- 
 1.7.10.4
