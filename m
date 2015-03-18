@@ -1,19 +1,19 @@
 Return-Path: <clg@fr.ibm.com>
-Received: from e06smtp17.uk.ibm.com (e06smtp17.uk.ibm.com [195.75.94.113])
+Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4EE7B1A0701
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Mar 2015 02:47:58 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 63BC51A02F4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Mar 2015 02:47:59 +1100 (AEDT)
 Received: from /spool/local
- by e06smtp17.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <clg@fr.ibm.com>;
- Wed, 18 Mar 2015 15:47:54 -0000
+ Wed, 18 Mar 2015 15:47:55 -0000
 From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@fr.ibm.com>
 To: lm-sensors@lm-sensors.org
-Subject: [PATCH 1/5] hwmon: (ibmpowernv) replace AMBIENT_TEMP by TEMP
-Date: Wed, 18 Mar 2015 16:47:41 +0100
-Message-Id: <1426693665-10797-2-git-send-email-clg@fr.ibm.com>
+Subject: [PATCH 3/5] hwmon: (ibmpowernv) add a convert_opal_attr_name() routine
+Date: Wed, 18 Mar 2015 16:47:43 +0100
+Message-Id: <1426693665-10797-4-git-send-email-clg@fr.ibm.com>
 In-Reply-To: <1423117857-32759-1-git-send-email-clg@fr.ibm.com>
 References: <1423117857-32759-1-git-send-email-clg@fr.ibm.com>
 MIME-Version: 1.0
@@ -32,44 +32,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Ambient is too restrictive as there can be other temperature channels :
-core, memory, etc.
+It simplifies the create_hwmon_attr_name() routine and it clearly isolates
+the conversion done between the OPAL node names and hwmon attributes names.
 
 Signed-off-by: Cédric Le Goater <clg@fr.ibm.com>
 ---
- drivers/hwmon/ibmpowernv.c |    6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/hwmon/ibmpowernv.c |   39 +++++++++++++++++++++++++--------------
+ 1 file changed, 25 insertions(+), 14 deletions(-)
 
 diff --git a/drivers/hwmon/ibmpowernv.c b/drivers/hwmon/ibmpowernv.c
-index febe8175d36c..f691e18df16b 100644
+index 07a8219b7f4e..edcc4ffa5ad0 100644
 --- a/drivers/hwmon/ibmpowernv.c
 +++ b/drivers/hwmon/ibmpowernv.c
-@@ -44,7 +44,7 @@
-  */
- enum sensors {
- 	FAN,
--	AMBIENT_TEMP,
-+	TEMP,
- 	POWER_SUPPLY,
- 	POWER_INPUT,
- 	MAX_SENSOR_TYPE,
-@@ -87,7 +87,7 @@ static ssize_t show_sensor(struct device *dev, struct device_attribute *devattr,
- 		return ret;
+@@ -127,6 +127,28 @@ static int get_sensor_index_attr(const char *name, u32 *index,
+ 	return 0;
+ }
  
- 	/* Convert temperature to milli-degrees */
--	if (sdata->type == AMBIENT_TEMP)
-+	if (sdata->type == TEMP)
- 		x *= 1000;
- 	/* Convert power to micro-watts */
- 	else if (sdata->type == POWER_INPUT)
-@@ -154,7 +154,7 @@ static int create_hwmon_attr_name(struct device *dev, enum sensors type,
- 	} else if (!strcmp(attr_suffix, DT_DATA_ATTR_SUFFIX)) {
- 		attr_name = "input";
- 	} else if (!strcmp(attr_suffix, DT_THRESHOLD_ATTR_SUFFIX)) {
--		if (type == AMBIENT_TEMP)
++static const char *convert_opal_attr_name(enum sensors type,
++					const char *opal_attr)
++{
++	const char *attr_name = NULL;
++
++	if (!strcmp(opal_attr, DT_FAULT_ATTR_SUFFIX)) {
++		attr_name = "fault";
++	} else if (!strcmp(opal_attr, DT_DATA_ATTR_SUFFIX)) {
++		attr_name = "input";
++	} else if (!strcmp(opal_attr, DT_THRESHOLD_ATTR_SUFFIX)) {
 +		if (type == TEMP)
- 			attr_name = "max";
- 		else if (type == FAN)
- 			attr_name = "min";
++			attr_name = "max";
++		else if (type == FAN)
++			attr_name = "min";
++		else
++			return NULL;
++	} else {
++		return NULL;
++	}
++	return attr_name;
++}
++
+ /*
+  * This function translates the DT node name into the 'hwmon' attribute name.
+  * IBMPOWERNV device node appear like cooling-fan#2-data, amb-temp#1-thrs etc.
+@@ -138,7 +160,7 @@ static int create_hwmon_attr_name(struct device *dev, enum sensors type,
+ 					 char *hwmon_attr_name)
+ {
+ 	char attr_suffix[MAX_ATTR_LEN];
+-	char *attr_name;
++	const char *attr_name;
+ 	u32 index;
+ 	int err;
+ 
+@@ -149,20 +171,9 @@ static int create_hwmon_attr_name(struct device *dev, enum sensors type,
+ 		return err;
+ 	}
+ 
+-	if (!strcmp(attr_suffix, DT_FAULT_ATTR_SUFFIX)) {
+-		attr_name = "fault";
+-	} else if (!strcmp(attr_suffix, DT_DATA_ATTR_SUFFIX)) {
+-		attr_name = "input";
+-	} else if (!strcmp(attr_suffix, DT_THRESHOLD_ATTR_SUFFIX)) {
+-		if (type == TEMP)
+-			attr_name = "max";
+-		else if (type == FAN)
+-			attr_name = "min";
+-		else
+-			return -ENOENT;
+-	} else {
++	attr_name = convert_opal_attr_name(type, attr_suffix);
++	if (!attr_name)
+ 		return -ENOENT;
+-	}
+ 
+ 	snprintf(hwmon_attr_name, MAX_ATTR_LEN, "%s%d_%s",
+ 		 sensor_groups[type].name, index, attr_name);
 -- 
 1.7.10.4
