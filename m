@@ -1,24 +1,18 @@
-Return-Path: <mpe@ellerman.id.au>
+Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 761471A0010
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Mar 2015 16:04:19 +1100 (AEDT)
-Message-ID: <1426655059.6504.4.camel@ellerman.id.au>
-Subject: Re: [PATCH v3 2/2] selftests/powerpc: Add a test of the
- switch_endian() syscall
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3CA751A0010
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Mar 2015 16:19:40 +1100 (AEDT)
+In-Reply-To: <20150315220847.1ecfe174@canb.auug.org.au>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Date: Wed, 18 Mar 2015 16:04:19 +1100
-In-Reply-To: <5507C437.3020203@linux.vnet.ibm.com>
-References: <1426489030-26025-1-git-send-email-mpe@ellerman.id.au>
- <1426489030-26025-2-git-send-email-mpe@ellerman.id.au>
- <5506B7DC.80702@linux.vnet.ibm.com>
- <1426547040.31646.2.camel@ellerman.id.au>
- <5507C437.3020203@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, linuxram@us.ibm.com, Jeremy Kerr <jk@ozlabs.org>
+Subject: Re: [PATCHv3] powerpc: convert relocs_check to a shell script using
+ grep
+Message-Id: <20150318051940.238AC14011D@ozlabs.org>
+Date: Wed, 18 Mar 2015 16:19:40 +1100 (AEDT)
+Cc: Paul Mackerras <paulus@samba.org>, David Laight <David.Laight@ACULAB.COM>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,35 +22,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-03-17 at 11:35 +0530, Anshuman Khandual wrote:
-> On 03/17/2015 04:34 AM, Michael Ellerman wrote:
-> > What are you seeing exactly?
-> 
-> I am running on a BE PKVM guest but compiling the test case on
-> a different BE machine which has newer version of the compiler.
-> 
-> cc (GCC) 4.8.3 20140624
-> 
-> cc -O2 -Wall -g -nostdlib -m64   -c -o check.o check.S
-> objcopy -j .text --reverse-bytes=4 -O binary check.o check-reversed.o
-> hexdump -v -e '/1 ".byte 0x%02X\n"' check-reversed.o > check-reversed.S
-> cc -O2 -Wall -g -nostdlib -m64    switch_endian_test.S check-reversed.S   -o switch_endian_test
-> 
-> which looks very similar to the details you have provided above.
-> Running on guest or host should not make any difference.
+On Sun, 2015-15-03 at 11:08:47 UTC, Stephen Rothwell wrote:
+> This runs a bit faster and removes another use of perl from
+> the kernel build.
 
-No it shouldn't.
+It tells me:
 
-Can you try strace, that should give you the full result code.
+$ make ARCH=powerpc CROSS_COMPILE= -s ppc64_defconfig
+#
+# configuration written to .config
+#
+$ make ARCH=powerpc CROSS_COMPILE= -s -j240 
+...
+arch/powerpc/relocs_check.sh: objdump (objdump) is not executable
+make: *** [relocs_check] Error 1
 
-Also can you try gdb. You can't breakpoint in the wrong-endian region, but it
-looks like you're getting through that anyway.
+I suspect because:
 
-So try setting a breakpoint at line ~77, and you should be back in BE. Then you
-can single step and see where it errors out.
++if [ ! -x "$objdump" ]; then
 
-> BTW, we need to add one .gitignore file to this new test directory.
-
-Oh yeah, thanks for the reminder.
+Doesn't search the PATH.
 
 cheers
