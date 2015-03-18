@@ -1,20 +1,20 @@
 Return-Path: <clg@fr.ibm.com>
-Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
+Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 727C81A051A
+ by lists.ozlabs.org (Postfix) with ESMTPS id ED2281A08EE
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Mar 2015 02:47:59 +1100 (AEDT)
 Received: from /spool/local
- by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <clg@fr.ibm.com>;
  Wed, 18 Mar 2015 15:47:56 -0000
 From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@fr.ibm.com>
 To: lm-sensors@lm-sensors.org
-Subject: [PATCH 4/5] hwmon: (ibmpowernv) change create_hwmon_attr_name()
- prototype
-Date: Wed, 18 Mar 2015 16:47:44 +0100
-Message-Id: <1426693665-10797-5-git-send-email-clg@fr.ibm.com>
+Subject: [PATCH 5/5] hwmon: (ibmpowernv) do not use the OPAL index for hwmon
+ attribute names
+Date: Wed, 18 Mar 2015 16:47:45 +0100
+Message-Id: <1426693665-10797-6-git-send-email-clg@fr.ibm.com>
 In-Reply-To: <1423117857-32759-1-git-send-email-clg@fr.ibm.com>
 References: <1423117857-32759-1-git-send-email-clg@fr.ibm.com>
 MIME-Version: 1.0
@@ -33,81 +33,87 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-It simplifies the creation of the hwmon attributes and will help when
-support for a new device tree layout is added. The patch also changes
-the name of the routine to parse_opal_node_name().
+The current OPAL firmware exposes the different sensors of an IBM Power
+system using the node names such as :
+
+	sensors/amb-temp#1-data
+	sensors/amb-temp#1-thrs
+	cooling-fan#1-data
+	cooling-fan#1-faulted
+	cooling-fan#1-thrs
+	cooling-fan#2-data
+	...
+
+The ibmpowernv driver, when loaded, parses these names to extract the
+sensor index and the sensor attribute name. Unfortunately, this scheme
+makes it difficult to add sensors with a different layout (specially of
+the same type, like temperature) as the sensor index calculated in OPAL
+is directly used in the hwmon sysfs interface.
+
+What this patch does is add a independent hwmon index for each sensor.
+The increment of the hwmon index (temp, fan, power, etc.) is kept per
+sensor type in the sensor_group table. The sensor_data table is used
+to store the association of the hwmon and OPAL indexes, as we need to
+have the same hwmon index for different attributes of a same sensor.
 
 Signed-off-by: Cédric Le Goater <clg@fr.ibm.com>
 ---
- drivers/hwmon/ibmpowernv.c |   32 ++++++++++++++++++--------------
- 1 file changed, 18 insertions(+), 14 deletions(-)
+ drivers/hwmon/ibmpowernv.c |   23 ++++++++++++++++++++++-
+ 1 file changed, 22 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/hwmon/ibmpowernv.c b/drivers/hwmon/ibmpowernv.c
-index edcc4ffa5ad0..570d2360b698 100644
+index 570d2360b698..ffcebc9d8bf5 100644
 --- a/drivers/hwmon/ibmpowernv.c
 +++ b/drivers/hwmon/ibmpowernv.c
-@@ -155,28 +155,22 @@ static const char *convert_opal_attr_name(enum sensors type,
-  * which need to be mapped as fan2_input, temp1_max respectively before
-  * populating them inside hwmon device class.
-  */
--static int create_hwmon_attr_name(struct device *dev, enum sensors type,
--					 const char *node_name,
--					 char *hwmon_attr_name)
-+static int parse_opal_node_name(const char *node_name, enum sensors type,
-+	u32 *index, const char **hwmon_attr_name)
- {
- 	char attr_suffix[MAX_ATTR_LEN];
- 	const char *attr_name;
--	u32 index;
- 	int err;
+@@ -55,6 +55,7 @@ static struct sensor_group {
+ 	const char *compatible;
+ 	struct attribute_group group;
+ 	u32 attr_count;
++	u32 hwmon_index;
+ } sensor_groups[] = {
+ 	{"fan", "ibm,opal-sensor-cooling-fan"},
+ 	{"temp", "ibm,opal-sensor-amb-temp"},
+@@ -64,6 +65,8 @@ static struct sensor_group {
  
--	err = get_sensor_index_attr(node_name, &index, attr_suffix);
--	if (err) {
--		dev_err(dev, "Sensor device node name '%s' is invalid\n",
--			node_name);
-+	err = get_sensor_index_attr(node_name, index, attr_suffix);
-+	if (err)
- 		return err;
--	}
- 
- 	attr_name = convert_opal_attr_name(type, attr_suffix);
- 	if (!attr_name)
- 		return -ENOENT;
- 
--	snprintf(hwmon_attr_name, MAX_ATTR_LEN, "%s%d_%s",
--		 sensor_groups[type].name, index, attr_name);
-+	*hwmon_attr_name = attr_name;
- 	return 0;
+ struct sensor_data {
+ 	u32 id; /* An opaque id of the firmware for each sensor */
++	u32 hwmon_index;
++	u32 opal_index;
+ 	enum sensors type;
+ 	char name[MAX_ATTR_LEN];
+ 	struct device_attribute dev_attr;
+@@ -185,6 +188,19 @@ static int get_sensor_type(struct device_node *np)
+ 	return MAX_SENSOR_TYPE;
  }
  
-@@ -252,6 +246,9 @@ static int create_device_attrs(struct platform_device *pdev)
- 	}
- 
- 	for_each_child_of_node(opal, np) {
-+		const char *attr_name;
-+		u32 opal_index;
++static u32 get_sensor_hwmon_index(struct sensor_data *sdata,
++	struct sensor_data *sdata_table, int count)
++{
++	int i;
 +
- 		if (np->name == NULL)
- 			continue;
- 
-@@ -268,10 +265,17 @@ static int create_device_attrs(struct platform_device *pdev)
- 
- 		sdata[count].id = sensor_id;
- 		sdata[count].type = type;
--		err = create_hwmon_attr_name(&pdev->dev, type, np->name,
--					     sdata[count].name);
--		if (err)
++	for (i = 0; i < count; i++)
++		if (sdata_table[i].opal_index == sdata->opal_index &&
++		    sdata_table[i].type == sdata->type)
++			return sdata_table[i].hwmon_index;
 +
-+		err = parse_opal_node_name(np->name, type, &opal_index,
-+					   &attr_name);
-+		if (err) {
-+			dev_err(&pdev->dev, "Sensor device node name '%s' is invalid\n",
-+				np->name);
++	return ++sensor_groups[sdata->type].hwmon_index;
++}
++
+ static int populate_attr_groups(struct platform_device *pdev)
+ {
+ 	struct platform_data *pdata = platform_get_drvdata(pdev);
+@@ -274,8 +290,13 @@ static int create_device_attrs(struct platform_device *pdev)
  			goto exit_put_node;
-+		}
+ 		}
+ 
++		sdata[count].opal_index = opal_index;
++		sdata[count].hwmon_index =
++			get_sensor_hwmon_index(&sdata[count], sdata, count);
 +
-+		snprintf(sdata[count].name, MAX_ATTR_LEN, "%s%d_%s",
-+			 sensor_groups[type].name, opal_index, attr_name);
+ 		snprintf(sdata[count].name, MAX_ATTR_LEN, "%s%d_%s",
+-			 sensor_groups[type].name, opal_index, attr_name);
++			 sensor_groups[type].name, sdata[count].hwmon_index,
++			 attr_name);
  
  		sysfs_attr_init(&sdata[count].dev_attr.attr);
  		sdata[count].dev_attr.attr.name = sdata[count].name;
