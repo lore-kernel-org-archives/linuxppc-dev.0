@@ -1,29 +1,37 @@
-Return-Path: <clg@fr.ibm.com>
-Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <linus971@gmail.com>
+Received: from mail-ie0-x22c.google.com (mail-ie0-x22c.google.com
+ [IPv6:2607:f8b0:4001:c03::22c])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id ED2281A08EE
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Mar 2015 02:47:59 +1100 (AEDT)
-Received: from /spool/local
- by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <clg@fr.ibm.com>;
- Wed, 18 Mar 2015 15:47:56 -0000
-From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@fr.ibm.com>
-To: lm-sensors@lm-sensors.org
-Subject: [PATCH 5/5] hwmon: (ibmpowernv) do not use the OPAL index for hwmon
- attribute names
-Date: Wed, 18 Mar 2015 16:47:45 +0100
-Message-Id: <1426693665-10797-6-git-send-email-clg@fr.ibm.com>
-In-Reply-To: <1423117857-32759-1-git-send-email-clg@fr.ibm.com>
-References: <1423117857-32759-1-git-send-email-clg@fr.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5E8FE1A02F4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Mar 2015 03:08:48 +1100 (AEDT)
+Received: by iegc3 with SMTP id c3so42802565ieg.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Mar 2015 09:08:44 -0700 (PDT)
 MIME-Version: 1.0
+Sender: linus971@gmail.com
+In-Reply-To: <20150317220840.GC28621@dastard>
+References: <CA+55aFywW5JLq=BU_qb2OG5+pJ-b1v9tiS5Ygi-vtEKbEZ_T5Q@mail.gmail.com>
+ <20150309191943.GF26657@destitution>
+ <CA+55aFzFt-vX5Jerci0Ty4Uf7K4_nQ7wyCp8hhU_dB0X4cBpVQ@mail.gmail.com>
+ <20150312131045.GE3406@suse.de>
+ <CA+55aFx=81BGnQFNhnAGu6CetL7yifPsnD-+v7Y6QRqwgH47gQ@mail.gmail.com>
+ <20150312184925.GH3406@suse.de> <20150317070655.GB10105@dastard>
+ <CA+55aFzdLnFdku-gnm3mGbeS=QauYBNkFQKYXJAGkrMd2jKXhw@mail.gmail.com>
+ <20150317205104.GA28621@dastard>
+ <CA+55aFzSPcNgxw4GC7aAV1r0P5LniyVVC66COz=3cgMcx73Nag@mail.gmail.com>
+ <20150317220840.GC28621@dastard>
+Date: Wed, 18 Mar 2015 09:08:44 -0700
+Message-ID: <CA+55aFwne-fe_Gg-_GTUo+iOAbbNpLBa264JqSFkH79EULyAqw@mail.gmail.com>
+Subject: Re: [PATCH 4/4] mm: numa: Slow PTE scan rate if migration failures
+ occur
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Dave Chinner <david@fromorbit.com>
 Content-Type: text/plain; charset=UTF-8
-Cc: Stewart Smith <stewart@linux.vnet.ibm.com>,
- =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@fr.ibm.com>,
- Jean Delvare <jdelvare@suse.de>, Neelesh Gupta <neelegup@linux.vnet.ibm.com>,
- skiboot@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org,
- Guenter Roeck <linux@roeck-us.net>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com,
+ Linux-MM <linux-mm@kvack.org>, Aneesh Kumar <aneesh.kumar@linux.vnet.ibm.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ ppc-dev <linuxppc-dev@lists.ozlabs.org>, Ingo Molnar <mingo@kernel.org>,
+ Mel Gorman <mgorman@suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,89 +41,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The current OPAL firmware exposes the different sensors of an IBM Power
-system using the node names such as :
+On Tue, Mar 17, 2015 at 3:08 PM, Dave Chinner <david@fromorbit.com> wrote:
+>>
+>> Damn. From a performance number standpoint, it looked like we zoomed
+>> in on the right thing. But now it's migrating even more pages than
+>> before. Odd.
+>
+> Throttling problem, like Mel originally suspected?
 
-	sensors/amb-temp#1-data
-	sensors/amb-temp#1-thrs
-	cooling-fan#1-data
-	cooling-fan#1-faulted
-	cooling-fan#1-thrs
-	cooling-fan#2-data
-	...
+That doesn't much make sense for the original bisect you did, though.
 
-The ibmpowernv driver, when loaded, parses these names to extract the
-sensor index and the sensor attribute name. Unfortunately, this scheme
-makes it difficult to add sensors with a different layout (specially of
-the same type, like temperature) as the sensor index calculated in OPAL
-is directly used in the hwmon sysfs interface.
+Although if there are two different issues, maybe that bisect was
+wrong. Or rather, incomplete.
 
-What this patch does is add a independent hwmon index for each sensor.
-The increment of the hwmon index (temp, fan, power, etc.) is kept per
-sensor type in the sensor_group table. The sensor_data table is used
-to store the association of the hwmon and OPAL indexes, as we need to
-have the same hwmon index for different attributes of a same sensor.
+>> Can you do a simple stupid test? Apply that commit 53da3bc2ba9e ("mm:
+>> fix up numa read-only thread grouping logic") to 3.19, so that it uses
+>> the same "pte_dirty()" logic as 4.0-rc4. That *should* make the 3.19
+>> and 4.0-rc4 numbers comparable.
+>
+> patched 3.19 numbers on this test are slightly worse than stock
+> 3.19, but nowhere near as bad as 4.0-rc4:
+>
+>         241,718      migrate:mm_migrate_pages           ( +-  5.17% )
 
-Signed-off-by: Cédric Le Goater <clg@fr.ibm.com>
----
- drivers/hwmon/ibmpowernv.c |   23 ++++++++++++++++++++++-
- 1 file changed, 22 insertions(+), 1 deletion(-)
+Ok, that's still much worse than plain 3.19, which was ~55,000.
+Assuming your memory/measurements were the same.
 
-diff --git a/drivers/hwmon/ibmpowernv.c b/drivers/hwmon/ibmpowernv.c
-index 570d2360b698..ffcebc9d8bf5 100644
---- a/drivers/hwmon/ibmpowernv.c
-+++ b/drivers/hwmon/ibmpowernv.c
-@@ -55,6 +55,7 @@ static struct sensor_group {
- 	const char *compatible;
- 	struct attribute_group group;
- 	u32 attr_count;
-+	u32 hwmon_index;
- } sensor_groups[] = {
- 	{"fan", "ibm,opal-sensor-cooling-fan"},
- 	{"temp", "ibm,opal-sensor-amb-temp"},
-@@ -64,6 +65,8 @@ static struct sensor_group {
- 
- struct sensor_data {
- 	u32 id; /* An opaque id of the firmware for each sensor */
-+	u32 hwmon_index;
-+	u32 opal_index;
- 	enum sensors type;
- 	char name[MAX_ATTR_LEN];
- 	struct device_attribute dev_attr;
-@@ -185,6 +188,19 @@ static int get_sensor_type(struct device_node *np)
- 	return MAX_SENSOR_TYPE;
- }
- 
-+static u32 get_sensor_hwmon_index(struct sensor_data *sdata,
-+	struct sensor_data *sdata_table, int count)
-+{
-+	int i;
-+
-+	for (i = 0; i < count; i++)
-+		if (sdata_table[i].opal_index == sdata->opal_index &&
-+		    sdata_table[i].type == sdata->type)
-+			return sdata_table[i].hwmon_index;
-+
-+	return ++sensor_groups[sdata->type].hwmon_index;
-+}
-+
- static int populate_attr_groups(struct platform_device *pdev)
- {
- 	struct platform_data *pdata = platform_get_drvdata(pdev);
-@@ -274,8 +290,13 @@ static int create_device_attrs(struct platform_device *pdev)
- 			goto exit_put_node;
- 		}
- 
-+		sdata[count].opal_index = opal_index;
-+		sdata[count].hwmon_index =
-+			get_sensor_hwmon_index(&sdata[count], sdata, count);
-+
- 		snprintf(sdata[count].name, MAX_ATTR_LEN, "%s%d_%s",
--			 sensor_groups[type].name, opal_index, attr_name);
-+			 sensor_groups[type].name, sdata[count].hwmon_index,
-+			 attr_name);
- 
- 		sysfs_attr_init(&sdata[count].dev_attr.attr);
- 		sdata[count].dev_attr.attr.name = sdata[count].name;
--- 
-1.7.10.4
+So apparently the pte_write() -> pte_dirty() check isn't equivalent at
+all. My thinking that for the common case (ie private mappings) it
+would be *exactly* the same, because all normal COW pages turn dirty
+at the same time they turn writable (and, in page_mkclean_one(), turn
+clean and read-only again at the same time). But if the numbers change
+that much, then clearly my simplistic "they are the same in practice"
+is just complete BS.
+
+So why am I wrong? Why is testing for dirty not the same as testing
+for writable?
+
+I can see a few cases:
+
+ - your load has lots of writable (but not written-to) shared memory,
+and maybe the test should be something like
+
+      pte_dirty(pte) || (vma->vm_flags & (VM_WRITE|VM_SHARED) ==
+(VM_WRITE|VM_SHARED))
+
+   and we really should have some helper function for this logic.
+
+ - something completely different that I am entirely missing
+
+What am I missing?
+
+                          Linus
