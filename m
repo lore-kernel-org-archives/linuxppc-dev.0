@@ -1,17 +1,17 @@
 Return-Path: <fabf@skynet.be>
 Received: from mailrelay106.isp.belgacom.be (mailrelay106.isp.belgacom.be
  [195.238.20.133])
- by lists.ozlabs.org (Postfix) with ESMTP id 7D5781A04E6
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Mar 2015 03:49:24 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTP id 025191A02F4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Mar 2015 03:49:22 +1100 (AEDT)
 From: Fabian Frederick <fabf@skynet.be>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 1/7 linux-next] ALSA: aoa: constify of_device_id array
-Date: Wed, 18 Mar 2015 17:48:56 +0100
-Message-Id: <1426697344-4884-2-git-send-email-fabf@skynet.be>
-In-Reply-To: <1426697344-4884-1-git-send-email-fabf@skynet.be>
-References: <1426697344-4884-1-git-send-email-fabf@skynet.be>
-Cc: alsa-devel@alsa-project.org, Takashi Iwai <tiwai@suse.de>,
+Subject: [PATCH 0/7 linux-next] sound: constify of_device_id array
+Date: Wed, 18 Mar 2015 17:48:55 +0100
+Message-Id: <1426697344-4884-1-git-send-email-fabf@skynet.be>
+Cc: Oder Chiou <oder_chiou@realtek.com>, alsa-devel@alsa-project.org,
+ Takashi Iwai <tiwai@suse.de>, Liam Girdwood <lgirdwood@gmail.com>,
  Jaroslav Kysela <perex@perex.cz>, Fabian Frederick <fabf@skynet.be>,
+ Mark Brown <broonie@kernel.org>, Bard Liao <bardliao@realtek.com>,
  Johannes Berg <johannes@sipsolutions.net>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -22,26 +22,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-of_device_id is always used as const.
-(See driver.of_match_table and open firmware functions)
+This small patchset adds const to of_device_id arrays in
+sound branch.
 
-Signed-off-by: Fabian Frederick <fabf@skynet.be>
----
- sound/aoa/soundbus/i2sbus/core.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Fabian Frederick (7):
+  ALSA: aoa: constify of_device_id array
+  ASoC: fsl: constify of_device_id array
+  ASoC: kirkwood: constify of_device_id array
+  ASoC: rt5631: constify of_device_id array
+  ASoC: ak4554: constify of_device_id array
+  ASoC: fsi: constify of_device_id array
+  ASoC: rsnd: constify of_device_id array
 
-diff --git a/sound/aoa/soundbus/i2sbus/core.c b/sound/aoa/soundbus/i2sbus/core.c
-index b9737fa..1cbf210 100644
---- a/sound/aoa/soundbus/i2sbus/core.c
-+++ b/sound/aoa/soundbus/i2sbus/core.c
-@@ -31,7 +31,7 @@ module_param(force, int, 0444);
- MODULE_PARM_DESC(force, "Force loading i2sbus even when"
- 			" no layout-id property is present");
- 
--static struct of_device_id i2sbus_match[] = {
-+static const struct of_device_id i2sbus_match[] = {
- 	{ .name = "i2s" },
- 	{ }
- };
+ sound/aoa/soundbus/i2sbus/core.c    | 2 +-
+ sound/soc/codecs/ak4554.c           | 2 +-
+ sound/soc/codecs/rt5631.c           | 2 +-
+ sound/soc/fsl/mpc5200_psc_ac97.c    | 2 +-
+ sound/soc/fsl/mpc5200_psc_i2s.c     | 2 +-
+ sound/soc/fsl/pcm030-audio-fabric.c | 2 +-
+ sound/soc/kirkwood/kirkwood-i2s.c   | 2 +-
+ sound/soc/sh/fsi.c                  | 4 ++--
+ sound/soc/sh/rcar/core.c            | 2 +-
+ 9 files changed, 10 insertions(+), 10 deletions(-)
+
 -- 
 1.9.1
