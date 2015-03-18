@@ -1,31 +1,35 @@
-Return-Path: <david@fromorbit.com>
-Received: from ipmail07.adl2.internode.on.net (ipmail07.adl2.internode.on.net
- [150.101.137.131])
- by lists.ozlabs.org (Postfix) with ESMTP id 67AB91A0079
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Mar 2015 09:24:02 +1100 (AEDT)
-Date: Thu, 19 Mar 2015 09:23:14 +1100
-From: Dave Chinner <david@fromorbit.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 4/4] mm: numa: Slow PTE scan rate if migration failures
- occur
-Message-ID: <20150318222314.GD28621@dastard>
-References: <20150312131045.GE3406@suse.de>
- <CA+55aFx=81BGnQFNhnAGu6CetL7yifPsnD-+v7Y6QRqwgH47gQ@mail.gmail.com>
- <20150312184925.GH3406@suse.de> <20150317070655.GB10105@dastard>
- <CA+55aFzdLnFdku-gnm3mGbeS=QauYBNkFQKYXJAGkrMd2jKXhw@mail.gmail.com>
- <20150317205104.GA28621@dastard>
- <CA+55aFzSPcNgxw4GC7aAV1r0P5LniyVVC66COz=3cgMcx73Nag@mail.gmail.com>
- <20150317220840.GC28621@dastard>
- <CA+55aFwne-fe_Gg-_GTUo+iOAbbNpLBa264JqSFkH79EULyAqw@mail.gmail.com>
- <CA+55aFy-Mw74rAdLMMMUgnsG3ZttMWVNGz7CXZJY7q9fqyRYfg@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CA+55aFy-Mw74rAdLMMMUgnsG3ZttMWVNGz7CXZJY7q9fqyRYfg@mail.gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com,
- Linux-MM <linux-mm@kvack.org>, Aneesh Kumar <aneesh.kumar@linux.vnet.ibm.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- ppc-dev <linuxppc-dev@lists.ozlabs.org>, Ingo Molnar <mingo@kernel.org>,
- Mel Gorman <mgorman@suse.de>
+Return-Path: <mikey@neuling.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id A7FAC1A0079
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Mar 2015 09:45:03 +1100 (AEDT)
+Message-ID: <1426718702.4866.2.camel@neuling.org>
+Subject: Re: [V6,1/9] elf: Add new powerpc specifc core note sections
+From: Michael Neuling <mikey@neuling.org>
+To: Ulrich Weigand <Ulrich.Weigand@de.ibm.com>
+Date: Thu, 19 Mar 2015 09:45:02 +1100
+In-Reply-To: <OF5DE08D4B.0B79C501-ONC1257E0C.0044F80B-C1257E0C.0046DC8F@de.ibm.com>
+References: <20141203052204.9DA8F1400DD@ozlabs.org>
+ <547EB253.5050307@linux.vnet.ibm.com>
+ <548578A8.5020901@linux.vnet.ibm.com> <54947C64.4030206@linux.vnet.ibm.com>
+ <54A50094.5070902@linux.vnet.ibm.com>
+ <1421883597.30744.3.camel@neuling.org>
+ <OFC6CFC348.C619B89D-ONC1257DD5.0056279B-C1257DD5.00577002@de.ibm.com>
+ <1421963049.30744.23.camel@neuling.org>
+ <1422419289.9646.20.camel@neuling.org>
+ <OFE5516C3F.3C4884DE-ONC1257DE4.004E7852-C1257DE4.00514232@de.ibm.com>
+ <1424667110.16027.6.camel@neuling.org>
+ <OF5DE08D4B.0B79C501-ONC1257E0C.0044F80B-C1257E0C.0046DC8F@de.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: shuahkh@osg.samsung.com, james.hogan@imgtec.com, avagin@openvz.org,
+ Paul.Clothier@imgtec.com, peterz@infradead.org, linux-kernel@vger.kernel.org,
+ davem@davemloft.net, dhowells@redhat.com, linuxppc-dev@ozlabs.org,
+ kirjanov@gmail.com, tglx@linutronix.de, oleg@redhat.com,
+ sukadev@linux.vnet.ibm.com, davej@redhat.com, akpm@linux-foundation.org,
+ palves@redhat.com, Edjunior Barbosa Machado <emachado@linux.vnet.ibm.com>,
+ sam.bobroff@au1.ibm.com, Anshuman Khandual <khandual@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,98 +39,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Mar 18, 2015 at 10:31:28AM -0700, Linus Torvalds wrote:
-> On Wed, Mar 18, 2015 at 9:08 AM, Linus Torvalds
-> <torvalds@linux-foundation.org> wrote:
+On Wed, 2015-03-18 at 13:53 +0100, Ulrich Weigand wrote:
+> Michael Neuling <mikey@neuling.org> wrote on 23.02.2015 05:51:50:
+>=20
+> > Sorry for the slow response.
+>=20
+> Same here :-(
+
+I'm going to break the cycle and respond in a few hours :-)
+
+
+> > I think what you're proposing with running the inferior function in
+> > suspend mode may end up corrupting the stack in this way.  You'd need t=
+o
+> > be really careful to make sure the inferior function is run on the stac=
+k
+> > pointer of the checkpointed registers.
+>=20
+> On the other hand, if code called a subroutine after the tbegin, if we
+> were using the checkpointed r1, this might corrupt the stack of the
+> transactional code.  (This code will never actually *run* again since
+> the transaction is doomed, but we can still *inspect* it in GDB after
+> the inferior call has returned, so the stack should remain unchanged.
+> Well .. if the transaction is suspended, the code might in fact still
+> run, so it should remain unchanged either way.)
+>=20
+> I guess we could use the minimum of transactional and checkpointed r1
+> in that case, to be safe either way.
+
+Sounds good.
+
+<snip>
+
+> > > Using the combination of (A)+(A') would be easiest to implement
+> > > in GDB without modifying a lot of common code, and would have the
+> > > advantage that the inferior function always executes in the same
+> > > state (suspended), while leaving information about the interrupted
+> > > transaction visible.
+> > >
+> > > Using the combination of (B)+(B') would be a bit more difficult
+> > > to implement (but certainly feasible), and would have the advantage
+> > > that the inferior function always executes in nontransactional state
+> > > (which is what it would most likely expect, anyway).  However, the
+> > > disadvantage is that after the inferior call returns, GDB is unable
+> > > to fully restore the visible inferior state as it was before (since
+> > > we're now in nontransactional state, and there is probably no way
+> > > to force us back into transactional/suspended state ...).
 > >
-> > So why am I wrong? Why is testing for dirty not the same as testing
-> > for writable?
-> >
-> > I can see a few cases:
-> >
-> >  - your load has lots of writable (but not written-to) shared memory
-> 
-> Hmm. I tried to look at the xfsprog sources, and I don't see any
-> MAP_SHARED activity.  It looks like it's just using pread64/pwrite64,
-> and the only MAP_SHARED is for the xfsio mmap test thing, not for
-> xfsrepair.
-> 
-> So I don't see any shared mappings, but I don't know the code-base.
+> > Yep.
+>=20
+> So right now I'd tend to prefer (A)+(A'), but the important thing is
+> that the kernel seems to provide all features required for GDB to
+> implement any of the above, so we can still make that decision later.
+>=20
+> > Getting back to the kernel interface, are you happy with what Anshuman
+> > has proposed in the current series?
+>=20
+> Given the discussion above, this seems fine to me now.
 
-Right - all the mmap activity in the xfs_repair test is coming from
-memory allocation through glibc - we don't use mmap() directly
-anywhere in xfs_repair. FWIW, all the IO into these pages that are
-allocated is being done via direct IO, if that makes any
-difference...
+Great, we'll push through with this in mind.
 
-> >  - something completely different that I am entirely missing
-> 
-> So I think there's something I'm missing. For non-shared mappings, I
-> still have the idea that pte_dirty should be the same as pte_write.
-> And yet, your testing of 3.19 shows that it's a big difference.
-> There's clearly something I'm completely missing.
-
-This level of pte interactions is beyond my level of knowledge, so
-I'm afraid at this point I'm not going to be much help other than to
-test patches and report the result.
-
-FWIW, here's the distribution of the hash table we are iterating
-over. There are a lot of search misses, which means we are doing a
-lot of pointer chasing, but the distribution is centred directly
-around the goal of 8 entries per chain and there is no long tail:
-
-libxfs_bcache: 0x67e110
-Max supported entries = 808584
-Max utilized entries = 808584
-Active entries = 808583
-Hash table size = 101073
-Hits = 9789987
-Misses = 8224234
-Hit ratio = 54.35
-MRU 0 entries =   4667 (  0%)
-MRU 1 entries =      0 (  0%)
-MRU 2 entries =      4 (  0%)
-MRU 3 entries = 797447 ( 98%)
-MRU 4 entries =    653 (  0%)
-MRU 5 entries =      0 (  0%)
-MRU 6 entries =   2755 (  0%)
-MRU 7 entries =   1518 (  0%)
-MRU 8 entries =   1518 (  0%)
-MRU 9 entries =      0 (  0%)
-MRU 10 entries =     21 (  0%)
-MRU 11 entries =      0 (  0%)
-MRU 12 entries =      0 (  0%)
-MRU 13 entries =      0 (  0%)
-MRU 14 entries =      0 (  0%)
-MRU 15 entries =      0 (  0%)
-Hash buckets with   0 entries     30 (  0%)
-Hash buckets with   1 entries    241 (  0%)
-Hash buckets with   2 entries   1019 (  0%)
-Hash buckets with   3 entries   2787 (  1%)
-Hash buckets with   4 entries   5838 (  2%)
-Hash buckets with   5 entries   9144 (  5%)
-Hash buckets with   6 entries  12165 (  9%)
-Hash buckets with   7 entries  14194 ( 12%)
-Hash buckets with   8 entries  14387 ( 14%)
-Hash buckets with   9 entries  12742 ( 14%)
-Hash buckets with  10 entries  10253 ( 12%)
-Hash buckets with  11 entries   7308 (  9%)
-Hash buckets with  12 entries   4872 (  7%)
-Hash buckets with  13 entries   2869 (  4%)
-Hash buckets with  14 entries   1578 (  2%)
-Hash buckets with  15 entries    894 (  1%)
-Hash buckets with  16 entries    430 (  0%)
-Hash buckets with  17 entries    188 (  0%)
-Hash buckets with  18 entries     88 (  0%)
-Hash buckets with  19 entries     24 (  0%)
-Hash buckets with  20 entries     11 (  0%)
-Hash buckets with  21 entries     10 (  0%)
-Hash buckets with  22 entries      1 (  0%)
-
-
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-david@fromorbit.com
+Thanks!
+Mikey
