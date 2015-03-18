@@ -1,19 +1,19 @@
 Return-Path: <clg@fr.ibm.com>
-Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
+Received: from e06smtp17.uk.ibm.com (e06smtp17.uk.ibm.com [195.75.94.113])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C7C261A0629
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Mar 2015 02:47:57 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4EE7B1A0701
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Mar 2015 02:47:58 +1100 (AEDT)
 Received: from /spool/local
- by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp17.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <clg@fr.ibm.com>;
- Wed, 18 Mar 2015 15:47:53 -0000
+ Wed, 18 Mar 2015 15:47:54 -0000
 From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@fr.ibm.com>
 To: lm-sensors@lm-sensors.org
-Subject: [PATCH 2/5] hwmon: (ibmpowernv) add a get_sensor_type() routine
-Date: Wed, 18 Mar 2015 16:47:42 +0100
-Message-Id: <1426693665-10797-3-git-send-email-clg@fr.ibm.com>
+Subject: [PATCH 1/5] hwmon: (ibmpowernv) replace AMBIENT_TEMP by TEMP
+Date: Wed, 18 Mar 2015 16:47:41 +0100
+Message-Id: <1426693665-10797-2-git-send-email-clg@fr.ibm.com>
 In-Reply-To: <1423117857-32759-1-git-send-email-clg@fr.ibm.com>
 References: <1423117857-32759-1-git-send-email-clg@fr.ibm.com>
 MIME-Version: 1.0
@@ -32,64 +32,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-It will help in adding different compatible properties, coming from a
-new device tree layout for example.
+Ambient is too restrictive as there can be other temperature channels :
+core, memory, etc.
 
 Signed-off-by: Cédric Le Goater <clg@fr.ibm.com>
 ---
- drivers/hwmon/ibmpowernv.c |   26 +++++++++++++++-----------
- 1 file changed, 15 insertions(+), 11 deletions(-)
+ drivers/hwmon/ibmpowernv.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
 diff --git a/drivers/hwmon/ibmpowernv.c b/drivers/hwmon/ibmpowernv.c
-index f691e18df16b..07a8219b7f4e 100644
+index febe8175d36c..f691e18df16b 100644
 --- a/drivers/hwmon/ibmpowernv.c
 +++ b/drivers/hwmon/ibmpowernv.c
-@@ -169,6 +169,17 @@ static int create_hwmon_attr_name(struct device *dev, enum sensors type,
- 	return 0;
- }
+@@ -44,7 +44,7 @@
+  */
+ enum sensors {
+ 	FAN,
+-	AMBIENT_TEMP,
++	TEMP,
+ 	POWER_SUPPLY,
+ 	POWER_INPUT,
+ 	MAX_SENSOR_TYPE,
+@@ -87,7 +87,7 @@ static ssize_t show_sensor(struct device *dev, struct device_attribute *devattr,
+ 		return ret;
  
-+static int get_sensor_type(struct device_node *np)
-+{
-+	enum sensors type;
-+
-+	for (type = 0; type < MAX_SENSOR_TYPE; type++) {
-+		if (of_device_is_compatible(np, sensor_groups[type].compatible))
-+			return type;
-+	}
-+	return MAX_SENSOR_TYPE;
-+}
-+
- static int populate_attr_groups(struct platform_device *pdev)
- {
- 	struct platform_data *pdata = platform_get_drvdata(pdev);
-@@ -181,12 +192,9 @@ static int populate_attr_groups(struct platform_device *pdev)
- 		if (np->name == NULL)
- 			continue;
- 
--		for (type = 0; type < MAX_SENSOR_TYPE; type++)
--			if (of_device_is_compatible(np,
--					sensor_groups[type].compatible)) {
--				sensor_groups[type].attr_count++;
--				break;
--			}
-+		type = get_sensor_type(np);
-+		if (type != MAX_SENSOR_TYPE)
-+			sensor_groups[type].attr_count++;
- 	}
- 
- 	of_node_put(opal);
-@@ -236,11 +244,7 @@ static int create_device_attrs(struct platform_device *pdev)
- 		if (np->name == NULL)
- 			continue;
- 
--		for (type = 0; type < MAX_SENSOR_TYPE; type++)
--			if (of_device_is_compatible(np,
--					sensor_groups[type].compatible))
--				break;
--
-+		type = get_sensor_type(np);
- 		if (type == MAX_SENSOR_TYPE)
- 			continue;
- 
+ 	/* Convert temperature to milli-degrees */
+-	if (sdata->type == AMBIENT_TEMP)
++	if (sdata->type == TEMP)
+ 		x *= 1000;
+ 	/* Convert power to micro-watts */
+ 	else if (sdata->type == POWER_INPUT)
+@@ -154,7 +154,7 @@ static int create_hwmon_attr_name(struct device *dev, enum sensors type,
+ 	} else if (!strcmp(attr_suffix, DT_DATA_ATTR_SUFFIX)) {
+ 		attr_name = "input";
+ 	} else if (!strcmp(attr_suffix, DT_THRESHOLD_ATTR_SUFFIX)) {
+-		if (type == AMBIENT_TEMP)
++		if (type == TEMP)
+ 			attr_name = "max";
+ 		else if (type == FAN)
+ 			attr_name = "min";
 -- 
 1.7.10.4
