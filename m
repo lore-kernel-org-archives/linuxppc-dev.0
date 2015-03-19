@@ -1,19 +1,19 @@
 Return-Path: <clg@fr.ibm.com>
-Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
+Received: from e06smtp16.uk.ibm.com (e06smtp16.uk.ibm.com [195.75.94.112])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 96ED61A09D8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3AEF11A09EC
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Mar 2015 04:44:58 +1100 (AEDT)
 Received: from /spool/local
- by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp16.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <clg@fr.ibm.com>;
- Thu, 19 Mar 2015 17:44:53 -0000
+ Thu, 19 Mar 2015 17:44:55 -0000
 From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@fr.ibm.com>
 To: lm-sensors@lm-sensors.org
-Subject: [PATCH v2 0/5] hwmon: (ibmpowernv) remove dependency on OPAL index
-Date: Thu, 19 Mar 2015 18:44:40 +0100
-Message-Id: <1426787085-9004-1-git-send-email-clg@fr.ibm.com>
+Subject: [PATCH v2 1/5] hwmon: (ibmpowernv) replace AMBIENT_TEMP by TEMP
+Date: Thu, 19 Mar 2015 18:44:41 +0100
+Message-Id: <1426787085-9004-2-git-send-email-clg@fr.ibm.com>
 In-Reply-To: <1423117857-32759-1-git-send-email-clg@fr.ibm.com>
 References: <1423117857-32759-1-git-send-email-clg@fr.ibm.com>
 MIME-Version: 1.0
@@ -32,49 +32,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello !
+Ambient is too restrictive as there can be other temperature channels :
+core, memory, etc.
 
-The current implementation of the driver uses an index for the hwmon 
-attribute which is extracted from the device node name. This index
-is calculated by the OPAL firmware and its usage creates a dependency 
-with the driver which makes changes a little more complex in OPAL.
+Signed-off-by: Cédric Le Goater <clg@fr.ibm.com>
+---
+ drivers/hwmon/ibmpowernv.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-This patchset changes the ibmpowernv code to use its own index. It 
-starts with a few cleanups, mostly code shuffling around the creation 
-of the hwmon sysfs attributes and completes by removing the dependency.
-
-It also prepares ground for future OPAL changes :  
-
-   https://lists.ozlabs.org/pipermail/skiboot/2015-March/000639.html
-
-which will be addressed in a other small patchset.
-
-
-The patches are based on Linux 4.0.0-rc4 and were tested on IBM Power 
-and Open Power systems running Trusty. 
-
-Cheers,
-
-C.
-
-
-Changes since v1:
-
- - fixed alignment
- - killed a couple of useless "return NULL"
- - changed returned value of parse_opal_node_name()
- - used *_PTR macros to check for errors
-
-Cédric Le Goater (5):
-  hwmon: (ibmpowernv) replace AMBIENT_TEMP by TEMP
-  hwmon: (ibmpowernv) add a get_sensor_type() routine
-  hwmon: (ibmpowernv) add a convert_opal_attr_name() routine
-  hwmon: (ibmpowernv) change create_hwmon_attr_name() prototype
-  hwmon: (ibmpowernv) do not use the OPAL index for hwmon attribute
-    names
-
- drivers/hwmon/ibmpowernv.c |  122 +++++++++++++++++++++++++++++---------------
- 1 file changed, 81 insertions(+), 41 deletions(-)
-
--- 
-1.7.10.4
+Index: linux.git/drivers/hwmon/ibmpowernv.c
+===================================================================
+--- linux.git.orig/drivers/hwmon/ibmpowernv.c
++++ linux.git/drivers/hwmon/ibmpowernv.c
+@@ -44,7 +44,7 @@
+  */
+ enum sensors {
+ 	FAN,
+-	AMBIENT_TEMP,
++	TEMP,
+ 	POWER_SUPPLY,
+ 	POWER_INPUT,
+ 	MAX_SENSOR_TYPE,
+@@ -87,7 +87,7 @@ static ssize_t show_sensor(struct device
+ 		return ret;
+ 
+ 	/* Convert temperature to milli-degrees */
+-	if (sdata->type == AMBIENT_TEMP)
++	if (sdata->type == TEMP)
+ 		x *= 1000;
+ 	/* Convert power to micro-watts */
+ 	else if (sdata->type == POWER_INPUT)
+@@ -154,7 +154,7 @@ static int create_hwmon_attr_name(struct
+ 	} else if (!strcmp(attr_suffix, DT_DATA_ATTR_SUFFIX)) {
+ 		attr_name = "input";
+ 	} else if (!strcmp(attr_suffix, DT_THRESHOLD_ATTR_SUFFIX)) {
+-		if (type == AMBIENT_TEMP)
++		if (type == TEMP)
+ 			attr_name = "max";
+ 		else if (type == FAN)
+ 			attr_name = "min";
