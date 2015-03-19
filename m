@@ -1,25 +1,16 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pa0-f42.google.com (mail-pa0-f42.google.com
- [209.85.220.42])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <paulus@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8306B1A018B
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Mar 2015 16:28:06 +1100 (AEDT)
-Received: by pacwe9 with SMTP id we9so64758122pac.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Mar 2015 22:28:04 -0700 (PDT)
-Message-ID: <550A5E5D.90907@ozlabs.ru>
-Date: Thu, 19 Mar 2015 16:27:57 +1100
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 63BA01A018B
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Mar 2015 17:03:53 +1100 (AEDT)
+Date: Thu, 19 Mar 2015 17:03:50 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc/powernv: Fixes for hypervisor doorbell handling
+Message-ID: <20150319060349.GA24870@drongo>
 MIME-Version: 1.0
-To: David Miller <davem@davemloft.net>
-Subject: Re: Generic IOMMU pooled allocator
-References: <20150318.222517.1444725543017433108.davem@davemloft.net>
- <1426734106.4770.118.camel@kernel.crashing.org>
-In-Reply-To: <1426734106.4770.118.camel@kernel.crashing.org>
-Content-Type: text/plain; charset=koi8-r; format=flowed
-Cc: Alexey Kardashevskiy <aik@au1.ibm.com>, Anton Blanchard <anton@au1.ibm.com>,
- paulus@samba.org, sowmini.varadhan@oracle.com, sparclinux@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,60 +20,110 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03/19/2015 02:01 PM, Benjamin Herrenschmidt wrote:
-> On Wed, 2015-03-18 at 22:25 -0400, David Miller wrote:
->> PowerPC folks, we're trying to kill the locking contention in our
->> IOMMU allocators and noticed that you guys have a nice solution to
->> this in your IOMMU code.
->
->   .../...
->
-> Adding Alexei too who is currently doing some changes to our iommu
-> code to deal with KVM.
->
-> One thing I noticed is the asymetry in your code between the alloc
-> and the free path. The alloc path is similar to us in that the lock
-> covers the allocation and that's about it, there's no actual mapping to
-> the HW done, it's done by the caller level right ?
->
-> The free path however, in your case, takes the lock and calls back into
-> "demap" (which I assume is what removes the translation from the HW)
-> with the lock held. There's also some mapping between cookies
-> and index which here too isn't exposed to the alloc side but is
-> exposed to the free side.
->
-> I'm sure there's a rationale for that but it would be good if you could
-> explain it and document the semantics of those 3 callbacks in the iommu
-> ops.
->
-> One thing that Alexey is doing on our side is to move some of the
-> hooks to manipulate the underlying TCEs (ie. iommu PTEs) from our
-> global ppc_md. data structure to a new iommu_table_ops, so your patches
-> will definitely collide with our current work so we'll have to figure
-> out how things can made to match. We might be able to move more than
-> just the allocator to the generic code, and the whole implementation of
-> map_sg/unmap_sg if we have the right set of "ops", unless you see a
-> reason why that wouldn't work for you ?
->
-> We also need to add some additional platform specific fields to certain
-> iommu table instances to deal with some KVM related tracking of pinned
-> "DMAble" memory, here too we might have to be creative and possibly
-> enclose the generic iommu_table in a platform specific variant.
->
-> Alexey, any other comment ?
+Since we can now use hypervisor doorbells for host IPIs, this makes
+sure we clear the host IPI flag when taking a doorbell interrupt, and
+clears any pending doorbell IPI in pnv_smp_cpu_kill_self() (as we
+already do for IPIs sent via the XICS interrupt controller).  Otherwise
+if there did happen to be a leftover pending doorbell interrupt for
+an offline CPU thread for any reason, it would prevent that thread from
+going into a power-saving mode; it would instead keep waking up because
+of the interrupt.
 
+Signed-off-by: Paul Mackerras <paulus@samba.org>
+---
+ arch/powerpc/include/asm/reg.h       |  3 +++
+ arch/powerpc/kernel/dbell.c          |  2 ++
+ arch/powerpc/platforms/powernv/smp.c | 13 +++++++++++--
+ 3 files changed, 16 insertions(+), 2 deletions(-)
 
-Agree about missing symmetry. In general, I would call it "zoned 
-pool-locked memory allocator"-ish rather than iommu_table and have no 
-callbacks there.
-
-The iommu_tbl_range_free() caller could call cookie_to_index() and what the 
-reset() callback does here - I do not understand, some documentation would 
-help here, and demap() does not have to be executed under the lock (as 
-map() is not executed under the lock).
-
-btw why demap, not unmap? :)
-
-
+diff --git a/arch/powerpc/include/asm/reg.h b/arch/powerpc/include/asm/reg.h
+index 1c874fb..af56b5c 100644
+--- a/arch/powerpc/include/asm/reg.h
++++ b/arch/powerpc/include/asm/reg.h
+@@ -608,13 +608,16 @@
+ #define   SRR1_ISI_N_OR_G	0x10000000 /* ISI: Access is no-exec or G */
+ #define   SRR1_ISI_PROT		0x08000000 /* ISI: Other protection fault */
+ #define   SRR1_WAKEMASK		0x00380000 /* reason for wakeup */
++#define   SRR1_WAKEMASK_P8	0x003c0000 /* reason for wakeup on POWER8 */
+ #define   SRR1_WAKESYSERR	0x00300000 /* System error */
+ #define   SRR1_WAKEEE		0x00200000 /* External interrupt */
+ #define   SRR1_WAKEMT		0x00280000 /* mtctrl */
+ #define	  SRR1_WAKEHMI		0x00280000 /* Hypervisor maintenance */
+ #define   SRR1_WAKEDEC		0x00180000 /* Decrementer interrupt */
++#define   SRR1_WAKEDBELL	0x00140000 /* Privileged doorbell on P8 */
+ #define   SRR1_WAKETHERM	0x00100000 /* Thermal management interrupt */
+ #define	  SRR1_WAKERESET	0x00100000 /* System reset */
++#define   SRR1_WAKEHDBELL	0x000c0000 /* Hypervisor doorbell on P8 */
+ #define	  SRR1_WAKESTATE	0x00030000 /* Powersave exit mask [46:47] */
+ #define	  SRR1_WS_DEEPEST	0x00030000 /* Some resources not maintained,
+ 					  * may not be recoverable */
+diff --git a/arch/powerpc/kernel/dbell.c b/arch/powerpc/kernel/dbell.c
+index f421781..2128f3a 100644
+--- a/arch/powerpc/kernel/dbell.c
++++ b/arch/powerpc/kernel/dbell.c
+@@ -17,6 +17,7 @@
+ 
+ #include <asm/dbell.h>
+ #include <asm/irq_regs.h>
++#include <asm/kvm_ppc.h>
+ 
+ #ifdef CONFIG_SMP
+ void doorbell_setup_this_cpu(void)
+@@ -41,6 +42,7 @@ void doorbell_exception(struct pt_regs *regs)
+ 
+ 	may_hard_irq_enable();
+ 
++	kvmppc_set_host_ipi(smp_processor_id(), 0);
+ 	__this_cpu_inc(irq_stat.doorbell_irqs);
+ 
+ 	smp_ipi_demux();
+diff --git a/arch/powerpc/platforms/powernv/smp.c b/arch/powerpc/platforms/powernv/smp.c
+index fc34025..7259a24 100644
+--- a/arch/powerpc/platforms/powernv/smp.c
++++ b/arch/powerpc/platforms/powernv/smp.c
+@@ -33,6 +33,7 @@
+ #include <asm/runlatch.h>
+ #include <asm/code-patching.h>
+ #include <asm/dbell.h>
++#include <asm/kvm_ppc.h>
+ 
+ #include "powernv.h"
+ 
+@@ -149,7 +150,7 @@ static int pnv_smp_cpu_disable(void)
+ static void pnv_smp_cpu_kill_self(void)
+ {
+ 	unsigned int cpu;
+-	unsigned long srr1;
++	unsigned long srr1, wmask;
+ 	u32 idle_states;
+ 
+ 	/* Standard hot unplug procedure */
+@@ -161,6 +162,10 @@ static void pnv_smp_cpu_kill_self(void)
+ 	generic_set_cpu_dead(cpu);
+ 	smp_wmb();
+ 
++	wmask = SRR1_WAKEMASK;
++	if (cpu_has_feature(CPU_FTR_ARCH_207S))
++		wmask = SRR1_WAKEMASK_P8;
++
+ 	idle_states = pnv_get_supported_cpuidle_states();
+ 	/* We don't want to take decrementer interrupts while we are offline,
+ 	 * so clear LPCR:PECE1. We keep PECE2 enabled.
+@@ -191,10 +196,14 @@ static void pnv_smp_cpu_kill_self(void)
+ 		 * having finished executing in a KVM guest, then srr1
+ 		 * contains 0.
+ 		 */
+-		if ((srr1 & SRR1_WAKEMASK) == SRR1_WAKEEE) {
++		if ((srr1 & wmask) == SRR1_WAKEEE) {
+ 			icp_native_flush_interrupt();
+ 			local_paca->irq_happened &= PACA_IRQ_HARD_DIS;
+ 			smp_mb();
++		} else if ((srr1 & wmask) == SRR1_WAKEHDBELL) {
++			unsigned long msg = PPC_DBELL_TYPE(PPC_DBELL_SERVER);
++			asm volatile(PPC_MSGCLR(%0) : : "r" (msg));
++			kvmppc_set_host_ipi(cpu, 0);
+ 		}
+ 
+ 		if (cpu_core_split_required())
 -- 
-Alexey
+2.1.4
