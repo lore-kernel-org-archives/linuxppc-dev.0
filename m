@@ -1,39 +1,23 @@
-Return-Path: <stewart@linux.vnet.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <rjw@rjwysocki.net>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6FDD91A0A9C
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Mar 2015 08:35:26 +1100 (AEDT)
-Received: from /spool/local
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <stewart@linux.vnet.ibm.com>;
- Thu, 19 Mar 2015 15:35:23 -0600
-Received: from b03cxnp08027.gho.boulder.ibm.com
- (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 511BE19D8026
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Mar 2015 15:26:27 -0600 (MDT)
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
- by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t2JLZKRO36765884
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Mar 2015 14:35:20 -0700
-Received: from d03av01.boulder.ibm.com (localhost [127.0.0.1])
- by d03av01.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t2JLZJEh012287
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Mar 2015 15:35:19 -0600
-From: Stewart Smith <stewart@linux.vnet.ibm.com>
-To: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, linux-leds@vger.kernel.org
-Subject: Re: [PATCH 1/2] powerpc/powernv: Add OPAL interfaces for accessing
- and modifying system LED states
-In-Reply-To: <20150308111408.3759.70606.stgit@localhost.localdomain>
-References: <20150308110558.3759.72635.stgit@localhost.localdomain>
- <20150308111408.3759.70606.stgit@localhost.localdomain>
-Date: Thu, 19 Mar 2015 14:35:11 -0700
-Message-ID: <m37fucpt68.fsf@oc8180480414.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id F10ED1A011B
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Mar 2015 08:39:53 +1100 (AEDT)
+Received: from v094114.home.net.pl (v094114.home.net.pl [79.96.170.134])
+ by ozlabs.org (Postfix) with SMTP id 25E9714007F
+ for <linuxppc-dev@ozlabs.org>; Fri, 20 Mar 2015 08:39:51 +1100 (AEDT)
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: Yuantian.Tang@freescale.com
+Subject: Re: [PATCH 2/2 v5] cpufreq: qoriq: rename the driver
+Date: Thu, 19 Mar 2015 23:03:44 +0100
+Message-ID: <1632290.3aq8l1mgG0@vostro.rjw.lan>
+In-Reply-To: <1426221542-41043-2-git-send-email-Yuantian.Tang@freescale.com>
+References: <1426221542-41043-1-git-send-email-Yuantian.Tang@freescale.com>
+ <1426221542-41043-2-git-send-email-Yuantian.Tang@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: cooloney@gmail.com, rpurdie@rpsys.net, khandual@linux.vnet.ibm.com
+Content-Type: text/plain; charset="utf-8"
+Cc: linuxppc-dev@ozlabs.org, viresh.kumar@linaro.org, linux-pm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,26 +27,91 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Vasant Hegde <hegdevasant@linux.vnet.ibm.com> writes:
-> From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
->
-> This patch registers the following two new OPAL interfaces calls
-> for the platform LED subsystem. With the help of these new OPAL calls,
-> the kernel will be able to get or set the state of various individual
-> LEDs on the system at any given location code which is passed through
-> the LED specific device tree nodes.
->
-> 	(1) OPAL_LEDS_GET_INDICATOR     opal_leds_get_ind
-> 	(2) OPAL_LEDS_SET_INDICATOR     opal_leds_set_ind
->
-> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-> Signed-off-by: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
+On Friday, March 13, 2015 12:39:02 PM Yuantian.Tang@freescale.com wrote:
+> From: Tang Yuantian <Yuantian.Tang@freescale.com>
+> 
+> This driver works on all QorIQ platforms which include
+> ARM-based cores and PPC-based cores.
+> Rename it in order to represent better.
+> 
+> Signed-off-by: Tang Yuantian <Yuantian.Tang@freescale.com>
+> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
-I also just merged the skiboot side of these calls.
+Both queued up for 4.1, thanks!
 
-Acked-by: Stewart Smith <stewart@linux.vnet.ibm.com>
-Tested-by: Stewart Smith <stewart@linux.vnet.ibm.com>
+> ---
+> v5:
+> 	- rebased to 4.0-rc3
+> 	- added Kconfig and Makefile entry
+> v3, v4
+> 	- none
+> v2:
+> 	- use -C -M options when format-patch
+> 
+>  drivers/cpufreq/Kconfig                                    | 8 ++++++++
+>  drivers/cpufreq/Kconfig.powerpc                            | 9 ---------
+>  drivers/cpufreq/Makefile                                   | 2 +-
+>  drivers/cpufreq/{ppc-corenet-cpufreq.c => qoriq-cpufreq.c} | 0
+>  4 files changed, 9 insertions(+), 10 deletions(-)
+>  rename drivers/cpufreq/{ppc-corenet-cpufreq.c => qoriq-cpufreq.c} (100%)
+> 
+> diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
+> index a171fef..659879a 100644
+> --- a/drivers/cpufreq/Kconfig
+> +++ b/drivers/cpufreq/Kconfig
+> @@ -293,5 +293,13 @@ config SH_CPU_FREQ
+>  	  If unsure, say N.
+>  endif
+>  
+> +config QORIQ_CPUFREQ
+> +	tristate "CPU frequency scaling driver for Freescale QorIQ SoCs"
+> +	depends on OF && COMMON_CLK && (PPC_E500MC || ARM)
+> +	select CLK_QORIQ
+> +	help
+> +	  This adds the CPUFreq driver support for Freescale QorIQ SoCs
+> +	  which are capable of changing the CPU's frequency dynamically.
+> +
+>  endif
+>  endmenu
+> diff --git a/drivers/cpufreq/Kconfig.powerpc b/drivers/cpufreq/Kconfig.powerpc
+> index 7ea2441..3a0595b 100644
+> --- a/drivers/cpufreq/Kconfig.powerpc
+> +++ b/drivers/cpufreq/Kconfig.powerpc
+> @@ -23,15 +23,6 @@ config CPU_FREQ_MAPLE
+>  	  This adds support for frequency switching on Maple 970FX
+>  	  Evaluation Board and compatible boards (IBM JS2x blades).
+>  
+> -config PPC_CORENET_CPUFREQ
+> -	tristate "CPU frequency scaling driver for Freescale E500MC SoCs"
+> -	depends on PPC_E500MC && OF && COMMON_CLK
+> -	select CLK_QORIQ
+> -	help
+> -	  This adds the CPUFreq driver support for Freescale e500mc,
+> -	  e5500 and e6500 series SoCs which are capable of changing
+> -	  the CPU's frequency dynamically.
+> -
+>  config CPU_FREQ_PMAC
+>  	bool "Support for Apple PowerBooks"
+>  	depends on ADB_PMU && PPC32
+> diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
+> index 82a1821..26df0ad 100644
+> --- a/drivers/cpufreq/Makefile
+> +++ b/drivers/cpufreq/Makefile
+> @@ -85,7 +85,7 @@ obj-$(CONFIG_CPU_FREQ_CBE)		+= ppc-cbe-cpufreq.o
+>  ppc-cbe-cpufreq-y			+= ppc_cbe_cpufreq_pervasive.o ppc_cbe_cpufreq.o
+>  obj-$(CONFIG_CPU_FREQ_CBE_PMI)		+= ppc_cbe_cpufreq_pmi.o
+>  obj-$(CONFIG_CPU_FREQ_MAPLE)		+= maple-cpufreq.o
+> -obj-$(CONFIG_PPC_CORENET_CPUFREQ)   += ppc-corenet-cpufreq.o
+> +obj-$(CONFIG_QORIQ_CPUFREQ)   		+= qoriq-cpufreq.o
+>  obj-$(CONFIG_CPU_FREQ_PMAC)		+= pmac32-cpufreq.o
+>  obj-$(CONFIG_CPU_FREQ_PMAC64)		+= pmac64-cpufreq.o
+>  obj-$(CONFIG_PPC_PASEMI_CPUFREQ)	+= pasemi-cpufreq.o
+> diff --git a/drivers/cpufreq/ppc-corenet-cpufreq.c b/drivers/cpufreq/qoriq-cpufreq.c
+> similarity index 100%
+> rename from drivers/cpufreq/ppc-corenet-cpufreq.c
+> rename to drivers/cpufreq/qoriq-cpufreq.c
+> 
 
-
-(well, it boots, interacts with firmware. I didn't go and look at the
-LEDs themselves).
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
