@@ -1,23 +1,39 @@
-Return-Path: <rjw@rjwysocki.net>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <linus971@gmail.com>
+Received: from mail-ig0-x236.google.com (mail-ig0-x236.google.com
+ [IPv6:2607:f8b0:4001:c05::236])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id F10ED1A011B
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Mar 2015 08:39:53 +1100 (AEDT)
-Received: from v094114.home.net.pl (v094114.home.net.pl [79.96.170.134])
- by ozlabs.org (Postfix) with SMTP id 25E9714007F
- for <linuxppc-dev@ozlabs.org>; Fri, 20 Mar 2015 08:39:51 +1100 (AEDT)
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To: Yuantian.Tang@freescale.com
-Subject: Re: [PATCH 2/2 v5] cpufreq: qoriq: rename the driver
-Date: Thu, 19 Mar 2015 23:03:44 +0100
-Message-ID: <1632290.3aq8l1mgG0@vostro.rjw.lan>
-In-Reply-To: <1426221542-41043-2-git-send-email-Yuantian.Tang@freescale.com>
-References: <1426221542-41043-1-git-send-email-Yuantian.Tang@freescale.com>
- <1426221542-41043-2-git-send-email-Yuantian.Tang@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7FA091A0423
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Mar 2015 08:41:50 +1100 (AEDT)
+Received: by igcau2 with SMTP id au2so18803419igc.1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Mar 2015 14:41:48 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: linuxppc-dev@ozlabs.org, viresh.kumar@linaro.org, linux-pm@vger.kernel.org
+Sender: linus971@gmail.com
+In-Reply-To: <CA+55aFy-Mw74rAdLMMMUgnsG3ZttMWVNGz7CXZJY7q9fqyRYfg@mail.gmail.com>
+References: <CA+55aFywW5JLq=BU_qb2OG5+pJ-b1v9tiS5Ygi-vtEKbEZ_T5Q@mail.gmail.com>
+ <20150309191943.GF26657@destitution>
+ <CA+55aFzFt-vX5Jerci0Ty4Uf7K4_nQ7wyCp8hhU_dB0X4cBpVQ@mail.gmail.com>
+ <20150312131045.GE3406@suse.de>
+ <CA+55aFx=81BGnQFNhnAGu6CetL7yifPsnD-+v7Y6QRqwgH47gQ@mail.gmail.com>
+ <20150312184925.GH3406@suse.de> <20150317070655.GB10105@dastard>
+ <CA+55aFzdLnFdku-gnm3mGbeS=QauYBNkFQKYXJAGkrMd2jKXhw@mail.gmail.com>
+ <20150317205104.GA28621@dastard>
+ <CA+55aFzSPcNgxw4GC7aAV1r0P5LniyVVC66COz=3cgMcx73Nag@mail.gmail.com>
+ <20150317220840.GC28621@dastard>
+ <CA+55aFwne-fe_Gg-_GTUo+iOAbbNpLBa264JqSFkH79EULyAqw@mail.gmail.com>
+ <CA+55aFy-Mw74rAdLMMMUgnsG3ZttMWVNGz7CXZJY7q9fqyRYfg@mail.gmail.com>
+Date: Thu, 19 Mar 2015 14:41:48 -0700
+Message-ID: <CA+55aFyxA9u2cVzV+S7TSY9ZvRXCX=z22YAbi9mdPVBKmqgR5g@mail.gmail.com>
+Subject: Re: [PATCH 4/4] mm: numa: Slow PTE scan rate if migration failures
+ occur
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Dave Chinner <david@fromorbit.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com,
+ Linux-MM <linux-mm@kvack.org>, Aneesh Kumar <aneesh.kumar@linux.vnet.ibm.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ ppc-dev <linuxppc-dev@lists.ozlabs.org>, Ingo Molnar <mingo@kernel.org>,
+ Mel Gorman <mgorman@suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,91 +43,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Friday, March 13, 2015 12:39:02 PM Yuantian.Tang@freescale.com wrote:
-> From: Tang Yuantian <Yuantian.Tang@freescale.com>
-> 
-> This driver works on all QorIQ platforms which include
-> ARM-based cores and PPC-based cores.
-> Rename it in order to represent better.
-> 
-> Signed-off-by: Tang Yuantian <Yuantian.Tang@freescale.com>
-> Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
+On Wed, Mar 18, 2015 at 10:31 AM, Linus Torvalds
+<torvalds@linux-foundation.org> wrote:
+>
+> So I think there's something I'm missing. For non-shared mappings, I
+> still have the idea that pte_dirty should be the same as pte_write.
+> And yet, your testing of 3.19 shows that it's a big difference.
+> There's clearly something I'm completely missing.
 
-Both queued up for 4.1, thanks!
+Ahh. The normal page table scanning and page fault handling both clear
+and set the dirty bit together with the writable one. But "fork()"
+will clear the writable bit without clearing dirty. For some reason I
+thought it moved the dirty bit into the struct page like the VM
+scanning does, but that was just me having a brainfart. So yeah,
+pte_dirty doesn't have to match pte_write even under perfectly normal
+circumstances. Maybe there are other cases.
 
-> ---
-> v5:
-> 	- rebased to 4.0-rc3
-> 	- added Kconfig and Makefile entry
-> v3, v4
-> 	- none
-> v2:
-> 	- use -C -M options when format-patch
-> 
->  drivers/cpufreq/Kconfig                                    | 8 ++++++++
->  drivers/cpufreq/Kconfig.powerpc                            | 9 ---------
->  drivers/cpufreq/Makefile                                   | 2 +-
->  drivers/cpufreq/{ppc-corenet-cpufreq.c => qoriq-cpufreq.c} | 0
->  4 files changed, 9 insertions(+), 10 deletions(-)
->  rename drivers/cpufreq/{ppc-corenet-cpufreq.c => qoriq-cpufreq.c} (100%)
-> 
-> diff --git a/drivers/cpufreq/Kconfig b/drivers/cpufreq/Kconfig
-> index a171fef..659879a 100644
-> --- a/drivers/cpufreq/Kconfig
-> +++ b/drivers/cpufreq/Kconfig
-> @@ -293,5 +293,13 @@ config SH_CPU_FREQ
->  	  If unsure, say N.
->  endif
->  
-> +config QORIQ_CPUFREQ
-> +	tristate "CPU frequency scaling driver for Freescale QorIQ SoCs"
-> +	depends on OF && COMMON_CLK && (PPC_E500MC || ARM)
-> +	select CLK_QORIQ
-> +	help
-> +	  This adds the CPUFreq driver support for Freescale QorIQ SoCs
-> +	  which are capable of changing the CPU's frequency dynamically.
-> +
->  endif
->  endmenu
-> diff --git a/drivers/cpufreq/Kconfig.powerpc b/drivers/cpufreq/Kconfig.powerpc
-> index 7ea2441..3a0595b 100644
-> --- a/drivers/cpufreq/Kconfig.powerpc
-> +++ b/drivers/cpufreq/Kconfig.powerpc
-> @@ -23,15 +23,6 @@ config CPU_FREQ_MAPLE
->  	  This adds support for frequency switching on Maple 970FX
->  	  Evaluation Board and compatible boards (IBM JS2x blades).
->  
-> -config PPC_CORENET_CPUFREQ
-> -	tristate "CPU frequency scaling driver for Freescale E500MC SoCs"
-> -	depends on PPC_E500MC && OF && COMMON_CLK
-> -	select CLK_QORIQ
-> -	help
-> -	  This adds the CPUFreq driver support for Freescale e500mc,
-> -	  e5500 and e6500 series SoCs which are capable of changing
-> -	  the CPU's frequency dynamically.
-> -
->  config CPU_FREQ_PMAC
->  	bool "Support for Apple PowerBooks"
->  	depends on ADB_PMU && PPC32
-> diff --git a/drivers/cpufreq/Makefile b/drivers/cpufreq/Makefile
-> index 82a1821..26df0ad 100644
-> --- a/drivers/cpufreq/Makefile
-> +++ b/drivers/cpufreq/Makefile
-> @@ -85,7 +85,7 @@ obj-$(CONFIG_CPU_FREQ_CBE)		+= ppc-cbe-cpufreq.o
->  ppc-cbe-cpufreq-y			+= ppc_cbe_cpufreq_pervasive.o ppc_cbe_cpufreq.o
->  obj-$(CONFIG_CPU_FREQ_CBE_PMI)		+= ppc_cbe_cpufreq_pmi.o
->  obj-$(CONFIG_CPU_FREQ_MAPLE)		+= maple-cpufreq.o
-> -obj-$(CONFIG_PPC_CORENET_CPUFREQ)   += ppc-corenet-cpufreq.o
-> +obj-$(CONFIG_QORIQ_CPUFREQ)   		+= qoriq-cpufreq.o
->  obj-$(CONFIG_CPU_FREQ_PMAC)		+= pmac32-cpufreq.o
->  obj-$(CONFIG_CPU_FREQ_PMAC64)		+= pmac64-cpufreq.o
->  obj-$(CONFIG_PPC_PASEMI_CPUFREQ)	+= pasemi-cpufreq.o
-> diff --git a/drivers/cpufreq/ppc-corenet-cpufreq.c b/drivers/cpufreq/qoriq-cpufreq.c
-> similarity index 100%
-> rename from drivers/cpufreq/ppc-corenet-cpufreq.c
-> rename to drivers/cpufreq/qoriq-cpufreq.c
-> 
+Not that I see a lot of forking in the xfs repair case either, so..
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Dave, mind re-running the plain 3.19 numbers to really verify that the
+pte_dirty/pte_write change really made that big of a difference. Maybe
+your recollection of ~55,000 migrate_pages events was faulty. If the
+pte_write ->pte_dirty change is the *only* difference, it's still very
+odd how that one difference would make migrate_rate go from ~55k to
+471k. That's an order of magnitude difference, for what really
+shouldn't be a big change.
+
+I'm running a kernel right now with a hacky "update_mmu_cache()" that
+warns if pte_dirty is ever different from pte_write().
+
++void update_mmu_cache(struct vm_area_struct *vma,
++               unsigned long addr, pte_t *ptep)
++{
++       if (!(vma->vm_flags & VM_SHARED)) {
++               pte_t now = READ_ONCE(*ptep);
++               if (!pte_write(now) != !pte_dirty(now)) {
++                       static int count = 20;
++                       static unsigned int prev = 0;
++                       unsigned int val = pte_val(now) & 0xfff;
++                       if (prev != val && count) {
++                               prev = val;
++                               count--;
++                               WARN(1, "pte value %x", val);
++                       }
++               }
++       }
++}
+
+I haven't seen a single warning so far (and there I wrote all that
+code to limit repeated warnings), although admittedly
+update_mu_cache() isn't called for all cases where we change a pte
+(not for the fork case, for example). But it *is* called for the page
+faulting cases
+
+Maybe a system update has changed libraries and memory allocation
+patterns, and there is something bigger than that one-liner
+pte_dirty/write change going on?
+
+                             Linus
