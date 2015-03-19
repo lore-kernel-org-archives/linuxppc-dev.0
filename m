@@ -1,20 +1,25 @@
-Return-Path: <mikey@neuling.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pa0-f42.google.com (mail-pa0-f42.google.com
+ [209.85.220.42])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CF06B1A0A44
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Mar 2015 16:01:54 +1100 (AEDT)
-Message-ID: <1426741314.4866.100.camel@neuling.org>
-Subject: Re: [PATCH 1/3] powerpc/tm: Abort syscalls in active transactions
-From: Michael Neuling <mikey@neuling.org>
-To: Sam Bobroff <sam.bobroff@au1.ibm.com>
-Date: Thu, 19 Mar 2015 16:01:54 +1100
-In-Reply-To: <6ebcb9f982f7cb100aef954cd7dc6a6081cd9134.1426740212.git.sam.bobroff@au1.ibm.com>
-References: <cover.1426740212.git.sam.bobroff@au1.ibm.com>
- <6ebcb9f982f7cb100aef954cd7dc6a6081cd9134.1426740212.git.sam.bobroff@au1.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: azanella@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, matt@ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8306B1A018B
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Mar 2015 16:28:06 +1100 (AEDT)
+Received: by pacwe9 with SMTP id we9so64758122pac.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Mar 2015 22:28:04 -0700 (PDT)
+Message-ID: <550A5E5D.90907@ozlabs.ru>
+Date: Thu, 19 Mar 2015 16:27:57 +1100
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+MIME-Version: 1.0
+To: David Miller <davem@davemloft.net>
+Subject: Re: Generic IOMMU pooled allocator
+References: <20150318.222517.1444725543017433108.davem@davemloft.net>
+ <1426734106.4770.118.camel@kernel.crashing.org>
+In-Reply-To: <1426734106.4770.118.camel@kernel.crashing.org>
+Content-Type: text/plain; charset=koi8-r; format=flowed
+Cc: Alexey Kardashevskiy <aik@au1.ibm.com>, Anton Blanchard <anton@au1.ibm.com>,
+ paulus@samba.org, sowmini.varadhan@oracle.com, sparclinux@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,153 +29,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2015-03-19 at 15:43 +1100, Sam Bobroff wrote:
-> This patch changes the syscall handler to doom (tabort) active
-> transactions when a syscall is made and return immediately without
-> performing the syscall.
->=20
-> Currently, the system call instruction automatically suspends an
-> active transaction which causes side effects to persist when an active
-> transaction fails.
->=20
-> This does change the kernel's behaviour, but in a way that was
-> documented as unsupported. It doesn't reduce functionality because
-> syscalls will still be performed after tsuspend. It also provides a
-> consistent interface and makes the behaviour of user code
-> substantially the same across powerpc and platforms that do not
-> support suspended transactions (e.g. x86 and s390).
->=20
-> Performance measurements using
-> http://ozlabs.org/~anton/junkcode/null_syscall.c
-> indicate the cost of a system call increases by about 0.5%.
->=20
-> Signed-off-by: Sam Bobroff <sam.bobroff@au1.ibm.com>
+On 03/19/2015 02:01 PM, Benjamin Herrenschmidt wrote:
+> On Wed, 2015-03-18 at 22:25 -0400, David Miller wrote:
+>> PowerPC folks, we're trying to kill the locking contention in our
+>> IOMMU allocators and noticed that you guys have a nice solution to
+>> this in your IOMMU code.
+>
+>   .../...
+>
+> Adding Alexei too who is currently doing some changes to our iommu
+> code to deal with KVM.
+>
+> One thing I noticed is the asymetry in your code between the alloc
+> and the free path. The alloc path is similar to us in that the lock
+> covers the allocation and that's about it, there's no actual mapping to
+> the HW done, it's done by the caller level right ?
+>
+> The free path however, in your case, takes the lock and calls back into
+> "demap" (which I assume is what removes the translation from the HW)
+> with the lock held. There's also some mapping between cookies
+> and index which here too isn't exposed to the alloc side but is
+> exposed to the free side.
+>
+> I'm sure there's a rationale for that but it would be good if you could
+> explain it and document the semantics of those 3 callbacks in the iommu
+> ops.
+>
+> One thing that Alexey is doing on our side is to move some of the
+> hooks to manipulate the underlying TCEs (ie. iommu PTEs) from our
+> global ppc_md. data structure to a new iommu_table_ops, so your patches
+> will definitely collide with our current work so we'll have to figure
+> out how things can made to match. We might be able to move more than
+> just the allocator to the generic code, and the whole implementation of
+> map_sg/unmap_sg if we have the right set of "ops", unless you see a
+> reason why that wouldn't work for you ?
+>
+> We also need to add some additional platform specific fields to certain
+> iommu table instances to deal with some KVM related tracking of pinned
+> "DMAble" memory, here too we might have to be creative and possibly
+> enclose the generic iommu_table in a platform specific variant.
+>
+> Alexey, any other comment ?
 
-Thanks Sam!
 
-Acked-By: Michael Neuling <mikey@neuling.org>
+Agree about missing symmetry. In general, I would call it "zoned 
+pool-locked memory allocator"-ish rather than iommu_table and have no 
+callbacks there.
 
-> ---
->  Documentation/powerpc/transactional_memory.txt |   33 ++++++++++++------=
-------
->  arch/powerpc/include/uapi/asm/tm.h             |    2 +-
->  arch/powerpc/kernel/entry_64.S                 |   19 ++++++++++++++
->  3 files changed, 37 insertions(+), 17 deletions(-)
->=20
-> diff --git a/Documentation/powerpc/transactional_memory.txt b/Documentati=
-on/powerpc/transactional_memory.txt
-> index 9791e98..4167bc2 100644
-> --- a/Documentation/powerpc/transactional_memory.txt
-> +++ b/Documentation/powerpc/transactional_memory.txt
-> @@ -74,22 +74,23 @@ Causes of transaction aborts
->  Syscalls
->  =3D=3D=3D=3D=3D=3D=3D=3D
-> =20
-> -Performing syscalls from within transaction is not recommended, and can =
-lead
-> -to unpredictable results.
-> -
-> -Syscalls do not by design abort transactions, but beware: The kernel cod=
-e will
-> -not be running in transactional state.  The effect of syscalls will alwa=
-ys
-> -remain visible, but depending on the call they may abort your transactio=
-n as a
-> -side-effect, read soon-to-be-aborted transactional data that should not =
-remain
-> -invisible, etc.  If you constantly retry a transaction that constantly a=
-borts
-> -itself by calling a syscall, you'll have a livelock & make no progress.
-> -
-> -Simple syscalls (e.g. sigprocmask()) "could" be OK.  Even things like wr=
-ite()
-> -from, say, printf() should be OK as long as the kernel does not access a=
-ny
-> -memory that was accessed transactionally.
-> -
-> -Consider any syscalls that happen to work as debug-only -- not recommend=
-ed for
-> -production use.  Best to queue them up till after the transaction is ove=
-r.
-> +Syscalls made from within an active transaction will not be performed an=
-d the
-> +transaction will be doomed by the kernel with the failure code TM_CAUSE_=
-SYSCALL
-> +| TM_CAUSE_PERSISTENT.
-> +
-> +Syscalls made from within a suspended transaction are performed as norma=
-l and
-> +the transaction is not explicitly doomed by the kernel.  However, what t=
-he
-> +kernel does to perform the syscall may result in the transaction being d=
-oomed
-> +by the hardware.  The syscall is performed in suspended mode so any side
-> +effects will be persistent, independent of transaction success or failur=
-e.  No
-> +guarantees are provided by the kernel about which syscalls will affect
-> +transaction success.
-> +
-> +Care must be taken when relying on syscalls to abort during active trans=
-actions
-> +if the calls are made via a library.  Libraries may cache values (which =
-may
-> +give the appearence of success) or perform operations that cause transac=
-tion
-> +failure before entering the kernel (which may produce different failure =
-codes).
-> +Examples are glibc's getpid() and lazy symbol resolution.
-> =20
->=20
->  Signals
-> diff --git a/arch/powerpc/include/uapi/asm/tm.h b/arch/powerpc/include/ua=
-pi/asm/tm.h
-> index 5d836b7..5047659 100644
-> --- a/arch/powerpc/include/uapi/asm/tm.h
-> +++ b/arch/powerpc/include/uapi/asm/tm.h
-> @@ -11,7 +11,7 @@
->  #define TM_CAUSE_RESCHED	0xde
->  #define TM_CAUSE_TLBI		0xdc
->  #define TM_CAUSE_FAC_UNAV	0xda
-> -#define TM_CAUSE_SYSCALL	0xd8  /* future use */
-> +#define TM_CAUSE_SYSCALL	0xd8
->  #define TM_CAUSE_MISC		0xd6  /* future use */
->  #define TM_CAUSE_SIGNAL		0xd4
->  #define TM_CAUSE_ALIGNMENT	0xd2
-> diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_6=
-4.S
-> index d180caf2..85bf81d 100644
-> --- a/arch/powerpc/kernel/entry_64.S
-> +++ b/arch/powerpc/kernel/entry_64.S
-> @@ -34,6 +34,7 @@
->  #include <asm/ftrace.h>
->  #include <asm/hw_irq.h>
->  #include <asm/context_tracking.h>
-> +#include <asm/tm.h>
-> =20
->  /*
->   * System calls.
-> @@ -145,6 +146,24 @@ END_FW_FTR_SECTION_IFSET(FW_FEATURE_SPLPAR)
->  	andi.	r11,r10,_TIF_SYSCALL_DOTRACE
->  	bne	syscall_dotrace
->  .Lsyscall_dotrace_cont:
-> +#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-> +BEGIN_FTR_SECTION
-> +	b	1f
-> +END_FTR_SECTION_IFCLR(CPU_FTR_TM)
-> +	extrdi.	r11, r12, 1, (63-MSR_TS_T_LG) /* transaction active? */
-> +	beq+	1f
-> +
-> +	/* Doom the transaction and don't perform the syscall: */
-> +	mfmsr	r11
-> +	li	r12, 1
-> +	rldimi	r11, r12, MSR_TM_LG, 63-MSR_TM_LG
-> +	mtmsrd	r11, 0
-> +	li	r11, (TM_CAUSE_SYSCALL|TM_CAUSE_PERSISTENT)
-> +	tabort. r11
-> +
-> +	b	.Lsyscall_exit
-> +1:
-> +#endif
->  	cmpldi	0,r0,NR_syscalls
->  	bge-	syscall_enosys
-> =20
+The iommu_tbl_range_free() caller could call cookie_to_index() and what the 
+reset() callback does here - I do not understand, some documentation would 
+help here, and demap() does not have to be executed under the lock (as 
+map() is not executed under the lock).
+
+btw why demap, not unmap? :)
+
+
+-- 
+Alexey
