@@ -1,26 +1,15 @@
-Return-Path: <linux@roeck-us.net>
-Received: from bh-25.webhostbox.net (bh-25.webhostbox.net [208.91.199.152])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D61611A09AE
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Mar 2015 15:05:35 +1100 (AEDT)
-Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
- (envelope-from <linux@roeck-us.net>) id 1YYRi9-002yRl-Rd
- for linuxppc-dev@lists.ozlabs.org; Thu, 19 Mar 2015 04:05:33 +0000
-Message-ID: <550A4B03.5070306@roeck-us.net>
-Date: Wed, 18 Mar 2015 21:05:23 -0700
-From: Guenter Roeck <linux@roeck-us.net>
-MIME-Version: 1.0
-To: =?UTF-8?B?Q8OpZHJpYyBMZSBHb2F0ZXI=?= <clg@fr.ibm.com>,
- lm-sensors@lm-sensors.org
-Subject: Re: [PATCH 0/5] hwmon: (ibmpowernv) remove dependency on OPAL index
-References: <1423117857-32759-1-git-send-email-clg@fr.ibm.com>
- <1426693665-10797-1-git-send-email-clg@fr.ibm.com>
-In-Reply-To: <1426693665-10797-1-git-send-email-clg@fr.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Cc: Stewart Smith <stewart@linux.vnet.ibm.com>,
- Neelesh Gupta <neelegup@linux.vnet.ibm.com>, skiboot@lists.ozlabs.org,
- linuxppc-dev@lists.ozlabs.org, Jean Delvare <jdelvare@suse.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id BB0C61A09C3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Mar 2015 15:15:22 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: <linuxppc-dev@ozlabs.org>
+Subject: [PATCH] powerpc: Remove the celleb support
+Date: Thu, 19 Mar 2015 15:15:20 +1100
+Message-Id: <1426738520-21905-1-git-send-email-mpe@ellerman.id.au>
+Cc: dja@axtens.net, cbe-oss-dev@ozlabs.org, Arnd Bergmann <arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,32 +19,4944 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03/18/2015 08:47 AM, Cédric Le Goater wrote:
-> Hello !
->
-> The current implementation of the driver uses an index for the hwmon
-> attribute which is extracted from the device node name. This index
-> is calculated by the OPAL firmware and its usage creates a dependency
-> with the driver which makes changes a little more complex in OPAL.
->
-> This patchset changes the ibmpowernv code to use its own index. It
-> starts with a few cleanups, mostly code shuffling around the creation
-> of the hwmon sysfs attributes and completes by removing the dependency.
->
-> It also prepares ground for future OPAL changes :
->
->     https://lists.ozlabs.org/pipermail/skiboot/2015-March/000639.html
->
-> which will be addressed in a other small patchset.
->
->
-> The patches are based on Linux 4.0.0-rc4 and were tested on IBM Power
-> and Open Power systems running Trusty.
->
+The celleb code has seen no actual development for ~7 years.
 
-I commented on two of the patches; the others are ok.
+We (maintainers) have no access to test hardware, and it is highly
+likely the code has bit-rotted.
 
-Please re-send the entire series after addressing my comments.
+As far as we're aware the hardware was never widely available, and is
+certainly no longer available, and no one on the list has shown any
+interest in it over the years.
 
-Thanks,
-Guenter
+So remove it. If anyone has one and cares please speak up.
+
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/Kconfig.debug                     |   7 -
+ arch/powerpc/boot/Makefile                     |   2 -
+ arch/powerpc/configs/cell_defconfig            |   3 -
+ arch/powerpc/configs/celleb_defconfig          | 152 -------
+ arch/powerpc/configs/ppc64_defconfig           |   3 -
+ arch/powerpc/include/asm/firmware.h            |  10 +-
+ arch/powerpc/include/asm/smp.h                 |   1 -
+ arch/powerpc/kernel/udbg.c                     |   2 -
+ arch/powerpc/platforms/Kconfig                 |   5 -
+ arch/powerpc/platforms/cell/Kconfig            |  11 -
+ arch/powerpc/platforms/cell/Makefile           |  15 -
+ arch/powerpc/platforms/cell/beat.c             | 264 ------------
+ arch/powerpc/platforms/cell/beat.h             |  39 --
+ arch/powerpc/platforms/cell/beat_htab.c        | 445 --------------------
+ arch/powerpc/platforms/cell/beat_hvCall.S      | 285 -------------
+ arch/powerpc/platforms/cell/beat_interrupt.c   | 253 ------------
+ arch/powerpc/platforms/cell/beat_interrupt.h   |  30 --
+ arch/powerpc/platforms/cell/beat_iommu.c       | 115 ------
+ arch/powerpc/platforms/cell/beat_spu_priv1.c   | 205 ----------
+ arch/powerpc/platforms/cell/beat_syscall.h     | 164 --------
+ arch/powerpc/platforms/cell/beat_udbg.c        |  98 -----
+ arch/powerpc/platforms/cell/beat_wrapper.h     | 290 -------------
+ arch/powerpc/platforms/cell/celleb_pci.c       | 500 -----------------------
+ arch/powerpc/platforms/cell/celleb_pci.h       |  46 ---
+ arch/powerpc/platforms/cell/celleb_scc.h       | 232 -----------
+ arch/powerpc/platforms/cell/celleb_scc_epci.c  | 428 --------------------
+ arch/powerpc/platforms/cell/celleb_scc_pciex.c | 538 -------------------------
+ arch/powerpc/platforms/cell/celleb_scc_sio.c   |  99 -----
+ arch/powerpc/platforms/cell/celleb_scc_uhc.c   |  95 -----
+ arch/powerpc/platforms/cell/celleb_setup.c     | 243 -----------
+ arch/powerpc/platforms/cell/iommu.c            |   2 -
+ 31 files changed, 1 insertion(+), 4581 deletions(-)
+ delete mode 100644 arch/powerpc/configs/celleb_defconfig
+ delete mode 100644 arch/powerpc/platforms/cell/beat.c
+ delete mode 100644 arch/powerpc/platforms/cell/beat.h
+ delete mode 100644 arch/powerpc/platforms/cell/beat_htab.c
+ delete mode 100644 arch/powerpc/platforms/cell/beat_hvCall.S
+ delete mode 100644 arch/powerpc/platforms/cell/beat_interrupt.c
+ delete mode 100644 arch/powerpc/platforms/cell/beat_interrupt.h
+ delete mode 100644 arch/powerpc/platforms/cell/beat_iommu.c
+ delete mode 100644 arch/powerpc/platforms/cell/beat_spu_priv1.c
+ delete mode 100644 arch/powerpc/platforms/cell/beat_syscall.h
+ delete mode 100644 arch/powerpc/platforms/cell/beat_udbg.c
+ delete mode 100644 arch/powerpc/platforms/cell/beat_wrapper.h
+ delete mode 100644 arch/powerpc/platforms/cell/celleb_pci.c
+ delete mode 100644 arch/powerpc/platforms/cell/celleb_pci.h
+ delete mode 100644 arch/powerpc/platforms/cell/celleb_scc.h
+ delete mode 100644 arch/powerpc/platforms/cell/celleb_scc_epci.c
+ delete mode 100644 arch/powerpc/platforms/cell/celleb_scc_pciex.c
+ delete mode 100644 arch/powerpc/platforms/cell/celleb_scc_sio.c
+ delete mode 100644 arch/powerpc/platforms/cell/celleb_scc_uhc.c
+ delete mode 100644 arch/powerpc/platforms/cell/celleb_setup.c
+
+diff --git a/arch/powerpc/Kconfig.debug b/arch/powerpc/Kconfig.debug
+index ec2e40f2cc11..aba62bda5128 100644
+--- a/arch/powerpc/Kconfig.debug
++++ b/arch/powerpc/Kconfig.debug
+@@ -193,13 +193,6 @@ config PPC_EARLY_DEBUG_PAS_REALMODE
+ 	  Select this to enable early debugging for PA Semi.
+ 	  Output will be on UART0.
+ 
+-config PPC_EARLY_DEBUG_BEAT
+-	bool "Beat HV Console"
+-	depends on PPC_CELLEB
+-	select PPC_UDBG_BEAT
+-	help
+-	  Select this to enable early debugging for Celleb with Beat.
+-
+ config PPC_EARLY_DEBUG_44x
+ 	bool "Early serial debugging for IBM/AMCC 44x CPUs"
+ 	depends on 44x
+diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
+index 8a5bc1cfc6aa..0399cd06f6ef 100644
+--- a/arch/powerpc/boot/Makefile
++++ b/arch/powerpc/boot/Makefile
+@@ -110,7 +110,6 @@ src-plat-$(CONFIG_EPAPR_BOOT) += epapr.c epapr-wrapper.c
+ src-plat-$(CONFIG_PPC_PSERIES) += pseries-head.S
+ src-plat-$(CONFIG_PPC_POWERNV) += pseries-head.S
+ src-plat-$(CONFIG_PPC_IBM_CELL_BLADE) += pseries-head.S
+-src-plat-$(CONFIG_PPC_CELLEB) += pseries-head.S
+ src-plat-$(CONFIG_PPC_CELL_QPACE) += pseries-head.S
+ 
+ src-wlib := $(sort $(src-wlib-y))
+@@ -215,7 +214,6 @@ image-$(CONFIG_PPC_POWERNV)		+= zImage.pseries
+ image-$(CONFIG_PPC_MAPLE)		+= zImage.maple
+ image-$(CONFIG_PPC_IBM_CELL_BLADE)	+= zImage.pseries
+ image-$(CONFIG_PPC_PS3)			+= dtbImage.ps3
+-image-$(CONFIG_PPC_CELLEB)		+= zImage.pseries
+ image-$(CONFIG_PPC_CELL_QPACE)		+= zImage.pseries
+ image-$(CONFIG_PPC_CHRP)		+= zImage.chrp
+ image-$(CONFIG_PPC_EFIKA)		+= zImage.chrp
+diff --git a/arch/powerpc/configs/cell_defconfig b/arch/powerpc/configs/cell_defconfig
+index 9788b3c2d563..9227b517560a 100644
+--- a/arch/powerpc/configs/cell_defconfig
++++ b/arch/powerpc/configs/cell_defconfig
+@@ -28,7 +28,6 @@ CONFIG_PS3_ROM=m
+ CONFIG_PS3_FLASH=m
+ CONFIG_PS3_LPM=m
+ CONFIG_PPC_IBM_CELL_BLADE=y
+-CONFIG_PPC_CELLEB=y
+ CONFIG_RTAS_FLASH=y
+ CONFIG_CPU_FREQ=y
+ CONFIG_CPU_FREQ_GOV_POWERSAVE=y
+@@ -113,7 +112,6 @@ CONFIG_IDE=y
+ CONFIG_BLK_DEV_GENERIC=y
+ CONFIG_BLK_DEV_AEC62XX=y
+ CONFIG_BLK_DEV_SIIMAGE=y
+-CONFIG_BLK_DEV_CELLEB=y
+ CONFIG_BLK_DEV_SD=y
+ CONFIG_BLK_DEV_SR=m
+ CONFIG_CHR_DEV_SG=y
+@@ -156,7 +154,6 @@ CONFIG_SERIAL_TXX9_NR_UARTS=2
+ CONFIG_SERIAL_TXX9_CONSOLE=y
+ CONFIG_SERIAL_OF_PLATFORM=y
+ CONFIG_HVC_RTAS=y
+-CONFIG_HVC_BEAT=y
+ CONFIG_IPMI_HANDLER=m
+ CONFIG_IPMI_DEVICE_INTERFACE=m
+ CONFIG_IPMI_SI=m
+diff --git a/arch/powerpc/configs/celleb_defconfig b/arch/powerpc/configs/celleb_defconfig
+deleted file mode 100644
+index ff454dcd2dd3..000000000000
+--- a/arch/powerpc/configs/celleb_defconfig
++++ /dev/null
+@@ -1,152 +0,0 @@
+-CONFIG_PPC64=y
+-CONFIG_TUNE_CELL=y
+-CONFIG_ALTIVEC=y
+-CONFIG_SMP=y
+-CONFIG_NR_CPUS=4
+-CONFIG_SYSVIPC=y
+-CONFIG_FHANDLE=y
+-CONFIG_NO_HZ=y
+-CONFIG_HIGH_RES_TIMERS=y
+-CONFIG_IKCONFIG=y
+-CONFIG_IKCONFIG_PROC=y
+-CONFIG_LOG_BUF_SHIFT=15
+-CONFIG_BLK_DEV_INITRD=y
+-# CONFIG_COMPAT_BRK is not set
+-CONFIG_MODULES=y
+-CONFIG_MODULE_UNLOAD=y
+-CONFIG_MODVERSIONS=y
+-CONFIG_MODULE_SRCVERSION_ALL=y
+-CONFIG_PARTITION_ADVANCED=y
+-# CONFIG_PPC_POWERNV is not set
+-# CONFIG_PPC_PSERIES is not set
+-# CONFIG_PPC_PMAC is not set
+-CONFIG_PPC_CELLEB=y
+-CONFIG_SPU_FS=y
+-# CONFIG_CBE_THERM is not set
+-CONFIG_UDBG_RTAS_CONSOLE=y
+-# CONFIG_RTAS_PROC is not set
+-CONFIG_BINFMT_MISC=m
+-CONFIG_KEXEC=y
+-CONFIG_NUMA=y
+-CONFIG_NET=y
+-CONFIG_PACKET=y
+-CONFIG_UNIX=y
+-CONFIG_INET=y
+-CONFIG_IP_MULTICAST=y
+-CONFIG_SYN_COOKIES=y
+-CONFIG_IPV6=y
+-CONFIG_INET6_AH=m
+-CONFIG_INET6_ESP=m
+-CONFIG_INET6_IPCOMP=m
+-CONFIG_IPV6_TUNNEL=m
+-CONFIG_NETFILTER=y
+-CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
+-CONFIG_BLK_DEV_LOOP=y
+-CONFIG_BLK_DEV_RAM=y
+-CONFIG_BLK_DEV_RAM_SIZE=131072
+-CONFIG_IDE=y
+-CONFIG_BLK_DEV_IDECD=m
+-CONFIG_BLK_DEV_GENERIC=y
+-CONFIG_BLK_DEV_CELLEB=y
+-CONFIG_SCSI=m
+-# CONFIG_SCSI_PROC_FS is not set
+-CONFIG_BLK_DEV_SD=m
+-CONFIG_BLK_DEV_SR=m
+-CONFIG_CHR_DEV_SG=m
+-CONFIG_MD=y
+-CONFIG_BLK_DEV_MD=m
+-CONFIG_MD_LINEAR=m
+-CONFIG_MD_RAID0=m
+-CONFIG_MD_RAID1=m
+-CONFIG_BLK_DEV_DM=m
+-CONFIG_DM_CRYPT=m
+-CONFIG_DM_SNAPSHOT=m
+-CONFIG_DM_MIRROR=m
+-CONFIG_DM_ZERO=m
+-CONFIG_DM_MULTIPATH=m
+-CONFIG_NETDEVICES=y
+-CONFIG_SPIDER_NET=y
+-# CONFIG_INPUT_MOUSEDEV_PSAUX is not set
+-# CONFIG_INPUT_KEYBOARD is not set
+-# CONFIG_INPUT_MOUSE is not set
+-# CONFIG_SERIO_I8042 is not set
+-# CONFIG_LEGACY_PTYS is not set
+-CONFIG_SERIAL_NONSTANDARD=y
+-CONFIG_SERIAL_TXX9_NR_UARTS=3
+-CONFIG_SERIAL_TXX9_CONSOLE=y
+-CONFIG_HVC_RTAS=y
+-CONFIG_HVC_BEAT=y
+-# CONFIG_HW_RANDOM is not set
+-CONFIG_GEN_RTC=y
+-CONFIG_I2C=y
+-# CONFIG_HWMON is not set
+-CONFIG_WATCHDOG=y
+-# CONFIG_VGA_CONSOLE is not set
+-CONFIG_USB_HIDDEV=y
+-CONFIG_USB=y
+-CONFIG_USB_MON=y
+-CONFIG_USB_EHCI_HCD=m
+-# CONFIG_USB_EHCI_HCD_PPC_OF is not set
+-CONFIG_USB_OHCI_HCD=m
+-CONFIG_USB_STORAGE=m
+-CONFIG_EXT2_FS=y
+-CONFIG_EXT2_FS_XATTR=y
+-CONFIG_EXT2_FS_POSIX_ACL=y
+-CONFIG_EXT2_FS_SECURITY=y
+-CONFIG_EXT2_FS_XIP=y
+-CONFIG_EXT3_FS=y
+-CONFIG_EXT3_FS_POSIX_ACL=y
+-CONFIG_EXT3_FS_SECURITY=y
+-CONFIG_ISO9660_FS=m
+-CONFIG_JOLIET=y
+-CONFIG_UDF_FS=m
+-CONFIG_MSDOS_FS=m
+-CONFIG_VFAT_FS=m
+-CONFIG_PROC_KCORE=y
+-CONFIG_TMPFS=y
+-CONFIG_HUGETLBFS=y
+-CONFIG_NFS_FS=m
+-CONFIG_NFS_V3_ACL=y
+-CONFIG_NFSD=m
+-CONFIG_NFSD_V3=y
+-CONFIG_NFSD_V3_ACL=y
+-CONFIG_NLS_ISO8859_1=m
+-CONFIG_NLS_ISO8859_2=m
+-CONFIG_NLS_ISO8859_3=m
+-CONFIG_NLS_ISO8859_4=m
+-CONFIG_NLS_ISO8859_5=m
+-CONFIG_NLS_ISO8859_6=m
+-CONFIG_NLS_ISO8859_7=m
+-CONFIG_NLS_ISO8859_9=m
+-CONFIG_NLS_ISO8859_13=m
+-CONFIG_NLS_ISO8859_14=m
+-CONFIG_NLS_ISO8859_15=m
+-CONFIG_LIBCRC32C=m
+-CONFIG_DEBUG_FS=y
+-CONFIG_MAGIC_SYSRQ=y
+-CONFIG_DEBUG_KERNEL=y
+-CONFIG_DEBUG_MUTEXES=y
+-CONFIG_XMON=y
+-CONFIG_XMON_DEFAULT=y
+-CONFIG_CRYPTO_NULL=m
+-CONFIG_CRYPTO_TEST=m
+-CONFIG_CRYPTO_ECB=m
+-CONFIG_CRYPTO_PCBC=m
+-CONFIG_CRYPTO_HMAC=y
+-CONFIG_CRYPTO_MD4=m
+-CONFIG_CRYPTO_MD5=y
+-CONFIG_CRYPTO_MICHAEL_MIC=m
+-CONFIG_CRYPTO_SHA256=m
+-CONFIG_CRYPTO_SHA512=m
+-CONFIG_CRYPTO_TGR192=m
+-CONFIG_CRYPTO_WP512=m
+-CONFIG_CRYPTO_ANUBIS=m
+-CONFIG_CRYPTO_ARC4=m
+-CONFIG_CRYPTO_BLOWFISH=m
+-CONFIG_CRYPTO_CAST5=m
+-CONFIG_CRYPTO_CAST6=m
+-CONFIG_CRYPTO_KHAZAD=m
+-CONFIG_CRYPTO_SERPENT=m
+-CONFIG_CRYPTO_TEA=m
+-CONFIG_CRYPTO_TWOFISH=m
+-# CONFIG_CRYPTO_HW is not set
+diff --git a/arch/powerpc/configs/ppc64_defconfig b/arch/powerpc/configs/ppc64_defconfig
+index 3315c9f0828a..aad501ae3834 100644
+--- a/arch/powerpc/configs/ppc64_defconfig
++++ b/arch/powerpc/configs/ppc64_defconfig
+@@ -36,7 +36,6 @@ CONFIG_PS3_ROM=m
+ CONFIG_PS3_FLASH=m
+ CONFIG_PS3_LPM=m
+ CONFIG_PPC_IBM_CELL_BLADE=y
+-CONFIG_PPC_CELLEB=y
+ CONFIG_PPC_CELL_QPACE=y
+ CONFIG_RTAS_FLASH=m
+ CONFIG_IBMEBUS=y
+@@ -89,7 +88,6 @@ CONFIG_IDE=y
+ CONFIG_BLK_DEV_IDECD=y
+ CONFIG_BLK_DEV_GENERIC=y
+ CONFIG_BLK_DEV_AMD74XX=y
+-CONFIG_BLK_DEV_CELLEB=y
+ CONFIG_BLK_DEV_IDE_PMAC=y
+ CONFIG_BLK_DEV_IDE_PMAC_ATA100FIRST=y
+ CONFIG_BLK_DEV_SD=y
+@@ -196,7 +194,6 @@ CONFIG_SERIAL_TXX9_CONSOLE=y
+ CONFIG_SERIAL_JSM=m
+ CONFIG_HVC_CONSOLE=y
+ CONFIG_HVC_RTAS=y
+-CONFIG_HVC_BEAT=y
+ CONFIG_HVCS=m
+ CONFIG_VIRTIO_CONSOLE=m
+ CONFIG_IBM_BSR=m
+diff --git a/arch/powerpc/include/asm/firmware.h b/arch/powerpc/include/asm/firmware.h
+index 681bc0314b6b..e05808a328db 100644
+--- a/arch/powerpc/include/asm/firmware.h
++++ b/arch/powerpc/include/asm/firmware.h
+@@ -42,7 +42,7 @@
+ #define FW_FEATURE_SPLPAR	ASM_CONST(0x0000000000100000)
+ #define FW_FEATURE_LPAR		ASM_CONST(0x0000000000400000)
+ #define FW_FEATURE_PS3_LV1	ASM_CONST(0x0000000000800000)
+-#define FW_FEATURE_BEAT		ASM_CONST(0x0000000001000000)
++/* Free				ASM_CONST(0x0000000001000000) */
+ #define FW_FEATURE_CMO		ASM_CONST(0x0000000002000000)
+ #define FW_FEATURE_VPHN		ASM_CONST(0x0000000004000000)
+ #define FW_FEATURE_XCMO		ASM_CONST(0x0000000008000000)
+@@ -75,8 +75,6 @@ enum {
+ 	FW_FEATURE_POWERNV_ALWAYS = 0,
+ 	FW_FEATURE_PS3_POSSIBLE = FW_FEATURE_LPAR | FW_FEATURE_PS3_LV1,
+ 	FW_FEATURE_PS3_ALWAYS = FW_FEATURE_LPAR | FW_FEATURE_PS3_LV1,
+-	FW_FEATURE_CELLEB_POSSIBLE = FW_FEATURE_LPAR | FW_FEATURE_BEAT,
+-	FW_FEATURE_CELLEB_ALWAYS = 0,
+ 	FW_FEATURE_NATIVE_POSSIBLE = 0,
+ 	FW_FEATURE_NATIVE_ALWAYS = 0,
+ 	FW_FEATURE_POSSIBLE =
+@@ -89,9 +87,6 @@ enum {
+ #ifdef CONFIG_PPC_PS3
+ 		FW_FEATURE_PS3_POSSIBLE |
+ #endif
+-#ifdef CONFIG_PPC_CELLEB
+-		FW_FEATURE_CELLEB_POSSIBLE |
+-#endif
+ #ifdef CONFIG_PPC_NATIVE
+ 		FW_FEATURE_NATIVE_ALWAYS |
+ #endif
+@@ -106,9 +101,6 @@ enum {
+ #ifdef CONFIG_PPC_PS3
+ 		FW_FEATURE_PS3_ALWAYS &
+ #endif
+-#ifdef CONFIG_PPC_CELLEB
+-		FW_FEATURE_CELLEB_ALWAYS &
+-#endif
+ #ifdef CONFIG_PPC_NATIVE
+ 		FW_FEATURE_NATIVE_ALWAYS &
+ #endif
+diff --git a/arch/powerpc/include/asm/smp.h b/arch/powerpc/include/asm/smp.h
+index d607df5081a7..7c19959cd705 100644
+--- a/arch/powerpc/include/asm/smp.h
++++ b/arch/powerpc/include/asm/smp.h
+@@ -125,7 +125,6 @@ extern irqreturn_t smp_ipi_demux(void);
+ 
+ void smp_init_pSeries(void);
+ void smp_init_cell(void);
+-void smp_init_celleb(void);
+ void smp_setup_cpu_maps(void);
+ 
+ extern int __cpu_disable(void);
+diff --git a/arch/powerpc/kernel/udbg.c b/arch/powerpc/kernel/udbg.c
+index b7aa07279a63..7cc38b5b58bc 100644
+--- a/arch/powerpc/kernel/udbg.c
++++ b/arch/powerpc/kernel/udbg.c
+@@ -46,8 +46,6 @@ void __init udbg_early_init(void)
+ #elif defined(CONFIG_PPC_EARLY_DEBUG_MAPLE)
+ 	/* Maple real mode debug */
+ 	udbg_init_maple_realmode();
+-#elif defined(CONFIG_PPC_EARLY_DEBUG_BEAT)
+-	udbg_init_debug_beat();
+ #elif defined(CONFIG_PPC_EARLY_DEBUG_PAS_REALMODE)
+ 	udbg_init_pas_realmode();
+ #elif defined(CONFIG_PPC_EARLY_DEBUG_BOOTX)
+diff --git a/arch/powerpc/platforms/Kconfig b/arch/powerpc/platforms/Kconfig
+index 391b3f6b54a3..b7f9c408bf24 100644
+--- a/arch/powerpc/platforms/Kconfig
++++ b/arch/powerpc/platforms/Kconfig
+@@ -72,11 +72,6 @@ config PPC_SMP_MUXED_IPI
+ 	  cpu.	This will enable the generic code to multiplex the 4
+ 	  messages on to one ipi.
+ 
+-config PPC_UDBG_BEAT
+-	bool "BEAT based debug console"
+-	depends on PPC_CELLEB
+-	default n
+-
+ config IPIC
+ 	bool
+ 	default n
+diff --git a/arch/powerpc/platforms/cell/Kconfig b/arch/powerpc/platforms/cell/Kconfig
+index 870b6dbd4d18..2f23133ab3d1 100644
+--- a/arch/powerpc/platforms/cell/Kconfig
++++ b/arch/powerpc/platforms/cell/Kconfig
+@@ -33,17 +33,6 @@ config PPC_IBM_CELL_BLADE
+ 	select PPC_UDBG_16550
+ 	select UDBG_RTAS_CONSOLE
+ 
+-config PPC_CELLEB
+-	bool "Toshiba's Cell Reference Set 'Celleb' Architecture"
+-	depends on PPC64 && PPC_BOOK3S
+-	select PPC_CELL_NATIVE
+-	select PPC_OF_PLATFORM_PCI
+-	select PCI
+-	select HAS_TXX9_SERIAL
+-	select PPC_UDBG_BEAT
+-	select USB_OHCI_BIG_ENDIAN_MMIO
+-	select USB_EHCI_BIG_ENDIAN_MMIO
+-
+ config PPC_CELL_QPACE
+ 	bool "IBM Cell - QPACE"
+ 	depends on PPC64 && PPC_BOOK3S
+diff --git a/arch/powerpc/platforms/cell/Makefile b/arch/powerpc/platforms/cell/Makefile
+index 2d16884f67b9..34699bddfddd 100644
+--- a/arch/powerpc/platforms/cell/Makefile
++++ b/arch/powerpc/platforms/cell/Makefile
+@@ -29,18 +29,3 @@ obj-$(CONFIG_AXON_MSI)			+= axon_msi.o
+ 
+ # qpace setup
+ obj-$(CONFIG_PPC_CELL_QPACE)		+= qpace_setup.o
+-
+-# celleb stuff
+-ifeq ($(CONFIG_PPC_CELLEB),y)
+-obj-y					+= celleb_setup.o \
+-					   celleb_pci.o celleb_scc_epci.o \
+-					   celleb_scc_pciex.o \
+-					   celleb_scc_uhc.o \
+-					   spider-pci.o beat.o beat_htab.o \
+-					   beat_hvCall.o beat_interrupt.o \
+-					   beat_iommu.o
+-
+-obj-$(CONFIG_PPC_UDBG_BEAT)		+= beat_udbg.o
+-obj-$(CONFIG_SERIAL_TXX9)		+= celleb_scc_sio.o
+-obj-$(CONFIG_SPU_BASE)			+= beat_spu_priv1.o
+-endif
+diff --git a/arch/powerpc/platforms/cell/beat.c b/arch/powerpc/platforms/cell/beat.c
+deleted file mode 100644
+index affcf566d460..000000000000
+--- a/arch/powerpc/platforms/cell/beat.c
++++ /dev/null
+@@ -1,264 +0,0 @@
+-/*
+- * Simple routines for Celleb/Beat
+- *
+- * (C) Copyright 2006-2007 TOSHIBA CORPORATION
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License as published by
+- * the Free Software Foundation; either version 2 of the License, or
+- * (at your option) any later version.
+- *
+- * This program is distributed in the hope that it will be useful,
+- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- * GNU General Public License for more details.
+- *
+- * You should have received a copy of the GNU General Public License along
+- * with this program; if not, write to the Free Software Foundation, Inc.,
+- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+- */
+-
+-#include <linux/export.h>
+-#include <linux/init.h>
+-#include <linux/err.h>
+-#include <linux/rtc.h>
+-#include <linux/interrupt.h>
+-#include <linux/irqreturn.h>
+-#include <linux/reboot.h>
+-
+-#include <asm/hvconsole.h>
+-#include <asm/time.h>
+-#include <asm/machdep.h>
+-#include <asm/firmware.h>
+-
+-#include "beat_wrapper.h"
+-#include "beat.h"
+-#include "beat_interrupt.h"
+-
+-static int beat_pm_poweroff_flag;
+-
+-void beat_restart(char *cmd)
+-{
+-	beat_shutdown_logical_partition(!beat_pm_poweroff_flag);
+-}
+-
+-void beat_power_off(void)
+-{
+-	beat_shutdown_logical_partition(0);
+-}
+-
+-u64 beat_halt_code = 0x1000000000000000UL;
+-EXPORT_SYMBOL(beat_halt_code);
+-
+-void beat_halt(void)
+-{
+-	beat_shutdown_logical_partition(beat_halt_code);
+-}
+-
+-int beat_set_rtc_time(struct rtc_time *rtc_time)
+-{
+-	u64 tim;
+-	tim = mktime(rtc_time->tm_year+1900,
+-		     rtc_time->tm_mon+1, rtc_time->tm_mday,
+-		     rtc_time->tm_hour, rtc_time->tm_min, rtc_time->tm_sec);
+-	if (beat_rtc_write(tim))
+-		return -1;
+-	return 0;
+-}
+-
+-void beat_get_rtc_time(struct rtc_time *rtc_time)
+-{
+-	u64 tim;
+-
+-	if (beat_rtc_read(&tim))
+-		tim = 0;
+-	to_tm(tim, rtc_time);
+-	rtc_time->tm_year -= 1900;
+-	rtc_time->tm_mon -= 1;
+-}
+-
+-#define	BEAT_NVRAM_SIZE	4096
+-
+-ssize_t beat_nvram_read(char *buf, size_t count, loff_t *index)
+-{
+-	unsigned int i;
+-	unsigned long len;
+-	char *p = buf;
+-
+-	if (*index >= BEAT_NVRAM_SIZE)
+-		return -ENODEV;
+-	i = *index;
+-	if (i + count > BEAT_NVRAM_SIZE)
+-		count = BEAT_NVRAM_SIZE - i;
+-
+-	for (; count != 0; count -= len) {
+-		len = count;
+-		if (len > BEAT_NVRW_CNT)
+-			len = BEAT_NVRW_CNT;
+-		if (beat_eeprom_read(i, len, p))
+-			return -EIO;
+-
+-		p += len;
+-		i += len;
+-	}
+-	*index = i;
+-	return p - buf;
+-}
+-
+-ssize_t beat_nvram_write(char *buf, size_t count, loff_t *index)
+-{
+-	unsigned int i;
+-	unsigned long len;
+-	char *p = buf;
+-
+-	if (*index >= BEAT_NVRAM_SIZE)
+-		return -ENODEV;
+-	i = *index;
+-	if (i + count > BEAT_NVRAM_SIZE)
+-		count = BEAT_NVRAM_SIZE - i;
+-
+-	for (; count != 0; count -= len) {
+-		len = count;
+-		if (len > BEAT_NVRW_CNT)
+-			len = BEAT_NVRW_CNT;
+-		if (beat_eeprom_write(i, len, p))
+-			return -EIO;
+-
+-		p += len;
+-		i += len;
+-	}
+-	*index = i;
+-	return p - buf;
+-}
+-
+-ssize_t beat_nvram_get_size(void)
+-{
+-	return BEAT_NVRAM_SIZE;
+-}
+-
+-int beat_set_xdabr(unsigned long dabr, unsigned long dabrx)
+-{
+-	if (beat_set_dabr(dabr, dabrx))
+-		return -1;
+-	return 0;
+-}
+-
+-int64_t beat_get_term_char(u64 vterm, u64 *len, u64 *t1, u64 *t2)
+-{
+-	u64 db[2];
+-	s64 ret;
+-
+-	ret = beat_get_characters_from_console(vterm, len, (u8 *)db);
+-	if (ret == 0) {
+-		*t1 = db[0];
+-		*t2 = db[1];
+-	}
+-	return ret;
+-}
+-EXPORT_SYMBOL(beat_get_term_char);
+-
+-int64_t beat_put_term_char(u64 vterm, u64 len, u64 t1, u64 t2)
+-{
+-	u64 db[2];
+-
+-	db[0] = t1;
+-	db[1] = t2;
+-	return beat_put_characters_to_console(vterm, len, (u8 *)db);
+-}
+-EXPORT_SYMBOL(beat_put_term_char);
+-
+-void beat_power_save(void)
+-{
+-	beat_pause(0);
+-}
+-
+-#ifdef CONFIG_KEXEC
+-void beat_kexec_cpu_down(int crash, int secondary)
+-{
+-	beatic_deinit_IRQ();
+-}
+-#endif
+-
+-static irqreturn_t beat_power_event(int virq, void *arg)
+-{
+-	printk(KERN_DEBUG "Beat: power button pressed\n");
+-	beat_pm_poweroff_flag = 1;
+-	ctrl_alt_del();
+-	return IRQ_HANDLED;
+-}
+-
+-static irqreturn_t beat_reset_event(int virq, void *arg)
+-{
+-	printk(KERN_DEBUG "Beat: reset button pressed\n");
+-	beat_pm_poweroff_flag = 0;
+-	ctrl_alt_del();
+-	return IRQ_HANDLED;
+-}
+-
+-static struct beat_event_list {
+-	const char *typecode;
+-	irq_handler_t handler;
+-	unsigned int virq;
+-} beat_event_list[] = {
+-	{ "power", beat_power_event, 0 },
+-	{ "reset", beat_reset_event, 0 },
+-};
+-
+-static int __init beat_register_event(void)
+-{
+-	u64 path[4], data[2];
+-	int rc, i;
+-	unsigned int virq;
+-
+-	for (i = 0; i < ARRAY_SIZE(beat_event_list); i++) {
+-		struct beat_event_list *ev = &beat_event_list[i];
+-
+-		if (beat_construct_event_receive_port(data) != 0) {
+-			printk(KERN_ERR "Beat: "
+-			       "cannot construct event receive port for %s\n",
+-			       ev->typecode);
+-			return -EINVAL;
+-		}
+-
+-		virq = irq_create_mapping(NULL, data[0]);
+-		if (virq == NO_IRQ) {
+-			printk(KERN_ERR "Beat: failed to get virtual IRQ"
+-			       " for event receive port for %s\n",
+-			       ev->typecode);
+-			beat_destruct_event_receive_port(data[0]);
+-			return -EIO;
+-		}
+-		ev->virq = virq;
+-
+-		rc = request_irq(virq, ev->handler, 0,
+-				      ev->typecode, NULL);
+-		if (rc != 0) {
+-			printk(KERN_ERR "Beat: failed to request virtual IRQ"
+-			       " for event receive port for %s\n",
+-			       ev->typecode);
+-			beat_destruct_event_receive_port(data[0]);
+-			return rc;
+-		}
+-
+-		path[0] = 0x1000000065780000ul;	/* 1,ex */
+-		path[1] = 0x627574746f6e0000ul;	/* button */
+-		path[2] = 0;
+-		strncpy((char *)&path[2], ev->typecode, 8);
+-		path[3] = 0;
+-		data[1] = 0;
+-
+-		beat_create_repository_node(path, data);
+-	}
+-	return 0;
+-}
+-
+-static int __init beat_event_init(void)
+-{
+-	if (!firmware_has_feature(FW_FEATURE_BEAT))
+-		return -EINVAL;
+-
+-	beat_pm_poweroff_flag = 0;
+-	return beat_register_event();
+-}
+-
+-device_initcall(beat_event_init);
+diff --git a/arch/powerpc/platforms/cell/beat.h b/arch/powerpc/platforms/cell/beat.h
+deleted file mode 100644
+index bfcb8e351ae5..000000000000
+--- a/arch/powerpc/platforms/cell/beat.h
++++ /dev/null
+@@ -1,39 +0,0 @@
+-/*
+- * Guest OS Interfaces.
+- *
+- * (C) Copyright 2006 TOSHIBA CORPORATION
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License as published by
+- * the Free Software Foundation; either version 2 of the License, or
+- * (at your option) any later version.
+- *
+- * This program is distributed in the hope that it will be useful,
+- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- * GNU General Public License for more details.
+- *
+- * You should have received a copy of the GNU General Public License along
+- * with this program; if not, write to the Free Software Foundation, Inc.,
+- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+- */
+-
+-#ifndef _CELLEB_BEAT_H
+-#define _CELLEB_BEAT_H
+-
+-int64_t beat_get_term_char(uint64_t, uint64_t *, uint64_t *, uint64_t *);
+-int64_t beat_put_term_char(uint64_t, uint64_t, uint64_t, uint64_t);
+-int64_t beat_repository_encode(int, const char *, uint64_t[4]);
+-void beat_restart(char *);
+-void beat_power_off(void);
+-void beat_halt(void);
+-int beat_set_rtc_time(struct rtc_time *);
+-void beat_get_rtc_time(struct rtc_time *);
+-ssize_t beat_nvram_get_size(void);
+-ssize_t beat_nvram_read(char *, size_t, loff_t *);
+-ssize_t beat_nvram_write(char *, size_t, loff_t *);
+-int beat_set_xdabr(unsigned long, unsigned long);
+-void beat_power_save(void);
+-void beat_kexec_cpu_down(int, int);
+-
+-#endif /* _CELLEB_BEAT_H */
+diff --git a/arch/powerpc/platforms/cell/beat_htab.c b/arch/powerpc/platforms/cell/beat_htab.c
+deleted file mode 100644
+index bee9232fe619..000000000000
+--- a/arch/powerpc/platforms/cell/beat_htab.c
++++ /dev/null
+@@ -1,445 +0,0 @@
+-/*
+- * "Cell Reference Set" HTAB support.
+- *
+- * (C) Copyright 2006-2007 TOSHIBA CORPORATION
+- *
+- * This code is based on arch/powerpc/platforms/pseries/lpar.c:
+- *  Copyright (C) 2001 Todd Inglett, IBM Corporation
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License as published by
+- * the Free Software Foundation; either version 2 of the License, or
+- * (at your option) any later version.
+- *
+- * This program is distributed in the hope that it will be useful,
+- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- * GNU General Public License for more details.
+- *
+- * You should have received a copy of the GNU General Public License along
+- * with this program; if not, write to the Free Software Foundation, Inc.,
+- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+- */
+-
+-#undef DEBUG_LOW
+-
+-#include <linux/kernel.h>
+-#include <linux/spinlock.h>
+-
+-#include <asm/mmu.h>
+-#include <asm/page.h>
+-#include <asm/pgtable.h>
+-#include <asm/machdep.h>
+-#include <asm/udbg.h>
+-
+-#include "beat_wrapper.h"
+-
+-#ifdef DEBUG_LOW
+-#define DBG_LOW(fmt...) do { udbg_printf(fmt); } while (0)
+-#else
+-#define DBG_LOW(fmt...) do { } while (0)
+-#endif
+-
+-static DEFINE_RAW_SPINLOCK(beat_htab_lock);
+-
+-static inline unsigned int beat_read_mask(unsigned hpte_group)
+-{
+-	unsigned long rmask = 0;
+-	u64 hpte_v[5];
+-
+-	beat_read_htab_entries(0, hpte_group + 0, hpte_v);
+-	if (!(hpte_v[0] & HPTE_V_BOLTED))
+-		rmask |= 0x8000;
+-	if (!(hpte_v[1] & HPTE_V_BOLTED))
+-		rmask |= 0x4000;
+-	if (!(hpte_v[2] & HPTE_V_BOLTED))
+-		rmask |= 0x2000;
+-	if (!(hpte_v[3] & HPTE_V_BOLTED))
+-		rmask |= 0x1000;
+-	beat_read_htab_entries(0, hpte_group + 4, hpte_v);
+-	if (!(hpte_v[0] & HPTE_V_BOLTED))
+-		rmask |= 0x0800;
+-	if (!(hpte_v[1] & HPTE_V_BOLTED))
+-		rmask |= 0x0400;
+-	if (!(hpte_v[2] & HPTE_V_BOLTED))
+-		rmask |= 0x0200;
+-	if (!(hpte_v[3] & HPTE_V_BOLTED))
+-		rmask |= 0x0100;
+-	hpte_group = ~hpte_group & (htab_hash_mask * HPTES_PER_GROUP);
+-	beat_read_htab_entries(0, hpte_group + 0, hpte_v);
+-	if (!(hpte_v[0] & HPTE_V_BOLTED))
+-		rmask |= 0x80;
+-	if (!(hpte_v[1] & HPTE_V_BOLTED))
+-		rmask |= 0x40;
+-	if (!(hpte_v[2] & HPTE_V_BOLTED))
+-		rmask |= 0x20;
+-	if (!(hpte_v[3] & HPTE_V_BOLTED))
+-		rmask |= 0x10;
+-	beat_read_htab_entries(0, hpte_group + 4, hpte_v);
+-	if (!(hpte_v[0] & HPTE_V_BOLTED))
+-		rmask |= 0x08;
+-	if (!(hpte_v[1] & HPTE_V_BOLTED))
+-		rmask |= 0x04;
+-	if (!(hpte_v[2] & HPTE_V_BOLTED))
+-		rmask |= 0x02;
+-	if (!(hpte_v[3] & HPTE_V_BOLTED))
+-		rmask |= 0x01;
+-	return rmask;
+-}
+-
+-static long beat_lpar_hpte_insert(unsigned long hpte_group,
+-				  unsigned long vpn, unsigned long pa,
+-				  unsigned long rflags, unsigned long vflags,
+-				  int psize, int apsize, int ssize)
+-{
+-	unsigned long lpar_rc;
+-	u64 hpte_v, hpte_r, slot;
+-
+-	if (vflags & HPTE_V_SECONDARY)
+-		return -1;
+-
+-	if (!(vflags & HPTE_V_BOLTED))
+-		DBG_LOW("hpte_insert(group=%lx, va=%016lx, pa=%016lx, "
+-			"rflags=%lx, vflags=%lx, psize=%d)\n",
+-		hpte_group, va, pa, rflags, vflags, psize);
+-
+-	hpte_v = hpte_encode_v(vpn, psize, apsize, MMU_SEGSIZE_256M) |
+-		vflags | HPTE_V_VALID;
+-	hpte_r = hpte_encode_r(pa, psize, apsize) | rflags;
+-
+-	if (!(vflags & HPTE_V_BOLTED))
+-		DBG_LOW(" hpte_v=%016lx, hpte_r=%016lx\n", hpte_v, hpte_r);
+-
+-	if (rflags & _PAGE_NO_CACHE)
+-		hpte_r &= ~HPTE_R_M;
+-
+-	raw_spin_lock(&beat_htab_lock);
+-	lpar_rc = beat_read_mask(hpte_group);
+-	if (lpar_rc == 0) {
+-		if (!(vflags & HPTE_V_BOLTED))
+-			DBG_LOW(" full\n");
+-		raw_spin_unlock(&beat_htab_lock);
+-		return -1;
+-	}
+-
+-	lpar_rc = beat_insert_htab_entry(0, hpte_group, lpar_rc << 48,
+-		hpte_v, hpte_r, &slot);
+-	raw_spin_unlock(&beat_htab_lock);
+-
+-	/*
+-	 * Since we try and ioremap PHBs we don't own, the pte insert
+-	 * will fail. However we must catch the failure in hash_page
+-	 * or we will loop forever, so return -2 in this case.
+-	 */
+-	if (unlikely(lpar_rc != 0)) {
+-		if (!(vflags & HPTE_V_BOLTED))
+-			DBG_LOW(" lpar err %lx\n", lpar_rc);
+-		return -2;
+-	}
+-	if (!(vflags & HPTE_V_BOLTED))
+-		DBG_LOW(" -> slot: %lx\n", slot);
+-
+-	/* We have to pass down the secondary bucket bit here as well */
+-	return (slot ^ hpte_group) & 15;
+-}
+-
+-static long beat_lpar_hpte_remove(unsigned long hpte_group)
+-{
+-	DBG_LOW("hpte_remove(group=%lx)\n", hpte_group);
+-	return -1;
+-}
+-
+-static unsigned long beat_lpar_hpte_getword0(unsigned long slot)
+-{
+-	unsigned long dword0;
+-	unsigned long lpar_rc;
+-	u64 dword[5];
+-
+-	lpar_rc = beat_read_htab_entries(0, slot & ~3UL, dword);
+-
+-	dword0 = dword[slot&3];
+-
+-	BUG_ON(lpar_rc != 0);
+-
+-	return dword0;
+-}
+-
+-static void beat_lpar_hptab_clear(void)
+-{
+-	unsigned long size_bytes = 1UL << ppc64_pft_size;
+-	unsigned long hpte_count = size_bytes >> 4;
+-	int i;
+-	u64 dummy0, dummy1;
+-
+-	/* TODO: Use bulk call */
+-	for (i = 0; i < hpte_count; i++)
+-		beat_write_htab_entry(0, i, 0, 0, -1UL, -1UL, &dummy0, &dummy1);
+-}
+-
+-/*
+- * NOTE: for updatepp ops we are fortunate that the linux "newpp" bits and
+- * the low 3 bits of flags happen to line up.  So no transform is needed.
+- * We can probably optimize here and assume the high bits of newpp are
+- * already zero.  For now I am paranoid.
+- */
+-static long beat_lpar_hpte_updatepp(unsigned long slot,
+-				    unsigned long newpp,
+-				    unsigned long vpn,
+-				    int psize, int apsize,
+-				    int ssize, unsigned long flags)
+-{
+-	unsigned long lpar_rc;
+-	u64 dummy0, dummy1;
+-	unsigned long want_v;
+-
+-	want_v = hpte_encode_avpn(vpn, psize, MMU_SEGSIZE_256M);
+-
+-	DBG_LOW("    update: "
+-		"avpnv=%016lx, slot=%016lx, psize: %d, newpp %016lx ... ",
+-		want_v & HPTE_V_AVPN, slot, psize, newpp);
+-
+-	raw_spin_lock(&beat_htab_lock);
+-	dummy0 = beat_lpar_hpte_getword0(slot);
+-	if ((dummy0 & ~0x7FUL) != (want_v & ~0x7FUL)) {
+-		DBG_LOW("not found !\n");
+-		raw_spin_unlock(&beat_htab_lock);
+-		return -1;
+-	}
+-
+-	lpar_rc = beat_write_htab_entry(0, slot, 0, newpp, 0, 7, &dummy0,
+-					&dummy1);
+-	raw_spin_unlock(&beat_htab_lock);
+-	if (lpar_rc != 0 || dummy0 == 0) {
+-		DBG_LOW("not found !\n");
+-		return -1;
+-	}
+-
+-	DBG_LOW("ok %lx %lx\n", dummy0, dummy1);
+-
+-	BUG_ON(lpar_rc != 0);
+-
+-	return 0;
+-}
+-
+-static long beat_lpar_hpte_find(unsigned long vpn, int psize)
+-{
+-	unsigned long hash;
+-	unsigned long i, j;
+-	long slot;
+-	unsigned long want_v, hpte_v;
+-
+-	hash = hpt_hash(vpn, mmu_psize_defs[psize].shift, MMU_SEGSIZE_256M);
+-	want_v = hpte_encode_avpn(vpn, psize, MMU_SEGSIZE_256M);
+-
+-	for (j = 0; j < 2; j++) {
+-		slot = (hash & htab_hash_mask) * HPTES_PER_GROUP;
+-		for (i = 0; i < HPTES_PER_GROUP; i++) {
+-			hpte_v = beat_lpar_hpte_getword0(slot);
+-
+-			if (HPTE_V_COMPARE(hpte_v, want_v)
+-			    && (hpte_v & HPTE_V_VALID)
+-			    && (!!(hpte_v & HPTE_V_SECONDARY) == j)) {
+-				/* HPTE matches */
+-				if (j)
+-					slot = -slot;
+-				return slot;
+-			}
+-			++slot;
+-		}
+-		hash = ~hash;
+-	}
+-
+-	return -1;
+-}
+-
+-static void beat_lpar_hpte_updateboltedpp(unsigned long newpp,
+-					  unsigned long ea,
+-					  int psize, int ssize)
+-{
+-	unsigned long vpn;
+-	unsigned long lpar_rc, slot, vsid;
+-	u64 dummy0, dummy1;
+-
+-	vsid = get_kernel_vsid(ea, MMU_SEGSIZE_256M);
+-	vpn = hpt_vpn(ea, vsid, MMU_SEGSIZE_256M);
+-
+-	raw_spin_lock(&beat_htab_lock);
+-	slot = beat_lpar_hpte_find(vpn, psize);
+-	BUG_ON(slot == -1);
+-
+-	lpar_rc = beat_write_htab_entry(0, slot, 0, newpp, 0, 7,
+-		&dummy0, &dummy1);
+-	raw_spin_unlock(&beat_htab_lock);
+-
+-	BUG_ON(lpar_rc != 0);
+-}
+-
+-static void beat_lpar_hpte_invalidate(unsigned long slot, unsigned long vpn,
+-				      int psize, int apsize,
+-				      int ssize, int local)
+-{
+-	unsigned long want_v;
+-	unsigned long lpar_rc;
+-	u64 dummy1, dummy2;
+-	unsigned long flags;
+-
+-	DBG_LOW("    inval : slot=%lx, va=%016lx, psize: %d, local: %d\n",
+-		slot, va, psize, local);
+-	want_v = hpte_encode_avpn(vpn, psize, MMU_SEGSIZE_256M);
+-
+-	raw_spin_lock_irqsave(&beat_htab_lock, flags);
+-	dummy1 = beat_lpar_hpte_getword0(slot);
+-
+-	if ((dummy1 & ~0x7FUL) != (want_v & ~0x7FUL)) {
+-		DBG_LOW("not found !\n");
+-		raw_spin_unlock_irqrestore(&beat_htab_lock, flags);
+-		return;
+-	}
+-
+-	lpar_rc = beat_write_htab_entry(0, slot, 0, 0, HPTE_V_VALID, 0,
+-		&dummy1, &dummy2);
+-	raw_spin_unlock_irqrestore(&beat_htab_lock, flags);
+-
+-	BUG_ON(lpar_rc != 0);
+-}
+-
+-void __init hpte_init_beat(void)
+-{
+-	ppc_md.hpte_invalidate	= beat_lpar_hpte_invalidate;
+-	ppc_md.hpte_updatepp	= beat_lpar_hpte_updatepp;
+-	ppc_md.hpte_updateboltedpp = beat_lpar_hpte_updateboltedpp;
+-	ppc_md.hpte_insert	= beat_lpar_hpte_insert;
+-	ppc_md.hpte_remove	= beat_lpar_hpte_remove;
+-	ppc_md.hpte_clear_all	= beat_lpar_hptab_clear;
+-}
+-
+-static long beat_lpar_hpte_insert_v3(unsigned long hpte_group,
+-				  unsigned long vpn, unsigned long pa,
+-				  unsigned long rflags, unsigned long vflags,
+-				  int psize, int apsize, int ssize)
+-{
+-	unsigned long lpar_rc;
+-	u64 hpte_v, hpte_r, slot;
+-
+-	if (vflags & HPTE_V_SECONDARY)
+-		return -1;
+-
+-	if (!(vflags & HPTE_V_BOLTED))
+-		DBG_LOW("hpte_insert(group=%lx, vpn=%016lx, pa=%016lx, "
+-			"rflags=%lx, vflags=%lx, psize=%d)\n",
+-		hpte_group, vpn, pa, rflags, vflags, psize);
+-
+-	hpte_v = hpte_encode_v(vpn, psize, apsize, MMU_SEGSIZE_256M) |
+-		vflags | HPTE_V_VALID;
+-	hpte_r = hpte_encode_r(pa, psize, apsize) | rflags;
+-
+-	if (!(vflags & HPTE_V_BOLTED))
+-		DBG_LOW(" hpte_v=%016lx, hpte_r=%016lx\n", hpte_v, hpte_r);
+-
+-	if (rflags & _PAGE_NO_CACHE)
+-		hpte_r &= ~HPTE_R_M;
+-
+-	/* insert into not-volted entry */
+-	lpar_rc = beat_insert_htab_entry3(0, hpte_group, hpte_v, hpte_r,
+-		HPTE_V_BOLTED, 0, &slot);
+-	/*
+-	 * Since we try and ioremap PHBs we don't own, the pte insert
+-	 * will fail. However we must catch the failure in hash_page
+-	 * or we will loop forever, so return -2 in this case.
+-	 */
+-	if (unlikely(lpar_rc != 0)) {
+-		if (!(vflags & HPTE_V_BOLTED))
+-			DBG_LOW(" lpar err %lx\n", lpar_rc);
+-		return -2;
+-	}
+-	if (!(vflags & HPTE_V_BOLTED))
+-		DBG_LOW(" -> slot: %lx\n", slot);
+-
+-	/* We have to pass down the secondary bucket bit here as well */
+-	return (slot ^ hpte_group) & 15;
+-}
+-
+-/*
+- * NOTE: for updatepp ops we are fortunate that the linux "newpp" bits and
+- * the low 3 bits of flags happen to line up.  So no transform is needed.
+- * We can probably optimize here and assume the high bits of newpp are
+- * already zero.  For now I am paranoid.
+- */
+-static long beat_lpar_hpte_updatepp_v3(unsigned long slot,
+-				       unsigned long newpp,
+-				       unsigned long vpn,
+-				       int psize, int apsize,
+-				       int ssize, unsigned long flags)
+-{
+-	unsigned long lpar_rc;
+-	unsigned long want_v;
+-	unsigned long pss;
+-
+-	want_v = hpte_encode_avpn(vpn, psize, MMU_SEGSIZE_256M);
+-	pss = (psize == MMU_PAGE_4K) ? -1UL : mmu_psize_defs[psize].penc[psize];
+-
+-	DBG_LOW("    update: "
+-		"avpnv=%016lx, slot=%016lx, psize: %d, newpp %016lx ... ",
+-		want_v & HPTE_V_AVPN, slot, psize, newpp);
+-
+-	lpar_rc = beat_update_htab_permission3(0, slot, want_v, pss, 7, newpp);
+-
+-	if (lpar_rc == 0xfffffff7) {
+-		DBG_LOW("not found !\n");
+-		return -1;
+-	}
+-
+-	DBG_LOW("ok\n");
+-
+-	BUG_ON(lpar_rc != 0);
+-
+-	return 0;
+-}
+-
+-static void beat_lpar_hpte_invalidate_v3(unsigned long slot, unsigned long vpn,
+-					 int psize, int apsize,
+-					 int ssize, int local)
+-{
+-	unsigned long want_v;
+-	unsigned long lpar_rc;
+-	unsigned long pss;
+-
+-	DBG_LOW("    inval : slot=%lx, vpn=%016lx, psize: %d, local: %d\n",
+-		slot, vpn, psize, local);
+-	want_v = hpte_encode_avpn(vpn, psize, MMU_SEGSIZE_256M);
+-	pss = (psize == MMU_PAGE_4K) ? -1UL : mmu_psize_defs[psize].penc[psize];
+-
+-	lpar_rc = beat_invalidate_htab_entry3(0, slot, want_v, pss);
+-
+-	/* E_busy can be valid output: page may be already replaced */
+-	BUG_ON(lpar_rc != 0 && lpar_rc != 0xfffffff7);
+-}
+-
+-static int64_t _beat_lpar_hptab_clear_v3(void)
+-{
+-	return beat_clear_htab3(0);
+-}
+-
+-static void beat_lpar_hptab_clear_v3(void)
+-{
+-	_beat_lpar_hptab_clear_v3();
+-}
+-
+-void __init hpte_init_beat_v3(void)
+-{
+-	if (_beat_lpar_hptab_clear_v3() == 0) {
+-		ppc_md.hpte_invalidate	= beat_lpar_hpte_invalidate_v3;
+-		ppc_md.hpte_updatepp	= beat_lpar_hpte_updatepp_v3;
+-		ppc_md.hpte_updateboltedpp = beat_lpar_hpte_updateboltedpp;
+-		ppc_md.hpte_insert	= beat_lpar_hpte_insert_v3;
+-		ppc_md.hpte_remove	= beat_lpar_hpte_remove;
+-		ppc_md.hpte_clear_all	= beat_lpar_hptab_clear_v3;
+-	} else {
+-		ppc_md.hpte_invalidate	= beat_lpar_hpte_invalidate;
+-		ppc_md.hpte_updatepp	= beat_lpar_hpte_updatepp;
+-		ppc_md.hpte_updateboltedpp = beat_lpar_hpte_updateboltedpp;
+-		ppc_md.hpte_insert	= beat_lpar_hpte_insert;
+-		ppc_md.hpte_remove	= beat_lpar_hpte_remove;
+-		ppc_md.hpte_clear_all	= beat_lpar_hptab_clear;
+-	}
+-}
+diff --git a/arch/powerpc/platforms/cell/beat_hvCall.S b/arch/powerpc/platforms/cell/beat_hvCall.S
+deleted file mode 100644
+index 96c801907126..000000000000
+--- a/arch/powerpc/platforms/cell/beat_hvCall.S
++++ /dev/null
+@@ -1,285 +0,0 @@
+-/*
+- * Beat hypervisor call I/F
+- *
+- * (C) Copyright 2007 TOSHIBA CORPORATION
+- *
+- * This code is based on arch/powerpc/platforms/pseries/hvCall.S.
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License as published by
+- * the Free Software Foundation; either version 2 of the License, or
+- * (at your option) any later version.
+- *
+- * This program is distributed in the hope that it will be useful,
+- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- * GNU General Public License for more details.
+- *
+- * You should have received a copy of the GNU General Public License along
+- * with this program; if not, write to the Free Software Foundation, Inc.,
+- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+- */
+-
+-#include <asm/ppc_asm.h>
+-
+-/* Not implemented on Beat, now */
+-#define	HCALL_INST_PRECALL
+-#define	HCALL_INST_POSTCALL
+-
+-	.text
+-
+-#define	HVSC	.long	0x44000022
+-
+-/* Note: takes only 7 input parameters at maximum */
+-_GLOBAL(beat_hcall_norets)
+-	HMT_MEDIUM
+-
+-	mfcr	r0
+-	stw	r0,8(r1)
+-
+-	HCALL_INST_PRECALL
+-
+-	mr	r11,r3
+-	mr	r3,r4
+-	mr	r4,r5
+-	mr	r5,r6
+-	mr	r6,r7
+-	mr	r7,r8
+-	mr	r8,r9
+-
+-	HVSC				/* invoke the hypervisor */
+-
+-	HCALL_INST_POSTCALL
+-
+-	lwz	r0,8(r1)
+-	mtcrf	0xff,r0
+-
+-	blr				/* return r3 = status */
+-
+-/* Note: takes 8 input parameters at maximum */
+-_GLOBAL(beat_hcall_norets8)
+-	HMT_MEDIUM
+-
+-	mfcr	r0
+-	stw	r0,8(r1)
+-
+-	HCALL_INST_PRECALL
+-
+-	mr	r11,r3
+-	mr	r3,r4
+-	mr	r4,r5
+-	mr	r5,r6
+-	mr	r6,r7
+-	mr	r7,r8
+-	mr	r8,r9
+-	ld	r10,STK_PARAM(R10)(r1)
+-
+-	HVSC				/* invoke the hypervisor */
+-
+-	HCALL_INST_POSTCALL
+-
+-	lwz	r0,8(r1)
+-	mtcrf	0xff,r0
+-
+-	blr				/* return r3 = status */
+-
+-/* Note: takes only 6 input parameters, 1 output parameters at maximum */
+-_GLOBAL(beat_hcall1)
+-	HMT_MEDIUM
+-
+-	mfcr	r0
+-	stw	r0,8(r1)
+-
+-	HCALL_INST_PRECALL
+-
+-	std	r4,STK_PARAM(R4)(r1)	/* save ret buffer */
+-
+-	mr	r11,r3
+-	mr	r3,r5
+-	mr	r4,r6
+-	mr	r5,r7
+-	mr	r6,r8
+-	mr	r7,r9
+-	mr	r8,r10
+-
+-	HVSC				/* invoke the hypervisor */
+-
+-	HCALL_INST_POSTCALL
+-
+-	ld	r12,STK_PARAM(R4)(r1)
+-	std	r4,  0(r12)
+-
+-	lwz	r0,8(r1)
+-	mtcrf	0xff,r0
+-
+-	blr				/* return r3 = status */
+-
+-/* Note: takes only 6 input parameters, 2 output parameters at maximum */
+-_GLOBAL(beat_hcall2)
+-	HMT_MEDIUM
+-
+-	mfcr	r0
+-	stw	r0,8(r1)
+-
+-	HCALL_INST_PRECALL
+-
+-	std	r4,STK_PARAM(R4)(r1)	/* save ret buffer */
+-
+-	mr	r11,r3
+-	mr	r3,r5
+-	mr	r4,r6
+-	mr	r5,r7
+-	mr	r6,r8
+-	mr	r7,r9
+-	mr	r8,r10
+-
+-	HVSC				/* invoke the hypervisor */
+-
+-	HCALL_INST_POSTCALL
+-
+-	ld	r12,STK_PARAM(R4)(r1)
+-	std	r4,  0(r12)
+-	std	r5,  8(r12)
+-
+-	lwz	r0,8(r1)
+-	mtcrf	0xff,r0
+-
+-	blr				/* return r3 = status */
+-
+-/* Note: takes only 6 input parameters, 3 output parameters at maximum */
+-_GLOBAL(beat_hcall3)
+-	HMT_MEDIUM
+-
+-	mfcr	r0
+-	stw	r0,8(r1)
+-
+-	HCALL_INST_PRECALL
+-
+-	std	r4,STK_PARAM(R4)(r1)	/* save ret buffer */
+-
+-	mr	r11,r3
+-	mr	r3,r5
+-	mr	r4,r6
+-	mr	r5,r7
+-	mr	r6,r8
+-	mr	r7,r9
+-	mr	r8,r10
+-
+-	HVSC				/* invoke the hypervisor */
+-
+-	HCALL_INST_POSTCALL
+-
+-	ld	r12,STK_PARAM(R4)(r1)
+-	std	r4,  0(r12)
+-	std	r5,  8(r12)
+-	std	r6, 16(r12)
+-
+-	lwz	r0,8(r1)
+-	mtcrf	0xff,r0
+-
+-	blr				/* return r3 = status */
+-
+-/* Note: takes only 6 input parameters, 4 output parameters at maximum */
+-_GLOBAL(beat_hcall4)
+-	HMT_MEDIUM
+-
+-	mfcr	r0
+-	stw	r0,8(r1)
+-
+-	HCALL_INST_PRECALL
+-
+-	std	r4,STK_PARAM(R4)(r1)	/* save ret buffer */
+-
+-	mr	r11,r3
+-	mr	r3,r5
+-	mr	r4,r6
+-	mr	r5,r7
+-	mr	r6,r8
+-	mr	r7,r9
+-	mr	r8,r10
+-
+-	HVSC				/* invoke the hypervisor */
+-
+-	HCALL_INST_POSTCALL
+-
+-	ld	r12,STK_PARAM(R4)(r1)
+-	std	r4,  0(r12)
+-	std	r5,  8(r12)
+-	std	r6, 16(r12)
+-	std	r7, 24(r12)
+-
+-	lwz	r0,8(r1)
+-	mtcrf	0xff,r0
+-
+-	blr				/* return r3 = status */
+-
+-/* Note: takes only 6 input parameters, 5 output parameters at maximum */
+-_GLOBAL(beat_hcall5)
+-	HMT_MEDIUM
+-
+-	mfcr	r0
+-	stw	r0,8(r1)
+-
+-	HCALL_INST_PRECALL
+-
+-	std	r4,STK_PARAM(R4)(r1)	/* save ret buffer */
+-
+-	mr	r11,r3
+-	mr	r3,r5
+-	mr	r4,r6
+-	mr	r5,r7
+-	mr	r6,r8
+-	mr	r7,r9
+-	mr	r8,r10
+-
+-	HVSC				/* invoke the hypervisor */
+-
+-	HCALL_INST_POSTCALL
+-
+-	ld	r12,STK_PARAM(R4)(r1)
+-	std	r4,  0(r12)
+-	std	r5,  8(r12)
+-	std	r6, 16(r12)
+-	std	r7, 24(r12)
+-	std	r8, 32(r12)
+-
+-	lwz	r0,8(r1)
+-	mtcrf	0xff,r0
+-
+-	blr				/* return r3 = status */
+-
+-/* Note: takes only 6 input parameters, 6 output parameters at maximum */
+-_GLOBAL(beat_hcall6)
+-	HMT_MEDIUM
+-
+-	mfcr	r0
+-	stw	r0,8(r1)
+-
+-	HCALL_INST_PRECALL
+-
+-	std	r4,STK_PARAM(R4)(r1)	/* save ret buffer */
+-
+-	mr	r11,r3
+-	mr	r3,r5
+-	mr	r4,r6
+-	mr	r5,r7
+-	mr	r6,r8
+-	mr	r7,r9
+-	mr	r8,r10
+-
+-	HVSC				/* invoke the hypervisor */
+-
+-	HCALL_INST_POSTCALL
+-
+-	ld	r12,STK_PARAM(R4)(r1)
+-	std	r4,  0(r12)
+-	std	r5,  8(r12)
+-	std	r6, 16(r12)
+-	std	r7, 24(r12)
+-	std	r8, 32(r12)
+-	std	r9, 40(r12)
+-
+-	lwz	r0,8(r1)
+-	mtcrf	0xff,r0
+-
+-	blr				/* return r3 = status */
+diff --git a/arch/powerpc/platforms/cell/beat_interrupt.c b/arch/powerpc/platforms/cell/beat_interrupt.c
+deleted file mode 100644
+index 9e5dfbcc00af..000000000000
+--- a/arch/powerpc/platforms/cell/beat_interrupt.c
++++ /dev/null
+@@ -1,253 +0,0 @@
+-/*
+- * Celleb/Beat Interrupt controller
+- *
+- * (C) Copyright 2006-2007 TOSHIBA CORPORATION
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License as published by
+- * the Free Software Foundation; either version 2 of the License, or
+- * (at your option) any later version.
+- *
+- * This program is distributed in the hope that it will be useful,
+- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- * GNU General Public License for more details.
+- *
+- * You should have received a copy of the GNU General Public License along
+- * with this program; if not, write to the Free Software Foundation, Inc.,
+- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+- */
+-
+-#include <linux/init.h>
+-#include <linux/interrupt.h>
+-#include <linux/irq.h>
+-#include <linux/percpu.h>
+-#include <linux/types.h>
+-
+-#include <asm/machdep.h>
+-
+-#include "beat_interrupt.h"
+-#include "beat_wrapper.h"
+-
+-#define	MAX_IRQS	NR_IRQS
+-static DEFINE_RAW_SPINLOCK(beatic_irq_mask_lock);
+-static uint64_t	beatic_irq_mask_enable[(MAX_IRQS+255)/64];
+-static uint64_t	beatic_irq_mask_ack[(MAX_IRQS+255)/64];
+-
+-static struct irq_domain *beatic_host;
+-
+-/*
+- * In this implementation, "virq" == "IRQ plug number",
+- * "(irq_hw_number_t)hwirq" == "IRQ outlet number".
+- */
+-
+-/* assumption: locked */
+-static inline void beatic_update_irq_mask(unsigned int irq_plug)
+-{
+-	int off;
+-	unsigned long masks[4];
+-
+-	off = (irq_plug / 256) * 4;
+-	masks[0] = beatic_irq_mask_enable[off + 0]
+-		& beatic_irq_mask_ack[off + 0];
+-	masks[1] = beatic_irq_mask_enable[off + 1]
+-		& beatic_irq_mask_ack[off + 1];
+-	masks[2] = beatic_irq_mask_enable[off + 2]
+-		& beatic_irq_mask_ack[off + 2];
+-	masks[3] = beatic_irq_mask_enable[off + 3]
+-		& beatic_irq_mask_ack[off + 3];
+-	if (beat_set_interrupt_mask(irq_plug&~255UL,
+-		masks[0], masks[1], masks[2], masks[3]) != 0)
+-		panic("Failed to set mask IRQ!");
+-}
+-
+-static void beatic_mask_irq(struct irq_data *d)
+-{
+-	unsigned long flags;
+-
+-	raw_spin_lock_irqsave(&beatic_irq_mask_lock, flags);
+-	beatic_irq_mask_enable[d->irq/64] &= ~(1UL << (63 - (d->irq%64)));
+-	beatic_update_irq_mask(d->irq);
+-	raw_spin_unlock_irqrestore(&beatic_irq_mask_lock, flags);
+-}
+-
+-static void beatic_unmask_irq(struct irq_data *d)
+-{
+-	unsigned long flags;
+-
+-	raw_spin_lock_irqsave(&beatic_irq_mask_lock, flags);
+-	beatic_irq_mask_enable[d->irq/64] |= 1UL << (63 - (d->irq%64));
+-	beatic_update_irq_mask(d->irq);
+-	raw_spin_unlock_irqrestore(&beatic_irq_mask_lock, flags);
+-}
+-
+-static void beatic_ack_irq(struct irq_data *d)
+-{
+-	unsigned long flags;
+-
+-	raw_spin_lock_irqsave(&beatic_irq_mask_lock, flags);
+-	beatic_irq_mask_ack[d->irq/64] &= ~(1UL << (63 - (d->irq%64)));
+-	beatic_update_irq_mask(d->irq);
+-	raw_spin_unlock_irqrestore(&beatic_irq_mask_lock, flags);
+-}
+-
+-static void beatic_end_irq(struct irq_data *d)
+-{
+-	s64 err;
+-	unsigned long flags;
+-
+-	err = beat_downcount_of_interrupt(d->irq);
+-	if (err != 0) {
+-		if ((err & 0xFFFFFFFF) != 0xFFFFFFF5) /* -11: wrong state */
+-			panic("Failed to downcount IRQ! Error = %16llx", err);
+-
+-		printk(KERN_ERR "IRQ over-downcounted, plug %d\n", d->irq);
+-	}
+-	raw_spin_lock_irqsave(&beatic_irq_mask_lock, flags);
+-	beatic_irq_mask_ack[d->irq/64] |= 1UL << (63 - (d->irq%64));
+-	beatic_update_irq_mask(d->irq);
+-	raw_spin_unlock_irqrestore(&beatic_irq_mask_lock, flags);
+-}
+-
+-static struct irq_chip beatic_pic = {
+-	.name = "CELL-BEAT",
+-	.irq_unmask = beatic_unmask_irq,
+-	.irq_mask = beatic_mask_irq,
+-	.irq_eoi = beatic_end_irq,
+-};
+-
+-/*
+- * Dispose binding hardware IRQ number (hw) and Virtuql IRQ number (virq),
+- * update flags.
+- *
+- * Note that the number (virq) is already assigned at upper layer.
+- */
+-static void beatic_pic_host_unmap(struct irq_domain *h, unsigned int virq)
+-{
+-	beat_destruct_irq_plug(virq);
+-}
+-
+-/*
+- * Create or update binding hardware IRQ number (hw) and Virtuql
+- * IRQ number (virq). This is called only once for a given mapping.
+- *
+- * Note that the number (virq) is already assigned at upper layer.
+- */
+-static int beatic_pic_host_map(struct irq_domain *h, unsigned int virq,
+-			       irq_hw_number_t hw)
+-{
+-	int64_t	err;
+-
+-	err = beat_construct_and_connect_irq_plug(virq, hw);
+-	if (err < 0)
+-		return -EIO;
+-
+-	irq_set_status_flags(virq, IRQ_LEVEL);
+-	irq_set_chip_and_handler(virq, &beatic_pic, handle_fasteoi_irq);
+-	return 0;
+-}
+-
+-/*
+- * Translate device-tree interrupt spec to irq_hw_number_t style (ulong),
+- * to pass away to irq_create_mapping().
+- *
+- * Called from irq_create_of_mapping() only.
+- * Note: We have only 1 entry to translate.
+- */
+-static int beatic_pic_host_xlate(struct irq_domain *h, struct device_node *ct,
+-				 const u32 *intspec, unsigned int intsize,
+-				 irq_hw_number_t *out_hwirq,
+-				 unsigned int *out_flags)
+-{
+-	const u64 *intspec2 = (const u64 *)intspec;
+-
+-	*out_hwirq = *intspec2;
+-	*out_flags |= IRQ_TYPE_LEVEL_LOW;
+-	return 0;
+-}
+-
+-static int beatic_pic_host_match(struct irq_domain *h, struct device_node *np)
+-{
+-	/* Match all */
+-	return 1;
+-}
+-
+-static const struct irq_domain_ops beatic_pic_host_ops = {
+-	.map = beatic_pic_host_map,
+-	.unmap = beatic_pic_host_unmap,
+-	.xlate = beatic_pic_host_xlate,
+-	.match = beatic_pic_host_match,
+-};
+-
+-/*
+- * Get an IRQ number
+- * Note: returns VIRQ
+- */
+-static inline unsigned int beatic_get_irq_plug(void)
+-{
+-	int i;
+-	uint64_t	pending[4], ub;
+-
+-	for (i = 0; i < MAX_IRQS; i += 256) {
+-		beat_detect_pending_interrupts(i, pending);
+-		__asm__ ("cntlzd %0,%1":"=r"(ub):
+-			"r"(pending[0] & beatic_irq_mask_enable[i/64+0]
+-				       & beatic_irq_mask_ack[i/64+0]));
+-		if (ub != 64)
+-			return i + ub + 0;
+-		__asm__ ("cntlzd %0,%1":"=r"(ub):
+-			"r"(pending[1] & beatic_irq_mask_enable[i/64+1]
+-				       & beatic_irq_mask_ack[i/64+1]));
+-		if (ub != 64)
+-			return i + ub + 64;
+-		__asm__ ("cntlzd %0,%1":"=r"(ub):
+-			"r"(pending[2] & beatic_irq_mask_enable[i/64+2]
+-				       & beatic_irq_mask_ack[i/64+2]));
+-		if (ub != 64)
+-			return i + ub + 128;
+-		__asm__ ("cntlzd %0,%1":"=r"(ub):
+-			"r"(pending[3] & beatic_irq_mask_enable[i/64+3]
+-				       & beatic_irq_mask_ack[i/64+3]));
+-		if (ub != 64)
+-			return i + ub + 192;
+-	}
+-
+-	return NO_IRQ;
+-}
+-unsigned int beatic_get_irq(void)
+-{
+-	unsigned int ret;
+-
+-	ret = beatic_get_irq_plug();
+-	if (ret != NO_IRQ)
+-		beatic_ack_irq(irq_get_irq_data(ret));
+-	return ret;
+-}
+-
+-/*
+- */
+-void __init beatic_init_IRQ(void)
+-{
+-	int	i;
+-
+-	memset(beatic_irq_mask_enable, 0, sizeof(beatic_irq_mask_enable));
+-	memset(beatic_irq_mask_ack, 255, sizeof(beatic_irq_mask_ack));
+-	for (i = 0; i < MAX_IRQS; i += 256)
+-		beat_set_interrupt_mask(i, 0L, 0L, 0L, 0L);
+-
+-	/* Set out get_irq function */
+-	ppc_md.get_irq = beatic_get_irq;
+-
+-	/* Allocate an irq host */
+-	beatic_host = irq_domain_add_nomap(NULL, ~0, &beatic_pic_host_ops, NULL);
+-	BUG_ON(beatic_host == NULL);
+-	irq_set_default_host(beatic_host);
+-}
+-
+-void beatic_deinit_IRQ(void)
+-{
+-	int	i;
+-
+-	for (i = 1; i < nr_irqs; i++)
+-		beat_destruct_irq_plug(i);
+-}
+diff --git a/arch/powerpc/platforms/cell/beat_interrupt.h b/arch/powerpc/platforms/cell/beat_interrupt.h
+deleted file mode 100644
+index a7e52f91a078..000000000000
+--- a/arch/powerpc/platforms/cell/beat_interrupt.h
++++ /dev/null
+@@ -1,30 +0,0 @@
+-/*
+- * Celleb/Beat Interrupt controller
+- *
+- * (C) Copyright 2006 TOSHIBA CORPORATION
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License as published by
+- * the Free Software Foundation; either version 2 of the License, or
+- * (at your option) any later version.
+- *
+- * This program is distributed in the hope that it will be useful,
+- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- * GNU General Public License for more details.
+- *
+- * You should have received a copy of the GNU General Public License along
+- * with this program; if not, write to the Free Software Foundation, Inc.,
+- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+- */
+-
+-#ifndef ASM_BEAT_PIC_H
+-#define ASM_BEAT_PIC_H
+-#ifdef __KERNEL__
+-
+-extern void beatic_init_IRQ(void);
+-extern unsigned int beatic_get_irq(void);
+-extern void beatic_deinit_IRQ(void);
+-
+-#endif
+-#endif /* ASM_BEAT_PIC_H */
+diff --git a/arch/powerpc/platforms/cell/beat_iommu.c b/arch/powerpc/platforms/cell/beat_iommu.c
+deleted file mode 100644
+index 3ce685568935..000000000000
+--- a/arch/powerpc/platforms/cell/beat_iommu.c
++++ /dev/null
+@@ -1,115 +0,0 @@
+-/*
+- * Support for IOMMU on Celleb platform.
+- *
+- * (C) Copyright 2006-2007 TOSHIBA CORPORATION
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License as published by
+- * the Free Software Foundation; either version 2 of the License, or
+- * (at your option) any later version.
+- *
+- * This program is distributed in the hope that it will be useful,
+- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- * GNU General Public License for more details.
+- *
+- * You should have received a copy of the GNU General Public License along
+- * with this program; if not, write to the Free Software Foundation, Inc.,
+- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+- */
+-
+-#include <linux/kernel.h>
+-#include <linux/init.h>
+-#include <linux/dma-mapping.h>
+-#include <linux/pci.h>
+-#include <linux/of_platform.h>
+-
+-#include <asm/machdep.h>
+-
+-#include "beat_wrapper.h"
+-
+-#define DMA_FLAGS 0xf800000000000000UL	/* r/w permitted, coherency required,
+-					   strongest order */
+-
+-static int __init find_dma_window(u64 *io_space_id, u64 *ioid,
+-				  u64 *base, u64 *size, u64 *io_page_size)
+-{
+-	struct device_node *dn;
+-	const unsigned long *dma_window;
+-
+-	for_each_node_by_type(dn, "ioif") {
+-		dma_window = of_get_property(dn, "toshiba,dma-window", NULL);
+-		if (dma_window) {
+-			*io_space_id = (dma_window[0] >> 32) & 0xffffffffUL;
+-			*ioid = dma_window[0] & 0x7ffUL;
+-			*base = dma_window[1];
+-			*size = dma_window[2];
+-			*io_page_size = 1 << dma_window[3];
+-			of_node_put(dn);
+-			return 1;
+-		}
+-	}
+-	return 0;
+-}
+-
+-static unsigned long celleb_dma_direct_offset;
+-
+-static void __init celleb_init_direct_mapping(void)
+-{
+-	u64 lpar_addr, io_addr;
+-	u64 io_space_id, ioid, dma_base, dma_size, io_page_size;
+-
+-	if (!find_dma_window(&io_space_id, &ioid, &dma_base, &dma_size,
+-			     &io_page_size)) {
+-		pr_info("No dma window found !\n");
+-		return;
+-	}
+-
+-	for (lpar_addr = 0; lpar_addr < dma_size; lpar_addr += io_page_size) {
+-		io_addr = lpar_addr + dma_base;
+-		(void)beat_put_iopte(io_space_id, io_addr, lpar_addr,
+-				     ioid, DMA_FLAGS);
+-	}
+-
+-	celleb_dma_direct_offset = dma_base;
+-}
+-
+-static void celleb_dma_dev_setup(struct device *dev)
+-{
+-	set_dma_ops(dev, &dma_direct_ops);
+-	set_dma_offset(dev, celleb_dma_direct_offset);
+-}
+-
+-static void celleb_pci_dma_dev_setup(struct pci_dev *pdev)
+-{
+-	celleb_dma_dev_setup(&pdev->dev);
+-}
+-
+-static int celleb_of_bus_notify(struct notifier_block *nb,
+-				unsigned long action, void *data)
+-{
+-	struct device *dev = data;
+-
+-	/* We are only intereted in device addition */
+-	if (action != BUS_NOTIFY_ADD_DEVICE)
+-		return 0;
+-
+-	celleb_dma_dev_setup(dev);
+-
+-	return 0;
+-}
+-
+-static struct notifier_block celleb_of_bus_notifier = {
+-	.notifier_call = celleb_of_bus_notify
+-};
+-
+-static int __init celleb_init_iommu(void)
+-{
+-	celleb_init_direct_mapping();
+-	ppc_md.pci_dma_dev_setup = celleb_pci_dma_dev_setup;
+-	bus_register_notifier(&platform_bus_type, &celleb_of_bus_notifier);
+-
+-	return 0;
+-}
+-
+-machine_arch_initcall(celleb_beat, celleb_init_iommu);
+diff --git a/arch/powerpc/platforms/cell/beat_spu_priv1.c b/arch/powerpc/platforms/cell/beat_spu_priv1.c
+deleted file mode 100644
+index 13f52589d3a9..000000000000
+--- a/arch/powerpc/platforms/cell/beat_spu_priv1.c
++++ /dev/null
+@@ -1,205 +0,0 @@
+-/*
+- * spu hypervisor abstraction for Beat
+- *
+- * (C) Copyright 2006-2007 TOSHIBA CORPORATION
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License as published by
+- * the Free Software Foundation; either version 2 of the License, or
+- * (at your option) any later version.
+- *
+- * This program is distributed in the hope that it will be useful,
+- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- * GNU General Public License for more details.
+- *
+- * You should have received a copy of the GNU General Public License along
+- * with this program; if not, write to the Free Software Foundation, Inc.,
+- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+- */
+-
+-#include <asm/types.h>
+-#include <asm/spu.h>
+-#include <asm/spu_priv1.h>
+-
+-#include "beat_wrapper.h"
+-
+-static inline void _int_mask_set(struct spu *spu, int class, u64 mask)
+-{
+-	spu->shadow_int_mask_RW[class] = mask;
+-	beat_set_irq_mask_for_spe(spu->spe_id, class, mask);
+-}
+-
+-static inline u64 _int_mask_get(struct spu *spu, int class)
+-{
+-	return spu->shadow_int_mask_RW[class];
+-}
+-
+-static void int_mask_set(struct spu *spu, int class, u64 mask)
+-{
+-	_int_mask_set(spu, class, mask);
+-}
+-
+-static u64 int_mask_get(struct spu *spu, int class)
+-{
+-	return _int_mask_get(spu, class);
+-}
+-
+-static void int_mask_and(struct spu *spu, int class, u64 mask)
+-{
+-	u64 old_mask;
+-	old_mask = _int_mask_get(spu, class);
+-	_int_mask_set(spu, class, old_mask & mask);
+-}
+-
+-static void int_mask_or(struct spu *spu, int class, u64 mask)
+-{
+-	u64 old_mask;
+-	old_mask = _int_mask_get(spu, class);
+-	_int_mask_set(spu, class, old_mask | mask);
+-}
+-
+-static void int_stat_clear(struct spu *spu, int class, u64 stat)
+-{
+-	beat_clear_interrupt_status_of_spe(spu->spe_id, class, stat);
+-}
+-
+-static u64 int_stat_get(struct spu *spu, int class)
+-{
+-	u64 int_stat;
+-	beat_get_interrupt_status_of_spe(spu->spe_id, class, &int_stat);
+-	return int_stat;
+-}
+-
+-static void cpu_affinity_set(struct spu *spu, int cpu)
+-{
+-	return;
+-}
+-
+-static u64 mfc_dar_get(struct spu *spu)
+-{
+-	u64 dar;
+-	beat_get_spe_privileged_state_1_registers(
+-		spu->spe_id,
+-		offsetof(struct spu_priv1, mfc_dar_RW), &dar);
+-	return dar;
+-}
+-
+-static u64 mfc_dsisr_get(struct spu *spu)
+-{
+-	u64 dsisr;
+-	beat_get_spe_privileged_state_1_registers(
+-		spu->spe_id,
+-		offsetof(struct spu_priv1, mfc_dsisr_RW), &dsisr);
+-	return dsisr;
+-}
+-
+-static void mfc_dsisr_set(struct spu *spu, u64 dsisr)
+-{
+-	beat_set_spe_privileged_state_1_registers(
+-		spu->spe_id,
+-		offsetof(struct spu_priv1, mfc_dsisr_RW), dsisr);
+-}
+-
+-static void mfc_sdr_setup(struct spu *spu)
+-{
+-	return;
+-}
+-
+-static void mfc_sr1_set(struct spu *spu, u64 sr1)
+-{
+-	beat_set_spe_privileged_state_1_registers(
+-		spu->spe_id,
+-		offsetof(struct spu_priv1, mfc_sr1_RW), sr1);
+-}
+-
+-static u64 mfc_sr1_get(struct spu *spu)
+-{
+-	u64 sr1;
+-	beat_get_spe_privileged_state_1_registers(
+-		spu->spe_id,
+-		offsetof(struct spu_priv1, mfc_sr1_RW), &sr1);
+-	return sr1;
+-}
+-
+-static void mfc_tclass_id_set(struct spu *spu, u64 tclass_id)
+-{
+-	beat_set_spe_privileged_state_1_registers(
+-		spu->spe_id,
+-		offsetof(struct spu_priv1, mfc_tclass_id_RW), tclass_id);
+-}
+-
+-static u64 mfc_tclass_id_get(struct spu *spu)
+-{
+-	u64 tclass_id;
+-	beat_get_spe_privileged_state_1_registers(
+-		spu->spe_id,
+-		offsetof(struct spu_priv1, mfc_tclass_id_RW), &tclass_id);
+-	return tclass_id;
+-}
+-
+-static void tlb_invalidate(struct spu *spu)
+-{
+-	beat_set_spe_privileged_state_1_registers(
+-		spu->spe_id,
+-		offsetof(struct spu_priv1, tlb_invalidate_entry_W), 0ul);
+-}
+-
+-static void resource_allocation_groupID_set(struct spu *spu, u64 id)
+-{
+-	beat_set_spe_privileged_state_1_registers(
+-		spu->spe_id,
+-		offsetof(struct spu_priv1, resource_allocation_groupID_RW),
+-		id);
+-}
+-
+-static u64 resource_allocation_groupID_get(struct spu *spu)
+-{
+-	u64 id;
+-	beat_get_spe_privileged_state_1_registers(
+-		spu->spe_id,
+-		offsetof(struct spu_priv1, resource_allocation_groupID_RW),
+-		&id);
+-	return id;
+-}
+-
+-static void resource_allocation_enable_set(struct spu *spu, u64 enable)
+-{
+-	beat_set_spe_privileged_state_1_registers(
+-		spu->spe_id,
+-		offsetof(struct spu_priv1, resource_allocation_enable_RW),
+-		enable);
+-}
+-
+-static u64 resource_allocation_enable_get(struct spu *spu)
+-{
+-	u64 enable;
+-	beat_get_spe_privileged_state_1_registers(
+-		spu->spe_id,
+-		offsetof(struct spu_priv1, resource_allocation_enable_RW),
+-		&enable);
+-	return enable;
+-}
+-
+-const struct spu_priv1_ops spu_priv1_beat_ops = {
+-	.int_mask_and = int_mask_and,
+-	.int_mask_or = int_mask_or,
+-	.int_mask_set = int_mask_set,
+-	.int_mask_get = int_mask_get,
+-	.int_stat_clear = int_stat_clear,
+-	.int_stat_get = int_stat_get,
+-	.cpu_affinity_set = cpu_affinity_set,
+-	.mfc_dar_get = mfc_dar_get,
+-	.mfc_dsisr_get = mfc_dsisr_get,
+-	.mfc_dsisr_set = mfc_dsisr_set,
+-	.mfc_sdr_setup = mfc_sdr_setup,
+-	.mfc_sr1_set = mfc_sr1_set,
+-	.mfc_sr1_get = mfc_sr1_get,
+-	.mfc_tclass_id_set = mfc_tclass_id_set,
+-	.mfc_tclass_id_get = mfc_tclass_id_get,
+-	.tlb_invalidate = tlb_invalidate,
+-	.resource_allocation_groupID_set = resource_allocation_groupID_set,
+-	.resource_allocation_groupID_get = resource_allocation_groupID_get,
+-	.resource_allocation_enable_set = resource_allocation_enable_set,
+-	.resource_allocation_enable_get = resource_allocation_enable_get,
+-};
+diff --git a/arch/powerpc/platforms/cell/beat_syscall.h b/arch/powerpc/platforms/cell/beat_syscall.h
+deleted file mode 100644
+index 8580dc7e1798..000000000000
+--- a/arch/powerpc/platforms/cell/beat_syscall.h
++++ /dev/null
+@@ -1,164 +0,0 @@
+-/*
+- * Beat hypervisor call numbers
+- *
+- * (C) Copyright 2004-2007 TOSHIBA CORPORATION
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License as published by
+- * the Free Software Foundation; either version 2 of the License, or
+- * (at your option) any later version.
+- *
+- * This program is distributed in the hope that it will be useful,
+- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- * GNU General Public License for more details.
+- *
+- * You should have received a copy of the GNU General Public License along
+- * with this program; if not, write to the Free Software Foundation, Inc.,
+- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+- */
+-
+-#ifndef BEAT_BEAT_syscall_H
+-#define BEAT_BEAT_syscall_H
+-
+-#ifdef	__ASSEMBLY__
+-#define	__BEAT_ADD_VENDOR_ID(__x, __v)	((__v)<<60|(__x))
+-#else
+-#define	__BEAT_ADD_VENDOR_ID(__x, __v)	((u64)(__v)<<60|(__x))
+-#endif
+-#define HV_allocate_memory __BEAT_ADD_VENDOR_ID(0, 0)
+-#define HV_construct_virtual_address_space __BEAT_ADD_VENDOR_ID(2, 0)
+-#define HV_destruct_virtual_address_space __BEAT_ADD_VENDOR_ID(10, 0)
+-#define HV_get_virtual_address_space_id_of_ppe __BEAT_ADD_VENDOR_ID(4, 0)
+-#define HV_query_logical_partition_address_region_info 			\
+-						__BEAT_ADD_VENDOR_ID(6, 0)
+-#define HV_release_memory __BEAT_ADD_VENDOR_ID(13, 0)
+-#define HV_select_virtual_address_space __BEAT_ADD_VENDOR_ID(7, 0)
+-#define HV_load_range_registers __BEAT_ADD_VENDOR_ID(68, 0)
+-#define HV_set_ppe_l2cache_rmt_entry __BEAT_ADD_VENDOR_ID(70, 0)
+-#define HV_set_ppe_tlb_rmt_entry __BEAT_ADD_VENDOR_ID(71, 0)
+-#define HV_set_spe_tlb_rmt_entry __BEAT_ADD_VENDOR_ID(72, 0)
+-#define HV_get_io_address_translation_fault_info __BEAT_ADD_VENDOR_ID(14, 0)
+-#define HV_get_iopte __BEAT_ADD_VENDOR_ID(16, 0)
+-#define HV_preload_iopt_cache __BEAT_ADD_VENDOR_ID(17, 0)
+-#define HV_put_iopte __BEAT_ADD_VENDOR_ID(15, 0)
+-#define HV_connect_event_ports __BEAT_ADD_VENDOR_ID(21, 0)
+-#define HV_construct_event_receive_port __BEAT_ADD_VENDOR_ID(18, 0)
+-#define HV_destruct_event_receive_port __BEAT_ADD_VENDOR_ID(19, 0)
+-#define HV_destruct_event_send_port __BEAT_ADD_VENDOR_ID(22, 0)
+-#define HV_get_state_of_event_send_port __BEAT_ADD_VENDOR_ID(25, 0)
+-#define HV_request_to_connect_event_ports __BEAT_ADD_VENDOR_ID(20, 0)
+-#define HV_send_event_externally __BEAT_ADD_VENDOR_ID(23, 0)
+-#define HV_send_event_locally __BEAT_ADD_VENDOR_ID(24, 0)
+-#define HV_construct_and_connect_irq_plug __BEAT_ADD_VENDOR_ID(28, 0)
+-#define HV_destruct_irq_plug __BEAT_ADD_VENDOR_ID(29, 0)
+-#define HV_detect_pending_interrupts __BEAT_ADD_VENDOR_ID(26, 0)
+-#define HV_end_of_interrupt __BEAT_ADD_VENDOR_ID(27, 0)
+-#define HV_assign_control_signal_notification_port __BEAT_ADD_VENDOR_ID(45, 0)
+-#define HV_end_of_control_signal_processing __BEAT_ADD_VENDOR_ID(48, 0)
+-#define HV_get_control_signal __BEAT_ADD_VENDOR_ID(46, 0)
+-#define HV_set_irq_mask_for_spe __BEAT_ADD_VENDOR_ID(61, 0)
+-#define HV_shutdown_logical_partition __BEAT_ADD_VENDOR_ID(44, 0)
+-#define HV_connect_message_ports __BEAT_ADD_VENDOR_ID(35, 0)
+-#define HV_destruct_message_port __BEAT_ADD_VENDOR_ID(36, 0)
+-#define HV_receive_message __BEAT_ADD_VENDOR_ID(37, 0)
+-#define HV_get_message_port_info __BEAT_ADD_VENDOR_ID(34, 0)
+-#define HV_request_to_connect_message_ports __BEAT_ADD_VENDOR_ID(33, 0)
+-#define HV_send_message __BEAT_ADD_VENDOR_ID(32, 0)
+-#define HV_get_logical_ppe_id __BEAT_ADD_VENDOR_ID(69, 0)
+-#define HV_pause __BEAT_ADD_VENDOR_ID(9, 0)
+-#define HV_destruct_shared_memory_handle __BEAT_ADD_VENDOR_ID(51, 0)
+-#define HV_get_shared_memory_info __BEAT_ADD_VENDOR_ID(52, 0)
+-#define HV_permit_sharing_memory __BEAT_ADD_VENDOR_ID(50, 0)
+-#define HV_request_to_attach_shared_memory __BEAT_ADD_VENDOR_ID(49, 0)
+-#define HV_enable_logical_spe_execution __BEAT_ADD_VENDOR_ID(55, 0)
+-#define HV_construct_logical_spe __BEAT_ADD_VENDOR_ID(53, 0)
+-#define HV_disable_logical_spe_execution __BEAT_ADD_VENDOR_ID(56, 0)
+-#define HV_destruct_logical_spe __BEAT_ADD_VENDOR_ID(54, 0)
+-#define HV_sense_spe_execution_status __BEAT_ADD_VENDOR_ID(58, 0)
+-#define HV_insert_htab_entry __BEAT_ADD_VENDOR_ID(101, 0)
+-#define HV_read_htab_entries __BEAT_ADD_VENDOR_ID(95, 0)
+-#define HV_write_htab_entry __BEAT_ADD_VENDOR_ID(94, 0)
+-#define HV_assign_io_address_translation_fault_port 			\
+-						__BEAT_ADD_VENDOR_ID(100, 0)
+-#define HV_set_interrupt_mask __BEAT_ADD_VENDOR_ID(73, 0)
+-#define HV_get_logical_partition_id __BEAT_ADD_VENDOR_ID(74, 0)
+-#define HV_create_repository_node2 __BEAT_ADD_VENDOR_ID(90, 0)
+-#define HV_create_repository_node __BEAT_ADD_VENDOR_ID(90, 0) /* alias */
+-#define HV_get_repository_node_value2 __BEAT_ADD_VENDOR_ID(91, 0)
+-#define HV_get_repository_node_value __BEAT_ADD_VENDOR_ID(91, 0) /* alias */
+-#define HV_modify_repository_node_value2 __BEAT_ADD_VENDOR_ID(92, 0)
+-#define HV_modify_repository_node_value __BEAT_ADD_VENDOR_ID(92, 0) /* alias */
+-#define HV_remove_repository_node2 __BEAT_ADD_VENDOR_ID(93, 0)
+-#define HV_remove_repository_node __BEAT_ADD_VENDOR_ID(93, 0) /* alias */
+-#define HV_cancel_shared_memory __BEAT_ADD_VENDOR_ID(104, 0)
+-#define HV_clear_interrupt_status_of_spe __BEAT_ADD_VENDOR_ID(206, 0)
+-#define HV_construct_spe_irq_outlet __BEAT_ADD_VENDOR_ID(80, 0)
+-#define HV_destruct_spe_irq_outlet __BEAT_ADD_VENDOR_ID(81, 0)
+-#define HV_disconnect_ipspc_service __BEAT_ADD_VENDOR_ID(88, 0)
+-#define HV_execute_ipspc_command __BEAT_ADD_VENDOR_ID(86, 0)
+-#define HV_get_interrupt_status_of_spe __BEAT_ADD_VENDOR_ID(205, 0)
+-#define HV_get_spe_privileged_state_1_registers __BEAT_ADD_VENDOR_ID(208, 0)
+-#define HV_permit_use_of_ipspc_service __BEAT_ADD_VENDOR_ID(85, 0)
+-#define HV_reinitialize_logical_spe __BEAT_ADD_VENDOR_ID(82, 0)
+-#define HV_request_ipspc_service __BEAT_ADD_VENDOR_ID(84, 0)
+-#define HV_stop_ipspc_command __BEAT_ADD_VENDOR_ID(87, 0)
+-#define HV_set_spe_privileged_state_1_registers __BEAT_ADD_VENDOR_ID(204, 0)
+-#define HV_get_status_of_ipspc_service __BEAT_ADD_VENDOR_ID(203, 0)
+-#define HV_put_characters_to_console __BEAT_ADD_VENDOR_ID(0x101, 1)
+-#define HV_get_characters_from_console __BEAT_ADD_VENDOR_ID(0x102, 1)
+-#define HV_get_base_clock __BEAT_ADD_VENDOR_ID(0x111, 1)
+-#define HV_set_base_clock __BEAT_ADD_VENDOR_ID(0x112, 1)
+-#define HV_get_frame_cycle __BEAT_ADD_VENDOR_ID(0x114, 1)
+-#define HV_disable_console __BEAT_ADD_VENDOR_ID(0x115, 1)
+-#define HV_disable_all_console __BEAT_ADD_VENDOR_ID(0x116, 1)
+-#define HV_oneshot_timer __BEAT_ADD_VENDOR_ID(0x117, 1)
+-#define HV_set_dabr __BEAT_ADD_VENDOR_ID(0x118, 1)
+-#define HV_get_dabr __BEAT_ADD_VENDOR_ID(0x119, 1)
+-#define HV_start_hv_stats __BEAT_ADD_VENDOR_ID(0x21c, 1)
+-#define HV_stop_hv_stats __BEAT_ADD_VENDOR_ID(0x21d, 1)
+-#define HV_get_hv_stats __BEAT_ADD_VENDOR_ID(0x21e, 1)
+-#define HV_get_hv_error_stats __BEAT_ADD_VENDOR_ID(0x221, 1)
+-#define HV_get_stats __BEAT_ADD_VENDOR_ID(0x224, 1)
+-#define HV_get_heap_stats __BEAT_ADD_VENDOR_ID(0x225, 1)
+-#define HV_get_memory_stats __BEAT_ADD_VENDOR_ID(0x227, 1)
+-#define HV_get_memory_detail __BEAT_ADD_VENDOR_ID(0x228, 1)
+-#define HV_set_priority_of_irq_outlet __BEAT_ADD_VENDOR_ID(0x122, 1)
+-#define HV_get_physical_spe_by_reservation_id __BEAT_ADD_VENDOR_ID(0x128, 1)
+-#define HV_get_spe_context __BEAT_ADD_VENDOR_ID(0x129, 1)
+-#define HV_set_spe_context __BEAT_ADD_VENDOR_ID(0x12a, 1)
+-#define HV_downcount_of_interrupt __BEAT_ADD_VENDOR_ID(0x12e, 1)
+-#define HV_peek_spe_context __BEAT_ADD_VENDOR_ID(0x12f, 1)
+-#define HV_read_bpa_register __BEAT_ADD_VENDOR_ID(0x131, 1)
+-#define HV_write_bpa_register __BEAT_ADD_VENDOR_ID(0x132, 1)
+-#define HV_map_context_table_of_spe __BEAT_ADD_VENDOR_ID(0x137, 1)
+-#define HV_get_slb_for_logical_spe __BEAT_ADD_VENDOR_ID(0x138, 1)
+-#define HV_set_slb_for_logical_spe __BEAT_ADD_VENDOR_ID(0x139, 1)
+-#define HV_init_pm __BEAT_ADD_VENDOR_ID(0x150, 1)
+-#define HV_set_pm_signal __BEAT_ADD_VENDOR_ID(0x151, 1)
+-#define HV_get_pm_signal __BEAT_ADD_VENDOR_ID(0x152, 1)
+-#define HV_set_pm_config __BEAT_ADD_VENDOR_ID(0x153, 1)
+-#define HV_get_pm_config __BEAT_ADD_VENDOR_ID(0x154, 1)
+-#define HV_get_inner_trace_data __BEAT_ADD_VENDOR_ID(0x155, 1)
+-#define HV_set_ext_trace_buffer __BEAT_ADD_VENDOR_ID(0x156, 1)
+-#define HV_get_ext_trace_buffer __BEAT_ADD_VENDOR_ID(0x157, 1)
+-#define HV_set_pm_interrupt __BEAT_ADD_VENDOR_ID(0x158, 1)
+-#define HV_get_pm_interrupt __BEAT_ADD_VENDOR_ID(0x159, 1)
+-#define HV_kick_pm __BEAT_ADD_VENDOR_ID(0x160, 1)
+-#define HV_construct_pm_context __BEAT_ADD_VENDOR_ID(0x164, 1)
+-#define HV_destruct_pm_context __BEAT_ADD_VENDOR_ID(0x165, 1)
+-#define HV_be_slow __BEAT_ADD_VENDOR_ID(0x170, 1)
+-#define HV_assign_ipspc_server_connection_status_notification_port 	\
+-						__BEAT_ADD_VENDOR_ID(0x173, 1)
+-#define HV_get_raid_of_physical_spe __BEAT_ADD_VENDOR_ID(0x174, 1)
+-#define HV_set_physical_spe_to_rag __BEAT_ADD_VENDOR_ID(0x175, 1)
+-#define HV_release_physical_spe_from_rag __BEAT_ADD_VENDOR_ID(0x176, 1)
+-#define HV_rtc_read __BEAT_ADD_VENDOR_ID(0x190, 1)
+-#define HV_rtc_write __BEAT_ADD_VENDOR_ID(0x191, 1)
+-#define HV_eeprom_read __BEAT_ADD_VENDOR_ID(0x192, 1)
+-#define HV_eeprom_write __BEAT_ADD_VENDOR_ID(0x193, 1)
+-#define HV_insert_htab_entry3 __BEAT_ADD_VENDOR_ID(0x104, 1)
+-#define HV_invalidate_htab_entry3 __BEAT_ADD_VENDOR_ID(0x105, 1)
+-#define HV_update_htab_permission3 __BEAT_ADD_VENDOR_ID(0x106, 1)
+-#define HV_clear_htab3 __BEAT_ADD_VENDOR_ID(0x107, 1)
+-#endif
+diff --git a/arch/powerpc/platforms/cell/beat_udbg.c b/arch/powerpc/platforms/cell/beat_udbg.c
+deleted file mode 100644
+index 350735bc8888..000000000000
+--- a/arch/powerpc/platforms/cell/beat_udbg.c
++++ /dev/null
+@@ -1,98 +0,0 @@
+-/*
+- * udbg function for Beat
+- *
+- * (C) Copyright 2006 TOSHIBA CORPORATION
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License as published by
+- * the Free Software Foundation; either version 2 of the License, or
+- * (at your option) any later version.
+- *
+- * This program is distributed in the hope that it will be useful,
+- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- * GNU General Public License for more details.
+- *
+- * You should have received a copy of the GNU General Public License along
+- * with this program; if not, write to the Free Software Foundation, Inc.,
+- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+- */
+-
+-#include <linux/kernel.h>
+-#include <linux/console.h>
+-
+-#include <asm/machdep.h>
+-#include <asm/prom.h>
+-#include <asm/udbg.h>
+-
+-#include "beat.h"
+-
+-#define	celleb_vtermno	0
+-
+-static void udbg_putc_beat(char c)
+-{
+-	unsigned long rc;
+-
+-	if (c == '\n')
+-		udbg_putc_beat('\r');
+-
+-	rc = beat_put_term_char(celleb_vtermno, 1, (uint64_t)c << 56, 0);
+-}
+-
+-/* Buffered chars getc */
+-static u64 inbuflen;
+-static u64 inbuf[2];	/* must be 2 u64s */
+-
+-static int udbg_getc_poll_beat(void)
+-{
+-	/* The interface is tricky because it may return up to 16 chars.
+-	 * We save them statically for future calls to udbg_getc().
+-	 */
+-	char ch, *buf = (char *)inbuf;
+-	int i;
+-	long rc;
+-	if (inbuflen == 0) {
+-		/* get some more chars. */
+-		inbuflen = 0;
+-		rc = beat_get_term_char(celleb_vtermno, &inbuflen,
+-					inbuf+0, inbuf+1);
+-		if (rc != 0)
+-			inbuflen = 0;	/* otherwise inbuflen is garbage */
+-	}
+-	if (inbuflen <= 0 || inbuflen > 16) {
+-		/* Catch error case as well as other oddities (corruption) */
+-		inbuflen = 0;
+-		return -1;
+-	}
+-	ch = buf[0];
+-	for (i = 1; i < inbuflen; i++)	/* shuffle them down. */
+-		buf[i-1] = buf[i];
+-	inbuflen--;
+-	return ch;
+-}
+-
+-static int udbg_getc_beat(void)
+-{
+-	int ch;
+-	for (;;) {
+-		ch = udbg_getc_poll_beat();
+-		if (ch == -1) {
+-			/* This shouldn't be needed...but... */
+-			volatile unsigned long delay;
+-			for (delay = 0; delay < 2000000; delay++)
+-				;
+-		} else {
+-			return ch;
+-		}
+-	}
+-}
+-
+-/* call this from early_init() for a working debug console on
+- * vterm capable LPAR machines
+- */
+-void __init udbg_init_debug_beat(void)
+-{
+-	udbg_putc = udbg_putc_beat;
+-	udbg_getc = udbg_getc_beat;
+-	udbg_getc_poll = udbg_getc_poll_beat;
+-}
+diff --git a/arch/powerpc/platforms/cell/beat_wrapper.h b/arch/powerpc/platforms/cell/beat_wrapper.h
+deleted file mode 100644
+index c1109969f242..000000000000
+--- a/arch/powerpc/platforms/cell/beat_wrapper.h
++++ /dev/null
+@@ -1,290 +0,0 @@
+-/*
+- * Beat hypervisor call I/F
+- *
+- * (C) Copyright 2007 TOSHIBA CORPORATION
+- *
+- * This code is based on arch/powerpc/platforms/pseries/plpar_wrapper.h.
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License as published by
+- * the Free Software Foundation; either version 2 of the License, or
+- * (at your option) any later version.
+- *
+- * This program is distributed in the hope that it will be useful,
+- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- * GNU General Public License for more details.
+- *
+- * You should have received a copy of the GNU General Public License along
+- * with this program; if not, write to the Free Software Foundation, Inc.,
+- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+- */
+-#ifndef BEAT_HCALL
+-#include <linux/string.h>
+-#include "beat_syscall.h"
+-
+-/* defined in hvCall.S */
+-extern s64 beat_hcall_norets(u64 opcode, ...);
+-extern s64 beat_hcall_norets8(u64 opcode, u64 arg1, u64 arg2, u64 arg3,
+-	u64 arg4, u64 arg5, u64 arg6, u64 arg7, u64 arg8);
+-extern s64 beat_hcall1(u64 opcode, u64 retbuf[1], ...);
+-extern s64 beat_hcall2(u64 opcode, u64 retbuf[2], ...);
+-extern s64 beat_hcall3(u64 opcode, u64 retbuf[3], ...);
+-extern s64 beat_hcall4(u64 opcode, u64 retbuf[4], ...);
+-extern s64 beat_hcall5(u64 opcode, u64 retbuf[5], ...);
+-extern s64 beat_hcall6(u64 opcode, u64 retbuf[6], ...);
+-
+-static inline s64 beat_downcount_of_interrupt(u64 plug_id)
+-{
+-	return beat_hcall_norets(HV_downcount_of_interrupt, plug_id);
+-}
+-
+-static inline s64 beat_set_interrupt_mask(u64 index,
+-	u64 val0, u64 val1, u64 val2, u64 val3)
+-{
+-	return beat_hcall_norets(HV_set_interrupt_mask, index,
+-	       val0, val1, val2, val3);
+-}
+-
+-static inline s64 beat_destruct_irq_plug(u64 plug_id)
+-{
+-	return beat_hcall_norets(HV_destruct_irq_plug, plug_id);
+-}
+-
+-static inline s64 beat_construct_and_connect_irq_plug(u64 plug_id,
+-	u64 outlet_id)
+-{
+-	return beat_hcall_norets(HV_construct_and_connect_irq_plug, plug_id,
+-	       outlet_id);
+-}
+-
+-static inline s64 beat_detect_pending_interrupts(u64 index, u64 *retbuf)
+-{
+-	return beat_hcall4(HV_detect_pending_interrupts, retbuf, index);
+-}
+-
+-static inline s64 beat_pause(u64 style)
+-{
+-	return beat_hcall_norets(HV_pause, style);
+-}
+-
+-static inline s64 beat_read_htab_entries(u64 htab_id, u64 index, u64 *retbuf)
+-{
+-	return beat_hcall5(HV_read_htab_entries, retbuf, htab_id, index);
+-}
+-
+-static inline s64 beat_insert_htab_entry(u64 htab_id, u64 group,
+-	u64 bitmask, u64 hpte_v, u64 hpte_r, u64 *slot)
+-{
+-	u64 dummy[3];
+-	s64 ret;
+-
+-	ret = beat_hcall3(HV_insert_htab_entry, dummy, htab_id, group,
+-		bitmask, hpte_v, hpte_r);
+-	*slot = dummy[0];
+-	return ret;
+-}
+-
+-static inline s64 beat_write_htab_entry(u64 htab_id, u64 slot,
+-	u64 hpte_v, u64 hpte_r, u64 mask_v, u64 mask_r,
+-	u64 *ret_v, u64 *ret_r)
+-{
+-	u64 dummy[2];
+-	s64 ret;
+-
+-	ret = beat_hcall2(HV_write_htab_entry, dummy, htab_id, slot,
+-		hpte_v, hpte_r, mask_v, mask_r);
+-	*ret_v = dummy[0];
+-	*ret_r = dummy[1];
+-	return ret;
+-}
+-
+-static inline s64 beat_insert_htab_entry3(u64 htab_id, u64 group,
+-	u64 hpte_v, u64 hpte_r, u64 mask_v, u64 value_v, u64 *slot)
+-{
+-	u64 dummy[1];
+-	s64 ret;
+-
+-	ret = beat_hcall1(HV_insert_htab_entry3, dummy, htab_id, group,
+-		hpte_v, hpte_r, mask_v, value_v);
+-	*slot = dummy[0];
+-	return ret;
+-}
+-
+-static inline s64 beat_invalidate_htab_entry3(u64 htab_id, u64 group,
+-	u64 va, u64 pss)
+-{
+-	return beat_hcall_norets(HV_invalidate_htab_entry3,
+-		htab_id, group, va, pss);
+-}
+-
+-static inline s64 beat_update_htab_permission3(u64 htab_id, u64 group,
+-	u64 va, u64 pss, u64 ptel_mask, u64 ptel_value)
+-{
+-	return beat_hcall_norets(HV_update_htab_permission3,
+-		htab_id, group, va, pss, ptel_mask, ptel_value);
+-}
+-
+-static inline s64 beat_clear_htab3(u64 htab_id)
+-{
+-	return beat_hcall_norets(HV_clear_htab3, htab_id);
+-}
+-
+-static inline void beat_shutdown_logical_partition(u64 code)
+-{
+-	(void)beat_hcall_norets(HV_shutdown_logical_partition, code);
+-}
+-
+-static inline s64 beat_rtc_write(u64 time_from_epoch)
+-{
+-	return beat_hcall_norets(HV_rtc_write, time_from_epoch);
+-}
+-
+-static inline s64 beat_rtc_read(u64 *time_from_epoch)
+-{
+-	u64 dummy[1];
+-	s64 ret;
+-
+-	ret = beat_hcall1(HV_rtc_read, dummy);
+-	*time_from_epoch = dummy[0];
+-	return ret;
+-}
+-
+-#define	BEAT_NVRW_CNT	(sizeof(u64) * 6)
+-
+-static inline s64 beat_eeprom_write(u64 index, u64 length, u8 *buffer)
+-{
+-	u64	b[6];
+-
+-	if (length > BEAT_NVRW_CNT)
+-		return -1;
+-	memcpy(b, buffer, sizeof(b));
+-	return beat_hcall_norets8(HV_eeprom_write, index, length,
+-		b[0], b[1], b[2], b[3], b[4], b[5]);
+-}
+-
+-static inline s64 beat_eeprom_read(u64 index, u64 length, u8 *buffer)
+-{
+-	u64	b[6];
+-	s64	ret;
+-
+-	if (length > BEAT_NVRW_CNT)
+-		return -1;
+-	ret = beat_hcall6(HV_eeprom_read, b, index, length);
+-	memcpy(buffer, b, length);
+-	return ret;
+-}
+-
+-static inline s64 beat_set_dabr(u64 value, u64 style)
+-{
+-	return beat_hcall_norets(HV_set_dabr, value, style);
+-}
+-
+-static inline s64 beat_get_characters_from_console(u64 termno, u64 *len,
+-	u8 *buffer)
+-{
+-	u64 dummy[3];
+-	s64 ret;
+-
+-	ret = beat_hcall3(HV_get_characters_from_console, dummy, termno, len);
+-	*len = dummy[0];
+-	memcpy(buffer, dummy + 1, *len);
+-	return ret;
+-}
+-
+-static inline s64 beat_put_characters_to_console(u64 termno, u64 len,
+-	u8 *buffer)
+-{
+-	u64 b[2];
+-
+-	memcpy(b, buffer, len);
+-	return beat_hcall_norets(HV_put_characters_to_console, termno, len,
+-		b[0], b[1]);
+-}
+-
+-static inline s64 beat_get_spe_privileged_state_1_registers(
+-		u64 id, u64 offsetof, u64 *value)
+-{
+-	u64 dummy[1];
+-	s64 ret;
+-
+-	ret = beat_hcall1(HV_get_spe_privileged_state_1_registers, dummy, id,
+-		offsetof);
+-	*value = dummy[0];
+-	return ret;
+-}
+-
+-static inline s64 beat_set_irq_mask_for_spe(u64 id, u64 class, u64 mask)
+-{
+-	return beat_hcall_norets(HV_set_irq_mask_for_spe, id, class, mask);
+-}
+-
+-static inline s64 beat_clear_interrupt_status_of_spe(u64 id, u64 class,
+-	u64 mask)
+-{
+-	return beat_hcall_norets(HV_clear_interrupt_status_of_spe,
+-		id, class, mask);
+-}
+-
+-static inline s64 beat_set_spe_privileged_state_1_registers(
+-		u64 id, u64 offsetof, u64 value)
+-{
+-	return beat_hcall_norets(HV_set_spe_privileged_state_1_registers,
+-		id, offsetof, value);
+-}
+-
+-static inline s64 beat_get_interrupt_status_of_spe(u64 id, u64 class, u64 *val)
+-{
+-	u64 dummy[1];
+-	s64 ret;
+-
+-	ret = beat_hcall1(HV_get_interrupt_status_of_spe, dummy, id, class);
+-	*val = dummy[0];
+-	return ret;
+-}
+-
+-static inline s64 beat_put_iopte(u64 ioas_id, u64 io_addr, u64 real_addr,
+-	u64 ioid, u64 flags)
+-{
+-	return beat_hcall_norets(HV_put_iopte, ioas_id, io_addr, real_addr,
+-		ioid, flags);
+-}
+-
+-static inline s64 beat_construct_event_receive_port(u64 *port)
+-{
+-	u64 dummy[1];
+-	s64 ret;
+-
+-	ret = beat_hcall1(HV_construct_event_receive_port, dummy);
+-	*port = dummy[0];
+-	return ret;
+-}
+-
+-static inline s64 beat_destruct_event_receive_port(u64 port)
+-{
+-	s64 ret;
+-
+-	ret = beat_hcall_norets(HV_destruct_event_receive_port, port);
+-	return ret;
+-}
+-
+-static inline s64 beat_create_repository_node(u64 path[4], u64 data[2])
+-{
+-	s64 ret;
+-
+-	ret = beat_hcall_norets(HV_create_repository_node2,
+-		path[0], path[1], path[2], path[3], data[0], data[1]);
+-	return ret;
+-}
+-
+-static inline s64 beat_get_repository_node_value(u64 lpid, u64 path[4],
+-	u64 data[2])
+-{
+-	s64 ret;
+-
+-	ret = beat_hcall2(HV_get_repository_node_value2, data,
+-		lpid, path[0], path[1], path[2], path[3]);
+-	return ret;
+-}
+-
+-#endif
+diff --git a/arch/powerpc/platforms/cell/celleb_pci.c b/arch/powerpc/platforms/cell/celleb_pci.c
+deleted file mode 100644
+index 3ce70ded2d6a..000000000000
+--- a/arch/powerpc/platforms/cell/celleb_pci.c
++++ /dev/null
+@@ -1,500 +0,0 @@
+-/*
+- * Support for PCI on Celleb platform.
+- *
+- * (C) Copyright 2006-2007 TOSHIBA CORPORATION
+- *
+- * This code is based on arch/powerpc/kernel/rtas_pci.c:
+- *  Copyright (C) 2001 Dave Engebretsen, IBM Corporation
+- *  Copyright (C) 2003 Anton Blanchard <anton@au.ibm.com>, IBM
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License as published by
+- * the Free Software Foundation; either version 2 of the License, or
+- * (at your option) any later version.
+- *
+- * This program is distributed in the hope that it will be useful,
+- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- * GNU General Public License for more details.
+- *
+- * You should have received a copy of the GNU General Public License along
+- * with this program; if not, write to the Free Software Foundation, Inc.,
+- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+- */
+-
+-#undef DEBUG
+-
+-#include <linux/kernel.h>
+-#include <linux/threads.h>
+-#include <linux/pci.h>
+-#include <linux/string.h>
+-#include <linux/init.h>
+-#include <linux/memblock.h>
+-#include <linux/pci_regs.h>
+-#include <linux/of.h>
+-#include <linux/of_device.h>
+-#include <linux/slab.h>
+-
+-#include <asm/io.h>
+-#include <asm/irq.h>
+-#include <asm/prom.h>
+-#include <asm/pci-bridge.h>
+-#include <asm/ppc-pci.h>
+-
+-#include "celleb_pci.h"
+-
+-#define MAX_PCI_DEVICES    32
+-#define MAX_PCI_FUNCTIONS   8
+-#define MAX_PCI_BASE_ADDRS  3 /* use 64 bit address */
+-
+-/* definition for fake pci configuration area for GbE, .... ,and etc. */
+-
+-struct celleb_pci_resource {
+-	struct resource r[MAX_PCI_BASE_ADDRS];
+-};
+-
+-struct celleb_pci_private {
+-	unsigned char *fake_config[MAX_PCI_DEVICES][MAX_PCI_FUNCTIONS];
+-	struct celleb_pci_resource *res[MAX_PCI_DEVICES][MAX_PCI_FUNCTIONS];
+-};
+-
+-static inline u8 celleb_fake_config_readb(void *addr)
+-{
+-	u8 *p = addr;
+-	return *p;
+-}
+-
+-static inline u16 celleb_fake_config_readw(void *addr)
+-{
+-	__le16 *p = addr;
+-	return le16_to_cpu(*p);
+-}
+-
+-static inline u32 celleb_fake_config_readl(void *addr)
+-{
+-	__le32 *p = addr;
+-	return le32_to_cpu(*p);
+-}
+-
+-static inline void celleb_fake_config_writeb(u32 val, void *addr)
+-{
+-	u8 *p = addr;
+-	*p = val;
+-}
+-
+-static inline void celleb_fake_config_writew(u32 val, void *addr)
+-{
+-	__le16 val16;
+-	__le16 *p = addr;
+-	val16 = cpu_to_le16(val);
+-	*p = val16;
+-}
+-
+-static inline void celleb_fake_config_writel(u32 val, void *addr)
+-{
+-	__le32 val32;
+-	__le32 *p = addr;
+-	val32 = cpu_to_le32(val);
+-	*p = val32;
+-}
+-
+-static unsigned char *get_fake_config_start(struct pci_controller *hose,
+-					    int devno, int fn)
+-{
+-	struct celleb_pci_private *private = hose->private_data;
+-
+-	if (private == NULL)
+-		return NULL;
+-
+-	return private->fake_config[devno][fn];
+-}
+-
+-static struct celleb_pci_resource *get_resource_start(
+-				struct pci_controller *hose,
+-				int devno, int fn)
+-{
+-	struct celleb_pci_private *private = hose->private_data;
+-
+-	if (private == NULL)
+-		return NULL;
+-
+-	return private->res[devno][fn];
+-}
+-
+-
+-static void celleb_config_read_fake(unsigned char *config, int where,
+-				    int size, u32 *val)
+-{
+-	char *p = config + where;
+-
+-	switch (size) {
+-	case 1:
+-		*val = celleb_fake_config_readb(p);
+-		break;
+-	case 2:
+-		*val = celleb_fake_config_readw(p);
+-		break;
+-	case 4:
+-		*val = celleb_fake_config_readl(p);
+-		break;
+-	}
+-}
+-
+-static void celleb_config_write_fake(unsigned char *config, int where,
+-				     int size, u32 val)
+-{
+-	char *p = config + where;
+-
+-	switch (size) {
+-	case 1:
+-		celleb_fake_config_writeb(val, p);
+-		break;
+-	case 2:
+-		celleb_fake_config_writew(val, p);
+-		break;
+-	case 4:
+-		celleb_fake_config_writel(val, p);
+-		break;
+-	}
+-}
+-
+-static int celleb_fake_pci_read_config(struct pci_bus *bus,
+-		unsigned int devfn, int where, int size, u32 *val)
+-{
+-	char *config;
+-	struct pci_controller *hose = pci_bus_to_host(bus);
+-	unsigned int devno = devfn >> 3;
+-	unsigned int fn = devfn & 0x7;
+-
+-	/* allignment check */
+-	BUG_ON(where % size);
+-
+-	pr_debug("    fake read: bus=0x%x, ", bus->number);
+-	config = get_fake_config_start(hose, devno, fn);
+-
+-	pr_debug("devno=0x%x, where=0x%x, size=0x%x, ", devno, where, size);
+-	if (!config) {
+-		pr_debug("failed\n");
+-		return PCIBIOS_DEVICE_NOT_FOUND;
+-	}
+-
+-	celleb_config_read_fake(config, where, size, val);
+-	pr_debug("val=0x%x\n", *val);
+-
+-	return PCIBIOS_SUCCESSFUL;
+-}
+-
+-
+-static int celleb_fake_pci_write_config(struct pci_bus *bus,
+-		unsigned int devfn, int where, int size, u32 val)
+-{
+-	char *config;
+-	struct pci_controller *hose = pci_bus_to_host(bus);
+-	struct celleb_pci_resource *res;
+-	unsigned int devno = devfn >> 3;
+-	unsigned int fn = devfn & 0x7;
+-
+-	/* allignment check */
+-	BUG_ON(where % size);
+-
+-	config = get_fake_config_start(hose, devno, fn);
+-
+-	if (!config)
+-		return PCIBIOS_DEVICE_NOT_FOUND;
+-
+-	if (val == ~0) {
+-		int i = (where - PCI_BASE_ADDRESS_0) >> 3;
+-
+-		switch (where) {
+-		case PCI_BASE_ADDRESS_0:
+-		case PCI_BASE_ADDRESS_2:
+-			if (size != 4)
+-				return PCIBIOS_DEVICE_NOT_FOUND;
+-			res = get_resource_start(hose, devno, fn);
+-			if (!res)
+-				return PCIBIOS_DEVICE_NOT_FOUND;
+-			celleb_config_write_fake(config, where, size,
+-					(res->r[i].end - res->r[i].start));
+-			return PCIBIOS_SUCCESSFUL;
+-		case PCI_BASE_ADDRESS_1:
+-		case PCI_BASE_ADDRESS_3:
+-		case PCI_BASE_ADDRESS_4:
+-		case PCI_BASE_ADDRESS_5:
+-			break;
+-		default:
+-			break;
+-		}
+-	}
+-
+-	celleb_config_write_fake(config, where, size, val);
+-	pr_debug("    fake write: where=%x, size=%d, val=%x\n",
+-		 where, size, val);
+-
+-	return PCIBIOS_SUCCESSFUL;
+-}
+-
+-static struct pci_ops celleb_fake_pci_ops = {
+-	.read = celleb_fake_pci_read_config,
+-	.write = celleb_fake_pci_write_config,
+-};
+-
+-static inline void celleb_setup_pci_base_addrs(struct pci_controller *hose,
+-					unsigned int devno, unsigned int fn,
+-					unsigned int num_base_addr)
+-{
+-	u32 val;
+-	unsigned char *config;
+-	struct celleb_pci_resource *res;
+-
+-	config = get_fake_config_start(hose, devno, fn);
+-	res = get_resource_start(hose, devno, fn);
+-
+-	if (!config || !res)
+-		return;
+-
+-	switch (num_base_addr) {
+-	case 3:
+-		val = (res->r[2].start & 0xfffffff0)
+-		    | PCI_BASE_ADDRESS_MEM_TYPE_64;
+-		celleb_config_write_fake(config, PCI_BASE_ADDRESS_4, 4, val);
+-		val = res->r[2].start >> 32;
+-		celleb_config_write_fake(config, PCI_BASE_ADDRESS_5, 4, val);
+-		/* FALLTHROUGH */
+-	case 2:
+-		val = (res->r[1].start & 0xfffffff0)
+-		    | PCI_BASE_ADDRESS_MEM_TYPE_64;
+-		celleb_config_write_fake(config, PCI_BASE_ADDRESS_2, 4, val);
+-		val = res->r[1].start >> 32;
+-		celleb_config_write_fake(config, PCI_BASE_ADDRESS_3, 4, val);
+-		/* FALLTHROUGH */
+-	case 1:
+-		val = (res->r[0].start & 0xfffffff0)
+-		    | PCI_BASE_ADDRESS_MEM_TYPE_64;
+-		celleb_config_write_fake(config, PCI_BASE_ADDRESS_0, 4, val);
+-		val = res->r[0].start >> 32;
+-		celleb_config_write_fake(config, PCI_BASE_ADDRESS_1, 4, val);
+-		break;
+-	}
+-
+-	val = PCI_COMMAND_IO | PCI_COMMAND_MEMORY | PCI_COMMAND_MASTER;
+-	celleb_config_write_fake(config, PCI_COMMAND, 2, val);
+-}
+-
+-static int __init celleb_setup_fake_pci_device(struct device_node *node,
+-					       struct pci_controller *hose)
+-{
+-	unsigned int rlen;
+-	int num_base_addr = 0;
+-	u32 val;
+-	const u32 *wi0, *wi1, *wi2, *wi3, *wi4;
+-	unsigned int devno, fn;
+-	struct celleb_pci_private *private = hose->private_data;
+-	unsigned char **config = NULL;
+-	struct celleb_pci_resource **res = NULL;
+-	const char *name;
+-	const unsigned long *li;
+-	int size, result;
+-
+-	if (private == NULL) {
+-		printk(KERN_ERR "PCI: "
+-		       "memory space for pci controller is not assigned\n");
+-		goto error;
+-	}
+-
+-	name = of_get_property(node, "model", &rlen);
+-	if (!name) {
+-		printk(KERN_ERR "PCI: model property not found.\n");
+-		goto error;
+-	}
+-
+-	wi4 = of_get_property(node, "reg", &rlen);
+-	if (wi4 == NULL)
+-		goto error;
+-
+-	devno = ((wi4[0] >> 8) & 0xff) >> 3;
+-	fn = (wi4[0] >> 8) & 0x7;
+-
+-	pr_debug("PCI: celleb_setup_fake_pci() %s devno=%x fn=%x\n", name,
+-		 devno, fn);
+-
+-	size = 256;
+-	config = &private->fake_config[devno][fn];
+-	*config = zalloc_maybe_bootmem(size, GFP_KERNEL);
+-	if (*config == NULL) {
+-		printk(KERN_ERR "PCI: "
+-		       "not enough memory for fake configuration space\n");
+-		goto error;
+-	}
+-	pr_debug("PCI: fake config area assigned 0x%016lx\n",
+-		 (unsigned long)*config);
+-
+-	size = sizeof(struct celleb_pci_resource);
+-	res = &private->res[devno][fn];
+-	*res = zalloc_maybe_bootmem(size, GFP_KERNEL);
+-	if (*res == NULL) {
+-		printk(KERN_ERR
+-		       "PCI: not enough memory for resource data space\n");
+-		goto error;
+-	}
+-	pr_debug("PCI: res assigned 0x%016lx\n", (unsigned long)*res);
+-
+-	wi0 = of_get_property(node, "device-id", NULL);
+-	wi1 = of_get_property(node, "vendor-id", NULL);
+-	wi2 = of_get_property(node, "class-code", NULL);
+-	wi3 = of_get_property(node, "revision-id", NULL);
+-	if (!wi0 || !wi1 || !wi2 || !wi3) {
+-		printk(KERN_ERR "PCI: Missing device tree properties.\n");
+-		goto error;
+-	}
+-
+-	celleb_config_write_fake(*config, PCI_DEVICE_ID, 2, wi0[0] & 0xffff);
+-	celleb_config_write_fake(*config, PCI_VENDOR_ID, 2, wi1[0] & 0xffff);
+-	pr_debug("class-code = 0x%08x\n", wi2[0]);
+-
+-	celleb_config_write_fake(*config, PCI_CLASS_PROG, 1, wi2[0] & 0xff);
+-	celleb_config_write_fake(*config, PCI_CLASS_DEVICE, 2,
+-				 (wi2[0] >> 8) & 0xffff);
+-	celleb_config_write_fake(*config, PCI_REVISION_ID, 1, wi3[0]);
+-
+-	while (num_base_addr < MAX_PCI_BASE_ADDRS) {
+-		result = of_address_to_resource(node,
+-				num_base_addr, &(*res)->r[num_base_addr]);
+-		if (result)
+-			break;
+-		num_base_addr++;
+-	}
+-
+-	celleb_setup_pci_base_addrs(hose, devno, fn, num_base_addr);
+-
+-	li = of_get_property(node, "interrupts", &rlen);
+-	if (!li) {
+-		printk(KERN_ERR "PCI: interrupts not found.\n");
+-		goto error;
+-	}
+-	val = li[0];
+-	celleb_config_write_fake(*config, PCI_INTERRUPT_PIN, 1, 1);
+-	celleb_config_write_fake(*config, PCI_INTERRUPT_LINE, 1, val);
+-
+-#ifdef DEBUG
+-	pr_debug("PCI: %s irq=%ld\n", name, li[0]);
+-	for (i = 0; i < 6; i++) {
+-		celleb_config_read_fake(*config,
+-					PCI_BASE_ADDRESS_0 + 0x4 * i, 4,
+-					&val);
+-		pr_debug("PCI: %s fn=%d base_address_%d=0x%x\n",
+-			 name, fn, i, val);
+-	}
+-#endif
+-
+-	celleb_config_write_fake(*config, PCI_HEADER_TYPE, 1,
+-				 PCI_HEADER_TYPE_NORMAL);
+-
+-	return 0;
+-
+-error:
+-	if (mem_init_done) {
+-		if (config && *config)
+-			kfree(*config);
+-		if (res && *res)
+-			kfree(*res);
+-
+-	} else {
+-		if (config && *config) {
+-			size = 256;
+-			memblock_free(__pa(*config), size);
+-		}
+-		if (res && *res) {
+-			size = sizeof(struct celleb_pci_resource);
+-			memblock_free(__pa(*res), size);
+-		}
+-	}
+-
+-	return 1;
+-}
+-
+-static int __init phb_set_bus_ranges(struct device_node *dev,
+-				     struct pci_controller *phb)
+-{
+-	const int *bus_range;
+-	unsigned int len;
+-
+-	bus_range = of_get_property(dev, "bus-range", &len);
+-	if (bus_range == NULL || len < 2 * sizeof(int))
+-		return 1;
+-
+-	phb->first_busno = bus_range[0];
+-	phb->last_busno = bus_range[1];
+-
+-	return 0;
+-}
+-
+-static void __init celleb_alloc_private_mem(struct pci_controller *hose)
+-{
+-	hose->private_data =
+-		zalloc_maybe_bootmem(sizeof(struct celleb_pci_private),
+-			GFP_KERNEL);
+-}
+-
+-static int __init celleb_setup_fake_pci(struct device_node *dev,
+-					struct pci_controller *phb)
+-{
+-	struct device_node *node;
+-
+-	phb->ops = &celleb_fake_pci_ops;
+-	celleb_alloc_private_mem(phb);
+-
+-	for (node = of_get_next_child(dev, NULL);
+-	     node != NULL; node = of_get_next_child(dev, node))
+-		celleb_setup_fake_pci_device(node, phb);
+-
+-	return 0;
+-}
+-
+-static struct celleb_phb_spec celleb_fake_pci_spec __initdata = {
+-	.setup = celleb_setup_fake_pci,
+-};
+-
+-static const struct of_device_id celleb_phb_match[] __initconst = {
+-	{
+-		.name = "pci-pseudo",
+-		.data = &celleb_fake_pci_spec,
+-	}, {
+-		.name = "epci",
+-		.data = &celleb_epci_spec,
+-	}, {
+-		.name = "pcie",
+-		.data = &celleb_pciex_spec,
+-	}, {
+-	},
+-};
+-
+-int __init celleb_setup_phb(struct pci_controller *phb)
+-{
+-	struct device_node *dev = phb->dn;
+-	const struct of_device_id *match;
+-	const struct celleb_phb_spec *phb_spec;
+-	int rc;
+-
+-	match = of_match_node(celleb_phb_match, dev);
+-	if (!match)
+-		return 1;
+-
+-	phb_set_bus_ranges(dev, phb);
+-	phb->buid = 1;
+-
+-	phb_spec = match->data;
+-	rc = (*phb_spec->setup)(dev, phb);
+-	if (rc)
+-		return 1;
+-
+-	if (phb_spec->ops)
+-		iowa_register_bus(phb, phb_spec->ops,
+-				  phb_spec->iowa_init,
+-				  phb_spec->iowa_data);
+-	return 0;
+-}
+-
+-int celleb_pci_probe_mode(struct pci_bus *bus)
+-{
+-	return PCI_PROBE_DEVTREE;
+-}
+diff --git a/arch/powerpc/platforms/cell/celleb_pci.h b/arch/powerpc/platforms/cell/celleb_pci.h
+deleted file mode 100644
+index a801fcc5f389..000000000000
+--- a/arch/powerpc/platforms/cell/celleb_pci.h
++++ /dev/null
+@@ -1,46 +0,0 @@
+-/*
+- * pci prototypes for Celleb platform
+- *
+- * (C) Copyright 2006-2007 TOSHIBA CORPORATION
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License as published by
+- * the Free Software Foundation; either version 2 of the License, or
+- * (at your option) any later version.
+- *
+- * This program is distributed in the hope that it will be useful,
+- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- * GNU General Public License for more details.
+- *
+- * You should have received a copy of the GNU General Public License along
+- * with this program; if not, write to the Free Software Foundation, Inc.,
+- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+- */
+-
+-#ifndef _CELLEB_PCI_H
+-#define _CELLEB_PCI_H
+-
+-#include <linux/pci.h>
+-
+-#include <asm/pci-bridge.h>
+-#include <asm/prom.h>
+-#include <asm/ppc-pci.h>
+-#include <asm/io-workarounds.h>
+-
+-struct iowa_bus;
+-
+-struct celleb_phb_spec {
+-	int (*setup)(struct device_node *, struct pci_controller *);
+-	struct ppc_pci_io *ops;
+-	int (*iowa_init)(struct iowa_bus *, void *);
+-	void *iowa_data;
+-};
+-
+-extern int celleb_setup_phb(struct pci_controller *);
+-extern int celleb_pci_probe_mode(struct pci_bus *);
+-
+-extern struct celleb_phb_spec celleb_epci_spec;
+-extern struct celleb_phb_spec celleb_pciex_spec;
+-
+-#endif /* _CELLEB_PCI_H */
+diff --git a/arch/powerpc/platforms/cell/celleb_scc.h b/arch/powerpc/platforms/cell/celleb_scc.h
+deleted file mode 100644
+index b596a711c348..000000000000
+--- a/arch/powerpc/platforms/cell/celleb_scc.h
++++ /dev/null
+@@ -1,232 +0,0 @@
+-/*
+- * SCC (Super Companion Chip) definitions
+- *
+- * (C) Copyright 2004-2006 TOSHIBA CORPORATION
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License as published by
+- * the Free Software Foundation; either version 2 of the License, or
+- * (at your option) any later version.
+- *
+- * This program is distributed in the hope that it will be useful,
+- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- * GNU General Public License for more details.
+- *
+- * You should have received a copy of the GNU General Public License along
+- * with this program; if not, write to the Free Software Foundation, Inc.,
+- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+- */
+-
+-#ifndef _CELLEB_SCC_H
+-#define _CELLEB_SCC_H
+-
+-#define PCI_VENDOR_ID_TOSHIBA_2                 0x102f
+-#define PCI_DEVICE_ID_TOSHIBA_SCC_PCIEXC_BRIDGE 0x01b0
+-#define PCI_DEVICE_ID_TOSHIBA_SCC_EPCI_BRIDGE   0x01b1
+-#define PCI_DEVICE_ID_TOSHIBA_SCC_BRIDGE        0x01b2
+-#define PCI_DEVICE_ID_TOSHIBA_SCC_GBE           0x01b3
+-#define PCI_DEVICE_ID_TOSHIBA_SCC_ATA           0x01b4
+-#define PCI_DEVICE_ID_TOSHIBA_SCC_USB2          0x01b5
+-#define PCI_DEVICE_ID_TOSHIBA_SCC_USB           0x01b6
+-#define PCI_DEVICE_ID_TOSHIBA_SCC_ENCDEC        0x01b7
+-
+-#define SCC_EPCI_REG            0x0000d000
+-
+-/* EPCI registers */
+-#define SCC_EPCI_CNF10_REG      0x010
+-#define SCC_EPCI_CNF14_REG      0x014
+-#define SCC_EPCI_CNF18_REG      0x018
+-#define SCC_EPCI_PVBAT          0x100
+-#define SCC_EPCI_VPMBAT         0x104
+-#define SCC_EPCI_VPIBAT         0x108
+-#define SCC_EPCI_VCSR           0x110
+-#define SCC_EPCI_VIENAB         0x114
+-#define SCC_EPCI_VISTAT         0x118
+-#define SCC_EPCI_VRDCOUNT       0x124
+-#define SCC_EPCI_BAM0           0x12c
+-#define SCC_EPCI_BAM1           0x134
+-#define SCC_EPCI_BAM2           0x13c
+-#define SCC_EPCI_IADR           0x164
+-#define SCC_EPCI_CLKRST         0x800
+-#define SCC_EPCI_INTSET         0x804
+-#define SCC_EPCI_STATUS         0x808
+-#define SCC_EPCI_ABTSET         0x80c
+-#define SCC_EPCI_WATRP          0x810
+-#define SCC_EPCI_DUMYRADR       0x814
+-#define SCC_EPCI_SWRESP         0x818
+-#define SCC_EPCI_CNTOPT         0x81c
+-#define SCC_EPCI_ECMODE         0xf00
+-#define SCC_EPCI_IOM_AC_NUM     5
+-#define SCC_EPCI_IOM_ACTE(n)    (0xf10 + (n) * 4)
+-#define SCC_EPCI_IOT_AC_NUM     4
+-#define SCC_EPCI_IOT_ACTE(n)    (0xf30 + (n) * 4)
+-#define SCC_EPCI_MAEA           0xf50
+-#define SCC_EPCI_MAEC           0xf54
+-#define SCC_EPCI_CKCTRL         0xff0
+-
+-/* bits for SCC_EPCI_VCSR */
+-#define SCC_EPCI_VCSR_FRE       0x00020000
+-#define SCC_EPCI_VCSR_FWE       0x00010000
+-#define SCC_EPCI_VCSR_DR        0x00000400
+-#define SCC_EPCI_VCSR_SR        0x00000008
+-#define SCC_EPCI_VCSR_AT        0x00000004
+-
+-/* bits for SCC_EPCI_VIENAB/SCC_EPCI_VISTAT */
+-#define SCC_EPCI_VISTAT_PMPE    0x00000008
+-#define SCC_EPCI_VISTAT_PMFE    0x00000004
+-#define SCC_EPCI_VISTAT_PRA     0x00000002
+-#define SCC_EPCI_VISTAT_PRD     0x00000001
+-#define SCC_EPCI_VISTAT_ALL     0x0000000f
+-
+-#define SCC_EPCI_VIENAB_PMPEE   0x00000008
+-#define SCC_EPCI_VIENAB_PMFEE   0x00000004
+-#define SCC_EPCI_VIENAB_PRA     0x00000002
+-#define SCC_EPCI_VIENAB_PRD     0x00000001
+-#define SCC_EPCI_VIENAB_ALL     0x0000000f
+-
+-/* bits for SCC_EPCI_CLKRST */
+-#define SCC_EPCI_CLKRST_CKS_MASK 0x00030000
+-#define SCC_EPCI_CLKRST_CKS_2   0x00000000
+-#define SCC_EPCI_CLKRST_CKS_4   0x00010000
+-#define SCC_EPCI_CLKRST_CKS_8   0x00020000
+-#define SCC_EPCI_CLKRST_PCICRST 0x00000400
+-#define SCC_EPCI_CLKRST_BC      0x00000200
+-#define SCC_EPCI_CLKRST_PCIRST  0x00000100
+-#define SCC_EPCI_CLKRST_PCKEN   0x00000001
+-
+-/* bits for SCC_EPCI_INTSET/SCC_EPCI_STATUS */
+-#define SCC_EPCI_INT_2M         0x01000000
+-#define SCC_EPCI_INT_RERR       0x00200000
+-#define SCC_EPCI_INT_SERR       0x00100000
+-#define SCC_EPCI_INT_PRTER      0x00080000
+-#define SCC_EPCI_INT_SER        0x00040000
+-#define SCC_EPCI_INT_PER        0x00020000
+-#define SCC_EPCI_INT_PAI        0x00010000
+-#define SCC_EPCI_INT_1M         0x00000100
+-#define SCC_EPCI_INT_PME        0x00000010
+-#define SCC_EPCI_INT_INTD       0x00000008
+-#define SCC_EPCI_INT_INTC       0x00000004
+-#define SCC_EPCI_INT_INTB       0x00000002
+-#define SCC_EPCI_INT_INTA       0x00000001
+-#define SCC_EPCI_INT_DEVINT     0x0000000f
+-#define SCC_EPCI_INT_ALL        0x003f001f
+-#define SCC_EPCI_INT_ALLERR     0x003f0000
+-
+-/* bits for SCC_EPCI_CKCTRL */
+-#define SCC_EPCI_CKCTRL_CRST0   0x00010000
+-#define SCC_EPCI_CKCTRL_CRST1   0x00020000
+-#define SCC_EPCI_CKCTRL_OCLKEN  0x00000100
+-#define SCC_EPCI_CKCTRL_LCLKEN  0x00000001
+-
+-#define SCC_EPCI_IDSEL_AD_TO_SLOT(ad)       ((ad) - 10)
+-#define SCC_EPCI_MAX_DEVNU      SCC_EPCI_IDSEL_AD_TO_SLOT(32)
+-
+-/* bits for SCC_EPCI_CNTOPT */
+-#define SCC_EPCI_CNTOPT_O2PMB   0x00000002
+-
+-/* SCC PCIEXC SMMIO registers */
+-#define PEXCADRS		0x000
+-#define PEXCWDATA		0x004
+-#define PEXCRDATA		0x008
+-#define PEXDADRS		0x010
+-#define PEXDCMND		0x014
+-#define PEXDWDATA		0x018
+-#define PEXDRDATA		0x01c
+-#define PEXREQID		0x020
+-#define PEXTIDMAP		0x024
+-#define PEXINTMASK		0x028
+-#define PEXINTSTS		0x02c
+-#define PEXAERRMASK		0x030
+-#define PEXAERRSTS		0x034
+-#define PEXPRERRMASK		0x040
+-#define PEXPRERRSTS		0x044
+-#define PEXPRERRID01		0x048
+-#define PEXPRERRID23		0x04c
+-#define PEXVDMASK		0x050
+-#define PEXVDSTS		0x054
+-#define PEXRCVCPLIDA		0x060
+-#define PEXLENERRIDA		0x068
+-#define PEXPHYPLLST		0x070
+-#define PEXDMRDEN0		0x100
+-#define PEXDMRDADR0		0x104
+-#define PEXDMRDENX		0x110
+-#define PEXDMRDADRX		0x114
+-#define PEXECMODE		0xf00
+-#define PEXMAEA(n)		(0xf50 + (8 * n))
+-#define PEXMAEC(n)		(0xf54 + (8 * n))
+-#define PEXCCRCTRL		0xff0
+-
+-/* SCC PCIEXC bits and shifts for PEXCADRS */
+-#define PEXCADRS_BYTE_EN_SHIFT		20
+-#define PEXCADRS_CMD_SHIFT		16
+-#define PEXCADRS_CMD_READ		(0xa << PEXCADRS_CMD_SHIFT)
+-#define PEXCADRS_CMD_WRITE		(0xb << PEXCADRS_CMD_SHIFT)
+-
+-/* SCC PCIEXC shifts for PEXDADRS */
+-#define PEXDADRS_BUSNO_SHIFT		20
+-#define PEXDADRS_DEVNO_SHIFT		15
+-#define PEXDADRS_FUNCNO_SHIFT		12
+-
+-/* SCC PCIEXC bits and shifts for PEXDCMND */
+-#define PEXDCMND_BYTE_EN_SHIFT		4
+-#define PEXDCMND_IO_READ		0x2
+-#define PEXDCMND_IO_WRITE		0x3
+-#define PEXDCMND_CONFIG_READ		0xa
+-#define PEXDCMND_CONFIG_WRITE		0xb
+-
+-/* SCC PCIEXC bits for PEXPHYPLLST */
+-#define PEXPHYPLLST_PEXPHYAPLLST	0x00000001
+-
+-/* SCC PCIEXC bits for PEXECMODE */
+-#define PEXECMODE_ALL_THROUGH		0x00000000
+-#define PEXECMODE_ALL_8BIT		0x00550155
+-#define PEXECMODE_ALL_16BIT		0x00aa02aa
+-
+-/* SCC PCIEXC bits for PEXCCRCTRL */
+-#define PEXCCRCTRL_PEXIPCOREEN		0x00040000
+-#define PEXCCRCTRL_PEXIPCONTEN		0x00020000
+-#define PEXCCRCTRL_PEXPHYPLLEN		0x00010000
+-#define PEXCCRCTRL_PCIEXCAOCKEN		0x00000100
+-
+-/* SCC PCIEXC port configuration registers */
+-#define PEXTCERRCHK		0x21c
+-#define PEXTAMAPB0		0x220
+-#define PEXTAMAPL0		0x224
+-#define PEXTAMAPB(n)		(PEXTAMAPB0 + 8 * (n))
+-#define PEXTAMAPL(n)		(PEXTAMAPL0 + 8 * (n))
+-#define PEXCHVC0P		0x500
+-#define PEXCHVC0NP		0x504
+-#define PEXCHVC0C		0x508
+-#define PEXCDVC0P		0x50c
+-#define PEXCDVC0NP		0x510
+-#define PEXCDVC0C		0x514
+-#define PEXCHVCXP		0x518
+-#define PEXCHVCXNP		0x51c
+-#define PEXCHVCXC		0x520
+-#define PEXCDVCXP		0x524
+-#define PEXCDVCXNP		0x528
+-#define PEXCDVCXC		0x52c
+-#define PEXCTTRG		0x530
+-#define PEXTSCTRL		0x700
+-#define PEXTSSTS		0x704
+-#define PEXSKPCTRL		0x708
+-
+-/* UHC registers */
+-#define SCC_UHC_CKRCTRL         0xff0
+-#define SCC_UHC_ECMODE          0xf00
+-
+-/* bits for SCC_UHC_CKRCTRL */
+-#define SCC_UHC_F48MCKLEN       0x00000001
+-#define SCC_UHC_P_SUSPEND       0x00000002
+-#define SCC_UHC_PHY_SUSPEND_SEL 0x00000004
+-#define SCC_UHC_HCLKEN          0x00000100
+-#define SCC_UHC_USBEN           0x00010000
+-#define SCC_UHC_USBCEN          0x00020000
+-#define SCC_UHC_PHYEN           0x00040000
+-
+-/* bits for SCC_UHC_ECMODE */
+-#define SCC_UHC_ECMODE_BY_BYTE  0x00000555
+-#define SCC_UHC_ECMODE_BY_WORD  0x00000aaa
+-
+-#endif /* _CELLEB_SCC_H */
+diff --git a/arch/powerpc/platforms/cell/celleb_scc_epci.c b/arch/powerpc/platforms/cell/celleb_scc_epci.c
+deleted file mode 100644
+index 9438bbed402f..000000000000
+--- a/arch/powerpc/platforms/cell/celleb_scc_epci.c
++++ /dev/null
+@@ -1,428 +0,0 @@
+-/*
+- * Support for SCC external PCI
+- *
+- * (C) Copyright 2004-2007 TOSHIBA CORPORATION
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License as published by
+- * the Free Software Foundation; either version 2 of the License, or
+- * (at your option) any later version.
+- *
+- * This program is distributed in the hope that it will be useful,
+- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- * GNU General Public License for more details.
+- *
+- * You should have received a copy of the GNU General Public License along
+- * with this program; if not, write to the Free Software Foundation, Inc.,
+- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+- */
+-
+-#undef DEBUG
+-
+-#include <linux/kernel.h>
+-#include <linux/threads.h>
+-#include <linux/pci.h>
+-#include <linux/init.h>
+-#include <linux/pci_regs.h>
+-
+-#include <asm/io.h>
+-#include <asm/irq.h>
+-#include <asm/prom.h>
+-#include <asm/pci-bridge.h>
+-#include <asm/ppc-pci.h>
+-
+-#include "celleb_scc.h"
+-#include "celleb_pci.h"
+-
+-#define MAX_PCI_DEVICES   32
+-#define MAX_PCI_FUNCTIONS  8
+-
+-#define iob()  __asm__ __volatile__("eieio; sync":::"memory")
+-
+-static inline PCI_IO_ADDR celleb_epci_get_epci_base(
+-					struct pci_controller *hose)
+-{
+-	/*
+-	 * Note:
+-	 * Celleb epci uses cfg_addr as a base address for
+-	 * epci control registers.
+-	 */
+-
+-	return hose->cfg_addr;
+-}
+-
+-static inline PCI_IO_ADDR celleb_epci_get_epci_cfg(
+-					struct pci_controller *hose)
+-{
+-	/*
+-	 * Note:
+-	 * Celleb epci uses cfg_data as a base address for
+-	 * configuration area for epci devices.
+-	 */
+-
+-	return hose->cfg_data;
+-}
+-
+-static inline void clear_and_disable_master_abort_interrupt(
+-					struct pci_controller *hose)
+-{
+-	PCI_IO_ADDR epci_base;
+-	PCI_IO_ADDR reg;
+-	epci_base = celleb_epci_get_epci_base(hose);
+-	reg = epci_base + PCI_COMMAND;
+-	out_be32(reg, in_be32(reg) | (PCI_STATUS_REC_MASTER_ABORT << 16));
+-}
+-
+-static int celleb_epci_check_abort(struct pci_controller *hose,
+-				   PCI_IO_ADDR addr)
+-{
+-	PCI_IO_ADDR reg;
+-	PCI_IO_ADDR epci_base;
+-	u32 val;
+-
+-	iob();
+-	epci_base = celleb_epci_get_epci_base(hose);
+-
+-	reg = epci_base + PCI_COMMAND;
+-	val = in_be32(reg);
+-
+-	if (val & (PCI_STATUS_REC_MASTER_ABORT << 16)) {
+-		out_be32(reg,
+-			 (val & 0xffff) | (PCI_STATUS_REC_MASTER_ABORT << 16));
+-
+-		/* clear PCI Controller error, FRE, PMFE */
+-		reg = epci_base + SCC_EPCI_STATUS;
+-		out_be32(reg, SCC_EPCI_INT_PAI);
+-
+-		reg = epci_base + SCC_EPCI_VCSR;
+-		val = in_be32(reg) & 0xffff;
+-		val |= SCC_EPCI_VCSR_FRE;
+-		out_be32(reg, val);
+-
+-		reg = epci_base + SCC_EPCI_VISTAT;
+-		out_be32(reg, SCC_EPCI_VISTAT_PMFE);
+-		return PCIBIOS_DEVICE_NOT_FOUND;
+-	}
+-
+-	return PCIBIOS_SUCCESSFUL;
+-}
+-
+-static PCI_IO_ADDR celleb_epci_make_config_addr(struct pci_bus *bus,
+-		struct pci_controller *hose, unsigned int devfn, int where)
+-{
+-	PCI_IO_ADDR addr;
+-
+-	if (bus != hose->bus)
+-		addr = celleb_epci_get_epci_cfg(hose) +
+-		       (((bus->number & 0xff) << 16)
+-			| ((devfn & 0xff) << 8)
+-			| (where & 0xff)
+-			| 0x01000000);
+-	else
+-		addr = celleb_epci_get_epci_cfg(hose) +
+-		       (((devfn & 0xff) << 8) | (where & 0xff));
+-
+-	pr_debug("EPCI: config_addr = 0x%p\n", addr);
+-
+-	return addr;
+-}
+-
+-static int celleb_epci_read_config(struct pci_bus *bus,
+-			unsigned int devfn, int where, int size, u32 *val)
+-{
+-	PCI_IO_ADDR epci_base;
+-	PCI_IO_ADDR addr;
+-	struct pci_controller *hose = pci_bus_to_host(bus);
+-
+-	/* allignment check */
+-	BUG_ON(where % size);
+-
+-	if (!celleb_epci_get_epci_cfg(hose))
+-		return PCIBIOS_DEVICE_NOT_FOUND;
+-
+-	if (bus->number == hose->first_busno && devfn == 0) {
+-		/* EPCI controller self */
+-
+-		epci_base = celleb_epci_get_epci_base(hose);
+-		addr = epci_base + where;
+-
+-		switch (size) {
+-		case 1:
+-			*val = in_8(addr);
+-			break;
+-		case 2:
+-			*val = in_be16(addr);
+-			break;
+-		case 4:
+-			*val = in_be32(addr);
+-			break;
+-		default:
+-			return PCIBIOS_DEVICE_NOT_FOUND;
+-		}
+-
+-	} else {
+-
+-		clear_and_disable_master_abort_interrupt(hose);
+-		addr = celleb_epci_make_config_addr(bus, hose, devfn, where);
+-
+-		switch (size) {
+-		case 1:
+-			*val = in_8(addr);
+-			break;
+-		case 2:
+-			*val = in_le16(addr);
+-			break;
+-		case 4:
+-			*val = in_le32(addr);
+-			break;
+-		default:
+-			return PCIBIOS_DEVICE_NOT_FOUND;
+-		}
+-	}
+-
+-	pr_debug("EPCI: "
+-		 "addr=0x%p, devfn=0x%x, where=0x%x, size=0x%x, val=0x%x\n",
+-		 addr, devfn, where, size, *val);
+-
+-	return celleb_epci_check_abort(hose, NULL);
+-}
+-
+-static int celleb_epci_write_config(struct pci_bus *bus,
+-			unsigned int devfn, int where, int size, u32 val)
+-{
+-	PCI_IO_ADDR epci_base;
+-	PCI_IO_ADDR addr;
+-	struct pci_controller *hose = pci_bus_to_host(bus);
+-
+-	/* allignment check */
+-	BUG_ON(where % size);
+-
+-	if (!celleb_epci_get_epci_cfg(hose))
+-		return PCIBIOS_DEVICE_NOT_FOUND;
+-
+-	if (bus->number == hose->first_busno && devfn == 0) {
+-		/* EPCI controller self */
+-
+-		epci_base = celleb_epci_get_epci_base(hose);
+-		addr = epci_base + where;
+-
+-		switch (size) {
+-		case 1:
+-			out_8(addr, val);
+-			break;
+-		case 2:
+-			out_be16(addr, val);
+-			break;
+-		case 4:
+-			out_be32(addr, val);
+-			break;
+-		default:
+-			return PCIBIOS_DEVICE_NOT_FOUND;
+-		}
+-
+-	} else {
+-
+-		clear_and_disable_master_abort_interrupt(hose);
+-		addr = celleb_epci_make_config_addr(bus, hose, devfn, where);
+-
+-		switch (size) {
+-		case 1:
+-			out_8(addr, val);
+-			break;
+-		case 2:
+-			out_le16(addr, val);
+-			break;
+-		case 4:
+-			out_le32(addr, val);
+-			break;
+-		default:
+-			return PCIBIOS_DEVICE_NOT_FOUND;
+-		}
+-	}
+-
+-	return celleb_epci_check_abort(hose, addr);
+-}
+-
+-struct pci_ops celleb_epci_ops = {
+-	.read = celleb_epci_read_config,
+-	.write = celleb_epci_write_config,
+-};
+-
+-/* to be moved in FW */
+-static int __init celleb_epci_init(struct pci_controller *hose)
+-{
+-	u32 val;
+-	PCI_IO_ADDR reg;
+-	PCI_IO_ADDR epci_base;
+-	int hwres = 0;
+-
+-	epci_base = celleb_epci_get_epci_base(hose);
+-
+-	/* PCI core reset(Internal bus and PCI clock) */
+-	reg = epci_base + SCC_EPCI_CKCTRL;
+-	val = in_be32(reg);
+-	if (val == 0x00030101)
+-		hwres = 1;
+-	else {
+-		val &= ~(SCC_EPCI_CKCTRL_CRST0 | SCC_EPCI_CKCTRL_CRST1);
+-		out_be32(reg, val);
+-
+-		/* set PCI core clock */
+-		val = in_be32(reg);
+-		val |= (SCC_EPCI_CKCTRL_OCLKEN | SCC_EPCI_CKCTRL_LCLKEN);
+-		out_be32(reg, val);
+-
+-		/* release PCI core reset (internal bus) */
+-		val = in_be32(reg);
+-		val |= SCC_EPCI_CKCTRL_CRST0;
+-		out_be32(reg, val);
+-
+-		/* set PCI clock select */
+-		reg = epci_base + SCC_EPCI_CLKRST;
+-		val = in_be32(reg);
+-		val &= ~SCC_EPCI_CLKRST_CKS_MASK;
+-		val |= SCC_EPCI_CLKRST_CKS_2;
+-		out_be32(reg, val);
+-
+-		/* set arbiter */
+-		reg = epci_base + SCC_EPCI_ABTSET;
+-		out_be32(reg, 0x0f1f001f);	/* temporary value */
+-
+-		/* buffer on */
+-		reg = epci_base + SCC_EPCI_CLKRST;
+-		val = in_be32(reg);
+-		val |= SCC_EPCI_CLKRST_BC;
+-		out_be32(reg, val);
+-
+-		/* PCI clock enable */
+-		val = in_be32(reg);
+-		val |= SCC_EPCI_CLKRST_PCKEN;
+-		out_be32(reg, val);
+-
+-		/* release PCI core reset (all) */
+-		reg = epci_base + SCC_EPCI_CKCTRL;
+-		val = in_be32(reg);
+-		val |= (SCC_EPCI_CKCTRL_CRST0 | SCC_EPCI_CKCTRL_CRST1);
+-		out_be32(reg, val);
+-
+-		/* set base translation registers. (already set by Beat) */
+-
+-		/* set base address masks. (already set by Beat) */
+-	}
+-
+-	/* release interrupt masks and clear all interrupts */
+-	reg = epci_base + SCC_EPCI_INTSET;
+-	out_be32(reg, 0x013f011f);	/* all interrupts enable */
+-	reg = epci_base + SCC_EPCI_VIENAB;
+-	val = SCC_EPCI_VIENAB_PMPEE | SCC_EPCI_VIENAB_PMFEE;
+-	out_be32(reg, val);
+-	reg = epci_base + SCC_EPCI_STATUS;
+-	out_be32(reg, 0xffffffff);
+-	reg = epci_base + SCC_EPCI_VISTAT;
+-	out_be32(reg, 0xffffffff);
+-
+-	/* disable PCI->IB address translation */
+-	reg = epci_base + SCC_EPCI_VCSR;
+-	val = in_be32(reg);
+-	val &= ~(SCC_EPCI_VCSR_DR | SCC_EPCI_VCSR_AT);
+-	out_be32(reg, val);
+-
+-	/* set base addresses. (no need to set?) */
+-
+-	/* memory space, bus master enable */
+-	reg = epci_base + PCI_COMMAND;
+-	val = PCI_COMMAND_MEMORY | PCI_COMMAND_MASTER;
+-	out_be32(reg, val);
+-
+-	/* endian mode setup */
+-	reg = epci_base + SCC_EPCI_ECMODE;
+-	val = 0x00550155;
+-	out_be32(reg, val);
+-
+-	/* set control option */
+-	reg = epci_base + SCC_EPCI_CNTOPT;
+-	val = in_be32(reg);
+-	val |= SCC_EPCI_CNTOPT_O2PMB;
+-	out_be32(reg, val);
+-
+-	/* XXX: temporay: set registers for address conversion setup */
+-	reg = epci_base + SCC_EPCI_CNF10_REG;
+-	out_be32(reg, 0x80000008);
+-	reg = epci_base + SCC_EPCI_CNF14_REG;
+-	out_be32(reg, 0x40000008);
+-
+-	reg = epci_base + SCC_EPCI_BAM0;
+-	out_be32(reg, 0x80000000);
+-	reg = epci_base + SCC_EPCI_BAM1;
+-	out_be32(reg, 0xe0000000);
+-
+-	reg = epci_base + SCC_EPCI_PVBAT;
+-	out_be32(reg, 0x80000000);
+-
+-	if (!hwres) {
+-		/* release external PCI reset */
+-		reg = epci_base + SCC_EPCI_CLKRST;
+-		val = in_be32(reg);
+-		val |= SCC_EPCI_CLKRST_PCIRST;
+-		out_be32(reg, val);
+-	}
+-
+-	return 0;
+-}
+-
+-static int __init celleb_setup_epci(struct device_node *node,
+-				    struct pci_controller *hose)
+-{
+-	struct resource r;
+-
+-	pr_debug("PCI: celleb_setup_epci()\n");
+-
+-	/*
+-	 * Note:
+-	 * Celleb epci uses cfg_addr and cfg_data member of
+-	 * pci_controller structure in irregular way.
+-	 *
+-	 * cfg_addr is used to map for control registers of
+-	 * celleb epci.
+-	 *
+-	 * cfg_data is used for configuration area of devices
+-	 * on Celleb epci buses.
+-	 */
+-
+-	if (of_address_to_resource(node, 0, &r))
+-		goto error;
+-	hose->cfg_addr = ioremap(r.start, resource_size(&r));
+-	if (!hose->cfg_addr)
+-		goto error;
+-	pr_debug("EPCI: cfg_addr map 0x%016llx->0x%016lx + 0x%016llx\n",
+-		 r.start, (unsigned long)hose->cfg_addr, resource_size(&r));
+-
+-	if (of_address_to_resource(node, 2, &r))
+-		goto error;
+-	hose->cfg_data = ioremap(r.start, resource_size(&r));
+-	if (!hose->cfg_data)
+-		goto error;
+-	pr_debug("EPCI: cfg_data map 0x%016llx->0x%016lx + 0x%016llx\n",
+-		 r.start, (unsigned long)hose->cfg_data, resource_size(&r));
+-
+-	hose->ops = &celleb_epci_ops;
+-	celleb_epci_init(hose);
+-
+-	return 0;
+-
+-error:
+-	if (hose->cfg_addr)
+-		iounmap(hose->cfg_addr);
+-
+-	if (hose->cfg_data)
+-		iounmap(hose->cfg_data);
+-	return 1;
+-}
+-
+-struct celleb_phb_spec celleb_epci_spec __initdata = {
+-	.setup = celleb_setup_epci,
+-	.ops = &spiderpci_ops,
+-	.iowa_init = &spiderpci_iowa_init,
+-	.iowa_data = (void *)0,
+-};
+diff --git a/arch/powerpc/platforms/cell/celleb_scc_pciex.c b/arch/powerpc/platforms/cell/celleb_scc_pciex.c
+deleted file mode 100644
+index 94170e4f2ce7..000000000000
+--- a/arch/powerpc/platforms/cell/celleb_scc_pciex.c
++++ /dev/null
+@@ -1,538 +0,0 @@
+-/*
+- * Support for Celleb PCI-Express.
+- *
+- * (C) Copyright 2007-2008 TOSHIBA CORPORATION
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License as published by
+- * the Free Software Foundation; either version 2 of the License, or
+- * (at your option) any later version.
+- *
+- * This program is distributed in the hope that it will be useful,
+- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- * GNU General Public License for more details.
+- *
+- * You should have received a copy of the GNU General Public License along
+- * with this program; if not, write to the Free Software Foundation, Inc.,
+- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+- */
+-
+-#undef DEBUG
+-
+-#include <linux/kernel.h>
+-#include <linux/pci.h>
+-#include <linux/string.h>
+-#include <linux/slab.h>
+-#include <linux/init.h>
+-#include <linux/delay.h>
+-#include <linux/interrupt.h>
+-
+-#include <asm/io.h>
+-#include <asm/irq.h>
+-#include <asm/iommu.h>
+-#include <asm/byteorder.h>
+-
+-#include "celleb_scc.h"
+-#include "celleb_pci.h"
+-
+-#define PEX_IN(base, off)	in_be32((void __iomem *)(base) + (off))
+-#define PEX_OUT(base, off, data) out_be32((void __iomem *)(base) + (off), (data))
+-
+-static void scc_pciex_io_flush(struct iowa_bus *bus)
+-{
+-	(void)PEX_IN(bus->phb->cfg_addr, PEXDMRDEN0);
+-}
+-
+-/*
+- * Memory space access to device on PCIEX
+- */
+-#define PCIEX_MMIO_READ(name, ret)					\
+-static ret scc_pciex_##name(const PCI_IO_ADDR addr)			\
+-{									\
+-	ret val = __do_##name(addr);					\
+-	scc_pciex_io_flush(iowa_mem_find_bus(addr));			\
+-	return val;							\
+-}
+-
+-#define PCIEX_MMIO_READ_STR(name)					\
+-static void scc_pciex_##name(const PCI_IO_ADDR addr, void *buf,		\
+-			     unsigned long count)			\
+-{									\
+-	__do_##name(addr, buf, count);					\
+-	scc_pciex_io_flush(iowa_mem_find_bus(addr));			\
+-}
+-
+-PCIEX_MMIO_READ(readb, u8)
+-PCIEX_MMIO_READ(readw, u16)
+-PCIEX_MMIO_READ(readl, u32)
+-PCIEX_MMIO_READ(readq, u64)
+-PCIEX_MMIO_READ(readw_be, u16)
+-PCIEX_MMIO_READ(readl_be, u32)
+-PCIEX_MMIO_READ(readq_be, u64)
+-PCIEX_MMIO_READ_STR(readsb)
+-PCIEX_MMIO_READ_STR(readsw)
+-PCIEX_MMIO_READ_STR(readsl)
+-
+-static void scc_pciex_memcpy_fromio(void *dest, const PCI_IO_ADDR src,
+-				    unsigned long n)
+-{
+-	__do_memcpy_fromio(dest, src, n);
+-	scc_pciex_io_flush(iowa_mem_find_bus(src));
+-}
+-
+-/*
+- * I/O port access to devices on PCIEX.
+- */
+-
+-static inline unsigned long get_bus_address(struct pci_controller *phb,
+-					    unsigned long port)
+-{
+-	return port - ((unsigned long)(phb->io_base_virt) - _IO_BASE);
+-}
+-
+-static u32 scc_pciex_read_port(struct pci_controller *phb,
+-			       unsigned long port, int size)
+-{
+-	unsigned int byte_enable;
+-	unsigned int cmd, shift;
+-	unsigned long addr;
+-	u32 data, ret;
+-
+-	BUG_ON(((port & 0x3ul) + size) > 4);
+-
+-	addr = get_bus_address(phb, port);
+-	shift = addr & 0x3ul;
+-	byte_enable = ((1 << size) - 1) << shift;
+-	cmd = PEXDCMND_IO_READ | (byte_enable << PEXDCMND_BYTE_EN_SHIFT);
+-	PEX_OUT(phb->cfg_addr, PEXDADRS, (addr & ~0x3ul));
+-	PEX_OUT(phb->cfg_addr, PEXDCMND, cmd);
+-	data = PEX_IN(phb->cfg_addr, PEXDRDATA);
+-	ret = (data >> (shift * 8)) & (0xFFFFFFFF >> ((4 - size) * 8));
+-
+-	pr_debug("PCIEX:PIO READ:port=0x%lx, addr=0x%lx, size=%d, be=%x,"
+-		 " cmd=%x, data=%x, ret=%x\n", port, addr, size, byte_enable,
+-		 cmd, data, ret);
+-
+-	return ret;
+-}
+-
+-static void scc_pciex_write_port(struct pci_controller *phb,
+-				 unsigned long port, int size, u32 val)
+-{
+-	unsigned int byte_enable;
+-	unsigned int cmd, shift;
+-	unsigned long addr;
+-	u32 data;
+-
+-	BUG_ON(((port & 0x3ul) + size) > 4);
+-
+-	addr = get_bus_address(phb, port);
+-	shift = addr & 0x3ul;
+-	byte_enable = ((1 << size) - 1) << shift;
+-	cmd = PEXDCMND_IO_WRITE | (byte_enable << PEXDCMND_BYTE_EN_SHIFT);
+-	data = (val & (0xFFFFFFFF >> (4 - size) * 8)) << (shift * 8);
+-	PEX_OUT(phb->cfg_addr, PEXDADRS, (addr & ~0x3ul));
+-	PEX_OUT(phb->cfg_addr, PEXDCMND, cmd);
+-	PEX_OUT(phb->cfg_addr, PEXDWDATA, data);
+-
+-	pr_debug("PCIEX:PIO WRITE:port=0x%lx, addr=%lx, size=%d, val=%x,"
+-		 " be=%x, cmd=%x, data=%x\n", port, addr, size, val,
+-		 byte_enable, cmd, data);
+-}
+-
+-static u8 __scc_pciex_inb(struct pci_controller *phb, unsigned long port)
+-{
+-	return (u8)scc_pciex_read_port(phb, port, 1);
+-}
+-
+-static u16 __scc_pciex_inw(struct pci_controller *phb, unsigned long port)
+-{
+-	u32 data;
+-	if ((port & 0x3ul) < 3)
+-		data = scc_pciex_read_port(phb, port, 2);
+-	else {
+-		u32 d1 = scc_pciex_read_port(phb, port, 1);
+-		u32 d2 = scc_pciex_read_port(phb, port + 1, 1);
+-		data = d1 | (d2 << 8);
+-	}
+-	return (u16)data;
+-}
+-
+-static u32 __scc_pciex_inl(struct pci_controller *phb, unsigned long port)
+-{
+-	unsigned int mod = port & 0x3ul;
+-	u32 data;
+-	if (mod == 0)
+-		data = scc_pciex_read_port(phb, port, 4);
+-	else {
+-		u32 d1 = scc_pciex_read_port(phb, port, 4 - mod);
+-		u32 d2 = scc_pciex_read_port(phb, port + 1, mod);
+-		data = d1 | (d2 << (mod * 8));
+-	}
+-	return data;
+-}
+-
+-static void __scc_pciex_outb(struct pci_controller *phb,
+-			     u8 val, unsigned long port)
+-{
+-	scc_pciex_write_port(phb, port, 1, (u32)val);
+-}
+-
+-static void __scc_pciex_outw(struct pci_controller *phb,
+-			     u16 val, unsigned long port)
+-{
+-	if ((port & 0x3ul) < 3)
+-		scc_pciex_write_port(phb, port, 2, (u32)val);
+-	else {
+-		u32 d1 = val & 0x000000FF;
+-		u32 d2 = (val & 0x0000FF00) >> 8;
+-		scc_pciex_write_port(phb, port, 1, d1);
+-		scc_pciex_write_port(phb, port + 1, 1, d2);
+-	}
+-}
+-
+-static void __scc_pciex_outl(struct pci_controller *phb,
+-			     u32 val, unsigned long port)
+-{
+-	unsigned int mod = port & 0x3ul;
+-	if (mod == 0)
+-		scc_pciex_write_port(phb, port, 4, val);
+-	else {
+-		u32 d1 = val & (0xFFFFFFFFul >> (mod * 8));
+-		u32 d2 = val >> ((4 - mod) * 8);
+-		scc_pciex_write_port(phb, port, 4 - mod, d1);
+-		scc_pciex_write_port(phb, port + 1, mod, d2);
+-	}
+-}
+-
+-#define PCIEX_PIO_FUNC(size, name)					\
+-static u##size scc_pciex_in##name(unsigned long port)			\
+-{									\
+-	struct iowa_bus *bus = iowa_pio_find_bus(port);			\
+-	u##size data = __scc_pciex_in##name(bus->phb, port);		\
+-	scc_pciex_io_flush(bus);					\
+-	return data;							\
+-}									\
+-static void scc_pciex_ins##name(unsigned long p, void *b, unsigned long c) \
+-{									\
+-	struct iowa_bus *bus = iowa_pio_find_bus(p);			\
+-	__le##size *dst = b;						\
+-	for (; c != 0; c--, dst++)					\
+-		*dst = cpu_to_le##size(__scc_pciex_in##name(bus->phb, p)); \
+-	scc_pciex_io_flush(bus);					\
+-}									\
+-static void scc_pciex_out##name(u##size val, unsigned long port)	\
+-{									\
+-	struct iowa_bus *bus = iowa_pio_find_bus(port);			\
+-	__scc_pciex_out##name(bus->phb, val, port);			\
+-}									\
+-static void scc_pciex_outs##name(unsigned long p, const void *b,	\
+-				 unsigned long c)			\
+-{									\
+-	struct iowa_bus *bus = iowa_pio_find_bus(p);			\
+-	const __le##size *src = b;					\
+-	for (; c != 0; c--, src++)					\
+-		__scc_pciex_out##name(bus->phb, le##size##_to_cpu(*src), p); \
+-}
+-#define __le8 u8
+-#define cpu_to_le8(x) (x)
+-#define le8_to_cpu(x) (x)
+-PCIEX_PIO_FUNC(8, b)
+-PCIEX_PIO_FUNC(16, w)
+-PCIEX_PIO_FUNC(32, l)
+-
+-static struct ppc_pci_io scc_pciex_ops = {
+-	.readb = scc_pciex_readb,
+-	.readw = scc_pciex_readw,
+-	.readl = scc_pciex_readl,
+-	.readq = scc_pciex_readq,
+-	.readw_be = scc_pciex_readw_be,
+-	.readl_be = scc_pciex_readl_be,
+-	.readq_be = scc_pciex_readq_be,
+-	.readsb = scc_pciex_readsb,
+-	.readsw = scc_pciex_readsw,
+-	.readsl = scc_pciex_readsl,
+-	.memcpy_fromio = scc_pciex_memcpy_fromio,
+-	.inb = scc_pciex_inb,
+-	.inw = scc_pciex_inw,
+-	.inl = scc_pciex_inl,
+-	.outb = scc_pciex_outb,
+-	.outw = scc_pciex_outw,
+-	.outl = scc_pciex_outl,
+-	.insb = scc_pciex_insb,
+-	.insw = scc_pciex_insw,
+-	.insl = scc_pciex_insl,
+-	.outsb = scc_pciex_outsb,
+-	.outsw = scc_pciex_outsw,
+-	.outsl = scc_pciex_outsl,
+-};
+-
+-static int __init scc_pciex_iowa_init(struct iowa_bus *bus, void *data)
+-{
+-	dma_addr_t dummy_page_da;
+-	void *dummy_page_va;
+-
+-	dummy_page_va = kmalloc(PAGE_SIZE, GFP_KERNEL);
+-	if (!dummy_page_va) {
+-		pr_err("PCIEX:Alloc dummy_page_va failed\n");
+-		return -1;
+-	}
+-
+-	dummy_page_da = dma_map_single(bus->phb->parent, dummy_page_va,
+-				       PAGE_SIZE, DMA_FROM_DEVICE);
+-	if (dma_mapping_error(bus->phb->parent, dummy_page_da)) {
+-		pr_err("PCIEX:Map dummy page failed.\n");
+-		kfree(dummy_page_va);
+-		return -1;
+-	}
+-
+-	PEX_OUT(bus->phb->cfg_addr, PEXDMRDADR0, dummy_page_da);
+-
+-	return 0;
+-}
+-
+-/*
+- * config space access
+- */
+-#define MK_PEXDADRS(bus_no, dev_no, func_no, addr) \
+-	((uint32_t)(((addr) & ~0x3UL) | \
+-	((bus_no) << PEXDADRS_BUSNO_SHIFT) | \
+-	((dev_no)  << PEXDADRS_DEVNO_SHIFT) | \
+-	((func_no) << PEXDADRS_FUNCNO_SHIFT)))
+-
+-#define MK_PEXDCMND_BYTE_EN(addr, size) \
+-	((((0x1 << (size))-1) << ((addr) & 0x3)) << PEXDCMND_BYTE_EN_SHIFT)
+-#define MK_PEXDCMND(cmd, addr, size) ((cmd) | MK_PEXDCMND_BYTE_EN(addr, size))
+-
+-static uint32_t config_read_pciex_dev(unsigned int __iomem *base,
+-		uint64_t bus_no, uint64_t dev_no, uint64_t func_no,
+-		uint64_t off, uint64_t size)
+-{
+-	uint32_t ret;
+-	uint32_t addr, cmd;
+-
+-	addr = MK_PEXDADRS(bus_no, dev_no, func_no, off);
+-	cmd = MK_PEXDCMND(PEXDCMND_CONFIG_READ, off, size);
+-	PEX_OUT(base, PEXDADRS, addr);
+-	PEX_OUT(base, PEXDCMND, cmd);
+-	ret = (PEX_IN(base, PEXDRDATA)
+-		>> ((off & (4-size)) * 8)) & ((0x1 << (size * 8)) - 1);
+-	return ret;
+-}
+-
+-static void config_write_pciex_dev(unsigned int __iomem *base, uint64_t bus_no,
+-	uint64_t dev_no, uint64_t func_no, uint64_t off, uint64_t size,
+-	uint32_t data)
+-{
+-	uint32_t addr, cmd;
+-
+-	addr = MK_PEXDADRS(bus_no, dev_no, func_no, off);
+-	cmd = MK_PEXDCMND(PEXDCMND_CONFIG_WRITE, off, size);
+-	PEX_OUT(base, PEXDADRS, addr);
+-	PEX_OUT(base, PEXDCMND, cmd);
+-	PEX_OUT(base, PEXDWDATA,
+-		(data & ((0x1 << (size * 8)) - 1)) << ((off & (4-size)) * 8));
+-}
+-
+-#define MK_PEXCADRS_BYTE_EN(off, len) \
+-	((((0x1 << (len)) - 1) << ((off) & 0x3)) << PEXCADRS_BYTE_EN_SHIFT)
+-#define MK_PEXCADRS(cmd, addr, size) \
+-	((cmd) | MK_PEXCADRS_BYTE_EN(addr, size) | ((addr) & ~0x3))
+-static uint32_t config_read_pciex_rc(unsigned int __iomem *base,
+-				     uint32_t where, uint32_t size)
+-{
+-	PEX_OUT(base, PEXCADRS, MK_PEXCADRS(PEXCADRS_CMD_READ, where, size));
+-	return (PEX_IN(base, PEXCRDATA)
+-		>> ((where & (4 - size)) * 8)) & ((0x1 << (size * 8)) - 1);
+-}
+-
+-static void config_write_pciex_rc(unsigned int __iomem *base, uint32_t where,
+-				  uint32_t size, uint32_t val)
+-{
+-	uint32_t data;
+-
+-	data = (val & ((0x1 << (size * 8)) - 1)) << ((where & (4 - size)) * 8);
+-	PEX_OUT(base, PEXCADRS, MK_PEXCADRS(PEXCADRS_CMD_WRITE, where, size));
+-	PEX_OUT(base, PEXCWDATA, data);
+-}
+-
+-/* Interfaces */
+-/* Note: Work-around
+- *  On SCC PCIEXC, one device is seen on all 32 dev_no.
+- *  As SCC PCIEXC can have only one device on the bus, we look only one dev_no.
+- * (dev_no = 1)
+- */
+-static int scc_pciex_read_config(struct pci_bus *bus, unsigned int devfn,
+-				 int where, int size, unsigned int *val)
+-{
+-	struct pci_controller *phb = pci_bus_to_host(bus);
+-
+-	if (bus->number == phb->first_busno && PCI_SLOT(devfn) != 1) {
+-		*val = ~0;
+-		return PCIBIOS_DEVICE_NOT_FOUND;
+-	}
+-
+-	if (bus->number == 0 && PCI_SLOT(devfn) == 0)
+-		*val = config_read_pciex_rc(phb->cfg_addr, where, size);
+-	else
+-		*val = config_read_pciex_dev(phb->cfg_addr, bus->number,
+-				PCI_SLOT(devfn), PCI_FUNC(devfn), where, size);
+-
+-	return PCIBIOS_SUCCESSFUL;
+-}
+-
+-static int scc_pciex_write_config(struct pci_bus *bus, unsigned int devfn,
+-				  int where, int size, unsigned int val)
+-{
+-	struct pci_controller *phb = pci_bus_to_host(bus);
+-
+-	if (bus->number == phb->first_busno && PCI_SLOT(devfn) != 1)
+-		return PCIBIOS_DEVICE_NOT_FOUND;
+-
+-	if (bus->number == 0 && PCI_SLOT(devfn) == 0)
+-		config_write_pciex_rc(phb->cfg_addr, where, size, val);
+-	else
+-		config_write_pciex_dev(phb->cfg_addr, bus->number,
+-			PCI_SLOT(devfn), PCI_FUNC(devfn), where, size, val);
+-	return PCIBIOS_SUCCESSFUL;
+-}
+-
+-static struct pci_ops scc_pciex_pci_ops = {
+-	.read = scc_pciex_read_config,
+-	.write = scc_pciex_write_config,
+-};
+-
+-static void pciex_clear_intr_all(unsigned int __iomem *base)
+-{
+-	PEX_OUT(base, PEXAERRSTS, 0xffffffff);
+-	PEX_OUT(base, PEXPRERRSTS, 0xffffffff);
+-	PEX_OUT(base, PEXINTSTS, 0xffffffff);
+-}
+-
+-#if 0
+-static void pciex_disable_intr_all(unsigned int *base)
+-{
+-	PEX_OUT(base, PEXINTMASK,   0x0);
+-	PEX_OUT(base, PEXAERRMASK,  0x0);
+-	PEX_OUT(base, PEXPRERRMASK, 0x0);
+-	PEX_OUT(base, PEXVDMASK,    0x0);
+-}
+-#endif
+-
+-static void pciex_enable_intr_all(unsigned int __iomem *base)
+-{
+-	PEX_OUT(base, PEXINTMASK, 0x0000e7f1);
+-	PEX_OUT(base, PEXAERRMASK, 0x03ff01ff);
+-	PEX_OUT(base, PEXPRERRMASK, 0x0001010f);
+-	PEX_OUT(base, PEXVDMASK, 0x00000001);
+-}
+-
+-static void pciex_check_status(unsigned int __iomem *base)
+-{
+-	uint32_t err = 0;
+-	uint32_t intsts, aerr, prerr, rcvcp, lenerr;
+-	uint32_t maea, maec;
+-
+-	intsts = PEX_IN(base, PEXINTSTS);
+-	aerr = PEX_IN(base, PEXAERRSTS);
+-	prerr = PEX_IN(base, PEXPRERRSTS);
+-	rcvcp = PEX_IN(base, PEXRCVCPLIDA);
+-	lenerr = PEX_IN(base, PEXLENERRIDA);
+-
+-	if (intsts || aerr || prerr || rcvcp || lenerr)
+-		err = 1;
+-
+-	pr_info("PCEXC interrupt!!\n");
+-	pr_info("PEXINTSTS    :0x%08x\n", intsts);
+-	pr_info("PEXAERRSTS   :0x%08x\n", aerr);
+-	pr_info("PEXPRERRSTS  :0x%08x\n", prerr);
+-	pr_info("PEXRCVCPLIDA :0x%08x\n", rcvcp);
+-	pr_info("PEXLENERRIDA :0x%08x\n", lenerr);
+-
+-	/* print detail of Protection Error */
+-	if (intsts & 0x00004000) {
+-		uint32_t i, n;
+-		for (i = 0; i < 4; i++) {
+-			n = 1 << i;
+-			if (prerr & n) {
+-				maea = PEX_IN(base, PEXMAEA(i));
+-				maec = PEX_IN(base, PEXMAEC(i));
+-				pr_info("PEXMAEC%d     :0x%08x\n", i, maec);
+-				pr_info("PEXMAEA%d     :0x%08x\n", i, maea);
+-			}
+-		}
+-	}
+-
+-	if (err)
+-		pciex_clear_intr_all(base);
+-}
+-
+-static irqreturn_t pciex_handle_internal_irq(int irq, void *dev_id)
+-{
+-	struct pci_controller *phb = dev_id;
+-
+-	pr_debug("PCIEX:pciex_handle_internal_irq(irq=%d)\n", irq);
+-
+-	BUG_ON(phb->cfg_addr == NULL);
+-
+-	pciex_check_status(phb->cfg_addr);
+-
+-	return IRQ_HANDLED;
+-}
+-
+-static __init int celleb_setup_pciex(struct device_node *node,
+-				     struct pci_controller *phb)
+-{
+-	struct resource	r;
+-	int virq;
+-
+-	/* SMMIO registers; used inside this file */
+-	if (of_address_to_resource(node, 0, &r)) {
+-		pr_err("PCIEXC:Failed to get config resource.\n");
+-		return 1;
+-	}
+-	phb->cfg_addr = ioremap(r.start, resource_size(&r));
+-	if (!phb->cfg_addr) {
+-		pr_err("PCIEXC:Failed to remap SMMIO region.\n");
+-		return 1;
+-	}
+-
+-	/* Not use cfg_data,  cmd and data regs are near address reg */
+-	phb->cfg_data = NULL;
+-
+-	/* set pci_ops */
+-	phb->ops = &scc_pciex_pci_ops;
+-
+-	/* internal interrupt handler */
+-	virq = irq_of_parse_and_map(node, 1);
+-	if (!virq) {
+-		pr_err("PCIEXC:Failed to map irq\n");
+-		goto error;
+-	}
+-	if (request_irq(virq, pciex_handle_internal_irq,
+-			0, "pciex", (void *)phb)) {
+-		pr_err("PCIEXC:Failed to request irq\n");
+-		goto error;
+-	}
+-
+-	/* enable all interrupts */
+-	pciex_clear_intr_all(phb->cfg_addr);
+-	pciex_enable_intr_all(phb->cfg_addr);
+-	/* MSI: TBD */
+-
+-	return 0;
+-
+-error:
+-	phb->cfg_data = NULL;
+-	if (phb->cfg_addr)
+-		iounmap(phb->cfg_addr);
+-	phb->cfg_addr = NULL;
+-	return 1;
+-}
+-
+-struct celleb_phb_spec celleb_pciex_spec __initdata = {
+-	.setup = celleb_setup_pciex,
+-	.ops = &scc_pciex_ops,
+-	.iowa_init = &scc_pciex_iowa_init,
+-};
+diff --git a/arch/powerpc/platforms/cell/celleb_scc_sio.c b/arch/powerpc/platforms/cell/celleb_scc_sio.c
+deleted file mode 100644
+index c8eb57193826..000000000000
+--- a/arch/powerpc/platforms/cell/celleb_scc_sio.c
++++ /dev/null
+@@ -1,99 +0,0 @@
+-/*
+- * setup serial port in SCC
+- *
+- * (C) Copyright 2006-2007 TOSHIBA CORPORATION
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License as published by
+- * the Free Software Foundation; either version 2 of the License, or
+- * (at your option) any later version.
+- *
+- * This program is distributed in the hope that it will be useful,
+- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- * GNU General Public License for more details.
+- *
+- * You should have received a copy of the GNU General Public License along
+- * with this program; if not, write to the Free Software Foundation, Inc.,
+- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+- */
+-
+-#include <linux/tty.h>
+-#include <linux/serial.h>
+-#include <linux/serial_core.h>
+-#include <linux/console.h>
+-
+-#include <asm/io.h>
+-#include <asm/prom.h>
+-
+-/* sio irq0=0xb00010022 irq0=0xb00010023 irq2=0xb00010024
+-    mmio=0xfff000-0x1000,0xff2000-0x1000 */
+-static int txx9_serial_bitmap __initdata;
+-
+-static struct {
+-	uint32_t offset;
+-	uint32_t index;
+-} txx9_scc_tab[3] __initdata = {
+-	{ 0x300, 0 },	/* 0xFFF300 */
+-	{ 0x400, 0 },	/* 0xFFF400 */
+-	{ 0x800, 1 }	/* 0xFF2800 */
+-};
+-
+-static int __init txx9_serial_init(void)
+-{
+-	extern int early_serial_txx9_setup(struct uart_port *port);
+-	struct device_node *node;
+-	int i;
+-	struct uart_port req;
+-	struct of_phandle_args irq;
+-	struct resource res;
+-
+-	for_each_compatible_node(node, "serial", "toshiba,sio-scc") {
+-		for (i = 0; i < ARRAY_SIZE(txx9_scc_tab); i++) {
+-			if (!(txx9_serial_bitmap & (1<<i)))
+-				continue;
+-
+-			if (of_irq_parse_one(node, i, &irq))
+-				continue;
+-			if (of_address_to_resource(node,
+-				txx9_scc_tab[i].index, &res))
+-				continue;
+-
+-			memset(&req, 0, sizeof(req));
+-			req.line = i;
+-			req.iotype = UPIO_MEM;
+-			req.mapbase = res.start + txx9_scc_tab[i].offset;
+-#ifdef CONFIG_SERIAL_TXX9_CONSOLE
+-			req.membase = ioremap(req.mapbase, 0x24);
+-#endif
+-			req.irq = irq_create_of_mapping(&irq);
+-			req.flags |= UPF_IOREMAP | UPF_BUGGY_UART
+-				/*HAVE_CTS_LINE*/;
+-			req.uartclk = 83300000;
+-			early_serial_txx9_setup(&req);
+-		}
+-	}
+-
+-	return 0;
+-}
+-
+-static int __init txx9_serial_config(char *ptr)
+-{
+-	int	i;
+-
+-	for (;;) {
+-		switch (get_option(&ptr, &i)) {
+-		default:
+-			return 0;
+-		case 2:
+-			txx9_serial_bitmap |= 1 << i;
+-			break;
+-		case 1:
+-			txx9_serial_bitmap |= 1 << i;
+-			return 0;
+-		}
+-	}
+-}
+-__setup("txx9_serial=", txx9_serial_config);
+-
+-console_initcall(txx9_serial_init);
+diff --git a/arch/powerpc/platforms/cell/celleb_scc_uhc.c b/arch/powerpc/platforms/cell/celleb_scc_uhc.c
+deleted file mode 100644
+index d63b720bfe3a..000000000000
+--- a/arch/powerpc/platforms/cell/celleb_scc_uhc.c
++++ /dev/null
+@@ -1,95 +0,0 @@
+-/*
+- * SCC (Super Companion Chip) UHC setup
+- *
+- * (C) Copyright 2006-2007 TOSHIBA CORPORATION
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License as published by
+- * the Free Software Foundation; either version 2 of the License, or
+- * (at your option) any later version.
+- *
+- * This program is distributed in the hope that it will be useful,
+- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- * GNU General Public License for more details.
+- *
+- * You should have received a copy of the GNU General Public License along
+- * with this program; if not, write to the Free Software Foundation, Inc.,
+- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+- */
+-
+-#include <linux/kernel.h>
+-#include <linux/pci.h>
+-
+-#include <asm/delay.h>
+-#include <asm/io.h>
+-#include <asm/machdep.h>
+-
+-#include "celleb_scc.h"
+-
+-#define UHC_RESET_WAIT_MAX 10000
+-
+-static inline int uhc_clkctrl_ready(u32 val)
+-{
+-	const u32 mask = SCC_UHC_USBCEN | SCC_UHC_USBCEN;
+-	return((val & mask) == mask);
+-}
+-
+-/*
+- * UHC(usb host controller) enable function.
+- * affect to both of OHCI and EHCI core module.
+- */
+-static void enable_scc_uhc(struct pci_dev *dev)
+-{
+-	void __iomem *uhc_base;
+-	u32 __iomem *uhc_clkctrl;
+-	u32 __iomem *uhc_ecmode;
+-	u32 val = 0;
+-	int i;
+-
+-	if (!machine_is(celleb_beat) &&
+-	    !machine_is(celleb_native))
+-		return;
+-
+-	uhc_base = ioremap(pci_resource_start(dev, 0),
+-			   pci_resource_len(dev, 0));
+-	if (!uhc_base) {
+-		printk(KERN_ERR "failed to map UHC register base.\n");
+-		return;
+-	}
+-	uhc_clkctrl = uhc_base + SCC_UHC_CKRCTRL;
+-	uhc_ecmode  = uhc_base + SCC_UHC_ECMODE;
+-
+-	/* setup for normal mode */
+-	val |= SCC_UHC_F48MCKLEN;
+-	out_be32(uhc_clkctrl, val);
+-	val |= SCC_UHC_PHY_SUSPEND_SEL;
+-	out_be32(uhc_clkctrl, val);
+-	udelay(10);
+-	val |= SCC_UHC_PHYEN;
+-	out_be32(uhc_clkctrl, val);
+-	udelay(50);
+-
+-	/* disable reset */
+-	val |= SCC_UHC_HCLKEN;
+-	out_be32(uhc_clkctrl, val);
+-	val |= (SCC_UHC_USBCEN | SCC_UHC_USBEN);
+-	out_be32(uhc_clkctrl, val);
+-	i = 0;
+-	while (!uhc_clkctrl_ready(in_be32(uhc_clkctrl))) {
+-		udelay(10);
+-		if (i++ > UHC_RESET_WAIT_MAX) {
+-			printk(KERN_ERR "Failed to disable UHC reset %x\n",
+-			       in_be32(uhc_clkctrl));
+-			break;
+-		}
+-	}
+-
+-	/* Endian Conversion Mode for Master ALL area */
+-	out_be32(uhc_ecmode, SCC_UHC_ECMODE_BY_BYTE);
+-
+-	iounmap(uhc_base);
+-}
+-
+-DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_TOSHIBA_2,
+-		 PCI_DEVICE_ID_TOSHIBA_SCC_USB, enable_scc_uhc);
+diff --git a/arch/powerpc/platforms/cell/celleb_setup.c b/arch/powerpc/platforms/cell/celleb_setup.c
+deleted file mode 100644
+index 90be8ec51686..000000000000
+--- a/arch/powerpc/platforms/cell/celleb_setup.c
++++ /dev/null
+@@ -1,243 +0,0 @@
+-/*
+- * Celleb setup code
+- *
+- * (C) Copyright 2006-2007 TOSHIBA CORPORATION
+- *
+- * This code is based on arch/powerpc/platforms/cell/setup.c:
+- *  Copyright (C) 1995  Linus Torvalds
+- *  Adapted from 'alpha' version by Gary Thomas
+- *  Modified by Cort Dougan (cort@cs.nmt.edu)
+- *  Modified by PPC64 Team, IBM Corp
+- *  Modified by Cell Team, IBM Deutschland Entwicklung GmbH
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License as published by
+- * the Free Software Foundation; either version 2 of the License, or
+- * (at your option) any later version.
+- *
+- * This program is distributed in the hope that it will be useful,
+- * but WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+- * GNU General Public License for more details.
+- *
+- * You should have received a copy of the GNU General Public License along
+- * with this program; if not, write to the Free Software Foundation, Inc.,
+- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+- */
+-
+-#undef DEBUG
+-
+-#include <linux/cpu.h>
+-#include <linux/sched.h>
+-#include <linux/kernel.h>
+-#include <linux/export.h>
+-#include <linux/mm.h>
+-#include <linux/stddef.h>
+-#include <linux/unistd.h>
+-#include <linux/reboot.h>
+-#include <linux/init.h>
+-#include <linux/delay.h>
+-#include <linux/irq.h>
+-#include <linux/seq_file.h>
+-#include <linux/root_dev.h>
+-#include <linux/console.h>
+-#include <linux/of_platform.h>
+-
+-#include <asm/mmu.h>
+-#include <asm/processor.h>
+-#include <asm/io.h>
+-#include <asm/prom.h>
+-#include <asm/machdep.h>
+-#include <asm/cputable.h>
+-#include <asm/irq.h>
+-#include <asm/time.h>
+-#include <asm/spu_priv1.h>
+-#include <asm/firmware.h>
+-#include <asm/rtas.h>
+-#include <asm/cell-regs.h>
+-
+-#include "beat_interrupt.h"
+-#include "beat_wrapper.h"
+-#include "beat.h"
+-#include "celleb_pci.h"
+-#include "interrupt.h"
+-#include "pervasive.h"
+-#include "ras.h"
+-
+-static char celleb_machine_type[128] = "Celleb";
+-
+-static void celleb_show_cpuinfo(struct seq_file *m)
+-{
+-	struct device_node *root;
+-	const char *model = "";
+-
+-	root = of_find_node_by_path("/");
+-	if (root)
+-		model = of_get_property(root, "model", NULL);
+-	/* using "CHRP" is to trick anaconda into installing FCx into Celleb */
+-	seq_printf(m, "machine\t\t: %s %s\n", celleb_machine_type, model);
+-	of_node_put(root);
+-}
+-
+-static int __init celleb_machine_type_hack(char *ptr)
+-{
+-	strlcpy(celleb_machine_type, ptr, sizeof(celleb_machine_type));
+-	return 0;
+-}
+-
+-__setup("celleb_machine_type_hack=", celleb_machine_type_hack);
+-
+-static void celleb_progress(char *s, unsigned short hex)
+-{
+-	printk("*** %04x : %s\n", hex, s ? s : "");
+-}
+-
+-static void __init celleb_setup_arch_common(void)
+-{
+-	/* init to some ~sane value until calibrate_delay() runs */
+-	loops_per_jiffy = 50000000;
+-
+-#ifdef CONFIG_DUMMY_CONSOLE
+-	conswitchp = &dummy_con;
+-#endif
+-}
+-
+-static const struct of_device_id celleb_bus_ids[] __initconst = {
+-	{ .type = "scc", },
+-	{ .type = "ioif", },	/* old style */
+-	{},
+-};
+-
+-static int __init celleb_publish_devices(void)
+-{
+-	/* Publish OF platform devices for southbridge IOs */
+-	of_platform_bus_probe(NULL, celleb_bus_ids, NULL);
+-
+-	return 0;
+-}
+-machine_device_initcall(celleb_beat, celleb_publish_devices);
+-machine_device_initcall(celleb_native, celleb_publish_devices);
+-
+-
+-/*
+- * functions for Celleb-Beat
+- */
+-static void __init celleb_setup_arch_beat(void)
+-{
+-#ifdef CONFIG_SPU_BASE
+-	spu_priv1_ops		= &spu_priv1_beat_ops;
+-	spu_management_ops	= &spu_management_of_ops;
+-#endif
+-
+-	celleb_setup_arch_common();
+-}
+-
+-static int __init celleb_probe_beat(void)
+-{
+-	unsigned long root = of_get_flat_dt_root();
+-
+-	if (!of_flat_dt_is_compatible(root, "Beat"))
+-		return 0;
+-
+-	powerpc_firmware_features |= FW_FEATURE_CELLEB_ALWAYS
+-		| FW_FEATURE_BEAT | FW_FEATURE_LPAR;
+-	hpte_init_beat_v3();
+-	pm_power_off = beat_power_off;
+-
+-	return 1;
+-}
+-
+-
+-/*
+- * functions for Celleb-native
+- */
+-static void __init celleb_init_IRQ_native(void)
+-{
+-	iic_init_IRQ();
+-	spider_init_IRQ();
+-}
+-
+-static void __init celleb_setup_arch_native(void)
+-{
+-#ifdef CONFIG_SPU_BASE
+-	spu_priv1_ops		= &spu_priv1_mmio_ops;
+-	spu_management_ops	= &spu_management_of_ops;
+-#endif
+-
+-	cbe_regs_init();
+-
+-#ifdef CONFIG_CBE_RAS
+-	cbe_ras_init();
+-#endif
+-
+-#ifdef CONFIG_SMP
+-	smp_init_cell();
+-#endif
+-
+-	cbe_pervasive_init();
+-
+-	/* XXX: nvram initialization should be added */
+-
+-	celleb_setup_arch_common();
+-}
+-
+-static int __init celleb_probe_native(void)
+-{
+-	unsigned long root = of_get_flat_dt_root();
+-
+-	if (of_flat_dt_is_compatible(root, "Beat") ||
+-	    !of_flat_dt_is_compatible(root, "TOSHIBA,Celleb"))
+-		return 0;
+-
+-	powerpc_firmware_features |= FW_FEATURE_CELLEB_ALWAYS;
+-	hpte_init_native();
+-	pm_power_off = rtas_power_off;
+-
+-	return 1;
+-}
+-
+-
+-/*
+- * machine definitions
+- */
+-define_machine(celleb_beat) {
+-	.name			= "Cell Reference Set (Beat)",
+-	.probe			= celleb_probe_beat,
+-	.setup_arch		= celleb_setup_arch_beat,
+-	.show_cpuinfo		= celleb_show_cpuinfo,
+-	.restart		= beat_restart,
+-	.halt			= beat_halt,
+-	.get_rtc_time		= beat_get_rtc_time,
+-	.set_rtc_time		= beat_set_rtc_time,
+-	.calibrate_decr		= generic_calibrate_decr,
+-	.progress		= celleb_progress,
+-	.power_save		= beat_power_save,
+-	.nvram_size		= beat_nvram_get_size,
+-	.nvram_read		= beat_nvram_read,
+-	.nvram_write		= beat_nvram_write,
+-	.set_dabr		= beat_set_xdabr,
+-	.init_IRQ		= beatic_init_IRQ,
+-	.get_irq		= beatic_get_irq,
+-	.pci_probe_mode 	= celleb_pci_probe_mode,
+-	.pci_setup_phb		= celleb_setup_phb,
+-#ifdef CONFIG_KEXEC
+-	.kexec_cpu_down		= beat_kexec_cpu_down,
+-#endif
+-};
+-
+-define_machine(celleb_native) {
+-	.name			= "Cell Reference Set (native)",
+-	.probe			= celleb_probe_native,
+-	.setup_arch		= celleb_setup_arch_native,
+-	.show_cpuinfo		= celleb_show_cpuinfo,
+-	.restart		= rtas_restart,
+-	.halt			= rtas_halt,
+-	.get_boot_time		= rtas_get_boot_time,
+-	.get_rtc_time		= rtas_get_rtc_time,
+-	.set_rtc_time		= rtas_set_rtc_time,
+-	.calibrate_decr		= generic_calibrate_decr,
+-	.progress		= celleb_progress,
+-	.pci_probe_mode 	= celleb_pci_probe_mode,
+-	.pci_setup_phb		= celleb_setup_phb,
+-	.init_IRQ		= celleb_init_IRQ_native,
+-};
+diff --git a/arch/powerpc/platforms/cell/iommu.c b/arch/powerpc/platforms/cell/iommu.c
+index c7c8720aa39f..31b1a67daccf 100644
+--- a/arch/powerpc/platforms/cell/iommu.c
++++ b/arch/powerpc/platforms/cell/iommu.c
+@@ -1234,5 +1234,3 @@ static int __init cell_iommu_init(void)
+ 	return 0;
+ }
+ machine_arch_initcall(cell, cell_iommu_init);
+-machine_arch_initcall(celleb_native, cell_iommu_init);
+-
+-- 
+2.1.0
