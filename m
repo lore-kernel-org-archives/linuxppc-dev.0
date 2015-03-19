@@ -1,28 +1,27 @@
-Return-Path: <sowmini.varadhan@oracle.com>
-Received: from userp1050.oracle.com (userp1050.oracle.com [156.151.31.82])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <weiyang.kernel@gmail.com>
+Received: from mail-oi0-x235.google.com (mail-oi0-x235.google.com
+ [IPv6:2607:f8b0:4003:c06::235])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BA7BA1A02CB
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Mar 2015 00:34:28 +1100 (AEDT)
-Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
- by userp1050.oracle.com (Sentrion-MTA-4.3.2/Sentrion-MTA-4.3.2) with ESMTP id
- t2JDYQ7q021640
- (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Mar 2015 13:34:26 GMT
-Date: Thu, 19 Mar 2015 06:34:07 -0700
-From: Sowmini Varadhan <sowmini.varadhan@oracle.com>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Subject: Re: Generic IOMMU pooled allocator
-Message-ID: <20150319133407.GA32355@oracle.com>
-References: <20150318.222517.1444725543017433108.davem@davemloft.net>
- <1426734106.4770.118.camel@kernel.crashing.org>
- <550A5E5D.90907@ozlabs.ru>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 22EFC1A02CB
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Mar 2015 03:18:35 +1100 (AEDT)
+Received: by oier21 with SMTP id r21so69226299oie.1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Mar 2015 09:18:32 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <550A5E5D.90907@ozlabs.ru>
-Cc: Alexey Kardashevskiy <aik@au1.ibm.com>, Anton Blanchard <anton@au1.ibm.com>,
- paulus@samba.org, sowmini.varadhan@oracle.com, sparclinux@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, David Miller <davem@davemloft.net>
+In-Reply-To: <20150319150824.GE26935@google.com>
+References: <1425446353-30513-1-git-send-email-weiyang@linux.vnet.ibm.com>
+ <1425446353-30513-16-git-send-email-weiyang@linux.vnet.ibm.com>
+ <20150311135507.GA16664@google.com> <20150312011517.GA5833@richard>
+ <20150319150824.GE26935@google.com>
+Date: Fri, 20 Mar 2015 00:18:31 +0800
+Message-ID: <CADLM8XOFfQmfEXeqObNatGmvonFRF29RVyhhOaKaxzdYxpHoEw@mail.gmail.com>
+Subject: Re: [PATCH V13 15/21] powerpc/powernv: Reserve additional space for
+ IOV BAR according to the number of total_pe
+From: Wei Yang <weiyang.kernel@gmail.com>
+To: Bjorn Helgaas <bhelgaas@google.com>
+Content-Type: multipart/alternative; boundary=001a11c360340e63140511a68d0c
+Cc: linux-pci@vger.kernel.org, Wei Yang <weiyang@linux.vnet.ibm.com>,
+ benh@au1.ibm.com, linuxppc-dev@lists.ozlabs.org, gwshan@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,104 +31,297 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+--001a11c360340e63140511a68d0c
+Content-Type: text/plain; charset=UTF-8
 
-On 03/19/2015 02:01 PM, Benjamin Herrenschmidt wrote:
+Oh, I thought you are not comfortable with the "Patch v12 10/21 PCI:
+Consider additional PF's IOV BAR alignment ..."
 
-Ben> One thing I noticed is the asymetry in your code between the alloc
-Ben> and the free path. The alloc path is similar to us in that the lock
-Ben> covers the allocation and that's about it, there's no actual mapping to
-Ben> the HW done, it's done by the caller level right ?
+V14 is ready to send which is based on v4.0-rc1.
 
-yes, the only constraint  is that the h/w alloc transaction should be
-done after the arena-alloc, whereas for the unmap, the h/w  transaction
-should happen first, and arena-unmap should happen after.
+2015-03-19 23:08 GMT+08:00 Bjorn Helgaas <bhelgaas@google.com>:
 
-Ben> The free path however, in your case, takes the lock and calls back into
-Ben> "demap" (which I assume is what removes the translation from the HW)
-Ben> with the lock held. There's also some mapping between cookies
-Ben> and index which here too isn't exposed to the alloc side but is
-Ben> exposed to the free side.
+> On Thu, Mar 12, 2015 at 09:15:17AM +0800, Wei Yang wrote:
+> > On Wed, Mar 11, 2015 at 08:55:07AM -0500, Bjorn Helgaas wrote:
+> > >On Wed, Mar 04, 2015 at 01:19:07PM +0800, Wei Yang wrote:
+> > >> On PHB3, PF IOV BAR will be covered by M64 window to have better PE
+> > >> isolation.  The total_pe number is usually different from total_VFs,
+> which
+> > >> can lead to a conflict between MMIO space and the PE number.
+> > >>
+> > >> For example, if total_VFs is 128 and total_pe is 256, the second half
+> of
+> > >> M64 window will be part of other PCI device, which may already belong
+> > >> to other PEs.
+> > >>
+> > >> Prevent the conflict by reserving additional space for the PF IOV BAR,
+> > >> which is total_pe number of VF's BAR size.
+> > >>
+> > >> [bhelgaas: make dev_printk() output more consistent, index resource[]
+> > >> conventionally]
+> > >> Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
+> > >> ---
+> > >>  arch/powerpc/include/asm/machdep.h        |    4 ++
+> > >>  arch/powerpc/include/asm/pci-bridge.h     |    3 ++
+> > >>  arch/powerpc/kernel/pci-common.c          |    5 +++
+> > >>  arch/powerpc/kernel/pci-hotplug.c         |    4 ++
+> > >>  arch/powerpc/platforms/powernv/pci-ioda.c |   61
+> +++++++++++++++++++++++++++++
+> > >>  5 files changed, 77 insertions(+)
+> > >>
+> > >> diff --git a/arch/powerpc/include/asm/machdep.h
+> b/arch/powerpc/include/asm/machdep.h
+> > >> index c8175a3..965547c 100644
+> > >> --- a/arch/powerpc/include/asm/machdep.h
+> > >> +++ b/arch/powerpc/include/asm/machdep.h
+> > >> @@ -250,6 +250,10 @@ struct machdep_calls {
+> > >>    /* Reset the secondary bus of bridge */
+> > >>    void  (*pcibios_reset_secondary_bus)(struct pci_dev *dev);
+> > >>
+> > >> +#ifdef CONFIG_PCI_IOV
+> > >> +  void (*pcibios_fixup_sriov)(struct pci_bus *bus);
+> > >> +#endif /* CONFIG_PCI_IOV */
+> > >> +
+> > >>    /* Called to shutdown machine specific hardware not already
+> controlled
+> > >>     * by other drivers.
+> > >>     */
+> > >> diff --git a/arch/powerpc/include/asm/pci-bridge.h
+> b/arch/powerpc/include/asm/pci-bridge.h
+> > >> index 513f8f2..de11de7 100644
+> > >> --- a/arch/powerpc/include/asm/pci-bridge.h
+> > >> +++ b/arch/powerpc/include/asm/pci-bridge.h
+> > >> @@ -175,6 +175,9 @@ struct pci_dn {
+> > >>  #define IODA_INVALID_PE           (-1)
+> > >>  #ifdef CONFIG_PPC_POWERNV
+> > >>    int     pe_number;
+> > >> +#ifdef CONFIG_PCI_IOV
+> > >> +  u16     max_vfs;                /* number of VFs IOV BAR expended
+> */
+> > >> +#endif /* CONFIG_PCI_IOV */
+> > >>  #endif
+> > >>    struct list_head child_list;
+> > >>    struct list_head list;
+> > >> diff --git a/arch/powerpc/kernel/pci-common.c
+> b/arch/powerpc/kernel/pci-common.c
+> > >> index 8203101..022e9fe 100644
+> > >> --- a/arch/powerpc/kernel/pci-common.c
+> > >> +++ b/arch/powerpc/kernel/pci-common.c
+> > >> @@ -1646,6 +1646,11 @@ void pcibios_scan_phb(struct pci_controller
+> *hose)
+> > >>    if (ppc_md.pcibios_fixup_phb)
+> > >>            ppc_md.pcibios_fixup_phb(hose);
+> > >>
+> > >> +#ifdef CONFIG_PCI_IOV
+> > >> +  if (ppc_md.pcibios_fixup_sriov)
+> > >> +          ppc_md.pcibios_fixup_sriov(bus);
+> > >> +#endif /* CONFIG_PCI_IOV */
+> > >
+> > >Here, and ...
+> > >
+> > >> +
+> > >>    /* Configure PCI Express settings */
+> > >>    if (bus && !pci_has_flag(PCI_PROBE_ONLY)) {
+> > >>            struct pci_bus *child;
+> > >> diff --git a/arch/powerpc/kernel/pci-hotplug.c
+> b/arch/powerpc/kernel/pci-hotplug.c
+> > >> index 5b78917..7d238ae 100644
+> > >> --- a/arch/powerpc/kernel/pci-hotplug.c
+> > >> +++ b/arch/powerpc/kernel/pci-hotplug.c
+> > >> @@ -94,6 +94,10 @@ void pcibios_add_pci_devices(struct pci_bus * bus)
+> > >>             */
+> > >>            slotno = PCI_SLOT(PCI_DN(dn->child)->devfn);
+> > >>            pci_scan_slot(bus, PCI_DEVFN(slotno, 0));
+> > >> +#ifdef CONFIG_PCI_IOV
+> > >> +          if (ppc_md.pcibios_fixup_sriov)
+> > >> +                  ppc_md.pcibios_fixup_sriov(bus);
+> > >> +#endif /* CONFIG_PCI_IOV */
+> > >
+> > >here, you have the same code.  It's good that we now do it for hot-added
+> > >devices as well as those present at boot.  But it's bad that it happens
+> in
+> > >two different paths.
+> > >
+> > >Isn't there some way we can unify this so the same path is used for the
+> > >initial pcibios_scan_phb() and also the hot-add case?  Maybe call
+> > >pcibios_fixup_sriov() from pcibios_add_device()?
+> > >
+> >
+> >
+> > This is a very good suggestion. I have changed this and works fine.
+>
+> I was expecting a v14 series with this change.  Is it coming, or are you
+> waiting for something else from me?
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+>
 
-Regarding the ->demap indirection- somewhere between V1 and V2, I 
-realized that, at least for sun4v, it's not necessary to hold
-the pool lock when doing the unmap, (V1 had originally passed this
-a the ->demap). Revisiting the LDC change, I think that even that
-has no pool-specific info that needs to be passed in, so possibly the
-->demap is not required at all?
-
-I can remove that, and re-verify the LDC code (though I might
-not be able to get to this till early next week, as I'm travelling
-at the moment).
-
-About the cookie_to_index, that came out of observation of the
-LDC code (ldc_cookie_to_index in patchset 3). In the LDC case, 
-the workflow is approximately
-   base = alloc_npages(..); /* calls iommu_tbl_range_alloc *.
-   /* set up cookie_state using base */
-   /* populate cookies calling fill_cookies() -> make_cookie() */
-The make_cookie() is the inverse operation of cookie_to_index()
-(afaict, the code is not very well commented, I'm afraid), but 
-I need that indirection to figure out which bitmap to clear.
-
-I dont know if there's a better way to do this, or if
-the ->cookie_to_index can get more complex for other IOMMU users
-
-Ben> One thing that Alexey is doing on our side is to move some of the
-Ben> hooks to manipulate the underlying TCEs (ie. iommu PTEs) from our
-Ben> global ppc_md. data structure to a new iommu_table_ops, so your patches
-Ben> will definitely collide with our current work so we'll have to figure
-Ben> out how things can made to match. We might be able to move more than
-Ben> just the allocator to the generic code, and the whole implementation of
-Ben> map_sg/unmap_sg if we have the right set of "ops", unless you see a
-Ben> reason why that wouldn't work for you ?
-
-I cant think of why that wont work, though it would help to see
-the patch itself..
 
 
-Ben> We also need to add some additional platform specific fields to certain
-Ben> iommu table instances to deal with some KVM related tracking of pinned
-Ben> "DMAble" memory, here too we might have to be creative and possibly
-Ben> enclose the generic iommu_table in a platform specific variant.
-Ben> 
-Ben> Alexey, any other comment ?
-Ben> 
-Ben> Cheers,
-Ben> Ben.
-Ben> 
-Ben> 
-Ben> 
-Ben> --
-Ben> To unsubscribe from this list: send the line "unsubscribe sparclinux" in
-Ben> the body of a message to majordomo@vger.kernel.org
-Ben> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-Ben> 
-Ben>Alexey, any other comment ?
+-- 
+Richard Yang
+Help You, Help Me
 
-On (03/19/15 16:27), Alexey Kardashevskiy wrote:
-Alexey> 
-Alexey> Agree about missing symmetry. In general, I would call it "zoned
-Alexey> pool-locked memory allocator"-ish rather than iommu_table and have
-Alexey> no callbacks there.
-Alexey> 
-Alexey> The iommu_tbl_range_free() caller could call cookie_to_index() and
+--001a11c360340e63140511a68d0c
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-Problem is that tbl_range_free itself needs the `entry' from
--Alexey>cookie_to_index.. dont know if there's a way to move the code
-to avoid that..
+<div dir=3D"ltr">Oh, I thought you are not comfortable with the &quot;Patch=
+=C2=A0v12 10/21 PCI: Consider additional PF&#39;s IOV BAR alignment ...&quo=
+t;<div><br></div><div>V14 is ready to send which is based on v4.0-rc1.=C2=
+=A0</div></div><div class=3D"gmail_extra"><br><div class=3D"gmail_quote">20=
+15-03-19 23:08 GMT+08:00 Bjorn Helgaas <span dir=3D"ltr">&lt;<a href=3D"mai=
+lto:bhelgaas@google.com" target=3D"_blank">bhelgaas@google.com</a>&gt;</spa=
+n>:<br><blockquote class=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;border-=
+left:1px #ccc solid;padding-left:1ex"><div class=3D"HOEnZb"><div class=3D"h=
+5">On Thu, Mar 12, 2015 at 09:15:17AM +0800, Wei Yang wrote:<br>
+&gt; On Wed, Mar 11, 2015 at 08:55:07AM -0500, Bjorn Helgaas wrote:<br>
+&gt; &gt;On Wed, Mar 04, 2015 at 01:19:07PM +0800, Wei Yang wrote:<br>
+&gt; &gt;&gt; On PHB3, PF IOV BAR will be covered by M64 window to have bet=
+ter PE<br>
+&gt; &gt;&gt; isolation.=C2=A0 The total_pe number is usually different fro=
+m total_VFs, which<br>
+&gt; &gt;&gt; can lead to a conflict between MMIO space and the PE number.<=
+br>
+&gt; &gt;&gt;<br>
+&gt; &gt;&gt; For example, if total_VFs is 128 and total_pe is 256, the sec=
+ond half of<br>
+&gt; &gt;&gt; M64 window will be part of other PCI device, which may alread=
+y belong<br>
+&gt; &gt;&gt; to other PEs.<br>
+&gt; &gt;&gt;<br>
+&gt; &gt;&gt; Prevent the conflict by reserving additional space for the PF=
+ IOV BAR,<br>
+&gt; &gt;&gt; which is total_pe number of VF&#39;s BAR size.<br>
+&gt; &gt;&gt;<br>
+&gt; &gt;&gt; [bhelgaas: make dev_printk() output more consistent, index re=
+source[]<br>
+&gt; &gt;&gt; conventionally]<br>
+&gt; &gt;&gt; Signed-off-by: Wei Yang &lt;<a href=3D"mailto:weiyang@linux.v=
+net.ibm.com">weiyang@linux.vnet.ibm.com</a>&gt;<br>
+&gt; &gt;&gt; ---<br>
+&gt; &gt;&gt;=C2=A0 arch/powerpc/include/asm/machdep.h=C2=A0 =C2=A0 =C2=A0 =
+=C2=A0 |=C2=A0 =C2=A0 4 ++<br>
+&gt; &gt;&gt;=C2=A0 arch/powerpc/include/asm/pci-bridge.h=C2=A0 =C2=A0 =C2=
+=A0|=C2=A0 =C2=A0 3 ++<br>
+&gt; &gt;&gt;=C2=A0 arch/powerpc/kernel/pci-common.c=C2=A0 =C2=A0 =C2=A0 =
+=C2=A0 =C2=A0 |=C2=A0 =C2=A0 5 +++<br>
+&gt; &gt;&gt;=C2=A0 arch/powerpc/kernel/pci-hotplug.c=C2=A0 =C2=A0 =C2=A0 =
+=C2=A0 =C2=A0|=C2=A0 =C2=A0 4 ++<br>
+&gt; &gt;&gt;=C2=A0 arch/powerpc/platforms/powernv/pci-ioda.c |=C2=A0 =C2=
+=A061 +++++++++++++++++++++++++++++<br>
+&gt; &gt;&gt;=C2=A0 5 files changed, 77 insertions(+)<br>
+&gt; &gt;&gt;<br>
+&gt; &gt;&gt; diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerp=
+c/include/asm/machdep.h<br>
+&gt; &gt;&gt; index c8175a3..965547c 100644<br>
+&gt; &gt;&gt; --- a/arch/powerpc/include/asm/machdep.h<br>
+&gt; &gt;&gt; +++ b/arch/powerpc/include/asm/machdep.h<br>
+&gt; &gt;&gt; @@ -250,6 +250,10 @@ struct machdep_calls {<br>
+&gt; &gt;&gt;=C2=A0 =C2=A0 /* Reset the secondary bus of bridge */<br>
+&gt; &gt;&gt;=C2=A0 =C2=A0 void=C2=A0 (*pcibios_reset_secondary_bus)(struct=
+ pci_dev *dev);<br>
+&gt; &gt;&gt;<br>
+&gt; &gt;&gt; +#ifdef CONFIG_PCI_IOV<br>
+&gt; &gt;&gt; +=C2=A0 void (*pcibios_fixup_sriov)(struct pci_bus *bus);<br>
+&gt; &gt;&gt; +#endif /* CONFIG_PCI_IOV */<br>
+&gt; &gt;&gt; +<br>
+&gt; &gt;&gt;=C2=A0 =C2=A0 /* Called to shutdown machine specific hardware =
+not already controlled<br>
+&gt; &gt;&gt;=C2=A0 =C2=A0 =C2=A0* by other drivers.<br>
+&gt; &gt;&gt;=C2=A0 =C2=A0 =C2=A0*/<br>
+&gt; &gt;&gt; diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/pow=
+erpc/include/asm/pci-bridge.h<br>
+&gt; &gt;&gt; index 513f8f2..de11de7 100644<br>
+&gt; &gt;&gt; --- a/arch/powerpc/include/asm/pci-bridge.h<br>
+&gt; &gt;&gt; +++ b/arch/powerpc/include/asm/pci-bridge.h<br>
+&gt; &gt;&gt; @@ -175,6 +175,9 @@ struct pci_dn {<br>
+&gt; &gt;&gt;=C2=A0 #define IODA_INVALID_PE=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 =C2=A0(-1)<br>
+&gt; &gt;&gt;=C2=A0 #ifdef CONFIG_PPC_POWERNV<br>
+&gt; &gt;&gt;=C2=A0 =C2=A0 int=C2=A0 =C2=A0 =C2=A0pe_number;<br>
+&gt; &gt;&gt; +#ifdef CONFIG_PCI_IOV<br>
+&gt; &gt;&gt; +=C2=A0 u16=C2=A0 =C2=A0 =C2=A0max_vfs;=C2=A0 =C2=A0 =C2=A0 =
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 /* number of VFs IOV BAR expended */<br>
+&gt; &gt;&gt; +#endif /* CONFIG_PCI_IOV */<br>
+&gt; &gt;&gt;=C2=A0 #endif<br>
+&gt; &gt;&gt;=C2=A0 =C2=A0 struct list_head child_list;<br>
+&gt; &gt;&gt;=C2=A0 =C2=A0 struct list_head list;<br>
+&gt; &gt;&gt; diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/=
+kernel/pci-common.c<br>
+&gt; &gt;&gt; index 8203101..022e9fe 100644<br>
+&gt; &gt;&gt; --- a/arch/powerpc/kernel/pci-common.c<br>
+&gt; &gt;&gt; +++ b/arch/powerpc/kernel/pci-common.c<br>
+&gt; &gt;&gt; @@ -1646,6 +1646,11 @@ void pcibios_scan_phb(struct pci_contr=
+oller *hose)<br>
+&gt; &gt;&gt;=C2=A0 =C2=A0 if (ppc_md.pcibios_fixup_phb)<br>
+&gt; &gt;&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 ppc_md.pcibios_fixup=
+_phb(hose);<br>
+&gt; &gt;&gt;<br>
+&gt; &gt;&gt; +#ifdef CONFIG_PCI_IOV<br>
+&gt; &gt;&gt; +=C2=A0 if (ppc_md.pcibios_fixup_sriov)<br>
+&gt; &gt;&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 ppc_md.pcibios_fixup_srio=
+v(bus);<br>
+&gt; &gt;&gt; +#endif /* CONFIG_PCI_IOV */<br>
+&gt; &gt;<br>
+&gt; &gt;Here, and ...<br>
+&gt; &gt;<br>
+&gt; &gt;&gt; +<br>
+&gt; &gt;&gt;=C2=A0 =C2=A0 /* Configure PCI Express settings */<br>
+&gt; &gt;&gt;=C2=A0 =C2=A0 if (bus &amp;&amp; !pci_has_flag(PCI_PROBE_ONLY)=
+) {<br>
+&gt; &gt;&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 struct pci_bus *chil=
+d;<br>
+&gt; &gt;&gt; diff --git a/arch/powerpc/kernel/pci-hotplug.c b/arch/powerpc=
+/kernel/pci-hotplug.c<br>
+&gt; &gt;&gt; index 5b78917..7d238ae 100644<br>
+&gt; &gt;&gt; --- a/arch/powerpc/kernel/pci-hotplug.c<br>
+&gt; &gt;&gt; +++ b/arch/powerpc/kernel/pci-hotplug.c<br>
+&gt; &gt;&gt; @@ -94,6 +94,10 @@ void pcibios_add_pci_devices(struct pci_bu=
+s * bus)<br>
+&gt; &gt;&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0*/<br>
+&gt; &gt;&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 slotno =3D PCI_SLOT(=
+PCI_DN(dn-&gt;child)-&gt;devfn);<br>
+&gt; &gt;&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 pci_scan_slot(bus, P=
+CI_DEVFN(slotno, 0));<br>
+&gt; &gt;&gt; +#ifdef CONFIG_PCI_IOV<br>
+&gt; &gt;&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 if (ppc_md.pcibios_fixup_=
+sriov)<br>
+&gt; &gt;&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
+=A0 ppc_md.pcibios_fixup_sriov(bus);<br>
+&gt; &gt;&gt; +#endif /* CONFIG_PCI_IOV */<br>
+&gt; &gt;<br>
+&gt; &gt;here, you have the same code.=C2=A0 It&#39;s good that we now do i=
+t for hot-added<br>
+&gt; &gt;devices as well as those present at boot.=C2=A0 But it&#39;s bad t=
+hat it happens in<br>
+&gt; &gt;two different paths.<br>
+&gt; &gt;<br>
+&gt; &gt;Isn&#39;t there some way we can unify this so the same path is use=
+d for the<br>
+&gt; &gt;initial pcibios_scan_phb() and also the hot-add case?=C2=A0 Maybe =
+call<br>
+&gt; &gt;pcibios_fixup_sriov() from pcibios_add_device()?<br>
+&gt; &gt;<br>
+&gt;<br>
+&gt;<br>
+&gt; This is a very good suggestion. I have changed this and works fine.<br=
+>
+<br>
+</div></div>I was expecting a v14 series with this change.=C2=A0 Is it comi=
+ng, or are you<br>
+waiting for something else from me?<br>
+<div class=3D"HOEnZb"><div class=3D"h5">___________________________________=
+____________<br>
+Linuxppc-dev mailing list<br>
+<a href=3D"mailto:Linuxppc-dev@lists.ozlabs.org">Linuxppc-dev@lists.ozlabs.=
+org</a><br>
+<a href=3D"https://lists.ozlabs.org/listinfo/linuxppc-dev" target=3D"_blank=
+">https://lists.ozlabs.org/listinfo/linuxppc-dev</a></div></div></blockquot=
+e></div><br><br clear=3D"all"><div><br></div>-- <br><div class=3D"gmail_sig=
+nature">Richard Yang<br>Help You, Help Me</div>
+</div>
 
-Alexey> what the reset() callback does here - I do not understand, some
-
-The -Alexey>reset callback came out of the sun4u use-case. Davem might
-have more history here than I do, but my understanding is that the
-iommu_flushall() was needed on the older sun4u architectures, where
-there was on intermediating HV?
-
-Alexey> documentation would help here, and demap() does not have to be
-Alexey> executed under the lock (as map() is not executed under the lock).
-Alexey> 
-Alexey> btw why demap, not unmap? :)
-
-Maybe neither is needed, as you folks made me realize above.
-
---Sowmini
+--001a11c360340e63140511a68d0c--
