@@ -1,32 +1,26 @@
-Return-Path: <mgorman@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <bhelgaas@google.com>
+Received: from mail-oi0-x230.google.com (mail-oi0-x230.google.com
+ [IPv6:2607:f8b0:4003:c06::230])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BBAC41A02CB
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Mar 2015 01:10:31 +1100 (AEDT)
-Date: Thu, 19 Mar 2015 14:10:22 +0000
-From: Mel Gorman <mgorman@suse.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 4/4] mm: numa: Slow PTE scan rate if migration failures
- occur
-Message-ID: <20150319141022.GD3087@suse.de>
-References: <20150312131045.GE3406@suse.de>
- <CA+55aFx=81BGnQFNhnAGu6CetL7yifPsnD-+v7Y6QRqwgH47gQ@mail.gmail.com>
- <20150312184925.GH3406@suse.de> <20150317070655.GB10105@dastard>
- <CA+55aFzdLnFdku-gnm3mGbeS=QauYBNkFQKYXJAGkrMd2jKXhw@mail.gmail.com>
- <20150317205104.GA28621@dastard>
- <CA+55aFzSPcNgxw4GC7aAV1r0P5LniyVVC66COz=3cgMcx73Nag@mail.gmail.com>
- <20150317220840.GC28621@dastard>
- <CA+55aFwne-fe_Gg-_GTUo+iOAbbNpLBa264JqSFkH79EULyAqw@mail.gmail.com>
- <CA+55aFy-Mw74rAdLMMMUgnsG3ZttMWVNGz7CXZJY7q9fqyRYfg@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id C61381A02CB
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Mar 2015 02:08:31 +1100 (AEDT)
+Received: by oigv203 with SMTP id v203so67195366oig.3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Mar 2015 08:08:27 -0700 (PDT)
+Date: Thu, 19 Mar 2015 10:08:24 -0500
+From: Bjorn Helgaas <bhelgaas@google.com>
+To: Wei Yang <weiyang@linux.vnet.ibm.com>
+Subject: Re: [PATCH V13 15/21] powerpc/powernv: Reserve additional space for
+ IOV BAR according to the number of total_pe
+Message-ID: <20150319150824.GE26935@google.com>
+References: <1425446353-30513-1-git-send-email-weiyang@linux.vnet.ibm.com>
+ <1425446353-30513-16-git-send-email-weiyang@linux.vnet.ibm.com>
+ <20150311135507.GA16664@google.com> <20150312011517.GA5833@richard>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-In-Reply-To: <CA+55aFy-Mw74rAdLMMMUgnsG3ZttMWVNGz7CXZJY7q9fqyRYfg@mail.gmail.com>
-Cc: Dave Chinner <david@fromorbit.com>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com,
- Linux-MM <linux-mm@kvack.org>, Aneesh Kumar <aneesh.kumar@linux.vnet.ibm.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- ppc-dev <linuxppc-dev@lists.ozlabs.org>, Ingo Molnar <mingo@kernel.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20150312011517.GA5833@richard>
+Cc: linux-pci@vger.kernel.org, benh@au1.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ gwshan@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,95 +30,103 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Mar 18, 2015 at 10:31:28AM -0700, Linus Torvalds wrote:
-> >  - something completely different that I am entirely missing
+On Thu, Mar 12, 2015 at 09:15:17AM +0800, Wei Yang wrote:
+> On Wed, Mar 11, 2015 at 08:55:07AM -0500, Bjorn Helgaas wrote:
+> >On Wed, Mar 04, 2015 at 01:19:07PM +0800, Wei Yang wrote:
+> >> On PHB3, PF IOV BAR will be covered by M64 window to have better PE
+> >> isolation.  The total_pe number is usually different from total_VFs, which
+> >> can lead to a conflict between MMIO space and the PE number.
+> >> 
+> >> For example, if total_VFs is 128 and total_pe is 256, the second half of
+> >> M64 window will be part of other PCI device, which may already belong
+> >> to other PEs.
+> >> 
+> >> Prevent the conflict by reserving additional space for the PF IOV BAR,
+> >> which is total_pe number of VF's BAR size.
+> >> 
+> >> [bhelgaas: make dev_printk() output more consistent, index resource[]
+> >> conventionally]
+> >> Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
+> >> ---
+> >>  arch/powerpc/include/asm/machdep.h        |    4 ++
+> >>  arch/powerpc/include/asm/pci-bridge.h     |    3 ++
+> >>  arch/powerpc/kernel/pci-common.c          |    5 +++
+> >>  arch/powerpc/kernel/pci-hotplug.c         |    4 ++
+> >>  arch/powerpc/platforms/powernv/pci-ioda.c |   61 +++++++++++++++++++++++++++++
+> >>  5 files changed, 77 insertions(+)
+> >> 
+> >> diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
+> >> index c8175a3..965547c 100644
+> >> --- a/arch/powerpc/include/asm/machdep.h
+> >> +++ b/arch/powerpc/include/asm/machdep.h
+> >> @@ -250,6 +250,10 @@ struct machdep_calls {
+> >>  	/* Reset the secondary bus of bridge */
+> >>  	void  (*pcibios_reset_secondary_bus)(struct pci_dev *dev);
+> >>  
+> >> +#ifdef CONFIG_PCI_IOV
+> >> +	void (*pcibios_fixup_sriov)(struct pci_bus *bus);
+> >> +#endif /* CONFIG_PCI_IOV */
+> >> +
+> >>  	/* Called to shutdown machine specific hardware not already controlled
+> >>  	 * by other drivers.
+> >>  	 */
+> >> diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
+> >> index 513f8f2..de11de7 100644
+> >> --- a/arch/powerpc/include/asm/pci-bridge.h
+> >> +++ b/arch/powerpc/include/asm/pci-bridge.h
+> >> @@ -175,6 +175,9 @@ struct pci_dn {
+> >>  #define IODA_INVALID_PE		(-1)
+> >>  #ifdef CONFIG_PPC_POWERNV
+> >>  	int	pe_number;
+> >> +#ifdef CONFIG_PCI_IOV
+> >> +	u16     max_vfs;		/* number of VFs IOV BAR expended */
+> >> +#endif /* CONFIG_PCI_IOV */
+> >>  #endif
+> >>  	struct list_head child_list;
+> >>  	struct list_head list;
+> >> diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
+> >> index 8203101..022e9fe 100644
+> >> --- a/arch/powerpc/kernel/pci-common.c
+> >> +++ b/arch/powerpc/kernel/pci-common.c
+> >> @@ -1646,6 +1646,11 @@ void pcibios_scan_phb(struct pci_controller *hose)
+> >>  	if (ppc_md.pcibios_fixup_phb)
+> >>  		ppc_md.pcibios_fixup_phb(hose);
+> >>  
+> >> +#ifdef CONFIG_PCI_IOV
+> >> +	if (ppc_md.pcibios_fixup_sriov)
+> >> +		ppc_md.pcibios_fixup_sriov(bus);
+> >> +#endif /* CONFIG_PCI_IOV */
+> >
+> >Here, and ...
+> >
+> >> +
+> >>  	/* Configure PCI Express settings */
+> >>  	if (bus && !pci_has_flag(PCI_PROBE_ONLY)) {
+> >>  		struct pci_bus *child;
+> >> diff --git a/arch/powerpc/kernel/pci-hotplug.c b/arch/powerpc/kernel/pci-hotplug.c
+> >> index 5b78917..7d238ae 100644
+> >> --- a/arch/powerpc/kernel/pci-hotplug.c
+> >> +++ b/arch/powerpc/kernel/pci-hotplug.c
+> >> @@ -94,6 +94,10 @@ void pcibios_add_pci_devices(struct pci_bus * bus)
+> >>  		 */
+> >>  		slotno = PCI_SLOT(PCI_DN(dn->child)->devfn);
+> >>  		pci_scan_slot(bus, PCI_DEVFN(slotno, 0));
+> >> +#ifdef CONFIG_PCI_IOV
+> >> +		if (ppc_md.pcibios_fixup_sriov)
+> >> +			ppc_md.pcibios_fixup_sriov(bus);
+> >> +#endif /* CONFIG_PCI_IOV */
+> >
+> >here, you have the same code.  It's good that we now do it for hot-added
+> >devices as well as those present at boot.  But it's bad that it happens in
+> >two different paths.
+> >
+> >Isn't there some way we can unify this so the same path is used for the
+> >initial pcibios_scan_phb() and also the hot-add case?  Maybe call
+> >pcibios_fixup_sriov() from pcibios_add_device()?
+> >
 > 
-> So I think there's something I'm missing. For non-shared mappings, I
-> still have the idea that pte_dirty should be the same as pte_write.
-> And yet, your testing of 3.19 shows that it's a big difference.
-> There's clearly something I'm completely missing.
 > 
+> This is a very good suggestion. I have changed this and works fine.
 
-Minimally, there is still the window where we clear the PTE to set the
-protections. During that window, a fault can occur. In the old code which
-was inherently racy and unsafe, the fault might still go ahead deferring
-a potential migration for a short period. In the current code, it'll stall
-on the lock, notice the PTE is changed and refault so the overhead is very
-different but functionally correct.
-
-In the old code, pte_write had complex interactions with background
-cleaning and sync in the case of file mappings (not applicable to Dave's
-case but still it's unpredictable behaviour). pte_dirty is close but there
-are interactions with the application as the timing of writes vs the PTE
-scanner matter.
-
-Even if we restored the original behaviour, it would still be very difficult
-to understand all the interactions between userspace and kernel.  The patch
-below should be tested because it's clearer what the intent is. Using
-the VMA flags is coarse but it's not vulnerable to timing artifacts that
-behave differently depending on the machine. My preliminary testing shows
-it helps but not by much. It does not restore performance to where it was
-but it's easier to understand which is important if there are changes in
-the scheduler later.
-
-In combination, I also think that slowing PTE scanning when migration fails
-is the correct action even if it is unrelated to the patch Dave bisected
-to. It's stupid to increase scanning rates and incurs more faults when
-migrations are failing so I'll be testing that next.
-
-diff --git a/mm/huge_memory.c b/mm/huge_memory.c
-index 626e93db28ba..2f12e9fcf1a2 100644
---- a/mm/huge_memory.c
-+++ b/mm/huge_memory.c
-@@ -1291,17 +1291,8 @@ int do_huge_pmd_numa_page(struct mm_struct *mm, struct vm_area_struct *vma,
- 		flags |= TNF_FAULT_LOCAL;
- 	}
- 
--	/*
--	 * Avoid grouping on DSO/COW pages in specific and RO pages
--	 * in general, RO pages shouldn't hurt as much anyway since
--	 * they can be in shared cache state.
--	 *
--	 * FIXME! This checks "pmd_dirty()" as an approximation of
--	 * "is this a read-only page", since checking "pmd_write()"
--	 * is even more broken. We haven't actually turned this into
--	 * a writable page, so pmd_write() will always be false.
--	 */
--	if (!pmd_dirty(pmd))
-+	/* See similar comment in do_numa_page for explanation */
-+	if (!(vma->vm_flags & VM_WRITE))
- 		flags |= TNF_NO_GROUP;
- 
- 	/*
-diff --git a/mm/memory.c b/mm/memory.c
-index 411144f977b1..20beb6647dba 100644
---- a/mm/memory.c
-+++ b/mm/memory.c
-@@ -3069,16 +3069,19 @@ static int do_numa_page(struct mm_struct *mm, struct vm_area_struct *vma,
- 	}
- 
- 	/*
--	 * Avoid grouping on DSO/COW pages in specific and RO pages
--	 * in general, RO pages shouldn't hurt as much anyway since
--	 * they can be in shared cache state.
-+	 * Avoid grouping on RO pages in general. RO pages shouldn't hurt as
-+	 * much anyway since they can be in shared cache state. This misses
-+	 * the case where a mapping is writable but the process never writes
-+	 * to it but pte_write gets cleared during protection updates and
-+	 * pte_dirty has unpredictable behaviour between PTE scan updates,
-+	 * background writeback, dirty balancing and application behaviour.
- 	 *
--	 * FIXME! This checks "pmd_dirty()" as an approximation of
--	 * "is this a read-only page", since checking "pmd_write()"
--	 * is even more broken. We haven't actually turned this into
--	 * a writable page, so pmd_write() will always be false.
-+	 * TODO: Note that the ideal here would be to avoid a situation where a
-+	 * NUMA fault is taken immediately followed by a write fault in
-+	 * some cases which would have lower overhead overall but would be
-+	 * invasive as the fault paths would need to be unified.
- 	 */
--	if (!pte_dirty(pte))
-+	if (!(vma->vm_flags & VM_WRITE))
- 		flags |= TNF_NO_GROUP;
- 
- 	/*
+I was expecting a v14 series with this change.  Is it coming, or are you
+waiting for something else from me?
