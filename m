@@ -1,29 +1,31 @@
-Return-Path: <clg@fr.ibm.com>
-Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <bhelgaas@google.com>
+Received: from mail-qc0-x22f.google.com (mail-qc0-x22f.google.com
+ [IPv6:2607:f8b0:400d:c01::22f])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2514D1A09DC
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Mar 2015 04:45:00 +1100 (AEDT)
-Received: from /spool/local
- by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <clg@fr.ibm.com>;
- Thu, 19 Mar 2015 17:44:57 -0000
-From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@fr.ibm.com>
-To: lm-sensors@lm-sensors.org
-Subject: [PATCH v2 5/5] hwmon: (ibmpowernv) do not use the OPAL index for
- hwmon attribute names
-Date: Thu, 19 Mar 2015 18:44:45 +0100
-Message-Id: <1426787085-9004-6-git-send-email-clg@fr.ibm.com>
-In-Reply-To: <1423117857-32759-1-git-send-email-clg@fr.ibm.com>
-References: <1423117857-32759-1-git-send-email-clg@fr.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 286091A09D9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Mar 2015 04:54:57 +1100 (AEDT)
+Received: by qcbkw5 with SMTP id kw5so73227231qcb.2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Mar 2015 10:54:53 -0700 (PDT)
 MIME-Version: 1.0
+In-Reply-To: <CADLM8XOFfQmfEXeqObNatGmvonFRF29RVyhhOaKaxzdYxpHoEw@mail.gmail.com>
+References: <1425446353-30513-1-git-send-email-weiyang@linux.vnet.ibm.com>
+ <1425446353-30513-16-git-send-email-weiyang@linux.vnet.ibm.com>
+ <20150311135507.GA16664@google.com> <20150312011517.GA5833@richard>
+ <20150319150824.GE26935@google.com>
+ <CADLM8XOFfQmfEXeqObNatGmvonFRF29RVyhhOaKaxzdYxpHoEw@mail.gmail.com>
+From: Bjorn Helgaas <bhelgaas@google.com>
+Date: Thu, 19 Mar 2015 12:54:33 -0500
+Message-ID: <CAErSpo6+d4W5wXEP8qoPN3S3tEYpFoOvg==ES922J_miisshXw@mail.gmail.com>
+Subject: Re: [PATCH V13 15/21] powerpc/powernv: Reserve additional space for
+ IOV BAR according to the number of total_pe
+To: Wei Yang <weiyang.kernel@gmail.com>
 Content-Type: text/plain; charset=UTF-8
-Cc: Stewart Smith <stewart@linux.vnet.ibm.com>,
- =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@fr.ibm.com>,
- Jean Delvare <jdelvare@suse.de>, Neelesh Gupta <neelegup@linux.vnet.ibm.com>,
- skiboot@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org,
- Guenter Roeck <linux@roeck-us.net>
+Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ Wei Yang <weiyang@linux.vnet.ibm.com>,
+ Benjamin Herrenschmidt <benh@au1.ibm.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,87 +35,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The current OPAL firmware exposes the different sensors of an IBM Power
-system using node names such as :
+On Thu, Mar 19, 2015 at 11:18 AM, Wei Yang <weiyang.kernel@gmail.com> wrote:
+> Oh, I thought you are not comfortable with the "Patch v12 10/21 PCI:
+> Consider additional PF's IOV BAR alignment ..."
+>
+> V14 is ready to send which is based on v4.0-rc1.
 
-	sensors/amb-temp#1-data
-	sensors/amb-temp#1-thrs
-	cooling-fan#1-data
-	cooling-fan#1-faulted
-	cooling-fan#1-thrs
-	cooling-fan#2-data
-	...
+Unless I missed something, the last email in that thread [1] is from
+you, so I think we're ready for the next iteration.
 
-The ibmpowernv driver, when loaded, parses these names to extract the
-sensor index and the sensor attribute name. Unfortunately, this scheme
-makes it difficult to add sensors with a different layout (specially of
-the same type, like temperature) as the sensor index calculated in OPAL
-is directly used in the hwmon sysfs interface.
-
-What this patch does is add a independent hwmon index for each sensor.
-The increment of the hwmon index (temp, fan, power, etc.) is kept per
-sensor type in the sensor_group table. The sensor_data table is used
-to store the association of the hwmon and OPAL indexes, as we need to
-have the same hwmon index for different attributes of a same sensor.
-
-Signed-off-by: Cédric Le Goater <clg@fr.ibm.com>
----
- drivers/hwmon/ibmpowernv.c |   23 ++++++++++++++++++++++-
- 1 file changed, 22 insertions(+), 1 deletion(-)
-
-Index: linux.git/drivers/hwmon/ibmpowernv.c
-===================================================================
---- linux.git.orig/drivers/hwmon/ibmpowernv.c
-+++ linux.git/drivers/hwmon/ibmpowernv.c
-@@ -55,6 +55,7 @@ static struct sensor_group {
- 	const char *compatible;
- 	struct attribute_group group;
- 	u32 attr_count;
-+	u32 hwmon_index;
- } sensor_groups[] = {
- 	{"fan", "ibm,opal-sensor-cooling-fan"},
- 	{"temp", "ibm,opal-sensor-amb-temp"},
-@@ -64,6 +65,8 @@ static struct sensor_group {
- 
- struct sensor_data {
- 	u32 id; /* An opaque id of the firmware for each sensor */
-+	u32 hwmon_index;
-+	u32 opal_index;
- 	enum sensors type;
- 	char name[MAX_ATTR_LEN];
- 	struct device_attribute dev_attr;
-@@ -181,6 +184,19 @@ static int get_sensor_type(struct device
- 	return MAX_SENSOR_TYPE;
- }
- 
-+static u32 get_sensor_hwmon_index(struct sensor_data *sdata,
-+	struct sensor_data *sdata_table, int count)
-+{
-+	int i;
-+
-+	for (i = 0; i < count; i++)
-+		if (sdata_table[i].opal_index == sdata->opal_index &&
-+		    sdata_table[i].type == sdata->type)
-+			return sdata_table[i].hwmon_index;
-+
-+	return ++sensor_groups[sdata->type].hwmon_index;
-+}
-+
- static int populate_attr_groups(struct platform_device *pdev)
- {
- 	struct platform_data *pdata = platform_get_drvdata(pdev);
-@@ -270,8 +286,13 @@ static int create_device_attrs(struct pl
- 			goto exit_put_node;
- 		}
- 
-+		sdata[count].opal_index = opal_index;
-+		sdata[count].hwmon_index =
-+			get_sensor_hwmon_index(&sdata[count], sdata, count);
-+
- 		snprintf(sdata[count].name, MAX_ATTR_LEN, "%s%d_%s",
--			 sensor_groups[type].name, opal_index, attr_name);
-+			 sensor_groups[type].name, sdata[count].hwmon_index,
-+			 attr_name);
- 
- 		sysfs_attr_init(&sdata[count].dev_attr.attr);
- 		sdata[count].dev_attr.attr.name = sdata[count].name;
+[1] http://lkml.kernel.org/r/20150224083406.32124.65957.stgit@bhelgaas-glaptop2.roam.corp.google.com
