@@ -1,30 +1,28 @@
-Return-Path: <Kim.Phillips@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0137.outbound.protection.outlook.com [65.55.169.137])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <sowmini.varadhan@oracle.com>
+Received: from userp1050.oracle.com (userp1050.oracle.com [156.151.31.82])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6DA061A0B8F
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Mar 2015 05:43:44 +1100 (AEDT)
-Date: Thu, 19 Mar 2015 13:38:16 -0500
-From: Kim Phillips <kim.phillips@freescale.com>
-To: Horia =?UTF-8?B?R2VhbnTEgw==?= <horia.geanta@freescale.com>
-Subject: Re: [PATCH v2 5/5] crypto: talitos: Add software backlog queue
- handling
-Message-ID: <20150319133816.4d05e820bd1af1b0613f7b6c@freescale.com>
-In-Reply-To: <550AF1C9.9090500@freescale.com>
-References: <1425388897-5434-1-git-send-email-mort@bork.org>
- <1425388897-5434-6-git-send-email-mort@bork.org>
- <20150303182332.546523088b5891a776880c0f@freescale.com>
- <5506AA4B.303@freescale.com>
- <20150316191935.81f89e0dafebbbe76ffcb0c0@freescale.com>
- <55086B5F.9080906@freescale.com>
- <20150317170319.1e4cd2b1d1450b442a3b3b36@freescale.com>
- <550AF1C9.9090500@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id BA7BA1A02CB
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Mar 2015 00:34:28 +1100 (AEDT)
+Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
+ by userp1050.oracle.com (Sentrion-MTA-4.3.2/Sentrion-MTA-4.3.2) with ESMTP id
+ t2JDYQ7q021640
+ (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Mar 2015 13:34:26 GMT
+Date: Thu, 19 Mar 2015 06:34:07 -0700
+From: Sowmini Varadhan <sowmini.varadhan@oracle.com>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Subject: Re: Generic IOMMU pooled allocator
+Message-ID: <20150319133407.GA32355@oracle.com>
+References: <20150318.222517.1444725543017433108.davem@davemloft.net>
+ <1426734106.4770.118.camel@kernel.crashing.org>
+ <550A5E5D.90907@ozlabs.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="UTF-8"
-Cc: netdev@vger.kernel.org, Martin Hicks <mort@bork.org>,
- linux-crypto@vger.kernel.org, Scott Wood <scottwood@freescale.com>,
- linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <550A5E5D.90907@ozlabs.ru>
+Cc: Alexey Kardashevskiy <aik@au1.ibm.com>, Anton Blanchard <anton@au1.ibm.com>,
+ paulus@samba.org, sowmini.varadhan@oracle.com, sparclinux@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,167 +32,104 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 19 Mar 2015 17:56:57 +0200
-Horia Geantă <horia.geanta@freescale.com> wrote:
 
-> On 3/18/2015 12:03 AM, Kim Phillips wrote:
-> > On Tue, 17 Mar 2015 19:58:55 +0200
-> > Horia Geantă <horia.geanta@freescale.com> wrote:
-> > 
-> >> On 3/17/2015 2:19 AM, Kim Phillips wrote:
-> >>> On Mon, 16 Mar 2015 12:02:51 +0200
-> >>> Horia Geantă <horia.geanta@freescale.com> wrote:
-> >>>
-> >>>> On 3/4/2015 2:23 AM, Kim Phillips wrote:
-> >>>>> Only potential problem is getting the crypto API to set the GFP_DMA
-> >>>>> flag in the allocation request, but presumably a
-> >>>>> CRYPTO_TFM_REQ_DMA crt_flag can be made to handle that.
-> >>>>
-> >>>> Seems there are quite a few places that do not use the
-> >>>> {aead,ablkcipher_ahash}_request_alloc() API to allocate crypto requests.
-> >>>> Among them, IPsec and dm-crypt.
-> >>>> I've looked at the code and I don't think it can be converted to use
-> >>>> crypto API.
-> >>>
-> >>> why not?
-> >>
-> >> It would imply having 2 memory allocations, one for crypto request and
-> >> the other for the rest of the data bundled with the request (for IPsec
-> >> that would be ESN + space for IV + sg entries for authenticated-only
-> >> data and sk_buff extension, if needed).
-> >>
-> >> Trying to have a single allocation by making ESN, IV etc. part of the
-> >> request private context requires modifying tfm.reqsize on the fly.
-> >> This won't work without adding some kind of locking for the tfm.
-> > 
-> > can't a common minimum tfm.reqsize be co-established up front, at
-> > least for the fast path?
-> 
-> Indeed, for IPsec at tfm allocation time - esp_init_state() -
-> tfm.reqsize could be increased to account for what is known for a given
-> flow: ESN, IV and asg (S/G entries for authenticated-only data).
-> The layout would be:
-> aead request (fixed part)
-> private ctx of backend algorithm
-> seq_no_hi (if ESN)
-> IV
-> asg
-> sg <-- S/G table for skb_to_sgvec; how many entries is the question
-> 
-> Do you have a suggestion for how many S/G entries to preallocate for
-> representing the sk_buff data to be encrypted?
-> An ancient esp4.c used ESP_NUM_FAST_SG, set to 4.
-> Btw, currently maximum number of fragments supported by the net stack
-> (MAX_SKB_FRAGS) is 16 or more.
-> 
-> >>>> This means that the CRYPTO_TFM_REQ_DMA would be visible to all of these
-> >>>> places. Some of the maintainers do not agree, as you've seen.
-> >>>
-> >>> would modifying the crypto API to either have a different
-> >>> *_request_alloc() API, and/or adding calls to negotiate the GFP mask
-> >>> between crypto users and drivers, e.g., get/set_gfp_mask, work?
-> >>
-> >> I think what DaveM asked for was the change to be transparent.
-> >>
-> >> Besides converting to *_request_alloc(), seems that all other options
-> >> require some extra awareness from the user.
-> >> Could you elaborate on the idea above?
-> > 
-> > was merely suggesting communicating GFP flags anonymously across the
-> > API, i.e., GFP_DMA wouldn't appear in user code.
-> 
-> Meaning user would have to get_gfp_mask before allocating a crypto
-> request - i.e. instead of kmalloc(..., GFP_ATOMIC) to have
-> kmalloc(GFP_ATOMIC | get_gfp_mask(aead))?
-> 
-> >>>> An alternative would be for talitos to use the page allocator to get 1 /
-> >>>> 2 pages at probe time (4 channels x 32 entries/channel x 64B/descriptor
-> >>>> = 8 kB), dma_map_page the area and manage it internally for talitos_desc
-> >>>> hw descriptors.
-> >>>> What do you think?
-> >>>
-> >>> There's a comment in esp_alloc_tmp(): "Use spare space in skb for
-> >>> this where possible," which is ideally where we'd want to be (esp.
-> >>
-> >> Ok, I'll check that. But note the "where possible" - finding room in the
-> >> skb to avoid the allocation won't always be the case, and then we're
-> >> back to square one.
-> 
-> So the skb cb is out of the question, being too small (48B).
-> Any idea what was the intention of the "TODO" - maybe to use the
-> tailroom in the skb data area?
-> 
-> >>> because that memory could already be DMA-able).  Your above
-> >>> suggestion would be in the opposite direction of that.
-> >>
-> >> The proposal:
-> >> -removes dma (un)mapping on the fast path
-> > 
-> > sure, but at the expense of additional complexity.
-> 
-> Right, there's no free lunch. But it's cheaper.
-> 
-> >> -avoids requesting dma mappable memory for more than it's actually
-> >> needed (CRYPTO_TFM_REQ_DMA forces entire request to be mappable, not
-> >> only its private context)
-> > 
-> > compared to the payload?  Plus, we have plenty of DMA space these
-> > days.
-> > 
-> >> -for caam it has the added benefit of speeding the below search for the
-> >> offending descriptor in the SW ring from O(n) to O(1):
-> >> for (i = 0; CIRC_CNT(head, tail + i, JOBR_DEPTH) >= 1; i++) {
-> >> 	sw_idx = (tail + i) & (JOBR_DEPTH - 1);
-> >>
-> >> 	if (jrp->outring[hw_idx].desc ==
-> >> 	    jrp->entinfo[sw_idx].desc_addr_dma)
-> >> 		break; /* found */
-> >> }
-> >> (drivers/crypto/caam/jr.c - caam_dequeue)
-> > 
-> > how?  The job ring h/w will still be spitting things out
-> > out-of-order.
-> 
-> jrp->outring[hw_idx].desc bus address can be used to find the sw_idx in
-> O(1):
-> 
-> dma_addr_t desc_base = dma_map_page(alloc_page(GFP_DMA),...);
-> [...]
-> sw_idx = (desc_base - jrp->outring[hw_idx].desc) / JD_SIZE;
-> 
-> JD_SIZE would be 16 words (64B) - 13 words used for the h/w job
-> descriptor, 3 words can be used for smth. else.
-> Basically all JDs would be filled at a 64B-aligned offset in the memory
-> page.
+On 03/19/2015 02:01 PM, Benjamin Herrenschmidt wrote:
 
-that assumes a linear mapping, which is a wrong assumption to make.
+Ben> One thing I noticed is the asymetry in your code between the alloc
+Ben> and the free path. The alloc path is similar to us in that the lock
+Ben> covers the allocation and that's about it, there's no actual mapping to
+Ben> the HW done, it's done by the caller level right ?
 
-I also think you don't know how many times that loop above executes
-in practice.
+yes, the only constraint  is that the h/w alloc transaction should be
+done after the arena-alloc, whereas for the unmap, the h/w  transaction
+should happen first, and arena-unmap should happen after.
 
-> > Plus, like I said, it's taking the problem in the wrong direction:
-> > we need to strive to merge the allocation and mapping with the upper
-> > layers as much as possible.
-> 
-> IMHO propagating the GFP_DMA from backend crypto implementations to
-> crypto API users doesn't seem feasable.
+Ben> The free path however, in your case, takes the lock and calls back into
+Ben> "demap" (which I assume is what removes the translation from the HW)
+Ben> with the lock held. There's also some mapping between cookies
+Ben> and index which here too isn't exposed to the alloc side but is
+Ben> exposed to the free side.
 
-should be.
+Regarding the ->demap indirection- somewhere between V1 and V2, I 
+realized that, at least for sun4v, it's not necessary to hold
+the pool lock when doing the unmap, (V1 had originally passed this
+a the ->demap). Revisiting the LDC change, I think that even that
+has no pool-specific info that needs to be passed in, so possibly the
+->demap is not required at all?
 
-> It's error-prone to audit all places that allocate crypto requests w/out
-> using *_request_alloc API.
+I can remove that, and re-verify the LDC code (though I might
+not be able to get to this till early next week, as I'm travelling
+at the moment).
 
-why is it error-prone?
+About the cookie_to_index, that came out of observation of the
+LDC code (ldc_cookie_to_index in patchset 3). In the LDC case, 
+the workflow is approximately
+   base = alloc_npages(..); /* calls iommu_tbl_range_alloc *.
+   /* set up cookie_state using base */
+   /* populate cookies calling fill_cookies() -> make_cookie() */
+The make_cookie() is the inverse operation of cookie_to_index()
+(afaict, the code is not very well commented, I'm afraid), but 
+I need that indirection to figure out which bitmap to clear.
 
-> And even if all these places would be identified:
-> -in some cases there's some heavy rework involved
+I dont know if there's a better way to do this, or if
+the ->cookie_to_index can get more complex for other IOMMU users
 
-so?
+Ben> One thing that Alexey is doing on our side is to move some of the
+Ben> hooks to manipulate the underlying TCEs (ie. iommu PTEs) from our
+Ben> global ppc_md. data structure to a new iommu_table_ops, so your patches
+Ben> will definitely collide with our current work so we'll have to figure
+Ben> out how things can made to match. We might be able to move more than
+Ben> just the allocator to the generic code, and the whole implementation of
+Ben> map_sg/unmap_sg if we have the right set of "ops", unless you see a
+Ben> reason why that wouldn't work for you ?
 
-> -more places might show up in the future and there's no way to detect them
+I cant think of why that wont work, though it would help to see
+the patch itself..
 
-let them worry about that.
 
-I leave the rest for netdev.
+Ben> We also need to add some additional platform specific fields to certain
+Ben> iommu table instances to deal with some KVM related tracking of pinned
+Ben> "DMAble" memory, here too we might have to be creative and possibly
+Ben> enclose the generic iommu_table in a platform specific variant.
+Ben> 
+Ben> Alexey, any other comment ?
+Ben> 
+Ben> Cheers,
+Ben> Ben.
+Ben> 
+Ben> 
+Ben> 
+Ben> --
+Ben> To unsubscribe from this list: send the line "unsubscribe sparclinux" in
+Ben> the body of a message to majordomo@vger.kernel.org
+Ben> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Ben> 
+Ben>Alexey, any other comment ?
 
-Kim
+On (03/19/15 16:27), Alexey Kardashevskiy wrote:
+Alexey> 
+Alexey> Agree about missing symmetry. In general, I would call it "zoned
+Alexey> pool-locked memory allocator"-ish rather than iommu_table and have
+Alexey> no callbacks there.
+Alexey> 
+Alexey> The iommu_tbl_range_free() caller could call cookie_to_index() and
+
+Problem is that tbl_range_free itself needs the `entry' from
+-Alexey>cookie_to_index.. dont know if there's a way to move the code
+to avoid that..
+
+Alexey> what the reset() callback does here - I do not understand, some
+
+The -Alexey>reset callback came out of the sun4u use-case. Davem might
+have more history here than I do, but my understanding is that the
+iommu_flushall() was needed on the older sun4u architectures, where
+there was on intermediating HV?
+
+Alexey> documentation would help here, and demap() does not have to be
+Alexey> executed under the lock (as map() is not executed under the lock).
+Alexey> 
+Alexey> btw why demap, not unmap? :)
+
+Maybe neither is needed, as you folks made me realize above.
+
+--Sowmini
