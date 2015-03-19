@@ -1,19 +1,24 @@
-Return-Path: <duwe@lst.de>
-Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
- (using TLSv1 with cipher DHE-RSA-CAMELLIA256-SHA (256/256 bits))
+Return-Path: <linux@rasmusvillemoes.dk>
+Received: from mail-la0-x230.google.com (mail-la0-x230.google.com
+ [IPv6:2a00:1450:4010:c03::230])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D304C1A00B0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Mar 2015 07:54:50 +1100 (AEDT)
-Date: Thu, 19 Mar 2015 21:54:46 +0100
-From: Torsten Duwe <duwe@lst.de>
-To: ppc-dev <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH v0 4/4] ppc64le: kgraft config options
-Message-ID: <20150319205446.GE19524@lst.de>
-References: <20150319203522.GA19524@lst.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id A44B11A011B
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Mar 2015 07:59:42 +1100 (AEDT)
+Received: by lagg8 with SMTP id g8so72400892lag.1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Mar 2015 13:59:39 -0700 (PDT)
+From: Rasmus Villemoes <linux@rasmusvillemoes.dk>
+To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+Subject: Re: new decimal conversion - seeking testers
+References: <87fv99x17k.fsf@rasmusvillemoes.dk>
+ <20150313010557.GA23117@linux.vnet.ibm.com>
+Date: Thu, 19 Mar 2015 21:59:36 +0100
+In-Reply-To: <20150313010557.GA23117@linux.vnet.ibm.com> (Nishanth
+ Aravamudan's message of "Thu, 12 Mar 2015 18:05:57 -0700")
+Message-ID: <87sid0putj.fsf@rasmusvillemoes.dk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150319203522.GA19524@lst.de>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,26 +28,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Enable kgraft on ppc, fairly trivial.
+On Fri, Mar 13 2015, Nishanth Aravamudan <nacc@linux.vnet.ibm.com> wrote:
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 4bc7b62..d82d7c8 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -102,6 +104,7 @@ config PPC
- 	select HAVE_IOREMAP_PROT
- 	select HAVE_EFFICIENT_UNALIGNED_ACCESS if !CPU_LITTLE_ENDIAN
- 	select HAVE_KPROBES
-+	select HAVE_KGRAFT
- 	select HAVE_ARCH_KGDB
- 	select HAVE_KRETPROBES
- 	select HAVE_ARCH_TRACEHOOK
-@@ -291,6 +294,8 @@ source "init/Kconfig"
- 
- source "kernel/Kconfig.freezer"
- 
-+source "kernel/Kconfig.kgraft"
-+
- source "arch/powerpc/sysdev/Kconfig"
- source "arch/powerpc/platforms/Kconfig"
- 
+> On 13.03.2015 [00:09:19 +0100], Rasmus Villemoes wrote:
+>> Since the new code plays a little endianness game I would really
+>> appreciate it if someone here would run the test and verification code
+>> on ppc.
+>
+> On a ppc64le box:
+[...]
+>
+> On a ppc64 box:
+[...]
+
+Thanks!
+
+Cheers,
+Rasmus
