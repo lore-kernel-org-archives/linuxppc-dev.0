@@ -1,36 +1,20 @@
-Return-Path: <sam.bobroff@au1.ibm.com>
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mikey@neuling.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 430BF1A09D7
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Mar 2015 15:44:50 +1100 (AEDT)
-Received: from /spool/local
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <sam.bobroff@au1.ibm.com>;
- Thu, 19 Mar 2015 14:44:48 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 1E24A2BB0055
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Mar 2015 15:44:46 +1100 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t2J4ibx426673218
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Mar 2015 15:44:46 +1100
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t2J4iC89025993
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Mar 2015 15:44:12 +1100
-From: Sam Bobroff <sam.bobroff@au1.ibm.com>
-To: mpe@ellerman.id.au, benh@kernel.crashing.org
-Subject: [PATCH 2/3] selftests/powerpc: Move get_auxv_entry() to harness.c
-Date: Thu, 19 Mar 2015 15:43:47 +1100
-Message-Id: <f750b963f1a42bad6270ef99645c3e4e742d715d.1426740212.git.sam.bobroff@au1.ibm.com>
-In-Reply-To: <cover.1426740212.git.sam.bobroff@au1.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id CF06B1A0A44
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Mar 2015 16:01:54 +1100 (AEDT)
+Message-ID: <1426741314.4866.100.camel@neuling.org>
+Subject: Re: [PATCH 1/3] powerpc/tm: Abort syscalls in active transactions
+From: Michael Neuling <mikey@neuling.org>
+To: Sam Bobroff <sam.bobroff@au1.ibm.com>
+Date: Thu, 19 Mar 2015 16:01:54 +1100
+In-Reply-To: <6ebcb9f982f7cb100aef954cd7dc6a6081cd9134.1426740212.git.sam.bobroff@au1.ibm.com>
 References: <cover.1426740212.git.sam.bobroff@au1.ibm.com>
-In-Reply-To: <cover.1426740212.git.sam.bobroff@au1.ibm.com>
-References: <cover.1426740212.git.sam.bobroff@au1.ibm.com>
-Cc: mikey@neuling.org, azanella@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org, matt@ozlabs.org
+ <6ebcb9f982f7cb100aef954cd7dc6a6081cd9134.1426740212.git.sam.bobroff@au1.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: azanella@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, matt@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,169 +24,153 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Move get_auxv_entry() from pmu/lib.c up to harness.c in order to make
-it available to other tests.
+On Thu, 2015-03-19 at 15:43 +1100, Sam Bobroff wrote:
+> This patch changes the syscall handler to doom (tabort) active
+> transactions when a syscall is made and return immediately without
+> performing the syscall.
+>=20
+> Currently, the system call instruction automatically suspends an
+> active transaction which causes side effects to persist when an active
+> transaction fails.
+>=20
+> This does change the kernel's behaviour, but in a way that was
+> documented as unsupported. It doesn't reduce functionality because
+> syscalls will still be performed after tsuspend. It also provides a
+> consistent interface and makes the behaviour of user code
+> substantially the same across powerpc and platforms that do not
+> support suspended transactions (e.g. x86 and s390).
+>=20
+> Performance measurements using
+> http://ozlabs.org/~anton/junkcode/null_syscall.c
+> indicate the cost of a system call increases by about 0.5%.
+>=20
+> Signed-off-by: Sam Bobroff <sam.bobroff@au1.ibm.com>
 
-Signed-off-by: Sam Bobroff <sam.bobroff@au1.ibm.com>
----
- tools/testing/selftests/powerpc/harness.c |   47 +++++++++++++++++++++++++++++
- tools/testing/selftests/powerpc/pmu/lib.c |   47 -----------------------------
- tools/testing/selftests/powerpc/pmu/lib.h |    1 -
- tools/testing/selftests/powerpc/utils.h   |    2 +-
- 4 files changed, 48 insertions(+), 49 deletions(-)
+Thanks Sam!
 
-diff --git a/tools/testing/selftests/powerpc/harness.c b/tools/testing/selftests/powerpc/harness.c
-index 8ebc58a..f7997af 100644
---- a/tools/testing/selftests/powerpc/harness.c
-+++ b/tools/testing/selftests/powerpc/harness.c
-@@ -11,6 +11,10 @@
- #include <sys/types.h>
- #include <sys/wait.h>
- #include <unistd.h>
-+#include <elf.h>
-+#include <fcntl.h>
-+#include <link.h>
-+#include <sys/stat.h>
- 
- #include "subunit.h"
- #include "utils.h"
-@@ -112,3 +116,46 @@ int test_harness(int (test_function)(void), char *name)
- 
- 	return rc;
- }
-+
-+static char auxv[4096];
-+
-+void *get_auxv_entry(int type)
-+{
-+	ElfW(auxv_t) *p;
-+	void *result;
-+	ssize_t num;
-+	int fd;
-+
-+	fd = open("/proc/self/auxv", O_RDONLY);
-+	if (fd == -1) {
-+		perror("open");
-+		return NULL;
-+	}
-+
-+	result = NULL;
-+
-+	num = read(fd, auxv, sizeof(auxv));
-+	if (num < 0) {
-+		perror("read");
-+		goto out;
-+	}
-+
-+	if (num > sizeof(auxv)) {
-+		printf("Overflowed auxv buffer\n");
-+		goto out;
-+	}
-+
-+	p = (ElfW(auxv_t) *)auxv;
-+
-+	while (p->a_type != AT_NULL) {
-+		if (p->a_type == type) {
-+			result = (void *)p->a_un.a_val;
-+			break;
-+		}
-+
-+		p++;
-+	}
-+out:
-+	close(fd);
-+	return result;
-+}
-diff --git a/tools/testing/selftests/powerpc/pmu/lib.c b/tools/testing/selftests/powerpc/pmu/lib.c
-index 9768dea..a07104c 100644
---- a/tools/testing/selftests/powerpc/pmu/lib.c
-+++ b/tools/testing/selftests/powerpc/pmu/lib.c
-@@ -5,15 +5,10 @@
- 
- #define _GNU_SOURCE	/* For CPU_ZERO etc. */
- 
--#include <elf.h>
- #include <errno.h>
--#include <fcntl.h>
--#include <link.h>
- #include <sched.h>
- #include <setjmp.h>
- #include <stdlib.h>
--#include <sys/stat.h>
--#include <sys/types.h>
- #include <sys/wait.h>
- 
- #include "utils.h"
-@@ -256,45 +251,3 @@ out:
- 	return rc;
- }
- 
--static char auxv[4096];
--
--void *get_auxv_entry(int type)
--{
--	ElfW(auxv_t) *p;
--	void *result;
--	ssize_t num;
--	int fd;
--
--	fd = open("/proc/self/auxv", O_RDONLY);
--	if (fd == -1) {
--		perror("open");
--		return NULL;
--	}
--
--	result = NULL;
--
--	num = read(fd, auxv, sizeof(auxv));
--	if (num < 0) {
--		perror("read");
--		goto out;
--	}
--
--	if (num > sizeof(auxv)) {
--		printf("Overflowed auxv buffer\n");
--		goto out;
--	}
--
--	p = (ElfW(auxv_t) *)auxv;
--
--	while (p->a_type != AT_NULL) {
--		if (p->a_type == type) {
--			result = (void *)p->a_un.a_val;
--			break;
--		}
--
--		p++;
--	}
--out:
--	close(fd);
--	return result;
--}
-diff --git a/tools/testing/selftests/powerpc/pmu/lib.h b/tools/testing/selftests/powerpc/pmu/lib.h
-index 0f0339c..ca5d72a 100644
---- a/tools/testing/selftests/powerpc/pmu/lib.h
-+++ b/tools/testing/selftests/powerpc/pmu/lib.h
-@@ -29,7 +29,6 @@ extern int notify_parent(union pipe write_pipe);
- extern int notify_parent_of_error(union pipe write_pipe);
- extern pid_t eat_cpu(int (test_function)(void));
- extern bool require_paranoia_below(int level);
--extern void *get_auxv_entry(int type);
- 
- struct addr_range {
- 	uint64_t first, last;
-diff --git a/tools/testing/selftests/powerpc/utils.h b/tools/testing/selftests/powerpc/utils.h
-index a93777a..64f53cd 100644
---- a/tools/testing/selftests/powerpc/utils.h
-+++ b/tools/testing/selftests/powerpc/utils.h
-@@ -19,7 +19,7 @@ typedef uint8_t u8;
- 
- 
- int test_harness(int (test_function)(void), char *name);
--
-+extern void *get_auxv_entry(int type);
- 
- /* Yes, this is evil */
- #define FAIL_IF(x)						\
--- 
-1.7.10.4
+Acked-By: Michael Neuling <mikey@neuling.org>
+
+> ---
+>  Documentation/powerpc/transactional_memory.txt |   33 ++++++++++++------=
+------
+>  arch/powerpc/include/uapi/asm/tm.h             |    2 +-
+>  arch/powerpc/kernel/entry_64.S                 |   19 ++++++++++++++
+>  3 files changed, 37 insertions(+), 17 deletions(-)
+>=20
+> diff --git a/Documentation/powerpc/transactional_memory.txt b/Documentati=
+on/powerpc/transactional_memory.txt
+> index 9791e98..4167bc2 100644
+> --- a/Documentation/powerpc/transactional_memory.txt
+> +++ b/Documentation/powerpc/transactional_memory.txt
+> @@ -74,22 +74,23 @@ Causes of transaction aborts
+>  Syscalls
+>  =3D=3D=3D=3D=3D=3D=3D=3D
+> =20
+> -Performing syscalls from within transaction is not recommended, and can =
+lead
+> -to unpredictable results.
+> -
+> -Syscalls do not by design abort transactions, but beware: The kernel cod=
+e will
+> -not be running in transactional state.  The effect of syscalls will alwa=
+ys
+> -remain visible, but depending on the call they may abort your transactio=
+n as a
+> -side-effect, read soon-to-be-aborted transactional data that should not =
+remain
+> -invisible, etc.  If you constantly retry a transaction that constantly a=
+borts
+> -itself by calling a syscall, you'll have a livelock & make no progress.
+> -
+> -Simple syscalls (e.g. sigprocmask()) "could" be OK.  Even things like wr=
+ite()
+> -from, say, printf() should be OK as long as the kernel does not access a=
+ny
+> -memory that was accessed transactionally.
+> -
+> -Consider any syscalls that happen to work as debug-only -- not recommend=
+ed for
+> -production use.  Best to queue them up till after the transaction is ove=
+r.
+> +Syscalls made from within an active transaction will not be performed an=
+d the
+> +transaction will be doomed by the kernel with the failure code TM_CAUSE_=
+SYSCALL
+> +| TM_CAUSE_PERSISTENT.
+> +
+> +Syscalls made from within a suspended transaction are performed as norma=
+l and
+> +the transaction is not explicitly doomed by the kernel.  However, what t=
+he
+> +kernel does to perform the syscall may result in the transaction being d=
+oomed
+> +by the hardware.  The syscall is performed in suspended mode so any side
+> +effects will be persistent, independent of transaction success or failur=
+e.  No
+> +guarantees are provided by the kernel about which syscalls will affect
+> +transaction success.
+> +
+> +Care must be taken when relying on syscalls to abort during active trans=
+actions
+> +if the calls are made via a library.  Libraries may cache values (which =
+may
+> +give the appearence of success) or perform operations that cause transac=
+tion
+> +failure before entering the kernel (which may produce different failure =
+codes).
+> +Examples are glibc's getpid() and lazy symbol resolution.
+> =20
+>=20
+>  Signals
+> diff --git a/arch/powerpc/include/uapi/asm/tm.h b/arch/powerpc/include/ua=
+pi/asm/tm.h
+> index 5d836b7..5047659 100644
+> --- a/arch/powerpc/include/uapi/asm/tm.h
+> +++ b/arch/powerpc/include/uapi/asm/tm.h
+> @@ -11,7 +11,7 @@
+>  #define TM_CAUSE_RESCHED	0xde
+>  #define TM_CAUSE_TLBI		0xdc
+>  #define TM_CAUSE_FAC_UNAV	0xda
+> -#define TM_CAUSE_SYSCALL	0xd8  /* future use */
+> +#define TM_CAUSE_SYSCALL	0xd8
+>  #define TM_CAUSE_MISC		0xd6  /* future use */
+>  #define TM_CAUSE_SIGNAL		0xd4
+>  #define TM_CAUSE_ALIGNMENT	0xd2
+> diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_6=
+4.S
+> index d180caf2..85bf81d 100644
+> --- a/arch/powerpc/kernel/entry_64.S
+> +++ b/arch/powerpc/kernel/entry_64.S
+> @@ -34,6 +34,7 @@
+>  #include <asm/ftrace.h>
+>  #include <asm/hw_irq.h>
+>  #include <asm/context_tracking.h>
+> +#include <asm/tm.h>
+> =20
+>  /*
+>   * System calls.
+> @@ -145,6 +146,24 @@ END_FW_FTR_SECTION_IFSET(FW_FEATURE_SPLPAR)
+>  	andi.	r11,r10,_TIF_SYSCALL_DOTRACE
+>  	bne	syscall_dotrace
+>  .Lsyscall_dotrace_cont:
+> +#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+> +BEGIN_FTR_SECTION
+> +	b	1f
+> +END_FTR_SECTION_IFCLR(CPU_FTR_TM)
+> +	extrdi.	r11, r12, 1, (63-MSR_TS_T_LG) /* transaction active? */
+> +	beq+	1f
+> +
+> +	/* Doom the transaction and don't perform the syscall: */
+> +	mfmsr	r11
+> +	li	r12, 1
+> +	rldimi	r11, r12, MSR_TM_LG, 63-MSR_TM_LG
+> +	mtmsrd	r11, 0
+> +	li	r11, (TM_CAUSE_SYSCALL|TM_CAUSE_PERSISTENT)
+> +	tabort. r11
+> +
+> +	b	.Lsyscall_exit
+> +1:
+> +#endif
+>  	cmpldi	0,r0,NR_syscalls
+>  	bge-	syscall_enosys
+> =20
