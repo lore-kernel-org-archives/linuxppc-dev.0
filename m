@@ -1,31 +1,37 @@
-Return-Path: <bhelgaas@google.com>
-Received: from mail-qc0-x22f.google.com (mail-qc0-x22f.google.com
- [IPv6:2607:f8b0:400d:c01::22f])
+Return-Path: <linus971@gmail.com>
+Received: from mail-ig0-x235.google.com (mail-ig0-x235.google.com
+ [IPv6:2607:f8b0:4001:c05::235])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 286091A09D9
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Mar 2015 04:54:57 +1100 (AEDT)
-Received: by qcbkw5 with SMTP id kw5so73227231qcb.2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Mar 2015 10:54:53 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0373A1A09FD
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Mar 2015 05:09:20 +1100 (AEDT)
+Received: by igbqf9 with SMTP id qf9so30904644igb.1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Mar 2015 11:09:15 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <CADLM8XOFfQmfEXeqObNatGmvonFRF29RVyhhOaKaxzdYxpHoEw@mail.gmail.com>
-References: <1425446353-30513-1-git-send-email-weiyang@linux.vnet.ibm.com>
- <1425446353-30513-16-git-send-email-weiyang@linux.vnet.ibm.com>
- <20150311135507.GA16664@google.com> <20150312011517.GA5833@richard>
- <20150319150824.GE26935@google.com>
- <CADLM8XOFfQmfEXeqObNatGmvonFRF29RVyhhOaKaxzdYxpHoEw@mail.gmail.com>
-From: Bjorn Helgaas <bhelgaas@google.com>
-Date: Thu, 19 Mar 2015 12:54:33 -0500
-Message-ID: <CAErSpo6+d4W5wXEP8qoPN3S3tEYpFoOvg==ES922J_miisshXw@mail.gmail.com>
-Subject: Re: [PATCH V13 15/21] powerpc/powernv: Reserve additional space for
- IOV BAR according to the number of total_pe
-To: Wei Yang <weiyang.kernel@gmail.com>
+Sender: linus971@gmail.com
+In-Reply-To: <20150319141022.GD3087@suse.de>
+References: <20150312131045.GE3406@suse.de>
+ <CA+55aFx=81BGnQFNhnAGu6CetL7yifPsnD-+v7Y6QRqwgH47gQ@mail.gmail.com>
+ <20150312184925.GH3406@suse.de> <20150317070655.GB10105@dastard>
+ <CA+55aFzdLnFdku-gnm3mGbeS=QauYBNkFQKYXJAGkrMd2jKXhw@mail.gmail.com>
+ <20150317205104.GA28621@dastard>
+ <CA+55aFzSPcNgxw4GC7aAV1r0P5LniyVVC66COz=3cgMcx73Nag@mail.gmail.com>
+ <20150317220840.GC28621@dastard>
+ <CA+55aFwne-fe_Gg-_GTUo+iOAbbNpLBa264JqSFkH79EULyAqw@mail.gmail.com>
+ <CA+55aFy-Mw74rAdLMMMUgnsG3ZttMWVNGz7CXZJY7q9fqyRYfg@mail.gmail.com>
+ <20150319141022.GD3087@suse.de>
+Date: Thu, 19 Mar 2015 11:09:15 -0700
+Message-ID: <CA+55aFwTcw2rTjPM_EOjPeKNWwdfNVazx+O=YAFXPWw1h==Tgw@mail.gmail.com>
+Subject: Re: [PATCH 4/4] mm: numa: Slow PTE scan rate if migration failures
+ occur
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: Mel Gorman <mgorman@suse.de>
 Content-Type: text/plain; charset=UTF-8
-Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- Wei Yang <weiyang@linux.vnet.ibm.com>,
- Benjamin Herrenschmidt <benh@au1.ibm.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Gavin Shan <gwshan@linux.vnet.ibm.com>
+Cc: Dave Chinner <david@fromorbit.com>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com,
+ Linux-MM <linux-mm@kvack.org>, Aneesh Kumar <aneesh.kumar@linux.vnet.ibm.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ ppc-dev <linuxppc-dev@lists.ozlabs.org>, Ingo Molnar <mingo@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,13 +41,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Mar 19, 2015 at 11:18 AM, Wei Yang <weiyang.kernel@gmail.com> wrote:
-> Oh, I thought you are not comfortable with the "Patch v12 10/21 PCI:
-> Consider additional PF's IOV BAR alignment ..."
->
-> V14 is ready to send which is based on v4.0-rc1.
+On Thu, Mar 19, 2015 at 7:10 AM, Mel Gorman <mgorman@suse.de> wrote:
+> -       if (!pmd_dirty(pmd))
+> +       /* See similar comment in do_numa_page for explanation */
+> +       if (!(vma->vm_flags & VM_WRITE))
 
-Unless I missed something, the last email in that thread [1] is from
-you, so I think we're ready for the next iteration.
+Yeah, that would certainly be a whole lot more obvious than all the
+"if this particular pte/pmd looks like X" tests.
 
-[1] http://lkml.kernel.org/r/20150224083406.32124.65957.stgit@bhelgaas-glaptop2.roam.corp.google.com
+So that, together with scanning rate improvements (this *does* seem to
+be somewhat chaotic, so it's quite possible that the current scanning
+rate thing is just fairly unstable) is likely the right thing. I'd
+just like to _understand_ why that write/dirty bit makes such a
+difference. I thought I understood what was going on, and was happy,
+and then Dave come with his crazy numbers.
+
+Damn you Dave, and damn your numbers and "facts" and stuff. Sometimes
+I much prefer ignorant bliss.
+
+                           Linus
