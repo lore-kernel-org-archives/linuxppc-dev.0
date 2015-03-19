@@ -1,32 +1,32 @@
-Return-Path: <david@fromorbit.com>
-Received: from ipmail07.adl2.internode.on.net (ipmail07.adl2.internode.on.net
- [150.101.137.131])
- by lists.ozlabs.org (Postfix) with ESMTP id 43F5D1A00B0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Mar 2015 10:30:57 +1100 (AEDT)
-Date: Fri, 20 Mar 2015 10:23:26 +1100
-From: Dave Chinner <david@fromorbit.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 4/4] mm: numa: Slow PTE scan rate if migration failures
- occur
-Message-ID: <20150319232326.GM10105@dastard>
-References: <20150317070655.GB10105@dastard>
- <CA+55aFzdLnFdku-gnm3mGbeS=QauYBNkFQKYXJAGkrMd2jKXhw@mail.gmail.com>
- <20150317205104.GA28621@dastard>
- <CA+55aFzSPcNgxw4GC7aAV1r0P5LniyVVC66COz=3cgMcx73Nag@mail.gmail.com>
- <20150317220840.GC28621@dastard>
- <CA+55aFwne-fe_Gg-_GTUo+iOAbbNpLBa264JqSFkH79EULyAqw@mail.gmail.com>
- <CA+55aFy-Mw74rAdLMMMUgnsG3ZttMWVNGz7CXZJY7q9fqyRYfg@mail.gmail.com>
- <CA+55aFyxA9u2cVzV+S7TSY9ZvRXCX=z22YAbi9mdPVBKmqgR5g@mail.gmail.com>
- <20150319224143.GI10105@dastard>
- <CA+55aFy5UeNnFUTi619cs3b9Up2NQ1wbuyvcCS614+o3=z=wBQ@mail.gmail.com>
+Return-Path: <weiyang.kernel@gmail.com>
+Received: from mail-oi0-x233.google.com (mail-oi0-x233.google.com
+ [IPv6:2607:f8b0:4003:c06::233])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2DC041A00B0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Mar 2015 10:49:41 +1100 (AEDT)
+Received: by oiag65 with SMTP id g65so78650193oia.2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Mar 2015 16:49:38 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CA+55aFy5UeNnFUTi619cs3b9Up2NQ1wbuyvcCS614+o3=z=wBQ@mail.gmail.com>
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com,
- Linux-MM <linux-mm@kvack.org>, Aneesh Kumar <aneesh.kumar@linux.vnet.ibm.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- ppc-dev <linuxppc-dev@lists.ozlabs.org>, Ingo Molnar <mingo@kernel.org>,
- Mel Gorman <mgorman@suse.de>
+In-Reply-To: <CAErSpo6+d4W5wXEP8qoPN3S3tEYpFoOvg==ES922J_miisshXw@mail.gmail.com>
+References: <1425446353-30513-1-git-send-email-weiyang@linux.vnet.ibm.com>
+ <1425446353-30513-16-git-send-email-weiyang@linux.vnet.ibm.com>
+ <20150311135507.GA16664@google.com> <20150312011517.GA5833@richard>
+ <20150319150824.GE26935@google.com>
+ <CADLM8XOFfQmfEXeqObNatGmvonFRF29RVyhhOaKaxzdYxpHoEw@mail.gmail.com>
+ <CAErSpo6+d4W5wXEP8qoPN3S3tEYpFoOvg==ES922J_miisshXw@mail.gmail.com>
+Date: Fri, 20 Mar 2015 07:49:38 +0800
+Message-ID: <CADLM8XNxRgpKFa9JE8vCge2vT9xK_4aorcku9RbCs5eP8o2kaQ@mail.gmail.com>
+Subject: Re: [PATCH V13 15/21] powerpc/powernv: Reserve additional space for
+ IOV BAR according to the number of total_pe
+From: Wei Yang <weiyang.kernel@gmail.com>
+To: Bjorn Helgaas <bhelgaas@google.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ Wei Yang <weiyang@linux.vnet.ibm.com>,
+ Benjamin Herrenschmidt <benh@au1.ibm.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,51 +36,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Mar 19, 2015 at 04:05:46PM -0700, Linus Torvalds wrote:
-> On Thu, Mar 19, 2015 at 3:41 PM, Dave Chinner <david@fromorbit.com> wrote:
-> >
-> > My recollection wasn't faulty - I pulled it from an earlier email.
-> > That said, the original measurement might have been faulty. I ran
-> > the numbers again on the 3.19 kernel I saved away from the original
-> > testing. That came up at 235k, which is pretty much the same as
-> > yesterday's test. The runtime,however, is unchanged from my original
-> > measurements of 4m54s (pte_hack came in at 5m20s).
-> 
-> Ok. Good. So the "more than an order of magnitude difference" was
-> really about measurement differences, not quite as real. Looks like
-> more a "factor of two" than a factor of 20.
-> 
-> Did you do the profiles the same way? Because that would explain the
-> differences in the TLB flush percentages too (the "1.4% from
-> tlb_invalidate_range()" vs "pretty much everything from migration").
+2015-03-20 1:54 GMT+08:00 Bjorn Helgaas <bhelgaas@google.com>:
+> On Thu, Mar 19, 2015 at 11:18 AM, Wei Yang <weiyang.kernel@gmail.com> wrote:
+>> Oh, I thought you are not comfortable with the "Patch v12 10/21 PCI:
+>> Consider additional PF's IOV BAR alignment ..."
+>>
+>> V14 is ready to send which is based on v4.0-rc1.
+>
+> Unless I missed something, the last email in that thread [1] is from
+> you, so I think we're ready for the next iteration.
+>
+> [1] http://lkml.kernel.org/r/20150224083406.32124.65957.stgit@bhelgaas-glaptop2.roam.corp.google.com
 
-No, the profiles all came from steady state. The profiles from the
-initial startup phase hammer the mmap_sem because of page fault vs
-mprotect contention (glibc runs mprotect() on every chunk of
-memory it allocates). It's not until the cache reaches "full" and it
-starts recycling old buffers rather than allocating new ones that
-the tlb flush problem dominates the profiles.
 
-> The runtime variation does show that there's some *big* subtle
-> difference for the numa balancing in the exact TNF_NO_GROUP details.
-> It must be *very* unstable for it to make that big of a difference.
-> But I feel at least a *bit* better about "unstable algorithm changes a
-> small varioation into a factor-of-two" vs that crazy factor-of-20.
-> 
-> Can you try Mel's change to make it use
-> 
->         if (!(vma->vm_flags & VM_WRITE))
-> 
-> instead of the pte details? Again, on otherwise plain 3.19, just so
-> that we have a baseline. I'd be *so* much happer with checking the vma
-> details over per-pte details, especially ones that change over the
-> lifetime of the pte entry, and the NUMA code explicitly mucks with.
+Great~~~ I thought you didn't get a chance to read it.
 
-Yup, will do. might take an hour or two before I get to it, though...
+Will send out a v14 ASAP.
 
-Cheers,
 
-Dave.
 -- 
-Dave Chinner
-david@fromorbit.com
+Richard Yang
+Help You, Help Me
