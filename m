@@ -1,20 +1,15 @@
-Return-Path: <linus971@gmail.com>
-Received: from mail-ig0-x236.google.com (mail-ig0-x236.google.com
- [IPv6:2607:f8b0:4001:c05::236])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7FA091A0423
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Mar 2015 08:41:50 +1100 (AEDT)
-Received: by igcau2 with SMTP id au2so18803419igc.1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Mar 2015 14:41:48 -0700 (PDT)
-MIME-Version: 1.0
-Sender: linus971@gmail.com
-In-Reply-To: <CA+55aFy-Mw74rAdLMMMUgnsG3ZttMWVNGz7CXZJY7q9fqyRYfg@mail.gmail.com>
-References: <CA+55aFywW5JLq=BU_qb2OG5+pJ-b1v9tiS5Ygi-vtEKbEZ_T5Q@mail.gmail.com>
- <20150309191943.GF26657@destitution>
- <CA+55aFzFt-vX5Jerci0Ty4Uf7K4_nQ7wyCp8hhU_dB0X4cBpVQ@mail.gmail.com>
- <20150312131045.GE3406@suse.de>
- <CA+55aFx=81BGnQFNhnAGu6CetL7yifPsnD-+v7Y6QRqwgH47gQ@mail.gmail.com>
+Return-Path: <david@fromorbit.com>
+Received: from ipmail07.adl2.internode.on.net (ipmail07.adl2.internode.on.net
+ [150.101.137.131])
+ by lists.ozlabs.org (Postfix) with ESMTP id 431AB1A00B0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Mar 2015 09:41:58 +1100 (AEDT)
+Date: Fri, 20 Mar 2015 09:41:44 +1100
+From: Dave Chinner <david@fromorbit.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 4/4] mm: numa: Slow PTE scan rate if migration failures
+ occur
+Message-ID: <20150319224143.GI10105@dastard>
+References: <CA+55aFx=81BGnQFNhnAGu6CetL7yifPsnD-+v7Y6QRqwgH47gQ@mail.gmail.com>
  <20150312184925.GH3406@suse.de> <20150317070655.GB10105@dastard>
  <CA+55aFzdLnFdku-gnm3mGbeS=QauYBNkFQKYXJAGkrMd2jKXhw@mail.gmail.com>
  <20150317205104.GA28621@dastard>
@@ -22,13 +17,10 @@ References: <CA+55aFywW5JLq=BU_qb2OG5+pJ-b1v9tiS5Ygi-vtEKbEZ_T5Q@mail.gmail.com>
  <20150317220840.GC28621@dastard>
  <CA+55aFwne-fe_Gg-_GTUo+iOAbbNpLBa264JqSFkH79EULyAqw@mail.gmail.com>
  <CA+55aFy-Mw74rAdLMMMUgnsG3ZttMWVNGz7CXZJY7q9fqyRYfg@mail.gmail.com>
-Date: Thu, 19 Mar 2015 14:41:48 -0700
-Message-ID: <CA+55aFyxA9u2cVzV+S7TSY9ZvRXCX=z22YAbi9mdPVBKmqgR5g@mail.gmail.com>
-Subject: Re: [PATCH 4/4] mm: numa: Slow PTE scan rate if migration failures
- occur
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Dave Chinner <david@fromorbit.com>
-Content-Type: text/plain; charset=UTF-8
+ <CA+55aFyxA9u2cVzV+S7TSY9ZvRXCX=z22YAbi9mdPVBKmqgR5g@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <CA+55aFyxA9u2cVzV+S7TSY9ZvRXCX=z22YAbi9mdPVBKmqgR5g@mail.gmail.com>
 Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com,
  Linux-MM <linux-mm@kvack.org>, Aneesh Kumar <aneesh.kumar@linux.vnet.ibm.com>,
  Andrew Morton <akpm@linux-foundation.org>,
@@ -43,61 +35,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Mar 18, 2015 at 10:31 AM, Linus Torvalds
-<torvalds@linux-foundation.org> wrote:
->
-> So I think there's something I'm missing. For non-shared mappings, I
-> still have the idea that pte_dirty should be the same as pte_write.
-> And yet, your testing of 3.19 shows that it's a big difference.
-> There's clearly something I'm completely missing.
+On Thu, Mar 19, 2015 at 02:41:48PM -0700, Linus Torvalds wrote:
+> On Wed, Mar 18, 2015 at 10:31 AM, Linus Torvalds
+> <torvalds@linux-foundation.org> wrote:
+> >
+> > So I think there's something I'm missing. For non-shared mappings, I
+> > still have the idea that pte_dirty should be the same as pte_write.
+> > And yet, your testing of 3.19 shows that it's a big difference.
+> > There's clearly something I'm completely missing.
+> 
+> Ahh. The normal page table scanning and page fault handling both clear
+> and set the dirty bit together with the writable one. But "fork()"
+> will clear the writable bit without clearing dirty. For some reason I
+> thought it moved the dirty bit into the struct page like the VM
+> scanning does, but that was just me having a brainfart. So yeah,
+> pte_dirty doesn't have to match pte_write even under perfectly normal
+> circumstances. Maybe there are other cases.
+> 
+> Not that I see a lot of forking in the xfs repair case either, so..
+> 
+> Dave, mind re-running the plain 3.19 numbers to really verify that the
+> pte_dirty/pte_write change really made that big of a difference. Maybe
+> your recollection of ~55,000 migrate_pages events was faulty. If the
+> pte_write ->pte_dirty change is the *only* difference, it's still very
+> odd how that one difference would make migrate_rate go from ~55k to
+> 471k. That's an order of magnitude difference, for what really
+> shouldn't be a big change.
 
-Ahh. The normal page table scanning and page fault handling both clear
-and set the dirty bit together with the writable one. But "fork()"
-will clear the writable bit without clearing dirty. For some reason I
-thought it moved the dirty bit into the struct page like the VM
-scanning does, but that was just me having a brainfart. So yeah,
-pte_dirty doesn't have to match pte_write even under perfectly normal
-circumstances. Maybe there are other cases.
+My recollection wasn't faulty - I pulled it from an earlier email.
+That said, the original measurement might have been faulty. I ran
+the numbers again on the 3.19 kernel I saved away from the original
+testing. That came up at 235k, which is pretty much the same as
+yesterday's test. The runtime,however, is unchanged from my original
+measurements of 4m54s (pte_hack came in at 5m20s).
 
-Not that I see a lot of forking in the xfs repair case either, so..
+Wondering where the 55k number came from, I played around with when
+I started the measurement - all the numbers since I did the bisect
+have come from starting it at roughly 130AGs into phase 3 where the
+memory footprint stabilises and the tlb flush overhead kicks in.
 
-Dave, mind re-running the plain 3.19 numbers to really verify that the
-pte_dirty/pte_write change really made that big of a difference. Maybe
-your recollection of ~55,000 migrate_pages events was faulty. If the
-pte_write ->pte_dirty change is the *only* difference, it's still very
-odd how that one difference would make migrate_rate go from ~55k to
-471k. That's an order of magnitude difference, for what really
-shouldn't be a big change.
+However, if I start the measurement at the same time as the repair
+test, I get something much closer to the 55k number. I also note
+that my original 4.0-rc1 numbers were much lower than the more
+recent steady state measurements (360k vs 470k), so I'd say the
+original numbers weren't representative of the steady state
+behaviour and so can be ignored...
 
-I'm running a kernel right now with a hacky "update_mmu_cache()" that
-warns if pte_dirty is ever different from pte_write().
+> Maybe a system update has changed libraries and memory allocation
+> patterns, and there is something bigger than that one-liner
+> pte_dirty/write change going on?
 
-+void update_mmu_cache(struct vm_area_struct *vma,
-+               unsigned long addr, pte_t *ptep)
-+{
-+       if (!(vma->vm_flags & VM_SHARED)) {
-+               pte_t now = READ_ONCE(*ptep);
-+               if (!pte_write(now) != !pte_dirty(now)) {
-+                       static int count = 20;
-+                       static unsigned int prev = 0;
-+                       unsigned int val = pte_val(now) & 0xfff;
-+                       if (prev != val && count) {
-+                               prev = val;
-+                               count--;
-+                               WARN(1, "pte value %x", val);
-+                       }
-+               }
-+       }
-+}
+Possibly. The xfs_repair binary has definitely been rebuilt (testing
+unrelated bug fixes that only affect phase 6/7 behaviour), but
+otherwise the system libraries are unchanged.
 
-I haven't seen a single warning so far (and there I wrote all that
-code to limit repeated warnings), although admittedly
-update_mu_cache() isn't called for all cases where we change a pte
-(not for the fork case, for example). But it *is* called for the page
-faulting cases
+Cheers,
 
-Maybe a system update has changed libraries and memory allocation
-patterns, and there is something bigger than that one-liner
-pte_dirty/write change going on?
-
-                             Linus
+Dave.
+-- 
+Dave Chinner
+david@fromorbit.com
