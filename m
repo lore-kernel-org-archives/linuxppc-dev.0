@@ -1,32 +1,25 @@
-Return-Path: <weiyang.kernel@gmail.com>
-Received: from mail-oi0-x233.google.com (mail-oi0-x233.google.com
- [IPv6:2607:f8b0:4003:c06::233])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2DC041A00B0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Mar 2015 10:49:41 +1100 (AEDT)
-Received: by oiag65 with SMTP id g65so78650193oia.2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Mar 2015 16:49:38 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <CAErSpo6+d4W5wXEP8qoPN3S3tEYpFoOvg==ES922J_miisshXw@mail.gmail.com>
-References: <1425446353-30513-1-git-send-email-weiyang@linux.vnet.ibm.com>
- <1425446353-30513-16-git-send-email-weiyang@linux.vnet.ibm.com>
- <20150311135507.GA16664@google.com> <20150312011517.GA5833@richard>
- <20150319150824.GE26935@google.com>
- <CADLM8XOFfQmfEXeqObNatGmvonFRF29RVyhhOaKaxzdYxpHoEw@mail.gmail.com>
- <CAErSpo6+d4W5wXEP8qoPN3S3tEYpFoOvg==ES922J_miisshXw@mail.gmail.com>
-Date: Fri, 20 Mar 2015 07:49:38 +0800
-Message-ID: <CADLM8XNxRgpKFa9JE8vCge2vT9xK_4aorcku9RbCs5eP8o2kaQ@mail.gmail.com>
-Subject: Re: [PATCH V13 15/21] powerpc/powernv: Reserve additional space for
- IOV BAR according to the number of total_pe
-From: Wei Yang <weiyang.kernel@gmail.com>
-To: Bjorn Helgaas <bhelgaas@google.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- Wei Yang <weiyang@linux.vnet.ibm.com>,
- Benjamin Herrenschmidt <benh@au1.ibm.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Gavin Shan <gwshan@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id D553F1A00B0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Mar 2015 10:54:34 +1100 (AEDT)
+Message-ID: <1426809274.2581.0.camel@ellerman.id.au>
+Subject: Re: [23/32] powerpc: copy_thread(): rename 'arg' argument to
+ 'kthread_arg'
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Alex Dowad <alexinbeijing@gmail.com>
+Date: Fri, 20 Mar 2015 10:54:34 +1100
+In-Reply-To: <550A794C.7020904@gmail.com>
+References: <20150319064519.6BEA814010F@ozlabs.org>
+ <550A794C.7020904@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Michael Neuling <mikey@neuling.org>, linux-kernel@vger.kernel.org,
+ Paul Gortmaker <paul.gortmaker@windriver.com>,
+ Vineeth Vijayan <vvijayan@mvista.com>, Anton Blanchard <anton@samba.org>,
+ Paul Mackerras <paulus@samba.org>, Christoph Lameter <cl@linux.com>,
+ "open list:LINUX FOR POWERPC..." <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,24 +29,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-2015-03-20 1:54 GMT+08:00 Bjorn Helgaas <bhelgaas@google.com>:
-> On Thu, Mar 19, 2015 at 11:18 AM, Wei Yang <weiyang.kernel@gmail.com> wrote:
->> Oh, I thought you are not comfortable with the "Patch v12 10/21 PCI:
->> Consider additional PF's IOV BAR alignment ..."
->>
->> V14 is ready to send which is based on v4.0-rc1.
->
-> Unless I missed something, the last email in that thread [1] is from
-> you, so I think we're ready for the next iteration.
->
-> [1] http://lkml.kernel.org/r/20150224083406.32124.65957.stgit@bhelgaas-glaptop2.roam.corp.google.com
+On Thu, 2015-03-19 at 09:22 +0200, Alex Dowad wrote:
+> On 19/03/15 08:45, Michael Ellerman wrote:
+> > On Fri, 2015-13-03 at 18:14:46 UTC, Alex Dowad wrote:
+> >> The 'arg' argument to copy_thread() is only ever used when forking a new
+> >> kernel thread. Hence, rename it to 'kthread_arg' for clarity (and consistency
+> >> with do_fork() and other arch-specific implementations of copy_thread()).
+> >   
+> > I don't understand the bit about consistency with do_fork() ?
 
+> This series of patches includes one patch which renames the arg for 
+> do_fork(), and others which rename the same arg for each arch-specific 
+> implementation of copy_thread(). So if all of them are accepted and 
+> merged, then all will be consistent. If only some of the patches are 
+> accepted, I will rewrite the commit message so it doesn't mention 
+> "consistency".
 
-Great~~~ I thought you didn't get a chance to read it.
+Ah OK, I only got patch 23, so I missed the context of the whole series.
 
-Will send out a v14 ASAP.
+I'll apply this one to the powerpc tree.
 
-
--- 
-Richard Yang
-Help You, Help Me
+cheers
