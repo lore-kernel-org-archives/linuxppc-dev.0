@@ -1,27 +1,31 @@
-Return-Path: <weiyang.kernel@gmail.com>
-Received: from mail-oi0-x22e.google.com (mail-oi0-x22e.google.com
- [IPv6:2607:f8b0:4003:c06::22e])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <richard@nod.at>
+Received: from radon.swed.at (a.ns.miles-group.at [95.130.255.143])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0F2AD1A02EE
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Mar 2015 09:24:37 +1100 (AEDT)
-Received: by oifl3 with SMTP id l3so72586624oif.0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Mar 2015 15:24:33 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id EB6651A02EE
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Mar 2015 10:26:30 +1100 (AEDT)
+Message-ID: <550CAB0A.8070402@nod.at>
+Date: Sat, 21 Mar 2015 00:19:38 +0100
+From: Richard Weinberger <richard@nod.at>
 MIME-Version: 1.0
-In-Reply-To: <20150320212045.GL26935@google.com>
-References: <1426820797-6267-1-git-send-email-weiyang@linux.vnet.ibm.com>
- <20150320212045.GL26935@google.com>
-Date: Sat, 21 Mar 2015 06:24:33 +0800
-Message-ID: <CADLM8XPXViGNVAr4wuf2goS06bY3oq0cHQV1vPimyKNNjZg3=w@mail.gmail.com>
-Subject: Re: [PATCH V14 00/21] Enable SRIOV on Power8
-From: Wei Yang <weiyang.kernel@gmail.com>
-To: Bjorn Helgaas <bhelgaas@google.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- Wei Yang <weiyang@linux.vnet.ibm.com>,
- Benjamin Herrenschmidt <benh@au1.ibm.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: Laurent Dufour <ldufour@linux.vnet.ibm.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Jeff Dike <jdike@addtoit.com>,
+ Guan Xuetao <gxt@mprc.pku.edu.cn>, Thomas Gleixner <tglx@linutronix.de>,
+ Ingo Molnar <mingo@redhat.com>,
+ "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org,
+ Arnd Bergmann <arnd@arndb.de>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-s390@vger.kernel.org, user-mode-linux-devel@lists.sourceforge.net,
+ user-mode-linux-user@lists.sourceforge.net, linux-arch@vger.kernel.org,
+ linux-mm@kvack.org
+Subject: Re: [PATCH 1/2] mm: Introducing arch_remap hook
+References: <cover.1426866405.git.ldufour@linux.vnet.ibm.com>
+ <503499aae380db1c4673f146bcba6ad095021257.1426866405.git.ldufour@linux.vnet.ibm.com>
+In-Reply-To: <503499aae380db1c4673f146bcba6ad095021257.1426866405.git.ldufour@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=iso-8859-15
+Cc: criu@openvz.org, cov@codeaurora.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,41 +35,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-2015-03-21 5:20 GMT+08:00 Bjorn Helgaas <bhelgaas@google.com>:
-> On Fri, Mar 20, 2015 at 11:06:16AM +0800, Wei Yang wrote:
->> This patchset enables the SRIOV on POWER8.
->>
->> The general idea is put each VF into one individual PE and allocate required
->> resources like MMIO/DMA/MSI. The major difficulty comes from the MMIO
->> allocation and adjustment for PF's IOV BAR.
->>
->> On P8, we use M64BT to cover a PF's IOV BAR, which could make an individual VF
->> sit in its own PE. This gives more flexiblity, while at the mean time it
->> brings on some restrictions on the PF's IOV BAR size and alignment.
->
-> For patches 03-12 (the "PCI: " ones):
->
-> Acked-by: Bjorn Helgaas <bhelgaas@google.com>
->
-> It's fine if you want to take all these via the powerpc tree.  I don't see
-> much if anything in my queue that will conflict with them.
->
+Am 20.03.2015 um 16:53 schrieb Laurent Dufour:
+> Some architecture would like to be triggered when a memory area is moved
+> through the mremap system call.
+> 
+> This patch is introducing a new arch_remap mm hook which is placed in the
+> path of mremap, and is called before the old area is unmapped (and the
+> arch_unmap hook is called).
+> 
+> To no break the build, this patch adds the empty hook definition to the
+> architectures that were not using the generic hook's definition.
 
-Thanks, Bjorn :-)
+Just wanted to point out that I like that new hook as UserModeLinux can benefit from it.
+UML has the concept of stub pages where the UML host process can inject commands to guest processes.
+Currently we play nasty games in the TLB code to make all this work.
+arch_unmap() could make this stuff more clear and less error prone.
 
-I will work with Ben/Gavin to merge it on ppc.
-If anything change in PCI core, I will let you know.
-
-Have a nice weekend :-)
-
-> Bjorn
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
-
-
-
--- 
-Richard Yang
-Help You, Help Me
+Thanks,
+//richard
