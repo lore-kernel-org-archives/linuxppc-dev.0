@@ -1,38 +1,39 @@
-Return-Path: <linus971@gmail.com>
-Received: from mail-ie0-x236.google.com (mail-ie0-x236.google.com
- [IPv6:2607:f8b0:4001:c03::236])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1497B1A2A93
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Mar 2015 04:02:25 +1100 (AEDT)
-Received: by iedm5 with SMTP id m5so33395067ied.3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Mar 2015 10:02:23 -0700 (PDT)
-MIME-Version: 1.0
-Sender: linus971@gmail.com
-In-Reply-To: <20150320041357.GO10105@dastard>
-References: <20150317205104.GA28621@dastard>
- <CA+55aFzSPcNgxw4GC7aAV1r0P5LniyVVC66COz=3cgMcx73Nag@mail.gmail.com>
- <20150317220840.GC28621@dastard>
- <CA+55aFwne-fe_Gg-_GTUo+iOAbbNpLBa264JqSFkH79EULyAqw@mail.gmail.com>
- <CA+55aFy-Mw74rAdLMMMUgnsG3ZttMWVNGz7CXZJY7q9fqyRYfg@mail.gmail.com>
- <CA+55aFyxA9u2cVzV+S7TSY9ZvRXCX=z22YAbi9mdPVBKmqgR5g@mail.gmail.com>
- <20150319224143.GI10105@dastard>
- <CA+55aFy5UeNnFUTi619cs3b9Up2NQ1wbuyvcCS614+o3=z=wBQ@mail.gmail.com>
- <20150320002311.GG28621@dastard>
- <CA+55aFyqXDVv9JkkhvM26x6PC5V82corR7HQNxmkeGZjOCxD=A@mail.gmail.com>
- <20150320041357.GO10105@dastard>
-Date: Fri, 20 Mar 2015 10:02:23 -0700
-Message-ID: <CA+55aFx1pywykWa0ThcHgE7wzdVuyOBSx27iyx_FtZpYSJbKGQ@mail.gmail.com>
-Subject: Re: [PATCH 4/4] mm: numa: Slow PTE scan rate if migration failures
- occur
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Dave Chinner <david@fromorbit.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com,
- Linux-MM <linux-mm@kvack.org>, Aneesh Kumar <aneesh.kumar@linux.vnet.ibm.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- ppc-dev <linuxppc-dev@lists.ozlabs.org>, Ingo Molnar <mingo@kernel.org>,
- Mel Gorman <mgorman@suse.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 537FB1A0325
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Mar 2015 06:59:00 +1100 (AEDT)
+Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 7367214012F
+ for <linuxppc-dev@ozlabs.org>; Sat, 21 Mar 2015 06:58:58 +1100 (AEDT)
+Received: from /spool/local
+ by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Sat, 21 Mar 2015 01:28:55 +0530
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 21B633940049
+ for <linuxppc-dev@ozlabs.org>; Sat, 21 Mar 2015 01:28:53 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay01.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t2KJwq4A26804254
+ for <linuxppc-dev@ozlabs.org>; Sat, 21 Mar 2015 01:28:52 +0530
+Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t2KJwqPY007943
+ for <linuxppc-dev@ozlabs.org>; Sat, 21 Mar 2015 01:28:52 +0530
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH v3 2/2] drivers/vfio: Support EEH error injection
+Date: Sat, 21 Mar 2015 06:58:45 +1100
+Message-Id: <1426881525-11044-3-git-send-email-gwshan@linux.vnet.ibm.com>
+In-Reply-To: <1426881525-11044-1-git-send-email-gwshan@linux.vnet.ibm.com>
+References: <1426881525-11044-1-git-send-email-gwshan@linux.vnet.ibm.com>
+Cc: kvm@vger.kernel.org, aik@ozlabs.ru, Gavin Shan <gwshan@linux.vnet.ibm.com>,
+ agraf@suse.de, alex.williamson@redhat.com, david@gibson.dropbear.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,24 +43,119 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Mar 19, 2015 at 9:13 PM, Dave Chinner <david@fromorbit.com> wrote:
->
-> Testing now. It's a bit faster - three runs gave 7m35s, 7m20s and
-> 7m36s. IOWs's a bit better, but not significantly. page migrations
-> are pretty much unchanged, too:
->
->            558,632      migrate:mm_migrate_pages ( +-  6.38% )
+The patch adds one more EEH sub-command (VFIO_EEH_PE_INJECT_ERR)
+to inject the specified EEH error, which is represented by
+(struct vfio_eeh_pe_err), to the indicated PE for testing purpose.
 
-Ok. That was kind of the expected thing.
+Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+---
+ Documentation/vfio.txt        | 12 ++++++++++++
+ drivers/vfio/vfio_spapr_eeh.c | 10 ++++++++++
+ include/uapi/linux/vfio.h     | 36 +++++++++++++++++++++++++++++++++++-
+ 3 files changed, 57 insertions(+), 1 deletion(-)
 
-I don't really know the NUMA fault rate limiting code, but one thing
-that strikes me is that if it tries to balance the NUMA faults against
-the *regular* faults, then maybe just the fact that we end up taking
-more COW faults after a NUMA fault then means that the NUMA rate
-limiting code now gets over-eager (because it sees all those extra
-non-numa faults).
-
-Mel, does that sound at all possible? I really have never looked at
-the magic automatic rate handling..
-
-                         Linus
+diff --git a/Documentation/vfio.txt b/Documentation/vfio.txt
+index 96978ec..c6e11a3 100644
+--- a/Documentation/vfio.txt
++++ b/Documentation/vfio.txt
+@@ -385,6 +385,18 @@ The code flow from the example above should be slightly changed:
+ 
+ 	....
+ 
++	/* Inject EEH error, which is expected to be caused by 32-bits
++	 * config load.
++	 */
++	pe_op.op = VFIO_EEH_PE_INJECT_ERR;
++	pe_op.err.type = VFIO_EEH_ERR_TYPE_32;
++	pe_op.err.func = VFIO_EEH_ERR_FUNC_LD_CFG_ADDR;
++	pe_op.err.addr = 0ul;
++	pe_op.err.mask = 0ul;
++	ioctl(container, VFIO_EEH_PE_OP, &pe_op);
++
++	....
++
+ 	/* When 0xFF's returned from reading PCI config space or IO BARs
+ 	 * of the PCI device. Check the PE's state to see if that has been
+ 	 * frozen.
+diff --git a/drivers/vfio/vfio_spapr_eeh.c b/drivers/vfio/vfio_spapr_eeh.c
+index 5fa42db..38edeb4 100644
+--- a/drivers/vfio/vfio_spapr_eeh.c
++++ b/drivers/vfio/vfio_spapr_eeh.c
+@@ -85,6 +85,16 @@ long vfio_spapr_iommu_eeh_ioctl(struct iommu_group *group,
+ 		case VFIO_EEH_PE_CONFIGURE:
+ 			ret = eeh_pe_configure(pe);
+ 			break;
++		case VFIO_EEH_PE_INJECT_ERR:
++			minsz = offsetofend(struct vfio_eeh_pe_op, err.mask);
++			if (op.argsz < minsz)
++				return -EINVAL;
++			if (copy_from_user(&op, (void __user *)arg, minsz))
++				return -EFAULT;
++
++			ret = eeh_pe_inject_err(pe, op.err.type, op.err.func,
++						op.err.addr, op.err.mask);
++			break;
+ 		default:
+ 			ret = -EINVAL;
+ 		}
+diff --git a/include/uapi/linux/vfio.h b/include/uapi/linux/vfio.h
+index 82889c3..f68e962 100644
+--- a/include/uapi/linux/vfio.h
++++ b/include/uapi/linux/vfio.h
+@@ -468,12 +468,23 @@ struct vfio_iommu_spapr_tce_info {
+  * - unfreeze IO/DMA for frozen PE;
+  * - read PE state;
+  * - reset PE;
+- * - configure PE.
++ * - configure PE;
++ * - inject EEH error.
+  */
++struct vfio_eeh_pe_err {
++	__u32 type;
++	__u32 func;
++	__u64 addr;
++	__u64 mask;
++};
++
+ struct vfio_eeh_pe_op {
+ 	__u32 argsz;
+ 	__u32 flags;
+ 	__u32 op;
++	union {
++		struct vfio_eeh_pe_err err;
++	};
+ };
+ 
+ #define VFIO_EEH_PE_DISABLE		0	/* Disable EEH functionality */
+@@ -490,6 +501,29 @@ struct vfio_eeh_pe_op {
+ #define VFIO_EEH_PE_RESET_HOT		6	/* Assert hot reset          */
+ #define VFIO_EEH_PE_RESET_FUNDAMENTAL	7	/* Assert fundamental reset  */
+ #define VFIO_EEH_PE_CONFIGURE		8	/* PE configuration          */
++#define VFIO_EEH_PE_INJECT_ERR		9	/* Inject EEH error          */
++#define  VFIO_EEH_ERR_TYPE_32		0	/* 32-bits EEH error type    */
++#define  VFIO_EEH_ERR_TYPE_64		1	/* 64-bits EEH error type    */
++#define  VFIO_EEH_ERR_FUNC_LD_MEM_ADDR		0	/* Memory load  */
++#define  VFIO_EEH_ERR_FUNC_LD_MEM_DATA		1
++#define  VFIO_EEH_ERR_FUNC_LD_IO_ADDR		2	/* IO load      */
++#define  VFIO_EEH_ERR_FUNC_LD_IO_DATA		3
++#define  VFIO_EEH_ERR_FUNC_LD_CFG_ADDR		4	/* Config load  */
++#define  VFIO_EEH_ERR_FUNC_LD_CFG_DATA		5
++#define  VFIO_EEH_ERR_FUNC_ST_MEM_ADDR		6	/* Memory store */
++#define  VFIO_EEH_ERR_FUNC_ST_MEM_DATA		7
++#define  VFIO_EEH_ERR_FUNC_ST_IO_ADDR		8	/* IO store     */
++#define  VFIO_EEH_ERR_FUNC_ST_IO_DATA		9
++#define  VFIO_EEH_ERR_FUNC_ST_CFG_ADDR		10	/* Config store */
++#define  VFIO_EEH_ERR_FUNC_ST_CFG_DATA		11
++#define  VFIO_EEH_ERR_FUNC_DMA_RD_ADDR		12	/* DMA read     */
++#define  VFIO_EEH_ERR_FUNC_DMA_RD_DATA		13
++#define  VFIO_EEH_ERR_FUNC_DMA_RD_MASTER	14
++#define  VFIO_EEH_ERR_FUNC_DMA_RD_TARGET	15
++#define  VFIO_EEH_ERR_FUNC_DMA_WR_ADDR		16	/* DMA write    */
++#define  VFIO_EEH_ERR_FUNC_DMA_WR_DATA		17
++#define  VFIO_EEH_ERR_FUNC_DMA_WR_MASTER	18
++#define  VFIO_EEH_ERR_FUNC_DMA_WR_TARGET	19
+ 
+ #define VFIO_EEH_PE_OP			_IO(VFIO_TYPE, VFIO_BASE + 21)
+ 
+-- 
+1.8.3.2
