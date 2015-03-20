@@ -1,38 +1,33 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mgorman@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 99A671A2A85
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Mar 2015 20:26:46 +1100 (AEDT)
-Received: from /spool/local
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Fri, 20 Mar 2015 19:26:45 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id E1E742BB0040
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Mar 2015 20:26:40 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t2K9QWpb36241576
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Mar 2015 20:26:40 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t2K9Q6Sj021528
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Mar 2015 20:26:07 +1100
-Message-ID: <550BE795.4070200@linux.vnet.ibm.com>
-Date: Fri, 20 Mar 2015 14:55:41 +0530
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id A484D1A2A85
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Mar 2015 20:56:17 +1100 (AEDT)
+Date: Fri, 20 Mar 2015 09:56:06 +0000
+From: Mel Gorman <mgorman@suse.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 4/4] mm: numa: Slow PTE scan rate if migration failures
+ occur
+Message-ID: <20150320095606.GE3087@suse.de>
+References: <20150317070655.GB10105@dastard>
+ <CA+55aFzdLnFdku-gnm3mGbeS=QauYBNkFQKYXJAGkrMd2jKXhw@mail.gmail.com>
+ <20150317205104.GA28621@dastard>
+ <CA+55aFzSPcNgxw4GC7aAV1r0P5LniyVVC66COz=3cgMcx73Nag@mail.gmail.com>
+ <20150317220840.GC28621@dastard>
+ <CA+55aFwne-fe_Gg-_GTUo+iOAbbNpLBa264JqSFkH79EULyAqw@mail.gmail.com>
+ <CA+55aFy-Mw74rAdLMMMUgnsG3ZttMWVNGz7CXZJY7q9fqyRYfg@mail.gmail.com>
+ <CA+55aFyxA9u2cVzV+S7TSY9ZvRXCX=z22YAbi9mdPVBKmqgR5g@mail.gmail.com>
+ <20150319224143.GI10105@dastard>
+ <CA+55aFy5UeNnFUTi619cs3b9Up2NQ1wbuyvcCS614+o3=z=wBQ@mail.gmail.com>
 MIME-Version: 1.0
-To: Sam Bobroff <sam.bobroff@au1.ibm.com>, mpe@ellerman.id.au,
- benh@kernel.crashing.org
-Subject: Re: [PATCH 3/3] selftests/powerpc: Add transactional syscall test
-References: <cover.1426740212.git.sam.bobroff@au1.ibm.com>
- <b4a4ea23b20098512cf350b97ce98e0d1ea58531.1426740212.git.sam.bobroff@au1.ibm.com>
-In-Reply-To: <b4a4ea23b20098512cf350b97ce98e0d1ea58531.1426740212.git.sam.bobroff@au1.ibm.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: mikey@neuling.org, azanella@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org, matt@ozlabs.org
+Content-Type: text/plain; charset=iso-8859-15
+In-Reply-To: <CA+55aFy5UeNnFUTi619cs3b9Up2NQ1wbuyvcCS614+o3=z=wBQ@mail.gmail.com>
+Cc: Dave Chinner <david@fromorbit.com>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com,
+ Linux-MM <linux-mm@kvack.org>, Aneesh Kumar <aneesh.kumar@linux.vnet.ibm.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ ppc-dev <linuxppc-dev@lists.ozlabs.org>, Ingo Molnar <mingo@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,55 +37,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03/19/2015 10:13 AM, Sam Bobroff wrote:
-> Check that a syscall made during an active transaction will fail with
-> the correct failure code and that one made during a suspended
-> transaction will succeed.
+On Thu, Mar 19, 2015 at 04:05:46PM -0700, Linus Torvalds wrote:
+> On Thu, Mar 19, 2015 at 3:41 PM, Dave Chinner <david@fromorbit.com> wrote:
+> >
+> > My recollection wasn't faulty - I pulled it from an earlier email.
+> > That said, the original measurement might have been faulty. I ran
+> > the numbers again on the 3.19 kernel I saved away from the original
+> > testing. That came up at 235k, which is pretty much the same as
+> > yesterday's test. The runtime,however, is unchanged from my original
+> > measurements of 4m54s (pte_hack came in at 5m20s).
 > 
-> Signed-off-by: Sam Bobroff <sam.bobroff@au1.ibm.com>
+> Ok. Good. So the "more than an order of magnitude difference" was
+> really about measurement differences, not quite as real. Looks like
+> more a "factor of two" than a factor of 20.
+> 
+> Did you do the profiles the same way? Because that would explain the
+> differences in the TLB flush percentages too (the "1.4% from
+> tlb_invalidate_range()" vs "pretty much everything from migration").
+> 
+> The runtime variation does show that there's some *big* subtle
+> difference for the numa balancing in the exact TNF_NO_GROUP details.
 
-The test works.
+TNF_NO_GROUP affects whether the scheduler tries to group related processes
+together. Whether migration occurs depends on what node a process is
+scheduled on. If processes are aggressively grouped inappropriately then it
+is possible there is a bug that causes the load balancer to move processes
+off a node (possible migration) with NUMA balancing trying to pull it back
+(another possible migration). Small bugs there can result in excessive
+migration.
 
-> +
-> +int tm_syscall(void)
-> +{
-> +	SKIP_IF(!((long)get_auxv_entry(AT_HWCAP2) & PPC_FEATURE2_HTM));
-> +	setbuf(stdout, 0);
-> +	FAIL_IF(!t_active_getppid_test());
-> +	printf("%d active transactions correctly aborted.\n", TM_TEST_RUNS);
-> +	FAIL_IF(!t_suspended_getppid_test());
-> +	printf("%d suspended transactions succeeded.\n", TM_TEST_RUNS);
-> +	return 0;
-> +}
-> +
-> +int main(void)
-> +{
-> +	return test_harness(tm_syscall, "tm_syscall");
-> +}
-> +
-
-There is an extra blank line at the end of this file. Interchanging return
-codes of 0 and 1 for various functions make it very confusing along with
-negative FAIL_IF checks in the primary test function. Control flow structures
-like these can use some in-code documentation for readability.
-
-+	for (i = 0; i < TM_RETRIES; i++) {
-+		if (__builtin_tbegin(0)) {
-+			getppid();
-+			__builtin_tend(0);
-+			return 1;
-+		}
-+		if (t_failure_persistent())
-+			return 0;
-
-or
-
-+		if (__builtin_tbegin(0)) {
-+			__builtin_tsuspend();
-+			getppid();
-+			__builtin_tresume();
-+			__builtin_tend(0);
-+			return 1;
-+		}
-+		if (t_failure_persistent())
-+			return 0;
+-- 
+Mel Gorman
+SUSE Labs
