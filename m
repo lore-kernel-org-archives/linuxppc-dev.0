@@ -1,23 +1,39 @@
-Return-Path: <asolokha@kb.kras.ru>
-Received: from ispman.iskranet.ru (ispman.iskranet.ru [62.213.33.10])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 54D101A0CE9
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Mar 2015 15:55:40 +1100 (AEDT)
-From: Arseny Solokha <asolokha@kb.kras.ru>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH v3 0/4] powerpc: trivial unused functions cleanup
-References: <1424768706-23150-1-git-send-email-asolokha@kb.kras.ru>
- <1426823789-949-1-git-send-email-asolokha@kb.kras.ru>
- <1426825436.2581.1.camel@ellerman.id.au>
-Date: Fri, 20 Mar 2015 11:55:32 +0700
-In-Reply-To: <1426825436.2581.1.camel@ellerman.id.au> (Michael Ellerman's
- message of "Fri, 20 Mar 2015 15:23:56 +1100")
-Message-ID: <87pp84w9mj.fsf@KB00016249.iskra.kb>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2BBE41A073F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Mar 2015 16:26:50 +1100 (AEDT)
+Received: from /spool/local
+ by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Fri, 20 Mar 2015 10:56:47 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id B47971258056
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Mar 2015 10:58:17 +0530 (IST)
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t2K5QhbT18677800
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Mar 2015 10:56:43 +0530
+Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t2K5M8EA021633
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Mar 2015 10:52:08 +0530
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 3/3] powerpc/dma: Remove ZONE_DMA completely
+In-Reply-To: <1426711109.4770.78.camel@kernel.crashing.org>
+References: <1424421344.27448.43.camel@kernel.crashing.org>
+ <87zj7amlqn.fsf@linux.vnet.ibm.com>
+ <1426711109.4770.78.camel@kernel.crashing.org>
+Date: Fri, 20 Mar 2015 10:56:43 +0530
+Message-ID: <87wq2cme7g.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Cc: Scott Wood <scottwood@freescale.com>, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Cc: Scott Wood <scottwood@freescale.com>, Anton Blanchard <anton@au1.ibm.com>,
+ linuxppc dev list <linuxppc-dev@lists.ozlabs.org>,
+ Brian J King <bjking1@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,66 +43,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> On Fri, 2015-03-20 at 10:56 +0700, Arseny Solokha wrote:
->> This series removes unused functions from powerpc tree that I've been ab=
-le
->> to discover.
->>=20
->> Two machines at hands, e300 and e500 based, boot and run without regress=
-ions
->> on my workload with this series applied. The removed code seems also been
->> rarely touched, so it seems the series is safe at least in general. But I
->> can't obviously express any strong point in support of the series, so it=
-'s
->> completely OK to leave things as is.
->>=20
->> v3: In patch 4/4, do not remove fsl_mpic_primary_get_version() from
->>     arch/powerpc/sysdev/mpic.c because the patch by Jia Hongtao
->>     ("powerpc/85xx: workaround for chips with MSI hardware errata") makes
->>     use of it.
+Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+
+> On Wed, 2015-03-18 at 19:49 +0530, Aneesh Kumar K.V wrote:
+>> Why not do it also for DMA32 as below. We call limit_zone_pfn() only
+>> for few
+>> platforms. They can select ZONE_DMA32. Everywhere else ZONE_DMA32 is
+>> same as ZONE_NORMAL ? So instead of having confusing output for
+>> show_mem(), we now have
 >
-> Sorry, too late.
+> There may be cases where we want ZONE_DMA32, what's confusing ?
 >
-> https://git.kernel.org/cgit/linux/kernel/git/mpe/linux.git/commit/?h=3Dne=
-xt&id=3D5e86bfde9cd93f272844c3ff6ac5f93d3666b3e7
->
->
-> The patch that needs it can just add it back.
+To see output like below
 
-I failed to notice that the series has been finally committed, so resent it=
-. Of
-course Hongtao can add the removed function back if he needs to.
+ Node 0 DMA32: 6*64kB (UM) 566*128kB (UEM) 367*256kB (UM) 185*512kB (UM)59*1024kB (UEM) 11*2048kB (UM) 4*4096kB (UM) 3*8192kB (UEM) 4016*16384kB
 
-And by the way, while revisiting the series I've noticed that though the pa=
-tch
-4/4 basically reverts [1], it leaves
+ Node 1 DMA32: 42*64kB (UEM) 14*128kB (UEM) 10*256kB (UM) 2*512kB (UM) 6*1024kB (UM) 7*2048kB (UEM) 5*4096kB (UM) 2*8192kB (U) 3644*16384kB (MR) =
 
-  #define MPIC_GREG_GLOBAL_CONF_1		0x00030
+ That is to find DMA32 convering more than 4GB range.
 
-in arch/powerpc/include/asm/mpic.h untouched. That define also loses its us=
-es
-after applying the patch. Compare the following hunk in today's patch w/ th=
-e one
-you committed:
-
-  @@ -33,11 +33,6 @@
-   #define		MPIC_GREG_GCONF_NO_BIAS			0x10000000
-   #define		MPIC_GREG_GCONF_BASE_MASK		0x000fffff
-   #define		MPIC_GREG_GCONF_MCK			0x08000000
-  -#define MPIC_GREG_GLOBAL_CONF_1		0x00030
-  -#define		MPIC_GREG_GLOBAL_CONF_1_SIE		0x08000000
-  -#define		MPIC_GREG_GLOBAL_CONF_1_CLK_RATIO_MASK	0x70000000
-  -#define		MPIC_GREG_GLOBAL_CONF_1_CLK_RATIO(r)	\
-  -			(((r) << 28) & MPIC_GREG_GLOBAL_CONF_1_CLK_RATIO_MASK)
-   #define MPIC_GREG_VENDOR_0		0x00040
-   #define MPIC_GREG_VENDOR_1		0x00050
-   #define MPIC_GREG_VENDOR_2		0x00060
-
-So the question is, should #define MPIC_GREG_GLOBAL_CONF_1 have been also
-removed, or could be left as is?
-
-[1] https://lists.ozlabs.org/pipermail/linuxppc-dev/2006-June/023867.html
-
-Ars=C3=A9ny
-
-> cheers
+ -aneesh
