@@ -1,35 +1,33 @@
 Return-Path: <weiyang@linux.vnet.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0D2431A0CB1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Mar 2015 14:09:07 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3216B1A0CE8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Mar 2015 14:09:28 +1100 (AEDT)
 Received: from /spool/local
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
- Fri, 20 Mar 2015 13:09:05 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id CBB5E2BB0040
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Mar 2015 14:09:02 +1100 (EST)
+ Fri, 20 Mar 2015 13:09:26 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 6CD952BB0052
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Mar 2015 14:09:25 +1100 (EST)
 Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t2K38sgf48234750
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Mar 2015 14:09:02 +1100
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t2K39Gbe18940010
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Mar 2015 14:09:25 +1100
 Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
  by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t2K38STo002554
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Mar 2015 14:08:29 +1100
+ t2K38pJj003053
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Mar 2015 14:08:51 +1100
 From: Wei Yang <weiyang@linux.vnet.ibm.com>
 To: bhelgaas@google.com, benh@au1.ibm.com, gwshan@linux.vnet.ibm.com
-Subject: [PATCH V14 02/21] powerpc/powernv: Use pci_dn, not device_node,
- in PCI config accessor
-Date: Fri, 20 Mar 2015 11:06:18 +0800
-Message-Id: <1426820797-6267-3-git-send-email-weiyang@linux.vnet.ibm.com>
+Subject: [PATCH V14 03/21] PCI: Print more info in sriov_enable() error message
+Date: Fri, 20 Mar 2015 11:06:19 +0800
+Message-Id: <1426820797-6267-4-git-send-email-weiyang@linux.vnet.ibm.com>
 In-Reply-To: <1426820797-6267-1-git-send-email-weiyang@linux.vnet.ibm.com>
 References: <1426820797-6267-1-git-send-email-weiyang@linux.vnet.ibm.com>
-Cc: linux-pci@vger.kernel.org, Wei Yang <weiyang@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+Cc: linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,239 +37,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The PCI config accessors previously relied on device_node.  Unfortunately,
-VFs don't have a corresponding device_node, so change the accessors to use
-pci_dn instead.
+From: Bjorn Helgaas <bhelgaas@google.com>
 
-[bhelgaas: changelog]
-Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+If we don't have space for all the bus numbers required to enable VFs,
+print the largest bus number required and the range available.
+
+No functional change; improved error message only.
+
+Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
 ---
- arch/powerpc/platforms/powernv/eeh-powernv.c |   14 +++++-
- arch/powerpc/platforms/powernv/pci.c         |   69 ++++++++++----------------
- arch/powerpc/platforms/powernv/pci.h         |    4 +-
- 3 files changed, 40 insertions(+), 47 deletions(-)
+ drivers/pci/iov.c |    7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
-index e261869..7a5021b 100644
---- a/arch/powerpc/platforms/powernv/eeh-powernv.c
-+++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
-@@ -430,21 +430,31 @@ static inline bool powernv_eeh_cfg_blocked(struct device_node *dn)
- static int powernv_eeh_read_config(struct device_node *dn,
- 				   int where, int size, u32 *val)
- {
-+	struct pci_dn *pdn = PCI_DN(dn);
-+
-+	if (!pdn)
-+		return PCIBIOS_DEVICE_NOT_FOUND;
-+
- 	if (powernv_eeh_cfg_blocked(dn)) {
- 		*val = 0xFFFFFFFF;
- 		return PCIBIOS_SET_FAILED;
+diff --git a/drivers/pci/iov.c b/drivers/pci/iov.c
+index 4b3a4ea..c4c33ea 100644
+--- a/drivers/pci/iov.c
++++ b/drivers/pci/iov.c
+@@ -180,6 +180,7 @@ static int sriov_enable(struct pci_dev *dev, int nr_virtfn)
+ 	struct pci_dev *pdev;
+ 	struct pci_sriov *iov = dev->sriov;
+ 	int bars = 0;
++	u8 bus;
+ 
+ 	if (!nr_virtfn)
+ 		return 0;
+@@ -216,8 +217,10 @@ static int sriov_enable(struct pci_dev *dev, int nr_virtfn)
+ 	iov->offset = offset;
+ 	iov->stride = stride;
+ 
+-	if (virtfn_bus(dev, nr_virtfn - 1) > dev->bus->busn_res.end) {
+-		dev_err(&dev->dev, "SR-IOV: bus number out of range\n");
++	bus = virtfn_bus(dev, nr_virtfn - 1);
++	if (bus > dev->bus->busn_res.end) {
++		dev_err(&dev->dev, "can't enable %d VFs (bus %02x out of range of %pR)\n",
++			nr_virtfn, bus, &dev->bus->busn_res);
+ 		return -ENOMEM;
  	}
  
--	return pnv_pci_cfg_read(dn, where, size, val);
-+	return pnv_pci_cfg_read(pdn, where, size, val);
- }
- 
- static int powernv_eeh_write_config(struct device_node *dn,
- 				    int where, int size, u32 val)
- {
-+	struct pci_dn *pdn = PCI_DN(dn);
-+
-+	if (!pdn)
-+		return PCIBIOS_DEVICE_NOT_FOUND;
-+
- 	if (powernv_eeh_cfg_blocked(dn))
- 		return PCIBIOS_SET_FAILED;
- 
--	return pnv_pci_cfg_write(dn, where, size, val);
-+	return pnv_pci_cfg_write(pdn, where, size, val);
- }
- 
- /**
-diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
-index e69142f..6c20d6e 100644
---- a/arch/powerpc/platforms/powernv/pci.c
-+++ b/arch/powerpc/platforms/powernv/pci.c
-@@ -366,9 +366,9 @@ static void pnv_pci_handle_eeh_config(struct pnv_phb *phb, u32 pe_no)
- 	spin_unlock_irqrestore(&phb->lock, flags);
- }
- 
--static void pnv_pci_config_check_eeh(struct pnv_phb *phb,
--				     struct device_node *dn)
-+static void pnv_pci_config_check_eeh(struct pci_dn *pdn)
- {
-+	struct pnv_phb *phb = pdn->phb->private_data;
- 	u8	fstate;
- 	__be16	pcierr;
- 	int	pe_no;
-@@ -379,7 +379,7 @@ static void pnv_pci_config_check_eeh(struct pnv_phb *phb,
- 	 * setup that yet. So all ER errors should be mapped to
- 	 * reserved PE.
- 	 */
--	pe_no = PCI_DN(dn)->pe_number;
-+	pe_no = pdn->pe_number;
- 	if (pe_no == IODA_INVALID_PE) {
- 		if (phb->type == PNV_PHB_P5IOC2)
- 			pe_no = 0;
-@@ -407,8 +407,7 @@ static void pnv_pci_config_check_eeh(struct pnv_phb *phb,
- 	}
- 
- 	cfg_dbg(" -> EEH check, bdfn=%04x PE#%d fstate=%x\n",
--		(PCI_DN(dn)->busno << 8) | (PCI_DN(dn)->devfn),
--		pe_no, fstate);
-+		(pdn->busno << 8) | (pdn->devfn), pe_no, fstate);
- 
- 	/* Clear the frozen state if applicable */
- 	if (fstate == OPAL_EEH_STOPPED_MMIO_FREEZE ||
-@@ -425,10 +424,9 @@ static void pnv_pci_config_check_eeh(struct pnv_phb *phb,
- 	}
- }
- 
--int pnv_pci_cfg_read(struct device_node *dn,
-+int pnv_pci_cfg_read(struct pci_dn *pdn,
- 		     int where, int size, u32 *val)
- {
--	struct pci_dn *pdn = PCI_DN(dn);
- 	struct pnv_phb *phb = pdn->phb->private_data;
- 	u32 bdfn = (pdn->busno << 8) | pdn->devfn;
- 	s64 rc;
-@@ -462,10 +460,9 @@ int pnv_pci_cfg_read(struct device_node *dn,
- 	return PCIBIOS_SUCCESSFUL;
- }
- 
--int pnv_pci_cfg_write(struct device_node *dn,
-+int pnv_pci_cfg_write(struct pci_dn *pdn,
- 		      int where, int size, u32 val)
- {
--	struct pci_dn *pdn = PCI_DN(dn);
- 	struct pnv_phb *phb = pdn->phb->private_data;
- 	u32 bdfn = (pdn->busno << 8) | pdn->devfn;
- 
-@@ -489,18 +486,17 @@ int pnv_pci_cfg_write(struct device_node *dn,
- }
- 
- #if CONFIG_EEH
--static bool pnv_pci_cfg_check(struct pci_controller *hose,
--			      struct device_node *dn)
-+static bool pnv_pci_cfg_check(struct pci_dn *pdn)
- {
- 	struct eeh_dev *edev = NULL;
--	struct pnv_phb *phb = hose->private_data;
-+	struct pnv_phb *phb = pdn->phb->private_data;
- 
- 	/* EEH not enabled ? */
- 	if (!(phb->flags & PNV_PHB_FLAG_EEH))
- 		return true;
- 
- 	/* PE reset or device removed ? */
--	edev = of_node_to_eeh_dev(dn);
-+	edev = pdn->edev;
- 	if (edev) {
- 		if (edev->pe &&
- 		    (edev->pe->state & EEH_PE_CFG_BLOCKED))
-@@ -513,8 +509,7 @@ static bool pnv_pci_cfg_check(struct pci_controller *hose,
- 	return true;
- }
- #else
--static inline pnv_pci_cfg_check(struct pci_controller *hose,
--				struct device_node *dn)
-+static inline pnv_pci_cfg_check(struct pci_dn *pdn)
- {
- 	return true;
- }
-@@ -524,32 +519,26 @@ static int pnv_pci_read_config(struct pci_bus *bus,
- 			       unsigned int devfn,
- 			       int where, int size, u32 *val)
- {
--	struct device_node *dn, *busdn = pci_bus_to_OF_node(bus);
- 	struct pci_dn *pdn;
- 	struct pnv_phb *phb;
--	bool found = false;
- 	int ret;
- 
- 	*val = 0xFFFFFFFF;
--	for (dn = busdn->child; dn; dn = dn->sibling) {
--		pdn = PCI_DN(dn);
--		if (pdn && pdn->devfn == devfn) {
--			phb = pdn->phb->private_data;
--			found = true;
--			break;
--		}
--	}
-+	pdn = pci_get_pdn_by_devfn(bus, devfn);
-+	if (!pdn)
-+		return PCIBIOS_DEVICE_NOT_FOUND;
- 
--	if (!found || !pnv_pci_cfg_check(pdn->phb, dn))
-+	if (!pnv_pci_cfg_check(pdn))
- 		return PCIBIOS_DEVICE_NOT_FOUND;
- 
--	ret = pnv_pci_cfg_read(dn, where, size, val);
--	if (phb->flags & PNV_PHB_FLAG_EEH) {
-+	ret = pnv_pci_cfg_read(pdn, where, size, val);
-+	phb = pdn->phb->private_data;
-+	if (phb->flags & PNV_PHB_FLAG_EEH && pdn->edev) {
- 		if (*val == EEH_IO_ERROR_VALUE(size) &&
--		    eeh_dev_check_failure(of_node_to_eeh_dev(dn)))
-+		    eeh_dev_check_failure(pdn->edev))
-                         return PCIBIOS_DEVICE_NOT_FOUND;
- 	} else {
--		pnv_pci_config_check_eeh(phb, dn);
-+		pnv_pci_config_check_eeh(pdn);
- 	}
- 
- 	return ret;
-@@ -559,27 +548,21 @@ static int pnv_pci_write_config(struct pci_bus *bus,
- 				unsigned int devfn,
- 				int where, int size, u32 val)
- {
--	struct device_node *dn, *busdn = pci_bus_to_OF_node(bus);
- 	struct pci_dn *pdn;
- 	struct pnv_phb *phb;
--	bool found = false;
- 	int ret;
- 
--	for (dn = busdn->child; dn; dn = dn->sibling) {
--		pdn = PCI_DN(dn);
--		if (pdn && pdn->devfn == devfn) {
--			phb = pdn->phb->private_data;
--			found = true;
--			break;
--		}
--	}
-+	pdn = pci_get_pdn_by_devfn(bus, devfn);
-+	if (!pdn)
-+		return PCIBIOS_DEVICE_NOT_FOUND;
- 
--	if (!found || !pnv_pci_cfg_check(pdn->phb, dn))
-+	if (!pnv_pci_cfg_check(pdn))
- 		return PCIBIOS_DEVICE_NOT_FOUND;
- 
--	ret = pnv_pci_cfg_write(dn, where, size, val);
-+	ret = pnv_pci_cfg_write(pdn, where, size, val);
-+	phb = pdn->phb->private_data;
- 	if (!(phb->flags & PNV_PHB_FLAG_EEH))
--		pnv_pci_config_check_eeh(phb, dn);
-+		pnv_pci_config_check_eeh(pdn);
- 
- 	return ret;
- }
-diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
-index 6c02ff8..e5b75b2 100644
---- a/arch/powerpc/platforms/powernv/pci.h
-+++ b/arch/powerpc/platforms/powernv/pci.h
-@@ -219,9 +219,9 @@ extern struct pnv_eeh_ops ioda_eeh_ops;
- 
- void pnv_pci_dump_phb_diag_data(struct pci_controller *hose,
- 				unsigned char *log_buff);
--int pnv_pci_cfg_read(struct device_node *dn,
-+int pnv_pci_cfg_read(struct pci_dn *pdn,
- 		     int where, int size, u32 *val);
--int pnv_pci_cfg_write(struct device_node *dn,
-+int pnv_pci_cfg_write(struct pci_dn *pdn,
- 		      int where, int size, u32 val);
- extern void pnv_pci_setup_iommu_table(struct iommu_table *tbl,
- 				      void *tce_mem, u64 tce_size,
 -- 
 1.7.9.5
