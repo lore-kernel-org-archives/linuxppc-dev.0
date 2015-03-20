@@ -1,31 +1,21 @@
-Return-Path: <richard@nod.at>
-Received: from radon.swed.at (a.ns.miles-group.at [95.130.255.143])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0123.outbound.protection.outlook.com [207.46.100.123])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id EB6651A02EE
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Mar 2015 10:26:30 +1100 (AEDT)
-Message-ID: <550CAB0A.8070402@nod.at>
-Date: Sat, 21 Mar 2015 00:19:38 +0100
-From: Richard Weinberger <richard@nod.at>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 22CED1A02EE
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Mar 2015 10:52:28 +1100 (AEDT)
+Date: Fri, 20 Mar 2015 18:52:13 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: LEROY Christophe <christophe.leroy@c-s.fr>
+Subject: Re: powerpc32: fix warning from include/linux/mm.h
+Message-ID: <20150320235213.GA1233@home.buserror.net>
+References: <20141205112020.640FA1A5D4F@localhost.localdomain>
 MIME-Version: 1.0
-To: Laurent Dufour <ldufour@linux.vnet.ibm.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Jeff Dike <jdike@addtoit.com>,
- Guan Xuetao <gxt@mprc.pku.edu.cn>, Thomas Gleixner <tglx@linutronix.de>,
- Ingo Molnar <mingo@redhat.com>,
- "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org,
- Arnd Bergmann <arnd@arndb.de>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-s390@vger.kernel.org, user-mode-linux-devel@lists.sourceforge.net,
- user-mode-linux-user@lists.sourceforge.net, linux-arch@vger.kernel.org,
- linux-mm@kvack.org
-Subject: Re: [PATCH 1/2] mm: Introducing arch_remap hook
-References: <cover.1426866405.git.ldufour@linux.vnet.ibm.com>
- <503499aae380db1c4673f146bcba6ad095021257.1426866405.git.ldufour@linux.vnet.ibm.com>
-In-Reply-To: <503499aae380db1c4673f146bcba6ad095021257.1426866405.git.ldufour@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=iso-8859-15
-Cc: criu@openvz.org, cov@codeaurora.org
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <20141205112020.640FA1A5D4F@localhost.localdomain>
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,21 +25,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Am 20.03.2015 um 16:53 schrieb Laurent Dufour:
-> Some architecture would like to be triggered when a memory area is moved
-> through the mremap system call.
+On Fri, Dec 05, 2014 at 12:20:20PM +0100, LEROY Christophe wrote:
+> include/linux/mm.h: In function 'is_vmalloc_addr':
+> include/linux/mm.h:367:14: warning: comparison between signed and unsigned integer expressions [-Wsign-compare]
+>   return addr >= VMALLOC_START && addr < VMALLOC_END;
+>               ^
 > 
-> This patch is introducing a new arch_remap mm hook which is placed in the
-> path of mremap, and is called before the old area is unmapped (and the
-> arch_unmap hook is called).
-> 
-> To no break the build, this patch adds the empty hook definition to the
-> architectures that were not using the generic hook's definition.
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> ---
+>  arch/powerpc/include/asm/pgtable-ppc32.h | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
-Just wanted to point out that I like that new hook as UserModeLinux can benefit from it.
-UML has the concept of stub pages where the UML host process can inject commands to guest processes.
-Currently we play nasty games in the TLB code to make all this work.
-arch_unmap() could make this stuff more clear and less error prone.
+That warning doesn't appear to be enabled.  What config are you seeing
+this with?
 
-Thanks,
-//richard
+I'm also not clear on why this was assigned to me in patchwork.
+
+-Scott
