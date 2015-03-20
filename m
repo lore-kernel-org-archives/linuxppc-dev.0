@@ -1,39 +1,23 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2BBE41A073F
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Mar 2015 16:26:50 +1100 (AEDT)
-Received: from /spool/local
- by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Fri, 20 Mar 2015 10:56:47 +0530
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id B47971258056
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Mar 2015 10:58:17 +0530 (IST)
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t2K5QhbT18677800
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Mar 2015 10:56:43 +0530
-Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t2K5M8EA021633
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Mar 2015 10:52:08 +0530
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 3/3] powerpc/dma: Remove ZONE_DMA completely
-In-Reply-To: <1426711109.4770.78.camel@kernel.crashing.org>
-References: <1424421344.27448.43.camel@kernel.crashing.org>
- <87zj7amlqn.fsf@linux.vnet.ibm.com>
- <1426711109.4770.78.camel@kernel.crashing.org>
-Date: Fri, 20 Mar 2015 10:56:43 +0530
-Message-ID: <87wq2cme7g.fsf@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Scott Wood <scottwood@freescale.com>, Anton Blanchard <anton@au1.ibm.com>,
- linuxppc dev list <linuxppc-dev@lists.ozlabs.org>,
- Brian J King <bjking1@us.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5197F1A073F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Mar 2015 16:39:54 +1100 (AEDT)
+Message-ID: <1426829993.2581.2.camel@ellerman.id.au>
+Subject: Re: [PATCH v3 0/4] powerpc: trivial unused functions cleanup
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Arseny Solokha <asolokha@kb.kras.ru>
+Date: Fri, 20 Mar 2015 16:39:53 +1100
+In-Reply-To: <87pp84w9mj.fsf@KB00016249.iskra.kb>
+References: <1424768706-23150-1-git-send-email-asolokha@kb.kras.ru>
+ <1426823789-949-1-git-send-email-asolokha@kb.kras.ru>
+ <1426825436.2581.1.camel@ellerman.id.au>
+ <87pp84w9mj.fsf@KB00016249.iskra.kb>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Scott Wood <scottwood@freescale.com>, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,23 +27,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+On Fri, 2015-03-20 at 11:55 +0700, Arseny Solokha wrote:
+> 
+> And by the way, while revisiting the series I've noticed that though the patch
+> 4/4 basically reverts [1], it leaves
+> 
+>   #define MPIC_GREG_GLOBAL_CONF_1		0x00030
+> 
+> in arch/powerpc/include/asm/mpic.h untouched. That define also loses its uses
+> after applying the patch. Compare the following hunk in today's patch w/ the one
+> you committed:
+> 
+>   @@ -33,11 +33,6 @@
+>    #define		MPIC_GREG_GCONF_NO_BIAS			0x10000000
+>    #define		MPIC_GREG_GCONF_BASE_MASK		0x000fffff
+>    #define		MPIC_GREG_GCONF_MCK			0x08000000
+>   -#define MPIC_GREG_GLOBAL_CONF_1		0x00030
+>   -#define		MPIC_GREG_GLOBAL_CONF_1_SIE		0x08000000
+>   -#define		MPIC_GREG_GLOBAL_CONF_1_CLK_RATIO_MASK	0x70000000
+>   -#define		MPIC_GREG_GLOBAL_CONF_1_CLK_RATIO(r)	\
+>   -			(((r) << 28) & MPIC_GREG_GLOBAL_CONF_1_CLK_RATIO_MASK)
+>    #define MPIC_GREG_VENDOR_0		0x00040
+>    #define MPIC_GREG_VENDOR_1		0x00050
+>    #define MPIC_GREG_VENDOR_2		0x00060
+> 
+> So the question is, should #define MPIC_GREG_GLOBAL_CONF_1 have been also
+> removed, or could be left as is?
+> 
+> [1] https://lists.ozlabs.org/pipermail/linuxppc-dev/2006-June/023867.html
 
-> On Wed, 2015-03-18 at 19:49 +0530, Aneesh Kumar K.V wrote:
->> Why not do it also for DMA32 as below. We call limit_zone_pfn() only
->> for few
->> platforms. They can select ZONE_DMA32. Everywhere else ZONE_DMA32 is
->> same as ZONE_NORMAL ? So instead of having confusing output for
->> show_mem(), we now have
->
-> There may be cases where we want ZONE_DMA32, what's confusing ?
->
-To see output like below
 
- Node 0 DMA32: 6*64kB (UM) 566*128kB (UEM) 367*256kB (UM) 185*512kB (UM)59*1024kB (UEM) 11*2048kB (UM) 4*4096kB (UM) 3*8192kB (UEM) 4016*16384kB
+OK, thanks for the thoroughness.
 
- Node 1 DMA32: 42*64kB (UEM) 14*128kB (UEM) 10*256kB (UM) 2*512kB (UM) 6*1024kB (UM) 7*2048kB (UEM) 5*4096kB (UM) 2*8192kB (U) 3644*16384kB (MR) =
+With #defines like that it's never clear if they should be removed or not. On
+the one hand it's not used, so it should be removed. But, it can be useful to
+keep the #defines there as documentation.
 
- That is to find DMA32 convering more than 4GB range.
+So I'm 50/50 on it. If you send me a patch to remove it I'll merge it, unless
+someone else objects.
 
- -aneesh
+cheers
