@@ -1,25 +1,32 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D553F1A00B0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Mar 2015 10:54:34 +1100 (AEDT)
-Message-ID: <1426809274.2581.0.camel@ellerman.id.au>
-Subject: Re: [23/32] powerpc: copy_thread(): rename 'arg' argument to
- 'kthread_arg'
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Alex Dowad <alexinbeijing@gmail.com>
-Date: Fri, 20 Mar 2015 10:54:34 +1100
-In-Reply-To: <550A794C.7020904@gmail.com>
-References: <20150319064519.6BEA814010F@ozlabs.org>
- <550A794C.7020904@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Michael Neuling <mikey@neuling.org>, linux-kernel@vger.kernel.org,
- Paul Gortmaker <paul.gortmaker@windriver.com>,
- Vineeth Vijayan <vvijayan@mvista.com>, Anton Blanchard <anton@samba.org>,
- Paul Mackerras <paulus@samba.org>, Christoph Lameter <cl@linux.com>,
- "open list:LINUX FOR POWERPC..." <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <david@fromorbit.com>
+Received: from ipmail07.adl2.internode.on.net (ipmail07.adl2.internode.on.net
+ [150.101.137.131])
+ by lists.ozlabs.org (Postfix) with ESMTP id 2688D1A00B0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Mar 2015 11:23:26 +1100 (AEDT)
+Date: Fri, 20 Mar 2015 11:23:11 +1100
+From: Dave Chinner <david@fromorbit.com>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 4/4] mm: numa: Slow PTE scan rate if migration failures
+ occur
+Message-ID: <20150320002311.GG28621@dastard>
+References: <20150317070655.GB10105@dastard>
+ <CA+55aFzdLnFdku-gnm3mGbeS=QauYBNkFQKYXJAGkrMd2jKXhw@mail.gmail.com>
+ <20150317205104.GA28621@dastard>
+ <CA+55aFzSPcNgxw4GC7aAV1r0P5LniyVVC66COz=3cgMcx73Nag@mail.gmail.com>
+ <20150317220840.GC28621@dastard>
+ <CA+55aFwne-fe_Gg-_GTUo+iOAbbNpLBa264JqSFkH79EULyAqw@mail.gmail.com>
+ <CA+55aFy-Mw74rAdLMMMUgnsG3ZttMWVNGz7CXZJY7q9fqyRYfg@mail.gmail.com>
+ <CA+55aFyxA9u2cVzV+S7TSY9ZvRXCX=z22YAbi9mdPVBKmqgR5g@mail.gmail.com>
+ <20150319224143.GI10105@dastard>
+ <CA+55aFy5UeNnFUTi619cs3b9Up2NQ1wbuyvcCS614+o3=z=wBQ@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <CA+55aFy5UeNnFUTi619cs3b9Up2NQ1wbuyvcCS614+o3=z=wBQ@mail.gmail.com>
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com,
+ Linux-MM <linux-mm@kvack.org>, Aneesh Kumar <aneesh.kumar@linux.vnet.ibm.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ ppc-dev <linuxppc-dev@lists.ozlabs.org>, Ingo Molnar <mingo@kernel.org>,
+ Mel Gorman <mgorman@suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,24 +36,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2015-03-19 at 09:22 +0200, Alex Dowad wrote:
-> On 19/03/15 08:45, Michael Ellerman wrote:
-> > On Fri, 2015-13-03 at 18:14:46 UTC, Alex Dowad wrote:
-> >> The 'arg' argument to copy_thread() is only ever used when forking a new
-> >> kernel thread. Hence, rename it to 'kthread_arg' for clarity (and consistency
-> >> with do_fork() and other arch-specific implementations of copy_thread()).
-> >   
-> > I don't understand the bit about consistency with do_fork() ?
+On Thu, Mar 19, 2015 at 04:05:46PM -0700, Linus Torvalds wrote:
+> Can you try Mel's change to make it use
+> 
+>         if (!(vma->vm_flags & VM_WRITE))
+> 
+> instead of the pte details? Again, on otherwise plain 3.19, just so
+> that we have a baseline. I'd be *so* much happer with checking the vma
+> details over per-pte details, especially ones that change over the
+> lifetime of the pte entry, and the NUMA code explicitly mucks with.
 
-> This series of patches includes one patch which renames the arg for 
-> do_fork(), and others which rename the same arg for each arch-specific 
-> implementation of copy_thread(). So if all of them are accepted and 
-> merged, then all will be consistent. If only some of the patches are 
-> accepted, I will rewrite the commit message so it doesn't mention 
-> "consistency".
+$ sudo perf_3.18 stat -a -r 6 -e migrate:mm_migrate_pages sleep 10
 
-Ah OK, I only got patch 23, so I missed the context of the whole series.
+ Performance counter stats for 'system wide' (6 runs):
 
-I'll apply this one to the powerpc tree.
+    266,750      migrate:mm_migrate_pages ( +-  7.43% )
 
-cheers
+	  10.002032292 seconds time elapsed ( +-  0.00% )
+
+Bit more variance there than the pte checking, but runtime
+difference is in the noise - 5m4s vs 4m54s - and profiles are
+identical to the pte checking version.
+
+Cheers,
+
+Dave.
+
+-- 
+Dave Chinner
+david@fromorbit.com
