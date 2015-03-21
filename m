@@ -1,21 +1,22 @@
 Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bbn0107.outbound.protection.outlook.com [157.56.111.107])
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0111.outbound.protection.outlook.com [207.46.100.111])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0C9141A0372
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Mar 2015 11:01:21 +1100 (AEDT)
-Date: Fri, 20 Mar 2015 19:01:09 -0500
+ by lists.ozlabs.org (Postfix) with ESMTPS id 55C3E1A0060
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Mar 2015 11:47:24 +1100 (AEDT)
+Message-ID: <1426898829.27998.256.camel@freescale.com>
+Subject: Re: [PATCH v2 11/11] powerpc/8xx: Add support for TASK_SIZE greater
+ than 0x80000000
 From: Scott Wood <scottwood@freescale.com>
-To: LEROY Christophe <christophe.leroy@c-s.fr>
-Subject: Re: powerpc32: fix warning from include/asm-generic/termios-base.h
-Message-ID: <20150321000109.GA24932@home.buserror.net>
-References: <20141205112025.330971A5D4F@localhost.localdomain>
+To: Christophe Leroy <christophe.leroy@c-s.fr>
+Date: Fri, 20 Mar 2015 19:47:09 -0500
+In-Reply-To: <20150120095736.518681A5E86@localhost.localdomain>
+References: <20150120095736.518681A5E86@localhost.localdomain>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <20141205112025.330971A5D4F@localhost.localdomain>
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,38 +26,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Dec 05, 2014 at 12:20:25PM +0100, LEROY Christophe wrote:
-> When size is equal to 1, the test is always true so lets eliminate both 0 and 1
-> at first.
-> 
-> include/asm-generic/termios-base.h: In function 'user_termio_to_kernel_termios':
-> include/asm-generic/termios-base.h:35:2: warning: comparison of unsigned expression >= 0 is always true [-Wtype-limits]
->   if (get_user(termios->c_line, &termio->c_line) < 0)
->   ^
-> include/asm-generic/termios-base.h: In function 'kernel_termios_to_user_termio':
-> include/asm-generic/termios-base.h:57:6: warning: comparison of unsigned expression >= 0 is always true [-Wtype-limits]
->       put_user(termios->c_line,  &termio->c_line) < 0 ||
->       ^
+On Tue, 2015-01-20 at 10:57 +0100, Christophe Leroy wrote:
+> By default, TASK_SIZE is set to 0x80000000 for PPC_8xx, which is most likely
+> sufficient for most cases. However, kernel configuration allows to set TASK_SIZE
+> to another value, so the 8xx shall handle it.
 > 
 > Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-> ---
->  arch/powerpc/include/asm/uaccess.h | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
 > 
-> diff --git a/arch/powerpc/include/asm/uaccess.h b/arch/powerpc/include/asm/uaccess.h
-> index 9485b43..f3028d2 100644
-> --- a/arch/powerpc/include/asm/uaccess.h
-> +++ b/arch/powerpc/include/asm/uaccess.h
-> @@ -54,7 +54,7 @@
+> ---
+> v2: no change
+> 
+>  arch/powerpc/kernel/head_8xx.S | 25 +++++++++++++++++++------
+>  1 file changed, 19 insertions(+), 6 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
+> index ead6448..92a6456 100644
+> --- a/arch/powerpc/kernel/head_8xx.S
+> +++ b/arch/powerpc/kernel/head_8xx.S
+> @@ -48,6 +48,19 @@
+>  	mtspr	spr, reg
+>  #endif
 >  
->  #define __access_ok(addr, size, segment)	\
->  	(((addr) <= (segment).seg) &&		\
-> -	 (((size) == 0) || (((size) - 1) <= ((segment).seg - (addr)))))
-> +	 (((size) <= 1) || (((size) - 1) <= ((segment).seg - (addr)))))
+> +/* Macro to test if an address is a kernel address */
+> +#if CONFIG_TASK_SIZE <= 0x80000000
+> +#define IS_KERNEL(tmp, addr)		\
+> +	andis.	tmp, addr, 0x8000	/* Address >= 0x80000000 */
+> +#define BRANCH_UNLESS_KERNEL(label)	beq	label
+> +#else
 
-Again, I don't think Linux enables this warning.  What did you do to
-produce this?  In any case, it's a bad warning that doesn't take macros
-into account, and the answer is not to make the code less clear by hiding
-the fact that zero is a special case.
+This works if CONFIG_TASK_SIZE == 0x80000000, but what if it's less, and
+you have a kernel address < 0x80000000?
 
 -Scott
