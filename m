@@ -2,17 +2,24 @@ Return-Path: <asolokha@kb.kras.ru>
 Received: from ispman.iskranet.ru (ispman.iskranet.ru [62.213.33.10])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 678731A02EE
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Mar 2015 17:56:54 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 68EEF1A03B0
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 21 Mar 2015 17:56:53 +1100 (AEDT)
 From: Arseny Solokha <asolokha@kb.kras.ru>
-To: Alexander Graf <agraf@suse.de>
-Subject: [PATCH v4 2/4] kvm/ppc/mpic: drop unused IRQ_testbit
-Date: Sat, 21 Mar 2015 13:56:44 +0700
-Message-Id: <1426921004-27685-1-git-send-email-asolokha@kb.kras.ru>
-In-Reply-To: <550C0760.50903@suse.de>
-References: <550C0760.50903@suse.de>
-Cc: Arseny Solokha <asolokha@kb.kras.ru>, linuxppc-dev@lists.ozlabs.org,
- kvm-ppc@vger.kernel.org, kvm@vger.kernel.org, linux-kernel@vger.kernel.org
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH v3 0/4] powerpc: trivial unused functions cleanup
+References: <1424768706-23150-1-git-send-email-asolokha@kb.kras.ru>
+ <1426823789-949-1-git-send-email-asolokha@kb.kras.ru>
+ <1426825436.2581.1.camel@ellerman.id.au>
+ <87pp84w9mj.fsf@KB00016249.iskra.kb>
+ <1426829993.2581.2.camel@ellerman.id.au>
+Date: Sat, 21 Mar 2015 13:56:43 +0700
+In-Reply-To: <1426829993.2581.2.camel@ellerman.id.au> (Michael Ellerman's
+ message of "Fri, 20 Mar 2015 16:39:53 +1100")
+Message-ID: <878ueqg7o4.fsf@KB00016249.iskra.kb>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Cc: Scott Wood <scottwood@freescale.com>, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,43 +29,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Drop unused static procedure which doesn't have callers within its
-translation unit. It had been already removed independently in QEMU[1]
-from the OpenPIC implementation borrowed by the kernel.
+> On Fri, 2015-03-20 at 11:55 +0700, Arseny Solokha wrote:
+>>=20
+>> And by the way, while revisiting the series I've noticed that though the=
+ patch
+>> 4/4 basically reverts [1], it leaves
+>>=20
+>>   #define MPIC_GREG_GLOBAL_CONF_1		0x00030
+>>=20
+>> in arch/powerpc/include/asm/mpic.h untouched. That define also loses its=
+ uses
+>> after applying the patch. Compare the following hunk in today's patch w/=
+ the one
+>> you committed:
+>>=20
+>>   @@ -33,11 +33,6 @@
+>>    #define		MPIC_GREG_GCONF_NO_BIAS			0x10000000
+>>    #define		MPIC_GREG_GCONF_BASE_MASK		0x000fffff
+>>    #define		MPIC_GREG_GCONF_MCK			0x08000000
+>>   -#define MPIC_GREG_GLOBAL_CONF_1		0x00030
+>>   -#define		MPIC_GREG_GLOBAL_CONF_1_SIE		0x08000000
+>>   -#define		MPIC_GREG_GLOBAL_CONF_1_CLK_RATIO_MASK	0x70000000
+>>   -#define		MPIC_GREG_GLOBAL_CONF_1_CLK_RATIO(r)	\
+>>   -			(((r) << 28) & MPIC_GREG_GLOBAL_CONF_1_CLK_RATIO_MASK)
+>>    #define MPIC_GREG_VENDOR_0		0x00040
+>>    #define MPIC_GREG_VENDOR_1		0x00050
+>>    #define MPIC_GREG_VENDOR_2		0x00060
+>>=20
+>> So the question is, should #define MPIC_GREG_GLOBAL_CONF_1 have been also
+>> removed, or could be left as is?
+>>=20
+>> [1] https://lists.ozlabs.org/pipermail/linuxppc-dev/2006-June/023867.html
+>
+>
+> OK, thanks for the thoroughness.
+>
+> With #defines like that it's never clear if they should be removed or not=
+. On
+> the one hand it's not used, so it should be removed. But, it can be usefu=
+l to
+> keep the #defines there as documentation.
+>
+> So I'm 50/50 on it. If you send me a patch to remove it I'll merge it, un=
+less
+> someone else objects.
 
-[1] https://lists.gnu.org/archive/html/qemu-devel/2014-06/msg01812.html
+So I'd abstain from removing it, for whatever it may be worth. Let it serve=
+ the
+documentation purposes.
 
-v4: Fixed the comment regarding the origination of OpenPIC codebase
-    and CC'ed KVM mailing lists, as suggested by Alexander Graf.
+Ars=C3=A9ny
 
-v3: In patch 4/4, do not remove fsl_mpic_primary_get_version() from
-    arch/powerpc/sysdev/mpic.c because the patch by Jia Hongtao
-    ("powerpc/85xx: workaround for chips with MSI hardware errata") makes
-    use of it.
-
-v2: Added a brief explanation to each patch description of why removed
-    functions are unused, as suggested by Michael Ellerman.
-
-Signed-off-by: Arseny Solokha <asolokha@kb.kras.ru>
----
- arch/powerpc/kvm/mpic.c | 5 -----
- 1 file changed, 5 deletions(-)
-
-diff --git a/arch/powerpc/kvm/mpic.c b/arch/powerpc/kvm/mpic.c
-index 39b3a8f..a480d99 100644
---- a/arch/powerpc/kvm/mpic.c
-+++ b/arch/powerpc/kvm/mpic.c
-@@ -289,11 +289,6 @@ static inline void IRQ_resetbit(struct irq_queue *q, int n_IRQ)
- 	clear_bit(n_IRQ, q->queue);
- }
- 
--static inline int IRQ_testbit(struct irq_queue *q, int n_IRQ)
--{
--	return test_bit(n_IRQ, q->queue);
--}
--
- static void IRQ_check(struct openpic *opp, struct irq_queue *q)
- {
- 	int irq = -1;
--- 
-2.3.3
+> cheers
