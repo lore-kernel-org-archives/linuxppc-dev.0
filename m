@@ -1,22 +1,20 @@
-Return-Path: <sowmini.varadhan@oracle.com>
-Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <arnd@arndb.de>
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.130])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1ED4B1A2C9B
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2015 06:27:46 +1100 (AEDT)
-Date: Sun, 22 Mar 2015 15:27:26 -0400
-From: Sowmini Varadhan <sowmini.varadhan@oracle.com>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
+ by lists.ozlabs.org (Postfix) with ESMTPS id BDD2F1A2AAD
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2015 06:36:20 +1100 (AEDT)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@lists.ozlabs.org
 Subject: Re: Generic IOMMU pooled allocator
-Message-ID: <20150322192726.GB19474@oracle.com>
+Date: Sun, 22 Mar 2015 20:36:02 +0100
 References: <20150318.222517.1444725543017433108.davem@davemloft.net>
- <1426734106.4770.118.camel@kernel.crashing.org>
- <550A5E5D.90907@ozlabs.ru>
+In-Reply-To: <20150318.222517.1444725543017433108.davem@davemloft.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <550A5E5D.90907@ozlabs.ru>
-Cc: Alexey Kardashevskiy <aik@au1.ibm.com>, Anton Blanchard <anton@au1.ibm.com>,
- paulus@samba.org, sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+Content-Type: Text/Plain;
+  charset="utf-8"
+Message-Id: <201503222036.02669.arnd@arndb.de>
+Cc: sparclinux@vger.kernel.org, sowmini.varadhan@oracle.com, paulus@samba.org,
  David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -27,20 +25,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Turned out that I was able to iterate over it, and remove
-both the ->cookie_to_index and the ->demap indirection from
-iommu_tbl_ops.
+On Thursday 19 March 2015, David Miller wrote:
+> PowerPC folks, we're trying to kill the locking contention in our
+> IOMMU allocators and noticed that you guys have a nice solution to
+> this in your IOMMU code.
+> 
+> Sowmini put together a patch series that tries to extract out the
+> generic parts of your code and place it in lib/iommu-common.c so
+> that both Sparc and PowerPC can make use of it.
+> 
+> The real test is if powerpc can be converted to use it.
+> 
+> So if you guys could please take a look at the current version of
+> this series at:
+> 
+> http://patchwork.ozlabs.org/patch/449712/
+> http://patchwork.ozlabs.org/patch/449713/
+> http://patchwork.ozlabs.org/patch/449715/
+> 
+> and give us some feedback that would be great.
+> 
+> After we sort out making this work properly for both architectures we
+> can figure out who merges which parts via what tree(s)
 
-That leaves only the odd iommu_flushall() hook, I'm trying
-to find the history behind that (needed for sun4u platforms,
-afaik, and not sure if there are other ways to achieve this).
+How does this relate to the ARM implementation? There is currently
+an effort going on to make that one shared with ARM64 and possibly
+x86. Has anyone looked at both the PowerPC and ARM ways of doing the
+allocation to see if we could pick one of the two to work on
+all architectures?
 
-Just sent out a new patch-set, which should reach all the 
-people/lists on this thread.
-
-If it's possible, it would also help to share any preliminary
-code-samples with the iommu_table_ops you folks have in mind.
-
-Please take a look at patchv5, and share your thoughts.
-
---Sowmini
+	Arnd
