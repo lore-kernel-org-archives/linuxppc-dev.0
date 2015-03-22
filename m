@@ -2,19 +2,19 @@ Return-Path: <sowmini.varadhan@oracle.com>
 Received: from userp1050.oracle.com (userp1050.oracle.com [156.151.31.82])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 37A661A2AAD
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2015 06:24:24 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6D48A1A2AC0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2015 06:24:25 +1100 (AEDT)
 Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
  by userp1050.oracle.com (Sentrion-MTA-4.3.2/Sentrion-MTA-4.3.2) with ESMTP id
- t2MJOMAg012307
+ t2MJONWt012311
  (version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 22 Mar 2015 19:24:22 GMT
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 22 Mar 2015 19:24:23 GMT
 From: Sowmini Varadhan <sowmini.varadhan@oracle.com>
 To: sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v5 RFC 1/3] sparc: Break up monolithic iommu table/lock into
- finer graularity pools and lock
-Date: Sun, 22 Mar 2015 15:22:52 -0400
-Message-Id: <42a2dc849f419466db3eff8368bb5e578a06a6ba.1426986386.git.sowmini.varadhan@oracle.com>
+Subject: [PATCH v5 RFC 3/3] sparc: Make LDC use common iommu poll management
+ functions
+Date: Sun, 22 Mar 2015 15:22:54 -0400
+Message-Id: <bbe7d1e269e8e72d14d8de37addb188d987e1d34.1426986386.git.sowmini.varadhan@oracle.com>
 In-Reply-To: <cover.1426986386.git.sowmini.varadhan@oracle.com>
 References: <cover.1426986386.git.sowmini.varadhan@oracle.com>
 In-Reply-To: <cover.1426986386.git.sowmini.varadhan@oracle.com>
@@ -30,342 +30,351 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Investigation of multithreaded iperf experiments on an ethernet
-interface show the iommu->lock as the hottest lock identified by
-lockstat, with something of the order of  21M contentions out of
-27M acquisitions, and an average wait time of 26 us for the lock.
-This is not efficient. A more scalable design is to follow the ppc
-model, where the iommu_table has multiple pools, each stretching
-over a segment of the map, and with a separate lock for each pool.
-This model allows for better parallelization of the iommu map search.
-
-This patch adds the iommu range alloc/free function infrastructure.
+Note that this conversion is only being done to consolidate the
+code and ensure that the common code provides the sufficient
+abstraction. It is not expected to result in any noticeable
+performance improvement, as there is typically one ldc_iommu
+per vnet_port, and each one has 8k entries, with a typical
+request for 1-4 pages.  Thus LDC uses npools == 1.
 
 Signed-off-by: Sowmini Varadhan <sowmini.varadhan@oracle.com>
 ---
-v2 changes:
-  - incorporate David Miller editorial comments: sparc specific
-    fields moved from iommu-common into sparc's iommu_64.h
-  - make the npools value an input parameter, for the case when
-    the iommu map size is not very large
-  - cookie_to_index mapping, and optimizations for span-boundary
-    check, for use case such as LDC.
-v3: eliminate iommu_sparc, rearrange the ->demap indirection to
-    be invoked under the pool lock.
+v3: added this file to be a consumer of the common iommu library
+v4: removed ->cookie_to_index and ->demap from iommu_tbl_ops and instead
+    inline these calls into ldc before calling into iommu-common
 
-v4: David Miller review changes:
-  - s/IOMMU_ERROR_CODE/DMA_ERROR_CODE
-  - page_table_map_base and page_table_shift are unsigned long, not u32.
+ arch/sparc/kernel/ldc.c |  172 +++++++++++++++++++++++------------------------
+ 1 files changed, 84 insertions(+), 88 deletions(-)
 
-v5: Feedback from benh@kernel.crashing.org and aik@ozlabs.ru
-  - removed ->cookie_to_index and ->demap indirection: caller should
-    invoke these as needed before calling into the generic allocator
-
- include/linux/iommu-common.h |   55 +++++++++++
- lib/Makefile                 |    2 +-
- lib/iommu-common.c           |  219 ++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 275 insertions(+), 1 deletions(-)
- create mode 100644 include/linux/iommu-common.h
- create mode 100644 lib/iommu-common.c
-
-diff --git a/include/linux/iommu-common.h b/include/linux/iommu-common.h
-new file mode 100644
-index 0000000..50753cf
---- /dev/null
-+++ b/include/linux/iommu-common.h
-@@ -0,0 +1,55 @@
-+#ifndef _LINUX_IOMMU_COMMON_H
-+#define _LINUX_IOMMU_COMMON_H
-+
-+#include <linux/spinlock_types.h>
-+#include <linux/device.h>
-+#include <asm/page.h>
-+
-+#define IOMMU_POOL_HASHBITS     4
-+#define IOMMU_NR_POOLS          (1 << IOMMU_POOL_HASHBITS)
-+
-+struct iommu_pool {
-+	unsigned long	start;
-+	unsigned long	end;
-+	unsigned long	hint;
-+	spinlock_t	lock;
-+};
-+
-+struct iommu_table;
-+
-+struct iommu_tbl_ops {
-+	void		(*reset)(struct iommu_table *);
-+};
-+
-+struct iommu_table {
-+	unsigned long		page_table_map_base;
-+	unsigned long		page_table_shift;
-+	unsigned long		nr_pools;
-+	const struct iommu_tbl_ops  *iommu_tbl_ops;
-+	unsigned long		poolsize;
-+	struct iommu_pool	arena_pool[IOMMU_NR_POOLS];
-+	u32			flags;
-+#define	IOMMU_HAS_LARGE_POOL	0x00000001
-+#define	IOMMU_NO_SPAN_BOUND	0x00000002
-+	struct iommu_pool	large_pool;
-+	unsigned long		*map;
-+};
-+
-+extern void iommu_tbl_pool_init(struct iommu_table *iommu,
-+				unsigned long num_entries,
-+				u32 page_table_shift,
-+				const struct iommu_tbl_ops *iommu_tbl_ops,
-+				bool large_pool, u32 npools,
-+				bool skip_span_boundary_check);
-+
-+extern unsigned long iommu_tbl_range_alloc(struct device *dev,
-+					   struct iommu_table *iommu,
-+					   unsigned long npages,
-+					   unsigned long *handle,
-+					   unsigned int pool_hash);
-+
-+extern void iommu_tbl_range_free(struct iommu_table *iommu,
-+				 u64 dma_addr, unsigned long npages,
-+				 unsigned long entry);
-+
-+#endif
-diff --git a/lib/Makefile b/lib/Makefile
-index 3c3b30b..0ea2ac6 100644
---- a/lib/Makefile
-+++ b/lib/Makefile
-@@ -102,7 +102,7 @@ obj-$(CONFIG_AUDIT_GENERIC) += audit.o
- obj-$(CONFIG_AUDIT_COMPAT_GENERIC) += compat_audit.o
- 
- obj-$(CONFIG_SWIOTLB) += swiotlb.o
--obj-$(CONFIG_IOMMU_HELPER) += iommu-helper.o
-+obj-$(CONFIG_IOMMU_HELPER) += iommu-helper.o iommu-common.o
- obj-$(CONFIG_FAULT_INJECTION) += fault-inject.o
- obj-$(CONFIG_NOTIFIER_ERROR_INJECTION) += notifier-error-inject.o
- obj-$(CONFIG_CPU_NOTIFIER_ERROR_INJECT) += cpu-notifier-error-inject.o
-diff --git a/lib/iommu-common.c b/lib/iommu-common.c
-new file mode 100644
-index 0000000..f416191
---- /dev/null
-+++ b/lib/iommu-common.c
-@@ -0,0 +1,219 @@
-+/*
-+ * IOMMU mmap management and range allocation functions.
-+ * Based almost entirely upon the powerpc iommu allocator.
-+ */
-+
-+#include <linux/export.h>
-+#include <linux/bitmap.h>
-+#include <linux/bug.h>
-+#include <linux/iommu-helper.h>
+diff --git a/arch/sparc/kernel/ldc.c b/arch/sparc/kernel/ldc.c
+index 274a9f5..3210f81 100644
+--- a/arch/sparc/kernel/ldc.c
++++ b/arch/sparc/kernel/ldc.c
+@@ -15,6 +15,8 @@
+ #include <linux/list.h>
+ #include <linux/init.h>
+ #include <linux/bitmap.h>
++#include <linux/hash.h>
 +#include <linux/iommu-common.h>
-+#include <linux/dma-mapping.h>
+ 
+ #include <asm/hypervisor.h>
+ #include <asm/iommu.h>
+@@ -27,6 +29,11 @@
+ #define DRV_MODULE_VERSION	"1.1"
+ #define DRV_MODULE_RELDATE	"July 22, 2008"
+ 
++#define COOKIE_PGSZ_CODE	0xf000000000000000ULL
++#define COOKIE_PGSZ_CODE_SHIFT	60ULL
 +
-+#define IOMMU_LARGE_ALLOC	15
++static DEFINE_PER_CPU(unsigned int, ldc_pool_hash);
 +
-+/*
-+ * Initialize iommu_pool entries for the iommu_table. `num_entries'
-+ * is the number of table entries. If `large_pool' is set to true,
-+ * the top 1/4 of the table will be set aside for pool allocations
-+ * of more than IOMMU_LARGE_ALLOC pages.
-+ */
-+extern void iommu_tbl_pool_init(struct iommu_table *iommu,
-+				unsigned long num_entries,
-+				u32 page_table_shift,
-+				const struct iommu_tbl_ops *iommu_tbl_ops,
-+				bool large_pool, u32 npools,
-+				bool skip_span_boundary_check)
+ static char version[] =
+ 	DRV_MODULE_NAME ".c:v" DRV_MODULE_VERSION " (" DRV_MODULE_RELDATE ")\n";
+ #define LDC_PACKET_SIZE		64
+@@ -98,10 +105,10 @@ static const struct ldc_mode_ops stream_ops;
+ int ldom_domaining_enabled;
+ 
+ struct ldc_iommu {
+-	/* Protects arena alloc/free.  */
++	/* Protects ldc_unmap.  */
+ 	spinlock_t			lock;
+-	struct iommu_arena		arena;
+ 	struct ldc_mtable_entry		*page_table;
++	struct iommu_table		iommu_table;
+ };
+ 
+ struct ldc_channel {
+@@ -998,31 +1005,76 @@ static void free_queue(unsigned long num_entries, struct ldc_packet *q)
+ 	free_pages((unsigned long)q, order);
+ }
+ 
++static unsigned long ldc_cookie_to_index(u64 cookie, void *arg)
 +{
-+	unsigned int start, i;
-+	struct iommu_pool *p = &(iommu->large_pool);
++	u64 szcode = cookie >> COOKIE_PGSZ_CODE_SHIFT;
++	/* struct ldc_iommu *ldc_iommu = (struct ldc_iommu *)arg; */
 +
-+	if (npools == 0)
-+		iommu->nr_pools = IOMMU_NR_POOLS;
-+	else
-+		iommu->nr_pools = npools;
-+	BUG_ON(npools > IOMMU_NR_POOLS);
++	cookie &= ~COOKIE_PGSZ_CODE;
 +
-+	iommu->page_table_shift = page_table_shift;
-+	iommu->iommu_tbl_ops = iommu_tbl_ops;
-+	start = 0;
-+	if (skip_span_boundary_check)
-+		iommu->flags |= IOMMU_NO_SPAN_BOUND;
-+	if (large_pool)
-+		iommu->flags |= IOMMU_HAS_LARGE_POOL;
++	return (cookie >> (13ULL + (szcode * 3ULL)));
++}
 +
-+	if (!large_pool)
-+		iommu->poolsize = num_entries/iommu->nr_pools;
-+	else
-+		iommu->poolsize = (num_entries * 3 / 4)/iommu->nr_pools;
-+	for (i = 0; i < iommu->nr_pools; i++) {
-+		spin_lock_init(&(iommu->arena_pool[i].lock));
-+		iommu->arena_pool[i].start = start;
-+		iommu->arena_pool[i].hint = start;
-+		start += iommu->poolsize; /* start for next pool */
-+		iommu->arena_pool[i].end = start - 1;
++static void ldc_demap(struct ldc_iommu *iommu, unsigned long id, u64 cookie,
++		      unsigned long entry, unsigned long npages)
++{
++	struct ldc_mtable_entry *base;
++	unsigned long i, shift;
++
++	shift = (cookie >> COOKIE_PGSZ_CODE_SHIFT) * 3;
++	base = iommu->page_table + entry;
++	for (i = 0; i < npages; i++) {
++		if (base->cookie)
++			sun4v_ldc_revoke(id, cookie + (i << shift),
++					 base->cookie);
++		base->mte = 0;
 +	}
-+	if (!large_pool)
++}
++
+ /* XXX Make this configurable... XXX */
+ #define LDC_IOTABLE_SIZE	(8 * 1024)
+ 
+-static int ldc_iommu_init(struct ldc_channel *lp)
++struct iommu_tbl_ops ldc_iommu_ops;
++
++static void setup_ldc_pool_hash(void)
++{
++	unsigned int i;
++	static bool do_once;
++
++	if (do_once)
 +		return;
-+	/* initialize large_pool */
-+	spin_lock_init(&(p->lock));
-+	p->start = start;
-+	p->hint = p->start;
-+	p->end = num_entries;
++	do_once = true;
++	for_each_possible_cpu(i)
++		per_cpu(ldc_pool_hash, i) = hash_32(i, IOMMU_POOL_HASHBITS);
 +}
-+EXPORT_SYMBOL(iommu_tbl_pool_init);
 +
-+unsigned long iommu_tbl_range_alloc(struct device *dev,
-+				struct iommu_table *iommu,
-+				unsigned long npages,
-+				unsigned long *handle,
-+				unsigned int pool_hash)
-+{
-+	unsigned long n, end, start, limit, boundary_size;
-+	struct iommu_pool *arena;
-+	int pass = 0;
-+	unsigned int pool_nr;
-+	unsigned int npools = iommu->nr_pools;
++
++static int ldc_iommu_init(const char *name, struct ldc_channel *lp)
+ {
+ 	unsigned long sz, num_tsb_entries, tsbsize, order;
+-	struct ldc_iommu *iommu = &lp->iommu;
++	struct ldc_iommu *ldc_iommu = &lp->iommu;
++	struct iommu_table *iommu = &ldc_iommu->iommu_table;
+ 	struct ldc_mtable_entry *table;
+ 	unsigned long hv_err;
+ 	int err;
+ 
+ 	num_tsb_entries = LDC_IOTABLE_SIZE;
+ 	tsbsize = num_tsb_entries * sizeof(struct ldc_mtable_entry);
+-
+-	spin_lock_init(&iommu->lock);
++	setup_ldc_pool_hash();
++	spin_lock_init(&ldc_iommu->lock);
+ 
+ 	sz = num_tsb_entries / 8;
+ 	sz = (sz + 7UL) & ~7UL;
+-	iommu->arena.map = kzalloc(sz, GFP_KERNEL);
+-	if (!iommu->arena.map) {
++	iommu->map = kzalloc(sz, GFP_KERNEL);
++	if (!iommu->map) {
+ 		printk(KERN_ERR PFX "Alloc of arena map failed, sz=%lu\n", sz);
+ 		return -ENOMEM;
+ 	}
+-
+-	iommu->arena.limit = num_tsb_entries;
++	iommu_tbl_pool_init(iommu, num_tsb_entries, PAGE_SHIFT,
++			    &ldc_iommu_ops,
++			    false /* no large pool */,
++			    1 /* npools */,
++			    true /* skip span boundary check */);
+ 
+ 	order = get_order(tsbsize);
+ 
+@@ -1037,7 +1089,7 @@ static int ldc_iommu_init(struct ldc_channel *lp)
+ 
+ 	memset(table, 0, PAGE_SIZE << order);
+ 
+-	iommu->page_table = table;
++	ldc_iommu->page_table = table;
+ 
+ 	hv_err = sun4v_ldc_set_map_table(lp->id, __pa(table),
+ 					 num_tsb_entries);
+@@ -1049,31 +1101,32 @@ static int ldc_iommu_init(struct ldc_channel *lp)
+ 
+ out_free_table:
+ 	free_pages((unsigned long) table, order);
+-	iommu->page_table = NULL;
++	ldc_iommu->page_table = NULL;
+ 
+ out_free_map:
+-	kfree(iommu->arena.map);
+-	iommu->arena.map = NULL;
++	kfree(iommu->map);
++	iommu->map = NULL;
+ 
+ 	return err;
+ }
+ 
+ static void ldc_iommu_release(struct ldc_channel *lp)
+ {
+-	struct ldc_iommu *iommu = &lp->iommu;
++	struct ldc_iommu *ldc_iommu = &lp->iommu;
++	struct iommu_table *iommu = &ldc_iommu->iommu_table;
+ 	unsigned long num_tsb_entries, tsbsize, order;
+ 
+ 	(void) sun4v_ldc_set_map_table(lp->id, 0, 0);
+ 
+-	num_tsb_entries = iommu->arena.limit;
++	num_tsb_entries = iommu->poolsize * iommu->nr_pools;
+ 	tsbsize = num_tsb_entries * sizeof(struct ldc_mtable_entry);
+ 	order = get_order(tsbsize);
+ 
+-	free_pages((unsigned long) iommu->page_table, order);
+-	iommu->page_table = NULL;
++	free_pages((unsigned long) ldc_iommu->page_table, order);
++	ldc_iommu->page_table = NULL;
+ 
+-	kfree(iommu->arena.map);
+-	iommu->arena.map = NULL;
++	kfree(iommu->map);
++	iommu->map = NULL;
+ }
+ 
+ struct ldc_channel *ldc_alloc(unsigned long id,
+@@ -1140,7 +1193,7 @@ struct ldc_channel *ldc_alloc(unsigned long id,
+ 
+ 	lp->id = id;
+ 
+-	err = ldc_iommu_init(lp);
++	err = ldc_iommu_init(name, lp);
+ 	if (err)
+ 		goto out_free_ldc;
+ 
+@@ -1885,40 +1938,6 @@ int ldc_read(struct ldc_channel *lp, void *buf, unsigned int size)
+ }
+ EXPORT_SYMBOL(ldc_read);
+ 
+-static long arena_alloc(struct ldc_iommu *iommu, unsigned long npages)
+-{
+-	struct iommu_arena *arena = &iommu->arena;
+-	unsigned long n, start, end, limit;
+-	int pass;
+-
+-	limit = arena->limit;
+-	start = arena->hint;
+-	pass = 0;
+-
+-again:
+-	n = bitmap_find_next_zero_area(arena->map, limit, start, npages, 0);
+-	end = n + npages;
+-	if (unlikely(end >= limit)) {
+-		if (likely(pass < 1)) {
+-			limit = start;
+-			start = 0;
+-			pass++;
+-			goto again;
+-		} else {
+-			/* Scanned the whole thing, give up. */
+-			return -1;
+-		}
+-	}
+-	bitmap_set(arena->map, n, npages);
+-
+-	arena->hint = end;
+-
+-	return n;
+-}
+-
+-#define COOKIE_PGSZ_CODE	0xf000000000000000ULL
+-#define COOKIE_PGSZ_CODE_SHIFT	60ULL
+-
+ static u64 pagesize_code(void)
+ {
+ 	switch (PAGE_SIZE) {
+@@ -1945,23 +1964,14 @@ static u64 make_cookie(u64 index, u64 pgsz_code, u64 page_offset)
+ 		page_offset);
+ }
+ 
+-static u64 cookie_to_index(u64 cookie, unsigned long *shift)
+-{
+-	u64 szcode = cookie >> COOKIE_PGSZ_CODE_SHIFT;
+-
+-	cookie &= ~COOKIE_PGSZ_CODE;
+-
+-	*shift = szcode * 3;
+-
+-	return (cookie >> (13ULL + (szcode * 3ULL)));
+-}
+ 
+ static struct ldc_mtable_entry *alloc_npages(struct ldc_iommu *iommu,
+ 					     unsigned long npages)
+ {
+ 	long entry;
+ 
+-	entry = arena_alloc(iommu, npages);
++	entry = iommu_tbl_range_alloc(NULL, &iommu->iommu_table, npages,
++				     NULL, __this_cpu_read(ldc_pool_hash));
+ 	if (unlikely(entry < 0))
+ 		return NULL;
+ 
+@@ -2090,7 +2100,7 @@ int ldc_map_sg(struct ldc_channel *lp,
+ 	       struct ldc_trans_cookie *cookies, int ncookies,
+ 	       unsigned int map_perm)
+ {
+-	unsigned long i, npages, flags;
++	unsigned long i, npages;
+ 	struct ldc_mtable_entry *base;
+ 	struct cookie_state state;
+ 	struct ldc_iommu *iommu;
+@@ -2109,9 +2119,7 @@ int ldc_map_sg(struct ldc_channel *lp,
+ 
+ 	iommu = &lp->iommu;
+ 
+-	spin_lock_irqsave(&iommu->lock, flags);
+ 	base = alloc_npages(iommu, npages);
+-	spin_unlock_irqrestore(&iommu->lock, flags);
+ 
+ 	if (!base)
+ 		return -ENOMEM;
+@@ -2136,7 +2144,7 @@ int ldc_map_single(struct ldc_channel *lp,
+ 		   struct ldc_trans_cookie *cookies, int ncookies,
+ 		   unsigned int map_perm)
+ {
+-	unsigned long npages, pa, flags;
++	unsigned long npages, pa;
+ 	struct ldc_mtable_entry *base;
+ 	struct cookie_state state;
+ 	struct ldc_iommu *iommu;
+@@ -2152,9 +2160,7 @@ int ldc_map_single(struct ldc_channel *lp,
+ 
+ 	iommu = &lp->iommu;
+ 
+-	spin_lock_irqsave(&iommu->lock, flags);
+ 	base = alloc_npages(iommu, npages);
+-	spin_unlock_irqrestore(&iommu->lock, flags);
+ 
+ 	if (!base)
+ 		return -ENOMEM;
+@@ -2172,35 +2178,25 @@ int ldc_map_single(struct ldc_channel *lp,
+ }
+ EXPORT_SYMBOL(ldc_map_single);
+ 
++
+ static void free_npages(unsigned long id, struct ldc_iommu *iommu,
+ 			u64 cookie, u64 size)
+ {
+-	struct iommu_arena *arena = &iommu->arena;
+-	unsigned long i, shift, index, npages;
+-	struct ldc_mtable_entry *base;
++	unsigned long npages, entry;
+ 
+ 	npages = PAGE_ALIGN(((cookie & ~PAGE_MASK) + size)) >> PAGE_SHIFT;
+-	index = cookie_to_index(cookie, &shift);
+-	base = iommu->page_table + index;
+-
+-	BUG_ON(index > arena->limit ||
+-	       (index + npages) > arena->limit);
+ 
+-	for (i = 0; i < npages; i++) {
+-		if (base->cookie)
+-			sun4v_ldc_revoke(id, cookie + (i << shift),
+-					 base->cookie);
+-		base->mte = 0;
+-		__clear_bit(index + i, arena->map);
+-	}
++	entry = ldc_cookie_to_index(cookie, iommu);
++	ldc_demap(iommu, id, cookie, entry, npages);
++	iommu_tbl_range_free(&iommu->iommu_table, cookie, npages, entry);
+ }
+ 
+ void ldc_unmap(struct ldc_channel *lp, struct ldc_trans_cookie *cookies,
+ 	       int ncookies)
+ {
+ 	struct ldc_iommu *iommu = &lp->iommu;
+-	unsigned long flags;
+ 	int i;
 +	unsigned long flags;
-+	bool large_pool = ((iommu->flags & IOMMU_HAS_LARGE_POOL) != 0);
-+	bool largealloc = (large_pool && npages > IOMMU_LARGE_ALLOC);
-+	unsigned long shift;
-+
-+	/* Sanity check */
-+	if (unlikely(npages == 0)) {
-+		printk_ratelimited("npages == 0\n");
-+		return DMA_ERROR_CODE;
-+	}
-+
-+	if (largealloc) {
-+		arena = &(iommu->large_pool);
-+		spin_lock_irqsave(&arena->lock, flags);
-+		pool_nr = 0; /* to keep compiler happy */
-+	} else {
-+		/* pick out pool_nr */
-+		pool_nr =  pool_hash & (npools - 1);
-+		arena = &(iommu->arena_pool[pool_nr]);
-+
-+		/* find first available unlocked pool */
-+		while (!spin_trylock_irqsave(&(arena->lock), flags)) {
-+			pool_nr = (pool_nr + 1) & (iommu->nr_pools - 1);
-+			arena = &(iommu->arena_pool[pool_nr]);
-+		}
-+	}
-+
-+ again:
-+	if (pass == 0 && handle && *handle &&
-+	    (*handle >= arena->start) && (*handle < arena->end))
-+		start = *handle;
-+	else
-+		start = arena->hint;
-+
-+	limit = arena->end;
-+
-+	/* The case below can happen if we have a small segment appended
-+	 * to a large, or when the previous alloc was at the very end of
-+	 * the available space. If so, go back to the beginning and flush.
-+	 */
-+	if (start >= limit) {
-+		start = arena->start;
-+		if (iommu->iommu_tbl_ops->reset != NULL)
-+			iommu->iommu_tbl_ops->reset(iommu);
-+	}
-+
-+	if (dev)
-+		boundary_size = ALIGN(dma_get_seg_boundary(dev) + 1,
-+				      1 << iommu->page_table_shift);
-+	else
-+		boundary_size = ALIGN(1UL << 32, 1 << iommu->page_table_shift);
-+
-+	shift = iommu->page_table_map_base >> iommu->page_table_shift;
-+	boundary_size = boundary_size >> iommu->page_table_shift;
-+	/*
-+	 * if the skip_span_boundary_check had been set during init, we set
-+	 * things up so that iommu_is_span_boundary() merely checks if the
-+	 * (index + npages) < num_tsb_entries
-+	 */
-+	if ((iommu->flags & IOMMU_NO_SPAN_BOUND) != 0) {
-+		shift = 0;
-+		boundary_size = iommu->poolsize * iommu->nr_pools;
-+	}
-+	n = iommu_area_alloc(iommu->map, limit, start, npages, shift,
-+			     boundary_size, 0);
-+	if (n == -1) {
-+		if (likely(pass == 0)) {
-+			/* First failure, rescan from the beginning.  */
-+			arena->hint = arena->start;
-+			if (iommu->iommu_tbl_ops->reset != NULL)
-+				iommu->iommu_tbl_ops->reset(iommu);
-+			pass++;
-+			goto again;
-+		} else if (!largealloc && pass <= iommu->nr_pools) {
-+			spin_unlock(&(arena->lock));
-+			pool_nr = (pool_nr + 1) & (iommu->nr_pools - 1);
-+			arena = &(iommu->arena_pool[pool_nr]);
-+			while (!spin_trylock(&(arena->lock))) {
-+				pool_nr = (pool_nr + 1) & (iommu->nr_pools - 1);
-+				arena = &(iommu->arena_pool[pool_nr]);
-+			}
-+			arena->hint = arena->start;
-+			pass++;
-+			goto again;
-+		} else {
-+			/* give up */
-+			spin_unlock_irqrestore(&(arena->lock), flags);
-+			return DMA_ERROR_CODE;
-+		}
-+	}
-+
-+	end = n + npages;
-+
-+	arena->hint = end;
-+
-+	/* Update handle for SG allocations */
-+	if (handle)
-+		*handle = end;
-+	spin_unlock_irqrestore(&(arena->lock), flags);
-+
-+	return n;
-+}
-+EXPORT_SYMBOL(iommu_tbl_range_alloc);
-+
-+static struct iommu_pool *get_pool(struct iommu_table *tbl,
-+				   unsigned long entry)
-+{
-+	struct iommu_pool *p;
-+	unsigned long largepool_start = tbl->large_pool.start;
-+	bool large_pool = ((tbl->flags & IOMMU_HAS_LARGE_POOL) != 0);
-+
-+	/* The large pool is the last pool at the top of the table */
-+	if (large_pool && entry >= largepool_start) {
-+		p = &tbl->large_pool;
-+	} else {
-+		unsigned int pool_nr = entry / tbl->poolsize;
-+
-+		BUG_ON(pool_nr >= tbl->nr_pools);
-+		p = &tbl->arena_pool[pool_nr];
-+	}
-+	return p;
-+}
-+
-+/* Caller supplies the index of the entry into the iommu map table
-+ * itself when the mapping from dma_addr to the entry is not the
-+ * default addr->entry mapping below.
-+ */
-+void iommu_tbl_range_free(struct iommu_table *iommu, u64 dma_addr,
-+			  unsigned long npages, unsigned long entry)
-+{
-+	struct iommu_pool *pool;
-+	unsigned long flags;
-+	unsigned long shift = iommu->page_table_shift;
-+
-+	if (entry == DMA_ERROR_CODE) /* use default addr->entry mapping */
-+		entry = (dma_addr - iommu->page_table_map_base) >> shift;
-+	pool = get_pool(iommu, entry);
-+
-+	spin_lock_irqsave(&(pool->lock), flags);
-+	bitmap_clear(iommu->map, entry, npages);
-+	spin_unlock_irqrestore(&(pool->lock), flags);
-+}
-+EXPORT_SYMBOL(iommu_tbl_range_free);
+ 
+ 	spin_lock_irqsave(&iommu->lock, flags);
+ 	for (i = 0; i < ncookies; i++) {
 -- 
 1.7.1
