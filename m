@@ -1,22 +1,16 @@
-Return-Path: <whitebox@nefkom.net>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <sowmini.varadhan@oracle.com>
+Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7DF471A09B9
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2015 02:45:44 +1100 (AEDT)
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 0EA7014008F
- for <linuxppc-dev@ozlabs.org>; Mon, 23 Mar 2015 02:45:43 +1100 (AEDT)
-From: Andreas Schwab <schwab@linux-m68k.org>
-To: linuxppc-dev@ozlabs.org
-Subject: ADDR_COMPAT_LAYOUT breaks PTRACE_SEIZE
-Date: Sun, 22 Mar 2015 16:39:44 +0100
-Message-ID: <87pp81nirj.fsf@igel.home>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: linux-kernel@vger.kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 53FC61A2AA8
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2015 06:24:19 +1100 (AEDT)
+From: Sowmini Varadhan <sowmini.varadhan@oracle.com>
+To: sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v5 RFC 0/3] Generic IOMMU pooled allocator
+Date: Sun, 22 Mar 2015 15:22:51 -0400
+Message-Id: <cover.1426986386.git.sowmini.varadhan@oracle.com>
+Cc: aik@au1.ibm.com, anton@au1.ibm.com, paulus@samba.org,
+ sowmini.varadhan@oracle.com, davem@davemloft.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,37 +20,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On ppc64, a process running with the ADDR_COMPAT_LAYOUT personality
-causes ptrace(PTRACE_SEIZE) to hang in the kernel, unkillable.
+Follows up on the feedback in the thread at
+  http://www.spinics.net/lists/sparclinux/msg13493.html
 
-#include <stdlib.h>
-#include <unistd.h>
-#include <signal.h>
-#include <sys/personality.h>
-#include <sys/ptrace.h>
-#include <sys/wait.h>
+- removed ->cookie_to_index and ->demap indirection from the iommu_tbl_ops
+  The caller needs to call these functions as needed, before invoking
+  the generic arena allocator functions.
 
-int
-main (void)
-{
-  pid_t child;
+- added the "skip_span_boundary" argument to iommu_tbl_pool_init() for
+  those callers like LDC which do no care about span boundary checks.
 
-  personality (ADDR_COMPAT_LAYOUT);
-  child = fork ();
-  if (child == 0)
-    {
-      kill (getpid (), SIGSTOP);
-      exit (0);
-    }
 
-  ptrace (PTRACE_SEIZE, child, NULL, NULL);
-  wait (NULL);
-  ptrace (PTRACE_CONT, child, NULL, NULL);
-}
+Sowmini (2):
+  Break up monolithic iommu table/lock into finer graularity pools and
+    lock
+  Make sparc64 use scalable lib/iommu-common.c functions
 
-Andreas.
+Sowmini Varadhan (1):
+  Make LDC use common iommu poll management functions
 
--- 
-Andreas Schwab, schwab@linux-m68k.org
-GPG Key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+ arch/sparc/include/asm/iommu_64.h |    7 +-
+ arch/sparc/kernel/iommu.c         |  187 +++++++++++---------------------
+ arch/sparc/kernel/iommu_common.h  |    8 --
+ arch/sparc/kernel/ldc.c           |  172 ++++++++++++++---------------
+ arch/sparc/kernel/pci_sun4v.c     |  194 ++++++++++++++++-----------------
+ include/linux/iommu-common.h      |   55 +++++++++
+ lib/Makefile                      |    2 +-
+ lib/iommu-common.c                |  219 +++++++++++++++++++++++++++++++++++++
+ 8 files changed, 519 insertions(+), 325 deletions(-)
+ create mode 100644 include/linux/iommu-common.h
+ create mode 100644 lib/iommu-common.c
