@@ -1,38 +1,24 @@
-Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 046841A2AE3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2015 09:19:37 +1100 (AEDT)
-Received: from /spool/local
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Mon, 23 Mar 2015 16:19:35 -0600
-Received: from b03cxnp08025.gho.boulder.ibm.com
- (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id C75201FF002A
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2015 16:10:44 -0600 (MDT)
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
- by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t2NMJMmr35323912
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2015 15:19:22 -0700
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
- by d03av04.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t2NMIEt4018709
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2015 16:18:15 -0600
-Date: Mon, 23 Mar 2015 15:17:20 -0700
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [2/9] powerpc/hv24x7: Remove unnecessary parameter
-Message-ID: <20150323221720.GB6013@us.ibm.com>
-References: <1424210434-28070-3-git-send-email-sukadev@linux.vnet.ibm.com>
- <20150317001352.69BC914010F@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150317001352.69BC914010F@ozlabs.org>
-Cc: peterz@infradead.org, linuxppc-dev@lists.ozlabs.org,
- Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id A85811A2AE3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2015 09:21:22 +1100 (AEDT)
+Message-ID: <1427149265.4770.238.camel@kernel.crashing.org>
+Subject: Re: Generic IOMMU pooled allocator
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: David Miller <davem@davemloft.net>
+Date: Tue, 24 Mar 2015 09:21:05 +1100
+In-Reply-To: <20150323.150508.149509757161802782.davem@davemloft.net>
+References: <20150322192726.GB19474@oracle.com>
+ <20150323.122922.887448418154237329.davem@davemloft.net>
+ <20150323165406.GG14061@oracle.com>
+ <20150323.150508.149509757161802782.davem@davemloft.net>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: aik@au1.ibm.com, aik@ozlabs.ru, sowmini.varadhan@oracle.com,
+ anton@au1.ibm.com, paulus@samba.org, sparclinux@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,38 +28,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael Ellerman [mpe@ellerman.id.au] wrote:
-| On Tue, 2015-17-02 at 22:00:27 UTC, Sukadev Bhattiprolu wrote:
-| > Use pr_notice_ratelimited() to log error messages and remove
-| > the 'success_expected' parameter.
-| 
-| I don't understand how this is equivalent?
+On Mon, 2015-03-23 at 15:05 -0400, David Miller wrote:
+> From: Sowmini Varadhan <sowmini.varadhan@oracle.com>
+> Date: Mon, 23 Mar 2015 12:54:06 -0400
+> 
+> > If it was only an optimization (i.e., removing it would not break
+> > any functionality), and if this was done for older hardware,
+> > and *if* we believe that the direction of most architectures is to 
+> > follow the sun4v/HV model, then, given that the sun4u code only uses 1 
+> > arena pool anyway, one thought that I have for refactoring this
+> > is the following:
+> 
+> Why add performance regressions to old machines who already are
+> suffering too much from all the bloat we are constantly adding to the
+> kernel?
 
-They are two unrelated changes that I should have separated.
-| 
-| The current code uses success_expected to indicate that once it's done the
-| request once and found that it works, it then expects the request to continue
-| working, and if it doesn't then that is an error.
+So we have two choices here that I can see:
 
-The current code is using success_expected to _not_ log an error if
-that initial request fails. i.e we silently return -EIO here.
+ - Keep that old platform use the old/simpler allocator
 
-I think the 'success_expected' parameter is not really necessary.
-We can simply log the message even for that initial request.
+ - Try to regain the bulk of that benefit with the new one
 
-And we can log it a lower priority than KERN_ERR since the message
-is mostly for developers rather than users who would use event names
-(which encode/abstract the domain and offset values).
+Sowmini, I see various options for the second choice. We could stick to
+1 pool, and basically do as before, ie, if we fail on the first pass of
+alloc, it means we wrap around and do a flush, I don't think that will
+cause a significant degradation from today, do you ? We might have an
+occasional additional flush but I would expect it to be in the noise.
 
-| 
-| Using pr_ratelimited() will do the opposite, ie. the first failure will print a
-| message, but that may not really indicate an error, it may just be a badly
-| configured request.
-| 
-| Or at least that's how I understand it, please convince me I'm wrong :)
-| 
-| cheers
-| _______________________________________________
-| Linuxppc-dev mailing list
-| Linuxppc-dev@lists.ozlabs.org
-| https://lists.ozlabs.org/listinfo/linuxppc-dev
+Another option would be trickier, is to keep an additional bitmap
+of "stale" entries. When an entry is freed, instead of freeing it
+in the main bitmap, set a bit in the "stale" bit map. If we fail to
+allocate, then flush, xor off the main bitmap bits using the stale
+bitmap, and try again.
+
+However, the second approach means that as the main bitmap gets full, we
+will start allocating from remote pools, so it partially defeats the
+pool system, unless we do everything locally per-pool (ie flush when the
+pool is full before we fallback to another pool), in which case we go
+back to flushing more often than we used to. But here too, the
+difference might end up in the noise, we still flush order of magnitude
+less than once per translation update.
+
+Dave, what's your feeling there ? Does anybody around still have some
+HW that we can test with ?
+
+Sowmini, I think we can still kill the ops and have a separate data
+structure exclusively concerned by allocations by having the alloc
+functions take the lazy flush function as an argument (which can be
+NULL), I don't think we should bother with ops.
+
+Cheers,
+Ben.
