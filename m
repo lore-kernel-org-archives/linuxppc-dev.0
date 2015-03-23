@@ -1,39 +1,19 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5F1711A2AD1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2015 14:03:53 +1100 (AEDT)
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 34F91140142
- for <linuxppc-dev@ozlabs.org>; Mon, 23 Mar 2015 14:03:53 +1100 (AEDT)
-Received: from /spool/local
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Mon, 23 Mar 2015 13:03:52 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 68DD22BB0040
- for <linuxppc-dev@ozlabs.org>; Mon, 23 Mar 2015 14:03:50 +1100 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t2N33fQR11272322
- for <linuxppc-dev@ozlabs.org>; Mon, 23 Mar 2015 14:03:50 +1100
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t2N33Gjn016027
- for <linuxppc-dev@ozlabs.org>; Mon, 23 Mar 2015 14:03:16 +1100
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH v3 2/2] PCI: Apply warm reset to specific devices
-Date: Mon, 23 Mar 2015 14:02:51 +1100
-Message-Id: <1427079771-18472-2-git-send-email-gwshan@linux.vnet.ibm.com>
-In-Reply-To: <1427079771-18472-1-git-send-email-gwshan@linux.vnet.ibm.com>
-References: <1427079771-18472-1-git-send-email-gwshan@linux.vnet.ibm.com>
-Cc: bhelgaas@google.com, linux-pci@vger.kernel.org, cascardo@linux.vnet.ibm.com,
- Gavin Shan <gwshan@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7D29F1A2ADC
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2015 14:11:41 +1100 (AEDT)
+In-Reply-To: <20150205193604.24669.67159.stgit@localhost.localdomain>
+To: Hari Bathini <hbathini@linux.vnet.ibm.com>, Tony Luck <tony.luck@intel.com>,
+ Kees Cook <keescook@chromium.org>, Anton Vorontsov <anton@enomsg.org>,
+ lkml <linux-kernel@vger.kernel.org>, linuxppc-dev <linuxppc-dev@ozlabs.org>,
+ Colin Cross <ccross@android.com>, <scottwood@freescale.com>
+From: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [v5,1/4] powerpc/nvram: move generic code for nvram and pstore
+Message-Id: <20150323031141.5E9B9140142@ozlabs.org>
+Date: Mon, 23 Mar 2015 14:11:41 +1100 (AEDT)
+Cc: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,69 +23,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently, VFIO infrastructure depends on pci_reset_function()
-to ensure the PCI device in clean state when passing to guest,
-or being returned back to host. However, the function doesn't
-work (or well) on some PCI devices on PowerPC platforms, which
-potentially brings pending traffic over the boundary between
-host/guest and usually causes memory corruption.
+On Thu, 2015-05-02 at 19:36:04 UTC, Hari Bathini wrote:
+> With minor checks, we can move most of the code for nvram
+> under pseries to a common place to be re-used by other
+> powerpc platforms like powernv. This patch moves such
+> common code to arch/powerpc/kernel/nvram_64.c file.
+> 
+> Signed-off-by: Hari Bathini <hbathini@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/include/asm/nvram.h       |   50 ++
+>  arch/powerpc/include/asm/rtas.h        |    4 
+>  arch/powerpc/kernel/nvram_64.c         |  656 ++++++++++++++++++++++++++++++++
+>  arch/powerpc/platforms/pseries/nvram.c |  665 --------------------------------
+>  4 files changed, 714 insertions(+), 661 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/nvram_64.c b/arch/powerpc/kernel/nvram_64.c
+> index 34f7c9b..42e5c6a 100644
+> --- a/arch/powerpc/kernel/nvram_64.c
+> +++ b/arch/powerpc/kernel/nvram_64.c
+> @@ -26,6 +26,9 @@
 
-The patch applies warm reset to those PCI devices, which is
-implemented based on pci_set_pcie_reset_state() to get clean
-state when passing device from host to guest, or returning it
-back to host. The reset request is routed to platform specific
-pcibios_set_pcie_reset_state() and processed there.
+...
 
-Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
----
- drivers/pci/quirks.c | 28 ++++++++++++++++++++++++++++
- 1 file changed, 28 insertions(+)
+> +/* Derived from logfs_compress() */
+> +static int nvram_compress(const void *in, void *out, size_t inlen,
+> +							size_t outlen)
+> +{
+> +	int err, ret;
+> +
+> +	ret = -EIO;
+> +	err = zlib_deflateInit2(&stream, COMPR_LEVEL, Z_DEFLATED, WINDOW_BITS,
+> +						MEM_LEVEL, Z_DEFAULT_STRATEGY);
+> +	if (err != Z_OK)
+> +		goto error;
 
-diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
-index 85f247e..9846d5e 100644
---- a/drivers/pci/quirks.c
-+++ b/drivers/pci/quirks.c
-@@ -3504,6 +3504,22 @@ static int reset_chelsio_generic_dev(struct pci_dev *dev, int probe)
- 	return 0;
- }
- 
-+static int pci_dev_warm_reset(struct pci_dev *pdev, int probe)
-+{
-+	int ret;
-+
-+	/* Check the device can take the reset or not */
-+	if (probe)
-+		return pci_set_pcie_reset_state(pdev, pcie_warm_reset, probe);
-+
-+	/* Issue warm reset */
-+	ret = pci_set_pcie_reset_state(pdev, pcie_warm_reset, 0);
-+	if (!ret)
-+		ret = pci_set_pcie_reset_state(pdev, pcie_deassert_reset, 0);
-+
-+	return ret;
-+}
-+
- #define PCI_DEVICE_ID_INTEL_82599_SFP_VF   0x10ed
- #define PCI_DEVICE_ID_INTEL_IVB_M_VGA      0x0156
- #define PCI_DEVICE_ID_INTEL_IVB_M2_VGA     0x0166
-@@ -3519,6 +3535,18 @@ static const struct pci_dev_reset_methods pci_dev_reset_methods[] = {
- 		reset_intel_generic_dev },
- 	{ PCI_VENDOR_ID_CHELSIO, PCI_ANY_ID,
- 		reset_chelsio_generic_dev },
-+	{ PCI_VENDOR_ID_IBM, PCI_ANY_ID,
-+		pci_dev_warm_reset },
-+	{ PCI_VENDOR_ID_BROADCOM, PCI_DEVICE_ID_NX2_57800,
-+		pci_dev_warm_reset },
-+	{ PCI_VENDOR_ID_BROADCOM, PCI_DEVICE_ID_NX2_57840,
-+		pci_dev_warm_reset },
-+	{ PCI_VENDOR_ID_BROADCOM, PCI_DEVICE_ID_NX2_57810,
-+		pci_dev_warm_reset },
-+	{ PCI_VENDOR_ID_MELLANOX, PCI_ANY_ID,
-+		pci_dev_warm_reset },
-+	{ PCI_VENDOR_ID_TI, PCI_ANY_ID,
-+		pci_dev_warm_reset },
- 	{ 0 }
- };
- 
--- 
-1.8.3.2
+
+This fails the build for ppc64e_defconfig:
+
+arch/powerpc/kernel/built-in.o: In function `.oops_to_nvram':
+nvram_64.c:(.text+0x12148): undefined reference to `.zlib_deflateInit2'
+nvram_64.c:(.text+0x12178): undefined reference to `.zlib_deflate'
+nvram_64.c:(.text+0x1218c): undefined reference to `.zlib_deflateEnd'
+arch/powerpc/kernel/built-in.o: In function `.nvram_init_oops_partition':
+(.init.text+0x41e0): undefined reference to `.zlib_deflate_workspacesize'
+make: *** [vmlinux] Error 1
+
+
+It used to be OK because PSERIES selects ZLIB_DEFLATE.
+
+I decided to just force ZLIB_DEFLATE on for PPC64. That will add ~22K to the
+ppc64e kernel image.
+
+Scott, if you guys are bothered by that let me know and we can add some #ifdefs
+to avoid it.
+
+cheers
