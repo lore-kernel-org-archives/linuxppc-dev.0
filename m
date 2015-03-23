@@ -1,22 +1,19 @@
-Return-Path: <paulus@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5B5E51A2B56
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2015 14:12:09 +1100 (AEDT)
-Date: Mon, 23 Mar 2015 14:12:05 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2] powerpc/book3s: Fix the MCE code to use
- CONFIG_KVM_BOOK3S_64_HANDLER
-Message-ID: <20150323031205.GB8257@drongo>
-References: <20150317103356.27872.65515.stgit@mars>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150317103356.27872.65515.stgit@mars>
-Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
- linuxppc-dev <linuxppc-dev@ozlabs.org>, David Gibson <dgibson@redhat.com>,
- Alexander Graf <agraf@suse.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 51EB51A2AD2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2015 14:16:48 +1100 (AEDT)
+Message-ID: <1427080598.4770.214.camel@kernel.crashing.org>
+Subject: [PATCH] drivers/of: Add empty ranges quirk for PA-Semi
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc dev list <linuxppc-dev@lists.ozlabs.org>
+Date: Mon, 23 Mar 2015 14:16:38 +1100
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Olof Johansson <olof@lixom.net>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ Rob Herring <robherring2@gmail.com>, Steven Rostedt <rostedt@goodmis.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,40 +23,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Mar 17, 2015 at 04:14:41PM +0530, Mahesh J Salgaonkar wrote:
-> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
-> 
-> commit id 2ba9f0d has changed CONFIG_KVM_BOOK3S_64_HV to tristate to allow
-> HV/PR bits to be built as modules. But the MCE code still depends on
-> CONFIG_KVM_BOOK3S_64_HV which is wrong. When user selects
-> CONFIG_KVM_BOOK3S_64_HV=m to build HV/PR bits as a separate module the
-> relevant MCE code gets excluded.
-> 
-> This patch fixes the MCE code to use CONFIG_KVM_BOOK3S_64_HANDLER. This
-> makes sure that the relevant MCE code is included when HV/PR bits
-> are built as a separate modules.
-> 
-> Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
-> ---
-> Hi Michael,
-> 	This patch should also goto stable.
-> 
->  arch/powerpc/kernel/exceptions-64s.S |    2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
-> index c2df815..9519e6b 100644
-> --- a/arch/powerpc/kernel/exceptions-64s.S
-> +++ b/arch/powerpc/kernel/exceptions-64s.S
-> @@ -1408,7 +1408,7 @@ machine_check_handle_early:
->  	bne	9f			/* continue in V mode if we are. */
->  
->  5:
-> -#ifdef CONFIG_KVM_BOOK3S_64_HV
-> +#ifdef CONFIG_KVM_BOOK3S_64_HANDLER
->  	/*
->  	 * We are coming from kernel context. Check if we are coming from
->  	 * guest. if yes, then we can continue. We will fall through
+The "sdc" node is missing the ranges property, it needs to be treated
+as having an empty one otherwise translation fails for its children.
 
-Acked-by: Paul Mackerras <paulus@samba.org>
-Cc: stable@vger.kernel.org  # v3.14+
+Tested-by: Steven Rostedt <rostedt@goodmis.org>
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+ drivers/of/address.c | 11 ++++++++---
+ 1 file changed, 8 insertions(+), 3 deletions(-)
+
+diff --git a/drivers/of/address.c b/drivers/of/address.c
+index ad29069..78a7dcb 100644
+--- a/drivers/of/address.c
++++ b/drivers/of/address.c
+@@ -450,12 +450,17 @@ static struct of_bus *of_match_bus(struct device_node *np)
+ 	return NULL;
+ }
+ 
+-static int of_empty_ranges_quirk(void)
++static int of_empty_ranges_quirk(struct device_node *np)
+ {
+ 	if (IS_ENABLED(CONFIG_PPC)) {
+-		/* To save cycles, we cache the result */
++		/* To save cycles, we cache the result for global "Mac" setting */
+ 		static int quirk_state = -1;
+ 
++		/* PA-SEMI sdc DT bug */
++		if (of_device_is_compatible(np, "1682m-sdc"))
++			return true;
++
++		/* Make quirk cached */
+ 		if (quirk_state < 0)
+ 			quirk_state =
+ 				of_machine_is_compatible("Power Macintosh") ||
+@@ -490,7 +495,7 @@ static int of_translate_one(struct device_node *parent, struct of_bus *bus,
+ 	 * This code is only enabled on powerpc. --gcl
+ 	 */
+ 	ranges = of_get_property(parent, rprop, &rlen);
+-	if (ranges == NULL && !of_empty_ranges_quirk()) {
++	if (ranges == NULL && !of_empty_ranges_quirk(parent)) {
+ 		pr_debug("OF: no ranges; cannot translate\n");
+ 		return 1;
+ 	}
