@@ -1,22 +1,41 @@
-Return-Path: <sowmini.varadhan@oracle.com>
-Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
+Return-Path: <mahesh@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id F1D6F1A2B68
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2015 03:54:53 +1100 (AEDT)
+Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D88B91A2AF2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2015 03:54:25 +1100 (AEDT)
-Date: Mon, 23 Mar 2015 12:54:06 -0400
-From: Sowmini Varadhan <sowmini.varadhan@oracle.com>
-To: David Miller <davem@davemloft.net>
-Subject: Re: Generic IOMMU pooled allocator
-Message-ID: <20150323165406.GG14061@oracle.com>
-References: <1426734106.4770.118.camel@kernel.crashing.org>
- <550A5E5D.90907@ozlabs.ru> <20150322192726.GB19474@oracle.com>
- <20150323.122922.887448418154237329.davem@davemloft.net>
+ by ozlabs.org (Postfix) with ESMTPS id 3ECD8140134
+ for <linuxppc-dev@ozlabs.org>; Tue, 24 Mar 2015 03:54:53 +1100 (AEDT)
+Received: from /spool/local
+ by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
+ Mon, 23 Mar 2015 22:24:50 +0530
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id D69F9394004E
+ for <linuxppc-dev@ozlabs.org>; Mon, 23 Mar 2015 22:24:47 +0530 (IST)
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t2NGsk4r26607826
+ for <linuxppc-dev@ozlabs.org>; Mon, 23 Mar 2015 22:24:47 +0530
+Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t2NGm829025649
+ for <linuxppc-dev@ozlabs.org>; Mon, 23 Mar 2015 22:18:08 +0530
+Subject: [RESEND PATCH] KVM: PPC: Book3S HV: Deliver machine check with
+ MSR(RI=0) to guest as MCE.
+From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
+To: linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>
+Date: Mon, 23 Mar 2015 22:24:45 +0530
+Message-ID: <20150323165056.18415.21045.stgit@mars>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150323.122922.887448418154237329.davem@davemloft.net>
-Cc: aik@au1.ibm.com, aik@ozlabs.ru, anton@au1.ibm.com, paulus@samba.org,
- sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="utf-8"
+Cc: David Gibson <dgibson@redhat.com>, Alexander Graf <agraf@suse.de>,
+ KVM-PPC <kvm-ppc@vger.kernel.org>, KVM <kvm@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,47 +45,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On (03/23/15 12:29), David Miller wrote:
-> 
-> In order to elide the IOMMU flush as much as possible, I implemnented
-> a scheme for sun4u wherein we always allocated from low IOMMU
-> addresses to high IOMMU addresses.
-> 
-> In this regime, we only need to flush the IOMMU when we rolled over
-> back to low IOMMU addresses during an allocation.
-> 
-> It made a noticable difference in performance.
-> 
-> Unfortunately, with sun4v and the hypervisor, I'm not allowed to
-> control when the IOMMU flush happens, it has to occur on every
-> single IOMMU mapping change.  So this optimization was no longer
-> possible there.
-> 
-> Anyways, that's the history behind it.
-> --
+From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 
-I see.
+For the machine check interrupt that happens while we are in the guest,
+kvm layer attempts the recovery, and then delivers the machine check interrupt
+directly to the guest if recovery fails. On successful recovery we go back to
+normal functioning of the guest. But there can be cases where a machine check
+interrupt can happen with MSR(RI=0) while we are in the guest. This means
+MC interrupt is unrecoverable and we have to deliver a machine check to the
+guest since the machine check interrupt might have trashed valid values in
+SRR0/1. The current implementation do not handle this case, causing guest
+to crash with Bad kernel stack pointer instead of machine check oops message.
 
-If it was only an optimization (i.e., removing it would not break
-any functionality), and if this was done for older hardware,
-and *if* we believe that the direction of most architectures is to 
-follow the sun4v/HV model, then, given that the sun4u code only uses 1 
-arena pool anyway, one thought that I have for refactoring this
-is the following:
+[26281.490060] Bad kernel stack pointer 3fff9ccce5b0 at c00000000000490c
+[26281.490434] Oops: Bad kernel stack pointer, sig: 6 [#1]
+[26281.490472] SMP NR_CPUS=2048 NUMA pSeries
 
-- Caller of iommu_tbl_range_alloc() can do the flush_all if they 
-  see start <= end for the one single pool 
-- lose the other ->flush_all invocation (i.e., the one that is
-  done when iommu_area_alloc() fails for pass == 0, and we reset
-  start to 0 to roll-back)
+This patch fixes this issue by checking MSR(RI=0) in KVM layer and forwarding
+unrecoverable interrupt to guest which then panics with proper machine check
+Oops message.
 
-that would avoid the need for any iommu_tbl_ops in my patch-set.
+Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+Acked-by: Paul Mackerras <paulus@samba.org>
+---
+ arch/powerpc/kvm/book3s_hv_rmhandlers.S |   12 ++++++++----
+ 1 file changed, 8 insertions(+), 4 deletions(-)
 
-But it would imply that you would still take the perf hit for the roll-back
-if we failed the pass == 0 iteration through iommu_area_alloc().
-Perhaps this is an acceptable compromise in favor of cleaner code
-(again, assuming that current/future archs will all follow the HV
-based design).
-
---Sowmini
+diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+index bb94e6f..258f46d 100644
+--- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
++++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+@@ -2063,7 +2063,6 @@ machine_check_realmode:
+ 	mr	r3, r9		/* get vcpu pointer */
+ 	bl	kvmppc_realmode_machine_check
+ 	nop
+-	cmpdi	r3, 0		/* Did we handle MCE ? */
+ 	ld	r9, HSTATE_KVM_VCPU(r13)
+ 	li	r12, BOOK3S_INTERRUPT_MACHINE_CHECK
+ 	/*
+@@ -2076,13 +2075,18 @@ machine_check_realmode:
+ 	 * The old code used to return to host for unhandled errors which
+ 	 * was causing guest to hang with soft lockups inside guest and
+ 	 * makes it difficult to recover guest instance.
++	 *
++	 * if we receive machine check with MSR(RI=0) then deliver it to
++	 * guest as machine check causing guest to crash.
+ 	 */
+-	ld	r10, VCPU_PC(r9)
+ 	ld	r11, VCPU_MSR(r9)
++	andi.	r10, r11, MSR_RI	/* check for unrecoverable exception */
++	beq	1f			/* Deliver a machine check to guest */
++	ld	r10, VCPU_PC(r9)
++	cmpdi	r3, 0		/* Did we handle MCE ? */
+ 	bne	2f	/* Continue guest execution. */
+ 	/* If not, deliver a machine check.  SRR0/1 are already set */
+-	li	r10, BOOK3S_INTERRUPT_MACHINE_CHECK
+-	ld	r11, VCPU_MSR(r9)
++1:	li	r10, BOOK3S_INTERRUPT_MACHINE_CHECK
+ 	bl	kvmppc_msr_interrupt
+ 2:	b	fast_interrupt_c_return
  
