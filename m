@@ -1,19 +1,50 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 853241A2B7F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2015 09:55:32 +1100 (AEDT)
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E1E371A2AF4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2015 09:55:18 +1100 (AEDT)
-Message-ID: <1427149333.4770.239.camel@kernel.crashing.org>
-Subject: Re: frequent lockups on ppc32
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Pranith Kumar <bobby.prani@gmail.com>
-Date: Tue, 24 Mar 2015 09:22:13 +1100
-In-Reply-To: <CAJhHMCDB-ymUnUqED6=c2L-wju0ZTW=OTfw3Jqwie44FqmkV=Q@mail.gmail.com>
-References: <CAJhHMCDB-ymUnUqED6=c2L-wju0ZTW=OTfw3Jqwie44FqmkV=Q@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+ by ozlabs.org (Postfix) with ESMTPS id 5DC53140082
+ for <linuxppc-dev@ozlabs.org>; Tue, 24 Mar 2015 09:55:32 +1100 (AEDT)
+Received: from /spool/local
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Tue, 24 Mar 2015 08:55:30 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 22BC72CE8040
+ for <linuxppc-dev@ozlabs.org>; Tue, 24 Mar 2015 09:55:28 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t2NMtJ0t44957798
+ for <linuxppc-dev@ozlabs.org>; Tue, 24 Mar 2015 09:55:28 +1100
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t2NMsssn029575
+ for <linuxppc-dev@ozlabs.org>; Tue, 24 Mar 2015 09:54:54 +1100
+Date: Tue, 24 Mar 2015 09:54:29 +1100
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: Alex Williamson <alex.williamson@redhat.com>
+Subject: Re: [PATCH v3 1/2] PCI: One more parameter to
+ pci_set_pcie_reset_state()
+Message-ID: <20150323225429.GA5646@shangw>
+Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+References: <1427079771-18472-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <1427081673.3643.547.camel@redhat.com>
+ <20150323035656.GA27802@shangw>
+ <1427083561.3643.551.camel@redhat.com>
+ <20150323044033.GA1874@shangw>
+ <1427114434.3643.554.camel@redhat.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1427114434.3643.554.camel@redhat.com>
+Cc: linux-pci@vger.kernel.org, Gavin Shan <gwshan@linux.vnet.ibm.com>,
+ linuxppc-dev@ozlabs.org, Brian King <brking@us.ibm.com>,
+ cascardo@linux.vnet.ibm.com, bhelgaas@google.com,
+ Frank Haverkamp <haver@linux.vnet.ibm.com>, Ian Munsie <imunsie@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,190 +54,289 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2015-03-23 at 15:28 -0400, Pranith Kumar wrote:
-> Hello,
-> 
-> I see frequent lockups with the latest rc5 kernel on a mac mini power
-> pc 32 system. I see the following in dmesg. I could git bisect, but
-> was wondering if you guys have seen this before and if anyone has any
-> pointers which can reduce my bisect search space.
+On Mon, Mar 23, 2015 at 06:40:34AM -0600, Alex Williamson wrote:
+>On Mon, 2015-03-23 at 15:40 +1100, Gavin Shan wrote:
+>> On Sun, Mar 22, 2015 at 10:06:01PM -0600, Alex Williamson wrote:
+>> >On Mon, 2015-03-23 at 14:56 +1100, Gavin Shan wrote:
+>> >> On Sun, Mar 22, 2015 at 09:34:33PM -0600, Alex Williamson wrote:
+>> >> >On Mon, 2015-03-23 at 14:02 +1100, Gavin Shan wrote:
+>> >> >> The patch adds one more parameter ("probe") to pci_set_pcie_reset_state(),
+>> >> >> which allows to check if one particular PCI device can be resetted by the
+>> >> >> function. The function will be reused to support PCI device specific methods
+>> >> >> maintained in pci_dev_reset_methods[] in subsequent patch.
+>> >> >> 
+>> >> >> Cc: Brian King <brking@us.ibm.com>
+>> >> >> Cc: Frank Haverkamp <haver@linux.vnet.ibm.com>
+>> >> >> Cc: Ian Munsie <imunsie@au1.ibm.com>
+>> >> >> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+>> >> >> ---
+>> >> >> v3: Fix arguments of pci_set_pcie_reset_state() in cxl driver
+>> >> >> v2: Reimplemented based on pci_set_pcie_reset_state()
+>> >> >> ---
+>> >> >>  arch/powerpc/kernel/eeh.c       | 14 ++++++++++----
+>> >> >>  drivers/misc/cxl/pci.c          |  2 +-
+>> >> >>  drivers/misc/genwqe/card_base.c |  9 +++++++--
+>> >> >>  drivers/pci/pci.c               | 15 +++++++++------
+>> >> >>  drivers/scsi/ipr.c              |  5 +++--
+>> >> >>  include/linux/pci.h             |  5 +++--
+>> >> >>  6 files changed, 33 insertions(+), 17 deletions(-)
+>> >> >
+>> >> >
+>> >> >Argh, you're trying to make pci_set_pcie_reset_state() compatible with
+>> >> >pci_dev_specific_reset(), so it can be called via pci_reset_function(),
+>> >> >but the whole point of the pci_reset_function() interface is to reset a
+>> >> >*single* function without disturbing anything else.  These patches make
+>> >> >no effort at all to limit the set of affected devices to a single
+>> >> >function and take great liberties using PCI_ANY_ID for vendors.  My take
+>> >> >on the powerpc version of pcibios_set_pcie_reset_state() is that it's
+>> >> >effectively a slot reset, so why not hook into the
+>> >> >pci_reset_hotplug_slot() via the hotplug slot ops?  Please also use
+>> >> >cover letters.  Thanks,
+>> >> >
+>> >> 
+>> >> Yep, that's the point and intention of the patches. pcibios_set_pcie_reset_state()
+>> >> isn't equal to pci_reset_hotplug_slot(). The later one depends on PCI slot, which
+>> >> wasn't populated on PowerNV platform yet, but pcibios_set_pcie_reseet_state() doesn't.
+>> >> 
+>> >> The patchset depends on improved pcibios_set_pcie_reset_state(), which can be seen
+>> >> from following linked. With it, we don't affect any PCI devices as the config space
+>> >> is saved/restored accordingly before/after reset:
+>> >> 
+>> >> https://patchwork.ozlabs.org/patch/438598/
+>> >
+>> >Sorry, that's wrong.  pci_reset_function() can be called while other
+>> >devices in the same multifunction package are actively in use.  It
+>> >doesn't matter that you're saving and restoring the external state of
+>> >the device, the internal state is lost and operation of the device is
+>> >interrupted.  That is not how pci_reset_function() is supposed to work.
+>> >Thanks,
+>> >
+>> 
+>> pcibios_set_pcie_reset_state() applies hot reset on PCI bus, or PCI
+>> slot fundamental reset essentially. It's potentially affecting multiple
+>> PCI devices (not functions).
+>> 
+>> Yes. It's not safe to call pcibios_set_pcie_reset_state() if some of
+>> the target functions are actively and in use. I also suspect if it
+>> works to reset function#0 via pci_reset_function() while function#1
+>> is actively in use? I guess the caller of pci_reset_function() perhaps
+>> has to ensure there are no active functions/devices.
+>> 
+>> One of the issues the patches try to fix: some of broadcom adapters have
+>> multile functions, which can't support FLR, AF FLR, PM reset. Also, reset
+>> on parent PCI bus and the corresponding reset can't be applied because of
+>> they're multi-function package. In summary, pci_reset_function() doesn't
+>> work on the adapters. That won't give clean state when passing device from
+>> host to guest, or return it back to host. Sometimes, the host memory gets
+>> corrupted when destorying the guest. Occasionally, the patches with improved
+>> pcibios_set_pcie_reset_state() avoided the issue.
+>> 
+>> Some adapters might require fundamental reset on the PCI slot, or hot reset
+>> on parent bus explicitly, in order to successfully reload its firmware after
+>> reset.
+>
+>This is exactly why we have pci_reset_slot() and pci_reset_bus(), so
+>that the caller can manage the scope of the reset.  You cannot change
+>the semantics of pci_reset_function() simply because it's convenient for
+>your implementation.  This series is wrong and should not be applied.
+>Thanks,
+>
 
-Nothing comes to my mind, a bisect might be  necessary here, sorry...
+Alex, thanks for your review. I agree that the patches changed the semantics
+of pci_reset_function() and it's wrong direction to take. Actually, the PEs
+are segmented based on PCI buses (except SRIOV VFs), which means all PCI devices
+attached to one PCI bus forms one PE, which is the minimal unit for passing
+through. So the case that 0000:00:00.0 is passed to guest#0, while 0000:00:00.1
+is assigned to guest#1, can't happen.
 
-Cheers,
-Ben.
-
-> Thanks!
-> 
-> [ 5735.022209] Unable to handle kernel paging request for data at
-> address 0x002800bc
-> [ 5735.022223] Faulting instruction address: 0xc00fa01c
-> [ 5735.022232] Oops: Kernel access of bad area, sig: 11 [#1]
-> [ 5735.022307] PowerMac
-> [ 5735.022335] Modules linked in: uinput radeon ttm drm_kms_helper drm
-> evdev snd_aoa_codec_tas snd_aoa_codec_toonie snd_aoa_fabric_layout
-> snd_aoa snd_aoa_i2sbus snd_aoa_soundbus snd_powermac snd_pcm snd_timer
-> snd soundcore loop fuse autofs4 ext4 mbcache jbd2 sg ohci_pci
-> firewire_ohci sungem sungem_phy firewire_core sr_mod cdrom sd_mod
-> ehci_pci ohci_hcd ehci_hcd usbcore usb_common
-> [ 5735.022786] CPU: 0 PID: 28783 Comm: make Not tainted 4.0.0-rc5 #75
-> [ 5735.022851] task: eea69770 ti: d03be000 task.ti: d03be000
-> [ 5735.022906] NIP: c00fa01c LR: c00efe14 CTR: 00000000
-> [ 5735.022959] REGS: d03bfc90 TRAP: 0300   Not tainted  (4.0.0-rc5)
-> [ 5735.023020] MSR: 00009032 <EE,ME,IR,DR,RI>  CR: 44022224  XER: 20000000
-> [ 5735.023114] DAR: 002800bc DSISR: 40000000
-> GPR00: c00efe14 d03bfd40 eea69770 ecc96210 d03bfe40 00000000 00000000 c05aa334
-> GPR08: c05b0000 00000000 ef654000 d03bfdb0 24022422 1004a930 00000000 10040000
-> GPR16: 00000000 100b2b10 00000000 10040000 10030194 100429e0 10040000 00000000
-> GPR24: 00000008 c1dfa032 d03bfd78 f6f113ca d03bfe40 ecc96210 002800b8 002800c0
-> [ 5735.023528] NIP [c00fa01c] __d_lookup_rcu+0x68/0x128
-> [ 5735.023585] LR [c00efe14] lookup_fast+0x40/0x288
-> [ 5735.023633] Call Trace:
-> [ 5735.023662] [d03bfd40] [c00eec18] __inode_permission+0x70/0xbc (unreliable)
-> [ 5735.023739] [d03bfd70] [c00efe14] lookup_fast+0x40/0x288
-> [ 5735.023796] [d03bfdb0] [c00f1004] path_lookupat+0xbc/0x654
-> [ 5735.023855] [d03bfe10] [c00f15c8] filename_lookup+0x2c/0xa8
-> [ 5735.023916] [d03bfe30] [c00f3828] user_path_at_empty+0x60/0x90
-> [ 5735.023985] [d03bfeb0] [c00e9cc8] vfs_fstatat+0x58/0x9c
-> [ 5735.024041] [d03bfee0] [c00ea4a4] SyS_stat64+0x1c/0x38
-> [ 5735.024099] [d03bff40] [c00113b4] ret_from_syscall+0x0/0x40
-> [ 5735.024163] --- interrupt: c01 at 0xfc59760
->     LR = 0x10020ca0
-> [ 5735.024237] Instruction dump:
-> [ 5735.024271] 7d29da14 83240008 7d4951d6 81270004 21290020 7d494c30
-> 8148a334 5529103a
-> [ 5735.024369] 7fea482e 2f9f0000 419e00bc 3bdffff8 <80bffffc> 813f0008
-> 7f9d4800 40be0098
-> [ 5735.048904] ---[ end trace 7b70a99f1f56d6ab ]---
-> 
-> [ 6029.453156] Unable to handle kernel paging request for data at
-> address 0x002800bc
-> [ 6029.453170] Faulting instruction address: 0xc00fa01c
-> [ 6029.453179] Oops: Kernel access of bad area, sig: 11 [#2]
-> [ 6029.453252] PowerMac
-> [ 6029.453279] Modules linked in: uinput radeon ttm drm_kms_helper drm
-> evdev snd_aoa_codec_tas snd_aoa_codec_toonie snd_aoa_fabric_layout
-> snd_aoa snd_aoa_i2sbus snd_aoa_soundbus snd_powermac snd_pcm snd_timer
-> snd soundcore loop fuse autofs4 ext4 mbcache jbd2 sg ohci_pci
-> firewire_ohci sungem sungem_phy firewire_core sr_mod cdrom sd_mod
-> ehci_pci ohci_hcd ehci_hcd usbcore usb_common
-> [ 6029.453732] CPU: 0 PID: 29103 Comm: make Tainted: G      D
-> 4.0.0-rc5 #75
-> [ 6029.453809] task: c788c770 ti: e6570000 task.ti: e6570000
-> [ 6029.453865] NIP: c00fa01c LR: c00efe14 CTR: 00000000
-> [ 6029.453917] REGS: e6571c90 TRAP: 0300   Tainted: G      D
-> (4.0.0-rc5)
-> [ 6029.453989] MSR: 00009032 <EE,ME,IR,DR,RI>  CR: 44022224  XER: 20000000
-> [ 6029.454084] DAR: 002800bc DSISR: 40000000
-> GPR00: c00efe14 e6571d40 c788c770 ecc96210 e6571e40 00000000 00000000 c05aa334
-> GPR08: c05b0000 00000000 ef654000 e6571db0 24022222 1004a930 00000000 10040000
-> GPR16: 00000000 1024ddc8 00000000 10040000 10030194 100429e0 10040000 00000000
-> GPR24: 00000008 c1c8f032 e6571d78 f6f113ca e6571e40 ecc96210 002800b8 002800c0
-> [ 6029.454497] NIP [c00fa01c] __d_lookup_rcu+0x68/0x128
-> [ 6029.454554] LR [c00efe14] lookup_fast+0x40/0x288
-> [ 6029.454602] Call Trace:
-> [ 6029.454631] [e6571d40] [c00eec18] __inode_permission+0x70/0xbc (unreliable)
-> [ 6029.454708] [e6571d70] [c00efe14] lookup_fast+0x40/0x288
-> [ 6029.454766] [e6571db0] [c00f1004] path_lookupat+0xbc/0x654
-> [ 6029.454825] [e6571e10] [c00f15c8] filename_lookup+0x2c/0xa8
-> [ 6029.454885] [e6571e30] [c00f3828] user_path_at_empty+0x60/0x90
-> [ 6029.454955] [e6571eb0] [c00e9cc8] vfs_fstatat+0x58/0x9c
-> [ 6029.455012] [e6571ee0] [c00ea4a4] SyS_stat64+0x1c/0x38
-> [ 6029.455069] [e6571f40] [c00113b4] ret_from_syscall+0x0/0x40
-> [ 6029.455133] --- interrupt: c01 at 0xfc59760
->     LR = 0x10020ca0
-> [ 6029.455207] Instruction dump:
-> [ 6029.455241] 7d29da14 83240008 7d4951d6 81270004 21290020 7d494c30
-> 8148a334 5529103a
-> [ 6029.455339] 7fea482e 2f9f0000 419e00bc 3bdffff8 <80bffffc> 813f0008
-> 7f9d4800 40be0098
-> [ 6029.455442] ---[ end trace 7b70a99f1f56d6ac ]---
-> 
-> [ 6085.014642] Unable to handle kernel paging request for data at
-> address 0x002800bc
-> [ 6085.014656] Faulting instruction address: 0xc00fa01c
-> [ 6085.014664] Oops: Kernel access of bad area, sig: 11 [#3]
-> [ 6085.014737] PowerMac
-> [ 6085.014764] Modules linked in: uinput radeon ttm drm_kms_helper drm
-> evdev snd_aoa_codec_tas snd_aoa_codec_toonie snd_aoa_fabric_layout
-> snd_aoa snd_aoa_i2sbus snd_aoa_soundbus snd_powermac snd_pcm snd_timer
-> snd soundcore loop fuse autofs4 ext4 mbcache jbd2 sg ohci_pci
-> firewire_ohci sungem sungem_phy firewire_core sr_mod cdrom sd_mod
-> ehci_pci ohci_hcd ehci_hcd usbcore usb_common
-> [ 6085.015216] CPU: 0 PID: 29136 Comm: make Tainted: G      D
-> 4.0.0-rc5 #75
-> [ 6085.015293] task: c7ac0770 ti: c1d60000 task.ti: c1d60000
-> [ 6085.015349] NIP: c00fa01c LR: c00efe14 CTR: 00000000
-> [ 6085.019439] REGS: c1d61c90 TRAP: 0300   Tainted: G      D
-> (4.0.0-rc5)
-> [ 6085.023481] MSR: 00009032 <EE,ME,IR,DR,RI>  CR: 42022224  XER: 20000000
-> [ 6085.027427] DAR: 002800bc DSISR: 40000000
-> GPR00: c00efe14 c1d61d40 c7ac0770 ecc96210 c1d61e40 00000000 00000000 c05aa334
-> GPR08: c05b0000 00000000 ef654000 c1d61db0 22022222 1004a930 00000000 10040000
-> GPR16: 00000000 10233920 00000000 10040000 10030194 100429e0 10040000 00000000
-> GPR24: 00000008 c1df1032 c1d61d78 f6f113ca c1d61e40 ecc96210 002800b8 002800c0
-> [ 6085.046247] NIP [c00fa01c] __d_lookup_rcu+0x68/0x128
-> [ 6085.049987] LR [c00efe14] lookup_fast+0x40/0x288
-> [ 6085.053706] Call Trace:
-> [ 6085.057384] [c1d61d40] [c00eec18] __inode_permission+0x70/0xbc (unreliable)
-> [ 6085.061121] [c1d61d70] [c00efe14] lookup_fast+0x40/0x288
-> [ 6085.064843] [c1d61db0] [c00f1004] path_lookupat+0xbc/0x654
-> [ 6085.068549] [c1d61e10] [c00f15c8] filename_lookup+0x2c/0xa8
-> [ 6085.072228] [c1d61e30] [c00f3828] user_path_at_empty+0x60/0x90
-> [ 6085.075914] [c1d61eb0] [c00e9cc8] vfs_fstatat+0x58/0x9c
-> [ 6085.079587] [c1d61ee0] [c00ea4a4] SyS_stat64+0x1c/0x38
-> [ 6085.083236] [c1d61f40] [c00113b4] ret_from_syscall+0x0/0x40
-> [ 6085.086883] --- interrupt: c01 at 0xfc59760
->     LR = 0x10020ca0
-> [ 6085.094143] Instruction dump:
-> [ 6085.097755] 7d29da14 83240008 7d4951d6 81270004 21290020 7d494c30
-> 8148a334 5529103a
-> [ 6085.101457] 7fea482e 2f9f0000 419e00bc 3bdffff8 <80bffffc> 813f0008
-> 7f9d4800 40be0098
-> [ 6085.105194] ---[ end trace 7b70a99f1f56d6ad ]---
-> 
-> [ 6317.864818] Unable to handle kernel paging request for data at
-> address 0x002800bc
-> [ 6317.864832] Faulting instruction address: 0xc00fa01c
-> [ 6317.864841] Oops: Kernel access of bad area, sig: 11 [#4]
-> [ 6317.868670] PowerMac
-> [ 6317.872365] Modules linked in: uinput radeon ttm drm_kms_helper drm
-> evdev snd_aoa_codec_tas snd_aoa_codec_toonie snd_aoa_fabric_layout
-> snd_aoa snd_aoa_i2sbus snd_aoa_soundbus snd_powermac snd_pcm snd_timer
-> snd soundcore loop fuse autofs4 ext4 mbcache jbd2 sg ohci_pci
-> firewire_ohci sungem sungem_phy firewire_core sr_mod cdrom sd_mod
-> ehci_pci ohci_hcd ehci_hcd usbcore usb_common
-> [ 6317.880595] CPU: 0 PID: 30103 Comm: make Tainted: G      D
-> 4.0.0-rc5 #75
-> [ 6317.884692] task: e649d770 ti: c1f8a000 task.ti: c1f8a000
-> [ 6317.888766] NIP: c00fa01c LR: c00efe14 CTR: 00000000
-> [ 6317.892811] REGS: c1f8bc90 TRAP: 0300   Tainted: G      D
-> (4.0.0-rc5)
-> [ 6317.896884] MSR: 00009032 <EE,ME,IR,DR,RI>  CR: 44022224  XER: 20000000
-> [ 6317.900863] DAR: 002800bc DSISR: 40000000
-> GPR00: c00efe14 c1f8bd40 e649d770 ecc96210 c1f8be40 00000000 00000000 c05aa334
-> GPR08: c05b0000 00000000 ef654000 c1f8bdb0 24022222 1004a930 00000000 10040000
-> GPR16: 00000000 100a5420 00000000 10040000 10030194 100429e0 10040000 00000000
-> GPR24: 00000008 c1e2a032 c1f8bd78 f6f113ca c1f8be40 ecc96210 002800b8 002800c0
-> [ 6317.919838] NIP [c00fa01c] __d_lookup_rcu+0x68/0x128
-> [ 6317.923602] LR [c00efe14] lookup_fast+0x40/0x288
-> [ 6317.927345] Call Trace:
-> [ 6317.931044] [c1f8bd40] [c00eec18] __inode_permission+0x70/0xbc (unreliable)
-> [ 6317.934804] [c1f8bd70] [c00efe14] lookup_fast+0x40/0x288
-> [ 6317.938546] [c1f8bdb0] [c00f1004] path_lookupat+0xbc/0x654
-> [ 6317.942275] [c1f8be10] [c00f15c8] filename_lookup+0x2c/0xa8
-> [ 6317.945974] [c1f8be30] [c00f3828] user_path_at_empty+0x60/0x90
-> [ 6317.949680] [c1f8beb0] [c00e9cc8] vfs_fstatat+0x58/0x9c
-> [ 6317.953374] [c1f8bee0] [c00ea4a4] SyS_stat64+0x1c/0x38
-> [ 6317.957042] [c1f8bf40] [c00113b4] ret_from_syscall+0x0/0x40
-> [ 6317.960707] --- interrupt: c01 at 0xfc59760
->     LR = 0x10020ca0
-> [ 6317.968007] Instruction dump:
-> [ 6317.971643] 7d29da14 83240008 7d4951d6 81270004 21290020 7d494c30
-> 8148a334 5529103a
-> [ 6317.975364] 7fea482e 2f9f0000 419e00bc 3bdffff8 <80bffffc> 813f0008
-> 7f9d4800 40be0098
-> [ 6317.979121] ---[ end trace 7b70a99f1f56d6ae ]---
-> 
-> 
-> 
+Thanks,
+Gavin
+ 
+>Alex
+>
+>> >> >> diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
+>> >> >> index daa68a1..cd85c18 100644
+>> >> >> --- a/arch/powerpc/kernel/eeh.c
+>> >> >> +++ b/arch/powerpc/kernel/eeh.c
+>> >> >> @@ -726,11 +726,14 @@ static void *eeh_restore_dev_state(void *data, void *userdata)
+>> >> >>   * pcibios_set_pcie_slot_reset - Set PCI-E reset state
+>> >> >>   * @dev: pci device struct
+>> >> >>   * @state: reset state to enter
+>> >> >> + * @probe: check if the device can take the reset
+>> >> >>   *
+>> >> >>   * Return value:
+>> >> >>   * 	0 if success
+>> >> >>   */
+>> >> >> -int pcibios_set_pcie_reset_state(struct pci_dev *dev, enum pcie_reset_state state)
+>> >> >> +int pcibios_set_pcie_reset_state(struct pci_dev *dev,
+>> >> >> +				 enum pcie_reset_state state,
+>> >> >> +				 int probe)
+>> >> >>  {
+>> >> >>  	struct eeh_dev *edev = pci_dev_to_eeh_dev(dev);
+>> >> >>  	struct eeh_pe *pe = eeh_dev_to_pe(edev);
+>> >> >> @@ -738,9 +741,12 @@ int pcibios_set_pcie_reset_state(struct pci_dev *dev, enum pcie_reset_state stat
+>> >> >>  	if (!pe) {
+>> >> >>  		pr_err("%s: No PE found on PCI device %s\n",
+>> >> >>  			__func__, pci_name(dev));
+>> >> >> -		return -EINVAL;
+>> >> >> +		return -ENOTTY;
+>> >> >>  	}
+>> >> >>  
+>> >> >> +	if (probe)
+>> >> >> +		return 0;
+>> >> >> +
+>> >> >>  	switch (state) {
+>> >> >>  	case pcie_deassert_reset:
+>> >> >>  		eeh_ops->reset(pe, EEH_RESET_DEACTIVATE);
+>> >> >> @@ -762,8 +768,8 @@ int pcibios_set_pcie_reset_state(struct pci_dev *dev, enum pcie_reset_state stat
+>> >> >>  		break;
+>> >> >>  	default:
+>> >> >>  		eeh_pe_state_clear(pe, EEH_PE_CFG_BLOCKED);
+>> >> >> -		return -EINVAL;
+>> >> >> -	};
+>> >> >> +		return -ENOTTY;
+>> >> >> +	}
+>> >> >>  
+>> >> >>  	return 0;
+>> >> >>  }
+>> >> >> diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
+>> >> >> index 1ef0164..3a87bfc 100644
+>> >> >> --- a/drivers/misc/cxl/pci.c
+>> >> >> +++ b/drivers/misc/cxl/pci.c
+>> >> >> @@ -789,7 +789,7 @@ int cxl_reset(struct cxl *adapter)
+>> >> >>  	/* pcie_warm_reset requests a fundamental pci reset which includes a
+>> >> >>  	 * PERST assert/deassert.  PERST triggers a loading of the image
+>> >> >>  	 * if "user" or "factory" is selected in sysfs */
+>> >> >> -	if ((rc = pci_set_pcie_reset_state(dev, pcie_warm_reset))) {
+>> >> >> +	if ((rc = pci_set_pcie_reset_state(dev, pcie_warm_reset, 0))) {
+>> >> >>  		dev_err(&dev->dev, "cxl: pcie_warm_reset failed\n");
+>> >> >>  		return rc;
+>> >> >>  	}
+>> >> >> diff --git a/drivers/misc/genwqe/card_base.c b/drivers/misc/genwqe/card_base.c
+>> >> >> index 4cf8f82..4871f69 100644
+>> >> >> --- a/drivers/misc/genwqe/card_base.c
+>> >> >> +++ b/drivers/misc/genwqe/card_base.c
+>> >> >> @@ -782,17 +782,22 @@ static int genwqe_pci_fundamental_reset(struct pci_dev *pci_dev)
+>> >> >>  {
+>> >> >>  	int rc;
+>> >> >>  
+>> >> >> +	/* Probe if the device can take the reset */
+>> >> >> +	rc = pci_set_pcie_reset_state(pci_dev, pcie_warm_reset, 1);
+>> >> >> +	if (rc)
+>> >> >> +		return rc;
+>> >> >> +
+>> >> >>  	/*
+>> >> >>  	 * lock pci config space access from userspace,
+>> >> >>  	 * save state and issue PCIe fundamental reset
+>> >> >>  	 */
+>> >> >>  	pci_cfg_access_lock(pci_dev);
+>> >> >>  	pci_save_state(pci_dev);
+>> >> >> -	rc = pci_set_pcie_reset_state(pci_dev, pcie_warm_reset);
+>> >> >> +	rc = pci_set_pcie_reset_state(pci_dev, pcie_warm_reset, 0);
+>> >> >>  	if (!rc) {
+>> >> >>  		/* keep PCIe reset asserted for 250ms */
+>> >> >>  		msleep(250);
+>> >> >> -		pci_set_pcie_reset_state(pci_dev, pcie_deassert_reset);
+>> >> >> +		pci_set_pcie_reset_state(pci_dev, pcie_deassert_reset, 0);
+>> >> >>  		/* Wait for 2s to reload flash and train the link */
+>> >> >>  		msleep(2000);
+>> >> >>  	}
+>> >> >> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+>> >> >> index 81f06e8..8581a5f 100644
+>> >> >> --- a/drivers/pci/pci.c
+>> >> >> +++ b/drivers/pci/pci.c
+>> >> >> @@ -1558,28 +1558,31 @@ EXPORT_SYMBOL(pci_disable_device);
+>> >> >>   * pcibios_set_pcie_reset_state - set reset state for device dev
+>> >> >>   * @dev: the PCIe device reset
+>> >> >>   * @state: Reset state to enter into
+>> >> >> - *
+>> >> >> + * @probe: Check if the device can take the reset
+>> >> >>   *
+>> >> >>   * Sets the PCIe reset state for the device. This is the default
+>> >> >>   * implementation. Architecture implementations can override this.
+>> >> >>   */
+>> >> >>  int __weak pcibios_set_pcie_reset_state(struct pci_dev *dev,
+>> >> >> -					enum pcie_reset_state state)
+>> >> >> +					enum pcie_reset_state state,
+>> >> >> +					int probe)
+>> >> >>  {
+>> >> >> -	return -EINVAL;
+>> >> >> +	return -ENOTTY;
+>> >> >>  }
+>> >> >>  
+>> >> >>  /**
+>> >> >>   * pci_set_pcie_reset_state - set reset state for device dev
+>> >> >>   * @dev: the PCIe device reset
+>> >> >>   * @state: Reset state to enter into
+>> >> >> - *
+>> >> >> + * @probe: Check if the device can take the reset
+>> >> >>   *
+>> >> >>   * Sets the PCI reset state for the device.
+>> >> >>   */
+>> >> >> -int pci_set_pcie_reset_state(struct pci_dev *dev, enum pcie_reset_state state)
+>> >> >> +int pci_set_pcie_reset_state(struct pci_dev *dev,
+>> >> >> +			     enum pcie_reset_state state,
+>> >> >> +			     int probe)
+>> >> >>  {
+>> >> >> -	return pcibios_set_pcie_reset_state(dev, state);
+>> >> >> +	return pcibios_set_pcie_reset_state(dev, state, probe);
+>> >> >>  }
+>> >> >>  EXPORT_SYMBOL_GPL(pci_set_pcie_reset_state);
+>> >> >>  
+>> >> >> diff --git a/drivers/scsi/ipr.c b/drivers/scsi/ipr.c
+>> >> >> index 9219953..89026f4 100644
+>> >> >> --- a/drivers/scsi/ipr.c
+>> >> >> +++ b/drivers/scsi/ipr.c
+>> >> >> @@ -8317,7 +8317,8 @@ static int ipr_reset_start_bist(struct ipr_cmnd *ipr_cmd)
+>> >> >>  static int ipr_reset_slot_reset_done(struct ipr_cmnd *ipr_cmd)
+>> >> >>  {
+>> >> >>  	ENTER;
+>> >> >> -	pci_set_pcie_reset_state(ipr_cmd->ioa_cfg->pdev, pcie_deassert_reset);
+>> >> >> +	pci_set_pcie_reset_state(ipr_cmd->ioa_cfg->pdev,
+>> >> >> +				 pcie_deassert_reset, 0);
+>> >> >>  	ipr_cmd->job_step = ipr_reset_bist_done;
+>> >> >>  	ipr_reset_start_timer(ipr_cmd, IPR_WAIT_FOR_BIST_TIMEOUT);
+>> >> >>  	LEAVE;
+>> >> >> @@ -8339,7 +8340,7 @@ static int ipr_reset_slot_reset(struct ipr_cmnd *ipr_cmd)
+>> >> >>  	struct pci_dev *pdev = ioa_cfg->pdev;
+>> >> >>  
+>> >> >>  	ENTER;
+>> >> >> -	pci_set_pcie_reset_state(pdev, pcie_warm_reset);
+>> >> >> +	pci_set_pcie_reset_state(pdev, pcie_warm_reset, 0);
+>> >> >>  	ipr_cmd->job_step = ipr_reset_slot_reset_done;
+>> >> >>  	ipr_reset_start_timer(ipr_cmd, IPR_PCI_RESET_TIMEOUT);
+>> >> >>  	LEAVE;
+>> >> >> diff --git a/include/linux/pci.h b/include/linux/pci.h
+>> >> >> index 4e1f17d..052ac63 100644
+>> >> >> --- a/include/linux/pci.h
+>> >> >> +++ b/include/linux/pci.h
+>> >> >> @@ -960,7 +960,8 @@ extern unsigned int pcibios_max_latency;
+>> >> >>  void pci_set_master(struct pci_dev *dev);
+>> >> >>  void pci_clear_master(struct pci_dev *dev);
+>> >> >>  
+>> >> >> -int pci_set_pcie_reset_state(struct pci_dev *dev, enum pcie_reset_state state);
+>> >> >> +int pci_set_pcie_reset_state(struct pci_dev *dev,
+>> >> >> +			     enum pcie_reset_state state, int probe);
+>> >> >>  int pci_set_cacheline_size(struct pci_dev *dev);
+>> >> >>  #define HAVE_PCI_SET_MWI
+>> >> >>  int __must_check pci_set_mwi(struct pci_dev *dev);
+>> >> >> @@ -1648,7 +1649,7 @@ extern unsigned long pci_hotplug_mem_size;
+>> >> >>  void pcibios_disable_device(struct pci_dev *dev);
+>> >> >>  void pcibios_set_master(struct pci_dev *dev);
+>> >> >>  int pcibios_set_pcie_reset_state(struct pci_dev *dev,
+>> >> >> -				 enum pcie_reset_state state);
+>> >> >> +				 enum pcie_reset_state state, int probe);
+>> >> >>  int pcibios_add_device(struct pci_dev *dev);
+>> >> >>  void pcibios_release_device(struct pci_dev *dev);
+>> >> >>  void pcibios_penalize_isa_irq(int irq, int active);
+>> >> >
+>> >> >
+>> >> >
+>> >> 
+>> >
+>> >
+>> >
+>> 
+>
+>
+>
