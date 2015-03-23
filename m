@@ -1,24 +1,28 @@
-Return-Path: <arnd@arndb.de>
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.24])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <agraf@suse.de>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B58091A2ACF
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2015 17:04:50 +1100 (AEDT)
-From: Arnd Bergmann <arnd@arndb.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: Generic IOMMU pooled allocator
-Date: Mon, 23 Mar 2015 07:04:31 +0100
-References: <20150318.222517.1444725543017433108.davem@davemloft.net>
- <20150322220708.GA14061@oracle.com>
- <1427062924.4770.208.camel@kernel.crashing.org>
-In-Reply-To: <1427062924.4770.208.camel@kernel.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id A8C3A1A2B00
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2015 19:36:48 +1100 (AEDT)
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 1252A140146
+ for <linuxppc-dev@ozlabs.org>; Mon, 23 Mar 2015 19:36:48 +1100 (AEDT)
+Message-ID: <550FD09C.1060909@suse.de>
+Date: Mon, 23 Mar 2015 09:36:44 +0100
+From: Alexander Graf <agraf@suse.de>
 MIME-Version: 1.0
-Content-Type: Text/Plain;
-  charset="utf-8"
-Message-Id: <201503230704.31878.arnd@arndb.de>
-Cc: sparclinux@vger.kernel.org, Sowmini Varadhan <sowmini.varadhan@oracle.com>,
- linuxppc-dev@lists.ozlabs.org, David Miller <davem@davemloft.net>,
- paulus@samba.org
+To: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>,
+ Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH v2] powerpc/book3s: Fix the MCE code to use
+ CONFIG_KVM_BOOK3S_64_HANDLER
+References: <20150317103356.27872.65515.stgit@mars>
+In-Reply-To: <20150317103356.27872.65515.stgit@mars>
+Content-Type: text/plain; charset=utf-8
+Cc: David Gibson <dgibson@redhat.com>, Paul Mackerras <paulus@samba.org>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,45 +32,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sunday 22 March 2015, Benjamin Herrenschmidt wrote:
-> On Sun, 2015-03-22 at 18:07 -0400, Sowmini Varadhan wrote:
-> > On (03/23/15 09:02), Benjamin Herrenschmidt wrote:
-> > > > How does this relate to the ARM implementation? There is currently
-> > > > an effort going on to make that one shared with ARM64 and possibly
-> > > > x86. Has anyone looked at both the PowerPC and ARM ways of doing the
-> > > > allocation to see if we could pick one of the two to work on
-> > > > all architectures?
-> > > 
-> > > What I see in ARM is horribly complex, I can't quite make sense of it
-> > > in a couple of minutes of looking at it, and doesn't seem to address the
-> > > basic issue we are addressing here which is the splitting of the iommu
-> > > table lock.
-> > 
-> > Amen to that.. I thought it was just me :-)
 
-Two problems on ARM IOMMU hardware are:
 
-- a very wide range of incompatible approaches, from a simple sw-loaded
-  iotlb with just a few hugepage entries to some rather complex
-  ones
-- a rather overdesigned "SMMU" that will be used by half the SoCs, but
-  with some of them implementing slightly incompatible variants.
-
-> > I plan to go through the code to see if/where the armd iommu code
-> > does its locking and achieves its parallelism, but the mapping
-> > between the sparc/powerpc approach and armd is not immediately obvious
-> > to me.
-
-My guess is that the ARM code so far has been concerned mainly with
-getting things to work in the first place, but scalability problems
-will only be seen when there are faster CPU cores become available.
-
-> We might have more chance with x86_64 though... They would surely have
-> similar scalability issues.
+On 17.03.15 11:44, Mahesh J Salgaonkar wrote:
+> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 > 
+> commit id 2ba9f0d has changed CONFIG_KVM_BOOK3S_64_HV to tristate to allow
+> HV/PR bits to be built as modules. But the MCE code still depends on
+> CONFIG_KVM_BOOK3S_64_HV which is wrong. When user selects
+> CONFIG_KVM_BOOK3S_64_HV=m to build HV/PR bits as a separate module the
+> relevant MCE code gets excluded.
+> 
+> This patch fixes the MCE code to use CONFIG_KVM_BOOK3S_64_HANDLER. This
+> makes sure that the relevant MCE code is included when HV/PR bits
+> are built as a separate modules.
+> 
+> Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 
-I believe the complexity of the modern Intel and AMD IOMMUs is similar
-to the ARM SMMU, which appears to have been modeled after the Intel
-one to some degree.
+Please CC the kvm@vger and kvm-ppc@vger mailing lists on patches that
+are KVM related.
 
-	Arnd
+In this case, please resend with the proper CCs, so that I can pick it
+up into my queue :). Also on resend add the lines that Paul suggested
+(CC: stable, Acked-by) after your SoB line.
+
+
+Alex
