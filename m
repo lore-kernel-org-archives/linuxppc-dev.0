@@ -1,35 +1,35 @@
 Return-Path: <tyreld@linux.vnet.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BBB961A2AC0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2015 07:21:58 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47E521A2B73
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2015 07:22:21 +1100 (AEDT)
 Received: from /spool/local
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
- Mon, 23 Mar 2015 14:21:55 -0600
-Received: from b03cxnp07028.gho.boulder.ibm.com
- (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id DB94E1FF0027
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2015 14:13:04 -0600 (MDT)
+ Mon, 23 Mar 2015 14:22:18 -0600
+Received: from b03cxnp07029.gho.boulder.ibm.com
+ (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 45FEE3E4003F
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2015 14:22:16 -0600 (MDT)
 Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
- by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t2NKKAXn32833770
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2015 13:20:10 -0700
+ by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t2NKMGPx49545250
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2015 13:22:16 -0700
 Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
  by d03av04.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t2NKLpSk018315
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2015 14:21:53 -0600
-Message-ID: <551075DC.4050909@linux.vnet.ibm.com>
-Date: Mon, 23 Mar 2015 13:21:48 -0700
+ t2NKMEdj020116
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2015 14:22:15 -0600
+Message-ID: <551075F3.7040107@linux.vnet.ibm.com>
+Date: Mon, 23 Mar 2015 13:22:11 -0700
 From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
 MIME-Version: 1.0
 To: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc/pseries: Introduce api_version to migration sysfs
- interface
-References: <1425522338-14271-1-git-send-email-tyreld@linux.vnet.ibm.com>
-In-Reply-To: <1425522338-14271-1-git-send-email-tyreld@linux.vnet.ibm.com>
+Subject: Re: [PATCH v2] powerpc/pseries: Simplify check for suspendability
+ during suspend/migration
+References: <1425500547-22777-1-git-send-email-tyreld@linux.vnet.ibm.com>
+In-Reply-To: <1425500547-22777-1-git-send-email-tyreld@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=windows-1252
 Cc: Cyril Bur <cyrilbur@gmail.com>, Nathan Fontenot <nfont@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -41,25 +41,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03/04/2015 06:25 PM, Tyrel Datwyler wrote:
-> The /sys/kernel/mobility/migration interface was added all the way back
-> in 2.6.37. However, the drmgr userspace tool was never augmented to use
-> this interface to perfrom migrations. Instead it has continued using a
-> faux rtas call coupled with performing the device tree update processing
-> in userspace and communicating it back to the kernel via the ugly
-> /proc/ppc64/ofdt interface.
+On 03/04/2015 12:22 PM, Tyrel Datwyler wrote:
+> During suspend/migration operation we must wait for the VASI state reported
+> by the hypervisor to become Suspending prior to making the ibm,suspend-me
+> RTAS call. Calling routines to rtas_ibm_supend_me() pass a vasi_state variable
+> that exposes the VASI state to the caller. This is unnecessary as the caller
+> only really cares about the following three conditions; if there is an error
+> we should bailout, success indicating we have suspended and woken back up so
+> proceed to device tree updated, or we are not suspendable yet so try calling
+> rtas_ibm_suspend_me again shortly.
 > 
-> Up until 3.12 the device tree update code in the kernel was badly broken
-> and bit rotting. This code was fixed in 3.12 and is now utilized by the
-> kernel suspend code as of 3.15. The kernel is now better suited to
-> handle the post-mobility fixup of the device tree and drmgr should be
-> transitioned to using the sysfs migration interface.
-> 
-> This patch introduces the api_version sysfs file to /sys/kernel/mobility
-> as a means for drmgr to query the current implementation level of the
-> kernel migration code. This initial versioning indicates it is capable
-> of perfroming all current PAPR requirements for migration including the
-> post-mobility firmware activation and device tree update.
+> This patch removes the extraneous vasi_state variable and simply uses the
+> return code to communicate how to proceed. We either succeed, fail, or get
+> -EAGAIN in which case we sleep for a second before trying to call
+> rtas_ibm_suspend_me again.
 > 
 > Signed-off-by: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
 > Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>
@@ -70,43 +65,130 @@ Ping. Does this look acceptable for -next?
 
 -Tyrel
 
->  arch/powerpc/platforms/pseries/mobility.c | 17 ++++++++++++++++-
->  1 file changed, 16 insertions(+), 1 deletion(-)
 > 
+> Changes in v2:
+> - Addressed Cyril's comments as follow:
+> - Removed unused vasi_rc variable
+> - Kept return behavior of ppc_rtas the same in the case of VASI error
+> - Updated rtas_ibm_suspend_me function definition for !CONFIG_PPC_PSERIES
+> 
+>  arch/powerpc/include/asm/rtas.h           |  2 +-
+>  arch/powerpc/kernel/rtas.c                | 26 +++++++++++++-------------
+>  arch/powerpc/platforms/pseries/mobility.c |  9 +++------
+>  3 files changed, 17 insertions(+), 20 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/rtas.h b/arch/powerpc/include/asm/rtas.h
+> index 2e23e92..fc85eb0 100644
+> --- a/arch/powerpc/include/asm/rtas.h
+> +++ b/arch/powerpc/include/asm/rtas.h
+> @@ -327,7 +327,7 @@ extern int rtas_suspend_cpu(struct rtas_suspend_me_data *data);
+>  extern int rtas_suspend_last_cpu(struct rtas_suspend_me_data *data);
+>  extern int rtas_online_cpus_mask(cpumask_var_t cpus);
+>  extern int rtas_offline_cpus_mask(cpumask_var_t cpus);
+> -extern int rtas_ibm_suspend_me(u64 handle, int *vasi_return);
+> +extern int rtas_ibm_suspend_me(u64 handle);
+> 
+>  struct rtc_time;
+>  extern unsigned long rtas_get_boot_time(void);
+> diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
+> index 21c45a2..b9a7b89 100644
+> --- a/arch/powerpc/kernel/rtas.c
+> +++ b/arch/powerpc/kernel/rtas.c
+> @@ -897,7 +897,7 @@ int rtas_offline_cpus_mask(cpumask_var_t cpus)
+>  }
+>  EXPORT_SYMBOL(rtas_offline_cpus_mask);
+> 
+> -int rtas_ibm_suspend_me(u64 handle, int *vasi_return)
+> +int rtas_ibm_suspend_me(u64 handle)
+>  {
+>  	long state;
+>  	long rc;
+> @@ -919,13 +919,11 @@ int rtas_ibm_suspend_me(u64 handle, int *vasi_return)
+>  		printk(KERN_ERR "rtas_ibm_suspend_me: vasi_state returned %ld\n",rc);
+>  		return rc;
+>  	} else if (state == H_VASI_ENABLED) {
+> -		*vasi_return = RTAS_NOT_SUSPENDABLE;
+> -		return 0;
+> +		return -EAGAIN;
+>  	} else if (state != H_VASI_SUSPENDING) {
+>  		printk(KERN_ERR "rtas_ibm_suspend_me: vasi_state returned state %ld\n",
+>  		       state);
+> -		*vasi_return = -1;
+> -		return 0;
+> +		return -EIO;
+>  	}
+> 
+>  	if (!alloc_cpumask_var(&offline_mask, GFP_TEMPORARY))
+> @@ -972,7 +970,7 @@ out:
+>  	return atomic_read(&data.error);
+>  }
+>  #else /* CONFIG_PPC_PSERIES */
+> -int rtas_ibm_suspend_me(u64 handle, int *vasi_return)
+> +int rtas_ibm_suspend_me(u64 handle)
+>  {
+>  	return -ENOSYS;
+>  }
+> @@ -1022,7 +1020,6 @@ asmlinkage int ppc_rtas(struct rtas_args __user *uargs)
+>  	unsigned long flags;
+>  	char *buff_copy, *errbuf = NULL;
+>  	int nargs, nret, token;
+> -	int rc;
+> 
+>  	if (!capable(CAP_SYS_ADMIN))
+>  		return -EPERM;
+> @@ -1054,15 +1051,18 @@ asmlinkage int ppc_rtas(struct rtas_args __user *uargs)
+>  	if (token == ibm_suspend_me_token) {
+> 
+>  		/*
+> -		 * rtas_ibm_suspend_me assumes args are in cpu endian, or at least the
+> -		 * hcall within it requires it.
+> +		 * rtas_ibm_suspend_me assumes the streamid handle is in cpu
+> +		 * endian, or at least the hcall within it requires it.
+>  		 */
+> -		int vasi_rc = 0;
+> +		int rc = 0;
+>  		u64 handle = ((u64)be32_to_cpu(args.args[0]) << 32)
+>  		              | be32_to_cpu(args.args[1]);
+> -		rc = rtas_ibm_suspend_me(handle, &vasi_rc);
+> -		args.rets[0] = cpu_to_be32(vasi_rc);
+> -		if (rc)
+> +		rc = rtas_ibm_suspend_me(handle);
+> +		if (rc == -EAGAIN)
+> +			args.rets[0] = cpu_to_be32(RTAS_NOT_SUSPENDABLE);
+> +		else if (rc == -EIO)
+> +			args.rets[0] = cpu_to_be32(-1);
+> +		else if (rc)
+>  			return rc;
+>  		goto copy_return;
+>  	}
 > diff --git a/arch/powerpc/platforms/pseries/mobility.c b/arch/powerpc/platforms/pseries/mobility.c
-> index bdf62c1..ceb18d3 100644
+> index 90cf3dc..c489701 100644
 > --- a/arch/powerpc/platforms/pseries/mobility.c
 > +++ b/arch/powerpc/platforms/pseries/mobility.c
-> @@ -338,7 +338,16 @@ static ssize_t migrate_store(struct class *class, struct class_attribute *attr,
->  	return count;
->  }
-> 
-> +/*
-> + * Used by drmgr to determine the kernel behavior of the migration interface.
-> + *
-> + * Version 1: Performs all PAPR requirements for migration including
-> + *	firmware activation and device tree update.
-> + */
-> +#define MIGRATION_API_VERSION	1
-> +
->  static CLASS_ATTR(migration, S_IWUSR, NULL, migrate_store);
-> +static CLASS_ATTR_STRING(api_version, S_IRUGO, __stringify(MIGRATION_API_VERSION));
-> 
->  static int __init mobility_sysfs_init(void)
+> @@ -318,22 +318,19 @@ static ssize_t migrate_store(struct class *class, struct class_attribute *attr,
 >  {
-> @@ -349,7 +358,13 @@ static int __init mobility_sysfs_init(void)
->  		return -ENOMEM;
+>  	u64 streamid;
+>  	int rc;
+> -	int vasi_rc = 0;
 > 
->  	rc = sysfs_create_file(mobility_kobj, &class_attr_migration.attr);
-> +	if (rc)
-> +		pr_err("mobility: unable to create migration sysfs file (%d)\n", rc);
+>  	rc = kstrtou64(buf, 0, &streamid);
+>  	if (rc)
+>  		return rc;
 > 
-> -	return rc;
-> +	rc = sysfs_create_file(mobility_kobj, &class_attr_api_version.attr.attr);
-> +	if (rc)
-> +		pr_err("mobility: unable to create api_version sysfs file (%d)\n", rc);
-> +
-> +	return 0;
->  }
->  machine_device_initcall(pseries, mobility_sysfs_init);
+>  	do {
+> -		rc = rtas_ibm_suspend_me(streamid, &vasi_rc);
+> -		if (!rc && vasi_rc == RTAS_NOT_SUSPENDABLE)
+> +		rc = rtas_ibm_suspend_me(streamid);
+> +		if (rc == -EAGAIN)
+>  			ssleep(1);
+> -	} while (!rc && vasi_rc == RTAS_NOT_SUSPENDABLE);
+> +	} while (rc == -EAGAIN);
+> 
+>  	if (rc)
+>  		return rc;
+> -	if (vasi_rc)
+> -		return vasi_rc;
+> 
+>  	post_mobility_fixup();
+>  	return count;
 > 
