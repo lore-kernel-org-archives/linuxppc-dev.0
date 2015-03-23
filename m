@@ -1,36 +1,36 @@
 Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A2DB71A2ADE
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2015 08:49:10 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8D5881A2ADE
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2015 08:57:29 +1100 (AEDT)
 Received: from /spool/local
- by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Mon, 23 Mar 2015 17:49:08 -0400
-Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com
- [9.57.198.28])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 5E8606E8045
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2015 17:40:56 -0400 (EDT)
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
- by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t2NLn5oB29491334
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2015 21:49:06 GMT
-Received: from d01av02.pok.ibm.com (localhost [127.0.0.1])
- by d01av02.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t2NLmnrX013887
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2015 17:48:49 -0400
-Date: Mon, 23 Mar 2015 14:47:56 -0700
+ Mon, 23 Mar 2015 15:57:27 -0600
+Received: from b03cxnp08027.gho.boulder.ibm.com
+ (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 663053E40044
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2015 15:57:25 -0600 (MDT)
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+ by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t2NLvPlf33292442
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2015 14:57:25 -0700
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av04.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t2NLuDlB011569
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2015 15:56:14 -0600
+Date: Mon, 23 Mar 2015 14:55:19 -0700
 From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [9/9] powerpc/hv-24x7: Add missing put_cpu_var()
-Message-ID: <20150323214755.GB23366@us.ibm.com>
-References: <1424210434-28070-10-git-send-email-sukadev@linux.vnet.ibm.com>
- <20150317023941.95DDD14010F@ozlabs.org>
+Subject: Re: [8/9] powerpc/hv-24x7: Break up single_24x7_request
+Message-ID: <20150323215519.GA6013@us.ibm.com>
+References: <1424210434-28070-9-git-send-email-sukadev@linux.vnet.ibm.com>
+ <20150317022358.8DE1D14011D@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150317023941.95DDD14010F@ozlabs.org>
+In-Reply-To: <20150317022358.8DE1D14011D@ozlabs.org>
 Cc: peterz@infradead.org, linuxppc-dev@lists.ozlabs.org,
  Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -43,13 +43,37 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 Michael Ellerman [mpe@ellerman.id.au] wrote:
-| On Tue, 2015-17-02 at 22:00:34 UTC, Sukadev Bhattiprolu wrote:
-| > Add missing put_cpu_var() for 24x7 requests.
+| > +static void start_24x7_get_data(struct hv_24x7_request_buffer *request_buffer,
+| > +			struct hv_24x7_data_result_buffer *result_buffer)
+| > +{
 | 
-| When did it go missing? I assume in upstream, in which case this should be a
-| separate patch which I could merge for 4.0.
+| Just init_24x7_request() ?
 
-It went missing in 3.18-rc3 (commit f34b6c7). I will resend this
-separately.
+Sure.
+
+| 
+| > +
+| > +	memset(request_buffer, 0, 4096);
+| > +	memset(result_buffer, 0, 4096);
+| > +
+| > +	request_buffer->interface_version = HV_24X7_IF_VERSION_CURRENT;
+| > +	/* memset above set request_buffer->num_requests to 0 */
+| > +}
+| > +
+| > +/*
+| > + * Commit (i.e perform) the H_GET_24x7_DATA hcall using the data collected
+| > + * by 'start_24x7_get_data()' and 'add_event_to_24x7_request()'.
+| > + */
+| > +static int commit_24x7_get_data(struct hv_24x7_request_buffer *request_buffer,
+| > +			struct hv_24x7_data_result_buffer *result_buffer)
+| > +{
+| 
+| It don't like "commit" that is a loaded term.
+| 
+| Just make_24x7_request() perhaps?
+
+Sure.
+
+Thanks
 
 Sukadev
