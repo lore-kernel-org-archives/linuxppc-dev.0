@@ -1,19 +1,22 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <paulus@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7D29F1A2ADC
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2015 14:11:41 +1100 (AEDT)
-In-Reply-To: <20150205193604.24669.67159.stgit@localhost.localdomain>
-To: Hari Bathini <hbathini@linux.vnet.ibm.com>, Tony Luck <tony.luck@intel.com>,
- Kees Cook <keescook@chromium.org>, Anton Vorontsov <anton@enomsg.org>,
- lkml <linux-kernel@vger.kernel.org>, linuxppc-dev <linuxppc-dev@ozlabs.org>,
- Colin Cross <ccross@android.com>, <scottwood@freescale.com>
-From: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [v5,1/4] powerpc/nvram: move generic code for nvram and pstore
-Message-Id: <20150323031141.5E9B9140142@ozlabs.org>
-Date: Mon, 23 Mar 2015 14:11:41 +1100 (AEDT)
-Cc: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5B5E51A2B56
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2015 14:12:09 +1100 (AEDT)
+Date: Mon, 23 Mar 2015 14:12:05 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
+Subject: Re: [PATCH v2] powerpc/book3s: Fix the MCE code to use
+ CONFIG_KVM_BOOK3S_64_HANDLER
+Message-ID: <20150323031205.GB8257@drongo>
+References: <20150317103356.27872.65515.stgit@mars>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20150317103356.27872.65515.stgit@mars>
+Cc: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>, David Gibson <dgibson@redhat.com>,
+ Alexander Graf <agraf@suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,58 +26,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2015-05-02 at 19:36:04 UTC, Hari Bathini wrote:
-> With minor checks, we can move most of the code for nvram
-> under pseries to a common place to be re-used by other
-> powerpc platforms like powernv. This patch moves such
-> common code to arch/powerpc/kernel/nvram_64.c file.
+On Tue, Mar 17, 2015 at 04:14:41PM +0530, Mahesh J Salgaonkar wrote:
+> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 > 
-> Signed-off-by: Hari Bathini <hbathini@linux.vnet.ibm.com>
+> commit id 2ba9f0d has changed CONFIG_KVM_BOOK3S_64_HV to tristate to allow
+> HV/PR bits to be built as modules. But the MCE code still depends on
+> CONFIG_KVM_BOOK3S_64_HV which is wrong. When user selects
+> CONFIG_KVM_BOOK3S_64_HV=m to build HV/PR bits as a separate module the
+> relevant MCE code gets excluded.
+> 
+> This patch fixes the MCE code to use CONFIG_KVM_BOOK3S_64_HANDLER. This
+> makes sure that the relevant MCE code is included when HV/PR bits
+> are built as a separate modules.
+> 
+> Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 > ---
->  arch/powerpc/include/asm/nvram.h       |   50 ++
->  arch/powerpc/include/asm/rtas.h        |    4 
->  arch/powerpc/kernel/nvram_64.c         |  656 ++++++++++++++++++++++++++++++++
->  arch/powerpc/platforms/pseries/nvram.c |  665 --------------------------------
->  4 files changed, 714 insertions(+), 661 deletions(-)
+> Hi Michael,
+> 	This patch should also goto stable.
 > 
-> diff --git a/arch/powerpc/kernel/nvram_64.c b/arch/powerpc/kernel/nvram_64.c
-> index 34f7c9b..42e5c6a 100644
-> --- a/arch/powerpc/kernel/nvram_64.c
-> +++ b/arch/powerpc/kernel/nvram_64.c
-> @@ -26,6 +26,9 @@
+>  arch/powerpc/kernel/exceptions-64s.S |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/arch/powerpc/kernel/exceptions-64s.S b/arch/powerpc/kernel/exceptions-64s.S
+> index c2df815..9519e6b 100644
+> --- a/arch/powerpc/kernel/exceptions-64s.S
+> +++ b/arch/powerpc/kernel/exceptions-64s.S
+> @@ -1408,7 +1408,7 @@ machine_check_handle_early:
+>  	bne	9f			/* continue in V mode if we are. */
+>  
+>  5:
+> -#ifdef CONFIG_KVM_BOOK3S_64_HV
+> +#ifdef CONFIG_KVM_BOOK3S_64_HANDLER
+>  	/*
+>  	 * We are coming from kernel context. Check if we are coming from
+>  	 * guest. if yes, then we can continue. We will fall through
 
-...
-
-> +/* Derived from logfs_compress() */
-> +static int nvram_compress(const void *in, void *out, size_t inlen,
-> +							size_t outlen)
-> +{
-> +	int err, ret;
-> +
-> +	ret = -EIO;
-> +	err = zlib_deflateInit2(&stream, COMPR_LEVEL, Z_DEFLATED, WINDOW_BITS,
-> +						MEM_LEVEL, Z_DEFAULT_STRATEGY);
-> +	if (err != Z_OK)
-> +		goto error;
-
-
-This fails the build for ppc64e_defconfig:
-
-arch/powerpc/kernel/built-in.o: In function `.oops_to_nvram':
-nvram_64.c:(.text+0x12148): undefined reference to `.zlib_deflateInit2'
-nvram_64.c:(.text+0x12178): undefined reference to `.zlib_deflate'
-nvram_64.c:(.text+0x1218c): undefined reference to `.zlib_deflateEnd'
-arch/powerpc/kernel/built-in.o: In function `.nvram_init_oops_partition':
-(.init.text+0x41e0): undefined reference to `.zlib_deflate_workspacesize'
-make: *** [vmlinux] Error 1
-
-
-It used to be OK because PSERIES selects ZLIB_DEFLATE.
-
-I decided to just force ZLIB_DEFLATE on for PPC64. That will add ~22K to the
-ppc64e kernel image.
-
-Scott, if you guys are bothered by that let me know and we can add some #ifdefs
-to avoid it.
-
-cheers
+Acked-by: Paul Mackerras <paulus@samba.org>
+Cc: stable@vger.kernel.org  # v3.14+
