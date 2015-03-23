@@ -2,32 +2,22 @@ Return-Path: <mgorman@suse.de>
 Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
  (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C0A3B1A2ADD
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2015 23:01:38 +1100 (AEDT)
-Date: Mon, 23 Mar 2015 12:01:31 +0000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6F6E01A2AE3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2015 23:24:08 +1100 (AEDT)
 From: Mel Gorman <mgorman@suse.de>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH 4/4] mm: numa: Slow PTE scan rate if migration failures
- occur
-Message-ID: <20150323120131.GB4701@suse.de>
-References: <20150317220840.GC28621@dastard>
- <CA+55aFwne-fe_Gg-_GTUo+iOAbbNpLBa264JqSFkH79EULyAqw@mail.gmail.com>
- <CA+55aFy-Mw74rAdLMMMUgnsG3ZttMWVNGz7CXZJY7q9fqyRYfg@mail.gmail.com>
- <CA+55aFyxA9u2cVzV+S7TSY9ZvRXCX=z22YAbi9mdPVBKmqgR5g@mail.gmail.com>
- <20150319224143.GI10105@dastard>
- <CA+55aFy5UeNnFUTi619cs3b9Up2NQ1wbuyvcCS614+o3=z=wBQ@mail.gmail.com>
- <20150320002311.GG28621@dastard>
- <CA+55aFyqXDVv9JkkhvM26x6PC5V82corR7HQNxmkeGZjOCxD=A@mail.gmail.com>
- <20150320041357.GO10105@dastard>
- <CA+55aFx1pywykWa0ThcHgE7wzdVuyOBSx27iyx_FtZpYSJbKGQ@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-In-Reply-To: <CA+55aFx1pywykWa0ThcHgE7wzdVuyOBSx27iyx_FtZpYSJbKGQ@mail.gmail.com>
-Cc: Dave Chinner <david@fromorbit.com>,
+To: Dave Chinner <david@fromorbit.com>
+Subject: [PATCH 1/3] mm: numa: Group related processes based on VMA flags
+ instead of page table flags
+Date: Mon, 23 Mar 2015 12:24:01 +0000
+Message-Id: <1427113443-20973-2-git-send-email-mgorman@suse.de>
+In-Reply-To: <1427113443-20973-1-git-send-email-mgorman@suse.de>
+References: <1427113443-20973-1-git-send-email-mgorman@suse.de>
+Cc: linuxppc-dev@lists.ozlabs.org,
  Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com,
  Linux-MM <linux-mm@kvack.org>, Aneesh Kumar <aneesh.kumar@linux.vnet.ibm.com>,
  Andrew Morton <akpm@linux-foundation.org>,
- ppc-dev <linuxppc-dev@lists.ozlabs.org>, Ingo Molnar <mingo@kernel.org>
+ Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@kernel.org>,
+ Mel Gorman <mgorman@suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,39 +27,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Mar 20, 2015 at 10:02:23AM -0700, Linus Torvalds wrote:
-> On Thu, Mar 19, 2015 at 9:13 PM, Dave Chinner <david@fromorbit.com> wrote:
-> >
-> > Testing now. It's a bit faster - three runs gave 7m35s, 7m20s and
-> > 7m36s. IOWs's a bit better, but not significantly. page migrations
-> > are pretty much unchanged, too:
-> >
-> >            558,632      migrate:mm_migrate_pages ( +-  6.38% )
-> 
-> Ok. That was kind of the expected thing.
-> 
-> I don't really know the NUMA fault rate limiting code, but one thing
-> that strikes me is that if it tries to balance the NUMA faults against
-> the *regular* faults, then maybe just the fact that we end up taking
-> more COW faults after a NUMA fault then means that the NUMA rate
-> limiting code now gets over-eager (because it sees all those extra
-> non-numa faults).
-> 
-> Mel, does that sound at all possible? I really have never looked at
-> the magic automatic rate handling..
-> 
+Threads that share writable data within pages are grouped together as
+related tasks. This decision is based on whether the PTE is marked dirty
+which is subject to timing races between the PTE scanner update and when the
+application writes the page. If the page is file-backed, then background
+flushes and sync also affect placement. This is unpredictable behaviour
+which is impossible to reason about so this patch makes grouping decisions
+based on the VMA flags.
 
-It should not be trying to balance against regular faults as it has no
-information on it. The trapping of additional faults to mark the PTE
-writable will alter timing so it indirectly affects how many migration
-faults there but this is only a side-effect IMO.
+Signed-off-by: Mel Gorman <mgorman@suse.de>
+---
+ mm/huge_memory.c | 13 ++-----------
+ mm/memory.c      | 19 +++++++++++--------
+ 2 files changed, 13 insertions(+), 19 deletions(-)
 
-There is more overhead now due to losing the writable information and
-that should be reduced so I tried a few approaches.  Ultimately, the one
-that performed the best and was easiest to understand simply preserved
-the writable bit across the protection update and page fault. I'll post
-it later when I stick a changelog on it.
-
+diff --git a/mm/huge_memory.c b/mm/huge_memory.c
+index 626e93db28ba..2f12e9fcf1a2 100644
+--- a/mm/huge_memory.c
++++ b/mm/huge_memory.c
+@@ -1291,17 +1291,8 @@ int do_huge_pmd_numa_page(struct mm_struct *mm, struct vm_area_struct *vma,
+ 		flags |= TNF_FAULT_LOCAL;
+ 	}
+ 
+-	/*
+-	 * Avoid grouping on DSO/COW pages in specific and RO pages
+-	 * in general, RO pages shouldn't hurt as much anyway since
+-	 * they can be in shared cache state.
+-	 *
+-	 * FIXME! This checks "pmd_dirty()" as an approximation of
+-	 * "is this a read-only page", since checking "pmd_write()"
+-	 * is even more broken. We haven't actually turned this into
+-	 * a writable page, so pmd_write() will always be false.
+-	 */
+-	if (!pmd_dirty(pmd))
++	/* See similar comment in do_numa_page for explanation */
++	if (!(vma->vm_flags & VM_WRITE))
+ 		flags |= TNF_NO_GROUP;
+ 
+ 	/*
+diff --git a/mm/memory.c b/mm/memory.c
+index 411144f977b1..20beb6647dba 100644
+--- a/mm/memory.c
++++ b/mm/memory.c
+@@ -3069,16 +3069,19 @@ static int do_numa_page(struct mm_struct *mm, struct vm_area_struct *vma,
+ 	}
+ 
+ 	/*
+-	 * Avoid grouping on DSO/COW pages in specific and RO pages
+-	 * in general, RO pages shouldn't hurt as much anyway since
+-	 * they can be in shared cache state.
++	 * Avoid grouping on RO pages in general. RO pages shouldn't hurt as
++	 * much anyway since they can be in shared cache state. This misses
++	 * the case where a mapping is writable but the process never writes
++	 * to it but pte_write gets cleared during protection updates and
++	 * pte_dirty has unpredictable behaviour between PTE scan updates,
++	 * background writeback, dirty balancing and application behaviour.
+ 	 *
+-	 * FIXME! This checks "pmd_dirty()" as an approximation of
+-	 * "is this a read-only page", since checking "pmd_write()"
+-	 * is even more broken. We haven't actually turned this into
+-	 * a writable page, so pmd_write() will always be false.
++	 * TODO: Note that the ideal here would be to avoid a situation where a
++	 * NUMA fault is taken immediately followed by a write fault in
++	 * some cases which would have lower overhead overall but would be
++	 * invasive as the fault paths would need to be unified.
+ 	 */
+-	if (!pte_dirty(pte))
++	if (!(vma->vm_flags & VM_WRITE))
+ 		flags |= TNF_NO_GROUP;
+ 
+ 	/*
 -- 
-Mel Gorman
-SUSE Labs
+2.1.2
