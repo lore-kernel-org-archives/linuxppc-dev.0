@@ -1,28 +1,24 @@
-Return-Path: <alex.williamson@redhat.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <dgibson@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 308321A011B
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2015 14:34:44 +1100 (AEDT)
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 7CF0E14008F
- for <linuxppc-dev@ozlabs.org>; Mon, 23 Mar 2015 14:34:43 +1100 (AEDT)
-Message-ID: <1427081673.3643.547.camel@redhat.com>
-Subject: Re: [PATCH v3 1/2] PCI: One more parameter to
- pci_set_pcie_reset_state()
-From: Alex Williamson <alex.williamson@redhat.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 81DBB1A2AC7
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2015 14:42:13 +1100 (AEDT)
+Date: Mon, 23 Mar 2015 14:43:03 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
 To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Date: Sun, 22 Mar 2015 21:34:33 -0600
-In-Reply-To: <1427079771-18472-1-git-send-email-gwshan@linux.vnet.ibm.com>
-References: <1427079771-18472-1-git-send-email-gwshan@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linux-pci@vger.kernel.org, linuxppc-dev@ozlabs.org,
- Brian King <brking@us.ibm.com>, cascardo@linux.vnet.ibm.com,
- bhelgaas@google.com, Frank Haverkamp <haver@linux.vnet.ibm.com>,
- Ian Munsie <imunsie@au1.ibm.com>
+Subject: Re: [PATCH v3 2/2] drivers/vfio: Support EEH error injection
+Message-ID: <20150323034303.GL25043@voom.fritz.box>
+References: <1426881525-11044-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <1426881525-11044-3-git-send-email-gwshan@linux.vnet.ibm.com>
+ <20150323013945.GE25043@voom.fritz.box>
+ <20150323015636.GA9430@shangw>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="ucfHZChuBC0NsER/"
+In-Reply-To: <20150323015636.GA9430@shangw>
+Cc: aik@ozlabs.ru, linuxppc-dev@ozlabs.org, alex.williamson@redhat.com,
+ agraf@suse.de, kvm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,214 +28,185 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2015-03-23 at 14:02 +1100, Gavin Shan wrote:
-> The patch adds one more parameter ("probe") to pci_set_pcie_reset_state(),
-> which allows to check if one particular PCI device can be resetted by the
-> function. The function will be reused to support PCI device specific methods
-> maintained in pci_dev_reset_methods[] in subsequent patch.
-> 
-> Cc: Brian King <brking@us.ibm.com>
-> Cc: Frank Haverkamp <haver@linux.vnet.ibm.com>
-> Cc: Ian Munsie <imunsie@au1.ibm.com>
-> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
-> ---
-> v3: Fix arguments of pci_set_pcie_reset_state() in cxl driver
-> v2: Reimplemented based on pci_set_pcie_reset_state()
-> ---
->  arch/powerpc/kernel/eeh.c       | 14 ++++++++++----
->  drivers/misc/cxl/pci.c          |  2 +-
->  drivers/misc/genwqe/card_base.c |  9 +++++++--
->  drivers/pci/pci.c               | 15 +++++++++------
->  drivers/scsi/ipr.c              |  5 +++--
->  include/linux/pci.h             |  5 +++--
->  6 files changed, 33 insertions(+), 17 deletions(-)
 
+--ucfHZChuBC0NsER/
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Argh, you're trying to make pci_set_pcie_reset_state() compatible with
-pci_dev_specific_reset(), so it can be called via pci_reset_function(),
-but the whole point of the pci_reset_function() interface is to reset a
-*single* function without disturbing anything else.  These patches make
-no effort at all to limit the set of affected devices to a single
-function and take great liberties using PCI_ANY_ID for vendors.  My take
-on the powerpc version of pcibios_set_pcie_reset_state() is that it's
-effectively a slot reset, so why not hook into the
-pci_reset_hotplug_slot() via the hotplug slot ops?  Please also use
-cover letters.  Thanks,
+On Mon, Mar 23, 2015 at 12:56:36PM +1100, Gavin Shan wrote:
+> On Mon, Mar 23, 2015 at 12:39:45PM +1100, David Gibson wrote:
+> >On Sat, Mar 21, 2015 at 06:58:45AM +1100, Gavin Shan wrote:
+> >> The patch adds one more EEH sub-command (VFIO_EEH_PE_INJECT_ERR)
+> >> to inject the specified EEH error, which is represented by
+> >> (struct vfio_eeh_pe_err), to the indicated PE for testing purpose.
+> >>=20
+> >> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+> >
+> >Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
+> >
+> >> ---
+> >>  Documentation/vfio.txt        | 12 ++++++++++++
+> >>  drivers/vfio/vfio_spapr_eeh.c | 10 ++++++++++
+> >>  include/uapi/linux/vfio.h     | 36 ++++++++++++++++++++++++++++++++++=
++-
+> >>  3 files changed, 57 insertions(+), 1 deletion(-)
+> >>=20
+> >> diff --git a/Documentation/vfio.txt b/Documentation/vfio.txt
+> >> index 96978ec..c6e11a3 100644
+> >> --- a/Documentation/vfio.txt
+> >> +++ b/Documentation/vfio.txt
+> >> @@ -385,6 +385,18 @@ The code flow from the example above should be sl=
+ightly changed:
+> >> =20
+> >>  	....
+> >> =20
+> >> +	/* Inject EEH error, which is expected to be caused by 32-bits
+> >> +	 * config load.
+> >> +	 */
+> >> +	pe_op.op =3D VFIO_EEH_PE_INJECT_ERR;
+> >> +	pe_op.err.type =3D VFIO_EEH_ERR_TYPE_32;
+> >> +	pe_op.err.func =3D VFIO_EEH_ERR_FUNC_LD_CFG_ADDR;
+> >> +	pe_op.err.addr =3D 0ul;
+> >> +	pe_op.err.mask =3D 0ul;
+> >> +	ioctl(container, VFIO_EEH_PE_OP, &pe_op);
+> >> +
+> >> +	....
+> >> +
+> >>  	/* When 0xFF's returned from reading PCI config space or IO BARs
+> >>  	 * of the PCI device. Check the PE's state to see if that has been
+> >>  	 * frozen.
+> >> diff --git a/drivers/vfio/vfio_spapr_eeh.c b/drivers/vfio/vfio_spapr_e=
+eh.c
+> >> index 5fa42db..38edeb4 100644
+> >> --- a/drivers/vfio/vfio_spapr_eeh.c
+> >> +++ b/drivers/vfio/vfio_spapr_eeh.c
+> >> @@ -85,6 +85,16 @@ long vfio_spapr_iommu_eeh_ioctl(struct iommu_group =
+*group,
+> >>  		case VFIO_EEH_PE_CONFIGURE:
+> >>  			ret =3D eeh_pe_configure(pe);
+> >>  			break;
+> >> +		case VFIO_EEH_PE_INJECT_ERR:
+> >> +			minsz =3D offsetofend(struct vfio_eeh_pe_op, err.mask);
+> >> +			if (op.argsz < minsz)
+> >> +				return -EINVAL;
+> >> +			if (copy_from_user(&op, (void __user *)arg, minsz))
+> >> +				return -EFAULT;
+> >> +
+> >> +			ret =3D eeh_pe_inject_err(pe, op.err.type, op.err.func,
+> >> +						op.err.addr, op.err.mask);
+> >> +			break;
+> >>  		default:
+> >>  			ret =3D -EINVAL;
+> >>  		}
+> >> diff --git a/include/uapi/linux/vfio.h b/include/uapi/linux/vfio.h
+> >> index 82889c3..f68e962 100644
+> >> --- a/include/uapi/linux/vfio.h
+> >> +++ b/include/uapi/linux/vfio.h
+> >> @@ -468,12 +468,23 @@ struct vfio_iommu_spapr_tce_info {
+> >>   * - unfreeze IO/DMA for frozen PE;
+> >>   * - read PE state;
+> >>   * - reset PE;
+> >> - * - configure PE.
+> >> + * - configure PE;
+> >> + * - inject EEH error.
+> >>   */
+> >> +struct vfio_eeh_pe_err {
+> >> +	__u32 type;
+> >> +	__u32 func;
+> >> +	__u64 addr;
+> >> +	__u64 mask;
+> >> +};
+> >> +
+> >>  struct vfio_eeh_pe_op {
+> >>  	__u32 argsz;
+> >>  	__u32 flags;
+> >>  	__u32 op;
+> >> +	union {
+> >> +		struct vfio_eeh_pe_err err;
+> >> +	};
+> >>  };
+> >> =20
+> >>  #define VFIO_EEH_PE_DISABLE		0	/* Disable EEH functionality */
+> >> @@ -490,6 +501,29 @@ struct vfio_eeh_pe_op {
+> >>  #define VFIO_EEH_PE_RESET_HOT		6	/* Assert hot reset          */
+> >>  #define VFIO_EEH_PE_RESET_FUNDAMENTAL	7	/* Assert fundamental reset  =
+*/
+> >>  #define VFIO_EEH_PE_CONFIGURE		8	/* PE configuration          */
+> >> +#define VFIO_EEH_PE_INJECT_ERR		9	/* Inject EEH error          */
+> >> +#define  VFIO_EEH_ERR_TYPE_32		0	/* 32-bits EEH error type    */
+> >> +#define  VFIO_EEH_ERR_TYPE_64		1	/* 64-bits EEH error type    */
+> >> +#define  VFIO_EEH_ERR_FUNC_LD_MEM_ADDR		0	/* Memory load  */
+> >> +#define  VFIO_EEH_ERR_FUNC_LD_MEM_DATA		1
+> >> +#define  VFIO_EEH_ERR_FUNC_LD_IO_ADDR		2	/* IO load      */
+> >> +#define  VFIO_EEH_ERR_FUNC_LD_IO_DATA		3
+> >> +#define  VFIO_EEH_ERR_FUNC_LD_CFG_ADDR		4	/* Config load  */
+> >> +#define  VFIO_EEH_ERR_FUNC_LD_CFG_DATA		5
+> >> +#define  VFIO_EEH_ERR_FUNC_ST_MEM_ADDR		6	/* Memory store */
+> >> +#define  VFIO_EEH_ERR_FUNC_ST_MEM_DATA		7
+> >> +#define  VFIO_EEH_ERR_FUNC_ST_IO_ADDR		8	/* IO store     */
+> >> +#define  VFIO_EEH_ERR_FUNC_ST_IO_DATA		9
+> >> +#define  VFIO_EEH_ERR_FUNC_ST_CFG_ADDR		10	/* Config store */
+> >> +#define  VFIO_EEH_ERR_FUNC_ST_CFG_DATA		11
+> >> +#define  VFIO_EEH_ERR_FUNC_DMA_RD_ADDR		12	/* DMA read     */
+> >> +#define  VFIO_EEH_ERR_FUNC_DMA_RD_DATA		13
+> >> +#define  VFIO_EEH_ERR_FUNC_DMA_RD_MASTER	14
+> >> +#define  VFIO_EEH_ERR_FUNC_DMA_RD_TARGET	15
+> >> +#define  VFIO_EEH_ERR_FUNC_DMA_WR_ADDR		16	/* DMA write    */
+> >> +#define  VFIO_EEH_ERR_FUNC_DMA_WR_DATA		17
+> >> +#define  VFIO_EEH_ERR_FUNC_DMA_WR_MASTER	18
+> >> +#define  VFIO_EEH_ERR_FUNC_DMA_WR_TARGET	19
+> >
+> >These all seem to duplicate (under slightly different names) the
+> >defines you just added in arch/powerpc/include/asm/eeh.h.  It would
+> >make more sense to only have the uapi copy, surely.
+> >
+>=20
+> David, Thanks for your time. The defines in eeh.h is used not only
+> for mapping those constants defined in vfio.h, but also for validating
+> arguments from debugfs entry "err_injct". So it'd better to keep
+> them separate: one set is used by userspace, another set is used
+> by host kernel.
 
-Alex
+I don't understand why this is an argument for duplicating them.  They
+have the same meanings and values, why can't you use the uapi versions
+everywhere?
 
-> diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
-> index daa68a1..cd85c18 100644
-> --- a/arch/powerpc/kernel/eeh.c
-> +++ b/arch/powerpc/kernel/eeh.c
-> @@ -726,11 +726,14 @@ static void *eeh_restore_dev_state(void *data, void *userdata)
->   * pcibios_set_pcie_slot_reset - Set PCI-E reset state
->   * @dev: pci device struct
->   * @state: reset state to enter
-> + * @probe: check if the device can take the reset
->   *
->   * Return value:
->   * 	0 if success
->   */
-> -int pcibios_set_pcie_reset_state(struct pci_dev *dev, enum pcie_reset_state state)
-> +int pcibios_set_pcie_reset_state(struct pci_dev *dev,
-> +				 enum pcie_reset_state state,
-> +				 int probe)
->  {
->  	struct eeh_dev *edev = pci_dev_to_eeh_dev(dev);
->  	struct eeh_pe *pe = eeh_dev_to_pe(edev);
-> @@ -738,9 +741,12 @@ int pcibios_set_pcie_reset_state(struct pci_dev *dev, enum pcie_reset_state stat
->  	if (!pe) {
->  		pr_err("%s: No PE found on PCI device %s\n",
->  			__func__, pci_name(dev));
-> -		return -EINVAL;
-> +		return -ENOTTY;
->  	}
->  
-> +	if (probe)
-> +		return 0;
-> +
->  	switch (state) {
->  	case pcie_deassert_reset:
->  		eeh_ops->reset(pe, EEH_RESET_DEACTIVATE);
-> @@ -762,8 +768,8 @@ int pcibios_set_pcie_reset_state(struct pci_dev *dev, enum pcie_reset_state stat
->  		break;
->  	default:
->  		eeh_pe_state_clear(pe, EEH_PE_CFG_BLOCKED);
-> -		return -EINVAL;
-> -	};
-> +		return -ENOTTY;
-> +	}
->  
->  	return 0;
->  }
-> diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
-> index 1ef0164..3a87bfc 100644
-> --- a/drivers/misc/cxl/pci.c
-> +++ b/drivers/misc/cxl/pci.c
-> @@ -789,7 +789,7 @@ int cxl_reset(struct cxl *adapter)
->  	/* pcie_warm_reset requests a fundamental pci reset which includes a
->  	 * PERST assert/deassert.  PERST triggers a loading of the image
->  	 * if "user" or "factory" is selected in sysfs */
-> -	if ((rc = pci_set_pcie_reset_state(dev, pcie_warm_reset))) {
-> +	if ((rc = pci_set_pcie_reset_state(dev, pcie_warm_reset, 0))) {
->  		dev_err(&dev->dev, "cxl: pcie_warm_reset failed\n");
->  		return rc;
->  	}
-> diff --git a/drivers/misc/genwqe/card_base.c b/drivers/misc/genwqe/card_base.c
-> index 4cf8f82..4871f69 100644
-> --- a/drivers/misc/genwqe/card_base.c
-> +++ b/drivers/misc/genwqe/card_base.c
-> @@ -782,17 +782,22 @@ static int genwqe_pci_fundamental_reset(struct pci_dev *pci_dev)
->  {
->  	int rc;
->  
-> +	/* Probe if the device can take the reset */
-> +	rc = pci_set_pcie_reset_state(pci_dev, pcie_warm_reset, 1);
-> +	if (rc)
-> +		return rc;
-> +
->  	/*
->  	 * lock pci config space access from userspace,
->  	 * save state and issue PCIe fundamental reset
->  	 */
->  	pci_cfg_access_lock(pci_dev);
->  	pci_save_state(pci_dev);
-> -	rc = pci_set_pcie_reset_state(pci_dev, pcie_warm_reset);
-> +	rc = pci_set_pcie_reset_state(pci_dev, pcie_warm_reset, 0);
->  	if (!rc) {
->  		/* keep PCIe reset asserted for 250ms */
->  		msleep(250);
-> -		pci_set_pcie_reset_state(pci_dev, pcie_deassert_reset);
-> +		pci_set_pcie_reset_state(pci_dev, pcie_deassert_reset, 0);
->  		/* Wait for 2s to reload flash and train the link */
->  		msleep(2000);
->  	}
-> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-> index 81f06e8..8581a5f 100644
-> --- a/drivers/pci/pci.c
-> +++ b/drivers/pci/pci.c
-> @@ -1558,28 +1558,31 @@ EXPORT_SYMBOL(pci_disable_device);
->   * pcibios_set_pcie_reset_state - set reset state for device dev
->   * @dev: the PCIe device reset
->   * @state: Reset state to enter into
-> - *
-> + * @probe: Check if the device can take the reset
->   *
->   * Sets the PCIe reset state for the device. This is the default
->   * implementation. Architecture implementations can override this.
->   */
->  int __weak pcibios_set_pcie_reset_state(struct pci_dev *dev,
-> -					enum pcie_reset_state state)
-> +					enum pcie_reset_state state,
-> +					int probe)
->  {
-> -	return -EINVAL;
-> +	return -ENOTTY;
->  }
->  
->  /**
->   * pci_set_pcie_reset_state - set reset state for device dev
->   * @dev: the PCIe device reset
->   * @state: Reset state to enter into
-> - *
-> + * @probe: Check if the device can take the reset
->   *
->   * Sets the PCI reset state for the device.
->   */
-> -int pci_set_pcie_reset_state(struct pci_dev *dev, enum pcie_reset_state state)
-> +int pci_set_pcie_reset_state(struct pci_dev *dev,
-> +			     enum pcie_reset_state state,
-> +			     int probe)
->  {
-> -	return pcibios_set_pcie_reset_state(dev, state);
-> +	return pcibios_set_pcie_reset_state(dev, state, probe);
->  }
->  EXPORT_SYMBOL_GPL(pci_set_pcie_reset_state);
->  
-> diff --git a/drivers/scsi/ipr.c b/drivers/scsi/ipr.c
-> index 9219953..89026f4 100644
-> --- a/drivers/scsi/ipr.c
-> +++ b/drivers/scsi/ipr.c
-> @@ -8317,7 +8317,8 @@ static int ipr_reset_start_bist(struct ipr_cmnd *ipr_cmd)
->  static int ipr_reset_slot_reset_done(struct ipr_cmnd *ipr_cmd)
->  {
->  	ENTER;
-> -	pci_set_pcie_reset_state(ipr_cmd->ioa_cfg->pdev, pcie_deassert_reset);
-> +	pci_set_pcie_reset_state(ipr_cmd->ioa_cfg->pdev,
-> +				 pcie_deassert_reset, 0);
->  	ipr_cmd->job_step = ipr_reset_bist_done;
->  	ipr_reset_start_timer(ipr_cmd, IPR_WAIT_FOR_BIST_TIMEOUT);
->  	LEAVE;
-> @@ -8339,7 +8340,7 @@ static int ipr_reset_slot_reset(struct ipr_cmnd *ipr_cmd)
->  	struct pci_dev *pdev = ioa_cfg->pdev;
->  
->  	ENTER;
-> -	pci_set_pcie_reset_state(pdev, pcie_warm_reset);
-> +	pci_set_pcie_reset_state(pdev, pcie_warm_reset, 0);
->  	ipr_cmd->job_step = ipr_reset_slot_reset_done;
->  	ipr_reset_start_timer(ipr_cmd, IPR_PCI_RESET_TIMEOUT);
->  	LEAVE;
-> diff --git a/include/linux/pci.h b/include/linux/pci.h
-> index 4e1f17d..052ac63 100644
-> --- a/include/linux/pci.h
-> +++ b/include/linux/pci.h
-> @@ -960,7 +960,8 @@ extern unsigned int pcibios_max_latency;
->  void pci_set_master(struct pci_dev *dev);
->  void pci_clear_master(struct pci_dev *dev);
->  
-> -int pci_set_pcie_reset_state(struct pci_dev *dev, enum pcie_reset_state state);
-> +int pci_set_pcie_reset_state(struct pci_dev *dev,
-> +			     enum pcie_reset_state state, int probe);
->  int pci_set_cacheline_size(struct pci_dev *dev);
->  #define HAVE_PCI_SET_MWI
->  int __must_check pci_set_mwi(struct pci_dev *dev);
-> @@ -1648,7 +1649,7 @@ extern unsigned long pci_hotplug_mem_size;
->  void pcibios_disable_device(struct pci_dev *dev);
->  void pcibios_set_master(struct pci_dev *dev);
->  int pcibios_set_pcie_reset_state(struct pci_dev *dev,
-> -				 enum pcie_reset_state state);
-> +				 enum pcie_reset_state state, int probe);
->  int pcibios_add_device(struct pci_dev *dev);
->  void pcibios_release_device(struct pci_dev *dev);
->  void pcibios_penalize_isa_irq(int irq, int active);
+> By the way, Alex Williamson, could you please ACK this if you don't
+> find obvious errors in the patch. I really want this to be merged
+> to 4.1.
+>=20
+> Thanks,
+> Gavin=20
+>=20
+>=20
+>=20
+
+--=20
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
+
+--ucfHZChuBC0NsER/
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJVD4vHAAoJEGw4ysog2bOS3s8QANoY1G5IUAA4dKhJXUAofejF
+3fKxnlMRe5X8iHzUnVyiONygPa+QJTIWuV1G+srdCswbHyBGw1seODZt5b8XhFA5
+c3VN/nA89AWGjNwr4LhyeUdC4mI2XB5h1X1kmuYTObqEvX5jFGMCDJFXAiT+b89U
+do50tsut99TnwS3GVz6ZVIWWeh3fzaO5dXTwfD3jxRPWJB1f3FU4ot9fekpn0QI6
+PczT5Cb7U+x6QDmdfjQwTS3Y9fArl78ky5nnNJEhAbkNh/KG85Y+hcHWRZ3h3DZp
+suQROQA9SBcf3tBYZp6SQddhuT8vtfyWal9z/SNWBIOvOl4L1M2kdjtTPBzTVbJQ
+kzfLLFog6zcynrwaBAoloL9N/IV7Iu+SuUEaTJZ+BC1gFSbQurB+Wo85Dw3rwIa3
+4n8D3jd5myu2JdVXiFFvCcAEjvjYDPVVarJHvyWc4M6Qc17drKdTRfOqqC5Vlbfd
+BC1k7sa6q2mOkYzNObZtj86a0iJqlw/G97e0aakaJm+FCYwqxmpCBea6pBEm7bGW
+JN45trBbVNyNia6owm9ZAvOclID0lzT6cGoVudz7YZK/+UuJjHYsVkAiqll/riju
+HSVm0QmY2+X9DKYca2KqAsiWn3enL42bvJpw8hisWWOZ3jBNbq9fg/ktaslTSERS
+4a1t1WDCEYf0u7WbnQec
+=pR5U
+-----END PGP SIGNATURE-----
+
+--ucfHZChuBC0NsER/--
