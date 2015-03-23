@@ -1,28 +1,32 @@
-Return-Path: <agraf@suse.de>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <mingo.kernel.org@gmail.com>
+Received: from mail-wg0-x233.google.com (mail-wg0-x233.google.com
+ [IPv6:2a00:1450:400c:c00::233])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A8C3A1A2B00
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2015 19:36:48 +1100 (AEDT)
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 1252A140146
- for <linuxppc-dev@ozlabs.org>; Mon, 23 Mar 2015 19:36:48 +1100 (AEDT)
-Message-ID: <550FD09C.1060909@suse.de>
-Date: Mon, 23 Mar 2015 09:36:44 +0100
-From: Alexander Graf <agraf@suse.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id CCD401A2B37
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2015 19:52:16 +1100 (AEDT)
+Received: by wgbcc7 with SMTP id cc7so139972204wgb.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2015 01:52:13 -0700 (PDT)
+Sender: Ingo Molnar <mingo.kernel.org@gmail.com>
+Date: Mon, 23 Mar 2015 09:52:09 +0100
+From: Ingo Molnar <mingo@kernel.org>
+To: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+Subject: Re: [PATCH 1/2] mm: Introducing arch_remap hook
+Message-ID: <20150323085209.GA28965@gmail.com>
+References: <cover.1426866405.git.ldufour@linux.vnet.ibm.com>
+ <503499aae380db1c4673f146bcba6ad095021257.1426866405.git.ldufour@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>,
- linuxppc-dev <linuxppc-dev@ozlabs.org>,
- Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH v2] powerpc/book3s: Fix the MCE code to use
- CONFIG_KVM_BOOK3S_64_HANDLER
-References: <20150317103356.27872.65515.stgit@mars>
-In-Reply-To: <20150317103356.27872.65515.stgit@mars>
-Content-Type: text/plain; charset=utf-8
-Cc: David Gibson <dgibson@redhat.com>, Paul Mackerras <paulus@samba.org>,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <503499aae380db1c4673f146bcba6ad095021257.1426866405.git.ldufour@linux.vnet.ibm.com>
+Cc: linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, x86@kernel.org,
+ user-mode-linux-devel@lists.sourceforge.net, Arnd Bergmann <arnd@arndb.de>,
+ Jeff Dike <jdike@addtoit.com>, "H. Peter Anvin" <hpa@zytor.com>,
+ linux-kernel@vger.kernel.org, criu@openvz.org, linux-mm@kvack.org,
+ Ingo Molnar <mingo@redhat.com>, Paul Mackerras <paulus@samba.org>,
+ user-mode-linux-user@lists.sourceforge.net,
+ Richard Weinberger <richard@nod.at>, Thomas Gleixner <tglx@linutronix.de>,
+ Guan Xuetao <gxt@mprc.pku.edu.cn>, linuxppc-dev@lists.ozlabs.org,
+ cov@codeaurora.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,28 +37,100 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
+* Laurent Dufour <ldufour@linux.vnet.ibm.com> wrote:
 
-On 17.03.15 11:44, Mahesh J Salgaonkar wrote:
-> From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+> Some architecture would like to be triggered when a memory area is moved
+> through the mremap system call.
 > 
-> commit id 2ba9f0d has changed CONFIG_KVM_BOOK3S_64_HV to tristate to allow
-> HV/PR bits to be built as modules. But the MCE code still depends on
-> CONFIG_KVM_BOOK3S_64_HV which is wrong. When user selects
-> CONFIG_KVM_BOOK3S_64_HV=m to build HV/PR bits as a separate module the
-> relevant MCE code gets excluded.
+> This patch is introducing a new arch_remap mm hook which is placed in the
+> path of mremap, and is called before the old area is unmapped (and the
+> arch_unmap hook is called).
 > 
-> This patch fixes the MCE code to use CONFIG_KVM_BOOK3S_64_HANDLER. This
-> makes sure that the relevant MCE code is included when HV/PR bits
-> are built as a separate modules.
+> To no break the build, this patch adds the empty hook definition to the
+> architectures that were not using the generic hook's definition.
 > 
-> Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+> Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+> ---
+>  arch/s390/include/asm/mmu_context.h      | 6 ++++++
+>  arch/um/include/asm/mmu_context.h        | 5 +++++
+>  arch/unicore32/include/asm/mmu_context.h | 6 ++++++
+>  arch/x86/include/asm/mmu_context.h       | 6 ++++++
+>  include/asm-generic/mm_hooks.h           | 6 ++++++
+>  mm/mremap.c                              | 9 +++++++--
+>  6 files changed, 36 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/s390/include/asm/mmu_context.h b/arch/s390/include/asm/mmu_context.h
+> index 8fb3802f8fad..ddd861a490ba 100644
+> --- a/arch/s390/include/asm/mmu_context.h
+> +++ b/arch/s390/include/asm/mmu_context.h
+> @@ -131,4 +131,10 @@ static inline void arch_bprm_mm_init(struct mm_struct *mm,
+>  {
+>  }
+>  
+> +static inline void arch_remap(struct mm_struct *mm,
+> +			      unsigned long old_start, unsigned long old_end,
+> +			      unsigned long new_start, unsigned long new_end)
+> +{
+> +}
+> +
+>  #endif /* __S390_MMU_CONTEXT_H */
+> diff --git a/arch/um/include/asm/mmu_context.h b/arch/um/include/asm/mmu_context.h
+> index 941527e507f7..f499b017c1f9 100644
+> --- a/arch/um/include/asm/mmu_context.h
+> +++ b/arch/um/include/asm/mmu_context.h
+> @@ -27,6 +27,11 @@ static inline void arch_bprm_mm_init(struct mm_struct *mm,
+>  				     struct vm_area_struct *vma)
+>  {
+>  }
+> +static inline void arch_remap(struct mm_struct *mm,
+> +			      unsigned long old_start, unsigned long old_end,
+> +			      unsigned long new_start, unsigned long new_end)
+> +{
+> +}
+>  /*
+>   * end asm-generic/mm_hooks.h functions
+>   */
+> diff --git a/arch/unicore32/include/asm/mmu_context.h b/arch/unicore32/include/asm/mmu_context.h
+> index 1cb5220afaf9..39a0a553172e 100644
+> --- a/arch/unicore32/include/asm/mmu_context.h
+> +++ b/arch/unicore32/include/asm/mmu_context.h
+> @@ -97,4 +97,10 @@ static inline void arch_bprm_mm_init(struct mm_struct *mm,
+>  {
+>  }
+>  
+> +static inline void arch_remap(struct mm_struct *mm,
+> +			      unsigned long old_start, unsigned long old_end,
+> +			      unsigned long new_start, unsigned long new_end)
+> +{
+> +}
+> +
+>  #endif
+> diff --git a/arch/x86/include/asm/mmu_context.h b/arch/x86/include/asm/mmu_context.h
+> index 883f6b933fa4..75cb71f4be1e 100644
+> --- a/arch/x86/include/asm/mmu_context.h
+> +++ b/arch/x86/include/asm/mmu_context.h
+> @@ -172,4 +172,10 @@ static inline void arch_unmap(struct mm_struct *mm, struct vm_area_struct *vma,
+>  		mpx_notify_unmap(mm, vma, start, end);
+>  }
+>  
+> +static inline void arch_remap(struct mm_struct *mm,
+> +			      unsigned long old_start, unsigned long old_end,
+> +			      unsigned long new_start, unsigned long new_end)
+> +{
+> +}
+> +
+>  #endif /* _ASM_X86_MMU_CONTEXT_H */
 
-Please CC the kvm@vger and kvm-ppc@vger mailing lists on patches that
-are KVM related.
+So instead of spreading these empty prototypes around mmu_context.h 
+files, why not add something like this to the PPC definition:
 
-In this case, please resend with the proper CCs, so that I can pick it
-up into my queue :). Also on resend add the lines that Paul suggested
-(CC: stable, Acked-by) after your SoB line.
+ #define __HAVE_ARCH_REMAP
 
+and define the empty prototype for everyone else? It's a bit like how 
+the __HAVE_ARCH_PTEP_* namespace works.
 
-Alex
+That should shrink this patch considerably.
+
+Thanks,
+
+	Ingo
