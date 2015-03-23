@@ -1,26 +1,33 @@
-Return-Path: <B43198@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0132.outbound.protection.outlook.com [157.56.110.132])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <mgorman@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A49A41A2B48
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2015 22:45:08 +1100 (AEDT)
-Message-ID: <550FFCAB.8080409@freescale.com>
-Date: Mon, 23 Mar 2015 13:44:43 +0200
-From: Purcareata Bogdan <b43198@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id C0A3B1A2ADD
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2015 23:01:38 +1100 (AEDT)
+Date: Mon, 23 Mar 2015 12:01:31 +0000
+From: Mel Gorman <mgorman@suse.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 4/4] mm: numa: Slow PTE scan rate if migration failures
+ occur
+Message-ID: <20150323120131.GB4701@suse.de>
+References: <20150317220840.GC28621@dastard>
+ <CA+55aFwne-fe_Gg-_GTUo+iOAbbNpLBa264JqSFkH79EULyAqw@mail.gmail.com>
+ <CA+55aFy-Mw74rAdLMMMUgnsG3ZttMWVNGz7CXZJY7q9fqyRYfg@mail.gmail.com>
+ <CA+55aFyxA9u2cVzV+S7TSY9ZvRXCX=z22YAbi9mdPVBKmqgR5g@mail.gmail.com>
+ <20150319224143.GI10105@dastard>
+ <CA+55aFy5UeNnFUTi619cs3b9Up2NQ1wbuyvcCS614+o3=z=wBQ@mail.gmail.com>
+ <20150320002311.GG28621@dastard>
+ <CA+55aFyqXDVv9JkkhvM26x6PC5V82corR7HQNxmkeGZjOCxD=A@mail.gmail.com>
+ <20150320041357.GO10105@dastard>
+ <CA+55aFx1pywykWa0ThcHgE7wzdVuyOBSx27iyx_FtZpYSJbKGQ@mail.gmail.com>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Michael Ellerman
- <mpe@ellerman.id.au>
-Subject: Re: [PATCH v4 0/3] powerpc: Enable seccomp filter support
-References: <1424247413-20753-1-git-send-email-bogdan.purcareata@freescale.com>	
- <54F01C85.2020602@freescale.com>
- <1425070490.4645.86.camel@kernel.crashing.org>
-In-Reply-To: <1425070490.4645.86.camel@kernel.crashing.org>
-Content-Type: text/plain; charset="utf-8"; format=flowed
-Cc: linux-kernel@vger.kernel.org, pmoore@redhat.com, paulus@samba.org,
- Bogdan Purcareata <bogdan.purcareata@freescale.com>,
- Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org,
- strosake@linux.vnet.ibm.com
+Content-Type: text/plain; charset=iso-8859-15
+In-Reply-To: <CA+55aFx1pywykWa0ThcHgE7wzdVuyOBSx27iyx_FtZpYSJbKGQ@mail.gmail.com>
+Cc: Dave Chinner <david@fromorbit.com>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com,
+ Linux-MM <linux-mm@kvack.org>, Aneesh Kumar <aneesh.kumar@linux.vnet.ibm.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ ppc-dev <linuxppc-dev@lists.ozlabs.org>, Ingo Molnar <mingo@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,65 +37,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 27.02.2015 22:54, Benjamin Herrenschmidt wrote:
-> On Fri, 2015-02-27 at 09:28 +0200, Purcareata Bogdan wrote:
->> Ping?
->
-> What is the ping for ?
->
-> Ben.
+On Fri, Mar 20, 2015 at 10:02:23AM -0700, Linus Torvalds wrote:
+> On Thu, Mar 19, 2015 at 9:13 PM, Dave Chinner <david@fromorbit.com> wrote:
+> >
+> > Testing now. It's a bit faster - three runs gave 7m35s, 7m20s and
+> > 7m36s. IOWs's a bit better, but not significantly. page migrations
+> > are pretty much unchanged, too:
+> >
+> >            558,632      migrate:mm_migrate_pages ( +-  6.38% )
+> 
+> Ok. That was kind of the expected thing.
+> 
+> I don't really know the NUMA fault rate limiting code, but one thing
+> that strikes me is that if it tries to balance the NUMA faults against
+> the *regular* faults, then maybe just the fact that we end up taking
+> more COW faults after a NUMA fault then means that the NUMA rate
+> limiting code now gets over-eager (because it sees all those extra
+> non-numa faults).
+> 
+> Mel, does that sound at all possible? I really have never looked at
+> the magic automatic rate handling..
+> 
 
-Hello Ben,
+It should not be trying to balance against regular faults as it has no
+information on it. The trapping of additional faults to mark the PTE
+writable will alter timing so it indirectly affects how many migration
+faults there but this is only a side-effect IMO.
 
-I just wanted to check with you what's the current status of these 
-patches. I noticed in patchwork [1][2][3] that the patches are marked as 
-non-applicable.
+There is more overhead now due to losing the writable information and
+that should be reduced so I tried a few approaches.  Ultimately, the one
+that performed the best and was easiest to understand simply preserved
+the writable bit across the protection update and page fault. I'll post
+it later when I stick a changelog on it.
 
-As of today, I cloned Michael Ellerman's tree [4], applied the patches 
-on the master branch, compiled and tested. Tests pass both with the 
-libseccomp regression suite and my LXC tests.
-
-Is there a specific tree I should send them against, or on another 
-mailing list? Is there any other reason the patches are not applicable?
-
-[1] https://patchwork.ozlabs.org/patch/440827/
-[2] https://patchwork.ozlabs.org/patch/440828/
-[3] https://patchwork.ozlabs.org/patch/440829/
-[4] git://git.kernel.org/pub/scm/linux/kernel/git/mpe/linux.git
-
-Thank you,
-Bogdan P.
-
->> On 18.02.2015 10:16, Bogdan Purcareata wrote:
->>> Add the missing pieces in order to enable SECCOMP_FILTER on PowerPC
->>> architectures, and enable this support.
->>>
->>> Testing has been pursued using libseccomp with the latest ppc support patches
->>> [1][2], on Freescale platforms for both ppc and ppc64. Support on ppc64le has
->>> also been tested, courtesy of Mike Strosaker.
->>>
->>> [1] https://groups.google.com/forum/#!topic/libseccomp/oz42LfMDsxg
->>> [2] https://groups.google.com/forum/#!topic/libseccomp/TQWfCt_nD7c
->>>
->>> v4:
->>> - rebased on top of 3.19
->>>
->>> v3:
->>> - keep setting ENOSYS in syscall entry assembly when syscall tracing is disabled
->>>
->>> v2:
->>> - move setting ENOSYS from syscall entry assembly to do_syscall_trace_enter
->>>
->>> Bogdan Purcareata (3):
->>>     powerpc: Don't force ENOSYS as error on syscall fail
->>>     powerpc: Relax secure computing on syscall entry trace
->>>     powerpc: Enable HAVE_ARCH_SECCOMP_FILTER
->>>
->>>    arch/powerpc/Kconfig           | 1 +
->>>    arch/powerpc/kernel/entry_32.S | 7 ++++++-
->>>    arch/powerpc/kernel/entry_64.S | 5 +++--
->>>    arch/powerpc/kernel/ptrace.c   | 8 ++++++--
->>>    4 files changed, 16 insertions(+), 5 deletions(-)
->>>
->
->
+-- 
+Mel Gorman
+SUSE Labs
