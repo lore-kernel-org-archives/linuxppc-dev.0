@@ -1,30 +1,30 @@
-Return-Path: <alex.williamson@redhat.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <wangyijing@huawei.com>
+Received: from szxga03-in.huawei.com (szxga03-in.huawei.com [119.145.14.66])
+ (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 008F01A2ABF
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2015 23:40:45 +1100 (AEDT)
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 228A2140146
- for <linuxppc-dev@ozlabs.org>; Mon, 23 Mar 2015 23:40:44 +1100 (AEDT)
-Message-ID: <1427114434.3643.554.camel@redhat.com>
-Subject: Re: [PATCH v3 1/2] PCI: One more parameter to
- pci_set_pcie_reset_state()
-From: Alex Williamson <alex.williamson@redhat.com>
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Date: Mon, 23 Mar 2015 06:40:34 -0600
-In-Reply-To: <20150323044033.GA1874@shangw>
-References: <1427079771-18472-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1427081673.3643.547.camel@redhat.com> <20150323035656.GA27802@shangw>
- <1427083561.3643.551.camel@redhat.com> <20150323044033.GA1874@shangw>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linux-pci@vger.kernel.org, linuxppc-dev@ozlabs.org,
- Brian King <brking@us.ibm.com>, cascardo@linux.vnet.ibm.com,
- bhelgaas@google.com, Frank Haverkamp <haver@linux.vnet.ibm.com>,
- Ian Munsie <imunsie@au1.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id F16351A2ABE
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2015 23:45:22 +1100 (AEDT)
+From: Yijing Wang <wangyijing@huawei.com>
+To: Bjorn Helgaas <bhelgaas@google.com>
+Subject: [PATCH v7 19/31] powerpc/pci: Use pci_scan_host_bridge() for
+ simplicity
+Date: Mon, 23 Mar 2015 20:40:45 +0800
+Message-ID: <1427114457-16687-20-git-send-email-wangyijing@huawei.com>
+In-Reply-To: <1427114457-16687-1-git-send-email-wangyijing@huawei.com>
+References: <1427114457-16687-1-git-send-email-wangyijing@huawei.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: linux-ia64@vger.kernel.org, linux-pci@vger.kernel.org,
+ Yijing Wang <wangyijing@huawei.com>, Guan
+ Xuetao <gxt@mprc.pku.edu.cn>, Russell King <linux@arm.linux.org.uk>,
+ x86@kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>, Arnd
+ Bergmann <arnd@arndb.de>, Marc Zyngier <marc.zyngier@arm.com>,
+ Rusty Russell <rusty@rustcorp.com.au>, linux-m68k@lists.linux-m68k.org,
+ Thomas Gleixner <tglx@linutronix.de>, Yinghai Lu <yinghai@kernel.org>,
+ linux-arm-kernel@lists.infradead.org, Liviu Dudau <liviu@dudau.co.uk>,
+ Tony Luck <tony.luck@intel.com>, linux-kernel@vger.kernel.org,
+ Jiang Liu <jiang.liu@linux.intel.com>, linux-alpha@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,274 +34,122 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2015-03-23 at 15:40 +1100, Gavin Shan wrote:
-> On Sun, Mar 22, 2015 at 10:06:01PM -0600, Alex Williamson wrote:
-> >On Mon, 2015-03-23 at 14:56 +1100, Gavin Shan wrote:
-> >> On Sun, Mar 22, 2015 at 09:34:33PM -0600, Alex Williamson wrote:
-> >> >On Mon, 2015-03-23 at 14:02 +1100, Gavin Shan wrote:
-> >> >> The patch adds one more parameter ("probe") to pci_set_pcie_reset_state(),
-> >> >> which allows to check if one particular PCI device can be resetted by the
-> >> >> function. The function will be reused to support PCI device specific methods
-> >> >> maintained in pci_dev_reset_methods[] in subsequent patch.
-> >> >> 
-> >> >> Cc: Brian King <brking@us.ibm.com>
-> >> >> Cc: Frank Haverkamp <haver@linux.vnet.ibm.com>
-> >> >> Cc: Ian Munsie <imunsie@au1.ibm.com>
-> >> >> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
-> >> >> ---
-> >> >> v3: Fix arguments of pci_set_pcie_reset_state() in cxl driver
-> >> >> v2: Reimplemented based on pci_set_pcie_reset_state()
-> >> >> ---
-> >> >>  arch/powerpc/kernel/eeh.c       | 14 ++++++++++----
-> >> >>  drivers/misc/cxl/pci.c          |  2 +-
-> >> >>  drivers/misc/genwqe/card_base.c |  9 +++++++--
-> >> >>  drivers/pci/pci.c               | 15 +++++++++------
-> >> >>  drivers/scsi/ipr.c              |  5 +++--
-> >> >>  include/linux/pci.h             |  5 +++--
-> >> >>  6 files changed, 33 insertions(+), 17 deletions(-)
-> >> >
-> >> >
-> >> >Argh, you're trying to make pci_set_pcie_reset_state() compatible with
-> >> >pci_dev_specific_reset(), so it can be called via pci_reset_function(),
-> >> >but the whole point of the pci_reset_function() interface is to reset a
-> >> >*single* function without disturbing anything else.  These patches make
-> >> >no effort at all to limit the set of affected devices to a single
-> >> >function and take great liberties using PCI_ANY_ID for vendors.  My take
-> >> >on the powerpc version of pcibios_set_pcie_reset_state() is that it's
-> >> >effectively a slot reset, so why not hook into the
-> >> >pci_reset_hotplug_slot() via the hotplug slot ops?  Please also use
-> >> >cover letters.  Thanks,
-> >> >
-> >> 
-> >> Yep, that's the point and intention of the patches. pcibios_set_pcie_reset_state()
-> >> isn't equal to pci_reset_hotplug_slot(). The later one depends on PCI slot, which
-> >> wasn't populated on PowerNV platform yet, but pcibios_set_pcie_reseet_state() doesn't.
-> >> 
-> >> The patchset depends on improved pcibios_set_pcie_reset_state(), which can be seen
-> >> from following linked. With it, we don't affect any PCI devices as the config space
-> >> is saved/restored accordingly before/after reset:
-> >> 
-> >> https://patchwork.ozlabs.org/patch/438598/
-> >
-> >Sorry, that's wrong.  pci_reset_function() can be called while other
-> >devices in the same multifunction package are actively in use.  It
-> >doesn't matter that you're saving and restoring the external state of
-> >the device, the internal state is lost and operation of the device is
-> >interrupted.  That is not how pci_reset_function() is supposed to work.
-> >Thanks,
-> >
-> 
-> pcibios_set_pcie_reset_state() applies hot reset on PCI bus, or PCI
-> slot fundamental reset essentially. It's potentially affecting multiple
-> PCI devices (not functions).
-> 
-> Yes. It's not safe to call pcibios_set_pcie_reset_state() if some of
-> the target functions are actively and in use. I also suspect if it
-> works to reset function#0 via pci_reset_function() while function#1
-> is actively in use? I guess the caller of pci_reset_function() perhaps
-> has to ensure there are no active functions/devices.
-> 
-> One of the issues the patches try to fix: some of broadcom adapters have
-> multile functions, which can't support FLR, AF FLR, PM reset. Also, reset
-> on parent PCI bus and the corresponding reset can't be applied because of
-> they're multi-function package. In summary, pci_reset_function() doesn't
-> work on the adapters. That won't give clean state when passing device from
-> host to guest, or return it back to host. Sometimes, the host memory gets
-> corrupted when destorying the guest. Occasionally, the patches with improved
-> pcibios_set_pcie_reset_state() avoided the issue.
-> 
-> Some adapters might require fundamental reset on the PCI slot, or hot reset
-> on parent bus explicitly, in order to successfully reload its firmware after
-> reset.
+Now we could use pci_scan_host_bridge() to scan
+pci buses, provide powerpc specific pci_host_bridge_ops.
 
-This is exactly why we have pci_reset_slot() and pci_reset_bus(), so
-that the caller can manage the scope of the reset.  You cannot change
-the semantics of pci_reset_function() simply because it's convenient for
-your implementation.  This series is wrong and should not be applied.
-Thanks,
+Signed-off-by: Yijing Wang <wangyijing@huawei.com>
+CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+CC: linuxppc-dev@lists.ozlabs.org
+---
+ arch/powerpc/kernel/pci-common.c |   60 +++++++++++++++++++++++--------------
+ 1 files changed, 37 insertions(+), 23 deletions(-)
 
-Alex
-
-> >> >> diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
-> >> >> index daa68a1..cd85c18 100644
-> >> >> --- a/arch/powerpc/kernel/eeh.c
-> >> >> +++ b/arch/powerpc/kernel/eeh.c
-> >> >> @@ -726,11 +726,14 @@ static void *eeh_restore_dev_state(void *data, void *userdata)
-> >> >>   * pcibios_set_pcie_slot_reset - Set PCI-E reset state
-> >> >>   * @dev: pci device struct
-> >> >>   * @state: reset state to enter
-> >> >> + * @probe: check if the device can take the reset
-> >> >>   *
-> >> >>   * Return value:
-> >> >>   * 	0 if success
-> >> >>   */
-> >> >> -int pcibios_set_pcie_reset_state(struct pci_dev *dev, enum pcie_reset_state state)
-> >> >> +int pcibios_set_pcie_reset_state(struct pci_dev *dev,
-> >> >> +				 enum pcie_reset_state state,
-> >> >> +				 int probe)
-> >> >>  {
-> >> >>  	struct eeh_dev *edev = pci_dev_to_eeh_dev(dev);
-> >> >>  	struct eeh_pe *pe = eeh_dev_to_pe(edev);
-> >> >> @@ -738,9 +741,12 @@ int pcibios_set_pcie_reset_state(struct pci_dev *dev, enum pcie_reset_state stat
-> >> >>  	if (!pe) {
-> >> >>  		pr_err("%s: No PE found on PCI device %s\n",
-> >> >>  			__func__, pci_name(dev));
-> >> >> -		return -EINVAL;
-> >> >> +		return -ENOTTY;
-> >> >>  	}
-> >> >>  
-> >> >> +	if (probe)
-> >> >> +		return 0;
-> >> >> +
-> >> >>  	switch (state) {
-> >> >>  	case pcie_deassert_reset:
-> >> >>  		eeh_ops->reset(pe, EEH_RESET_DEACTIVATE);
-> >> >> @@ -762,8 +768,8 @@ int pcibios_set_pcie_reset_state(struct pci_dev *dev, enum pcie_reset_state stat
-> >> >>  		break;
-> >> >>  	default:
-> >> >>  		eeh_pe_state_clear(pe, EEH_PE_CFG_BLOCKED);
-> >> >> -		return -EINVAL;
-> >> >> -	};
-> >> >> +		return -ENOTTY;
-> >> >> +	}
-> >> >>  
-> >> >>  	return 0;
-> >> >>  }
-> >> >> diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
-> >> >> index 1ef0164..3a87bfc 100644
-> >> >> --- a/drivers/misc/cxl/pci.c
-> >> >> +++ b/drivers/misc/cxl/pci.c
-> >> >> @@ -789,7 +789,7 @@ int cxl_reset(struct cxl *adapter)
-> >> >>  	/* pcie_warm_reset requests a fundamental pci reset which includes a
-> >> >>  	 * PERST assert/deassert.  PERST triggers a loading of the image
-> >> >>  	 * if "user" or "factory" is selected in sysfs */
-> >> >> -	if ((rc = pci_set_pcie_reset_state(dev, pcie_warm_reset))) {
-> >> >> +	if ((rc = pci_set_pcie_reset_state(dev, pcie_warm_reset, 0))) {
-> >> >>  		dev_err(&dev->dev, "cxl: pcie_warm_reset failed\n");
-> >> >>  		return rc;
-> >> >>  	}
-> >> >> diff --git a/drivers/misc/genwqe/card_base.c b/drivers/misc/genwqe/card_base.c
-> >> >> index 4cf8f82..4871f69 100644
-> >> >> --- a/drivers/misc/genwqe/card_base.c
-> >> >> +++ b/drivers/misc/genwqe/card_base.c
-> >> >> @@ -782,17 +782,22 @@ static int genwqe_pci_fundamental_reset(struct pci_dev *pci_dev)
-> >> >>  {
-> >> >>  	int rc;
-> >> >>  
-> >> >> +	/* Probe if the device can take the reset */
-> >> >> +	rc = pci_set_pcie_reset_state(pci_dev, pcie_warm_reset, 1);
-> >> >> +	if (rc)
-> >> >> +		return rc;
-> >> >> +
-> >> >>  	/*
-> >> >>  	 * lock pci config space access from userspace,
-> >> >>  	 * save state and issue PCIe fundamental reset
-> >> >>  	 */
-> >> >>  	pci_cfg_access_lock(pci_dev);
-> >> >>  	pci_save_state(pci_dev);
-> >> >> -	rc = pci_set_pcie_reset_state(pci_dev, pcie_warm_reset);
-> >> >> +	rc = pci_set_pcie_reset_state(pci_dev, pcie_warm_reset, 0);
-> >> >>  	if (!rc) {
-> >> >>  		/* keep PCIe reset asserted for 250ms */
-> >> >>  		msleep(250);
-> >> >> -		pci_set_pcie_reset_state(pci_dev, pcie_deassert_reset);
-> >> >> +		pci_set_pcie_reset_state(pci_dev, pcie_deassert_reset, 0);
-> >> >>  		/* Wait for 2s to reload flash and train the link */
-> >> >>  		msleep(2000);
-> >> >>  	}
-> >> >> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-> >> >> index 81f06e8..8581a5f 100644
-> >> >> --- a/drivers/pci/pci.c
-> >> >> +++ b/drivers/pci/pci.c
-> >> >> @@ -1558,28 +1558,31 @@ EXPORT_SYMBOL(pci_disable_device);
-> >> >>   * pcibios_set_pcie_reset_state - set reset state for device dev
-> >> >>   * @dev: the PCIe device reset
-> >> >>   * @state: Reset state to enter into
-> >> >> - *
-> >> >> + * @probe: Check if the device can take the reset
-> >> >>   *
-> >> >>   * Sets the PCIe reset state for the device. This is the default
-> >> >>   * implementation. Architecture implementations can override this.
-> >> >>   */
-> >> >>  int __weak pcibios_set_pcie_reset_state(struct pci_dev *dev,
-> >> >> -					enum pcie_reset_state state)
-> >> >> +					enum pcie_reset_state state,
-> >> >> +					int probe)
-> >> >>  {
-> >> >> -	return -EINVAL;
-> >> >> +	return -ENOTTY;
-> >> >>  }
-> >> >>  
-> >> >>  /**
-> >> >>   * pci_set_pcie_reset_state - set reset state for device dev
-> >> >>   * @dev: the PCIe device reset
-> >> >>   * @state: Reset state to enter into
-> >> >> - *
-> >> >> + * @probe: Check if the device can take the reset
-> >> >>   *
-> >> >>   * Sets the PCI reset state for the device.
-> >> >>   */
-> >> >> -int pci_set_pcie_reset_state(struct pci_dev *dev, enum pcie_reset_state state)
-> >> >> +int pci_set_pcie_reset_state(struct pci_dev *dev,
-> >> >> +			     enum pcie_reset_state state,
-> >> >> +			     int probe)
-> >> >>  {
-> >> >> -	return pcibios_set_pcie_reset_state(dev, state);
-> >> >> +	return pcibios_set_pcie_reset_state(dev, state, probe);
-> >> >>  }
-> >> >>  EXPORT_SYMBOL_GPL(pci_set_pcie_reset_state);
-> >> >>  
-> >> >> diff --git a/drivers/scsi/ipr.c b/drivers/scsi/ipr.c
-> >> >> index 9219953..89026f4 100644
-> >> >> --- a/drivers/scsi/ipr.c
-> >> >> +++ b/drivers/scsi/ipr.c
-> >> >> @@ -8317,7 +8317,8 @@ static int ipr_reset_start_bist(struct ipr_cmnd *ipr_cmd)
-> >> >>  static int ipr_reset_slot_reset_done(struct ipr_cmnd *ipr_cmd)
-> >> >>  {
-> >> >>  	ENTER;
-> >> >> -	pci_set_pcie_reset_state(ipr_cmd->ioa_cfg->pdev, pcie_deassert_reset);
-> >> >> +	pci_set_pcie_reset_state(ipr_cmd->ioa_cfg->pdev,
-> >> >> +				 pcie_deassert_reset, 0);
-> >> >>  	ipr_cmd->job_step = ipr_reset_bist_done;
-> >> >>  	ipr_reset_start_timer(ipr_cmd, IPR_WAIT_FOR_BIST_TIMEOUT);
-> >> >>  	LEAVE;
-> >> >> @@ -8339,7 +8340,7 @@ static int ipr_reset_slot_reset(struct ipr_cmnd *ipr_cmd)
-> >> >>  	struct pci_dev *pdev = ioa_cfg->pdev;
-> >> >>  
-> >> >>  	ENTER;
-> >> >> -	pci_set_pcie_reset_state(pdev, pcie_warm_reset);
-> >> >> +	pci_set_pcie_reset_state(pdev, pcie_warm_reset, 0);
-> >> >>  	ipr_cmd->job_step = ipr_reset_slot_reset_done;
-> >> >>  	ipr_reset_start_timer(ipr_cmd, IPR_PCI_RESET_TIMEOUT);
-> >> >>  	LEAVE;
-> >> >> diff --git a/include/linux/pci.h b/include/linux/pci.h
-> >> >> index 4e1f17d..052ac63 100644
-> >> >> --- a/include/linux/pci.h
-> >> >> +++ b/include/linux/pci.h
-> >> >> @@ -960,7 +960,8 @@ extern unsigned int pcibios_max_latency;
-> >> >>  void pci_set_master(struct pci_dev *dev);
-> >> >>  void pci_clear_master(struct pci_dev *dev);
-> >> >>  
-> >> >> -int pci_set_pcie_reset_state(struct pci_dev *dev, enum pcie_reset_state state);
-> >> >> +int pci_set_pcie_reset_state(struct pci_dev *dev,
-> >> >> +			     enum pcie_reset_state state, int probe);
-> >> >>  int pci_set_cacheline_size(struct pci_dev *dev);
-> >> >>  #define HAVE_PCI_SET_MWI
-> >> >>  int __must_check pci_set_mwi(struct pci_dev *dev);
-> >> >> @@ -1648,7 +1649,7 @@ extern unsigned long pci_hotplug_mem_size;
-> >> >>  void pcibios_disable_device(struct pci_dev *dev);
-> >> >>  void pcibios_set_master(struct pci_dev *dev);
-> >> >>  int pcibios_set_pcie_reset_state(struct pci_dev *dev,
-> >> >> -				 enum pcie_reset_state state);
-> >> >> +				 enum pcie_reset_state state, int probe);
-> >> >>  int pcibios_add_device(struct pci_dev *dev);
-> >> >>  void pcibios_release_device(struct pci_dev *dev);
-> >> >>  void pcibios_penalize_isa_irq(int irq, int active);
-> >> >
-> >> >
-> >> >
-> >> 
-> >
-> >
-> >
-> 
+diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
+index 2c58200..e2b50a2 100644
+--- a/arch/powerpc/kernel/pci-common.c
++++ b/arch/powerpc/kernel/pci-common.c
+@@ -773,6 +773,29 @@ void pcibios_set_root_bus_speed(struct pci_host_bridge *bridge)
+ 		return ppc_md.pcibios_set_root_bus_speed(bridge);
+ }
+ 
++static int pci_host_scan_bus(struct pci_host_bridge *host)
++{
++	int mode = PCI_PROBE_NORMAL;
++	struct pci_bus *bus = host->bus;
++	struct pci_controller *hose = dev_get_drvdata(&host->dev);
++
++	/* Get probe mode and perform scan */
++	if (hose->dn && ppc_md.pci_probe_mode)
++		mode = ppc_md.pci_probe_mode(bus);
++
++	pr_debug("    probe mode: %d\n", mode);
++	if (mode == PCI_PROBE_DEVTREE)
++		of_scan_bus(hose->dn, bus);
++
++	if (mode == PCI_PROBE_NORMAL) {
++		pci_bus_update_busn_res_end(bus, 255);
++		hose->last_busno = pci_scan_child_bus(bus);
++		pci_bus_update_busn_res_end(bus, hose->last_busno);
++	}
++
++	return pci_bus_child_max_busnr(bus);
++}
++
+ /* This header fixup will do the resource fixup for all devices as they are
+  * probed, but not for bridge ranges
+  */
+@@ -1585,6 +1608,11 @@ struct device_node *pcibios_get_phb_of_node(struct pci_bus *bus)
+ 	return of_node_get(hose->dn);
+ }
+ 
++static struct pci_host_bridge_ops pci_host_ops = {
++	.set_root_bus_speed = pcibios_set_root_bus_speed,
++	.scan_bus = pci_host_scan_bus,
++};
++
+ /**
+  * pci_scan_phb - Given a pci_controller, setup and scan the PCI bus
+  * @hose: Pointer to the PCI host controller instance structure
+@@ -1592,9 +1620,8 @@ struct device_node *pcibios_get_phb_of_node(struct pci_bus *bus)
+ void pcibios_scan_phb(struct pci_controller *hose)
+ {
+ 	LIST_HEAD(resources);
+-	struct pci_bus *bus;
++	struct pci_host_bridge *host;
+ 	struct device_node *node = hose->dn;
+-	int mode;
+ 
+ 	pr_debug("PCI: Scanning PHB %s\n", of_node_full_name(node));
+ 
+@@ -1609,31 +1636,18 @@ void pcibios_scan_phb(struct pci_controller *hose)
+ 	hose->busn.flags = IORESOURCE_BUS;
+ 	pci_add_resource(&resources, &hose->busn);
+ 
++	pci_host_ops.pci_ops = hose->ops;
+ 	/* Create an empty bus for the toplevel */
+-	bus = pci_create_root_bus(hose->parent, hose->global_number,
+-			hose->first_busno, hose->ops, hose, &resources);
+-	if (bus == NULL) {
+-		pr_err("Failed to create bus for PCI domain %04x\n",
+-			hose->global_number);
++	host = pci_scan_host_bridge(hose->parent, hose->global_number,
++			hose->first_busno, hose, &resources, &pci_host_ops);
++	if (host == NULL) {
++		pr_err("Failed to create host bridge for pci%04x:%02x\n",
++			hose->global_number, hose->first_busno);
+ 		pci_free_resource_list(&resources);
+ 		return;
+ 	}
+ 	hose->bus = bus;
+ 
+-	/* Get probe mode and perform scan */
+-	mode = PCI_PROBE_NORMAL;
+-	if (node && ppc_md.pci_probe_mode)
+-		mode = ppc_md.pci_probe_mode(bus);
+-	pr_debug("    probe mode: %d\n", mode);
+-	if (mode == PCI_PROBE_DEVTREE)
+-		of_scan_bus(node, bus);
+-
+-	if (mode == PCI_PROBE_NORMAL) {
+-		pci_bus_update_busn_res_end(bus, 255);
+-		hose->last_busno = pci_scan_child_bus(bus);
+-		pci_bus_update_busn_res_end(bus, hose->last_busno);
+-	}
+-
+ 	/* Platform gets a chance to do some global fixups before
+ 	 * we proceed to resource allocation
+ 	 */
+@@ -1641,9 +1655,9 @@ void pcibios_scan_phb(struct pci_controller *hose)
+ 		ppc_md.pcibios_fixup_phb(hose);
+ 
+ 	/* Configure PCI Express settings */
+-	if (bus && !pci_has_flag(PCI_PROBE_ONLY)) {
++	if (host->bus && !pci_has_flag(PCI_PROBE_ONLY)) {
+ 		struct pci_bus *child;
+-		list_for_each_entry(child, &bus->children, node)
++		list_for_each_entry(child, &host->bus->children, node)
+ 			pcie_bus_configure_settings(child);
+ 	}
+ }
+-- 
+1.7.1
