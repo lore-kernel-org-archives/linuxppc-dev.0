@@ -1,22 +1,30 @@
-Return-Path: <mgorman@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <alex.williamson@redhat.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2521D1A2AE3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2015 23:24:10 +1100 (AEDT)
-From: Mel Gorman <mgorman@suse.de>
-To: Dave Chinner <david@fromorbit.com>
-Subject: [PATCH 3/3] mm: numa: Slow PTE scan rate if migration failures occur
-Date: Mon, 23 Mar 2015 12:24:03 +0000
-Message-Id: <1427113443-20973-4-git-send-email-mgorman@suse.de>
-In-Reply-To: <1427113443-20973-1-git-send-email-mgorman@suse.de>
-References: <1427113443-20973-1-git-send-email-mgorman@suse.de>
-Cc: linuxppc-dev@lists.ozlabs.org,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com,
- Linux-MM <linux-mm@kvack.org>, Aneesh Kumar <aneesh.kumar@linux.vnet.ibm.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@kernel.org>,
- Mel Gorman <mgorman@suse.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 008F01A2ABF
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2015 23:40:45 +1100 (AEDT)
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 228A2140146
+ for <linuxppc-dev@ozlabs.org>; Mon, 23 Mar 2015 23:40:44 +1100 (AEDT)
+Message-ID: <1427114434.3643.554.camel@redhat.com>
+Subject: Re: [PATCH v3 1/2] PCI: One more parameter to
+ pci_set_pcie_reset_state()
+From: Alex Williamson <alex.williamson@redhat.com>
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Date: Mon, 23 Mar 2015 06:40:34 -0600
+In-Reply-To: <20150323044033.GA1874@shangw>
+References: <1427079771-18472-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <1427081673.3643.547.camel@redhat.com> <20150323035656.GA27802@shangw>
+ <1427083561.3643.551.camel@redhat.com> <20150323044033.GA1874@shangw>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linux-pci@vger.kernel.org, linuxppc-dev@ozlabs.org,
+ Brian King <brking@us.ibm.com>, cascardo@linux.vnet.ibm.com,
+ bhelgaas@google.com, Frank Haverkamp <haver@linux.vnet.ibm.com>,
+ Ian Munsie <imunsie@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,132 +34,274 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Dave Chinner reported the following on https://lkml.org/lkml/2015/3/1/226
+On Mon, 2015-03-23 at 15:40 +1100, Gavin Shan wrote:
+> On Sun, Mar 22, 2015 at 10:06:01PM -0600, Alex Williamson wrote:
+> >On Mon, 2015-03-23 at 14:56 +1100, Gavin Shan wrote:
+> >> On Sun, Mar 22, 2015 at 09:34:33PM -0600, Alex Williamson wrote:
+> >> >On Mon, 2015-03-23 at 14:02 +1100, Gavin Shan wrote:
+> >> >> The patch adds one more parameter ("probe") to pci_set_pcie_reset_state(),
+> >> >> which allows to check if one particular PCI device can be resetted by the
+> >> >> function. The function will be reused to support PCI device specific methods
+> >> >> maintained in pci_dev_reset_methods[] in subsequent patch.
+> >> >> 
+> >> >> Cc: Brian King <brking@us.ibm.com>
+> >> >> Cc: Frank Haverkamp <haver@linux.vnet.ibm.com>
+> >> >> Cc: Ian Munsie <imunsie@au1.ibm.com>
+> >> >> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+> >> >> ---
+> >> >> v3: Fix arguments of pci_set_pcie_reset_state() in cxl driver
+> >> >> v2: Reimplemented based on pci_set_pcie_reset_state()
+> >> >> ---
+> >> >>  arch/powerpc/kernel/eeh.c       | 14 ++++++++++----
+> >> >>  drivers/misc/cxl/pci.c          |  2 +-
+> >> >>  drivers/misc/genwqe/card_base.c |  9 +++++++--
+> >> >>  drivers/pci/pci.c               | 15 +++++++++------
+> >> >>  drivers/scsi/ipr.c              |  5 +++--
+> >> >>  include/linux/pci.h             |  5 +++--
+> >> >>  6 files changed, 33 insertions(+), 17 deletions(-)
+> >> >
+> >> >
+> >> >Argh, you're trying to make pci_set_pcie_reset_state() compatible with
+> >> >pci_dev_specific_reset(), so it can be called via pci_reset_function(),
+> >> >but the whole point of the pci_reset_function() interface is to reset a
+> >> >*single* function without disturbing anything else.  These patches make
+> >> >no effort at all to limit the set of affected devices to a single
+> >> >function and take great liberties using PCI_ANY_ID for vendors.  My take
+> >> >on the powerpc version of pcibios_set_pcie_reset_state() is that it's
+> >> >effectively a slot reset, so why not hook into the
+> >> >pci_reset_hotplug_slot() via the hotplug slot ops?  Please also use
+> >> >cover letters.  Thanks,
+> >> >
+> >> 
+> >> Yep, that's the point and intention of the patches. pcibios_set_pcie_reset_state()
+> >> isn't equal to pci_reset_hotplug_slot(). The later one depends on PCI slot, which
+> >> wasn't populated on PowerNV platform yet, but pcibios_set_pcie_reseet_state() doesn't.
+> >> 
+> >> The patchset depends on improved pcibios_set_pcie_reset_state(), which can be seen
+> >> from following linked. With it, we don't affect any PCI devices as the config space
+> >> is saved/restored accordingly before/after reset:
+> >> 
+> >> https://patchwork.ozlabs.org/patch/438598/
+> >
+> >Sorry, that's wrong.  pci_reset_function() can be called while other
+> >devices in the same multifunction package are actively in use.  It
+> >doesn't matter that you're saving and restoring the external state of
+> >the device, the internal state is lost and operation of the device is
+> >interrupted.  That is not how pci_reset_function() is supposed to work.
+> >Thanks,
+> >
+> 
+> pcibios_set_pcie_reset_state() applies hot reset on PCI bus, or PCI
+> slot fundamental reset essentially. It's potentially affecting multiple
+> PCI devices (not functions).
+> 
+> Yes. It's not safe to call pcibios_set_pcie_reset_state() if some of
+> the target functions are actively and in use. I also suspect if it
+> works to reset function#0 via pci_reset_function() while function#1
+> is actively in use? I guess the caller of pci_reset_function() perhaps
+> has to ensure there are no active functions/devices.
+> 
+> One of the issues the patches try to fix: some of broadcom adapters have
+> multile functions, which can't support FLR, AF FLR, PM reset. Also, reset
+> on parent PCI bus and the corresponding reset can't be applied because of
+> they're multi-function package. In summary, pci_reset_function() doesn't
+> work on the adapters. That won't give clean state when passing device from
+> host to guest, or return it back to host. Sometimes, the host memory gets
+> corrupted when destorying the guest. Occasionally, the patches with improved
+> pcibios_set_pcie_reset_state() avoided the issue.
+> 
+> Some adapters might require fundamental reset on the PCI slot, or hot reset
+> on parent bus explicitly, in order to successfully reload its firmware after
+> reset.
 
-  Across the board the 4.0-rc1 numbers are much slower, and the degradation
-  is far worse when using the large memory footprint configs. Perf points
-  straight at the cause - this is from 4.0-rc1 on the "-o bhash=101073" config:
+This is exactly why we have pci_reset_slot() and pci_reset_bus(), so
+that the caller can manage the scope of the reset.  You cannot change
+the semantics of pci_reset_function() simply because it's convenient for
+your implementation.  This series is wrong and should not be applied.
+Thanks,
 
-   -   56.07%    56.07%  [kernel]            [k] default_send_IPI_mask_sequence_phys
-      - default_send_IPI_mask_sequence_phys
-         - 99.99% physflat_send_IPI_mask
-            - 99.37% native_send_call_func_ipi
-                 smp_call_function_many
-               - native_flush_tlb_others
-                  - 99.85% flush_tlb_page
-                       ptep_clear_flush
-                       try_to_unmap_one
-                       rmap_walk
-                       try_to_unmap
-                       migrate_pages
-                       migrate_misplaced_page
-                     - handle_mm_fault
-                        - 99.73% __do_page_fault
-                             trace_do_page_fault
-                             do_async_page_fault
-                           + async_page_fault
-              0.63% native_send_call_func_single_ipi
-                 generic_exec_single
-                 smp_call_function_single
+Alex
 
-This is showing excessive migration activity even though excessive migrations
-are meant to get throttled. Normally, the scan rate is tuned on a per-task
-basis depending on the locality of faults.  However, if migrations fail
-for any reason then the PTE scanner may scan faster if the faults continue
-to be remote. This means there is higher system CPU overhead and fault
-trapping at exactly the time we know that migrations cannot happen. This
-patch tracks when migration failures occur and slows the PTE scanner.
-
-Signed-off-by: Mel Gorman <mgorman@suse.de>
----
- include/linux/sched.h | 9 +++++----
- kernel/sched/fair.c   | 8 ++++++--
- mm/huge_memory.c      | 3 ++-
- mm/memory.c           | 3 ++-
- 4 files changed, 15 insertions(+), 8 deletions(-)
-
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 6d77432e14ff..a419b65770d6 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -1625,11 +1625,11 @@ struct task_struct {
- 
- 	/*
- 	 * numa_faults_locality tracks if faults recorded during the last
--	 * scan window were remote/local. The task scan period is adapted
--	 * based on the locality of the faults with different weights
--	 * depending on whether they were shared or private faults
-+	 * scan window were remote/local or failed to migrate. The task scan
-+	 * period is adapted based on the locality of the faults with different
-+	 * weights depending on whether they were shared or private faults
- 	 */
--	unsigned long numa_faults_locality[2];
-+	unsigned long numa_faults_locality[3];
- 
- 	unsigned long numa_pages_migrated;
- #endif /* CONFIG_NUMA_BALANCING */
-@@ -1719,6 +1719,7 @@ struct task_struct {
- #define TNF_NO_GROUP	0x02
- #define TNF_SHARED	0x04
- #define TNF_FAULT_LOCAL	0x08
-+#define TNF_MIGRATE_FAIL 0x10
- 
- #ifdef CONFIG_NUMA_BALANCING
- extern void task_numa_fault(int last_node, int node, int pages, int flags);
-diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index 7ce18f3c097a..bcfe32088b37 100644
---- a/kernel/sched/fair.c
-+++ b/kernel/sched/fair.c
-@@ -1609,9 +1609,11 @@ static void update_task_scan_period(struct task_struct *p,
- 	/*
- 	 * If there were no record hinting faults then either the task is
- 	 * completely idle or all activity is areas that are not of interest
--	 * to automatic numa balancing. Scan slower
-+	 * to automatic numa balancing. Related to that, if there were failed
-+	 * migration then it implies we are migrating too quickly or the local
-+	 * node is overloaded. In either case, scan slower
- 	 */
--	if (local + shared == 0) {
-+	if (local + shared == 0 || p->numa_faults_locality[2]) {
- 		p->numa_scan_period = min(p->numa_scan_period_max,
- 			p->numa_scan_period << 1);
- 
-@@ -2080,6 +2082,8 @@ void task_numa_fault(int last_cpupid, int mem_node, int pages, int flags)
- 
- 	if (migrated)
- 		p->numa_pages_migrated += pages;
-+	if (flags & TNF_MIGRATE_FAIL)
-+		p->numa_faults_locality[2] += pages;
- 
- 	p->numa_faults[task_faults_idx(NUMA_MEMBUF, mem_node, priv)] += pages;
- 	p->numa_faults[task_faults_idx(NUMA_CPUBUF, cpu_node, priv)] += pages;
-diff --git a/mm/huge_memory.c b/mm/huge_memory.c
-index 0a42d1521aa4..51b3e7c64622 100644
---- a/mm/huge_memory.c
-+++ b/mm/huge_memory.c
-@@ -1350,7 +1350,8 @@ int do_huge_pmd_numa_page(struct mm_struct *mm, struct vm_area_struct *vma,
- 	if (migrated) {
- 		flags |= TNF_MIGRATED;
- 		page_nid = target_nid;
--	}
-+	} else
-+		flags |= TNF_MIGRATE_FAIL;
- 
- 	goto out;
- clear_pmdnuma:
-diff --git a/mm/memory.c b/mm/memory.c
-index d20e12da3a3c..97839f5c8c30 100644
---- a/mm/memory.c
-+++ b/mm/memory.c
-@@ -3103,7 +3103,8 @@ static int do_numa_page(struct mm_struct *mm, struct vm_area_struct *vma,
- 	if (migrated) {
- 		page_nid = target_nid;
- 		flags |= TNF_MIGRATED;
--	}
-+	} else
-+		flags |= TNF_MIGRATE_FAIL;
- 
- out:
- 	if (page_nid != -1)
--- 
-2.1.2
+> >> >> diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
+> >> >> index daa68a1..cd85c18 100644
+> >> >> --- a/arch/powerpc/kernel/eeh.c
+> >> >> +++ b/arch/powerpc/kernel/eeh.c
+> >> >> @@ -726,11 +726,14 @@ static void *eeh_restore_dev_state(void *data, void *userdata)
+> >> >>   * pcibios_set_pcie_slot_reset - Set PCI-E reset state
+> >> >>   * @dev: pci device struct
+> >> >>   * @state: reset state to enter
+> >> >> + * @probe: check if the device can take the reset
+> >> >>   *
+> >> >>   * Return value:
+> >> >>   * 	0 if success
+> >> >>   */
+> >> >> -int pcibios_set_pcie_reset_state(struct pci_dev *dev, enum pcie_reset_state state)
+> >> >> +int pcibios_set_pcie_reset_state(struct pci_dev *dev,
+> >> >> +				 enum pcie_reset_state state,
+> >> >> +				 int probe)
+> >> >>  {
+> >> >>  	struct eeh_dev *edev = pci_dev_to_eeh_dev(dev);
+> >> >>  	struct eeh_pe *pe = eeh_dev_to_pe(edev);
+> >> >> @@ -738,9 +741,12 @@ int pcibios_set_pcie_reset_state(struct pci_dev *dev, enum pcie_reset_state stat
+> >> >>  	if (!pe) {
+> >> >>  		pr_err("%s: No PE found on PCI device %s\n",
+> >> >>  			__func__, pci_name(dev));
+> >> >> -		return -EINVAL;
+> >> >> +		return -ENOTTY;
+> >> >>  	}
+> >> >>  
+> >> >> +	if (probe)
+> >> >> +		return 0;
+> >> >> +
+> >> >>  	switch (state) {
+> >> >>  	case pcie_deassert_reset:
+> >> >>  		eeh_ops->reset(pe, EEH_RESET_DEACTIVATE);
+> >> >> @@ -762,8 +768,8 @@ int pcibios_set_pcie_reset_state(struct pci_dev *dev, enum pcie_reset_state stat
+> >> >>  		break;
+> >> >>  	default:
+> >> >>  		eeh_pe_state_clear(pe, EEH_PE_CFG_BLOCKED);
+> >> >> -		return -EINVAL;
+> >> >> -	};
+> >> >> +		return -ENOTTY;
+> >> >> +	}
+> >> >>  
+> >> >>  	return 0;
+> >> >>  }
+> >> >> diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
+> >> >> index 1ef0164..3a87bfc 100644
+> >> >> --- a/drivers/misc/cxl/pci.c
+> >> >> +++ b/drivers/misc/cxl/pci.c
+> >> >> @@ -789,7 +789,7 @@ int cxl_reset(struct cxl *adapter)
+> >> >>  	/* pcie_warm_reset requests a fundamental pci reset which includes a
+> >> >>  	 * PERST assert/deassert.  PERST triggers a loading of the image
+> >> >>  	 * if "user" or "factory" is selected in sysfs */
+> >> >> -	if ((rc = pci_set_pcie_reset_state(dev, pcie_warm_reset))) {
+> >> >> +	if ((rc = pci_set_pcie_reset_state(dev, pcie_warm_reset, 0))) {
+> >> >>  		dev_err(&dev->dev, "cxl: pcie_warm_reset failed\n");
+> >> >>  		return rc;
+> >> >>  	}
+> >> >> diff --git a/drivers/misc/genwqe/card_base.c b/drivers/misc/genwqe/card_base.c
+> >> >> index 4cf8f82..4871f69 100644
+> >> >> --- a/drivers/misc/genwqe/card_base.c
+> >> >> +++ b/drivers/misc/genwqe/card_base.c
+> >> >> @@ -782,17 +782,22 @@ static int genwqe_pci_fundamental_reset(struct pci_dev *pci_dev)
+> >> >>  {
+> >> >>  	int rc;
+> >> >>  
+> >> >> +	/* Probe if the device can take the reset */
+> >> >> +	rc = pci_set_pcie_reset_state(pci_dev, pcie_warm_reset, 1);
+> >> >> +	if (rc)
+> >> >> +		return rc;
+> >> >> +
+> >> >>  	/*
+> >> >>  	 * lock pci config space access from userspace,
+> >> >>  	 * save state and issue PCIe fundamental reset
+> >> >>  	 */
+> >> >>  	pci_cfg_access_lock(pci_dev);
+> >> >>  	pci_save_state(pci_dev);
+> >> >> -	rc = pci_set_pcie_reset_state(pci_dev, pcie_warm_reset);
+> >> >> +	rc = pci_set_pcie_reset_state(pci_dev, pcie_warm_reset, 0);
+> >> >>  	if (!rc) {
+> >> >>  		/* keep PCIe reset asserted for 250ms */
+> >> >>  		msleep(250);
+> >> >> -		pci_set_pcie_reset_state(pci_dev, pcie_deassert_reset);
+> >> >> +		pci_set_pcie_reset_state(pci_dev, pcie_deassert_reset, 0);
+> >> >>  		/* Wait for 2s to reload flash and train the link */
+> >> >>  		msleep(2000);
+> >> >>  	}
+> >> >> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+> >> >> index 81f06e8..8581a5f 100644
+> >> >> --- a/drivers/pci/pci.c
+> >> >> +++ b/drivers/pci/pci.c
+> >> >> @@ -1558,28 +1558,31 @@ EXPORT_SYMBOL(pci_disable_device);
+> >> >>   * pcibios_set_pcie_reset_state - set reset state for device dev
+> >> >>   * @dev: the PCIe device reset
+> >> >>   * @state: Reset state to enter into
+> >> >> - *
+> >> >> + * @probe: Check if the device can take the reset
+> >> >>   *
+> >> >>   * Sets the PCIe reset state for the device. This is the default
+> >> >>   * implementation. Architecture implementations can override this.
+> >> >>   */
+> >> >>  int __weak pcibios_set_pcie_reset_state(struct pci_dev *dev,
+> >> >> -					enum pcie_reset_state state)
+> >> >> +					enum pcie_reset_state state,
+> >> >> +					int probe)
+> >> >>  {
+> >> >> -	return -EINVAL;
+> >> >> +	return -ENOTTY;
+> >> >>  }
+> >> >>  
+> >> >>  /**
+> >> >>   * pci_set_pcie_reset_state - set reset state for device dev
+> >> >>   * @dev: the PCIe device reset
+> >> >>   * @state: Reset state to enter into
+> >> >> - *
+> >> >> + * @probe: Check if the device can take the reset
+> >> >>   *
+> >> >>   * Sets the PCI reset state for the device.
+> >> >>   */
+> >> >> -int pci_set_pcie_reset_state(struct pci_dev *dev, enum pcie_reset_state state)
+> >> >> +int pci_set_pcie_reset_state(struct pci_dev *dev,
+> >> >> +			     enum pcie_reset_state state,
+> >> >> +			     int probe)
+> >> >>  {
+> >> >> -	return pcibios_set_pcie_reset_state(dev, state);
+> >> >> +	return pcibios_set_pcie_reset_state(dev, state, probe);
+> >> >>  }
+> >> >>  EXPORT_SYMBOL_GPL(pci_set_pcie_reset_state);
+> >> >>  
+> >> >> diff --git a/drivers/scsi/ipr.c b/drivers/scsi/ipr.c
+> >> >> index 9219953..89026f4 100644
+> >> >> --- a/drivers/scsi/ipr.c
+> >> >> +++ b/drivers/scsi/ipr.c
+> >> >> @@ -8317,7 +8317,8 @@ static int ipr_reset_start_bist(struct ipr_cmnd *ipr_cmd)
+> >> >>  static int ipr_reset_slot_reset_done(struct ipr_cmnd *ipr_cmd)
+> >> >>  {
+> >> >>  	ENTER;
+> >> >> -	pci_set_pcie_reset_state(ipr_cmd->ioa_cfg->pdev, pcie_deassert_reset);
+> >> >> +	pci_set_pcie_reset_state(ipr_cmd->ioa_cfg->pdev,
+> >> >> +				 pcie_deassert_reset, 0);
+> >> >>  	ipr_cmd->job_step = ipr_reset_bist_done;
+> >> >>  	ipr_reset_start_timer(ipr_cmd, IPR_WAIT_FOR_BIST_TIMEOUT);
+> >> >>  	LEAVE;
+> >> >> @@ -8339,7 +8340,7 @@ static int ipr_reset_slot_reset(struct ipr_cmnd *ipr_cmd)
+> >> >>  	struct pci_dev *pdev = ioa_cfg->pdev;
+> >> >>  
+> >> >>  	ENTER;
+> >> >> -	pci_set_pcie_reset_state(pdev, pcie_warm_reset);
+> >> >> +	pci_set_pcie_reset_state(pdev, pcie_warm_reset, 0);
+> >> >>  	ipr_cmd->job_step = ipr_reset_slot_reset_done;
+> >> >>  	ipr_reset_start_timer(ipr_cmd, IPR_PCI_RESET_TIMEOUT);
+> >> >>  	LEAVE;
+> >> >> diff --git a/include/linux/pci.h b/include/linux/pci.h
+> >> >> index 4e1f17d..052ac63 100644
+> >> >> --- a/include/linux/pci.h
+> >> >> +++ b/include/linux/pci.h
+> >> >> @@ -960,7 +960,8 @@ extern unsigned int pcibios_max_latency;
+> >> >>  void pci_set_master(struct pci_dev *dev);
+> >> >>  void pci_clear_master(struct pci_dev *dev);
+> >> >>  
+> >> >> -int pci_set_pcie_reset_state(struct pci_dev *dev, enum pcie_reset_state state);
+> >> >> +int pci_set_pcie_reset_state(struct pci_dev *dev,
+> >> >> +			     enum pcie_reset_state state, int probe);
+> >> >>  int pci_set_cacheline_size(struct pci_dev *dev);
+> >> >>  #define HAVE_PCI_SET_MWI
+> >> >>  int __must_check pci_set_mwi(struct pci_dev *dev);
+> >> >> @@ -1648,7 +1649,7 @@ extern unsigned long pci_hotplug_mem_size;
+> >> >>  void pcibios_disable_device(struct pci_dev *dev);
+> >> >>  void pcibios_set_master(struct pci_dev *dev);
+> >> >>  int pcibios_set_pcie_reset_state(struct pci_dev *dev,
+> >> >> -				 enum pcie_reset_state state);
+> >> >> +				 enum pcie_reset_state state, int probe);
+> >> >>  int pcibios_add_device(struct pci_dev *dev);
+> >> >>  void pcibios_release_device(struct pci_dev *dev);
+> >> >>  void pcibios_penalize_isa_irq(int irq, int active);
+> >> >
+> >> >
+> >> >
+> >> 
+> >
+> >
+> >
+> 
