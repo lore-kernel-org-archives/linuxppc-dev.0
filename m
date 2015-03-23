@@ -1,36 +1,36 @@
 Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8D5881A2ADE
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2015 08:57:29 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 046841A2AE3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2015 09:19:37 +1100 (AEDT)
 Received: from /spool/local
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Mon, 23 Mar 2015 15:57:27 -0600
-Received: from b03cxnp08027.gho.boulder.ibm.com
- (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 663053E40044
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2015 15:57:25 -0600 (MDT)
+ Mon, 23 Mar 2015 16:19:35 -0600
+Received: from b03cxnp08025.gho.boulder.ibm.com
+ (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id C75201FF002A
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2015 16:10:44 -0600 (MDT)
 Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
- by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t2NLvPlf33292442
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2015 14:57:25 -0700
+ by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t2NMJMmr35323912
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2015 15:19:22 -0700
 Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
  by d03av04.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t2NLuDlB011569
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2015 15:56:14 -0600
-Date: Mon, 23 Mar 2015 14:55:19 -0700
+ t2NMIEt4018709
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2015 16:18:15 -0600
+Date: Mon, 23 Mar 2015 15:17:20 -0700
 From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [8/9] powerpc/hv-24x7: Break up single_24x7_request
-Message-ID: <20150323215519.GA6013@us.ibm.com>
-References: <1424210434-28070-9-git-send-email-sukadev@linux.vnet.ibm.com>
- <20150317022358.8DE1D14011D@ozlabs.org>
+Subject: Re: [2/9] powerpc/hv24x7: Remove unnecessary parameter
+Message-ID: <20150323221720.GB6013@us.ibm.com>
+References: <1424210434-28070-3-git-send-email-sukadev@linux.vnet.ibm.com>
+ <20150317001352.69BC914010F@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150317022358.8DE1D14011D@ozlabs.org>
+In-Reply-To: <20150317001352.69BC914010F@ozlabs.org>
 Cc: peterz@infradead.org, linuxppc-dev@lists.ozlabs.org,
  Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -43,37 +43,37 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 Michael Ellerman [mpe@ellerman.id.au] wrote:
-| > +static void start_24x7_get_data(struct hv_24x7_request_buffer *request_buffer,
-| > +			struct hv_24x7_data_result_buffer *result_buffer)
-| > +{
+| On Tue, 2015-17-02 at 22:00:27 UTC, Sukadev Bhattiprolu wrote:
+| > Use pr_notice_ratelimited() to log error messages and remove
+| > the 'success_expected' parameter.
 | 
-| Just init_24x7_request() ?
+| I don't understand how this is equivalent?
 
-Sure.
+They are two unrelated changes that I should have separated.
+| 
+| The current code uses success_expected to indicate that once it's done the
+| request once and found that it works, it then expects the request to continue
+| working, and if it doesn't then that is an error.
+
+The current code is using success_expected to _not_ log an error if
+that initial request fails. i.e we silently return -EIO here.
+
+I think the 'success_expected' parameter is not really necessary.
+We can simply log the message even for that initial request.
+
+And we can log it a lower priority than KERN_ERR since the message
+is mostly for developers rather than users who would use event names
+(which encode/abstract the domain and offset values).
 
 | 
-| > +
-| > +	memset(request_buffer, 0, 4096);
-| > +	memset(result_buffer, 0, 4096);
-| > +
-| > +	request_buffer->interface_version = HV_24X7_IF_VERSION_CURRENT;
-| > +	/* memset above set request_buffer->num_requests to 0 */
-| > +}
-| > +
-| > +/*
-| > + * Commit (i.e perform) the H_GET_24x7_DATA hcall using the data collected
-| > + * by 'start_24x7_get_data()' and 'add_event_to_24x7_request()'.
-| > + */
-| > +static int commit_24x7_get_data(struct hv_24x7_request_buffer *request_buffer,
-| > +			struct hv_24x7_data_result_buffer *result_buffer)
-| > +{
+| Using pr_ratelimited() will do the opposite, ie. the first failure will print a
+| message, but that may not really indicate an error, it may just be a badly
+| configured request.
 | 
-| It don't like "commit" that is a loaded term.
+| Or at least that's how I understand it, please convince me I'm wrong :)
 | 
-| Just make_24x7_request() perhaps?
-
-Sure.
-
-Thanks
-
-Sukadev
+| cheers
+| _______________________________________________
+| Linuxppc-dev mailing list
+| Linuxppc-dev@lists.ozlabs.org
+| https://lists.ozlabs.org/listinfo/linuxppc-dev
