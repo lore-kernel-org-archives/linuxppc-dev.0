@@ -1,26 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <cyrilbur@gmail.com>
+Received: from mail-pa0-x22c.google.com (mail-pa0-x22c.google.com
+ [IPv6:2607:f8b0:400e:c03::22c])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 315161A097F
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2015 11:49:13 +1100 (AEDT)
-Message-ID: <1427158138.4770.296.camel@kernel.crashing.org>
-Subject: Re: Generic IOMMU pooled allocator
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Sowmini Varadhan <sowmini.varadhan@oracle.com>
-Date: Tue, 24 Mar 2015 11:48:58 +1100
-In-Reply-To: <20150323231943.GC21966@oracle.com>
-References: <20150322192726.GB19474@oracle.com>
- <20150323.122922.887448418154237329.davem@davemloft.net>
- <20150323165406.GG14061@oracle.com>
- <20150323.150508.149509757161802782.davem@davemloft.net>
- <1427150202.4770.248.camel@kernel.crashing.org>
- <20150323231943.GC21966@oracle.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id EAD411A01CC
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2015 11:52:44 +1100 (AEDT)
+Received: by pabxg6 with SMTP id xg6so195296193pab.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2015 17:52:43 -0700 (PDT)
+Message-ID: <1427158353.8284.12.camel@cyril>
+Subject: Re: [PATCH v2] powerpc/pseries: Simplify check for suspendability
+ during suspend/migration
+From: Cyril Bur <cyrilbur@gmail.com>
+To: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+Date: Tue, 24 Mar 2015 11:52:33 +1100
+In-Reply-To: <1425500547-22777-1-git-send-email-tyreld@linux.vnet.ibm.com>
+References: <1425500547-22777-1-git-send-email-tyreld@linux.vnet.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: aik@au1.ibm.com, aik@ozlabs.ru, anton@au1.ibm.com, paulus@samba.org,
- sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- David Miller <davem@davemloft.net>
+Cc: linuxppc-dev@lists.ozlabs.org, Nathan Fontenot <nfont@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,26 +27,165 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2015-03-23 at 19:19 -0400, Sowmini Varadhan wrote:
+On Wed, 2015-03-04 at 12:22 -0800, Tyrel Datwyler wrote:
+> During suspend/migration operation we must wait for the VASI state reported
+> by the hypervisor to become Suspending prior to making the ibm,suspend-me
+> RTAS call. Calling routines to rtas_ibm_supend_me() pass a vasi_state variable
+> that exposes the VASI state to the caller. This is unnecessary as the caller
+> only really cares about the following three conditions; if there is an error
+> we should bailout, success indicating we have suspended and woken back up so
+> proceed to device tree updated, or we are not suspendable yet so try calling
+> rtas_ibm_suspend_me again shortly.
+> 
+> This patch removes the extraneous vasi_state variable and simply uses the
+> return code to communicate how to proceed. We either succeed, fail, or get
+> -EAGAIN in which case we sleep for a second before trying to call
+> rtas_ibm_suspend_me again.
+> 
+Hi Tyrel, sorry this fell off my radar. Thanks for addressing all those
+issues.
 
-> What I've tried to do is to have a bool large_pool arg passed
-> to iommu_tbl_pool_init. In my observation (instrumented for scsi, ixgbe), 
-> we never allocate more than 4 pages at a time, so I pass in 
-> large_pool == false for all the sparc platforms. 
+> Signed-off-by: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+> Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+> Cc: Cyril Bur <cyrilbur@gmail.com>
+> ---
+> 
+> Changes in v2:
+> - Addressed Cyril's comments as follow:
+> - Removed unused vasi_rc variable
+> - Kept return behavior of ppc_rtas the same in the case of VASI error
 
-But that might not be necessary. If indeed we very rarely use the large
-pool, then just make it flush always. My feeling is that it will only
-ever be used at driver init/remove time when allocating things like
-descriptor rings, where the flush overhead dont' matter.
+Looks good for ppc_rtas(). Still changing a return value (pointed out
+below) in migrate_store(), we might be ok with that since its the sysfs
+file but mentioning it in the commit message would be a good idea.
 
-> > Or we can decide that large allocs are rare (typically
-> > pci_alloc_consistent, ie, driver init time), and thus always flush on
-> > them (or rather on free of a large chunk). David, what's your take
-> > there ? I have a feeling that should work fine without a noticeable
-> > performance issue...
-> > 
-> > I would also keep a "dirty" flag set on any free and cleared on any
-> > flush to avoid more spurrious flushes, but here too the benefit might be
-> > in the noise.
+> - Updated rtas_ibm_suspend_me function definition for !CONFIG_PPC_PSERIES
+> 
 
-Ben.
+Apart from that potential non problem, looks good to me.
+
+Reviewed-by: Cyril Bur <cyrilbur@gmail.com>
+
+>  arch/powerpc/include/asm/rtas.h           |  2 +-
+>  arch/powerpc/kernel/rtas.c                | 26 +++++++++++++-------------
+>  arch/powerpc/platforms/pseries/mobility.c |  9 +++------
+>  3 files changed, 17 insertions(+), 20 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/rtas.h b/arch/powerpc/include/asm/rtas.h
+> index 2e23e92..fc85eb0 100644
+> --- a/arch/powerpc/include/asm/rtas.h
+> +++ b/arch/powerpc/include/asm/rtas.h
+> @@ -327,7 +327,7 @@ extern int rtas_suspend_cpu(struct rtas_suspend_me_data *data);
+>  extern int rtas_suspend_last_cpu(struct rtas_suspend_me_data *data);
+>  extern int rtas_online_cpus_mask(cpumask_var_t cpus);
+>  extern int rtas_offline_cpus_mask(cpumask_var_t cpus);
+> -extern int rtas_ibm_suspend_me(u64 handle, int *vasi_return);
+> +extern int rtas_ibm_suspend_me(u64 handle);
+>  
+>  struct rtc_time;
+>  extern unsigned long rtas_get_boot_time(void);
+> diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
+> index 21c45a2..b9a7b89 100644
+> --- a/arch/powerpc/kernel/rtas.c
+> +++ b/arch/powerpc/kernel/rtas.c
+> @@ -897,7 +897,7 @@ int rtas_offline_cpus_mask(cpumask_var_t cpus)
+>  }
+>  EXPORT_SYMBOL(rtas_offline_cpus_mask);
+>  
+> -int rtas_ibm_suspend_me(u64 handle, int *vasi_return)
+> +int rtas_ibm_suspend_me(u64 handle)
+>  {
+>  	long state;
+>  	long rc;
+> @@ -919,13 +919,11 @@ int rtas_ibm_suspend_me(u64 handle, int *vasi_return)
+>  		printk(KERN_ERR "rtas_ibm_suspend_me: vasi_state returned %ld\n",rc);
+>  		return rc;
+>  	} else if (state == H_VASI_ENABLED) {
+> -		*vasi_return = RTAS_NOT_SUSPENDABLE;
+> -		return 0;
+> +		return -EAGAIN;
+>  	} else if (state != H_VASI_SUSPENDING) {
+>  		printk(KERN_ERR "rtas_ibm_suspend_me: vasi_state returned state %ld\n",
+>  		       state);
+> -		*vasi_return = -1;
+> -		return 0;
+> +		return -EIO;
+>  	}
+>  
+>  	if (!alloc_cpumask_var(&offline_mask, GFP_TEMPORARY))
+> @@ -972,7 +970,7 @@ out:
+>  	return atomic_read(&data.error);
+>  }
+>  #else /* CONFIG_PPC_PSERIES */
+> -int rtas_ibm_suspend_me(u64 handle, int *vasi_return)
+> +int rtas_ibm_suspend_me(u64 handle)
+>  {
+>  	return -ENOSYS;
+>  }
+> @@ -1022,7 +1020,6 @@ asmlinkage int ppc_rtas(struct rtas_args __user *uargs)
+>  	unsigned long flags;
+>  	char *buff_copy, *errbuf = NULL;
+>  	int nargs, nret, token;
+> -	int rc;
+>  
+>  	if (!capable(CAP_SYS_ADMIN))
+>  		return -EPERM;
+> @@ -1054,15 +1051,18 @@ asmlinkage int ppc_rtas(struct rtas_args __user *uargs)
+>  	if (token == ibm_suspend_me_token) {
+>  
+>  		/*
+> -		 * rtas_ibm_suspend_me assumes args are in cpu endian, or at least the
+> -		 * hcall within it requires it.
+> +		 * rtas_ibm_suspend_me assumes the streamid handle is in cpu
+> +		 * endian, or at least the hcall within it requires it.
+>  		 */
+> -		int vasi_rc = 0;
+> +		int rc = 0;
+>  		u64 handle = ((u64)be32_to_cpu(args.args[0]) << 32)
+>  		              | be32_to_cpu(args.args[1]);
+> -		rc = rtas_ibm_suspend_me(handle, &vasi_rc);
+> -		args.rets[0] = cpu_to_be32(vasi_rc);
+> -		if (rc)
+> +		rc = rtas_ibm_suspend_me(handle);
+> +		if (rc == -EAGAIN)
+> +			args.rets[0] = cpu_to_be32(RTAS_NOT_SUSPENDABLE);
+> +		else if (rc == -EIO)
+> +			args.rets[0] = cpu_to_be32(-1);
+> +		else if (rc)
+>  			return rc;
+>  		goto copy_return;
+>  	}
+> diff --git a/arch/powerpc/platforms/pseries/mobility.c b/arch/powerpc/platforms/pseries/mobility.c
+> index 90cf3dc..c489701 100644
+> --- a/arch/powerpc/platforms/pseries/mobility.c
+> +++ b/arch/powerpc/platforms/pseries/mobility.c
+> @@ -318,22 +318,19 @@ static ssize_t migrate_store(struct class *class, struct class_attribute *attr,
+>  {
+>  	u64 streamid;
+>  	int rc;
+> -	int vasi_rc = 0;
+>  
+>  	rc = kstrtou64(buf, 0, &streamid);
+>  	if (rc)
+>  		return rc;
+>  
+>  	do {
+> -		rc = rtas_ibm_suspend_me(streamid, &vasi_rc);
+> -		if (!rc && vasi_rc == RTAS_NOT_SUSPENDABLE)
+> +		rc = rtas_ibm_suspend_me(streamid);
+> +		if (rc == -EAGAIN)
+>  			ssleep(1);
+> -	} while (!rc && vasi_rc == RTAS_NOT_SUSPENDABLE);
+> +	} while (rc == -EAGAIN);
+>  
+>  	if (rc)
+>  		return rc;
+> -	if (vasi_rc)
+> -		return vasi_rc;
+>  
+
+When rtas_ibm_suspend me() now returns -EIO, migrate_store() will now
+return -EIO. It used to return -1.
+
+>  	post_mobility_fixup();
+>  	return count;
