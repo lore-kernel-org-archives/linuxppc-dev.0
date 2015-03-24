@@ -1,20 +1,24 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A12591A003D
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2015 13:19:57 +1100 (AEDT)
-Message-ID: <1427163597.28572.5.camel@ellerman.id.au>
-Subject: [git pull] Please pull mpe/linux.git powerpc-4.0-3 tag
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Tue, 24 Mar 2015 13:19:57 +1100
-Content-Type: multipart/signed; micalg="pgp-sha1";
- protocol="application/pgp-signature";
- boundary="=-cELSJhHF9ozgtWGNCjYo"
+ by lists.ozlabs.org (Postfix) with ESMTPS id E7AD21A0549
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2015 13:33:18 +1100 (AEDT)
+Message-ID: <1427164368.4770.310.camel@kernel.crashing.org>
+Subject: Re: [PATCH 2/5] powerpc: Remove powerpc specific byteswap from
+ bt8xx DVB driver
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: David Gibson <david@gibson.dropbear.id.au>
+Date: Tue, 24 Mar 2015 13:32:48 +1100
+In-Reply-To: <1422941785-22557-3-git-send-email-david@gibson.dropbear.id.au>
+References: <1422941785-22557-1-git-send-email-david@gibson.dropbear.id.au>
+ <1422941785-22557-3-git-send-email-david@gibson.dropbear.id.au>
+Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: linux-kernel@vger.kernel.org, paulus@samba.org, tyreld@linux.vnet.ibm.com,
- mahesh@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+Cc: Mauro Carvalho Chehab <mchehab@osg.samsung.com>, aik@ozlabs.ru,
+ Peter Hettkamp <peter.hettkamp@htp-tel.de>, agraf@suse.de,
+ linux-kernel@vger.kernel.org, paulus@samba.org, mdroth@us.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,85 +28,89 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Tue, 2015-02-03 at 16:36 +1100, David Gibson wrote:
+> The bt8xx PCI DVB driver includes a powerpc specific hack, using one of
+> the powerpc specific byteswapping functions in an IO helper macro.
+> 
+> There's no reason to use the powerpc specific function instead of a
+> generic byteswap, so this patch removes it.  I'm not sure if the powerpc
+> specific memory barrier is required, so I'm leaving that in.
+> 
+> Cc: Mauro Carvalho Chehab <mchehab@osg.samsung.com>
+> Cc: Peter Hettkamp <peter.hettkamp@htp-tel.de>
 
---=-cELSJhHF9ozgtWGNCjYo
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+In fact there's no reason for the powerpc specific bits in this driver
+(they might have been useful 15 years ago but they definitely aren't
+anymore), I'll replace this with the patch with:
 
-Hi Linus,
-
-Please pull some powerpc fixes for 4.0:
-
-The following changes since commit 06e5801b8cb3fc057d88cb4dc03c0b64b2744cda=
-:
-
-  Linux 4.0-rc4 (2015-03-15 17:38:20 -0700)
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/mpe/linux.git tags/powerpc-=
-4.0-3
-
-for you to fetch changes up to 44d5f6f5901e996744858c175baee320ccf1eda3:
-
-  powerpc/book3s: Fix the MCE code to use CONFIG_KVM_BOOK3S_64_HANDLER (201=
-5-03-23 17:10:47 +1100)
-
-----------------------------------------------------------------
-powerpc fixes for 4.0 # 2
-
-- Fix the MCE code to use CONFIG_KVM_BOOK3S_64_HANDLER
-- Little endian fixes for post mobility device tree update
-- Add PVR for POWER8NVL processor
-- Fixes for hypervisor doorbell handling
-
-----------------------------------------------------------------
-Benjamin Herrenschmidt (1):
-      powerpc: Add PVR for POWER8NVL processor
-
-Mahesh Salgaonkar (1):
-      powerpc/book3s: Fix the MCE code to use CONFIG_KVM_BOOK3S_64_HANDLER
-
-Paul Mackerras (1):
-      powerpc/powernv: Fixes for hypervisor doorbell handling
-
-Tyrel Datwyler (1):
-      powerpc/pseries: Little endian fixes for post mobility device tree up=
-date
-
- arch/powerpc/include/asm/ppc-opcode.h     |  3 +++
- arch/powerpc/include/asm/reg.h            |  3 +++
- arch/powerpc/kernel/cputable.c            | 20 ++++++++++++++
- arch/powerpc/kernel/dbell.c               |  2 ++
- arch/powerpc/kernel/exceptions-64s.S      |  2 +-
- arch/powerpc/platforms/powernv/smp.c      | 14 ++++++++--
- arch/powerpc/platforms/pseries/mobility.c | 44 ++++++++++++++++-----------=
-----
- 7 files changed, 64 insertions(+), 24 deletions(-)
+(Mauro, unless you holler ASAP, I'll just put this in my tree along
+with David series due to various cross-dependencies, ie, he removes
+those old crufty powerpc-specific leXX_to/from_cpu we had).
 
 
+media/bt8xx: Remove old powerpc cruft
 
---=-cELSJhHF9ozgtWGNCjYo
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-Content-Transfer-Encoding: 7bit
+The powerpc arch code enables PCI_COMMAND_MEMORY (and has done so for
+more than 10 years at least !) on pci_enable_device() and the hackery
+on the MMIO accessor is useless as well, our writel does everything
+this driver should need.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+ drivers/media/pci/bt8xx/bt878.c | 12 ------------
+ drivers/media/pci/bt8xx/bt878.h | 11 -----------
+ 2 files changed, 23 deletions(-)
 
-iQIcBAABAgAGBQJVEMnNAAoJEFHr6jzI4aWACkUQAIf5w5Yx6zBZupCC4tpiOSug
-YEATU/Ih0L8DFcOMsdnmU9uQ2ijRPSiXUw3gSU/iRbV1xZWB0OGmRvEgHqEPy1Q5
-IXOAT9zGoeMVwZs6GHarCPm0mO2XgXgqWcZvEBxP4hNBiO+5bV1G+SVTviXk9iUb
-WYQEati0rhFOsr2oakP1QjV8V5gMUBNzdQZmT/YqrS2kisjhASrq5n3IFm/Wn7L3
-GAZErGssOP587jYauQB0WcWF5SJx+944GtPHejc3H0ASt05ZrVJHO+0svuatwzBu
-0vfWweshjswtRsBGshuzrjNYa0WeMjyKCP1CwY1/6E5pgjG5cRJd0OQujssEAIza
-FPC01f6ZXev89mwo9E5vG0z+ryFFBxVpHQQw+Y87Mfp4zD8B8jDz7DeLM1w6YjDO
-L5gJj4yD+6rFcpyZY+hCrsRqGXS397Qy1CkFqsrKgXNse6nOu65trcKrLBfMbUXt
-TWWDK+1Y7xBgr3m8jsXxQ2mbsXQaYfZEku0g3IYyzwNdzHN1lhjLzHlN64Uho/2u
-z71ioH7W2B5yHXArWB33WADzR6VhyHpmtxBYmcuQzMfxL7W1WuLJ91CznpnFFfXl
-tCD/9ZnGWRfyN4rXMefFWlRE6jL5jPG1UMqdkHGVfFukdECQtcocw5V3GQDP16nV
-Z3J1psoylSJcIBU3AqUi
-=zQr0
------END PGP SIGNATURE-----
-
---=-cELSJhHF9ozgtWGNCjYo--
+diff --git a/drivers/media/pci/bt8xx/bt878.c b/drivers/media/pci/bt8xx/bt878.c
+index 0939d39..8aa7266 100644
+--- a/drivers/media/pci/bt8xx/bt878.c
++++ b/drivers/media/pci/bt8xx/bt878.c
+@@ -416,9 +416,6 @@ static int bt878_probe(struct pci_dev *dev, const struct pci_device_id *pci_id)
+ 	int result = 0;
+ 	unsigned char lat;
+ 	struct bt878 *bt;
+-#if defined(__powerpc__)
+-	unsigned int cmd;
+-#endif
+ 	unsigned int cardid;
+ 
+ 	printk(KERN_INFO "bt878: Bt878 AUDIO function found (%d).\n",
+@@ -461,15 +458,6 @@ static int bt878_probe(struct pci_dev *dev, const struct pci_device_id *pci_id)
+ 	printk("irq: %d, latency: %d, memory: 0x%lx\n",
+ 	       bt->irq, lat, bt->bt878_adr);
+ 
+-
+-#if defined(__powerpc__)
+-	/* on OpenFirmware machines (PowerMac at least), PCI memory cycle */
+-	/* response on cards with no firmware is not enabled by OF */
+-	pci_read_config_dword(dev, PCI_COMMAND, &cmd);
+-	cmd = (cmd | PCI_COMMAND_MEMORY);
+-	pci_write_config_dword(dev, PCI_COMMAND, cmd);
+-#endif
+-
+ #ifdef __sparc__
+ 	bt->bt878_mem = (unsigned char *) bt->bt878_adr;
+ #else
+diff --git a/drivers/media/pci/bt8xx/bt878.h b/drivers/media/pci/bt8xx/bt878.h
+index d19b592..49af240 100644
+--- a/drivers/media/pci/bt8xx/bt878.h
++++ b/drivers/media/pci/bt8xx/bt878.h
+@@ -142,18 +142,7 @@ void bt878_start(struct bt878 *bt, u32 controlreg, u32 op_sync_orin,
+ 		u32 irq_err_ignore);
+ void bt878_stop(struct bt878 *bt);
+ 
+-#if defined(__powerpc__)	/* big-endian */
+-static inline void io_st_le32(volatile unsigned __iomem *addr, unsigned val)
+-{
+-	st_le32(addr, val);
+-	eieio();
+-}
+-
+-#define bmtwrite(dat,adr)  io_st_le32((adr),(dat))
+-#define bmtread(adr)       ld_le32((adr))
+-#else
+ #define bmtwrite(dat,adr)  writel((dat), (adr))
+ #define bmtread(adr)       readl(adr)
+-#endif
+ 
+ #endif
