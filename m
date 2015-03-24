@@ -1,22 +1,37 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <hemant@linux.vnet.ibm.com>
+Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C9AC31A033E
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2015 17:37:34 +1100 (AEDT)
-Date: Tue, 24 Mar 2015 17:37:25 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Shuah Khan <shuahkh@osg.samsung.com>, Michael Ellerman
- <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- <linuxppc-dev@lists.ozlabs.org>
-Subject: linux-next: manual merge of the kselftest tree with the powerpc-mpe
- tree
-Message-ID: <20150324173725.442f88c1@canb.auug.org.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id CCD0E1A0270
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2015 17:49:05 +1100 (AEDT)
+Received: from /spool/local
+ by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <hemant@linux.vnet.ibm.com>;
+ Tue, 24 Mar 2015 12:18:59 +0530
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 4048A125805A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2015 12:20:34 +0530 (IST)
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay01.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t2O6mtOu41615582
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2015 12:18:56 +0530
+Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t2O6fun7028310
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2015 12:11:57 +0530
+Message-ID: <551108D6.7090805@linux.vnet.ibm.com>
+Date: Tue, 24 Mar 2015 12:18:54 +0530
+From: Hemant Kumar <hemant@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- boundary="Sig_/+_SYdCU37V1BehUDV.18aQf"; protocol="application/pgp-signature"
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
- Sam Bobroff <sam.bobroff@au1.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH v1 0/2] perf/kvm: perf-kvm-stat on powerpc
+References: <20150227093649.6367.15679.stgit@localhost.localdomain>
+In-Reply-To: <20150227093649.6367.15679.stgit@localhost.localdomain>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: maddy@linux.vnet.ibm.com, srikar@linux.vnet.ibm.com, anton@au1.ibm.com,
+ agraf@suse.de, linux-kernel@vger.kernel.org, paulus@samba.org,
+ warrier@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,111 +41,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Sig_/+_SYdCU37V1BehUDV.18aQf
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+Hi Michael,
 
-Hi Shuah,
+These patches were posted a month back. We don't have any review 
+comments to handle at this time. Can you pull these patches to your tree?
+Please, do let me know if you want me to rebase these patches to a 
+different tree (like Arnaldo's/tip etc).
 
-Today's linux-next merge of the kselftest tree got a conflict in
-tools/testing/selftests/powerpc/Makefile between commit a908f5de3b10
-("selftests/powerpc: Rename TARGETS in powerpc selftests makefile")
-from the powerpc-mpe tree and commit 6faeeea44b84 ("selftests: Add
-install support for the powerpc tests") from the kselftest tree.
+On 02/27/2015 03:13 PM, Hemant Kumar wrote:
+> perf kvm stat record/report which can be used to analyze KVM related statistics
+> isn't enabled on powerpc. This patchset enables "perf kvm stat" on powerpc.
+> The first patch enables perf kvm stat record and report to report kvm exits.
+>
+> "record" enables recording of the tracepoints: kvm_hv:kvm_guest_enter and
+> kvm_hv:kvm_guest_exit in the first patch and kvm_hv:kvm_hcall_enter and
+> kvm_hv:kvm_hcall_exit in the second patch.
+>
+> This command can be used to record kvm events on the host:
+> # perf kvm stat record -a
+>
+> To report the kvm guest related exit events, use:
+> # perf kvm stat report
+> or
+> # perf kvm stat report --event=vmexit
+>
+> This should show the exit events along with the exit reasons.
+>
+> The second patch in this series adds support to show the hcall events too with:
+> # perf kvm stat report --event=syscall
+>
+> ---
+>
+> Hemant Kumar (1):
+>        perf/kvm: perf-kvm-stat to report syscalls
+>
+> Srikar Dronamraju (1):
+>        perf/kvm: Enable perf-kvm-stat record/report on powerpc
+>
+>
+>   arch/powerpc/include/asm/hvcall.h            |  120 -------------------------
+>   arch/powerpc/include/uapi/asm/hcall_codes.h  |  123 ++++++++++++++++++++++++++
+>   arch/powerpc/include/uapi/asm/kvm_perf.h     |   19 ++++
+>   arch/powerpc/include/uapi/asm/trace_book3s.h |   33 +++++++
+>   arch/powerpc/include/uapi/asm/trace_hcall.h  |  122 ++++++++++++++++++++++++++
+>   arch/powerpc/kvm/trace_book3s.h              |   32 -------
+>   arch/powerpc/kvm/trace_hv.h                  |  119 -------------------------
+>   arch/powerpc/kvm/trace_pr.h                  |    2
+>   tools/perf/arch/powerpc/Makefile             |    1
+>   tools/perf/arch/powerpc/util/Build           |    1
+>   tools/perf/arch/powerpc/util/kvm-stat.c      |   94 ++++++++++++++++++++
+>   11 files changed, 398 insertions(+), 268 deletions(-)
+>   create mode 100644 arch/powerpc/include/uapi/asm/hcall_codes.h
+>   create mode 100644 arch/powerpc/include/uapi/asm/kvm_perf.h
+>   create mode 100644 arch/powerpc/include/uapi/asm/trace_book3s.h
+>   create mode 100644 arch/powerpc/include/uapi/asm/trace_hcall.h
+>   delete mode 100644 arch/powerpc/kvm/trace_book3s.h
+>   create mode 100644 tools/perf/arch/powerpc/util/kvm-stat.c
+>
+> --
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
 
-I fixed it up (see below) and can carry the fix as necessary (no action
-is required).
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-diff --cc tools/testing/selftests/powerpc/Makefile
-index 27dff8241de3,2958fe9a74e9..000000000000
---- a/tools/testing/selftests/powerpc/Makefile
-+++ b/tools/testing/selftests/powerpc/Makefile
-@@@ -8,27 -8,41 +8,41 @@@ ifeq ($(ARCH),powerpc
- =20
-  GIT_VERSION =3D $(shell git describe --always --long --dirty || echo "unk=
-nown")
- =20
-- CC :=3D $(CROSS_COMPILE)$(CC)
-  CFLAGS :=3D -Wall -O2 -flto -Wall -Werror -DGIT_VERSION=3D'"$(GIT_VERSION=
-)"' -I$(CURDIR) $(CFLAGS)
- =20
-- export CC CFLAGS
-+ export CFLAGS
- =20
- -TARGETS =3D pmu copyloops mm tm primitives stringloops
- +SUB_DIRS =3D pmu copyloops mm tm primitives stringloops vphn
- =20
-  endif
- =20
- -all: $(TARGETS)
- +all: $(SUB_DIRS)
- =20
- -$(TARGETS):
- +$(SUB_DIRS):
-  	$(MAKE) -k -C $@ all
- =20
-- run_tests: all
-+ include ../lib.mk
-+=20
-+ override define RUN_TESTS
- -	@for TARGET in $(TARGETS); do \
- +	@for TARGET in $(SUB_DIRS); do \
-  		$(MAKE) -C $$TARGET run_tests; \
-  	done;
-+ endef
-+=20
-+ override define INSTALL_RULE
- -	@for TARGET in $(TARGETS); do \
-++	@for TARGET in $(SUB_DIRS); do \
-+ 		$(MAKE) -C $$TARGET install; \
-+ 	done;
-+ endef
-+=20
-+ override define EMIT_TESTS
- -	@for TARGET in $(TARGETS); do \
-++	@for TARGET in $(SUB_DIRS); do \
-+ 		$(MAKE) -s -C $$TARGET emit_tests; \
-+ 	done;
-+ endef
- =20
-  clean:
- -	@for TARGET in $(TARGETS); do \
- +	@for TARGET in $(SUB_DIRS); do \
-  		$(MAKE) -C $$TARGET clean; \
-  	done;
-  	rm -f tags
-@@@ -36,4 -50,4 +50,4 @@@
-  tags:
-  	find . -name '*.c' -o -name '*.h' | xargs ctags
- =20
-- .PHONY: all run_tests clean tags $(SUB_DIRS)
- -.PHONY: tags $(TARGETS)
-++.PHONY: tags $(SUB_DIRS)
-
---Sig_/+_SYdCU37V1BehUDV.18aQf
-Content-Type: application/pgp-signature
-Content-Description: OpenPGP digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJVEQYtAAoJEMDTa8Ir7ZwVOagP/1razoHji4tCGmKiJl1q28qz
-GRvMwAbBJYZezNMm+kESDs2oDwq7B4leJJ4NQZc2JDBNXtiTGB2pycxTfKGtfMUF
-22X/GMb0I2YdBpXwnOHn4JB1SOmW754w5sLq3W/EXt+FyomMrwVjgHFmGh9TmxZy
-bBHN/EDMSl1jJkuSarSlDsGpKntBdjVAGvzelXuOL4VfELWtFbBN4HSWWyKJ19Rb
-lh/zgZsWUl3xJZe9caboePn9DUyUdaPJIOvhtphK1GIEAGLXDvJBWbFHcaxeRepl
-0y0JDL/yvXe7met4ihtKFD8PWF90tYISRdOH5h8VQ5OgT09dXC8bw3lRBW+XzuWQ
-GP9p7joCDmfpXnBcXTJgLlUyCs5uAPWmHLtUOkw7bLX5i7zUP+XW3fN5qdHPTj2H
-W28qsCeG7d2+6rUycXibEncyNfMnAf9WGY5iF59enmyWJvHnc4tmjwM9OAdUbRj7
-M5ldD0+c0TACOKQP8ZJfblZ3c4PB7pdjSlXGcVoabZIudW1lSSgesiqGaOYvdeIl
-JVJ9KCpS99zqsaxPdXTPprJNFN/759P1XGHRbdQ/YVeCkuLE4cMJvo0gPLI+vSwU
-BBzSZtFIYKcxy09QLpRKOZ0vFxv7PoDgkS+gAC+7PPIOT3MsX8Xdcm8ylEdaUIte
-+c6ppvdwhpaio7mwfmYL
-=XXhX
------END PGP SIGNATURE-----
-
---Sig_/+_SYdCU37V1BehUDV.18aQf--
+-- 
+Thanks,
+Hemant Kumar
