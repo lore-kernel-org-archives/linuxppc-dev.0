@@ -1,22 +1,25 @@
-Return-Path: <david@fromorbit.com>
-Received: from ipmail04.adl6.internode.on.net (ipmail04.adl6.internode.on.net
- [150.101.137.141])
- by lists.ozlabs.org (Postfix) with ESMTP id D45E31A02B6
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2015 22:51:43 +1100 (AEDT)
-Date: Tue, 24 Mar 2015 22:51:41 +1100
-From: Dave Chinner <david@fromorbit.com>
-To: Mel Gorman <mgorman@suse.de>
-Subject: Re: [PATCH 0/3] Reduce system overhead of automatic NUMA balancing
-Message-ID: <20150324115141.GS28621@dastard>
-References: <1427113443-20973-1-git-send-email-mgorman@suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1427113443-20973-1-git-send-email-mgorman@suse.de>
-Cc: linuxppc-dev@lists.ozlabs.org,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, xfs@oss.sgi.com,
- Linux-MM <linux-mm@kvack.org>, Aneesh Kumar <aneesh.kumar@linux.vnet.ibm.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Linus Torvalds <torvalds@linux-foundation.org>, Ingo Molnar <mingo@kernel.org>
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 65A2D1A033E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2015 00:02:44 +1100 (AEDT)
+Message-ID: <1427202157.1125.0.camel@ellerman.id.au>
+Subject: Re: [PATCH 1/3] powerpc/tm: Abort syscalls in active transactions
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Date: Wed, 25 Mar 2015 00:02:37 +1100
+In-Reply-To: <5510E77F.1020903@linux.vnet.ibm.com>
+References: <cover.1426740212.git.sam.bobroff@au1.ibm.com>
+ <6ebcb9f982f7cb100aef954cd7dc6a6081cd9134.1426740212.git.sam.bobroff@au1.ibm.com>
+ <550BE2AB.2050604@linux.vnet.ibm.com>
+ <1427162659.28572.3.camel@ellerman.id.au>
+ <5510E77F.1020903@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: mikey@neuling.org, azanella@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, Sam Bobroff <sam.bobroff@au1.ibm.com>,
+ matt@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,73 +29,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Mar 23, 2015 at 12:24:00PM +0000, Mel Gorman wrote:
-> These are three follow-on patches based on the xfsrepair workload Dave
-> Chinner reported was problematic in 4.0-rc1 due to changes in page table
-> management -- https://lkml.org/lkml/2015/3/1/226.
+On Tue, 2015-03-24 at 09:56 +0530, Anshuman Khandual wrote:
+> On 03/24/2015 07:34 AM, Michael Ellerman wrote:
+> > On Fri, 2015-03-20 at 14:34 +0530, Anshuman Khandual wrote:
+> >> On 03/19/2015 10:13 AM, Sam Bobroff wrote:
+> >>> This patch changes the syscall handler to doom (tabort) active
+> >>> transactions when a syscall is made and return immediately without
+> >>> performing the syscall.
+> >>>
+> >>> Currently, the system call instruction automatically suspends an
+> >>> active transaction which causes side effects to persist when an active
+> >>> transaction fails.
+> >>>
+> >>> This does change the kernel's behaviour, but in a way that was
+> >>> documented as unsupported. It doesn't reduce functionality because
+> >>> syscalls will still be performed after tsuspend. It also provides a
+> >>> consistent interface and makes the behaviour of user code
+> >>> substantially the same across powerpc and platforms that do not
+> >>> support suspended transactions (e.g. x86 and s390).
+> >>>
+> >>> Performance measurements using
+> >>> http://ozlabs.org/~anton/junkcode/null_syscall.c
+> >>> indicate the cost of a system call increases by about 0.5%.
+> >>
+> >> Performance test results verified which shows an improvement of
+> >> around ~0.52% with the patch compared to without it.
+> >>
+> >> [With patch]		null_syscall:     757.59 cycles     100.00%
+> >> [Without patch]]	null_syscall:     753.66 cycles     100.00%
+> > 
+> > No that's a performance *decrease* with the patch applied. ?
 > 
-> Much of the problem was reduced by commit 53da3bc2ba9e ("mm: fix up numa
-> read-only thread grouping logic") and commit ba68bc0115eb ("mm: thp:
-> Return the correct value for change_huge_pmd"). It was known that the performance
-> in 3.19 was still better even if is far less safe. This series aims to
-> restore the performance without compromising on safety.
-> 
-> Dave, you already tested patch 1 on its own but it would be nice to test
-> patches 1+2 and 1+2+3 separately just to be certain.
+> Micheal, thats true. The cycle counts are more with patch being applied.
+> Here are some more results on mainline.
 
-			   3.19  4.0-rc4    +p1      +p2      +p3
-mm_migrate_pages	266,750  572,839  558,632  223,706  201,429
-run time		  4m54s    7m50s    7m20s    5m07s    4m31s
+Right, more cycles == worse :)
 
-numa stats form p1+p2:
+But it's not much more so we'll merge it.
 
-numa_hit 8436537
-numa_miss 0
-numa_foreign 0
-numa_interleave 30765
-numa_local 8409240
-numa_other 27297
-numa_pte_updates 46109698
-numa_huge_pte_updates 0
-numa_hint_faults 44756389
-numa_hint_faults_local 11841095
-numa_pages_migrated 4868674
-pgmigrate_success 4868674
-pgmigrate_fail 0
-
-
-numa stats form p1+p2+p3:
-
-numa_hit 6991596
-numa_miss 0
-numa_foreign 0
-numa_interleave 10336
-numa_local 6983144
-numa_other 8452
-numa_pte_updates 24460492
-numa_huge_pte_updates 0
-numa_hint_faults 23677262
-numa_hint_faults_local 5952273
-numa_pages_migrated 3557928
-pgmigrate_success 3557928
-pgmigrate_fail 0
-
-OK, the summary with all patches applied:
-
-config                          3.19   4.0-rc1  4.0-rc4  4.0-rc5+
-defaults                       8m08s     9m34s    9m14s    6m57s
--o ag_stride=-1                4m04s     4m38s    4m11s    4m06s
--o bhash=101073                6m04s    17m43s    7m35s    6m13s
--o ag_stride=-1,bhash=101073   4m54s     9m58s    7m50s    4m31s
-
-So it looks like the patch set fixes the remaining regression and in
-2 of the four cases actually improves performance....
-
-Thanks, Linus and Mel, for tracking this tricky problem down! 
-
-Cheers,
-
-Dave.
--- 
-Dave Chinner
-david@fromorbit.com
+cheers
