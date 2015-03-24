@@ -1,40 +1,37 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5C09A1A0271
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2015 15:27:44 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 97BE21A033E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2015 16:54:53 +1100 (AEDT)
 Received: from /spool/local
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Tue, 24 Mar 2015 14:27:42 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 6D34E2BB0040
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2015 15:27:38 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t2O4RTD538076524
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2015 15:27:38 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t2O4R31a001773
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2015 15:27:04 +1100
-Message-ID: <5510E77F.1020903@linux.vnet.ibm.com>
-Date: Tue, 24 Mar 2015 09:56:39 +0530
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Tue, 24 Mar 2015 15:54:51 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 8DA44357804F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2015 16:54:50 +1100 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t2O5sgeu45351038
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2015 16:54:50 +1100
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t2O5sGWb017154
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2015 16:54:16 +1100
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [RFC PATCH] powerpc/mm/thp: Make page table walk safe against thp
+ split/collapse
+In-Reply-To: <1427153762.4770.266.camel@kernel.crashing.org>
+References: <1427122851-22495-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1427153762.4770.266.camel@kernel.crashing.org>
+Date: Tue, 24 Mar 2015 11:23:49 +0530
+Message-ID: <87vbhrlz4i.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH 1/3] powerpc/tm: Abort syscalls in active transactions
-References: <cover.1426740212.git.sam.bobroff@au1.ibm.com>
- <6ebcb9f982f7cb100aef954cd7dc6a6081cd9134.1426740212.git.sam.bobroff@au1.ibm.com>
- <550BE2AB.2050604@linux.vnet.ibm.com>
- <1427162659.28572.3.camel@ellerman.id.au>
-In-Reply-To: <1427162659.28572.3.camel@ellerman.id.au>
-Content-Type: text/plain; charset=UTF-8
-Cc: mikey@neuling.org, azanella@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org, Sam Bobroff <sam.bobroff@au1.ibm.com>,
- matt@ozlabs.org
+Content-Type: text/plain
+Cc: anton@au1.ibm.com, paulus@samba.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,61 +41,384 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03/24/2015 07:34 AM, Michael Ellerman wrote:
-> On Fri, 2015-03-20 at 14:34 +0530, Anshuman Khandual wrote:
->> On 03/19/2015 10:13 AM, Sam Bobroff wrote:
->>> This patch changes the syscall handler to doom (tabort) active
->>> transactions when a syscall is made and return immediately without
->>> performing the syscall.
->>>
->>> Currently, the system call instruction automatically suspends an
->>> active transaction which causes side effects to persist when an active
->>> transaction fails.
->>>
->>> This does change the kernel's behaviour, but in a way that was
->>> documented as unsupported. It doesn't reduce functionality because
->>> syscalls will still be performed after tsuspend. It also provides a
->>> consistent interface and makes the behaviour of user code
->>> substantially the same across powerpc and platforms that do not
->>> support suspended transactions (e.g. x86 and s390).
->>>
->>> Performance measurements using
->>> http://ozlabs.org/~anton/junkcode/null_syscall.c
->>> indicate the cost of a system call increases by about 0.5%.
->>
->> Performance test results verified which shows an improvement of
->> around ~0.52% with the patch compared to without it.
->>
->> [With patch]		null_syscall:     757.59 cycles     100.00%
->> [Without patch]]	null_syscall:     753.66 cycles     100.00%
-> 
-> No that's a performance *decrease* with the patch applied. ?
+Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
 
-Micheal, thats true. The cycle counts are more with patch being applied.
-Here are some more results on mainline.
+> On Mon, 2015-03-23 at 20:30 +0530, Aneesh Kumar K.V wrote:
+>
+>> -static inline pte_t *lookup_linux_ptep(pgd_t *pgdir, unsigned long hva,
+>> +static inline pte_t lookup_linux_pte(pgd_t *pgdir, unsigned long hva,
+>>  				     unsigned long *pte_sizep)
+>>  {
+>>  	pte_t *ptep;
+>>  	unsigned long ps = *pte_sizep;
+>>  	unsigned int shift;
+>> +	unsigned long flags;
+>>  
+>> +	local_irq_save(flags);
+>>  	ptep = find_linux_pte_or_hugepte(pgdir, hva, &shift);
+>>  	if (!ptep)
+>> -		return NULL;
+>> +		goto err_out;
+>>  	if (shift)
+>>  		*pte_sizep = 1ul << shift;
+>>  	else
+>>  		*pte_sizep = PAGE_SIZE;
+>>  
+>>  	if (ps > *pte_sizep)
+>> -		return NULL;
+>> +		goto err_out;
+>>  
+>> -	return ptep;
+>> +	local_irq_restore(flags);
+>> +	return *ptep;
+>> +err_out:
+>> +	local_irq_restore(flags);
+>> +	return __pte(0);
+>>  }
+>
+> Doesn't the above go backward vs. your explanation ? IE. You capture the
+> PTE *value* inside the lock then drop the lock and have no check for
+> splitting or anything, causing you to potentially return a stale PTE.
+>
+> You assume the caller will check for splitting ? It doesn't ...
 
-Without the patch:
+The only call site is kvmppc_e500_shadow_map and lookup_linux_pte is
+used to get the wimg bits. It also consider not present pte and error
+and prints kernel message. I am not completely sure what the semantics
+are expected int he call site. Since it cared only about wimg bits,
+irrespective of whether it is getting split or not, we would get the
+correct value. Now may be we want to drop the generic function
+lookup_linux_pte and do lookup_linux_pte_wimg() to make sure we don't
+end up using that for something else. ? I am still not sure whether we
+can hit a hugepage collapse there. 
 
-        null_syscall:     754.14 cycles     100.00%
-        null_syscall:     754.50 cycles     100.00%
-        null_syscall:     754.17 cycles     100.00%
-        null_syscall:     754.43 cycles     100.00%
-        null_syscall:     754.17 cycles     100.00%
-        null_syscall:     754.20 cycles     100.00%
-        null_syscall:     754.47 cycles     100.00%
-        null_syscall:     754.70 cycles     100.00%
-        null_syscall:     754.43 cycles     100.00%
-        null_syscall:     753.72 cycles     100.00%
 
-With the patch:
 
-        null_syscall:     756.76 cycles     100.00%
-        null_syscall:     756.40 cycles     100.00%
-        null_syscall:     756.46 cycles     100.00%
-        null_syscall:     756.86 cycles     100.00%
-        null_syscall:     756.56 cycles     100.00%
-        null_syscall:     756.66 cycles     100.00%
-        null_syscall:     756.86 cycles     100.00%
-        null_syscall:     756.86 cycles     100.00%
-        null_syscall:     757.02 cycles     100.00%
-        null_syscall:     756.93 cycles     100.00%
+>
+>>  #endif /* __ASSEMBLY__ */
+>>  
+>> diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
+>> index 3b2252e7731b..c2b44f250824 100644
+>> --- a/arch/powerpc/kernel/eeh.c
+>> +++ b/arch/powerpc/kernel/eeh.c
+>> @@ -326,17 +326,21 @@ void eeh_slot_error_detail(struct eeh_pe *pe, int severity)
+>>  static inline unsigned long eeh_token_to_phys(unsigned long token)
+>>  {
+>>  	pte_t *ptep;
+>> -	unsigned long pa;
+>> +	unsigned long pa, flags;
+>>  	int hugepage_shift;
+>>  
+>>  	/*
+>>  	 * We won't find hugepages here, iomem
+>>  	 */
+>> +	local_irq_save(flags);
+>>  	ptep = find_linux_pte_or_hugepte(init_mm.pgd, token, &hugepage_shift);
+>> -	if (!ptep)
+>> +	if (!ptep) {
+>> +		local_irq_restore(flags);
+>>  		return token;
+>> +	}
+>>  	WARN_ON(hugepage_shift);
+>>  	pa = pte_pfn(*ptep) << PAGE_SHIFT;
+>> +	local_irq_restore(flags);
+>
+> Isn't think the same as lookup_linux_pte ? Can't you just use that and
+> keep WARN_ON(psize != PAGE_SIZE) ?
+
+I wanted to drop lookup_linux_pte, We definitely don't want to have more
+functions that walk linux page table with different assumptions. 
+
+
+>
+>>  	return pa | (token & (PAGE_SIZE-1));
+>>  }
+>> diff --git a/arch/powerpc/kernel/io-workarounds.c b/arch/powerpc/kernel/io-workarounds.c
+>> index 24b968f8e4d8..bd958d93fd38 100644
+>> --- a/arch/powerpc/kernel/io-workarounds.c
+>> +++ b/arch/powerpc/kernel/io-workarounds.c
+>> @@ -65,6 +65,7 @@ struct iowa_bus *iowa_mem_find_bus(const PCI_IO_ADDR addr)
+>>  	if (token && token <= iowa_bus_count)
+>>  		bus = &iowa_busses[token - 1];
+>>  	else {
+>> +		unsigned long flags;
+>>  		unsigned long vaddr, paddr;
+>>  		pte_t *ptep;
+>>  
+>> @@ -72,6 +73,7 @@ struct iowa_bus *iowa_mem_find_bus(const PCI_IO_ADDR addr)
+>>  		if (vaddr < PHB_IO_BASE || vaddr >= PHB_IO_END)
+>>  			return NULL;
+>>  
+>> +		local_irq_save(flags);
+>>  		ptep = find_linux_pte_or_hugepte(init_mm.pgd, vaddr,
+>>  						 &hugepage_shift);
+>>  		if (ptep == NULL)
+>> @@ -83,6 +85,7 @@ struct iowa_bus *iowa_mem_find_bus(const PCI_IO_ADDR addr)
+>>  			WARN_ON(hugepage_shift);
+>>  			paddr = pte_pfn(*ptep) << PAGE_SHIFT;
+>>  		}
+>> +		local_irq_restore(flags);
+>>  		bus = iowa_pci_find(vaddr, paddr);
+>
+> Same.
+>
+>>  		if (bus == NULL)
+>> diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c b/arch/powerpc/kvm/book3s_64_mmu_hv.c
+>> index 534acb3c6c3d..2dccaa6a1113 100644
+>> --- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
+>> +++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
+>> @@ -537,14 +537,15 @@ int kvmppc_book3s_hv_page_fault(struct kvm_run *run, struct kvm_vcpu *vcpu,
+>>  		}
+>>  		/* if the guest wants write access, see if that is OK */
+>>  		if (!writing && hpte_is_writable(r)) {
+>> +			unsigned long flags;
+>>  			unsigned int hugepage_shift;
+>>  			pte_t *ptep, pte;
+>>  
+>>  			/*
+>>  			 * We need to protect against page table destruction
+>> -			 * while looking up and updating the pte.
+>> +			 * hugepage split and collapse.
+>>  			 */
+>> -			rcu_read_lock_sched();
+>> +			local_irq_save(flags);
+>>  			ptep = find_linux_pte_or_hugepte(current->mm->pgd,
+>>  							 hva, &hugepage_shift);
+>>  			if (ptep) {
+>> @@ -553,7 +554,7 @@ int kvmppc_book3s_hv_page_fault(struct kvm_run *run, struct kvm_vcpu *vcpu,
+>>  				if (pte_write(pte))
+>>  					write_ok = 1;
+>>  			}
+>> -			rcu_read_unlock_sched();
+>> +			local_irq_restore(flags);
+>>  		}
+>>  	}
+>
+> Ack.
+>
+>> diff --git a/arch/powerpc/kvm/book3s_hv_rm_mmu.c b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
+>> index 625407e4d3b0..b0ad673b35cf 100644
+>> --- a/arch/powerpc/kvm/book3s_hv_rm_mmu.c
+>> +++ b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
+>> @@ -24,14 +24,19 @@
+>>  /* Translate address of a vmalloc'd thing to a linear map address */
+>>  static void *real_vmalloc_addr(void *x)
+>>  {
+>> +	unsigned long flags;
+>>  	unsigned long addr = (unsigned long) x;
+>>  	pte_t *p;
+>>  
+>> +	local_irq_save(flags);
+>>  	p = find_linux_pte_or_hugepte(swapper_pg_dir, addr, NULL);
+>> -	if (!p || !pte_present(*p))
+>> +	if (!p || !pte_present(*p)) {
+>> +		local_irq_restore(flags);
+>>  		return NULL;
+>> +	}
+>>  	/* assume we don't have huge pages in vmalloc space... */
+>>  	addr = (pte_pfn(*p) << PAGE_SHIFT) | (addr & ~PAGE_MASK);
+>> +	local_irq_restore(flags);
+>>  	return __va(addr);
+>>  }
+>
+> This is called in real mode, I don't like the debug stuff that can
+> happen inside local_irq_* in that context. Can you either pounce that
+> to the higher level callers (and so not do it in real mode at all) or
+> use a lower level variant ? (I prefer going for the callers).
+>
+
+Which debug stuff ? the dump_stack print in
+find_linux_pte_or_hugepte ?. One of the reason I endup using pr_info and
+not WARN_ON is that the later didn't work in real mode. Or are you
+suggesting that we don't need to track for irqs_disabled for real-mode ?
+I was not sure whether we avoid taking an IPI when we are in real mode. 
+
+
+>> @@ -134,20 +139,27 @@ static void remove_revmap_chain(struct kvm *kvm, long pte_index,
+>>  static pte_t lookup_linux_pte_and_update(pgd_t *pgdir, unsigned long hva,
+>>  			      int writing, unsigned long *pte_sizep)
+>>  {
+>> -	pte_t *ptep;
+>> +	pte_t *ptep, pte;
+>> +	unsigned long flags;
+>>  	unsigned long ps = *pte_sizep;
+>>  	unsigned int hugepage_shift;
+>>  
+>> +	local_irq_save(flags);
+>>  	ptep = find_linux_pte_or_hugepte(pgdir, hva, &hugepage_shift);
+>>  	if (!ptep)
+>> -		return __pte(0);
+>> +		goto err_out;
+>>  	if (hugepage_shift)
+>>  		*pte_sizep = 1ul << hugepage_shift;
+>>  	else
+>>  		*pte_sizep = PAGE_SIZE;
+>>  	if (ps > *pte_sizep)
+>> -		return __pte(0);
+>> -	return kvmppc_read_update_linux_pte(ptep, writing, hugepage_shift);
+>> +		goto err_out;
+>> +	pte = kvmppc_read_update_linux_pte(ptep, writing, hugepage_shift);
+>> +	local_irq_restore(flags);
+>> +	return pte;
+>> +err_out:
+>> +	local_irq_restore(flags);
+>> +	return __pte(0);
+>>  }
+>
+> Ditto
+>
+>>  static inline void unlock_hpte(__be64 *hpte, unsigned long hpte_v)
+>> @@ -211,6 +223,10 @@ long kvmppc_do_h_enter(struct kvm *kvm, unsigned long flags,
+>>  
+>>  	/* Look up the Linux PTE for the backing page */
+>>  	pte_size = psize;
+>> +	/*
+>> +	 * If we had a page table table change after lookup, we would
+>> +	 * retry via mmu_notifier_retry.
+>> +	 */
+>>  	pte = lookup_linux_pte_and_update(pgdir, hva, writing, &pte_size);
+>>  	if (pte_present(pte) && !pte_protnone(pte)) {
+>>  		if (writing && !pte_write(pte))
+>> diff --git a/arch/powerpc/kvm/e500_mmu_host.c b/arch/powerpc/kvm/e500_mmu_host.c
+>> index cc536d4a75ef..b50778eee650 100644
+>> --- a/arch/powerpc/kvm/e500_mmu_host.c
+>> +++ b/arch/powerpc/kvm/e500_mmu_host.c
+>> @@ -335,7 +335,7 @@ static inline int kvmppc_e500_shadow_map(struct kvmppc_vcpu_e500 *vcpu_e500,
+>>  	unsigned long mmu_seq;
+>>  	struct kvm *kvm = vcpu_e500->vcpu.kvm;
+>>  	unsigned long tsize_pages = 0;
+>> -	pte_t *ptep;
+>> +	pte_t pte;
+>>  	unsigned int wimg = 0;
+>>  	pgd_t *pgdir;
+>>  
+>> @@ -468,9 +468,16 @@ static inline int kvmppc_e500_shadow_map(struct kvmppc_vcpu_e500 *vcpu_e500,
+>>  
+>> 
+>>  	pgdir = vcpu_e500->vcpu.arch.pgdir;
+>> -	ptep = lookup_linux_ptep(pgdir, hva, &tsize_pages);
+>> -	if (pte_present(*ptep))
+>> -		wimg = (*ptep >> PTE_WIMGE_SHIFT) & MAS2_WIMGE_MASK;
+>> +	/*
+>> +	 * We are just looking at the wimg bits, so we don't
+>> +	 * care much about the trans splitting bit.
+>> +	 * How about hugepage collapse ? the pfn will change,
+>> +	 * may be we should hold mmap_sem ?. We also don't
+>> +	 * have a page reference count here .
+>> +	 */
+>> +	pte = lookup_linux_pte(pgdir, hva, &tsize_pages);
+>> +	if (pte_present(pte))
+>> +		wimg = (pte >> PTE_WIMGE_SHIFT) & MAS2_WIMGE_MASK;
+>>  	else {
+>>  		if (printk_ratelimit())
+>>  			pr_err("%s: pte not present: gfn %lx, pfn %lx\n",
+>> diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
+>> index 7e408bfc7948..92f01649450a 100644
+>> --- a/arch/powerpc/mm/hugetlbpage.c
+>> +++ b/arch/powerpc/mm/hugetlbpage.c
+>> @@ -108,8 +108,17 @@ int pgd_huge(pgd_t pgd)
+>>  
+>>  pte_t *huge_pte_offset(struct mm_struct *mm, unsigned long addr)
+>>  {
+>> -	/* Only called for hugetlbfs pages, hence can ignore THP */
+>> -	return find_linux_pte_or_hugepte(mm->pgd, addr, NULL);
+>> +	unsigned long flags;
+>> +	pte_t *ptep;
+>> +	/*
+>> +	 * Only called for hugetlbfs pages, hence can ignore THP
+>> +	 * The save and restore are there only for avoiding the warning
+>> +	 * in find_linux_pte_or_hugepte().
+>> +	 */
+>> +	local_irq_save(flags);
+>> +	ptep = find_linux_pte_or_hugepte(mm->pgd, addr, NULL);
+>> +	local_irq_restore(flags);
+>> +	return ptep;
+>>  }
+>>  
+>>  static int __hugepte_alloc(struct mm_struct *mm, hugepd_t *hpdp,
+>> @@ -681,28 +690,35 @@ void hugetlb_free_pgd_range(struct mmu_gather *tlb,
+>>  	} while (addr = next, addr != end);
+>>  }
+>>  
+>> +/*
+>> + * We are holding mmap_sem, so a parallel huge page collapse cannot run.
+>> + * To prevent hugepage split, disable irq.
+>> + */
+>>  struct page *
+>>  follow_huge_addr(struct mm_struct *mm, unsigned long address, int write)
+>>  {
+>>  	pte_t *ptep;
+>>  	struct page *page;
+>>  	unsigned shift;
+>> -	unsigned long mask;
+>> +	unsigned long mask, flags;
+>>  	/*
+>>  	 * Transparent hugepages are handled by generic code. We can skip them
+>>  	 * here.
+>>  	 */
+>> +	local_irq_save(flags);
+>>  	ptep = find_linux_pte_or_hugepte(mm->pgd, address, &shift);
+>>  
+>>  	/* Verify it is a huge page else bail. */
+>> -	if (!ptep || !shift || pmd_trans_huge(*(pmd_t *)ptep))
+>> +	if (!ptep || !shift || pmd_trans_huge(*(pmd_t *)ptep)) {
+>> +		local_irq_restore(flags);
+>>  		return ERR_PTR(-EINVAL);
+>> -
+>> +	}
+>>  	mask = (1UL << shift) - 1;
+>>  	page = pte_page(*ptep);
+>>  	if (page)
+>>  		page += (address & mask) / PAGE_SIZE;
+>>  
+>> +	local_irq_restore(flags);
+>>  	return page;
+>>  }
+>>  
+>> @@ -949,6 +965,8 @@ void flush_dcache_icache_hugepage(struct page *page)
+>>   *
+>>   * So long as we atomically load page table pointers we are safe against teardown,
+>>   * we can follow the address down to the the page and take a ref on it.
+>> + * Should be called with irq disabled. If is is splitting hugepage, we will return
+>> + * NULL;
+>>   */
+>>  
+>>  pte_t *find_linux_pte_or_hugepte(pgd_t *pgdir, unsigned long ea, unsigned *shift)
+>> @@ -963,6 +981,11 @@ pte_t *find_linux_pte_or_hugepte(pgd_t *pgdir, unsigned long ea, unsigned *shift
+>>  	if (shift)
+>>  		*shift = 0;
+>>  
+>> +	if (!irqs_disabled()) {
+>
+> Might want to use the arch_* variant for similar "beware of generic
+> debug stuff in real mode" reasons...
+
+ok got that. 
+
+
+>
+>> +		pr_info("%s called with irq enabled\n", __func__);
+>> +		dump_stack();
+>> +	}
+>> +
+>>  	pgdp = pgdir + pgd_index(ea);
+>>  	pgd  = ACCESS_ONCE(*pgdp);
+>>  	/*
+>> diff --git a/arch/powerpc/perf/callchain.c b/arch/powerpc/perf/callchain.c
+>> index 2396dda282cd..173e4abc0c56 100644
+>> --- a/arch/powerpc/perf/callchain.c
+>> +++ b/arch/powerpc/perf/callchain.c
+>> @@ -125,6 +125,7 @@ static int read_user_stack_slow(void __user *ptr, void *ret, int nb)
+>>  	if (!pgdir)
+>>  		return -EFAULT;
+>>  
+>> +	/* FIXME!! I guess we come with irq disabled here ? */
+>
+> Not that I know of, that's not guaranteed.
+
+Will add local_irq_save/restore around that. 
+
+>
+>>  	ptep = find_linux_pte_or_hugepte(pgdir, addr, &shift);
+>>  	if (!shift)
+>>  		shift = PAGE_SHIFT;
