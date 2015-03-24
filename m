@@ -1,29 +1,32 @@
-Return-Path: <cusbrar1@gmail.com>
-Received: from mail-wi0-x234.google.com (mail-wi0-x234.google.com
- [IPv6:2a00:1450:400c:c05::234])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 43ABE1A2AA5
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2015 10:29:34 +1100 (AEDT)
-Received: by wixw10 with SMTP id w10so78282731wix.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 23 Mar 2015 16:29:31 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <20150323230811.GA21966@oracle.com>
-References: <20150322192726.GB19474@oracle.com>
- <20150323.122922.887448418154237329.davem@davemloft.net>
- <20150323165406.GG14061@oracle.com>
- <20150323.150508.149509757161802782.davem@davemloft.net>
- <1427149265.4770.238.camel@kernel.crashing.org>
- <20150323230811.GA21966@oracle.com>
-Date: Mon, 23 Mar 2015 19:29:31 -0400
-Message-ID: <CACwypyNS+U7cu6VKoFujVguHcCygcpbO8mzj5aFS-qkQALtg5Q@mail.gmail.com>
-Subject: Re: Generic IOMMU pooled allocator
-From: chase rayfield <cusbrar1@gmail.com>
-To: Sowmini Varadhan <sowmini.varadhan@oracle.com>
-Content-Type: multipart/alternative; boundary=047d7b5d6592bd7c880511fd095c
-Cc: aik@au1.ibm.com, aik@ozlabs.ru, anton@au1.ibm.com, paulus@samba.org,
- sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- David Miller <davem@davemloft.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id D8F211A0279
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2015 11:19:32 +1100 (AEDT)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id DB5DF140083
+ for <linuxppc-dev@ozlabs.org>; Tue, 24 Mar 2015 11:19:31 +1100 (AEDT)
+Message-ID: <1427156351.4770.286.camel@kernel.crashing.org>
+Subject: Re: [PATCH v3 1/2] PCI: One more parameter to
+ pci_set_pcie_reset_state()
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: cascardo@linux.vnet.ibm.com
+Date: Tue, 24 Mar 2015 11:19:11 +1100
+In-Reply-To: <20150323200729.GB1368@oc0812247204.ltc.br.ibm.com>
+References: <1427079771-18472-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <1427081673.3643.547.camel@redhat.com> <20150323035656.GA27802@shangw>
+ <1427083561.3643.551.camel@redhat.com> <20150323044033.GA1874@shangw>
+ <1427114434.3643.554.camel@redhat.com>
+ <20150323200729.GB1368@oc0812247204.ltc.br.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linux-pci@vger.kernel.org, Gavin Shan <gwshan@linux.vnet.ibm.com>,
+ linuxppc-dev@ozlabs.org, Alex Williamson <alex.williamson@redhat.com>,
+ Brian King <brking@us.ibm.com>, Ian Munsie <imunsie@au1.ibm.com>,
+ bhelgaas@google.com, Frank Haverkamp <haver@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,110 +36,252 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---047d7b5d6592bd7c880511fd095c
-Content-Type: text/plain; charset=UTF-8
+On Mon, 2015-03-23 at 17:07 -0300, cascardo@linux.vnet.ibm.com wrote:
+> 
+> I agree with you here. I think the bigger issue is that we are not
+> making sure VFIO is secure, allowing functions to be assigned
+> separately to different guests, even when we cannot guarantee we can
+> safely reset a single function, and also ignoring the possibility of
+> internal communication between functions. This second problem is real,
+> since some adapters will allow firmware to be loaded or reset, which
+> will affect other functions.
 
-On Mar 23, 2015 7:13 PM, "Sowmini Varadhan" <sowmini.varadhan@oracle.com>
-wrote:
->
-> On (03/24/15 09:21), Benjamin Herrenschmidt wrote:
-> >
-> > So we have two choices here that I can see:
-> >
-> >  - Keep that old platform use the old/simpler allocator
->
-> Problem with that approach is that the base "struct iommu" structure
-> for sparc gets a split personality: the older one is used with
-> the older allocator, and other ugly things ensue.  (alternatively,
-> you end up duplicating a version of the code with the flush_all
-> inlined).
->
-> >  - Try to regain the bulk of that benefit with the new one
-> >
-> > Sowmini, I see various options for the second choice. We could stick to
-> > 1 pool, and basically do as before, ie, if we fail on the first pass of
-> > alloc, it means we wrap around and do a flush, I don't think that will
-> > cause a significant degradation from today, do you ? We might have an
-> > occasional additional flush but I would expect it to be in the noise.
->
-> Isn't this essentially what I have in patch v5 here:
-> http://www.spinics.net/lists/sparclinux/msg13534.html
->
-> (the ops->reset is the flushall indirection, can be renamed if the
-> latter is preferred)
->
-> > Dave, what's your feeling there ? Does anybody around still have some
-> > HW that we can test with ?
->
-> I actually tested this on a V440 and a ultra45 (had a heck of a
-> time finding these, since the owners keep them turned off because
-> they are too noisy and consume too much power :-).
+We do ... on power. We don't create per-function PEs for that specific
+reason. Yes it does prevent individual ports of network adapters from
+being assigned to different guests but the HW cannot be trusted. We
+might add ways to "relax" this for cases where the user somewhat knows
+what he is doing, but the problem of the reset will remain.
 
-So we need tests then more than hw?.... I have an ultra1, ultra10 and t2000
-I can test on if needed. And I'd appreciate my caches not being flushed
-excessively on these boxes :-) too. I'll see if I can't get Gentoo on the
-u10 tonight.
-
-Also... It would be more "green" to make the code run faster on these boxes
-than otherwise!
-
---047d7b5d6592bd7c880511fd095c
-Content-Type: text/html; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-
-<p dir=3D"ltr"><br>
-On Mar 23, 2015 7:13 PM, &quot;Sowmini Varadhan&quot; &lt;<a href=3D"mailto=
-:sowmini.varadhan@oracle.com">sowmini.varadhan@oracle.com</a>&gt; wrote:<br=
->
-&gt;<br>
-&gt; On (03/24/15 09:21), Benjamin Herrenschmidt wrote:<br>
-&gt; &gt;<br>
-&gt; &gt; So we have two choices here that I can see:<br>
-&gt; &gt;<br>
-&gt; &gt;=C2=A0 - Keep that old platform use the old/simpler allocator<br>
-&gt;<br>
-&gt; Problem with that approach is that the base &quot;struct iommu&quot; s=
-tructure<br>
-&gt; for sparc gets a split personality: the older one is used with<br>
-&gt; the older allocator, and other ugly things ensue.=C2=A0 (alternatively=
-,<br>
-&gt; you end up duplicating a version of the code with the flush_all<br>
-&gt; inlined).<br>
-&gt;<br>
-&gt; &gt;=C2=A0 - Try to regain the bulk of that benefit with the new one<b=
-r>
-&gt; &gt;<br>
-&gt; &gt; Sowmini, I see various options for the second choice. We could st=
-ick to<br>
-&gt; &gt; 1 pool, and basically do as before, ie, if we fail on the first p=
-ass of<br>
-&gt; &gt; alloc, it means we wrap around and do a flush, I don&#39;t think =
-that will<br>
-&gt; &gt; cause a significant degradation from today, do you ? We might hav=
-e an<br>
-&gt; &gt; occasional additional flush but I would expect it to be in the no=
-ise.<br>
-&gt;<br>
-&gt; Isn&#39;t this essentially what I have in patch v5 here:<br>
-&gt; <a href=3D"http://www.spinics.net/lists/sparclinux/msg13534.html">http=
-://www.spinics.net/lists/sparclinux/msg13534.html</a><br>
-&gt;<br>
-&gt; (the ops-&gt;reset is the flushall indirection, can be renamed if the<=
-br>
-&gt; latter is preferred)<br>
-&gt;<br>
-&gt; &gt; Dave, what&#39;s your feeling there ? Does anybody around still h=
-ave some<br>
-&gt; &gt; HW that we can test with ?<br>
-&gt;<br>
-&gt; I actually tested this on a V440 and a ultra45 (had a heck of a<br>
-&gt; time finding these, since the owners keep them turned off because<br>
-&gt; they are too noisy and consume too much power :-).</p>
-<p dir=3D"ltr">So we need tests then more than hw?.... I have an ultra1, ul=
-tra10 and t2000 I can test on if needed. And I&#39;d appreciate my caches n=
-ot being flushed excessively on these boxes :-) too. I&#39;ll see if I can&=
-#39;t get Gentoo on the u10 tonight.</p>
-<p dir=3D"ltr">Also... It would be more &quot;green&quot; to make the code =
-run faster on these boxes than otherwise! </p>
-
---047d7b5d6592bd7c880511fd095c--
+> We need to either have in written that this is acceptable and that
+> higher layers should take care of these possibilities, if they care
+> about them, or we need to fix this, by making VFIO only accept a whole
+> group of functions to be assigned to a guest, which will allow the
+> problem described by Gavin to be properly handled, by using slot reset
+> functions, or another way of grouping devices that may be specific to
+> the platform.
+> Does it make sense?
+> 
+> Cascardo.
+> 
+> > > >> >> diff --git a/arch/powerpc/kernel/eeh.c
+> b/arch/powerpc/kernel/eeh.c
+> > > >> >> index daa68a1..cd85c18 100644
+> > > >> >> --- a/arch/powerpc/kernel/eeh.c
+> > > >> >> +++ b/arch/powerpc/kernel/eeh.c
+> > > >> >> @@ -726,11 +726,14 @@ static void
+> *eeh_restore_dev_state(void *data, void *userdata)
+> > > >> >>   * pcibios_set_pcie_slot_reset - Set PCI-E reset state
+> > > >> >>   * @dev: pci device struct
+> > > >> >>   * @state: reset state to enter
+> > > >> >> + * @probe: check if the device can take the reset
+> > > >> >>   *
+> > > >> >>   * Return value:
+> > > >> >>   *   0 if success
+> > > >> >>   */
+> > > >> >> -int pcibios_set_pcie_reset_state(struct pci_dev *dev, enum
+> pcie_reset_state state)
+> > > >> >> +int pcibios_set_pcie_reset_state(struct pci_dev *dev,
+> > > >> >> +                              enum pcie_reset_state state,
+> > > >> >> +                              int probe)
+> > > >> >>  {
+> > > >> >>       struct eeh_dev *edev = pci_dev_to_eeh_dev(dev);
+> > > >> >>       struct eeh_pe *pe = eeh_dev_to_pe(edev);
+> > > >> >> @@ -738,9 +741,12 @@ int pcibios_set_pcie_reset_state(struct
+> pci_dev *dev, enum pcie_reset_state stat
+> > > >> >>       if (!pe) {
+> > > >> >>               pr_err("%s: No PE found on PCI device %s\n",
+> > > >> >>                       __func__, pci_name(dev));
+> > > >> >> -             return -EINVAL;
+> > > >> >> +             return -ENOTTY;
+> > > >> >>       }
+> > > >> >>  
+> > > >> >> +     if (probe)
+> > > >> >> +             return 0;
+> > > >> >> +
+> > > >> >>       switch (state) {
+> > > >> >>       case pcie_deassert_reset:
+> > > >> >>               eeh_ops->reset(pe, EEH_RESET_DEACTIVATE);
+> > > >> >> @@ -762,8 +768,8 @@ int pcibios_set_pcie_reset_state(struct
+> pci_dev *dev, enum pcie_reset_state stat
+> > > >> >>               break;
+> > > >> >>       default:
+> > > >> >>               eeh_pe_state_clear(pe, EEH_PE_CFG_BLOCKED);
+> > > >> >> -             return -EINVAL;
+> > > >> >> -     };
+> > > >> >> +             return -ENOTTY;
+> > > >> >> +     }
+> > > >> >>  
+> > > >> >>       return 0;
+> > > >> >>  }
+> > > >> >> diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
+> > > >> >> index 1ef0164..3a87bfc 100644
+> > > >> >> --- a/drivers/misc/cxl/pci.c
+> > > >> >> +++ b/drivers/misc/cxl/pci.c
+> > > >> >> @@ -789,7 +789,7 @@ int cxl_reset(struct cxl *adapter)
+> > > >> >>       /* pcie_warm_reset requests a fundamental pci reset
+> which includes a
+> > > >> >>        * PERST assert/deassert.  PERST triggers a loading of
+> the image
+> > > >> >>        * if "user" or "factory" is selected in sysfs */
+> > > >> >> -     if ((rc = pci_set_pcie_reset_state(dev,
+> pcie_warm_reset))) {
+> > > >> >> +     if ((rc = pci_set_pcie_reset_state(dev,
+> pcie_warm_reset, 0))) {
+> > > >> >>               dev_err(&dev->dev, "cxl: pcie_warm_reset
+> failed\n");
+> > > >> >>               return rc;
+> > > >> >>       }
+> > > >> >> diff --git a/drivers/misc/genwqe/card_base.c
+> b/drivers/misc/genwqe/card_base.c
+> > > >> >> index 4cf8f82..4871f69 100644
+> > > >> >> --- a/drivers/misc/genwqe/card_base.c
+> > > >> >> +++ b/drivers/misc/genwqe/card_base.c
+> > > >> >> @@ -782,17 +782,22 @@ static int
+> genwqe_pci_fundamental_reset(struct pci_dev *pci_dev)
+> > > >> >>  {
+> > > >> >>       int rc;
+> > > >> >>  
+> > > >> >> +     /* Probe if the device can take the reset */
+> > > >> >> +     rc = pci_set_pcie_reset_state(pci_dev,
+> pcie_warm_reset, 1);
+> > > >> >> +     if (rc)
+> > > >> >> +             return rc;
+> > > >> >> +
+> > > >> >>       /*
+> > > >> >>        * lock pci config space access from userspace,
+> > > >> >>        * save state and issue PCIe fundamental reset
+> > > >> >>        */
+> > > >> >>       pci_cfg_access_lock(pci_dev);
+> > > >> >>       pci_save_state(pci_dev);
+> > > >> >> -     rc = pci_set_pcie_reset_state(pci_dev,
+> pcie_warm_reset);
+> > > >> >> +     rc = pci_set_pcie_reset_state(pci_dev,
+> pcie_warm_reset, 0);
+> > > >> >>       if (!rc) {
+> > > >> >>               /* keep PCIe reset asserted for 250ms */
+> > > >> >>               msleep(250);
+> > > >> >> -             pci_set_pcie_reset_state(pci_dev,
+> pcie_deassert_reset);
+> > > >> >> +             pci_set_pcie_reset_state(pci_dev,
+> pcie_deassert_reset, 0);
+> > > >> >>               /* Wait for 2s to reload flash and train the
+> link */
+> > > >> >>               msleep(2000);
+> > > >> >>       }
+> > > >> >> diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+> > > >> >> index 81f06e8..8581a5f 100644
+> > > >> >> --- a/drivers/pci/pci.c
+> > > >> >> +++ b/drivers/pci/pci.c
+> > > >> >> @@ -1558,28 +1558,31 @@ EXPORT_SYMBOL(pci_disable_device);
+> > > >> >>   * pcibios_set_pcie_reset_state - set reset state for
+> device dev
+> > > >> >>   * @dev: the PCIe device reset
+> > > >> >>   * @state: Reset state to enter into
+> > > >> >> - *
+> > > >> >> + * @probe: Check if the device can take the reset
+> > > >> >>   *
+> > > >> >>   * Sets the PCIe reset state for the device. This is the
+> default
+> > > >> >>   * implementation. Architecture implementations can
+> override this.
+> > > >> >>   */
+> > > >> >>  int __weak pcibios_set_pcie_reset_state(struct pci_dev
+> *dev,
+> > > >> >> -                                     enum pcie_reset_state
+> state)
+> > > >> >> +                                     enum pcie_reset_state
+> state,
+> > > >> >> +                                     int probe)
+> > > >> >>  {
+> > > >> >> -     return -EINVAL;
+> > > >> >> +     return -ENOTTY;
+> > > >> >>  }
+> > > >> >>  
+> > > >> >>  /**
+> > > >> >>   * pci_set_pcie_reset_state - set reset state for device
+> dev
+> > > >> >>   * @dev: the PCIe device reset
+> > > >> >>   * @state: Reset state to enter into
+> > > >> >> - *
+> > > >> >> + * @probe: Check if the device can take the reset
+> > > >> >>   *
+> > > >> >>   * Sets the PCI reset state for the device.
+> > > >> >>   */
+> > > >> >> -int pci_set_pcie_reset_state(struct pci_dev *dev, enum
+> pcie_reset_state state)
+> > > >> >> +int pci_set_pcie_reset_state(struct pci_dev *dev,
+> > > >> >> +                          enum pcie_reset_state state,
+> > > >> >> +                          int probe)
+> > > >> >>  {
+> > > >> >> -     return pcibios_set_pcie_reset_state(dev, state);
+> > > >> >> +     return pcibios_set_pcie_reset_state(dev, state,
+> probe);
+> > > >> >>  }
+> > > >> >>  EXPORT_SYMBOL_GPL(pci_set_pcie_reset_state);
+> > > >> >>  
+> > > >> >> diff --git a/drivers/scsi/ipr.c b/drivers/scsi/ipr.c
+> > > >> >> index 9219953..89026f4 100644
+> > > >> >> --- a/drivers/scsi/ipr.c
+> > > >> >> +++ b/drivers/scsi/ipr.c
+> > > >> >> @@ -8317,7 +8317,8 @@ static int ipr_reset_start_bist(struct
+> ipr_cmnd *ipr_cmd)
+> > > >> >>  static int ipr_reset_slot_reset_done(struct ipr_cmnd
+> *ipr_cmd)
+> > > >> >>  {
+> > > >> >>       ENTER;
+> > > >> >> -     pci_set_pcie_reset_state(ipr_cmd->ioa_cfg->pdev,
+> pcie_deassert_reset);
+> > > >> >> +     pci_set_pcie_reset_state(ipr_cmd->ioa_cfg->pdev,
+> > > >> >> +                              pcie_deassert_reset, 0);
+> > > >> >>       ipr_cmd->job_step = ipr_reset_bist_done;
+> > > >> >>       ipr_reset_start_timer(ipr_cmd,
+> IPR_WAIT_FOR_BIST_TIMEOUT);
+> > > >> >>       LEAVE;
+> > > >> >> @@ -8339,7 +8340,7 @@ static int ipr_reset_slot_reset(struct
+> ipr_cmnd *ipr_cmd)
+> > > >> >>       struct pci_dev *pdev = ioa_cfg->pdev;
+> > > >> >>  
+> > > >> >>       ENTER;
+> > > >> >> -     pci_set_pcie_reset_state(pdev, pcie_warm_reset);
+> > > >> >> +     pci_set_pcie_reset_state(pdev, pcie_warm_reset, 0);
+> > > >> >>       ipr_cmd->job_step = ipr_reset_slot_reset_done;
+> > > >> >>       ipr_reset_start_timer(ipr_cmd, IPR_PCI_RESET_TIMEOUT);
+> > > >> >>       LEAVE;
+> > > >> >> diff --git a/include/linux/pci.h b/include/linux/pci.h
+> > > >> >> index 4e1f17d..052ac63 100644
+> > > >> >> --- a/include/linux/pci.h
+> > > >> >> +++ b/include/linux/pci.h
+> > > >> >> @@ -960,7 +960,8 @@ extern unsigned int pcibios_max_latency;
+> > > >> >>  void pci_set_master(struct pci_dev *dev);
+> > > >> >>  void pci_clear_master(struct pci_dev *dev);
+> > > >> >>  
+> > > >> >> -int pci_set_pcie_reset_state(struct pci_dev *dev, enum
+> pcie_reset_state state);
+> > > >> >> +int pci_set_pcie_reset_state(struct pci_dev *dev,
+> > > >> >> +                          enum pcie_reset_state state, int
+> probe);
+> > > >> >>  int pci_set_cacheline_size(struct pci_dev *dev);
+> > > >> >>  #define HAVE_PCI_SET_MWI
+> > > >> >>  int __must_check pci_set_mwi(struct pci_dev *dev);
+> > > >> >> @@ -1648,7 +1649,7 @@ extern unsigned long
+> pci_hotplug_mem_size;
+> > > >> >>  void pcibios_disable_device(struct pci_dev *dev);
+> > > >> >>  void pcibios_set_master(struct pci_dev *dev);
+> > > >> >>  int pcibios_set_pcie_reset_state(struct pci_dev *dev,
+> > > >> >> -                              enum pcie_reset_state state);
+> > > >> >> +                              enum pcie_reset_state state,
+> int probe);
+> > > >> >>  int pcibios_add_device(struct pci_dev *dev);
+> > > >> >>  void pcibios_release_device(struct pci_dev *dev);
+> > > >> >>  void pcibios_penalize_isa_irq(int irq, int active);
+> > > >> >
+> > > >> >
+> > > >> >
+> > > >> 
+> > > >
+> > > >
+> > > >
+> > > 
+> > 
+> > 
+> > 
