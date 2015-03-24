@@ -1,23 +1,22 @@
-Return-Path: <sowmini.varadhan@oracle.com>
-Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CCADB1A0281
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2015 12:57:36 +1100 (AEDT)
-Date: Mon, 23 Mar 2015 21:57:20 -0400
-From: Sowmini Varadhan <sowmini.varadhan@oracle.com>
-To: David Miller <davem@davemloft.net>
-Subject: Re: Generic IOMMU pooled allocator
-Message-ID: <20150324015720.GE21966@oracle.com>
-References: <20150323165406.GG14061@oracle.com>
- <20150323.150508.149509757161802782.davem@davemloft.net>
- <1427149265.4770.238.camel@kernel.crashing.org>
- <20150323.214453.255192641139042325.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150323.214453.255192641139042325.davem@davemloft.net>
-Cc: aik@au1.ibm.com, aik@ozlabs.ru, anton@au1.ibm.com, paulus@samba.org,
- sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7AC771A0171
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2015 13:02:49 +1100 (AEDT)
+Message-ID: <1427162568.28572.2.camel@ellerman.id.au>
+Subject: Re: [PATCH 3/3] selftests/powerpc: Add transactional syscall test
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Sam Bobroff <sam.bobroff@au1.ibm.com>
+Date: Tue, 24 Mar 2015 13:02:48 +1100
+In-Reply-To: <5510C352.9060302@au1.ibm.com>
+References: <cover.1426740212.git.sam.bobroff@au1.ibm.com>
+ <b4a4ea23b20098512cf350b97ce98e0d1ea58531.1426740212.git.sam.bobroff@au1.ibm.com>
+ <550BE795.4070200@linux.vnet.ibm.com> <5510C352.9060302@au1.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: mikey@neuling.org, matt@ozlabs.org, azanella@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, Anshuman Khandual <khandual@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,34 +26,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-benh> It might be sufficient to add a flush counter and compare it between runs
-benh> if actual wall-clock benchmarks are too hard to do (especially if you
-benh> don't have things like very fast network cards at hand).
-benh>
-benh> Number of flush / number of packets might be a sufficient metric, it..
+On Tue, 2015-03-24 at 12:52 +1100, Sam Bobroff wrote:
+> On 20/03/15 20:25, Anshuman Khandual wrote:
+> > On 03/19/2015 10:13 AM, Sam Bobroff wrote:
+> >> Check that a syscall made during an active transaction will fail with
+> >> the correct failure code and that one made during a suspended
+> >> transaction will succeed.
+> >>
+> >> Signed-off-by: Sam Bobroff <sam.bobroff@au1.ibm.com>
+> > 
+> > The test works.
+> 
+> Great :-)
+> 
+> >> +
+> >> +int tm_syscall(void)
+> >> +{
+> >> +	SKIP_IF(!((long)get_auxv_entry(AT_HWCAP2) & PPC_FEATURE2_HTM));
+> >> +	setbuf(stdout, 0);
+> >> +	FAIL_IF(!t_active_getppid_test());
+> >> +	printf("%d active transactions correctly aborted.\n", TM_TEST_RUNS);
+> >> +	FAIL_IF(!t_suspended_getppid_test());
+> >> +	printf("%d suspended transactions succeeded.\n", TM_TEST_RUNS);
+> >> +	return 0;
+> >> +}
+> >> +
+> >> +int main(void)
+> >> +{
+> >> +	return test_harness(tm_syscall, "tm_syscall");
+> >> +}
+> >> +
+> > 
+> > There is an extra blank line at the end of this file. Interchanging return
+> > codes of 0 and 1 for various functions make it very confusing along with
+> > negative FAIL_IF checks in the primary test function. Control flow structures
+> > like these can use some in-code documentation for readability.
+> > 
+> > +	for (i = 0; i < TM_RETRIES; i++) {
+> > +		if (__builtin_tbegin(0)) {
+> > +			getppid();
+> > +			__builtin_tend(0);
+> > +			return 1;
+> > +		}
+> > +		if (t_failure_persistent())
+> > +			return 0;
+> > 
+> > or
+> > 
+> > +		if (__builtin_tbegin(0)) {
+> > +			__builtin_tsuspend();
+> > +			getppid();
+> > +			__builtin_tresume();
+> > +			__builtin_tend(0);
+> > +			return 1;
+> > +		}
+> > +		if (t_failure_persistent())
+> > +			return 0;
+> > 
+> 
+> Good points. I'll remove the blank line and comment the code.
+> 
+> I'm not sure I can do any better with the FAIL_IF() macro: I wanted it
+> to read "fail if the test failed", but I can see what you mean about a
+> double negative. Maybe it would be better to introduce a different
+> macro, more like a standard assert: TEST(XXX) which fails if XXX is
+> false. However, I think "TEST" would be too generic a name and I'm not
+> should what would be better. Any comments/suggestions?
 
-I was just going to say: I can add those counters tomorrow,
-and get some stats, but seems like it doesn't really matter what 
-the outcome is, because: 
+FAIL_IF() is designed for things that return 0 for OK and !0 for failure. Like
+most things in C.
 
-On (03/23/15 21:44), David Miller wrote:
-> 
-> From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Date: Tue, 24 Mar 2015 09:21:05 +1100
-> 
-> > Dave, what's your feeling there ? Does anybody around still have
-> > some HW that we can test with ?
-> 
-> I don't see what the actual problem is.
-> 
-> Even if you use multiple pools, which we should for scalability on
-> sun4u too, just do the flush when allocation in _any_ pool wraps
-> around.
-> 
-> That's still better than not doing the optimization at all.
-> 
-> That is always going to be correct, and you can use a separate
-> spinlock to make sure only one thread of control does the full
-> IOMMU flush at a time.
+So I think it would be improved if you inverted your return codes in your test
+routines.
 
---Sowmini
+Even better to return ESOMETHING in the error cases, and zero otherwise.
+
+cheers
