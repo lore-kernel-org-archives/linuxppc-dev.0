@@ -1,11 +1,11 @@
 Return-Path: <Kim.Phillips@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0108.outbound.protection.outlook.com [65.55.169.108])
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1on0147.outbound.protection.outlook.com [157.56.110.147])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1A1C51A0961
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2015 09:49:51 +1100 (AEDT)
-Date: Tue, 24 Mar 2015 17:44:26 -0500
+ by lists.ozlabs.org (Postfix) with ESMTPS id 30DB51A0869
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2015 09:49:59 +1100 (AEDT)
+Date: Tue, 24 Mar 2015 17:44:34 -0500
 From: Kim Phillips <kim.phillips@freescale.com>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
  <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>, Scott Wood
@@ -14,12 +14,12 @@ To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
  <jkosina@suse.cz>, Ulrich Weigand <ulrich.weigand@de.ibm.com>, "Alexander
  Graf" <agraf@suse.de>, Stewart Smith <stewart@linux.vnet.ibm.com>, "Kyle
  Moffett" <Kyle.D.Moffett@boeing.com>
-Subject: [PATCH 2/3] powerpc: make copyuser_power7.S 64-byte cacheline friendly
-Message-ID: <20150324174426.acde5e836bcc8e71ee93055d@freescale.com>
+Subject: [PATCH 3/3] powerpc/e6500: disable POWER7 data cache prefetch and
+ implement our own
+Message-ID: <20150324174434.248a2f8488c9460e013aa7b4@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="US-ASCII"
-Cc: linux-api@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Shuah Khan <shuahkh@osg.samsung.com>, linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,423 +29,617 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The innermost copyloops were optimized for POWER7's 128-byte cacheline.
-This patch adds optimization for the e6500, which has a 64-byte
-cacheline.
+POWER7 has a dedicated stream prefetcher that is pre-programmed via
+dcbt rX,rY,0b010?0 instructions in the beginning of vmx_copy.
 
-We basically do this by stripping loop bodies using L1_CACHE_BYTES
-ifdeferry, replace 128 with L1_CACHE_BYTES, and 7's with L1_CACHE_SHIFTs.
+e6500 has no such prefetcher, so we revert to using regular dcbt
+instructions in-loop:
 
-We also add an e6500 copyuser to copyloops tests, which requires we copy
-asm/cache.h into copyloops, just to satisfy the #include:  We define
-the define symbols manually in the testing makefile.
+1. at __copy_tofrom_user_power7 entry, we prefetch the first
+src and dest lines with dcbt and dcbtst, respectively.
 
-Includes a minor spelling fix: desination->destination.
+2. if a short (16 bytes or less) copy, don't prefetch any further.
+
+3. else (nonvmx_copy, vmx_copy, unaligned_vmx_copy), we prefetch
+LINES_AHEAD number of lines, then, in the inner cacheline-wide
+loops, prefetch a line LINES_AHEAD of the current address being
+copied, and, finally drop into a tail-end cacheline-wide loop
+that doesn't prefetch for the last LINES_AHEAD number of iterations.
+
+LINES_AHEAD has been chosen emperically to be 10 based on generally
+best results on an important target benchmark: 1MB netperf TCP_CRR
+runs*, relative to a stock 3.19 kernel with FTR_VMX_COPY turned off
+for e6500 (i.e., without this patchseries):
+
+                throughput      mean latency
+single-thread   27%             21.2%
+8-thread        6.08%           5.8%
+
+POWER7/BOOK3S_64 code is left completely immune from these e6500
+changes: we don't have a POWER7 to benchmark with.
+
+Lastly, this patch includes some post make copyuser_power7.S 64-byte
+cacheline friendly enhancements by removing any register stack saves
+for non-128-byte case, and a renumbering of the branch labels.
+
+* specifically: netperf -v 0 -B "-b 8 -D" -H $dest_ip -l 20 -t TCP_CRR -P 0 -- -b 8 -D -r 64,1000000
 
 Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
-Cc: Shuah Khan <shuahkh@osg.samsung.com> [SELFTESTS]
-Cc: linux-api@vger.kernel.org [SELFTESTS]
 ---
- arch/powerpc/lib/copyuser_power7.S                 | 74 +++++++++++++------
- tools/testing/selftests/powerpc/copyloops/Makefile | 11 ++-
- .../selftests/powerpc/copyloops/asm/cache.h        | 84 ++++++++++++++++++++++
- 3 files changed, 144 insertions(+), 25 deletions(-)
- create mode 100644 tools/testing/selftests/powerpc/copyloops/asm/cache.h
+ arch/powerpc/lib/copyuser_power7.S | 254 ++++++++++++++++++++++++++++++++-----
+ 1 file changed, 221 insertions(+), 33 deletions(-)
 
 diff --git a/arch/powerpc/lib/copyuser_power7.S b/arch/powerpc/lib/copyuser_power7.S
-index 92ee840..2d22e58 100644
+index 2d22e58..54b70fe 100644
 --- a/arch/powerpc/lib/copyuser_power7.S
 +++ b/arch/powerpc/lib/copyuser_power7.S
-@@ -18,6 +18,7 @@
+@@ -14,6 +14,7 @@
+  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+  *
+  * Copyright (C) IBM Corporation, 2011
++ * Copyright Freescale Semiconductor, 2015
+  *
   * Author: Anton Blanchard <anton@au.ibm.com>
   */
- #include <asm/ppc_asm.h>
-+#include <asm/cache.h>
+@@ -63,9 +64,11 @@
  
- #ifdef __BIG_ENDIAN__
- #define LVS(VRT,RA,RB)		lvsl	VRT,RA,RB
-@@ -137,7 +138,7 @@ err1;	stw	r0,0(r3)
- 	addi	r3,r3,4
+ 
+ .Ldo_err4:
++#if L1_CACHE_BYTES >= 128
+ 	ld	r16,STK_REG(R16)(r1)
+ 	ld	r15,STK_REG(R15)(r1)
+ 	ld	r14,STK_REG(R14)(r1)
++#endif
+ .Ldo_err3:
+ 	bl	exit_vmx_usercopy
+ 	ld	r0,STACKFRAMESIZE+16(r1)
+@@ -74,6 +77,7 @@
+ #endif /* CONFIG_ALTIVEC */
+ 
+ .Ldo_err2:
++#if L1_CACHE_BYTES >= 128
+ 	ld	r22,STK_REG(R22)(r1)
+ 	ld	r21,STK_REG(R21)(r1)
+ 	ld	r20,STK_REG(R20)(r1)
+@@ -81,6 +85,7 @@
+ 	ld	r18,STK_REG(R18)(r1)
+ 	ld	r17,STK_REG(R17)(r1)
+ 	ld	r16,STK_REG(R16)(r1)
++#endif
+ 	ld	r15,STK_REG(R15)(r1)
+ 	ld	r14,STK_REG(R14)(r1)
+ .Lexit:
+@@ -93,6 +98,10 @@
+ 
+ 
+ _GLOBAL(__copy_tofrom_user_power7)
++#ifdef CONFIG_PPC_BOOK3E_64
++	dcbt	0,r4
++	dcbt	0,r3
++#endif
+ #ifdef CONFIG_ALTIVEC
+ 	cmpldi	r5,16
+ 	cmpldi	cr1,r5,4096
+@@ -139,12 +148,13 @@ err1;	stw	r0,0(r3)
  
  3:	sub	r5,r5,r6
--	cmpldi	r5,128
-+	cmpldi	r5,L1_CACHE_BYTES
- 	blt	5f
+ 	cmpldi	r5,L1_CACHE_BYTES
+-	blt	5f
++	blt	9f
  
  	mflr	r0
-@@ -153,10 +154,10 @@ err1;	stw	r0,0(r3)
+ 	stdu	r1,-STACKFRAMESIZE(r1)
+ 	std	r14,STK_REG(R14)(r1)
+ 	std	r15,STK_REG(R15)(r1)
++#if L1_CACHE_BYTES >= 128
+ 	std	r16,STK_REG(R16)(r1)
+ 	std	r17,STK_REG(R17)(r1)
+ 	std	r18,STK_REG(R18)(r1)
+@@ -152,14 +162,43 @@ err1;	stw	r0,0(r3)
+ 	std	r20,STK_REG(R20)(r1)
+ 	std	r21,STK_REG(R21)(r1)
  	std	r22,STK_REG(R22)(r1)
++#endif
  	std	r0,STACKFRAMESIZE+16(r1)
  
--	srdi	r6,r5,7
-+	srdi	r6,r5,L1_CACHE_SHIFT
- 	mtctr	r6
- 
--	/* Now do cacheline (128B) sized loads and stores. */
-+	/* Now do cacheline sized loads and stores. */
- 	.align	5
- 4:
- err2;	ld	r0,0(r4)
-@@ -167,6 +168,7 @@ err2;	ld	r9,32(r4)
- err2;	ld	r10,40(r4)
- err2;	ld	r11,48(r4)
- err2;	ld	r12,56(r4)
-+#if L1_CACHE_BYTES >= 128
- err2;	ld	r14,64(r4)
- err2;	ld	r15,72(r4)
- err2;	ld	r16,80(r4)
-@@ -175,7 +177,8 @@ err2;	ld	r18,96(r4)
- err2;	ld	r19,104(r4)
- err2;	ld	r20,112(r4)
- err2;	ld	r21,120(r4)
--	addi	r4,r4,128
+-	srdi	r6,r5,L1_CACHE_SHIFT
+-	mtctr	r6
++#ifdef CONFIG_PPC_BOOK3E_64
++#define LINES_AHEAD 10
++	clrrdi	r6,r4,L1_CACHE_SHIFT
++	clrrdi	r9,r3,L1_CACHE_SHIFT
++	srdi	r7,r5,L1_CACHE_SHIFT	/* length in cachelines,
++					 * capped at LINES_AHEAD
++					 */
++	cmpldi	r7,LINES_AHEAD
++	ble	4f
++	li	r7,LINES_AHEAD
++4:	mtctr	r7
++
++5:	addi	r6,r6,L1_CACHE_BYTES
++	dcbt	0,r6
++	addi	r9,r9,L1_CACHE_BYTES
++	dcbtst	0,r9
++
++	bdnz	5b
++
++	li	r14,LINES_AHEAD*L1_CACHE_BYTES
 +#endif
-+	addi	r4,r4,L1_CACHE_BYTES
++
++	srdi	r15,r5,L1_CACHE_SHIFT
++#ifdef CONFIG_PPC_BOOK3E_64
++	cmpldi  r15,LINES_AHEAD
++	ble	7f	/* don't prefetch if cachelines <= LINES_AHEAD*/
++	subi    r15,r15,LINES_AHEAD     /* otherwise, r6 <- r6 - LINES_AHEAD*/
++#endif
++
++	mtctr	r15
+ 
+ 	/* Now do cacheline sized loads and stores. */
+ 	.align	5
+-4:
++6:
+ err2;	ld	r0,0(r4)
+ err2;	ld	r6,8(r4)
+ err2;	ld	r7,16(r4)
+@@ -179,6 +218,9 @@ err2;	ld	r20,112(r4)
+ err2;	ld	r21,120(r4)
+ #endif
+ 	addi	r4,r4,L1_CACHE_BYTES
++#ifdef CONFIG_PPC_BOOK3E_64
++	dcbt	r14,r4
++#endif
  err2;	std	r0,0(r3)
  err2;	std	r6,8(r3)
  err2;	std	r7,16(r3)
-@@ -184,6 +187,7 @@ err2;	std	r9,32(r3)
- err2;	std	r10,40(r3)
- err2;	std	r11,48(r3)
- err2;	std	r12,56(r3)
-+#if L1_CACHE_BYTES >= 128
- err2;	std	r14,64(r3)
- err2;	std	r15,72(r3)
- err2;	std	r16,80(r3)
-@@ -192,10 +196,11 @@ err2;	std	r18,96(r3)
- err2;	std	r19,104(r3)
- err2;	std	r20,112(r3)
+@@ -198,12 +240,47 @@ err2;	std	r20,112(r3)
  err2;	std	r21,120(r3)
--	addi	r3,r3,128
+ #endif
+ 	addi	r3,r3,L1_CACHE_BYTES
+-	bdnz	4b
++#ifdef CONFIG_PPC_BOOK3E_64
++	dcbtst	r14,r3
 +#endif
++	bdnz	6b
++
++#ifdef CONFIG_PPC_BOOK3E_64
++	srdi	r7,r5,L1_CACHE_SHIFT	/* length in cachelines */
++	subf	r15,r15,r7		/* r6 = r7 - r15 */
++
++7:
++	mtctr	r15
++
++	/* remaining cacheline sized loads and stores, without prefetches. */
++	.align	5
++8:
++err2;	ld	r0,0(r4)
++err2;	ld	r6,8(r4)
++err2;	ld	r7,16(r4)
++err2;	ld	r8,24(r4)
++err2;	ld	r9,32(r4)
++err2;	ld	r10,40(r4)
++err2;	ld	r11,48(r4)
++err2;	ld	r12,56(r4)
++	addi	r4,r4,L1_CACHE_BYTES
++err2;	std	r0,0(r3)
++err2;	std	r6,8(r3)
++err2;	std	r7,16(r3)
++err2;	std	r8,24(r3)
++err2;	std	r9,32(r3)
++err2;	std	r10,40(r3)
++err2;	std	r11,48(r3)
++err2;	std	r12,56(r3)
 +	addi	r3,r3,L1_CACHE_BYTES
- 	bdnz	4b
++	bdnz	8b
++#endif
  
--	clrldi	r5,r5,(64-7)
-+	clrldi	r5,r5,(64-L1_CACHE_SHIFT)
+ 	clrldi	r5,r5,(64-L1_CACHE_SHIFT)
  
  	ld	r14,STK_REG(R14)(r1)
  	ld	r15,STK_REG(R15)(r1)
-@@ -208,10 +213,11 @@ err2;	std	r21,120(r3)
++#if L1_CACHE_BYTES >= 128
+ 	ld	r16,STK_REG(R16)(r1)
+ 	ld	r17,STK_REG(R17)(r1)
+ 	ld	r18,STK_REG(R18)(r1)
+@@ -211,14 +288,15 @@ err2;	std	r21,120(r3)
+ 	ld	r20,STK_REG(R20)(r1)
+ 	ld	r21,STK_REG(R21)(r1)
  	ld	r22,STK_REG(R22)(r1)
++#endif
  	addi	r1,r1,STACKFRAMESIZE
  
--	/* Up to 127B to go */
-+	/* Up to L1_CACHE_BYTES - 1 to go */
- 5:	srdi	r6,r5,4
+ 	/* Up to L1_CACHE_BYTES - 1 to go */
+-5:	srdi	r6,r5,4
++9:	srdi	r6,r5,4
  	mtocrf	0x01,r6
  
-+#if L1_CACHE_BYTES >= 128
- 6:	bf	cr7*4+1,7f
+ #if L1_CACHE_BYTES >= 128
+-6:	bf	cr7*4+1,7f
++10:	bf	cr7*4+1,11f
  err1;	ld	r0,0(r4)
  err1;	ld	r6,8(r4)
-@@ -231,6 +237,7 @@ err1;	std	r10,40(r3)
- err1;	std	r11,48(r3)
- err1;	std	r12,56(r3)
- 	addi	r3,r3,64
-+#endif
+ err1;	ld	r7,16(r4)
+@@ -240,7 +318,7 @@ err1;	std	r12,56(r3)
+ #endif
  
  	/* Up to 63B to go */
- 7:	bf	cr7*4+2,8f
-@@ -377,11 +384,11 @@ err3;	std	r0,0(r3)
- 
- 4:	sub	r5,r5,r6
- 
--	/* Get the desination 128B aligned */
-+	/* Get the destination L1_CACHE_BYTES aligned */
- 	neg	r6,r3
- 	srdi	r7,r6,4
- 	mtocrf	0x01,r7
--	clrldi	r6,r6,(64-7)
-+	clrldi	r6,r6,(64-L1_CACHE_SHIFT)
- 
- 	li	r9,16
- 	li	r10,32
-@@ -401,7 +408,9 @@ err3;	stvx	vr1,r0,r3
- err3;	stvx	vr0,r3,r9
+-7:	bf	cr7*4+2,8f
++11:	bf	cr7*4+2,12f
+ err1;	ld	r0,0(r4)
+ err1;	ld	r6,8(r4)
+ err1;	ld	r7,16(r4)
+@@ -253,7 +331,7 @@ err1;	std	r8,24(r3)
  	addi	r3,r3,32
  
--6:	bf	cr7*4+1,7f
-+6:
-+#if L1_CACHE_BYTES >= 128
-+	bf	cr7*4+1,7f
- err3;	lvx	vr3,r0,r4
- err3;	lvx	vr2,r4,r9
- err3;	lvx	vr1,r4,r10
-@@ -412,9 +421,10 @@ err3;	stvx	vr2,r3,r9
- err3;	stvx	vr1,r3,r10
- err3;	stvx	vr0,r3,r11
- 	addi	r3,r3,64
+ 	/* Up to 31B to go */
+-8:	bf	cr7*4+3,9f
++12:	bf	cr7*4+3,13f
+ err1;	ld	r0,0(r4)
+ err1;	ld	r6,8(r4)
+ 	addi	r4,r4,16
+@@ -261,12 +339,12 @@ err1;	std	r0,0(r3)
+ err1;	std	r6,8(r3)
+ 	addi	r3,r3,16
+ 
+-9:	clrldi	r5,r5,(64-4)
++13:	clrldi	r5,r5,(64-4)
+ 
+ 	/* Up to 15B to go */
+ .Lshort_copy:
+ 	mtocrf	0x01,r5
+-	bf	cr7*4+0,12f
++	bf	cr7*4+0,14f
+ err1;	lwz	r0,0(r4)	/* Less chance of a reject with word ops */
+ err1;	lwz	r6,4(r4)
+ 	addi	r4,r4,8
+@@ -274,23 +352,23 @@ err1;	stw	r0,0(r3)
+ err1;	stw	r6,4(r3)
+ 	addi	r3,r3,8
+ 
+-12:	bf	cr7*4+1,13f
++14:	bf	cr7*4+1,15f
+ err1;	lwz	r0,0(r4)
+ 	addi	r4,r4,4
+ err1;	stw	r0,0(r3)
+ 	addi	r3,r3,4
+ 
+-13:	bf	cr7*4+2,14f
++15:	bf	cr7*4+2,16f
+ err1;	lhz	r0,0(r4)
+ 	addi	r4,r4,2
+ err1;	sth	r0,0(r3)
+ 	addi	r3,r3,2
+ 
+-14:	bf	cr7*4+3,15f
++16:	bf	cr7*4+3,17f
+ err1;	lbz	r0,0(r4)
+ err1;	stb	r0,0(r3)
+ 
+-15:	li	r3,0
++17:	li	r3,0
+ 	blr
+ 
+ .Lunwind_stack_nonvmx_copy:
+@@ -310,6 +388,7 @@ err1;	stb	r0,0(r3)
+ 	ld	r5,STK_REG(R29)(r1)
+ 	mtlr	r0
+ 
++#ifdef CONFIG_PPC_BOOK3S_64
+ 	/*
+ 	 * We prefetch both the source and destination using enhanced touch
+ 	 * instructions. We use a stream ID of 0 for the load side and
+@@ -342,6 +421,30 @@ err1;	stb	r0,0(r3)
+ 	eieio
+ 	dcbt	r0,r8,0b01010	/* all streams GO */
+ .machine pop
++#else
++	/*
++	 * We prefetch both the source and destination using regular touch
++	 * instructions.
++	 */
++	clrrdi	r6,r4,L1_CACHE_SHIFT
++	clrrdi	r9,r3,L1_CACHE_SHIFT
++	srdi	r7,r5,L1_CACHE_SHIFT	/* length in cachelines,
++					 * capped at LINES_AHEAD
++					 */
++	cmpldi	r7,LINES_AHEAD
++	ble	2f
++	li	r7,LINES_AHEAD
++2:	mtctr	r7
++
++3:	addi	r6,r6,L1_CACHE_BYTES
++	dcbt	0,r6
++	addi	r9,r9,L1_CACHE_BYTES
++	dcbtst	0,r9
++
++	bdnz	3b
++
++	li	r8,LINES_AHEAD*L1_CACHE_BYTES
 +#endif
  
- 7:	sub	r5,r5,r6
--	srdi	r6,r5,7
-+	srdi	r6,r5,L1_CACHE_SHIFT
+ 	beq	cr1,.Lunwind_stack_nonvmx_copy
  
+@@ -426,6 +529,14 @@ err3;	stvx	vr0,r3,r11
+ 7:	sub	r5,r5,r6
+ 	srdi	r6,r5,L1_CACHE_SHIFT
+ 
++#ifdef CONFIG_PPC_BOOK3E_64
++	cmpldi	r6,LINES_AHEAD
++	ble	12f	/* don't prefetch if cachelines <= LINES_AHEAD*/
++	subi	r6,r6,LINES_AHEAD	/* otherwise, r6 <- r6 - LINES_AHEAD*/
++	li	r8,LINES_AHEAD*L1_CACHE_BYTES
++#endif
++
++#if L1_CACHE_BYTES >= 128
  	std	r14,STK_REG(R14)(r1)
  	std	r15,STK_REG(R15)(r1)
-@@ -437,31 +447,36 @@ err4;	lvx	vr7,r0,r4
- err4;	lvx	vr6,r4,r9
- err4;	lvx	vr5,r4,r10
- err4;	lvx	vr4,r4,r11
-+#if L1_CACHE_BYTES >= 128
- err4;	lvx	vr3,r4,r12
- err4;	lvx	vr2,r4,r14
- err4;	lvx	vr1,r4,r15
- err4;	lvx	vr0,r4,r16
--	addi	r4,r4,128
+ 	std	r16,STK_REG(R16)(r1)
+@@ -434,6 +545,7 @@ err3;	stvx	vr0,r3,r11
+ 	li	r14,80
+ 	li	r15,96
+ 	li	r16,112
 +#endif
-+	addi	r4,r4,L1_CACHE_BYTES
+ 
+ 	mtctr	r6
+ 
+@@ -454,6 +566,9 @@ err4;	lvx	vr1,r4,r15
+ err4;	lvx	vr0,r4,r16
+ #endif
+ 	addi	r4,r4,L1_CACHE_BYTES
++#ifdef CONFIG_PPC_BOOK3E_64
++	dcbt	r8,r4
++#endif
  err4;	stvx	vr7,r0,r3
  err4;	stvx	vr6,r3,r9
  err4;	stvx	vr5,r3,r10
- err4;	stvx	vr4,r3,r11
-+#if L1_CACHE_BYTES >= 128
- err4;	stvx	vr3,r3,r12
- err4;	stvx	vr2,r3,r14
- err4;	stvx	vr1,r3,r15
+@@ -465,11 +580,39 @@ err4;	stvx	vr1,r3,r15
  err4;	stvx	vr0,r3,r16
--	addi	r3,r3,128
+ #endif
+ 	addi	r3,r3,L1_CACHE_BYTES
++#ifdef CONFIG_PPC_BOOK3E_64
++	dcbtst	r8,r3
 +#endif
-+	addi	r3,r3,L1_CACHE_BYTES
  	bdnz	8b
  
++#ifdef CONFIG_PPC_BOOK3E_64
++	srdi	r7,r5,L1_CACHE_SHIFT	/* length in cachelines */
++	subf	r6,r6,r7		/* r6 = r7 - r6 */
++
++12:
++	mtctr	r6
++
++	/* remaining cacheline sized loads and stores, without prefetches.  */
++	.align	5
++13:
++err4;	lvx	vr7,r0,r4
++err4;	lvx	vr6,r4,r9
++err4;	lvx	vr5,r4,r10
++err4;	lvx	vr4,r4,r11
++	addi	r4,r4,L1_CACHE_BYTES
++err4;	stvx	vr7,r0,r3
++err4;	stvx	vr6,r3,r9
++err4;	stvx	vr5,r3,r10
++err4;	stvx	vr4,r3,r11
++	addi	r3,r3,L1_CACHE_BYTES
++	bdnz	13b
++#endif
++
++#if L1_CACHE_BYTES >= 128
  	ld	r14,STK_REG(R14)(r1)
  	ld	r15,STK_REG(R15)(r1)
  	ld	r16,STK_REG(R16)(r1)
++#endif
  
--	/* Up to 127B to go */
--	clrldi	r5,r5,(64-7)
-+	/* Up to L1_CACHE_BYTES - 1 to go */
-+	clrldi	r5,r5,(64-L1_CACHE_SHIFT)
- 	srdi	r6,r5,4
+ 	/* Up to L1_CACHE_BYTES - 1 to go */
+ 	clrldi	r5,r5,(64-L1_CACHE_SHIFT)
+@@ -477,7 +620,7 @@ err4;	stvx	vr0,r3,r16
  	mtocrf	0x01,r6
  
-+#if L1_CACHE_BYTES >= 128
- 	bf	cr7*4+1,9f
+ #if L1_CACHE_BYTES >= 128
+-	bf	cr7*4+1,9f
++	bf	cr7*4+1,14f
  err3;	lvx	vr3,r0,r4
  err3;	lvx	vr2,r4,r9
-@@ -473,6 +488,7 @@ err3;	stvx	vr2,r3,r9
- err3;	stvx	vr1,r3,r10
- err3;	stvx	vr0,r3,r11
+ err3;	lvx	vr1,r4,r10
+@@ -490,7 +633,7 @@ err3;	stvx	vr0,r3,r11
  	addi	r3,r3,64
-+#endif
+ #endif
  
- 9:	bf	cr7*4+2,10f
+-9:	bf	cr7*4+2,10f
++14:	bf	cr7*4+2,15f
  err3;	lvx	vr1,r0,r4
-@@ -550,11 +566,11 @@ err3;	stw	r7,4(r3)
- 
- 4:	sub	r5,r5,r6
- 
--	/* Get the desination 128B aligned */
-+	/* Get the destination L1_CACHE_BYTES aligned */
- 	neg	r6,r3
- 	srdi	r7,r6,4
- 	mtocrf	0x01,r7
--	clrldi	r6,r6,(64-7)
-+	clrldi	r6,r6,(64-L1_CACHE_SHIFT)
- 
- 	li	r9,16
- 	li	r10,32
-@@ -582,7 +598,9 @@ err3;	stvx	vr8,r0,r3
- err3;	stvx	vr9,r3,r9
+ err3;	lvx	vr0,r4,r9
+ 	addi	r4,r4,32
+@@ -498,38 +641,38 @@ err3;	stvx	vr1,r0,r3
+ err3;	stvx	vr0,r3,r9
  	addi	r3,r3,32
  
--6:	bf	cr7*4+1,7f
-+6:
-+#if L1_CACHE_BYTES >= 128
-+	bf	cr7*4+1,7f
- err3;	lvx	vr3,r0,r4
- 	VPERM(vr8,vr0,vr3,vr16)
- err3;	lvx	vr2,r4,r9
-@@ -597,9 +615,10 @@ err3;	stvx	vr9,r3,r9
- err3;	stvx	vr10,r3,r10
- err3;	stvx	vr11,r3,r11
- 	addi	r3,r3,64
-+#endif
+-10:	bf	cr7*4+3,11f
++15:	bf	cr7*4+3,16f
+ err3;	lvx	vr1,r0,r4
+ 	addi	r4,r4,16
+ err3;	stvx	vr1,r0,r3
+ 	addi	r3,r3,16
  
+ 	/* Up to 15B to go */
+-11:	clrldi	r5,r5,(64-4)
++16:	clrldi	r5,r5,(64-4)
+ 	mtocrf	0x01,r5
+-	bf	cr7*4+0,12f
++	bf	cr7*4+0,17f
+ err3;	ld	r0,0(r4)
+ 	addi	r4,r4,8
+ err3;	std	r0,0(r3)
+ 	addi	r3,r3,8
+ 
+-12:	bf	cr7*4+1,13f
++17:	bf	cr7*4+1,18f
+ err3;	lwz	r0,0(r4)
+ 	addi	r4,r4,4
+ err3;	stw	r0,0(r3)
+ 	addi	r3,r3,4
+ 
+-13:	bf	cr7*4+2,14f
++18:	bf	cr7*4+2,19f
+ err3;	lhz	r0,0(r4)
+ 	addi	r4,r4,2
+ err3;	sth	r0,0(r3)
+ 	addi	r3,r3,2
+ 
+-14:	bf	cr7*4+3,15f
++19:	bf	cr7*4+3,20f
+ err3;	lbz	r0,0(r4)
+ err3;	stb	r0,0(r3)
+ 
+-15:	addi	r1,r1,STACKFRAMESIZE
++20:	addi	r1,r1,STACKFRAMESIZE
+ 	b	exit_vmx_usercopy	/* tail call optimise */
+ 
+ .Lvmx_unaligned_copy:
+@@ -620,6 +763,14 @@ err3;	stvx	vr11,r3,r11
  7:	sub	r5,r5,r6
--	srdi	r6,r5,7
-+	srdi	r6,r5,L1_CACHE_SHIFT
+ 	srdi	r6,r5,L1_CACHE_SHIFT
  
++#ifdef CONFIG_PPC_BOOK3E_64
++	cmpldi  r6,LINES_AHEAD
++	ble     9f            /* don't prefetch if cachelines <= LINES_AHEAD*/
++	subi    r6,r6,LINES_AHEAD     /* otherwise, r6 <- r6 - LINES_AHEAD*/
++	li	r8,LINES_AHEAD*L1_CACHE_BYTES
++#endif
++
++#if L1_CACHE_BYTES >= 128
  	std	r14,STK_REG(R14)(r1)
  	std	r15,STK_REG(R15)(r1)
-@@ -626,6 +645,10 @@ err4;	lvx	vr5,r4,r10
- 	VPERM(vr10,vr6,vr5,vr16)
- err4;	lvx	vr4,r4,r11
- 	VPERM(vr11,vr5,vr4,vr16)
-+#if L1_CACHE_BYTES == 64
-+err4;	lvx	vr0,r4,r11
-+	VPERM(vr11,vr5,vr0,vr16)
-+#else
- err4;	lvx	vr3,r4,r12
- 	VPERM(vr12,vr4,vr3,vr16)
- err4;	lvx	vr2,r4,r14
-@@ -634,27 +657,31 @@ err4;	lvx	vr1,r4,r15
- 	VPERM(vr14,vr2,vr1,vr16)
- err4;	lvx	vr0,r4,r16
- 	VPERM(vr15,vr1,vr0,vr16)
--	addi	r4,r4,128
+ 	std	r16,STK_REG(R16)(r1)
+@@ -628,6 +779,7 @@ err3;	stvx	vr11,r3,r11
+ 	li	r14,80
+ 	li	r15,96
+ 	li	r16,112
 +#endif
-+	addi	r4,r4,L1_CACHE_BYTES
+ 
+ 	mtctr	r6
+ 
+@@ -659,6 +811,9 @@ err4;	lvx	vr0,r4,r16
+ 	VPERM(vr15,vr1,vr0,vr16)
+ #endif
+ 	addi	r4,r4,L1_CACHE_BYTES
++#ifdef CONFIG_PPC_BOOK3E_64
++	dcbt	r8,r4
++#endif
  err4;	stvx	vr8,r0,r3
  err4;	stvx	vr9,r3,r9
  err4;	stvx	vr10,r3,r10
- err4;	stvx	vr11,r3,r11
-+#if L1_CACHE_BYTES >= 128
- err4;	stvx	vr12,r3,r12
- err4;	stvx	vr13,r3,r14
- err4;	stvx	vr14,r3,r15
+@@ -670,11 +825,44 @@ err4;	stvx	vr14,r3,r15
  err4;	stvx	vr15,r3,r16
--	addi	r3,r3,128
+ #endif
+ 	addi	r3,r3,L1_CACHE_BYTES
++#ifdef CONFIG_PPC_BOOK3E_64
++	dcbtst	r8,r3
 +#endif
-+	addi	r3,r3,L1_CACHE_BYTES
  	bdnz	8b
  
++#ifdef CONFIG_PPC_BOOK3E_64
++	srdi	r7,r5,L1_CACHE_SHIFT	/* length in cachelines */
++	subf	r6,r6,r7		/* r6 = r7 - r6 */
++
++9:
++	mtctr	r6
++
++	/* remaining cacheline sized loads and stores, without prefetches.  */
++	.align	5
++10:
++err4;	lvx	vr7,r0,r4
++	VPERM(vr8,vr0,vr7,vr16)
++err4;	lvx	vr6,r4,r9
++	VPERM(vr9,vr7,vr6,vr16)
++err4;	lvx	vr5,r4,r10
++	VPERM(vr10,vr6,vr5,vr16)
++err4;	lvx	vr0,r4,r11
++	VPERM(vr11,vr5,vr0,vr16)
++	addi	r4,r4,L1_CACHE_BYTES
++err4;	stvx	vr8,r0,r3
++err4;	stvx	vr9,r3,r9
++err4;	stvx	vr10,r3,r10
++err4;	stvx	vr11,r3,r11
++	addi	r3,r3,L1_CACHE_BYTES
++
++	bdnz	10b
++#endif
++
++#if L1_CACHE_BYTES >= 128
  	ld	r14,STK_REG(R14)(r1)
  	ld	r15,STK_REG(R15)(r1)
  	ld	r16,STK_REG(R16)(r1)
++#endif
  
--	/* Up to 127B to go */
--	clrldi	r5,r5,(64-7)
-+	/* Up to L1_CACHE_BYTES - 1 to go */
-+	clrldi	r5,r5,(64-L1_CACHE_SHIFT)
- 	srdi	r6,r5,4
+ 	/* Up to L1_CACHE_BYTES - 1 to go */
+ 	clrldi	r5,r5,(64-L1_CACHE_SHIFT)
+@@ -682,7 +870,7 @@ err4;	stvx	vr15,r3,r16
  	mtocrf	0x01,r6
  
-+#if L1_CACHE_BYTES >= 128
- 	bf	cr7*4+1,9f
+ #if L1_CACHE_BYTES >= 128
+-	bf	cr7*4+1,9f
++	bf	cr7*4+1,11f
  err3;	lvx	vr3,r0,r4
  	VPERM(vr8,vr0,vr3,vr16)
-@@ -670,6 +697,7 @@ err3;	stvx	vr9,r3,r9
- err3;	stvx	vr10,r3,r10
- err3;	stvx	vr11,r3,r11
+ err3;	lvx	vr2,r4,r9
+@@ -699,7 +887,7 @@ err3;	stvx	vr11,r3,r11
  	addi	r3,r3,64
-+#endif
+ #endif
  
- 9:	bf	cr7*4+2,10f
+-9:	bf	cr7*4+2,10f
++11:	bf	cr7*4+2,12f
  err3;	lvx	vr1,r0,r4
-diff --git a/tools/testing/selftests/powerpc/copyloops/Makefile b/tools/testing/selftests/powerpc/copyloops/Makefile
-index 6f2d3be..eb912c5 100644
---- a/tools/testing/selftests/powerpc/copyloops/Makefile
-+++ b/tools/testing/selftests/powerpc/copyloops/Makefile
-@@ -6,18 +6,25 @@ CFLAGS += -D SELFTEST
- # Use our CFLAGS for the implicit .S rule
- ASFLAGS = $(CFLAGS)
+ 	VPERM(vr8,vr0,vr1,vr16)
+ err3;	lvx	vr0,r4,r9
+@@ -709,7 +897,7 @@ err3;	stvx	vr8,r0,r3
+ err3;	stvx	vr9,r3,r9
+ 	addi	r3,r3,32
  
--PROGS := copyuser_64 copyuser_power7 memcpy_64 memcpy_power7
-+PROGS := copyuser_64 copyuser_power7 copyuser_e6500 memcpy_64 memcpy_power7
- EXTRA_SOURCES := validate.c ../harness.c
+-10:	bf	cr7*4+3,11f
++12:	bf	cr7*4+3,13f
+ err3;	lvx	vr1,r0,r4
+ 	VPERM(vr8,vr0,vr1,vr16)
+ 	addi	r4,r4,16
+@@ -717,10 +905,10 @@ err3;	stvx	vr8,r0,r3
+ 	addi	r3,r3,16
  
- all: $(PROGS)
+ 	/* Up to 15B to go */
+-11:	clrldi	r5,r5,(64-4)
++13:	clrldi	r5,r5,(64-4)
+ 	addi	r4,r4,-16	/* Unwind the +16 load offset */
+ 	mtocrf	0x01,r5
+-	bf	cr7*4+0,12f
++	bf	cr7*4+0,14f
+ err3;	lwz	r0,0(r4)	/* Less chance of a reject with word ops */
+ err3;	lwz	r6,4(r4)
+ 	addi	r4,r4,8
+@@ -728,22 +916,22 @@ err3;	stw	r0,0(r3)
+ err3;	stw	r6,4(r3)
+ 	addi	r3,r3,8
  
- copyuser_64:     CPPFLAGS += -D COPY_LOOP=test___copy_tofrom_user_base
--copyuser_power7: CPPFLAGS += -D COPY_LOOP=test___copy_tofrom_user_power7
-+copyuser_power7: CPPFLAGS += -D COPY_LOOP=test___copy_tofrom_user_power7 \
-+			     -D CONFIG_PPC_BOOK3S_64 -D L1_CACHE_SHIFT=7 \
-+			     -D L1_CACHE_BYTES=128
- memcpy_64:       CPPFLAGS += -D COPY_LOOP=test_memcpy
- memcpy_power7:   CPPFLAGS += -D COPY_LOOP=test_memcpy_power7
+-12:	bf	cr7*4+1,13f
++14:	bf	cr7*4+1,15f
+ err3;	lwz	r0,0(r4)
+ 	addi	r4,r4,4
+ err3;	stw	r0,0(r3)
+ 	addi	r3,r3,4
  
- $(PROGS): $(EXTRA_SOURCES)
+-13:	bf	cr7*4+2,14f
++15:	bf	cr7*4+2,16f
+ err3;	lhz	r0,0(r4)
+ 	addi	r4,r4,2
+ err3;	sth	r0,0(r3)
+ 	addi	r3,r3,2
  
-+copyuser_e6500: copyuser_power7.S
-+	$(CC) $(CFLAGS) -D COPY_LOOP=test___copy_tofrom_user_power7 \
-+		-D CONFIG_PPC_BOOK3E_64 -D L1_CACHE_SHIFT=6 \
-+		-D L1_CACHE_BYTES=64 copyuser_power7.S $(EXTRA_SOURCES) -o $@
-+
- run_tests: all
- 	@-for PROG in $(PROGS); do \
- 		./$$PROG; \
-diff --git a/tools/testing/selftests/powerpc/copyloops/asm/cache.h b/tools/testing/selftests/powerpc/copyloops/asm/cache.h
-new file mode 100644
-index 0000000..34a05a1
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/copyloops/asm/cache.h
-@@ -0,0 +1,84 @@
-+#ifndef _ASM_POWERPC_CACHE_H
-+#define _ASM_POWERPC_CACHE_H
-+
-+#ifdef __KERNEL__
-+
-+#include <asm/reg.h>
-+
-+/* bytes per L1 cache line */
-+#if defined(CONFIG_8xx) || defined(CONFIG_403GCX)
-+#define L1_CACHE_SHIFT		4
-+#define MAX_COPY_PREFETCH	1
-+#elif defined(CONFIG_PPC_E500MC)
-+#define L1_CACHE_SHIFT		6
-+#define MAX_COPY_PREFETCH	4
-+#elif defined(CONFIG_PPC32)
-+#define MAX_COPY_PREFETCH	4
-+#if defined(CONFIG_PPC_47x)
-+#define L1_CACHE_SHIFT		7
-+#else
-+#define L1_CACHE_SHIFT		5
-+#endif
-+#else /* CONFIG_PPC64 */
-+#define L1_CACHE_SHIFT		7
-+#endif
-+
-+#define	L1_CACHE_BYTES		(1 << L1_CACHE_SHIFT)
-+
-+#define	SMP_CACHE_BYTES		L1_CACHE_BYTES
-+
-+#if defined(__powerpc64__) && !defined(__ASSEMBLY__)
-+struct ppc64_caches {
-+	u32	dsize;			/* L1 d-cache size */
-+	u32	dline_size;		/* L1 d-cache line size	*/
-+	u32	log_dline_size;
-+	u32	dlines_per_page;
-+	u32	isize;			/* L1 i-cache size */
-+	u32	iline_size;		/* L1 i-cache line size	*/
-+	u32	log_iline_size;
-+	u32	ilines_per_page;
-+};
-+
-+extern struct ppc64_caches ppc64_caches;
-+
-+static inline void logmpp(u64 x)
-+{
-+	asm volatile(PPC_LOGMPP(R1) : : "r" (x));
-+}
-+
-+#endif /* __powerpc64__ && ! __ASSEMBLY__ */
-+
-+#if defined(__ASSEMBLY__)
-+/*
-+ * For a snooping icache, we still need a dummy icbi to purge all the
-+ * prefetched instructions from the ifetch buffers. We also need a sync
-+ * before the icbi to order the the actual stores to memory that might
-+ * have modified instructions with the icbi.
-+ */
-+#define PURGE_PREFETCHED_INS	\
-+	sync;			\
-+	icbi	0,r3;		\
-+	sync;			\
-+	isync
-+
-+#else
-+#define __read_mostly __attribute__((__section__(".data..read_mostly")))
-+
-+#ifdef CONFIG_6xx
-+extern long _get_L2CR(void);
-+extern long _get_L3CR(void);
-+extern void _set_L2CR(unsigned long);
-+extern void _set_L3CR(unsigned long);
-+#else
-+#define _get_L2CR()	0L
-+#define _get_L3CR()	0L
-+#define _set_L2CR(val)	do { } while(0)
-+#define _set_L3CR(val)	do { } while(0)
-+#endif
-+
-+extern void cacheable_memzero(void *p, unsigned int nb);
-+extern void *cacheable_memcpy(void *, const void *, unsigned int);
-+
-+#endif /* !__ASSEMBLY__ */
-+#endif /* __KERNEL__ */
-+#endif /* _ASM_POWERPC_CACHE_H */
+-14:	bf	cr7*4+3,15f
++16:	bf	cr7*4+3,17f
+ err3;	lbz	r0,0(r4)
+ err3;	stb	r0,0(r3)
+ 
+-15:	addi	r1,r1,STACKFRAMESIZE
++17:	addi	r1,r1,STACKFRAMESIZE
+ 	b	exit_vmx_usercopy	/* tail call optimise */
+ #endif /* CONFIG_ALTIVEC */
 -- 
 2.3.3
