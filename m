@@ -1,23 +1,22 @@
-Return-Path: <Emilian.Medve@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0143.outbound.protection.outlook.com [157.56.110.143])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <sowmini.varadhan@oracle.com>
+Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id EA2D91A033E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2015 04:01:42 +1100 (AEDT)
-From: Emil Medve <Emilian.Medve@Freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>, <devicetree@vger.kernel.org>,
- <scottwood@Freescale.com>
-Subject: [PATCH v8 2/2] powerpc/mpc85xx: Add FSL QorIQ DPAA QMan support to
- device tree(s)
-Date: Tue, 24 Mar 2015 11:55:09 -0500
-Message-ID: <1427216109-13378-1-git-send-email-Emilian.Medve@Freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Poonam Aggrwal <poonam.aggrwal@Freescale.com>,
- Geoff Thorpe <Geoff.Thorpe@Freescale.com>,
- Emil Medve <Emilian.Medve@Freescale.com>,
- Chunhe Lan <Chunhe.Lan@Freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2BE091A060B
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2015 04:10:58 +1100 (AEDT)
+From: Sowmini Varadhan <sowmini.varadhan@oracle.com>
+To: sparclinux@vger.kernel.org
+Subject: [PATCH v6 RFC 2/3] sparc: Make sparc64 use scalable
+ lib/iommu-common.c functions
+Date: Tue, 24 Mar 2015 13:10:29 -0400
+Message-Id: <03a44bd270fb0210f4d89acd93ab4dd6e523034c.1427210772.git.sowmini.varadhan@oracle.com>
+In-Reply-To: <cover.1427210772.git.sowmini.varadhan@oracle.com>
+References: <cover.1427210772.git.sowmini.varadhan@oracle.com>
+In-Reply-To: <cover.1427210772.git.sowmini.varadhan@oracle.com>
+References: <cover.1427210772.git.sowmini.varadhan@oracle.com>
+Cc: aik@au1.ibm.com, anton@au1.ibm.com, paulus@samba.org,
+ sowmini.varadhan@oracle.com, linuxppc-dev@lists.ozlabs.org,
+ davem@davemloft.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,1554 +26,868 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Kumar Gala <galak@kernel.crashing.org>
+In iperf experiments running linux as the Tx side (TCP client) with
+10 threads results in a severe performance drop when TSO is disabled,
+indicating a weakness in the software that can be avoided by using
+the scalable IOMMU arena DMA allocation.
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
-Signed-off-by: Geoff Thorpe <Geoff.Thorpe@freescale.com>
-Signed-off-by: Hai-Ying Wang <Haiying.Wang@freescale.com>
-Signed-off-by: Chunhe Lan <Chunhe.Lan@freescale.com>
-Signed-off-by: Poonam Aggrwal <poonam.aggrwal@freescale.com>
-[Emil Medve: Sync with the upstream binding]
-Signed-off-by: Emil Medve <Emilian.Medve@Freescale.com>
+Baseline numbers before this patch:
+   with default settings (TSO enabled) :    9-9.5 Gbps
+   Disable TSO using ethtool- drops badly:  2-3 Gbps.
+
+After this patch, iperf client with 10 threads, can give a
+throughput of at least 8.5 Gbps, even when TSO is disabled.
+
+Signed-off-by: Sowmini Varadhan <sowmini.varadhan@oracle.com>
 ---
+v2: moved sparc specific fileds into iommu_sparc
+v3: converted all sparc users of iommu, so lot of cleanup and streamlining
+v4: David Miller review change:
+    - s/IOMMU_ERROR_CODE/DMA_ERROR_CODE
+    - reverts pci_impl.h (now that all iommu usage has been converted)
+v5: benh/aik feedback modifies the function signatures: pass in 
+    modified args to iommmu_tbl_pool_init() and iommu_tbl_range_free()
+v6: removed iommu_tbl_ops. Pass flush_all as function pointer to 
+    iommu_tbl_pool_init
 
-v8:	Fix indentation/whitespaces
+ arch/sparc/include/asm/iommu_64.h |    7 +-
+ arch/sparc/kernel/iommu.c         |  182 +++++++++++------------------------
+ arch/sparc/kernel/iommu_common.h  |    8 --
+ arch/sparc/kernel/pci_sun4v.c     |  192 ++++++++++++++++++-------------------
+ 4 files changed, 153 insertions(+), 236 deletions(-)
 
-v7:	Remove 'Change-Id'
-
-v6:	Rebase
-
- arch/powerpc/boot/dts/b4qds.dtsi            |  12 ++
- arch/powerpc/boot/dts/fsl/b4860si-post.dtsi |  69 ++++++
- arch/powerpc/boot/dts/fsl/b4si-post.dtsi    | 106 ++++++++++
- arch/powerpc/boot/dts/fsl/p1023si-post.dtsi |  43 ++++
- arch/powerpc/boot/dts/fsl/p2041si-post.dtsi |  13 ++
- arch/powerpc/boot/dts/fsl/p3041si-post.dtsi |  13 ++
- arch/powerpc/boot/dts/fsl/p4080si-post.dtsi |  13 ++
- arch/powerpc/boot/dts/fsl/p5020si-post.dtsi |  13 ++
- arch/powerpc/boot/dts/fsl/p5040si-post.dtsi |  13 ++
- arch/powerpc/boot/dts/fsl/t1040si-post.dtsi |  78 +++++++
- arch/powerpc/boot/dts/fsl/t2081si-post.dtsi | 126 +++++++++++
- arch/powerpc/boot/dts/fsl/t4240si-post.dtsi | 318 ++++++++++++++++++++++++++++
- arch/powerpc/boot/dts/kmcoge4.dts           |  12 ++
- arch/powerpc/boot/dts/oca4080.dts           |  12 ++
- arch/powerpc/boot/dts/p1023rdb.dts          |  12 ++
- arch/powerpc/boot/dts/p2041rdb.dts          |  12 ++
- arch/powerpc/boot/dts/p3041ds.dts           |  12 ++
- arch/powerpc/boot/dts/p4080ds.dts           |  12 ++
- arch/powerpc/boot/dts/p5020ds.dts           |  12 ++
- arch/powerpc/boot/dts/p5040ds.dts           |  12 ++
- arch/powerpc/boot/dts/t104xqds.dtsi         |  12 ++
- arch/powerpc/boot/dts/t104xrdb.dtsi         |  12 ++
- arch/powerpc/boot/dts/t208xqds.dtsi         |  12 ++
- arch/powerpc/boot/dts/t208xrdb.dtsi         |  12 ++
- arch/powerpc/boot/dts/t4240qds.dts          |  12 ++
- arch/powerpc/boot/dts/t4240rdb.dts          |  12 ++
- 26 files changed, 985 insertions(+)
-
-diff --git a/arch/powerpc/boot/dts/b4qds.dtsi b/arch/powerpc/boot/dts/b4qds.dtsi
-index 24ed80d..559d006 100644
---- a/arch/powerpc/boot/dts/b4qds.dtsi
-+++ b/arch/powerpc/boot/dts/b4qds.dtsi
-@@ -106,6 +106,14 @@
- 			size = <0 0x1000000>;
- 			alignment = <0 0x1000000>;
- 		};
-+		qman_fqd: qman-fqd {
-+			size = <0 0x400000>;
-+			alignment = <0 0x400000>;
-+		};
-+		qman_pfdr: qman-pfdr {
-+			size = <0 0x2000000>;
-+			alignment = <0 0x2000000>;
-+		};
- 	};
+diff --git a/arch/sparc/include/asm/iommu_64.h b/arch/sparc/include/asm/iommu_64.h
+index 2b9321a..e3cd449 100644
+--- a/arch/sparc/include/asm/iommu_64.h
++++ b/arch/sparc/include/asm/iommu_64.h
+@@ -16,6 +16,7 @@
+ #define IOPTE_WRITE   0x0000000000000002UL
  
- 	dcsr: dcsr@f00000000 {
-@@ -116,6 +124,10 @@
- 		ranges = <0x0 0xf 0xf4000000 0x2000000>;
- 	};
+ #define IOMMU_NUM_CTXS	4096
++#include <linux/iommu-common.h>
  
-+	qportals: qman-portals@ff6000000 {
-+		ranges = <0x0 0xf 0xf6000000 0x2000000>;
-+	};
-+
- 	soc: soc@ffe000000 {
- 		ranges = <0x00000000 0xf 0xfe000000 0x1000000>;
- 		reg = <0xf 0xfe000000 0 0x00001000>;
-diff --git a/arch/powerpc/boot/dts/fsl/b4860si-post.dtsi b/arch/powerpc/boot/dts/fsl/b4860si-post.dtsi
-index f35e9e0..f26e736 100644
---- a/arch/powerpc/boot/dts/fsl/b4860si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/b4860si-post.dtsi
-@@ -167,6 +167,75 @@
- 	};
+ struct iommu_arena {
+ 	unsigned long	*map;
+@@ -24,11 +25,10 @@ struct iommu_arena {
  };
  
-+&qportals {
-+	qportal14: qman-portal@38000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x38000 0x4000>, <0x100e000 0x1000>;
-+		interrupts = <132 0x2 0 0>;
-+		fsl,qman-channel-id = <0xe>;
-+	};
-+	qportal15: qman-portal@3c000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x3c000 0x4000>, <0x100f000 0x1000>;
-+		interrupts = <134 0x2 0 0>;
-+		fsl,qman-channel-id = <0xf>;
-+	};
-+	qportal16: qman-portal@40000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x40000 0x4000>, <0x1010000 0x1000>;
-+		interrupts = <136 0x2 0 0>;
-+		fsl,qman-channel-id = <0x10>;
-+	};
-+	qportal17: qman-portal@44000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x44000 0x4000>, <0x1011000 0x1000>;
-+		interrupts = <138 0x2 0 0>;
-+		fsl,qman-channel-id = <0x11>;
-+	};
-+	qportal18: qman-portal@48000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x48000 0x4000>, <0x1012000 0x1000>;
-+		interrupts = <140 0x2 0 0>;
-+		fsl,qman-channel-id = <0x12>;
-+	};
-+	qportal19: qman-portal@4c000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x4c000 0x4000>, <0x1013000 0x1000>;
-+		interrupts = <142 0x2 0 0>;
-+		fsl,qman-channel-id = <0x13>;
-+	};
-+	qportal20: qman-portal@50000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x50000 0x4000>, <0x1014000 0x1000>;
-+		interrupts = <144 0x2 0 0>;
-+		fsl,qman-channel-id = <0x14>;
-+	};
-+	qportal21: qman-portal@54000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x54000 0x4000>, <0x1015000 0x1000>;
-+		interrupts = <146 0x2 0 0>;
-+		fsl,qman-channel-id = <0x15>;
-+	};
-+	qportal22: qman-portal@58000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x58000 0x4000>, <0x1016000 0x1000>;
-+		interrupts = <148 0x2 0 0>;
-+		fsl,qman-channel-id = <0x16>;
-+	};
-+	qportal23: qman-portal@5c000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x5c000 0x4000>, <0x1017000 0x1000>;
-+		interrupts = <150 0x2 0 0>;
-+		fsl,qman-channel-id = <0x17>;
-+	};
-+	qportal24: qman-portal@60000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x60000 0x4000>, <0x1018000 0x1000>;
-+		interrupts = <152 0x2 0 0>;
-+		fsl,qman-channel-id = <0x18>;
-+	};
-+};
-+
- &soc {
- 	ddr2: memory-controller@9000 {
- 		compatible = "fsl,qoriq-memory-controller-v4.5", "fsl,qoriq-memory-controller";
-diff --git a/arch/powerpc/boot/dts/fsl/b4si-post.dtsi b/arch/powerpc/boot/dts/fsl/b4si-post.dtsi
-index 73136c0..aae93bb 100644
---- a/arch/powerpc/boot/dts/fsl/b4si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/b4si-post.dtsi
-@@ -37,6 +37,16 @@
- 	alloc-ranges = <0 0 0x10000 0>;
+ struct iommu {
++	struct iommu_table	tbl;
+ 	spinlock_t		lock;
+-	struct iommu_arena	arena;
+-	void			(*flush_all)(struct iommu *);
++	u32			dma_addr_mask;
+ 	iopte_t			*page_table;
+-	u32			page_table_map_base;
+ 	unsigned long		iommu_control;
+ 	unsigned long		iommu_tsbbase;
+ 	unsigned long		iommu_flush;
+@@ -40,7 +40,6 @@ struct iommu {
+ 	unsigned long		dummy_page_pa;
+ 	unsigned long		ctx_lowest_free;
+ 	DECLARE_BITMAP(ctx_bitmap, IOMMU_NUM_CTXS);
+-	u32			dma_addr_mask;
  };
  
-+&qman_fqd {
-+	compatible = "fsl,qman-fqd";
-+	alloc-ranges = <0 0 0x10000 0>;
-+};
+ struct strbuf {
+diff --git a/arch/sparc/kernel/iommu.c b/arch/sparc/kernel/iommu.c
+index bfa4d0c..9886186 100644
+--- a/arch/sparc/kernel/iommu.c
++++ b/arch/sparc/kernel/iommu.c
+@@ -13,11 +13,15 @@
+ #include <linux/errno.h>
+ #include <linux/iommu-helper.h>
+ #include <linux/bitmap.h>
++#include <linux/hash.h>
++#include <linux/iommu-common.h>
+ 
+ #ifdef CONFIG_PCI
+ #include <linux/pci.h>
+ #endif
+ 
++static	DEFINE_PER_CPU(unsigned int, iommu_pool_hash);
 +
-+&qman_pfdr {
-+	compatible = "fsl,qman-pfdr";
-+	alloc-ranges = <0 0 0x10000 0>;
-+};
+ #include <asm/iommu.h>
+ 
+ #include "iommu_common.h"
+@@ -45,8 +49,9 @@
+ 			       "i" (ASI_PHYS_BYPASS_EC_E))
+ 
+ /* Must be invoked under the IOMMU lock. */
+-static void iommu_flushall(struct iommu *iommu)
++static void iommu_flushall(struct iommu_table *iommu_table)
+ {
++	struct iommu *iommu = container_of(iommu_table, struct iommu, tbl);
+ 	if (iommu->iommu_flushinv) {
+ 		iommu_write(iommu->iommu_flushinv, ~(u64)0);
+ 	} else {
+@@ -87,93 +92,18 @@ static inline void iopte_make_dummy(struct iommu *iommu, iopte_t *iopte)
+ 	iopte_val(*iopte) = val;
+ }
+ 
+-/* Based almost entirely upon the ppc64 iommu allocator.  If you use the 'handle'
+- * facility it must all be done in one pass while under the iommu lock.
+- *
+- * On sun4u platforms, we only flush the IOMMU once every time we've passed
+- * over the entire page table doing allocations.  Therefore we only ever advance
+- * the hint and cannot backtrack it.
+- */
+-unsigned long iommu_range_alloc(struct device *dev,
+-				struct iommu *iommu,
+-				unsigned long npages,
+-				unsigned long *handle)
++static void setup_iommu_pool_hash(void)
+ {
+-	unsigned long n, end, start, limit, boundary_size;
+-	struct iommu_arena *arena = &iommu->arena;
+-	int pass = 0;
+-
+-	/* This allocator was derived from x86_64's bit string search */
+-
+-	/* Sanity check */
+-	if (unlikely(npages == 0)) {
+-		if (printk_ratelimit())
+-			WARN_ON(1);
+-		return DMA_ERROR_CODE;
+-	}
+-
+-	if (handle && *handle)
+-		start = *handle;
+-	else
+-		start = arena->hint;
+-
+-	limit = arena->limit;
+-
+-	/* The case below can happen if we have a small segment appended
+-	 * to a large, or when the previous alloc was at the very end of
+-	 * the available space. If so, go back to the beginning and flush.
+-	 */
+-	if (start >= limit) {
+-		start = 0;
+-		if (iommu->flush_all)
+-			iommu->flush_all(iommu);
+-	}
+-
+- again:
+-
+-	if (dev)
+-		boundary_size = ALIGN(dma_get_seg_boundary(dev) + 1,
+-				      1 << IO_PAGE_SHIFT);
+-	else
+-		boundary_size = ALIGN(1UL << 32, 1 << IO_PAGE_SHIFT);
+-
+-	n = iommu_area_alloc(arena->map, limit, start, npages,
+-			     iommu->page_table_map_base >> IO_PAGE_SHIFT,
+-			     boundary_size >> IO_PAGE_SHIFT, 0);
+-	if (n == -1) {
+-		if (likely(pass < 1)) {
+-			/* First failure, rescan from the beginning.  */
+-			start = 0;
+-			if (iommu->flush_all)
+-				iommu->flush_all(iommu);
+-			pass++;
+-			goto again;
+-		} else {
+-			/* Second failure, give up */
+-			return DMA_ERROR_CODE;
+-		}
+-	}
+-
+-	end = n + npages;
+-
+-	arena->hint = end;
+-
+-	/* Update handle for SG allocations */
+-	if (handle)
+-		*handle = end;
++	unsigned int i;
++	static bool do_once;
+ 
+-	return n;
++	if (do_once)
++		return;
++	do_once = true;
++	for_each_possible_cpu(i)
++		per_cpu(iommu_pool_hash, i) = hash_32(i, IOMMU_POOL_HASHBITS);
+ }
+ 
+-void iommu_range_free(struct iommu *iommu, dma_addr_t dma_addr, unsigned long npages)
+-{
+-	struct iommu_arena *arena = &iommu->arena;
+-	unsigned long entry;
+-
+-	entry = (dma_addr - iommu->page_table_map_base) >> IO_PAGE_SHIFT;
+-
+-	bitmap_clear(arena->map, entry, npages);
+-}
+ 
+ int iommu_table_init(struct iommu *iommu, int tsbsize,
+ 		     u32 dma_offset, u32 dma_addr_mask,
+@@ -187,22 +117,21 @@ int iommu_table_init(struct iommu *iommu, int tsbsize,
+ 	/* Setup initial software IOMMU state. */
+ 	spin_lock_init(&iommu->lock);
+ 	iommu->ctx_lowest_free = 1;
+-	iommu->page_table_map_base = dma_offset;
++	iommu->tbl.page_table_map_base = dma_offset;
+ 	iommu->dma_addr_mask = dma_addr_mask;
+ 
+ 	/* Allocate and initialize the free area map.  */
+ 	sz = num_tsb_entries / 8;
+ 	sz = (sz + 7UL) & ~7UL;
+-	iommu->arena.map = kmalloc_node(sz, GFP_KERNEL, numa_node);
+-	if (!iommu->arena.map) {
+-		printk(KERN_ERR "IOMMU: Error, kmalloc(arena.map) failed.\n");
++	iommu->tbl.map = kmalloc_node(sz, GFP_KERNEL, numa_node);
++	if (!iommu->tbl.map)
+ 		return -ENOMEM;
+-	}
+-	memset(iommu->arena.map, 0, sz);
+-	iommu->arena.limit = num_tsb_entries;
++	memset(iommu->tbl.map, 0, sz);
+ 
+-	if (tlb_type != hypervisor)
+-		iommu->flush_all = iommu_flushall;
++	setup_iommu_pool_hash();
++	iommu_tbl_pool_init(&iommu->tbl, num_tsb_entries, IO_PAGE_SHIFT,
++			    (tlb_type != hypervisor ? iommu_flushall : NULL),
++			    false, 1, false);
+ 
+ 	/* Allocate and initialize the dummy page which we
+ 	 * set inactive IO PTEs to point to.
+@@ -235,18 +164,20 @@ int iommu_table_init(struct iommu *iommu, int tsbsize,
+ 	iommu->dummy_page = 0UL;
+ 
+ out_free_map:
+-	kfree(iommu->arena.map);
+-	iommu->arena.map = NULL;
++	kfree(iommu->tbl.map);
++	iommu->tbl.map = NULL;
+ 
+ 	return -ENOMEM;
+ }
+ 
+-static inline iopte_t *alloc_npages(struct device *dev, struct iommu *iommu,
++static inline iopte_t *alloc_npages(struct device *dev,
++				    struct iommu *iommu,
+ 				    unsigned long npages)
+ {
+ 	unsigned long entry;
+ 
+-	entry = iommu_range_alloc(dev, iommu, npages, NULL);
++	entry = iommu_tbl_range_alloc(dev, &iommu->tbl, npages, NULL,
++				      __this_cpu_read(iommu_pool_hash));
+ 	if (unlikely(entry == DMA_ERROR_CODE))
+ 		return NULL;
+ 
+@@ -284,7 +215,7 @@ static void *dma_4u_alloc_coherent(struct device *dev, size_t size,
+ 				   dma_addr_t *dma_addrp, gfp_t gfp,
+ 				   struct dma_attrs *attrs)
+ {
+-	unsigned long flags, order, first_page;
++	unsigned long order, first_page;
+ 	struct iommu *iommu;
+ 	struct page *page;
+ 	int npages, nid;
+@@ -306,16 +237,14 @@ static void *dma_4u_alloc_coherent(struct device *dev, size_t size,
+ 
+ 	iommu = dev->archdata.iommu;
+ 
+-	spin_lock_irqsave(&iommu->lock, flags);
+ 	iopte = alloc_npages(dev, iommu, size >> IO_PAGE_SHIFT);
+-	spin_unlock_irqrestore(&iommu->lock, flags);
+ 
+ 	if (unlikely(iopte == NULL)) {
+ 		free_pages(first_page, order);
+ 		return NULL;
+ 	}
+ 
+-	*dma_addrp = (iommu->page_table_map_base +
++	*dma_addrp = (iommu->tbl.page_table_map_base +
+ 		      ((iopte - iommu->page_table) << IO_PAGE_SHIFT));
+ 	ret = (void *) first_page;
+ 	npages = size >> IO_PAGE_SHIFT;
+@@ -336,16 +265,12 @@ static void dma_4u_free_coherent(struct device *dev, size_t size,
+ 				 struct dma_attrs *attrs)
+ {
+ 	struct iommu *iommu;
+-	unsigned long flags, order, npages;
++	unsigned long order, npages;
+ 
+ 	npages = IO_PAGE_ALIGN(size) >> IO_PAGE_SHIFT;
+ 	iommu = dev->archdata.iommu;
+ 
+-	spin_lock_irqsave(&iommu->lock, flags);
+-
+-	iommu_range_free(iommu, dvma, npages);
+-
+-	spin_unlock_irqrestore(&iommu->lock, flags);
++	iommu_tbl_range_free(&iommu->tbl, dvma, npages, DMA_ERROR_CODE);
+ 
+ 	order = get_order(size);
+ 	if (order < 10)
+@@ -375,8 +300,8 @@ static dma_addr_t dma_4u_map_page(struct device *dev, struct page *page,
+ 	npages = IO_PAGE_ALIGN(oaddr + sz) - (oaddr & IO_PAGE_MASK);
+ 	npages >>= IO_PAGE_SHIFT;
+ 
+-	spin_lock_irqsave(&iommu->lock, flags);
+ 	base = alloc_npages(dev, iommu, npages);
++	spin_lock_irqsave(&iommu->lock, flags);
+ 	ctx = 0;
+ 	if (iommu->iommu_ctxflush)
+ 		ctx = iommu_alloc_ctx(iommu);
+@@ -385,7 +310,7 @@ static dma_addr_t dma_4u_map_page(struct device *dev, struct page *page,
+ 	if (unlikely(!base))
+ 		goto bad;
+ 
+-	bus_addr = (iommu->page_table_map_base +
++	bus_addr = (iommu->tbl.page_table_map_base +
+ 		    ((base - iommu->page_table) << IO_PAGE_SHIFT));
+ 	ret = bus_addr | (oaddr & ~IO_PAGE_MASK);
+ 	base_paddr = __pa(oaddr & IO_PAGE_MASK);
+@@ -496,7 +421,7 @@ static void dma_4u_unmap_page(struct device *dev, dma_addr_t bus_addr,
+ 	npages = IO_PAGE_ALIGN(bus_addr + sz) - (bus_addr & IO_PAGE_MASK);
+ 	npages >>= IO_PAGE_SHIFT;
+ 	base = iommu->page_table +
+-		((bus_addr - iommu->page_table_map_base) >> IO_PAGE_SHIFT);
++		((bus_addr - iommu->tbl.page_table_map_base) >> IO_PAGE_SHIFT);
+ 	bus_addr &= IO_PAGE_MASK;
+ 
+ 	spin_lock_irqsave(&iommu->lock, flags);
+@@ -515,11 +440,10 @@ static void dma_4u_unmap_page(struct device *dev, dma_addr_t bus_addr,
+ 	for (i = 0; i < npages; i++)
+ 		iopte_make_dummy(iommu, base + i);
+ 
+-	iommu_range_free(iommu, bus_addr, npages);
+-
+ 	iommu_free_ctx(iommu, ctx);
+-
+ 	spin_unlock_irqrestore(&iommu->lock, flags);
 +
- &ifc {
- 	#address-cells = <2>;
- 	#size-cells = <1>;
-@@ -210,6 +220,97 @@
- 	};
++	iommu_tbl_range_free(&iommu->tbl, bus_addr, npages, DMA_ERROR_CODE);
+ }
+ 
+ static int dma_4u_map_sg(struct device *dev, struct scatterlist *sglist,
+@@ -567,7 +491,7 @@ static int dma_4u_map_sg(struct device *dev, struct scatterlist *sglist,
+ 	max_seg_size = dma_get_max_seg_size(dev);
+ 	seg_boundary_size = ALIGN(dma_get_seg_boundary(dev) + 1,
+ 				  IO_PAGE_SIZE) >> IO_PAGE_SHIFT;
+-	base_shift = iommu->page_table_map_base >> IO_PAGE_SHIFT;
++	base_shift = iommu->tbl.page_table_map_base >> IO_PAGE_SHIFT;
+ 	for_each_sg(sglist, s, nelems, i) {
+ 		unsigned long paddr, npages, entry, out_entry = 0, slen;
+ 		iopte_t *base;
+@@ -581,7 +505,8 @@ static int dma_4u_map_sg(struct device *dev, struct scatterlist *sglist,
+ 		/* Allocate iommu entries for that segment */
+ 		paddr = (unsigned long) SG_ENT_PHYS_ADDRESS(s);
+ 		npages = iommu_num_pages(paddr, slen, IO_PAGE_SIZE);
+-		entry = iommu_range_alloc(dev, iommu, npages, &handle);
++		entry = iommu_tbl_range_alloc(dev, &iommu->tbl, npages, &handle,
++					      __this_cpu_read(iommu_pool_hash));
+ 
+ 		/* Handle failure */
+ 		if (unlikely(entry == DMA_ERROR_CODE)) {
+@@ -594,7 +519,7 @@ static int dma_4u_map_sg(struct device *dev, struct scatterlist *sglist,
+ 		base = iommu->page_table + entry;
+ 
+ 		/* Convert entry to a dma_addr_t */
+-		dma_addr = iommu->page_table_map_base +
++		dma_addr = iommu->tbl.page_table_map_base +
+ 			(entry << IO_PAGE_SHIFT);
+ 		dma_addr |= (s->offset & ~IO_PAGE_MASK);
+ 
+@@ -654,15 +579,17 @@ static int dma_4u_map_sg(struct device *dev, struct scatterlist *sglist,
+ 			vaddr = s->dma_address & IO_PAGE_MASK;
+ 			npages = iommu_num_pages(s->dma_address, s->dma_length,
+ 						 IO_PAGE_SIZE);
+-			iommu_range_free(iommu, vaddr, npages);
+ 
+-			entry = (vaddr - iommu->page_table_map_base)
++			entry = (vaddr - iommu->tbl.page_table_map_base)
+ 				>> IO_PAGE_SHIFT;
+ 			base = iommu->page_table + entry;
+ 
+ 			for (j = 0; j < npages; j++)
+ 				iopte_make_dummy(iommu, base + j);
+ 
++			iommu_tbl_range_free(&iommu->tbl, vaddr, npages,
++					     DMA_ERROR_CODE);
++
+ 			s->dma_address = DMA_ERROR_CODE;
+ 			s->dma_length = 0;
+ 		}
+@@ -677,17 +604,19 @@ static int dma_4u_map_sg(struct device *dev, struct scatterlist *sglist,
+ /* If contexts are being used, they are the same in all of the mappings
+  * we make for a particular SG.
+  */
+-static unsigned long fetch_sg_ctx(struct iommu *iommu, struct scatterlist *sg)
++static unsigned long fetch_sg_ctx(struct iommu *iommu,
++				  struct scatterlist *sg)
+ {
+ 	unsigned long ctx = 0;
+ 
+ 	if (iommu->iommu_ctxflush) {
+ 		iopte_t *base;
+ 		u32 bus_addr;
++		struct iommu_table *tbl = &iommu->tbl;
+ 
+ 		bus_addr = sg->dma_address & IO_PAGE_MASK;
+ 		base = iommu->page_table +
+-			((bus_addr - iommu->page_table_map_base) >> IO_PAGE_SHIFT);
++		       ((bus_addr - tbl->page_table_map_base) >> IO_PAGE_SHIFT);
+ 
+ 		ctx = (iopte_val(*base) & IOPTE_CONTEXT) >> 47UL;
+ 	}
+@@ -723,9 +652,8 @@ static void dma_4u_unmap_sg(struct device *dev, struct scatterlist *sglist,
+ 		if (!len)
+ 			break;
+ 		npages = iommu_num_pages(dma_handle, len, IO_PAGE_SIZE);
+-		iommu_range_free(iommu, dma_handle, npages);
+ 
+-		entry = ((dma_handle - iommu->page_table_map_base)
++		entry = ((dma_handle - iommu->tbl.page_table_map_base)
+ 			 >> IO_PAGE_SHIFT);
+ 		base = iommu->page_table + entry;
+ 
+@@ -737,6 +665,8 @@ static void dma_4u_unmap_sg(struct device *dev, struct scatterlist *sglist,
+ 		for (i = 0; i < npages; i++)
+ 			iopte_make_dummy(iommu, base + i);
+ 
++		iommu_tbl_range_free(&iommu->tbl, dma_handle, npages,
++				     DMA_ERROR_CODE);
+ 		sg = sg_next(sg);
+ 	}
+ 
+@@ -770,9 +700,10 @@ static void dma_4u_sync_single_for_cpu(struct device *dev,
+ 	if (iommu->iommu_ctxflush &&
+ 	    strbuf->strbuf_ctxflush) {
+ 		iopte_t *iopte;
++		struct iommu_table *tbl = &iommu->tbl;
+ 
+ 		iopte = iommu->page_table +
+-			((bus_addr - iommu->page_table_map_base)>>IO_PAGE_SHIFT);
++			((bus_addr - tbl->page_table_map_base)>>IO_PAGE_SHIFT);
+ 		ctx = (iopte_val(*iopte) & IOPTE_CONTEXT) >> 47UL;
+ 	}
+ 
+@@ -805,9 +736,10 @@ static void dma_4u_sync_sg_for_cpu(struct device *dev,
+ 	if (iommu->iommu_ctxflush &&
+ 	    strbuf->strbuf_ctxflush) {
+ 		iopte_t *iopte;
++		struct iommu_table *tbl = &iommu->tbl;
+ 
+-		iopte = iommu->page_table +
+-			((sglist[0].dma_address - iommu->page_table_map_base) >> IO_PAGE_SHIFT);
++		iopte = iommu->page_table + ((sglist[0].dma_address -
++			tbl->page_table_map_base) >> IO_PAGE_SHIFT);
+ 		ctx = (iopte_val(*iopte) & IOPTE_CONTEXT) >> 47UL;
+ 	}
+ 
+diff --git a/arch/sparc/kernel/iommu_common.h b/arch/sparc/kernel/iommu_common.h
+index 1ec0de4..f4be0d7 100644
+--- a/arch/sparc/kernel/iommu_common.h
++++ b/arch/sparc/kernel/iommu_common.h
+@@ -48,12 +48,4 @@ static inline int is_span_boundary(unsigned long entry,
+ 	return iommu_is_span_boundary(entry, nr, shift, boundary_size);
+ }
+ 
+-unsigned long iommu_range_alloc(struct device *dev,
+-				struct iommu *iommu,
+-				unsigned long npages,
+-				unsigned long *handle);
+-void iommu_range_free(struct iommu *iommu,
+-		      dma_addr_t dma_addr,
+-		      unsigned long npages);
+-
+ #endif /* _IOMMU_COMMON_H */
+diff --git a/arch/sparc/kernel/pci_sun4v.c b/arch/sparc/kernel/pci_sun4v.c
+index 49d33b1..a0cb038 100644
+--- a/arch/sparc/kernel/pci_sun4v.c
++++ b/arch/sparc/kernel/pci_sun4v.c
+@@ -15,6 +15,8 @@
+ #include <linux/export.h>
+ #include <linux/log2.h>
+ #include <linux/of_device.h>
++#include <linux/hash.h>
++#include <linux/iommu-common.h>
+ 
+ #include <asm/iommu.h>
+ #include <asm/irq.h>
+@@ -28,6 +30,7 @@
+ 
+ #define DRIVER_NAME	"pci_sun4v"
+ #define PFX		DRIVER_NAME ": "
++static DEFINE_PER_CPU(unsigned int, iommu_pool_hash);
+ 
+ static unsigned long vpci_major = 1;
+ static unsigned long vpci_minor = 1;
+@@ -155,14 +158,13 @@ static void *dma_4v_alloc_coherent(struct device *dev, size_t size,
+ 
+ 	iommu = dev->archdata.iommu;
+ 
+-	spin_lock_irqsave(&iommu->lock, flags);
+-	entry = iommu_range_alloc(dev, iommu, npages, NULL);
+-	spin_unlock_irqrestore(&iommu->lock, flags);
++	entry = iommu_tbl_range_alloc(dev, &iommu->tbl, npages, NULL,
++				      __this_cpu_read(iommu_pool_hash));
+ 
+ 	if (unlikely(entry == DMA_ERROR_CODE))
+ 		goto range_alloc_fail;
+ 
+-	*dma_addrp = (iommu->page_table_map_base +
++	*dma_addrp = (iommu->tbl.page_table_map_base +
+ 		      (entry << IO_PAGE_SHIFT));
+ 	ret = (void *) first_page;
+ 	first_page = __pa(first_page);
+@@ -188,45 +190,46 @@ static void *dma_4v_alloc_coherent(struct device *dev, size_t size,
+ 	return ret;
+ 
+ iommu_map_fail:
+-	/* Interrupts are disabled.  */
+-	spin_lock(&iommu->lock);
+-	iommu_range_free(iommu, *dma_addrp, npages);
+-	spin_unlock_irqrestore(&iommu->lock, flags);
++	iommu_tbl_range_free(&iommu->tbl, *dma_addrp, npages, DMA_ERROR_CODE);
+ 
+ range_alloc_fail:
+ 	free_pages(first_page, order);
+ 	return NULL;
+ }
+ 
++static void dma_4v_iommu_demap(void *demap_arg, unsigned long entry,
++			       unsigned long npages)
++{
++	u32 devhandle = *(u32 *)demap_arg;
++	unsigned long num, flags;
++
++	local_irq_save(flags);
++	do {
++		num = pci_sun4v_iommu_demap(devhandle,
++					    HV_PCI_TSBID(0, entry),
++					    npages);
++
++		entry += num;
++		npages -= num;
++	} while (npages != 0);
++	local_irq_restore(flags);
++}
++
+ static void dma_4v_free_coherent(struct device *dev, size_t size, void *cpu,
+ 				 dma_addr_t dvma, struct dma_attrs *attrs)
+ {
+ 	struct pci_pbm_info *pbm;
+ 	struct iommu *iommu;
+-	unsigned long flags, order, npages, entry;
++	unsigned long order, npages, entry;
+ 	u32 devhandle;
+ 
+ 	npages = IO_PAGE_ALIGN(size) >> IO_PAGE_SHIFT;
+ 	iommu = dev->archdata.iommu;
+ 	pbm = dev->archdata.host_controller;
+ 	devhandle = pbm->devhandle;
+-	entry = ((dvma - iommu->page_table_map_base) >> IO_PAGE_SHIFT);
+-
+-	spin_lock_irqsave(&iommu->lock, flags);
+-
+-	iommu_range_free(iommu, dvma, npages);
+-
+-	do {
+-		unsigned long num;
+-
+-		num = pci_sun4v_iommu_demap(devhandle, HV_PCI_TSBID(0, entry),
+-					    npages);
+-		entry += num;
+-		npages -= num;
+-	} while (npages != 0);
+-
+-	spin_unlock_irqrestore(&iommu->lock, flags);
+-
++	entry = ((dvma - iommu->tbl.page_table_map_base) >> IO_PAGE_SHIFT);
++	dma_4v_iommu_demap(&devhandle, entry, npages);
++	iommu_tbl_range_free(&iommu->tbl, dvma, npages, DMA_ERROR_CODE);
+ 	order = get_order(size);
+ 	if (order < 10)
+ 		free_pages((unsigned long)cpu, order);
+@@ -253,14 +256,13 @@ static dma_addr_t dma_4v_map_page(struct device *dev, struct page *page,
+ 	npages = IO_PAGE_ALIGN(oaddr + sz) - (oaddr & IO_PAGE_MASK);
+ 	npages >>= IO_PAGE_SHIFT;
+ 
+-	spin_lock_irqsave(&iommu->lock, flags);
+-	entry = iommu_range_alloc(dev, iommu, npages, NULL);
+-	spin_unlock_irqrestore(&iommu->lock, flags);
++	entry = iommu_tbl_range_alloc(dev, &iommu->tbl, npages, NULL,
++				      __this_cpu_read(iommu_pool_hash));
+ 
+ 	if (unlikely(entry == DMA_ERROR_CODE))
+ 		goto bad;
+ 
+-	bus_addr = (iommu->page_table_map_base +
++	bus_addr = (iommu->tbl.page_table_map_base +
+ 		    (entry << IO_PAGE_SHIFT));
+ 	ret = bus_addr | (oaddr & ~IO_PAGE_MASK);
+ 	base_paddr = __pa(oaddr & IO_PAGE_MASK);
+@@ -290,11 +292,7 @@ static dma_addr_t dma_4v_map_page(struct device *dev, struct page *page,
+ 	return DMA_ERROR_CODE;
+ 
+ iommu_map_fail:
+-	/* Interrupts are disabled.  */
+-	spin_lock(&iommu->lock);
+-	iommu_range_free(iommu, bus_addr, npages);
+-	spin_unlock_irqrestore(&iommu->lock, flags);
+-
++	iommu_tbl_range_free(&iommu->tbl, bus_addr, npages, DMA_ERROR_CODE);
+ 	return DMA_ERROR_CODE;
+ }
+ 
+@@ -304,7 +302,7 @@ static void dma_4v_unmap_page(struct device *dev, dma_addr_t bus_addr,
+ {
+ 	struct pci_pbm_info *pbm;
+ 	struct iommu *iommu;
+-	unsigned long flags, npages;
++	unsigned long npages;
+ 	long entry;
+ 	u32 devhandle;
+ 
+@@ -321,22 +319,9 @@ static void dma_4v_unmap_page(struct device *dev, dma_addr_t bus_addr,
+ 	npages = IO_PAGE_ALIGN(bus_addr + sz) - (bus_addr & IO_PAGE_MASK);
+ 	npages >>= IO_PAGE_SHIFT;
+ 	bus_addr &= IO_PAGE_MASK;
+-
+-	spin_lock_irqsave(&iommu->lock, flags);
+-
+-	iommu_range_free(iommu, bus_addr, npages);
+-
+-	entry = (bus_addr - iommu->page_table_map_base) >> IO_PAGE_SHIFT;
+-	do {
+-		unsigned long num;
+-
+-		num = pci_sun4v_iommu_demap(devhandle, HV_PCI_TSBID(0, entry),
+-					    npages);
+-		entry += num;
+-		npages -= num;
+-	} while (npages != 0);
+-
+-	spin_unlock_irqrestore(&iommu->lock, flags);
++	entry = (bus_addr - iommu->tbl.page_table_map_base) >> IO_PAGE_SHIFT;
++	dma_4v_iommu_demap(&devhandle, entry, npages);
++	iommu_tbl_range_free(&iommu->tbl, bus_addr, npages, DMA_ERROR_CODE);
+ }
+ 
+ static int dma_4v_map_sg(struct device *dev, struct scatterlist *sglist,
+@@ -371,14 +356,14 @@ static int dma_4v_map_sg(struct device *dev, struct scatterlist *sglist,
+ 	/* Init first segment length for backout at failure */
+ 	outs->dma_length = 0;
+ 
+-	spin_lock_irqsave(&iommu->lock, flags);
++	local_irq_save(flags);
+ 
+ 	iommu_batch_start(dev, prot, ~0UL);
+ 
+ 	max_seg_size = dma_get_max_seg_size(dev);
+ 	seg_boundary_size = ALIGN(dma_get_seg_boundary(dev) + 1,
+ 				  IO_PAGE_SIZE) >> IO_PAGE_SHIFT;
+-	base_shift = iommu->page_table_map_base >> IO_PAGE_SHIFT;
++	base_shift = iommu->tbl.page_table_map_base >> IO_PAGE_SHIFT;
+ 	for_each_sg(sglist, s, nelems, i) {
+ 		unsigned long paddr, npages, entry, out_entry = 0, slen;
+ 
+@@ -391,7 +376,8 @@ static int dma_4v_map_sg(struct device *dev, struct scatterlist *sglist,
+ 		/* Allocate iommu entries for that segment */
+ 		paddr = (unsigned long) SG_ENT_PHYS_ADDRESS(s);
+ 		npages = iommu_num_pages(paddr, slen, IO_PAGE_SIZE);
+-		entry = iommu_range_alloc(dev, iommu, npages, &handle);
++		entry = iommu_tbl_range_alloc(dev, &iommu->tbl, npages, &handle,
++				      __this_cpu_read(iommu_pool_hash));
+ 
+ 		/* Handle failure */
+ 		if (unlikely(entry == DMA_ERROR_CODE)) {
+@@ -404,7 +390,7 @@ static int dma_4v_map_sg(struct device *dev, struct scatterlist *sglist,
+ 		iommu_batch_new_entry(entry);
+ 
+ 		/* Convert entry to a dma_addr_t */
+-		dma_addr = iommu->page_table_map_base +
++		dma_addr = iommu->tbl.page_table_map_base +
+ 			(entry << IO_PAGE_SHIFT);
+ 		dma_addr |= (s->offset & ~IO_PAGE_MASK);
+ 
+@@ -451,7 +437,7 @@ static int dma_4v_map_sg(struct device *dev, struct scatterlist *sglist,
+ 	if (unlikely(err < 0L))
+ 		goto iommu_map_failed;
+ 
+-	spin_unlock_irqrestore(&iommu->lock, flags);
++	local_irq_restore(flags);
+ 
+ 	if (outcount < incount) {
+ 		outs = sg_next(outs);
+@@ -469,7 +455,8 @@ static int dma_4v_map_sg(struct device *dev, struct scatterlist *sglist,
+ 			vaddr = s->dma_address & IO_PAGE_MASK;
+ 			npages = iommu_num_pages(s->dma_address, s->dma_length,
+ 						 IO_PAGE_SIZE);
+-			iommu_range_free(iommu, vaddr, npages);
++			iommu_tbl_range_free(&iommu->tbl, vaddr, npages,
++					     DMA_ERROR_CODE);
+ 			/* XXX demap? XXX */
+ 			s->dma_address = DMA_ERROR_CODE;
+ 			s->dma_length = 0;
+@@ -477,7 +464,7 @@ static int dma_4v_map_sg(struct device *dev, struct scatterlist *sglist,
+ 		if (s == outs)
+ 			break;
+ 	}
+-	spin_unlock_irqrestore(&iommu->lock, flags);
++	local_irq_restore(flags);
+ 
+ 	return 0;
+ }
+@@ -489,7 +476,7 @@ static void dma_4v_unmap_sg(struct device *dev, struct scatterlist *sglist,
+ 	struct pci_pbm_info *pbm;
+ 	struct scatterlist *sg;
+ 	struct iommu *iommu;
+-	unsigned long flags;
++	unsigned long flags, entry;
+ 	u32 devhandle;
+ 
+ 	BUG_ON(direction == DMA_NONE);
+@@ -498,33 +485,27 @@ static void dma_4v_unmap_sg(struct device *dev, struct scatterlist *sglist,
+ 	pbm = dev->archdata.host_controller;
+ 	devhandle = pbm->devhandle;
+ 	
+-	spin_lock_irqsave(&iommu->lock, flags);
++	local_irq_save(flags);
+ 
+ 	sg = sglist;
+ 	while (nelems--) {
+ 		dma_addr_t dma_handle = sg->dma_address;
+ 		unsigned int len = sg->dma_length;
+-		unsigned long npages, entry;
++		unsigned long npages;
++		struct iommu_table *tbl = &iommu->tbl;
++		unsigned long shift = IO_PAGE_SHIFT;
+ 
+ 		if (!len)
+ 			break;
+ 		npages = iommu_num_pages(dma_handle, len, IO_PAGE_SIZE);
+-		iommu_range_free(iommu, dma_handle, npages);
+-
+-		entry = ((dma_handle - iommu->page_table_map_base) >> IO_PAGE_SHIFT);
+-		while (npages) {
+-			unsigned long num;
+-
+-			num = pci_sun4v_iommu_demap(devhandle, HV_PCI_TSBID(0, entry),
+-						    npages);
+-			entry += num;
+-			npages -= num;
+-		}
+-
++		entry = ((dma_handle - tbl->page_table_map_base) >> shift);
++		dma_4v_iommu_demap(&devhandle, entry, npages);
++		iommu_tbl_range_free(&iommu->tbl, dma_handle, npages,
++				     DMA_ERROR_CODE);
+ 		sg = sg_next(sg);
+ 	}
+ 
+-	spin_unlock_irqrestore(&iommu->lock, flags);
++	local_irq_restore(flags);
+ }
+ 
+ static struct dma_map_ops sun4v_dma_ops = {
+@@ -550,30 +531,33 @@ static void pci_sun4v_scan_bus(struct pci_pbm_info *pbm, struct device *parent)
+ }
+ 
+ static unsigned long probe_existing_entries(struct pci_pbm_info *pbm,
+-					    struct iommu *iommu)
++					    struct iommu_table *iommu)
+ {
+-	struct iommu_arena *arena = &iommu->arena;
+-	unsigned long i, cnt = 0;
++	struct iommu_pool *pool;
++	unsigned long i, pool_nr, cnt = 0;
+ 	u32 devhandle;
+ 
+ 	devhandle = pbm->devhandle;
+-	for (i = 0; i < arena->limit; i++) {
+-		unsigned long ret, io_attrs, ra;
+-
+-		ret = pci_sun4v_iommu_getmap(devhandle,
+-					     HV_PCI_TSBID(0, i),
+-					     &io_attrs, &ra);
+-		if (ret == HV_EOK) {
+-			if (page_in_phys_avail(ra)) {
+-				pci_sun4v_iommu_demap(devhandle,
+-						      HV_PCI_TSBID(0, i), 1);
+-			} else {
+-				cnt++;
+-				__set_bit(i, arena->map);
++	for (pool_nr = 0; pool_nr < iommu->nr_pools; pool_nr++) {
++		pool = &(iommu->arena_pool[pool_nr]);
++		for (i = pool->start; i <= pool->end; i++) {
++			unsigned long ret, io_attrs, ra;
++
++			ret = pci_sun4v_iommu_getmap(devhandle,
++						     HV_PCI_TSBID(0, i),
++						     &io_attrs, &ra);
++			if (ret == HV_EOK) {
++				if (page_in_phys_avail(ra)) {
++					pci_sun4v_iommu_demap(devhandle,
++							      HV_PCI_TSBID(0,
++							      i), 1);
++				} else {
++					cnt++;
++					__set_bit(i, iommu->map);
++				}
+ 			}
+ 		}
+ 	}
+-
+ 	return cnt;
+ }
+ 
+@@ -601,22 +585,23 @@ static int pci_sun4v_iommu_init(struct pci_pbm_info *pbm)
+ 	dma_offset = vdma[0];
+ 
+ 	/* Setup initial software IOMMU state. */
+-	spin_lock_init(&iommu->lock);
+ 	iommu->ctx_lowest_free = 1;
+-	iommu->page_table_map_base = dma_offset;
++	iommu->tbl.page_table_map_base = dma_offset;
+ 	iommu->dma_addr_mask = dma_mask;
+ 
+ 	/* Allocate and initialize the free area map.  */
+ 	sz = (num_tsb_entries + 7) / 8;
+ 	sz = (sz + 7UL) & ~7UL;
+-	iommu->arena.map = kzalloc(sz, GFP_KERNEL);
+-	if (!iommu->arena.map) {
++	iommu->tbl.map = kzalloc(sz, GFP_KERNEL);
++	if (!iommu->tbl.map) {
+ 		printk(KERN_ERR PFX "Error, kmalloc(arena.map) failed.\n");
+ 		return -ENOMEM;
+ 	}
+-	iommu->arena.limit = num_tsb_entries;
+-
+-	sz = probe_existing_entries(pbm, iommu);
++	iommu_tbl_pool_init(&iommu->tbl, num_tsb_entries, IO_PAGE_SHIFT,
++			    NULL, false /* no large_pool */,
++			    0 /* default npools */,
++			    false /* want span boundary checking */);
++	sz = probe_existing_entries(pbm, &iommu->tbl);
+ 	if (sz)
+ 		printk("%s: Imported %lu TSB entries from OBP\n",
+ 		       pbm->name, sz);
+@@ -1016,8 +1001,17 @@ static struct platform_driver pci_sun4v_driver = {
+ 	.probe		= pci_sun4v_probe,
  };
  
-+&qportals {
-+	#address-cells = <0x1>;
-+	#size-cells = <0x1>;
-+	compatible = "simple-bus";
++static void setup_iommu_pool_hash(void)
++{
++	unsigned int i;
 +
-+	qportal0: qman-portal@0 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x0 0x4000>, <0x1000000 0x1000>;
-+		interrupts = <104 0x2 0 0>;
-+		fsl,qman-channel-id = <0x0>;
-+	};
-+	qportal1: qman-portal@4000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x4000 0x4000>, <0x1001000 0x1000>;
-+		interrupts = <106 0x2 0 0>;
-+		fsl,qman-channel-id = <0x1>;
-+	};
-+	qportal2: qman-portal@8000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x8000 0x4000>, <0x1002000 0x1000>;
-+		interrupts = <108 0x2 0 0>;
-+		fsl,qman-channel-id = <0x2>;
-+	};
-+	qportal3: qman-portal@c000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0xc000 0x4000>, <0x1003000 0x1000>;
-+		interrupts = <110 0x2 0 0>;
-+		fsl,qman-channel-id = <0x3>;
-+	};
-+	qportal4: qman-portal@10000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x10000 0x4000>, <0x1004000 0x1000>;
-+		interrupts = <112 0x2 0 0>;
-+		fsl,qman-channel-id = <0x4>;
-+	};
-+	qportal5: qman-portal@14000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x14000 0x4000>, <0x1005000 0x1000>;
-+		interrupts = <114 0x2 0 0>;
-+		fsl,qman-channel-id = <0x5>;
-+	};
-+	qportal6: qman-portal@18000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x18000 0x4000>, <0x1006000 0x1000>;
-+		interrupts = <116 0x2 0 0>;
-+		fsl,qman-channel-id = <0x6>;
-+	};
-+	qportal7: qman-portal@1c000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x1c000 0x4000>, <0x1007000 0x1000>;
-+		interrupts = <118 0x2 0 0>;
-+		fsl,qman-channel-id = <0x7>;
-+	};
-+	qportal8: qman-portal@20000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x20000 0x4000>, <0x1008000 0x1000>;
-+		interrupts = <120 0x2 0 0>;
-+		fsl,qman-channel-id = <0x8>;
-+	};
-+	qportal9: qman-portal@24000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x24000 0x4000>, <0x1009000 0x1000>;
-+		interrupts = <122 0x2 0 0>;
-+		fsl,qman-channel-id = <0x9>;
-+	};
-+	qportal10: qman-portal@28000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x28000 0x4000>, <0x100a000 0x1000>;
-+		interrupts = <124 0x2 0 0>;
-+		fsl,qman-channel-id = <0xa>;
-+	};
-+	qportal11: qman-portal@2c000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x2c000 0x4000>, <0x100b000 0x1000>;
-+		interrupts = <126 0x2 0 0>;
-+		fsl,qman-channel-id = <0xb>;
-+	};
-+	qportal12: qman-portal@30000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x30000 0x4000>, <0x100c000 0x1000>;
-+		interrupts = <128 0x2 0 0>;
-+		fsl,qman-channel-id = <0xc>;
-+	};
-+	qportal13: qman-portal@34000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x34000 0x4000>, <0x100d000 0x1000>;
-+		interrupts = <130 0x2 0 0>;
-+		fsl,qman-channel-id = <0xd>;
-+	};
-+};
++	for_each_possible_cpu(i)
++		per_cpu(iommu_pool_hash, i) = hash_32(i, IOMMU_POOL_HASHBITS);
++}
 +
- &soc {
- 	#address-cells = <1>;
- 	#size-cells = <1>;
-@@ -343,6 +444,11 @@
- /include/ "qoriq-duart-1.dtsi"
- /include/ "qoriq-sec5.3-0.dtsi"
+ static int __init pci_sun4v_init(void)
+ {
++	setup_iommu_pool_hash();
+ 	return platform_driver_register(&pci_sun4v_driver);
+ }
  
-+/include/ "qoriq-qman3.dtsi"
-+	qman: qman@318000 {
-+		interrupts = <16 2 1 28>;
-+	};
-+
- /include/ "qoriq-bman1.dtsi"
- 	bman: bman@31a000 {
- 		interrupts = <16 2 1 29>;
-diff --git a/arch/powerpc/boot/dts/fsl/p1023si-post.dtsi b/arch/powerpc/boot/dts/fsl/p1023si-post.dtsi
-index 7780f21..8a09cbb 100644
---- a/arch/powerpc/boot/dts/fsl/p1023si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/p1023si-post.dtsi
-@@ -37,6 +37,16 @@
- 	alloc-ranges = <0 0 0x10 0>;
- };
- 
-+&qman_fqd {
-+	compatible = "fsl,qman-fqd";
-+	alloc-ranges = <0 0 0x10 0>;
-+};
-+
-+&qman_pfdr {
-+	compatible = "fsl,qman-pfdr";
-+	alloc-ranges = <0 0 0x10 0>;
-+};
-+
- &lbc {
- 	#address-cells = <2>;
- 	#size-cells = <1>;
-@@ -102,6 +112,31 @@
- 	};
- };
- 
-+&qportals {
-+	#address-cells = <1>;
-+	#size-cells = <1>;
-+	compatible = "simple-bus";
-+
-+	qportal0: qman-portal@0 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x0 0x4000>, <0x100000 0x1000>;
-+		interrupts = <29 2 0 0>;
-+		fsl,qman-channel-id = <0>;
-+	};
-+	qportal1: qman-portal@4000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x4000 0x4000>, <0x101000 0x1000>;
-+		interrupts = <31 2 0 0>;
-+		fsl,qman-channel-id = <1>;
-+	};
-+	qportal2: qman-portal@8000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x8000 0x4000>, <0x102000 0x1000>;
-+		interrupts = <33 2 0 0>;
-+		fsl,qman-channel-id = <2>;
-+	};
-+};
-+
- &bportals {
- 	#address-cells = <1>;
- 	#size-cells = <1>;
-@@ -248,6 +283,14 @@
- /include/ "pq3-mpic.dtsi"
- /include/ "pq3-mpic-timer-B.dtsi"
- 
-+	qman: qman@88000 {
-+		compatible = "fsl,qman";
-+		reg = <0x88000 0x1000>;
-+		interrupts = <16 2 0 0>;
-+		fsl,qman-portals = <&qportals>;
-+		memory-region = <&qman_fqd &qman_pfdr>;
-+	};
-+
- 	bman: bman@8a000 {
- 		compatible = "fsl,bman";
- 		reg = <0x8a000 0x1000>;
-diff --git a/arch/powerpc/boot/dts/fsl/p2041si-post.dtsi b/arch/powerpc/boot/dts/fsl/p2041si-post.dtsi
-index f2feacf..1f18b8b 100644
---- a/arch/powerpc/boot/dts/fsl/p2041si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/p2041si-post.dtsi
-@@ -37,6 +37,16 @@
- 	alloc-ranges = <0 0 0x10 0>;
- };
- 
-+&qman_fqd {
-+	compatible = "fsl,qman-fqd";
-+	alloc-ranges = <0 0 0x10 0>;
-+};
-+
-+&qman_pfdr {
-+	compatible = "fsl,qman-pfdr";
-+	alloc-ranges = <0 0 0x10 0>;
-+};
-+
- &lbc {
- 	compatible = "fsl,p2041-elbc", "fsl,elbc", "simple-bus";
- 	interrupts = <25 2 0 0>;
-@@ -223,6 +233,8 @@
- 
- /include/ "qoriq-bman1-portals.dtsi"
- 
-+/include/ "qoriq-qman1-portals.dtsi"
-+
- &soc {
- 	#address-cells = <1>;
- 	#size-cells = <1>;
-@@ -415,5 +427,6 @@ crypto: crypto@300000 {
- 		fsl,iommu-parent = <&pamu1>;
- 	};
- 
-+/include/ "qoriq-qman1.dtsi"
- /include/ "qoriq-bman1.dtsi"
- };
-diff --git a/arch/powerpc/boot/dts/fsl/p3041si-post.dtsi b/arch/powerpc/boot/dts/fsl/p3041si-post.dtsi
-index d6fea37..a555d24 100644
---- a/arch/powerpc/boot/dts/fsl/p3041si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/p3041si-post.dtsi
-@@ -37,6 +37,16 @@
- 	alloc-ranges = <0 0 0x10 0>;
- };
- 
-+&qman_fqd {
-+	compatible = "fsl,qman-fqd";
-+	alloc-ranges = <0 0 0x10 0>;
-+};
-+
-+&qman_pfdr {
-+	compatible = "fsl,qman-pfdr";
-+	alloc-ranges = <0 0 0x10 0>;
-+};
-+
- &lbc {
- 	compatible = "fsl,p3041-elbc", "fsl,elbc", "simple-bus";
- 	interrupts = <25 2 0 0>;
-@@ -250,6 +260,8 @@
- 
- /include/ "qoriq-bman1-portals.dtsi"
- 
-+/include/ "qoriq-qman1-portals.dtsi"
-+
- &soc {
- 	#address-cells = <1>;
- 	#size-cells = <1>;
-@@ -442,5 +454,6 @@ crypto: crypto@300000 {
- 		fsl,iommu-parent = <&pamu1>;
- 	};
- 
-+/include/ "qoriq-qman1.dtsi"
- /include/ "qoriq-bman1.dtsi"
- };
-diff --git a/arch/powerpc/boot/dts/fsl/p4080si-post.dtsi b/arch/powerpc/boot/dts/fsl/p4080si-post.dtsi
-index 89482c9..0fe7281 100644
---- a/arch/powerpc/boot/dts/fsl/p4080si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/p4080si-post.dtsi
-@@ -37,6 +37,16 @@
- 	alloc-ranges = <0 0 0x10 0>;
- };
- 
-+&qman_fqd {
-+	compatible = "fsl,qman-fqd";
-+	alloc-ranges = <0 0 0x10 0>;
-+};
-+
-+&qman_pfdr {
-+	compatible = "fsl,qman-pfdr";
-+	alloc-ranges = <0 0 0x10 0>;
-+};
-+
- &lbc {
- 	compatible = "fsl,p4080-elbc", "fsl,elbc", "simple-bus";
- 	interrupts = <25 2 0 0>;
-@@ -250,6 +260,8 @@
- 
- /include/ "qoriq-bman1-portals.dtsi"
- 
-+/include/ "qoriq-qman1-portals.dtsi"
-+
- &soc {
- 	#address-cells = <1>;
- 	#size-cells = <1>;
-@@ -498,5 +510,6 @@ crypto: crypto@300000 {
- 		fsl,iommu-parent = <&pamu1>;
- 	};
- 
-+/include/ "qoriq-qman1.dtsi"
- /include/ "qoriq-bman1.dtsi"
- };
-diff --git a/arch/powerpc/boot/dts/fsl/p5020si-post.dtsi b/arch/powerpc/boot/dts/fsl/p5020si-post.dtsi
-index 6e04851..a34ca20 100644
---- a/arch/powerpc/boot/dts/fsl/p5020si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/p5020si-post.dtsi
-@@ -37,6 +37,16 @@
- 	alloc-ranges = <0 0 0x10000 0>;
- };
- 
-+&qman_fqd {
-+	compatible = "fsl,qman-fqd";
-+	alloc-ranges = <0 0 0x10000 0>;
-+};
-+
-+&qman_pfdr {
-+	compatible = "fsl,qman-pfdr";
-+	alloc-ranges = <0 0 0x10000 0>;
-+};
-+
- &lbc {
- 	compatible = "fsl,p5020-elbc", "fsl,elbc", "simple-bus";
- 	interrupts = <25 2 0 0>;
-@@ -247,6 +257,8 @@
- 
- /include/ "qoriq-bman1-portals.dtsi"
- 
-+/include/ "qoriq-qman1-portals.dtsi"
-+
- &soc {
- 	#address-cells = <1>;
- 	#size-cells = <1>;
-@@ -428,6 +440,7 @@
- 		fsl,iommu-parent = <&pamu1>;
- 	};
- 
-+/include/ "qoriq-qman1.dtsi"
- /include/ "qoriq-bman1.dtsi"
- 
- /include/ "qoriq-raid1.0-0.dtsi"
-diff --git a/arch/powerpc/boot/dts/fsl/p5040si-post.dtsi b/arch/powerpc/boot/dts/fsl/p5040si-post.dtsi
-index 5e44dfa..bf57513 100644
---- a/arch/powerpc/boot/dts/fsl/p5040si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/p5040si-post.dtsi
-@@ -37,6 +37,16 @@
- 	alloc-ranges = <0 0 0x10000 0>;
- };
- 
-+&qman_fqd {
-+	compatible = "fsl,qman-fqd";
-+	alloc-ranges = <0 0 0x10000 0>;
-+};
-+
-+&qman_pfdr {
-+	compatible = "fsl,qman-pfdr";
-+	alloc-ranges = <0 0 0x10000 0>;
-+};
-+
- &lbc {
- 	compatible = "fsl,p5040-elbc", "fsl,elbc", "simple-bus";
- 	interrupts = <25 2 0 0>;
-@@ -202,6 +212,8 @@
- 
- /include/ "qoriq-bman1-portals.dtsi"
- 
-+/include/ "qoriq-qman1-portals.dtsi"
-+
- &soc {
- 	#address-cells = <1>;
- 	#size-cells = <1>;
-@@ -407,5 +419,6 @@
- 		fsl,iommu-parent = <&pamu4>;
- 	};
- 
-+/include/ "qoriq-qman1.dtsi"
- /include/ "qoriq-bman1.dtsi"
- };
-diff --git a/arch/powerpc/boot/dts/fsl/t1040si-post.dtsi b/arch/powerpc/boot/dts/fsl/t1040si-post.dtsi
-index 5cc01be..4d41ce1 100644
---- a/arch/powerpc/boot/dts/fsl/t1040si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/t1040si-post.dtsi
-@@ -37,6 +37,16 @@
- 	alloc-ranges = <0 0 0x10000 0>;
- };
- 
-+&qman_fqd {
-+	compatible = "fsl,qman-fqd";
-+	alloc-ranges = <0 0 0x10000 0>;
-+};
-+
-+&qman_pfdr {
-+	compatible = "fsl,qman-pfdr";
-+	alloc-ranges = <0 0 0x10000 0>;
-+};
-+
- &ifc {
- 	#address-cells = <2>;
- 	#size-cells = <1>;
-@@ -280,6 +290,73 @@
- 	};
- };
- 
-+&qportals {
-+	#address-cells = <0x1>;
-+	#size-cells = <0x1>;
-+	compatible = "simple-bus";
-+
-+	qportal0: qman-portal@0 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x0 0x4000>, <0x1000000 0x1000>;
-+		interrupts = <104 0x2 0 0>;
-+		fsl,qman-channel-id = <0x0>;
-+	};
-+	qportal1: qman-portal@4000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x4000 0x4000>, <0x1001000 0x1000>;
-+		interrupts = <106 0x2 0 0>;
-+		fsl,qman-channel-id = <0x1>;
-+	};
-+	qportal2: qman-portal@8000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x8000 0x4000>, <0x1002000 0x1000>;
-+		interrupts = <108 0x2 0 0>;
-+		fsl,qman-channel-id = <0x2>;
-+	};
-+	qportal3: qman-portal@c000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0xc000 0x4000>, <0x1003000 0x1000>;
-+		interrupts = <110 0x2 0 0>;
-+		fsl,qman-channel-id = <0x3>;
-+	};
-+	qportal4: qman-portal@10000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x10000 0x4000>, <0x1004000 0x1000>;
-+		interrupts = <112 0x2 0 0>;
-+		fsl,qman-channel-id = <0x4>;
-+	};
-+	qportal5: qman-portal@14000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x14000 0x4000>, <0x1005000 0x1000>;
-+		interrupts = <114 0x2 0 0>;
-+		fsl,qman-channel-id = <0x5>;
-+	};
-+	qportal6: qman-portal@18000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x18000 0x4000>, <0x1006000 0x1000>;
-+		interrupts = <116 0x2 0 0>;
-+		fsl,qman-channel-id = <0x6>;
-+	};
-+	qportal7: qman-portal@1c000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x1c000 0x4000>, <0x1007000 0x1000>;
-+		interrupts = <118 0x2 0 0>;
-+		fsl,qman-channel-id = <0x7>;
-+	};
-+	qportal8: qman-portal@20000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x20000 0x4000>, <0x1008000 0x1000>;
-+		interrupts = <120 0x2 0 0>;
-+		fsl,qman-channel-id = <0x8>;
-+	};
-+	qportal9: qman-portal@24000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x24000 0x4000>, <0x1009000 0x1000>;
-+		interrupts = <122 0x2 0 0>;
-+		fsl,qman-channel-id = <0x9>;
-+	};
-+};
-+
- &soc {
- 	#address-cells = <1>;
- 	#size-cells = <1>;
-@@ -463,5 +540,6 @@
- 		fsl,liodn-reg = <&guts 0x554>; /* SATA2LIODNR */
- 	};
- /include/ "qoriq-sec5.0-0.dtsi"
-+/include/ "qoriq-qman3.dtsi"
- /include/ "qoriq-bman1.dtsi"
- };
-diff --git a/arch/powerpc/boot/dts/fsl/t2081si-post.dtsi b/arch/powerpc/boot/dts/fsl/t2081si-post.dtsi
-index 86bdaf6..c2cb0f3 100644
---- a/arch/powerpc/boot/dts/fsl/t2081si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/t2081si-post.dtsi
-@@ -37,6 +37,16 @@
- 	alloc-ranges = <0 0 0x10000 0>;
- };
- 
-+&qman_fqd {
-+	compatible = "fsl,qman-fqd";
-+	alloc-ranges = <0 0 0x10000 0>;
-+};
-+
-+&qman_pfdr {
-+	compatible = "fsl,qman-pfdr";
-+	alloc-ranges = <0 0 0x10000 0>;
-+};
-+
- &ifc {
- 	#address-cells = <2>;
- 	#size-cells = <1>;
-@@ -326,6 +336,121 @@
- 	};
- };
- 
-+&qportals {
-+	#address-cells = <0x1>;
-+	#size-cells = <0x1>;
-+	compatible = "simple-bus";
-+
-+	qportal0: qman-portal@0 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x0 0x4000>, <0x1000000 0x1000>;
-+		interrupts = <104 0x2 0 0>;
-+		fsl,qman-channel-id = <0x0>;
-+	};
-+	qportal1: qman-portal@4000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x4000 0x4000>, <0x1001000 0x1000>;
-+		interrupts = <106 0x2 0 0>;
-+		fsl,qman-channel-id = <0x1>;
-+	};
-+	qportal2: qman-portal@8000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x8000 0x4000>, <0x1002000 0x1000>;
-+		interrupts = <108 0x2 0 0>;
-+		fsl,qman-channel-id = <0x2>;
-+	};
-+	qportal3: qman-portal@c000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0xc000 0x4000>, <0x1003000 0x1000>;
-+		interrupts = <110 0x2 0 0>;
-+		fsl,qman-channel-id = <0x3>;
-+	};
-+	qportal4: qman-portal@10000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x10000 0x4000>, <0x1004000 0x1000>;
-+		interrupts = <112 0x2 0 0>;
-+		fsl,qman-channel-id = <0x4>;
-+	};
-+	qportal5: qman-portal@14000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x14000 0x4000>, <0x1005000 0x1000>;
-+		interrupts = <114 0x2 0 0>;
-+		fsl,qman-channel-id = <0x5>;
-+	};
-+	qportal6: qman-portal@18000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x18000 0x4000>, <0x1006000 0x1000>;
-+		interrupts = <116 0x2 0 0>;
-+		fsl,qman-channel-id = <0x6>;
-+	};
-+	qportal7: qman-portal@1c000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x1c000 0x4000>, <0x1007000 0x1000>;
-+		interrupts = <118 0x2 0 0>;
-+		fsl,qman-channel-id = <0x7>;
-+	};
-+	qportal8: qman-portal@20000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x20000 0x4000>, <0x1008000 0x1000>;
-+		interrupts = <120 0x2 0 0>;
-+		fsl,qman-channel-id = <0x8>;
-+	};
-+	qportal9: qman-portal@24000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x24000 0x4000>, <0x1009000 0x1000>;
-+		interrupts = <122 0x2 0 0>;
-+		fsl,qman-channel-id = <0x9>;
-+	};
-+	qportal10: qman-portal@28000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x28000 0x4000>, <0x100a000 0x1000>;
-+		interrupts = <124 0x2 0 0>;
-+		fsl,qman-channel-id = <0xa>;
-+	};
-+	qportal11: qman-portal@2c000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x2c000 0x4000>, <0x100b000 0x1000>;
-+		interrupts = <126 0x2 0 0>;
-+		fsl,qman-channel-id = <0xb>;
-+	};
-+	qportal12: qman-portal@30000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x30000 0x4000>, <0x100c000 0x1000>;
-+		interrupts = <128 0x2 0 0>;
-+		fsl,qman-channel-id = <0xc>;
-+	};
-+	qportal13: qman-portal@34000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x34000 0x4000>, <0x100d000 0x1000>;
-+		interrupts = <130 0x2 0 0>;
-+		fsl,qman-channel-id = <0xd>;
-+	};
-+	qportal14: qman-portal@38000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x38000 0x4000>, <0x100e000 0x1000>;
-+		interrupts = <132 0x2 0 0>;
-+		fsl,qman-channel-id = <0xe>;
-+	};
-+	qportal15: qman-portal@3c000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x3c000 0x4000>, <0x100f000 0x1000>;
-+		interrupts = <134 0x2 0 0>;
-+		fsl,qman-channel-id = <0xf>;
-+	};
-+	qportal16: qman-portal@40000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x40000 0x4000>, <0x1010000 0x1000>;
-+		interrupts = <136 0x2 0 0>;
-+		fsl,qman-channel-id = <0x10>;
-+	};
-+	qportal17: qman-portal@44000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x44000 0x4000>, <0x1011000 0x1000>;
-+		interrupts = <138 0x2 0 0>;
-+		fsl,qman-channel-id = <0x11>;
-+	};
-+};
-+
- &soc {
- 	#address-cells = <1>;
- 	#size-cells = <1>;
-@@ -502,6 +627,7 @@
- 		phy_type = "utmi";
- 	};
- /include/ "qoriq-sec5.2-0.dtsi"
-+/include/ "qoriq-qman3.dtsi"
- /include/ "qoriq-bman1.dtsi"
- 
- 	L2_1: l2-cache-controller@c20000 {
-diff --git a/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi b/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
-index 4d4f258..c18245e 100644
---- a/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
-@@ -37,6 +37,16 @@
- 	alloc-ranges = <0 0 0x10000 0>;
- };
- 
-+&qman_fqd {
-+	compatible = "fsl,qman-fqd";
-+	alloc-ranges = <0 0 0x10000 0>;
-+};
-+
-+&qman_pfdr {
-+	compatible = "fsl,qman-pfdr";
-+	alloc-ranges = <0 0 0x10000 0>;
-+};
-+
- &ifc {
- 	#address-cells = <2>;
- 	#size-cells = <1>;
-@@ -556,6 +566,313 @@
- 	};
- };
- 
-+&qportals {
-+	#address-cells = <0x1>;
-+	#size-cells = <0x1>;
-+	compatible = "simple-bus";
-+
-+	qportal0: qman-portal@0 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x0 0x4000>, <0x1000000 0x1000>;
-+		interrupts = <104 0x2 0 0>;
-+		fsl,qman-channel-id = <0x0>;
-+	};
-+	qportal1: qman-portal@4000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x4000 0x4000>, <0x1001000 0x1000>;
-+		interrupts = <106 0x2 0 0>;
-+		fsl,qman-channel-id = <0x1>;
-+	};
-+	qportal2: qman-portal@8000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x8000 0x4000>, <0x1002000 0x1000>;
-+		interrupts = <108 0x2 0 0>;
-+		fsl,qman-channel-id = <0x2>;
-+	};
-+	qportal3: qman-portal@c000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0xc000 0x4000>, <0x1003000 0x1000>;
-+		interrupts = <110 0x2 0 0>;
-+		fsl,qman-channel-id = <0x3>;
-+	};
-+	qportal4: qman-portal@10000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x10000 0x4000>, <0x1004000 0x1000>;
-+		interrupts = <112 0x2 0 0>;
-+		fsl,qman-channel-id = <0x4>;
-+	};
-+	qportal5: qman-portal@14000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x14000 0x4000>, <0x1005000 0x1000>;
-+		interrupts = <114 0x2 0 0>;
-+		fsl,qman-channel-id = <0x5>;
-+	};
-+	qportal6: qman-portal@18000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x18000 0x4000>, <0x1006000 0x1000>;
-+		interrupts = <116 0x2 0 0>;
-+		fsl,qman-channel-id = <0x6>;
-+	};
-+	qportal7: qman-portal@1c000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x1c000 0x4000>, <0x1007000 0x1000>;
-+		interrupts = <118 0x2 0 0>;
-+		fsl,qman-channel-id = <0x7>;
-+	};
-+	qportal8: qman-portal@20000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x20000 0x4000>, <0x1008000 0x1000>;
-+		interrupts = <120 0x2 0 0>;
-+		fsl,qman-channel-id = <0x8>;
-+	};
-+	qportal9: qman-portal@24000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x24000 0x4000>, <0x1009000 0x1000>;
-+		interrupts = <122 0x2 0 0>;
-+		fsl,qman-channel-id = <0x9>;
-+	};
-+	qportal10: qman-portal@28000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x28000 0x4000>, <0x100a000 0x1000>;
-+		interrupts = <124 0x2 0 0>;
-+		fsl,qman-channel-id = <0xa>;
-+	};
-+	qportal11: qman-portal@2c000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x2c000 0x4000>, <0x100b000 0x1000>;
-+		interrupts = <126 0x2 0 0>;
-+		fsl,qman-channel-id = <0xb>;
-+	};
-+	qportal12: qman-portal@30000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x30000 0x4000>, <0x100c000 0x1000>;
-+		interrupts = <128 0x2 0 0>;
-+		fsl,qman-channel-id = <0xc>;
-+	};
-+	qportal13: qman-portal@34000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x34000 0x4000>, <0x100d000 0x1000>;
-+		interrupts = <130 0x2 0 0>;
-+		fsl,qman-channel-id = <0xd>;
-+	};
-+	qportal14: qman-portal@38000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x38000 0x4000>, <0x100e000 0x1000>;
-+		interrupts = <132 0x2 0 0>;
-+		fsl,qman-channel-id = <0xe>;
-+	};
-+	qportal15: qman-portal@3c000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x3c000 0x4000>, <0x100f000 0x1000>;
-+		interrupts = <134 0x2 0 0>;
-+		fsl,qman-channel-id = <0xf>;
-+	};
-+	qportal16: qman-portal@40000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x40000 0x4000>, <0x1010000 0x1000>;
-+		interrupts = <136 0x2 0 0>;
-+		fsl,qman-channel-id = <0x10>;
-+	};
-+	qportal17: qman-portal@44000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x44000 0x4000>, <0x1011000 0x1000>;
-+		interrupts = <138 0x2 0 0>;
-+		fsl,qman-channel-id = <0x11>;
-+	};
-+	qportal18: qman-portal@48000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x48000 0x4000>, <0x1012000 0x1000>;
-+		interrupts = <140 0x2 0 0>;
-+		fsl,qman-channel-id = <0x12>;
-+	};
-+	qportal19: qman-portal@4c000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x4c000 0x4000>, <0x1013000 0x1000>;
-+		interrupts = <142 0x2 0 0>;
-+		fsl,qman-channel-id = <0x13>;
-+	};
-+	qportal20: qman-portal@50000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x50000 0x4000>, <0x1014000 0x1000>;
-+		interrupts = <144 0x2 0 0>;
-+		fsl,qman-channel-id = <0x14>;
-+	};
-+	qportal21: qman-portal@54000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x54000 0x4000>, <0x1015000 0x1000>;
-+		interrupts = <146 0x2 0 0>;
-+		fsl,qman-channel-id = <0x15>;
-+	};
-+	qportal22: qman-portal@58000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x58000 0x4000>, <0x1016000 0x1000>;
-+		interrupts = <148 0x2 0 0>;
-+		fsl,qman-channel-id = <0x16>;
-+	};
-+	qportal23: qman-portal@5c000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x5c000 0x4000>, <0x1017000 0x1000>;
-+		interrupts = <150 0x2 0 0>;
-+		fsl,qman-channel-id = <0x17>;
-+	};
-+	qportal24: qman-portal@60000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x60000 0x4000>, <0x1018000 0x1000>;
-+		interrupts = <152 0x2 0 0>;
-+		fsl,qman-channel-id = <0x18>;
-+	};
-+	qportal25: qman-portal@64000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x64000 0x4000>, <0x1019000 0x1000>;
-+		interrupts = <154 0x2 0 0>;
-+		fsl,qman-channel-id = <0x19>;
-+	};
-+	qportal26: qman-portal@68000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x68000 0x4000>, <0x101a000 0x1000>;
-+		interrupts = <156 0x2 0 0>;
-+		fsl,qman-channel-id = <0x1a>;
-+	};
-+	qportal27: qman-portal@6c000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x6c000 0x4000>, <0x101b000 0x1000>;
-+		interrupts = <158 0x2 0 0>;
-+		fsl,qman-channel-id = <0x1b>;
-+	};
-+	qportal28: qman-portal@70000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x70000 0x4000>, <0x101c000 0x1000>;
-+		interrupts = <160 0x2 0 0>;
-+		fsl,qman-channel-id = <0x1c>;
-+	};
-+	qportal29: qman-portal@74000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x74000 0x4000>, <0x101d000 0x1000>;
-+		interrupts = <162 0x2 0 0>;
-+		fsl,qman-channel-id = <0x1d>;
-+	};
-+	qportal30: qman-portal@78000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x78000 0x4000>, <0x101e000 0x1000>;
-+		interrupts = <164 0x2 0 0>;
-+		fsl,qman-channel-id = <0x1e>;
-+	};
-+	qportal31: qman-portal@7c000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x7c000 0x4000>, <0x101f000 0x1000>;
-+		interrupts = <166 0x2 0 0>;
-+		fsl,qman-channel-id = <0x1f>;
-+	};
-+	qportal32: qman-portal@80000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x80000 0x4000>, <0x1020000 0x1000>;
-+		interrupts = <168 0x2 0 0>;
-+		fsl,qman-channel-id = <0x20>;
-+	};
-+	qportal33: qman-portal@84000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x84000 0x4000>, <0x1021000 0x1000>;
-+		interrupts = <170 0x2 0 0>;
-+		fsl,qman-channel-id = <0x21>;
-+	};
-+	qportal34: qman-portal@88000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x88000 0x4000>, <0x1022000 0x1000>;
-+		interrupts = <172 0x2 0 0>;
-+		fsl,qman-channel-id = <0x22>;
-+	};
-+	qportal35: qman-portal@8c000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x8c000 0x4000>, <0x1023000 0x1000>;
-+		interrupts = <174 0x2 0 0>;
-+		fsl,qman-channel-id = <0x23>;
-+	};
-+	qportal36: qman-portal@90000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x90000 0x4000>, <0x1024000 0x1000>;
-+		interrupts = <384 0x2 0 0>;
-+		fsl,qman-channel-id = <0x24>;
-+	};
-+	qportal37: qman-portal@94000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x94000 0x4000>, <0x1025000 0x1000>;
-+		interrupts = <386 0x2 0 0>;
-+		fsl,qman-channel-id = <0x25>;
-+	};
-+	qportal38: qman-portal@98000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x98000 0x4000>, <0x1026000 0x1000>;
-+		interrupts = <388 0x2 0 0>;
-+		fsl,qman-channel-id = <0x26>;
-+	};
-+	qportal39: qman-portal@9c000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x9c000 0x4000>, <0x1027000 0x1000>;
-+		interrupts = <390 0x2 0 0>;
-+		fsl,qman-channel-id = <0x27>;
-+	};
-+	qportal40: qman-portal@a0000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0xa0000 0x4000>, <0x1028000 0x1000>;
-+		interrupts = <392 0x2 0 0>;
-+		fsl,qman-channel-id = <0x28>;
-+	};
-+	qportal41: qman-portal@a4000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0xa4000 0x4000>, <0x1029000 0x1000>;
-+		interrupts = <394 0x2 0 0>;
-+		fsl,qman-channel-id = <0x29>;
-+	};
-+	qportal42: qman-portal@a8000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0xa8000 0x4000>, <0x102a000 0x1000>;
-+		interrupts = <396 0x2 0 0>;
-+		fsl,qman-channel-id = <0x2a>;
-+	};
-+	qportal43: qman-portal@ac000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0xac000 0x4000>, <0x102b000 0x1000>;
-+		interrupts = <398 0x2 0 0>;
-+		fsl,qman-channel-id = <0x2b>;
-+	};
-+	qportal44: qman-portal@b0000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0xb0000 0x4000>, <0x102c000 0x1000>;
-+		interrupts = <400 0x2 0 0>;
-+		fsl,qman-channel-id = <0x2c>;
-+	};
-+	qportal45: qman-portal@b4000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0xb4000 0x4000>, <0x102d000 0x1000>;
-+		interrupts = <402 0x2 0 0>;
-+		fsl,qman-channel-id = <0x2d>;
-+	};
-+	qportal46: qman-portal@b8000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0xb8000 0x4000>, <0x102e000 0x1000>;
-+		interrupts = <404 0x2 0 0>;
-+		fsl,qman-channel-id = <0x2e>;
-+	};
-+	qportal47: qman-portal@bc000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0xbc000 0x4000>, <0x102f000 0x1000>;
-+		interrupts = <406 0x2 0 0>;
-+		fsl,qman-channel-id = <0x2f>;
-+	};
-+	qportal48: qman-portal@c0000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0xc0000 0x4000>, <0x1030000 0x1000>;
-+		interrupts = <408 0x2 0 0>;
-+		fsl,qman-channel-id = <0x30>;
-+	};
-+	qportal49: qman-portal@c4000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0xc4000 0x4000>, <0x1031000 0x1000>;
-+		interrupts = <410 0x2 0 0>;
-+		fsl,qman-channel-id = <0x31>;
-+	};
-+};
-+
- &soc {
- 	#address-cells = <1>;
- 	#size-cells = <1>;
-@@ -748,6 +1065,7 @@
- /include/ "qoriq-sata2-0.dtsi"
- /include/ "qoriq-sata2-1.dtsi"
- /include/ "qoriq-sec5.0-0.dtsi"
-+/include/ "qoriq-qman3.dtsi"
- /include/ "qoriq-bman1.dtsi"
- 
- 	L2_1: l2-cache-controller@c20000 {
-diff --git a/arch/powerpc/boot/dts/kmcoge4.dts b/arch/powerpc/boot/dts/kmcoge4.dts
-index 97e6d11..48dab6a 100644
---- a/arch/powerpc/boot/dts/kmcoge4.dts
-+++ b/arch/powerpc/boot/dts/kmcoge4.dts
-@@ -34,6 +34,14 @@
- 			size = <0 0x1000000>;
- 			alignment = <0 0x1000000>;
- 		};
-+		qman_fqd: qman-fqd {
-+			size = <0 0x400000>;
-+			alignment = <0 0x400000>;
-+		};
-+		qman_pfdr: qman-pfdr {
-+			size = <0 0x2000000>;
-+			alignment = <0 0x2000000>;
-+		};
- 	};
- 
- 	dcsr: dcsr@f00000000 {
-@@ -44,6 +52,10 @@
- 		ranges = <0x0 0xf 0xf4000000 0x200000>;
- 	};
- 
-+	qportals: qman-portals@ff4200000 {
-+		ranges = <0x0 0xf 0xf4200000 0x200000>;
-+	};
-+
- 	soc: soc@ffe000000 {
- 		ranges = <0x00000000 0xf 0xfe000000 0x1000000>;
- 		reg = <0xf 0xfe000000 0 0x00001000>;
-diff --git a/arch/powerpc/boot/dts/oca4080.dts b/arch/powerpc/boot/dts/oca4080.dts
-index eb76caa..42796c5 100644
---- a/arch/powerpc/boot/dts/oca4080.dts
-+++ b/arch/powerpc/boot/dts/oca4080.dts
-@@ -58,6 +58,14 @@
- 			size = <0 0x1000000>;
- 			alignment = <0 0x1000000>;
- 		};
-+		qman_fqd: qman-fqd {
-+			size = <0 0x400000>;
-+			alignment = <0 0x400000>;
-+		};
-+		qman_pfdr: qman-pfdr {
-+			size = <0 0x2000000>;
-+			alignment = <0 0x2000000>;
-+		};
- 	};
- 
- 	dcsr: dcsr@f00000000 {
-@@ -68,6 +76,10 @@
- 		ranges = <0x0 0xf 0xf4000000 0x200000>;
- 	};
- 
-+	qportals: qman-portals@ff4200000 {
-+		ranges = <0x0 0xf 0xf4200000 0x200000>;
-+	};
-+
- 	soc: soc@ffe000000 {
- 		ranges = <0x00000000 0xf 0xfe000000 0x1000000>;
- 		reg = <0xf 0xfe000000 0 0x00001000>;
-diff --git a/arch/powerpc/boot/dts/p1023rdb.dts b/arch/powerpc/boot/dts/p1023rdb.dts
-index 9236e37..05a00a4 100644
---- a/arch/powerpc/boot/dts/p1023rdb.dts
-+++ b/arch/powerpc/boot/dts/p1023rdb.dts
-@@ -56,6 +56,18 @@
- 			size = <0 0x1000000>;
- 			alignment = <0 0x1000000>;
- 		};
-+		qman_fqd: qman-fqd {
-+			size = <0 0x400000>;
-+			alignment = <0 0x400000>;
-+		};
-+		qman_pfdr: qman-pfdr {
-+			size = <0 0x2000000>;
-+			alignment = <0 0x2000000>;
-+		};
-+	};
-+
-+	qportals: qman-portals@ff000000 {
-+		ranges = <0x0 0xf 0xff000000 0x200000>;
- 	};
- 
- 	bportals: bman-portals@ff200000 {
-diff --git a/arch/powerpc/boot/dts/p2041rdb.dts b/arch/powerpc/boot/dts/p2041rdb.dts
-index c1e69dc..d2bb0765 100644
---- a/arch/powerpc/boot/dts/p2041rdb.dts
-+++ b/arch/powerpc/boot/dts/p2041rdb.dts
-@@ -54,6 +54,14 @@
- 			size = <0 0x1000000>;
- 			alignment = <0 0x1000000>;
- 		};
-+		qman_fqd: qman-fqd {
-+			size = <0 0x400000>;
-+			alignment = <0 0x400000>;
-+		};
-+		qman_pfdr: qman-pfdr {
-+			size = <0 0x2000000>;
-+			alignment = <0 0x2000000>;
-+		};
- 	};
- 
- 	dcsr: dcsr@f00000000 {
-@@ -64,6 +72,10 @@
- 		ranges = <0x0 0xf 0xf4000000 0x200000>;
- 	};
- 
-+	qportals: qman-portals@ff4200000 {
-+		ranges = <0x0 0xf 0xf4200000 0x200000>;
-+	};
-+
- 	soc: soc@ffe000000 {
- 		ranges = <0x00000000 0xf 0xfe000000 0x1000000>;
- 		reg = <0xf 0xfe000000 0 0x00001000>;
-diff --git a/arch/powerpc/boot/dts/p3041ds.dts b/arch/powerpc/boot/dts/p3041ds.dts
-index 2192fe9..eca6c69 100644
---- a/arch/powerpc/boot/dts/p3041ds.dts
-+++ b/arch/powerpc/boot/dts/p3041ds.dts
-@@ -54,6 +54,14 @@
- 			size = <0 0x1000000>;
- 			alignment = <0 0x1000000>;
- 		};
-+		qman_fqd: qman-fqd {
-+			size = <0 0x400000>;
-+			alignment = <0 0x400000>;
-+		};
-+		qman_pfdr: qman-pfdr {
-+			size = <0 0x2000000>;
-+			alignment = <0 0x2000000>;
-+		};
- 	};
- 
- 	dcsr: dcsr@f00000000 {
-@@ -64,6 +72,10 @@
- 		ranges = <0x0 0xf 0xf4000000 0x200000>;
- 	};
- 
-+	qportals: qman-portals@ff4200000 {
-+		ranges = <0x0 0xf 0xf4200000 0x200000>;
-+	};
-+
- 	soc: soc@ffe000000 {
- 		ranges = <0x00000000 0xf 0xfe000000 0x1000000>;
- 		reg = <0xf 0xfe000000 0 0x00001000>;
-diff --git a/arch/powerpc/boot/dts/p4080ds.dts b/arch/powerpc/boot/dts/p4080ds.dts
-index fad4416..4f80c9d 100644
---- a/arch/powerpc/boot/dts/p4080ds.dts
-+++ b/arch/powerpc/boot/dts/p4080ds.dts
-@@ -54,6 +54,14 @@
- 			size = <0 0x1000000>;
- 			alignment = <0 0x1000000>;
- 		};
-+		qman_fqd: qman-fqd {
-+			size = <0 0x400000>;
-+			alignment = <0 0x400000>;
-+		};
-+		qman_pfdr: qman-pfdr {
-+			size = <0 0x2000000>;
-+			alignment = <0 0x2000000>;
-+		};
- 	};
- 
- 	dcsr: dcsr@f00000000 {
-@@ -64,6 +72,10 @@
- 		ranges = <0x0 0xf 0xf4000000 0x200000>;
- 	};
- 
-+	qportals: qman-portals@ff4200000 {
-+		ranges = <0x0 0xf 0xf4200000 0x200000>;
-+	};
-+
- 	soc: soc@ffe000000 {
- 		ranges = <0x00000000 0xf 0xfe000000 0x1000000>;
- 		reg = <0xf 0xfe000000 0 0x00001000>;
-diff --git a/arch/powerpc/boot/dts/p5020ds.dts b/arch/powerpc/boot/dts/p5020ds.dts
-index 7382636..d0309a8 100644
---- a/arch/powerpc/boot/dts/p5020ds.dts
-+++ b/arch/powerpc/boot/dts/p5020ds.dts
-@@ -54,6 +54,14 @@
- 			size = <0 0x1000000>;
- 			alignment = <0 0x1000000>;
- 		};
-+		qman_fqd: qman-fqd {
-+			size = <0 0x400000>;
-+			alignment = <0 0x400000>;
-+		};
-+		qman_pfdr: qman-pfdr {
-+			size = <0 0x2000000>;
-+			alignment = <0 0x2000000>;
-+		};
- 	};
- 
- 	dcsr: dcsr@f00000000 {
-@@ -64,6 +72,10 @@
- 		ranges = <0x0 0xf 0xf4000000 0x200000>;
- 	};
- 
-+	qportals: qman-portals@ff4200000 {
-+		ranges = <0x0 0xf 0xf4200000 0x200000>;
-+	};
-+
- 	soc: soc@ffe000000 {
- 		ranges = <0x00000000 0xf 0xfe000000 0x1000000>;
- 		reg = <0xf 0xfe000000 0 0x00001000>;
-diff --git a/arch/powerpc/boot/dts/p5040ds.dts b/arch/powerpc/boot/dts/p5040ds.dts
-index 35dabf5..0516823 100644
---- a/arch/powerpc/boot/dts/p5040ds.dts
-+++ b/arch/powerpc/boot/dts/p5040ds.dts
-@@ -54,6 +54,14 @@
- 			size = <0 0x1000000>;
- 			alignment = <0 0x1000000>;
- 		};
-+		qman_fqd: qman-fqd {
-+			size = <0 0x400000>;
-+			alignment = <0 0x400000>;
-+		};
-+		qman_pfdr: qman-pfdr {
-+			size = <0 0x2000000>;
-+			alignment = <0 0x2000000>;
-+		};
- 	};
- 
- 	dcsr: dcsr@f00000000 {
-@@ -64,6 +72,10 @@
- 		ranges = <0x0 0xf 0xf4000000 0x200000>;
- 	};
- 
-+	qportals: qman-portals@ff4200000 {
-+		ranges = <0x0 0xf 0xf4200000 0x200000>;
-+	};
-+
- 	soc: soc@ffe000000 {
- 		ranges = <0x00000000 0xf 0xfe000000 0x1000000>;
- 		reg = <0xf 0xfe000000 0 0x00001000>;
-diff --git a/arch/powerpc/boot/dts/t104xqds.dtsi b/arch/powerpc/boot/dts/t104xqds.dtsi
-index f7e9bfb..1498d1e 100644
---- a/arch/powerpc/boot/dts/t104xqds.dtsi
-+++ b/arch/powerpc/boot/dts/t104xqds.dtsi
-@@ -47,6 +47,14 @@
- 			size = <0 0x1000000>;
- 			alignment = <0 0x1000000>;
- 		};
-+		qman_fqd: qman-fqd {
-+			size = <0 0x400000>;
-+			alignment = <0 0x400000>;
-+		};
-+		qman_pfdr: qman-pfdr {
-+			size = <0 0x2000000>;
-+			alignment = <0 0x2000000>;
-+		};
- 	};
- 
- 	ifc: localbus@ffe124000 {
-@@ -92,6 +100,10 @@
- 		ranges = <0x0 0xf 0xf4000000 0x2000000>;
- 	};
- 
-+	qportals: qman-portals@ff6000000 {
-+		ranges = <0x0 0xf 0xf6000000 0x2000000>;
-+	};
-+
- 	soc: soc@ffe000000 {
- 		ranges = <0x00000000 0xf 0xfe000000 0x1000000>;
- 		reg = <0xf 0xfe000000 0 0x00001000>;
-diff --git a/arch/powerpc/boot/dts/t104xrdb.dtsi b/arch/powerpc/boot/dts/t104xrdb.dtsi
-index 76e07a3..830ea48 100644
---- a/arch/powerpc/boot/dts/t104xrdb.dtsi
-+++ b/arch/powerpc/boot/dts/t104xrdb.dtsi
-@@ -42,6 +42,14 @@
- 			size = <0 0x1000000>;
- 			alignment = <0 0x1000000>;
- 		};
-+		qman_fqd: qman-fqd {
-+			size = <0 0x400000>;
-+			alignment = <0 0x400000>;
-+		};
-+		qman_pfdr: qman-pfdr {
-+			size = <0 0x2000000>;
-+			alignment = <0 0x2000000>;
-+		};
- 	};
- 
- 	ifc: localbus@ffe124000 {
-@@ -83,6 +91,10 @@
- 		ranges = <0x0 0xf 0xf4000000 0x2000000>;
- 	};
- 
-+	qportals: qman-portals@ff6000000 {
-+		ranges = <0x0 0xf 0xf6000000 0x2000000>;
-+	};
-+
- 	soc: soc@ffe000000 {
- 		ranges = <0x00000000 0xf 0xfe000000 0x1000000>;
- 		reg = <0xf 0xfe000000 0 0x00001000>;
-diff --git a/arch/powerpc/boot/dts/t208xqds.dtsi b/arch/powerpc/boot/dts/t208xqds.dtsi
-index 186959e..cdb90af 100644
---- a/arch/powerpc/boot/dts/t208xqds.dtsi
-+++ b/arch/powerpc/boot/dts/t208xqds.dtsi
-@@ -48,6 +48,14 @@
- 			size = <0 0x1000000>;
- 			alignment = <0 0x1000000>;
- 		};
-+		qman_fqd: qman-fqd {
-+			size = <0 0x400000>;
-+			alignment = <0 0x400000>;
-+		};
-+		qman_pfdr: qman-pfdr {
-+			size = <0 0x2000000>;
-+			alignment = <0 0x2000000>;
-+		};
- 	};
- 
- 	ifc: localbus@ffe124000 {
-@@ -93,6 +101,10 @@
- 		ranges = <0x0 0xf 0xf4000000 0x2000000>;
- 	};
- 
-+	qportals: qman-portals@ff6000000 {
-+		ranges = <0x0 0xf 0xf6000000 0x2000000>;
-+	};
-+
- 	soc: soc@ffe000000 {
- 		ranges = <0x00000000 0xf 0xfe000000 0x1000000>;
- 		reg = <0xf 0xfe000000 0 0x00001000>;
-diff --git a/arch/powerpc/boot/dts/t208xrdb.dtsi b/arch/powerpc/boot/dts/t208xrdb.dtsi
-index e1463b1..693d2a8 100644
---- a/arch/powerpc/boot/dts/t208xrdb.dtsi
-+++ b/arch/powerpc/boot/dts/t208xrdb.dtsi
-@@ -48,6 +48,14 @@
- 			size = <0 0x1000000>;
- 			alignment = <0 0x1000000>;
- 		};
-+		qman_fqd: qman-fqd {
-+			size = <0 0x400000>;
-+			alignment = <0 0x400000>;
-+		};
-+		qman_pfdr: qman-pfdr {
-+			size = <0 0x2000000>;
-+			alignment = <0 0x2000000>;
-+		};
- 	};
- 
- 	ifc: localbus@ffe124000 {
-@@ -94,6 +102,10 @@
- 		ranges = <0x0 0xf 0xf4000000 0x2000000>;
- 	};
- 
-+	qportals: qman-portals@ff6000000 {
-+		ranges = <0x0 0xf 0xf6000000 0x2000000>;
-+	};
-+
- 	soc: soc@ffe000000 {
- 		ranges = <0x00000000 0xf 0xfe000000 0x1000000>;
- 		reg = <0xf 0xfe000000 0 0x00001000>;
-diff --git a/arch/powerpc/boot/dts/t4240qds.dts b/arch/powerpc/boot/dts/t4240qds.dts
-index 6df7776..93722da 100644
---- a/arch/powerpc/boot/dts/t4240qds.dts
-+++ b/arch/powerpc/boot/dts/t4240qds.dts
-@@ -109,6 +109,14 @@
- 			size = <0 0x1000000>;
- 			alignment = <0 0x1000000>;
- 		};
-+		qman_fqd: qman-fqd {
-+			size = <0 0x400000>;
-+			alignment = <0 0x400000>;
-+		};
-+		qman_pfdr: qman-pfdr {
-+			size = <0 0x2000000>;
-+			alignment = <0 0x2000000>;
-+		};
- 	};
- 
- 	dcsr: dcsr@f00000000 {
-@@ -119,6 +127,10 @@
- 		ranges = <0x0 0xf 0xf4000000 0x2000000>;
- 	};
- 
-+	qportals: qman-portals@ff6000000 {
-+		ranges = <0x0 0xf 0xf6000000 0x2000000>;
-+	};
-+
- 	soc: soc@ffe000000 {
- 		ranges = <0x00000000 0xf 0xfe000000 0x1000000>;
- 		reg = <0xf 0xfe000000 0 0x00001000>;
-diff --git a/arch/powerpc/boot/dts/t4240rdb.dts b/arch/powerpc/boot/dts/t4240rdb.dts
-index 46049cf..993eb4b 100644
---- a/arch/powerpc/boot/dts/t4240rdb.dts
-+++ b/arch/powerpc/boot/dts/t4240rdb.dts
-@@ -78,6 +78,14 @@
- 			size = <0 0x1000000>;
- 			alignment = <0 0x1000000>;
- 		};
-+		qman_fqd: qman-fqd {
-+			size = <0 0x400000>;
-+			alignment = <0 0x400000>;
-+		};
-+		qman_pfdr: qman-pfdr {
-+			size = <0 0x2000000>;
-+			alignment = <0 0x2000000>;
-+		};
- 	};
- 
- 	dcsr: dcsr@f00000000 {
-@@ -88,6 +96,10 @@
- 		ranges = <0x0 0xf 0xf4000000 0x2000000>;
- 	};
- 
-+	qportals: qman-portals@ff6000000 {
-+		ranges = <0x0 0xf 0xf6000000 0x2000000>;
-+	};
-+
- 	soc: soc@ffe000000 {
- 		ranges = <0x00000000 0xf 0xfe000000 0x1000000>;
- 		reg = <0xf 0xfe000000 0 0x00001000>;
 -- 
-2.3.3
+1.7.1
