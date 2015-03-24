@@ -1,41 +1,23 @@
-Return-Path: <weiyang@linux.vnet.ibm.com>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <sowmini.varadhan@oracle.com>
+Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 68A841A0281
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2015 12:55:10 +1100 (AEDT)
-Received: from /spool/local
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
- Tue, 24 Mar 2015 11:55:09 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 217B12BB0052
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2015 12:55:05 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t2O1suaF47251492
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2015 12:55:04 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t2O1sUaE004320
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2015 12:54:31 +1100
-Date: Tue, 24 Mar 2015 09:54:14 +0800
-From: Wei Yang <weiyang@linux.vnet.ibm.com>
-To: Daniel Axtens <dja@axtens.net>
-Subject: Re: [PATCH V14 17/21] powerpc/powernv: Shift VF resource with an
- offset
-Message-ID: <20150324015414.GA7824@richard>
-Reply-To: Wei Yang <weiyang@linux.vnet.ibm.com>
-References: <1426820797-6267-1-git-send-email-weiyang@linux.vnet.ibm.com>
- <1426820797-6267-18-git-send-email-weiyang@linux.vnet.ibm.com>
- <1427152946.2922.3.camel@axtens.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id CCADB1A0281
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2015 12:57:36 +1100 (AEDT)
+Date: Mon, 23 Mar 2015 21:57:20 -0400
+From: Sowmini Varadhan <sowmini.varadhan@oracle.com>
+To: David Miller <davem@davemloft.net>
+Subject: Re: Generic IOMMU pooled allocator
+Message-ID: <20150324015720.GE21966@oracle.com>
+References: <20150323165406.GG14061@oracle.com>
+ <20150323.150508.149509757161802782.davem@davemloft.net>
+ <1427149265.4770.238.camel@kernel.crashing.org>
+ <20150323.214453.255192641139042325.davem@davemloft.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1427152946.2922.3.camel@axtens.net>
-Cc: Wei Yang <weiyang@linux.vnet.ibm.com>, benh@au1.ibm.com,
- linux-pci@vger.kernel.org, gwshan@linux.vnet.ibm.com, bhelgaas@google.com,
- linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <20150323.214453.255192641139042325.davem@davemloft.net>
+Cc: aik@au1.ibm.com, aik@ozlabs.ru, anton@au1.ibm.com, paulus@samba.org,
+ sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,25 +27,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Mar 24, 2015 at 10:22:26AM +1100, Daniel Axtens wrote:
->> +
->> +		/* Do some magic shift */
->> +		ret = pnv_pci_vf_resource_shift(pdev, pdn->offset);
->
->
->Given that you're already doing a version 15, would it be possible to
->include a more informative comment than "Do some magic shift"? Perhaps
->some of the information from your commit message?
->
->Regards,
->Daniel
->
+benh> It might be sufficient to add a flush counter and compare it between runs
+benh> if actual wall-clock benchmarks are too hard to do (especially if you
+benh> don't have things like very fast network cards at hand).
+benh>
+benh> Number of flush / number of packets might be a sufficient metric, it..
 
-Daniel,
+I was just going to say: I can add those counters tomorrow,
+and get some stats, but seems like it doesn't really matter what 
+the outcome is, because: 
 
-Thanks for your comment, I will add more informative comment at this place.
+On (03/23/15 21:44), David Miller wrote:
+> 
+> From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Date: Tue, 24 Mar 2015 09:21:05 +1100
+> 
+> > Dave, what's your feeling there ? Does anybody around still have
+> > some HW that we can test with ?
+> 
+> I don't see what the actual problem is.
+> 
+> Even if you use multiple pools, which we should for scalability on
+> sun4u too, just do the flush when allocation in _any_ pool wraps
+> around.
+> 
+> That's still better than not doing the optimization at all.
+> 
+> That is always going to be correct, and you can use a separate
+> spinlock to make sure only one thread of control does the full
+> IOMMU flush at a time.
 
-
--- 
-Richard Yang
-Help you, Help me
+--Sowmini
