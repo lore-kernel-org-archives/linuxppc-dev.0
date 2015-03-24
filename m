@@ -1,33 +1,38 @@
-Return-Path: <benh@kernel.crashing.org>
+Return-Path: <gwshan@linux.vnet.ibm.com>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3423C1A2B39
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2015 11:24:21 +1100 (AEDT)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ by lists.ozlabs.org (Postfix) with ESMTPS id B59ED1A0764
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2015 11:40:44 +1100 (AEDT)
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 6A523140161
- for <linuxppc-dev@ozlabs.org>; Tue, 24 Mar 2015 11:24:16 +1100 (AEDT)
-Message-ID: <1427156635.4770.290.camel@kernel.crashing.org>
-Subject: Re: [PATCH v3 1/2] PCI: One more parameter to
- pci_set_pcie_reset_state()
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Alex Williamson <alex.williamson@redhat.com>
-Date: Tue, 24 Mar 2015 11:23:55 +1100
-In-Reply-To: <1427144881.3643.680.camel@redhat.com>
-References: <1427079771-18472-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1427081673.3643.547.camel@redhat.com> <20150323035656.GA27802@shangw>
- <1427083561.3643.551.camel@redhat.com> <20150323044033.GA1874@shangw>
- <1427114434.3643.554.camel@redhat.com>
- <20150323200729.GB1368@oc0812247204.ltc.br.ibm.com>
- <1427144881.3643.680.camel@redhat.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linux-pci@vger.kernel.org, Gavin Shan <gwshan@linux.vnet.ibm.com>,
- linuxppc-dev@ozlabs.org, Brian King <brking@us.ibm.com>,
- cascardo@linux.vnet.ibm.com, bhelgaas@google.com,
- Frank Haverkamp <haver@linux.vnet.ibm.com>, Ian Munsie <imunsie@au1.ibm.com>
+ by ozlabs.org (Postfix) with ESMTPS id 7E2111400DD
+ for <linuxppc-dev@ozlabs.org>; Tue, 24 Mar 2015 11:40:44 +1100 (AEDT)
+Received: from /spool/local
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Tue, 24 Mar 2015 10:40:42 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 876EF2BB0054
+ for <linuxppc-dev@ozlabs.org>; Tue, 24 Mar 2015 11:40:41 +1100 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t2O0eXqk39976976
+ for <linuxppc-dev@ozlabs.org>; Tue, 24 Mar 2015 11:40:41 +1100
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t2O0e8r7019908
+ for <linuxppc-dev@ozlabs.org>; Tue, 24 Mar 2015 11:40:08 +1100
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH v3 2/3] powerpc/powernv: Fundamental reset for PCI bus reset
+Date: Tue, 24 Mar 2015 11:39:41 +1100
+Message-Id: <1427157582-11196-3-git-send-email-gwshan@linux.vnet.ibm.com>
+In-Reply-To: <1427157582-11196-1-git-send-email-gwshan@linux.vnet.ibm.com>
+References: <1427157582-11196-1-git-send-email-gwshan@linux.vnet.ibm.com>
+Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,68 +42,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2015-03-23 at 15:08 -0600, Alex Williamson wrote:
-> 
-> I don't know what you're doing on POWER, I thought groups were
-> equivalent to PEs, but on x86 we learn about isolation of PCI functions
-> by standard PCI properties.  Devices need to tell us that they're
-> isolated via ACS capabilities (or quirks, with vendor approval).
-> Otherwise we assume there is no isolation and multi-function devices
-> will be grouped together, preventing the individual functions from being
-> assigned to separate userspace instances.  VFIO does not ignore the
-> problem of internal communication between functions, it uses ACS... at
-> least on most platforms.
+Function pnv_pci_reset_secondary_bus() is used to reset specified
+PCI bus, which is leaded by root complex or PCI bridge. That means
+the function shouldn't be called on PCI root bus and the patch
+removes the logic for that case.
 
-POWER doesn't allow functions in different PEs today (mostly for a
-different reason which is the problem we have with MMIO assignment to
-different PEs, though we are working on ways to fix that in the future
-in which case we might start using ACS).
+Also, some adapters beneath the indicated PCI bus may require
+fundamental reset in order to successfully reload their firmwares
+after the reset. The patch translates hot reset to fundamental reset
+for that case.
 
-There's still a potential issue with LSIs though, I haven't looked how
-you handle it on x86.
+Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+---
+ arch/powerpc/platforms/powernv/eeh-powernv.c | 35 +++++++++++++++++++++-------
+ 1 file changed, 26 insertions(+), 9 deletions(-)
 
-> Firmware shared between functions is an unsolvable problem outside of
-> restricting device assignment only to SR-IOV virtual functions.  We
-> cannot know the programming method to block firmware updates of an
-> assigned device nor can we control which functions share the firmware.
-> If you're worried about this level of attack against the hardware, use
-> VFs exclusively.
-
-You cannot trust HW :-)
-
-> If you're unsatisfied with the grouping of devices on your platform,
-> this is entirely within your control since VFIO relies on IOMMU groups,
-> which are managed via the platform IOMMU driver.  If your IOMMU driver
-> is arbitrarily splitting each PCI function into a separate group without
-> testing the isolation, that's a problem with IOMMU groups on your
-> platform.  If you would like to add a reset requirement to a group, you
-> have the ability to do that.  On x86, I expect this would be far too
-> restrictive.
-
-That means that you cannot recover devices that don't support FLR...
-
-> VFIO also knows how to do bus and slot resets, the pci_reset_bus() and
-> pci_reset_slot() interfaces were added by me with vfio-pci as the first
-> user.  Resets are generally handled as best effort though and this is
-> sometimes a property of a device that might make it unsuitable for
-> device assignment.
-
-Or unsuitable as a multi-function split assignment, we can still give
-the whole slot to the guest.
-
-> The fact that you're implying above that the devices covered by the
-> device specific reset proposed in this series can be assigned separately
-> makes ignoring the scope of pci_reset_function() all the more wrong.  If
-> you want to change grouping on POWER to require that a group can be
-> reset, that's an IOMMU driver issue.  If you want to make a change to
-> VFIO to require an opt-in/out of allowing access to groups without a
-> reset, then propose something.  Just please don't ignore the semantics
-> of existing functions because it's a quicker and easier hack than doing
-> it correctly.  Thanks,
-
-The IOMMU driver unfortunately cannot know whether the devices support a
-good reset granularity without quirks ... Oh well. It's a mess, thanks
-for Intel for not making FLR mandatory since PCI 1.0 .... :-)
-
-Cheers,
-Ben.
+diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
+index 79208cd..0f1e5ba 100644
+--- a/arch/powerpc/platforms/powernv/eeh-powernv.c
++++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
+@@ -888,18 +888,35 @@ static int pnv_eeh_bridge_reset(struct pci_dev *dev, int option)
+ 	return (rc == OPAL_SUCCESS) ? 0 : -EIO;
+ }
+ 
+-void pnv_pci_reset_secondary_bus(struct pci_dev *dev)
++static int pnv_pci_dev_reset_type(struct pci_dev *pdev, void *data)
+ {
+-	struct pci_controller *hose;
++	int *freset = data;
+ 
+-	if (pci_is_root_bus(dev->bus)) {
+-		hose = pci_bus_to_host(dev->bus);
+-		pnv_eeh_phb_reset(hose, EEH_RESET_HOT);
+-		pnv_eeh_phb_reset(hose, EEH_RESET_DEACTIVATE);
+-	} else {
+-		pnv_eeh_bridge_reset(dev, EEH_RESET_HOT);
+-		pnv_eeh_bridge_reset(dev, EEH_RESET_DEACTIVATE);
++	/*
++	 * Stop the iteration immediately if there is any
++	 * one PCI device requesting fundamental reset
++	 */
++	*freset |= pdev->needs_freset;
++	return *freset;
++}
++
++void pnv_pci_reset_secondary_bus(struct pci_dev *pdev)
++{
++	int option = EEH_RESET_HOT;
++	int freset = 0;
++
++	/* Check if there're any PCI devices asking for fundamental reset */
++	if (pdev->subordinate) {
++		pci_walk_bus(pdev->subordinate,
++			     pnv_pci_dev_reset_type,
++			     &freset);
++		if (freset)
++			option = EEH_RESET_FUNDAMENTAL;
+ 	}
++
++	/* Issue the requested type of reset */
++	pnv_eeh_bridge_reset(pdev, option);
++	pnv_eeh_bridge_reset(pdev, EEH_RESET_DEACTIVATE);
+ }
+ 
+ /**
+-- 
+1.8.3.2
