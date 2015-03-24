@@ -1,30 +1,40 @@
-Return-Path: <wangyijing@huawei.com>
-Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [119.145.14.65])
- (using TLSv1 with cipher RC4-SHA (128/128 bits))
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E08101A05F6
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2015 14:37:45 +1100 (AEDT)
-From: Yijing Wang <wangyijing@huawei.com>
-To: Bjorn Helgaas <bhelgaas@google.com>
-Subject: [PATCH v8 19/30] powerpc/pci: Use pci_scan_host_bridge() for
- simplicity
-Date: Tue, 24 Mar 2015 11:34:13 +0800
-Message-ID: <1427168064-8657-20-git-send-email-wangyijing@huawei.com>
-In-Reply-To: <1427168064-8657-1-git-send-email-wangyijing@huawei.com>
-References: <1427168064-8657-1-git-send-email-wangyijing@huawei.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5C09A1A0271
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2015 15:27:44 +1100 (AEDT)
+Received: from /spool/local
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Tue, 24 Mar 2015 14:27:42 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 6D34E2BB0040
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2015 15:27:38 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t2O4RTD538076524
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2015 15:27:38 +1100
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t2O4R31a001773
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2015 15:27:04 +1100
+Message-ID: <5510E77F.1020903@linux.vnet.ibm.com>
+Date: Tue, 24 Mar 2015 09:56:39 +0530
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: linux-ia64@vger.kernel.org, linux-pci@vger.kernel.org,
- Yijing Wang <wangyijing@huawei.com>, Guan
- Xuetao <gxt@mprc.pku.edu.cn>, Russell King <linux@arm.linux.org.uk>,
- x86@kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>, Arnd
- Bergmann <arnd@arndb.de>, Marc Zyngier <marc.zyngier@arm.com>,
- Rusty Russell <rusty@rustcorp.com.au>, linux-m68k@lists.linux-m68k.org,
- Thomas Gleixner <tglx@linutronix.de>, Yinghai Lu <yinghai@kernel.org>,
- linux-arm-kernel@lists.infradead.org, Liviu Dudau <liviu@dudau.co.uk>,
- Tony Luck <tony.luck@intel.com>, linux-kernel@vger.kernel.org,
- Jiang Liu <jiang.liu@linux.intel.com>, linux-alpha@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, "David S. Miller" <davem@davemloft.net>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH 1/3] powerpc/tm: Abort syscalls in active transactions
+References: <cover.1426740212.git.sam.bobroff@au1.ibm.com>
+ <6ebcb9f982f7cb100aef954cd7dc6a6081cd9134.1426740212.git.sam.bobroff@au1.ibm.com>
+ <550BE2AB.2050604@linux.vnet.ibm.com>
+ <1427162659.28572.3.camel@ellerman.id.au>
+In-Reply-To: <1427162659.28572.3.camel@ellerman.id.au>
+Content-Type: text/plain; charset=UTF-8
+Cc: mikey@neuling.org, azanella@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, Sam Bobroff <sam.bobroff@au1.ibm.com>,
+ matt@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,122 +44,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Now we could use pci_scan_host_bridge() to scan
-pci buses, provide powerpc specific pci_host_bridge_ops.
+On 03/24/2015 07:34 AM, Michael Ellerman wrote:
+> On Fri, 2015-03-20 at 14:34 +0530, Anshuman Khandual wrote:
+>> On 03/19/2015 10:13 AM, Sam Bobroff wrote:
+>>> This patch changes the syscall handler to doom (tabort) active
+>>> transactions when a syscall is made and return immediately without
+>>> performing the syscall.
+>>>
+>>> Currently, the system call instruction automatically suspends an
+>>> active transaction which causes side effects to persist when an active
+>>> transaction fails.
+>>>
+>>> This does change the kernel's behaviour, but in a way that was
+>>> documented as unsupported. It doesn't reduce functionality because
+>>> syscalls will still be performed after tsuspend. It also provides a
+>>> consistent interface and makes the behaviour of user code
+>>> substantially the same across powerpc and platforms that do not
+>>> support suspended transactions (e.g. x86 and s390).
+>>>
+>>> Performance measurements using
+>>> http://ozlabs.org/~anton/junkcode/null_syscall.c
+>>> indicate the cost of a system call increases by about 0.5%.
+>>
+>> Performance test results verified which shows an improvement of
+>> around ~0.52% with the patch compared to without it.
+>>
+>> [With patch]		null_syscall:     757.59 cycles     100.00%
+>> [Without patch]]	null_syscall:     753.66 cycles     100.00%
+> 
+> No that's a performance *decrease* with the patch applied. ?
 
-Signed-off-by: Yijing Wang <wangyijing@huawei.com>
-CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-CC: linuxppc-dev@lists.ozlabs.org
----
- arch/powerpc/kernel/pci-common.c |   60 +++++++++++++++++++++++--------------
- 1 files changed, 37 insertions(+), 23 deletions(-)
+Micheal, thats true. The cycle counts are more with patch being applied.
+Here are some more results on mainline.
 
-diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
-index 2c58200..e2b50a2 100644
---- a/arch/powerpc/kernel/pci-common.c
-+++ b/arch/powerpc/kernel/pci-common.c
-@@ -773,6 +773,29 @@ void pcibios_set_root_bus_speed(struct pci_host_bridge *bridge)
- 		return ppc_md.pcibios_set_root_bus_speed(bridge);
- }
- 
-+static int pci_host_scan_bus(struct pci_host_bridge *host)
-+{
-+	int mode = PCI_PROBE_NORMAL;
-+	struct pci_bus *bus = host->bus;
-+	struct pci_controller *hose = dev_get_drvdata(&host->dev);
-+
-+	/* Get probe mode and perform scan */
-+	if (hose->dn && ppc_md.pci_probe_mode)
-+		mode = ppc_md.pci_probe_mode(bus);
-+
-+	pr_debug("    probe mode: %d\n", mode);
-+	if (mode == PCI_PROBE_DEVTREE)
-+		of_scan_bus(hose->dn, bus);
-+
-+	if (mode == PCI_PROBE_NORMAL) {
-+		pci_bus_update_busn_res_end(bus, 255);
-+		hose->last_busno = pci_scan_child_bus(bus);
-+		pci_bus_update_busn_res_end(bus, hose->last_busno);
-+	}
-+
-+	return pci_bus_child_max_busnr(bus);
-+}
-+
- /* This header fixup will do the resource fixup for all devices as they are
-  * probed, but not for bridge ranges
-  */
-@@ -1585,6 +1608,11 @@ struct device_node *pcibios_get_phb_of_node(struct pci_bus *bus)
- 	return of_node_get(hose->dn);
- }
- 
-+static struct pci_host_bridge_ops pci_host_ops = {
-+	.set_root_bus_speed = pcibios_set_root_bus_speed,
-+	.scan_bus = pci_host_scan_bus,
-+};
-+
- /**
-  * pci_scan_phb - Given a pci_controller, setup and scan the PCI bus
-  * @hose: Pointer to the PCI host controller instance structure
-@@ -1592,9 +1620,8 @@ struct device_node *pcibios_get_phb_of_node(struct pci_bus *bus)
- void pcibios_scan_phb(struct pci_controller *hose)
- {
- 	LIST_HEAD(resources);
--	struct pci_bus *bus;
-+	struct pci_host_bridge *host;
- 	struct device_node *node = hose->dn;
--	int mode;
- 
- 	pr_debug("PCI: Scanning PHB %s\n", of_node_full_name(node));
- 
-@@ -1609,31 +1636,18 @@ void pcibios_scan_phb(struct pci_controller *hose)
- 	hose->busn.flags = IORESOURCE_BUS;
- 	pci_add_resource(&resources, &hose->busn);
- 
-+	pci_host_ops.pci_ops = hose->ops;
- 	/* Create an empty bus for the toplevel */
--	bus = pci_create_root_bus(hose->parent, hose->global_number,
--			hose->first_busno, hose->ops, hose, &resources);
--	if (bus == NULL) {
--		pr_err("Failed to create bus for PCI domain %04x\n",
--			hose->global_number);
-+	host = pci_scan_host_bridge(hose->parent, hose->global_number,
-+			hose->first_busno, hose, &resources, &pci_host_ops);
-+	if (host == NULL) {
-+		pr_err("Failed to create host bridge for pci%04x:%02x\n",
-+			hose->global_number, hose->first_busno);
- 		pci_free_resource_list(&resources);
- 		return;
- 	}
- 	hose->bus = bus;
- 
--	/* Get probe mode and perform scan */
--	mode = PCI_PROBE_NORMAL;
--	if (node && ppc_md.pci_probe_mode)
--		mode = ppc_md.pci_probe_mode(bus);
--	pr_debug("    probe mode: %d\n", mode);
--	if (mode == PCI_PROBE_DEVTREE)
--		of_scan_bus(node, bus);
--
--	if (mode == PCI_PROBE_NORMAL) {
--		pci_bus_update_busn_res_end(bus, 255);
--		hose->last_busno = pci_scan_child_bus(bus);
--		pci_bus_update_busn_res_end(bus, hose->last_busno);
--	}
--
- 	/* Platform gets a chance to do some global fixups before
- 	 * we proceed to resource allocation
- 	 */
-@@ -1641,9 +1655,9 @@ void pcibios_scan_phb(struct pci_controller *hose)
- 		ppc_md.pcibios_fixup_phb(hose);
- 
- 	/* Configure PCI Express settings */
--	if (bus && !pci_has_flag(PCI_PROBE_ONLY)) {
-+	if (host->bus && !pci_has_flag(PCI_PROBE_ONLY)) {
- 		struct pci_bus *child;
--		list_for_each_entry(child, &bus->children, node)
-+		list_for_each_entry(child, &host->bus->children, node)
- 			pcie_bus_configure_settings(child);
- 	}
- }
--- 
-1.7.1
+Without the patch:
+
+        null_syscall:     754.14 cycles     100.00%
+        null_syscall:     754.50 cycles     100.00%
+        null_syscall:     754.17 cycles     100.00%
+        null_syscall:     754.43 cycles     100.00%
+        null_syscall:     754.17 cycles     100.00%
+        null_syscall:     754.20 cycles     100.00%
+        null_syscall:     754.47 cycles     100.00%
+        null_syscall:     754.70 cycles     100.00%
+        null_syscall:     754.43 cycles     100.00%
+        null_syscall:     753.72 cycles     100.00%
+
+With the patch:
+
+        null_syscall:     756.76 cycles     100.00%
+        null_syscall:     756.40 cycles     100.00%
+        null_syscall:     756.46 cycles     100.00%
+        null_syscall:     756.86 cycles     100.00%
+        null_syscall:     756.56 cycles     100.00%
+        null_syscall:     756.66 cycles     100.00%
+        null_syscall:     756.86 cycles     100.00%
+        null_syscall:     756.86 cycles     100.00%
+        null_syscall:     757.02 cycles     100.00%
+        null_syscall:     756.93 cycles     100.00%
