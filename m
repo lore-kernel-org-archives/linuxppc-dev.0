@@ -1,37 +1,22 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <sfr@canb.auug.org.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 97BE21A033E
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2015 16:54:53 +1100 (AEDT)
-Received: from /spool/local
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Tue, 24 Mar 2015 15:54:51 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 8DA44357804F
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2015 16:54:50 +1100 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t2O5sgeu45351038
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2015 16:54:50 +1100
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t2O5sGWb017154
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2015 16:54:16 +1100
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [RFC PATCH] powerpc/mm/thp: Make page table walk safe against thp
- split/collapse
-In-Reply-To: <1427153762.4770.266.camel@kernel.crashing.org>
-References: <1427122851-22495-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1427153762.4770.266.camel@kernel.crashing.org>
-Date: Tue, 24 Mar 2015 11:23:49 +0530
-Message-ID: <87vbhrlz4i.fsf@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id C9AC31A033E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2015 17:37:34 +1100 (AEDT)
+Date: Tue, 24 Mar 2015 17:37:25 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Shuah Khan <shuahkh@osg.samsung.com>, Michael Ellerman
+ <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: linux-next: manual merge of the kselftest tree with the powerpc-mpe
+ tree
+Message-ID: <20150324173725.442f88c1@canb.auug.org.au>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: anton@au1.ibm.com, paulus@samba.org, linuxppc-dev@lists.ozlabs.org
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ boundary="Sig_/+_SYdCU37V1BehUDV.18aQf"; protocol="application/pgp-signature"
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Sam Bobroff <sam.bobroff@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,384 +26,111 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+--Sig_/+_SYdCU37V1BehUDV.18aQf
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-> On Mon, 2015-03-23 at 20:30 +0530, Aneesh Kumar K.V wrote:
->
->> -static inline pte_t *lookup_linux_ptep(pgd_t *pgdir, unsigned long hva,
->> +static inline pte_t lookup_linux_pte(pgd_t *pgdir, unsigned long hva,
->>  				     unsigned long *pte_sizep)
->>  {
->>  	pte_t *ptep;
->>  	unsigned long ps = *pte_sizep;
->>  	unsigned int shift;
->> +	unsigned long flags;
->>  
->> +	local_irq_save(flags);
->>  	ptep = find_linux_pte_or_hugepte(pgdir, hva, &shift);
->>  	if (!ptep)
->> -		return NULL;
->> +		goto err_out;
->>  	if (shift)
->>  		*pte_sizep = 1ul << shift;
->>  	else
->>  		*pte_sizep = PAGE_SIZE;
->>  
->>  	if (ps > *pte_sizep)
->> -		return NULL;
->> +		goto err_out;
->>  
->> -	return ptep;
->> +	local_irq_restore(flags);
->> +	return *ptep;
->> +err_out:
->> +	local_irq_restore(flags);
->> +	return __pte(0);
->>  }
->
-> Doesn't the above go backward vs. your explanation ? IE. You capture the
-> PTE *value* inside the lock then drop the lock and have no check for
-> splitting or anything, causing you to potentially return a stale PTE.
->
-> You assume the caller will check for splitting ? It doesn't ...
+Hi Shuah,
 
-The only call site is kvmppc_e500_shadow_map and lookup_linux_pte is
-used to get the wimg bits. It also consider not present pte and error
-and prints kernel message. I am not completely sure what the semantics
-are expected int he call site. Since it cared only about wimg bits,
-irrespective of whether it is getting split or not, we would get the
-correct value. Now may be we want to drop the generic function
-lookup_linux_pte and do lookup_linux_pte_wimg() to make sure we don't
-end up using that for something else. ? I am still not sure whether we
-can hit a hugepage collapse there. 
+Today's linux-next merge of the kselftest tree got a conflict in
+tools/testing/selftests/powerpc/Makefile between commit a908f5de3b10
+("selftests/powerpc: Rename TARGETS in powerpc selftests makefile")
+from the powerpc-mpe tree and commit 6faeeea44b84 ("selftests: Add
+install support for the powerpc tests") from the kselftest tree.
 
+I fixed it up (see below) and can carry the fix as necessary (no action
+is required).
 
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
->
->>  #endif /* __ASSEMBLY__ */
->>  
->> diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
->> index 3b2252e7731b..c2b44f250824 100644
->> --- a/arch/powerpc/kernel/eeh.c
->> +++ b/arch/powerpc/kernel/eeh.c
->> @@ -326,17 +326,21 @@ void eeh_slot_error_detail(struct eeh_pe *pe, int severity)
->>  static inline unsigned long eeh_token_to_phys(unsigned long token)
->>  {
->>  	pte_t *ptep;
->> -	unsigned long pa;
->> +	unsigned long pa, flags;
->>  	int hugepage_shift;
->>  
->>  	/*
->>  	 * We won't find hugepages here, iomem
->>  	 */
->> +	local_irq_save(flags);
->>  	ptep = find_linux_pte_or_hugepte(init_mm.pgd, token, &hugepage_shift);
->> -	if (!ptep)
->> +	if (!ptep) {
->> +		local_irq_restore(flags);
->>  		return token;
->> +	}
->>  	WARN_ON(hugepage_shift);
->>  	pa = pte_pfn(*ptep) << PAGE_SHIFT;
->> +	local_irq_restore(flags);
->
-> Isn't think the same as lookup_linux_pte ? Can't you just use that and
-> keep WARN_ON(psize != PAGE_SIZE) ?
+diff --cc tools/testing/selftests/powerpc/Makefile
+index 27dff8241de3,2958fe9a74e9..000000000000
+--- a/tools/testing/selftests/powerpc/Makefile
++++ b/tools/testing/selftests/powerpc/Makefile
+@@@ -8,27 -8,41 +8,41 @@@ ifeq ($(ARCH),powerpc
+ =20
+  GIT_VERSION =3D $(shell git describe --always --long --dirty || echo "unk=
+nown")
+ =20
+- CC :=3D $(CROSS_COMPILE)$(CC)
+  CFLAGS :=3D -Wall -O2 -flto -Wall -Werror -DGIT_VERSION=3D'"$(GIT_VERSION=
+)"' -I$(CURDIR) $(CFLAGS)
+ =20
+- export CC CFLAGS
++ export CFLAGS
+ =20
+ -TARGETS =3D pmu copyloops mm tm primitives stringloops
+ +SUB_DIRS =3D pmu copyloops mm tm primitives stringloops vphn
+ =20
+  endif
+ =20
+ -all: $(TARGETS)
+ +all: $(SUB_DIRS)
+ =20
+ -$(TARGETS):
+ +$(SUB_DIRS):
+  	$(MAKE) -k -C $@ all
+ =20
+- run_tests: all
++ include ../lib.mk
++=20
++ override define RUN_TESTS
+ -	@for TARGET in $(TARGETS); do \
+ +	@for TARGET in $(SUB_DIRS); do \
+  		$(MAKE) -C $$TARGET run_tests; \
+  	done;
++ endef
++=20
++ override define INSTALL_RULE
+ -	@for TARGET in $(TARGETS); do \
+++	@for TARGET in $(SUB_DIRS); do \
++ 		$(MAKE) -C $$TARGET install; \
++ 	done;
++ endef
++=20
++ override define EMIT_TESTS
+ -	@for TARGET in $(TARGETS); do \
+++	@for TARGET in $(SUB_DIRS); do \
++ 		$(MAKE) -s -C $$TARGET emit_tests; \
++ 	done;
++ endef
+ =20
+  clean:
+ -	@for TARGET in $(TARGETS); do \
+ +	@for TARGET in $(SUB_DIRS); do \
+  		$(MAKE) -C $$TARGET clean; \
+  	done;
+  	rm -f tags
+@@@ -36,4 -50,4 +50,4 @@@
+  tags:
+  	find . -name '*.c' -o -name '*.h' | xargs ctags
+ =20
+- .PHONY: all run_tests clean tags $(SUB_DIRS)
+ -.PHONY: tags $(TARGETS)
+++.PHONY: tags $(SUB_DIRS)
 
-I wanted to drop lookup_linux_pte, We definitely don't want to have more
-functions that walk linux page table with different assumptions. 
+--Sig_/+_SYdCU37V1BehUDV.18aQf
+Content-Type: application/pgp-signature
+Content-Description: OpenPGP digital signature
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
 
->
->>  	return pa | (token & (PAGE_SIZE-1));
->>  }
->> diff --git a/arch/powerpc/kernel/io-workarounds.c b/arch/powerpc/kernel/io-workarounds.c
->> index 24b968f8e4d8..bd958d93fd38 100644
->> --- a/arch/powerpc/kernel/io-workarounds.c
->> +++ b/arch/powerpc/kernel/io-workarounds.c
->> @@ -65,6 +65,7 @@ struct iowa_bus *iowa_mem_find_bus(const PCI_IO_ADDR addr)
->>  	if (token && token <= iowa_bus_count)
->>  		bus = &iowa_busses[token - 1];
->>  	else {
->> +		unsigned long flags;
->>  		unsigned long vaddr, paddr;
->>  		pte_t *ptep;
->>  
->> @@ -72,6 +73,7 @@ struct iowa_bus *iowa_mem_find_bus(const PCI_IO_ADDR addr)
->>  		if (vaddr < PHB_IO_BASE || vaddr >= PHB_IO_END)
->>  			return NULL;
->>  
->> +		local_irq_save(flags);
->>  		ptep = find_linux_pte_or_hugepte(init_mm.pgd, vaddr,
->>  						 &hugepage_shift);
->>  		if (ptep == NULL)
->> @@ -83,6 +85,7 @@ struct iowa_bus *iowa_mem_find_bus(const PCI_IO_ADDR addr)
->>  			WARN_ON(hugepage_shift);
->>  			paddr = pte_pfn(*ptep) << PAGE_SHIFT;
->>  		}
->> +		local_irq_restore(flags);
->>  		bus = iowa_pci_find(vaddr, paddr);
->
-> Same.
->
->>  		if (bus == NULL)
->> diff --git a/arch/powerpc/kvm/book3s_64_mmu_hv.c b/arch/powerpc/kvm/book3s_64_mmu_hv.c
->> index 534acb3c6c3d..2dccaa6a1113 100644
->> --- a/arch/powerpc/kvm/book3s_64_mmu_hv.c
->> +++ b/arch/powerpc/kvm/book3s_64_mmu_hv.c
->> @@ -537,14 +537,15 @@ int kvmppc_book3s_hv_page_fault(struct kvm_run *run, struct kvm_vcpu *vcpu,
->>  		}
->>  		/* if the guest wants write access, see if that is OK */
->>  		if (!writing && hpte_is_writable(r)) {
->> +			unsigned long flags;
->>  			unsigned int hugepage_shift;
->>  			pte_t *ptep, pte;
->>  
->>  			/*
->>  			 * We need to protect against page table destruction
->> -			 * while looking up and updating the pte.
->> +			 * hugepage split and collapse.
->>  			 */
->> -			rcu_read_lock_sched();
->> +			local_irq_save(flags);
->>  			ptep = find_linux_pte_or_hugepte(current->mm->pgd,
->>  							 hva, &hugepage_shift);
->>  			if (ptep) {
->> @@ -553,7 +554,7 @@ int kvmppc_book3s_hv_page_fault(struct kvm_run *run, struct kvm_vcpu *vcpu,
->>  				if (pte_write(pte))
->>  					write_ok = 1;
->>  			}
->> -			rcu_read_unlock_sched();
->> +			local_irq_restore(flags);
->>  		}
->>  	}
->
-> Ack.
->
->> diff --git a/arch/powerpc/kvm/book3s_hv_rm_mmu.c b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
->> index 625407e4d3b0..b0ad673b35cf 100644
->> --- a/arch/powerpc/kvm/book3s_hv_rm_mmu.c
->> +++ b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
->> @@ -24,14 +24,19 @@
->>  /* Translate address of a vmalloc'd thing to a linear map address */
->>  static void *real_vmalloc_addr(void *x)
->>  {
->> +	unsigned long flags;
->>  	unsigned long addr = (unsigned long) x;
->>  	pte_t *p;
->>  
->> +	local_irq_save(flags);
->>  	p = find_linux_pte_or_hugepte(swapper_pg_dir, addr, NULL);
->> -	if (!p || !pte_present(*p))
->> +	if (!p || !pte_present(*p)) {
->> +		local_irq_restore(flags);
->>  		return NULL;
->> +	}
->>  	/* assume we don't have huge pages in vmalloc space... */
->>  	addr = (pte_pfn(*p) << PAGE_SHIFT) | (addr & ~PAGE_MASK);
->> +	local_irq_restore(flags);
->>  	return __va(addr);
->>  }
->
-> This is called in real mode, I don't like the debug stuff that can
-> happen inside local_irq_* in that context. Can you either pounce that
-> to the higher level callers (and so not do it in real mode at all) or
-> use a lower level variant ? (I prefer going for the callers).
->
+iQIcBAEBCAAGBQJVEQYtAAoJEMDTa8Ir7ZwVOagP/1razoHji4tCGmKiJl1q28qz
+GRvMwAbBJYZezNMm+kESDs2oDwq7B4leJJ4NQZc2JDBNXtiTGB2pycxTfKGtfMUF
+22X/GMb0I2YdBpXwnOHn4JB1SOmW754w5sLq3W/EXt+FyomMrwVjgHFmGh9TmxZy
+bBHN/EDMSl1jJkuSarSlDsGpKntBdjVAGvzelXuOL4VfELWtFbBN4HSWWyKJ19Rb
+lh/zgZsWUl3xJZe9caboePn9DUyUdaPJIOvhtphK1GIEAGLXDvJBWbFHcaxeRepl
+0y0JDL/yvXe7met4ihtKFD8PWF90tYISRdOH5h8VQ5OgT09dXC8bw3lRBW+XzuWQ
+GP9p7joCDmfpXnBcXTJgLlUyCs5uAPWmHLtUOkw7bLX5i7zUP+XW3fN5qdHPTj2H
+W28qsCeG7d2+6rUycXibEncyNfMnAf9WGY5iF59enmyWJvHnc4tmjwM9OAdUbRj7
+M5ldD0+c0TACOKQP8ZJfblZ3c4PB7pdjSlXGcVoabZIudW1lSSgesiqGaOYvdeIl
+JVJ9KCpS99zqsaxPdXTPprJNFN/759P1XGHRbdQ/YVeCkuLE4cMJvo0gPLI+vSwU
+BBzSZtFIYKcxy09QLpRKOZ0vFxv7PoDgkS+gAC+7PPIOT3MsX8Xdcm8ylEdaUIte
++c6ppvdwhpaio7mwfmYL
+=XXhX
+-----END PGP SIGNATURE-----
 
-Which debug stuff ? the dump_stack print in
-find_linux_pte_or_hugepte ?. One of the reason I endup using pr_info and
-not WARN_ON is that the later didn't work in real mode. Or are you
-suggesting that we don't need to track for irqs_disabled for real-mode ?
-I was not sure whether we avoid taking an IPI when we are in real mode. 
-
-
->> @@ -134,20 +139,27 @@ static void remove_revmap_chain(struct kvm *kvm, long pte_index,
->>  static pte_t lookup_linux_pte_and_update(pgd_t *pgdir, unsigned long hva,
->>  			      int writing, unsigned long *pte_sizep)
->>  {
->> -	pte_t *ptep;
->> +	pte_t *ptep, pte;
->> +	unsigned long flags;
->>  	unsigned long ps = *pte_sizep;
->>  	unsigned int hugepage_shift;
->>  
->> +	local_irq_save(flags);
->>  	ptep = find_linux_pte_or_hugepte(pgdir, hva, &hugepage_shift);
->>  	if (!ptep)
->> -		return __pte(0);
->> +		goto err_out;
->>  	if (hugepage_shift)
->>  		*pte_sizep = 1ul << hugepage_shift;
->>  	else
->>  		*pte_sizep = PAGE_SIZE;
->>  	if (ps > *pte_sizep)
->> -		return __pte(0);
->> -	return kvmppc_read_update_linux_pte(ptep, writing, hugepage_shift);
->> +		goto err_out;
->> +	pte = kvmppc_read_update_linux_pte(ptep, writing, hugepage_shift);
->> +	local_irq_restore(flags);
->> +	return pte;
->> +err_out:
->> +	local_irq_restore(flags);
->> +	return __pte(0);
->>  }
->
-> Ditto
->
->>  static inline void unlock_hpte(__be64 *hpte, unsigned long hpte_v)
->> @@ -211,6 +223,10 @@ long kvmppc_do_h_enter(struct kvm *kvm, unsigned long flags,
->>  
->>  	/* Look up the Linux PTE for the backing page */
->>  	pte_size = psize;
->> +	/*
->> +	 * If we had a page table table change after lookup, we would
->> +	 * retry via mmu_notifier_retry.
->> +	 */
->>  	pte = lookup_linux_pte_and_update(pgdir, hva, writing, &pte_size);
->>  	if (pte_present(pte) && !pte_protnone(pte)) {
->>  		if (writing && !pte_write(pte))
->> diff --git a/arch/powerpc/kvm/e500_mmu_host.c b/arch/powerpc/kvm/e500_mmu_host.c
->> index cc536d4a75ef..b50778eee650 100644
->> --- a/arch/powerpc/kvm/e500_mmu_host.c
->> +++ b/arch/powerpc/kvm/e500_mmu_host.c
->> @@ -335,7 +335,7 @@ static inline int kvmppc_e500_shadow_map(struct kvmppc_vcpu_e500 *vcpu_e500,
->>  	unsigned long mmu_seq;
->>  	struct kvm *kvm = vcpu_e500->vcpu.kvm;
->>  	unsigned long tsize_pages = 0;
->> -	pte_t *ptep;
->> +	pte_t pte;
->>  	unsigned int wimg = 0;
->>  	pgd_t *pgdir;
->>  
->> @@ -468,9 +468,16 @@ static inline int kvmppc_e500_shadow_map(struct kvmppc_vcpu_e500 *vcpu_e500,
->>  
->> 
->>  	pgdir = vcpu_e500->vcpu.arch.pgdir;
->> -	ptep = lookup_linux_ptep(pgdir, hva, &tsize_pages);
->> -	if (pte_present(*ptep))
->> -		wimg = (*ptep >> PTE_WIMGE_SHIFT) & MAS2_WIMGE_MASK;
->> +	/*
->> +	 * We are just looking at the wimg bits, so we don't
->> +	 * care much about the trans splitting bit.
->> +	 * How about hugepage collapse ? the pfn will change,
->> +	 * may be we should hold mmap_sem ?. We also don't
->> +	 * have a page reference count here .
->> +	 */
->> +	pte = lookup_linux_pte(pgdir, hva, &tsize_pages);
->> +	if (pte_present(pte))
->> +		wimg = (pte >> PTE_WIMGE_SHIFT) & MAS2_WIMGE_MASK;
->>  	else {
->>  		if (printk_ratelimit())
->>  			pr_err("%s: pte not present: gfn %lx, pfn %lx\n",
->> diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
->> index 7e408bfc7948..92f01649450a 100644
->> --- a/arch/powerpc/mm/hugetlbpage.c
->> +++ b/arch/powerpc/mm/hugetlbpage.c
->> @@ -108,8 +108,17 @@ int pgd_huge(pgd_t pgd)
->>  
->>  pte_t *huge_pte_offset(struct mm_struct *mm, unsigned long addr)
->>  {
->> -	/* Only called for hugetlbfs pages, hence can ignore THP */
->> -	return find_linux_pte_or_hugepte(mm->pgd, addr, NULL);
->> +	unsigned long flags;
->> +	pte_t *ptep;
->> +	/*
->> +	 * Only called for hugetlbfs pages, hence can ignore THP
->> +	 * The save and restore are there only for avoiding the warning
->> +	 * in find_linux_pte_or_hugepte().
->> +	 */
->> +	local_irq_save(flags);
->> +	ptep = find_linux_pte_or_hugepte(mm->pgd, addr, NULL);
->> +	local_irq_restore(flags);
->> +	return ptep;
->>  }
->>  
->>  static int __hugepte_alloc(struct mm_struct *mm, hugepd_t *hpdp,
->> @@ -681,28 +690,35 @@ void hugetlb_free_pgd_range(struct mmu_gather *tlb,
->>  	} while (addr = next, addr != end);
->>  }
->>  
->> +/*
->> + * We are holding mmap_sem, so a parallel huge page collapse cannot run.
->> + * To prevent hugepage split, disable irq.
->> + */
->>  struct page *
->>  follow_huge_addr(struct mm_struct *mm, unsigned long address, int write)
->>  {
->>  	pte_t *ptep;
->>  	struct page *page;
->>  	unsigned shift;
->> -	unsigned long mask;
->> +	unsigned long mask, flags;
->>  	/*
->>  	 * Transparent hugepages are handled by generic code. We can skip them
->>  	 * here.
->>  	 */
->> +	local_irq_save(flags);
->>  	ptep = find_linux_pte_or_hugepte(mm->pgd, address, &shift);
->>  
->>  	/* Verify it is a huge page else bail. */
->> -	if (!ptep || !shift || pmd_trans_huge(*(pmd_t *)ptep))
->> +	if (!ptep || !shift || pmd_trans_huge(*(pmd_t *)ptep)) {
->> +		local_irq_restore(flags);
->>  		return ERR_PTR(-EINVAL);
->> -
->> +	}
->>  	mask = (1UL << shift) - 1;
->>  	page = pte_page(*ptep);
->>  	if (page)
->>  		page += (address & mask) / PAGE_SIZE;
->>  
->> +	local_irq_restore(flags);
->>  	return page;
->>  }
->>  
->> @@ -949,6 +965,8 @@ void flush_dcache_icache_hugepage(struct page *page)
->>   *
->>   * So long as we atomically load page table pointers we are safe against teardown,
->>   * we can follow the address down to the the page and take a ref on it.
->> + * Should be called with irq disabled. If is is splitting hugepage, we will return
->> + * NULL;
->>   */
->>  
->>  pte_t *find_linux_pte_or_hugepte(pgd_t *pgdir, unsigned long ea, unsigned *shift)
->> @@ -963,6 +981,11 @@ pte_t *find_linux_pte_or_hugepte(pgd_t *pgdir, unsigned long ea, unsigned *shift
->>  	if (shift)
->>  		*shift = 0;
->>  
->> +	if (!irqs_disabled()) {
->
-> Might want to use the arch_* variant for similar "beware of generic
-> debug stuff in real mode" reasons...
-
-ok got that. 
-
-
->
->> +		pr_info("%s called with irq enabled\n", __func__);
->> +		dump_stack();
->> +	}
->> +
->>  	pgdp = pgdir + pgd_index(ea);
->>  	pgd  = ACCESS_ONCE(*pgdp);
->>  	/*
->> diff --git a/arch/powerpc/perf/callchain.c b/arch/powerpc/perf/callchain.c
->> index 2396dda282cd..173e4abc0c56 100644
->> --- a/arch/powerpc/perf/callchain.c
->> +++ b/arch/powerpc/perf/callchain.c
->> @@ -125,6 +125,7 @@ static int read_user_stack_slow(void __user *ptr, void *ret, int nb)
->>  	if (!pgdir)
->>  		return -EFAULT;
->>  
->> +	/* FIXME!! I guess we come with irq disabled here ? */
->
-> Not that I know of, that's not guaranteed.
-
-Will add local_irq_save/restore around that. 
-
->
->>  	ptep = find_linux_pte_or_hugepte(pgdir, addr, &shift);
->>  	if (!shift)
->>  		shift = PAGE_SHIFT;
+--Sig_/+_SYdCU37V1BehUDV.18aQf--
