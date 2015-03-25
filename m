@@ -1,35 +1,27 @@
-Return-Path: <dja@axtens.net>
-Received: from mail-pa0-x22c.google.com (mail-pa0-x22c.google.com
- [IPv6:2607:f8b0:400e:c03::22c])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <stewart@linux.vnet.ibm.com>
+Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 66A971A060B
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Mar 2015 09:14:17 +1100 (AEDT)
-Received: by pagj7 with SMTP id j7so42523765pag.2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2015 15:14:15 -0700 (PDT)
-Message-ID: <1427321631.2575.3.camel@axtens.net>
-Subject: Re: [PATCH v8 19/30] powerpc/pci: Use pci_scan_host_bridge() for
- simplicity
-From: Daniel Axtens <dja@axtens.net>
-To: Yijing Wang <wangyijing@huawei.com>
-Date: Thu, 26 Mar 2015 09:13:51 +1100
-In-Reply-To: <551266DE.3030609@huawei.com>
-References: <1427168064-8657-1-git-send-email-wangyijing@huawei.com>
- <1427168064-8657-20-git-send-email-wangyijing@huawei.com>
- <1427241523.2685.18.camel@axtens.net> <551266DE.3030609@huawei.com>
-Content-Type: multipart/signed; micalg="pgp-sha256";
- protocol="application/pgp-signature"; boundary="=-kGkB4ipJ9dr1gy57APLQ"
-Mime-Version: 1.0
-Cc: Liviu Dudau <liviu@dudau.co.uk>, x86@kernel.org, linux-ia64@vger.kernel.org,
- Arnd Bergmann <arnd@arndb.de>, Marc Zyngier <marc.zyngier@arm.com>,
- linux-pci@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
- linux-kernel@vger.kernel.org, Jiang Liu <jiang.liu@linux.intel.com>,
- linux-m68k@lists.linux-m68k.org, Tony Luck <tony.luck@intel.com>,
- Geert Uytterhoeven <geert@linux-m68k.org>, Yinghai Lu <yinghai@kernel.org>,
- linux-alpha@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>,
- Russell King <linux@arm.linux.org.uk>, Thomas Gleixner <tglx@linutronix.de>,
- Guan Xuetao <gxt@mprc.pku.edu.cn>, linuxppc-dev@lists.ozlabs.org,
- "David S. Miller" <davem@davemloft.net>, linux-arm-kernel@lists.infradead.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8CCB41A0671
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Mar 2015 10:07:20 +1100 (AEDT)
+Received: from /spool/local
+ by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <stewart@linux.vnet.ibm.com>;
+ Wed, 25 Mar 2015 19:07:17 -0400
+From: Stewart Smith <stewart@linux.vnet.ibm.com>
+To: =?utf-8?Q?C=C3=A9dric?= Le Goater <clg@fr.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc/powernv: handle OPAL_SUCCESS return in
+ opal_sensor_read
+In-Reply-To: <1427305834-6737-1-git-send-email-clg@fr.ibm.com>
+References: <1427305834-6737-1-git-send-email-clg@fr.ibm.com>
+Date: Thu, 26 Mar 2015 10:07:10 +1100
+Message-ID: <m3fv8s7k2p.fsf@oc8180480414.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Cc: Neelesh Gupta <neelegup@linux.vnet.ibm.com>,
+ =?utf-8?Q?C=C3=A9dric?= Le Goater <clg@fr.ibm.com>, skiboot@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,121 +31,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+C=C3=A9dric Le Goater <clg@fr.ibm.com> writes:
+> Currently, when a sensor value is read, the kernel calls OPAL, which in
+> turn builds a message for the FSP, and waits for a message back.=20
+>
+> The new device tree for OPAL sensors [1] adds new sensors that can be=20
+> read synchronously (core temperatures for instance) and that don't need=20
+> to wait for a response.
+>
+> This patch modifies the opal call to accept an OPAL_SUCCESS return value
+> and cover the case above.
+>
+> [1] https://lists.ozlabs.org/pipermail/skiboot/2015-March/000639.html
+>
+> Signed-off-by: C=C3=A9dric Le Goater <clg@fr.ibm.com>
+> ---
+>
+>  We still uselessly reserve a token (for the response) and take a
+>  lock, which might raise the need of a new 'opal_sensor_read_sync'=20
+>  call.
 
---=-kGkB4ipJ9dr1gy57APLQ
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-
-Hi Yijing,
-
-I wasn't quite sure I understood your comments, so I was trying to apply
-your patch series and test it, but patch 3 doesn't apply cleanly to
-4.0-rc5 or master. Can you respin the series?
-
-Thanks,
-Daniel
-
-
-> Hi Daniel, thanks for your review and comments. We want to make a generic=
- pci_host_bridge,
-> which would hold the common host information, for example, pci domain is =
-common info for
-> pci host bridge, this series saved domain in pci_host_bridge, then we no =
-need to
-> extract out domain by pci_bus->sysdata by platform specific pci_domain_nr=
-().
-> Also we store the sysdata in pci_host_bridge, and pci_bus_to_host() is th=
-e platform
-> interface, I think use the common interface would be better.
->=20
-> >> +
-> >> +	/* Get probe mode and perform scan */
-> >> +	if (hose->dn && ppc_md.pci_probe_mode)
-> >> +		mode =3D ppc_md.pci_probe_mode(bus);
-> >> +
-> >> +	pr_debug("    probe mode: %d\n", mode);
-> >> +	if (mode =3D=3D PCI_PROBE_DEVTREE)
-> >> +		of_scan_bus(hose->dn, bus);
-> >> +
-> >> +	if (mode =3D=3D PCI_PROBE_NORMAL) {
-> >> +		pci_bus_update_busn_res_end(bus, 255);
-> >> +		hose->last_busno =3D pci_scan_child_bus(bus);
-> >> +		pci_bus_update_busn_res_end(bus, hose->last_busno);
-> >> +	}
-> >> +
-> >> +	return pci_bus_child_max_busnr(bus);
-> >> +}
-> >> +
-> > I'm having trouble convincing myself that this patch covers every
-> > variation within our PCI implementations. In particular, there's a
-> > stanza in of_scan_pci_bridge in kernel/pci_of_scan.c that's almost
-> > identical to this function. Does that implementation need to be cleaned
-> > up and replaced with this function too?
-> >=20
->=20
-> This is a pci_host_bridge_ops hook function, which would be called in
-> PCI core, and after applied this series, we only need to call pci_scan_ho=
-st_bridge()
-> to scan pci devices, and this function is also extracted from the pcibios=
-_scan_phb(),
-> it's not the redundant code.
->=20
-> >=20
-> >> @@ -1641,9 +1655,9 @@ void pcibios_scan_phb(struct pci_controller *hos=
-e)
-> >>  		ppc_md.pcibios_fixup_phb(hose);
-> >> =20
-> >>  	/* Configure PCI Express settings */
-> >> -	if (bus && !pci_has_flag(PCI_PROBE_ONLY)) {
-> >> +	if (host->bus && !pci_has_flag(PCI_PROBE_ONLY)) {
-> >>  		struct pci_bus *child;
-> >> -		list_for_each_entry(child, &bus->children, node)
-> >> +		list_for_each_entry(child, &host->bus->children, node)
-> >>  			pcie_bus_configure_settings(child);
-> >>  	}
-> >>  }
-> > Two things: Firstly, the function uses hose throughout, not host.
-> > Secondly, you're not deleting the bus variable: what's the purpose of
-> > this change?
->=20
-> host is the common pci_host_bridge which is created by PCI core for pci h=
-ost bridge driver,
-> the hose is the platform data used in powerpc. The purpose of the patch/s=
-eries is to simplify
-> pci enumeration interface, and try to reduce the weak functions which wer=
-e used to setup pci bus/devices
-> during PCI enumeration.
->=20
-> >=20
-> > Regards,
-> > Daniel
-> >=20
->=20
->=20
-
-
---=-kGkB4ipJ9dr1gy57APLQ
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-Content-Transfer-Encoding: 7bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-Comment: GPGTools - https://gpgtools.org
-
-iQIcBAABCAAGBQJVEzM2AAoJEPC3R3P2I92FQZwP/R5SRv7SsQeRdyiOrXCMLC7a
-JfCwcSHgDdhyWYCAYuSeOKjJjPiDz9QNm9KS8ntynhe6VJVBGcHpLslWxZTpI9Dl
-PHO/1b4i68YKxmjeXk19bQa38wDmuGxw8+ni1XX2ZzTIvm3fvOy9JZefde2lebi1
-dB/D0GSRQu7CcuKcyEYWEyvqwbfPqb8VbiKpEFUiImjMFjboP6Yl5dOcVye0NNnQ
-J36BOPHBj/FvIwK1ySUe5BE5mHjQUDijj9NkfqE5ED5Inf+/kjRYp9l0uBh3m8O1
-oGbpMp0b/7L0cXk4WuF0UFcaNkkI7+n24O2QJ8tBCIL8B+9U7nb41xqTcI2kbWGE
-9uKGGUDHQI1pERNtDKgLOsD+tFuyHo8oI99Oc8GFfWPnbvr576qEBBQaQI6Dwpdi
-dbejgs48MB8IRVdur3oWu8uibQhUddtk02CIfpTF3OT7rx9ay/CKC8NX/odUGtY6
-AYqqzNF6OxlfZXhrlS1nE1YWFacX+PKRiqulsgDE4peyq9cGse9ZYrOkkyL9VXdy
-ja3H43wace2qaa0JpzOu//uN/vULylpSh8QOfeqgLRCDlF29NbKn23gNbhzr+4yw
-xASO+O4SAR1IKM0hW2mqLE4/1TI8cDj5jX5emAhnCZi3uCnPkEAbq9C9ZqfJ2hEP
-+2/0/9fEImcp/ma9tmc1
-=I0so
------END PGP SIGNATURE-----
-
---=-kGkB4ipJ9dr1gy57APLQ--
+Actually.... why do we take a lock around the OPAL calls at all?
