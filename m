@@ -1,18 +1,18 @@
 Return-Path: <dja@axtens.net>
-Received: from mail-pa0-x22d.google.com (mail-pa0-x22d.google.com
- [IPv6:2607:f8b0:400e:c03::22d])
+Received: from mail-pd0-x22f.google.com (mail-pd0-x22f.google.com
+ [IPv6:2607:f8b0:400e:c02::22f])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3C5971A09E1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2015 16:36:56 +1100 (AEDT)
-Received: by pacwe9 with SMTP id we9so17281792pac.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2015 22:36:54 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id AEDC91A09E1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2015 16:36:59 +1100 (AEDT)
+Received: by pdbcz9 with SMTP id cz9so17000953pdb.3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2015 22:36:57 -0700 (PDT)
 From: Daniel Axtens <dja@axtens.net>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 15/27] powerpc/pseries: Move controller ops from ppc_md to
+Subject: [PATCH 16/27] powerpc/powernv: Move controller ops from ppc_md to
  controller_ops
-Date: Wed, 25 Mar 2015 16:35:49 +1100
-Message-Id: <1427261761-22952-16-git-send-email-dja@axtens.net>
+Date: Wed, 25 Mar 2015 16:35:50 +1100
+Message-Id: <1427261761-22952-17-git-send-email-dja@axtens.net>
 In-Reply-To: <1427261761-22952-1-git-send-email-dja@axtens.net>
 References: <1427261761-22952-1-git-send-email-dja@axtens.net>
 Cc: Daniel Axtens <dja@axtens.net>
@@ -25,92 +25,86 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This moves the pSeries platform to use the pci_controller_ops structure,
-rather than ppc_md for PCI controller operations.
+This moves the PowerNV platform to use the pci_controller_ops
+structure rather than ppc_md for PCI controller operations.
 
 Signed-off-by: Daniel Axtens <dja@axtens.net>
 ---
- arch/powerpc/platforms/pseries/iommu.c   | 9 +++++----
- arch/powerpc/platforms/pseries/pseries.h | 2 ++
- arch/powerpc/platforms/pseries/setup.c   | 6 +++++-
- 3 files changed, 12 insertions(+), 5 deletions(-)
+ arch/powerpc/platforms/powernv/pci-ioda.c   | 7 ++++---
+ arch/powerpc/platforms/powernv/pci-p5ioc2.c | 1 +
+ arch/powerpc/platforms/powernv/pci.c        | 5 ++++-
+ arch/powerpc/platforms/powernv/powernv.h    | 2 ++
+ 4 files changed, 11 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
-index 7803a19..61d5a17 100644
---- a/arch/powerpc/platforms/pseries/iommu.c
-+++ b/arch/powerpc/platforms/pseries/iommu.c
-@@ -49,6 +49,7 @@
- #include <asm/mmzone.h>
- #include <asm/plpar_wrappers.h>
- 
-+#include "pseries.h"
- 
- static void tce_invalidate_pSeries_sw(struct iommu_table *tbl,
- 				      __be64 *startp, __be64 *endp)
-@@ -1307,16 +1308,16 @@ void iommu_init_early_pSeries(void)
- 			ppc_md.tce_free	 = tce_free_pSeriesLP;
- 		}
- 		ppc_md.tce_get   = tce_get_pSeriesLP;
--		ppc_md.pci_dma_bus_setup = pci_dma_bus_setup_pSeriesLP;
--		ppc_md.pci_dma_dev_setup = pci_dma_dev_setup_pSeriesLP;
-+		pseries_pci_controller_ops.dma_bus_setup = pci_dma_bus_setup_pSeriesLP;
-+		pseries_pci_controller_ops.dma_dev_setup = pci_dma_dev_setup_pSeriesLP;
- 		ppc_md.dma_set_mask = dma_set_mask_pSeriesLP;
- 		ppc_md.dma_get_required_mask = dma_get_required_mask_pSeriesLP;
- 	} else {
- 		ppc_md.tce_build = tce_build_pSeries;
- 		ppc_md.tce_free  = tce_free_pSeries;
- 		ppc_md.tce_get   = tce_get_pseries;
--		ppc_md.pci_dma_bus_setup = pci_dma_bus_setup_pSeries;
--		ppc_md.pci_dma_dev_setup = pci_dma_dev_setup_pSeries;
-+		pseries_pci_controller_ops.dma_bus_setup = pci_dma_bus_setup_pSeries;
-+		pseries_pci_controller_ops.dma_dev_setup = pci_dma_dev_setup_pSeries;
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index c18e191..b4e46bf 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -1988,6 +1988,7 @@ static void __init pnv_pci_init_ioda_phb(struct device_node *np,
+ 		hose->last_busno = 0xff;
  	}
+ 	hose->private_data = phb;
++	hose->controller_ops = pnv_pci_controller_ops;
+ 	phb->hub_id = hub_id;
+ 	phb->opal_id = phb_id;
+ 	phb->type = ioda_type;
+@@ -2104,9 +2105,9 @@ static void __init pnv_pci_init_ioda_phb(struct device_node *np,
+ 	 * the child P2P bridges) can form individual PE.
+ 	 */
+ 	ppc_md.pcibios_fixup = pnv_pci_ioda_fixup;
+-	ppc_md.pcibios_enable_device_hook = pnv_pci_enable_device_hook;
+-	ppc_md.pcibios_window_alignment = pnv_pci_window_alignment;
+-	ppc_md.pcibios_reset_secondary_bus = pnv_pci_reset_secondary_bus;
++	pnv_pci_controller_ops.enable_device_hook = pnv_pci_enable_device_hook;
++	pnv_pci_controller_ops.window_alignment = pnv_pci_window_alignment;
++	pnv_pci_controller_ops.reset_secondary_bus = pnv_pci_reset_secondary_bus;
+ 	pci_add_flags(PCI_REASSIGN_ALL_RSRC);
  
+ 	/* Reset IODA tables to a clean state */
+diff --git a/arch/powerpc/platforms/powernv/pci-p5ioc2.c b/arch/powerpc/platforms/powernv/pci-p5ioc2.c
+index 6ef6d4d..4729ca7 100644
+--- a/arch/powerpc/platforms/powernv/pci-p5ioc2.c
++++ b/arch/powerpc/platforms/powernv/pci-p5ioc2.c
+@@ -133,6 +133,7 @@ static void __init pnv_pci_init_p5ioc2_phb(struct device_node *np, u64 hub_id,
+ 	phb->hose->first_busno = 0;
+ 	phb->hose->last_busno = 0xff;
+ 	phb->hose->private_data = phb;
++	phb->hose->controller_ops = pnv_pci_controller_ops;
+ 	phb->hub_id = hub_id;
+ 	phb->opal_id = phb_id;
+ 	phb->type = PNV_PHB_P5IOC2;
+diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
+index c8939ad..63518b3 100644
+--- a/arch/powerpc/platforms/powernv/pci.c
++++ b/arch/powerpc/platforms/powernv/pci.c
+@@ -761,7 +761,6 @@ void __init pnv_pci_init(void)
+ 	pci_devs_phb_init();
  
-diff --git a/arch/powerpc/platforms/pseries/pseries.h b/arch/powerpc/platforms/pseries/pseries.h
-index 1796c54..cd64672 100644
---- a/arch/powerpc/platforms/pseries/pseries.h
-+++ b/arch/powerpc/platforms/pseries/pseries.h
-@@ -65,6 +65,8 @@ extern int dlpar_detach_node(struct device_node *);
- struct pci_host_bridge;
- int pseries_root_bridge_prepare(struct pci_host_bridge *bridge);
+ 	/* Configure IOMMU DMA hooks */
+-	ppc_md.pci_dma_dev_setup = pnv_pci_dma_dev_setup;
+ 	ppc_md.tce_build = pnv_tce_build_vm;
+ 	ppc_md.tce_free = pnv_tce_free_vm;
+ 	ppc_md.tce_build_rm = pnv_tce_build_rm;
+@@ -777,3 +776,7 @@ void __init pnv_pci_init(void)
+ }
  
-+extern struct pci_controller_ops pseries_pci_controller_ops;
+ machine_subsys_initcall_sync(powernv, tce_iommu_bus_notifier_init);
 +
- unsigned long pseries_memory_block_size(void);
- 
- #endif /* _PSERIES_PSERIES_H */
-diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
-index 1a5f884..328e318 100644
---- a/arch/powerpc/platforms/pseries/setup.c
-+++ b/arch/powerpc/platforms/pseries/setup.c
-@@ -478,6 +478,7 @@ static void __init find_and_init_phbs(void)
- 		rtas_setup_phb(phb);
- 		pci_process_bridge_OF_ranges(phb, node, 0);
- 		isa_bridge_find_early(phb);
-+		phb->controller_ops = pseries_pci_controller_ops;
- 	}
- 
- 	of_node_put(root);
-@@ -840,6 +841,10 @@ static int pSeries_pci_probe_mode(struct pci_bus *bus)
- void pSeries_final_fixup(void) { }
++struct pci_controller_ops pnv_pci_controller_ops = {
++	.dma_dev_setup = pnv_pci_dma_dev_setup,
++};
+diff --git a/arch/powerpc/platforms/powernv/powernv.h b/arch/powerpc/platforms/powernv/powernv.h
+index 604c48e..826d2c9 100644
+--- a/arch/powerpc/platforms/powernv/powernv.h
++++ b/arch/powerpc/platforms/powernv/powernv.h
+@@ -29,6 +29,8 @@ static inline u64 pnv_pci_dma_get_required_mask(struct pci_dev *pdev)
+ }
  #endif
  
-+struct pci_controller_ops pseries_pci_controller_ops = {
-+	.probe_mode		= pSeries_pci_probe_mode,
-+};
++extern struct pci_controller_ops pnv_pci_controller_ops;
 +
- define_machine(pseries) {
- 	.name			= "pSeries",
- 	.probe			= pSeries_probe,
-@@ -848,7 +853,6 @@ define_machine(pseries) {
- 	.show_cpuinfo		= pSeries_show_cpuinfo,
- 	.log_error		= pSeries_log_error,
- 	.pcibios_fixup		= pSeries_final_fixup,
--	.pci_probe_mode		= pSeries_pci_probe_mode,
- 	.restart		= rtas_restart,
- 	.halt			= rtas_halt,
- 	.panic			= rtas_os_term,
+ extern u32 pnv_get_supported_cpuidle_states(void);
+ 
+ extern void pnv_lpc_init(void);
 -- 
 2.1.4
