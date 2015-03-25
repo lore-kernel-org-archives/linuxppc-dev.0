@@ -1,18 +1,18 @@
 Return-Path: <dja@axtens.net>
-Received: from mail-pa0-x232.google.com (mail-pa0-x232.google.com
- [IPv6:2607:f8b0:400e:c03::232])
+Received: from mail-pd0-x231.google.com (mail-pd0-x231.google.com
+ [IPv6:2607:f8b0:400e:c02::231])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C9BB31A0744
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2015 16:36:49 +1100 (AEDT)
-Received: by pagj7 with SMTP id j7so17255631pag.2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2015 22:36:48 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 09A351A086B
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2015 16:36:53 +1100 (AEDT)
+Received: by pdbcz9 with SMTP id cz9so16998528pdb.3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2015 22:36:51 -0700 (PDT)
 From: Daniel Axtens <dja@axtens.net>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 13/27] powerpc: dart_iommu: optionally populate controller_ops
- on init
-Date: Wed, 25 Mar 2015 16:35:47 +1100
-Message-Id: <1427261761-22952-14-git-send-email-dja@axtens.net>
+Subject: [PATCH 14/27] powerpc/powermac: Move controller ops from ppc_md to
+ controller_ops
+Date: Wed, 25 Mar 2015 16:35:48 +1100
+Message-Id: <1427261761-22952-15-git-send-email-dja@axtens.net>
 In-Reply-To: <1427261761-22952-1-git-send-email-dja@axtens.net>
 References: <1427261761-22952-1-git-send-email-dja@axtens.net>
 Cc: Daniel Axtens <dja@axtens.net>
@@ -25,111 +25,116 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-If a pci_controller_ops struct is provided to iommu_init_early_dart,
-populate that with the DMA setup ops, rather than ppc_md. If NULL is
-provided, populate ppc_md as before.
-
-This also patches the call sites for Maple and Power Mac to pass
-NULL, so existing behaviour is preserved.
-
-The benefit of making this optional is that it means we don't have
-to change dart, Maple and Power Mac over to the controller_ops
-system in one fell swoop.
+This moves the Power Mac platform to use the pci_controller_ops
+structure rather than ppc_md for PCI controller operations.
 
 Signed-off-by: Daniel Axtens <dja@axtens.net>
 ---
- arch/powerpc/include/asm/iommu.h        |  3 ++-
- arch/powerpc/platforms/maple/setup.c    |  2 +-
- arch/powerpc/platforms/powermac/setup.c |  2 +-
- arch/powerpc/sysdev/dart_iommu.c        | 16 ++++++++++++----
- 4 files changed, 16 insertions(+), 7 deletions(-)
+ arch/powerpc/platforms/powermac/pci.c   | 17 +++++++++++++++--
+ arch/powerpc/platforms/powermac/pmac.h  |  5 +----
+ arch/powerpc/platforms/powermac/setup.c |  4 +---
+ 3 files changed, 17 insertions(+), 9 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
-index f1ea597..0be7d9e 100644
---- a/arch/powerpc/include/asm/iommu.h
-+++ b/arch/powerpc/include/asm/iommu.h
-@@ -29,6 +29,7 @@
- #include <linux/bitops.h>
- #include <asm/machdep.h>
- #include <asm/types.h>
-+#include <asm/pci-bridge.h>
+diff --git a/arch/powerpc/platforms/powermac/pci.c b/arch/powerpc/platforms/powermac/pci.c
+index 9c89fd2..59ab16f 100644
+--- a/arch/powerpc/platforms/powermac/pci.c
++++ b/arch/powerpc/platforms/powermac/pci.c
+@@ -27,6 +27,8 @@
+ #include <asm/grackle.h>
+ #include <asm/ppc-pci.h>
  
- #define IOMMU_PAGE_SHIFT_4K      12
- #define IOMMU_PAGE_SIZE_4K       (ASM_CONST(1) << IOMMU_PAGE_SHIFT_4K)
-@@ -169,7 +170,7 @@ extern void iommu_unmap_page(struct iommu_table *tbl, dma_addr_t dma_handle,
- 			     struct dma_attrs *attrs);
++#include "pmac.h"
++
+ #undef DEBUG
  
- extern void iommu_init_early_pSeries(void);
--extern void iommu_init_early_dart(void);
-+extern void iommu_init_early_dart(struct pci_controller_ops *controller_ops);
- extern void iommu_init_early_pasemi(void);
+ #ifdef DEBUG
+@@ -798,6 +800,7 @@ static int __init pmac_add_bridge(struct device_node *dev)
+ 		return -ENOMEM;
+ 	hose->first_busno = bus_range ? bus_range[0] : 0;
+ 	hose->last_busno = bus_range ? bus_range[1] : 0xff;
++	hose->controller_ops = pmac_pci_controller_ops;
  
- extern void alloc_dart_table(void);
-diff --git a/arch/powerpc/platforms/maple/setup.c b/arch/powerpc/platforms/maple/setup.c
-index 56b85cd..3bf2e03 100644
---- a/arch/powerpc/platforms/maple/setup.c
-+++ b/arch/powerpc/platforms/maple/setup.c
-@@ -203,7 +203,7 @@ static void __init maple_init_early(void)
- {
- 	DBG(" -> maple_init_early\n");
+ 	disp_name = NULL;
  
--	iommu_init_early_dart();
-+	iommu_init_early_dart(NULL);
- 
- 	DBG(" <- maple_init_early\n");
+@@ -942,7 +945,7 @@ void __init pmac_pci_init(void)
  }
+ 
+ #ifdef CONFIG_PPC32
+-bool pmac_pci_enable_device_hook(struct pci_dev *dev)
++static bool pmac_pci_enable_device_hook(struct pci_dev *dev)
+ {
+ 	struct device_node* node;
+ 	int updatecfg = 0;
+@@ -1225,7 +1228,7 @@ static void fixup_u4_pcie(struct pci_dev* dev)
+ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_APPLE, PCI_DEVICE_ID_APPLE_U4_PCIE, fixup_u4_pcie);
+ 
+ #ifdef CONFIG_PPC64
+-int pmac_pci_probe_mode(struct pci_bus *bus)
++static int pmac_pci_probe_mode(struct pci_bus *bus)
+ {
+ 	struct device_node *node = pci_bus_to_OF_node(bus);
+ 
+@@ -1240,3 +1243,13 @@ int pmac_pci_probe_mode(struct pci_bus *bus)
+ 	return PCI_PROBE_DEVTREE;
+ }
+ #endif /* CONFIG_PPC64 */
++
++struct pci_controller_ops pmac_pci_controller_ops = {
++#ifdef CONFIG_PPC64
++	.probe_mode		= pmac_pci_probe_mode,
++#endif
++#ifdef CONFIG_PPC32
++	.enable_device_hook	= pmac_pci_enable_device_hook,
++#endif
++};
++
+diff --git a/arch/powerpc/platforms/powermac/pmac.h b/arch/powerpc/platforms/powermac/pmac.h
+index b8d5721..e7f8163 100644
+--- a/arch/powerpc/platforms/powermac/pmac.h
++++ b/arch/powerpc/platforms/powermac/pmac.h
+@@ -25,7 +25,6 @@ extern void pmac_pci_init(void);
+ extern void pmac_nvram_update(void);
+ extern unsigned char pmac_nvram_read_byte(int addr);
+ extern void pmac_nvram_write_byte(int addr, unsigned char val);
+-extern bool pmac_pci_enable_device_hook(struct pci_dev *dev);
+ extern void pmac_pcibios_after_init(void);
+ extern int of_show_percpuinfo(struct seq_file *m, int i);
+ 
+@@ -39,8 +38,6 @@ extern void low_cpu_die(void) __attribute__((noreturn));
+ extern int pmac_nvram_init(void);
+ extern void pmac_pic_init(void);
+ 
+-#ifdef CONFIG_PPC64
+-extern int pmac_pci_probe_mode(struct pci_bus *bus);
+-#endif
++extern struct pci_controller_ops pmac_pci_controller_ops;
+ 
+ #endif /* __PMAC_H__ */
 diff --git a/arch/powerpc/platforms/powermac/setup.c b/arch/powerpc/platforms/powermac/setup.c
-index efe172d..71a353c 100644
+index 71a353c..8dd78f4 100644
 --- a/arch/powerpc/platforms/powermac/setup.c
 +++ b/arch/powerpc/platforms/powermac/setup.c
 @@ -473,7 +473,7 @@ static void __init pmac_init_early(void)
  	udbg_adb_init(!!strstr(boot_command_line, "btextdbg"));
  
  #ifdef CONFIG_PPC64
--	iommu_init_early_dart();
-+	iommu_init_early_dart(NULL);
+-	iommu_init_early_dart(NULL);
++	iommu_init_early_dart(&pmac_pci_controller_ops);
  #endif
  
  	/* SMP Init has to be done early as we need to patch up
-diff --git a/arch/powerpc/sysdev/dart_iommu.c b/arch/powerpc/sysdev/dart_iommu.c
-index 9e5353f..120e96a 100644
---- a/arch/powerpc/sysdev/dart_iommu.c
-+++ b/arch/powerpc/sysdev/dart_iommu.c
-@@ -369,7 +369,7 @@ static int dart_dma_set_mask(struct device *dev, u64 dma_mask)
- 	return 0;
- }
- 
--void __init iommu_init_early_dart(void)
-+void __init iommu_init_early_dart(struct pci_controller_ops *controller_ops)
- {
- 	struct device_node *dn;
- 
-@@ -395,15 +395,23 @@ void __init iommu_init_early_dart(void)
- 	if (dart_is_u4)
- 		ppc_md.dma_set_mask = dart_dma_set_mask;
- 
--	ppc_md.pci_dma_dev_setup = pci_dma_dev_setup_dart;
--	ppc_md.pci_dma_bus_setup = pci_dma_bus_setup_dart;
--
-+	if (controller_ops) {
-+		controller_ops->dma_dev_setup = pci_dma_dev_setup_dart;
-+		controller_ops->dma_bus_setup = pci_dma_bus_setup_dart;
-+	} else {
-+		ppc_md.pci_dma_dev_setup = pci_dma_dev_setup_dart;
-+		ppc_md.pci_dma_bus_setup = pci_dma_bus_setup_dart;
-+	}
- 	/* Setup pci_dma ops */
- 	set_pci_dma_ops(&dma_iommu_ops);
- 	return;
- 
-  bail:
- 	/* If init failed, use direct iommu and null setup functions */
-+	if (controller_ops) {
-+		controller_ops->dma_dev_setup = NULL;
-+		controller_ops->dma_bus_setup = NULL;
-+	}
- 	ppc_md.pci_dma_dev_setup = NULL;
- 	ppc_md.pci_dma_bus_setup = NULL;
- 
+@@ -656,12 +656,10 @@ define_machine(powermac) {
+ 	.feature_call		= pmac_do_feature_call,
+ 	.progress		= udbg_progress,
+ #ifdef CONFIG_PPC64
+-	.pci_probe_mode		= pmac_pci_probe_mode,
+ 	.power_save		= power4_idle,
+ 	.enable_pmcs		= power4_enable_pmcs,
+ #endif /* CONFIG_PPC64 */
+ #ifdef CONFIG_PPC32
+-	.pcibios_enable_device_hook = pmac_pci_enable_device_hook,
+ 	.pcibios_after_init	= pmac_pcibios_after_init,
+ 	.phys_mem_access_prot	= pci_phys_mem_access_prot,
+ #endif
 -- 
 2.1.4
