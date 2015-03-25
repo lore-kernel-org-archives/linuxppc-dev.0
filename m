@@ -1,18 +1,18 @@
 Return-Path: <dja@axtens.net>
-Received: from mail-pd0-x229.google.com (mail-pd0-x229.google.com
- [IPv6:2607:f8b0:400e:c02::229])
+Received: from mail-pd0-x22a.google.com (mail-pd0-x22a.google.com
+ [IPv6:2607:f8b0:400e:c02::22a])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2F0521A0769
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2015 16:36:22 +1100 (AEDT)
-Received: by pdnc3 with SMTP id c3so17183246pdn.0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2015 22:36:20 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id E56951A07BC
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2015 16:36:24 +1100 (AEDT)
+Received: by pdbcz9 with SMTP id cz9so16986925pdb.3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2015 22:36:22 -0700 (PDT)
 From: Daniel Axtens <dja@axtens.net>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 04/27] powerpc/fsl_pci: Don't change ppc_swiotlb_enable after
- swiotlb_subsys_init
-Date: Wed, 25 Mar 2015 16:35:38 +1100
-Message-Id: <1427261761-22952-5-git-send-email-dja@axtens.net>
+Subject: [PATCH 05/27] powerpc: pcibios_enable_device_hook: return bool rather
+ than int
+Date: Wed, 25 Mar 2015 16:35:39 +1100
+Message-Id: <1427261761-22952-6-git-send-email-dja@axtens.net>
 In-Reply-To: <1427261761-22952-1-git-send-email-dja@axtens.net>
 References: <1427261761-22952-1-git-send-email-dja@axtens.net>
 Cc: Daniel Axtens <dja@axtens.net>
@@ -25,32 +25,127 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The only function that checks ppc_swiotlb_enable is swiotlb_subsys_init.
-The code in fsl_pci.c is called well after that, so don't bother
-changing it.
-
-(ppc_swiotlb is usually set in swiotlb_detect_4g, which is called by
-a number of arch initcalls.)
+pcibios_enable_device_hook returned an int. Every implementation
+returned either -EINVAL or 0. The return value wasn't propagated by
+the caller: any non-zero return value caused pcibios_enable_device
+to return -EINVAL itself. Therefore, make the hook return a bool.
 
 Signed-off-by: Daniel Axtens <dja@axtens.net>
 ---
- arch/powerpc/sysdev/fsl_pci.c | 4 +---
- 1 file changed, 1 insertion(+), 3 deletions(-)
+ arch/powerpc/include/asm/machdep.h        | 4 ++--
+ arch/powerpc/kernel/pci-common.c          | 2 +-
+ arch/powerpc/platforms/powermac/pci.c     | 8 ++++----
+ arch/powerpc/platforms/powermac/pmac.h    | 2 +-
+ arch/powerpc/platforms/powernv/pci-ioda.c | 8 ++++----
+ 5 files changed, 12 insertions(+), 12 deletions(-)
 
-diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
-index 4b74c27..7071feb 100644
---- a/arch/powerpc/sysdev/fsl_pci.c
-+++ b/arch/powerpc/sysdev/fsl_pci.c
-@@ -376,9 +376,7 @@ static void setup_pci_atmu(struct pci_controller *hose)
+diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
+index c8175a3..9d4a067 100644
+--- a/arch/powerpc/include/asm/machdep.h
++++ b/arch/powerpc/include/asm/machdep.h
+@@ -237,9 +237,9 @@ struct machdep_calls {
+ 	/* Called for each PCI bus in the system when it's probed */
+ 	void (*pcibios_fixup_bus)(struct pci_bus *);
+ 
+-	/* Called when pci_enable_device() is called. Returns 0 to
++	/* Called when pci_enable_device() is called. Returns true to
+ 	 * allow assignment/enabling of the device. */
+-	int  (*pcibios_enable_device_hook)(struct pci_dev *);
++	bool (*pcibios_enable_device_hook)(struct pci_dev *);
+ 
+ 	/* Called after scan and before resource survey */
+ 	void (*pcibios_fixup_phb)(struct pci_controller *hose);
+diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
+index 2a525c9..3d07d81 100644
+--- a/arch/powerpc/kernel/pci-common.c
++++ b/arch/powerpc/kernel/pci-common.c
+@@ -1451,7 +1451,7 @@ EXPORT_SYMBOL_GPL(pcibios_finish_adding_to_bus);
+ int pcibios_enable_device(struct pci_dev *dev, int mask)
+ {
+ 	if (ppc_md.pcibios_enable_device_hook)
+-		if (ppc_md.pcibios_enable_device_hook(dev))
++		if (!ppc_md.pcibios_enable_device_hook(dev))
+ 			return -EINVAL;
+ 
+ 	return pci_enable_resources(dev, mask);
+diff --git a/arch/powerpc/platforms/powermac/pci.c b/arch/powerpc/platforms/powermac/pci.c
+index a792f45..9c89fd2 100644
+--- a/arch/powerpc/platforms/powermac/pci.c
++++ b/arch/powerpc/platforms/powermac/pci.c
+@@ -942,7 +942,7 @@ void __init pmac_pci_init(void)
+ }
+ 
+ #ifdef CONFIG_PPC32
+-int pmac_pci_enable_device_hook(struct pci_dev *dev)
++bool pmac_pci_enable_device_hook(struct pci_dev *dev)
+ {
+ 	struct device_node* node;
+ 	int updatecfg = 0;
+@@ -958,11 +958,11 @@ int pmac_pci_enable_device_hook(struct pci_dev *dev)
+ 	    && !node) {
+ 		printk(KERN_INFO "Apple USB OHCI %s disabled by firmware\n",
+ 		       pci_name(dev));
+-		return -EINVAL;
++		return false;
  	}
  
- 	if (hose->dma_window_size < mem) {
--#ifdef CONFIG_SWIOTLB
--		ppc_swiotlb_enable = 1;
--#else
-+#ifndef CONFIG_SWIOTLB
- 		pr_err("%s: ERROR: Memory size exceeds PCI ATMU ability to "
- 			"map - enable CONFIG_SWIOTLB to avoid dma errors.\n",
- 			 name);
+ 	if (!node)
+-		return 0;
++		return true;
+ 
+ 	uninorth_child = node->parent &&
+ 		of_device_is_compatible(node->parent, "uni-north");
+@@ -1003,7 +1003,7 @@ int pmac_pci_enable_device_hook(struct pci_dev *dev)
+ 				      L1_CACHE_BYTES >> 2);
+ 	}
+ 
+-	return 0;
++	return true;
+ }
+ 
+ void pmac_pci_fixup_ohci(struct pci_dev *dev)
+diff --git a/arch/powerpc/platforms/powermac/pmac.h b/arch/powerpc/platforms/powermac/pmac.h
+index 46d2193..b8d5721 100644
+--- a/arch/powerpc/platforms/powermac/pmac.h
++++ b/arch/powerpc/platforms/powermac/pmac.h
+@@ -25,7 +25,7 @@ extern void pmac_pci_init(void);
+ extern void pmac_nvram_update(void);
+ extern unsigned char pmac_nvram_read_byte(int addr);
+ extern void pmac_nvram_write_byte(int addr, unsigned char val);
+-extern int pmac_pci_enable_device_hook(struct pci_dev *dev);
++extern bool pmac_pci_enable_device_hook(struct pci_dev *dev);
+ extern void pmac_pcibios_after_init(void);
+ extern int of_show_percpuinfo(struct seq_file *m, int i);
+ 
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index 6c9ff2b..c18e191 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -1910,7 +1910,7 @@ static resource_size_t pnv_pci_window_alignment(struct pci_bus *bus,
+ /* Prevent enabling devices for which we couldn't properly
+  * assign a PE
+  */
+-static int pnv_pci_enable_device_hook(struct pci_dev *dev)
++static bool pnv_pci_enable_device_hook(struct pci_dev *dev)
+ {
+ 	struct pci_controller *hose = pci_bus_to_host(dev->bus);
+ 	struct pnv_phb *phb = hose->private_data;
+@@ -1922,13 +1922,13 @@ static int pnv_pci_enable_device_hook(struct pci_dev *dev)
+ 	 * PEs isn't ready.
+ 	 */
+ 	if (!phb->initialized)
+-		return 0;
++		return true;
+ 
+ 	pdn = pci_get_pdn(dev);
+ 	if (!pdn || pdn->pe_number == IODA_INVALID_PE)
+-		return -EINVAL;
++		return false;
+ 
+-	return 0;
++	return true;
+ }
+ 
+ static u32 pnv_ioda_bdfn_to_pe(struct pnv_phb *phb, struct pci_bus *bus,
 -- 
 2.1.4
