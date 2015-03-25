@@ -1,17 +1,18 @@
 Return-Path: <dja@axtens.net>
-Received: from mail-pd0-x22c.google.com (mail-pd0-x22c.google.com
- [IPv6:2607:f8b0:400e:c02::22c])
+Received: from mail-pa0-x22e.google.com (mail-pa0-x22e.google.com
+ [IPv6:2607:f8b0:400e:c03::22e])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 200501A09DD
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2015 16:37:24 +1100 (AEDT)
-Received: by pdnc3 with SMTP id c3so17207446pdn.0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2015 22:37:22 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4B8B81A07BF
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2015 16:37:27 +1100 (AEDT)
+Received: by pacwe9 with SMTP id we9so17293658pac.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2015 22:37:25 -0700 (PDT)
 From: Daniel Axtens <dja@axtens.net>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 24/27] powerpc: Remove shim for pci_controller_ops.probe_mode
-Date: Wed, 25 Mar 2015 16:35:58 +1100
-Message-Id: <1427261761-22952-25-git-send-email-dja@axtens.net>
+Subject: [PATCH 25/27] powerpc: Remove shim for
+ pci_controller_ops.dma_dev_setup
+Date: Wed, 25 Mar 2015 16:35:59 +1100
+Message-Id: <1427261761-22952-26-git-send-email-dja@axtens.net>
 In-Reply-To: <1427261761-22952-1-git-send-email-dja@axtens.net>
 References: <1427261761-22952-1-git-send-email-dja@axtens.net>
 Cc: Daniel Axtens <dja@axtens.net>
@@ -24,141 +25,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This also moves back the defines, as explained in the commit that
-created the shim.
-
 Signed-off-by: Daniel Axtens <dja@axtens.net>
 ---
- arch/powerpc/include/asm/machdep.h    |  1 -
- arch/powerpc/include/asm/pci-bridge.h | 16 ----------------
- arch/powerpc/include/asm/pci.h        |  5 +++++
- arch/powerpc/kernel/pci-common.c      |  4 ++--
- arch/powerpc/kernel/pci-hotplug.c     |  6 +++++-
- arch/powerpc/kernel/pci_of_scan.c     |  6 +++++-
- 6 files changed, 17 insertions(+), 21 deletions(-)
+ arch/powerpc/include/asm/machdep.h    | 1 -
+ arch/powerpc/include/asm/pci-bridge.h | 9 ---------
+ arch/powerpc/kernel/pci-common.c      | 5 ++++-
+ arch/powerpc/sysdev/dart_iommu.c      | 2 --
+ 4 files changed, 4 insertions(+), 13 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
-index 5549b6c..dfc8d2b 100644
+index dfc8d2b..2f7b319 100644
 --- a/arch/powerpc/include/asm/machdep.h
 +++ b/arch/powerpc/include/asm/machdep.h
-@@ -127,7 +127,6 @@ struct machdep_calls {
- 	/* PCI stuff */
- 	/* Called after scanning the bus, before allocating resources */
- 	void		(*pcibios_fixup)(void);
--	int		(*pci_probe_mode)(struct pci_bus *);
- 	void		(*pci_irq_fixup)(struct pci_dev *dev);
- 	int		(*pcibios_root_bridge_prepare)(struct pci_host_bridge
- 				*bridge);
+@@ -103,7 +103,6 @@ struct machdep_calls {
+ #endif
+ #endif /* CONFIG_PPC64 */
+ 
+-	void		(*pci_dma_dev_setup)(struct pci_dev *dev);
+ 	void		(*pci_dma_bus_setup)(struct pci_bus *bus);
+ 
+ 	/* Platform set_dma_mask and dma_get_required_mask overrides */
 diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
-index 029def0..b5d8631 100644
+index b5d8631..e578f67 100644
 --- a/arch/powerpc/include/asm/pci-bridge.h
 +++ b/arch/powerpc/include/asm/pci-bridge.h
-@@ -12,11 +12,6 @@
- #include <linux/ioport.h>
- #include <asm-generic/pci-bridge.h>
- 
--/* Return values for pci_controller_ops.probe_mode function */
--#define PCI_PROBE_NONE		-1	/* Don't look at this bus at all */
--#define PCI_PROBE_NORMAL	0	/* Do normal PCI probing */
--#define PCI_PROBE_DEVTREE	1	/* Instantiate from device tree */
--
- struct device_node;
- 
+@@ -280,15 +280,6 @@ static inline int pcibios_vaddr_is_ioport(void __iomem *address)
  /*
-@@ -305,16 +300,5 @@ static inline void dma_bus_setup(struct pci_bus *bus)
- 		ppc_md.pci_dma_bus_setup(bus);
- }
- 
--static inline int probe_mode(struct pci_bus *bus)
+  * Shims to prefer pci_controller version over ppc_md where available.
+  */
+-static inline void dma_dev_setup(struct pci_dev *dev)
 -{
--	struct pci_controller *hose = pci_bus_to_host(bus);
+-	struct pci_controller *hose = pci_bus_to_host(dev->bus);
 -
--	if (hose->controller_ops.probe_mode)
--		return hose->controller_ops.probe_mode(bus);
--	if (ppc_md.pci_probe_mode)
--		return ppc_md.pci_probe_mode(bus);
--	return PCI_PROBE_NORMAL;
+-	if (hose->controller_ops.dma_dev_setup)
+-		hose->controller_ops.dma_dev_setup(dev);
+-	else if (ppc_md.pci_dma_dev_setup)
+-		ppc_md.pci_dma_dev_setup(dev);
 -}
--
- #endif	/* __KERNEL__ */
- #endif	/* _ASM_POWERPC_PCI_BRIDGE_H */
-diff --git a/arch/powerpc/include/asm/pci.h b/arch/powerpc/include/asm/pci.h
-index 8745067..4aef8d6 100644
---- a/arch/powerpc/include/asm/pci.h
-+++ b/arch/powerpc/include/asm/pci.h
-@@ -22,6 +22,11 @@
  
- #include <asm-generic/pci-dma-compat.h>
- 
-+/* Return values for pci_controller_ops.probe_mode function */
-+#define PCI_PROBE_NONE		-1	/* Don't look at this bus at all */
-+#define PCI_PROBE_NORMAL	0	/* Do normal PCI probing */
-+#define PCI_PROBE_DEVTREE	1	/* Instantiate from device tree */
-+
- #define PCIBIOS_MIN_IO		0x1000
- #define PCIBIOS_MIN_MEM		0x10000000
- 
+ static inline void dma_bus_setup(struct pci_bus *bus)
+ {
 diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
-index 5b90e99c..a61ecb4 100644
+index a61ecb4..433b387 100644
 --- a/arch/powerpc/kernel/pci-common.c
 +++ b/arch/powerpc/kernel/pci-common.c
-@@ -1628,8 +1628,8 @@ void pcibios_scan_phb(struct pci_controller *hose)
+@@ -962,6 +962,7 @@ void pcibios_setup_bus_self(struct pci_bus *bus)
  
- 	/* Get probe mode and perform scan */
- 	mode = PCI_PROBE_NORMAL;
--	if (node)
--		mode = probe_mode(bus);
-+	if (node && hose->controller_ops.probe_mode)
-+		mode = hose->controller_ops.probe_mode(bus);
- 	pr_debug("    probe mode: %d\n", mode);
- 	if (mode == PCI_PROBE_DEVTREE)
- 		of_scan_bus(node, bus);
-diff --git a/arch/powerpc/kernel/pci-hotplug.c b/arch/powerpc/kernel/pci-hotplug.c
-index 504d823..e9b0a4a 100644
---- a/arch/powerpc/kernel/pci-hotplug.c
-+++ b/arch/powerpc/kernel/pci-hotplug.c
-@@ -73,12 +73,16 @@ void pcibios_add_pci_devices(struct pci_bus * bus)
+ static void pcibios_setup_device(struct pci_dev *dev)
  {
- 	int slotno, mode, pass, max;
- 	struct pci_dev *dev;
 +	struct pci_controller *hose;
- 	struct device_node *dn = pci_bus_to_OF_node(bus);
+ 	/* Fixup NUMA node as it may not be setup yet by the generic
+ 	 * code and is needed by the DMA init
+ 	 */
+@@ -972,7 +973,9 @@ static void pcibios_setup_device(struct pci_dev *dev)
+ 	set_dma_offset(&dev->dev, PCI_DRAM_OFFSET);
  
- 	eeh_add_device_tree_early(dn);
+ 	/* Additional platform DMA/iommu setup */
+-	dma_dev_setup(dev);
++	hose = pci_bus_to_host(dev->bus);
++	if (hose->controller_ops.dma_dev_setup)
++		hose->controller_ops.dma_dev_setup(dev);
  
-+	hose = pci_bus_to_host(bus);
-+
- 	mode = PCI_PROBE_NORMAL;
--	mode = probe_mode(bus);
-+	if (hose->controller_ops.probe_mode)
-+		mode = hose->controller_ops.probe_mode(bus);
+ 	/* Read default IRQs and fixup if necessary */
+ 	pci_read_irq_line(dev);
+diff --git a/arch/powerpc/sysdev/dart_iommu.c b/arch/powerpc/sysdev/dart_iommu.c
+index 120e96a..ca38b1e 100644
+--- a/arch/powerpc/sysdev/dart_iommu.c
++++ b/arch/powerpc/sysdev/dart_iommu.c
+@@ -399,7 +399,6 @@ void __init iommu_init_early_dart(struct pci_controller_ops *controller_ops)
+ 		controller_ops->dma_dev_setup = pci_dma_dev_setup_dart;
+ 		controller_ops->dma_bus_setup = pci_dma_bus_setup_dart;
+ 	} else {
+-		ppc_md.pci_dma_dev_setup = pci_dma_dev_setup_dart;
+ 		ppc_md.pci_dma_bus_setup = pci_dma_bus_setup_dart;
+ 	}
+ 	/* Setup pci_dma ops */
+@@ -412,7 +411,6 @@ void __init iommu_init_early_dart(struct pci_controller_ops *controller_ops)
+ 		controller_ops->dma_dev_setup = NULL;
+ 		controller_ops->dma_bus_setup = NULL;
+ 	}
+-	ppc_md.pci_dma_dev_setup = NULL;
+ 	ppc_md.pci_dma_bus_setup = NULL;
  
- 	if (mode == PCI_PROBE_DEVTREE) {
- 		/* use ofdt-based probe */
-diff --git a/arch/powerpc/kernel/pci_of_scan.c b/arch/powerpc/kernel/pci_of_scan.c
-index ae1767b..8312962 100644
---- a/arch/powerpc/kernel/pci_of_scan.c
-+++ b/arch/powerpc/kernel/pci_of_scan.c
-@@ -207,6 +207,7 @@ void of_scan_pci_bridge(struct pci_dev *dev)
- {
- 	struct device_node *node = dev->dev.of_node;
- 	struct pci_bus *bus;
-+	struct pci_controller *hose;
- 	const __be32 *busrange, *ranges;
- 	int len, i, mode;
- 	struct pci_bus_region region;
-@@ -286,8 +287,11 @@ void of_scan_pci_bridge(struct pci_dev *dev)
- 		bus->number);
- 	pr_debug("    bus name: %s\n", bus->name);
- 
-+	hose = pci_bus_to_host(bus);
-+
- 	mode = PCI_PROBE_NORMAL;
--	mode = probe_mode(bus);
-+	if (hose->controller_ops.probe_mode)
-+		mode = hose->controller_ops.probe_mode(bus);
- 	pr_debug("    probe mode: %d\n", mode);
- 
- 	if (mode == PCI_PROBE_DEVTREE)
+ 	/* Setup pci_dma ops */
 -- 
 2.1.4
