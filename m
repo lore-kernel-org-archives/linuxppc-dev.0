@@ -1,18 +1,18 @@
 Return-Path: <dja@axtens.net>
-Received: from mail-pa0-x233.google.com (mail-pa0-x233.google.com
- [IPv6:2607:f8b0:400e:c03::233])
+Received: from mail-pa0-x234.google.com (mail-pa0-x234.google.com
+ [IPv6:2607:f8b0:400e:c03::234])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 217CB1A08B8
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2015 16:36:31 +1100 (AEDT)
-Received: by padcy3 with SMTP id cy3so17184541pad.3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2015 22:36:29 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 70A131A088D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2015 16:36:34 +1100 (AEDT)
+Received: by pacwe9 with SMTP id we9so17273475pac.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2015 22:36:32 -0700 (PDT)
 From: Daniel Axtens <dja@axtens.net>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 07/27] powerpc: ppc_md.pci_dma_dev_setup ->
- pci_controller_ops.dma_dev_setup
-Date: Wed, 25 Mar 2015 16:35:41 +1100
-Message-Id: <1427261761-22952-8-git-send-email-dja@axtens.net>
+Subject: [PATCH 08/27] powerpc: ppc_md.pci_dma_bus_setup ->
+ pci_controller_ops.dma_bus_setup
+Date: Wed, 25 Mar 2015 16:35:42 +1100
+Message-Id: <1427261761-22952-9-git-send-email-dja@axtens.net>
 In-Reply-To: <1427261761-22952-1-git-send-email-dja@axtens.net>
 References: <1427261761-22952-1-git-send-email-dja@axtens.net>
 Cc: Daniel Axtens <dja@axtens.net>
@@ -27,54 +27,51 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Signed-off-by: Daniel Axtens <dja@axtens.net>
 ---
- arch/powerpc/include/asm/pci-bridge.h | 14 ++++++++++++++
+ arch/powerpc/include/asm/pci-bridge.h | 11 +++++++++++
  arch/powerpc/kernel/pci-common.c      |  3 +--
- 2 files changed, 15 insertions(+), 2 deletions(-)
+ 2 files changed, 12 insertions(+), 2 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
-index 3ab8a2d..2474f29 100644
+index 2474f29..680a46d 100644
 --- a/arch/powerpc/include/asm/pci-bridge.h
 +++ b/arch/powerpc/include/asm/pci-bridge.h
-@@ -18,6 +18,7 @@ struct device_node;
-  * PCI controller operations
+@@ -19,6 +19,7 @@ struct device_node;
   */
  struct pci_controller_ops {
-+	void		(*dma_dev_setup)(struct pci_dev *dev);
+ 	void		(*dma_dev_setup)(struct pci_dev *dev);
++	void		(*dma_bus_setup)(struct pci_bus *bus);
  };
  
  /*
-@@ -265,5 +266,18 @@ static inline int pcibios_vaddr_is_ioport(void __iomem *address)
+@@ -279,5 +280,15 @@ static inline void dma_dev_setup(struct pci_dev *dev)
+ 		ppc_md.pci_dma_dev_setup(dev);
  }
- #endif	/* CONFIG_PCI */
  
-+/*
-+ * Shims to prefer pci_controller version over ppc_md where available.
-+ */
-+static inline void dma_dev_setup(struct pci_dev *dev)
++static inline void dma_bus_setup(struct pci_bus *bus)
 +{
-+	struct pci_controller *hose = pci_bus_to_host(dev->bus);
++	struct pci_controller *hose = pci_bus_to_host(bus);
 +
-+	if (hose->controller_ops.dma_dev_setup)
-+		hose->controller_ops.dma_dev_setup(dev);
-+	else if (ppc_md.pci_dma_dev_setup)
-+		ppc_md.pci_dma_dev_setup(dev);
++	if (hose->controller_ops.dma_bus_setup)
++		hose->controller_ops.dma_bus_setup(bus);
++	else if (ppc_md.pci_dma_bus_setup)
++		ppc_md.pci_dma_bus_setup(bus);
 +}
 +
  #endif	/* __KERNEL__ */
  #endif	/* _ASM_POWERPC_PCI_BRIDGE_H */
 diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
-index 3d07d81..3ce6d0c 100644
+index 3ce6d0c..f5280ec 100644
 --- a/arch/powerpc/kernel/pci-common.c
 +++ b/arch/powerpc/kernel/pci-common.c
-@@ -969,8 +969,7 @@ static void pcibios_setup_device(struct pci_dev *dev)
- 	set_dma_offset(&dev->dev, PCI_DRAM_OFFSET);
+@@ -953,8 +953,7 @@ void pcibios_setup_bus_self(struct pci_bus *bus)
+ 		ppc_md.pcibios_fixup_bus(bus);
  
- 	/* Additional platform DMA/iommu setup */
--	if (ppc_md.pci_dma_dev_setup)
--		ppc_md.pci_dma_dev_setup(dev);
-+	dma_dev_setup(dev);
+ 	/* Setup bus DMA mappings */
+-	if (ppc_md.pci_dma_bus_setup)
+-		ppc_md.pci_dma_bus_setup(bus);
++	dma_bus_setup(bus);
+ }
  
- 	/* Read default IRQs and fixup if necessary */
- 	pci_read_irq_line(dev);
+ static void pcibios_setup_device(struct pci_dev *dev)
 -- 
 2.1.4
