@@ -1,18 +1,18 @@
 Return-Path: <dja@axtens.net>
-Received: from mail-pa0-x22a.google.com (mail-pa0-x22a.google.com
- [IPv6:2607:f8b0:400e:c03::22a])
+Received: from mail-pa0-x22e.google.com (mail-pa0-x22e.google.com
+ [IPv6:2607:f8b0:400e:c03::22e])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 007FD1A0680
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2015 16:37:14 +1100 (AEDT)
-Received: by pabxg6 with SMTP id xg6so17387535pab.0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2015 22:37:13 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id EC4D01A0682
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2015 16:37:17 +1100 (AEDT)
+Received: by pagj7 with SMTP id j7so17266109pag.2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2015 22:37:16 -0700 (PDT)
 From: Daniel Axtens <dja@axtens.net>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 21/27] powerpc: Remove shim for
- pci_controller_ops.window_alignment
-Date: Wed, 25 Mar 2015 16:35:55 +1100
-Message-Id: <1427261761-22952-22-git-send-email-dja@axtens.net>
+Subject: [PATCH 22/27] powerpc: Remove shim for
+ pci_controller_ops.reset_secondary_bus
+Date: Wed, 25 Mar 2015 16:35:56 +1100
+Message-Id: <1427261761-22952-23-git-send-email-dja@axtens.net>
 In-Reply-To: <1427261761-22952-1-git-send-email-dja@axtens.net>
 References: <1427261761-22952-1-git-send-email-dja@axtens.net>
 Cc: Daniel Axtens <dja@axtens.net>
@@ -28,75 +28,69 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 Signed-off-by: Daniel Axtens <dja@axtens.net>
 ---
  arch/powerpc/include/asm/machdep.h    |  3 ---
- arch/powerpc/include/asm/pci-bridge.h | 18 ------------------
- arch/powerpc/kernel/pci-common.c      | 12 +++++++++++-
- 3 files changed, 11 insertions(+), 22 deletions(-)
+ arch/powerpc/include/asm/pci-bridge.h | 16 ----------------
+ arch/powerpc/kernel/pci-common.c      |  9 ++++++++-
+ 3 files changed, 8 insertions(+), 20 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
-index 9d4a067..f1476b8 100644
+index f1476b8..f178cf1 100644
 --- a/arch/powerpc/include/asm/machdep.h
 +++ b/arch/powerpc/include/asm/machdep.h
 @@ -244,9 +244,6 @@ struct machdep_calls {
  	/* Called after scan and before resource survey */
  	void (*pcibios_fixup_phb)(struct pci_controller *hose);
  
--	/* Called during PCI resource reassignment */
--	resource_size_t (*pcibios_window_alignment)(struct pci_bus *, unsigned long type);
+-	/* Reset the secondary bus of bridge */
+-	void  (*pcibios_reset_secondary_bus)(struct pci_dev *dev);
 -
- 	/* Reset the secondary bus of bridge */
- 	void  (*pcibios_reset_secondary_bus)(struct pci_dev *dev);
- 
+ 	/* Called to shutdown machine specific hardware not already controlled
+ 	 * by other drivers.
+ 	 */
 diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
-index ea9496b..b62e043 100644
+index b62e043..b08db93 100644
 --- a/arch/powerpc/include/asm/pci-bridge.h
 +++ b/arch/powerpc/include/asm/pci-bridge.h
-@@ -327,24 +327,6 @@ static inline bool enable_device_hook(struct pci_dev *dev)
+@@ -327,21 +327,5 @@ static inline bool enable_device_hook(struct pci_dev *dev)
  	return true;
  }
  
--static inline resource_size_t pci_window_alignment(struct pci_bus *bus,
--						   unsigned long type)
+-static inline void reset_secondary_bus(struct pci_dev *dev)
 -{
--	struct pci_controller *hose = pci_bus_to_host(bus);
+-	struct pci_controller *hose = pci_bus_to_host(dev->bus);
 -
--	if (hose->controller_ops.window_alignment)
--		return hose->controller_ops.window_alignment(bus, type);
--	if (ppc_md.pcibios_window_alignment)
--		return ppc_md.pcibios_window_alignment(bus, type);
--
--	/*
--	 * PCI core will figure out the default
--	 * alignment: 4KiB for I/O and 1MiB for
--	 * memory window.
--	 */
--	return 1;
+-	if (hose->controller_ops.reset_secondary_bus)
+-		hose->controller_ops.reset_secondary_bus(dev);
+-	else if (ppc_md.pcibios_reset_secondary_bus)
+-		ppc_md.pcibios_reset_secondary_bus(dev);
+-	else
+-		/*
+-		 * Fallback to the generic function if no
+-		 * platform-specific one is provided
+-		 */
+-		pci_reset_secondary_bus(dev);
 -}
 -
- static inline void reset_secondary_bus(struct pci_dev *dev)
- {
- 	struct pci_controller *hose = pci_bus_to_host(dev->bus);
+ #endif	/* __KERNEL__ */
+ #endif	/* _ASM_POWERPC_PCI_BRIDGE_H */
 diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
-index 67d4dcb..9edb479 100644
+index 9edb479..a535d31 100644
 --- a/arch/powerpc/kernel/pci-common.c
 +++ b/arch/powerpc/kernel/pci-common.c
-@@ -109,7 +109,17 @@ void pcibios_free_controller(struct pci_controller *phb)
- resource_size_t pcibios_window_alignment(struct pci_bus *bus,
- 					 unsigned long type)
- {
--	return pci_window_alignment(bus, type);
-+	struct pci_controller *hose = pci_bus_to_host(bus);
-+
-+	if (hose->controller_ops.window_alignment)
-+		return hose->controller_ops.window_alignment(bus, type);
-+
-+	/*
-+	 * PCI core will figure out the default
-+	 * alignment: 4KiB for I/O and 1MiB for
-+	 * memory window.
-+	 */
-+	return 1;
- }
+@@ -124,7 +124,14 @@ resource_size_t pcibios_window_alignment(struct pci_bus *bus,
  
  void pcibios_reset_secondary_bus(struct pci_dev *dev)
+ {
+-	reset_secondary_bus(dev);
++	struct pci_controller *hose = pci_bus_to_host(dev->bus);
++
++	if (hose->controller_ops.reset_secondary_bus) {
++		hose->controller_ops.reset_secondary_bus(dev);
++		return;
++	}
++
++	pci_reset_secondary_bus(dev);
+ }
+ 
+ static resource_size_t pcibios_io_size(const struct pci_controller *hose)
 -- 
 2.1.4
