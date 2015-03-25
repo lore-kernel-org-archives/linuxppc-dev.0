@@ -1,35 +1,22 @@
-Return-Path: <weiyang@linux.vnet.ibm.com>
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <Emilian.Medve@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0116.outbound.protection.outlook.com [207.46.100.116])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8F2EE1A2CEF
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2015 16:58:11 +1100 (AEDT)
-Received: from /spool/local
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
- Wed, 25 Mar 2015 15:58:10 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 9A3E82CE8040
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2015 16:58:08 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t2P5w06x46596314
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2015 16:58:08 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t2P5vYwL031509
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2015 16:57:35 +1100
-From: Wei Yang <weiyang@linux.vnet.ibm.com>
-To: bhelgaas@google.com, benh@au1.ibm.com, gwshan@linux.vnet.ibm.com
-Subject: [PATCH V15 21/21] powerpc/pci: Add PCI resource alignment
- documentation
-Date: Wed, 25 Mar 2015 13:44:57 +0800
-Message-Id: <1427262297-5694-22-git-send-email-weiyang@linux.vnet.ibm.com>
-In-Reply-To: <1427262297-5694-1-git-send-email-weiyang@linux.vnet.ibm.com>
-References: <1427262297-5694-1-git-send-email-weiyang@linux.vnet.ibm.com>
-Cc: linux-pci@vger.kernel.org, Wei Yang <weiyang@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 782221A366E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2015 17:21:23 +1100 (AEDT)
+From: Emil Medve <Emilian.Medve@Freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <devicetree@vger.kernel.org>,
+ <scottwood@Freescale.com>
+Subject: [PATCH v2] powerpc/mpc85xx: Add MDIO bus muxing support to the board
+ device tree(s)
+Date: Wed, 25 Mar 2015 01:14:51 -0500
+Message-ID: <1427264091-1741-1-git-send-email-Emilian.Medve@Freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: Shruti Kanetkar <Kanetkar.Shruti@gmail.com>,
+ Igal Liberman <Igal.Liberman@Freescale.com>,
+ Emil Medve <Emilian.Medve@Freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,327 +26,2672 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In order to enable SRIOV on PowerNV platform, the PF's IOV BAR needs to be
-adjusted:
+From: Igal Liberman <Igal.Liberman@freescale.com>
 
-    1. size expanded
-    2. aligned to M64BT size
+Describe the PHY topology for all configurations supported by each board
 
-This patch documents this change on the reason and how.
+Based on prior work by Andy Fleming <afleming@gmail.com>
 
-[bhelgaas: reformat, clarify, expand]
-Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
+Signed-off-by: Igal Liberman <Igal.Liberman@freescale.com>
+Signed-off-by: Shruti Kanetkar <Kanetkar.Shruti@gmail.com>
+Signed-off-by: Emil Medve <Emilian.Medve@Freescale.com>
 ---
- .../powerpc/pci_iov_resource_on_powernv.txt        |  301 ++++++++++++++++++++
- 1 file changed, 301 insertions(+)
- create mode 100644 Documentation/powerpc/pci_iov_resource_on_powernv.txt
 
-diff --git a/Documentation/powerpc/pci_iov_resource_on_powernv.txt b/Documentation/powerpc/pci_iov_resource_on_powernv.txt
-new file mode 100644
-index 0000000..b55c5cd
---- /dev/null
-+++ b/Documentation/powerpc/pci_iov_resource_on_powernv.txt
-@@ -0,0 +1,301 @@
-+Wei Yang <weiyang@linux.vnet.ibm.com>
-+Benjamin Herrenschmidt <benh@au1.ibm.com>
-+Bjorn Helgaas <bhelgaas@google.com>
-+26 Aug 2014
-+
-+This document describes the requirement from hardware for PCI MMIO resource
-+sizing and assignment on PowerKVM and how generic PCI code handles this
-+requirement. The first two sections describe the concepts of Partitionable
-+Endpoints and the implementation on P8 (IODA2). The next two sections talks
-+about considerations on enabling SRIOV on IODA2.
-+
-+1. Introduction to Partitionable Endpoints
-+
-+A Partitionable Endpoint (PE) is a way to group the various resources
-+associated with a device or a set of devices to provide isolation between
-+partitions (i.e., filtering of DMA, MSIs etc.) and to provide a mechanism
-+to freeze a device that is causing errors in order to limit the possibility
-+of propagation of bad data.
-+
-+There is thus, in HW, a table of PE states that contains a pair of "frozen"
-+state bits (one for MMIO and one for DMA, they get set together but can be
-+cleared independently) for each PE.
-+
-+When a PE is frozen, all stores in any direction are dropped and all loads
-+return all 1's value. MSIs are also blocked. There's a bit more state that
-+captures things like the details of the error that caused the freeze etc., but
-+that's not critical.
-+
-+The interesting part is how the various PCIe transactions (MMIO, DMA, ...)
-+are matched to their corresponding PEs.
-+
-+The following section provides a rough description of what we have on P8
-+(IODA2).  Keep in mind that this is all per PHB (PCI host bridge).  Each PHB
-+is a completely separate HW entity that replicates the entire logic, so has
-+its own set of PEs, etc.
-+
-+2. Implementation of Partitionable Endpoints on P8 (IODA2)
-+
-+P8 supports up to 256 Partitionable Endpoints per PHB.
-+
-+  * Inbound
-+
-+    For DMA, MSIs and inbound PCIe error messages, we have a table (in
-+    memory but accessed in HW by the chip) that provides a direct
-+    correspondence between a PCIe RID (bus/dev/fn) with a PE number.
-+    We call this the RTT.
-+
-+    - For DMA we then provide an entire address space for each PE that can
-+      contain two "windows", depending on the value of PCI address bit 59.
-+      Each window can be configured to be remapped via a "TCE table" (IOMMU
-+      translation table), which has various configurable characteristics
-+      not described here.
-+
-+    - For MSIs, we have two windows in the address space (one at the top of
-+      the 32-bit space and one much higher) which, via a combination of the
-+      address and MSI value, will result in one of the 2048 interrupts per
-+      bridge being triggered.  There's a PE# in the interrupt controller
-+      descriptor table as well which is compared with the PE# obtained from
-+      the RTT to "authorize" the device to emit that specific interrupt.
-+
-+    - Error messages just use the RTT.
-+
-+  * Outbound.  That's where the tricky part is.
-+
-+    Like other PCI host bridges, the Power8 IODA2 PHB supports "windows"
-+    from the CPU address space to the PCI address space.  There is one M32
-+    window and sixteen M64 windows.  They have different characteristics.
-+    First what they have in common: they forward a configurable portion of
-+    the CPU address space to the PCIe bus and must be naturally aligned
-+    power of two in size.  The rest is different:
-+
-+    - The M32 window:
-+
-+      * Is limited to 4GB in size.
-+
-+      * Drops the top bits of the address (above the size) and replaces
-+	them with a configurable value.  This is typically used to generate
-+	32-bit PCIe accesses.  We configure that window at boot from FW and
-+	don't touch it from Linux; it's usually set to forward a 2GB
-+	portion of address space from the CPU to PCIe
-+	0x8000_0000..0xffff_ffff.  (Note: The top 64KB are actually
-+	reserved for MSIs but this is not a problem at this point; we just
-+	need to ensure Linux doesn't assign anything there, the M32 logic
-+	ignores that however and will forward in that space if we try).
-+
-+      * It is divided into 256 segments of equal size.  A table in the chip
-+	maps each segment to a PE#.  That allows portions of the MMIO space
-+	to be assigned to PEs on a segment granularity.  For a 2GB window,
-+	the segment granularity is 2GB/256 = 8MB.
-+
-+    Now, this is the "main" window we use in Linux today (excluding
-+    SR-IOV).  We basically use the trick of forcing the bridge MMIO windows
-+    onto a segment alignment/granularity so that the space behind a bridge
-+    can be assigned to a PE.
-+
-+    Ideally we would like to be able to have individual functions in PEs
-+    but that would mean using a completely different address allocation
-+    scheme where individual function BARs can be "grouped" to fit in one or
-+    more segments.
-+
-+    - The M64 windows:
-+
-+      * Must be at least 256MB in size.
-+
-+      * Do not translate addresses (the address on PCIe is the same as the
-+	address on the PowerBus).  There is a way to also set the top 14
-+	bits which are not conveyed by PowerBus but we don't use this.
-+
-+      * Can be configured to be segmented.  When not segmented, we can
-+	specify the PE# for the entire window.  When segmented, a window
-+	has 256 segments; however, there is no table for mapping a segment
-+	to a PE#.  The segment number *is* the PE#.
-+
-+      * Support overlaps.  If an address is covered by multiple windows,
-+	there's a defined ordering for which window applies.
-+
-+    We have code (fairly new compared to the M32 stuff) that exploits that
-+    for large BARs in 64-bit space:
-+
-+    We configure an M64 window to cover the entire region of address space
-+    that has been assigned by FW for the PHB (about 64GB, ignore the space
-+    for the M32, it comes out of a different "reserve").  We configure it
-+    as segmented.
-+
-+    Then we do the same thing as with M32, using the bridge alignment
-+    trick, to match to those giant segments.
-+
-+    Since we cannot remap, we have two additional constraints:
-+
-+    - We do the PE# allocation *after* the 64-bit space has been assigned
-+      because the addresses we use directly determine the PE#.  We then
-+      update the M32 PE# for the devices that use both 32-bit and 64-bit
-+      spaces or assign the remaining PE# to 32-bit only devices.
-+
-+    - We cannot "group" segments in HW, so if a device ends up using more
-+      than one segment, we end up with more than one PE#.  There is a HW
-+      mechanism to make the freeze state cascade to "companion" PEs but
-+      that only works for PCIe error messages (typically used so that if
-+      you freeze a switch, it freezes all its children).  So we do it in
-+      SW.  We lose a bit of effectiveness of EEH in that case, but that's
-+      the best we found.  So when any of the PEs freezes, we freeze the
-+      other ones for that "domain".  We thus introduce the concept of
-+      "master PE" which is the one used for DMA, MSIs, etc., and "secondary
-+      PEs" that are used for the remaining M64 segments.
-+
-+    We would like to investigate using additional M64 windows in "single
-+    PE" mode to overlay over specific BARs to work around some of that, for
-+    example for devices with very large BARs, e.g., GPUs.  It would make
-+    sense, but we haven't done it yet.
-+
-+3. Considerations for SR-IOV on PowerKVM
-+
-+  * SR-IOV Background
-+
-+    The PCIe SR-IOV feature allows a single Physical Function (PF) to
-+    support several Virtual Functions (VFs).  Registers in the PF's SR-IOV
-+    Capability control the number of VFs and whether they are enabled.
-+
-+    When VFs are enabled, they appear in Configuration Space like normal
-+    PCI devices, but the BARs in VF config space headers are unusual.  For
-+    a non-VF device, software uses BARs in the config space header to
-+    discover the BAR sizes and assign addresses for them.  For VF devices,
-+    software uses VF BAR registers in the *PF* SR-IOV Capability to
-+    discover sizes and assign addresses.  The BARs in the VF's config space
-+    header are read-only zeros.
-+
-+    When a VF BAR in the PF SR-IOV Capability is programmed, it sets the
-+    base address for all the corresponding VF(n) BARs.  For example, if the
-+    PF SR-IOV Capability is programmed to enable eight VFs, and it has a
-+    1MB VF BAR0, the address in that VF BAR sets the base of an 8MB region.
-+    This region is divided into eight contiguous 1MB regions, each of which
-+    is a BAR0 for one of the VFs.  Note that even though the VF BAR
-+    describes an 8MB region, the alignment requirement is for a single VF,
-+    i.e., 1MB in this example.
-+
-+  There are several strategies for isolating VFs in PEs:
-+
-+  - M32 window: There's one M32 window, and it is split into 256
-+    equally-sized segments.  The finest granularity possible is a 256MB
-+    window with 1MB segments.  VF BARs that are 1MB or larger could be
-+    mapped to separate PEs in this window.  Each segment can be
-+    individually mapped to a PE via the lookup table, so this is quite
-+    flexible, but it works best when all the VF BARs are the same size.  If
-+    they are different sizes, the entire window has to be small enough that
-+    the segment size matches the smallest VF BAR, which means larger VF
-+    BARs span several segments.
-+
-+  - Non-segmented M64 window: A non-segmented M64 window is mapped entirely
-+    to a single PE, so it could only isolate one VF.
-+
-+  - Single segmented M64 windows: A segmented M64 window could be used just
-+    like the M32 window, but the segments can't be individually mapped to
-+    PEs (the segment number is the PE#), so there isn't as much
-+    flexibility.  A VF with multiple BARs would have to be in a "domain" of
-+    multiple PEs, which is not as well isolated as a single PE.
-+
-+  - Multiple segmented M64 windows: As usual, each window is split into 256
-+    equally-sized segments, and the segment number is the PE#.  But if we
-+    use several M64 windows, they can be set to different base addresses
-+    and different segment sizes.  If we have VFs that each have a 1MB BAR
-+    and a 32MB BAR, we could use one M64 window to assign 1MB segments and
-+    another M64 window to assign 32MB segments.
-+
-+  Finally, the plan to use M64 windows for SR-IOV, which will be described
-+  more in the next two sections.  For a given VF BAR, we need to
-+  effectively reserve the entire 256 segments (256 * VF BAR size) and
-+  position the VF BAR to start at the beginning of a free range of
-+  segments/PEs inside that M64 window.
-+
-+  The goal is of course to be able to give a separate PE for each VF.
-+
-+  The IODA2 platform has 16 M64 windows, which are used to map MMIO
-+  range to PE#.  Each M64 window defines one MMIO range and this range is
-+  divided into 256 segments, with each segment corresponding to one PE.
-+
-+  We decide to leverage this M64 window to map VFs to individual PEs, since
-+  SR-IOV VF BARs are all the same size.
-+
-+  But doing so introduces another problem: total_VFs is usually smaller
-+  than the number of M64 window segments, so if we map one VF BAR directly
-+  to one M64 window, some part of the M64 window will map to another
-+  device's MMIO range.
-+
-+  IODA supports 256 PEs, so segmented windows contain 256 segments, so if
-+  total_VFs is less than 256, we have the situation in Figure 1.0, where
-+  segments [total_VFs, 255] of the M64 window may map to some MMIO range on
-+  other devices:
-+
-+     0      1                     total_VFs - 1
-+     +------+------+-     -+------+------+
-+     |      |      |  ...  |      |      |
-+     +------+------+-     -+------+------+
-+
-+                           VF(n) BAR space
-+
-+     0      1                     total_VFs - 1                255
-+     +------+------+-     -+------+------+-      -+------+------+
-+     |      |      |  ...  |      |      |   ...  |      |      |
-+     +------+------+-     -+------+------+-      -+------+------+
-+
-+                           M64 window
-+
-+		Figure 1.0 Direct map VF(n) BAR space
-+
-+  Our current solution is to allocate 256 segments even if the VF(n) BAR
-+  space doesn't need that much, as shown in Figure 1.1:
-+
-+     0      1                     total_VFs - 1                255
-+     +------+------+-     -+------+------+-      -+------+------+
-+     |      |      |  ...  |      |      |   ...  |      |      |
-+     +------+------+-     -+------+------+-      -+------+------+
-+
-+                           VF(n) BAR space + extra
-+
-+     0      1                     total_VFs - 1                255
-+     +------+------+-     -+------+------+-      -+------+------+
-+     |      |      |  ...  |      |      |   ...  |      |      |
-+     +------+------+-     -+------+------+-      -+------+------+
-+
-+			   M64 window
-+
-+		Figure 1.1 Map VF(n) BAR space + extra
-+
-+  Allocating the extra space ensures that the entire M64 window will be
-+  assigned to this one SR-IOV device and none of the space will be
-+  available for other devices.  Note that this only expands the space
-+  reserved in software; there are still only total_VFs VFs, and they only
-+  respond to segments [0, total_VFs - 1].  There's nothing in hardware that
-+  responds to segments [total_VFs, 255].
-+
-+4. Implications for the Generic PCI Code
-+
-+The PCIe SR-IOV spec requires that the base of the VF(n) BAR space be
-+aligned to the size of an individual VF BAR.
-+
-+In IODA2, the MMIO address determines the PE#.  If the address is in an M32
-+window, we can set the PE# by updating the table that translates segments
-+to PE#s.  Similarly, if the address is in an unsegmented M64 window, we can
-+set the PE# for the window.  But if it's in a segmented M64 window, the
-+segment number is the PE#.
-+
-+Therefore, the only way to control the PE# for a VF is to change the base
-+of the VF(n) BAR space in the VF BAR.  If the PCI core allocates the exact
-+amount of space required for the VF(n) BAR space, the VF BAR value is fixed
-+and cannot be changed.
-+
-+On the other hand, if the PCI core allocates additional space, the VF BAR
-+value can be changed as long as the entire VF(n) BAR space remains inside
-+the space allocated by the core.
-+
-+Ideally the segment size will be the same as an individual VF BAR size.
-+Then each VF will be in its own PE.  The VF BARs (and therefore the PE#s)
-+are contiguous.  If VF0 is in PE(x), then VF(n) is in PE(x+n).  If we
-+allocate 256 segments, there are (256 - numVFs) choices for the PE# of VF0.
-+
-+If the segment size is smaller than the VF BAR size, it will take several
-+segments to cover a VF BAR, and a VF will be in several PEs.  This is
-+possible, but the isolation isn't as good, and it reduces the number of PE#
-+choices because instead of consuming only numVFs segments, the VF(n) BAR
-+space will consume (numVFs * n) segments.  That means there aren't as many
-+available segments for adjusting base of the VF(n) BAR space.
+v2:	Remove 'Change-Id'
+
+ arch/powerpc/boot/dts/b4860qds.dts    |  60 ++++-
+ arch/powerpc/boot/dts/b4qds.dtsi      |  51 ++++-
+ arch/powerpc/boot/dts/p1023rdb.dts    |  24 +-
+ arch/powerpc/boot/dts/p2041rdb.dts    |  92 +++++++-
+ arch/powerpc/boot/dts/p3041ds.dts     | 112 +++++++++-
+ arch/powerpc/boot/dts/p4080ds.dts     | 184 +++++++++++++++-
+ arch/powerpc/boot/dts/p5020ds.dts     | 112 +++++++++-
+ arch/powerpc/boot/dts/p5040ds.dts     | 234 +++++++++++++++++++-
+ arch/powerpc/boot/dts/t1040rdb.dts    |  32 ++-
+ arch/powerpc/boot/dts/t1042rdb.dts    |  30 ++-
+ arch/powerpc/boot/dts/t1042rdb_pi.dts |  18 +-
+ arch/powerpc/boot/dts/t104xqds.dtsi   | 178 ++++++++++++++-
+ arch/powerpc/boot/dts/t104xrdb.dtsi   |  33 ++-
+ arch/powerpc/boot/dts/t2080qds.dts    | 158 +++++++++++++-
+ arch/powerpc/boot/dts/t2080rdb.dts    |  67 +++++-
+ arch/powerpc/boot/dts/t2081qds.dts    | 221 ++++++++++++++++++-
+ arch/powerpc/boot/dts/t4240qds.dts    | 400 +++++++++++++++++++++++++++++++++-
+ arch/powerpc/boot/dts/t4240rdb.dts    | 149 ++++++++++++-
+ 18 files changed, 2135 insertions(+), 20 deletions(-)
+
+diff --git a/arch/powerpc/boot/dts/b4860qds.dts b/arch/powerpc/boot/dts/b4860qds.dts
+index 6bb3707..98b1ef4 100644
+--- a/arch/powerpc/boot/dts/b4860qds.dts
++++ b/arch/powerpc/boot/dts/b4860qds.dts
+@@ -1,7 +1,7 @@
+ /*
+  * B4860DS Device Tree Source
+  *
+- * Copyright 2012 Freescale Semiconductor Inc.
++ * Copyright 2012 - 2015 Freescale Semiconductor Inc.
+  *
+  * Redistribution and use in source and binary forms, with or without
+  * modification, are permitted provided that the following conditions are met:
+@@ -39,12 +39,69 @@
+ 	model = "fsl,B4860QDS";
+ 	compatible = "fsl,B4860QDS";
+ 
++	aliases {
++		phy_sgmii_1e = &phy_sgmii_1e;
++		phy_sgmii_1f = &phy_sgmii_1f;
++		phy_xaui_slot1 = &phy_xaui_slot1;
++		phy_xaui_slot2 = &phy_xaui_slot2;
++	};
++
+ 	ifc: localbus@ffe124000 {
+ 		board-control@3,0 {
+ 			compatible = "fsl,b4860qds-fpga", "fsl,fpga-qixis";
+ 		};
+ 	};
+ 
++	soc@ffe000000 {
++		fman@400000 {
++			ethernet@e8000 {
++				phy-handle = <&phy_sgmii_1e>;
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@ea000 {
++				phy-handle = <&phy_sgmii_1f>;
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@f0000 {
++				phy-handle = <&phy_xaui_slot1>;
++				phy-connection-type = "xgmii";
++			};
++
++			ethernet@f2000 {
++				phy-handle = <&phy_xaui_slot2>;
++				phy-connection-type = "xgmii";
++			};
++
++			mdio@fc000 {
++				phy_sgmii_1e: ethernet-phy@1e {
++					reg = <0x1e>;
++					status = "disabled";
++				};
++
++				phy_sgmii_1f: ethernet-phy@1f {
++					reg = <0x1f>;
++					status = "disabled";
++				};
++			};
++
++			mdio@fd000 {
++				phy_xaui_slot1: xaui-phy@slot1 {
++					compatible = "ethernet-phy-ieee802.3-c45";
++					reg = <0x7>;
++					status = "disabled";
++				};
++
++				phy_xaui_slot2: xaui-phy@slot2 {
++					compatible = "ethernet-phy-ieee802.3-c45";
++					reg = <0x6>;
++					status = "disabled";
++				};
++			};
++		};
++	};
++
+ 	rio: rapidio@ffe0c0000 {
+ 		reg = <0xf 0xfe0c0000 0 0x11000>;
+ 
+@@ -55,7 +112,6 @@
+ 			ranges = <0 0 0xc 0x30000000 0 0x10000000>;
+ 		};
+ 	};
+-
+ };
+ 
+ /include/ "fsl/b4860si-post.dtsi"
+diff --git a/arch/powerpc/boot/dts/b4qds.dtsi b/arch/powerpc/boot/dts/b4qds.dtsi
+index 559d006..af49456 100644
+--- a/arch/powerpc/boot/dts/b4qds.dtsi
++++ b/arch/powerpc/boot/dts/b4qds.dtsi
+@@ -1,7 +1,7 @@
+ /*
+  * B4420DS Device Tree Source
+  *
+- * Copyright 2012 - 2014 Freescale Semiconductor, Inc.
++ * Copyright 2012 - 2015 Freescale Semiconductor, Inc.
+  *
+  * Redistribution and use in source and binary forms, with or without
+  * modification, are permitted provided that the following conditions are met:
+@@ -39,6 +39,13 @@
+ 	#size-cells = <2>;
+ 	interrupt-parent = <&mpic>;
+ 
++	aliases {
++		phy_sgmii_10 = &phy_sgmii_10;
++		phy_sgmii_11 = &phy_sgmii_11;
++		phy_sgmii_1c = &phy_sgmii_1c;
++		phy_sgmii_1d = &phy_sgmii_1d;
++	};
++
+ 	ifc: localbus@ffe124000 {
+ 		reg = <0xf 0xfe124000 0 0x2000>;
+ 		ranges = <0 0 0xf 0xe8000000 0x08000000
+@@ -210,6 +217,47 @@
+ 			phy_type = "ulpi";
+ 		};
+ 
++		fman@400000 {
++			ethernet@e0000 {
++				phy-handle = <&phy_sgmii_10>;
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@e2000 {
++				phy-handle = <&phy_sgmii_11>;
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@e4000 {
++				phy-handle = <&phy_sgmii_1c>;
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@e6000 {
++				phy-handle = <&phy_sgmii_1d>;
++				phy-connection-type = "sgmii";
++			};
++
++			mdio@fc000 {
++				phy_sgmii_10: ethernet-phy@10 {
++					reg = <0x10>;
++				};
++
++				phy_sgmii_11: ethernet-phy@11 {
++					reg = <0x11>;
++				};
++
++				phy_sgmii_1c: ethernet-phy@1c {
++					reg = <0x1c>;
++					status = "disabled";
++				};
++
++				phy_sgmii_1d: ethernet-phy@1d {
++					reg = <0x1d>;
++					status = "disabled";
++				};
++			};
++		};
+ 	};
+ 
+ 	pci0: pcie@ffe200000 {
+@@ -226,7 +274,6 @@
+ 				  0 0x00010000>;
+ 		};
+ 	};
+-
+ };
+ 
+ /include/ "fsl/b4si-post.dtsi"
+diff --git a/arch/powerpc/boot/dts/p1023rdb.dts b/arch/powerpc/boot/dts/p1023rdb.dts
+index 05a00a4..d4b111e7 100644
+--- a/arch/powerpc/boot/dts/p1023rdb.dts
++++ b/arch/powerpc/boot/dts/p1023rdb.dts
+@@ -1,7 +1,7 @@
+ /*
+  * P1023 RDB Device Tree Source
+  *
+- * Copyright 2013 - 2014 Freescale Semiconductor Inc.
++ * Copyright 2013 - 2015 Freescale Semiconductor Inc.
+  *
+  * Author: Chunhe Lan <Chunhe.Lan@freescale.com>
+  *
+@@ -93,6 +93,28 @@
+ 			dr_mode = "host";
+ 			phy_type = "ulpi";
+ 		};
++
++		fman@100000 {
++			ethernet@e0000 {
++				phy-handle = <&phy0>;
++				phy-connection-type = "rgmii";
++			};
++
++			ethernet@e2000 {
++				phy-handle = <&phy1>;
++				phy-connection-type = "rgmii";
++			};
++
++			mdio@e1120 {
++				phy0: ethernet-phy@1 {
++					reg = <0x01>;
++				};
++
++				phy1: ethernet-phy@2 {
++					reg = <0x02>;
++				};
++			};
++		};
+ 	};
+ 
+ 	lbc: localbus@ff605000 {
+diff --git a/arch/powerpc/boot/dts/p2041rdb.dts b/arch/powerpc/boot/dts/p2041rdb.dts
+index d2bb0765..33e194c 100644
+--- a/arch/powerpc/boot/dts/p2041rdb.dts
++++ b/arch/powerpc/boot/dts/p2041rdb.dts
+@@ -1,7 +1,7 @@
+ /*
+  * P2041RDB Device Tree Source
+  *
+- * Copyright 2011 - 2014 Freescale Semiconductor Inc.
++ * Copyright 2011 - 2015 Freescale Semiconductor Inc.
+  *
+  * Redistribution and use in source and binary forms, with or without
+  * modification, are permitted provided that the following conditions are met:
+@@ -41,6 +41,19 @@
+ 	#size-cells = <2>;
+ 	interrupt-parent = <&mpic>;
+ 
++	aliases {
++		phy_rgmii_0 = &phy_rgmii_0;
++		phy_rgmii_1 = &phy_rgmii_1;
++		phy_sgmii_2 = &phy_sgmii_2;
++		phy_sgmii_3 = &phy_sgmii_3;
++		phy_sgmii_4 = &phy_sgmii_4;
++		phy_sgmii_1c = &phy_sgmii_1c;
++		phy_sgmii_1d = &phy_sgmii_1d;
++		phy_sgmii_1e = &phy_sgmii_1e;
++		phy_sgmii_1f = &phy_sgmii_1f;
++		phy_xgmii_2 = &phy_xgmii_2;
++	};
++
+ 	memory {
+ 		device_type = "memory";
+ 	};
+@@ -137,6 +150,83 @@
+ 		usb1: usb@211000 {
+ 			dr_mode = "host";
+ 		};
++
++		fman@400000 {
++			ethernet@e0000 {
++				phy-handle = <&phy_sgmii_2>;
++				phy-connection-type = "sgmii";
++			};
++
++			mdio@e1120 {
++				phy_rgmii_0: ethernet-phy@0 {
++					reg = <0x0>;
++				};
++
++				phy_rgmii_1: ethernet-phy@1 {
++					reg = <0x1>;
++				};
++
++				phy_sgmii_2: ethernet-phy@2 {
++					reg = <0x2>;
++				};
++
++				phy_sgmii_3: ethernet-phy@3 {
++					reg = <0x3>;
++				};
++
++				phy_sgmii_4: ethernet-phy@4 {
++					reg = <0x4>;
++				};
++
++				phy_sgmii_1c: ethernet-phy@1c {
++					reg = <0x1c>;
++				};
++
++				phy_sgmii_1d: ethernet-phy@1d {
++					reg = <0x1d>;
++				};
++
++				phy_sgmii_1e: ethernet-phy@1e {
++					reg = <0x1e>;
++				};
++
++				phy_sgmii_1f: ethernet-phy@1f {
++					reg = <0x1f>;
++				};
++			};
++
++			ethernet@e2000 {
++				phy-handle = <&phy_sgmii_3>;
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@e4000 {
++				phy-handle = <&phy_sgmii_4>;
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@e6000 {
++				phy-handle = <&phy_rgmii_1>;
++				phy-connection-type = "rgmii";
++			};
++
++			ethernet@e8000 {
++				phy-handle = <&phy_rgmii_0>;
++				phy-connection-type = "rgmii";
++			};
++
++			ethernet@f0000 {
++				phy-handle = <&phy_xgmii_2>;
++				phy-connection-type = "xgmii";
++			};
++
++			mdio@f1000 {
++				phy_xgmii_2: ethernet-phy@0 {
++					compatible = "ethernet-phy-ieee802.3-c45";
++					reg = <0x0>;
++				};
++			};
++		};
+ 	};
+ 
+ 	rio: rapidio@ffe0c0000 {
+diff --git a/arch/powerpc/boot/dts/p3041ds.dts b/arch/powerpc/boot/dts/p3041ds.dts
+index eca6c69..80af50e 100644
+--- a/arch/powerpc/boot/dts/p3041ds.dts
++++ b/arch/powerpc/boot/dts/p3041ds.dts
+@@ -1,7 +1,7 @@
+ /*
+  * P3041DS Device Tree Source
+  *
+- * Copyright 2010 - 2014 Freescale Semiconductor Inc.
++ * Copyright 2010 - 2015 Freescale Semiconductor Inc.
+  *
+  * Redistribution and use in source and binary forms, with or without
+  * modification, are permitted provided that the following conditions are met:
+@@ -41,6 +41,20 @@
+ 	#size-cells = <2>;
+ 	interrupt-parent = <&mpic>;
+ 
++	aliases{
++		phy_rgmii_0 = &phy_rgmii_0;
++		phy_rgmii_1 = &phy_rgmii_1;
++		phy_sgmii_1c = &phy_sgmii_1c;
++		phy_sgmii_1d = &phy_sgmii_1d;
++		phy_sgmii_1e = &phy_sgmii_1e;
++		phy_sgmii_1f = &phy_sgmii_1f;
++		phy_xgmii_1 = &phy_xgmii_1;
++		phy_xgmii_2 = &phy_xgmii_2;
++		emi1_rgmii = &hydra_mdio_rgmii;
++		emi1_sgmii = &hydra_mdio_sgmii;
++		emi2_xgmii = &hydra_mdio_xgmii;
++	};
++
+ 	memory {
+ 		device_type = "memory";
+ 	};
+@@ -150,6 +164,52 @@
+ 				reg = <0x4c>;
+ 			};
+ 		};
++
++		fman@400000{
++			ethernet@e0000 {
++				phy-handle = <&phy_sgmii_1c>;
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@e2000 {
++				phy-handle = <&phy_sgmii_1d>;
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@e4000 {
++				phy-handle = <&phy_sgmii_1e>;
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@e6000 {
++				phy-handle = <&phy_sgmii_1f>;
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@e8000 {
++				phy-handle = <&phy_rgmii_1>;
++				phy-connection-type = "rgmii";
++			};
++
++			ethernet@f0000 {
++				phy-handle = <&phy_xgmii_1>;
++				phy-connection-type = "xgmii";
++			};
++
++			hydra_mdio_xgmii: mdio@f1000 {
++				status = "disabled";
++
++				phy_xgmii_1: ethernet-phy@4 {
++					compatible = "ethernet-phy-ieee802.3-c45";
++					reg = <0x4>;
++				};
++
++				phy_xgmii_2: ethernet-phy@0 {
++					compatible = "ethernet-phy-ieee802.3-c45";
++					reg = <0x0>;
++				};
++			};
++		};
+ 	};
+ 
+ 	rio: rapidio@ffe0c0000 {
+@@ -215,8 +275,58 @@
+ 		};
+ 
+ 		board-control@3,0 {
++			#address-cells = <1>;
++			#size-cells = <1>;
+ 			compatible = "fsl,p3041ds-fpga", "fsl,fpga-ngpixis";
+ 			reg = <3 0 0x30>;
++			ranges = <0 3 0 0x30>;
++
++			mdio-mux-emi1 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				compatible = "mdio-mux-mmioreg", "mdio-mux";
++				mdio-parent-bus = <&mdio0>;
++				reg = <9 1>;
++				mux-mask = <0x78>;
++
++				hydra_mdio_rgmii: rgmii-mdio@8 {
++					#address-cells = <1>;
++					#size-cells = <0>;
++					reg = <8>;
++					status = "disabled";
++
++					phy_rgmii_0: ethernet-phy@0 {
++						reg = <0x0>;
++					};
++
++					phy_rgmii_1: ethernet-phy@1 {
++						reg = <0x1>;
++					};
++				};
++
++				hydra_mdio_sgmii: sgmii-mdio@28 {
++					#address-cells = <1>;
++					#size-cells = <0>;
++					reg = <0x28>;
++					status = "disabled";
++
++					phy_sgmii_1c: ethernet-phy@1c {
++						reg = <0x1c>;
++					};
++
++					phy_sgmii_1d: ethernet-phy@1d {
++						reg = <0x1d>;
++					};
++
++					phy_sgmii_1e: ethernet-phy@1e {
++						reg = <0x1e>;
++					};
++
++					phy_sgmii_1f: ethernet-phy@1f {
++						reg = <0x1f>;
++					};
++				};
++			};
+ 		};
+ 	};
+ 
+diff --git a/arch/powerpc/boot/dts/p4080ds.dts b/arch/powerpc/boot/dts/p4080ds.dts
+index 4f80c9d..f115909 100644
+--- a/arch/powerpc/boot/dts/p4080ds.dts
++++ b/arch/powerpc/boot/dts/p4080ds.dts
+@@ -1,7 +1,7 @@
+ /*
+  * P4080DS Device Tree Source
+  *
+- * Copyright 2009 - 2014 Freescale Semiconductor Inc.
++ * Copyright 2009 - 2015 Freescale Semiconductor Inc.
+  *
+  * Redistribution and use in source and binary forms, with or without
+  * modification, are permitted provided that the following conditions are met:
+@@ -41,6 +41,20 @@
+ 	#size-cells = <2>;
+ 	interrupt-parent = <&mpic>;
+ 
++	aliases {
++		phy_rgmii = &phyrgmii;
++		phy5_slot3 = &phy5slot3;
++		phy6_slot3 = &phy6slot3;
++		phy7_slot3 = &phy7slot3;
++		phy8_slot3 = &phy8slot3;
++		emi1_slot3 = &p4080mdio2;
++		emi1_slot4 = &p4080mdio1;
++		emi1_slot5 = &p4080mdio3;
++		emi1_rgmii = &p4080mdio0;
++		emi2_slot4 = &p4080xmdio1;
++		emi2_slot5 = &p4080xmdio3;
++	};
++
+ 	memory {
+ 		device_type = "memory";
+ 	};
+@@ -137,6 +151,60 @@
+ 			dr_mode = "host";
+ 			phy_type = "ulpi";
+ 		};
++
++		fman@400000 {
++			ethernet@e0000 {
++				phy-handle = <&phy0>;
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@e2000 {
++				phy-handle = <&phy1>;
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@e4000 {
++				phy-handle = <&phy2>;
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@e6000 {
++				phy-handle = <&phy3>;
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@f0000 {
++				phy-handle = <&phy10>;
++				phy-connection-type = "xgmii";
++			};
++		};
++
++		fman@500000 {
++			ethernet@e0000 {
++				phy-handle = <&phy5>;
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@e2000 {
++				phy-handle = <&phy6>;
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@e4000 {
++				phy-handle = <&phy7>;
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@e6000 {
++				phy-handle = <&phy8>;
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@f0000 {
++				phy-handle = <&phy11>;
++				phy-connection-type = "xgmii";
++			};
++		};
+ 	};
+ 
+ 	rio: rapidio@ffe0c0000 {
+@@ -213,6 +281,120 @@
+ 		};
+ 	};
+ 
++	mdio-mux-emi1 {
++		#address-cells = <1>;
++		#size-cells = <0>;
++		compatible = "mdio-mux-gpio", "mdio-mux";
++		mdio-parent-bus = <&mdio0>;
++		gpios = <&gpio0 1 0>, <&gpio0 0 0>;
++
++		p4080mdio0: mdio@0 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0>;
++
++			phyrgmii: ethernet-phy@0 {
++				reg = <0x0>;
++			};
++		};
++
++		p4080mdio1: mdio@1 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <1>;
++
++			phy5: ethernet-phy@1c {
++				reg = <0x1c>;
++			};
++
++			phy6: ethernet-phy@1d {
++				reg = <0x1d>;
++			};
++
++			phy7: ethernet-phy@1e {
++				reg = <0x1e>;
++			};
++
++			phy8: ethernet-phy@1f {
++				reg = <0x1f>;
++			};
++		};
++
++		p4080mdio2: mdio@2 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <2>;
++			status = "disabled";
++
++			phy5slot3: ethernet-phy@1c {
++				reg = <0x1c>;
++			};
++
++			phy6slot3: ethernet-phy@1d {
++				reg = <0x1d>;
++			};
++
++			phy7slot3: ethernet-phy@1e {
++				reg = <0x1e>;
++			};
++
++			phy8slot3: ethernet-phy@1f {
++				reg = <0x1f>;
++			};
++		};
++
++		p4080mdio3: mdio@3 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <3>;
++
++			phy0: ethernet-phy@1c {
++				reg = <0x1c>;
++			};
++
++			phy1: ethernet-phy@1d {
++				reg = <0x1d>;
++			};
++
++			phy2: ethernet-phy@1e {
++				reg = <0x1e>;
++			};
++
++			phy3: ethernet-phy@1f {
++				reg = <0x1f>;
++			};
++		};
++	};
++
++	mdio-mux-emi2 {
++		#address-cells = <1>;
++		#size-cells = <0>;
++		compatible = "mdio-mux-gpio", "mdio-mux";
++		mdio-parent-bus = <&xmdio0>;
++		gpios = <&gpio0 3 0>, <&gpio0 2 0>;
++
++		p4080xmdio1: mdio@1 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <1>;
++
++			phy11: ethernet-phy@0 {
++				compatible = "ethernet-phy-ieee802.3-c45";
++				reg = <0x0>;
++			};
++		};
++
++		p4080xmdio3: mdio@3 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <3>;
++
++			phy10: ethernet-phy@4 {
++				compatible = "ethernet-phy-ieee802.3-c45";
++				reg = <0x4>;
++			};
++		};
++	};
+ };
+ 
+ /include/ "fsl/p4080si-post.dtsi"
+diff --git a/arch/powerpc/boot/dts/p5020ds.dts b/arch/powerpc/boot/dts/p5020ds.dts
+index d0309a8..d052721 100644
+--- a/arch/powerpc/boot/dts/p5020ds.dts
++++ b/arch/powerpc/boot/dts/p5020ds.dts
+@@ -1,7 +1,7 @@
+ /*
+  * P5020DS Device Tree Source
+  *
+- * Copyright 2010 - 2014 Freescale Semiconductor Inc.
++ * Copyright 2010 - 2015 Freescale Semiconductor Inc.
+  *
+  * Redistribution and use in source and binary forms, with or without
+  * modification, are permitted provided that the following conditions are met:
+@@ -41,6 +41,20 @@
+ 	#size-cells = <2>;
+ 	interrupt-parent = <&mpic>;
+ 
++	aliases {
++		phy_rgmii_0 = &phy_rgmii_0;
++		phy_rgmii_1 = &phy_rgmii_1;
++		phy_sgmii_1c = &phy_sgmii_1c;
++		phy_sgmii_1d = &phy_sgmii_1d;
++		phy_sgmii_1e = &phy_sgmii_1e;
++		phy_sgmii_1f = &phy_sgmii_1f;
++		phy_xgmii_1 = &phy_xgmii_1;
++		phy_xgmii_2 = &phy_xgmii_2;
++		emi1_rgmii = &hydra_mdio_rgmii;
++		emi1_sgmii = &hydra_mdio_sgmii;
++		emi2_xgmii = &hydra_mdio_xgmii;
++	};
++
+ 	memory {
+ 		device_type = "memory";
+ 	};
+@@ -150,6 +164,52 @@
+ 				reg = <0x4c>;
+ 			};
+ 		};
++
++		fman@400000 {
++			ethernet@e0000 {
++				phy-handle = <&phy_sgmii_1c>;
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@e2000 {
++				phy-handle = <&phy_sgmii_1d>;
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@e4000 {
++				phy-handle = <&phy_sgmii_1e>;
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@e6000 {
++				phy-handle = <&phy_sgmii_1f>;
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@e8000 {
++				phy-handle = <&phy_rgmii_1>;
++				phy-connection-type = "rgmii";
++			};
++
++			ethernet@f0000 {
++				phy-handle = <&phy_xgmii_1>;
++				phy-connection-type = "xgmii";
++			};
++
++			hydra_mdio_xgmii: mdio@f1000 {
++				status = "disabled";
++
++				phy_xgmii_1: ethernet-phy@4 {
++					compatible = "ethernet-phy-ieee802.3-c45";
++					reg = <0x4>;
++				};
++
++				phy_xgmii_2: ethernet-phy@0 {
++					compatible = "ethernet-phy-ieee802.3-c45";
++					reg = <0x0>;
++				};
++			};
++		};
+ 	};
+ 
+ 	rio: rapidio@ffe0c0000 {
+@@ -215,8 +275,58 @@
+ 		};
+ 
+ 		board-control@3,0 {
++			#address-cells = <1>;
++			#size-cells = <1>;
+ 			compatible = "fsl,p5020ds-fpga", "fsl,fpga-ngpixis";
+ 			reg = <3 0 0x30>;
++			ranges = <0 3 0 0x30>;
++
++			mdio-mux-emi1 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				compatible = "mdio-mux-mmioreg", "mdio-mux";
++				mdio-parent-bus = <&mdio0>;
++				reg = <9 1>;
++				mux-mask = <0x78>;
++
++				hydra_mdio_rgmii: rgmii-mdio@8 {
++					#address-cells = <1>;
++					#size-cells = <0>;
++					reg = <8>;
++					status = "disabled";
++
++					phy_rgmii_0: ethernet-phy@0 {
++						reg = <0x0>;
++					};
++
++					phy_rgmii_1: ethernet-phy@1 {
++						reg = <0x1>;
++					};
++				};
++
++				hydra_mdio_sgmii: sgmii-mdio@28 {
++					#address-cells = <1>;
++					#size-cells = <0>;
++					reg = <0x28>;
++					status = "disabled";
++
++					phy_sgmii_1c: ethernet-phy@1c {
++						reg = <0x1c>;
++					};
++
++					phy_sgmii_1d: ethernet-phy@1d {
++						reg = <0x1d>;
++					};
++
++					phy_sgmii_1e: ethernet-phy@1e {
++						reg = <0x1e>;
++					};
++
++					phy_sgmii_1f: ethernet-phy@1f {
++						reg = <0x1f>;
++					};
++				};
++			};
+ 		};
+ 	};
+ 
+diff --git a/arch/powerpc/boot/dts/p5040ds.dts b/arch/powerpc/boot/dts/p5040ds.dts
+index 0516823..db31483 100644
+--- a/arch/powerpc/boot/dts/p5040ds.dts
++++ b/arch/powerpc/boot/dts/p5040ds.dts
+@@ -1,7 +1,7 @@
+ /*
+  * P5040DS Device Tree Source
+  *
+- * Copyright 2012 - 2014 Freescale Semiconductor Inc.
++ * Copyright 2012 - 2015 Freescale Semiconductor Inc.
+  *
+  * Redistribution and use in source and binary forms, with or without
+  * modification, are permitted provided that the following conditions are met:
+@@ -41,6 +41,32 @@
+ 	#size-cells = <2>;
+ 	interrupt-parent = <&mpic>;
+ 
++	aliases{
++		phy_sgmii_slot2_1c = &phy_sgmii_slot2_1c;
++		phy_sgmii_slot2_1d = &phy_sgmii_slot2_1d;
++		phy_sgmii_slot2_1e = &phy_sgmii_slot2_1e;
++		phy_sgmii_slot2_1f = &phy_sgmii_slot2_1f;
++		phy_sgmii_slot3_1c = &phy_sgmii_slot3_1c;
++		phy_sgmii_slot3_1d = &phy_sgmii_slot3_1d;
++		phy_sgmii_slot3_1e = &phy_sgmii_slot3_1e;
++		phy_sgmii_slot3_1f = &phy_sgmii_slot3_1f;
++		phy_sgmii_slot5_1c = &phy_sgmii_slot5_1c;
++		phy_sgmii_slot5_1d = &phy_sgmii_slot5_1d;
++		phy_sgmii_slot5_1e = &phy_sgmii_slot5_1e;
++		phy_sgmii_slot5_1f = &phy_sgmii_slot5_1f;
++		phy_sgmii_slot6_1c = &phy_sgmii_slot6_1c;
++		phy_sgmii_slot6_1d = &phy_sgmii_slot6_1d;
++		phy_sgmii_slot6_1e = &phy_sgmii_slot6_1e;
++		phy_sgmii_slot6_1f = &phy_sgmii_slot6_1f;
++		hydra_rg = &hydra_rg;
++		hydra_sg_slot2 = &hydra_sg_slot2;
++		hydra_sg_slot3 = &hydra_sg_slot3;
++		hydra_sg_slot5 = &hydra_sg_slot5;
++		hydra_sg_slot6 = &hydra_sg_slot6;
++		hydra_xg_slot1 = &hydra_xg_slot1;
++		hydra_xg_slot2 = &hydra_xg_slot2;
++	};
++
+ 	memory {
+ 		device_type = "memory";
+ 	};
+@@ -147,6 +173,62 @@
+ 				reg = <0x4c>;
+ 			};
+ 		};
++
++		fman@400000 {
++			ethernet@e0000 {
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@e2000 {
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@e4000 {
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@e6000 {
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@e8000 {
++				phy-handle = <&phy_rgmii_0>;
++				phy-connection-type = "rgmii";
++			};
++
++			ethernet@f0000 {
++				phy-handle = <&phy_xgmii_slot_2>;
++				phy-connection-type = "xgmii";
++			};
++		};
++
++		fman@500000 {
++			ethernet@e0000 {
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@e2000 {
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@e4000 {
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@e6000 {
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@e8000 {
++				phy-handle = <&phy_rgmii_1>;
++				phy-connection-type = "rgmii";
++			};
++
++			ethernet@f0000 {
++				phy-handle = <&phy_xgmii_slot_1>;
++				phy-connection-type = "xgmii";
++			};
++		};
+ 	};
+ 
+ 	lbc: localbus@ffe124000 {
+@@ -200,8 +282,158 @@
+ 		};
+ 
+ 		board-control@3,0 {
++			#address-cells = <1>;
++			#size-cells = <1>;
+ 			compatible = "fsl,p5040ds-fpga", "fsl,fpga-ngpixis";
+ 			reg = <3 0 0x40>;
++			ranges = <0 3 0 0x40>;
++
++			mdio-mux-emi1 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				compatible = "mdio-mux-mmioreg", "mdio-mux";
++				mdio-parent-bus = <&mdio0>;
++				reg = <9 1>;
++				mux-mask = <0x78>;
++
++				hydra_rg:rgmii-mdio@8 {
++					#address-cells = <1>;
++					#size-cells = <0>;
++					reg = <8>;
++					status = "disabled";
++
++					phy_rgmii_0: ethernet-phy@0 {
++						reg = <0x0>;
++					};
++
++					phy_rgmii_1: ethernet-phy@1 {
++						reg = <0x1>;
++					};
++				};
++
++				hydra_sg_slot2: sgmii-mdio@28 {
++					#address-cells = <1>;
++					#size-cells = <0>;
++					reg = <0x28>;
++					status = "disabled";
++
++					phy_sgmii_slot2_1c: ethernet-phy@1c {
++						reg = <0x1c>;
++					};
++
++					phy_sgmii_slot2_1d: ethernet-phy@1d {
++						reg = <0x1d>;
++					};
++
++					phy_sgmii_slot2_1e: ethernet-phy@1e {
++						reg = <0x1e>;
++					};
++
++					phy_sgmii_slot2_1f: ethernet-phy@1f {
++						reg = <0x1f>;
++					};
++				};
++
++				hydra_sg_slot3: sgmii-mdio@68 {
++					#address-cells = <1>;
++					#size-cells = <0>;
++					reg = <0x68>;
++					status = "disabled";
++
++					phy_sgmii_slot3_1c: ethernet-phy@1c {
++						reg = <0x1c>;
++					};
++
++					phy_sgmii_slot3_1d: ethernet-phy@1d {
++						reg = <0x1d>;
++					};
++
++					phy_sgmii_slot3_1e: ethernet-phy@1e {
++						reg = <0x1e>;
++					};
++
++					phy_sgmii_slot3_1f: ethernet-phy@1f {
++						reg = <0x1f>;
++					};
++				};
++
++				hydra_sg_slot5: sgmii-mdio@38 {
++					#address-cells = <1>;
++					#size-cells = <0>;
++					reg = <0x38>;
++					status = "disabled";
++
++					phy_sgmii_slot5_1c: ethernet-phy@1c {
++						reg = <0x1c>;
++					};
++
++					phy_sgmii_slot5_1d: ethernet-phy@1d {
++						reg = <0x1d>;
++					};
++
++					phy_sgmii_slot5_1e: ethernet-phy@1e {
++						reg = <0x1e>;
++					};
++
++					phy_sgmii_slot5_1f: ethernet-phy@1f {
++						reg = <0x1f>;
++					};
++				};
++				hydra_sg_slot6: sgmii-mdio@48 {
++					#address-cells = <1>;
++					#size-cells = <0>;
++					reg = <0x48>;
++					status = "disabled";
++
++					phy_sgmii_slot6_1c: ethernet-phy@1c {
++						reg = <0x1c>;
++					};
++
++					phy_sgmii_slot6_1d: ethernet-phy@1d {
++						reg = <0x1d>;
++					};
++
++					phy_sgmii_slot6_1e: ethernet-phy@1e {
++						reg = <0x1e>;
++					};
++
++					phy_sgmii_slot6_1f: ethernet-phy@1f {
++						reg = <0x1f>;
++					};
++				};
++			};
++
++			mdio-mux-emi2 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				compatible = "mdio-mux-mmioreg", "mdio-mux";
++				mdio-parent-bus = <&xmdio0>;
++				reg = <9 1>;
++				mux-mask = <0x06>;
++
++				hydra_xg_slot1: hydra-xg-slot1@0 {
++					#address-cells = <1>;
++					#size-cells = <0>;
++					reg = <0>;
++					status = "disabled";
++
++					phy_xgmii_slot_1: ethernet-phy@0 {
++						compatible = "ethernet-phy-ieee802.3-c45";
++						reg = <4>;
++					};
++				};
++
++				hydra_xg_slot2: hydra-xg-slot2@2 {
++					#address-cells = <1>;
++					#size-cells = <0>;
++					reg = <2>;
++
++					phy_xgmii_slot_2: ethernet-phy@4 {
++						compatible = "ethernet-phy-ieee802.3-c45";
++						reg = <0>;
++					};
++				};
++			};
+ 		};
+ 	};
+ 
+diff --git a/arch/powerpc/boot/dts/t1040rdb.dts b/arch/powerpc/boot/dts/t1040rdb.dts
+index 79a0bed..9de684a 100644
+--- a/arch/powerpc/boot/dts/t1040rdb.dts
++++ b/arch/powerpc/boot/dts/t1040rdb.dts
+@@ -1,7 +1,7 @@
+ /*
+  * T1040RDB Device Tree Source
+  *
+- * Copyright 2014 Freescale Semiconductor Inc.
++ * Copyright 2014 - 2015 Freescale Semiconductor Inc.
+  *
+  * Redistribution and use in source and binary forms, with or without
+  * modification, are permitted provided that the following conditions are met:
+@@ -38,6 +38,36 @@
+ / {
+ 	model = "fsl,T1040RDB";
+ 	compatible = "fsl,T1040RDB";
++
++	aliases {
++		phy_sgmii_2 = &phy_sgmii_2;
++	};
++
++	soc@ffe000000 {
++		fman@400000 {
++			ethernet@e0000 {
++				fixed-link = <0 1 1000 0 0>;
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@e2000 {
++				fixed-link = <1 1 1000 0 0>;
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@e4000 {
++				phy-handle = <&phy_sgmii_2>;
++				phy-connection-type = "sgmii";
++			};
++
++			mdio@fc000 {
++				phy_sgmii_2: ethernet-phy@03 {
++					reg = <0x03>;
++				};
++			};
++		};
++	};
++
+ 	ifc: localbus@ffe124000 {
+ 		cpld@3,0 {
+ 			compatible = "fsl,t1040rdb-cpld";
+diff --git a/arch/powerpc/boot/dts/t1042rdb.dts b/arch/powerpc/boot/dts/t1042rdb.dts
+index 738c237..25ea7aa 100644
+--- a/arch/powerpc/boot/dts/t1042rdb.dts
++++ b/arch/powerpc/boot/dts/t1042rdb.dts
+@@ -1,7 +1,7 @@
+ /*
+  * T1042RDB Device Tree Source
+  *
+- * Copyright 2014 Freescale Semiconductor Inc.
++ * Copyright 2014 - 2015 Freescale Semiconductor Inc.
+  *
+  * Redistribution and use in source and binary forms, with or without
+  * modification, are permitted provided that the following conditions are met:
+@@ -38,6 +38,34 @@
+ / {
+ 	model = "fsl,T1042RDB";
+ 	compatible = "fsl,T1042RDB";
++
++	aliases {
++		phy_sgmii_2 = &phy_sgmii_2;
++	};
++
++	soc@ffe000000 {
++		fman@400000 {
++			ethernet@e0000 {
++			       status = "disabled";
++			};
++
++			ethernet@e2000 {
++			       status = "disabled";
++			};
++
++			ethernet@e4000 {
++				phy-handle = <&phy_sgmii_2>;
++				phy-connection-type = "sgmii";
++			};
++
++			mdio@fc000 {
++				phy_sgmii_2: ethernet-phy@03 {
++					reg = <0x03>;
++				};
++			};
++		};
++	};
++
+ 	ifc: localbus@ffe124000 {
+ 		cpld@3,0 {
+ 			compatible = "fsl,t1042rdb-cpld";
+diff --git a/arch/powerpc/boot/dts/t1042rdb_pi.dts b/arch/powerpc/boot/dts/t1042rdb_pi.dts
+index 634f751..6ebb818 100644
+--- a/arch/powerpc/boot/dts/t1042rdb_pi.dts
++++ b/arch/powerpc/boot/dts/t1042rdb_pi.dts
+@@ -1,7 +1,7 @@
+ /*
+  * T1042RDB_PI Device Tree Source
+  *
+- * Copyright 2014 Freescale Semiconductor Inc.
++ * Copyright 2014 - 2015 Freescale Semiconductor Inc.
+  *
+  * Redistribution and use in source and binary forms, with or without
+  * modification, are permitted provided that the following conditions are met:
+@@ -38,11 +38,13 @@
+ / {
+ 	model = "fsl,T1042RDB_PI";
+ 	compatible = "fsl,T1042RDB_PI";
++
+ 	ifc: localbus@ffe124000 {
+ 		cpld@3,0 {
+ 			compatible = "fsl,t1042rdb_pi-cpld";
+ 		};
+ 	};
++
+ 	soc: soc@ffe000000 {
+ 		i2c@118000 {
+ 			rtc@68 {
+@@ -51,6 +53,20 @@
+ 				interrupts = <0x2 0x1 0 0>;
+ 			};
+ 		};
++
++		fman@400000 {
++			ethernet@e0000 {
++				status = "disabled";
++			};
++
++			ethernet@e2000 {
++				status = "disabled";
++			};
++
++			ethernet@e4000 {
++				status = "disabled";
++			};
++		};
+ 	};
+ };
+ 
+diff --git a/arch/powerpc/boot/dts/t104xqds.dtsi b/arch/powerpc/boot/dts/t104xqds.dtsi
+index 1498d1e..a02715b 100644
+--- a/arch/powerpc/boot/dts/t104xqds.dtsi
++++ b/arch/powerpc/boot/dts/t104xqds.dtsi
+@@ -1,7 +1,7 @@
+ /*
+  * T104xQDS Device Tree Source
+  *
+- * Copyright 2013 - 2014 Freescale Semiconductor Inc.
++ * Copyright 2013 - 2015 Freescale Semiconductor Inc.
+  *
+  * Redistribution and use in source and binary forms, with or without
+  * modification, are permitted provided that the following conditions are met:
+@@ -38,6 +38,33 @@
+ 	#size-cells = <2>;
+ 	interrupt-parent = <&mpic>;
+ 
++	aliases {
++		emi1_rgmii0 = &t1040mdio0;
++		emi1_rgmii1 = &t1040mdio1;
++		emi1_slot3 = &t1040mdio3;
++		emi1_slot5 = &t1040mdio5;
++		emi1_slot6 = &t1040mdio6;
++		emi1_slot7 = &t1040mdio7;
++		rgmii_phy1 = &rgmii_phy1;
++		rgmii_phy2 = &rgmii_phy2;
++		phy_s3_01 = &phy_s3_01;
++		phy_s3_02 = &phy_s3_02;
++		phy_s3_03 = &phy_s3_03;
++		phy_s3_04 = &phy_s3_04;
++		phy_s5_01 = &phy_s5_01;
++		phy_s5_02 = &phy_s5_02;
++		phy_s5_03 = &phy_s5_03;
++		phy_s5_04 = &phy_s5_04;
++		phy_s6_01 = &phy_s6_01;
++		phy_s6_02 = &phy_s6_02;
++		phy_s6_03 = &phy_s6_03;
++		phy_s6_04 = &phy_s6_04;
++		phy_s7_01 = &phy_s7_01;
++		phy_s7_02 = &phy_s7_02;
++		phy_s7_03 = &phy_s7_03;
++		phy_s7_04 = &phy_s7_04;
++	};
++
+ 	reserved-memory {
+ 		#address-cells = <2>;
+ 		#size-cells = <2>;
+@@ -85,6 +112,128 @@
+ 			#size-cells = <1>;
+ 			compatible = "fsl,fpga-qixis";
+ 			reg = <3 0 0x300>;
++			ranges = <0 3 0 0x300>;
++
++			mdio-mux-emi1 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				compatible = "mdio-mux-mmioreg", "mdio-mux";
++				mdio-parent-bus = <&mdio0>;
++				reg = <0x54 1>;
++				mux-mask = <0xe0>;
++
++				t1040mdio0: mdio@0 {
++					#address-cells = <1>;
++					#size-cells = <0>;
++					reg = <0x00>;
++					status = "disabled";
++
++					rgmii_phy1: ethernet-phy@1 {
++						reg = <0x1>;
++					};
++				};
++
++				t1040mdio1: mdio@20 {
++					#address-cells = <1>;
++					#size-cells = <0>;
++					reg = <0x20>;
++					status = "disabled";
++
++					rgmii_phy2: ethernet-phy@2 {
++						reg = <0x2>;
++					};
++				};
++
++				t1040mdio3: mdio@60 {
++					#address-cells = <1>;
++					#size-cells = <0>;
++					reg = <0x60>;
++					status = "disabled";
++
++					phy_s3_01: ethernet-phy@1c {
++						reg = <0x1c>;
++					};
++
++					phy_s3_02: ethernet-phy@1d {
++						reg = <0x1d>;
++					};
++
++					phy_s3_03: ethernet-phy@1e {
++						reg = <0x1e>;
++					};
++
++					phy_s3_04: ethernet-phy@1f {
++						reg = <0x1f>;
++					};
++				};
++
++				t1040mdio5: mdio@a0 {
++					#address-cells = <1>;
++					#size-cells = <0>;
++					reg = <0xa0>;
++
++					phy_s5_01: ethernet-phy@1c {
++						reg = <0x14>;
++					};
++
++					phy_s5_02: ethernet-phy@1d {
++						reg = <0x15>;
++					};
++
++					phy_s5_03: ethernet-phy@1e {
++						reg = <0x16>;
++					};
++
++					phy_s5_04: ethernet-phy@1f {
++						reg = <0x17>;
++					};
++				};
++
++				t1040mdio6: mdio@c0 {
++					#address-cells = <1>;
++					#size-cells = <0>;
++					reg = <0xc0>;
++
++					phy_s6_01: ethernet-phy@1c {
++						reg = <0x18>;
++					};
++
++					phy_s6_02: ethernet-phy@1d {
++						reg = <0x19>;
++					};
++
++					phy_s6_03: ethernet-phy@1e {
++						reg = <0x1a>;
++					};
++
++					phy_s6_04: ethernet-phy@1f {
++						reg = <0x1b>;
++					};
++				};
++
++				t1040mdio7: mdio@e0 {
++					#address-cells = <1>;
++					#size-cells = <0>;
++					reg = <0xe0>;
++					status = "disabled";
++
++					phy_s7_01: ethernet-phy@1c {
++						reg = <0x1c>;
++					};
++
++					phy_s7_02: ethernet-phy@1d {
++						reg = <0x1d>;
++					};
++
++					phy_s7_03: ethernet-phy@1e {
++						reg = <0x1e>;
++					};
++
++					phy_s7_04: ethernet-phy@1f {
++						reg = <0x1f>;
++					};
++				};
++			};
+ 		};
+ 	};
+ 
+@@ -129,6 +278,33 @@
+ 				interrupts = <0x1 0x1 0 0>;
+ 			};
+ 		};
++
++		fman@400000 {
++			ethernet@e0000 {
++				fixed-link = <0 1 1000 0 0>;
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@e2000 {
++				fixed-link = <1 1 1000 0 0>;
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@e4000 {
++				phy-handle = <&phy_s7_03>;
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@e6000 {
++				phy-handle = <&rgmii_phy1>;
++				phy-connection-type = "rgmii";
++			};
++
++			ethernet@e8000 {
++				phy-handle = <&rgmii_phy2>;
++				phy-connection-type = "rgmii";
++			};
++		};
+ 	};
+ 
+ 	pci0: pcie@ffe240000 {
+diff --git a/arch/powerpc/boot/dts/t104xrdb.dtsi b/arch/powerpc/boot/dts/t104xrdb.dtsi
+index 830ea48..521a50b 100644
+--- a/arch/powerpc/boot/dts/t104xrdb.dtsi
++++ b/arch/powerpc/boot/dts/t104xrdb.dtsi
+@@ -1,7 +1,7 @@
+ /*
+  * T1040RDB/T1042RDB Device Tree Source
+  *
+- * Copyright 2014 Freescale Semiconductor Inc.
++ * Copyright 2014 - 2015 Freescale Semiconductor Inc.
+  *
+  * Redistribution and use in source and binary forms, with or without
+  * modification, are permitted provided that the following conditions are met:
+@@ -33,6 +33,12 @@
+  */
+ 
+ / {
++	aliases {
++		phy_rgmii_0 = &phy_rgmii_0;
++		phy_rgmii_1 = &phy_rgmii_1;
++		phy_sgmii_2 = &phy_sgmii_2;
++	};
++
+ 	reserved-memory {
+ 		#address-cells = <2>;
+ 		#size-cells = <2>;
+@@ -125,6 +131,31 @@
+ 			};
+ 		};
+ 
++		fman@400000 {
++			ethernet@e6000 {
++				phy-handle = <&phy_rgmii_0>;
++				phy-connection-type = "rgmii";
++			};
++
++			ethernet@e8000 {
++				phy-handle = <&phy_rgmii_1>;
++				phy-connection-type = "rgmii";
++			};
++
++			mdio0: mdio@fc000 {
++				phy_sgmii_2: ethernet-phy@03 {
++					reg = <0x03>;
++				};
++
++				phy_rgmii_0: ethernet-phy@01 {
++					reg = <0x01>;
++				};
++
++				phy_rgmii_1: ethernet-phy@02 {
++					reg = <0x02>;
++				};
++			};
++		};
+ 	};
+ 
+ 	pci0: pcie@ffe240000 {
+diff --git a/arch/powerpc/boot/dts/t2080qds.dts b/arch/powerpc/boot/dts/t2080qds.dts
+index aa1d6d8..de8aacd 100644
+--- a/arch/powerpc/boot/dts/t2080qds.dts
++++ b/arch/powerpc/boot/dts/t2080qds.dts
+@@ -1,7 +1,7 @@
+ /*
+  * T2080QDS Device Tree Source
+  *
+- * Copyright 2013 Freescale Semiconductor Inc.
++ * Copyright 2013 - 2015 Freescale Semiconductor Inc.
+  *
+  * Redistribution and use in source and binary forms, with or without
+  * modification, are permitted provided that the following conditions are met:
+@@ -42,6 +42,12 @@
+ 	#size-cells = <2>;
+ 	interrupt-parent = <&mpic>;
+ 
++	aliases {
++		emi1_slot1 = &t2080mdio2;
++		emi1_slot2 = &t2080mdio3;
++		emi1_slot3 = &t2080mdio4;
++	};
++
+ 	rio: rapidio@ffe0c0000 {
+ 		reg = <0xf 0xfe0c0000 0 0x11000>;
+ 
+@@ -54,4 +60,154 @@
+ 	};
+ };
+ 
++&soc {
++	fman@400000 {
++		ethernet@e0000 {
++			phy-handle = <&phy_sgmii_s3_1e>;
++			phy-connection-type = "xgmii";
++		};
++
++		ethernet@e2000 {
++			phy-handle = <&phy_sgmii_s3_1f>;
++			phy-connection-type = "xgmii";
++		};
++
++		ethernet@e4000 {
++			phy-handle = <&rgmii_phy1>;
++			phy-connection-type = "rgmii";
++		};
++
++		ethernet@e6000 {
++			phy-handle = <&rgmii_phy2>;
++			phy-connection-type = "rgmii";
++		};
++
++		ethernet@e8000 {
++			phy-handle = <&phy_sgmii_s2_1e>;
++			phy-connection-type = "sgmii";
++		};
++
++		ethernet@ea000 {
++			phy-handle = <&phy_sgmii_s2_1d>;
++			phy-connection-type = "sgmii";
++		};
++
++		ethernet@f0000 {
++			phy-handle = <&phy_xaui_slot3>;
++			phy-connection-type = "xgmii";
++		};
++
++		ethernet@f2000 {
++			phy-handle = <&phy_sgmii_s3_1f>;
++			phy-connection-type = "xgmii";
++		};
++
++		mdio@fd000 {
++			phy_xaui_slot3: ethernet-phy@3 {
++				compatible = "ethernet-phy-ieee802.3-c45";
++				reg = <0x3>;
++			};
++		};
++	};
++};
++
++&boardctrl {
++	mdio-mux-emi1 {
++		compatible = "mdio-mux-mmioreg", "mdio-mux";
++		mdio-parent-bus = <&mdio0>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++		reg = <0x54 1>;
++		mux-mask = <0xe0>;
++
++		t2080mdio0: mdio@0 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0>;
++
++			rgmii_phy1: ethernet-phy@1 {
++				reg = <0x1>;
++			};
++		};
++
++		t2080mdio1: mdio@20 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0x20>;
++
++			rgmii_phy2: ethernet-phy@2 {
++				reg = <0x2>;
++			};
++		};
++
++		t2080mdio2: mdio@40 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0x40>;
++			status = "disabled";
++
++			phy_sgmii_s1_1c: ethernet-phy@1c {
++				reg = <0x1c>;
++			};
++
++			phy_sgmii_s1_1d: ethernet-phy@1d {
++				reg = <0x1d>;
++			};
++
++			phy_sgmii_s1_1e: ethernet-phy@1e {
++				reg = <0x1e>;
++			};
++
++			phy_sgmii_s1_1f: ethernet-phy@1f {
++				reg = <0x1f>;
++			};
++		};
++
++		t2080mdio3: mdio@c0 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0xc0>;
++
++			phy_sgmii_s2_1c: ethernet-phy@1c {
++				reg = <0x1c>;
++			};
++
++			phy_sgmii_s2_1d: ethernet-phy@1d {
++				reg = <0x1d>;
++			};
++
++			phy_sgmii_s2_1e: ethernet-phy@1e {
++				reg = <0x1e>;
++			};
++
++			phy_sgmii_s2_1f: ethernet-phy@1f {
++				reg = <0x1f>;
++			};
++		};
++
++		t2080mdio4: mdio@60 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0x60>;
++			status = "disabled";
++
++			phy_sgmii_s3_1c: ethernet-phy@1c {
++				reg = <0x1c>;
++			};
++
++			phy_sgmii_s3_1d: ethernet-phy@1d {
++				reg = <0x1d>;
++			};
++
++			phy_sgmii_s3_1e: ethernet-phy@1e {
++				reg = <0x1e>;
++			};
++
++			phy_sgmii_s3_1f: ethernet-phy@1f {
++				reg = <0x1f>;
++			};
++		};
++	};
++};
++
+ /include/ "fsl/t2080si-post.dtsi"
+diff --git a/arch/powerpc/boot/dts/t2080rdb.dts b/arch/powerpc/boot/dts/t2080rdb.dts
+index e889104..8785ad7 100644
+--- a/arch/powerpc/boot/dts/t2080rdb.dts
++++ b/arch/powerpc/boot/dts/t2080rdb.dts
+@@ -1,7 +1,7 @@
+ /*
+  * T2080PCIe-RDB Board Device Tree Source
+  *
+- * Copyright 2014 Freescale Semiconductor Inc.
++ * Copyright 2014 - 2015 Freescale Semiconductor Inc.
+  *
+  * Redistribution and use in source and binary forms, with or without
+  * modification, are permitted provided that the following conditions are met:
+@@ -54,4 +54,69 @@
+ 	};
+ };
+ 
++&soc {
++	fman@400000 {
++		ethernet@e0000 {
++			phy-handle = <&xg_aq1202_phy3>;
++			phy-connection-type = "xgmii";
++		};
++
++		ethernet@e2000 {
++			phy-handle = <&xg_aq1202_phy4>;
++			phy-connection-type = "xgmii";
++		};
++
++		ethernet@e4000 {
++			phy-handle = <&rgmii_phy1>;
++			phy-connection-type = "rgmii";
++		};
++
++		ethernet@e6000 {
++			phy-handle = <&rgmii_phy2>;
++			phy-connection-type = "rgmii";
++		};
++
++		ethernet@f0000 {
++			phy-handle = <&xg_cs4315_phy1>;
++			phy-connection-type = "xgmii";
++		};
++
++		ethernet@f2000 {
++			phy-handle = <&xg_cs4315_phy2>;
++			phy-connection-type = "xgmii";
++		};
++
++		mdio@fc000 {
++			rgmii_phy1: ethernet-phy@1 {
++				reg = <0x1>;
++			};
++			rgmii_phy2: ethernet-phy@2 {
++				reg = <0x2>;
++			};
++		};
++
++		mdio@fd000 {
++			xg_cs4315_phy1: ethernet-phy@c {
++				compatible = "ethernet-phy-ieee802.3-c45";
++				reg = <0xc>;
++			};
++
++			xg_cs4315_phy2: ethernet-phy@d {
++				compatible = "ethernet-phy-ieee802.3-c45";
++				reg = <0xd>;
++			};
++
++			xg_aq1202_phy3: ethernet-phy@0 {
++				compatible = "ethernet-phy-ieee802.3-c45";
++				reg = <0x0>;
++			};
++
++			xg_aq1202_phy4: ethernet-phy@1 {
++				compatible = "ethernet-phy-ieee802.3-c45";
++				reg = <0x1>;
++			};
++		};
++	};
++};
++
+ /include/ "fsl/t2080si-post.dtsi"
+diff --git a/arch/powerpc/boot/dts/t2081qds.dts b/arch/powerpc/boot/dts/t2081qds.dts
+index 8ec80a7..d24ba7b 100644
+--- a/arch/powerpc/boot/dts/t2081qds.dts
++++ b/arch/powerpc/boot/dts/t2081qds.dts
+@@ -1,7 +1,7 @@
+ /*
+  * T2081QDS Device Tree Source
+  *
+- * Copyright 2013 Freescale Semiconductor Inc.
++ * Copyright 2013 - 2015 Freescale Semiconductor Inc.
+  *
+  * Redistribution and use in source and binary forms, with or without
+  * modification, are permitted provided that the following conditions are met:
+@@ -41,6 +41,225 @@
+ 	#address-cells = <2>;
+ 	#size-cells = <2>;
+ 	interrupt-parent = <&mpic>;
++
++	aliases {
++		emi1_slot1 = &t2081mdio2;
++		emi1_slot2 = &t2081mdio3;
++		emi1_slot3 = &t2081mdio4;
++		emi1_slot5 = &t2081mdio5;
++		emi1_slot6 = &t2081mdio6;
++		emi1_slot7 = &t2081mdio7;
++	};
++};
++
++&soc {
++	fman@400000 {
++		ethernet@e0000 {
++			phy-handle = <&phy_sgmii_s7_1c>;
++			phy-connection-type = "sgmii";
++		};
++
++		ethernet@e2000 {
++			phy-handle = <&phy_sgmii_s7_1d>;
++			phy-connection-type = "sgmii";
++		};
++
++		ethernet@e4000 {
++			phy-handle = <&rgmii_phy1>;
++			phy-connection-type = "rgmii";
++		};
++
++		ethernet@e6000 {
++			phy-handle = <&rgmii_phy2>;
++			phy-connection-type = "rgmii";
++		};
++
++		ethernet@e8000 {
++			phy-handle = <&phy_sgmii_s3_1c>;
++			phy-connection-type = "sgmii";
++		};
++
++		ethernet@ea000 {
++			phy-handle = <&phy_sgmii_s7_1f>;
++			phy-connection-type = "sgmii";
++		};
++
++		ethernet@f0000 {
++			phy-handle = <&phy_sgmii_s2_1c>;
++			phy-connection-type = "xgmii";
++		};
++
++		ethernet@f2000 {
++			phy-handle = <&phy_sgmii_s7_1e>;
++			phy-connection-type = "xgmii";
++		};
++	};
++};
++
++&boardctrl {
++	mdio-mux-emi1 {
++		compatible = "mdio-mux-mmioreg", "mdio-mux";
++		mdio-parent-bus = <&mdio0>;
++		#address-cells = <1>;
++		#size-cells = <0>;
++		reg = <0x54 1>;
++		mux-mask = <0xe0>;
++
++		t2081mdio0: mdio@0 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0>;
++
++			rgmii_phy1: ethernet-phy@1 {
++				reg = <0x1>;
++			};
++		};
++
++		t2081mdio1: mdio@20 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0x20>;
++
++			rgmii_phy2: ethernet-phy@2 {
++				reg = <0x2>;
++			};
++		};
++
++		t2081mdio2: mdio@40 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0x40>;
++
++			phy_sgmii_s1_1c: ethernet-phy@1c {
++				reg = <0x1c>;
++			};
++
++			phy_sgmii_s1_1d: ethernet-phy@1d {
++				reg = <0x1d>;
++			};
++
++			phy_sgmii_s1_1e: ethernet-phy@1e {
++				reg = <0x1e>;
++			};
++
++			phy_sgmii_s1_1f: ethernet-phy@1f {
++				reg = <0x1f>;
++			};
++		};
++
++		t2081mdio3: mdio@60 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0x60>;
++
++			phy_sgmii_s2_1c: ethernet-phy@1c {
++				reg = <0x1c>;
++			};
++
++			phy_sgmii_s2_1d: ethernet-phy@1d {
++				reg = <0x1d>;
++			};
++
++			phy_sgmii_s2_1e: ethernet-phy@1e {
++				reg = <0x1e>;
++			};
++
++			phy_sgmii_s2_1f: ethernet-phy@1f {
++				reg = <0x1f>;
++			};
++		};
++
++		t2081mdio4: mdio@80 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0x80>;
++			status = "disabled";
++
++			phy_sgmii_s3_1c: ethernet-phy@1c {
++				reg = <0x1c>;
++			};
++
++			phy_sgmii_s3_1d: ethernet-phy@1d {
++				reg = <0x1d>;
++			};
++
++			phy_sgmii_s3_1e: ethernet-phy@1e {
++				reg = <0x1e>;
++			};
++
++			phy_sgmii_s3_1f: ethernet-phy@1f {
++				reg = <0x1f>;
++			};
++		};
++
++		t2081mdio5: mdio@a0 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0xa0>;
++			status = "disabled";
++
++			phy_sgmii_s5_1c: ethernet-phy@1c {
++				reg = <0x1c>;
++			};
++
++			phy_sgmii_s5_1d: ethernet-phy@1d {
++				reg = <0x1d>;
++			};
++
++			phy_sgmii_s5_1e: ethernet-phy@1e {
++				reg = <0x1e>;
++			};
++
++			phy_sgmii_s5_1f: ethernet-phy@1f {
++				reg = <0x1f>;
++			};
++		};
++
++		t2081mdio6: mdio@c0 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0xc0>;
++			status = "disabled";
++
++			phy_sgmii_s6_1c: ethernet-phy@1c {
++				reg = <0x1c>;
++			};
++
++			phy_sgmii_s6_1d: ethernet-phy@1d {
++				reg = <0x1d>;
++			};
++
++			phy_sgmii_s6_1e: ethernet-phy@1e {
++				reg = <0x1e>;
++			};
++
++			phy_sgmii_s6_1f: ethernet-phy@1f {
++				reg = <0x1f>;
++			};
++		};
++
++		t2081mdio7: mdio@e0 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			reg = <0xe0>;
++
++			phy_sgmii_s7_1c: ethernet-phy@1c {
++				reg = <0x1c>;
++			};
++
++			phy_sgmii_s7_1d: ethernet-phy@1d {
++				reg = <0x1d>;
++			};
++
++			phy_sgmii_s7_1e: ethernet-phy@1e {
++				reg = <0x1e>;
++			};
++
++			phy_sgmii_s7_1f: ethernet-phy@1f {
++				reg = <0x1f>;
++			};
++		};
++	};
+ };
+ 
+ /include/ "fsl/t2081si-post.dtsi"
+diff --git a/arch/powerpc/boot/dts/t4240qds.dts b/arch/powerpc/boot/dts/t4240qds.dts
+index 93722da..38e765c 100644
+--- a/arch/powerpc/boot/dts/t4240qds.dts
++++ b/arch/powerpc/boot/dts/t4240qds.dts
+@@ -1,7 +1,7 @@
+ /*
+  * T4240QDS Device Tree Source
+  *
+- * Copyright 2012 - 2014 Freescale Semiconductor Inc.
++ * Copyright 2012 - 2015 Freescale Semiconductor Inc.
+  *
+  * Redistribution and use in source and binary forms, with or without
+  * modification, are permitted provided that the following conditions are met:
+@@ -41,6 +41,44 @@
+ 	#size-cells = <2>;
+ 	interrupt-parent = <&mpic>;
+ 
++	aliases{
++		phy_rgmii1 = &phyrgmii1;
++		phy_rgmii2 = &phyrgmii2;
++		phy_sgmii3 = &phy3;
++		phy_sgmii4 = &phy4;
++		phy_sgmii11 = &phy11;
++		phy_sgmii12 = &phy12;
++		sgmii_phy11 = &sgmiiphy11;
++		sgmii_phy12 = &sgmiiphy12;
++		sgmii_phy13 = &sgmiiphy13;
++		sgmii_phy14 = &sgmiiphy14;
++		sgmii_phy21 = &sgmiiphy21;
++		sgmii_phy22 = &sgmiiphy22;
++		sgmii_phy23 = &sgmiiphy23;
++		sgmii_phy24 = &sgmiiphy24;
++		sgmii_phy31 = &sgmiiphy31;
++		sgmii_phy32 = &sgmiiphy32;
++		sgmii_phy33 = &sgmiiphy33;
++		sgmii_phy34 = &sgmiiphy34;
++		sgmii_phy41 = &sgmiiphy41;
++		sgmii_phy42 = &sgmiiphy42;
++		sgmii_phy43 = &sgmiiphy43;
++		sgmii_phy44 = &sgmiiphy44;
++		phy_xfi1 = &xfiphy1;
++		phy_xfi2 = &xfiphy2;
++		phy_xfi3 = &xfiphy3;
++		phy_xfi4 = &xfiphy4;
++		xfi_pcs_mdio1 = &xfimdio0;
++		xfi_pcs_mdio2 = &xfimdio1;
++		xfi_pcs_mdio3 = &xfimdio2;
++		xfi_pcs_mdio4 = &xfimdio3;
++		emi1_rgmii = &t4240mdio0;
++		emi1_slot1 = &t4240mdio1;
++		emi1_slot2 = &t4240mdio2;
++		emi1_slot3 = &t4240mdio3;
++		emi1_slot4 = &t4240mdio4;
++	};
++
+ 	ifc: localbus@ffe124000 {
+ 		reg = <0xf 0xfe124000 0 0x2000>;
+ 		ranges = <0 0 0xf 0xe8000000 0x08000000
+@@ -91,8 +129,190 @@
+ 		};
+ 
+ 		board-control@3,0 {
++			#address-cells = <1>;
++			#size-cells = <1>;
+ 			compatible = "fsl,t4240qds-fpga", "fsl,fpga-qixis";
+ 			reg = <3 0 0x300>;
++			ranges = <0 3 0 0x300>;
++
++			mdio-mux-emi1 {
++				#address-cells = <1>;
++				#size-cells = <0>;
++				compatible = "mdio-mux-mmioreg", "mdio-mux";
++				mdio-parent-bus = <&mdio1>;
++				reg = <0x54 1>;
++				mux-mask = <0xe0>;
++
++				t4240mdio0: mdio@0 {
++					#address-cells = <1>;
++					#size-cells = <0>;
++					reg = <0>;
++
++					phyrgmii1: ethernet-phy@1 {
++						reg = <0x1>;
++					};
++
++					phyrgmii2: ethernet-phy@2 {
++						reg = <0x2>;
++					};
++				};
++
++				t4240mdio1: mdio@20 {
++					#address-cells = <1>;
++					#size-cells = <0>;
++					reg = <0x20>;
++					status = "disabled";
++
++					phy1: ethernet-phy@0 {
++						reg = <0x0>;
++					};
++
++					phy2: ethernet-phy@1 {
++						reg = <0x1>;
++					};
++
++					phy3: ethernet-phy@2 {
++						reg = <0x2>;
++					};
++
++					phy4: ethernet-phy@3 {
++						reg = <0x3>;
++					};
++
++					sgmiiphy11: ethernet-phy@1c {
++						reg = <0x1c>;
++					};
++
++					sgmiiphy12: ethernet-phy@1d {
++						reg = <0x1d>;
++					};
++
++					sgmiiphy13: ethernet-phy@1e {
++						reg = <0x1e>;
++					};
++
++					sgmiiphy14: ethernet-phy@1f {
++						reg = <0x1f>;
++					};
++				};
++
++				t4240mdio2: mdio@40 {
++					#address-cells = <1>;
++					#size-cells = <0>;
++					reg = <0x40>;
++					status = "disabled";
++
++					phy5: ethernet-phy@4 {
++						reg = <0x4>;
++					};
++
++					phy6: ethernet-phy@5 {
++						reg = <0x5>;
++					};
++
++					phy7: ethernet-phy@6 {
++						reg = <0x6>;
++					};
++
++					phy8: ethernet-phy@7 {
++						reg = <0x7>;
++					};
++
++					sgmiiphy21: ethernet-phy@1c {
++						reg = <0x1c>;
++					};
++
++					sgmiiphy22: ethernet-phy@1d {
++						reg = <0x1d>;
++					};
++
++					sgmiiphy23: ethernet-phy@1e {
++						reg = <0x1e>;
++					};
++
++					sgmiiphy24: ethernet-phy@1f {
++						reg = <0x1f>;
++					};
++				};
++
++				t4240mdio3: mdio@60 {
++					#address-cells = <1>;
++					#size-cells = <0>;
++					reg = <0x60>;
++					status = "disabled";
++
++					phy9: ethernet-phy@8 {
++						reg = <0x8>;
++					};
++
++					phy10: ethernet-phy@9 {
++						reg = <0x9>;
++					};
++
++					phy11: ethernet-phy@a {
++						reg = <0xa>;
++					};
++
++					phy12: ethernet-phy@b {
++						reg = <0xb>;
++					};
++
++					sgmiiphy31: ethernet-phy@1c {
++						reg = <0x1c>;
++					};
++
++					sgmiiphy32: ethernet-phy@1d {
++						reg = <0x1d>;
++					};
++
++					sgmiiphy33: ethernet-phy@1e {
++						reg = <0x1e>;
++					};
++
++					sgmiiphy34: ethernet-phy@1f {
++						reg = <0x1f>;
++					};
++				};
++
++				t4240mdio4: mdio@80 {
++					#address-cells = <1>;
++					#size-cells = <0>;
++					reg = <0x80>;
++					status = "disabled";
++
++					phy13: ethernet-phy@c {
++						reg = <0xc>;
++					};
++
++					phy14: ethernet-phy@d {
++						reg = <0xd>;
++					};
++
++					phy15: ethernet-phy@e {
++						reg = <0xe>;
++					};
++
++					phy16: ethernet-phy@f {
++						reg = <0xf>;
++					};
++
++					sgmiiphy41: ethernet-phy@1c {
++						reg = <0x1c>;
++					};
++
++					sgmiiphy42: ethernet-phy@1d {
++						reg = <0x1d>;
++					};
++
++					sgmiiphy43: ethernet-phy@1e {
++						reg = <0x1e>;
++					};
++
++					sgmiiphy44: ethernet-phy@1f {
++						reg = <0x1f>;
++					};
++				};
++			};
+ 		};
+ 	};
+ 
+@@ -234,6 +454,184 @@
+ 		sdhc@114000 {
+ 			voltage-ranges = <1800 1800 3300 3300>;
+ 		};
++
++		fman@400000 {
++			port@83000 {
++				status = "disabled";
++			};
++
++			port@84000 {
++				status = "disabled";
++			};
++
++			port@85000 {
++				status = "disabled";
++			};
++
++			port@86000 {
++				status = "disabled";
++			};
++
++			port@87000 {
++				status = "disabled";
++			};
++
++			ethernet@e0000 {
++				phy-handle = <&phy5>;
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@e2000 {
++				phy-handle = <&phy6>;
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@e4000 {
++				phy-handle = <&phy7>;
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@e6000 {
++				phy-handle = <&phy8>;
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@e8000 {
++				phy-handle = <&phyrgmii2>;
++				phy-connection-type = "rgmii";
++			};
++
++			ethernet@ea000 {
++				phy-handle = <&phy2>;
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@f0000 {
++				phy-handle = <&xauiphy1>;
++				phy-connection-type = "xgmii";
++			};
++
++			ethernet@f2000 {
++				phy-handle = <&xauiphy2>;
++				phy-connection-type = "xgmii";
++			};
++
++			xfimdio0: mdio@f1000 {
++				status = "disabled";
++
++				xfiphy1: ethernet-phy@0 {
++					compatible = "ethernet-phy-ieee802.3-c45";
++					reg = <0x0>;
++				};
++			};
++
++			xfimdio1: mdio@f3000 {
++				status = "disabled";
++
++				xfiphy2: ethernet-phy@0 {
++					compatible = "ethernet-phy-ieee802.3-c45";
++					reg = <0x0>;
++				};
++			};
++		};
++
++		fman@500000 {
++			port@84000 {
++				status = "disabled";
++			};
++
++			port@85000 {
++				status = "disabled";
++			};
++
++			port@86000 {
++				status = "disabled";
++			};
++
++			port@87000 {
++				status = "disabled";
++			};
++
++			ethernet@e0000 {
++				phy-handle = <&phy13>;
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@e2000 {
++				phy-handle = <&phy14>;
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@e4000 {
++				phy-handle = <&phy15>;
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@e6000 {
++				phy-handle = <&phy16>;
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@e8000 {
++				phy-handle = <&phyrgmii1>;
++				phy-connection-type = "rgmii";
++			};
++
++			ethernet@ea000 {
++				phy-handle = <&phy10>;
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@f0000 {
++				phy-handle = <&xauiphy3>;
++				phy-connection-type = "xgmii";
++			};
++
++			ethernet@f2000 {
++				phy-handle = <&xauiphy4>;
++				phy-connection-type = "xgmii";
++			};
++
++			xfimdio2: mdio@f1000 {
++				status = "disabled";
++
++				xfiphy3: ethernet-phy@0 {
++					compatible = "ethernet-phy-ieee802.3-c45";
++					reg = <0x0>;
++				};
++			};
++
++			xfimdio3: mdio@f3000 {
++				status = "disabled";
++
++				xfiphy4: ethernet-phy@0 {
++					compatible = "ethernet-phy-ieee802.3-c45";
++					reg = <0x0>;
++				};
++			};
++
++			mdio@fd000 {
++				xauiphy1: ethernet-phy@0 {
++					compatible = "ethernet-phy-ieee802.3-c45";
++					reg = <0x0>;
++				};
++
++				xauiphy2: ethernet-phy@1 {
++					compatible = "ethernet-phy-ieee802.3-c45";
++					reg = <0x1>;
++				};
++
++				xauiphy3: ethernet-phy@2 {
++					compatible = "ethernet-phy-ieee802.3-c45";
++					reg = <0x2>;
++				};
++
++				xauiphy4: ethernet-phy@3 {
++					compatible = "ethernet-phy-ieee802.3-c45";
++					reg = <0x3>;
++				};
++			};
++		};
+ 	};
+ 
+ 	pci0: pcie@ffe240000 {
+diff --git a/arch/powerpc/boot/dts/t4240rdb.dts b/arch/powerpc/boot/dts/t4240rdb.dts
+index 993eb4b..66ddb35 100644
+--- a/arch/powerpc/boot/dts/t4240rdb.dts
++++ b/arch/powerpc/boot/dts/t4240rdb.dts
+@@ -1,7 +1,7 @@
+ /*
+  * T4240RDB Device Tree Source
+  *
+- * Copyright 2014 Freescale Semiconductor Inc.
++ * Copyright 2014 - 2015 Freescale Semiconductor Inc.
+  *
+  * Redistribution and use in source and binary forms, with or without
+  * modification, are permitted provided that the following conditions are met:
+@@ -41,6 +41,17 @@
+ 	#size-cells = <2>;
+ 	interrupt-parent = <&mpic>;
+ 
++	aliases {
++		sgmii_phy21 = &sgmiiphy21;
++		sgmii_phy22 = &sgmiiphy22;
++		sgmii_phy23 = &sgmiiphy23;
++		sgmii_phy24 = &sgmiiphy24;
++		sgmii_phy41 = &sgmiiphy41;
++		sgmii_phy42 = &sgmiiphy42;
++		sgmii_phy43 = &sgmiiphy43;
++		sgmii_phy44 = &sgmiiphy44;
++	};
++
+ 	ifc: localbus@ffe124000 {
+ 		reg = <0xf 0xfe124000 0 0x2000>;
+ 		ranges = <0 0 0xf 0xe8000000 0x08000000
+@@ -136,6 +147,142 @@
+ 		sdhc@114000 {
+ 			voltage-ranges = <1800 1800 3300 3300>;
+ 		};
++
++		fman@400000 {
++			ethernet@e0000 {
++				phy-handle = <&sgmiiphy21>;
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@e2000 {
++				phy-handle = <&sgmiiphy22>;
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@e4000 {
++				phy-handle = <&sgmiiphy23>;
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@e6000 {
++				phy-handle = <&sgmiiphy24>;
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@e8000 {
++				status = "disabled";
++			};
++
++			ethernet@ea000 {
++				status = "disabled";
++			};
++
++			ethernet@f0000 {
++				phy-handle = <&xfiphy1>;
++				phy-connection-type = "xgmii";
++			};
++
++			ethernet@f2000 {
++				phy-handle = <&xfiphy2>;
++				phy-connection-type = "xgmii";
++			};
++		};
++
++		fman@500000 {
++			ethernet@e0000 {
++				phy-handle = <&sgmiiphy41>;
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@e2000 {
++				phy-handle = <&sgmiiphy42>;
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@e4000 {
++				phy-handle = <&sgmiiphy43>;
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@e6000 {
++				phy-handle = <&sgmiiphy44>;
++				phy-connection-type = "sgmii";
++			};
++
++			ethernet@e8000 {
++				status = "disabled";
++			};
++
++			ethernet@ea000 {
++				status = "disabled";
++			};
++
++			ethernet@f0000 {
++				phy-handle = <&xfiphy3>;
++				phy-connection-type = "xgmii";
++			};
++
++			ethernet@f2000 {
++				phy-handle = <&xfiphy4>;
++				phy-connection-type = "xgmii";
++			};
++
++			mdio@fc000 {
++				sgmiiphy21: ethernet-phy@0 {
++					reg = <0x0>;
++				};
++
++				sgmiiphy22: ethernet-phy@1 {
++					reg = <0x1>;
++				};
++
++				sgmiiphy23: ethernet-phy@2 {
++					reg = <0x2>;
++				};
++
++				sgmiiphy24: ethernet-phy@3 {
++					reg = <0x3>;
++				};
++
++				sgmiiphy41: ethernet-phy@4 {
++					reg = <0x4>;
++				};
++
++				sgmiiphy42: ethernet-phy@5 {
++					reg = <0x5>;
++				};
++
++				sgmiiphy43: ethernet-phy@6 {
++					reg = <0x6>;
++				};
++
++				sgmiiphy44: ethernet-phy@7 {
++					reg = <0x7>;
++				};
++			};
++
++			mdio@fd000 {
++				xfiphy1: ethernet-phy@10 {
++					compatible = "ethernet-phy-ieee802.3-c45";
++					reg = <0x10>;
++				};
++
++				xfiphy2: ethernet-phy@11 {
++					compatible = "ethernet-phy-ieee802.3-c45";
++					reg = <0x11>;
++				};
++
++				xfiphy3: ethernet-phy@13 {
++					compatible = "ethernet-phy-ieee802.3-c45";
++					reg = <0x13>;
++				};
++
++				xfiphy4: ethernet-phy@12 {
++					compatible = "ethernet-phy-ieee802.3-c45";
++					reg = <0x12>;
++				};
++			};
++		};
+ 	};
+ 
+ 	pci0: pcie@ffe240000 {
 -- 
-1.7.9.5
+2.3.3
