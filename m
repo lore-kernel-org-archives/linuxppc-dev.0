@@ -1,36 +1,33 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DC9211A0171
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Mar 2015 00:49:20 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id C75C41A0171
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Mar 2015 00:51:52 +1100 (AEDT)
 Received: from /spool/local
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Wed, 25 Mar 2015 23:49:18 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 3BC233578047
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Mar 2015 00:49:14 +1100 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t2PDn5aR43122720
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Mar 2015 00:49:14 +1100
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t2PDmeLs011157
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Mar 2015 00:48:40 +1100
+ Wed, 25 Mar 2015 19:21:50 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 6898C3940061
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2015 19:21:48 +0530 (IST)
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t2PDplog15007964
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2015 19:21:48 +0530
+Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t2PDhkgV003762
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2015 19:13:47 +0530
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
-Subject: Re: [PATCH 1/2] KVM: PPC: Use ACCESS_ONCE when dereferencing pte_t
+Subject: [PATCH V3 1/3] KVM: PPC: Use READ_ONCE when dereferencing pte_t
  pointer
-In-Reply-To: <1427281687-11089-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-References: <1427281687-11089-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Date: Wed, 25 Mar 2015 19:18:23 +0530
-Message-ID: <87a8z1fas8.fsf@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: linuxppc-dev@lists.ozlabs.org
+Date: Wed, 25 Mar 2015 19:21:39 +0530
+Message-Id: <1427291501-20161-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,10 +37,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+pte can get updated from other CPUs as part of multiple activities
+like THP split, huge page collapse, unmap. We need to make sure we
+don't reload the pte value again and again for different checks.
 
-Hi,
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+---
+NOTE:
+The series depends on the patch
+ [PATCH 4/6] powerpc: Fix compile errors with STRICT_MM_TYPECHECKS enabled
 
-Ignore this series, I used a wrong directory when sending out the
-patchset. Will send a v3.
+ arch/powerpc/include/asm/kvm_book3s_64.h |  5 ++++-
+ arch/powerpc/kvm/e500_mmu_host.c         | 20 ++++++++++++--------
+ 2 files changed, 16 insertions(+), 9 deletions(-)
 
--aneesh
+diff --git a/arch/powerpc/include/asm/kvm_book3s_64.h b/arch/powerpc/include/asm/kvm_book3s_64.h
+index cc073a7ac2b7..f06820c67175 100644
+--- a/arch/powerpc/include/asm/kvm_book3s_64.h
++++ b/arch/powerpc/include/asm/kvm_book3s_64.h
+@@ -290,7 +290,10 @@ static inline pte_t kvmppc_read_update_linux_pte(pte_t *ptep, int writing,
+ 	pte_t old_pte, new_pte = __pte(0);
+ 
+ 	while (1) {
+-		old_pte = *ptep;
++		/*
++		 * Make sure we don't reload from ptep
++		 */
++		old_pte = READ_ONCE(*ptep);
+ 		/*
+ 		 * wait until _PAGE_BUSY is clear then set it atomically
+ 		 */
+diff --git a/arch/powerpc/kvm/e500_mmu_host.c b/arch/powerpc/kvm/e500_mmu_host.c
+index cc536d4a75ef..5840d546aa03 100644
+--- a/arch/powerpc/kvm/e500_mmu_host.c
++++ b/arch/powerpc/kvm/e500_mmu_host.c
+@@ -469,14 +469,18 @@ static inline int kvmppc_e500_shadow_map(struct kvmppc_vcpu_e500 *vcpu_e500,
+ 
+ 	pgdir = vcpu_e500->vcpu.arch.pgdir;
+ 	ptep = lookup_linux_ptep(pgdir, hva, &tsize_pages);
+-	if (pte_present(*ptep))
+-		wimg = (*ptep >> PTE_WIMGE_SHIFT) & MAS2_WIMGE_MASK;
+-	else {
+-		if (printk_ratelimit())
+-			pr_err("%s: pte not present: gfn %lx, pfn %lx\n",
+-				__func__, (long)gfn, pfn);
+-		ret = -EINVAL;
+-		goto out;
++	if (ptep) {
++		pte_t pte = READ_ONCE(*ptep);
++
++		if (pte_present(pte))
++			wimg = (pte_val(pte) >> PTE_WIMGE_SHIFT) &
++				MAS2_WIMGE_MASK;
++		else {
++			pr_err_ratelimited("%s: pte not present: gfn %lx,pfn %lx\n",
++					   __func__, (long)gfn, pfn);
++			ret = -EINVAL;
++			goto out;
++		}
+ 	}
+ 	kvmppc_e500_ref_setup(ref, gtlbe, pfn, wimg);
+ 
+-- 
+2.1.0
