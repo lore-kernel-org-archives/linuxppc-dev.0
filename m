@@ -1,20 +1,20 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1D4D11A11BC
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2015 20:42:52 +1100 (AEDT)
-Message-ID: <1427276571.31588.4.camel@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/powernv: Remove powernv RTAS support
+ by lists.ozlabs.org (Postfix) with ESMTPS id A70F11A0C19
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2015 20:51:20 +1100 (AEDT)
+In-Reply-To: <1423993377.2932.23.camel@TP420>
+To: Li Zhong <zhong@linux.vnet.ibm.com>,
+ PowerPC email list <linuxppc-dev@lists.ozlabs.org>
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Stewart Smith <stewart@linux.vnet.ibm.com>
-Date: Wed, 25 Mar 2015 20:42:51 +1100
-In-Reply-To: <m3mw317hod.fsf@oc8180480414.ibm.com>
-References: <1426141631-10741-1-git-send-email-mpe@ellerman.id.au>
- <m3mw317hod.fsf@oc8180480414.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, dja@axtens.net
+Subject: Re: [RFC,
+ powerpc] perf/hv-24x7 set the attr group to NULL if events failed to
+ be initialized
+Message-Id: <20150325095120.8F48F1400EA@ozlabs.org>
+Date: Wed, 25 Mar 2015 20:51:20 +1100 (AEDT)
+Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+ Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,35 +24,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2015-03-25 at 16:46 +1100, Stewart Smith wrote:
-> Michael Ellerman <mpe@ellerman.id.au> writes:
+On Sun, 2015-15-02 at 09:42:57 UTC, Li Zhong wrote:
+> sysfs_create_groups() creates groups one by one in the attr_groups array
+> before a NULL entry is encountered. But if an error is seen, it stops
+> and removes all the groups already created:
+>         for (i = 0; groups[i]; i++) {
+>                 error = sysfs_create_group(kobj, groups[i]);
+>                 if (error) {
+>                         while (--i >= 0)
+>                                 sysfs_remove_group(kobj, groups[i]);
+>                         break;
+>                 }
+>         }
 > 
-> > The powernv code has some conditional support for running on bare metal
-> > machines that have no OPAL firmware, but provide RTAS.
-> >
-> > No released machines ever supported that, and even in the lab it was
-> > just a transitional hack in the days when OPAL was still being
-> > developed.
-> >
-> > So remove the code.
-> >
-> > Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> And for the three event groups of 24x7, if it is not supported,
+> according to the above logic, it causes format and interface group to be
+> removed because of the error.
 > 
-> The only current place I could think this could be remotely possible
-> would be in simulator... and we should instead make the OPAL calls work
-> properly in the simulator for all the RTAS functionality (that we care
-> about).
+> This patch moves the three events groups to the end of the attr groups,
+> and if create_events_from_catalog() fails to set their attributes, we
+> set them to NULL in attr_groups.
 
-If you mean mambo, I tested that, at least the public version, and it doesn't
-provide or need RTAS.
+But why are we continuing at all if create_events_from_catalog() fails?
 
-On the other sims we ran without RTAS during the Power8 bringup, though it was
-eventually used a little bit late in the cycle. In future we should be using
-skiboot, or just putting logic directly into the kernel for early bringup - or
-permanently :)
-
-> Acked-by: Stewart Smith <stewart@linux.vnet.ibm.com>
-
-Thanks.
+Shouldn't that just be a fatal error and we bail?
 
 cheers
