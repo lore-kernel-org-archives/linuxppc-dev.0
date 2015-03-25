@@ -1,27 +1,24 @@
-Return-Path: <grant.likely@secretlab.ca>
-Received: from mail-pd0-f172.google.com (mail-pd0-f172.google.com
- [209.85.192.172])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6E7BC1A0681
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Mar 2015 03:15:47 +1100 (AEDT)
-Received: by pdnc3 with SMTP id c3so33171858pdn.0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2015 09:15:44 -0700 (PDT)
-Sender: Grant Likely <glikely@secretlab.ca>
-From: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: drivers/of: Add empty ranges quirk for PA-Semi
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Michael Ellerman
- <mpe@ellerman.id.au>
-In-Reply-To: <1427083595.4770.221.camel@kernel.crashing.org>
-References: <20150323035004.2D6B9140134@ozlabs.org>
- <1427083595.4770.221.camel@kernel.crashing.org>
-Date: Wed, 25 Mar 2015 09:15:43 -0700
-Message-Id: <20150325161543.27663C408FE@trevor.secretlab.ca>
-Cc: Olof Johansson <olof@lixom.net>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Rob Herring <robherring2@gmail.com>,
- linuxppc dev list <linuxppc-dev@lists.ozlabs.org>,
- Steven Rostedt <rostedt@goodmis.org>
+Return-Path: <lsorense@csclub.uwaterloo.ca>
+Received: from mail.csclub.uwaterloo.ca (mail.csclub.uwaterloo.ca
+ [129.97.134.52])
+ by lists.ozlabs.org (Postfix) with ESMTP id A892C1A0681
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Mar 2015 04:21:42 +1100 (AEDT)
+From: "Lennart Sorensen" <lsorense@csclub.uwaterloo.ca>
+Date: Wed, 25 Mar 2015 13:13:26 -0400
+To: Florian Fainelli <f.fainelli@gmail.com>
+Subject: Re: net: ucc: tbi phy detection broken by
+ 058112c7efc9ef43bb511c137293dddbe6e42908
+Message-ID: <20150325171326.GA29558@csclub.uwaterloo.ca>
+References: <20141219034918.GX24110@csclub.uwaterloo.ca>
+ <CAGVrzcbCCV_AL48R3iTGQqvdAM6NWuC1yDW5P+eh7rExE3fcow@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <CAGVrzcbCCV_AL48R3iTGQqvdAM6NWuC1yDW5P+eh7rExE3fcow@mail.gmail.com>
+Cc: netdev <netdev@vger.kernel.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "David S. Miller" <davem@davemloft.net>,
+ Sebastian Hesselbarth <sebastian.hesselbarth@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,24 +28,97 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 23 Mar 2015 15:06:35 +1100
-, Benjamin Herrenschmidt <benh@kernel.crashing.org>
- wrote:
-> On Mon, 2015-03-23 at 14:50 +1100, Michael Ellerman wrote:
-> > On Mon, 2015-23-03 at 03:16:38 UTC, Benjamin Herrenschmidt wrote:
-> > > The "sdc" node is missing the ranges property, it needs to be treated
-> > > as having an empty one otherwise translation fails for its children.
-> > > 
-> > > Tested-by: Steven Rostedt <rostedt@goodmis.org>
-> > > Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> > 
-> > Fixes: 746c9e9f92dd ("of/base: Fix PowerPC address parsing hack")
-> > 
-> > Which went into 3.18-rc6, and was CC'ed to stable. So this should probably also
-> > go to stable no?
+On Sat, Dec 20, 2014 at 09:08:51AM -0800, Florian Fainelli wrote:
+> 2014-12-18 19:49 GMT-08:00 Lennart Sorensen <lsorense@csclub.uwaterloo.ca>:
+> > I have been trying to move an 8360 based system from a 3.0 kernel to a
+> > 3.12 (on the way to 3.14 with ipipe/xenomai) kernel and encountered an
+> > oops in the ucc_geth driver when using RTBI mode on one of the ucc
+> > ports.  I haven't managed to find any commits to of_mdio or ucc_geth or
+> > fsl_pq_mdio that would appear to address this problem, so I believe it
+> > is still present in the latest kernel, but have not confirmed that with
+> > testing yet.
+> >
+> > Commit 058112c7efc9ef43bb511c137293dddbe6e42908 appears to have broken
+> > ucc support for tbi phy detection.
+> >
+> > With the patch in place, I am unable to get the mdio bus to create phy
+> > devices for the tbi phy in the ucc on an 8360e, and the ucc_geth driver
+> > causes a kernel oops, while with the patch reverted, it does create them
+> > and the driver comes up and works.
+> >
+> > The tbi phy is needed when using a ucc in RTBI, TBI or SGMII mode.
+> >
+> > I am not convinced that the tbi phy really behaves quite like a real phy,
+> > which may be why get_phy_device does not work with it.  Perhaps there
+> > is a better way to deal with the tbi phy on the ucc for this purpose.
 > 
-> Sure, go for it.
+> There are some comments in ucc_geth that also lead me to believe this
+> is a just a hack instead of a real Ethernet PHY device. Part of what I
+> think got broken is because of this comment:
+> 
+> /* Initialize TBI PHY interface for communicating with the
+>  * SERDES lynx PHY on the chip.  We communicate with this PHY
+>  * through the MDIO bus on each controller, treating it as a
+>  * "normal" PHY at the address found in the UTBIPA register.  We assume
+>  * that the UTBIPA register is valid.  Either the MDIO bus code will set
+>  * it to a value that doesn't conflict with other PHYs on the bus, or the
+>  * value doesn't matter, as there are no other PHYs on the bus.
+>  */
+> 
+> In particular this one:
+> 
+> "Either the MDIO bus code will set
+>  * it to a value that doesn't conflict with other PHYs on the bus, or the
+>  * value doesn't matter, as there are no other PHYs on the bus."
+> 
+> and what Sebastian removed did exactly that, we used the special MDIO
+> broadcast address 0 to provide this "whatever". If this is such a
+> requirement from the ucc_geth driver and TBI PHYs, maybe we should
+> have this hack somewhere in the actual MDIO driver used by the
+> ucc_geth driver instead, or set a flag/read the PHY connection mode
+> and do this in drivers/of/of_mdio.c
+> 
 
-Applied, thanks.
+I discovered a problem with the tbi address handling on ucc_geth.
 
-g.
+In get_ucc_tbipa, the passed in pointer is expecting a pointer to a struct
+fsl_pq_mdio, but on ucc the pointer is actually to the start of the mii
+area, since it doesn't have all the stuff that the etsec2 has, so as a
+result the address returned for tbipa is actually 1312 bytes too high,
+which means the address never gets set of course.  In fact the driver
+prints out cr=0 and sr=0, while with the older working driver it printed
+cr=140 and sr=149.
+
+As a quick test I did:
+
+                        }
+
+                        tbipa = data->get_tbipa(priv->map - offsetof(struct fsl_pq_mdio, mii));
+
+                        out_be32(tbipa, be32_to_cpup(prop));
+
+and that made it work, but of course is ugly and would break etsec2.
+
+Any suggestion for a clean way to make get_ucc_tbipa able to dereference
+the structure correctly?
+
+I suppose I could do:
+
+/*
+ * Return the TBIPAR address for a QE MDIO node
+ */
+static uint32_t __iomem *get_ucc_tbipa(void __iomem *p)
+{
+        struct fsl_pq_mdio __iomem *mdio = p - offsetof(struct fsl_pq_mdio, mii);
+
+        return &mdio->utbipar;
+}
+
+but it seems like just putting more hacks in place.  The use of the
+mii_offset in the first place seems like a clue that defining one
+structure for etsec2 and ucc and such even though it doesn't apply to
+both is probably an error.  It would just be using mii_offset in reverse
+for the ucc, versus the etsec2.
+
+-- 
+Len Sorensen
