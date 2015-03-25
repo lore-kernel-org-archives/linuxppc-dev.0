@@ -1,48 +1,35 @@
-Return-Path: <ldufour@linux.vnet.ibm.com>
-Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A2FE71A11C2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2015 22:06:56 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 74CAC1A1895
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2015 22:09:17 +1100 (AEDT)
 Received: from /spool/local
- by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
- Wed, 25 Mar 2015 11:06:53 -0000
-Received: from b06cxnps4076.portsmouth.uk.ibm.com
- (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
- by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id 060911B08061
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2015 11:07:16 +0000 (GMT)
-Received: from d06av01.portsmouth.uk.ibm.com (d06av01.portsmouth.uk.ibm.com
- [9.149.37.212])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t2PB6oBW9306542
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2015 11:06:50 GMT
-Received: from d06av01.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av01.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t2PB6kIC021809
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2015 05:06:49 -0600
-From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Jeff Dike <jdike@addtoit.com>,
- Richard Weinberger <richard@nod.at>, Guan Xuetao <gxt@mprc.pku.edu.cn>,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org,
- Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
- user-mode-linux-devel@lists.sourceforge.net,
- user-mode-linux-user@lists.sourceforge.net, linux-arch@vger.kernel.org,
- linux-mm@kvack.org
-Subject: [PATCH v2 2/2] powerpc/mm: Tracking vDSO remap
-Date: Wed, 25 Mar 2015 12:06:36 +0100
-Message-Id: <25152b76585716dc635945c3455ab9b49e645f6d.1427280806.git.ldufour@linux.vnet.ibm.com>
-In-Reply-To: <cover.1427280806.git.ldufour@linux.vnet.ibm.com>
-References: <cover.1427280806.git.ldufour@linux.vnet.ibm.com>
-In-Reply-To: <cover.1427280806.git.ldufour@linux.vnet.ibm.com>
-References: <20150323085209.GA28965@gmail.com>
- <cover.1427280806.git.ldufour@linux.vnet.ibm.com>
-Cc: criu@openvz.org, cov@codeaurora.org
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Wed, 25 Mar 2015 21:09:15 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 2C0BC2CE8050
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2015 22:09:14 +1100 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t2PB95qx23855176
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2015 22:09:14 +1100
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t2PB8eaf013226
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2015 22:08:40 +1100
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
+Subject: [PATCH -V2 1/2] KVM: PPC: Use READ_ONCE when dereferencing pte_t
+ pointer
+Date: Wed, 25 Mar 2015 16:38:06 +0530
+Message-Id: <1427281687-11089-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+In-Reply-To: <1427281687-11089-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+References: <1427281687-11089-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,70 +39,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Some processes (CRIU) are moving the vDSO area using the mremap system
-call. As a consequence the kernel reference to the vDSO base address is
-no more valid and the signal return frame built once the vDSO has been
-moved is not pointing to the new sigreturn address.
+pte can get updated from other CPUs as part of multiple activities
+like THP split, huge page collapse, unmap. We need to make sure we
+don't reload the pte value again and again for different checks.
 
-This patch handles vDSO remapping and unmapping.
-
-Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/mmu_context.h | 36 +++++++++++++++++++++++++++++++++-
- 1 file changed, 35 insertions(+), 1 deletion(-)
+ arch/powerpc/include/asm/kvm_book3s_64.h |  5 ++++-
+ arch/powerpc/kvm/e500_mmu_host.c         | 20 ++++++++++++--------
+ 2 files changed, 16 insertions(+), 9 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/include/asm/mmu_context.h
-index 73382eba02dc..be5dca3f7826 100644
---- a/arch/powerpc/include/asm/mmu_context.h
-+++ b/arch/powerpc/include/asm/mmu_context.h
-@@ -8,7 +8,6 @@
- #include <linux/spinlock.h>
- #include <asm/mmu.h>	
- #include <asm/cputable.h>
--#include <asm-generic/mm_hooks.h>
- #include <asm/cputhreads.h>
+diff --git a/arch/powerpc/include/asm/kvm_book3s_64.h b/arch/powerpc/include/asm/kvm_book3s_64.h
+index cc073a7ac2b7..f06820c67175 100644
+--- a/arch/powerpc/include/asm/kvm_book3s_64.h
++++ b/arch/powerpc/include/asm/kvm_book3s_64.h
+@@ -290,7 +290,10 @@ static inline pte_t kvmppc_read_update_linux_pte(pte_t *ptep, int writing,
+ 	pte_t old_pte, new_pte = __pte(0);
  
- /*
-@@ -109,5 +108,40 @@ static inline void enter_lazy_tlb(struct mm_struct *mm,
- #endif
- }
+ 	while (1) {
+-		old_pte = *ptep;
++		/*
++		 * Make sure we don't reload from ptep
++		 */
++		old_pte = READ_ONCE(*ptep);
+ 		/*
+ 		 * wait until _PAGE_BUSY is clear then set it atomically
+ 		 */
+diff --git a/arch/powerpc/kvm/e500_mmu_host.c b/arch/powerpc/kvm/e500_mmu_host.c
+index cc536d4a75ef..5840d546aa03 100644
+--- a/arch/powerpc/kvm/e500_mmu_host.c
++++ b/arch/powerpc/kvm/e500_mmu_host.c
+@@ -469,14 +469,18 @@ static inline int kvmppc_e500_shadow_map(struct kvmppc_vcpu_e500 *vcpu_e500,
  
-+static inline void arch_dup_mmap(struct mm_struct *oldmm,
-+				 struct mm_struct *mm)
-+{
-+}
+ 	pgdir = vcpu_e500->vcpu.arch.pgdir;
+ 	ptep = lookup_linux_ptep(pgdir, hva, &tsize_pages);
+-	if (pte_present(*ptep))
+-		wimg = (*ptep >> PTE_WIMGE_SHIFT) & MAS2_WIMGE_MASK;
+-	else {
+-		if (printk_ratelimit())
+-			pr_err("%s: pte not present: gfn %lx, pfn %lx\n",
+-				__func__, (long)gfn, pfn);
+-		ret = -EINVAL;
+-		goto out;
++	if (ptep) {
++		pte_t pte = READ_ONCE(*ptep);
 +
-+static inline void arch_exit_mmap(struct mm_struct *mm)
-+{
-+}
-+
-+static inline void arch_unmap(struct mm_struct *mm,
-+			struct vm_area_struct *vma,
-+			unsigned long start, unsigned long end)
-+{
-+	if (start <= mm->context.vdso_base && mm->context.vdso_base < end)
-+		mm->context.vdso_base = 0;
-+}
-+
-+static inline void arch_bprm_mm_init(struct mm_struct *mm,
-+				     struct vm_area_struct *vma)
-+{
-+}
-+
-+#define __HAVE_ARCH_REMAP
-+static inline void arch_remap(struct mm_struct *mm,
-+			      unsigned long old_start, unsigned long old_end,
-+			      unsigned long new_start, unsigned long new_end)
-+{
-+	/*
-+	 * mremap don't allow moving multiple vma so we can limit the check
-+	 * to old_start == vdso_base.
-+	 */
-+	if (old_start == mm->context.vdso_base)
-+		mm->context.vdso_base = new_start;
-+}
-+
- #endif /* __KERNEL__ */
- #endif /* __ASM_POWERPC_MMU_CONTEXT_H */
++		if (pte_present(pte))
++			wimg = (pte_val(pte) >> PTE_WIMGE_SHIFT) &
++				MAS2_WIMGE_MASK;
++		else {
++			pr_err_ratelimited("%s: pte not present: gfn %lx,pfn %lx\n",
++					   __func__, (long)gfn, pfn);
++			ret = -EINVAL;
++			goto out;
++		}
+ 	}
+ 	kvmppc_e500_ref_setup(ref, gtlbe, pfn, wimg);
+ 
 -- 
-1.9.1
+2.1.0
