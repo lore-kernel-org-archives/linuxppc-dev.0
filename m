@@ -2,30 +2,30 @@ Return-Path: <weiyang@linux.vnet.ibm.com>
 Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AE3021A2C67
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2015 19:26:55 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id DE8A21A2B4C
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2015 19:27:16 +1100 (AEDT)
 Received: from /spool/local
  by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
- Wed, 25 Mar 2015 18:26:55 +1000
+ Wed, 25 Mar 2015 18:27:16 +1000
 Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 6F45D357804C
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2015 19:26:53 +1100 (EST)
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 4E5142CE8050
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2015 19:27:13 +1100 (EST)
 Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
  by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t2P8Qjwu34734254
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2015 19:26:53 +1100
+ t2P8R4id45220028
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2015 19:27:12 +1100
 Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
  by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t2P8QJ3F022697
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2015 19:26:20 +1100
+ t2P8QclS023081
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2015 19:26:39 +1100
 From: Wei Yang <weiyang@linux.vnet.ibm.com>
 To: bhelgaas@google.com, benh@au1.ibm.com, gwshan@linux.vnet.ibm.com
-Subject: [PATCH V16 05/20] PCI: Refresh First VF Offset and VF Stride when
- updating NumVFs
-Date: Wed, 25 Mar 2015 16:23:46 +0800
-Message-Id: <1427271841-28749-6-git-send-email-weiyang@linux.vnet.ibm.com>
+Subject: [PATCH V16 06/20] PCI: Calculate maximum number of buses required for
+ VFs
+Date: Wed, 25 Mar 2015 16:23:47 +0800
+Message-Id: <1427271841-28749-7-git-send-email-weiyang@linux.vnet.ibm.com>
 In-Reply-To: <1427271841-28749-1-git-send-email-weiyang@linux.vnet.ibm.com>
 References: <1427271841-28749-1-git-send-email-weiyang@linux.vnet.ibm.com>
 Cc: linux-pci@vger.kernel.org, Wei Yang <weiyang@linux.vnet.ibm.com>,
@@ -39,78 +39,99 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The First VF Offset and VF Stride fields depend on the NumVFs setting, so
-refresh the cached fields in struct pci_sriov when updating NumVFs.  See
-the SR-IOV spec r1.1, sec 3.3.9 and 3.3.10.
+An SR-IOV device can change its First VF Offset and VF Stride based on the
+values of ARI Capable Hierarchy and NumVFs.  The number of buses required
+for all VFs is determined by NumVFs, First VF Offset, and VF Stride (see
+SR-IOV spec r1.1, sec 2.1.2).
 
-[bhelgaas: changelog, remove kernel-doc comment marker]
+Previously pci_iov_bus_range() computed how many buses would be required by
+TotalVFs, but this was based on a single NumVFs value and may not have been
+the maximum for all NumVFs configurations.
+
+Iterate over all valid NumVFs and calculate the maximum number of bus
+numbers that could ever be required for VFs of this device.
+
+[bhelgaas: changelog, compute busnr of NumVFs, not TotalVFs, remove
+kerenl-doc comment marker]
 Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
 Acked-by: Bjorn Helgaas <bhelgaas@google.com>
 ---
- drivers/pci/iov.c |   23 +++++++++++++++++++----
- 1 file changed, 19 insertions(+), 4 deletions(-)
+ drivers/pci/iov.c |   31 +++++++++++++++++++++++++++----
+ drivers/pci/pci.h |    1 +
+ 2 files changed, 28 insertions(+), 4 deletions(-)
 
 diff --git a/drivers/pci/iov.c b/drivers/pci/iov.c
-index 27b98c3..a8752c2 100644
+index a8752c2..2ae921f 100644
 --- a/drivers/pci/iov.c
 +++ b/drivers/pci/iov.c
-@@ -31,6 +31,21 @@ static inline u8 virtfn_devfn(struct pci_dev *dev, int id)
- 		dev->sriov->stride * id) & 0xff;
+@@ -46,6 +46,30 @@ static inline void pci_iov_set_numvfs(struct pci_dev *dev, int nr_virtfn)
+ 	pci_read_config_word(dev, iov->pos + PCI_SRIOV_VF_STRIDE, &iov->stride);
  }
  
 +/*
-+ * Per SR-IOV spec sec 3.3.10 and 3.3.11, First VF Offset and VF Stride may
-+ * change when NumVFs changes.
++ * The PF consumes one bus number.  NumVFs, First VF Offset, and VF Stride
++ * determine how many additional bus numbers will be consumed by VFs.
 + *
-+ * Update iov->offset and iov->stride when NumVFs is written.
++ * Iterate over all valid NumVFs and calculate the maximum number of bus
++ * numbers that could ever be required.
 + */
-+static inline void pci_iov_set_numvfs(struct pci_dev *dev, int nr_virtfn)
++static inline u8 virtfn_max_buses(struct pci_dev *dev)
 +{
 +	struct pci_sriov *iov = dev->sriov;
++	int nr_virtfn;
++	u8 max = 0;
++	u8 busnr;
 +
-+	pci_write_config_word(dev, iov->pos + PCI_SRIOV_NUM_VF, nr_virtfn);
-+	pci_read_config_word(dev, iov->pos + PCI_SRIOV_VF_OFFSET, &iov->offset);
-+	pci_read_config_word(dev, iov->pos + PCI_SRIOV_VF_STRIDE, &iov->stride);
++	for (nr_virtfn = 1; nr_virtfn <= iov->total_VFs; nr_virtfn++) {
++		pci_iov_set_numvfs(dev, nr_virtfn);
++		busnr = virtfn_bus(dev, nr_virtfn - 1);
++		if (busnr > max)
++			max = busnr;
++	}
++
++	return max;
 +}
 +
  static struct pci_bus *virtfn_add_bus(struct pci_bus *bus, int busnr)
  {
  	struct pci_bus *child;
-@@ -253,7 +268,7 @@ static int sriov_enable(struct pci_dev *dev, int nr_virtfn)
- 			return rc;
+@@ -427,6 +451,7 @@ found:
+ 
+ 	dev->sriov = iov;
+ 	dev->is_physfn = 1;
++	iov->max_VF_buses = virtfn_max_buses(dev);
+ 
+ 	return 0;
+ 
+@@ -556,15 +581,13 @@ void pci_restore_iov_state(struct pci_dev *dev)
+ int pci_iov_bus_range(struct pci_bus *bus)
+ {
+ 	int max = 0;
+-	u8 busnr;
+ 	struct pci_dev *dev;
+ 
+ 	list_for_each_entry(dev, &bus->devices, bus_list) {
+ 		if (!dev->is_physfn)
+ 			continue;
+-		busnr = virtfn_bus(dev, dev->sriov->total_VFs - 1);
+-		if (busnr > max)
+-			max = busnr;
++		if (dev->sriov->max_VF_buses > max)
++			max = dev->sriov->max_VF_buses;
  	}
  
--	pci_write_config_word(dev, iov->pos + PCI_SRIOV_NUM_VF, nr_virtfn);
-+	pci_iov_set_numvfs(dev, nr_virtfn);
- 	iov->ctrl |= PCI_SRIOV_CTRL_VFE | PCI_SRIOV_CTRL_MSE;
- 	pci_cfg_access_lock(dev);
- 	pci_write_config_word(dev, iov->pos + PCI_SRIOV_CTRL, iov->ctrl);
-@@ -282,7 +297,7 @@ failed:
- 	iov->ctrl &= ~(PCI_SRIOV_CTRL_VFE | PCI_SRIOV_CTRL_MSE);
- 	pci_cfg_access_lock(dev);
- 	pci_write_config_word(dev, iov->pos + PCI_SRIOV_CTRL, iov->ctrl);
--	pci_write_config_word(dev, iov->pos + PCI_SRIOV_NUM_VF, 0);
-+	pci_iov_set_numvfs(dev, 0);
- 	ssleep(1);
- 	pci_cfg_access_unlock(dev);
- 
-@@ -313,7 +328,7 @@ static void sriov_disable(struct pci_dev *dev)
- 		sysfs_remove_link(&dev->dev.kobj, "dep_link");
- 
- 	iov->num_VFs = 0;
--	pci_write_config_word(dev, iov->pos + PCI_SRIOV_NUM_VF, 0);
-+	pci_iov_set_numvfs(dev, 0);
- }
- 
- static int sriov_init(struct pci_dev *dev, int pos)
-@@ -452,7 +467,7 @@ static void sriov_restore_state(struct pci_dev *dev)
- 		pci_update_resource(dev, i);
- 
- 	pci_write_config_dword(dev, iov->pos + PCI_SRIOV_SYS_PGSIZE, iov->pgsz);
--	pci_write_config_word(dev, iov->pos + PCI_SRIOV_NUM_VF, iov->num_VFs);
-+	pci_iov_set_numvfs(dev, iov->num_VFs);
- 	pci_write_config_word(dev, iov->pos + PCI_SRIOV_CTRL, iov->ctrl);
- 	if (iov->ctrl & PCI_SRIOV_CTRL_VFE)
- 		msleep(100);
+ 	return max ? max - bus->number : 0;
+diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
+index 5732964..bae593c 100644
+--- a/drivers/pci/pci.h
++++ b/drivers/pci/pci.h
+@@ -243,6 +243,7 @@ struct pci_sriov {
+ 	u16 stride;		/* following VF stride */
+ 	u32 pgsz;		/* page size for BAR alignment */
+ 	u8 link;		/* Function Dependency Link */
++	u8 max_VF_buses;	/* max buses consumed by VFs */
+ 	u16 driver_max_VFs;	/* max num VFs driver supports */
+ 	struct pci_dev *dev;	/* lowest numbered PF */
+ 	struct pci_dev *self;	/* this PF */
 -- 
 1.7.9.5
