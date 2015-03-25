@@ -1,31 +1,31 @@
 Return-Path: <weiyang@linux.vnet.ibm.com>
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0E71D1A1AB3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2015 16:56:10 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id AB46B1A2BE6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2015 16:56:27 +1100 (AEDT)
 Received: from /spool/local
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
- Wed, 25 Mar 2015 15:56:08 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id DC36E2BB0040
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2015 16:56:06 +1100 (EST)
+ Wed, 25 Mar 2015 15:56:27 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id EED202CE8040
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2015 16:56:25 +1100 (EST)
 Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t2P5twVa29556906
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2015 16:56:06 +1100
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t2P5uH3s36175898
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2015 16:56:25 +1100
 Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
  by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t2P5tWBA028766
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2015 16:55:33 +1100
+ t2P5tqdD029378
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2015 16:55:52 +1100
 From: Wei Yang <weiyang@linux.vnet.ibm.com>
 To: bhelgaas@google.com, benh@au1.ibm.com, gwshan@linux.vnet.ibm.com
-Subject: [PATCH V15 15/21] powerpc/powernv: Reserve additional space for IOV
- BAR according to the number of total_pe
-Date: Wed, 25 Mar 2015 13:44:51 +0800
-Message-Id: <1427262297-5694-16-git-send-email-weiyang@linux.vnet.ibm.com>
+Subject: [PATCH V15 16/21] powerpc/powernv: Implement
+ pcibios_iov_resource_alignment() on powernv
+Date: Wed, 25 Mar 2015 13:44:52 +0800
+Message-Id: <1427262297-5694-17-git-send-email-weiyang@linux.vnet.ibm.com>
 In-Reply-To: <1427262297-5694-1-git-send-email-weiyang@linux.vnet.ibm.com>
 References: <1427262297-5694-1-git-send-email-weiyang@linux.vnet.ibm.com>
 Cc: linux-pci@vger.kernel.org, Wei Yang <weiyang@linux.vnet.ibm.com>,
@@ -39,138 +39,94 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On PHB3, PF IOV BAR will be covered by M64 BAR to have better PE isolation.
-M64 BAR is a type of hardware resource in PHB3, which could map a range of
-MMIO to PE numbers on powernv platform. And this range is divided equally
-by the number of total_pe with each divided range mapping to a PE number.
-Also, the M64 BAR must map a MMIO range with power-of-two size.
+Implement pcibios_iov_resource_alignment() on powernv platform.
 
-The total_pe number is usually different from total_VFs, which can lead to
-a conflict between MMIO space and the PE number.
+On PowerNV platform, there are 3 cases for the IOV BAR:
+1. initial state, the IOV BAR size is multiple times of VF BAR size
+2. after expanded, the IOV BAR size is expanded to meet the M64 segment size
+3. sizing stage, the IOV BAR is truncated to 0
 
-For example, if total_VFs is 128 and total_pe is 256, the second half of
-M64 BAR will be part of other PCI device, which may already belong to other
-PEs.
+pnv_pci_iov_resource_alignment() handle these three cases respectively.
 
-This patch prevents the conflict by reserving additional space for the PF
-IOV BAR, which is total_pe number of VF's BAR size.
-
-[bhelgaas: make dev_printk() output more consistent, index resource[]
-conventionally]
+[bhelgaas: adjust to drop "align" parameter, return pci_iov_resource_size()
+if no ppc_md machdep_call version]
 Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/machdep.h        |    4 +++
- arch/powerpc/include/asm/pci-bridge.h     |    3 ++
- arch/powerpc/kernel/pci-common.c          |    6 ++++
- arch/powerpc/platforms/powernv/pci-ioda.c |   43 +++++++++++++++++++++++++++++
- 4 files changed, 56 insertions(+)
+ arch/powerpc/include/asm/machdep.h        |    1 +
+ arch/powerpc/kernel/pci-common.c          |   10 ++++++++++
+ arch/powerpc/platforms/powernv/pci-ioda.c |   20 ++++++++++++++++++++
+ 3 files changed, 31 insertions(+)
 
 diff --git a/arch/powerpc/include/asm/machdep.h b/arch/powerpc/include/asm/machdep.h
-index c8175a3..1d72fda 100644
+index 1d72fda..37e451f 100644
 --- a/arch/powerpc/include/asm/machdep.h
 +++ b/arch/powerpc/include/asm/machdep.h
-@@ -250,6 +250,10 @@ struct machdep_calls {
- 	/* Reset the secondary bus of bridge */
- 	void  (*pcibios_reset_secondary_bus)(struct pci_dev *dev);
+@@ -252,6 +252,7 @@ struct machdep_calls {
  
-+#ifdef CONFIG_PCI_IOV
-+	void (*pcibios_fixup_sriov)(struct pci_dev *pdev);
-+#endif /* CONFIG_PCI_IOV */
-+
+ #ifdef CONFIG_PCI_IOV
+ 	void (*pcibios_fixup_sriov)(struct pci_dev *pdev);
++	resource_size_t (*pcibios_iov_resource_alignment)(struct pci_dev *, int resno);
+ #endif /* CONFIG_PCI_IOV */
+ 
  	/* Called to shutdown machine specific hardware not already controlled
- 	 * by other drivers.
- 	 */
-diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
-index 513f8f2..d0d1718 100644
---- a/arch/powerpc/include/asm/pci-bridge.h
-+++ b/arch/powerpc/include/asm/pci-bridge.h
-@@ -175,6 +175,9 @@ struct pci_dn {
- #define IODA_INVALID_PE		(-1)
- #ifdef CONFIG_PPC_POWERNV
- 	int	pe_number;
-+#ifdef CONFIG_PCI_IOV
-+	u16     vfs_expanded;		/* number of VFs IOV BAR expanded */
-+#endif /* CONFIG_PCI_IOV */
- #endif
- 	struct list_head child_list;
- 	struct list_head list;
 diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
-index 8203101..375bf70 100644
+index 375bf70..9a306ff 100644
 --- a/arch/powerpc/kernel/pci-common.c
 +++ b/arch/powerpc/kernel/pci-common.c
-@@ -990,6 +990,12 @@ int pcibios_add_device(struct pci_dev *dev)
- 	 */
- 	if (dev->bus->is_added)
- 		pcibios_setup_device(dev);
-+
-+#ifdef CONFIG_PCI_IOV
-+	if (ppc_md.pcibios_fixup_sriov)
-+		ppc_md.pcibios_fixup_sriov(dev);
-+#endif /* CONFIG_PCI_IOV */
-+
- 	return 0;
+@@ -130,6 +130,16 @@ void pcibios_reset_secondary_bus(struct pci_dev *dev)
+ 	pci_reset_secondary_bus(dev);
  }
  
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index 1b37066..cadd3fb 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -1749,6 +1749,46 @@ static void pnv_pci_init_ioda_msis(struct pnv_phb *phb)
- static void pnv_pci_init_ioda_msis(struct pnv_phb *phb) { }
- #endif /* CONFIG_PCI_MSI */
- 
 +#ifdef CONFIG_PCI_IOV
-+static void pnv_pci_ioda_fixup_iov_resources(struct pci_dev *pdev)
++resource_size_t pcibios_iov_resource_alignment(struct pci_dev *pdev, int resno)
 +{
-+	struct pci_controller *hose;
-+	struct pnv_phb *phb;
-+	struct resource *res;
-+	int i;
-+	resource_size_t size;
-+	struct pci_dn *pdn;
++	if (ppc_md.pcibios_iov_resource_alignment)
++		return ppc_md.pcibios_iov_resource_alignment(pdev, resno);
 +
-+	if (!pdev->is_physfn || pdev->is_added)
-+		return;
-+
-+	hose = pci_bus_to_host(pdev->bus);
-+	phb = hose->private_data;
-+
-+	pdn = pci_get_pdn(pdev);
-+	pdn->vfs_expanded = 0;
-+
-+	for (i = 0; i < PCI_SRIOV_NUM_BARS; i++) {
-+		res = &pdev->resource[i + PCI_IOV_RESOURCES];
-+		if (!res->flags || res->parent)
-+			continue;
-+		if (!pnv_pci_is_mem_pref_64(res->flags)) {
-+			dev_warn(&pdev->dev, "Skipping expanding VF BAR%d: %pR\n",
-+				 i, res);
-+			continue;
-+		}
-+
-+		dev_dbg(&pdev->dev, " Fixing VF BAR%d: %pR to\n", i, res);
-+		size = pci_iov_resource_size(pdev, i + PCI_IOV_RESOURCES);
-+		res->end = res->start + size * phb->ioda.total_pe - 1;
-+		dev_dbg(&pdev->dev, "                       %pR\n", res);
-+		dev_info(&pdev->dev, "VF BAR%d: %pR (expanded to %d VFs for PE alignment)",
-+				i, res, phb->ioda.total_pe);
-+	}
-+	pdn->vfs_expanded = phb->ioda.total_pe;
++	return pci_iov_resource_size(pdev, resno);
 +}
 +#endif /* CONFIG_PCI_IOV */
 +
- /*
-  * This function is supposed to be called on basis of PE from top
-  * to bottom style. So the the I/O or MMIO segment assigned to
-@@ -2125,6 +2165,9 @@ static void __init pnv_pci_init_ioda_phb(struct device_node *np,
- 	ppc_md.pcibios_enable_device_hook = pnv_pci_enable_device_hook;
- 	ppc_md.pcibios_window_alignment = pnv_pci_window_alignment;
- 	ppc_md.pcibios_reset_secondary_bus = pnv_pci_reset_secondary_bus;
+ static resource_size_t pcibios_io_size(const struct pci_controller *hose)
+ {
+ #ifdef CONFIG_PPC64
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index cadd3fb..93ec16c 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -1965,6 +1965,25 @@ static resource_size_t pnv_pci_window_alignment(struct pci_bus *bus,
+ 	return phb->ioda.io_segsize;
+ }
+ 
 +#ifdef CONFIG_PCI_IOV
-+	ppc_md.pcibios_fixup_sriov = pnv_pci_ioda_fixup_iov_resources;
++static resource_size_t pnv_pci_iov_resource_alignment(struct pci_dev *pdev,
++						      int resno)
++{
++	struct pci_dn *pdn = pci_get_pdn(pdev);
++	resource_size_t align, iov_align;
++
++	iov_align = resource_size(&pdev->resource[resno]);
++	if (iov_align)
++		return iov_align;
++
++	align = pci_iov_resource_size(pdev, resno);
++	if (pdn->vfs_expanded)
++		return pdn->vfs_expanded * align;
++
++	return align;
++}
 +#endif /* CONFIG_PCI_IOV */
++
+ /* Prevent enabling devices for which we couldn't properly
+  * assign a PE
+  */
+@@ -2167,6 +2186,7 @@ static void __init pnv_pci_init_ioda_phb(struct device_node *np,
+ 	ppc_md.pcibios_reset_secondary_bus = pnv_pci_reset_secondary_bus;
+ #ifdef CONFIG_PCI_IOV
+ 	ppc_md.pcibios_fixup_sriov = pnv_pci_ioda_fixup_iov_resources;
++	ppc_md.pcibios_iov_resource_alignment = pnv_pci_iov_resource_alignment;
+ #endif /* CONFIG_PCI_IOV */
  	pci_add_flags(PCI_REASSIGN_ALL_RSRC);
  
- 	/* Reset IODA tables to a clean state */
 -- 
 1.7.9.5
