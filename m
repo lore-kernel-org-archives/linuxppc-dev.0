@@ -2,34 +2,34 @@ Return-Path: <gwshan@linux.vnet.ibm.com>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1ABE51A0671
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1B88A1A0680
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Mar 2015 10:21:41 +1100 (AEDT)
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id D88C214015A
+ by ozlabs.org (Postfix) with ESMTPS id D8A43140161
  for <linuxppc-dev@ozlabs.org>; Thu, 26 Mar 2015 10:21:40 +1100 (AEDT)
 Received: from /spool/local
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
  Thu, 26 Mar 2015 09:21:39 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 1B0C22BB0055
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 3C7673578053
  for <linuxppc-dev@ozlabs.org>; Thu, 26 Mar 2015 10:21:38 +1100 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t2PNLTmr45744334
- for <linuxppc-dev@ozlabs.org>; Thu, 26 Mar 2015 10:21:37 +1100
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t2PNL4Vk032691
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t2PNLTMi31654084
+ for <linuxppc-dev@ozlabs.org>; Thu, 26 Mar 2015 10:21:38 +1100
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t2PNL4vQ001023
  for <linuxppc-dev@ozlabs.org>; Thu, 26 Mar 2015 10:21:04 +1100
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH v4 4/4] drivers/vfio: Remove duplicated PE states
-Date: Thu, 26 Mar 2015 10:20:37 +1100
-Message-Id: <1427325637-14345-5-git-send-email-gwshan@linux.vnet.ibm.com>
+Subject: [PATCH v4 3/4] drivers/vfio: Support EEH error injection
+Date: Thu, 26 Mar 2015 10:20:36 +1100
+Message-Id: <1427325637-14345-4-git-send-email-gwshan@linux.vnet.ibm.com>
 In-Reply-To: <1427325637-14345-1-git-send-email-gwshan@linux.vnet.ibm.com>
 References: <1427325637-14345-1-git-send-email-gwshan@linux.vnet.ibm.com>
 Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>, alex.williamson@redhat.com,
@@ -43,30 +43,98 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The set of constants for PE states defined in uapi/linux/vfio.h is
-duplicated to uapi/asm/eeh.h. The patch removes the set from the
-former.
+The patch adds one more EEH sub-command (VFIO_EEH_PE_INJECT_ERR)
+to inject the specified EEH error, which is represented by
+(struct vfio_eeh_pe_err), to the indicated PE for testing purpose.
 
 Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 ---
- include/uapi/linux/vfio.h | 5 -----
- 1 file changed, 5 deletions(-)
+ Documentation/vfio.txt        | 12 ++++++++++++
+ drivers/vfio/vfio_spapr_eeh.c | 10 ++++++++++
+ include/uapi/linux/vfio.h     | 14 +++++++++++++-
+ 3 files changed, 35 insertions(+), 1 deletion(-)
 
+diff --git a/Documentation/vfio.txt b/Documentation/vfio.txt
+index 96978ec..4c746a7 100644
+--- a/Documentation/vfio.txt
++++ b/Documentation/vfio.txt
+@@ -385,6 +385,18 @@ The code flow from the example above should be slightly changed:
+ 
+ 	....
+ 
++	/* Inject EEH error, which is expected to be caused by 32-bits
++	 * config load.
++	 */
++	pe_op.op = VFIO_EEH_PE_INJECT_ERR;
++	pe_op.err.type = EEH_ERR_TYPE_32;
++	pe_op.err.func = EEH_ERR_FUNC_LD_CFG_ADDR;
++	pe_op.err.addr = 0ul;
++	pe_op.err.mask = 0ul;
++	ioctl(container, VFIO_EEH_PE_OP, &pe_op);
++
++	....
++
+ 	/* When 0xFF's returned from reading PCI config space or IO BARs
+ 	 * of the PCI device. Check the PE's state to see if that has been
+ 	 * frozen.
+diff --git a/drivers/vfio/vfio_spapr_eeh.c b/drivers/vfio/vfio_spapr_eeh.c
+index 5fa42db..38edeb4 100644
+--- a/drivers/vfio/vfio_spapr_eeh.c
++++ b/drivers/vfio/vfio_spapr_eeh.c
+@@ -85,6 +85,16 @@ long vfio_spapr_iommu_eeh_ioctl(struct iommu_group *group,
+ 		case VFIO_EEH_PE_CONFIGURE:
+ 			ret = eeh_pe_configure(pe);
+ 			break;
++		case VFIO_EEH_PE_INJECT_ERR:
++			minsz = offsetofend(struct vfio_eeh_pe_op, err.mask);
++			if (op.argsz < minsz)
++				return -EINVAL;
++			if (copy_from_user(&op, (void __user *)arg, minsz))
++				return -EFAULT;
++
++			ret = eeh_pe_inject_err(pe, op.err.type, op.err.func,
++						op.err.addr, op.err.mask);
++			break;
+ 		default:
+ 			ret = -EINVAL;
+ 		}
 diff --git a/include/uapi/linux/vfio.h b/include/uapi/linux/vfio.h
-index d81c17f..3fd1e86 100644
+index 82889c3..d81c17f 100644
 --- a/include/uapi/linux/vfio.h
 +++ b/include/uapi/linux/vfio.h
-@@ -492,11 +492,6 @@ struct vfio_eeh_pe_op {
- #define VFIO_EEH_PE_UNFREEZE_IO		2	/* Enable IO for frozen PE   */
- #define VFIO_EEH_PE_UNFREEZE_DMA	3	/* Enable DMA for frozen PE  */
- #define VFIO_EEH_PE_GET_STATE		4	/* PE state retrieval        */
--#define  VFIO_EEH_PE_STATE_NORMAL	0	/* PE in functional state    */
--#define  VFIO_EEH_PE_STATE_RESET	1	/* PE reset in progress      */
--#define  VFIO_EEH_PE_STATE_STOPPED	2	/* Stopped DMA and IO        */
--#define  VFIO_EEH_PE_STATE_STOPPED_DMA	4	/* Stopped DMA only          */
--#define  VFIO_EEH_PE_STATE_UNAVAIL	5	/* State unavailable         */
- #define VFIO_EEH_PE_RESET_DEACTIVATE	5	/* Deassert PE reset         */
+@@ -468,12 +468,23 @@ struct vfio_iommu_spapr_tce_info {
+  * - unfreeze IO/DMA for frozen PE;
+  * - read PE state;
+  * - reset PE;
+- * - configure PE.
++ * - configure PE;
++ * - inject EEH error.
+  */
++struct vfio_eeh_pe_err {
++	__u32 type;
++	__u32 func;
++	__u64 addr;
++	__u64 mask;
++};
++
+ struct vfio_eeh_pe_op {
+ 	__u32 argsz;
+ 	__u32 flags;
+ 	__u32 op;
++	union {
++		struct vfio_eeh_pe_err err;
++	};
+ };
+ 
+ #define VFIO_EEH_PE_DISABLE		0	/* Disable EEH functionality */
+@@ -490,6 +501,7 @@ struct vfio_eeh_pe_op {
  #define VFIO_EEH_PE_RESET_HOT		6	/* Assert hot reset          */
  #define VFIO_EEH_PE_RESET_FUNDAMENTAL	7	/* Assert fundamental reset  */
+ #define VFIO_EEH_PE_CONFIGURE		8	/* PE configuration          */
++#define VFIO_EEH_PE_INJECT_ERR		9	/* Inject EEH error          */
+ 
+ #define VFIO_EEH_PE_OP			_IO(VFIO_TYPE, VFIO_BASE + 21)
+ 
 -- 
 1.8.3.2
