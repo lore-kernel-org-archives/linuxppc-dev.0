@@ -1,26 +1,22 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 434C91A028E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2015 12:35:23 +1100 (AEDT)
-Message-ID: <1427247322.29319.3.camel@ellerman.id.au>
-Subject: Re: [23/32] powerpc: copy_thread(): rename 'arg' argument to
- 'kthread_arg'
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3E96F1A028E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2015 12:55:37 +1100 (AEDT)
+Message-ID: <1427248536.29319.4.camel@ellerman.id.au>
+Subject: Re: [PATCH v2] powerpc/pseries: Simplify check for suspendability
+ during suspend/migration
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Alex Dowad <alexinbeijing@gmail.com>
-Date: Wed, 25 Mar 2015 12:35:22 +1100
-In-Reply-To: <5511BFDF.6070309@gmail.com>
-References: <20150319064519.6BEA814010F@ozlabs.org>
- <550A794C.7020904@gmail.com> <1426809274.2581.0.camel@ellerman.id.au>
- <5511BFDF.6070309@gmail.com>
+To: Cyril Bur <cyrilbur@gmail.com>
+Date: Wed, 25 Mar 2015 12:55:36 +1100
+In-Reply-To: <1427158353.8284.12.camel@cyril>
+References: <1425500547-22777-1-git-send-email-tyreld@linux.vnet.ibm.com>
+ <1427158353.8284.12.camel@cyril>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: Michael Neuling <mikey@neuling.org>, linux-kernel@vger.kernel.org,
- Paul Gortmaker <paul.gortmaker@windriver.com>,
- Vineeth Vijayan <vvijayan@mvista.com>, Anton Blanchard <anton@samba.org>,
- Paul Mackerras <paulus@samba.org>, Christoph Lameter <cl@linux.com>,
- "open list:LINUX FOR POWERPC..." <linuxppc-dev@lists.ozlabs.org>
+Cc: linuxppc-dev@lists.ozlabs.org, Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
+ Nathan Fontenot <nfont@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,38 +26,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-03-24 at 21:49 +0200, Alex Dowad wrote:
-> On 20/03/15 01:54, Michael Ellerman wrote:
-> > On Thu, 2015-03-19 at 09:22 +0200, Alex Dowad wrote:
-> >> On 19/03/15 08:45, Michael Ellerman wrote:
-> >>> On Fri, 2015-13-03 at 18:14:46 UTC, Alex Dowad wrote:
-> >>>> The 'arg' argument to copy_thread() is only ever used when forking a new
-> >>>> kernel thread. Hence, rename it to 'kthread_arg' for clarity (and consistency
-> >>>> with do_fork() and other arch-specific implementations of copy_thread()).
-> >>>    
-> >>> I don't understand the bit about consistency with do_fork() ?
-> >>>
-> >> This series of patches includes one patch which renames the arg for
-> >> do_fork(), and others which rename the same arg for each arch-specific
-> >> implementation of copy_thread(). So if all of them are accepted and
-> >> merged, then all will be consistent. If only some of the patches are
-> >> accepted, I will rewrite the commit message so it doesn't mention
-> >> "consistency".
-> > Ah OK, I only got patch 23, so I missed the context of the whole series.
-> >
-> > I'll apply this one to the powerpc tree.
->
-> Dear M. Ellerman, sorry for not replying promptly. If you would like to 
-> apply this directly to the powerpc tree, that is fine, but can I edit 
-> the commit message to remove the mention of 'consistency'? I doubt that 
-> all 30+ archs will ever merge this change. Thanks, Alex
- 
-I merged it last week:
+On Tue, 2015-03-24 at 11:52 +1100, Cyril Bur wrote:
+> On Wed, 2015-03-04 at 12:22 -0800, Tyrel Datwyler wrote:
+> > During suspend/migration operation we must wait for the VASI state reported
+> > by the hypervisor to become Suspending prior to making the ibm,suspend-me
+> > RTAS call. Calling routines to rtas_ibm_supend_me() pass a vasi_state variable
+> > that exposes the VASI state to the caller. This is unnecessary as the caller
+> > only really cares about the following three conditions; if there is an error
+> > we should bailout, success indicating we have suspended and woken back up so
+> > proceed to device tree updated, or we are not suspendable yet so try calling
+> > rtas_ibm_suspend_me again shortly.
+> > 
+> > This patch removes the extraneous vasi_state variable and simply uses the
+> > return code to communicate how to proceed. We either succeed, fail, or get
+> > -EAGAIN in which case we sleep for a second before trying to call
+> > rtas_ibm_suspend_me again.
+> > 
+> Hi Tyrel, sorry this fell off my radar. Thanks for addressing all those
+> issues.
+> 
+> > Signed-off-by: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+> > Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+> > Cc: Cyril Bur <cyrilbur@gmail.com>
+> > ---
+> > 
+> > Changes in v2:
+> > - Addressed Cyril's comments as follow:
+> > - Removed unused vasi_rc variable
+> > - Kept return behavior of ppc_rtas the same in the case of VASI error
+> 
+> Looks good for ppc_rtas(). Still changing a return value (pointed out
+> below) in migrate_store(), we might be ok with that since its the sysfs
+> file but mentioning it in the commit message would be a good idea.
 
-  https://git.kernel.org/cgit/linux/kernel/git/mpe/linux.git/commit/?h=next&id=6eca8933d3ff17bff39d5f10a2a22366d8622fa6
+Yeah I think that's fine.
 
-And I edited the commit message more or less as you describe.
+> When rtas_ibm_suspend me() now returns -EIO, migrate_store() will now
+> return -EIO. It used to return -1.
 
-And feel free to call me Michael or mpe :)
+-1 is EPERM which is wrong, so -EIO is better at least.
+
+Tyrel can you please resend with an updated changelog that documents that
+change.
 
 cheers
