@@ -1,41 +1,33 @@
-Return-Path: <stewart@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D058D1A1B66
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2015 16:47:38 +1100 (AEDT)
-Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
+Return-Path: <weiyang@linux.vnet.ibm.com>
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 0B369140119
- for <linuxppc-dev@ozlabs.org>; Wed, 25 Mar 2015 16:47:37 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id E6CEF1A11C5
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2015 16:49:15 +1100 (AEDT)
 Received: from /spool/local
- by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <stewart@linux.vnet.ibm.com>;
- Wed, 25 Mar 2015 01:47:35 -0400
-Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
- [9.57.198.24])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id A36B638C8039
- for <linuxppc-dev@ozlabs.org>; Wed, 25 Mar 2015 01:47:33 -0400 (EDT)
-Received: from d01av05.pok.ibm.com (d01av05.pok.ibm.com [9.56.224.195])
- by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t2P5lP2g25690114
- for <linuxppc-dev@ozlabs.org>; Wed, 25 Mar 2015 05:47:33 GMT
-Received: from d01av05.pok.ibm.com (localhost [127.0.0.1])
- by d01av05.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t2P5l0Y6010078
- for <linuxppc-dev@ozlabs.org>; Wed, 25 Mar 2015 01:47:00 -0400
-From: Stewart Smith <stewart@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] powerpc/powernv: Remove powernv RTAS support
-In-Reply-To: <1426141631-10741-1-git-send-email-mpe@ellerman.id.au>
-References: <1426141631-10741-1-git-send-email-mpe@ellerman.id.au>
-Date: Wed, 25 Mar 2015 16:46:42 +1100
-Message-ID: <m3mw317hod.fsf@oc8180480414.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: dja@axtens.net
+ for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
+ Wed, 25 Mar 2015 15:49:14 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 7984D357804F
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2015 16:49:12 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t2P5n4OJ48496790
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2015 16:49:12 +1100
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t2P5mcCR018754
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2015 16:48:38 +1100
+From: Wei Yang <weiyang@linux.vnet.ibm.com>
+To: bhelgaas@google.com, benh@au1.ibm.com, gwshan@linux.vnet.ibm.com
+Subject: [PATCH V15 03/21] PCI: Print more info in sriov_enable() error message
+Date: Wed, 25 Mar 2015 13:44:39 +0800
+Message-Id: <1427262297-5694-4-git-send-email-weiyang@linux.vnet.ibm.com>
+In-Reply-To: <1427262297-5694-1-git-send-email-weiyang@linux.vnet.ibm.com>
+References: <1427262297-5694-1-git-send-email-weiyang@linux.vnet.ibm.com>
+Cc: linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,24 +37,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael Ellerman <mpe@ellerman.id.au> writes:
+From: Bjorn Helgaas <bhelgaas@google.com>
 
-> The powernv code has some conditional support for running on bare metal
-> machines that have no OPAL firmware, but provide RTAS.
->
-> No released machines ever supported that, and even in the lab it was
-> just a transitional hack in the days when OPAL was still being
-> developed.
->
-> So remove the code.
->
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+If we don't have space for all the bus numbers required to enable VFs,
+print the largest bus number required and the range available.
 
-The only current place I could think this could be remotely possible
-would be in simulator... and we should instead make the OPAL calls work
-properly in the simulator for all the RTAS functionality (that we care
-about).
+No functional change; improved error message only.
 
-In related news.. I should poke the simulator guys.
+Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
+Acked-by: Wei Yang <weiyang@linux.vnet.ibm.com>
+---
+ drivers/pci/iov.c |    7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
 
-Acked-by: Stewart Smith <stewart@linux.vnet.ibm.com>
+diff --git a/drivers/pci/iov.c b/drivers/pci/iov.c
+index 4b3a4ea..c4c33ea 100644
+--- a/drivers/pci/iov.c
++++ b/drivers/pci/iov.c
+@@ -180,6 +180,7 @@ static int sriov_enable(struct pci_dev *dev, int nr_virtfn)
+ 	struct pci_dev *pdev;
+ 	struct pci_sriov *iov = dev->sriov;
+ 	int bars = 0;
++	u8 bus;
+ 
+ 	if (!nr_virtfn)
+ 		return 0;
+@@ -216,8 +217,10 @@ static int sriov_enable(struct pci_dev *dev, int nr_virtfn)
+ 	iov->offset = offset;
+ 	iov->stride = stride;
+ 
+-	if (virtfn_bus(dev, nr_virtfn - 1) > dev->bus->busn_res.end) {
+-		dev_err(&dev->dev, "SR-IOV: bus number out of range\n");
++	bus = virtfn_bus(dev, nr_virtfn - 1);
++	if (bus > dev->bus->busn_res.end) {
++		dev_err(&dev->dev, "can't enable %d VFs (bus %02x out of range of %pR)\n",
++			nr_virtfn, bus, &dev->bus->busn_res);
+ 		return -ENOMEM;
+ 	}
+ 
+-- 
+1.7.9.5
