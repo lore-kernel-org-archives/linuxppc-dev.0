@@ -1,34 +1,40 @@
-Return-Path: <mingo.kernel.org@gmail.com>
-Received: from mail-wi0-x22d.google.com (mail-wi0-x22d.google.com
- [IPv6:2a00:1450:400c:c05::22d])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <sukadev@linux.vnet.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C424D1A0681
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Mar 2015 05:36:54 +1100 (AEDT)
-Received: by wibgn9 with SMTP id gn9so52208624wib.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2015 11:36:51 -0700 (PDT)
-Sender: Ingo Molnar <mingo.kernel.org@gmail.com>
-Date: Wed, 25 Mar 2015 19:36:47 +0100
-From: Ingo Molnar <mingo@kernel.org>
-To: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-Subject: Re: [PATCH v3 2/2] powerpc/mm: Tracking vDSO remap
-Message-ID: <20150325183647.GA9331@gmail.com>
-References: <20150325121118.GA2542@gmail.com>
- <cover.1427289960.git.ldufour@linux.vnet.ibm.com>
- <b6ce07f8e1e0d654371aee70bd8eac310456d0df.1427289960.git.ldufour@linux.vnet.ibm.com>
- <20150325183316.GA9090@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id C66171A0688
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Mar 2015 05:42:54 +1100 (AEDT)
+Received: from /spool/local
+ by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
+ Wed, 25 Mar 2015 12:42:52 -0600
+Received: from b03cxnp08027.gho.boulder.ibm.com
+ (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 68A5F3E40041
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2015 12:42:50 -0600 (MDT)
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+ by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t2PIgo2e27197504
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2015 11:42:50 -0700
+Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t2PIgnTY015355
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2015 12:42:50 -0600
+Date: Wed, 25 Mar 2015 11:41:53 -0700
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [RFC, powerpc] perf/hv-24x7 set the attr group to NULL if events
+ failed to be initialized
+Message-ID: <20150325184153.GA6579@us.ibm.com>
+References: <1423993377.2932.23.camel@TP420>
+ <20150325095120.8F48F1400EA@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150325183316.GA9090@gmail.com>
-Cc: linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, x86@kernel.org,
- user-mode-linux-devel@lists.sourceforge.net, Arnd Bergmann <arnd@arndb.de>,
- Jeff Dike <jdike@addtoit.com>, "H. Peter Anvin" <hpa@zytor.com>,
- linux-kernel@vger.kernel.org, criu@openvz.org, linux-mm@kvack.org,
- Ingo Molnar <mingo@redhat.com>, Paul Mackerras <paulus@samba.org>,
- user-mode-linux-user@lists.sourceforge.net,
- Richard Weinberger <richard@nod.at>, Thomas Gleixner <tglx@linutronix.de>,
- Guan Xuetao <gxt@mprc.pku.edu.cn>, linuxppc-dev@lists.ozlabs.org,
- cov@codeaurora.org
+In-Reply-To: <20150325095120.8F48F1400EA@ozlabs.org>
+Cc: Paul Mackerras <paulus@samba.org>,
+ PowerPC email list <linuxppc-dev@lists.ozlabs.org>,
+ Li Zhong <zhong@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,33 +44,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Michael Ellerman [mpe@ellerman.id.au] wrote:
+| On Sun, 2015-15-02 at 09:42:57 UTC, Li Zhong wrote:
+| > This patch moves the three events groups to the end of the attr groups,
+| > and if create_events_from_catalog() fails to set their attributes, we
+| > set them to NULL in attr_groups.
+| 
+| But why are we continuing at all if create_events_from_catalog() fails?
+| 
+| Shouldn't that just be a fatal error and we bail?
 
-* Ingo Molnar <mingo@kernel.org> wrote:
+Well, even if create_events_from_catalog() fails, we can continue to use
+the 24x7 events, rather clumsily, as long as the catalog is readable.  i.e.
+parse /sys/bus/event_source/devices/hv_24x7/interface/catalog to find event
+offset and run:
 
-> > +#define __HAVE_ARCH_REMAP
-> > +static inline void arch_remap(struct mm_struct *mm,
-> > +			      unsigned long old_start, unsigned long old_end,
-> > +			      unsigned long new_start, unsigned long new_end)
-> > +{
-> > +	/*
-> > +	 * mremap() doesn't allow moving multiple vmas so we can limit the
-> > +	 * check to old_start == vdso_base.
-> > +	 */
-> > +	if (old_start == mm->context.vdso_base)
-> > +		mm->context.vdso_base = new_start;
-> > +}
-> 
-> mremap() doesn't allow moving multiple vmas, but it allows the 
-> movement of multi-page vmas and it also allows partial mremap()s, 
-> where it will split up a vma.
-
-I.e. mremap() supports the shrinking (and growing) of vmas. In that 
-case mremap() will unmap the end of the vma and will shrink the 
-remaining vDSO vma.
-
-Doesn't that result in a non-working vDSO that should zero out 
-vdso_base?
-
-Thanks,
-
-	Ingo
+	perf stat -C 0 -e hv_24x7/domain=2,offset=8,core=0/ workload
+Suka
