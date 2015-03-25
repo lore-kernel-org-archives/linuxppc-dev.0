@@ -1,25 +1,20 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C39A71A065A
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2015 20:31:37 +1100 (AEDT)
-Message-ID: <1427275897.31588.2.camel@ellerman.id.au>
-Subject: Re: [PATCH v4 0/3] powerpc: Enable seccomp filter support
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1D4D11A11BC
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2015 20:42:52 +1100 (AEDT)
+Message-ID: <1427276571.31588.4.camel@ellerman.id.au>
+Subject: Re: [PATCH] powerpc/powernv: Remove powernv RTAS support
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Purcareata Bogdan <b43198@freescale.com>
-Date: Wed, 25 Mar 2015 20:31:37 +1100
-In-Reply-To: <550FFCAB.8080409@freescale.com>
-References: <1424247413-20753-1-git-send-email-bogdan.purcareata@freescale.com>
- <54F01C85.2020602@freescale.com>
- <1425070490.4645.86.camel@kernel.crashing.org>
- <550FFCAB.8080409@freescale.com>
+To: Stewart Smith <stewart@linux.vnet.ibm.com>
+Date: Wed, 25 Mar 2015 20:42:51 +1100
+In-Reply-To: <m3mw317hod.fsf@oc8180480414.ibm.com>
+References: <1426141631-10741-1-git-send-email-mpe@ellerman.id.au>
+ <m3mw317hod.fsf@oc8180480414.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: linux-kernel@vger.kernel.org, pmoore@redhat.com, paulus@samba.org,
- Bogdan Purcareata <bogdan.purcareata@freescale.com>,
- Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org,
- strosake@linux.vnet.ibm.com
+Cc: linuxppc-dev@ozlabs.org, dja@axtens.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,33 +24,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2015-03-23 at 13:44 +0200, Purcareata Bogdan wrote:
-> On 27.02.2015 22:54, Benjamin Herrenschmidt wrote:
-> > On Fri, 2015-02-27 at 09:28 +0200, Purcareata Bogdan wrote:
-> >> Ping?
+On Wed, 2015-03-25 at 16:46 +1100, Stewart Smith wrote:
+> Michael Ellerman <mpe@ellerman.id.au> writes:
+> 
+> > The powernv code has some conditional support for running on bare metal
+> > machines that have no OPAL firmware, but provide RTAS.
 > >
-> > What is the ping for ?
+> > No released machines ever supported that, and even in the lab it was
+> > just a transitional hack in the days when OPAL was still being
+> > developed.
 > >
-> > Ben.
+> > So remove the code.
+> >
+> > Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 > 
-> Hello Ben,
-> 
-> I just wanted to check with you what's the current status of these 
-> patches. I noticed in patchwork [1][2][3] that the patches are marked as 
-> non-applicable.
-> 
-> As of today, I cloned Michael Ellerman's tree [4], applied the patches 
-> on the master branch, compiled and tested. Tests pass both with the 
-> libseccomp regression suite and my LXC tests.
-> 
-> Is there a specific tree I should send them against, or on another 
-> mailing list? Is there any other reason the patches are not applicable?
+> The only current place I could think this could be remotely possible
+> would be in simulator... and we should instead make the OPAL calls work
+> properly in the simulator for all the RTAS functionality (that we care
+> about).
 
-I just haven't had time to review them properly.
+If you mean mambo, I tested that, at least the public version, and it doesn't
+provide or need RTAS.
 
-Because you're touching the syscall path for all powerpc platforms it needs
-more scrutiny than the average patch.
+On the other sims we ran without RTAS during the Power8 bringup, though it was
+eventually used a little bit late in the cycle. In future we should be using
+skiboot, or just putting logic directly into the kernel for early bringup - or
+permanently :)
 
-It should still make 4.1, probably :)
+> Acked-by: Stewart Smith <stewart@linux.vnet.ibm.com>
+
+Thanks.
 
 cheers
