@@ -1,35 +1,27 @@
-Return-Path: <dja@axtens.net>
-Received: from mail-pa0-x230.google.com (mail-pa0-x230.google.com
- [IPv6:2607:f8b0:400e:c03::230])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C06AD1A02B6
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2015 10:59:02 +1100 (AEDT)
-Received: by pacwe9 with SMTP id we9so9195300pac.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Mar 2015 16:58:59 -0700 (PDT)
-Message-ID: <1427241523.2685.18.camel@axtens.net>
-Subject: Re: [PATCH v8 19/30] powerpc/pci: Use pci_scan_host_bridge() for
- simplicity
-From: Daniel Axtens <dja@axtens.net>
-To: Yijing Wang <wangyijing@huawei.com>
-Date: Wed, 25 Mar 2015 10:58:43 +1100
-In-Reply-To: <1427168064-8657-20-git-send-email-wangyijing@huawei.com>
-References: <1427168064-8657-1-git-send-email-wangyijing@huawei.com>
- <1427168064-8657-20-git-send-email-wangyijing@huawei.com>
-Content-Type: multipart/signed; micalg="pgp-sha256";
- protocol="application/pgp-signature"; boundary="=-f8VqFOdjSIDYlQlsKBNk"
-Mime-Version: 1.0
-Cc: Liviu Dudau <liviu@dudau.co.uk>, Rusty Russell <rusty@rustcorp.com.au>,
- linux-ia64@vger.kernel.org, Arnd Bergmann <arnd@arndb.de>,
- Marc Zyngier <marc.zyngier@arm.com>, linux-pci@vger.kernel.org, x86@kernel.org,
- linux-kernel@vger.kernel.org, "David S.
- Miller" <davem@davemloft.net>, linuxppc-dev@lists.ozlabs.org,
- linux-m68k@lists.linux-m68k.org, Tony Luck <tony.luck@intel.com>,
- Geert Uytterhoeven <geert@linux-m68k.org>, linux-alpha@vger.kernel.org,
- Bjorn Helgaas <bhelgaas@google.com>, Russell King <linux@arm.linux.org.uk>,
- Thomas Gleixner <tglx@linutronix.de>, Guan Xuetao <gxt@mprc.pku.edu.cn>,
- Yinghai Lu <yinghai@kernel.org>, Jiang Liu <jiang.liu@linux.intel.com>,
- linux-arm-kernel@lists.infradead.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id A11571A02B6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2015 11:45:45 +1100 (AEDT)
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0146.outbound.protection.outlook.com [207.46.100.146])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 506841400F1
+ for <linuxppc-dev@ozlabs.org>; Wed, 25 Mar 2015 11:45:43 +1100 (AEDT)
+Message-ID: <1427244330.22867.76.camel@freescale.com>
+Subject: Re: [PATCH 0/8] powerpc/8xx: Getting rid of CONFIG_8xx
+From: Scott Wood <scottwood@freescale.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Date: Tue, 24 Mar 2015 19:45:30 -0500
+In-Reply-To: <1426203271.2772.3.camel@ellerman.id.au>
+References: <20150312152420.11C821A2425@localhost.localdomain>
+ <1426203271.2772.3.camel@ellerman.id.au>
+Content-Type: text/plain; charset="UTF-8"
+MIME-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+ Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,106 +31,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Fri, 2015-03-13 at 10:34 +1100, Michael Ellerman wrote:
+> On Thu, 2015-03-12 at 16:24 +0100, Christophe Leroy wrote:
+> > Two config options exist to define powerpc MPC8xx:
+> > * CONFIG_PPC_8xx
+> > * CONFIG_8xx
+> > In addition, CONFIG_PPC_8xx also defines CONFIG_CPM1 as
+> > communication co-processor
+> > 
+> > arch/powerpc/platforms/Kconfig.cputype has contained the following
+> > comment about CONFIG_8xx item for some years:
+> > "# this is temp to handle compat with arch=ppc"
+> > 
+> > It looks like not many places still have that old CONFIG_8xx used,
+> > so it is likely to be a good time to get rid of it completely ?
+> > 
+> > Patchset is composed of the following patches:
+> > [1/8] powerpc: replace CONFIG_8xx by CONFIG_PPC_8xx
+> > [2/8] um: replace CONFIG_8xx by CONFIG_PPC_8xx
+> > [3/8] video: replace CONFIG_8xx by CONFIG_PPC_8xx
+> > [4/8] net: freescale: replace CONFIG_8xx by CONFIG_PPC_8xx
+> > [5/8] tty: cpm_uart: replace CONFIG_8xx by CONFIG_CPM1
+> > [6/8] mtd: replace CONFIG_8xx by CONFIG_PPC_8xx
+> > [7/8] isdn: replace CONFIG_8xx by CONFIG_PPC_8xx
+> > [8/8] powerpc: get rid of CONFIG_8xx
+> > 
+> > All but the last one are independant and can be applied in any
+> > order. Only the 8th one requires the first 7 patches to be applied.
+> 
+> Sounds good.
+> 
+> I only see 0, 4 and 7 on linuxppc-dev for some reason.
 
---=-f8VqFOdjSIDYlQlsKBNk
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+I see them all in linuxppc-dev patchwork.
 
-On Tue, 2015-03-24 at 11:34 +0800, Yijing Wang wrote:
-> Now we could use pci_scan_host_bridge() to scan
-> pci buses, provide powerpc specific pci_host_bridge_ops.
->=20
-> Signed-off-by: Yijing Wang <wangyijing@huawei.com>
-> CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> CC: linuxppc-dev@lists.ozlabs.org
-> ---
->  arch/powerpc/kernel/pci-common.c |   60 +++++++++++++++++++++++---------=
------
->  1 files changed, 37 insertions(+), 23 deletions(-)
+> You'll need to collect ACKs, or get the individual patches merged, and then we
+> can take patch 8 through the powerpc tree once those are all in - probably for
+> 4.2.
 
-> diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-c=
-ommon.c
-> index 2c58200..e2b50a2 100644
-> --- a/arch/powerpc/kernel/pci-common.c
-> +++ b/arch/powerpc/kernel/pci-common.c
-> @@ -773,6 +773,29 @@ void pcibios_set_root_bus_speed(struct pci_host_brid=
-ge *bridge)
->  		return ppc_md.pcibios_set_root_bus_speed(bridge);
->  }
-> =20
-> +static int pci_host_scan_bus(struct pci_host_bridge *host)
-> +{
-> +	int mode =3D PCI_PROBE_NORMAL;
-> +	struct pci_bus *bus =3D host->bus;
-> +	struct pci_controller *hose =3D dev_get_drvdata(&host->dev);
-Is there any reason this isn't *hose =3D pci_bus_to_host(bus)?
-> +
-> +	/* Get probe mode and perform scan */
-> +	if (hose->dn && ppc_md.pci_probe_mode)
-> +		mode =3D ppc_md.pci_probe_mode(bus);
-> +
-> +	pr_debug("    probe mode: %d\n", mode);
-> +	if (mode =3D=3D PCI_PROBE_DEVTREE)
-> +		of_scan_bus(hose->dn, bus);
-> +
-> +	if (mode =3D=3D PCI_PROBE_NORMAL) {
-> +		pci_bus_update_busn_res_end(bus, 255);
-> +		hose->last_busno =3D pci_scan_child_bus(bus);
-> +		pci_bus_update_busn_res_end(bus, hose->last_busno);
-> +	}
-> +
-> +	return pci_bus_child_max_busnr(bus);
-> +}
-> +
-I'm having trouble convincing myself that this patch covers every
-variation within our PCI implementations. In particular, there's a
-stanza in of_scan_pci_bridge in kernel/pci_of_scan.c that's almost
-identical to this function. Does that implementation need to be cleaned
-up and replaced with this function too?
+It looks like CONFIG_8xx is used a lot more than CONFIG_PPC_8xx, so it
+would be less churn to get rid of the latter (plus, we also have
+CONFIG_4xx, CONFIG_6xx, etc).  The only use of PPC_8xx I see outside
+arch/powerpc is in drivers/watchdog/Kconfig.
 
-
-> @@ -1641,9 +1655,9 @@ void pcibios_scan_phb(struct pci_controller *hose)
->  		ppc_md.pcibios_fixup_phb(hose);
-> =20
->  	/* Configure PCI Express settings */
-> -	if (bus && !pci_has_flag(PCI_PROBE_ONLY)) {
-> +	if (host->bus && !pci_has_flag(PCI_PROBE_ONLY)) {
->  		struct pci_bus *child;
-> -		list_for_each_entry(child, &bus->children, node)
-> +		list_for_each_entry(child, &host->bus->children, node)
->  			pcie_bus_configure_settings(child);
->  	}
->  }
-Two things: Firstly, the function uses hose throughout, not host.
-Secondly, you're not deleting the bus variable: what's the purpose of
-this change?
-
-Regards,
-Daniel
-
-
---=-f8VqFOdjSIDYlQlsKBNk
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-Content-Transfer-Encoding: 7bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-Comment: GPGTools - https://gpgtools.org
-
-iQIcBAABCAAGBQJVEfo/AAoJEPC3R3P2I92FxmIQAIshxMc6nPL6aTLS4mmTONnj
-6s9KW71n2ni64pT74/Q97KF4YJ/KLAPPNUpOZtZ46MbLtCXyFkZyxGtb+dArOUfy
-1G0LpoZOk06zszw/KuNwRSscZEYWf7AT35E4/BlONWjoPoNL2BQUexICrd38+/aE
-gV6zZfWZJrRzWtdxAIMsyoz33bKhRJgf6WGBGwh8aJj9TtXCc/Bz9UZT4ZbhIkWG
-QH7jly1n06OPXTn6Ap74VlbIGDnJBtvfm+hduFXqL5NlgmZJh9YSktjpq4PgmWVT
-EcNE5xfHyD884GpxYjckWqC+qKUynrFMtGT2a7t3HoylfcCQSbdYScAw4VHbDUR8
-yEvtbuWvoKUxdGKG8xBbNwIVkASoZMSld377hC9WVO5b42670JMIncGCZOr4svO0
-cCufQm9i01cplYD25rEwU7GEI7ZU+JLKsb/gihBmjht37Z4wjMtsiAgl+zuY9Tb5
-ilIUJJb00sXCLKYWhenplcVrTxX8RUbrU3FUG5M4FM+/WDYVLiMRcjTJshC897Em
-N/K2kXAYLYAi4THnRwS8wqFeYqEYUSKaTC2kz/LcEAg0rUwt1VPvwMJu/HeaBNLu
-b6Tpgf3QKihKqv78cY4oACebmzaSQBXPPs2p4uM5v/Xuk3M2KKWzcFdbXnBRiBk4
-wOFxmReRgVfXP7L2rniG
-=dWhE
------END PGP SIGNATURE-----
-
---=-f8VqFOdjSIDYlQlsKBNk--
+-Scott
