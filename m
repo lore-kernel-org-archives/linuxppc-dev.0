@@ -1,25 +1,18 @@
-Return-Path: <sowmini.varadhan@oracle.com>
-Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <ying.zhang@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0119.outbound.protection.outlook.com [65.55.169.119])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id EC8CE1A01AA
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Mar 2015 21:56:23 +1100 (AEDT)
-Date: Thu, 26 Mar 2015 06:56:01 -0400
-From: Sowmini Varadhan <sowmini.varadhan@oracle.com>
-To: cascardo@linux.vnet.ibm.com
-Subject: Re: Generic IOMMU pooled allocator
-Message-ID: <20150326105601.GK31861@oracle.com>
-References: <1427149265.4770.238.camel@kernel.crashing.org>
- <20150323.214453.255192641139042325.davem@davemloft.net>
- <1427162890.4770.307.camel@kernel.crashing.org>
- <20150323.221508.1178754097347144400.davem@davemloft.net>
- <20150326004342.GB4925@oc0812247204.ltc.br.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 392B41A0689
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Mar 2015 21:23:43 +1100 (AEDT)
+From: <ying.zhang@freescale.com>
+To: <scottwood@freescale.com>, <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH 3/3] P1021RDB: Add QE TDM support
+Date: Thu, 26 Mar 2015 17:16:17 +0800
+Message-ID: <1427361377-4789-1-git-send-email-ying.zhang@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150326004342.GB4925@oc0812247204.ltc.br.ibm.com>
-Cc: aik@au1.ibm.com, aik@ozlabs.ru, anton@au1.ibm.com, paulus@samba.org,
- sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- David Miller <davem@davemloft.net>
+Content-Type: text/plain
+Cc: Xie Xiaobo <X.Xie@freescale.com>, Ying Zhang <b40530@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,48 +22,121 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On (03/25/15 21:43), cascardo@linux.vnet.ibm.com wrote:
-> However, when using large TCP send/recv (I used uperf with 64KB
-> writes/reads), I noticed that on the transmit side, largealloc is not
-> used, but on the receive side, cxgb4 almost only uses largealloc, while
-> qlge seems to have a 1/1 usage or largealloc/non-largealloc mappings.
-> When turning GRO off, that ratio is closer to 1/10, meaning there is
-> still some fair use of largealloc in that scenario.
-> 
-> I confess my experiments are not complete. I would like to test a couple
-> of other drivers as well, including mlx4_en and bnx2x, and test with
-> small packet sizes. I suspected that MTU size could make a difference,
-> but in the case of ICMP, with MTU 9000 and payload of 8000 bytes, I
-> didn't notice any significant hit of largepool with either qlge or
-> cxgb4.
+From: Ying Zhang <b40530@freescale.com>
 
-I guess we also need to consider the "average use-case", i.e., 
-something that interleaves small packets and interactive data with
-jumbo/bulk data.. in those cases, the largepool would not get many
-hits, and might actually be undesirable?
+The P1021RDB-PC have PMC sockets that support QE-TDM function.
+The patch enable Quicc Engine and the related signals of QE-TDM.
 
-> But I believe that on the receive side, all drivers should map entire
-> pages, using some allocation strategy similar to mlx4_en, in order to
-> avoid DMA mapping all the time. 
+Signed-off-by: Ying Zhang <b40530@freescale.com>
+Signed-off-by: Xie Xiaobo <X.Xie@freescale.com>
+Signed-off-by: Li Yang <leoli@freescale.com>
 
-good point. I think in the early phase of my perf investigation,
-it was brought up that Solaris does pre-mapped DMA buffers (they
-have to do this carefully, to avoid resource-starvation vulnerabilities-
-see http://www.spinics.net/lists/sparclinux/msg13217.html
-and threads leading to it..
+---
+ arch/powerpc/platforms/85xx/mpc85xx_rdb.c | 76 ++++++++++++++++++++++---------
+ 1 file changed, 54 insertions(+), 22 deletions(-)
 
-This is  not something that the common iommu-arena allocator
-can/should get involved in, of course. The scope of the arena-allocator
-is much more rigorously defined.
-
-I dont know if there is a way to set up a generalized DMA premapped
-buffer infra for linux today.
-
-fwiw, when I instrumented this for solaris (there are hooks to disable
-the pre-mapped bufferes) the impact on a T5-2 (8 sockets, 2 numa nodes,
-64 cpus) was not very significant for a single 10G ixgbe port- approx
-8 Gbps instead of 9.X Gbps. I think the DMA buffer pre-mapping is
-only significant when you start trying to scale to multiple ethernet 
-ports.
-
---Sowmini
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
+index e358bed..a2f0639 100644
+--- a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
++++ b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
+@@ -86,6 +86,12 @@ void __init mpc85xx_rdb_pic_init(void)
+  */
+ static void __init mpc85xx_rdb_setup_arch(void)
+ {
++	struct device_node *np;
++#if defined(CONFIG_QUICC_ENGINE) && defined(CONFIG_SPI_FSL_SPI)
++	struct device_node *qe_spi;
++#endif
++	struct ccsr_guts __iomem *guts;
++
+ 	if (ppc_md.progress)
+ 		ppc_md.progress("mpc85xx_rdb_setup_arch()", 0);
+ 
+@@ -96,37 +102,63 @@ static void __init mpc85xx_rdb_setup_arch(void)
+ #ifdef CONFIG_QUICC_ENGINE
+ 	mpc85xx_qe_init();
+ 	mpc85xx_qe_par_io_init();
+-#if defined(CONFIG_UCC_GETH) || defined(CONFIG_SERIAL_QE)
+-	if (machine_is(p1025_rdb)) {
+-		struct device_node *np;
+-
+-		struct ccsr_guts __iomem *guts;
+-
+-		np = of_find_node_by_name(NULL, "global-utilities");
+-		if (np) {
+-			guts = of_iomap(np, 0);
+-			if (!guts) {
+-
+-				pr_err("mpc85xx-rdb: could not map global utilities register\n");
++#ifdef CONFIG_SPI_FSL_SPI
++	for_each_node_by_name(qe_spi, "spi")
++			par_io_of_config(qe_spi);
++#endif	/* CONFIG_SPI_FSL_SPI */
+ 
+-			} else {
+-			/* P1025 has pins muxed for QE and other functions. To
+-			* enable QE UEC mode, we need to set bit QE0 for UCC1
+-			* in Eth mode, QE0 and QE3 for UCC5 in Eth mode, QE9
+-			* and QE12 for QE MII management singals in PMUXCR
+-			* register.
+-			*/
++	np = of_find_node_by_name(NULL, "global-utilities");
++	if (np) {
++		guts = of_iomap(np, 0);
++		if (!guts)
++			pr_err("mpc85xx-rdb: could not map global %s\n",
++					"utilities register");
++		else {
++#if defined(CONFIG_UCC_GETH) || defined(CONFIG_SERIAL_QE)
++			if (machine_is(p1025_rdb)) {
++				/*
++				 * P1025 has pins muxed for QE and other
++				 * functions. To enable QE UEC mode, we
++				 * need to set bit QE0 for UCC1 in Eth mode,
++				 * QE0 and QE3 for UCC5 in Eth mode, QE9
++				 * and QE12 for QE MII management singals
++				 * in PMUXCR register.
++				 */
+ 				setbits32(&guts->pmuxcr, MPC85xx_PMUXCR_QE(0) |
+ 						MPC85xx_PMUXCR_QE(3) |
+ 						MPC85xx_PMUXCR_QE(9) |
+ 						MPC85xx_PMUXCR_QE(12));
+-				iounmap(guts);
+ 			}
+-			of_node_put(np);
++#endif
++#ifdef CONFIG_FSL_UCC_TDM
++			if (machine_is(p1021_rdb_pc)) {
++				/* Clear QE12 for releasing the LBCTL */
++				clrbits32(&guts->pmuxcr, MPC85xx_PMUXCR_QE(12));
++				/* TDMA */
++				setbits32(&guts->pmuxcr, MPC85xx_PMUXCR_QE(5) |
++						  MPC85xx_PMUXCR_QE(11));
++				/* TDMB */
++				setbits32(&guts->pmuxcr, MPC85xx_PMUXCR_QE(0) |
++						  MPC85xx_PMUXCR_QE(9));
++				/* TDMC */
++				setbits32(&guts->pmuxcr, MPC85xx_PMUXCR_QE(0));
++				/* TDMD */
++				setbits32(&guts->pmuxcr, MPC85xx_PMUXCR_QE(8) |
++						  MPC85xx_PMUXCR_QE(7));
++			}
++#endif	/* CONFIG_FSL_UCC_TDM */
++#ifdef CONFIG_SPI_FSL_SPI
++			clrbits32(&guts->pmuxcr, MPC85xx_PMUXCR_QE(12));
++			/*QE-SPI*/
++			setbits32(&guts->pmuxcr, MPC85xx_PMUXCR_QE(6) |
++					  MPC85xx_PMUXCR_QE(9) |
++					  MPC85xx_PMUXCR_QE(10));
++#endif	/* CONFIG_SPI_FSL_SPI */
++			iounmap(guts);
+ 		}
+ 
++		of_node_put(np);
+ 	}
+-#endif
+ #endif	/* CONFIG_QUICC_ENGINE */
+ 
+ 	printk(KERN_INFO "MPC85xx RDB board from Freescale Semiconductor\n");
+-- 
+1.8.4.1
