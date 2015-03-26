@@ -1,39 +1,40 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BA20D1A0688
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Mar 2015 16:43:25 +1100 (AEDT)
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+Return-Path: <sukadev@linux.vnet.ibm.com>
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 895551400DD
- for <linuxppc-dev@ozlabs.org>; Thu, 26 Mar 2015 16:43:25 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8409E1A0145
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Mar 2015 16:58:07 +1100 (AEDT)
 Received: from /spool/local
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Thu, 26 Mar 2015 15:43:25 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 1D13F2BB0047
- for <linuxppc-dev@ozlabs.org>; Thu, 26 Mar 2015 16:43:22 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t2Q5hDcV47054892
- for <linuxppc-dev@ozlabs.org>; Thu, 26 Mar 2015 16:43:22 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t2Q5gmWw014619
- for <linuxppc-dev@ozlabs.org>; Thu, 26 Mar 2015 16:42:48 +1100
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH v5 3/3] drivers/vfio: Support EEH error injection
-Date: Thu, 26 Mar 2015 16:42:09 +1100
-Message-Id: <1427348529-7060-4-git-send-email-gwshan@linux.vnet.ibm.com>
-In-Reply-To: <1427348529-7060-1-git-send-email-gwshan@linux.vnet.ibm.com>
-References: <1427348529-7060-1-git-send-email-gwshan@linux.vnet.ibm.com>
-Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>, alex.williamson@redhat.com,
- agraf@suse.de, kvm@vger.kernel.org, david@gibson.dropbear.id.au
+ for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
+ Wed, 25 Mar 2015 23:58:04 -0600
+Received: from b03cxnp07028.gho.boulder.ibm.com
+ (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 51B1219D8026
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2015 23:49:09 -0600 (MDT)
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+ by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t2Q5uIZp32309326
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2015 22:56:18 -0700
+Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t2Q5w1XT030157
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2015 23:58:02 -0600
+Date: Wed, 25 Mar 2015 22:57:05 -0700
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: [PATCH 4/4] perf/powerpc: Implement group_read() txn interface
+ for 24x7 counters
+Message-ID: <20150326055705.GA5593@us.ibm.com>
+References: <1425458108-3341-1-git-send-email-sukadev@linux.vnet.ibm.com>
+ <1425458108-3341-5-git-send-email-sukadev@linux.vnet.ibm.com>
+ <20150317065733.GN2896@worktop.programming.kicks-ass.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20150317065733.GN2896@worktop.programming.kicks-ass.net>
+Cc: dev@codyps.com, Paul Mackerras <paulus@samba.org>,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,98 +44,140 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The patch adds one more EEH sub-command (VFIO_EEH_PE_INJECT_ERR)
-to inject the specified EEH error, which is represented by
-(struct vfio_eeh_pe_err), to the indicated PE for testing purpose.
+Peter Zijlstra [peterz@infradead.org] wrote:
+| 
+| Is there a down-side to always doing the txn based group read? If an
+| arch does not implement the read txn support it'll fall back to doing
+| independent read ops, but we end up doing those anyway.
+| 
+| That way we get less special case code.
 
-Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
----
- Documentation/vfio.txt        | 12 ++++++++++++
- drivers/vfio/vfio_spapr_eeh.c | 10 ++++++++++
- include/uapi/linux/vfio.h     | 14 +++++++++++++-
- 3 files changed, 35 insertions(+), 1 deletion(-)
+We could, but would need to move the perf_event_read() earlier in
+the perf_event_read_group(). Can we do something like this (it
+could be broken into two patches, but merging for easier review)
+Would something liks this work?
 
-diff --git a/Documentation/vfio.txt b/Documentation/vfio.txt
-index 96978ec..4c746a7 100644
---- a/Documentation/vfio.txt
-+++ b/Documentation/vfio.txt
-@@ -385,6 +385,18 @@ The code flow from the example above should be slightly changed:
+----
+
+perf_event_read_value() is mostly computing event count, enabled
+and running times. Move the perf_event_read() into caller and
+rename perf_event_read_value() to perf_event_compute_values().
+
+Then, in perf_event_read_group(), read the event counts using the
+transaction interface for all PMUs.
+
+
+----
+diff --git a/arch/x86/kvm/pmu.c b/arch/x86/kvm/pmu.c
+index 8e6b7d8..5896cb1 100644
+--- a/arch/x86/kvm/pmu.c
++++ b/arch/x86/kvm/pmu.c
+@@ -144,9 +144,11 @@ static u64 read_pmc(struct kvm_pmc *pmc)
  
- 	....
+ 	counter = pmc->counter;
  
-+	/* Inject EEH error, which is expected to be caused by 32-bits
-+	 * config load.
-+	 */
-+	pe_op.op = VFIO_EEH_PE_INJECT_ERR;
-+	pe_op.err.type = EEH_ERR_TYPE_32;
-+	pe_op.err.func = EEH_ERR_FUNC_LD_CFG_ADDR;
-+	pe_op.err.addr = 0ul;
-+	pe_op.err.mask = 0ul;
-+	ioctl(container, VFIO_EEH_PE_OP, &pe_op);
+-	if (pmc->perf_event)
+-		counter += perf_event_read_value(pmc->perf_event,
++	if (pmc->perf_event) {
++		perf_event_read(pmc->perf_event);
++		counter += perf_event_compute_values(pmc->perf_event,
+ 						 &enabled, &running);
++	}
+ 
+ 	/* FIXME: Scaling needed? */
+ 
+diff --git a/include/linux/perf_event.h b/include/linux/perf_event.h
+index c8fe60e..1e30560 100644
+--- a/include/linux/perf_event.h
++++ b/include/linux/perf_event.h
+@@ -579,7 +579,7 @@ perf_event_create_kernel_counter(struct perf_event_attr *attr,
+ 				void *context);
+ extern void perf_pmu_migrate_context(struct pmu *pmu,
+ 				int src_cpu, int dst_cpu);
+-extern u64 perf_event_read_value(struct perf_event *event,
++extern u64 perf_event_compute_values(struct perf_event *event,
+ 				 u64 *enabled, u64 *running);
+ 
+ 
+diff --git a/kernel/events/core.c b/kernel/events/core.c
+index a6abcd3..f7e4705 100644
+--- a/kernel/events/core.c
++++ b/kernel/events/core.c
+@@ -3643,7 +3643,27 @@ static void orphans_remove_work(struct work_struct *work)
+ 	put_ctx(ctx);
+ }
+ 
+-u64 perf_event_read_value(struct perf_event *event, u64 *enabled, u64 *running)
++static int perf_event_read_values(struct perf_event *leader)
++{
++	int ret;
++	struct perf_event *sub;
++	struct pmu *pmu;
 +
-+	....
++	pmu = leader->pmu;
 +
- 	/* When 0xFF's returned from reading PCI config space or IO BARs
- 	 * of the PCI device. Check the PE's state to see if that has been
- 	 * frozen.
-diff --git a/drivers/vfio/vfio_spapr_eeh.c b/drivers/vfio/vfio_spapr_eeh.c
-index 5fa42db..38edeb4 100644
---- a/drivers/vfio/vfio_spapr_eeh.c
-+++ b/drivers/vfio/vfio_spapr_eeh.c
-@@ -85,6 +85,16 @@ long vfio_spapr_iommu_eeh_ioctl(struct iommu_group *group,
- 		case VFIO_EEH_PE_CONFIGURE:
- 			ret = eeh_pe_configure(pe);
- 			break;
-+		case VFIO_EEH_PE_INJECT_ERR:
-+			minsz = offsetofend(struct vfio_eeh_pe_op, err.mask);
-+			if (op.argsz < minsz)
-+				return -EINVAL;
-+			if (copy_from_user(&op, (void __user *)arg, minsz))
-+				return -EFAULT;
++	pmu->start_txn(pmu, PERF_PMU_TXN_READ);
 +
-+			ret = eeh_pe_inject_err(pe, op.err.type, op.err.func,
-+						op.err.addr, op.err.mask);
-+			break;
- 		default:
- 			ret = -EINVAL;
- 		}
-diff --git a/include/uapi/linux/vfio.h b/include/uapi/linux/vfio.h
-index 82889c3..d81c17f 100644
---- a/include/uapi/linux/vfio.h
-+++ b/include/uapi/linux/vfio.h
-@@ -468,12 +468,23 @@ struct vfio_iommu_spapr_tce_info {
-  * - unfreeze IO/DMA for frozen PE;
-  * - read PE state;
-  * - reset PE;
-- * - configure PE.
-+ * - configure PE;
-+ * - inject EEH error.
-  */
-+struct vfio_eeh_pe_err {
-+	__u32 type;
-+	__u32 func;
-+	__u64 addr;
-+	__u64 mask;
-+};
++	pmu->read(leader);
++	list_for_each_entry(sub, &leader->sibling_list, group_entry)
++		pmu->read(sub);
 +
- struct vfio_eeh_pe_op {
- 	__u32 argsz;
- 	__u32 flags;
- 	__u32 op;
-+	union {
-+		struct vfio_eeh_pe_err err;
-+	};
- };
++	ret = pmu->commit_txn(pmu, PERF_PMU_TXN_READ);
++
++	return ret;
++}
++
++u64 perf_event_compute_values(struct perf_event *event, u64 *enabled,
++				u64 *running)
+ {
+ 	struct perf_event *child;
+ 	u64 total = 0;
+@@ -3653,7 +3673,6 @@ u64 perf_event_read_value(struct perf_event *event, u64 *enabled, u64 *running)
  
- #define VFIO_EEH_PE_DISABLE		0	/* Disable EEH functionality */
-@@ -490,6 +501,7 @@ struct vfio_eeh_pe_op {
- #define VFIO_EEH_PE_RESET_HOT		6	/* Assert hot reset          */
- #define VFIO_EEH_PE_RESET_FUNDAMENTAL	7	/* Assert fundamental reset  */
- #define VFIO_EEH_PE_CONFIGURE		8	/* PE configuration          */
-+#define VFIO_EEH_PE_INJECT_ERR		9	/* Inject EEH error          */
+ 	mutex_lock(&event->child_mutex);
  
- #define VFIO_EEH_PE_OP			_IO(VFIO_TYPE, VFIO_BASE + 21)
+-	perf_event_read(event);
+ 	total += perf_event_count(event);
  
--- 
-1.8.3.2
+ 	*enabled += event->total_time_enabled +
+@@ -3671,7 +3690,7 @@ u64 perf_event_read_value(struct perf_event *event, u64 *enabled, u64 *running)
+ 
+ 	return total;
+ }
+-EXPORT_SYMBOL_GPL(perf_event_read_value);
++EXPORT_SYMBOL_GPL(perf_event_compute_values);
+ 
+ static int perf_event_read_group(struct perf_event *event,
+ 				   u64 read_format, char __user *buf)
+@@ -3684,7 +3703,11 @@ static int perf_event_read_group(struct perf_event *event,
+ 
+ 	lockdep_assert_held(&ctx->mutex);
+ 
+-	count = perf_event_read_value(leader, &enabled, &running);
++	ret = perf_event_read_values(leader);
++	if (ret)
++		return ret;
++
++	count = perf_event_compute_values(leader, &enabled, &running);
+ 
+ 	values[n++] = 1 + leader->nr_siblings;
+ 	if (read_format & PERF_FORMAT_TOTAL_TIME_ENABLED)
+@@ -3705,7 +3728,7 @@ static int perf_event_read_group(struct perf_event *event,
+ 	list_for_each_entry(sub, &leader->sibling_list, group_entry) {
+ 		n = 0;
+ 
+-		values[n++] = perf_event_read_value(sub, &enabled, &running);
++		values[n++] = perf_event_compute_values(sub, &enabled, &running);
+ 		if (read_format & PERF_FORMAT_ID)
+ 			values[n++] = primary_event_id(sub);
+ 
+@@ -3728,7 +3751,8 @@ static int perf_event_read_one(struct perf_event *event,
+ 	u64 values[4];
+ 	int n = 0;
+ 
+-	values[n++] = perf_event_read_value(event, &enabled, &running);
++	perf_event_read(event);
++	values[n++] = perf_event_compute_values(event, &enabled, &running);
+ 	if (read_format & PERF_FORMAT_TOTAL_TIME_ENABLED)
+ 		values[n++] = enabled;
+ 	if (read_format & PERF_FORMAT_TOTAL_TIME_RUNNING)
