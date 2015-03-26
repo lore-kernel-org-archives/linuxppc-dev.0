@@ -1,21 +1,21 @@
 Return-Path: <scottwood@freescale.com>
 Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0133.outbound.protection.outlook.com [207.46.100.133])
+ (mail-by2on0113.outbound.protection.outlook.com [207.46.100.113])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id F3DF81A0332
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Mar 2015 09:10:53 +1100 (AEDT)
-Message-ID: <1427407839.22867.130.camel@freescale.com>
-Subject: Re: [PATCH 1/3] powerpc/dts: Add TDM device tree nodes for P1021RDB
+ by lists.ozlabs.org (Postfix) with ESMTPS id 998E21A0332
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Mar 2015 09:16:03 +1100 (AEDT)
+Message-ID: <1427408150.22867.135.camel@freescale.com>
+Subject: Re: [PATCH 2/3] powerpc/85xx: Create dts of each core in CAMP mode
+ for P1021RDB-PC
 From: Scott Wood <scottwood@freescale.com>
 To: <ying.zhang@freescale.com>
-Date: Thu, 26 Mar 2015 17:10:39 -0500
-In-Reply-To: <1427361254-4639-1-git-send-email-ying.zhang@freescale.com>
-References: <1427361254-4639-1-git-send-email-ying.zhang@freescale.com>
+Date: Thu, 26 Mar 2015 17:15:50 -0500
+In-Reply-To: <1427361317-4733-1-git-send-email-ying.zhang@freescale.com>
+References: <1427361317-4733-1-git-send-email-ying.zhang@freescale.com>
 Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, Xie
- Xiaobo <X.Xie@freescale.com>, Ying Zhang <b40530@freescale.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Ying Zhang <b40530@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,58 +25,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2015-03-26 at 17:14 +0800, ying.zhang@freescale.com wrote:
+On Thu, 2015-03-26 at 17:15 +0800, ying.zhang@freescale.com wrote:
 > From: Ying Zhang <b40530@freescale.com>
 > 
-> The dts file support QE-TDM function and PQ-MDS-T1 card for P1021RDB.
-> PQ-MDS-T1 is connected to the board by PMC, there is a zarlink le88266
-> on the card, we configure it by QE-SPI. Because PMC has a shared CS pin
-> with L2switch, so we do the device tree fixup in uboot.
+> Create the dts files for each core and splits the devices between
+> the two cores for P1021RDB-PC.
 > 
-> Change-Id: I7ecee0d93a105ef158455238fb003a2ad2ca32e7
+> Core0 has l2, serial0, i2c, spi, gpio, tdm,dma, usb, eth0, eth1,
+> sdhc, crypto, global-util, message, pci0, pci1, msi, crypto.
+> Core1 has l2, serial1, eth2.
+
+Are we going to have this split for every board (I hope not)?  We
+already have a couple examples of CAMP; why do we need p1021
+specifically?
+
 > Signed-off-by: Ying Zhang <b40530@freescale.com>
-> Signed-off-by: Xie Xiaobo <X.Xie@freescale.com>
-> Reviewed-on: http://git.am.freescale.net:8181/900
+> Change-Id: I92614abdca3db3ab6083c4443ad563fd687050ec
+> Reviewed-on: http://git.am.freescale.net:8181/1179
 > Reviewed-by: Fleming Andrew-AFLEMING <AFLEMING@freescale.com>
 > Tested-by: Fleming Andrew-AFLEMING <AFLEMING@freescale.com>
-> ---
->  arch/powerpc/boot/dts/p1021rdb-pc_32b.dts | 191 +++++++++++++++++++++++++++++-
->  1 file changed, 187 insertions(+), 4 deletions(-)
 
-Where is the device tree binding?
+Get rid of the gerrit stuff.
 
+> +		mpic: pic@40000 {
+> +			protected-sources = <
+> +			42		/* serial1 */
+> +			31 32 33	/* enet2-queue-group0 */
+> +			25 26 27	/* enet2-queue-group1 */
+> +			>;
+> +			pic-no-reset;
+> +		};
 
-> +		pq_mds_t1: tdmphy@2,0 {
-> +			#address-cells = <1>;
-> +			#size-cells = <1>;
-> +			reg = <2 0 0x10000>;
-> +			ranges = <0 2 0 0x10000>;
-> +			compatible = "fsl,pq-mds-t1";
-
-MDS?
-
-> +		spi@4c0 {
-> +			#address-cells = <1>;
-> +			#size-cells = <0>;
-> +			compatible = "fsl,mpc8569-qe-spi", "fsl,spi";
-
-mpc8569?
-
-> +			reg = <0x4c0 0x40>;
-> +			cell-index = <0>;
-> +			interrupts = <2>;
-> +			interrupt-parent = <&qeic>;
-> +			pio-handle = <&pio_qe_spi>;
-> +			gpios = <&qe_pio_b 29 0>;
-> +			mode = "cpu-qe";
-> +
-> +			legerity@0 {
-> +				compatible = "zarlink,le88266";
-> +				reg = <0>;
-> +				spi-max-frequency = <8000000>;
-> +			};
-
-What does "legerity" mean in this context?  Node names are supposed to
-be generic, not product names, and certainly not (former) company names.
+If you have pic-no-reset you don't strictly need protected-sources.
+Having it can protect against some relatively unlikely software errors,
+at the expense of allowing more likely device tree errors.  Or at least,
+it makes it harder to modify the device tree to assign devices
+differently.
 
 -Scott
