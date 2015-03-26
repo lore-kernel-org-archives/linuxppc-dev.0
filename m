@@ -1,33 +1,36 @@
-Return-Path: <wangyijing@huawei.com>
-Received: from szxga03-in.huawei.com (szxga03-in.huawei.com [119.145.14.66])
- (using TLSv1 with cipher RC4-SHA (128/128 bits))
+Return-Path: <mingo.kernel.org@gmail.com>
+Received: from mail-wi0-x22c.google.com (mail-wi0-x22c.google.com
+ [IPv6:2a00:1450:400c:c05::22c])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 037071A0B66
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Mar 2015 17:25:59 +1100 (AEDT)
-Message-ID: <5513A517.8080205@huawei.com>
-Date: Thu, 26 Mar 2015 14:20:07 +0800
-From: Yijing Wang <wangyijing@huawei.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 88A9D1A0688
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Mar 2015 20:43:38 +1100 (AEDT)
+Received: by wibg7 with SMTP id g7so141398965wib.1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Mar 2015 02:43:35 -0700 (PDT)
+Sender: Ingo Molnar <mingo.kernel.org@gmail.com>
+Date: Thu, 26 Mar 2015 10:43:30 +0100
+From: Ingo Molnar <mingo@kernel.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH v3 2/2] powerpc/mm: Tracking vDSO remap
+Message-ID: <20150326094330.GA15407@gmail.com>
+References: <20150325121118.GA2542@gmail.com>
+ <cover.1427289960.git.ldufour@linux.vnet.ibm.com>
+ <b6ce07f8e1e0d654371aee70bd8eac310456d0df.1427289960.git.ldufour@linux.vnet.ibm.com>
+ <20150325183316.GA9090@gmail.com> <20150325183647.GA9331@gmail.com>
+ <1427317867.6468.87.camel@kernel.crashing.org>
 MIME-Version: 1.0
-To: Daniel Axtens <dja@axtens.net>
-Subject: Re: [PATCH v8 19/30] powerpc/pci: Use pci_scan_host_bridge() for
- simplicity
-References: <1427168064-8657-1-git-send-email-wangyijing@huawei.com>			
- <1427168064-8657-20-git-send-email-wangyijing@huawei.com>		
- <1427241523.2685.18.camel@axtens.net> <551266DE.3030609@huawei.com>	
- <1427321631.2575.3.camel@axtens.net> <55135E16.6060909@huawei.com>
- <1427347180.2575.91.camel@axtens.net>
-In-Reply-To: <1427347180.2575.91.camel@axtens.net>
-Content-Type: text/plain; charset="UTF-8"
-Cc: Liviu Dudau <liviu@dudau.co.uk>, x86@kernel.org, linux-ia64@vger.kernel.org,
- Arnd Bergmann <arnd@arndb.de>, Marc Zyngier <marc.zyngier@arm.com>,
- linux-pci@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
- linux-kernel@vger.kernel.org, Jiang Liu <jiang.liu@linux.intel.com>,
- linux-m68k@lists.linux-m68k.org, Tony Luck <tony.luck@intel.com>,
- Geert Uytterhoeven <geert@linux-m68k.org>, Yinghai Lu <yinghai@kernel.org>,
- linux-alpha@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>, Russell
- King <linux@arm.linux.org.uk>, Thomas Gleixner <tglx@linutronix.de>, Guan
- Xuetao <gxt@mprc.pku.edu.cn>, linuxppc-dev@lists.ozlabs.org,
- "David S. Miller" <davem@davemloft.net>, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1427317867.6468.87.camel@kernel.crashing.org>
+Cc: linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
+ Laurent Dufour <ldufour@linux.vnet.ibm.com>,
+ user-mode-linux-devel@lists.sourceforge.net, Arnd Bergmann <arnd@arndb.de>,
+ Jeff Dike <jdike@addtoit.com>, "H. Peter Anvin" <hpa@zytor.com>,
+ x86@kernel.org, linux-kernel@vger.kernel.org, criu@openvz.org,
+ linux-mm@kvack.org, Ingo Molnar <mingo@redhat.com>,
+ Paul Mackerras <paulus@samba.org>, cov@codeaurora.org,
+ user-mode-linux-user@lists.sourceforge.net,
+ Richard Weinberger <richard@nod.at>, Thomas Gleixner <tglx@linutronix.de>,
+ Guan Xuetao <gxt@mprc.pku.edu.cn>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,151 +40,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2015/3/26 13:19, Daniel Axtens wrote:
-> Hi Yijing,
-> 
-> Pulled.
-> 
-> I'm now getting build errors:
-> 
-> /scratch/dja/linux-patches/arch/powerpc/kernel/pci-common.c: In function 'pcibios_scan_phb':
-> /scratch/dja/linux-patches/arch/powerpc/kernel/pci-common.c:1638:14: error: 'bus' undeclared (first use in this function)
-> /scratch/dja/linux-patches/arch/powerpc/kernel/pci-common.c:1638:14: note: each undeclared identifier is reported only once for each function it appears in
-> 
-> That relates to your changes to pcibios_scan_phb:
-> -       struct pci_bus *bus;
-> +       struct pci_host_bridge *host;
-> clashing with line 1638:
-> 	hose->bus = bus;
-> which occurs later in the same unction.
-> 
-> If I fix that, I'll get more errors with lines in that function that
-> still reference hose instead of host.
-> 
-> As well as line 1638, there's still big chunks of the function that
-> reference hose, for example:
-> 
-> 	/* Get some IO space for the new PHB */
-> 	pcibios_setup_phb_io_space(hose);
-> 
-> 	/* Wire up PHB bus resources */
-> 	pcibios_setup_phb_resources(hose, &resources);
-> 
-> 	hose->busn.start = hose->first_busno;
-> 	hose->busn.end	 = hose->last_busno;
-> 	hose->busn.flags = IORESOURCE_BUS;
-> 	pci_add_resource(&resources, &hose->busn);
-> 
-> 	pci_host_ops.pci_ops = hose->ops;
-> 
-> 
-> Basically, the changes in PowerPC need to be quite a bit more through
-> just to get the changes to build.
-> 
-> I'm keen to work on simplifying PCI code in PowerPC, but at this point,
-> it will need a lot more work before it's ready to go in.
 
-Hi Daniel, I'm really so sorry about that, I will update it today.
+* Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-Thanks!
-Yijing.
+> On Wed, 2015-03-25 at 19:36 +0100, Ingo Molnar wrote:
+> > * Ingo Molnar <mingo@kernel.org> wrote:
+> > 
+> > > > +#define __HAVE_ARCH_REMAP
+> > > > +static inline void arch_remap(struct mm_struct *mm,
+> > > > +			      unsigned long old_start, unsigned long old_end,
+> > > > +			      unsigned long new_start, unsigned long new_end)
+> > > > +{
+> > > > +	/*
+> > > > +	 * mremap() doesn't allow moving multiple vmas so we can limit the
+> > > > +	 * check to old_start == vdso_base.
+> > > > +	 */
+> > > > +	if (old_start == mm->context.vdso_base)
+> > > > +		mm->context.vdso_base = new_start;
+> > > > +}
+> > > 
+> > > mremap() doesn't allow moving multiple vmas, but it allows the 
+> > > movement of multi-page vmas and it also allows partial mremap()s, 
+> > > where it will split up a vma.
+> > 
+> > I.e. mremap() supports the shrinking (and growing) of vmas. In that 
+> > case mremap() will unmap the end of the vma and will shrink the 
+> > remaining vDSO vma.
+> > 
+> > Doesn't that result in a non-working vDSO that should zero out 
+> > vdso_base?
+> 
+> Right. Now we can't completely prevent the user from shooting itself 
+> in the foot I suppose, though there is a legit usage scenario which 
+> is to move the vDSO around which it would be nice to support. I 
+> think it's reasonable to put the onus on the user here to do the 
+> right thing.
 
-> 
-> Regards,
-> Daniel
-> 
-> 
-> On Thu, 2015-03-26 at 09:17 +0800, Yijing Wang wrote:
->> On 2015/3/26 6:13, Daniel Axtens wrote:
->>> Hi Yijing,
->>>
->>> I wasn't quite sure I understood your comments, so I was trying to apply
->>> your patch series and test it, but patch 3 doesn't apply cleanly to
->>> 4.0-rc5 or master. Can you respin the series?
->>
->> Hi Daniel,
->>    Could you pull the series from Bjorn's git tree ? The URL is
->> https://git.kernel.org/pub/scm/linux/kernel/git/helgaas/pci.git pci/enumeration-yw8
->>
->> Thanks!
->> Yijing.
->>
->>>
->>> Thanks,
->>> Daniel
->>>
->>>
->>>> Hi Daniel, thanks for your review and comments. We want to make a generic pci_host_bridge,
->>>> which would hold the common host information, for example, pci domain is common info for
->>>> pci host bridge, this series saved domain in pci_host_bridge, then we no need to
->>>> extract out domain by pci_bus->sysdata by platform specific pci_domain_nr().
->>>> Also we store the sysdata in pci_host_bridge, and pci_bus_to_host() is the platform
->>>> interface, I think use the common interface would be better.
->>>>
->>>>>> +
->>>>>> +	/* Get probe mode and perform scan */
->>>>>> +	if (hose->dn && ppc_md.pci_probe_mode)
->>>>>> +		mode = ppc_md.pci_probe_mode(bus);
->>>>>> +
->>>>>> +	pr_debug("    probe mode: %d\n", mode);
->>>>>> +	if (mode == PCI_PROBE_DEVTREE)
->>>>>> +		of_scan_bus(hose->dn, bus);
->>>>>> +
->>>>>> +	if (mode == PCI_PROBE_NORMAL) {
->>>>>> +		pci_bus_update_busn_res_end(bus, 255);
->>>>>> +		hose->last_busno = pci_scan_child_bus(bus);
->>>>>> +		pci_bus_update_busn_res_end(bus, hose->last_busno);
->>>>>> +	}
->>>>>> +
->>>>>> +	return pci_bus_child_max_busnr(bus);
->>>>>> +}
->>>>>> +
->>>>> I'm having trouble convincing myself that this patch covers every
->>>>> variation within our PCI implementations. In particular, there's a
->>>>> stanza in of_scan_pci_bridge in kernel/pci_of_scan.c that's almost
->>>>> identical to this function. Does that implementation need to be cleaned
->>>>> up and replaced with this function too?
->>>>>
->>>>
->>>> This is a pci_host_bridge_ops hook function, which would be called in
->>>> PCI core, and after applied this series, we only need to call pci_scan_host_bridge()
->>>> to scan pci devices, and this function is also extracted from the pcibios_scan_phb(),
->>>> it's not the redundant code.
->>>>
->>>>>
->>>>>> @@ -1641,9 +1655,9 @@ void pcibios_scan_phb(struct pci_controller *hose)
->>>>>>  		ppc_md.pcibios_fixup_phb(hose);
->>>>>>  
->>>>>>  	/* Configure PCI Express settings */
->>>>>> -	if (bus && !pci_has_flag(PCI_PROBE_ONLY)) {
->>>>>> +	if (host->bus && !pci_has_flag(PCI_PROBE_ONLY)) {
->>>>>>  		struct pci_bus *child;
->>>>>> -		list_for_each_entry(child, &bus->children, node)
->>>>>> +		list_for_each_entry(child, &host->bus->children, node)
->>>>>>  			pcie_bus_configure_settings(child);
->>>>>>  	}
->>>>>>  }
->>>>> Two things: Firstly, the function uses hose throughout, not host.
->>>>> Secondly, you're not deleting the bus variable: what's the purpose of
->>>>> this change?
->>>>
->>>> host is the common pci_host_bridge which is created by PCI core for pci host bridge driver,
->>>> the hose is the platform data used in powerpc. The purpose of the patch/series is to simplify
->>>> pci enumeration interface, and try to reduce the weak functions which were used to setup pci bus/devices
->>>> during PCI enumeration.
->>>>
->>>>>
->>>>> Regards,
->>>>> Daniel
->>>>>
->>>>
->>>>
->>>
->>
->>
-> 
+I argue we should use the right condition to clear vdso_base: if the 
+vDSO gets at least partially unmapped. Otherwise there's little point 
+in the whole patch: either correctly track whether the vDSO is OK, or 
+don't ...
 
+There's also the question of mprotect(): can users mprotect() the vDSO 
+on PowerPC?
 
--- 
-Thanks!
-Yijing
+Thanks,
+
+	Ingo
