@@ -1,19 +1,18 @@
 Return-Path: <ying.zhang@freescale.com>
 Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0144.outbound.protection.outlook.com [157.56.110.144])
+ (mail-bn1bbn0104.outbound.protection.outlook.com [157.56.111.104])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 484621A011B
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Mar 2015 21:40:42 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 20CC11A0144
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Mar 2015 22:39:30 +1100 (AEDT)
 From: <ying.zhang@freescale.com>
 To: <scottwood@freescale.com>, <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 2/3] powerpc/85xx: Create dts of each core in CAMP mode for
- P1021RDB-PC
-Date: Thu, 26 Mar 2015 17:15:17 +0800
-Message-ID: <1427361317-4733-1-git-send-email-ying.zhang@freescale.com>
+Subject: [PATCH 1/3] powerpc/dts: Add TDM device tree nodes for P1021RDB
+Date: Thu, 26 Mar 2015 17:14:14 +0800
+Message-ID: <1427361254-4639-1-git-send-email-ying.zhang@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
-Cc: Ying Zhang <b40530@freescale.com>
+Cc: Xie Xiaobo <X.Xie@freescale.com>, Ying Zhang <b40530@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,306 +24,233 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Ying Zhang <b40530@freescale.com>
 
-Create the dts files for each core and splits the devices between
-the two cores for P1021RDB-PC.
+The dts file support QE-TDM function and PQ-MDS-T1 card for P1021RDB.
+PQ-MDS-T1 is connected to the board by PMC, there is a zarlink le88266
+on the card, we configure it by QE-SPI. Because PMC has a shared CS pin
+with L2switch, so we do the device tree fixup in uboot.
 
-Core0 has l2, serial0, i2c, spi, gpio, tdm,dma, usb, eth0, eth1,
-sdhc, crypto, global-util, message, pci0, pci1, msi, crypto.
-Core1 has l2, serial1, eth2.
-
+Change-Id: I7ecee0d93a105ef158455238fb003a2ad2ca32e7
 Signed-off-by: Ying Zhang <b40530@freescale.com>
-Change-Id: I92614abdca3db3ab6083c4443ad563fd687050ec
-Reviewed-on: http://git.am.freescale.net:8181/1179
+Signed-off-by: Xie Xiaobo <X.Xie@freescale.com>
+Reviewed-on: http://git.am.freescale.net:8181/900
 Reviewed-by: Fleming Andrew-AFLEMING <AFLEMING@freescale.com>
 Tested-by: Fleming Andrew-AFLEMING <AFLEMING@freescale.com>
 ---
- arch/powerpc/boot/dts/p1021rdb_camp_core0.dts |  91 +++++++++++++
- arch/powerpc/boot/dts/p1021rdb_camp_core1.dts | 179 ++++++++++++++++++++++++++
- 2 files changed, 270 insertions(+)
- create mode 100644 arch/powerpc/boot/dts/p1021rdb_camp_core0.dts
- create mode 100644 arch/powerpc/boot/dts/p1021rdb_camp_core1.dts
+ arch/powerpc/boot/dts/p1021rdb-pc_32b.dts | 191 +++++++++++++++++++++++++++++-
+ 1 file changed, 187 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/boot/dts/p1021rdb_camp_core0.dts b/arch/powerpc/boot/dts/p1021rdb_camp_core0.dts
-new file mode 100644
-index 0000000..43f44c2
---- /dev/null
-+++ b/arch/powerpc/boot/dts/p1021rdb_camp_core0.dts
-@@ -0,0 +1,91 @@
-+/*
-+ * P1021 RDB Core0 Device Tree Source in CAMP mode.
-+ *
-+ * Copyright 2011 Freescale Semiconductor Inc.
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions are met:
-+ *     * Redistributions of source code must retain the above copyright
-+ *       notice, this list of conditions and the following disclaimer.
-+ *     * Redistributions in binary form must reproduce the above copyright
-+ *       notice, this list of conditions and the following disclaimer in the
-+ *       documentation and/or other materials provided with the distribution.
-+ *     * Neither the name of Freescale Semiconductor nor the
-+ *       names of its contributors may be used to endorse or promote products
-+ *       derived from this software without specific prior written permission.
-+ *
-+ *
-+ * ALTERNATIVELY, this software may be distributed under the terms of the
-+ * GNU General Public License ("GPL") as published by the Free Software
-+ * Foundation, either version 2 of that License or (at your option) any
-+ * later version.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
-+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ *
-+ * In CAMP mode, each core needs to have its own dts. Only mpic and L2 cache
-+ * can be shared, all the other devices must be assigned to one core only.
-+ * This dts file allows core0 to have memory, l2, serail0, i2c, spi, gpio,
-+ * tdm, dma, usb, eth0, eth1, sdhc, crypto, global-util, message, pci0, pci1,
-+ * msi.
-+ *
-+ * Please note to add "-b 0" for core0's dts compiling.
-+ */
+diff --git a/arch/powerpc/boot/dts/p1021rdb-pc_32b.dts b/arch/powerpc/boot/dts/p1021rdb-pc_32b.dts
+index 7cefa12..0fdb78f 100644
+--- a/arch/powerpc/boot/dts/p1021rdb-pc_32b.dts
++++ b/arch/powerpc/boot/dts/p1021rdb-pc_32b.dts
+@@ -48,10 +48,96 @@
+ 		ranges = <0x0 0x0 0x0 0xef000000 0x01000000
+ 			  0x1 0x0 0x0 0xff800000 0x00040000
+ 			  0x2 0x0 0x0 0xffb00000 0x00020000>;
 +
-+/include/ "p1021rdb.dts"
++		pq_mds_t1: tdmphy@2,0 {
++			#address-cells = <1>;
++			#size-cells = <1>;
++			reg = <2 0 0x10000>;
++			ranges = <0 2 0 0x10000>;
++			compatible = "fsl,pq-mds-t1";
 +
-+/ {
-+	model = "fsl,P1021RDB";
-+	compatible = "fsl,P1021RDB-PC";
++			dallas: ds26528@0 {
++				compatible = "dallas,ds26528";
++				reg = <0 0x2000>;
++				line-rate = "e1";
++				trans-mode = "normal";
++			};
 +
-+	aliases {
-+		ethernet1 = &enet0;
-+		ethernet2 = &enet1;
-+		serial0 = &serial0;
-+		pci0 = &pci0;
-+		pci1 = &pci1;
-+	};
-+
-+	cpus {
-+		PowerPC,P1021@1 {
-+			status = "disabled";
++			pld-reg@2000 {
++				compatible = "fsl,pq-mds-t1-pld";
++				reg = <0x2000 0x1000>;
++				fsl,card-support = <&dallas>;
++			};
 +		};
-+	};
+ 	};
+ 
+ 	soc: soc@ffe00000 {
+ 		ranges = <0x0 0x0 0xffe00000 0x100000>;
 +
-+	memory {
-+		device_type = "memory";
-+	};
++		par_io@e0100 {
++			#address-cells = <1>;
++			#size-cells = <1>;
++			reg = <0xe0100 0x60>;
++			ranges = <0x0 0xe0100 0x60>;
++			device_type = "par_io";
++			num-ports = <3>;
 +
-+	soc@ffe00000 {
-+		serial1: serial@4600 {
-+			status = "disabled";
++			qe_pio_b: gpio-controller@20 {
++				#gpio-cells = <2>;
++				compatible = "fsl,mpc8569-qe-pario-bank",
++					     "fsl,mpc8323-qe-pario-bank";
++				reg = <0x20 0x18>;
++				gpio-controller;
++			};
++
++			pio_qe_spi: qe_spi_pin@01 {
++				pio-map = <
++					0x1  0x13 0x1  0x0  0x3  0x0    /* QE_MUX_SPIMOSI */
++					0x1  0x15 0x1  0x0  0x3  0x0    /* QE_MUX_CLK*/
++					0x1  0x16 0x2  0x0  0x3  0x0    /* QE_MUX_SPIMISO*/
++					0x1  0x1d 0x1  0x0  0x0  0x0>;  /* QE_SPISEL_MASTER*/
++			};
++
++			pio_tdma: tdm_pin@01 {
++				pio-map = <
++					0x1  0xc  0x2  0x0  0x1  0x0    /* CLK3 */
++					0x1  0xd  0x2  0x0  0x1  0x0    /* CLK4 */
++					0x1  0x18 0x3  0x0  0x1  0x0    /* TDMA_RXD0_OPT2*/
++					0x1  0x17 0x3  0x0  0x1  0x0    /* TDMA_TXD0_OPT2*/
++					0x1  0x1a 0x2  0x0  0x1  0x0    /* TDMA_RSYNC_OPT2*/
++					0x1  0x19 0x2  0x0  0x1  0x0>;  /* TDMA_TSYNC_OPT2*/
++			};
++
++			pio_tdmb: tdm_pin@02 {
++				pio-map = <
++					0x1  0x1  0x2  0x0  0x1  0x0    /* CLK5 */
++					0x0  0x1b 0x2  0x0  0x1  0x0    /* CLK6 */
++					0x0  0x1d 0x3  0x0  0x1  0x0    /* TDMB_RXD0*/
++					0x1  0x0  0x3  0x0  0x1  0x0    /* TDMB_TXD0*/
++					0x0  0x1f 0x2  0x0  0x1  0x0    /* TDMB_RSYNC */
++					0x0  0x1e 0x2  0x0  0x1  0x0>;  /* TDMB_TSYNC */
++			};
++
++			pio_tdmc: tdm_pin@03 {
++				pio-map = <
++					0x1  0xa  0x2  0x0  0x1  0x0    /* CLK7 */
++					0x1  0xb  0x2  0x0  0x1  0x0    /* CLK13 */
++					0x1  0x5  0x3  0x0  0x1  0x0    /* TDMC_RXD0*/
++					0x1  0x4  0x3  0x0  0x1  0x0    /* TDMC_TXD0*/
++					0x1  0x7  0x2  0x0  0x1  0x0    /* TDMC_RSYNC */
++					0x1  0x6  0x2  0x0  0x1  0x0>;  /* TDMC_TSYNC */
++			};
++
++			pio_tdmd: tdm_pin@04 {
++				pio-map = <
++					0x2  0x0  0x2  0x0  0x1  0x0    /* CLK14 */
++					0x1  0x1f 0x2  0x0  0x1  0x0    /* CLK15 */
++					0x0  0x13 0x3  0x0  0x1  0x0    /* TDMD_RXD0_OPT2*/
++					0x0  0x12 0x3  0x0  0x1  0x0    /* TDMD_TXD0_OPT2*/
++					0x0  0x15 0x2  0x0  0x1  0x0    /* TDMD_RSYNC_OPT2*/
++					0x0  0x14 0x2  0x0  0x1  0x0>;  /* TDMD_TSYNC_OPT2*/
++			};
 +		};
+ 	};
+ 
+ 	pci0: pcie@ffe09000 {
+@@ -85,10 +171,107 @@
+ 	};
+ 
+ 	qe: qe@ffe80000 {
+-                ranges = <0x0 0x0 0xffe80000 0x40000>;
+-                reg = <0 0xffe80000 0 0x480>;
+-                brg-frequency = <0>;
+-                bus-frequency = <0>;
++		ranges = <0x0 0x0 0xffe80000 0x40000>;
++		reg = <0 0xffe80000 0 0x480>;
++		brg-frequency = <0>;
++		bus-frequency = <0>;
 +
-+		mdio@24000 {
-+			phy1: ethernet-phy@1 {
-+				status = "disabled";
++		spi@4c0 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			compatible = "fsl,mpc8569-qe-spi", "fsl,spi";
++			reg = <0x4c0 0x40>;
++			cell-index = <0>;
++			interrupts = <2>;
++			interrupt-parent = <&qeic>;
++			pio-handle = <&pio_qe_spi>;
++			gpios = <&qe_pio_b 29 0>;
++			mode = "cpu-qe";
++
++			legerity@0 {
++				compatible = "zarlink,le88266";
++				reg = <0>;
++				spi-max-frequency = <8000000>;
 +			};
 +		};
 +
-+		enet2: ethernet@b2000 {
-+			status = "disabled";
++		si1: si@700 {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			compatible = "fsl,qe-si";
++			reg = <0x700 0x80>;
 +		};
 +
-+		mpic: pic@40000 {
-+			protected-sources = <
-+			42		/* serial1 */
-+			31 32 33	/* enet2-queue-group0 */
-+			25 26 27	/* enet2-queue-group1 */
-+			>;
-+			pic-no-reset;
-+		};
-+	};
-+};
-diff --git a/arch/powerpc/boot/dts/p1021rdb_camp_core1.dts b/arch/powerpc/boot/dts/p1021rdb_camp_core1.dts
-new file mode 100644
-index 0000000..591cf5f
---- /dev/null
-+++ b/arch/powerpc/boot/dts/p1021rdb_camp_core1.dts
-@@ -0,0 +1,179 @@
-+/*
-+ * P1021 RDB Core1 Device Tree Source in CAMP mode.
-+ *
-+ * Copyright 2011 Freescale Semiconductor Inc.
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions are met:
-+ *     * Redistributions of source code must retain the above copyright
-+ *       notice, this list of conditions and the following disclaimer.
-+ *     * Redistributions in binary form must reproduce the above copyright
-+ *       notice, this list of conditions and the following disclaimer in the
-+ *       documentation and/or other materials provided with the distribution.
-+ *     * Neither the name of Freescale Semiconductor nor the
-+ *       names of its contributors may be used to endorse or promote products
-+ *       derived from this software without specific prior written permission.
-+ *
-+ *
-+ * ALTERNATIVELY, this software may be distributed under the terms of the
-+ * GNU General Public License ("GPL") as published by the Free Software
-+ * Foundation, either version 2 of that License or (at your option) any
-+ * later version.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
-+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ *
-+ * In CAMP mode, each core needs to have its own dts. Only mpic and L2 cache
-+ * can be shared, all the other devices must be assigned to one core only.
-+ * This dts allows core1 to have l2, eth2, serial1, crypto.
-+ *
-+ * Please note to add "-b 1" for core1's dts compiling.
-+ */
-+
-+/include/ "p1021rdb.dts"
-+
-+/ {
-+	model = "fsl,P1021RDB";
-+	compatible = "fsl,P1021RDB-PC";
-+
-+	aliases {
-+		ethernet0 = &enet2;
-+		serial0 = &serial1;
++		siram1: siram@1000 {
++			#address-cells = <1>;
++			#size-cells = <1>;
++			compatible = "fsl,qe-siram";
++			reg = <0x1000 0x800>;
 +		};
 +
-+	cpus {
-+		PowerPC,P1021@0 {
-+			status = "disabled";
-+		};
-+	};
-+
-+	memory {
-+		device_type = "memory";
-+	};
-+
-+	localbus@ffe05000 {
-+		status = "disabled";
-+	};
-+
-+	soc@ffe00000 {
-+		ecm-law@0 {
-+			status = "disabled";
++		tdma: ucc@2000 {
++			compatible = "fsl,ucc-tdm";
++			rx-clock-name = "clk3";
++			tx-clock-name = "clk4";
++			fsl,rx-sync-clock = "rsync_pin";
++			fsl,tx-sync-clock = "tsync_pin";
++			fsl,tx-timeslot = <0xfffffffe>;
++			fsl,rx-timeslot = <0xfffffffe>;
++			pio-handle = <&pio_tdma>;
++			fsl,tdm-framer-type = "e1";
++			fsl,tdm-mode = "normal";
++			fsl,tdm-id = <0>;
++			fsl,siram-entry-id = <0>;
++			phy-handle = <&pq_mds_t1>;
 +		};
 +
-+		ecm@1000 {
-+			status = "disabled";
++		tdmb: ucc@2200 {
++			compatible = "fsl,ucc-tdm";
++			rx-clock-name = "clk5";
++			tx-clock-name = "clk6";
++			fsl,rx-sync-clock = "rsync_pin";
++			fsl,tx-sync-clock = "tsync_pin";
++			fsl,tx-timeslot = <0xfffffffe>;
++			fsl,rx-timeslot = <0xfffffffe>;
++			pio-handle = <&pio_tdmb>;
++			fsl,tdm-framer-type = "e1";
++			fsl,tdm-mode = "normal";
++			fsl,tdm-id = <1>;
++			fsl,siram-entry-id = <2>;
++			phy-handle = <&pq_mds_t1>;
 +		};
 +
-+		memory-controller@2000 {
-+			status = "disabled";
++		tdmc: ucc@2400 {
++			compatible = "fsl,ucc-tdm";
++			rx-clock-name = "clk7";
++			tx-clock-name = "clk13";
++			fsl,rx-sync-clock = "rsync_pin";
++			fsl,tx-sync-clock = "tsync_pin";
++			fsl,tx-timeslot = <0xfffffffe>;
++			fsl,rx-timeslot = <0xfffffffe>;
++			pio-handle = <&pio_tdmc>;
++			fsl,tdm-framer-type = "e1";
++			fsl,tdm-mode = "normal";
++			fsl,tdm-id = <2>;
++			fsl,siram-entry-id = <4>;
++			phy-handle = <&pq_mds_t1>;
 +		};
 +
-+		i2c@3000 {
-+			status = "disabled";
++		tdmd: ucc@2600 {
++			compatible = "fsl,ucc-tdm";
++			rx-clock-name = "clk14";
++			tx-clock-name = "clk15";
++			fsl,rx-sync-clock = "rsync_pin";
++			fsl,tx-sync-clock = "tsync_pin";
++			pio-handle = <&pio_tdmd>;
++			fsl,tx-timeslot = <0xfffffffe>;
++			fsl,rx-timeslot = <0xfffffffe>;
++			fsl,tdm-framer-type = "e1";
++			fsl,tdm-mode = "normal";
++			fsl,tdm-id = <3>;
++			fsl,siram-entry-id = <6>;
++			phy-handle = <&pq_mds_t1>;
 +		};
-+
-+		i2c@3100 {
-+			status = "disabled";
-+		};
-+
-+		serial0: serial@4500 {
-+			status = "disabled";
-+		};
-+
-+		spi@7000 {
-+			status = "disabled";
-+		};
-+
-+		gpio: gpio-controller@f000 {
-+			status = "disabled";
-+		};
-+
-+		dma@21300 {
-+			status = "disabled";
-+		};
-+
-+		mdio@24000 {
-+			phy0: ethernet-phy@0 {
-+				status = "disabled";
-+			};
-+
-+			tbi0: tbi-phy@11 {
-+				status = "disabled";
-+			};
-+		};
-+
-+		mdio@25000 {
-+			status = "disabled";
-+		};
-+
-+		mdio@26000 {
-+			status = "disabled";
-+		};
-+
-+		enet0: ethernet@b0000 {
-+			status = "disabled";
-+		};
-+
-+		enet1: ethernet@b1000 {
-+			status = "disabled";
-+		};
-+
-+		usb@22000 {
-+			status = "disabled";
-+		};
-+
-+		sdhci@2e000 {
-+			status = "disabled";
-+		};
-+
-+		crypto@30000 {
-+                        status = "disabled";
-+                };
-+
-+		mpic: pic@40000 {
-+			protected-sources = <
-+			16 		/* ecm, mem, L2, pci0, pci1 */
-+			43 42 59	/* i2c, serial0, spi */
-+			47 63 62 	/* gpio, tdm */
-+			20 21 22 23	/* dma */
-+			03 02 		/* mdio */
-+			29 30 34	/* enet0-queue-group0 */
-+			17 18 24	/* enet0-queue-group1 */
-+			35 36 40	/* enet1-queue-group0 */
-+			51 52 67	/* enet1-queue-group1 */
-+			28 72 45 58 	/* usb, sdhci, crypto */
-+			0xb0 0xb1 0xb2	/* message */
-+			0xb3 0xb4 0xb5
-+			0xb6 0xb7
-+			0xe0 0xe1 0xe2	/* msi */
-+			0xe3 0xe4 0xe5
-+			0xe6 0xe7		/* sdhci, crypto , pci */
-+			>;
-+			pic-no-reset;
-+		};
-+
-+		msi@41600 {
-+			status = "disabled";
-+		};
-+
-+		global-utilities@e0000 {	//global utilities block
-+			status = "disabled";
-+		};
-+	};
-+
-+	pci0: pcie@ffe09000 {
-+		status = "disabled";
-+	};
-+
-+	pci1: pcie@ffe0a000 {
-+		status = "disabled";
-+	};
-+};
+         };
+ };
+ 
 -- 
 1.8.4.1
