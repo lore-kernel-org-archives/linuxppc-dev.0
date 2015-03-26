@@ -1,27 +1,40 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <cascardo@linux.vnet.ibm.com>
+Received: from e24smtp05.br.ibm.com (e24smtp05.br.ibm.com [32.104.18.26])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2AD171A065A
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Mar 2015 11:36:50 +1100 (AEDT)
-Message-ID: <1427330209.16501.1.camel@ellerman.id.au>
-Subject: Re: [PATCH v3 2/2] selftests/powerpc: Add a test of the
- switch_endian() syscall
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Date: Thu, 26 Mar 2015 11:36:49 +1100
-In-Reply-To: <55129CBA.4010402@linux.vnet.ibm.com>
-References: <1426489030-26025-1-git-send-email-mpe@ellerman.id.au>
- <1426489030-26025-2-git-send-email-mpe@ellerman.id.au>
- <5506B7DC.80702@linux.vnet.ibm.com>
- <1426547040.31646.2.camel@ellerman.id.au>
- <5507C437.3020203@linux.vnet.ibm.com>
- <1426655059.6504.4.camel@ellerman.id.au>
- <1427261327.29319.5.camel@ellerman.id.au>
- <55129CBA.4010402@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, linuxram@us.ibm.com, Jeremy Kerr <jk@ozlabs.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3E18D1A0671
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Mar 2015 11:44:37 +1100 (AEDT)
+Received: from /spool/local
+ by e24smtp05.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <cascardo@linux.vnet.ibm.com>;
+ Wed, 25 Mar 2015 21:44:33 -0300
+Received: from d24relay03.br.ibm.com (d24relay03.br.ibm.com [9.13.184.25])
+ by d24dlp01.br.ibm.com (Postfix) with ESMTP id 9D6A03520066
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2015 20:43:28 -0400 (EDT)
+Received: from d24av04.br.ibm.com (d24av04.br.ibm.com [9.8.31.97])
+ by d24relay03.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t2Q0hd5w58720382
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2015 21:43:40 -0300
+Received: from d24av04.br.ibm.com (localhost [127.0.0.1])
+ by d24av04.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t2Q0iQsT023135
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2015 21:44:26 -0300
+Date: Wed, 25 Mar 2015 21:43:42 -0300
+From: cascardo@linux.vnet.ibm.com
+To: David Miller <davem@davemloft.net>
+Subject: Re: Generic IOMMU pooled allocator
+Message-ID: <20150326004342.GB4925@oc0812247204.ltc.br.ibm.com>
+References: <1427149265.4770.238.camel@kernel.crashing.org>
+ <20150323.214453.255192641139042325.davem@davemloft.net>
+ <1427162890.4770.307.camel@kernel.crashing.org>
+ <20150323.221508.1178754097347144400.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20150323.221508.1178754097347144400.davem@davemloft.net>
+Cc: aik@au1.ibm.com, aik@ozlabs.ru, anton@au1.ibm.com, paulus@samba.org,
+ sowmini.varadhan@oracle.com, sparclinux@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,91 +44,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2015-03-25 at 17:02 +0530, Anshuman Khandual wrote:
-> On 03/25/2015 10:58 AM, Michael Ellerman wrote:
-> > On Wed, 2015-03-18 at 16:04 +1100, Michael Ellerman wrote:
-> >> On Tue, 2015-03-17 at 11:35 +0530, Anshuman Khandual wrote:
-> >>> On 03/17/2015 04:34 AM, Michael Ellerman wrote:
-> >>>> What are you seeing exactly?
-> >>>
-> >>> I am running on a BE PKVM guest but compiling the test case on
-> >>> a different BE machine which has newer version of the compiler.
-> >>>
-> >>> cc (GCC) 4.8.3 20140624
-> >>>
-> >>> cc -O2 -Wall -g -nostdlib -m64   -c -o check.o check.S
-> >>> objcopy -j .text --reverse-bytes=4 -O binary check.o check-reversed.o
-> >>> hexdump -v -e '/1 ".byte 0x%02X\n"' check-reversed.o > check-reversed.S
-> >>> cc -O2 -Wall -g -nostdlib -m64    switch_endian_test.S check-reversed.S   -o switch_endian_test
-> >>>
-> >>> which looks very similar to the details you have provided above.
-> >>> Running on guest or host should not make any difference.
-> >>
-> >> No it shouldn't.
-> >>
-> >> Can you try strace, that should give you the full result code.
-> >>
-> >> Also can you try gdb. You can't breakpoint in the wrong-endian region, but it
-> >> looks like you're getting through that anyway.
-> >>
-> >> So try setting a breakpoint at line ~77, and you should be back in BE. Then you
-> >> can single step and see where it errors out.
-> > 
-> > Did you try these?
+On Mon, Mar 23, 2015 at 10:15:08PM -0400, David Miller wrote:
+> From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Date: Tue, 24 Mar 2015 13:08:10 +1100
 > 
-> Yeah. The test program is showing some strange behavior.
+> > For the large pool, we don't keep a hint so we don't know it's
+> > wrapped, in fact we purposefully don't use a hint to limit
+> > fragmentation on it, but then, it should be used rarely enough that
+> > flushing always is, I suspect, a good option.
 > 
-> (1) Without strace: It just fails with 176 return code as before
-> (2) With strace: It works with return code 0 and prints everything !!
-> 
-> strace ./switch_endian_test
-> execve("./switch_endian_test", ["./switch_endian_test"], [/* 50 vars */]) = 0
-> SYS_363(0x5555aaaa5555aaaa, 0x5555aaaa5555aaae, 0x5555aaaa5555aaaf,
-> 0x5555aaaa5555aab0, 0x5555aaaa5555aab1) = 6149008514797120170
-> write(1, "Hello wrong-endian world\n", 25Hello wrong-endian world
-> ) = 25
-> SYS_363(0x19, 0x10010638, 0x19, 0x5555aaaa5555aab0, 0x5555aaaa5555aab1) = 25
-> write(1, "Hello right-endian world\n", 25Hello right-endian world
-> ) = 25
-> write(1, "success: switch_endian_test\n", 28success: switch_endian_test
-> ) = 28
-> exit(0)                                 = ?
-> 
-> With GDB and breaking at line 77, it exits with a different exit code this time
+> I can't think of any use case where the largepool would be hit a lot
+> at all.
 
-No that's the same code, 176 == 0260 (octal).
+Well, until recently, IOMMU_PAGE_SIZE was 4KiB on Power, so every time a
+driver mapped a whole 64KiB page, it would hit the largepool.
 
-> 30		cmpd    r3,r5
-> (gdb) 
-> 31		bne     1f
-> (gdb) 
-> 32		addi    r3,r15,6
-> (gdb) 
-> 33		cmpd    r3,r6
-> (gdb) 
-> 34		bne     1f
-> (gdb) 
-> 98	1:	li	r0, __NR_exit
-> (gdb) 
-> 99		sc
-> (gdb) 
-> [Inferior 1 (process 6456) exited with code 0260]
+I have been suspicious for some time that after Anton's work on the
+pools, the large mappings optimization would throw away the benefit of
+using the 4 pools, since some drivers would always hit the largepool.
 
-And that makes sense, it's bailing because r6 doesn't match. In the setup we do:
+Of course, drivers that map entire pages, when not buggy, are optimized
+already to avoid calling dma_map all the time. I worked on that for
+mlx4_en, and I would expect that its receive side would always hit the
+largepool.
 
-	addi	r6, r15, 6
+So, I decided to experiment and count the number of times that
+largealloc is true versus false.
 
-Where r15 is 0x5555aaaa5555aaaa, so:
+On the transmit side, or when using ICMP, I didn't notice many large
+allocations with qlge or cxgb4.
 
-	0x5555aaaa5555aaaa + 6 = 0x5555aaaa5555aab0
+However, when using large TCP send/recv (I used uperf with 64KB
+writes/reads), I noticed that on the transmit side, largealloc is not
+used, but on the receive side, cxgb4 almost only uses largealloc, while
+qlge seems to have a 1/1 usage or largealloc/non-largealloc mappings.
+When turning GRO off, that ratio is closer to 1/10, meaning there is
+still some fair use of largealloc in that scenario.
 
-And when we exit the kernel masks the exit code in r3 with 0xff, so:
+I confess my experiments are not complete. I would like to test a couple
+of other drivers as well, including mlx4_en and bnx2x, and test with
+small packet sizes. I suspected that MTU size could make a difference,
+but in the case of ICMP, with MTU 9000 and payload of 8000 bytes, I
+didn't notice any significant hit of largepool with either qlge or
+cxgb4.
 
-	0x5555aaaa5555aab0 & 0xff = 0xb0 = 176
+Also, we need to keep in mind that IOMMU_PAGE_SIZE is now dynamic in the
+latest code, with plans on using 64KiB in some situations, Alexey or Ben
+should have more details.
 
+But I believe that on the receive side, all drivers should map entire
+pages, using some allocation strategy similar to mlx4_en, in order to
+avoid DMA mapping all the time. Some believe that is bad for latency,
+and prefer to call something like skb_alloc for every package received,
+but I haven't seen any hard numbers, and I don't know why we couldn't
+make such an allocator as good as using something like the SLAB/SLUB
+allocator. Maybe there is a jitter problem, since the allocator has to
+go out and get some new pages and map them, once in a while. But I don't
+see why this would not be a problem with SLAB/SLUB as well. Calling
+dma_map is even worse with the current implementation. It's just that
+some architectures do no work at all when dma_map/unmap is called.
 
-So for some reason r6 does not contain our pattern.
+Hope that helps consider the best strategy for the DMA space allocation
+as of now.
 
-Can you do an "info registers" and see what's in r6?
-
-cheers
+Regards.
+Cascardo.
