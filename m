@@ -1,32 +1,45 @@
-Return-Path: <wangyijing@huawei.com>
-Received: from szxga03-in.huawei.com (szxga03-in.huawei.com [119.145.14.66])
- (using TLSv1 with cipher RC4-SHA (128/128 bits))
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 234E91A0671
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Mar 2015 12:24:56 +1100 (AEDT)
-Message-ID: <55135E16.6060909@huawei.com>
-Date: Thu, 26 Mar 2015 09:17:10 +0800
-From: Yijing Wang <wangyijing@huawei.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id AF7921A0680
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Mar 2015 12:27:10 +1100 (AEDT)
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 630A214011D
+ for <linuxppc-dev@ozlabs.org>; Thu, 26 Mar 2015 12:27:10 +1100 (AEDT)
+Received: from /spool/local
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Thu, 26 Mar 2015 11:27:08 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id AA1D12CE8054
+ for <linuxppc-dev@ozlabs.org>; Thu, 26 Mar 2015 12:27:04 +1100 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t2Q1QuJa30343308
+ for <linuxppc-dev@ozlabs.org>; Thu, 26 Mar 2015 12:27:04 +1100
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t2Q1QUBl020851
+ for <linuxppc-dev@ozlabs.org>; Thu, 26 Mar 2015 12:26:30 +1100
+Date: Thu, 26 Mar 2015 12:26:06 +1100
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: [PATCH v4 4/4] drivers/vfio: Remove duplicated PE states
+Message-ID: <20150326012606.GA17303@shangw>
+Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+References: <1427325637-14345-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <1427325637-14345-5-git-send-email-gwshan@linux.vnet.ibm.com>
+ <1427330788.3643.883.camel@redhat.com>
+ <20150326010157.GA28039@voom.redhat.com>
 MIME-Version: 1.0
-To: Daniel Axtens <dja@axtens.net>
-Subject: Re: [PATCH v8 19/30] powerpc/pci: Use pci_scan_host_bridge() for
- simplicity
-References: <1427168064-8657-1-git-send-email-wangyijing@huawei.com>		
- <1427168064-8657-20-git-send-email-wangyijing@huawei.com>	
- <1427241523.2685.18.camel@axtens.net> <551266DE.3030609@huawei.com>
- <1427321631.2575.3.camel@axtens.net>
-In-Reply-To: <1427321631.2575.3.camel@axtens.net>
-Content-Type: text/plain; charset="UTF-8"
-Cc: Liviu Dudau <liviu@dudau.co.uk>, x86@kernel.org, linux-ia64@vger.kernel.org,
- Arnd Bergmann <arnd@arndb.de>, Marc Zyngier <marc.zyngier@arm.com>,
- linux-pci@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
- linux-kernel@vger.kernel.org, Jiang Liu <jiang.liu@linux.intel.com>,
- linux-m68k@lists.linux-m68k.org, Tony Luck <tony.luck@intel.com>,
- Geert Uytterhoeven <geert@linux-m68k.org>, Yinghai Lu <yinghai@kernel.org>,
- linux-alpha@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>, Russell
- King <linux@arm.linux.org.uk>, Thomas Gleixner <tglx@linutronix.de>, Guan
- Xuetao <gxt@mprc.pku.edu.cn>, linuxppc-dev@lists.ozlabs.org,
- "David S. Miller" <davem@davemloft.net>, linux-arm-kernel@lists.infradead.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20150326010157.GA28039@voom.redhat.com>
+Cc: linuxppc-dev@ozlabs.org, Alex Williamson <alex.williamson@redhat.com>,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>, kvm@vger.kernel.org, agraf@suse.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,93 +49,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2015/3/26 6:13, Daniel Axtens wrote:
-> Hi Yijing,
-> 
-> I wasn't quite sure I understood your comments, so I was trying to apply
-> your patch series and test it, but patch 3 doesn't apply cleanly to
-> 4.0-rc5 or master. Can you respin the series?
+On Thu, Mar 26, 2015 at 12:01:57PM +1100, David Gibson wrote:
+>On Wed, Mar 25, 2015 at 06:46:28PM -0600, Alex Williamson wrote:
+>> On Thu, 2015-03-26 at 10:20 +1100, Gavin Shan wrote:
+>> > The set of constants for PE states defined in uapi/linux/vfio.h is
+>> > duplicated to uapi/asm/eeh.h. The patch removes the set from the
+>> > former.
+>> > 
+>> > Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+>> > ---
+>> >  include/uapi/linux/vfio.h | 5 -----
+>> >  1 file changed, 5 deletions(-)
+>> > 
+>> > diff --git a/include/uapi/linux/vfio.h b/include/uapi/linux/vfio.h
+>> > index d81c17f..3fd1e86 100644
+>> > --- a/include/uapi/linux/vfio.h
+>> > +++ b/include/uapi/linux/vfio.h
+>> > @@ -492,11 +492,6 @@ struct vfio_eeh_pe_op {
+>> >  #define VFIO_EEH_PE_UNFREEZE_IO		2	/* Enable IO for frozen PE   */
+>> >  #define VFIO_EEH_PE_UNFREEZE_DMA	3	/* Enable DMA for frozen PE  */
+>> >  #define VFIO_EEH_PE_GET_STATE		4	/* PE state retrieval        */
+>> > -#define  VFIO_EEH_PE_STATE_NORMAL	0	/* PE in functional state    */
+>> > -#define  VFIO_EEH_PE_STATE_RESET	1	/* PE reset in progress      */
+>> > -#define  VFIO_EEH_PE_STATE_STOPPED	2	/* Stopped DMA and IO        */
+>> > -#define  VFIO_EEH_PE_STATE_STOPPED_DMA	4	/* Stopped DMA only          */
+>> > -#define  VFIO_EEH_PE_STATE_UNAVAIL	5	/* State unavailable         */
+>> >  #define VFIO_EEH_PE_RESET_DEACTIVATE	5	/* Deassert PE reset         */
+>> >  #define VFIO_EEH_PE_RESET_HOT		6	/* Assert hot reset          */
+>> >  #define VFIO_EEH_PE_RESET_FUNDAMENTAL	7	/* Assert fundamental reset  */
+>> 
+>> How do you know that nobody depends on these defines?  I thought the
+>> suggestion was to use the EEH_* defines for error injection, not to
+>> remove existing VFIO_EEH_* defines.  You could certainly redefine these
+>> in terms of EEH_* defines instead.  Thanks,
+>
+>Yeah, since they're already exported, these can't be just removed, but
+>should be redefined in terms of the new exported EEH defines.
+>
 
-Hi Daniel,
-   Could you pull the series from Bjorn's git tree ? The URL is
-https://git.kernel.org/pub/scm/linux/kernel/git/helgaas/pci.git pci/enumeration-yw8
+I just explained to Alex.W with something as follows. Are you sure to
+keep this set of defines in vfio.h? That way, the EEH error constants
+are all defined in uapi/asm/eeh.h, but the EEH PE state constatns will
+be distributed in vfio.h and uapi/asm/eeh.h at the same time. Actually,
+I believe it's safe to move the PE state defines from vfio.h to
+uapi/asm/eeh.h and now is the right time to do so :)
 
-Thanks!
-Yijing.
+---
 
-> 
-> Thanks,
-> Daniel
-> 
-> 
->> Hi Daniel, thanks for your review and comments. We want to make a generic pci_host_bridge,
->> which would hold the common host information, for example, pci domain is common info for
->> pci host bridge, this series saved domain in pci_host_bridge, then we no need to
->> extract out domain by pci_bus->sysdata by platform specific pci_domain_nr().
->> Also we store the sysdata in pci_host_bridge, and pci_bus_to_host() is the platform
->> interface, I think use the common interface would be better.
->>
->>>> +
->>>> +	/* Get probe mode and perform scan */
->>>> +	if (hose->dn && ppc_md.pci_probe_mode)
->>>> +		mode = ppc_md.pci_probe_mode(bus);
->>>> +
->>>> +	pr_debug("    probe mode: %d\n", mode);
->>>> +	if (mode == PCI_PROBE_DEVTREE)
->>>> +		of_scan_bus(hose->dn, bus);
->>>> +
->>>> +	if (mode == PCI_PROBE_NORMAL) {
->>>> +		pci_bus_update_busn_res_end(bus, 255);
->>>> +		hose->last_busno = pci_scan_child_bus(bus);
->>>> +		pci_bus_update_busn_res_end(bus, hose->last_busno);
->>>> +	}
->>>> +
->>>> +	return pci_bus_child_max_busnr(bus);
->>>> +}
->>>> +
->>> I'm having trouble convincing myself that this patch covers every
->>> variation within our PCI implementations. In particular, there's a
->>> stanza in of_scan_pci_bridge in kernel/pci_of_scan.c that's almost
->>> identical to this function. Does that implementation need to be cleaned
->>> up and replaced with this function too?
->>>
->>
->> This is a pci_host_bridge_ops hook function, which would be called in
->> PCI core, and after applied this series, we only need to call pci_scan_host_bridge()
->> to scan pci devices, and this function is also extracted from the pcibios_scan_phb(),
->> it's not the redundant code.
->>
->>>
->>>> @@ -1641,9 +1655,9 @@ void pcibios_scan_phb(struct pci_controller *hose)
->>>>  		ppc_md.pcibios_fixup_phb(hose);
->>>>  
->>>>  	/* Configure PCI Express settings */
->>>> -	if (bus && !pci_has_flag(PCI_PROBE_ONLY)) {
->>>> +	if (host->bus && !pci_has_flag(PCI_PROBE_ONLY)) {
->>>>  		struct pci_bus *child;
->>>> -		list_for_each_entry(child, &bus->children, node)
->>>> +		list_for_each_entry(child, &host->bus->children, node)
->>>>  			pcie_bus_configure_settings(child);
->>>>  	}
->>>>  }
->>> Two things: Firstly, the function uses hose throughout, not host.
->>> Secondly, you're not deleting the bus variable: what's the purpose of
->>> this change?
->>
->> host is the common pci_host_bridge which is created by PCI core for pci host bridge driver,
->> the hose is the platform data used in powerpc. The purpose of the patch/series is to simplify
->> pci enumeration interface, and try to reduce the weak functions which were used to setup pci bus/devices
->> during PCI enumeration.
->>
->>>
->>> Regards,
->>> Daniel
->>>
->>
->>
-> 
+QEMU should be the first user to utilize the EEH capability exposed by
+the host kernel, and I believe QEMU doesn't use those constants yet.
+So it's right time to move those constants to uapi/asm/eeh.h. Once some
+one starts to use them, it's impossible to do so.
 
+>I also think this should be folded into 1/1.
+>
 
--- 
-Thanks!
-Yijing
+The reason I didn't fold it to PATCH[1/4]: I was afraid the changs
+will be taken via different trees (ppc-next and vfio-next).
+
+Thanks,
+Gavin
+
+>-- 
+>David Gibson			| I'll have my music baroque, and my code
+>david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+>				| _way_ _around_!
+>http://www.ozlabs.org/~dgibson
