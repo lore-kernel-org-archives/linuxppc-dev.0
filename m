@@ -1,16 +1,36 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <dja@axtens.net>
+Received: from mail-pa0-x231.google.com (mail-pa0-x231.google.com
+ [IPv6:2607:f8b0:400e:c03::231])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0B2FD1A0688
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Mar 2015 15:49:28 +1100 (AEDT)
-In-Reply-To: <1424909087-2819-1-git-send-email-olson@cumulusnetworks.com>
-To: Dave Olson <olson@cumulusnetworks.com>, linuxppc-dev@lists.ozlabs.org
-From: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [v3] Fix missing L2 cache size in /sys/devices/system/cpu
-Message-Id: <20150326044927.EAD4D1400B7@ozlabs.org>
-Date: Thu, 26 Mar 2015 15:49:27 +1100 (AEDT)
-Cc: Dave Olson <olson@cumulusnetworks.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3694A1A0688
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Mar 2015 16:19:42 +1100 (AEDT)
+Received: by padcy3 with SMTP id cy3so52106243pad.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2015 22:19:41 -0700 (PDT)
+Message-ID: <1427347180.2575.91.camel@axtens.net>
+Subject: Re: [PATCH v8 19/30] powerpc/pci: Use pci_scan_host_bridge() for
+ simplicity
+From: Daniel Axtens <dja@axtens.net>
+To: Yijing Wang <wangyijing@huawei.com>
+Date: Thu, 26 Mar 2015 16:19:40 +1100
+In-Reply-To: <55135E16.6060909@huawei.com>
+References: <1427168064-8657-1-git-send-email-wangyijing@huawei.com>
+ <1427168064-8657-20-git-send-email-wangyijing@huawei.com>
+ <1427241523.2685.18.camel@axtens.net> <551266DE.3030609@huawei.com>
+ <1427321631.2575.3.camel@axtens.net> <55135E16.6060909@huawei.com>
+Content-Type: multipart/signed; micalg="pgp-sha256";
+ protocol="application/pgp-signature"; boundary="=-EtOc/hYhLJzchjc4+T9t"
+Mime-Version: 1.0
+Cc: Liviu Dudau <liviu@dudau.co.uk>, x86@kernel.org, linux-ia64@vger.kernel.org,
+ Arnd Bergmann <arnd@arndb.de>, Marc Zyngier <marc.zyngier@arm.com>,
+ linux-pci@vger.kernel.org, Rusty Russell <rusty@rustcorp.com.au>,
+ linux-kernel@vger.kernel.org, Jiang Liu <jiang.liu@linux.intel.com>,
+ linux-m68k@lists.linux-m68k.org, Tony Luck <tony.luck@intel.com>,
+ Geert Uytterhoeven <geert@linux-m68k.org>, Yinghai Lu <yinghai@kernel.org>,
+ linux-alpha@vger.kernel.org, Bjorn Helgaas <bhelgaas@google.com>,
+ Russell King <linux@arm.linux.org.uk>, Thomas Gleixner <tglx@linutronix.de>,
+ Guan Xuetao <gxt@mprc.pku.edu.cn>, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>, linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,52 +40,188 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2015-26-02 at 00:04:47 UTC, Dave Olson wrote:
-> @@ -324,14 +335,33 @@ static bool cache_node_is_unified(const struct device_node *np)
->  	return of_get_property(np, "cache-unified", NULL);
->  }
->  
-> +/*
-> + * Handle unified caches that have two different types of tags.  Most embedded
-> + * use cache-size, etc. for the unified cache size, but open firmware systems
-> + * use d-cache-size, etc.   Since they all appear to be consistent, check on
-> + * initialization for which type we are, and use the appropriate structure.
-> + */
->  static struct cache *cache_do_one_devnode_unified(struct device_node *node,
->  						  int level)
->  {
->  	struct cache *cache;
-> +	int ucache;
->  
->  	pr_debug("creating L%d ucache for %s\n", level, node->full_name);
->  
->  	cache = new_cache(CACHE_TYPE_UNIFIED, level, node);
-        ^^
 
-> +	if (of_get_property(node,
-> +		cache_type_info[CACHE_TYPE_UNIFIED_D].size_prop, NULL)) {
-> +		ucache = CACHE_TYPE_UNIFIED_D;
-> +	} else {
-> +		ucache = CACHE_TYPE_UNIFIED; /* assume embedded */
-> +		if (of_get_property(node,
-> +			cache_type_info[CACHE_TYPE_UNIFIED].size_prop, NULL) ==
-> +			NULL)
-> +			printk(KERN_WARNING "Unified cache property missing\n");
-> +	}
-> +
-> +	cache = new_cache(ucache, level, node);
-        ^^
->  
->  	return cache;
->  }
+--=-EtOc/hYhLJzchjc4+T9t
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-That looks fishy. You create a cache, and then throw it away and create another
-one and return that. I don't think that's what you intended, is it?
+Hi Yijing,
 
-It would also be cleaner I think if you created another helper, eg.
-cache_is_unified_d() to do the property lookup.
+Pulled.
 
-And also I don't think you need to do the second property lookup, especially if
-all you're going to do is print a warning.
+I'm now getting build errors:
 
-cheers
+/scratch/dja/linux-patches/arch/powerpc/kernel/pci-common.c: In function 'p=
+cibios_scan_phb':
+/scratch/dja/linux-patches/arch/powerpc/kernel/pci-common.c:1638:14: error:=
+ 'bus' undeclared (first use in this function)
+/scratch/dja/linux-patches/arch/powerpc/kernel/pci-common.c:1638:14: note: =
+each undeclared identifier is reported only once for each function it appea=
+rs in
+
+That relates to your changes to pcibios_scan_phb:
+-       struct pci_bus *bus;
++       struct pci_host_bridge *host;
+clashing with line 1638:
+	hose->bus =3D bus;
+which occurs later in the same unction.
+
+If I fix that, I'll get more errors with lines in that function that
+still reference hose instead of host.
+
+As well as line 1638, there's still big chunks of the function that
+reference hose, for example:
+
+	/* Get some IO space for the new PHB */
+	pcibios_setup_phb_io_space(hose);
+
+	/* Wire up PHB bus resources */
+	pcibios_setup_phb_resources(hose, &resources);
+
+	hose->busn.start =3D hose->first_busno;
+	hose->busn.end	 =3D hose->last_busno;
+	hose->busn.flags =3D IORESOURCE_BUS;
+	pci_add_resource(&resources, &hose->busn);
+
+	pci_host_ops.pci_ops =3D hose->ops;
+
+
+Basically, the changes in PowerPC need to be quite a bit more through
+just to get the changes to build.
+
+I'm keen to work on simplifying PCI code in PowerPC, but at this point,
+it will need a lot more work before it's ready to go in.
+
+Regards,
+Daniel
+
+
+On Thu, 2015-03-26 at 09:17 +0800, Yijing Wang wrote:
+> On 2015/3/26 6:13, Daniel Axtens wrote:
+> > Hi Yijing,
+> >=20
+> > I wasn't quite sure I understood your comments, so I was trying to appl=
+y
+> > your patch series and test it, but patch 3 doesn't apply cleanly to
+> > 4.0-rc5 or master. Can you respin the series?
+>=20
+> Hi Daniel,
+>    Could you pull the series from Bjorn's git tree ? The URL is
+> https://git.kernel.org/pub/scm/linux/kernel/git/helgaas/pci.git pci/enume=
+ration-yw8
+>=20
+> Thanks!
+> Yijing.
+>=20
+> >=20
+> > Thanks,
+> > Daniel
+> >=20
+> >=20
+> >> Hi Daniel, thanks for your review and comments. We want to make a gene=
+ric pci_host_bridge,
+> >> which would hold the common host information, for example, pci domain =
+is common info for
+> >> pci host bridge, this series saved domain in pci_host_bridge, then we =
+no need to
+> >> extract out domain by pci_bus->sysdata by platform specific pci_domain=
+_nr().
+> >> Also we store the sysdata in pci_host_bridge, and pci_bus_to_host() is=
+ the platform
+> >> interface, I think use the common interface would be better.
+> >>
+> >>>> +
+> >>>> +	/* Get probe mode and perform scan */
+> >>>> +	if (hose->dn && ppc_md.pci_probe_mode)
+> >>>> +		mode =3D ppc_md.pci_probe_mode(bus);
+> >>>> +
+> >>>> +	pr_debug("    probe mode: %d\n", mode);
+> >>>> +	if (mode =3D=3D PCI_PROBE_DEVTREE)
+> >>>> +		of_scan_bus(hose->dn, bus);
+> >>>> +
+> >>>> +	if (mode =3D=3D PCI_PROBE_NORMAL) {
+> >>>> +		pci_bus_update_busn_res_end(bus, 255);
+> >>>> +		hose->last_busno =3D pci_scan_child_bus(bus);
+> >>>> +		pci_bus_update_busn_res_end(bus, hose->last_busno);
+> >>>> +	}
+> >>>> +
+> >>>> +	return pci_bus_child_max_busnr(bus);
+> >>>> +}
+> >>>> +
+> >>> I'm having trouble convincing myself that this patch covers every
+> >>> variation within our PCI implementations. In particular, there's a
+> >>> stanza in of_scan_pci_bridge in kernel/pci_of_scan.c that's almost
+> >>> identical to this function. Does that implementation need to be clean=
+ed
+> >>> up and replaced with this function too?
+> >>>
+> >>
+> >> This is a pci_host_bridge_ops hook function, which would be called in
+> >> PCI core, and after applied this series, we only need to call pci_scan=
+_host_bridge()
+> >> to scan pci devices, and this function is also extracted from the pcib=
+ios_scan_phb(),
+> >> it's not the redundant code.
+> >>
+> >>>
+> >>>> @@ -1641,9 +1655,9 @@ void pcibios_scan_phb(struct pci_controller *h=
+ose)
+> >>>>  		ppc_md.pcibios_fixup_phb(hose);
+> >>>> =20
+> >>>>  	/* Configure PCI Express settings */
+> >>>> -	if (bus && !pci_has_flag(PCI_PROBE_ONLY)) {
+> >>>> +	if (host->bus && !pci_has_flag(PCI_PROBE_ONLY)) {
+> >>>>  		struct pci_bus *child;
+> >>>> -		list_for_each_entry(child, &bus->children, node)
+> >>>> +		list_for_each_entry(child, &host->bus->children, node)
+> >>>>  			pcie_bus_configure_settings(child);
+> >>>>  	}
+> >>>>  }
+> >>> Two things: Firstly, the function uses hose throughout, not host.
+> >>> Secondly, you're not deleting the bus variable: what's the purpose of
+> >>> this change?
+> >>
+> >> host is the common pci_host_bridge which is created by PCI core for pc=
+i host bridge driver,
+> >> the hose is the platform data used in powerpc. The purpose of the patc=
+h/series is to simplify
+> >> pci enumeration interface, and try to reduce the weak functions which =
+were used to setup pci bus/devices
+> >> during PCI enumeration.
+> >>
+> >>>
+> >>> Regards,
+> >>> Daniel
+> >>>
+> >>
+> >>
+> >=20
+>=20
+>=20
+
+
+--=-EtOc/hYhLJzchjc4+T9t
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+Content-Transfer-Encoding: 7bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+Comment: GPGTools - https://gpgtools.org
+
+iQIcBAABCAAGBQJVE5bsAAoJEPC3R3P2I92FXz8QAM6EZdJbrxsM2bQA9Mazwkin
+ZryfB+DSfP/TcFyOx7Hhw2Zz0OrxH6iUa+1/RdwWIzGOXMjhwMxA2CJIbU5YeEGu
+9P4JquQto1g3aZcZLPku5eKiJlCooPBcwS7Zoir/PBAWyQg0EHjOw3yq2pWJl5nx
+JLNCHZgEzdSFmTb1u0C+sAds5RoKwcijZZJJxWI6gtaj1gmOaLyDpX8GA1SlSd5C
+wnthFTqOLmcac2iN1C172BiCsHTbc4MWUIBLTcrzqPz+/6z0XwsGDihYLAfwJdzn
+XjRxtv9VLgfNZfwteTCcaF4b8eTCBfiPKyl5vPVosZOTgfZLzgKINemc5179zhHG
+rS8qp1iOHOC+FTWYACnfLxD34CuytWQoBQLnGECuxJJgPFygjBg/AGX0Kh3HfWt4
+CEo43dzVTcXlZ4vVr86cUnW9NFWKl7MVfzSGBkunvHHRkfLEBFV6ch1e5Hje7x/P
+8UO60Stnq2HAJdarwGCzOZ0Ut4+a2K/7Yf6sx5TQeKzTGj5hDKSgSdDXb9gjaQpH
+Tgl5FJnegZXsLLSHXcuo5dhlD1bVyhwaPWSGsPxdUKLGqnpuQYM/G5aBBcaXg5+2
+C1+nJldjCsPWMImzJp0GG3UCxLAr+N3R41qnWzaanW67daQXebKsQzGUpny74IvD
+Dr3JxwEt612+WPwsTEp2
+=OlY6
+-----END PGP SIGNATURE-----
+
+--=-EtOc/hYhLJzchjc4+T9t--
