@@ -2,7 +2,7 @@ Return-Path: <clg@fr.ibm.com>
 Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E340B1A0270
+ by lists.ozlabs.org (Postfix) with ESMTPS id DC1F61A025F
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Mar 2015 03:04:57 +1100 (AEDT)
 Received: from /spool/local
  by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
@@ -11,13 +11,11 @@ Received: from /spool/local
  Thu, 26 Mar 2015 16:04:54 -0000
 From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@fr.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 2/3] powerpc/powernv: handle OPAL_SUCCESS return in
- opal_sensor_read
-Date: Thu, 26 Mar 2015 17:04:46 +0100
-Message-Id: <1427385887-25403-2-git-send-email-clg@fr.ibm.com>
-In-Reply-To: <1427385887-25403-1-git-send-email-clg@fr.ibm.com>
+Subject: =?UTF-8?q?=5BPATCH=20v2=201/3=5D=20powerpc/powernv=3A=20convert=20codes=20returned=20by=20OPAL=20calls?=
+Date: Thu, 26 Mar 2015 17:04:45 +0100
+Message-Id: <1427385887-25403-1-git-send-email-clg@fr.ibm.com>
+In-Reply-To: <5514027D.8010501@fr.ibm.com>
 References: <5514027D.8010501@fr.ibm.com>
- <1427385887-25403-1-git-send-email-clg@fr.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Cc: Stewart Smith <stewart@linux.vnet.ibm.com>,
@@ -33,70 +31,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently, when a sensor value is read, the kernel calls OPAL, which in
-turn builds a message for the FSP, and waits for a message back. 
-
-The new device tree for OPAL sensors [1] adds new sensors that can be 
-read synchronously (core temperatures for instance) and that don't need 
-to wait for a response.
-
-This patch modifies the opal call to accept an OPAL_SUCCESS return value
-and cover the case above.
-
-[1] https://lists.ozlabs.org/pipermail/skiboot/2015-March/000639.html
+OPAL has its own list of return codes. The patch provides a translation
+of such codes in errnos for the opal_sensor_read call.
 
 Signed-off-by: Cédric Le Goater <clg@fr.ibm.com>
 ---
-
- We still uselessly reserve a token (for the response) and take a
- lock, which might raise the need of a new 'opal_sensor_read_sync' 
- call.
-
- arch/powerpc/platforms/powernv/opal-sensor.c |   31 ++++++++++++++++-----------
- 1 file changed, 19 insertions(+), 12 deletions(-)
+ arch/powerpc/platforms/powernv/opal-sensor.c |   37 ++++++++++++++++++++++++++-
+ 1 file changed, 36 insertions(+), 1 deletion(-)
 
 Index: linux.git/arch/powerpc/platforms/powernv/opal-sensor.c
 ===================================================================
 --- linux.git.orig/arch/powerpc/platforms/powernv/opal-sensor.c
 +++ linux.git/arch/powerpc/platforms/powernv/opal-sensor.c
-@@ -78,21 +78,28 @@ int opal_get_sensor_data(u32 sensor_hndl
+@@ -26,6 +26,38 @@
+ 
+ static DEFINE_MUTEX(opal_sensor_mutex);
+ 
++
++/*
++ * opal_sensor_read() return codes
++ *
++ * OPAL_PARAMETER - invalid sensor handler
++ * OPAL_UNSUPPORTED - plateform does not support reading sensors.
++ *
++ *     in case of communication with the FSP on IBM systems
++ *
++ * OPAL_ASYNC_COMPLETION - a request was sent and an async completion will
++ *	be triggered with the @token argument
++ * OPAL_PARTIAL - the request completed but the data returned is invalid
++ * OPAL_BUSY_EVENT - a previous request is still pending
++ * OPAL_NO_MEM - allocation failed
++ * OPAL_INTERNAL_ERROR - communication failure with the FSP
++ * OPAL_HARDWARE - FSP is not available
++ */
++static int convert_opal_code(int ret)
++{
++	switch (ret) {
++	case OPAL_SUCCESS:		return 0;
++	case OPAL_PARAMETER:		return -EINVAL;
++	case OPAL_UNSUPPORTED:		return -ENOSYS;
++	case OPAL_ASYNC_COMPLETION:	return -EAGAIN;
++	case OPAL_BUSY_EVENT:		return -EBUSY;
++	case OPAL_NO_MEM:		return -ENOMEM;
++	case OPAL_HARDWARE:		return -ENOENT;
++	case OPAL_INTERNAL_ERROR:	return -EIO;
++	default:			return -EIO;
++	}
++}
++
+ /*
+  * This will return sensor information to driver based on the requested sensor
+  * handle. A handle is an opaque id for the powernv, read by the driver from the
+@@ -46,8 +78,10 @@ int opal_get_sensor_data(u32 sensor_hndl
  
  	mutex_lock(&opal_sensor_mutex);
  	ret = opal_sensor_read(sensor_hndl, token, &data);
--	if (ret != OPAL_ASYNC_COMPLETION) {
-+	switch (ret) {
-+	case OPAL_ASYNC_COMPLETION:
-+		ret = opal_async_wait_response(token, &msg);
-+		if (ret) {
-+			pr_err("%s: Failed to wait for the async response, %d\n",
-+			       __func__, ret);
-+			goto out_token;
-+		}
-+
-+		*sensor_data = be32_to_cpu(data);
-+		ret = be64_to_cpu(msg.params[1]);
- 		ret = convert_opal_code(ret);
--		goto out_token;
--	}
-+		break;
- 
--	ret = opal_async_wait_response(token, &msg);
--	if (ret) {
--		pr_err("%s: Failed to wait for the async response, %d\n",
--				__func__, ret);
--		goto out_token;
--	}
-+	case OPAL_SUCCESS:
-+		*sensor_data = be32_to_cpu(data);
-+		break;
- 
--	*sensor_data = be32_to_cpu(data);
--	ret = be64_to_cpu(msg.params[1]);
--	ret = convert_opal_code(ret);
-+	default:
+-	if (ret != OPAL_ASYNC_COMPLETION)
++	if (ret != OPAL_ASYNC_COMPLETION) {
 +		ret = convert_opal_code(ret);
-+		break;
+ 		goto out_token;
 +	}
+ 
+ 	ret = opal_async_wait_response(token, &msg);
+ 	if (ret) {
+@@ -58,6 +92,7 @@ int opal_get_sensor_data(u32 sensor_hndl
+ 
+ 	*sensor_data = be32_to_cpu(data);
+ 	ret = be64_to_cpu(msg.params[1]);
++	ret = convert_opal_code(ret);
  
  out_token:
  	mutex_unlock(&opal_sensor_mutex);
