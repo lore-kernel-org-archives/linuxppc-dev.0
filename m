@@ -1,18 +1,26 @@
-Return-Path: <ying.zhang@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bbn0104.outbound.protection.outlook.com [157.56.111.104])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <clg@fr.ibm.com>
+Received: from e06smtp17.uk.ibm.com (e06smtp17.uk.ibm.com [195.75.94.113])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 20CC11A0144
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Mar 2015 22:39:30 +1100 (AEDT)
-From: <ying.zhang@freescale.com>
-To: <scottwood@freescale.com>, <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 1/3] powerpc/dts: Add TDM device tree nodes for P1021RDB
-Date: Thu, 26 Mar 2015 17:14:14 +0800
-Message-ID: <1427361254-4639-1-git-send-email-ying.zhang@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 660551A0151
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Mar 2015 23:58:48 +1100 (AEDT)
+Received: from /spool/local
+ by e06smtp17.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <clg@fr.ibm.com>;
+ Thu, 26 Mar 2015 12:58:44 -0000
+Message-ID: <5514027D.8010501@fr.ibm.com>
+Date: Thu, 26 Mar 2015 13:58:37 +0100
+From: Cedric Le Goater <clg@fr.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Xie Xiaobo <X.Xie@freescale.com>, Ying Zhang <b40530@freescale.com>
+To: Stewart Smith <stewart@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc/powernv: handle OPAL_SUCCESS return in
+ opal_sensor_read
+References: <1427305834-6737-1-git-send-email-clg@fr.ibm.com>
+ <m3fv8s7k2p.fsf@oc8180480414.ibm.com> <5513D514.1000504@fr.ibm.com>
+In-Reply-To: <5513D514.1000504@fr.ibm.com>
+Content-Type: text/plain; charset=utf-8
+Cc: Neelesh Gupta <neelegup@linux.vnet.ibm.com>, skiboot@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,235 +30,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Ying Zhang <b40530@freescale.com>
+On 03/26/2015 10:44 AM, Cedric Le Goater wrote:
+> On 03/26/2015 12:07 AM, Stewart Smith wrote:
+>> Cédric Le Goater <clg@fr.ibm.com> writes:
+>>> Currently, when a sensor value is read, the kernel calls OPAL, which in
+>>> turn builds a message for the FSP, and waits for a message back. 
+>>>
+>>> The new device tree for OPAL sensors [1] adds new sensors that can be 
+>>> read synchronously (core temperatures for instance) and that don't need 
+>>> to wait for a response.
+>>>
+>>> This patch modifies the opal call to accept an OPAL_SUCCESS return value
+>>> and cover the case above.
+>>>
+>>> [1] https://lists.ozlabs.org/pipermail/skiboot/2015-March/000639.html
+>>>
+>>> Signed-off-by: Cédric Le Goater <clg@fr.ibm.com>
+>>> ---
+>>>
+>>>  We still uselessly reserve a token (for the response) and take a
+>>>  lock, which might raise the need of a new 'opal_sensor_read_sync' 
+>>>  call.
+>>
+>> Actually.... why do we take a lock around the OPAL calls at all?
+> 
+> The sensor service in OPAL only handles one FSP request at a time and 
+> returns OPAL_BUSY if one is already in progress. The lock covers this case 
+> but we could also remove it return EBUSY to the driver or even retry the 
+> call. That might be dangerous though. 
+> 
+> Changing OPAL to handle simultaneously multiple requests does not seem really 
+> necessary, it won't speed up the communication with the FSP and that is the
+> main bottleneck.
 
-The dts file support QE-TDM function and PQ-MDS-T1 card for P1021RDB.
-PQ-MDS-T1 is connected to the board by PMC, there is a zarlink le88266
-on the card, we configure it by QE-SPI. Because PMC has a shared CS pin
-with L2switch, so we do the device tree fixup in uboot.
+opal_get_sensor_data() is mixing OPAL return codes and errnos. I will send
+a v2 addressing this problem first.
 
-Change-Id: I7ecee0d93a105ef158455238fb003a2ad2ca32e7
-Signed-off-by: Ying Zhang <b40530@freescale.com>
-Signed-off-by: Xie Xiaobo <X.Xie@freescale.com>
-Reviewed-on: http://git.am.freescale.net:8181/900
-Reviewed-by: Fleming Andrew-AFLEMING <AFLEMING@freescale.com>
-Tested-by: Fleming Andrew-AFLEMING <AFLEMING@freescale.com>
----
- arch/powerpc/boot/dts/p1021rdb-pc_32b.dts | 191 +++++++++++++++++++++++++++++-
- 1 file changed, 187 insertions(+), 4 deletions(-)
-
-diff --git a/arch/powerpc/boot/dts/p1021rdb-pc_32b.dts b/arch/powerpc/boot/dts/p1021rdb-pc_32b.dts
-index 7cefa12..0fdb78f 100644
---- a/arch/powerpc/boot/dts/p1021rdb-pc_32b.dts
-+++ b/arch/powerpc/boot/dts/p1021rdb-pc_32b.dts
-@@ -48,10 +48,96 @@
- 		ranges = <0x0 0x0 0x0 0xef000000 0x01000000
- 			  0x1 0x0 0x0 0xff800000 0x00040000
- 			  0x2 0x0 0x0 0xffb00000 0x00020000>;
-+
-+		pq_mds_t1: tdmphy@2,0 {
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			reg = <2 0 0x10000>;
-+			ranges = <0 2 0 0x10000>;
-+			compatible = "fsl,pq-mds-t1";
-+
-+			dallas: ds26528@0 {
-+				compatible = "dallas,ds26528";
-+				reg = <0 0x2000>;
-+				line-rate = "e1";
-+				trans-mode = "normal";
-+			};
-+
-+			pld-reg@2000 {
-+				compatible = "fsl,pq-mds-t1-pld";
-+				reg = <0x2000 0x1000>;
-+				fsl,card-support = <&dallas>;
-+			};
-+		};
- 	};
- 
- 	soc: soc@ffe00000 {
- 		ranges = <0x0 0x0 0xffe00000 0x100000>;
-+
-+		par_io@e0100 {
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			reg = <0xe0100 0x60>;
-+			ranges = <0x0 0xe0100 0x60>;
-+			device_type = "par_io";
-+			num-ports = <3>;
-+
-+			qe_pio_b: gpio-controller@20 {
-+				#gpio-cells = <2>;
-+				compatible = "fsl,mpc8569-qe-pario-bank",
-+					     "fsl,mpc8323-qe-pario-bank";
-+				reg = <0x20 0x18>;
-+				gpio-controller;
-+			};
-+
-+			pio_qe_spi: qe_spi_pin@01 {
-+				pio-map = <
-+					0x1  0x13 0x1  0x0  0x3  0x0    /* QE_MUX_SPIMOSI */
-+					0x1  0x15 0x1  0x0  0x3  0x0    /* QE_MUX_CLK*/
-+					0x1  0x16 0x2  0x0  0x3  0x0    /* QE_MUX_SPIMISO*/
-+					0x1  0x1d 0x1  0x0  0x0  0x0>;  /* QE_SPISEL_MASTER*/
-+			};
-+
-+			pio_tdma: tdm_pin@01 {
-+				pio-map = <
-+					0x1  0xc  0x2  0x0  0x1  0x0    /* CLK3 */
-+					0x1  0xd  0x2  0x0  0x1  0x0    /* CLK4 */
-+					0x1  0x18 0x3  0x0  0x1  0x0    /* TDMA_RXD0_OPT2*/
-+					0x1  0x17 0x3  0x0  0x1  0x0    /* TDMA_TXD0_OPT2*/
-+					0x1  0x1a 0x2  0x0  0x1  0x0    /* TDMA_RSYNC_OPT2*/
-+					0x1  0x19 0x2  0x0  0x1  0x0>;  /* TDMA_TSYNC_OPT2*/
-+			};
-+
-+			pio_tdmb: tdm_pin@02 {
-+				pio-map = <
-+					0x1  0x1  0x2  0x0  0x1  0x0    /* CLK5 */
-+					0x0  0x1b 0x2  0x0  0x1  0x0    /* CLK6 */
-+					0x0  0x1d 0x3  0x0  0x1  0x0    /* TDMB_RXD0*/
-+					0x1  0x0  0x3  0x0  0x1  0x0    /* TDMB_TXD0*/
-+					0x0  0x1f 0x2  0x0  0x1  0x0    /* TDMB_RSYNC */
-+					0x0  0x1e 0x2  0x0  0x1  0x0>;  /* TDMB_TSYNC */
-+			};
-+
-+			pio_tdmc: tdm_pin@03 {
-+				pio-map = <
-+					0x1  0xa  0x2  0x0  0x1  0x0    /* CLK7 */
-+					0x1  0xb  0x2  0x0  0x1  0x0    /* CLK13 */
-+					0x1  0x5  0x3  0x0  0x1  0x0    /* TDMC_RXD0*/
-+					0x1  0x4  0x3  0x0  0x1  0x0    /* TDMC_TXD0*/
-+					0x1  0x7  0x2  0x0  0x1  0x0    /* TDMC_RSYNC */
-+					0x1  0x6  0x2  0x0  0x1  0x0>;  /* TDMC_TSYNC */
-+			};
-+
-+			pio_tdmd: tdm_pin@04 {
-+				pio-map = <
-+					0x2  0x0  0x2  0x0  0x1  0x0    /* CLK14 */
-+					0x1  0x1f 0x2  0x0  0x1  0x0    /* CLK15 */
-+					0x0  0x13 0x3  0x0  0x1  0x0    /* TDMD_RXD0_OPT2*/
-+					0x0  0x12 0x3  0x0  0x1  0x0    /* TDMD_TXD0_OPT2*/
-+					0x0  0x15 0x2  0x0  0x1  0x0    /* TDMD_RSYNC_OPT2*/
-+					0x0  0x14 0x2  0x0  0x1  0x0>;  /* TDMD_TSYNC_OPT2*/
-+			};
-+		};
- 	};
- 
- 	pci0: pcie@ffe09000 {
-@@ -85,10 +171,107 @@
- 	};
- 
- 	qe: qe@ffe80000 {
--                ranges = <0x0 0x0 0xffe80000 0x40000>;
--                reg = <0 0xffe80000 0 0x480>;
--                brg-frequency = <0>;
--                bus-frequency = <0>;
-+		ranges = <0x0 0x0 0xffe80000 0x40000>;
-+		reg = <0 0xffe80000 0 0x480>;
-+		brg-frequency = <0>;
-+		bus-frequency = <0>;
-+
-+		spi@4c0 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			compatible = "fsl,mpc8569-qe-spi", "fsl,spi";
-+			reg = <0x4c0 0x40>;
-+			cell-index = <0>;
-+			interrupts = <2>;
-+			interrupt-parent = <&qeic>;
-+			pio-handle = <&pio_qe_spi>;
-+			gpios = <&qe_pio_b 29 0>;
-+			mode = "cpu-qe";
-+
-+			legerity@0 {
-+				compatible = "zarlink,le88266";
-+				reg = <0>;
-+				spi-max-frequency = <8000000>;
-+			};
-+		};
-+
-+		si1: si@700 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			compatible = "fsl,qe-si";
-+			reg = <0x700 0x80>;
-+		};
-+
-+		siram1: siram@1000 {
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			compatible = "fsl,qe-siram";
-+			reg = <0x1000 0x800>;
-+		};
-+
-+		tdma: ucc@2000 {
-+			compatible = "fsl,ucc-tdm";
-+			rx-clock-name = "clk3";
-+			tx-clock-name = "clk4";
-+			fsl,rx-sync-clock = "rsync_pin";
-+			fsl,tx-sync-clock = "tsync_pin";
-+			fsl,tx-timeslot = <0xfffffffe>;
-+			fsl,rx-timeslot = <0xfffffffe>;
-+			pio-handle = <&pio_tdma>;
-+			fsl,tdm-framer-type = "e1";
-+			fsl,tdm-mode = "normal";
-+			fsl,tdm-id = <0>;
-+			fsl,siram-entry-id = <0>;
-+			phy-handle = <&pq_mds_t1>;
-+		};
-+
-+		tdmb: ucc@2200 {
-+			compatible = "fsl,ucc-tdm";
-+			rx-clock-name = "clk5";
-+			tx-clock-name = "clk6";
-+			fsl,rx-sync-clock = "rsync_pin";
-+			fsl,tx-sync-clock = "tsync_pin";
-+			fsl,tx-timeslot = <0xfffffffe>;
-+			fsl,rx-timeslot = <0xfffffffe>;
-+			pio-handle = <&pio_tdmb>;
-+			fsl,tdm-framer-type = "e1";
-+			fsl,tdm-mode = "normal";
-+			fsl,tdm-id = <1>;
-+			fsl,siram-entry-id = <2>;
-+			phy-handle = <&pq_mds_t1>;
-+		};
-+
-+		tdmc: ucc@2400 {
-+			compatible = "fsl,ucc-tdm";
-+			rx-clock-name = "clk7";
-+			tx-clock-name = "clk13";
-+			fsl,rx-sync-clock = "rsync_pin";
-+			fsl,tx-sync-clock = "tsync_pin";
-+			fsl,tx-timeslot = <0xfffffffe>;
-+			fsl,rx-timeslot = <0xfffffffe>;
-+			pio-handle = <&pio_tdmc>;
-+			fsl,tdm-framer-type = "e1";
-+			fsl,tdm-mode = "normal";
-+			fsl,tdm-id = <2>;
-+			fsl,siram-entry-id = <4>;
-+			phy-handle = <&pq_mds_t1>;
-+		};
-+
-+		tdmd: ucc@2600 {
-+			compatible = "fsl,ucc-tdm";
-+			rx-clock-name = "clk14";
-+			tx-clock-name = "clk15";
-+			fsl,rx-sync-clock = "rsync_pin";
-+			fsl,tx-sync-clock = "tsync_pin";
-+			pio-handle = <&pio_tdmd>;
-+			fsl,tx-timeslot = <0xfffffffe>;
-+			fsl,rx-timeslot = <0xfffffffe>;
-+			fsl,tdm-framer-type = "e1";
-+			fsl,tdm-mode = "normal";
-+			fsl,tdm-id = <3>;
-+			fsl,siram-entry-id = <6>;
-+			phy-handle = <&pq_mds_t1>;
-+		};
-         };
- };
- 
--- 
-1.8.4.1
+C. 
