@@ -1,26 +1,33 @@
-Return-Path: <clg@fr.ibm.com>
-Received: from e06smtp17.uk.ibm.com (e06smtp17.uk.ibm.com [195.75.94.113])
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 660551A0151
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Mar 2015 23:58:48 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id C8FFF1A0671
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Mar 2015 00:13:52 +1100 (AEDT)
 Received: from /spool/local
- by e06smtp17.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <clg@fr.ibm.com>;
- Thu, 26 Mar 2015 12:58:44 -0000
-Message-ID: <5514027D.8010501@fr.ibm.com>
-Date: Thu, 26 Mar 2015 13:58:37 +0100
-From: Cedric Le Goater <clg@fr.ibm.com>
-MIME-Version: 1.0
-To: Stewart Smith <stewart@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc/powernv: handle OPAL_SUCCESS return in
- opal_sensor_read
-References: <1427305834-6737-1-git-send-email-clg@fr.ibm.com>
- <m3fv8s7k2p.fsf@oc8180480414.ibm.com> <5513D514.1000504@fr.ibm.com>
-In-Reply-To: <5513D514.1000504@fr.ibm.com>
-Content-Type: text/plain; charset=utf-8
-Cc: Neelesh Gupta <neelegup@linux.vnet.ibm.com>, skiboot@lists.ozlabs.org
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Thu, 26 Mar 2015 18:43:50 +0530
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 136C7394005C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Mar 2015 18:43:48 +0530 (IST)
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay01.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t2QDDiKf22741060
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Mar 2015 18:43:44 +0530
+Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t2QD5OuX025839
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Mar 2015 18:35:25 +0530
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
+Subject: [PATCH V4 1/4] KVM: PPC: Use READ_ONCE when dereferencing pte_t
+ pointer
+Date: Thu, 26 Mar 2015 18:43:39 +0530
+Message-Id: <1427375622-3708-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,40 +37,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03/26/2015 10:44 AM, Cedric Le Goater wrote:
-> On 03/26/2015 12:07 AM, Stewart Smith wrote:
->> Cédric Le Goater <clg@fr.ibm.com> writes:
->>> Currently, when a sensor value is read, the kernel calls OPAL, which in
->>> turn builds a message for the FSP, and waits for a message back. 
->>>
->>> The new device tree for OPAL sensors [1] adds new sensors that can be 
->>> read synchronously (core temperatures for instance) and that don't need 
->>> to wait for a response.
->>>
->>> This patch modifies the opal call to accept an OPAL_SUCCESS return value
->>> and cover the case above.
->>>
->>> [1] https://lists.ozlabs.org/pipermail/skiboot/2015-March/000639.html
->>>
->>> Signed-off-by: Cédric Le Goater <clg@fr.ibm.com>
->>> ---
->>>
->>>  We still uselessly reserve a token (for the response) and take a
->>>  lock, which might raise the need of a new 'opal_sensor_read_sync' 
->>>  call.
->>
->> Actually.... why do we take a lock around the OPAL calls at all?
-> 
-> The sensor service in OPAL only handles one FSP request at a time and 
-> returns OPAL_BUSY if one is already in progress. The lock covers this case 
-> but we could also remove it return EBUSY to the driver or even retry the 
-> call. That might be dangerous though. 
-> 
-> Changing OPAL to handle simultaneously multiple requests does not seem really 
-> necessary, it won't speed up the communication with the FSP and that is the
-> main bottleneck.
+pte can get updated from other CPUs as part of multiple activities
+like THP split, huge page collapse, unmap. We need to make sure we
+don't reload the pte value again and again for different checks.
 
-opal_get_sensor_data() is mixing OPAL return codes and errnos. I will send
-a v2 addressing this problem first.
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/kvm_book3s_64.h |  5 ++++-
+ arch/powerpc/kvm/e500_mmu_host.c         | 20 ++++++++++++--------
+ 2 files changed, 16 insertions(+), 9 deletions(-)
 
-C. 
+diff --git a/arch/powerpc/include/asm/kvm_book3s_64.h b/arch/powerpc/include/asm/kvm_book3s_64.h
+index cc073a7ac2b7..f06820c67175 100644
+--- a/arch/powerpc/include/asm/kvm_book3s_64.h
++++ b/arch/powerpc/include/asm/kvm_book3s_64.h
+@@ -290,7 +290,10 @@ static inline pte_t kvmppc_read_update_linux_pte(pte_t *ptep, int writing,
+ 	pte_t old_pte, new_pte = __pte(0);
+ 
+ 	while (1) {
+-		old_pte = *ptep;
++		/*
++		 * Make sure we don't reload from ptep
++		 */
++		old_pte = READ_ONCE(*ptep);
+ 		/*
+ 		 * wait until _PAGE_BUSY is clear then set it atomically
+ 		 */
+diff --git a/arch/powerpc/kvm/e500_mmu_host.c b/arch/powerpc/kvm/e500_mmu_host.c
+index cc536d4a75ef..5840d546aa03 100644
+--- a/arch/powerpc/kvm/e500_mmu_host.c
++++ b/arch/powerpc/kvm/e500_mmu_host.c
+@@ -469,14 +469,18 @@ static inline int kvmppc_e500_shadow_map(struct kvmppc_vcpu_e500 *vcpu_e500,
+ 
+ 	pgdir = vcpu_e500->vcpu.arch.pgdir;
+ 	ptep = lookup_linux_ptep(pgdir, hva, &tsize_pages);
+-	if (pte_present(*ptep))
+-		wimg = (*ptep >> PTE_WIMGE_SHIFT) & MAS2_WIMGE_MASK;
+-	else {
+-		if (printk_ratelimit())
+-			pr_err("%s: pte not present: gfn %lx, pfn %lx\n",
+-				__func__, (long)gfn, pfn);
+-		ret = -EINVAL;
+-		goto out;
++	if (ptep) {
++		pte_t pte = READ_ONCE(*ptep);
++
++		if (pte_present(pte))
++			wimg = (pte_val(pte) >> PTE_WIMGE_SHIFT) &
++				MAS2_WIMGE_MASK;
++		else {
++			pr_err_ratelimited("%s: pte not present: gfn %lx,pfn %lx\n",
++					   __func__, (long)gfn, pfn);
++			ret = -EINVAL;
++			goto out;
++		}
+ 	}
+ 	kvmppc_e500_ref_setup(ref, gtlbe, pfn, wimg);
+ 
+-- 
+2.1.0
