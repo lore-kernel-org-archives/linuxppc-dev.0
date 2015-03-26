@@ -1,27 +1,48 @@
-Return-Path: <haschka@gmail.com>
-Received: from mail-wg0-x22e.google.com (mail-wg0-x22e.google.com
- [IPv6:2a00:1450:400c:c00::22e])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <ldufour@linux.vnet.ibm.com>
+Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B0CE1A0145
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Mar 2015 03:23:03 +1100 (AEDT)
-Received: by wgs2 with SMTP id 2so70413231wgs.1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Mar 2015 09:22:59 -0700 (PDT)
-Date: Thu, 26 Mar 2015 17:23:58 +0100
-From: Thomas Haschka <haschka@gmail.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 1/1]: thermal driver therm_adt746.c
-Message-ID: <20150326162358.GA1025@gmail.com>
-References: <CADAoK=UH4q9x-OMyOpqCmGpNwDo3vey41xajBw-PDdupmEHnAA@mail.gmail.com>
- <1424726318.12891.1.camel@kernel.crashing.org>
- <20150225112457.GA3491@gmail.com>
- <1424898763.12891.77.camel@kernel.crashing.org>
- <20150226094805.GA1009@gmail.com>
- <1427261800.6468.74.camel@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1427261800.6468.74.camel@kernel.crashing.org>
-Cc: linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0A61F1A0145
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Mar 2015 04:38:04 +1100 (AEDT)
+Received: from /spool/local
+ by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
+ Thu, 26 Mar 2015 17:38:01 -0000
+Received: from b06cxnps3074.portsmouth.uk.ibm.com
+ (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
+ by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id 067A71B08074
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Mar 2015 17:38:24 +0000 (GMT)
+Received: from d06av10.portsmouth.uk.ibm.com (d06av10.portsmouth.uk.ibm.com
+ [9.149.37.251])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t2QHbvHS1704206
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Mar 2015 17:37:57 GMT
+Received: from d06av10.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av10.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t2QHbtG7032188
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Mar 2015 11:37:57 -0600
+From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Jeff Dike <jdike@addtoit.com>,
+ Richard Weinberger <richard@nod.at>, Guan Xuetao <gxt@mprc.pku.edu.cn>,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+ "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org,
+ Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
+ user-mode-linux-devel@lists.sourceforge.net,
+ user-mode-linux-user@lists.sourceforge.net, linux-arch@vger.kernel.org,
+ linux-mm@kvack.org
+Subject: [PATCH v4 2/2] powerpc/mm: Tracking vDSO remap
+Date: Thu, 26 Mar 2015 18:37:53 +0100
+Message-Id: <7fdae652993cf88bdd633d65e5a8f81c7ad8a1e3.1427390952.git.ldufour@linux.vnet.ibm.com>
+In-Reply-To: <cover.1427390952.git.ldufour@linux.vnet.ibm.com>
+References: <cover.1427390952.git.ldufour@linux.vnet.ibm.com>
+In-Reply-To: <cover.1427390952.git.ldufour@linux.vnet.ibm.com>
+References: <20150326141730.GA23060@gmail.com>
+ <cover.1427390952.git.ldufour@linux.vnet.ibm.com>
+Cc: criu@openvz.org, cov@codeaurora.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,320 +52,119 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello,
+Some processes (CRIU) are moving the vDSO area using the mremap system
+call. As a consequence the kernel reference to the vDSO base address is
+no more valid and the signal return frame built once the vDSO has been
+moved is not pointing to the new sigreturn address.
 
-Here's an updated version taking your suggested changements into account
-(merged the two loops into one, changed a hardcoded value into a constant).
+This patch handles vDSO remapping and unmapping.
+Moving or unmapping partially the vDSO lead to invalidate it from the
+kernel point of view.
 
-Just to keep everything together, here are the changements:
-
-1. changes in sensors limits, we are down from 70, 50, 70 
-   to 45, 50, 70, where the first value is the environement sensor that is 
-   located on the bottumside of the Harddrive. Empirical testing 
-   shows that this speeds up the Fan almoast in the same moment as in OS X
-
-2. A function has been added in order to take the environement sensor into 
-   account on SingleFan Apple Notebooks (i.e. those that have air inlets
-   next to the harddrive and that are cooling, besides other components 
-   using the single fan in these machines.
-
-3. Output values in /sys/devices/temperatures/ etc.. have been changed. 
-   First: All three sensors can be monitored right now instead of only the 
-   GPU and CPU sensors. 
-   Second: The units have been changed in order to correspond to the units
-   given by other temperature sensors, such as the coretemp (intel) sensor. 
-   This allows to monitor them using several applications, notably xosview.
-
-Signed-off-by: Thomas Haschka <haschka@gmail.com>
+Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
 ---
- drivers/macintosh/therm_adt746x.c | 123 +++++++++++++++++++++++++++++++++++---
- 1 file changed, 114 insertions(+), 9 deletions(-)
+ arch/powerpc/include/asm/mmu_context.h | 32 +++++++++++++++++++++++++++-
+ arch/powerpc/kernel/vdso.c             | 39 ++++++++++++++++++++++++++++++++++
+ 2 files changed, 70 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/macintosh/therm_adt746x.c b/drivers/macintosh/therm_adt746x.c
-index f433521..1a36ea44 100644
---- a/drivers/macintosh/therm_adt746x.c
-+++ b/drivers/macintosh/therm_adt746x.c
-@@ -1,7 +1,8 @@
+diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/include/asm/mmu_context.h
+index 73382eba02dc..67734ce8be67 100644
+--- a/arch/powerpc/include/asm/mmu_context.h
++++ b/arch/powerpc/include/asm/mmu_context.h
+@@ -8,7 +8,6 @@
+ #include <linux/spinlock.h>
+ #include <asm/mmu.h>	
+ #include <asm/cputable.h>
+-#include <asm-generic/mm_hooks.h>
+ #include <asm/cputhreads.h>
+ 
  /*
-  * Device driver for the i2c thermostat found on the iBook G4, Albook G4
-  *
-- * Copyright (C) 2003, 2004 Colin Leroy, Rasmus Rohde, Benjamin Herrenschmidt
-+ * Copyright (C) 2003, 2004, 2015 
-+ *   Colin Leroy, Rasmus Rohde, Benjamin Herrenschmidt, Thomas Haschka
-  *
-  * Documentation from 115254175ADT7467_pra.pdf and 3686221171167ADT7460_b.pdf
-  * http://www.onsemi.com/PowerSolutions/product.do?id=ADT7467
-@@ -45,8 +46,10 @@ static u8 REM_CONTROL[2] = {0x00, 0x40};
- static u8 FAN_SPEED[2]   = {0x28, 0x2a};
- static u8 FAN_SPD_SET[2] = {0x30, 0x31};
- 
--static u8 default_limits_local[3] = {70, 50, 70};    /* local, sensor1, sensor2 */
--static u8 default_limits_chip[3] = {80, 65, 80};    /* local, sensor1, sensor2 */
-+/* Local sensor is down to 45 in order to assure stable harddrive and 
-+ * components temperature on single fan machines */
-+static u8 default_limits_local[3] = {45, 50, 70}; /* local, sensor1, sensor2 */
-+static u8 default_limits_chip[3] = {80, 65, 80}; /* local, sensor1, sensor2 */
- static const char *sensor_location[3] = { "?", "?", "?" };
- 
- static int limit_adjust;
-@@ -223,7 +226,7 @@ static void display_stats(struct thermostat *th)
- }
+@@ -109,5 +108,36 @@ static inline void enter_lazy_tlb(struct mm_struct *mm,
  #endif
- 
--static void update_fans_speed (struct thermostat *th)
-+static void update_fans_speed_multifan (struct thermostat *th)
- {
- 	int lastvar = 0; /* last variation, for iBook */
- 	int i = 0;
-@@ -278,6 +281,88 @@ static void update_fans_speed (struct thermostat *th)
- 	}
  }
  
-+static void update_fans_speed_singlefan (struct thermostat *th) {
++static inline void arch_dup_mmap(struct mm_struct *oldmm,
++				 struct mm_struct *mm)
++{
++}
 +
-+	/* Single Fan Laptops i.e. 12 inch Powerbook, Ibook etc.
-+	 * Necessites the readout of all three thermal sensors
-+	 * in order to avoid the harddisk and other components to overheat
-+	 * in the case of cold CPU. */
-+	
-+	int lastvar = 0; /* last variation, for iBook */
-+	int i = 0;
-+	int var = 0;
-+	int var_sensor[3];
-+	int started = 0;
-+	const int fan_number = 0;
++static inline void arch_exit_mmap(struct mm_struct *mm)
++{
++}
 +
-+	/* select the highest delta from all three sensors and store it to var
++extern void arch_vdso_remap(struct mm_struct *mm,
++			    unsigned long old_start, unsigned long old_end,
++			    unsigned long new_start, unsigned long new_end);
++static inline void arch_unmap(struct mm_struct *mm, struct vm_area_struct *vma,
++			      unsigned long start, unsigned long end)
++{
++	arch_vdso_remap(mm, start, end, 0, 0);
++}
++
++static inline void arch_bprm_mm_init(struct mm_struct *mm,
++				     struct vm_area_struct *vma)
++{
++}
++
++#define __HAVE_ARCH_REMAP
++static inline void arch_remap(struct mm_struct *mm,
++			      unsigned long old_start, unsigned long old_end,
++			      unsigned long new_start, unsigned long new_end)
++{
++	arch_vdso_remap(mm, old_start, old_end, new_start, new_end);
++}
++
+ #endif /* __KERNEL__ */
+ #endif /* __ASM_POWERPC_MMU_CONTEXT_H */
+diff --git a/arch/powerpc/kernel/vdso.c b/arch/powerpc/kernel/vdso.c
+index 305eb0d9b768..a11b5d8f36d6 100644
+--- a/arch/powerpc/kernel/vdso.c
++++ b/arch/powerpc/kernel/vdso.c
+@@ -283,6 +283,45 @@ int arch_setup_additional_pages(struct linux_binprm *bprm, int uses_interp)
+ 	return rc;
+ }
+ 
++void arch_vdso_remap(struct mm_struct *mm,
++		     unsigned long old_start, unsigned long old_end,
++		     unsigned long new_start, unsigned long new_end)
++{
++	unsigned long vdso_end, vdso_start;
++
++	if (!mm->context.vdso_base)
++		return;
++	vdso_start = mm->context.vdso_base;
++
++#ifdef CONFIG_PPC64
++	/* Calling is_32bit_task() implies that we are dealing with the
++	 * current process memory. If there is a call path where mm is not
++	 * owned by the current task, then we'll have need to store the
++	 * vDSO size in the mm->context.
 +	 */
-+	
-+	var_sensor[0] = th->temps[0] - th->limits[0];
-+	var = var_sensor[0];
-+	
-+	for (i = 1; i < 3; i++) {
-+		var_sensor[i] = th->temps[i] - th->limits[i];
-+		if (var_sensor[i] > var) {
-+			var = var_sensor[i]; 
-+		}
-+	}
-+	
-+	if (var > -1) {
-+		int step = (255 - fan_speed) / 7;
-+		int new_speed = 0;
-+		/* hysteresis : change fan speed only if variation is
-+		 * more than two degrees */
-+		if (abs(var - th->last_var[fan_number]) > 2) { 
++	BUG_ON(current->mm != mm);
++	if (is_32bit_task())
++		vdso_end = vdso_start + (vdso32_pages << PAGE_SHIFT);
++	else
++		vdso_end = vdso_start + (vdso64_pages << PAGE_SHIFT);
++#else
++	vdso_end = vdso_start + (vdso32_pages << PAGE_SHIFT);
++#endif
++	vdso_end += (1<<PAGE_SHIFT); /* data page */
 +
-+			started = 1;
-+			new_speed = fan_speed + ((var-1)*step);
-+
-+			if (new_speed < fan_speed)
-+				new_speed = fan_speed;
-+			if (new_speed > 255)
-+				new_speed = 255;
-+
-+			if (verbose)
-+				printk(KERN_DEBUG "adt746x:"
-+				       " Setting fans speed to %d "
-+				       "(limit exceeded by %d on %s)\n",
-+				       new_speed, var,
-+				       sensor_location[fan_number+1]);
-+			write_both_fan_speed(th, new_speed);
-+			th->last_var[fan_number] = var; 
-+		}
-+	} else if (var < -2) {
-+		/* don't stop fan if sensor2 is cold and sensor1 is not
-+		 * so cold (lastvar >= -1) */
-+		if (i == 2 && lastvar < -1) {
-+			if (th->last_speed[fan_number] != 0)
-+				if (verbose)
-+					printk(KERN_DEBUG "adt746x:"
-+					       " Stopping "
-+					       "fans.\n");
-+			write_both_fan_speed(th, 0);
-+		}
-+	}
-+
-+	lastvar = var;
-+
-+	if (started)
-+		return; /* we don't want to re-stop the fan
-+			 * if sensor1 is heating and sensor2 is not */
-+}
-+
-+static void update_fans_speed(struct thermostat *th) {
-+
-+	if (th->type == ADT7460) {
-+		/* Multifan Laptops */
-+		update_fans_speed_multifan(th);
-+	} else {
-+		/* Singlefan Laptops i.e. 12 inch Powerbook, Ibook etc. */
-+		update_fans_speed_singlefan(th);
++	/* Check if the vDSO is in the range of the remapped area */
++	if ((vdso_start <= old_start && old_start < vdso_end) ||
++	    (vdso_start < old_end && old_end <= vdso_end)  ||
++	    (old_start <= vdso_start && vdso_start < old_end)) {
++		/* Update vdso_base if the vDSO is entirely moved. */
++		if (old_start == vdso_start && old_end == vdso_end &&
++		    (old_end - old_start) == (new_end - new_start))
++			mm->context.vdso_base = new_start;
++		else
++			mm->context.vdso_base = 0;
 +	}
 +}
 +
- static int monitor_task(void *arg)
+ const char *arch_vma_name(struct vm_area_struct *vma)
  {
- 	struct thermostat* th = arg;
-@@ -371,10 +456,18 @@ static ssize_t store_##name(struct device *dev, struct device_attribute *attr, c
- 	return n;						\
- }
- 
--BUILD_SHOW_FUNC_INT(sensor1_temperature,	 (read_reg(th, TEMP_REG[1])))
--BUILD_SHOW_FUNC_INT(sensor2_temperature,	 (read_reg(th, TEMP_REG[2])))
--BUILD_SHOW_FUNC_INT(sensor1_limit,		 th->limits[1])
--BUILD_SHOW_FUNC_INT(sensor2_limit,		 th->limits[2])
-+/* Several units are multiplied by 1000 in order to have
-+ * coherent readings with other 
-+ * temperature sensors such as intel coretemp. This further
-+ * allows programs such as xosview to read these sensors correctly */
-+
-+BUILD_SHOW_FUNC_INT(sensor0_temperature,       (read_reg(th, TEMP_REG[0]))*1000)
-+BUILD_SHOW_FUNC_INT(sensor1_temperature,       (read_reg(th, TEMP_REG[1]))*1000)
-+BUILD_SHOW_FUNC_INT(sensor2_temperature,       (read_reg(th, TEMP_REG[2]))*1000)
-+BUILD_SHOW_FUNC_INT(sensor0_limit,               (th->limits[0])*1000)
-+BUILD_SHOW_FUNC_INT(sensor1_limit,		 (th->limits[1])*1000)
-+BUILD_SHOW_FUNC_INT(sensor2_limit,		 (th->limits[2])*1000)
-+BUILD_SHOW_FUNC_STR(sensor0_location,            sensor_location[0])
- BUILD_SHOW_FUNC_STR(sensor1_location,		 sensor_location[1])
- BUILD_SHOW_FUNC_STR(sensor2_location,		 sensor_location[2])
- 
-@@ -387,14 +480,20 @@ BUILD_SHOW_FUNC_FAN(sensor2_fan_speed,	 1)
- BUILD_SHOW_FUNC_INT_LITE(limit_adjust,	 limit_adjust)
- BUILD_STORE_FUNC_DEG(limit_adjust,	 th)
- 		
-+static DEVICE_ATTR(sensor0_temperature,	S_IRUGO,
-+		   show_sensor0_temperature,NULL);
- static DEVICE_ATTR(sensor1_temperature,	S_IRUGO,
- 		   show_sensor1_temperature,NULL);
- static DEVICE_ATTR(sensor2_temperature,	S_IRUGO,
- 		   show_sensor2_temperature,NULL);
-+static DEVICE_ATTR(sensor0_limit, S_IRUGO,
-+		   show_sensor0_limit,	NULL);
- static DEVICE_ATTR(sensor1_limit, S_IRUGO,
- 		   show_sensor1_limit,	NULL);
- static DEVICE_ATTR(sensor2_limit, S_IRUGO,
- 		   show_sensor2_limit,	NULL);
-+static DEVICE_ATTR(sensor0_location, S_IRUGO,
-+		   show_sensor0_location, NULL);
- static DEVICE_ATTR(sensor1_location, S_IRUGO,
- 		   show_sensor1_location, NULL);
- static DEVICE_ATTR(sensor2_location, S_IRUGO,
-@@ -426,10 +525,13 @@ static void thermostat_create_files(struct thermostat *th)
- 		return;
- 	dev = &th->pdev->dev;
- 	dev_set_drvdata(dev, th);
--	err = device_create_file(dev, &dev_attr_sensor1_temperature);
-+	err = device_create_file(dev, &dev_attr_sensor0_temperature);
-+	err |= device_create_file(dev, &dev_attr_sensor1_temperature);
- 	err |= device_create_file(dev, &dev_attr_sensor2_temperature);
-+	err |= device_create_file(dev, &dev_attr_sensor0_limit);
- 	err |= device_create_file(dev, &dev_attr_sensor1_limit);
- 	err |= device_create_file(dev, &dev_attr_sensor2_limit);
-+	err |= device_create_file(dev, &dev_attr_sensor0_location);
- 	err |= device_create_file(dev, &dev_attr_sensor1_location);
- 	err |= device_create_file(dev, &dev_attr_sensor2_location);
- 	err |= device_create_file(dev, &dev_attr_limit_adjust);
-@@ -449,10 +551,13 @@ static void thermostat_remove_files(struct thermostat *th)
- 	if (!th->pdev)
- 		return;
- 	dev = &th->pdev->dev;
-+	device_remove_file(dev, &dev_attr_sensor0_temperature);
- 	device_remove_file(dev, &dev_attr_sensor1_temperature);
- 	device_remove_file(dev, &dev_attr_sensor2_temperature);
-+	device_remove_file(dev, &dev_attr_sensor0_limit);
- 	device_remove_file(dev, &dev_attr_sensor1_limit);
- 	device_remove_file(dev, &dev_attr_sensor2_limit);
-+	device_remove_file(dev, &dev_attr_sensor0_location);
- 	device_remove_file(dev, &dev_attr_sensor1_location);
- 	device_remove_file(dev, &dev_attr_sensor2_location);
- 	device_remove_file(dev, &dev_attr_limit_adjust);
+ 	if (vma->vm_mm && vma->vm_start == vma->vm_mm->context.vdso_base)
 -- 
-2.0.5
-
-
-On Wed, Mar 25, 2015 at 04:36:40PM +1100, Benjamin Herrenschmidt wrote:
-> On Thu, 2015-02-26 at 10:48 +0100, Thomas Haschka wrote:
-> > Hello, 
-> > 
-> > I hope I get it correct this time, thanks again.
-> 
-> Thanks. Sorry for the delay, I've been a bit swamped. I looked at your
-> code a bit more in depth and I would appreciate a couple more changes
-> if you don't mind:
-> 
-> 
->  .../...
-> 
-> > +static void update_fans_speed_singlefan (struct thermostat *th) {
-> > +
-> > +	/* Single Fan Laptops i.e. 12 inch Powerbook, Ibook etc.
-> > +	 * Necessites the readout of all three thermal sensors
-> > +	 * in order to avoid the harddisk and other components to overheat
-> > +	 * in the case of cold CPU. */
-> > +	
-> > +	int lastvar = 0; /* last variation, for iBook */
-> > +	int i = 0;
-> > +	int var = 0;
-> > +	int var_sensor[3];
-> > +	int started = 0;
-> > +	int fan_number = 0;
-> 
-> So here you hard code fan_number instead of looping accross all fans,
-> you could just use a constant...
-> 
-> > +	for (i = 0; i < 3; i++) {
-> > +		var_sensor[i] = th->temps[i] - th->limits[i];
-> > +	}
-> > +	var = var_sensor[0];
-> > +	for (i = 1; i < 3; i++) {
-> > +		if (var_sensor[i] > var) {
-> > +			var = var_sensor[i]; 
-> > +		}
-> > +	}
-> 
-> Why two loops ?
-> 
-> > +	if (var > -1) {
-> > +		int step = (255 - fan_speed) / 7;
-> > +		int new_speed = 0;
-> > +		/* hysteresis : change fan speed only if variation is
-> > +		 * more than two degrees */
-> > +		if (abs(var - th->last_var[fan_number]) > 2) { 
-> > +
-> > +			started = 1;
-> > +			new_speed = fan_speed + ((var-1)*step);
-> > +
-> > +			if (new_speed < fan_speed)
-> > +				new_speed = fan_speed;
-> > +			if (new_speed > 255)
-> > +				new_speed = 255;
-> > +
-> > +			if (verbose)
-> > +				printk(KERN_DEBUG "adt746x:"
-> > +				       " Setting fans speed to %d "
-> > +				       "(limit exceeded by %d on %s)\n",
-> > +				       new_speed, var,
-> > +				       sensor_location[fan_number+1]);
-> > +			write_both_fan_speed(th, new_speed);
-> > +			th->last_var[fan_number] = var; 
-> > +		}
-> > +	} else if (var < -2) {
-> > +		/* don't stop fan if sensor2 is cold and sensor1 is not
-> > +		 * so cold (lastvar >= -1) */
-> > +		if (i == 2 && lastvar < -1) {
-> > +			if (th->last_speed[fan_number] != 0)
-> > +				if (verbose)
-> > +					printk(KERN_DEBUG "adt746x:"
-> > +					       " Stopping "
-> > +					       "fans.\n");
-> > +			write_both_fan_speed(th, 0);
-> > +		}
-> > +	}
-> 
-> This looks identical between the two functions (single/multi fan), can
-> you factor it out into a single static helper that they both call ?
-> 
-> Cheers,
-> Ben.
-> 
-> 
+1.9.1
