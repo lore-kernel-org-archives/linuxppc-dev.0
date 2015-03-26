@@ -2,34 +2,34 @@ Return-Path: <gwshan@linux.vnet.ibm.com>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 29CEB1A0688
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48F5A1A0689
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Mar 2015 16:43:24 +1100 (AEDT)
 Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 068871400DD
+ by ozlabs.org (Postfix) with ESMTPS id 1DE4F1400F1
  for <linuxppc-dev@ozlabs.org>; Thu, 26 Mar 2015 16:43:24 +1100 (AEDT)
 Received: from /spool/local
  by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
  Thu, 26 Mar 2015 15:43:23 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 963393578047
- for <linuxppc-dev@ozlabs.org>; Thu, 26 Mar 2015 16:43:21 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t2Q5hD9227787354
- for <linuxppc-dev@ozlabs.org>; Thu, 26 Mar 2015 16:43:21 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t2Q5gm13014601
- for <linuxppc-dev@ozlabs.org>; Thu, 26 Mar 2015 16:42:48 +1100
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 9B1B2357804F
+ for <linuxppc-dev@ozlabs.org>; Thu, 26 Mar 2015 16:43:20 +1100 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t2Q5hCFS36569096
+ for <linuxppc-dev@ozlabs.org>; Thu, 26 Mar 2015 16:43:20 +1100
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t2Q5gleX030086
+ for <linuxppc-dev@ozlabs.org>; Thu, 26 Mar 2015 16:42:47 +1100
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH v5 2/3] powerpc/eeh: Introduce eeh_pe_inject_err()
-Date: Thu, 26 Mar 2015 16:42:08 +1100
-Message-Id: <1427348529-7060-3-git-send-email-gwshan@linux.vnet.ibm.com>
+Subject: [PATCH v5 1/3] powerpc/eeh: Move PE state constants around
+Date: Thu, 26 Mar 2015 16:42:07 +1100
+Message-Id: <1427348529-7060-2-git-send-email-gwshan@linux.vnet.ibm.com>
 In-Reply-To: <1427348529-7060-1-git-send-email-gwshan@linux.vnet.ibm.com>
 References: <1427348529-7060-1-git-send-email-gwshan@linux.vnet.ibm.com>
 Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>, alex.williamson@redhat.com,
@@ -43,112 +43,86 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The patch defines PCI error types and functions in uapi/asm/eeh.h
-and exports function eeh_pe_inject_err(), which will be called by
-VFIO driver to inject the specified PCI error to the indicated
-PE for testing purpose.
+There are two equivalent sets of PE state constants, defined in
+arch/powerpc/include/asm/eeh.h and include/uapi/linux/vfio.h.
+Though the names are different, their corresponding values are
+exactly same. The former is used by EEH core and the latter is
+used by userspace.
 
+The patch moves those constants from arch/powerpc/include/asm/eeh.h
+to arch/powerpc/include/uapi/asm/eeh.h, which are expected to be
+used by userspace from now on. We can't delete those constants in
+vfio.h as it's uncertain that those constants have been or will be
+used by userspace.
+
+Suggested-by: David Gibson <david@gibson.dropbear.id.au>
 Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 ---
- arch/powerpc/include/asm/eeh.h      |  2 ++
- arch/powerpc/include/uapi/asm/eeh.h | 26 ++++++++++++++++++++++++++
- arch/powerpc/kernel/eeh.c           | 35 +++++++++++++++++++++++++++++++++++
- 3 files changed, 63 insertions(+)
+ arch/powerpc/include/asm/eeh.h      |  7 ++-----
+ arch/powerpc/include/uapi/asm/eeh.h | 30 ++++++++++++++++++++++++++++++
+ 2 files changed, 32 insertions(+), 5 deletions(-)
+ create mode 100644 arch/powerpc/include/uapi/asm/eeh.h
 
 diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
-index 08c4042..cd6003b 100644
+index d777c0c..08c4042 100644
 --- a/arch/powerpc/include/asm/eeh.h
 +++ b/arch/powerpc/include/asm/eeh.h
-@@ -291,6 +291,8 @@ int eeh_pe_set_option(struct eeh_pe *pe, int option);
- int eeh_pe_get_state(struct eeh_pe *pe);
- int eeh_pe_reset(struct eeh_pe *pe, int option);
- int eeh_pe_configure(struct eeh_pe *pe);
-+int eeh_pe_inject_err(struct eeh_pe *pe, int type, int func,
-+		      unsigned long addr, unsigned long mask);
+@@ -27,6 +27,8 @@
+ #include <linux/time.h>
+ #include <linux/atomic.h>
  
- /**
-  * EEH_POSSIBLE_ERROR() -- test for possible MMIO failure.
++#include <uapi/asm/eeh.h>
++
+ struct pci_dev;
+ struct pci_bus;
+ 
+@@ -184,11 +186,6 @@ enum {
+ #define EEH_STATE_DMA_ACTIVE	(1 << 4)	/* Active DMA		*/
+ #define EEH_STATE_MMIO_ENABLED	(1 << 5)	/* MMIO enabled		*/
+ #define EEH_STATE_DMA_ENABLED	(1 << 6)	/* DMA enabled		*/
+-#define EEH_PE_STATE_NORMAL		0	/* Normal state		*/
+-#define EEH_PE_STATE_RESET		1	/* PE reset asserted	*/
+-#define EEH_PE_STATE_STOPPED_IO_DMA	2	/* Frozen PE		*/
+-#define EEH_PE_STATE_STOPPED_DMA	4	/* Stopped DMA, Enabled IO */
+-#define EEH_PE_STATE_UNAVAIL		5	/* Unavailable		*/
+ #define EEH_RESET_DEACTIVATE	0	/* Deactivate the PE reset	*/
+ #define EEH_RESET_HOT		1	/* Hot reset			*/
+ #define EEH_RESET_FUNDAMENTAL	3	/* Fundamental reset		*/
 diff --git a/arch/powerpc/include/uapi/asm/eeh.h b/arch/powerpc/include/uapi/asm/eeh.h
-index 8bb34b0..291b7d1 100644
---- a/arch/powerpc/include/uapi/asm/eeh.h
+new file mode 100644
+index 0000000..8bb34b0
+--- /dev/null
 +++ b/arch/powerpc/include/uapi/asm/eeh.h
-@@ -27,4 +27,30 @@
- #define EEH_PE_STATE_STOPPED_DMA	4	/* Stopped DMA only	*/
- #define EEH_PE_STATE_UNAVAIL		5	/* Unavailable		*/
- 
-+/* EEH error types and functions */
-+#define EEH_ERR_TYPE_32			0       /* 32-bits error	*/
-+#define EEH_ERR_TYPE_64			1       /* 64-bits error	*/
-+#define EEH_ERR_FUNC_MIN		0
-+#define EEH_ERR_FUNC_LD_MEM_ADDR	0	/* Memory load	*/
-+#define EEH_ERR_FUNC_LD_MEM_DATA	1
-+#define EEH_ERR_FUNC_LD_IO_ADDR		2	/* IO load	*/
-+#define EEH_ERR_FUNC_LD_IO_DATA		3
-+#define EEH_ERR_FUNC_LD_CFG_ADDR	4	/* Config load	*/
-+#define EEH_ERR_FUNC_LD_CFG_DATA	5
-+#define EEH_ERR_FUNC_ST_MEM_ADDR	6	/* Memory store	*/
-+#define EEH_ERR_FUNC_ST_MEM_DATA	7
-+#define EEH_ERR_FUNC_ST_IO_ADDR		8	/* IO store	*/
-+#define EEH_ERR_FUNC_ST_IO_DATA		9
-+#define EEH_ERR_FUNC_ST_CFG_ADDR	10	/* Config store	*/
-+#define EEH_ERR_FUNC_ST_CFG_DATA	11
-+#define EEH_ERR_FUNC_DMA_RD_ADDR	12	/* DMA read	*/
-+#define EEH_ERR_FUNC_DMA_RD_DATA	13
-+#define EEH_ERR_FUNC_DMA_RD_MASTER	14
-+#define EEH_ERR_FUNC_DMA_RD_TARGET	15
-+#define EEH_ERR_FUNC_DMA_WR_ADDR	16	/* DMA write	*/
-+#define EEH_ERR_FUNC_DMA_WR_DATA	17
-+#define EEH_ERR_FUNC_DMA_WR_MASTER	18
-+#define EEH_ERR_FUNC_DMA_WR_TARGET	19
-+#define EEH_ERR_FUNC_MAX		19
-+
- #endif /* _ASM_POWERPC_EEH_H */
-diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
-index 76253eb..daa68a1 100644
---- a/arch/powerpc/kernel/eeh.c
-+++ b/arch/powerpc/kernel/eeh.c
-@@ -1636,6 +1636,41 @@ int eeh_pe_configure(struct eeh_pe *pe)
- }
- EXPORT_SYMBOL_GPL(eeh_pe_configure);
- 
-+/**
-+ * eeh_pe_inject_err - Injecting the specified PCI error to the indicated PE
-+ * @pe: the indicated PE
-+ * @type: error type
-+ * @function: error function
-+ * @addr: address
-+ * @mask: address mask
+@@ -0,0 +1,30 @@
++/*
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License, version 2, as
++ * published by the Free Software Foundation.
 + *
-+ * The routine is called to inject the specified PCI error, which
-+ * is determined by @type and @function, to the indicated PE for
-+ * testing purpose.
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
++ *
++ * Copyright IBM Corp. 2015
++ *
++ * Authors: Gavin Shan <gwshan@linux.vnet.ibm.com>
 + */
-+int eeh_pe_inject_err(struct eeh_pe *pe, int type, int func,
-+		      unsigned long addr, unsigned long mask)
-+{
-+	/* Invalid PE ? */
-+	if (!pe)
-+		return -ENODEV;
 +
-+	/* Unsupported operation ? */
-+	if (!eeh_ops || !eeh_ops->err_inject)
-+		return -ENOENT;
++#ifndef _ASM_POWERPC_EEH_H
++#define _ASM_POWERPC_EEH_H
 +
-+	/* Check on PCI error type */
-+	if (type != EEH_ERR_TYPE_32 && type != EEH_ERR_TYPE_64)
-+		return -EINVAL;
++/* PE states */
++#define EEH_PE_STATE_NORMAL		0	/* Normal state		*/
++#define EEH_PE_STATE_RESET		1	/* PE reset asserted	*/
++#define EEH_PE_STATE_STOPPED_IO_DMA	2	/* Frozen PE		*/
++#define EEH_PE_STATE_STOPPED_DMA	4	/* Stopped DMA only	*/
++#define EEH_PE_STATE_UNAVAIL		5	/* Unavailable		*/
 +
-+	/* Check on PCI error function */
-+	if (func < EEH_ERR_FUNC_MIN || func > EEH_ERR_FUNC_MAX)
-+		return -EINVAL;
-+
-+	return eeh_ops->err_inject(pe, type, func, addr, mask);
-+}
-+EXPORT_SYMBOL_GPL(eeh_pe_inject_err);
-+
- static int proc_eeh_show(struct seq_file *m, void *v)
- {
- 	if (!eeh_enabled()) {
++#endif /* _ASM_POWERPC_EEH_H */
 -- 
 1.8.3.2
