@@ -1,40 +1,26 @@
-Return-Path: <cascardo@linux.vnet.ibm.com>
-Received: from e24smtp05.br.ibm.com (e24smtp05.br.ibm.com [32.104.18.26])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <alex.williamson@redhat.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3E18D1A0671
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Mar 2015 11:44:37 +1100 (AEDT)
-Received: from /spool/local
- by e24smtp05.br.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <cascardo@linux.vnet.ibm.com>;
- Wed, 25 Mar 2015 21:44:33 -0300
-Received: from d24relay03.br.ibm.com (d24relay03.br.ibm.com [9.13.184.25])
- by d24dlp01.br.ibm.com (Postfix) with ESMTP id 9D6A03520066
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2015 20:43:28 -0400 (EDT)
-Received: from d24av04.br.ibm.com (d24av04.br.ibm.com [9.8.31.97])
- by d24relay03.br.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t2Q0hd5w58720382
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2015 21:43:40 -0300
-Received: from d24av04.br.ibm.com (localhost [127.0.0.1])
- by d24av04.br.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t2Q0iQsT023135
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Mar 2015 21:44:26 -0300
-Date: Wed, 25 Mar 2015 21:43:42 -0300
-From: cascardo@linux.vnet.ibm.com
-To: David Miller <davem@davemloft.net>
-Subject: Re: Generic IOMMU pooled allocator
-Message-ID: <20150326004342.GB4925@oc0812247204.ltc.br.ibm.com>
-References: <1427149265.4770.238.camel@kernel.crashing.org>
- <20150323.214453.255192641139042325.davem@davemloft.net>
- <1427162890.4770.307.camel@kernel.crashing.org>
- <20150323.221508.1178754097347144400.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150323.221508.1178754097347144400.davem@davemloft.net>
-Cc: aik@au1.ibm.com, aik@ozlabs.ru, anton@au1.ibm.com, paulus@samba.org,
- sowmini.varadhan@oracle.com, sparclinux@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7140D1A0671
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Mar 2015 11:46:33 +1100 (AEDT)
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id EA26814012C
+ for <linuxppc-dev@ozlabs.org>; Thu, 26 Mar 2015 11:46:32 +1100 (AEDT)
+Message-ID: <1427330788.3643.883.camel@redhat.com>
+Subject: Re: [PATCH v4 4/4] drivers/vfio: Remove duplicated PE states
+From: Alex Williamson <alex.williamson@redhat.com>
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Date: Wed, 25 Mar 2015 18:46:28 -0600
+In-Reply-To: <1427325637-14345-5-git-send-email-gwshan@linux.vnet.ibm.com>
+References: <1427325637-14345-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <1427325637-14345-5-git-send-email-gwshan@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, agraf@suse.de, kvm@vger.kernel.org,
+ david@gibson.dropbear.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,68 +30,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Mar 23, 2015 at 10:15:08PM -0400, David Miller wrote:
-> From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Date: Tue, 24 Mar 2015 13:08:10 +1100
+On Thu, 2015-03-26 at 10:20 +1100, Gavin Shan wrote:
+> The set of constants for PE states defined in uapi/linux/vfio.h is
+> duplicated to uapi/asm/eeh.h. The patch removes the set from the
+> former.
 > 
-> > For the large pool, we don't keep a hint so we don't know it's
-> > wrapped, in fact we purposefully don't use a hint to limit
-> > fragmentation on it, but then, it should be used rarely enough that
-> > flushing always is, I suspect, a good option.
+> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+> ---
+>  include/uapi/linux/vfio.h | 5 -----
+>  1 file changed, 5 deletions(-)
 > 
-> I can't think of any use case where the largepool would be hit a lot
-> at all.
+> diff --git a/include/uapi/linux/vfio.h b/include/uapi/linux/vfio.h
+> index d81c17f..3fd1e86 100644
+> --- a/include/uapi/linux/vfio.h
+> +++ b/include/uapi/linux/vfio.h
+> @@ -492,11 +492,6 @@ struct vfio_eeh_pe_op {
+>  #define VFIO_EEH_PE_UNFREEZE_IO		2	/* Enable IO for frozen PE   */
+>  #define VFIO_EEH_PE_UNFREEZE_DMA	3	/* Enable DMA for frozen PE  */
+>  #define VFIO_EEH_PE_GET_STATE		4	/* PE state retrieval        */
+> -#define  VFIO_EEH_PE_STATE_NORMAL	0	/* PE in functional state    */
+> -#define  VFIO_EEH_PE_STATE_RESET	1	/* PE reset in progress      */
+> -#define  VFIO_EEH_PE_STATE_STOPPED	2	/* Stopped DMA and IO        */
+> -#define  VFIO_EEH_PE_STATE_STOPPED_DMA	4	/* Stopped DMA only          */
+> -#define  VFIO_EEH_PE_STATE_UNAVAIL	5	/* State unavailable         */
+>  #define VFIO_EEH_PE_RESET_DEACTIVATE	5	/* Deassert PE reset         */
+>  #define VFIO_EEH_PE_RESET_HOT		6	/* Assert hot reset          */
+>  #define VFIO_EEH_PE_RESET_FUNDAMENTAL	7	/* Assert fundamental reset  */
 
-Well, until recently, IOMMU_PAGE_SIZE was 4KiB on Power, so every time a
-driver mapped a whole 64KiB page, it would hit the largepool.
+How do you know that nobody depends on these defines?  I thought the
+suggestion was to use the EEH_* defines for error injection, not to
+remove existing VFIO_EEH_* defines.  You could certainly redefine these
+in terms of EEH_* defines instead.  Thanks,
 
-I have been suspicious for some time that after Anton's work on the
-pools, the large mappings optimization would throw away the benefit of
-using the 4 pools, since some drivers would always hit the largepool.
-
-Of course, drivers that map entire pages, when not buggy, are optimized
-already to avoid calling dma_map all the time. I worked on that for
-mlx4_en, and I would expect that its receive side would always hit the
-largepool.
-
-So, I decided to experiment and count the number of times that
-largealloc is true versus false.
-
-On the transmit side, or when using ICMP, I didn't notice many large
-allocations with qlge or cxgb4.
-
-However, when using large TCP send/recv (I used uperf with 64KB
-writes/reads), I noticed that on the transmit side, largealloc is not
-used, but on the receive side, cxgb4 almost only uses largealloc, while
-qlge seems to have a 1/1 usage or largealloc/non-largealloc mappings.
-When turning GRO off, that ratio is closer to 1/10, meaning there is
-still some fair use of largealloc in that scenario.
-
-I confess my experiments are not complete. I would like to test a couple
-of other drivers as well, including mlx4_en and bnx2x, and test with
-small packet sizes. I suspected that MTU size could make a difference,
-but in the case of ICMP, with MTU 9000 and payload of 8000 bytes, I
-didn't notice any significant hit of largepool with either qlge or
-cxgb4.
-
-Also, we need to keep in mind that IOMMU_PAGE_SIZE is now dynamic in the
-latest code, with plans on using 64KiB in some situations, Alexey or Ben
-should have more details.
-
-But I believe that on the receive side, all drivers should map entire
-pages, using some allocation strategy similar to mlx4_en, in order to
-avoid DMA mapping all the time. Some believe that is bad for latency,
-and prefer to call something like skb_alloc for every package received,
-but I haven't seen any hard numbers, and I don't know why we couldn't
-make such an allocator as good as using something like the SLAB/SLUB
-allocator. Maybe there is a jitter problem, since the allocator has to
-go out and get some new pages and map them, once in a while. But I don't
-see why this would not be a problem with SLAB/SLUB as well. Calling
-dma_map is even worse with the current implementation. It's just that
-some architectures do no work at all when dma_map/unmap is called.
-
-Hope that helps consider the best strategy for the DMA space allocation
-as of now.
-
-Regards.
-Cascardo.
+Alex
