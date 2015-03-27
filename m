@@ -1,40 +1,22 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <Amit.Tomar@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0117.outbound.protection.outlook.com [207.46.100.117])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 499371A06B9
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Mar 2015 23:54:24 +1100 (AEDT)
-Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 6C25E1400DE
- for <linuxppc-dev@ozlabs.org>; Fri, 27 Mar 2015 23:54:23 +1100 (AEDT)
-Received: from /spool/local
- by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Fri, 27 Mar 2015 18:24:20 +0530
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 11C1E1258056
- for <linuxppc-dev@ozlabs.org>; Fri, 27 Mar 2015 18:25:56 +0530 (IST)
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t2RCsGRP42532970
- for <linuxppc-dev@ozlabs.org>; Fri, 27 Mar 2015 18:24:16 +0530
-Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t2RCj3s3032376
- for <linuxppc-dev@ozlabs.org>; Fri, 27 Mar 2015 18:15:03 +0530
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] powerpc/powernv: Remove powernv RTAS support
-In-Reply-To: <1426141631-10741-1-git-send-email-mpe@ellerman.id.au>
-References: <1426141631-10741-1-git-send-email-mpe@ellerman.id.au>
-Date: Fri, 27 Mar 2015 18:24:08 +0530
-Message-ID: <87k2y24n4f.fsf@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id A8A3B1A06B9
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Mar 2015 00:21:14 +1100 (AEDT)
+From: Amit Tomar <Amit.Tomar@freescale.com>
+To: Wolfram Sang <wsa@the-dreams.de>
+Subject: RE: [PATCH] i2c/mpc: Fix ISR return value
+Date: Fri, 27 Mar 2015 12:47:10 +0000
+Message-ID: <BL2PR03MB44973331DBA9AE4940F125A83090@BL2PR03MB449.namprd03.prod.outlook.com>
+References: <BL2PR03MB449C87445D2FD1F15E9D33483310@BL2PR03MB449.namprd03.prod.outlook.com>
+ <20150205193612.GG15307@katana>
+In-Reply-To: <20150205193612.GG15307@katana>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: dja@axtens.net
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,23 +26,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael Ellerman <mpe@ellerman.id.au> writes:
-
-> The powernv code has some conditional support for running on bare metal
-> machines that have no OPAL firmware, but provide RTAS.
->
-> No released machines ever supported that, and even in the lab it was
-> just a transitional hack in the days when OPAL was still being
-> developed.
->
-> So remove the code.
-
-So when we select CONFIG_PPC_PSERIES, we end up selecting
-CONFIG_PPC_RTAS. What is the expected behaviour there for powernv ? Can
-we use RTAS call from powernv code if rtas node is present in device
-tree ? Or do we want to make sure powernv always use OPAL call ?
-
-For example, right now we will use rtas_node get-term-char and
-put-term-char even with this patch applied.
-
--aneesh
+ID4+SSBjYW4ndCBhcHBseSB0aGUgcGF0Y2guIFRoZXJlIHNlZW0gdG8gYmUgd2hpdGVzcGFjZSBw
+cm9ibGVtcy4gUGxlYXNlIGZpeCB0aGUgcGF0Y2ggb3IgeW91ciBtYWlsIHNlbmRpbmcuDQoNClNv
+cnJ5IGZvciB0aGUgRGVsYXllZCByZXNwb25zZSBhbmQgSXQncyBteSBCYWQgYXMgSSBkaWRuJ3Qg
+cGFzcyBpdCB0aHJvdWdoIGNoZWNrcGF0Y2guDQoNCkkgd291bGQgc2VuZCBhIGZyZXNoIHBhdGNo
+Lg0KDQpUaGFua3MNCkFtaXQuDQogDQoNCj4gLS0tDQo+IGRyaXZlcnMvaTJjL2J1c3Nlcy9pMmMt
+bXBjLmMgfMKgwqDCoCAzICsrLQ0KPiAxIGZpbGUgY2hhbmdlZCwgMiBpbnNlcnRpb25zKCspLCAx
+IGRlbGV0aW9uKC0pDQo+IA0KPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9pMmMvYnVzc2VzL2kyYy1t
+cGMuYyANCj4gYi9kcml2ZXJzL2kyYy9idXNzZXMvaTJjLW1wYy5jIGluZGV4IDBlZGY2MzAuLjdh
+MzEzNmYgMTAwNjQ0DQo+IC0tLSBhL2RyaXZlcnMvaTJjL2J1c3Nlcy9pMmMtbXBjLmMNCj4gKysr
+IGIvZHJpdmVycy9pMmMvYnVzc2VzL2kyYy1tcGMuYw0KPiBAQCAtOTUsOCArOTUsOSBAQCBzdGF0
+aWMgaXJxcmV0dXJuX3QgbXBjX2kyY19pc3IoaW50IGlycSwgdm9pZCANCj4gKmRldl9pZCkNCj4g
+wqDCoMKgwqDCoMKgwqAgaTJjLT5pbnRlcnJ1cHQgPSByZWFkYihpMmMtPmJhc2UgKyBNUENfSTJD
+X1NSKTsNCj4gwqDCoMKgwqDCoMKgwqAgd3JpdGViKDAsIGkyYy0+YmFzZSArIE1QQ19JMkNfU1Ip
+Ow0KPiDCoMKgwqDCoMKgwqDCoCB3YWtlX3VwKCZpMmMtPnF1ZXVlKTsNCj4gK8KgwqAgwqDCoCAg
+cmV0dXJuIElSUV9IQU5ETEVEOw0KPiDCoMKgwqAgfQ0KPiAtwqAgcmV0dXJuIElSUV9IQU5ETEVE
+Ow0KPiArIMKgcmV0dXJuIElSUV9OT05FOw0KPiB9DQo+IA0KPiAvKiBTb21ldGltZXMgOXRoIGNs
+b2NrIHB1bHNlIGlzbid0IGdlbmVyYXRlZCwgYW5kIHNsYXZlIGRvZXNuJ3QgDQo+IHJlbGVhc2UN
+Cj4gLS0NCj4gMS43LjkuNQ0KPiAgDQo+IC0tDQo+IFRvIHVuc3Vic2NyaWJlIGZyb20gdGhpcyBs
+aXN0OiBzZW5kIHRoZSBsaW5lICJ1bnN1YnNjcmliZSBsaW51eC1pMmMiIA0KPiBpbiB0aGUgYm9k
+eSBvZiBhIG1lc3NhZ2UgdG8gbWFqb3Jkb21vQHZnZXIua2VybmVsLm9yZyBNb3JlIG1ham9yZG9t
+byANCj4gaW5mbyBhdCAgaHR0cDovL3ZnZXIua2VybmVsLm9yZy9tYWpvcmRvbW8taW5mby5odG1s
+DQo=
