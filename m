@@ -1,31 +1,31 @@
 Return-Path: <aik@ozlabs.ru>
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 120601A0A01
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4A5C51A06F8
  for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Mar 2015 01:56:56 +1100 (AEDT)
 Received: from /spool/local
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aik@ozlabs.ru>;
- Sat, 28 Mar 2015 00:56:55 +1000
+ Sat, 28 Mar 2015 00:56:56 +1000
 Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 623593578047
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Mar 2015 01:56:52 +1100 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 6CDA43578062
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Mar 2015 01:56:53 +1100 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
  by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t2REuiFJ50593874
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Mar 2015 01:56:52 +1100
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t2REuJ0S027562
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Mar 2015 01:56:19 +1100
+ t2REuj7i50528278
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Mar 2015 01:56:53 +1100
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t2REuJtR018213
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Mar 2015 01:56:20 +1100
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH kernel v7 05/31] vfio: powerpc/spapr: Move locked_vm
- accounting to helpers
-Date: Sat, 28 Mar 2015 01:54:49 +1100
-Message-Id: <1427468115-2224-6-git-send-email-aik@ozlabs.ru>
+Subject: [PATCH kernel v7 07/31] vfio: powerpc/spapr: Moving pinning/unpinning
+ to helpers
+Date: Sat, 28 Mar 2015 01:54:51 +1100
+Message-Id: <1427468115-2224-8-git-send-email-aik@ozlabs.ru>
 In-Reply-To: <1427468115-2224-1-git-send-email-aik@ozlabs.ru>
 References: <1427468115-2224-1-git-send-email-aik@ozlabs.ru>
 Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
@@ -40,156 +40,154 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-There moves locked pages accounting to helpers.
-Later they will be reused for Dynamic DMA windows (DDW).
+This is a pretty mechanical patch to make next patches simpler.
 
-This reworks debug messages to show the current value and the limit.
+New tce_iommu_unuse_page() helper does put_page() now but it might skip
+that after the memory registering patch applied.
 
-This stores the locked pages number in the container so when unlocking
-the iommu table pointer won't be needed. This does not have an effect
-now but it will with the multiple tables per container as then we will
-allow attaching/detaching groups on fly and we may end up having
-a container with no group attached but with the counter incremented.
+As we are here, this removes unnecessary checks for a value returned
+by pfn_to_page() as it cannot possibly return NULL.
 
-While we are here, update the comment explaining why RLIMIT_MEMLOCK
-might be required to be bigger than the guest RAM. This also prints
-pid of the current process in pr_warn/pr_debug.
+This moves tce_iommu_disable() later to let tce_iommu_clear() know if
+the container has been enabled because if it has not been, then
+put_page() must not be called on TCEs from the TCE table. This situation
+is not yet possible but it will after KVM acceleration patchset is
+applied.
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 ---
 Changes:
-v4:
-* new helpers do nothing if @npages == 0
-* tce_iommu_disable() now can decrement the counter if the group was
-detached (not possible now but will be in the future)
+v6:
+* tce_get_hva() returns hva via a pointer
 ---
- drivers/vfio/vfio_iommu_spapr_tce.c | 82 ++++++++++++++++++++++++++++---------
- 1 file changed, 63 insertions(+), 19 deletions(-)
+ drivers/vfio/vfio_iommu_spapr_tce.c | 68 +++++++++++++++++++++++++++----------
+ 1 file changed, 50 insertions(+), 18 deletions(-)
 
 diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
-index 8bbee22..9448e39 100644
+index c137bb3..ec5ee83 100644
 --- a/drivers/vfio/vfio_iommu_spapr_tce.c
 +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
-@@ -29,6 +29,51 @@
- static void tce_iommu_detach_group(void *iommu_data,
- 		struct iommu_group *iommu_group);
- 
-+static long try_increment_locked_vm(long npages)
-+{
-+	long ret = 0, locked, lock_limit;
-+
-+	if (!current || !current->mm)
-+		return -ESRCH; /* process exited */
-+
-+	if (!npages)
-+		return 0;
-+
-+	down_write(&current->mm->mmap_sem);
-+	locked = current->mm->locked_vm + npages;
-+	lock_limit = rlimit(RLIMIT_MEMLOCK) >> PAGE_SHIFT;
-+	if (locked > lock_limit && !capable(CAP_IPC_LOCK))
-+		ret = -ENOMEM;
-+	else
-+		current->mm->locked_vm += npages;
-+
-+	pr_debug("[%d] RLIMIT_MEMLOCK +%ld %ld/%ld%s\n", current->pid,
-+			npages << PAGE_SHIFT,
-+			current->mm->locked_vm << PAGE_SHIFT,
-+			rlimit(RLIMIT_MEMLOCK),
-+			ret ? " - exceeded" : "");
-+
-+	up_write(&current->mm->mmap_sem);
-+
-+	return ret;
-+}
-+
-+static void decrement_locked_vm(long npages)
-+{
-+	if (!current || !current->mm || !npages)
-+		return; /* process exited */
-+
-+	down_write(&current->mm->mmap_sem);
-+	if (npages > current->mm->locked_vm)
-+		npages = current->mm->locked_vm;
-+	current->mm->locked_vm -= npages;
-+	pr_debug("[%d] RLIMIT_MEMLOCK -%ld %ld/%ld\n", current->pid,
-+			npages << PAGE_SHIFT,
-+			current->mm->locked_vm << PAGE_SHIFT,
-+			rlimit(RLIMIT_MEMLOCK));
-+	up_write(&current->mm->mmap_sem);
-+}
-+
- /*
-  * VFIO IOMMU fd for SPAPR_TCE IOMMU implementation
-  *
-@@ -45,6 +90,7 @@ struct tce_container {
- 	struct mutex lock;
- 	struct iommu_table *tbl;
- 	bool enabled;
-+	unsigned long locked_pages;
- };
- 
- static bool tce_page_is_contained(struct page *page, unsigned page_shift)
-@@ -60,7 +106,7 @@ static bool tce_page_is_contained(struct page *page, unsigned page_shift)
- static int tce_iommu_enable(struct tce_container *container)
- {
- 	int ret = 0;
--	unsigned long locked, lock_limit, npages;
-+	unsigned long locked;
+@@ -196,7 +196,6 @@ static void tce_iommu_release(void *iommu_data)
  	struct iommu_table *tbl = container->tbl;
  
- 	if (!container->tbl)
-@@ -89,21 +135,22 @@ static int tce_iommu_enable(struct tce_container *container)
- 	 * Also we don't have a nice way to fail on H_PUT_TCE due to ulimits,
- 	 * that would effectively kill the guest at random points, much better
- 	 * enforcing the limit based on the max that the guest can map.
-+	 *
-+	 * Unfortunately at the moment it counts whole tables, no matter how
-+	 * much memory the guest has. I.e. for 4GB guest and 4 IOMMU groups
-+	 * each with 2GB DMA window, 8GB will be counted here. The reason for
-+	 * this is that we cannot tell here the amount of RAM used by the guest
-+	 * as this information is only available from KVM and VFIO is
-+	 * KVM agnostic.
- 	 */
--	down_write(&current->mm->mmap_sem);
--	npages = (tbl->it_size << tbl->it_page_shift) >> PAGE_SHIFT;
--	locked = current->mm->locked_vm + npages;
--	lock_limit = rlimit(RLIMIT_MEMLOCK) >> PAGE_SHIFT;
--	if (locked > lock_limit && !capable(CAP_IPC_LOCK)) {
--		pr_warn("RLIMIT_MEMLOCK (%ld) exceeded\n",
--				rlimit(RLIMIT_MEMLOCK));
--		ret = -ENOMEM;
--	} else {
-+	locked = (tbl->it_size << tbl->it_page_shift) >> PAGE_SHIFT;
-+	ret = try_increment_locked_vm(locked);
-+	if (ret)
-+		return ret;
+ 	WARN_ON(tbl && !tbl->it_group);
+-	tce_iommu_disable(container);
  
--		current->mm->locked_vm += npages;
--		container->enabled = true;
--	}
--	up_write(&current->mm->mmap_sem);
-+	container->locked_pages = locked;
+ 	if (tbl) {
+ 		tce_iommu_clear(container, tbl,	tbl->it_offset, tbl->it_size);
+@@ -204,63 +203,96 @@ static void tce_iommu_release(void *iommu_data)
+ 		if (tbl->it_group)
+ 			tce_iommu_detach_group(iommu_data, tbl->it_group);
+ 	}
 +
-+	container->enabled = true;
++	tce_iommu_disable(container);
++
+ 	mutex_destroy(&container->lock);
  
- 	return ret;
- }
-@@ -115,13 +162,10 @@ static void tce_iommu_disable(struct tce_container *container)
- 
- 	container->enabled = false;
- 
--	if (!container->tbl || !current->mm)
-+	if (!current->mm)
- 		return;
- 
--	down_write(&current->mm->mmap_sem);
--	current->mm->locked_vm -= (container->tbl->it_size <<
--			container->tbl->it_page_shift) >> PAGE_SHIFT;
--	up_write(&current->mm->mmap_sem);
-+	decrement_locked_vm(container->locked_pages);
+ 	kfree(container);
  }
  
- static void *tce_iommu_open(unsigned long arg)
++static void tce_iommu_unuse_page(struct tce_container *container,
++		unsigned long oldtce)
++{
++	struct page *page;
++
++	if (!(oldtce & (TCE_PCI_READ | TCE_PCI_WRITE)))
++		return;
++
++	/*
++	 * VFIO cannot map/unmap when a container is not enabled so
++	 * we would not need this check but KVM could map/unmap and if
++	 * this happened, we must not put pages as KVM does not get them as
++	 * it expects memory pre-registation to do this part.
++	 */
++	if (!container->enabled)
++		return;
++
++	page = pfn_to_page(__pa(oldtce) >> PAGE_SHIFT);
++
++	if (oldtce & TCE_PCI_WRITE)
++		SetPageDirty(page);
++
++	put_page(page);
++}
++
+ static int tce_iommu_clear(struct tce_container *container,
+ 		struct iommu_table *tbl,
+ 		unsigned long entry, unsigned long pages)
+ {
+ 	unsigned long oldtce;
+-	struct page *page;
+ 
+ 	for ( ; pages; --pages, ++entry) {
+ 		oldtce = iommu_clear_tce(tbl, entry);
+ 		if (!oldtce)
+ 			continue;
+ 
+-		page = pfn_to_page(oldtce >> PAGE_SHIFT);
+-		WARN_ON(!page);
+-		if (page) {
+-			if (oldtce & TCE_PCI_WRITE)
+-				SetPageDirty(page);
+-			put_page(page);
+-		}
++		tce_iommu_unuse_page(container, (unsigned long) __va(oldtce));
+ 	}
+ 
+ 	return 0;
+ }
+ 
++static int tce_get_hva(unsigned long tce, unsigned long *hva)
++{
++	struct page *page = NULL;
++	enum dma_data_direction direction = iommu_tce_direction(tce);
++
++	if (get_user_pages_fast(tce & PAGE_MASK, 1,
++			direction != DMA_TO_DEVICE, &page) != 1)
++		return -EFAULT;
++
++	*hva = (unsigned long) page_address(page);
++
++	return 0;
++}
++
+ static long tce_iommu_build(struct tce_container *container,
+ 		struct iommu_table *tbl,
+ 		unsigned long entry, unsigned long tce, unsigned long pages)
+ {
+ 	long i, ret = 0;
+-	struct page *page = NULL;
++	struct page *page;
+ 	unsigned long hva;
+ 	enum dma_data_direction direction = iommu_tce_direction(tce);
+ 
+ 	for (i = 0; i < pages; ++i) {
+-		ret = get_user_pages_fast(tce & PAGE_MASK, 1,
+-				direction != DMA_TO_DEVICE, &page);
+-		if (unlikely(ret != 1)) {
+-			ret = -EFAULT;
++		ret = tce_get_hva(tce, &hva);
++		if (ret)
+ 			break;
+-		}
+ 
++		page = pfn_to_page(__pa(hva) >> PAGE_SHIFT);
+ 		if (!tce_page_is_contained(page, tbl->it_page_shift)) {
+ 			ret = -EPERM;
+ 			break;
+ 		}
+ 
+-		hva = (unsigned long) page_address(page) +
+-			(tce & IOMMU_PAGE_MASK(tbl) & ~PAGE_MASK);
++		/* Preserve offset within IOMMU page */
++		hva |= tce & IOMMU_PAGE_MASK(tbl) & ~PAGE_MASK;
+ 
+ 		ret = iommu_tce_build(tbl, entry + i, hva, direction);
+ 		if (ret) {
+-			put_page(page);
++			tce_iommu_unuse_page(container, hva);
+ 			pr_err("iommu_tce: %s failed ioba=%lx, tce=%lx, ret=%ld\n",
+ 					__func__, entry << tbl->it_page_shift,
+ 					tce, ret);
 -- 
 2.0.0
