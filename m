@@ -1,31 +1,31 @@
 Return-Path: <aik@ozlabs.ru>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E1F1C1A0706
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Mar 2015 01:56:56 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 15AE41A02F6
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Mar 2015 01:56:57 +1100 (AEDT)
 Received: from /spool/local
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aik@ozlabs.ru>;
  Sat, 28 Mar 2015 00:56:56 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 282942CE805E
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Mar 2015 01:56:53 +1100 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t2REujRB41091196
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Mar 2015 01:56:53 +1100
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t2REuJkv027593
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Mar 2015 01:56:19 +1100
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 926782CE8059
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Mar 2015 01:56:54 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t2REuke215270062
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Mar 2015 01:56:54 +1100
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t2REuKlg025898
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Mar 2015 01:56:21 +1100
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH kernel v7 23/31] powerpc/powernv: Change prototypes to receive
- iommu
-Date: Sat, 28 Mar 2015 01:55:07 +1100
-Message-Id: <1427468115-2224-24-git-send-email-aik@ozlabs.ru>
+Subject: [PATCH kernel v7 11/31] powerpc/iommu: Introduce iommu_table_alloc()
+ helper
+Date: Sat, 28 Mar 2015 01:54:55 +1100
+Message-Id: <1427468115-2224-12-git-send-email-aik@ozlabs.ru>
 In-Reply-To: <1427468115-2224-1-git-send-email-aik@ozlabs.ru>
 References: <1427468115-2224-1-git-send-email-aik@ozlabs.ru>
 Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
@@ -40,68 +40,110 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This changes few functions to receive a iommu_table_group pointer
-rather than PE as they are going to be a part of upcoming
-iommu_table_group_ops callback set.
+This replaces multiple calls of kzalloc_node() with a new
+iommu_table_alloc() helper. Right now it calls kzalloc_node() but
+later it will be modified to allocate a iommu_table_group struct with
+a single iommu_table in it.
+
+Later the helper will allocate a iommu_table_group struct which embeds
+the iommu table(s).
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 ---
- arch/powerpc/platforms/powernv/pci-ioda.c | 13 ++++++++-----
- 1 file changed, 8 insertions(+), 5 deletions(-)
+ arch/powerpc/include/asm/iommu.h       |  1 +
+ arch/powerpc/kernel/iommu.c            |  9 +++++++++
+ arch/powerpc/platforms/powernv/pci.c   |  2 +-
+ arch/powerpc/platforms/pseries/iommu.c | 12 ++++--------
+ 4 files changed, 15 insertions(+), 9 deletions(-)
 
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index 74e119c..80ea84d 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -1408,10 +1408,12 @@ static __be64 *pnv_alloc_tce_table(int nid,
- 	return addr;
+diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
+index d909e2a..eb75726 100644
+--- a/arch/powerpc/include/asm/iommu.h
++++ b/arch/powerpc/include/asm/iommu.h
+@@ -117,6 +117,7 @@ static inline void *get_iommu_table_base(struct device *dev)
+ 	return dev->archdata.dma_data.iommu_table_base;
  }
  
--static long pnv_pci_ioda2_create_table(struct pnv_ioda_pe *pe,
-+static long pnv_pci_ioda2_create_table(struct iommu_table_group *table_group,
- 		__u32 page_shift, __u64 window_size, __u32 levels,
- 		struct iommu_table *tbl)
- {
-+	struct pnv_ioda_pe *pe = container_of(table_group, struct pnv_ioda_pe,
-+						table_group);
- 	int nid = pe->phb->hose->node;
- 	void *addr;
- 	unsigned long tce_table_size, left;
-@@ -1462,9 +1464,11 @@ static void pnv_pci_free_table(struct iommu_table *tbl)
- 	iommu_reset_table(tbl, "ioda2");
++extern struct iommu_table *iommu_table_alloc(int node);
+ /* Frees table for an individual device node */
+ extern void iommu_free_table(struct iommu_table *tbl, const char *node_name);
+ 
+diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
+index eceb214..b39d00a 100644
+--- a/arch/powerpc/kernel/iommu.c
++++ b/arch/powerpc/kernel/iommu.c
+@@ -710,6 +710,15 @@ struct iommu_table *iommu_init_table(struct iommu_table *tbl, int nid)
+ 	return tbl;
  }
  
--static long pnv_pci_ioda2_set_window(struct pnv_ioda_pe *pe,
-+static long pnv_pci_ioda2_set_window(struct iommu_table_group *table_group,
- 		struct iommu_table *tbl)
++struct iommu_table *iommu_table_alloc(int node)
++{
++	struct iommu_table *tbl;
++
++	tbl = kzalloc_node(sizeof(struct iommu_table), GFP_KERNEL, node);
++
++	return tbl;
++}
++
+ void iommu_free_table(struct iommu_table *tbl, const char *node_name)
  {
-+	struct pnv_ioda_pe *pe = container_of(table_group, struct pnv_ioda_pe,
-+			table_group);
- 	struct pnv_phb *phb = pe->phb;
- 	const __be64 *swinvp;
- 	int64_t rc;
-@@ -1599,12 +1603,11 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
+ 	unsigned long bitmap_sz;
+diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
+index c619ec6..1c31ac8 100644
+--- a/arch/powerpc/platforms/powernv/pci.c
++++ b/arch/powerpc/platforms/powernv/pci.c
+@@ -680,7 +680,7 @@ static struct iommu_table *pnv_pci_setup_bml_iommu(struct pci_controller *hose)
+ 		       hose->dn->full_name);
+ 		return NULL;
+ 	}
+-	tbl = kzalloc_node(sizeof(struct iommu_table), GFP_KERNEL, hose->node);
++	tbl = iommu_table_alloc(hose->node);
+ 	if (WARN_ON(!tbl))
+ 		return NULL;
+ 	pnv_pci_setup_iommu_table(tbl, __va(be64_to_cpup(basep)),
+diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
+index 48d1fde..41a8b14 100644
+--- a/arch/powerpc/platforms/pseries/iommu.c
++++ b/arch/powerpc/platforms/pseries/iommu.c
+@@ -617,8 +617,7 @@ static void pci_dma_bus_setup_pSeries(struct pci_bus *bus)
+ 	pci->phb->dma_window_size = 0x8000000ul;
+ 	pci->phb->dma_window_base_cur = 0x8000000ul;
  
- 	/* The PE will reserve all possible 32-bits space */
- 	pe->tce32_seg = 0;
--
- 	end = (1 << ilog2(phb->ioda.m32_pci_base));
- 	pe_info(pe, "Setting up 32-bit TCE table at 0..%08x\n",
- 		end);
+-	tbl = kzalloc_node(sizeof(struct iommu_table), GFP_KERNEL,
+-			   pci->phb->node);
++	tbl = iommu_table_alloc(pci->phb->node);
  
--	rc = pnv_pci_ioda2_create_table(pe, IOMMU_PAGE_SHIFT_4K,
-+	rc = pnv_pci_ioda2_create_table(&pe->table_group, IOMMU_PAGE_SHIFT_4K,
- 			phb->ioda.m32_pci_base,
- 			POWERNV_IOMMU_DEFAULT_LEVELS, tbl);
- 	if (rc) {
-@@ -1619,7 +1622,7 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
- 	pe->table_group.ops = &pnv_pci_ioda2_ops;
- #endif
+ 	iommu_table_setparms(pci->phb, dn, tbl);
+ 	tbl->it_ops = &iommu_table_pseries_ops;
+@@ -669,8 +668,7 @@ static void pci_dma_bus_setup_pSeriesLP(struct pci_bus *bus)
+ 		 pdn->full_name, ppci->iommu_table);
  
--	rc = pnv_pci_ioda2_set_window(pe, tbl);
-+	rc = pnv_pci_ioda2_set_window(&pe->table_group, tbl);
- 	if (rc) {
- 		pe_err(pe, "Failed to configure 32-bit TCE table,"
- 		       " err %ld\n", rc);
+ 	if (!ppci->iommu_table) {
+-		tbl = kzalloc_node(sizeof(struct iommu_table), GFP_KERNEL,
+-				   ppci->phb->node);
++		tbl = iommu_table_alloc(ppci->phb->node);
+ 		iommu_table_setparms_lpar(ppci->phb, pdn, tbl, dma_window);
+ 		tbl->it_ops = &iommu_table_lpar_multi_ops;
+ 		ppci->iommu_table = iommu_init_table(tbl, ppci->phb->node);
+@@ -697,8 +695,7 @@ static void pci_dma_dev_setup_pSeries(struct pci_dev *dev)
+ 		struct pci_controller *phb = PCI_DN(dn)->phb;
+ 
+ 		pr_debug(" --> first child, no bridge. Allocating iommu table.\n");
+-		tbl = kzalloc_node(sizeof(struct iommu_table), GFP_KERNEL,
+-				   phb->node);
++		tbl = iommu_table_alloc(phb->node);
+ 		iommu_table_setparms(phb, dn, tbl);
+ 		tbl->it_ops = &iommu_table_pseries_ops;
+ 		PCI_DN(dn)->iommu_table = iommu_init_table(tbl, phb->node);
+@@ -1120,8 +1117,7 @@ static void pci_dma_dev_setup_pSeriesLP(struct pci_dev *dev)
+ 
+ 	pci = PCI_DN(pdn);
+ 	if (!pci->iommu_table) {
+-		tbl = kzalloc_node(sizeof(struct iommu_table), GFP_KERNEL,
+-				   pci->phb->node);
++		tbl = iommu_table_alloc(pci->phb->node);
+ 		iommu_table_setparms_lpar(pci->phb, pdn, tbl, dma_window);
+ 		tbl->it_ops = &iommu_table_lpar_multi_ops;
+ 		pci->iommu_table = iommu_init_table(tbl, pci->phb->node);
 -- 
 2.0.0
