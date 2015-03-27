@@ -1,22 +1,35 @@
-Return-Path: <Amit.Tomar@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0117.outbound.protection.outlook.com [207.46.100.117])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <aik@ozlabs.ru>
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A8A3B1A06B9
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Mar 2015 00:21:14 +1100 (AEDT)
-From: Amit Tomar <Amit.Tomar@freescale.com>
-To: Wolfram Sang <wsa@the-dreams.de>
-Subject: RE: [PATCH] i2c/mpc: Fix ISR return value
-Date: Fri, 27 Mar 2015 12:47:10 +0000
-Message-ID: <BL2PR03MB44973331DBA9AE4940F125A83090@BL2PR03MB449.namprd03.prod.outlook.com>
-References: <BL2PR03MB449C87445D2FD1F15E9D33483310@BL2PR03MB449.namprd03.prod.outlook.com>
- <20150205193612.GG15307@katana>
-In-Reply-To: <20150205193612.GG15307@katana>
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-i2c@vger.kernel.org" <linux-i2c@vger.kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2CCFD1A02AC
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Mar 2015 01:56:35 +1100 (AEDT)
+Received: from /spool/local
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aik@ozlabs.ru>;
+ Sat, 28 Mar 2015 00:56:34 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id ABB6D3578057
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Mar 2015 01:56:30 +1100 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t2REuMgU21495844
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Mar 2015 01:56:30 +1100
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t2REtvAF027194
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Mar 2015 01:55:57 +1100
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH kernel v7 04/31] vfio: powerpc/spapr: Use it_page_size
+Date: Sat, 28 Mar 2015 01:54:48 +1100
+Message-Id: <1427468115-2224-5-git-send-email-aik@ozlabs.ru>
+In-Reply-To: <1427468115-2224-1-git-send-email-aik@ozlabs.ru>
+References: <1427468115-2224-1-git-send-email-aik@ozlabs.ru>
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,25 +39,104 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-ID4+SSBjYW4ndCBhcHBseSB0aGUgcGF0Y2guIFRoZXJlIHNlZW0gdG8gYmUgd2hpdGVzcGFjZSBw
-cm9ibGVtcy4gUGxlYXNlIGZpeCB0aGUgcGF0Y2ggb3IgeW91ciBtYWlsIHNlbmRpbmcuDQoNClNv
-cnJ5IGZvciB0aGUgRGVsYXllZCByZXNwb25zZSBhbmQgSXQncyBteSBCYWQgYXMgSSBkaWRuJ3Qg
-cGFzcyBpdCB0aHJvdWdoIGNoZWNrcGF0Y2guDQoNCkkgd291bGQgc2VuZCBhIGZyZXNoIHBhdGNo
-Lg0KDQpUaGFua3MNCkFtaXQuDQogDQoNCj4gLS0tDQo+IGRyaXZlcnMvaTJjL2J1c3Nlcy9pMmMt
-bXBjLmMgfMKgwqDCoCAzICsrLQ0KPiAxIGZpbGUgY2hhbmdlZCwgMiBpbnNlcnRpb25zKCspLCAx
-IGRlbGV0aW9uKC0pDQo+IA0KPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9pMmMvYnVzc2VzL2kyYy1t
-cGMuYyANCj4gYi9kcml2ZXJzL2kyYy9idXNzZXMvaTJjLW1wYy5jIGluZGV4IDBlZGY2MzAuLjdh
-MzEzNmYgMTAwNjQ0DQo+IC0tLSBhL2RyaXZlcnMvaTJjL2J1c3Nlcy9pMmMtbXBjLmMNCj4gKysr
-IGIvZHJpdmVycy9pMmMvYnVzc2VzL2kyYy1tcGMuYw0KPiBAQCAtOTUsOCArOTUsOSBAQCBzdGF0
-aWMgaXJxcmV0dXJuX3QgbXBjX2kyY19pc3IoaW50IGlycSwgdm9pZCANCj4gKmRldl9pZCkNCj4g
-wqDCoMKgwqDCoMKgwqAgaTJjLT5pbnRlcnJ1cHQgPSByZWFkYihpMmMtPmJhc2UgKyBNUENfSTJD
-X1NSKTsNCj4gwqDCoMKgwqDCoMKgwqAgd3JpdGViKDAsIGkyYy0+YmFzZSArIE1QQ19JMkNfU1Ip
-Ow0KPiDCoMKgwqDCoMKgwqDCoCB3YWtlX3VwKCZpMmMtPnF1ZXVlKTsNCj4gK8KgwqAgwqDCoCAg
-cmV0dXJuIElSUV9IQU5ETEVEOw0KPiDCoMKgwqAgfQ0KPiAtwqAgcmV0dXJuIElSUV9IQU5ETEVE
-Ow0KPiArIMKgcmV0dXJuIElSUV9OT05FOw0KPiB9DQo+IA0KPiAvKiBTb21ldGltZXMgOXRoIGNs
-b2NrIHB1bHNlIGlzbid0IGdlbmVyYXRlZCwgYW5kIHNsYXZlIGRvZXNuJ3QgDQo+IHJlbGVhc2UN
-Cj4gLS0NCj4gMS43LjkuNQ0KPiAgDQo+IC0tDQo+IFRvIHVuc3Vic2NyaWJlIGZyb20gdGhpcyBs
-aXN0OiBzZW5kIHRoZSBsaW5lICJ1bnN1YnNjcmliZSBsaW51eC1pMmMiIA0KPiBpbiB0aGUgYm9k
-eSBvZiBhIG1lc3NhZ2UgdG8gbWFqb3Jkb21vQHZnZXIua2VybmVsLm9yZyBNb3JlIG1ham9yZG9t
-byANCj4gaW5mbyBhdCAgaHR0cDovL3ZnZXIua2VybmVsLm9yZy9tYWpvcmRvbW8taW5mby5odG1s
-DQo=
+This makes use of the it_page_size from the iommu_table struct
+as page size can differ.
+
+This replaces missing IOMMU_PAGE_SHIFT macro in commented debug code
+as recently introduced IOMMU_PAGE_XXX macros do not include
+IOMMU_PAGE_SHIFT.
+
+Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
+---
+ drivers/vfio/vfio_iommu_spapr_tce.c | 26 +++++++++++++-------------
+ 1 file changed, 13 insertions(+), 13 deletions(-)
+
+diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
+index f835e63..8bbee22 100644
+--- a/drivers/vfio/vfio_iommu_spapr_tce.c
++++ b/drivers/vfio/vfio_iommu_spapr_tce.c
+@@ -91,7 +91,7 @@ static int tce_iommu_enable(struct tce_container *container)
+ 	 * enforcing the limit based on the max that the guest can map.
+ 	 */
+ 	down_write(&current->mm->mmap_sem);
+-	npages = (tbl->it_size << IOMMU_PAGE_SHIFT_4K) >> PAGE_SHIFT;
++	npages = (tbl->it_size << tbl->it_page_shift) >> PAGE_SHIFT;
+ 	locked = current->mm->locked_vm + npages;
+ 	lock_limit = rlimit(RLIMIT_MEMLOCK) >> PAGE_SHIFT;
+ 	if (locked > lock_limit && !capable(CAP_IPC_LOCK)) {
+@@ -120,7 +120,7 @@ static void tce_iommu_disable(struct tce_container *container)
+ 
+ 	down_write(&current->mm->mmap_sem);
+ 	current->mm->locked_vm -= (container->tbl->it_size <<
+-			IOMMU_PAGE_SHIFT_4K) >> PAGE_SHIFT;
++			container->tbl->it_page_shift) >> PAGE_SHIFT;
+ 	up_write(&current->mm->mmap_sem);
+ }
+ 
+@@ -222,7 +222,7 @@ static long tce_iommu_build(struct tce_container *container,
+ 					tce, ret);
+ 			break;
+ 		}
+-		tce += IOMMU_PAGE_SIZE_4K;
++		tce += IOMMU_PAGE_SIZE(tbl);
+ 	}
+ 
+ 	if (ret)
+@@ -267,8 +267,8 @@ static long tce_iommu_ioctl(void *iommu_data,
+ 		if (info.argsz < minsz)
+ 			return -EINVAL;
+ 
+-		info.dma32_window_start = tbl->it_offset << IOMMU_PAGE_SHIFT_4K;
+-		info.dma32_window_size = tbl->it_size << IOMMU_PAGE_SHIFT_4K;
++		info.dma32_window_start = tbl->it_offset << tbl->it_page_shift;
++		info.dma32_window_size = tbl->it_size << tbl->it_page_shift;
+ 		info.flags = 0;
+ 
+ 		if (copy_to_user((void __user *)arg, &info, minsz))
+@@ -298,8 +298,8 @@ static long tce_iommu_ioctl(void *iommu_data,
+ 				VFIO_DMA_MAP_FLAG_WRITE))
+ 			return -EINVAL;
+ 
+-		if ((param.size & ~IOMMU_PAGE_MASK_4K) ||
+-				(param.vaddr & ~IOMMU_PAGE_MASK_4K))
++		if ((param.size & ~IOMMU_PAGE_MASK(tbl)) ||
++				(param.vaddr & ~IOMMU_PAGE_MASK(tbl)))
+ 			return -EINVAL;
+ 
+ 		/* iova is checked by the IOMMU API */
+@@ -314,8 +314,8 @@ static long tce_iommu_ioctl(void *iommu_data,
+ 			return ret;
+ 
+ 		ret = tce_iommu_build(container, tbl,
+-				param.iova >> IOMMU_PAGE_SHIFT_4K,
+-				tce, param.size >> IOMMU_PAGE_SHIFT_4K);
++				param.iova >> tbl->it_page_shift,
++				tce, param.size >> tbl->it_page_shift);
+ 
+ 		iommu_flush_tce(tbl);
+ 
+@@ -341,17 +341,17 @@ static long tce_iommu_ioctl(void *iommu_data,
+ 		if (param.flags)
+ 			return -EINVAL;
+ 
+-		if (param.size & ~IOMMU_PAGE_MASK_4K)
++		if (param.size & ~IOMMU_PAGE_MASK(tbl))
+ 			return -EINVAL;
+ 
+ 		ret = iommu_tce_clear_param_check(tbl, param.iova, 0,
+-				param.size >> IOMMU_PAGE_SHIFT_4K);
++				param.size >> tbl->it_page_shift);
+ 		if (ret)
+ 			return ret;
+ 
+ 		ret = tce_iommu_clear(container, tbl,
+-				param.iova >> IOMMU_PAGE_SHIFT_4K,
+-				param.size >> IOMMU_PAGE_SHIFT_4K);
++				param.iova >> tbl->it_page_shift,
++				param.size >> tbl->it_page_shift);
+ 		iommu_flush_tce(tbl);
+ 
+ 		return ret;
+-- 
+2.0.0
