@@ -1,41 +1,36 @@
-Return-Path: <nacc@linux.vnet.ibm.com>
-Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
+Return-Path: <tyreld@linux.vnet.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 436271A0AC4
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Mar 2015 06:39:28 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id AB98C1A0ACE
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Mar 2015 06:47:35 +1100 (AEDT)
 Received: from /spool/local
- by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
- Fri, 27 Mar 2015 15:39:25 -0400
-Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com
- [9.57.198.28])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 83AF56E803C
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Mar 2015 15:31:12 -0400 (EDT)
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
- by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t2RJdMG429950132
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Mar 2015 19:39:22 GMT
-Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
- by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t2RJdKKs026159
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Mar 2015 15:39:22 -0400
-Date: Fri, 27 Mar 2015 12:39:18 -0700
-From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-To: Mel Gorman <mgorman@suse.de>
-Subject: Re: [PATCH] mm: vmscan: do not throttle based on pfmemalloc reserves
- if node has no reclaimable zones
-Message-ID: <20150327193918.GB18701@linux.vnet.ibm.com>
-References: <20150327192850.GA18701@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150327192850.GA18701@linux.vnet.ibm.com>
-Cc: Rik van Riel <riel@redhat.com>, linux-kernel@vger.kernel.org,
- Michal Hocko <mhocko@suse.cz>, linux-mm@kvack.org, anton@samba.org,
- Johannes Weiner <hannes@cmpxchg.org>,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- Dan Streetman <ddstreet@ieee.org>
+ for <linuxppc-dev@lists.ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
+ Fri, 27 Mar 2015 13:47:33 -0600
+Received: from b03cxnp08027.gho.boulder.ibm.com
+ (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 1818219D8040
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Mar 2015 13:38:37 -0600 (MDT)
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+ by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t2RJlU8T35717190
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Mar 2015 12:47:30 -0700
+Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t2RJlSCY026569
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Mar 2015 13:47:30 -0600
+From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v3 1/2] powerpc/pseries: Simplify check for suspendability
+ during suspend/migration
+Date: Fri, 27 Mar 2015 12:47:25 -0700
+Message-Id: <1427485645-1252-1-git-send-email-tyreld@linux.vnet.ibm.com>
+In-Reply-To: <1427248536.29319.4.camel@ellerman.id.au>
+References: <1427248536.29319.4.camel@ellerman.id.au>
+Cc: Cyril Bur <cyrilbur@gmail.com>, Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
+ Nathan Fontenont <nfont@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,86 +40,154 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-[ Sorry, typo'd anton's address ]
+During suspend/migration operation we must wait for the VASI state reported
+by the hypervisor to become Suspending prior to making the ibm,suspend-me
+RTAS call. Calling routines to rtas_ibm_supend_me() pass a vasi_state variable
+that exposes the VASI state to the caller. This is unnecessary as the caller
+only really cares about the following three conditions; if there is an error
+we should bailout, success indicating we have suspended and woken back up so
+proceed to device tree update, or we are not suspendable yet so try calling
+rtas_ibm_suspend_me again shortly.
 
-On 27.03.2015 [12:28:50 -0700], Nishanth Aravamudan wrote:
-> Based upon 675becce15 ("mm: vmscan: do not throttle based on pfmemalloc
-> reserves if node has no ZONE_NORMAL") from Mel.
-> 
-> We have a system with the following topology:
-> 
-> (0) root @ br30p03: /root
-> # numactl -H
-> available: 3 nodes (0,2-3)
-> node 0 cpus: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22
-> 23 24 25 26 27 28 29 30 31
-> node 0 size: 28273 MB
-> node 0 free: 27323 MB
-> node 2 cpus:
-> node 2 size: 16384 MB
-> node 2 free: 0 MB
-> node 3 cpus: 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47
-> node 3 size: 30533 MB
-> node 3 free: 13273 MB
-> node distances:
-> node   0   2   3 
->   0:  10  20  20 
->   2:  20  10  20 
->   3:  20  20  10 
-> 
-> Node 2 has no free memory, because:
-> 
-> # cat /sys/devices/system/node/node2/hugepages/hugepages-16777216kB/nr_hugepages 
-> 1
-> 
-> This leads to the following zoneinfo:
-> 
-> Node 2, zone      DMA
->   pages free     0
->         min      1840
->         low      2300
->         high     2760
->         scanned  0
->         spanned  262144
->         present  262144
->         managed  262144
-> ...
->   all_unreclaimable: 1
-> 
-> If one then attempts to allocate some normal 16M hugepages:
-> 
-> echo 37 > /proc/sys/vm/nr_hugepages
-> 
-> The echo enver returns and kswapd2 consumes CPU cycles.
-> 
-> This is because throttle_direct_reclaim ends up calling
-> wait_event(pfmemalloc_wait, pfmemalloc_watermark_ok...).
-> pfmemalloc_watermark_ok() in turn checks all zones on the node and see
-> if the there are any reserves, and if so, then indicates the watermarks
-> are ok, by seeing if there are sufficient free pages.
-> 
-> 675becce15 added a condition already for memoryless nodes. In this case,
-> though, the node has memory, it is just all consumed (and not
-> recliamable). Effectively, though, the result is the same on this
-> call to pfmemalloc_watermark_ok() and thus seems like a reasonable
-> additional condition.
-> 
-> With this change, the afore-mentioned 16M hugepage allocation succeeds
-> and correctly round-robins between Nodes 1 and 3.
-> 
-> Signed-off-by: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-> 
-> diff --git a/mm/vmscan.c b/mm/vmscan.c
-> index dcd90c8..033c2b7 100644
-> --- a/mm/vmscan.c
-> +++ b/mm/vmscan.c
-> @@ -2585,7 +2585,7 @@ static bool pfmemalloc_watermark_ok(pg_data_t *pgdat)
->  
->         for (i = 0; i <= ZONE_NORMAL; i++) {
->                 zone = &pgdat->node_zones[i];
-> -               if (!populated_zone(zone))
-> +               if (!populated_zone(zone) || !zone_reclaimable(zone))
->                         continue;
->  
->                 pfmemalloc_reserve += min_wmark_pages(zone);
-> 
+This patch removes the extraneous vasi_state variable and simply uses the
+return code to communicate how to proceed. We either succeed, fail, or get
+-EAGAIN in which case we sleep for a second before trying to call
+rtas_ibm_suspend_me again. The behaviour of ppc_rtas() remains the same,
+but migrate_store() now returns the propogated error code on failure.
+Previously -1 was returned from migrate_store() in the  failure case which
+equates to -EPERM and was clearly wrong.
+
+Signed-off-by: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+Cc: Nathan Fontenont <nfont@linux.vnet.ibm.com>
+Cc: Cyril Bur <cyrilbur@gmail.com>
+---
+Changes in v3:
+- Updated changelog with behaviour change of migrate_store() return code
+
+Changes in v2:
+- Addressed Cyril's comments as follow:
+- Removed unused vasi_rc variable
+- Kept return behavior of ppc_rtas the same in the case of VASI error
+- Updated rtas_ibm_suspend_me function definition for !CONFIG_PPC_PSERIES
+
+ arch/powerpc/include/asm/rtas.h           |  2 +-
+ arch/powerpc/kernel/rtas.c                | 26 +++++++++++++-------------
+ arch/powerpc/platforms/pseries/mobility.c |  9 +++------
+ 3 files changed, 17 insertions(+), 20 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/rtas.h b/arch/powerpc/include/asm/rtas.h
+index 2e23e92..fc85eb0 100644
+--- a/arch/powerpc/include/asm/rtas.h
++++ b/arch/powerpc/include/asm/rtas.h
+@@ -327,7 +327,7 @@ extern int rtas_suspend_cpu(struct rtas_suspend_me_data *data);
+ extern int rtas_suspend_last_cpu(struct rtas_suspend_me_data *data);
+ extern int rtas_online_cpus_mask(cpumask_var_t cpus);
+ extern int rtas_offline_cpus_mask(cpumask_var_t cpus);
+-extern int rtas_ibm_suspend_me(u64 handle, int *vasi_return);
++extern int rtas_ibm_suspend_me(u64 handle);
+ 
+ struct rtc_time;
+ extern unsigned long rtas_get_boot_time(void);
+diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
+index 21c45a2..b9a7b89 100644
+--- a/arch/powerpc/kernel/rtas.c
++++ b/arch/powerpc/kernel/rtas.c
+@@ -897,7 +897,7 @@ int rtas_offline_cpus_mask(cpumask_var_t cpus)
+ }
+ EXPORT_SYMBOL(rtas_offline_cpus_mask);
+ 
+-int rtas_ibm_suspend_me(u64 handle, int *vasi_return)
++int rtas_ibm_suspend_me(u64 handle)
+ {
+ 	long state;
+ 	long rc;
+@@ -919,13 +919,11 @@ int rtas_ibm_suspend_me(u64 handle, int *vasi_return)
+ 		printk(KERN_ERR "rtas_ibm_suspend_me: vasi_state returned %ld\n",rc);
+ 		return rc;
+ 	} else if (state == H_VASI_ENABLED) {
+-		*vasi_return = RTAS_NOT_SUSPENDABLE;
+-		return 0;
++		return -EAGAIN;
+ 	} else if (state != H_VASI_SUSPENDING) {
+ 		printk(KERN_ERR "rtas_ibm_suspend_me: vasi_state returned state %ld\n",
+ 		       state);
+-		*vasi_return = -1;
+-		return 0;
++		return -EIO;
+ 	}
+ 
+ 	if (!alloc_cpumask_var(&offline_mask, GFP_TEMPORARY))
+@@ -972,7 +970,7 @@ out:
+ 	return atomic_read(&data.error);
+ }
+ #else /* CONFIG_PPC_PSERIES */
+-int rtas_ibm_suspend_me(u64 handle, int *vasi_return)
++int rtas_ibm_suspend_me(u64 handle)
+ {
+ 	return -ENOSYS;
+ }
+@@ -1022,7 +1020,6 @@ asmlinkage int ppc_rtas(struct rtas_args __user *uargs)
+ 	unsigned long flags;
+ 	char *buff_copy, *errbuf = NULL;
+ 	int nargs, nret, token;
+-	int rc;
+ 
+ 	if (!capable(CAP_SYS_ADMIN))
+ 		return -EPERM;
+@@ -1054,15 +1051,18 @@ asmlinkage int ppc_rtas(struct rtas_args __user *uargs)
+ 	if (token == ibm_suspend_me_token) {
+ 
+ 		/*
+-		 * rtas_ibm_suspend_me assumes args are in cpu endian, or at least the
+-		 * hcall within it requires it.
++		 * rtas_ibm_suspend_me assumes the streamid handle is in cpu
++		 * endian, or at least the hcall within it requires it.
+ 		 */
+-		int vasi_rc = 0;
++		int rc = 0;
+ 		u64 handle = ((u64)be32_to_cpu(args.args[0]) << 32)
+ 		              | be32_to_cpu(args.args[1]);
+-		rc = rtas_ibm_suspend_me(handle, &vasi_rc);
+-		args.rets[0] = cpu_to_be32(vasi_rc);
+-		if (rc)
++		rc = rtas_ibm_suspend_me(handle);
++		if (rc == -EAGAIN)
++			args.rets[0] = cpu_to_be32(RTAS_NOT_SUSPENDABLE);
++		else if (rc == -EIO)
++			args.rets[0] = cpu_to_be32(-1);
++		else if (rc)
+ 			return rc;
+ 		goto copy_return;
+ 	}
+diff --git a/arch/powerpc/platforms/pseries/mobility.c b/arch/powerpc/platforms/pseries/mobility.c
+index 8f35d52..bdf62c1 100644
+--- a/arch/powerpc/platforms/pseries/mobility.c
++++ b/arch/powerpc/platforms/pseries/mobility.c
+@@ -320,22 +320,19 @@ static ssize_t migrate_store(struct class *class, struct class_attribute *attr,
+ {
+ 	u64 streamid;
+ 	int rc;
+-	int vasi_rc = 0;
+ 
+ 	rc = kstrtou64(buf, 0, &streamid);
+ 	if (rc)
+ 		return rc;
+ 
+ 	do {
+-		rc = rtas_ibm_suspend_me(streamid, &vasi_rc);
+-		if (!rc && vasi_rc == RTAS_NOT_SUSPENDABLE)
++		rc = rtas_ibm_suspend_me(streamid);
++		if (rc == -EAGAIN)
+ 			ssleep(1);
+-	} while (!rc && vasi_rc == RTAS_NOT_SUSPENDABLE);
++	} while (rc == -EAGAIN);
+ 
+ 	if (rc)
+ 		return rc;
+-	if (vasi_rc)
+-		return vasi_rc;
+ 
+ 	post_mobility_fixup();
+ 	return count;
+-- 
+1.7.12.2
