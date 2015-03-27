@@ -2,29 +2,30 @@ Return-Path: <aik@ozlabs.ru>
 Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2CCFD1A02AC
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2B9981A0281
  for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Mar 2015 01:56:35 +1100 (AEDT)
 Received: from /spool/local
  by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aik@ozlabs.ru>;
- Sat, 28 Mar 2015 00:56:34 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id ABB6D3578057
+ Sat, 28 Mar 2015 00:56:33 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 8B8D5357804F
  for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Mar 2015 01:56:30 +1100 (EST)
 Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t2REuMgU21495844
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t2REuLRe39846112
  for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Mar 2015 01:56:30 +1100
 Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
  by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t2REtvAF027194
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Mar 2015 01:55:57 +1100
+ t2REttof027164
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Mar 2015 01:55:55 +1100
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH kernel v7 04/31] vfio: powerpc/spapr: Use it_page_size
-Date: Sat, 28 Mar 2015 01:54:48 +1100
-Message-Id: <1427468115-2224-5-git-send-email-aik@ozlabs.ru>
+Subject: [PATCH kernel v7 01/31] vfio: powerpc/spapr: Move page pinning from
+ arch code to VFIO IOMMU driver
+Date: Sat, 28 Mar 2015 01:54:45 +1100
+Message-Id: <1427468115-2224-2-git-send-email-aik@ozlabs.ru>
 In-Reply-To: <1427468115-2224-1-git-send-email-aik@ozlabs.ru>
 References: <1427468115-2224-1-git-send-email-aik@ozlabs.ru>
 Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
@@ -39,104 +40,241 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This makes use of the it_page_size from the iommu_table struct
-as page size can differ.
+This moves page pinning (get_user_pages_fast()/put_page()) code out of
+the platform IOMMU code and puts it to VFIO IOMMU driver where it belongs
+to as the platform code does not deal with page pinning.
 
-This replaces missing IOMMU_PAGE_SHIFT macro in commented debug code
-as recently introduced IOMMU_PAGE_XXX macros do not include
-IOMMU_PAGE_SHIFT.
+This makes iommu_take_ownership()/iommu_release_ownership() deal with
+the IOMMU table bitmap only.
+
+This removes page unpinning from iommu_take_ownership() as the actual
+TCE table might contain garbage and doing put_page() on it is undefined
+behaviour.
+
+Besides the last part, the rest of the patch is mechanical.
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 ---
- drivers/vfio/vfio_iommu_spapr_tce.c | 26 +++++++++++++-------------
- 1 file changed, 13 insertions(+), 13 deletions(-)
+Changes:
+v4:
+* s/iommu_tce_build(tbl, entry + 1/iommu_tce_build(tbl, entry + i/
+---
+ arch/powerpc/include/asm/iommu.h    |  4 --
+ arch/powerpc/kernel/iommu.c         | 55 --------------------------
+ drivers/vfio/vfio_iommu_spapr_tce.c | 78 ++++++++++++++++++++++++++++++-------
+ 3 files changed, 65 insertions(+), 72 deletions(-)
 
-diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
-index f835e63..8bbee22 100644
---- a/drivers/vfio/vfio_iommu_spapr_tce.c
-+++ b/drivers/vfio/vfio_iommu_spapr_tce.c
-@@ -91,7 +91,7 @@ static int tce_iommu_enable(struct tce_container *container)
- 	 * enforcing the limit based on the max that the guest can map.
- 	 */
- 	down_write(&current->mm->mmap_sem);
--	npages = (tbl->it_size << IOMMU_PAGE_SHIFT_4K) >> PAGE_SHIFT;
-+	npages = (tbl->it_size << tbl->it_page_shift) >> PAGE_SHIFT;
- 	locked = current->mm->locked_vm + npages;
- 	lock_limit = rlimit(RLIMIT_MEMLOCK) >> PAGE_SHIFT;
- 	if (locked > lock_limit && !capable(CAP_IPC_LOCK)) {
-@@ -120,7 +120,7 @@ static void tce_iommu_disable(struct tce_container *container)
+diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
+index f1ea597..ed69b7d 100644
+--- a/arch/powerpc/include/asm/iommu.h
++++ b/arch/powerpc/include/asm/iommu.h
+@@ -197,10 +197,6 @@ extern int iommu_tce_build(struct iommu_table *tbl, unsigned long entry,
+ 		unsigned long hwaddr, enum dma_data_direction direction);
+ extern unsigned long iommu_clear_tce(struct iommu_table *tbl,
+ 		unsigned long entry);
+-extern int iommu_clear_tces_and_put_pages(struct iommu_table *tbl,
+-		unsigned long entry, unsigned long pages);
+-extern int iommu_put_tce_user_mode(struct iommu_table *tbl,
+-		unsigned long entry, unsigned long tce);
  
- 	down_write(&current->mm->mmap_sem);
- 	current->mm->locked_vm -= (container->tbl->it_size <<
--			IOMMU_PAGE_SHIFT_4K) >> PAGE_SHIFT;
-+			container->tbl->it_page_shift) >> PAGE_SHIFT;
- 	up_write(&current->mm->mmap_sem);
+ extern void iommu_flush_tce(struct iommu_table *tbl);
+ extern int iommu_take_ownership(struct iommu_table *tbl);
+diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
+index b054f33..1b4a178 100644
+--- a/arch/powerpc/kernel/iommu.c
++++ b/arch/powerpc/kernel/iommu.c
+@@ -991,30 +991,6 @@ unsigned long iommu_clear_tce(struct iommu_table *tbl, unsigned long entry)
  }
+ EXPORT_SYMBOL_GPL(iommu_clear_tce);
  
-@@ -222,7 +222,7 @@ static long tce_iommu_build(struct tce_container *container,
- 					tce, ret);
- 			break;
- 		}
--		tce += IOMMU_PAGE_SIZE_4K;
-+		tce += IOMMU_PAGE_SIZE(tbl);
+-int iommu_clear_tces_and_put_pages(struct iommu_table *tbl,
+-		unsigned long entry, unsigned long pages)
+-{
+-	unsigned long oldtce;
+-	struct page *page;
+-
+-	for ( ; pages; --pages, ++entry) {
+-		oldtce = iommu_clear_tce(tbl, entry);
+-		if (!oldtce)
+-			continue;
+-
+-		page = pfn_to_page(oldtce >> PAGE_SHIFT);
+-		WARN_ON(!page);
+-		if (page) {
+-			if (oldtce & TCE_PCI_WRITE)
+-				SetPageDirty(page);
+-			put_page(page);
+-		}
+-	}
+-
+-	return 0;
+-}
+-EXPORT_SYMBOL_GPL(iommu_clear_tces_and_put_pages);
+-
+ /*
+  * hwaddr is a kernel virtual address here (0xc... bazillion),
+  * tce_build converts it to a physical address.
+@@ -1044,35 +1020,6 @@ int iommu_tce_build(struct iommu_table *tbl, unsigned long entry,
+ }
+ EXPORT_SYMBOL_GPL(iommu_tce_build);
+ 
+-int iommu_put_tce_user_mode(struct iommu_table *tbl, unsigned long entry,
+-		unsigned long tce)
+-{
+-	int ret;
+-	struct page *page = NULL;
+-	unsigned long hwaddr, offset = tce & IOMMU_PAGE_MASK(tbl) & ~PAGE_MASK;
+-	enum dma_data_direction direction = iommu_tce_direction(tce);
+-
+-	ret = get_user_pages_fast(tce & PAGE_MASK, 1,
+-			direction != DMA_TO_DEVICE, &page);
+-	if (unlikely(ret != 1)) {
+-		/* pr_err("iommu_tce: get_user_pages_fast failed tce=%lx ioba=%lx ret=%d\n",
+-				tce, entry << tbl->it_page_shift, ret); */
+-		return -EFAULT;
+-	}
+-	hwaddr = (unsigned long) page_address(page) + offset;
+-
+-	ret = iommu_tce_build(tbl, entry, hwaddr, direction);
+-	if (ret)
+-		put_page(page);
+-
+-	if (ret < 0)
+-		pr_err("iommu_tce: %s failed ioba=%lx, tce=%lx, ret=%d\n",
+-			__func__, entry << tbl->it_page_shift, tce, ret);
+-
+-	return ret;
+-}
+-EXPORT_SYMBOL_GPL(iommu_put_tce_user_mode);
+-
+ int iommu_take_ownership(struct iommu_table *tbl)
+ {
+ 	unsigned long sz = (tbl->it_size + 7) >> 3;
+@@ -1086,7 +1033,6 @@ int iommu_take_ownership(struct iommu_table *tbl)
  	}
  
- 	if (ret)
-@@ -267,8 +267,8 @@ static long tce_iommu_ioctl(void *iommu_data,
- 		if (info.argsz < minsz)
- 			return -EINVAL;
+ 	memset(tbl->it_map, 0xff, sz);
+-	iommu_clear_tces_and_put_pages(tbl, tbl->it_offset, tbl->it_size);
  
--		info.dma32_window_start = tbl->it_offset << IOMMU_PAGE_SHIFT_4K;
--		info.dma32_window_size = tbl->it_size << IOMMU_PAGE_SHIFT_4K;
-+		info.dma32_window_start = tbl->it_offset << tbl->it_page_shift;
-+		info.dma32_window_size = tbl->it_size << tbl->it_page_shift;
- 		info.flags = 0;
+ 	/*
+ 	 * Disable iommu bypass, otherwise the user can DMA to all of
+@@ -1104,7 +1050,6 @@ void iommu_release_ownership(struct iommu_table *tbl)
+ {
+ 	unsigned long sz = (tbl->it_size + 7) >> 3;
  
- 		if (copy_to_user((void __user *)arg, &info, minsz))
-@@ -298,8 +298,8 @@ static long tce_iommu_ioctl(void *iommu_data,
- 				VFIO_DMA_MAP_FLAG_WRITE))
- 			return -EINVAL;
+-	iommu_clear_tces_and_put_pages(tbl, tbl->it_offset, tbl->it_size);
+ 	memset(tbl->it_map, 0, sz);
  
--		if ((param.size & ~IOMMU_PAGE_MASK_4K) ||
--				(param.vaddr & ~IOMMU_PAGE_MASK_4K))
-+		if ((param.size & ~IOMMU_PAGE_MASK(tbl)) ||
-+				(param.vaddr & ~IOMMU_PAGE_MASK(tbl)))
- 			return -EINVAL;
+ 	/* Restore bit#0 set by iommu_init_table() */
+diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
+index 730b4ef..cefaf05 100644
+--- a/drivers/vfio/vfio_iommu_spapr_tce.c
++++ b/drivers/vfio/vfio_iommu_spapr_tce.c
+@@ -147,6 +147,66 @@ static void tce_iommu_release(void *iommu_data)
+ 	kfree(container);
+ }
  
- 		/* iova is checked by the IOMMU API */
-@@ -314,8 +314,8 @@ static long tce_iommu_ioctl(void *iommu_data,
- 			return ret;
++static int tce_iommu_clear(struct tce_container *container,
++		struct iommu_table *tbl,
++		unsigned long entry, unsigned long pages)
++{
++	unsigned long oldtce;
++	struct page *page;
++
++	for ( ; pages; --pages, ++entry) {
++		oldtce = iommu_clear_tce(tbl, entry);
++		if (!oldtce)
++			continue;
++
++		page = pfn_to_page(oldtce >> PAGE_SHIFT);
++		WARN_ON(!page);
++		if (page) {
++			if (oldtce & TCE_PCI_WRITE)
++				SetPageDirty(page);
++			put_page(page);
++		}
++	}
++
++	return 0;
++}
++
++static long tce_iommu_build(struct tce_container *container,
++		struct iommu_table *tbl,
++		unsigned long entry, unsigned long tce, unsigned long pages)
++{
++	long i, ret = 0;
++	struct page *page = NULL;
++	unsigned long hva;
++	enum dma_data_direction direction = iommu_tce_direction(tce);
++
++	for (i = 0; i < pages; ++i) {
++		ret = get_user_pages_fast(tce & PAGE_MASK, 1,
++				direction != DMA_TO_DEVICE, &page);
++		if (unlikely(ret != 1)) {
++			ret = -EFAULT;
++			break;
++		}
++		hva = (unsigned long) page_address(page) +
++			(tce & IOMMU_PAGE_MASK(tbl) & ~PAGE_MASK);
++
++		ret = iommu_tce_build(tbl, entry + i, hva, direction);
++		if (ret) {
++			put_page(page);
++			pr_err("iommu_tce: %s failed ioba=%lx, tce=%lx, ret=%ld\n",
++					__func__, entry << tbl->it_page_shift,
++					tce, ret);
++			break;
++		}
++		tce += IOMMU_PAGE_SIZE_4K;
++	}
++
++	if (ret)
++		tce_iommu_clear(container, tbl, entry, i);
++
++	return ret;
++}
++
+ static long tce_iommu_ioctl(void *iommu_data,
+ 				 unsigned int cmd, unsigned long arg)
+ {
+@@ -195,7 +255,7 @@ static long tce_iommu_ioctl(void *iommu_data,
+ 	case VFIO_IOMMU_MAP_DMA: {
+ 		struct vfio_iommu_type1_dma_map param;
+ 		struct iommu_table *tbl = container->tbl;
+-		unsigned long tce, i;
++		unsigned long tce;
  
- 		ret = tce_iommu_build(container, tbl,
--				param.iova >> IOMMU_PAGE_SHIFT_4K,
--				tce, param.size >> IOMMU_PAGE_SHIFT_4K);
-+				param.iova >> tbl->it_page_shift,
-+				tce, param.size >> tbl->it_page_shift);
- 
- 		iommu_flush_tce(tbl);
- 
-@@ -341,17 +341,17 @@ static long tce_iommu_ioctl(void *iommu_data,
- 		if (param.flags)
- 			return -EINVAL;
- 
--		if (param.size & ~IOMMU_PAGE_MASK_4K)
-+		if (param.size & ~IOMMU_PAGE_MASK(tbl))
- 			return -EINVAL;
- 
- 		ret = iommu_tce_clear_param_check(tbl, param.iova, 0,
--				param.size >> IOMMU_PAGE_SHIFT_4K);
-+				param.size >> tbl->it_page_shift);
+ 		if (!tbl)
+ 			return -ENXIO;
+@@ -229,17 +289,9 @@ static long tce_iommu_ioctl(void *iommu_data,
  		if (ret)
  			return ret;
  
- 		ret = tce_iommu_clear(container, tbl,
--				param.iova >> IOMMU_PAGE_SHIFT_4K,
--				param.size >> IOMMU_PAGE_SHIFT_4K);
-+				param.iova >> tbl->it_page_shift,
-+				param.size >> tbl->it_page_shift);
+-		for (i = 0; i < (param.size >> IOMMU_PAGE_SHIFT_4K); ++i) {
+-			ret = iommu_put_tce_user_mode(tbl,
+-					(param.iova >> IOMMU_PAGE_SHIFT_4K) + i,
+-					tce);
+-			if (ret)
+-				break;
+-			tce += IOMMU_PAGE_SIZE_4K;
+-		}
+-		if (ret)
+-			iommu_clear_tces_and_put_pages(tbl,
+-					param.iova >> IOMMU_PAGE_SHIFT_4K, i);
++		ret = tce_iommu_build(container, tbl,
++				param.iova >> IOMMU_PAGE_SHIFT_4K,
++				tce, param.size >> IOMMU_PAGE_SHIFT_4K);
+ 
  		iommu_flush_tce(tbl);
  
- 		return ret;
+@@ -273,7 +325,7 @@ static long tce_iommu_ioctl(void *iommu_data,
+ 		if (ret)
+ 			return ret;
+ 
+-		ret = iommu_clear_tces_and_put_pages(tbl,
++		ret = tce_iommu_clear(container, tbl,
+ 				param.iova >> IOMMU_PAGE_SHIFT_4K,
+ 				param.size >> IOMMU_PAGE_SHIFT_4K);
+ 		iommu_flush_tce(tbl);
 -- 
 2.0.0
