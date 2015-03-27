@@ -1,29 +1,23 @@
-Return-Path: <B43198@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0107.outbound.protection.outlook.com [65.55.169.107])
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bon0146.outbound.protection.outlook.com [157.56.111.146])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CA8321A003D
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Mar 2015 04:23:34 +1100 (AEDT)
-Message-ID: <55158E6D.40304@freescale.com>
-Date: Fri, 27 Mar 2015 19:07:57 +0200
-From: Purcareata Bogdan <b43198@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id D434D1A0C99
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Mar 2015 05:07:46 +1100 (AEDT)
+Message-ID: <1427479651.22867.151.camel@freescale.com>
+Subject: Re: [PATCH v3] powerpc: Use PFN_PHYS() to avoid truncating the
+ physical address
+From: Scott Wood <scottwood@freescale.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Date: Fri, 27 Mar 2015 13:07:31 -0500
+In-Reply-To: <1427413505.23142.3.camel@ellerman.id.au>
+References: <1427291352-31256-1-git-send-email-Emilian.Medve@Freescale.com>
+ <FB8A0580-9A76-4F83-BDE7-2EECC0063C1C@kernel.crashing.org>
+ <5514264A.6020502@Freescale.com> <1427413505.23142.3.camel@ellerman.id.au>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>, Sebastian Andrzej Siewior
- <bigeasy@linutronix.de>
-Subject: Re: [PATCH 0/2] powerpc/kvm: Enable running guests on RT Linux
-References: <1424251955-308-1-git-send-email-bogdan.purcareata@freescale.com>	
- <54E73A6C.9080500@suse.de> <54E740E7.5090806@redhat.com>	
- <54E74A8C.30802@linutronix.de> <1424734051.4698.17.camel@freescale.com>	
- <54EF196E.4090805@redhat.com> <54EF2025.80404@linutronix.de>
- <1424999159.4698.78.camel@freescale.com>
-In-Reply-To: <1424999159.4698.78.camel@freescale.com>
-Content-Type: text/plain; charset="utf-8"; format=flowed
-Cc: linux-rt-users@vger.kernel.org, Alexander Graf <agraf@suse.de>,
- linux-kernel@vger.kernel.org,
- Bogdan Purcareata <bogdan.purcareata@freescale.com>,
- mihai.caraman@freescale.com, Paolo Bonzini <pbonzini@redhat.com>, Thomas
- Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@lists.ozlabs.org, Emil Medve <Emilian.Medve@Freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,103 +27,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 27.02.2015 03:05, Scott Wood wrote:
-> On Thu, 2015-02-26 at 14:31 +0100, Sebastian Andrzej Siewior wrote:
->> On 02/26/2015 02:02 PM, Paolo Bonzini wrote:
->>>
->>>
->>> On 24/02/2015 00:27, Scott Wood wrote:
->>>> This isn't a host PIC driver.  It's guest PIC emulation, some of which
->>>> is indeed not suitable for a rawlock (in particular, openpic_update_irq
->>>> which loops on the number of vcpus, with a loop body that calls
->>>> IRQ_check() which loops over all pending IRQs).
->>>
->>> The question is what behavior is wanted of code that isn't quite
->>> RT-ready.  What is preferred, bugs or bad latency?
->>>
->>> If the answer is bad latency (which can be avoided simply by not running
->>> KVM on a RT kernel in production), patch 1 can be applied.  If the
->> can be applied *but* makes no difference if applied or not.
->>
->>> answer is bugs, patch 1 is not upstream material.
->>>
->>> I myself prefer to have bad latency; if something takes a spinlock in
->>> atomic context, that spinlock should be raw.  If it hurts (latency),
->>> don't do it (use the affected code).
->>
->> The problem, that is fixed by this s/spin_lock/raw_spin_lock/, exists
->> only in -RT. There is no change upstream. In general we fix such things
->> in -RT first and forward the patches upstream if possible. This convert
->> thingy would be possible.
->> Bug fixing comes before latency no matter if RT or not. Converting
->> every lock into a rawlock is not always the answer.
->> Last thing I read from Scott is that he is not entirely sure if this is
->> the right approach or not and patch #1 was not acked-by him either.
->>
->> So for now I wait for Scott's feedback and maybe a backtrace :)
->
-> Obviously leaving it in a buggy state is not what we want -- but I lean
-> towards a short term "fix" of putting "depends on !PREEMPT_RT" on the
-> in-kernel MPIC emulation (which is itself just an optimization -- you
-> can still use KVM without it).  This way people don't enable it with RT
-> without being aware of the issue, and there's more of an incentive to
-> fix it properly.
->
-> I'll let Bogdan supply the backtrace.
+On Fri, 2015-03-27 at 10:45 +1100, Michael Ellerman wrote:
+> On Thu, 2015-03-26 at 10:31 -0500, Emil Medve wrote:
+> > Hello Kumar,
+> > 
+> > 
+> > On 03/26/2015 10:18 AM, Kumar Gala wrote:
+> > > Why no commit message with what issue this change was trying to fix?
+> > 
+> > A while back, when I attempted to remove bootmem (in favor of just plain
+> > memblock as in powerpc land bootmem was just a wrapper to memblock
+> > anyway) I run at some point into a problem with an intermediate address
+> > value because of this '<< PAGE_SHIFT' on the wrong width variable. Using
+> > PFN_PHYS() took care of it (it has a cast) so I decided to get this
+> > defensive patch applied. Since, I dropped my bootmem/memblock patches in
+> > favor to Anton's (Blanchard) work so my concrete issue example is
+> > somewhat gone
+> 
+> I'm not a big fan of it unless it's actually fixing an issue. It's a lot of
+> churn and the end result is less readable IMHO.
 
-So about the backtrace. Wasn't really sure how to "catch" this, so what 
-I did was to start a 24 VCPUs guest on a 24 CPU board, and in the guest 
-run 24 netperf flows with an external back to back board of the same 
-kind. I assumed this would provide the sufficient VCPUs and external 
-interrupt to expose an alleged culprit.
+It is fixing an issue -- the issue is that there are overflow errors in
+the code.  Some of the places Emil fixed are only for platforms that
+don't have physical addresses larger than pointers, or have the needed
+casts, or are known to be dealing with lowmem, but others aren't.  E.g.
+page_is_ram() and devmem_is_allowed() are buggy on 32-bit with 64-bit
+physical.
 
-With regards to measuring the latency, I thought of using ftrace, 
-specifically the preemptirqsoff latency histogram. Unfortunately, I 
-wasn't able to capture any major differences between running a guest 
-with in-kernel MPIC emulation (with the openpic raw_spinlock_conversion 
-applied) vs. no in-kernel MPIC emulation. Function profiling 
-(trace_stat) shows that in the second case there's a far greater time 
-spent in kvm_handle_exit (100x), but overall, the maximum latencies for 
-preemptirqsoff don't look that much different.
+flush_dcache_icache_page() is buggy on mpc86xx with more than 4 GiB RAM
+-- though that would still be buggy even with this change, due to
+__flush_dcache_icache_phys taking unsigned long.  The entire concept of
+that function doesn't work for sizeof(phys_addr_t) > sizeof(void *), so
+in this case 86xx should be using the booke code instead.
 
-Here are the max numbers (preemptirqsoff) for the 24 CPUs, on the host 
-RT Linux, sorted in descending order, expressed in microseconds:
+Even in the places where overflow can't happen due to the above
+circumstances (other than having the needed cast), it's setting a bad
+example that can be copied to places where it will break, or the
+circumstances of the code could change (e.g. currently 64-bit-only code
+being used on 32-bit).
 
-In-kernel MPIC		QEMU MPIC
-3975			5105
-2079			3972
-1303			3557
-1106			1725
-447			907
-423			853
-362			723
-343			182
-260			121
-133			116
-131			116
-118			115
-116			114
-114			114
-114			114
-114			99
-113			99
-103			98
-98			98
-95			97
-87			96
-83			83
-83			82
-80			81
-
-I'm not sure if this captures openpic behavior or just scheduler behavior.
-
-Anyways, I'm pro adding the openpic raw_spinlock conversion along with 
-disabling the in-kernel MPIC emulation for upstream. But just wanted to 
-catch up with this last request from a while ago.
-
-Do you think it would be better to just submit the new patch or should I 
-do some further testing? Do you have any suggestions regarding what else 
-I should look at / how to test?
-
-Thank you,
-Bogdan P.
+-Scott
