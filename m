@@ -1,20 +1,19 @@
 Return-Path: <clg@fr.ibm.com>
-Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
+Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 62A461A11C1
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Mar 2015 03:39:54 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id B65771A11C2
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Mar 2015 03:40:06 +1100 (AEDT)
 Received: from /spool/local
- by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <clg@fr.ibm.com>;
- Fri, 27 Mar 2015 16:39:50 -0000
+ Fri, 27 Mar 2015 16:40:03 -0000
 From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@fr.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v3 2/3] powerpc/powernv: handle OPAL_SUCCESS return in
- opal_sensor_read
-Date: Fri, 27 Mar 2015 17:39:20 +0100
-Message-Id: <1427474362-3903-2-git-send-email-clg@fr.ibm.com>
+Subject: [PATCH v3 3/3] powerpc/powernv: remove opal_sensor_mutex
+Date: Fri, 27 Mar 2015 17:39:21 +0100
+Message-Id: <1427474362-3903-3-git-send-email-clg@fr.ibm.com>
 In-Reply-To: <20150327095936.50A921400A0@ozlabs.org>
 References: <20150327095936.50A921400A0@ozlabs.org>
 MIME-Version: 1.0
@@ -31,74 +30,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently, when a sensor value is read, the kernel calls OPAL, which in
-turn builds a message for the FSP, and waits for a message back. 
+The opal sensor mutex protects the opal_sensor_read call which
+can return a OPAL_BUSY code on IBM Power systems if a previous 
+request is in progress.
 
-The new device tree for OPAL sensors [1] adds new sensors that can be 
-read synchronously (core temperatures for instance) and that don't need 
-to wait for a response.
-
-This patch modifies the opal call to accept an OPAL_SUCCESS return value
-and cover the case above.
-
-[1] https://lists.ozlabs.org/pipermail/skiboot/2015-March/000639.html
+This can be handled at user level with a retry.
 
 Signed-off-by: Cédric Le Goater <clg@fr.ibm.com>
 ---
 
- We still uselessly reserve a token (for the response) and take a
- lock, which might raise the need of a new 'opal_sensor_read_sync' 
- call.
-
  Changes since v2 :
 
- - merged the return code assignments in one call
+ - removed a goto label
 
- arch/powerpc/platforms/powernv/opal-sensor.c |   32 ++++++++++++++++-----------
- 1 file changed, 20 insertions(+), 12 deletions(-)
+ arch/powerpc/platforms/powernv/opal-sensor.c |    9 +--------
+ 1 file changed, 1 insertion(+), 8 deletions(-)
 
 Index: linux.git/arch/powerpc/platforms/powernv/opal-sensor.c
 ===================================================================
 --- linux.git.orig/arch/powerpc/platforms/powernv/opal-sensor.c
 +++ linux.git/arch/powerpc/platforms/powernv/opal-sensor.c
-@@ -46,20 +46,28 @@ int opal_get_sensor_data(u32 sensor_hndl
+@@ -19,13 +19,10 @@
+  */
  
- 	mutex_lock(&opal_sensor_mutex);
+ #include <linux/delay.h>
+-#include <linux/mutex.h>
+ #include <linux/of_platform.h>
+ #include <asm/opal.h>
+ #include <asm/machdep.h>
+ 
+-static DEFINE_MUTEX(opal_sensor_mutex);
+-
+ /*
+  * This will return sensor information to driver based on the requested sensor
+  * handle. A handle is an opaque id for the powernv, read by the driver from the
+@@ -40,11 +37,9 @@ int opal_get_sensor_data(u32 sensor_hndl
+ 	token = opal_async_get_token_interruptible();
+ 	if (token < 0) {
+ 		pr_err("%s: Couldn't get the token, returning\n", __func__);
+-		ret = token;
+-		goto out;
++		return token;
+ 	}
+ 
+-	mutex_lock(&opal_sensor_mutex);
  	ret = opal_sensor_read(sensor_hndl, token, &data);
--	if (ret != OPAL_ASYNC_COMPLETION) {
--		ret = opal_error_code(ret);
--		goto out_token;
--	}
-+	switch (ret) {
-+	case OPAL_ASYNC_COMPLETION:
-+		ret = opal_async_wait_response(token, &msg);
-+		if (ret) {
-+			pr_err("%s: Failed to wait for the async response, %d\n",
-+			       __func__, ret);
-+			goto out_token;
-+		}
- 
--	ret = opal_async_wait_response(token, &msg);
--	if (ret) {
--		pr_err("%s: Failed to wait for the async response, %d\n",
--				__func__, ret);
--		goto out_token;
--	}
-+		ret = opal_error_code(be64_to_cpu(msg.params[1]));
-+		*sensor_data = be32_to_cpu(data);
-+		break;
- 
--	*sensor_data = be32_to_cpu(data);
--	ret = opal_error_code(be64_to_cpu(msg.params[1]));
-+	case OPAL_SUCCESS:
-+		ret = 0;
-+		*sensor_data = be32_to_cpu(data);
-+		break;
-+
-+	default:
-+		ret = opal_error_code(ret);
-+		break;
-+	}
+ 	switch (ret) {
+ 	case OPAL_ASYNC_COMPLETION:
+@@ -70,9 +65,7 @@ int opal_get_sensor_data(u32 sensor_hndl
+ 	}
  
  out_token:
- 	mutex_unlock(&opal_sensor_mutex);
+-	mutex_unlock(&opal_sensor_mutex);
+ 	opal_async_release_token(token);
+-out:
+ 	return ret;
+ }
+ EXPORT_SYMBOL_GPL(opal_get_sensor_data);
