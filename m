@@ -1,23 +1,18 @@
-Return-Path: <sowmini.varadhan@oracle.com>
-Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <Shengzhou.Liu@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0145.outbound.protection.outlook.com [207.46.100.145])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 760341A02AC
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Mar 2015 21:51:38 +1100 (AEDT)
-Date: Fri, 27 Mar 2015 06:51:23 -0400
-From: Sowmini Varadhan <sowmini.varadhan@oracle.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH v7 0/3] Generic IOMMU pooled allocator
-Message-ID: <20150327105123.GC15564@oracle.com>
-References: <cover.1427295804.git.sowmini.varadhan@oracle.com>
- <20150325.141235.238730018688792495.davem@davemloft.net>
- <1427317542.6468.85.camel@kernel.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id B8F3F1A09F9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Mar 2015 21:52:36 +1100 (AEDT)
+From: Shengzhou Liu <Shengzhou.Liu@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <scottwood@freescale.com>
+Subject: [PATCH] t2080qds/rtc: fix rtc interrupt
+Date: Fri, 27 Mar 2015 18:49:17 +0800
+Message-ID: <1427453357-11444-1-git-send-email-Shengzhou.Liu@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1427317542.6468.85.camel@kernel.crashing.org>
-Cc: aik@au1.ibm.com, anton@au1.ibm.com, paulus@samba.org,
- sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- David Miller <davem@davemloft.net>
+Content-Type: text/plain
+Cc: Shengzhou Liu <Shengzhou.Liu@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,16 +22,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On (03/26/15 08:05), Benjamin Herrenschmidt wrote:
-> > PowerPC folks, what do you think?
-> 
-> I'll give it another look today.
-> 
-> Cheers,
-> Ben.
+RTC interrupt uses IRQ11 on T2080QDS.
 
-Hi Ben, 
+Signed-off-by: Shengzhou Liu <Shengzhou.Liu@freescale.com>
+---
+ arch/powerpc/boot/dts/t208xqds.dtsi | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-did you have a chance to look at this?
-
---Sowmini
+diff --git a/arch/powerpc/boot/dts/t208xqds.dtsi b/arch/powerpc/boot/dts/t208xqds.dtsi
+index 5906183..024cc96 100644
+--- a/arch/powerpc/boot/dts/t208xqds.dtsi
++++ b/arch/powerpc/boot/dts/t208xqds.dtsi
+@@ -137,7 +137,7 @@
+ 					rtc@68 {
+ 						compatible = "dallas,ds3232";
+ 						reg = <0x68>;
+-						interrupts = <0x1 0x1 0 0>;
++						interrupts = <0xb 0x1 0 0>;
+ 					};
+ 				};
+ 
+-- 
+2.1.0.27.g96db324
