@@ -1,31 +1,31 @@
 Return-Path: <aik@ozlabs.ru>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4A5C51A06F8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 608A81A0740
  for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Mar 2015 01:56:56 +1100 (AEDT)
 Received: from /spool/local
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aik@ozlabs.ru>;
- Sat, 28 Mar 2015 00:56:56 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 6CDA43578062
+ Sat, 28 Mar 2015 00:56:55 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 446E42BB0060
  for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Mar 2015 01:56:53 +1100 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t2REuj7i50528278
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t2REuj1K47120578
  for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Mar 2015 01:56:53 +1100
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t2REuJtR018213
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t2REuJi4027607
  for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Mar 2015 01:56:20 +1100
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH kernel v7 07/31] vfio: powerpc/spapr: Moving pinning/unpinning
- to helpers
-Date: Sat, 28 Mar 2015 01:54:51 +1100
-Message-Id: <1427468115-2224-8-git-send-email-aik@ozlabs.ru>
+Subject: [PATCH kernel v7 28/31] powerpc/mmu: Add userspace-to-physical
+ addresses translation cache
+Date: Sat, 28 Mar 2015 01:55:12 +1100
+Message-Id: <1427468115-2224-29-git-send-email-aik@ozlabs.ru>
 In-Reply-To: <1427468115-2224-1-git-send-email-aik@ozlabs.ru>
 References: <1427468115-2224-1-git-send-email-aik@ozlabs.ru>
 Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
@@ -40,154 +40,329 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is a pretty mechanical patch to make next patches simpler.
+We are adding support for DMA memory pre-registration to be used in
+conjunction with VFIO. The idea is that the userspace which is going to
+run a guest may want to pre-register a user space memory region so
+it all gets pinned once and never goes away. Having this done,
+a hypervisor will not have to pin/unpin pages on every DMA map/unmap
+request. This is going to help with multiple pinning of the same memory
+and in-kernel acceleration of DMA requests.
 
-New tce_iommu_unuse_page() helper does put_page() now but it might skip
-that after the memory registering patch applied.
+This adds a list of memory regions to mm_context_t. Each region consists
+of a header and a list of physical addresses. This adds API to:
+1. register/unregister memory regions;
+2. do final cleanup (which puts all pre-registered pages);
+3. do userspace to physical address translation;
+4. manage a mapped pages counter; when it is zero, it is safe to
+unregister the region.
 
-As we are here, this removes unnecessary checks for a value returned
-by pfn_to_page() as it cannot possibly return NULL.
-
-This moves tce_iommu_disable() later to let tce_iommu_clear() know if
-the container has been enabled because if it has not been, then
-put_page() must not be called on TCEs from the TCE table. This situation
-is not yet possible but it will after KVM acceleration patchset is
-applied.
+Multiple registration of the same region is allowed, kref is used to
+track the number of registrations.
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 ---
-Changes:
-v6:
-* tce_get_hva() returns hva via a pointer
----
- drivers/vfio/vfio_iommu_spapr_tce.c | 68 +++++++++++++++++++++++++++----------
- 1 file changed, 50 insertions(+), 18 deletions(-)
+ arch/powerpc/include/asm/mmu-hash64.h      |   3 +
+ arch/powerpc/include/asm/mmu_context.h     |  16 +++
+ arch/powerpc/mm/Makefile                   |   1 +
+ arch/powerpc/mm/mmu_context_hash64.c       |   6 +
+ arch/powerpc/mm/mmu_context_hash64_iommu.c | 215 +++++++++++++++++++++++++++++
+ 5 files changed, 241 insertions(+)
+ create mode 100644 arch/powerpc/mm/mmu_context_hash64_iommu.c
 
-diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
-index c137bb3..ec5ee83 100644
---- a/drivers/vfio/vfio_iommu_spapr_tce.c
-+++ b/drivers/vfio/vfio_iommu_spapr_tce.c
-@@ -196,7 +196,6 @@ static void tce_iommu_release(void *iommu_data)
- 	struct iommu_table *tbl = container->tbl;
+diff --git a/arch/powerpc/include/asm/mmu-hash64.h b/arch/powerpc/include/asm/mmu-hash64.h
+index 4f13c3e..83214c4 100644
+--- a/arch/powerpc/include/asm/mmu-hash64.h
++++ b/arch/powerpc/include/asm/mmu-hash64.h
+@@ -535,6 +535,9 @@ typedef struct {
+ 	/* for 4K PTE fragment support */
+ 	void *pte_frag;
+ #endif
++#ifdef CONFIG_SPAPR_TCE_IOMMU
++	struct list_head iommu_group_mem_list;
++#endif
+ } mm_context_t;
  
- 	WARN_ON(tbl && !tbl->it_group);
--	tce_iommu_disable(container);
  
- 	if (tbl) {
- 		tce_iommu_clear(container, tbl,	tbl->it_offset, tbl->it_size);
-@@ -204,63 +203,96 @@ static void tce_iommu_release(void *iommu_data)
- 		if (tbl->it_group)
- 			tce_iommu_detach_group(iommu_data, tbl->it_group);
- 	}
+diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/include/asm/mmu_context.h
+index 73382eb..3461c91 100644
+--- a/arch/powerpc/include/asm/mmu_context.h
++++ b/arch/powerpc/include/asm/mmu_context.h
+@@ -16,6 +16,22 @@
+  */
+ extern int init_new_context(struct task_struct *tsk, struct mm_struct *mm);
+ extern void destroy_context(struct mm_struct *mm);
++#ifdef CONFIG_SPAPR_TCE_IOMMU
++typedef struct mm_iommu_table_group_mem_t mm_iommu_table_group_mem_t;
 +
-+	tce_iommu_disable(container);
-+
- 	mutex_destroy(&container->lock);
++extern bool mm_iommu_preregistered(void);
++extern long mm_iommu_alloc(unsigned long ua, unsigned long entries,
++		mm_iommu_table_group_mem_t **pmem);
++extern mm_iommu_table_group_mem_t *mm_iommu_get(unsigned long ua,
++		unsigned long entries);
++extern long mm_iommu_put(mm_iommu_table_group_mem_t *mem);
++extern void mm_iommu_cleanup(mm_context_t *ctx);
++extern mm_iommu_table_group_mem_t *mm_iommu_lookup(unsigned long ua,
++		unsigned long size);
++extern long mm_iommu_ua_to_hpa(mm_iommu_table_group_mem_t *mem,
++		unsigned long ua, unsigned long *hpa);
++extern long mm_iommu_mapped_update(mm_iommu_table_group_mem_t *mem, bool inc);
++#endif
  
- 	kfree(container);
- }
- 
-+static void tce_iommu_unuse_page(struct tce_container *container,
-+		unsigned long oldtce)
-+{
-+	struct page *page;
-+
-+	if (!(oldtce & (TCE_PCI_READ | TCE_PCI_WRITE)))
-+		return;
-+
-+	/*
-+	 * VFIO cannot map/unmap when a container is not enabled so
-+	 * we would not need this check but KVM could map/unmap and if
-+	 * this happened, we must not put pages as KVM does not get them as
-+	 * it expects memory pre-registation to do this part.
-+	 */
-+	if (!container->enabled)
-+		return;
-+
-+	page = pfn_to_page(__pa(oldtce) >> PAGE_SHIFT);
-+
-+	if (oldtce & TCE_PCI_WRITE)
-+		SetPageDirty(page);
-+
-+	put_page(page);
-+}
-+
- static int tce_iommu_clear(struct tce_container *container,
- 		struct iommu_table *tbl,
- 		unsigned long entry, unsigned long pages)
- {
- 	unsigned long oldtce;
--	struct page *page;
- 
- 	for ( ; pages; --pages, ++entry) {
- 		oldtce = iommu_clear_tce(tbl, entry);
- 		if (!oldtce)
- 			continue;
- 
--		page = pfn_to_page(oldtce >> PAGE_SHIFT);
--		WARN_ON(!page);
--		if (page) {
--			if (oldtce & TCE_PCI_WRITE)
--				SetPageDirty(page);
--			put_page(page);
--		}
-+		tce_iommu_unuse_page(container, (unsigned long) __va(oldtce));
- 	}
- 
+ extern void switch_mmu_context(struct mm_struct *prev, struct mm_struct *next);
+ extern void switch_slb(struct task_struct *tsk, struct mm_struct *mm);
+diff --git a/arch/powerpc/mm/Makefile b/arch/powerpc/mm/Makefile
+index 438dcd3..49fbfc7 100644
+--- a/arch/powerpc/mm/Makefile
++++ b/arch/powerpc/mm/Makefile
+@@ -35,3 +35,4 @@ obj-$(CONFIG_PPC_SUBPAGE_PROT)	+= subpage-prot.o
+ obj-$(CONFIG_NOT_COHERENT_CACHE) += dma-noncoherent.o
+ obj-$(CONFIG_HIGHMEM)		+= highmem.o
+ obj-$(CONFIG_PPC_COPRO_BASE)	+= copro_fault.o
++obj-$(CONFIG_SPAPR_TCE_IOMMU)	+= mmu_context_hash64_iommu.o
+diff --git a/arch/powerpc/mm/mmu_context_hash64.c b/arch/powerpc/mm/mmu_context_hash64.c
+index 178876ae..eb3080c 100644
+--- a/arch/powerpc/mm/mmu_context_hash64.c
++++ b/arch/powerpc/mm/mmu_context_hash64.c
+@@ -89,6 +89,9 @@ int init_new_context(struct task_struct *tsk, struct mm_struct *mm)
+ #ifdef CONFIG_PPC_64K_PAGES
+ 	mm->context.pte_frag = NULL;
+ #endif
++#ifdef CONFIG_SPAPR_TCE_IOMMU
++	INIT_LIST_HEAD_RCU(&mm->context.iommu_group_mem_list);
++#endif
  	return 0;
  }
  
-+static int tce_get_hva(unsigned long tce, unsigned long *hva)
+@@ -132,6 +135,9 @@ static inline void destroy_pagetable_page(struct mm_struct *mm)
+ 
+ void destroy_context(struct mm_struct *mm)
+ {
++#ifdef CONFIG_SPAPR_TCE_IOMMU
++	mm_iommu_cleanup(&mm->context);
++#endif
+ 
+ #ifdef CONFIG_PPC_ICSWX
+ 	drop_cop(mm->context.acop, mm);
+diff --git a/arch/powerpc/mm/mmu_context_hash64_iommu.c b/arch/powerpc/mm/mmu_context_hash64_iommu.c
+new file mode 100644
+index 0000000..c268c4d
+--- /dev/null
++++ b/arch/powerpc/mm/mmu_context_hash64_iommu.c
+@@ -0,0 +1,215 @@
++/*
++ *  IOMMU helpers in MMU context.
++ *
++ *  Copyright (C) 2015 IBM Corp. <aik@ozlabs.ru>
++ *
++ *  This program is free software; you can redistribute it and/or
++ *  modify it under the terms of the GNU General Public License
++ *  as published by the Free Software Foundation; either version
++ *  2 of the License, or (at your option) any later version.
++ *
++ */
++
++#include <linux/sched.h>
++#include <linux/slab.h>
++#include <linux/rculist.h>
++#include <linux/vmalloc.h>
++#include <linux/kref.h>
++#include <asm/mmu_context.h>
++
++typedef struct mm_iommu_table_group_mem_t {
++	struct list_head next;
++	struct rcu_head rcu;
++	struct kref kref; /* one reference per VFIO container */
++	atomic_t mapped;/* number of currently mapped pages */
++	u64 ua; 	/* userspace address */
++	u64 entries; 	/* number of entries in hpas[] */
++	u64 *hpas;	/* vmalloc'ed */
++} mm_iommu_table_group_mem_t;
++
++bool mm_iommu_preregistered(void)
 +{
++	if (!current || !current->mm)
++		return false;
++
++	return !list_empty(&current->mm->context.iommu_group_mem_list);
++}
++EXPORT_SYMBOL_GPL(mm_iommu_preregistered);
++
++long mm_iommu_alloc(unsigned long ua, unsigned long entries,
++		mm_iommu_table_group_mem_t **pmem)
++{
++	mm_iommu_table_group_mem_t *mem;
++	long i, j;
 +	struct page *page = NULL;
-+	enum dma_data_direction direction = iommu_tce_direction(tce);
 +
-+	if (get_user_pages_fast(tce & PAGE_MASK, 1,
-+			direction != DMA_TO_DEVICE, &page) != 1)
-+		return -EFAULT;
++	list_for_each_entry_rcu(mem, &current->mm->context.iommu_group_mem_list,
++			next) {
++		if ((mem->ua == ua) && (mem->entries == entries))
++			return -EBUSY;
 +
-+	*hva = (unsigned long) page_address(page);
++		/* Overlap? */
++		if ((mem->ua < (ua + (entries << PAGE_SHIFT))) &&
++				(ua < (mem->ua + (mem->entries << PAGE_SHIFT))))
++			return -EINVAL;
++	}
++
++	mem = kzalloc(sizeof(*mem), GFP_KERNEL);
++	if (!mem)
++		return -ENOMEM;
++
++	mem->hpas = vzalloc(entries * sizeof(mem->hpas[0]));
++	if (!mem->hpas) {
++		kfree(mem);
++		return -ENOMEM;
++	}
++
++	for (i = 0; i < entries; ++i) {
++		if (1 != get_user_pages_fast(ua + (i << PAGE_SHIFT),
++					1/* pages */, 1/* iswrite */, &page)) {
++			for (j = 0; j < i; ++j)
++				put_page(pfn_to_page(
++						mem->hpas[i] >> PAGE_SHIFT));
++			vfree(mem->hpas);
++			kfree(mem);
++			return -EFAULT;
++		}
++
++		mem->hpas[i] = page_to_pfn(page) << PAGE_SHIFT;
++	}
++
++	kref_init(&mem->kref);
++	atomic_set(&mem->mapped, 0);
++	mem->ua = ua;
++	mem->entries = entries;
++	*pmem = mem;
++
++	list_add_rcu(&mem->next, &current->mm->context.iommu_group_mem_list);
 +
 +	return 0;
 +}
++EXPORT_SYMBOL_GPL(mm_iommu_alloc);
 +
- static long tce_iommu_build(struct tce_container *container,
- 		struct iommu_table *tbl,
- 		unsigned long entry, unsigned long tce, unsigned long pages)
- {
- 	long i, ret = 0;
--	struct page *page = NULL;
-+	struct page *page;
- 	unsigned long hva;
- 	enum dma_data_direction direction = iommu_tce_direction(tce);
- 
- 	for (i = 0; i < pages; ++i) {
--		ret = get_user_pages_fast(tce & PAGE_MASK, 1,
--				direction != DMA_TO_DEVICE, &page);
--		if (unlikely(ret != 1)) {
--			ret = -EFAULT;
-+		ret = tce_get_hva(tce, &hva);
-+		if (ret)
- 			break;
--		}
- 
-+		page = pfn_to_page(__pa(hva) >> PAGE_SHIFT);
- 		if (!tce_page_is_contained(page, tbl->it_page_shift)) {
- 			ret = -EPERM;
- 			break;
- 		}
- 
--		hva = (unsigned long) page_address(page) +
--			(tce & IOMMU_PAGE_MASK(tbl) & ~PAGE_MASK);
-+		/* Preserve offset within IOMMU page */
-+		hva |= tce & IOMMU_PAGE_MASK(tbl) & ~PAGE_MASK;
- 
- 		ret = iommu_tce_build(tbl, entry + i, hva, direction);
- 		if (ret) {
--			put_page(page);
-+			tce_iommu_unuse_page(container, hva);
- 			pr_err("iommu_tce: %s failed ioba=%lx, tce=%lx, ret=%ld\n",
- 					__func__, entry << tbl->it_page_shift,
- 					tce, ret);
++static void mm_iommu_unpin(mm_iommu_table_group_mem_t *mem)
++{
++	long i;
++	struct page *page = NULL;
++
++	for (i = 0; i < mem->entries; ++i) {
++		if (!mem->hpas[i])
++			continue;
++
++		page = pfn_to_page(mem->hpas[i] >> PAGE_SHIFT);
++		if (!page)
++			continue;
++
++		put_page(page);
++		mem->hpas[i] = 0;
++	}
++}
++
++static void mm_iommu_free(struct rcu_head *head)
++{
++	mm_iommu_table_group_mem_t *mem = container_of(head,
++			mm_iommu_table_group_mem_t, rcu);
++
++	mm_iommu_unpin(mem);
++	vfree(mem->hpas);
++	kfree(mem);
++}
++
++static void mm_iommu_release(struct kref *kref)
++{
++	mm_iommu_table_group_mem_t *mem = container_of(kref,
++			mm_iommu_table_group_mem_t, kref);
++
++	list_del_rcu(&mem->next);
++	call_rcu(&mem->rcu, mm_iommu_free);
++}
++
++mm_iommu_table_group_mem_t *mm_iommu_get(unsigned long ua,
++		unsigned long entries)
++{
++	mm_iommu_table_group_mem_t *mem;
++
++	list_for_each_entry_rcu(mem, &current->mm->context.iommu_group_mem_list,
++			next) {
++		if ((mem->ua == ua) && (mem->entries == entries)) {
++			kref_get(&mem->kref);
++			return mem;
++		}
++	}
++
++	return NULL;
++}
++EXPORT_SYMBOL_GPL(mm_iommu_get);
++
++long mm_iommu_put(mm_iommu_table_group_mem_t *mem)
++{
++	if (atomic_read(&mem->mapped))
++		return -EBUSY;
++
++	kref_put(&mem->kref, mm_iommu_release);
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(mm_iommu_put);
++
++mm_iommu_table_group_mem_t *mm_iommu_lookup(unsigned long ua,
++		unsigned long size)
++{
++	mm_iommu_table_group_mem_t *mem, *ret = NULL;
++
++	list_for_each_entry_rcu(mem,
++			&current->mm->context.iommu_group_mem_list,
++			next) {
++		if ((mem->ua <= ua) &&
++				(ua + size <= mem->ua +
++				 (mem->entries << PAGE_SHIFT))) {
++			ret = mem;
++			break;
++		}
++	}
++
++	return ret;
++}
++EXPORT_SYMBOL_GPL(mm_iommu_lookup);
++
++long mm_iommu_ua_to_hpa(mm_iommu_table_group_mem_t *mem,
++		unsigned long ua, unsigned long *hpa)
++{
++	const long entry = (ua - mem->ua) >> PAGE_SHIFT;
++	u64 *va = &mem->hpas[entry];
++
++	if (entry >= mem->entries)
++		return -EFAULT;
++
++	*hpa = *va | (ua & ~PAGE_MASK);
++
++	return 0;
++}
++EXPORT_SYMBOL_GPL(mm_iommu_ua_to_hpa);
++
++long mm_iommu_mapped_update(mm_iommu_table_group_mem_t *mem, bool inc)
++{
++	long ret = 0;
++
++	if (inc)
++		atomic_inc(&mem->mapped);
++	else
++		ret = atomic_dec_if_positive(&mem->mapped);
++
++	return ret;
++}
++EXPORT_SYMBOL_GPL(mm_iommu_mapped_update);
++
++void mm_iommu_cleanup(mm_context_t *ctx)
++{
++	while (!list_empty(&ctx->iommu_group_mem_list)) {
++		mm_iommu_table_group_mem_t *mem;
++
++		mem = list_first_entry(&ctx->iommu_group_mem_list,
++				mm_iommu_table_group_mem_t, next);
++		mm_iommu_release(&mem->kref);
++	}
++}
 -- 
 2.0.0
