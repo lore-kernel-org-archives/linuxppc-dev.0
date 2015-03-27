@@ -1,19 +1,23 @@
-Return-Path: <Shengzhou.Liu@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0131.outbound.protection.outlook.com [207.46.100.131])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <sowmini.varadhan@oracle.com>
+Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 873941A02AC
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Mar 2015 21:48:59 +1100 (AEDT)
-From: Shengzhou Liu <Shengzhou.Liu@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>, <scottwood@freescale.com>
-Subject: [PATCH] powerpc/defconfig: enable CONFIG_I2C_MUX and
- CONFIG_I2C_MUX_PCA954x
-Date: Fri, 27 Mar 2015 18:45:35 +0800
-Message-ID: <1427453135-11319-1-git-send-email-Shengzhou.Liu@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 760341A02AC
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Mar 2015 21:51:38 +1100 (AEDT)
+Date: Fri, 27 Mar 2015 06:51:23 -0400
+From: Sowmini Varadhan <sowmini.varadhan@oracle.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH v7 0/3] Generic IOMMU pooled allocator
+Message-ID: <20150327105123.GC15564@oracle.com>
+References: <cover.1427295804.git.sowmini.varadhan@oracle.com>
+ <20150325.141235.238730018688792495.davem@davemloft.net>
+ <1427317542.6468.85.camel@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Shengzhou Liu <Shengzhou.Liu@freescale.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1427317542.6468.85.camel@kernel.crashing.org>
+Cc: aik@au1.ibm.com, anton@au1.ibm.com, paulus@samba.org,
+ sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,42 +27,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-By default we enable CONFIG_I2C_MUX and CONFIG_I2C_MUX_PCA954x,
-which are needed on T2080QDS, T4240QDS, B4860QDS, etc.
+On (03/26/15 08:05), Benjamin Herrenschmidt wrote:
+> > PowerPC folks, what do you think?
+> 
+> I'll give it another look today.
+> 
+> Cheers,
+> Ben.
 
-Signed-off-by: Shengzhou Liu <Shengzhou.Liu@freescale.com>
----
-against 'next' branch of git://git.kernel.org/pub/scm/linux/kernel/git/scottwood/linux.git
+Hi Ben, 
 
- arch/powerpc/configs/corenet32_smp_defconfig | 2 ++
- arch/powerpc/configs/corenet64_smp_defconfig | 2 ++
- 2 files changed, 4 insertions(+)
+did you have a chance to look at this?
 
-diff --git a/arch/powerpc/configs/corenet32_smp_defconfig b/arch/powerpc/configs/corenet32_smp_defconfig
-index 51866f1..6cf323f 100644
---- a/arch/powerpc/configs/corenet32_smp_defconfig
-+++ b/arch/powerpc/configs/corenet32_smp_defconfig
-@@ -114,6 +114,8 @@ CONFIG_NVRAM=y
- CONFIG_I2C=y
- CONFIG_I2C_CHARDEV=y
- CONFIG_I2C_MPC=y
-+CONFIG_I2C_MUX=y
-+CONFIG_I2C_MUX_PCA954x=y
- CONFIG_SPI=y
- CONFIG_SPI_GPIO=y
- CONFIG_SPI_FSL_SPI=y
-diff --git a/arch/powerpc/configs/corenet64_smp_defconfig b/arch/powerpc/configs/corenet64_smp_defconfig
-index d6c0c81..9d8ca81 100644
---- a/arch/powerpc/configs/corenet64_smp_defconfig
-+++ b/arch/powerpc/configs/corenet64_smp_defconfig
-@@ -99,6 +99,8 @@ CONFIG_SERIAL_8250_RSA=y
- CONFIG_I2C=y
- CONFIG_I2C_CHARDEV=y
- CONFIG_I2C_MPC=y
-+CONFIG_I2C_MUX=y
-+CONFIG_I2C_MUX_PCA954x=y
- CONFIG_SPI=y
- CONFIG_SPI_GPIO=y
- CONFIG_SPI_FSL_SPI=y
--- 
-2.1.0.27.g96db324
+--Sowmini
