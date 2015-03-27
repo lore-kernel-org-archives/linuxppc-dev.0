@@ -1,17 +1,19 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <Shengzhou.Liu@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bn0101.outbound.protection.outlook.com [157.56.110.101])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6C6731A06B9
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Mar 2015 21:07:06 +1100 (AEDT)
-In-Reply-To: <5513E3A0.6060001@linux.vnet.ibm.com>
-To: Philippe Bergheaud <felix@linux.vnet.ibm.com>
-From: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: cxl: Fix a typo in ABI documentation
-Message-Id: <20150327100706.5A9271400D5@ozlabs.org>
-Date: Fri, 27 Mar 2015 21:07:06 +1100 (AEDT)
-Cc: Michael Neuling <mikey@neuling.org>, linuxppc-dev@lists.ozlabs.org,
- Ian Munsie <imunsie@au1.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 481601A02AC
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Mar 2015 21:14:07 +1100 (AEDT)
+From: Shengzhou Liu <Shengzhou.Liu@freescale.com>
+To: <linux-mtd@lists.infradead.org>, <linuxppc-dev@lists.ozlabs.org>,
+ <broonie@kernel.org>
+Subject: [PATCH] mtd/spi: support en25s64 device
+Date: Fri, 27 Mar 2015 17:38:30 +0800
+Message-ID: <1427449110-24556-1-git-send-email-Shengzhou.Liu@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: scottwood@freescale.com, Shengzhou Liu <Shengzhou.Liu@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,30 +23,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2015-26-03 at 10:46:56 UTC, Philippe Bergheaud wrote:
-> Fix the attribute name of the configuration record class ID.
-> 
-> Signed-off-by: Philippe Bergheaud <felix@linux.vnet.ibm.com>
-> ---
->   Documentation/ABI/testing/sysfs-class-cxl | 2 +-
->   1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/Documentation/ABI/testing/sysfs-class-cxl b/Documentation/ABI/testing/sysfs-class-cxl
-> index 3680364..d46bba8 100644
-> --- a/Documentation/ABI/testing/sysfs-class-cxl
-> +++ b/Documentation/ABI/testing/sysfs-class-cxl
-> @@ -100,7 +100,7 @@ Description:    read only
->   		Hexadecimal value of the device ID found in this AFU
->   		configuration record.
-> 
-> -What:           /sys/class/cxl/<afu>/cr<config num>/vendor
-> +What:           /sys/class/cxl/<afu>/cr<config num>/class
->   Date:           February 2015
->   Contact:        linuxppc-dev@lists.ozlabs.org
->   Description:    read only
+Add support for EON en25s64 spi device.
 
-White space is fubar.
+Signed-off-by: Shengzhou Liu <Shengzhou.Liu@freescale.com>
+---
+ drivers/mtd/spi-nor/spi-nor.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-I fixed it up and applied it anyway.
-
-cheers
+diff --git a/drivers/mtd/spi-nor/spi-nor.c b/drivers/mtd/spi-nor/spi-nor.c
+index 0f8ec3c..f8acef7 100644
+--- a/drivers/mtd/spi-nor/spi-nor.c
++++ b/drivers/mtd/spi-nor/spi-nor.c
+@@ -524,6 +524,7 @@ static const struct spi_device_id spi_nor_ids[] = {
+ 	{ "en25q64",    INFO(0x1c3017, 0, 64 * 1024,  128, SECT_4K) },
+ 	{ "en25qh128",  INFO(0x1c7018, 0, 64 * 1024,  256, 0) },
+ 	{ "en25qh256",  INFO(0x1c7019, 0, 64 * 1024,  512, 0) },
++	{ "en25s64",	INFO(0x1c3817, 0, 64 * 1024,  128, 0) },
+ 
+ 	/* ESMT */
+ 	{ "f25l32pa", INFO(0x8c2016, 0, 64 * 1024, 64, SECT_4K) },
+-- 
+2.1.0.27.g96db324
