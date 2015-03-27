@@ -1,23 +1,39 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0146.outbound.protection.outlook.com [157.56.111.146])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <nacc@linux.vnet.ibm.com>
+Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D434D1A0C99
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Mar 2015 05:07:46 +1100 (AEDT)
-Message-ID: <1427479651.22867.151.camel@freescale.com>
-Subject: Re: [PATCH v3] powerpc: Use PFN_PHYS() to avoid truncating the
- physical address
-From: Scott Wood <scottwood@freescale.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Date: Fri, 27 Mar 2015 13:07:31 -0500
-In-Reply-To: <1427413505.23142.3.camel@ellerman.id.au>
-References: <1427291352-31256-1-git-send-email-Emilian.Medve@Freescale.com>
- <FB8A0580-9A76-4F83-BDE7-2EECC0063C1C@kernel.crashing.org>
- <5514264A.6020502@Freescale.com> <1427413505.23142.3.camel@ellerman.id.au>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id E73C91A054F
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Mar 2015 06:28:57 +1100 (AEDT)
+Received: from /spool/local
+ by e7.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
+ Fri, 27 Mar 2015 15:28:55 -0400
+Received: from b01cxnp23032.gho.pok.ibm.com (b01cxnp23032.gho.pok.ibm.com
+ [9.57.198.27])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 0FB44C90046
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Mar 2015 15:20:03 -0400 (EDT)
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+ by b01cxnp23032.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t2RJSrX329753568
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Mar 2015 19:28:53 GMT
+Received: from d01av02.pok.ibm.com (localhost [127.0.0.1])
+ by d01av02.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t2RJSpRx031944
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Mar 2015 15:28:52 -0400
+Date: Fri, 27 Mar 2015 12:28:50 -0700
+From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+To: Mel Gorman <mgorman@suse.de>
+Subject: [PATCH] mm: vmscan: do not throttle based on pfmemalloc reserves if
+ node has no reclaimable zones
+Message-ID: <20150327192850.GA18701@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, Emil Medve <Emilian.Medve@Freescale.com>
+Content-Type: text/plain; charset=us-ascii
+Cc: Rik van Riel <riel@redhat.com>, anton@sambar.org,
+ linux-kernel@vger.kernel.org, Michal Hocko <mhocko@suse.cz>,
+ linux-mm@kvack.org, Johannes Weiner <hannes@cmpxchg.org>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ Dan Streetman <ddstreet@ieee.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,43 +43,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2015-03-27 at 10:45 +1100, Michael Ellerman wrote:
-> On Thu, 2015-03-26 at 10:31 -0500, Emil Medve wrote:
-> > Hello Kumar,
-> > 
-> > 
-> > On 03/26/2015 10:18 AM, Kumar Gala wrote:
-> > > Why no commit message with what issue this change was trying to fix?
-> > 
-> > A while back, when I attempted to remove bootmem (in favor of just plain
-> > memblock as in powerpc land bootmem was just a wrapper to memblock
-> > anyway) I run at some point into a problem with an intermediate address
-> > value because of this '<< PAGE_SHIFT' on the wrong width variable. Using
-> > PFN_PHYS() took care of it (it has a cast) so I decided to get this
-> > defensive patch applied. Since, I dropped my bootmem/memblock patches in
-> > favor to Anton's (Blanchard) work so my concrete issue example is
-> > somewhat gone
-> 
-> I'm not a big fan of it unless it's actually fixing an issue. It's a lot of
-> churn and the end result is less readable IMHO.
+Based upon 675becce15 ("mm: vmscan: do not throttle based on pfmemalloc
+reserves if node has no ZONE_NORMAL") from Mel.
 
-It is fixing an issue -- the issue is that there are overflow errors in
-the code.  Some of the places Emil fixed are only for platforms that
-don't have physical addresses larger than pointers, or have the needed
-casts, or are known to be dealing with lowmem, but others aren't.  E.g.
-page_is_ram() and devmem_is_allowed() are buggy on 32-bit with 64-bit
-physical.
+We have a system with the following topology:
 
-flush_dcache_icache_page() is buggy on mpc86xx with more than 4 GiB RAM
--- though that would still be buggy even with this change, due to
-__flush_dcache_icache_phys taking unsigned long.  The entire concept of
-that function doesn't work for sizeof(phys_addr_t) > sizeof(void *), so
-in this case 86xx should be using the booke code instead.
+(0) root @ br30p03: /root
+# numactl -H
+available: 3 nodes (0,2-3)
+node 0 cpus: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22
+23 24 25 26 27 28 29 30 31
+node 0 size: 28273 MB
+node 0 free: 27323 MB
+node 2 cpus:
+node 2 size: 16384 MB
+node 2 free: 0 MB
+node 3 cpus: 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47
+node 3 size: 30533 MB
+node 3 free: 13273 MB
+node distances:
+node   0   2   3 
+  0:  10  20  20 
+  2:  20  10  20 
+  3:  20  20  10 
 
-Even in the places where overflow can't happen due to the above
-circumstances (other than having the needed cast), it's setting a bad
-example that can be copied to places where it will break, or the
-circumstances of the code could change (e.g. currently 64-bit-only code
-being used on 32-bit).
+Node 2 has no free memory, because:
 
--Scott
+# cat /sys/devices/system/node/node2/hugepages/hugepages-16777216kB/nr_hugepages 
+1
+
+This leads to the following zoneinfo:
+
+Node 2, zone      DMA
+  pages free     0
+        min      1840
+        low      2300
+        high     2760
+        scanned  0
+        spanned  262144
+        present  262144
+        managed  262144
+...
+  all_unreclaimable: 1
+
+If one then attempts to allocate some normal 16M hugepages:
+
+echo 37 > /proc/sys/vm/nr_hugepages
+
+The echo enver returns and kswapd2 consumes CPU cycles.
+
+This is because throttle_direct_reclaim ends up calling
+wait_event(pfmemalloc_wait, pfmemalloc_watermark_ok...).
+pfmemalloc_watermark_ok() in turn checks all zones on the node and see
+if the there are any reserves, and if so, then indicates the watermarks
+are ok, by seeing if there are sufficient free pages.
+
+675becce15 added a condition already for memoryless nodes. In this case,
+though, the node has memory, it is just all consumed (and not
+recliamable). Effectively, though, the result is the same on this
+call to pfmemalloc_watermark_ok() and thus seems like a reasonable
+additional condition.
+
+With this change, the afore-mentioned 16M hugepage allocation succeeds
+and correctly round-robins between Nodes 1 and 3.
+
+Signed-off-by: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+
+diff --git a/mm/vmscan.c b/mm/vmscan.c
+index dcd90c8..033c2b7 100644
+--- a/mm/vmscan.c
++++ b/mm/vmscan.c
+@@ -2585,7 +2585,7 @@ static bool pfmemalloc_watermark_ok(pg_data_t *pgdat)
+ 
+        for (i = 0; i <= ZONE_NORMAL; i++) {
+                zone = &pgdat->node_zones[i];
+-               if (!populated_zone(zone))
++               if (!populated_zone(zone) || !zone_reclaimable(zone))
+                        continue;
+ 
+                pfmemalloc_reserve += min_wmark_pages(zone);
