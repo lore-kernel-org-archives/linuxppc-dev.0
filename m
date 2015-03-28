@@ -1,14 +1,17 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C53CD1A0260
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Mar 2015 21:35:19 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6C0C81A0260
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Mar 2015 21:35:20 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH v5 1/2] powerpc: Add a proper syscall for switching endianness
-Date: Sat, 28 Mar 2015 21:35:16 +1100
-Message-Id: <1427538917-5140-1-git-send-email-mpe@ellerman.id.au>
+Subject: [PATCH v5 2/2] selftests/powerpc: Add a test of the switch_endian()
+ syscall
+Date: Sat, 28 Mar 2015 21:35:17 +1100
+Message-Id: <1427538917-5140-2-git-send-email-mpe@ellerman.id.au>
+In-Reply-To: <1427538917-5140-1-git-send-email-mpe@ellerman.id.au>
+References: <1427538917-5140-1-git-send-email-mpe@ellerman.id.au>
 Cc: Jeremy Kerr <jk@ozlabs.org>, khandual@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -19,164 +22,295 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We currently have a "special" syscall for switching endianness. This is
-syscall number 0x1ebe, which is handled explicitly in the 64-bit syscall
-exception entry.
+This adds a test of the switch_endian() syscall we added in the previous
+commit.
 
-That has a few problems, firstly the syscall number is outside of the
-usual range, which confuses various tools. For example strace doesn't
-recognise the syscall at all.
+We test it by calling the endian switch syscall, and then executing some
+code in the other endian to check everything went as expected. That code
+checks registers we expect to be maintained are. If the endian switch
+failed to happen that code sequence will be illegal and cause the test
+to abort.
 
-Secondly it's handled explicitly as a special case in the syscall
-exception entry, which is complicated enough without it.
-
-As a first step toward removing the special syscall, we need to add a
-regular syscall that implements the same functionality.
-
-The logic is simple, it simply toggles the MSR_LE bit in the userspace
-MSR. This is the same as the special syscall, with the caveat that the
-special syscall clobbers fewer registers.
-
-This version clobbers r9-r12, XER, CTR, and CR0-1,5-7.
+We then switch back to the original endian, do the same checks and
+finally write a success message and exit(0).
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+
 ---
+v3: Have the test switch back to the original endian.
+v4: Add .gitignore.
+    Drop the message write in the checking code - it clobbers some regs
+    and breaks the second check.
+v5: Move r9 to r3 before calling exit to ensure we exit with !0.
 
-v3: Don't provide the syscall on 32-bit.
-v4: No change.
-v5: No change.
+ tools/testing/selftests/powerpc/Makefile           |   2 +-
+ .../selftests/powerpc/switch_endian/.gitignore     |   2 +
+ .../selftests/powerpc/switch_endian/Makefile       |  23 +++++
+ .../selftests/powerpc/switch_endian/check.S        | 100 +++++++++++++++++++++
+ .../selftests/powerpc/switch_endian/common.h       |   6 ++
+ .../powerpc/switch_endian/switch_endian_test.S     |  82 +++++++++++++++++
+ 6 files changed, 214 insertions(+), 1 deletion(-)
+ create mode 100644 tools/testing/selftests/powerpc/switch_endian/.gitignore
+ create mode 100644 tools/testing/selftests/powerpc/switch_endian/Makefile
+ create mode 100644 tools/testing/selftests/powerpc/switch_endian/check.S
+ create mode 100644 tools/testing/selftests/powerpc/switch_endian/common.h
+ create mode 100644 tools/testing/selftests/powerpc/switch_endian/switch_endian_test.S
 
- arch/powerpc/include/asm/systbl.h           |  1 +
- arch/powerpc/include/asm/unistd.h           |  2 +-
- arch/powerpc/include/uapi/asm/unistd.h      |  1 +
- arch/powerpc/kernel/entry_64.S              |  5 +++++
- arch/powerpc/kernel/syscalls.c              | 17 +++++++++++++++++
- arch/powerpc/kernel/systbl.S                |  2 ++
- arch/powerpc/kernel/systbl_chk.c            |  2 ++
- arch/powerpc/platforms/cell/spu_callbacks.c |  1 +
- 8 files changed, 30 insertions(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/include/asm/systbl.h b/arch/powerpc/include/asm/systbl.h
-index 91062eef582f..f1863a138b4a 100644
---- a/arch/powerpc/include/asm/systbl.h
-+++ b/arch/powerpc/include/asm/systbl.h
-@@ -367,3 +367,4 @@ SYSCALL_SPU(getrandom)
- SYSCALL_SPU(memfd_create)
- SYSCALL_SPU(bpf)
- COMPAT_SYS(execveat)
-+PPC64ONLY(switch_endian)
-diff --git a/arch/powerpc/include/asm/unistd.h b/arch/powerpc/include/asm/unistd.h
-index 36b79c31eedd..f4f8b667d75b 100644
---- a/arch/powerpc/include/asm/unistd.h
-+++ b/arch/powerpc/include/asm/unistd.h
-@@ -12,7 +12,7 @@
- #include <uapi/asm/unistd.h>
+diff --git a/tools/testing/selftests/powerpc/Makefile b/tools/testing/selftests/powerpc/Makefile
+index 1d5e7ad2c460..85c24a2210b5 100644
+--- a/tools/testing/selftests/powerpc/Makefile
++++ b/tools/testing/selftests/powerpc/Makefile
+@@ -13,7 +13,7 @@ CFLAGS := -Wall -O2 -flto -Wall -Werror -DGIT_VERSION='"$(GIT_VERSION)"' -I$(CUR
  
+ export CC CFLAGS
  
--#define __NR_syscalls		363
-+#define __NR_syscalls		364
+-TARGETS = pmu copyloops mm tm primitives stringloops
++TARGETS = pmu copyloops mm tm primitives stringloops switch_endian
  
- #define __NR__exit __NR_exit
- #define NR_syscalls	__NR_syscalls
-diff --git a/arch/powerpc/include/uapi/asm/unistd.h b/arch/powerpc/include/uapi/asm/unistd.h
-index ef5b5b1f3123..e4aa173dae62 100644
---- a/arch/powerpc/include/uapi/asm/unistd.h
-+++ b/arch/powerpc/include/uapi/asm/unistd.h
-@@ -385,5 +385,6 @@
- #define __NR_memfd_create	360
- #define __NR_bpf		361
- #define __NR_execveat		362
-+#define __NR_switch_endian	363
+ endif
  
- #endif /* _UAPI_ASM_POWERPC_UNISTD_H_ */
-diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_64.S
-index d180caf2d6de..afbc20019c2e 100644
---- a/arch/powerpc/kernel/entry_64.S
-+++ b/arch/powerpc/kernel/entry_64.S
-@@ -356,6 +356,11 @@ _GLOBAL(ppc64_swapcontext)
- 	bl	sys_swapcontext
- 	b	.Lsyscall_exit
- 
-+_GLOBAL(ppc_switch_endian)
-+	bl	save_nvgprs
-+	bl	sys_switch_endian
-+	b	.Lsyscall_exit
+diff --git a/tools/testing/selftests/powerpc/switch_endian/.gitignore b/tools/testing/selftests/powerpc/switch_endian/.gitignore
+new file mode 100644
+index 000000000000..89e762eab676
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/switch_endian/.gitignore
+@@ -0,0 +1,2 @@
++switch_endian_test
++check-reversed.S
+diff --git a/tools/testing/selftests/powerpc/switch_endian/Makefile b/tools/testing/selftests/powerpc/switch_endian/Makefile
+new file mode 100644
+index 000000000000..c7fefbf880b5
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/switch_endian/Makefile
+@@ -0,0 +1,23 @@
++PROGS := switch_endian_test
 +
- _GLOBAL(ret_from_fork)
- 	bl	schedule_tail
- 	REST_NVGPRS(r1)
-diff --git a/arch/powerpc/kernel/syscalls.c b/arch/powerpc/kernel/syscalls.c
-index b2702e87db0d..5fa92706444b 100644
---- a/arch/powerpc/kernel/syscalls.c
-+++ b/arch/powerpc/kernel/syscalls.c
-@@ -121,3 +121,20 @@ long ppc_fadvise64_64(int fd, int advice, u32 offset_high, u32 offset_low,
- 	return sys_fadvise64(fd, (u64)offset_high << 32 | offset_low,
- 			     (u64)len_high << 32 | len_low, advice);
- }
++ASFLAGS += -O2 -Wall -g -nostdlib -m64
 +
-+long sys_switch_endian(void)
-+{
-+	struct thread_info *ti;
++all: $(PROGS)
 +
-+	current->thread.regs->msr ^= MSR_LE;
++switch_endian_test: check-reversed.S
++
++check-reversed.o: check.o
++	objcopy -j .text --reverse-bytes=4 -O binary $< $@
++
++check-reversed.S: check-reversed.o
++	hexdump -v -e '/1 ".byte 0x%02X\n"' $< > $@
++
++run_tests: all
++	@-for PROG in $(PROGS); do \
++		./$$PROG; \
++	done;
++
++clean:
++	rm -f $(PROGS) *.o check-reversed.S
++
++.PHONY: all run_tests clean
+diff --git a/tools/testing/selftests/powerpc/switch_endian/check.S b/tools/testing/selftests/powerpc/switch_endian/check.S
+new file mode 100644
+index 000000000000..e2484d2c24f4
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/switch_endian/check.S
+@@ -0,0 +1,100 @@
++#include "common.h"
++
++/*
++ * Checks that registers contain what we expect, ie. they were not clobbered by
++ * the syscall.
++ *
++ * r15: pattern to check registers against.
++ *
++ * At the end r3 == 0 if everything's OK.
++ */
++	nop			# guaranteed to be illegal in reverse-endian
++	mr	r9,r15
++	cmpd    r9,r3		# check r3
++	bne     1f
++	addi    r9,r15,4	# check r4
++	cmpd    r9,r4
++	bne     1f
++	lis     r9,0x00FF	# check CR
++	ori     r9,r9,0xF000
++	mfcr    r10
++	and     r10,r10,r9
++	cmpw    r9,r10
++	addi    r9,r15,34
++	bne     1f
++	addi    r9,r15,32	# check LR
++	mflr    r10
++	cmpd    r9,r10
++	bne     1f
++	addi    r9,r15,5	# check r5
++	cmpd    r9,r5
++	bne     1f
++	addi    r9,r15,6	# check r6
++	cmpd    r9,r6
++	bne     1f
++	addi    r9,r15,7	# check r7
++	cmpd    r9,r7
++	bne     1f
++	addi    r9,r15,8	# check r8
++	cmpd    r9,r8
++	bne     1f
++	addi    r9,r15,13	# check r13
++	cmpd    r9,r13
++	bne     1f
++	addi    r9,r15,14	# check r14
++	cmpd    r9,r14
++	bne     1f
++	addi    r9,r15,16	# check r16
++	cmpd    r9,r16
++	bne     1f
++	addi    r9,r15,17	# check r17
++	cmpd    r9,r17
++	bne     1f
++	addi    r9,r15,18	# check r18
++	cmpd    r9,r18
++	bne     1f
++	addi    r9,r15,19	# check r19
++	cmpd    r9,r19
++	bne     1f
++	addi    r9,r15,20	# check r20
++	cmpd    r9,r20
++	bne     1f
++	addi    r9,r15,21	# check r21
++	cmpd    r9,r21
++	bne     1f
++	addi    r9,r15,22	# check r22
++	cmpd    r9,r22
++	bne     1f
++	addi    r9,r15,23	# check r23
++	cmpd    r9,r23
++	bne     1f
++	addi    r9,r15,24	# check r24
++	cmpd    r9,r24
++	bne     1f
++	addi    r9,r15,25	# check r25
++	cmpd    r9,r25
++	bne     1f
++	addi    r9,r15,26	# check r26
++	cmpd    r9,r26
++	bne     1f
++	addi    r9,r15,27	# check r27
++	cmpd    r9,r27
++	bne     1f
++	addi    r9,r15,28	# check r28
++	cmpd    r9,r28
++	bne     1f
++	addi    r9,r15,29	# check r29
++	cmpd    r9,r29
++	bne     1f
++	addi    r9,r15,30	# check r30
++	cmpd    r9,r30
++	bne     1f
++	addi    r9,r15,31	# check r31
++	cmpd    r9,r31
++	bne     1f
++	b	2f
++1:	mr	r3, r9
++	li	r0, __NR_exit
++	sc
++2:	li	r0, __NR_switch_endian
++	nop
+diff --git a/tools/testing/selftests/powerpc/switch_endian/common.h b/tools/testing/selftests/powerpc/switch_endian/common.h
+new file mode 100644
+index 000000000000..69e399698c64
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/switch_endian/common.h
+@@ -0,0 +1,6 @@
++#include <ppc-asm.h>
++#include <asm/unistd.h>
++
++#ifndef __NR_switch_endian
++#define __NR_switch_endian 363
++#endif
+diff --git a/tools/testing/selftests/powerpc/switch_endian/switch_endian_test.S b/tools/testing/selftests/powerpc/switch_endian/switch_endian_test.S
+new file mode 100644
+index 000000000000..eee0e393600b
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/switch_endian/switch_endian_test.S
+@@ -0,0 +1,82 @@
++#include "common.h"
++
++	.data
++	.balign 8
++message:
++	.ascii "success: switch_endian_test\n\0"
++
++	.section ".toc"
++	.balign 8
++pattern:
++	.llong 0x5555AAAA5555AAAA
++
++	.text
++FUNC_START(_start)
++	/* Load the pattern */
++	ld	r15, pattern@TOC(%r2)
++
++	/* Setup CR, only CR2-CR4 are maintained */
++	lis	r3, 0x00FF
++	ori	r3, r3, 0xF000
++	mtcr	r3
++
++	/* Load the pattern slightly modified into the registers */
++	mr	r3, r15
++	addi	r4, r15, 4
++
++	addi	r5, r15, 32
++	mtlr	r5
++
++	addi	r5, r15, 5
++	addi	r6, r15, 6
++	addi	r7, r15, 7
++	addi	r8, r15, 8
++
++	/* r9 - r12 are clobbered */
++
++	addi	r13, r15, 13
++	addi	r14, r15, 14
++
++	/* Skip r15 we're using it */
++
++	addi	r16, r15, 16
++	addi	r16, r15, 16
++	addi	r17, r15, 17
++	addi	r18, r15, 18
++	addi	r19, r15, 19
++	addi	r20, r15, 20
++	addi	r21, r15, 21
++	addi	r22, r15, 22
++	addi	r23, r15, 23
++	addi	r24, r15, 24
++	addi	r25, r15, 25
++	addi	r26, r15, 26
++	addi	r27, r15, 27
++	addi	r28, r15, 28
++	addi	r29, r15, 29
++	addi	r30, r15, 30
++	addi	r31, r15, 31
 +
 +	/*
-+	 * Set TIF_RESTOREALL so that r3 isn't clobbered on return to
-+	 * userspace. That also has the effect of restoring the non-volatile
-+	 * GPRs, so we saved them on the way in here.
++	 * Call the syscall to switch endian.
++	 * It clobbers r9-r12, XER, CTR and CR0-1,5-7.
 +	 */
-+	ti = current_thread_info();
-+	ti->flags |= _TIF_RESTOREALL;
++	li r0, __NR_switch_endian
++	sc
 +
-+	return 0;
-+}
-diff --git a/arch/powerpc/kernel/systbl.S b/arch/powerpc/kernel/systbl.S
-index 7ab5d434e2ee..4d6b1d3a747f 100644
---- a/arch/powerpc/kernel/systbl.S
-+++ b/arch/powerpc/kernel/systbl.S
-@@ -22,6 +22,7 @@
- #define PPC_SYS(func)		.llong	DOTSYM(ppc_##func),DOTSYM(ppc_##func)
- #define OLDSYS(func)		.llong	DOTSYM(sys_ni_syscall),DOTSYM(sys_ni_syscall)
- #define SYS32ONLY(func)		.llong	DOTSYM(sys_ni_syscall),DOTSYM(compat_sys_##func)
-+#define PPC64ONLY(func)		.llong	DOTSYM(ppc_##func),DOTSYM(sys_ni_syscall)
- #define SYSX(f, f3264, f32)	.llong	DOTSYM(f),DOTSYM(f3264)
- #else
- #define SYSCALL(func)		.long	sys_##func
-@@ -29,6 +30,7 @@
- #define PPC_SYS(func)		.long	ppc_##func
- #define OLDSYS(func)		.long	sys_##func
- #define SYS32ONLY(func)		.long	sys_##func
-+#define PPC64ONLY(func)		.long	sys_ni_syscall
- #define SYSX(f, f3264, f32)	.long	f32
- #endif
- #define SYSCALL_SPU(func)	SYSCALL(func)
-diff --git a/arch/powerpc/kernel/systbl_chk.c b/arch/powerpc/kernel/systbl_chk.c
-index 238aa63ced8f..2384129f5893 100644
---- a/arch/powerpc/kernel/systbl_chk.c
-+++ b/arch/powerpc/kernel/systbl_chk.c
-@@ -21,9 +21,11 @@
- #ifdef CONFIG_PPC64
- #define OLDSYS(func)		-1
- #define SYS32ONLY(func)		-1
-+#define PPC64ONLY(func)		__NR_##func
- #else
- #define OLDSYS(func)		__NR_old##func
- #define SYS32ONLY(func)		__NR_##func
-+#define PPC64ONLY(func)		-1
- #endif
- #define SYSX(f, f3264, f32)	-1
- 
-diff --git a/arch/powerpc/platforms/cell/spu_callbacks.c b/arch/powerpc/platforms/cell/spu_callbacks.c
-index b0ec78e8ad68..a494028b2cdf 100644
---- a/arch/powerpc/platforms/cell/spu_callbacks.c
-+++ b/arch/powerpc/platforms/cell/spu_callbacks.c
-@@ -39,6 +39,7 @@ static void *spu_syscall_table[] = {
- #define PPC_SYS(func)		sys_ni_syscall,
- #define OLDSYS(func)		sys_ni_syscall,
- #define SYS32ONLY(func)		sys_ni_syscall,
-+#define PPC64ONLY(func)		sys_ni_syscall,
- #define SYSX(f, f3264, f32)	sys_ni_syscall,
- 
- #define SYSCALL_SPU(func)	sys_##func,
++#include "check-reversed.S"
++
++	/* Flip back, r0 already has the switch syscall number */
++	.long	0x02000044	/* sc */
++
++#include "check.S"
++
++	li	r0, __NR_write
++	li	r3, 1	/* stdout */
++	ld	r4, message@got(%r2)
++	li	r5, 28	/* strlen(message3) */
++	sc
++	li      r0, __NR_exit
++	li	r3, 0
++	sc
++	b       .
 -- 
 2.1.0
