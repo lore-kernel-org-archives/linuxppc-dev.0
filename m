@@ -1,23 +1,20 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6AEAF1A0260
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Mar 2015 21:40:03 +1100 (AEDT)
-Message-ID: <1427539202.7547.0.camel@ellerman.id.au>
-Subject: Re: [PATCH v4 2/2] selftests/powerpc: Add a test of the
- switch_endian() syscall
+ by lists.ozlabs.org (Postfix) with ESMTPS id 89A681A0260
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Mar 2015 21:57:21 +1100 (AEDT)
+Message-ID: <1427540240.7547.1.camel@ellerman.id.au>
+Subject: Re: [PATCH] powerpc/powernv: Remove powernv RTAS support
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Gabriel Paubert <paubert@iram.es>
-Date: Sat, 28 Mar 2015 21:40:02 +1100
-In-Reply-To: <20150328091705.GC4500@visitor2.iram.es>
-References: <1427505550-13252-1-git-send-email-mpe@ellerman.id.au>
- <1427505550-13252-2-git-send-email-mpe@ellerman.id.au>
- <20150328091705.GC4500@visitor2.iram.es>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Date: Sat, 28 Mar 2015 21:57:20 +1100
+In-Reply-To: <87k2y24n4f.fsf@linux.vnet.ibm.com>
+References: <1426141631-10741-1-git-send-email-mpe@ellerman.id.au>
+ <87k2y24n4f.fsf@linux.vnet.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Jeremy Kerr <jk@ozlabs.org>,
- khandual@linux.vnet.ibm.com
+Cc: linuxppc-dev@ozlabs.org, dja@axtens.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,30 +24,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2015-03-28 at 10:17 +0100, Gabriel Paubert wrote:
-> On Sat, Mar 28, 2015 at 12:19:10PM +1100, Michael Ellerman wrote:
-> > This adds a test of the switch_endian() syscall we added in the previous
-> > commit.
-
-...
-
-> > +
-> > +	/* r9 - r12 are clobbered */
-> > +
-> > +	addi	r13, r15, 13
-> > +	addi	r14, r15, 14
-> > +
-> > +	/* Skip r15 we're using it */
-> > +
-> > +	addi	r16, r15, 16
-> > +	addi	r16, r15, 16
+On Fri, 2015-03-27 at 18:24 +0530, Aneesh Kumar K.V wrote:
+> Michael Ellerman <mpe@ellerman.id.au> writes:
 > 
-> Duplicate?
- 
-Oh god damn it.
+> > The powernv code has some conditional support for running on bare metal
+> > machines that have no OPAL firmware, but provide RTAS.
+> >
+> > No released machines ever supported that, and even in the lab it was
+> > just a transitional hack in the days when OPAL was still being
+> > developed.
+> >
+> > So remove the code.
+> 
+> So when we select CONFIG_PPC_PSERIES, we end up selecting
+> CONFIG_PPC_RTAS. What is the expected behaviour there for powernv ? 
 
-Yes :)
+After this patch, the expected behaviour is that the powernv platform code
+won't use RTAS, even if it's there. And that's fine because no real powernv
+machines have RTAS.
 
-Thanks for reviewing.
+In a perfect world the RTAS code would be isolated in platforms/pseries, but
+it's used on other platforms, so it's a bit messier than that. But the expected
+behaviour is that the powernv code won't use RTAS, even if the code is still
+built in.
+
+Is that what you meant?
+
+> Can we use RTAS call from powernv code if rtas node is present in device
+> tree ? 
+
+Yes you can, if you build with CONFIG_PPC_RTAS=y. Though when I add a
+powernv_defconfig (soon), it won't have CONFIG_PPC_RTAS.
+
+> Or do we want to make sure powernv always use OPAL call ?
+
+It depends what you mean by "powernv". Once this patch is applied the powernv
+*platform* code will not use RTAS.
+
+There may still be other code that can be built into a kernel and booted on
+powernv that then uses RTAS. That's fine, if it makes sense for someone, I
+don't think we need to prevent that happening.
+
+> For example, right now we will use rtas_node get-term-char and
+> put-term-char even with this patch applied.
+
+Well you will *if* your machine has RTAS, and you have CONFIG_HVC_RTAS=y and/or
+CONFIG_UDBG_RTAS_CONSOLE=y.
+
+So I think that's fine?
 
 cheers
