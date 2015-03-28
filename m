@@ -1,29 +1,28 @@
-Return-Path: <mpe@ellerman.id.au>
+Return-Path: <paubert@iram.es>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47DA31A0281
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Mar 2015 13:34:34 +1100 (AEDT)
-Message-ID: <1427510073.5870.2.camel@ellerman.id.au>
-Subject: Re: [PATCH v3 2/2] selftests/powerpc: Add a test of the
+ by lists.ozlabs.org (Postfix) with ESMTPS id 762E71A0260
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 28 Mar 2015 21:09:55 +1100 (AEDT)
+Received: from navarro.puc.rediris.es (navarro.puc.rediris.es
+ [IPv6:2001:720:418:ca01::131])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 091E51400A0
+ for <linuxppc-dev@ozlabs.org>; Sat, 28 Mar 2015 21:09:55 +1100 (AEDT)
+Date: Sat, 28 Mar 2015 10:17:05 +0100
+From: Gabriel Paubert <paubert@iram.es>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH v4 2/2] selftests/powerpc: Add a test of the
  switch_endian() syscall
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Date: Sat, 28 Mar 2015 13:34:33 +1100
-In-Reply-To: <5513A622.2040706@linux.vnet.ibm.com>
-References: <1426489030-26025-1-git-send-email-mpe@ellerman.id.au>
- <1426489030-26025-2-git-send-email-mpe@ellerman.id.au>
- <5506B7DC.80702@linux.vnet.ibm.com>
- <1426547040.31646.2.camel@ellerman.id.au>
- <5507C437.3020203@linux.vnet.ibm.com>
- <1426655059.6504.4.camel@ellerman.id.au>
- <1427261327.29319.5.camel@ellerman.id.au>
- <55129CBA.4010402@linux.vnet.ibm.com>
- <1427330209.16501.1.camel@ellerman.id.au>
- <5513A622.2040706@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, linuxram@us.ibm.com, Jeremy Kerr <jk@ozlabs.org>
+Message-ID: <20150328091705.GC4500@visitor2.iram.es>
+References: <1427505550-13252-1-git-send-email-mpe@ellerman.id.au>
+ <1427505550-13252-2-git-send-email-mpe@ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1427505550-13252-2-git-send-email-mpe@ellerman.id.au>
+Cc: linuxppc-dev@ozlabs.org, Jeremy Kerr <jk@ozlabs.org>,
+ khandual@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,123 +32,134 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2015-03-26 at 11:54 +0530, Anshuman Khandual wrote:
-> On 03/26/2015 06:06 AM, Michael Ellerman wrote:
-> > On Wed, 2015-03-25 at 17:02 +0530, Anshuman Khandual wrote:
-> >> On 03/25/2015 10:58 AM, Michael Ellerman wrote:
-> >>> On Wed, 2015-03-18 at 16:04 +1100, Michael Ellerman wrote:
-> >>>> On Tue, 2015-03-17 at 11:35 +0530, Anshuman Khandual wrote:
-> >>>>> On 03/17/2015 04:34 AM, Michael Ellerman wrote:
-> >>>>>> What are you seeing exactly?
-> >>>>>
-> >>>>> I am running on a BE PKVM guest but compiling the test case on
-> >>>>> a different BE machine which has newer version of the compiler.
-> >>>>>
-> >>>>> cc (GCC) 4.8.3 20140624
-> >>>>>
-> >>>>> cc -O2 -Wall -g -nostdlib -m64   -c -o check.o check.S
-> >>>>> objcopy -j .text --reverse-bytes=4 -O binary check.o check-reversed.o
-> >>>>> hexdump -v -e '/1 ".byte 0x%02X\n"' check-reversed.o > check-reversed.S
-> >>>>> cc -O2 -Wall -g -nostdlib -m64    switch_endian_test.S check-reversed.S   -o switch_endian_test
-> >>>>>
-> >>>>> which looks very similar to the details you have provided above.
-> >>>>> Running on guest or host should not make any difference.
-> >>>>
-> >>>> No it shouldn't.
-> >>>>
-> >>>> Can you try strace, that should give you the full result code.
-> >>>>
-> >>>> Also can you try gdb. You can't breakpoint in the wrong-endian region, but it
-> >>>> looks like you're getting through that anyway.
-> >>>>
-> >>>> So try setting a breakpoint at line ~77, and you should be back in BE. Then you
-> >>>> can single step and see where it errors out.
-> >>>
-> >>> Did you try these?
-> >>
-> >> Yeah. The test program is showing some strange behavior.
-> >>
-> >> (1) Without strace: It just fails with 176 return code as before
-> >> (2) With strace: It works with return code 0 and prints everything !!
-> >>
-> >> strace ./switch_endian_test
-> >> execve("./switch_endian_test", ["./switch_endian_test"], [/* 50 vars */]) = 0
-> >> SYS_363(0x5555aaaa5555aaaa, 0x5555aaaa5555aaae, 0x5555aaaa5555aaaf,
-> >> 0x5555aaaa5555aab0, 0x5555aaaa5555aab1) = 6149008514797120170
-> >> write(1, "Hello wrong-endian world\n", 25Hello wrong-endian world
-> >> ) = 25
-> >> SYS_363(0x19, 0x10010638, 0x19, 0x5555aaaa5555aab0, 0x5555aaaa5555aab1) = 25
-> >> write(1, "Hello right-endian world\n", 25Hello right-endian world
-> >> ) = 25
-> >> write(1, "success: switch_endian_test\n", 28success: switch_endian_test
-> >> ) = 28
-> >> exit(0)                                 = ?
-> >>
-> >> With GDB and breaking at line 77, it exits with a different exit code this time
-> > 
-> > No that's the same code, 176 == 0260 (octal).
-> > 
-> >> 30		cmpd    r3,r5
-> >> (gdb) 
-> >> 31		bne     1f
-> >> (gdb) 
-> >> 32		addi    r3,r15,6
-> >> (gdb) 
-> >> 33		cmpd    r3,r6
-> >> (gdb) 
-> >> 34		bne     1f
-> >> (gdb) 
-> >> 98	1:	li	r0, __NR_exit
-> >> (gdb) 
-> >> 99		sc
-> >> (gdb) 
-> >> [Inferior 1 (process 6456) exited with code 0260]
-> > 
-> > And that makes sense, it's bailing because r6 doesn't match. In the setup we do:
-> > 
-> > 	addi	r6, r15, 6
-> > 
-> > Where r15 is 0x5555aaaa5555aaaa, so:
-> > 
-> > 	0x5555aaaa5555aaaa + 6 = 0x5555aaaa5555aab0
-> > 
-> > And when we exit the kernel masks the exit code in r3 with 0xff, so:
-> > 
-> > 	0x5555aaaa5555aab0 & 0xff = 0xb0 = 176
-> > 
-> > 
-> > So for some reason r6 does not contain our pattern.
-> > 
-> > Can you do an "info registers" and see what's in r6?
+On Sat, Mar 28, 2015 at 12:19:10PM +1100, Michael Ellerman wrote:
+> This adds a test of the switch_endian() syscall we added in the previous
+> commit.
 > 
-> Sure, here are the details.
+> We test it by calling the endian switch syscall, and then executing some
+> code in the other endian to check everything went as expected. That code
+> checks registers we expect to be maintained are. If the endian switch
+> failed to happen that code sequence will be illegal and cause the test
+> to abort.
 > 
-> (gdb)
-> 98	1:	li	r0, __NR_exit
-> (gdb)
-> 99		sc
-> (gdb) info registers
-> r0             0x1	1
-> r1             0x3ffffffff360	70368744174432
-> r2             0x10018670	268535408
-> r3             0x5555aaaa5555aab0	6149008514797120176
-> r4             0x5555aaaa5555aaca	6149008514797120202
-> r5             0x5555aaaa5555aaaf	6149008514797120175
+> We then switch back to the original endian, do the same checks and
+> finally write a success message and exit(0).
 > 
-> r6             0x4000	16384   <<=========================
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 > 
-> r7             0x100002e4	268436196
-> r8             0x800000010000d033	9223372041149796403
+> ---
+> v3: Have the test switch back to the original endian.
+> v4: Add .gitignore.
+>     Drop the message write in the checking code - it clobbers some regs
+>     and breaks the second check.
+> 
+>  tools/testing/selftests/powerpc/Makefile           |  2 +-
+>  .../selftests/powerpc/switch_endian/.gitignore     |  2 +
+>  .../selftests/powerpc/switch_endian/Makefile       | 23 +++++
+>  .../selftests/powerpc/switch_endian/check.S        | 98 ++++++++++++++++++++++
+>  .../selftests/powerpc/switch_endian/common.h       |  6 ++
+>  .../powerpc/switch_endian/switch_endian_test.S     | 82 ++++++++++++++++++
+>  6 files changed, 212 insertions(+), 1 deletion(-)
+>  create mode 100644 tools/testing/selftests/powerpc/switch_endian/.gitignore
+>  create mode 100644 tools/testing/selftests/powerpc/switch_endian/Makefile
+>  create mode 100644 tools/testing/selftests/powerpc/switch_endian/check.S
+>  create mode 100644 tools/testing/selftests/powerpc/switch_endian/common.h
+>  create mode 100644 tools/testing/selftests/powerpc/switch_endian/switch_endian_test.S
+
+[snipped]
+> diff --git a/tools/testing/selftests/powerpc/switch_endian/switch_endian_test.S b/tools/testing/selftests/powerpc/switch_endian/switch_endian_test.S
+> new file mode 100644
+> index 000000000000..eee0e393600b
+> --- /dev/null
+> +++ b/tools/testing/selftests/powerpc/switch_endian/switch_endian_test.S
+> @@ -0,0 +1,82 @@
+> +#include "common.h"
+> +
+> +	.data
+> +	.balign 8
+> +message:
+> +	.ascii "success: switch_endian_test\n\0"
+> +
+> +	.section ".toc"
+> +	.balign 8
+> +pattern:
+> +	.llong 0x5555AAAA5555AAAA
+> +
+> +	.text
+> +FUNC_START(_start)
+> +	/* Load the pattern */
+> +	ld	r15, pattern@TOC(%r2)
+> +
+> +	/* Setup CR, only CR2-CR4 are maintained */
+> +	lis	r3, 0x00FF
+> +	ori	r3, r3, 0xF000
+> +	mtcr	r3
+> +
+> +	/* Load the pattern slightly modified into the registers */
+> +	mr	r3, r15
+> +	addi	r4, r15, 4
+> +
+> +	addi	r5, r15, 32
+> +	mtlr	r5
+> +
+> +	addi	r5, r15, 5
+> +	addi	r6, r15, 6
+> +	addi	r7, r15, 7
+> +	addi	r8, r15, 8
+> +
+> +	/* r9 - r12 are clobbered */
+> +
+> +	addi	r13, r15, 13
+> +	addi	r14, r15, 14
+> +
+> +	/* Skip r15 we're using it */
+> +
+> +	addi	r16, r15, 16
+> +	addi	r16, r15, 16
+
+Duplicate?
 
 
-Sigh. This is just a ■■■■■■ ■■■■■■■ ■■■■ ■■ on my part.
+> +	addi	r17, r15, 17
+> +	addi	r18, r15, 18
+> +	addi	r19, r15, 19
+> +	addi	r20, r15, 20
+> +	addi	r21, r15, 21
+> +	addi	r22, r15, 22
+> +	addi	r23, r15, 23
+> +	addi	r24, r15, 24
+> +	addi	r25, r15, 25
+> +	addi	r26, r15, 26
+> +	addi	r27, r15, 27
+> +	addi	r28, r15, 28
+> +	addi	r29, r15, 29
+> +	addi	r30, r15, 30
+> +	addi	r31, r15, 31
+> +
+> +	/*
+> +	 * Call the syscall to switch endian.
+> +	 * It clobbers r9-r12, XER, CTR and CR0-1,5-7.
+> +	 */
+> +	li r0, __NR_switch_endian
+> +	sc
+> +
+> +#include "check-reversed.S"
+> +
+> +	/* Flip back, r0 already has the switch syscall number */
+> +	.long	0x02000044	/* sc */
+> +
+> +#include "check.S"
+> +
+> +	li	r0, __NR_write
+> +	li	r3, 1	/* stdout */
+> +	ld	r4, message@got(%r2)
+> +	li	r5, 28	/* strlen(message3) */
+> +	sc
+> +	li      r0, __NR_exit
+> +	li	r3, 0
+> +	sc
+> +	b       .
+> -- 
+> 2.1.0
 
-At the end of the checking code we call write(), which is a syscall, and it
-clobbers the register state! Duh.
-
-I think the reason you were seeing it and I wasn't is that on my system I have
-audit enabled, so we *always* go through the path that restores.
-
-New patch sent.
-
-cheers
+    Gabriel
