@@ -2,18 +2,21 @@ Return-Path: <mst@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1EDB41A0144
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Mar 2015 00:37:51 +1100 (AEDT)
-Date: Sun, 29 Mar 2015 15:37:43 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 914011A0144
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Mar 2015 00:40:25 +1100 (AEDT)
+Date: Sun, 29 Mar 2015 15:40:16 +0200
 From: "Michael S. Tsirkin" <mst@redhat.com>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 04/86] powerpc/pci: use uapi/linux/pci_ids.h directly
-Message-ID: <1427635734-24786-5-git-send-email-mst@redhat.com>
+Subject: [PATCH 33/86] edac/pasemi: use uapi/linux/pci_ids.h directly
+Message-ID: <1427635734-24786-34-git-send-email-mst@redhat.com>
 References: <1427635734-24786-1-git-send-email-mst@redhat.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 In-Reply-To: <1427635734-24786-1-git-send-email-mst@redhat.com>
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Cc: Mauro Carvalho Chehab <mchehab@osg.samsung.com>,
+ Borislav Petkov <bp@alien8.de>, Doug Thompson <dougthompson@xmission.com>,
+ Olof Johansson <olof@lixom.net>, Egor Martovetsky <egor@pasemi.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-edac@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,30 +32,21 @@ the wrapper in include/linux/pci_ids.h.
 
 Signed-off-by: Michael S. Tsirkin <mst@redhat.com>
 ---
- arch/powerpc/platforms/embedded6xx/mpc10x.h | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/edac/pasemi_edac.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/platforms/embedded6xx/mpc10x.h b/arch/powerpc/platforms/embedded6xx/mpc10x.h
-index b290b63..4175800 100644
---- a/arch/powerpc/platforms/embedded6xx/mpc10x.h
-+++ b/arch/powerpc/platforms/embedded6xx/mpc10x.h
-@@ -13,7 +13,7 @@
- #ifndef __PPC_KERNEL_MPC10X_H
- #define __PPC_KERNEL_MPC10X_H
- 
+diff --git a/drivers/edac/pasemi_edac.c b/drivers/edac/pasemi_edac.c
+index 9c971b5..cd0da08 100644
+--- a/drivers/edac/pasemi_edac.c
++++ b/drivers/edac/pasemi_edac.c
+@@ -24,7 +24,7 @@
+ #include <linux/module.h>
+ #include <linux/init.h>
+ #include <linux/pci.h>
 -#include <linux/pci_ids.h>
 +#include <uapi/linux/pci_ids.h>
- #include <asm/pci-bridge.h>
+ #include <linux/edac.h>
+ #include "edac_core.h"
  
- /*
-@@ -35,7 +35,7 @@
- 
- /*
-  * Define the vendor/device IDs for the various bridges--should be added to
-- * <linux/pci_ids.h>
-+ * <uapi/linux/pci_ids.h>
-  */
- #define	MPC10X_BRIDGE_106	((PCI_DEVICE_ID_MOTOROLA_MPC106 << 16) |  \
- 				  PCI_VENDOR_ID_MOTOROLA)
 -- 
 MST
