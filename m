@@ -1,24 +1,24 @@
-Return-Path: <sowmini.varadhan@oracle.com>
-Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DAF8F1A0272
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Mar 2015 08:15:37 +1100 (AEDT)
-Date: Mon, 30 Mar 2015 17:15:25 -0400
-From: Sowmini Varadhan <sowmini.varadhan@oracle.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4253F1A0272
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Mar 2015 08:29:12 +1100 (AEDT)
+Message-ID: <1427750937.20500.99.camel@kernel.crashing.org>
 Subject: Re: [PATCH v7 RFC 1/3] sparc: Break up monolithic iommu table/lock
  into finer graularity pools and lock
-Message-ID: <20150330211525.GM26127@oracle.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Sowmini Varadhan <sowmini.varadhan@oracle.com>
+Date: Tue, 31 Mar 2015 08:28:57 +1100
+In-Reply-To: <20150330211525.GM26127@oracle.com>
 References: <cover.1427295804.git.sowmini.varadhan@oracle.com>
  <b9dbeef3a3ae463a5198b6d34eb446ae50966a66.1427295804.git.sowmini.varadhan@oracle.com>
  <1427685844.20500.66.camel@kernel.crashing.org>
  <20150330103824.GA26127@oracle.com>
  <1427712943.20500.77.camel@kernel.crashing.org>
- <20150330130116.GE26127@oracle.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150330130116.GE26127@oracle.com>
+ <20150330130116.GE26127@oracle.com> <20150330211525.GM26127@oracle.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 Cc: aik@au1.ibm.com, anton@au1.ibm.com, paulus@samba.org,
  sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,37 +30,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On (03/30/15 09:01), Sowmini Varadhan wrote:
+On Mon, 2015-03-30 at 17:15 -0400, Sowmini Varadhan wrote:
+> On (03/30/15 09:01), Sowmini Varadhan wrote:
+> > 
+> > So I tried looking at the code, and perhaps there is some arch-specific
+> > subtlety here that I am missing, but where does spin_lock itself
+> > do the cpu_relax? afaict, LOCK_CONTENDED() itself does not have this.
 > 
-> So I tried looking at the code, and perhaps there is some arch-specific
-> subtlety here that I am missing, but where does spin_lock itself
-> do the cpu_relax? afaict, LOCK_CONTENDED() itself does not have this.
+> To answer my question:
+> I'd missed the CONFIG_LOCK_STAT (which David Ahern pointed out to me).
+> the above is only true for the LOCK_STAT case.
 
-To answer my question:
-I'd missed the CONFIG_LOCK_STAT (which David Ahern pointed out to me).
-the above is only true for the LOCK_STAT case.
+powerpc:
 
-In any case, I ran some experiments today: I was running 
-iperf [http://en.wikipedia.org/wiki/Iperf] over ixgbe, which
-is where I'd noticed the original perf issues for sparc. I was
-running iperf2 (which is more aggressively threaded than iperf3) with
-8, 10, 16, 20 threads, and with TSO turned off. In each case, I was
-making sure that I was able to reach 9.X Gbps (this is a 10Gbps link)
+static inline void arch_spin_lock(arch_spinlock_t *lock)
+{
+	CLEAR_IO_SYNC;
+	while (1) {
+		if (likely(__arch_spin_trylock(lock) == 0))
+			break;
+		do {
+			HMT_low();
+			if (SHARED_PROCESSOR)
+				__spin_yield(lock);
+		} while (unlikely(lock->slock != 0));
+		HMT_medium();
+	}
+}
 
-I dont see any significant difference in the perf profile between the
-spin_trylock and the spin_lock version (other than, of course, the change
-to the lock-contention for the trylock version). I looked at the
-perf profiled cache-misses (works out to about 1400M for 10 threads,
-with or without the trylock).
+The HMT_* statements are what reduces the thread prio. Additionally,
+the yield thingy is something that allows us to relinguish out time
+slice to the partition owning the lock if it's not currently scheduled
+by the hypervisor.
 
-I'm still waiting for some of the IB folks to try out the spin_lock
-version (they had also seen some significant perf improvements from
-breaking down the monolithic lock into multiple pools, so their workload
-is also sensitive to this)
+> In any case, I ran some experiments today: I was running 
+> iperf [http://en.wikipedia.org/wiki/Iperf] over ixgbe, which
+> is where I'd noticed the original perf issues for sparc. I was
+> running iperf2 (which is more aggressively threaded than iperf3) with
+> 8, 10, 16, 20 threads, and with TSO turned off. In each case, I was
+> making sure that I was able to reach 9.X Gbps (this is a 10Gbps link)
+> 
+> I dont see any significant difference in the perf profile between the
+> spin_trylock and the spin_lock version (other than, of course, the change
+> to the lock-contention for the trylock version). I looked at the
+> perf profiled cache-misses (works out to about 1400M for 10 threads,
+> with or without the trylock).
+> 
+> I'm still waiting for some of the IB folks to try out the spin_lock
+> version (they had also seen some significant perf improvements from
+> breaking down the monolithic lock into multiple pools, so their workload
+> is also sensitive to this)
+> 
+> But as such, it looks like it doesnt matter much, whether you use
+> the trylock to find the first available pool, or block on the spin_lock.
+> I'll let folks on this list vote on this one (assuming the IB tests also 
+> come out without a significant variation between the 2 locking choices).
 
-But as such, it looks like it doesnt matter much, whether you use
-the trylock to find the first available pool, or block on the spin_lock.
-I'll let folks on this list vote on this one (assuming the IB tests also 
-come out without a significant variation between the 2 locking choices).
+Provided that the IB test doesn't come up with a significant difference,
+I definitely vote for the simpler version of doing a normal spin_lock.
 
---Sowmini
+Cheers,
+Ben.
