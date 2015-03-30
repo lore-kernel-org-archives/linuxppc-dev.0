@@ -1,31 +1,23 @@
 Return-Path: <joe@perches.com>
-Received: from smtprelay.hostedemail.com (smtprelay0036.hostedemail.com
- [216.40.44.36])
- by lists.ozlabs.org (Postfix) with ESMTP id 927AF1A0272
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Mar 2015 10:52:59 +1100 (AEDT)
+Received: from smtprelay.hostedemail.com (smtprelay0113.hostedemail.com
+ [216.40.44.113])
+ by lists.ozlabs.org (Postfix) with ESMTP id BACAC1A0AF2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Mar 2015 10:54:00 +1100 (AEDT)
 Received: from smtprelay.hostedemail.com (10.5.19.251.rfc1918.com
  [10.5.19.251])
- by smtpgrave07.hostedemail.com (Postfix) with ESMTP id B91BE11A6A4
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Mar 2015 23:47:10 +0000 (UTC)
+ by smtpgrave04.hostedemail.com (Postfix) with ESMTP id AD0E4B19A9
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Mar 2015 23:47:22 +0000 (UTC)
 From: Joe Perches <joe@perches.com>
-To: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- kvmarm@lists.cs.columbia.edu, kvm@vger.kernel.org,
- linux-omap@vger.kernel.org, kvm-ppc@vger.kernel.org,
- virtualization@lists.linux-foundation.org, linux-fsdevel@vger.kernel.org,
- linux-nfs@vger.kernel.org, linux-ide@vger.kernel.org,
- kgdb-bugreport@lists.sourceforge.net, linux-mm@kvack.org,
- linux-pm@vger.kernel.org, netdev@vger.kernel.org,
- alsa-devel@alsa-project.org, bridge@lists.linux-foundation.org,
- netfilter-devel@vger.kernel.org, coreteam@netfilter.org,
- patches@opensource.wolfsonmicro.com
-Subject: [PATCH 00/25] treewide: Use bool function return values of true/false
+To: linux-kernel@vger.kernel.org, Alexander Graf <agraf@suse.de>,
+ Gleb Natapov <gleb@kernel.org>, Paolo Bonzini <pbonzini@redhat.com>
+Subject: [PATCH 06/25] powerpc: Use bool function return values of true/false
  not 1/0
-Date: Mon, 30 Mar 2015 16:45:58 -0700
-Message-Id: <cover.1427759009.git.joe@perches.com>
-Cc: linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org,
- linux-scsi@vger.kernel.org, linux-mips@linux-mips.org,
- linux-hexagon@vger.kernel.org, linux-security-module@vger.kernel.org,
- sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Date: Mon, 30 Mar 2015 16:46:04 -0700
+Message-Id: <6d45a6e4596f0b282048fc4b8db9e7f7a19a46e3.1427759009.git.joe@perches.com>
+In-Reply-To: <cover.1427759009.git.joe@perches.com>
+References: <cover.1427759009.git.joe@perches.com>
+Cc: kvm@vger.kernel.org, kvm-ppc@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,89 +27,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Joe Perches (25):
-  arm: Use bool function return values of true/false not 1/0
-  arm64: Use bool function return values of true/false not 1/0
-  hexagon: Use bool function return values of true/false not 1/0
-  ia64: Use bool function return values of true/false not 1/0
-  mips: Use bool function return values of true/false not 1/0
-  powerpc: Use bool function return values of true/false not 1/0
-  s390: Use bool function return values of true/false not 1/0
-  sparc: Use bool function return values of true/false not 1/0
-  tile: Use bool function return values of true/false not 1/0
-  unicore32: Use bool function return values of true/false not 1/0
-  x86: Use bool function return values of true/false not 1/0
-  virtio_console: Use bool function return values of true/false not 1/0
-  csiostor: Use bool function return values of true/false not 1/0
-  dcache: Use bool function return values of true/false not 1/0
-  nfsd: nfs4state: Use bool function return values of true/false not 1/0
-  include/linux: Use bool function return values of true/false not 1/0
-  sound: Use bool function return values of true/false not 1/0
-  rcu: tree_plugin: Use bool function return values of true/false not 1/0
-  sched: Use bool function return values of true/false not 1/0
-  ftrace: Use bool function return values of true/false not 1/0
-  slub: Use bool function return values of true/false not 1/0
-  bridge: Use bool function return values of true/false not 1/0
-  netfilter: Use bool function return values of true/false not 1/0
-  security: Use bool function return values of true/false not 1/0
-  sound: wm5100-tables: Use bool function return values of true/false not 1/0
+Use the normal return values for bool functions
 
- arch/arm/include/asm/dma-mapping.h           |  8 ++--
- arch/arm/include/asm/kvm_emulate.h           |  2 +-
- arch/arm/mach-omap2/powerdomain.c            | 14 +++---
- arch/arm64/include/asm/dma-mapping.h         |  2 +-
- arch/hexagon/include/asm/dma-mapping.h       |  2 +-
- arch/ia64/include/asm/dma-mapping.h          |  2 +-
- arch/mips/include/asm/dma-mapping.h          |  2 +-
- arch/powerpc/include/asm/dcr-native.h        |  2 +-
- arch/powerpc/include/asm/dma-mapping.h       |  4 +-
- arch/powerpc/include/asm/kvm_book3s_64.h     |  4 +-
- arch/powerpc/sysdev/dcr.c                    |  2 +-
- arch/s390/include/asm/dma-mapping.h          |  2 +-
- arch/sparc/mm/init_64.c                      |  8 ++--
- arch/tile/include/asm/dma-mapping.h          |  2 +-
- arch/unicore32/include/asm/dma-mapping.h     |  2 +-
- arch/x86/include/asm/archrandom.h            |  2 +-
- arch/x86/include/asm/dma-mapping.h           |  2 +-
- arch/x86/include/asm/kvm_para.h              |  2 +-
- arch/x86/kvm/cpuid.h                         |  2 +-
- arch/x86/kvm/vmx.c                           | 72 ++++++++++++++--------------
- drivers/char/virtio_console.c                |  2 +-
- drivers/scsi/csiostor/csio_scsi.c            |  4 +-
- fs/dcache.c                                  | 12 ++---
- fs/nfsd/nfs4state.c                          |  2 +-
- include/linux/blkdev.h                       |  2 +-
- include/linux/ide.h                          |  2 +-
- include/linux/kgdb.h                         |  2 +-
- include/linux/mfd/db8500-prcmu.h             |  2 +-
- include/linux/mm.h                           |  2 +-
- include/linux/power_supply.h                 |  8 ++--
- include/linux/ssb/ssb_driver_extif.h         |  2 +-
- include/linux/ssb/ssb_driver_gige.h          | 16 +++----
- include/sound/soc.h                          |  4 +-
- kernel/rcu/tree_plugin.h                     |  4 +-
- kernel/sched/auto_group.h                    |  2 +-
- kernel/sched/completion.c                    | 16 ++++---
- kernel/trace/ftrace.c                        | 10 ++--
- mm/slub.c                                    | 12 ++---
- net/bridge/br_private.h                      |  2 +-
- net/ipv4/netfilter/ipt_ah.c                  |  2 +-
- net/netfilter/ipset/ip_set_hash_ip.c         |  8 ++--
- net/netfilter/ipset/ip_set_hash_ipmark.c     |  8 ++--
- net/netfilter/ipset/ip_set_hash_ipport.c     |  8 ++--
- net/netfilter/ipset/ip_set_hash_ipportip.c   |  8 ++--
- net/netfilter/ipset/ip_set_hash_ipportnet.c  |  8 ++--
- net/netfilter/ipset/ip_set_hash_net.c        |  8 ++--
- net/netfilter/ipset/ip_set_hash_netiface.c   |  8 ++--
- net/netfilter/ipset/ip_set_hash_netport.c    |  8 ++--
- net/netfilter/ipset/ip_set_hash_netportnet.c |  8 ++--
- net/netfilter/xt_connlimit.c                 |  2 +-
- net/netfilter/xt_hashlimit.c                 |  2 +-
- net/netfilter/xt_ipcomp.c                    |  2 +-
- security/apparmor/file.c                     |  8 ++--
- security/apparmor/policy.c                   | 10 ++--
- sound/soc/codecs/wm5100-tables.c             | 12 ++---
- 55 files changed, 178 insertions(+), 176 deletions(-)
+Signed-off-by: Joe Perches <joe@perches.com>
+---
+ arch/powerpc/include/asm/dcr-native.h    | 2 +-
+ arch/powerpc/include/asm/dma-mapping.h   | 4 ++--
+ arch/powerpc/include/asm/kvm_book3s_64.h | 4 ++--
+ arch/powerpc/sysdev/dcr.c                | 2 +-
+ 4 files changed, 6 insertions(+), 6 deletions(-)
 
+diff --git a/arch/powerpc/include/asm/dcr-native.h b/arch/powerpc/include/asm/dcr-native.h
+index 7d2e623..4efc11d 100644
+--- a/arch/powerpc/include/asm/dcr-native.h
++++ b/arch/powerpc/include/asm/dcr-native.h
+@@ -31,7 +31,7 @@ typedef struct {
+ 
+ static inline bool dcr_map_ok_native(dcr_host_native_t host)
+ {
+-	return 1;
++	return true;
+ }
+ 
+ #define dcr_map_native(dev, dcr_n, dcr_c) \
+diff --git a/arch/powerpc/include/asm/dma-mapping.h b/arch/powerpc/include/asm/dma-mapping.h
+index 894d538..9103687 100644
+--- a/arch/powerpc/include/asm/dma-mapping.h
++++ b/arch/powerpc/include/asm/dma-mapping.h
+@@ -191,11 +191,11 @@ static inline bool dma_capable(struct device *dev, dma_addr_t addr, size_t size)
+ 	struct dev_archdata *sd = &dev->archdata;
+ 
+ 	if (sd->max_direct_dma_addr && addr + size > sd->max_direct_dma_addr)
+-		return 0;
++		return false;
+ #endif
+ 
+ 	if (!dev->dma_mask)
+-		return 0;
++		return false;
+ 
+ 	return addr + size - 1 <= *dev->dma_mask;
+ }
+diff --git a/arch/powerpc/include/asm/kvm_book3s_64.h b/arch/powerpc/include/asm/kvm_book3s_64.h
+index 2d81e20..2a244bf 100644
+--- a/arch/powerpc/include/asm/kvm_book3s_64.h
++++ b/arch/powerpc/include/asm/kvm_book3s_64.h
+@@ -335,7 +335,7 @@ static inline bool hpte_read_permission(unsigned long pp, unsigned long key)
+ {
+ 	if (key)
+ 		return PP_RWRX <= pp && pp <= PP_RXRX;
+-	return 1;
++	return true;
+ }
+ 
+ static inline bool hpte_write_permission(unsigned long pp, unsigned long key)
+@@ -373,7 +373,7 @@ static inline bool slot_is_aligned(struct kvm_memory_slot *memslot,
+ 	unsigned long mask = (pagesize >> PAGE_SHIFT) - 1;
+ 
+ 	if (pagesize <= PAGE_SIZE)
+-		return 1;
++		return true;
+ 	return !(memslot->base_gfn & mask) && !(memslot->npages & mask);
+ }
+ 
+diff --git a/arch/powerpc/sysdev/dcr.c b/arch/powerpc/sysdev/dcr.c
+index 2d8a101..121e26f 100644
+--- a/arch/powerpc/sysdev/dcr.c
++++ b/arch/powerpc/sysdev/dcr.c
+@@ -54,7 +54,7 @@ bool dcr_map_ok_generic(dcr_host_t host)
+ 	else if (host.type == DCR_HOST_MMIO)
+ 		return dcr_map_ok_mmio(host.host.mmio);
+ 	else
+-		return 0;
++		return false;
+ }
+ EXPORT_SYMBOL_GPL(dcr_map_ok_generic);
+ 
 -- 
 2.1.2
