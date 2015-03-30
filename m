@@ -1,20 +1,29 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <clg@fr.ibm.com>
+Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B90F61A0079
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Mar 2015 20:40:09 +1100 (AEDT)
-In-Reply-To: <1426999379-20542-2-git-send-email-shreyas@linux.vnet.ibm.com>
-To: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>,
- linux-kernel@vger.kernel.org
-From: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [v3,
- 2/3] powerpc/powernv: Move cpuidle related code from setup.c to new
- file
-Message-Id: <20150330094009.A575514015A@ozlabs.org>
-Date: Mon, 30 Mar 2015 20:40:08 +1100 (AEDT)
-Cc: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id E5B471A0079
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Mar 2015 21:06:08 +1100 (AEDT)
+Received: from /spool/local
+ by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <clg@fr.ibm.com>;
+ Mon, 30 Mar 2015 11:06:04 +0100
+Message-ID: <55192007.9090000@fr.ibm.com>
+Date: Mon, 30 Mar 2015 12:05:59 +0200
+From: Cedric Le Goater <clg@fr.ibm.com>
+MIME-Version: 1.0
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH v3 3/3] powerpc/powernv: remove opal_sensor_mutex
+References: <20150327095936.50A921400A0@ozlabs.org>
+ <1427474362-3903-3-git-send-email-clg@fr.ibm.com>
+ <1427681398.4218.7.camel@ellerman.id.au> <5518F258.4060308@fr.ibm.com>
+ <1427698777.28219.3.camel@ellerman.id.au>
+In-Reply-To: <1427698777.28219.3.camel@ellerman.id.au>
+Content-Type: text/plain; charset=utf-8
+Cc: Stewart Smith <stewart@linux.vnet.ibm.com>, skiboot@lists.ozlabs.org,
+ benh@au1.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ Neelesh Gupta <neelegup@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,21 +33,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2015-22-03 at 04:42:58 UTC, "Shreyas B. Prabhu" wrote:
-> This is a cleanup patch; doesn't change any functionality. Moves
-> all cpuidle related code from setup.c to a new file.
+On 03/30/2015 08:59 AM, Michael Ellerman wrote:
+> On Mon, 2015-03-30 at 08:51 +0200, Cedric Le Goater wrote:
+>> On 03/30/2015 04:09 AM, Michael Ellerman wrote:
+>>> On Fri, 2015-03-27 at 17:39 +0100, Cédric Le Goater wrote:
+>>>> The opal sensor mutex protects the opal_sensor_read call which
+>>>> can return a OPAL_BUSY code on IBM Power systems if a previous 
+>>>> request is in progress.
+>>>>
+>>>> This can be handled at user level with a retry.
+>>>
+>>> It can, but how does it actually look in practice?
+>>>
+>>> It looks like the only use of opal_get_sensor_data() is show_sensor() in
+>>> drivers/hwmon/ibmpowernv.c.
+>>>
+>>> Because that's a sysfs attribute folks will be generally just dumping 
+>>> that with cat, or reading it in a shell script, neither of which will 
+>>> cope nicely with EBUSY I think?
+>>
+>> It won't, I agree but it should only happen when running concurrent cat 
+>> commands on the hwmon sysfs files. The event should be rare enough.
 > 
-> Signed-off-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
-> ---
-> This patch is new in v3
+> Rare enough maybe, but a real pain in the .. to cope with in a shell script if
+> you're trying to automate something.
 > 
->  arch/powerpc/platforms/powernv/Makefile |   2 +-
->  arch/powerpc/platforms/powernv/idle.c   | 186 ++++++++++++++++++++++++++++++++
->  arch/powerpc/platforms/powernv/setup.c  | 166 ----------------------------
+>> Anyhow, this is not a big issue. We can drop that patch. The real "issue"
+>> is the time it takes to get some values back from the FSP. This is what
+>> user space has been most surprised about.
+> 
+> OK. The other option would be to move the mutex into the sysfs show routine, so
+> only that is synchronous. That would give you nice behaviour from cat, ie. it
+> would sleep on contention but still be killable with ctrl-c.
 
-Sorry this no longer applies, because I merged some changes from Preeti to
-__init pnv_init_idle_states().
+Let's keep it how it is and see if it is possible to the improve OPAL 
+side first. 
 
-Can you please rebase on top of linux-next, or my next.
+I will send you an updated patchset shortly. 
 
-cheers
+Thanks for the review. 
+
+C.
