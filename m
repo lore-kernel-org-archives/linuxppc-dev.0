@@ -1,24 +1,23 @@
-Return-Path: <dja@axtens.net>
-Received: from mail-pd0-x235.google.com (mail-pd0-x235.google.com
- [IPv6:2607:f8b0:400e:c02::235])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0140.outbound.protection.outlook.com [207.46.100.140])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6E4B61A0332
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Mar 2015 09:12:48 +1100 (AEDT)
-Received: by pdcp1 with SMTP id p1so97130822pdc.3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Mar 2015 15:12:46 -0700 (PDT)
-Message-ID: <1427753572.11226.10.camel@axtens.net>
-Subject: Re: [PATCH 02/27] powerpc/powermac: move pmac_pci_probe_mode from
- setup.c to pci.c
-From: Daniel Axtens <dja@axtens.net>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Date: Tue, 31 Mar 2015 09:12:52 +1100
-In-Reply-To: <20150330123214.9EE4014009B@ozlabs.org>
-References: <20150330123214.9EE4014009B@ozlabs.org>
-Content-Type: multipart/signed; micalg="pgp-sha256";
- protocol="application/pgp-signature"; boundary="=-eJb9Rmb+/pUVSWHrhLrH"
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4E7491A0272
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Mar 2015 10:00:39 +1100 (AEDT)
+Message-ID: <1427756416.22867.205.camel@freescale.com>
+Subject: Re: [1/4] powerpc/fsl-booke: Add device tree support for
+ T1024/T1023 SoC
+From: Scott Wood <scottwood@freescale.com>
+To: Liu Shengzhou-B36685 <Shengzhou.Liu@freescale.com>
+Date: Mon, 30 Mar 2015 18:00:16 -0500
+In-Reply-To: <DM2PR03MB398E5EB28719411243C1C76F8F50@DM2PR03MB398.namprd03.prod.outlook.com>
+References: <1422517947-28722-1-git-send-email-Shengzhou.Liu@freescale.com>
+ <20150130011949.GA19864@home.buserror.net>
+ <DM2PR03MB398E5EB28719411243C1C76F8F50@DM2PR03MB398.namprd03.prod.outlook.com>
+Content-Type: text/plain; charset="UTF-8"
+MIME-Version: 1.0
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,115 +27,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Mon, 2015-03-30 at 06:08 -0500, Liu Shengzhou-B36685 wrote:
+> > -----Original Message-----
+> > From: Wood Scott-B07421
+> > Sent: Friday, January 30, 2015 9:20 AM
+> > To: Liu Shengzhou-B36685
+> > Cc: linuxppc-dev@lists.ozlabs.org
+> > Subject: Re: [1/4] powerpc/fsl-booke: Add device tree support for
+> > T1024/T1023 SoC
+> > 
+> > On Thu, Jan 29, 2015 at 03:52:24PM +0800, Shengzhou Liu wrote:
+> > > +	corenet-cf@18000 {
+> > > +		compatible = "fsl,corenet2-cf";
+> > 
+> > While the damage has already been done by the t1040 device tree, this is
+> > not 100% compatible with what's on t4240.  I'm not sure if it's worth
+> > doing anything about it at this point, given that you can tell the
+> > difference by the version register even though that register is reserved
+> > on t4240 and simliar chips, which is what I do in
+> > http://patchwork.ozlabs.org/patch/419911/
+> 
+> Now here "fsl,corenet2-cf" is suitable for t1024 after your t1040 patch was merged.
+> T1024 and t1040 have the same version of ccf.
 
---=-eJb9Rmb+/pUVSWHrhLrH
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+I wouldn't call it "suitable", just that there's a workaround for
+existing badness.
 
-On Mon, 2015-03-30 at 23:32 +1100, Michael Ellerman wrote:
-> On Wed, 2015-25-03 at 05:35:36 UTC, Daniel Axtens wrote:
->=20
-> Why did we move it? Just for cleanliness?
->=20
+> > > +/include/ "t1023si-post.dtsi"
+> > > +&soc {
+> > > +	display:display@180000 {
+> > > +		compatible = "fsl,t1024-diu", "fsl,diu";
+> > > +		reg = <0x180000 1000>;
+> > > +		interrupts = <74 2 0 0>;
+> > > +	};
+> > > +};
+> > 
+> > There are other differences between t1023 an t1024.  Where do you
+> > describe t1024's QE?  Where do you describe the DDR and IFC differences?
+> > can they be detected at runtime?  t1024 supports deep sleep, but t1023
+> > doesn't -- yet you label both chips as having t1024 rcpm.
+> > 
+> As QE IP block has not been upstream yet,
 
-I move it because in (what is currently) patch 14, I want to hook it
-into the PCI controller ops structure, which I define in pci.c. In that
-patch I make the definition static again and remove the prototype from
-the header.
+Huh?
 
-I saw two other options:
- - Move it to pci.c as part of patch 14
- - Keep it in setup.c and just accept that it won't be static and will
-need a prototype in the header.
+arch/powerpc/sysdev/qe_lib/
 
-I thought this was the least bad option, but I'm happy to do it another
-way. Either way I will explain it better in the next series.
+>  so have to removed QE info in dts currently(same on t1040), 
 
-Regards,
-Daniel
+That's not how it works.
 
-> > Signed-off-by: Daniel Axtens <dja@axtens.net>
-> > ---
-> >  arch/powerpc/platforms/powermac/pci.c   | 17 +++++++++++++++++
-> >  arch/powerpc/platforms/powermac/pmac.h  |  4 ++++
-> >  arch/powerpc/platforms/powermac/setup.c | 18 ------------------
-> >  3 files changed, 21 insertions(+), 18 deletions(-)
-> >=20
-> > diff --git a/arch/powerpc/platforms/powermac/pci.c b/arch/powerpc/platf=
-orms/powermac/pci.c
-> > index f4071a6..a792f45 100644
-> > --- a/arch/powerpc/platforms/powermac/pci.c
-> > +++ b/arch/powerpc/platforms/powermac/pci.c
-> > @@ -1223,3 +1223,20 @@ static void fixup_u4_pcie(struct pci_dev* dev)
-> >  	pci_write_config_dword(dev, PCI_PREF_MEMORY_BASE, 0);
-> >  }
-> >  DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_APPLE, PCI_DEVICE_ID_APPLE_U4_P=
-CIE, fixup_u4_pcie);
-> > +
-> > +#ifdef CONFIG_PPC64
-> > +int pmac_pci_probe_mode(struct pci_bus *bus)
-> > +{
-> > +	struct device_node *node =3D pci_bus_to_OF_node(bus);
-> > +
-> > +	/* We need to use normal PCI probing for the AGP bus,
-> > +	 * since the device for the AGP bridge isn't in the tree.
-> > +	 * Same for the PCIe host on U4 and the HT host bridge.
-> > +	 */
-> > +	if (bus->self =3D=3D NULL && (of_device_is_compatible(node, "u3-agp")=
- ||
-> > +				  of_device_is_compatible(node, "u4-pcie") ||
-> > +				  of_device_is_compatible(node, "u3-ht")))
-> > +		return PCI_PROBE_NORMAL;
-> > +	return PCI_PROBE_DEVTREE;
-> > +}
-> > +#endif /* CONFIG_PPC64 */
-> > diff --git a/arch/powerpc/platforms/powermac/pmac.h b/arch/powerpc/plat=
-forms/powermac/pmac.h
-> > index 8327cce..46d2193 100644
-> > --- a/arch/powerpc/platforms/powermac/pmac.h
-> > +++ b/arch/powerpc/platforms/powermac/pmac.h
-> > @@ -39,4 +39,8 @@ extern void low_cpu_die(void) __attribute__((noreturn=
-));
-> >  extern int pmac_nvram_init(void);
-> >  extern void pmac_pic_init(void);
-> > =20
-> > +#ifdef CONFIG_PPC64
-> > +extern int pmac_pci_probe_mode(struct pci_bus *bus);
-> > +#endif
->=20
-> You don't need to ifdef declarations, and you don't need extern.
->=20
-> So just:
->=20
-> > +int pmac_pci_probe_mode(struct pci_bus *bus);
->=20
-> Is fine.
->=20
-> cheers
+> DDR and IFC differences are in u-boot, not in dts.
 
+The differences are in hardware, which is what the dts is supposed to
+describe.
 
---=-eJb9Rmb+/pUVSWHrhLrH
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-Content-Transfer-Encoding: 7bit
+> Both t1023 and t1024 support sleep, so label both chips as having t1024 rcpm.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-Comment: GPGTools - https://gpgtools.org
+That's not how it works.
 
-iQIcBAABCAAGBQJVGcpkAAoJEPC3R3P2I92FNCwQAJZEi/JadChdqSjjXPN9nBe4
-RNowtYh9sH1KprYNTMc6NdoqI7cbJHmY4bTz8q+kdouUSEXev5uqp0Czvf62CY/5
-9m9Z/JIEW25Trkxg9WmoanvLe8KLKVXTOkKeq9kfShxnpiN7sX0cKQhWHP2a0nnL
-9n+w3WRC7r7C6+NTn4QnBZR/UT7m10oIXOy576uW1WaBSj0MOnk9/xrR75H0rmzY
-ftSlDAA3dSIGbGD4bVOMMzwhxZQui/1Eby6oT8jp4RiHloT6HA9Lft5bVpTawtpc
-sbrQqoEcWWRJaEpMyDzjqrp71eTebrvCQ6LeKsuF0T7B33D6TG4Jfwgl561gRdki
-rJ5tLAhEWd+yMbOV3V5h6wz4Tg8i509idxGxriEW0w2fvq7JLsBDjIluOyq3O6YC
-Zxt3PIx46YJ1S6xgQwZfzaA1cQEy8l96WZgHFpPoWw/y1p2vcz3bmEmOir0+UmZ+
-+RXhD9eKg7HCVdriRZo7h7MFPELJXxShIgX7FI5+xuOCVEYYfYj0VNOmkYmhUk0h
-0STBsLOrbeAyvNKn613scn5w+QuylSdKZEwk3+D9WgW47dCrgNzKIUVVu2xGG40b
-NAgdx/n0F3eglvocWAn6Pgk4bQvZrliiUTOowNbqwjVNNCnWu6ZUpq+d338y8YvL
-bKw0WJLeDsrUbNCRcM6j
-=BoWw
------END PGP SIGNATURE-----
+> Only t1024 has deep sleep, the difference is identified in *.c not in dts (confirmed with deep sleep owner). 
 
---=-eJb9Rmb+/pUVSWHrhLrH--
+Even if the C code chooses to use SVR to identify the difference (why?),
+that doesn't mean it's OK for the device tree to contain wrong
+information.
+
+-Scott
