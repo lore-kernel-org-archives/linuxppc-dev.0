@@ -1,18 +1,23 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <sowmini.varadhan@oracle.com>
+Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 56E6D1A00F6
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Mar 2015 21:21:56 +1100 (AEDT)
-In-Reply-To: <1426999379-20542-3-git-send-email-shreyas@linux.vnet.ibm.com>
-To: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>,
- linux-kernel@vger.kernel.org
-From: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [v3, 3/3] powerpc/powernv: Introduce sysfs control for fastsleep
- workaround behavior
-Message-Id: <20150330102156.43CD1140161@ozlabs.org>
-Date: Mon, 30 Mar 2015 21:21:56 +1100 (AEDT)
-Cc: linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 29FE81A0079
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Mar 2015 21:38:42 +1100 (AEDT)
+Date: Mon, 30 Mar 2015 06:38:24 -0400
+From: Sowmini Varadhan <sowmini.varadhan@oracle.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH v7 RFC 1/3] sparc: Break up monolithic iommu table/lock
+ into finer graularity pools and lock
+Message-ID: <20150330103824.GA26127@oracle.com>
+References: <cover.1427295804.git.sowmini.varadhan@oracle.com>
+ <b9dbeef3a3ae463a5198b6d34eb446ae50966a66.1427295804.git.sowmini.varadhan@oracle.com>
+ <1427685844.20500.66.camel@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1427685844.20500.66.camel@kernel.crashing.org>
+Cc: aik@au1.ibm.com, anton@au1.ibm.com, paulus@samba.org,
+ sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,205 +27,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2015-22-03 at 04:42:59 UTC, "Shreyas B. Prabhu" wrote:
-> Fastsleep is one of the idle state which cpuidle subsystem currently
-> uses on power8 machines. In this state L2 cache is brought down to a
-> threshold voltage. Therefore when the core is in fastsleep, the
-> communication between L2 and L3 needs to be fenced. But there is a bug
-> in the current power8 chips surrounding this fencing.
+On (03/30/15 14:24), Benjamin Herrenschmidt wrote:
+> > +
+> > +#define IOMMU_POOL_HASHBITS     4
+> > +#define IOMMU_NR_POOLS          (1 << IOMMU_POOL_HASHBITS)
 > 
-> OPAL provides a workaround which precludes the possibility of hitting
-> this bug. But running with this workaround applied causes checkstop
-> if any correctable error in L2 cache directory is detected. Hence OPAL
-> also provides a way to undo the workaround.
+> I don't like those macros. You changed the value from what we had on
+> powerpc. It could be that the new values are as good for us but I'd
+> like to do a bit differently. Can you make the bits a variable ? Or at
+> least an arch-provided macro which we can change later if needed ?
+
+Actuallly, this are just the upper bound (16) on the number of pools.
+
+The actual number is selected by the value passed to the 
+iommu_tbl_range_init(), and is not hard-coded (as was the case with
+the power-pc code).
+
+Thus powerpc can continue to use 4 pools without any loss of 
+generality.
+
+   :
+> Let's make it clear that this is for allocation of DMA space only, it
+> would thus make my life easier when adapting powerpc to use a different
+> names, something like "struct iommu_area" works for me, or "iommu
+> alloc_region" .. whatever you fancy the most.
+  :
+> Why adding the 'arena' prefix ? What was wrong with "pools" in the
+> powerpc imlementation ?
+
+for the same reason you want to re-baptize iommu_table above- at
+the time, I was doing it to minimize conflicts with existing usage.
+But I can rename everything if you like. 
+
+> > +#define IOMMU_LARGE_ALLOC	15
 > 
-> In the existing implementation, workaround is applied by the last thread
-> of the core entering fastsleep and undone by the first thread waking up.
-> But this has a performance cost. These OPAL calls account for roughly
-> 4000 cycles everytime the core has to enter or wakeup from fastsleep.
+> Make that a variable, here too, the arch might want to tweak it.
 > 
-> This patch introduces a sysfs attribute (fastsleep_workaround_state)
-> to choose the behavior of this workaround.
+> I think 15 is actually not a good value for powerpc with 4k iommu pages
+> and 64k PAGE_SIZE, we should make the above some kind of factor of
+> PAGE_SHIFT - iommu_page_shift.
+
+Ok.
+
+> > +	/* Sanity check */
+> > +	if (unlikely(npages == 0)) {
+> > +		printk_ratelimited("npages == 0\n");
 > 
-> By default, fastsleep_workaround_state = 0. In this case, workaround
-> is applied/undone everytime the core enters/exits fastsleep.
-> 
-> fastsleep_workaround_state = 1. In this case the workaround is applied
-> once on all the cores and never undone. This can be triggered by
-> echo 1 > /sys/devices/system/cpu/fastsleep_workaround_state
-> 
-> For simplicity this attribute can be modified only once. Implying, once
-> fastsleep_workaround_state is changed to 1, it cannot be reverted to
-> the default state.
+> You removed the WARN_ON here which had the nice property of giving you a
+> backtrace which points to the offender. The above message alone is
+> useless.
 
-This sounds good, although the name is a bit vague.
+yes, the original code was generating checkpatch warnings and errors.
+That's why I removed it. 
 
-Just calling it "state" doesn't make it clear what 0 and 1 mean.
-I think better would be "fastsleep_workaround_active" ?
+> I am not certain about the "first unlocked pool"... We take the lock for
+> a fairly short amount of time, I have the gut feeling that the cache
+> line bouncing introduced by looking at a different pool may well cost
+> more than waiting a bit longer. Did do some measurements of that
+> optimisation ?
 
-Though even that is a bit wrong, because 0 doesn't really mean it's not active,
-it means it's not *permanently* active.
+if you are really only taking it for a short amount of time, then
+the trylock should just succeed, so there is no cache line bouncing.
 
-So another option would be to make it a string attribute, with the initial
-state being eg. "dynamic" and then maybe "applied" for the applied state?
+But yes, I did instrument it with iperf, and there was lock contention
+on the spinlock, which was eliminted by the trylock. 
 
-I won't say you have to do that, but think about it, seeing as I'm going to ask
-for a v4 anyway (see comments below).
+I'll fix the rest of the variable naming etc nits and send out
+a new version later today.
 
-> diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
-> index 9ee0a30..8bea8fc 100644
-> --- a/arch/powerpc/include/asm/opal.h
-> +++ b/arch/powerpc/include/asm/opal.h
-> @@ -180,6 +180,13 @@ struct opal_sg_list {
->  #define OPAL_PM_WINKLE_ENABLED	0x00040000
->  #define OPAL_PM_SLEEP_ENABLED_ER1	0x00080000
->  
-> +/*
-> + * OPAL_CONFIG_CPU_IDLE_STATE parameters
-> + */
-> +#define OPAL_CONFIG_IDLE_FASTSLEEP	1
-> +#define OPAL_CONFIG_IDLE_UNDO		0
-> +#define OPAL_CONFIG_IDLE_APPLY		1
-
-The OPAL defines have moved to opal-api.h in Linux.
-
-They should also be made #defines in skiboot.
-
-> diff --git a/arch/powerpc/platforms/powernv/idle.c b/arch/powerpc/platforms/powernv/idle.c
-> index 77992f6..79157b9 100644
-> --- a/arch/powerpc/platforms/powernv/idle.c
-> +++ b/arch/powerpc/platforms/powernv/idle.c
-> @@ -13,6 +13,8 @@
->  #include <linux/mm.h>
->  #include <linux/slab.h>
->  #include <linux/of.h>
-> +#include <linux/device.h>
-> +#include <linux/cpu.h>
->  
->  #include <asm/firmware.h>
->  #include <asm/opal.h>
-> @@ -136,6 +138,77 @@ u32 pnv_get_supported_cpuidle_states(void)
->  }
->  EXPORT_SYMBOL_GPL(pnv_get_supported_cpuidle_states);
->  
-> +static void pnv_fastsleep_workaround_apply(void *info)
-> +{
-> +	opal_config_cpu_idle_state(OPAL_CONFIG_IDLE_FASTSLEEP,
-> +					OPAL_CONFIG_IDLE_APPLY);
-
-This can fail, please check the return. You'll need to report the result via
-*info.
-
-> +}
-> +
-> +/*
-> + * Used to store fastsleep workaround state
-> + * 0 - Workaround applied/undone at fastsleep entry/exit path (Default)
-> + * 1 - Workaround applied once, never undone.
-> + */
-> +static u8 fastsleep_workaround_state;
-> +
-> +static ssize_t show_fastsleep_workaround_state(struct device *dev,
-> +		struct device_attribute *attr, char *buf)
-> +{
-> +	return sprintf(buf, "%u\n", fastsleep_workaround_state);
-> +}
-> +
-> +static ssize_t store_fastsleep_workaround_state(struct device *dev,
-> +		struct device_attribute *attr, const char *buf,
-> +		size_t count)
-> +{
-> +	u32 val;
-> +	cpumask_t primary_thread_mask;
-> +
-> +	/*
-> +	 * fastsleep_workaround_state is write-once parameter.
-> +	 * Once it has been set to 1, it cannot be undone.
-> +	 */
-> +	if (fastsleep_workaround_state == 1)
-> +		return -EINVAL;
-
-Better behaviour here is to delay this check until after you've done the
-kstrtou32(), and if they are asking to set it to 1 (again) then you just return
-count (OK).
-
-That way scripts can just "echo 1 > .." and if the workaround is already
-applied then there is no error.
-
-> +	if (kstrtou32(buf, 0, &val))
-> +		return -EINVAL;
-
-You use a u8 above, so why not a u8 here?
-
-> +	if (val > 1)
-> +		return -EINVAL;
-> +
-> +	fastsleep_workaround_state = 1;
-
-You should delay setting this until below when you know it's succeeded.
-
-> +	/*
-> +	 * fastsleep_workaround_state = 1 implies fastsleep workaround needs to
-> +	 * be left in 'applied' state on all the cores. Do this by-
-> +	 * 1. Patching out the call to 'undo' workaround in fastsleep exit path
-> +	 * 2. Sending ipi to all the cores which have atleast one online thread
-> +	 * 3. Patching out the call to 'apply' workaround in fastsleep entry
-> +	 * path
-> +	 * There is no need to send ipi to cores which have all threads
-> +	 * offlined, as last thread of the core entering fastsleep or deeper
-> +	 * state would have applied workaround.
-> +	 */
-> +	patch_instruction(
-> +		(unsigned int *)pnv_fastsleep_workaround_at_exit,
-> +		PPC_INST_NOP);
-
-This can fail.
-
-> +	primary_thread_mask = cpu_online_cores_map();
-> +	on_each_cpu_mask(&primary_thread_mask,
-> +				pnv_fastsleep_workaround_apply,
-> +				NULL, 1);
-> +
-> +	patch_instruction(
-> +		(unsigned int *)pnv_fastsleep_workaround_at_entry,
-> +		PPC_INST_NOP);
-
-And so can this.
-
-> +	return count;
-> +}
-> +
-> +static DEVICE_ATTR(fastsleep_workaround_state, 0600,
-> +			show_fastsleep_workaround_state,
-> +			store_fastsleep_workaround_state);
-> +
->  static int __init pnv_init_idle_states(void)
->  {
->  	struct device_node *power_mgt;
-> @@ -178,7 +251,15 @@ static int __init pnv_init_idle_states(void)
->  		patch_instruction(
->  			(unsigned int *)pnv_fastsleep_workaround_at_exit,
->  			PPC_INST_NOP);
-> -	}
-> +	} else
-
-I know it's coding style to not bracket a single statement else block, but I
-disagree in cases like this. Because the comment is so big it's preferable to
-bracket it IMHO.
-
-> +	/*
-> +	 * OPAL_PM_SLEEP_ENABLED_ER1 is set. It indicates that workaround is
-> +	 * needed to use fastsleep. Provide sysfs control to choose how this
-> +	 * workaround has to be applied.
-> +	 */
-
-And the comment should indentend to match the code.
-
-> +		device_create_file(cpu_subsys.dev_root,
-> +					&dev_attr_fastsleep_workaround_state);
-> +
->  	pnv_alloc_idle_core_states();
->  	return 0;
->  }
-
-cheers
+--Sowmini
