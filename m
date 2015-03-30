@@ -1,40 +1,23 @@
-Return-Path: <sam.bobroff@au1.ibm.com>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8C9661A04B3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Mar 2015 11:07:56 +1100 (AEDT)
-Received: from /spool/local
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <sam.bobroff@au1.ibm.com>;
- Mon, 30 Mar 2015 10:07:54 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id C3E9E2BB0057
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Mar 2015 11:07:51 +1100 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t2U07hlR53346306
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Mar 2015 11:07:51 +1100
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t2U07HYe027094
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Mar 2015 11:07:18 +1100
-Message-ID: <5518939E.5080306@au1.ibm.com>
-Date: Mon, 30 Mar 2015 11:06:54 +1100
-From: Sam Bobroff <sam.bobroff@au1.ibm.com>
-MIME-Version: 1.0
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH 3/3] selftests/powerpc: Add transactional syscall test
-References: <cover.1426740212.git.sam.bobroff@au1.ibm.com>
- <b4a4ea23b20098512cf350b97ce98e0d1ea58531.1426740212.git.sam.bobroff@au1.ibm.com>
- <550BE795.4070200@linux.vnet.ibm.com> <5510C352.9060302@au1.ibm.com>
- <1427162568.28572.2.camel@ellerman.id.au>
-In-Reply-To: <1427162568.28572.2.camel@ellerman.id.au>
-Content-Type: text/plain; charset=utf-8
-Cc: mikey@neuling.org, azanella@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org, matt@ozlabs.org,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9AE361A01AA
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Mar 2015 12:40:24 +1100 (AEDT)
+Message-ID: <1427679624.4218.5.camel@ellerman.id.au>
+Subject: Re: [PATCH v3] powerpc: Use PFN_PHYS() to avoid truncating the
+ physical address
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Scott Wood <scottwood@freescale.com>
+Date: Mon, 30 Mar 2015 12:40:24 +1100
+In-Reply-To: <1427479651.22867.151.camel@freescale.com>
+References: <1427291352-31256-1-git-send-email-Emilian.Medve@Freescale.com>
+ <FB8A0580-9A76-4F83-BDE7-2EECC0063C1C@kernel.crashing.org>
+ <5514264A.6020502@Freescale.com> <1427413505.23142.3.camel@ellerman.id.au>
+ <1427479651.22867.151.camel@freescale.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org, Emil Medve <Emilian.Medve@Freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,97 +27,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 24/03/15 13:02, Michael Ellerman wrote:
-> On Tue, 2015-03-24 at 12:52 +1100, Sam Bobroff wrote:
->> On 20/03/15 20:25, Anshuman Khandual wrote:
->>> On 03/19/2015 10:13 AM, Sam Bobroff wrote:
->>>> Check that a syscall made during an active transaction will fail with
->>>> the correct failure code and that one made during a suspended
->>>> transaction will succeed.
->>>>
->>>> Signed-off-by: Sam Bobroff <sam.bobroff@au1.ibm.com>
->>>
->>> The test works.
->>
->> Great :-)
->>
->>>> +
->>>> +int tm_syscall(void)
->>>> +{
->>>> +	SKIP_IF(!((long)get_auxv_entry(AT_HWCAP2) & PPC_FEATURE2_HTM));
->>>> +	setbuf(stdout, 0);
->>>> +	FAIL_IF(!t_active_getppid_test());
->>>> +	printf("%d active transactions correctly aborted.\n", TM_TEST_RUNS);
->>>> +	FAIL_IF(!t_suspended_getppid_test());
->>>> +	printf("%d suspended transactions succeeded.\n", TM_TEST_RUNS);
->>>> +	return 0;
->>>> +}
->>>> +
->>>> +int main(void)
->>>> +{
->>>> +	return test_harness(tm_syscall, "tm_syscall");
->>>> +}
->>>> +
->>>
->>> There is an extra blank line at the end of this file. Interchanging return
->>> codes of 0 and 1 for various functions make it very confusing along with
->>> negative FAIL_IF checks in the primary test function. Control flow structures
->>> like these can use some in-code documentation for readability.
->>>
->>> +	for (i = 0; i < TM_RETRIES; i++) {
->>> +		if (__builtin_tbegin(0)) {
->>> +			getppid();
->>> +			__builtin_tend(0);
->>> +			return 1;
->>> +		}
->>> +		if (t_failure_persistent())
->>> +			return 0;
->>>
->>> or
->>>
->>> +		if (__builtin_tbegin(0)) {
->>> +			__builtin_tsuspend();
->>> +			getppid();
->>> +			__builtin_tresume();
->>> +			__builtin_tend(0);
->>> +			return 1;
->>> +		}
->>> +		if (t_failure_persistent())
->>> +			return 0;
->>>
->>
->> Good points. I'll remove the blank line and comment the code.
->>
->> I'm not sure I can do any better with the FAIL_IF() macro: I wanted it
->> to read "fail if the test failed", but I can see what you mean about a
->> double negative. Maybe it would be better to introduce a different
->> macro, more like a standard assert: TEST(XXX) which fails if XXX is
->> false. However, I think "TEST" would be too generic a name and I'm not
->> should what would be better. Any comments/suggestions?
+On Fri, 2015-03-27 at 13:07 -0500, Scott Wood wrote:
+> On Fri, 2015-03-27 at 10:45 +1100, Michael Ellerman wrote:
+> > On Thu, 2015-03-26 at 10:31 -0500, Emil Medve wrote:
+> > > Hello Kumar,
+> > > 
+> > > 
+> > > On 03/26/2015 10:18 AM, Kumar Gala wrote:
+> > > > Why no commit message with what issue this change was trying to fix?
+> > > 
+> > > A while back, when I attempted to remove bootmem (in favor of just plain
+> > > memblock as in powerpc land bootmem was just a wrapper to memblock
+> > > anyway) I run at some point into a problem with an intermediate address
+> > > value because of this '<< PAGE_SHIFT' on the wrong width variable. Using
+> > > PFN_PHYS() took care of it (it has a cast) so I decided to get this
+> > > defensive patch applied. Since, I dropped my bootmem/memblock patches in
+> > > favor to Anton's (Blanchard) work so my concrete issue example is
+> > > somewhat gone
+> > 
+> > I'm not a big fan of it unless it's actually fixing an issue. It's a lot of
+> > churn and the end result is less readable IMHO.
 > 
-> FAIL_IF() is designed for things that return 0 for OK and !0 for failure. Like
-> most things in C.
+> It is fixing an issue -- the issue is that there are overflow errors in
+> the code.  Some of the places Emil fixed are only for platforms that
+> don't have physical addresses larger than pointers, or have the needed
+> casts, or are known to be dealing with lowmem, but others aren't.  E.g.
+> page_is_ram() and devmem_is_allowed() are buggy on 32-bit with 64-bit
+> physical.
+
+Right. So obviously I'm fine with all the cases where it fixes an actual bug.
+ 
+> flush_dcache_icache_page() is buggy on mpc86xx with more than 4 GiB RAM
+> -- though that would still be buggy even with this change, due to
+> __flush_dcache_icache_phys taking unsigned long.  The entire concept of
+> that function doesn't work for sizeof(phys_addr_t) > sizeof(void *), so
+> in this case 86xx should be using the booke code instead.
 > 
-> So I think it would be improved if you inverted your return codes in your test
-> routines.
-> 
-> Even better to return ESOMETHING in the error cases, and zero otherwise.
-> 
-> cheers
+> Even in the places where overflow can't happen due to the above
+> circumstances (other than having the needed cast), it's setting a bad
+> example that can be copied to places where it will break, or the
+> circumstances of the code could change (e.g. currently 64-bit-only code
+> being used on 32-bit).
 
-Fair enough. I think the *_test() functions I added for "clarity" were
-just making it more confusing, so I've dropped them.
+I agree with that in principle, but it looks like in a bunch of places this
+patch ends up assigning the result to unsigned long anyway.
 
-Moving the code around, even a little, has also exposed the fact that
-transactions are very sensitive to how the code is compiled so I'm going
-to move the transaction blocks out into a separate assembly file where I
-can control exactly what instructions get used. This will also mean that
-it's no longer dependent on using linker magic (or some other trick) to
-avoid lazy symbol loading.
+So those cases are just churn IMHO. The end result doesn't work with 64-bit
+phys if the code is ever used there, even though it looks like maybe it should,
+and it's also not setting a good example for other code. Those cases should
+either be left alone, or fixed properly to use phys_addr_t.
 
-I'll repost the series.
-
-Thanks for the review!
-
-Cheers,
-Sam.
+cheers
