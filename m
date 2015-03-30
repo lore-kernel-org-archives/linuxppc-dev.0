@@ -1,23 +1,31 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0140.outbound.protection.outlook.com [207.46.100.140])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4E7491A0272
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Mar 2015 10:00:39 +1100 (AEDT)
-Message-ID: <1427756416.22867.205.camel@freescale.com>
-Subject: Re: [1/4] powerpc/fsl-booke: Add device tree support for
- T1024/T1023 SoC
-From: Scott Wood <scottwood@freescale.com>
-To: Liu Shengzhou-B36685 <Shengzhou.Liu@freescale.com>
-Date: Mon, 30 Mar 2015 18:00:16 -0500
-In-Reply-To: <DM2PR03MB398E5EB28719411243C1C76F8F50@DM2PR03MB398.namprd03.prod.outlook.com>
-References: <1422517947-28722-1-git-send-email-Shengzhou.Liu@freescale.com>
- <20150130011949.GA19864@home.buserror.net>
- <DM2PR03MB398E5EB28719411243C1C76F8F50@DM2PR03MB398.namprd03.prod.outlook.com>
-Content-Type: text/plain; charset="UTF-8"
-MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <joe@perches.com>
+Received: from smtprelay.hostedemail.com (smtprelay0036.hostedemail.com
+ [216.40.44.36])
+ by lists.ozlabs.org (Postfix) with ESMTP id 927AF1A0272
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Mar 2015 10:52:59 +1100 (AEDT)
+Received: from smtprelay.hostedemail.com (10.5.19.251.rfc1918.com
+ [10.5.19.251])
+ by smtpgrave07.hostedemail.com (Postfix) with ESMTP id B91BE11A6A4
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Mar 2015 23:47:10 +0000 (UTC)
+From: Joe Perches <joe@perches.com>
+To: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ kvmarm@lists.cs.columbia.edu, kvm@vger.kernel.org,
+ linux-omap@vger.kernel.org, kvm-ppc@vger.kernel.org,
+ virtualization@lists.linux-foundation.org, linux-fsdevel@vger.kernel.org,
+ linux-nfs@vger.kernel.org, linux-ide@vger.kernel.org,
+ kgdb-bugreport@lists.sourceforge.net, linux-mm@kvack.org,
+ linux-pm@vger.kernel.org, netdev@vger.kernel.org,
+ alsa-devel@alsa-project.org, bridge@lists.linux-foundation.org,
+ netfilter-devel@vger.kernel.org, coreteam@netfilter.org,
+ patches@opensource.wolfsonmicro.com
+Subject: [PATCH 00/25] treewide: Use bool function return values of true/false
+ not 1/0
+Date: Mon, 30 Mar 2015 16:45:58 -0700
+Message-Id: <cover.1427759009.git.joe@perches.com>
+Cc: linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org,
+ linux-scsi@vger.kernel.org, linux-mips@linux-mips.org,
+ linux-hexagon@vger.kernel.org, linux-security-module@vger.kernel.org,
+ sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,69 +35,89 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2015-03-30 at 06:08 -0500, Liu Shengzhou-B36685 wrote:
-> > -----Original Message-----
-> > From: Wood Scott-B07421
-> > Sent: Friday, January 30, 2015 9:20 AM
-> > To: Liu Shengzhou-B36685
-> > Cc: linuxppc-dev@lists.ozlabs.org
-> > Subject: Re: [1/4] powerpc/fsl-booke: Add device tree support for
-> > T1024/T1023 SoC
-> > 
-> > On Thu, Jan 29, 2015 at 03:52:24PM +0800, Shengzhou Liu wrote:
-> > > +	corenet-cf@18000 {
-> > > +		compatible = "fsl,corenet2-cf";
-> > 
-> > While the damage has already been done by the t1040 device tree, this is
-> > not 100% compatible with what's on t4240.  I'm not sure if it's worth
-> > doing anything about it at this point, given that you can tell the
-> > difference by the version register even though that register is reserved
-> > on t4240 and simliar chips, which is what I do in
-> > http://patchwork.ozlabs.org/patch/419911/
-> 
-> Now here "fsl,corenet2-cf" is suitable for t1024 after your t1040 patch was merged.
-> T1024 and t1040 have the same version of ccf.
+Joe Perches (25):
+  arm: Use bool function return values of true/false not 1/0
+  arm64: Use bool function return values of true/false not 1/0
+  hexagon: Use bool function return values of true/false not 1/0
+  ia64: Use bool function return values of true/false not 1/0
+  mips: Use bool function return values of true/false not 1/0
+  powerpc: Use bool function return values of true/false not 1/0
+  s390: Use bool function return values of true/false not 1/0
+  sparc: Use bool function return values of true/false not 1/0
+  tile: Use bool function return values of true/false not 1/0
+  unicore32: Use bool function return values of true/false not 1/0
+  x86: Use bool function return values of true/false not 1/0
+  virtio_console: Use bool function return values of true/false not 1/0
+  csiostor: Use bool function return values of true/false not 1/0
+  dcache: Use bool function return values of true/false not 1/0
+  nfsd: nfs4state: Use bool function return values of true/false not 1/0
+  include/linux: Use bool function return values of true/false not 1/0
+  sound: Use bool function return values of true/false not 1/0
+  rcu: tree_plugin: Use bool function return values of true/false not 1/0
+  sched: Use bool function return values of true/false not 1/0
+  ftrace: Use bool function return values of true/false not 1/0
+  slub: Use bool function return values of true/false not 1/0
+  bridge: Use bool function return values of true/false not 1/0
+  netfilter: Use bool function return values of true/false not 1/0
+  security: Use bool function return values of true/false not 1/0
+  sound: wm5100-tables: Use bool function return values of true/false not 1/0
 
-I wouldn't call it "suitable", just that there's a workaround for
-existing badness.
+ arch/arm/include/asm/dma-mapping.h           |  8 ++--
+ arch/arm/include/asm/kvm_emulate.h           |  2 +-
+ arch/arm/mach-omap2/powerdomain.c            | 14 +++---
+ arch/arm64/include/asm/dma-mapping.h         |  2 +-
+ arch/hexagon/include/asm/dma-mapping.h       |  2 +-
+ arch/ia64/include/asm/dma-mapping.h          |  2 +-
+ arch/mips/include/asm/dma-mapping.h          |  2 +-
+ arch/powerpc/include/asm/dcr-native.h        |  2 +-
+ arch/powerpc/include/asm/dma-mapping.h       |  4 +-
+ arch/powerpc/include/asm/kvm_book3s_64.h     |  4 +-
+ arch/powerpc/sysdev/dcr.c                    |  2 +-
+ arch/s390/include/asm/dma-mapping.h          |  2 +-
+ arch/sparc/mm/init_64.c                      |  8 ++--
+ arch/tile/include/asm/dma-mapping.h          |  2 +-
+ arch/unicore32/include/asm/dma-mapping.h     |  2 +-
+ arch/x86/include/asm/archrandom.h            |  2 +-
+ arch/x86/include/asm/dma-mapping.h           |  2 +-
+ arch/x86/include/asm/kvm_para.h              |  2 +-
+ arch/x86/kvm/cpuid.h                         |  2 +-
+ arch/x86/kvm/vmx.c                           | 72 ++++++++++++++--------------
+ drivers/char/virtio_console.c                |  2 +-
+ drivers/scsi/csiostor/csio_scsi.c            |  4 +-
+ fs/dcache.c                                  | 12 ++---
+ fs/nfsd/nfs4state.c                          |  2 +-
+ include/linux/blkdev.h                       |  2 +-
+ include/linux/ide.h                          |  2 +-
+ include/linux/kgdb.h                         |  2 +-
+ include/linux/mfd/db8500-prcmu.h             |  2 +-
+ include/linux/mm.h                           |  2 +-
+ include/linux/power_supply.h                 |  8 ++--
+ include/linux/ssb/ssb_driver_extif.h         |  2 +-
+ include/linux/ssb/ssb_driver_gige.h          | 16 +++----
+ include/sound/soc.h                          |  4 +-
+ kernel/rcu/tree_plugin.h                     |  4 +-
+ kernel/sched/auto_group.h                    |  2 +-
+ kernel/sched/completion.c                    | 16 ++++---
+ kernel/trace/ftrace.c                        | 10 ++--
+ mm/slub.c                                    | 12 ++---
+ net/bridge/br_private.h                      |  2 +-
+ net/ipv4/netfilter/ipt_ah.c                  |  2 +-
+ net/netfilter/ipset/ip_set_hash_ip.c         |  8 ++--
+ net/netfilter/ipset/ip_set_hash_ipmark.c     |  8 ++--
+ net/netfilter/ipset/ip_set_hash_ipport.c     |  8 ++--
+ net/netfilter/ipset/ip_set_hash_ipportip.c   |  8 ++--
+ net/netfilter/ipset/ip_set_hash_ipportnet.c  |  8 ++--
+ net/netfilter/ipset/ip_set_hash_net.c        |  8 ++--
+ net/netfilter/ipset/ip_set_hash_netiface.c   |  8 ++--
+ net/netfilter/ipset/ip_set_hash_netport.c    |  8 ++--
+ net/netfilter/ipset/ip_set_hash_netportnet.c |  8 ++--
+ net/netfilter/xt_connlimit.c                 |  2 +-
+ net/netfilter/xt_hashlimit.c                 |  2 +-
+ net/netfilter/xt_ipcomp.c                    |  2 +-
+ security/apparmor/file.c                     |  8 ++--
+ security/apparmor/policy.c                   | 10 ++--
+ sound/soc/codecs/wm5100-tables.c             | 12 ++---
+ 55 files changed, 178 insertions(+), 176 deletions(-)
 
-> > > +/include/ "t1023si-post.dtsi"
-> > > +&soc {
-> > > +	display:display@180000 {
-> > > +		compatible = "fsl,t1024-diu", "fsl,diu";
-> > > +		reg = <0x180000 1000>;
-> > > +		interrupts = <74 2 0 0>;
-> > > +	};
-> > > +};
-> > 
-> > There are other differences between t1023 an t1024.  Where do you
-> > describe t1024's QE?  Where do you describe the DDR and IFC differences?
-> > can they be detected at runtime?  t1024 supports deep sleep, but t1023
-> > doesn't -- yet you label both chips as having t1024 rcpm.
-> > 
-> As QE IP block has not been upstream yet,
-
-Huh?
-
-arch/powerpc/sysdev/qe_lib/
-
->  so have to removed QE info in dts currently(same on t1040), 
-
-That's not how it works.
-
-> DDR and IFC differences are in u-boot, not in dts.
-
-The differences are in hardware, which is what the dts is supposed to
-describe.
-
-> Both t1023 and t1024 support sleep, so label both chips as having t1024 rcpm.
-
-That's not how it works.
-
-> Only t1024 has deep sleep, the difference is identified in *.c not in dts (confirmed with deep sleep owner). 
-
-Even if the C code chooses to use SVR to identify the difference (why?),
-that doesn't mean it's OK for the device tree to contain wrong
-information.
-
--Scott
+-- 
+2.1.2
