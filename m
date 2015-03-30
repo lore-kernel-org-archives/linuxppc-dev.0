@@ -1,29 +1,26 @@
 Return-Path: <clg@fr.ibm.com>
-Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
+Received: from e06smtp16.uk.ibm.com (e06smtp16.uk.ibm.com [195.75.94.112])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E5B471A0079
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Mar 2015 21:06:08 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id DADAE1A0A09
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Mar 2015 21:06:54 +1100 (AEDT)
 Received: from /spool/local
- by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp16.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <clg@fr.ibm.com>;
- Mon, 30 Mar 2015 11:06:04 +0100
-Message-ID: <55192007.9090000@fr.ibm.com>
-Date: Mon, 30 Mar 2015 12:05:59 +0200
-From: Cedric Le Goater <clg@fr.ibm.com>
+ Mon, 30 Mar 2015 11:06:50 +0100
+From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@fr.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v4 1/2] powerpc/powernv: convert codes returned by OPAL calls
+Date: Mon, 30 Mar 2015 12:06:09 +0200
+Message-Id: <1427709970-10207-1-git-send-email-clg@fr.ibm.com>
+In-Reply-To: <1427698456.28219.2.camel@ellerman.id.au>
+References: <1427698456.28219.2.camel@ellerman.id.au>
 MIME-Version: 1.0
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH v3 3/3] powerpc/powernv: remove opal_sensor_mutex
-References: <20150327095936.50A921400A0@ozlabs.org>
- <1427474362-3903-3-git-send-email-clg@fr.ibm.com>
- <1427681398.4218.7.camel@ellerman.id.au> <5518F258.4060308@fr.ibm.com>
- <1427698777.28219.3.camel@ellerman.id.au>
-In-Reply-To: <1427698777.28219.3.camel@ellerman.id.au>
-Content-Type: text/plain; charset=utf-8
-Cc: Stewart Smith <stewart@linux.vnet.ibm.com>, skiboot@lists.ozlabs.org,
- benh@au1.ibm.com, linuxppc-dev@lists.ozlabs.org,
- Neelesh Gupta <neelegup@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: Stewart Smith <stewart@linux.vnet.ibm.com>, benh@au1.ibm.com,
+ =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@fr.ibm.com>,
+ Neelesh Gupta <neelegup@linux.vnet.ibm.com>, skiboot@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,44 +30,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03/30/2015 08:59 AM, Michael Ellerman wrote:
-> On Mon, 2015-03-30 at 08:51 +0200, Cedric Le Goater wrote:
->> On 03/30/2015 04:09 AM, Michael Ellerman wrote:
->>> On Fri, 2015-03-27 at 17:39 +0100, Cédric Le Goater wrote:
->>>> The opal sensor mutex protects the opal_sensor_read call which
->>>> can return a OPAL_BUSY code on IBM Power systems if a previous 
->>>> request is in progress.
->>>>
->>>> This can be handled at user level with a retry.
->>>
->>> It can, but how does it actually look in practice?
->>>
->>> It looks like the only use of opal_get_sensor_data() is show_sensor() in
->>> drivers/hwmon/ibmpowernv.c.
->>>
->>> Because that's a sysfs attribute folks will be generally just dumping 
->>> that with cat, or reading it in a shell script, neither of which will 
->>> cope nicely with EBUSY I think?
->>
->> It won't, I agree but it should only happen when running concurrent cat 
->> commands on the hwmon sysfs files. The event should be rare enough.
-> 
-> Rare enough maybe, but a real pain in the .. to cope with in a shell script if
-> you're trying to automate something.
-> 
->> Anyhow, this is not a big issue. We can drop that patch. The real "issue"
->> is the time it takes to get some values back from the FSP. This is what
->> user space has been most surprised about.
-> 
-> OK. The other option would be to move the mutex into the sysfs show routine, so
-> only that is synchronous. That would give you nice behaviour from cat, ie. it
-> would sleep on contention but still be killable with ctrl-c.
+OPAL has its own list of return codes. The patch provides a translation
+of such codes in errnos for the opal_sensor_read call, and possibly 
+others if needed.
 
-Let's keep it how it is and see if it is possible to the improve OPAL 
-side first. 
+Signed-off-by: Cédric Le Goater <clg@fr.ibm.com>
+---
 
-I will send you an updated patchset shortly. 
+ Changes since v3 :
 
-Thanks for the review. 
+ - reworked the return codes a little as suggested by Michael Ellerman
 
-C.
+ Changes since v2 :
+
+ - renamed and moved the routine to opal.[ch]
+ - changed default value to ERANGE like rtas
+
+ arch/powerpc/include/asm/opal.h              |    2 ++
+ arch/powerpc/platforms/powernv/opal-sensor.c |    6 ++++--
+ arch/powerpc/platforms/powernv/opal.c        |   19 +++++++++++++++++++
+ 3 files changed, 25 insertions(+), 2 deletions(-)
+
+Index: linux.git/arch/powerpc/platforms/powernv/opal-sensor.c
+===================================================================
+--- linux.git.orig/arch/powerpc/platforms/powernv/opal-sensor.c
++++ linux.git/arch/powerpc/platforms/powernv/opal-sensor.c
+@@ -46,8 +46,10 @@ int opal_get_sensor_data(u32 sensor_hndl
+ 
+ 	mutex_lock(&opal_sensor_mutex);
+ 	ret = opal_sensor_read(sensor_hndl, token, &data);
+-	if (ret != OPAL_ASYNC_COMPLETION)
++	if (ret != OPAL_ASYNC_COMPLETION) {
++		ret = opal_error_code(ret);
+ 		goto out_token;
++	}
+ 
+ 	ret = opal_async_wait_response(token, &msg);
+ 	if (ret) {
+@@ -57,7 +59,7 @@ int opal_get_sensor_data(u32 sensor_hndl
+ 	}
+ 
+ 	*sensor_data = be32_to_cpu(data);
+-	ret = be64_to_cpu(msg.params[1]);
++	ret = opal_error_code(be64_to_cpu(msg.params[1]));
+ 
+ out_token:
+ 	mutex_unlock(&opal_sensor_mutex);
+Index: linux.git/arch/powerpc/include/asm/opal.h
+===================================================================
+--- linux.git.orig/arch/powerpc/include/asm/opal.h
++++ linux.git/arch/powerpc/include/asm/opal.h
+@@ -983,6 +983,8 @@ struct opal_sg_list *opal_vmalloc_to_sg_
+ 					     unsigned long vmalloc_size);
+ void opal_free_sg_list(struct opal_sg_list *sg);
+ 
++extern int opal_error_code(int rc);
++
+ /*
+  * Dump region ID range usable by the OS
+  */
+Index: linux.git/arch/powerpc/platforms/powernv/opal.c
+===================================================================
+--- linux.git.orig/arch/powerpc/platforms/powernv/opal.c
++++ linux.git/arch/powerpc/platforms/powernv/opal.c
+@@ -894,6 +894,25 @@ void opal_free_sg_list(struct opal_sg_li
+ 	}
+ }
+ 
++int opal_error_code(int rc)
++{
++	switch (rc) {
++	case OPAL_SUCCESS:		return 0;
++
++	case OPAL_PARAMETER:		return -EINVAL;
++	case OPAL_ASYNC_COMPLETION:	return -EINPROGRESS;
++	case OPAL_BUSY_EVENT:		return -EBUSY;
++	case OPAL_NO_MEM:		return -ENOMEM;
++
++	case OPAL_UNSUPPORTED:		return -EIO;
++	case OPAL_HARDWARE:		return -EIO;
++	case OPAL_INTERNAL_ERROR:	return -EIO;
++	default:
++		pr_err("%s: unexpected OPAL error %d\n", __func__, rc);
++		return -EIO;
++	}
++}
++
+ EXPORT_SYMBOL_GPL(opal_poll_events);
+ EXPORT_SYMBOL_GPL(opal_rtc_read);
+ EXPORT_SYMBOL_GPL(opal_rtc_write);
