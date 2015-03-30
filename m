@@ -1,27 +1,15 @@
-Return-Path: <clg@fr.ibm.com>
-Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2611C1A00CA
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Mar 2015 17:56:29 +1100 (AEDT)
-Received: from /spool/local
- by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <clg@fr.ibm.com>;
- Mon, 30 Mar 2015 07:56:26 +0100
-Message-ID: <5518F394.2030907@fr.ibm.com>
-Date: Mon, 30 Mar 2015 08:56:20 +0200
-From: Cedric Le Goater <clg@fr.ibm.com>
-MIME-Version: 1.0
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH v3 1/3] powerpc/powernv: convert codes returned by OPAL
- calls
+Return-Path: <mpe@ellerman.id.au>
+Message-ID: <1427698777.28219.3.camel@ellerman.id.au>
+Subject: Re: [PATCH v3 3/3] powerpc/powernv: remove opal_sensor_mutex
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Cedric Le Goater <clg@fr.ibm.com>
+Date: Mon, 30 Mar 2015 17:59:37 +1100
+In-Reply-To: <5518F258.4060308@fr.ibm.com>
 References: <20150327095936.50A921400A0@ozlabs.org>
- <1427474362-3903-1-git-send-email-clg@fr.ibm.com>
- <1427681112.4218.6.camel@ellerman.id.au> <5518EF16.9070502@fr.ibm.com>
- <1427698456.28219.2.camel@ellerman.id.au>
-In-Reply-To: <1427698456.28219.2.camel@ellerman.id.au>
-Content-Type: text/plain; charset=utf-8
+ <1427474362-3903-3-git-send-email-clg@fr.ibm.com>
+ <1427681398.4218.7.camel@ellerman.id.au> <5518F258.4060308@fr.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 Cc: Stewart Smith <stewart@linux.vnet.ibm.com>, skiboot@lists.ozlabs.org,
  benh@au1.ibm.com, linuxppc-dev@lists.ozlabs.org,
  Neelesh Gupta <neelegup@linux.vnet.ibm.com>
@@ -34,29 +22,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03/30/2015 08:54 AM, Michael Ellerman wrote:
-> On Mon, 2015-03-30 at 08:37 +0200, Cedric Le Goater wrote:
->> On 03/30/2015 04:05 AM, Michael Ellerman wrote:
->>> On Fri, 2015-03-27 at 17:39 +0100, Cédric Le Goater wrote:
->>>> OPAL has its own list of return codes. The patch provides a translation
->>>> of such codes in errnos for the opal_sensor_read call, and possibly 
->>>> others if needed.
->>>>
->>>> +	case OPAL_UNSUPPORTED:		return -ENOSYS;
->>>
->>> You shouldn't use ENOSYS here, that should only ever mean "no such syscall",
->>> otherwise you get very confusing results like read() returning ENOSYS.
->>
->> Indeed. How about ENODEV then ? 
+On Mon, 2015-03-30 at 08:51 +0200, Cedric Le Goater wrote:
+> On 03/30/2015 04:09 AM, Michael Ellerman wrote:
+> > On Fri, 2015-03-27 at 17:39 +0100, Cédric Le Goater wrote:
+> >> The opal sensor mutex protects the opal_sensor_read call which
+> >> can return a OPAL_BUSY code on IBM Power systems if a previous 
+> >> request is in progress.
+> >>
+> >> This can be handled at user level with a retry.
+> > 
+> > It can, but how does it actually look in practice?
+> > 
+> > It looks like the only use of opal_get_sensor_data() is show_sensor() in
+> > drivers/hwmon/ibmpowernv.c.
+> > 
+> > Because that's a sysfs attribute folks will be generally just dumping 
+> > that with cat, or reading it in a shell script, neither of which will 
+> > cope nicely with EBUSY I think?
 > 
-> That can also be confusing from userspace.
-> 
-> I think it's probably best just to use EIO, as far as userspace is concerned if
-> the kernel lets it call an unsupported OPAL routine that is more or less a
-> kernel bug.
+> It won't, I agree but it should only happen when running concurrent cat 
+> commands on the hwmon sysfs files. The event should be rare enough.
 
-OK. Will do.
+Rare enough maybe, but a real pain in the .. to cope with in a shell script if
+you're trying to automate something.
 
-Thanks,
+> Anyhow, this is not a big issue. We can drop that patch. The real "issue"
+> is the time it takes to get some values back from the FSP. This is what
+> user space has been most surprised about.
 
-C.
+OK. The other option would be to move the mutex into the sysfs show routine, so
+only that is synchronous. That would give you nice behaviour from cat, ie. it
+would sleep on contention but still be killable with ctrl-c.
+
+cheers
