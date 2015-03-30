@@ -1,24 +1,27 @@
 Return-Path: <benh@kernel.crashing.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 71E971A0079
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Mar 2015 21:58:04 +1100 (AEDT)
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 313331A0079
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Mar 2015 21:55:58 +1100 (AEDT)
-Message-ID: <1427712943.20500.77.camel@kernel.crashing.org>
-Subject: Re: [PATCH v7 RFC 1/3] sparc: Break up monolithic iommu table/lock
- into finer graularity pools and lock
+ by ozlabs.org (Postfix) with ESMTPS id BE1CC1400A0
+ for <linuxppc-dev@ozlabs.org>; Mon, 30 Mar 2015 21:58:03 +1100 (AEDT)
+Message-ID: <1427713068.20500.79.camel@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: Export __spin_yield
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Sowmini Varadhan <sowmini.varadhan@oracle.com>
-Date: Mon, 30 Mar 2015 21:55:43 +1100
-In-Reply-To: <20150330103824.GA26127@oracle.com>
-References: <cover.1427295804.git.sowmini.varadhan@oracle.com>
- <b9dbeef3a3ae463a5198b6d34eb446ae50966a66.1427295804.git.sowmini.varadhan@oracle.com>
- <1427685844.20500.66.camel@kernel.crashing.org>
- <20150330103824.GA26127@oracle.com>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Mon, 30 Mar 2015 21:57:48 +1100
+In-Reply-To: <CAMuHMdVX450vQpYzZX+QGTY9ZUfaTuHZaNgizmuCd0HiaUc=_w@mail.gmail.com>
+References: <54EE5989.7010800@linux.vnet.ibm.com>
+ <20150319230848.GB31148@iris.ozlabs.ibm.com>
+ <CAMuHMdVX450vQpYzZX+QGTY9ZUfaTuHZaNgizmuCd0HiaUc=_w@mail.gmail.com>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: aik@au1.ibm.com, anton@au1.ibm.com, paulus@samba.org,
- sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
+Cc: "Suresh E. Warrier" <warrier@linux.vnet.ibm.com>,
+ Linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,103 +31,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2015-03-30 at 06:38 -0400, Sowmini Varadhan wrote:
-> On (03/30/15 14:24), Benjamin Herrenschmidt wrote:
-> > > +
-> > > +#define IOMMU_POOL_HASHBITS     4
-> > > +#define IOMMU_NR_POOLS          (1 << IOMMU_POOL_HASHBITS)
-> > 
-> > I don't like those macros. You changed the value from what we had on
-> > powerpc. It could be that the new values are as good for us but I'd
-> > like to do a bit differently. Can you make the bits a variable ? Or at
-> > least an arch-provided macro which we can change later if needed ?
+On Mon, 2015-03-30 at 12:17 +0200, Geert Uytterhoeven wrote:
+> Hi Ben,
 > 
-> Actuallly, this are just the upper bound (16) on the number of pools.
+> On Fri, Mar 20, 2015 at 12:08 AM, Paul Mackerras <paulus@samba.org> wrote:
+> > On Wed, Feb 25, 2015 at 05:23:53PM -0600, Suresh E. Warrier wrote:
+> >> Export __spin_yield so that the arch_spin_unlock() function can
+> >> be invoked from a module. This will be required for modules where
+> >> we want to take a lock that is also is acquired in hypervisor
+> >> real mode. Because we want to avoid running any lockdep code
+> >> (which may not be safe in real mode), this lock needs to be
+> >> an arch_spinlock_t instead of a normal spinlock.
+> >>
+> >> Signed-off-by: Suresh Warrier <warrier@linux.vnet.ibm.com>
+> >
+> > Acked-by: Paul Mackerras <paulus@samba.org>
 > 
-> The actual number is selected by the value passed to the 
-> iommu_tbl_range_init(), and is not hard-coded (as was the case with
-> the power-pc code).
+> Something went wrong when applying this, as it ended up as:
+
+Ugh, weird. I must have fucked up something when rebasing. I don't
+want to rebase that branch now that it's out, I know of at least one
+series based on it. We'll live with it.
+
+> commit 1f8c82ab1b0bc7e24601c0fca411fd27b9c883ef
+> Author: Geert Uytterhoeven <geert+renesas@glider.be>
+> Date:   Wed Mar 4 12:56:20 2015 +0100
 > 
-> Thus powerpc can continue to use 4 pools without any loss of 
-> generality.
-
-Right, but it affects the way we hash... not a huge deal though.
-
->    :
-> > Let's make it clear that this is for allocation of DMA space only, it
-> > would thus make my life easier when adapting powerpc to use a different
-> > names, something like "struct iommu_area" works for me, or "iommu
-> > alloc_region" .. whatever you fancy the most.
->   :
-> > Why adding the 'arena' prefix ? What was wrong with "pools" in the
-> > powerpc imlementation ?
+>     cpufreq/ppc: Add missing #include <asm/smp.h>
 > 
-> for the same reason you want to re-baptize iommu_table above- at
-> the time, I was doing it to minimize conflicts with existing usage.
-> But I can rename everything if you like. 
-
-But in that case it doesn't make much sense and makes the names longer.
-Those are just "pools", it's sufficient.
-
-> > > +#define IOMMU_LARGE_ALLOC	15
-> > 
-> > Make that a variable, here too, the arch might want to tweak it.
-> > 
-> > I think 15 is actually not a good value for powerpc with 4k iommu pages
-> > and 64k PAGE_SIZE, we should make the above some kind of factor of
-> > PAGE_SHIFT - iommu_page_shift.
+>     If CONFIG_SMP=n, <linux/smp.h> does not include <asm/smp.h>, causing:
 > 
-> Ok.
+>     drivers/cpufreq/ppc-corenet-cpufreq.c: In function 'corenet_cpufreq_cpu_init
+>     drivers/cpufreq/ppc-corenet-cpufreq.c:173:3: error: implicit declaration of
+>     X-Patchwork-Id: 443703
+>     Message-Id: <54EE5989.7010800@linux.vnet.ibm.com>
+>     To: linuxppc-dev@ozlabs.org
+>     Date: Wed, 25 Feb 2015 17:23:53 -0600
 > 
-> > > +	/* Sanity check */
-> > > +	if (unlikely(npages == 0)) {
-> > > +		printk_ratelimited("npages == 0\n");
-> > 
-> > You removed the WARN_ON here which had the nice property of giving you a
-> > backtrace which points to the offender. The above message alone is
-> > useless.
+>     Export __spin_yield so that the arch_spin_unlock() function can
+>     be invoked from a module. This will be required for modules where
+>     we want to take a lock that is also is acquired in hypervisor
+>     real mode. Because we want to avoid running any lockdep code
+>     (which may not be safe in real mode), this lock needs to be
+>     an arch_spinlock_t instead of a normal spinlock.
 > 
-> yes, the original code was generating checkpatch warnings and errors.
-> That's why I removed it. 
-
-Put it back please, and ignore checkpatch, it's become an annoyance more
-than anything else.
-
-Note that nowadays, you can probably use WARN_ON_ONCE(npages == 0); in
-place of the whole construct.
-
-> > I am not certain about the "first unlocked pool"... We take the lock for
-> > a fairly short amount of time, I have the gut feeling that the cache
-> > line bouncing introduced by looking at a different pool may well cost
-> > more than waiting a bit longer. Did do some measurements of that
-> > optimisation ?
+>     Signed-off-by: Suresh Warrier <warrier@linux.vnet.ibm.com>
+>     Acked-by: Paul Mackerras <paulus@samba.org>
+>     Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 > 
-> if you are really only taking it for a short amount of time, then
-> the trylock should just succeed, so there is no cache line bouncing.
-
-No that's not my point. The lock is only taken for a short time but
-might still collide, the bouncing in that case will probably (at least
-that's my feeling) hurt more than help.
-
-However, I have another concern with your construct. Essentially you
-spin looking for an unlocked pool without a cpu_relax. Now it's unlikely
-but you *can* end up eating cycles, which on a high SMT like POWER8
-might mean slowing down the actual owner of the pool lock. 
-
-> But yes, I did instrument it with iperf, and there was lock contention
-> on the spinlock, which was eliminted by the trylock. 
-
-What is iperf ? What does that mean "there was lock contention" ? IE,
-was the overall performance improved or not ? Removing contention by
-trading it for cache line bouncing will not necessarily help. I'm not
-saying this is a bad optimisation but it makes the code messy and I
-think deserves some solid numbers demonstrating its worth.
-
-> I'll fix the rest of the variable naming etc nits and send out
-> a new version later today.
-
-There was also an actual bug in the case where you hop'ed to a new pool
-and forgot the flush.
-
-Cheers,
-Ben.
+> Gr{oetje,eeting}s,
+> 
+>                         Geert
+> 
+> --
+> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+> 
+> In personal conversations with technical people, I call myself a hacker. But
+> when I'm talking to journalists I just say "programmer" or something like that.
+>                                 -- Linus Torvalds
