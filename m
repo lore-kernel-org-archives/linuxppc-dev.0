@@ -1,14 +1,36 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <sam.bobroff@au1.ibm.com>
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 476471A01AA
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Mar 2015 14:10:41 +1100 (AEDT)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH] powerpc: Replace mem_init_done with slab_is_available()
-Date: Mon, 30 Mar 2015 14:10:37 +1100
-Message-Id: <1427685037-2585-1-git-send-email-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id CEAE01A04B3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Mar 2015 14:21:48 +1100 (AEDT)
+Received: from /spool/local
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <sam.bobroff@au1.ibm.com>;
+ Mon, 30 Mar 2015 13:21:47 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id A10513578055
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Mar 2015 14:21:44 +1100 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t2U3LagS43319456
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Mar 2015 14:21:44 +1100
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t2U3LAO5027407
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Mar 2015 14:21:11 +1100
+From: Sam Bobroff <sam.bobroff@au1.ibm.com>
+To: mpe@ellerman.id.au, benh@kernel.crashing.org
+Subject: [PATCH v2 3/4] selftests/powerpc: Add transactional syscall test
+Date: Mon, 30 Mar 2015 14:20:46 +1100
+Message-Id: <597a1013836715b480faacbc6ce75b9824a1a881.1427685637.git.sam.bobroff@au1.ibm.com>
+In-Reply-To: <cover.1427685637.git.sam.bobroff@au1.ibm.com>
+References: <cover.1427685637.git.sam.bobroff@au1.ibm.com>
+In-Reply-To: <cover.1427685637.git.sam.bobroff@au1.ibm.com>
+References: <cover.1427685637.git.sam.bobroff@au1.ibm.com>
+Cc: mikey@neuling.org, azanella@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, matt@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,184 +40,212 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We have a powerpc specific global called mem_init_done which is "set on
-boot once kmalloc can be called".
+Check that a syscall made during an active transaction will fail with
+the correct failure code and that one made during a suspended
+transaction will succeed.
 
-But that's not *quite* true. We set it at the bottom of mem_init(), and
-rely on the fact that mm_init() calls kmem_cache_init() immediately
-after that, and nothing is running in parallel.
-
-So replace it with the generic and 100% correct slab_is_available().
-
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+Signed-off-by: Sam Bobroff <sam.bobroff@au1.ibm.com>
 ---
- arch/powerpc/include/asm/setup.h         | 1 -
- arch/powerpc/kernel/pci-common.c         | 2 +-
- arch/powerpc/kernel/rtas.c               | 4 ++--
- arch/powerpc/lib/alloc.c                 | 2 +-
- arch/powerpc/mm/mem.c                    | 3 ---
- arch/powerpc/mm/pgtable_32.c             | 9 ++++-----
- arch/powerpc/mm/pgtable_64.c             | 4 ++--
- arch/powerpc/platforms/cell/celleb_pci.c | 2 +-
- 8 files changed, 11 insertions(+), 16 deletions(-)
+v2:
 
-diff --git a/arch/powerpc/include/asm/setup.h b/arch/powerpc/include/asm/setup.h
-index fbdf18cf954c..e9d384cbd021 100644
---- a/arch/powerpc/include/asm/setup.h
-+++ b/arch/powerpc/include/asm/setup.h
-@@ -7,7 +7,6 @@
- extern void ppc_printk_progress(char *s, unsigned short hex);
+Further testing has shown that the success or failure of the transactions was
+affected by minor changes to the code, compiler optimisation and linker
+settings.
+
+To address this, I've moved the transactional part of the test to a separate
+function, written in assembly. I've also extended the test to as many
+transactions as it can fit into ten seconds, to better test for failures that
+occur more rarely. This has stabilised the results, and it's no longer
+necessary to use special compiler or linker flags.
+
+ tools/testing/selftests/powerpc/tm/.gitignore      |    1 +
+ tools/testing/selftests/powerpc/tm/Makefile        |    4 +-
+ .../testing/selftests/powerpc/tm/tm-syscall-asm.S  |   27 +++++
+ .../testing/selftests/powerpc/tm/tm-syscall-asm.h  |    2 +
+ tools/testing/selftests/powerpc/tm/tm-syscall.c    |  109 ++++++++++++++++++++
+ 5 files changed, 142 insertions(+), 1 deletion(-)
+ create mode 100644 tools/testing/selftests/powerpc/tm/tm-syscall-asm.S
+ create mode 100644 tools/testing/selftests/powerpc/tm/tm-syscall-asm.h
+ create mode 100644 tools/testing/selftests/powerpc/tm/tm-syscall.c
+
+diff --git a/tools/testing/selftests/powerpc/tm/.gitignore b/tools/testing/selftests/powerpc/tm/.gitignore
+index 33d02cc..2699635d 100644
+--- a/tools/testing/selftests/powerpc/tm/.gitignore
++++ b/tools/testing/selftests/powerpc/tm/.gitignore
+@@ -1 +1,2 @@
+ tm-resched-dscr
++tm-syscall
+diff --git a/tools/testing/selftests/powerpc/tm/Makefile b/tools/testing/selftests/powerpc/tm/Makefile
+index 2cede23..93bbff3 100644
+--- a/tools/testing/selftests/powerpc/tm/Makefile
++++ b/tools/testing/selftests/powerpc/tm/Makefile
+@@ -1,8 +1,10 @@
+-PROGS := tm-resched-dscr
++PROGS := tm-resched-dscr tm-syscall
++CFLAGS:=$(CFLAGS) -mhtm
  
- extern unsigned int rtas_data;
--extern int mem_init_done;	/* set on boot once kmalloc can be called */
- extern unsigned long long memory_limit;
- extern unsigned long klimit;
- extern void *zalloc_maybe_bootmem(size_t size, gfp_t mask);
-diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
-index 2a525c938158..bcf618bfff1e 100644
---- a/arch/powerpc/kernel/pci-common.c
-+++ b/arch/powerpc/kernel/pci-common.c
-@@ -76,7 +76,7 @@ struct pci_controller *pcibios_alloc_controller(struct device_node *dev)
- 	list_add_tail(&phb->list_node, &hose_list);
- 	spin_unlock(&hose_spinlock);
- 	phb->dn = dev;
--	phb->is_dynamic = mem_init_done;
-+	phb->is_dynamic = slab_is_available();
- #ifdef CONFIG_PPC64
- 	if (dev) {
- 		int nid = of_node_to_nid(dev);
-diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
-index 21c45a2d0706..fffdef2962eb 100644
---- a/arch/powerpc/kernel/rtas.c
-+++ b/arch/powerpc/kernel/rtas.c
-@@ -401,7 +401,7 @@ static char *__fetch_rtas_last_error(char *altbuf)
- 			buf = altbuf;
- 		} else {
- 			buf = rtas_err_buf;
--			if (mem_init_done)
-+			if (slab_is_available())
- 				buf = kmalloc(RTAS_ERROR_LOG_MAX, GFP_ATOMIC);
- 		}
- 		if (buf)
-@@ -461,7 +461,7 @@ int rtas_call(int token, int nargs, int nret, int *outputs, ...)
+ all: $(PROGS)
  
- 	if (buff_copy) {
- 		log_error(buff_copy, ERR_TYPE_RTAS_LOG, 0);
--		if (mem_init_done)
-+		if (slab_is_available())
- 			kfree(buff_copy);
- 	}
- 	return ret;
-diff --git a/arch/powerpc/lib/alloc.c b/arch/powerpc/lib/alloc.c
-index 4a6c2cf890d9..60b0b3fc8fc1 100644
---- a/arch/powerpc/lib/alloc.c
-+++ b/arch/powerpc/lib/alloc.c
-@@ -10,7 +10,7 @@ void * __init_refok zalloc_maybe_bootmem(size_t size, gfp_t mask)
- {
- 	void *p;
+ $(PROGS): ../harness.c
++tm-syscall: tm-syscall-asm.S
  
--	if (mem_init_done)
-+	if (slab_is_available())
- 		p = kzalloc(size, mask);
- 	else {
- 		p = memblock_virt_alloc(size, 0);
-diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-index b7285a5870f8..45fda71feb27 100644
---- a/arch/powerpc/mm/mem.c
-+++ b/arch/powerpc/mm/mem.c
-@@ -61,7 +61,6 @@
- #define CPU_FTR_NOEXECUTE	0
- #endif
- 
--int mem_init_done;
- unsigned long long memory_limit;
- 
- #ifdef CONFIG_HIGHMEM
-@@ -377,8 +376,6 @@ void __init mem_init(void)
- 	pr_info("  * 0x%08lx..0x%08lx  : vmalloc & ioremap\n",
- 		VMALLOC_START, VMALLOC_END);
- #endif /* CONFIG_PPC32 */
--
--	mem_init_done = 1;
- }
- 
- void free_initmem(void)
-diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
-index 03b1a3b0fbd5..57b41f8b7053 100644
---- a/arch/powerpc/mm/pgtable_32.c
-+++ b/arch/powerpc/mm/pgtable_32.c
-@@ -110,9 +110,8 @@ void pgd_free(struct mm_struct *mm, pgd_t *pgd)
- __init_refok pte_t *pte_alloc_one_kernel(struct mm_struct *mm, unsigned long address)
- {
- 	pte_t *pte;
--	extern int mem_init_done;
- 
--	if (mem_init_done) {
-+	if (slab_is_available()) {
- 		pte = (pte_t *)__get_free_page(GFP_KERNEL|__GFP_REPEAT|__GFP_ZERO);
- 	} else {
- 		pte = __va(memblock_alloc(PAGE_SIZE, PAGE_SIZE));
-@@ -219,7 +218,7 @@ __ioremap_caller(phys_addr_t addr, unsigned long size, unsigned long flags,
- 	 * Don't allow anybody to remap normal RAM that we're using.
- 	 * mem_init() sets high_memory so only do the check after that.
- 	 */
--	if (mem_init_done && (p < virt_to_phys(high_memory)) &&
-+	if (slab_is_available() && (p < virt_to_phys(high_memory)) &&
- 	    !(__allow_ioremap_reserved && memblock_is_region_reserved(p, size))) {
- 		printk("__ioremap(): phys addr 0x%llx is RAM lr %pf\n",
- 		       (unsigned long long)p, __builtin_return_address(0));
-@@ -247,7 +246,7 @@ __ioremap_caller(phys_addr_t addr, unsigned long size, unsigned long flags,
- 	if ((v = p_mapped_by_tlbcam(p)))
- 		goto out;
- 
--	if (mem_init_done) {
-+	if (slab_is_available()) {
- 		struct vm_struct *area;
- 		area = get_vm_area_caller(size, VM_IOREMAP, caller);
- 		if (area == 0)
-@@ -266,7 +265,7 @@ __ioremap_caller(phys_addr_t addr, unsigned long size, unsigned long flags,
- 	for (i = 0; i < size && err == 0; i += PAGE_SIZE)
- 		err = map_page(v+i, p+i, flags);
- 	if (err) {
--		if (mem_init_done)
-+		if (slab_is_available())
- 			vunmap((void *)v);
- 		return NULL;
- 	}
-diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
-index 6957cc1ca0a7..ece5124d1946 100644
---- a/arch/powerpc/mm/pgtable_64.c
-+++ b/arch/powerpc/mm/pgtable_64.c
-@@ -231,7 +231,7 @@ void __iomem * __ioremap_caller(phys_addr_t addr, unsigned long size,
- 	if ((size == 0) || (paligned == 0))
- 		return NULL;
- 
--	if (mem_init_done) {
-+	if (slab_is_available()) {
- 		struct vm_struct *area;
- 
- 		area = __get_vm_area_caller(size, VM_IOREMAP,
-@@ -315,7 +315,7 @@ void __iounmap(volatile void __iomem *token)
- {
- 	void *addr;
- 
--	if (!mem_init_done)
-+	if (!slab_is_available())
- 		return;
- 	
- 	addr = (void *) ((unsigned long __force)
-diff --git a/arch/powerpc/platforms/cell/celleb_pci.c b/arch/powerpc/platforms/cell/celleb_pci.c
-index 3ce70ded2d6a..fd30e0a19420 100644
---- a/arch/powerpc/platforms/cell/celleb_pci.c
-+++ b/arch/powerpc/platforms/cell/celleb_pci.c
-@@ -392,7 +392,7 @@ static int __init celleb_setup_fake_pci_device(struct device_node *node,
- 	return 0;
- 
- error:
--	if (mem_init_done) {
-+	if (slab_is_available()) {
- 		if (config && *config)
- 			kfree(*config);
- 		if (res && *res)
+ run_tests: all
+ 	@-for PROG in $(PROGS); do \
+diff --git a/tools/testing/selftests/powerpc/tm/tm-syscall-asm.S b/tools/testing/selftests/powerpc/tm/tm-syscall-asm.S
+new file mode 100644
+index 0000000..2b2daa7
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/tm/tm-syscall-asm.S
+@@ -0,0 +1,27 @@
++#include <ppc-asm.h>
++#include <asm/unistd.h>
++
++	.text
++FUNC_START(getppid_tm_active_impl)
++	tbegin.
++	beq 1f
++	li	r0, __NR_getppid
++	sc
++	tend.
++	blr
++1:
++	li	r3, -1
++	blr
++
++FUNC_START(getppid_tm_suspended_impl)
++	tbegin.
++	beq 1f
++	li	r0, __NR_getppid
++	tsuspend.
++	sc
++	tresume.
++	tend.
++	blr
++1:
++	li	r3, -1
++	blr
+diff --git a/tools/testing/selftests/powerpc/tm/tm-syscall-asm.h b/tools/testing/selftests/powerpc/tm/tm-syscall-asm.h
+new file mode 100644
+index 0000000..6136328
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/tm/tm-syscall-asm.h
+@@ -0,0 +1,2 @@
++extern int getppid_tm_active_impl(void);
++extern int getppid_tm_suspended_impl(void);
+diff --git a/tools/testing/selftests/powerpc/tm/tm-syscall.c b/tools/testing/selftests/powerpc/tm/tm-syscall.c
+new file mode 100644
+index 0000000..ff3b15c
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/tm/tm-syscall.c
+@@ -0,0 +1,109 @@
++/* Test the kernel's system call code to ensure that a system call
++ * made from within an active HTM transaction is aborted with the
++ * correct failure code.
++ * Conversely, ensure that a system call made from within a
++ * suspended transaction can succeed.
++ */
++
++#include <stdio.h>
++#include <unistd.h>
++#include <sys/syscall.h>
++#include <asm/tm.h>
++#include <asm/cputable.h>
++#include <linux/auxvec.h>
++#include <sys/time.h>
++#include <stdlib.h>
++
++#include "utils.h"
++#include "tm-syscall-asm.h"
++
++unsigned retries = 0;
++
++#define TEST_DURATION 10 /* seconds */
++#define TM_RETRIES 100
++
++long failure_code(void)
++{
++	return __builtin_get_texasr() >> 56;
++}
++
++bool failure_is_persistent(void)
++{
++	return (failure_code() & TM_CAUSE_PERSISTENT) == TM_CAUSE_PERSISTENT;
++}
++
++bool failure_is_syscall(void)
++{
++	return (failure_code() & TM_CAUSE_SYSCALL) == TM_CAUSE_SYSCALL;
++}
++
++pid_t getppid_tm(bool suspend)
++{
++	int i;
++	pid_t pid;
++
++	for (i = 0; i < TM_RETRIES; i++) {
++		if (suspend)
++			pid = getppid_tm_suspended_impl();
++		else
++			pid = getppid_tm_active_impl();
++		if (pid >= 0)
++			return pid;
++		if (failure_is_persistent()) {
++			if (failure_is_syscall())
++				return -1;
++			printf("Unexpected persistent transaction failure.\n");
++			printf("TEXASR 0x%016lx, TFIAR 0x%016lx.\n",
++			       __builtin_get_texasr(), __builtin_get_tfiar());
++			exit(-1);
++		}
++		retries++;
++	}
++	printf("Exceeded limit of %d temporary transaction failures.\n",
++	       TM_RETRIES);
++	printf("TEXASR 0x%016lx, TFIAR 0x%016lx.\n",
++	       __builtin_get_texasr(), __builtin_get_tfiar());
++	exit(-1);
++}
++
++int tm_syscall(void)
++{
++	unsigned count = 0;
++	struct timeval end, now;
++
++	SKIP_IF(!((long)get_auxv_entry(AT_HWCAP2) & PPC_FEATURE2_HTM));
++	setbuf(stdout, 0);
++
++	printf("Testing transactional syscalls for %d seconds...\n",
++	       TEST_DURATION);
++
++	gettimeofday(&end, 0);
++	now.tv_sec = TEST_DURATION;
++	now.tv_usec = 0;
++	timeradd(&end, &now, &end);
++
++	for (count = 0; timercmp(&now, &end, <); count++) {
++		/* Test a syscall within a suspended transaction and verify
++		 * that it succeeds.
++		 */
++		FAIL_IF(getppid_tm(true) == -1); /* Should succeed. */
++
++		/* Test a syscall within an active transaction and verify that
++		 * it fails with the correct failure code.
++		 */
++		FAIL_IF(getppid_tm(false) != -1); /* Should fail... */
++		FAIL_IF(!failure_is_persistent()); /* ...persistently... */
++		FAIL_IF(!failure_is_syscall()); /* ...with code syscall. */
++		gettimeofday(&now, 0);
++	}
++	printf("%d active and suspended transactions behaved correctly.\n",
++	       count);
++	printf("(There were %d transaction retries.)\n", retries);
++
++	return 0;
++}
++
++int main(void)
++{
++	return test_harness(tm_syscall, "tm_syscall");
++}
 -- 
-2.1.0
+1.7.10.4
