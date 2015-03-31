@@ -1,23 +1,34 @@
-Return-Path: <fbrozovic@gmail.com>
-Received: from mail-wg0-x22e.google.com (mail-wg0-x22e.google.com
- [IPv6:2a00:1450:400c:c00::22e])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <alex.bennee@linaro.org>
+Received: from socrates.bennee.com
+ (static.88-198-71-155.clients.your-server.de [88.198.71.155])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 485E31A0739
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Apr 2015 06:59:11 +1100 (AEDT)
-Received: by wgbdm7 with SMTP id dm7so31293494wgb.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Mar 2015 12:59:07 -0700 (PDT)
-Message-ID: <551AFC7E.8090108@gmail.com>
-Date: Tue, 31 Mar 2015 21:58:54 +0200
-From: =?UTF-8?B?RmlsaXAgQnJvem92acSH?= <fbrozovic@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id E8C031A03DB
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Apr 2015 02:33:46 +1100 (AEDT)
+From: =?UTF-8?q?Alex=20Benn=C3=A9e?= <alex.bennee@linaro.org>
+To: kvm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ kvmarm@lists.cs.columbia.edu, christoffer.dall@linaro.org,
+ marc.zyngier@arm.com, peter.maydell@linaro.org, agraf@suse.de,
+ drjones@redhat.com, pbonzini@redhat.com, zhichao.huang@linaro.org
+Subject: [PATCH v2 02/10] KVM: define common __KVM_GUESTDBG_USE_SW/HW_BP values
+Date: Tue, 31 Mar 2015 16:08:00 +0100
+Message-Id: <1427814488-28467-3-git-send-email-alex.bennee@linaro.org>
+In-Reply-To: <1427814488-28467-1-git-send-email-alex.bennee@linaro.org>
+References: <1427814488-28467-1-git-send-email-alex.bennee@linaro.org>
 MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH] powerpc/83xx: add support for mpc8306
-References: <1427561968-32049-1-git-send-email-fbrozovic@gmail.com>
- <1427824493.22867.226.camel@freescale.com>
-In-Reply-To: <1427824493.22867.226.camel@freescale.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Cc: "maintainer:X86 ARCHITECTURE..." <x86@kernel.org>,
+ Alexey Kardashevskiy <aik@ozlabs.ru>, Nadav Amit <namit@cs.technion.ac.il>,
+ Gleb Natapov <gleb@kernel.org>, jan.kiszka@siemens.com,
+ "H. Peter Anvin" <hpa@zytor.com>,
+ "open list:LINUX FOR POWERPC..." <linuxppc-dev@lists.ozlabs.org>,
+ "open list:ABI/API" <linux-api@vger.kernel.org>,
+ open list <linux-kernel@vger.kernel.org>,
+ Bharat Bhushan <Bharat.Bhushan@freescale.com>, dahi@linux.vnet.ibm.com,
+ Ingo Molnar <mingo@redhat.com>, Paul Mackerras <paulus@samba.org>,
+ r65777@freescale.com, Mihai Caraman <mihai.caraman@freescale.com>,
+ Thomas Gleixner <tglx@linutronix.de>, bp@suse.de,
+ =?UTF-8?q?Alex=20Benn=C3=A9e?= <alex.bennee@linaro.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,15 +38,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 3/31/2015 7:54 PM, Scott Wood wrote:
-> This breaks multiplatform support.  You need to determine this at
-> runtime.
+Currently x86, powerpc and soon arm64 use the same two architecture
+specific bits for guest debug support for software and hardware
+breakpoints. This makes the shared values explicit while leaving the
+gate open for another architecture to use some other value if they
+really really want to.
 
-Understood, but I'm unsure of how to do this exactly. Would it be 
-appropriate to define another array, snum_init_14, with the SNUM values 
-for the MPC8306 QE, change the minimum number of SNUMs in 
-qe_get_num_of_snums() to 14 and set the correct values this way? In that 
-case, compatibility with other platforms would be kept intact, and the 
-QE device tree node for MPC8306 (and MPC8309) boards would just have to 
-have the fsl,qe-num-snums property set to 14 in order for the driver to 
-set the correct values.
+Signed-off-by: Alex Bennée <alex.bennee@linaro.org>
+
+diff --git a/arch/powerpc/include/uapi/asm/kvm.h b/arch/powerpc/include/uapi/asm/kvm.h
+index ab4d473..1731569 100644
+--- a/arch/powerpc/include/uapi/asm/kvm.h
++++ b/arch/powerpc/include/uapi/asm/kvm.h
+@@ -310,8 +310,8 @@ struct kvm_guest_debug_arch {
+  * and upper 16 bits are architecture specific. Architecture specific defines
+  * that ioctl is for setting hardware breakpoint or software breakpoint.
+  */
+-#define KVM_GUESTDBG_USE_SW_BP		0x00010000
+-#define KVM_GUESTDBG_USE_HW_BP		0x00020000
++#define KVM_GUESTDBG_USE_SW_BP		__KVM_GUESTDBG_USE_SW_BP
++#define KVM_GUESTDBG_USE_HW_BP		__KVM_GUESTDBG_USE_HW_BP
+ 
+ /* definition of registers in kvm_run */
+ struct kvm_sync_regs {
+diff --git a/arch/x86/include/uapi/asm/kvm.h b/arch/x86/include/uapi/asm/kvm.h
+index d7dcef5..1438202 100644
+--- a/arch/x86/include/uapi/asm/kvm.h
++++ b/arch/x86/include/uapi/asm/kvm.h
+@@ -250,8 +250,8 @@ struct kvm_debug_exit_arch {
+ 	__u64 dr7;
+ };
+ 
+-#define KVM_GUESTDBG_USE_SW_BP		0x00010000
+-#define KVM_GUESTDBG_USE_HW_BP		0x00020000
++#define KVM_GUESTDBG_USE_SW_BP		__KVM_GUESTDBG_USE_SW_BP
++#define KVM_GUESTDBG_USE_HW_BP		__KVM_GUESTDBG_USE_HW_BP
+ #define KVM_GUESTDBG_INJECT_DB		0x00040000
+ #define KVM_GUESTDBG_INJECT_BP		0x00080000
+ 
+diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
+index 5eedf84..ce2db14 100644
+--- a/include/uapi/linux/kvm.h
++++ b/include/uapi/linux/kvm.h
+@@ -525,8 +525,16 @@ struct kvm_s390_irq {
+ 
+ /* for KVM_SET_GUEST_DEBUG */
+ 
+-#define KVM_GUESTDBG_ENABLE		0x00000001
+-#define KVM_GUESTDBG_SINGLESTEP		0x00000002
++#define KVM_GUESTDBG_ENABLE		(1 << 0)
++#define KVM_GUESTDBG_SINGLESTEP	(1 << 1)
++
++/*
++ * Architecture specific stuff uses the top 16 bits of the field,
++ * however there is some shared commonality for the common cases
++ */
++#define __KVM_GUESTDBG_USE_SW_BP	(1 << 16)
++#define __KVM_GUESTDBG_USE_HW_BP	(1 << 17)
++
+ 
+ struct kvm_guest_debug {
+ 	__u32 control;
+-- 
+2.3.4
