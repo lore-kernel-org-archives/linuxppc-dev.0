@@ -1,24 +1,34 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <sukadev@linux.vnet.ibm.com>
+Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1BCE41A005A
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Mar 2015 12:49:37 +1100 (AEDT)
-Message-ID: <1427766549.20500.108.camel@kernel.crashing.org>
-Subject: Re: [PATCH 06/25] powerpc: Use bool function return values of
- true/false not 1/0
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Joe Perches <joe@perches.com>
-Date: Tue, 31 Mar 2015 12:49:09 +1100
-In-Reply-To: <6d45a6e4596f0b282048fc4b8db9e7f7a19a46e3.1427759009.git.joe@perches.com>
-References: <cover.1427759009.git.joe@perches.com>
- <6d45a6e4596f0b282048fc4b8db9e7f7a19a46e3.1427759009.git.joe@perches.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: kvm@vger.kernel.org, Gleb Natapov <gleb@kernel.org>,
- linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org,
- Alexander Graf <agraf@suse.de>, Paul Mackerras <paulus@samba.org>,
- Paolo Bonzini <pbonzini@redhat.com>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id BAD841A005A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Mar 2015 12:52:23 +1100 (AEDT)
+Received: from /spool/local
+ by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
+ Mon, 30 Mar 2015 21:52:20 -0400
+Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com
+ [9.57.198.28])
+ by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 86E0B6E8040
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Mar 2015 21:44:07 -0400 (EDT)
+Received: from d01av05.pok.ibm.com (d01av05.pok.ibm.com [9.56.224.195])
+ by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t2V1qHle23789630
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Mar 2015 01:52:17 GMT
+Received: from d01av05.pok.ibm.com (localhost [127.0.0.1])
+ by d01av05.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t2V1qGmj027478
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Mar 2015 21:52:17 -0400
+Date: Mon, 30 Mar 2015 18:51:17 -0700
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: [PATCH 1/1] powerpc/hv-24x7: Add missing put_cpu_var()
+Message-ID: <20150331015117.GA32741@us.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@lists.ozlabs.org, dev@codyps.com, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,87 +38,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2015-03-30 at 16:46 -0700, Joe Perches wrote:
-> Use the normal return values for bool functions
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Date: Tue, 17 Feb 2015 14:14:36 -0500
+Subject: [PATCH 1/1] powerpc/hv-24x7: Add missing put_cpu_var()
 
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Add missing put_cpu_var() for 24x7 requests. This went missing in
+commit f34b6c7 (3.18-rc3).
 
-Should we merge it or will you ?
+Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+---
+ arch/powerpc/perf/hv-24x7.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-Cheers,
-Ben.
-
-> Signed-off-by: Joe Perches <joe@perches.com>
-> ---
->  arch/powerpc/include/asm/dcr-native.h    | 2 +-
->  arch/powerpc/include/asm/dma-mapping.h   | 4 ++--
->  arch/powerpc/include/asm/kvm_book3s_64.h | 4 ++--
->  arch/powerpc/sysdev/dcr.c                | 2 +-
->  4 files changed, 6 insertions(+), 6 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/dcr-native.h b/arch/powerpc/include/asm/dcr-native.h
-> index 7d2e623..4efc11d 100644
-> --- a/arch/powerpc/include/asm/dcr-native.h
-> +++ b/arch/powerpc/include/asm/dcr-native.h
-> @@ -31,7 +31,7 @@ typedef struct {
->  
->  static inline bool dcr_map_ok_native(dcr_host_native_t host)
->  {
-> -	return 1;
-> +	return true;
->  }
->  
->  #define dcr_map_native(dev, dcr_n, dcr_c) \
-> diff --git a/arch/powerpc/include/asm/dma-mapping.h b/arch/powerpc/include/asm/dma-mapping.h
-> index 894d538..9103687 100644
-> --- a/arch/powerpc/include/asm/dma-mapping.h
-> +++ b/arch/powerpc/include/asm/dma-mapping.h
-> @@ -191,11 +191,11 @@ static inline bool dma_capable(struct device *dev, dma_addr_t addr, size_t size)
->  	struct dev_archdata *sd = &dev->archdata;
->  
->  	if (sd->max_direct_dma_addr && addr + size > sd->max_direct_dma_addr)
-> -		return 0;
-> +		return false;
->  #endif
->  
->  	if (!dev->dma_mask)
-> -		return 0;
-> +		return false;
->  
->  	return addr + size - 1 <= *dev->dma_mask;
->  }
-> diff --git a/arch/powerpc/include/asm/kvm_book3s_64.h b/arch/powerpc/include/asm/kvm_book3s_64.h
-> index 2d81e20..2a244bf 100644
-> --- a/arch/powerpc/include/asm/kvm_book3s_64.h
-> +++ b/arch/powerpc/include/asm/kvm_book3s_64.h
-> @@ -335,7 +335,7 @@ static inline bool hpte_read_permission(unsigned long pp, unsigned long key)
->  {
->  	if (key)
->  		return PP_RWRX <= pp && pp <= PP_RXRX;
-> -	return 1;
-> +	return true;
->  }
->  
->  static inline bool hpte_write_permission(unsigned long pp, unsigned long key)
-> @@ -373,7 +373,7 @@ static inline bool slot_is_aligned(struct kvm_memory_slot *memslot,
->  	unsigned long mask = (pagesize >> PAGE_SHIFT) - 1;
->  
->  	if (pagesize <= PAGE_SIZE)
-> -		return 1;
-> +		return true;
->  	return !(memslot->base_gfn & mask) && !(memslot->npages & mask);
->  }
->  
-> diff --git a/arch/powerpc/sysdev/dcr.c b/arch/powerpc/sysdev/dcr.c
-> index 2d8a101..121e26f 100644
-> --- a/arch/powerpc/sysdev/dcr.c
-> +++ b/arch/powerpc/sysdev/dcr.c
-> @@ -54,7 +54,7 @@ bool dcr_map_ok_generic(dcr_host_t host)
->  	else if (host.type == DCR_HOST_MMIO)
->  		return dcr_map_ok_mmio(host.host.mmio);
->  	else
-> -		return 0;
-> +		return false;
->  }
->  EXPORT_SYMBOL_GPL(dcr_map_ok_generic);
->  
+diff --git a/arch/powerpc/perf/hv-24x7.c b/arch/powerpc/perf/hv-24x7.c
+index 46be032..ead8878 100644
+--- a/arch/powerpc/perf/hv-24x7.c
++++ b/arch/powerpc/perf/hv-24x7.c
+@@ -1096,7 +1096,7 @@ static unsigned long single_24x7_request(struct perf_event *event, u64 *count)
+ 
+ 	ret = add_event_to_24x7_request(event, request_buffer);
+ 	if (ret)
+-		return ret;
++		goto out;
+ 
+ 	ret = make_24x7_request(request_buffer, result_buffer);
+ 	if (ret) {
+@@ -1109,6 +1109,8 @@ static unsigned long single_24x7_request(struct perf_event *event, u64 *count)
+ 	*count = be64_to_cpu(resb->elements[0].element_data[0]);
+ 
+ out:
++	put_cpu_var(hv_24x7_reqb);
++	put_cpu_var(hv_24x7_resb);
+ 	return ret;
+ }
+ 
+-- 
+1.8.3.1
