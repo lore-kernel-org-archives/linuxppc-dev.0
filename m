@@ -1,33 +1,32 @@
 Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 00E571A03DB
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Mar 2015 12:54:53 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 50A6E1A0427
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Mar 2015 12:54:54 +1100 (AEDT)
 Received: from /spool/local
- by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Mon, 30 Mar 2015 19:54:51 -0600
-Received: from b03cxnp08026.gho.boulder.ibm.com
- (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 2AEE81FF0025
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Mar 2015 19:45:59 -0600 (MDT)
+ Mon, 30 Mar 2015 19:54:52 -0600
+Received: from b03cxnp08028.gho.boulder.ibm.com
+ (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 9D00E3E4003E
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Mar 2015 19:54:48 -0600 (MDT)
 Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
- by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t2V1sreH48627854
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Mar 2015 18:54:53 -0700
+ by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t2V1sbbt38600790
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Mar 2015 18:54:37 -0700
 Received: from d03av03.boulder.ibm.com (localhost [127.0.0.1])
  by d03av03.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t2V1slYH002961
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Mar 2015 19:54:47 -0600
+ t2V1smel002984
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Mar 2015 19:54:48 -0600
 From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 To: Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>,
  peterz@infradead.org
-Subject: [PATCH v2 01/10] powerpc/hv-24x7: Modify definition of request and
- result buffers
-Date: Mon, 30 Mar 2015 18:53:38 -0700
-Message-Id: <1427766828-771-2-git-send-email-sukadev@linux.vnet.ibm.com>
+Subject: [PATCH v2 02/10] powerpc/hv24x7: Remove unnecessary parameter
+Date: Mon, 30 Mar 2015 18:53:39 -0700
+Message-Id: <1427766828-771-3-git-send-email-sukadev@linux.vnet.ibm.com>
 In-Reply-To: <1427766828-771-1-git-send-email-sukadev@linux.vnet.ibm.com>
 References: <1427766828-771-1-git-send-email-sukadev@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org, dev@codyps.com, linux-kernel@vger.kernel.org
@@ -40,177 +39,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The parameters to the 24x7 HCALL have variable number of elements in them.
-Set the minimum number of such elements to 1 rather than 0 and eliminate
-the temporary structures.
+Remove the 'success_expected' parameter and log the message unconditionally.
 
-This would enable us to submit multiple counter requests and process
-multiple results from a single HCALL (in a follow on patch).
+Changelog[v2]
+	[Michael Ellerman]: Move the change to reduce log message priority
+		into a separate patch.
 
 Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 ---
- arch/powerpc/perf/hv-24x7.c | 77 ++++++++++++++++++++++-----------------------
- arch/powerpc/perf/hv-24x7.h |  8 ++---
- 2 files changed, 41 insertions(+), 44 deletions(-)
+ arch/powerpc/perf/hv-24x7.c | 16 ++++++----------
+ 1 file changed, 6 insertions(+), 10 deletions(-)
 
 diff --git a/arch/powerpc/perf/hv-24x7.c b/arch/powerpc/perf/hv-24x7.c
-index 9445a82..408e6e9 100644
+index 408e6e9..c185dcf 100644
 --- a/arch/powerpc/perf/hv-24x7.c
 +++ b/arch/powerpc/perf/hv-24x7.c
-@@ -142,6 +142,15 @@ static struct attribute_group event_long_desc_group = {
- 
- static struct kmem_cache *hv_page_cache;
- 
-+/*
-+ * request_buffer and result_buffer are not required to be 4k aligned,
-+ * but are not allowed to cross any 4k boundary. Aligning them to 4k is
-+ * the simplest way to ensure that.
-+ */
-+#define H24x7_DATA_BUFFER_SIZE	4096
-+DEFINE_PER_CPU(char, hv_24x7_reqb[H24x7_DATA_BUFFER_SIZE]) __aligned(4096);
-+DEFINE_PER_CPU(char, hv_24x7_resb[H24x7_DATA_BUFFER_SIZE]) __aligned(4096);
-+
- static char *event_name(struct hv_24x7_event_data *ev, int *len)
- {
- 	*len = be16_to_cpu(ev->event_name_len) - 2;
-@@ -976,31 +985,16 @@ static const struct attribute_group *attr_groups[] = {
- 	NULL,
+@@ -986,8 +986,7 @@ static const struct attribute_group *attr_groups[] = {
  };
  
--DEFINE_PER_CPU(char, hv_24x7_reqb[4096]) __aligned(4096);
--DEFINE_PER_CPU(char, hv_24x7_resb[4096]) __aligned(4096);
--
  static unsigned long single_24x7_request(u8 domain, u32 offset, u16 ix,
--					 u16 lpar, u64 *res,
-+					 u16 lpar, u64 *count,
- 					 bool success_expected)
+-					 u16 lpar, u64 *count,
+-					 bool success_expected)
++					 u16 lpar, u64 *count)
  {
  	unsigned long ret;
  
--	/*
--	 * request_buffer and result_buffer are not required to be 4k aligned,
--	 * but are not allowed to cross any 4k boundary. Aligning them to 4k is
--	 * the simplest way to ensure that.
--	 */
--	struct reqb {
--		struct hv_24x7_request_buffer buf;
--		struct hv_24x7_request req;
--	} __packed *request_buffer;
--
--	struct {
--		struct hv_24x7_data_result_buffer buf;
--		struct hv_24x7_result res;
--		struct hv_24x7_result_element elem;
--		__be64 result;
--	} __packed *result_buffer;
-+	struct hv_24x7_request_buffer *request_buffer;
-+	struct hv_24x7_data_result_buffer *result_buffer;
-+	struct hv_24x7_result *resb;
-+	struct hv_24x7_request *req;
- 
- 	BUILD_BUG_ON(sizeof(*request_buffer) > 4096);
- 	BUILD_BUG_ON(sizeof(*result_buffer) > 4096);
-@@ -1011,38 +1005,41 @@ static unsigned long single_24x7_request(u8 domain, u32 offset, u16 ix,
- 	memset(request_buffer, 0, 4096);
- 	memset(result_buffer, 0, 4096);
- 
--	*request_buffer = (struct reqb) {
--		.buf = {
--			.interface_version = HV_24X7_IF_VERSION_CURRENT,
--			.num_requests = 1,
--		},
--		.req = {
--			.performance_domain = domain,
--			.data_size = cpu_to_be16(8),
--			.data_offset = cpu_to_be32(offset),
--			.starting_lpar_ix = cpu_to_be16(lpar),
--			.max_num_lpars = cpu_to_be16(1),
--			.starting_ix = cpu_to_be16(ix),
--			.max_ix = cpu_to_be16(1),
--		}
--	};
-+	request_buffer->interface_version = HV_24X7_IF_VERSION_CURRENT;
-+	request_buffer->num_requests = 1;
-+
-+	req = &request_buffer->requests[0];
- 
-+	req->performance_domain = domain;
-+	req->data_size = cpu_to_be16(8);
-+	req->data_offset = cpu_to_be32(offset);
-+	req->starting_lpar_ix = cpu_to_be16(lpar),
-+	req->max_num_lpars = cpu_to_be16(1);
-+	req->starting_ix = cpu_to_be16(ix);
-+	req->max_ix = cpu_to_be16(1);
-+
-+	/*
-+	 * NOTE: Due to variable number of array elements in request and
-+	 *	 result buffer(s), sizeof() is not reliable. Use the actual
-+	 *	 allocated buffer size, H24x7_DATA_BUFFER_SIZE.
-+	 */
- 	ret = plpar_hcall_norets(H_GET_24X7_DATA,
--			virt_to_phys(request_buffer), sizeof(*request_buffer),
--			virt_to_phys(result_buffer),  sizeof(*result_buffer));
-+			virt_to_phys(request_buffer), H24x7_DATA_BUFFER_SIZE,
-+			virt_to_phys(result_buffer),  H24x7_DATA_BUFFER_SIZE);
+@@ -1028,8 +1027,7 @@ static unsigned long single_24x7_request(u8 domain, u32 offset, u16 ix,
+ 			virt_to_phys(result_buffer),  H24x7_DATA_BUFFER_SIZE);
  
  	if (ret) {
- 		if (success_expected)
- 			pr_err_ratelimited("hcall failed: %d %#x %#x %d => "
+-		if (success_expected)
+-			pr_err_ratelimited("hcall failed: %d %#x %#x %d => "
++		pr_err_ratelimited("hcall failed: %d %#x %#x %d => "
  				"0x%lx (%ld) detail=0x%x failing ix=%x\n",
  				domain, offset, ix, lpar, ret, ret,
--				result_buffer->buf.detailed_rc,
--				result_buffer->buf.failing_request_ix);
-+				result_buffer->detailed_rc,
-+				result_buffer->failing_request_ix);
- 		goto out;
- 	}
- 
--	*res = be64_to_cpu(result_buffer->result);
-+	resb = &result_buffer->results[0];
- 
-+	*count = be64_to_cpu(resb->elements[0].element_data[0]);
- out:
+ 				result_buffer->detailed_rc,
+@@ -1044,8 +1042,7 @@ out:
  	return ret;
  }
-diff --git a/arch/powerpc/perf/hv-24x7.h b/arch/powerpc/perf/hv-24x7.h
-index 69cd4e6..0f9fa21 100644
---- a/arch/powerpc/perf/hv-24x7.h
-+++ b/arch/powerpc/perf/hv-24x7.h
-@@ -50,7 +50,7 @@ struct hv_24x7_request_buffer {
- 	__u8 interface_version;
- 	__u8 num_requests;
- 	__u8 reserved[0xE];
--	struct hv_24x7_request requests[];
-+	struct hv_24x7_request requests[1];
- } __packed;
  
- struct hv_24x7_result_element {
-@@ -66,7 +66,7 @@ struct hv_24x7_result_element {
- 	__be32 lpar_cfg_instance_id;
+-static unsigned long event_24x7_request(struct perf_event *event, u64 *res,
+-		bool success_expected)
++static unsigned long event_24x7_request(struct perf_event *event, u64 *res)
+ {
+ 	u16 idx;
+ 	unsigned domain = event_get_domain(event);
+@@ -1059,8 +1056,7 @@ static unsigned long event_24x7_request(struct perf_event *event, u64 *res,
+ 				event_get_offset(event),
+ 				idx,
+ 				event_get_lpar(event),
+-				res,
+-				success_expected);
++				res);
+ }
  
- 	/* size = @result_element_data_size of cointaining result. */
--	__u8 element_data[];
-+	__u64 element_data[1];
- } __packed;
+ static int h_24x7_event_init(struct perf_event *event)
+@@ -1130,7 +1126,7 @@ static int h_24x7_event_init(struct perf_event *event)
+ 	}
  
- struct hv_24x7_result {
-@@ -87,7 +87,7 @@ struct hv_24x7_result {
- 	/* WARNING: only valid for first result element due to variable sizes
- 	 *          of result elements */
- 	/* struct hv_24x7_result_element[@num_elements_returned] */
--	struct hv_24x7_result_element elements[];
-+	struct hv_24x7_result_element elements[1];
- } __packed;
- 
- struct hv_24x7_data_result_buffer {
-@@ -103,7 +103,7 @@ struct hv_24x7_data_result_buffer {
- 	__u8 reserved2[0x8];
- 	/* WARNING: only valid for the first result due to variable sizes of
- 	 *	    results */
--	struct hv_24x7_result results[]; /* [@num_results] */
-+	struct hv_24x7_result results[1]; /* [@num_results] */
- } __packed;
- 
- #endif
+ 	/* see if the event complains */
+-	if (event_24x7_request(event, &ct, false)) {
++	if (event_24x7_request(event, &ct)) {
+ 		pr_devel("test hcall failed\n");
+ 		return -EIO;
+ 	}
+@@ -1142,7 +1138,7 @@ static u64 h_24x7_get_value(struct perf_event *event)
+ {
+ 	unsigned long ret;
+ 	u64 ct;
+-	ret = event_24x7_request(event, &ct, true);
++	ret = event_24x7_request(event, &ct);
+ 	if (ret)
+ 		/* We checked this in event init, shouldn't fail here... */
+ 		return 0;
 -- 
 1.8.3.1
