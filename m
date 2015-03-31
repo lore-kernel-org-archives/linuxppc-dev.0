@@ -1,21 +1,24 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0131.outbound.protection.outlook.com [207.46.100.131])
+Return-Path: <Shengzhou.Liu@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0115.outbound.protection.outlook.com [65.55.169.115])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6CC041A0058
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Mar 2015 14:14:43 +1100 (AEDT)
-Date: Mon, 30 Mar 2015 22:14:30 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: LEROY Christophe <christophe.leroy@c-s.fr>
-Subject: Re: [v2,2/2] powerpc32: add support for csum_add()
-Message-ID: <20150331031430.GA7982@home.buserror.net>
-References: <20150203113927.8604D1A5F14@localhost.localdomain>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0994C1A0058
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Mar 2015 14:32:23 +1100 (AEDT)
+From: "Shengzhou.Liu@freescale.com" <Shengzhou.Liu@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: RE: [1/4] powerpc/fsl-booke: Add device tree support for T1024/T1023
+ SoC
+Date: Tue, 31 Mar 2015 03:32:15 +0000
+Message-ID: <DM2PR03MB398FAC6511FC9B94CEC4B03F8F40@DM2PR03MB398.namprd03.prod.outlook.com>
+References: <1422517947-28722-1-git-send-email-Shengzhou.Liu@freescale.com>
+ <20150130011949.GA19864@home.buserror.net>
+ <DM2PR03MB398E5EB28719411243C1C76F8F50@DM2PR03MB398.namprd03.prod.outlook.com>
+ <1427756416.22867.205.camel@freescale.com>
+In-Reply-To: <1427756416.22867.205.camel@freescale.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <20150203113927.8604D1A5F14@localhost.localdomain>
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,47 +28,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Feb 03, 2015 at 12:39:27PM +0100, LEROY Christophe wrote:
-> The C version of csum_add() as defined in include/net/checksum.h gives the
-> following assembly:
->        0:       7c 04 1a 14     add     r0,r4,r3
->        4:       7c 64 00 10     subfc   r3,r4,r0
->        8:       7c 63 19 10     subfe   r3,r3,r3
->        c:       7c 63 00 50     subf    r3,r3,r0
-> 
-> include/net/checksum.h also offers the possibility to define an arch specific
-> function.
-> This patch provides a ppc32 specific csum_add() inline function.
-> 
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-> ---
-> v2: changed constraints on the __asm__
-> 
->  arch/powerpc/include/asm/checksum.h | 12 ++++++++++++
->  1 file changed, 12 insertions(+)
-> 
-> diff --git a/arch/powerpc/include/asm/checksum.h b/arch/powerpc/include/asm/checksum.h
-> index cfe806a..1e48cc7 100644
-> --- a/arch/powerpc/include/asm/checksum.h
-> +++ b/arch/powerpc/include/asm/checksum.h
-> @@ -141,6 +141,18 @@ static inline __sum16 csum_tcpudp_magic(__be32 saddr, __be32 daddr,
->  {
->  	return csum_fold(csum_tcpudp_nofold(saddr, daddr, len, proto, sum));
->  }
-> +
-> +#define HAVE_ARCH_CSUM_ADD
-> +static inline __wsum csum_add(__wsum csum, __wsum addend)
-> +{
-> +    __asm__("\n\
-
-s/__asm__/asm/
-
-Use tabs to indent
-
-> +	addc %0,%0,%1 \n\
-> +	addze %0,%0 \n\
-
-Use ; to separate asm statements instead of using \n
-Use string concatenation instead of \
-
--Scott
+PiA+ID4gVGhlcmUgYXJlIG90aGVyIGRpZmZlcmVuY2VzIGJldHdlZW4gdDEwMjMgYW4gdDEwMjQu
+ICBXaGVyZSBkbyB5b3UNCj4gPiA+IGRlc2NyaWJlIHQxMDI0J3MgUUU/ICBXaGVyZSBkbyB5b3Ug
+ZGVzY3JpYmUgdGhlIEREUiBhbmQgSUZDIGRpZmZlcmVuY2VzPw0KPiA+ID4gY2FuIHRoZXkgYmUg
+ZGV0ZWN0ZWQgYXQgcnVudGltZT8gIHQxMDI0IHN1cHBvcnRzIGRlZXAgc2xlZXAsIGJ1dA0KPiA+
+ID4gdDEwMjMgZG9lc24ndCAtLSB5ZXQgeW91IGxhYmVsIGJvdGggY2hpcHMgYXMgaGF2aW5nIHQx
+MDI0IHJjcG0uDQo+ID4gPg0KPiA+IEFzIFFFIElQIGJsb2NrIGhhcyBub3QgYmVlbiB1cHN0cmVh
+bSB5ZXQsIA0KPiBIdWg/IA0KPiBhcmNoL3Bvd2VycGMvc3lzZGV2L3FlX2xpYi8NCg0KYXJjaC9w
+b3dlcnBjL2Jvb3QvZHRzL2ZzbC9xb3JpcS10ZG0xLjAuZHRzaSBoYXMgbm90IGJlZW4gdXBzdHJl
+YW0gYnkgVERNIG93bmVyLg0KT2ssIEkgd2lsbCBmaXJzdCBzZW5kIHFvcmlxLXRkbTEuMC5kdHNp
+IHVwc3RyZWFtIGluIG9yZGVyIHRvIGluY2x1ZGUgUUUgaW4gdDEwMjQgZHRzLg0KDQoNCj4gPiBE
+RFIgYW5kIElGQyBkaWZmZXJlbmNlcyBhcmUgaW4gdS1ib290LCBub3QgaW4gZHRzLiANCj4gVGhl
+IGRpZmZlcmVuY2VzIGFyZSBpbiBoYXJkd2FyZSwgd2hpY2ggaXMgd2hhdCB0aGUgZHRzIGlzIHN1
+cHBvc2VkIHRvIGRlc2NyaWJlLg0KDQpUaGVvcmV0aWNhbGx5IEkgdGhpbmsgc28sIGJ1dCBub3Qg
+YWxsIGhhcmR3YXJlIGRldGFpbHMgbXVzdCBiZSBkZXNjcmliZWQgaW4gZHRzDQphcyBjdXJyZW50
+IElQIGRyaXZlciBkb2Vzbid0IHRha2UgY2FyZSBvZiBpdCBmcm9tIGR0cy4NCklmIHNvLCBJUCBv
+d25lcnMgd2lsbCBoYXZlIHRvIHVwZGF0ZSBkcml2ZXJzLCBmb3Igbm93IGxldCdzIGtlZXAgYXMg
+aXQncy4gICAgDQoNCj4gPiBCb3RoIHQxMDIzIGFuZCB0MTAyNCBzdXBwb3J0IHNsZWVwLCBzbyBs
+YWJlbCBib3RoIGNoaXBzIGFzIGhhdmluZyB0MTAyNCByY3BtLg0KPiANCj4gVGhhdCdzIG5vdCBo
+b3cgaXQgd29ya3MuDQo+IA0KPiA+IE9ubHkgdDEwMjQgaGFzIGRlZXAgc2xlZXAsIHRoZSBkaWZm
+ZXJlbmNlIGlzIGlkZW50aWZpZWQgaW4gKi5jIG5vdCBpbiBkdHMgKGNvbmZpcm1lZCB3aXRoIGRl
+ZXAgc2xlZXAgb3duZXIpLg0KPiANCj4gRXZlbiBpZiB0aGUgQyBjb2RlIGNob29zZXMgdG8gdXNl
+IFNWUiB0byBpZGVudGlmeSB0aGUgZGlmZmVyZW5jZSAod2h5PyksDQo+IHRoYXQgZG9lc24ndCBt
+ZWFuIGl0J3MgT0sgZm9yIHRoZSBkZXZpY2UgdHJlZSB0byBjb250YWluIHdyb25nIGluZm9ybWF0
+aW9uLg0KIA0KV2hlcmUgaXMgdGhlIHdyb25nIGluZm9ybWF0aW9uPw0KDQogICAgICAgIHJjcG06
+IGdsb2JhbC11dGlsaXRpZXNAZTIwMDAgew0KICAgICAgICAgICAgICAgIGNvbXBhdGlibGUgPSAi
+ZnNsLHQxMDI0LXJjcG0iLCAiZnNsLHFvcmlxLXJjcG0tMi4wIjsNCiAgICAgICAgICAgICAgICBy
+ZWcgPSA8MHhlMjAwMCAweDEwMDA+Ow0KICAgICAgICB9Ow0KDQogICAgICAgIHNkaGNAMTE0MDAw
+IHsNCiAgICAgICAgICAgICAgICBjb21wYXRpYmxlID0gImZzbCx0MTAyNC1lc2RoYyIsICJmc2ws
+ZXNkaGMiOw0KICAgICAgICAgICAgICAgIGZzbCxpb21tdS1wYXJlbnQgPSA8JnBhbXUwPjsNCiAg
+ICAgICAgICAgICAgICBmc2wsbGlvZG4tcmVnID0gPCZndXRzIDB4NTMwPjsgLyogZVNESENMSU9E
+TlIgKi8NCiAgICAgICAgICAgICAgICBzZGhjaSxhdXRvLWNtZDEyOw0KICAgICAgICAgICAgICAg
+IG5vLTEtOC12Ow0KICAgICAgICAgICAgICAgIHNsZWVwID0gPCZyY3BtIDB4MDAwMDAwODA+Ow0K
+ICAgICAgICB9Ow0KdDEwMjMgYWxzbyBzdXBwb3J0cyBzbGVlcChub3QgZGVlcCBzbGVlcCksIGl0
+IG5lZWRzIHRoZSBpbmZvIGFib3ZlLg0K
