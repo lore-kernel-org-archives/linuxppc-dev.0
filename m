@@ -1,20 +1,17 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <sowmini.varadhan@oracle.com>
+Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4F7A51A03DB
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Mar 2015 21:56:37 +1100 (AEDT)
-In-Reply-To: <1424715500-21725-1-git-send-email-sudeep.holla@arm.com>
-To: Sudeep Holla <Sudeep.Holla@arm.com>, linux-kernel@vger.kernel.org,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>
-From: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [RFC/RFT,
- RESEND] powerpc: move cacheinfo sysfs to generic cacheinfo
- infrastructure
-Message-Id: <20150331105637.39B451400DE@ozlabs.org>
-Date: Tue, 31 Mar 2015 21:56:37 +1100 (AEDT)
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- Sudeep Holla <sudeep.holla@arm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 081881A0427
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Apr 2015 01:41:56 +1100 (AEDT)
+From: Sowmini Varadhan <sowmini.varadhan@oracle.com>
+To: sparclinux@vger.kernel.org
+Subject: [PATCH v8 RFC 0/3] Generic IOMMU pooled allocator
+Date: Tue, 31 Mar 2015 10:40:43 -0400
+Message-Id: <cover.1427761300.git.sowmini.varadhan@oracle.com>
+Cc: aik@au1.ibm.com, anton@au1.ibm.com, paulus@samba.org,
+ sowmini.varadhan@oracle.com, linuxppc-dev@lists.ozlabs.org,
+ davem@davemloft.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,41 +21,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2015-23-02 at 18:18:20 UTC, Sudeep Holla wrote:
-> This patch removes the redundant sysfs cacheinfo code by reusing
-> the newly introduced generic cacheinfo infrastructure through the
-> commit 246246cbde5e ("drivers: base: support cpu cache information
-> interface to userspace via sysfs")
-> 
-> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-> Cc: linuxppc-dev@lists.ozlabs.org
-> ---
->  arch/powerpc/kernel/cacheinfo.c | 811 +++++-----------------------------------
->  arch/powerpc/kernel/cacheinfo.h |   8 -
->  arch/powerpc/kernel/sysfs.c     |  12 +-
->  3 files changed, 91 insertions(+), 740 deletions(-)
->  delete mode 100644 arch/powerpc/kernel/cacheinfo.h
-> 
-> Hi,
-> 
-> This patch is not tested. Last time Anshuman tested, he had seen issues.
-> The core driver has changed a lot after that. Since PPC depends a lot
-> on DT for cache information, there might be issues in the core later
-> which I could not identify with ARM/ARM64. It would be much appreciable
-> if someone help me in testing and fixing those so that PPC can migrate
-> to new/common cacheinfo infrastructure. This resend is rebased on v4.0-rc1
+Addresses BenH comments with one exception: I've left the
+IOMMU_POOL_HASH as is, so that powerpc can tailor it to their
+convenience. 
 
-Doesn't build for me.
+I've not heard back from the IB folks, but I'm going to make
+a judgement call here and go with the spin_lock. *If* they
+report some significant benefit from the trylock, probably 
+need to revisit this (and then probably start by re-exmaining
+the hash function to avoid collisions, before resorting to 
+trylock).
 
-  arch/powerpc/platforms/pseries/suspend.c:29:36: fatal error: ../../kernel/cacheinfo.h: No such file or directory
-  #include "../../kernel/cacheinfo.h"
+Sowmini Varadhan (3):
+  Break up monolithic iommu table/lock into finer graularity pools and
+    lock
+  Make sparc64 use scalable lib/iommu-common.c functions
+  Make LDC use common iommu poll management functions
 
-Anshuman must have worked around that somehow to test it previously?
-
-Removing the include doesn't fix it, it needs cacheinfo_cpu_on/offline().
-
-cheers
+ arch/sparc/include/asm/iommu_64.h |    7 +-
+ arch/sparc/kernel/iommu.c         |  171 +++++++--------------------
+ arch/sparc/kernel/iommu_common.h  |    8 --
+ arch/sparc/kernel/ldc.c           |  153 ++++++++++--------------
+ arch/sparc/kernel/pci_sun4v.c     |  181 +++++++++++++----------------
+ include/linux/iommu-common.h      |   48 ++++++++
+ lib/Makefile                      |    2 +-
+ lib/iommu-common.c                |  233 +++++++++++++++++++++++++++++++++++++
+ 8 files changed, 472 insertions(+), 331 deletions(-)
+ create mode 100644 include/linux/iommu-common.h
+ create mode 100644 lib/iommu-common.c
