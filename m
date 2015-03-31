@@ -1,19 +1,19 @@
 Return-Path: <scottwood@freescale.com>
 Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bbn0106.outbound.protection.outlook.com [157.56.111.106])
+ (mail-bn1bon0138.outbound.protection.outlook.com [157.56.111.138])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DCDD41A03DB
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Mar 2015 12:10:43 +1100 (AEDT)
-Date: Mon, 30 Mar 2015 20:10:28 -0500
+ by lists.ozlabs.org (Postfix) with ESMTPS id DC1B91A03DB
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Mar 2015 12:31:11 +1100 (AEDT)
+Date: Mon, 30 Mar 2015 20:30:57 -0500
 From: Scott Wood <scottwood@freescale.com>
 To: chenhui zhao <chenhui.zhao@freescale.com>
-Subject: Re: [1/4] powerpc/cache: add cache flush operation for various e500
-Message-ID: <20150331011028.GA5667@home.buserror.net>
-References: <1427365095-26396-1-git-send-email-chenhui.zhao@freescale.com>
+Subject: Re: [2/4] powerpc/rcpm: add RCPM driver
+Message-ID: <20150331013057.GB5667@home.buserror.net>
+References: <1427365095-26396-2-git-send-email-chenhui.zhao@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <1427365095-26396-1-git-send-email-chenhui.zhao@freescale.com>
+In-Reply-To: <1427365095-26396-2-git-send-email-chenhui.zhao@freescale.com>
 Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  linux-kernel@vger.kernel.org, Jason.Jin@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,79 +25,200 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Mar 26, 2015 at 06:18:12PM +0800, chenhui zhao wrote:
-> Various e500 core have different cache architecture, so they
-> need different cache flush operations. Therefore, add a callback
-> function cpu_flush_caches to the struct cpu_spec. The cache flush
-> operation for the specific kind of e500 is selected at init time.
-> The callback function will flush all caches inside the current cpu.
+On Thu, Mar 26, 2015 at 06:18:13PM +0800, chenhui zhao wrote:
+> There is a RCPM (Run Control/Power Management) in Freescale QorIQ
+> series processors. The device performs tasks associated with device
+> run control and power management.
+> 
+> The driver implements some features: mask/unmask irq, enter/exit low
+> power states, freeze time base, etc.
 > 
 > Signed-off-by: Chenhui Zhao <chenhui.zhao@freescale.com>
 > ---
->  arch/powerpc/include/asm/cacheflush.h     |   2 -
->  arch/powerpc/include/asm/cputable.h       |  11 +++
->  arch/powerpc/kernel/asm-offsets.c         |   3 +
->  arch/powerpc/kernel/cpu_setup_fsl_booke.S | 114 +++++++++++++++++++++++++++++-
->  arch/powerpc/kernel/cputable.c            |   4 ++
->  arch/powerpc/kernel/head_fsl_booke.S      |  74 -------------------
->  arch/powerpc/platforms/85xx/smp.c         |   3 +-
->  7 files changed, 133 insertions(+), 78 deletions(-)
+>  Documentation/devicetree/bindings/soc/fsl/rcpm.txt |  23 ++
+>  arch/powerpc/include/asm/fsl_guts.h                | 105 ++++++
+>  arch/powerpc/include/asm/fsl_pm.h                  |  49 +++
+>  arch/powerpc/platforms/85xx/Kconfig                |   1 +
+>  arch/powerpc/sysdev/Kconfig                        |   5 +
+>  arch/powerpc/sysdev/Makefile                       |   1 +
+>  arch/powerpc/sysdev/fsl_rcpm.c                     | 353 +++++++++++++++++++++
+>  7 files changed, 537 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/soc/fsl/rcpm.txt
+>  create mode 100644 arch/powerpc/include/asm/fsl_pm.h
+>  create mode 100644 arch/powerpc/sysdev/fsl_rcpm.c
 > 
-> diff --git a/arch/powerpc/include/asm/cacheflush.h b/arch/powerpc/include/asm/cacheflush.h
-> index 30b35ff..729fde4 100644
-> --- a/arch/powerpc/include/asm/cacheflush.h
-> +++ b/arch/powerpc/include/asm/cacheflush.h
-> @@ -30,8 +30,6 @@ extern void flush_dcache_page(struct page *page);
->  #define flush_dcache_mmap_lock(mapping)		do { } while (0)
->  #define flush_dcache_mmap_unlock(mapping)	do { } while (0)
->  
-> -extern void __flush_disable_L1(void);
-> -
->  extern void flush_icache_range(unsigned long, unsigned long);
->  extern void flush_icache_user_range(struct vm_area_struct *vma,
->  				    struct page *page, unsigned long addr,
-> diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
-> index 5cf5a6d..c776efe4 100644
-> --- a/arch/powerpc/include/asm/cputable.h
-> +++ b/arch/powerpc/include/asm/cputable.h
-> @@ -43,6 +43,13 @@ extern int machine_check_e500(struct pt_regs *regs);
->  extern int machine_check_e200(struct pt_regs *regs);
->  extern int machine_check_47x(struct pt_regs *regs);
->  
-> +#if defined(CONFIG_E500) || defined(CONFIG_PPC_E500MC)
-> +extern void __flush_caches_e500v2(void);
-> +extern void __flush_caches_e500mc(void);
-> +extern void __flush_caches_e5500(void);
-> +extern void __flush_caches_e6500(void);
-> +#endif
+> diff --git a/Documentation/devicetree/bindings/soc/fsl/rcpm.txt b/Documentation/devicetree/bindings/soc/fsl/rcpm.txt
+> new file mode 100644
+> index 0000000..8c21b6c
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/soc/fsl/rcpm.txt
+> @@ -0,0 +1,23 @@
+> +* Run Control and Power Management
+> +
+> +The RCPM performs all device-level tasks associated with device run control
+> +and power management.
+> +
+> +Required properites:
+> +  - reg : Offset and length of the register set of RCPM block.
+> +  - compatible : Specifies the compatibility list for the RCPM. The type
+> +    should be string, such as "fsl,qoriq-rcpm-1.0", "fsl,qoriq-rcpm-2.0".
+> +
+> +Example:
+> +The RCPM node for T4240:
+> +	rcpm: global-utilities@e2000 {
+> +		compatible = "fsl,t4240-rcpm", "fsl,qoriq-rcpm-2.0";
+> +		reg = <0xe2000 0x1000>;
+> +	};
+> +
+> +The RCPM node for P4080:
+> +	rcpm: global-utilities@e2000 {
+> +		compatible = "fsl,qoriq-rcpm-1.0";
+> +		reg = <0xe2000 0x1000>;
+> +		#sleep-cells = <1>;
+> +	};
 
-Why the leading underscores?
+Where is #sleep-cells documented?  It's copy-and-paste from something
+that was never finished from many years ago.
 
->  /* NOTE WELL: Update identify_cpu() if fields are added or removed! */
->  struct cpu_spec {
->  	/* CPU is matched via (PVR & pvr_mask) == pvr_value */
-> @@ -59,6 +66,10 @@ struct cpu_spec {
->  	unsigned int	icache_bsize;
->  	unsigned int	dcache_bsize;
->  
-> +#if defined(CONFIG_E500) || defined(CONFIG_PPC_E500MC)
+> diff --git a/arch/powerpc/include/asm/fsl_pm.h b/arch/powerpc/include/asm/fsl_pm.h
+> new file mode 100644
+> index 0000000..bbe6089
+> --- /dev/null
+> +++ b/arch/powerpc/include/asm/fsl_pm.h
+> @@ -0,0 +1,49 @@
+> +/*
+> + * Support Power Management
+> + *
+> + * Copyright 2014-2015 Freescale Semiconductor Inc.
+> + *
+> + * This program is free software; you can redistribute  it and/or modify it
+> + * under  the terms of  the GNU General  Public License as published by the
+> + * Free Software Foundation;  either version 2 of the  License, or (at your
+> + * option) any later version.
+> + */
+> +#ifndef __PPC_FSL_PM_H
+> +#define __PPC_FSL_PM_H
+> +#ifdef	__KERNEL__
 
-CONFIG_PPC_E500MC implies CONFIG_E500.  Why do we need this ifdef?
+Put a space after #ifdef, not a tab.
 
-> +	/* flush caches inside the current cpu */
-> +	void (*cpu_flush_caches)(void);
-> +#endif
+> +#define E500_PM_PH10	1
+> +#define E500_PM_PH15	2
+> +#define E500_PM_PH20	3
+> +#define E500_PM_PH30	4
+> +#define E500_PM_DOZE	E500_PM_PH10
+> +#define E500_PM_NAP	E500_PM_PH15
+> +
+> +#define PLAT_PM_SLEEP	20
+> +#define PLAT_PM_LPM20	30
+> +
+> +#define FSL_PM_SLEEP		(1 << 0)
+> +#define FSL_PM_DEEP_SLEEP	(1 << 1)
+> +
+> +struct fsl_pm_ops {
+> +	/* mask pending interrupts to the RCPM from MPIC */
+> +	void (*irq_mask)(int cpu);
+> +	/* unmask pending interrupts to the RCPM from MPIC */
+> +	void (*irq_unmask)(int cpu);
+> +	/* place the CPU in the specified state */
+> +	void (*cpu_enter_state)(int cpu, int state);
+> +	/* exit the CPU from the specified state */
+> +	void (*cpu_exit_state)(int cpu, int state);
+> +	/* place the platform in the sleep state */
+> +	int (*plat_enter_sleep)(void);
+> +	/* freeze the time base */
+> +	void (*freeze_time_base)(int freeze);
+> +	/* keep the power of IP blocks during sleep/deep sleep */
+> +	void (*set_ip_power)(int enable, u32 *mask);
+> +	/* get platform supported power management modes */
+> +	unsigned int (*get_pm_modes)(void);
+> +};
 
-It seems you literally mean "in the cpu" -- If it's a threaded core, then
-by "cpu" do you mean "thread" (like we usually do) and thus no caches get
-flushed (ignore the fact that it's moot on e6500 -- this is an interface
-and needs to be clear).
+Drop the comments that are basically just a restatement of the function
+name.  Where there are comments, it'd be easier to read with a blank line
+between a function and the next comment.
 
-Also, no-oping L1 flush on e6500 is not compliant with the claim that
-you're flushing the cache.  You're relying on an unstated assumption that
-you'll invalidate that cache later instead.
+s/int enable/bool enable/
+s/int freeze/bool freeze/
 
-If you want to make this "flush whatever needs to be flushed for
-suspend/hotplug", call it that.
+> +#endif	/* __KERNEL__ */
+> +#endif  /* __PPC_FSL_PM_H */
+
+Please be consistent with whitespace.
+
+> +	default:
+> +		pr_err("%s: Unknown cpu PM state (%d)\n", __func__, state);
+
+WARN?
+
+> +static int rcpm_v2_plat_enter_state(int state)
+> +{
+> +	u32 *pmcsr_reg = &rcpm_v2_regs->powmgtcsr;
+> +	int ret = 0;
+> +	int result;
+> +
+> +	switch (state) {
+> +	case PLAT_PM_LPM20:
+> +		/* clear previous LPM20 status */
+> +		setbits32(pmcsr_reg, RCPM_POWMGTCSR_P_LPM20_ST);
+
+How would the bit be set when you enter here, given that you wait for it
+to clear when leaving?
+
+> +		/* enter LPM20 status */
+> +		setbits32(pmcsr_reg, RCPM_POWMGTCSR_LPM20_RQ);
+> +
+> +		/* At this point, the device is in LPM20 status. */
+> +
+> +		/* resume ... */
+> +		result = spin_event_timeout(
+> +		  !(in_be32(pmcsr_reg) & RCPM_POWMGTCSR_LPM20_ST), 10000, 10);
+> +		if (!result) {
+> +			pr_err("%s: timeout waiting for LPM20 bit to be cleared\n",
+> +			       __func__);
+> +			ret = -ETIMEDOUT;
+> +		}
+> +		break;
+
+"At this point" is a bit misleading.  I think it's clear enough if you
+just drop that comment.
+
+> +	default:
+> +		pr_err("%s: Unknown platform PM state (%d)\n",
+> +		       __func__, state);
+> +		ret = -EINVAL;
+> +	}
+
+WARN?
+
+> +static const struct of_device_id rcpm_matches[] = {
+> +	{
+> +		.compatible = "fsl,qoriq-rcpm-1.0",
+> +		.data = (void *)RCPM_V1,
+> +	},
+> +	{
+> +		.compatible = "fsl,qoriq-rcpm-2.0",
+> +		.data = (void *)RCPM_V2,
+> +	},
+
+Why not point .data directly at the ops?
+
+> +	switch ((unsigned long)match->data) {
+> +	case RCPM_V1:
+> +		rcpm_v1_regs = base;
+> +		qoriq_pm_ops = &qoriq_rcpm_v1_ops;
+> +		break;
+> +
+> +	case RCPM_V2:
+> +		rcpm_v2_regs = base;
+> +		qoriq_pm_ops = &qoriq_rcpm_v2_ops;
+> +		break;
+> +
+> +	default:
+> +		break;
+> +	}
+
+default: break; is unnecessary (and impossible to hit -- if you really
+want default: it should probably WARN).
 
 -Scott
