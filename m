@@ -1,17 +1,26 @@
-Return-Path: <jstancek@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from smtp-out4.electric.net (smtp-out4.electric.net
+ [192.162.216.185])
+ (using TLSv1.1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 715551A03DB
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Apr 2015 03:11:59 +1100 (AEDT)
-From: Jan Stancek <jstancek@redhat.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc: fix memory corruption by pnv_alloc_idle_core_states
-Date: Tue, 31 Mar 2015 18:11:46 +0200
-Message-Id: <67174f780b3615749546d5a6d5bfba4c4f26a855.1427818011.git.jstancek@redhat.com>
-Cc: mikey@neuling.org, shreyas@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
- sbest@redhat.com, paulus@samba.org, preeti@linux.vnet.ibm.com,
- jstancek@redhat.com
+ by lists.ozlabs.org (Postfix) with ESMTPS id 79F711A03DB
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Apr 2015 03:37:46 +1100 (AEDT)
+From: David Laight <David.Laight@ACULAB.COM>
+To: 'Sowmini Varadhan' <sowmini.varadhan@oracle.com>,
+ "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>
+Subject: RE: [PATCH v8 RFC 1/3] sparc: Break up monolithic iommu table/lock
+ into finer graularity pools and lock
+Date: Tue, 31 Mar 2015 15:15:33 +0000
+Message-ID: <063D6719AE5E284EB5DD2968C1650D6D1CB118E4@AcuExch.aculab.com>
+References: <cover.1427761300.git.sowmini.varadhan@oracle.com>
+ <8406d119fb885255387a400551de994cb4a4c331.1427761300.git.sowmini.varadhan@oracle.com>
+In-Reply-To: <8406d119fb885255387a400551de994cb4a4c331.1427761300.git.sowmini.varadhan@oracle.com>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Cc: "paulus@samba.org" <paulus@samba.org>,
+ "anton@au1.ibm.com" <anton@au1.ibm.com>, "aik@au1.ibm.com" <aik@au1.ibm.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "davem@davemloft.net" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,31 +30,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Space allocated for paca is based off nr_cpu_ids,
-but pnv_alloc_idle_core_states() iterates paca with
-cpu_nr_cores()*threads_per_core, which is using NR_CPUS.
-
-This causes pnv_alloc_idle_core_states() to write over memory,
-which is outside of paca array and may later lead to various panics.
-
-Fixes: 7cba160ad789 (powernv/cpuidle: Redesign idle states management)
-Signed-off-by: Jan Stancek <jstancek@redhat.com>
----
- arch/powerpc/include/asm/cputhreads.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/include/asm/cputhreads.h b/arch/powerpc/include/asm/cputhreads.h
-index 2bf8e93..4c8ad59 100644
---- a/arch/powerpc/include/asm/cputhreads.h
-+++ b/arch/powerpc/include/asm/cputhreads.h
-@@ -55,7 +55,7 @@ static inline cpumask_t cpu_thread_mask_to_cores(const struct cpumask *threads)
- 
- static inline int cpu_nr_cores(void)
- {
--	return NR_CPUS >> threads_shift;
-+	return nr_cpu_ids >> threads_shift;
- }
- 
- static inline cpumask_t cpu_online_cores_map(void)
--- 
-1.8.3.1
+RnJvbTogU293bWluaSBWYXJhZGhhbg0KPiBJbnZlc3RpZ2F0aW9uIG9mIG11bHRpdGhyZWFkZWQg
+aXBlcmYgZXhwZXJpbWVudHMgb24gYW4gZXRoZXJuZXQNCj4gaW50ZXJmYWNlIHNob3cgdGhlIGlv
+bW11LT5sb2NrIGFzIHRoZSBob3R0ZXN0IGxvY2sgaWRlbnRpZmllZCBieQ0KPiBsb2Nrc3RhdCwg
+d2l0aCBzb21ldGhpbmcgb2YgdGhlIG9yZGVyIG9mICAyMU0gY29udGVudGlvbnMgb3V0IG9mDQo+
+IDI3TSBhY3F1aXNpdGlvbnMsIGFuZCBhbiBhdmVyYWdlIHdhaXQgdGltZSBvZiAyNiB1cyBmb3Ig
+dGhlIGxvY2suDQo+IFRoaXMgaXMgbm90IGVmZmljaWVudC4gQSBtb3JlIHNjYWxhYmxlIGRlc2ln
+biBpcyB0byBmb2xsb3cgdGhlIHBwYw0KPiBtb2RlbCwgd2hlcmUgdGhlIGlvbW11X21hcF90YWJs
+ZSBoYXMgbXVsdGlwbGUgcG9vbHMsIGVhY2ggc3RyZXRjaGluZw0KPiBvdmVyIGEgc2VnbWVudCBv
+ZiB0aGUgbWFwLCBhbmQgd2l0aCBhIHNlcGFyYXRlIGxvY2sgZm9yIGVhY2ggcG9vbC4NCj4gVGhp
+cyBtb2RlbCBhbGxvd3MgZm9yIGJldHRlciBwYXJhbGxlbGl6YXRpb24gb2YgdGhlIGlvbW11IG1h
+cCBzZWFyY2guDQoNCkkndmUgd29uZGVyZWQgd2hldGhlciB0aGUgaW9tbXUgc2V0dXAgZm9yIGV0
+aGVybmV0IHJlY2VpdmUgKGluIHBhcnRpY3VsYXIpDQpjb3VsZCBiZSBtYWRlIG11Y2ggbW9yZSBl
+ZmZpY2llbnQgaWYgdGhlcmUgd2VyZSBhIGZ1bmN0aW9uIHRoYXQNCndvdWxkIHVubWFwIG9uZSBi
+dWZmZXIgYW5kIG1hcCBhIHNlY29uZCBidWZmZXI/DQpNeSB0aG91Z2h0IGlzIHRoYXQgaW9tbXUg
+cHRlIGVudHJ5IHVzZWQgYnkgdGhlIG9sZCBidWZmZXIgY291bGQganVzdA0KYmUgbW9kaWZpZWQg
+dG8gcmVmZXJlbmNlIHRoZSBuZXcgb25lLg0KSW4gZWZmZWN0IGVhY2ggcmluZyBlbnRyeSB3b3Vs
+ZCBlbmQgdXAgdXNpbmcgYSBmaXhlZCBpb21tdSBwdGUuDQoNClRoZSBvdGhlciBxdWVzdGlvbiBp
+cyBob3cgbXVjaCBkYXRhIGNhbiBiZSBjb3BpZWQgaW4gMjZ1cyA/DQpPbiBpb21tdSBzeXN0ZW1z
+ICdjb3B5YnJlYWsnIGxpbWl0cyBvbiByZWNlaXZlIGFuZCB0cmFuc21pdA0KbWF5IG5lZWQgdG8g
+YmUgcXVpdGUgaGlnaC4NCg0KCURhdmlkDQoNCg==
