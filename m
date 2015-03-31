@@ -1,33 +1,26 @@
-Return-Path: <casey@schaufler-ca.com>
-Received: from smtp101.biz.mail.bf1.yahoo.com (smtp101.biz.mail.bf1.yahoo.com
- [98.139.221.60])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <computersforpeace@gmail.com>
+Received: from mail-pd0-x22f.google.com (mail-pd0-x22f.google.com
+ [IPv6:2607:f8b0:400e:c02::22f])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8EFAE1A0272
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Mar 2015 11:07:36 +1100 (AEDT)
-Message-ID: <5519E53B.5040504@schaufler-ca.com>
-Date: Mon, 30 Mar 2015 17:07:23 -0700
-From: Casey Schaufler <casey@schaufler-ca.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 71BB11A0272
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Mar 2015 11:55:48 +1100 (AEDT)
+Received: by pddn5 with SMTP id n5so2735373pdd.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Mar 2015 17:55:45 -0700 (PDT)
+Date: Mon, 30 Mar 2015 17:55:38 -0700
+From: Brian Norris <computersforpeace@gmail.com>
+To: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: Re: [PATCH 6/8] mtd: replace CONFIG_8xx by CONFIG_PPC_8xx
+Message-ID: <20150331005538.GJ32500@ld-irv-0074>
+References: <20150312152404.D6C391A2421@localhost.localdomain>
 MIME-Version: 1.0
-To: Joe Perches <joe@perches.com>, linux-kernel@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, kvmarm@lists.cs.columbia.edu,
- kvm@vger.kernel.org, linux-omap@vger.kernel.org, kvm-ppc@vger.kernel.org,
- virtualization@lists.linux-foundation.org, linux-fsdevel@vger.kernel.org,
- linux-nfs@vger.kernel.org, linux-ide@vger.kernel.org,
- kgdb-bugreport@lists.sourceforge.net, linux-mm@kvack.org,
- linux-pm@vger.kernel.org, netdev@vger.kernel.org,
- alsa-devel@alsa-project.org, bridge@lists.linux-foundation.org,
- netfilter-devel@vger.kernel.org, coreteam@netfilter.org,
- patches@opensource.wolfsonmicro.com
-Subject: Re: [PATCH 00/25] treewide: Use bool function return values of
- true/false not 1/0
-References: <cover.1427759009.git.joe@perches.com>
-In-Reply-To: <cover.1427759009.git.joe@perches.com>
-Content-Type: text/plain; charset=windows-1252
-Cc: linux-s390@vger.kernel.org, linux-ia64@vger.kernel.org,
- linux-scsi@vger.kernel.org, linux-mips@linux-mips.org,
- linux-hexagon@vger.kernel.org, linux-security-module@vger.kernel.org,
- sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20150312152404.D6C391A2421@localhost.localdomain>
+Cc: linux-fbdev@vger.kernel.org, linux-serial@vger.kernel.org,
+ user-mode-linux-devel@lists.sourceforge.net,
+ David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org,
+ linux-mtd@lists.infradead.org, user-mode-linux-user@lists.sourceforge.net,
+ netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,91 +30,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 3/30/2015 4:45 PM, Joe Perches wrote:
-> Joe Perches (25):
->   arm: Use bool function return values of true/false not 1/0
->   arm64: Use bool function return values of true/false not 1/0
->   hexagon: Use bool function return values of true/false not 1/0
->   ia64: Use bool function return values of true/false not 1/0
->   mips: Use bool function return values of true/false not 1/0
->   powerpc: Use bool function return values of true/false not 1/0
->   s390: Use bool function return values of true/false not 1/0
->   sparc: Use bool function return values of true/false not 1/0
->   tile: Use bool function return values of true/false not 1/0
->   unicore32: Use bool function return values of true/false not 1/0
->   x86: Use bool function return values of true/false not 1/0
->   virtio_console: Use bool function return values of true/false not 1/0
->   csiostor: Use bool function return values of true/false not 1/0
->   dcache: Use bool function return values of true/false not 1/0
->   nfsd: nfs4state: Use bool function return values of true/false not 1/0
->   include/linux: Use bool function return values of true/false not 1/0
->   sound: Use bool function return values of true/false not 1/0
->   rcu: tree_plugin: Use bool function return values of true/false not 1/0
->   sched: Use bool function return values of true/false not 1/0
->   ftrace: Use bool function return values of true/false not 1/0
->   slub: Use bool function return values of true/false not 1/0
->   bridge: Use bool function return values of true/false not 1/0
->   netfilter: Use bool function return values of true/false not 1/0
->   security: Use bool function return values of true/false not 1/0
->   sound: wm5100-tables: Use bool function return values of true/false not 1/0
->
->  arch/arm/include/asm/dma-mapping.h           |  8 ++--
->  arch/arm/include/asm/kvm_emulate.h           |  2 +-
->  arch/arm/mach-omap2/powerdomain.c            | 14 +++---
->  arch/arm64/include/asm/dma-mapping.h         |  2 +-
->  arch/hexagon/include/asm/dma-mapping.h       |  2 +-
->  arch/ia64/include/asm/dma-mapping.h          |  2 +-
->  arch/mips/include/asm/dma-mapping.h          |  2 +-
->  arch/powerpc/include/asm/dcr-native.h        |  2 +-
->  arch/powerpc/include/asm/dma-mapping.h       |  4 +-
->  arch/powerpc/include/asm/kvm_book3s_64.h     |  4 +-
->  arch/powerpc/sysdev/dcr.c                    |  2 +-
->  arch/s390/include/asm/dma-mapping.h          |  2 +-
->  arch/sparc/mm/init_64.c                      |  8 ++--
->  arch/tile/include/asm/dma-mapping.h          |  2 +-
->  arch/unicore32/include/asm/dma-mapping.h     |  2 +-
->  arch/x86/include/asm/archrandom.h            |  2 +-
->  arch/x86/include/asm/dma-mapping.h           |  2 +-
->  arch/x86/include/asm/kvm_para.h              |  2 +-
->  arch/x86/kvm/cpuid.h                         |  2 +-
->  arch/x86/kvm/vmx.c                           | 72 ++++++++++++++--------------
->  drivers/char/virtio_console.c                |  2 +-
->  drivers/scsi/csiostor/csio_scsi.c            |  4 +-
->  fs/dcache.c                                  | 12 ++---
->  fs/nfsd/nfs4state.c                          |  2 +-
->  include/linux/blkdev.h                       |  2 +-
->  include/linux/ide.h                          |  2 +-
->  include/linux/kgdb.h                         |  2 +-
->  include/linux/mfd/db8500-prcmu.h             |  2 +-
->  include/linux/mm.h                           |  2 +-
->  include/linux/power_supply.h                 |  8 ++--
->  include/linux/ssb/ssb_driver_extif.h         |  2 +-
->  include/linux/ssb/ssb_driver_gige.h          | 16 +++----
->  include/sound/soc.h                          |  4 +-
->  kernel/rcu/tree_plugin.h                     |  4 +-
->  kernel/sched/auto_group.h                    |  2 +-
->  kernel/sched/completion.c                    | 16 ++++---
->  kernel/trace/ftrace.c                        | 10 ++--
->  mm/slub.c                                    | 12 ++---
->  net/bridge/br_private.h                      |  2 +-
->  net/ipv4/netfilter/ipt_ah.c                  |  2 +-
->  net/netfilter/ipset/ip_set_hash_ip.c         |  8 ++--
->  net/netfilter/ipset/ip_set_hash_ipmark.c     |  8 ++--
->  net/netfilter/ipset/ip_set_hash_ipport.c     |  8 ++--
->  net/netfilter/ipset/ip_set_hash_ipportip.c   |  8 ++--
->  net/netfilter/ipset/ip_set_hash_ipportnet.c  |  8 ++--
->  net/netfilter/ipset/ip_set_hash_net.c        |  8 ++--
->  net/netfilter/ipset/ip_set_hash_netiface.c   |  8 ++--
->  net/netfilter/ipset/ip_set_hash_netport.c    |  8 ++--
->  net/netfilter/ipset/ip_set_hash_netportnet.c |  8 ++--
->  net/netfilter/xt_connlimit.c                 |  2 +-
->  net/netfilter/xt_hashlimit.c                 |  2 +-
->  net/netfilter/xt_ipcomp.c                    |  2 +-
->  security/apparmor/file.c                     |  8 ++--
->  security/apparmor/policy.c                   | 10 ++--
->  sound/soc/codecs/wm5100-tables.c             | 12 ++---
+On Thu, Mar 12, 2015 at 04:24:04PM +0100, Christophe Leroy wrote:
+> Two config options exist to define powerpc MPC8xx:
+> * CONFIG_PPC_8xx
+> * CONFIG_8xx
+> In addition, CONFIG_PPC_8xx also defines CONFIG_CPM1 as
+> communication co-processor
+> 
+> arch/powerpc/platforms/Kconfig.cputype has contained the following
+> comment about CONFIG_8xx item for some years:
+> "# this is temp to handle compat with arch=ppc"
+> 
+> It looks like not many places still have that old CONFIG_8xx used,
+> so it is likely to be a good time to get rid of it completely ?
+> 
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
-Why, and why these in particular?
+I'm not sure if the consistency aspect is worked out for all symbols
+(Geert's comment on the cover letter), but this one looks fine.
 
->  55 files changed, 178 insertions(+), 176 deletions(-)
->
+Applied this patch to l2-mtd.git.
+
+Brian
