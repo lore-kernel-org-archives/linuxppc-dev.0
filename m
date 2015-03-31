@@ -1,18 +1,18 @@
 Return-Path: <dja@axtens.net>
-Received: from mail-pa0-x231.google.com (mail-pa0-x231.google.com
- [IPv6:2607:f8b0:400e:c03::231])
+Received: from mail-pd0-x22d.google.com (mail-pd0-x22d.google.com
+ [IPv6:2607:f8b0:400e:c02::22d])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DFA1A1A05CD
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Mar 2015 16:01:52 +1100 (AEDT)
-Received: by patj18 with SMTP id j18so8087524pat.2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Mar 2015 22:01:51 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1B2D91A03DB
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Mar 2015 16:01:56 +1100 (AEDT)
+Received: by pddn5 with SMTP id n5so8496816pdd.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Mar 2015 22:01:54 -0700 (PDT)
 From: Daniel Axtens <dja@axtens.net>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 11/19] powerpc/powermac: Move controller ops from ppc_md to
+Subject: [PATCH v2 12/19] powerpc/pseries: Move controller ops from ppc_md to
  controller_ops
-Date: Tue, 31 Mar 2015 16:00:49 +1100
-Message-Id: <1427778057-9505-12-git-send-email-dja@axtens.net>
+Date: Tue, 31 Mar 2015 16:00:50 +1100
+Message-Id: <1427778057-9505-13-git-send-email-dja@axtens.net>
 In-Reply-To: <1427778057-9505-1-git-send-email-dja@axtens.net>
 References: <1427778057-9505-1-git-send-email-dja@axtens.net>
 Cc: Daniel Axtens <dja@axtens.net>
@@ -25,116 +25,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This moves the Power Mac platform to use the pci_controller_ops
-structure rather than ppc_md for PCI controller operations.
+This moves the pSeries platform to use the pci_controller_ops structure,
+rather than ppc_md for PCI controller operations.
 
 Signed-off-by: Daniel Axtens <dja@axtens.net>
 ---
- arch/powerpc/platforms/powermac/pci.c   | 17 +++++++++++++++--
- arch/powerpc/platforms/powermac/pmac.h  |  5 +----
- arch/powerpc/platforms/powermac/setup.c |  4 +---
- 3 files changed, 17 insertions(+), 9 deletions(-)
+ arch/powerpc/platforms/pseries/iommu.c   | 9 +++++----
+ arch/powerpc/platforms/pseries/pseries.h | 2 ++
+ arch/powerpc/platforms/pseries/setup.c   | 6 +++++-
+ 3 files changed, 12 insertions(+), 5 deletions(-)
 
-diff --git a/arch/powerpc/platforms/powermac/pci.c b/arch/powerpc/platforms/powermac/pci.c
-index 9c89fd2..59ab16f 100644
---- a/arch/powerpc/platforms/powermac/pci.c
-+++ b/arch/powerpc/platforms/powermac/pci.c
-@@ -27,6 +27,8 @@
- #include <asm/grackle.h>
- #include <asm/ppc-pci.h>
+diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
+index 7803a19..61d5a17 100644
+--- a/arch/powerpc/platforms/pseries/iommu.c
++++ b/arch/powerpc/platforms/pseries/iommu.c
+@@ -49,6 +49,7 @@
+ #include <asm/mmzone.h>
+ #include <asm/plpar_wrappers.h>
  
-+#include "pmac.h"
++#include "pseries.h"
+ 
+ static void tce_invalidate_pSeries_sw(struct iommu_table *tbl,
+ 				      __be64 *startp, __be64 *endp)
+@@ -1307,16 +1308,16 @@ void iommu_init_early_pSeries(void)
+ 			ppc_md.tce_free	 = tce_free_pSeriesLP;
+ 		}
+ 		ppc_md.tce_get   = tce_get_pSeriesLP;
+-		ppc_md.pci_dma_bus_setup = pci_dma_bus_setup_pSeriesLP;
+-		ppc_md.pci_dma_dev_setup = pci_dma_dev_setup_pSeriesLP;
++		pseries_pci_controller_ops.dma_bus_setup = pci_dma_bus_setup_pSeriesLP;
++		pseries_pci_controller_ops.dma_dev_setup = pci_dma_dev_setup_pSeriesLP;
+ 		ppc_md.dma_set_mask = dma_set_mask_pSeriesLP;
+ 		ppc_md.dma_get_required_mask = dma_get_required_mask_pSeriesLP;
+ 	} else {
+ 		ppc_md.tce_build = tce_build_pSeries;
+ 		ppc_md.tce_free  = tce_free_pSeries;
+ 		ppc_md.tce_get   = tce_get_pseries;
+-		ppc_md.pci_dma_bus_setup = pci_dma_bus_setup_pSeries;
+-		ppc_md.pci_dma_dev_setup = pci_dma_dev_setup_pSeries;
++		pseries_pci_controller_ops.dma_bus_setup = pci_dma_bus_setup_pSeries;
++		pseries_pci_controller_ops.dma_dev_setup = pci_dma_dev_setup_pSeries;
+ 	}
+ 
+ 
+diff --git a/arch/powerpc/platforms/pseries/pseries.h b/arch/powerpc/platforms/pseries/pseries.h
+index 1796c54..cd64672 100644
+--- a/arch/powerpc/platforms/pseries/pseries.h
++++ b/arch/powerpc/platforms/pseries/pseries.h
+@@ -65,6 +65,8 @@ extern int dlpar_detach_node(struct device_node *);
+ struct pci_host_bridge;
+ int pseries_root_bridge_prepare(struct pci_host_bridge *bridge);
+ 
++extern struct pci_controller_ops pseries_pci_controller_ops;
 +
- #undef DEBUG
+ unsigned long pseries_memory_block_size(void);
  
- #ifdef DEBUG
-@@ -798,6 +800,7 @@ static int __init pmac_add_bridge(struct device_node *dev)
- 		return -ENOMEM;
- 	hose->first_busno = bus_range ? bus_range[0] : 0;
- 	hose->last_busno = bus_range ? bus_range[1] : 0xff;
-+	hose->controller_ops = pmac_pci_controller_ops;
+ #endif /* _PSERIES_PSERIES_H */
+diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
+index 1a5f884..328e318 100644
+--- a/arch/powerpc/platforms/pseries/setup.c
++++ b/arch/powerpc/platforms/pseries/setup.c
+@@ -478,6 +478,7 @@ static void __init find_and_init_phbs(void)
+ 		rtas_setup_phb(phb);
+ 		pci_process_bridge_OF_ranges(phb, node, 0);
+ 		isa_bridge_find_early(phb);
++		phb->controller_ops = pseries_pci_controller_ops;
+ 	}
  
- 	disp_name = NULL;
+ 	of_node_put(root);
+@@ -840,6 +841,10 @@ static int pSeries_pci_probe_mode(struct pci_bus *bus)
+ void pSeries_final_fixup(void) { }
+ #endif
  
-@@ -942,7 +945,7 @@ void __init pmac_pci_init(void)
- }
- 
- #ifdef CONFIG_PPC32
--bool pmac_pci_enable_device_hook(struct pci_dev *dev)
-+static bool pmac_pci_enable_device_hook(struct pci_dev *dev)
- {
- 	struct device_node* node;
- 	int updatecfg = 0;
-@@ -1225,7 +1228,7 @@ static void fixup_u4_pcie(struct pci_dev* dev)
- DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_APPLE, PCI_DEVICE_ID_APPLE_U4_PCIE, fixup_u4_pcie);
- 
- #ifdef CONFIG_PPC64
--int pmac_pci_probe_mode(struct pci_bus *bus)
-+static int pmac_pci_probe_mode(struct pci_bus *bus)
- {
- 	struct device_node *node = pci_bus_to_OF_node(bus);
- 
-@@ -1240,3 +1243,13 @@ int pmac_pci_probe_mode(struct pci_bus *bus)
- 	return PCI_PROBE_DEVTREE;
- }
- #endif /* CONFIG_PPC64 */
-+
-+struct pci_controller_ops pmac_pci_controller_ops = {
-+#ifdef CONFIG_PPC64
-+	.probe_mode		= pmac_pci_probe_mode,
-+#endif
-+#ifdef CONFIG_PPC32
-+	.enable_device_hook	= pmac_pci_enable_device_hook,
-+#endif
++struct pci_controller_ops pseries_pci_controller_ops = {
++	.probe_mode		= pSeries_pci_probe_mode,
 +};
 +
-diff --git a/arch/powerpc/platforms/powermac/pmac.h b/arch/powerpc/platforms/powermac/pmac.h
-index b8d5721..e7f8163 100644
---- a/arch/powerpc/platforms/powermac/pmac.h
-+++ b/arch/powerpc/platforms/powermac/pmac.h
-@@ -25,7 +25,6 @@ extern void pmac_pci_init(void);
- extern void pmac_nvram_update(void);
- extern unsigned char pmac_nvram_read_byte(int addr);
- extern void pmac_nvram_write_byte(int addr, unsigned char val);
--extern bool pmac_pci_enable_device_hook(struct pci_dev *dev);
- extern void pmac_pcibios_after_init(void);
- extern int of_show_percpuinfo(struct seq_file *m, int i);
- 
-@@ -39,8 +38,6 @@ extern void low_cpu_die(void) __attribute__((noreturn));
- extern int pmac_nvram_init(void);
- extern void pmac_pic_init(void);
- 
--#ifdef CONFIG_PPC64
--extern int pmac_pci_probe_mode(struct pci_bus *bus);
--#endif
-+extern struct pci_controller_ops pmac_pci_controller_ops;
- 
- #endif /* __PMAC_H__ */
-diff --git a/arch/powerpc/platforms/powermac/setup.c b/arch/powerpc/platforms/powermac/setup.c
-index 71a353c..8dd78f4 100644
---- a/arch/powerpc/platforms/powermac/setup.c
-+++ b/arch/powerpc/platforms/powermac/setup.c
-@@ -473,7 +473,7 @@ static void __init pmac_init_early(void)
- 	udbg_adb_init(!!strstr(boot_command_line, "btextdbg"));
- 
- #ifdef CONFIG_PPC64
--	iommu_init_early_dart(NULL);
-+	iommu_init_early_dart(&pmac_pci_controller_ops);
- #endif
- 
- 	/* SMP Init has to be done early as we need to patch up
-@@ -656,12 +656,10 @@ define_machine(powermac) {
- 	.feature_call		= pmac_do_feature_call,
- 	.progress		= udbg_progress,
- #ifdef CONFIG_PPC64
--	.pci_probe_mode		= pmac_pci_probe_mode,
- 	.power_save		= power4_idle,
- 	.enable_pmcs		= power4_enable_pmcs,
- #endif /* CONFIG_PPC64 */
- #ifdef CONFIG_PPC32
--	.pcibios_enable_device_hook = pmac_pci_enable_device_hook,
- 	.pcibios_after_init	= pmac_pcibios_after_init,
- 	.phys_mem_access_prot	= pci_phys_mem_access_prot,
- #endif
+ define_machine(pseries) {
+ 	.name			= "pSeries",
+ 	.probe			= pSeries_probe,
+@@ -848,7 +853,6 @@ define_machine(pseries) {
+ 	.show_cpuinfo		= pSeries_show_cpuinfo,
+ 	.log_error		= pSeries_log_error,
+ 	.pcibios_fixup		= pSeries_final_fixup,
+-	.pci_probe_mode		= pSeries_pci_probe_mode,
+ 	.restart		= rtas_restart,
+ 	.halt			= rtas_halt,
+ 	.panic			= rtas_os_term,
 -- 
 2.1.4
