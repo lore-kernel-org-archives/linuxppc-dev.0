@@ -1,26 +1,23 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from smtp-out4.electric.net (smtp-out4.electric.net
- [192.162.216.185])
- (using TLSv1.1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 79F711A03DB
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Apr 2015 03:37:46 +1100 (AEDT)
-From: David Laight <David.Laight@ACULAB.COM>
-To: 'Sowmini Varadhan' <sowmini.varadhan@oracle.com>,
- "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>
-Subject: RE: [PATCH v8 RFC 1/3] sparc: Break up monolithic iommu table/lock
- into finer graularity pools and lock
-Date: Tue, 31 Mar 2015 15:15:33 +0000
-Message-ID: <063D6719AE5E284EB5DD2968C1650D6D1CB118E4@AcuExch.aculab.com>
-References: <cover.1427761300.git.sowmini.varadhan@oracle.com>
- <8406d119fb885255387a400551de994cb4a4c331.1427761300.git.sowmini.varadhan@oracle.com>
-In-Reply-To: <8406d119fb885255387a400551de994cb4a4c331.1427761300.git.sowmini.varadhan@oracle.com>
-Content-Type: text/plain; charset="utf-8"
+Return-Path: <sudeep.holla@arm.com>
+Received: from foss.arm.com (foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id C1E2E1A03DB
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Apr 2015 04:13:16 +1100 (AEDT)
+Message-ID: <551AD5E4.2040103@arm.com>
+Date: Tue, 31 Mar 2015 18:14:12 +0100
+From: Sudeep Holla <sudeep.holla@arm.com>
 MIME-Version: 1.0
-Cc: "paulus@samba.org" <paulus@samba.org>,
- "anton@au1.ibm.com" <anton@au1.ibm.com>, "aik@au1.ibm.com" <aik@au1.ibm.com>,
+To: Michael Ellerman <mpe@ellerman.id.au>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Subject: Re: [RFC/RFT,
+ RESEND] powerpc: move cacheinfo sysfs to generic cacheinfo
+ infrastructure
+References: <20150331105637.39B451400DE@ozlabs.org>
+In-Reply-To: <20150331105637.39B451400DE@ozlabs.org>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Cc: Paul Mackerras <paulus@samba.org>,
  "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "davem@davemloft.net" <davem@davemloft.net>
+ Sudeep Holla <sudeep.holla@arm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,23 +27,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-RnJvbTogU293bWluaSBWYXJhZGhhbg0KPiBJbnZlc3RpZ2F0aW9uIG9mIG11bHRpdGhyZWFkZWQg
-aXBlcmYgZXhwZXJpbWVudHMgb24gYW4gZXRoZXJuZXQNCj4gaW50ZXJmYWNlIHNob3cgdGhlIGlv
-bW11LT5sb2NrIGFzIHRoZSBob3R0ZXN0IGxvY2sgaWRlbnRpZmllZCBieQ0KPiBsb2Nrc3RhdCwg
-d2l0aCBzb21ldGhpbmcgb2YgdGhlIG9yZGVyIG9mICAyMU0gY29udGVudGlvbnMgb3V0IG9mDQo+
-IDI3TSBhY3F1aXNpdGlvbnMsIGFuZCBhbiBhdmVyYWdlIHdhaXQgdGltZSBvZiAyNiB1cyBmb3Ig
-dGhlIGxvY2suDQo+IFRoaXMgaXMgbm90IGVmZmljaWVudC4gQSBtb3JlIHNjYWxhYmxlIGRlc2ln
-biBpcyB0byBmb2xsb3cgdGhlIHBwYw0KPiBtb2RlbCwgd2hlcmUgdGhlIGlvbW11X21hcF90YWJs
-ZSBoYXMgbXVsdGlwbGUgcG9vbHMsIGVhY2ggc3RyZXRjaGluZw0KPiBvdmVyIGEgc2VnbWVudCBv
-ZiB0aGUgbWFwLCBhbmQgd2l0aCBhIHNlcGFyYXRlIGxvY2sgZm9yIGVhY2ggcG9vbC4NCj4gVGhp
-cyBtb2RlbCBhbGxvd3MgZm9yIGJldHRlciBwYXJhbGxlbGl6YXRpb24gb2YgdGhlIGlvbW11IG1h
-cCBzZWFyY2guDQoNCkkndmUgd29uZGVyZWQgd2hldGhlciB0aGUgaW9tbXUgc2V0dXAgZm9yIGV0
-aGVybmV0IHJlY2VpdmUgKGluIHBhcnRpY3VsYXIpDQpjb3VsZCBiZSBtYWRlIG11Y2ggbW9yZSBl
-ZmZpY2llbnQgaWYgdGhlcmUgd2VyZSBhIGZ1bmN0aW9uIHRoYXQNCndvdWxkIHVubWFwIG9uZSBi
-dWZmZXIgYW5kIG1hcCBhIHNlY29uZCBidWZmZXI/DQpNeSB0aG91Z2h0IGlzIHRoYXQgaW9tbXUg
-cHRlIGVudHJ5IHVzZWQgYnkgdGhlIG9sZCBidWZmZXIgY291bGQganVzdA0KYmUgbW9kaWZpZWQg
-dG8gcmVmZXJlbmNlIHRoZSBuZXcgb25lLg0KSW4gZWZmZWN0IGVhY2ggcmluZyBlbnRyeSB3b3Vs
-ZCBlbmQgdXAgdXNpbmcgYSBmaXhlZCBpb21tdSBwdGUuDQoNClRoZSBvdGhlciBxdWVzdGlvbiBp
-cyBob3cgbXVjaCBkYXRhIGNhbiBiZSBjb3BpZWQgaW4gMjZ1cyA/DQpPbiBpb21tdSBzeXN0ZW1z
-ICdjb3B5YnJlYWsnIGxpbWl0cyBvbiByZWNlaXZlIGFuZCB0cmFuc21pdA0KbWF5IG5lZWQgdG8g
-YmUgcXVpdGUgaGlnaC4NCg0KCURhdmlkDQoNCg==
+
+
+On 31/03/15 11:56, Michael Ellerman wrote:
+> On Mon, 2015-23-02 at 18:18:20 UTC, Sudeep Holla wrote:
+>> This patch removes the redundant sysfs cacheinfo code by reusing
+>> the newly introduced generic cacheinfo infrastructure through the
+>> commit 246246cbde5e ("drivers: base: support cpu cache information
+>> interface to userspace via sysfs")
+>>
+>> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
+>> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>> Cc: Paul Mackerras <paulus@samba.org>
+>> Cc: Michael Ellerman <mpe@ellerman.id.au>
+>> Cc: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+>> Cc: linuxppc-dev@lists.ozlabs.org
+>> ---
+>>   arch/powerpc/kernel/cacheinfo.c | 811 +++++-----------------------------------
+>>   arch/powerpc/kernel/cacheinfo.h |   8 -
+>>   arch/powerpc/kernel/sysfs.c     |  12 +-
+>>   3 files changed, 91 insertions(+), 740 deletions(-)
+>>   delete mode 100644 arch/powerpc/kernel/cacheinfo.h
+>>
+>> Hi,
+>>
+>> This patch is not tested. Last time Anshuman tested, he had seen issues.
+>> The core driver has changed a lot after that. Since PPC depends a lot
+>> on DT for cache information, there might be issues in the core later
+>> which I could not identify with ARM/ARM64. It would be much appreciable
+>> if someone help me in testing and fixing those so that PPC can migrate
+>> to new/common cacheinfo infrastructure. This resend is rebased on v4.0-rc1
+>
+> Doesn't build for me.
+>
+>    arch/powerpc/platforms/pseries/suspend.c:29:36: fatal error: ../../kernel/cacheinfo.h: No such file or directory
+>    #include "../../kernel/cacheinfo.h"
+>
+
+Right, sorry for missing this. I just tested corenet32_smp_defconfig.
+Also after some digging I found that this patch was written before the
+commit 6b36ba8492ab (" powerpc/pseries: Update dynamic cache nodes for
+suspend/resume operation"). I had a quick looks at that patch and I am
+not sure if we can support that with generic cacheinfo implementation.
+
+> Anshuman must have worked around that somehow to test it previously?
+>
+
+I think he tried before the above mentioned commit was introduced.
+
+> Removing the include doesn't fix it, it needs cacheinfo_cpu_on/offline().
+>
+
+I agree, had a quick look at that, and it requires some rework not sure
+if that should be in generic code or ppc specific.
+
+Regards,
+Sudeep
