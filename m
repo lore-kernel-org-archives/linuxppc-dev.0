@@ -1,21 +1,24 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0138.outbound.protection.outlook.com [157.56.111.138])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DC1B91A03DB
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Mar 2015 12:31:11 +1100 (AEDT)
-Date: Mon, 30 Mar 2015 20:30:57 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: chenhui zhao <chenhui.zhao@freescale.com>
-Subject: Re: [2/4] powerpc/rcpm: add RCPM driver
-Message-ID: <20150331013057.GB5667@home.buserror.net>
-References: <1427365095-26396-2-git-send-email-chenhui.zhao@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <1427365095-26396-2-git-send-email-chenhui.zhao@freescale.com>
-Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Jason.Jin@freescale.com
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1BCE41A005A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Mar 2015 12:49:37 +1100 (AEDT)
+Message-ID: <1427766549.20500.108.camel@kernel.crashing.org>
+Subject: Re: [PATCH 06/25] powerpc: Use bool function return values of
+ true/false not 1/0
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Joe Perches <joe@perches.com>
+Date: Tue, 31 Mar 2015 12:49:09 +1100
+In-Reply-To: <6d45a6e4596f0b282048fc4b8db9e7f7a19a46e3.1427759009.git.joe@perches.com>
+References: <cover.1427759009.git.joe@perches.com>
+ <6d45a6e4596f0b282048fc4b8db9e7f7a19a46e3.1427759009.git.joe@perches.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: kvm@vger.kernel.org, Gleb Natapov <gleb@kernel.org>,
+ linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org,
+ Alexander Graf <agraf@suse.de>, Paul Mackerras <paulus@samba.org>,
+ Paolo Bonzini <pbonzini@redhat.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,200 +28,87 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Mar 26, 2015 at 06:18:13PM +0800, chenhui zhao wrote:
-> There is a RCPM (Run Control/Power Management) in Freescale QorIQ
-> series processors. The device performs tasks associated with device
-> run control and power management.
-> 
-> The driver implements some features: mask/unmask irq, enter/exit low
-> power states, freeze time base, etc.
-> 
-> Signed-off-by: Chenhui Zhao <chenhui.zhao@freescale.com>
+On Mon, 2015-03-30 at 16:46 -0700, Joe Perches wrote:
+> Use the normal return values for bool functions
+
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+
+Should we merge it or will you ?
+
+Cheers,
+Ben.
+
+> Signed-off-by: Joe Perches <joe@perches.com>
 > ---
->  Documentation/devicetree/bindings/soc/fsl/rcpm.txt |  23 ++
->  arch/powerpc/include/asm/fsl_guts.h                | 105 ++++++
->  arch/powerpc/include/asm/fsl_pm.h                  |  49 +++
->  arch/powerpc/platforms/85xx/Kconfig                |   1 +
->  arch/powerpc/sysdev/Kconfig                        |   5 +
->  arch/powerpc/sysdev/Makefile                       |   1 +
->  arch/powerpc/sysdev/fsl_rcpm.c                     | 353 +++++++++++++++++++++
->  7 files changed, 537 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/soc/fsl/rcpm.txt
->  create mode 100644 arch/powerpc/include/asm/fsl_pm.h
->  create mode 100644 arch/powerpc/sysdev/fsl_rcpm.c
+>  arch/powerpc/include/asm/dcr-native.h    | 2 +-
+>  arch/powerpc/include/asm/dma-mapping.h   | 4 ++--
+>  arch/powerpc/include/asm/kvm_book3s_64.h | 4 ++--
+>  arch/powerpc/sysdev/dcr.c                | 2 +-
+>  4 files changed, 6 insertions(+), 6 deletions(-)
 > 
-> diff --git a/Documentation/devicetree/bindings/soc/fsl/rcpm.txt b/Documentation/devicetree/bindings/soc/fsl/rcpm.txt
-> new file mode 100644
-> index 0000000..8c21b6c
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/soc/fsl/rcpm.txt
-> @@ -0,0 +1,23 @@
-> +* Run Control and Power Management
-> +
-> +The RCPM performs all device-level tasks associated with device run control
-> +and power management.
-> +
-> +Required properites:
-> +  - reg : Offset and length of the register set of RCPM block.
-> +  - compatible : Specifies the compatibility list for the RCPM. The type
-> +    should be string, such as "fsl,qoriq-rcpm-1.0", "fsl,qoriq-rcpm-2.0".
-> +
-> +Example:
-> +The RCPM node for T4240:
-> +	rcpm: global-utilities@e2000 {
-> +		compatible = "fsl,t4240-rcpm", "fsl,qoriq-rcpm-2.0";
-> +		reg = <0xe2000 0x1000>;
-> +	};
-> +
-> +The RCPM node for P4080:
-> +	rcpm: global-utilities@e2000 {
-> +		compatible = "fsl,qoriq-rcpm-1.0";
-> +		reg = <0xe2000 0x1000>;
-> +		#sleep-cells = <1>;
-> +	};
-
-Where is #sleep-cells documented?  It's copy-and-paste from something
-that was never finished from many years ago.
-
-> diff --git a/arch/powerpc/include/asm/fsl_pm.h b/arch/powerpc/include/asm/fsl_pm.h
-> new file mode 100644
-> index 0000000..bbe6089
-> --- /dev/null
-> +++ b/arch/powerpc/include/asm/fsl_pm.h
-> @@ -0,0 +1,49 @@
-> +/*
-> + * Support Power Management
-> + *
-> + * Copyright 2014-2015 Freescale Semiconductor Inc.
-> + *
-> + * This program is free software; you can redistribute  it and/or modify it
-> + * under  the terms of  the GNU General  Public License as published by the
-> + * Free Software Foundation;  either version 2 of the  License, or (at your
-> + * option) any later version.
-> + */
-> +#ifndef __PPC_FSL_PM_H
-> +#define __PPC_FSL_PM_H
-> +#ifdef	__KERNEL__
-
-Put a space after #ifdef, not a tab.
-
-> +#define E500_PM_PH10	1
-> +#define E500_PM_PH15	2
-> +#define E500_PM_PH20	3
-> +#define E500_PM_PH30	4
-> +#define E500_PM_DOZE	E500_PM_PH10
-> +#define E500_PM_NAP	E500_PM_PH15
-> +
-> +#define PLAT_PM_SLEEP	20
-> +#define PLAT_PM_LPM20	30
-> +
-> +#define FSL_PM_SLEEP		(1 << 0)
-> +#define FSL_PM_DEEP_SLEEP	(1 << 1)
-> +
-> +struct fsl_pm_ops {
-> +	/* mask pending interrupts to the RCPM from MPIC */
-> +	void (*irq_mask)(int cpu);
-> +	/* unmask pending interrupts to the RCPM from MPIC */
-> +	void (*irq_unmask)(int cpu);
-> +	/* place the CPU in the specified state */
-> +	void (*cpu_enter_state)(int cpu, int state);
-> +	/* exit the CPU from the specified state */
-> +	void (*cpu_exit_state)(int cpu, int state);
-> +	/* place the platform in the sleep state */
-> +	int (*plat_enter_sleep)(void);
-> +	/* freeze the time base */
-> +	void (*freeze_time_base)(int freeze);
-> +	/* keep the power of IP blocks during sleep/deep sleep */
-> +	void (*set_ip_power)(int enable, u32 *mask);
-> +	/* get platform supported power management modes */
-> +	unsigned int (*get_pm_modes)(void);
-> +};
-
-Drop the comments that are basically just a restatement of the function
-name.  Where there are comments, it'd be easier to read with a blank line
-between a function and the next comment.
-
-s/int enable/bool enable/
-s/int freeze/bool freeze/
-
-> +#endif	/* __KERNEL__ */
-> +#endif  /* __PPC_FSL_PM_H */
-
-Please be consistent with whitespace.
-
-> +	default:
-> +		pr_err("%s: Unknown cpu PM state (%d)\n", __func__, state);
-
-WARN?
-
-> +static int rcpm_v2_plat_enter_state(int state)
-> +{
-> +	u32 *pmcsr_reg = &rcpm_v2_regs->powmgtcsr;
-> +	int ret = 0;
-> +	int result;
-> +
-> +	switch (state) {
-> +	case PLAT_PM_LPM20:
-> +		/* clear previous LPM20 status */
-> +		setbits32(pmcsr_reg, RCPM_POWMGTCSR_P_LPM20_ST);
-
-How would the bit be set when you enter here, given that you wait for it
-to clear when leaving?
-
-> +		/* enter LPM20 status */
-> +		setbits32(pmcsr_reg, RCPM_POWMGTCSR_LPM20_RQ);
-> +
-> +		/* At this point, the device is in LPM20 status. */
-> +
-> +		/* resume ... */
-> +		result = spin_event_timeout(
-> +		  !(in_be32(pmcsr_reg) & RCPM_POWMGTCSR_LPM20_ST), 10000, 10);
-> +		if (!result) {
-> +			pr_err("%s: timeout waiting for LPM20 bit to be cleared\n",
-> +			       __func__);
-> +			ret = -ETIMEDOUT;
-> +		}
-> +		break;
-
-"At this point" is a bit misleading.  I think it's clear enough if you
-just drop that comment.
-
-> +	default:
-> +		pr_err("%s: Unknown platform PM state (%d)\n",
-> +		       __func__, state);
-> +		ret = -EINVAL;
-> +	}
-
-WARN?
-
-> +static const struct of_device_id rcpm_matches[] = {
-> +	{
-> +		.compatible = "fsl,qoriq-rcpm-1.0",
-> +		.data = (void *)RCPM_V1,
-> +	},
-> +	{
-> +		.compatible = "fsl,qoriq-rcpm-2.0",
-> +		.data = (void *)RCPM_V2,
-> +	},
-
-Why not point .data directly at the ops?
-
-> +	switch ((unsigned long)match->data) {
-> +	case RCPM_V1:
-> +		rcpm_v1_regs = base;
-> +		qoriq_pm_ops = &qoriq_rcpm_v1_ops;
-> +		break;
-> +
-> +	case RCPM_V2:
-> +		rcpm_v2_regs = base;
-> +		qoriq_pm_ops = &qoriq_rcpm_v2_ops;
-> +		break;
-> +
-> +	default:
-> +		break;
-> +	}
-
-default: break; is unnecessary (and impossible to hit -- if you really
-want default: it should probably WARN).
-
--Scott
+> diff --git a/arch/powerpc/include/asm/dcr-native.h b/arch/powerpc/include/asm/dcr-native.h
+> index 7d2e623..4efc11d 100644
+> --- a/arch/powerpc/include/asm/dcr-native.h
+> +++ b/arch/powerpc/include/asm/dcr-native.h
+> @@ -31,7 +31,7 @@ typedef struct {
+>  
+>  static inline bool dcr_map_ok_native(dcr_host_native_t host)
+>  {
+> -	return 1;
+> +	return true;
+>  }
+>  
+>  #define dcr_map_native(dev, dcr_n, dcr_c) \
+> diff --git a/arch/powerpc/include/asm/dma-mapping.h b/arch/powerpc/include/asm/dma-mapping.h
+> index 894d538..9103687 100644
+> --- a/arch/powerpc/include/asm/dma-mapping.h
+> +++ b/arch/powerpc/include/asm/dma-mapping.h
+> @@ -191,11 +191,11 @@ static inline bool dma_capable(struct device *dev, dma_addr_t addr, size_t size)
+>  	struct dev_archdata *sd = &dev->archdata;
+>  
+>  	if (sd->max_direct_dma_addr && addr + size > sd->max_direct_dma_addr)
+> -		return 0;
+> +		return false;
+>  #endif
+>  
+>  	if (!dev->dma_mask)
+> -		return 0;
+> +		return false;
+>  
+>  	return addr + size - 1 <= *dev->dma_mask;
+>  }
+> diff --git a/arch/powerpc/include/asm/kvm_book3s_64.h b/arch/powerpc/include/asm/kvm_book3s_64.h
+> index 2d81e20..2a244bf 100644
+> --- a/arch/powerpc/include/asm/kvm_book3s_64.h
+> +++ b/arch/powerpc/include/asm/kvm_book3s_64.h
+> @@ -335,7 +335,7 @@ static inline bool hpte_read_permission(unsigned long pp, unsigned long key)
+>  {
+>  	if (key)
+>  		return PP_RWRX <= pp && pp <= PP_RXRX;
+> -	return 1;
+> +	return true;
+>  }
+>  
+>  static inline bool hpte_write_permission(unsigned long pp, unsigned long key)
+> @@ -373,7 +373,7 @@ static inline bool slot_is_aligned(struct kvm_memory_slot *memslot,
+>  	unsigned long mask = (pagesize >> PAGE_SHIFT) - 1;
+>  
+>  	if (pagesize <= PAGE_SIZE)
+> -		return 1;
+> +		return true;
+>  	return !(memslot->base_gfn & mask) && !(memslot->npages & mask);
+>  }
+>  
+> diff --git a/arch/powerpc/sysdev/dcr.c b/arch/powerpc/sysdev/dcr.c
+> index 2d8a101..121e26f 100644
+> --- a/arch/powerpc/sysdev/dcr.c
+> +++ b/arch/powerpc/sysdev/dcr.c
+> @@ -54,7 +54,7 @@ bool dcr_map_ok_generic(dcr_host_t host)
+>  	else if (host.type == DCR_HOST_MMIO)
+>  		return dcr_map_ok_mmio(host.host.mmio);
+>  	else
+> -		return 0;
+> +		return false;
+>  }
+>  EXPORT_SYMBOL_GPL(dcr_map_ok_generic);
+>  
