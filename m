@@ -1,19 +1,20 @@
-Return-Path: <Yuantian.Tang@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0144.outbound.protection.outlook.com [157.56.110.144])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6CB211A005A
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Mar 2015 21:18:37 +1100 (AEDT)
-From: <Yuantian.Tang@freescale.com>
-To: <B07421@freescale.com>
-Subject: [PATCH] powerpc/config: add SCSI configs for corenet64_smp_defconfig
-Date: Tue, 31 Mar 2015 18:00:08 +0800
-Message-ID: <1427796008-40028-1-git-send-email-Yuantian.Tang@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Tang Yuantian <Yuantian.Tang@freescale.com>, linuxppc-dev@lists.ozlabs.org,
- Shaohui Xie <Shaohui.Xie@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4F7A51A03DB
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Mar 2015 21:56:37 +1100 (AEDT)
+In-Reply-To: <1424715500-21725-1-git-send-email-sudeep.holla@arm.com>
+To: Sudeep Holla <Sudeep.Holla@arm.com>, linux-kernel@vger.kernel.org,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>
+From: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [RFC/RFT,
+ RESEND] powerpc: move cacheinfo sysfs to generic cacheinfo
+ infrastructure
+Message-Id: <20150331105637.39B451400DE@ozlabs.org>
+Date: Tue, 31 Mar 2015 21:56:37 +1100 (AEDT)
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ Sudeep Holla <sudeep.holla@arm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,33 +24,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Tang Yuantian <Yuantian.Tang@freescale.com>
+On Mon, 2015-23-02 at 18:18:20 UTC, Sudeep Holla wrote:
+> This patch removes the redundant sysfs cacheinfo code by reusing
+> the newly introduced generic cacheinfo infrastructure through the
+> commit 246246cbde5e ("drivers: base: support cpu cache information
+> interface to userspace via sysfs")
+> 
+> Signed-off-by: Sudeep Holla <sudeep.holla@arm.com>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+> Cc: linuxppc-dev@lists.ozlabs.org
+> ---
+>  arch/powerpc/kernel/cacheinfo.c | 811 +++++-----------------------------------
+>  arch/powerpc/kernel/cacheinfo.h |   8 -
+>  arch/powerpc/kernel/sysfs.c     |  12 +-
+>  3 files changed, 91 insertions(+), 740 deletions(-)
+>  delete mode 100644 arch/powerpc/kernel/cacheinfo.h
+> 
+> Hi,
+> 
+> This patch is not tested. Last time Anshuman tested, he had seen issues.
+> The core driver has changed a lot after that. Since PPC depends a lot
+> on DT for cache information, there might be issues in the core later
+> which I could not identify with ARM/ARM64. It would be much appreciable
+> if someone help me in testing and fixing those so that PPC can migrate
+> to new/common cacheinfo infrastructure. This resend is rebased on v4.0-rc1
 
-Otherwise there wil be no SCSI device nodes.
+Doesn't build for me.
 
-Signed-off-by: Shaohui Xie <Shaohui.Xie@freescale.com>
-Signed-off-by: Tang Yuantian <Yuantian.Tang@freescale.com>
----
- arch/powerpc/configs/corenet64_smp_defconfig | 7 +++++++
- 1 file changed, 7 insertions(+)
+  arch/powerpc/platforms/pseries/suspend.c:29:36: fatal error: ../../kernel/cacheinfo.h: No such file or directory
+  #include "../../kernel/cacheinfo.h"
 
-diff --git a/arch/powerpc/configs/corenet64_smp_defconfig b/arch/powerpc/configs/corenet64_smp_defconfig
-index 04737aa..77a8151 100644
---- a/arch/powerpc/configs/corenet64_smp_defconfig
-+++ b/arch/powerpc/configs/corenet64_smp_defconfig
-@@ -75,6 +75,13 @@ CONFIG_BLK_DEV_LOOP=y
- CONFIG_BLK_DEV_RAM=y
- CONFIG_BLK_DEV_RAM_SIZE=131072
- CONFIG_EEPROM_LEGACY=y
-+CONFIG_BLK_DEV_SD=y
-+CONFIG_CHR_DEV_ST=y
-+CONFIG_BLK_DEV_SR=y
-+CONFIG_CHR_DEV_SG=y
-+CONFIG_SCSI_MULTI_LUN=y
-+CONFIG_SCSI_LOGGING=y
-+CONFIG_SCSI_SPI_ATTRS=y
- CONFIG_ATA=y
- CONFIG_SATA_FSL=y
- CONFIG_SATA_SIL24=y
--- 
-2.1.0.27.g96db324
+Anshuman must have worked around that somehow to test it previously?
+
+Removing the include doesn't fix it, it needs cacheinfo_cpu_on/offline().
+
+cheers
