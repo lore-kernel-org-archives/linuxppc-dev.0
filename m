@@ -1,21 +1,20 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0144.outbound.protection.outlook.com [157.56.110.144])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B40521A0895
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Mar 2015 13:35:22 +1100 (AEDT)
-Date: Mon, 30 Mar 2015 21:35:07 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: chenhui zhao <chenhui.zhao@freescale.com>
-Subject: Re: [4/4] powerpc/85xx: support sleep feature on QorIQ SoCs with RCPM
-Message-ID: <20150331023507.GD5667@home.buserror.net>
-References: <1427365095-26396-4-git-send-email-chenhui.zhao@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <1427365095-26396-4-git-send-email-chenhui.zhao@freescale.com>
-Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Jason.Jin@freescale.com
+Return-Path: <joe@perches.com>
+Received: from smtprelay.hostedemail.com (smtprelay0121.hostedemail.com
+ [216.40.44.121])
+ by lists.ozlabs.org (Postfix) with ESMTP id 90B291A0BC2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Mar 2015 14:08:09 +1100 (AEDT)
+Message-ID: <1427771281.14276.48.camel@perches.com>
+Subject: Re: [PATCH v2 08/10] perf/hv24x7: Whitespace cleanup
+From: Joe Perches <joe@perches.com>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Date: Mon, 30 Mar 2015 20:08:01 -0700
+In-Reply-To: <1427766828-771-9-git-send-email-sukadev@linux.vnet.ibm.com>
+References: <1427766828-771-1-git-send-email-sukadev@linux.vnet.ibm.com>
+ <1427766828-771-9-git-send-email-sukadev@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="ISO-8859-1"
+Mime-Version: 1.0
+Cc: peterz@infradead.org, linux-kernel@vger.kernel.org, dev@codyps.com,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,56 +24,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Mar 26, 2015 at 06:18:15PM +0800, chenhui zhao wrote:
-> In sleep mode, the clocks of e500 cores and unused IP blocks is
-> turned off. The IP blocks which are allowed to wake up the processor
-> are still running.
-> 
-> The sleep mode is equal to the Standby state in Linux. Use the
-> command to enter sleep mode:
->   echo standby > /sys/power/state
-> 
-> Signed-off-by: Chenhui Zhao <chenhui.zhao@freescale.com>
-> ---
->  arch/powerpc/Kconfig                   |  3 +-
->  arch/powerpc/platforms/85xx/Kconfig    |  5 +++
->  arch/powerpc/platforms/85xx/Makefile   |  1 +
->  arch/powerpc/platforms/85xx/qoriq_pm.c | 59 ++++++++++++++++++++++++++++++++++
->  arch/powerpc/platforms/86xx/Kconfig    |  1 +
->  5 files changed, 67 insertions(+), 2 deletions(-)
->  create mode 100644 arch/powerpc/platforms/85xx/qoriq_pm.c
-> 
-> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> index 9846c83..162eb53 100644
-> --- a/arch/powerpc/Kconfig
-> +++ b/arch/powerpc/Kconfig
-> @@ -233,7 +233,7 @@ config ARCH_HIBERNATION_POSSIBLE
->  config ARCH_SUSPEND_POSSIBLE
->  	def_bool y
->  	depends on ADB_PMU || PPC_EFIKA || PPC_LITE5200 || PPC_83xx || \
-> -		   (PPC_85xx && !PPC_E500MC) || PPC_86xx || PPC_PSERIES \
-> +		   FSL_SOC_BOOKE || PPC_86xx || PPC_PSERIES \
->  		   || 44x || 40x
+On Mon, 2015-03-30 at 18:53 -0700, Sukadev Bhattiprolu wrote:
+> Fix minor whitespace damages.
+
+If you are going to do whitespace cleaning,
+please verify the patches with scripts/checkpatch.pl --strict.
+
+> diff --git a/arch/powerpc/perf/hv-24x7.c b/arch/powerpc/perf/hv-24x7.c
+[]
+> @@ -1077,7 +1079,6 @@ static unsigned long single_24x7_request(struct perf_event *event, u64 *count)
+>  	}
 >  
->  config PPC_DCR_NATIVE
-> @@ -747,7 +747,6 @@ config FSL_PCI
->  
->  config FSL_PMC
->  	bool
-> -	default y
->  	depends on SUSPEND && (PPC_85xx || PPC_86xx)
+>  	resb = &result_buffer->results[0];
+> -
+>  	*count = be64_to_cpu(resb->elements[0].element_data[0]);
+>  out:
+>  	return ret;
 
-Get rid of this depends line if you're going to use select instead.
+Does this deletion make the code easier to read?
 
-> +static int qoriq_suspend_valid(suspend_state_t state)
-> +{
-> +	unsigned int pm_modes;
-> +
-> +	pm_modes = qoriq_pm_ops->get_pm_modes();
-> +
-> +	if ((state == PM_SUSPEND_STANDBY) && (pm_modes & FSL_PM_SLEEP))
-> +		return 1;
+It might be better just to use:
 
-Unnecessary parentheses around ==
-
--Scott
+	be64 val;
+	...
+	val = result_buffer->results[0].elements[0].element_data[0];
+	*count = be64_to_cpu(val);
