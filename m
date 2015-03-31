@@ -1,26 +1,21 @@
-Return-Path: <computersforpeace@gmail.com>
-Received: from mail-pd0-x22f.google.com (mail-pd0-x22f.google.com
- [IPv6:2607:f8b0:400e:c02::22f])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bbn0106.outbound.protection.outlook.com [157.56.111.106])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 71BB11A0272
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Mar 2015 11:55:48 +1100 (AEDT)
-Received: by pddn5 with SMTP id n5so2735373pdd.2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Mar 2015 17:55:45 -0700 (PDT)
-Date: Mon, 30 Mar 2015 17:55:38 -0700
-From: Brian Norris <computersforpeace@gmail.com>
-To: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: Re: [PATCH 6/8] mtd: replace CONFIG_8xx by CONFIG_PPC_8xx
-Message-ID: <20150331005538.GJ32500@ld-irv-0074>
-References: <20150312152404.D6C391A2421@localhost.localdomain>
+ by lists.ozlabs.org (Postfix) with ESMTPS id DCDD41A03DB
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Mar 2015 12:10:43 +1100 (AEDT)
+Date: Mon, 30 Mar 2015 20:10:28 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: chenhui zhao <chenhui.zhao@freescale.com>
+Subject: Re: [1/4] powerpc/cache: add cache flush operation for various e500
+Message-ID: <20150331011028.GA5667@home.buserror.net>
+References: <1427365095-26396-1-git-send-email-chenhui.zhao@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150312152404.D6C391A2421@localhost.localdomain>
-Cc: linux-fbdev@vger.kernel.org, linux-serial@vger.kernel.org,
- user-mode-linux-devel@lists.sourceforge.net,
- David Woodhouse <dwmw2@infradead.org>, linux-kernel@vger.kernel.org,
- linux-mtd@lists.infradead.org, user-mode-linux-user@lists.sourceforge.net,
- netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset="us-ascii"
+In-Reply-To: <1427365095-26396-1-git-send-email-chenhui.zhao@freescale.com>
+Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Jason.Jin@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,25 +25,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Mar 12, 2015 at 04:24:04PM +0100, Christophe Leroy wrote:
-> Two config options exist to define powerpc MPC8xx:
-> * CONFIG_PPC_8xx
-> * CONFIG_8xx
-> In addition, CONFIG_PPC_8xx also defines CONFIG_CPM1 as
-> communication co-processor
+On Thu, Mar 26, 2015 at 06:18:12PM +0800, chenhui zhao wrote:
+> Various e500 core have different cache architecture, so they
+> need different cache flush operations. Therefore, add a callback
+> function cpu_flush_caches to the struct cpu_spec. The cache flush
+> operation for the specific kind of e500 is selected at init time.
+> The callback function will flush all caches inside the current cpu.
 > 
-> arch/powerpc/platforms/Kconfig.cputype has contained the following
-> comment about CONFIG_8xx item for some years:
-> "# this is temp to handle compat with arch=ppc"
+> Signed-off-by: Chenhui Zhao <chenhui.zhao@freescale.com>
+> ---
+>  arch/powerpc/include/asm/cacheflush.h     |   2 -
+>  arch/powerpc/include/asm/cputable.h       |  11 +++
+>  arch/powerpc/kernel/asm-offsets.c         |   3 +
+>  arch/powerpc/kernel/cpu_setup_fsl_booke.S | 114 +++++++++++++++++++++++++++++-
+>  arch/powerpc/kernel/cputable.c            |   4 ++
+>  arch/powerpc/kernel/head_fsl_booke.S      |  74 -------------------
+>  arch/powerpc/platforms/85xx/smp.c         |   3 +-
+>  7 files changed, 133 insertions(+), 78 deletions(-)
 > 
-> It looks like not many places still have that old CONFIG_8xx used,
-> so it is likely to be a good time to get rid of it completely ?
-> 
-> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> diff --git a/arch/powerpc/include/asm/cacheflush.h b/arch/powerpc/include/asm/cacheflush.h
+> index 30b35ff..729fde4 100644
+> --- a/arch/powerpc/include/asm/cacheflush.h
+> +++ b/arch/powerpc/include/asm/cacheflush.h
+> @@ -30,8 +30,6 @@ extern void flush_dcache_page(struct page *page);
+>  #define flush_dcache_mmap_lock(mapping)		do { } while (0)
+>  #define flush_dcache_mmap_unlock(mapping)	do { } while (0)
+>  
+> -extern void __flush_disable_L1(void);
+> -
+>  extern void flush_icache_range(unsigned long, unsigned long);
+>  extern void flush_icache_user_range(struct vm_area_struct *vma,
+>  				    struct page *page, unsigned long addr,
+> diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
+> index 5cf5a6d..c776efe4 100644
+> --- a/arch/powerpc/include/asm/cputable.h
+> +++ b/arch/powerpc/include/asm/cputable.h
+> @@ -43,6 +43,13 @@ extern int machine_check_e500(struct pt_regs *regs);
+>  extern int machine_check_e200(struct pt_regs *regs);
+>  extern int machine_check_47x(struct pt_regs *regs);
+>  
+> +#if defined(CONFIG_E500) || defined(CONFIG_PPC_E500MC)
+> +extern void __flush_caches_e500v2(void);
+> +extern void __flush_caches_e500mc(void);
+> +extern void __flush_caches_e5500(void);
+> +extern void __flush_caches_e6500(void);
+> +#endif
 
-I'm not sure if the consistency aspect is worked out for all symbols
-(Geert's comment on the cover letter), but this one looks fine.
+Why the leading underscores?
 
-Applied this patch to l2-mtd.git.
+>  /* NOTE WELL: Update identify_cpu() if fields are added or removed! */
+>  struct cpu_spec {
+>  	/* CPU is matched via (PVR & pvr_mask) == pvr_value */
+> @@ -59,6 +66,10 @@ struct cpu_spec {
+>  	unsigned int	icache_bsize;
+>  	unsigned int	dcache_bsize;
+>  
+> +#if defined(CONFIG_E500) || defined(CONFIG_PPC_E500MC)
 
-Brian
+CONFIG_PPC_E500MC implies CONFIG_E500.  Why do we need this ifdef?
+
+> +	/* flush caches inside the current cpu */
+> +	void (*cpu_flush_caches)(void);
+> +#endif
+
+It seems you literally mean "in the cpu" -- If it's a threaded core, then
+by "cpu" do you mean "thread" (like we usually do) and thus no caches get
+flushed (ignore the fact that it's moot on e6500 -- this is an interface
+and needs to be clear).
+
+Also, no-oping L1 flush on e6500 is not compliant with the claim that
+you're flushing the cache.  You're relying on an unstated assumption that
+you'll invalidate that cache later instead.
+
+If you want to make this "flush whatever needs to be flushed for
+suspend/hotplug", call it that.
+
+-Scott
