@@ -1,22 +1,23 @@
-Return-Path: <Shengzhou.Liu@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0115.outbound.protection.outlook.com [65.55.169.115])
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1on0141.outbound.protection.outlook.com [157.56.110.141])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0994C1A0058
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Mar 2015 14:32:23 +1100 (AEDT)
-From: "Shengzhou.Liu@freescale.com" <Shengzhou.Liu@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: RE: [1/4] powerpc/fsl-booke: Add device tree support for T1024/T1023
- SoC
-Date: Tue, 31 Mar 2015 03:32:15 +0000
-Message-ID: <DM2PR03MB398FAC6511FC9B94CEC4B03F8F40@DM2PR03MB398.namprd03.prod.outlook.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 19BCA1A0058
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Mar 2015 14:37:31 +1100 (AEDT)
+Message-ID: <1427773038.22867.218.camel@freescale.com>
+Subject: Re: [1/4] powerpc/fsl-booke: Add device tree support for
+ T1024/T1023 SoC
+From: Scott Wood <scottwood@freescale.com>
+To: Liu Shengzhou-B36685 <Shengzhou.Liu@freescale.com>
+Date: Mon, 30 Mar 2015 22:37:18 -0500
+In-Reply-To: <DM2PR03MB398FAC6511FC9B94CEC4B03F8F40@DM2PR03MB398.namprd03.prod.outlook.com>
 References: <1422517947-28722-1-git-send-email-Shengzhou.Liu@freescale.com>
  <20150130011949.GA19864@home.buserror.net>
  <DM2PR03MB398E5EB28719411243C1C76F8F50@DM2PR03MB398.namprd03.prod.outlook.com>
  <1427756416.22867.205.camel@freescale.com>
-In-Reply-To: <1427756416.22867.205.camel@freescale.com>
-Content-Type: text/plain; charset="utf-8"
+ <DM2PR03MB398FAC6511FC9B94CEC4B03F8F40@DM2PR03MB398.namprd03.prod.outlook.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
 Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,37 +29,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PiA+ID4gVGhlcmUgYXJlIG90aGVyIGRpZmZlcmVuY2VzIGJldHdlZW4gdDEwMjMgYW4gdDEwMjQu
-ICBXaGVyZSBkbyB5b3UNCj4gPiA+IGRlc2NyaWJlIHQxMDI0J3MgUUU/ICBXaGVyZSBkbyB5b3Ug
-ZGVzY3JpYmUgdGhlIEREUiBhbmQgSUZDIGRpZmZlcmVuY2VzPw0KPiA+ID4gY2FuIHRoZXkgYmUg
-ZGV0ZWN0ZWQgYXQgcnVudGltZT8gIHQxMDI0IHN1cHBvcnRzIGRlZXAgc2xlZXAsIGJ1dA0KPiA+
-ID4gdDEwMjMgZG9lc24ndCAtLSB5ZXQgeW91IGxhYmVsIGJvdGggY2hpcHMgYXMgaGF2aW5nIHQx
-MDI0IHJjcG0uDQo+ID4gPg0KPiA+IEFzIFFFIElQIGJsb2NrIGhhcyBub3QgYmVlbiB1cHN0cmVh
-bSB5ZXQsIA0KPiBIdWg/IA0KPiBhcmNoL3Bvd2VycGMvc3lzZGV2L3FlX2xpYi8NCg0KYXJjaC9w
-b3dlcnBjL2Jvb3QvZHRzL2ZzbC9xb3JpcS10ZG0xLjAuZHRzaSBoYXMgbm90IGJlZW4gdXBzdHJl
-YW0gYnkgVERNIG93bmVyLg0KT2ssIEkgd2lsbCBmaXJzdCBzZW5kIHFvcmlxLXRkbTEuMC5kdHNp
-IHVwc3RyZWFtIGluIG9yZGVyIHRvIGluY2x1ZGUgUUUgaW4gdDEwMjQgZHRzLg0KDQoNCj4gPiBE
-RFIgYW5kIElGQyBkaWZmZXJlbmNlcyBhcmUgaW4gdS1ib290LCBub3QgaW4gZHRzLiANCj4gVGhl
-IGRpZmZlcmVuY2VzIGFyZSBpbiBoYXJkd2FyZSwgd2hpY2ggaXMgd2hhdCB0aGUgZHRzIGlzIHN1
-cHBvc2VkIHRvIGRlc2NyaWJlLg0KDQpUaGVvcmV0aWNhbGx5IEkgdGhpbmsgc28sIGJ1dCBub3Qg
-YWxsIGhhcmR3YXJlIGRldGFpbHMgbXVzdCBiZSBkZXNjcmliZWQgaW4gZHRzDQphcyBjdXJyZW50
-IElQIGRyaXZlciBkb2Vzbid0IHRha2UgY2FyZSBvZiBpdCBmcm9tIGR0cy4NCklmIHNvLCBJUCBv
-d25lcnMgd2lsbCBoYXZlIHRvIHVwZGF0ZSBkcml2ZXJzLCBmb3Igbm93IGxldCdzIGtlZXAgYXMg
-aXQncy4gICAgDQoNCj4gPiBCb3RoIHQxMDIzIGFuZCB0MTAyNCBzdXBwb3J0IHNsZWVwLCBzbyBs
-YWJlbCBib3RoIGNoaXBzIGFzIGhhdmluZyB0MTAyNCByY3BtLg0KPiANCj4gVGhhdCdzIG5vdCBo
-b3cgaXQgd29ya3MuDQo+IA0KPiA+IE9ubHkgdDEwMjQgaGFzIGRlZXAgc2xlZXAsIHRoZSBkaWZm
-ZXJlbmNlIGlzIGlkZW50aWZpZWQgaW4gKi5jIG5vdCBpbiBkdHMgKGNvbmZpcm1lZCB3aXRoIGRl
-ZXAgc2xlZXAgb3duZXIpLg0KPiANCj4gRXZlbiBpZiB0aGUgQyBjb2RlIGNob29zZXMgdG8gdXNl
-IFNWUiB0byBpZGVudGlmeSB0aGUgZGlmZmVyZW5jZSAod2h5PyksDQo+IHRoYXQgZG9lc24ndCBt
-ZWFuIGl0J3MgT0sgZm9yIHRoZSBkZXZpY2UgdHJlZSB0byBjb250YWluIHdyb25nIGluZm9ybWF0
-aW9uLg0KIA0KV2hlcmUgaXMgdGhlIHdyb25nIGluZm9ybWF0aW9uPw0KDQogICAgICAgIHJjcG06
-IGdsb2JhbC11dGlsaXRpZXNAZTIwMDAgew0KICAgICAgICAgICAgICAgIGNvbXBhdGlibGUgPSAi
-ZnNsLHQxMDI0LXJjcG0iLCAiZnNsLHFvcmlxLXJjcG0tMi4wIjsNCiAgICAgICAgICAgICAgICBy
-ZWcgPSA8MHhlMjAwMCAweDEwMDA+Ow0KICAgICAgICB9Ow0KDQogICAgICAgIHNkaGNAMTE0MDAw
-IHsNCiAgICAgICAgICAgICAgICBjb21wYXRpYmxlID0gImZzbCx0MTAyNC1lc2RoYyIsICJmc2ws
-ZXNkaGMiOw0KICAgICAgICAgICAgICAgIGZzbCxpb21tdS1wYXJlbnQgPSA8JnBhbXUwPjsNCiAg
-ICAgICAgICAgICAgICBmc2wsbGlvZG4tcmVnID0gPCZndXRzIDB4NTMwPjsgLyogZVNESENMSU9E
-TlIgKi8NCiAgICAgICAgICAgICAgICBzZGhjaSxhdXRvLWNtZDEyOw0KICAgICAgICAgICAgICAg
-IG5vLTEtOC12Ow0KICAgICAgICAgICAgICAgIHNsZWVwID0gPCZyY3BtIDB4MDAwMDAwODA+Ow0K
-ICAgICAgICB9Ow0KdDEwMjMgYWxzbyBzdXBwb3J0cyBzbGVlcChub3QgZGVlcCBzbGVlcCksIGl0
-IG5lZWRzIHRoZSBpbmZvIGFib3ZlLg0K
+On Mon, 2015-03-30 at 22:32 -0500, Liu Shengzhou-B36685 wrote:
+> > > > There are other differences between t1023 an t1024.  Where do you
+> > > > describe t1024's QE?  Where do you describe the DDR and IFC differences?
+> > > > can they be detected at runtime?  t1024 supports deep sleep, but
+> > > > t1023 doesn't -- yet you label both chips as having t1024 rcpm.
+> > > >
+> > > As QE IP block has not been upstream yet, 
+> > Huh? 
+> > arch/powerpc/sysdev/qe_lib/
+> 
+> arch/powerpc/boot/dts/fsl/qoriq-tdm1.0.dtsi has not been upstream by TDM owner.
+> Ok, I will first send qoriq-tdm1.0.dtsi upstream in order to include QE in t1024 dts.
+
+Thanks, but make sure there's also a binding for it.
+
+> > > DDR and IFC differences are in u-boot, not in dts. 
+> > The differences are in hardware, which is what the dts is supposed to describe.
+> 
+> Theoretically I think so, but not all hardware details must be described in dts
+
+No, but all hardware should be properly identified.
+
+> as current IP driver doesn't take care of it from dts.
+
+The device tree describes the hardware, not the driver.
+
+> If so, IP owners will have to update drivers, for now let's keep as it's.    
+
+Please don't use the phrase "IP owner" in upstream discussions.  Besides
+being a bad name for "maintainer", SDK maintainership isn't relevant
+here.
+
+> > > Both t1023 and t1024 support sleep, so label both chips as having t1024 rcpm.
+> > 
+> > That's not how it works.
+> > 
+> > > Only t1024 has deep sleep, the difference is identified in *.c not in dts (confirmed with deep sleep owner).
+> > 
+> > Even if the C code chooses to use SVR to identify the difference (why?),
+> > that doesn't mean it's OK for the device tree to contain wrong information.
+>  
+> Where is the wrong information?
+> 
+>         rcpm: global-utilities@e2000 {
+>                 compatible = "fsl,t1024-rcpm", "fsl,qoriq-rcpm-2.0";
+>                 reg = <0xe2000 0x1000>;
+>         };
+> 
+>         sdhc@114000 {
+>                 compatible = "fsl,t1024-esdhc", "fsl,esdhc";
+>                 fsl,iommu-parent = <&pamu0>;
+>                 fsl,liodn-reg = <&guts 0x530>; /* eSDHCLIODNR */
+>                 sdhci,auto-cmd12;
+>                 no-1-8-v;
+>                 sleep = <&rcpm 0x00000080>;
+>         };
+> t1023 also supports sleep(not deep sleep), it needs the info above.
+
+The part that's wrong is where it says "t1024".  It's not t1024 and for
+rcpm it's not 100% compatible with t1024.
+
+-Scott
