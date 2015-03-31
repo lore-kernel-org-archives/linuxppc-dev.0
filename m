@@ -1,21 +1,25 @@
-Return-Path: <dja@axtens.net>
-Received: from mail-pa0-x22b.google.com (mail-pa0-x22b.google.com
- [IPv6:2607:f8b0:400e:c03::22b])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <Igal.Liberman@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bbn0108.outbound.protection.outlook.com [157.56.111.108])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D86A31A0A0B
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Mar 2015 16:02:15 +1100 (AEDT)
-Received: by padcy3 with SMTP id cy3so8043263pad.3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 30 Mar 2015 22:02:13 -0700 (PDT)
-From: Daniel Axtens <dja@axtens.net>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 19/19] powerpc: dart_iommu: Remove check for controller_ops
- == NULL case
-Date: Tue, 31 Mar 2015 16:00:57 +1100
-Message-Id: <1427778057-9505-20-git-send-email-dja@axtens.net>
-In-Reply-To: <1427778057-9505-1-git-send-email-dja@axtens.net>
-References: <1427778057-9505-1-git-send-email-dja@axtens.net>
-Cc: Daniel Axtens <dja@axtens.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 260A71A0427
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Mar 2015 17:17:27 +1100 (AEDT)
+From: "Igal.Liberman@freescale.com" <Igal.Liberman@freescale.com>
+To: Scott Wood <scottwood@freescale.com>, Emilian Medve
+ <Emilian.Medve@freescale.com>
+Subject: RE: [PATCH 1/3] powerpc/mpc85xx: Add FMan clock nodes
+Date: Tue, 31 Mar 2015 06:17:19 +0000
+Message-ID: <BY2PR03MB379E54862E2122AAE20CBF4E6F40@BY2PR03MB379.namprd03.prod.outlook.com>
+References: <1424964417-13760-1-git-send-email-Emilian.Medve@Freescale.com>
+ <1427153449.22867.19.camel@freescale.com> <55111FCC.2000806@Freescale.com>
+ <1427760921.22867.213.camel@freescale.com>
+In-Reply-To: <1427760921.22867.213.camel@freescale.com>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "afleming@gmail.com" <afleming@gmail.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,43 +29,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Now that we have ported the calls to iommu_init_early_dart to always
-supply a pci_controller_ops struct, we can safely drop the check.
-
-Signed-off-by: Daniel Axtens <dja@axtens.net>
----
- arch/powerpc/sysdev/dart_iommu.c | 13 +++++--------
- 1 file changed, 5 insertions(+), 8 deletions(-)
-
-diff --git a/arch/powerpc/sysdev/dart_iommu.c b/arch/powerpc/sysdev/dart_iommu.c
-index 87b8000..d00a566 100644
---- a/arch/powerpc/sysdev/dart_iommu.c
-+++ b/arch/powerpc/sysdev/dart_iommu.c
-@@ -395,20 +395,17 @@ void __init iommu_init_early_dart(struct pci_controller_ops *controller_ops)
- 	if (dart_is_u4)
- 		ppc_md.dma_set_mask = dart_dma_set_mask;
- 
--	if (controller_ops) {
--		controller_ops->dma_dev_setup = pci_dma_dev_setup_dart;
--		controller_ops->dma_bus_setup = pci_dma_bus_setup_dart;
--	}
-+	controller_ops->dma_dev_setup = pci_dma_dev_setup_dart;
-+	controller_ops->dma_bus_setup = pci_dma_bus_setup_dart;
-+
- 	/* Setup pci_dma ops */
- 	set_pci_dma_ops(&dma_iommu_ops);
- 	return;
- 
-  bail:
- 	/* If init failed, use direct iommu and null setup functions */
--	if (controller_ops) {
--		controller_ops->dma_dev_setup = NULL;
--		controller_ops->dma_bus_setup = NULL;
--	}
-+	controller_ops->dma_dev_setup = NULL;
-+	controller_ops->dma_bus_setup = NULL;
- 
- 	/* Setup pci_dma ops */
- 	set_pci_dma_ops(&dma_direct_ops);
--- 
-2.1.4
+PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBXb29kIFNjb3R0LUIwNzQyMQ0K
+PiBTZW50OiBUdWVzZGF5LCBNYXJjaCAzMSwgMjAxNSAzOjE1IEFNDQo+IFRvOiBNZWR2ZSBFbWls
+aWFuLUVNTUVEVkUxDQo+IENjOiBkZXZpY2V0cmVlQHZnZXIua2VybmVsLm9yZzsgYWZsZW1pbmdA
+Z21haWwuY29tOyBsaW51eHBwYy0NCj4gZGV2QGxpc3RzLm96bGFicy5vcmc7IExpYmVybWFuIEln
+YWwtQjMxOTUwDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggMS8zXSBwb3dlcnBjL21wYzg1eHg6IEFk
+ZCBGTWFuIGNsb2NrIG5vZGVzDQo+IA0KPiBPbiBUdWUsIDIwMTUtMDMtMjQgYXQgMDM6MjYgLTA1
+MDAsIEVtaWwgTWVkdmUgd3JvdGU6DQo+ID4gSGVsbG8gU2NvdHQsDQo+ID4NCj4gPg0KPiA+IE9u
+IDAzLzIzLzIwMTUgMDY6MzAgUE0sIFNjb3R0IFdvb2Qgd3JvdGU6DQo+ID4gPiBPbiBUaHUsIDIw
+MTUtMDItMjYgYXQgMDk6MjYgLTA2MDAsIEVtaWwgTWVkdmUgd3JvdGU6DQo+ID4gPj4gRnJvbTog
+SWdhbCBMaWJlcm1hbiA8SWdhbC5MaWJlcm1hbkBmcmVlc2NhbGUuY29tPg0KPiA+ID4+DQo+ID4g
+Pj4gU2lnbmVkLW9mZi1ieTogSWdhbCBMaWJlcm1hbiA8SWdhbC5MaWJlcm1hbkBmcmVlc2NhbGUu
+Y29tPg0KPiA+ID4+IC0tLQ0KPiA+ID4+ICBhcmNoL3Bvd2VycGMvYm9vdC9kdHMvZnNsL2I0c2kt
+cG9zdC5kdHNpICAgIHwgMTEgKysrKysrKysrKysNCj4gPiA+PiAgYXJjaC9wb3dlcnBjL2Jvb3Qv
+ZHRzL2ZzbC9wMjA0MXNpLXBvc3QuZHRzaSB8ICA4ICsrKysrKysrDQo+ID4gPj4gYXJjaC9wb3dl
+cnBjL2Jvb3QvZHRzL2ZzbC9wMzA0MXNpLXBvc3QuZHRzaSB8ICA4ICsrKysrKysrDQo+ID4gPj4g
+YXJjaC9wb3dlcnBjL2Jvb3QvZHRzL2ZzbC9wNDA4MHNpLXBvc3QuZHRzaSB8IDE2ICsrKysrKysr
+KysrKysrKysNCj4gPiA+PiBhcmNoL3Bvd2VycGMvYm9vdC9kdHMvZnNsL3A1MDIwc2ktcG9zdC5k
+dHNpIHwgMTMgKysrKysrKysrKysrKw0KPiA+ID4+IGFyY2gvcG93ZXJwYy9ib290L2R0cy9mc2wv
+cDUwNDBzaS1wb3N0LmR0c2kgfCAyNg0KPiA+ID4+ICsrKysrKysrKysrKysrKysrKysrKysrKysr
+DQo+ID4gPj4gYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL2ZzbC90MTA0MHNpLXBvc3QuZHRzaSB8ICA4
+ICsrKysrKysrDQo+ID4gPj4gYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL2ZzbC90MjA4MXNpLXBvc3Qu
+ZHRzaSB8IDExICsrKysrKysrKysrDQo+ID4gPj4gYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL2ZzbC90
+NDI0MHNpLXBvc3QuZHRzaSB8IDIwDQo+ID4gPj4gKysrKysrKysrKysrKysrKysrKysNCj4gPiA+
+PiAgOSBmaWxlcyBjaGFuZ2VkLCAxMjEgaW5zZXJ0aW9ucygrKQ0KPiA+ID4+DQo+ID4gPj4gZGlm
+ZiAtLWdpdCBhL2FyY2gvcG93ZXJwYy9ib290L2R0cy9mc2wvYjRzaS1wb3N0LmR0c2kNCj4gPiA+
+PiBiL2FyY2gvcG93ZXJwYy9ib290L2R0cy9mc2wvYjRzaS1wb3N0LmR0c2kNCj4gPiA+PiBpbmRl
+eCBmOGMzMjVlLi4zODYyMWVmIDEwMDY0NA0KPiA+ID4+IC0tLSBhL2FyY2gvcG93ZXJwYy9ib290
+L2R0cy9mc2wvYjRzaS1wb3N0LmR0c2kNCj4gPiA+PiArKysgYi9hcmNoL3Bvd2VycGMvYm9vdC9k
+dHMvZnNsL2I0c2ktcG9zdC5kdHNpDQo+ID4gPj4gQEAgLTM5NSw2ICszOTUsMTcgQEANCj4gPiA+
+PiAgCQlyZWcgPSA8MHhlMDAwMCAweGUwMD47DQo+ID4gPj4gIAkJZnNsLGhhcy1yc3RjcjsNCj4g
+PiA+PiAgCQlmc2wsbGlvZG4tYml0cyA9IDwxMj47DQo+ID4gPj4gKw0KPiA+ID4+ICsJCWZtMGNs
+azogZm0wLWNsay1tdXggew0KPiA+ID4+ICsJCQkjY2xvY2stY2VsbHMgPSA8MD47DQo+ID4gPj4g
+KwkJCWNvbXBhdGlibGUgPSAiZnNsLGZtYW4tY2xrLW11eCI7DQo+ID4gPj4gKwkJCWNsb2NrcyA9
+IDwmcGxsMCAwPiwgPCZwbGwwIDE+LCA8JnBsbDAgMj4sIDwmcGxsMCAzPiwNCj4gPiA+PiArCQkJ
+CSA8JnBsYXRmb3JtX3BsbCAwPiwgPCZwbGwxIDE+LCA8JnBsbDEgMj47DQo+ID4gPj4gKwkJCWNs
+b2NrLW5hbWVzID0gInBsbDAiLCAicGxsMC1kaXYyIiwgInBsbDAtZGl2MyIsDQo+ID4gPj4gKwkJ
+CQkgICAgICAicGxsMC1kaXY0IiwgInBsYXRmb3JtLXBsbCIsICJwbGwxLWRpdjIiLA0KPiA+ID4+
+ICsJCQkJICAgICAgInBsbDEtZGl2MyI7DQo+ID4gPj4gKwkJCWNsb2NrLW91dHB1dC1uYW1lcyA9
+ICJmbTAtY2xrIjsNCj4gPiA+PiArCQl9Ow0KPiA+ID4NCj4gPiA+IFdoZXJlJ3MgdGhlIGJpbmRp
+bmcgZm9yIGZzbCxmbWFuLWNsay1tdXg/DQo+ID4gPg0KPiA+DQo+ID4gSWdhbCB3aWxsIGZvbGxv
+dy11cCB3aXRoIHRoZSBiaW5kaW5nIGRvY3VtZW50DQo+IA0KPiBJZ2FsLCBwaW5nPw0KPiANCj4g
+SSBuZWVkIGEgYmluZGluZyBiZWZvcmUgSSBjYW4gYXBwbHkgdGhlIGR0cyBwYXRjaC4NCj4gDQo+
+IC1TY290dA0KPiANCg0KSGkgU2NvdHQsDQpJJ20gd29ya2luZyBvbiBGTWFuIHBhdGNoZXMuIEkn
+bGwgc2VudCB0aGUgYmluZGluZyBBU0FQLiANCg0KVGhhbmtzLA0KSWdhbA0K
