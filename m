@@ -1,39 +1,20 @@
-Return-Path: <paulmck@linux.vnet.ibm.com>
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <Igal.Liberman@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0132.outbound.protection.outlook.com [207.46.100.132])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 82E9D1A0743
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Apr 2015 02:26:11 +1100 (AEDT)
-Received: from /spool/local
- by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
- Wed, 1 Apr 2015 09:26:09 -0600
-Received: from b03cxnp07028.gho.boulder.ibm.com
- (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id CF33F1FF0023
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Apr 2015 09:17:17 -0600 (MDT)
-Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
- by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with
- ESMTP id t31FOJnI34734142
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Apr 2015 08:24:19 -0700
-Received: from d03av05.boulder.ibm.com (localhost [127.0.0.1])
- by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t31FQ62m016215
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Apr 2015 09:26:06 -0600
-Date: Wed, 1 Apr 2015 08:26:05 -0700
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Will Deacon <will.deacon@arm.com>
-Subject: Re: [RESEND PATCH] documentation: memory-barriers: fix
- smp_mb__before_spinlock() semantics
-Message-ID: <20150401152605.GP9023@linux.vnet.ibm.com>
-Reply-To: paulmck@linux.vnet.ibm.com
-References: <1427791181-21952-1-git-send-email-will.deacon@arm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5FABC1A0743
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Apr 2015 02:37:51 +1100 (AEDT)
+From: Igal.Liberman <igal.liberman@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <netdev@vger.kernel.org>,
+ <linux-kernel@vger.kernel.org>
+Subject: [RFC,v2,00/12] Freescale DPAA FMan
+Date: Wed, 1 Apr 2015 14:35:29 +0300
+Message-ID: <1427888129-24079-1-git-send-email-igal.liberman@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1427791181-21952-1-git-send-email-will.deacon@arm.com>
-Cc: Peter Zijlstra <peterz@infradead.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Oleg Nesterov <oleg@redhat.com>
+Content-Type: text/plain
+Cc: scottwood@freescale.com, Igal Liberman <Igal.Liberman@freescale.com>,
+ madalin.bucur@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,70 +24,182 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Mar 31, 2015 at 09:39:41AM +0100, Will Deacon wrote:
-> Our current documentation claims that, when followed by an ACQUIRE,
-> smp_mb__before_spinlock() orders prior loads against subsequent loads
-> and stores, which isn't actually true.
-> 
-> Fix the documentation to state that this sequence orders only prior
-> stores against subsequent loads and stores.
-> 
-> Cc: Oleg Nesterov <oleg@redhat.com>
-> Cc: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-> Cc: Peter Zijlstra <peterz@infradead.org>
-> Signed-off-by: Will Deacon <will.deacon@arm.com>
-> ---
-> 
-> Could somebody pick this up please? I guess I could route it via the arm64
-> tree with an Ack, but I'd rather it went through Paul or -tip.
+From: Igal Liberman <Igal.Liberman@freescale.com>
 
-Queued for 4.2, along with a separate patch for PowerPC that make it so
-that PowerPC actually behaves as described below.  ;-)
+The Freescale Data Path Acceleration Architecture (DPAA) is a set of
+hardware components on specific QorIQ multicore processors. This
+architecture provides the infrastructure to support simplified
+sharing of networking interfaces and accelerators by multiple CPU
+cores and the accelerators.
 
-							Thanx, Paul
+One of the DPAA accelerators is the Frame Manager (FMan) which
+contains a series of hardware blocks: ports, Ethernet MACs, a multi
+user RAM (MURAM) and Storage Profile (SP).
 
->  Documentation/memory-barriers.txt | 7 +++----
->  1 file changed, 3 insertions(+), 4 deletions(-)
-> 
-> diff --git a/Documentation/memory-barriers.txt b/Documentation/memory-barriers.txt
-> index ca2387ef27ab..fa28a0c1e2b1 100644
-> --- a/Documentation/memory-barriers.txt
-> +++ b/Documentation/memory-barriers.txt
-> @@ -1768,10 +1768,9 @@ for each construct.  These operations all imply certain barriers:
-> 
->       Memory operations issued before the ACQUIRE may be completed after
->       the ACQUIRE operation has completed.  An smp_mb__before_spinlock(),
-> -     combined with a following ACQUIRE, orders prior loads against
-> -     subsequent loads and stores and also orders prior stores against
-> -     subsequent stores.  Note that this is weaker than smp_mb()!  The
-> -     smp_mb__before_spinlock() primitive is free on many architectures.
-> +     combined with a following ACQUIRE, orders prior stores against
-> +     subsequent loads and stores. Note that this is weaker than smp_mb()!
-> +     The smp_mb__before_spinlock() primitive is free on many architectures.
-> 
->   (2) RELEASE operation implication:
+This patch set introduced the FMan driver code that configures
+and initializes the FMan hardware blocks, offering support for
+three different types of MACs.
+The first 6 patches present the FMan Foundation Libraries (FLIBs),
+the FMan FLib provides the basic API used by the FMan drivers to
+configure and control the FMan hardware.
+The following patches present the FMan driver itself, split into
+patches for each required hardware module.
 
-------------------------------------------------------------------------
 
-    powerpc: Fix smp_mb__before_spinlock()
-    
-    Currently, smp_mb__before_spinlock() is defined to be smp_wmb()
-    in core code, but this is not sufficient on PowerPC.  This patch
-    therefore supplies an override for the generic definition to
-    strengthen smp_mb__before_spinlock() to smp_mb(), as is needed
-    on PowerPC.
-    
-    Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-    Cc: <linuxppc-dev@lists.ozlabs.org>
+v2:	- This set of patches combines the following submissions:
+		- v2 of FMan (RFC)
+		- v3 of FMan FLib
+	- Reduced FMan code size:
+		- Reduced FMan FLib's size:
+			Removed code for future support.
+		- Removed Priority Flow Control (PFC) support.
+		- Removed rate-limiter.
+		- Removed some MAC features.
+		- Removed Real Time Clock (RTC) support.
 
-diff --git a/arch/powerpc/include/asm/barrier.h b/arch/powerpc/include/asm/barrier.h
-index a3bf5be111ff..1124f59b8df4 100644
---- a/arch/powerpc/include/asm/barrier.h
-+++ b/arch/powerpc/include/asm/barrier.h
-@@ -89,5 +89,6 @@ do {									\
- 
- #define smp_mb__before_atomic()     smp_mb()
- #define smp_mb__after_atomic()      smp_mb()
-+#define smp_mb__before_spinlock()   smp_mb()
- 
- #endif /* _ASM_POWERPC_BARRIER_H */
+Igal Liberman (12):
+  soc/fman: Add the FMan FLIB headers
+  soc/fman: Add the FMan FLIB
+  soc/fman: Add the FMan port FLIB headers
+  soc/fman: Add the FMan port FLIB
+  soc/fman: Add the FMan MAC FLIB headers
+  soc/fman: Add the FMan MAC FLIB
+  soc/fman: Add FMan MURAM support
+  soc/fman: Add Frame Manager support
+  soc/fman: Add FMan MAC support
+  soc/fman: Add FMan SP support
+  soc/fman: Add FMan Port Support
+  soc/fman: Add FMan MAC driver
+
+ drivers/soc/fsl/Kconfig                            |    2 +
+ drivers/soc/fsl/Makefile                           |    2 +
+ drivers/soc/fsl/fman/Kconfig                       |   46 +
+ drivers/soc/fsl/fman/Makefile                      |   12 +
+ drivers/soc/fsl/fman/flib/common/general.h         |   41 +
+ drivers/soc/fsl/fman/flib/fman_common.h            |   73 +
+ drivers/soc/fsl/fman/flib/fsl_enet.h               |  275 +++
+ drivers/soc/fsl/fman/flib/fsl_fman.h               |  743 +++++++
+ drivers/soc/fsl/fman/flib/fsl_fman_dtsec.h         |  791 ++++++++
+ drivers/soc/fsl/fman/flib/fsl_fman_dtsec_mii_acc.h |  103 +
+ drivers/soc/fsl/fman/flib/fsl_fman_memac.h         |  453 +++++
+ drivers/soc/fsl/fman/flib/fsl_fman_memac_mii_acc.h |   76 +
+ drivers/soc/fsl/fman/flib/fsl_fman_port.h          |  462 +++++
+ drivers/soc/fsl/fman/flib/fsl_fman_sp.h            |   66 +
+ drivers/soc/fsl/fman/flib/fsl_fman_tgec.h          |  409 ++++
+ drivers/soc/fsl/fman/fm.c                          | 2088 ++++++++++++++++++++
+ drivers/soc/fsl/fman/fm.h                          |  486 +++++
+ drivers/soc/fsl/fman/fm_common.h                   |  538 +++++
+ drivers/soc/fsl/fman/fm_drv.c                      |  967 +++++++++
+ drivers/soc/fsl/fman/fm_drv.h                      |  123 ++
+ drivers/soc/fsl/fman/fm_muram.c                    |  174 ++
+ drivers/soc/fsl/fman/fm_port_drv.c                 |  536 +++++
+ drivers/soc/fsl/fman/fm_sp_common.h                |  104 +
+ drivers/soc/fsl/fman/fman.c                        |  978 +++++++++
+ drivers/soc/fsl/fman/inc/crc_mac_addr_ext.h        |  343 ++++
+ drivers/soc/fsl/fman/inc/dpaa_ext.h                |  253 +++
+ drivers/soc/fsl/fman/inc/dpaa_integration_ext.h    |  120 ++
+ drivers/soc/fsl/fman/inc/enet_ext.h                |  199 ++
+ drivers/soc/fsl/fman/inc/fm_ext.h                  |  715 +++++++
+ drivers/soc/fsl/fman/inc/fm_mac_ext.h              |  452 +++++
+ drivers/soc/fsl/fman/inc/fm_muram_ext.h            |   98 +
+ drivers/soc/fsl/fman/inc/fm_port_ext.h             |  397 ++++
+ drivers/soc/fsl/fman/inc/fsl_fman_drv.h            |  192 ++
+ drivers/soc/fsl/fman/inc/mac.h                     |  125 ++
+ drivers/soc/fsl/fman/inc/net_ext.h                 |  534 +++++
+ drivers/soc/fsl/fman/inc/service.h                 |   90 +
+ drivers/soc/fsl/fman/mac/Makefile                  |    9 +
+ drivers/soc/fsl/fman/mac/dtsec.c                   | 1226 ++++++++++++
+ drivers/soc/fsl/fman/mac/dtsec.h                   |  185 ++
+ drivers/soc/fsl/fman/mac/dtsec_mii_acc.c           |   82 +
+ drivers/soc/fsl/fman/mac/dtsec_mii_acc.h           |   43 +
+ drivers/soc/fsl/fman/mac/fm_mac.c                  |  510 +++++
+ drivers/soc/fsl/fman/mac/fm_mac.h                  |  183 ++
+ drivers/soc/fsl/fman/mac/fman_crc32.c              |  116 ++
+ drivers/soc/fsl/fman/mac/fman_crc32.h              |   39 +
+ drivers/soc/fsl/fman/mac/fman_dtsec.c              |  571 ++++++
+ drivers/soc/fsl/fman/mac/fman_dtsec_mii_acc.c      |  168 ++
+ drivers/soc/fsl/fman/mac/fman_memac.c              |  365 ++++
+ drivers/soc/fsl/fman/mac/fman_memac_mii_acc.c      |  217 ++
+ drivers/soc/fsl/fman/mac/fman_tgec.c               |  217 ++
+ drivers/soc/fsl/fman/mac/mac-api.c                 |  605 ++++++
+ drivers/soc/fsl/fman/mac/mac.c                     |  521 +++++
+ drivers/soc/fsl/fman/mac/memac.c                   |  837 ++++++++
+ drivers/soc/fsl/fman/mac/memac.h                   |  103 +
+ drivers/soc/fsl/fman/mac/memac_mii_acc.c           |   66 +
+ drivers/soc/fsl/fman/mac/memac_mii_acc.h           |   50 +
+ drivers/soc/fsl/fman/mac/tgec.c                    |  797 ++++++++
+ drivers/soc/fsl/fman/mac/tgec.h                    |  112 ++
+ drivers/soc/fsl/fman/mac/tgec_mii_acc.h            |   66 +
+ drivers/soc/fsl/fman/port/Makefile                 |    3 +
+ drivers/soc/fsl/fman/port/fm_port.c                | 1484 ++++++++++++++
+ drivers/soc/fsl/fman/port/fm_port.h                |  711 +++++++
+ drivers/soc/fsl/fman/port/fman_port.c              |  728 +++++++
+ drivers/soc/fsl/fman/sp/Makefile                   |    3 +
+ drivers/soc/fsl/fman/sp/fm_sp.c                    |  398 ++++
+ 65 files changed, 23481 insertions(+)
+ create mode 100644 drivers/soc/fsl/fman/Kconfig
+ create mode 100644 drivers/soc/fsl/fman/Makefile
+ create mode 100644 drivers/soc/fsl/fman/flib/common/general.h
+ create mode 100644 drivers/soc/fsl/fman/flib/fman_common.h
+ create mode 100644 drivers/soc/fsl/fman/flib/fsl_enet.h
+ create mode 100644 drivers/soc/fsl/fman/flib/fsl_fman.h
+ create mode 100644 drivers/soc/fsl/fman/flib/fsl_fman_dtsec.h
+ create mode 100644 drivers/soc/fsl/fman/flib/fsl_fman_dtsec_mii_acc.h
+ create mode 100644 drivers/soc/fsl/fman/flib/fsl_fman_memac.h
+ create mode 100644 drivers/soc/fsl/fman/flib/fsl_fman_memac_mii_acc.h
+ create mode 100644 drivers/soc/fsl/fman/flib/fsl_fman_port.h
+ create mode 100644 drivers/soc/fsl/fman/flib/fsl_fman_sp.h
+ create mode 100644 drivers/soc/fsl/fman/flib/fsl_fman_tgec.h
+ create mode 100644 drivers/soc/fsl/fman/fm.c
+ create mode 100644 drivers/soc/fsl/fman/fm.h
+ create mode 100644 drivers/soc/fsl/fman/fm_common.h
+ create mode 100644 drivers/soc/fsl/fman/fm_drv.c
+ create mode 100644 drivers/soc/fsl/fman/fm_drv.h
+ create mode 100644 drivers/soc/fsl/fman/fm_muram.c
+ create mode 100644 drivers/soc/fsl/fman/fm_port_drv.c
+ create mode 100644 drivers/soc/fsl/fman/fm_sp_common.h
+ create mode 100644 drivers/soc/fsl/fman/fman.c
+ create mode 100644 drivers/soc/fsl/fman/inc/crc_mac_addr_ext.h
+ create mode 100644 drivers/soc/fsl/fman/inc/dpaa_ext.h
+ create mode 100644 drivers/soc/fsl/fman/inc/dpaa_integration_ext.h
+ create mode 100644 drivers/soc/fsl/fman/inc/enet_ext.h
+ create mode 100644 drivers/soc/fsl/fman/inc/fm_ext.h
+ create mode 100644 drivers/soc/fsl/fman/inc/fm_mac_ext.h
+ create mode 100644 drivers/soc/fsl/fman/inc/fm_muram_ext.h
+ create mode 100644 drivers/soc/fsl/fman/inc/fm_port_ext.h
+ create mode 100644 drivers/soc/fsl/fman/inc/fsl_fman_drv.h
+ create mode 100644 drivers/soc/fsl/fman/inc/mac.h
+ create mode 100644 drivers/soc/fsl/fman/inc/net_ext.h
+ create mode 100644 drivers/soc/fsl/fman/inc/service.h
+ create mode 100644 drivers/soc/fsl/fman/mac/Makefile
+ create mode 100644 drivers/soc/fsl/fman/mac/dtsec.c
+ create mode 100644 drivers/soc/fsl/fman/mac/dtsec.h
+ create mode 100644 drivers/soc/fsl/fman/mac/dtsec_mii_acc.c
+ create mode 100644 drivers/soc/fsl/fman/mac/dtsec_mii_acc.h
+ create mode 100644 drivers/soc/fsl/fman/mac/fm_mac.c
+ create mode 100644 drivers/soc/fsl/fman/mac/fm_mac.h
+ create mode 100644 drivers/soc/fsl/fman/mac/fman_crc32.c
+ create mode 100644 drivers/soc/fsl/fman/mac/fman_crc32.h
+ create mode 100644 drivers/soc/fsl/fman/mac/fman_dtsec.c
+ create mode 100644 drivers/soc/fsl/fman/mac/fman_dtsec_mii_acc.c
+ create mode 100644 drivers/soc/fsl/fman/mac/fman_memac.c
+ create mode 100644 drivers/soc/fsl/fman/mac/fman_memac_mii_acc.c
+ create mode 100644 drivers/soc/fsl/fman/mac/fman_tgec.c
+ create mode 100644 drivers/soc/fsl/fman/mac/mac-api.c
+ create mode 100644 drivers/soc/fsl/fman/mac/mac.c
+ create mode 100644 drivers/soc/fsl/fman/mac/memac.c
+ create mode 100644 drivers/soc/fsl/fman/mac/memac.h
+ create mode 100644 drivers/soc/fsl/fman/mac/memac_mii_acc.c
+ create mode 100644 drivers/soc/fsl/fman/mac/memac_mii_acc.h
+ create mode 100644 drivers/soc/fsl/fman/mac/tgec.c
+ create mode 100644 drivers/soc/fsl/fman/mac/tgec.h
+ create mode 100644 drivers/soc/fsl/fman/mac/tgec_mii_acc.h
+ create mode 100644 drivers/soc/fsl/fman/port/Makefile
+ create mode 100644 drivers/soc/fsl/fman/port/fm_port.c
+ create mode 100644 drivers/soc/fsl/fman/port/fm_port.h
+ create mode 100644 drivers/soc/fsl/fman/port/fman_port.c
+ create mode 100644 drivers/soc/fsl/fman/sp/Makefile
+ create mode 100644 drivers/soc/fsl/fman/sp/fm_sp.c
+
+-- 
+1.7.9.5
