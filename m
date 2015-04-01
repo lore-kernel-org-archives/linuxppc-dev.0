@@ -1,22 +1,29 @@
-Return-Path: <alex.williamson@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <julian.calaby@gmail.com>
+Received: from mail-wi0-x232.google.com (mail-wi0-x232.google.com
+ [IPv6:2a00:1450:400c:c05::232])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8E5F41A0B57
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Apr 2015 08:48:33 +1100 (AEDT)
-Message-ID: <1427924911.5567.304.camel@redhat.com>
-Subject: Re: [PATCH kernel v7 12/31] powerpc/spapr: vfio: Switch from
- iommu_table to new iommu_table_group
-From: Alex Williamson <alex.williamson@redhat.com>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Date: Wed, 01 Apr 2015 15:48:31 -0600
-In-Reply-To: <1427468115-2224-13-git-send-email-aik@ozlabs.ru>
-References: <1427468115-2224-1-git-send-email-aik@ozlabs.ru>
- <1427468115-2224-13-git-send-email-aik@ozlabs.ru>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id CC39E1A0741
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Apr 2015 09:28:12 +1100 (AEDT)
+Received: by wibgn9 with SMTP id gn9so83897658wib.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Apr 2015 15:28:09 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <1427871888-27331-2-git-send-email-joel@jms.id.au>
+References: <1427871888-27331-1-git-send-email-joel@jms.id.au>
+ <1427871888-27331-2-git-send-email-joel@jms.id.au>
+From: Julian Calaby <julian.calaby@gmail.com>
+Date: Thu, 2 Apr 2015 09:27:48 +1100
+Message-ID: <CAGRGNgUBy0gRZADXmbFzmcAGEf-en=D-rD4Cjoh67Y=iF8puvA@mail.gmail.com>
+Subject: Re: [PATCH v2 2/3] kernel/reboot.c: Add orderly_reboot for graceful
+ reboot
+To: Joel Stanley <joel@jms.id.au>
+Content-Type: text/plain; charset=UTF-8
+Cc: rusty@rustcorp.com.au,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Fabian Frederick <fabf@skynet.be>, jk@ozlabs.org,
+ sparclinux <sparclinux@vger.kernel.org>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,105 +33,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2015-03-28 at 01:54 +1100, Alexey Kardashevskiy wrote:
-> Modern IBM POWERPC systems support multiple (currently two) TCE tables
-> per IOMMU group (a.k.a. PE). This adds a iommu_table_group container
-> for TCE tables. Right now just one table is supported.
-> 
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+Hi Joel,
+
+On Wed, Apr 1, 2015 at 6:04 PM, Joel Stanley <joel@jms.id.au> wrote:
+> The kernel has orderly_poweroff which allows the kernel to initiate a
+> graceful shutdown of userspace, by running /sbin/poweroff. This adds
+> orderly_reboot that will cause userspace to shut itself down by calling
+> /sbin/reboot.
+>
+> This will be used for shutdown initiated by a system controller on
+> platforms that do not use ACPI.
+>
+> orderly_reboot() should be used when the system wants to allow userspace
+> to gracefully shut itself down. For cases where the system may
+> imminently catch on fire, the existing emergency_restart() provides an
+> immediate reboot without involving userspace.
+>
+> Signed-off-by: Joel Stanley <joel@jms.id.au>
 > ---
->  Documentation/vfio.txt                      |  23 ++++++
->  arch/powerpc/include/asm/iommu.h            |  18 +++--
->  arch/powerpc/kernel/iommu.c                 |  34 ++++----
->  arch/powerpc/platforms/powernv/pci-ioda.c   |  38 +++++----
->  arch/powerpc/platforms/powernv/pci-p5ioc2.c |  17 ++--
->  arch/powerpc/platforms/powernv/pci.c        |   2 +-
->  arch/powerpc/platforms/powernv/pci.h        |   4 +-
->  arch/powerpc/platforms/pseries/iommu.c      |   9 ++-
->  drivers/vfio/vfio_iommu_spapr_tce.c         | 120 ++++++++++++++++++++--------
->  9 files changed, 183 insertions(+), 82 deletions(-)
-> 
-> diff --git a/Documentation/vfio.txt b/Documentation/vfio.txt
-> index 96978ec..94328c8 100644
-> --- a/Documentation/vfio.txt
-> +++ b/Documentation/vfio.txt
-> @@ -427,6 +427,29 @@ The code flow from the example above should be slightly changed:
->  
->  	....
->  
-> +5) There is v2 of SPAPR TCE IOMMU. It deprecates VFIO_IOMMU_ENABLE/
-> +VFIO_IOMMU_DISABLE and implements 2 new ioctls:
-> +VFIO_IOMMU_SPAPR_REGISTER_MEMORY and VFIO_IOMMU_SPAPR_UNREGISTER_MEMORY
-> +(which are unsupported in v1 IOMMU).
-> +
-> +PPC64 paravirtualized guests generate a lot of map/unmap requests,
-> +and the handling of those includes pinning/unpinning pages and updating
-> +mm::locked_vm counter to make sure we do not exceed the rlimit.
-> +The v2 IOMMU splits accounting and pinning into separate operations:
-> +
-> +- VFIO_IOMMU_SPAPR_REGISTER_MEMORY/VFIO_IOMMU_SPAPR_UNREGISTER_MEMORY ioctls
-> +receive a user space address and size of the block to be pinned.
-> +Bisecting is not supported and VFIO_IOMMU_UNREGISTER_MEMORY is expected to
-> +be called with the exact address and size used for registering
-> +the memory block. The userspace is not expected to call these often.
-> +The ranges are stored in a linked list in a VFIO container.
-> +
-> +- VFIO_IOMMU_MAP_DMA/VFIO_IOMMU_UNMAP_DMA ioctls only update the actual
-> +IOMMU table and do not do pinning; instead these check that the userspace
-> +address is from pre-registered range.
-> +
-> +This separation helps in optimizing DMA for guests.
-> +
->  -------------------------------------------------------------------------------
->  
->  [1] VFIO was originally an acronym for "Virtual Function I/O" in its
-> diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
-> index eb75726..667aa1a 100644
-> --- a/arch/powerpc/include/asm/iommu.h
-> +++ b/arch/powerpc/include/asm/iommu.h
-> @@ -90,9 +90,7 @@ struct iommu_table {
->  	struct iommu_pool pools[IOMMU_NR_POOLS];
->  	unsigned long *it_map;       /* A simple allocation bitmap for now */
->  	unsigned long  it_page_shift;/* table iommu page size */
-> -#ifdef CONFIG_IOMMU_API
-> -	struct iommu_group *it_group;
-> -#endif
-> +	struct iommu_table_group *it_group;
->  	struct iommu_table_ops *it_ops;
->  	void (*set_bypass)(struct iommu_table *tbl, bool enable);
->  };
-> @@ -126,14 +124,24 @@ extern void iommu_free_table(struct iommu_table *tbl, const char *node_name);
->   */
->  extern struct iommu_table *iommu_init_table(struct iommu_table * tbl,
->  					    int nid);
-> +
-> +#define IOMMU_TABLE_GROUP_MAX_TABLES	1
-> +
-> +struct iommu_table_group {
->  #ifdef CONFIG_IOMMU_API
-> -extern void iommu_register_group(struct iommu_table *tbl,
-> +	struct iommu_group *group;
-> +#endif
-> +	struct iommu_table tables[IOMMU_TABLE_GROUP_MAX_TABLES];
-> +};
-> +
-> +#ifdef CONFIG_IOMMU_API
-> +extern void iommu_register_group(struct iommu_table_group *table_group,
->  				 int pci_domain_number, unsigned long pe_num);
->  extern int iommu_add_device(struct device *dev);
->  extern void iommu_del_device(struct device *dev);
->  extern int __init tce_iommu_bus_notifier_init(void);
->  #else
-> -static inline void iommu_register_group(struct iommu_table *tbl,
-> +static inline void iommu_register_group(struct iommu_table_group *table_group,
->  					int pci_domain_number,
->  					unsigned long pe_num)
+> V2:
+>  - remove unused return value from orderly_*
+>  - use correct command in orderly_poweroff
+>  - the reboot command will not have a proc knob to control it, so
+>    it can be made const and static
+>
+>  include/linux/reboot.h |  3 ++-
+>  kernel/reboot.c        | 53 +++++++++++++++++++++++++++++++++++++++++++++-----
+>  2 files changed, 50 insertions(+), 6 deletions(-)
+>
+> diff --git a/include/linux/reboot.h b/include/linux/reboot.h
+> index 48bf152..dc5e3bd 100644
+> --- a/include/linux/reboot.h
+> +++ b/include/linux/reboot.h
+> @@ -67,7 +67,8 @@ void ctrl_alt_del(void);
+>  #define POWEROFF_CMD_PATH_LEN  256
+>  extern char poweroff_cmd[POWEROFF_CMD_PATH_LEN];
+>
+> -extern int orderly_poweroff(bool force);
+> +extern void orderly_poweroff(bool force);
 
+Should making orderly_poweroff() void be in a separate patch?
 
-Not a new problem, but there's some awfully liberal use of the namespace
-with function names here.  IOMMU API uses iommu_foo() functions.  IOMMU
-group related interfaces within the IOMMU API include "group" somewhere
-in that name.  powerpc specific functions should include a tag to avoid
-causing conflicts there.
+Thanks,
 
-(sorry for commenting twice on the same patch)
+-- 
+Julian Calaby
+
+Email: julian.calaby@gmail.com
+Profile: http://www.google.com/profiles/julian.calaby/
