@@ -1,18 +1,18 @@
 Return-Path: <joel@jms.id.au>
-Received: from mail-pa0-x230.google.com (mail-pa0-x230.google.com
- [IPv6:2607:f8b0:400e:c03::230])
+Received: from mail-pd0-x236.google.com (mail-pd0-x236.google.com
+ [IPv6:2607:f8b0:400e:c02::236])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49A3C1A07BF
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Apr 2015 18:05:25 +1100 (AEDT)
-Received: by patj18 with SMTP id j18so43686885pat.2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Apr 2015 00:05:23 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 63AA31A0895
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Apr 2015 18:05:30 +1100 (AEDT)
+Received: by pddn5 with SMTP id n5so45891121pdd.2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Apr 2015 00:05:28 -0700 (PDT)
 From: Joel Stanley <joel@jms.id.au>
 To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  sparclinux@vger.kernel.org
-Subject: [PATCH v2 2/3] kernel/reboot.c: Add orderly_reboot for graceful reboot
-Date: Wed,  1 Apr 2015 17:34:47 +1030
-Message-Id: <1427871888-27331-2-git-send-email-joel@jms.id.au>
+Subject: [PATCH v2 3/3] powerpc/powernv: Reboot when requested by firmware
+Date: Wed,  1 Apr 2015 17:34:48 +1030
+Message-Id: <1427871888-27331-3-git-send-email-joel@jms.id.au>
 In-Reply-To: <1427871888-27331-1-git-send-email-joel@jms.id.au>
 References: <1427871888-27331-1-git-send-email-joel@jms.id.au>
 Cc: rusty@rustcorp.com.au, fabf@skynet.be, jk@ozlabs.org,
@@ -26,139 +26,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The kernel has orderly_poweroff which allows the kernel to initiate a
-graceful shutdown of userspace, by running /sbin/poweroff. This adds
-orderly_reboot that will cause userspace to shut itself down by calling
-/sbin/reboot.
-
-This will be used for shutdown initiated by a system controller on
-platforms that do not use ACPI.
-
-orderly_reboot() should be used when the system wants to allow userspace
-to gracefully shut itself down. For cases where the system may
-imminently catch on fire, the existing emergency_restart() provides an
-immediate reboot without involving userspace.
+Use orderly_reboot so userspace will to shut itself down via the reboot
+path. This is required for graceful reboot initiated by the BMC, such
+as when a user uses ipmitool to issue a 'chassis power cycle' command.
 
 Signed-off-by: Joel Stanley <joel@jms.id.au>
+Acked-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
-V2:
- - remove unused return value from orderly_*
- - use correct command in orderly_poweroff
- - the reboot command will not have a proc knob to control it, so
-   it can be made const and static
+ arch/powerpc/platforms/powernv/opal-power.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
- include/linux/reboot.h |  3 ++-
- kernel/reboot.c        | 53 +++++++++++++++++++++++++++++++++++++++++++++-----
- 2 files changed, 50 insertions(+), 6 deletions(-)
-
-diff --git a/include/linux/reboot.h b/include/linux/reboot.h
-index 48bf152..dc5e3bd 100644
---- a/include/linux/reboot.h
-+++ b/include/linux/reboot.h
-@@ -67,7 +67,8 @@ void ctrl_alt_del(void);
- #define POWEROFF_CMD_PATH_LEN	256
- extern char poweroff_cmd[POWEROFF_CMD_PATH_LEN];
+diff --git a/arch/powerpc/platforms/powernv/opal-power.c b/arch/powerpc/platforms/powernv/opal-power.c
+index 48bf5b0..ac46c2c 100644
+--- a/arch/powerpc/platforms/powernv/opal-power.c
++++ b/arch/powerpc/platforms/powernv/opal-power.c
+@@ -29,8 +29,9 @@ static int opal_power_control_event(struct notifier_block *nb,
  
--extern int orderly_poweroff(bool force);
-+extern void orderly_poweroff(bool force);
-+extern void orderly_reboot(void);
- 
- /*
-  * Emergency restart, callable from an interrupt handler.
-diff --git a/kernel/reboot.c b/kernel/reboot.c
-index a3a9e24..0ace9f6 100644
---- a/kernel/reboot.c
-+++ b/kernel/reboot.c
-@@ -306,8 +306,9 @@ void ctrl_alt_del(void)
- }
- 
- char poweroff_cmd[POWEROFF_CMD_PATH_LEN] = "/sbin/poweroff";
-+static const char reboot_cmd[] = "/sbin/reboot";
- 
--static int __orderly_poweroff(bool force)
-+static int run_cmd(const char *cmd)
- {
- 	char **argv;
- 	static char *envp[] = {
-@@ -316,8 +317,7 @@ static int __orderly_poweroff(bool force)
- 		NULL
- 	};
- 	int ret;
--
--	argv = argv_split(GFP_KERNEL, poweroff_cmd, NULL);
-+	argv = argv_split(GFP_KERNEL, cmd, NULL);
- 	if (argv) {
- 		ret = call_usermodehelper(argv[0], argv, envp, UMH_WAIT_EXEC);
- 		argv_free(argv);
-@@ -325,8 +325,33 @@ static int __orderly_poweroff(bool force)
- 		ret = -ENOMEM;
- 	}
- 
-+	return ret;
-+}
-+
-+static int __orderly_reboot(void)
-+{
-+	int ret;
-+
-+	ret = run_cmd(reboot_cmd);
-+
-+	if (ret) {
-+		pr_warn("Failed to start orderly reboot: forcing the issue\n");
-+		emergency_sync();
-+		kernel_restart(NULL);
-+	}
-+
-+	return ret;
-+}
-+
-+static int __orderly_poweroff(bool force)
-+{
-+	int ret;
-+
-+	ret = run_cmd(poweroff_cmd);
-+
- 	if (ret && force) {
- 		pr_warn("Failed to start orderly shutdown: forcing the issue\n");
-+
- 		/*
- 		 * I guess this should try to kick off some daemon to sync and
- 		 * poweroff asap.  Or not even bother syncing if we're doing an
-@@ -355,15 +380,33 @@ static DECLARE_WORK(poweroff_work, poweroff_work_func);
-  * This may be called from any context to trigger a system shutdown.
-  * If the orderly shutdown fails, it will force an immediate shutdown.
-  */
--int orderly_poweroff(bool force)
-+void orderly_poweroff(bool force)
- {
- 	if (force) /* do not override the pending "true" */
- 		poweroff_force = true;
- 	schedule_work(&poweroff_work);
--	return 0;
- }
- EXPORT_SYMBOL_GPL(orderly_poweroff);
- 
-+static void reboot_work_func(struct work_struct *work)
-+{
-+	__orderly_reboot();
-+}
-+
-+static DECLARE_WORK(reboot_work, reboot_work_func);
-+
-+/**
-+ * orderly_reboot - Trigger an orderly system reboot
-+ *
-+ * This may be called from any context to trigger a system reboot.
-+ * If the orderly reboot fails, it will force an immediate reboot.
-+ */
-+void orderly_reboot(void)
-+{
-+	schedule_work(&reboot_work);
-+}
-+EXPORT_SYMBOL_GPL(orderly_reboot);
-+
- static int __init reboot_setup(char *str)
- {
- 	for (;;) {
+ 	switch (type) {
+ 	case SOFT_REBOOT:
+-		/* Fall through. The service processor is responsible for
+-		 * bringing the machine back up */
++		pr_info("OPAL: reboot requested\n");
++		orderly_reboot();
++		break;
+ 	case SOFT_OFF:
+ 		pr_info("OPAL: poweroff requested\n");
+ 		orderly_poweroff(true);
 -- 
 2.1.4
