@@ -1,22 +1,19 @@
-Return-Path: <joel@jms.id.au>
-Received: from mail-pd0-x236.google.com (mail-pd0-x236.google.com
- [IPv6:2607:f8b0:400e:c02::236])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <jk@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 63AA31A0895
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Apr 2015 18:05:30 +1100 (AEDT)
-Received: by pddn5 with SMTP id n5so45891121pdd.2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Apr 2015 00:05:28 -0700 (PDT)
-From: Joel Stanley <joel@jms.id.au>
-To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- sparclinux@vger.kernel.org
-Subject: [PATCH v2 3/3] powerpc/powernv: Reboot when requested by firmware
-Date: Wed,  1 Apr 2015 17:34:48 +1030
-Message-Id: <1427871888-27331-3-git-send-email-joel@jms.id.au>
-In-Reply-To: <1427871888-27331-1-git-send-email-joel@jms.id.au>
-References: <1427871888-27331-1-git-send-email-joel@jms.id.au>
-Cc: rusty@rustcorp.com.au, fabf@skynet.be, jk@ozlabs.org,
- akpm@linux-foundation.org, davem@davemloft.net
+ by lists.ozlabs.org (Postfix) with ESMTPS id 289E11A0729
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Apr 2015 18:15:56 +1100 (AEDT)
+Message-ID: <551B9B2A.10109@ozlabs.org>
+Date: Wed, 01 Apr 2015 15:15:54 +0800
+From: Jeremy Kerr <jk@ozlabs.org>
+MIME-Version: 1.0
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] powerpc: Remove the celleb support
+References: <1426738520-21905-1-git-send-email-mpe@ellerman.id.au>
+In-Reply-To: <1426738520-21905-1-git-send-email-mpe@ellerman.id.au>
+Content-Type: text/plain; charset=utf-8
+Cc: cbe-oss-dev@ozlabs.org, Arnd Bergmann <arnd@arndb.de>, dja@axtens.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,31 +23,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Use orderly_reboot so userspace will to shut itself down via the reboot
-path. This is required for graceful reboot initiated by the BMC, such
-as when a user uses ipmitool to issue a 'chassis power cycle' command.
+Hi Michael,
 
-Signed-off-by: Joel Stanley <joel@jms.id.au>
-Acked-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/platforms/powernv/opal-power.c | 5 +++--
- 1 file changed, 3 insertions(+), 2 deletions(-)
+> The celleb code has seen no actual development for ~7 years.
+> 
+> We (maintainers) have no access to test hardware, and it is highly
+> likely the code has bit-rotted.
+> 
+> As far as we're aware the hardware was never widely available, and is
+> certainly no longer available, and no one on the list has shown any
+> interest in it over the years.
+> 
+> So remove it. If anyone has one and cares please speak up.
 
-diff --git a/arch/powerpc/platforms/powernv/opal-power.c b/arch/powerpc/platforms/powernv/opal-power.c
-index 48bf5b0..ac46c2c 100644
---- a/arch/powerpc/platforms/powernv/opal-power.c
-+++ b/arch/powerpc/platforms/powernv/opal-power.c
-@@ -29,8 +29,9 @@ static int opal_power_control_event(struct notifier_block *nb,
- 
- 	switch (type) {
- 	case SOFT_REBOOT:
--		/* Fall through. The service processor is responsible for
--		 * bringing the machine back up */
-+		pr_info("OPAL: reboot requested\n");
-+		orderly_reboot();
-+		break;
- 	case SOFT_OFF:
- 		pr_info("OPAL: poweroff requested\n");
- 		orderly_poweroff(true);
--- 
-2.1.4
+I've never had any spufs-related feedback from celleb platforms either.
+
+Acked-by: Jeremy Kerr <jk@ozlabs.org>
+
+Cheers,
+
+
+Jeremy
