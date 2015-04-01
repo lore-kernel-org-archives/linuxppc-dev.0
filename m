@@ -1,22 +1,21 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 69C7D1A072A
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Apr 2015 13:40:39 +1100 (AEDT)
-Message-ID: <1427856038.4256.7.camel@ellerman.id.au>
-Subject: Re: [PATCH] powerpc: fix memory corruption by
- pnv_alloc_idle_core_states
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Jan Stancek <jstancek@redhat.com>
-Date: Wed, 01 Apr 2015 13:40:38 +1100
-In-Reply-To: <67174f780b3615749546d5a6d5bfba4c4f26a855.1427818011.git.jstancek@redhat.com>
-References: <67174f780b3615749546d5a6d5bfba4c4f26a855.1427818011.git.jstancek@redhat.com>
-Content-Type: text/plain; charset="UTF-8"
+Return-Path: <davem@davemloft.net>
+Received: from shards.monkeyblade.net (shards.monkeyblade.net
+ [IPv6:2001:4f8:3:36:211:85ff:fe63:a549])
+ by lists.ozlabs.org (Postfix) with ESMTP id CED201A0145
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Apr 2015 14:12:29 +1100 (AEDT)
+Date: Tue, 31 Mar 2015 23:12:24 -0400 (EDT)
+Message-Id: <20150331.231224.402909066860518278.davem@davemloft.net>
+To: sowmini.varadhan@oracle.com
+Subject: Re: [PATCH v8 RFC 0/3] Generic IOMMU pooled allocator
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <551B4502.1020603@oracle.com>
+References: <20150331180642.GA13314@oracle.com>
+ <1427850091.20500.150.camel@kernel.crashing.org>
+ <551B4502.1020603@oracle.com>
 Mime-Version: 1.0
-Cc: mikey@neuling.org, linux-kernel@vger.kernel.org, sbest@redhat.com,
- paulus@samba.org, shreyas@linux.vnet.ibm.com, preeti@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org
+Content-Type: Text/Plain; charset=us-ascii
+Cc: aik@au1.ibm.com, anton@au1.ibm.com, paulus@samba.org,
+ sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,18 +25,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-03-31 at 18:11 +0200, Jan Stancek wrote:
-> Space allocated for paca is based off nr_cpu_ids,
-> but pnv_alloc_idle_core_states() iterates paca with
-> cpu_nr_cores()*threads_per_core, which is using NR_CPUS.
-> 
-> This causes pnv_alloc_idle_core_states() to write over memory,
-> which is outside of paca array and may later lead to various panics.
-> 
-> Fixes: 7cba160ad789 (powernv/cpuidle: Redesign idle states management)
-> Signed-off-by: Jan Stancek <jstancek@redhat.com>
+From: Sowmini Varadhan <sowmini.varadhan@oracle.com>
+Date: Tue, 31 Mar 2015 21:08:18 -0400
 
-Thanks. I'll send that to Linus in the next day or two and mark it for stable
-as well.
+> I'm starting to wonder if  some approximation of dma premapped
+> buffers may be needed. Doing a map/unmap on each packet is expensive.
 
-cheers
+It's much more amortized with smart buffering strategies, which are
+common on current generation networking cards.
+
+There you only eat one map/unmap per "PAGE_SIZE / rx_pkt_size".
+
+Maybe the infiniband stuff is doing things very suboptimally, and
+actually with that subsystem and drivers absolutely nothing would
+surprise me.
