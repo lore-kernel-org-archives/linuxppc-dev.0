@@ -1,39 +1,22 @@
-Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <alex.williamson@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 87FAF1A1147
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Apr 2015 05:27:40 +1100 (AEDT)
-Received: from /spool/local
- by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Wed, 1 Apr 2015 12:27:38 -0600
-Received: from b01cxnp22036.gho.pok.ibm.com (b01cxnp22036.gho.pok.ibm.com
- [9.57.198.26])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 09C0FC90041
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Apr 2015 14:18:44 -0400 (EDT)
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
- by b01cxnp22036.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t31IRYrW28835974
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Apr 2015 18:27:34 GMT
-Received: from d01av02.pok.ibm.com (localhost [127.0.0.1])
- by d01av02.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t31IRWvt017794
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Apr 2015 14:27:33 -0400
-Date: Wed, 1 Apr 2015 11:26:32 -0700
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: Joe Perches <joe@perches.com>
-Subject: Re: [PATCH v2 08/10] perf/hv24x7: Whitespace cleanup
-Message-ID: <20150401182632.GA4287@us.ibm.com>
-References: <1427766828-771-1-git-send-email-sukadev@linux.vnet.ibm.com>
- <1427766828-771-9-git-send-email-sukadev@linux.vnet.ibm.com>
- <1427771281.14276.48.camel@perches.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1427771281.14276.48.camel@perches.com>
-Cc: peterz@infradead.org, linux-kernel@vger.kernel.org, dev@codyps.com,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id D835E1A0743
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Apr 2015 08:48:15 +1100 (AEDT)
+Message-ID: <1427924889.5567.302.camel@redhat.com>
+Subject: Re: [PATCH kernel v7 28/31] powerpc/mmu: Add userspace-to-physical
+ addresses translation cache
+From: Alex Williamson <alex.williamson@redhat.com>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Date: Wed, 01 Apr 2015 15:48:09 -0600
+In-Reply-To: <1427468115-2224-29-git-send-email-aik@ozlabs.ru>
+References: <1427468115-2224-1-git-send-email-aik@ozlabs.ru>
+ <1427468115-2224-29-git-send-email-aik@ozlabs.ru>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,37 +26,333 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Joe Perches [joe@perches.com] wrote:
-| On Mon, 2015-03-30 at 18:53 -0700, Sukadev Bhattiprolu wrote:
-| > Fix minor whitespace damages.
-| 
-| If you are going to do whitespace cleaning,
-| please verify the patches with scripts/checkpatch.pl --strict.
+On Sat, 2015-03-28 at 01:55 +1100, Alexey Kardashevskiy wrote:
+> We are adding support for DMA memory pre-registration to be used in
+> conjunction with VFIO. The idea is that the userspace which is going to
+> run a guest may want to pre-register a user space memory region so
+> it all gets pinned once and never goes away. Having this done,
+> a hypervisor will not have to pin/unpin pages on every DMA map/unmap
+> request. This is going to help with multiple pinning of the same memory
+> and in-kernel acceleration of DMA requests.
+> 
+> This adds a list of memory regions to mm_context_t. Each region consists
+> of a header and a list of physical addresses. This adds API to:
+> 1. register/unregister memory regions;
+> 2. do final cleanup (which puts all pre-registered pages);
+> 3. do userspace to physical address translation;
+> 4. manage a mapped pages counter; when it is zero, it is safe to
+> unregister the region.
+> 
+> Multiple registration of the same region is allowed, kref is used to
+> track the number of registrations.
+> 
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> ---
+>  arch/powerpc/include/asm/mmu-hash64.h      |   3 +
+>  arch/powerpc/include/asm/mmu_context.h     |  16 +++
+>  arch/powerpc/mm/Makefile                   |   1 +
+>  arch/powerpc/mm/mmu_context_hash64.c       |   6 +
+>  arch/powerpc/mm/mmu_context_hash64_iommu.c | 215 +++++++++++++++++++++++++++++
+>  5 files changed, 241 insertions(+)
+>  create mode 100644 arch/powerpc/mm/mmu_context_hash64_iommu.c
+> 
+> diff --git a/arch/powerpc/include/asm/mmu-hash64.h b/arch/powerpc/include/asm/mmu-hash64.h
+> index 4f13c3e..83214c4 100644
+> --- a/arch/powerpc/include/asm/mmu-hash64.h
+> +++ b/arch/powerpc/include/asm/mmu-hash64.h
+> @@ -535,6 +535,9 @@ typedef struct {
+>  	/* for 4K PTE fragment support */
+>  	void *pte_frag;
+>  #endif
+> +#ifdef CONFIG_SPAPR_TCE_IOMMU
+> +	struct list_head iommu_group_mem_list;
+> +#endif
+>  } mm_context_t;
+>  
+> 
+> diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/include/asm/mmu_context.h
+> index 73382eb..3461c91 100644
+> --- a/arch/powerpc/include/asm/mmu_context.h
+> +++ b/arch/powerpc/include/asm/mmu_context.h
+> @@ -16,6 +16,22 @@
+>   */
+>  extern int init_new_context(struct task_struct *tsk, struct mm_struct *mm);
+>  extern void destroy_context(struct mm_struct *mm);
+> +#ifdef CONFIG_SPAPR_TCE_IOMMU
+> +typedef struct mm_iommu_table_group_mem_t mm_iommu_table_group_mem_t;
+> +
+> +extern bool mm_iommu_preregistered(void);
+> +extern long mm_iommu_alloc(unsigned long ua, unsigned long entries,
+> +		mm_iommu_table_group_mem_t **pmem);
+> +extern mm_iommu_table_group_mem_t *mm_iommu_get(unsigned long ua,
+> +		unsigned long entries);
+> +extern long mm_iommu_put(mm_iommu_table_group_mem_t *mem);
+> +extern void mm_iommu_cleanup(mm_context_t *ctx);
+> +extern mm_iommu_table_group_mem_t *mm_iommu_lookup(unsigned long ua,
+> +		unsigned long size);
+> +extern long mm_iommu_ua_to_hpa(mm_iommu_table_group_mem_t *mem,
+> +		unsigned long ua, unsigned long *hpa);
+> +extern long mm_iommu_mapped_update(mm_iommu_table_group_mem_t *mem, bool inc);
+> +#endif
+>  
+>  extern void switch_mmu_context(struct mm_struct *prev, struct mm_struct *next);
+>  extern void switch_slb(struct task_struct *tsk, struct mm_struct *mm);
+> diff --git a/arch/powerpc/mm/Makefile b/arch/powerpc/mm/Makefile
+> index 438dcd3..49fbfc7 100644
+> --- a/arch/powerpc/mm/Makefile
+> +++ b/arch/powerpc/mm/Makefile
+> @@ -35,3 +35,4 @@ obj-$(CONFIG_PPC_SUBPAGE_PROT)	+= subpage-prot.o
+>  obj-$(CONFIG_NOT_COHERENT_CACHE) += dma-noncoherent.o
+>  obj-$(CONFIG_HIGHMEM)		+= highmem.o
+>  obj-$(CONFIG_PPC_COPRO_BASE)	+= copro_fault.o
+> +obj-$(CONFIG_SPAPR_TCE_IOMMU)	+= mmu_context_hash64_iommu.o
+> diff --git a/arch/powerpc/mm/mmu_context_hash64.c b/arch/powerpc/mm/mmu_context_hash64.c
+> index 178876ae..eb3080c 100644
+> --- a/arch/powerpc/mm/mmu_context_hash64.c
+> +++ b/arch/powerpc/mm/mmu_context_hash64.c
+> @@ -89,6 +89,9 @@ int init_new_context(struct task_struct *tsk, struct mm_struct *mm)
+>  #ifdef CONFIG_PPC_64K_PAGES
+>  	mm->context.pte_frag = NULL;
+>  #endif
+> +#ifdef CONFIG_SPAPR_TCE_IOMMU
+> +	INIT_LIST_HEAD_RCU(&mm->context.iommu_group_mem_list);
+> +#endif
+>  	return 0;
+>  }
+>  
+> @@ -132,6 +135,9 @@ static inline void destroy_pagetable_page(struct mm_struct *mm)
+>  
+>  void destroy_context(struct mm_struct *mm)
+>  {
+> +#ifdef CONFIG_SPAPR_TCE_IOMMU
+> +	mm_iommu_cleanup(&mm->context);
+> +#endif
+>  
+>  #ifdef CONFIG_PPC_ICSWX
+>  	drop_cop(mm->context.acop, mm);
+> diff --git a/arch/powerpc/mm/mmu_context_hash64_iommu.c b/arch/powerpc/mm/mmu_context_hash64_iommu.c
+> new file mode 100644
+> index 0000000..c268c4d
+> --- /dev/null
+> +++ b/arch/powerpc/mm/mmu_context_hash64_iommu.c
+> @@ -0,0 +1,215 @@
+> +/*
+> + *  IOMMU helpers in MMU context.
+> + *
+> + *  Copyright (C) 2015 IBM Corp. <aik@ozlabs.ru>
+> + *
+> + *  This program is free software; you can redistribute it and/or
+> + *  modify it under the terms of the GNU General Public License
+> + *  as published by the Free Software Foundation; either version
+> + *  2 of the License, or (at your option) any later version.
+> + *
+> + */
+> +
+> +#include <linux/sched.h>
+> +#include <linux/slab.h>
+> +#include <linux/rculist.h>
+> +#include <linux/vmalloc.h>
+> +#include <linux/kref.h>
+> +#include <asm/mmu_context.h>
+> +
+> +typedef struct mm_iommu_table_group_mem_t {
+> +	struct list_head next;
+> +	struct rcu_head rcu;
+> +	struct kref kref; /* one reference per VFIO container */
+> +	atomic_t mapped;/* number of currently mapped pages */
+> +	u64 ua; 	/* userspace address */
+> +	u64 entries; 	/* number of entries in hpas[] */
+> +	u64 *hpas;	/* vmalloc'ed */
+> +} mm_iommu_table_group_mem_t;
+> +
+> +bool mm_iommu_preregistered(void)
+> +{
+> +	if (!current || !current->mm)
+> +		return false;
+> +
+> +	return !list_empty(&current->mm->context.iommu_group_mem_list);
+> +}
+> +EXPORT_SYMBOL_GPL(mm_iommu_preregistered);
+> +
+> +long mm_iommu_alloc(unsigned long ua, unsigned long entries,
+> +		mm_iommu_table_group_mem_t **pmem)
+> +{
+> +	mm_iommu_table_group_mem_t *mem;
+> +	long i, j;
+> +	struct page *page = NULL;
+> +
+> +	list_for_each_entry_rcu(mem, &current->mm->context.iommu_group_mem_list,
+> +			next) {
+> +		if ((mem->ua == ua) && (mem->entries == entries))
+> +			return -EBUSY;
+> +
+> +		/* Overlap? */
+> +		if ((mem->ua < (ua + (entries << PAGE_SHIFT))) &&
+> +				(ua < (mem->ua + (mem->entries << PAGE_SHIFT))))
+> +			return -EINVAL;
+> +	}
+> +
+> +	mem = kzalloc(sizeof(*mem), GFP_KERNEL);
+> +	if (!mem)
+> +		return -ENOMEM;
+> +
+> +	mem->hpas = vzalloc(entries * sizeof(mem->hpas[0]));
+> +	if (!mem->hpas) {
+> +		kfree(mem);
+> +		return -ENOMEM;
+> +	}
+> +
+> +	for (i = 0; i < entries; ++i) {
+> +		if (1 != get_user_pages_fast(ua + (i << PAGE_SHIFT),
+> +					1/* pages */, 1/* iswrite */, &page)) {
+> +			for (j = 0; j < i; ++j)
+> +				put_page(pfn_to_page(
+> +						mem->hpas[i] >> PAGE_SHIFT));
 
-Ok. Will fix up parameter alignment with the open parens in a
-follow on patch.
 
-| 
-| > diff --git a/arch/powerpc/perf/hv-24x7.c b/arch/powerpc/perf/hv-24x7.c
-| []
-| > @@ -1077,7 +1079,6 @@ static unsigned long single_24x7_request(struct perf_event *event, u64 *count)
-| >  	}
-| >  
-| >  	resb = &result_buffer->results[0];
-| > -
-| >  	*count = be64_to_cpu(resb->elements[0].element_data[0]);
-| >  out:
-| >  	return ret;
-| 
-| Does this deletion make the code easier to read?
-| 
-| It might be better just to use:
-| 
-| 	be64 val;
-| 	...
-| 	val = result_buffer->results[0].elements[0].element_data[0];
-| 	*count = be64_to_cpu(val);
+Pretty sure you want [j] here
 
-Agree. Will include in a follow on patch.
 
-Sukadev
+> +			vfree(mem->hpas);
+> +			kfree(mem);
+> +			return -EFAULT;
+> +		}
+> +
+> +		mem->hpas[i] = page_to_pfn(page) << PAGE_SHIFT;
+> +	}
+> +
+> +	kref_init(&mem->kref);
+> +	atomic_set(&mem->mapped, 0);
+> +	mem->ua = ua;
+> +	mem->entries = entries;
+> +	*pmem = mem;
+> +
+> +	list_add_rcu(&mem->next, &current->mm->context.iommu_group_mem_list);
+> +
+> +	return 0;
+> +}
+> +EXPORT_SYMBOL_GPL(mm_iommu_alloc);
+> +
+> +static void mm_iommu_unpin(mm_iommu_table_group_mem_t *mem)
+> +{
+> +	long i;
+> +	struct page *page = NULL;
+> +
+> +	for (i = 0; i < mem->entries; ++i) {
+> +		if (!mem->hpas[i])
+> +			continue;
+> +
+> +		page = pfn_to_page(mem->hpas[i] >> PAGE_SHIFT);
+> +		if (!page)
+> +			continue;
+> +
+> +		put_page(page);
+> +		mem->hpas[i] = 0;
+> +	}
+> +}
+> +
+> +static void mm_iommu_free(struct rcu_head *head)
+> +{
+> +	mm_iommu_table_group_mem_t *mem = container_of(head,
+> +			mm_iommu_table_group_mem_t, rcu);
+> +
+> +	mm_iommu_unpin(mem);
+> +	vfree(mem->hpas);
+> +	kfree(mem);
+> +}
+> +
+> +static void mm_iommu_release(struct kref *kref)
+> +{
+> +	mm_iommu_table_group_mem_t *mem = container_of(kref,
+> +			mm_iommu_table_group_mem_t, kref);
+> +
+> +	list_del_rcu(&mem->next);
+> +	call_rcu(&mem->rcu, mm_iommu_free);
+> +}
+> +
+> +mm_iommu_table_group_mem_t *mm_iommu_get(unsigned long ua,
+> +		unsigned long entries)
+> +{
+> +	mm_iommu_table_group_mem_t *mem;
+> +
+> +	list_for_each_entry_rcu(mem, &current->mm->context.iommu_group_mem_list,
+> +			next) {
+> +		if ((mem->ua == ua) && (mem->entries == entries)) {
+> +			kref_get(&mem->kref);
+> +			return mem;
+> +		}
+> +	}
+> +
+> +	return NULL;
+> +}
+> +EXPORT_SYMBOL_GPL(mm_iommu_get);
+> +
+> +long mm_iommu_put(mm_iommu_table_group_mem_t *mem)
+> +{
+> +	if (atomic_read(&mem->mapped))
+> +		return -EBUSY;
+> +
+> +	kref_put(&mem->kref, mm_iommu_release);
+> +
+> +	return 0;
+> +}
+> +EXPORT_SYMBOL_GPL(mm_iommu_put);
+> +
+> +mm_iommu_table_group_mem_t *mm_iommu_lookup(unsigned long ua,
+> +		unsigned long size)
+> +{
+> +	mm_iommu_table_group_mem_t *mem, *ret = NULL;
+> +
+> +	list_for_each_entry_rcu(mem,
+> +			&current->mm->context.iommu_group_mem_list,
+> +			next) {
+> +		if ((mem->ua <= ua) &&
+> +				(ua + size <= mem->ua +
+> +				 (mem->entries << PAGE_SHIFT))) {
+> +			ret = mem;
+> +			break;
+> +		}
+> +	}
+> +
+> +	return ret;
+> +}
+> +EXPORT_SYMBOL_GPL(mm_iommu_lookup);
+> +
+> +long mm_iommu_ua_to_hpa(mm_iommu_table_group_mem_t *mem,
+> +		unsigned long ua, unsigned long *hpa)
+> +{
+> +	const long entry = (ua - mem->ua) >> PAGE_SHIFT;
+> +	u64 *va = &mem->hpas[entry];
+> +
+> +	if (entry >= mem->entries)
+> +		return -EFAULT;
+> +
+> +	*hpa = *va | (ua & ~PAGE_MASK);
+> +
+> +	return 0;
+> +}
+> +EXPORT_SYMBOL_GPL(mm_iommu_ua_to_hpa);
+> +
+> +long mm_iommu_mapped_update(mm_iommu_table_group_mem_t *mem, bool inc)
+> +{
+> +	long ret = 0;
+> +
+> +	if (inc)
+> +		atomic_inc(&mem->mapped);
+> +	else
+> +		ret = atomic_dec_if_positive(&mem->mapped);
+> +
+> +	return ret;
+> +}
+> +EXPORT_SYMBOL_GPL(mm_iommu_mapped_update);
+> +
+> +void mm_iommu_cleanup(mm_context_t *ctx)
+> +{
+> +	while (!list_empty(&ctx->iommu_group_mem_list)) {
+> +		mm_iommu_table_group_mem_t *mem;
+> +
+> +		mem = list_first_entry(&ctx->iommu_group_mem_list,
+> +				mm_iommu_table_group_mem_t, next);
+> +		mm_iommu_release(&mem->kref);
+> +	}
+> +}
