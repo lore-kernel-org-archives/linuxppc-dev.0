@@ -1,20 +1,20 @@
-Return-Path: <davem@davemloft.net>
-Received: from shards.monkeyblade.net (shards.monkeyblade.net
- [IPv6:2001:4f8:3:36:211:85ff:fe63:a549])
- by lists.ozlabs.org (Postfix) with ESMTP id D4EC01A09F4
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Apr 2015 03:18:16 +1100 (AEDT)
-Date: Wed, 01 Apr 2015 12:18:10 -0400 (EDT)
-Message-Id: <20150401.121810.1558465635261397368.davem@davemloft.net>
-To: joel@jms.id.au
-Subject: Re: [PATCH v2 1/3] envctrl: Ignore orderly_poweroff return value
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1427871888-27331-1-git-send-email-joel@jms.id.au>
-References: <1427871888-27331-1-git-send-email-joel@jms.id.au>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: rusty@rustcorp.com.au, linux-kernel@vger.kernel.org, fabf@skynet.be,
- jk@ozlabs.org, sparclinux@vger.kernel.org, akpm@linux-foundation.org,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <madalin.bucur@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0130.outbound.protection.outlook.com [65.55.169.130])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5ADBF1A09F4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Apr 2015 03:19:52 +1100 (AEDT)
+From: Madalin Bucur <madalin.bucur@freescale.com>
+To: <netdev@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH RFC 01/10] devres: add devm_alloc_percpu()
+Date: Wed, 1 Apr 2015 19:19:39 +0300
+Message-ID: <1427905179-27755-1-git-send-email-madalin.bucur@freescale.com>
+Reply-To: <madalin.bucur@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org, Madalin
+ Bucur <madalin.bucur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,14 +24,133 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Joel Stanley <joel@jms.id.au>
-Date: Wed,  1 Apr 2015 17:34:46 +1030
+Introduce managed counterparts for alloc_percpu() and free_percpu().
+Add devm_alloc_percpu() and devm_free_percpu() into the managed
+interfaces list.
 
-> orderly_poweroff() unconditionally returns 0, so remove the dead code
-> that checks the return value.
-> 
-> A future patch will change the return type to void.
-> 
-> Signed-off-by: Joel Stanley <joel@jms.id.au>
+Signed-off-by: Madalin Bucur <madalin.bucur@freescale.com>
+Tested-by: Madalin-Cristian Bucur <madalin.bucur@freescale.com>
+---
+ Documentation/driver-model/devres.txt |  4 +++
+ drivers/base/devres.c                 | 63 +++++++++++++++++++++++++++++++++++
+ include/linux/device.h                | 19 +++++++++++
+ 3 files changed, 86 insertions(+)
 
-Acked-by: David S. Miller <davem@davemloft.net>
+diff --git a/Documentation/driver-model/devres.txt b/Documentation/driver-model/devres.txt
+index 6d1e8ee..f105669 100644
+--- a/Documentation/driver-model/devres.txt
++++ b/Documentation/driver-model/devres.txt
+@@ -307,6 +307,10 @@ MEM
+   devm_kvasprintf()
+   devm_kzalloc()
+ 
++PER-CPU MEM
++  devm_alloc_percpu()
++  devm_free_percpu()
++
+ PCI
+   pcim_enable_device()	: after success, all PCI ops become managed
+   pcim_pin_device()	: keep PCI device enabled after release
+diff --git a/drivers/base/devres.c b/drivers/base/devres.c
+index c8a53d1..6c76e75 100644
+--- a/drivers/base/devres.c
++++ b/drivers/base/devres.c
+@@ -984,3 +984,66 @@ void devm_free_pages(struct device *dev, unsigned long addr)
+ 			       &devres));
+ }
+ EXPORT_SYMBOL_GPL(devm_free_pages);
++
++static void devm_percpu_release(struct device *dev, void *pdata)
++{
++	void __percpu *p;
++
++	p = *(void __percpu **)pdata;
++	free_percpu(p);
++}
++
++static int devm_percpu_match(struct device *dev, void *data, void *p)
++{
++	struct devres *devr = container_of(data, struct devres, data);
++
++	return *(void **)devr->data == p;
++}
++
++/**
++ * __devm_alloc_percpu - Resource-managed alloc_percpu
++ * @dev: Device to allocate per-cpu memory for
++ * @size: Size of per-cpu memory to allocate
++ * @align: Alignement of per-cpu memory to allocate
++ *
++ * Managed alloc_percpu. Per-cpu memory allocated with this function is
++ * automatically freed on driver detach.
++ *
++ * RETURNS:
++ * Pointer to allocated memory on success, NULL on failure.
++ */
++void __percpu *__devm_alloc_percpu(struct device *dev, size_t size,
++		size_t align)
++{
++	void *p;
++	void __percpu *pcpu;
++
++	pcpu = __alloc_percpu(size, align);
++	if (!pcpu)
++		return NULL;
++
++	p = devres_alloc(devm_percpu_release, sizeof(void *), GFP_KERNEL);
++	if (!p)
++		return NULL;
++
++	*(void __percpu **)p = pcpu;
++
++	devres_add(dev, p);
++
++	return pcpu;
++}
++EXPORT_SYMBOL_GPL(__devm_alloc_percpu);
++
++/**
++ * devm_free_percpu - Resource-managed free_percpu
++ * @dev: Device this memory belongs to
++ * @pdata: Per-cpu memory to free
++ *
++ * Free memory allocated with devm_alloc_percpu().
++ */
++void devm_free_percpu(struct device *dev, void __percpu *pdata)
++{
++	WARN_ON(devres_destroy(dev, devm_percpu_release, devm_percpu_match,
++			       (void *)pdata));
++}
++EXPORT_SYMBOL_GPL(devm_free_percpu);
+diff --git a/include/linux/device.h b/include/linux/device.h
+index 0eb8ee2..5b570f4 100644
+--- a/include/linux/device.h
++++ b/include/linux/device.h
+@@ -641,6 +641,25 @@ void __iomem *devm_ioremap_resource(struct device *dev, struct resource *res);
+ int devm_add_action(struct device *dev, void (*action)(void *), void *data);
+ void devm_remove_action(struct device *dev, void (*action)(void *), void *data);
+ 
++/**
++ * devm_alloc_percpu - Resource-managed alloc_percpu
++ * @dev: Device to allocate per-cpu memory for
++ * @type: Type to allocate per-cpu memory for
++ *
++ * Managed alloc_percpu. Per-cpu memory allocated with this function is
++ * automatically freed on driver detach.
++ *
++ * RETURNS:
++ * Pointer to allocated memory on success, NULL on failure.
++ */
++#define devm_alloc_percpu(dev, type)      \
++	(typeof(type) __percpu *)__devm_alloc_percpu(dev, sizeof(type), \
++						     __alignof__(type))
++
++void __percpu *__devm_alloc_percpu(struct device *dev, size_t size,
++				   size_t align);
++void devm_free_percpu(struct device *dev, void __percpu *pdata);
++
+ struct device_dma_parameters {
+ 	/*
+ 	 * a low level driver may set these to teach IOMMU code about
+-- 
+1.7.11.7
