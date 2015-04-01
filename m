@@ -1,23 +1,24 @@
-Return-Path: <joe@perches.com>
-Received: from smtprelay.hostedemail.com (smtprelay0042.hostedemail.com
- [216.40.44.42])
- by lists.ozlabs.org (Postfix) with ESMTP id 148511A1914
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Apr 2015 04:11:44 +1100 (AEDT)
-Message-ID: <1427908299.31790.51.camel@perches.com>
-Subject: Re: [PATCH RFC 06/10] dpaa_eth: add ethtool functionality
-From: Joe Perches <joe@perches.com>
-To: madalin.bucur@freescale.com
-Date: Wed, 01 Apr 2015 10:11:39 -0700
-In-Reply-To: <1427905196-27778-5-git-send-email-madalin.bucur@freescale.com>
-References: <1427905196-27778-1-git-send-email-madalin.bucur@freescale.com>
- <1427905196-27778-2-git-send-email-madalin.bucur@freescale.com>
- <1427905196-27778-3-git-send-email-madalin.bucur@freescale.com>
- <1427905196-27778-4-git-send-email-madalin.bucur@freescale.com>
- <1427905196-27778-5-git-send-email-madalin.bucur@freescale.com>
-Content-Type: text/plain; charset="ISO-8859-1"
-Mime-Version: 1.0
-Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Return-Path: <peterz@infradead.org>
+Received: from casper.infradead.org (casper.infradead.org [85.118.1.10])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id C74CC1A0C9E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Apr 2015 05:10:32 +1100 (AEDT)
+Date: Wed, 1 Apr 2015 20:10:23 +0200
+From: Peter Zijlstra <peterz@infradead.org>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Subject: Re: [PATCH 4/4] perf/powerpc: Implement group_read() txn interface
+ for 24x7 counters
+Message-ID: <20150401181023.GY27490@worktop.programming.kicks-ass.net>
+References: <1425458108-3341-1-git-send-email-sukadev@linux.vnet.ibm.com>
+ <1425458108-3341-5-git-send-email-sukadev@linux.vnet.ibm.com>
+ <20150317065733.GN2896@worktop.programming.kicks-ass.net>
+ <20150326055705.GA5593@us.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20150326055705.GA5593@us.ibm.com>
+Cc: dev@codyps.com, Paul Mackerras <paulus@samba.org>,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,31 +28,10 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2015-04-01 at 19:19 +0300, Madalin Bucur wrote:
-> Add support for basic ethtool operations.
+On Wed, Mar 25, 2015 at 10:57:05PM -0700, Sukadev Bhattiprolu wrote:
+> Would something liks this work?
+> 
 
-> diff --git a/drivers/net/ethernet/freescale/dpaa/dpaa_ethtool.c b/drivers/net/ethernet/freescale/dpaa/dpaa_ethtool.c
-[]
-> +static int __cold dpa_get_settings(struct net_device *net_dev,
-> +				   struct ethtool_cmd *et_cmd)
-> +{
-> +	int			 _errno;
+Sure, that looks fine.
 
-Using a variable name of _errno is misleading at best,
-(btw: the only return value for phy_ethtool_gset is 0)
-
-> +static void __cold dpa_get_drvinfo(struct net_device *net_dev,
-> +				   struct ethtool_drvinfo *drvinfo)
-> +{
-> +	int		 _errno;
-> +
-> +	strncpy(drvinfo->driver, KBUILD_MODNAME,
-> +		sizeof(drvinfo->driver) - 1)[sizeof(drvinfo->driver) - 1] = 0;
-
-That's a really odd and unusual construct
-more commonly written as strlcpy
-
-> +	_errno = snprintf(drvinfo->version, sizeof(drvinfo->version),
-
-Using errno here is especially misleading as that's
-not the return value of an snprintf
+Thanks.
