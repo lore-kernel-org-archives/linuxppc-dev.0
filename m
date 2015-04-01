@@ -1,24 +1,28 @@
-Return-Path: <sudeep.holla@arm.com>
-Received: from foss.arm.com (foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id DC8271A0744
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Apr 2015 20:55:04 +1100 (AEDT)
-Message-ID: <551BC0B4.8050007@arm.com>
-Date: Wed, 01 Apr 2015 10:56:04 +0100
-From: Sudeep Holla <sudeep.holla@arm.com>
+Return-Path: <clg@fr.ibm.com>
+Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0866F1A0748
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Apr 2015 21:15:34 +1100 (AEDT)
+Received: from /spool/local
+ by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <clg@fr.ibm.com>;
+ Wed, 1 Apr 2015 11:15:31 +0100
+From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@fr.ibm.com>
+To: lm-sensors@lm-sensors.org
+Subject: [PATCH 0/4]  hwmon: (ibmpowernv) add DTS support
+Date: Wed,  1 Apr 2015 12:15:02 +0200
+Message-Id: <1427883306-32528-1-git-send-email-clg@fr.ibm.com>
+In-Reply-To: <1426787085-9004-1-git-send-email-clg@fr.ibm.com>
+References: <1426787085-9004-1-git-send-email-clg@fr.ibm.com>
 MIME-Version: 1.0
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [RFC/RFT,
- RESEND] powerpc: move cacheinfo sysfs to generic cacheinfo
- infrastructure
-References: <20150331105637.39B451400DE@ozlabs.org>	
- <551AD5E4.2040103@arm.com> <1427863242.4256.10.camel@ellerman.id.au>
-In-Reply-To: <1427863242.4256.10.camel@ellerman.id.au>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Cc: Paul Mackerras <paulus@samba.org>,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Sudeep Holla <sudeep.holla@arm.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: Stewart Smith <stewart@linux.vnet.ibm.com>,
+ =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@fr.ibm.com>,
+ Jean Delvare <jdelvare@suse.de>, Neelesh Gupta <neelegup@linux.vnet.ibm.com>,
+ skiboot@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org,
+ Guenter Roeck <linux@roeck-us.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,66 +32,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hello !
 
+These patches extend the ibmpowernv driver to support the new OPAL firmware 
+which now exposes in its device tree the Digital Temperature Sensors of 
+a P8 system.
 
-On 01/04/15 05:40, Michael Ellerman wrote:
-> On Tue, 2015-03-31 at 18:14 +0100, Sudeep Holla wrote:
->>
->> On 31/03/15 11:56, Michael Ellerman wrote:
->>> On Mon, 2015-23-02 at 18:18:20 UTC, Sudeep Holla wrote:
->>>> This patch removes the redundant sysfs cacheinfo code by reusing
->>>> the newly introduced generic cacheinfo infrastructure through the
->>>> commit 246246cbde5e ("drivers: base: support cpu cache information
->>>> interface to userspace via sysfs")
->>
->>> Removing the include doesn't fix it, it needs cacheinfo_cpu_on/offline().
->>>
->>
->> I agree, had a quick look at that, and it requires some rework not sure
->> if that should be in generic code or ppc specific.
->
-> Yeah OK.
->
-> Also if I just remove the references from the suspend code, it still causes
-> changes to the result, some of which look wrong:
->
-> --- cpu0.before	2015-04-01 15:34:58.985470973 +1100
-> +++ cpu0.after-no-power	2015-04-01 15:36:31.313435304 +1100
-> @@ -3,22 +3,24 @@
->   ./cpu0/cache/index0/level:1
->   ./cpu0/cache/index0/number_of_sets:8
->   ./cpu0/cache/index0/shared_cpu_map:0000,000000ff
-> +./cpu0/cache/index0/shared_cpu_list:0-7		<- additional, OK
->   ./cpu0/cache/index0/coherency_line_size:128
->   ./cpu0/cache/index0/ways_of_associativity:64
-> -./cpu0/cache/index1/size:32K				<- we lost the size of the Icache?
->   ./cpu0/cache/index1/type:Instruction
->   ./cpu0/cache/index1/level:1
-> -./cpu0/cache/index1/number_of_sets:4			}-.
-> -./cpu0/cache/index1/shared_cpu_map:0000,000000ff	  .
-> -./cpu0/cache/index1/coherency_line_size:128		  .   These changes are no good
-> -./cpu0/cache/index1/ways_of_associativity:64		  .
-> +./cpu0/cache/index1/shared_cpu_map:ffff,ffffffff	  .
-> +./cpu0/cache/index1/shared_cpu_list:0-47		}-
->   ./cpu0/cache/index2/size:512K
->   ./cpu0/cache/index2/type:Unified
->   ./cpu0/cache/index2/level:2
->   ./cpu0/cache/index2/number_of_sets:8
->   ./cpu0/cache/index2/shared_cpu_map:0000,000000ff
-> +./cpu0/cache/index2/shared_cpu_list:0-7		<- additional, OK
-> +./cpu0/cache/index2/ways_of_associativity:0		<- this is new but wrong I think
->   ./cpu0/cache/index3/size:8192K
->   ./cpu0/cache/index3/type:Unified
->   ./cpu0/cache/index3/level:3
->   ./cpu0/cache/index3/number_of_sets:8
->   ./cpu0/cache/index3/shared_cpu_map:0000,000000ff
-> +./cpu0/cache/index3/shared_cpu_list:0-7
-> +./cpu0/cache/index3/ways_of_associativity:0		<- ditto
->
+They are based on Linux 4.0.0-rc6 + the initial cleanup serie :
 
-Thanks for the log. It's been long time since I looked at this code.
-It would be good to know if Anshuman had looked at this issue. If not
-I will start looking at this in couple of days.
+     http://lists.lm-sensors.org/pipermail/lm-sensors/2015-March/043670.html
 
-Regards,
-Sudeep
+and were tested on IBM Power and Open Power systems running Trusty.
+
+Cheers,
+
+C.
+
+Cédric Le Goater (4):
+  hwmon: (ibmpowernv) add a helper routine create_hwmon_attr
+  hwmon: (ibmpowernv) add support for the new device tree
+  hwmon: (ibmpowernv) add a label attribute
+  hwmon: (ibmpowernv) pretty print labels
+
+ drivers/hwmon/ibmpowernv.c |  143 ++++++++++++++++++++++++++++++++++++++------
+ 1 file changed, 125 insertions(+), 18 deletions(-)
+
+-- 
+1.7.10.4
