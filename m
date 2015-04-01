@@ -1,26 +1,23 @@
-Return-Path: <joel.stan@gmail.com>
-Received: from mail-wi0-x236.google.com (mail-wi0-x236.google.com
- [IPv6:2a00:1450:400c:c05::236])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4C3B01A0145
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Apr 2015 14:17:27 +1100 (AEDT)
-Received: by wixo5 with SMTP id o5so34433689wix.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 31 Mar 2015 20:17:23 -0700 (PDT)
-MIME-Version: 1.0
-Sender: joel.stan@gmail.com
-In-Reply-To: <20150331153912.267c0b1af94b5f4964d791de@linux-foundation.org>
-References: <1427681733-25488-1-git-send-email-joel@jms.id.au>
- <20150331153912.267c0b1af94b5f4964d791de@linux-foundation.org>
-From: Joel Stanley <joel@jms.id.au>
-Date: Wed, 1 Apr 2015 13:47:01 +1030
-Message-ID: <CACPK8XezpWftupa-jgMfiO2B9ozJS07ZKZW7XyWdvE=Z52dF+Q@mail.gmail.com>
-Subject: Re: [PATCH 1/2] kernel/reboot.c: Add orderly_reboot for graceful
- reboot
-To: Andrew Morton <akpm@linux-foundation.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Rusty Russell <rusty@rustcorp.com.au>, linux-kernel@vger.kernel.org,
- fabf@skynet.be, Jeremy Kerr <jk@ozlabs.org>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id B62D91A0631
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Apr 2015 15:40:42 +1100 (AEDT)
+Message-ID: <1427863242.4256.10.camel@ellerman.id.au>
+Subject: Re: [RFC/RFT, RESEND] powerpc: move cacheinfo sysfs to generic
+ cacheinfo infrastructure
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Sudeep Holla <sudeep.holla@arm.com>
+Date: Wed, 01 Apr 2015 15:40:42 +1100
+In-Reply-To: <551AD5E4.2040103@arm.com>
+References: <20150331105637.39B451400DE@ozlabs.org> <551AD5E4.2040103@arm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Paul Mackerras <paulus@samba.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,40 +27,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Andrew,
+On Tue, 2015-03-31 at 18:14 +0100, Sudeep Holla wrote:
+> 
+> On 31/03/15 11:56, Michael Ellerman wrote:
+> > On Mon, 2015-23-02 at 18:18:20 UTC, Sudeep Holla wrote:
+> >> This patch removes the redundant sysfs cacheinfo code by reusing
+> >> the newly introduced generic cacheinfo infrastructure through the
+> >> commit 246246cbde5e ("drivers: base: support cpu cache information
+> >> interface to userspace via sysfs")
+> 
+> > Removing the include doesn't fix it, it needs cacheinfo_cpu_on/offline().
+> >
+> 
+> I agree, had a quick look at that, and it requires some rework not sure
+> if that should be in generic code or ppc specific.
 
-On Wed, Apr 1, 2015 at 9:09 AM, Andrew Morton <akpm@linux-foundation.org> wrote:
-> On Mon, 30 Mar 2015 12:45:32 +1030 Joel Stanley <joel@jms.id.au> wrote:
->
->> The kernel has orderly_poweroff which allows the kernel to initiate a
->> graceful shutdown of userspace, by running /sbin/poweroff. This adds
->> orderly_reboot that will cause userspace to shut itself down by calling
->> /sbin/reboot.
->>
->> This will be used for shutdown initiated by a system controller on
->> platforms that do not use ACPI.
->
-> gee.  There are a lot of callers of emergency_restart().  Why is the
-> BMC reboot special, and how many of the emergency_restart() callers
-> really be using orderly_reboot()?
+Yeah OK.
 
-The BMC reboot is intended to be a graceful shutdown - let userspace
-do it's thing before the system goes down.
+Also if I just remove the references from the suspend code, it still causes
+changes to the result, some of which look wrong:
 
-Userspace may chose to stop and perform some long, slow teardown
-before it gets around to shutting down. We don't want to move callers
-over orderly_reboot() if they're shutting the system down due to a
-critical failure, eg. printer on fire.
+--- cpu0.before	2015-04-01 15:34:58.985470973 +1100
++++ cpu0.after-no-power	2015-04-01 15:36:31.313435304 +1100
+@@ -3,22 +3,24 @@
+ ./cpu0/cache/index0/level:1
+ ./cpu0/cache/index0/number_of_sets:8
+ ./cpu0/cache/index0/shared_cpu_map:0000,000000ff
++./cpu0/cache/index0/shared_cpu_list:0-7		<- additional, OK
+ ./cpu0/cache/index0/coherency_line_size:128
+ ./cpu0/cache/index0/ways_of_associativity:64
+-./cpu0/cache/index1/size:32K				<- we lost the size of the Icache?
+ ./cpu0/cache/index1/type:Instruction
+ ./cpu0/cache/index1/level:1
+-./cpu0/cache/index1/number_of_sets:4			}-.
+-./cpu0/cache/index1/shared_cpu_map:0000,000000ff	  .
+-./cpu0/cache/index1/coherency_line_size:128		  .   These changes are no good
+-./cpu0/cache/index1/ways_of_associativity:64		  .
++./cpu0/cache/index1/shared_cpu_map:ffff,ffffffff	  .
++./cpu0/cache/index1/shared_cpu_list:0-47		}-
+ ./cpu0/cache/index2/size:512K
+ ./cpu0/cache/index2/type:Unified
+ ./cpu0/cache/index2/level:2
+ ./cpu0/cache/index2/number_of_sets:8
+ ./cpu0/cache/index2/shared_cpu_map:0000,000000ff
++./cpu0/cache/index2/shared_cpu_list:0-7		<- additional, OK
++./cpu0/cache/index2/ways_of_associativity:0		<- this is new but wrong I think
+ ./cpu0/cache/index3/size:8192K
+ ./cpu0/cache/index3/type:Unified
+ ./cpu0/cache/index3/level:3
+ ./cpu0/cache/index3/number_of_sets:8
+ ./cpu0/cache/index3/shared_cpu_map:0000,000000ff
++./cpu0/cache/index3/shared_cpu_list:0-7
++./cpu0/cache/index3/ways_of_associativity:0		<- ditto
 
-I had a read of the emergency_restart() callers and I didn't see any
-obvious cases for moving over to orderly_reboot().
 
-> We have /proc/sys/kernel/poweroff_cmd.  Should we have
-> /proc/sys/kernel/reboot_cmd as well?  If not,
-> kernel/reboot.c:reboot_cmd[] can be made static ;)
-
-I don't think we need it. I'll make reboot_cmd[] static.
-
-Cheers,
-
-Joel
+cheers
