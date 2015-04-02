@@ -1,20 +1,24 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <chenhui.zhao@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bbn0101.outbound.protection.outlook.com [157.56.111.101])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9A79F1A0895
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Apr 2015 20:48:16 +1100 (AEDT)
-Message-ID: <1427968095.11277.1.camel@ellerman.id.au>
-Subject: [git pull] Please pull mpe/linux.git powerpc-4.0-4 tag
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Thu, 02 Apr 2015 20:48:15 +1100
-Content-Type: multipart/signed; micalg="pgp-sha1";
- protocol="application/pgp-signature";
- boundary="=-NGAmeTCNHCUWCiu6aiLu"
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, jstancek@redhat.com,
- linux-kernel@vger.kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id ADB471A03D3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Apr 2015 21:14:20 +1100 (AEDT)
+From: "chenhui.zhao@freescale.com" <chenhui.zhao@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [1/4] powerpc/cache: add cache flush operation for various e500
+Date: Thu, 2 Apr 2015 10:14:11 +0000
+Message-ID: <1427969652830.68303@freescale.com>
+References: <1427365095-26396-1-git-send-email-chenhui.zhao@freescale.com>,
+ <20150331011028.GA5667@home.buserror.net>
+In-Reply-To: <20150331011028.GA5667@home.buserror.net>
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "Jason.Jin@freescale.com" <Jason.Jin@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,64 +29,97 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---=-NGAmeTCNHCUWCiu6aiLu
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+________________________________________
+From: Wood Scott-B07421
+Sent: Tuesday, March 31, 2015 9:10
+To: Zhao Chenhui-B35336
+Cc: linuxppc-dev@lists.ozlabs.org; devicetree@vger.kernel.org; linux-kernel=
+@vger.kernel.org; Jin Zhengxiong-R64188
+Subject: Re: [1/4] powerpc/cache: add cache flush operation for various e50=
+0
 
-Hi Linus,
+On Thu, Mar 26, 2015 at 06:18:12PM +0800, chenhui zhao wrote:
+> Various e500 core have different cache architecture, so they
+> need different cache flush operations. Therefore, add a callback
+> function cpu_flush_caches to the struct cpu_spec. The cache flush
+> operation for the specific kind of e500 is selected at init time.
+> The callback function will flush all caches inside the current cpu.
+>
+> Signed-off-by: Chenhui Zhao <chenhui.zhao@freescale.com>
+> ---
+>  arch/powerpc/include/asm/cacheflush.h     |   2 -
+>  arch/powerpc/include/asm/cputable.h       |  11 +++
+>  arch/powerpc/kernel/asm-offsets.c         |   3 +
+>  arch/powerpc/kernel/cpu_setup_fsl_booke.S | 114 ++++++++++++++++++++++++=
++++++-
+>  arch/powerpc/kernel/cputable.c            |   4 ++
+>  arch/powerpc/kernel/head_fsl_booke.S      |  74 -------------------
+>  arch/powerpc/platforms/85xx/smp.c         |   3 +-
+>  7 files changed, 133 insertions(+), 78 deletions(-)
+>
+> diff --git a/arch/powerpc/include/asm/cacheflush.h b/arch/powerpc/include=
+/asm/cacheflush.h
+> index 30b35ff..729fde4 100644
+> --- a/arch/powerpc/include/asm/cacheflush.h
+> +++ b/arch/powerpc/include/asm/cacheflush.h
+> @@ -30,8 +30,6 @@ extern void flush_dcache_page(struct page *page);
+>  #define flush_dcache_mmap_lock(mapping)              do { } while (0)
+>  #define flush_dcache_mmap_unlock(mapping)    do { } while (0)
+>
+> -extern void __flush_disable_L1(void);
+> -
+>  extern void flush_icache_range(unsigned long, unsigned long);
+>  extern void flush_icache_user_range(struct vm_area_struct *vma,
+>                                   struct page *page, unsigned long addr,
+> diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/a=
+sm/cputable.h
+> index 5cf5a6d..c776efe4 100644
+> --- a/arch/powerpc/include/asm/cputable.h
+> +++ b/arch/powerpc/include/asm/cputable.h
+> @@ -43,6 +43,13 @@ extern int machine_check_e500(struct pt_regs *regs);
+>  extern int machine_check_e200(struct pt_regs *regs);
+>  extern int machine_check_47x(struct pt_regs *regs);
+>
+> +#if defined(CONFIG_E500) || defined(CONFIG_PPC_E500MC)
+> +extern void __flush_caches_e500v2(void);
+> +extern void __flush_caches_e500mc(void);
+> +extern void __flush_caches_e5500(void);
+> +extern void __flush_caches_e6500(void);
+> +#endif
 
-Please pull one powerpc fix for 4.0:
+Why the leading underscores?
 
-The following changes since commit e42391cd048809d903291d07f86ed3934ce138e9=
-:
+[chenhui] Will get rid of them.
 
-  Linux 4.0-rc6 (2015-03-29 15:26:31 -0700)
+>  /* NOTE WELL: Update identify_cpu() if fields are added or removed! */
+>  struct cpu_spec {
+>       /* CPU is matched via (PVR & pvr_mask) =3D=3D pvr_value */
+> @@ -59,6 +66,10 @@ struct cpu_spec {
+>       unsigned int    icache_bsize;
+>       unsigned int    dcache_bsize;
+>
+> +#if defined(CONFIG_E500) || defined(CONFIG_PPC_E500MC)
 
-are available in the git repository at:
+CONFIG_PPC_E500MC implies CONFIG_E500.  Why do we need this ifdef?
 
-  git://git.kernel.org/pub/scm/linux/kernel/git/mpe/linux.git tags/powerpc-=
-4.0-4
+[chenhui] Change to "#ifdef CONFIG_E500".
 
-for you to fetch changes up to d52356e7f48e400ca258c6763a232a92fa82ff68:
+> +     /* flush caches inside the current cpu */
+> +     void (*cpu_flush_caches)(void);
+> +#endif
 
-  powerpc: fix memory corruption by pnv_alloc_idle_core_states (2015-04-01 =
-12:05:44 +1100)
+It seems you literally mean "in the cpu" -- If it's a threaded core, then
+by "cpu" do you mean "thread" (like we usually do) and thus no caches get
+flushed (ignore the fact that it's moot on e6500 -- this is an interface
+and needs to be clear).
 
-----------------------------------------------------------------
-powerpc fixes for 4.0 # 3
+Also, no-oping L1 flush on e6500 is not compliant with the claim that
+you're flushing the cache.  You're relying on an unstated assumption that
+you'll invalidate that cache later instead.
 
- - fix memory corruption by pnv_alloc_idle_core_states
+If you want to make this "flush whatever needs to be flushed for
+suspend/hotplug", call it that.
 
-----------------------------------------------------------------
-Jan Stancek (1):
-      powerpc: fix memory corruption by pnv_alloc_idle_core_states
+-Scott
 
- arch/powerpc/include/asm/cputhreads.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-
-
---=-NGAmeTCNHCUWCiu6aiLu
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-Content-Transfer-Encoding: 7bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAABAgAGBQJVHRBfAAoJEFHr6jzI4aWA/k0QAJHPQk07rP04X3JsAALHkami
-9q/wUCObuEfaPMUrBjjNee6eh9ZpbnhDuX7I3ZSIlrFKlkX8Q54+XRW+MZtaPEzz
-fivpIrmJp0IN8jYh9Od5jVaxvBAG7d738A12CnZ8ZOvbCQGvQBfKcJbBLOA2J+60
-KqQHH6kmz9cOVWUZQuoMVOxonygHJ38Z39dmnXUrymVr8STmZ8PDMchqsiq86sMG
-2kjHGdKIorKteqIoCZyam+cQVtcFpRFr2zwZAUDHZm1KPzkyBDhj4iMoOoF2dhS7
-w719DoJpYdmP1rifztiLHZd9tPYpBrcyQ0jN3/W/6l0sviUDU6aOEbz6g33nPQuu
-0Clo+oymqAHVrT4S9znIfqizsDkdySa4thZWk4oYmwnzSSdZTL+Jmsq/9/Co+SyZ
-a3ZGIbXqWVsJkt9JEMb4I/UFjXjrW73pK+yz1U9gh8jatUrACzoynS1xLpFwY4lV
-YkC8zzYk9XOzI7Qkc/dPvRcWUqfX7pIN/tzs4Zwvdg+ZNlvg4PoAzL9jaZB3AJVE
-0v6BktGRMM7YrNEO9Xke9SOckyWKv3GMyoHYDhSfKsz9Me1VNzi3dBgBOM+fX1HO
-fj2x+R0m95tGLcSi0E2r9G6Dl+69WISla9vGohA94cDYgcpnJhJNZwIuwsiEoPP7
-59+FQvTweNWj/bph+4M0
-=O6Rm
------END PGP SIGNATURE-----
-
---=-NGAmeTCNHCUWCiu6aiLu--
+[chenhui] OK. Then, call "cpu_down_flush".
