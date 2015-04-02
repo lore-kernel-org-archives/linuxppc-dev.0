@@ -1,25 +1,22 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0111.outbound.protection.outlook.com [157.56.110.111])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <ppc@mindchasers.com>
+Received: from resqmta-ch2-08v.sys.comcast.net
+ (resqmta-ch2-08v.sys.comcast.net [IPv6:2001:558:fe21:29:69:252:207:40])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DF18D1A0895
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Apr 2015 02:51:04 +1100 (AEDT)
-Message-ID: <1427989850.22867.266.camel@freescale.com>
-Subject: Re: [2/4] powerpc/rcpm: add RCPM driver
-From: Scott Wood <scottwood@freescale.com>
-To: Zhao Chenhui-B35336 <chenhui.zhao@freescale.com>
-Date: Thu, 2 Apr 2015 10:50:50 -0500
-In-Reply-To: <1427970805609.21194@freescale.com>
-References: <1427365095-26396-2-git-send-email-chenhui.zhao@freescale.com>
- ,<20150331013057.GB5667@home.buserror.net>
- <1427970805609.21194@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3B3521A0895
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Apr 2015 02:56:55 +1100 (AEDT)
+Message-ID: <551D64C5.7040607@mindchasers.com>
+Date: Thu, 02 Apr 2015 11:48:21 -0400
+From: Bob Cochran <ppc@mindchasers.com>
 MIME-Version: 1.0
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Jin
- Zhengxiong-R64188 <Jason.Jin@freescale.com>
+To: "Igal.Liberman" <igal.liberman@freescale.com>,
+ linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+Subject: Re: [RFC,v2,02/12] soc/fman: Add the FMan FLIB
+References: <1427888168-24145-1-git-send-email-igal.liberman@freescale.com>
+In-Reply-To: <1427888168-24145-1-git-send-email-igal.liberman@freescale.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Cc: scottwood@freescale.com, madalin.bucur@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,23 +26,96 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2015-04-02 at 05:33 -0500, Zhao Chenhui-B35336 wrote:
-> > +static int rcpm_v2_plat_enter_state(int state)
-> > +{
-> > +     u32 *pmcsr_reg = &rcpm_v2_regs->powmgtcsr;
-> > +     int ret = 0;
-> > +     int result;
-> > +
-> > +     switch (state) {
-> > +     case PLAT_PM_LPM20:
-> > +             /* clear previous LPM20 status */
-> > +             setbits32(pmcsr_reg, RCPM_POWMGTCSR_P_LPM20_ST);
-> 
-> How would the bit be set when you enter here, given that you wait for it
-> to clear when leaving?
-> 
-> [chenhui] Actually, the bit is not used by software. Just follow the instruction in RM.
+On 04/01/2015 07:36 AM, Igal.Liberman wrote:
+> From: Igal Liberman <Igal.Liberman@freescale.com>
+>
+> The FMan FLib provides the basic API used by the FMan drivers to
+> configure and control the FMan hardware.
+>
+> Signed-off-by: Igal Liberman <Igal.Liberman@freescale.com>
+> ---
+>   drivers/soc/fsl/Kconfig       |    2 +
+>   drivers/soc/fsl/Makefile      |    2 +
+>   drivers/soc/fsl/fman/Kconfig  |    7 +
+>   drivers/soc/fsl/fman/Makefile |    5 +
+>   drivers/soc/fsl/fman/fman.c   |  978 +++++++++++++++++++++++++++++++++++++++++
+>   5 files changed, 994 insertions(+)
+>   create mode 100644 drivers/soc/fsl/fman/Kconfig
+>   create mode 100644 drivers/soc/fsl/fman/Makefile
+>   create mode 100644 drivers/soc/fsl/fman/fman.c
+>
+> diff --git a/drivers/soc/fsl/Kconfig b/drivers/soc/fsl/Kconfig
+> index 291123a..2981306 100644
+> --- a/drivers/soc/fsl/Kconfig
+> +++ b/drivers/soc/fsl/Kconfig
 
-Sorry, I missed the "_P_" and thought it was RCPM_POWMGTCSR_LPM20_ST.
 
--Scott
+I need some help putting together the DPAA patches.  On 3/11, there was 
+a patch with the subject "[v2,02/11] soc/fman: Add the FMan FLIB", which 
+is basically the same subject as this one.  In the 3/11 patch, you 
+create /drivers/soc/fsl/Kconfig and Makefile.
+
+In this patch, Kconfig and Makefile already exist.  So, please tell me 
+the patch that should be applied before this one to pick up both Kconfig 
+and Makefile.
+
+Should this patch have been called v3?  There was a v1 on 3/5 and a v2 
+on 3/11 that had the subject "soc/fman Add the FMan FLIB".
+
+Excluding device tree patches, I think there are currently three 
+non-superseded patch sets submitted for the DPAA:
+
+1) 4/1/15: [PATCH RFC 00/10] introduce DPAA Ethernet driver, 
+madalin.bucur@freescale.com  [SHOULD HAVE BEEN TITLED V2?]
+
+2) 4/1/15: [RFC,v2,00/12] Freescale DPAA FMan, 
+igal.liberman@freescale.com [SHOULD HAVE BEEN TITLED V3?]
+
+3) 3/9/15: [RFC v3 00/10] Freescale DPAA B/QMan drivers, 
+Emilian.Medve@Freescale.com
+
+
+I'm looking forward to putting together all the patches and trying to 
+build it and eventually test it.
+
+
+Thank you,
+
+Bob
+
+
+
+
+> @@ -189,4 +189,6 @@ config FSL_QMAN_INIT_TIMEOUT
+>
+>   endif # FSL_QMAN
+>
+> +source "drivers/soc/fsl/fman/Kconfig"
+> +
+>   endif # FSL_DPA
+> diff --git a/drivers/soc/fsl/Makefile b/drivers/soc/fsl/Makefile
+> index cce1f70..b2f76e9 100644
+> --- a/drivers/soc/fsl/Makefile
+> +++ b/drivers/soc/fsl/Makefile
+> @@ -18,3 +18,5 @@ qman-test-y					 = qman_test.o
+>   qman-test-$(CONFIG_FSL_QMAN_TEST_API)		+= qman_test_api.o
+>   qman-test-$(CONFIG_FSL_QMAN_TEST_STASH)		+= qman_test_stash.o
+>   obj-$(CONFIG_FSL_QMAN_DEBUGFS)			+= qman-debugfs.o
+> +
+> +obj-$(CONFIG_FSL_FMAN)				+= fman/
+> diff --git a/drivers/soc/fsl/fman/Kconfig b/drivers/soc/fsl/fman/Kconfig
+> new file mode 100644
+> index 0000000..8aeae29
+> --- /dev/null
+> +++ b/drivers/soc/fsl/fman/Kconfig
+> @@ -0,0 +1,7 @@
+> +config FSL_FMAN
+> +	bool "FMan support"
+> +	depends on FSL_SOC || COMPILE_TEST
+> +	default n
+> +	help
+> +		Freescale Data-Path Acceleration Architecture Frame Manager
+> +		(FMan) support
+>
+
+[snip]
