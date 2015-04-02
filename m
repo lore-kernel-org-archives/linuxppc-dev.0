@@ -1,37 +1,20 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C31CC1A0895
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Apr 2015 19:44:26 +1100 (AEDT)
-Received: from /spool/local
- by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Thu, 2 Apr 2015 14:14:23 +0530
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 369BE1258044
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Apr 2015 14:16:03 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay01.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t328iIQe51511376
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 2 Apr 2015 14:14:19 +0530
-Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t328iH7Q003611
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 2 Apr 2015 14:14:18 +0530
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>, Anton Blanchard <anton@samba.org>
-Subject: Re: [PATCH] powerpc/mm: Add trace point for tracking hash pte fault
-In-Reply-To: <87y4og70nu.fsf@linux.vnet.ibm.com>
-References: <1421753750-17135-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1421809627.4900.1.camel@ellerman.id.au> <87d268v7xm.fsf@linux.vnet.ibm.com>
- <1422425467.11009.2.camel@ellerman.id.au> <87y4og70nu.fsf@linux.vnet.ibm.com>
-Date: Thu, 02 Apr 2015 14:14:18 +0530
-Message-ID: <87ego2c42l.fsf@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: linuxppc-dev@lists.ozlabs.org, paulus@samba.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9A79F1A0895
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Apr 2015 20:48:16 +1100 (AEDT)
+Message-ID: <1427968095.11277.1.camel@ellerman.id.au>
+Subject: [git pull] Please pull mpe/linux.git powerpc-4.0-4 tag
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Thu, 02 Apr 2015 20:48:15 +1100
+Content-Type: multipart/signed; micalg="pgp-sha1";
+ protocol="application/pgp-signature";
+ boundary="=-NGAmeTCNHCUWCiu6aiLu"
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org, jstancek@redhat.com,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,64 +24,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
 
-> Michael Ellerman <mpe@ellerman.id.au> writes:
->
-....
-....
-> With patch:
-> sys: 0m11.3258
->
-> ie, a -0.7% impact 
->
-> If that impact is high we could possibly put that tracepoint within #ifdef
-> CONFIG_DEBUG_VM ?
+--=-NGAmeTCNHCUWCiu6aiLu
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Since the ebizzy runs results were not stable, I did a micro benchmark
-to measure this and I noticed that results observed are within the
-run variance of the test. I made sure we don't have context-switches
-between the runs. If I try to get large number of page-faults, we end up
-with context switches.
+Hi Linus,
 
-for ex: We get without patch
---------------------------------
-root@qemu-pr-host trace-fault]# bash run 
+Please pull one powerpc fix for 4.0:
 
- Performance counter stats for './a.out 3000 300':
+The following changes since commit e42391cd048809d903291d07f86ed3934ce138e9=
+:
 
-               643      page-faults               #    0.089 M/sec                  
-          7.236562      task-clock (msec)         #    0.928 CPUs utilized          
-         2,179,213      stalled-cycles-frontend   #    0.00% frontend cycles idle   
-        17,174,367      stalled-cycles-backend    #    0.00% backend  cycles idle   
-                 0      context-switches          #    0.000 K/sec                  
+  Linux 4.0-rc6 (2015-03-29 15:26:31 -0700)
 
-       0.007794658 seconds time elapsed
+are available in the git repository at:
 
-[root@qemu-pr-host trace-fault]# 
+  git://git.kernel.org/pub/scm/linux/kernel/git/mpe/linux.git tags/powerpc-=
+4.0-4
 
-And with-patch:
----------------
-[root@qemu-pr-host trace-fault]# bash run 
+for you to fetch changes up to d52356e7f48e400ca258c6763a232a92fa82ff68:
 
- Performance counter stats for './a.out 3000 300':
+  powerpc: fix memory corruption by pnv_alloc_idle_core_states (2015-04-01 =
+12:05:44 +1100)
 
-               643      page-faults               #    0.089 M/sec                  
-          7.233746      task-clock (msec)         #    0.921 CPUs utilized          
-                 0      context-switches          #    0.000 K/sec                  
+----------------------------------------------------------------
+powerpc fixes for 4.0 # 3
 
-       0.007854876 seconds time elapsed
+ - fix memory corruption by pnv_alloc_idle_core_states
+
+----------------------------------------------------------------
+Jan Stancek (1):
+      powerpc: fix memory corruption by pnv_alloc_idle_core_states
+
+ arch/powerpc/include/asm/cputhreads.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 
- Performance counter stats for './a.out 3000 300':
 
-               643      page-faults               #    0.087 M/sec                  
-               649      powerpc:hash_fault        #    0.087 M/sec                  
-          7.430376      task-clock (msec)         #    0.938 CPUs utilized          
-         2,347,174      stalled-cycles-frontend   #    0.00% frontend cycles idle   
-        17,524,282      stalled-cycles-backend    #    0.00% backend  cycles idle   
-                 0      context-switches          #    0.000 K/sec                  
+--=-NGAmeTCNHCUWCiu6aiLu
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+Content-Transfer-Encoding: 7bit
 
-       0.007920284 seconds time elapsed
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
 
-[root@qemu-pr-host trace-fault]# 
+iQIcBAABAgAGBQJVHRBfAAoJEFHr6jzI4aWA/k0QAJHPQk07rP04X3JsAALHkami
+9q/wUCObuEfaPMUrBjjNee6eh9ZpbnhDuX7I3ZSIlrFKlkX8Q54+XRW+MZtaPEzz
+fivpIrmJp0IN8jYh9Od5jVaxvBAG7d738A12CnZ8ZOvbCQGvQBfKcJbBLOA2J+60
+KqQHH6kmz9cOVWUZQuoMVOxonygHJ38Z39dmnXUrymVr8STmZ8PDMchqsiq86sMG
+2kjHGdKIorKteqIoCZyam+cQVtcFpRFr2zwZAUDHZm1KPzkyBDhj4iMoOoF2dhS7
+w719DoJpYdmP1rifztiLHZd9tPYpBrcyQ0jN3/W/6l0sviUDU6aOEbz6g33nPQuu
+0Clo+oymqAHVrT4S9znIfqizsDkdySa4thZWk4oYmwnzSSdZTL+Jmsq/9/Co+SyZ
+a3ZGIbXqWVsJkt9JEMb4I/UFjXjrW73pK+yz1U9gh8jatUrACzoynS1xLpFwY4lV
+YkC8zzYk9XOzI7Qkc/dPvRcWUqfX7pIN/tzs4Zwvdg+ZNlvg4PoAzL9jaZB3AJVE
+0v6BktGRMM7YrNEO9Xke9SOckyWKv3GMyoHYDhSfKsz9Me1VNzi3dBgBOM+fX1HO
+fj2x+R0m95tGLcSi0E2r9G6Dl+69WISla9vGohA94cDYgcpnJhJNZwIuwsiEoPP7
+59+FQvTweNWj/bph+4M0
+=O6Rm
+-----END PGP SIGNATURE-----
+
+--=-NGAmeTCNHCUWCiu6aiLu--
