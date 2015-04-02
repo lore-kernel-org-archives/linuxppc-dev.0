@@ -1,24 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <sowmini.varadhan@oracle.com>
+Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8F6E51A078D
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Apr 2015 07:53:00 +1100 (AEDT)
-Message-ID: <1428007964.20500.270.camel@kernel.crashing.org>
-Subject: Re: [PATCH v8 RFC 0/3] Generic IOMMU pooled allocator
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: David Miller <davem@davemloft.net>
-Date: Fri, 03 Apr 2015 07:52:44 +1100
-In-Reply-To: <1428006142.20500.246.camel@kernel.crashing.org>
-References: <551B4502.1020603@oracle.com>
- <20150331.231224.402909066860518278.davem@davemloft.net>
- <20150402125152.GA17528@oracle.com>
- <20150402.122133.402067811944670903.davem@davemloft.net>
- <1428006142.20500.246.camel@kernel.crashing.org>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: aik@au1.ibm.com, sowmini.varadhan@oracle.com, anton@au1.ibm.com,
- paulus@samba.org, sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3EBF41A078D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Apr 2015 08:43:55 +1100 (AEDT)
+Date: Thu, 2 Apr 2015 17:43:43 -0400
+From: Sowmini Varadhan <sowmini.varadhan@oracle.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH v8 RFC 1/3] sparc: Break up monolithic iommu table/lock
+ into finer graularity pools and lock
+Message-ID: <20150402214343.GA15680@oracle.com>
+References: <cover.1427761300.git.sowmini.varadhan@oracle.com>
+ <8406d119fb885255387a400551de994cb4a4c331.1427761300.git.sowmini.varadhan@oracle.com>
+ <1428008044.20500.272.camel@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1428008044.20500.272.camel@kernel.crashing.org>
+Cc: aik@au1.ibm.com, anton@au1.ibm.com, paulus@samba.org,
+ sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,23 +27,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2015-04-03 at 07:22 +1100, Benjamin Herrenschmidt wrote:
-> On Thu, 2015-04-02 at 12:21 -0400, David Miller wrote:
-> > From: Sowmini Varadhan <sowmini.varadhan@oracle.com>
-> > Date: Thu, 2 Apr 2015 08:51:52 -0400
-> > 
-> > > do I need to resubmit this without the RFC tag? Perhaps I should
-> > > have dropped that some time ago.
-> > 
-> > I want to hear from the powerpc folks whether they can positively
-> > adopt the new generic code or not.
+On (04/03/15 07:54), Benjamin Herrenschmidt wrote:
+> > +	limit = pool->end;
+> > +
+> > +	/* The case below can happen if we have a small segment appended
+> > +	 * to a large, or when the previous alloc was at the very end of
+> > +	 * the available space. If so, go back to the beginning and flush.
+> > +	 */
+> > +	if (start >= limit) {
+> > +		start = pool->start;
+> > +		if (!large_pool && iommu->lazy_flush != NULL)
+> > +			iommu->lazy_flush(iommu);
 > 
-> Oh yes, I'm fine with it, it's basically our code slightly refactored,
-> but I still have a few minor review comments on Swomini's patch I
-> started to put together yesterday but didn't finish. I'll send them
-> today.
+> Add need_flush = false;
 
-Actually I found some more serious issues that for some reason I didn't
-spot the other day. Will send comments in a jiffy.
+A few clarifications, while I parse the rest of your comments:
 
-Ben.
+Not sure I follow- need_flush is initialized to true at the start of the function?
+
+> I only just noticed too, you completely dropped the code to honor
+> the dma mask. Why that ? Some devices rely on this.
+
+so that's an interesting question: the existing iommu_range_alloc() in
+arch/sparc/kernel/iommu.c does not use the mask at all. I based most of
+the code  on this (except for the lock fragmentation part). 
+I dont know if this is arch specific.
+
+> 
+> > +	if (dev)
+> > +		boundary_size = ALIGN(dma_get_seg_boundary(dev) + 1,
+> > +				      1 << iommu->table_shift);
+> > +	else
+> > +		boundary_size = ALIGN(1UL << 32, 1 << iommu->table_shift);
+> > +
+> > +	shift = iommu->table_map_base >> iommu->table_shift;
+> > +	boundary_size = boundary_size >> iommu->table_shift;
+> > +	/*
+> > +	 * if the skip_span_boundary_check had been set during init, we set
+> > +	 * things up so that iommu_is_span_boundary() merely checks if the
+> > +	 * (index + npages) < num_tsb_entries
+> > +	 */
+> > +	if ((iommu->flags & IOMMU_NO_SPAN_BOUND) != 0) {
+> > +		shift = 0;
+> > +		boundary_size = iommu->poolsize * iommu->nr_pools;
+> > +	}
+> > +	n = iommu_area_alloc(iommu->map, limit, start, npages, shift,
+> > +			     boundary_size, 0);
+> 
+> You have completely dropped the alignment support. This will break
+> drivers. There are cases (especially with consistent allocations) where
+
+Again, not sure I follow? are you referring to the IOMMU_NO_SPAN_BOUND case?
+That's very specific to LDC (sparc ldoms virtualization infra). The default
+is to not have IOMMU_NO_SPAN_BOUND set. 
+For the rest of the drivers, the code that sets up boundary_size aligns things
+in the same way as the ppc code.
+
+
+> the driver have alignment constraints on the address, those must be
+> preserved.
+> 
+
+--Sowmini
