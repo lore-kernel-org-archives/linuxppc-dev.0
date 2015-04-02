@@ -1,22 +1,25 @@
-Return-Path: <ppc@mindchasers.com>
-Received: from resqmta-ch2-08v.sys.comcast.net
- (resqmta-ch2-08v.sys.comcast.net [IPv6:2001:558:fe21:29:69:252:207:40])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bon0130.outbound.protection.outlook.com [157.56.111.130])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3B3521A0895
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Apr 2015 02:56:55 +1100 (AEDT)
-Message-ID: <551D64C5.7040607@mindchasers.com>
-Date: Thu, 02 Apr 2015 11:48:21 -0400
-From: Bob Cochran <ppc@mindchasers.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id CCE361A0058
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Apr 2015 03:03:32 +1100 (AEDT)
+Message-ID: <1427990598.22867.271.camel@freescale.com>
+Subject: Re: [3/4] powerpc: support CPU hotplug for e500mc, e5500 and e6500
+From: Scott Wood <scottwood@freescale.com>
+To: Zhao Chenhui-B35336 <chenhui.zhao@freescale.com>
+Date: Thu, 2 Apr 2015 11:03:18 -0500
+In-Reply-To: <1427973405260.57477@freescale.com>
+References: <1427365095-26396-3-git-send-email-chenhui.zhao@freescale.com>
+ ,<20150331020722.GC5667@home.buserror.net>
+ <1427973405260.57477@freescale.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-To: "Igal.Liberman" <igal.liberman@freescale.com>,
- linuxppc-dev@lists.ozlabs.org, netdev@vger.kernel.org,
- linux-kernel@vger.kernel.org
-Subject: Re: [RFC,v2,02/12] soc/fman: Add the FMan FLIB
-References: <1427888168-24145-1-git-send-email-igal.liberman@freescale.com>
-In-Reply-To: <1427888168-24145-1-git-send-email-igal.liberman@freescale.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Cc: scottwood@freescale.com, madalin.bucur@freescale.com
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Jin
+ Zhengxiong-R64188 <Jason.Jin@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,96 +29,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/01/2015 07:36 AM, Igal.Liberman wrote:
-> From: Igal Liberman <Igal.Liberman@freescale.com>
->
-> The FMan FLib provides the basic API used by the FMan drivers to
-> configure and control the FMan hardware.
->
-> Signed-off-by: Igal Liberman <Igal.Liberman@freescale.com>
-> ---
->   drivers/soc/fsl/Kconfig       |    2 +
->   drivers/soc/fsl/Makefile      |    2 +
->   drivers/soc/fsl/fman/Kconfig  |    7 +
->   drivers/soc/fsl/fman/Makefile |    5 +
->   drivers/soc/fsl/fman/fman.c   |  978 +++++++++++++++++++++++++++++++++++++++++
->   5 files changed, 994 insertions(+)
->   create mode 100644 drivers/soc/fsl/fman/Kconfig
->   create mode 100644 drivers/soc/fsl/fman/Makefile
->   create mode 100644 drivers/soc/fsl/fman/fman.c
->
-> diff --git a/drivers/soc/fsl/Kconfig b/drivers/soc/fsl/Kconfig
-> index 291123a..2981306 100644
-> --- a/drivers/soc/fsl/Kconfig
-> +++ b/drivers/soc/fsl/Kconfig
+On Thu, 2015-04-02 at 06:16 -0500, Zhao Chenhui-B35336 wrote:
+> 
+> ________________________________________
+> From: Wood Scott-B07421
+> Sent: Tuesday, March 31, 2015 10:07
+> To: Zhao Chenhui-B35336
+> Cc: linuxppc-dev@lists.ozlabs.org; devicetree@vger.kernel.org; linux-kernel@vger.kernel.org; Jin Zhengxiong-R64188
+> Subject: Re: [3/4] powerpc: support CPU hotplug for e500mc, e5500 and e6500
+> 
+> On Thu, Mar 26, 2015 at 06:18:14PM +0800, chenhui zhao wrote:
+> > @@ -189,16 +193,14 @@ _GLOBAL(fsl_secondary_thread_init)
+> >       isync
+> >
+> >       /*
+> > -      * Fix PIR to match the linear numbering in the device tree.
+> > -      *
+> > -      * On e6500, the reset value of PIR uses the low three bits for
+> > -      * the thread within a core, and the upper bits for the core
+> > -      * number.  There are two threads per core, so shift everything
+> > -      * but the low bit right by two bits so that the cpu numbering is
+> > -      * continuous.
+> 
+> Why are you getting rid of this?  If it's to avoid doing it twice on the
+> same thread, in my work-in-progress kexec patches I instead check to see
+> whether BUCSR has already been set up -- if it has, I assume we've
+> already been here.
+> 
+> [chenhui] I didn't delete the branch prediction related code.
 
+I didn't say you did.  I'm saying that you can check whether BUCSR has
+been set up, to determine whether PIR has already been adjusted, if your
+concern is avoiding running this twice on a thread between core resets.
+If that's not your concern, then please explain.
 
-I need some help putting together the DPAA patches.  On 3/11, there was 
-a patch with the subject "[v2,02/11] soc/fman: Add the FMan FLIB", which 
-is basically the same subject as this one.  In the 3/11 patch, you 
-create /drivers/soc/fsl/Kconfig and Makefile.
+> > +             /*
+> > +              * If both threads are offline, reset core to start.
+> > +              * When core is up, Thread 0 always gets up first,
+> > +              * so bind the current logical cpu with Thread 0.
+> > +              */
+> 
+> What if the core is not in a PM state that requires a reset?
+> Where does this reset occur?
+> 
+> [chenhui] Reset occurs in the function mpic_reset_core().
+> 
+> > +             if (hw_cpu != cpu_first_thread_sibling(hw_cpu)) {
+> > +                     int hw_cpu1, hw_cpu2;
+> > +
+> > +                     hw_cpu1 = get_hard_smp_processor_id(primary);
+> > +                     hw_cpu2 = get_hard_smp_processor_id(primary + 1);
+> > +                     set_hard_smp_processor_id(primary, hw_cpu2);
+> > +                     set_hard_smp_processor_id(primary + 1, hw_cpu1);
+> > +                     /* get new physical cpu id */
+> > +                     hw_cpu = get_hard_smp_processor_id(nr);
+> 
+> Why are you swapping the hard smp ids?
+> 
+> [chenhui] For example, Core1 has two threads, Thread0 and Thread1. In normal boot, Thread0 is CPU2, and Thread1 is CPU3.
+> But, if CPU2 and CPU3 are all off, user wants CPU3 up first. we need to call Thread0 as CPU3 and Thead1 as CPU2, considering
+> the limitation, after core is reset, only Thread0 is up, then Thread0 kicks up Thread1.
 
-In this patch, Kconfig and Makefile already exist.  So, please tell me 
-the patch that should be applied before this one to pick up both Kconfig 
-and Makefile.
+There's no need for this.  I have booting from a thread1, and having it
+kick its thread0, working locally without messing with the hwid/cpu
+mapping.
 
-Should this patch have been called v3?  There was a v1 on 3/5 and a v2 
-on 3/11 that had the subject "soc/fman Add the FMan FLIB".
+> > @@ -252,11 +340,7 @@ static int smp_85xx_kick_cpu(int nr)
+> >               spin_table = phys_to_virt(*cpu_rel_addr);
+> >
+> >       local_irq_save(flags);
+> > -#ifdef CONFIG_PPC32
+> >  #ifdef CONFIG_HOTPLUG_CPU
+> > -     /* Corresponding to generic_set_cpu_dead() */
+> > -     generic_set_cpu_up(nr);
+> > -
+> 
+> Why did you move this?
+> 
+> [chenhui] It would be better to set this after CPU is really up.
 
-Excluding device tree patches, I think there are currently three 
-non-superseded patch sets submitted for the DPAA:
+Please make it a separate patch with an explanation.
 
-1) 4/1/15: [PATCH RFC 00/10] introduce DPAA Ethernet driver, 
-madalin.bucur@freescale.com  [SHOULD HAVE BEEN TITLED V2?]
-
-2) 4/1/15: [RFC,v2,00/12] Freescale DPAA FMan, 
-igal.liberman@freescale.com [SHOULD HAVE BEEN TITLED V3?]
-
-3) 3/9/15: [RFC v3 00/10] Freescale DPAA B/QMan drivers, 
-Emilian.Medve@Freescale.com
-
-
-I'm looking forward to putting together all the patches and trying to 
-build it and eventually test it.
-
-
-Thank you,
-
-Bob
-
-
-
-
-> @@ -189,4 +189,6 @@ config FSL_QMAN_INIT_TIMEOUT
->
->   endif # FSL_QMAN
->
-> +source "drivers/soc/fsl/fman/Kconfig"
-> +
->   endif # FSL_DPA
-> diff --git a/drivers/soc/fsl/Makefile b/drivers/soc/fsl/Makefile
-> index cce1f70..b2f76e9 100644
-> --- a/drivers/soc/fsl/Makefile
-> +++ b/drivers/soc/fsl/Makefile
-> @@ -18,3 +18,5 @@ qman-test-y					 = qman_test.o
->   qman-test-$(CONFIG_FSL_QMAN_TEST_API)		+= qman_test_api.o
->   qman-test-$(CONFIG_FSL_QMAN_TEST_STASH)		+= qman_test_stash.o
->   obj-$(CONFIG_FSL_QMAN_DEBUGFS)			+= qman-debugfs.o
-> +
-> +obj-$(CONFIG_FSL_FMAN)				+= fman/
-> diff --git a/drivers/soc/fsl/fman/Kconfig b/drivers/soc/fsl/fman/Kconfig
-> new file mode 100644
-> index 0000000..8aeae29
-> --- /dev/null
-> +++ b/drivers/soc/fsl/fman/Kconfig
-> @@ -0,0 +1,7 @@
-> +config FSL_FMAN
-> +	bool "FMan support"
-> +	depends on FSL_SOC || COMPILE_TEST
-> +	default n
-> +	help
-> +		Freescale Data-Path Acceleration Architecture Frame Manager
-> +		(FMan) support
->
-
-[snip]
+-Scott
