@@ -1,23 +1,26 @@
-Return-Path: <alex.williamson@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+Return-Path: <dja@axtens.net>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C412D1A0B86
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Apr 2015 13:52:01 +1100 (AEDT)
-Message-ID: <1427943118.5567.331.camel@redhat.com>
-Subject: Re: [PATCH kernel v7 12/31] powerpc/spapr: vfio: Switch from
- iommu_table to new iommu_table_group
-From: Alex Williamson <alex.williamson@redhat.com>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Date: Wed, 01 Apr 2015 20:51:58 -0600
-In-Reply-To: <551CAA95.8080903@ozlabs.ru>
-References: <1427468115-2224-1-git-send-email-aik@ozlabs.ru>
- <1427468115-2224-13-git-send-email-aik@ozlabs.ru>
- <1427924911.5567.304.camel@redhat.com> <551CAA95.8080903@ozlabs.ru>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 259A21A03D3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Apr 2015 14:22:13 +1100 (AEDT)
+Received: from mail-pa0-x232.google.com (mail-pa0-x232.google.com
+ [IPv6:2607:f8b0:400e:c03::232])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 0D52A14008F
+ for <linuxppc-dev@ozlabs.org>; Thu,  2 Apr 2015 14:22:10 +1100 (AEDT)
+Received: by patj18 with SMTP id j18so71036958pat.2
+ for <linuxppc-dev@ozlabs.org>; Wed, 01 Apr 2015 20:22:08 -0700 (PDT)
+From: Daniel Axtens <dja@axtens.net>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH v3 12/19] powerpc/pseries: Move controller ops from ppc_md to
+ controller_ops
+Date: Thu,  2 Apr 2015 14:21:58 +1100
+Message-Id: <1427944918-9035-1-git-send-email-dja@axtens.net>
+In-Reply-To: <1427778057-9505-13-git-send-email-dja@axtens.net>
+References: <1427778057-9505-13-git-send-email-dja@axtens.net>
+Cc: Daniel Axtens <dja@axtens.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,115 +30,117 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2015-04-02 at 13:33 +1100, Alexey Kardashevskiy wrote:
-> On 04/02/2015 08:48 AM, Alex Williamson wrote:
-> > On Sat, 2015-03-28 at 01:54 +1100, Alexey Kardashevskiy wrote:
-> >> Modern IBM POWERPC systems support multiple (currently two) TCE tables
-> >> per IOMMU group (a.k.a. PE). This adds a iommu_table_group container
-> >> for TCE tables. Right now just one table is supported.
-> >>
-> >> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> >> ---
-> >>   Documentation/vfio.txt                      |  23 ++++++
-> >>   arch/powerpc/include/asm/iommu.h            |  18 +++--
-> >>   arch/powerpc/kernel/iommu.c                 |  34 ++++----
-> >>   arch/powerpc/platforms/powernv/pci-ioda.c   |  38 +++++----
-> >>   arch/powerpc/platforms/powernv/pci-p5ioc2.c |  17 ++--
-> >>   arch/powerpc/platforms/powernv/pci.c        |   2 +-
-> >>   arch/powerpc/platforms/powernv/pci.h        |   4 +-
-> >>   arch/powerpc/platforms/pseries/iommu.c      |   9 ++-
-> >>   drivers/vfio/vfio_iommu_spapr_tce.c         | 120 ++++++++++++++++++++--------
-> >>   9 files changed, 183 insertions(+), 82 deletions(-)
-> >>
-> >> diff --git a/Documentation/vfio.txt b/Documentation/vfio.txt
-> >> index 96978ec..94328c8 100644
-> >> --- a/Documentation/vfio.txt
-> >> +++ b/Documentation/vfio.txt
-> >> @@ -427,6 +427,29 @@ The code flow from the example above should be slightly changed:
-> >>
-> >>   	....
-> >>
-> >> +5) There is v2 of SPAPR TCE IOMMU. It deprecates VFIO_IOMMU_ENABLE/
-> >> +VFIO_IOMMU_DISABLE and implements 2 new ioctls:
-> >> +VFIO_IOMMU_SPAPR_REGISTER_MEMORY and VFIO_IOMMU_SPAPR_UNREGISTER_MEMORY
-> >> +(which are unsupported in v1 IOMMU).
-> >> +
-> >> +PPC64 paravirtualized guests generate a lot of map/unmap requests,
-> >> +and the handling of those includes pinning/unpinning pages and updating
-> >> +mm::locked_vm counter to make sure we do not exceed the rlimit.
-> >> +The v2 IOMMU splits accounting and pinning into separate operations:
-> >> +
-> >> +- VFIO_IOMMU_SPAPR_REGISTER_MEMORY/VFIO_IOMMU_SPAPR_UNREGISTER_MEMORY ioctls
-> >> +receive a user space address and size of the block to be pinned.
-> >> +Bisecting is not supported and VFIO_IOMMU_UNREGISTER_MEMORY is expected to
-> >> +be called with the exact address and size used for registering
-> >> +the memory block. The userspace is not expected to call these often.
-> >> +The ranges are stored in a linked list in a VFIO container.
-> >> +
-> >> +- VFIO_IOMMU_MAP_DMA/VFIO_IOMMU_UNMAP_DMA ioctls only update the actual
-> >> +IOMMU table and do not do pinning; instead these check that the userspace
-> >> +address is from pre-registered range.
-> >> +
-> >> +This separation helps in optimizing DMA for guests.
-> >> +
-> >>   -------------------------------------------------------------------------------
-> >>
-> >>   [1] VFIO was originally an acronym for "Virtual Function I/O" in its
-> >> diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
-> >> index eb75726..667aa1a 100644
-> >> --- a/arch/powerpc/include/asm/iommu.h
-> >> +++ b/arch/powerpc/include/asm/iommu.h
-> >> @@ -90,9 +90,7 @@ struct iommu_table {
-> >>   	struct iommu_pool pools[IOMMU_NR_POOLS];
-> >>   	unsigned long *it_map;       /* A simple allocation bitmap for now */
-> >>   	unsigned long  it_page_shift;/* table iommu page size */
-> >> -#ifdef CONFIG_IOMMU_API
-> >> -	struct iommu_group *it_group;
-> >> -#endif
-> >> +	struct iommu_table_group *it_group;
-> >>   	struct iommu_table_ops *it_ops;
-> >>   	void (*set_bypass)(struct iommu_table *tbl, bool enable);
-> >>   };
-> >> @@ -126,14 +124,24 @@ extern void iommu_free_table(struct iommu_table *tbl, const char *node_name);
-> >>    */
-> >>   extern struct iommu_table *iommu_init_table(struct iommu_table * tbl,
-> >>   					    int nid);
-> >> +
-> >> +#define IOMMU_TABLE_GROUP_MAX_TABLES	1
-> >> +
-> >> +struct iommu_table_group {
-> >>   #ifdef CONFIG_IOMMU_API
-> >> -extern void iommu_register_group(struct iommu_table *tbl,
-> >> +	struct iommu_group *group;
-> >> +#endif
-> >> +	struct iommu_table tables[IOMMU_TABLE_GROUP_MAX_TABLES];
-> >> +};
-> >> +
-> >> +#ifdef CONFIG_IOMMU_API
-> >> +extern void iommu_register_group(struct iommu_table_group *table_group,
-> >>   				 int pci_domain_number, unsigned long pe_num);
-> >>   extern int iommu_add_device(struct device *dev);
-> >>   extern void iommu_del_device(struct device *dev);
-> >>   extern int __init tce_iommu_bus_notifier_init(void);
-> >>   #else
-> >> -static inline void iommu_register_group(struct iommu_table *tbl,
-> >> +static inline void iommu_register_group(struct iommu_table_group *table_group,
-> >>   					int pci_domain_number,
-> >>   					unsigned long pe_num)
-> >
-> >
-> > Not a new problem, but there's some awfully liberal use of the namespace
-> > with function names here.  IOMMU API uses iommu_foo() functions.  IOMMU
-> > group related interfaces within the IOMMU API include "group" somewhere
-> > in that name.  powerpc specific functions should include a tag to avoid
-> > causing conflicts there.
-> 
-> 
-> Cannot argue with that but it is kind of late or not for this patchset, no? 
-> And iommu_table is way too generic for powerpc/spapr-specific thing.
-> 
-> I can replace with something better, should I do this now?
+This moves the pSeries platform to use the pci_controller_ops structure,
+rather than ppc_md for PCI controller operations.
 
-I don't think this series makes it (much) worse, but it's something that
-should be cleaned up.  Probably in a separate, later series because this
-series is plenty long enough.
+Signed-off-by: Daniel Axtens <dja@axtens.net>
+
+---
+ v2 --> v3: Add a hotplug case in pci_dlpar.c
+---
+ arch/powerpc/platforms/pseries/iommu.c     | 9 +++++----
+ arch/powerpc/platforms/pseries/pci_dlpar.c | 3 +++
+ arch/powerpc/platforms/pseries/pseries.h   | 2 ++
+ arch/powerpc/platforms/pseries/setup.c     | 6 +++++-
+ 4 files changed, 15 insertions(+), 5 deletions(-)
+
+diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
+index 7803a19..61d5a17 100644
+--- a/arch/powerpc/platforms/pseries/iommu.c
++++ b/arch/powerpc/platforms/pseries/iommu.c
+@@ -49,6 +49,7 @@
+ #include <asm/mmzone.h>
+ #include <asm/plpar_wrappers.h>
+ 
++#include "pseries.h"
+ 
+ static void tce_invalidate_pSeries_sw(struct iommu_table *tbl,
+ 				      __be64 *startp, __be64 *endp)
+@@ -1307,16 +1308,16 @@ void iommu_init_early_pSeries(void)
+ 			ppc_md.tce_free	 = tce_free_pSeriesLP;
+ 		}
+ 		ppc_md.tce_get   = tce_get_pSeriesLP;
+-		ppc_md.pci_dma_bus_setup = pci_dma_bus_setup_pSeriesLP;
+-		ppc_md.pci_dma_dev_setup = pci_dma_dev_setup_pSeriesLP;
++		pseries_pci_controller_ops.dma_bus_setup = pci_dma_bus_setup_pSeriesLP;
++		pseries_pci_controller_ops.dma_dev_setup = pci_dma_dev_setup_pSeriesLP;
+ 		ppc_md.dma_set_mask = dma_set_mask_pSeriesLP;
+ 		ppc_md.dma_get_required_mask = dma_get_required_mask_pSeriesLP;
+ 	} else {
+ 		ppc_md.tce_build = tce_build_pSeries;
+ 		ppc_md.tce_free  = tce_free_pSeries;
+ 		ppc_md.tce_get   = tce_get_pseries;
+-		ppc_md.pci_dma_bus_setup = pci_dma_bus_setup_pSeries;
+-		ppc_md.pci_dma_dev_setup = pci_dma_dev_setup_pSeries;
++		pseries_pci_controller_ops.dma_bus_setup = pci_dma_bus_setup_pSeries;
++		pseries_pci_controller_ops.dma_dev_setup = pci_dma_dev_setup_pSeries;
+ 	}
+ 
+ 
+diff --git a/arch/powerpc/platforms/pseries/pci_dlpar.c b/arch/powerpc/platforms/pseries/pci_dlpar.c
+index 89e2381..c8c37f9 100644
+--- a/arch/powerpc/platforms/pseries/pci_dlpar.c
++++ b/arch/powerpc/platforms/pseries/pci_dlpar.c
+@@ -32,6 +32,8 @@
+ #include <asm/firmware.h>
+ #include <asm/eeh.h>
+ 
++#include "pseries.h"
++
+ static struct pci_bus *
+ find_bus_among_children(struct pci_bus *bus,
+                         struct device_node *dn)
+@@ -75,6 +77,7 @@ struct pci_controller *init_phb_dynamic(struct device_node *dn)
+ 		return NULL;
+ 	rtas_setup_phb(phb);
+ 	pci_process_bridge_OF_ranges(phb, dn, 0);
++	phb->controller_ops = pseries_pci_controller_ops;
+ 
+ 	pci_devs_phb_init_dynamic(phb);
+ 
+diff --git a/arch/powerpc/platforms/pseries/pseries.h b/arch/powerpc/platforms/pseries/pseries.h
+index 1796c54..cd64672 100644
+--- a/arch/powerpc/platforms/pseries/pseries.h
++++ b/arch/powerpc/platforms/pseries/pseries.h
+@@ -65,6 +65,8 @@ extern int dlpar_detach_node(struct device_node *);
+ struct pci_host_bridge;
+ int pseries_root_bridge_prepare(struct pci_host_bridge *bridge);
+ 
++extern struct pci_controller_ops pseries_pci_controller_ops;
++
+ unsigned long pseries_memory_block_size(void);
+ 
+ #endif /* _PSERIES_PSERIES_H */
+diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
+index 1a5f884..328e318 100644
+--- a/arch/powerpc/platforms/pseries/setup.c
++++ b/arch/powerpc/platforms/pseries/setup.c
+@@ -478,6 +478,7 @@ static void __init find_and_init_phbs(void)
+ 		rtas_setup_phb(phb);
+ 		pci_process_bridge_OF_ranges(phb, node, 0);
+ 		isa_bridge_find_early(phb);
++		phb->controller_ops = pseries_pci_controller_ops;
+ 	}
+ 
+ 	of_node_put(root);
+@@ -840,6 +841,10 @@ static int pSeries_pci_probe_mode(struct pci_bus *bus)
+ void pSeries_final_fixup(void) { }
+ #endif
+ 
++struct pci_controller_ops pseries_pci_controller_ops = {
++	.probe_mode		= pSeries_pci_probe_mode,
++};
++
+ define_machine(pseries) {
+ 	.name			= "pSeries",
+ 	.probe			= pSeries_probe,
+@@ -848,7 +853,6 @@ define_machine(pseries) {
+ 	.show_cpuinfo		= pSeries_show_cpuinfo,
+ 	.log_error		= pSeries_log_error,
+ 	.pcibios_fixup		= pSeries_final_fixup,
+-	.pci_probe_mode		= pSeries_pci_probe_mode,
+ 	.restart		= rtas_restart,
+ 	.halt			= rtas_halt,
+ 	.panic			= rtas_os_term,
+-- 
+2.1.4
