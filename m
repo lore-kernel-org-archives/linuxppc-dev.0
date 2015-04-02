@@ -1,24 +1,25 @@
 Return-Path: <sandeep@freescale.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D67AB1A097F
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Apr 2015 22:04:45 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0AD3F1A0CF3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Apr 2015 22:05:20 +1100 (AEDT)
 Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0140.outbound.protection.outlook.com [65.55.169.140])
+ (mail-bl2on0117.outbound.protection.outlook.com [65.55.169.117])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id DC204140083
- for <linuxppc-dev@ozlabs.org>; Thu,  2 Apr 2015 22:04:44 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPS id 1BF81140083
+ for <linuxppc-dev@ozlabs.org>; Thu,  2 Apr 2015 22:05:18 +1100 (AEDT)
 Received: from localhost.localdomain (nmglablinux22.zin33.ap.freescale.net
  [10.232.20.244])
- by tx30smr01.am.freescale.net (8.14.3/8.14.0) with ESMTP id t32An9Ut002908
- for <linuxppc-dev@ozlabs.org>; Thu, 2 Apr 2015 03:49:10 -0700
+ by tx30smr01.am.freescale.net (8.14.3/8.14.0) with ESMTP id t32AnKs5002965
+ for <linuxppc-dev@ozlabs.org>; Thu, 2 Apr 2015 03:49:22 -0700
 From: <sandeep@freescale.com>
 To: <linuxppc-dev@ozlabs.org>
-Subject: [2/3][PATCH][v2] Device tree entry for Freescale TDM controller
-Date: Thu, 2 Apr 2015 16:19:08 +0530
-Message-ID: <1427971748-32424-1-git-send-email-sandeep@freescale.com>
+Subject: [3/3][PATCH] powerpc/85xx: Device tree entry for Freescale TDM
+ controller.
+Date: Thu, 2 Apr 2015 16:19:20 +0530
+Message-ID: <1427971760-32445-1-git-send-email-sandeep@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,29 +31,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Sandeep Singh <Sandeep@freescale.com>
+From: Sandeep Singh <sandeep@freescale.com>
 
-Added dtsi file for Freescale TDM controller.
-This controller is available on many Freescale SOCs like MPC8315, P1020, P1010,
-P1022 and P1024
+Add device tree for TDM on QorIQ chips.
 
-Signed-off-by: Sandeep Singh <Sandeep@freescale.com>
+Signed-off-by: Sandeep Singh <sandeep@freescale.com>
 Signed-off-by: Poonam Aggrwal <poonam.aggrwal@freescale.com>
 ---
- arch/powerpc/boot/dts/fsl/pq3-tdm1.0-0.dtsi | 41 +++++++++++++++++++++++++++++
+ arch/powerpc/boot/dts/fsl/qoriq-tdm1.0.dtsi | 41 +++++++++++++++++++++++++++++
  1 file changed, 41 insertions(+)
- create mode 100644 arch/powerpc/boot/dts/fsl/pq3-tdm1.0-0.dtsi
+ create mode 100644 arch/powerpc/boot/dts/fsl/qoriq-tdm1.0.dtsi
 
-diff --git a/arch/powerpc/boot/dts/fsl/pq3-tdm1.0-0.dtsi b/arch/powerpc/boot/dts/fsl/pq3-tdm1.0-0.dtsi
+diff --git a/arch/powerpc/boot/dts/fsl/qoriq-tdm1.0.dtsi b/arch/powerpc/boot/dts/fsl/qoriq-tdm1.0.dtsi
 new file mode 100644
-index 0000000..d4bdd5d
+index 0000000..f70ad37
 --- /dev/null
-+++ b/arch/powerpc/boot/dts/fsl/pq3-tdm1.0-0.dtsi
++++ b/arch/powerpc/boot/dts/fsl/qoriq-tdm1.0.dtsi
 @@ -0,0 +1,41 @@
 +/*
-+ * PQ3 TDM device tree stub [ controller @ offset 0x16000 ]
++ * QorIQ TDM device tree stub [ controller @ offset 0x185000 ]
 + *
-+ * Copyright 2012 Freescale Semiconductor Inc.
++ * Copyright 2013 Freescale Semiconductor Inc.
 + *
 + * Redistribution and use in source and binary forms, with or without
 + * modification, are permitted provided that the following conditions are met:
@@ -83,11 +82,11 @@ index 0000000..d4bdd5d
 + * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 + */
 +
-+tdm@16000 {
++tdm@185000 {
 +	compatible = "fsl,tdm1.0";
-+	reg = <0x16000 0x200 0x2c000 0x2000>;
++	reg = <0x185000 0x200 0x186000 0x2000>;
 +	clock-frequency = <0>;
-+	interrupts = <62 8 0 0>;
++	interrupts = <49 8 0 0>;
 +	fsl,max-time-slots = <128>;
 +};
 -- 
