@@ -1,18 +1,29 @@
 Return-Path: <scottwood@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0138.outbound.protection.outlook.com [65.55.169.138])
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0130.outbound.protection.outlook.com [207.46.100.130])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0D5DF1A0D64
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Apr 2015 09:47:18 +1100 (AEDT)
-Date: Thu, 2 Apr 2015 17:47:02 -0500
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2A9251A084B
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Apr 2015 10:12:11 +1100 (AEDT)
+Message-ID: <1428016310.22867.289.camel@freescale.com>
+Subject: Re: [PATCH 0/2] powerpc/kvm: Enable running guests on RT Linux
 From: Scott Wood <scottwood@freescale.com>
-To: <benh@kernel.crashing.org>, Michael Ellerman <mpe@ellerman.id.au>
-Subject: Pull request: scottwood/linux.git next
-Message-ID: <20150402224702.GA5064@home.buserror.net>
+To: Purcareata Bogdan <b43198@freescale.com>
+Date: Thu, 2 Apr 2015 18:11:50 -0500
+In-Reply-To: <55158E6D.40304@freescale.com>
+References: <1424251955-308-1-git-send-email-bogdan.purcareata@freescale.com>
+ <54E73A6C.9080500@suse.de> <54E740E7.5090806@redhat.com>
+ <54E74A8C.30802@linutronix.de> <1424734051.4698.17.camel@freescale.com>
+ <54EF196E.4090805@redhat.com> <54EF2025.80404@linutronix.de>
+ <1424999159.4698.78.camel@freescale.com> <55158E6D.40304@freescale.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-rt-users@vger.kernel.org,
+ Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
+ Alexander Graf <agraf@suse.de>, linux-kernel@vger.kernel.org,
+ Bogdan Purcareata <bogdan.purcareata@freescale.com>,
+ mihai.caraman@freescale.com, Paolo Bonzini <pbonzini@redhat.com>,
+ Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,106 +33,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Highlights include BMan device tree nodes, an MSI erratum workaround, a
-couple minor performance improvements, config updates, and misc
-fixes/cleanup.
+On Fri, 2015-03-27 at 19:07 +0200, Purcareata Bogdan wrote:
+> On 27.02.2015 03:05, Scott Wood wrote:
+> > On Thu, 2015-02-26 at 14:31 +0100, Sebastian Andrzej Siewior wrote:
+> >> On 02/26/2015 02:02 PM, Paolo Bonzini wrote:
+> >>>
+> >>>
+> >>> On 24/02/2015 00:27, Scott Wood wrote:
+> >>>> This isn't a host PIC driver.  It's guest PIC emulation, some of which
+> >>>> is indeed not suitable for a rawlock (in particular, openpic_update_irq
+> >>>> which loops on the number of vcpus, with a loop body that calls
+> >>>> IRQ_check() which loops over all pending IRQs).
+> >>>
+> >>> The question is what behavior is wanted of code that isn't quite
+> >>> RT-ready.  What is preferred, bugs or bad latency?
+> >>>
+> >>> If the answer is bad latency (which can be avoided simply by not running
+> >>> KVM on a RT kernel in production), patch 1 can be applied.  If the
+> >> can be applied *but* makes no difference if applied or not.
+> >>
+> >>> answer is bugs, patch 1 is not upstream material.
+> >>>
+> >>> I myself prefer to have bad latency; if something takes a spinlock in
+> >>> atomic context, that spinlock should be raw.  If it hurts (latency),
+> >>> don't do it (use the affected code).
+> >>
+> >> The problem, that is fixed by this s/spin_lock/raw_spin_lock/, exists
+> >> only in -RT. There is no change upstream. In general we fix such things
+> >> in -RT first and forward the patches upstream if possible. This convert
+> >> thingy would be possible.
+> >> Bug fixing comes before latency no matter if RT or not. Converting
+> >> every lock into a rawlock is not always the answer.
+> >> Last thing I read from Scott is that he is not entirely sure if this is
+> >> the right approach or not and patch #1 was not acked-by him either.
+> >>
+> >> So for now I wait for Scott's feedback and maybe a backtrace :)
+> >
+> > Obviously leaving it in a buggy state is not what we want -- but I lean
+> > towards a short term "fix" of putting "depends on !PREEMPT_RT" on the
+> > in-kernel MPIC emulation (which is itself just an optimization -- you
+> > can still use KVM without it).  This way people don't enable it with RT
+> > without being aware of the issue, and there's more of an incentive to
+> > fix it properly.
+> >
+> > I'll let Bogdan supply the backtrace.
+> 
+> So about the backtrace. Wasn't really sure how to "catch" this, so what 
+> I did was to start a 24 VCPUs guest on a 24 CPU board, and in the guest 
+> run 24 netperf flows with an external back to back board of the same 
+> kind. I assumed this would provide the sufficient VCPUs and external 
+> interrupt to expose an alleged culprit.
+> 
+> With regards to measuring the latency, I thought of using ftrace, 
+> specifically the preemptirqsoff latency histogram. Unfortunately, I 
+> wasn't able to capture any major differences between running a guest 
+> with in-kernel MPIC emulation (with the openpic raw_spinlock_conversion 
+> applied) vs. no in-kernel MPIC emulation. Function profiling 
+> (trace_stat) shows that in the second case there's a far greater time 
+> spent in kvm_handle_exit (100x), but overall, the maximum latencies for 
+> preemptirqsoff don't look that much different.
+> 
+> Here are the max numbers (preemptirqsoff) for the 24 CPUs, on the host 
+> RT Linux, sorted in descending order, expressed in microseconds:
+> 
+> In-kernel MPIC		QEMU MPIC
+> 3975			5105
 
-The following changes since commit 6eca8933d3ff17bff39d5f10a2a22366d8622fa6:
+What are you measuring?  Latency in the host, or in the guest?
 
-  powerpc/kernel: Rename copy_thread() 'arg' argument to 'kthread_arg' (2015-03-20 12:41:15 +1100)
-
-are available in the git repository at:
-
-  git://git.kernel.org/pub/scm/linux/kernel/git/scottwood/linux.git next
-
-for you to fetch changes up to d41444daba1fd65e5a998c83398f44524f638d07:
-
-  powerpc/corenet: enable CONFIG_I2C_MUX and CONFIG_I2C_MUX_PCA954x (2015-03-31 22:23:21 -0500)
-
-----------------------------------------------------------------
-Andy Fleming (1):
-      powerpc/corenet: Enable muxing MDIO buses via GPIO
-
-Benjamin Herrenschmidt (1):
-      powerpc: Make corenet64_defconfig a bit more useful
-
-Bogdan Purcareata (1):
-      powerpc/mpic: Remove WHOAMI readback after EOI
-
-Emil Medve (1):
-      powerpc/dts: Remove B4860 emulator support
-
-Hongtao Jia (4):
-      powerpc/mpic: Add get_version API both for internal and external use
-      powerpc/85xx: workaround for chips with MSI hardware errata
-      powerpc: Enable thermal monitor feature in defconfig for supported platforms
-      powerpc: Enable power monitor feature in defconfig for supported platforms
-
-Igal Liberman (1):
-      powerpc/mpc85xx: Add FMan platform support
-
-Julia Lawall (1):
-      powerpc: don't export static symbol
-
-Kevin Hao (1):
-      powerpc: book3e_64: fix the align size for paca_struct
-
-Kumar Gala (1):
-      powerpc/mpc85xx: Add FSL QorIQ DPAA BMan support to device tree(s)
-
-Madalin Bucur (1):
-      powerpc/fsl-booke: Add T4080 SVR value
-
-Shengzhou Liu (2):
-      powerpc/t2080qds: fix rtc interrupt
-      powerpc/corenet: enable CONFIG_I2C_MUX and CONFIG_I2C_MUX_PCA954x
-
-Shruti Kanetkar (1):
-      powerpc/corenet: Enable muxing MDIO buses via FPGA
-
-Yanjiang Jin (1):
-      powerpc/mpc85xx: call k(un)map_atomic rather than k(un)map
-
- arch/powerpc/boot/dts/b4860emu.dts            | 223 ----------------------
- arch/powerpc/boot/dts/b4qds.dtsi              |  17 +-
- arch/powerpc/boot/dts/fsl/b4860si-post.dtsi   |  60 +++++-
- arch/powerpc/boot/dts/fsl/b4si-post.dtsi      |  89 ++++++++-
- arch/powerpc/boot/dts/fsl/p1023si-post.dtsi   |  37 +++-
- arch/powerpc/boot/dts/fsl/p2041si-post.dtsi   |  11 +-
- arch/powerpc/boot/dts/fsl/p3041si-post.dtsi   |  11 +-
- arch/powerpc/boot/dts/fsl/p4080si-post.dtsi   |  11 +-
- arch/powerpc/boot/dts/fsl/p5020si-post.dtsi   |  11 +-
- arch/powerpc/boot/dts/fsl/p5040si-post.dtsi   |  11 +-
- arch/powerpc/boot/dts/fsl/t1040si-post.dtsi   |  65 ++++++-
- arch/powerpc/boot/dts/fsl/t2081si-post.dtsi   | 105 +++++++++-
- arch/powerpc/boot/dts/fsl/t4240si-post.dtsi   | 265 +++++++++++++++++++++++++-
- arch/powerpc/boot/dts/kmcoge4.dts             |  15 ++
- arch/powerpc/boot/dts/oca4080.dts             |  15 ++
- arch/powerpc/boot/dts/p1023rdb.dts            |  18 +-
- arch/powerpc/boot/dts/p2041rdb.dts            |  17 +-
- arch/powerpc/boot/dts/p3041ds.dts             |  17 +-
- arch/powerpc/boot/dts/p4080ds.dts             |  17 +-
- arch/powerpc/boot/dts/p5020ds.dts             |  17 +-
- arch/powerpc/boot/dts/p5040ds.dts             |  17 +-
- arch/powerpc/boot/dts/t104xqds.dtsi           |  17 +-
- arch/powerpc/boot/dts/t104xrdb.dtsi           |  14 ++
- arch/powerpc/boot/dts/t208xqds.dtsi           |  19 +-
- arch/powerpc/boot/dts/t208xrdb.dtsi           |  15 ++
- arch/powerpc/boot/dts/t4240qds.dts            |  17 +-
- arch/powerpc/boot/dts/t4240rdb.dts            |  15 ++
- arch/powerpc/configs/corenet32_smp_defconfig  |   7 +-
- arch/powerpc/configs/corenet64_smp_defconfig  |  15 +-
- arch/powerpc/configs/mpc85xx_defconfig        |   3 +-
- arch/powerpc/configs/mpc85xx_smp_defconfig    |   2 +-
- arch/powerpc/include/asm/mpc85xx.h            |   1 +
- arch/powerpc/include/asm/mpic.h               |   3 +
- arch/powerpc/include/asm/paca.h               |   4 +-
- arch/powerpc/platforms/85xx/common.c          |   1 +
- arch/powerpc/platforms/85xx/corenet_generic.c |  12 ++
- arch/powerpc/platforms/85xx/smp.c             |   4 +-
- arch/powerpc/sysdev/fsl_msi.c                 |  29 ++-
- arch/powerpc/sysdev/fsl_msi.h                 |   2 +
- arch/powerpc/sysdev/mpic.c                    |  11 +-
- arch/powerpc/sysdev/qe_lib/qe_io.c            |  25 ---
- 41 files changed, 981 insertions(+), 284 deletions(-)
- delete mode 100644 arch/powerpc/boot/dts/b4860emu.dts
+-Scott
