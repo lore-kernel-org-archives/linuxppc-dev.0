@@ -1,22 +1,23 @@
 Return-Path: <aik@ozlabs.ru>
-Received: from mail-pa0-f53.google.com (mail-pa0-f53.google.com
- [209.85.220.53])
+Received: from mail-pd0-f178.google.com (mail-pd0-f178.google.com
+ [209.85.192.178])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 985571A0B66
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Apr 2015 13:30:55 +1100 (AEDT)
-Received: by pactp5 with SMTP id tp5so69789452pac.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Apr 2015 19:30:54 -0700 (PDT)
-Message-ID: <551CA9D7.2060804@ozlabs.ru>
-Date: Thu, 02 Apr 2015 13:30:47 +1100
+ by lists.ozlabs.org (Postfix) with ESMTPS id 08BDD1A0729
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Apr 2015 13:34:05 +1100 (AEDT)
+Received: by pddn5 with SMTP id n5so74236663pdd.2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Apr 2015 19:34:03 -0700 (PDT)
+Message-ID: <551CAA95.8080903@ozlabs.ru>
+Date: Thu, 02 Apr 2015 13:33:57 +1100
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 MIME-Version: 1.0
 To: Alex Williamson <alex.williamson@redhat.com>
-Subject: Re: [PATCH kernel v7 04/31] vfio: powerpc/spapr: Use it_page_size
+Subject: Re: [PATCH kernel v7 12/31] powerpc/spapr: vfio: Switch from
+ iommu_table to new iommu_table_group
 References: <1427468115-2224-1-git-send-email-aik@ozlabs.ru>	
- <1427468115-2224-5-git-send-email-aik@ozlabs.ru>
- <1427924904.5567.303.camel@redhat.com>
-In-Reply-To: <1427924904.5567.303.camel@redhat.com>
+ <1427468115-2224-13-git-send-email-aik@ozlabs.ru>
+ <1427924911.5567.304.camel@redhat.com>
+In-Reply-To: <1427924911.5567.304.camel@redhat.com>
 Content-Type: text/plain; charset=koi8-r; format=flowed
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  Paul Mackerras <paulus@samba.org>
@@ -31,63 +32,115 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 On 04/02/2015 08:48 AM, Alex Williamson wrote:
 > On Sat, 2015-03-28 at 01:54 +1100, Alexey Kardashevskiy wrote:
->> This makes use of the it_page_size from the iommu_table struct
->> as page size can differ.
->>
->> This replaces missing IOMMU_PAGE_SHIFT macro in commented debug code
->> as recently introduced IOMMU_PAGE_XXX macros do not include
->> IOMMU_PAGE_SHIFT.
+>> Modern IBM POWERPC systems support multiple (currently two) TCE tables
+>> per IOMMU group (a.k.a. PE). This adds a iommu_table_group container
+>> for TCE tables. Right now just one table is supported.
 >>
 >> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
->> Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 >> ---
->>   drivers/vfio/vfio_iommu_spapr_tce.c | 26 +++++++++++++-------------
->>   1 file changed, 13 insertions(+), 13 deletions(-)
+>>   Documentation/vfio.txt                      |  23 ++++++
+>>   arch/powerpc/include/asm/iommu.h            |  18 +++--
+>>   arch/powerpc/kernel/iommu.c                 |  34 ++++----
+>>   arch/powerpc/platforms/powernv/pci-ioda.c   |  38 +++++----
+>>   arch/powerpc/platforms/powernv/pci-p5ioc2.c |  17 ++--
+>>   arch/powerpc/platforms/powernv/pci.c        |   2 +-
+>>   arch/powerpc/platforms/powernv/pci.h        |   4 +-
+>>   arch/powerpc/platforms/pseries/iommu.c      |   9 ++-
+>>   drivers/vfio/vfio_iommu_spapr_tce.c         | 120 ++++++++++++++++++++--------
+>>   9 files changed, 183 insertions(+), 82 deletions(-)
 >>
->> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
->> index f835e63..8bbee22 100644
->> --- a/drivers/vfio/vfio_iommu_spapr_tce.c
->> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
->> @@ -91,7 +91,7 @@ static int tce_iommu_enable(struct tce_container *container)
->>   	 * enforcing the limit based on the max that the guest can map.
->>   	 */
->>   	down_write(&current->mm->mmap_sem);
->> -	npages = (tbl->it_size << IOMMU_PAGE_SHIFT_4K) >> PAGE_SHIFT;
->> +	npages = (tbl->it_size << tbl->it_page_shift) >> PAGE_SHIFT;
->>   	locked = current->mm->locked_vm + npages;
->>   	lock_limit = rlimit(RLIMIT_MEMLOCK) >> PAGE_SHIFT;
->>   	if (locked > lock_limit && !capable(CAP_IPC_LOCK)) {
->> @@ -120,7 +120,7 @@ static void tce_iommu_disable(struct tce_container *container)
+>> diff --git a/Documentation/vfio.txt b/Documentation/vfio.txt
+>> index 96978ec..94328c8 100644
+>> --- a/Documentation/vfio.txt
+>> +++ b/Documentation/vfio.txt
+>> @@ -427,6 +427,29 @@ The code flow from the example above should be slightly changed:
 >>
->>   	down_write(&current->mm->mmap_sem);
->>   	current->mm->locked_vm -= (container->tbl->it_size <<
->> -			IOMMU_PAGE_SHIFT_4K) >> PAGE_SHIFT;
->> +			container->tbl->it_page_shift) >> PAGE_SHIFT;
->>   	up_write(&current->mm->mmap_sem);
->>   }
+>>   	....
 >>
->> @@ -222,7 +222,7 @@ static long tce_iommu_build(struct tce_container *container,
->>   					tce, ret);
->>   			break;
->>   		}
->> -		tce += IOMMU_PAGE_SIZE_4K;
->> +		tce += IOMMU_PAGE_SIZE(tbl);
+>> +5) There is v2 of SPAPR TCE IOMMU. It deprecates VFIO_IOMMU_ENABLE/
+>> +VFIO_IOMMU_DISABLE and implements 2 new ioctls:
+>> +VFIO_IOMMU_SPAPR_REGISTER_MEMORY and VFIO_IOMMU_SPAPR_UNREGISTER_MEMORY
+>> +(which are unsupported in v1 IOMMU).
+>> +
+>> +PPC64 paravirtualized guests generate a lot of map/unmap requests,
+>> +and the handling of those includes pinning/unpinning pages and updating
+>> +mm::locked_vm counter to make sure we do not exceed the rlimit.
+>> +The v2 IOMMU splits accounting and pinning into separate operations:
+>> +
+>> +- VFIO_IOMMU_SPAPR_REGISTER_MEMORY/VFIO_IOMMU_SPAPR_UNREGISTER_MEMORY ioctls
+>> +receive a user space address and size of the block to be pinned.
+>> +Bisecting is not supported and VFIO_IOMMU_UNREGISTER_MEMORY is expected to
+>> +be called with the exact address and size used for registering
+>> +the memory block. The userspace is not expected to call these often.
+>> +The ranges are stored in a linked list in a VFIO container.
+>> +
+>> +- VFIO_IOMMU_MAP_DMA/VFIO_IOMMU_UNMAP_DMA ioctls only update the actual
+>> +IOMMU table and do not do pinning; instead these check that the userspace
+>> +address is from pre-registered range.
+>> +
+>> +This separation helps in optimizing DMA for guests.
+>> +
+>>   -------------------------------------------------------------------------------
+>>
+>>   [1] VFIO was originally an acronym for "Virtual Function I/O" in its
+>> diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
+>> index eb75726..667aa1a 100644
+>> --- a/arch/powerpc/include/asm/iommu.h
+>> +++ b/arch/powerpc/include/asm/iommu.h
+>> @@ -90,9 +90,7 @@ struct iommu_table {
+>>   	struct iommu_pool pools[IOMMU_NR_POOLS];
+>>   	unsigned long *it_map;       /* A simple allocation bitmap for now */
+>>   	unsigned long  it_page_shift;/* table iommu page size */
+>> -#ifdef CONFIG_IOMMU_API
+>> -	struct iommu_group *it_group;
+>> -#endif
+>> +	struct iommu_table_group *it_group;
+>>   	struct iommu_table_ops *it_ops;
+>>   	void (*set_bypass)(struct iommu_table *tbl, bool enable);
+>>   };
+>> @@ -126,14 +124,24 @@ extern void iommu_free_table(struct iommu_table *tbl, const char *node_name);
+>>    */
+>>   extern struct iommu_table *iommu_init_table(struct iommu_table * tbl,
+>>   					    int nid);
+>> +
+>> +#define IOMMU_TABLE_GROUP_MAX_TABLES	1
+>> +
+>> +struct iommu_table_group {
+>>   #ifdef CONFIG_IOMMU_API
+>> -extern void iommu_register_group(struct iommu_table *tbl,
+>> +	struct iommu_group *group;
+>> +#endif
+>> +	struct iommu_table tables[IOMMU_TABLE_GROUP_MAX_TABLES];
+>> +};
+>> +
+>> +#ifdef CONFIG_IOMMU_API
+>> +extern void iommu_register_group(struct iommu_table_group *table_group,
+>>   				 int pci_domain_number, unsigned long pe_num);
+>>   extern int iommu_add_device(struct device *dev);
+>>   extern void iommu_del_device(struct device *dev);
+>>   extern int __init tce_iommu_bus_notifier_init(void);
+>>   #else
+>> -static inline void iommu_register_group(struct iommu_table *tbl,
+>> +static inline void iommu_register_group(struct iommu_table_group *table_group,
+>>   					int pci_domain_number,
+>>   					unsigned long pe_num)
 >
 >
-> Is PAGE_SIZE ever smaller than IOMMU_PAGE_SIZE(tbl)?  IOW, can the page
-> we got from get_user_pages_fast() ever not completely fill the tce
-> entry?
+> Not a new problem, but there's some awfully liberal use of the namespace
+> with function names here.  IOMMU API uses iommu_foo() functions.  IOMMU
+> group related interfaces within the IOMMU API include "group" somewhere
+> in that name.  powerpc specific functions should include a tag to avoid
+> causing conflicts there.
 
 
-Yes. IOMMU_PAGE_SIZE is 4K/64K/16M (16M is with huge pages enabled in QEMU 
-with -mempath), PAGE_SIZE is 4K/64K (normally 64K).
+Cannot argue with that but it is kind of late or not for this patchset, no? 
+And iommu_table is way too generic for powerpc/spapr-specific thing.
+
+I can replace with something better, should I do this now?
 
 
-> (Have I asked this before?  Sorry if so)
-
-
-:)
-
+> (sorry for commenting twice on the same patch)
+>
 
 
 -- 
