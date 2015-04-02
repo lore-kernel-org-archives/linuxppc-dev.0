@@ -1,23 +1,24 @@
-Return-Path: <Lijun.Pan@freescale.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3A2E41A0C8B
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Apr 2015 08:56:15 +1100 (AEDT)
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0110.outbound.protection.outlook.com [65.55.169.110])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id A8C4B14009B
- for <linuxppc-dev@ozlabs.org>; Fri,  3 Apr 2015 08:56:13 +1100 (AEDT)
-From: Lijun Pan <Lijun.Pan@freescale.com>
-To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 1/4] powerpc/85xx: miscellaneous changes on mpc85xx_defconfig
-Date: Thu, 2 Apr 2015 16:37:51 -0500
-Message-ID: <1428010674-25361-1-git-send-email-Lijun.Pan@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Lijun Pan <Lijun.Pan@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 38A1C1A0E06
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Apr 2015 08:57:14 +1100 (AEDT)
+Message-ID: <1428011820.20500.277.camel@kernel.crashing.org>
+Subject: Re: [PATCH v8 RFC 1/3] sparc: Break up monolithic iommu table/lock
+ into finer graularity pools and lock
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Sowmini Varadhan <sowmini.varadhan@oracle.com>
+Date: Fri, 03 Apr 2015 08:57:00 +1100
+In-Reply-To: <20150402214343.GA15680@oracle.com>
+References: <cover.1427761300.git.sowmini.varadhan@oracle.com>
+ <8406d119fb885255387a400551de994cb4a4c331.1427761300.git.sowmini.varadhan@oracle.com>
+ <1428008044.20500.272.camel@kernel.crashing.org>
+ <20150402214343.GA15680@oracle.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: aik@au1.ibm.com, anton@au1.ibm.com, paulus@samba.org,
+ sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,120 +28,89 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Merge Freescale's Internal mpc85xx_defconfig with upstream's.
-Run savedefconfig to get the minimal change.
+On Thu, 2015-04-02 at 17:43 -0400, Sowmini Varadhan wrote:
+> On (04/03/15 07:54), Benjamin Herrenschmidt wrote:
+> > > +	limit = pool->end;
+> > > +
+> > > +	/* The case below can happen if we have a small segment appended
+> > > +	 * to a large, or when the previous alloc was at the very end of
+> > > +	 * the available space. If so, go back to the beginning and flush.
+> > > +	 */
+> > > +	if (start >= limit) {
+> > > +		start = pool->start;
+> > > +		if (!large_pool && iommu->lazy_flush != NULL)
+> > > +			iommu->lazy_flush(iommu);
+> > 
+> > Add need_flush = false;
+> 
+> A few clarifications, while I parse the rest of your comments:
+> 
+> Not sure I follow- need_flush is initialized to true at the start of the function?
 
-Signed-off-by: Lijun Pan <Lijun.Pan@freescale.com>
----
- arch/powerpc/configs/mpc85xx_defconfig | 28 +++++++---------------------
- 1 file changed, 7 insertions(+), 21 deletions(-)
+No but you can loop back there via "goto again". However if you follow
+my other comment and move the flush back to the end, then you don't need
+that at all.
 
-diff --git a/arch/powerpc/configs/mpc85xx_defconfig b/arch/powerpc/configs/mpc85xx_defconfig
-index 6ecf7bd..0a04104 100644
---- a/arch/powerpc/configs/mpc85xx_defconfig
-+++ b/arch/powerpc/configs/mpc85xx_defconfig
-@@ -15,7 +15,6 @@ CONFIG_EXPERT=y
- CONFIG_KALLSYMS_ALL=y
- CONFIG_MODULES=y
- CONFIG_MODULE_UNLOAD=y
--CONFIG_MODULE_FORCE_UNLOAD=y
- CONFIG_MODVERSIONS=y
- # CONFIG_BLK_DEV_BSG is not set
- CONFIG_PARTITION_ADVANCED=y
-@@ -42,7 +41,8 @@ CONFIG_TQM8548=y
- CONFIG_TQM8555=y
- CONFIG_TQM8560=y
- CONFIG_SBC8548=y
--CONFIG_MVME2500=y
-+CONFIG_PPC_QEMU_E500=y
-+CONFIG_KVM_GUEST=y
- CONFIG_QUICC_ENGINE=y
- CONFIG_QE_GPIO=y
- CONFIG_HIGHMEM=y
-@@ -50,8 +50,6 @@ CONFIG_BINFMT_MISC=m
- CONFIG_MATH_EMULATION=y
- CONFIG_FORCE_MAX_ZONEORDER=12
- CONFIG_PCI=y
--CONFIG_PCIEPORTBUS=y
--# CONFIG_PCIEASPM is not set
- CONFIG_PCI_MSI=y
- CONFIG_RAPIDIO=y
- CONFIG_NET=y
-@@ -88,21 +86,17 @@ CONFIG_FTL=y
- CONFIG_MTD_CFI=y
- CONFIG_MTD_CFI_INTELEXT=y
- CONFIG_MTD_CFI_AMDSTD=y
--CONFIG_MTD_PHYSMAP=y
- CONFIG_MTD_PHYSMAP_OF=y
--CONFIG_MTD_PLATRAM=y
--CONFIG_MTD_M25P80=y
- CONFIG_MTD_NAND=y
- CONFIG_MTD_NAND_FSL_ELBC=y
- CONFIG_MTD_NAND_FSL_IFC=y
--CONFIG_MTD_SPI_NOR=y
- CONFIG_MTD_UBI=y
- CONFIG_BLK_DEV_LOOP=y
- CONFIG_BLK_DEV_NBD=y
- CONFIG_BLK_DEV_RAM=y
- CONFIG_BLK_DEV_RAM_SIZE=131072
--CONFIG_EEPROM_AT24=y
--CONFIG_EEPROM_LEGACY=y
-+CONFIG_IDE=y
-+CONFIG_BLK_DEV_VIA82CXXX=y
- CONFIG_BLK_DEV_SD=y
- CONFIG_CHR_DEV_ST=y
- CONFIG_BLK_DEV_SR=y
-@@ -127,7 +121,6 @@ CONFIG_MARVELL_PHY=y
- CONFIG_DAVICOM_PHY=y
- CONFIG_CICADA_PHY=y
- CONFIG_VITESSE_PHY=y
--CONFIG_BROADCOM_PHY=y
- CONFIG_FIXED_PHY=y
- CONFIG_INPUT_FF_MEMLESS=m
- # CONFIG_INPUT_MOUSEDEV is not set
-@@ -136,8 +129,8 @@ CONFIG_INPUT_FF_MEMLESS=m
- CONFIG_SERIO_LIBPS2=y
- CONFIG_SERIAL_8250=y
- CONFIG_SERIAL_8250_CONSOLE=y
--CONFIG_SERIAL_8250_NR_UARTS=6
--CONFIG_SERIAL_8250_RUNTIME_UARTS=6
-+CONFIG_SERIAL_8250_NR_UARTS=2
-+CONFIG_SERIAL_8250_RUNTIME_UARTS=2
- CONFIG_SERIAL_8250_MANY_PORTS=y
- CONFIG_SERIAL_8250_DETECT_IRQ=y
- CONFIG_SERIAL_8250_RSA=y
-@@ -190,14 +183,9 @@ CONFIG_USB_STORAGE=y
- CONFIG_MMC=y
- CONFIG_MMC_SDHCI=y
- CONFIG_MMC_SDHCI_PLTFM=y
--CONFIG_MMC_SDHCI_OF_ESDHC=y
- CONFIG_EDAC=y
- CONFIG_EDAC_MM_EDAC=y
--CONFIG_EDAC_MPC85XX=y
- CONFIG_RTC_CLASS=y
--CONFIG_RTC_DRV_DS1307=y
--CONFIG_RTC_DRV_DS1374=y
--CONFIG_RTC_DRV_DS3232=y
- CONFIG_RTC_DRV_CMOS=y
- CONFIG_DMADEVICES=y
- CONFIG_FSL_DMA=y
-@@ -218,9 +206,6 @@ CONFIG_ADFS_FS=m
- CONFIG_AFFS_FS=m
- CONFIG_HFS_FS=m
- CONFIG_HFSPLUS_FS=m
--CONFIG_BEFS_FS=m
--CONFIG_BFS_FS=m
--CONFIG_EFS_FS=m
- CONFIG_JFFS2_FS=y
- CONFIG_JFFS2_FS_DEBUG=1
- CONFIG_UBIFS_FS=y
-@@ -243,6 +228,7 @@ CONFIG_FONT_8x8=y
- CONFIG_FONT_8x16=y
- CONFIG_DEBUG_INFO=y
- CONFIG_DEBUG_FS=y
-+CONFIG_MAGIC_SYSRQ=y
- CONFIG_DETECT_HUNG_TASK=y
- CONFIG_CRYPTO_PCBC=m
- CONFIG_CRYPTO_SHA256=y
--- 
-1.9.3
+> > I only just noticed too, you completely dropped the code to honor
+> > the dma mask. Why that ? Some devices rely on this.
+> 
+> so that's an interesting question: the existing iommu_range_alloc() in
+> arch/sparc/kernel/iommu.c does not use the mask at all. I based most of
+> the code  on this (except for the lock fragmentation part). 
+> I dont know if this is arch specific.
+
+Probably, not that many devices have limits on DMA mask but they do
+exist. It becomes more important if we decide to create a very large
+IOMMU window that spans beyond 4G in order to support devices with
+32-bit DMA masks. Otherwise it's older devices mostly with <32-bit
+masks.
+
+In any case, for a generic piece of code, this should be supported.
+Basically, assume that if we have something in the powerpc code, we need
+it, if you remove it, we won't be able to use your code generically.
+
+There are a few cases we can debate like our block allocation, but
+things like the mask or the alignment constraints aren't in that group.
+
+> > 
+> > > +	if (dev)
+> > > +		boundary_size = ALIGN(dma_get_seg_boundary(dev) + 1,
+> > > +				      1 << iommu->table_shift);
+> > > +	else
+> > > +		boundary_size = ALIGN(1UL << 32, 1 << iommu->table_shift);
+> > > +
+> > > +	shift = iommu->table_map_base >> iommu->table_shift;
+> > > +	boundary_size = boundary_size >> iommu->table_shift;
+> > > +	/*
+> > > +	 * if the skip_span_boundary_check had been set during init, we set
+> > > +	 * things up so that iommu_is_span_boundary() merely checks if the
+> > > +	 * (index + npages) < num_tsb_entries
+> > > +	 */
+> > > +	if ((iommu->flags & IOMMU_NO_SPAN_BOUND) != 0) {
+> > > +		shift = 0;
+> > > +		boundary_size = iommu->poolsize * iommu->nr_pools;
+> > > +	}
+> > > +	n = iommu_area_alloc(iommu->map, limit, start, npages, shift,
+> > > +			     boundary_size, 0);
+> > 
+> > You have completely dropped the alignment support. This will break
+> > drivers. There are cases (especially with consistent allocations) where
+> 
+> Again, not sure I follow? are you referring to the IOMMU_NO_SPAN_BOUND case?
+
+No, the last argument to iommu_area_alloc() which is passed from the
+callers when doing consistent allocs. Basically, the DMA api mandates
+that consistent allocs are naturally aligned (to their own size), we
+implement that on powerpc by passing that alignment argument down.
+
+> That's very specific to LDC (sparc ldoms virtualization infra). The default
+> is to not have IOMMU_NO_SPAN_BOUND set. 
+> For the rest of the drivers, the code that sets up boundary_size aligns things
+> in the same way as the ppc code.
+> 
+> 
+> > the driver have alignment constraints on the address, those must be
+> > preserved.
+> > 
+> 
+> --Sowmini
