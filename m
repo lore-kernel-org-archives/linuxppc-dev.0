@@ -1,26 +1,35 @@
-Return-Path: <dja@axtens.net>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <alistair.popple@au1.ibm.com>
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 259A21A03D3
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Apr 2015 14:22:13 +1100 (AEDT)
-Received: from mail-pa0-x232.google.com (mail-pa0-x232.google.com
- [IPv6:2607:f8b0:400e:c03::232])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 0D52A14008F
- for <linuxppc-dev@ozlabs.org>; Thu,  2 Apr 2015 14:22:10 +1100 (AEDT)
-Received: by patj18 with SMTP id j18so71036958pat.2
- for <linuxppc-dev@ozlabs.org>; Wed, 01 Apr 2015 20:22:08 -0700 (PDT)
-From: Daniel Axtens <dja@axtens.net>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH v3 12/19] powerpc/pseries: Move controller ops from ppc_md to
- controller_ops
-Date: Thu,  2 Apr 2015 14:21:58 +1100
-Message-Id: <1427944918-9035-1-git-send-email-dja@axtens.net>
-In-Reply-To: <1427778057-9505-13-git-send-email-dja@axtens.net>
-References: <1427778057-9505-13-git-send-email-dja@axtens.net>
-Cc: Daniel Axtens <dja@axtens.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id C99C41A03D6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Apr 2015 14:23:58 +1100 (AEDT)
+Received: from /spool/local
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <alistair.popple@au1.ibm.com>;
+ Thu, 2 Apr 2015 13:23:57 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id CC3622BB0055
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Apr 2015 14:23:54 +1100 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t323NkgX41025646
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 2 Apr 2015 14:23:54 +1100
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t323NLXl017332
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 2 Apr 2015 14:23:21 +1100
+From: Alistair Popple <alistair@popple.id.au>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 4/8] powernv/eeh: Update the EEH code to use the opal irq
+ domain
+Date: Thu,  2 Apr 2015 14:22:28 +1100
+Message-Id: <1427944952-17452-4-git-send-email-alistair@popple.id.au>
+In-Reply-To: <1427944952-17452-1-git-send-email-alistair@popple.id.au>
+References: <1427944952-17452-1-git-send-email-alistair@popple.id.au>
+Cc: Alistair Popple <alistair@popple.id.au>,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>, Jeremy Kerr <jk@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,117 +39,101 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This moves the pSeries platform to use the pci_controller_ops structure,
-rather than ppc_md for PCI controller operations.
+The eeh code currently uses the old notifier method to get eeh events
+from OPAL. It also contains some logic to filter opal events which has
+been moved into the virtual irqchip. This patch converts the eeh code
+to the new event interface which simplifies event handling.
 
-Signed-off-by: Daniel Axtens <dja@axtens.net>
-
+Signed-off-by: Alistair Popple <alistair@popple.id.au>
 ---
- v2 --> v3: Add a hotplug case in pci_dlpar.c
----
- arch/powerpc/platforms/pseries/iommu.c     | 9 +++++----
- arch/powerpc/platforms/pseries/pci_dlpar.c | 3 +++
- arch/powerpc/platforms/pseries/pseries.h   | 2 ++
- arch/powerpc/platforms/pseries/setup.c     | 6 +++++-
- 4 files changed, 15 insertions(+), 5 deletions(-)
+ arch/powerpc/platforms/powernv/eeh-ioda.c | 39 ++++++++++++++-----------------
+ 1 file changed, 17 insertions(+), 22 deletions(-)
 
-diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
-index 7803a19..61d5a17 100644
---- a/arch/powerpc/platforms/pseries/iommu.c
-+++ b/arch/powerpc/platforms/pseries/iommu.c
-@@ -49,6 +49,7 @@
- #include <asm/mmzone.h>
- #include <asm/plpar_wrappers.h>
+diff --git a/arch/powerpc/platforms/powernv/eeh-ioda.c b/arch/powerpc/platforms/powernv/eeh-ioda.c
+index 2809c98..6eee1d1 100644
+--- a/arch/powerpc/platforms/powernv/eeh-ioda.c
++++ b/arch/powerpc/platforms/powernv/eeh-ioda.c
+@@ -15,6 +15,7 @@
+ #include <linux/delay.h>
+ #include <linux/io.h>
+ #include <linux/irq.h>
++#include <linux/interrupt.h>
+ #include <linux/kernel.h>
+ #include <linux/msi.h>
+ #include <linux/notifier.h>
+@@ -36,34 +37,20 @@
  
-+#include "pseries.h"
+ static int ioda_eeh_nb_init = 0;
  
- static void tce_invalidate_pSeries_sw(struct iommu_table *tbl,
- 				      __be64 *startp, __be64 *endp)
-@@ -1307,16 +1308,16 @@ void iommu_init_early_pSeries(void)
- 			ppc_md.tce_free	 = tce_free_pSeriesLP;
+-static int ioda_eeh_event(struct notifier_block *nb,
+-			  unsigned long events, void *change)
++static irqreturn_t ioda_eeh_event(int irq, void *data)
+ {
+-	uint64_t changed_evts = (uint64_t)change;
+-
+ 	/*
+ 	 * We simply send special EEH event if EEH has
+ 	 * been enabled, or clear pending events in
+ 	 * case that we enable EEH soon
+ 	 */
+-	if (!(changed_evts & OPAL_EVENT_PCI_ERROR) ||
+-	    !(events & OPAL_EVENT_PCI_ERROR))
+-		return 0;
+ 
+ 	if (eeh_enabled())
+ 		eeh_send_failure_event(NULL);
+-	else
+-		opal_notifier_update_evt(OPAL_EVENT_PCI_ERROR, 0x0ul);
+ 
+-	return 0;
++	return IRQ_HANDLED;
+ }
+ 
+-static struct notifier_block ioda_eeh_nb = {
+-	.notifier_call	= ioda_eeh_event,
+-	.next		= NULL,
+-	.priority	= 0
+-};
+-
+ #ifdef CONFIG_DEBUG_FS
+ static ssize_t ioda_eeh_ei_write(struct file *filp,
+ 				 const char __user *user_buf,
+@@ -181,14 +168,23 @@ DEFINE_SIMPLE_ATTRIBUTE(ioda_eeh_inbB_dbgfs_ops, ioda_eeh_inbB_dbgfs_get,
+ static int ioda_eeh_post_init(struct pci_controller *hose)
+ {
+ 	struct pnv_phb *phb = hose->private_data;
+-	int ret;
++	int irq, ret;
+ 
+ 	/* Register OPAL event notifier */
+ 	if (!ioda_eeh_nb_init) {
+-		ret = opal_notifier_register(&ioda_eeh_nb);
+-		if (ret) {
+-			pr_err("%s: Can't register OPAL event notifier (%d)\n",
+-			       __func__, ret);
++		irq = opal_event_request(ilog2(OPAL_EVENT_PCI_ERROR));
++		if (irq < 0) {
++			pr_err("%s: Can't register OPAL event interrupt (%d)\n",
++			       __func__, irq);
++			return irq;
++		}
++
++		ret = request_irq(irq, ioda_eeh_event, IRQ_TYPE_EDGE_RISING,
++				"opal-eeh", NULL);
++		if (ret < 0) {
++			irq_dispose_mapping(irq);
++			pr_err("%s: Can't request OPAL event interrupt (%d)\n",
++			       __func__, irq);
+ 			return ret;
  		}
- 		ppc_md.tce_get   = tce_get_pSeriesLP;
--		ppc_md.pci_dma_bus_setup = pci_dma_bus_setup_pSeriesLP;
--		ppc_md.pci_dma_dev_setup = pci_dma_dev_setup_pSeriesLP;
-+		pseries_pci_controller_ops.dma_bus_setup = pci_dma_bus_setup_pSeriesLP;
-+		pseries_pci_controller_ops.dma_dev_setup = pci_dma_dev_setup_pSeriesLP;
- 		ppc_md.dma_set_mask = dma_set_mask_pSeriesLP;
- 		ppc_md.dma_get_required_mask = dma_get_required_mask_pSeriesLP;
- 	} else {
- 		ppc_md.tce_build = tce_build_pSeries;
- 		ppc_md.tce_free  = tce_free_pSeries;
- 		ppc_md.tce_get   = tce_get_pseries;
--		ppc_md.pci_dma_bus_setup = pci_dma_bus_setup_pSeries;
--		ppc_md.pci_dma_dev_setup = pci_dma_dev_setup_pSeries;
-+		pseries_pci_controller_ops.dma_bus_setup = pci_dma_bus_setup_pSeries;
-+		pseries_pci_controller_ops.dma_dev_setup = pci_dma_dev_setup_pSeries;
- 	}
  
+@@ -969,7 +965,6 @@ static int ioda_eeh_next_error(struct eeh_pe **pe)
+ 	 * between the kernel and firmware.
+ 	 */
+ 	eeh_remove_event(NULL, false);
+-	opal_notifier_update_evt(OPAL_EVENT_PCI_ERROR, 0x0ul);
  
-diff --git a/arch/powerpc/platforms/pseries/pci_dlpar.c b/arch/powerpc/platforms/pseries/pci_dlpar.c
-index 89e2381..c8c37f9 100644
---- a/arch/powerpc/platforms/pseries/pci_dlpar.c
-+++ b/arch/powerpc/platforms/pseries/pci_dlpar.c
-@@ -32,6 +32,8 @@
- #include <asm/firmware.h>
- #include <asm/eeh.h>
- 
-+#include "pseries.h"
-+
- static struct pci_bus *
- find_bus_among_children(struct pci_bus *bus,
-                         struct device_node *dn)
-@@ -75,6 +77,7 @@ struct pci_controller *init_phb_dynamic(struct device_node *dn)
- 		return NULL;
- 	rtas_setup_phb(phb);
- 	pci_process_bridge_OF_ranges(phb, dn, 0);
-+	phb->controller_ops = pseries_pci_controller_ops;
- 
- 	pci_devs_phb_init_dynamic(phb);
- 
-diff --git a/arch/powerpc/platforms/pseries/pseries.h b/arch/powerpc/platforms/pseries/pseries.h
-index 1796c54..cd64672 100644
---- a/arch/powerpc/platforms/pseries/pseries.h
-+++ b/arch/powerpc/platforms/pseries/pseries.h
-@@ -65,6 +65,8 @@ extern int dlpar_detach_node(struct device_node *);
- struct pci_host_bridge;
- int pseries_root_bridge_prepare(struct pci_host_bridge *bridge);
- 
-+extern struct pci_controller_ops pseries_pci_controller_ops;
-+
- unsigned long pseries_memory_block_size(void);
- 
- #endif /* _PSERIES_PSERIES_H */
-diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
-index 1a5f884..328e318 100644
---- a/arch/powerpc/platforms/pseries/setup.c
-+++ b/arch/powerpc/platforms/pseries/setup.c
-@@ -478,6 +478,7 @@ static void __init find_and_init_phbs(void)
- 		rtas_setup_phb(phb);
- 		pci_process_bridge_OF_ranges(phb, node, 0);
- 		isa_bridge_find_early(phb);
-+		phb->controller_ops = pseries_pci_controller_ops;
- 	}
- 
- 	of_node_put(root);
-@@ -840,6 +841,10 @@ static int pSeries_pci_probe_mode(struct pci_bus *bus)
- void pSeries_final_fixup(void) { }
- #endif
- 
-+struct pci_controller_ops pseries_pci_controller_ops = {
-+	.probe_mode		= pSeries_pci_probe_mode,
-+};
-+
- define_machine(pseries) {
- 	.name			= "pSeries",
- 	.probe			= pSeries_probe,
-@@ -848,7 +853,6 @@ define_machine(pseries) {
- 	.show_cpuinfo		= pSeries_show_cpuinfo,
- 	.log_error		= pSeries_log_error,
- 	.pcibios_fixup		= pSeries_final_fixup,
--	.pci_probe_mode		= pSeries_pci_probe_mode,
- 	.restart		= rtas_restart,
- 	.halt			= rtas_halt,
- 	.panic			= rtas_os_term,
+ 	list_for_each_entry(hose, &hose_list, list_node) {
+ 		/*
 -- 
-2.1.4
+1.8.3.2
