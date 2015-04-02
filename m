@@ -1,31 +1,30 @@
 Return-Path: <alistair.popple@au1.ibm.com>
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C99C41A03D6
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Apr 2015 14:23:58 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0D5281A0748
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Apr 2015 14:23:59 +1100 (AEDT)
 Received: from /spool/local
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <alistair.popple@au1.ibm.com>;
  Thu, 2 Apr 2015 13:23:57 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id CC3622BB0055
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 4767E2BB0040
  for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Apr 2015 14:23:54 +1100 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t323NkgX41025646
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t323Nkrl43188358
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 2 Apr 2015 14:23:54 +1100
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t323NLXl017332
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t323NK0p016709
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 2 Apr 2015 14:23:21 +1100
 From: Alistair Popple <alistair@popple.id.au>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 4/8] powernv/eeh: Update the EEH code to use the opal irq
- domain
-Date: Thu,  2 Apr 2015 14:22:28 +1100
-Message-Id: <1427944952-17452-4-git-send-email-alistair@popple.id.au>
+Subject: [PATCH 2/8] ipmi/powernv: Convert to irq event interface
+Date: Thu,  2 Apr 2015 14:22:26 +1100
+Message-Id: <1427944952-17452-2-git-send-email-alistair@popple.id.au>
 In-Reply-To: <1427944952-17452-1-git-send-email-alistair@popple.id.au>
 References: <1427944952-17452-1-git-send-email-alistair@popple.id.au>
 Cc: Alistair Popple <alistair@popple.id.au>,
@@ -39,101 +38,100 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The eeh code currently uses the old notifier method to get eeh events
-from OPAL. It also contains some logic to filter opal events which has
-been moved into the virtual irqchip. This patch converts the eeh code
-to the new event interface which simplifies event handling.
+Convert the opal ipmi driver to use the new irq interface for events.
 
 Signed-off-by: Alistair Popple <alistair@popple.id.au>
 ---
- arch/powerpc/platforms/powernv/eeh-ioda.c | 39 ++++++++++++++-----------------
- 1 file changed, 17 insertions(+), 22 deletions(-)
+ drivers/char/ipmi/ipmi_powernv.c | 39 ++++++++++++++++++++++-----------------
+ 1 file changed, 22 insertions(+), 17 deletions(-)
 
-diff --git a/arch/powerpc/platforms/powernv/eeh-ioda.c b/arch/powerpc/platforms/powernv/eeh-ioda.c
-index 2809c98..6eee1d1 100644
---- a/arch/powerpc/platforms/powernv/eeh-ioda.c
-+++ b/arch/powerpc/platforms/powernv/eeh-ioda.c
-@@ -15,6 +15,7 @@
- #include <linux/delay.h>
- #include <linux/io.h>
- #include <linux/irq.h>
+diff --git a/drivers/char/ipmi/ipmi_powernv.c b/drivers/char/ipmi/ipmi_powernv.c
+index 79524ed..b3a2224 100644
+--- a/drivers/char/ipmi/ipmi_powernv.c
++++ b/drivers/char/ipmi/ipmi_powernv.c
+@@ -15,6 +15,8 @@
+ #include <linux/list.h>
+ #include <linux/module.h>
+ #include <linux/of.h>
++#include <linux/of_irq.h>
 +#include <linux/interrupt.h>
- #include <linux/kernel.h>
- #include <linux/msi.h>
- #include <linux/notifier.h>
-@@ -36,34 +37,20 @@
  
- static int ioda_eeh_nb_init = 0;
+ #include <asm/opal.h>
  
--static int ioda_eeh_event(struct notifier_block *nb,
+@@ -23,8 +25,7 @@ struct ipmi_smi_powernv {
+ 	u64			interface_id;
+ 	struct ipmi_device_id	ipmi_id;
+ 	ipmi_smi_t		intf;
+-	u64			event;
+-	struct notifier_block	event_nb;
++	unsigned int		irq;
+ 
+ 	/**
+ 	 * We assume that there can only be one outstanding request, so
+@@ -196,15 +197,12 @@ static struct ipmi_smi_handlers ipmi_powernv_smi_handlers = {
+ 	.poll			= ipmi_powernv_poll,
+ };
+ 
+-static int ipmi_opal_event(struct notifier_block *nb,
 -			  unsigned long events, void *change)
-+static irqreturn_t ioda_eeh_event(int irq, void *data)
++static irqreturn_t ipmi_opal_event(int irq, void *data)
  {
--	uint64_t changed_evts = (uint64_t)change;
--
- 	/*
- 	 * We simply send special EEH event if EEH has
- 	 * been enabled, or clear pending events in
- 	 * case that we enable EEH soon
- 	 */
--	if (!(changed_evts & OPAL_EVENT_PCI_ERROR) ||
--	    !(events & OPAL_EVENT_PCI_ERROR))
--		return 0;
+-	struct ipmi_smi_powernv *smi = container_of(nb,
+-					struct ipmi_smi_powernv, event_nb);
++	struct ipmi_smi_powernv *smi = data;
  
- 	if (eeh_enabled())
- 		eeh_send_failure_event(NULL);
--	else
--		opal_notifier_update_evt(OPAL_EVENT_PCI_ERROR, 0x0ul);
- 
+-	if (events & smi->event)
+-		ipmi_powernv_recv(smi);
 -	return 0;
++	ipmi_powernv_recv(smi);
 +	return IRQ_HANDLED;
  }
  
--static struct notifier_block ioda_eeh_nb = {
--	.notifier_call	= ioda_eeh_event,
--	.next		= NULL,
--	.priority	= 0
--};
--
- #ifdef CONFIG_DEBUG_FS
- static ssize_t ioda_eeh_ei_write(struct file *filp,
- 				 const char __user *user_buf,
-@@ -181,14 +168,23 @@ DEFINE_SIMPLE_ATTRIBUTE(ioda_eeh_inbB_dbgfs_ops, ioda_eeh_inbB_dbgfs_get,
- static int ioda_eeh_post_init(struct pci_controller *hose)
- {
- 	struct pnv_phb *phb = hose->private_data;
--	int ret;
-+	int irq, ret;
+ static int ipmi_powernv_probe(struct platform_device *pdev)
+@@ -239,13 +237,16 @@ static int ipmi_powernv_probe(struct platform_device *pdev)
+ 		goto err_free;
+ 	}
  
- 	/* Register OPAL event notifier */
- 	if (!ioda_eeh_nb_init) {
--		ret = opal_notifier_register(&ioda_eeh_nb);
--		if (ret) {
--			pr_err("%s: Can't register OPAL event notifier (%d)\n",
--			       __func__, ret);
-+		irq = opal_event_request(ilog2(OPAL_EVENT_PCI_ERROR));
-+		if (irq < 0) {
-+			pr_err("%s: Can't register OPAL event interrupt (%d)\n",
-+			       __func__, irq);
-+			return irq;
-+		}
+-	ipmi->event = 1ull << prop;
+-	ipmi->event_nb.notifier_call = ipmi_opal_event;
++	ipmi->irq = irq_of_parse_and_map(dev->of_node, 0);
++	if (!ipmi->irq) {
++		dev_info(dev, "Unable to map irq from device tree\n");
++		ipmi->irq = opal_event_request(prop);
++	}
+ 
+-	rc = opal_notifier_register(&ipmi->event_nb);
+-	if (rc) {
+-		dev_warn(dev, "OPAL notifier registration failed (%d)\n", rc);
+-		goto err_free;
++	if (request_irq(ipmi->irq, ipmi_opal_event, IRQ_TYPE_LEVEL_HIGH,
++				"opal-ipmi", ipmi)) {
++		dev_warn(dev, "Unable to request irq\n");
++		goto err_dispose;
+ 	}
+ 
+ 	ipmi->opal_msg = devm_kmalloc(dev,
+@@ -270,7 +271,9 @@ static int ipmi_powernv_probe(struct platform_device *pdev)
+ err_free_msg:
+ 	devm_kfree(dev, ipmi->opal_msg);
+ err_unregister:
+-	opal_notifier_unregister(&ipmi->event_nb);
++	free_irq(ipmi->irq, ipmi);
++err_dispose:
++	irq_dispose_mapping(ipmi->irq);
+ err_free:
+ 	devm_kfree(dev, ipmi);
+ 	return rc;
+@@ -281,7 +284,9 @@ static int ipmi_powernv_remove(struct platform_device *pdev)
+ 	struct ipmi_smi_powernv *smi = dev_get_drvdata(&pdev->dev);
+ 
+ 	ipmi_unregister_smi(smi->intf);
+-	opal_notifier_unregister(&smi->event_nb);
++	free_irq(smi->irq, smi);
++	irq_dispose_mapping(smi->irq);
 +
-+		ret = request_irq(irq, ioda_eeh_event, IRQ_TYPE_EDGE_RISING,
-+				"opal-eeh", NULL);
-+		if (ret < 0) {
-+			irq_dispose_mapping(irq);
-+			pr_err("%s: Can't request OPAL event interrupt (%d)\n",
-+			       __func__, irq);
- 			return ret;
- 		}
+ 	return 0;
+ }
  
-@@ -969,7 +965,6 @@ static int ioda_eeh_next_error(struct eeh_pe **pe)
- 	 * between the kernel and firmware.
- 	 */
- 	eeh_remove_event(NULL, false);
--	opal_notifier_update_evt(OPAL_EVENT_PCI_ERROR, 0x0ul);
- 
- 	list_for_each_entry(hose, &hose_list, list_node) {
- 		/*
 -- 
 1.8.3.2
