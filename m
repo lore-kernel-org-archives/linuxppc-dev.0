@@ -1,29 +1,38 @@
-Return-Path: <julian.calaby@gmail.com>
-Received: from mail-wi0-x232.google.com (mail-wi0-x232.google.com
- [IPv6:2a00:1450:400c:c05::232])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <stewart@linux.vnet.ibm.com>
+Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CC39E1A0741
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Apr 2015 09:28:12 +1100 (AEDT)
-Received: by wibgn9 with SMTP id gn9so83897658wib.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 01 Apr 2015 15:28:09 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 53EF11A0729
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Apr 2015 13:16:24 +1100 (AEDT)
+Received: from /spool/local
+ by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <stewart@linux.vnet.ibm.com>;
+ Wed, 1 Apr 2015 22:16:21 -0400
+Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
+ [9.57.198.24])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 6D64E38C8026
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  1 Apr 2015 22:16:19 -0400 (EDT)
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+ by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t322GJKZ30801926
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 2 Apr 2015 02:16:19 GMT
+Received: from d01av04.pok.ibm.com (localhost [127.0.0.1])
+ by d01av04.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t322GHC1031345
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 1 Apr 2015 22:16:18 -0400
+From: Stewart Smith <stewart@linux.vnet.ibm.com>
+To: Jeremy Kerr <jk@ozlabs.org>, linux-mtd@lists.infradead.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 1/2] powerpc/powernv: Add interfaces for flash device
+ access
+In-Reply-To: <1427868330.742068.357457598273.1.gpush@pablo>
+References: <1427868330.742068.357457598273.1.gpush@pablo>
+Date: Thu, 02 Apr 2015 13:16:14 +1100
+Message-ID: <m31tk32s29.fsf@oc8180480414.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <1427871888-27331-2-git-send-email-joel@jms.id.au>
-References: <1427871888-27331-1-git-send-email-joel@jms.id.au>
- <1427871888-27331-2-git-send-email-joel@jms.id.au>
-From: Julian Calaby <julian.calaby@gmail.com>
-Date: Thu, 2 Apr 2015 09:27:48 +1100
-Message-ID: <CAGRGNgUBy0gRZADXmbFzmcAGEf-en=D-rD4Cjoh67Y=iF8puvA@mail.gmail.com>
-Subject: Re: [PATCH v2 2/3] kernel/reboot.c: Add orderly_reboot for graceful
- reboot
-To: Joel Stanley <joel@jms.id.au>
-Content-Type: text/plain; charset=UTF-8
-Cc: rusty@rustcorp.com.au,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Fabian Frederick <fabf@skynet.be>, jk@ozlabs.org,
- sparclinux <sparclinux@vger.kernel.org>,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- "David S. Miller" <davem@davemloft.net>
+Content-Type: text/plain; charset=us-ascii
+Cc: Cyril Bur <cyrilbur@gmail.com>, Joel Stanley <joel@jms.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,51 +42,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Joel,
+Jeremy Kerr <jk@ozlabs.org> writes:
 
-On Wed, Apr 1, 2015 at 6:04 PM, Joel Stanley <joel@jms.id.au> wrote:
-> The kernel has orderly_poweroff which allows the kernel to initiate a
-> graceful shutdown of userspace, by running /sbin/poweroff. This adds
-> orderly_reboot that will cause userspace to shut itself down by calling
-> /sbin/reboot.
+> From: Cyril Bur <cyrilbur@gmail.com>
 >
-> This will be used for shutdown initiated by a system controller on
-> platforms that do not use ACPI.
+> This change adds the OPAL interface definitions to allow Linux to read,
+> write and erase from system flash devices. We register platform devices
+> for the flash devices exported by firmware.
 >
-> orderly_reboot() should be used when the system wants to allow userspace
-> to gracefully shut itself down. For cases where the system may
-> imminently catch on fire, the existing emergency_restart() provides an
-> immediate reboot without involving userspace.
+> We clash with the existing opal_flash_init function, which is really for
+> the FSP flash update functionality, so we rename that initcall to
+> opal_flash_update_init().
 >
+> A future change will add an mtd driver that uses this interface.
+>
+> Changes from Joel Stanley and Jeremy Kerr.
+>
+> Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
+> Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
 > Signed-off-by: Joel Stanley <joel@jms.id.au>
-> ---
-> V2:
->  - remove unused return value from orderly_*
->  - use correct command in orderly_poweroff
->  - the reboot command will not have a proc knob to control it, so
->    it can be made const and static
->
->  include/linux/reboot.h |  3 ++-
->  kernel/reboot.c        | 53 +++++++++++++++++++++++++++++++++++++++++++++-----
->  2 files changed, 50 insertions(+), 6 deletions(-)
->
-> diff --git a/include/linux/reboot.h b/include/linux/reboot.h
-> index 48bf152..dc5e3bd 100644
-> --- a/include/linux/reboot.h
-> +++ b/include/linux/reboot.h
-> @@ -67,7 +67,8 @@ void ctrl_alt_del(void);
->  #define POWEROFF_CMD_PATH_LEN  256
->  extern char poweroff_cmd[POWEROFF_CMD_PATH_LEN];
->
-> -extern int orderly_poweroff(bool force);
-> +extern void orderly_poweroff(bool force);
 
-Should making orderly_poweroff() void be in a separate patch?
+Acking that firmware calls are merged into skiboot.
 
-Thanks,
-
--- 
-Julian Calaby
-
-Email: julian.calaby@gmail.com
-Profile: http://www.google.com/profiles/julian.calaby/
+Acked-by: Stewart Smith <stewart@linux.vnet.ibm.com>
