@@ -1,21 +1,26 @@
-Return-Path: <pebolle@tiscali.nl>
-Received: from lb3-smtp-cloud6.xs4all.net (lb3-smtp-cloud6.xs4all.net
- [194.109.24.31])
- (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <sandeep@freescale.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 19C5E1A03D6
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Apr 2015 21:51:37 +1100 (AEDT)
-Message-ID: <1427971444.10518.40.camel@x220>
-Subject: Re: [PATCH RFC 02/10] dpaa_eth: add support for DPAA Ethernet
-From: Paul Bolle <pebolle@tiscali.nl>
-To: madalin.bucur@freescale.com
-Date: Thu, 02 Apr 2015 12:44:04 +0200
-In-Reply-To: <1427905196-27778-1-git-send-email-madalin.bucur@freescale.com>
-References: <1427905196-27778-1-git-send-email-madalin.bucur@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7141D1A096D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Apr 2015 22:03:13 +1100 (AEDT)
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1on0116.outbound.protection.outlook.com [157.56.110.116])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 818E3140083
+ for <linuxppc-dev@ozlabs.org>; Thu,  2 Apr 2015 22:03:12 +1100 (AEDT)
+Received: from localhost.localdomain (nmglablinux22.zin33.ap.freescale.net
+ [10.232.20.244])
+ by tx30smr01.am.freescale.net (8.14.3/8.14.0) with ESMTP id t32Alvax002443
+ for <linuxppc-dev@ozlabs.org>; Thu, 2 Apr 2015 03:47:59 -0700
+From: <sandeep@freescale.com>
+To: <linuxppc-dev@ozlabs.org>
+Subject: [1/3][PATCH][v2] Device Tree bindings for Freescale TDM controller
+Date: Thu, 2 Apr 2015 16:17:57 +0530
+Message-ID: <1427971677-32395-1-git-send-email-sandeep@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,80 +30,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Just a few nits.
+From: Sandeep Singh <sandeep@freescale.com>
 
-This series is posted as an RFC, so this might not be what you're
-expecting right now. But as these messages got tangled up in my mail
-filter anyhow, I thought I might as well bother you with these nits now.
+This controller is available on many Freescale SOCs like MPC8315, P1020, P1010,
+P1022 and P1024
 
-On Wed, 2015-04-01 at 19:19 +0300, Madalin Bucur wrote:
-> --- /dev/null
-> +++ b/drivers/net/ethernet/freescale/dpaa/Kconfig
-> @@ -0,0 +1,49 @@
-> +menuconfig FSL_DPAA_ETH
-> +	tristate "DPAA Ethernet"
-> +	depends on FSL_SOC && FSL_BMAN && FSL_QMAN && FSL_FMAN
-> +	select PHYLIB
-> +	select FSL_FMAN_MAC
-> +	---help---
-> +	  Data Path Acceleration Architecture Ethernet driver,
-> +	  supporting the Freescale QorIQ chips.
-> +	  Depends on Freescale Buffer Manager and Queue Manager
-> +	  driver and Frame Manager Driver.
-> +
-> +if FSL_DPAA_ETH
-> +
-> +config FSL_DPAA_CS_THRESHOLD_1G
-> +	hex "Egress congestion threshold on 1G ports"
-> +	depends on FSL_DPAA_ETH
+Signed-off-by: Sandeep Singh <Sandeep@freescale.com>
+Signed-off-by: Poonam Aggrwal <poonam.aggrwal@freescale.com>
+---
+ Documentation/devicetree/bindings/tdm/fsl-tdm.txt |   65 +++++++++++++++++++++
+ 1 files changed, 65 insertions(+), 0 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/tdm/fsl-tdm.txt
 
-This entry is inside the "if FSL_DPAA_ETH" block. So this line should be
-superfluous.
-
-> +	range 0x1000 0x10000000
-> +	default "0x06000000"
-> +	---help---
-> +	  The size in bytes of the egress Congestion State notification threshold on 1G ports.
-> +	  The 1G dTSECs can quite easily be flooded by cores doing Tx in a tight loop
-> +	  (e.g. by sending UDP datagrams at "while(1) speed"),
-> +	  and the larger the frame size, the more acute the problem.
-> +	  So we have to find a balance between these factors:
-> +	       - avoiding the device staying congested for a prolonged time (risking
-> +                 the netdev watchdog to fire - see also the tx_timeout module param);
-> +               - affecting performance of protocols such as TCP, which otherwise
-> +	         behave well under the congestion notification mechanism;
-> +	       - preventing the Tx cores from tightly-looping (as if the congestion
-> +	         threshold was too low to be effective);
-> +	       - running out of memory if the CS threshold is set too high.
-> +
-> +config FSL_DPAA_CS_THRESHOLD_10G
-> +	hex "Egress congestion threshold on 10G ports"
-> +	depends on FSL_DPAA_ETH
-
-Ditto.
-
-> +	range 0x1000 0x20000000
-> +	default "0x10000000"
-> +	---help ---
-> +	  The size in bytes of the egress Congestion State notification threshold on 10G ports.
-> +
-> +config FSL_DPAA_INGRESS_CS_THRESHOLD
-> +	hex "Ingress congestion threshold on FMan ports"
-> +	depends on FSL_DPAA_ETH
-
-Ditto.
-
-> +	default "0x10000000"
-> +	---help---
-> +	  The size in bytes of the ingress tail-drop threshold on FMan ports.
-> +	  Traffic piling up above this value will be rejected by QMan and discarded by FMan.
-> +
-> +endif # FSL_DPAA_ETH
-
-A similar comment can be made for the entries added in 03/10, 05/10, and
-09/10.
-
-Thanks,
-
-
-Paul Bolle
+diff --git a/Documentation/devicetree/bindings/tdm/fsl-tdm.txt b/Documentation/devicetree/bindings/tdm/fsl-tdm.txt
+new file mode 100644
+index 0000000..1258b89
+--- /dev/null
++++ b/Documentation/devicetree/bindings/tdm/fsl-tdm.txt
+@@ -0,0 +1,65 @@
++=====================================================================
++TDM Device Tree Binding
++Copyright (C) 2012 Freescale Semiconductor Inc.
++
++NOTE: The bindings described in this document are preliminary
++and subject to change.
++
++=====================================================================
++TDM (Time Division Multiplexing)
++
++DESCRIPTION
++
++The TDM is full duplex serial port designed to allow various devices including
++digital signal processors (DSPs) to communicate with a variety of serial devices
++including industry standard framers, codecs, other DSPs and microprocessors.
++
++The below properties describe the device tree bindings for Freescale TDM
++controller.
++This TDM controller is available on various Freescale Processors like
++MPC8313, P1020, P1022 and P1010.
++
++PROPERTIES
++
++  - compatible
++      Usage: required
++      Value type: <string>
++      Definition: Should contain "fsl,tdm1.0".
++
++  - reg
++      Usage: required
++      Definition: A standard property. The first reg specifier describes the
++          TDM registers, and the second describes the TDM DMAC registers.
++
++  - clock-frequency
++      Usage: optional
++      Value type: <u32 or u64>
++      Definition: The frequency at which the TDM block is operating.
++
++  - interrupts
++      Usage: required
++      Definition: Definition: Two interrupt specifiers.  The first is TDM
++          error, and the second is TDM EMAC.
++
++  - phy-handle
++      Usage: optional
++      Value type: <phandle>
++      Definition: Phandle of the line controller node or framer node eg. SLIC,
++          E1/T1 etc.
++
++  - fsl,max-time-slots
++      Usage: required
++      Value type: <u32>
++      Definition: Maximum number of 8-bit time slots in one TDM frame.
++          This is the maximum number which TDM hardware supports.
++
++EXAMPLE
++
++	tdm@16000 {
++		compatible = "fsl,tdm1.0";
++		reg = <0x16000 0x200 0x2c000 0x2000>;
++		clock-frequency = <0>;
++		interrupts = <16 8 62 8>;
++		phy-handle = <&zarlink1>;
++		fsl,max-time-slots = <128>;
++	};
+-- 
+1.7.6.GIT
