@@ -1,22 +1,25 @@
-Return-Path: <arnd@arndb.de>
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.10])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1on0111.outbound.protection.outlook.com [157.56.110.111])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4456E1A08B0
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Apr 2015 01:14:01 +1100 (AEDT)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v2 04/19] powerpc: Create pci_controller_ops.dma_dev_setup
- and shim
-Date: Thu, 02 Apr 2015 16:13:52 +0200
-Message-ID: <5500778.Q4t9Fg7Irn@wuerfel>
-In-Reply-To: <1427778057-9505-5-git-send-email-dja@axtens.net>
-References: <1427778057-9505-1-git-send-email-dja@axtens.net>
- <1427778057-9505-5-git-send-email-dja@axtens.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id DF18D1A0895
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Apr 2015 02:51:04 +1100 (AEDT)
+Message-ID: <1427989850.22867.266.camel@freescale.com>
+Subject: Re: [2/4] powerpc/rcpm: add RCPM driver
+From: Scott Wood <scottwood@freescale.com>
+To: Zhao Chenhui-B35336 <chenhui.zhao@freescale.com>
+Date: Thu, 2 Apr 2015 10:50:50 -0500
+In-Reply-To: <1427970805609.21194@freescale.com>
+References: <1427365095-26396-2-git-send-email-chenhui.zhao@freescale.com>
+ ,<20150331013057.GB5667@home.buserror.net>
+ <1427970805609.21194@freescale.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Cc: wangyijing@huawei.com, linux-pci@vger.kernel.org,
- Daniel Axtens <dja@axtens.net>
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Jin
+ Zhengxiong-R64188 <Jason.Jin@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,45 +29,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tuesday 31 March 2015 16:00:42 Daniel Axtens wrote:
-> Introduces the pci_controller_ops structure.
-> Add pci_controller_ops.dma_dev_setup, shadowing ppc_md.pci_dma_dev_setup.
-> Add a shim, and change the callsites to use the shim.
+On Thu, 2015-04-02 at 05:33 -0500, Zhao Chenhui-B35336 wrote:
+> > +static int rcpm_v2_plat_enter_state(int state)
+> > +{
+> > +     u32 *pmcsr_reg = &rcpm_v2_regs->powmgtcsr;
+> > +     int ret = 0;
+> > +     int result;
+> > +
+> > +     switch (state) {
+> > +     case PLAT_PM_LPM20:
+> > +             /* clear previous LPM20 status */
+> > +             setbits32(pmcsr_reg, RCPM_POWMGTCSR_P_LPM20_ST);
 > 
-> Signed-off-by: Daniel Axtens <dja@axtens.net>
+> How would the bit be set when you enter here, given that you wait for it
+> to clear when leaving?
 > 
-> ---
-> 
-> v1 --> v2:
->  - Better commit message
->  - Use phb in favour of hose
->  - Make shim name match ppc_md name, not pci_controller_ops name.
-> ---
->  arch/powerpc/include/asm/pci-bridge.h | 21 +++++++++++++++++++++
->  arch/powerpc/kernel/pci-common.c      |  3 +--
->  2 files changed, 22 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
-> index 546d036..347d49d 100644
-> --- a/arch/powerpc/include/asm/pci-bridge.h
-> +++ b/arch/powerpc/include/asm/pci-bridge.h
-> @@ -15,6 +15,13 @@
->  struct device_node;
->  
->  /*
-> + * PCI controller operations
-> + */
-> +struct pci_controller_ops {
-> +       void            (*dma_dev_setup)(struct pci_dev *dev);
-> +};
-> +
-> +/*
+> [chenhui] Actually, the bit is not used by software. Just follow the instruction in RM.
 
-Please see https://patchwork.ozlabs.org/patch/431333/ for related work.
+Sorry, I missed the "_P_" and thought it was RCPM_POWMGTCSR_LPM20_ST.
 
-I think it would be better not to introduce another architecture-specific
-pci host bridge operations structure, but instead consolidate into
-the one that is already there. We are also adding a generic way to set up
-PCI DMA, so it would seems reasonable to hook into that place.
-
-	Arnd
+-Scott
