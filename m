@@ -2,23 +2,23 @@ Return-Path: <sandeep@freescale.com>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7141D1A096D
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Apr 2015 22:03:13 +1100 (AEDT)
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0116.outbound.protection.outlook.com [157.56.110.116])
+ by lists.ozlabs.org (Postfix) with ESMTPS id D67AB1A097F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Apr 2015 22:04:45 +1100 (AEDT)
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0140.outbound.protection.outlook.com [65.55.169.140])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 818E3140083
- for <linuxppc-dev@ozlabs.org>; Thu,  2 Apr 2015 22:03:12 +1100 (AEDT)
+ by ozlabs.org (Postfix) with ESMTPS id DC204140083
+ for <linuxppc-dev@ozlabs.org>; Thu,  2 Apr 2015 22:04:44 +1100 (AEDT)
 Received: from localhost.localdomain (nmglablinux22.zin33.ap.freescale.net
  [10.232.20.244])
- by tx30smr01.am.freescale.net (8.14.3/8.14.0) with ESMTP id t32Alvax002443
- for <linuxppc-dev@ozlabs.org>; Thu, 2 Apr 2015 03:47:59 -0700
+ by tx30smr01.am.freescale.net (8.14.3/8.14.0) with ESMTP id t32An9Ut002908
+ for <linuxppc-dev@ozlabs.org>; Thu, 2 Apr 2015 03:49:10 -0700
 From: <sandeep@freescale.com>
 To: <linuxppc-dev@ozlabs.org>
-Subject: [1/3][PATCH][v2] Device Tree bindings for Freescale TDM controller
-Date: Thu, 2 Apr 2015 16:17:57 +0530
-Message-ID: <1427971677-32395-1-git-send-email-sandeep@freescale.com>
+Subject: [2/3][PATCH][v2] Device tree entry for Freescale TDM controller
+Date: Thu, 2 Apr 2015 16:19:08 +0530
+Message-ID: <1427971748-32424-1-git-send-email-sandeep@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,88 +30,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Sandeep Singh <sandeep@freescale.com>
+From: Sandeep Singh <Sandeep@freescale.com>
 
+Added dtsi file for Freescale TDM controller.
 This controller is available on many Freescale SOCs like MPC8315, P1020, P1010,
 P1022 and P1024
 
 Signed-off-by: Sandeep Singh <Sandeep@freescale.com>
 Signed-off-by: Poonam Aggrwal <poonam.aggrwal@freescale.com>
 ---
- Documentation/devicetree/bindings/tdm/fsl-tdm.txt |   65 +++++++++++++++++++++
- 1 files changed, 65 insertions(+), 0 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/tdm/fsl-tdm.txt
+ arch/powerpc/boot/dts/fsl/pq3-tdm1.0-0.dtsi | 41 +++++++++++++++++++++++++++++
+ 1 file changed, 41 insertions(+)
+ create mode 100644 arch/powerpc/boot/dts/fsl/pq3-tdm1.0-0.dtsi
 
-diff --git a/Documentation/devicetree/bindings/tdm/fsl-tdm.txt b/Documentation/devicetree/bindings/tdm/fsl-tdm.txt
+diff --git a/arch/powerpc/boot/dts/fsl/pq3-tdm1.0-0.dtsi b/arch/powerpc/boot/dts/fsl/pq3-tdm1.0-0.dtsi
 new file mode 100644
-index 0000000..1258b89
+index 0000000..d4bdd5d
 --- /dev/null
-+++ b/Documentation/devicetree/bindings/tdm/fsl-tdm.txt
-@@ -0,0 +1,65 @@
-+=====================================================================
-+TDM Device Tree Binding
-+Copyright (C) 2012 Freescale Semiconductor Inc.
++++ b/arch/powerpc/boot/dts/fsl/pq3-tdm1.0-0.dtsi
+@@ -0,0 +1,41 @@
++/*
++ * PQ3 TDM device tree stub [ controller @ offset 0x16000 ]
++ *
++ * Copyright 2012 Freescale Semiconductor Inc.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are met:
++ *     * Redistributions of source code must retain the above copyright
++ *       notice, this list of conditions and the following disclaimer.
++ *     * Redistributions in binary form must reproduce the above copyright
++ *       notice, this list of conditions and the following disclaimer in the
++ *       documentation and/or other materials provided with the distribution.
++ *     * Neither the name of Freescale Semiconductor nor the
++ *       names of its contributors may be used to endorse or promote products
++ *       derived from this software without specific prior written permission.
++ *
++ *
++ * ALTERNATIVELY, this software may be distributed under the terms of the
++ * GNU General Public License ("GPL") as published by the Free Software
++ * Foundation, either version 2 of that License or (at your option) any
++ * later version.
++ *
++ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
++ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
++ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
++ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
++ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
++ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
++ */
 +
-+NOTE: The bindings described in this document are preliminary
-+and subject to change.
-+
-+=====================================================================
-+TDM (Time Division Multiplexing)
-+
-+DESCRIPTION
-+
-+The TDM is full duplex serial port designed to allow various devices including
-+digital signal processors (DSPs) to communicate with a variety of serial devices
-+including industry standard framers, codecs, other DSPs and microprocessors.
-+
-+The below properties describe the device tree bindings for Freescale TDM
-+controller.
-+This TDM controller is available on various Freescale Processors like
-+MPC8313, P1020, P1022 and P1010.
-+
-+PROPERTIES
-+
-+  - compatible
-+      Usage: required
-+      Value type: <string>
-+      Definition: Should contain "fsl,tdm1.0".
-+
-+  - reg
-+      Usage: required
-+      Definition: A standard property. The first reg specifier describes the
-+          TDM registers, and the second describes the TDM DMAC registers.
-+
-+  - clock-frequency
-+      Usage: optional
-+      Value type: <u32 or u64>
-+      Definition: The frequency at which the TDM block is operating.
-+
-+  - interrupts
-+      Usage: required
-+      Definition: Definition: Two interrupt specifiers.  The first is TDM
-+          error, and the second is TDM EMAC.
-+
-+  - phy-handle
-+      Usage: optional
-+      Value type: <phandle>
-+      Definition: Phandle of the line controller node or framer node eg. SLIC,
-+          E1/T1 etc.
-+
-+  - fsl,max-time-slots
-+      Usage: required
-+      Value type: <u32>
-+      Definition: Maximum number of 8-bit time slots in one TDM frame.
-+          This is the maximum number which TDM hardware supports.
-+
-+EXAMPLE
-+
-+	tdm@16000 {
-+		compatible = "fsl,tdm1.0";
-+		reg = <0x16000 0x200 0x2c000 0x2000>;
-+		clock-frequency = <0>;
-+		interrupts = <16 8 62 8>;
-+		phy-handle = <&zarlink1>;
-+		fsl,max-time-slots = <128>;
-+	};
++tdm@16000 {
++	compatible = "fsl,tdm1.0";
++	reg = <0x16000 0x200 0x2c000 0x2000>;
++	clock-frequency = <0>;
++	interrupts = <62 8 0 0>;
++	fsl,max-time-slots = <128>;
++};
 -- 
-1.7.6.GIT
+1.8.1.4
