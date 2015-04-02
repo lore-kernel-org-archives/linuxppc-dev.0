@@ -1,23 +1,37 @@
-Return-Path: <alex.williamson@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C2CF71A0748
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Apr 2015 14:46:21 +1100 (AEDT)
-Message-ID: <1427946378.5567.340.camel@redhat.com>
-Subject: Re: [PATCH kernel v7 04/31] vfio: powerpc/spapr: Use it_page_size
-From: Alex Williamson <alex.williamson@redhat.com>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Date: Wed, 01 Apr 2015 21:46:18 -0600
-In-Reply-To: <551CBA14.7080707@ozlabs.ru>
-References: <1427468115-2224-1-git-send-email-aik@ozlabs.ru>
- <1427468115-2224-5-git-send-email-aik@ozlabs.ru>
- <1427924904.5567.303.camel@redhat.com> <551CA9D7.2060804@ozlabs.ru>
- <1427943033.5567.329.camel@redhat.com> <551CBA14.7080707@ozlabs.ru>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id C31CC1A0895
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Apr 2015 19:44:26 +1100 (AEDT)
+Received: from /spool/local
+ by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Thu, 2 Apr 2015 14:14:23 +0530
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 369BE1258044
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  2 Apr 2015 14:16:03 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay01.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t328iIQe51511376
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 2 Apr 2015 14:14:19 +0530
+Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t328iH7Q003611
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 2 Apr 2015 14:14:18 +0530
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>, Anton Blanchard <anton@samba.org>
+Subject: Re: [PATCH] powerpc/mm: Add trace point for tracking hash pte fault
+In-Reply-To: <87y4og70nu.fsf@linux.vnet.ibm.com>
+References: <1421753750-17135-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1421809627.4900.1.camel@ellerman.id.au> <87d268v7xm.fsf@linux.vnet.ibm.com>
+ <1422425467.11009.2.camel@ellerman.id.au> <87y4og70nu.fsf@linux.vnet.ibm.com>
+Date: Thu, 02 Apr 2015 14:14:18 +0530
+Message-ID: <87ego2c42l.fsf@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: linuxppc-dev@lists.ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,72 +41,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2015-04-02 at 14:40 +1100, Alexey Kardashevskiy wrote:
-> On 04/02/2015 01:50 PM, Alex Williamson wrote:
-> > On Thu, 2015-04-02 at 13:30 +1100, Alexey Kardashevskiy wrote:
-> >> On 04/02/2015 08:48 AM, Alex Williamson wrote:
-> >>> On Sat, 2015-03-28 at 01:54 +1100, Alexey Kardashevskiy wrote:
-> >>>> This makes use of the it_page_size from the iommu_table struct
-> >>>> as page size can differ.
-> >>>>
-> >>>> This replaces missing IOMMU_PAGE_SHIFT macro in commented debug code
-> >>>> as recently introduced IOMMU_PAGE_XXX macros do not include
-> >>>> IOMMU_PAGE_SHIFT.
-> >>>>
-> >>>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> >>>> Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
-> >>>> ---
-> >>>>    drivers/vfio/vfio_iommu_spapr_tce.c | 26 +++++++++++++-------------
-> >>>>    1 file changed, 13 insertions(+), 13 deletions(-)
-> >>>>
-> >>>> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
-> >>>> index f835e63..8bbee22 100644
-> >>>> --- a/drivers/vfio/vfio_iommu_spapr_tce.c
-> >>>> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
-> >>>> @@ -91,7 +91,7 @@ static int tce_iommu_enable(struct tce_container *container)
-> >>>>    	 * enforcing the limit based on the max that the guest can map.
-> >>>>    	 */
-> >>>>    	down_write(&current->mm->mmap_sem);
-> >>>> -	npages = (tbl->it_size << IOMMU_PAGE_SHIFT_4K) >> PAGE_SHIFT;
-> >>>> +	npages = (tbl->it_size << tbl->it_page_shift) >> PAGE_SHIFT;
-> >>>>    	locked = current->mm->locked_vm + npages;
-> >>>>    	lock_limit = rlimit(RLIMIT_MEMLOCK) >> PAGE_SHIFT;
-> >>>>    	if (locked > lock_limit && !capable(CAP_IPC_LOCK)) {
-> >>>> @@ -120,7 +120,7 @@ static void tce_iommu_disable(struct tce_container *container)
-> >>>>
-> >>>>    	down_write(&current->mm->mmap_sem);
-> >>>>    	current->mm->locked_vm -= (container->tbl->it_size <<
-> >>>> -			IOMMU_PAGE_SHIFT_4K) >> PAGE_SHIFT;
-> >>>> +			container->tbl->it_page_shift) >> PAGE_SHIFT;
-> >>>>    	up_write(&current->mm->mmap_sem);
-> >>>>    }
-> >>>>
-> >>>> @@ -222,7 +222,7 @@ static long tce_iommu_build(struct tce_container *container,
-> >>>>    					tce, ret);
-> >>>>    			break;
-> >>>>    		}
-> >>>> -		tce += IOMMU_PAGE_SIZE_4K;
-> >>>> +		tce += IOMMU_PAGE_SIZE(tbl);
-> >>>
-> >>>
-> >>> Is PAGE_SIZE ever smaller than IOMMU_PAGE_SIZE(tbl)?  IOW, can the page
-> >>> we got from get_user_pages_fast() ever not completely fill the tce
-> >>> entry?
-> >>
-> >>
-> >> Yes. IOMMU_PAGE_SIZE is 4K/64K/16M (16M is with huge pages enabled in QEMU
-> >> with -mempath), PAGE_SIZE is 4K/64K (normally 64K).
-> >
-> > Isn't that a problem then that you're filling the tce with processor
-> > page sizes via get_user_pages_fast(), but incrementing the tce by by
-> > IOMMU page size?  For example, if PAGE_SIZE = 4K and IOMMU_PAGE_SIZE !=
-> > 4K have we really pinned all of the memory backed by the tce?Where do
-> > you make sure the 4K page is really contiguous for the IOMMU page?
-> 
-> 
-> Aaaah. This is just not supported. Instead, after the previous patch 
-> ("vfio: powerpc/spapr: Check that TCE page size is equal to it_page_size", 
-> which need fixed subject), tce_page_is_contained(page4K, 64K) will return 
-> false and the caller - tce_iommu_build() - will return -EPERM.
+"Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> writes:
 
-Ok, makes sense.  Thanks
+> Michael Ellerman <mpe@ellerman.id.au> writes:
+>
+....
+....
+> With patch:
+> sys: 0m11.3258
+>
+> ie, a -0.7% impact 
+>
+> If that impact is high we could possibly put that tracepoint within #ifdef
+> CONFIG_DEBUG_VM ?
+
+Since the ebizzy runs results were not stable, I did a micro benchmark
+to measure this and I noticed that results observed are within the
+run variance of the test. I made sure we don't have context-switches
+between the runs. If I try to get large number of page-faults, we end up
+with context switches.
+
+for ex: We get without patch
+--------------------------------
+root@qemu-pr-host trace-fault]# bash run 
+
+ Performance counter stats for './a.out 3000 300':
+
+               643      page-faults               #    0.089 M/sec                  
+          7.236562      task-clock (msec)         #    0.928 CPUs utilized          
+         2,179,213      stalled-cycles-frontend   #    0.00% frontend cycles idle   
+        17,174,367      stalled-cycles-backend    #    0.00% backend  cycles idle   
+                 0      context-switches          #    0.000 K/sec                  
+
+       0.007794658 seconds time elapsed
+
+[root@qemu-pr-host trace-fault]# 
+
+And with-patch:
+---------------
+[root@qemu-pr-host trace-fault]# bash run 
+
+ Performance counter stats for './a.out 3000 300':
+
+               643      page-faults               #    0.089 M/sec                  
+          7.233746      task-clock (msec)         #    0.921 CPUs utilized          
+                 0      context-switches          #    0.000 K/sec                  
+
+       0.007854876 seconds time elapsed
+
+
+ Performance counter stats for './a.out 3000 300':
+
+               643      page-faults               #    0.087 M/sec                  
+               649      powerpc:hash_fault        #    0.087 M/sec                  
+          7.430376      task-clock (msec)         #    0.938 CPUs utilized          
+         2,347,174      stalled-cycles-frontend   #    0.00% frontend cycles idle   
+        17,524,282      stalled-cycles-backend    #    0.00% backend  cycles idle   
+                 0      context-switches          #    0.000 K/sec                  
+
+       0.007920284 seconds time elapsed
+
+[root@qemu-pr-host trace-fault]# 
