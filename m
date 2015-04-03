@@ -1,20 +1,19 @@
-Return-Path: <Shengzhou.Liu@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0104.outbound.protection.outlook.com [207.46.100.104])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <fbrozovic@gmail.com>
+Received: from mail-wi0-x233.google.com (mail-wi0-x233.google.com
+ [IPv6:2a00:1450:400c:c05::233])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6A88F1A0B02
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Apr 2015 21:39:32 +1100 (AEDT)
-From: Shengzhou Liu <Shengzhou.Liu@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>, <scottwood@freescale.com>
-Subject: [PATCH 4/4] powerpc/fsl-booke: Add T1023 RDB board support
-Date: Fri, 3 Apr 2015 18:35:50 +0800
-Message-ID: <1428057350-33553-4-git-send-email-Shengzhou.Liu@freescale.com>
-In-Reply-To: <1428057350-33553-1-git-send-email-Shengzhou.Liu@freescale.com>
-References: <1428057350-33553-1-git-send-email-Shengzhou.Liu@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Shengzhou Liu <Shengzhou.Liu@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 39B521A0AFA
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Apr 2015 21:44:50 +1100 (AEDT)
+Received: by widdi4 with SMTP id di4so104528699wid.0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Apr 2015 03:44:46 -0700 (PDT)
+From: Filip Brozovic <fbrozovic@gmail.com>
+To: scottwood@freescale.com
+Subject: [PATCH v2] powerpc/83xx: add support for mpc8306
+Date: Fri,  3 Apr 2015 12:44:16 +0200
+Message-Id: <1428057856-26421-1-git-send-email-fbrozovic@gmail.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Filip Brozovic <fbrozovic@gmail.com>,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,206 +23,158 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-T1023RDB is a Freescale Reference Design Board that hosts T1023 SoC.
+Add chip specific initialization for the MPC8306.
 
-T1023RDB board Overview
------------------------
-- T1023 SoC integrating two 64-bit e5500 cores up to 1.4GHz
-- CoreNet fabric supporting coherent and noncoherent transactions with
-  prioritization and bandwidth allocation
-- Memory: 2GB Micron MT40A512M8HX unbuffered 32-bit fixed DDR4 without ECC
-- Accelerator: DPAA components consist of FMan, BMan, QMan, DCE and SEC
-- Ethernet interfaces:
-  - one 1G RGMII port on-board(RTL8211F PHY)
-  - one 1G SGMII port on-board(RTL8211F PHY)
-  - one 2.5G SGMII port on-board(AQR105 PHY)
-- PCIe: Two Mini-PCIe connectors on-board.
-- SerDes: 4 lanes up to 10.3125GHz
-- NOR:  128MB S29GL01GS110TFIV10 Spansion NOR Flash
-- NAND: 512MB S34MS04G200BFI000 Spansion NAND Flash
-- eSPI: 64MB S25FL512SAGMFI010 Spansion SPI flash
-- USB: one Type-A USB 2.0 port with internal PHY
-- eSDHC: support SD/MMC card and eMMC flash on-board
-- 256Kbit M24256 I2C EEPROM
-- RTC: Real-time clock DS1339 on I2C bus
-- UART: one serial port on-board with RJ45 connector
-- Debugging: JTAG/COP for T1023 debugging
-
-Signed-off-by: Shengzhou Liu <Shengzhou.Liu@freescale.com>
+Signed-off-by: Filip Brozovic <fbrozovic@gmail.com>
 ---
- arch/powerpc/boot/dts/t1023rdb.dts            | 151 ++++++++++++++++++++++++++
- arch/powerpc/platforms/85xx/corenet_generic.c |   1 +
- 2 files changed, 152 insertions(+)
- create mode 100644 arch/powerpc/boot/dts/t1023rdb.dts
+Changes from v1:
+- Fix multiplatform support for setting QE SNUMs
+ arch/powerpc/platforms/83xx/Kconfig   |  8 ++++++++
+ arch/powerpc/platforms/83xx/mpc83xx.h |  4 ++++
+ arch/powerpc/platforms/83xx/usb.c     | 14 +++++++++++---
+ arch/powerpc/sysdev/qe_lib/qe.c       | 10 ++++++++--
+ drivers/gpio/Kconfig                  |  6 +++---
+ 5 files changed, 34 insertions(+), 8 deletions(-)
 
-diff --git a/arch/powerpc/boot/dts/t1023rdb.dts b/arch/powerpc/boot/dts/t1023rdb.dts
-new file mode 100644
-index 0000000..3780e68
---- /dev/null
-+++ b/arch/powerpc/boot/dts/t1023rdb.dts
-@@ -0,0 +1,151 @@
-+/*
-+ * T1023 RDB Device Tree Source
-+ *
-+ * Copyright 2014 Freescale Semiconductor Inc.
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions are met:
-+ *     * Redistributions of source code must retain the above copyright
-+ *	 notice, this list of conditions and the following disclaimer.
-+ *     * Redistributions in binary form must reproduce the above copyright
-+ *	 notice, this list of conditions and the following disclaimer in the
-+ *	 documentation and/or other materials provided with the distribution.
-+ *     * Neither the name of Freescale Semiconductor nor the
-+ *	 names of its contributors may be used to endorse or promote products
-+ *	 derived from this software without specific prior written permission.
-+ *
-+ *
-+ * ALTERNATIVELY, this software may be distributed under the terms of the
-+ * GNU General Public License ("GPL") as published by the Free Software
-+ * Foundation, either version 2 of that License or (at your option) any
-+ * later version.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor "AS IS" AND ANY
-+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ */
+diff --git a/arch/powerpc/platforms/83xx/Kconfig b/arch/powerpc/platforms/83xx/Kconfig
+index 2bdc8c8..904991d 100644
+--- a/arch/powerpc/platforms/83xx/Kconfig
++++ b/arch/powerpc/platforms/83xx/Kconfig
+@@ -113,6 +113,14 @@ config KMETER1
+ 
+ endif
+ 
++# used for gpio
++config PPC_MPC830x
++	bool
++	select ARCH_WANT_OPTIONAL_GPIOLIB
 +
-+/include/ "fsl/t102xsi-pre.dtsi"
++config PPC_MPC8306
++	bool
 +
-+/ {
-+	model = "fsl,T1023RDB";
-+	compatible = "fsl,T1023RDB";
-+	#address-cells = <2>;
-+	#size-cells = <2>;
-+	interrupt-parent = <&mpic>;
-+
-+	ifc: localbus@ffe124000 {
-+		reg = <0xf 0xfe124000 0 0x2000>;
-+		ranges = <0 0 0xf 0xe8000000 0x08000000
-+			  1 0 0xf 0xff800000 0x00010000>;
-+
-+		nor@0,0 {
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			status = "disabled";
-+			compatible = "cfi-flash";
-+			reg = <0x0 0x0 0x8000000>;
-+			bank-width = <2>;
-+			device-width = <1>;
-+		};
-+
-+		nand@1,0 {
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			compatible = "fsl,ifc-nand";
-+			reg = <0x2 0x0 0x10000>;
-+		};
+ # used for usb & gpio
+ config PPC_MPC831x
+ 	bool
+diff --git a/arch/powerpc/platforms/83xx/mpc83xx.h b/arch/powerpc/platforms/83xx/mpc83xx.h
+index 0cf74d7..4f21fb9 100644
+--- a/arch/powerpc/platforms/83xx/mpc83xx.h
++++ b/arch/powerpc/platforms/83xx/mpc83xx.h
+@@ -21,6 +21,8 @@
+ 
+ /* system i/o configuration register low */
+ #define MPC83XX_SICRL_OFFS         0x114
++#define MPC8306_SICRL_USB_MASK     0x003C0000
++#define MPC8306_SICRL_USB_ULPI     0x00000000
+ #define MPC834X_SICRL_USB_MASK     0x60000000
+ #define MPC834X_SICRL_USB0         0x20000000
+ #define MPC834X_SICRL_USB1         0x40000000
+@@ -35,6 +37,8 @@
+ 
+ /* system i/o configuration register high */
+ #define MPC83XX_SICRH_OFFS         0x118
++#define MPC8306_SICRH_USB_MASK     0x0F00F300
++#define MPC8306_SICRH_USB_ULPI     0x00000000
+ #define MPC8308_SICRH_USB_MASK     0x000c0000
+ #define MPC8308_SICRH_USB_ULPI     0x00040000
+ #define MPC834X_SICRH_USB_UTMI     0x00020000
+diff --git a/arch/powerpc/platforms/83xx/usb.c b/arch/powerpc/platforms/83xx/usb.c
+index 5c31d82..a9db44b 100644
+--- a/arch/powerpc/platforms/83xx/usb.c
++++ b/arch/powerpc/platforms/83xx/usb.c
+@@ -99,7 +99,7 @@ int mpc834x_usb_cfg(void)
+ }
+ #endif /* CONFIG_PPC_MPC834x */
+ 
+-#ifdef CONFIG_PPC_MPC831x
++#if defined(CONFIG_PPC_MPC8306) || defined(CONFIG_PPC_MPC831x)
+ int mpc831x_usb_cfg(void)
+ {
+ 	u32 temp;
+@@ -128,6 +128,7 @@ int mpc831x_usb_cfg(void)
+ 	/* Configure clock */
+ 	immr_node = of_get_parent(np);
+ 	if (immr_node && (of_device_is_compatible(immr_node, "fsl,mpc8315-immr") ||
++			of_device_is_compatible(immr_node, "fsl,mpc8306-immr") ||
+ 			of_device_is_compatible(immr_node, "fsl,mpc8308-immr")))
+ 		clrsetbits_be32(immap + MPC83XX_SCCR_OFFS,
+ 		                MPC8315_SCCR_USB_MASK,
+@@ -139,7 +140,14 @@ int mpc831x_usb_cfg(void)
+ 
+ 	/* Configure pin mux for ULPI.  There is no pin mux for UTMI */
+ 	if (prop && !strcmp(prop, "ulpi")) {
+-		if (of_device_is_compatible(immr_node, "fsl,mpc8308-immr")) {
++		if (of_device_is_compatible(immr_node, "fsl,mpc8306-immr")) {
++			clrsetbits_be32(immap + MPC83XX_SICRL_OFFS,
++					MPC8306_SICRL_USB_MASK,
++					MPC8306_SICRL_USB_ULPI);
++			clrsetbits_be32(immap + MPC83XX_SICRH_OFFS,
++					MPC8306_SICRH_USB_MASK,
++					MPC8306_SICRH_USB_ULPI);
++		} else if (of_device_is_compatible(immr_node, "fsl,mpc8308-immr")) {
+ 			clrsetbits_be32(immap + MPC83XX_SICRH_OFFS,
+ 					MPC8308_SICRH_USB_MASK,
+ 					MPC8308_SICRH_USB_ULPI);
+@@ -210,7 +218,7 @@ out:
+ 	of_node_put(np);
+ 	return ret;
+ }
+-#endif /* CONFIG_PPC_MPC831x */
++#endif /* CONFIG_PPC_MPC8306 || CONFIG_PPC_MPC831x */
+ 
+ #ifdef CONFIG_PPC_MPC837x
+ int mpc837x_usb_cfg(void)
+diff --git a/arch/powerpc/sysdev/qe_lib/qe.c b/arch/powerpc/sysdev/qe_lib/qe.c
+index c2518cd..f0c45f0 100644
+--- a/arch/powerpc/sysdev/qe_lib/qe.c
++++ b/arch/powerpc/sysdev/qe_lib/qe.c
+@@ -285,12 +285,18 @@ static void qe_snums_init(void)
+ 		0x28, 0x29, 0x38, 0x39, 0x48, 0x49, 0x58, 0x59,
+ 		0x68, 0x69, 0x78, 0x79, 0x80, 0x81,
+ 	};
++	static const u8 snum_init_14[] = {
++		0x88, 0x89, 0x98, 0x99, 0xA8, 0xA9, 0xB8, 0xB9,
++		0xC8, 0xC9, 0xD8, 0xD9, 0xE8, 0xE9,
 +	};
-+
-+	memory {
-+		device_type = "memory";
-+	};
-+
-+	dcsr: dcsr@f00000000 {
-+		ranges = <0x00000000 0xf 0x00000000 0x01072000>;
-+	};
-+
-+	soc: soc@ffe000000 {
-+		ranges = <0x00000000 0xf 0xfe000000 0x1000000>;
-+		reg = <0xf 0xfe000000 0 0x00001000>;
-+		spi@110000 {
-+			flash@0 {
-+				#address-cells = <1>;
-+				#size-cells = <1>;
-+				compatible = "spansion,s25fl512s";
-+				reg = <0>;
-+				spi-max-frequency = <10000000>; /* input clk */
-+			};
-+		};
-+
-+		i2c@118000 {
-+			eeprom@50 {
-+				compatible = "stm,m24256";
-+				reg = <0x50>;
-+			};
-+
-+			rtc@68 {
-+				compatible = "dallas,ds1339";
-+				reg = <0x68>;
-+				interrupts = <0x5 0x1 0 0>;
-+			};
-+		};
-+
-+		i2c@118100 {
-+		};
-+	};
-+
-+	pci0: pcie@ffe240000 {
-+		reg = <0xf 0xfe240000 0 0x10000>;
-+		ranges = <0x02000000 0 0xe0000000 0xc 0x00000000 0 0x10000000
-+			  0x01000000 0 0x00000000 0xf 0xf8000000 0 0x00010000>;
-+		pcie@0 {
-+			ranges = <0x02000000 0 0xe0000000
-+				  0x02000000 0 0xe0000000
-+				  0 0x10000000
-+
-+				  0x01000000 0 0x00000000
-+				  0x01000000 0 0x00000000
-+				  0 0x00010000>;
-+		};
-+	};
-+
-+	pci1: pcie@ffe250000 {
-+		reg = <0xf 0xfe250000 0 0x10000>;
-+		ranges = <0x02000000 0 0xe0000000 0xc 0x10000000 0 0x10000000
-+			  0x01000000 0 0x00000000 0xf 0xf8010000 0 0x00010000>;
-+		pcie@0 {
-+			ranges = <0x02000000 0 0xe0000000
-+				  0x02000000 0 0xe0000000
-+				  0 0x10000000
-+
-+				  0x01000000 0 0x00000000
-+				  0x01000000 0 0x00000000
-+				  0 0x00010000>;
-+		};
-+	};
-+
-+	pci2: pcie@ffe260000 {
-+		reg = <0xf 0xfe260000 0 0x10000>;
-+		ranges = <0x02000000 0 0xe0000000 0xc 0x20000000 0 0x10000000
-+			  0x01000000 0 0x00000000 0xf 0xf8020000 0 0x00010000>;
-+		pcie@0 {
-+			ranges = <0x02000000 0 0xe0000000
-+				  0x02000000 0 0xe0000000
-+				  0 0x10000000
-+
-+				  0x01000000 0 0x00000000
-+				  0x01000000 0 0x00000000
-+				  0 0x00010000>;
-+		};
-+	};
-+};
-+
-+/include/ "fsl/t1023si-post.dtsi"
-diff --git a/arch/powerpc/platforms/85xx/corenet_generic.c b/arch/powerpc/platforms/85xx/corenet_generic.c
-index d7c1b4d..bd839dc 100644
---- a/arch/powerpc/platforms/85xx/corenet_generic.c
-+++ b/arch/powerpc/platforms/85xx/corenet_generic.c
-@@ -150,6 +150,7 @@ static const char * const boards[] __initconst = {
- 	"fsl,B4860QDS",
- 	"fsl,B4420QDS",
- 	"fsl,B4220QDS",
-+	"fsl,T1023RDB",
- 	"fsl,T1024QDS",
- 	"fsl,T1024RDB",
- 	"fsl,T1040QDS",
+ 	static const u8 *snum_init;
+ 
+ 	qe_num_of_snum = qe_get_num_of_snums();
+ 
+ 	if (qe_num_of_snum == 76)
+ 		snum_init = snum_init_76;
++	else if (qe_num_of_snum == 14)
++		snum_init = snum_init_14;
+ 	else
+ 		snum_init = snum_init_46;
+ 
+@@ -657,8 +663,8 @@ unsigned int qe_get_num_of_snums(void)
+ 	prop = of_get_property(qe, "fsl,qe-num-snums", &size);
+ 	if (prop && size == sizeof(*prop)) {
+ 		num_of_snums = *prop;
+-		if ((num_of_snums < 28) || (num_of_snums > QE_NUM_OF_SNUM)) {
+-			/* No QE ever has fewer than 28 SNUMs */
++		if ((num_of_snums < 14) || (num_of_snums > QE_NUM_OF_SNUM)) {
++			/* No QE ever has fewer than 14 SNUMs */
+ 			pr_err("QE: number of snum is invalid\n");
+ 			of_node_put(qe);
+ 			return -EINVAL;
+diff --git a/drivers/gpio/Kconfig b/drivers/gpio/Kconfig
+index c1e2ca3..4c60e7f 100644
+--- a/drivers/gpio/Kconfig
++++ b/drivers/gpio/Kconfig
+@@ -217,11 +217,11 @@ config GPIO_MPC5200
+ 
+ config GPIO_MPC8XXX
+ 	bool "MPC512x/MPC8xxx GPIO support"
+-	depends on PPC_MPC512x || PPC_MPC831x || PPC_MPC834x || PPC_MPC837x || \
+-		   FSL_SOC_BOOKE || PPC_86xx
++	depends on PPC_MPC512x || PPC_MPC830x || PPC_MPC831x || PPC_MPC834x || \
++		   PPC_MPC837x || FSL_SOC_BOOKE || PPC_86xx
+ 	help
+ 	  Say Y here if you're going to use hardware that connects to the
+-	  MPC512x/831x/834x/837x/8572/8610 GPIOs.
++	  MPC512x/830x/831x/834x/837x/8572/8610 GPIOs.
+ 
+ config GPIO_MSM_V1
+ 	tristate "Qualcomm MSM GPIO v1"
 -- 
-2.1.0.27.g96db324
+2.1.4
