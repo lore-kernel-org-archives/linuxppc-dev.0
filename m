@@ -1,18 +1,21 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0118.outbound.protection.outlook.com [157.56.110.118])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <olson@cumulusnetworks.com>
+Received: from mail-pd0-x229.google.com (mail-pd0-x229.google.com
+ [IPv6:2607:f8b0:400e:c02::229])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 06CED1A03D6
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Apr 2015 14:14:25 +1100 (AEDT)
-From: Scott Wood <scottwood@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH] powerpc/e6500: Optimize hugepage TLB misses
-Date: Thu, 2 Apr 2015 22:14:11 -0500
-Message-ID: <1428030851-2233-1-git-send-email-scottwood@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Scott Wood <scottwood@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 71C331A0145
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Apr 2015 14:33:39 +1100 (AEDT)
+Received: by pddn5 with SMTP id n5so108922193pdd.2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Apr 2015 20:33:37 -0700 (PDT)
+From: olson@cumulusnetworks.com
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
+Subject: [PATCH] Fix missing L2 cache size in /sys/devices/system/cpu
+Date: Thu,  2 Apr 2015 20:33:00 -0700
+Message-Id: <1428031980-17175-1-git-send-email-olson@cumulusnetworks.com>
+In-Reply-To: <20150326194914.GC23655@cumulusnetworks.com>
+References: <20150326194914.GC23655@cumulusnetworks.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Dave Olson <olson@cumulusnetworks.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,100 +25,103 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Some workloads take a lot of TLB misses despite using traditional
-hugepages.  Handle these TLB misses in the asm fastpath rather than
-going through a bunch of C code.  With this patch I measured around a
-5x speedup in handling hugepage TLB misses.
+From: Dave Olson <olson@cumulusnetworks.com>
 
-Signed-off-by: Scott Wood <scottwood@freescale.com>
+This is version 4 of the patch, incorporating Michael Ellerman's 
+suggested changes from March 26, 2015.
+================
+
+This problem appears to have been introduced in 2.6.29 by
+the commit in the Fixes line below.
+
+This caused lscpu to error out on e500v2 devices, and probably others
+ error: cannot open /sys/devices/system/cpu/cpu0/cache/index2/size: No such file or directory
+
+Some embedded powerpc systems use cache-size in DTS for the unified L2 cache
+size, not d-cache-size, so we need to allow for both DTS names.  Added a
+new CACHE_TYPE_UNIFIED_D cache_type_info structure to handle this.
+
+Fixes: 93197a36a9c16a85fb24cf5a8639f7bf9af838a3
+Signed-off-by: Dave Olson <olson@cumulusnetworks.com>
 ---
- arch/powerpc/mm/tlb_low_64e.S | 51 ++++++++++++++++++++++++++++++++++++++++---
- 1 file changed, 48 insertions(+), 3 deletions(-)
+ arch/powerpc/kernel/cacheinfo.c |   44 ++++++++++++++++++++++++++++++---------
+ 1 file changed, 34 insertions(+), 10 deletions(-)
 
-diff --git a/arch/powerpc/mm/tlb_low_64e.S b/arch/powerpc/mm/tlb_low_64e.S
-index 89bf95b..765b419 100644
---- a/arch/powerpc/mm/tlb_low_64e.S
-+++ b/arch/powerpc/mm/tlb_low_64e.S
-@@ -398,18 +398,18 @@ ALT_FTR_SECTION_END_IFSET(CPU_FTR_SMT)
- 	rldicl	r15,r16,64-PUD_SHIFT+3,64-PUD_INDEX_SIZE-3
- 	clrrdi	r15,r15,3
- 	cmpdi	cr0,r14,0
--	bge	tlb_miss_fault_e6500	/* Bad pgd entry or hugepage; bail */
-+	bge	tlb_miss_huge_e6500	/* Bad pgd entry or hugepage; bail */
- 	ldx	r14,r14,r15		/* grab pud entry */
+diff --git a/arch/powerpc/kernel/cacheinfo.c b/arch/powerpc/kernel/cacheinfo.c
+index ae77b7e..b9df547 100644
+--- a/arch/powerpc/kernel/cacheinfo.c
++++ b/arch/powerpc/kernel/cacheinfo.c
+@@ -61,12 +61,22 @@ struct cache_type_info {
+ };
  
- 	rldicl	r15,r16,64-PMD_SHIFT+3,64-PMD_INDEX_SIZE-3
- 	clrrdi	r15,r15,3
- 	cmpdi	cr0,r14,0
--	bge	tlb_miss_fault_e6500
-+	bge	tlb_miss_huge_e6500
- 	ldx	r14,r14,r15		/* Grab pmd entry */
+ /* These are used to index the cache_type_info array. */
+-#define CACHE_TYPE_UNIFIED     0
+-#define CACHE_TYPE_INSTRUCTION 1
+-#define CACHE_TYPE_DATA        2
++#define CACHE_TYPE_UNIFIED     0 /* cache-size, cache-block-size, etc. */
++#define CACHE_TYPE_UNIFIED_D   1 /* d-cache-size, d-cache-block-size, etc */
++#define CACHE_TYPE_INSTRUCTION 2
++#define CACHE_TYPE_DATA        3
  
- 	mfspr	r10,SPRN_MAS0
- 	cmpdi	cr0,r14,0
--	bge	tlb_miss_fault_e6500
-+	bge	tlb_miss_huge_e6500
+ static const struct cache_type_info cache_type_info[] = {
+ 	{
++		/* Embedded systems that use cache-size, cache-block-size,
++		 * etc. for the Unified (typically L2) cache. */
++		.name            = "Unified",
++		.size_prop       = "cache-size",
++		.line_size_props = { "cache-line-size",
++				     "cache-block-size", },
++		.nr_sets_prop    = "cache-sets",
++	},
++	{
+ 		/* PowerPC Processor binding says the [di]-cache-*
+ 		 * must be equal on unified caches, so just use
+ 		 * d-cache properties. */
+@@ -293,7 +303,8 @@ static struct cache *cache_find_first_sibling(struct cache *cache)
+ {
+ 	struct cache *iter;
  
- 	/* Now we build the MAS for a 2M indirect page:
- 	 *
-@@ -428,6 +428,7 @@ ALT_FTR_SECTION_END_IFSET(CPU_FTR_SMT)
- 	clrrdi	r15,r16,21		/* make EA 2M-aligned */
- 	mtspr	SPRN_MAS2,r15
+-	if (cache->type == CACHE_TYPE_UNIFIED)
++	if (cache->type == CACHE_TYPE_UNIFIED ||
++	    cache->type == CACHE_TYPE_UNIFIED_D)
+ 		return cache;
  
-+tlb_miss_huge_done_e6500:
- 	lbz	r15,TCD_ESEL_NEXT(r11)
- 	lbz	r16,TCD_ESEL_MAX(r11)
- 	lbz	r14,TCD_ESEL_FIRST(r11)
-@@ -456,6 +457,50 @@ END_FTR_SECTION_IFSET(CPU_FTR_SMT)
- 	tlb_epilog_bolted
- 	rfi
+ 	list_for_each_entry(iter, &cache_list, list)
+@@ -324,16 +335,29 @@ static bool cache_node_is_unified(const struct device_node *np)
+ 	return of_get_property(np, "cache-unified", NULL);
+ }
  
-+tlb_miss_huge_e6500:
-+	beq	tlb_miss_fault_e6500
-+	li	r10,1
-+	andi.	r15,r14,HUGEPD_SHIFT_MASK@l /* r15 = psize */
-+	rldimi	r14,r10,63,0		/* Set PD_HUGE */
-+	xor	r14,r14,r15		/* Clear size bits */
-+	ldx	r14,0,r14
-+
-+	/*
-+	 * Now we build the MAS for a huge page.
-+	 *
-+	 * MAS 0   :	ESEL needs to be filled by software round-robin
-+	 *		 - can be handled by indirect code
-+	 * MAS 1   :	Need to clear IND and set TSIZE
-+	 * MAS 2,3+7:	Needs to be redone similar to non-tablewalk handler
-+	 */
-+
-+	subi	r15,r15,10		/* Convert psize to tsize */
-+	mfspr	r10,SPRN_MAS1
-+	rlwinm	r10,r10,0,~MAS1_IND
-+	rlwimi	r10,r15,MAS1_TSIZE_SHIFT,MAS1_TSIZE_MASK
-+	mtspr	SPRN_MAS1,r10
-+
-+	li	r10,-0x400
-+	sld	r15,r10,r15		/* Generate mask based on size */
-+	and	r10,r16,r15
-+	rldicr	r15,r14,64-(PTE_RPN_SHIFT-PAGE_SHIFT),63-PAGE_SHIFT
-+	rlwimi	r10,r14,32-19,27,31	/* Insert WIMGE */
-+	clrldi	r15,r15,PAGE_SHIFT	/* Clear crap at the top */
-+	rlwimi	r15,r14,32-8,22,25	/* Move in U bits */
-+	mtspr	SPRN_MAS2,r10
-+	andi.	r10,r14,_PAGE_DIRTY
-+	rlwimi	r15,r14,32-2,26,31	/* Move in BAP bits */
-+
-+	/* Mask out SW and UW if !DIRTY (XXX optimize this !) */
-+	bne	1f
-+	li	r10,MAS3_SW|MAS3_UW
-+	andc	r15,r15,r10
-+1:
-+	mtspr	SPRN_MAS7_MAS3,r15
-+
-+	mfspr	r10,SPRN_MAS0
-+	b	tlb_miss_huge_done_e6500
-+
- tlb_miss_kernel_e6500:
- 	ld	r14,PACA_KERNELPGD(r13)
- 	cmpldi	cr1,r15,8		/* Check for vmalloc region */
+-static struct cache *cache_do_one_devnode_unified(struct device_node *node,
+-						  int level)
++/*
++ * Unified caches can have two different sets of tags.  Most embedded
++ * use cache-size, etc. for the unified cache size, but open firmware systems
++ * use d-cache-size, etc.   Check on initialization for which type we have, and
++ * return the appropriate structure type.  Assume it's embedded if it isn't
++ * open firmware.  If it's yet a 3rd type, then there will be missing entries
++ * in /sys/devices/system/cpu/cpu0/cache/index2/, and this code will need
++ * to be extended further.
++ */
++static int __cpuinit cache_is_unified_d(const struct device_node *np)
+ {
+-	struct cache *cache;
++	return of_get_property(np,
++		cache_type_info[CACHE_TYPE_UNIFIED_D].size_prop, NULL) ?
++		CACHE_TYPE_UNIFIED_D : CACHE_TYPE_UNIFIED;
++}
+ 
++/*
++ */
++static struct cache *__cpuinit cache_do_one_devnode_unified(struct device_node *node, int level)
++{
+ 	pr_debug("creating L%d ucache for %s\n", level, node->full_name);
+ 
+-	cache = new_cache(CACHE_TYPE_UNIFIED, level, node);
+-
+-	return cache;
++	return new_cache(cache_is_unified_d(node), level, node);
+ }
+ 
+ static struct cache *cache_do_one_devnode_split(struct device_node *node,
 -- 
-2.1.0
+1.7.10.4
