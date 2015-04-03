@@ -1,24 +1,27 @@
-Return-Path: <curieux.khetan@gmail.com>
-Received: from mail-ob0-x22d.google.com (mail-ob0-x22d.google.com
- [IPv6:2607:f8b0:4003:c01::22d])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <vbabka@suse.cz>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E44161A03D6
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Apr 2015 17:24:43 +1100 (AEDT)
-Received: by obbfy7 with SMTP id fy7so75523365obb.2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Apr 2015 23:24:39 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 57C971A0741
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Apr 2015 18:57:42 +1100 (AEDT)
+Message-ID: <551E47EF.5030800@suse.cz>
+Date: Fri, 03 Apr 2015 09:57:35 +0200
+From: Vlastimil Babka <vbabka@suse.cz>
 MIME-Version: 1.0
-Date: Fri, 3 Apr 2015 11:54:39 +0530
-Message-ID: <CAERE9Pqkpshru9=teOXiv9wG4c=ngK6=TQpTo+fQPxo_Y6aTUg@mail.gmail.com>
-Subject: PCIE Switch Bringup Problem
-From: Ashish Khetan <curieux.khetan@gmail.com>
-To: kernelnewbies <kernelnewbies@kernelnewbies.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "scottwood@freescale.com" <scottwood@freescale.com>,
- Sanjeev Sharma <sanjeevsharmaengg@gmail.com>,
- Valdis Kletnieks <Valdis.Kletnieks@vt.edu>
-Content-Type: multipart/alternative; boundary=001a11c1f5eecdf25b0512cc0089
-Cc: ashishk@vrindatech.com
+To: Michal Hocko <mhocko@suse.cz>,
+ Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+Subject: Re: [PATCH v2] mm: vmscan: do not throttle based on pfmemalloc
+ reserves if node has no reclaimable pages
+References: <20150327192850.GA18701@linux.vnet.ibm.com>
+ <5515BAF7.6070604@intel.com> <20150327222350.GA22887@linux.vnet.ibm.com>
+ <20150331094829.GE9589@dhcp22.suse.cz>
+In-Reply-To: <20150331094829.GE9589@dhcp22.suse.cz>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Cc: Rik van Riel <riel@redhat.com>, anton@sambar.org, linux-mm@kvack.org,
+ linux-kernel@vger.kernel.org, Dave Hansen <dave.hansen@intel.com>,
+ Mel Gorman <mgorman@suse.de>, Johannes Weiner <hannes@cmpxchg.org>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ Dan Streetman <ddstreet@ieee.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,30 +31,172 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---001a11c1f5eecdf25b0512cc0089
-Content-Type: text/plain; charset=UTF-8
+On 03/31/2015 11:48 AM, Michal Hocko wrote:
+> On Fri 27-03-15 15:23:50, Nishanth Aravamudan wrote:
+>> On 27.03.2015 [13:17:59 -0700], Dave Hansen wrote:
+>>> On 03/27/2015 12:28 PM, Nishanth Aravamudan wrote:
+>>>> @@ -2585,7 +2585,7 @@ static bool pfmemalloc_watermark_ok(pg_data_t *pgdat)
+>>>>
+>>>>          for (i = 0; i <= ZONE_NORMAL; i++) {
+>>>>                  zone = &pgdat->node_zones[i];
+>>>> -               if (!populated_zone(zone))
+>>>> +               if (!populated_zone(zone) || !zone_reclaimable(zone))
+>>>>                          continue;
+>>>>
+>>>>                  pfmemalloc_reserve += min_wmark_pages(zone);
+>>>
+>>> Do you really want zone_reclaimable()?  Or do you want something more
+>>> direct like "zone_reclaimable_pages(zone) == 0"?
+>>
+>> Yeah, I guess in my testing this worked out to be the same, since
+>> zone_reclaimable_pages(zone) is 0 and so zone_reclaimable(zone) will
+>> always be false. Thanks!
+>>
+>> Based upon 675becce15 ("mm: vmscan: do not throttle based on pfmemalloc
+>> reserves if node has no ZONE_NORMAL") from Mel.
+>>
+>> We have a system with the following topology:
+>>
+>> # numactl -H
+>> available: 3 nodes (0,2-3)
+>> node 0 cpus: 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22
+>> 23 24 25 26 27 28 29 30 31
+>> node 0 size: 28273 MB
+>> node 0 free: 27323 MB
+>> node 2 cpus:
+>> node 2 size: 16384 MB
+>> node 2 free: 0 MB
+>> node 3 cpus: 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47
+>> node 3 size: 30533 MB
+>> node 3 free: 13273 MB
+>> node distances:
+>> node   0   2   3
+>>    0:  10  20  20
+>>    2:  20  10  20
+>>    3:  20  20  10
+>>
+>> Node 2 has no free memory, because:
+>> # cat /sys/devices/system/node/node2/hugepages/hugepages-16777216kB/nr_hugepages
+>> 1
+>>
+>> This leads to the following zoneinfo:
+>>
+>> Node 2, zone      DMA
+>>    pages free     0
+>>          min      1840
+>>          low      2300
+>>          high     2760
+>>          scanned  0
+>>          spanned  262144
+>>          present  262144
+>>          managed  262144
+>> ...
+>>    all_unreclaimable: 1
+>
+> Blee, this is a weird configuration.
+>
+>> If one then attempts to allocate some normal 16M hugepages via
+>>
+>> echo 37 > /proc/sys/vm/nr_hugepages
+>>
+>> The echo never returns and kswapd2 consumes CPU cycles.
+>>
+>> This is because throttle_direct_reclaim ends up calling
+>> wait_event(pfmemalloc_wait, pfmemalloc_watermark_ok...).
+>> pfmemalloc_watermark_ok() in turn checks all zones on the node if there
+>> are any reserves, and if so, then indicates the watermarks are ok, by
+>> seeing if there are sufficient free pages.
+>>
+>> 675becce15 added a condition already for memoryless nodes. In this case,
+>> though, the node has memory, it is just all consumed (and not
+>> reclaimable). Effectively, though, the result is the same on this call
+>> to pfmemalloc_watermark_ok() and thus seems like a reasonable additional
+>> condition.
+>>
+>> With this change, the afore-mentioned 16M hugepage allocation attempt
+>> succeeds and correctly round-robins between Nodes 1 and 3.
+>
+> I am just wondering whether this is the right/complete fix. Don't we
+> need a similar treatment at more places?
+> I would expect kswapd would be looping endlessly because the zone
+> wouldn't be balanced obviously. But I would be wrong... because
+> pgdat_balanced is doing this:
+> 		/*
+> 		 * A special case here:
+> 		 *
+> 		 * balance_pgdat() skips over all_unreclaimable after
+> 		 * DEF_PRIORITY. Effectively, it considers them balanced so
+> 		 * they must be considered balanced here as well!
+> 		 */
+> 		if (!zone_reclaimable(zone)) {
+> 			balanced_pages += zone->managed_pages;
+> 			continue;
+> 		}
+>
+> and zone_reclaimable is false for you as you didn't have any
+> zone_reclaimable_pages(). But wakeup_kswapd doesn't do this check so it
+> would see !zone_balanced() AFAICS (build_zonelists doesn't ignore those
+> zones right?) and so the kswapd would be woken up easily. So it looks
+> like a mess.
 
-Hi, I am using MPC8640D based powerpc board. I am trying to bringup PCIe
-switch(PES64H16AG2) using linux BSP(Linux-3.14).
-After Power on reset its unable detect to detect any link on PCIe BUS.
-While on another bus PCIe link is detected which is not another PCIe device.
+Yeah, looks like a much cleaner/complete solution would be to remove 
+such zones from zonelists. But that means covering all situations when 
+these hugepages are allocated/removed and the approach then looks 
+similar to memory hotplug.
+Also I'm not sure if the ability to actually allocate the reserved 
+hugepage would be impossible due to not being reachable by a zonelist...
 
+> There are possibly other places which rely on populated_zone or
+> for_each_populated_zone without checking reclaimability. Are those
+> working as expected?
 
- Any debugging points/link will be really helpful.
+Yeah. At least the wakeup_kswapd case should be fixed IMHO. No point in 
+waking it up just to let it immediately go to sleep again.
 
+> That being said. I am not objecting to this patch. I am just trying to
+> wrap my head around possible issues from such a weird configuration and
+> all the consequences.
+>
+>> Signed-off-by: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+>
+> The patch as is doesn't seem to be harmful.
+>
+> Reviewed-by: Michal Hocko <mhocko@suse.cz>
+>
+>> ---
+>> v1 -> v2:
+>>    Check against zone_reclaimable_pages, rather zone_reclaimable, based
+>>    upon feedback from Dave Hansen.
+>
+> Dunno, but shouldn't we use the same thing here and in pgdat_balanced?
+> zone_reclaimable_pages seems to be used only from zone_reclaimable().
 
-Regards
-@$HI$H
+pgdat_balanced() has a different goal than pfmemalloc_watermark_ok() and 
+needs to match what balance_pgdat() does, which includes considering 
+NR_PAGES_SCANNED through zone_reclaimable(). For the situation 
+considered in this patch, result of zone_reclaimable() will match the 
+test zone_reclaimable_pages(zone) == 0, so it is fine I think.
 
---001a11c1f5eecdf25b0512cc0089
-Content-Type: text/html; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+What I find somewhat worrying though is that we could potentially break 
+the pfmemalloc_watermark_ok() test in situations where 
+zone_reclaimable_pages(zone) == 0 is a transient situation (and not a 
+permanently allocated hugepage). In that case, the throttling is 
+supposed to help system recover, and we might be breaking that ability 
+with this patch, no?
 
-<div dir=3D"ltr"><div><div><div>Hi, I am using MPC8640D based powerpc board=
-. I am trying to bringup PCIe switch(PES64H16AG2) using linux BSP(Linux-3.1=
-4).<br></div>After Power on reset its unable detect to detect any link on P=
-CIe BUS. While on another bus PCIe link is detected which is not another PC=
-Ie device.<br><br><br>=C2=A0Any debugging points/link will be really helpfu=
-l.<br><br><br></div>Regards <br></div>@$HI$H<br></div>
-
---001a11c1f5eecdf25b0512cc0089--
+>> diff --git a/mm/vmscan.c b/mm/vmscan.c
+>> index 5e8eadd71bac..c627fa4c991f 100644
+>> --- a/mm/vmscan.c
+>> +++ b/mm/vmscan.c
+>> @@ -2646,7 +2646,8 @@ static bool pfmemalloc_watermark_ok(pg_data_t *pgdat)
+>>
+>>   	for (i = 0; i <= ZONE_NORMAL; i++) {
+>>   		zone = &pgdat->node_zones[i];
+>> -		if (!populated_zone(zone))
+>> +		if (!populated_zone(zone) ||
+>> +		    zone_reclaimable_pages(zone) == 0)
+>>   			continue;
+>>
+>>   		pfmemalloc_reserve += min_wmark_pages(zone);
+>>
+>
