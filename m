@@ -1,46 +1,22 @@
-Return-Path: <nacc@linux.vnet.ibm.com>
-Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1on0130.outbound.protection.outlook.com [157.56.110.130])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 205591A0AA4
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Apr 2015 05:50:46 +1100 (AEDT)
-Received: from /spool/local
- by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
- Fri, 3 Apr 2015 12:50:44 -0600
-Received: from b03cxnp07028.gho.boulder.ibm.com
- (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 6F80B3E4003E
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Apr 2015 12:50:42 -0600 (MDT)
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
- by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t33ImsjL32375036
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 3 Apr 2015 11:48:54 -0700
-Received: from d03av03.boulder.ibm.com (localhost [127.0.0.1])
- by d03av03.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t33IofVq031145
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 3 Apr 2015 12:50:42 -0600
-Date: Fri, 3 Apr 2015 11:50:39 -0700
-From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-To: Michal Hocko <mhocko@suse.cz>
-Subject: Re: [PATCH v2] mm: vmscan: do not throttle based on pfmemalloc
- reserves if node has no reclaimable pages
-Message-ID: <20150403185039.GB38424@linux.vnet.ibm.com>
-References: <20150327192850.GA18701@linux.vnet.ibm.com>
- <5515BAF7.6070604@intel.com>
- <20150327222350.GA22887@linux.vnet.ibm.com>
- <20150331094829.GE9589@dhcp22.suse.cz>
- <20150403174357.GE32318@linux.vnet.ibm.com>
- <20150403182445.GA31900@dhcp22.suse.cz>
+ by lists.ozlabs.org (Postfix) with ESMTPS id C71EC1A09FD
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Apr 2015 07:24:26 +1100 (AEDT)
+Message-ID: <1428092654.22867.339.camel@freescale.com>
+Subject: Re: [PATCH v2] powerpc/83xx: add support for mpc8306
+From: Scott Wood <scottwood@freescale.com>
+To: Filip =?UTF-8?Q?Brozovi=C4=87?= <fbrozovic@gmail.com>
+Date: Fri, 3 Apr 2015 15:24:14 -0500
+In-Reply-To: <551E8B65.5010400@gmail.com>
+References: <1428057856-26421-1-git-send-email-fbrozovic@gmail.com>
+ <1428062487.7898.12.camel@x220> <551E8B65.5010400@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150403182445.GA31900@dhcp22.suse.cz>
-Cc: Rik van Riel <riel@redhat.com>, anton@sambar.org, linux-mm@kvack.org,
- linux-kernel@vger.kernel.org, Dave Hansen <dave.hansen@intel.com>,
- Mel Gorman <mgorman@suse.de>, Johannes Weiner <hannes@cmpxchg.org>,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
- Dan Streetman <ddstreet@ieee.org>
+Cc: Paul Bolle <pebolle@tiscali.nl>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,59 +26,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 03.04.2015 [20:24:45 +0200], Michal Hocko wrote:
-> On Fri 03-04-15 10:43:57, Nishanth Aravamudan wrote:
-> > On 31.03.2015 [11:48:29 +0200], Michal Hocko wrote:
-> [...]
-> > > I would expect kswapd would be looping endlessly because the zone
-> > > wouldn't be balanced obviously. But I would be wrong... because
-> > > pgdat_balanced is doing this:
-> > > 		/*
-> > > 		 * A special case here:
-> > > 		 *
-> > > 		 * balance_pgdat() skips over all_unreclaimable after
-> > > 		 * DEF_PRIORITY. Effectively, it considers them balanced so
-> > > 		 * they must be considered balanced here as well!
-> > > 		 */
-> > > 		if (!zone_reclaimable(zone)) {
-> > > 			balanced_pages += zone->managed_pages;
-> > > 			continue;
-> > > 		}
-> > > 
-> > > and zone_reclaimable is false for you as you didn't have any
-> > > zone_reclaimable_pages(). But wakeup_kswapd doesn't do this check so it
-> > > would see !zone_balanced() AFAICS (build_zonelists doesn't ignore those
-> > > zones right?) and so the kswapd would be woken up easily. So it looks
-> > > like a mess.
-> > 
-> > My understanding, and I could easily be wrong, is that kswapd2 (node 2
-> > is the exhausted one) spins endlessly, because the reclaim logic sees
-> > that we are reclaiming from somewhere but the allocation request for
-> > node 2 (which is __GFP_THISNODE for hugepages, not GFP_THISNODE) will
-> > never complete, so we just continue to reclaim.
+On Fri, 2015-04-03 at 14:45 +0200, Filip Brozović wrote:
+> On 4/3/2015 2:01 PM, Paul Bolle wrote:
+> > On Fri, 2015-04-03 at 12:44 +0200, Filip Brozovic wrote:
+> >> --- a/arch/powerpc/platforms/83xx/Kconfig
+> >> +++ b/arch/powerpc/platforms/83xx/Kconfig
+> >
+> >> +# used for gpio
+> >> +config PPC_MPC830x
+> >> +	bool
+> >> +	select ARCH_WANT_OPTIONAL_GPIOLIB
+> >> +
+> >> +config PPC_MPC8306
+> >> +	bool
+> >
+> > To me these two new Kconfig symbols look pointless:
+> > - they have no prompt, so one cannot set them manually;
+> > - no other Kconfig symbol selects them;
+> > - they do not default to 'y'.
+> >
+> > I'm not aware of a way to set these symbols to 'y' outside of those
+> > three. Is there perhaps a way for kconfig to set these symbols to 'y'
+> > that I have missed?
+> >
+> > Or do you expect to do one of these three things in a separate patch?
+> >
 > 
-> __GFP_THISNODE would be waking up kswapd2 again and again, that is true.
+> The idea was that boards in the Kconfig file would select these symbols 
+> in order to enable support for the 8306. I mainly wanted to get this 
+> patch into mainline in order to make kernel maintenance for a couple of 
+> custom in-house developed boards easier. Since these boards are not 
+> widely available and our customers are unlikely to want to change and 
+> recompile the kernel, I have so far leaned towards not including support 
+> for them in mainline. As far as I can see, boards which are included in 
+> mainline right now are mostly evaluation boards which are easily 
+> available at most electronics distributors.
+> 
+> That being said, I don't know what the "official" stance on this is; is 
+> adding custom boards encouraged regardless of their availability (e.g. 
+> if I develop a custom board with the intention of only ever actually 
+> making a single prototype for personal use, should I go and submit 
+> patches so that support makes it into the mainline kernel?), or should 
+> there be a minimum level of public interest before incorporating custom 
+> boards into mainline? If it's the latter, I suppose a solution would be 
+> to include support for the Freescale MPC8306SOM in mainline. Of course, 
+> this has its own problems, since someone would have to write and 
+> maintain it (and I don't have an MPC8306SOM nor the time needed to do 
+> maintenance).
 
-Right, one idea I had for this was ensuring that we perform reclaim with
-somehow some knowledge of __GFP_THISNODE -- that is it needs to be
-somewhat targetted in order to actually help satisfy the current
-allocation. But it got pretty hairy fast and I didn't want to break the
-world :)
+Custom boards are fine as long as someone will maintain them.
 
-> I am just wondering whether we will have any __GFP_THISNODE allocations
-> for a node without CPUs (numa_node_id() shouldn't return such a node
-> AFAICS). Maybe if somebody is bound to Node2 explicitly but I would
-> consider this as a misconfiguration.
+What are you using PPC_MPC8306 for in your custom board code?
 
-Right, I'd need to check what happens if in our setup you taskset to
-node2 and tried to force memory to be local -- I think you'd either be
-killed immediately, or the kernel will just disagree with your binding
-since it's invalid (e.g., that will happen if you try to bind to a
-memoryless node, I think).
-
-Keep in mind that although in my config node2 had no CPUs, that's not a
-hard & fast requirement. I do believe in a previous iteration of this
-bug, the exhausted node had no free memory but did have cpus assigned to
-it.
-
--Nish
+-Scott
