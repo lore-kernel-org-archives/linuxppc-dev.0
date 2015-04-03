@@ -1,26 +1,23 @@
-Return-Path: <scottwood@freescale.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 241DB1A0741
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Apr 2015 12:25:42 +1100 (AEDT)
+Return-Path: <Yuantian.Tang@freescale.com>
 Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0112.outbound.protection.outlook.com [157.56.111.112])
+ (mail-bn1on0142.outbound.protection.outlook.com [157.56.110.142])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 4ACCA14016A
- for <linuxppc-dev@ozlabs.org>; Fri,  3 Apr 2015 12:25:40 +1100 (AEDT)
-Message-ID: <1428024328.22867.328.camel@freescale.com>
-Subject: Re: [PATCH 1/4] powerpc/85xx: miscellaneous changes on
- mpc85xx_defconfig
-From: Scott Wood <scottwood@freescale.com>
-To: Lijun Pan <Lijun.Pan@freescale.com>
-Date: Thu, 2 Apr 2015 20:25:28 -0500
-In-Reply-To: <1428010674-25361-1-git-send-email-Lijun.Pan@freescale.com>
-References: <1428010674-25361-1-git-send-email-Lijun.Pan@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id C25341A0272
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Apr 2015 13:23:18 +1100 (AEDT)
+From: Yuantian Tang <Yuantian.Tang@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: RE: [PATCH] powerpc/config: add SCSI configs for
+ corenet64_smp_defconfig
+Date: Fri, 3 Apr 2015 02:08:57 +0000
+Message-ID: <DM2PR03MB574726ACAF40348C87C2A32FAF10@DM2PR03MB574.namprd03.prod.outlook.com>
+References: <1427796008-40028-1-git-send-email-Yuantian.Tang@freescale.com>
+ <1428018982.22867.310.camel@freescale.com>
+In-Reply-To: <1428018982.22867.310.camel@freescale.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Shaohui
+ Xie <Shaohui.Xie@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,74 +27,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2015-04-02 at 16:37 -0500, Lijun Pan wrote:
-> Merge Freescale's Internal mpc85xx_defconfig with upstream's.
-> Run savedefconfig to get the minimal change.
-
-What makes the internal config preferred without any explanation of why
-we want or don't want specific config items?  Especially where things
-are being turned off, rather than on.
-
-Are any of these changes due to running savedefconfig on the upstream
-config (if so, make that a separate patch)?
-
-> @@ -50,8 +50,6 @@ CONFIG_BINFMT_MISC=m
->  CONFIG_MATH_EMULATION=y
->  CONFIG_FORCE_MAX_ZONEORDER=12
->  CONFIG_PCI=y
-> -CONFIG_PCIEPORTBUS=y
-> -# CONFIG_PCIEASPM is not set
-
-PCIEPORTBUS was enabled by commit 2727ed54716e60 ("powerpc/85xx: Add
-support for Emerson/Artesyn MVME2500.").  Presumably that board needs
-it.
-
->  CONFIG_PCI_MSI=y
->  CONFIG_RAPIDIO=y
->  CONFIG_NET=y
-> @@ -88,21 +86,17 @@ CONFIG_FTL=y
->  CONFIG_MTD_CFI=y
->  CONFIG_MTD_CFI_INTELEXT=y
->  CONFIG_MTD_CFI_AMDSTD=y
-> -CONFIG_MTD_PHYSMAP=y
->  CONFIG_MTD_PHYSMAP_OF=y
-> -CONFIG_MTD_PLATRAM=y
-> -CONFIG_MTD_M25P80=y
->  CONFIG_MTD_NAND=y
->  CONFIG_MTD_NAND_FSL_ELBC=y
->  CONFIG_MTD_NAND_FSL_IFC=y
-> -CONFIG_MTD_SPI_NOR=y
-
-Why?
-
-
->  CONFIG_EDAC=y
->  CONFIG_EDAC_MM_EDAC=y
-> -CONFIG_EDAC_MPC85XX=y
-
-Umm...  What other EDAC driver are you expecting to be used with this
-config?
-
->  CONFIG_RTC_CLASS=y
-> -CONFIG_RTC_DRV_DS1307=y
-> -CONFIG_RTC_DRV_DS1374=y
-> -CONFIG_RTC_DRV_DS3232=y
-
-mpc8568/8569 have ds1374.  mpc8536/p1022 have ds3232.  Various tqm
-boards have ds1337 which uses the ds1307 driver.
-
-> @@ -218,9 +206,6 @@ CONFIG_ADFS_FS=m
->  CONFIG_AFFS_FS=m
->  CONFIG_HFS_FS=m
->  CONFIG_HFSPLUS_FS=m
-> -CONFIG_BEFS_FS=m
-> -CONFIG_BFS_FS=m
-> -CONFIG_EFS_FS=m
->  CONFIG_JFFS2_FS=y
->  CONFIG_JFFS2_FS_DEBUG=1
->  CONFIG_UBIFS_FS=y
-
-This is pretty random.  If we want to remove fringe filesystems, fine,
-but why just these three?
-
--Scott
+PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBXb29kIFNjb3R0LUIwNzQyMQ0K
+PiBTZW50OiBGcmlkYXksIEFwcmlsIDAzLCAyMDE1IDc6NTYgQU0NCj4gVG86IFRhbmcgWXVhbnRp
+YW4tQjI5OTgzDQo+IENjOiBXb29kIFNjb3R0LUIwNzQyMTsgbGludXhwcGMtZGV2QGxpc3RzLm96
+bGFicy5vcmc7IFhpZSBTaGFvaHVpLUIyMTk4OQ0KPiBTdWJqZWN0OiBSZTogW1BBVENIXSBwb3dl
+cnBjL2NvbmZpZzogYWRkIFNDU0kgY29uZmlncyBmb3INCj4gY29yZW5ldDY0X3NtcF9kZWZjb25m
+aWcNCj4gDQo+IE9uIFR1ZSwgMjAxNS0wMy0zMSBhdCAxODowMCArMDgwMCwgWXVhbnRpYW4uVGFu
+Z0BmcmVlc2NhbGUuY29tIHdyb3RlOg0KPiA+IEZyb206IFRhbmcgWXVhbnRpYW4gPFl1YW50aWFu
+LlRhbmdAZnJlZXNjYWxlLmNvbT4NCj4gPg0KPiA+IE90aGVyd2lzZSB0aGVyZSB3aWwgYmUgbm8g
+U0NTSSBkZXZpY2Ugbm9kZXMuDQo+ID4NCj4gPiBTaWduZWQtb2ZmLWJ5OiBTaGFvaHVpIFhpZSA8
+U2hhb2h1aS5YaWVAZnJlZXNjYWxlLmNvbT4NCj4gPiBTaWduZWQtb2ZmLWJ5OiBUYW5nIFl1YW50
+aWFuIDxZdWFudGlhbi5UYW5nQGZyZWVzY2FsZS5jb20+DQo+ID4gLS0tDQo+ID4gIGFyY2gvcG93
+ZXJwYy9jb25maWdzL2NvcmVuZXQ2NF9zbXBfZGVmY29uZmlnIHwgNyArKysrKysrDQo+ID4gIDEg
+ZmlsZSBjaGFuZ2VkLCA3IGluc2VydGlvbnMoKykNCj4gPg0KPiA+IGRpZmYgLS1naXQgYS9hcmNo
+L3Bvd2VycGMvY29uZmlncy9jb3JlbmV0NjRfc21wX2RlZmNvbmZpZw0KPiA+IGIvYXJjaC9wb3dl
+cnBjL2NvbmZpZ3MvY29yZW5ldDY0X3NtcF9kZWZjb25maWcNCj4gPiBpbmRleCAwNDczN2FhLi43
+N2E4MTUxIDEwMDY0NA0KPiA+IC0tLSBhL2FyY2gvcG93ZXJwYy9jb25maWdzL2NvcmVuZXQ2NF9z
+bXBfZGVmY29uZmlnDQo+ID4gKysrIGIvYXJjaC9wb3dlcnBjL2NvbmZpZ3MvY29yZW5ldDY0X3Nt
+cF9kZWZjb25maWcNCj4gPiBAQCAtNzUsNiArNzUsMTMgQEAgQ09ORklHX0JMS19ERVZfTE9PUD15
+ICBDT05GSUdfQkxLX0RFVl9SQU09eQ0KPiA+ICBDT05GSUdfQkxLX0RFVl9SQU1fU0laRT0xMzEw
+NzINCj4gPiAgQ09ORklHX0VFUFJPTV9MRUdBQ1k9eQ0KPiA+ICtDT05GSUdfQkxLX0RFVl9TRD15
+DQo+ID4gK0NPTkZJR19DSFJfREVWX1NUPXkNCj4gPiArQ09ORklHX0JMS19ERVZfU1I9eQ0KPiA+
+ICtDT05GSUdfQ0hSX0RFVl9TRz15DQo+IA0KPiBCZW4gYWxyZWFkeSBzZW50IGEgcGF0Y2ggZW5h
+YmxpbmcgdGhlc2UgKGV4Y2VwdCBTVCAtLSBkbyB3ZSByZWFsbHkgbmVlZA0KPiB0aGF0PykgaW4g
+Ym90aCBjb3JlbmV0MzIgYW5kIGNvcmVuZXQ2NC4NCj4gDQo+ID4gK0NPTkZJR19TQ1NJX01VTFRJ
+X0xVTj15DQo+IA0KPiBUaGlzIG9wdGlvbiB3YXMgcmVtb3ZlZCBieSBjMzA5YjM1MTcxZGQNCj4g
+DQo+ID4gK0NPTkZJR19TQ1NJX0xPR0dJTkc9eQ0KPiA+ICtDT05GSUdfU0NTSV9TUElfQVRUUlM9
+eQ0KPiANCj4gSWYgeW91IHdhbnQgdGhlc2UgZW5hYmxlZCwgZG8gaXQgaW4gYSBzZXBhcmF0ZSBw
+YXRjaCB3aXRoIGFuIGV4cGxhbmF0aW9uDQo+IG9mIHdoeSB3ZSBzaG91bGQgZW5hYmxlIHRoZW0g
+YnkgZGVmYXVsdCwgYW5kIGRvIGl0IGZvciBvdGhlciA4NXh4L2NvcmVuZXQNCj4gY29uZmlncyBh
+cyB3ZWxsLg0KPiANCk9LLCBJIHdpbGwgaW52ZXN0aWdhdGUgdGhpcyBhbmQgcmVzZW5kIGlmIG5l
+ZWRlZC4NCg0KVGhhbmtzLA0KWXVhbnRpYW4NCg0KPiAtU2NvdHQNCj4gDQoNCg==
