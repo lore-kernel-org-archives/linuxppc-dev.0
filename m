@@ -1,22 +1,25 @@
-Return-Path: <pebolle@tiscali.nl>
-Received: from lb3-smtp-cloud3.xs4all.net (lb3-smtp-cloud3.xs4all.net
- [194.109.24.30])
- (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <sowmini.varadhan@oracle.com>
+Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B01E21A0A3F
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Apr 2015 08:31:09 +1100 (AEDT)
-Message-ID: <1428096660.7898.27.camel@x220>
-Subject: Re: [PATCH v2] powerpc/83xx: add support for mpc8306
-From: Paul Bolle <pebolle@tiscali.nl>
-To: Filip =?UTF-8?Q?Brozovi=C4=87?= <fbrozovic@gmail.com>
-Date: Fri, 03 Apr 2015 23:31:00 +0200
-In-Reply-To: <551E8B65.5010400@gmail.com>
-References: <1428057856-26421-1-git-send-email-fbrozovic@gmail.com>
- <1428062487.7898.12.camel@x220> <551E8B65.5010400@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: scottwood@freescale.com, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id C426F1A0A9C
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Apr 2015 08:52:06 +1100 (AEDT)
+Date: Fri, 3 Apr 2015 17:51:54 -0400
+From: Sowmini Varadhan <sowmini.varadhan@oracle.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH v8 RFC 1/3] sparc: Break up monolithic iommu table/lock
+ into finer graularity pools and lock
+Message-ID: <20150403215154.GK26158@oracle.com>
+References: <cover.1427761300.git.sowmini.varadhan@oracle.com>
+ <8406d119fb885255387a400551de994cb4a4c331.1427761300.git.sowmini.varadhan@oracle.com>
+ <1428008044.20500.272.camel@kernel.crashing.org>
+ <20150403182852.GI26158@oracle.com>
+ <1428095210.20500.291.camel@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1428095210.20500.291.camel@kernel.crashing.org>
+Cc: aik@au1.ibm.com, anton@au1.ibm.com, paulus@samba.org,
+ sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,22 +29,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2015-04-03 at 14:45 +0200, Filip Brozović wrote:
-> The idea was that boards in the Kconfig file would select these symbols 
-> in order to enable support for the 8306. I mainly wanted to get this 
-> patch into mainline in order to make kernel maintenance for a couple of 
-> custom in-house developed boards easier.
+On (04/04/15 08:06), Benjamin Herrenschmidt wrote:
+> 
+> No, I meant "n < pool->hint", ie, the start of the newly allocated
+> block.
 
-The trouble with this patch is that, without some follow up patch, it
-adds Kconfig symbols and preprocessor checks that are pointless for
-mainline. I think we should not do that. (I'm also not sure how having
-those bits in mainline substantially benefits out of tree development.)
+ah, got it. I'll do my drill with patchset and get back, probably by
+Monday.
 
-But if you would put this in a series that also adds the code using
-these bits, than I'd have no reason to object (and neither would, I
-guess, the bots checking the tree for issues like that).
-
-Thanks,
-
-
-Paul Bolle
+--Sowmini
