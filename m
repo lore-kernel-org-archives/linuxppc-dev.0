@@ -1,27 +1,30 @@
 Return-Path: <bhelgaas@google.com>
-Received: from mail-ig0-x22b.google.com (mail-ig0-x22b.google.com
- [IPv6:2607:f8b0:4001:c05::22b])
+Received: from mail-ie0-x233.google.com (mail-ie0-x233.google.com
+ [IPv6:2607:f8b0:4001:c03::233])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4A4921A0A05
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Apr 2015 07:46:16 +1100 (AEDT)
-Received: by igblo3 with SMTP id lo3so15382591igb.0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Apr 2015 13:46:13 -0700 (PDT)
-Date: Fri, 3 Apr 2015 15:46:08 -0500
+ by lists.ozlabs.org (Postfix) with ESMTPS id A55B01A0A05
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Apr 2015 07:52:09 +1100 (AEDT)
+Received: by ierf6 with SMTP id f6so97880383ier.2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Apr 2015 13:52:06 -0700 (PDT)
+Date: Fri, 3 Apr 2015 15:52:01 -0500
 From: Bjorn Helgaas <bhelgaas@google.com>
 To: Yinghai Lu <yinghai@kernel.org>
-Subject: Re: [PATCH 2/3] sparc/PCI: Add mem64 resource parsing for root bus
-Message-ID: <20150403204608.GE10892@google.com>
+Subject: Re: [PATCH 1/3] PCI: Introduce pci_bus_addr_t
+Message-ID: <20150403205201.GF10892@google.com>
 References: <1427857069-6789-1-git-send-email-yinghai@kernel.org>
- <1427857069-6789-3-git-send-email-yinghai@kernel.org>
+ <1427857069-6789-2-git-send-email-yinghai@kernel.org>
+ <20150403193234.GD10892@google.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1427857069-6789-3-git-send-email-yinghai@kernel.org>
-Cc: David Ahern <david.ahern@oracle.com>, devicetree@vger.kernel.org,
- linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
- stable@vger.kernel.org, Grant Likely <grant.likely@linaro.org>,
- Rob Herring <robh+dt@kernel.org>, sparclinux@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, David Miller <davem@davemloft.net>
+In-Reply-To: <20150403193234.GD10892@google.com>
+Cc: David Ahern <david.ahern@oracle.com>, x86@kernel.org,
+ Russell King <linux@arm.linux.org.uk>, linux-mips@linux-mips.org,
+ linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, stable@vger.kernel.org,
+ Ralf Baechle <ralf@linux-mips.org>, sparclinux@vger.kernel.org,
+ Sam Ravnborg <sam@ravnborg.org>, David Miller <davem@davemloft.net>,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,141 +34,205 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-[+cc Ben, linuxppc-dev, Grant, Rob, devicetree]
+[+cc Sam (commented on previous versions), Russell, linux-arm-kernel, Ralf,
+linux-mips, Ben, linuxppc-dev, x86]
 
-On Tue, Mar 31, 2015 at 07:57:48PM -0700, Yinghai Lu wrote:
-> Found "no compatible bridge window" warning in boot log from T5-8.
+On Fri, Apr 03, 2015 at 02:32:34PM -0500, Bjorn Helgaas wrote:
+> On Tue, Mar 31, 2015 at 07:57:47PM -0700, Yinghai Lu wrote:
+> > David Ahern found commit d63e2e1f3df9 ("sparc/PCI: Clip bridge windows
+> > to fit in upstream windows") broke booting on sparc/T5-8.
+> > 
+> > In the boot log, there is
+> >   pci 0000:06:00.0: reg 0x184: can't handle BAR above 4GB (bus address
+> >   0x110204000)
+> > but that only could happen when dma_addr_t is 32-bit.
+> > 
+> > According to David Miller, all DMA occurs behind an IOMMU and these
+> > IOMMUs only support 32-bit addressing, therefore dma_addr_t is
+> > 32-bit on sparc64.
+> > 
+> > Let's introduce pci_bus_addr_t instead of using dma_addr_t,
+> > and pci_bus_addr_t will be 64-bit on 64-bit platform or X86_PAE.
+> > 
+> > Fixes: commit d63e2e1f3df9 ("sparc/PCI: Clip bridge windows to fit in upstream windows")
+> > Fixes: commit 23b13bc76f35 ("PCI: Fail safely if we can't handle BARs larger than 4GB")
+> > Link: http://lkml.kernel.org/r/CAE9FiQU1gJY1LYrxs+ma5LCTEEe4xmtjRG0aXJ9K_Tsu+m9Wuw@mail.gmail.com
+> > Reported-by: David Ahern <david.ahern@oracle.com>
+> > Tested-by: David Ahern <david.ahern@oracle.com>
+> > Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+> > Cc: <stable@vger.kernel.org> #3.19
+> > ---
+> >  drivers/pci/Kconfig |  4 ++++
+> >  drivers/pci/bus.c   | 10 +++++-----
+> >  drivers/pci/probe.c | 12 ++++++------
+> >  include/linux/pci.h | 12 +++++++++---
+> >  4 files changed, 24 insertions(+), 14 deletions(-)
+> > 
+> > diff --git a/drivers/pci/Kconfig b/drivers/pci/Kconfig
+> > index 7a8f1c5..6a5a269 100644
+> > --- a/drivers/pci/Kconfig
+> > +++ b/drivers/pci/Kconfig
+> > @@ -1,6 +1,10 @@
+> >  #
+> >  # PCI configuration
+> >  #
+> > +config PCI_BUS_ADDR_T_64BIT
+> > +	def_bool y if (64BIT || X86_PAE)
+> > +	depends on PCI
 > 
-> pci 0000:00:01.0: can't claim BAR 15 [mem 0x100000000-0x4afffffff pref]: no compatible bridge window
+> We're going to use pci_bus_addr_t in some places where we previously used
+> dma_addr_t, which means pci_bus_addr_t should be at least as large as
+> dma_addr_t.  Can you enforce that directly, e.g., with something like this?
 > 
-> That resource is above 4G, but does not get offset correctly as
-> root bus only report io and mem32.
+>     def_bool y if (ARCH_DMA_ADDR_T_64BIT || 64BIT || X86_PAE)
 > 
-> pci_sun4v f02dbcfc: PCI host bridge to bus 0000:00
-> pci_bus 0000:00: root bus resource [io  0x804000000000-0x80400fffffff] (bus address [0x0000-0xfffffff])
-> pci_bus 0000:00: root bus resource [mem 0x800000000000-0x80007effffff] (bus address [0x00000000-0x7effffff])
-> pci_bus 0000:00: root bus resource [bus 00-77]
+> Unless we do something like that, I think this may break these arches by
+> changing the addresses in struct pci_bus_region from 64 bits to 32:
 > 
-> Add mem64 handling in pci_common for sparc, so we can have 64bit resource
-> registered for root bus at first.
+>     arch/arm/Kconfig:
+> 	XEN selects ARCH_DMA_ADDR_T_64BIT but not 64BIT, so it would not
+> 	set PCI_BUS_ADDR_T_64BIT
 > 
-> After patch, will have:
-> pci_sun4v f02dbcfc: PCI host bridge to bus 0000:00
-> pci_bus 0000:00: root bus resource [io  0x804000000000-0x80400fffffff] (bus address [0x0000-0xfffffff])
-> pci_bus 0000:00: root bus resource [mem 0x800000000000-0x80007effffff] (bus address [0x00000000-0x7effffff])
-> pci_bus 0000:00: root bus resource [mem 0x800100000000-0x8007ffffffff] (bus address [0x100000000-0x7ffffffff])
-> pci_bus 0000:00: root bus resource [bus 00-77]
+>     arch/arm/mach-axxia/Kconfig:
+> 	ARCH_AXXIA selects ARCH_DMA_ADDR_T_64BIT but not 64BIT, so it
+> 	would not set PCI_BUS_ADDR_T_64BIT
 > 
-> Fixes: commit d63e2e1f3df9 ("sparc/PCI: Clip bridge windows to fit in upstream windows")
-> Link: http://lkml.kernel.org/r/CAE9FiQU1gJY1LYrxs+ma5LCTEEe4xmtjRG0aXJ9K_Tsu+m9Wuw@mail.gmail.com
-> Reported-by: David Ahern <david.ahern@oracle.com>
-> Tested-by: David Ahern <david.ahern@oracle.com>
-> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
-> Cc: <stable@vger.kernel.org> #3.19
-> ---
->  arch/sparc/kernel/pci.c        |  7 ++++++-
->  arch/sparc/kernel/pci_common.c | 15 +++++++++++++--
->  arch/sparc/kernel/pci_impl.h   |  1 +
->  3 files changed, 20 insertions(+), 3 deletions(-)
+>     arch/arm/mach-exynos/Kconfig:
+> 	SOC_EXYNOS5440 selects ARCH_DMA_ADDR_T_64BIT if ARM_LPAE, but not
+> 	64BIT, so it would not set PCI_BUS_ADDR_T_64BIT
 > 
-> diff --git a/arch/sparc/kernel/pci.c b/arch/sparc/kernel/pci.c
-> index 9ce5afe..04ce3ac 100644
-> --- a/arch/sparc/kernel/pci.c
-> +++ b/arch/sparc/kernel/pci.c
-> @@ -185,8 +185,10 @@ static unsigned long pci_parse_of_flags(u32 addr0)
->  
->  	if (addr0 & 0x02000000) {
->  		flags = IORESOURCE_MEM | PCI_BASE_ADDRESS_SPACE_MEMORY;
-> -		flags |= (addr0 >> 22) & PCI_BASE_ADDRESS_MEM_TYPE_64;
->  		flags |= (addr0 >> 28) & PCI_BASE_ADDRESS_MEM_TYPE_1M;
-> +		if (addr0 & 0x01000000)
-> +			flags |= IORESOURCE_MEM_64
-> +				 | PCI_BASE_ADDRESS_MEM_TYPE_64;
->  		if (addr0 & 0x40000000)
->  			flags |= IORESOURCE_PREFETCH
->  				 | PCI_BASE_ADDRESS_MEM_PREFETCH;
-
-This function is very similar to these:
-
-  drivers/of/address.c			of_bus_pci_get_flags()
-  arch/powerpc/kernel/pci_of_scan.c	pci_parse_of_flags()
-  arch/sparc/kernel/of_device_32.c	of_bus_pci_get_flags()
-  arch/sparc/kernel/of_device_64.c	of_bus_pci_get_flags()
-
-Should they get a similar change?  They're all so similar that it would be
-nice to consolidate them, but I think that would be out of scope for this
-patch.
-
-> @@ -663,6 +665,9 @@ struct pci_bus *pci_scan_one_pbm(struct pci_pbm_info *pbm,
->  				pbm->io_space.start);
->  	pci_add_resource_offset(&resources, &pbm->mem_space,
->  				pbm->mem_space.start);
-> +	if (pbm->mem64_space.flags)
-> +		pci_add_resource_offset(&resources, &pbm->mem64_space,
-> +					pbm->mem_space.start);
->  	pbm->busn.start = pbm->pci_first_busno;
->  	pbm->busn.end	= pbm->pci_last_busno;
->  	pbm->busn.flags	= IORESOURCE_BUS;
-> diff --git a/arch/sparc/kernel/pci_common.c b/arch/sparc/kernel/pci_common.c
-> index 944a065..a859a86 100644
-> --- a/arch/sparc/kernel/pci_common.c
-> +++ b/arch/sparc/kernel/pci_common.c
-> @@ -406,6 +406,7 @@ void pci_determine_mem_io_space(struct pci_pbm_info *pbm)
->  	}
->  
->  	num_pbm_ranges = i / sizeof(*pbm_ranges);
-> +	memset(&pbm->mem64_space, 0, sizeof(struct resource));
->  
->  	for (i = 0; i < num_pbm_ranges; i++) {
->  		const struct linux_prom_pci_ranges *pr = &pbm_ranges[i];
-> @@ -451,7 +452,11 @@ void pci_determine_mem_io_space(struct pci_pbm_info *pbm)
->  			break;
->  
->  		case 3:
-> -			/* XXX 64-bit MEM handling XXX */
-> +			/* 64-bit MEM handling */
-> +			pbm->mem64_space.start = a;
-> +			pbm->mem64_space.end = a + size - 1UL;
-> +			pbm->mem64_space.flags = IORESOURCE_MEM;
-> +			break;
->  
->  		default:
->  			break;
-> @@ -465,15 +470,21 @@ void pci_determine_mem_io_space(struct pci_pbm_info *pbm)
->  		prom_halt();
->  	}
->  
-> -	printk("%s: PCI IO[%llx] MEM[%llx]\n",
-> +	printk("%s: PCI IO[%llx] MEM[%llx]",
->  	       pbm->name,
->  	       pbm->io_space.start,
->  	       pbm->mem_space.start);
-> +	if (pbm->mem64_space.flags)
-> +		printk(" MEM64[%llx]",
-> +		       pbm->mem64_space.start);
-> +	printk("\n");
->  
->  	pbm->io_space.name = pbm->mem_space.name = pbm->name;
->  
->  	request_resource(&ioport_resource, &pbm->io_space);
->  	request_resource(&iomem_resource, &pbm->mem_space);
-> +	if (pbm->mem64_space.flags)
-> +		request_resource(&iomem_resource, &pbm->mem64_space);
->  
->  	pci_register_legacy_regions(&pbm->io_space,
->  				    &pbm->mem_space);
-> diff --git a/arch/sparc/kernel/pci_impl.h b/arch/sparc/kernel/pci_impl.h
-> index 75803c7..37222ca 100644
-> --- a/arch/sparc/kernel/pci_impl.h
-> +++ b/arch/sparc/kernel/pci_impl.h
-> @@ -97,6 +97,7 @@ struct pci_pbm_info {
->  	/* PBM I/O and Memory space resources. */
->  	struct resource			io_space;
->  	struct resource			mem_space;
-> +	struct resource			mem64_space;
->  	struct resource			busn;
->  
->  	/* Base of PCI Config space, can be per-PBM or shared. */
-> -- 
-> 1.8.4.5
+>     arch/arm/mach-highbank/Kconfig:
+> 	ARCH_HIGHBANK selects ARCH_DMA_ADDR_T_64BIT if ARM_LPAE, but not
+> 	64BIT, so it would not set PCI_BUS_ADDR_T_64BIT
 > 
+>     arch/arm/mach-shmobile/Kconfig:
+> 	ARCH_SHMOBILE_MULTI selects ARCH_DMA_ADDR_T_64BIT if ARM_LPAE, but
+> 	not 64BIT, so it would not set PCI_BUS_ADDR_T_64BIT
+> 
+>     arch/mips/Kconfig:
+> 	sets ARCH_DMA_ADDR_T_64BIT if (HIGHMEM && ARCH_PHYS_ADDR_T_64BIT)
+> 	|| 64BIT, so if we have (HIGHMEM && ARCH_PHYS_ADDR_T_64BIT) but not
+> 	64BIT, it would not set PCI_BUS_ADDR_T_64BIT
+> 	
+>     arch/powerpc/Kconfig:
+> 	sets ARCH_DMA_ADDR_T_64BIT if ARCH_PHYS_ADDR_T_64BIT, which isn't
+> 	trivially identical to (64BIT || X86_PAE), so we may not set
+> 	PCI_BUS_ADDR_T_64BIT in all cases where we set
+> 	ARCH_DMA_ADDR_T_64BIT
+> 
+>     arch/x86/Kconfig:
+> 	sets ARCH_DMA_ADDR_T_64BIT if X86_64 || HIGHMEM64G, which isn't
+> 	trivially identical to (64BIT || X86_PAE), so we may not set
+> 	PCI_BUS_ADDR_T_64BIT in all cases where we set
+> 	ARCH_DMA_ADDR_T_64BIT
+> 
+> >  config PCI_MSI
+> >  	bool "Message Signaled Interrupts (MSI and MSI-X)"
+> >  	depends on PCI
+> > diff --git a/drivers/pci/bus.c b/drivers/pci/bus.c
+> > index 90fa3a7..6fbd3f2 100644
+> > --- a/drivers/pci/bus.c
+> > +++ b/drivers/pci/bus.c
+> > @@ -92,11 +92,11 @@ void pci_bus_remove_resources(struct pci_bus *bus)
+> >  }
+> >  
+> >  static struct pci_bus_region pci_32_bit = {0, 0xffffffffULL};
+> > -#ifdef CONFIG_ARCH_DMA_ADDR_T_64BIT
+> > +#ifdef CONFIG_PCI_BUS_ADDR_T_64BIT
+> >  static struct pci_bus_region pci_64_bit = {0,
+> > -				(dma_addr_t) 0xffffffffffffffffULL};
+> > -static struct pci_bus_region pci_high = {(dma_addr_t) 0x100000000ULL,
+> > -				(dma_addr_t) 0xffffffffffffffffULL};
+> > +				(pci_bus_addr_t) 0xffffffffffffffffULL};
+> > +static struct pci_bus_region pci_high = {(pci_bus_addr_t) 0x100000000ULL,
+> > +				(pci_bus_addr_t) 0xffffffffffffffffULL};
+> >  #endif
+> >  
+> >  /*
+> > @@ -200,7 +200,7 @@ int pci_bus_alloc_resource(struct pci_bus *bus, struct resource *res,
+> >  					  resource_size_t),
+> >  		void *alignf_data)
+> >  {
+> > -#ifdef CONFIG_ARCH_DMA_ADDR_T_64BIT
+> > +#ifdef CONFIG_PCI_BUS_ADDR_T_64BIT
+> >  	int rc;
+> >  
+> >  	if (res->flags & IORESOURCE_MEM_64) {
+> > diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
+> > index 8d2f400..f71cb7c 100644
+> > --- a/drivers/pci/probe.c
+> > +++ b/drivers/pci/probe.c
+> > @@ -253,8 +253,8 @@ int __pci_read_base(struct pci_dev *dev, enum pci_bar_type type,
+> >  	}
+> >  
+> >  	if (res->flags & IORESOURCE_MEM_64) {
+> > -		if ((sizeof(dma_addr_t) < 8 || sizeof(resource_size_t) < 8) &&
+> > -		    sz64 > 0x100000000ULL) {
+> > +		if ((sizeof(pci_bus_addr_t) < 8 || sizeof(resource_size_t) < 8)
+> > +		    && sz64 > 0x100000000ULL) {
+> >  			res->flags |= IORESOURCE_UNSET | IORESOURCE_DISABLED;
+> >  			res->start = 0;
+> >  			res->end = 0;
+> > @@ -263,7 +263,7 @@ int __pci_read_base(struct pci_dev *dev, enum pci_bar_type type,
+> >  			goto out;
+> >  		}
+> >  
+> > -		if ((sizeof(dma_addr_t) < 8) && l) {
+> > +		if ((sizeof(pci_bus_addr_t) < 8) && l) {
+> >  			/* Above 32-bit boundary; try to reallocate */
+> >  			res->flags |= IORESOURCE_UNSET;
+> >  			res->start = 0;
+> > @@ -398,7 +398,7 @@ static void pci_read_bridge_mmio_pref(struct pci_bus *child)
+> >  	struct pci_dev *dev = child->self;
+> >  	u16 mem_base_lo, mem_limit_lo;
+> >  	u64 base64, limit64;
+> > -	dma_addr_t base, limit;
+> > +	pci_bus_addr_t base, limit;
+> >  	struct pci_bus_region region;
+> >  	struct resource *res;
+> >  
+> > @@ -425,8 +425,8 @@ static void pci_read_bridge_mmio_pref(struct pci_bus *child)
+> >  		}
+> >  	}
+> >  
+> > -	base = (dma_addr_t) base64;
+> > -	limit = (dma_addr_t) limit64;
+> > +	base = (pci_bus_addr_t) base64;
+> > +	limit = (pci_bus_addr_t) limit64;
+> >  
+> >  	if (base != base64) {
+> >  		dev_err(&dev->dev, "can't handle bridge window above 4GB (bus address %#010llx)\n",
+> > diff --git a/include/linux/pci.h b/include/linux/pci.h
+> > index 211e9da..6021bbe 100644
+> > --- a/include/linux/pci.h
+> > +++ b/include/linux/pci.h
+> > @@ -573,9 +573,15 @@ int raw_pci_read(unsigned int domain, unsigned int bus, unsigned int devfn,
+> >  int raw_pci_write(unsigned int domain, unsigned int bus, unsigned int devfn,
+> >  		  int reg, int len, u32 val);
+> >  
+> > +#ifdef CONFIG_PCI_BUS_ADDR_T_64BIT
+> > +typedef u64 pci_bus_addr_t;
+> > +#else
+> > +typedef u32 pci_bus_addr_t;
+> > +#endif
+> > +
+> >  struct pci_bus_region {
+> > -	dma_addr_t start;
+> > -	dma_addr_t end;
+> > +	pci_bus_addr_t start;
+> > +	pci_bus_addr_t end;
+> >  };
+> >  
+> >  struct pci_dynids {
+> > @@ -1124,7 +1130,7 @@ int __must_check pci_bus_alloc_resource(struct pci_bus *bus,
+> >  
+> >  int pci_remap_iospace(const struct resource *res, phys_addr_t phys_addr);
+> >  
+> > -static inline dma_addr_t pci_bus_address(struct pci_dev *pdev, int bar)
+> > +static inline pci_bus_addr_t pci_bus_address(struct pci_dev *pdev, int bar)
+> >  {
+> >  	struct pci_bus_region region;
+> >  
+> > -- 
+> > 1.8.4.5
+> > 
