@@ -1,15 +1,15 @@
 Return-Path: <Shengzhou.Liu@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0146.outbound.protection.outlook.com [207.46.100.146])
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0131.outbound.protection.outlook.com [65.55.169.131])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5489A1A09EC
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Apr 2015 21:39:26 +1100 (AEDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id E45AA1A0A07
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Apr 2015 21:39:29 +1100 (AEDT)
 From: Shengzhou Liu <Shengzhou.Liu@freescale.com>
 To: <linuxppc-dev@lists.ozlabs.org>, <scottwood@freescale.com>
-Subject: [PATCH 2/4] powerpc/fsl-booke: Add T1024 QDS board support
-Date: Fri, 3 Apr 2015 18:35:48 +0800
-Message-ID: <1428057350-33553-2-git-send-email-Shengzhou.Liu@freescale.com>
+Subject: [PATCH 3/4] powerpc/fsl-booke: Add T1024 RDB board support
+Date: Fri, 3 Apr 2015 18:35:49 +0800
+Message-ID: <1428057350-33553-3-git-send-email-Shengzhou.Liu@freescale.com>
 In-Reply-To: <1428057350-33553-1-git-send-email-Shengzhou.Liu@freescale.com>
 References: <1428057350-33553-1-git-send-email-Shengzhou.Liu@freescale.com>
 MIME-Version: 1.0
@@ -24,60 +24,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add support for Freescale T1024/T1023 QorIQ Development System Board.
+T1024RDB is a Freescale Reference Design Board that hosts the T1024 SoC.
 
-T1024QDS is a high-performance computing evaluation, development and
-test platform for T1024 QorIQ Power Architecture processor.
-
-T1024QDS board Overview
+T1024RDB board Overview
 -----------------------
-- T1024 SoC integrating two 64-bit e5500 cores up to 1.4GHz
-- CoreNet fabric supporting coherent and noncoherent transactions with
-  prioritization and bandwidth allocation
-- 32-/64-bit DDR3L/DDR4 SDRAM memory controller with ECC and interleaving support
+- Processor: T1024 SoC integrating two 64-bit e5500 cores up to 1.4GHz
+- DDR: 64-bit 4GB DDR3L UDIMM with ECC and interleaving support
+- Ethernet: two 10M/100M/1Gbps RGMII ports and one 10Gbps Base-T port on-board
 - Accelerator: DPAA components consist of FMan, BMan, QMan, PME, DCE and SEC
-- Ethernet interfaces:
-  - Two 10M/100M/1G RGMII ports on-board
-  - Three 1G/2.5Gbps SGMII ports
-  - Four 1Gbps QSGMII ports
-  - one 10Gbps XFI or 10G Base-KR interface
-- SerDes: 4 lanes up to 10.3125GHz Supporting SGMII/QSGMII, XFI, PCIe, SATA and Aurora
-- PCIe: Three PCI Express controllers with five PCIe slots.
-- IFC: 128MB NOR Flash, 2GB NAND Flash, PromJet debug port and Qixis FPGA
-- Video: DIU supports video up to 1280x1024x32 bpp.
-  - Chrontel CH7201 for HDMI connection.
-  - TI DS90C387R for direct LCD connection.
-  - Raw (not encoded) video connector for testing or other encoders.
-- QUICC Engine block
-  - 32-bit RISC controller for flexible support of the communications peripherals
-  - Serial DMA channel for receive and transmit on all serial channels
-  - Two universal communication controllers, supporting TDM, HDLC, and UART
-- Deep sleep power management implementaion (wakeup from GPIO/Timer/Ethernet/USB)
-- eSPI: Three SPI flash devices.
-- SATA: one SATA 2.O.
-- USB: Two USB2.0 ports with internal PHY (one Type-A and one micro Type mini-AB)
-- eSDHC: Support SD, SDHC, SDXC and MMC/eMMC.
-- I2C: Four I2C controllers.
-- UART: Two UART on board.
+- SerDes: 4 lanes up to 10.3125GHz
+- IFC: 128MB NOR Flash, 1GB NAND Flash and CPLD system controlling
+- PCIe: one PCIe slot and two Mini-PCIe connectors on-board
+- USB: two Type-A USB2.0 ports with internal PHY
+- eSDHC: one SDHC/MMC/eMMC connector
+- eSPI: one 64MB N25Q512 SPI flash
+- QE-TDM: support TDM Riser card
+   - 32-bit RISC controller for flexible support of the communications peripherals
+   - Serial DMA channel for receive and transmit on all serial channels
+   - Two universal communication controllers, supporting TDM, HDLC, and UART
+- I2C: four I2C controllers
+- UART: two UART on board
+- Deep sleep power management support
 
 Signed-off-by: Shengzhou Liu <Shengzhou.Liu@freescale.com>
 ---
- arch/powerpc/boot/dts/t1024qds.dts            |  89 ++++++++++
- arch/powerpc/boot/dts/t102xqds.dtsi           | 247 ++++++++++++++++++++++++++
+ arch/powerpc/boot/dts/t1024rdb.dts            | 235 ++++++++++++++++++++++++++
  arch/powerpc/platforms/85xx/Kconfig           |   2 +-
  arch/powerpc/platforms/85xx/corenet_generic.c |   1 +
- 4 files changed, 338 insertions(+), 1 deletion(-)
- create mode 100644 arch/powerpc/boot/dts/t1024qds.dts
- create mode 100644 arch/powerpc/boot/dts/t102xqds.dtsi
+ 3 files changed, 237 insertions(+), 1 deletion(-)
+ create mode 100644 arch/powerpc/boot/dts/t1024rdb.dts
 
-diff --git a/arch/powerpc/boot/dts/t1024qds.dts b/arch/powerpc/boot/dts/t1024qds.dts
+diff --git a/arch/powerpc/boot/dts/t1024rdb.dts b/arch/powerpc/boot/dts/t1024rdb.dts
 new file mode 100644
-index 0000000..35e0d34
+index 0000000..4c85599
 --- /dev/null
-+++ b/arch/powerpc/boot/dts/t1024qds.dts
-@@ -0,0 +1,89 @@
++++ b/arch/powerpc/boot/dts/t1024rdb.dts
+@@ -0,0 +1,235 @@
 +/*
-+ * T1024 QDS Device Tree Source
++ * T1024 RDB Device Tree Source
 + *
 + * Copyright 2014 Freescale Semiconductor Inc.
 + *
@@ -111,16 +95,110 @@ index 0000000..35e0d34
 + */
 +
 +/include/ "fsl/t102xsi-pre.dtsi"
-+/include/ "t102xqds.dtsi"
 +
 +/ {
-+	model = "fsl,T1024QDS";
-+	compatible = "fsl,T1024QDS";
++	model = "fsl,T1024RDB";
++	compatible = "fsl,T1024RDB";
 +	#address-cells = <2>;
 +	#size-cells = <2>;
 +	interrupt-parent = <&mpic>;
 +
-+	qe: qe@ffe140000 {
++	ifc: localbus@ffe124000 {
++		reg = <0xf 0xfe124000 0 0x2000>;
++		ranges = <0 0 0xf 0xe8000000 0x08000000
++			  2 0 0xf 0xff800000 0x00010000
++			  3 0 0xf 0xffdf0000 0x00008000>;
++
++		nor@0,0 {
++			#address-cells = <1>;
++			#size-cells = <1>;
++			compatible = "cfi-flash";
++			reg = <0x0 0x0 0x8000000>;
++			bank-width = <2>;
++			device-width = <1>;
++		};
++
++		nand@1,0 {
++			#address-cells = <1>;
++			#size-cells = <1>;
++			compatible = "fsl,ifc-nand";
++			reg = <0x2 0x0 0x10000>;
++		};
++
++		board-control@2,0 {
++			#address-cells = <1>;
++			#size-cells = <1>;
++			compatible = "fsl,t1024-cpld", "fsl,deepsleep-cpld";
++			reg = <3 0 0x300>;
++			ranges = <0 3 0 0x300>;
++			bank-width = <1>;
++			device-width = <1>;
++		};
++	};
++
++	memory {
++		device_type = "memory";
++	};
++
++	dcsr: dcsr@f00000000 {
++		ranges = <0x00000000 0xf 0x00000000 0x01072000>;
++	};
++
++	soc: soc@ffe000000 {
++		ranges = <0x00000000 0xf 0xfe000000 0x1000000>;
++		reg = <0xf 0xfe000000 0 0x00001000>;
++		spi@110000 {
++			flash@0 {
++				#address-cells = <1>;
++				#size-cells = <1>;
++				compatible = "micron,n25q512ax3";
++				reg = <0>;
++				spi-max-frequency = <10000000>; /* input clk */
++			};
++
++			slic@1 {
++				compatible = "maxim,ds26522";
++				reg = <1>;
++				spi-max-frequency = <2000000>;
++			};
++
++			slic@2 {
++				compatible = "maxim,ds26522";
++				reg = <2>;
++				spi-max-frequency = <2000000>;
++			};
++		};
++
++		i2c@118000 {
++			adt7461@4c {
++				/* Thermal Monitor */
++				compatible = "adi,adt7461";
++				reg = <0x4c>;
++			};
++
++			eeprom@50 {
++				compatible = "at24,24c256";
++				reg = <0x50>;
++			};
++
++			rtc@68 {
++				compatible = "dallas,ds1339";
++				reg = <0x68>;
++				interrupts = <0x1 0x1 0 0>;
++			};
++		};
++
++		i2c@118100 {
++			pca9546@77 {
++				compatible = "nxp,pca9546";
++				reg = <0x77>;
++				#address-cells = <1>;
++				#size-cells = <0>;
++			};
++		};
++	};
++
++	qe: qe@ffe139999 {
 +		ranges = <0x0 0xf 0xfe140000 0x40000>;
 +		reg = <0xf 0xfe140000 0 0x480>;
 +		brg-frequency = <0>;
@@ -154,222 +232,19 @@ index 0000000..35e0d34
 +			fsl,siram-entry-id = <0>;
 +		};
 +
-+		serial: ucc@2200 {
-+			device_type = "serial";
-+			compatible = "ucc_uart";
-+			port-number = <1>;
++		ucc@2200 {
++			compatible = "fsl,ucc_hdlc";
 +			rx-clock-name = "brg2";
 +			tx-clock-name = "brg2";
-+		};
-+	};
-+};
-+
-+/include/ "fsl/t1024si-post.dtsi"
-diff --git a/arch/powerpc/boot/dts/t102xqds.dtsi b/arch/powerpc/boot/dts/t102xqds.dtsi
-new file mode 100644
-index 0000000..58e401c
---- /dev/null
-+++ b/arch/powerpc/boot/dts/t102xqds.dtsi
-@@ -0,0 +1,247 @@
-+/*
-+ * T102x QDS Device Tree Source
-+ *
-+ * Copyright 2014 Freescale Semiconductor Inc.
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions are met:
-+ *     * Redistributions of source code must retain the above copyright
-+ *	 notice, this list of conditions and the following disclaimer.
-+ *     * Redistributions in binary form must reproduce the above copyright
-+ *	 notice, this list of conditions and the following disclaimer in the
-+ *	 documentation and/or other materials provided with the distribution.
-+ *     * Neither the name of Freescale Semiconductor nor the
-+ *	 names of its contributors may be used to endorse or promote products
-+ *	 derived from this software without specific prior written permission.
-+ *
-+ *
-+ * ALTERNATIVELY, this software may be distributed under the terms of the
-+ * GNU General Public License ("GPL") as published by the Free Software
-+ * Foundation, either version 2 of that License or (at your option) any
-+ * later version.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor "AS IS" AND ANY
-+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ */
-+
-+/ {
-+	model = "fsl,T1024QDS";
-+	compatible = "fsl,T1024QDS";
-+	#address-cells = <2>;
-+	#size-cells = <2>;
-+	interrupt-parent = <&mpic>;
-+
-+	ifc: localbus@ffe124000 {
-+		reg = <0xf 0xfe124000 0 0x2000>;
-+		ranges = <0 0 0xf 0xe8000000 0x08000000
-+			  2 0 0xf 0xff800000 0x00010000
-+			  3 0 0xf 0xffdf0000 0x00008000>;
-+
-+		nor@0,0 {
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			compatible = "cfi-flash";
-+			reg = <0x0 0x0 0x8000000>;
-+			bank-width = <2>;
-+			device-width = <1>;
-+		};
-+
-+		nand@2,0 {
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			compatible = "fsl,ifc-nand";
-+			reg = <0x2 0x0 0x10000>;
-+		};
-+
-+		board-control@3,0 {
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			compatible = "fsl,tetra-fpga", "fsl,fpga-qixis";
-+			reg = <3 0 0x300>;
-+			ranges = <0 3 0 0x300>;
-+		};
-+	};
-+
-+	memory {
-+		device_type = "memory";
-+	};
-+
-+	dcsr: dcsr@f00000000 {
-+		ranges = <0x00000000 0xf 0x00000000 0x01072000>;
-+	};
-+
-+	soc: soc@ffe000000 {
-+		ranges = <0x00000000 0xf 0xfe000000 0x1000000>;
-+		reg = <0xf 0xfe000000 0 0x00001000>;
-+		spi@110000 {
-+			flash@0 {
-+				#address-cells = <1>;
-+				#size-cells = <1>;
-+				compatible = "micron,n25q128a11";  /* 16MB */
-+				reg = <0>;
-+				spi-max-frequency = <10000000>;
-+			};
-+
-+			flash@1 {
-+				#address-cells = <1>;
-+				#size-cells = <1>;
-+				compatible = "sst,sst25wf040";  /* 512KB */
-+				reg = <1>;
-+				spi-max-frequency = <10000000>;
-+			};
-+
-+			flash@2 {
-+				#address-cells = <1>;
-+				#size-cells = <1>;
-+				compatible = "eon,en25s64";   /* 8MB */
-+				reg = <2>;
-+				spi-max-frequency = <10000000>;
-+			};
-+
-+			slic@2 {
-+				compatible = "maxim,ds26522";
-+				reg = <2>;
-+				spi-max-frequency = <2000000>;
-+			};
-+
-+			slic@3 {
-+				compatible = "maxim,ds26522";
-+				reg = <3>;
-+				spi-max-frequency = <2000000>;
-+			};
-+		};
-+
-+		i2c@118000 {
-+			pca9547@77 {
-+				compatible = "nxp,pca9547";
-+				reg = <0x77>;
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+
-+				i2c@0 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <0x0>;
-+
-+					eeprom@50 {
-+						compatible = "at24,24c512";
-+						reg = <0x50>;
-+					};
-+
-+					eeprom@51 {
-+						compatible = "at24,24c02";
-+						reg = <0x51>;
-+					};
-+
-+					eeprom@57 {
-+						compatible = "at24,24c02";
-+						reg = <0x57>;
-+					};
-+				};
-+
-+				i2c@2 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <0x2>;
-+
-+					ina220@40 {
-+						compatible = "ti,ina220";
-+						reg = <0x40>;
-+						shunt-resistor = <1000>;
-+					};
-+
-+					ina220@41 {
-+						compatible = "ti,ina220";
-+						reg = <0x41>;
-+						shunt-resistor = <1000>;
-+					};
-+				};
-+
-+				i2c@3 {
-+					#address-cells = <1>;
-+					#size-cells = <0>;
-+					reg = <0x3>;
-+
-+					adt7461@4c {
-+						/* Thermal Monitor */
-+						compatible = "adi,adt7461";
-+						reg = <0x4c>;
-+					};
-+
-+					eeprom@55 {
-+						compatible = "at24,24c02";
-+						reg = <0x55>;
-+					};
-+
-+					eeprom@56 {
-+						compatible = "at24,24c512";
-+						reg = <0x56>;
-+					};
-+
-+					eeprom@57 {
-+						compatible = "at24,24c512";
-+						reg = <0x57>;
-+					};
-+				};
-+			};
-+			rtc@68 {
-+				compatible = "dallas,ds3232";
-+				reg = <0x68>;
-+				interrupts = <0x5 0x1 0 0>;
-+			};
++			fsl,rx-sync-clock = "none";
++			fsl,tx-sync-clock = "none";
++			fsl,tx-timeslot = <0xfffffffe>;
++			fsl,rx-timeslot = <0xfffffffe>;
++			fsl,tdm-framer-type = "e1";
++			fsl,tdm-mode = "normal";
++			fsl,tdm-id = <1>;
++			fsl,siram-entry-id = <2>;
++			fsl,inter-loopback;
 +		};
 +	};
 +
@@ -418,28 +293,30 @@ index 0000000..58e401c
 +		};
 +	};
 +};
++
++/include/ "fsl/t1024si-post.dtsi"
 diff --git a/arch/powerpc/platforms/85xx/Kconfig b/arch/powerpc/platforms/85xx/Kconfig
-index 2fb4b24..e628d40 100644
+index e628d40..97915fe 100644
 --- a/arch/powerpc/platforms/85xx/Kconfig
 +++ b/arch/powerpc/platforms/85xx/Kconfig
 @@ -282,7 +282,7 @@ config CORENET_GENERIC
  	  For 64bit kernel, the following boards are supported:
  	    T208x QDS/RDB, T4240 QDS/RDB and B4 QDS
  	  The following boards are supported for both 32bit and 64bit kernel:
--	    P5020 DS, P5040 DS and T104xQDS/RDB
-+	    P5020 DS, P5040 DS, T102x QDS, T104x QDS/RDB
+-	    P5020 DS, P5040 DS, T102x QDS, T104x QDS/RDB
++	    P5020 DS, P5040 DS, T102x QDS/RDB, T104x QDS/RDB
  
  endif # FSL_SOC_BOOKE
  
 diff --git a/arch/powerpc/platforms/85xx/corenet_generic.c b/arch/powerpc/platforms/85xx/corenet_generic.c
-index 9824d2c..f61f477 100644
+index f61f477..d7c1b4d 100644
 --- a/arch/powerpc/platforms/85xx/corenet_generic.c
 +++ b/arch/powerpc/platforms/85xx/corenet_generic.c
-@@ -150,6 +150,7 @@ static const char * const boards[] __initconst = {
- 	"fsl,B4860QDS",
+@@ -151,6 +151,7 @@ static const char * const boards[] __initconst = {
  	"fsl,B4420QDS",
  	"fsl,B4220QDS",
-+	"fsl,T1024QDS",
+ 	"fsl,T1024QDS",
++	"fsl,T1024RDB",
  	"fsl,T1040QDS",
  	"fsl,T1042QDS",
  	"fsl,T1040RDB",
