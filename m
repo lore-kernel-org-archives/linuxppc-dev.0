@@ -1,23 +1,25 @@
-Return-Path: <Yuantian.Tang@freescale.com>
+Return-Path: <chenhui.zhao@freescale.com>
 Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0142.outbound.protection.outlook.com [157.56.110.142])
+ (mail-bn1bbn0101.outbound.protection.outlook.com [157.56.111.101])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C25341A0272
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Apr 2015 13:23:18 +1100 (AEDT)
-From: Yuantian Tang <Yuantian.Tang@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id AA4861A03D6
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Apr 2015 13:54:18 +1100 (AEDT)
+From: "chenhui.zhao@freescale.com" <chenhui.zhao@freescale.com>
 To: Scott Wood <scottwood@freescale.com>
-Subject: RE: [PATCH] powerpc/config: add SCSI configs for
- corenet64_smp_defconfig
-Date: Fri, 3 Apr 2015 02:08:57 +0000
-Message-ID: <DM2PR03MB574726ACAF40348C87C2A32FAF10@DM2PR03MB574.namprd03.prod.outlook.com>
-References: <1427796008-40028-1-git-send-email-Yuantian.Tang@freescale.com>
- <1428018982.22867.310.camel@freescale.com>
-In-Reply-To: <1428018982.22867.310.camel@freescale.com>
-Content-Type: text/plain; charset="utf-8"
+Subject: Re: [3/4] powerpc: support CPU hotplug for e500mc, e5500 and e6500
+Date: Fri, 3 Apr 2015 02:54:08 +0000
+Message-ID: <1428029650867.38904@freescale.com>
+References: <1427365095-26396-3-git-send-email-chenhui.zhao@freescale.com>
+ ,<20150331020722.GC5667@home.buserror.net>
+ <1427973405260.57477@freescale.com>, <1427990598.22867.271.camel@freescale.com>
+In-Reply-To: <1427990598.22867.271.camel@freescale.com>
+Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Shaohui
- Xie <Shaohui.Xie@freescale.com>
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "Jason.Jin@freescale.com" <Jason.Jin@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,34 +29,108 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBXb29kIFNjb3R0LUIwNzQyMQ0K
-PiBTZW50OiBGcmlkYXksIEFwcmlsIDAzLCAyMDE1IDc6NTYgQU0NCj4gVG86IFRhbmcgWXVhbnRp
-YW4tQjI5OTgzDQo+IENjOiBXb29kIFNjb3R0LUIwNzQyMTsgbGludXhwcGMtZGV2QGxpc3RzLm96
-bGFicy5vcmc7IFhpZSBTaGFvaHVpLUIyMTk4OQ0KPiBTdWJqZWN0OiBSZTogW1BBVENIXSBwb3dl
-cnBjL2NvbmZpZzogYWRkIFNDU0kgY29uZmlncyBmb3INCj4gY29yZW5ldDY0X3NtcF9kZWZjb25m
-aWcNCj4gDQo+IE9uIFR1ZSwgMjAxNS0wMy0zMSBhdCAxODowMCArMDgwMCwgWXVhbnRpYW4uVGFu
-Z0BmcmVlc2NhbGUuY29tIHdyb3RlOg0KPiA+IEZyb206IFRhbmcgWXVhbnRpYW4gPFl1YW50aWFu
-LlRhbmdAZnJlZXNjYWxlLmNvbT4NCj4gPg0KPiA+IE90aGVyd2lzZSB0aGVyZSB3aWwgYmUgbm8g
-U0NTSSBkZXZpY2Ugbm9kZXMuDQo+ID4NCj4gPiBTaWduZWQtb2ZmLWJ5OiBTaGFvaHVpIFhpZSA8
-U2hhb2h1aS5YaWVAZnJlZXNjYWxlLmNvbT4NCj4gPiBTaWduZWQtb2ZmLWJ5OiBUYW5nIFl1YW50
-aWFuIDxZdWFudGlhbi5UYW5nQGZyZWVzY2FsZS5jb20+DQo+ID4gLS0tDQo+ID4gIGFyY2gvcG93
-ZXJwYy9jb25maWdzL2NvcmVuZXQ2NF9zbXBfZGVmY29uZmlnIHwgNyArKysrKysrDQo+ID4gIDEg
-ZmlsZSBjaGFuZ2VkLCA3IGluc2VydGlvbnMoKykNCj4gPg0KPiA+IGRpZmYgLS1naXQgYS9hcmNo
-L3Bvd2VycGMvY29uZmlncy9jb3JlbmV0NjRfc21wX2RlZmNvbmZpZw0KPiA+IGIvYXJjaC9wb3dl
-cnBjL2NvbmZpZ3MvY29yZW5ldDY0X3NtcF9kZWZjb25maWcNCj4gPiBpbmRleCAwNDczN2FhLi43
-N2E4MTUxIDEwMDY0NA0KPiA+IC0tLSBhL2FyY2gvcG93ZXJwYy9jb25maWdzL2NvcmVuZXQ2NF9z
-bXBfZGVmY29uZmlnDQo+ID4gKysrIGIvYXJjaC9wb3dlcnBjL2NvbmZpZ3MvY29yZW5ldDY0X3Nt
-cF9kZWZjb25maWcNCj4gPiBAQCAtNzUsNiArNzUsMTMgQEAgQ09ORklHX0JMS19ERVZfTE9PUD15
-ICBDT05GSUdfQkxLX0RFVl9SQU09eQ0KPiA+ICBDT05GSUdfQkxLX0RFVl9SQU1fU0laRT0xMzEw
-NzINCj4gPiAgQ09ORklHX0VFUFJPTV9MRUdBQ1k9eQ0KPiA+ICtDT05GSUdfQkxLX0RFVl9TRD15
-DQo+ID4gK0NPTkZJR19DSFJfREVWX1NUPXkNCj4gPiArQ09ORklHX0JMS19ERVZfU1I9eQ0KPiA+
-ICtDT05GSUdfQ0hSX0RFVl9TRz15DQo+IA0KPiBCZW4gYWxyZWFkeSBzZW50IGEgcGF0Y2ggZW5h
-YmxpbmcgdGhlc2UgKGV4Y2VwdCBTVCAtLSBkbyB3ZSByZWFsbHkgbmVlZA0KPiB0aGF0PykgaW4g
-Ym90aCBjb3JlbmV0MzIgYW5kIGNvcmVuZXQ2NC4NCj4gDQo+ID4gK0NPTkZJR19TQ1NJX01VTFRJ
-X0xVTj15DQo+IA0KPiBUaGlzIG9wdGlvbiB3YXMgcmVtb3ZlZCBieSBjMzA5YjM1MTcxZGQNCj4g
-DQo+ID4gK0NPTkZJR19TQ1NJX0xPR0dJTkc9eQ0KPiA+ICtDT05GSUdfU0NTSV9TUElfQVRUUlM9
-eQ0KPiANCj4gSWYgeW91IHdhbnQgdGhlc2UgZW5hYmxlZCwgZG8gaXQgaW4gYSBzZXBhcmF0ZSBw
-YXRjaCB3aXRoIGFuIGV4cGxhbmF0aW9uDQo+IG9mIHdoeSB3ZSBzaG91bGQgZW5hYmxlIHRoZW0g
-YnkgZGVmYXVsdCwgYW5kIGRvIGl0IGZvciBvdGhlciA4NXh4L2NvcmVuZXQNCj4gY29uZmlncyBh
-cyB3ZWxsLg0KPiANCk9LLCBJIHdpbGwgaW52ZXN0aWdhdGUgdGhpcyBhbmQgcmVzZW5kIGlmIG5l
-ZWRlZC4NCg0KVGhhbmtzLA0KWXVhbnRpYW4NCg0KPiAtU2NvdHQNCj4gDQoNCg==
+
+
+________________________________________
+From: Wood Scott-B07421
+Sent: Friday, April 3, 2015 0:03
+To: Zhao Chenhui-B35336
+Cc: linuxppc-dev@lists.ozlabs.org; devicetree@vger.kernel.org; linux-kernel=
+@vger.kernel.org; Jin Zhengxiong-R64188
+Subject: Re: [3/4] powerpc: support CPU hotplug for e500mc, e5500 and e6500
+
+On Thu, 2015-04-02 at 06:16 -0500, Zhao Chenhui-B35336 wrote:
+>
+> ________________________________________
+> From: Wood Scott-B07421
+> Sent: Tuesday, March 31, 2015 10:07
+> To: Zhao Chenhui-B35336
+> Cc: linuxppc-dev@lists.ozlabs.org; devicetree@vger.kernel.org; linux-kern=
+el@vger.kernel.org; Jin Zhengxiong-R64188
+> Subject: Re: [3/4] powerpc: support CPU hotplug for e500mc, e5500 and e65=
+00
+>
+> On Thu, Mar 26, 2015 at 06:18:14PM +0800, chenhui zhao wrote:
+> > @@ -189,16 +193,14 @@ _GLOBAL(fsl_secondary_thread_init)
+> >       isync
+> >
+> >       /*
+> > -      * Fix PIR to match the linear numbering in the device tree.
+> > -      *
+> > -      * On e6500, the reset value of PIR uses the low three bits for
+> > -      * the thread within a core, and the upper bits for the core
+> > -      * number.  There are two threads per core, so shift everything
+> > -      * but the low bit right by two bits so that the cpu numbering is
+> > -      * continuous.
+>
+> Why are you getting rid of this?  If it's to avoid doing it twice on the
+> same thread, in my work-in-progress kexec patches I instead check to see
+> whether BUCSR has already been set up -- if it has, I assume we've
+> already been here.
+>
+> [chenhui] I didn't delete the branch prediction related code.
+
+I didn't say you did.  I'm saying that you can check whether BUCSR has
+been set up, to determine whether PIR has already been adjusted, if your
+concern is avoiding running this twice on a thread between core resets.
+If that's not your concern, then please explain.
+
+[chenhui] If no need to change PIR in CPU hotplug, I will change the code a=
+s you mentioned.
+
+> > +             /*
+> > +              * If both threads are offline, reset core to start.
+> > +              * When core is up, Thread 0 always gets up first,
+> > +              * so bind the current logical cpu with Thread 0.
+> > +              */
+>
+> What if the core is not in a PM state that requires a reset?
+> Where does this reset occur?
+>
+> [chenhui] Reset occurs in the function mpic_reset_core().
+>
+> > +             if (hw_cpu !=3D cpu_first_thread_sibling(hw_cpu)) {
+> > +                     int hw_cpu1, hw_cpu2;
+> > +
+> > +                     hw_cpu1 =3D get_hard_smp_processor_id(primary);
+> > +                     hw_cpu2 =3D get_hard_smp_processor_id(primary + 1=
+);
+> > +                     set_hard_smp_processor_id(primary, hw_cpu2);
+> > +                     set_hard_smp_processor_id(primary + 1, hw_cpu1);
+> > +                     /* get new physical cpu id */
+> > +                     hw_cpu =3D get_hard_smp_processor_id(nr);
+>
+> Why are you swapping the hard smp ids?
+>
+> [chenhui] For example, Core1 has two threads, Thread0 and Thread1. In nor=
+mal boot, Thread0 is CPU2, and Thread1 is CPU3.
+> But, if CPU2 and CPU3 are all off, user wants CPU3 up first. we need to c=
+all Thread0 as CPU3 and Thead1 as CPU2, considering
+> the limitation, after core is reset, only Thread0 is up, then Thread0 kic=
+ks up Thread1.
+
+There's no need for this.  I have booting from a thread1, and having it
+kick its thread0, working locally without messing with the hwid/cpu
+mapping.
+
+[chenhui] Great. If you have completed your patches, can we merge our code?
+
+> > @@ -252,11 +340,7 @@ static int smp_85xx_kick_cpu(int nr)
+> >               spin_table =3D phys_to_virt(*cpu_rel_addr);
+> >
+> >       local_irq_save(flags);
+> > -#ifdef CONFIG_PPC32
+> >  #ifdef CONFIG_HOTPLUG_CPU
+> > -     /* Corresponding to generic_set_cpu_dead() */
+> > -     generic_set_cpu_up(nr);
+> > -
+>
+> Why did you move this?
+>
+> [chenhui] It would be better to set this after CPU is really up.
+
+Please make it a separate patch with an explanation.
+
+-Scott
+
+[chenhui] OK.
