@@ -1,21 +1,21 @@
 Return-Path: <olson@cumulusnetworks.com>
-Received: from mail-pd0-x229.google.com (mail-pd0-x229.google.com
- [IPv6:2607:f8b0:400e:c02::229])
+Received: from mail-pd0-x233.google.com (mail-pd0-x233.google.com
+ [IPv6:2607:f8b0:400e:c02::233])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 71C331A0145
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Apr 2015 14:33:39 +1100 (AEDT)
-Received: by pddn5 with SMTP id n5so108922193pdd.2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Apr 2015 20:33:37 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 43DCD1A03D3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Apr 2015 15:29:07 +1100 (AEDT)
+Received: by pdea3 with SMTP id a3so58724247pde.3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 02 Apr 2015 21:29:05 -0700 (PDT)
 From: olson@cumulusnetworks.com
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH] Fix missing L2 cache size in /sys/devices/system/cpu
-Date: Thu,  2 Apr 2015 20:33:00 -0700
-Message-Id: <1428031980-17175-1-git-send-email-olson@cumulusnetworks.com>
+Subject: [PATCHv5 1/1] Fix missing L2 cache size in /sys/devices/system/cpu
+Date: Thu,  2 Apr 2015 21:28:45 -0700
+Message-Id: <1428035325-16477-1-git-send-email-olson@cumulusnetworks.com>
 In-Reply-To: <20150326194914.GC23655@cumulusnetworks.com>
 References: <20150326194914.GC23655@cumulusnetworks.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Dave Olson <olson@cumulusnetworks.com>
+Cc: Dave Olson <olson@cumulusnetworks.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,8 +27,10 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Dave Olson <olson@cumulusnetworks.com>
 
-This is version 4 of the patch, incorporating Michael Ellerman's 
-suggested changes from March 26, 2015.
+This is version 5 of the patch, incorporating Michael Ellerman's 
+suggested changes from March 26, 2015.  v5 removes the __cpuinit
+that had crept in from my patch based on an older kernel, but is
+otherwise the same as v4.
 ================
 
 This problem appears to have been introduced in 2.6.29 by
@@ -48,7 +50,7 @@ Signed-off-by: Dave Olson <olson@cumulusnetworks.com>
  1 file changed, 34 insertions(+), 10 deletions(-)
 
 diff --git a/arch/powerpc/kernel/cacheinfo.c b/arch/powerpc/kernel/cacheinfo.c
-index ae77b7e..b9df547 100644
+index ae77b7e..c641983 100644
 --- a/arch/powerpc/kernel/cacheinfo.c
 +++ b/arch/powerpc/kernel/cacheinfo.c
 @@ -61,12 +61,22 @@ struct cache_type_info {
@@ -102,7 +104,7 @@ index ae77b7e..b9df547 100644
 + * in /sys/devices/system/cpu/cpu0/cache/index2/, and this code will need
 + * to be extended further.
 + */
-+static int __cpuinit cache_is_unified_d(const struct device_node *np)
++static int cache_is_unified_d(const struct device_node *np)
  {
 -	struct cache *cache;
 +	return of_get_property(np,
@@ -112,7 +114,7 @@ index ae77b7e..b9df547 100644
  
 +/*
 + */
-+static struct cache *__cpuinit cache_do_one_devnode_unified(struct device_node *node, int level)
++static struct cache *cache_do_one_devnode_unified(struct device_node *node, int level)
 +{
  	pr_debug("creating L%d ucache for %s\n", level, node->full_name);
  
