@@ -2,21 +2,22 @@ Return-Path: <scottwood@freescale.com>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E18E61A0272
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Apr 2015 12:15:03 +1100 (AEDT)
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0125.outbound.protection.outlook.com [207.46.100.125])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 241DB1A0741
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Apr 2015 12:25:42 +1100 (AEDT)
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bon0112.outbound.protection.outlook.com [157.56.111.112])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id ADEEB1400A0
- for <linuxppc-dev@ozlabs.org>; Fri,  3 Apr 2015 12:15:01 +1100 (AEDT)
-Message-ID: <1428023676.22867.320.camel@freescale.com>
-Subject: Re: [1/3][PATCH][v2] Device Tree bindings for Freescale TDM controller
+ by ozlabs.org (Postfix) with ESMTPS id 4ACCA14016A
+ for <linuxppc-dev@ozlabs.org>; Fri,  3 Apr 2015 12:25:40 +1100 (AEDT)
+Message-ID: <1428024328.22867.328.camel@freescale.com>
+Subject: Re: [PATCH 1/4] powerpc/85xx: miscellaneous changes on
+ mpc85xx_defconfig
 From: Scott Wood <scottwood@freescale.com>
-To: <sandeep@freescale.com>
-Date: Thu, 2 Apr 2015 20:14:36 -0500
-In-Reply-To: <1427971677-32395-1-git-send-email-sandeep@freescale.com>
-References: <1427971677-32395-1-git-send-email-sandeep@freescale.com>
+To: Lijun Pan <Lijun.Pan@freescale.com>
+Date: Thu, 2 Apr 2015 20:25:28 -0500
+In-Reply-To: <1428010674-25361-1-git-send-email-Lijun.Pan@freescale.com>
+References: <1428010674-25361-1-git-send-email-Lijun.Pan@freescale.com>
 Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
@@ -29,105 +30,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2015-04-02 at 16:17 +0530, sandeep@freescale.com wrote:
-> From: Sandeep Singh <sandeep@freescale.com>
-> 
-> This controller is available on many Freescale SOCs like MPC8315, P1020, P1010,
-> P1022 and P1024
-> 
-> Signed-off-by: Sandeep Singh <Sandeep@freescale.com>
-> Signed-off-by: Poonam Aggrwal <poonam.aggrwal@freescale.com>
-> ---
->  Documentation/devicetree/bindings/tdm/fsl-tdm.txt |   65 +++++++++++++++++++++
->  1 files changed, 65 insertions(+), 0 deletions(-)
->  create mode 100644 Documentation/devicetree/bindings/tdm/fsl-tdm.txt
+On Thu, 2015-04-02 at 16:37 -0500, Lijun Pan wrote:
+> Merge Freescale's Internal mpc85xx_defconfig with upstream's.
+> Run savedefconfig to get the minimal change.
 
-Add devicetree@vger.kernel.org to CC for device tree patches.
+What makes the internal config preferred without any explanation of why
+we want or don't want specific config items?  Especially where things
+are being turned off, rather than on.
+
+Are any of these changes due to running savedefconfig on the upstream
+config (if so, make that a separate patch)?
+
+> @@ -50,8 +50,6 @@ CONFIG_BINFMT_MISC=m
+>  CONFIG_MATH_EMULATION=y
+>  CONFIG_FORCE_MAX_ZONEORDER=12
+>  CONFIG_PCI=y
+> -CONFIG_PCIEPORTBUS=y
+> -# CONFIG_PCIEASPM is not set
+
+PCIEPORTBUS was enabled by commit 2727ed54716e60 ("powerpc/85xx: Add
+support for Emerson/Artesyn MVME2500.").  Presumably that board needs
+it.
+
+>  CONFIG_PCI_MSI=y
+>  CONFIG_RAPIDIO=y
+>  CONFIG_NET=y
+> @@ -88,21 +86,17 @@ CONFIG_FTL=y
+>  CONFIG_MTD_CFI=y
+>  CONFIG_MTD_CFI_INTELEXT=y
+>  CONFIG_MTD_CFI_AMDSTD=y
+> -CONFIG_MTD_PHYSMAP=y
+>  CONFIG_MTD_PHYSMAP_OF=y
+> -CONFIG_MTD_PLATRAM=y
+> -CONFIG_MTD_M25P80=y
+>  CONFIG_MTD_NAND=y
+>  CONFIG_MTD_NAND_FSL_ELBC=y
+>  CONFIG_MTD_NAND_FSL_IFC=y
+> -CONFIG_MTD_SPI_NOR=y
+
+Why?
 
 
-> diff --git a/Documentation/devicetree/bindings/tdm/fsl-tdm.txt b/Documentation/devicetree/bindings/tdm/fsl-tdm.txt
-> new file mode 100644
-> index 0000000..1258b89
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/tdm/fsl-tdm.txt
-> @@ -0,0 +1,65 @@
-> +=====================================================================
-> +TDM Device Tree Binding
-> +Copyright (C) 2012 Freescale Semiconductor Inc.
-> +
-> +NOTE: The bindings described in this document are preliminary
-> +and subject to change.
+>  CONFIG_EDAC=y
+>  CONFIG_EDAC_MM_EDAC=y
+> -CONFIG_EDAC_MPC85XX=y
 
-Get rid of this note.  Bindings are expected to be stable ABI once
-merged.
+Umm...  What other EDAC driver are you expecting to be used with this
+config?
 
-> +=====================================================================
-> +TDM (Time Division Multiplexing)
-> +
-> +DESCRIPTION
-> +
-> +The TDM is full duplex serial port designed to allow various devices including
-> +digital signal processors (DSPs) to communicate with a variety of serial devices
-> +including industry standard framers, codecs, other DSPs and microprocessors.
-> +
-> +The below properties describe the device tree bindings for Freescale TDM
-> +controller.
-> +This TDM controller is available on various Freescale Processors like
-> +MPC8313, P1020, P1022 and P1010.
-> +
-> +PROPERTIES
-> +
-> +  - compatible
-> +      Usage: required
-> +      Value type: <string>
-> +      Definition: Should contain "fsl,tdm1.0".
+>  CONFIG_RTC_CLASS=y
+> -CONFIG_RTC_DRV_DS1307=y
+> -CONFIG_RTC_DRV_DS1374=y
+> -CONFIG_RTC_DRV_DS3232=y
 
-What does 1.0 refer to?  Is the TDM block identical on all the chips
-that currently have it?  Is this a real version number scheme (public or
-otherwise) or something made up for software?
+mpc8568/8569 have ds1374.  mpc8536/p1022 have ds3232.  Various tqm
+boards have ds1337 which uses the ds1307 driver.
 
-> +  - reg
-> +      Usage: required
-> +      Definition: A standard property. The first reg specifier describes the
-> +          TDM registers, and the second describes the TDM DMAC registers.
-> +
-> +  - clock-frequency
-> +      Usage: optional
-> +      Value type: <u32 or u64>
-> +      Definition: The frequency at which the TDM block is operating.
+> @@ -218,9 +206,6 @@ CONFIG_ADFS_FS=m
+>  CONFIG_AFFS_FS=m
+>  CONFIG_HFS_FS=m
+>  CONFIG_HFSPLUS_FS=m
+> -CONFIG_BEFS_FS=m
+> -CONFIG_BFS_FS=m
+> -CONFIG_EFS_FS=m
+>  CONFIG_JFFS2_FS=y
+>  CONFIG_JFFS2_FS_DEBUG=1
+>  CONFIG_UBIFS_FS=y
 
-It'd be nice if new bindings used clock nodes rather than relying on
-U-Boot fixups.
-
-> +  - interrupts
-> +      Usage: required
-> +      Definition: Definition: Two interrupt specifiers.  The first is TDM
-> +          error, and the second is TDM EMAC.
-> +
-> +  - phy-handle
-> +      Usage: optional
-> +      Value type: <phandle>
-> +      Definition: Phandle of the line controller node or framer node eg. SLIC,
-> +          E1/T1 etc.
-> +
-> +  - fsl,max-time-slots
-> +      Usage: required
-> +      Value type: <u32>
-> +      Definition: Maximum number of 8-bit time slots in one TDM frame.
-> +          This is the maximum number which TDM hardware supports.
-> +
-> +EXAMPLE
-> +
-> +	tdm@16000 {
-> +		compatible = "fsl,tdm1.0";
-> +		reg = <0x16000 0x200 0x2c000 0x2000>;
-> +		clock-frequency = <0>;
-> +		interrupts = <16 8 62 8>;
-> +		phy-handle = <&zarlink1>;
-> +		fsl,max-time-slots = <128>;
-> +	};
-
-The example refers to a "zarlink1" node but it is not present.  What
-does a "line controller or framer node" look like?
+This is pretty random.  If we want to remove fringe filesystems, fine,
+but why just these three?
 
 -Scott
