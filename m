@@ -1,15 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7E0EE1A03D6
+ by lists.ozlabs.org (Postfix) with ESMTPS id BD47E1A03D6
  for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Apr 2015 14:11:58 +1100 (AEDT)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 1/2] powerpc/cell: Fix crash in iic_setup_cpu() after per_cpu
- changes
-Date: Fri,  3 Apr 2015 14:11:53 +1100
-Message-Id: <1428030714-24989-1-git-send-email-mpe@ellerman.id.au>
+Subject: [PATCH 2/2] powerpc/cell: Fix cell iommu after it_page_shift changes
+Date: Fri,  3 Apr 2015 14:11:54 +1100
+Message-Id: <1428030714-24989-2-git-send-email-mpe@ellerman.id.au>
+In-Reply-To: <1428030714-24989-1-git-send-email-mpe@ellerman.id.au>
+References: <1428030714-24989-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,32 +20,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The conversion from __get_cpu_var() to this_cpu_ptr() in iic_setup_cpu()
-is wrong. It causes an oops at boot.
+The patch to add it_page_shift incorrectly changed the increment of
+uaddr to use it_page_shift, rather then (1 << it_page_shift).
 
-We need the per-cpu address of struct cpu_iic, not cpu_iic.regs->prio.
+This broke booting on at least some Cell blades, as the iommu was
+basically non-functional.
 
-Sparse noticed this, because we pass a non-iomem pointer to out_be64(),
-but we obviously don't check the sparse results often enough.
-
-Fixes: 69111bac42f5 ("powerpc: Replace __get_cpu_var uses")
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+Fixes: 3a553170d35d ("powerpc/iommu: Add it_page_shift field to determine iommu page size")
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 ---
- arch/powerpc/platforms/cell/interrupt.c | 2 +-
+ arch/powerpc/platforms/cell/iommu.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/platforms/cell/interrupt.c b/arch/powerpc/platforms/cell/interrupt.c
-index 4c11421847be..3af8324c122e 100644
---- a/arch/powerpc/platforms/cell/interrupt.c
-+++ b/arch/powerpc/platforms/cell/interrupt.c
-@@ -163,7 +163,7 @@ static unsigned int iic_get_irq(void)
+diff --git a/arch/powerpc/platforms/cell/iommu.c b/arch/powerpc/platforms/cell/iommu.c
+index c7c8720aa39f..63db1b03e756 100644
+--- a/arch/powerpc/platforms/cell/iommu.c
++++ b/arch/powerpc/platforms/cell/iommu.c
+@@ -197,7 +197,7 @@ static int tce_build_cell(struct iommu_table *tbl, long index, long npages,
  
- void iic_setup_cpu(void)
- {
--	out_be64(this_cpu_ptr(&cpu_iic.regs->prio), 0xff);
-+	out_be64(&this_cpu_ptr(&cpu_iic)->regs->prio, 0xff);
- }
+ 	io_pte = (unsigned long *)tbl->it_base + (index - tbl->it_offset);
  
- u8 iic_get_target_id(int cpu)
+-	for (i = 0; i < npages; i++, uaddr += tbl->it_page_shift)
++	for (i = 0; i < npages; i++, uaddr += (1 << tbl->it_page_shift))
+ 		io_pte[i] = base_pte | (__pa(uaddr) & CBE_IOPTE_RPN_Mask);
+ 
+ 	mb();
 -- 
 2.1.0
