@@ -1,23 +1,46 @@
-Return-Path: <sowmini.varadhan@oracle.com>
-Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <nacc@linux.vnet.ibm.com>
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DEDB11A0A05
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Apr 2015 05:29:03 +1100 (AEDT)
-Date: Fri, 3 Apr 2015 14:28:52 -0400
-From: Sowmini Varadhan <sowmini.varadhan@oracle.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH v8 RFC 1/3] sparc: Break up monolithic iommu table/lock
- into finer graularity pools and lock
-Message-ID: <20150403182852.GI26158@oracle.com>
-References: <cover.1427761300.git.sowmini.varadhan@oracle.com>
- <8406d119fb885255387a400551de994cb4a4c331.1427761300.git.sowmini.varadhan@oracle.com>
- <1428008044.20500.272.camel@kernel.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 205591A0AA4
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Apr 2015 05:50:46 +1100 (AEDT)
+Received: from /spool/local
+ by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
+ Fri, 3 Apr 2015 12:50:44 -0600
+Received: from b03cxnp07028.gho.boulder.ibm.com
+ (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 6F80B3E4003E
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Apr 2015 12:50:42 -0600 (MDT)
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+ by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t33ImsjL32375036
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 3 Apr 2015 11:48:54 -0700
+Received: from d03av03.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av03.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t33IofVq031145
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 3 Apr 2015 12:50:42 -0600
+Date: Fri, 3 Apr 2015 11:50:39 -0700
+From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+To: Michal Hocko <mhocko@suse.cz>
+Subject: Re: [PATCH v2] mm: vmscan: do not throttle based on pfmemalloc
+ reserves if node has no reclaimable pages
+Message-ID: <20150403185039.GB38424@linux.vnet.ibm.com>
+References: <20150327192850.GA18701@linux.vnet.ibm.com>
+ <5515BAF7.6070604@intel.com>
+ <20150327222350.GA22887@linux.vnet.ibm.com>
+ <20150331094829.GE9589@dhcp22.suse.cz>
+ <20150403174357.GE32318@linux.vnet.ibm.com>
+ <20150403182445.GA31900@dhcp22.suse.cz>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1428008044.20500.272.camel@kernel.crashing.org>
-Cc: aik@au1.ibm.com, anton@au1.ibm.com, paulus@samba.org,
- sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
+In-Reply-To: <20150403182445.GA31900@dhcp22.suse.cz>
+Cc: Rik van Riel <riel@redhat.com>, anton@sambar.org, linux-mm@kvack.org,
+ linux-kernel@vger.kernel.org, Dave Hansen <dave.hansen@intel.com>,
+ Mel Gorman <mgorman@suse.de>, Johannes Weiner <hannes@cmpxchg.org>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ Dan Streetman <ddstreet@ieee.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,39 +50,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-
-Just want to confirm:
-
-> > + again:
-> > +	if (pass == 0 && handle && *handle &&
-> > +	    (*handle >= pool->start) && (*handle < pool->end))
-> > +		start = *handle;
-> > +	else
-> > +		start = pool->hint;
+On 03.04.2015 [20:24:45 +0200], Michal Hocko wrote:
+> On Fri 03-04-15 10:43:57, Nishanth Aravamudan wrote:
+> > On 31.03.2015 [11:48:29 +0200], Michal Hocko wrote:
+> [...]
+> > > I would expect kswapd would be looping endlessly because the zone
+> > > wouldn't be balanced obviously. But I would be wrong... because
+> > > pgdat_balanced is doing this:
+> > > 		/*
+> > > 		 * A special case here:
+> > > 		 *
+> > > 		 * balance_pgdat() skips over all_unreclaimable after
+> > > 		 * DEF_PRIORITY. Effectively, it considers them balanced so
+> > > 		 * they must be considered balanced here as well!
+> > > 		 */
+> > > 		if (!zone_reclaimable(zone)) {
+> > > 			balanced_pages += zone->managed_pages;
+> > > 			continue;
+> > > 		}
+> > > 
+> > > and zone_reclaimable is false for you as you didn't have any
+> > > zone_reclaimable_pages(). But wakeup_kswapd doesn't do this check so it
+> > > would see !zone_balanced() AFAICS (build_zonelists doesn't ignore those
+> > > zones right?) and so the kswapd would be woken up easily. So it looks
+> > > like a mess.
+> > 
+> > My understanding, and I could easily be wrong, is that kswapd2 (node 2
+> > is the exhausted one) spins endlessly, because the reclaim logic sees
+> > that we are reclaiming from somewhere but the allocation request for
+> > node 2 (which is __GFP_THISNODE for hugepages, not GFP_THISNODE) will
+> > never complete, so we just continue to reclaim.
 > 
-> Now this means "handle" might be < pool->hint, in that case you also
-> need a lazy flush. Or rather only if the resulting alloc is. My
-         :
+> __GFP_THISNODE would be waking up kswapd2 again and again, that is true.
 
-> > +		} else {
-> > +			/* give up */
-> > +			n = DMA_ERROR_CODE;
-> > +			goto bail;
-> > +		}
-> > +	}
-> 
-> Here, make this something like:
-> 
-> 	} else if (end < pool->hint)
-> 		need_flush = true;
+Right, one idea I had for this was ensuring that we perform reclaim with
+somehow some knowledge of __GFP_THISNODE -- that is it needs to be
+somewhat targetted in order to actually help satisfy the current
+allocation. But it got pretty hairy fast and I didn't want to break the
+world :)
 
-you mean 
+> I am just wondering whether we will have any __GFP_THISNODE allocations
+> for a node without CPUs (numa_node_id() shouldn't return such a node
+> AFAICS). Maybe if somebody is bound to Node2 explicitly but I would
+> consider this as a misconfiguration.
 
- 	} else if (start < pool->hint)
+Right, I'd need to check what happens if in our setup you taskset to
+node2 and tried to force memory to be local -- I think you'd either be
+killed immediately, or the kernel will just disagree with your binding
+since it's invalid (e.g., that will happen if you try to bind to a
+memoryless node, I think).
 
-right?  (so I'm not missing some corner-case that you are thinking
-about here)
+Keep in mind that although in my config node2 had no CPUs, that's not a
+hard & fast requirement. I do believe in a previous iteration of this
+bug, the exhausted node had no free memory but did have cpus assigned to
+it.
 
---Sowmini
- 
+-Nish
