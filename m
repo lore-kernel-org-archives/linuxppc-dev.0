@@ -1,22 +1,22 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0119.outbound.protection.outlook.com [207.46.100.119])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BDF411A09FA
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Apr 2015 10:56:34 +1100 (AEDT)
-Message-ID: <1428018982.22867.310.camel@freescale.com>
-Subject: Re: [PATCH] powerpc/config: add SCSI configs for
- corenet64_smp_defconfig
-From: Scott Wood <scottwood@freescale.com>
-To: <Yuantian.Tang@freescale.com>
-Date: Thu, 2 Apr 2015 18:56:22 -0500
-In-Reply-To: <1427796008-40028-1-git-send-email-Yuantian.Tang@freescale.com>
-References: <1427796008-40028-1-git-send-email-Yuantian.Tang@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
-MIME-Version: 1.0
-Cc: B07421@freescale.com, linuxppc-dev@lists.ozlabs.org,
- Shaohui Xie <Shaohui.Xie@freescale.com>
+Return-Path: <davem@davemloft.net>
+Received: from shards.monkeyblade.net (shards.monkeyblade.net
+ [IPv6:2001:4f8:3:36:211:85ff:fe63:a549])
+ by lists.ozlabs.org (Postfix) with ESMTP id 3BFC41A09FA
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Apr 2015 11:42:09 +1100 (AEDT)
+Date: Thu, 02 Apr 2015 20:42:01 -0400 (EDT)
+Message-Id: <20150402.204201.1019535262608342723.davem@davemloft.net>
+To: sowmini.varadhan@oracle.com
+Subject: Re: [PATCH v8 RFC 1/3] sparc: Break up monolithic iommu table/lock
+ into finer graularity pools and lock
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20150402215453.GB15680@oracle.com>
+References: <8406d119fb885255387a400551de994cb4a4c331.1427761300.git.sowmini.varadhan@oracle.com>
+ <1428008044.20500.272.camel@kernel.crashing.org>
+ <20150402215453.GB15680@oracle.com>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: aik@au1.ibm.com, anton@au1.ibm.com, paulus@samba.org,
+ sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,42 +26,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-03-31 at 18:00 +0800, Yuantian.Tang@freescale.com wrote:
-> From: Tang Yuantian <Yuantian.Tang@freescale.com>
+From: Sowmini Varadhan <sowmini.varadhan@oracle.com>
+Date: Thu, 2 Apr 2015 17:54:53 -0400
+
+> the other question that comes to my mind is: the whole lazy_flush
+> optimization probably works best when there is exactly one pool,
+> and no large pools. In most other cases, we'd end up doing a lazy_flush
+> when we wrap within our pool itself, losing the benefit of that 
+> optimization. 
 > 
-> Otherwise there wil be no SCSI device nodes.
-> 
-> Signed-off-by: Shaohui Xie <Shaohui.Xie@freescale.com>
-> Signed-off-by: Tang Yuantian <Yuantian.Tang@freescale.com>
-> ---
->  arch/powerpc/configs/corenet64_smp_defconfig | 7 +++++++
->  1 file changed, 7 insertions(+)
-> 
-> diff --git a/arch/powerpc/configs/corenet64_smp_defconfig b/arch/powerpc/configs/corenet64_smp_defconfig
-> index 04737aa..77a8151 100644
-> --- a/arch/powerpc/configs/corenet64_smp_defconfig
-> +++ b/arch/powerpc/configs/corenet64_smp_defconfig
-> @@ -75,6 +75,13 @@ CONFIG_BLK_DEV_LOOP=y
->  CONFIG_BLK_DEV_RAM=y
->  CONFIG_BLK_DEV_RAM_SIZE=131072
->  CONFIG_EEPROM_LEGACY=y
-> +CONFIG_BLK_DEV_SD=y
-> +CONFIG_CHR_DEV_ST=y
-> +CONFIG_BLK_DEV_SR=y
-> +CONFIG_CHR_DEV_SG=y
+> Given that the lazy_flush is mostly there to avoid regressions for 
+> the older sun4u architectures (which have other hardware bottlenecks 
+> anyway), and this code is rapidly getting messy, does it make sense
+> to constrain the lazy_flush check to only apply for the 1-pool, 
+> no-large-pool case?
 
-Ben already sent a patch enabling these (except ST -- do we really need
-that?) in both corenet32 and corenet64.
-
-> +CONFIG_SCSI_MULTI_LUN=y
-
-This option was removed by c309b35171dd
-
-> +CONFIG_SCSI_LOGGING=y
-> +CONFIG_SCSI_SPI_ATTRS=y
-
-If you want these enabled, do it in a separate patch with an explanation
-of why we should enable them by default, and do it for other
-85xx/corenet configs as well.
-
--Scott
+I think it's better to have the multiple pools with more often global
+flushing.
