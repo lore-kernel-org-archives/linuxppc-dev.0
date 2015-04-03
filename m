@@ -1,23 +1,31 @@
-Return-Path: <madalin.bucur@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0136.outbound.protection.outlook.com [157.56.111.136])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <wangyijing@huawei.com>
+Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [58.251.152.64])
+ (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 499E81A0741
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Apr 2015 19:58:19 +1100 (AEDT)
-From: Madalin-Cristian Bucur <madalin.bucur@freescale.com>
-To: Paul Bolle <pebolle@tiscali.nl>
-Subject: RE: [PATCH RFC 02/10] dpaa_eth: add support for DPAA Ethernet
-Date: Fri, 3 Apr 2015 08:58:12 +0000
-Message-ID: <BL2PR03MB545A59DD0E2700AF630C468E6F10@BL2PR03MB545.namprd03.prod.outlook.com>
-References: <1427905196-27778-1-git-send-email-madalin.bucur@freescale.com>
- <1427971444.10518.40.camel@x220>
-In-Reply-To: <1427971444.10518.40.camel@x220>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8F35C1A08A6
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  3 Apr 2015 20:29:22 +1100 (AEDT)
+From: Yijing Wang <wangyijing@huawei.com>
+To: Bjorn Helgaas <bhelgaas@google.com>
+Subject: [PATCH v9 19/30] powerpc/pci: Use pci_scan_host_bridge() for
+ simplicity
+Date: Fri, 3 Apr 2015 17:25:53 +0800
+Message-ID: <1428053164-28277-21-git-send-email-wangyijing@huawei.com>
+In-Reply-To: <1428053164-28277-1-git-send-email-wangyijing@huawei.com>
+References: <1428053164-28277-1-git-send-email-wangyijing@huawei.com>
 MIME-Version: 1.0
-Cc: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Cc: linux-ia64@vger.kernel.org, linux-pci@vger.kernel.org,
+ Yijing Wang <wangyijing@huawei.com>, Guan
+ Xuetao <gxt@mprc.pku.edu.cn>, Russell King <linux@arm.linux.org.uk>,
+ x86@kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>, Arnd
+ Bergmann <arnd@arndb.de>, Marc Zyngier <marc.zyngier@arm.com>,
+ Rusty Russell <rusty@rustcorp.com.au>, linux-m68k@lists.linux-m68k.org,
+ Thomas Gleixner <tglx@linutronix.de>, Yinghai Lu <yinghai@kernel.org>,
+ linux-arm-kernel@lists.infradead.org, dja@axtens.net,
+ Liviu Dudau <liviu@dudau.co.uk>, Tony Luck <tony.luck@intel.com>,
+ linux-kernel@vger.kernel.org, Jiang Liu <jiang.liu@linux.intel.com>,
+ linux-alpha@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,58 +35,122 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiBGcm9tOiBQYXVsIEJvbGxlIFttYWlsdG86
-cGVib2xsZUB0aXNjYWxpLm5sXQ0KPiANCj4gSnVzdCBhIGZldyBuaXRzLg0KPiANCj4gVGhpcyBz
-ZXJpZXMgaXMgcG9zdGVkIGFzIGFuIFJGQywgc28gdGhpcyBtaWdodCBub3QgYmUgd2hhdCB5b3Un
-cmUNCj4gZXhwZWN0aW5nIHJpZ2h0IG5vdy4gQnV0IGFzIHRoZXNlIG1lc3NhZ2VzIGdvdCB0YW5n
-bGVkIHVwIGluIG15IG1haWwNCj4gZmlsdGVyIGFueWhvdywgSSB0aG91Z2h0IEkgbWlnaHQgYXMg
-d2VsbCBib3RoZXIgeW91IHdpdGggdGhlc2Ugbml0cyBub3cuDQo+IA0KPiBPbiBXZWQsIDIwMTUt
-MDQtMDEgYXQgMTk6MTkgKzAzMDAsIE1hZGFsaW4gQnVjdXIgd3JvdGU6DQo+ID4gLS0tIC9kZXYv
-bnVsbA0KPiA+ICsrKyBiL2RyaXZlcnMvbmV0L2V0aGVybmV0L2ZyZWVzY2FsZS9kcGFhL0tjb25m
-aWcNCj4gPiBAQCAtMCwwICsxLDQ5IEBADQo+ID4gK21lbnVjb25maWcgRlNMX0RQQUFfRVRIDQo+
-ID4gKwl0cmlzdGF0ZSAiRFBBQSBFdGhlcm5ldCINCj4gPiArCWRlcGVuZHMgb24gRlNMX1NPQyAm
-JiBGU0xfQk1BTiAmJiBGU0xfUU1BTiAmJiBGU0xfRk1BTg0KPiA+ICsJc2VsZWN0IFBIWUxJQg0K
-PiA+ICsJc2VsZWN0IEZTTF9GTUFOX01BQw0KPiA+ICsJLS0taGVscC0tLQ0KPiA+ICsJICBEYXRh
-IFBhdGggQWNjZWxlcmF0aW9uIEFyY2hpdGVjdHVyZSBFdGhlcm5ldCBkcml2ZXIsDQo+ID4gKwkg
-IHN1cHBvcnRpbmcgdGhlIEZyZWVzY2FsZSBRb3JJUSBjaGlwcy4NCj4gPiArCSAgRGVwZW5kcyBv
-biBGcmVlc2NhbGUgQnVmZmVyIE1hbmFnZXIgYW5kIFF1ZXVlIE1hbmFnZXINCj4gPiArCSAgZHJp
-dmVyIGFuZCBGcmFtZSBNYW5hZ2VyIERyaXZlci4NCj4gPiArDQo+ID4gK2lmIEZTTF9EUEFBX0VU
-SA0KPiA+ICsNCj4gPiArY29uZmlnIEZTTF9EUEFBX0NTX1RIUkVTSE9MRF8xRw0KPiA+ICsJaGV4
-ICJFZ3Jlc3MgY29uZ2VzdGlvbiB0aHJlc2hvbGQgb24gMUcgcG9ydHMiDQo+ID4gKwlkZXBlbmRz
-IG9uIEZTTF9EUEFBX0VUSA0KPiANCj4gVGhpcyBlbnRyeSBpcyBpbnNpZGUgdGhlICJpZiBGU0xf
-RFBBQV9FVEgiIGJsb2NrLiBTbyB0aGlzIGxpbmUgc2hvdWxkIGJlDQo+IHN1cGVyZmx1b3VzLg0K
-DQpXaWxsIGFkZHJlc3MgdGhpcyBhbmQgdGhlIG90aGVyIG9jY3VycmVuY2VzLg0KDQo+ID4gKwly
-YW5nZSAweDEwMDAgMHgxMDAwMDAwMA0KPiA+ICsJZGVmYXVsdCAiMHgwNjAwMDAwMCINCj4gPiAr
-CS0tLWhlbHAtLS0NCj4gPiArCSAgVGhlIHNpemUgaW4gYnl0ZXMgb2YgdGhlIGVncmVzcyBDb25n
-ZXN0aW9uIFN0YXRlIG5vdGlmaWNhdGlvbg0KPiB0aHJlc2hvbGQgb24gMUcgcG9ydHMuDQo+ID4g
-KwkgIFRoZSAxRyBkVFNFQ3MgY2FuIHF1aXRlIGVhc2lseSBiZSBmbG9vZGVkIGJ5IGNvcmVzIGRv
-aW5nIFR4IGluIGENCj4gdGlnaHQgbG9vcA0KPiA+ICsJICAoZS5nLiBieSBzZW5kaW5nIFVEUCBk
-YXRhZ3JhbXMgYXQgIndoaWxlKDEpIHNwZWVkIiksDQo+ID4gKwkgIGFuZCB0aGUgbGFyZ2VyIHRo
-ZSBmcmFtZSBzaXplLCB0aGUgbW9yZSBhY3V0ZSB0aGUgcHJvYmxlbS4NCj4gPiArCSAgU28gd2Ug
-aGF2ZSB0byBmaW5kIGEgYmFsYW5jZSBiZXR3ZWVuIHRoZXNlIGZhY3RvcnM6DQo+ID4gKwkgICAg
-ICAgLSBhdm9pZGluZyB0aGUgZGV2aWNlIHN0YXlpbmcgY29uZ2VzdGVkIGZvciBhIHByb2xvbmdl
-ZCB0aW1lDQo+IChyaXNraW5nDQo+ID4gKyAgICAgICAgICAgICAgICAgdGhlIG5ldGRldiB3YXRj
-aGRvZyB0byBmaXJlIC0gc2VlIGFsc28gdGhlIHR4X3RpbWVvdXQgbW9kdWxlDQo+IHBhcmFtKTsN
-Cj4gPiArICAgICAgICAgICAgICAgLSBhZmZlY3RpbmcgcGVyZm9ybWFuY2Ugb2YgcHJvdG9jb2xz
-IHN1Y2ggYXMgVENQLCB3aGljaCBvdGhlcndpc2UNCj4gPiArCSAgICAgICAgIGJlaGF2ZSB3ZWxs
-IHVuZGVyIHRoZSBjb25nZXN0aW9uIG5vdGlmaWNhdGlvbiBtZWNoYW5pc207DQo+ID4gKwkgICAg
-ICAgLSBwcmV2ZW50aW5nIHRoZSBUeCBjb3JlcyBmcm9tIHRpZ2h0bHktbG9vcGluZyAoYXMgaWYg
-dGhlDQo+IGNvbmdlc3Rpb24NCj4gPiArCSAgICAgICAgIHRocmVzaG9sZCB3YXMgdG9vIGxvdyB0
-byBiZSBlZmZlY3RpdmUpOw0KPiA+ICsJICAgICAgIC0gcnVubmluZyBvdXQgb2YgbWVtb3J5IGlm
-IHRoZSBDUyB0aHJlc2hvbGQgaXMgc2V0IHRvbyBoaWdoLg0KPiA+ICsNCj4gPiArY29uZmlnIEZT
-TF9EUEFBX0NTX1RIUkVTSE9MRF8xMEcNCj4gPiArCWhleCAiRWdyZXNzIGNvbmdlc3Rpb24gdGhy
-ZXNob2xkIG9uIDEwRyBwb3J0cyINCj4gPiArCWRlcGVuZHMgb24gRlNMX0RQQUFfRVRIDQo+IA0K
-PiBEaXR0by4NCj4gDQo+ID4gKwlyYW5nZSAweDEwMDAgMHgyMDAwMDAwMA0KPiA+ICsJZGVmYXVs
-dCAiMHgxMDAwMDAwMCINCj4gPiArCS0tLWhlbHAgLS0tDQo+ID4gKwkgIFRoZSBzaXplIGluIGJ5
-dGVzIG9mIHRoZSBlZ3Jlc3MgQ29uZ2VzdGlvbiBTdGF0ZSBub3RpZmljYXRpb24NCj4gdGhyZXNo
-b2xkIG9uIDEwRyBwb3J0cy4NCj4gPiArDQo+ID4gK2NvbmZpZyBGU0xfRFBBQV9JTkdSRVNTX0NT
-X1RIUkVTSE9MRA0KPiA+ICsJaGV4ICJJbmdyZXNzIGNvbmdlc3Rpb24gdGhyZXNob2xkIG9uIEZN
-YW4gcG9ydHMiDQo+ID4gKwlkZXBlbmRzIG9uIEZTTF9EUEFBX0VUSA0KPiANCj4gRGl0dG8uDQo+
-IA0KPiA+ICsJZGVmYXVsdCAiMHgxMDAwMDAwMCINCj4gPiArCS0tLWhlbHAtLS0NCj4gPiArCSAg
-VGhlIHNpemUgaW4gYnl0ZXMgb2YgdGhlIGluZ3Jlc3MgdGFpbC1kcm9wIHRocmVzaG9sZCBvbiBG
-TWFuIHBvcnRzLg0KPiA+ICsJICBUcmFmZmljIHBpbGluZyB1cCBhYm92ZSB0aGlzIHZhbHVlIHdp
-bGwgYmUgcmVqZWN0ZWQgYnkgUU1hbiBhbmQNCj4gZGlzY2FyZGVkIGJ5IEZNYW4uDQo+ID4gKw0K
-PiA+ICtlbmRpZiAjIEZTTF9EUEFBX0VUSA0KPiANCj4gQSBzaW1pbGFyIGNvbW1lbnQgY2FuIGJl
-IG1hZGUgZm9yIHRoZSBlbnRyaWVzIGFkZGVkIGluIDAzLzEwLCAwNS8xMCwgYW5kDQo+IDA5LzEw
-Lg0KPiANCj4gVGhhbmtzLA0KPiANCj4gDQo+IFBhdWwgQm9sbGUNCg0KVGhhbmsgeW91LA0KTWFk
-YWxpbg0K
+Now we could use pci_scan_host_bridge() to scan
+pci buses, provide powerpc specific pci_host_bridge_ops.
+
+Signed-off-by: Yijing Wang <wangyijing@huawei.com>
+CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+CC: linuxppc-dev@lists.ozlabs.org
+---
+ arch/powerpc/kernel/pci-common.c |   62 +++++++++++++++++++++++--------------
+ 1 files changed, 38 insertions(+), 24 deletions(-)
+
+diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
+index 2c58200..50b32f6 100644
+--- a/arch/powerpc/kernel/pci-common.c
++++ b/arch/powerpc/kernel/pci-common.c
+@@ -773,6 +773,29 @@ void pcibios_set_root_bus_speed(struct pci_host_bridge *bridge)
+ 		return ppc_md.pcibios_set_root_bus_speed(bridge);
+ }
+ 
++static int pci_host_scan_bus(struct pci_host_bridge *host)
++{
++	int mode = PCI_PROBE_NORMAL;
++	struct pci_bus *bus = host->bus;
++	struct pci_controller *hose = dev_get_drvdata(&host->dev);
++
++	/* Get probe mode and perform scan */
++	if (hose->dn && ppc_md.pci_probe_mode)
++		mode = ppc_md.pci_probe_mode(bus);
++
++	pr_debug("    probe mode: %d\n", mode);
++	if (mode == PCI_PROBE_DEVTREE)
++		of_scan_bus(hose->dn, bus);
++
++	if (mode == PCI_PROBE_NORMAL) {
++		pci_bus_update_busn_res_end(bus, 255);
++		hose->last_busno = pci_scan_child_bus(bus);
++		pci_bus_update_busn_res_end(bus, hose->last_busno);
++	}
++
++	return pci_bus_child_max_busnr(bus);
++}
++
+ /* This header fixup will do the resource fixup for all devices as they are
+  * probed, but not for bridge ranges
+  */
+@@ -1585,6 +1608,11 @@ struct device_node *pcibios_get_phb_of_node(struct pci_bus *bus)
+ 	return of_node_get(hose->dn);
+ }
+ 
++static struct pci_host_bridge_ops pci_host_ops = {
++	.set_root_bus_speed = pcibios_set_root_bus_speed,
++	.scan_bus = pci_host_scan_bus,
++};
++
+ /**
+  * pci_scan_phb - Given a pci_controller, setup and scan the PCI bus
+  * @hose: Pointer to the PCI host controller instance structure
+@@ -1592,9 +1620,8 @@ struct device_node *pcibios_get_phb_of_node(struct pci_bus *bus)
+ void pcibios_scan_phb(struct pci_controller *hose)
+ {
+ 	LIST_HEAD(resources);
+-	struct pci_bus *bus;
++	struct pci_host_bridge *host;
+ 	struct device_node *node = hose->dn;
+-	int mode;
+ 
+ 	pr_debug("PCI: Scanning PHB %s\n", of_node_full_name(node));
+ 
+@@ -1609,30 +1636,17 @@ void pcibios_scan_phb(struct pci_controller *hose)
+ 	hose->busn.flags = IORESOURCE_BUS;
+ 	pci_add_resource(&resources, &hose->busn);
+ 
++	pci_host_ops.pci_ops = hose->ops;
+ 	/* Create an empty bus for the toplevel */
+-	bus = pci_create_root_bus(hose->parent, hose->global_number,
+-			hose->first_busno, hose->ops, hose, &resources);
+-	if (bus == NULL) {
+-		pr_err("Failed to create bus for PCI domain %04x\n",
+-			hose->global_number);
++	host = pci_scan_host_bridge(hose->parent, hose->global_number,
++			hose->first_busno, hose, &resources, &pci_host_ops);
++	if (host == NULL) {
++		pr_err("Failed to create host bridge for pci%04x:%02x\n",
++			hose->global_number, hose->first_busno);
+ 		pci_free_resource_list(&resources);
+ 		return;
+ 	}
+-	hose->bus = bus;
+-
+-	/* Get probe mode and perform scan */
+-	mode = PCI_PROBE_NORMAL;
+-	if (node && ppc_md.pci_probe_mode)
+-		mode = ppc_md.pci_probe_mode(bus);
+-	pr_debug("    probe mode: %d\n", mode);
+-	if (mode == PCI_PROBE_DEVTREE)
+-		of_scan_bus(node, bus);
+-
+-	if (mode == PCI_PROBE_NORMAL) {
+-		pci_bus_update_busn_res_end(bus, 255);
+-		hose->last_busno = pci_scan_child_bus(bus);
+-		pci_bus_update_busn_res_end(bus, hose->last_busno);
+-	}
++	hose->bus = host->bus;
+ 
+ 	/* Platform gets a chance to do some global fixups before
+ 	 * we proceed to resource allocation
+@@ -1641,9 +1655,9 @@ void pcibios_scan_phb(struct pci_controller *hose)
+ 		ppc_md.pcibios_fixup_phb(hose);
+ 
+ 	/* Configure PCI Express settings */
+-	if (bus && !pci_has_flag(PCI_PROBE_ONLY)) {
++	if (host->bus && !pci_has_flag(PCI_PROBE_ONLY)) {
+ 		struct pci_bus *child;
+-		list_for_each_entry(child, &bus->children, node)
++		list_for_each_entry(child, &host->bus->children, node)
+ 			pcie_bus_configure_settings(child);
+ 	}
+ }
+-- 
+1.7.1
