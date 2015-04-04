@@ -1,37 +1,17 @@
-Return-Path: <yhlu.kernel@gmail.com>
-Received: from mail-ie0-x229.google.com (mail-ie0-x229.google.com
- [IPv6:2607:f8b0:4001:c03::229])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <rbrito@ime.usp.br>
+Received: from nm23-vm1.bullet.mail.bf1.yahoo.com
+ (nm23-vm1.bullet.mail.bf1.yahoo.com [98.139.213.141])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3D7311A0AB1
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Apr 2015 14:34:56 +1100 (AEDT)
-Received: by iedfl3 with SMTP id fl3so114773147ied.1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 03 Apr 2015 20:34:52 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6A0201A0ABD
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Apr 2015 16:40:27 +1100 (AEDT)
+Date: Sat, 4 Apr 2015 02:40:22 -0300
+From: =?utf-8?Q?Rog=C3=A9rio?= Brito <rbrito@ime.usp.br>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: Old regression with MTD devices disappearing from a Kurobox HD/HG
+Message-ID: <20150404054022.GA15572@ime.usp.br>
 MIME-Version: 1.0
-Sender: yhlu.kernel@gmail.com
-In-Reply-To: <20150403205201.GF10892@google.com>
-References: <1427857069-6789-1-git-send-email-yinghai@kernel.org>
- <1427857069-6789-2-git-send-email-yinghai@kernel.org>
- <20150403193234.GD10892@google.com>
- <20150403205201.GF10892@google.com>
-Date: Fri, 3 Apr 2015 20:34:52 -0700
-Message-ID: <CAE9FiQVqAEvoLDRZMcNFki0gLMQiyQd2VYivjAh1teRGeuNwBw@mail.gmail.com>
-Subject: Re: [PATCH 1/3] PCI: Introduce pci_bus_addr_t
-From: Yinghai Lu <yinghai@kernel.org>
-To: Bjorn Helgaas <bhelgaas@google.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: David Ahern <david.ahern@oracle.com>,
- the arch/x86 maintainers <x86@kernel.org>,
- Russell King <linux@arm.linux.org.uk>,
- "linux-mips@linux-mips.org" <linux-mips@linux-mips.org>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- "stable@vger.kernel.org" <stable@vger.kernel.org>,
- Ralf Baechle <ralf@linux-mips.org>,
- "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>,
- Sam Ravnborg <sam@ravnborg.org>, David Miller <davem@davemloft.net>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,63 +21,94 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Apr 3, 2015 at 1:52 PM, Bjorn Helgaas <bhelgaas@google.com> wrote:
-> [+cc Sam (commented on previous versions), Russell, linux-arm-kernel, Ralf,
-> linux-mips, Ben, linuxppc-dev, x86]
->
-> On Fri, Apr 03, 2015 at 02:32:34PM -0500, Bjorn Helgaas wrote:
->> On Tue, Mar 31, 2015 at 07:57:47PM -0700, Yinghai Lu wrote:
->> > David Ahern found commit d63e2e1f3df9 ("sparc/PCI: Clip bridge windows
->> > to fit in upstream windows") broke booting on sparc/T5-8.
->> >
->> > In the boot log, there is
->> >   pci 0000:06:00.0: reg 0x184: can't handle BAR above 4GB (bus address
->> >   0x110204000)
->> > but that only could happen when dma_addr_t is 32-bit.
->> >
->> > According to David Miller, all DMA occurs behind an IOMMU and these
->> > IOMMUs only support 32-bit addressing, therefore dma_addr_t is
->> > 32-bit on sparc64.
->> >
->> > Let's introduce pci_bus_addr_t instead of using dma_addr_t,
->> > and pci_bus_addr_t will be 64-bit on 64-bit platform or X86_PAE.
->> >
->> > Fixes: commit d63e2e1f3df9 ("sparc/PCI: Clip bridge windows to fit in upstream windows")
->> > Fixes: commit 23b13bc76f35 ("PCI: Fail safely if we can't handle BARs larger than 4GB")
->> > Link: http://lkml.kernel.org/r/CAE9FiQU1gJY1LYrxs+ma5LCTEEe4xmtjRG0aXJ9K_Tsu+m9Wuw@mail.gmail.com
->> > Reported-by: David Ahern <david.ahern@oracle.com>
->> > Tested-by: David Ahern <david.ahern@oracle.com>
->> > Signed-off-by: Yinghai Lu <yinghai@kernel.org>
->> > Cc: <stable@vger.kernel.org> #3.19
->> > ---
->> >  drivers/pci/Kconfig |  4 ++++
->> >  drivers/pci/bus.c   | 10 +++++-----
->> >  drivers/pci/probe.c | 12 ++++++------
->> >  include/linux/pci.h | 12 +++++++++---
->> >  4 files changed, 24 insertions(+), 14 deletions(-)
->> >
->> > diff --git a/drivers/pci/Kconfig b/drivers/pci/Kconfig
->> > index 7a8f1c5..6a5a269 100644
->> > --- a/drivers/pci/Kconfig
->> > +++ b/drivers/pci/Kconfig
->> > @@ -1,6 +1,10 @@
->> >  #
->> >  # PCI configuration
->> >  #
->> > +config PCI_BUS_ADDR_T_64BIT
->> > +   def_bool y if (64BIT || X86_PAE)
->> > +   depends on PCI
->>
->> We're going to use pci_bus_addr_t in some places where we previously used
->> dma_addr_t, which means pci_bus_addr_t should be at least as large as
->> dma_addr_t.  Can you enforce that directly, e.g., with something like this?
->>
->>     def_bool y if (ARCH_DMA_ADDR_T_64BIT || 64BIT || X86_PAE)
+Hi.
 
-then should use
+I just revived a Kurobox HG to use as a NAS (I also have a simpler Kurobox
+HD here, not being used at this moment) and I am having problems that didn't
+happen before.  I will describe the first problem here and further problems
+in later e-mails.
 
-def_bool y if (ARCH_DMA_ADDR_T_64BIT || 64BIT)
+During the 2.6.27 to 2.6.29 era (I may be mistaken in the range, as this is
+not new) the kernel had a regression where the MTD device of the Kurobox
+used to show about 5 partitions and, with kernels later than that, only one
+partition is shown, namely, /dev/mtd0.
 
-Thanks
+Here is what I used to see (just booted the kernel from flash), with a
+2.4.33.3 kernel (if desired, I can, of course, send the full dmesg log, but
+I don't have the corresponding config):
 
-Yinghai
+,----
+| LinkStation flash device: 400000 at ffc00000
+| NO QRY response
+|  Amd/Fujitsu Extended Query Table v1.3 at 0x0040
+| LinkStation Flash: Swapping erase regions for broken CFI table.
+| number of CFI chips: 1
+| cfi_cmdset_0002: Disabling fast programming due to code brokenness.
+| Creating 5 MTD partitions on "LinkStation Flash":
+| 0x00000000-0x00300000 : "mtd0: kernel+ramdisk"
+| 0x00300000-0x00370000 : "mtd1: bootloader"
+| 0x00370000-0x00380000 : "mtd2: configuration"
+| 0x00380000-0x00400000 : "mtd3: user space"
+| 0x00000000-0x00400000 : "mtd4: all flash"
+| LinkStation flash device initialized
+`----
+
+As I have trouble booting kernels older than 3.x due to my userspace having
+udev and libc requirements, I found a dmesg log that is similar to what I
+used to get with early 2.6 kernels---this is from a kernel 2.6.15 (this part
+is copied from: http://genbako.vodapone.com/old/dmesg-20060117-kuro-NG.txt):
+
+,----
+| physmap flash device: 400000 at ffc00000
+| phys_mapped_flash: Found 1 x16 devices at 0x0 in 8-bit bank
+|  Amd/Fujitsu Extended Query Table at 0x0040
+| phys_mapped_flash: Swapping erase regions for broken CFI table.
+| number of CFI chips: 1
+| cfi_cmdset_0002: Disabling erase-suspend-program due to code brokenness.
+| cmdlinepart partition parsing not available
+| RedBoot partition parsing not available
+| Using physmap partition definition
+| Creating 5 MTD partitions on "phys_mapped_flash":
+| 0x00000000-0x00400000 : "mtd_allflash"
+| 0x00000000-0x00300000 : "mtd_firmimg"
+| 0x00300000-0x00370000 : "mtd_bootcode"
+| 0x00370000-0x00380000 : "mtd_status"
+| 0x00380000-0x00400000 : "mtd_conf"
+| usbmon: debugfs is not available
+`----
+
+Note that, in particular, the boundary addresses of the MTD device are
+exactly the same as the ones on my device.
+
+Unfortunately, right now, what I see with Linus's tree
+(4.0.0-rc6-00009-g6c310bc) is the following:
+
+,----
+| physmap platform flash device: 00400000 at ffc00000
+| physmap-flash.0: Found 1 x16 devices at 0x0 in 8-bit bank. Manufacturer ID 0x000004 Chip ID 0x00007e
+| Amd/Fujitsu Extended Query Table at 0x0040
+|   Amd/Fujitsu Extended Query version 1.3.
+| physmap-flash.0: Swapping erase regions for top-boot CFI table.
+| number of CFI chips: 1
+`----
+
+I note that arch/powerpc/boot/dts/kuroboxH{D,G}.dts have, as one of their
+first lines, the following comment: [0][1]
+
+    XXXX add flash parts, rtc, ??
+
+[0]: http://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/arch/powerpc/boot/dts/kuroboxHD.dts?id=1cced5015b171415169d938fb179c44fe060dc15#n17
+[1]: http://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/arch/powerpc/boot/dts/kuroboxHG.dts?id=1cced5015b171415169d938fb179c44fe060dc15#n17
+
+Is this a problem that can be fixed via additions to the DTS files?  Or
+would the problem be solved in a different way?
+
+
+Thanks in advance,
+
+Rogério Brito.
+
+-- 
+Rogério Brito : rbrito@{ime.usp.br,gmail.com} : GPG key 4096R/BCFCAAAA
+http://cynic.cc/blog/ : github.com/rbrito : profiles.google.com/rbrito
+DebianQA: http://qa.debian.org/developer.php?login=rbrito%40ime.usp.br
