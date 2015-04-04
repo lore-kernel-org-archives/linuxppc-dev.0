@@ -1,21 +1,25 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <sowmini.varadhan@oracle.com>
+Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 363A91A0AC4
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Apr 2015 20:14:33 +1100 (AEDT)
-Message-ID: <1428138872.19454.0.camel@ellerman.id.au>
-Subject: Re: [PATCH v2 1/4] powerpc/tm: Abort syscalls in active transactions
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Sam Bobroff <sam.bobroff@au1.ibm.com>
-Date: Sat, 04 Apr 2015 20:14:32 +1100
-In-Reply-To: <cb32074cdf25c5b5707904ea618f3c375daa6126.1427685637.git.sam.bobroff@au1.ibm.com>
-References: <cover.1427685637.git.sam.bobroff@au1.ibm.com>
- <cb32074cdf25c5b5707904ea618f3c375daa6126.1427685637.git.sam.bobroff@au1.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: mikey@neuling.org, azanella@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org, matt@ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 825E41A0AC8
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Apr 2015 22:27:34 +1100 (AEDT)
+Date: Sat, 4 Apr 2015 07:27:14 -0400
+From: Sowmini Varadhan <sowmini.varadhan@oracle.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH v8 RFC 1/3] sparc: Break up monolithic iommu table/lock
+ into finer graularity pools and lock
+Message-ID: <20150404112714.GA2117@oracle.com>
+References: <cover.1427761300.git.sowmini.varadhan@oracle.com>
+ <8406d119fb885255387a400551de994cb4a4c331.1427761300.git.sowmini.varadhan@oracle.com>
+ <1428008044.20500.272.camel@kernel.crashing.org>
+ <20150403182852.GI26158@oracle.com>
+ <1428095210.20500.291.camel@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1428095210.20500.291.camel@kernel.crashing.org>
+Cc: aik@au1.ibm.com, anton@au1.ibm.com, paulus@samba.org,
+ sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,26 +29,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2015-03-30 at 14:20 +1100, Sam Bobroff wrote:
-> @@ -145,6 +146,24 @@ END_FW_FTR_SECTION_IFSET(FW_FEATURE_SPLPAR)
->  	andi.	r11,r10,_TIF_SYSCALL_DOTRACE
->  	bne	syscall_dotrace
->  .Lsyscall_dotrace_cont:
-> +#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-> +BEGIN_FTR_SECTION
-> +	b	1f
-> +END_FTR_SECTION_IFCLR(CPU_FTR_TM)
-> +	extrdi.	r11, r12, 1, (63-MSR_TS_T_LG) /* transaction active? */
-> +	beq+	1f
-> +
-> +	/* Doom the transaction and don't perform the syscall: */
-> +	mfmsr	r11
-> +	li	r12, 1
-> +	rldimi	r11, r12, MSR_TM_LG, 63-MSR_TM_LG
-> +	mtmsrd	r11, 0
-> +	li	r11, (TM_CAUSE_SYSCALL|TM_CAUSE_PERSISTENT)
-> +	tabort. r11
+One last question before I spin out v9.. the dma_mask code
+is a bit confusing to me, so I want to make sure... the code is 
 
-TABORT please, otherwise old toolchains can't build it.
+> if (limit + tbl->it_offset > mask) {
+>               limit = mask - tbl->it_offset + 1;
+>               /* If we're constrained on address range, first try
+>                * at the masked hint to avoid O(n) search complexity,
+>                * but on second pass, start at 0 in pool 0.
+>                */
+>               if ((start & mask) >= limit || pass > 0) {
+>                       spin_unlock(&(pool->lock));
+>                       pool = &(tbl->pools[0]);
+>                       spin_lock(&(pool->lock));
+>                       start = pool->start;
 
-cheers
+So here I would need to mark need_flush to true, right?
+
+
+--Sowmini
