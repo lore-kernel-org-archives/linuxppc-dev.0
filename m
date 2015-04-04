@@ -1,17 +1,14 @@
-Return-Path: <rbrito@ime.usp.br>
-Received: from nm23-vm1.bullet.mail.bf1.yahoo.com
- (nm23-vm1.bullet.mail.bf1.yahoo.com [98.139.213.141])
- (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6A0201A0ABD
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Apr 2015 16:40:27 +1100 (AEDT)
-Date: Sat, 4 Apr 2015 02:40:22 -0300
-From: =?utf-8?Q?Rog=C3=A9rio?= Brito <rbrito@ime.usp.br>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: Old regression with MTD devices disappearing from a Kurobox HD/HG
-Message-ID: <20150404054022.GA15572@ime.usp.br>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id B047D1A084E
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  4 Apr 2015 19:28:53 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: <linuxppc-dev@ozlabs.org>
+Subject: [PATCH] powerpc: Drop return value of smp_ops->probe()
+Date: Sat,  4 Apr 2015 19:28:50 +1100
+Message-Id: <1428136130-4406-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,94 +18,218 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi.
+smp_ops->probe() is currently supposed to return the number of cpus in
+the system.
 
-I just revived a Kurobox HG to use as a NAS (I also have a simpler Kurobox
-HD here, not being used at this moment) and I am having problems that didn't
-happen before.  I will describe the first problem here and further problems
-in later e-mails.
+The last actual usage of the value was removed in May 2007 in e147ec8f1808
+"[POWERPC] Simplify smp_space_timers". We still passed the value around
+until June 2010 when even that was finally removed in c1aa687d499a
+"powerpc: Clean up obsolete code relating to decrementer and timebase".
 
-During the 2.6.27 to 2.6.29 era (I may be mistaken in the range, as this is
-not new) the kernel had a regression where the MTD device of the Kurobox
-used to show about 5 partitions and, with kernels later than that, only one
-partition is shown, namely, /dev/mtd0.
+So drop that requirement, probe() now returns void, and update all
+implementations.
 
-Here is what I used to see (just booted the kernel from flash), with a
-2.4.33.3 kernel (if desired, I can, of course, send the full dmesg log, but
-I don't have the corresponding config):
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/include/asm/smp.h         | 4 ++--
+ arch/powerpc/include/asm/xics.h        | 2 +-
+ arch/powerpc/platforms/cell/smp.c      | 9 +--------
+ arch/powerpc/platforms/powermac/smp.c  | 8 +++-----
+ arch/powerpc/platforms/ps3/smp.c       | 4 +---
+ arch/powerpc/platforms/pseries/smp.c   | 6 ++----
+ arch/powerpc/sysdev/mpic.c             | 4 +---
+ arch/powerpc/sysdev/xics/xics-common.c | 4 +---
+ 8 files changed, 12 insertions(+), 29 deletions(-)
 
-,----
-| LinkStation flash device: 400000 at ffc00000
-| NO QRY response
-|  Amd/Fujitsu Extended Query Table v1.3 at 0x0040
-| LinkStation Flash: Swapping erase regions for broken CFI table.
-| number of CFI chips: 1
-| cfi_cmdset_0002: Disabling fast programming due to code brokenness.
-| Creating 5 MTD partitions on "LinkStation Flash":
-| 0x00000000-0x00300000 : "mtd0: kernel+ramdisk"
-| 0x00300000-0x00370000 : "mtd1: bootloader"
-| 0x00370000-0x00380000 : "mtd2: configuration"
-| 0x00380000-0x00400000 : "mtd3: user space"
-| 0x00000000-0x00400000 : "mtd4: all flash"
-| LinkStation flash device initialized
-`----
-
-As I have trouble booting kernels older than 3.x due to my userspace having
-udev and libc requirements, I found a dmesg log that is similar to what I
-used to get with early 2.6 kernels---this is from a kernel 2.6.15 (this part
-is copied from: http://genbako.vodapone.com/old/dmesg-20060117-kuro-NG.txt):
-
-,----
-| physmap flash device: 400000 at ffc00000
-| phys_mapped_flash: Found 1 x16 devices at 0x0 in 8-bit bank
-|  Amd/Fujitsu Extended Query Table at 0x0040
-| phys_mapped_flash: Swapping erase regions for broken CFI table.
-| number of CFI chips: 1
-| cfi_cmdset_0002: Disabling erase-suspend-program due to code brokenness.
-| cmdlinepart partition parsing not available
-| RedBoot partition parsing not available
-| Using physmap partition definition
-| Creating 5 MTD partitions on "phys_mapped_flash":
-| 0x00000000-0x00400000 : "mtd_allflash"
-| 0x00000000-0x00300000 : "mtd_firmimg"
-| 0x00300000-0x00370000 : "mtd_bootcode"
-| 0x00370000-0x00380000 : "mtd_status"
-| 0x00380000-0x00400000 : "mtd_conf"
-| usbmon: debugfs is not available
-`----
-
-Note that, in particular, the boundary addresses of the MTD device are
-exactly the same as the ones on my device.
-
-Unfortunately, right now, what I see with Linus's tree
-(4.0.0-rc6-00009-g6c310bc) is the following:
-
-,----
-| physmap platform flash device: 00400000 at ffc00000
-| physmap-flash.0: Found 1 x16 devices at 0x0 in 8-bit bank. Manufacturer ID 0x000004 Chip ID 0x00007e
-| Amd/Fujitsu Extended Query Table at 0x0040
-|   Amd/Fujitsu Extended Query version 1.3.
-| physmap-flash.0: Swapping erase regions for top-boot CFI table.
-| number of CFI chips: 1
-`----
-
-I note that arch/powerpc/boot/dts/kuroboxH{D,G}.dts have, as one of their
-first lines, the following comment: [0][1]
-
-    XXXX add flash parts, rtc, ??
-
-[0]: http://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/arch/powerpc/boot/dts/kuroboxHD.dts?id=1cced5015b171415169d938fb179c44fe060dc15#n17
-[1]: http://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/arch/powerpc/boot/dts/kuroboxHG.dts?id=1cced5015b171415169d938fb179c44fe060dc15#n17
-
-Is this a problem that can be fixed via additions to the DTS files?  Or
-would the problem be solved in a different way?
-
-
-Thanks in advance,
-
-Rogério Brito.
-
+diff --git a/arch/powerpc/include/asm/smp.h b/arch/powerpc/include/asm/smp.h
+index d607df5081a7..3e7d0abb402b 100644
+--- a/arch/powerpc/include/asm/smp.h
++++ b/arch/powerpc/include/asm/smp.h
+@@ -42,7 +42,7 @@ struct smp_ops_t {
+ #ifdef CONFIG_PPC_SMP_MUXED_IPI
+ 	void  (*cause_ipi)(int cpu, unsigned long data);
+ #endif
+-	int   (*probe)(void);
++	void  (*probe)(void);
+ 	int   (*kick_cpu)(int nr);
+ 	void  (*setup_cpu)(int nr);
+ 	void  (*bringup_done)(void);
+@@ -175,7 +175,7 @@ static inline void set_hard_smp_processor_id(int cpu, int phys)
+ 
+ extern int smt_enabled_at_boot;
+ 
+-extern int smp_mpic_probe(void);
++extern void smp_mpic_probe(void);
+ extern void smp_mpic_setup_cpu(int cpu);
+ extern int smp_generic_kick_cpu(int nr);
+ extern int smp_generic_cpu_bootable(unsigned int nr);
+diff --git a/arch/powerpc/include/asm/xics.h b/arch/powerpc/include/asm/xics.h
+index 6997f4a271df..0e25bdb190bb 100644
+--- a/arch/powerpc/include/asm/xics.h
++++ b/arch/powerpc/include/asm/xics.h
+@@ -146,7 +146,7 @@ extern void xics_update_irq_servers(void);
+ extern void xics_set_cpu_giq(unsigned int gserver, unsigned int join);
+ extern void xics_mask_unknown_vec(unsigned int vec);
+ extern irqreturn_t xics_ipi_dispatch(int cpu);
+-extern int xics_smp_probe(void);
++extern void xics_smp_probe(void);
+ extern void xics_register_ics(struct ics *ics);
+ extern void xics_teardown_cpu(void);
+ extern void xics_kexec_teardown_cpu(int secondary);
+diff --git a/arch/powerpc/platforms/cell/smp.c b/arch/powerpc/platforms/cell/smp.c
+index b64e7ead752f..895560f4be69 100644
+--- a/arch/powerpc/platforms/cell/smp.c
++++ b/arch/powerpc/platforms/cell/smp.c
+@@ -102,13 +102,6 @@ static inline int smp_startup_cpu(unsigned int lcpu)
+ 	return 1;
+ }
+ 
+-static int __init smp_iic_probe(void)
+-{
+-	iic_request_IPIs();
+-
+-	return num_possible_cpus();
+-}
+-
+ static void smp_cell_setup_cpu(int cpu)
+ {
+ 	if (cpu != boot_cpuid)
+@@ -139,7 +132,7 @@ static int smp_cell_kick_cpu(int nr)
+ 
+ static struct smp_ops_t bpa_iic_smp_ops = {
+ 	.message_pass	= iic_message_pass,
+-	.probe		= smp_iic_probe,
++	.probe		= iic_request_IPIs,
+ 	.kick_cpu	= smp_cell_kick_cpu,
+ 	.setup_cpu	= smp_cell_setup_cpu,
+ 	.cpu_bootable	= smp_generic_cpu_bootable,
+diff --git a/arch/powerpc/platforms/powermac/smp.c b/arch/powerpc/platforms/powermac/smp.c
+index af094ae03dbb..f84ac7ee1107 100644
+--- a/arch/powerpc/platforms/powermac/smp.c
++++ b/arch/powerpc/platforms/powermac/smp.c
+@@ -268,7 +268,7 @@ static void __init psurge_quad_init(void)
+ 	mdelay(33);
+ }
+ 
+-static int __init smp_psurge_probe(void)
++static void __init smp_psurge_probe(void)
+ {
+ 	int i, ncpus;
+ 	struct device_node *dn;
+@@ -766,7 +766,7 @@ static void __init smp_core99_setup(int ncpus)
+ 		powersave_nap = 0;
+ }
+ 
+-static int __init smp_core99_probe(void)
++static void __init smp_core99_probe(void)
+ {
+ 	struct device_node *cpus;
+ 	int ncpus = 0;
+@@ -781,7 +781,7 @@ static int __init smp_core99_probe(void)
+ 
+ 	/* Nothing more to do if less than 2 of them */
+ 	if (ncpus <= 1)
+-		return 1;
++		return;
+ 
+ 	/* We need to perform some early initialisations before we can start
+ 	 * setting up SMP as we are running before initcalls
+@@ -797,8 +797,6 @@ static int __init smp_core99_probe(void)
+ 
+ 	/* Collect l2cr and l3cr values from CPU 0 */
+ 	core99_init_caches(0);
+-
+-	return ncpus;
+ }
+ 
+ static int smp_core99_kick_cpu(int nr)
+diff --git a/arch/powerpc/platforms/ps3/smp.c b/arch/powerpc/platforms/ps3/smp.c
+index b358bec6c8cb..3c7707af3384 100644
+--- a/arch/powerpc/platforms/ps3/smp.c
++++ b/arch/powerpc/platforms/ps3/smp.c
+@@ -57,7 +57,7 @@ static void ps3_smp_message_pass(int cpu, int msg)
+ 			" (%d)\n", __func__, __LINE__, cpu, msg, result);
+ }
+ 
+-static int __init ps3_smp_probe(void)
++static void __init ps3_smp_probe(void)
+ {
+ 	int cpu;
+ 
+@@ -100,8 +100,6 @@ static int __init ps3_smp_probe(void)
+ 
+ 		DBG(" <- %s:%d: (%d)\n", __func__, __LINE__, cpu);
+ 	}
+-
+-	return 2;
+ }
+ 
+ void ps3_smp_cleanup_cpu(int cpu)
+diff --git a/arch/powerpc/platforms/pseries/smp.c b/arch/powerpc/platforms/pseries/smp.c
+index a3555b10c1a5..6932ea803e33 100644
+--- a/arch/powerpc/platforms/pseries/smp.c
++++ b/arch/powerpc/platforms/pseries/smp.c
+@@ -197,16 +197,14 @@ static void pSeries_cause_ipi_mux(int cpu, unsigned long data)
+ 		xics_cause_ipi(cpu, data);
+ }
+ 
+-static __init int pSeries_smp_probe(void)
++static __init void pSeries_smp_probe(void)
+ {
+-	int ret = xics_smp_probe();
++	xics_smp_probe();
+ 
+ 	if (cpu_has_feature(CPU_FTR_DBELL)) {
+ 		xics_cause_ipi = smp_ops->cause_ipi;
+ 		smp_ops->cause_ipi = pSeries_cause_ipi_mux;
+ 	}
+-
+-	return ret;
+ }
+ 
+ static struct smp_ops_t pSeries_mpic_smp_ops = {
+diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
+index f72b592d60cc..d4ca85fbebfe 100644
+--- a/arch/powerpc/sysdev/mpic.c
++++ b/arch/powerpc/sysdev/mpic.c
+@@ -1888,7 +1888,7 @@ void smp_mpic_message_pass(int cpu, int msg)
+ 		       msg * MPIC_INFO(CPU_IPI_DISPATCH_STRIDE), physmask);
+ }
+ 
+-int __init smp_mpic_probe(void)
++void __init smp_mpic_probe(void)
+ {
+ 	int nr_cpus;
+ 
+@@ -1900,8 +1900,6 @@ int __init smp_mpic_probe(void)
+ 
+ 	if (nr_cpus > 1)
+ 		mpic_request_ipis();
+-
+-	return nr_cpus;
+ }
+ 
+ void smp_mpic_setup_cpu(int cpu)
+diff --git a/arch/powerpc/sysdev/xics/xics-common.c b/arch/powerpc/sysdev/xics/xics-common.c
+index 125743b58c70..878a54036a25 100644
+--- a/arch/powerpc/sysdev/xics/xics-common.c
++++ b/arch/powerpc/sysdev/xics/xics-common.c
+@@ -140,15 +140,13 @@ static void xics_request_ipi(void)
+ 			   IRQF_PERCPU | IRQF_NO_THREAD, "IPI", NULL));
+ }
+ 
+-int __init xics_smp_probe(void)
++void __init xics_smp_probe(void)
+ {
+ 	/* Setup cause_ipi callback  based on which ICP is used */
+ 	smp_ops->cause_ipi = icp_ops->cause_ipi;
+ 
+ 	/* Register all the IPIs */
+ 	xics_request_ipi();
+-
+-	return num_possible_cpus();
+ }
+ 
+ #endif /* CONFIG_SMP */
 -- 
-Rogério Brito : rbrito@{ime.usp.br,gmail.com} : GPG key 4096R/BCFCAAAA
-http://cynic.cc/blog/ : github.com/rbrito : profiles.google.com/rbrito
-DebianQA: http://qa.debian.org/developer.php?login=rbrito%40ime.usp.br
+2.1.0
