@@ -1,37 +1,41 @@
-Return-Path: <nacc@linux.vnet.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9F6871A0145
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Apr 2015 07:46:04 +1000 (AEST)
-Received: from /spool/local
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
- Mon, 6 Apr 2015 15:46:02 -0600
-Received: from b03cxnp08026.gho.boulder.ibm.com
- (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 6B9F93E4003F
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Apr 2015 15:46:00 -0600 (MDT)
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
- by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t36Lk38W28311758
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 Apr 2015 14:46:03 -0700
-Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
- by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t36Ljxl8012324
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 6 Apr 2015 15:46:00 -0600
-Date: Mon, 6 Apr 2015 14:45:58 -0700
-From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Subject: Topology updates and NUMA-level sched domains
-Message-ID: <20150406214558.GA38501@linux.vnet.ibm.com>
+Return-Path: <stefan@agner.ch>
+Received: from mail.kmu-office.ch (mail.kmu-office.ch [178.209.48.109])
+ by lists.ozlabs.org (Postfix) with ESMTP id BFF721A0ACC
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  5 Apr 2015 08:12:52 +1000 (AEST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: Boqun Feng <boqun.feng@linux.vnet.ibm.com>,
- Srikar Dronamraju <srikar@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
- Ingo Molnar <mingo@redhat.com>, linuxppc-dev@lists.ozlabs.org,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=US-ASCII
+Date: Sun, 05 Apr 2015 00:04:29 +0200
+From: Stefan Agner <stefan@agner.ch>
+To: Joe Perches <joe@perches.com>
+Subject: Re: [PATCH] tty: serial: Add const to struct
+ =?UTF-8?Q?uart=5Fops=20declarations?=
+In-Reply-To: <1428169665.2775.53.camel@perches.com>
+References: <1428169665.2775.53.camel@perches.com>
+Message-ID: <a938a0e86638588e5ccff85771fa3b95@agner.ch>
+Cc: linux-ia64@vger.kernel.org, kernel@stlinux.com,
+ Nicolas Ferre <nicolas.ferre@atmel.com>, Timur Tabi <timur@tabi.org>,
+ Patrice Chotard <patrice.chotard@st.com>, Pat Gefre <pfg@sgi.com>,
+ Laxman Dewangan <ldewangan@nvidia.com>,
+ "Maciej W. Rozycki" <macro@linux-mips.org>, Daniel Walker <dwalker@fifo99.com>,
+ sparclinux@vger.kernel.org, Sonic Zhang <sonic.zhang@analog.com>,
+ Jiri Slaby <jslaby@suse.cz>, Alexandre Courbot <gnurou@gmail.com>,
+ Russell King <linux@arm.linux.org.uk>, Michal Simek <michal.simek@xilinx.com>,
+ =?UTF-8?Q?S=C3=B6ren_Brinkmann?= <soren.brinkmann@xilinx.com>,
+ linux-serial@vger.kernel.org, Tobias Klauser <tklauser@distanz.ch>,
+ Stephen Warren <swarren@wwwdotorg.org>, linux-arm-msm@vger.kernel.org,
+ adi-buildroot-devel@lists.sourceforge.net,
+ Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>,
+ linux-tegra@vger.kernel.org, David Brown <davidb@codeaurora.org>,
+ linux-arm-kernel@lists.infradead.org, Maxime Coquelin <maxime.coquelin@st.com>,
+ Barry Song <baohua@kernel.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org,
+ Tony Prisk <linux@prisktech.co.nz>, Bryan Huntsman <bryanh@codeaurora.org>,
+ Thierry Reding <thierry.reding@gmail.com>,
+ =?UTF-8?Q?Uwe_Kleine-K=C3=B6nig?= <kernel@pengutronix.de>,
+ Vineet Gupta <vgupta@synopsys.com>, nios2-dev@lists.rocketboards.org,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "David S. Miller" <davem@davemloft.net>,
+ Srinivas Kandagatla <srinivas.kandagatla@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,87 +45,138 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Peter,
+Hi Joe,
 
-As you are very aware, I think, power has some odd NUMA topologies (and
-changes to the those topologies) at run-time. In particular, we can see
-a topology at boot:
+See comment below...
 
-Node 0: all Cpus
-Node 7: no cpus
+On 2015-04-04 19:47, Joe Perches wrote:
+> These structs can be const, so make them const.
+> 
+> Signed-off-by: Joe Perches <joe@perches.com>
+> ---
+> 
+> Done with:
+> sed -r -i -e 's/\bstruct\s+uart_ops\s+(\w+)\s*=\s*/const struct
+> uart_ops \1 = /g' drivers/tty/serial/*.c
+> 
+> Compiled x86 only, not cross-compiled.  Untested.
+> 
+>  drivers/tty/serial/21285.c                  | 2 +-
+>  drivers/tty/serial/altera_jtaguart.c        | 2 +-
+>  drivers/tty/serial/altera_uart.c            | 2 +-
+>  drivers/tty/serial/amba-pl010.c             | 2 +-
+>  drivers/tty/serial/amba-pl011.c             | 2 +-
+>  drivers/tty/serial/apbuart.c                | 2 +-
+>  drivers/tty/serial/ar933x_uart.c            | 2 +-
+>  drivers/tty/serial/arc_uart.c               | 2 +-
+>  drivers/tty/serial/atmel_serial.c           | 2 +-
+>  drivers/tty/serial/bcm63xx_uart.c           | 2 +-
+>  drivers/tty/serial/bfin_sport_uart.c        | 2 +-
+>  drivers/tty/serial/bfin_uart.c              | 2 +-
+>  drivers/tty/serial/cpm_uart/cpm_uart_core.c | 2 +-
+>  drivers/tty/serial/dz.c                     | 2 +-
+>  drivers/tty/serial/efm32-uart.c             | 2 +-
+>  drivers/tty/serial/fsl_lpuart.c             | 4 ++--
+>  drivers/tty/serial/icom.c                   | 2 +-
+>  drivers/tty/serial/imx.c                    | 2 +-
+>  drivers/tty/serial/ioc3_serial.c            | 2 +-
+>  drivers/tty/serial/ioc4_serial.c            | 2 +-
+>  drivers/tty/serial/ip22zilog.c              | 2 +-
+>  drivers/tty/serial/jsm/jsm_tty.c            | 2 +-
+>  drivers/tty/serial/lantiq.c                 | 2 +-
+>  drivers/tty/serial/lpc32xx_hs.c             | 2 +-
+>  drivers/tty/serial/m32r_sio.c               | 2 +-
+>  drivers/tty/serial/max3100.c                | 2 +-
+>  drivers/tty/serial/men_z135_uart.c          | 2 +-
+>  drivers/tty/serial/meson_uart.c             | 2 +-
+>  drivers/tty/serial/mpc52xx_uart.c           | 2 +-
+>  drivers/tty/serial/mpsc.c                   | 2 +-
+>  drivers/tty/serial/msm_serial.c             | 2 +-
+>  drivers/tty/serial/mux.c                    | 2 +-
+>  drivers/tty/serial/mxs-auart.c              | 2 +-
+>  drivers/tty/serial/netx-serial.c            | 2 +-
+>  drivers/tty/serial/nwpserial.c              | 2 +-
+>  drivers/tty/serial/omap-serial.c            | 2 +-
+>  drivers/tty/serial/pch_uart.c               | 2 +-
+>  drivers/tty/serial/pmac_zilog.c             | 2 +-
+>  drivers/tty/serial/pnx8xxx_uart.c           | 2 +-
+>  drivers/tty/serial/pxa.c                    | 2 +-
+>  drivers/tty/serial/sa1100.c                 | 2 +-
+>  drivers/tty/serial/samsung.c                | 2 +-
+>  drivers/tty/serial/serial-tegra.c           | 2 +-
+>  drivers/tty/serial/serial_ks8695.c          | 2 +-
+>  drivers/tty/serial/serial_txx9.c            | 2 +-
+>  drivers/tty/serial/sh-sci.c                 | 2 +-
+>  drivers/tty/serial/sirfsoc_uart.c           | 2 +-
+>  drivers/tty/serial/sn_console.c             | 2 +-
+>  drivers/tty/serial/sprd_serial.c            | 2 +-
+>  drivers/tty/serial/st-asc.c                 | 2 +-
+>  drivers/tty/serial/sunhv.c                  | 2 +-
+>  drivers/tty/serial/sunsab.c                 | 2 +-
+>  drivers/tty/serial/sunsu.c                  | 2 +-
+>  drivers/tty/serial/sunzilog.c               | 2 +-
+>  drivers/tty/serial/timbuart.c               | 2 +-
+>  drivers/tty/serial/uartlite.c               | 2 +-
+>  drivers/tty/serial/ucc_uart.c               | 2 +-
+>  drivers/tty/serial/vr41xx_siu.c             | 2 +-
+>  drivers/tty/serial/vt8500_serial.c          | 2 +-
+>  drivers/tty/serial/xilinx_uartps.c          | 2 +-
+>  drivers/tty/serial/zs.c                     | 2 +-
+>  61 files changed, 62 insertions(+), 62 deletions(-)
+> 
 
-Then we get a notification from the hypervisor that a core (or two) have
-moved from node 0 to node 7. This results in the:
+<snip>
 
-[   64.496687] BUG: arch topology borken
-[   64.496689]      the CPU domain not a subset of the NUMA domain
+> --- a/drivers/tty/serial/efm32-uart.c
+> +++ b/drivers/tty/serial/efm32-uart.c
+> @@ -487,7 +487,7 @@ static int efm32_uart_verify_port(struct uart_port *port,
+>  	return ret;
+>  }
+>  
+> -static struct uart_ops efm32_uart_pops = {
+> +static const struct uart_ops efm32_uart_pops = {
+>  	.tx_empty = efm32_uart_tx_empty,
+>  	.set_mctrl = efm32_uart_set_mctrl,
+>  	.get_mctrl = efm32_uart_get_mctrl,
+> diff --git a/drivers/tty/serial/fsl_lpuart.c b/drivers/tty/serial/fsl_lpuart.c
+> index 08ce76f..738b5c4 100644
+> --- a/drivers/tty/serial/fsl_lpuart.c
+> +++ b/drivers/tty/serial/fsl_lpuart.c
+> @@ -1494,7 +1494,7 @@ static int lpuart_verify_port(struct uart_port
+> *port, struct serial_struct *ser)
+>  	return ret;
+>  }
+>  
+> -static struct uart_ops lpuart_pops = {
+> +static const const struct uart_ops lpuart_pops = {
 
-messages for each moved CPU. I think this is because when we first came
-up, we degrade (elide altogether?) the NUMA domain for node 7 as it has
-no CPUs:
+Something went wrong in this driver, const is twice...
 
-[    0.305823] CPU0 attaching sched-domain:
-[    0.305831]  domain 0: span 0-7 level SIBLING
-[    0.305834]   groups: 0 (cpu_power = 146) 1 (cpu_power = 146) 2
-(cpu_power = 146) 3 (cpu_power = 146) 4 (cpu_power = 146) 5 (cpu_power =
-146) 6 (cpu_power = 146) 7 (cpu_power = 146)
-[    0.305854]   domain 1: span 0-79 level CPU
-[    0.305856]    groups: 0-7 (cpu_power = 1168) 8-15 (cpu_power = 1168)
-16-23 (cpu_power = 1168) 24-31 (cpu_power = 1168) 32-39 (cpu_power =
-1168) 40-47 (cpu_power = 1168) 48-55 (cpu_power = 1168) 56-63 (cpu_power
-= 1168) 64-71 (cpu_power = 1168) 72-79 (cpu_power = 1168)
+Probably because we have two struct uart_ops in one driver?
 
-For those cpus that moved, we get after the update:
+>  	.tx_empty	= lpuart_tx_empty,
+>  	.set_mctrl	= lpuart_set_mctrl,
+>  	.get_mctrl	= lpuart_get_mctrl,
+> @@ -1513,7 +1513,7 @@ static struct uart_ops lpuart_pops = {
+>  	.flush_buffer	= lpuart_flush_buffer,
+>  };
+>  
+> -static struct uart_ops lpuart32_pops = {
+> +static const const struct uart_ops lpuart32_pops = {
+>  	.tx_empty	= lpuart32_tx_empty,
+>  	.set_mctrl	= lpuart32_set_mctrl,
+>  	.get_mctrl	= lpuart32_get_mctrl,
+> diff --git a/drivers/tty/serial/icom.c b/drivers/tty/serial/icom.c
+> index 45fc323..3915443 100644
+> --- a/drivers/tty/serial/icom.c
+> +++ b/drivers/tty/serial/icom.c
+> @@ -1287,7 +1287,7 @@ static void icom_config_port(struct uart_port
+> *port, int flags)
+>  	port->type = PORT_ICOM;
+>  }
+>  
 
-[   64.505819] CPU8 attaching sched-domain:
-[   64.505821]  domain 0: span 8-15 level SIBLING
-[   64.505823]   groups: 8 (cpu_power = 147) 9 (cpu_power = 147) 10
-(cpu_power = 147) 11 (cpu_power = 146) 12 (cpu_power = 147) 13
-(cpu_power = 147) 14 (cpu_power = 146) 15 (cpu_power = 147)
-[   64.505842]   domain 1: span 8-23,72-79 level CPU
-[   64.505845]    groups: 8-15 (cpu_power = 1174) 16-23 (cpu_power =
-1175) 72-79 (cpu_power = 1176)
+<snip>
 
-while the non-modified CPUs report, correctly:
-
-[   64.497186] CPU0 attaching sched-domain:
-[   64.497189]  domain 0: span 0-7 level SIBLING
-[   64.497192]   groups: 0 (cpu_power = 147) 1 (cpu_power = 147) 2
-(cpu_power = 146) 3 (cpu_power = 147) 4 (cpu_power = 147) 5 (cpu_power =
-147) 6 (cpu_power = 147) 7 (cpu_power = 146)
-[   64.497213]   domain 1: span 0-7,24-71 level CPU
-[   64.497215]    groups: 0-7 (cpu_power = 1174) 24-31 (cpu_power =
-1173) 32-39 (cpu_power = 1176) 40-47 (cpu_power = 1175) 48-55 (cpu_power
-= 1176) 56-63 (cpu_power = 1175) 64-71 (cpu_power = 1174)
-[   64.497234]    domain 2: span 0-79 level NUMA
-[   64.497236]     groups: 0-7,24-71 (cpu_power = 8223) 8-23,72-79
-(cpu_power = 3525)
-
-It seems like we might need something like this (HORRIBLE HACK, I know,
-just to get discussion):
-
-@@ -6958,6 +6960,10 @@ void partition_sched_domains(int ndoms_new,
-cpumask_var_t doms_new[],
- 
-        /* Let architecture update cpu core mappings. */
-        new_topology = arch_update_cpu_topology();
-+       /* Update NUMA topology lists */
-+       if (new_topology) {
-+               sched_init_numa();
-+       }
- 
-        n = doms_new ? ndoms_new : 0;
-
-or a re-init API (which won't try to reallocate various bits), because
-the topology could be completely different now (e.g.,
-sched_domains_numa_distance will also be inaccurate now).  Really, a
-topology update on power (not sure on s390x, but those are the only two
-archs that return a positive value from arch_update_cpu_topology() right
-now, afaics) is a lot like a hotplug event and we need to re-initialize
-any dependent structures.
-
-I'm just sending out feelers, as we can limp by with the above warning,
-it seems, but is less than ideal. Any help or insight you could provide
-would be greatly appreciated!
-
--Nish
+--
+Stefan
