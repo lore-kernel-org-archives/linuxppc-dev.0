@@ -1,18 +1,22 @@
-Return-Path: <julia.lawall@lip6.fr>
-Date: Sun, 5 Apr 2015 14:12:37 +0200 (CEST)
-From: Julia Lawall <julia.lawall@lip6.fr>
-To: Julia Lawall <Julia.Lawall@lip6.fr>
-Subject: Re: [PATCH 9/9] sound/ppc/snd_ps3.c: fix error return code
-In-Reply-To: <1428233914-4503-9-git-send-email-Julia.Lawall@lip6.fr>
-Message-ID: <alpine.DEB.2.02.1504051412330.2038@localhost6.localdomain6>
-References: <1428233914-4503-1-git-send-email-Julia.Lawall@lip6.fr>
- <1428233914-4503-9-git-send-email-Julia.Lawall@lip6.fr>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: cbe-oss-dev@lists.ozlabs.org, alsa-devel@alsa-project.org,
- Geoff Levand <geoff@infradead.org>, kernel-janitors@vger.kernel.org,
- linux-kernel@vger.kernel.org, Jaroslav Kysela <perex@perex.cz>,
- Takashi Iwai <tiwai@suse.de>, linuxppc-dev@lists.ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8A2DF1A0B9B
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  5 Apr 2015 22:26:16 +1000 (AEST)
+Message-ID: <1428236761.20500.315.camel@kernel.crashing.org>
+Subject: Re: [PATCHv9 RFC 1/3] Break up monolithic iommu table/lock into
+ finer graularity pools and lock
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Sowmini Varadhan <sowmini.varadhan@oracle.com>
+Date: Sun, 05 Apr 2015 22:26:01 +1000
+In-Reply-To: <a259c5bbc3d98dbaedc73a88250a5e7c937ec5f9.1428181553.git.sowmini.varadhan@oracle.com>
+References: <cover.1428181553.git.sowmini.varadhan@oracle.com>
+ <a259c5bbc3d98dbaedc73a88250a5e7c937ec5f9.1428181553.git.sowmini.varadhan@oracle.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: aik@au1.ibm.com, anton@au1.ibm.com, paulus@samba.org,
+ sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,57 +26,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Please ignore. Wrong patch set.
+On Sun, 2015-04-05 at 07:49 -0400, Sowmini Varadhan wrote:
+> +               if (likely(pass == 0)) {
+> +                       /* First failure, rescan from the beginning.
+> */
+> +                       pool->hint = pool->start;
+> +                       set_flush(iommu);
+> +                       pass++;
+> +                       goto again;
+> +               } else if (!largealloc && pass <= iommu->nr_pools) {
+> +                       spin_unlock(&(pool->lock));
+> +                       pool_nr = (pool_nr + 1) & (iommu->nr_pools -
+> 1);
+> +                       pool = &(iommu->pools[pool_nr]);
+> +                       spin_lock(&(pool->lock));
+> +                       pool->hint = pool->start;
+> +                       set_flush(iommu);
+> +                       pass++;
+> +                       goto again;
 
-On Sun, 5 Apr 2015, Julia Lawall wrote:
+So you decided to keep the logic here that updates the hint instead of
+just getting rid of need_flush alltogether ?
 
-> From: Julia Lawall <Julia.Lawall@lip6.fr>
-> 
-> Initialize ret before returning on failure, as done elsewhere in the
-> function.
-> 
-> A simplified version of the semantic match that finds this problem is as
-> follows: (http://coccinelle.lip6.fr/)
-> 
-> // <smpl>
-> (
-> if@p1 (\(ret < 0\|ret != 0\))
->  { ... return ret; }
-> |
-> ret@p1 = 0
-> )
-> ... when != ret = e1
->     when != &ret
-> *if(...)
-> {
->   ... when != ret = e2
->       when forall
->  return ret;
-> }
-> 
-> // </smpl>
-> 
-> Signed-off-by: Julia Lawall <Julia.Lawall@lip6.fr>
-> 
-> ---
->  sound/ppc/snd_ps3.c |    1 +
->  1 file changed, 1 insertion(+)
-> 
-> diff --git a/sound/ppc/snd_ps3.c b/sound/ppc/snd_ps3.c
-> index 1aa52ef..9b18b52 100644
-> --- a/sound/ppc/snd_ps3.c
-> +++ b/sound/ppc/snd_ps3.c
-> @@ -1040,6 +1040,7 @@ static int __devinit snd_ps3_driver_probe(struct ps3_system_bus_device *dev)
->  				   GFP_KERNEL);
->  	if (!the_card.null_buffer_start_vaddr) {
->  		pr_info("%s: nullbuffer alloc failed\n", __func__);
-> +		ret = -ENOMEM;
->  		goto clean_preallocate;
->  	}
->  	pr_debug("%s: null vaddr=%p dma=%#llx\n", __func__,
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe kernel-janitors" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+Out of curiosity, what's the rationale ? Did you find a reason why
+resetting the hint in those two cases (rather than just setting "start"
+appropriately) is actually useful ?
+
+Cheers,
+Ben.
