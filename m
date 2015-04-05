@@ -1,17 +1,19 @@
 Return-Path: <stefan@agner.ch>
 Received: from mail.kmu-office.ch (mail.kmu-office.ch [178.209.48.109])
- by lists.ozlabs.org (Postfix) with ESMTP id BFF721A0ACC
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  5 Apr 2015 08:12:52 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTP id E46571A03D3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  6 Apr 2015 09:09:56 +1000 (AEST)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Date: Sun, 05 Apr 2015 00:04:29 +0200
+Date: Mon, 06 Apr 2015 01:09:06 +0200
 From: Stefan Agner <stefan@agner.ch>
 To: Joe Perches <joe@perches.com>
-Subject: Re: [PATCH] tty: serial: Add const to struct
+Subject: Re: [PATCH V2] tty: serial: Add const to struct
  =?UTF-8?Q?uart=5Fops=20declarations?=
-In-Reply-To: <1428169665.2775.53.camel@perches.com>
+In-Reply-To: <1428258294.2775.69.camel@perches.com>
 References: <1428169665.2775.53.camel@perches.com>
-Message-ID: <a938a0e86638588e5ccff85771fa3b95@agner.ch>
+ <a938a0e86638588e5ccff85771fa3b95@agner.ch>
+ <1428258294.2775.69.camel@perches.com>
+Message-ID: <d55b1a1240db66ae651cb99cd713694a@agner.ch>
 Cc: linux-ia64@vger.kernel.org, kernel@stlinux.com,
  Nicolas Ferre <nicolas.ferre@atmel.com>, Timur Tabi <timur@tabi.org>,
  Patrice Chotard <patrice.chotard@st.com>, Pat Gefre <pfg@sgi.com>,
@@ -45,21 +47,11 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Joe,
+On 2015-04-05 20:24, Joe Perches wrote:
+> Still compiled only x86 and not cross-compiled or tested.
 
-See comment below...
+Cross-compiled with multi_v7_defconfig
 
-On 2015-04-04 19:47, Joe Perches wrote:
-> These structs can be const, so make them const.
-> 
-> Signed-off-by: Joe Perches <joe@perches.com>
-> ---
-> 
-> Done with:
-> sed -r -i -e 's/\bstruct\s+uart_ops\s+(\w+)\s*=\s*/const struct
-> uart_ops \1 = /g' drivers/tty/serial/*.c
-> 
-> Compiled x86 only, not cross-compiled.  Untested.
 > 
 >  drivers/tty/serial/21285.c                  | 2 +-
 >  drivers/tty/serial/altera_jtaguart.c        | 2 +-
@@ -77,6 +69,9 @@ On 2015-04-04 19:47, Joe Perches wrote:
 >  drivers/tty/serial/dz.c                     | 2 +-
 >  drivers/tty/serial/efm32-uart.c             | 2 +-
 >  drivers/tty/serial/fsl_lpuart.c             | 4 ++--
+
+Tested that driver on actual hardware, looks fine.
+
 >  drivers/tty/serial/icom.c                   | 2 +-
 >  drivers/tty/serial/imx.c                    | 2 +-
 >  drivers/tty/serial/ioc3_serial.c            | 2 +-
@@ -103,6 +98,16 @@ On 2015-04-04 19:47, Joe Perches wrote:
 >  drivers/tty/serial/pxa.c                    | 2 +-
 >  drivers/tty/serial/sa1100.c                 | 2 +-
 >  drivers/tty/serial/samsung.c                | 2 +-
+
+This driver seems to alter the startup function on initialization:
+
+  CC      drivers/video/of_display_timing.o
+../drivers/tty/serial/samsung.c: In function 's3c24xx_serial_init_port':
+../drivers/tty/serial/samsung.c:1702:3: error: assignment of member
+'startup' in read-only object
+   s3c24xx_serial_ops.startup = s3c64xx_serial_startup;
+   ^
+
 >  drivers/tty/serial/serial-tegra.c           | 2 +-
 >  drivers/tty/serial/serial_ks8695.c          | 2 +-
 >  drivers/tty/serial/serial_txx9.c            | 2 +-
@@ -123,60 +128,8 @@ On 2015-04-04 19:47, Joe Perches wrote:
 >  drivers/tty/serial/xilinx_uartps.c          | 2 +-
 >  drivers/tty/serial/zs.c                     | 2 +-
 >  61 files changed, 62 insertions(+), 62 deletions(-)
-> 
 
-<snip>
-
-> --- a/drivers/tty/serial/efm32-uart.c
-> +++ b/drivers/tty/serial/efm32-uart.c
-> @@ -487,7 +487,7 @@ static int efm32_uart_verify_port(struct uart_port *port,
->  	return ret;
->  }
->  
-> -static struct uart_ops efm32_uart_pops = {
-> +static const struct uart_ops efm32_uart_pops = {
->  	.tx_empty = efm32_uart_tx_empty,
->  	.set_mctrl = efm32_uart_set_mctrl,
->  	.get_mctrl = efm32_uart_get_mctrl,
-> diff --git a/drivers/tty/serial/fsl_lpuart.c b/drivers/tty/serial/fsl_lpuart.c
-> index 08ce76f..738b5c4 100644
-> --- a/drivers/tty/serial/fsl_lpuart.c
-> +++ b/drivers/tty/serial/fsl_lpuart.c
-> @@ -1494,7 +1494,7 @@ static int lpuart_verify_port(struct uart_port
-> *port, struct serial_struct *ser)
->  	return ret;
->  }
->  
-> -static struct uart_ops lpuart_pops = {
-> +static const const struct uart_ops lpuart_pops = {
-
-Something went wrong in this driver, const is twice...
-
-Probably because we have two struct uart_ops in one driver?
-
->  	.tx_empty	= lpuart_tx_empty,
->  	.set_mctrl	= lpuart_set_mctrl,
->  	.get_mctrl	= lpuart_get_mctrl,
-> @@ -1513,7 +1513,7 @@ static struct uart_ops lpuart_pops = {
->  	.flush_buffer	= lpuart_flush_buffer,
->  };
->  
-> -static struct uart_ops lpuart32_pops = {
-> +static const const struct uart_ops lpuart32_pops = {
->  	.tx_empty	= lpuart32_tx_empty,
->  	.set_mctrl	= lpuart32_set_mctrl,
->  	.get_mctrl	= lpuart32_get_mctrl,
-> diff --git a/drivers/tty/serial/icom.c b/drivers/tty/serial/icom.c
-> index 45fc323..3915443 100644
-> --- a/drivers/tty/serial/icom.c
-> +++ b/drivers/tty/serial/icom.c
-> @@ -1287,7 +1287,7 @@ static void icom_config_port(struct uart_port
-> *port, int flags)
->  	port->type = PORT_ICOM;
->  }
->  
-
-<snip>
+That is the only thing which popped up with multi_v7_defconfig.
 
 --
 Stefan
