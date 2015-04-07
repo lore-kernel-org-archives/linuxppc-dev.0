@@ -1,26 +1,22 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <peterz@infradead.org>
+Received: from casper.infradead.org (unknown [IPv6:2001:770:15f::2])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BC3361A0515
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Apr 2015 19:02:13 +1000 (AEST)
-Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by ozlabs.org (Postfix) with ESMTP id B292314007D
- for <linuxppc-dev@ozlabs.org>; Tue,  7 Apr 2015 19:02:12 +1000 (AEST)
-Message-ID: <5523932C.8070303@c-s.fr>
-Date: Tue, 07 Apr 2015 10:19:56 +0200
-From: leroy christophe <christophe.leroy@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id C85B51A056E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Apr 2015 20:22:08 +1000 (AEST)
+Date: Tue, 7 Apr 2015 12:21:47 +0200
+From: Peter Zijlstra <peterz@infradead.org>
+To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+Subject: Re: Topology updates and NUMA-level sched domains
+Message-ID: <20150407102147.GJ23123@twins.programming.kicks-ass.net>
+References: <20150406214558.GA38501@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>,
- Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH 0/8] powerpc/8xx: Getting rid of CONFIG_8xx
-References: <20150312152420.11C821A2425@localhost.localdomain>	
- <1426203271.2772.3.camel@ellerman.id.au>
- <1427244330.22867.76.camel@freescale.com>
-In-Reply-To: <1427244330.22867.76.camel@freescale.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
- Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20150406214558.GA38501@linux.vnet.ibm.com>
+Cc: Boqun Feng <boqun.feng@linux.vnet.ibm.com>,
+ Srikar Dronamraju <srikar@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+ Ingo Molnar <mingo@redhat.com>, Anton Blanchard <anton@samba.org>,
+ linuxppc-dev@lists.ozlabs.org, Anshuman Khandual <khandual@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,52 +26,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Mon, Apr 06, 2015 at 02:45:58PM -0700, Nishanth Aravamudan wrote:
+> Hi Peter,
+> 
+> As you are very aware, I think, power has some odd NUMA topologies (and
+> changes to the those topologies) at run-time. In particular, we can see
+> a topology at boot:
+> 
+> Node 0: all Cpus
+> Node 7: no cpus
+> 
+> Then we get a notification from the hypervisor that a core (or two) have
+> moved from node 0 to node 7. This results in the:
 
-Le 25/03/2015 01:45, Scott Wood a écrit :
-> On Fri, 2015-03-13 at 10:34 +1100, Michael Ellerman wrote:
->> On Thu, 2015-03-12 at 16:24 +0100, Christophe Leroy wrote:
->>> Two config options exist to define powerpc MPC8xx:
->>> * CONFIG_PPC_8xx
->>> * CONFIG_8xx
->>> In addition, CONFIG_PPC_8xx also defines CONFIG_CPM1 as
->>> communication co-processor
->>>
->>> arch/powerpc/platforms/Kconfig.cputype has contained the following
->>> comment about CONFIG_8xx item for some years:
->>> "# this is temp to handle compat with arch=ppc"
->>>
->>> It looks like not many places still have that old CONFIG_8xx used,
->>> so it is likely to be a good time to get rid of it completely ?
->>>
->>> Patchset is composed of the following patches:
->>> [1/8] powerpc: replace CONFIG_8xx by CONFIG_PPC_8xx
->>> [2/8] um: replace CONFIG_8xx by CONFIG_PPC_8xx
->>> [3/8] video: replace CONFIG_8xx by CONFIG_PPC_8xx
->>> [4/8] net: freescale: replace CONFIG_8xx by CONFIG_PPC_8xx
->>> [5/8] tty: cpm_uart: replace CONFIG_8xx by CONFIG_CPM1
->>> [6/8] mtd: replace CONFIG_8xx by CONFIG_PPC_8xx
->>> [7/8] isdn: replace CONFIG_8xx by CONFIG_PPC_8xx
->>> [8/8] powerpc: get rid of CONFIG_8xx
->>>
->>> All but the last one are independant and can be applied in any
->>> order. Only the 8th one requires the first 7 patches to be applied.
->> Sounds good.
->>
->> I only see 0, 4 and 7 on linuxppc-dev for some reason.
-> I see them all in linuxppc-dev patchwork.
->
->> You'll need to collect ACKs, or get the individual patches merged, and then we
->> can take patch 8 through the powerpc tree once those are all in - probably for
->> 4.2.
-> It looks like CONFIG_8xx is used a lot more than CONFIG_PPC_8xx, so it
-> would be less churn to get rid of the latter (plus, we also have
-> CONFIG_4xx, CONFIG_6xx, etc).  The only use of PPC_8xx I see outside
-> arch/powerpc is in drivers/watchdog/Kconfig.
+> or a re-init API (which won't try to reallocate various bits), because
+> the topology could be completely different now (e.g.,
+> sched_domains_numa_distance will also be inaccurate now).  Really, a
+> topology update on power (not sure on s390x, but those are the only two
+> archs that return a positive value from arch_update_cpu_topology() right
+> now, afaics) is a lot like a hotplug event and we need to re-initialize
+> any dependent structures.
+> 
+> I'm just sending out feelers, as we can limp by with the above warning,
+> it seems, but is less than ideal. Any help or insight you could provide
+> would be greatly appreciated!
 
-Ok, we can do that. But when outside of arch/powerpc/, isn't is more 
-explicit with CONFIG_PPC_8xx rather that CONFIG_8xx ?
+So I think (and ISTR having stated this before) that dynamic cpu<->node
+maps are absolutely insane.
 
-Now that I have submitted the first set of patch, don't we have a risk 
-that now it is already merged by some other maintainers ?
+There is a ton of stuff that assumes the cpu<->node relation is a boot
+time fixed one. Userspace being one of them. Per-cpu memory another.
 
-Christophe
+You simply cannot do this without causing massive borkage.
+
+So please come up with a coherent plan to deal with the entire problem
+of dynamic cpu to memory relation and I might consider the scheduler
+impact. But we're not going to hack around and maybe make it not crash
+in a few corner cases while the entire thing is shite.
