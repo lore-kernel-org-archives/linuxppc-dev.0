@@ -1,27 +1,28 @@
-Return-Path: <ddstreet@gmail.com>
-Received: from mail-ie0-x22a.google.com (mail-ie0-x22a.google.com
- [IPv6:2607:f8b0:4001:c03::22a])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <clg@fr.ibm.com>
+Received: from e06smtp17.uk.ibm.com (e06smtp17.uk.ibm.com [195.75.94.113])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A24EB1A09F4
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Apr 2015 03:35:40 +1000 (AEST)
-Received: by ierf6 with SMTP id f6so53255879ier.2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Apr 2015 10:35:38 -0700 (PDT)
-Sender: Dan Streetman <ddstreet@gmail.com>
-From: Dan Streetman <ddstreet@ieee.org>
-To: Herbert Xu <herbert@gondor.apana.org.au>,
- "David S. Miller" <davem@davemloft.net>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 11/11] crypto: add crypto compression sefltest
-Date: Tue,  7 Apr 2015 13:34:30 -0400
-Message-Id: <1428428070-17803-12-git-send-email-ddstreet@ieee.org>
-In-Reply-To: <1428428070-17803-1-git-send-email-ddstreet@ieee.org>
-References: <1428428070-17803-1-git-send-email-ddstreet@ieee.org>
-Cc: linux-kernel@vger.kernel.org, Robert Jennings <rob@pochix.net>,
- linux-crypto@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Seth Jennings <sjennings@variantweb.net>, Dan Streetman <ddstreet@ieee.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2F1111A0AB1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Apr 2015 04:04:12 +1000 (AEST)
+Received: from /spool/local
+ by e06smtp17.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <clg@fr.ibm.com>;
+ Tue, 7 Apr 2015 19:04:09 +0100
+Message-ID: <55241C02.60103@fr.ibm.com>
+Date: Tue, 07 Apr 2015 20:03:46 +0200
+From: Cedric Le Goater <clg@fr.ibm.com>
+MIME-Version: 1.0
+To: Guenter Roeck <linux@roeck-us.net>
+Subject: Re: [PATCH 4/4] hwmon: (ibmpowernv) pretty print labels
+References: <5523ECC4.9010609@fr.ibm.com>
+ <1428417956-28617-1-git-send-email-clg@fr.ibm.com>
+ <20150407164439.GA4514@roeck-us.net>
+In-Reply-To: <20150407164439.GA4514@roeck-us.net>
+Content-Type: text/plain; charset=windows-1252
+Cc: Stewart Smith <stewart@linux.vnet.ibm.com>, lm-sensors@lm-sensors.org,
+ Neelesh Gupta <neelegup@linux.vnet.ibm.com>, skiboot@lists.ozlabs.org,
+ linuxppc-dev@lists.ozlabs.org, Jean Delvare <jdelvare@suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,988 +32,218 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add configurable module to perform self-tests on any crypto compression
-driver.
+Hello Guenter,
 
-This allows testing any crypto compression driver with any input buffer,
-at varying alignments and lengths.  It calculates the average bytes per
-second compression and decompression rates.  Any errors reported by the
-compressor during compression or decompression will end the test and
-be logged.
+On 04/07/2015 06:44 PM, Guenter Roeck wrote:
+> On Tue, Apr 07, 2015 at 04:45:56PM +0200, Cédric Le Goater wrote:
+>> The new OPAL device tree adds a few properties which can be used to add
+>> extra information on the sensor label.
+>>
+>> In the case of a cpu core sensor, the firmware exposes the physical 
+>> identifier of the core in the "ibm,pir" property. The driver 
+>> translates this identifier in a linux cpu number and prints out a 
+>> range corresponding to the hardware threads of the core (as they
+>> share the same sensor).
+>>
+>> The numbering gives a hint on the localization of the core in the 
+>> system (which socket, which chip). 
+>>
+>> Signed-off-by: Cédric Le Goater <clg@fr.ibm.com>
+> 
+> Hi Cedric,
+> 
+> Please do not send follow-up patches as reply, but as separate e-mail.
 
-Signed-off-by: Dan Streetman <ddstreet@ieee.org>
----
- crypto/Kconfig         |   9 +
- crypto/Makefile        |   1 +
- crypto/comp_selftest.c | 928 +++++++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 938 insertions(+)
- create mode 100644 crypto/comp_selftest.c
+Ok. I will start a new thread when I resend this patch.
 
-diff --git a/crypto/Kconfig b/crypto/Kconfig
-index a7148ff..e56ecf2 100644
---- a/crypto/Kconfig
-+++ b/crypto/Kconfig
-@@ -189,6 +189,15 @@ config CRYPTO_TEST
- 	help
- 	  Quick & dirty crypto test module.
- 
-+config CRYPTO_COMP_SELFTEST
-+	tristate "Compression Self-Testing module"
-+	help
-+	  Configurable Compression Self-Testing using debugfs interface.
-+	  This allows you to compress and decompress buffers of variable
-+	  offsets, lengths, and data, using different compressors.  Also
-+	  the average bytes per second rate for compression/decompression
-+	  can be calculated.
-+
- config CRYPTO_ABLK_HELPER
- 	tristate
- 	select CRYPTO_CRYPTD
-diff --git a/crypto/Makefile b/crypto/Makefile
-index ba19465..0bb1ac2 100644
---- a/crypto/Makefile
-+++ b/crypto/Makefile
-@@ -95,6 +95,7 @@ obj-$(CONFIG_CRYPTO_RNG2) += krng.o
- obj-$(CONFIG_CRYPTO_ANSI_CPRNG) += ansi_cprng.o
- obj-$(CONFIG_CRYPTO_DRBG) += drbg.o
- obj-$(CONFIG_CRYPTO_TEST) += tcrypt.o
-+obj-$(CONFIG_CRYPTO_COMP_SELFTEST) += comp_selftest.o
- obj-$(CONFIG_CRYPTO_GHASH) += ghash-generic.o
- obj-$(CONFIG_CRYPTO_USER_API) += af_alg.o
- obj-$(CONFIG_CRYPTO_USER_API_HASH) += algif_hash.o
-diff --git a/crypto/comp_selftest.c b/crypto/comp_selftest.c
-new file mode 100644
-index 0000000..691a8ea
---- /dev/null
-+++ b/crypto/comp_selftest.c
-@@ -0,0 +1,928 @@
-+/*
-+ * Self-test for compression
-+ *
-+ * Copyright (C) 2015 Dan Streetman, IBM Corp
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/kthread.h>
-+#include <linux/debugfs.h>
-+#include <linux/uaccess.h>
-+#include <linux/crypto.h>
-+#include <linux/rwsem.h>
-+#include <linux/ratelimit.h>
-+
-+#define MODULE_NAME "comp_selftest"
-+MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("Dan Streetman <ddstreet@ieee.org>");
-+MODULE_DESCRIPTION("Crypto Compression Self-Test");
-+
-+static unsigned int test_kthreads_max = 64;
-+module_param_named(threads_max, test_kthreads_max, uint, 0444);
-+
-+static unsigned int test_buffer_order = 2;
-+module_param_named(buffer_order, test_buffer_order, uint, 0444);
-+
-+#define TEST_KTHREADS_DEFAULT	(4)
-+
-+#define TEST_REPEAT_DEFAULT	(1)
-+
-+#define TEST_BPS_WINDOW_DEFAULT	(1)
-+
-+#define TEST_BUFFER_SIZE	(PAGE_SIZE << test_buffer_order)
-+
-+#define TEST_CHECK_INTERVAL	(msecs_to_jiffies(500))
-+
-+#define OFFSET_START_DEFAULT	(0)
-+#define OFFSET_END_DEFAULT	OFFSET_START_DEFAULT
-+#define OFFSET_INTERVAL_DEFAULT	(1)
-+#define LENGTH_START_DEFAULT	(PAGE_SIZE)
-+#define LENGTH_END_DEFAULT	LENGTH_START_DEFAULT
-+#define LENGTH_INTERVAL_DEFAULT	(1)
-+
-+struct test_range {
-+	u32 start, interval, end;
-+};
-+
-+struct test_param {
-+	u32 running;
-+	u32 repeat;
-+	u32 kthreads;
-+	u32 bps_window; /* in seconds */
-+	struct test_range offset[3];
-+	struct test_range length[3];
-+};
-+
-+struct test_kthread_param {
-+	bool running;
-+	struct task_struct *kthread;
-+	struct crypto_comp *tfm;
-+	u8 *buffer[3];
-+	u32 offset[3];
-+	u32 length[3];
-+	atomic64_t bps[2];
-+};
-+
-+static struct test_kthread_param *test_kthread_params;
-+
-+static struct task_struct *test_kthread;
-+static int test_return;
-+static u8 *test_buffer;
-+
-+static atomic64_t test_max_bps[2];
-+
-+#define TEST_TFM_NAME_MAX	(32)
-+static char test_tfm[TEST_TFM_NAME_MAX];
-+
-+static struct test_param test_params, test_new_params;
-+
-+static DECLARE_RWSEM(test_lock);
-+
-+
-+static unsigned long total_bps(int i)
-+{
-+	unsigned long total = 0;
-+	int j;
-+
-+	for (j = 0; j < test_kthreads_max; j++)
-+		total += atomic64_read(&test_kthread_params[j].bps[i]);
-+
-+	return total;
-+}
-+
-+static void update_max_bps(int i)
-+{
-+	uint64_t prev, t;
-+
-+	t = total_bps(i);
-+	prev = atomic64_read(&test_max_bps[i]);
-+	while (t > prev) {
-+		uint64_t a = atomic64_cmpxchg(&test_max_bps[i], prev, t);
-+
-+		if (prev == a)
-+			break;
-+		prev = a;
-+	}
-+}
-+
-+#define NS_PER_S	(1000000000)
-+
-+static void update_bps(struct test_kthread_param *p,
-+		       int i, u64 bytes, ktime_t start)
-+{
-+	u64 ns = ktime_to_ns(ktime_sub(ktime_get(), start));
-+	u64 bps = atomic64_read(&p->bps[i]);
-+	u64 window_ns = NS_PER_S * test_params.bps_window;
-+	u64 window_bytes = bps * test_params.bps_window;
-+	s64 a, b, delta;
-+
-+	a = window_ns * bytes;
-+	b = ns * window_bytes;
-+
-+	delta = (s64)(a - b) / (s64)(window_ns + ns);
-+
-+	window_bytes += delta;
-+
-+	atomic64_set(&p->bps[i], window_bytes / test_params.bps_window);
-+
-+	update_max_bps(i);
-+}
-+
-+static void reset_bps(void)
-+{
-+	int i;
-+
-+	for (i = 0; i < test_kthreads_max; i++) {
-+		atomic64_set(&test_kthread_params[i].bps[0], 0);
-+		atomic64_set(&test_kthread_params[i].bps[1], 0);
-+	}
-+
-+	atomic64_set(&test_max_bps[0], 0);
-+	atomic64_set(&test_max_bps[1], 0);
-+}
-+
-+static int test_compare(struct test_kthread_param *p, unsigned int clen)
-+{
-+	u8 *a = &p->buffer[0][p->offset[0]];
-+	u8 *c = &p->buffer[2][p->offset[2]];
-+	unsigned int alen = p->length[0];
-+
-+	if (alen != clen) {
-+		pr_err("buffer length mismatch, alen 0x%x clen 0x%x\n",
-+		      alen, clen);
-+		return -EINVAL;
-+	}
-+
-+	if (memcmp(a, c, alen)) {
-+		pr_err("buffer data mismatch\n");
-+		return -EINVAL;
-+	}
-+
-+	return 0;
-+}
-+
-+static int __test_decompress(struct test_kthread_param *p, unsigned int blen)
-+{
-+	u8 *b = &p->buffer[1][p->offset[1]];
-+	u8 *c = &p->buffer[2][p->offset[2]];
-+	unsigned int clen = p->length[2];
-+	ktime_t start = ktime_get();
-+	int ret;
-+
-+	ret = crypto_comp_decompress(p->tfm, b, blen, c, &clen);
-+	if (ret)
-+		return ret;
-+
-+	update_bps(p, 1, clen, start);
-+
-+	return test_compare(p, clen);
-+}
-+
-+static int test_decompress(struct test_kthread_param *p, unsigned int blen)
-+{
-+	struct test_range *off, *len;
-+	u32 o, l;
-+	int ret;
-+
-+	off = &test_params.offset[2];
-+	len = &test_params.length[2];
-+
-+	for (l = len->start; l <= len->end; l += len->interval) {
-+		p->length[2] = l;
-+
-+		for (o = off->start; o <= off->end; o += off->interval) {
-+			p->offset[2] = o;
-+
-+			ret = __test_decompress(p, blen);
-+			if (ret)
-+				return ret;
-+
-+			if (kthread_should_stop())
-+				return 0;
-+
-+			/* so we don't appear hung */
-+			schedule();
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-+static int __test_compress(struct test_kthread_param *p)
-+{
-+	u8 *a = &p->buffer[0][p->offset[0]];
-+	u8 *b = &p->buffer[1][p->offset[1]];
-+	unsigned int alen = p->length[0], blen = p->length[1];
-+	ktime_t start = ktime_get();
-+	int ret;
-+
-+	ret = crypto_comp_compress(p->tfm, a, alen, b, &blen);
-+	if (ret)
-+		return ret;
-+
-+	update_bps(p, 0, alen, start);
-+
-+	return test_decompress(p, blen);
-+}
-+
-+static int test_compress(struct test_kthread_param *p)
-+{
-+	struct test_range *off, *len;
-+	u32 o, l;
-+	int ret;
-+
-+	off = &test_params.offset[1];
-+	len = &test_params.length[1];
-+
-+	for (l = len->start; l <= len->end; l += len->interval) {
-+		p->length[1] = l;
-+
-+		for (o = off->start; o <= off->end; o += off->interval) {
-+			p->offset[1] = o;
-+
-+			ret = __test_compress(p);
-+			if (ret)
-+				return ret;
-+
-+			if (kthread_should_stop())
-+				return 0;
-+
-+			/* so we don't appear hung */
-+			schedule();
-+		}
-+	}
-+
-+	return 0;
-+}
-+
-+static int test_kthread_func(void *arg)
-+{
-+	struct test_kthread_param *p = arg;
-+	struct test_range *off, *len;
-+	u32 o, l;
-+	int ret;
-+
-+	off = &test_params.offset[0];
-+	len = &test_params.length[0];
-+
-+repeat:
-+	for (l = len->start; l <= len->end; l += len->interval) {
-+		p->length[0] = l;
-+
-+		for (o = off->start; o <= off->end; o += off->interval) {
-+			p->offset[0] = o;
-+
-+			ret = test_compress(p);
-+			if (ret)
-+				goto end;
-+
-+			if (kthread_should_stop())
-+				goto end;
-+
-+			/* so we don't appear hung */
-+			schedule();
-+		}
-+	}
-+
-+	if (test_params.repeat)
-+		goto repeat;
-+
-+end:
-+	if (ret)
-+		test_return = ret;
-+
-+	p->running = false;
-+
-+	return 0;
-+}
-+
-+static void test_free_kthread(int i)
-+{
-+	struct test_kthread_param *p;
-+
-+	if (i > test_kthreads_max)
-+		return;
-+
-+	p = &test_kthread_params[i];
-+
-+	if (p->tfm && !IS_ERR(p->tfm))
-+		crypto_free_comp(p->tfm);
-+	p->tfm = NULL;
-+
-+	free_pages((unsigned long)p->buffer[0], test_buffer_order);
-+	p->buffer[0] = NULL;
-+	free_pages((unsigned long)p->buffer[1], test_buffer_order);
-+	p->buffer[1] = NULL;
-+	free_pages((unsigned long)p->buffer[2], test_buffer_order);
-+	p->buffer[2] = NULL;
-+}
-+
-+static int test_alloc_kthread(int i)
-+{
-+	struct test_kthread_param *p;
-+	int ret = 0;
-+
-+	if (i > test_kthreads_max)
-+		return -EINVAL;
-+
-+	p = &test_kthread_params[i];
-+
-+	p->buffer[0] = (u8 *)__get_free_pages(GFP_KERNEL, test_buffer_order);
-+	p->buffer[1] = (u8 *)__get_free_pages(GFP_KERNEL, test_buffer_order);
-+	p->buffer[2] = (u8 *)__get_free_pages(GFP_KERNEL, test_buffer_order);
-+	p->tfm = crypto_alloc_comp(test_tfm, 0, 0);
-+
-+	if (IS_ERR(p->tfm)) {
-+		pr_err("could not create compressor %s : %ld\n",
-+			 test_tfm, PTR_ERR(p->tfm));
-+		ret = PTR_ERR(p->tfm);
-+	}
-+
-+	if (!p->buffer[0] || !p->buffer[1] || !p->buffer[2]) {
-+		pr_err("could not create buffer\n");
-+		ret = -ENOMEM;
-+	}
-+
-+	if (ret) {
-+		test_free_kthread(i);
-+	} else {
-+		memcpy(p->buffer[0], test_buffer, TEST_BUFFER_SIZE);
-+		memcpy(p->buffer[1], test_buffer, TEST_BUFFER_SIZE);
-+		memcpy(p->buffer[2], test_buffer, TEST_BUFFER_SIZE);
-+	}
-+
-+	return ret;
-+}
-+
-+static int test_kthread_running(void)
-+{
-+	int i;
-+
-+	for (i = 0; i < test_kthreads_max; i++)
-+		if (test_kthread_params[i].running)
-+			return 1;
-+
-+	return 0;
-+}
-+
-+static int test_run(void *arg)
-+{
-+	int i;
-+
-+	test_return = 0;
-+
-+	if (test_tfm[0] == 0) {
-+		test_return = -ENODEV;
-+		pr_err("compression self test error: no compressor defined\n");
-+		goto error;
-+	}
-+
-+	reset_bps();
-+
-+	pr_info("compression self test starting\n");
-+	pr_info("  compressor: %s\n", test_tfm);
-+	pr_info("  repeat: %s\n", test_params.repeat ? "Y" : "N");
-+	pr_info("  threads: %d\n", test_params.kthreads);
-+	pr_info("  offsets %x-%x/%x, %x-%x/%x, %x-%x/%x\n",
-+		test_params.offset[0].start, test_params.offset[0].end,
-+		test_params.offset[0].interval,
-+		test_params.offset[1].start, test_params.offset[1].end,
-+		test_params.offset[1].interval,
-+		test_params.offset[2].start, test_params.offset[2].end,
-+		test_params.offset[2].interval);
-+	pr_info("  lengths %x-%x/%x, %x-%x/%x, %x-%x/%x\n",
-+		test_params.length[0].start, test_params.length[0].end,
-+		test_params.length[0].interval,
-+		test_params.length[1].start, test_params.length[1].end,
-+		test_params.length[1].interval,
-+		test_params.length[2].start, test_params.length[2].end,
-+		test_params.length[2].interval);
-+
-+	for (i = 0; !test_return && i < test_params.kthreads; i++) {
-+		test_return = test_alloc_kthread(i);
-+		if (test_return)
-+			while (--i >= 0)
-+				test_free_kthread(i);
-+	}
-+
-+	for (i = 0; !test_return && i < test_params.kthreads; i++) {
-+		struct test_kthread_param *p = &test_kthread_params[i];
-+
-+		p->running = true;
-+		p->kthread = kthread_run(test_kthread_func, p, "selftest%d", i);
-+		if (IS_ERR(p->kthread)) {
-+			test_return = PTR_ERR(p->kthread);
-+			p->kthread = NULL;
-+			p->running = false;
-+		} else {
-+			get_task_struct(p->kthread);
-+		}
-+	}
-+
-+	while (!kthread_should_stop() && !test_return && test_kthread_running())
-+		schedule_timeout_interruptible(msecs_to_jiffies(100));
-+
-+	for (i = 0; i < test_params.kthreads; i++) {
-+		struct test_kthread_param *p = &test_kthread_params[i];
-+
-+		if (p->running)
-+			kthread_stop(p->kthread);
-+		if (p->kthread)
-+			put_task_struct(p->kthread);
-+		p->kthread = NULL;
-+		p->running = false;
-+	}
-+
-+	pr_info("compression self test MBps %ld/%ld peak %ld/%ld\n",
-+		(unsigned long)(total_bps(0) / 1000000),
-+		(unsigned long)(total_bps(1) / 1000000),
-+		(unsigned long)(atomic64_read(&test_max_bps[0]) / 1000000),
-+		(unsigned long)(atomic64_read(&test_max_bps[1]) / 1000000));
-+
-+	if (kthread_should_stop())
-+		pr_info("compression self test stopped by user\n");
-+	else
-+		pr_info("compression self test ended\n");
-+
-+error:
-+	/* this causes test_stop() to get called */
-+	test_new_params.running = 0;
-+
-+	if (test_return)
-+		pr_info("compression self test failed\n");
-+
-+	return test_return;
-+}
-+
-+static void test_stop(void)
-+{
-+	if (!test_kthread)
-+		return;
-+
-+	if (!IS_ERR(test_kthread)) {
-+		kthread_stop(test_kthread);
-+		put_task_struct(test_kthread);
-+	}
-+
-+	test_kthread = NULL;
-+	test_params.running = false;
-+	test_new_params.running = false;
-+}
-+
-+static int test_start(void)
-+{
-+	int ret = 0;
-+
-+	if (test_kthread)
-+		return 0;
-+
-+	test_kthread = kthread_run(test_run, NULL, MODULE_NAME);
-+	if (IS_ERR(test_kthread)) {
-+		ret = PTR_ERR(test_kthread);
-+		test_stop();
-+	} else
-+		get_task_struct(test_kthread);
-+
-+	return ret;
-+}
-+
-+/* this changes the source buffer passed in */
-+static void test_buffer_fill(u8 *buf, size_t len)
-+{
-+	size_t i, l, pos;
-+
-+	/* repeat source buf across entire test buffer,
-+	 * changing each byte by 1 per repeat
-+	 */
-+	for (pos = 0; pos < TEST_BUFFER_SIZE; pos += len) {
-+		l = min_t(size_t, len, TEST_BUFFER_SIZE - pos);
-+
-+		memcpy(&test_buffer[pos], buf, l);
-+
-+		if (pos + len < TEST_BUFFER_SIZE)
-+			for (i = 0; i < len; i++)
-+				buf[i] += 1;
-+	}
-+}
-+
-+static ssize_t test_buffer_read(struct file *file, char __user *buf,
-+				size_t len, loff_t *off)
-+{
-+	return simple_read_from_buffer(buf, len, off,
-+				       test_buffer, TEST_BUFFER_SIZE);
-+}
-+
-+static ssize_t test_buffer_write(struct file *file, const char __user *buf,
-+				 size_t len, loff_t *off)
-+{
-+	size_t l = min_t(size_t, len, TEST_BUFFER_SIZE);
-+	char *tmp;
-+	u32 was_running;
-+
-+	tmp = kmalloc(l, GFP_KERNEL);
-+	if (!tmp)
-+		return -ENOMEM;
-+
-+	if (copy_from_user(tmp, buf, l)) {
-+		kfree(tmp);
-+		return -EFAULT;
-+	}
-+
-+	down_write(&test_lock);
-+
-+	was_running = test_params.running && test_new_params.running;
-+
-+	/* if was_running, this clears the running flags */
-+	test_stop();
-+
-+	/* special case if writing to start, we fill out the rest
-+	 * of the buffer using the starting pattern
-+	 */
-+	if (*off == 0)
-+		test_buffer_fill(tmp, l);
-+	else
-+		l = simple_write_to_buffer(test_buffer, TEST_BUFFER_SIZE,
-+					   off, buf, l);
-+	*off += l;
-+
-+	if (was_running) {
-+		int ret;
-+
-+		test_new_params.running = was_running;
-+		test_params.running = was_running;
-+		ret = test_start();
-+		if (ret)
-+			l = ret;
-+	}
-+
-+	up_write(&test_lock);
-+
-+	kfree(tmp);
-+
-+	return l;
-+}
-+
-+static const struct file_operations test_buffer_ops = {
-+	.owner =	THIS_MODULE,
-+	.read =		test_buffer_read,
-+	.write =	test_buffer_write,
-+};
-+
-+static ssize_t test_compressor_read(struct file *file, char __user *buf,
-+				    size_t len, loff_t *off)
-+{
-+	char name[TEST_TFM_NAME_MAX] = "none\n";
-+
-+	down_read(&test_lock);
-+
-+	if (test_tfm[0] != 0)
-+		snprintf(name, TEST_TFM_NAME_MAX, "%s\n", test_tfm);
-+	name[TEST_TFM_NAME_MAX-1] = 0;
-+
-+	up_read(&test_lock);
-+
-+	return simple_read_from_buffer(buf, len, off, name, TEST_TFM_NAME_MAX);
-+}
-+
-+static ssize_t test_compressor_write(struct file *file, const char __user *buf,
-+				     size_t len, loff_t *off)
-+{
-+	char tmp[TEST_TFM_NAME_MAX], *name;
-+	size_t l = min_t(size_t, len, TEST_TFM_NAME_MAX);
-+	u32 was_running;
-+
-+	if (l < 1)
-+		return -EINVAL;
-+
-+	if (copy_from_user(tmp, buf, l))
-+		return -EFAULT;
-+	tmp[l-1] = 0;
-+	name = strim(tmp);
-+	l = strlen(name) + 1;
-+
-+	if (!crypto_has_comp(name, 0, 0))
-+		return -ENODEV;
-+
-+	down_write(&test_lock);
-+
-+	was_running = test_params.running && test_new_params.running;
-+
-+	/* if was_running, this clears the running flags */
-+	test_stop();
-+
-+	strncpy(test_tfm, name, l);
-+	test_tfm[l-1] = 0;
-+
-+	if (was_running) {
-+		int ret;
-+
-+		test_new_params.running = was_running;
-+		test_params.running = was_running;
-+		ret = test_start();
-+		if (ret)
-+			len = ret;
-+	}
-+
-+	up_write(&test_lock);
-+
-+	return len;
-+}
-+
-+static const struct file_operations test_compressor_ops = {
-+	.owner =	THIS_MODULE,
-+	.read =		test_compressor_read,
-+	.write =	test_compressor_write,
-+};
-+
-+static ssize_t test_status_read(struct file *file, char __user *buf,
-+				size_t len, loff_t *off)
-+{
-+	int tmplen = 120;
-+	char tmp[tmplen];
-+
-+	if (!test_params.running) {
-+		if (*off == 0) /* haven't printed anything yet, so print msg */
-+			snprintf(tmp, tmplen, "Test not running\n");
-+		else if (*off == 1) /* printed status, just print \n */
-+			snprintf(tmp, tmplen, "\n");
-+		else /* printed msg or \n, report end */
-+			return 0;
-+		*off = 2;
-+		goto end;
-+	}
-+
-+	/* slow down reading */
-+	schedule_timeout_interruptible(msecs_to_jiffies(250));
-+
-+	snprintf(tmp, tmplen, "Threads %d MBps: %lu/%lu peak %lu/%lu       \r",
-+		 test_params.kthreads,
-+		 (unsigned long)(total_bps(0) / 1000000),
-+		 (unsigned long)(total_bps(1) / 1000000),
-+		 (unsigned long)(atomic64_read(&test_max_bps[0]) / 1000000),
-+		 (unsigned long)(atomic64_read(&test_max_bps[1]) / 1000000));
-+	tmp[tmplen - 2] = '\r';
-+	tmp[tmplen - 1] = 0;
-+
-+end:
-+	len = min(len, strlen(tmp));
-+
-+	if (copy_to_user(buf, tmp, len))
-+		return -EFAULT;
-+
-+	if (*off == 0)
-+		*off = 1;
-+
-+	return len;
-+}
-+
-+static const struct file_operations test_status_ops = {
-+	.owner =	THIS_MODULE,
-+	.read =		test_status_read,
-+};
-+
-+static void test_param_check_valid(int i)
-+{
-+	struct test_range *off, *len;
-+
-+	off = &test_params.offset[i];
-+	len = &test_params.length[i];
-+
-+	/* interval must be at least 1 */
-+	if (off->interval < 1)
-+		off->interval = OFFSET_INTERVAL_DEFAULT;
-+	if (len->interval < 1)
-+		len->interval = LENGTH_INTERVAL_DEFAULT;
-+
-+	/* end offset + length can't be more than buffer size */
-+	if (off->end + len->end > TEST_BUFFER_SIZE)
-+		off->end = max_t(u32, 0, TEST_BUFFER_SIZE - len->end);
-+	if (off->end + len->end > TEST_BUFFER_SIZE)
-+		len->end = TEST_BUFFER_SIZE;
-+
-+	/* end must be equal or after start */
-+	if (off->end < off->start)
-+		off->start = off->end;
-+	if (len->end < len->start)
-+		len->start = len->end;
-+}
-+
-+static void test_param_change(void)
-+{
-+	bool should_run;
-+	int i;
-+
-+	down_write(&test_lock);
-+
-+	should_run = test_new_params.running;
-+
-+	/* if already running, this clears running flags */
-+	test_stop();
-+
-+	test_new_params.running = should_run;
-+
-+	memcpy(&test_params, &test_new_params, sizeof(test_params));
-+
-+	/* kthreads must be between 1 and max */
-+	if (test_params.kthreads < 1)
-+		test_params.kthreads = 1;
-+	if (test_params.kthreads > test_kthreads_max)
-+		test_params.kthreads = test_kthreads_max;
-+
-+	/* bps_window must be at least 1 */
-+	if (test_params.bps_window < 1)
-+		test_params.bps_window = 1;
-+
-+	for (i = 0; i < 3; i++)
-+		test_param_check_valid(i);
-+
-+	/* update any corrected params */
-+	memcpy(&test_new_params, &test_params, sizeof(test_params));
-+
-+	if (test_params.running)
-+		test_start();
-+
-+	up_write(&test_lock);
-+}
-+
-+static int test_check(void *ignored)
-+{
-+	bool changed;
-+
-+	while (1) {
-+		set_current_state(TASK_INTERRUPTIBLE);
-+		if (kthread_should_stop())
-+			break;
-+
-+		schedule_timeout(TEST_CHECK_INTERVAL);
-+
-+		if (kthread_should_stop())
-+			break;
-+
-+		down_read(&test_lock);
-+		changed = !!memcmp(&test_params, &test_new_params,
-+				   sizeof(test_params));
-+		up_read(&test_lock);
-+
-+		if (changed)
-+			test_param_change();
-+	}
-+
-+	return 0;
-+}
-+
-+static struct task_struct *test_check_kthread;
-+
-+static struct dentry *test_root;
-+
-+static void test_exit(void)
-+{
-+	if (test_root && !IS_ERR(test_root))
-+		debugfs_remove_recursive(test_root);
-+	if (test_check_kthread && !IS_ERR(test_check_kthread))
-+		kthread_stop(test_check_kthread);
-+	test_stop();
-+	kfree(test_kthread_params);
-+	free_pages((unsigned long)test_buffer, test_buffer_order);
-+}
-+module_exit(test_exit);
-+
-+static int __init test_init(void)
-+{
-+	struct dentry *offsets, *lengths;
-+	u8 test_buffer_fill_default[8] = { 0 };
-+	int ret = 0, i;
-+
-+	if (!debugfs_initialized())
-+		return -EINVAL;
-+
-+	test_root = debugfs_create_dir(MODULE_NAME, NULL);
-+	if (IS_ERR(test_root)) {
-+		pr_err("could not create debugfs dir %s : %ld\n",
-+		       MODULE_NAME, PTR_ERR(test_root));
-+		return PTR_ERR(test_root);
-+	}
-+
-+	offsets = debugfs_create_dir("offsets", test_root);
-+	if (IS_ERR(offsets)) {
-+		pr_err("could not create debugfs dir %s/offsets : %ld\n",
-+		       MODULE_NAME, PTR_ERR(offsets));
-+		ret = PTR_ERR(offsets);
-+		goto end;
-+	}
-+	lengths = debugfs_create_dir("lengths", test_root);
-+	if (IS_ERR(lengths)) {
-+		pr_err("could not create debugfs dir %s/lengths : %ld\n",
-+		       MODULE_NAME, PTR_ERR(lengths));
-+		ret = PTR_ERR(lengths);
-+		goto end;
-+	}
-+
-+	debugfs_create_file("status", S_IRUGO, test_root, NULL,
-+			    &test_status_ops);
-+	debugfs_create_file("compressor", S_IRUGO | S_IWUSR, test_root, NULL,
-+			    &test_compressor_ops);
-+	debugfs_create_file("buffer", S_IRUSR | S_IWUSR, test_root, NULL,
-+			    &test_buffer_ops);
-+
-+	debugfs_create_bool("running", S_IRUGO | S_IWUSR, test_root,
-+			    &test_new_params.running);
-+	debugfs_create_bool("repeat", S_IRUGO | S_IWUSR, test_root,
-+			    &test_new_params.repeat);
-+	debugfs_create_u32("threads", S_IRUGO | S_IWUSR, test_root,
-+			    &test_new_params.kthreads);
-+	debugfs_create_u32("bps_window", S_IRUGO | S_IWUSR, test_root,
-+			    &test_new_params.bps_window);
-+
-+	debugfs_create_u32("start_a", S_IRUGO | S_IWUSR, offsets,
-+			    &test_new_params.offset[0].start);
-+	debugfs_create_u32("start_b", S_IRUGO | S_IWUSR, offsets,
-+			    &test_new_params.offset[1].start);
-+	debugfs_create_u32("start_c", S_IRUGO | S_IWUSR, offsets,
-+			    &test_new_params.offset[2].start);
-+	debugfs_create_u32("end_a", S_IRUGO | S_IWUSR, offsets,
-+			    &test_new_params.offset[0].end);
-+	debugfs_create_u32("end_b", S_IRUGO | S_IWUSR, offsets,
-+			    &test_new_params.offset[1].end);
-+	debugfs_create_u32("end_c", S_IRUGO | S_IWUSR, offsets,
-+			    &test_new_params.offset[2].end);
-+	debugfs_create_u32("interval_a", S_IRUGO | S_IWUSR, offsets,
-+			    &test_new_params.offset[0].interval);
-+	debugfs_create_u32("interval_b", S_IRUGO | S_IWUSR, offsets,
-+			    &test_new_params.offset[1].interval);
-+	debugfs_create_u32("interval_c", S_IRUGO | S_IWUSR, offsets,
-+			    &test_new_params.offset[2].interval);
-+
-+	debugfs_create_u32("start_a", S_IRUGO | S_IWUSR, lengths,
-+			    &test_new_params.length[0].start);
-+	debugfs_create_u32("start_b", S_IRUGO | S_IWUSR, lengths,
-+			    &test_new_params.length[1].start);
-+	debugfs_create_u32("start_c", S_IRUGO | S_IWUSR, lengths,
-+			    &test_new_params.length[2].start);
-+	debugfs_create_u32("end_a", S_IRUGO | S_IWUSR, lengths,
-+			    &test_new_params.length[0].end);
-+	debugfs_create_u32("end_b", S_IRUGO | S_IWUSR, lengths,
-+			    &test_new_params.length[1].end);
-+	debugfs_create_u32("end_c", S_IRUGO | S_IWUSR, lengths,
-+			    &test_new_params.length[2].end);
-+	debugfs_create_u32("interval_a", S_IRUGO | S_IWUSR, lengths,
-+			    &test_new_params.length[0].interval);
-+	debugfs_create_u32("interval_b", S_IRUGO | S_IWUSR, lengths,
-+			    &test_new_params.length[1].interval);
-+	debugfs_create_u32("interval_c", S_IRUGO | S_IWUSR, lengths,
-+			    &test_new_params.length[2].interval);
-+
-+	test_kthread_params = kcalloc(test_kthreads_max,
-+				      sizeof(*test_kthread_params),
-+				      GFP_KERNEL);
-+
-+	if (!test_kthread_params) {
-+		pr_err("could kthread params\n");
-+		ret = -ENOMEM;
-+		goto end;
-+	}
-+
-+	test_buffer = (u8 *)__get_free_pages(GFP_KERNEL, test_buffer_order);
-+	if (!test_buffer) {
-+		pr_err("could not allocate test buffer\n");
-+		ret = -ENOMEM;
-+		goto end;
-+	}
-+
-+	test_buffer_fill(test_buffer_fill_default,
-+			 ARRAY_SIZE(test_buffer_fill_default));
-+
-+	test_params.running = 0;
-+	test_params.repeat = TEST_REPEAT_DEFAULT;
-+	test_params.kthreads = TEST_KTHREADS_DEFAULT;
-+	test_params.bps_window = TEST_BPS_WINDOW_DEFAULT;
-+	for (i = 0; i < 3; i++) {
-+		test_params.offset[i].start = OFFSET_START_DEFAULT;
-+		test_params.offset[i].end = OFFSET_END_DEFAULT;
-+		test_params.offset[i].interval = OFFSET_INTERVAL_DEFAULT;
-+		test_params.length[i].start = LENGTH_START_DEFAULT;
-+		test_params.length[i].end = LENGTH_END_DEFAULT;
-+		test_params.length[i].interval = LENGTH_INTERVAL_DEFAULT;
-+	}
-+	memcpy(&test_new_params, &test_params, sizeof(test_params));
-+
-+	test_check_kthread = kthread_run(test_check, NULL, MODULE_NAME "_chk");
-+	if (IS_ERR(test_check_kthread))
-+		ret = PTR_ERR(test_check_kthread);
-+
-+end:
-+	if (ret)
-+		test_exit();
-+
-+	return ret;
-+}
-+module_init(test_init);
--- 
-2.1.0
+> Further comments below.
+> 
+>> ---
+>>
+>>  Changes since v1:
+>>
+>>  - check cpu validity before printing out the attribute label. 
+>>    if invalid, use a "phy" prefix to distinguish a linux cpu 
+>>    number from a physical cpu number. 
+>>
+>>  drivers/hwmon/ibmpowernv.c |   34 ++++++++++++++++++++++++++++++++++
+>>  1 file changed, 34 insertions(+)
+>>
+>> Index: linux.git/drivers/hwmon/ibmpowernv.c
+>> ===================================================================
+>> --- linux.git.orig/drivers/hwmon/ibmpowernv.c
+>> +++ linux.git/drivers/hwmon/ibmpowernv.c
+>> @@ -113,9 +113,43 @@ static ssize_t show_label(struct device
+>>  static void __init make_sensor_label(struct device_node *np,
+>>  		    struct sensor_data *sdata, const char *label)
+>>  {
+>> +	u32 id;
+>>  	size_t n;
+>>  
+>>  	n = snprintf(sdata->label, sizeof(sdata->label), "%s", label);
+>> +
+>> +	/*
+>> +	 * Core temp pretty print
+>> +	 */
+>> +	if (!of_property_read_u32(np, "ibm,pir", &id)) {
+>> +		int i = -1;
+>> +
+>> +		for_each_possible_cpu(i)
+>> +			if (paca[i].hw_cpu_id == id)
+> 
+> I think you should consider using get_hard_smp_processor_id() and avoid
+> direct access to the paca array.
+
+Yes. It will look better. Thanks.
+
+>> +				break;
+>> +
+>> +		if (i != -1)
+> 
+> I don't think that works. i is initialized by for_each_possible_cpu(),
+> either to -1 or 0 depending on the state of CONFIG_SMP. So pre-initializing
+> it won't make a difference. Its last value is NR_CPUS (SMP) or 1 (non-SMP).
+> 
+> You would need a second variable (which you could pre-initialize)
+> to determine if the code found a matching ID or not.
+
+gloups. I did that patch waaaay too quickly, it is completely bogus ... 
+I will cook a new version. sorry for the noise. 
+
+>> +			/*
+>> +			 * The digital thermal sensors are associated
+>> +			 * with a core. Let's print out the range of
+>> +			 * cpu ids corresponding to the hardware
+>> +			 * threads of the core.
+>> +			 */
+>> +			n += snprintf(sdata->label + n,
+>> +				      sizeof(sdata->label) - n,
+>> +				      " %d-%d", i, i+7);
+> 
+> I would really like to see how this looks like in practice.
+> 
+> The id in the devicetree entry is the physical CPU. The resulting index
+> is the logical CPU number. So let's assume that the logical CPU number
+> for the first physical CPU is 0. Output would be "0-7". If the second
+> physical CPU matches logical CPU 1, output would be "1-8". 
+> How does that make any sense ?
+
+The logical CPU numbers on PowerPC are initialized looping on the cores
+found in the device tree and then on the threads of the core. Something 
+like :
+
+	logical_cpu = core_index * max_threads_per_core + thread_index 
+
+which gives on a P8  :
+
+	# ppc64_cpu --info
+	Core   0:    0*    1*    2*    3*    4*    5*    6*    7* 
+	Core   1:    8*    9*   10*   11*   12*   13*   14*   15* 
+	Core   2:   16*   17*   18*   19*   20*   21*   22*   23* 
+	Core   3:   24*   25*   26*   27*   28*   29*   30*   31* 
+	Core   4:   32*   33*   34*   35*   36*   37*   38*   39* 
+	Core   5:   40*   41*   42*   43*   44*   45*   46*   47* 
+	Core   6:   48*   49*   50*   51*   52*   53*   54*   55* 
+	Core   7:   56*   57*   58*   59*   60*   61*   62*   63* 
+	Core   8:   64*   65*   66*   67*   68*   69*   70*   71* 
+	Core   9:   72*   73*   74*   75*   76*   77*   78*   79* 
+	Core  10:   80*   81*   82*   83*   84*   85*   86*   87* 
+	Core  11:   88*   89*   90*   91*   92*   93*   94*   95* 
+	Core  12:   96*   97*   98*   99*  100*  101*  102*  103* 
+	Core  13:  104*  105*  106*  107*  108*  109*  110*  111* 
+	Core  14:  112*  113*  114*  115*  116*  117*  118*  119* 
+	Core  15:  120*  121*  122*  123*  124*  125*  126*  127* 
+	Core  16:  128*  129*  130*  131*  132*  133*  134*  135* 
+	Core  17:  136*  137*  138*  139*  140*  141*  142*  143* 
+	Core  18:  144*  145*  146*  147*  148*  149*  150*  151* 
+	Core  19:  152*  153*  154*  155*  156*  157*  158*  159* 
+
+on a P7  :
+
+	# ppc64_cpu --info
+	Core   0:    0*    1*    2*    3* 
+	Core   1:    4*    5*    6*    7* 
+	Core   2:    8*    9*   10*   11* 
+	Core   3:   12*   13*   14*   15* 
+	Core   4:   16*   17*   18*   19* 
+	Core   5:   20*   21*   22*   23* 
+
+
+> Also, how do you know that the range of CPU IDs is always 8 ?
+
+This is a shortcut. The code is for the ibmpowernv platform and assumes 
+that we are running on a P8 (8 hardware threads). It would be better to 
+use a "maximum threads per core" variable but I am not sure this is 
+available, as it is a tunable. I will look into it.
+
+> Can you provide some resulting outputs ?
+
+sure. 
+
+On an Open Power system : 
+
+	# sensors
+	ibmpowernv-isa-0000
+	Adapter: ISA adapter
+	Core 8-15:    +29.0°C  
+	Core 16-23:   +29.0°C  
+	Core 24-31:   +30.0°C  
+	Core 32-39:   +30.0°C  
+	Core 40-47:   +32.0°C  
+	Core 48-55:   +29.0°C  
+	Core 56-63:   +29.0°C  
+	Centaur 0:    +28.0°C  
+	Centaur 1:    +32.0°C  
+	Centaur 4:    +28.0°C  
+	Centaur 5:    +27.0°C  
+	Core 0-7:     +29.0°C  
+
+The Centaur numbering does not look as good as for the core.
+
+On an IBM Power system :
+
+	# sensors
+	ibmpowernv-isa-0000
+	Adapter: ISA adapter
+	fan1:         5960 RPM  (min =    0 RPM)
+	fan2:         5252 RPM  (min =    0 RPM)
+	fan3:         5960 RPM  (min =    0 RPM)
+	fan4:         5242 RPM  (min =    0 RPM)
+	fan5:         5008 RPM  (min =    0 RPM)
+	fan6:         5000 RPM  (min =    0 RPM)
+	fan7:         5232 RPM  (min =    0 RPM)
+	fan8:         5986 RPM  (min =    0 RPM)
+	fan9:         5232 RPM  (min =    0 RPM)
+	fan10:        6094 RPM  (min =    0 RPM)
+	fan11:        5242 RPM  (min =    0 RPM)
+	fan12:        5882 RPM  (min =    0 RPM)
+	fan13:        5212 RPM  (min =    0 RPM)
+	fan14:        5973 RPM  (min =    0 RPM)
+	Ambient:       +18.0°C  (high =  +0.0°C)
+	Core 0-7:      +40.0°C  
+	Core 8-15:     +39.0°C  
+	Core 16-23:    +39.0°C  
+	Core 24-31:    +38.0°C  
+	Core 32-39:    +38.0°C  
+	Core 40-47:    +37.0°C  
+	Core 48-55:    +37.0°C  
+	Core 56-63:    +38.0°C  
+	Core 64-71:    +38.0°C  
+	Core 72-79:    +39.0°C  
+	Core 80-87:    +35.0°C  
+	Core 88-95:    +34.0°C  
+	Core 96-103:   +33.0°C  
+	Core 104-111:  +34.0°C  
+	Core 112-119:  +33.0°C  
+	Core 120-127:  +31.0°C  
+	Core 128-135:  +31.0°C  
+	Core 136-143:  +39.0°C  
+	Core 144-151:  +39.0°C  
+	Core 152-159:  +40.0°C  
+	power1:       425.00 W  
+
+The Centaur are not exposed yet.
+
+Thanks,
+
+C.
