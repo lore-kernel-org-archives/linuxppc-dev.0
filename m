@@ -1,25 +1,40 @@
-Return-Path: <linux@roeck-us.net>
-Received: from bh-25.webhostbox.net (bh-25.webhostbox.net [208.91.199.152])
+Return-Path: <nacc@linux.vnet.ibm.com>
+Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 249721A057D
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Apr 2015 02:46:01 +1000 (AEST)
-Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
- (envelope-from <linux@roeck-us.net>) id 1YfWdQ-003moY-TN
- for linuxppc-dev@lists.ozlabs.org; Tue, 07 Apr 2015 16:45:57 +0000
-Date: Tue, 7 Apr 2015 09:44:39 -0700
-From: Guenter Roeck <linux@roeck-us.net>
-To: =?iso-8859-1?Q?C=E9dric?= Le Goater <clg@fr.ibm.com>
-Subject: Re: [PATCH 4/4] hwmon: (ibmpowernv) pretty print labels
-Message-ID: <20150407164439.GA4514@roeck-us.net>
-References: <5523ECC4.9010609@fr.ibm.com>
- <1428417956-28617-1-git-send-email-clg@fr.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3436E1A084B
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Apr 2015 03:14:18 +1000 (AEST)
+Received: from /spool/local
+ by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
+ Tue, 7 Apr 2015 13:14:15 -0400
+Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
+ [9.57.198.24])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 8A37DC9003E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Apr 2015 13:05:22 -0400 (EDT)
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+ by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t37HEDU523199776
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 Apr 2015 17:14:13 GMT
+Received: from d01av04.pok.ibm.com (localhost [127.0.0.1])
+ by d01av04.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t37HECcj003617
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 Apr 2015 13:14:12 -0400
+Date: Tue, 7 Apr 2015 10:14:10 -0700
+From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: Topology updates and NUMA-level sched domains
+Message-ID: <20150407171410.GA62529@linux.vnet.ibm.com>
+References: <20150406214558.GA38501@linux.vnet.ibm.com>
+ <20150407102147.GJ23123@twins.programming.kicks-ass.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <1428417956-28617-1-git-send-email-clg@fr.ibm.com>
-Cc: Stewart Smith <stewart@linux.vnet.ibm.com>, lm-sensors@lm-sensors.org,
- Neelesh Gupta <neelegup@linux.vnet.ibm.com>, skiboot@lists.ozlabs.org,
- linuxppc-dev@lists.ozlabs.org, Jean Delvare <jdelvare@suse.de>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20150407102147.GJ23123@twins.programming.kicks-ass.net>
+Cc: Boqun Feng <boqun.feng@linux.vnet.ibm.com>,
+ Srikar Dronamraju <srikar@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+ Ingo Molnar <mingo@redhat.com>, Anton Blanchard <anton@samba.org>,
+ linuxppc-dev@lists.ozlabs.org, Anshuman Khandual <khandual@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,95 +44,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Apr 07, 2015 at 04:45:56PM +0200, Cédric Le Goater wrote:
-> The new OPAL device tree adds a few properties which can be used to add
-> extra information on the sensor label.
+On 07.04.2015 [12:21:47 +0200], Peter Zijlstra wrote:
+> On Mon, Apr 06, 2015 at 02:45:58PM -0700, Nishanth Aravamudan wrote:
+> > Hi Peter,
+> > 
+> > As you are very aware, I think, power has some odd NUMA topologies (and
+> > changes to the those topologies) at run-time. In particular, we can see
+> > a topology at boot:
+> > 
+> > Node 0: all Cpus
+> > Node 7: no cpus
+> > 
+> > Then we get a notification from the hypervisor that a core (or two) have
+> > moved from node 0 to node 7. This results in the:
 > 
-> In the case of a cpu core sensor, the firmware exposes the physical 
-> identifier of the core in the "ibm,pir" property. The driver 
-> translates this identifier in a linux cpu number and prints out a 
-> range corresponding to the hardware threads of the core (as they
-> share the same sensor).
+> > or a re-init API (which won't try to reallocate various bits), because
+> > the topology could be completely different now (e.g.,
+> > sched_domains_numa_distance will also be inaccurate now).  Really, a
+> > topology update on power (not sure on s390x, but those are the only two
+> > archs that return a positive value from arch_update_cpu_topology() right
+> > now, afaics) is a lot like a hotplug event and we need to re-initialize
+> > any dependent structures.
+> > 
+> > I'm just sending out feelers, as we can limp by with the above warning,
+> > it seems, but is less than ideal. Any help or insight you could provide
+> > would be greatly appreciated!
 > 
-> The numbering gives a hint on the localization of the core in the 
-> system (which socket, which chip). 
+> So I think (and ISTR having stated this before) that dynamic cpu<->node
+> maps are absolutely insane.
+
+Sorry if I wasn't involved at the time. I agree that it's a bit of a
+mess!
+
+> There is a ton of stuff that assumes the cpu<->node relation is a boot
+> time fixed one. Userspace being one of them. Per-cpu memory another.
+
+Well, userspace already deals with CPU hotplug, right? And the topology
+updates are, in a lot of ways, just like you've hotplugged a CPU from
+one node and re-hotplugged it into another node.
+
+I'll look into the per-cpu memory case.
+
+For what it's worth, our test teams are stressing the kernel with these
+topology updates and hopefully we'll be able to resolve any issues that
+result.
+
+> You simply cannot do this without causing massive borkage.
 > 
-> Signed-off-by: Cédric Le Goater <clg@fr.ibm.com>
+> So please come up with a coherent plan to deal with the entire problem
+> of dynamic cpu to memory relation and I might consider the scheduler
+> impact. But we're not going to hack around and maybe make it not crash
+> in a few corner cases while the entire thing is shite.
 
-Hi Cedric,
+Well, it doesn't crash now. In fact, it stays up reasonable well and
+seems to dtrt (from the kernel perspective) other than the sched domain
+messages.
 
-Please do not send follow-up patches as reply, but as separate e-mail.
+I will look into per-cpu memory, and also another case I have been
+thinking about where if a process is bound to a CPU/node combination via
+numactl and then the topology changes, what exactly will happen. In
+theory, via these topology updates, a node could go from memoryless ->
+not and v.v., which seems like it might not be well supported (but
+again, should not be much different from hotplugging all the memory out
+from a node).
 
-Further comments below.
+And, in fact, I think topologically speaking, I think I should be able
+to repeat the same sched domain warnings if I start off with a 2-node
+system with all CPUs on one node, and then hotplug a CPU onto the second
+node, right? That has nothing to do with power, that I can tell. I'll
+see if I can demonstrate it via a KVM guest.
 
-> ---
-> 
->  Changes since v1:
-> 
->  - check cpu validity before printing out the attribute label. 
->    if invalid, use a "phy" prefix to distinguish a linux cpu 
->    number from a physical cpu number. 
-> 
->  drivers/hwmon/ibmpowernv.c |   34 ++++++++++++++++++++++++++++++++++
->  1 file changed, 34 insertions(+)
-> 
-> Index: linux.git/drivers/hwmon/ibmpowernv.c
-> ===================================================================
-> --- linux.git.orig/drivers/hwmon/ibmpowernv.c
-> +++ linux.git/drivers/hwmon/ibmpowernv.c
-> @@ -113,9 +113,43 @@ static ssize_t show_label(struct device
->  static void __init make_sensor_label(struct device_node *np,
->  		    struct sensor_data *sdata, const char *label)
->  {
-> +	u32 id;
->  	size_t n;
->  
->  	n = snprintf(sdata->label, sizeof(sdata->label), "%s", label);
-> +
-> +	/*
-> +	 * Core temp pretty print
-> +	 */
-> +	if (!of_property_read_u32(np, "ibm,pir", &id)) {
-> +		int i = -1;
-> +
-> +		for_each_possible_cpu(i)
-> +			if (paca[i].hw_cpu_id == id)
+Thanks for your quick response!
 
-I think you should consider using get_hard_smp_processor_id() and avoid
-direct access to the paca array.
-
-> +				break;
-> +
-> +		if (i != -1)
-
-I don't think that works. i is initialized by for_each_possible_cpu(),
-either to -1 or 0 depending on the state of CONFIG_SMP. So pre-initializing
-it won't make a difference. Its last value is NR_CPUS (SMP) or 1 (non-SMP).
-
-You would need a second variable (which you could pre-initialize)
-to determine if the code found a matching ID or not.
-
-> +			/*
-> +			 * The digital thermal sensors are associated
-> +			 * with a core. Let's print out the range of
-> +			 * cpu ids corresponding to the hardware
-> +			 * threads of the core.
-> +			 */
-> +			n += snprintf(sdata->label + n,
-> +				      sizeof(sdata->label) - n,
-> +				      " %d-%d", i, i+7);
-
-I would really like to see how this looks like in practice.
-
-The id in the devicetree entry is the physical CPU. The resulting index
-is the logical CPU number. So let's assume that the logical CPU number
-for the first physical CPU is 0. Output would be "0-7". If the second
-physical CPU matches logical CPU 1, output would be "1-8". 
-How does that make any sense ?
-
-Also, how do you know that the range of CPU IDs is always 8 ?
-
-Can you provide some resulting outputs ?
-
-Thanks,
-Guenter
+-Nish
