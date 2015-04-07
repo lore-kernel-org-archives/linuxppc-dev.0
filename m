@@ -1,34 +1,30 @@
 Return-Path: <sam.bobroff@au1.ibm.com>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 048BD1A0515
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Apr 2015 10:55:53 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id DB74A1A04F2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Apr 2015 10:55:52 +1000 (AEST)
 Received: from /spool/local
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <sam.bobroff@au1.ibm.com>;
  Tue, 7 Apr 2015 10:55:51 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 2E35C2BB0054
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 2F7EA2BB0055
  for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Apr 2015 10:55:48 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t370te7t46006414
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t370tdc950921620
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 Apr 2015 10:55:48 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t370tEZ1002382
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t370tEF9004289
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 Apr 2015 10:55:14 +1000
 From: Sam Bobroff <sam.bobroff@au1.ibm.com>
 To: mpe@ellerman.id.au, benh@kernel.crashing.org
-Subject: [PATCH v3 2/4] selftests/powerpc: Move get_auxv_entry() to harness.c
-Date: Tue,  7 Apr 2015 10:54:48 +1000
-Message-Id: <13c5acd8a857ceba3f1bac86bee3c596152f3606.1428368031.git.sam.bobroff@au1.ibm.com>
-In-Reply-To: <cover.1428368031.git.sam.bobroff@au1.ibm.com>
-References: <cover.1428368031.git.sam.bobroff@au1.ibm.com>
-In-Reply-To: <cover.1428368031.git.sam.bobroff@au1.ibm.com>
-References: <cover.1428368031.git.sam.bobroff@au1.ibm.com>
+Subject: [PATCH v3 0/4] powerpc/tm: Abort syscalls in active transactions
+Date: Tue,  7 Apr 2015 10:54:46 +1000
+Message-Id: <cover.1428368031.git.sam.bobroff@au1.ibm.com>
 Cc: mikey@neuling.org, azanella@linux.vnet.ibm.com,
  linuxppc-dev@lists.ozlabs.org, matt@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -40,169 +36,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Move get_auxv_entry() from pmu/lib.c up to harness.c in order to make
-it available to other tests.
 
-Signed-off-by: Sam Bobroff <sam.bobroff@au1.ibm.com>
----
- tools/testing/selftests/powerpc/harness.c |   47 +++++++++++++++++++++++++++++
- tools/testing/selftests/powerpc/pmu/lib.c |   47 -----------------------------
- tools/testing/selftests/powerpc/pmu/lib.h |    1 -
- tools/testing/selftests/powerpc/utils.h   |    2 +-
- 4 files changed, 48 insertions(+), 49 deletions(-)
+See the first patch for a description of the reasoning behind this
+change.
 
-diff --git a/tools/testing/selftests/powerpc/harness.c b/tools/testing/selftests/powerpc/harness.c
-index 8ebc58a..f7997af 100644
---- a/tools/testing/selftests/powerpc/harness.c
-+++ b/tools/testing/selftests/powerpc/harness.c
-@@ -11,6 +11,10 @@
- #include <sys/types.h>
- #include <sys/wait.h>
- #include <unistd.h>
-+#include <elf.h>
-+#include <fcntl.h>
-+#include <link.h>
-+#include <sys/stat.h>
- 
- #include "subunit.h"
- #include "utils.h"
-@@ -112,3 +116,46 @@ int test_harness(int (test_function)(void), char *name)
- 
- 	return rc;
- }
-+
-+static char auxv[4096];
-+
-+void *get_auxv_entry(int type)
-+{
-+	ElfW(auxv_t) *p;
-+	void *result;
-+	ssize_t num;
-+	int fd;
-+
-+	fd = open("/proc/self/auxv", O_RDONLY);
-+	if (fd == -1) {
-+		perror("open");
-+		return NULL;
-+	}
-+
-+	result = NULL;
-+
-+	num = read(fd, auxv, sizeof(auxv));
-+	if (num < 0) {
-+		perror("read");
-+		goto out;
-+	}
-+
-+	if (num > sizeof(auxv)) {
-+		printf("Overflowed auxv buffer\n");
-+		goto out;
-+	}
-+
-+	p = (ElfW(auxv_t) *)auxv;
-+
-+	while (p->a_type != AT_NULL) {
-+		if (p->a_type == type) {
-+			result = (void *)p->a_un.a_val;
-+			break;
-+		}
-+
-+		p++;
-+	}
-+out:
-+	close(fd);
-+	return result;
-+}
-diff --git a/tools/testing/selftests/powerpc/pmu/lib.c b/tools/testing/selftests/powerpc/pmu/lib.c
-index 9768dea..a07104c 100644
---- a/tools/testing/selftests/powerpc/pmu/lib.c
-+++ b/tools/testing/selftests/powerpc/pmu/lib.c
-@@ -5,15 +5,10 @@
- 
- #define _GNU_SOURCE	/* For CPU_ZERO etc. */
- 
--#include <elf.h>
- #include <errno.h>
--#include <fcntl.h>
--#include <link.h>
- #include <sched.h>
- #include <setjmp.h>
- #include <stdlib.h>
--#include <sys/stat.h>
--#include <sys/types.h>
- #include <sys/wait.h>
- 
- #include "utils.h"
-@@ -256,45 +251,3 @@ out:
- 	return rc;
- }
- 
--static char auxv[4096];
--
--void *get_auxv_entry(int type)
--{
--	ElfW(auxv_t) *p;
--	void *result;
--	ssize_t num;
--	int fd;
--
--	fd = open("/proc/self/auxv", O_RDONLY);
--	if (fd == -1) {
--		perror("open");
--		return NULL;
--	}
--
--	result = NULL;
--
--	num = read(fd, auxv, sizeof(auxv));
--	if (num < 0) {
--		perror("read");
--		goto out;
--	}
--
--	if (num > sizeof(auxv)) {
--		printf("Overflowed auxv buffer\n");
--		goto out;
--	}
--
--	p = (ElfW(auxv_t) *)auxv;
--
--	while (p->a_type != AT_NULL) {
--		if (p->a_type == type) {
--			result = (void *)p->a_un.a_val;
--			break;
--		}
--
--		p++;
--	}
--out:
--	close(fd);
--	return result;
--}
-diff --git a/tools/testing/selftests/powerpc/pmu/lib.h b/tools/testing/selftests/powerpc/pmu/lib.h
-index 0f0339c..ca5d72a 100644
---- a/tools/testing/selftests/powerpc/pmu/lib.h
-+++ b/tools/testing/selftests/powerpc/pmu/lib.h
-@@ -29,7 +29,6 @@ extern int notify_parent(union pipe write_pipe);
- extern int notify_parent_of_error(union pipe write_pipe);
- extern pid_t eat_cpu(int (test_function)(void));
- extern bool require_paranoia_below(int level);
--extern void *get_auxv_entry(int type);
- 
- struct addr_range {
- 	uint64_t first, last;
-diff --git a/tools/testing/selftests/powerpc/utils.h b/tools/testing/selftests/powerpc/utils.h
-index a93777a..64f53cd 100644
---- a/tools/testing/selftests/powerpc/utils.h
-+++ b/tools/testing/selftests/powerpc/utils.h
-@@ -19,7 +19,7 @@ typedef uint8_t u8;
- 
- 
- int test_harness(int (test_function)(void), char *name);
--
-+extern void *get_auxv_entry(int type);
- 
- /* Yes, this is evil */
- #define FAIL_IF(x)						\
+This set includes the change, a kernel selftest for it and
+some slight refactoring of the selftest code.
+
+
+v3:
+Patch 1/4: powerpc/tm: Abort syscalls in active transactions
+
+Use "TABORT()" macro to allow building on versions of gcc that don't support
+the "tabort." instruction.
+
+
+v2:
+Patch 1/4: powerpc/tm: Abort syscalls in active transactions
+
+Also update the failure code table.
+
+Patch 3/4: selftests/powerpc: Add transactional syscall test
+
+Further testing has shown that the success or failure of the transactions was
+affected by minor changes to the code, compiler optimisation and linker
+settings.
+
+To address this, I've moved the transactional part of the test to a separate
+function, written in assembly. I've also extended the test to as many
+transactions as it can fit into ten seconds, to better test for failures that
+occur more rarely. This has stabilised the results, and it's no longer
+necessary to use special compiler or linker flags.
+
+Patch 4/4: powerpc/tm: Correct minor documentation typos
+
+Discovered some typos while updating the documentation.
+
+
+Sam Bobroff (4):
+  powerpc/tm: Abort syscalls in active transactions
+  selftests/powerpc: Move get_auxv_entry() to harness.c
+  selftests/powerpc: Add transactional syscall test
+  powerpc/tm: Correct minor documentation typos
+
+ Documentation/powerpc/transactional_memory.txt     |   36 +++----
+ arch/powerpc/include/uapi/asm/tm.h                 |    2 +-
+ arch/powerpc/kernel/entry_64.S                     |   19 ++++
+ tools/testing/selftests/powerpc/harness.c          |   47 +++++++++
+ tools/testing/selftests/powerpc/pmu/lib.c          |   47 ---------
+ tools/testing/selftests/powerpc/pmu/lib.h          |    1 -
+ tools/testing/selftests/powerpc/tm/.gitignore      |    1 +
+ tools/testing/selftests/powerpc/tm/Makefile        |    4 +-
+ .../testing/selftests/powerpc/tm/tm-syscall-asm.S  |   27 +++++
+ .../testing/selftests/powerpc/tm/tm-syscall-asm.h  |    2 +
+ tools/testing/selftests/powerpc/tm/tm-syscall.c    |  109 ++++++++++++++++++++
+ tools/testing/selftests/powerpc/utils.h            |    2 +-
+ 12 files changed, 228 insertions(+), 69 deletions(-)
+ create mode 100644 tools/testing/selftests/powerpc/tm/tm-syscall-asm.S
+ create mode 100644 tools/testing/selftests/powerpc/tm/tm-syscall-asm.h
+ create mode 100644 tools/testing/selftests/powerpc/tm/tm-syscall.c
+
 -- 
 1.7.10.4
