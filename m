@@ -1,43 +1,19 @@
-Return-Path: <tklauser@sym2.noone.org>
-Received: from sym2.noone.org (sym2.noone.org [178.63.92.236])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 969861A03D6
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Apr 2015 18:00:16 +1000 (AEST)
-Date: Tue, 7 Apr 2015 09:49:57 +0200
-From: Tobias Klauser <tklauser@distanz.ch>
-To: Joe Perches <joe@perches.com>
-Subject: Re: [PATCH V2] tty: serial: Add const to struct uart_ops declarations
-Message-ID: <20150407074957.GA25696@distanz.ch>
-References: <1428169665.2775.53.camel@perches.com>
- <a938a0e86638588e5ccff85771fa3b95@agner.ch>
- <1428258294.2775.69.camel@perches.com>
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ by lists.ozlabs.org (Postfix) with ESMTP id 0AC2E1A03D6
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Apr 2015 18:08:11 +1000 (AEST)
+Message-ID: <5523905E.6050007@c-s.fr>
+Date: Tue, 07 Apr 2015 10:07:58 +0200
+From: leroy christophe <christophe.leroy@c-s.fr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1428258294.2775.69.camel@perches.com>
-Cc: linux-ia64@vger.kernel.org, kernel@stlinux.com,
- Nicolas Ferre <nicolas.ferre@atmel.com>, Timur Tabi <timur@tabi.org>,
- Stefan Agner <stefan@agner.ch>, Patrice Chotard <patrice.chotard@st.com>,
- Pat Gefre <pfg@sgi.com>, Laxman Dewangan <ldewangan@nvidia.com>,
- "Maciej W. Rozycki" <macro@linux-mips.org>, Daniel Walker <dwalker@fifo99.com>,
- sparclinux@vger.kernel.org, Sonic Zhang <sonic.zhang@analog.com>,
- Jiri Slaby <jslaby@suse.cz>, Alexandre Courbot <gnurou@gmail.com>,
- Russell King <linux@arm.linux.org.uk>, Michal Simek <michal.simek@xilinx.com>,
- =?iso-8859-1?Q?S=F6ren?= Brinkmann <soren.brinkmann@xilinx.com>,
- linux-serial@vger.kernel.org, David Brown <davidb@codeaurora.org>,
- Stephen Warren <swarren@wwwdotorg.org>, linux-arm-msm@vger.kernel.org,
- adi-buildroot-devel@lists.sourceforge.net,
- Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>,
- linux-tegra@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- Maxime Coquelin <maxime.coquelin@st.com>, Barry Song <baohua@kernel.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org,
- Tony Prisk <linux@prisktech.co.nz>, Bryan Huntsman <bryanh@codeaurora.org>,
- Thierry Reding <thierry.reding@gmail.com>,
- Uwe =?iso-8859-1?Q?Kleine-K=F6nig?= <kernel@pengutronix.de>,
- Vineet Gupta <vgupta@synopsys.com>, nios2-dev@lists.rocketboards.org,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "David S. Miller" <davem@davemloft.net>,
- Srinivas Kandagatla <srinivas.kandagatla@gmail.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: powerpc32: fix warning from include/linux/mm.h
+References: <20141205112020.640FA1A5D4F@localhost.localdomain>
+ <20150320235213.GA1233@home.buserror.net>
+In-Reply-To: <20150320235213.GA1233@home.buserror.net>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,13 +23,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2015-04-05 at 20:24:54 +0200, Joe Perches <joe@perches.com> wrote:
 
-[...]
+Le 21/03/2015 00:52, Scott Wood a écrit :
+> On Fri, Dec 05, 2014 at 12:20:20PM +0100, LEROY Christophe wrote:
+>> include/linux/mm.h: In function 'is_vmalloc_addr':
+>> include/linux/mm.h:367:14: warning: comparison between signed and unsigned integer expressions [-Wsign-compare]
+>>    return addr >= VMALLOC_START && addr < VMALLOC_END;
+>>                ^
+>>
+>> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+>> ---
+>>   arch/powerpc/include/asm/pgtable-ppc32.h | 2 +-
+>>   1 file changed, 1 insertion(+), 1 deletion(-)
+> That warning doesn't appear to be enabled.  What config are you seeing
+> this with?
+I'm used to adding EXTRA_CFLAGS=-Wextra  when checking my own drivers, 
+as it helps finding additional bugs.
 
->  drivers/tty/serial/altera_jtaguart.c        | 2 +-
->  drivers/tty/serial/altera_uart.c            | 2 +-
+When doing that, the only warnings I get outside of my own code are this 
+one, and the other one in my proposed patch identified "powerpc32: fix 
+warning from include/asm-generic/termios-base.h"
 
-For these two drivers:
+I though it would be worth fixing those two warnings in order to get a 
+perfectly clean code.
 
-Acked-by: Tobias Klauser <tklauser@distanz.ch>
+Christophe
