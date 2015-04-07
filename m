@@ -1,43 +1,44 @@
-Return-Path: <stewart@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 464111A0758
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Apr 2015 15:36:09 +1000 (AEST)
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+Return-Path: <patrice.chotard@st.com>
+Received: from mx08-00178001.pphosted.com (mx08-00178001.pphosted.com
+ [91.207.212.93])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 573011401B1
- for <linuxppc-dev@ozlabs.org>; Tue,  7 Apr 2015 15:36:07 +1000 (AEST)
-Received: from /spool/local
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <stewart@linux.vnet.ibm.com>;
- Mon, 6 Apr 2015 23:36:05 -0600
-Received: from b03cxnp08025.gho.boulder.ibm.com
- (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id E899019D8026
- for <linuxppc-dev@ozlabs.org>; Mon,  6 Apr 2015 23:27:07 -0600 (MDT)
-Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
- by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with
- ESMTP id t375ZkCX31850646
- for <linuxppc-dev@ozlabs.org>; Mon, 6 Apr 2015 22:35:46 -0700
-Received: from d03av05.boulder.ibm.com (localhost [127.0.0.1])
- by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t375a1Di028501
- for <linuxppc-dev@ozlabs.org>; Mon, 6 Apr 2015 23:36:01 -0600
-From: Stewart Smith <stewart@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/powernv: Remove powernv RTAS support
-In-Reply-To: <1427276571.31588.4.camel@ellerman.id.au>
-References: <1426141631-10741-1-git-send-email-mpe@ellerman.id.au>
- <m3mw317hod.fsf@oc8180480414.ibm.com>
- <1427276571.31588.4.camel@ellerman.id.au>
-Date: Tue, 07 Apr 2015 15:36:00 +1000
-Message-ID: <m37ftozein.fsf@oc8180480414.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1DAB41A02CB
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Apr 2015 17:33:22 +1000 (AEST)
+Message-ID: <552383C2.3050502@st.com>
+Date: Tue, 7 Apr 2015 09:14:10 +0200
+From: Patrice Chotard <patrice.chotard@st.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, dja@axtens.net
+To: Joe Perches <joe@perches.com>, Stefan Agner <stefan@agner.ch>
+Subject: Re: [PATCH V2] tty: serial: Add const to struct uart_ops declarations
+References: <1428169665.2775.53.camel@perches.com>	
+ <a938a0e86638588e5ccff85771fa3b95@agner.ch>
+ <1428258294.2775.69.camel@perches.com>
+In-Reply-To: <1428258294.2775.69.camel@perches.com>
+Content-Type: text/plain; charset="windows-1252"; format=flowed
+Cc: linux-ia64@vger.kernel.org, kernel@stlinux.com,
+ Nicolas Ferre <nicolas.ferre@atmel.com>, Timur Tabi <timur@tabi.org>,
+ Pat Gefre <pfg@sgi.com>, Laxman Dewangan <ldewangan@nvidia.com>,
+ "Maciej W. Rozycki" <macro@linux-mips.org>, Daniel Walker <dwalker@fifo99.com>,
+ sparclinux@vger.kernel.org, Sonic Zhang <sonic.zhang@analog.com>,
+ Jiri Slaby <jslaby@suse.cz>, Alexandre Courbot <gnurou@gmail.com>,
+ Russell King <linux@arm.linux.org.uk>, Michal Simek <michal.simek@xilinx.com>,
+ =?windows-1252?Q?S=F6ren_Brinkmann?= <soren.brinkmann@xilinx.com>,
+ linux-serial@vger.kernel.org, Tobias Klauser <tklauser@distanz.ch>,
+ Stephen Warren <swarren@wwwdotorg.org>, linux-arm-msm@vger.kernel.org,
+ adi-buildroot-devel@lists.sourceforge.net,
+ Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>,
+ linux-tegra@vger.kernel.org, David Brown <davidb@codeaurora.org>,
+ linux-arm-kernel@lists.infradead.org, Maxime Coquelin <maxime.coquelin@st.com>,
+ Barry Song <baohua@kernel.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org,
+ Tony Prisk <linux@prisktech.co.nz>, Bryan Huntsman <bryanh@codeaurora.org>,
+ Thierry Reding <thierry.reding@gmail.com>,
+ =?windows-1252?Q?Uwe_Kleine-K=F6nig?= <kernel@pengutronix.de>,
+ Vineet Gupta <vgupta@synopsys.com>, nios2-dev@lists.rocketboards.org,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "David S. Miller" <davem@davemloft.net>,
+ Srinivas Kandagatla <srinivas.kandagatla@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,20 +48,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Michael Ellerman <mpe@ellerman.id.au> writes:
->> The only current place I could think this could be remotely possible
->> would be in simulator... and we should instead make the OPAL calls work
->> properly in the simulator for all the RTAS functionality (that we care
->> about).
->
-> If you mean mambo, I tested that, at least the public version, and it doesn't
-> provide or need RTAS.
->
-> On the other sims we ran without RTAS during the Power8 bringup, though it was
-> eventually used a little bit late in the cycle. In future we should be using
-> skiboot, or just putting logic directly into the kernel for early bringup - or
-> permanently :)
+Hi
 
-agreed on using skiboot. If we're going as far as booting a linux
-kernel, the overhead of loading skiboot is next to nothing in
-comparison. Or at least it should be.
+On 04/05/2015 08:24 PM, Joe Perches wrote:
+> These structs can be const, so make them const.
+>
+> Miscellanea:
+>
+> o Add static to struct uart_ops declaration in bfin_sport_uart
+>
+> Signed-off-by: Joe Perches <joe@perches.com>
+> ---
+[...]
+
+for
+>   drivers/tty/serial/st-asc.c                 | 2 +-
+
+Acked-by: Patrice Chotard <patrice.chotard@st.com>
+
+
+Thanks
