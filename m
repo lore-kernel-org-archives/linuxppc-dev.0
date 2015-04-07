@@ -1,40 +1,25 @@
-Return-Path: <nacc@linux.vnet.ibm.com>
-Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <ddstreet@gmail.com>
+Received: from mail-ig0-x235.google.com (mail-ig0-x235.google.com
+ [IPv6:2607:f8b0:4001:c05::235])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3436E1A084B
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Apr 2015 03:14:18 +1000 (AEST)
-Received: from /spool/local
- by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
- Tue, 7 Apr 2015 13:14:15 -0400
-Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
- [9.57.198.24])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 8A37DC9003E
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Apr 2015 13:05:22 -0400 (EDT)
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
- by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t37HEDU523199776
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 Apr 2015 17:14:13 GMT
-Received: from d01av04.pok.ibm.com (localhost [127.0.0.1])
- by d01av04.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t37HECcj003617
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 Apr 2015 13:14:12 -0400
-Date: Tue, 7 Apr 2015 10:14:10 -0700
-From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: Topology updates and NUMA-level sched domains
-Message-ID: <20150407171410.GA62529@linux.vnet.ibm.com>
-References: <20150406214558.GA38501@linux.vnet.ibm.com>
- <20150407102147.GJ23123@twins.programming.kicks-ass.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150407102147.GJ23123@twins.programming.kicks-ass.net>
-Cc: Boqun Feng <boqun.feng@linux.vnet.ibm.com>,
- Srikar Dronamraju <srikar@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
- Ingo Molnar <mingo@redhat.com>, Anton Blanchard <anton@samba.org>,
- linuxppc-dev@lists.ozlabs.org, Anshuman Khandual <khandual@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 868FD1A084E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Apr 2015 03:35:03 +1000 (AEST)
+Received: by igbqf9 with SMTP id qf9so18131451igb.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Apr 2015 10:35:01 -0700 (PDT)
+Sender: Dan Streetman <ddstreet@gmail.com>
+From: Dan Streetman <ddstreet@ieee.org>
+To: Herbert Xu <herbert@gondor.apana.org.au>,
+ "David S. Miller" <davem@davemloft.net>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>
+Subject: [PATCH 00/11] add 842 hw compression for PowerNV platform
+Date: Tue,  7 Apr 2015 13:34:19 -0400
+Message-Id: <1428428070-17803-1-git-send-email-ddstreet@ieee.org>
+Cc: linux-kernel@vger.kernel.org, Robert Jennings <rob@pochix.net>,
+ linux-crypto@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Seth Jennings <sjennings@variantweb.net>, Dan Streetman <ddstreet@ieee.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,76 +29,83 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 07.04.2015 [12:21:47 +0200], Peter Zijlstra wrote:
-> On Mon, Apr 06, 2015 at 02:45:58PM -0700, Nishanth Aravamudan wrote:
-> > Hi Peter,
-> > 
-> > As you are very aware, I think, power has some odd NUMA topologies (and
-> > changes to the those topologies) at run-time. In particular, we can see
-> > a topology at boot:
-> > 
-> > Node 0: all Cpus
-> > Node 7: no cpus
-> > 
-> > Then we get a notification from the hypervisor that a core (or two) have
-> > moved from node 0 to node 7. This results in the:
-> 
-> > or a re-init API (which won't try to reallocate various bits), because
-> > the topology could be completely different now (e.g.,
-> > sched_domains_numa_distance will also be inaccurate now).  Really, a
-> > topology update on power (not sure on s390x, but those are the only two
-> > archs that return a positive value from arch_update_cpu_topology() right
-> > now, afaics) is a lot like a hotplug event and we need to re-initialize
-> > any dependent structures.
-> > 
-> > I'm just sending out feelers, as we can limp by with the above warning,
-> > it seems, but is less than ideal. Any help or insight you could provide
-> > would be greatly appreciated!
-> 
-> So I think (and ISTR having stated this before) that dynamic cpu<->node
-> maps are absolutely insane.
+IBM PowerPC processors starting at version P7+ contain a NX coprocessor that
+provides various hw-accelerated functions, one of which is memory compression
+to the IBM "842" compression format.  This NX-842 coprocessor is already
+supported on the pSeries platform, by the nx-842.c driver and the crypto
+compression interface at crypto/842.c.  This patch set adds support for NX-842
+on the PowerNV (Non-Virtualized) platform.
 
-Sorry if I wasn't involved at the time. I agree that it's a bit of a
-mess!
+The existing pSeries platform NX-842 driver could not be re-used for the
+PowerNV platform driver, as there are fundamentally different interfaces;
+on pSeries the system hypervisor (pHyp) provides the interface and manages
+communication with the coprocessor, while on PowerNV the kernel talks directly
+to the coprocessor using the ICSWX instruction.  The data structures used to
+describe each compression or decompression request to the coprocessor are
+also different between pHyp's interface and direct communication with ICSWX.
+So, different drivers for pSeries and PowerNV are required.  Adding the new
+PowerNV driver but keeping the interface to the drivers the same required
+adding a new common frontend interface, to which only one of the platform
+drivers will connect (based on what platform the kernel is currently running
+on), and moving some functionality out of the existing pSeries driver into a
+more common location.  Also, the crypto/842.c interface to the NX-842 hw
+driver is modified to be able to handle any alignment or length input or
+output buffer; currently with the pSeries driver only page-size and
+page-aligned (uncompressed) buffers are possible.
 
-> There is a ton of stuff that assumes the cpu<->node relation is a boot
-> time fixed one. Userspace being one of them. Per-cpu memory another.
+The result is a crypto 842 interface that allows using any input and output
+buffers (i.e. any alignment and length) to communicate with the NX-842
+hardware on either the pSeries or PowerNV platforms, as well as a generic
+842 software decompressor that the crypto 842 interface falls back to if the
+NX-842 hardware fails and/or returns error during decompression.
 
-Well, userspace already deals with CPU hotplug, right? And the topology
-updates are, in a lot of ways, just like you've hotplugged a CPU from
-one node and re-hotplugged it into another node.
+Finally, this also adds a generic crypto compression selftest module, that
+can verify correct compression/decompression cycles using variable alignment
+and length buffers, multiple threads, and can calculate the throughput.
 
-I'll look into the per-cpu memory case.
+Dan Streetman (11):
+  powerpc: export of_get_ibm_chip_id function
+  powerpc: Add ICSWX instruction
+  crypto: add software 842 decompression
+  drivers/crypto/nx: move nx-842.c to nx-842-pseries.c
+  drivers/crypto/nx: add NX-842 platform frontend driver
+  drivers/crypto/nx: add nx842 constraints
+  drivers/crypto/nx: add PowerNV platform NX-842 driver
+  drivers/crypto/nx: simplify pSeries nx842 driver
+  crypto: remove LZO fallback from crypto 842
+  crypto: rewrite crypto 842 to use nx842 constraints
+  crypto: add crypto compression sefltest
 
-For what it's worth, our test teams are stressing the kernel with these
-topology updates and hopefully we'll be able to resolve any issues that
-result.
+ MAINTAINERS                           |    5 +-
+ arch/powerpc/include/asm/icswx.h      |  184 ++++
+ arch/powerpc/include/asm/ppc-opcode.h |   13 +
+ arch/powerpc/kernel/prom.c            |    1 +
+ crypto/842.c                          |  495 ++++++++--
+ crypto/Kconfig                        |   13 +-
+ crypto/Makefile                       |    1 +
+ crypto/comp_selftest.c                |  928 +++++++++++++++++++
+ drivers/crypto/Kconfig                |    6 +-
+ drivers/crypto/nx/Kconfig             |   43 +-
+ drivers/crypto/nx/Makefile            |    4 +
+ drivers/crypto/nx/nx-842-powernv.c    |  623 +++++++++++++
+ drivers/crypto/nx/nx-842-pseries.c    | 1126 +++++++++++++++++++++++
+ drivers/crypto/nx/nx-842.c            | 1623 +++------------------------------
+ drivers/crypto/nx/nx-842.h            |  131 +++
+ include/linux/nx842.h                 |   17 +-
+ include/linux/sw842.h                 |    7 +
+ lib/842/842_decompress.c              |  413 +++++++++
+ lib/842/Makefile                      |    1 +
+ lib/Kconfig                           |    3 +
+ lib/Makefile                          |    1 +
+ 21 files changed, 4001 insertions(+), 1637 deletions(-)
+ create mode 100644 arch/powerpc/include/asm/icswx.h
+ create mode 100644 crypto/comp_selftest.c
+ create mode 100644 drivers/crypto/nx/nx-842-powernv.c
+ create mode 100644 drivers/crypto/nx/nx-842-pseries.c
+ create mode 100644 drivers/crypto/nx/nx-842.h
+ create mode 100644 include/linux/sw842.h
+ create mode 100644 lib/842/842_decompress.c
+ create mode 100644 lib/842/Makefile
 
-> You simply cannot do this without causing massive borkage.
-> 
-> So please come up with a coherent plan to deal with the entire problem
-> of dynamic cpu to memory relation and I might consider the scheduler
-> impact. But we're not going to hack around and maybe make it not crash
-> in a few corner cases while the entire thing is shite.
-
-Well, it doesn't crash now. In fact, it stays up reasonable well and
-seems to dtrt (from the kernel perspective) other than the sched domain
-messages.
-
-I will look into per-cpu memory, and also another case I have been
-thinking about where if a process is bound to a CPU/node combination via
-numactl and then the topology changes, what exactly will happen. In
-theory, via these topology updates, a node could go from memoryless ->
-not and v.v., which seems like it might not be well supported (but
-again, should not be much different from hotplugging all the memory out
-from a node).
-
-And, in fact, I think topologically speaking, I think I should be able
-to repeat the same sched domain warnings if I start off with a 2-node
-system with all CPUs on one node, and then hotplug a CPU onto the second
-node, right? That has nothing to do with power, that I can tell. I'll
-see if I can demonstrate it via a KVM guest.
-
-Thanks for your quick response!
-
--Nish
+-- 
+2.1.0
