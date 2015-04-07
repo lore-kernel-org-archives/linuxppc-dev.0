@@ -1,50 +1,28 @@
-Return-Path: <Vineet.Gupta1@synopsys.com>
-Received: from smtprelay.synopsys.com (smtprelay4.synopsys.com [198.182.47.9])
- (using TLSv1.1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <clg@fr.ibm.com>
+Received: from e06smtp17.uk.ibm.com (e06smtp17.uk.ibm.com [195.75.94.113])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A028B1A056E
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Apr 2015 22:54:58 +1000 (AEST)
-From: Vineet Gupta <Vineet.Gupta1@synopsys.com>
-To: Joe Perches <joe@perches.com>, Stefan Agner <stefan@agner.ch>
-Subject: Re: [PATCH V2] tty: serial: Add const to struct uart_ops declarations
-Date: Tue, 7 Apr 2015 12:46:46 +0000
-Message-ID: <C2D7FE5348E1B147BCA15975FBA2307566598FD3@IN01WEMBXB.internal.synopsys.com>
-References: <1428169665.2775.53.camel@perches.com>
- <a938a0e86638588e5ccff85771fa3b95@agner.ch>
- <1428258294.2775.69.camel@perches.com>
-Content-Type: text/plain; charset="iso-8859-1"
+ by lists.ozlabs.org (Postfix) with ESMTPS id F0EF51A084E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Apr 2015 00:42:23 +1000 (AEST)
+Received: from /spool/local
+ by e06smtp17.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <clg@fr.ibm.com>;
+ Tue, 7 Apr 2015 15:42:19 +0100
+Message-ID: <5523ECC4.9010609@fr.ibm.com>
+Date: Tue, 07 Apr 2015 16:42:12 +0200
+From: Cedric Le Goater <clg@fr.ibm.com>
 MIME-Version: 1.0
-Cc: "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
- "kernel@stlinux.com" <kernel@stlinux.com>,
- Nicolas Ferre <nicolas.ferre@atmel.com>, Timur Tabi <timur@tabi.org>,
- Patrice Chotard <patrice.chotard@st.com>, Pat Gefre <pfg@sgi.com>,
- Laxman Dewangan <ldewangan@nvidia.com>,
- "Maciej W. Rozycki" <macro@linux-mips.org>, Daniel Walker <dwalker@fifo99.com>,
- "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>,
- Sonic Zhang <sonic.zhang@analog.com>, Jiri Slaby <jslaby@suse.cz>,
- Alexandre Courbot <gnurou@gmail.com>, Russell King <linux@arm.linux.org.uk>,
- Michal Simek <michal.simek@xilinx.com>,
- =?iso-8859-1?Q?S=F6ren_Brinkmann?= <soren.brinkmann@xilinx.com>,
- "linux-serial@vger.kernel.org" <linux-serial@vger.kernel.org>,
- Tobias Klauser <tklauser@distanz.ch>, Stephen Warren <swarren@wwwdotorg.org>,
- "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, Vineet
- Gupta <Vineet.Gupta1@synopsys.com>,
- "adi-buildroot-devel@lists.sourceforge.net"
- <adi-buildroot-devel@lists.sourceforge.net>,
- Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>,
- "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>,
- David Brown <davidb@codeaurora.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- Maxime Coquelin <maxime.coquelin@st.com>, Barry Song <baohua@kernel.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Tony Prisk <linux@prisktech.co.nz>, Bryan Huntsman <bryanh@codeaurora.org>,
- Thierry Reding <thierry.reding@gmail.com>,
- =?iso-8859-1?Q?Uwe_Kleine-K=F6nig?= <kernel@pengutronix.de>, Srinivas
- Kandagatla <srinivas.kandagatla@gmail.com>,
- "nios2-dev@lists.rocketboards.org" <nios2-dev@lists.rocketboards.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "David S. Miller" <davem@davemloft.net>
+To: Guenter Roeck <linux@roeck-us.net>, lm-sensors@lm-sensors.org
+Subject: Re: [PATCH 4/4] hwmon: (ibmpowernv) pretty print labels
+References: <1426787085-9004-1-git-send-email-clg@fr.ibm.com>
+ <1427883306-32528-5-git-send-email-clg@fr.ibm.com>
+ <551EB692.3010309@roeck-us.net>
+In-Reply-To: <551EB692.3010309@roeck-us.net>
+Content-Type: text/plain; charset=utf-8
+Cc: Stewart Smith <stewart@linux.vnet.ibm.com>,
+ Neelesh Gupta <neelegup@linux.vnet.ibm.com>, skiboot@lists.ozlabs.org,
+ linuxppc-dev@lists.ozlabs.org, Jean Delvare <jdelvare@suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -54,55 +32,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sunday 05 April 2015 11:55 PM, Joe Perches wrote:
+On 04/03/2015 05:49 PM, Guenter Roeck wrote:
+> On 04/01/2015 03:15 AM, Cédric Le Goater wrote:
+>> The new OPAL device tree adds a few properties which can be used to add
+>> extra information on the sensor label.
+>>
+>> Signed-off-by: Cédric Le Goater <clg@fr.ibm.com>
+>> ---
+>>   drivers/hwmon/ibmpowernv.c |   22 ++++++++++++++++++++++
+>>   1 file changed, 22 insertions(+)
+>>
+>> diff --git a/drivers/hwmon/ibmpowernv.c b/drivers/hwmon/ibmpowernv.c
+>> index be6fe559b52a..3e753c215b40 100644
+>> --- a/drivers/hwmon/ibmpowernv.c
+>> +++ b/drivers/hwmon/ibmpowernv.c
+>> @@ -113,9 +113,31 @@ static ssize_t show_label(struct device *dev, struct device_attribute *devattr,
+>>   static void __init make_sensor_label(struct device_node *np,
+>>               struct sensor_data *sdata, const char *label)
+>>   {
+>> +    u32 id;
+>>       size_t n;
+>>
+>>       n = snprintf(sdata->label, sizeof(sdata->label), "%s", label);
+>> +
+>> +    /*
+>> +     * Core temp pretty print
+>> +     */
+>> +    if (!of_property_read_u32(np, "ibm,pir", &id)) {
+>> +        int i;
+>> +
+>> +        for_each_possible_cpu(i)
+>> +            if (paca[i].hw_cpu_id == id)
+>> +                break;
+>> +
+>> +        n += snprintf(sdata->label + n, sizeof(sdata->label) - n,
+>> +                  " %d-%d", i, i+7);
+> 
+> If ibm,pir points to a bad/invalid CPU id you just print an invalid value.
+> Is that what you want ? 
 
-These structs can be const, so make them const.
+Certainly not :) I am being over optimistic on the underlying layer. 
 
-Miscellanea:
+> Also, what relevance does 'i' have for the user ?
+> It is the index into the paca array, sure, but what is its relevance
+> outside this code, especially in the context of you printing both i and i+7 ?
 
-o Add static to struct uart_ops declaration in bfin_sport_uart
+It gives a hint on the localization of the core in the system, which
+can be useful when developing custom heat sinks. The translation 
+from physical to linux cpu id is here to be consistent with the user
+layer. The physical id is rarely used at that level.  
 
-Signed-off-by: Joe Perches <joe@perches.com><mailto:joe@perches.com>
----
-On Sun, 2015-04-05 at 00:04 +0200, Stefan Agner wrote:
+I will send a v2 for this patch.
 
+Thanks,
 
-> On 2015-04-04 19:47, Joe Perches wrote:
+C.
+ 
 
-
-> > Done with:
-> > sed -r -i -e 's/\bstruct\s+uart_ops\s+(\w+)\s*=3D\s*/const struct
-> > uart_ops \1 =3D /g' drivers/tty/serial/*.c
-
-
-[]
-
-
-> +++ b/drivers/tty/serial/fsl_lpuart.c
-> Something went wrong in this driver, const is twice...
-
-
-Apologies, thanks for noticing.
-The sed was mistakenly done twice on that file.
-
-V2:
-
-o Fix duplicate const in fsl_lpuart.c
-o Add static to drivers/tty/serial/bfin_sport_uart.c
-
-Still compiled only x86 and not cross-compiled or tested.
-
- drivers/tty/serial/21285.c                  | 2 +-
- drivers/tty/serial/altera_jtaguart.c        | 2 +-
- drivers/tty/serial/altera_uart.c            | 2 +-
- drivers/tty/serial/amba-pl010.c             | 2 +-
- drivers/tty/serial/amba-pl011.c             | 2 +-
- drivers/tty/serial/apbuart.c                | 2 +-
- drivers/tty/serial/ar933x_uart.c            | 2 +-
- drivers/tty/serial/arc_uart.c               | 2 +-
-
-Acked-by: Vineet Gupta <vgupta@synopsys.com><mailto:vgupta@synopsys.com> # =
-for arc_uart
-
-Th,
--Vineet
+> 
+> Guenter
+> 
+>> +    }
+>> +
+>> +    /*
+>> +     * Membuffer pretty print
+>> +     */
+>> +    if (!of_property_read_u32(np, "ibm,chip-id", &id))
+>> +        n += snprintf(sdata->label + n, sizeof(sdata->label) - n,
+>> +                  " %d", id & 0xffff);
+>>   }
+>>
+>>   static int get_sensor_index_attr(const char *name, u32 *index,
+>>
+> 
