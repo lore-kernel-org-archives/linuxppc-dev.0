@@ -1,28 +1,20 @@
 Return-Path: <scottwood@freescale.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4C0081A0AA4
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Apr 2015 07:31:22 +1000 (AEST)
 Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0112.outbound.protection.outlook.com [157.56.111.112])
+ (mail-bn1on0136.outbound.protection.outlook.com [157.56.110.136])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 6543F14021A
- for <linuxppc-dev@ozlabs.org>; Wed,  8 Apr 2015 07:31:20 +1000 (AEST)
-Message-ID: <1428442269.22867.467.camel@freescale.com>
-Subject: Re: [PATCH 0/8] powerpc/8xx: Getting rid of CONFIG_8xx
+ by lists.ozlabs.org (Postfix) with ESMTPS id BDB321A0AB3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Apr 2015 08:34:21 +1000 (AEST)
+Message-ID: <1428446044.22867.475.camel@freescale.com>
+Subject: Re: Old regression with MTD devices disappearing from a Kurobox HD/HG
 From: Scott Wood <scottwood@freescale.com>
-To: leroy christophe <christophe.leroy@c-s.fr>
-Date: Tue, 7 Apr 2015 16:31:09 -0500
-In-Reply-To: <5523932C.8070303@c-s.fr>
-References: <20150312152420.11C821A2425@localhost.localdomain>
- <1426203271.2772.3.camel@ellerman.id.au>
- <1427244330.22867.76.camel@freescale.com> <5523932C.8070303@c-s.fr>
+To: =?ISO-8859-1?Q?Rog=E9rio?= Brito <rbrito@ime.usp.br>
+Date: Tue, 7 Apr 2015 17:34:04 -0500
+In-Reply-To: <20150404054022.GA15572@ime.usp.br>
+References: <20150404054022.GA15572@ime.usp.br>
 Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Cc: Paul Mackerras <paulus@samba.org>,
- linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,26 +24,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-04-07 at 10:19 +0200, leroy christophe wrote:
-> Le 25/03/2015 01:45, Scott Wood a écrit :
-> > On Fri, 2015-03-13 at 10:34 +1100, Michael Ellerman wrote:
-> >> You'll need to collect ACKs, or get the individual patches merged, and then we
-> >> can take patch 8 through the powerpc tree once those are all in - probably for
-> >> 4.2.
-> > It looks like CONFIG_8xx is used a lot more than CONFIG_PPC_8xx, so it
-> > would be less churn to get rid of the latter (plus, we also have
-> > CONFIG_4xx, CONFIG_6xx, etc).  The only use of PPC_8xx I see outside
-> > arch/powerpc is in drivers/watchdog/Kconfig.
+On Sat, 2015-04-04 at 02:40 -0300, Rogério Brito wrote:
+> Unfortunately, right now, what I see with Linus's tree
+> (4.0.0-rc6-00009-g6c310bc) is the following:
 > 
-> Ok, we can do that. But when outside of arch/powerpc/, isn't is more 
-> explicit with CONFIG_PPC_8xx rather that CONFIG_8xx ?
+> ,----
+> | physmap platform flash device: 00400000 at ffc00000
+> | physmap-flash.0: Found 1 x16 devices at 0x0 in 8-bit bank. Manufacturer ID 0x000004 Chip ID 0x00007e
+> | Amd/Fujitsu Extended Query Table at 0x0040
+> |   Amd/Fujitsu Extended Query version 1.3.
+> | physmap-flash.0: Swapping erase regions for top-boot CFI table.
+> | number of CFI chips: 1
+> `----
+> 
+> I note that arch/powerpc/boot/dts/kuroboxH{D,G}.dts have, as one of their
+> first lines, the following comment: [0][1]
+> 
+>     XXXX add flash parts, rtc, ??
+> 
+> [0]: http://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/arch/powerpc/boot/dts/kuroboxHD.dts?id=1cced5015b171415169d938fb179c44fe060dc15#n17
+> [1]: http://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/arch/powerpc/boot/dts/kuroboxHG.dts?id=1cced5015b171415169d938fb179c44fe060dc15#n17
+> 
+> Is this a problem that can be fixed via additions to the DTS files?  Or
+> would the problem be solved in a different way?
 
-Yes, CONFIG_PPC_8xx is a better name, but churn and consistency matter
-as well.
+What are your bootargs?
 
-> Now that I have submitted the first set of patch, don't we have a risk 
-> that now it is already merged by some other maintainers ?
-
-Sigh.  I see a couple in linux-next.
+I suggest putting the flash device into the dts (instead of using
+physmap), and specifying the partitions on the command-line using
+mtdparts.  Putting the partitions in the dts is an option as well, but
+less flexible if users may want to change the partition layout -- though
+that may be less of a concern here than with reference boards.
 
 -Scott
