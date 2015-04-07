@@ -1,36 +1,32 @@
-Return-Path: <sam.bobroff@au1.ibm.com>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <wangyijing@huawei.com>
+Received: from szxga03-in.huawei.com (szxga03-in.huawei.com [119.145.14.66])
+ (using TLSv1 with cipher RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AAC371A0BA1
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Apr 2015 10:56:13 +1000 (AEST)
-Received: from /spool/local
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <sam.bobroff@au1.ibm.com>;
- Tue, 7 Apr 2015 10:56:13 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 95F43357804C
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Apr 2015 10:56:11 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t370u3oD30081036
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 Apr 2015 10:56:11 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t370tbFL026812
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 Apr 2015 10:55:38 +1000
-From: Sam Bobroff <sam.bobroff@au1.ibm.com>
-To: mpe@ellerman.id.au, benh@kernel.crashing.org
-Subject: [PATCH v3 4/4] powerpc/tm: Correct minor documentation typos
-Date: Tue,  7 Apr 2015 10:54:50 +1000
-Message-Id: <9095bd465b988a5c3a96bb0b58713eddcd2b099c.1428368031.git.sam.bobroff@au1.ibm.com>
-In-Reply-To: <cover.1428368031.git.sam.bobroff@au1.ibm.com>
-References: <cover.1428368031.git.sam.bobroff@au1.ibm.com>
-In-Reply-To: <cover.1428368031.git.sam.bobroff@au1.ibm.com>
-References: <cover.1428368031.git.sam.bobroff@au1.ibm.com>
-Cc: mikey@neuling.org, azanella@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org, matt@ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id E5A0F1A074A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Apr 2015 12:53:11 +1000 (AEST)
+Message-ID: <5523466A.3090500@huawei.com>
+Date: Tue, 7 Apr 2015 10:52:26 +0800
+From: Yijing Wang <wangyijing@huawei.com>
+MIME-Version: 1.0
+To: Daniel Axtens <dja@axtens.net>
+Subject: Re: [PATCH v9 19/30] powerpc/pci: Use pci_scan_host_bridge() for
+ simplicity
+References: <1428053164-28277-1-git-send-email-wangyijing@huawei.com>	
+ <1428053164-28277-21-git-send-email-wangyijing@huawei.com>
+ <1428363334.22268.9.camel@axtens.net>
+In-Reply-To: <1428363334.22268.9.camel@axtens.net>
+Content-Type: text/plain; charset="UTF-8"
+Cc: linux-ia64@vger.kernel.org, linux-pci@vger.kernel.org, Guan
+ Xuetao <gxt@mprc.pku.edu.cn>, Russell King <linux@arm.linux.org.uk>,
+ x86@kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>, Arnd
+ Bergmann <arnd@arndb.de>, Marc Zyngier <marc.zyngier@arm.com>,
+ Rusty Russell <rusty@rustcorp.com.au>, linux-m68k@lists.linux-m68k.org,
+ Bjorn Helgaas <bhelgaas@google.com>, Thomas Gleixner <tglx@linutronix.de>,
+ Yinghai Lu <yinghai@kernel.org>, linux-arm-kernel@lists.infradead.org,
+ Liviu Dudau <liviu@dudau.co.uk>, Tony Luck <tony.luck@intel.com>,
+ linux-kernel@vger.kernel.org, Jiang Liu <jiang.liu@linux.intel.com>,
+ linux-alpha@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,36 +36,160 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Sam Bobroff <sam.bobroff@au1.ibm.com>
----
-v2:
+On 2015/4/7 7:35, Daniel Axtens wrote:
+> I've been looking at this patch series for a while now, and I now
+> believe it's ready on the PowerPC side.
+> 
+> I was originally concerned that it would break odd corner cases,
+> particularly where similar code appears (namely kernel/pci_hotplug.c and
+> kernel/pci_of_scan.c). However, upon further examination, talking with
+> Yijing, and some testing, I'm now convinced that it is indeed restricted
+> to the generic code, and doesn't change behaviour.
+> 
+> This is both a plus and a minus: because it's currently restricted to
+> generic code, I'm confident it works, but the down side is that it
+> doesn't yet simplify our arch-specific complexity. We'll need to do some
+> more work on our side to reap the full benefits.
+> 
+> I tested this entire series on a PowerNV machine, including doing EEH
+> injection to trigger PCI hotplug:
+> Tested-by: Daniel Axtens <dja@axtens.net>
+> For completeness, it would be good to test it on Cell, as they are the
+> only remaining user of pci_of_scan.c
+> 
+> In conclusion, this patch is
+> Reviewed-by: Daniel Axtens <dja@axtens.net>
+> 
 
-Discovered some typos while updating the documentation.
 
- Documentation/powerpc/transactional_memory.txt |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+Thanks very much for your test and review.
 
-diff --git a/Documentation/powerpc/transactional_memory.txt b/Documentation/powerpc/transactional_memory.txt
-index 98b39af..ba0a2a4 100644
---- a/Documentation/powerpc/transactional_memory.txt
-+++ b/Documentation/powerpc/transactional_memory.txt
-@@ -175,7 +175,7 @@ These are defined in <asm/reg.h>, and distinguish different reasons why the
- kernel aborted a transaction:
- 
-  TM_CAUSE_RESCHED       Thread was rescheduled.
-- TM_CAUSE_TLBI          Software TLB invalide.
-+ TM_CAUSE_TLBI          Software TLB invalid.
-  TM_CAUSE_FAC_UNAV      FP/VEC/VSX unavailable trap.
-  TM_CAUSE_SYSCALL       Syscall from active transaction.
-  TM_CAUSE_SIGNAL        Signal delivered.
-@@ -185,7 +185,7 @@ kernel aborted a transaction:
- 
- These can be checked by the user program's abort handler as TEXASR[0:7].  If
- bit 7 is set, it indicates that the error is consider persistent.  For example
--a TM_CAUSE_ALIGNMENT will be persistent while a TM_CAUSE_RESCHED will not.q
-+a TM_CAUSE_ALIGNMENT will be persistent while a TM_CAUSE_RESCHED will not.
- 
- GDB
- ===
+Thanks!
+Yijing.
+
+> 
+> 
+> On Fri, 2015-04-03 at 17:25 +0800, Yijing Wang wrote:
+>> Now we could use pci_scan_host_bridge() to scan
+>> pci buses, provide powerpc specific pci_host_bridge_ops.
+>>
+>> Signed-off-by: Yijing Wang <wangyijing@huawei.com>
+>> CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+>> CC: linuxppc-dev@lists.ozlabs.org
+>> ---
+>>  arch/powerpc/kernel/pci-common.c |   62 +++++++++++++++++++++++--------------
+>>  1 files changed, 38 insertions(+), 24 deletions(-)
+>>
+>> diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
+>> index 2c58200..50b32f6 100644
+>> --- a/arch/powerpc/kernel/pci-common.c
+>> +++ b/arch/powerpc/kernel/pci-common.c
+>> @@ -773,6 +773,29 @@ void pcibios_set_root_bus_speed(struct pci_host_bridge *bridge)
+>>  		return ppc_md.pcibios_set_root_bus_speed(bridge);
+>>  }
+>>  
+>> +static int pci_host_scan_bus(struct pci_host_bridge *host)
+>> +{
+>> +	int mode = PCI_PROBE_NORMAL;
+>> +	struct pci_bus *bus = host->bus;
+>> +	struct pci_controller *hose = dev_get_drvdata(&host->dev);
+>> +
+>> +	/* Get probe mode and perform scan */
+>> +	if (hose->dn && ppc_md.pci_probe_mode)
+>> +		mode = ppc_md.pci_probe_mode(bus);
+>> +
+>> +	pr_debug("    probe mode: %d\n", mode);
+>> +	if (mode == PCI_PROBE_DEVTREE)
+>> +		of_scan_bus(hose->dn, bus);
+>> +
+>> +	if (mode == PCI_PROBE_NORMAL) {
+>> +		pci_bus_update_busn_res_end(bus, 255);
+>> +		hose->last_busno = pci_scan_child_bus(bus);
+>> +		pci_bus_update_busn_res_end(bus, hose->last_busno);
+>> +	}
+>> +
+>> +	return pci_bus_child_max_busnr(bus);
+>> +}
+>> +
+>>  /* This header fixup will do the resource fixup for all devices as they are
+>>   * probed, but not for bridge ranges
+>>   */
+>> @@ -1585,6 +1608,11 @@ struct device_node *pcibios_get_phb_of_node(struct pci_bus *bus)
+>>  	return of_node_get(hose->dn);
+>>  }
+>>  
+>> +static struct pci_host_bridge_ops pci_host_ops = {
+>> +	.set_root_bus_speed = pcibios_set_root_bus_speed,
+>> +	.scan_bus = pci_host_scan_bus,
+>> +};
+>> +
+>>  /**
+>>   * pci_scan_phb - Given a pci_controller, setup and scan the PCI bus
+>>   * @hose: Pointer to the PCI host controller instance structure
+>> @@ -1592,9 +1620,8 @@ struct device_node *pcibios_get_phb_of_node(struct pci_bus *bus)
+>>  void pcibios_scan_phb(struct pci_controller *hose)
+>>  {
+>>  	LIST_HEAD(resources);
+>> -	struct pci_bus *bus;
+>> +	struct pci_host_bridge *host;
+>>  	struct device_node *node = hose->dn;
+>> -	int mode;
+>>  
+>>  	pr_debug("PCI: Scanning PHB %s\n", of_node_full_name(node));
+>>  
+>> @@ -1609,30 +1636,17 @@ void pcibios_scan_phb(struct pci_controller *hose)
+>>  	hose->busn.flags = IORESOURCE_BUS;
+>>  	pci_add_resource(&resources, &hose->busn);
+>>  
+>> +	pci_host_ops.pci_ops = hose->ops;
+>>  	/* Create an empty bus for the toplevel */
+>> -	bus = pci_create_root_bus(hose->parent, hose->global_number,
+>> -			hose->first_busno, hose->ops, hose, &resources);
+>> -	if (bus == NULL) {
+>> -		pr_err("Failed to create bus for PCI domain %04x\n",
+>> -			hose->global_number);
+>> +	host = pci_scan_host_bridge(hose->parent, hose->global_number,
+>> +			hose->first_busno, hose, &resources, &pci_host_ops);
+>> +	if (host == NULL) {
+>> +		pr_err("Failed to create host bridge for pci%04x:%02x\n",
+>> +			hose->global_number, hose->first_busno);
+>>  		pci_free_resource_list(&resources);
+>>  		return;
+>>  	}
+>> -	hose->bus = bus;
+>> -
+>> -	/* Get probe mode and perform scan */
+>> -	mode = PCI_PROBE_NORMAL;
+>> -	if (node && ppc_md.pci_probe_mode)
+>> -		mode = ppc_md.pci_probe_mode(bus);
+>> -	pr_debug("    probe mode: %d\n", mode);
+>> -	if (mode == PCI_PROBE_DEVTREE)
+>> -		of_scan_bus(node, bus);
+>> -
+>> -	if (mode == PCI_PROBE_NORMAL) {
+>> -		pci_bus_update_busn_res_end(bus, 255);
+>> -		hose->last_busno = pci_scan_child_bus(bus);
+>> -		pci_bus_update_busn_res_end(bus, hose->last_busno);
+>> -	}
+>> +	hose->bus = host->bus;
+>>  
+>>  	/* Platform gets a chance to do some global fixups before
+>>  	 * we proceed to resource allocation
+>> @@ -1641,9 +1655,9 @@ void pcibios_scan_phb(struct pci_controller *hose)
+>>  		ppc_md.pcibios_fixup_phb(hose);
+>>  
+>>  	/* Configure PCI Express settings */
+>> -	if (bus && !pci_has_flag(PCI_PROBE_ONLY)) {
+>> +	if (host->bus && !pci_has_flag(PCI_PROBE_ONLY)) {
+>>  		struct pci_bus *child;
+>> -		list_for_each_entry(child, &bus->children, node)
+>> +		list_for_each_entry(child, &host->bus->children, node)
+>>  			pcie_bus_configure_settings(child);
+>>  	}
+>>  }
+> 
+
+
 -- 
-1.7.10.4
+Thanks!
+Yijing
