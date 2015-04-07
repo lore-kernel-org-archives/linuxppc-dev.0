@@ -1,12 +1,12 @@
 Return-Path: <ddstreet@gmail.com>
-Received: from mail-ie0-x231.google.com (mail-ie0-x231.google.com
- [IPv6:2607:f8b0:4001:c03::231])
+Received: from mail-ig0-x22c.google.com (mail-ig0-x22c.google.com
+ [IPv6:2607:f8b0:4001:c05::22c])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 27DF21A0A3F
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Apr 2015 03:35:10 +1000 (AEST)
-Received: by ierf6 with SMTP id f6so53243098ier.2
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Apr 2015 10:35:07 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id CFAAE1A09F3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Apr 2015 03:35:12 +1000 (AEST)
+Received: by iget9 with SMTP id t9so13825556ige.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Apr 2015 10:35:10 -0700 (PDT)
 Sender: Dan Streetman <ddstreet@gmail.com>
 From: Dan Streetman <ddstreet@ieee.org>
 To: Herbert Xu <herbert@gondor.apana.org.au>,
@@ -14,13 +14,14 @@ To: Herbert Xu <herbert@gondor.apana.org.au>,
  Michael Ellerman <mpe@ellerman.id.au>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 02/11] powerpc: Add ICSWX instruction
-Date: Tue,  7 Apr 2015 13:34:21 -0400
-Message-Id: <1428428070-17803-3-git-send-email-ddstreet@ieee.org>
+Subject: [PATCH 03/11] crypto: add software 842 decompression
+Date: Tue,  7 Apr 2015 13:34:22 -0400
+Message-Id: <1428428070-17803-4-git-send-email-ddstreet@ieee.org>
 In-Reply-To: <1428428070-17803-1-git-send-email-ddstreet@ieee.org>
 References: <1428428070-17803-1-git-send-email-ddstreet@ieee.org>
-Cc: linux-kernel@vger.kernel.org, Robert Jennings <rob@pochix.net>,
- linux-crypto@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+Cc: Greg KH <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org,
+ Robert Jennings <rob@pochix.net>, linux-crypto@vger.kernel.org,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
  Seth Jennings <sjennings@variantweb.net>, Dan Streetman <ddstreet@ieee.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -31,240 +32,505 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add the asm ICSWX and ICSWEPX opcodes.  Add definitions for the
-Coprocessor Request structures needed to use the icswx calls to
-coprocessors.  Add icswx() function to perform the ICSWX asm
-using the provided Coprocessor Command Word value and
-Coprocessor Request Block structure.
+Add an 842-format software decompression function.  Update the MAINTAINERS
+842 section to include the new files.
 
-This is required for communication with the NX-842 coprocessor on
-a PowerNV system.
+This decompression function can decompress any standard-format 842
+compressed data.  The 842 compressed format is explained in the header
+comments.  This general-use decompression function is required by later
+patches that update the crypto 842 driver to fall back to software 842
+decompression if the NX-842 hardware fails and/or returns an error.
 
 Signed-off-by: Dan Streetman <ddstreet@ieee.org>
 ---
- arch/powerpc/include/asm/icswx.h      | 184 ++++++++++++++++++++++++++++++++++
- arch/powerpc/include/asm/ppc-opcode.h |  13 +++
- 2 files changed, 197 insertions(+)
- create mode 100644 arch/powerpc/include/asm/icswx.h
+ MAINTAINERS              |   2 +
+ include/linux/sw842.h    |   7 +
+ lib/842/842_decompress.c | 413 +++++++++++++++++++++++++++++++++++++++++++++++
+ lib/842/Makefile         |   1 +
+ lib/Kconfig              |   3 +
+ lib/Makefile             |   1 +
+ 6 files changed, 427 insertions(+)
+ create mode 100644 include/linux/sw842.h
+ create mode 100644 lib/842/842_decompress.c
+ create mode 100644 lib/842/Makefile
 
-diff --git a/arch/powerpc/include/asm/icswx.h b/arch/powerpc/include/asm/icswx.h
+diff --git a/MAINTAINERS b/MAINTAINERS
+index efbcb50..3dc973a 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -4836,6 +4836,8 @@ M:	Dan Streetman <ddstreet@us.ibm.com>
+ S:	Supported
+ F:	drivers/crypto/nx/nx-842.c
+ F:	include/linux/nx842.h
++F:	include/linux/sw842.h
++F:	lib/842/
+ 
+ IBM Power Linux RAID adapter
+ M:	Brian King <brking@us.ibm.com>
+diff --git a/include/linux/sw842.h b/include/linux/sw842.h
 new file mode 100644
-index 0000000..a70ae93
+index 0000000..aa8d86e
 --- /dev/null
-+++ b/arch/powerpc/include/asm/icswx.h
-@@ -0,0 +1,184 @@
++++ b/include/linux/sw842.h
+@@ -0,0 +1,7 @@
++#ifndef __SW842_H__
++#define __SW842_H__
++
++int sw842_decompress(const unsigned char *src, int srclen,
++			unsigned char *dst, int *destlen);
++
++#endif
+diff --git a/lib/842/842_decompress.c b/lib/842/842_decompress.c
+new file mode 100644
+index 0000000..9fc0ffc
+--- /dev/null
++++ b/lib/842/842_decompress.c
+@@ -0,0 +1,413 @@
 +/*
-+ * ICSWX api
++ * 842 Decompressor
 + *
-+ * Copyright (C) 2015 IBM Corp.
++ * Copyright (C) 2015 Dan Streetman, IBM Corp
 + *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
 + *
-+ * This provides the Initiate Coprocessor Store Word Indexed (ICSWX)
-+ * instruction.  This instruction is used to communicate with PowerPC
-+ * coprocessors.  This also provides definitions of the structures used
-+ * to communicate with the coprocessor.
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
 + *
-+ * The RFC02130: Coprocessor Architecture document is the reference for
-+ * everything in this file unless otherwise noted.
-+ */
-+#ifndef _ARCH_POWERPC_INCLUDE_ASM_ICSWX_H_
-+#define _ARCH_POWERPC_INCLUDE_ASM_ICSWX_H_
-+
-+#include <asm/ppc-opcode.h> /* for PPC_ICSWX */
-+
-+/* Chapter 6.5.8 Coprocessor-Completion Block (CCB) */
-+
-+#define CCB_VALUE		(0x3fffffffffffffff)
-+#define CCB_ADDRESS		(0xfffffffffffffff8)
-+#define CCB_CM			(0x0000000000000007)
-+#define CCB_CM0			(0x0000000000000004)
-+#define CCB_CM12		(0x0000000000000003)
-+
-+#define CCB_CM0_ALL_COMPLETIONS	(0x0)
-+#define CCB_CM0_LAST_IN_CHAIN	(0x4)
-+#define CCB_CM12_STORE		(0x0)
-+#define CCB_CM12_INTERRUPT	(0x1)
-+
-+#define CCB_SIZE		(0x10)
-+#define CCB_ALIGN		CCB_SIZE
-+
-+struct coprocessor_completion_block {
-+	__be64 value;
-+	__be64 address;
-+} __packed __aligned(CCB_ALIGN);
-+
-+
-+/* Chapter 6.5.7 Coprocessor-Status Block (CSB) */
-+
-+#define CSB_V			(0x80)
-+#define CSB_F			(0x04)
-+#define CSB_CH			(0x03)
-+#define CSB_CE_INCOMPLETE	(0x80)
-+#define CSB_CE_TERMINATION	(0x40)
-+#define CSB_CE_TPBC		(0x20)
-+
-+#define CSB_CC_SUCCESS		(0)
-+#define CSB_CC_INVALID_ALIGN	(1)
-+#define CSB_CC_OPERAND_OVERLAP	(2)
-+#define CSB_CC_DATA_LENGTH	(3)
-+#define CSB_CC_TRANSLATION	(5)
-+#define CSB_CC_PROTECTION	(6)
-+#define CSB_CC_RD_EXTERNAL	(7)
-+#define CSB_CC_INVALID_OPERAND	(8)
-+#define CSB_CC_PRIVILEGE	(9)
-+#define CSB_CC_INTERNAL		(10)
-+#define CSB_CC_WR_EXTERNAL	(12)
-+#define CSB_CC_NOSPC		(13)
-+#define CSB_CC_EXCESSIVE_DDE	(14)
-+#define CSB_CC_WR_TRANSLATION	(15)
-+#define CSB_CC_WR_PROTECTION	(16)
-+#define CSB_CC_UNKNOWN_CODE	(17)
-+#define CSB_CC_ABORT		(18)
-+#define CSB_CC_TRANSPORT	(20)
-+#define CSB_CC_SEGMENTED_DDL	(31)
-+#define CSB_CC_PROGRESS_POINT	(32)
-+#define CSB_CC_DDE_OVERFLOW	(33)
-+#define CSB_CC_SESSION		(34)
-+#define CSB_CC_PROVISION	(36)
-+#define CSB_CC_CHAIN		(37)
-+#define CSB_CC_SEQUENCE		(38)
-+#define CSB_CC_HW		(39)
-+
-+#define CSB_SIZE		(0x10)
-+#define CSB_ALIGN		CSB_SIZE
-+
-+struct coprocessor_status_block {
-+	u8 flags;
-+	u8 cs;
-+	u8 cc;
-+	u8 ce;
-+	__be32 count;
-+	__be64 address;
-+} __packed __aligned(CSB_ALIGN);
-+
-+
-+/* Chapter 6.5.10 Data-Descriptor List (DDL)
-+ * each list contains one or more Data-Descriptor Entries (DDE)
++ * The 842 compressed format is made up of multiple blocks, each of
++ * which have the format:
++ *
++ * <template>[arg1][arg2][arg3][arg4]
++ *
++ * where there are between 0 and 4 template args, depending on the specific
++ * template operation.  For normal operations, each arg is either a specific
++ * number of data bytes to add to the output stream, or an index pointing
++ * to a previously-written number of data bytes to copy to the output stream.
++ *
++ * The template code is a 5-bit value.  This code indicates what to
++ * do with the following data.  Template codes from 0 to 0x19 should
++ * use the template table, the static "ops" table in the code below.
++ * For each template (table row), there are between 1 and 4 actions;
++ * each action corresponds to an arg following the template code
++ * bits.  Each action is either a "data" type action, or a "index"
++ * type action, and each action results in 2, 4, or 8 bytes being
++ * written to the output stream.  Each template (i.e. all actions in
++ * the table row) will add up to 8 bytes being written to the output
++ * stream.  Any row with less than 4 actions is padded with noop
++ * actions, indicated by N0 (for which there is no corresponding arg
++ * in the compressed data stream).
++ *
++ * "Data" actions, indicated in the table by D2, D4, and D8, mean that
++ * the corresponding arg is 2, 4, or 8 bytes, respectively, in the
++ * compressed data stream should be copied directly to the output stream.
++ *
++ * "Index" actions, indicated in the table by I2, I4, and I8, mean
++ * the corresponding arg is an index parameter that points to,
++ * respectively, a 2, 4, or 8 byte value already in the output
++ * stream, that should be copied to the end of the output stream.
++ * Essentially, the index points to a position in a ring buffer that
++ * contains the last N bytes of output stream data.  The number of bits
++ * for each index's arg are: 8 bits for I2, 9 bits for I4, and 8 bits for
++ * I8.  Since each index points to a 2, 4, or 8 byte section, this means
++ * that I2 can reference 512 bytes ((2^8 bits = 256) * 2 bytes), I4 can
++ * reference 2048 bytes ((2^9 = 512) * 4 bytes), and I8 can reference
++ * 2048 bytes ((2^8 = 256) * 8 bytes).  Think of it as a dedicated ring
++ * buffer for each of I2, I4, and I8 that are updated for each byte
++ * written to the output stream.  In this implementation, the output stream
++ * is directly used for each index; there is no additional memory required.
++ * Note that the index is into a ring buffer, not a sliding window;
++ * for example, if there have been 260 bytes written to the output stream,
++ * an I2 index of 0 would index to byte 256 in the output stream, while
++ * an I2 index of 16 would index to byte 16 in the output stream.
++ *
++ * There are also 3 special template codes; 0x1b for "repeat", 0x1c for
++ * "zeros", and 0x1e for "end".  The "repeat" operation is followed by
++ * a 6 bit arg N indicating how many times to repeat.  The last 8
++ * bytes written to the output stream are written again to the output
++ * stream, N + 1 times.  The "zeros" operation, which has no arg bits,
++ * writes 8 zeros to the output stream.  The "end" operation, which also
++ * has no arg bits, signals the end of the compressed data.  There may
++ * be some number of padding (don't care, but usually 0) bits after
++ * the "end" operation bits, to fill the stream length to a specific
++ * byte multiple (usually a multiple of 8, 16, or 32 bytes).
++ *
++ * After all actions for each operation code are processed, another
++ * template code is in the next 5 bits.  The decompression ends
++ * once the "end" template code is detected.
 + */
 +
-+#define DDE_P			(0x8000)
++#ifndef STATIC
++#include <linux/module.h>
++#include <linux/kernel.h>
++#endif
 +
-+#define DDE_SIZE		(16)
-+#define DDE_ALIGN		DDE_SIZE
++#include <linux/sw842.h>
 +
-+struct data_descriptor_entry {
-+	__be16 flags;
-+	u8 count;
-+	u8 index;
-+	__be32 length;
-+	__be64 address;
-+} __packed __aligned(DDE_ALIGN);
++/* special templates */
++#define OP_REPEAT	(0x1B)
++#define OP_ZEROS	(0x1C)
++#define OP_END		(0x1E)
 +
++/* additional bits of each op param */
++#define OP_BITS		(5)
++#define REPEAT_BITS	(6)
++#define I2_BITS		(8)
++#define I4_BITS		(9)
++#define I8_BITS		(8)
 +
-+/* Chapter 6.5.2 Coprocessor-Request Block (CRB) */
++/* rolling fifo sizes */
++#define I2_FIFO_SIZE	(512)
++#define I4_FIFO_SIZE	(2048)
++#define I8_FIFO_SIZE	(2048)
 +
-+#define CRB_SIZE		(128)
-+#define CRB_ALIGN		(256) /* Errata: requires 256 alignment */
++/* Arbitrary values used to indicate action */
++#define OP_ACTION	(0x30)
++#define OP_ACTION_NOOP	(0x00)
++#define OP_ACTION_DATA	(0x10)
++#define OP_ACTION_INDEX	(0x20)
++#define OP_AMOUNT	(0x0f)
++#define OP_AMOUNT_0	(0x00)
++#define OP_AMOUNT_2	(0x02)
++#define OP_AMOUNT_4	(0x04)
++#define OP_AMOUNT_8	(0x08)
 +
-+/* Coprocessor Status Block field
-+ *   ADDRESS	address of CSB
-+ *   C		CCB is valid
-+ *   AT		0 = addrs are virtual, 1 = addrs are phys
-+ *   M		enable perf monitor
-+ */
-+#define CRB_CSB_ADDRESS		(0xfffffffffffffff0)
-+#define CRB_CSB_C		(0x0000000000000008)
-+#define CRB_CSB_AT		(0x0000000000000002)
-+#define CRB_CSB_M		(0x0000000000000001)
++#define D2		(OP_ACTION_DATA  | OP_AMOUNT_2)
++#define D4		(OP_ACTION_DATA  | OP_AMOUNT_4)
++#define D8		(OP_ACTION_DATA  | OP_AMOUNT_8)
++#define I2		(OP_ACTION_INDEX | OP_AMOUNT_2)
++#define I4		(OP_ACTION_INDEX | OP_AMOUNT_4)
++#define I8		(OP_ACTION_INDEX | OP_AMOUNT_8)
++#define N0		(OP_ACTION_NOOP  | OP_AMOUNT_0)
 +
-+struct coprocessor_request_block {
-+	__be32 ccw;
-+	__be32 flags;
-+	__be64 csb_addr;
++#define OPS_MAX		(0x19)
 +
-+	struct data_descriptor_entry source;
-+	struct data_descriptor_entry target;
++static u8 ops[OPS_MAX + 1][4] = {
++	{ D8, N0, N0, N0 },
++	{ D4, D2, I2, N0 },
++	{ D4, I2, D2, N0 },
++	{ D4, I2, I2, N0 },
++	{ D4, I4, N0, N0 },
++	{ D2, I2, D4, N0 },
++	{ D2, I2, D2, I2 },
++	{ D2, I2, I2, D2 },
++	{ D2, I2, I2, I2 },
++	{ D2, I2, I4, N0 },
++	{ I2, D2, D4, N0 },
++	{ I2, D4, I2, N0 },
++	{ I2, D2, I2, D2 },
++	{ I2, D2, I2, I2 },
++	{ I2, D2, I4, N0 },
++	{ I2, I2, D4, N0 },
++	{ I2, I2, D2, I2 },
++	{ I2, I2, I2, D2 },
++	{ I2, I2, I2, I2 },
++	{ I2, I2, I4, N0 },
++	{ I4, D4, N0, N0 },
++	{ I4, D2, I2, N0 },
++	{ I4, I2, D2, N0 },
++	{ I4, I2, I2, N0 },
++	{ I4, I4, N0, N0 },
++	{ I8, N0, N0, N0 }
++};
 +
-+	struct coprocessor_completion_block ccb;
++struct sw842_param {
++	u8 *in;
++	int bit;
++	int ilen;
++	u8 *out;
++	u8 *ostart;
++	int olen;
++};
 +
-+	u8 reserved[48];
-+
-+	struct coprocessor_status_block csb;
-+} __packed __aligned(CRB_ALIGN);
-+
-+
-+/* RFC02167 Initiate Coprocessor Instructions document
-+ * Chapter 8.2.1.1.1 RS
-+ * Chapter 8.2.3 Coprocessor Directive
-+ * Chapter 8.2.4 Execution
++/**
++ * Get the next specified bits, up to 57 bits
 + *
-+ * The CCW must be converted to BE before passing to icswx()
++ * This also increments the byte and bit positions, and remaining
++ * length.  This can return no more than 57 bits, because in the
++ * worst case the starting bit is bit 7, which would place the end
++ * of the following 57 bits at the end of an 8 byte span, which
++ * is the max that this function's type casting approach can
++ * handle.
++ *
++ * Returns: the value of the requested bits, or -1 on failure
 + */
-+
-+#define CCW_PS			(0xff000000)
-+#define CCW_CT			(0x00ff0000)
-+#define CCW_CD			(0x0000ffff)
-+#define CCW_CL			(0x0000c000)
-+
-+
-+/* RFC02167 Initiate Coprocessor Instructions document
-+ * Chapter 8.2.1 Initiate Coprocessor Store Word Indexed (ICSWX)
-+ * Chapter 8.2.4.1 Condition Register 0
-+ */
-+
-+#define ICSWX_INITIATED		(0x8)
-+#define ICSWX_BUSY		(0x4)
-+#define ICSWX_REJECTED		(0x2)
-+
-+static inline int icswx(__be32 ccw, struct coprocessor_request_block *crb)
++static s64 next_bits(struct sw842_param *p, int n)
 +{
-+	__be64 ccw_reg = ccw;
-+	u32 cr;
++	u64 v;
++	u8 *in = p->in;
++	int b = p->bit, bits = b + n;
 +
-+	__asm__ __volatile__(
-+	PPC_ICSWX(%1,0,%2) "\n"
-+	"mfcr %0\n"
-+	: "=r" (cr)
-+	: "r" (ccw_reg), "r" (crb)
-+	: "cr0", "memory");
++	if (b > 7 || n > 57) {
++		WARN(1, "b %d n %d\n", b, n);
++		return -EINVAL;
++	}
 +
-+	return (int)((cr >> 28) & 0xf);
++	if (DIV_ROUND_UP(bits, 8) > p->ilen)
++		return -EOVERFLOW;
++
++	if (bits <= 8)
++		v = *in >> (8 - bits);
++	else if (bits <= 16)
++		v = be16_to_cpu(*(__be16 *)in) >> (16 - bits);
++	else if (bits <= 32)
++		v = be32_to_cpu(*(__be32 *)in) >> (32 - bits);
++	else
++		v = be64_to_cpu(*(__be64 *)in) >> (64 - bits);
++
++	p->bit += n;
++
++	p->in += p->bit / 8;
++	p->ilen -= p->bit / 8;
++	p->bit %= 8;
++
++	return (s64)(v & ((1 << n) - 1));
 +}
 +
++static int __do_data(struct sw842_param *p, int n)
++{
++	s64 v = next_bits(p, n * 8);
 +
-+#endif /* _ARCH_POWERPC_INCLUDE_ASM_ICSWX_H_ */
-diff --git a/arch/powerpc/include/asm/ppc-opcode.h b/arch/powerpc/include/asm/ppc-opcode.h
-index 4cbe23a..e025d8e 100644
---- a/arch/powerpc/include/asm/ppc-opcode.h
-+++ b/arch/powerpc/include/asm/ppc-opcode.h
-@@ -136,6 +136,8 @@
- #define PPC_INST_DCBAL			0x7c2005ec
- #define PPC_INST_DCBZL			0x7c2007ec
- #define PPC_INST_ICBT			0x7c00002c
-+#define PPC_INST_ICSWX			0x7c00032d
-+#define PPC_INST_ICSWEPX		0x7c00076d
- #define PPC_INST_ISEL			0x7c00001e
- #define PPC_INST_ISEL_MASK		0xfc00003e
- #define PPC_INST_LDARX			0x7c0000a8
-@@ -401,4 +403,15 @@
- #define MFTMR(tmr, r)		stringify_in_c(.long PPC_INST_MFTMR | \
- 					       TMRN(tmr) | ___PPC_RT(r))
++	if (v < 0 || n > p->olen)
++		return -EINVAL;
++
++	switch (n) {
++	case 2:
++		*(__be16 *)p->out = cpu_to_be16((u16)v);
++		break;
++	case 4:
++		*(__be32 *)p->out = cpu_to_be32((u32)v);
++		break;
++	default:
++		return -EINVAL;
++	}
++	p->out += n;
++	p->olen -= n;
++
++	return 0;
++}
++
++static int do_data(struct sw842_param *p, int n)
++{
++	switch (n) {
++	case 2:
++		if (__do_data(p, 2))
++			return -EINVAL;
++		break;
++	case 8:
++		/* we copy two 4-byte chunks here because
++		 * next_bits() can't do a full 64 bits
++		 */
++		if (__do_data(p, 4))
++			return -EINVAL;
++		/* fallthrough */
++	case 4:
++		if (__do_data(p, 4))
++			return -EINVAL;
++		break;
++	default:
++		return -EINVAL;
++	}
++
++	return 0;
++}
++
++static int __do_index(struct sw842_param *p, int size, int bits, int fsize)
++{
++	s64 index = next_bits(p, bits);
++	u64 offset;
++	int total = (int)(p->out - p->ostart);
++
++	if (index < 0)
++		return -EINVAL;
++
++	offset = index * size;
++
++	/* a ring buffer of fsize is used; correct the offset */
++	if (total > fsize) {
++		/* this is where the current fifo is */
++		int sec = (total / fsize) * fsize;
++		/* the current pos in the fifo */
++		int pos = total % fsize;
++
++		/* if the offset is past/at the pos, we need to
++		 * go back to the last fifo section
++		 */
++		if (offset >= pos)
++			sec -= fsize;
++
++		offset += sec;
++	}
++
++	if (offset + size > total)
++		return -EINVAL;
++
++	memcpy(p->out, &p->ostart[offset], size);
++	p->out += size;
++	p->olen -= size;
++
++	return 0;
++}
++
++int do_index(struct sw842_param *p, int n)
++{
++	switch (n) {
++	case 2:
++		return __do_index(p, 2, I2_BITS, I2_FIFO_SIZE);
++	case 4:
++		return __do_index(p, 4, I4_BITS, I4_FIFO_SIZE);
++	case 8:
++		return __do_index(p, 8, I8_BITS, I8_FIFO_SIZE);
++	default:
++		return -EINVAL;
++	}
++}
++
++int do_op(struct sw842_param *p, int o)
++{
++	int i;
++	u8 op, n;
++
++	if (o > OPS_MAX)
++		return -EINVAL;
++
++	for (i = 0; i < 4; i++) {
++		op = ops[o][i];
++		n = op & OP_AMOUNT;
++
++		switch (op & OP_ACTION) {
++		case OP_ACTION_DATA:
++			if (do_data(p, n))
++				return -EINVAL;
++			break;
++		case OP_ACTION_INDEX:
++			if (do_index(p, n))
++				return -EINVAL;
++			break;
++		case OP_ACTION_NOOP:
++			break;
++		default:
++			return -EINVAL;
++		}
++	}
++
++	return 0;
++}
++
++/**
++ * sw842_decompress
++ *
++ * Decompress the 842-compressed buffer of length @len at @in
++ * to the output buffer @out.
++ *
++ * The compressed buffer must be only a single 842-compressed buffer,
++ * with the standard format described in the comments at the top of
++ * this file.  Processing will stop when the 842 "END" template is
++ * detected, not the end of the buffer.
++ *
++ * Returns: 0 on success, error on failure.  The @olen parameter
++ * will contain the number of output bytes written on success, or
++ * 0 on error.
++ */
++int sw842_decompress(const unsigned char *in, int len,
++		     unsigned char *out, int *olen)
++{
++	struct sw842_param p;
++	int op, total = *olen;
++
++	p.in = (unsigned char *)in;
++	p.bit = 0;
++	p.ilen = len;
++	p.out = out;
++	p.ostart = out;
++	p.olen = *olen;
++
++	*olen = 0;
++
++	while ((op = (int)next_bits(&p, OP_BITS)) != OP_END) {
++		if (op < 0)
++			return op;
++
++		if (op == OP_REPEAT) {
++			int rep = (int)next_bits(&p, REPEAT_BITS);
++
++			if (rep < 0)
++				return rep;
++
++			if (p.out == out) /* no previous bytes */
++				return -EINVAL;
++
++			/* copy rep + 1 */
++			rep++;
++
++			if (rep * 8 > p.olen)
++				return -ENOSPC;
++
++			while (rep-- > 0) {
++				memcpy(p.out, p.out - 8, 8);
++				p.out += 8;
++				p.olen -= 8;
++			}
++		} else if (op == OP_ZEROS) {
++			if (8 > p.olen)
++				return -ENOSPC;
++
++			memset(p.out, 0, 8);
++			p.out += 8;
++			p.olen -= 8;
++		} else { /* use template */
++			if (do_op(&p, op))
++				return -EINVAL;
++		}
++	}
++
++	*olen = total - p.olen;
++
++	return 0;
++}
++#ifndef STATIC
++EXPORT_SYMBOL_GPL(sw842_decompress);
++
++MODULE_LICENSE("GPL");
++MODULE_DESCRIPTION("Software 842 Decompressor");
++MODULE_AUTHOR("Dan Streetman <ddstreet@ieee.org>");
++
++#endif
+diff --git a/lib/842/Makefile b/lib/842/Makefile
+new file mode 100644
+index 0000000..8071c3f
+--- /dev/null
++++ b/lib/842/Makefile
+@@ -0,0 +1 @@
++obj-$(CONFIG_842_DECOMPRESS) += 842_decompress.o
+diff --git a/lib/Kconfig b/lib/Kconfig
+index 87da53b..78aee1f 100644
+--- a/lib/Kconfig
++++ b/lib/Kconfig
+@@ -213,6 +213,9 @@ config RANDOM32_SELFTEST
+ #
+ # compression support is select'ed if needed
+ #
++config 842_DECOMPRESS
++	tristate
++
+ config ZLIB_INFLATE
+ 	tristate
  
-+/* Coprocessor instructions */
-+#define PPC_ICSWX(s, a, b)	stringify_in_c(.long PPC_INST_ICSWX |	\
-+					       ___PPC_RS(s) |		\
-+					       ___PPC_RA(a) |		\
-+					       ___PPC_RB(b))
-+#define PPC_ICSWEPX(s, a, b)	stringify_in_c(.long PPC_INST_ICSWEPX | \
-+					       ___PPC_RS(s) |		\
-+					       ___PPC_RA(a) |		\
-+					       ___PPC_RB(b))
-+
-+
- #endif /* _ASM_POWERPC_PPC_OPCODE_H */
+diff --git a/lib/Makefile b/lib/Makefile
+index 58f74d2..88b144e 100644
+--- a/lib/Makefile
++++ b/lib/Makefile
+@@ -78,6 +78,7 @@ obj-$(CONFIG_LIBCRC32C)	+= libcrc32c.o
+ obj-$(CONFIG_CRC8)	+= crc8.o
+ obj-$(CONFIG_GENERIC_ALLOCATOR) += genalloc.o
+ 
++obj-$(CONFIG_842_DECOMPRESS) += 842/
+ obj-$(CONFIG_ZLIB_INFLATE) += zlib_inflate/
+ obj-$(CONFIG_ZLIB_DEFLATE) += zlib_deflate/
+ obj-$(CONFIG_REED_SOLOMON) += reed_solomon/
 -- 
 2.1.0
