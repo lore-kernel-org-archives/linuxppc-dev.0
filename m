@@ -1,35 +1,27 @@
 Return-Path: <dja@axtens.net>
-Received: from mail-pa0-x22b.google.com (mail-pa0-x22b.google.com
- [IPv6:2607:f8b0:400e:c03::22b])
+Received: from mail-pd0-x233.google.com (mail-pd0-x233.google.com
+ [IPv6:2607:f8b0:400e:c02::233])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C52011A0944
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Apr 2015 09:36:00 +1000 (AEST)
-Received: by patj18 with SMTP id j18so58865024pat.2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Apr 2015 16:35:57 -0700 (PDT)
-Message-ID: <1428363334.22268.9.camel@axtens.net>
-Subject: Re: [PATCH v9 19/30] powerpc/pci: Use pci_scan_host_bridge() for
- simplicity
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2F7311A0406
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Apr 2015 10:31:44 +1000 (AEST)
+Received: by pdea3 with SMTP id a3so60480156pde.3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Apr 2015 17:31:41 -0700 (PDT)
+Message-ID: <1428366696.22268.28.camel@axtens.net>
+Subject: Re: [PATCH v2 04/19] powerpc: Create
+ pci_controller_ops.dma_dev_setup and shim
 From: Daniel Axtens <dja@axtens.net>
-To: Yijing Wang <wangyijing@huawei.com>
-Date: Tue, 07 Apr 2015 09:35:34 +1000
-In-Reply-To: <1428053164-28277-21-git-send-email-wangyijing@huawei.com>
-References: <1428053164-28277-1-git-send-email-wangyijing@huawei.com>
- <1428053164-28277-21-git-send-email-wangyijing@huawei.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Date: Tue, 07 Apr 2015 10:31:36 +1000
+In-Reply-To: <5500778.Q4t9Fg7Irn@wuerfel>
+References: <1427778057-9505-1-git-send-email-dja@axtens.net>
+ <1427778057-9505-5-git-send-email-dja@axtens.net>
+ <5500778.Q4t9Fg7Irn@wuerfel>
 Content-Type: multipart/signed; micalg="pgp-sha256";
- protocol="application/pgp-signature"; boundary="=-JBi1R6/zCXZTQ4qH8SNQ"
+ protocol="application/pgp-signature"; boundary="=-TVh8S7fVsFWscyQVZw4D"
 Mime-Version: 1.0
-Cc: linux-ia64@vger.kernel.org, linux-pci@vger.kernel.org,
- Guan Xuetao <gxt@mprc.pku.edu.cn>, Russell King <linux@arm.linux.org.uk>,
- x86@kernel.org, Geert Uytterhoeven <geert@linux-m68k.org>,
- Arnd Bergmann <arnd@arndb.de>, Marc Zyngier <marc.zyngier@arm.com>,
- Rusty Russell <rusty@rustcorp.com.au>, linux-m68k@lists.linux-m68k.org,
- Bjorn Helgaas <bhelgaas@google.com>, Thomas Gleixner <tglx@linutronix.de>,
- Yinghai Lu <yinghai@kernel.org>, linux-arm-kernel@lists.infradead.org,
- Liviu Dudau <liviu@dudau.co.uk>, Tony Luck <tony.luck@intel.com>,
- linux-kernel@vger.kernel.org, Jiang Liu <jiang.liu@linux.intel.com>,
- linux-alpha@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- "David S. Miller" <davem@davemloft.net>
+Cc: wangyijing@huawei.com, linux-pci@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,165 +32,48 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---=-JBi1R6/zCXZTQ4qH8SNQ
+--=-TVh8S7fVsFWscyQVZw4D
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-I've been looking at this patch series for a while now, and I now
-believe it's ready on the PowerPC side.
+> Please see https://patchwork.ozlabs.org/patch/431333/ for related work.
+>=20
+I'm familiar with that patch series - I've been helping Yijing get it up
+to speed on PowerPC.
 
-I was originally concerned that it would break odd corner cases,
-particularly where similar code appears (namely kernel/pci_hotplug.c and
-kernel/pci_of_scan.c). However, upon further examination, talking with
-Yijing, and some testing, I'm now convinced that it is indeed restricted
-to the generic code, and doesn't change behaviour.
 
-This is both a plus and a minus: because it's currently restricted to
-generic code, I'm confident it works, but the down side is that it
-doesn't yet simplify our arch-specific complexity. We'll need to do some
-more work on our side to reap the full benefits.
+> I think it would be better not to introduce another architecture-specific
+> pci host bridge operations structure, but instead consolidate into
+> the one that is already there. We are also adding a generic way to set up
+> PCI DMA, so it would seems reasonable to hook into that place.
+I see what you're getting at, and I agree that we want to move towards
+generic operations.=20
 
-I tested this entire series on a PowerNV machine, including doing EEH
-injection to trigger PCI hotplug:
-Tested-by: Daniel Axtens <dja@axtens.net>
-For completeness, it would be good to test it on Cell, as they are the
-only remaining user of pci_of_scan.c
+However, I think this should go in as is at this point, for two main
+reasons:
 
-In conclusion, this patch is
-Reviewed-by: Daniel Axtens <dja@axtens.net>
+1) This is a good midpoint that makes it easier to move to a generic
+structure. Our arch specific stuff is quirky and difficult. This patch
+series does a lot to reduce the complexity, and would make it very easy
+to move these ops into a generic structure at some future point.=20
+
+2) Trying to go generic at this point risks making the change set so
+complex and wide ranging that it will really struggle to get in. For
+example, Yijing's patch set, despite not changing any of the quirky
+stuff in PowerPC, is already quite long, and will require agreement from
+a lot of people before it can go in.
+
+Much as I would like to have everything as generic as possible, if we
+were to try to do the whole job in one go, it'd become a big, difficult,
+messy patch set, and would be less likely to happen than if we were to
+do it in two steps.
 
 Regards,
-Daniel Axtens
+Daniel
 
 
-On Fri, 2015-04-03 at 17:25 +0800, Yijing Wang wrote:
-> Now we could use pci_scan_host_bridge() to scan
-> pci buses, provide powerpc specific pci_host_bridge_ops.
->=20
-> Signed-off-by: Yijing Wang <wangyijing@huawei.com>
-> CC: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> CC: linuxppc-dev@lists.ozlabs.org
-> ---
->  arch/powerpc/kernel/pci-common.c |   62 +++++++++++++++++++++++---------=
------
->  1 files changed, 38 insertions(+), 24 deletions(-)
->=20
-> diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-c=
-ommon.c
-> index 2c58200..50b32f6 100644
-> --- a/arch/powerpc/kernel/pci-common.c
-> +++ b/arch/powerpc/kernel/pci-common.c
-> @@ -773,6 +773,29 @@ void pcibios_set_root_bus_speed(struct pci_host_brid=
-ge *bridge)
->  		return ppc_md.pcibios_set_root_bus_speed(bridge);
->  }
-> =20
-> +static int pci_host_scan_bus(struct pci_host_bridge *host)
-> +{
-> +	int mode =3D PCI_PROBE_NORMAL;
-> +	struct pci_bus *bus =3D host->bus;
-> +	struct pci_controller *hose =3D dev_get_drvdata(&host->dev);
-> +
-> +	/* Get probe mode and perform scan */
-> +	if (hose->dn && ppc_md.pci_probe_mode)
-> +		mode =3D ppc_md.pci_probe_mode(bus);
-> +
-> +	pr_debug("    probe mode: %d\n", mode);
-> +	if (mode =3D=3D PCI_PROBE_DEVTREE)
-> +		of_scan_bus(hose->dn, bus);
-> +
-> +	if (mode =3D=3D PCI_PROBE_NORMAL) {
-> +		pci_bus_update_busn_res_end(bus, 255);
-> +		hose->last_busno =3D pci_scan_child_bus(bus);
-> +		pci_bus_update_busn_res_end(bus, hose->last_busno);
-> +	}
-> +
-> +	return pci_bus_child_max_busnr(bus);
-> +}
-> +
->  /* This header fixup will do the resource fixup for all devices as they =
-are
->   * probed, but not for bridge ranges
->   */
-> @@ -1585,6 +1608,11 @@ struct device_node *pcibios_get_phb_of_node(struct=
- pci_bus *bus)
->  	return of_node_get(hose->dn);
->  }
-> =20
-> +static struct pci_host_bridge_ops pci_host_ops =3D {
-> +	.set_root_bus_speed =3D pcibios_set_root_bus_speed,
-> +	.scan_bus =3D pci_host_scan_bus,
-> +};
-> +
->  /**
->   * pci_scan_phb - Given a pci_controller, setup and scan the PCI bus
->   * @hose: Pointer to the PCI host controller instance structure
-> @@ -1592,9 +1620,8 @@ struct device_node *pcibios_get_phb_of_node(struct =
-pci_bus *bus)
->  void pcibios_scan_phb(struct pci_controller *hose)
->  {
->  	LIST_HEAD(resources);
-> -	struct pci_bus *bus;
-> +	struct pci_host_bridge *host;
->  	struct device_node *node =3D hose->dn;
-> -	int mode;
-> =20
->  	pr_debug("PCI: Scanning PHB %s\n", of_node_full_name(node));
-> =20
-> @@ -1609,30 +1636,17 @@ void pcibios_scan_phb(struct pci_controller *hose=
-)
->  	hose->busn.flags =3D IORESOURCE_BUS;
->  	pci_add_resource(&resources, &hose->busn);
-> =20
-> +	pci_host_ops.pci_ops =3D hose->ops;
->  	/* Create an empty bus for the toplevel */
-> -	bus =3D pci_create_root_bus(hose->parent, hose->global_number,
-> -			hose->first_busno, hose->ops, hose, &resources);
-> -	if (bus =3D=3D NULL) {
-> -		pr_err("Failed to create bus for PCI domain %04x\n",
-> -			hose->global_number);
-> +	host =3D pci_scan_host_bridge(hose->parent, hose->global_number,
-> +			hose->first_busno, hose, &resources, &pci_host_ops);
-> +	if (host =3D=3D NULL) {
-> +		pr_err("Failed to create host bridge for pci%04x:%02x\n",
-> +			hose->global_number, hose->first_busno);
->  		pci_free_resource_list(&resources);
->  		return;
->  	}
-> -	hose->bus =3D bus;
-> -
-> -	/* Get probe mode and perform scan */
-> -	mode =3D PCI_PROBE_NORMAL;
-> -	if (node && ppc_md.pci_probe_mode)
-> -		mode =3D ppc_md.pci_probe_mode(bus);
-> -	pr_debug("    probe mode: %d\n", mode);
-> -	if (mode =3D=3D PCI_PROBE_DEVTREE)
-> -		of_scan_bus(node, bus);
-> -
-> -	if (mode =3D=3D PCI_PROBE_NORMAL) {
-> -		pci_bus_update_busn_res_end(bus, 255);
-> -		hose->last_busno =3D pci_scan_child_bus(bus);
-> -		pci_bus_update_busn_res_end(bus, hose->last_busno);
-> -	}
-> +	hose->bus =3D host->bus;
-> =20
->  	/* Platform gets a chance to do some global fixups before
->  	 * we proceed to resource allocation
-> @@ -1641,9 +1655,9 @@ void pcibios_scan_phb(struct pci_controller *hose)
->  		ppc_md.pcibios_fixup_phb(hose);
-> =20
->  	/* Configure PCI Express settings */
-> -	if (bus && !pci_has_flag(PCI_PROBE_ONLY)) {
-> +	if (host->bus && !pci_has_flag(PCI_PROBE_ONLY)) {
->  		struct pci_bus *child;
-> -		list_for_each_entry(child, &bus->children, node)
-> +		list_for_each_entry(child, &host->bus->children, node)
->  			pcie_bus_configure_settings(child);
->  	}
->  }
 
-
---=-JBi1R6/zCXZTQ4qH8SNQ
+--=-TVh8S7fVsFWscyQVZw4D
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part
 Content-Transfer-Encoding: 7bit
@@ -207,19 +82,19 @@ Content-Transfer-Encoding: 7bit
 Version: GnuPG v2
 Comment: GPGTools - https://gpgtools.org
 
-iQIcBAABCAAGBQJVIxhSAAoJEPC3R3P2I92FGEkQAM0to7tMdeHcxvzb0mN4AVKY
-G2iyNjiSb0olgDa9iCjsJxr6Eg0cnL2kTSng+iWIyAywCEL8P438f2QX1bcRiLL4
-vhmsLAwpr6pf4kloaol/T8oFrg+uFRlTdiJE1D0omL94qj0A5INeDy7e9PwY+wrE
-mugTHnCG/O5O/DOthK+cPZ59BISZaKga4Uor6C7AgKiitsNQgNFWMOtLhpuKKUtD
-7OlbKc4HhTY40rJWikevOAlY/d5Hq1w3s0yvhugX4ForUes7frq4qMRtKRacS/Vg
-WMKF/9js3pX5S0YIscFe/A8UMT35wPfNwJUjHKPgWrQdOVw8ipAs0ga2F9bK6ipX
-6F/6d7DSDeNHpvFoS4A+zn/2wTjBGbNfKyO5c+hJFjlmRN4dRfA5MvQS3+vXrDC7
-muZuY6pwH2lsTM8UgwfXbmwOfOh47c0ohNLuX3Wpfkjz3jvuAUjyKAqFjwsdh3NW
-bWPv7ay1W1GcXJhfCI+5dK2MZzQ1JmGZnH/M8cl5qLiOSVlNgKXJxFVt3PEDZzB+
-CKe0wSbtw528pC2/P/utk4kFzEK+QMVCzi1H80b6XhFvgZLpU1bzLSZQR0p6C4g4
-2O46VVKu7alxphGyIlTavVXGiJzo8GoAgLSceHF3bnxwtizPF0yJN3Y9fQYxXh7Z
-bc65BhJ/bJiVnJXJx+gj
-=CqP4
+iQIcBAABCAAGBQJVIyVoAAoJEPC3R3P2I92FTlwP/3Qk6njMhm/gy6E4+DVQ39Az
+JiXZQwdZ1ltTJDiDqSHLm3wPwRk/i/r4kGzX+dPCTVapMZTeyx4uKFGYqAkO5hnU
+bdsoL8GXS9zHFwItRUewoXAQOti7lQ4Zn4BKw4G0ir6dp3q1wlh1twc6d9jZ6c30
+4OLTpnvvO0BXnLoDjSse64pKO/YlKPgSM2oXE2Nec9Pm6zG+JKUgcGiD+6vbfh+h
+RqRg42Epw8RMWSF099Mc3UGxwrWz/SJkIiXRUq9MOgcLZjolKx+UE160YUAHC/Ni
+8PUE62k+wTYiqejTROVcgEwTth717j0UNy4sr0THBztghmH7Xf3qOGMhlL9GbFhf
+5qpglbnNj+NfTS1sBycY8KguZsJ58Zj3eA9cq7InSso6+mfE46nYXlD55RmdwgHB
+aez4RfkLLzZ8GebzEPsmXX2KYnYqEtOYMba/Tx79r3FXjOj2xZCqtVursDZgb00y
+0X0iNogP2YBDCKIfYflu783W4Nn3asxojehVOzGDr5Fg+ZCQMIKalrfdsKHVjLv1
+PpKROQ5ITcVooyvwdPdwfK30iyV4axpn5wblMOXuDptLt1AF1pLHUI4a8RQJfVP/
+EGvu+lIVneJqhMMeaCVLqOq0R+5Qy3CO+OFeBOxmBMgyAxPlVuSiV5WWvpgpdeP+
+KD4XPEjZ5H5rQemoTUN6
+=kHEb
 -----END PGP SIGNATURE-----
 
---=-JBi1R6/zCXZTQ4qH8SNQ--
+--=-TVh8S7fVsFWscyQVZw4D--
