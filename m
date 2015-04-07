@@ -1,27 +1,36 @@
-Return-Path: <dja@axtens.net>
-Received: from mail-pd0-x233.google.com (mail-pd0-x233.google.com
- [IPv6:2607:f8b0:400e:c02::233])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <sam.bobroff@au1.ibm.com>
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2F7311A0406
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Apr 2015 10:31:44 +1000 (AEST)
-Received: by pdea3 with SMTP id a3so60480156pde.3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 06 Apr 2015 17:31:41 -0700 (PDT)
-Message-ID: <1428366696.22268.28.camel@axtens.net>
-Subject: Re: [PATCH v2 04/19] powerpc: Create
- pci_controller_ops.dma_dev_setup and shim
-From: Daniel Axtens <dja@axtens.net>
-To: Arnd Bergmann <arnd@arndb.de>
-Date: Tue, 07 Apr 2015 10:31:36 +1000
-In-Reply-To: <5500778.Q4t9Fg7Irn@wuerfel>
-References: <1427778057-9505-1-git-send-email-dja@axtens.net>
- <1427778057-9505-5-git-send-email-dja@axtens.net>
- <5500778.Q4t9Fg7Irn@wuerfel>
-Content-Type: multipart/signed; micalg="pgp-sha256";
- protocol="application/pgp-signature"; boundary="=-TVh8S7fVsFWscyQVZw4D"
-Mime-Version: 1.0
-Cc: wangyijing@huawei.com, linux-pci@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 048BD1A0515
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Apr 2015 10:55:53 +1000 (AEST)
+Received: from /spool/local
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <sam.bobroff@au1.ibm.com>;
+ Tue, 7 Apr 2015 10:55:51 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 2E35C2BB0054
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Apr 2015 10:55:48 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t370te7t46006414
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 Apr 2015 10:55:48 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t370tEZ1002382
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 7 Apr 2015 10:55:14 +1000
+From: Sam Bobroff <sam.bobroff@au1.ibm.com>
+To: mpe@ellerman.id.au, benh@kernel.crashing.org
+Subject: [PATCH v3 2/4] selftests/powerpc: Move get_auxv_entry() to harness.c
+Date: Tue,  7 Apr 2015 10:54:48 +1000
+Message-Id: <13c5acd8a857ceba3f1bac86bee3c596152f3606.1428368031.git.sam.bobroff@au1.ibm.com>
+In-Reply-To: <cover.1428368031.git.sam.bobroff@au1.ibm.com>
+References: <cover.1428368031.git.sam.bobroff@au1.ibm.com>
+In-Reply-To: <cover.1428368031.git.sam.bobroff@au1.ibm.com>
+References: <cover.1428368031.git.sam.bobroff@au1.ibm.com>
+Cc: mikey@neuling.org, azanella@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, matt@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,70 +40,169 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Move get_auxv_entry() from pmu/lib.c up to harness.c in order to make
+it available to other tests.
 
---=-TVh8S7fVsFWscyQVZw4D
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Sam Bobroff <sam.bobroff@au1.ibm.com>
+---
+ tools/testing/selftests/powerpc/harness.c |   47 +++++++++++++++++++++++++++++
+ tools/testing/selftests/powerpc/pmu/lib.c |   47 -----------------------------
+ tools/testing/selftests/powerpc/pmu/lib.h |    1 -
+ tools/testing/selftests/powerpc/utils.h   |    2 +-
+ 4 files changed, 48 insertions(+), 49 deletions(-)
 
-> Please see https://patchwork.ozlabs.org/patch/431333/ for related work.
->=20
-I'm familiar with that patch series - I've been helping Yijing get it up
-to speed on PowerPC.
-
-
-> I think it would be better not to introduce another architecture-specific
-> pci host bridge operations structure, but instead consolidate into
-> the one that is already there. We are also adding a generic way to set up
-> PCI DMA, so it would seems reasonable to hook into that place.
-I see what you're getting at, and I agree that we want to move towards
-generic operations.=20
-
-However, I think this should go in as is at this point, for two main
-reasons:
-
-1) This is a good midpoint that makes it easier to move to a generic
-structure. Our arch specific stuff is quirky and difficult. This patch
-series does a lot to reduce the complexity, and would make it very easy
-to move these ops into a generic structure at some future point.=20
-
-2) Trying to go generic at this point risks making the change set so
-complex and wide ranging that it will really struggle to get in. For
-example, Yijing's patch set, despite not changing any of the quirky
-stuff in PowerPC, is already quite long, and will require agreement from
-a lot of people before it can go in.
-
-Much as I would like to have everything as generic as possible, if we
-were to try to do the whole job in one go, it'd become a big, difficult,
-messy patch set, and would be less likely to happen than if we were to
-do it in two steps.
-
-Regards,
-Daniel
-
-
-
---=-TVh8S7fVsFWscyQVZw4D
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-Content-Transfer-Encoding: 7bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-Comment: GPGTools - https://gpgtools.org
-
-iQIcBAABCAAGBQJVIyVoAAoJEPC3R3P2I92FTlwP/3Qk6njMhm/gy6E4+DVQ39Az
-JiXZQwdZ1ltTJDiDqSHLm3wPwRk/i/r4kGzX+dPCTVapMZTeyx4uKFGYqAkO5hnU
-bdsoL8GXS9zHFwItRUewoXAQOti7lQ4Zn4BKw4G0ir6dp3q1wlh1twc6d9jZ6c30
-4OLTpnvvO0BXnLoDjSse64pKO/YlKPgSM2oXE2Nec9Pm6zG+JKUgcGiD+6vbfh+h
-RqRg42Epw8RMWSF099Mc3UGxwrWz/SJkIiXRUq9MOgcLZjolKx+UE160YUAHC/Ni
-8PUE62k+wTYiqejTROVcgEwTth717j0UNy4sr0THBztghmH7Xf3qOGMhlL9GbFhf
-5qpglbnNj+NfTS1sBycY8KguZsJ58Zj3eA9cq7InSso6+mfE46nYXlD55RmdwgHB
-aez4RfkLLzZ8GebzEPsmXX2KYnYqEtOYMba/Tx79r3FXjOj2xZCqtVursDZgb00y
-0X0iNogP2YBDCKIfYflu783W4Nn3asxojehVOzGDr5Fg+ZCQMIKalrfdsKHVjLv1
-PpKROQ5ITcVooyvwdPdwfK30iyV4axpn5wblMOXuDptLt1AF1pLHUI4a8RQJfVP/
-EGvu+lIVneJqhMMeaCVLqOq0R+5Qy3CO+OFeBOxmBMgyAxPlVuSiV5WWvpgpdeP+
-KD4XPEjZ5H5rQemoTUN6
-=kHEb
------END PGP SIGNATURE-----
-
---=-TVh8S7fVsFWscyQVZw4D--
+diff --git a/tools/testing/selftests/powerpc/harness.c b/tools/testing/selftests/powerpc/harness.c
+index 8ebc58a..f7997af 100644
+--- a/tools/testing/selftests/powerpc/harness.c
++++ b/tools/testing/selftests/powerpc/harness.c
+@@ -11,6 +11,10 @@
+ #include <sys/types.h>
+ #include <sys/wait.h>
+ #include <unistd.h>
++#include <elf.h>
++#include <fcntl.h>
++#include <link.h>
++#include <sys/stat.h>
+ 
+ #include "subunit.h"
+ #include "utils.h"
+@@ -112,3 +116,46 @@ int test_harness(int (test_function)(void), char *name)
+ 
+ 	return rc;
+ }
++
++static char auxv[4096];
++
++void *get_auxv_entry(int type)
++{
++	ElfW(auxv_t) *p;
++	void *result;
++	ssize_t num;
++	int fd;
++
++	fd = open("/proc/self/auxv", O_RDONLY);
++	if (fd == -1) {
++		perror("open");
++		return NULL;
++	}
++
++	result = NULL;
++
++	num = read(fd, auxv, sizeof(auxv));
++	if (num < 0) {
++		perror("read");
++		goto out;
++	}
++
++	if (num > sizeof(auxv)) {
++		printf("Overflowed auxv buffer\n");
++		goto out;
++	}
++
++	p = (ElfW(auxv_t) *)auxv;
++
++	while (p->a_type != AT_NULL) {
++		if (p->a_type == type) {
++			result = (void *)p->a_un.a_val;
++			break;
++		}
++
++		p++;
++	}
++out:
++	close(fd);
++	return result;
++}
+diff --git a/tools/testing/selftests/powerpc/pmu/lib.c b/tools/testing/selftests/powerpc/pmu/lib.c
+index 9768dea..a07104c 100644
+--- a/tools/testing/selftests/powerpc/pmu/lib.c
++++ b/tools/testing/selftests/powerpc/pmu/lib.c
+@@ -5,15 +5,10 @@
+ 
+ #define _GNU_SOURCE	/* For CPU_ZERO etc. */
+ 
+-#include <elf.h>
+ #include <errno.h>
+-#include <fcntl.h>
+-#include <link.h>
+ #include <sched.h>
+ #include <setjmp.h>
+ #include <stdlib.h>
+-#include <sys/stat.h>
+-#include <sys/types.h>
+ #include <sys/wait.h>
+ 
+ #include "utils.h"
+@@ -256,45 +251,3 @@ out:
+ 	return rc;
+ }
+ 
+-static char auxv[4096];
+-
+-void *get_auxv_entry(int type)
+-{
+-	ElfW(auxv_t) *p;
+-	void *result;
+-	ssize_t num;
+-	int fd;
+-
+-	fd = open("/proc/self/auxv", O_RDONLY);
+-	if (fd == -1) {
+-		perror("open");
+-		return NULL;
+-	}
+-
+-	result = NULL;
+-
+-	num = read(fd, auxv, sizeof(auxv));
+-	if (num < 0) {
+-		perror("read");
+-		goto out;
+-	}
+-
+-	if (num > sizeof(auxv)) {
+-		printf("Overflowed auxv buffer\n");
+-		goto out;
+-	}
+-
+-	p = (ElfW(auxv_t) *)auxv;
+-
+-	while (p->a_type != AT_NULL) {
+-		if (p->a_type == type) {
+-			result = (void *)p->a_un.a_val;
+-			break;
+-		}
+-
+-		p++;
+-	}
+-out:
+-	close(fd);
+-	return result;
+-}
+diff --git a/tools/testing/selftests/powerpc/pmu/lib.h b/tools/testing/selftests/powerpc/pmu/lib.h
+index 0f0339c..ca5d72a 100644
+--- a/tools/testing/selftests/powerpc/pmu/lib.h
++++ b/tools/testing/selftests/powerpc/pmu/lib.h
+@@ -29,7 +29,6 @@ extern int notify_parent(union pipe write_pipe);
+ extern int notify_parent_of_error(union pipe write_pipe);
+ extern pid_t eat_cpu(int (test_function)(void));
+ extern bool require_paranoia_below(int level);
+-extern void *get_auxv_entry(int type);
+ 
+ struct addr_range {
+ 	uint64_t first, last;
+diff --git a/tools/testing/selftests/powerpc/utils.h b/tools/testing/selftests/powerpc/utils.h
+index a93777a..64f53cd 100644
+--- a/tools/testing/selftests/powerpc/utils.h
++++ b/tools/testing/selftests/powerpc/utils.h
+@@ -19,7 +19,7 @@ typedef uint8_t u8;
+ 
+ 
+ int test_harness(int (test_function)(void), char *name);
+-
++extern void *get_auxv_entry(int type);
+ 
+ /* Yes, this is evil */
+ #define FAIL_IF(x)						\
+-- 
+1.7.10.4
