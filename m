@@ -1,44 +1,22 @@
-Return-Path: <patrice.chotard@st.com>
-Received: from mx08-00178001.pphosted.com (mx08-00178001.pphosted.com
- [91.207.212.93])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <arnd@arndb.de>
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.130])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1DAB41A02CB
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Apr 2015 17:33:22 +1000 (AEST)
-Message-ID: <552383C2.3050502@st.com>
-Date: Tue, 7 Apr 2015 09:14:10 +0200
-From: Patrice Chotard <patrice.chotard@st.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id C86931A031F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Apr 2015 17:44:44 +1000 (AEST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: Daniel Axtens <dja@axtens.net>
+Subject: Re: [PATCH v2 04/19] powerpc: Create pci_controller_ops.dma_dev_setup
+ and shim
+Date: Tue, 07 Apr 2015 09:44:36 +0200
+Message-ID: <2489424.TEiBTfgpvS@wuerfel>
+In-Reply-To: <1428366696.22268.28.camel@axtens.net>
+References: <1427778057-9505-1-git-send-email-dja@axtens.net>
+ <5500778.Q4t9Fg7Irn@wuerfel> <1428366696.22268.28.camel@axtens.net>
 MIME-Version: 1.0
-To: Joe Perches <joe@perches.com>, Stefan Agner <stefan@agner.ch>
-Subject: Re: [PATCH V2] tty: serial: Add const to struct uart_ops declarations
-References: <1428169665.2775.53.camel@perches.com>	
- <a938a0e86638588e5ccff85771fa3b95@agner.ch>
- <1428258294.2775.69.camel@perches.com>
-In-Reply-To: <1428258294.2775.69.camel@perches.com>
-Content-Type: text/plain; charset="windows-1252"; format=flowed
-Cc: linux-ia64@vger.kernel.org, kernel@stlinux.com,
- Nicolas Ferre <nicolas.ferre@atmel.com>, Timur Tabi <timur@tabi.org>,
- Pat Gefre <pfg@sgi.com>, Laxman Dewangan <ldewangan@nvidia.com>,
- "Maciej W. Rozycki" <macro@linux-mips.org>, Daniel Walker <dwalker@fifo99.com>,
- sparclinux@vger.kernel.org, Sonic Zhang <sonic.zhang@analog.com>,
- Jiri Slaby <jslaby@suse.cz>, Alexandre Courbot <gnurou@gmail.com>,
- Russell King <linux@arm.linux.org.uk>, Michal Simek <michal.simek@xilinx.com>,
- =?windows-1252?Q?S=F6ren_Brinkmann?= <soren.brinkmann@xilinx.com>,
- linux-serial@vger.kernel.org, Tobias Klauser <tklauser@distanz.ch>,
- Stephen Warren <swarren@wwwdotorg.org>, linux-arm-msm@vger.kernel.org,
- adi-buildroot-devel@lists.sourceforge.net,
- Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>,
- linux-tegra@vger.kernel.org, David Brown <davidb@codeaurora.org>,
- linux-arm-kernel@lists.infradead.org, Maxime Coquelin <maxime.coquelin@st.com>,
- Barry Song <baohua@kernel.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-kernel@vger.kernel.org,
- Tony Prisk <linux@prisktech.co.nz>, Bryan Huntsman <bryanh@codeaurora.org>,
- Thierry Reding <thierry.reding@gmail.com>,
- =?windows-1252?Q?Uwe_Kleine-K=F6nig?= <kernel@pengutronix.de>,
- Vineet Gupta <vgupta@synopsys.com>, nios2-dev@lists.rocketboards.org,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "David S. Miller" <davem@davemloft.net>,
- Srinivas Kandagatla <srinivas.kandagatla@gmail.com>
+Content-Type: text/plain; charset="us-ascii"
+Cc: wangyijing@huawei.com, linux-pci@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,23 +26,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi
+On Tuesday 07 April 2015 10:31:36 Daniel Axtens wrote:
+> > Please see https://patchwork.ozlabs.org/patch/431333/ for related work.
+> > 
+> I'm familiar with that patch series - I've been helping Yijing get it up
+> to speed on PowerPC.
+> 
+> 
+> > I think it would be better not to introduce another architecture-specific
+> > pci host bridge operations structure, but instead consolidate into
+> > the one that is already there. We are also adding a generic way to set up
+> > PCI DMA, so it would seems reasonable to hook into that place.
+> I see what you're getting at, and I agree that we want to move towards
+> generic operations. 
+> 
+> However, I think this should go in as is at this point, for two main
+> reasons:
+> 
+> 1) This is a good midpoint that makes it easier to move to a generic
+> structure. Our arch specific stuff is quirky and difficult. This patch
+> series does a lot to reduce the complexity, and would make it very easy
+> to move these ops into a generic structure at some future point. 
+> 
+> 2) Trying to go generic at this point risks making the change set so
+> complex and wide ranging that it will really struggle to get in. For
+> example, Yijing's patch set, despite not changing any of the quirky
+> stuff in PowerPC, is already quite long, and will require agreement from
+> a lot of people before it can go in.
+> 
+> Much as I would like to have everything as generic as possible, if we
+> were to try to do the whole job in one go, it'd become a big, difficult,
+> messy patch set, and would be less likely to happen than if we were to
+> do it in two steps.
 
-On 04/05/2015 08:24 PM, Joe Perches wrote:
-> These structs can be const, so make them const.
->
-> Miscellanea:
->
-> o Add static to struct uart_ops declaration in bfin_sport_uart
->
-> Signed-off-by: Joe Perches <joe@perches.com>
-> ---
-[...]
+Ok, fair enough. Let's do this one first then.
 
-for
->   drivers/tty/serial/st-asc.c                 | 2 +-
-
-Acked-by: Patrice Chotard <patrice.chotard@st.com>
-
-
-Thanks
+	Arnd
