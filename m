@@ -1,22 +1,50 @@
-Return-Path: <peterz@infradead.org>
-Received: from casper.infradead.org (unknown [IPv6:2001:770:15f::2])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <Vineet.Gupta1@synopsys.com>
+Received: from smtprelay.synopsys.com (smtprelay4.synopsys.com [198.182.47.9])
+ (using TLSv1.1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C85B51A056E
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Apr 2015 20:22:08 +1000 (AEST)
-Date: Tue, 7 Apr 2015 12:21:47 +0200
-From: Peter Zijlstra <peterz@infradead.org>
-To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-Subject: Re: Topology updates and NUMA-level sched domains
-Message-ID: <20150407102147.GJ23123@twins.programming.kicks-ass.net>
-References: <20150406214558.GA38501@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id A028B1A056E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  7 Apr 2015 22:54:58 +1000 (AEST)
+From: Vineet Gupta <Vineet.Gupta1@synopsys.com>
+To: Joe Perches <joe@perches.com>, Stefan Agner <stefan@agner.ch>
+Subject: Re: [PATCH V2] tty: serial: Add const to struct uart_ops declarations
+Date: Tue, 7 Apr 2015 12:46:46 +0000
+Message-ID: <C2D7FE5348E1B147BCA15975FBA2307566598FD3@IN01WEMBXB.internal.synopsys.com>
+References: <1428169665.2775.53.camel@perches.com>
+ <a938a0e86638588e5ccff85771fa3b95@agner.ch>
+ <1428258294.2775.69.camel@perches.com>
+Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150406214558.GA38501@linux.vnet.ibm.com>
-Cc: Boqun Feng <boqun.feng@linux.vnet.ibm.com>,
- Srikar Dronamraju <srikar@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
- Ingo Molnar <mingo@redhat.com>, Anton Blanchard <anton@samba.org>,
- linuxppc-dev@lists.ozlabs.org, Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Cc: "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+ "kernel@stlinux.com" <kernel@stlinux.com>,
+ Nicolas Ferre <nicolas.ferre@atmel.com>, Timur Tabi <timur@tabi.org>,
+ Patrice Chotard <patrice.chotard@st.com>, Pat Gefre <pfg@sgi.com>,
+ Laxman Dewangan <ldewangan@nvidia.com>,
+ "Maciej W. Rozycki" <macro@linux-mips.org>, Daniel Walker <dwalker@fifo99.com>,
+ "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>,
+ Sonic Zhang <sonic.zhang@analog.com>, Jiri Slaby <jslaby@suse.cz>,
+ Alexandre Courbot <gnurou@gmail.com>, Russell King <linux@arm.linux.org.uk>,
+ Michal Simek <michal.simek@xilinx.com>,
+ =?iso-8859-1?Q?S=F6ren_Brinkmann?= <soren.brinkmann@xilinx.com>,
+ "linux-serial@vger.kernel.org" <linux-serial@vger.kernel.org>,
+ Tobias Klauser <tklauser@distanz.ch>, Stephen Warren <swarren@wwwdotorg.org>,
+ "linux-arm-msm@vger.kernel.org" <linux-arm-msm@vger.kernel.org>, Vineet
+ Gupta <Vineet.Gupta1@synopsys.com>,
+ "adi-buildroot-devel@lists.sourceforge.net"
+ <adi-buildroot-devel@lists.sourceforge.net>,
+ Thadeu Lima de Souza Cascardo <cascardo@linux.vnet.ibm.com>,
+ "linux-tegra@vger.kernel.org" <linux-tegra@vger.kernel.org>,
+ David Brown <davidb@codeaurora.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ Maxime Coquelin <maxime.coquelin@st.com>, Barry Song <baohua@kernel.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Tony Prisk <linux@prisktech.co.nz>, Bryan Huntsman <bryanh@codeaurora.org>,
+ Thierry Reding <thierry.reding@gmail.com>,
+ =?iso-8859-1?Q?Uwe_Kleine-K=F6nig?= <kernel@pengutronix.de>, Srinivas
+ Kandagatla <srinivas.kandagatla@gmail.com>,
+ "nios2-dev@lists.rocketboards.org" <nios2-dev@lists.rocketboards.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,40 +54,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Apr 06, 2015 at 02:45:58PM -0700, Nishanth Aravamudan wrote:
-> Hi Peter,
-> 
-> As you are very aware, I think, power has some odd NUMA topologies (and
-> changes to the those topologies) at run-time. In particular, we can see
-> a topology at boot:
-> 
-> Node 0: all Cpus
-> Node 7: no cpus
-> 
-> Then we get a notification from the hypervisor that a core (or two) have
-> moved from node 0 to node 7. This results in the:
+On Sunday 05 April 2015 11:55 PM, Joe Perches wrote:
 
-> or a re-init API (which won't try to reallocate various bits), because
-> the topology could be completely different now (e.g.,
-> sched_domains_numa_distance will also be inaccurate now).  Really, a
-> topology update on power (not sure on s390x, but those are the only two
-> archs that return a positive value from arch_update_cpu_topology() right
-> now, afaics) is a lot like a hotplug event and we need to re-initialize
-> any dependent structures.
-> 
-> I'm just sending out feelers, as we can limp by with the above warning,
-> it seems, but is less than ideal. Any help or insight you could provide
-> would be greatly appreciated!
+These structs can be const, so make them const.
 
-So I think (and ISTR having stated this before) that dynamic cpu<->node
-maps are absolutely insane.
+Miscellanea:
 
-There is a ton of stuff that assumes the cpu<->node relation is a boot
-time fixed one. Userspace being one of them. Per-cpu memory another.
+o Add static to struct uart_ops declaration in bfin_sport_uart
 
-You simply cannot do this without causing massive borkage.
+Signed-off-by: Joe Perches <joe@perches.com><mailto:joe@perches.com>
+---
+On Sun, 2015-04-05 at 00:04 +0200, Stefan Agner wrote:
 
-So please come up with a coherent plan to deal with the entire problem
-of dynamic cpu to memory relation and I might consider the scheduler
-impact. But we're not going to hack around and maybe make it not crash
-in a few corner cases while the entire thing is shite.
+
+> On 2015-04-04 19:47, Joe Perches wrote:
+
+
+> > Done with:
+> > sed -r -i -e 's/\bstruct\s+uart_ops\s+(\w+)\s*=3D\s*/const struct
+> > uart_ops \1 =3D /g' drivers/tty/serial/*.c
+
+
+[]
+
+
+> +++ b/drivers/tty/serial/fsl_lpuart.c
+> Something went wrong in this driver, const is twice...
+
+
+Apologies, thanks for noticing.
+The sed was mistakenly done twice on that file.
+
+V2:
+
+o Fix duplicate const in fsl_lpuart.c
+o Add static to drivers/tty/serial/bfin_sport_uart.c
+
+Still compiled only x86 and not cross-compiled or tested.
+
+ drivers/tty/serial/21285.c                  | 2 +-
+ drivers/tty/serial/altera_jtaguart.c        | 2 +-
+ drivers/tty/serial/altera_uart.c            | 2 +-
+ drivers/tty/serial/amba-pl010.c             | 2 +-
+ drivers/tty/serial/amba-pl011.c             | 2 +-
+ drivers/tty/serial/apbuart.c                | 2 +-
+ drivers/tty/serial/ar933x_uart.c            | 2 +-
+ drivers/tty/serial/arc_uart.c               | 2 +-
+
+Acked-by: Vineet Gupta <vgupta@synopsys.com><mailto:vgupta@synopsys.com> # =
+for arc_uart
+
+Th,
+-Vineet
