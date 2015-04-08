@@ -1,22 +1,25 @@
-Return-Path: <peterz@infradead.org>
-Received: from casper.infradead.org (unknown [IPv6:2001:770:15f::2])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <fbrozovic@gmail.com>
+Received: from mail-wi0-x229.google.com (mail-wi0-x229.google.com
+ [IPv6:2a00:1450:400c:c05::229])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 69A9E1A0515
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Apr 2015 22:19:44 +1000 (AEST)
-Date: Wed, 8 Apr 2015 14:19:23 +0200
-From: Peter Zijlstra <peterz@infradead.org>
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2 1/5] perf: Add a flags parameter to pmu txn interfaces
-Message-ID: <20150408121923.GD23123@twins.programming.kicks-ass.net>
-References: <1428453299-19121-1-git-send-email-sukadev@linux.vnet.ibm.com>
- <1428453299-19121-2-git-send-email-sukadev@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2DA6E1A0515
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Apr 2015 22:24:49 +1000 (AEST)
+Received: by wiaa2 with SMTP id a2so56272484wia.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Apr 2015 05:24:44 -0700 (PDT)
+Message-ID: <55251DFB.8070907@gmail.com>
+Date: Wed, 08 Apr 2015 14:24:27 +0200
+From: =?UTF-8?B?RmlsaXAgQnJvem92acSH?= <fbrozovic@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1428453299-19121-2-git-send-email-sukadev@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, Arnaldo Carvalho de Melo <acme@kernel.org>,
- mingo@redhat.com, Paul Mackerras <paulus@samba.org>, dev@codyps.com,
- linuxppc-dev@lists.ozlabs.org
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH v2] powerpc/83xx: add support for mpc8306
+References: <1428057856-26421-1-git-send-email-fbrozovic@gmail.com>	
+ <1428062487.7898.12.camel@x220> <551E8B65.5010400@gmail.com>
+ <1428092654.22867.339.camel@freescale.com>
+In-Reply-To: <1428092654.22867.339.camel@freescale.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Cc: Paul Bolle <pebolle@tiscali.nl>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,48 +29,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Apr 07, 2015 at 05:34:55PM -0700, Sukadev Bhattiprolu wrote:
-> diff --git a/include/linux/perf_event.h b/include/linux/perf_event.h
-> index 2b62198..4dc3d70 100644
-> --- a/include/linux/perf_event.h
-> +++ b/include/linux/perf_event.h
-> @@ -240,20 +240,27 @@ struct pmu {
->  	 *
->  	 * Start the transaction, after this ->add() doesn't need to
->  	 * do schedulability tests.
-> +	 *
-> +	 * Optional.
->  	 */
-> -	void (*start_txn)		(struct pmu *pmu); /* optional */
-> +#define PERF_PMU_TXN_ADD  0x1		/* txn to add/schedule event on PMU */
 
-Please do not interleave these flags in the structure. Maybe place it
-near PERF_EVENT_TXN.
 
-> +	void (*start_txn)		(struct pmu *pmu, int flags);
->  	/*
->  	 * If ->start_txn() disabled the ->add() schedulability test
->  	 * then ->commit_txn() is required to perform one. On success
->  	 * the transaction is closed. On error the transaction is kept
->  	 * open until ->cancel_txn() is called.
-> +	 *
-> +	 * Optional.
->  	 */
-> -	int  (*commit_txn)		(struct pmu *pmu); /* optional */
-> +	int  (*commit_txn)		(struct pmu *pmu, int flags);
->  	/*
->  	 * Will cancel the transaction, assumes ->del() is called
->  	 * for each successful ->add() during the transaction.
-> +	 *
-> +	 * Optional.
->  	 */
-> -	void (*cancel_txn)		(struct pmu *pmu); /* optional */
-> +	void (*cancel_txn)		(struct pmu *pmu, int flags);
->  
->  	/*
->  	 * Will return the value for perf_event_mmap_page::index for this event,
+On 4/3/2015 10:24 PM, Scott Wood wrote:
+> What are you using PPC_MPC8306 for in your custom board code?
 
-So (again), why also pass the flags to cancel/commit ?
+Sorry for the late reply, I was a bit busy over the Easter weekend.
 
-The transaction state _has_ to already record it, otherwise it doesn't
-know if add/read are part of one.
+I'm not currently using it for anything, so I guess I could remove it 
+and just use PPC_MPC830x in my board code. However, I think it's best if 
+this patch is ignored (for now), and I'll submit a patch series for the 
+8306 and a custom board in a couple of weeks/months, when I find some 
+time to clean up the board code.
+
+- Filip
