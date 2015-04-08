@@ -1,20 +1,27 @@
-Return-Path: <Shengzhou.Liu@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0131.outbound.protection.outlook.com [207.46.100.131])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <peterz@infradead.org>
+Received: from casper.infradead.org (unknown [IPv6:2001:770:15f::2])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id EEE641A0515
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Apr 2015 20:50:17 +1000 (AEST)
-From: Shengzhou Liu <Shengzhou.Liu@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>, <scottwood@freescale.com>
-Subject: [PATCH 4/4 v2] powerpc/fsl-booke: Add T1023 RDB board support
-Date: Wed, 8 Apr 2015 18:46:27 +0800
-Message-ID: <1428489987-31209-4-git-send-email-Shengzhou.Liu@freescale.com>
-In-Reply-To: <1428489987-31209-1-git-send-email-Shengzhou.Liu@freescale.com>
-References: <1428489987-31209-1-git-send-email-Shengzhou.Liu@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 515431A0EA1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Apr 2015 20:52:34 +1000 (AEST)
+Date: Wed, 8 Apr 2015 12:52:12 +0200
+From: Peter Zijlstra <peterz@infradead.org>
+To: Brice Goglin <Brice.Goglin@inria.fr>
+Subject: Re: Topology updates and NUMA-level sched domains
+Message-ID: <20150408105212.GP21418@twins.programming.kicks-ass.net>
+References: <20150406214558.GA38501@linux.vnet.ibm.com>
+ <20150407102147.GJ23123@twins.programming.kicks-ass.net>
+ <20150407171410.GA62529@linux.vnet.ibm.com>
+ <20150407194129.GT23123@twins.programming.kicks-ass.net>
+ <552503A1.3050502@inria.fr>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Shengzhou Liu <Shengzhou.Liu@freescale.com>
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <552503A1.3050502@inria.fr>
+Cc: Boqun Feng <boqun.feng@linux.vnet.ibm.com>,
+ Srikar Dronamraju <srikar@linux.vnet.ibm.com>,
+ Nishanth Aravamudan <nacc@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+ Ingo Molnar <mingo@redhat.com>, Anton Blanchard <anton@samba.org>,
+ linuxppc-dev@lists.ozlabs.org, Anshuman Khandual <khandual@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,208 +31,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-T1023RDB is a Freescale Reference Design Board that hosts T1023 SoC.
+On Wed, Apr 08, 2015 at 12:32:01PM +0200, Brice Goglin wrote:
+> Le 07/04/2015 21:41, Peter Zijlstra a écrit :
+> > No, that's very much not the same. Even if it were dealing with hotplug
+> > it would still assume the cpu to return to the same node.
+> >
+> > But mostly people do not even bother to handle hotplug.
+> >
+> 
+> You said userspace assumes the cpu<->node relation is a boot-time fixed
+> one, and hotplug breaks this.
 
-T1023RDB board Overview
------------------------
-- T1023 SoC integrating two 64-bit e5500 cores up to 1.4GHz
-- CoreNet fabric supporting coherent and noncoherent transactions with
-  prioritization and bandwidth allocation
-- Memory: 2GB Micron MT40A512M8HX unbuffered 32-bit fixed DDR4 without ECC
-- Accelerator: DPAA components consist of FMan, BMan, QMan, DCE and SEC
-- Ethernet interfaces:
-  - one 1G RGMII port on-board(RTL8211F PHY)
-  - one 1G SGMII port on-board(RTL8211F PHY)
-  - one 2.5G SGMII port on-board(AQR105 PHY)
-- PCIe: Two Mini-PCIe connectors on-board.
-- SerDes: 4 lanes up to 10.3125GHz
-- NOR:  128MB S29GL01GS110TFIV10 Spansion NOR Flash
-- NAND: 512MB S34MS04G200BFI000 Spansion NAND Flash
-- eSPI: 64MB S25FL512SAGMFI010 Spansion SPI flash
-- USB: one Type-A USB 2.0 port with internal PHY
-- eSDHC: support SD/MMC card and eMMC flash on-board
-- 256Kbit M24256 I2C EEPROM
-- RTC: Real-time clock DS1339 on I2C bus
-- UART: one serial port on-board with RJ45 connector
-- Debugging: JTAG/COP for T1023 debugging
+I said no such thing. Regular hotplug actually respects that relation.
 
-Signed-off-by: Shengzhou Liu <Shengzhou.Liu@freescale.com>
----
-v2: no change
+> How do you expect userspace to handle hotplug?
 
- arch/powerpc/boot/dts/t1023rdb.dts            | 151 ++++++++++++++++++++++++++
- arch/powerpc/platforms/85xx/corenet_generic.c |   1 +
- 2 files changed, 152 insertions(+)
- create mode 100644 arch/powerpc/boot/dts/t1023rdb.dts
+Mostly not. Why would they? CPU hotplug is rare and mostly a case of:
+don't do that then.
 
-diff --git a/arch/powerpc/boot/dts/t1023rdb.dts b/arch/powerpc/boot/dts/t1023rdb.dts
-new file mode 100644
-index 0000000..3780e68
---- /dev/null
-+++ b/arch/powerpc/boot/dts/t1023rdb.dts
-@@ -0,0 +1,151 @@
-+/*
-+ * T1023 RDB Device Tree Source
-+ *
-+ * Copyright 2014 Freescale Semiconductor Inc.
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions are met:
-+ *     * Redistributions of source code must retain the above copyright
-+ *	 notice, this list of conditions and the following disclaimer.
-+ *     * Redistributions in binary form must reproduce the above copyright
-+ *	 notice, this list of conditions and the following disclaimer in the
-+ *	 documentation and/or other materials provided with the distribution.
-+ *     * Neither the name of Freescale Semiconductor nor the
-+ *	 names of its contributors may be used to endorse or promote products
-+ *	 derived from this software without specific prior written permission.
-+ *
-+ *
-+ * ALTERNATIVELY, this software may be distributed under the terms of the
-+ * GNU General Public License ("GPL") as published by the Free Software
-+ * Foundation, either version 2 of that License or (at your option) any
-+ * later version.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor "AS IS" AND ANY
-+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ */
-+
-+/include/ "fsl/t102xsi-pre.dtsi"
-+
-+/ {
-+	model = "fsl,T1023RDB";
-+	compatible = "fsl,T1023RDB";
-+	#address-cells = <2>;
-+	#size-cells = <2>;
-+	interrupt-parent = <&mpic>;
-+
-+	ifc: localbus@ffe124000 {
-+		reg = <0xf 0xfe124000 0 0x2000>;
-+		ranges = <0 0 0xf 0xe8000000 0x08000000
-+			  1 0 0xf 0xff800000 0x00010000>;
-+
-+		nor@0,0 {
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			status = "disabled";
-+			compatible = "cfi-flash";
-+			reg = <0x0 0x0 0x8000000>;
-+			bank-width = <2>;
-+			device-width = <1>;
-+		};
-+
-+		nand@1,0 {
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			compatible = "fsl,ifc-nand";
-+			reg = <0x2 0x0 0x10000>;
-+		};
-+	};
-+
-+	memory {
-+		device_type = "memory";
-+	};
-+
-+	dcsr: dcsr@f00000000 {
-+		ranges = <0x00000000 0xf 0x00000000 0x01072000>;
-+	};
-+
-+	soc: soc@ffe000000 {
-+		ranges = <0x00000000 0xf 0xfe000000 0x1000000>;
-+		reg = <0xf 0xfe000000 0 0x00001000>;
-+		spi@110000 {
-+			flash@0 {
-+				#address-cells = <1>;
-+				#size-cells = <1>;
-+				compatible = "spansion,s25fl512s";
-+				reg = <0>;
-+				spi-max-frequency = <10000000>; /* input clk */
-+			};
-+		};
-+
-+		i2c@118000 {
-+			eeprom@50 {
-+				compatible = "stm,m24256";
-+				reg = <0x50>;
-+			};
-+
-+			rtc@68 {
-+				compatible = "dallas,ds1339";
-+				reg = <0x68>;
-+				interrupts = <0x5 0x1 0 0>;
-+			};
-+		};
-+
-+		i2c@118100 {
-+		};
-+	};
-+
-+	pci0: pcie@ffe240000 {
-+		reg = <0xf 0xfe240000 0 0x10000>;
-+		ranges = <0x02000000 0 0xe0000000 0xc 0x00000000 0 0x10000000
-+			  0x01000000 0 0x00000000 0xf 0xf8000000 0 0x00010000>;
-+		pcie@0 {
-+			ranges = <0x02000000 0 0xe0000000
-+				  0x02000000 0 0xe0000000
-+				  0 0x10000000
-+
-+				  0x01000000 0 0x00000000
-+				  0x01000000 0 0x00000000
-+				  0 0x00010000>;
-+		};
-+	};
-+
-+	pci1: pcie@ffe250000 {
-+		reg = <0xf 0xfe250000 0 0x10000>;
-+		ranges = <0x02000000 0 0xe0000000 0xc 0x10000000 0 0x10000000
-+			  0x01000000 0 0x00000000 0xf 0xf8010000 0 0x00010000>;
-+		pcie@0 {
-+			ranges = <0x02000000 0 0xe0000000
-+				  0x02000000 0 0xe0000000
-+				  0 0x10000000
-+
-+				  0x01000000 0 0x00000000
-+				  0x01000000 0 0x00000000
-+				  0 0x00010000>;
-+		};
-+	};
-+
-+	pci2: pcie@ffe260000 {
-+		reg = <0xf 0xfe260000 0 0x10000>;
-+		ranges = <0x02000000 0 0xe0000000 0xc 0x20000000 0 0x10000000
-+			  0x01000000 0 0x00000000 0xf 0xf8020000 0 0x00010000>;
-+		pcie@0 {
-+			ranges = <0x02000000 0 0xe0000000
-+				  0x02000000 0 0xe0000000
-+				  0 0x10000000
-+
-+				  0x01000000 0 0x00000000
-+				  0x01000000 0 0x00000000
-+				  0 0x00010000>;
-+		};
-+	};
-+};
-+
-+/include/ "fsl/t1023si-post.dtsi"
-diff --git a/arch/powerpc/platforms/85xx/corenet_generic.c b/arch/powerpc/platforms/85xx/corenet_generic.c
-index d7c1b4d..bd839dc 100644
---- a/arch/powerpc/platforms/85xx/corenet_generic.c
-+++ b/arch/powerpc/platforms/85xx/corenet_generic.c
-@@ -150,6 +150,7 @@ static const char * const boards[] __initconst = {
- 	"fsl,B4860QDS",
- 	"fsl,B4420QDS",
- 	"fsl,B4220QDS",
-+	"fsl,T1023RDB",
- 	"fsl,T1024QDS",
- 	"fsl,T1024RDB",
- 	"fsl,T1040QDS",
--- 
-2.1.0.27.g96db324
+Its just that some of the virt wankers are using it for resource
+management which is entirely misguided. Then again, most of virt is.
+
+> Is there a convenient way to be notified when a CPU (or memory)
+> is unplugged?
+
+I think you can poll some sysfs file or other.
