@@ -1,22 +1,25 @@
-Return-Path: <peterz@infradead.org>
-Received: from casper.infradead.org (unknown [IPv6:2001:770:15f::2])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <linux@roeck-us.net>
+Received: from bh-25.webhostbox.net (bh-25.webhostbox.net [208.91.199.152])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DCF851A0515
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Apr 2015 22:51:29 +1000 (AEST)
-Date: Wed, 8 Apr 2015 14:51:13 +0200
-From: Peter Zijlstra <peterz@infradead.org>
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2 5/5] powerpc/perf/hv-24x7: Use PMU_TXN_READ interface
-Message-ID: <20150408125113.GG23123@twins.programming.kicks-ass.net>
-References: <1428453299-19121-1-git-send-email-sukadev@linux.vnet.ibm.com>
- <1428453299-19121-6-git-send-email-sukadev@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 79F731A0CF1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Apr 2015 23:27:04 +1000 (AEST)
+Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
+ (envelope-from <linux@roeck-us.net>) id 1Yfq0U-0043v9-0B
+ for linuxppc-dev@lists.ozlabs.org; Wed, 08 Apr 2015 13:27:02 +0000
+Message-ID: <55252C9A.4050505@roeck-us.net>
+Date: Wed, 08 Apr 2015 06:26:50 -0700
+From: Guenter Roeck <linux@roeck-us.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1428453299-19121-6-git-send-email-sukadev@linux.vnet.ibm.com>
-Cc: linux-kernel@vger.kernel.org, Arnaldo Carvalho de Melo <acme@kernel.org>,
- mingo@redhat.com, Paul Mackerras <paulus@samba.org>, dev@codyps.com,
- linuxppc-dev@lists.ozlabs.org
+To: =?UTF-8?B?Q8OpZHJpYyBMZSBHb2F0ZXI=?= <clg@fr.ibm.com>,
+ lm-sensors@lm-sensors.org
+Subject: Re: [PATCH v3] hwmon: (ibmpowernv) pretty print labels
+References: <1428476427-23311-1-git-send-email-clg@fr.ibm.com>
+In-Reply-To: <1428476427-23311-1-git-send-email-clg@fr.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Cc: Stewart Smith <stewart@linux.vnet.ibm.com>,
+ Neelesh Gupta <neelegup@linux.vnet.ibm.com>, skiboot@lists.ozlabs.org,
+ linuxppc-dev@lists.ozlabs.org, Jean Delvare <jdelvare@suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,53 +29,110 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Apr 07, 2015 at 05:34:59PM -0700, Sukadev Bhattiprolu wrote:
-> @@ -1213,9 +1221,47 @@ static void update_event_count(struct perf_event *event, u64 now)
->  static void h_24x7_event_read(struct perf_event *event)
->  {
->  	u64 now;
-> +	struct h_24x7_hw *h24x7hw;
-> +	struct hv_24x7_request_buffer *request_buffer;
+On 04/08/2015 12:00 AM, Cédric Le Goater wrote:
+> The new OPAL device tree adds a few properties which can be used to add
+> extra information on the sensor label.
+>
+> In the case of a cpu core sensor, the firmware exposes the physical
+> identifier of the core in the "ibm,pir" property. The driver
+> translates this identifier in a linux cpu number and prints out a
+> range corresponding to the hardware threads of the core (as they
+> share the same sensor).
+>
+> The numbering gives a hint on the localization of the core in the
+> system (which socket, which chip).
+>
+> Signed-off-by: Cédric Le Goater <clg@fr.ibm.com>
+> ---
+>
+>   Changes since v2:
+>
+>   - fix bogus logical cpu retrieval
+>   - use 'threads_per_core' to print out cpu range
+>
+>   Changes since v1:
+>
+>   - check cpu validity before printing out the attribute label.
+>     if invalid, use a "phy" prefix to distinguish a linux cpu
+>     number from a physical cpu number.
+>
+>   drivers/hwmon/ibmpowernv.c |   43 +++++++++++++++++++++++++++++++++++++++++++
+>   1 file changed, 43 insertions(+)
+>
+> Index: linux.git/drivers/hwmon/ibmpowernv.c
+> ===================================================================
+> --- linux.git.orig/drivers/hwmon/ibmpowernv.c
+> +++ linux.git/drivers/hwmon/ibmpowernv.c
+> @@ -30,6 +30,7 @@
+>   #include <linux/platform_device.h>
+>   #include <asm/opal.h>
+>   #include <linux/err.h>
+> +#include <asm/cputhreads.h>
+>
+>   #define MAX_ATTR_LEN	32
+>   #define MAX_LABEL_LEN	64
+> @@ -110,12 +111,54 @@ static ssize_t show_label(struct device
+>   	return sprintf(buf, "%s\n", sdata->label);
+>   }
+>
+> +static int __init get_logical_cpu(unsigned int hwcpu)
+> +{
+> +	int cpu;
+> +
+> +	for_each_possible_cpu(cpu)
+> +		if (get_hard_smp_processor_id(cpu) == hwcpu)
+> +			return cpu;
+> +
+> +	pr_err("%s: could not find a cpu with physical id 0x%x\n",
+> +	       __func__, hwcpu);
+
+I like moving this into a function, but I really dislike this error
+message. If the devicetree data is wrong/bad, the log and the console
+will be clogged with that message. And the user will not be able
+to do anything about it.
+
+Guenter
+
+> +	return -ENOENT;
+> +}
+> +
+>   static void __init make_sensor_label(struct device_node *np,
+>   		    struct sensor_data *sdata, const char *label)
+>   {
+> +	u32 id;
+>   	size_t n;
+>
+>   	n = snprintf(sdata->label, sizeof(sdata->label), "%s", label);
 > +
 > +	/*
-> +	 * If in a READ transaction, add this counter to the list of
-> +	 * counters to read during the next HCALL (i.e commit_txn()).
-> +	 * If not in a READ transaction, go ahead and make the HCALL
-> +	 * to read this counter by itself.
+> +	 * Core temp pretty print
 > +	 */
-> +	h24x7hw = &get_cpu_var(h_24x7_hw);
-> +	if (h24x7hw->txn_err)
-> +		goto out;
+> +	if (!of_property_read_u32(np, "ibm,pir", &id)) {
+> +		int cpuid = get_logical_cpu(id);
 > +
-> +	if (h24x7hw->in_txn) {
-> +		int i;
-> +		int ret;
-> +
-> +		request_buffer = (void *)get_cpu_var(hv_24x7_reqb);
-> +
-> +		ret = add_event_to_24x7_request(event, request_buffer);
-> +		if (ret) {
-> +			h24x7hw->txn_err = ret;
-> +		} else {
+> +		if (cpuid >= 0)
 > +			/*
-> +			 * Assoicate the event with the HCALL request index,
-> +			 * so we can quickly find/update the count in
-> +			 * ->commit_txn().
+> +			 * The digital thermal sensors are associated
+> +			 * with a core. Let's print out the range of
+> +			 * cpu ids corresponding to the hardware
+> +			 * threads of the core.
 > +			 */
-> +			i = request_buffer->num_requests - 1;
-> +			h24x7hw->events[i] = event;
-> +		}
-> +
-> +		put_cpu_var(hv_24x7_reqb);
-> +		goto out;
+> +			n += snprintf(sdata->label + n,
+> +				      sizeof(sdata->label) - n, " %d-%d",
+> +				      cpuid, cpuid + threads_per_core - 1);
+> +		else
+> +			n += snprintf(sdata->label + n,
+> +				      sizeof(sdata->label) - n, " phy%d", id);
 > +	}
->  
->  	now = h_24x7_get_value(event);
->  	update_event_count(event, now);
 > +
-> +out:
-> +	put_cpu_var(h_24x7_hw);
->  }
-
-Most of the pmu ops are called with IRQs disabled, no need to use
-get_cpu_var()/put_cpu_var() which disable/enable preemption.
+> +	/*
+> +	 * Membuffer pretty print
+> +	 */
+> +	if (!of_property_read_u32(np, "ibm,chip-id", &id))
+> +		n += snprintf(sdata->label + n, sizeof(sdata->label) - n,
+> +			      " %d", id & 0xffff);
+>   }
+>
+>   static int get_sensor_index_attr(const char *name, u32 *index,
+>
+>
