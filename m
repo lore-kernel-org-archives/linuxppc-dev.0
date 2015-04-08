@@ -1,29 +1,23 @@
-Return-Path: <ulf.hansson@linaro.org>
-Received: from mail-qk0-f179.google.com (mail-qk0-f179.google.com
- [209.85.220.179])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <sowmini.varadhan@oracle.com>
+Received: from userp1040.oracle.com (userp1040.oracle.com [156.151.31.81])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E62101A0143
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Apr 2015 19:40:18 +1000 (AEST)
-Received: by qku63 with SMTP id 63so78576581qku.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Apr 2015 02:40:16 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 59C301A0515
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Apr 2015 20:12:32 +1000 (AEST)
+Date: Wed, 8 Apr 2015 06:12:21 -0400
+From: Sowmini Varadhan <sowmini.varadhan@oracle.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCHv9 RFC 1/3] Break up monolithic iommu table/lock into
+ finer graularity pools and lock
+Message-ID: <20150408101221.GS29504@oracle.com>
+References: <cover.1428181553.git.sowmini.varadhan@oracle.com>
+ <a259c5bbc3d98dbaedc73a88250a5e7c937ec5f9.1428181553.git.sowmini.varadhan@oracle.com>
+ <1428481825.18187.10.camel@kernel.crashing.org>
 MIME-Version: 1.0
-In-Reply-To: <1427726768-17233-3-git-send-email-stripathi@apm.com>
-References: <1427726768-17233-1-git-send-email-stripathi@apm.com>
- <1427726768-17233-3-git-send-email-stripathi@apm.com>
-Date: Wed, 8 Apr 2015 11:40:16 +0200
-Message-ID: <CAPDyKFoc0V5BdKCO8v92Y1qHzEPgwxRdYR3cCj8nCyU-s25NuQ@mail.gmail.com>
-Subject: Re: [PATCH v2 2/2] mmc: host: Add some quirks to be read from fdt in
- sdhci-pltm.c
-From: Ulf Hansson <ulf.hansson@linaro.org>
-To: Suman Tripathi <stripathi@apm.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- mlangsdo@redhat.com, Arnd Bergmann <arnd@arndb.de>, jcm@redhat.com,
- Anton Vorontsov <anton@enomsg.org>, linux-mmc <linux-mmc@vger.kernel.org>,
- Chris Ball <chris@printf.net>, patches@apm.com, ddutile@redhat.com,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1428481825.18187.10.camel@kernel.crashing.org>
+Cc: aik@au1.ibm.com, anton@au1.ibm.com, paulus@samba.org,
+ sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,51 +27,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 30 March 2015 at 16:46, Suman Tripathi <stripathi@apm.com> wrote:
-> This patch adds some quirks support to be read from fdt.
->
-> Signed-off-by: Suman Tripathi <stripathi@apm.com>
-> ---
->  drivers/mmc/host/sdhci-pltfm.c | 15 +++++++++++++++
->  1 file changed, 15 insertions(+)
->
-> diff --git a/drivers/mmc/host/sdhci-pltfm.c b/drivers/mmc/host/sdhci-pltfm.c
-> index bef250e..9f6a4b9 100644
-> --- a/drivers/mmc/host/sdhci-pltfm.c
-> +++ b/drivers/mmc/host/sdhci-pltfm.c
-> @@ -85,6 +85,21 @@ void sdhci_get_of_property(struct platform_device *pdev)
->
->                 if (of_get_property(np, "broken-cd", NULL))
->                         host->quirks |= SDHCI_QUIRK_BROKEN_CARD_DETECTION;
-> +
-> +               if (of_get_property(np, "delay-after-power", NULL))
-> +                       host->quirks |= SDHCI_QUIRK_DELAY_AFTER_POWER;
-> +
-> +               if (of_get_property(np, "no-hispd", NULL))
-> +                       host->quirks |= SDHCI_QUIRK_NO_HISPD_BIT;
-> +
-> +               if (of_get_property(np, "broken-adma", NULL))
-> +                       host->quirks |= SDHCI_QUIRK_BROKEN_ADMA;
-> +
-> +               if (of_get_property(np, "broken-dma", NULL))
-> +                       host->quirks |= SDHCI_QUIRK_BROKEN_DMA;
-> +
-> +               if (of_get_property(np, "no-cmd23", NULL))
-> +                       host->quirks2 |= SDHCI_QUIRK2_HOST_NO_CMD23;
+On (04/08/15 18:30), Benjamin Herrenschmidt wrote:
+> 
+> I'm happy with your last version, feel free to add my
+> 
+> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-Can't at least some of these be distinguished from what sdhci variant
-that is being used? Instead of having them in DT...
+sounds good, I'll do this and rese a non-RFC version today.
 
-Kind regards
-Uffe
+Thanks for all the feedback - it was very useful to me, and
+I'm much happier with the end-result.
 
->
->                 if (of_get_property(np, "no-1-8-v", NULL))
->                         host->quirks2 |= SDHCI_QUIRK2_NO_1_8_V;
-> --
-> 1.8.2.1
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-mmc" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+--Sowmini
