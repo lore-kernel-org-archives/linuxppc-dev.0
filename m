@@ -1,19 +1,20 @@
 Return-Path: <clg@fr.ibm.com>
-Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
+Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2FED11A04F2
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3491C1A056E
  for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Apr 2015 03:20:02 +1000 (AEST)
 Received: from /spool/local
- by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <clg@fr.ibm.com>;
  Wed, 8 Apr 2015 18:19:59 +0100
 From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@fr.ibm.com>
 To: lm-sensors@lm-sensors.org
-Subject: [PATCH v5 0/4] hwmon: (ibmpowernv) add DTS support
-Date: Wed,  8 Apr 2015 19:19:46 +0200
-Message-Id: <1428513590-5773-1-git-send-email-clg@fr.ibm.com>
+Subject: [PATCH v5 1/4] hwmon: (ibmpowernv) add a helper routine
+ create_hwmon_attr
+Date: Wed,  8 Apr 2015 19:19:47 +0200
+Message-Id: <1428513590-5773-2-git-send-email-clg@fr.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Cc: Stewart Smith <stewart@linux.vnet.ibm.com>,
@@ -30,53 +31,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello !
+This should shorten a bit the code necessary to create a hmwon attribute.
 
-These patches extend the ibmpowernv driver to support the new OPAL firmware 
-which now exposes in its device tree the Digital Temperature Sensors of 
-a P8 system.
-
-They are based on Linux 4.0.0-rc7 + the initial cleanup serie :
-
-     http://lists.lm-sensors.org/pipermail/lm-sensors/2015-March/043670.html
-
-and were tested on IBM Power and Open Power systems running Trusty.
-
-Cheers,
-
-C.
-
- Changes since v4:
-
- - fixed comparison between signed and unsigned integer in 
-   get_logical_cpu()
-
- Changes since v3:
-
- - removed error message in case of an unknown physical cpu number
-
- Changes since v2:
-
- - fix bogus logical cpu retrieval 
- - use 'threads_per_core' to print out cpu range
+Signed-off-by: Cédric Le Goater <clg@fr.ibm.com>
+---
 
  Changes since v1:
 
- - check cpu validity before printing out the attribute label. 
-   if invalid, use a "phy" prefix to distinguish a linux cpu 
-   number from a physical cpu number. 
- - fixed alignment
- - fixed comparison between signed and unsigned integer on opal_index 
+ - fix alignment of create_hwmon_attr() prototype
 
+ drivers/hwmon/ibmpowernv.c |   24 ++++++++++++++++--------
+ 1 file changed, 16 insertions(+), 8 deletions(-)
 
-Cédric Le Goater (4):
-  hwmon: (ibmpowernv) add a helper routine create_hwmon_attr
-  hwmon: (ibmpowernv) add support for the new device tree
-  hwmon: (ibmpowernv) add a label attribute
-  hwmon: (ibmpowernv) pretty print labels
-
- drivers/hwmon/ibmpowernv.c |  166 +++++++++++++++++++++++++++++++++++++++-----
- 1 file changed, 148 insertions(+), 18 deletions(-)
-
+diff --git a/drivers/hwmon/ibmpowernv.c b/drivers/hwmon/ibmpowernv.c
+index a6e7245f172d..7822474c4ac8 100644
+--- a/drivers/hwmon/ibmpowernv.c
++++ b/drivers/hwmon/ibmpowernv.c
+@@ -232,6 +232,21 @@ static int populate_attr_groups(struct platform_device *pdev)
+ 	return 0;
+ }
+ 
++static void create_hwmon_attr(struct sensor_data *sdata, const char *attr_name,
++			      ssize_t (*show)(struct device *dev,
++					      struct device_attribute *attr,
++					      char *buf))
++{
++	snprintf(sdata->name, MAX_ATTR_LEN, "%s%d_%s",
++		 sensor_groups[sdata->type].name, sdata->hwmon_index,
++		 attr_name);
++
++	sysfs_attr_init(&sdata->dev_attr.attr);
++	sdata->dev_attr.attr.name = sdata->name;
++	sdata->dev_attr.attr.mode = S_IRUGO;
++	sdata->dev_attr.show = show;
++}
++
+ /*
+  * Iterate through the device tree for each child of 'sensors' node, create
+  * a sysfs attribute file, the file is named by translating the DT node name
+@@ -290,14 +305,7 @@ static int create_device_attrs(struct platform_device *pdev)
+ 		sdata[count].hwmon_index =
+ 			get_sensor_hwmon_index(&sdata[count], sdata, count);
+ 
+-		snprintf(sdata[count].name, MAX_ATTR_LEN, "%s%d_%s",
+-			 sensor_groups[type].name, sdata[count].hwmon_index,
+-			 attr_name);
+-
+-		sysfs_attr_init(&sdata[count].dev_attr.attr);
+-		sdata[count].dev_attr.attr.name = sdata[count].name;
+-		sdata[count].dev_attr.attr.mode = S_IRUGO;
+-		sdata[count].dev_attr.show = show_sensor;
++		create_hwmon_attr(&sdata[count], attr_name, show_sensor);
+ 
+ 		pgroups[type]->attrs[sensor_groups[type].attr_count++] =
+ 				&sdata[count++].dev_attr.attr;
 -- 
 1.7.10.4
