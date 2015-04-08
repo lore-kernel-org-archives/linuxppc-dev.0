@@ -1,22 +1,19 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0147.outbound.protection.outlook.com [207.46.100.147])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <yinghai@kernel.org>
+Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B2E501A0058
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Apr 2015 10:02:27 +1000 (AEST)
-Message-ID: <1428451332.22867.490.camel@freescale.com>
-Subject: Re: Old regression with MTD devices disappearing from a Kurobox HD/HG
-From: Scott Wood <scottwood@freescale.com>
-To: =?ISO-8859-1?Q?Rog=E9rio?= Brito <rbrito@ime.usp.br>
-Date: Tue, 7 Apr 2015 19:02:12 -0500
-In-Reply-To: <20150407235812.GA3443@ime.usp.br>
-References: <20150404054022.GA15572@ime.usp.br>
- <1428446044.22867.475.camel@freescale.com>
- <20150407235812.GA3443@ime.usp.br>
-Content-Type: text/plain; charset="UTF-8"
-MIME-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 26C521A09FD
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Apr 2015 10:25:09 +1000 (AEST)
+From: Yinghai Lu <yinghai@kernel.org>
+To: Bjorn Helgaas <bhelgaas@google.com>
+Subject: [PATCH] powerpc/PCI: Add IORESOURCE_MEM_64 for 64-bit resource in of
+ parsing
+Date: Tue,  7 Apr 2015 17:24:29 -0700
+Message-Id: <1428452669-24824-1-git-send-email-yinghai@kernel.org>
+Cc: linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>, Paul Mackerras <paulus@samba.org>,
+ Anton Blanchard <anton@samba.org>, Yijing Wang <wangyijing@huawei.com>,
+ Yinghai Lu <yinghai@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,61 +23,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-04-07 at 20:58 -0300, Rogério Brito wrote:
-> Dear Scott.
-> 
-> First of all, thank you so very much for your reply.
-> 
-> On Apr 07 2015, Scott Wood wrote:
-> > On Sat, 2015-04-04 at 02:40 -0300, Rogério Brito wrote:
-> > > ,----
-> > > | physmap platform flash device: 00400000 at ffc00000
-> > > | physmap-flash.0: Found 1 x16 devices at 0x0 in 8-bit bank. Manufacturer ID 0x000004 Chip ID 0x00007e
-> > > | Amd/Fujitsu Extended Query Table at 0x0040
-> > > |   Amd/Fujitsu Extended Query version 1.3.
-> > > | physmap-flash.0: Swapping erase regions for top-boot CFI table.
-> > > | number of CFI chips: 1
-> > > `----
-> > > 
-> > > I note that arch/powerpc/boot/dts/kuroboxH{D,G}.dts have, as one of their
-> > > first lines, the following comment: [0][1]
-> > > 
-> > >     XXXX add flash parts, rtc, ??
-> > > 
-> > > [0]: http://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/arch/powerpc/boot/dts/kuroboxHD.dts?id=1cced5015b171415169d938fb179c44fe060dc15#n17
-> > > [1]: http://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/arch/powerpc/boot/dts/kuroboxHG.dts?id=1cced5015b171415169d938fb179c44fe060dc15#n17
-> > > 
-> > > Is this a problem that can be fixed via additions to the DTS files?  Or
-> > > would the problem be solved in a different way?
-> > 
-> > What are your bootargs?
-> 
-> My kernel command line is (specified via uboot) is the following:
-> 
-> ,----
-> | root=/dev/sda1 netconsole=6666@192.168.11.150/,@192.168.11.149/ rtc-rs5c372.probe=0,0x32
-> `----
-> 
-> Only that.
-> 
-> > I suggest putting the flash device into the dts (instead of using
-> > physmap), and specifying the partitions on the command-line using
-> > mtdparts.
-> 
-> This is good to know. Is there any reasonable dts that I can copy/adapt?
+For device resource PREF bit setting under bridge 64-bit pref resource,
+we need to make sure only set PREF for 64bit resource, so set IORESOUCE_MEM_64
+for 64bit resource during of device resource flags parsing.
 
-I'm not familiar with how flash is connected on this chip, so I don't
-have a specific recommendation other than to read the binding and look
-at several examples.
+Link: https://bugzilla.kernel.org/show_bug.cgi?id=96261
+Link: https://bugzilla.kernel.org/show_bug.cgi?id=96241
+Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Cc: Yijing Wang <wangyijing@huawei.com>
+Cc: Anton Blanchard <anton@samba.org>
+Cc: linuxppc-dev@lists.ozlabs.org
 
->  I just started to read on the syntax of the dts files and I am still
-> not confident that I can write my own without messing everything.
-> 
-> Another question: would putting the description of the flash device into the
-> dts file be helpful to remove any code from the kernel?
+---
+ arch/powerpc/kernel/pci_of_scan.c |    4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-If you currently have a custom flash map driver, you could get rid of
-that, but I suspect that's already gone away due to the fact that it's
-no longer working.
-
--Scott
+Index: linux-2.6/arch/powerpc/kernel/pci_of_scan.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/kernel/pci_of_scan.c
++++ linux-2.6/arch/powerpc/kernel/pci_of_scan.c
+@@ -44,8 +44,10 @@ static unsigned int pci_parse_of_flags(u
+ 
+ 	if (addr0 & 0x02000000) {
+ 		flags = IORESOURCE_MEM | PCI_BASE_ADDRESS_SPACE_MEMORY;
+-		flags |= (addr0 >> 22) & PCI_BASE_ADDRESS_MEM_TYPE_64;
+ 		flags |= (addr0 >> 28) & PCI_BASE_ADDRESS_MEM_TYPE_1M;
++		if (addr0 & 0x01000000)
++			flags |= IORESOURCE_MEM_64
++				 | PCI_BASE_ADDRESS_MEM_TYPE_64;
+ 		if (addr0 & 0x40000000)
+ 			flags |= IORESOURCE_PREFETCH
+ 				 | PCI_BASE_ADDRESS_MEM_PREFETCH;
