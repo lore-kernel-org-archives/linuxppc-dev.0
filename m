@@ -1,26 +1,37 @@
 Return-Path: <clg@fr.ibm.com>
-Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
+Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AB0911A012A
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Apr 2015 17:00:39 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9EB4B1A0BB9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Apr 2015 17:31:32 +1000 (AEST)
 Received: from /spool/local
- by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <clg@fr.ibm.com>;
- Wed, 8 Apr 2015 08:00:35 +0100
+ Wed, 8 Apr 2015 08:31:29 +0100
+Received: from b06cxnps4075.portsmouth.uk.ibm.com
+ (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
+ by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id 91ADB2190046
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Apr 2015 08:31:10 +0100 (BST)
+Received: from d06av05.portsmouth.uk.ibm.com (d06av05.portsmouth.uk.ibm.com
+ [9.149.37.229])
+ by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t387VO3q3211554
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 8 Apr 2015 07:31:24 GMT
+Received: from d06av05.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av05.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t387VN0f015805
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 8 Apr 2015 01:31:23 -0600
 From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@fr.ibm.com>
-To: lm-sensors@lm-sensors.org
-Subject: [PATCH v3] hwmon: (ibmpowernv) pretty print labels
-Date: Wed,  8 Apr 2015 09:00:27 +0200
-Message-Id: <1428476427-23311-1-git-send-email-clg@fr.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc/powernv: convert OPAL codes returned by sysparam calls
+Date: Wed,  8 Apr 2015 09:31:10 +0200
+Message-Id: <1428478270-26645-1-git-send-email-clg@fr.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Cc: Stewart Smith <stewart@linux.vnet.ibm.com>,
+Cc: Neelesh Gupta <neelegup@linux.vnet.ibm.com>,
  =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@fr.ibm.com>,
- Jean Delvare <jdelvare@suse.de>, Neelesh Gupta <neelegup@linux.vnet.ibm.com>,
- skiboot@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org,
- Guenter Roeck <linux@roeck-us.net>
+ Joel Stanley <joel@jms.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,99 +41,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The new OPAL device tree adds a few properties which can be used to add
-extra information on the sensor label.
-
-In the case of a cpu core sensor, the firmware exposes the physical 
-identifier of the core in the "ibm,pir" property. The driver 
-translates this identifier in a linux cpu number and prints out a 
-range corresponding to the hardware threads of the core (as they
-share the same sensor).
-
-The numbering gives a hint on the localization of the core in the 
-system (which socket, which chip). 
+The opal_{get,set}_param calls return internal error codes which need
+to be translated in errnos in Linux. 
 
 Signed-off-by: Cédric Le Goater <clg@fr.ibm.com>
 ---
+ arch/powerpc/platforms/powernv/opal-sysparam.c |   12 ++++++++----
+ arch/powerpc/platforms/powernv/opal.c          |    1 +
+ 2 files changed, 9 insertions(+), 4 deletions(-)
 
- Changes since v2:
-
- - fix bogus logical cpu retrieval 
- - use 'threads_per_core' to print out cpu range
-
- Changes since v1:
-
- - check cpu validity before printing out the attribute label. 
-   if invalid, use a "phy" prefix to distinguish a linux cpu 
-   number from a physical cpu number. 
-
- drivers/hwmon/ibmpowernv.c |   43 +++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 43 insertions(+)
-
-Index: linux.git/drivers/hwmon/ibmpowernv.c
+Index: linux.git/arch/powerpc/platforms/powernv/opal-sysparam.c
 ===================================================================
---- linux.git.orig/drivers/hwmon/ibmpowernv.c
-+++ linux.git/drivers/hwmon/ibmpowernv.c
-@@ -30,6 +30,7 @@
- #include <linux/platform_device.h>
- #include <asm/opal.h>
- #include <linux/err.h>
-+#include <asm/cputhreads.h>
+--- linux.git.orig/arch/powerpc/platforms/powernv/opal-sysparam.c
++++ linux.git/arch/powerpc/platforms/powernv/opal-sysparam.c
+@@ -55,8 +55,10 @@ static ssize_t opal_get_sys_param(u32 pa
+ 	}
  
- #define MAX_ATTR_LEN	32
- #define MAX_LABEL_LEN	64
-@@ -110,12 +111,54 @@ static ssize_t show_label(struct device
- 	return sprintf(buf, "%s\n", sdata->label);
- }
- 
-+static int __init get_logical_cpu(unsigned int hwcpu)
-+{
-+	int cpu;
-+
-+	for_each_possible_cpu(cpu)
-+		if (get_hard_smp_processor_id(cpu) == hwcpu)
-+			return cpu;
-+
-+	pr_err("%s: could not find a cpu with physical id 0x%x\n",
-+	       __func__, hwcpu);
-+	return -ENOENT;
-+}
-+
- static void __init make_sensor_label(struct device_node *np,
- 		    struct sensor_data *sdata, const char *label)
- {
-+	u32 id;
- 	size_t n;
- 
- 	n = snprintf(sdata->label, sizeof(sdata->label), "%s", label);
-+
-+	/*
-+	 * Core temp pretty print
-+	 */
-+	if (!of_property_read_u32(np, "ibm,pir", &id)) {
-+		int cpuid = get_logical_cpu(id);
-+
-+		if (cpuid >= 0)
-+			/*
-+			 * The digital thermal sensors are associated
-+			 * with a core. Let's print out the range of
-+			 * cpu ids corresponding to the hardware
-+			 * threads of the core.
-+			 */
-+			n += snprintf(sdata->label + n,
-+				      sizeof(sdata->label) - n, " %d-%d",
-+				      cpuid, cpuid + threads_per_core - 1);
-+		else
-+			n += snprintf(sdata->label + n,
-+				      sizeof(sdata->label) - n, " phy%d", id);
+ 	ret = opal_get_param(token, param_id, (u64)buffer, length);
+-	if (ret != OPAL_ASYNC_COMPLETION)
++	if (ret != OPAL_ASYNC_COMPLETION) {
++		ret = opal_error_code(ret);
+ 		goto out_token;
 +	}
-+
-+	/*
-+	 * Membuffer pretty print
-+	 */
-+	if (!of_property_read_u32(np, "ibm,chip-id", &id))
-+		n += snprintf(sdata->label + n, sizeof(sdata->label) - n,
-+			      " %d", id & 0xffff);
- }
  
- static int get_sensor_index_attr(const char *name, u32 *index,
+ 	ret = opal_async_wait_response(token, &msg);
+ 	if (ret) {
+@@ -65,7 +67,7 @@ static ssize_t opal_get_sys_param(u32 pa
+ 		goto out_token;
+ 	}
+ 
+-	ret = be64_to_cpu(msg.params[1]);
++	ret = opal_error_code(be64_to_cpu(msg.params[1]));
+ 
+ out_token:
+ 	opal_async_release_token(token);
+@@ -89,8 +91,10 @@ static int opal_set_sys_param(u32 param_
+ 
+ 	ret = opal_set_param(token, param_id, (u64)buffer, length);
+ 
+-	if (ret != OPAL_ASYNC_COMPLETION)
++	if (ret != OPAL_ASYNC_COMPLETION) {
++		ret = opal_error_code(ret);
+ 		goto out_token;
++	}
+ 
+ 	ret = opal_async_wait_response(token, &msg);
+ 	if (ret) {
+@@ -99,7 +103,7 @@ static int opal_set_sys_param(u32 param_
+ 		goto out_token;
+ 	}
+ 
+-	ret = be64_to_cpu(msg.params[1]);
++	ret = opal_error_code(be64_to_cpu(msg.params[1]));
+ 
+ out_token:
+ 	opal_async_release_token(token);
+Index: linux.git/arch/powerpc/platforms/powernv/opal.c
+===================================================================
+--- linux.git.orig/arch/powerpc/platforms/powernv/opal.c
++++ linux.git/arch/powerpc/platforms/powernv/opal.c
+@@ -903,6 +903,7 @@ int opal_error_code(int rc)
+ 	case OPAL_ASYNC_COMPLETION:	return -EINPROGRESS;
+ 	case OPAL_BUSY_EVENT:		return -EBUSY;
+ 	case OPAL_NO_MEM:		return -ENOMEM;
++	case OPAL_PERMISSION:		return -EPERM;
+ 
+ 	case OPAL_UNSUPPORTED:		return -EIO;
+ 	case OPAL_HARDWARE:		return -EIO;
