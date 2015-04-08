@@ -1,23 +1,23 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 996051A0BA2
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Apr 2015 13:31:45 +1000 (AEST)
-Message-ID: <1428463905.29968.2.camel@ellerman.id.au>
-Subject: Re: [PATCH v2 04/19] powerpc: Create
- pci_controller_ops.dma_dev_setup and shim
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Arnd Bergmann <arnd@arndb.de>
-Date: Wed, 08 Apr 2015 13:31:45 +1000
-In-Reply-To: <2489424.TEiBTfgpvS@wuerfel>
-References: <1427778057-9505-1-git-send-email-dja@axtens.net>
- <5500778.Q4t9Fg7Irn@wuerfel> <1428366696.22268.28.camel@axtens.net>
- <2489424.TEiBTfgpvS@wuerfel>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8870A1A0BB7
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Apr 2015 13:50:20 +1000 (AEST)
+Message-ID: <1428464944.4947.69.camel@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc/PCI: Add IORESOURCE_MEM_64 for 64-bit resource
+ in of parsing
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Yinghai Lu <yinghai@kernel.org>
+Date: Wed, 08 Apr 2015 13:49:04 +1000
+In-Reply-To: <1428452669-24824-1-git-send-email-yinghai@kernel.org>
+References: <1428452669-24824-1-git-send-email-yinghai@kernel.org>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: wangyijing@huawei.com, linux-pci@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, Daniel Axtens <dja@axtens.net>
+Cc: linux-pci@vger.kernel.org, Gavin Shan <gwshan@linux.vnet.ibm.com>,
+ Yijing Wang <wangyijing@huawei.com>, Paul Mackerras <paulus@samba.org>,
+ Anton Blanchard <anton@samba.org>, Bjorn Helgaas <bhelgaas@google.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,42 +27,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-04-07 at 09:44 +0200, Arnd Bergmann wrote:
-> On Tuesday 07 April 2015 10:31:36 Daniel Axtens wrote:
-> > > Please see https://patchwork.ozlabs.org/patch/431333/ for related work.
-> > > 
-> > I'm familiar with that patch series - I've been helping Yijing get it up
-> > to speed on PowerPC.
-> > 
-> > 
-> > > I think it would be better not to introduce another architecture-specific
-> > > pci host bridge operations structure, but instead consolidate into
-> > > the one that is already there. We are also adding a generic way to set up
-> > > PCI DMA, so it would seems reasonable to hook into that place.
-> > I see what you're getting at, and I agree that we want to move towards
-> > generic operations. 
-> > 
-> > However, I think this should go in as is at this point, for two main
-> > reasons:
-> > 
-> > 1) This is a good midpoint that makes it easier to move to a generic
-> > structure. Our arch specific stuff is quirky and difficult. This patch
-> > series does a lot to reduce the complexity, and would make it very easy
-> > to move these ops into a generic structure at some future point. 
-> > 
-> > 2) Trying to go generic at this point risks making the change set so
-> > complex and wide ranging that it will really struggle to get in. For
-> > example, Yijing's patch set, despite not changing any of the quirky
-> > stuff in PowerPC, is already quite long, and will require agreement from
-> > a lot of people before it can go in.
-> > 
-> > Much as I would like to have everything as generic as possible, if we
-> > were to try to do the whole job in one go, it'd become a big, difficult,
-> > messy patch set, and would be less likely to happen than if we were to
-> > do it in two steps.
+On Tue, 2015-04-07 at 17:24 -0700, Yinghai Lu wrote:
+> For device resource PREF bit setting under bridge 64-bit pref resource,
+> we need to make sure only set PREF for 64bit resource, so set IORESOUCE_MEM_64
+> for 64bit resource during of device resource flags parsing.
+
+> Link: https://bugzilla.kernel.org/show_bug.cgi?id=96261
+> Link: https://bugzilla.kernel.org/show_bug.cgi?id=96241
+
+These patches (from the above BZ) aren't right for one thing: You
+shouldn't set the IORESOURCE_PREFETCH in the resource itself. This
+*will* break stuff.
+
+You can put the resource in a prefetchable region indeed, if you
+are on a PCIe-only path (though we should have some arch flag
+to check that the host bridge indeed doesn't do any prefetch,
+on powerpc we are good there).
+
+But you can't set the "prefetch" bit on the resource because that would
+be losing the indication that this resource has side effects. This bit
+is used in some cases to enable store gathering when mmap'ing via sysfs
+and can be used for similar uses by drivers.
+
+It's one thing to say "you can put non-prefetch BARs in prefetch windows
+on that path", it's another one to completely make the BAR looks like
+it's prefetchable when it's not.
+
+Cheers,
+Ben.
+
+
+> Signed-off-by: Yinghai Lu <yinghai@kernel.org>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Cc: Paul Mackerras <paulus@samba.org>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
+> Cc: Yijing Wang <wangyijing@huawei.com>
+> Cc: Anton Blanchard <anton@samba.org>
+> Cc: linuxppc-dev@lists.ozlabs.org
 > 
-> Ok, fair enough. Let's do this one first then.
-
-Thanks Arnd.
-
-cheers
+> ---
+>  arch/powerpc/kernel/pci_of_scan.c |    4 +++-
+>  1 file changed, 3 insertions(+), 1 deletion(-)
+> 
+> Index: linux-2.6/arch/powerpc/kernel/pci_of_scan.c
+> ===================================================================
+> --- linux-2.6.orig/arch/powerpc/kernel/pci_of_scan.c
+> +++ linux-2.6/arch/powerpc/kernel/pci_of_scan.c
+> @@ -44,8 +44,10 @@ static unsigned int pci_parse_of_flags(u
+>  
+>  	if (addr0 & 0x02000000) {
+>  		flags = IORESOURCE_MEM | PCI_BASE_ADDRESS_SPACE_MEMORY;
+> -		flags |= (addr0 >> 22) & PCI_BASE_ADDRESS_MEM_TYPE_64;
+>  		flags |= (addr0 >> 28) & PCI_BASE_ADDRESS_MEM_TYPE_1M;
+> +		if (addr0 & 0x01000000)
+> +			flags |= IORESOURCE_MEM_64
+> +				 | PCI_BASE_ADDRESS_MEM_TYPE_64;
+>  		if (addr0 & 0x40000000)
+>  			flags |= IORESOURCE_PREFETCH
+>  				 | PCI_BASE_ADDRESS_MEM_PREFETCH;
