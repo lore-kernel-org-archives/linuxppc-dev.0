@@ -1,22 +1,29 @@
-Return-Path: <Igal.Liberman@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0132.outbound.protection.outlook.com [157.56.111.132])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <ulf.hansson@linaro.org>
+Received: from mail-qk0-f179.google.com (mail-qk0-f179.google.com
+ [209.85.220.179])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 90C7E1A0629
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Apr 2015 18:54:50 +1000 (AEST)
-From: "Igal.Liberman@freescale.com" <Igal.Liberman@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: RE: [PATCH] dt/bindings: qoriq-clock: Add binding for FMan clock mux
-Date: Wed, 8 Apr 2015 08:54:41 +0000
-Message-ID: <DM2PR03MB383BB3A8993435B4F7D2EFDE6FC0@DM2PR03MB383.namprd03.prod.outlook.com>
-References: <1428379720-3247-1-git-send-email-igal.liberman@freescale.com>
- <1428446404.22867.479.camel@freescale.com>
-In-Reply-To: <1428446404.22867.479.camel@freescale.com>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id E62101A0143
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Apr 2015 19:40:18 +1000 (AEST)
+Received: by qku63 with SMTP id 63so78576581qku.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Apr 2015 02:40:16 -0700 (PDT)
 MIME-Version: 1.0
+In-Reply-To: <1427726768-17233-3-git-send-email-stripathi@apm.com>
+References: <1427726768-17233-1-git-send-email-stripathi@apm.com>
+ <1427726768-17233-3-git-send-email-stripathi@apm.com>
+Date: Wed, 8 Apr 2015 11:40:16 +0200
+Message-ID: <CAPDyKFoc0V5BdKCO8v92Y1qHzEPgwxRdYR3cCj8nCyU-s25NuQ@mail.gmail.com>
+Subject: Re: [PATCH v2 2/2] mmc: host: Add some quirks to be read from fdt in
+ sdhci-pltm.c
+From: Ulf Hansson <ulf.hansson@linaro.org>
+To: Suman Tripathi <stripathi@apm.com>
+Content-Type: text/plain; charset=UTF-8
 Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+ mlangsdo@redhat.com, Arnd Bergmann <arnd@arndb.de>, jcm@redhat.com,
+ Anton Vorontsov <anton@enomsg.org>, linux-mmc <linux-mmc@vger.kernel.org>,
+ Chris Ball <chris@printf.net>, patches@apm.com, ddutile@redhat.com,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,46 +33,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-SGkgU2NvdHQNCg0KUmVnYXJkcywNCklnYWwgTGliZXJtYW4uDQoNCj4gLS0tLS1PcmlnaW5hbCBN
-ZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0MjENCj4gU2VudDogV2VkbmVzZGF5
-LCBBcHJpbCAwOCwgMjAxNSAxOjQwIEFNDQo+IFRvOiBMaWJlcm1hbiBJZ2FsLUIzMTk1MA0KPiBD
-YzogZGV2aWNldHJlZUB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMu
-b3JnDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0hdIGR0L2JpbmRpbmdzOiBxb3JpcS1jbG9jazogQWRk
-IGJpbmRpbmcgZm9yIEZNYW4gY2xvY2sNCj4gbXV4DQo+IA0KPiBPbiBUdWUsIDIwMTUtMDQtMDcg
-YXQgMDc6MDggKzAzMDAsIElnYWwuTGliZXJtYW4gd3JvdGU6DQo+ID4gRnJvbTogSWdhbCBMaWJl
-cm1hbiA8SWdhbC5MaWJlcm1hbkBmcmVlc2NhbGUuY29tPg0KPiA+DQo+ID4gU2lnbmVkLW9mZi1i
-eTogSWdhbCBMaWJlcm1hbiA8SWdhbC5MaWJlcm1hbkBmcmVlc2NhbGUuY29tPg0KPiA+IC0tLQ0K
-PiA+ICAuLi4vZGV2aWNldHJlZS9iaW5kaW5ncy9jbG9jay9xb3JpcS1jbG9jay50eHQgICAgICB8
-ICAgNTkNCj4gKysrKysrKysrKysrKysrKysrKysNCj4gPiAgMSBmaWxlIGNoYW5nZWQsIDU5IGlu
-c2VydGlvbnMoKykNCj4gPg0KPiA+IGRpZmYgLS1naXQgYS9Eb2N1bWVudGF0aW9uL2RldmljZXRy
-ZWUvYmluZGluZ3MvY2xvY2svcW9yaXEtY2xvY2sudHh0DQo+ID4gYi9Eb2N1bWVudGF0aW9uL2Rl
-dmljZXRyZWUvYmluZGluZ3MvY2xvY2svcW9yaXEtY2xvY2sudHh0DQo+ID4gaW5kZXggZGY0YTI1
-OS4uYTdlODRjZSAxMDA2NDQNCj4gPiAtLS0gYS9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmlu
-ZGluZ3MvY2xvY2svcW9yaXEtY2xvY2sudHh0DQo+ID4gKysrIGIvRG9jdW1lbnRhdGlvbi9kZXZp
-Y2V0cmVlL2JpbmRpbmdzL2Nsb2NrL3FvcmlxLWNsb2NrLnR4dA0KPiA+IEBAIC02NSw2ICs2NSw3
-IEBAIFJlcXVpcmVkIHByb3BlcnRpZXM6DQo+ID4gIAkJSXQgdGFrZXMgcGFyZW50J3MgY2xvY2st
-ZnJlcXVlbmN5IGFzIGl0cyBjbG9jay4NCj4gPiAgCSogImZzbCxxb3JpcS1wbGF0Zm9ybS1wbGwt
-MS4wIiBmb3IgdGhlIHBsYXRmb3JtIFBMTCBjbG9jayAodjEuMCkNCj4gPiAgCSogImZzbCxxb3Jp
-cS1wbGF0Zm9ybS1wbGwtMi4wIiBmb3IgdGhlIHBsYXRmb3JtIFBMTCBjbG9jayAodjIuMCkNCj4g
-PiArCSogImZzbCxmbWFuLWNsay1tdXgiIGZvciB0aGUgRnJhbWUgTWFuYWdlciBjbG9jay4NCj4g
-DQo+IElzIHRoZXJlIGFueSB2ZXJzaW9uaW5nIHJlcXVpcmVkIG9uIHRoaXM/DQo+IA0KDQpJIGRv
-bid0IHRoaW5rIHdlIG5lZWQgdmVyc2lvbmluZyBoZXJlLg0KDQo+ID4gIC0gI2Nsb2NrLWNlbGxz
-OiBGcm9tIGNvbW1vbiBjbG9jayBiaW5kaW5nLiBUaGUgbnVtYmVyIG9mIGNlbGxzIGluIGENCj4g
-PiAgCWNsb2NrLXNwZWNpZmllci4gU2hvdWxkIGJlIDwwPiBmb3IgImZzbCxxb3JpcS1zeXNjbGst
-WzEsMl0uMCINCj4gPiAgCWNsb2Nrcywgb3IgPDE+IGZvciAiZnNsLHFvcmlxLWNvcmUtcGxsLVsx
-LDJdLjAiIGNsb2Nrcy4NCj4gPiBAQCAtNzMsNiArNzQsNTIgQEAgUmVxdWlyZWQgcHJvcGVydGll
-czoNCj4gPiAgCSogMCAtIGVxdWFsIHRvIHRoZSBQTEwgZnJlcXVlbmN5DQo+ID4gIAkqIDEgLSBl
-cXVhbCB0byB0aGUgUExMIGZyZXF1ZW5jeSBkaXZpZGVkIGJ5IDINCj4gPiAgCSogMiAtIGVxdWFs
-IHRvIHRoZSBQTEwgZnJlcXVlbmN5IGRpdmlkZWQgYnkgNA0KPiA+ICsJRm9yICJmc2wsZm1hbi1j
-bGstbXV4IiBjbG9ja3MsIHRoZSBzaW5nbGUgY2xvY2stc3BlY2lmaWVyIGNlbGwgbWF5DQo+ID4g
-Kwl0YWtlIHZhbHVlcyBhY2NvcmRpbmcgdGhlIFJlc2V0IENvbmZpZ3VyYXRpb24gV29yZCBvZiB0
-aGUgc3BlY2lmaWMNCj4gPiArCWRldmljZToNCj4gDQo+IGZzbCxmbWFuLWNsay1tdXggbm9kZXMg
-aGF2ZSAjY2xvY2stY2VsbHMgb2YgemVybywgc28gSSBkb24ndCB1bmRlcnN0YW5kIHRoaXMNCj4g
-c2VjdGlvbi4NCj4gDQo+IElmIHRoaXMgaXMgbWVhbnQgdG8gcmVmZXIgdG8gdGhlIGNsb2NrIHNw
-ZWNpZmllciB0aGF0IGZzbCxmbWFuLWNsay1tdXggbm9kZXMgdXNlDQo+IGluIHRoZWlyIGlucHV0
-IGNsb2NrcywgdGhhdCBpcyBkZXRlcm1pbmVkIGJ5IHRoZSBjbG9jayBwcm92aWRlciBhbmQgbm90
-IHRoZQ0KPiBjbG9jayBjb25zdW1lci4NCj4gDQoNClRoaXMgc2VjdGlvbiByZWZlcnMgdG8gdGhl
-IGNsb2NrIHByb3ZpZGVyLg0KSSBuZWVkIHRvIG1vdmUgdGhlIHRleHQgYmVsbG93IHRvIG1vcmUg
-YXBwcm9wcmlhdGUgcGxhY2UsIG5vdCB1bmRlciAjY2xvY2stY2VsbHMuIA0KQW55IGNvbW1lbnRz
-IG9uIHRoZSBjb250ZW50IGl0c2VsZj8gDQoNCj4gLVNjb3R0DQo+IA0KDQpUaGFua3MsIElnYWwN
-Cg==
+On 30 March 2015 at 16:46, Suman Tripathi <stripathi@apm.com> wrote:
+> This patch adds some quirks support to be read from fdt.
+>
+> Signed-off-by: Suman Tripathi <stripathi@apm.com>
+> ---
+>  drivers/mmc/host/sdhci-pltfm.c | 15 +++++++++++++++
+>  1 file changed, 15 insertions(+)
+>
+> diff --git a/drivers/mmc/host/sdhci-pltfm.c b/drivers/mmc/host/sdhci-pltfm.c
+> index bef250e..9f6a4b9 100644
+> --- a/drivers/mmc/host/sdhci-pltfm.c
+> +++ b/drivers/mmc/host/sdhci-pltfm.c
+> @@ -85,6 +85,21 @@ void sdhci_get_of_property(struct platform_device *pdev)
+>
+>                 if (of_get_property(np, "broken-cd", NULL))
+>                         host->quirks |= SDHCI_QUIRK_BROKEN_CARD_DETECTION;
+> +
+> +               if (of_get_property(np, "delay-after-power", NULL))
+> +                       host->quirks |= SDHCI_QUIRK_DELAY_AFTER_POWER;
+> +
+> +               if (of_get_property(np, "no-hispd", NULL))
+> +                       host->quirks |= SDHCI_QUIRK_NO_HISPD_BIT;
+> +
+> +               if (of_get_property(np, "broken-adma", NULL))
+> +                       host->quirks |= SDHCI_QUIRK_BROKEN_ADMA;
+> +
+> +               if (of_get_property(np, "broken-dma", NULL))
+> +                       host->quirks |= SDHCI_QUIRK_BROKEN_DMA;
+> +
+> +               if (of_get_property(np, "no-cmd23", NULL))
+> +                       host->quirks2 |= SDHCI_QUIRK2_HOST_NO_CMD23;
+
+Can't at least some of these be distinguished from what sdhci variant
+that is being used? Instead of having them in DT...
+
+Kind regards
+Uffe
+
+>
+>                 if (of_get_property(np, "no-1-8-v", NULL))
+>                         host->quirks2 |= SDHCI_QUIRK2_NO_1_8_V;
+> --
+> 1.8.2.1
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-mmc" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
