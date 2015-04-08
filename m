@@ -1,38 +1,26 @@
-Return-Path: <mikey@neuling.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <julian.calaby@gmail.com>
+Received: from mail-wg0-x22f.google.com (mail-wg0-x22f.google.com
+ [IPv6:2a00:1450:400c:c00::22f])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E1A981A02F4
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Apr 2015 09:11:35 +1000 (AEST)
-Message-ID: <1428534695.4682.18.camel@neuling.org>
-Subject: Re: [V6,1/9] elf: Add new powerpc specifc core note sections
-From: Michael Neuling <mikey@neuling.org>
-To: Ulrich Weigand <Ulrich.Weigand@de.ibm.com>
-Date: Thu, 09 Apr 2015 09:11:35 +1000
-In-Reply-To: <OF91038A37.65C405E5-ONC1257E21.0061938F-C1257E21.00620A03@de.ibm.com>
-References: <20141203052204.9DA8F1400DD@ozlabs.org>
- <547EB253.5050307@linux.vnet.ibm.com> <548578A8.5020901@linux.vnet.ibm.com>
- <54947C64.4030206@linux.vnet.ibm.com> <54A50094.5070902@linux.vnet.ibm.com>
- <1421883597.30744.3.camel@neuling.org>
- <OFC6CFC348.C619B89D-ONC1257DD5.0056279B-C1257DD5.00577002@de.ibm.com>
- <1421963049.30744.23.camel@neuling.org>
- <1422419289.9646.20.camel@neuling.org>
- <OFE5516C3F.3C4884DE-ONC1257DE4.004E7852-C1257DE4.00514232@de.ibm.com>
- <1424667110.16027.6.camel@neuling.org>
- <OF5DE08D4B.0B79C501-ONC1257E0C.0044F80B-C1257E0C.0046DC8F@de.ibm.com>
- <1426718702.4866.2.camel@neuling.org> <1426719027.4866.4.camel@neuling.org>
- <550FEC36.8080803@linux.vnet.ibm.com>
- <OF91038A37.65C405E5-ONC1257E21.0061938F-C1257E21.00620A03@de.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: shuahkh@osg.samsung.com, james.hogan@imgtec.com, avagin@openvz.org,
- Paul.Clothier@imgtec.com, peterz@infradead.org, palves@redhat.com,
- linux-kernel@vger.kernel.org,
- Edjunior Barbosa Machado <emachado@linux.vnet.ibm.com>, dhowells@redhat.com,
- linuxppc-dev@ozlabs.org, kirjanov@gmail.com, tglx@linutronix.de,
- oleg@redhat.com, davej@redhat.com, akpm@linux-foundation.org,
- sukadev@linux.vnet.ibm.com, davem@davemloft.net, sam.bobroff@au1.ibm.com,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3A56A1A02F4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Apr 2015 09:13:13 +1000 (AEST)
+Received: by wgyo15 with SMTP id o15so92588471wgy.2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Apr 2015 16:13:10 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <55255F84.6060608@yandex-team.ru>
+References: <20150408165920.25007.6869.stgit@buzz>
+ <55255F84.6060608@yandex-team.ru>
+From: Julian Calaby <julian.calaby@gmail.com>
+Date: Thu, 9 Apr 2015 09:12:49 +1000
+Message-ID: <CAGRGNgUseiLaKz+iPoe7U73HEu22durZjxROu-NE0EZcThhysA@mail.gmail.com>
+Subject: Re: [PATCH] of: return NUMA_NO_NODE from fallback of_node_to_nid()
+To: Konstantin Khlebnikov <khlebnikov@yandex-team.ru>
+Content-Type: text/plain; charset=UTF-8
+Cc: devicetree <devicetree@vger.kernel.org>, linux-mm@kvack.org,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ sparclinux <sparclinux@vger.kernel.org>, Rob Herring <robh+dt@kernel.org>,
+ Grant Likely <grant.likely@linaro.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,38 +30,90 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2015-04-08 at 19:50 +0200, Ulrich Weigand wrote:
-> Anshuman Khandual <khandual@linux.vnet.ibm.com> wrote on 23.03.2015
-> 11:34:30:
->=20
-> > > With that in mind, do we have a way to set the top 32bits of the MSR
-> > > (which contain the TM bits) when ptracing 32 bit processes?  I can't
-> > > find anything like that in this patch set.
-> >
-> > No, we dont have that yet. When ptracing in 32-bit mode the MSR value
-> > which can be viewed or set from the user space through PTRACE_GETREGS
-> > PTRACE_SETREGS call is it's lower 32 bits only. Either we can club
-> > the upper 32 bits of MSR as part of one of the ELF core notes we are
-> > adding in the patch series or we can create one more separate ELF core
-> > note for that purpose. Let me know your opinion on this.
->=20
-> I'm not sure I understand this.  I thought we had the following:
->=20
-> - If the process calling ptrace is itself 64-bit (which is how GDB is
->   built on all current Linux distributions), then PTRACE_GETREGS etc.
->   will *always* operate on 64-bit register sets, even if the target
->   process is 32-bit.
->=20
-> - If the process calling ptrace is 32-bit, then PTRACE_GETREGS will
->   operate on 32-bit register sets.   However, there is a separate
->   PTRACE_GETREGS64 / PTRACE_SETREGS64 call that will also provide
->   the opportunity to operate on the full 64-bit register set.  Both
->   apply independently of whether the target process is 32-bit or
->   64-bit.
->=20
-> Is this not correct?
+Hi Konstantin,
 
-I think you're correct.  We should be right.  I'd forgotten about the
-GET/SETREGS64 interfaces.
+On Thu, Apr 9, 2015 at 3:04 AM, Konstantin Khlebnikov
+<khlebnikov@yandex-team.ru> wrote:
+> On 08.04.2015 19:59, Konstantin Khlebnikov wrote:
+>>
+>> Node 0 might be offline as well as any other numa node,
+>> in this case kernel cannot handle memory allocation and crashes.
+>
+>
+> Example:
+>
+> [    0.027133] ------------[ cut here ]------------
+> [    0.027938] kernel BUG at include/linux/gfp.h:322!
+> [    0.028000] invalid opcode: 0000 [#1] SMP
+> [    0.028000] Modules linked in:
+> [    0.028000] CPU: 0 PID: 1 Comm: swapper/0 Not tainted 4.0.0-rc7 #12
+> [    0.028000] Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS
+> rel-1.7.5.1-0-g8936dbb-20141113_115728-nilsson.home.kraxel.org 04/01/2014
+> [    0.028000] task: ffff88007d3f8000 ti: ffff88007d3dc000 task.ti:
+> ffff88007d3dc000
+> [    0.028000] RIP: 0010:[<ffffffff8118574c>]  [<ffffffff8118574c>]
+> new_slab+0x30c/0x3c0
+> [    0.028000] RSP: 0000:ffff88007d3dfc28  EFLAGS: 00010246
+> [    0.028000] RAX: 0000000000000000 RBX: ffff88007d001800 RCX:
+> 0000000000000001
+> [    0.028000] RDX: 0000000000000000 RSI: 0000000000000000 RDI:
+> 00000000002012d0
+> [    0.028000] RBP: ffff88007d3dfc58 R08: 0000000000000000 R09:
+> 0000000000000000
+> [    0.028000] R10: 0000000000000001 R11: ffff88007d02fe40 R12:
+> 00000000000000d0
+> [    0.028000] R13: 00000000000000c0 R14: 0000000000000015 R15:
+> 0000000000000000
+> [    0.028000] FS:  0000000000000000(0000) GS:ffff88007fc00000(0000)
+> knlGS:0000000000000000
+> [    0.028000] CS:  0010 DS: 0000 ES: 0000 CR0: 000000008005003b
+> [    0.028000] CR2: 00000000ffffffff CR3: 0000000001e0e000 CR4:
+> 00000000000006f0
+> [    0.028000] DR0: 0000000000000000 DR1: 0000000000000000 DR2:
+> 0000000000000000
+> [    0.028000] DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7:
+> 0000000000000400
+> [    0.028000] Stack:
+> [    0.028000]  0000000000000000 ffff88007fc175d0 ffffea0001f40bc0
+> 00000000000000c0
+> [    0.028000]  ffff88007d001800 00000000000080d0 ffff88007d3dfd48
+> ffffffff8192da27
+> [    0.028000]  000000000000000d ffffffff81e27038 0000000000000000
+> 0000000000000000
+> [    0.028000] Call Trace:
+> [    0.028000]  [<ffffffff8192da27>] __slab_alloc+0x3df/0x55d
+> [    0.028000]  [<ffffffff8109a92b>] ? __lock_acquire+0xc1b/0x1f40
+> [    0.028000]  [<ffffffff810b1f2c>] ? __irq_domain_add+0x3c/0xe0
+> [    0.028000]  [<ffffffff810998f5>] ? trace_hardirqs_on_caller+0x105/0x1d0
+> [    0.028000]  [<ffffffff813631ab>] ? trace_hardirqs_on_thunk+0x3a/0x3f
+> [    0.028000]  [<ffffffff811890ab>] __kmalloc_node+0xab/0x210
+> [    0.028000]  [<ffffffff810394df>] ? ioapic_read_entry+0x1f/0x50
+> [    0.028000]  [<ffffffff810b1f2c>] ? __irq_domain_add+0x3c/0xe0
+> [    0.028000]  [<ffffffff810b1f2c>] __irq_domain_add+0x3c/0xe0
+> [    0.028000]  [<ffffffff81039e0e>] mp_irqdomain_create+0x9e/0x120
+> [    0.028000]  [<ffffffff81f22d49>] setup_IO_APIC+0x6b/0x798
+> [    0.028000]  [<ffffffff810398a5>] ? clear_IO_APIC+0x45/0x70
+> [    0.028000]  [<ffffffff81f21f01>] apic_bsp_setup+0x87/0x96
+> [    0.028000]  [<ffffffff81f1fdb4>] native_smp_prepare_cpus+0x237/0x275
+> [    0.028000]  [<ffffffff81f131b7>] kernel_init_freeable+0x120/0x265
+> [    0.028000]  [<ffffffff819271f9>] ? kernel_init+0x9/0xf0
+> [    0.028000]  [<ffffffff819271f0>] ? rest_init+0x130/0x130
+> [    0.028000]  [<ffffffff819271f9>] kernel_init+0x9/0xf0
+> [    0.028000]  [<ffffffff8193b958>] ret_from_fork+0x58/0x90
+> [    0.028000]  [<ffffffff819271f0>] ? rest_init+0x130/0x130
+> [    0.028000] Code: 6b b6 ff ff 49 89 c5 e9 ce fd ff ff 31 c0 90 e9 74 ff
+> ff ff 49 c7 04 04 00 00 00 00 e9 05 ff ff ff 4c 89 e7 ff d0 e9 d9 fe ff ff
+> <0f> 0b 4c 8b 73 38 44 89 e7 81 cf 00 00 20 00 4c 89 f6 48 c1 ee
+> [    0.028000] RIP  [<ffffffff8118574c>] new_slab+0x30c/0x3c0
+> [    0.028000]  RSP <ffff88007d3dfc28>
+> [    0.028039] ---[ end trace f03690e70d7e4be6 ]---
 
-Mikey
+Shouldn't this be in the commit message?
+
+Thanks,
+
+-- 
+Julian Calaby
+
+Email: julian.calaby@gmail.com
+Profile: http://www.google.com/profiles/julian.calaby/
