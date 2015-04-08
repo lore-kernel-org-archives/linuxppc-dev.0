@@ -1,26 +1,26 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0139.outbound.protection.outlook.com [157.56.111.139])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pa0-f41.google.com (mail-pa0-f41.google.com
+ [209.85.220.41])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id ED5A71A0B7D
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Apr 2015 11:27:17 +1000 (AEST)
-Message-ID: <1428456423.22867.501.camel@freescale.com>
-Subject: )
-From: Scott Wood <scottwood@freescale.com>
-To: =?ISO-8859-1?Q?Rog=E9rio?= Brito <rbrito@ime.usp.br>
-Date: Tue, 7 Apr 2015 20:27:03 -0500
-In-Reply-To: <20150408011300.GA6395@ime.usp.br>
-References: <20150404054022.GA15572@ime.usp.br>
- <1428446044.22867.475.camel@freescale.com>
- <20150407235812.GA3443@ime.usp.br>
- <1428451332.22867.490.camel@freescale.com>
- <20150408003638.GA5170@ime.usp.br>
- <1428454204.22867.497.camel@freescale.com>
- <20150408011300.GA6395@ime.usp.br>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 82D971A0BA2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Apr 2015 13:22:09 +1000 (AEST)
+Received: by paboj16 with SMTP id oj16so100178361pab.0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Apr 2015 20:22:07 -0700 (PDT)
+Message-ID: <55249ED8.9090401@ozlabs.ru>
+Date: Wed, 08 Apr 2015 13:22:00 +1000
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
 MIME-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+To: Alex Williamson <alex.williamson@redhat.com>
+Subject: Re: [PATCH kernel v7 26/31] powerpc/iommu: Add userspace view of
+ TCE table
+References: <1427468115-2224-1-git-send-email-aik@ozlabs.ru>	
+ <1427468115-2224-27-git-send-email-aik@ozlabs.ru>
+ <1428007803.5567.383.camel@redhat.com>
+In-Reply-To: <1428007803.5567.383.camel@redhat.com>
+Content-Type: text/plain; charset=koi8-r; format=flowed
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,61 +30,160 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-04-07 at 22:13 -0300, Rogério Brito wrote:
-> Hi, Scott.
-> 
-> On Apr 07 2015, Scott Wood wrote:
-> > On Tue, 2015-04-07 at 21:37 -0300, Rogério Brito wrote:
-> > > I see. If I do some "archaeology" (read: bisect when it stopped
-> > > working), would that help to discover how the flash is connected?
-> > 
-> > It will probably give you the address and size of the flash, which is
-> > good enough to get something working.  Does your config (for the old
-> > kernel) have anything with PHYSMAP in it?  I suspect it probably broke
-> > with commit dcb3e137ce9be1dfc86e306182b23e3ae5e239c4 ("[MTD] physmap:
-> > make physmap compat explicit").
-> 
-> Here is what my 2.6.27 kernel has in the section regarding physmap:
-> 
-> ,----
-> | #
-> | # Mapping drivers for chip access
-> | #
-> | # CONFIG_MTD_COMPLEX_MAPPINGS is not set
-> | CONFIG_MTD_PHYSMAP=y
-> | CONFIG_MTD_PHYSMAP_START=0xffc00000
-> | CONFIG_MTD_PHYSMAP_LEN=0x400000
-> | CONFIG_MTD_PHYSMAP_BANKWIDTH=1
-> | # CONFIG_MTD_PHYSMAP_OF is not set
-> | # CONFIG_MTD_INTEL_VR_NOR is not set
-> | # CONFIG_MTD_PLATRAM is not set
-> `----
-> 
-> Here is what my 4.0-rc6 kernel has:
-> 
-> ,----
-> | #
-> | # Mapping drivers for chip access
-> | #
-> | # CONFIG_MTD_COMPLEX_MAPPINGS is not set
-> | CONFIG_MTD_PHYSMAP=y
-> | CONFIG_MTD_PHYSMAP_COMPAT=y
-> | CONFIG_MTD_PHYSMAP_START=0xffc00000
-> | CONFIG_MTD_PHYSMAP_LEN=0x400000
-> | CONFIG_MTD_PHYSMAP_BANKWIDTH=1
-> | CONFIG_MTD_PHYSMAP_OF=y
-> | # CONFIG_MTD_INTEL_VR_NOR is not set
-> | # CONFIG_MTD_PLATRAM is not set
-> `----
-> 
-> I may try to revert locally that patch here to see if things improve or not,
-> but it will take me some time to compile it (I hope not much).
+On 04/03/2015 07:50 AM, Alex Williamson wrote:
+>
+> Should have sent this with the other comments, but found it hiding on my
+> desktop...
+>
+> On Sat, 2015-03-28 at 01:55 +1100, Alexey Kardashevskiy wrote:
+>> In order to support memory pre-registration, we need a way to track
+>> the use of every registered memory region and only allow unregistration
+>> if a region is not in use anymore. So we need a way to tell from what
+>> region the just cleared TCE was from.
+>>
+>> This adds a userspace view of the TCE table into iommu_table struct.
+>> It contains userspace address, one per TCE entry. The table is only
+>> allocated when the ownership over an IOMMU group is taken which means
+>> it is only used from outside of the powernv code (such as VFIO).
+>>
+>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+>> ---
+>>   arch/powerpc/include/asm/iommu.h          |  6 ++++++
+>>   arch/powerpc/kernel/iommu.c               |  7 +++++++
+>>   arch/powerpc/platforms/powernv/pci-ioda.c | 23 ++++++++++++++++++++++-
+>>   3 files changed, 35 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
+>> index 2c08c91..a768a4d 100644
+>> --- a/arch/powerpc/include/asm/iommu.h
+>> +++ b/arch/powerpc/include/asm/iommu.h
+>> @@ -106,9 +106,15 @@ struct iommu_table {
+>>   	unsigned long *it_map;       /* A simple allocation bitmap for now */
+>>   	unsigned long  it_page_shift;/* table iommu page size */
+>>   	struct iommu_table_group *it_group;
+>> +	unsigned long *it_userspace; /* userspace view of the table */
+>>   	struct iommu_table_ops *it_ops;
+>>   };
+>>
+>> +#define IOMMU_TABLE_USERSPACE_ENTRY(tbl, entry) \
+>> +		((tbl)->it_userspace ? \
+>> +			&((tbl)->it_userspace[(entry) - (tbl)->it_offset]) : \
+>> +			NULL)
+>> +
+>>   /* Pure 2^n version of get_order */
+>>   static inline __attribute_const__
+>>   int get_iommu_order(unsigned long size, struct iommu_table *tbl)
+>> diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
+>> index 0bcd988..82102d1 100644
+>> --- a/arch/powerpc/kernel/iommu.c
+>> +++ b/arch/powerpc/kernel/iommu.c
+>> @@ -38,6 +38,7 @@
+>>   #include <linux/pci.h>
+>>   #include <linux/iommu.h>
+>>   #include <linux/sched.h>
+>> +#include <linux/vmalloc.h>
+>>   #include <asm/io.h>
+>>   #include <asm/prom.h>
+>>   #include <asm/iommu.h>
+>> @@ -1069,6 +1070,9 @@ static int iommu_table_take_ownership(struct iommu_table *tbl)
+>>   		spin_unlock(&tbl->pools[i].lock);
+>>   	spin_unlock_irqrestore(&tbl->large_pool.lock, flags);
+>>
+>> +	BUG_ON(tbl->it_userspace);
+>> +	tbl->it_userspace = vzalloc(sizeof(*tbl->it_userspace) * tbl->it_size);
+>> +
+>
+> -ENOMEM?
+>
+>>   	return 0;
+>>   }
+>>
+>> @@ -1102,6 +1106,9 @@ static void iommu_table_release_ownership(struct iommu_table *tbl)
+>>   {
+>>   	unsigned long flags, i, sz = (tbl->it_size + 7) >> 3;
+>>
+>> +	vfree(tbl->it_userspace);
+>> +	tbl->it_userspace = NULL;
+>> +
+>>   	spin_lock_irqsave(&tbl->large_pool.lock, flags);
+>>   	for (i = 0; i < tbl->nr_pools; i++)
+>>   		spin_lock(&tbl->pools[i].lock);
+>> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+>> index bc36cf1..036f3c1 100644
+>> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+>> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+>> @@ -26,6 +26,7 @@
+>>   #include <linux/iommu.h>
+>>   #include <linux/mmzone.h>
+>>   #include <linux/sizes.h>
+>> +#include <linux/vmalloc.h>
+>>
+>>   #include <asm/mmzone.h>
+>>   #include <asm/sections.h>
+>> @@ -1469,6 +1470,9 @@ static void pnv_pci_free_table(struct iommu_table *tbl)
+>>   	if (!tbl->it_size)
+>>   		return;
+>>
+>> +	if (tbl->it_userspace)
+>
+> Not necessary
 
-Oh right, it's the partitions that are missing, rather than the flash
-device itself.  It was probably commit
-13e0fe49f676607688da7475c33540ec5dac53b5 ("mtd: drop physmap_configure")
-that broke your out-of-tree kernel.  Maybe you (or someone) dropped a
-call to physmap_set_partitions() to stop the build error, and didn't
-replace it with anything?
+Out of curiosity - why? Is every single implementation is known for 
+checking the argument?
 
--Scott
+
+>
+>> +		vfree(tbl->it_userspace);
+>> +
+>
+> Why no NULL setting this time?
+
+iommu_reset_table() (2 lines below) will do memset(0) on the entire struct.
+
+
+>
+>>   	pnv_free_tce_table(tbl->it_base, size, tbl->it_indirect_levels);
+>>   	iommu_reset_table(tbl, "ioda2");
+>>   }
+>> @@ -1656,9 +1660,26 @@ static void pnv_ioda2_set_ownership(struct iommu_table_group *table_group,
+>>   	pnv_pci_ioda2_set_bypass(pe, !enable);
+>>   }
+>>
+>> +static long pnv_pci_ioda2_create_table_with_uas(
+>> +		struct iommu_table_group *table_group,
+>> +		int num, __u32 page_shift, __u64 window_size, __u32 levels,
+>> +		struct iommu_table *tbl)
+>> +{
+>> +	long ret = pnv_pci_ioda2_create_table(table_group, num,
+>> +			page_shift, window_size, levels, tbl);
+>> +
+>> +	if (ret)
+>> +		return ret;
+>> +
+>> +	BUG_ON(tbl->it_userspace);
+>> +	tbl->it_userspace = vzalloc(sizeof(*tbl->it_userspace) * tbl->it_size);
+>
+> -ENOMEM
+>
+>> +
+>> +	return 0;
+>> +}
+>> +
+>>   static struct iommu_table_group_ops pnv_pci_ioda2_ops = {
+>>   	.set_ownership = pnv_ioda2_set_ownership,
+>> -	.create_table = pnv_pci_ioda2_create_table,
+>> +	.create_table = pnv_pci_ioda2_create_table_with_uas,
+>>   	.set_window = pnv_pci_ioda2_set_window,
+>>   	.unset_window = pnv_pci_ioda2_unset_window,
+>>   };
+>
+>
+>
+
+
+Thanks for the review! What is overall resume? Another respin?
+
+
+
+-- 
+Alexey
