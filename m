@@ -1,22 +1,22 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <Igal.Liberman@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bon0132.outbound.protection.outlook.com [157.56.111.132])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BBF8F1A051A
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Apr 2015 18:30:44 +1000 (AEST)
-Message-ID: <1428481825.18187.10.camel@kernel.crashing.org>
-Subject: Re: [PATCHv9 RFC 1/3] Break up monolithic iommu table/lock into
- finer graularity pools and lock
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Sowmini Varadhan <sowmini.varadhan@oracle.com>
-Date: Wed, 08 Apr 2015 18:30:25 +1000
-In-Reply-To: <a259c5bbc3d98dbaedc73a88250a5e7c937ec5f9.1428181553.git.sowmini.varadhan@oracle.com>
-References: <cover.1428181553.git.sowmini.varadhan@oracle.com>
- <a259c5bbc3d98dbaedc73a88250a5e7c937ec5f9.1428181553.git.sowmini.varadhan@oracle.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: aik@au1.ibm.com, anton@au1.ibm.com, paulus@samba.org,
- sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
+ by lists.ozlabs.org (Postfix) with ESMTPS id 90C7E1A0629
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Apr 2015 18:54:50 +1000 (AEST)
+From: "Igal.Liberman@freescale.com" <Igal.Liberman@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: RE: [PATCH] dt/bindings: qoriq-clock: Add binding for FMan clock mux
+Date: Wed, 8 Apr 2015 08:54:41 +0000
+Message-ID: <DM2PR03MB383BB3A8993435B4F7D2EFDE6FC0@DM2PR03MB383.namprd03.prod.outlook.com>
+References: <1428379720-3247-1-git-send-email-igal.liberman@freescale.com>
+ <1428446404.22867.479.camel@freescale.com>
+In-Reply-To: <1428446404.22867.479.camel@freescale.com>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,407 +26,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2015-04-05 at 07:49 -0400, Sowmini Varadhan wrote:
-> Investigation of multithreaded iperf experiments on an ethernet
-> interface show the iommu->lock as the hottest lock identified by
-> lockstat, with something of the order of  21M contentions out of
-> 27M acquisitions, and an average wait time of 26 us for the lock.
-> This is not efficient. A more scalable design is to follow the ppc
-> model, where the iommu_map_table has multiple pools, each stretching
-> over a segment of the map, and with a separate lock for each pool.
-> This model allows for better parallelization of the iommu map search.
-> 
-> This patch adds the iommu range alloc/free function infrastructure.
-
-Sorry for the delay, I'm swamped with "stuff" at the moment, I wanted to
-try actually porting powerpc over and testing but didn't get a chance.
-
-I'm happy with your last version, feel free to add my
-
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-
-I'll port powerpc over when I get a chance and if I find a need to tweak
-something at that point, I'll send a separate patch on top of yours.
-
-Cheers,
-Ben.
-
-> Signed-off-by: Sowmini Varadhan <sowmini.varadhan@oracle.com>
-> ---
-> v2 changes:
->   - incorporate David Miller editorial comments: sparc specific
->     fields moved from iommu-common into sparc's iommu_64.h
->   - make the npools value an input parameter, for the case when
->     the iommu map size is not very large
->   - cookie_to_index mapping, and optimizations for span-boundary
->     check, for use case such as LDC.
-> v3: eliminate iommu_sparc, rearrange the ->demap indirection to
->     be invoked under the pool lock.
-> 
-> v4: David Miller review changes:
->   - s/IOMMU_ERROR_CODE/DMA_ERROR_CODE
->   - page_table_map_base and page_table_shift are unsigned long, not u32.
-> 
-> v5: Feedback from benh@kernel.crashing.org and aik@ozlabs.ru
->   - removed ->cookie_to_index and ->demap indirection: caller should
->     invoke these as needed before calling into the generic allocator
-> 
-> v6: Benh/DaveM discussion eliminationg iommu_tbl_ops, but retaining flush_all
->     optimization.
-> 
-> v7: one-time initialization of pool_hash from iommu_tbl_pool_init()
-> 
-> v8: Benh code review comments.
-> 
-> v9: More Benh code review comments, added dma_mask, align_order logic to
->     iommu_tbl_range_alloc.
-> 
->  include/linux/iommu-common.h |   51 ++++++++
->  lib/Makefile                 |    2 +-
->  lib/iommu-common.c           |  266 ++++++++++++++++++++++++++++++++++++++++++
->  3 files changed, 318 insertions(+), 1 deletions(-)
->  create mode 100644 include/linux/iommu-common.h
->  create mode 100644 lib/iommu-common.c
-> 
-> diff --git a/include/linux/iommu-common.h b/include/linux/iommu-common.h
-> new file mode 100644
-> index 0000000..bbced83
-> --- /dev/null
-> +++ b/include/linux/iommu-common.h
-> @@ -0,0 +1,51 @@
-> +#ifndef _LINUX_IOMMU_COMMON_H
-> +#define _LINUX_IOMMU_COMMON_H
-> +
-> +#include <linux/spinlock_types.h>
-> +#include <linux/device.h>
-> +#include <asm/page.h>
-> +
-> +#define IOMMU_POOL_HASHBITS     4
-> +#define IOMMU_NR_POOLS          (1 << IOMMU_POOL_HASHBITS)
-> +
-> +struct iommu_pool {
-> +	unsigned long	start;
-> +	unsigned long	end;
-> +	unsigned long	hint;
-> +	spinlock_t	lock;
-> +};
-> +
-> +struct iommu_map_table {
-> +	unsigned long		table_map_base;
-> +	unsigned long		table_shift;
-> +	unsigned long		nr_pools;
-> +	void			(*lazy_flush)(struct iommu_map_table *);
-> +	unsigned long		poolsize;
-> +	struct iommu_pool	pools[IOMMU_NR_POOLS];
-> +	u32			flags;
-> +#define	IOMMU_HAS_LARGE_POOL	0x00000001
-> +#define	IOMMU_NO_SPAN_BOUND	0x00000002
-> +#define	IOMMU_NEED_FLUSH	0x00000004
-> +	struct iommu_pool	large_pool;
-> +	unsigned long		*map;
-> +};
-> +
-> +extern void iommu_tbl_pool_init(struct iommu_map_table *iommu,
-> +				unsigned long num_entries,
-> +				u32 table_shift,
-> +				void (*lazy_flush)(struct iommu_map_table *),
-> +				bool large_pool, u32 npools,
-> +				bool skip_span_boundary_check);
-> +
-> +extern unsigned long iommu_tbl_range_alloc(struct device *dev,
-> +					   struct iommu_map_table *iommu,
-> +					   unsigned long npages,
-> +					   unsigned long *handle,
-> +					   unsigned long mask,
-> +					   unsigned int align_order);
-> +
-> +extern void iommu_tbl_range_free(struct iommu_map_table *iommu,
-> +				 u64 dma_addr, unsigned long npages,
-> +				 unsigned long entry);
-> +
-> +#endif
-> diff --git a/lib/Makefile b/lib/Makefile
-> index 58f74d2..60c22e6 100644
-> --- a/lib/Makefile
-> +++ b/lib/Makefile
-> @@ -106,7 +106,7 @@ obj-$(CONFIG_AUDIT_GENERIC) += audit.o
->  obj-$(CONFIG_AUDIT_COMPAT_GENERIC) += compat_audit.o
->  
->  obj-$(CONFIG_SWIOTLB) += swiotlb.o
-> -obj-$(CONFIG_IOMMU_HELPER) += iommu-helper.o
-> +obj-$(CONFIG_IOMMU_HELPER) += iommu-helper.o iommu-common.o
->  obj-$(CONFIG_FAULT_INJECTION) += fault-inject.o
->  obj-$(CONFIG_NOTIFIER_ERROR_INJECTION) += notifier-error-inject.o
->  obj-$(CONFIG_CPU_NOTIFIER_ERROR_INJECT) += cpu-notifier-error-inject.o
-> diff --git a/lib/iommu-common.c b/lib/iommu-common.c
-> new file mode 100644
-> index 0000000..b99f1d7
-> --- /dev/null
-> +++ b/lib/iommu-common.c
-> @@ -0,0 +1,266 @@
-> +/*
-> + * IOMMU mmap management and range allocation functions.
-> + * Based almost entirely upon the powerpc iommu allocator.
-> + */
-> +
-> +#include <linux/export.h>
-> +#include <linux/bitmap.h>
-> +#include <linux/bug.h>
-> +#include <linux/iommu-helper.h>
-> +#include <linux/iommu-common.h>
-> +#include <linux/dma-mapping.h>
-> +#include <linux/hash.h>
-> +
-> +unsigned long iommu_large_alloc = 15;
-> +
-> +static	DEFINE_PER_CPU(unsigned int, iommu_pool_hash);
-> +
-> +static inline bool need_flush(struct iommu_map_table *iommu)
-> +{
-> +	return (iommu->lazy_flush != NULL &&
-> +		(iommu->flags & IOMMU_NEED_FLUSH) != 0);
-> +}
-> +
-> +static inline void set_flush(struct iommu_map_table *iommu)
-> +{
-> +	iommu->flags |= IOMMU_NEED_FLUSH;
-> +}
-> +
-> +static inline void clear_flush(struct iommu_map_table *iommu)
-> +{
-> +	iommu->flags &= ~IOMMU_NEED_FLUSH;
-> +}
-> +
-> +static void setup_iommu_pool_hash(void)
-> +{
-> +	unsigned int i;
-> +	static bool do_once;
-> +
-> +	if (do_once)
-> +		return;
-> +	do_once = true;
-> +	for_each_possible_cpu(i)
-> +		per_cpu(iommu_pool_hash, i) = hash_32(i, IOMMU_POOL_HASHBITS);
-> +}
-> +
-> +/*
-> + * Initialize iommu_pool entries for the iommu_map_table. `num_entries'
-> + * is the number of table entries. If `large_pool' is set to true,
-> + * the top 1/4 of the table will be set aside for pool allocations
-> + * of more than iommu_large_alloc pages.
-> + */
-> +extern void iommu_tbl_pool_init(struct iommu_map_table *iommu,
-> +				unsigned long num_entries,
-> +				u32 table_shift,
-> +				void (*lazy_flush)(struct iommu_map_table *),
-> +				bool large_pool, u32 npools,
-> +				bool skip_span_boundary_check)
-> +{
-> +	unsigned int start, i;
-> +	struct iommu_pool *p = &(iommu->large_pool);
-> +
-> +	setup_iommu_pool_hash();
-> +	if (npools == 0)
-> +		iommu->nr_pools = IOMMU_NR_POOLS;
-> +	else
-> +		iommu->nr_pools = npools;
-> +	BUG_ON(npools > IOMMU_NR_POOLS);
-> +
-> +	iommu->table_shift = table_shift;
-> +	iommu->lazy_flush = lazy_flush;
-> +	start = 0;
-> +	if (skip_span_boundary_check)
-> +		iommu->flags |= IOMMU_NO_SPAN_BOUND;
-> +	if (large_pool)
-> +		iommu->flags |= IOMMU_HAS_LARGE_POOL;
-> +
-> +	if (!large_pool)
-> +		iommu->poolsize = num_entries/iommu->nr_pools;
-> +	else
-> +		iommu->poolsize = (num_entries * 3 / 4)/iommu->nr_pools;
-> +	for (i = 0; i < iommu->nr_pools; i++) {
-> +		spin_lock_init(&(iommu->pools[i].lock));
-> +		iommu->pools[i].start = start;
-> +		iommu->pools[i].hint = start;
-> +		start += iommu->poolsize; /* start for next pool */
-> +		iommu->pools[i].end = start - 1;
-> +	}
-> +	if (!large_pool)
-> +		return;
-> +	/* initialize large_pool */
-> +	spin_lock_init(&(p->lock));
-> +	p->start = start;
-> +	p->hint = p->start;
-> +	p->end = num_entries;
-> +}
-> +EXPORT_SYMBOL(iommu_tbl_pool_init);
-> +
-> +unsigned long iommu_tbl_range_alloc(struct device *dev,
-> +				struct iommu_map_table *iommu,
-> +				unsigned long npages,
-> +				unsigned long *handle,
-> +				unsigned long mask,
-> +				unsigned int align_order)
-> +{
-> +	unsigned int pool_hash = __this_cpu_read(iommu_pool_hash);
-> +	unsigned long n, end, start, limit, boundary_size;
-> +	struct iommu_pool *pool;
-> +	int pass = 0;
-> +	unsigned int pool_nr;
-> +	unsigned int npools = iommu->nr_pools;
-> +	unsigned long flags;
-> +	bool large_pool = ((iommu->flags & IOMMU_HAS_LARGE_POOL) != 0);
-> +	bool largealloc = (large_pool && npages > iommu_large_alloc);
-> +	unsigned long shift;
-> +	unsigned long align_mask = 0;
-> +
-> +	if (align_order > 0)
-> +		align_mask = 0xffffffffffffffffl >> (64 - align_order);
-> +
-> +	/* Sanity check */
-> +	if (unlikely(npages == 0)) {
-> +		WARN_ON_ONCE(1);
-> +		return DMA_ERROR_CODE;
-> +	}
-> +
-> +	if (largealloc) {
-> +		pool = &(iommu->large_pool);
-> +		pool_nr = 0; /* to keep compiler happy */
-> +	} else {
-> +		/* pick out pool_nr */
-> +		pool_nr =  pool_hash & (npools - 1);
-> +		pool = &(iommu->pools[pool_nr]);
-> +	}
-> +	spin_lock_irqsave(&pool->lock, flags);
-> +
-> + again:
-> +	if (pass == 0 && handle && *handle &&
-> +	    (*handle >= pool->start) && (*handle < pool->end))
-> +		start = *handle;
-> +	else
-> +		start = pool->hint;
-> +
-> +	limit = pool->end;
-> +
-> +	/* The case below can happen if we have a small segment appended
-> +	 * to a large, or when the previous alloc was at the very end of
-> +	 * the available space. If so, go back to the beginning. If a
-> +	 * flush is needed, it will get done based on the return value
-> +	 * from iommu_area_alloc() below.
-> +	 */
-> +	if (start >= limit)
-> +		start = pool->start;
-> +	shift = iommu->table_map_base >> iommu->table_shift;
-> +	if (limit + shift > mask) {
-> +		limit = mask - shift + 1;
-> +		/* If we're constrained on address range, first try
-> +		 * at the masked hint to avoid O(n) search complexity,
-> +		 * but on second pass, start at 0 in pool 0.
-> +		 */
-> +		if ((start & mask) >= limit || pass > 0) {
-> +			spin_unlock(&(pool->lock));
-> +			pool = &(iommu->pools[0]);
-> +			spin_lock(&(pool->lock));
-> +			start = pool->start;
-> +		} else {
-> +			start &= mask;
-> +		}
-> +	}
-> +
-> +	if (dev)
-> +		boundary_size = ALIGN(dma_get_seg_boundary(dev) + 1,
-> +				      1 << iommu->table_shift);
-> +	else
-> +		boundary_size = ALIGN(1UL << 32, 1 << iommu->table_shift);
-> +
-> +	boundary_size = boundary_size >> iommu->table_shift;
-> +	/*
-> +	 * if the skip_span_boundary_check had been set during init, we set
-> +	 * things up so that iommu_is_span_boundary() merely checks if the
-> +	 * (index + npages) < num_tsb_entries
-> +	 */
-> +	if ((iommu->flags & IOMMU_NO_SPAN_BOUND) != 0) {
-> +		shift = 0;
-> +		boundary_size = iommu->poolsize * iommu->nr_pools;
-> +	}
-> +	n = iommu_area_alloc(iommu->map, limit, start, npages, shift,
-> +			     boundary_size, align_mask);
-> +	if (n == -1) {
-> +		if (likely(pass == 0)) {
-> +			/* First failure, rescan from the beginning.  */
-> +			pool->hint = pool->start;
-> +			set_flush(iommu);
-> +			pass++;
-> +			goto again;
-> +		} else if (!largealloc && pass <= iommu->nr_pools) {
-> +			spin_unlock(&(pool->lock));
-> +			pool_nr = (pool_nr + 1) & (iommu->nr_pools - 1);
-> +			pool = &(iommu->pools[pool_nr]);
-> +			spin_lock(&(pool->lock));
-> +			pool->hint = pool->start;
-> +			set_flush(iommu);
-> +			pass++;
-> +			goto again;
-> +		} else {
-> +			/* give up */
-> +			n = DMA_ERROR_CODE;
-> +			goto bail;
-> +		}
-> +	}
-> +	if (n < pool->hint || need_flush(iommu)) {
-> +		clear_flush(iommu);
-> +		iommu->lazy_flush(iommu);
-> +	}
-> +
-> +	end = n + npages;
-> +	pool->hint = end;
-> +
-> +	/* Update handle for SG allocations */
-> +	if (handle)
-> +		*handle = end;
-> +bail:
-> +	spin_unlock_irqrestore(&(pool->lock), flags);
-> +
-> +	return n;
-> +}
-> +EXPORT_SYMBOL(iommu_tbl_range_alloc);
-> +
-> +static struct iommu_pool *get_pool(struct iommu_map_table *tbl,
-> +				   unsigned long entry)
-> +{
-> +	struct iommu_pool *p;
-> +	unsigned long largepool_start = tbl->large_pool.start;
-> +	bool large_pool = ((tbl->flags & IOMMU_HAS_LARGE_POOL) != 0);
-> +
-> +	/* The large pool is the last pool at the top of the table */
-> +	if (large_pool && entry >= largepool_start) {
-> +		p = &tbl->large_pool;
-> +	} else {
-> +		unsigned int pool_nr = entry / tbl->poolsize;
-> +
-> +		BUG_ON(pool_nr >= tbl->nr_pools);
-> +		p = &tbl->pools[pool_nr];
-> +	}
-> +	return p;
-> +}
-> +
-> +/* Caller supplies the index of the entry into the iommu map table
-> + * itself when the mapping from dma_addr to the entry is not the
-> + * default addr->entry mapping below.
-> + */
-> +void iommu_tbl_range_free(struct iommu_map_table *iommu, u64 dma_addr,
-> +			  unsigned long npages, unsigned long entry)
-> +{
-> +	struct iommu_pool *pool;
-> +	unsigned long flags;
-> +	unsigned long shift = iommu->table_shift;
-> +
-> +	if (entry == DMA_ERROR_CODE) /* use default addr->entry mapping */
-> +		entry = (dma_addr - iommu->table_map_base) >> shift;
-> +	pool = get_pool(iommu, entry);
-> +
-> +	spin_lock_irqsave(&(pool->lock), flags);
-> +	bitmap_clear(iommu->map, entry, npages);
-> +	spin_unlock_irqrestore(&(pool->lock), flags);
-> +}
-> +EXPORT_SYMBOL(iommu_tbl_range_free);
+SGkgU2NvdHQNCg0KUmVnYXJkcywNCklnYWwgTGliZXJtYW4uDQoNCj4gLS0tLS1PcmlnaW5hbCBN
+ZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0MjENCj4gU2VudDogV2VkbmVzZGF5
+LCBBcHJpbCAwOCwgMjAxNSAxOjQwIEFNDQo+IFRvOiBMaWJlcm1hbiBJZ2FsLUIzMTk1MA0KPiBD
+YzogZGV2aWNldHJlZUB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMu
+b3JnDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0hdIGR0L2JpbmRpbmdzOiBxb3JpcS1jbG9jazogQWRk
+IGJpbmRpbmcgZm9yIEZNYW4gY2xvY2sNCj4gbXV4DQo+IA0KPiBPbiBUdWUsIDIwMTUtMDQtMDcg
+YXQgMDc6MDggKzAzMDAsIElnYWwuTGliZXJtYW4gd3JvdGU6DQo+ID4gRnJvbTogSWdhbCBMaWJl
+cm1hbiA8SWdhbC5MaWJlcm1hbkBmcmVlc2NhbGUuY29tPg0KPiA+DQo+ID4gU2lnbmVkLW9mZi1i
+eTogSWdhbCBMaWJlcm1hbiA8SWdhbC5MaWJlcm1hbkBmcmVlc2NhbGUuY29tPg0KPiA+IC0tLQ0K
+PiA+ICAuLi4vZGV2aWNldHJlZS9iaW5kaW5ncy9jbG9jay9xb3JpcS1jbG9jay50eHQgICAgICB8
+ICAgNTkNCj4gKysrKysrKysrKysrKysrKysrKysNCj4gPiAgMSBmaWxlIGNoYW5nZWQsIDU5IGlu
+c2VydGlvbnMoKykNCj4gPg0KPiA+IGRpZmYgLS1naXQgYS9Eb2N1bWVudGF0aW9uL2RldmljZXRy
+ZWUvYmluZGluZ3MvY2xvY2svcW9yaXEtY2xvY2sudHh0DQo+ID4gYi9Eb2N1bWVudGF0aW9uL2Rl
+dmljZXRyZWUvYmluZGluZ3MvY2xvY2svcW9yaXEtY2xvY2sudHh0DQo+ID4gaW5kZXggZGY0YTI1
+OS4uYTdlODRjZSAxMDA2NDQNCj4gPiAtLS0gYS9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmlu
+ZGluZ3MvY2xvY2svcW9yaXEtY2xvY2sudHh0DQo+ID4gKysrIGIvRG9jdW1lbnRhdGlvbi9kZXZp
+Y2V0cmVlL2JpbmRpbmdzL2Nsb2NrL3FvcmlxLWNsb2NrLnR4dA0KPiA+IEBAIC02NSw2ICs2NSw3
+IEBAIFJlcXVpcmVkIHByb3BlcnRpZXM6DQo+ID4gIAkJSXQgdGFrZXMgcGFyZW50J3MgY2xvY2st
+ZnJlcXVlbmN5IGFzIGl0cyBjbG9jay4NCj4gPiAgCSogImZzbCxxb3JpcS1wbGF0Zm9ybS1wbGwt
+MS4wIiBmb3IgdGhlIHBsYXRmb3JtIFBMTCBjbG9jayAodjEuMCkNCj4gPiAgCSogImZzbCxxb3Jp
+cS1wbGF0Zm9ybS1wbGwtMi4wIiBmb3IgdGhlIHBsYXRmb3JtIFBMTCBjbG9jayAodjIuMCkNCj4g
+PiArCSogImZzbCxmbWFuLWNsay1tdXgiIGZvciB0aGUgRnJhbWUgTWFuYWdlciBjbG9jay4NCj4g
+DQo+IElzIHRoZXJlIGFueSB2ZXJzaW9uaW5nIHJlcXVpcmVkIG9uIHRoaXM/DQo+IA0KDQpJIGRv
+bid0IHRoaW5rIHdlIG5lZWQgdmVyc2lvbmluZyBoZXJlLg0KDQo+ID4gIC0gI2Nsb2NrLWNlbGxz
+OiBGcm9tIGNvbW1vbiBjbG9jayBiaW5kaW5nLiBUaGUgbnVtYmVyIG9mIGNlbGxzIGluIGENCj4g
+PiAgCWNsb2NrLXNwZWNpZmllci4gU2hvdWxkIGJlIDwwPiBmb3IgImZzbCxxb3JpcS1zeXNjbGst
+WzEsMl0uMCINCj4gPiAgCWNsb2Nrcywgb3IgPDE+IGZvciAiZnNsLHFvcmlxLWNvcmUtcGxsLVsx
+LDJdLjAiIGNsb2Nrcy4NCj4gPiBAQCAtNzMsNiArNzQsNTIgQEAgUmVxdWlyZWQgcHJvcGVydGll
+czoNCj4gPiAgCSogMCAtIGVxdWFsIHRvIHRoZSBQTEwgZnJlcXVlbmN5DQo+ID4gIAkqIDEgLSBl
+cXVhbCB0byB0aGUgUExMIGZyZXF1ZW5jeSBkaXZpZGVkIGJ5IDINCj4gPiAgCSogMiAtIGVxdWFs
+IHRvIHRoZSBQTEwgZnJlcXVlbmN5IGRpdmlkZWQgYnkgNA0KPiA+ICsJRm9yICJmc2wsZm1hbi1j
+bGstbXV4IiBjbG9ja3MsIHRoZSBzaW5nbGUgY2xvY2stc3BlY2lmaWVyIGNlbGwgbWF5DQo+ID4g
+Kwl0YWtlIHZhbHVlcyBhY2NvcmRpbmcgdGhlIFJlc2V0IENvbmZpZ3VyYXRpb24gV29yZCBvZiB0
+aGUgc3BlY2lmaWMNCj4gPiArCWRldmljZToNCj4gDQo+IGZzbCxmbWFuLWNsay1tdXggbm9kZXMg
+aGF2ZSAjY2xvY2stY2VsbHMgb2YgemVybywgc28gSSBkb24ndCB1bmRlcnN0YW5kIHRoaXMNCj4g
+c2VjdGlvbi4NCj4gDQo+IElmIHRoaXMgaXMgbWVhbnQgdG8gcmVmZXIgdG8gdGhlIGNsb2NrIHNw
+ZWNpZmllciB0aGF0IGZzbCxmbWFuLWNsay1tdXggbm9kZXMgdXNlDQo+IGluIHRoZWlyIGlucHV0
+IGNsb2NrcywgdGhhdCBpcyBkZXRlcm1pbmVkIGJ5IHRoZSBjbG9jayBwcm92aWRlciBhbmQgbm90
+IHRoZQ0KPiBjbG9jayBjb25zdW1lci4NCj4gDQoNClRoaXMgc2VjdGlvbiByZWZlcnMgdG8gdGhl
+IGNsb2NrIHByb3ZpZGVyLg0KSSBuZWVkIHRvIG1vdmUgdGhlIHRleHQgYmVsbG93IHRvIG1vcmUg
+YXBwcm9wcmlhdGUgcGxhY2UsIG5vdCB1bmRlciAjY2xvY2stY2VsbHMuIA0KQW55IGNvbW1lbnRz
+IG9uIHRoZSBjb250ZW50IGl0c2VsZj8gDQoNCj4gLVNjb3R0DQo+IA0KDQpUaGFua3MsIElnYWwN
+Cg==
