@@ -1,27 +1,26 @@
 Return-Path: <clg@fr.ibm.com>
-Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
+Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E0F4D1A0629
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Apr 2015 02:06:15 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2FED11A04F2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Apr 2015 03:20:02 +1000 (AEST)
 Received: from /spool/local
- by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <clg@fr.ibm.com>;
- Wed, 8 Apr 2015 17:06:11 +0100
-Message-ID: <552551EB.9020808@fr.ibm.com>
-Date: Wed, 08 Apr 2015 18:06:03 +0200
-From: Cedric Le Goater <clg@fr.ibm.com>
+ Wed, 8 Apr 2015 18:19:59 +0100
+From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@fr.ibm.com>
+To: lm-sensors@lm-sensors.org
+Subject: [PATCH v5 0/4] hwmon: (ibmpowernv) add DTS support
+Date: Wed,  8 Apr 2015 19:19:46 +0200
+Message-Id: <1428513590-5773-1-git-send-email-clg@fr.ibm.com>
 MIME-Version: 1.0
-To: Guenter Roeck <linux@roeck-us.net>
-Subject: Re: [PATCH 2/4] hwmon: (ibmpowernv) add support for the new device
- tree
-References: <20150408152029.GA11030@roeck-us.net>
-In-Reply-To: <20150408152029.GA11030@roeck-us.net>
-Content-Type: text/plain; charset=windows-1252
-Cc: Stewart Smith <stewart@linux.vnet.ibm.com>, lm-sensors@lm-sensors.org,
- Neelesh Gupta <neelegup@linux.vnet.ibm.com>, skiboot@lists.ozlabs.org,
- linuxppc-dev@lists.ozlabs.org, Jean Delvare <jdelvare@suse.de>
+Content-Type: text/plain; charset=UTF-8
+Cc: Stewart Smith <stewart@linux.vnet.ibm.com>,
+ =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@fr.ibm.com>,
+ Jean Delvare <jdelvare@suse.de>, Neelesh Gupta <neelegup@linux.vnet.ibm.com>,
+ skiboot@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org,
+ Guenter Roeck <linux@roeck-us.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,58 +30,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/08/2015 05:20 PM, Guenter Roeck wrote:
-> On Wed, Apr 01, 2015 at 12:15:04PM +0200, Cédric Le Goater wrote:
->> The new OPAL device tree for sensors has a different layout and uses new
->> property names, for the type and for the handler used to capture the
->> sensor data.
->>
->> This patch modifies the ibmpowernv driver to support such a tree in a
->> way preserving compatibility with older OPAL firmwares.
->>
->> This is achieved by changing the error path of the routine parsing
->> an OPAL node name. The node is simply considered being from the new
->> device tree layout and fallback values are used.
->>
->> Signed-off-by: Cédric Le Goater <clg@fr.ibm.com>
-> 
-> Hi Cedric,
-> 
-> I was about to apply the series, but then I found the following problem.
-> 
->> ---
->>  drivers/hwmon/ibmpowernv.c |   47 +++++++++++++++++++++++++++++++++++---------
->>  1 file changed, 38 insertions(+), 9 deletions(-)
->>
-> [ ... ]
->>  
->> @@ -189,11 +204,16 @@ static u32 get_sensor_hwmon_index(struct sensor_data *sdata,
->>  {
->>  	int i;
->>  
->> -	for (i = 0; i < count; i++)
->> -		if (sdata_table[i].opal_index == sdata->opal_index &&
->> -		    sdata_table[i].type == sdata->type)
->> -			return sdata_table[i].hwmon_index;
->> +	/*
->> +	 * We don't use the OPAL index on newer device trees
->> +	 */
->> +	if (sdata->opal_index != -1) {
-> 
-> opal_index is u32, so this won't work (or at least the result is
-> unpredictable).
-> 
-> Also, in patch 4/4 (v4), get_logical_cpu() takes unsigned int as parameter,
-> but get_hard_smp_processor_id() returns an int, causing gcc to complain
-> if the code is built with W=1.
-> 
-> Please fix and resubmit the entire series.
-> 
-> When you do that, please also ensure that continuation lines
-> are aligned (in patch 3/4).
+Hello !
 
-Sure. Working on it right now.
+These patches extend the ibmpowernv driver to support the new OPAL firmware 
+which now exposes in its device tree the Digital Temperature Sensors of 
+a P8 system.
 
-Thanks,
+They are based on Linux 4.0.0-rc7 + the initial cleanup serie :
 
-C. 
+     http://lists.lm-sensors.org/pipermail/lm-sensors/2015-March/043670.html
+
+and were tested on IBM Power and Open Power systems running Trusty.
+
+Cheers,
+
+C.
+
+ Changes since v4:
+
+ - fixed comparison between signed and unsigned integer in 
+   get_logical_cpu()
+
+ Changes since v3:
+
+ - removed error message in case of an unknown physical cpu number
+
+ Changes since v2:
+
+ - fix bogus logical cpu retrieval 
+ - use 'threads_per_core' to print out cpu range
+
+ Changes since v1:
+
+ - check cpu validity before printing out the attribute label. 
+   if invalid, use a "phy" prefix to distinguish a linux cpu 
+   number from a physical cpu number. 
+ - fixed alignment
+ - fixed comparison between signed and unsigned integer on opal_index 
+
+
+CÃ©dric Le Goater (4):
+  hwmon: (ibmpowernv) add a helper routine create_hwmon_attr
+  hwmon: (ibmpowernv) add support for the new device tree
+  hwmon: (ibmpowernv) add a label attribute
+  hwmon: (ibmpowernv) pretty print labels
+
+ drivers/hwmon/ibmpowernv.c |  166 +++++++++++++++++++++++++++++++++++++++-----
+ 1 file changed, 148 insertions(+), 18 deletions(-)
+
+-- 
+1.7.10.4
