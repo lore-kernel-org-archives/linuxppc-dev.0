@@ -1,20 +1,19 @@
 Return-Path: <peterz@infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2001:1868:205::9])
+Received: from casper.infradead.org (unknown [IPv6:2001:770:15f::2])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E5C4D1A0515
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Apr 2015 22:45:51 +1000 (AEST)
-Date: Wed, 8 Apr 2015 14:45:35 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id DCF851A0515
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Apr 2015 22:51:29 +1000 (AEST)
+Date: Wed, 8 Apr 2015 14:51:13 +0200
 From: Peter Zijlstra <peterz@infradead.org>
 To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2 4/5] perf: Define PMU_TXN_READ interface
-Message-ID: <20150408124535.GF23123@twins.programming.kicks-ass.net>
+Subject: Re: [PATCH v2 5/5] powerpc/perf/hv-24x7: Use PMU_TXN_READ interface
+Message-ID: <20150408125113.GG23123@twins.programming.kicks-ass.net>
 References: <1428453299-19121-1-git-send-email-sukadev@linux.vnet.ibm.com>
- <1428453299-19121-5-git-send-email-sukadev@linux.vnet.ibm.com>
+ <1428453299-19121-6-git-send-email-sukadev@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1428453299-19121-5-git-send-email-sukadev@linux.vnet.ibm.com>
+In-Reply-To: <1428453299-19121-6-git-send-email-sukadev@linux.vnet.ibm.com>
 Cc: linux-kernel@vger.kernel.org, Arnaldo Carvalho de Melo <acme@kernel.org>,
  mingo@redhat.com, Paul Mackerras <paulus@samba.org>, dev@codyps.com,
  linuxppc-dev@lists.ozlabs.org
@@ -27,124 +26,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Apr 07, 2015 at 05:34:58PM -0700, Sukadev Bhattiprolu wrote:
-> diff --git a/kernel/events/core.c b/kernel/events/core.c
-> index 1ac99d1..a001582 100644
-> --- a/kernel/events/core.c
-> +++ b/kernel/events/core.c
-> @@ -3644,6 +3644,33 @@ static void orphans_remove_work(struct work_struct *work)
->  	put_ctx(ctx);
->  }
+On Tue, Apr 07, 2015 at 05:34:59PM -0700, Sukadev Bhattiprolu wrote:
+> @@ -1213,9 +1221,47 @@ static void update_event_count(struct perf_event *event, u64 now)
+>  static void h_24x7_event_read(struct perf_event *event)
+>  {
+>  	u64 now;
+> +	struct h_24x7_hw *h24x7hw;
+> +	struct hv_24x7_request_buffer *request_buffer;
+> +
+> +	/*
+> +	 * If in a READ transaction, add this counter to the list of
+> +	 * counters to read during the next HCALL (i.e commit_txn()).
+> +	 * If not in a READ transaction, go ahead and make the HCALL
+> +	 * to read this counter by itself.
+> +	 */
+> +	h24x7hw = &get_cpu_var(h_24x7_hw);
+> +	if (h24x7hw->txn_err)
+> +		goto out;
+> +
+> +	if (h24x7hw->in_txn) {
+> +		int i;
+> +		int ret;
+> +
+> +		request_buffer = (void *)get_cpu_var(hv_24x7_reqb);
+> +
+> +		ret = add_event_to_24x7_request(event, request_buffer);
+> +		if (ret) {
+> +			h24x7hw->txn_err = ret;
+> +		} else {
+> +			/*
+> +			 * Assoicate the event with the HCALL request index,
+> +			 * so we can quickly find/update the count in
+> +			 * ->commit_txn().
+> +			 */
+> +			i = request_buffer->num_requests - 1;
+> +			h24x7hw->events[i] = event;
+> +		}
+> +
+> +		put_cpu_var(hv_24x7_reqb);
+> +		goto out;
+> +	}
 >  
-> +/*
-> + * Use the transaction interface to read the group of events in @leader.
-> + * PMUs like the 24x7 counters in Power, can use this to queue the events
-> + * in the ->read() operation and perform the actual read in ->commit_txn.
-> + *
-> + * Other PMUs can ignore the ->start_txn and ->commit_txn and read each
-> + * PMU directly in the ->read() operation.
-> + */
-> +static int perf_event_read_txn(struct perf_event *leader)
-
-perf_event_read_group() might be a better name. Ah, I see that's already
-taken. Bugger.
-
-See the below patch.
-
-> +{
-> +	int ret;
-> +	struct perf_event *sub;
-> +	struct pmu *pmu;
+>  	now = h_24x7_get_value(event);
+>  	update_event_count(event, now);
 > +
-> +	pmu = leader->pmu;
-> +
-> +	pmu->start_txn(pmu, PERF_PMU_TXN_READ);
-> +
-> +	perf_event_read(leader);
-> +	list_for_each_entry(sub, &leader->sibling_list, group_entry)
-> +		perf_event_read(sub);
-> +
-> +	ret = pmu->commit_txn(pmu, PERF_PMU_TXN_READ);
-> +
-> +	return ret;
-> +}
+> +out:
+> +	put_cpu_var(h_24x7_hw);
+>  }
 
-And while were here, should we change the NOP txn implementation to not
-call perf_pmu_disable for TXN_READ ?
-
-That seems entirely unneeded in this case.
-
----
-Subject: perf: Rename perf_event_read_{one,group}, perf_read_hw
-
-In order to free up the perf_event_read_group() name:
-
- s/perf_event_read_\(one\|group\)/perf_read_\1/g
- s/perf_read_hw/__perf_read/g
-
-Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
----
- kernel/events/core.c | 14 +++++++-------
- 1 file changed, 7 insertions(+), 7 deletions(-)
-
-diff --git a/kernel/events/core.c b/kernel/events/core.c
-index 06917d537302..869f6accb4f4 100644
---- a/kernel/events/core.c
-+++ b/kernel/events/core.c
-@@ -3677,7 +3677,7 @@ static void put_event(struct perf_event *event)
- 	 *     see the comment there.
- 	 *
- 	 *  2) there is a lock-inversion with mmap_sem through
--	 *     perf_event_read_group(), which takes faults while
-+	 *     perf_read_group(), which takes faults while
- 	 *     holding ctx->mutex, however this is called after
- 	 *     the last filedesc died, so there is no possibility
- 	 *     to trigger the AB-BA case.
-@@ -3765,7 +3765,7 @@ u64 perf_event_read_value(struct perf_event *event, u64 *enabled, u64 *running)
- }
- EXPORT_SYMBOL_GPL(perf_event_read_value);
- 
--static int perf_event_read_group(struct perf_event *event,
-+static int perf_read_group(struct perf_event *event,
- 				   u64 read_format, char __user *buf)
- {
- 	struct perf_event *leader = event->group_leader, *sub;
-@@ -3813,7 +3813,7 @@ static int perf_event_read_group(struct perf_event *event,
- 	return ret;
- }
- 
--static int perf_event_read_one(struct perf_event *event,
-+static int perf_read_one(struct perf_event *event,
- 				 u64 read_format, char __user *buf)
- {
- 	u64 enabled, running;
-@@ -3851,7 +3851,7 @@ static bool is_event_hup(struct perf_event *event)
-  * Read the performance event - simple non blocking version for now
-  */
- static ssize_t
--perf_read_hw(struct perf_event *event, char __user *buf, size_t count)
-+__perf_read(struct perf_event *event, char __user *buf, size_t count)
- {
- 	u64 read_format = event->attr.read_format;
- 	int ret;
-@@ -3869,9 +3869,9 @@ perf_read_hw(struct perf_event *event, char __user *buf, size_t count)
- 
- 	WARN_ON_ONCE(event->ctx->parent_ctx);
- 	if (read_format & PERF_FORMAT_GROUP)
--		ret = perf_event_read_group(event, read_format, buf);
-+		ret = perf_read_group(event, read_format, buf);
- 	else
--		ret = perf_event_read_one(event, read_format, buf);
-+		ret = perf_read_one(event, read_format, buf);
- 
- 	return ret;
- }
-@@ -3884,7 +3884,7 @@ perf_read(struct file *file, char __user *buf, size_t count, loff_t *ppos)
- 	int ret;
- 
- 	ctx = perf_event_ctx_lock(event);
--	ret = perf_read_hw(event, buf, count);
-+	ret = __perf_read(event, buf, count);
- 	perf_event_ctx_unlock(event, ctx);
- 
- 	return ret;
+Most of the pmu ops are called with IRQs disabled, no need to use
+get_cpu_var()/put_cpu_var() which disable/enable preemption.
