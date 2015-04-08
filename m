@@ -1,31 +1,29 @@
-Return-Path: <yhlu.kernel@gmail.com>
-Received: from mail-ie0-x234.google.com (mail-ie0-x234.google.com
- [IPv6:2607:f8b0:4001:c03::234])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <clg@fr.ibm.com>
+Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 091E61A0BB9
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Apr 2015 15:39:58 +1000 (AEST)
-Received: by iedfl3 with SMTP id fl3so74191733ied.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 07 Apr 2015 22:39:56 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6244E1A0BBE
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Apr 2015 16:57:23 +1000 (AEST)
+Received: from /spool/local
+ by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <clg@fr.ibm.com>;
+ Wed, 8 Apr 2015 07:57:19 +0100
+Message-ID: <5524D147.1080201@fr.ibm.com>
+Date: Wed, 08 Apr 2015 08:57:11 +0200
+From: Cedric Le Goater <clg@fr.ibm.com>
 MIME-Version: 1.0
-Sender: yhlu.kernel@gmail.com
-In-Reply-To: <1428464944.4947.69.camel@kernel.crashing.org>
-References: <1428452669-24824-1-git-send-email-yinghai@kernel.org>
- <1428464944.4947.69.camel@kernel.crashing.org>
-Date: Tue, 7 Apr 2015 22:39:55 -0700
-Message-ID: <CAE9FiQVwKpUB2Qh+_sqO363BfZz2ueoUxe=0ZYM1SE=ONquvdA@mail.gmail.com>
-Subject: Re: [PATCH] powerpc/PCI: Add IORESOURCE_MEM_64 for 64-bit resource in
- of parsing
-From: Yinghai Lu <yinghai@kernel.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- David Miller <davem@davemloft.net>
-Content-Type: text/plain; charset=UTF-8
-Cc: "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- Gavin Shan <gwshan@linux.vnet.ibm.com>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- Yijing Wang <wangyijing@huawei.com>, Paul Mackerras <paulus@samba.org>,
- Anton Blanchard <anton@samba.org>, Bjorn Helgaas <bhelgaas@google.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+To: Guenter Roeck <linux@roeck-us.net>
+Subject: Re: [PATCH 4/4] hwmon: (ibmpowernv) pretty print labels
+References: <5523ECC4.9010609@fr.ibm.com>
+ <1428417956-28617-1-git-send-email-clg@fr.ibm.com>
+ <20150407164439.GA4514@roeck-us.net> <55241C02.60103@fr.ibm.com>
+ <20150407192212.GA6446@roeck-us.net>
+In-Reply-To: <20150407192212.GA6446@roeck-us.net>
+Content-Type: text/plain; charset=windows-1252
+Cc: Stewart Smith <stewart@linux.vnet.ibm.com>, lm-sensors@lm-sensors.org,
+ Neelesh Gupta <neelegup@linux.vnet.ibm.com>, skiboot@lists.ozlabs.org,
+ linuxppc-dev@lists.ozlabs.org, Jean Delvare <jdelvare@suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,44 +33,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Apr 7, 2015 at 8:49 PM, Benjamin Herrenschmidt
-<benh@kernel.crashing.org> wrote:
-> On Tue, 2015-04-07 at 17:24 -0700, Yinghai Lu wrote:
->> For device resource PREF bit setting under bridge 64-bit pref resource,
->> we need to make sure only set PREF for 64bit resource, so set IORESOUCE_MEM_64
->> for 64bit resource during of device resource flags parsing.
->
->> Link: https://bugzilla.kernel.org/show_bug.cgi?id=96261
->> Link: https://bugzilla.kernel.org/show_bug.cgi?id=96241
->
-> These patches (from the above BZ) aren't right for one thing: You
-> shouldn't set the IORESOURCE_PREFETCH in the resource itself. This
-> *will* break stuff.
->
-> You can put the resource in a prefetchable region indeed, if you
-> are on a PCIe-only path (though we should have some arch flag
-> to check that the host bridge indeed doesn't do any prefetch,
-> on powerpc we are good there).
+Hello Guenter,
 
-The patch is at:
+On 04/07/2015 09:22 PM, Guenter Roeck wrote:
+> Hi Cedric,
+> 
+> On Tue, Apr 07, 2015 at 08:03:46PM +0200, Cedric Le Goater wrote:
+>>
+>> on a P7  :
+>>
+>> 	# ppc64_cpu --info
+>> 	Core   0:    0*    1*    2*    3* 
+>> 	Core   1:    4*    5*    6*    7* 
+>> 	Core   2:    8*    9*   10*   11* 
+>> 	Core   3:   12*   13*   14*   15* 
+>> 	Core   4:   16*   17*   18*   19* 
+>> 	Core   5:   20*   21*   22*   23* 
+>>
+> How would the 'sensors' output look like on that system ?
+> Wouldn't it be something like the following ?
+> 
+>  	Core 0-7:    +29.0°C  
+>  	Core 4-11:   +29.0°C  
 
-http://git.kernel.org/cgit/linux/kernel/git/helgaas/pci.git/commit/?h=for-linus&id=1a3ec5e7b00dcd9cac24efe3d65bfccf82597ce5
+yep. 
 
-and we limit to set pref bit for pcie end devices mmio 64bit resource.
+>>> Also, how do you know that the range of CPU IDs is always 8 ?
+>>
+>> This is a shortcut. The code is for the ibmpowernv platform and assumes 
+>> that we are running on a P8 (8 hardware threads). It would be better to 
+>> use a "maximum threads per core" variable but I am not sure this is 
+>> available, as it is a tunable. I will look into it.
+>>
+> Tunable how ? 
 
->
-> But you can't set the "prefetch" bit on the resource because that would
-> be losing the indication that this resource has side effects. This bit
-> is used in some cases to enable store gathering when mmap'ing via sysfs
-> and can be used for similar uses by drivers.
+You can switch on and off threads.
 
-Any pointer for that?
+> The core code must have some means to detect this number when it initialized 
+> CPU entries, or am I missing something ?
 
->
-> It's one thing to say "you can put non-prefetch BARs in prefetch windows
-> on that path", it's another one to completely make the BAR looks like
-> it's prefetchable when it's not.
+threads_per_core is what the code needs. v3 is on its way.
 
-Too hard for me to tell the difference.
+Thanks !
 
-        Yinghai
+C.
