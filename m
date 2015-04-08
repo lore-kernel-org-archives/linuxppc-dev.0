@@ -1,26 +1,23 @@
-Return-Path: <clg@fr.ibm.com>
-Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <herbert@gondor.apana.org.au>
+Received: from helcar.hengli.com.au (helcar.hengli.com.au [209.40.204.226])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D65281A0406
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Apr 2015 23:42:18 +1000 (AEST)
-Received: from /spool/local
- by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <clg@fr.ibm.com>;
- Wed, 8 Apr 2015 14:42:15 +0100
-From: =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@fr.ibm.com>
-To: lm-sensors@lm-sensors.org
-Subject: [PATCH v4] hwmon: (ibmpowernv) pretty print labels
-Date: Wed,  8 Apr 2015 15:42:07 +0200
-Message-Id: <1428500527-7833-1-git-send-email-clg@fr.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 65ACB1A08FC
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Apr 2015 00:16:33 +1000 (AEST)
+Date: Wed, 8 Apr 2015 22:16:00 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Dan Streetman <ddstreet@ieee.org>
+Subject: Re: [PATCH 09/11] crypto: remove LZO fallback from crypto 842
+Message-ID: <20150408141600.GA30338@gondor.apana.org.au>
+References: <1428428070-17803-1-git-send-email-ddstreet@ieee.org>
+ <1428428070-17803-10-git-send-email-ddstreet@ieee.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Cc: Stewart Smith <stewart@linux.vnet.ibm.com>,
- =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@fr.ibm.com>,
- Jean Delvare <jdelvare@suse.de>, Neelesh Gupta <neelegup@linux.vnet.ibm.com>,
- skiboot@lists.ozlabs.org, linuxppc-dev@lists.ozlabs.org,
- Guenter Roeck <linux@roeck-us.net>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1428428070-17803-10-git-send-email-ddstreet@ieee.org>
+Cc: "David S. Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+ Robert Jennings <rob@pochix.net>, Paul Mackerras <paulus@samba.org>,
+ linux-crypto@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Seth Jennings <sjennings@variantweb.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,101 +27,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The new OPAL device tree adds a few properties which can be used to add
-extra information on the sensor label.
+On Tue, Apr 07, 2015 at 01:34:28PM -0400, Dan Streetman wrote:
+> Update the crypto 842 driver to no longer fallback to LZO if the 842
+> hardware is unavailable.  Simplify the crpypto 842 driver to remove all
+> headers indicating 842/lzo.
+> 
+> The crypto 842 driver should do 842-format compression and decompression
+> only.  It should not fallback to LZO compression/decompression.  The
+> user of the crypto 842 driver can fallback to another format if desired.
+> 
+> Signed-off-by: Dan Streetman <ddstreet@ieee.org>
 
-In the case of a cpu core sensor, the firmware exposes the physical 
-identifier of the core in the "ibm,pir" property. The driver 
-translates this identifier in a linux cpu number and prints out a 
-range corresponding to the hardware threads of the core (as they
-share the same sensor).
+Thanks for the series.  I don't know how I missed it when it was
+merged originally but crypto/842.c needs to be moved over to
+drivers/crypto.  Your software implementation should take its
+places as the reference implementation.
 
-The numbering gives a hint on the localization of the core in the 
-system (which socket, which chip). 
-
-Signed-off-by: Cédric Le Goater <clg@fr.ibm.com>
----
-
- Changes since v3:
-
- - removed error message in case of an unknown physical cpu number
-
- Changes since v2:
-
- - fix bogus logical cpu retrieval 
- - use 'threads_per_core' to print out cpu range
-
- Changes since v1:
-
- - check cpu validity before printing out the attribute label. 
-   if invalid, use a "phy" prefix to distinguish a linux cpu 
-   number from a physical cpu number. 
-
- drivers/hwmon/ibmpowernv.c |   41 +++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 41 insertions(+)
-
-Index: linux.git/drivers/hwmon/ibmpowernv.c
-===================================================================
---- linux.git.orig/drivers/hwmon/ibmpowernv.c
-+++ linux.git/drivers/hwmon/ibmpowernv.c
-@@ -30,6 +30,7 @@
- #include <linux/platform_device.h>
- #include <asm/opal.h>
- #include <linux/err.h>
-+#include <asm/cputhreads.h>
- 
- #define MAX_ATTR_LEN	32
- #define MAX_LABEL_LEN	64
-@@ -110,12 +111,52 @@ static ssize_t show_label(struct device
- 	return sprintf(buf, "%s\n", sdata->label);
- }
- 
-+static int __init get_logical_cpu(unsigned int hwcpu)
-+{
-+	int cpu;
-+
-+	for_each_possible_cpu(cpu)
-+		if (get_hard_smp_processor_id(cpu) == hwcpu)
-+			return cpu;
-+
-+	return -ENOENT;
-+}
-+
- static void __init make_sensor_label(struct device_node *np,
- 		    struct sensor_data *sdata, const char *label)
- {
-+	u32 id;
- 	size_t n;
- 
- 	n = snprintf(sdata->label, sizeof(sdata->label), "%s", label);
-+
-+	/*
-+	 * Core temp pretty print
-+	 */
-+	if (!of_property_read_u32(np, "ibm,pir", &id)) {
-+		int cpuid = get_logical_cpu(id);
-+
-+		if (cpuid >= 0)
-+			/*
-+			 * The digital thermal sensors are associated
-+			 * with a core. Let's print out the range of
-+			 * cpu ids corresponding to the hardware
-+			 * threads of the core.
-+			 */
-+			n += snprintf(sdata->label + n,
-+				      sizeof(sdata->label) - n, " %d-%d",
-+				      cpuid, cpuid + threads_per_core - 1);
-+		else
-+			n += snprintf(sdata->label + n,
-+				      sizeof(sdata->label) - n, " phy%d", id);
-+	}
-+
-+	/*
-+	 * Membuffer pretty print
-+	 */
-+	if (!of_property_read_u32(np, "ibm,chip-id", &id))
-+		n += snprintf(sdata->label + n, sizeof(sdata->label) - n,
-+			      " %d", id & 0xffff);
- }
- 
- static int get_sensor_index_attr(const char *name, u32 *index,
+Cheers,
+-- 
+Email: Herbert Xu <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
