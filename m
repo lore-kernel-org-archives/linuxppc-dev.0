@@ -1,24 +1,23 @@
-Return-Path: <ddstreet@gmail.com>
-Received: from mail-ie0-x229.google.com (mail-ie0-x229.google.com
- [IPv6:2607:f8b0:4001:c03::229])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <herbert@gondor.apana.org.au>
+Received: from helcar.hengli.com.au (helcar.hengli.com.au [209.40.204.226])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 085531A08FC
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Apr 2015 00:48:28 +1000 (AEST)
-Received: by iedfl3 with SMTP id fl3so85601599ied.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Apr 2015 07:48:25 -0700 (PDT)
-MIME-Version: 1.0
-Sender: ddstreet@gmail.com
-In-Reply-To: <20150408141631.GB30338@gondor.apana.org.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4D08E1A0A3F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Apr 2015 00:49:02 +1000 (AEST)
+Date: Wed, 8 Apr 2015 22:48:42 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Dan Streetman <ddstreet@ieee.org>
+Subject: Re: [PATCH 09/11] crypto: remove LZO fallback from crypto 842
+Message-ID: <20150408144842.GA30895@gondor.apana.org.au>
 References: <1428428070-17803-1-git-send-email-ddstreet@ieee.org>
- <1428428070-17803-12-git-send-email-ddstreet@ieee.org>
- <20150408141631.GB30338@gondor.apana.org.au>
-From: Dan Streetman <ddstreet@ieee.org>
-Date: Wed, 8 Apr 2015 10:48:03 -0400
-Message-ID: <CALZtONB371ODDyhAVxgaGtxMWRSgshaXsYB8P_5AwSmdiJaAQg@mail.gmail.com>
-Subject: Re: [PATCH 11/11] crypto: add crypto compression sefltest
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Content-Type: text/plain; charset=UTF-8
+ <1428428070-17803-10-git-send-email-ddstreet@ieee.org>
+ <20150408141600.GA30338@gondor.apana.org.au>
+ <CALZtONC0WWkfaRs+0SNHaDQ1DhT+1ekgk0YXsQBi_2NRoP1e8Q@mail.gmail.com>
+ <20150408143831.GA30762@gondor.apana.org.au>
+ <CALZtONAZenUKxJdzOFXe1hBxGCASO_GsVfG9vtKWBe5EwcftmA@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <CALZtONAZenUKxJdzOFXe1hBxGCASO_GsVfG9vtKWBe5EwcftmA@mail.gmail.com>
 Cc: "David S. Miller" <davem@davemloft.net>,
  linux-kernel <linux-kernel@vger.kernel.org>, Robert Jennings <rob@pochix.net>,
  Paul Mackerras <paulus@samba.org>, linux-crypto@vger.kernel.org,
@@ -33,30 +32,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, Apr 8, 2015 at 10:16 AM, Herbert Xu <herbert@gondor.apana.org.au> wrote:
-> On Tue, Apr 07, 2015 at 01:34:30PM -0400, Dan Streetman wrote:
->> Add configurable module to perform self-tests on any crypto compression
->> driver.
->>
->> This allows testing any crypto compression driver with any input buffer,
->> at varying alignments and lengths.  It calculates the average bytes per
->> second compression and decompression rates.  Any errors reported by the
->> compressor during compression or decompression will end the test and
->> be logged.
->>
->> Signed-off-by: Dan Streetman <ddstreet@ieee.org>
+On Wed, Apr 08, 2015 at 10:45:45AM -0400, Dan Streetman wrote:
 >
-> Please use the existing infrastructure in testmgr/tcrypt.
+> Ok I'll see if I can include a sw compression implementation.
 
-I think I looked at that and it didn't seem like it would be able to
-include all the user controls, but I'll look again.  In any case this
-test doesn't have to be included in this 842 patch set, so I'll drop
-it from the next version and re-send it by itself if/when I can update
-it to use testmgr.
+That would be great!
 
->
-> Thanks,
-> --
-> Email: Herbert Xu <herbert@gondor.apana.org.au>
-> Home Page: http://gondor.apana.org.au/~herbert/
-> PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+> ah ok, so you mean it can still be a crypto_comp interface, just move
+> its location and/or merge it into nx-842.c?
+
+Oh yes of course.  There is nothing wrong with it exporting this
+via the crypto API.  It's just in an unusual spot for a driver.
+
+Cheers,
+-- 
+Email: Herbert Xu <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
