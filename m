@@ -1,31 +1,20 @@
-Return-Path: <stripathi@apm.com>
-Received: from mail-wi0-f172.google.com (exprod5og122.obsmtp.com [64.18.0.192])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1on0112.outbound.protection.outlook.com [157.56.110.112])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BCD851A04E0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 02:17:21 +1000 (AEST)
-Received: by wiaa2 with SMTP id a2so104817046wia.0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Apr 2015 09:17:18 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id ADEFC1A04E0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 03:00:39 +1000 (AEST)
+Message-ID: <1428598825.22867.532.camel@freescale.com>
+Subject: Re: [PATCH] dt/bindings: fsl/guts: Added global-utilities compatibles
+From: Scott Wood <scottwood@freescale.com>
+To: Igal.Liberman <igal.liberman@freescale.com>
+Date: Thu, 9 Apr 2015 12:00:25 -0500
+In-Reply-To: <1428560392-30903-1-git-send-email-igal.liberman@freescale.com>
+References: <1428560392-30903-1-git-send-email-igal.liberman@freescale.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-In-Reply-To: <CAOHikRArf+Fqv0JbQ1jM19zWGj-fBDcPie6apgkydgBLOm=x0w@mail.gmail.com>
-References: <1427726768-17233-1-git-send-email-stripathi@apm.com>
- <1427726768-17233-3-git-send-email-stripathi@apm.com>
- <CAPDyKFoc0V5BdKCO8v92Y1qHzEPgwxRdYR3cCj8nCyU-s25NuQ@mail.gmail.com>
- <CAOHikRArf+Fqv0JbQ1jM19zWGj-fBDcPie6apgkydgBLOm=x0w@mail.gmail.com>
-Date: Thu, 9 Apr 2015 21:41:18 +0530
-Message-ID: <CAOHikRCD6MfqMmBzQR3XLUj8WSL1H+jH2KZrBXSQSRpTXuz1_g@mail.gmail.com>
-Subject: Re: [PATCH v2 2/2] mmc: host: Add some quirks to be read from fdt in
- sdhci-pltm.c
-From: Suman Tripathi <stripathi@apm.com>
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Content-Type: text/plain; charset=UTF-8
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Mark Langsdorf <mlangsdo@redhat.com>, Arnd Bergmann <arnd@arndb.de>,
- Jon Masters <jcm@redhat.com>, Anton Vorontsov <anton@enomsg.org>,
- linux-mmc <linux-mmc@vger.kernel.org>, Chris Ball <chris@printf.net>,
- patches <patches@apm.com>, Don Dutile <ddutile@redhat.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,158 +24,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 30 March 2015 at 16:46, Suman Tripathi <stripathi@apm.com> wrote:
-> This patch adds some quirks support to be read from fdt.
->
-> Signed-off-by: Suman Tripathi <stripathi@apm.com>
+On Thu, 2015-04-09 at 09:19 +0300, Igal.Liberman wrote:
+> From: Igal Liberman <Igal.Liberman@freescale.com>
+> 
+> Signed-off-by: Igal Liberman <Igal.Liberman@freescale.com>
 > ---
->  drivers/mmc/host/sdhci-pltfm.c | 15 +++++++++++++++
->  1 file changed, 15 insertions(+)
->
-> diff --git a/drivers/mmc/host/sdhci-pltfm.c b/drivers/mmc/host/sdhci-pltfm.c
-> index bef250e..9f6a4b9 100644
-> --- a/drivers/mmc/host/sdhci-pltfm.c
-> +++ b/drivers/mmc/host/sdhci-pltfm.c
-> @@ -85,6 +85,21 @@ void sdhci_get_of_property(struct platform_device *pdev)
->
->                 if (of_get_property(np, "broken-cd", NULL))
->                         host->quirks |= SDHCI_QUIRK_BROKEN_CARD_DETECTION;
-> +
-> +               if (of_get_property(np, "delay-after-power", NULL))
-> +                       host->quirks |= SDHCI_QUIRK_DELAY_AFTER_POWER;
-> +
-> +               if (of_get_property(np, "no-hispd", NULL))
-> +                       host->quirks |= SDHCI_QUIRK_NO_HISPD_BIT;
-> +
-> +               if (of_get_property(np, "broken-adma", NULL))
-> +                       host->quirks |= SDHCI_QUIRK_BROKEN_ADMA;
-> +
-> +               if (of_get_property(np, "broken-dma", NULL))
-> +                       host->quirks |= SDHCI_QUIRK_BROKEN_DMA;
-> +
-> +               if (of_get_property(np, "no-cmd23", NULL))
-> +                       host->quirks2 |= SDHCI_QUIRK2_HOST_NO_CMD23;
+>  .../devicetree/bindings/powerpc/fsl/guts.txt       |   14 ++++++++++++++
+>  1 file changed, 14 insertions(+)
+> 
+> diff --git a/Documentation/devicetree/bindings/powerpc/fsl/guts.txt b/Documentation/devicetree/bindings/powerpc/fsl/guts.txt
+> index 7f150b5..e4f0ac2 100644
+> --- a/Documentation/devicetree/bindings/powerpc/fsl/guts.txt
+> +++ b/Documentation/devicetree/bindings/powerpc/fsl/guts.txt
+> @@ -9,6 +9,20 @@ Required properties:
+>  
+>   - compatible : Should define the compatible device type for
+>     global-utilities.
+> +   Possible compatibles:
+> +	"fsl,qoriq-device-config-1.0"
+> +	"fsl,p2041-device-config"
+> +	"fsl,p3041-device-config"
+> +	"fsl,p4080-device-config"
+> +	"fsl,p5020-device-config"
+> +	"fsl,p5040-device-config"
+> +	"fsl,qoriq-device-config-2.0"
+> +	"fsl,b4860-device-config"
+> +	"fsl,b4420-device-config"
+> +	"fsl,b4-device-config"
+> +	"fsl,t1040-device-config"
+> +	"fsl,t2080-device-config"
+> +	"fsl,t4240-device-config"
 
-Can't at least some of these be distinguished from what sdhci variant
-that is being used? Instead of having them in DT...
+There's no need to list every chip here.  Just list the ones that aren't
+chips, plus "fsl,<chip>-device-config".
 
-We are using arasan controller in our SOC. So reusing a the existing
-sdhci-of-arasan driver. Due to H/W issues we require this quirks. So
-for us only option left to pass the info is DTS or ACPI table.
+As for fsl,b4-device-config, does that exist in any final dtb (as
+opposed to b4si-post.dtsi)?  The b4420 and b4860 dtsi files both
+overwrite that compatible.
 
-Kind regards
-Uffe
-
-On Thu, Apr 9, 2015 at 9:40 PM, Suman Tripathi <stripathi@apm.com> wrote:
-> On 30 March 2015 at 16:46, Suman Tripathi <stripathi@apm.com> wrote:
->> This patch adds some quirks support to be read from fdt.
->>
->> Signed-off-by: Suman Tripathi <stripathi@apm.com>
->> ---
->>  drivers/mmc/host/sdhci-pltfm.c | 15 +++++++++++++++
->>  1 file changed, 15 insertions(+)
->>
->> diff --git a/drivers/mmc/host/sdhci-pltfm.c
->> b/drivers/mmc/host/sdhci-pltfm.c
->> index bef250e..9f6a4b9 100644
->> --- a/drivers/mmc/host/sdhci-pltfm.c
->> +++ b/drivers/mmc/host/sdhci-pltfm.c
->> @@ -85,6 +85,21 @@ void sdhci_get_of_property(struct platform_device
->> *pdev)
->>
->>                 if (of_get_property(np, "broken-cd", NULL))
->>                         host->quirks |= SDHCI_QUIRK_BROKEN_CARD_DETECTION;
->> +
->> +               if (of_get_property(np, "delay-after-power", NULL))
->> +                       host->quirks |= SDHCI_QUIRK_DELAY_AFTER_POWER;
->> +
->> +               if (of_get_property(np, "no-hispd", NULL))
->> +                       host->quirks |= SDHCI_QUIRK_NO_HISPD_BIT;
->> +
->> +               if (of_get_property(np, "broken-adma", NULL))
->> +                       host->quirks |= SDHCI_QUIRK_BROKEN_ADMA;
->> +
->> +               if (of_get_property(np, "broken-dma", NULL))
->> +                       host->quirks |= SDHCI_QUIRK_BROKEN_DMA;
->> +
->> +               if (of_get_property(np, "no-cmd23", NULL))
->> +                       host->quirks2 |= SDHCI_QUIRK2_HOST_NO_CMD23;
->
-> Can't at least some of these be distinguished from what sdhci variant
-> that is being used? Instead of having them in DT...
->
-> We are using arasan controller in our SOC. So reusing a the existing
-> sdhci-of-arasan driver. Due to H/W issues we require this quirks. So for us
-> only option left to pass the info is DTS or ACPI table.
->
-> Kind regards
-> Uffe
->
-> On Wed, Apr 8, 2015 at 3:10 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
->>
->> On 30 March 2015 at 16:46, Suman Tripathi <stripathi@apm.com> wrote:
->> > This patch adds some quirks support to be read from fdt.
->> >
->> > Signed-off-by: Suman Tripathi <stripathi@apm.com>
->> > ---
->> >  drivers/mmc/host/sdhci-pltfm.c | 15 +++++++++++++++
->> >  1 file changed, 15 insertions(+)
->> >
->> > diff --git a/drivers/mmc/host/sdhci-pltfm.c
->> > b/drivers/mmc/host/sdhci-pltfm.c
->> > index bef250e..9f6a4b9 100644
->> > --- a/drivers/mmc/host/sdhci-pltfm.c
->> > +++ b/drivers/mmc/host/sdhci-pltfm.c
->> > @@ -85,6 +85,21 @@ void sdhci_get_of_property(struct platform_device
->> > *pdev)
->> >
->> >                 if (of_get_property(np, "broken-cd", NULL))
->> >                         host->quirks |=
->> > SDHCI_QUIRK_BROKEN_CARD_DETECTION;
->> > +
->> > +               if (of_get_property(np, "delay-after-power", NULL))
->> > +                       host->quirks |= SDHCI_QUIRK_DELAY_AFTER_POWER;
->> > +
->> > +               if (of_get_property(np, "no-hispd", NULL))
->> > +                       host->quirks |= SDHCI_QUIRK_NO_HISPD_BIT;
->> > +
->> > +               if (of_get_property(np, "broken-adma", NULL))
->> > +                       host->quirks |= SDHCI_QUIRK_BROKEN_ADMA;
->> > +
->> > +               if (of_get_property(np, "broken-dma", NULL))
->> > +                       host->quirks |= SDHCI_QUIRK_BROKEN_DMA;
->> > +
->> > +               if (of_get_property(np, "no-cmd23", NULL))
->> > +                       host->quirks2 |= SDHCI_QUIRK2_HOST_NO_CMD23;
->>
->> Can't at least some of these be distinguished from what sdhci variant
->> that is being used? Instead of having them in DT...
->>
->> Kind regards
->> Uffe
->>
->> >
->> >                 if (of_get_property(np, "no-1-8-v", NULL))
->> >                         host->quirks2 |= SDHCI_QUIRK2_NO_1_8_V;
->> > --
->> > 1.8.2.1
->> >
->> > --
->> > To unsubscribe from this list: send the line "unsubscribe linux-mmc" in
->> > the body of a message to majordomo@vger.kernel.org
->> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
->
->
->
-> --
-> Thanks,
-> with regards,
-> Suman Tripathi
-
-
-
--- 
-Thanks,
-with regards,
-Suman Tripathi
+-Scott
