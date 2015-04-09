@@ -1,42 +1,31 @@
-Return-Path: <mahesh@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A89BF1A0AA4
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 00:14:44 +1000 (AEST)
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+Return-Path: <stripathi@apm.com>
+Received: from mail-wi0-f172.google.com (exprod5og122.obsmtp.com [64.18.0.192])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 429ED1402D8
- for <linuxppc-dev@ozlabs.org>; Fri, 10 Apr 2015 00:14:44 +1000 (AEST)
-Received: from /spool/local
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
- Fri, 10 Apr 2015 00:14:43 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 188DA3578047
- for <linuxppc-dev@ozlabs.org>; Fri, 10 Apr 2015 00:14:41 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t39EEWtS45875220
- for <linuxppc-dev@ozlabs.org>; Fri, 10 Apr 2015 00:14:41 +1000
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t39EE755022334
- for <linuxppc-dev@ozlabs.org>; Fri, 10 Apr 2015 00:14:07 +1000
-Subject: [PATCH 2/2] powerpc/powernv: Pull all HMI events before panic.
-From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
-To: linuxppc-dev <linuxppc-dev@ozlabs.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>
-Date: Thu, 09 Apr 2015 19:43:42 +0530
-Message-ID: <20150409141338.6963.54307.stgit@mars>
-In-Reply-To: <20150409141305.6963.46929.stgit@mars>
-References: <20150409141305.6963.46929.stgit@mars>
+ by lists.ozlabs.org (Postfix) with ESMTPS id BCD851A04E0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 02:17:21 +1000 (AEST)
+Received: by wiaa2 with SMTP id a2so104817046wia.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Apr 2015 09:17:18 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: Paul Mackerras <paulus@samba.org>
+In-Reply-To: <CAOHikRArf+Fqv0JbQ1jM19zWGj-fBDcPie6apgkydgBLOm=x0w@mail.gmail.com>
+References: <1427726768-17233-1-git-send-email-stripathi@apm.com>
+ <1427726768-17233-3-git-send-email-stripathi@apm.com>
+ <CAPDyKFoc0V5BdKCO8v92Y1qHzEPgwxRdYR3cCj8nCyU-s25NuQ@mail.gmail.com>
+ <CAOHikRArf+Fqv0JbQ1jM19zWGj-fBDcPie6apgkydgBLOm=x0w@mail.gmail.com>
+Date: Thu, 9 Apr 2015 21:41:18 +0530
+Message-ID: <CAOHikRCD6MfqMmBzQR3XLUj8WSL1H+jH2KZrBXSQSRpTXuz1_g@mail.gmail.com>
+Subject: Re: [PATCH v2 2/2] mmc: host: Add some quirks to be read from fdt in
+ sdhci-pltm.c
+From: Suman Tripathi <stripathi@apm.com>
+To: Ulf Hansson <ulf.hansson@linaro.org>
+Content-Type: text/plain; charset=UTF-8
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ Mark Langsdorf <mlangsdo@redhat.com>, Arnd Bergmann <arnd@arndb.de>,
+ Jon Masters <jcm@redhat.com>, Anton Vorontsov <anton@enomsg.org>,
+ linux-mmc <linux-mmc@vger.kernel.org>, Chris Ball <chris@printf.net>,
+ patches <patches@apm.com>, Don Dutile <ddutile@redhat.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,67 +35,158 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+On 30 March 2015 at 16:46, Suman Tripathi <stripathi@apm.com> wrote:
+> This patch adds some quirks support to be read from fdt.
+>
+> Signed-off-by: Suman Tripathi <stripathi@apm.com>
+> ---
+>  drivers/mmc/host/sdhci-pltfm.c | 15 +++++++++++++++
+>  1 file changed, 15 insertions(+)
+>
+> diff --git a/drivers/mmc/host/sdhci-pltfm.c b/drivers/mmc/host/sdhci-pltfm.c
+> index bef250e..9f6a4b9 100644
+> --- a/drivers/mmc/host/sdhci-pltfm.c
+> +++ b/drivers/mmc/host/sdhci-pltfm.c
+> @@ -85,6 +85,21 @@ void sdhci_get_of_property(struct platform_device *pdev)
+>
+>                 if (of_get_property(np, "broken-cd", NULL))
+>                         host->quirks |= SDHCI_QUIRK_BROKEN_CARD_DETECTION;
+> +
+> +               if (of_get_property(np, "delay-after-power", NULL))
+> +                       host->quirks |= SDHCI_QUIRK_DELAY_AFTER_POWER;
+> +
+> +               if (of_get_property(np, "no-hispd", NULL))
+> +                       host->quirks |= SDHCI_QUIRK_NO_HISPD_BIT;
+> +
+> +               if (of_get_property(np, "broken-adma", NULL))
+> +                       host->quirks |= SDHCI_QUIRK_BROKEN_ADMA;
+> +
+> +               if (of_get_property(np, "broken-dma", NULL))
+> +                       host->quirks |= SDHCI_QUIRK_BROKEN_DMA;
+> +
+> +               if (of_get_property(np, "no-cmd23", NULL))
+> +                       host->quirks2 |= SDHCI_QUIRK2_HOST_NO_CMD23;
 
-In the event of unrecovered HMI the existing code panics as soon as
-it receives the first unrecovered HMI event. This makes host to report
-partial information about HMIs before panic. There may be more errors
-which would have caused the HMI and hence more HMI event would have been
-generated waiting to be pulled by host. This patch implements a logic to
-pull and display all the HMI event before going down panic path.
+Can't at least some of these be distinguished from what sdhci variant
+that is being used? Instead of having them in DT...
 
-Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
----
- arch/powerpc/platforms/powernv/opal-hmi.c |   26 ++++++++++++++++++++++++--
- 1 file changed, 24 insertions(+), 2 deletions(-)
+We are using arasan controller in our SOC. So reusing a the existing
+sdhci-of-arasan driver. Due to H/W issues we require this quirks. So
+for us only option left to pass the info is DTS or ACPI table.
 
-diff --git a/arch/powerpc/platforms/powernv/opal-hmi.c b/arch/powerpc/platforms/powernv/opal-hmi.c
-index 2668225..26e0f3f 100644
---- a/arch/powerpc/platforms/powernv/opal-hmi.c
-+++ b/arch/powerpc/platforms/powernv/opal-hmi.c
-@@ -235,6 +235,8 @@ static void hmi_event_handler(struct work_struct *work)
- 	struct OpalHMIEvent *hmi_evt;
- 	struct OpalHmiEvtNode *msg_node;
- 	uint8_t disposition;
-+	struct opal_msg msg;
-+	int unrecoverable = 0;
- 
- 	spin_lock_irqsave(&opal_hmi_evt_lock, flags);
- 	while (!list_empty(&opal_hmi_evt_list)) {
-@@ -250,14 +252,34 @@ static void hmi_event_handler(struct work_struct *work)
- 
- 		/*
- 		 * Check if HMI event has been recovered or not. If not
--		 * then we can't continue, invoke panic.
-+		 * then kernel can't continue, we need to panic.
-+		 * But before we do that, display all the HMI event
-+		 * available on the list and set unrecoverable flag to 1.
- 		 */
- 		if (disposition != OpalHMI_DISPOSITION_RECOVERED)
--			panic("Unrecoverable HMI exception");
-+			unrecoverable = 1;
- 
- 		spin_lock_irqsave(&opal_hmi_evt_lock, flags);
- 	}
- 	spin_unlock_irqrestore(&opal_hmi_evt_lock, flags);
-+
-+	if (unrecoverable) {
-+		/* Pull all HMI events from OPAL before we panic. */
-+		while (opal_get_msg(__pa(&msg), sizeof(msg)) == OPAL_SUCCESS) {
-+			u32 type;
-+
-+			type = be32_to_cpu(msg.msg_type);
-+
-+			/* skip if not HMI event */
-+			if (type != OPAL_MSG_HMI_EVT)
-+				continue;
-+
-+			/* HMI event info starts from param[0] */
-+			hmi_evt = (struct OpalHMIEvent *)&msg.params[0];
-+			print_hmi_event_info(hmi_evt);
-+		}
-+		panic("Unrecoverable HMI exception");
-+	}
- }
- 
- static DECLARE_WORK(hmi_event_work, hmi_event_handler);
+Kind regards
+Uffe
+
+On Thu, Apr 9, 2015 at 9:40 PM, Suman Tripathi <stripathi@apm.com> wrote:
+> On 30 March 2015 at 16:46, Suman Tripathi <stripathi@apm.com> wrote:
+>> This patch adds some quirks support to be read from fdt.
+>>
+>> Signed-off-by: Suman Tripathi <stripathi@apm.com>
+>> ---
+>>  drivers/mmc/host/sdhci-pltfm.c | 15 +++++++++++++++
+>>  1 file changed, 15 insertions(+)
+>>
+>> diff --git a/drivers/mmc/host/sdhci-pltfm.c
+>> b/drivers/mmc/host/sdhci-pltfm.c
+>> index bef250e..9f6a4b9 100644
+>> --- a/drivers/mmc/host/sdhci-pltfm.c
+>> +++ b/drivers/mmc/host/sdhci-pltfm.c
+>> @@ -85,6 +85,21 @@ void sdhci_get_of_property(struct platform_device
+>> *pdev)
+>>
+>>                 if (of_get_property(np, "broken-cd", NULL))
+>>                         host->quirks |= SDHCI_QUIRK_BROKEN_CARD_DETECTION;
+>> +
+>> +               if (of_get_property(np, "delay-after-power", NULL))
+>> +                       host->quirks |= SDHCI_QUIRK_DELAY_AFTER_POWER;
+>> +
+>> +               if (of_get_property(np, "no-hispd", NULL))
+>> +                       host->quirks |= SDHCI_QUIRK_NO_HISPD_BIT;
+>> +
+>> +               if (of_get_property(np, "broken-adma", NULL))
+>> +                       host->quirks |= SDHCI_QUIRK_BROKEN_ADMA;
+>> +
+>> +               if (of_get_property(np, "broken-dma", NULL))
+>> +                       host->quirks |= SDHCI_QUIRK_BROKEN_DMA;
+>> +
+>> +               if (of_get_property(np, "no-cmd23", NULL))
+>> +                       host->quirks2 |= SDHCI_QUIRK2_HOST_NO_CMD23;
+>
+> Can't at least some of these be distinguished from what sdhci variant
+> that is being used? Instead of having them in DT...
+>
+> We are using arasan controller in our SOC. So reusing a the existing
+> sdhci-of-arasan driver. Due to H/W issues we require this quirks. So for us
+> only option left to pass the info is DTS or ACPI table.
+>
+> Kind regards
+> Uffe
+>
+> On Wed, Apr 8, 2015 at 3:10 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+>>
+>> On 30 March 2015 at 16:46, Suman Tripathi <stripathi@apm.com> wrote:
+>> > This patch adds some quirks support to be read from fdt.
+>> >
+>> > Signed-off-by: Suman Tripathi <stripathi@apm.com>
+>> > ---
+>> >  drivers/mmc/host/sdhci-pltfm.c | 15 +++++++++++++++
+>> >  1 file changed, 15 insertions(+)
+>> >
+>> > diff --git a/drivers/mmc/host/sdhci-pltfm.c
+>> > b/drivers/mmc/host/sdhci-pltfm.c
+>> > index bef250e..9f6a4b9 100644
+>> > --- a/drivers/mmc/host/sdhci-pltfm.c
+>> > +++ b/drivers/mmc/host/sdhci-pltfm.c
+>> > @@ -85,6 +85,21 @@ void sdhci_get_of_property(struct platform_device
+>> > *pdev)
+>> >
+>> >                 if (of_get_property(np, "broken-cd", NULL))
+>> >                         host->quirks |=
+>> > SDHCI_QUIRK_BROKEN_CARD_DETECTION;
+>> > +
+>> > +               if (of_get_property(np, "delay-after-power", NULL))
+>> > +                       host->quirks |= SDHCI_QUIRK_DELAY_AFTER_POWER;
+>> > +
+>> > +               if (of_get_property(np, "no-hispd", NULL))
+>> > +                       host->quirks |= SDHCI_QUIRK_NO_HISPD_BIT;
+>> > +
+>> > +               if (of_get_property(np, "broken-adma", NULL))
+>> > +                       host->quirks |= SDHCI_QUIRK_BROKEN_ADMA;
+>> > +
+>> > +               if (of_get_property(np, "broken-dma", NULL))
+>> > +                       host->quirks |= SDHCI_QUIRK_BROKEN_DMA;
+>> > +
+>> > +               if (of_get_property(np, "no-cmd23", NULL))
+>> > +                       host->quirks2 |= SDHCI_QUIRK2_HOST_NO_CMD23;
+>>
+>> Can't at least some of these be distinguished from what sdhci variant
+>> that is being used? Instead of having them in DT...
+>>
+>> Kind regards
+>> Uffe
+>>
+>> >
+>> >                 if (of_get_property(np, "no-1-8-v", NULL))
+>> >                         host->quirks2 |= SDHCI_QUIRK2_NO_1_8_V;
+>> > --
+>> > 1.8.2.1
+>> >
+>> > --
+>> > To unsubscribe from this list: send the line "unsubscribe linux-mmc" in
+>> > the body of a message to majordomo@vger.kernel.org
+>> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
+>
+>
+>
+> --
+> Thanks,
+> with regards,
+> Suman Tripathi
+
+
+
+-- 
+Thanks,
+with regards,
+Suman Tripathi
