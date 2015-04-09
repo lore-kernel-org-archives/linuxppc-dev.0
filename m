@@ -1,27 +1,27 @@
-Return-Path: <ddstreet@gmail.com>
-Received: from mail-ig0-x229.google.com (mail-ig0-x229.google.com
- [IPv6:2607:f8b0:4001:c05::229])
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pa0-f51.google.com (mail-pa0-f51.google.com
+ [209.85.220.51])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 77D2F1A04E0
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Apr 2015 13:06:24 +1000 (AEST)
-Received: by igbqf9 with SMTP id qf9so54867279igb.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Apr 2015 20:06:22 -0700 (PDT)
-Sender: Dan Streetman <ddstreet@gmail.com>
-From: Dan Streetman <ddstreet@ieee.org>
-To: Rob Herring <robh+dt@kernel.org>, Pawel Moll <pawel.moll@arm.com>,
- Mark Rutland <mark.rutland@arm.com>,
- Ian Campbell <ijc+devicetree@hellion.org.uk>,
- Kumar Gala <galak@codeaurora.org>,
- Herbert Xu <herbert@gondor.apana.org.au>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ by lists.ozlabs.org (Postfix) with ESMTPS id 526D61A04E0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Apr 2015 13:21:50 +1000 (AEST)
+Received: by pacyx8 with SMTP id yx8so134883041pac.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Apr 2015 20:21:48 -0700 (PDT)
+Message-ID: <5525F044.6070108@ozlabs.ru>
+Date: Thu, 09 Apr 2015 13:21:40 +1000
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+MIME-Version: 1.0
+To: Alex Williamson <alex.williamson@redhat.com>
+Subject: Re: [PATCH kernel v7 26/31] powerpc/iommu: Add userspace view of
+ TCE table
+References: <1427468115-2224-1-git-send-email-aik@ozlabs.ru>		
+ <1427468115-2224-27-git-send-email-aik@ozlabs.ru>	
+ <1428007803.5567.383.camel@redhat.com> <55249ED8.9090401@ozlabs.ru>
+ <1428507805.5567.506.camel@redhat.com>
+In-Reply-To: <1428507805.5567.506.camel@redhat.com>
+Content-Type: text/plain; charset=koi8-r; format=flowed
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  Paul Mackerras <paulus@samba.org>
-Subject: [PATCH] devicetree: add ibm-nx-powernv details
-Date: Wed,  8 Apr 2015 23:05:56 -0400
-Message-Id: <1428548756-16485-1-git-send-email-ddstreet@ieee.org>
-Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Dan Streetman <ddstreet@ieee.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,71 +31,175 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add a devicetree description for property nodes for the NX Coprocessor
-in an IBM PowerPC processor.
+On 04/09/2015 01:43 AM, Alex Williamson wrote:
+> On Wed, 2015-04-08 at 13:22 +1000, Alexey Kardashevskiy wrote:
+>> On 04/03/2015 07:50 AM, Alex Williamson wrote:
+>>>
+>>> Should have sent this with the other comments, but found it hiding on my
+>>> desktop...
+>>>
+>>> On Sat, 2015-03-28 at 01:55 +1100, Alexey Kardashevskiy wrote:
+>>>> In order to support memory pre-registration, we need a way to track
+>>>> the use of every registered memory region and only allow unregistration
+>>>> if a region is not in use anymore. So we need a way to tell from what
+>>>> region the just cleared TCE was from.
+>>>>
+>>>> This adds a userspace view of the TCE table into iommu_table struct.
+>>>> It contains userspace address, one per TCE entry. The table is only
+>>>> allocated when the ownership over an IOMMU group is taken which means
+>>>> it is only used from outside of the powernv code (such as VFIO).
+>>>>
+>>>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+>>>> ---
+>>>>    arch/powerpc/include/asm/iommu.h          |  6 ++++++
+>>>>    arch/powerpc/kernel/iommu.c               |  7 +++++++
+>>>>    arch/powerpc/platforms/powernv/pci-ioda.c | 23 ++++++++++++++++++++++-
+>>>>    3 files changed, 35 insertions(+), 1 deletion(-)
+>>>>
+>>>> diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
+>>>> index 2c08c91..a768a4d 100644
+>>>> --- a/arch/powerpc/include/asm/iommu.h
+>>>> +++ b/arch/powerpc/include/asm/iommu.h
+>>>> @@ -106,9 +106,15 @@ struct iommu_table {
+>>>>    	unsigned long *it_map;       /* A simple allocation bitmap for now */
+>>>>    	unsigned long  it_page_shift;/* table iommu page size */
+>>>>    	struct iommu_table_group *it_group;
+>>>> +	unsigned long *it_userspace; /* userspace view of the table */
+>>>>    	struct iommu_table_ops *it_ops;
+>>>>    };
+>>>>
+>>>> +#define IOMMU_TABLE_USERSPACE_ENTRY(tbl, entry) \
+>>>> +		((tbl)->it_userspace ? \
+>>>> +			&((tbl)->it_userspace[(entry) - (tbl)->it_offset]) : \
+>>>> +			NULL)
+>>>> +
+>>>>    /* Pure 2^n version of get_order */
+>>>>    static inline __attribute_const__
+>>>>    int get_iommu_order(unsigned long size, struct iommu_table *tbl)
+>>>> diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
+>>>> index 0bcd988..82102d1 100644
+>>>> --- a/arch/powerpc/kernel/iommu.c
+>>>> +++ b/arch/powerpc/kernel/iommu.c
+>>>> @@ -38,6 +38,7 @@
+>>>>    #include <linux/pci.h>
+>>>>    #include <linux/iommu.h>
+>>>>    #include <linux/sched.h>
+>>>> +#include <linux/vmalloc.h>
+>>>>    #include <asm/io.h>
+>>>>    #include <asm/prom.h>
+>>>>    #include <asm/iommu.h>
+>>>> @@ -1069,6 +1070,9 @@ static int iommu_table_take_ownership(struct iommu_table *tbl)
+>>>>    		spin_unlock(&tbl->pools[i].lock);
+>>>>    	spin_unlock_irqrestore(&tbl->large_pool.lock, flags);
+>>>>
+>>>> +	BUG_ON(tbl->it_userspace);
+>>>> +	tbl->it_userspace = vzalloc(sizeof(*tbl->it_userspace) * tbl->it_size);
+>>>> +
+>>>
+>>> -ENOMEM?
+>>>
+>>>>    	return 0;
+>>>>    }
+>>>>
+>>>> @@ -1102,6 +1106,9 @@ static void iommu_table_release_ownership(struct iommu_table *tbl)
+>>>>    {
+>>>>    	unsigned long flags, i, sz = (tbl->it_size + 7) >> 3;
+>>>>
+>>>> +	vfree(tbl->it_userspace);
+>>>> +	tbl->it_userspace = NULL;
+>>>> +
+>>>>    	spin_lock_irqsave(&tbl->large_pool.lock, flags);
+>>>>    	for (i = 0; i < tbl->nr_pools; i++)
+>>>>    		spin_lock(&tbl->pools[i].lock);
+>>>> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+>>>> index bc36cf1..036f3c1 100644
+>>>> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+>>>> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+>>>> @@ -26,6 +26,7 @@
+>>>>    #include <linux/iommu.h>
+>>>>    #include <linux/mmzone.h>
+>>>>    #include <linux/sizes.h>
+>>>> +#include <linux/vmalloc.h>
+>>>>
+>>>>    #include <asm/mmzone.h>
+>>>>    #include <asm/sections.h>
+>>>> @@ -1469,6 +1470,9 @@ static void pnv_pci_free_table(struct iommu_table *tbl)
+>>>>    	if (!tbl->it_size)
+>>>>    		return;
+>>>>
+>>>> +	if (tbl->it_userspace)
+>>>
+>>> Not necessary
+>>
+>> Out of curiosity - why? Is every single implementation is known for
+>> checking the argument?
+>
+> AFAIK, all flavors of free in the kernel accept NULL pointers and do the
+> right thing.  I verified this one does too.
+>
+>>>> +		vfree(tbl->it_userspace);
+>>>> +
+>>>
+>>> Why no NULL setting this time?
+>>
+>> iommu_reset_table() (2 lines below) will do memset(0) on the entire struct.
+>
+> So then should iommu_reset_table() handle the vfree() as well?
 
-Signed-off-by: Dan Streetman <ddstreet@ieee.org>
----
 
-Is this the right location/naming for this file?
-And did I get the content format right?
+I wanted to keep vfree() in the same file with vzalloc(). Bad idea?
+But I'll move vfree() to iommu_reset_table() anyway.
 
-Should this file be called "ibm-nx-opal.txt" instead of "ibm-nx-powernv.txt",
-since it's the Opal firmware that provides the nodes (although they are
-used by the PowerNV platform kernel)?
 
-The 842 properties are used by the PowerNV 842 driver patch set I
-sent out yesterday, and which I'll send a v2 of soon.
+>
+>>>>    	pnv_free_tce_table(tbl->it_base, size, tbl->it_indirect_levels);
+>>>>    	iommu_reset_table(tbl, "ioda2");
+>>>>    }
+>>>> @@ -1656,9 +1660,26 @@ static void pnv_ioda2_set_ownership(struct iommu_table_group *table_group,
+>>>>    	pnv_pci_ioda2_set_bypass(pe, !enable);
+>>>>    }
+>>>>
+>>>> +static long pnv_pci_ioda2_create_table_with_uas(
+>>>> +		struct iommu_table_group *table_group,
+>>>> +		int num, __u32 page_shift, __u64 window_size, __u32 levels,
+>>>> +		struct iommu_table *tbl)
+>>>> +{
+>>>> +	long ret = pnv_pci_ioda2_create_table(table_group, num,
+>>>> +			page_shift, window_size, levels, tbl);
+>>>> +
+>>>> +	if (ret)
+>>>> +		return ret;
+>>>> +
+>>>> +	BUG_ON(tbl->it_userspace);
+>>>> +	tbl->it_userspace = vzalloc(sizeof(*tbl->it_userspace) * tbl->it_size);
+>>>
+>>> -ENOMEM
+>>>
+>>>> +
+>>>> +	return 0;
+>>>> +}
+>>>> +
+>>>>    static struct iommu_table_group_ops pnv_pci_ioda2_ops = {
+>>>>    	.set_ownership = pnv_ioda2_set_ownership,
+>>>> -	.create_table = pnv_pci_ioda2_create_table,
+>>>> +	.create_table = pnv_pci_ioda2_create_table_with_uas,
+>>>>    	.set_window = pnv_pci_ioda2_set_window,
+>>>>    	.unset_window = pnv_pci_ioda2_unset_window,
+>>>>    };
+>>>
+>>>
+>>>
+>>
+>>
+>> Thanks for the review! What is overall resume? Another respin?
+>
+> Is there another option?  It seems like there are too many issues to
+> simply fold cleanups onto the end of the series.  Thanks,
 
-.../devicetree/bindings/crypto/ibm-nx-powernv.txt  | 40 ++++++++++++++++++++++
- 1 file changed, 40 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/crypto/ibm-nx-powernv.txt
+I'll repost indeed, I meant it would help me if you could tell that you 
+agree with the patchset and Ben can pull this stuff to his tree. Thanks!
 
-diff --git a/Documentation/devicetree/bindings/crypto/ibm-nx-powernv.txt b/Documentation/devicetree/bindings/crypto/ibm-nx-powernv.txt
-new file mode 100644
-index 0000000..e031636
---- /dev/null
-+++ b/Documentation/devicetree/bindings/crypto/ibm-nx-powernv.txt
-@@ -0,0 +1,40 @@
-+Device-tree bindings for PowerNV platform IBM Nest (NX) Coprocessor
-+-------------------------------------------------------------------
-+
-+Required properties:
-+
-+- compatible: must contain "ibm,power-nx"; may also contain the processor
-+              version, e.g. "ibm,power8-nx"
-+
-+Optional properties:
-+
-+- ibm,842-coprocessor-type: CT of this NX 842 coprocessor
-+- ibm,842-coprocessor-instance: CI of this NX 842 coprocessor
-+
-+If present, the NX-842 Coprocessor Type (CT) and Coprocessor Instance (CI)
-+can be used in an ICSWX instruction to communicate with the NX-842
-+coprocessor, to perform hardware compression/decompression.
-+
-+Additionally, there must be an "ibm,chip-id" node at some point in the
-+direct devicetree hierarchy leading to the nx node; typically the nx
-+node's parent is an xscom node, which contains the "ibm,chip-id" property.
-+
-+Example:
-+
-+nx@2010000 {
-+	compatible = "ibm,power-nx", "ibm,power8-nx";
-+	ibm,842-coprocessor-type = <0x3>;
-+	ibm,842-coprocessor-instance = <0x1>;
-+	name = "nx";
-+	reg = <0x2010000 0x4000>;
-+	linux,phandle = <0x85>;
-+	phandle = <0x85>;
-+};
-+
-+with a parent of:
-+
-+xscom@3fc0000000000 {
-+	ibm,chip-id = <0x0>;
-+	nx@2010000;
-+	...
-+};
+
+
 -- 
-2.1.0
+Alexey
