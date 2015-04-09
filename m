@@ -1,25 +1,28 @@
-Return-Path: <anton@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <koct9i@gmail.com>
+Received: from mail-la0-x229.google.com (mail-la0-x229.google.com
+ [IPv6:2a00:1450:4010:c03::229])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BA18D1A0C77
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Apr 2015 13:51:38 +1000 (AEST)
-From: Anton Blanchard <anton@samba.org>
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- mmarek@suse.cz, akpm@linux-foundation.org, jbaron@akamai.com,
- peterz@infradead.org, liuj97@gmail.com, mingo@kernel.org, mgorman@suse.de,
- linux@arm.linux.org.uk, catalin.marinas@arm.com, will.deacon@arm.com,
- ralf@linux-mips.org, schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com,
- davem@davemloft.net, tglx@linutronix.de, mingo@redhat.com, hpa@zytor.com,
- rostedt@goodmis.org
-Subject: [PATCH 3/3] powerpc: Include linux/jump_label.h to get
- HAVE_JUMP_LABEL define
-Date: Thu,  9 Apr 2015 13:51:32 +1000
-Message-Id: <1428551492-21977-3-git-send-email-anton@samba.org>
-In-Reply-To: <1428551492-21977-1-git-send-email-anton@samba.org>
-References: <1428551492-21977-1-git-send-email-anton@samba.org>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-kbuild@vger.kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 24F3B1A0571
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Apr 2015 14:27:32 +1000 (AEST)
+Received: by lagv1 with SMTP id v1so80817019lag.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Apr 2015 21:27:28 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <20150408230740.GB53918@linux.vnet.ibm.com>
+References: <20150408165920.25007.6869.stgit@buzz>
+ <55255F84.6060608@yandex-team.ru>
+ <20150408230740.GB53918@linux.vnet.ibm.com>
+Date: Thu, 9 Apr 2015 07:27:28 +0300
+Message-ID: <CALYGNiP_Ru0PpWoXOYPbviiNuY+9JHDqzL0jDNJeZAtmYZGFUg@mail.gmail.com>
+Subject: Re: [PATCH] of: return NUMA_NO_NODE from fallback of_node_to_nid()
+From: Konstantin Khlebnikov <koct9i@gmail.com>
+To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: devicetree@vger.kernel.org, "linux-mm@kvack.org" <linux-mm@kvack.org>,
+ Konstantin Khlebnikov <khlebnikov@yandex-team.ru>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ sparclinux@vger.kernel.org, Rob Herring <robh+dt@kernel.org>,
+ Grant Likely <grant.likely@linaro.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,68 +32,122 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Commit 1bc9e47aa8e4 ("powerpc/jump_label: Use HAVE_JUMP_LABEL")
-converted uses of CONFIG_JUMP_LABEL to HAVE_JUMP_LABEL in
-some assembly files.
+On Thu, Apr 9, 2015 at 2:07 AM, Nishanth Aravamudan
+<nacc@linux.vnet.ibm.com> wrote:
+> On 08.04.2015 [20:04:04 +0300], Konstantin Khlebnikov wrote:
+>> On 08.04.2015 19:59, Konstantin Khlebnikov wrote:
+>> >Node 0 might be offline as well as any other numa node,
+>> >in this case kernel cannot handle memory allocation and crashes.
+>
+> Isn't the bug that numa_node_id() returned an offline node? That
+> shouldn't happen.
 
-HAVE_JUMP_LABEL is defined in linux/jump_label.h, so we need to
-include this or we always get the non jump label fallback code.
+Offline node 0 came from static-inline copy of that function from of.h
+I've patched weak function for keeping consistency.
 
-Fixes: 1bc9e47aa8e4 ("powerpc/jump_label: Use HAVE_JUMP_LABEL")
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
- arch/powerpc/platforms/powernv/opal-wrappers.S | 2 +-
- arch/powerpc/platforms/pseries/hvCall.S        | 2 +-
- arch/powerpc/platforms/pseries/lpar.c          | 2 +-
- 3 files changed, 3 insertions(+), 3 deletions(-)
+>
+> #ifdef CONFIG_USE_PERCPU_NUMA_NODE_ID
+> ...
+> #ifndef numa_node_id
+> /* Returns the number of the current Node. */
+> static inline int numa_node_id(void)
+> {
+>         return raw_cpu_read(numa_node);
+> }
+> #endif
+> ...
+> #else   /* !CONFIG_USE_PERCPU_NUMA_NODE_ID */
+>
+> /* Returns the number of the current Node. */
+> #ifndef numa_node_id
+> static inline int numa_node_id(void)
+> {
+>         return cpu_to_node(raw_smp_processor_id());
+> }
+> #endif
+> ...
+>
+> So that's either the per-cpu numa_node value, right? Or the result of
+> cpu_to_node on the current processor.
+>
+>> Example:
+>>
+>> [    0.027133] ------------[ cut here ]------------
+>> [    0.027938] kernel BUG at include/linux/gfp.h:322!
+>
+> This is
+>
+> VM_BUG_ON(nid < 0 || nid >= MAX_NUMNODES || !node_online(nid));
+>
+> in
+>
+> alloc_pages_exact_node().
+>
+> And based on the trace below, that's
+>
+> __slab_alloc -> alloc
+>
+> alloc_pages_exact_node
+>         <- alloc_slab_page
+>                 <- allocate_slab
+>                         <- new_slab
+>                                 <- new_slab_objects
+>                                         < __slab_alloc?
+>
+> which is just passing the node value down, right? Which I think was
+> from:
+>
+>         domain = kzalloc_node(sizeof(*domain) + (sizeof(unsigned int) * size),
+>                               GFP_KERNEL, of_node_to_nid(of_node));
+>
+> ?
+>
+>
+> What platform is this on, looks to be x86? qemu emulation of a
+> pathological topology? What was the topology?
 
-diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
-index b23fe7c..4c4fe6f 100644
---- a/arch/powerpc/platforms/powernv/opal-wrappers.S
-+++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
-@@ -9,11 +9,11 @@
-  * 2 of the License, or (at your option) any later version.
-  */
- 
-+#include <linux/jump_label.h>
- #include <asm/ppc_asm.h>
- #include <asm/hvcall.h>
- #include <asm/asm-offsets.h>
- #include <asm/opal.h>
--#include <asm/jump_label.h>
- 
- 	.section	".text"
- 
-diff --git a/arch/powerpc/platforms/pseries/hvCall.S b/arch/powerpc/platforms/pseries/hvCall.S
-index ccd53f9..74b5b8e 100644
---- a/arch/powerpc/platforms/pseries/hvCall.S
-+++ b/arch/powerpc/platforms/pseries/hvCall.S
-@@ -7,12 +7,12 @@
-  * as published by the Free Software Foundation; either version
-  * 2 of the License, or (at your option) any later version.
-  */
-+#include <linux/jump_label.h>
- #include <asm/hvcall.h>
- #include <asm/processor.h>
- #include <asm/ppc_asm.h>
- #include <asm/asm-offsets.h>
- #include <asm/ptrace.h>
--#include <asm/jump_label.h>
- 
- 	.section	".text"
- 	
-diff --git a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
-index b5682fd..b7a67e3 100644
---- a/arch/powerpc/platforms/pseries/lpar.c
-+++ b/arch/powerpc/platforms/pseries/lpar.c
-@@ -26,7 +26,7 @@
- #include <linux/dma-mapping.h>
- #include <linux/console.h>
- #include <linux/export.h>
--#include <linux/static_key.h>
-+#include <linux/jump_label.h>
- #include <asm/processor.h>
- #include <asm/mmu.h>
- #include <asm/page.h>
--- 
-2.1.0
+qemu x86_64, 2 cpu, 2 numa nodes, all memory in second.
+ I've slightly patched it to allow that setup (in qemu hardcoded 1Mb
+of memory connected to node 0) And i've found unrelated bug --
+if numa node has less that 4Mb ram then kernel crashes even
+earlier because numa code ignores that node
+but buddy allocator still tries to use that pages.
+
+>
+> Note that there is a ton of code that seems to assume node 0 is online.
+> I started working on removing this assumption myself and it just led
+> down a rathole (on power, we always have node 0 online, even if it is
+> memoryless and cpuless, as a result).
+>
+> I am guessing this is just happening early in boot before the per-cpu
+> areas are setup? That's why (I think) x86 has the early_cpu_to_node()
+> function...
+>
+> Or do you not have CONFIG_OF set? So isn't the only change necessary to
+> the include file, and it should just return first_online_node rather
+> than 0?
+>
+> Ah and there's more of those node 0 assumptions :)
+
+That was x86 where is no CONFIG_OF at all.
+
+I don't know what's wrong with that machine but ACPI reports that
+cpus and memory from node 0 as connected to node 1 and everything
+seems worked fine until lates upgrade -- seems like buggy static-inline
+of_node_to_nid was intoduced in 3.13 but x86 ioapic uses it during
+early allocations only in since 3.17. Machine owner teells that 3.15
+worked fine.
+
+>
+> #define first_online_node       0
+> #define first_memory_node       0
+>
+> if MAX_NUMODES == 1...
+>
+> -Nish
+>
+> --
+> To unsubscribe, send a message with 'unsubscribe linux-mm' in
+> the body to majordomo@kvack.org.  For more info on Linux MM,
+> see: http://www.linux-mm.org/ .
+> Don't email: <a href=mailto:"dont@kvack.org"> email@kvack.org </a>
