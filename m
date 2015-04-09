@@ -1,45 +1,43 @@
 Return-Path: <nacc@linux.vnet.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E5F071A0145
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 08:40:46 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 46EFB1A02F4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 08:58:23 +1000 (AEST)
 Received: from /spool/local
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
- Thu, 9 Apr 2015 16:40:44 -0600
-Received: from b03cxnp08028.gho.boulder.ibm.com
- (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 1D12319D8040
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Apr 2015 16:31:48 -0600 (MDT)
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
- by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t39MeSrw40501450
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 9 Apr 2015 15:40:28 -0700
-Received: from d03av01.boulder.ibm.com (localhost [127.0.0.1])
- by d03av01.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t39MegiR032055
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 9 Apr 2015 16:40:42 -0600
-Date: Thu, 9 Apr 2015 15:40:40 -0700
+ Thu, 9 Apr 2015 16:58:21 -0600
+Received: from b03cxnp08026.gho.boulder.ibm.com
+ (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 0EA9D19D8042
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Apr 2015 16:49:25 -0600 (MDT)
+Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
+ by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with
+ ESMTP id t39MwLYm41353250
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 9 Apr 2015 15:58:21 -0700
+Received: from d03av05.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t39MwIw7004490
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 9 Apr 2015 16:58:19 -0600
+Date: Thu, 9 Apr 2015 15:58:17 -0700
 From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-To: Peter Zijlstra <peterz@infradead.org>
-Subject: Re: Topology updates and NUMA-level sched domains
-Message-ID: <20150409224040.GG53918@linux.vnet.ibm.com>
-References: <20150406214558.GA38501@linux.vnet.ibm.com>
- <20150407102147.GJ23123@twins.programming.kicks-ass.net>
- <20150407171410.GA62529@linux.vnet.ibm.com>
- <20150407194129.GT23123@twins.programming.kicks-ass.net>
- <552503A1.3050502@inria.fr>
- <20150408105212.GP21418@twins.programming.kicks-ass.net>
+To: Konstantin Khlebnikov <koct9i@gmail.com>
+Subject: Re: [PATCH] of: return NUMA_NO_NODE from fallback of_node_to_nid()
+Message-ID: <20150409225817.GI53918@linux.vnet.ibm.com>
+References: <20150408165920.25007.6869.stgit@buzz>
+ <55255F84.6060608@yandex-team.ru>
+ <20150408230740.GB53918@linux.vnet.ibm.com>
+ <CALYGNiP_Ru0PpWoXOYPbviiNuY+9JHDqzL0jDNJeZAtmYZGFUg@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <20150408105212.GP21418@twins.programming.kicks-ass.net>
-Cc: Boqun Feng <boqun.feng@linux.vnet.ibm.com>,
- Srikar Dronamraju <srikar@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
- Ingo Molnar <mingo@redhat.com>, Anton Blanchard <anton@samba.org>,
- Brice Goglin <Brice.Goglin@inria.fr>, linuxppc-dev@lists.ozlabs.org,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <CALYGNiP_Ru0PpWoXOYPbviiNuY+9JHDqzL0jDNJeZAtmYZGFUg@mail.gmail.com>
+Cc: devicetree@vger.kernel.org, "linux-mm@kvack.org" <linux-mm@kvack.org>,
+ Konstantin Khlebnikov <khlebnikov@yandex-team.ru>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ sparclinux@vger.kernel.org, Rob Herring <robh+dt@kernel.org>,
+ Grant Likely <grant.likely@linaro.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,33 +47,122 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08.04.2015 [12:52:12 +0200], Peter Zijlstra wrote:
-> On Wed, Apr 08, 2015 at 12:32:01PM +0200, Brice Goglin wrote:
-> > Le 07/04/2015 21:41, Peter Zijlstra a écrit :
-> > > No, that's very much not the same. Even if it were dealing with hotplug
-> > > it would still assume the cpu to return to the same node.
-> > >
-> > > But mostly people do not even bother to handle hotplug.
-> > >
-> > 
-> > You said userspace assumes the cpu<->node relation is a boot-time fixed
-> > one, and hotplug breaks this.
+On 09.04.2015 [07:27:28 +0300], Konstantin Khlebnikov wrote:
+> On Thu, Apr 9, 2015 at 2:07 AM, Nishanth Aravamudan
+> <nacc@linux.vnet.ibm.com> wrote:
+> > On 08.04.2015 [20:04:04 +0300], Konstantin Khlebnikov wrote:
+> >> On 08.04.2015 19:59, Konstantin Khlebnikov wrote:
+> >> >Node 0 might be offline as well as any other numa node,
+> >> >in this case kernel cannot handle memory allocation and crashes.
+> >
+> > Isn't the bug that numa_node_id() returned an offline node? That
+> > shouldn't happen.
 > 
-> I said no such thing. Regular hotplug actually respects that relation.
+> Offline node 0 came from static-inline copy of that function from of.h
+> I've patched weak function for keeping consistency.
 
-Wel, sort of. If you *just* hotplug a CPU out, your invariant of what
-CPUs are currently available on what nodes is no longer held. Similarly
-if you just add a CPU. And means that you could end up using cpumasks
-that are incorrect if you don't make them at runtime, it seems?
+Got it, that's not necessarily clear in the original commit message.
 
-> > How do you expect userspace to handle hotplug?
+> > #ifdef CONFIG_USE_PERCPU_NUMA_NODE_ID
+> > ...
+> > #ifndef numa_node_id
+> > /* Returns the number of the current Node. */
+> > static inline int numa_node_id(void)
+> > {
+> >         return raw_cpu_read(numa_node);
+> > }
+> > #endif
+> > ...
+> > #else   /* !CONFIG_USE_PERCPU_NUMA_NODE_ID */
+> >
+> > /* Returns the number of the current Node. */
+> > #ifndef numa_node_id
+> > static inline int numa_node_id(void)
+> > {
+> >         return cpu_to_node(raw_smp_processor_id());
+> > }
+> > #endif
+> > ...
+> >
+> > So that's either the per-cpu numa_node value, right? Or the result of
+> > cpu_to_node on the current processor.
+> >
+> >> Example:
+> >>
+> >> [    0.027133] ------------[ cut here ]------------
+> >> [    0.027938] kernel BUG at include/linux/gfp.h:322!
+> >
+> > This is
+> >
+> > VM_BUG_ON(nid < 0 || nid >= MAX_NUMNODES || !node_online(nid));
+> >
+> > in
+> >
+> > alloc_pages_exact_node().
+> >
+> > And based on the trace below, that's
+> >
+> > __slab_alloc -> alloc
+> >
+> > alloc_pages_exact_node
+> >         <- alloc_slab_page
+> >                 <- allocate_slab
+> >                         <- new_slab
+> >                                 <- new_slab_objects
+> >                                         < __slab_alloc?
+> >
+> > which is just passing the node value down, right? Which I think was
+> > from:
+> >
+> >         domain = kzalloc_node(sizeof(*domain) + (sizeof(unsigned int) * size),
+> >                               GFP_KERNEL, of_node_to_nid(of_node));
+> >
+> > ?
+> >
+> >
+> > What platform is this on, looks to be x86? qemu emulation of a
+> > pathological topology? What was the topology?
 > 
-> Mostly not. Why would they? CPU hotplug is rare and mostly a case of:
-> don't do that then.
-> 
-> Its just that some of the virt wankers are using it for resource
-> management which is entirely misguided. Then again, most of virt is.
+> qemu x86_64, 2 cpu, 2 numa nodes, all memory in second.
 
-I guess that is a matter of opinion.
+Ok, this worked before? That is, this is a regression?
+
+>  I've slightly patched it to allow that setup (in qemu hardcoded 1Mb
+> of memory connected to node 0) And i've found unrelated bug --
+> if numa node has less that 4Mb ram then kernel crashes even
+> earlier because numa code ignores that node
+> but buddy allocator still tries to use that pages.
+
+So this isn't an actually supported topology by qemu?
+
+> > Note that there is a ton of code that seems to assume node 0 is online.
+> > I started working on removing this assumption myself and it just led
+> > down a rathole (on power, we always have node 0 online, even if it is
+> > memoryless and cpuless, as a result).
+> >
+> > I am guessing this is just happening early in boot before the per-cpu
+> > areas are setup? That's why (I think) x86 has the early_cpu_to_node()
+> > function...
+> >
+> > Or do you not have CONFIG_OF set? So isn't the only change necessary to
+> > the include file, and it should just return first_online_node rather
+> > than 0?
+> >
+> > Ah and there's more of those node 0 assumptions :)
+> 
+> That was x86 where is no CONFIG_OF at all.
+>
+> I don't know what's wrong with that machine but ACPI reports that
+> cpus and memory from node 0 as connected to node 1 and everything
+> seems worked fine until lates upgrade -- seems like buggy static-inline
+> of_node_to_nid was intoduced in 3.13 but x86 ioapic uses it during
+> early allocations only in since 3.17. Machine owner teells that 3.15
+> worked fine.
+
+So, this was a qemu emulation of this actual physical machine without a
+node 0?
+
+As I mentioned, there are lots of node 0 assumptions through the kernel.
+You might run into more issues at runtime.
 
 -Nish
