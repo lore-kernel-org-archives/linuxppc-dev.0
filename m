@@ -1,19 +1,20 @@
 Return-Path: <peterz@infradead.org>
-Received: from casper.infradead.org (unknown [IPv6:2001:770:15f::2])
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2001:1868:205::9])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9E3C51A04E0
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Apr 2015 17:08:35 +1000 (AEST)
-Date: Thu, 9 Apr 2015 09:08:13 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id EEBD51A0C18
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Apr 2015 17:09:15 +1000 (AEST)
+Date: Thu, 9 Apr 2015 09:08:38 +0200
 From: Peter Zijlstra <peterz@infradead.org>
 To: Anton Blanchard <anton@samba.org>
-Subject: Re: [PATCH 1/3] jump_label: Allow asm/jump_label.h to be included in
- assembly
-Message-ID: <20150409070813.GM27490@worktop.programming.kicks-ass.net>
+Subject: Re: [PATCH 2/3] jump_label: Allow jump labels to be used in assembly
+Message-ID: <20150409070838.GN27490@worktop.programming.kicks-ass.net>
 References: <1428551492-21977-1-git-send-email-anton@samba.org>
+ <1428551492-21977-2-git-send-email-anton@samba.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1428551492-21977-1-git-send-email-anton@samba.org>
+In-Reply-To: <1428551492-21977-2-git-send-email-anton@samba.org>
 Cc: heiko.carstens@de.ibm.com, paulus@samba.org, hpa@zytor.com,
  mingo@kernel.org, linux@arm.linux.org.uk, mingo@redhat.com, mgorman@suse.de,
  catalin.marinas@arm.com, liuj97@gmail.com, linux-kbuild@vger.kernel.org,
@@ -30,15 +31,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, Apr 09, 2015 at 01:51:30PM +1000, Anton Blanchard wrote:
-> Wrap asm/jump_label.h for all archs with #ifndef __ASSEMBLY__.
-> Since these are kernel only headers, we don't need #ifdef __KERNEL__
-> so can simplify things a bit.
+On Thu, Apr 09, 2015 at 01:51:31PM +1000, Anton Blanchard wrote:
+> To use jump labels in assembly we need the HAVE_JUMP_LABEL define,
+> so we select a fallback version if the toolchain does not support
+> them.
 > 
-> If an architecture wants to use jump labels in assembly, it
-> will still need to define a macro to create the __jump_table
-> entries (see ARCH_STATIC_BRANCH in the powerpc asm/jump_label.h
-> for an example).
+> Modify linux/jump_label.h so it can be included by assembly files.
+> We also need to add -DCC_HAVE_ASM_GOTO to KBUILD_AFLAGS.
 > 
 > Signed-off-by: Anton Blanchard <anton@samba.org>
 
