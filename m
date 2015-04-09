@@ -1,17 +1,18 @@
 Return-Path: <scottwood@freescale.com>
 Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0112.outbound.protection.outlook.com [157.56.110.112])
+ (mail-bn1bon0141.outbound.protection.outlook.com [157.56.111.141])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id ADEFC1A04E0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 03:00:39 +1000 (AEST)
-Message-ID: <1428598825.22867.532.camel@freescale.com>
-Subject: Re: [PATCH] dt/bindings: fsl/guts: Added global-utilities compatibles
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1D7241A056E
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 03:02:20 +1000 (AEST)
+Message-ID: <1428598922.22867.534.camel@freescale.com>
+Subject: Re: [PATCH] powerpc/dts: Add some SoC specific
+ "fsl,*-device-config" compatibles
 From: Scott Wood <scottwood@freescale.com>
 To: Igal.Liberman <igal.liberman@freescale.com>
-Date: Thu, 9 Apr 2015 12:00:25 -0500
-In-Reply-To: <1428560392-30903-1-git-send-email-igal.liberman@freescale.com>
-References: <1428560392-30903-1-git-send-email-igal.liberman@freescale.com>
+Date: Thu, 9 Apr 2015 12:02:02 -0500
+In-Reply-To: <1428560482-30938-1-git-send-email-igal.liberman@freescale.com>
+References: <1428560482-30938-1-git-send-email-igal.liberman@freescale.com>
 Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
 Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
@@ -24,42 +25,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2015-04-09 at 09:19 +0300, Igal.Liberman wrote:
+On Thu, 2015-04-09 at 09:21 +0300, Igal.Liberman wrote:
 > From: Igal Liberman <Igal.Liberman@freescale.com>
 > 
+> This patch is required for: https://patchwork.ozlabs.org/patch/459584/
+
+If it's required for that patch, why aren't they part of a patchset
+rather than independently posted?  I don't see any mention of a
+dependency in that patch, so how would I have known not to apply it?
+
 > Signed-off-by: Igal Liberman <Igal.Liberman@freescale.com>
 > ---
->  .../devicetree/bindings/powerpc/fsl/guts.txt       |   14 ++++++++++++++
->  1 file changed, 14 insertions(+)
+>  arch/powerpc/boot/dts/fsl/b4420si-post.dtsi |    3 ++-
+>  arch/powerpc/boot/dts/fsl/b4860si-post.dtsi |    3 ++-
+>  arch/powerpc/boot/dts/fsl/b4si-post.dtsi    |    3 ++-
+>  arch/powerpc/boot/dts/fsl/p2041si-post.dtsi |    3 ++-
+>  arch/powerpc/boot/dts/fsl/p3041si-post.dtsi |    3 ++-
+>  arch/powerpc/boot/dts/fsl/p4080si-post.dtsi |    3 ++-
+>  arch/powerpc/boot/dts/fsl/p5020si-post.dtsi |    3 ++-
+>  7 files changed, 14 insertions(+), 7 deletions(-)
 > 
-> diff --git a/Documentation/devicetree/bindings/powerpc/fsl/guts.txt b/Documentation/devicetree/bindings/powerpc/fsl/guts.txt
-> index 7f150b5..e4f0ac2 100644
-> --- a/Documentation/devicetree/bindings/powerpc/fsl/guts.txt
-> +++ b/Documentation/devicetree/bindings/powerpc/fsl/guts.txt
-> @@ -9,6 +9,20 @@ Required properties:
+> diff --git a/arch/powerpc/boot/dts/fsl/b4420si-post.dtsi b/arch/powerpc/boot/dts/fsl/b4420si-post.dtsi
+> index 1ea8602..9b14f24 100644
+> --- a/arch/powerpc/boot/dts/fsl/b4420si-post.dtsi
+> +++ b/arch/powerpc/boot/dts/fsl/b4420si-post.dtsi
+> @@ -77,7 +77,8 @@
+>  	};
 >  
->   - compatible : Should define the compatible device type for
->     global-utilities.
-> +   Possible compatibles:
-> +	"fsl,qoriq-device-config-1.0"
-> +	"fsl,p2041-device-config"
-> +	"fsl,p3041-device-config"
-> +	"fsl,p4080-device-config"
-> +	"fsl,p5020-device-config"
-> +	"fsl,p5040-device-config"
-> +	"fsl,qoriq-device-config-2.0"
-> +	"fsl,b4860-device-config"
-> +	"fsl,b4420-device-config"
-> +	"fsl,b4-device-config"
-> +	"fsl,t1040-device-config"
-> +	"fsl,t2080-device-config"
-> +	"fsl,t4240-device-config"
+>  	guts: global-utilities@e0000 {
+> -		compatible = "fsl,b4420-device-config", "fsl,qoriq-device-config-2.0";
+> +		compatible = "fsl,b4420-device-config", "fsl,b4-device-config",
+> +			      "fsl,qoriq-device-config-2.0";
 
-There's no need to list every chip here.  Just list the ones that aren't
-chips, plus "fsl,<chip>-device-config".
-
-As for fsl,b4-device-config, does that exist in any final dtb (as
-opposed to b4si-post.dtsi)?  The b4420 and b4860 dtsi files both
-overwrite that compatible.
+Why?
 
 -Scott
