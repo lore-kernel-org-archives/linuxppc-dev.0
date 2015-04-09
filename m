@@ -1,15 +1,15 @@
 Return-Path: <Shengzhou.Liu@freescale.com>
 Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0114.outbound.protection.outlook.com [65.55.169.114])
+ (mail-bl2on0141.outbound.protection.outlook.com [65.55.169.141])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DE26A1A0ACC
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Apr 2015 18:11:27 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8E4541A0A9C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Apr 2015 18:11:30 +1000 (AEST)
 From: Shengzhou Liu <Shengzhou.Liu@freescale.com>
 To: <linuxppc-dev@lists.ozlabs.org>, <scottwood@freescale.com>
-Subject: [PATCH 3/4 v3] powerpc/fsl-booke: Add T1024 RDB board support
-Date: Thu, 9 Apr 2015 16:07:44 +0800
-Message-ID: <1428566865-35732-3-git-send-email-Shengzhou.Liu@freescale.com>
+Subject: [PATCH 4/4 v3] powerpc/fsl-booke: Add T1023 RDB board support
+Date: Thu, 9 Apr 2015 16:07:45 +0800
+Message-ID: <1428566865-35732-4-git-send-email-Shengzhou.Liu@freescale.com>
 In-Reply-To: <1428566865-35732-1-git-send-email-Shengzhou.Liu@freescale.com>
 References: <1428566865-35732-1-git-send-email-Shengzhou.Liu@freescale.com>
 MIME-Version: 1.0
@@ -24,47 +24,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-T1024RDB is a Freescale Reference Design Board that hosts the T1024 SoC.
+T1023RDB is a Freescale Reference Design Board that hosts T1023 SoC.
 
-T1024RDB board Overview
+T1023RDB board Overview
 -----------------------
-- Processor: T1024 SoC integrating two 64-bit e5500 cores up to 1.4GHz
-- Memory: 64-bit 4GB DDR3L UDIMM with ECC and interleaving support
-- Ethernet: two 1G RGMII ports, one 2.5G SGMII port and one 10G Base-T port
-- Accelerator: DPAA components consist of FMan, BMan, QMan, PME, DCE and SEC
+- T1023 SoC integrating two 64-bit e5500 cores up to 1.4GHz
+- CoreNet fabric supporting coherent and noncoherent transactions with
+  prioritization and bandwidth allocation
+- Memory: 2GB Micron MT40A512M8HX unbuffered 32-bit fixed DDR4 without ECC
+- Accelerator: DPAA components consist of FMan, BMan, QMan, DCE and SEC
+- Ethernet interfaces:
+  - one 1G RGMII port on-board(RTL8211F PHY)
+  - one 1G SGMII port on-board(RTL8211F PHY)
+  - one 2.5G SGMII port on-board(AQR105 PHY)
+- PCIe: Two Mini-PCIe connectors on-board.
 - SerDes: 4 lanes up to 10.3125GHz
-- IFC: 128MB NOR Flash, 1GB NAND Flash and CPLD system controlling
-- PCIe: one PCIe slot and two Mini-PCIe connectors on-board
-- USB: two Type-A USB2.0 ports with internal PHY
-- eSDHC: one SDHC/MMC/eMMC connector
-- eSPI: one 64MB N25Q512 SPI flash
-- QE-TDM: support TDM Riser card
-   - 32-bit RISC controller for flexible support of the communications peripherals
-   - Serial DMA channel for receive and transmit on all serial channels
-   - Two universal communication controllers, supporting TDM, HDLC, and UART
-- I2C: four I2C controllers
-- UART: two UART on board
-- Deep sleep power management support
+- NOR:  128MB S29GL01GS110TFIV10 Spansion NOR Flash
+- NAND: 512MB S34MS04G200BFI000 Spansion NAND Flash
+- eSPI: 64MB S25FL512SAGMFI010 Spansion SPI flash
+- USB: one Type-A USB 2.0 port with internal PHY
+- eSDHC: support SD/MMC card and eMMC flash on-board
+- 256Kbit M24256 I2C EEPROM
+- RTC: Real-time clock DS1339 on I2C bus
+- UART: one serial port on-board with RJ45 connector
+- Debugging: JTAG/COP for T1023 debugging
 
 Signed-off-by: Shengzhou Liu <Shengzhou.Liu@freescale.com>
 ---
-v3: no change.
-v2: Integrated scott's comments.
+v3: no change
+v2: no change
 
- arch/powerpc/boot/dts/t1024rdb.dts            | 185 ++++++++++++++++++++++++++
- arch/powerpc/platforms/85xx/Kconfig           |   2 +-
+ arch/powerpc/boot/dts/t1023rdb.dts            | 151 ++++++++++++++++++++++++++
  arch/powerpc/platforms/85xx/corenet_generic.c |   1 +
- 3 files changed, 187 insertions(+), 1 deletion(-)
- create mode 100644 arch/powerpc/boot/dts/t1024rdb.dts
+ 2 files changed, 152 insertions(+)
+ create mode 100644 arch/powerpc/boot/dts/t1023rdb.dts
 
-diff --git a/arch/powerpc/boot/dts/t1024rdb.dts b/arch/powerpc/boot/dts/t1024rdb.dts
+diff --git a/arch/powerpc/boot/dts/t1023rdb.dts b/arch/powerpc/boot/dts/t1023rdb.dts
 new file mode 100644
-index 0000000..eb1d51b
+index 0000000..3780e68
 --- /dev/null
-+++ b/arch/powerpc/boot/dts/t1024rdb.dts
-@@ -0,0 +1,185 @@
++++ b/arch/powerpc/boot/dts/t1023rdb.dts
+@@ -0,0 +1,151 @@
 +/*
-+ * T1024 RDB Device Tree Source
++ * T1023 RDB Device Tree Source
 + *
 + * Copyright 2014 Freescale Semiconductor Inc.
 + *
@@ -100,8 +102,8 @@ index 0000000..eb1d51b
 +/include/ "fsl/t102xsi-pre.dtsi"
 +
 +/ {
-+	model = "fsl,T1024RDB";
-+	compatible = "fsl,T1024RDB";
++	model = "fsl,T1023RDB";
++	compatible = "fsl,T1023RDB";
 +	#address-cells = <2>;
 +	#size-cells = <2>;
 +	interrupt-parent = <&mpic>;
@@ -109,12 +111,12 @@ index 0000000..eb1d51b
 +	ifc: localbus@ffe124000 {
 +		reg = <0xf 0xfe124000 0 0x2000>;
 +		ranges = <0 0 0xf 0xe8000000 0x08000000
-+			  2 0 0xf 0xff800000 0x00010000
-+			  3 0 0xf 0xffdf0000 0x00008000>;
++			  1 0 0xf 0xff800000 0x00010000>;
 +
 +		nor@0,0 {
 +			#address-cells = <1>;
 +			#size-cells = <1>;
++			status = "disabled";
 +			compatible = "cfi-flash";
 +			reg = <0x0 0x0 0x8000000>;
 +			bank-width = <2>;
@@ -126,16 +128,6 @@ index 0000000..eb1d51b
 +			#size-cells = <1>;
 +			compatible = "fsl,ifc-nand";
 +			reg = <0x2 0x0 0x10000>;
-+		};
-+
-+		board-control@2,0 {
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			compatible = "fsl,t1024-cpld";
-+			reg = <3 0 0x300>;
-+			ranges = <0 3 0 0x300>;
-+			bank-width = <1>;
-+			device-width = <1>;
 +		};
 +	};
 +
@@ -154,50 +146,26 @@ index 0000000..eb1d51b
 +			flash@0 {
 +				#address-cells = <1>;
 +				#size-cells = <1>;
-+				compatible = "micron,n25q512ax3";
++				compatible = "spansion,s25fl512s";
 +				reg = <0>;
 +				spi-max-frequency = <10000000>; /* input clk */
-+			};
-+
-+			slic@1 {
-+				compatible = "maxim,ds26522";
-+				reg = <1>;
-+				spi-max-frequency = <2000000>;
-+			};
-+
-+			slic@2 {
-+				compatible = "maxim,ds26522";
-+				reg = <2>;
-+				spi-max-frequency = <2000000>;
 +			};
 +		};
 +
 +		i2c@118000 {
-+			adt7461@4c {
-+				/* Thermal Monitor */
-+				compatible = "adi,adt7461";
-+				reg = <0x4c>;
-+			};
-+
 +			eeprom@50 {
-+				compatible = "at24,24c256";
++				compatible = "stm,m24256";
 +				reg = <0x50>;
 +			};
 +
 +			rtc@68 {
 +				compatible = "dallas,ds1339";
 +				reg = <0x68>;
-+				interrupts = <0x1 0x1 0 0>;
++				interrupts = <0x5 0x1 0 0>;
 +			};
 +		};
 +
 +		i2c@118100 {
-+			pca9546@77 {
-+				compatible = "nxp,pca9546";
-+				reg = <0x77>;
-+				#address-cells = <1>;
-+				#size-cells = <0>;
-+			};
 +		};
 +	};
 +
@@ -247,31 +215,18 @@ index 0000000..eb1d51b
 +	};
 +};
 +
-+/include/ "fsl/t1024si-post.dtsi"
-diff --git a/arch/powerpc/platforms/85xx/Kconfig b/arch/powerpc/platforms/85xx/Kconfig
-index e628d40..97915fe 100644
---- a/arch/powerpc/platforms/85xx/Kconfig
-+++ b/arch/powerpc/platforms/85xx/Kconfig
-@@ -282,7 +282,7 @@ config CORENET_GENERIC
- 	  For 64bit kernel, the following boards are supported:
- 	    T208x QDS/RDB, T4240 QDS/RDB and B4 QDS
- 	  The following boards are supported for both 32bit and 64bit kernel:
--	    P5020 DS, P5040 DS, T102x QDS, T104x QDS/RDB
-+	    P5020 DS, P5040 DS, T102x QDS/RDB, T104x QDS/RDB
- 
- endif # FSL_SOC_BOOKE
- 
++/include/ "fsl/t1023si-post.dtsi"
 diff --git a/arch/powerpc/platforms/85xx/corenet_generic.c b/arch/powerpc/platforms/85xx/corenet_generic.c
-index f61f477..d7c1b4d 100644
+index d7c1b4d..bd839dc 100644
 --- a/arch/powerpc/platforms/85xx/corenet_generic.c
 +++ b/arch/powerpc/platforms/85xx/corenet_generic.c
-@@ -151,6 +151,7 @@ static const char * const boards[] __initconst = {
+@@ -150,6 +150,7 @@ static const char * const boards[] __initconst = {
+ 	"fsl,B4860QDS",
  	"fsl,B4420QDS",
  	"fsl,B4220QDS",
++	"fsl,T1023RDB",
  	"fsl,T1024QDS",
-+	"fsl,T1024RDB",
+ 	"fsl,T1024RDB",
  	"fsl,T1040QDS",
- 	"fsl,T1042QDS",
- 	"fsl,T1040RDB",
 -- 
 2.1.0.27.g96db324
