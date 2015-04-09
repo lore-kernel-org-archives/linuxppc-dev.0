@@ -1,19 +1,20 @@
-Return-Path: <Igal.Liberman@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0119.outbound.protection.outlook.com [157.56.110.119])
+Return-Path: <Shengzhou.Liu@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0116.outbound.protection.outlook.com [207.46.100.116])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8F4661A0332
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Apr 2015 18:00:03 +1000 (AEST)
-From: Igal.Liberman <igal.liberman@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [v2] clk: qoriq: Add support for the FMan clock
-Date: Thu, 9 Apr 2015 06:50:16 +0300
-Message-ID: <1428551416-27626-1-git-send-email-igal.liberman@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3D2371A0332
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Apr 2015 18:11:21 +1000 (AEST)
+From: Shengzhou Liu <Shengzhou.Liu@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <scottwood@freescale.com>
+Subject: [PATCH 2/4 v3] powerpc/fsl-booke: Add T1024 QDS board support
+Date: Thu, 9 Apr 2015 16:07:43 +0800
+Message-ID: <1428566865-35732-2-git-send-email-Shengzhou.Liu@freescale.com>
+In-Reply-To: <1428566865-35732-1-git-send-email-Shengzhou.Liu@freescale.com>
+References: <1428566865-35732-1-git-send-email-Shengzhou.Liu@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
-Cc: scottwood@freescale.com, sboyd@codeaurora.org, mturquette@linaro.org,
- Igal Liberman <Igal.Liberman@freescale.com>
+Cc: Shengzhou Liu <Shengzhou.Liu@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,247 +24,334 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Igal Liberman <Igal.Liberman@freescale.com>
+Add support for Freescale T1024/T1023 QorIQ Development System Board.
 
-v2:	- Added clock maintainers
-	- Cached FMan clock parent during initialization
-	- Register the clock after checking if the hardware exists
-	- updated error messages
+T1024QDS is a high-performance computing evaluation, development and
+test platform for T1024 QorIQ Power Architecture processor.
 
-Signed-off-by: Igal Liberman <Igal.Liberman@freescale.com>
+T1024QDS board Overview
+-----------------------
+- T1024 SoC integrating two 64-bit e5500 cores up to 1.4GHz
+- CoreNet fabric supporting coherent and noncoherent transactions with
+  prioritization and bandwidth allocation
+- 32-/64-bit DDR3L/DDR4 SDRAM memory controller with ECC and interleaving support
+- Accelerator: DPAA components consist of FMan, BMan, QMan, PME, DCE and SEC
+- Ethernet interfaces:
+  - Two 10M/100M/1G RGMII ports on-board
+  - Three 1G/2.5Gbps SGMII ports
+  - Four 1Gbps QSGMII ports
+  - one 10Gbps XFI or 10G Base-KR interface
+- SerDes: 4 lanes up to 10.3125GHz Supporting SGMII/QSGMII, XFI, PCIe, SATA and Aurora
+- PCIe: Three PCI Express controllers with five PCIe slots.
+- IFC: 128MB NOR Flash, 2GB NAND Flash, PromJet debug port and Qixis FPGA
+- Video: DIU supports video up to 1280x1024x32 bpp.
+  - Chrontel CH7201 for HDMI connection.
+  - TI DS90C387R for direct LCD connection.
+  - Raw (not encoded) video connector for testing or other encoders.
+- QUICC Engine block
+  - 32-bit RISC controller for flexible support of the communications peripherals
+  - Serial DMA channel for receive and transmit on all serial channels
+  - Two universal communication controllers, supporting TDM, HDLC, and UART
+- Deep sleep power management implementaion (wakeup from GPIO/Timer/Ethernet/USB)
+- eSPI: Three SPI flash devices.
+- SATA: one SATA 2.O.
+- USB: Two USB2.0 ports with internal PHY (one Type-A and one micro Type mini-AB)
+- eSDHC: Support SD, SDHC, SDXC and MMC/eMMC.
+- I2C: Four I2C controllers.
+- UART: Two UART on board.
+
+Signed-off-by: Shengzhou Liu <Shengzhou.Liu@freescale.com>
 ---
- drivers/clk/clk-qoriq.c |  208 +++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 208 insertions(+)
+v3: no change
+v2: no change
 
-diff --git a/drivers/clk/clk-qoriq.c b/drivers/clk/clk-qoriq.c
-index cda90a9..d588e90 100644
---- a/drivers/clk/clk-qoriq.c
-+++ b/drivers/clk/clk-qoriq.c
-@@ -19,6 +19,8 @@
- #include <linux/of.h>
- #include <linux/slab.h>
- 
-+#include <asm/fsl_guts.h>
-+
- struct cmux_clk {
- 	struct clk_hw hw;
- 	void __iomem *reg;
-@@ -155,6 +157,211 @@ err_name:
- 	kfree(parent_names);
- }
- 
-+/* Table for matching compatible strings, for device tree
-+ * guts node, for QorIQ SOCs.
-+ * "fsl,qoriq-device-config-2.0" corresponds to T4 & B4
-+ * SOCs. For the older SOCs "fsl,qoriq-device-config-1.0"
-+ * string would be used.
+ arch/powerpc/boot/dts/t1024qds.dts            | 251 ++++++++++++++++++++++++++
+ arch/powerpc/platforms/85xx/Kconfig           |   2 +-
+ arch/powerpc/platforms/85xx/corenet_generic.c |   1 +
+ 3 files changed, 253 insertions(+), 1 deletion(-)
+ create mode 100644 arch/powerpc/boot/dts/t1024qds.dts
+
+diff --git a/arch/powerpc/boot/dts/t1024qds.dts b/arch/powerpc/boot/dts/t1024qds.dts
+new file mode 100644
+index 0000000..14122cf
+--- /dev/null
++++ b/arch/powerpc/boot/dts/t1024qds.dts
+@@ -0,0 +1,251 @@
++/*
++ * T1024 QDS Device Tree Source
++ *
++ * Copyright 2014 Freescale Semiconductor Inc.
++ *
++ * Redistribution and use in source and binary forms, with or without
++ * modification, are permitted provided that the following conditions are met:
++ *     * Redistributions of source code must retain the above copyright
++ *	 notice, this list of conditions and the following disclaimer.
++ *     * Redistributions in binary form must reproduce the above copyright
++ *	 notice, this list of conditions and the following disclaimer in the
++ *	 documentation and/or other materials provided with the distribution.
++ *     * Neither the name of Freescale Semiconductor nor the
++ *	 names of its contributors may be used to endorse or promote products
++ *	 derived from this software without specific prior written permission.
++ *
++ *
++ * ALTERNATIVELY, this software may be distributed under the terms of the
++ * GNU General Public License ("GPL") as published by the Free Software
++ * Foundation, either version 2 of that License or (at your option) any
++ * later version.
++ *
++ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor "AS IS" AND ANY
++ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
++ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
++ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
++ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
++ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
++ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
++ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
++ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
++ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 + */
 +
-+static const struct of_device_id guts_device_ids[] = {
-+	{ .compatible = "fsl,qoriq-device-config-1.0", },
-+	{ .compatible = "fsl,qoriq-device-config-2.0", },
-+	{}
++/include/ "fsl/t102xsi-pre.dtsi"
++
++/ {
++	model = "fsl,T1024QDS";
++	compatible = "fsl,T1024QDS";
++	#address-cells = <2>;
++	#size-cells = <2>;
++	interrupt-parent = <&mpic>;
++
++	ifc: localbus@ffe124000 {
++		reg = <0xf 0xfe124000 0 0x2000>;
++		ranges = <0 0 0xf 0xe8000000 0x08000000
++			  2 0 0xf 0xff800000 0x00010000
++			  3 0 0xf 0xffdf0000 0x00008000>;
++
++		nor@0,0 {
++			#address-cells = <1>;
++			#size-cells = <1>;
++			compatible = "cfi-flash";
++			reg = <0x0 0x0 0x8000000>;
++			bank-width = <2>;
++			device-width = <1>;
++		};
++
++		nand@2,0 {
++			#address-cells = <1>;
++			#size-cells = <1>;
++			compatible = "fsl,ifc-nand";
++			reg = <0x2 0x0 0x10000>;
++		};
++
++		board-control@3,0 {
++			#address-cells = <1>;
++			#size-cells = <1>;
++			compatible = "fsl,tetra-fpga", "fsl,fpga-qixis";
++			reg = <3 0 0x300>;
++			ranges = <0 3 0 0x300>;
++		};
++	};
++
++	memory {
++		device_type = "memory";
++	};
++
++	dcsr: dcsr@f00000000 {
++		ranges = <0x00000000 0xf 0x00000000 0x01072000>;
++	};
++
++	soc: soc@ffe000000 {
++		ranges = <0x00000000 0xf 0xfe000000 0x1000000>;
++		reg = <0xf 0xfe000000 0 0x00001000>;
++		spi@110000 {
++			flash@0 {
++				#address-cells = <1>;
++				#size-cells = <1>;
++				compatible = "micron,n25q128a11";  /* 16MB */
++				reg = <0>;
++				spi-max-frequency = <10000000>;
++			};
++
++			flash@1 {
++				#address-cells = <1>;
++				#size-cells = <1>;
++				compatible = "sst,sst25wf040";  /* 512KB */
++				reg = <1>;
++				spi-max-frequency = <10000000>;
++			};
++
++			flash@2 {
++				#address-cells = <1>;
++				#size-cells = <1>;
++				compatible = "eon,en25s64";   /* 8MB */
++				reg = <2>;
++				spi-max-frequency = <10000000>;
++			};
++
++			slic@2 {
++				compatible = "maxim,ds26522";
++				reg = <2>;
++				spi-max-frequency = <2000000>;
++			};
++
++			slic@3 {
++				compatible = "maxim,ds26522";
++				reg = <3>;
++				spi-max-frequency = <2000000>;
++			};
++		};
++
++		i2c@118000 {
++			pca9547@77 {
++				compatible = "nxp,pca9547";
++				reg = <0x77>;
++				#address-cells = <1>;
++				#size-cells = <0>;
++
++				i2c@0 {
++					#address-cells = <1>;
++					#size-cells = <0>;
++					reg = <0x0>;
++
++					eeprom@50 {
++						compatible = "at24,24c512";
++						reg = <0x50>;
++					};
++
++					eeprom@51 {
++						compatible = "at24,24c02";
++						reg = <0x51>;
++					};
++
++					eeprom@57 {
++						compatible = "at24,24c02";
++						reg = <0x57>;
++					};
++				};
++
++				i2c@2 {
++					#address-cells = <1>;
++					#size-cells = <0>;
++					reg = <0x2>;
++
++					ina220@40 {
++						compatible = "ti,ina220";
++						reg = <0x40>;
++						shunt-resistor = <1000>;
++					};
++
++					ina220@41 {
++						compatible = "ti,ina220";
++						reg = <0x41>;
++						shunt-resistor = <1000>;
++					};
++				};
++
++				i2c@3 {
++					#address-cells = <1>;
++					#size-cells = <0>;
++					reg = <0x3>;
++
++					adt7461@4c {
++						/* Thermal Monitor */
++						compatible = "adi,adt7461";
++						reg = <0x4c>;
++					};
++
++					eeprom@55 {
++						compatible = "at24,24c02";
++						reg = <0x55>;
++					};
++
++					eeprom@56 {
++						compatible = "at24,24c512";
++						reg = <0x56>;
++					};
++
++					eeprom@57 {
++						compatible = "at24,24c512";
++						reg = <0x57>;
++					};
++				};
++			};
++			rtc@68 {
++				compatible = "dallas,ds3232";
++				reg = <0x68>;
++				interrupts = <0x5 0x1 0 0>;
++			};
++		};
++	};
++
++	pci0: pcie@ffe240000 {
++		reg = <0xf 0xfe240000 0 0x10000>;
++		ranges = <0x02000000 0 0xe0000000 0xc 0x00000000 0 0x10000000
++			  0x01000000 0 0x00000000 0xf 0xf8000000 0 0x00010000>;
++		pcie@0 {
++			ranges = <0x02000000 0 0xe0000000
++				  0x02000000 0 0xe0000000
++				  0 0x10000000
++
++				  0x01000000 0 0x00000000
++				  0x01000000 0 0x00000000
++				  0 0x00010000>;
++		};
++	};
++
++	pci1: pcie@ffe250000 {
++		reg = <0xf 0xfe250000 0 0x10000>;
++		ranges = <0x02000000 0 0xe0000000 0xc 0x10000000 0 0x10000000
++			  0x01000000 0 0x00000000 0xf 0xf8010000 0 0x00010000>;
++		pcie@0 {
++			ranges = <0x02000000 0 0xe0000000
++				  0x02000000 0 0xe0000000
++				  0 0x10000000
++
++				  0x01000000 0 0x00000000
++				  0x01000000 0 0x00000000
++				  0 0x00010000>;
++		};
++	};
++
++	pci2: pcie@ffe260000 {
++		reg = <0xf 0xfe260000 0 0x10000>;
++		ranges = <0x02000000 0 0xe0000000 0xc 0x20000000 0 0x10000000
++			  0x01000000 0 0x00000000 0xf 0xf8020000 0 0x00010000>;
++		pcie@0 {
++			ranges = <0x02000000 0 0xe0000000
++				  0x02000000 0 0xe0000000
++				  0 0x10000000
++
++				  0x01000000 0 0x00000000
++				  0x01000000 0 0x00000000
++				  0 0x00010000>;
++		};
++	};
 +};
 +
-+/* P2, P3, P4, P5 */
-+#define FM1_CLK_SEL_SHIFT		30
-+#define FM1_CLK_SEL			BIT(FM1_CLK_SEL_SHIFT)
-+#define FM2_CLK_SEL_SHIFT		29
-+#define FM2_CLK_SEL			BIT(FM2_CLK_SEL_SHIFT)
-+#define HWA_ASYNC_DIV_SHIFT		26
-+#define HWA_ASYNC_DIV			BIT(HWA_ASYNC_DIV_SHIFT)
-+
-+/* B4, T2 */
-+#define HWA_CGA_M1_CLK_SEL_SHIFT	29
-+#define HWA_CGA_M1_CLK_SEL		(BIT(HWA_CGA_M1_CLK_SEL_SHIFT + 2) |\
-+					 BIT(HWA_CGA_M1_CLK_SEL_SHIFT + 1) |\
-+					 BIT(HWA_CGA_M1_CLK_SEL_SHIFT))
-+
-+/* T4240 */
-+#define HWA_CGB_M1_CLK_SEL_SHIFT	26
-+#define HWA_CGB_M1_CLK_SEL		(BIT(HWA_CGB_M1_CLK_SEL_SHIFT + 2) |\
-+					 BIT(HWA_CGB_M1_CLK_SEL_SHIFT + 1) |\
-+					 BIT(HWA_CGB_M1_CLK_SEL_SHIFT))
-+#define HWA_CGB_M2_CLK_SEL_SHIFT	3
-+#define HWA_CGB_M2_CLK_SEL		(BIT(HWA_CGB_M2_CLK_SEL_SHIFT + 2) |\
-+					 BIT(HWA_CGB_M2_CLK_SEL_SHIFT + 1) |\
-+					 BIT(HWA_CGB_M2_CLK_SEL_SHIFT))
-+
-+static u8 get_fm_clk_parent(struct clk_hw *hw)
-+{
-+	return hw->init->flags;
-+}
-+
-+static const struct clk_ops fm_clk_ops = {
-+	.get_parent = get_fm_clk_parent,
-+};
-+
-+static int get_fm_clk_idx(int fm_id, int *fm_clk_idx)
-+{
-+	struct ccsr_guts __iomem *guts_regs = NULL;
-+	struct device_node *guts;
-+	uint32_t reg = 0;
-+	int clk_src = 0;
-+
-+	guts = of_find_matching_node(NULL, guts_device_ids);
-+	if (!guts) {
-+		pr_err("could not find GUTS node\n");
-+		return -ENODEV;
-+	}
-+
-+	guts_regs = of_iomap(guts, 0);
-+	of_node_put(guts);
-+	if (!guts_regs) {
-+		pr_err("ioremap of GUTS node failed\n");
-+		return -ENODEV;
-+	}
-+
-+	if (of_device_is_compatible(guts, "fsl,p1023-guts") ||
-+	    of_device_is_compatible(guts, "fsl,t1040-device-config")) {
-+		/* P1023 and T1040 have only one optional clock source */
-+		*fm_clk_idx = 0;
-+	} else if (of_device_is_compatible(guts, "fsl,p2041-device-config") ||
-+		   of_device_is_compatible(guts, "fsl,p3041-device-config") ||
-+		   of_device_is_compatible(guts, "fsl,p4080-device-config")) {
-+		/* Read RCW*/
-+		reg = ioread32be(&guts_regs->rcwsr[7]);
-+
-+		if (fm_id == 0)
-+			*fm_clk_idx = (reg & FM1_CLK_SEL) >>
-+							FM1_CLK_SEL_SHIFT;
-+		else
-+			*fm_clk_idx = (reg & FM2_CLK_SEL) >>
-+							FM2_CLK_SEL_SHIFT;
-+	} else if (of_device_is_compatible(guts, "fsl,p5020-device-config") ||
-+		   of_device_is_compatible(guts, "fsl,p5040-device-config")) {
-+		/* Read RCW */
-+		reg = ioread32be(&guts_regs->rcwsr[7]);
-+
-+		if (fm_id == 0)
-+			clk_src = (reg & FM1_CLK_SEL) >> FM1_CLK_SEL_SHIFT;
-+		else
-+			clk_src = (reg & FM2_CLK_SEL) >> FM2_CLK_SEL_SHIFT;
-+
-+		if (clk_src == 0) {
-+			*fm_clk_idx = 0;
-+		} else {
-+			clk_src = (reg & HWA_ASYNC_DIV) >> HWA_ASYNC_DIV_SHIFT;
-+			*fm_clk_idx = clk_src + 1;
-+		}
-+	} else if (of_device_is_compatible(guts, "fsl,b4-device-config") ||
-+		   of_device_is_compatible(guts, "fsl,t2080-device-config")) {
-+		/* Read RCW */
-+		reg = ioread32be(&guts_regs->rcwsr[7]);
-+
-+		clk_src = (reg & HWA_CGA_M1_CLK_SEL) >>
-+						HWA_CGA_M1_CLK_SEL_SHIFT;
-+		*fm_clk_idx = clk_src - 1;
-+	} else if (of_device_is_compatible(guts, "fsl,t4240-device-config")) {
-+		if (fm_id == 0) {
-+			reg = ioread32be(&guts_regs->rcwsr[7]);
-+			clk_src = (reg & HWA_CGB_M1_CLK_SEL) >>
-+						HWA_CGB_M1_CLK_SEL_SHIFT;
-+		} else {
-+			reg = ioread32be(&guts_regs->rcwsr[15]);
-+			clk_src = (reg & HWA_CGB_M2_CLK_SEL) >>
-+						HWA_CGB_M2_CLK_SEL_SHIFT;
-+		}
-+		*fm_clk_idx = clk_src - 2;
-+	} else {
-+		pr_err("Unsupported device! Can't determine FM clk source!\n");
-+		iounmap(guts_regs);
-+		return -ENODEV;
-+	}
-+
-+	iounmap(guts_regs);
-+
-+	return 0;
-+
-+}
-+
-+static void __init fm_mux_init(struct device_node *np)
-+{
-+	struct clk_init_data *init;
-+	struct clk_hw *hw;
-+	int count, i, ret, fm_id = 0, fm_clk_idx;
-+	struct clk *clk;
-+
-+	init = kmalloc((sizeof(struct clk_init_data)), GFP_KERNEL);
-+	if (!init)
-+		return;
-+
-+	/* get the input clock source count */
-+	count = of_property_count_strings(np, "clock-names");
-+	if (count < 0) {
-+		pr_err("%s: get clock count error\n", np->name);
-+		goto err_init;
-+	}
-+
-+	init->parent_names = kmalloc((sizeof(char *) * count), GFP_KERNEL);
-+	if (!init->parent_names)
-+		goto err_init;
-+
-+	for (i = 0; i < count; i++)
-+		init->parent_names[i] = of_clk_get_parent_name(np, i);
-+
-+	hw = kzalloc(sizeof(*hw), GFP_KERNEL);
-+	if (!hw)
-+		goto err_name;
-+
-+	ret = of_property_read_string_index(np, "clock-output-names", 0,
-+					    &init->name);
-+	if (ret) {
-+		pr_err("%s: read clock names error\n", np->name);
-+		goto err_clk_hw;
-+	}
-+
-+	if (!strcmp(np->name, "fm1-clk-mux"))
-+		fm_id = 1;
-+
-+	ret = get_fm_clk_idx(fm_id, &fm_clk_idx);
-+	if (ret)
-+		goto err_clk_hw;
-+
-+	init->ops = &fm_clk_ops;
-+	init->num_parents = count;
-+	/* Save clock source index */
-+	init->flags = fm_clk_idx;
-+	hw->init = init;
-+
-+	clk = clk_register(NULL, hw);
-+	if (IS_ERR(clk)) {
-+		pr_err("%s: could not register clock\n", init->name);
-+		goto err_clk_hw;
-+	}
-+
-+	ret = of_clk_add_provider(np, of_clk_src_simple_get, clk);
-+	if (ret) {
-+		pr_err("Could not register clock provider for node: %s\n",
-+		       np->name);
-+		clk_unregister(clk);
-+		goto err_clk_hw;
-+	}
-+
-+	/* Free parent_names because they are reallocated when registered */
-+	kfree(init->parent_names);
-+
-+	return;
-+
-+err_clk_hw:
-+	kfree(hw);
-+err_name:
-+	kfree(init->parent_names);
-+err_init:
-+	kfree(init);
-+}
-+
- static void __init core_pll_init(struct device_node *np)
- {
- 	u32 mult;
-@@ -360,3 +567,4 @@ CLK_OF_DECLARE(qoriq_core_mux_1, "fsl,qoriq-core-mux-1.0", core_mux_init);
- CLK_OF_DECLARE(qoriq_core_mux_2, "fsl,qoriq-core-mux-2.0", core_mux_init);
- CLK_OF_DECLARE(qoriq_pltfrm_pll_1, "fsl,qoriq-platform-pll-1.0", pltfrm_pll_init);
- CLK_OF_DECLARE(qoriq_pltfrm_pll_2, "fsl,qoriq-platform-pll-2.0", pltfrm_pll_init);
-+CLK_OF_DECLARE(qoriq_fm_mux, "fsl,fman-clk-mux", fm_mux_init);
++/include/ "fsl/t1024si-post.dtsi"
+diff --git a/arch/powerpc/platforms/85xx/Kconfig b/arch/powerpc/platforms/85xx/Kconfig
+index 2fb4b24..e628d40 100644
+--- a/arch/powerpc/platforms/85xx/Kconfig
++++ b/arch/powerpc/platforms/85xx/Kconfig
+@@ -282,7 +282,7 @@ config CORENET_GENERIC
+ 	  For 64bit kernel, the following boards are supported:
+ 	    T208x QDS/RDB, T4240 QDS/RDB and B4 QDS
+ 	  The following boards are supported for both 32bit and 64bit kernel:
+-	    P5020 DS, P5040 DS and T104xQDS/RDB
++	    P5020 DS, P5040 DS, T102x QDS, T104x QDS/RDB
+ 
+ endif # FSL_SOC_BOOKE
+ 
+diff --git a/arch/powerpc/platforms/85xx/corenet_generic.c b/arch/powerpc/platforms/85xx/corenet_generic.c
+index 9824d2c..f61f477 100644
+--- a/arch/powerpc/platforms/85xx/corenet_generic.c
++++ b/arch/powerpc/platforms/85xx/corenet_generic.c
+@@ -150,6 +150,7 @@ static const char * const boards[] __initconst = {
+ 	"fsl,B4860QDS",
+ 	"fsl,B4420QDS",
+ 	"fsl,B4220QDS",
++	"fsl,T1024QDS",
+ 	"fsl,T1040QDS",
+ 	"fsl,T1042QDS",
+ 	"fsl,T1040RDB",
 -- 
-1.7.9.5
+2.1.0.27.g96db324
