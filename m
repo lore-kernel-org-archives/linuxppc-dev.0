@@ -1,23 +1,17 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0114.outbound.protection.outlook.com [157.56.111.114])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <sowmini.varadhan@oracle.com>
+Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2BC2E1A0D77
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 03:03:09 +1000 (AEST)
-Message-ID: <1428598976.22867.535.camel@freescale.com>
-Subject: Re: [v2] dt/bindings: qoriq-clock: Add binding for FMan clock mux
-From: Scott Wood <scottwood@freescale.com>
-To: Liberman Igal-B31950 <Igal.Liberman@freescale.com>
-Date: Thu, 9 Apr 2015 12:02:56 -0500
-In-Reply-To: <DM2PR03MB383D9FD2888970950261FB2E6FB0@DM2PR03MB383.namprd03.prod.outlook.com>
-References: <1428479031-26597-1-git-send-email-igal.liberman@freescale.com>
- <1428527516.22867.509.camel@freescale.com>
- <DM2PR03MB383D9FD2888970950261FB2E6FB0@DM2PR03MB383.namprd03.prod.outlook.com>
-Content-Type: text/plain; charset="UTF-8"
-MIME-Version: 1.0
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id CE51B1A0571
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 05:33:54 +1000 (AEST)
+From: Sowmini Varadhan <sowmini.varadhan@oracle.com>
+To: sparclinux@vger.kernel.org
+Subject: [PATCH v10 0/3] Generic IOMMU pooled allocator
+Date: Thu,  9 Apr 2015 15:33:29 -0400
+Message-Id: <cover.1428605063.git.sowmini.varadhan@oracle.com>
+Cc: aik@au1.ibm.com, anton@au1.ibm.com, paulus@samba.org,
+ sowmini.varadhan@oracle.com, linuxppc-dev@lists.ozlabs.org,
+ davem@davemloft.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,47 +21,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2015-04-09 at 02:18 -0500, Liberman Igal-B31950 wrote:
-> 
-> 
-> Regards,
-> Igal Liberman.
-> 
-> > -----Original Message-----
-> > From: Wood Scott-B07421
-> > Sent: Thursday, April 09, 2015 12:12 AM
-> > To: Liberman Igal-B31950
-> > Cc: devicetree@vger.kernel.org; linuxppc-dev@lists.ozlabs.org
-> > Subject: Re: [v2] dt/bindings: qoriq-clock: Add binding for FMan clock mux
-> > 
-> > On Wed, 2015-04-08 at 10:43 +0300, Igal.Liberman wrote:
-> > > @@ -76,6 +77,52 @@ Required properties:
-> > >
-> > >  Recommended properties:
-> > >  - clocks: Should be the phandle of input parent clock
-> > > +	For "fsl,fman-clk-mux" clock there are several options for parent
-> > > +	clock (clock provider), the parent is determined according to the
-> > > +	Reset Configuration Word of the specific device:
-> > > +		* P2041, P3041:
-> > > +			* 0 - equal to platform PLL divided by 2
-> > > +			* 1 - equal to PLL2 divided by 2
-> > > +		* P4080 (Both FMans):
-> > > +			* 0 - equal to platform PLL divided by 2
-> > > +			* 1 - equal to PLL3 divided by 2
-> > ...
-> > 
-> > 
-> > Again, the clock specifier format is determined by the clock provider, not the
-> > clock consumer.
-> > 
-> 
-> Scott,
-> The "clocks" property contains all possible clock providers, right?
-> In the text above I'm trying to explain how the FMan clock provider is determined and what are the options for each SoC.
-> Do you think that we shouldn't have this explanation? Can you please elaborate?
 
-I'm saying that the clock specifiers must be the same regardless of the
-node that is consuming the clock.  You can't define certain values as
-only being "for fsl,fman-clk-mux".
+Investigation of network performance on Sparc shows a high
+degree of locking contention in the IOMMU allocator, and it
+was noticed that the PowerPC code has a better locking model.
 
--Scott
+This patch series tries to extract the generic parts of the 
+PowerPC code so that it can be shared across multiple PCI
+devices and architectures.
+
+v10: resend patchv9 without RFC tag, and a new mail Message-Id,
+(previous non-RFC attempt did not show up on the patchwork queue?)
+
+Full revision history below:
+v2 changes:
+  - incorporate David Miller editorial comments: sparc specific
+    fields moved from iommu-common into sparc's iommu_64.h
+  - make the npools value an input parameter, for the case when
+    the iommu map size is not very large
+  - cookie_to_index mapping, and optimizations for span-boundary
+    check, for use case such as LDC.
+
+v3: eliminate iommu_sparc, rearrange the ->demap indirection to
+    be invoked under the pool lock.
+
+v4: David Miller review changes:
+  - s/IOMMU_ERROR_CODE/DMA_ERROR_CODE
+  - page_table_map_base and page_table_shift are unsigned long, not u32.
+
+v5: removed ->cookie_to_index and ->demap indirection from the
+    iommu_tbl_ops The caller needs to call these functions as needed,
+    before invoking the generic arena allocator functions.
+    Added the "skip_span_boundary" argument to iommu_tbl_pool_init() for
+    those callers like LDC which do no care about span boundary checks.
+
+v6: removed iommu_tbl_ops, and instead pass the ->flush_all as
+    an indirection to iommu_tbl_pool_init(); only invoke ->flush_all
+    when there is no large_pool, based on the assumption that large-pool
+    usage is infrequently encountered
+
+v7: moved pool_hash initialization to lib/iommu-common.c and cleaned up
+    code duplication from sun4v/sun4u/ldc. 
+
+v8: Addresses BenH comments with one exception: I've left the
+    IOMMU_POOL_HASH as is, so that powerpc can tailor it to their
+    convenience.  Discard trylock for simple spin_lock to acquire pool
+
+v9: Addresses latest BenH comments: need_flush checks, add support
+    for dma mask and align_order. 
+
+v10: resend without RFC tag, and new mail Message-Id.
+
+Sowmini Varadhan (3):
+  Break up monolithic iommu table/lock into finer graularity pools and
+    lock
+  Make sparc64 use scalable lib/iommu-common.c functions
+  Make LDC use common iommu poll management functions
+
+ arch/sparc/include/asm/iommu_64.h |    7 +-
+ arch/sparc/kernel/iommu.c         |  172 ++++++------------------
+ arch/sparc/kernel/iommu_common.h  |    8 -
+ arch/sparc/kernel/ldc.c           |  153 +++++++++------------
+ arch/sparc/kernel/pci_sun4v.c     |  183 ++++++++++++--------------
+ include/linux/iommu-common.h      |   51 +++++++
+ lib/Makefile                      |    2 +-
+ lib/iommu-common.c                |  266 +++++++++++++++++++++++++++++++++++++
+ 8 files changed, 511 insertions(+), 331 deletions(-)
+ create mode 100644 include/linux/iommu-common.h
+ create mode 100644 lib/iommu-common.c
