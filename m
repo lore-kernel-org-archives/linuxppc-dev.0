@@ -1,24 +1,17 @@
-Return-Path: <alex.williamson@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <anton@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 06BB61A04E0
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Apr 2015 13:46:39 +1000 (AEST)
-Message-ID: <1428551192.5567.590.camel@redhat.com>
-Subject: Re: [PATCH kernel v7 26/31] powerpc/iommu: Add userspace view of
- TCE table
-From: Alex Williamson <alex.williamson@redhat.com>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Date: Wed, 08 Apr 2015 21:46:32 -0600
-In-Reply-To: <5525F044.6070108@ozlabs.ru>
-References: <1427468115-2224-1-git-send-email-aik@ozlabs.ru>
- <1427468115-2224-27-git-send-email-aik@ozlabs.ru>
- <1428007803.5567.383.camel@redhat.com> <55249ED8.9090401@ozlabs.ru>
- <1428507805.5567.506.camel@redhat.com> <5525F044.6070108@ozlabs.ru>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 71BF01A04E0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Apr 2015 13:50:52 +1000 (AEST)
+From: Anton Blanchard <anton@samba.org>
+To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ rric@kernel.org
+Subject: [PATCH 1/3] jump_label: Allow asm/jump_label.h to be included in
+ assembly
+Date: Thu,  9 Apr 2015 13:50:44 +1000
+Message-Id: <1428551446-21802-1-git-send-email-anton@samba.org>
+Cc: linuxppc-dev@lists.ozlabs.org, oprofile-list@lists.sf.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,180 +21,192 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2015-04-09 at 13:21 +1000, Alexey Kardashevskiy wrote:
-> On 04/09/2015 01:43 AM, Alex Williamson wrote:
-> > On Wed, 2015-04-08 at 13:22 +1000, Alexey Kardashevskiy wrote:
-> >> On 04/03/2015 07:50 AM, Alex Williamson wrote:
-> >>>
-> >>> Should have sent this with the other comments, but found it hiding on my
-> >>> desktop...
-> >>>
-> >>> On Sat, 2015-03-28 at 01:55 +1100, Alexey Kardashevskiy wrote:
-> >>>> In order to support memory pre-registration, we need a way to track
-> >>>> the use of every registered memory region and only allow unregistration
-> >>>> if a region is not in use anymore. So we need a way to tell from what
-> >>>> region the just cleared TCE was from.
-> >>>>
-> >>>> This adds a userspace view of the TCE table into iommu_table struct.
-> >>>> It contains userspace address, one per TCE entry. The table is only
-> >>>> allocated when the ownership over an IOMMU group is taken which means
-> >>>> it is only used from outside of the powernv code (such as VFIO).
-> >>>>
-> >>>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> >>>> ---
-> >>>>    arch/powerpc/include/asm/iommu.h          |  6 ++++++
-> >>>>    arch/powerpc/kernel/iommu.c               |  7 +++++++
-> >>>>    arch/powerpc/platforms/powernv/pci-ioda.c | 23 ++++++++++++++++++++++-
-> >>>>    3 files changed, 35 insertions(+), 1 deletion(-)
-> >>>>
-> >>>> diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
-> >>>> index 2c08c91..a768a4d 100644
-> >>>> --- a/arch/powerpc/include/asm/iommu.h
-> >>>> +++ b/arch/powerpc/include/asm/iommu.h
-> >>>> @@ -106,9 +106,15 @@ struct iommu_table {
-> >>>>    	unsigned long *it_map;       /* A simple allocation bitmap for now */
-> >>>>    	unsigned long  it_page_shift;/* table iommu page size */
-> >>>>    	struct iommu_table_group *it_group;
-> >>>> +	unsigned long *it_userspace; /* userspace view of the table */
-> >>>>    	struct iommu_table_ops *it_ops;
-> >>>>    };
-> >>>>
-> >>>> +#define IOMMU_TABLE_USERSPACE_ENTRY(tbl, entry) \
-> >>>> +		((tbl)->it_userspace ? \
-> >>>> +			&((tbl)->it_userspace[(entry) - (tbl)->it_offset]) : \
-> >>>> +			NULL)
-> >>>> +
-> >>>>    /* Pure 2^n version of get_order */
-> >>>>    static inline __attribute_const__
-> >>>>    int get_iommu_order(unsigned long size, struct iommu_table *tbl)
-> >>>> diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
-> >>>> index 0bcd988..82102d1 100644
-> >>>> --- a/arch/powerpc/kernel/iommu.c
-> >>>> +++ b/arch/powerpc/kernel/iommu.c
-> >>>> @@ -38,6 +38,7 @@
-> >>>>    #include <linux/pci.h>
-> >>>>    #include <linux/iommu.h>
-> >>>>    #include <linux/sched.h>
-> >>>> +#include <linux/vmalloc.h>
-> >>>>    #include <asm/io.h>
-> >>>>    #include <asm/prom.h>
-> >>>>    #include <asm/iommu.h>
-> >>>> @@ -1069,6 +1070,9 @@ static int iommu_table_take_ownership(struct iommu_table *tbl)
-> >>>>    		spin_unlock(&tbl->pools[i].lock);
-> >>>>    	spin_unlock_irqrestore(&tbl->large_pool.lock, flags);
-> >>>>
-> >>>> +	BUG_ON(tbl->it_userspace);
-> >>>> +	tbl->it_userspace = vzalloc(sizeof(*tbl->it_userspace) * tbl->it_size);
-> >>>> +
-> >>>
-> >>> -ENOMEM?
-> >>>
-> >>>>    	return 0;
-> >>>>    }
-> >>>>
-> >>>> @@ -1102,6 +1106,9 @@ static void iommu_table_release_ownership(struct iommu_table *tbl)
-> >>>>    {
-> >>>>    	unsigned long flags, i, sz = (tbl->it_size + 7) >> 3;
-> >>>>
-> >>>> +	vfree(tbl->it_userspace);
-> >>>> +	tbl->it_userspace = NULL;
-> >>>> +
-> >>>>    	spin_lock_irqsave(&tbl->large_pool.lock, flags);
-> >>>>    	for (i = 0; i < tbl->nr_pools; i++)
-> >>>>    		spin_lock(&tbl->pools[i].lock);
-> >>>> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-> >>>> index bc36cf1..036f3c1 100644
-> >>>> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
-> >>>> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-> >>>> @@ -26,6 +26,7 @@
-> >>>>    #include <linux/iommu.h>
-> >>>>    #include <linux/mmzone.h>
-> >>>>    #include <linux/sizes.h>
-> >>>> +#include <linux/vmalloc.h>
-> >>>>
-> >>>>    #include <asm/mmzone.h>
-> >>>>    #include <asm/sections.h>
-> >>>> @@ -1469,6 +1470,9 @@ static void pnv_pci_free_table(struct iommu_table *tbl)
-> >>>>    	if (!tbl->it_size)
-> >>>>    		return;
-> >>>>
-> >>>> +	if (tbl->it_userspace)
-> >>>
-> >>> Not necessary
-> >>
-> >> Out of curiosity - why? Is every single implementation is known for
-> >> checking the argument?
-> >
-> > AFAIK, all flavors of free in the kernel accept NULL pointers and do the
-> > right thing.  I verified this one does too.
-> >
-> >>>> +		vfree(tbl->it_userspace);
-> >>>> +
-> >>>
-> >>> Why no NULL setting this time?
-> >>
-> >> iommu_reset_table() (2 lines below) will do memset(0) on the entire struct.
-> >
-> > So then should iommu_reset_table() handle the vfree() as well?
-> 
-> 
-> I wanted to keep vfree() in the same file with vzalloc(). Bad idea?
-> But I'll move vfree() to iommu_reset_table() anyway.
+Wrap asm/jump_label.h for all archs with #ifndef __ASSEMBLY__.
+Since these are kernel only headers, we don't need #ifdef __KERNEL__
+so can simplify things a bit.
 
-No, that's probably a good idea to have some locality between the alloc
-and free.  If it doesn't make sense, don't do it.
+If an architecture wants to use jump labels in assembly, it
+will still need to define a macro to create the __jump_table
+entries (see ARCH_STATIC_BRANCH in the powerpc asm/jump_label.h
+for an example).
 
-> >>>>    	pnv_free_tce_table(tbl->it_base, size, tbl->it_indirect_levels);
-> >>>>    	iommu_reset_table(tbl, "ioda2");
-> >>>>    }
-> >>>> @@ -1656,9 +1660,26 @@ static void pnv_ioda2_set_ownership(struct iommu_table_group *table_group,
-> >>>>    	pnv_pci_ioda2_set_bypass(pe, !enable);
-> >>>>    }
-> >>>>
-> >>>> +static long pnv_pci_ioda2_create_table_with_uas(
-> >>>> +		struct iommu_table_group *table_group,
-> >>>> +		int num, __u32 page_shift, __u64 window_size, __u32 levels,
-> >>>> +		struct iommu_table *tbl)
-> >>>> +{
-> >>>> +	long ret = pnv_pci_ioda2_create_table(table_group, num,
-> >>>> +			page_shift, window_size, levels, tbl);
-> >>>> +
-> >>>> +	if (ret)
-> >>>> +		return ret;
-> >>>> +
-> >>>> +	BUG_ON(tbl->it_userspace);
-> >>>> +	tbl->it_userspace = vzalloc(sizeof(*tbl->it_userspace) * tbl->it_size);
-> >>>
-> >>> -ENOMEM
-> >>>
-> >>>> +
-> >>>> +	return 0;
-> >>>> +}
-> >>>> +
-> >>>>    static struct iommu_table_group_ops pnv_pci_ioda2_ops = {
-> >>>>    	.set_ownership = pnv_ioda2_set_ownership,
-> >>>> -	.create_table = pnv_pci_ioda2_create_table,
-> >>>> +	.create_table = pnv_pci_ioda2_create_table_with_uas,
-> >>>>    	.set_window = pnv_pci_ioda2_set_window,
-> >>>>    	.unset_window = pnv_pci_ioda2_unset_window,
-> >>>>    };
-> >>>
-> >>>
-> >>>
-> >>
-> >>
-> >> Thanks for the review! What is overall resume? Another respin?
-> >
-> > Is there another option?  It seems like there are too many issues to
-> > simply fold cleanups onto the end of the series.  Thanks,
-> 
-> I'll repost indeed, I meant it would help me if you could tell that you 
-> agree with the patchset and Ben can pull this stuff to his tree. Thanks!
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
+ arch/arm/include/asm/jump_label.h   | 5 ++---
+ arch/arm64/include/asm/jump_label.h | 8 ++++----
+ arch/mips/include/asm/jump_label.h  | 7 +++----
+ arch/s390/include/asm/jump_label.h  | 3 +++
+ arch/sparc/include/asm/jump_label.h | 5 ++---
+ arch/x86/include/asm/jump_label.h   | 5 ++---
+ 6 files changed, 16 insertions(+), 17 deletions(-)
 
-It doesn't seem like there's much choice in the matter, it's hard to
-define the API that's being used between the vfio code and the powerpc
-code and the patch series is completely intermixed between the two.  I
-haven't found any blocker bugs in this version, but it will take at
-least another spin to get an ack.  Thanks,
-
-Alex
+diff --git a/arch/arm/include/asm/jump_label.h b/arch/arm/include/asm/jump_label.h
+index 70f9b9b..5f337dc 100644
+--- a/arch/arm/include/asm/jump_label.h
++++ b/arch/arm/include/asm/jump_label.h
+@@ -1,7 +1,7 @@
+ #ifndef _ASM_ARM_JUMP_LABEL_H
+ #define _ASM_ARM_JUMP_LABEL_H
+ 
+-#ifdef __KERNEL__
++#ifndef __ASSEMBLY__
+ 
+ #include <linux/types.h>
+ 
+@@ -27,8 +27,6 @@ l_yes:
+ 	return true;
+ }
+ 
+-#endif /* __KERNEL__ */
+-
+ typedef u32 jump_label_t;
+ 
+ struct jump_entry {
+@@ -37,4 +35,5 @@ struct jump_entry {
+ 	jump_label_t key;
+ };
+ 
++#endif  /* __ASSEMBLY__ */
+ #endif
+diff --git a/arch/arm64/include/asm/jump_label.h b/arch/arm64/include/asm/jump_label.h
+index 076a1c7..c0e5165 100644
+--- a/arch/arm64/include/asm/jump_label.h
++++ b/arch/arm64/include/asm/jump_label.h
+@@ -18,11 +18,12 @@
+  */
+ #ifndef __ASM_JUMP_LABEL_H
+ #define __ASM_JUMP_LABEL_H
++
++#ifndef __ASSEMBLY__
++
+ #include <linux/types.h>
+ #include <asm/insn.h>
+ 
+-#ifdef __KERNEL__
+-
+ #define JUMP_LABEL_NOP_SIZE		AARCH64_INSN_SIZE
+ 
+ static __always_inline bool arch_static_branch(struct static_key *key)
+@@ -39,8 +40,6 @@ l_yes:
+ 	return true;
+ }
+ 
+-#endif /* __KERNEL__ */
+-
+ typedef u64 jump_label_t;
+ 
+ struct jump_entry {
+@@ -49,4 +48,5 @@ struct jump_entry {
+ 	jump_label_t key;
+ };
+ 
++#endif  /* __ASSEMBLY__ */
+ #endif	/* __ASM_JUMP_LABEL_H */
+diff --git a/arch/mips/include/asm/jump_label.h b/arch/mips/include/asm/jump_label.h
+index fdbff44..608aa57 100644
+--- a/arch/mips/include/asm/jump_label.h
++++ b/arch/mips/include/asm/jump_label.h
+@@ -8,9 +8,9 @@
+ #ifndef _ASM_MIPS_JUMP_LABEL_H
+ #define _ASM_MIPS_JUMP_LABEL_H
+ 
+-#include <linux/types.h>
++#ifndef __ASSEMBLY__
+ 
+-#ifdef __KERNEL__
++#include <linux/types.h>
+ 
+ #define JUMP_LABEL_NOP_SIZE 4
+ 
+@@ -39,8 +39,6 @@ l_yes:
+ 	return true;
+ }
+ 
+-#endif /* __KERNEL__ */
+-
+ #ifdef CONFIG_64BIT
+ typedef u64 jump_label_t;
+ #else
+@@ -53,4 +51,5 @@ struct jump_entry {
+ 	jump_label_t key;
+ };
+ 
++#endif  /* __ASSEMBLY__ */
+ #endif /* _ASM_MIPS_JUMP_LABEL_H */
+diff --git a/arch/s390/include/asm/jump_label.h b/arch/s390/include/asm/jump_label.h
+index 58642fd..2b77e23 100644
+--- a/arch/s390/include/asm/jump_label.h
++++ b/arch/s390/include/asm/jump_label.h
+@@ -1,6 +1,8 @@
+ #ifndef _ASM_S390_JUMP_LABEL_H
+ #define _ASM_S390_JUMP_LABEL_H
+ 
++#ifndef __ASSEMBLY__
++
+ #include <linux/types.h>
+ 
+ #define JUMP_LABEL_NOP_SIZE 6
+@@ -39,4 +41,5 @@ struct jump_entry {
+ 	jump_label_t key;
+ };
+ 
++#endif  /* __ASSEMBLY__ */
+ #endif
+diff --git a/arch/sparc/include/asm/jump_label.h b/arch/sparc/include/asm/jump_label.h
+index ec2e2e2..cc9b04a 100644
+--- a/arch/sparc/include/asm/jump_label.h
++++ b/arch/sparc/include/asm/jump_label.h
+@@ -1,7 +1,7 @@
+ #ifndef _ASM_SPARC_JUMP_LABEL_H
+ #define _ASM_SPARC_JUMP_LABEL_H
+ 
+-#ifdef __KERNEL__
++#ifndef __ASSEMBLY__
+ 
+ #include <linux/types.h>
+ 
+@@ -22,8 +22,6 @@ l_yes:
+ 	return true;
+ }
+ 
+-#endif /* __KERNEL__ */
+-
+ typedef u32 jump_label_t;
+ 
+ struct jump_entry {
+@@ -32,4 +30,5 @@ struct jump_entry {
+ 	jump_label_t key;
+ };
+ 
++#endif  /* __ASSEMBLY__ */
+ #endif
+diff --git a/arch/x86/include/asm/jump_label.h b/arch/x86/include/asm/jump_label.h
+index 6a2cefb..a4c1cf7 100644
+--- a/arch/x86/include/asm/jump_label.h
++++ b/arch/x86/include/asm/jump_label.h
+@@ -1,7 +1,7 @@
+ #ifndef _ASM_X86_JUMP_LABEL_H
+ #define _ASM_X86_JUMP_LABEL_H
+ 
+-#ifdef __KERNEL__
++#ifndef __ASSEMBLY__
+ 
+ #include <linux/stringify.h>
+ #include <linux/types.h>
+@@ -30,8 +30,6 @@ l_yes:
+ 	return true;
+ }
+ 
+-#endif /* __KERNEL__ */
+-
+ #ifdef CONFIG_X86_64
+ typedef u64 jump_label_t;
+ #else
+@@ -44,4 +42,5 @@ struct jump_entry {
+ 	jump_label_t key;
+ };
+ 
++#endif  /* __ASSEMBLY__ */
+ #endif
+-- 
+2.1.0
