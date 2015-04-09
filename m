@@ -1,43 +1,29 @@
-Return-Path: <nacc@linux.vnet.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <rbrito@ime.usp.br>
+Received: from nm38-vm9.bullet.mail.bf1.yahoo.com
+ (nm38-vm9.bullet.mail.bf1.yahoo.com [72.30.239.25])
+ (using TLSv1 with cipher ECDHE-RSA-RC4-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 46EFB1A02F4
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 08:58:23 +1000 (AEST)
-Received: from /spool/local
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
- Thu, 9 Apr 2015 16:58:21 -0600
-Received: from b03cxnp08026.gho.boulder.ibm.com
- (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 0EA9D19D8042
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Apr 2015 16:49:25 -0600 (MDT)
-Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
- by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with
- ESMTP id t39MwLYm41353250
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 9 Apr 2015 15:58:21 -0700
-Received: from d03av05.boulder.ibm.com (localhost [127.0.0.1])
- by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t39MwIw7004490
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 9 Apr 2015 16:58:19 -0600
-Date: Thu, 9 Apr 2015 15:58:17 -0700
-From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-To: Konstantin Khlebnikov <koct9i@gmail.com>
-Subject: Re: [PATCH] of: return NUMA_NO_NODE from fallback of_node_to_nid()
-Message-ID: <20150409225817.GI53918@linux.vnet.ibm.com>
-References: <20150408165920.25007.6869.stgit@buzz>
- <55255F84.6060608@yandex-team.ru>
- <20150408230740.GB53918@linux.vnet.ibm.com>
- <CALYGNiP_Ru0PpWoXOYPbviiNuY+9JHDqzL0jDNJeZAtmYZGFUg@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id A7C171A02F4
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 09:12:56 +1000 (AEST)
+Date: Thu, 9 Apr 2015 20:12:50 -0300
+From: =?utf-8?Q?Rog=C3=A9rio?= Brito <rbrito@ime.usp.br>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: Old regression with MTD devices disappearing from a Kurobox HD/HG
+Message-ID: <20150409231250.GA23450@ime.usp.br>
+References: <1428446044.22867.475.camel@freescale.com>
+ <20150407235812.GA3443@ime.usp.br>
+ <1428451332.22867.490.camel@freescale.com>
+ <20150408003638.GA5170@ime.usp.br>
+ <1428454204.22867.497.camel@freescale.com>
+ <20150408011300.GA6395@ime.usp.br>
+ <1428456423.22867.501.camel@freescale.com>
+ <20150408015649.GA11297@ime.usp.br>
+ <20150409215418.GC22595@ime.usp.br>
+ <1428618510.22867.548.camel@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CALYGNiP_Ru0PpWoXOYPbviiNuY+9JHDqzL0jDNJeZAtmYZGFUg@mail.gmail.com>
-Cc: devicetree@vger.kernel.org, "linux-mm@kvack.org" <linux-mm@kvack.org>,
- Konstantin Khlebnikov <khlebnikov@yandex-team.ru>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- sparclinux@vger.kernel.org, Rob Herring <robh+dt@kernel.org>,
- Grant Likely <grant.likely@linaro.org>, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <1428618510.22867.548.camel@freescale.com>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,122 +33,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09.04.2015 [07:27:28 +0300], Konstantin Khlebnikov wrote:
-> On Thu, Apr 9, 2015 at 2:07 AM, Nishanth Aravamudan
-> <nacc@linux.vnet.ibm.com> wrote:
-> > On 08.04.2015 [20:04:04 +0300], Konstantin Khlebnikov wrote:
-> >> On 08.04.2015 19:59, Konstantin Khlebnikov wrote:
-> >> >Node 0 might be offline as well as any other numa node,
-> >> >in this case kernel cannot handle memory allocation and crashes.
-> >
-> > Isn't the bug that numa_node_id() returned an offline node? That
-> > shouldn't happen.
+Hi, Scott.
+
+On Apr 09 2015, Scott Wood wrote:
+> On Thu, 2015-04-09 at 18:54 -0300, Rogério Brito wrote:
+> > Dear Scott and other people,
+> > 
+> > Just for the record, I am passing now the following command line option to
+> > the kernel:
+> > 
+> >     mtdparts=myflash:4096k(allflash),3072k(firmimg),448k@3072k(bootcode),64k@3520k(status),512k@3584k(conf)
 > 
-> Offline node 0 came from static-inline copy of that function from of.h
-> I've patched weak function for keeping consistency.
+> What is "myflash"?  You need to match the device name that the kernel
+> uses.
 
-Got it, that's not necessarily clear in the original commit message.
+>From the documentation that I read, it *seemed* to be an arbitrary name and,
+to be screamingly different from anything else, I just picked "myflash".
+So, in my case (see dmesg snippet below), I would use "physmap-flash.0",
+right? Or would that be "physmap-flash"? Or something else entirely?
 
-> > #ifdef CONFIG_USE_PERCPU_NUMA_NODE_ID
-> > ...
-> > #ifndef numa_node_id
-> > /* Returns the number of the current Node. */
-> > static inline int numa_node_id(void)
-> > {
-> >         return raw_cpu_read(numa_node);
-> > }
-> > #endif
-> > ...
-> > #else   /* !CONFIG_USE_PERCPU_NUMA_NODE_ID */
-> >
-> > /* Returns the number of the current Node. */
-> > #ifndef numa_node_id
-> > static inline int numa_node_id(void)
-> > {
-> >         return cpu_to_node(raw_smp_processor_id());
-> > }
-> > #endif
-> > ...
-> >
-> > So that's either the per-cpu numa_node value, right? Or the result of
-> > cpu_to_node on the current processor.
-> >
-> >> Example:
-> >>
-> >> [    0.027133] ------------[ cut here ]------------
-> >> [    0.027938] kernel BUG at include/linux/gfp.h:322!
-> >
-> > This is
-> >
-> > VM_BUG_ON(nid < 0 || nid >= MAX_NUMNODES || !node_online(nid));
-> >
-> > in
-> >
-> > alloc_pages_exact_node().
-> >
-> > And based on the trace below, that's
-> >
-> > __slab_alloc -> alloc
-> >
-> > alloc_pages_exact_node
-> >         <- alloc_slab_page
-> >                 <- allocate_slab
-> >                         <- new_slab
-> >                                 <- new_slab_objects
-> >                                         < __slab_alloc?
-> >
-> > which is just passing the node value down, right? Which I think was
-> > from:
-> >
-> >         domain = kzalloc_node(sizeof(*domain) + (sizeof(unsigned int) * size),
-> >                               GFP_KERNEL, of_node_to_nid(of_node));
-> >
-> > ?
-> >
-> >
-> > What platform is this on, looks to be x86? qemu emulation of a
-> > pathological topology? What was the topology?
+,----
+| (...)
+| ata1: PATA max UDMA/133 cmd 0xbffed0 ctl 0xbffed8 bmdma 0xbffef0 irq 17
+| ata2: PATA max UDMA/133 cmd 0xbffee0 ctl 0xbffee8 bmdma 0xbffef8 irq 17
+| physmap platform flash device: 00400000 at ffc00000
+| physmap-flash.0: Found 1 x16 devices at 0x0 in 8-bit bank. Manufacturer ID 0x000004 Chip ID 0x00007e
+| Amd/Fujitsu Extended Query Table at 0x0040
+|   Amd/Fujitsu Extended Query version 1.3.
+| physmap-flash.0: Swapping erase regions for top-boot CFI table.
+| number of CFI chips: 1
+| r8169 Gigabit Ethernet driver 2.3LK-NAPI loaded
+| (...)
+`----
+
+> What is "allflash"?  If the flash is only 4 MiB and you're trying to
+> make the first partition refer to the entire flash, it won't work.
+> It'll see that 4 MiB partition and ignore the rest as being beyond the
+> end of the device.
+
+OK, I was just trying to mimic the layout that you can see here:
+
+    http://buffalo.nas-central.org/wiki/Flash_ROM#Checking_the_layout_.28with_kernel_2.6.x.29
+
+> > Do the options CONFIG_MTD_CMDLINE_PARTS and CONFIG_MTD_OF_PARTS somehow
+> > "conflict" with each other?
 > 
-> qemu x86_64, 2 cpu, 2 numa nodes, all memory in second.
+> No.  CONFIG_MTD_OF_PARTS only matters if you're describing the flash
+> chip in the device tree, and even then cmdline mtdparts takes precedence
+> if present.
 
-Ok, this worked before? That is, this is a regression?
+Great to know. I hope that one way or another we can have these partitions
+specified in the device tree so that:
 
->  I've slightly patched it to allow that setup (in qemu hardcoded 1Mb
-> of memory connected to node 0) And i've found unrelated bug --
-> if numa node has less that 4Mb ram then kernel crashes even
-> earlier because numa code ignores that node
-> but buddy allocator still tries to use that pages.
+* The device tree sources better reflect the reality and describe the
+  hardware closer than they do today.
+* I can clean up my command line.
 
-So this isn't an actually supported topology by qemu?
 
-> > Note that there is a ton of code that seems to assume node 0 is online.
-> > I started working on removing this assumption myself and it just led
-> > down a rathole (on power, we always have node 0 online, even if it is
-> > memoryless and cpuless, as a result).
-> >
-> > I am guessing this is just happening early in boot before the per-cpu
-> > areas are setup? That's why (I think) x86 has the early_cpu_to_node()
-> > function...
-> >
-> > Or do you not have CONFIG_OF set? So isn't the only change necessary to
-> > the include file, and it should just return first_online_node rather
-> > than 0?
-> >
-> > Ah and there's more of those node 0 assumptions :)
-> 
-> That was x86 where is no CONFIG_OF at all.
->
-> I don't know what's wrong with that machine but ACPI reports that
-> cpus and memory from node 0 as connected to node 1 and everything
-> seems worked fine until lates upgrade -- seems like buggy static-inline
-> of_node_to_nid was intoduced in 3.13 but x86 ioapic uses it during
-> early allocations only in since 3.17. Machine owner teells that 3.15
-> worked fine.
+Thanks once again,
 
-So, this was a qemu emulation of this actual physical machine without a
-node 0?
-
-As I mentioned, there are lots of node 0 assumptions through the kernel.
-You might run into more issues at runtime.
-
--Nish
+-- 
+Rogério Brito : rbrito@{ime.usp.br,gmail.com} : GPG key 4096R/BCFCAAAA
+http://cynic.cc/blog/ : github.com/rbrito : profiles.google.com/rbrito
+DebianQA: http://qa.debian.org/developer.php?login=rbrito%40ime.usp.br
