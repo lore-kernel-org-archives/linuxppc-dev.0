@@ -1,30 +1,42 @@
-Return-Path: <stripathi@apm.com>
-Received: from mail-wg0-f45.google.com (exprod5og110.obsmtp.com [64.18.0.20])
+Return-Path: <nacc@linux.vnet.ibm.com>
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 382271A04E0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 02:16:13 +1000 (AEST)
-Received: by wgin8 with SMTP id n8so125522215wgi.0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Apr 2015 09:16:10 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id D9A941A0C44
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 08:30:02 +1000 (AEST)
+Received: from /spool/local
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
+ Thu, 9 Apr 2015 16:30:00 -0600
+Received: from b03cxnp08025.gho.boulder.ibm.com
+ (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id D19321FF0021
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Apr 2015 16:21:08 -0600 (MDT)
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+ by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t39MTfaH28704770
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 9 Apr 2015 15:29:41 -0700
+Received: from d03av01.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av01.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t39MTvwJ029029
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 9 Apr 2015 16:29:57 -0600
+Date: Thu, 9 Apr 2015 15:29:56 -0700
+From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+To: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: Topology updates and NUMA-level sched domains
+Message-ID: <20150409222956.GE53918@linux.vnet.ibm.com>
+References: <20150406214558.GA38501@linux.vnet.ibm.com>
+ <20150407102147.GJ23123@twins.programming.kicks-ass.net>
+ <20150407171410.GA62529@linux.vnet.ibm.com>
+ <20150407194129.GT23123@twins.programming.kicks-ass.net>
 MIME-Version: 1.0
-In-Reply-To: <CAPDyKFoc0V5BdKCO8v92Y1qHzEPgwxRdYR3cCj8nCyU-s25NuQ@mail.gmail.com>
-References: <1427726768-17233-1-git-send-email-stripathi@apm.com>
- <1427726768-17233-3-git-send-email-stripathi@apm.com>
- <CAPDyKFoc0V5BdKCO8v92Y1qHzEPgwxRdYR3cCj8nCyU-s25NuQ@mail.gmail.com>
-Date: Thu, 9 Apr 2015 21:40:02 +0530
-Message-ID: <CAOHikRArf+Fqv0JbQ1jM19zWGj-fBDcPie6apgkydgBLOm=x0w@mail.gmail.com>
-Subject: Re: [PATCH v2 2/2] mmc: host: Add some quirks to be read from fdt in
- sdhci-pltm.c
-From: Suman Tripathi <stripathi@apm.com>
-To: Ulf Hansson <ulf.hansson@linaro.org>
-Content-Type: multipart/alternative; boundary=e89a8f23558151639105134ce1fb
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Mark Langsdorf <mlangsdo@redhat.com>, Arnd Bergmann <arnd@arndb.de>,
- Jon Masters <jcm@redhat.com>, Anton Vorontsov <anton@enomsg.org>,
- linux-mmc <linux-mmc@vger.kernel.org>, Chris Ball <chris@printf.net>,
- patches <patches@apm.com>, Don Dutile <ddutile@redhat.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20150407194129.GT23123@twins.programming.kicks-ass.net>
+Cc: Boqun Feng <boqun.feng@linux.vnet.ibm.com>,
+ Srikar Dronamraju <srikar@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+ Ingo Molnar <mingo@redhat.com>, Anton Blanchard <anton@samba.org>,
+ linuxppc-dev@lists.ozlabs.org, Anshuman Khandual <khandual@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,245 +46,158 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---e89a8f23558151639105134ce1fb
-Content-Type: text/plain; charset=UTF-8
+On 07.04.2015 [21:41:29 +0200], Peter Zijlstra wrote:
+> On Tue, Apr 07, 2015 at 10:14:10AM -0700, Nishanth Aravamudan wrote:
+> > > So I think (and ISTR having stated this before) that dynamic cpu<->node
+> > > maps are absolutely insane.
+> > 
+> > Sorry if I wasn't involved at the time. I agree that it's a bit of a
+> > mess!
+> > 
+> > > There is a ton of stuff that assumes the cpu<->node relation is a boot
+> > > time fixed one. Userspace being one of them. Per-cpu memory another.
+> > 
+> > Well, userspace already deals with CPU hotplug, right? 
+> 
+> Barely, mostly not.
 
-On 30 March 2015 at 16:46, Suman Tripathi <stripathi@apm.com> wrote:
-> This patch adds some quirks support to be read from fdt.
+Well, as much as it needs to, I mean. CPU hotlug is done quite regularly
+on power, at least.
+
+> > And the topology updates are, in a lot of ways, just like you've
+> > hotplugged a CPU from one node and re-hotplugged it into another
+> > node.
+> 
+> No, that's very much not the same. Even if it were dealing with hotplug
+> it would still assume the cpu to return to the same node.
+
+The analogy may have been poor; a better one is: it's the same as
+hotunplugging a CPU from one node and hotplugging a physically identical
+CPU on a different node.
+
+> But mostly people do not even bother to handle hotplug.
+
+I'm not sure what you mean by "people" here, but I think it's what you
+outline below.
+
+> People very much assume that when they set up their node affinities they
+> will remain the same for the life time of their program. People set
+> separate cpu affinity with sched_setaffinity() and memory affinity with
+> mbind() and assume the cpu<->node maps are invariant.
+
+That's a bad assumption to make if you're virtualized, I would think
+(including on KVM). Unless you're also binding your vcpu threads to
+physical cpus.
+
+But the point is valid, that userspace does tend to think rather
+statically about the world.
+
+> > I'll look into the per-cpu memory case.
+> 
+> Look into everything that does cpu_to_node() based allocations, because
+> they all assume that that is stable.
 >
-> Signed-off-by: Suman Tripathi <stripathi@apm.com>
-> ---
->  drivers/mmc/host/sdhci-pltfm.c | 15 +++++++++++++++
->  1 file changed, 15 insertions(+)
->
-> diff --git a/drivers/mmc/host/sdhci-pltfm.c
-b/drivers/mmc/host/sdhci-pltfm.c
-> index bef250e..9f6a4b9 100644
-> --- a/drivers/mmc/host/sdhci-pltfm.c
-> +++ b/drivers/mmc/host/sdhci-pltfm.c
-> @@ -85,6 +85,21 @@ void sdhci_get_of_property(struct platform_device
-*pdev)
->
->                 if (of_get_property(np, "broken-cd", NULL))
->                         host->quirks |= SDHCI_QUIRK_BROKEN_CARD_DETECTION;
-> +
-> +               if (of_get_property(np, "delay-after-power", NULL))
-> +                       host->quirks |= SDHCI_QUIRK_DELAY_AFTER_POWER;
-> +
-> +               if (of_get_property(np, "no-hispd", NULL))
-> +                       host->quirks |= SDHCI_QUIRK_NO_HISPD_BIT;
-> +
-> +               if (of_get_property(np, "broken-adma", NULL))
-> +                       host->quirks |= SDHCI_QUIRK_BROKEN_ADMA;
-> +
-> +               if (of_get_property(np, "broken-dma", NULL))
-> +                       host->quirks |= SDHCI_QUIRK_BROKEN_DMA;
-> +
-> +               if (of_get_property(np, "no-cmd23", NULL))
-> +                       host->quirks2 |= SDHCI_QUIRK2_HOST_NO_CMD23;
+> They allocate memory at init time to be node local, but they you go an
+> mess that up.
 
-Can't at least some of these be distinguished from what sdhci variant
-that is being used? Instead of having them in DT...
+So, the case that you're considering is:
 
-We are using arasan controller in our SOC. So reusing a the existing
-sdhci-of-arasan driver. Due to H/W issues we require this quirks. So for us
-only option left to pass the info is DTS or ACPI table.
+CPU X on Node Y at boot-time, gets memory from Node Y.
 
-Kind regards
-Uffe
+CPU X moves to Node Z at run-time, is still using memory from Node Y.
 
-On Wed, Apr 8, 2015 at 3:10 PM, Ulf Hansson <ulf.hansson@linaro.org> wrote:
+The memory is still there (or it's also been 'moved' via the hypervisor
+interface), it's just not optimally placed. Autonuma support should help
+us move that memory over at run-time, in my understanding.
 
-> On 30 March 2015 at 16:46, Suman Tripathi <stripathi@apm.com> wrote:
-> > This patch adds some quirks support to be read from fdt.
-> >
-> > Signed-off-by: Suman Tripathi <stripathi@apm.com>
-> > ---
-> >  drivers/mmc/host/sdhci-pltfm.c | 15 +++++++++++++++
-> >  1 file changed, 15 insertions(+)
-> >
-> > diff --git a/drivers/mmc/host/sdhci-pltfm.c
-> b/drivers/mmc/host/sdhci-pltfm.c
-> > index bef250e..9f6a4b9 100644
-> > --- a/drivers/mmc/host/sdhci-pltfm.c
-> > +++ b/drivers/mmc/host/sdhci-pltfm.c
-> > @@ -85,6 +85,21 @@ void sdhci_get_of_property(struct platform_device
-> *pdev)
-> >
-> >                 if (of_get_property(np, "broken-cd", NULL))
-> >                         host->quirks |=
-> SDHCI_QUIRK_BROKEN_CARD_DETECTION;
-> > +
-> > +               if (of_get_property(np, "delay-after-power", NULL))
-> > +                       host->quirks |= SDHCI_QUIRK_DELAY_AFTER_POWER;
-> > +
-> > +               if (of_get_property(np, "no-hispd", NULL))
-> > +                       host->quirks |= SDHCI_QUIRK_NO_HISPD_BIT;
-> > +
-> > +               if (of_get_property(np, "broken-adma", NULL))
-> > +                       host->quirks |= SDHCI_QUIRK_BROKEN_ADMA;
-> > +
-> > +               if (of_get_property(np, "broken-dma", NULL))
-> > +                       host->quirks |= SDHCI_QUIRK_BROKEN_DMA;
-> > +
-> > +               if (of_get_property(np, "no-cmd23", NULL))
-> > +                       host->quirks2 |= SDHCI_QUIRK2_HOST_NO_CMD23;
->
-> Can't at least some of these be distinguished from what sdhci variant
-> that is being used? Instead of having them in DT...
->
-> Kind regards
-> Uffe
->
-> >
-> >                 if (of_get_property(np, "no-1-8-v", NULL))
-> >                         host->quirks2 |= SDHCI_QUIRK2_NO_1_8_V;
-> > --
-> > 1.8.2.1
-> >
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-mmc" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
+I won't deny it's imperfect, but honestly, it does actually work (in
+that the kernel doesn't crash). And the updated mappings will ensure
+future page allocations are accurate.
 
+But the point is still valid, and I will do my best and work with others
+to audit the users of cpu_to_node(). When I worked earlier on supporting
+memoryless nodes, I didn't see too too many init time callers using
+those APIs, many just rely on getting local allocations implicitly
+(which I do understand also would break here, but should also get
+migrated to follow the cpus eventually, if possible).
 
+> > For what it's worth, our test teams are stressing the kernel with these
+> > topology updates and hopefully we'll be able to resolve any issues that
+> > result.
+> 
+> Still absolutely insane.
 
--- 
-Thanks,
-with regards,
-Suman Tripathi
+I won't deny that, necessarily, but I'm in a position to at least try
+and make them work with Linux.
 
---e89a8f23558151639105134ce1fb
-Content-Type: text/html; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+> > I will look into per-cpu memory, and also another case I have been
+> > thinking about where if a process is bound to a CPU/node combination via
+> > numactl and then the topology changes, what exactly will happen. In
+> > theory, via these topology updates, a node could go from memoryless ->
+> > not and v.v., which seems like it might not be well supported (but
+> > again, should not be much different from hotplugging all the memory out
+> > from a node).
+> 
+> memory hotplug is even less well handled than cpu hotplug.
 
-<div dir=3D"ltr"><div id=3D":38l" tabindex=3D"-1" class=3D"" style=3D"font-=
-size:medium"><div id=3D":383" class=3D"" tabindex=3D"0"><img class=3D"" src=
-=3D"https://ssl.gstatic.com/ui/v1/icons/mail/images/cleardot.gif"></div></d=
-iv><div id=3D":38x" class=3D"" style=3D"font-size:12.8000001907349px"><div =
-id=3D":38y" class=3D"" style=3D"overflow:hidden"><div class=3D""><div class=
-=3D"adm"></div><div class=3D"im">On 30 March 2015 at 16:46, Suman Tripathi =
-&lt;<a href=3D"mailto:stripathi@apm.com">stripathi@apm.com</a>&gt; wrote:<b=
-r>&gt; This patch adds some quirks support to be read from fdt.<br>&gt;<br>=
-&gt; Signed-off-by: Suman Tripathi &lt;<a href=3D"mailto:stripathi@apm.com"=
->stripathi@apm.com</a>&gt;<br>&gt; ---<br>&gt;=C2=A0 drivers/mmc/host/sdhci=
--pltfm.c | 15 +++++++++++++++<br>&gt;=C2=A0 1 file changed, 15 insertions(+=
-)<br>&gt;<br>&gt; diff --git a/drivers/mmc/host/sdhci-pltfm.c b/drivers/mmc=
-/host/sdhci-pltfm.c<br>&gt; index bef250e..9f6a4b9 100644<br>&gt; --- a/dri=
-vers/mmc/host/sdhci-pltfm.c<br>&gt; +++ b/drivers/mmc/host/sdhci-pltfm.c<br=
->&gt; @@ -85,6 +85,21 @@ void sdhci_get_of_property(struct platform_device =
-*pdev)<br>&gt;<br>&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0if (of_get_property(np, &quot;broken-cd&quot;, NULL))<br>&gt;=C2=
-=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
-=C2=A0 =C2=A0host-&gt;quirks |=3D SDHCI_QUIRK_BROKEN_CARD_DETECTION;<br>&gt=
-; +<br>&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0if (of_=
-get_property(np, &quot;delay-after-power&quot;, NULL))<br>&gt; +=C2=A0 =C2=
-=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0ho=
-st-&gt;quirks |=3D SDHCI_QUIRK_DELAY_AFTER_POWER;<br>&gt; +<br>&gt; +=C2=A0=
- =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0if (of_get_property(np, &q=
-uot;no-hispd&quot;, NULL))<br>&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0host-&gt;quirks |=3D SDHCI_QUI=
-RK_NO_HISPD_BIT;<br>&gt; +<br>&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0 =C2=A0if (of_get_property(np, &quot;broken-adma&quot;, NULL))<br=
->&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0 =C2=A0host-&gt;quirks |=3D SDHCI_QUIRK_BROKEN_ADMA;<br>&gt; +<br=
->&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0if (of_get_pr=
-operty(np, &quot;broken-dma&quot;, NULL))<br>&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0host-&gt;quirks =
-|=3D SDHCI_QUIRK_BROKEN_DMA;<br>&gt; +<br>&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0=
- =C2=A0 =C2=A0 =C2=A0 =C2=A0if (of_get_property(np, &quot;no-cmd23&quot;, N=
-ULL))<br>&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0 =C2=A0 =C2=A0host-&gt;quirks2 |=3D SDHCI_QUIRK2_HOST_NO_CMD23;<b=
-r><br></div></div>Can&#39;t at least some of these be distinguished from wh=
-at sdhci variant<br>that is being used? Instead of having them in DT...</di=
-v><div id=3D":38y" class=3D"" style=3D"overflow:hidden"><br></div><div id=
-=3D":38y" class=3D"" style=3D"overflow:hidden">We are using arasan controll=
-er in our SOC. So reusing a the existing sdhci-of-arasan driver. Due to H/W=
- issues we require this quirks. So for us only option left to pass the info=
- is DTS or ACPI table.=C2=A0<br><br>Kind regards<br>Uffe<div class=3D""><di=
-v id=3D":382" class=3D"" tabindex=3D"0"><img class=3D"" src=3D"https://ssl.=
-gstatic.com/ui/v1/icons/mail/images/cleardot.gif"></div></div></div></div><=
-/div><div class=3D"gmail_extra"><br><div class=3D"gmail_quote">On Wed, Apr =
-8, 2015 at 3:10 PM, Ulf Hansson <span dir=3D"ltr">&lt;<a href=3D"mailto:ulf=
-.hansson@linaro.org" target=3D"_blank">ulf.hansson@linaro.org</a>&gt;</span=
-> wrote:<br><blockquote class=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;bo=
-rder-left:1px #ccc solid;padding-left:1ex"><div class=3D"HOEnZb"><div class=
-=3D"h5">On 30 March 2015 at 16:46, Suman Tripathi &lt;<a href=3D"mailto:str=
-ipathi@apm.com">stripathi@apm.com</a>&gt; wrote:<br>
-&gt; This patch adds some quirks support to be read from fdt.<br>
-&gt;<br>
-&gt; Signed-off-by: Suman Tripathi &lt;<a href=3D"mailto:stripathi@apm.com"=
->stripathi@apm.com</a>&gt;<br>
-&gt; ---<br>
-&gt;=C2=A0 drivers/mmc/host/sdhci-pltfm.c | 15 +++++++++++++++<br>
-&gt;=C2=A0 1 file changed, 15 insertions(+)<br>
-&gt;<br>
-&gt; diff --git a/drivers/mmc/host/sdhci-pltfm.c b/drivers/mmc/host/sdhci-p=
-ltfm.c<br>
-&gt; index bef250e..9f6a4b9 100644<br>
-&gt; --- a/drivers/mmc/host/sdhci-pltfm.c<br>
-&gt; +++ b/drivers/mmc/host/sdhci-pltfm.c<br>
-&gt; @@ -85,6 +85,21 @@ void sdhci_get_of_property(struct platform_device *=
-pdev)<br>
-&gt;<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0if (of_ge=
-t_property(np, &quot;broken-cd&quot;, NULL))<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
-=C2=A0 =C2=A0 =C2=A0host-&gt;quirks |=3D SDHCI_QUIRK_BROKEN_CARD_DETECTION;=
-<br>
-&gt; +<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0if (of_get_pro=
-perty(np, &quot;delay-after-power&quot;, NULL))<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0=
- =C2=A0 =C2=A0host-&gt;quirks |=3D SDHCI_QUIRK_DELAY_AFTER_POWER;<br>
-&gt; +<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0if (of_get_pro=
-perty(np, &quot;no-hispd&quot;, NULL))<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0=
- =C2=A0 =C2=A0host-&gt;quirks |=3D SDHCI_QUIRK_NO_HISPD_BIT;<br>
-&gt; +<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0if (of_get_pro=
-perty(np, &quot;broken-adma&quot;, NULL))<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0=
- =C2=A0 =C2=A0host-&gt;quirks |=3D SDHCI_QUIRK_BROKEN_ADMA;<br>
-&gt; +<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0if (of_get_pro=
-perty(np, &quot;broken-dma&quot;, NULL))<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0=
- =C2=A0 =C2=A0host-&gt;quirks |=3D SDHCI_QUIRK_BROKEN_DMA;<br>
-&gt; +<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0if (of_get_pro=
-perty(np, &quot;no-cmd23&quot;, NULL))<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0=
- =C2=A0 =C2=A0host-&gt;quirks2 |=3D SDHCI_QUIRK2_HOST_NO_CMD23;<br>
-<br>
-</div></div>Can&#39;t at least some of these be distinguished from what sdh=
-ci variant<br>
-that is being used? Instead of having them in DT...<br>
-<br>
-Kind regards<br>
-Uffe<br>
-<div class=3D"HOEnZb"><div class=3D"h5"><br>
-&gt;<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0if (of_ge=
-t_property(np, &quot;no-1-8-v&quot;, NULL))<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
-=C2=A0 =C2=A0 =C2=A0host-&gt;quirks2 |=3D SDHCI_QUIRK2_NO_1_8_V;<br>
-&gt; --<br>
-&gt; 1.8.2.1<br>
-&gt;<br>
-</div></div><span class=3D"HOEnZb"><font color=3D"#888888">&gt; --<br>
-&gt; To unsubscribe from this list: send the line &quot;unsubscribe linux-m=
-mc&quot; in<br>
-&gt; the body of a message to <a href=3D"mailto:majordomo@vger.kernel.org">=
-majordomo@vger.kernel.org</a><br>
-&gt; More majordomo info at=C2=A0 <a href=3D"http://vger.kernel.org/majordo=
-mo-info.html" target=3D"_blank">http://vger.kernel.org/majordomo-info.html<=
-/a><br>
-</font></span></blockquote></div><br><br clear=3D"all"><div><br></div>-- <b=
-r><div class=3D"gmail_signature"><div dir=3D"ltr"><div>Thanks,</div><div>wi=
-th regards,</div>Suman Tripathi</div></div>
-</div>
+That feels awfully hand-wavy to me. Again, we stress test both memory
+and cpu hotplug pretty heavily.
 
---e89a8f23558151639105134ce1fb--
+> And yes, the fact that you need to go look into WTF happens when people
+> use numactl should be a big arse red flag. _That_ is breaking userspace.
+
+It will be the exact same condition as running bound to a CPU and
+hotplugging that CPU out, as I understand it. In the kernel, actually,
+we can (do) migrate CPUs via stop_machine and so it's slightly different
+than a hotplug event (numbering is consistent, just the mapping has
+changed).
+
+So maybe the better example would be being bound to a given node and
+having the CPUs in that node change. We would need to ensure the sched
+domains are accurate after the update, so that the policies can be
+accurately applied, afaict. That's why I'm asking you as the sched
+domain expert what exactly needs to be done.
+
+> > And, in fact, I think topologically speaking, I think I should be able
+> > to repeat the same sched domain warnings if I start off with a 2-node
+> > system with all CPUs on one node, and then hotplug a CPU onto the second
+> > node, right? That has nothing to do with power, that I can tell. I'll
+> > see if I can demonstrate it via a KVM guest.
+> 
+> Uhm, no. CPUs will not first appear on node 0 only to then appear on
+> node 1 later.
+
+Sorry I was unclear in my statement. The "hotplug a CPU" wasn't one that
+was unplugged from node 0, it was only added to node 1. In other words,
+I was trying to say:
+
+Node 0 - all CPUs, some memory
+Node 1 - no CPUs, some memory
+
+<hotplug event>
+
+Node 0 - same CPUs, some memory
+Node 1 - some CPUs, some memory
+
+> If you have a cpu-less node 1 and then hotplug cpus in they will start
+> and end live on node 1, they'll never be part of node 0.
+
+Yes, that's exactly right.
+
+But node 1 won't have a sched domain at the NUMA level, because it had
+no CPUs on it to start. And afaict, there's no support to build that
+NUMA level domain at run-time if the CPU is hotplugged?
+
+> Also, cpu/memory - less nodes + hotplug to later populate them are
+> crazeh in they they never get the performance you get from regular
+> setups. Its impossible to get node-local right.
+
+Ok, so the performance may suck and we may eventually say -- reboot when
+you can, to re-init everything properly. But I'd actually like to limp
+along (which in fact we do already). I'd like the limp to be a little
+less pronounced by building the proper sched domains in the example I
+gave. I get the impression you disagree, so we'll continue to limp
+as-is.
+
+Thanks for your insight,
+Nish
