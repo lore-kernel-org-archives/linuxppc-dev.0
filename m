@@ -1,23 +1,25 @@
-Return-Path: <rric.net@gmail.com>
-Received: from mail-wi0-x235.google.com (mail-wi0-x235.google.com
- [IPv6:2a00:1450:400c:c05::235])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <Shengzhou.Liu@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1on0130.outbound.protection.outlook.com [157.56.110.130])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2669F1A02CB
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Apr 2015 15:44:01 +1000 (AEST)
-Received: by wiun10 with SMTP id n10so84172364wiu.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 08 Apr 2015 22:43:56 -0700 (PDT)
-Sender: Robert Richter <rric.net@gmail.com>
-Date: Thu, 9 Apr 2015 07:43:52 +0200
-From: Robert Richter <rric@kernel.org>
-To: Anton Blanchard <anton@samba.org>
-Subject: Re: [PATCH 1/2] oprofile: Disable oprofile NMI timer on ppc64
-Message-ID: <20150409054352.GK4201@rric.localhost>
-References: <1428547976-24890-1-git-send-email-anton@samba.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 93B671A04DD
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  9 Apr 2015 16:20:18 +1000 (AEST)
+From: "Shengzhou.Liu@freescale.com" <Shengzhou.Liu@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: RE: [PATCH 3/4 v2] powerpc/fsl-booke: Add T1024 RDB board support
+Date: Thu, 9 Apr 2015 06:20:09 +0000
+Message-ID: <DM2PR03MB39828B9B5ADC6116F500B2AF8FB0@DM2PR03MB398.namprd03.prod.outlook.com>
+References: <1428489987-31209-1-git-send-email-Shengzhou.Liu@freescale.com>
+ <1428489987-31209-3-git-send-email-Shengzhou.Liu@freescale.com>
+ <1428533547.22867.521.camel@freescale.com>
+In-Reply-To: <1428533547.22867.521.camel@freescale.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1428547976-24890-1-git-send-email-anton@samba.org>
-Cc: oprofile-list@lists.sf.net, paulus@samba.org, linuxppc-dev@lists.ozlabs.org
+Cc: "sandeep@freescale.com" <sandeep@freescale.com>,
+ "qiang.zhao@freescale.com" <qiang.zhao@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Xiaobo Xie <X.Xie@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,44 +29,9 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 09.04.15 12:52:55, Anton Blanchard wrote:
-> We want to enable the hard lockup detector on ppc64, but right now
-> that enables the oprofile NMI timer too.
-> 
-> We'd prefer not to enable the oprofile NMI timer, it adds another
-> element to our PMU testing and it requires us to increase our
-> exported symbols (eg cpu_khz).
-> 
-> Modify the config entry for OPROFILE_NMI_TIMER to disable it on PPC64.
-> 
-> Signed-off-by: Anton Blanchard <anton@samba.org>
-
-Acked-by: Robert Richter <rric@kernel.org>
-
-Please pass this patch along with patch 2 of this series (ppc tree or
-so).
-
-Thanks,
-
--Robert
-
-> ---
->  arch/Kconfig | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/arch/Kconfig b/arch/Kconfig
-> index 05d7a8a..0cc605d 100644
-> --- a/arch/Kconfig
-> +++ b/arch/Kconfig
-> @@ -32,7 +32,7 @@ config HAVE_OPROFILE
->  
->  config OPROFILE_NMI_TIMER
->  	def_bool y
-> -	depends on PERF_EVENTS && HAVE_PERF_EVENTS_NMI
-> +	depends on PERF_EVENTS && HAVE_PERF_EVENTS_NMI && !PPC64
->  
->  config KPROBES
->  	bool "Kprobes"
-> -- 
-> 2.1.0
-> 
+PiA+IC0tLQ0KPiA+IHYyOiBJbnRlZ3JhdGVkIHNjb3R0J3MgY29tbWVudHMuDQo+IA0KPiBNeSBj
+b21tZW50IHdhcyB0byBhZGQgYSBiaW5kaW5nIGZvciB0aGUgUUUgVERNIHN0dWZmLCBub3QgdG8g
+cmVtb3ZlIGl0Lg0KPiANCj4gLVNjb3R0IA0KDQpRRSBURE0gaGFzIG5vdCBiZWVuIHVwc3RyZWFt
+IG9uIGFueSBmc2wtYm9hcmQsIGl0IG5lZWRzIFFFIFRETSBvd25lciBmaW5pc2ggaXQgdW5pZm9y
+bWx5IGZvciB0aG9zZSBib2FyZHMocDEwMjEsIHAxMDI1LCB0MTA0MCwgdDEwMjQsIGV0Yykgd2l0
+aCBiaW5kaW5nLg0K
