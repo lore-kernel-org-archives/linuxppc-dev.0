@@ -1,34 +1,26 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <peterz@infradead.org>
+Received: from casper.infradead.org (unknown [IPv6:2001:770:15f::2])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 52AAE1A1BDB
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 18:31:34 +1000 (AEST)
-Received: from /spool/local
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Fri, 10 Apr 2015 18:31:33 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 447322CE804E
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 18:31:29 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t3A8VKII44367920
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 18:31:29 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t3A8UtYr026302
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 18:30:55 +1000
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH V3 12/13] selftests,
- powerpc: Add thread based stress test for DSCR sysfs interfaces
-Date: Fri, 10 Apr 2015 14:00:11 +0530
-Message-Id: <1428654612-23539-13-git-send-email-khandual@linux.vnet.ibm.com>
-In-Reply-To: <1428654612-23539-1-git-send-email-khandual@linux.vnet.ibm.com>
-References: <1428654612-23539-1-git-send-email-khandual@linux.vnet.ibm.com>
-Cc: mikey@neuling.org, shuahkh@osg.samsung.com
+ by lists.ozlabs.org (Postfix) with ESMTPS id 996071A2DAC
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 18:32:06 +1000 (AEST)
+Date: Fri, 10 Apr 2015 10:31:53 +0200
+From: Peter Zijlstra <peterz@infradead.org>
+To: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+Subject: Re: Topology updates and NUMA-level sched domains
+Message-ID: <20150410083153.GQ27490@worktop.programming.kicks-ass.net>
+References: <20150406214558.GA38501@linux.vnet.ibm.com>
+ <20150407102147.GJ23123@twins.programming.kicks-ass.net>
+ <20150407171410.GA62529@linux.vnet.ibm.com>
+ <20150407194129.GT23123@twins.programming.kicks-ass.net>
+ <20150409222956.GE53918@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20150409222956.GE53918@linux.vnet.ibm.com>
+Cc: Boqun Feng <boqun.feng@linux.vnet.ibm.com>,
+ Srikar Dronamraju <srikar@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+ Ingo Molnar <mingo@redhat.com>, Anton Blanchard <anton@samba.org>,
+ linuxppc-dev@lists.ozlabs.org, Anshuman Khandual <khandual@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,152 +30,155 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch adds a test to update the system wide DSCR value repeatedly
-and then verifies that any thread on any given CPU on the system must
-be able to see the same DSCR value whether its is being read through
-the problem state based SPR or the privilege state based SPR.
+On Thu, Apr 09, 2015 at 03:29:56PM -0700, Nishanth Aravamudan wrote:
+> > No, that's very much not the same. Even if it were dealing with hotplug
+> > it would still assume the cpu to return to the same node.
+> 
+> The analogy may have been poor; a better one is: it's the same as
+> hotunplugging a CPU from one node and hotplugging a physically identical
+> CPU on a different node.
 
-Acked-by: Shuah Khan <shuahkh@osg.samsung.com>
-Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
----
- tools/testing/selftests/powerpc/dscr/Makefile      |   2 +-
- .../powerpc/dscr/dscr_sysfs_thread_test.c          | 116 +++++++++++++++++++++
- 2 files changed, 117 insertions(+), 1 deletion(-)
- create mode 100644 tools/testing/selftests/powerpc/dscr/dscr_sysfs_thread_test.c
+Then it'll not be the same cpu from the OS's pov. The outgoing cpus and
+the incoming cpus will have different cpu numbers.
 
-diff --git a/tools/testing/selftests/powerpc/dscr/Makefile b/tools/testing/selftests/powerpc/dscr/Makefile
-index fada526..834ef88 100644
---- a/tools/testing/selftests/powerpc/dscr/Makefile
-+++ b/tools/testing/selftests/powerpc/dscr/Makefile
-@@ -1,6 +1,6 @@
- PROGS := dscr_default_test dscr_explicit_test dscr_user_test	\
- 	 dscr_inherit_test dscr_inherit_exec_test		\
--	 dscr_sysfs_test
-+	 dscr_sysfs_test dscr_sysfs_thread_test
- 
- CFLAGS := $(CFLAGS) -lpthread
- 
-diff --git a/tools/testing/selftests/powerpc/dscr/dscr_sysfs_thread_test.c b/tools/testing/selftests/powerpc/dscr/dscr_sysfs_thread_test.c
-new file mode 100644
-index 0000000..e7229c1
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/dscr/dscr_sysfs_thread_test.c
-@@ -0,0 +1,116 @@
-+/*
-+ * POWER Data Stream Control Register (DSCR) sysfs thread test
-+ *
-+ * This test updates the system wide DSCR default value through
-+ * sysfs interface which should then update all the CPU specific
-+ * DSCR default values which must also be then visible to threads
-+ * executing on individual CPUs on the system.
-+ *
-+ * Copyright (C) 2015 Anshuman Khandual <khandual@linux.vnet.ibm.com>, IBM
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ */
-+#define _GNU_SOURCE
-+#include "dscr.h"
-+
-+static pthread_mutex_t lock;	/* Pthread lock */
-+static cpu_set_t cpuset;	/* Thread cpu set */
-+static int target;		/* Thread target cpu */
-+static unsigned long *result;	/* Thread exit status array */
-+
-+#define NR_ONLN sysconf(_SC_NPROCESSORS_ONLN)
-+
-+static void *test_thread_dscr(void *in)
-+{
-+	unsigned long cur_dscr, cur_dscr_usr;
-+	unsigned long val = (unsigned long)in;
-+
-+	pthread_mutex_lock(&lock);
-+	target++;
-+	if (target == NR_ONLN)
-+		target =  0;
-+	CPU_ZERO(&cpuset);
-+	CPU_SET(target, &cpuset);
-+
-+	if (sched_setaffinity(0, sizeof(cpuset), &cpuset)) {
-+		perror("sched_settarget_cpu() failed\n");
-+		pthread_mutex_unlock(&lock);
-+		result[target] = 1;
-+		pthread_exit(&result[target]);
-+	}
-+	pthread_mutex_unlock(&lock);
-+
-+	cur_dscr = get_dscr();
-+	cur_dscr_usr = get_dscr_usr();
-+
-+	if (val != cur_dscr) {
-+		printf("[cpu %d] Kernel DSCR should be %ld but is %ld\n",
-+					sched_getcpu(), val, cur_dscr);
-+		result[target] = 1;
-+		pthread_exit(&result[target]);
-+	}
-+
-+	if (val != cur_dscr_usr) {
-+		printf("[cpu %d] User DSCR should be %ld but is %ld\n",
-+					sched_getcpu(), val, cur_dscr_usr);
-+		result[target] = 1;
-+		pthread_exit(&result[target]);
-+	}
-+	result[target] = 0;
-+	pthread_exit(&result[target]);
-+}
-+
-+static int check_cpu_dscr_thread(unsigned long val)
-+{
-+	pthread_t threads[NR_ONLN];
-+	unsigned long *status[NR_ONLN];
-+	unsigned long i;
-+
-+	for (i = 0; i < NR_ONLN; i++) {
-+		if (pthread_create(&threads[i], NULL,
-+				test_thread_dscr, (void *)val)) {
-+			perror("pthread_create() failed\n");
-+			return 1;
-+		}
-+	}
-+
-+	for (i = 0; i < NR_ONLN; i++) {
-+		if (pthread_join(threads[i], (void **)&(status[i]))) {
-+			perror("pthread_join() failed\n");
-+			return 1;
-+		}
-+
-+		if (*status[i]) {
-+			printf(" %ldth thread join failed with %ld\n",
-+							i, *status[i]);
-+			return 1;
-+		}
-+	}
-+	return 0;
-+}
-+
-+int test_body(void)
-+{
-+	int i, j;
-+
-+	result = malloc(sizeof(unsigned long) * NR_ONLN);
-+	pthread_mutex_init(&lock, NULL);
-+	target = 0;
-+	for (i = 0; i < COUNT; i++) {
-+		for (j = 0; j < DSCR_MAX; j++) {
-+			set_default_dscr(j);
-+			if (check_cpu_dscr_thread(j))
-+				return 1;
-+		}
-+	}
-+	free(result);
-+	return 0;
-+}
-+
-+int main(int argc, char *argv[])
-+{
-+	return test_harness(test_body, "dscr_sysfs_thread_test");
-+}
--- 
-1.9.3
+Furthermore at boot we will have observed the empty socket and reserved
+cpu number and arranged per-cpu resources for them.
+
+> > People very much assume that when they set up their node affinities they
+> > will remain the same for the life time of their program. People set
+> > separate cpu affinity with sched_setaffinity() and memory affinity with
+> > mbind() and assume the cpu<->node maps are invariant.
+> 
+> That's a bad assumption to make if you're virtualized, I would think
+> (including on KVM). Unless you're also binding your vcpu threads to
+> physical cpus.
+> 
+> But the point is valid, that userspace does tend to think rather
+> statically about the world.
+
+I've no idea how KVM numa is working, if at all. I would not be
+surprised if it indeed hard binds vcpus to nodes. Not doing that allows
+the vcpus to randomly migrate between nodes which will completely
+destroy the whole point of exposing numa details to the guest.
+
+I suppose some of the auto-numa work helps here. not sure at all.
+
+> > > I'll look into the per-cpu memory case.
+> > 
+> > Look into everything that does cpu_to_node() based allocations, because
+> > they all assume that that is stable.
+> >
+> > They allocate memory at init time to be node local, but they you go an
+> > mess that up.
+> 
+> So, the case that you're considering is:
+> 
+> CPU X on Node Y at boot-time, gets memory from Node Y.
+> 
+> CPU X moves to Node Z at run-time, is still using memory from Node Y.
+
+Right, at which point numa doesn't make sense anymore. If you randomly
+scramble your cpu<->node map what's the point of exposing numa to the
+guest?
+
+The whole point of NUMA is that userspace can be aware of the layout and
+use local memory where possible.
+
+Nobody will want to consider dynamic NUMA information; its utterly
+insane; do you see your HPC compute job going: "oi hold on, I've got to
+reallocate my data, just hold on while I go do this" ? I think not.
+
+> The memory is still there (or it's also been 'moved' via the hypervisor
+> interface), it's just not optimally placed. Autonuma support should help
+> us move that memory over at run-time, in my understanding.
+
+No auto-numa cannot fix this. And the HV cannot migrate the memory for
+the same reason.
+
+Suppose you have two cpus: X0 X1 on node X, you then move X0 into node
+Y. You cannot move memory along with it, X1 might still expect it to be
+on node X.
+
+You can only migrate your entire node, at which point nothing has really
+changed (assuming a fully connected system).
+
+> I won't deny it's imperfect, but honestly, it does actually work (in
+> that the kernel doesn't crash). And the updated mappings will ensure
+> future page allocations are accurate.
+
+Well it works for you; because all you care about is the kernel not
+crashing.
+
+But does it actually provide usable semantics for userspace? Is there
+anyone who _wants_ to use this?
+
+What's the point of thinking all your memory is local only to have it
+shredded across whatever nodes you stuffed your vcpu in? Utter crap I'd
+say.
+
+> But the point is still valid, and I will do my best and work with others
+> to audit the users of cpu_to_node(). When I worked earlier on supporting
+> memoryless nodes, I didn't see too too many init time callers using
+> those APIs, many just rely on getting local allocations implicitly
+> (which I do understand also would break here, but should also get
+> migrated to follow the cpus eventually, if possible).
+
+init time or not doesn't matter; runtime cpu_to_node() users equally
+expect the allocation to remain local for the duration as well.
+
+You've really got to step back and look at what you think you're
+providing.
+
+Sure you can make all this 'work' but what is the end result? Is it
+useful? I say not. I'm saying that what you end up with is a useless
+pile of crap.
+
+> > > For what it's worth, our test teams are stressing the kernel with these
+> > > topology updates and hopefully we'll be able to resolve any issues that
+> > > result.
+> > 
+> > Still absolutely insane.
+> 
+> I won't deny that, necessarily, but I'm in a position to at least try
+> and make them work with Linux.
+
+Make what work? A useless pile of crap that nobody can or wants to use?
+
+> > > I will look into per-cpu memory, and also another case I have been
+> > > thinking about where if a process is bound to a CPU/node combination via
+> > > numactl and then the topology changes, what exactly will happen. In
+> > > theory, via these topology updates, a node could go from memoryless ->
+> > > not and v.v., which seems like it might not be well supported (but
+> > > again, should not be much different from hotplugging all the memory out
+> > > from a node).
+> > 
+> > memory hotplug is even less well handled than cpu hotplug.
+> 
+> That feels awfully hand-wavy to me. Again, we stress test both memory
+> and cpu hotplug pretty heavily.
+
+That's not the point; sure you stress the kernel implementation; but
+does anybody actually care?
+
+Is there a single userspace program out there that goes: oh hey, my
+memory layout just changed, lemme go fix that?
+
+> > And yes, the fact that you need to go look into WTF happens when people
+> > use numactl should be a big arse red flag. _That_ is breaking userspace.
+> 
+> It will be the exact same condition as running bound to a CPU and
+> hotplugging that CPU out, as I understand it.
+
+Yes and that is _BROKEN_.. I'm >< that close to merging a patch that
+will fail hotplug when there is a user task affine to that cpu. This
+madness need to stop _NOW_.
+
+Also, listen to yourself. The user _wanted_ that task there and you say
+its OK to wreck that.
+
+
+Please, step back, look at what you're doing and ask yourself, will any
+sane person want to use this? Can they use this?
+
+If so, start by describing the desired user semantics of this work.
+Don't start by cobbling kernel bits togerther until it stops crashing.
