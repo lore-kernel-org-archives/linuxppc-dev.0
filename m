@@ -1,27 +1,24 @@
-Return-Path: <Shengzhou.Liu@freescale.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D39BD1A0176
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 20:45:46 +1000 (AEST)
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0113.outbound.protection.outlook.com [157.56.110.113])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 04B371401DA
- for <linuxppc-dev@ozlabs.org>; Fri, 10 Apr 2015 20:45:45 +1000 (AEST)
-From: "Shengzhou.Liu@freescale.com" <Shengzhou.Liu@freescale.com>
-To: Scott Wood <scottwood@freescale.com>, Lijun Pan <Lijun.Pan@freescale.com>
-Subject: RE: [PATCH 1/4] powerpc/85xx: miscellaneous changes on
- mpc85xx_defconfig
-Date: Fri, 10 Apr 2015 10:31:32 +0000
-Message-ID: <DM2PR03MB3988FB0851DC047F768517BF8FA0@DM2PR03MB398.namprd03.prod.outlook.com>
-References: <1428010674-25361-1-git-send-email-Lijun.Pan@freescale.com>
- <1428024328.22867.328.camel@freescale.com>
-In-Reply-To: <1428024328.22867.328.camel@freescale.com>
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1D3A81A04DD
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 20:55:59 +1000 (AEST)
+Message-ID: <1428663358.21137.4.camel@ellerman.id.au>
+Subject: Re: [RFC v2 powerpc] perf/hv-24x7  fail 24x7 initcall if
+ create_events_from_catalog() fails
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Li Zhong <zhong@linux.vnet.ibm.com>
+Date: Fri, 10 Apr 2015 20:55:58 +1000
+In-Reply-To: <1428655351.16563.11.camel@TP420>
+References: <1423993377.2932.23.camel@TP420>
+ <20150325095120.8F48F1400EA@ozlabs.org> <20150325184153.GA6579@us.ibm.com>
+ <1427341876.16501.2.camel@ellerman.id.au> <1428655351.16563.11.camel@TP420>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Paul Mackerras <paulus@samba.org>,
+ Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+ PowerPC email list <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,47 +28,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogTGludXhwcGMtZGV2IFtt
-YWlsdG86bGludXhwcGMtZGV2LQ0KPiBib3VuY2VzK3NoZW5nemhvdS5saXU9ZnJlZXNjYWxlLmNv
-bUBsaXN0cy5vemxhYnMub3JnXSBPbiBCZWhhbGYgT2YgU2NvdHQgV29vZA0KPiBTZW50OiBGcmlk
-YXksIEFwcmlsIDAzLCAyMDE1IDk6MjUgQU0NCj4gVG86IFBhbiBMaWp1bi1CNDQzMDYNCj4gQ2M6
-IGxpbnV4cHBjLWRldkBvemxhYnMub3JnDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0ggMS80XSBwb3dl
-cnBjLzg1eHg6IG1pc2NlbGxhbmVvdXMgY2hhbmdlcyBvbg0KPiBtcGM4NXh4X2RlZmNvbmZpZw0K
-PiANCj4gT24gVGh1LCAyMDE1LTA0LTAyIGF0IDE2OjM3IC0wNTAwLCBMaWp1biBQYW4gd3JvdGU6
-DQo+ID4gTWVyZ2UgRnJlZXNjYWxlJ3MgSW50ZXJuYWwgbXBjODV4eF9kZWZjb25maWcgd2l0aCB1
-cHN0cmVhbSdzLg0KPiA+IFJ1biBzYXZlZGVmY29uZmlnIHRvIGdldCB0aGUgbWluaW1hbCBjaGFu
-Z2UuDQo+IA0KPiBXaGF0IG1ha2VzIHRoZSBpbnRlcm5hbCBjb25maWcgcHJlZmVycmVkIHdpdGhv
-dXQgYW55IGV4cGxhbmF0aW9uIG9mIHdoeSB3ZQ0KPiB3YW50IG9yIGRvbid0IHdhbnQgc3BlY2lm
-aWMgY29uZmlnIGl0ZW1zPyAgRXNwZWNpYWxseSB3aGVyZSB0aGluZ3MgYXJlIGJlaW5nDQo+IHR1
-cm5lZCBvZmYsIHJhdGhlciB0aGFuIG9uLg0KPiANCj4gQXJlIGFueSBvZiB0aGVzZSBjaGFuZ2Vz
-IGR1ZSB0byBydW5uaW5nIHNhdmVkZWZjb25maWcgb24gdGhlIHVwc3RyZWFtIGNvbmZpZw0KPiAo
-aWYgc28sIG1ha2UgdGhhdCBhIHNlcGFyYXRlIHBhdGNoKT8NCj4gDQo+ID4gQEAgLTUwLDggKzUw
-LDYgQEAgQ09ORklHX0JJTkZNVF9NSVNDPW0gIENPTkZJR19NQVRIX0VNVUxBVElPTj15DQo+ID4g
-IENPTkZJR19GT1JDRV9NQVhfWk9ORU9SREVSPTEyDQo+ID4gIENPTkZJR19QQ0k9eQ0KPiA+IC1D
-T05GSUdfUENJRVBPUlRCVVM9eQ0KPiA+IC0jIENPTkZJR19QQ0lFQVNQTSBpcyBub3Qgc2V0DQo+
-IA0KPiBQQ0lFUE9SVEJVUyB3YXMgZW5hYmxlZCBieSBjb21taXQgMjcyN2VkNTQ3MTZlNjAgKCJw
-b3dlcnBjLzg1eHg6IEFkZCBzdXBwb3J0DQo+IGZvciBFbWVyc29uL0FydGVzeW4gTVZNRTI1MDAu
-IikuICBQcmVzdW1hYmx5IHRoYXQgYm9hcmQgbmVlZHMgaXQuDQo+IA0KPiA+ICBDT05GSUdfUENJ
-X01TST15DQo+ID4gIENPTkZJR19SQVBJRElPPXkNCj4gPiAgQ09ORklHX05FVD15DQo+ID4gQEAg
-LTg4LDIxICs4NiwxNyBAQCBDT05GSUdfRlRMPXkNCj4gPiAgQ09ORklHX01URF9DRkk9eQ0KPiA+
-ICBDT05GSUdfTVREX0NGSV9JTlRFTEVYVD15DQo+ID4gIENPTkZJR19NVERfQ0ZJX0FNRFNURD15
-DQo+ID4gLUNPTkZJR19NVERfUEhZU01BUD15DQo+ID4gIENPTkZJR19NVERfUEhZU01BUF9PRj15
-DQo+ID4gLUNPTkZJR19NVERfUExBVFJBTT15DQo+ID4gLUNPTkZJR19NVERfTTI1UDgwPXkNCj4g
-PiAgQ09ORklHX01URF9OQU5EPXkNCj4gPiAgQ09ORklHX01URF9OQU5EX0ZTTF9FTEJDPXkNCj4g
-PiAgQ09ORklHX01URF9OQU5EX0ZTTF9JRkM9eQ0KPiA+IC1DT05GSUdfTVREX1NQSV9OT1I9eQ0K
-PiANCj4gV2h5Pw0KPiANCj4gDQo+ID4gIENPTkZJR19FREFDPXkNCj4gPiAgQ09ORklHX0VEQUNf
-TU1fRURBQz15DQo+ID4gLUNPTkZJR19FREFDX01QQzg1WFg9eQ0KPiANCj4gVW1tLi4uICBXaGF0
-IG90aGVyIEVEQUMgZHJpdmVyIGFyZSB5b3UgZXhwZWN0aW5nIHRvIGJlIHVzZWQgd2l0aCB0aGlz
-IGNvbmZpZz8NCj4gDQo+ID4gIENPTkZJR19SVENfQ0xBU1M9eQ0KPiA+IC1DT05GSUdfUlRDX0RS
-Vl9EUzEzMDc9eQ0KPiA+IC1DT05GSUdfUlRDX0RSVl9EUzEzNzQ9eQ0KPiA+IC1DT05GSUdfUlRD
-X0RSVl9EUzMyMzI9eQ0KPiANCj4gbXBjODU2OC84NTY5IGhhdmUgZHMxMzc0LiAgbXBjODUzNi9w
-MTAyMiBoYXZlIGRzMzIzMi4gIFZhcmlvdXMgdHFtIGJvYXJkcw0KPiBoYXZlIGRzMTMzNyB3aGlj
-aCB1c2VzIHRoZSBkczEzMDcgZHJpdmVyLg0KPiANCj4gPiBAQCAtMjE4LDkgKzIwNiw2IEBAIENP
-TkZJR19BREZTX0ZTPW0NCj4gPiAgQ09ORklHX0FGRlNfRlM9bQ0KPiA+ICBDT05GSUdfSEZTX0ZT
-PW0NCj4gPiAgQ09ORklHX0hGU1BMVVNfRlM9bQ0KPiA+IC1DT05GSUdfQkVGU19GUz1tDQo+ID4g
-LUNPTkZJR19CRlNfRlM9bQ0KPiA+IC1DT05GSUdfRUZTX0ZTPW0NCj4gPiAgQ09ORklHX0pGRlMy
-X0ZTPXkNCj4gPiAgQ09ORklHX0pGRlMyX0ZTX0RFQlVHPTENCj4gPiAgQ09ORklHX1VCSUZTX0ZT
-PXkNCj4gDQo+IFRoaXMgaXMgcHJldHR5IHJhbmRvbS4gIElmIHdlIHdhbnQgdG8gcmVtb3ZlIGZy
-aW5nZSBmaWxlc3lzdGVtcywgZmluZSwgYnV0DQo+IHdoeSBqdXN0IHRoZXNlIHRocmVlPw0KPiAN
-Cg0KTWFueSBvZiB0aGUgYWJvdmUgcmVtb3ZlZCBpdGVtcyBhcmUgcmVhbGx5IG5lZWRlZCBieSB0
-aG9zZSBxb3JpcSBib2FyZHMsIHRoZXkgc2hvdWxkIG5vdCBiZWVuIHJlbW92ZWQuDQo=
+On Fri, 2015-04-10 at 16:42 +0800, Li Zhong wrote:
+> As Michael pointed out, create_events_from_catalog() fails when 
+> we either have:
+>  - a kernel bug
+>  - some sort of hypervisor misconfiguration
+>  - ENOMEM
+> 
+> In all the above cases, we can also fail 24x7 initcall. 
+
+Thanks.
+ 
+> In the patch below, I used ENODEV for hypervisor errors, not sure 
+> whether some other error values is more proper here. 
+
+ENODEV is a special case, if an initcall returns ENODEV no error is reported to
+dmesg.
+
+In this case I think we would like an error to be reported, so EIO would be
+better I think.
+
+cheers
