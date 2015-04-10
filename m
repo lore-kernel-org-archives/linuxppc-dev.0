@@ -1,24 +1,23 @@
-Return-Path: <hongtao.jia@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0133.outbound.protection.outlook.com [65.55.169.133])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <sfr@canb.auug.org.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5387E1A11B5
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 16:37:52 +1000 (AEST)
-From: Hongtao Jia <hongtao.jia@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: RE: [PATCH] QorIQ/TMU: add TMU node to device tree for QorIQ T104x
-Date: Fri, 10 Apr 2015 06:23:29 +0000
-Message-ID: <BLUPR03MB14924B9EBBD1C5635B0487DE1FA0@BLUPR03MB149.namprd03.prod.outlook.com>
-References: <1427782669-20368-1-git-send-email-hongtao.jia@freescale.com>
- <1428638140.22867.583.camel@freescale.com>
-In-Reply-To: <1428638140.22867.583.camel@freescale.com>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48C2C1A1B6E
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 16:42:13 +1000 (AEST)
+Date: Fri, 10 Apr 2015 16:42:08 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH] powerpc/pasemi: Only the build the pasemi MSI code for
+ PASEMI=y
+Message-ID: <20150410164208.1cc2a994@canb.auug.org.au>
+In-Reply-To: <1428643714.30592.4.camel@ellerman.id.au>
+References: <1428630726-12905-1-git-send-email-mpe@ellerman.id.au>
+ <20150410142414.0ea55c4b@canb.auug.org.au>
+ <1428643714.30592.4.camel@ellerman.id.au>
 MIME-Version: 1.0
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "rui.zhang@intel.com" <rui.zhang@intel.com>,
- "robh+dt@kernel.org" <robh+dt@kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ boundary="Sig_/2_w_OPnA_Z90.pQX=obyz9W"; protocol="application/pgp-signature"
+Cc: Olof Johannsson <olof@lixom.net>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,44 +27,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
-MjENCj4gU2VudDogRnJpZGF5LCBBcHJpbCAxMCwgMjAxNSAxMTo1NiBBTQ0KPiBUbzogSmlhIEhv
-bmd0YW8tQjM4OTUxDQo+IENjOiBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZzsgZGV2aWNl
-dHJlZUB2Z2VyLmtlcm5lbC5vcmc7DQo+IHJvYmgrZHRAa2VybmVsLm9yZzsgcnVpLnpoYW5nQGlu
-dGVsLmNvbQ0KPiBTdWJqZWN0OiBSZTogW1BBVENIXSBRb3JJUS9UTVU6IGFkZCBUTVUgbm9kZSB0
-byBkZXZpY2UgdHJlZSBmb3IgUW9ySVENCj4gVDEwNHgNCj4gDQo+IE9uIFR1ZSwgMjAxNS0wMy0z
-MSBhdCAxNDoxNyArMDgwMCwgSmlhIEhvbmd0YW8gd3JvdGU6DQo+ID4gVGhpcyBpcyBUaGVybWFs
-IE1vbml0b3JpbmcgVW5pdCBmb3IgUW9ySVEgcGxhdGZvcm0uDQo+ID4NCj4gPiBTaWduZWQtb2Zm
-LWJ5OiBKaWEgSG9uZ3RhbyA8aG9uZ3Rhby5qaWFAZnJlZXNjYWxlLmNvbT4NCj4gPiAtLS0NCj4g
-PiAgLi4uL2RldmljZXRyZWUvYmluZGluZ3MvdGhlcm1hbC9xb3JpcS10aGVybWFsLnR4dCAgfCA1
-OA0KPiArKysrKysrKysrKysrKysNCj4gPiAgYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL2ZzbC9xb3Jp
-cS10bXUtdDEwNHhzaS5kdHNpICAgfCA4Mg0KPiArKysrKysrKysrKysrKysrKysrKysrDQo+ID4g
-IGFyY2gvcG93ZXJwYy9ib290L2R0cy9mc2wvdDEwNDBzaS1wb3N0LmR0c2kgICAgICAgIHwgIDEg
-Kw0KPiA+ICAzIGZpbGVzIGNoYW5nZWQsIDE0MSBpbnNlcnRpb25zKCspDQo+ID4gIGNyZWF0ZSBt
-b2RlIDEwMDY0NA0KPiA+IERvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy90aGVybWFs
-L3FvcmlxLXRoZXJtYWwudHh0DQo+ID4gIGNyZWF0ZSBtb2RlIDEwMDY0NCBhcmNoL3Bvd2VycGMv
-Ym9vdC9kdHMvZnNsL3FvcmlxLXRtdS10MTA0eHNpLmR0c2kNCj4gPg0KPiA+IGRpZmYgLS1naXQN
-Cj4gPiBhL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy90aGVybWFsL3FvcmlxLXRo
-ZXJtYWwudHh0DQo+ID4gYi9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvdGhlcm1h
-bC9xb3JpcS10aGVybWFsLnR4dA0KPiA+IG5ldyBmaWxlIG1vZGUgMTAwNjQ0DQo+ID4gaW5kZXgg
-MDAwMDAwMC4uZGZjMTdmYQ0KPiA+IC0tLSAvZGV2L251bGwNCj4gPiArKysgYi9Eb2N1bWVudGF0
-aW9uL2RldmljZXRyZWUvYmluZGluZ3MvdGhlcm1hbC9xb3JpcS10aGVybWFsLnR4dA0KPiA+IEBA
-IC0wLDAgKzEsNTggQEANCj4gPiArKiBUaGVybWFsIE1vbml0b3JpbmcgVW5pdCAoVE1VKSBvbiBG
-cmVlc2NhbGUgUW9ySVEgU29Dcw0KPiA+ICsNCj4gPiArUmVxdWlyZWQgcHJvcGVydGllczoNCj4g
-PiArLSBjb21wYXRpYmxlIDogImZzbCxxb3JpcS10bXUiLg0KPiANCj4gY29tcGF0aWJsZTogTXVz
-dCBpbmNsdWRlICJmc2wscW9yaXEtdG11Ii4gVGhlIHZlcnNpb24gb2YgdGhlIGRldmljZSBpcw0K
-PiAJICAgIGRldGVybWluZWQgYnkgdGhlIFRNVSBJUCBCbG9jayBSZXZpc2lvbiBSZWdpc3RlciAo
-SVBCUlIwKQ0KPiAJICAgIGF0IG9mZnNldCAweDBCRjguDQo+IA0KPiAJICAgIFRhYmxlIG9mIGNv
-cnJlc3BvbmRlbmNlcyBiZXR3ZWVuIElQQlJSMCB2YWx1ZXMgYW5kIGV4YW1wbGUNCj4gCSAgICBj
-aGlwczoNCj4gCQlWYWx1ZSAgICAgICAgICAgRGV2aWNlDQo+IAkJLS0tLS0tLS0tLS0gICAgIC0t
-LS0tLS0NCj4gCQkweDAxOTAwMTAyICAgICAgVDEwNDANCg0KSSB3aWxsIHVwZGF0ZSBpdCBpbiBu
-ZXh0IHZlcnNpb24uDQoNCj4gDQo+ID4gKy0gcmVnIDogYWRkcmVzcyByYW5nZSBvZiBUTVUgcmVn
-aXN0ZXJzLg0KPiA+ICstIGludGVycnVwdHMgOiBzaG91bGQgY29udGFpbiB0aGUgaW50ZXJydXB0
-IGZvciBUTVUuDQo+IA0KPiBzL3Nob3VsZCBjb250YWluL2NvbnRhaW5zLw0KDQpUaGFua3MgZm9y
-IHRoZSBjb3JyZWN0aW9uLg0KDQo+IA0KPiA+ICstIGNhbGlicmF0aW9uIDogY2FsaWJyYXRpb24g
-dGFibGUgZm9yIFRNVS4NCj4gDQo+IFdoYXQgaXMgdGhlIGZvcm1hdCBvZiB0aGUgY2FsaWJyYXRp
-b24gdGFibGUsIGFuZCB3aGVyZSBkb2VzIG9uZSBnZXQgdGhlDQo+IGRhdGE/DQoNClRoZXJlIGFy
-ZSBmb3VyIGNhbGlicmF0aW9uIGNvbmZpZyByYW5nZSwgZm9yIGVhY2ggcmFuZ2Ugd2UgZ290IGEg
-Y291cGxlIG9mDQpwYWlycyBmb3JtYXR0ZWQgbGlrZSA8VFRDRkdSLCBUU0NGR1I+IGF0IG9mZnNl
-dCBvZiA8MHgwMDgwLCAweDAwODQ+Lg0KDQotSG9uZ3Rhbw0KDQo+IA0KPiAtU2NvdHQNCj4gDQoN
-Cg==
+--Sig_/2_w_OPnA_Z90.pQX=obyz9W
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
+
+Hi Michael,
+
+On Fri, 10 Apr 2015 15:28:34 +1000 Michael Ellerman <mpe@ellerman.id.au> wr=
+ote:
+>
+> Like this?
+>=20
+> $ git diff --stat -M HEAD^
+>  arch/powerpc/platforms/pasemi/Makefile                            |  1 +
+>  arch/powerpc/{sysdev/mpic_pasemi_msi.c =3D> platforms/pasemi/msi.c} |  4=
+ +---
+>  arch/powerpc/sysdev/Makefile                                      |  2 +-
+>  arch/powerpc/sysdev/mpic.h                                        | 10 +=
+++++-----
+>  4 files changed, 8 insertions(+), 9 deletions(-)
+
+Yeah, much easier to see what is going on.  And (I think) the diff
+should work as long as it is only given to "git am" (et al) and not
+"patch".
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+--Sig_/2_w_OPnA_Z90.pQX=obyz9W
+Content-Type: application/pgp-signature
+Content-Description: OpenPGP digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBCAAGBQJVJ3DEAAoJEMDTa8Ir7ZwVUEMP/1rJa3LidYxk73QJZC2z9srl
+SueonBaY3JTIwgpLNn7raZYgHZyEezvhlQ2YwRJa8hoyPqLOyjVcoHwp8+0vBjkr
+pxKIvCC/yWW6B0tf6rYgtELqZV14mLDcvxk3DIbXxWJDc8Vlzyl/bjrUwMBXR6fn
+nkRkLM6HbjLwcZY10q8zZvObdRXNB0AAXcZJxjEhbj0yf6n6EsbmSMMY0o+LVaSu
+MbIWPlkFKrTaRdt+8xrNcRrIHUvgJiJTzQXKv3pS6btS4ArmXmTGrjTuOb1RLZy2
+QL13T29qmq1Qx8VJqIsNwqhXVKdOlQcIDoVbSfyHEEoy+1XvNFrsBAR7k+DNgEeO
+r8HrmTCZfkwfyPlgxTv3UGoNyw2pQcwUep6fIOvdlPfZvS4sxTyGlTfgz/4pPu0N
+a+huR32+htci5IraEmrTN4wNjJ9i550hM3GW4O2Y5/U3MUxQQawdbmU7XfKzgGYI
+fqjR2o4yUyhRq9TN+OZ24RdN57kjNsth9v/3EHcCgcxWPIf/Ex/fBUbg5rTPzRkm
+5xrgk2zR/x6SaTbeRB8RyYmUAAC6MvH7AXJMEJ6HOrtBykbkMu31v3HabnnYYUbn
+Zau0+aSAVzxhjF7HBtq5FYoe1DJJ0/Pcudap0r13nQfNFfAabyGo1YJ2QC+kxdBq
+fPudDIH7XqaTsxRuzKho
+=K9EF
+-----END PGP SIGNATURE-----
+
+--Sig_/2_w_OPnA_Z90.pQX=obyz9W--
