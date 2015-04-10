@@ -1,30 +1,33 @@
 Return-Path: <vipin@linux.vnet.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B3E171A31B3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 16:53:28 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 070A51A31D6
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 16:53:40 +1000 (AEST)
 Received: from /spool/local
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <vipin@linux.vnet.ibm.com>;
- Fri, 10 Apr 2015 16:53:27 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 20F152BB004D
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 16:53:25 +1000 (EST)
+ Fri, 10 Apr 2015 16:53:38 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 9B6BE2CE804E
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 16:53:36 +1000 (EST)
 Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t3A6rGR524969420
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 16:53:25 +1000
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t3A6rStI25559284
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 16:53:36 +1000
 Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
  by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t3A6qpNJ028091
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 16:52:51 +1000
+ t3A6r3tt028459
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 16:53:03 +1000
 From: Vipin K Parashar <vipin@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 0/2] OPAL Poweroff events driver for PowerNV platform
-Date: Fri, 10 Apr 2015 12:22:11 +0530
-Message-Id: <1428648733-23826-1-git-send-email-vipin@linux.vnet.ibm.com>
+Subject: [PATCH 1/2] powerpc/powernv: OPAL Poweroff events driver for PowerNV
+ platform
+Date: Fri, 10 Apr 2015 12:22:12 +0530
+Message-Id: <1428648733-23826-2-git-send-email-vipin@linux.vnet.ibm.com>
+In-Reply-To: <1428648733-23826-1-git-send-email-vipin@linux.vnet.ibm.com>
+References: <1428648733-23826-1-git-send-email-vipin@linux.vnet.ibm.com>
 Cc: Vipin K Parashar <vipin@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -43,48 +46,569 @@ conditions that need system shutdown. Few examples of these conditions are
 high ambient temperature or system running on UPS power with UPS battery low.
 DPO event is generated in reponse to user initiated system shutdown request.
 	OPAL Poweroff events driver handles OPAL notifications for these events,
-processes them, starts kernel system poweroff timers and send uevents to notify
-udev. Poweroff event attributes are exposed as attributes files for platform
-device opal-poweroff-events. Host userspace should add udev scripts to perform
-various actions like sending event info to guests for graceful guest shutdown
-and host poweroff scripts.
+processes these event notifications, starts kernel system poweroff timers and
+send uevents for host user space. Host user space should add udev scripts to
+perform various actions like host poweroff scripts and sending event into to
+guests for graceful guest shutdown.
+	This patch handles only host processing i.e. handle OPAL EPOW, DPO
+event notifications, process event information and start kernel timers for
+host shutdown. Subsequent patches will add support for sending uevent
+notification to host userspace.
 
-Below attribute files are created for platform device opal-poweroff-events:
-
-admin_shutdown - Poweroff needed due to admin requested shutdown
-        Values as below:
-        No
-        Yes
-
-power_supply - Poweroff needed due to UPS/internal battery
-        Values as below:
-        Normal
-        UPS
-        UPS-low
-
-thermal - Poweroff needed due to high, critical ambient or internal temp
-        Values as below:
-        Normal
-        High-ambient-temp
-        Critical-ambient-temp
-        High-internal-temp
-        Critical-internal-temp
-
-timeout: Time allowed for poweroff
-
-Vipin K Parashar (2):
-  powerpc/powernv: OPAL poweroff events driver for PowerNV platform
-  powerpc/powernv: Add udev notification and poweroff event attributes
-
- arch/powerpc/include/asm/opal.h                    |  22 +
+Signed-off-by: Vipin K Parashar <vipin@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/opal.h                    |  22 ++
  arch/powerpc/platforms/powernv/Makefile            |   2 +-
- .../platforms/powernv/opal-poweroff-events.c       | 567 +++++++++++++++++++++
+ .../platforms/powernv/opal-poweroff-events.c       | 382 +++++++++++++++++++++
  .../platforms/powernv/opal-poweroff-events.h       |  35 ++
  arch/powerpc/platforms/powernv/opal-wrappers.S     |   3 +-
  arch/powerpc/platforms/powernv/opal.c              |   8 +-
- 6 files changed, 634 insertions(+), 3 deletions(-)
+ 6 files changed, 449 insertions(+), 3 deletions(-)
  create mode 100644 arch/powerpc/platforms/powernv/opal-poweroff-events.c
  create mode 100644 arch/powerpc/platforms/powernv/opal-poweroff-events.h
 
---
+diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
+index 9ee0a30..d2fcb5e 100644
+--- a/arch/powerpc/include/asm/opal.h
++++ b/arch/powerpc/include/asm/opal.h
+@@ -166,9 +166,11 @@ struct opal_sg_list {
+ #define OPAL_UNREGISTER_DUMP_REGION		102
+ #define OPAL_WRITE_TPO				103
+ #define OPAL_READ_TPO				104
++#define OPAL_GET_DPO_STATUS			105
+ #define OPAL_IPMI_SEND				107
+ #define OPAL_IPMI_RECV				108
+ #define OPAL_I2C_REQUEST			109
++#define OPAL_GET_EPOW_EVENT_INFO                116
+ 
+ /* Device tree flags */
+ 
+@@ -306,6 +308,7 @@ enum OpalMessageType {
+ 	OPAL_MSG_EPOW,
+ 	OPAL_MSG_SHUTDOWN,		/* params[0] = 1 reboot, 0 shutdown */
+ 	OPAL_MSG_HMI_EVT,
++	OPAL_MSG_DPO,
+ 	OPAL_MSG_TYPE_MAX,
+ };
+ 
+@@ -759,6 +762,23 @@ struct opal_i2c_request {
+ 	__be64 buffer_ra;		/* Buffer real address */
+ };
+ 
++/* EPOW event types */
++#define OPAL_EPOW_EVENT_TYPE3   3       /* EPOW3 event */
++#define OPAL_EPOW_EVENT_TYPE4   4       /* EPOW4 event */
++
++/* EPOW reason code values */
++#define OPAL_EPOW_NONE		0	/* EPOW normal/reset */
++#define OPAL_EPOW_ON_UPS	1	/* System on UPS */
++#define OPAL_EPOW_AMB_TEMP	2	/* Over ambient temperature */
++#define OPAL_EPOW_INT_TEMP	3	/* Over internal temperature */
++
++/* EPOW event information */
++struct opal_epow_event {
++	__be32 type;		/* EPOW event types */
++	__be32 reason_code;	/* EPOW reason */
++	__be32 timeout;		/* Time allowed for EPOW event */
++};
++
+ /* /sys/firmware/opal */
+ extern struct kobject *opal_kobj;
+ 
+@@ -880,6 +900,8 @@ int64_t opal_pci_reinit(uint64_t phb_id, uint64_t reinit_scope, uint64_t data);
+ int64_t opal_pci_mask_pe_error(uint64_t phb_id, uint16_t pe_number, uint8_t error_type, uint8_t mask_action);
+ int64_t opal_set_slot_led_status(uint64_t phb_id, uint64_t slot_id, uint8_t led_type, uint8_t led_action);
+ int64_t opal_get_epow_status(__be64 *status);
++int64_t opal_get_epow_event_info(struct opal_epow_event *);
++int64_t opal_get_dpo_status(int64_t *dpo_timeout);
+ int64_t opal_set_system_attention_led(uint8_t led_action);
+ int64_t opal_pci_next_error(uint64_t phb_id, __be64 *first_frozen_pe,
+ 			    __be16 *pci_error_type, __be16 *severity);
+diff --git a/arch/powerpc/platforms/powernv/Makefile b/arch/powerpc/platforms/powernv/Makefile
+index 6f3c5d3..1680d42 100644
+--- a/arch/powerpc/platforms/powernv/Makefile
++++ b/arch/powerpc/platforms/powernv/Makefile
+@@ -1,7 +1,7 @@
+ obj-y			+= setup.o opal-wrappers.o opal.o opal-async.o
+ obj-y			+= opal-rtc.o opal-nvram.o opal-lpc.o opal-flash.o
+ obj-y			+= rng.o opal-elog.o opal-dump.o opal-sysparam.o opal-sensor.o
+-obj-y			+= opal-msglog.o opal-hmi.o opal-power.o
++obj-y			+= opal-msglog.o opal-hmi.o opal-power.o opal-poweroff-events.o
+ 
+ obj-$(CONFIG_SMP)	+= smp.o subcore.o subcore-asm.o
+ obj-$(CONFIG_PCI)	+= pci.o pci-p5ioc2.o pci-ioda.o
+diff --git a/arch/powerpc/platforms/powernv/opal-poweroff-events.c b/arch/powerpc/platforms/powernv/opal-poweroff-events.c
+new file mode 100644
+index 0000000..f1669e0
+--- /dev/null
++++ b/arch/powerpc/platforms/powernv/opal-poweroff-events.c
+@@ -0,0 +1,382 @@
++/*
++ * PowerNV OPAL poweroff events driver
++ *
++ * Copyright 2015 IBM Corp.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ */
++
++#define pr_fmt(fmt)	"OPAL_POWEROFF_EVENT: "    fmt
++
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/spinlock.h>
++#include <linux/timer.h>
++#include <linux/platform_device.h>
++#include <linux/reboot.h>
++#include <asm/opal.h>
++
++#include "opal-poweroff-events.h"
++
++/* Poweroff timers */
++static struct timer_list poweroff_timer;
++static DEFINE_SPINLOCK(poweroff_timer_spinlock);
++
++/* Converts OPAL event type into it's description. */
++static const char *poweroff_events_map[POWEROFF_EVENTS]
++			= {"EPOW", "DPO"};
++
++/* Host poweroff function. */
++static void poweroff_host(unsigned long event)
++{
++	pr_info("Powering off system\n");
++	orderly_poweroff(true);
++}
++
++/* Start poweroff timer */
++static void start_poweroff_timer(unsigned long event, int32_t timeout)
++{
++	unsigned long flags;
++
++	/* Check if any poweroff timer is already active with lower timeout */
++	spin_lock_irqsave(&poweroff_timer_spinlock, flags);
++	if (timer_pending(&poweroff_timer) &&
++			(poweroff_timer.expires < (jiffies + timeout * HZ))) {
++		spin_unlock_irqrestore(&poweroff_timer_spinlock, flags);
++		pr_info("An earlier poweroff already scheduled due to %s "
++			"event\n", poweroff_events_map[poweroff_timer.data]);
++		return;
++	}
++
++	/* Start a new timer/modify existing timer with new timeout value */
++	poweroff_timer.data = event;
++	mod_timer(&poweroff_timer, jiffies + timeout  * HZ);
++	spin_unlock_irqrestore(&poweroff_timer_spinlock, flags);
++	pr_info("Scheduled poweroff due to %s event after %d seconds\n",
++			poweroff_events_map[event], timeout);
++}
++
++/* Cancel poweroff timer for EPOW event */
++static void cancel_epow_poweroff_timer(void)
++{
++	unsigned long flags;
++
++	/* Check if poweroff time for epow event is running */
++	spin_lock_irqsave(&poweroff_timer_spinlock, flags);
++	if (timer_pending(&poweroff_timer) &&
++		poweroff_timer.data ==  POWEROFF_EVENT_EPOW) {
++		del_timer_sync(&poweroff_timer);
++		spin_unlock_irqrestore(&poweroff_timer_spinlock, flags);
++		pr_info("Poweroff timer for EPOW event deactivated\n");
++		return;
++	}
++	spin_unlock_irqrestore(&poweroff_timer_spinlock, flags);
++}
++
++/* Stop poweroff timer */
++static void stop_poweroff_timer(void)
++{
++	int rc;
++	unsigned long flags;
++
++	spin_lock_irqsave(&poweroff_timer_spinlock, flags);
++	rc = del_timer_sync(&poweroff_timer);
++	spin_unlock_irqrestore(&poweroff_timer_spinlock, flags);
++
++	if (rc)
++		pr_info("Poweroff timer deactivated\n");
++}
++
++/* Determine EPOW reason text from EPOW reason code */
++static const char *get_epow_reason_string(int code)
++{
++	switch (code) {
++	case OPAL_EPOW_NONE:
++		return "EPOW condition not present/cleared";
++	case OPAL_EPOW_ON_UPS:
++		return "System on UPS/internal battery";
++	case OPAL_EPOW_AMB_TEMP:
++		return "High ambient temperature";
++	case OPAL_EPOW_INT_TEMP:
++		return "High internal temperature";
++	}
++
++	return "Unknown";
++}
++
++/* Get EPOW event information */
++static int get_epow_event_info(struct epow_event *p_epow)
++{
++	int rc;
++	struct opal_epow_event opal_epow;
++
++	/* Get EPOW event information from OPAL */
++	rc = opal_get_epow_event_info(&opal_epow);
++	if (rc == OPAL_PARAMETER) {
++		pr_err("opal_get_epow_event_info: Invalid parameter\n");
++		return -1;
++	}
++
++	if (rc) {
++		pr_err("opal_get_epow_event_info failed\n");
++		return -1;
++	}
++
++	/* Endian conversions */
++	p_epow->type = be32_to_cpu(opal_epow.type);
++	p_epow->reason_code = be32_to_cpu(opal_epow.reason_code);
++	p_epow->timeout = be32_to_cpu(opal_epow.timeout);
++
++	return 0;
++}
++
++/* Get DPO timeout */
++static void get_dpo_timeout(int64_t *dpo_timeout)
++{
++	int rc;
++	__be64 timeout;
++
++	rc = opal_get_dpo_status(&timeout);
++
++	if (rc == OPAL_WRONG_STATE) {
++		pr_info("DPO not initiated by OPAL\n");
++		*dpo_timeout = 0;
++	} else
++		*dpo_timeout = be64_to_cpu(timeout);
++}
++
++/* Process EPOW event information */
++void process_epow_event(struct epow_event *p_epow)
++{
++	int32_t timeout;
++	int guest_shutdown = 0;
++	int epow_delay = 0;
++
++	/*
++	* OPAL_EPOW_NONE shows that EPOW condition has returned
++	* to normal and thus we need to cancel any EPOW poweroff
++	* timer running.
++	*/
++	if (p_epow->type == OPAL_EPOW_NONE) {
++		cancel_epow_poweroff_timer();
++		return;
++	}
++
++	/*
++	 * Proceed with timeout calculations to perform graceful system
++	 * shutdown. First allow enough time for graceful guest shutdown,
++	 * and there after allow time to wait for EPOW condition to return
++	 * to normal.
++	 */
++	timeout = p_epow->timeout;
++
++	timeout = timeout - POWEROFF_HOST_TIME;
++	if (timeout > POWEROFF_GUEST_TIME) {
++		timeout = timeout - POWEROFF_GUEST_TIME;
++		guest_shutdown = 1;
++	}
++
++	if ((timeout > POWEROFF_EPOW_DELAY) && guest_shutdown) {
++		timeout = timeout - POWEROFF_EPOW_DELAY;
++		epow_delay = 1;
++	}
++
++	/* Calculate poweroff timeout value */
++	timeout = POWEROFF_HOST_TIME;
++	if (guest_shutdown)
++		timeout += POWEROFF_GUEST_TIME;
++	if (epow_delay)
++		timeout += POWEROFF_EPOW_DELAY;
++
++	start_poweroff_timer(POWEROFF_EVENT_EPOW, timeout);
++}
++
++
++/* Process DPO event information */
++void process_dpo_event(int64_t dpo_timeout)
++{
++	/*
++	 * Calculate poweroff timeout value.
++	 * Allow enough time for guests VM to shutdown
++	 * before proceeding with host shutdown.
++	 */
++	if (dpo_timeout > (POWEROFF_GUEST_TIME + POWEROFF_HOST_TIME))
++		dpo_timeout = POWEROFF_GUEST_TIME + POWEROFF_HOST_TIME;
++	else
++		dpo_timeout = POWEROFF_HOST_TIME;
++
++	start_poweroff_timer(POWEROFF_EVENT_DPO, dpo_timeout);
++}
++
++/* Check for any existing EPOW, DPO events and process them, if existing */
++static void process_existing_poweroff_events(void)
++{
++	int rc;
++	int64_t dpo_timeout;
++	struct epow_event epow;
++
++	/* Check for any existing EPOW event */
++	rc = get_epow_event_info(&epow);
++	if (rc) {
++		pr_err("Failed to get EPOW event info\n");
++		goto check_dpo;
++	}
++
++	if (epow.type != OPAL_EPOW_NONE) {
++		pr_info("Existing EPOW%d event detected. "
++			"Timeout = %d seconds, Reason: %s\n",
++			epow.type, epow.timeout,
++			get_epow_reason_string(epow.reason_code));
++		process_epow_event(&epow);
++	} else
++		pr_info("No existing EPOW event detected\n");
++
++check_dpo:
++	/* Check for any existing DPO event */
++	get_dpo_timeout(&dpo_timeout);
++	if (dpo_timeout) {
++		pr_info("Existing DPO event detected. Timeout = %lld seconds\n",
++				dpo_timeout);
++		process_dpo_event(dpo_timeout);
++	 } else
++		pr_info("No existing DPO event detected\n");
++}
++
++/* Platform EPOW message received */
++static int opal_epow_event_notifier(struct notifier_block *nb,
++			unsigned long msg_type, void *msg)
++{
++	int rc;
++	struct epow_event epow;
++
++	/* Get EPOW event details */
++	rc = get_epow_event_info(&epow);
++	if (rc) {
++		pr_err("Failed to get EPOW event info\n");
++		return 0;
++	}
++
++	pr_info("EPOW%d event received. Timeout = %d seconds, Reason: %s\n",
++		epow.type, epow.timeout,
++		get_epow_reason_string(epow.reason_code));
++
++	/* Processing EPOW event information */
++	process_epow_event(&epow);
++
++	return 0;
++}
++
++
++/* Platform DPO message received */
++static int opal_dpo_event_notifier(struct notifier_block *nb,
++				unsigned long msg_type, void *msg)
++{
++	int64_t dpo_timeout;
++
++	/* Get DPO timeout */
++	get_dpo_timeout(&dpo_timeout);
++
++	if (!dpo_timeout) {
++		pr_err("Failed to get DPO event timeout\n");
++		return 0;
++	}
++
++	pr_info("DPO event received. Timeout = %lld seconds\n", dpo_timeout);
++
++	process_dpo_event(dpo_timeout);
++
++	return 0;
++}
++
++
++/* OPAL EPOW event notifier block */
++static struct notifier_block opal_epow_nb = {
++	.notifier_call  = opal_epow_event_notifier,
++	.next           = NULL,
++	.priority       = 0,
++};
++
++/* OPAL DPO event notifier block */
++static struct notifier_block opal_dpo_nb = {
++	.notifier_call  = opal_dpo_event_notifier,
++	.next           = NULL,
++	.priority       = 0,
++};
++
++/* Platform driver probe */
++static int opal_poweroff_events_probe(struct platform_device *pdev)
++{
++	int ret;
++
++	/* Initialize poweroff timer */
++	init_timer(&poweroff_timer);
++	poweroff_timer.function = poweroff_host;
++
++	/*
++	 * Check for any existing EPOW or DPO events. Host could have missed
++	 * their notifications while booting.
++	 */
++	process_existing_poweroff_events();
++
++	/* Register EPOW event notifier */
++	ret = opal_message_notifier_register(OPAL_MSG_EPOW, &opal_epow_nb);
++	if (ret) {
++		pr_err("EPOW event notifier registration failed\n");
++		return ret;
++	}
++	pr_info("EPOW event notifier registered\n");
++
++	/* Register DPO event notifier */
++	ret = opal_message_notifier_register(OPAL_MSG_DPO, &opal_dpo_nb);
++	if (ret) {
++		pr_err("DPO event notifier registration failed\n");
++		opal_notifier_unregister(&opal_epow_nb);
++		return ret;
++	}
++	pr_info("DPO event notifier registered\n");
++
++	pr_info("OPAL poweroff events driver initialized\n");
++	return 0;
++}
++
++/* Platform driver remove */
++static int opal_poweroff_events_remove(struct platform_device *pdev)
++{
++	/* Unregister OPAL message notifiers */
++	opal_notifier_unregister(&opal_dpo_nb);
++	opal_notifier_unregister(&opal_epow_nb);
++
++	/* Stop poweroff timer */
++	stop_poweroff_timer();
++
++	pr_info("OPAL poweroff events driver exited\n");
++	return 0;
++}
++
++/* Platform driver property match */
++static const struct of_device_id opal_poweroff_events_match[] = {
++	{
++		.compatible     = "ibm,opal-v3-epow",
++	},
++	{},
++};
++MODULE_DEVICE_TABLE(of, opal_poweroff_events_match);
++
++static struct platform_driver opal_poweroff_events_driver = {
++	.probe  = opal_poweroff_events_probe,
++	.remove = opal_poweroff_events_remove,
++	.driver = {
++		.name = "opal-poweroff-events-driver",
++		.owner = THIS_MODULE,
++		.of_match_table = opal_poweroff_events_match,
++	},
++};
++
++module_platform_driver(opal_poweroff_events_driver);
++
++MODULE_LICENSE("GPL");
++MODULE_AUTHOR("Vipin K Parashar <vipin@linux.vnet.ibm.com>");
++MODULE_DESCRIPTION("PowerNV OPAL poweroff events driver");
+diff --git a/arch/powerpc/platforms/powernv/opal-poweroff-events.h b/arch/powerpc/platforms/powernv/opal-poweroff-events.h
+new file mode 100644
+index 0000000..dfc9381
+--- /dev/null
++++ b/arch/powerpc/platforms/powernv/opal-poweroff-events.h
+@@ -0,0 +1,35 @@
++/*
++ * PowerNV OPAL poweroff events driver definitions
++ *
++ * Copyright 2015 IBM Corp.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ */
++
++#ifndef _OPAL_POWEROFF_EVENTS_H
++#define _OPAL_POWEROFF_EVENTS_H
++
++/*
++ * EPOW event information
++ * This structure is almost same as struct opal_epow_event, defined in
++ * asm/opal.h. which uses big endian data types.
++ */
++
++struct epow_event {
++	int32_t type;		/* EPOW event types */
++	int32_t reason_code;	/* EPOW reason */
++	int32_t timeout;	/* Time allowed for EPOW event */
++};
++
++#define POWEROFF_EVENT_EPOW	0
++#define POWEROFF_EVENT_DPO	1
++#define POWEROFF_EVENTS		2
++
++#define	POWEROFF_HOST_TIME	10	/* Max time for host shutdown */
++#define	POWEROFF_GUEST_TIME	300	/* Max time for guests shutdown */
++#define POWEROFF_EPOW_DELAY	300	/* Wait time for EPOW condition
++					 * to return to normal */
++#endif /* _OPAL_POWEROFF_EVENTS_H */
+diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
+index 0509bca..1df509a 100644
+--- a/arch/powerpc/platforms/powernv/opal-wrappers.S
++++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
+@@ -248,7 +248,6 @@ OPAL_CALL(opal_pci_fence_phb,			OPAL_PCI_FENCE_PHB);
+ OPAL_CALL(opal_pci_reinit,			OPAL_PCI_REINIT);
+ OPAL_CALL(opal_pci_mask_pe_error,		OPAL_PCI_MASK_PE_ERROR);
+ OPAL_CALL(opal_set_slot_led_status,		OPAL_SET_SLOT_LED_STATUS);
+-OPAL_CALL(opal_get_epow_status,			OPAL_GET_EPOW_STATUS);
+ OPAL_CALL(opal_set_system_attention_led,	OPAL_SET_SYSTEM_ATTENTION_LED);
+ OPAL_CALL(opal_pci_next_error,			OPAL_PCI_NEXT_ERROR);
+ OPAL_CALL(opal_pci_poll,			OPAL_PCI_POLL);
+@@ -292,3 +291,5 @@ OPAL_CALL(opal_tpo_read,			OPAL_READ_TPO);
+ OPAL_CALL(opal_ipmi_send,			OPAL_IPMI_SEND);
+ OPAL_CALL(opal_ipmi_recv,			OPAL_IPMI_RECV);
+ OPAL_CALL(opal_i2c_request,			OPAL_I2C_REQUEST);
++OPAL_CALL(opal_get_epow_event_info,		OPAL_GET_EPOW_EVENT_INFO);
++OPAL_CALL(opal_get_dpo_status,			OPAL_GET_DPO_STATUS);
+diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
+index 18fd4e7..29f80f4 100644
+--- a/arch/powerpc/platforms/powernv/opal.c
++++ b/arch/powerpc/platforms/powernv/opal.c
+@@ -743,7 +743,7 @@ static void __init opal_irq_init(struct device_node *dn)
+ 
+ static int __init opal_init(void)
+ {
+-	struct device_node *np, *consoles;
++	struct device_node *np, *consoles, *epow;
+ 	int rc;
+ 
+ 	opal_node = of_find_node_by_path("/ibm,opal");
+@@ -791,6 +791,12 @@ static int __init opal_init(void)
+ 		opal_msglog_init();
+ 	}
+ 
++	epow = of_find_node_by_path("/ibm,opal/epow");
++	if (epow) {
++		of_platform_device_create(epow, "opal-poweroff-events", NULL);
++		of_node_put(epow);
++	}
++
+ 	opal_ipmi_init(opal_node);
+ 
+ 	return 0;
+-- 
 1.9.3
