@@ -1,60 +1,20 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <sfr@canb.auug.org.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B2E0F1A1D26
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 19:10:48 +1000 (AEST)
-Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 1CCE1140272
- for <linuxppc-dev@ozlabs.org>; Fri, 10 Apr 2015 19:10:47 +1000 (AEST)
-Received: from /spool/local
- by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Fri, 10 Apr 2015 14:40:44 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id CAA95E005A
- for <linuxppc-dev@ozlabs.org>; Fri, 10 Apr 2015 14:43:08 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t3A9AeD81311208
- for <linuxppc-dev@ozlabs.org>; Fri, 10 Apr 2015 14:40:40 +0530
-Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t3A9AZJ2018419
- for <linuxppc-dev@ozlabs.org>; Fri, 10 Apr 2015 14:40:38 +0530
-Message-ID: <5527938B.1030901@linux.vnet.ibm.com>
-Date: Fri, 10 Apr 2015 14:40:35 +0530
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id A17951A09FA
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 20:02:45 +1000 (AEST)
+Date: Fri, 10 Apr 2015 20:02:40 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, <linuxppc-dev@lists.ozlabs.org>, Andrew Morton
+ <akpm@linux-foundation.org>
+Subject: linux-next: build failure after merge of the powerpc-mpe tree
+Message-ID: <20150410200240.13471ce4@canb.auug.org.au>
 MIME-Version: 1.0
-To: Michael Neuling <mikey@neuling.org>
-Subject: Re: [V6,1/9] elf: Add new powerpc specifc core note sections
-References: <20141203052204.9DA8F1400DD@ozlabs.org>
- <547EB253.5050307@linux.vnet.ibm.com> <548578A8.5020901@linux.vnet.ibm.com>
- <54947C64.4030206@linux.vnet.ibm.com> <54A50094.5070902@linux.vnet.ibm.com>
- <1421883597.30744.3.camel@neuling.org>
- <OFC6CFC348.C619B89D-ONC1257DD5.0056279B-C1257DD5.00577002@de.ibm.com>
- <1421963049.30744.23.camel@neuling.org>
- <1422419289.9646.20.camel@neuling.org>
- <OFE5516C3F.3C4884DE-ONC1257DE4.004E7852-C1257DE4.00514232@de.ibm.com>
- <1424667110.16027.6.camel@neuling.org>
- <OF5DE08D4B.0B79C501-ONC1257E0C.0044F80B-C1257E0C.0046DC8F@de.ibm.com>
- <1426718702.4866.2.camel@neuling.org> <1426719027.4866.4.camel@neuling.org>
- <550FEC36.8080803@linux.vnet.ibm.com>
- <OF91038A37.65C405E5-ONC1257E21.0061938F-C1257E21.00620A03@de.ibm.com>
- <1428534695.4682.18.camel@neuling.org> <55267595.9030202@linux.vnet.ibm.com>
- <1428635033.1554.49.camel@neuling.org>
-In-Reply-To: <1428635033.1554.49.camel@neuling.org>
-Content-Type: text/plain; charset=UTF-8
-Cc: james.hogan@imgtec.com, avagin@openvz.org, Paul.Clothier@imgtec.com,
- Ulrich Weigand <Ulrich.Weigand@de.ibm.com>, peterz@infradead.org,
- palves@redhat.com, Edjunior Barbosa Machado <emachado@linux.vnet.ibm.com>,
- shuahkh@osg.samsung.com, linux-kernel@vger.kernel.org, dhowells@redhat.com,
- linuxppc-dev@ozlabs.org, kirjanov@gmail.com, tglx@linutronix.de,
- oleg@redhat.com, davej@redhat.com, akpm@linux-foundation.org,
- sukadev@linux.vnet.ibm.com, davem@davemloft.net, sam.bobroff@au1.ibm.com
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ boundary="Sig_/=sTlS/Twty6TfvK4Cu2V34u"; protocol="application/pgp-signature"
+Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -64,56 +24,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/10/2015 08:33 AM, Michael Neuling wrote:
-> On Thu, 2015-04-09 at 18:20 +0530, Anshuman Khandual wrote:
->> On 04/09/2015 04:41 AM, Michael Neuling wrote:
->>> On Wed, 2015-04-08 at 19:50 +0200, Ulrich Weigand wrote:
->>>> Anshuman Khandual <khandual@linux.vnet.ibm.com> wrote on 23.03.2015
->>>> 11:34:30:
->>>>
->>>>>> With that in mind, do we have a way to set the top 32bits of the MSR
->>>>>> (which contain the TM bits) when ptracing 32 bit processes?  I can't
->>>>>> find anything like that in this patch set.
->>>>>
->>>>> No, we dont have that yet. When ptracing in 32-bit mode the MSR value
->>>>> which can be viewed or set from the user space through PTRACE_GETREGS
->>>>> PTRACE_SETREGS call is it's lower 32 bits only. Either we can club
->>>>> the upper 32 bits of MSR as part of one of the ELF core notes we are
->>>>> adding in the patch series or we can create one more separate ELF core
->>>>> note for that purpose. Let me know your opinion on this.
->>>>
->>>> I'm not sure I understand this.  I thought we had the following:
->>>>
->>>> - If the process calling ptrace is itself 64-bit (which is how GDB is
->>>>   built on all current Linux distributions), then PTRACE_GETREGS etc.
->>>>   will *always* operate on 64-bit register sets, even if the target
->>>>   process is 32-bit.
->>>>
->>>> - If the process calling ptrace is 32-bit, then PTRACE_GETREGS will
->>>>   operate on 32-bit register sets.   However, there is a separate
->>>>   PTRACE_GETREGS64 / PTRACE_SETREGS64 call that will also provide
->>>>   the opportunity to operate on the full 64-bit register set.  Both
->>>>   apply independently of whether the target process is 32-bit or
->>>>   64-bit.
->>>>
->>>> Is this not correct?
->>>
->>> I think you're correct.  We should be right.  I'd forgotten about the
->>> GET/SETREGS64 interfaces.
->>
->> In that case, is the patch series complete and okay ? Is there any thing
->> else we need to verify other than waiting for the GDB test results which
->> Edjunior has been working on. But I am not aware of the status on the GDB
->> test development front.
-> 
-> I think we are good.
+--Sig_/=sTlS/Twty6TfvK4Cu2V34u
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-I had posted a newer version [V7] of this patch series couple of months back
-which got ignored while the discussion continued in this version.
+Hi all,
 
-V7: https://lkml.org/lkml/2015/1/14/19
+After merging the powerpc-mpe tree, today's linux-next build (powerpc
+allyesconfig) failed like this:
 
-Apart from the last gitignore related patch which already got merged into
-mainline separately, all other patches should be as good even today. I will
-try rebasing the series, running the base tests again and re post it in some
-time.
+mm/gup.c: In function 'gup_pte_range':
+mm/gup.c:904:3: error: conversion to non-scalar type requested
+   pte_t pte =3D ACCESS_ONCE(*ptep);
+   ^
+mm/gup.c: In function '__get_user_pages_fast':
+mm/gup.c:1194:3: error: conversion to non-scalar type requested
+   pgd_t pgd =3D ACCESS_ONCE(*pgdp);
+   ^
+
+Caused by commit 4bcad5b3b3ea ("powerpc: Make STRICT_MM_TYPECHECKS a
+config option").
+
+I have reverted that commit for today.
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+--Sig_/=sTlS/Twty6TfvK4Cu2V34u
+Content-Type: application/pgp-signature
+Content-Description: OpenPGP digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBCAAGBQJVJ5/EAAoJEMDTa8Ir7ZwVOdcP+wZWXBwG9EuQrQza4qBLISqS
+8Zbe+TaEekn3eyK9cIwBp36HQ8iPTj1TbMHRl9ov7zAmaIeJf3MnGI1yWg7YCrzx
++kYB44+95xLj1fiyPO5jZ4fxIm+eUOlzkO9aCknvH2pApv4J8s//42FwtmxA6iNL
+xZtBpKHK5pTSLSdImQfCWXY5d7FurAHXvlv33ceNtgVCuuLBkNmhIB/5F5+zlIA/
+JcxEJBZ+gmUc+1ZOBX39o87YU3c6dvJnr9allER+z+rwKbo1F05xpDr+Dv2DZkwd
+1Ip0Swg4eekJjV7xRqNtnAErRdHGeWFMLlT4zkivczMYdE2xd1kz9L5ilqFfxLxM
+HEQxSlPmWr9ZcsrekTS+fDCQlbZpASLms/XJrQVYdqzpIEWpGMiLkrRq3X/1xO1O
+n/m8D6LSFT1u2tQc07VFOLVREqF6vZaoQL0T35xtKfmAiyTin3bRWgg/Q81euMz9
+w+WX1sByhk2fcgAvgeme0MtqE07wgTaVrNwfCAJhcD8BF3UoCQyNV3+ziy+TzZWW
+p0SI/tN4u2czSq6n4TDSNzzme30BejdZc4kWGMw0UY/MYrMphihpEyxAZ8XS9U5D
+UKNDqOZG08l5Q0OchLNyZ4ufA5vLy9HlHAUh3SfWg2xCcfmIUDALY+RkKg/YlKVy
+X+mLOD2Bzdz8G9F3HacN
+=VR61
+-----END PGP SIGNATURE-----
+
+--Sig_/=sTlS/Twty6TfvK4Cu2V34u--
