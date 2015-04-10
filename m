@@ -1,20 +1,62 @@
-Return-Path: <sfr@canb.auug.org.au>
+Return-Path: <ulrich.weigand@de.ibm.com>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A17951A09FA
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 20:02:45 +1000 (AEST)
-Date: Fri, 10 Apr 2015 20:02:40 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, <linuxppc-dev@lists.ozlabs.org>, Andrew Morton
- <akpm@linux-foundation.org>
-Subject: linux-next: build failure after merge of the powerpc-mpe tree
-Message-ID: <20150410200240.13471ce4@canb.auug.org.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 66EAB1A0058
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 20:33:46 +1000 (AEST)
+Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id D0030140284
+ for <linuxppc-dev@ozlabs.org>; Fri, 10 Apr 2015 20:33:44 +1000 (AEST)
+Received: from /spool/local
+ by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <ulrich.weigand@de.ibm.com>;
+ Fri, 10 Apr 2015 11:33:41 +0100
+Received: from b06cxnps4075.portsmouth.uk.ibm.com
+ (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
+ by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id F411A2190063
+ for <linuxppc-dev@ozlabs.org>; Fri, 10 Apr 2015 11:33:22 +0100 (BST)
+Received: from d06av07.portsmouth.uk.ibm.com (d06av07.portsmouth.uk.ibm.com
+ [9.149.37.248])
+ by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t3AAXaCV54132892
+ for <linuxppc-dev@ozlabs.org>; Fri, 10 Apr 2015 10:33:36 GMT
+Received: from d06av07.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av07.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t3AAXZ8q016994
+ for <linuxppc-dev@ozlabs.org>; Fri, 10 Apr 2015 06:33:36 -0400
+In-Reply-To: <5527938B.1030901@linux.vnet.ibm.com>
+References: <20141203052204.9DA8F1400DD@ozlabs.org>
+ <548578A8.5020901@linux.vnet.ibm.com> <54947C64.4030206@linux.vnet.ibm.com>
+ <54A50094.5070902@linux.vnet.ibm.com> <1421883597.30744.3.camel@neuling.org>
+ <OFC6CFC348.C619B89D-ONC1257DD5.0056279B-C1257DD5.00577002@de.ibm.com>
+ <1421963049.30744.23.camel@neuling.org>
+ <1422419289.9646.20.camel@neuling.org>
+ <OFE5516C3F.3C4884DE-ONC1257DE4.004E7852-C1257DE4.00514232@de.ibm.com>
+ <1424667110.16027.6.camel@neuling.org>
+ <OF5DE08D4B.0B79C501-ONC1257E0C.0044F80B-C1257E0C.0046DC8F@de.ibm.com>
+ <1426718702.4866.2.camel@neuling.org> <1426719027.4866.4.camel@neuling.org>
+ <550FEC36.8080803@linux.vnet.ibm.com>
+ <OF91038A37.65C405E5-ONC1257E21.0061938F-C1257E21.00620A03@de.ibm.com>
+ <1428534695.4682.18.camel@neuling.org> <55267595.90
+ <5527938B.1030901@linux.vnet.ibm.com>
+Subject: Re: [V6,1/9] elf: Add new powerpc specifc core note sections
+To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Message-ID: <OFCDE0430E.A5CD2FAF-ONC1257E23.003813C4-C1257E23.0039F950@de.ibm.com>
+From: Ulrich Weigand <Ulrich.Weigand@de.ibm.com>
+Date: Fri, 10 Apr 2015 12:33:13 +0200
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- boundary="Sig_/=sTlS/Twty6TfvK4Cu2V34u"; protocol="application/pgp-signature"
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-type: text/plain; charset=US-ASCII
+Cc: shuahkh@osg.samsung.com, Michael Neuling <mikey@neuling.org>,
+ james.hogan@imgtec.com, avagin@openvz.org, Paul.Clothier@imgtec.com,
+ peterz@infradead.org, palves@redhat.com, linux-kernel@vger.kernel.org,
+ davem@davemloft.net, dhowells@redhat.com, linuxppc-dev@ozlabs.org,
+ kirjanov@gmail.com, tglx@linutronix.de, oleg@redhat.com, davej@redhat.com,
+ akpm@linux-foundation.org, sukadev@linux.vnet.ibm.com,
+ Edjunior Barbosa Machado <emachado@linux.vnet.ibm.com>,
+ sam.bobroff@au1.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,53 +66,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Sig_/=sTlS/Twty6TfvK4Cu2V34u
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+Anshuman Khandual <khandual@linux.vnet.ibm.com> wrote on 10.04.2015
+11:10:35:
 
-Hi all,
+> I had posted a newer version [V7] of this patch series couple of months
+back
+> which got ignored while the discussion continued in this version.
+>
+> V7: https://lkml.org/lkml/2015/1/14/19
 
-After merging the powerpc-mpe tree, today's linux-next build (powerpc
-allyesconfig) failed like this:
+Ah, with all the back-and-forth on the checkpointed state, I never looked
+at this.  Unfortunately, there's still a number of issues with this, I
+think:
 
-mm/gup.c: In function 'gup_pte_range':
-mm/gup.c:904:3: error: conversion to non-scalar type requested
-   pte_t pte =3D ACCESS_ONCE(*ptep);
-   ^
-mm/gup.c: In function '__get_user_pages_fast':
-mm/gup.c:1194:3: error: conversion to non-scalar type requested
-   pgd_t pgd =3D ACCESS_ONCE(*pgdp);
-   ^
+- You provide checkpointed FPR and VMX registers, but there doesn't seem
+  to be any way to get at the checkpointed *VSX* registers (i.e. the part
+  that is neither covered by FPR or VMX, corresponding to NT_PPC_VSX).
 
-Caused by commit 4bcad5b3b3ea ("powerpc: Make STRICT_MM_TYPECHECKS a
-config option").
+- We may have had this discussion in the past, but I still do not like the
+  notion of a "misc" register set, in particular since the three registers
+  in it are available at different architecture levels and categories.
 
-I have reverted that commit for today.
+  I would much prefer three separate regsets (e.g. NT_PPC_DSCR, NT_PPC_PPR,
+  and NT_PPC_TAR), each of which is available and valid if and only if the
+  current processor actually has the register in question.
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+  If we do have a single regset, at the very least a "get" operation should
+  set registers unvailable on the machine to a defined state (zero?)
+  instead of simply leaving memory uninitialized.
 
---Sig_/=sTlS/Twty6TfvK4Cu2V34u
-Content-Type: application/pgp-signature
-Content-Description: OpenPGP digital signature
+- Similarly, the NT_PPC_TM_SPR regset as currently defined mixes and
+matches
+  registers with different "lifetimes".  The transactional memory registers
+  (TFHAR, TEXASR, TFIAR) are available *always* on machines that support
+  transactions.  But the other registers in that regset are checkpointed
+  versions that are only available/valid within a transaction.  I think a
+  better way to faithfully represent this would be to have the
+NT_PPC_TM_SPR
+  regset only contain the transcational memory registers, and use separate
+  regsets for the checkpointed registers -- those should parallel the non-
+  checkpointed register regset.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
+  For example, if we have NT_PPC_DSCR, there should be a NT_PPC_CDSCR for
+  the checkpointed version etc.  (If we do stay with MISC, there should
+then
+  be a CMISC).
 
-iQIcBAEBCAAGBQJVJ5/EAAoJEMDTa8Ir7ZwVOdcP+wZWXBwG9EuQrQza4qBLISqS
-8Zbe+TaEekn3eyK9cIwBp36HQ8iPTj1TbMHRl9ov7zAmaIeJf3MnGI1yWg7YCrzx
-+kYB44+95xLj1fiyPO5jZ4fxIm+eUOlzkO9aCknvH2pApv4J8s//42FwtmxA6iNL
-xZtBpKHK5pTSLSdImQfCWXY5d7FurAHXvlv33ceNtgVCuuLBkNmhIB/5F5+zlIA/
-JcxEJBZ+gmUc+1ZOBX39o87YU3c6dvJnr9allER+z+rwKbo1F05xpDr+Dv2DZkwd
-1Ip0Swg4eekJjV7xRqNtnAErRdHGeWFMLlT4zkivczMYdE2xd1kz9L5ilqFfxLxM
-HEQxSlPmWr9ZcsrekTS+fDCQlbZpASLms/XJrQVYdqzpIEWpGMiLkrRq3X/1xO1O
-n/m8D6LSFT1u2tQc07VFOLVREqF6vZaoQL0T35xtKfmAiyTin3bRWgg/Q81euMz9
-w+WX1sByhk2fcgAvgeme0MtqE07wgTaVrNwfCAJhcD8BF3UoCQyNV3+ziy+TzZWW
-p0SI/tN4u2czSq6n4TDSNzzme30BejdZc4kWGMw0UY/MYrMphihpEyxAZ8XS9U5D
-UKNDqOZG08l5Q0OchLNyZ4ufA5vLy9HlHAUh3SfWg2xCcfmIUDALY+RkKg/YlKVy
-X+mLOD2Bzdz8G9F3HacN
-=VR61
------END PGP SIGNATURE-----
+- Particularly confusing to me is the "checkpointed original MSR" which
+  currently also resides in NT_PPC_TM_SPR.  What exactly is this?  How
+  does that differ from the MSR slot in the NT_PPC_TM_CGPR regset?
 
---Sig_/=sTlS/Twty6TfvK4Cu2V34u--
+  I may be misreading kernel code, but it seems the kernel does not
+actually
+  use the ckpt_regs.msr slot at all, and therefore the corresponding slot
+of
+  the NT_PPC_TM_CGPR regset is likewise undefined/unused.  Would it not be
+  more consistent to use that slot to pass the checkpointed MSR?
+
+  In any case, it seems the ptrace set-register case currently allows user
+  space to restore *any* arbitrary value into the checkpointed MSR, which
+  would presumably get restored into the real MSR at some point, unless I'm
+  missing something here.  Do we not need a check that only safe bits are
+  modified, just like with ptrace access to the real MSR?
+
+Bye,
+Ulrich
