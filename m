@@ -1,31 +1,30 @@
 Return-Path: <aik@ozlabs.ru>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 55EC71A0B99
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4A41E1A0B87
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 16:32:45 +1000 (AEST)
 Received: from /spool/local
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aik@ozlabs.ru>;
  Fri, 10 Apr 2015 16:32:44 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id E1A1A357805C
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 16:32:41 +1000 (EST)
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 71FDE2BB005D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 16:32:42 +1000 (EST)
 Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t3A6WXMi42663970
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 16:32:41 +1000
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t3A6WYh18257782
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 16:32:42 +1000
 Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
  by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t3A6W8sj023171
+ t3A6W8Ju023204
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 16:32:08 +1000
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH kernel v8 05/31] vfio: powerpc/spapr: Move locked_vm
- accounting to helpers
-Date: Fri, 10 Apr 2015 16:30:47 +1000
-Message-Id: <1428647473-11738-6-git-send-email-aik@ozlabs.ru>
+Subject: [PATCH kernel v8 26/31] powerpc/iommu: Add userspace view of TCE table
+Date: Fri, 10 Apr 2015 16:31:08 +1000
+Message-Id: <1428647473-11738-27-git-send-email-aik@ozlabs.ru>
 In-Reply-To: <1428647473-11738-1-git-send-email-aik@ozlabs.ru>
 References: <1428647473-11738-1-git-send-email-aik@ozlabs.ru>
 Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
@@ -40,156 +39,132 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-There moves locked pages accounting to helpers.
-Later they will be reused for Dynamic DMA windows (DDW).
+In order to support memory pre-registration, we need a way to track
+the use of every registered memory region and only allow unregistration
+if a region is not in use anymore. So we need a way to tell from what
+region the just cleared TCE was from.
 
-This reworks debug messages to show the current value and the limit.
-
-This stores the locked pages number in the container so when unlocking
-the iommu table pointer won't be needed. This does not have an effect
-now but it will with the multiple tables per container as then we will
-allow attaching/detaching groups on fly and we may end up having
-a container with no group attached but with the counter incremented.
-
-While we are here, update the comment explaining why RLIMIT_MEMLOCK
-might be required to be bigger than the guest RAM. This also prints
-pid of the current process in pr_warn/pr_debug.
+This adds a userspace view of the TCE table into iommu_table struct.
+It contains userspace address, one per TCE entry. The table is only
+allocated when the ownership over an IOMMU group is taken which means
+it is only used from outside of the powernv code (such as VFIO).
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 ---
 Changes:
-v4:
-* new helpers do nothing if @npages == 0
-* tce_iommu_disable() now can decrement the counter if the group was
-detached (not possible now but will be in the future)
+v8:
+* added ENOMEM on failed vzalloc()
 ---
- drivers/vfio/vfio_iommu_spapr_tce.c | 82 ++++++++++++++++++++++++++++---------
- 1 file changed, 63 insertions(+), 19 deletions(-)
+ arch/powerpc/include/asm/iommu.h          |  6 ++++++
+ arch/powerpc/kernel/iommu.c               |  9 +++++++++
+ arch/powerpc/platforms/powernv/pci-ioda.c | 25 ++++++++++++++++++++++++-
+ 3 files changed, 39 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
-index 8bbee22..9448e39 100644
---- a/drivers/vfio/vfio_iommu_spapr_tce.c
-+++ b/drivers/vfio/vfio_iommu_spapr_tce.c
-@@ -29,6 +29,51 @@
- static void tce_iommu_detach_group(void *iommu_data,
- 		struct iommu_group *iommu_group);
- 
-+static long try_increment_locked_vm(long npages)
-+{
-+	long ret = 0, locked, lock_limit;
-+
-+	if (!current || !current->mm)
-+		return -ESRCH; /* process exited */
-+
-+	if (!npages)
-+		return 0;
-+
-+	down_write(&current->mm->mmap_sem);
-+	locked = current->mm->locked_vm + npages;
-+	lock_limit = rlimit(RLIMIT_MEMLOCK) >> PAGE_SHIFT;
-+	if (locked > lock_limit && !capable(CAP_IPC_LOCK))
-+		ret = -ENOMEM;
-+	else
-+		current->mm->locked_vm += npages;
-+
-+	pr_debug("[%d] RLIMIT_MEMLOCK +%ld %ld/%ld%s\n", current->pid,
-+			npages << PAGE_SHIFT,
-+			current->mm->locked_vm << PAGE_SHIFT,
-+			rlimit(RLIMIT_MEMLOCK),
-+			ret ? " - exceeded" : "");
-+
-+	up_write(&current->mm->mmap_sem);
-+
-+	return ret;
-+}
-+
-+static void decrement_locked_vm(long npages)
-+{
-+	if (!current || !current->mm || !npages)
-+		return; /* process exited */
-+
-+	down_write(&current->mm->mmap_sem);
-+	if (npages > current->mm->locked_vm)
-+		npages = current->mm->locked_vm;
-+	current->mm->locked_vm -= npages;
-+	pr_debug("[%d] RLIMIT_MEMLOCK -%ld %ld/%ld\n", current->pid,
-+			npages << PAGE_SHIFT,
-+			current->mm->locked_vm << PAGE_SHIFT,
-+			rlimit(RLIMIT_MEMLOCK));
-+	up_write(&current->mm->mmap_sem);
-+}
-+
- /*
-  * VFIO IOMMU fd for SPAPR_TCE IOMMU implementation
-  *
-@@ -45,6 +90,7 @@ struct tce_container {
- 	struct mutex lock;
- 	struct iommu_table *tbl;
- 	bool enabled;
-+	unsigned long locked_pages;
+diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
+index 2c08c91..a768a4d 100644
+--- a/arch/powerpc/include/asm/iommu.h
++++ b/arch/powerpc/include/asm/iommu.h
+@@ -106,9 +106,15 @@ struct iommu_table {
+ 	unsigned long *it_map;       /* A simple allocation bitmap for now */
+ 	unsigned long  it_page_shift;/* table iommu page size */
+ 	struct iommu_table_group *it_group;
++	unsigned long *it_userspace; /* userspace view of the table */
+ 	struct iommu_table_ops *it_ops;
  };
  
- static bool tce_page_is_contained(struct page *page, unsigned page_shift)
-@@ -60,7 +106,7 @@ static bool tce_page_is_contained(struct page *page, unsigned page_shift)
- static int tce_iommu_enable(struct tce_container *container)
- {
- 	int ret = 0;
--	unsigned long locked, lock_limit, npages;
-+	unsigned long locked;
- 	struct iommu_table *tbl = container->tbl;
- 
- 	if (!container->tbl)
-@@ -89,21 +135,22 @@ static int tce_iommu_enable(struct tce_container *container)
- 	 * Also we don't have a nice way to fail on H_PUT_TCE due to ulimits,
- 	 * that would effectively kill the guest at random points, much better
- 	 * enforcing the limit based on the max that the guest can map.
-+	 *
-+	 * Unfortunately at the moment it counts whole tables, no matter how
-+	 * much memory the guest has. I.e. for 4GB guest and 4 IOMMU groups
-+	 * each with 2GB DMA window, 8GB will be counted here. The reason for
-+	 * this is that we cannot tell here the amount of RAM used by the guest
-+	 * as this information is only available from KVM and VFIO is
-+	 * KVM agnostic.
- 	 */
--	down_write(&current->mm->mmap_sem);
--	npages = (tbl->it_size << tbl->it_page_shift) >> PAGE_SHIFT;
--	locked = current->mm->locked_vm + npages;
--	lock_limit = rlimit(RLIMIT_MEMLOCK) >> PAGE_SHIFT;
--	if (locked > lock_limit && !capable(CAP_IPC_LOCK)) {
--		pr_warn("RLIMIT_MEMLOCK (%ld) exceeded\n",
--				rlimit(RLIMIT_MEMLOCK));
--		ret = -ENOMEM;
--	} else {
-+	locked = (tbl->it_size << tbl->it_page_shift) >> PAGE_SHIFT;
-+	ret = try_increment_locked_vm(locked);
-+	if (ret)
-+		return ret;
- 
--		current->mm->locked_vm += npages;
--		container->enabled = true;
--	}
--	up_write(&current->mm->mmap_sem);
-+	container->locked_pages = locked;
++#define IOMMU_TABLE_USERSPACE_ENTRY(tbl, entry) \
++		((tbl)->it_userspace ? \
++			&((tbl)->it_userspace[(entry) - (tbl)->it_offset]) : \
++			NULL)
 +
-+	container->enabled = true;
+ /* Pure 2^n version of get_order */
+ static inline __attribute_const__
+ int get_iommu_order(unsigned long size, struct iommu_table *tbl)
+diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
+index 0bcd988..833b396 100644
+--- a/arch/powerpc/kernel/iommu.c
++++ b/arch/powerpc/kernel/iommu.c
+@@ -38,6 +38,7 @@
+ #include <linux/pci.h>
+ #include <linux/iommu.h>
+ #include <linux/sched.h>
++#include <linux/vmalloc.h>
+ #include <asm/io.h>
+ #include <asm/prom.h>
+ #include <asm/iommu.h>
+@@ -1069,6 +1070,11 @@ static int iommu_table_take_ownership(struct iommu_table *tbl)
+ 		spin_unlock(&tbl->pools[i].lock);
+ 	spin_unlock_irqrestore(&tbl->large_pool.lock, flags);
  
- 	return ret;
++	BUG_ON(tbl->it_userspace);
++	tbl->it_userspace = vzalloc(sizeof(*tbl->it_userspace) * tbl->it_size);
++	if (!tbl->it_userspace)
++		return -ENOMEM;
++
+ 	return 0;
  }
-@@ -115,13 +162,10 @@ static void tce_iommu_disable(struct tce_container *container)
  
- 	container->enabled = false;
+@@ -1102,6 +1108,9 @@ static void iommu_table_release_ownership(struct iommu_table *tbl)
+ {
+ 	unsigned long flags, i, sz = (tbl->it_size + 7) >> 3;
  
--	if (!container->tbl || !current->mm)
-+	if (!current->mm)
++	vfree(tbl->it_userspace);
++	tbl->it_userspace = NULL;
++
+ 	spin_lock_irqsave(&tbl->large_pool.lock, flags);
+ 	for (i = 0; i < tbl->nr_pools; i++)
+ 		spin_lock(&tbl->pools[i].lock);
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index 751aeab..3ac523d 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -26,6 +26,7 @@
+ #include <linux/iommu.h>
+ #include <linux/mmzone.h>
+ #include <linux/sizes.h>
++#include <linux/vmalloc.h>
+ 
+ #include <asm/mmzone.h>
+ #include <asm/sections.h>
+@@ -1469,6 +1470,9 @@ static void pnv_pci_free_table(struct iommu_table *tbl)
+ 	if (!tbl->it_size)
  		return;
  
--	down_write(&current->mm->mmap_sem);
--	current->mm->locked_vm -= (container->tbl->it_size <<
--			container->tbl->it_page_shift) >> PAGE_SHIFT;
--	up_write(&current->mm->mmap_sem);
-+	decrement_locked_vm(container->locked_pages);
++	vfree(tbl->it_userspace);
++	tbl->it_userspace = NULL;
++
+ 	pnv_free_tce_table(tbl->it_base, size, tbl->it_indirect_levels);
+ 	iommu_reset_table(tbl, "ioda2");
+ }
+@@ -1656,9 +1660,28 @@ static void pnv_ioda2_set_ownership(struct iommu_table_group *table_group,
+ 	pnv_pci_ioda2_set_bypass(pe, !enable);
  }
  
- static void *tce_iommu_open(unsigned long arg)
++static long pnv_pci_ioda2_create_table_with_uas(
++		struct iommu_table_group *table_group,
++		int num, __u32 page_shift, __u64 window_size, __u32 levels,
++		struct iommu_table *tbl)
++{
++	long ret = pnv_pci_ioda2_create_table(table_group, num,
++			page_shift, window_size, levels, tbl);
++
++	if (ret)
++		return ret;
++
++	BUG_ON(tbl->it_userspace);
++	tbl->it_userspace = vzalloc(sizeof(*tbl->it_userspace) * tbl->it_size);
++	if (!tbl->it_userspace)
++		return -ENOMEM;
++
++	return 0;
++}
++
+ static struct iommu_table_group_ops pnv_pci_ioda2_ops = {
+ 	.set_ownership = pnv_ioda2_set_ownership,
+-	.create_table = pnv_pci_ioda2_create_table,
++	.create_table = pnv_pci_ioda2_create_table_with_uas,
+ 	.set_window = pnv_pci_ioda2_set_window,
+ 	.unset_window = pnv_pci_ioda2_unset_window,
+ };
 -- 
 2.0.0
