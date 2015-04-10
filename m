@@ -1,30 +1,31 @@
 Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9F05E1A2B6F
+ by lists.ozlabs.org (Postfix) with ESMTPS id C59011A2D61
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 18:31:25 +1000 (AEST)
 Received: from /spool/local
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
  Fri, 10 Apr 2015 18:31:25 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 0A03C357804F
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 18:31:23 +1000 (EST)
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 7E6C32CE804E
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 18:31:21 +1000 (EST)
 Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t3A8VE3g43974906
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 18:31:23 +1000
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t3A8VDaf47841420
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 18:31:21 +1000
 Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
  by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t3A8UnMM026114
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 18:30:49 +1000
+ t3A8UlWe026088
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 18:30:47 +1000
 From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH V3 08/13] selftests, powerpc: Add test for DSCR SPR numbers
-Date: Fri, 10 Apr 2015 14:00:07 +0530
-Message-Id: <1428654612-23539-9-git-send-email-khandual@linux.vnet.ibm.com>
+Subject: [PATCH V3 07/13] selftests,
+ powerpc: Add test for explicitly changing DSCR value
+Date: Fri, 10 Apr 2015 14:00:06 +0530
+Message-Id: <1428654612-23539-8-git-send-email-khandual@linux.vnet.ibm.com>
 In-Reply-To: <1428654612-23539-1-git-send-email-khandual@linux.vnet.ibm.com>
 References: <1428654612-23539-1-git-send-email-khandual@linux.vnet.ibm.com>
 Cc: mikey@neuling.org, shuahkh@osg.samsung.com
@@ -37,42 +38,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch adds a test which verifies that the DSCR privilege and
-problem state SPR read & write accesses while making sure that the
-results are always the same irrespective of which SPR number is
-being used.
+This patch adds a test which modifies the DSCR using mtspr instruction
+and verifies the change using mfspr instruction. It uses both the
+privilege state SPR as well as the problem state SPR for the purpose.
 
 Acked-by: Shuah Khan <shuahkh@osg.samsung.com>
 Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 ---
  tools/testing/selftests/powerpc/dscr/Makefile      |  2 +-
- .../selftests/powerpc/dscr/dscr_user_test.c        | 62 ++++++++++++++++++++++
- 2 files changed, 63 insertions(+), 1 deletion(-)
- create mode 100644 tools/testing/selftests/powerpc/dscr/dscr_user_test.c
+ .../selftests/powerpc/dscr/dscr_explicit_test.c    | 72 ++++++++++++++++++++++
+ 2 files changed, 73 insertions(+), 1 deletion(-)
+ create mode 100644 tools/testing/selftests/powerpc/dscr/dscr_explicit_test.c
 
 diff --git a/tools/testing/selftests/powerpc/dscr/Makefile b/tools/testing/selftests/powerpc/dscr/Makefile
-index aede453..ae865d8 100644
+index 0aa90ab..aede453 100644
 --- a/tools/testing/selftests/powerpc/dscr/Makefile
 +++ b/tools/testing/selftests/powerpc/dscr/Makefile
 @@ -1,4 +1,4 @@
--PROGS := dscr_default_test dscr_explicit_test
-+PROGS := dscr_default_test dscr_explicit_test dscr_user_test
+-PROGS := dscr_default_test
++PROGS := dscr_default_test dscr_explicit_test
  
  CFLAGS := $(CFLAGS) -lpthread
  
-diff --git a/tools/testing/selftests/powerpc/dscr/dscr_user_test.c b/tools/testing/selftests/powerpc/dscr/dscr_user_test.c
+diff --git a/tools/testing/selftests/powerpc/dscr/dscr_explicit_test.c b/tools/testing/selftests/powerpc/dscr/dscr_explicit_test.c
 new file mode 100644
-index 0000000..f25d68e
+index 0000000..5c0b7c1
 --- /dev/null
-+++ b/tools/testing/selftests/powerpc/dscr/dscr_user_test.c
-@@ -0,0 +1,62 @@
++++ b/tools/testing/selftests/powerpc/dscr/dscr_explicit_test.c
+@@ -0,0 +1,72 @@
 +/*
-+ * POWER Data Stream Control Register (DSCR) SPR test
++ * POWER Data Stream Control Register (DSCR) explicit test
 + *
-+ * This test modifies the DSCR value through both the SPR number
-+ * based mtspr instruction and then makes sure that the same is
-+ * reflected through mfspr instruction using either of the SPR
-+ * numbers.
++ * This test modifies the DSCR value using mtspr instruction and
++ * verifies the change with mfspr instruction. It uses both the
++ * privilege state SPR and the problem state SPR for this purpose.
 + *
 + * When using the privilege state SPR, the instructions such as
 + * mfspr or mtspr are priviledged and the kernel emulates them
@@ -80,7 +79,7 @@ index 0000000..f25d68e
 + * directly without any emulation if the HW supports them. Else
 + * they also get emulated by the kernel.
 + *
-+ * Copyright (C) 2013 Anton Blanchard <anton@au.ibm.com>, IBM
++ * Copyright (C) 2012 Anton Blanchard <anton@au.ibm.com>, IBM
 + * Copyright (C) 2015 Anshuman Khandual <khandual@linux.vnet.ibm.com>, IBM
 + *
 + * This program is free software; you can redistribute it and/or
@@ -90,43 +89,54 @@ index 0000000..f25d68e
 + */
 +#include "dscr.h"
 +
-+static int check_dscr(char *str)
-+{
-+	unsigned long cur_dscr, cur_dscr_usr;
-+
-+	cur_dscr = get_dscr();
-+	cur_dscr_usr = get_dscr_usr();
-+	if (cur_dscr != cur_dscr_usr) {
-+		printf("%s set, kernel get %lx != user get %lx\n",
-+					str, cur_dscr, cur_dscr_usr);
-+		return 1;
-+	}
-+	return 0;
-+}
-+
 +int test_body(void)
 +{
-+	int i;
++	unsigned long i, dscr = 0;
 +
-+	check_dscr("");
-+
-+	for (i = 0; i < COUNT; i++) {
-+		set_dscr(i);
-+		if (check_dscr("kernel"))
-+			return 1;
-+	}
++	srand(getpid());
++	set_dscr(dscr);
 +
 +	for (i = 0; i < COUNT; i++) {
-+		set_dscr_usr(i);
-+		if (check_dscr("user"))
++		unsigned long cur_dscr, cur_dscr_usr;
++		double ret = uniform_deviate(rand());
++
++		if (ret < 0.001) {
++			dscr++;
++			if (dscr > DSCR_MAX)
++				dscr = 0;
++
++			set_dscr(dscr);
++		}
++
++		cur_dscr = get_dscr();
++		if (cur_dscr != dscr) {
++			fprintf(stderr, "Kernel DSCR should be %ld but "
++					"is %ld\n", dscr, cur_dscr);
 +			return 1;
++		}
++
++		ret = uniform_deviate(rand());
++		if (ret < 0.001) {
++			dscr++;
++			if (dscr > DSCR_MAX)
++				dscr = 0;
++
++			set_dscr_usr(dscr);
++		}
++
++		cur_dscr_usr = get_dscr_usr();
++		if (cur_dscr_usr != dscr) {
++			fprintf(stderr, "User DSCR should be %ld but "
++					"is %ld\n", dscr, cur_dscr_usr);
++			return 1;
++		}
 +	}
 +	return 0;
 +}
 +
 +int main(int argc, char *argv[])
 +{
-+	return test_harness(test_body, "dscr_user_test");
++	return test_harness(test_body, "dscr_explicit_test");
 +}
 -- 
 1.9.3
