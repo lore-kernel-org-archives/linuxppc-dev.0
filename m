@@ -2,44 +2,44 @@ Return-Path: <nacc@linux.vnet.ibm.com>
 Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5B8A41A0143
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Apr 2015 05:48:46 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8A7D01A0143
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Apr 2015 05:51:50 +1000 (AEST)
 Received: from /spool/local
  by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
- Fri, 10 Apr 2015 15:48:44 -0400
+ Fri, 10 Apr 2015 15:51:48 -0400
 Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
  [9.57.198.24])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 299DF38C8046
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 15:48:41 -0400 (EDT)
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id E2AC9C90042
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 15:42:53 -0400 (EDT)
+Received: from d01av05.pok.ibm.com (d01av05.pok.ibm.com [9.56.224.195])
  by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t3AJmfM823003260
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 19:48:41 GMT
-Received: from d01av04.pok.ibm.com (localhost [127.0.0.1])
- by d01av04.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t3AJmeH6025779
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 15:48:40 -0400
-Date: Fri, 10 Apr 2015 12:48:39 -0700
+ t3AJpaCd21954600
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 19:51:44 GMT
+Received: from d01av05.pok.ibm.com (localhost [127.0.0.1])
+ by d01av05.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t3AJpBFa028385
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 15:51:12 -0400
+Date: Fri, 10 Apr 2015 12:50:46 -0700
 From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-To: Konstantin Khlebnikov <khlebnikov@yandex-team.ru>
-Subject: Re: [PATCH] of: return NUMA_NO_NODE from fallback of_node_to_nid()
-Message-ID: <20150410194839.GA31621@linux.vnet.ibm.com>
-References: <20150408165920.25007.6869.stgit@buzz>
- <55255F84.6060608@yandex-team.ru>
- <20150408230740.GB53918@linux.vnet.ibm.com>
- <CALYGNiP_Ru0PpWoXOYPbviiNuY+9JHDqzL0jDNJeZAtmYZGFUg@mail.gmail.com>
- <20150409225817.GI53918@linux.vnet.ibm.com>
- <5527B5EF.8090401@yandex-team.ru>
+To: Peter Zijlstra <peterz@infradead.org>
+Subject: Re: Topology updates and NUMA-level sched domains
+Message-ID: <20150410195046.GB31621@linux.vnet.ibm.com>
+References: <20150406214558.GA38501@linux.vnet.ibm.com>
+ <20150407102147.GJ23123@twins.programming.kicks-ass.net>
+ <20150407171410.GA62529@linux.vnet.ibm.com>
+ <20150407194129.GT23123@twins.programming.kicks-ass.net>
+ <20150409222956.GE53918@linux.vnet.ibm.com>
+ <20150410083153.GQ27490@worktop.programming.kicks-ass.net>
+ <20150410090810.GW24151@twins.programming.kicks-ass.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <5527B5EF.8090401@yandex-team.ru>
-Cc: devicetree@vger.kernel.org, "linux-mm@kvack.org" <linux-mm@kvack.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
- sparclinux@vger.kernel.org, Rob Herring <robh+dt@kernel.org>,
- Grant Likely <grant.likely@linaro.org>, linuxppc-dev@lists.ozlabs.org,
- Konstantin Khlebnikov <koct9i@gmail.com>
+In-Reply-To: <20150410090810.GW24151@twins.programming.kicks-ass.net>
+Cc: Boqun Feng <boqun.feng@linux.vnet.ibm.com>,
+ Srikar Dronamraju <srikar@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+ Ingo Molnar <mingo@redhat.com>, Anton Blanchard <anton@samba.org>,
+ linuxppc-dev@lists.ozlabs.org, Anshuman Khandual <khandual@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -49,160 +49,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10.04.2015 [14:37:19 +0300], Konstantin Khlebnikov wrote:
-> On 10.04.2015 01:58, Tanisha Aravamudan wrote:
-> >On 09.04.2015 [07:27:28 +0300], Konstantin Khlebnikov wrote:
-> >>On Thu, Apr 9, 2015 at 2:07 AM, Nishanth Aravamudan
-> >><nacc@linux.vnet.ibm.com> wrote:
-> >>>On 08.04.2015 [20:04:04 +0300], Konstantin Khlebnikov wrote:
-> >>>>On 08.04.2015 19:59, Konstantin Khlebnikov wrote:
-> >>>>>Node 0 might be offline as well as any other numa node,
-> >>>>>in this case kernel cannot handle memory allocation and crashes.
-> >>>
-> >>>Isn't the bug that numa_node_id() returned an offline node? That
-> >>>shouldn't happen.
-> >>
-> >>Offline node 0 came from static-inline copy of that function from of.h
-> >>I've patched weak function for keeping consistency.
-> >
-> >Got it, that's not necessarily clear in the original commit message.
+On 10.04.2015 [11:08:10 +0200], Peter Zijlstra wrote:
+> On Fri, Apr 10, 2015 at 10:31:53AM +0200, Peter Zijlstra wrote:
+> > Please, step back, look at what you're doing and ask yourself, will any
+> > sane person want to use this? Can they use this?
+> > 
+> > If so, start by describing the desired user semantics of this work.
+> > Don't start by cobbling kernel bits togerther until it stops crashing.
 > 
-> Sorry.
-> 
-> >
-> >>>#ifdef CONFIG_USE_PERCPU_NUMA_NODE_ID
-> >>>...
-> >>>#ifndef numa_node_id
-> >>>/* Returns the number of the current Node. */
-> >>>static inline int numa_node_id(void)
-> >>>{
-> >>>         return raw_cpu_read(numa_node);
-> >>>}
-> >>>#endif
-> >>>...
-> >>>#else   /* !CONFIG_USE_PERCPU_NUMA_NODE_ID */
-> >>>
-> >>>/* Returns the number of the current Node. */
-> >>>#ifndef numa_node_id
-> >>>static inline int numa_node_id(void)
-> >>>{
-> >>>         return cpu_to_node(raw_smp_processor_id());
-> >>>}
-> >>>#endif
-> >>>...
-> >>>
-> >>>So that's either the per-cpu numa_node value, right? Or the result of
-> >>>cpu_to_node on the current processor.
-> >>>
-> >>>>Example:
-> >>>>
-> >>>>[    0.027133] ------------[ cut here ]------------
-> >>>>[    0.027938] kernel BUG at include/linux/gfp.h:322!
-> >>>
-> >>>This is
-> >>>
-> >>>VM_BUG_ON(nid < 0 || nid >= MAX_NUMNODES || !node_online(nid));
-> >>>
-> >>>in
-> >>>
-> >>>alloc_pages_exact_node().
-> >>>
-> >>>And based on the trace below, that's
-> >>>
-> >>>__slab_alloc -> alloc
-> >>>
-> >>>alloc_pages_exact_node
-> >>>         <- alloc_slab_page
-> >>>                 <- allocate_slab
-> >>>                         <- new_slab
-> >>>                                 <- new_slab_objects
-> >>>                                         < __slab_alloc?
-> >>>
-> >>>which is just passing the node value down, right? Which I think was
-> >>>from:
-> >>>
-> >>>         domain = kzalloc_node(sizeof(*domain) + (sizeof(unsigned int) * size),
-> >>>                               GFP_KERNEL, of_node_to_nid(of_node));
-> >>>
-> >>>?
-> >>>
-> >>>
-> >>>What platform is this on, looks to be x86? qemu emulation of a
-> >>>pathological topology? What was the topology?
-> >>
-> >>qemu x86_64, 2 cpu, 2 numa nodes, all memory in second.
-> >
-> >Ok, this worked before? That is, this is a regression?
-> 
-> Seems like that worked before 3.17 where
-> bug was exposed by commit 44767bfaaed782d6d635ecbb13f3980041e6f33e
-> (x86, irq: Enhance mp_register_ioapic() to support irqdomain)
-> this is first usage of  *irq_domain_add*() in x86.
+> Also, please talk to your s390 folks. They've long since realized that
+> this doesn't work. They've just added big honking caches (their BOOK
+> stuff) and pretend the system is UMA.
 
-Ok.
-
-> >>  I've slightly patched it to allow that setup (in qemu hardcoded 1Mb
-> >>of memory connected to node 0) And i've found unrelated bug --
-> >>if numa node has less that 4Mb ram then kernel crashes even
-> >>earlier because numa code ignores that node
-> >>but buddy allocator still tries to use that pages.
-> >
-> >So this isn't an actually supported topology by qemu?
-> 
-> Qemu easily created memoryless numa nodes but node 0 have hardcoded
-> 1Mb of ram. This seems like legacy prop for DOS era software.
-
-Well, the problem is that x86 doesn't support memoryless nodes.
-
-git grep MEMORYLESS_NODES
-arch/ia64/Kconfig:config HAVE_MEMORYLESS_NODES
-arch/powerpc/Kconfig:config HAVE_MEMORYLESS_NODES
-
-> >>>Note that there is a ton of code that seems to assume node 0 is online.
-> >>>I started working on removing this assumption myself and it just led
-> >>>down a rathole (on power, we always have node 0 online, even if it is
-> >>>memoryless and cpuless, as a result).
-> >>>
-> >>>I am guessing this is just happening early in boot before the per-cpu
-> >>>areas are setup? That's why (I think) x86 has the early_cpu_to_node()
-> >>>function...
-> >>>
-> >>>Or do you not have CONFIG_OF set? So isn't the only change necessary to
-> >>>the include file, and it should just return first_online_node rather
-> >>>than 0?
-> >>>
-> >>>Ah and there's more of those node 0 assumptions :)
-> >>
-> >>That was x86 where is no CONFIG_OF at all.
-> >>
-> >>I don't know what's wrong with that machine but ACPI reports that
-> >>cpus and memory from node 0 as connected to node 1 and everything
-> >>seems worked fine until lates upgrade -- seems like buggy static-inline
-> >>of_node_to_nid was intoduced in 3.13 but x86 ioapic uses it during
-> >>early allocations only in since 3.17. Machine owner teells that 3.15
-> >>worked fine.
-> >
-> >So, this was a qemu emulation of this actual physical machine without a
-> >node 0?
-> 
-> Yep. Also I have crash from real machine but that stacktrace is messy
-> because CONFIG_DEBUG_VM wasn't enabled and kernel crashed inside
-> buddy allocator when tried to touch unallocated numa node structure.
-> 
-> >
-> >As I mentioned, there are lots of node 0 assumptions through the kernel.
-> >You might run into more issues at runtime.
-> 
-> I think it's possible to trigger kernel crash for any memoryless numa
-> node (not just for 0) if some device (like ioapic in my case) points to
-> it in its acpi tables. In runtime numa affinity configured by user
-> usually validated by the kernel, while numbers from firmware might
-> be used without proper validation.
-> 
-> Anyway seems like at least one x86 machines works fine without
-> memory in node 0.
-
-You're going to run into more issues, without adding proper memoryless
-node support, I think.
+Interesting, I will take a look.
 
 -Nish
