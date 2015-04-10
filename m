@@ -1,36 +1,24 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <hongtao.jia@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0133.outbound.protection.outlook.com [65.55.169.133])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 843451A0B92
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 16:33:10 +1000 (AEST)
-Received: from /spool/local
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aik@ozlabs.ru>;
- Fri, 10 Apr 2015 16:33:09 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 7493E2CE8052
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 16:33:06 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t3A6Wwtm35913928
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 16:33:06 +1000
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t3A6WXIB028976
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 16:32:33 +1000
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH kernel v8 28/31] powerpc/mmu: Add userspace-to-physical
- addresses translation cache
-Date: Fri, 10 Apr 2015 16:31:10 +1000
-Message-Id: <1428647473-11738-29-git-send-email-aik@ozlabs.ru>
-In-Reply-To: <1428647473-11738-1-git-send-email-aik@ozlabs.ru>
-References: <1428647473-11738-1-git-send-email-aik@ozlabs.ru>
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
- Alex Williamson <alex.williamson@redhat.com>,
- Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5387E1A11B5
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 16:37:52 +1000 (AEST)
+From: Hongtao Jia <hongtao.jia@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: RE: [PATCH] QorIQ/TMU: add TMU node to device tree for QorIQ T104x
+Date: Fri, 10 Apr 2015 06:23:29 +0000
+Message-ID: <BLUPR03MB14924B9EBBD1C5635B0487DE1FA0@BLUPR03MB149.namprd03.prod.outlook.com>
+References: <1427782669-20368-1-git-send-email-hongtao.jia@freescale.com>
+ <1428638140.22867.583.camel@freescale.com>
+In-Reply-To: <1428638140.22867.583.camel@freescale.com>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "rui.zhang@intel.com" <rui.zhang@intel.com>,
+ "robh+dt@kernel.org" <robh+dt@kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,335 +28,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We are adding support for DMA memory pre-registration to be used in
-conjunction with VFIO. The idea is that the userspace which is going to
-run a guest may want to pre-register a user space memory region so
-it all gets pinned once and never goes away. Having this done,
-a hypervisor will not have to pin/unpin pages on every DMA map/unmap
-request. This is going to help with multiple pinning of the same memory
-and in-kernel acceleration of DMA requests.
-
-This adds a list of memory regions to mm_context_t. Each region consists
-of a header and a list of physical addresses. This adds API to:
-1. register/unregister memory regions;
-2. do final cleanup (which puts all pre-registered pages);
-3. do userspace to physical address translation;
-4. manage a mapped pages counter; when it is zero, it is safe to
-unregister the region.
-
-Multiple registration of the same region is allowed, kref is used to
-track the number of registrations.
-
-Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
----
-Changes:
-v8:
-* s/mm_iommu_table_group_mem_t/struct mm_iommu_table_group_mem_t/
-* fixed error fallback look (s/[i]/[j]/)
----
- arch/powerpc/include/asm/mmu-hash64.h      |   3 +
- arch/powerpc/include/asm/mmu_context.h     |  17 +++
- arch/powerpc/mm/Makefile                   |   1 +
- arch/powerpc/mm/mmu_context_hash64.c       |   6 +
- arch/powerpc/mm/mmu_context_hash64_iommu.c | 215 +++++++++++++++++++++++++++++
- 5 files changed, 242 insertions(+)
- create mode 100644 arch/powerpc/mm/mmu_context_hash64_iommu.c
-
-diff --git a/arch/powerpc/include/asm/mmu-hash64.h b/arch/powerpc/include/asm/mmu-hash64.h
-index 4f13c3e..83214c4 100644
---- a/arch/powerpc/include/asm/mmu-hash64.h
-+++ b/arch/powerpc/include/asm/mmu-hash64.h
-@@ -535,6 +535,9 @@ typedef struct {
- 	/* for 4K PTE fragment support */
- 	void *pte_frag;
- #endif
-+#ifdef CONFIG_SPAPR_TCE_IOMMU
-+	struct list_head iommu_group_mem_list;
-+#endif
- } mm_context_t;
- 
- 
-diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/include/asm/mmu_context.h
-index 73382eb..d6116ca 100644
---- a/arch/powerpc/include/asm/mmu_context.h
-+++ b/arch/powerpc/include/asm/mmu_context.h
-@@ -16,6 +16,23 @@
-  */
- extern int init_new_context(struct task_struct *tsk, struct mm_struct *mm);
- extern void destroy_context(struct mm_struct *mm);
-+#ifdef CONFIG_SPAPR_TCE_IOMMU
-+struct mm_iommu_table_group_mem_t;
-+
-+extern bool mm_iommu_preregistered(void);
-+extern long mm_iommu_alloc(unsigned long ua, unsigned long entries,
-+		struct mm_iommu_table_group_mem_t **pmem);
-+extern struct mm_iommu_table_group_mem_t *mm_iommu_get(unsigned long ua,
-+		unsigned long entries);
-+extern long mm_iommu_put(struct mm_iommu_table_group_mem_t *mem);
-+extern void mm_iommu_cleanup(mm_context_t *ctx);
-+extern struct mm_iommu_table_group_mem_t *mm_iommu_lookup(unsigned long ua,
-+		unsigned long size);
-+extern long mm_iommu_ua_to_hpa(struct mm_iommu_table_group_mem_t *mem,
-+		unsigned long ua, unsigned long *hpa);
-+extern long mm_iommu_mapped_update(struct mm_iommu_table_group_mem_t *mem,
-+		bool inc);
-+#endif
- 
- extern void switch_mmu_context(struct mm_struct *prev, struct mm_struct *next);
- extern void switch_slb(struct task_struct *tsk, struct mm_struct *mm);
-diff --git a/arch/powerpc/mm/Makefile b/arch/powerpc/mm/Makefile
-index 438dcd3..49fbfc7 100644
---- a/arch/powerpc/mm/Makefile
-+++ b/arch/powerpc/mm/Makefile
-@@ -35,3 +35,4 @@ obj-$(CONFIG_PPC_SUBPAGE_PROT)	+= subpage-prot.o
- obj-$(CONFIG_NOT_COHERENT_CACHE) += dma-noncoherent.o
- obj-$(CONFIG_HIGHMEM)		+= highmem.o
- obj-$(CONFIG_PPC_COPRO_BASE)	+= copro_fault.o
-+obj-$(CONFIG_SPAPR_TCE_IOMMU)	+= mmu_context_hash64_iommu.o
-diff --git a/arch/powerpc/mm/mmu_context_hash64.c b/arch/powerpc/mm/mmu_context_hash64.c
-index 178876ae..eb3080c 100644
---- a/arch/powerpc/mm/mmu_context_hash64.c
-+++ b/arch/powerpc/mm/mmu_context_hash64.c
-@@ -89,6 +89,9 @@ int init_new_context(struct task_struct *tsk, struct mm_struct *mm)
- #ifdef CONFIG_PPC_64K_PAGES
- 	mm->context.pte_frag = NULL;
- #endif
-+#ifdef CONFIG_SPAPR_TCE_IOMMU
-+	INIT_LIST_HEAD_RCU(&mm->context.iommu_group_mem_list);
-+#endif
- 	return 0;
- }
- 
-@@ -132,6 +135,9 @@ static inline void destroy_pagetable_page(struct mm_struct *mm)
- 
- void destroy_context(struct mm_struct *mm)
- {
-+#ifdef CONFIG_SPAPR_TCE_IOMMU
-+	mm_iommu_cleanup(&mm->context);
-+#endif
- 
- #ifdef CONFIG_PPC_ICSWX
- 	drop_cop(mm->context.acop, mm);
-diff --git a/arch/powerpc/mm/mmu_context_hash64_iommu.c b/arch/powerpc/mm/mmu_context_hash64_iommu.c
-new file mode 100644
-index 0000000..af7668c
---- /dev/null
-+++ b/arch/powerpc/mm/mmu_context_hash64_iommu.c
-@@ -0,0 +1,215 @@
-+/*
-+ *  IOMMU helpers in MMU context.
-+ *
-+ *  Copyright (C) 2015 IBM Corp. <aik@ozlabs.ru>
-+ *
-+ *  This program is free software; you can redistribute it and/or
-+ *  modify it under the terms of the GNU General Public License
-+ *  as published by the Free Software Foundation; either version
-+ *  2 of the License, or (at your option) any later version.
-+ *
-+ */
-+
-+#include <linux/sched.h>
-+#include <linux/slab.h>
-+#include <linux/rculist.h>
-+#include <linux/vmalloc.h>
-+#include <linux/kref.h>
-+#include <asm/mmu_context.h>
-+
-+struct mm_iommu_table_group_mem_t {
-+	struct list_head next;
-+	struct rcu_head rcu;
-+	struct kref kref;	/* one reference per VFIO container */
-+	atomic_t mapped;	/* number of currently mapped pages */
-+	u64 ua;			/* userspace address */
-+	u64 entries;		/* number of entries in hpas[] */
-+	u64 *hpas;		/* vmalloc'ed */
-+};
-+
-+bool mm_iommu_preregistered(void)
-+{
-+	if (!current || !current->mm)
-+		return false;
-+
-+	return !list_empty(&current->mm->context.iommu_group_mem_list);
-+}
-+EXPORT_SYMBOL_GPL(mm_iommu_preregistered);
-+
-+long mm_iommu_alloc(unsigned long ua, unsigned long entries,
-+		struct mm_iommu_table_group_mem_t **pmem)
-+{
-+	struct mm_iommu_table_group_mem_t *mem;
-+	long i, j;
-+	struct page *page = NULL;
-+
-+	list_for_each_entry_rcu(mem, &current->mm->context.iommu_group_mem_list,
-+			next) {
-+		if ((mem->ua == ua) && (mem->entries == entries))
-+			return -EBUSY;
-+
-+		/* Overlap? */
-+		if ((mem->ua < (ua + (entries << PAGE_SHIFT))) &&
-+				(ua < (mem->ua + (mem->entries << PAGE_SHIFT))))
-+			return -EINVAL;
-+	}
-+
-+	mem = kzalloc(sizeof(*mem), GFP_KERNEL);
-+	if (!mem)
-+		return -ENOMEM;
-+
-+	mem->hpas = vzalloc(entries * sizeof(mem->hpas[0]));
-+	if (!mem->hpas) {
-+		kfree(mem);
-+		return -ENOMEM;
-+	}
-+
-+	for (i = 0; i < entries; ++i) {
-+		if (1 != get_user_pages_fast(ua + (i << PAGE_SHIFT),
-+					1/* pages */, 1/* iswrite */, &page)) {
-+			for (j = 0; j < i; ++j)
-+				put_page(pfn_to_page(
-+						mem->hpas[j] >> PAGE_SHIFT));
-+			vfree(mem->hpas);
-+			kfree(mem);
-+			return -EFAULT;
-+		}
-+
-+		mem->hpas[i] = page_to_pfn(page) << PAGE_SHIFT;
-+	}
-+
-+	kref_init(&mem->kref);
-+	atomic_set(&mem->mapped, 0);
-+	mem->ua = ua;
-+	mem->entries = entries;
-+	*pmem = mem;
-+
-+	list_add_rcu(&mem->next, &current->mm->context.iommu_group_mem_list);
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(mm_iommu_alloc);
-+
-+static void mm_iommu_unpin(struct mm_iommu_table_group_mem_t *mem)
-+{
-+	long i;
-+	struct page *page = NULL;
-+
-+	for (i = 0; i < mem->entries; ++i) {
-+		if (!mem->hpas[i])
-+			continue;
-+
-+		page = pfn_to_page(mem->hpas[i] >> PAGE_SHIFT);
-+		if (!page)
-+			continue;
-+
-+		put_page(page);
-+		mem->hpas[i] = 0;
-+	}
-+}
-+
-+static void mm_iommu_free(struct rcu_head *head)
-+{
-+	struct mm_iommu_table_group_mem_t *mem = container_of(head,
-+			struct mm_iommu_table_group_mem_t, rcu);
-+
-+	mm_iommu_unpin(mem);
-+	vfree(mem->hpas);
-+	kfree(mem);
-+}
-+
-+static void mm_iommu_release(struct kref *kref)
-+{
-+	struct mm_iommu_table_group_mem_t *mem = container_of(kref,
-+			struct mm_iommu_table_group_mem_t, kref);
-+
-+	list_del_rcu(&mem->next);
-+	call_rcu(&mem->rcu, mm_iommu_free);
-+}
-+
-+struct mm_iommu_table_group_mem_t *mm_iommu_get(unsigned long ua,
-+		unsigned long entries)
-+{
-+	struct mm_iommu_table_group_mem_t *mem;
-+
-+	list_for_each_entry_rcu(mem, &current->mm->context.iommu_group_mem_list,
-+			next) {
-+		if ((mem->ua == ua) && (mem->entries == entries)) {
-+			kref_get(&mem->kref);
-+			return mem;
-+		}
-+	}
-+
-+	return NULL;
-+}
-+EXPORT_SYMBOL_GPL(mm_iommu_get);
-+
-+long mm_iommu_put(struct mm_iommu_table_group_mem_t *mem)
-+{
-+	if (atomic_read(&mem->mapped))
-+		return -EBUSY;
-+
-+	kref_put(&mem->kref, mm_iommu_release);
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(mm_iommu_put);
-+
-+struct mm_iommu_table_group_mem_t *mm_iommu_lookup(unsigned long ua,
-+		unsigned long size)
-+{
-+	struct mm_iommu_table_group_mem_t *mem, *ret = NULL;
-+
-+	list_for_each_entry_rcu(mem,
-+			&current->mm->context.iommu_group_mem_list,
-+			next) {
-+		if ((mem->ua <= ua) &&
-+				(ua + size <= mem->ua +
-+				 (mem->entries << PAGE_SHIFT))) {
-+			ret = mem;
-+			break;
-+		}
-+	}
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(mm_iommu_lookup);
-+
-+long mm_iommu_ua_to_hpa(struct mm_iommu_table_group_mem_t *mem,
-+		unsigned long ua, unsigned long *hpa)
-+{
-+	const long entry = (ua - mem->ua) >> PAGE_SHIFT;
-+	u64 *va = &mem->hpas[entry];
-+
-+	if (entry >= mem->entries)
-+		return -EFAULT;
-+
-+	*hpa = *va | (ua & ~PAGE_MASK);
-+
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(mm_iommu_ua_to_hpa);
-+
-+long mm_iommu_mapped_update(struct mm_iommu_table_group_mem_t *mem, bool inc)
-+{
-+	long ret = 0;
-+
-+	if (inc)
-+		atomic_inc(&mem->mapped);
-+	else
-+		ret = atomic_dec_if_positive(&mem->mapped);
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(mm_iommu_mapped_update);
-+
-+void mm_iommu_cleanup(mm_context_t *ctx)
-+{
-+	while (!list_empty(&ctx->iommu_group_mem_list)) {
-+		struct mm_iommu_table_group_mem_t *mem;
-+
-+		mem = list_first_entry(&ctx->iommu_group_mem_list,
-+				struct mm_iommu_table_group_mem_t, next);
-+		mm_iommu_release(&mem->kref);
-+	}
-+}
--- 
-2.0.0
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
+MjENCj4gU2VudDogRnJpZGF5LCBBcHJpbCAxMCwgMjAxNSAxMTo1NiBBTQ0KPiBUbzogSmlhIEhv
+bmd0YW8tQjM4OTUxDQo+IENjOiBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZzsgZGV2aWNl
+dHJlZUB2Z2VyLmtlcm5lbC5vcmc7DQo+IHJvYmgrZHRAa2VybmVsLm9yZzsgcnVpLnpoYW5nQGlu
+dGVsLmNvbQ0KPiBTdWJqZWN0OiBSZTogW1BBVENIXSBRb3JJUS9UTVU6IGFkZCBUTVUgbm9kZSB0
+byBkZXZpY2UgdHJlZSBmb3IgUW9ySVENCj4gVDEwNHgNCj4gDQo+IE9uIFR1ZSwgMjAxNS0wMy0z
+MSBhdCAxNDoxNyArMDgwMCwgSmlhIEhvbmd0YW8gd3JvdGU6DQo+ID4gVGhpcyBpcyBUaGVybWFs
+IE1vbml0b3JpbmcgVW5pdCBmb3IgUW9ySVEgcGxhdGZvcm0uDQo+ID4NCj4gPiBTaWduZWQtb2Zm
+LWJ5OiBKaWEgSG9uZ3RhbyA8aG9uZ3Rhby5qaWFAZnJlZXNjYWxlLmNvbT4NCj4gPiAtLS0NCj4g
+PiAgLi4uL2RldmljZXRyZWUvYmluZGluZ3MvdGhlcm1hbC9xb3JpcS10aGVybWFsLnR4dCAgfCA1
+OA0KPiArKysrKysrKysrKysrKysNCj4gPiAgYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL2ZzbC9xb3Jp
+cS10bXUtdDEwNHhzaS5kdHNpICAgfCA4Mg0KPiArKysrKysrKysrKysrKysrKysrKysrDQo+ID4g
+IGFyY2gvcG93ZXJwYy9ib290L2R0cy9mc2wvdDEwNDBzaS1wb3N0LmR0c2kgICAgICAgIHwgIDEg
+Kw0KPiA+ICAzIGZpbGVzIGNoYW5nZWQsIDE0MSBpbnNlcnRpb25zKCspDQo+ID4gIGNyZWF0ZSBt
+b2RlIDEwMDY0NA0KPiA+IERvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy90aGVybWFs
+L3FvcmlxLXRoZXJtYWwudHh0DQo+ID4gIGNyZWF0ZSBtb2RlIDEwMDY0NCBhcmNoL3Bvd2VycGMv
+Ym9vdC9kdHMvZnNsL3FvcmlxLXRtdS10MTA0eHNpLmR0c2kNCj4gPg0KPiA+IGRpZmYgLS1naXQN
+Cj4gPiBhL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy90aGVybWFsL3FvcmlxLXRo
+ZXJtYWwudHh0DQo+ID4gYi9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvdGhlcm1h
+bC9xb3JpcS10aGVybWFsLnR4dA0KPiA+IG5ldyBmaWxlIG1vZGUgMTAwNjQ0DQo+ID4gaW5kZXgg
+MDAwMDAwMC4uZGZjMTdmYQ0KPiA+IC0tLSAvZGV2L251bGwNCj4gPiArKysgYi9Eb2N1bWVudGF0
+aW9uL2RldmljZXRyZWUvYmluZGluZ3MvdGhlcm1hbC9xb3JpcS10aGVybWFsLnR4dA0KPiA+IEBA
+IC0wLDAgKzEsNTggQEANCj4gPiArKiBUaGVybWFsIE1vbml0b3JpbmcgVW5pdCAoVE1VKSBvbiBG
+cmVlc2NhbGUgUW9ySVEgU29Dcw0KPiA+ICsNCj4gPiArUmVxdWlyZWQgcHJvcGVydGllczoNCj4g
+PiArLSBjb21wYXRpYmxlIDogImZzbCxxb3JpcS10bXUiLg0KPiANCj4gY29tcGF0aWJsZTogTXVz
+dCBpbmNsdWRlICJmc2wscW9yaXEtdG11Ii4gVGhlIHZlcnNpb24gb2YgdGhlIGRldmljZSBpcw0K
+PiAJICAgIGRldGVybWluZWQgYnkgdGhlIFRNVSBJUCBCbG9jayBSZXZpc2lvbiBSZWdpc3RlciAo
+SVBCUlIwKQ0KPiAJICAgIGF0IG9mZnNldCAweDBCRjguDQo+IA0KPiAJICAgIFRhYmxlIG9mIGNv
+cnJlc3BvbmRlbmNlcyBiZXR3ZWVuIElQQlJSMCB2YWx1ZXMgYW5kIGV4YW1wbGUNCj4gCSAgICBj
+aGlwczoNCj4gCQlWYWx1ZSAgICAgICAgICAgRGV2aWNlDQo+IAkJLS0tLS0tLS0tLS0gICAgIC0t
+LS0tLS0NCj4gCQkweDAxOTAwMTAyICAgICAgVDEwNDANCg0KSSB3aWxsIHVwZGF0ZSBpdCBpbiBu
+ZXh0IHZlcnNpb24uDQoNCj4gDQo+ID4gKy0gcmVnIDogYWRkcmVzcyByYW5nZSBvZiBUTVUgcmVn
+aXN0ZXJzLg0KPiA+ICstIGludGVycnVwdHMgOiBzaG91bGQgY29udGFpbiB0aGUgaW50ZXJydXB0
+IGZvciBUTVUuDQo+IA0KPiBzL3Nob3VsZCBjb250YWluL2NvbnRhaW5zLw0KDQpUaGFua3MgZm9y
+IHRoZSBjb3JyZWN0aW9uLg0KDQo+IA0KPiA+ICstIGNhbGlicmF0aW9uIDogY2FsaWJyYXRpb24g
+dGFibGUgZm9yIFRNVS4NCj4gDQo+IFdoYXQgaXMgdGhlIGZvcm1hdCBvZiB0aGUgY2FsaWJyYXRp
+b24gdGFibGUsIGFuZCB3aGVyZSBkb2VzIG9uZSBnZXQgdGhlDQo+IGRhdGE/DQoNClRoZXJlIGFy
+ZSBmb3VyIGNhbGlicmF0aW9uIGNvbmZpZyByYW5nZSwgZm9yIGVhY2ggcmFuZ2Ugd2UgZ290IGEg
+Y291cGxlIG9mDQpwYWlycyBmb3JtYXR0ZWQgbGlrZSA8VFRDRkdSLCBUU0NGR1I+IGF0IG9mZnNl
+dCBvZiA8MHgwMDgwLCAweDAwODQ+Lg0KDQotSG9uZ3Rhbw0KDQo+IA0KPiAtU2NvdHQNCj4gDQoN
+Cg==
