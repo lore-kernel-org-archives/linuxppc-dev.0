@@ -1,30 +1,31 @@
 Return-Path: <aik@ozlabs.ru>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E66991A09EC
+ by lists.ozlabs.org (Postfix) with ESMTPS id F25861A057D
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 16:32:46 +1000 (AEST)
 Received: from /spool/local
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aik@ozlabs.ru>;
- Fri, 10 Apr 2015 16:32:45 +1000
+ Fri, 10 Apr 2015 16:32:46 +1000
 Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id BF8063578055
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 16:32:42 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 68BE42BB005C
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 16:32:43 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
  by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t3A6WYLV38797370
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 16:32:42 +1000
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t3A6W9cZ027922
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 16:32:09 +1000
+ t3A6WZN345023344
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 16:32:43 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t3A6WA4g010091
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 16:32:10 +1000
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH kernel v8 08/31] vfio: powerpc/spapr: Rework groups attaching
-Date: Fri, 10 Apr 2015 16:30:50 +1000
-Message-Id: <1428647473-11738-9-git-send-email-aik@ozlabs.ru>
+Subject: [PATCH kernel v8 09/31] powerpc/powernv: Do not set "read" flag if
+ direction==DMA_NONE
+Date: Fri, 10 Apr 2015 16:30:51 +1000
+Message-Id: <1428647473-11738-10-git-send-email-aik@ozlabs.ru>
 In-Reply-To: <1428647473-11738-1-git-send-email-aik@ozlabs.ru>
 References: <1428647473-11738-1-git-send-email-aik@ozlabs.ru>
 Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
@@ -39,78 +40,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is to make extended ownership and multiple groups support patches
-simpler for review.
+Normally a bitmap from the iommu_table is used to track what TCE entry
+is in use. Since we are going to use iommu_table without its locks and
+do xchg() instead, it becomes essential not to put bits which are not
+implied in the direction flag.
 
-This is a mechanical patch.
+This adds iommu_direction_to_tce_perm() (its counterpart is there already)
+and uses it for powernv's pnv_tce_build().
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 ---
- drivers/vfio/vfio_iommu_spapr_tce.c | 38 ++++++++++++++++++++++---------------
- 1 file changed, 23 insertions(+), 15 deletions(-)
+ arch/powerpc/include/asm/iommu.h     |  1 +
+ arch/powerpc/kernel/iommu.c          | 15 +++++++++++++++
+ arch/powerpc/platforms/powernv/pci.c |  7 +------
+ 3 files changed, 17 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
-index ec5ee83..244c958 100644
---- a/drivers/vfio/vfio_iommu_spapr_tce.c
-+++ b/drivers/vfio/vfio_iommu_spapr_tce.c
-@@ -478,16 +478,21 @@ static int tce_iommu_attach_group(void *iommu_data,
- 				iommu_group_id(container->tbl->it_group),
- 				iommu_group_id(iommu_group));
- 		ret = -EBUSY;
--	} else if (container->enabled) {
-+		goto unlock_exit;
-+	}
-+
-+	if (container->enabled) {
- 		pr_err("tce_vfio: attaching group #%u to enabled container\n",
- 				iommu_group_id(iommu_group));
- 		ret = -EBUSY;
--	} else {
--		ret = iommu_take_ownership(tbl);
--		if (!ret)
--			container->tbl = tbl;
-+		goto unlock_exit;
+diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
+index ed69b7d..2af2d70 100644
+--- a/arch/powerpc/include/asm/iommu.h
++++ b/arch/powerpc/include/asm/iommu.h
+@@ -203,6 +203,7 @@ extern int iommu_take_ownership(struct iommu_table *tbl);
+ extern void iommu_release_ownership(struct iommu_table *tbl);
+ 
+ extern enum dma_data_direction iommu_tce_direction(unsigned long tce);
++extern unsigned long iommu_direction_to_tce_perm(enum dma_data_direction dir);
+ 
+ #endif /* __KERNEL__ */
+ #endif /* _ASM_IOMMU_H */
+diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
+index 1b4a178..029b1ea 100644
+--- a/arch/powerpc/kernel/iommu.c
++++ b/arch/powerpc/kernel/iommu.c
+@@ -871,6 +871,21 @@ void iommu_free_coherent(struct iommu_table *tbl, size_t size,
  	}
- 
-+	ret = iommu_take_ownership(tbl);
-+	if (!ret)
-+		container->tbl = tbl;
-+
-+unlock_exit:
- 	mutex_unlock(&container->lock);
- 
- 	return ret;
-@@ -505,18 +510,21 @@ static void tce_iommu_detach_group(void *iommu_data,
- 		pr_warn("tce_vfio: detaching group #%u, expected group is #%u\n",
- 				iommu_group_id(iommu_group),
- 				iommu_group_id(tbl->it_group));
--	} else {
--		if (container->enabled) {
--			pr_warn("tce_vfio: detaching group #%u from enabled container, forcing disable\n",
--					iommu_group_id(tbl->it_group));
--			tce_iommu_disable(container);
--		}
-+		goto unlock_exit;
-+	}
- 
--		/* pr_debug("tce_vfio: detaching group #%u from iommu %p\n",
--				iommu_group_id(iommu_group), iommu_group); */
--		container->tbl = NULL;
--		iommu_release_ownership(tbl);
-+	if (container->enabled) {
-+		pr_warn("tce_vfio: detaching group #%u from enabled container, forcing disable\n",
-+				iommu_group_id(tbl->it_group));
-+		tce_iommu_disable(container);
- 	}
-+
-+	/* pr_debug("tce_vfio: detaching group #%u from iommu %p\n",
-+	   iommu_group_id(iommu_group), iommu_group); */
-+	container->tbl = NULL;
-+	iommu_release_ownership(tbl);
-+
-+unlock_exit:
- 	mutex_unlock(&container->lock);
  }
+ 
++unsigned long iommu_direction_to_tce_perm(enum dma_data_direction dir)
++{
++	switch (dir) {
++	case DMA_BIDIRECTIONAL:
++		return TCE_PCI_READ | TCE_PCI_WRITE;
++	case DMA_FROM_DEVICE:
++		return TCE_PCI_WRITE;
++	case DMA_TO_DEVICE:
++		return TCE_PCI_READ;
++	default:
++		return 0;
++	}
++}
++EXPORT_SYMBOL_GPL(iommu_direction_to_tce_perm);
++
+ #ifdef CONFIG_IOMMU_API
+ /*
+  * SPAPR TCE API
+diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
+index 54323d6..609f5b1 100644
+--- a/arch/powerpc/platforms/powernv/pci.c
++++ b/arch/powerpc/platforms/powernv/pci.c
+@@ -593,15 +593,10 @@ static int pnv_tce_build(struct iommu_table *tbl, long index, long npages,
+ 			 unsigned long uaddr, enum dma_data_direction direction,
+ 			 struct dma_attrs *attrs, bool rm)
+ {
+-	u64 proto_tce;
++	u64 proto_tce = iommu_direction_to_tce_perm(direction);
+ 	__be64 *tcep, *tces;
+ 	u64 rpn;
+ 
+-	proto_tce = TCE_PCI_READ; // Read allowed
+-
+-	if (direction != DMA_TO_DEVICE)
+-		proto_tce |= TCE_PCI_WRITE;
+-
+ 	tces = tcep = ((__be64 *)tbl->it_base) + index - tbl->it_offset;
+ 	rpn = __pa(uaddr) >> tbl->it_page_shift;
  
 -- 
 2.0.0
