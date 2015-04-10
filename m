@@ -2,30 +2,30 @@ Return-Path: <aik@ozlabs.ru>
 Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0D34B1A09EC
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6AD251A09EC
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 16:32:46 +1000 (AEST)
 Received: from /spool/local
  by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aik@ozlabs.ru>;
  Fri, 10 Apr 2015 16:32:45 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 6550D2CE8057
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 16:32:43 +1000 (EST)
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 92B353578056
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 16:32:44 +1000 (EST)
 Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t3A6WZQm40370294
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 16:32:43 +1000
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t3A6Wa7240042504
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 16:32:44 +1000
 Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
  by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t3A6WAqa004898
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 16:32:10 +1000
+ t3A6WBam004949
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 16:32:11 +1000
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH kernel v8 11/31] powerpc/iommu: Introduce iommu_table_alloc()
- helper
-Date: Fri, 10 Apr 2015 16:30:53 +1000
-Message-Id: <1428647473-11738-12-git-send-email-aik@ozlabs.ru>
+Subject: [PATCH kernel v8 14/31] vfio: powerpc/spapr: powerpc/powernv/ioda2:
+ Rework IOMMU ownership control
+Date: Fri, 10 Apr 2015 16:30:56 +1000
+Message-Id: <1428647473-11738-15-git-send-email-aik@ozlabs.ru>
 In-Reply-To: <1428647473-11738-1-git-send-email-aik@ozlabs.ru>
 References: <1428647473-11738-1-git-send-email-aik@ozlabs.ru>
 Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
@@ -40,110 +40,175 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This replaces multiple calls of kzalloc_node() with a new
-iommu_table_alloc() helper. Right now it calls kzalloc_node() but
-later it will be modified to allocate a iommu_table_group struct with
-a single iommu_table in it.
+At the moment the iommu_table struct has a set_bypass() which enables/
+disables DMA bypass on IODA2 PHB. This is exposed to POWERPC IOMMU code
+which calls this callback when external IOMMU users such as VFIO are
+about to get over a PHB.
 
-Later the helper will allocate a iommu_table_group struct which embeds
-the iommu table(s).
+The set_bypass() callback is not really an iommu_table function but
+IOMMU/PE function. This introduces a iommu_table_group_ops struct and
+adds a set_ownership() callback to it which is called when an external
+user takes control over the IOMMU.
+
+This renames set_bypass() to set_ownership() as it is not necessarily
+just enabling bypassing, it can be something else/more so let's give it
+more generic name. The bool parameter is inverted.
+
+The callback is implemented for IODA2 only. Other platforms (P5IOC2,
+IODA1) will use the old iommu_take_ownership/iommu_release_ownership API.
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 ---
- arch/powerpc/include/asm/iommu.h       |  1 +
- arch/powerpc/kernel/iommu.c            |  9 +++++++++
- arch/powerpc/platforms/powernv/pci.c   |  2 +-
- arch/powerpc/platforms/pseries/iommu.c | 12 ++++--------
- 4 files changed, 15 insertions(+), 9 deletions(-)
+ arch/powerpc/include/asm/iommu.h          | 14 +++++++++++++-
+ arch/powerpc/platforms/powernv/pci-ioda.c | 30 ++++++++++++++++++++++--------
+ drivers/vfio/vfio_iommu_spapr_tce.c       | 25 +++++++++++++++++++++----
+ 3 files changed, 56 insertions(+), 13 deletions(-)
 
 diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
-index d909e2a..eb75726 100644
+index b9e50d3..d1f8c6c 100644
 --- a/arch/powerpc/include/asm/iommu.h
 +++ b/arch/powerpc/include/asm/iommu.h
-@@ -117,6 +117,7 @@ static inline void *get_iommu_table_base(struct device *dev)
- 	return dev->archdata.dma_data.iommu_table_base;
+@@ -92,7 +92,6 @@ struct iommu_table {
+ 	unsigned long  it_page_shift;/* table iommu page size */
+ 	struct iommu_table_group *it_group;
+ 	struct iommu_table_ops *it_ops;
+-	void (*set_bypass)(struct iommu_table *tbl, bool enable);
+ };
+ 
+ /* Pure 2^n version of get_order */
+@@ -127,11 +126,24 @@ extern struct iommu_table *iommu_init_table(struct iommu_table * tbl,
+ 
+ #define IOMMU_TABLE_GROUP_MAX_TABLES	1
+ 
++struct iommu_table_group;
++
++struct iommu_table_group_ops {
++	/*
++	 * Switches ownership from the kernel itself to an external
++	 * user. While onwership is enabled, the kernel cannot use IOMMU
++	 * for itself.
++	 */
++	void (*set_ownership)(struct iommu_table_group *table_group,
++			bool enable);
++};
++
+ struct iommu_table_group {
+ #ifdef CONFIG_IOMMU_API
+ 	struct iommu_group *group;
+ #endif
+ 	struct iommu_table tables[IOMMU_TABLE_GROUP_MAX_TABLES];
++	struct iommu_table_group_ops *ops;
+ };
+ 
+ #ifdef CONFIG_IOMMU_API
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index a964c50..9687731 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -1255,10 +1255,8 @@ static void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
+ 		__free_pages(tce_mem, get_order(TCE32_TABLE_SIZE * segs));
  }
  
-+extern struct iommu_table *iommu_table_alloc(int node);
- /* Frees table for an individual device node */
- extern void iommu_free_table(struct iommu_table *tbl, const char *node_name);
+-static void pnv_pci_ioda2_set_bypass(struct iommu_table *tbl, bool enable)
++static void pnv_pci_ioda2_set_bypass(struct pnv_ioda_pe *pe, bool enable)
+ {
+-	struct pnv_ioda_pe *pe = container_of(tbl->it_group, struct pnv_ioda_pe,
+-					      table_group);
+ 	uint16_t window_id = (pe->pe_number << 1 ) + 1;
+ 	int64_t rc;
  
-diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
-index eceb214..b39d00a 100644
---- a/arch/powerpc/kernel/iommu.c
-+++ b/arch/powerpc/kernel/iommu.c
-@@ -710,6 +710,15 @@ struct iommu_table *iommu_init_table(struct iommu_table *tbl, int nid)
- 	return tbl;
+@@ -1286,7 +1284,8 @@ static void pnv_pci_ioda2_set_bypass(struct iommu_table *tbl, bool enable)
+ 		 * host side.
+ 		 */
+ 		if (pe->pdev)
+-			set_iommu_table_base(&pe->pdev->dev, tbl);
++			set_iommu_table_base(&pe->pdev->dev,
++					&pe->table_group.tables[0]);
+ 		else
+ 			pnv_ioda_setup_bus_dma(pe, pe->pbus, false);
+ 	}
+@@ -1302,13 +1301,27 @@ static void pnv_pci_ioda2_setup_bypass_pe(struct pnv_phb *phb,
+ 	/* TVE #1 is selected by PCI address bit 59 */
+ 	pe->tce_bypass_base = 1ull << 59;
+ 
+-	/* Install set_bypass callback for VFIO */
+-	pe->table_group.tables[0].set_bypass = pnv_pci_ioda2_set_bypass;
+-
+ 	/* Enable bypass by default */
+-	pnv_pci_ioda2_set_bypass(&pe->table_group.tables[0], true);
++	pnv_pci_ioda2_set_bypass(pe, true);
  }
  
-+struct iommu_table *iommu_table_alloc(int node)
++static void pnv_ioda2_set_ownership(struct iommu_table_group *table_group,
++				     bool enable)
 +{
-+	struct iommu_table *tbl;
++	struct pnv_ioda_pe *pe = container_of(table_group, struct pnv_ioda_pe,
++						table_group);
++	if (enable)
++		iommu_take_ownership(table_group);
++	else
++		iommu_release_ownership(table_group);
 +
-+	tbl = kzalloc_node(sizeof(struct iommu_table), GFP_KERNEL, node);
-+
-+	return tbl;
++	pnv_pci_ioda2_set_bypass(pe, !enable);
 +}
 +
- void iommu_free_table(struct iommu_table *tbl, const char *node_name)
++static struct iommu_table_group_ops pnv_pci_ioda2_ops = {
++	.set_ownership = pnv_ioda2_set_ownership,
++};
++
+ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
+ 				       struct pnv_ioda_pe *pe)
  {
- 	unsigned long bitmap_sz;
-diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
-index c619ec6..1c31ac8 100644
---- a/arch/powerpc/platforms/powernv/pci.c
-+++ b/arch/powerpc/platforms/powernv/pci.c
-@@ -680,7 +680,7 @@ static struct iommu_table *pnv_pci_setup_bml_iommu(struct pci_controller *hose)
- 		       hose->dn->full_name);
- 		return NULL;
+@@ -1376,6 +1389,7 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
  	}
--	tbl = kzalloc_node(sizeof(struct iommu_table), GFP_KERNEL, hose->node);
-+	tbl = iommu_table_alloc(hose->node);
- 	if (WARN_ON(!tbl))
- 		return NULL;
- 	pnv_pci_setup_iommu_table(tbl, __va(be64_to_cpup(basep)),
-diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
-index 48d1fde..41a8b14 100644
---- a/arch/powerpc/platforms/pseries/iommu.c
-+++ b/arch/powerpc/platforms/pseries/iommu.c
-@@ -617,8 +617,7 @@ static void pci_dma_bus_setup_pSeries(struct pci_bus *bus)
- 	pci->phb->dma_window_size = 0x8000000ul;
- 	pci->phb->dma_window_base_cur = 0x8000000ul;
+ 	tbl->it_ops = &pnv_iommu_ops;
+ 	iommu_init_table(tbl, phb->hose->node);
++	pe->table_group.ops = &pnv_pci_ioda2_ops;
+ 	iommu_register_group(&pe->table_group, phb->hose->global_number,
+ 			pe->pe_number);
  
--	tbl = kzalloc_node(sizeof(struct iommu_table), GFP_KERNEL,
--			   pci->phb->node);
-+	tbl = iommu_table_alloc(pci->phb->node);
+diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
+index 9f38351..d5d8c50 100644
+--- a/drivers/vfio/vfio_iommu_spapr_tce.c
++++ b/drivers/vfio/vfio_iommu_spapr_tce.c
+@@ -535,9 +535,22 @@ static int tce_iommu_attach_group(void *iommu_data,
+ 		goto unlock_exit;
+ 	}
  
- 	iommu_table_setparms(pci->phb, dn, tbl);
- 	tbl->it_ops = &iommu_table_pseries_ops;
-@@ -669,8 +668,7 @@ static void pci_dma_bus_setup_pSeriesLP(struct pci_bus *bus)
- 		 pdn->full_name, ppci->iommu_table);
+-	ret = iommu_take_ownership(table_group);
+-	if (!ret)
+-		container->grp = iommu_group;
++	if (!table_group->ops || !table_group->ops->set_ownership) {
++		ret = iommu_take_ownership(table_group);
++	} else {
++		/*
++		 * Disable iommu bypass, otherwise the user can DMA to all of
++		 * our physical memory via the bypass window instead of just
++		 * the pages that has been explicitly mapped into the iommu
++		 */
++		table_group->ops->set_ownership(table_group, true);
++		ret = 0;
++	}
++
++	if (ret)
++		goto unlock_exit;
++
++	container->grp = iommu_group;
  
- 	if (!ppci->iommu_table) {
--		tbl = kzalloc_node(sizeof(struct iommu_table), GFP_KERNEL,
--				   ppci->phb->node);
-+		tbl = iommu_table_alloc(ppci->phb->node);
- 		iommu_table_setparms_lpar(ppci->phb, pdn, tbl, dma_window);
- 		tbl->it_ops = &iommu_table_lpar_multi_ops;
- 		ppci->iommu_table = iommu_init_table(tbl, ppci->phb->node);
-@@ -697,8 +695,7 @@ static void pci_dma_dev_setup_pSeries(struct pci_dev *dev)
- 		struct pci_controller *phb = PCI_DN(dn)->phb;
+ unlock_exit:
+ 	mutex_unlock(&container->lock);
+@@ -572,7 +585,11 @@ static void tce_iommu_detach_group(void *iommu_data,
+ 	table_group = iommu_group_get_iommudata(iommu_group);
+ 	BUG_ON(!table_group);
  
- 		pr_debug(" --> first child, no bridge. Allocating iommu table.\n");
--		tbl = kzalloc_node(sizeof(struct iommu_table), GFP_KERNEL,
--				   phb->node);
-+		tbl = iommu_table_alloc(phb->node);
- 		iommu_table_setparms(phb, dn, tbl);
- 		tbl->it_ops = &iommu_table_pseries_ops;
- 		PCI_DN(dn)->iommu_table = iommu_init_table(tbl, phb->node);
-@@ -1120,8 +1117,7 @@ static void pci_dma_dev_setup_pSeriesLP(struct pci_dev *dev)
+-	iommu_release_ownership(table_group);
++	/* Kernel owns the device now, we can restore bypass */
++	if (!table_group->ops || !table_group->ops->set_ownership)
++		iommu_release_ownership(table_group);
++	else
++		table_group->ops->set_ownership(table_group, false);
  
- 	pci = PCI_DN(pdn);
- 	if (!pci->iommu_table) {
--		tbl = kzalloc_node(sizeof(struct iommu_table), GFP_KERNEL,
--				   pci->phb->node);
-+		tbl = iommu_table_alloc(pci->phb->node);
- 		iommu_table_setparms_lpar(pci->phb, pdn, tbl, dma_window);
- 		tbl->it_ops = &iommu_table_lpar_multi_ops;
- 		pci->iommu_table = iommu_init_table(tbl, pci->phb->node);
+ unlock_exit:
+ 	mutex_unlock(&container->lock);
 -- 
 2.0.0
