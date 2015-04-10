@@ -1,36 +1,21 @@
-Return-Path: <sam.bobroff@au1.ibm.com>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <sfr@canb.auug.org.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 164681A04DD
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 14:17:54 +1000 (AEST)
-Received: from /spool/local
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <sam.bobroff@au1.ibm.com>;
- Fri, 10 Apr 2015 14:17:53 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 88E432BB0055
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 14:17:48 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t3A4He6R48562398
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 14:17:48 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t3A4HEnD010325
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 14:17:15 +1000
-From: Sam Bobroff <sam.bobroff@au1.ibm.com>
-To: mpe@ellerman.id.au, benh@kernel.crashing.org
-Subject: [PATCH v4 4/4] powerpc/tm: Correct minor documentation typos
-Date: Fri, 10 Apr 2015 14:16:50 +1000
-Message-Id: <c29e4b255aa412c4de98b5cb03432f1f6edfcdb2.1428639350.git.sam.bobroff@au1.ibm.com>
-In-Reply-To: <cover.1428639350.git.sam.bobroff@au1.ibm.com>
-References: <cover.1428639350.git.sam.bobroff@au1.ibm.com>
-In-Reply-To: <cover.1428639350.git.sam.bobroff@au1.ibm.com>
-References: <cover.1428639350.git.sam.bobroff@au1.ibm.com>
-Cc: mikey@neuling.org, azanella@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org, matt@ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 53D1D1A0944
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 14:24:20 +1000 (AEST)
+Date: Fri, 10 Apr 2015 14:24:14 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH] powerpc/pasemi: Only the build the pasemi MSI code for
+ PASEMI=y
+Message-ID: <20150410142414.0ea55c4b@canb.auug.org.au>
+In-Reply-To: <1428630726-12905-1-git-send-email-mpe@ellerman.id.au>
+References: <1428630726-12905-1-git-send-email-mpe@ellerman.id.au>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ boundary="Sig_/o3OaIag7jyaTEHqL+4+gaaH"; protocol="application/pgp-signature"
+Cc: Olof Johannsson <olof@lixom.net>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,36 +25,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Sam Bobroff <sam.bobroff@au1.ibm.com>
----
-v2:
+--Sig_/o3OaIag7jyaTEHqL+4+gaaH
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-Discovered some typos while updating the documentation.
+Hi Michael,
 
- Documentation/powerpc/transactional_memory.txt |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+On Fri, 10 Apr 2015 11:52:06 +1000 Michael Ellerman <mpe@ellerman.id.au> wr=
+ote:
+>
+>  arch/powerpc/platforms/pasemi/Makefile |   1 +
+>  arch/powerpc/platforms/pasemi/msi.c    | 165 +++++++++++++++++++++++++++=
++++++
+>  arch/powerpc/sysdev/Makefile           |   2 +-
+>  arch/powerpc/sysdev/mpic.h             |  10 +-
+>  arch/powerpc/sysdev/mpic_pasemi_msi.c  | 167 ---------------------------=
+------
+>  5 files changed, 172 insertions(+), 173 deletions(-)
+>  create mode 100644 arch/powerpc/platforms/pasemi/msi.c
+>  delete mode 100644 arch/powerpc/sysdev/mpic_pasemi_msi.c
 
-diff --git a/Documentation/powerpc/transactional_memory.txt b/Documentation/powerpc/transactional_memory.txt
-index 98b39af..ba0a2a4 100644
---- a/Documentation/powerpc/transactional_memory.txt
-+++ b/Documentation/powerpc/transactional_memory.txt
-@@ -175,7 +175,7 @@ These are defined in <asm/reg.h>, and distinguish different reasons why the
- kernel aborted a transaction:
- 
-  TM_CAUSE_RESCHED       Thread was rescheduled.
-- TM_CAUSE_TLBI          Software TLB invalide.
-+ TM_CAUSE_TLBI          Software TLB invalid.
-  TM_CAUSE_FAC_UNAV      FP/VEC/VSX unavailable trap.
-  TM_CAUSE_SYSCALL       Syscall from active transaction.
-  TM_CAUSE_SIGNAL        Signal delivered.
-@@ -185,7 +185,7 @@ kernel aborted a transaction:
- 
- These can be checked by the user program's abort handler as TEXASR[0:7].  If
- bit 7 is set, it indicates that the error is consider persistent.  For example
--a TM_CAUSE_ALIGNMENT will be persistent while a TM_CAUSE_RESCHED will not.q
-+a TM_CAUSE_ALIGNMENT will be persistent while a TM_CAUSE_RESCHED will not.
- 
- GDB
- ===
--- 
-1.7.10.4
+What does this look like if you do "git diff --stat -M" and "git diff -M"?
+
+This is very useful in cases where files are moved so that people can
+see what changed when the file moved.
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+--Sig_/o3OaIag7jyaTEHqL+4+gaaH
+Content-Type: application/pgp-signature
+Content-Description: OpenPGP digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBCAAGBQJVJ1BzAAoJEMDTa8Ir7ZwVMD8P/iromTkF17RN8p8HUXgv210O
+cPRUppxwu/gF3Z9Hd58nt5r3n2/wD1tLAVa72lQ/8oHigucH9IQY6nKXqYaIqx4R
+EhSiM3DKMB5jc7nFGxgp/Zf0x0YtcJ+1AklXRDoneArQocDV85hGec2ZcOiMFbZX
+NYv5fI5aWL3qQC5NDBL/fGnhom0IHMgZfqqfYNYg75sa2HdLnp2M6ZZoa6ulfJgD
+81SqOPDEZJts13QDsqSt97rNNaLkMseZx51Dvupe+E/oSg5wc0SrSglVcpgMT5H2
++36p9CelOWKgkaC2I720UmkxbHvR2dDumf4Fo0ZCdXJEQSTcnDD3TMcOz6uTiKEU
+vIK4heuBw+Hzd8Ws5rbnOF1pTUOCOnwgSyR/USAyB7+FSArsJmG4A36z3YIs6f1v
+Y3aPoGAanrKBxWtmUUTiadOlV9xxJOpyi4S5D3PEzDkkNR5FCOp1EAD8OOCFi/nt
+VfkfpWlb/FeooshNiUdqFPDafX0XYWdAHjKSLQ9EL0Sh3TjA2tB0MY6rcivzrb06
+nMbUKIAYOi6vthtP5e0GXWobmyY4CfCXoaLgGhVz6LWmqunImcMb3t0l0+QL00mE
+inm8KPgV6XKMG9btpUoCOp+/QsEjhb0HwPr3ZdsweFyZOxyywcgkTbTfFdU2/Qo6
+yXlfRbC7HP7OKS6kGmbj
+=2BRO
+-----END PGP SIGNATURE-----
+
+--Sig_/o3OaIag7jyaTEHqL+4+gaaH--
