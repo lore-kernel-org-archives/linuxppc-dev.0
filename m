@@ -1,21 +1,36 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <aik@ozlabs.ru>
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1756D1A031F
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 15:28:35 +1000 (AEST)
-Message-ID: <1428643714.30592.4.camel@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/pasemi: Only the build the pasemi MSI code for
- PASEMI=y
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Fri, 10 Apr 2015 15:28:34 +1000
-In-Reply-To: <20150410142414.0ea55c4b@canb.auug.org.au>
-References: <1428630726-12905-1-git-send-email-mpe@ellerman.id.au>
- <20150410142414.0ea55c4b@canb.auug.org.au>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Olof Johannsson <olof@lixom.net>, linuxppc-dev@ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 861EF1A03C8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 16:32:25 +1000 (AEST)
+Received: from /spool/local
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aik@ozlabs.ru>;
+ Fri, 10 Apr 2015 16:32:21 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 7BC5B2CE8040
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 16:32:19 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t3A6WAEj10027168
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 16:32:19 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t3A6VjOx004156
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 16:31:45 +1000
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH kernel v8 02/31] vfio: powerpc/spapr: Do cleanup when
+ releasing the group
+Date: Fri, 10 Apr 2015 16:30:44 +1000
+Message-Id: <1428647473-11738-3-git-send-email-aik@ozlabs.ru>
+In-Reply-To: <1428647473-11738-1-git-send-email-aik@ozlabs.ru>
+References: <1428647473-11738-1-git-send-email-aik@ozlabs.ru>
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,110 +40,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2015-04-10 at 14:24 +1000, Stephen Rothwell wrote:
-> Hi Michael,
-> 
-> On Fri, 10 Apr 2015 11:52:06 +1000 Michael Ellerman <mpe@ellerman.id.au> wrote:
-> >
-> >  arch/powerpc/platforms/pasemi/Makefile |   1 +
-> >  arch/powerpc/platforms/pasemi/msi.c    | 165 ++++++++++++++++++++++++++++++++
-> >  arch/powerpc/sysdev/Makefile           |   2 +-
-> >  arch/powerpc/sysdev/mpic.h             |  10 +-
-> >  arch/powerpc/sysdev/mpic_pasemi_msi.c  | 167 ---------------------------------
-> >  5 files changed, 172 insertions(+), 173 deletions(-)
-> >  create mode 100644 arch/powerpc/platforms/pasemi/msi.c
-> >  delete mode 100644 arch/powerpc/sysdev/mpic_pasemi_msi.c
-> 
-> What does this look like if you do "git diff --stat -M" and "git diff -M"?
-> 
-> This is very useful in cases where files are moved so that people can
-> see what changed when the file moved.
+This clears the TCE table when a container is being closed as this is
+a good thing to leave the table clean before passing the ownership
+back to the host kernel.
 
-Like this?
+Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+---
+ drivers/vfio/vfio_iommu_spapr_tce.c | 14 +++++++++++---
+ 1 file changed, 11 insertions(+), 3 deletions(-)
 
-$ git diff --stat -M HEAD^
- arch/powerpc/platforms/pasemi/Makefile                            |  1 +
- arch/powerpc/{sysdev/mpic_pasemi_msi.c => platforms/pasemi/msi.c} |  4 +---
- arch/powerpc/sysdev/Makefile                                      |  2 +-
- arch/powerpc/sysdev/mpic.h                                        | 10 +++++-----
- 4 files changed, 8 insertions(+), 9 deletions(-)
-
-
-diff --git a/arch/powerpc/platforms/pasemi/Makefile b/arch/powerpc/platforms/pasemi/Makefile
-index 8e8d4cae5ebe..60b4e0fd9808 100644
---- a/arch/powerpc/platforms/pasemi/Makefile
-+++ b/arch/powerpc/platforms/pasemi/Makefile
-@@ -1,2 +1,3 @@
- obj-y  += setup.o pci.o time.o idle.o powersave.o iommu.o dma_lib.o misc.o
- obj-$(CONFIG_PPC_PASEMI_MDIO)  += gpio_mdio.o
-+obj-$(CONFIG_PCI_MSI)          += msi.o
-diff --git a/arch/powerpc/sysdev/mpic_pasemi_msi.c b/arch/powerpc/platforms/pasemi/msi.c
-similarity index 99%
-rename from arch/powerpc/sysdev/mpic_pasemi_msi.c
-rename to arch/powerpc/platforms/pasemi/msi.c
-index a3f660eed6de..0b3706604543 100644
---- a/arch/powerpc/sysdev/mpic_pasemi_msi.c
-+++ b/arch/powerpc/platforms/pasemi/msi.c
-@@ -13,8 +13,6 @@
-  *
-  */
- 
--#undef DEBUG
--
- #include <linux/irq.h>
- #include <linux/msi.h>
- #include <asm/mpic.h>
-@@ -23,7 +21,7 @@
- #include <asm/ppc-pci.h>
- #include <asm/msi_bitmap.h>
- 
--#include "mpic.h"
-+#include <sysdev/mpic.h>
- 
- /* Allocate 16 interrupts per device, to give an alignment of 16,
-  * since that's the size of the grouping w.r.t. affinity. If someone
-diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/Makefile
-index f7cb2a1b01fa..5b492a6438ff 100644
---- a/arch/powerpc/sysdev/Makefile
-+++ b/arch/powerpc/sysdev/Makefile
-@@ -2,7 +2,7 @@ subdir-ccflags-$(CONFIG_PPC_WERROR) := -Werror
- 
- ccflags-$(CONFIG_PPC64)                := $(NO_MINIMAL_TOC)
- 
--mpic-msi-obj-$(CONFIG_PCI_MSI) += mpic_msi.o mpic_u3msi.o mpic_pasemi_msi.o
-+mpic-msi-obj-$(CONFIG_PCI_MSI) += mpic_msi.o mpic_u3msi.o
- obj-$(CONFIG_MPIC)             += mpic.o $(mpic-msi-obj-y)
- obj-$(CONFIG_MPIC_TIMER)        += mpic_timer.o
- obj-$(CONFIG_FSL_MPIC_TIMER_WAKEUP)    += fsl_mpic_timer_wakeup.o
-diff --git a/arch/powerpc/sysdev/mpic.h b/arch/powerpc/sysdev/mpic.h
-index 24bf07a63924..32971a41853b 100644
---- a/arch/powerpc/sysdev/mpic.h
-+++ b/arch/powerpc/sysdev/mpic.h
-@@ -15,7 +15,6 @@
- extern void mpic_msi_reserve_hwirq(struct mpic *mpic, irq_hw_number_t hwirq);
- extern int mpic_msi_init_allocator(struct mpic *mpic);
- extern int mpic_u3msi_init(struct mpic *mpic);
--extern int mpic_pasemi_msi_init(struct mpic *mpic);
- #else
- static inline void mpic_msi_reserve_hwirq(struct mpic *mpic,
-                                          irq_hw_number_t hwirq)
-@@ -27,11 +26,12 @@ static inline int mpic_u3msi_init(struct mpic *mpic)
- {
-        return -1;
+diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
+index cefaf05..e9b4d7d 100644
+--- a/drivers/vfio/vfio_iommu_spapr_tce.c
++++ b/drivers/vfio/vfio_iommu_spapr_tce.c
+@@ -132,16 +132,24 @@ static void *tce_iommu_open(unsigned long arg)
+ 	return container;
  }
-+#endif
  
--static inline int mpic_pasemi_msi_init(struct mpic *mpic)
--{
--       return -1;
--}
-+#if defined(CONFIG_PCI_MSI) && defined(CONFIG_PPC_PASEMI)
-+int mpic_pasemi_msi_init(struct mpic *mpic);
-+#else
-+static inline int mpic_pasemi_msi_init(struct mpic *mpic) { return -1; }
- #endif
++static int tce_iommu_clear(struct tce_container *container,
++		struct iommu_table *tbl,
++		unsigned long entry, unsigned long pages);
++
+ static void tce_iommu_release(void *iommu_data)
+ {
+ 	struct tce_container *container = iommu_data;
++	struct iommu_table *tbl = container->tbl;
  
- extern int mpic_set_irq_type(struct irq_data *d, unsigned int flow_type);
-
-
-cheers
+-	WARN_ON(container->tbl && !container->tbl->it_group);
++	WARN_ON(tbl && !tbl->it_group);
+ 	tce_iommu_disable(container);
+ 
+-	if (container->tbl && container->tbl->it_group)
+-		tce_iommu_detach_group(iommu_data, container->tbl->it_group);
++	if (tbl) {
++		tce_iommu_clear(container, tbl,	tbl->it_offset, tbl->it_size);
+ 
++		if (tbl->it_group)
++			tce_iommu_detach_group(iommu_data, tbl->it_group);
++	}
+ 	mutex_destroy(&container->lock);
+ 
+ 	kfree(container);
+-- 
+2.0.0
