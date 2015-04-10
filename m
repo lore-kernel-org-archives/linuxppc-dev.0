@@ -1,31 +1,31 @@
 Return-Path: <aik@ozlabs.ru>
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A19961A0757
+ by lists.ozlabs.org (Postfix) with ESMTPS id A19A21A0BA8
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 16:32:45 +1000 (AEST)
 Received: from /spool/local
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aik@ozlabs.ru>;
- Fri, 10 Apr 2015 16:32:44 +1000
+ Fri, 10 Apr 2015 16:32:45 +1000
 Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 845012BB0060
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 16:32:42 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 62C7D2CE8054
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 16:32:43 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
  by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t3A6WYdI18612388
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 16:32:42 +1000
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t3A6W8bl027880
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 16:32:08 +1000
+ t3A6WZ7M46858326
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 16:32:43 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t3A6W9pm010076
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 16:32:10 +1000
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH kernel v8 21/31] powerpc/iommu: Split iommu_free_table into 2
- helpers
-Date: Fri, 10 Apr 2015 16:31:03 +1000
-Message-Id: <1428647473-11738-22-git-send-email-aik@ozlabs.ru>
+Subject: [PATCH kernel v8 07/31] vfio: powerpc/spapr: Moving pinning/unpinning
+ to helpers
+Date: Fri, 10 Apr 2015 16:30:49 +1000
+Message-Id: <1428647473-11738-8-git-send-email-aik@ozlabs.ru>
 In-Reply-To: <1428647473-11738-1-git-send-email-aik@ozlabs.ru>
 References: <1428647473-11738-1-git-send-email-aik@ozlabs.ru>
 Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
@@ -40,108 +40,154 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The iommu_free_table helper release memory it is using (the TCE table and
-@it_map) and release the iommu_table struct as well. We might not want
-the very last step as we store iommu_table in parent structures.
+This is a pretty mechanical patch to make next patches simpler.
+
+New tce_iommu_unuse_page() helper does put_page() now but it might skip
+that after the memory registering patch applied.
+
+As we are here, this removes unnecessary checks for a value returned
+by pfn_to_page() as it cannot possibly return NULL.
+
+This moves tce_iommu_disable() later to let tce_iommu_clear() know if
+the container has been enabled because if it has not been, then
+put_page() must not be called on TCEs from the TCE table. This situation
+is not yet possible but it will after KVM acceleration patchset is
+applied.
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 ---
- arch/powerpc/include/asm/iommu.h |  1 +
- arch/powerpc/kernel/iommu.c      | 57 ++++++++++++++++++++++++----------------
- 2 files changed, 35 insertions(+), 23 deletions(-)
+Changes:
+v6:
+* tce_get_hva() returns hva via a pointer
+---
+ drivers/vfio/vfio_iommu_spapr_tce.c | 68 +++++++++++++++++++++++++++----------
+ 1 file changed, 50 insertions(+), 18 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
-index bde7ee7..8ed4648 100644
---- a/arch/powerpc/include/asm/iommu.h
-+++ b/arch/powerpc/include/asm/iommu.h
-@@ -127,6 +127,7 @@ static inline void *get_iommu_table_base(struct device *dev)
+diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
+index c137bb3..ec5ee83 100644
+--- a/drivers/vfio/vfio_iommu_spapr_tce.c
++++ b/drivers/vfio/vfio_iommu_spapr_tce.c
+@@ -196,7 +196,6 @@ static void tce_iommu_release(void *iommu_data)
+ 	struct iommu_table *tbl = container->tbl;
  
- extern struct iommu_table *iommu_table_alloc(int node);
- /* Frees table for an individual device node */
-+extern void iommu_reset_table(struct iommu_table *tbl, const char *node_name);
- extern void iommu_free_table(struct iommu_table *tbl, const char *node_name);
+ 	WARN_ON(tbl && !tbl->it_group);
+-	tce_iommu_disable(container);
  
- /* Initializes an iommu_table based in values set in the passed-in
-diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
-index 501e8ee..0bcd988 100644
---- a/arch/powerpc/kernel/iommu.c
-+++ b/arch/powerpc/kernel/iommu.c
-@@ -721,24 +721,46 @@ struct iommu_table *iommu_table_alloc(int node)
- 	return &table_group->tables[0];
+ 	if (tbl) {
+ 		tce_iommu_clear(container, tbl,	tbl->it_offset, tbl->it_size);
+@@ -204,63 +203,96 @@ static void tce_iommu_release(void *iommu_data)
+ 		if (tbl->it_group)
+ 			tce_iommu_detach_group(iommu_data, tbl->it_group);
+ 	}
++
++	tce_iommu_disable(container);
++
+ 	mutex_destroy(&container->lock);
+ 
+ 	kfree(container);
  }
  
-+void iommu_reset_table(struct iommu_table *tbl, const char *node_name)
++static void tce_iommu_unuse_page(struct tce_container *container,
++		unsigned long oldtce)
 +{
-+	if (!tbl)
++	struct page *page;
++
++	if (!(oldtce & (TCE_PCI_READ | TCE_PCI_WRITE)))
 +		return;
 +
-+	if (tbl->it_map) {
-+		unsigned long bitmap_sz;
-+		unsigned int order;
++	/*
++	 * VFIO cannot map/unmap when a container is not enabled so
++	 * we would not need this check but KVM could map/unmap and if
++	 * this happened, we must not put pages as KVM does not get them as
++	 * it expects memory pre-registation to do this part.
++	 */
++	if (!container->enabled)
++		return;
 +
-+		/*
-+		 * In case we have reserved the first bit, we should not emit
-+		 * the warning below.
-+		 */
-+		if (tbl->it_offset == 0)
-+			clear_bit(0, tbl->it_map);
++	page = pfn_to_page(__pa(oldtce) >> PAGE_SHIFT);
 +
-+		/* verify that table contains no entries */
-+		if (!bitmap_empty(tbl->it_map, tbl->it_size))
-+			pr_warn("%s: Unexpected TCEs for %s\n", __func__,
-+					node_name);
++	if (oldtce & TCE_PCI_WRITE)
++		SetPageDirty(page);
 +
-+		/* calculate bitmap size in bytes */
-+		bitmap_sz = BITS_TO_LONGS(tbl->it_size) * sizeof(unsigned long);
-+
-+		/* free bitmap */
-+		order = get_order(bitmap_sz);
-+		free_pages((unsigned long) tbl->it_map, order);
-+	}
-+
-+	memset(tbl, 0, sizeof(*tbl));
++	put_page(page);
 +}
 +
- void iommu_free_table(struct iommu_table *tbl, const char *node_name)
+ static int tce_iommu_clear(struct tce_container *container,
+ 		struct iommu_table *tbl,
+ 		unsigned long entry, unsigned long pages)
  {
--	unsigned long bitmap_sz;
--	unsigned int order;
- 	struct iommu_table_group *table_group = tbl->it_group;
+ 	unsigned long oldtce;
+-	struct page *page;
  
--	if (!tbl || !tbl->it_map) {
--		printk(KERN_ERR "%s: expected TCE map for %s\n", __func__,
--				node_name);
-+	if (!tbl)
- 		return;
--	}
+ 	for ( ; pages; --pages, ++entry) {
+ 		oldtce = iommu_clear_tce(tbl, entry);
+ 		if (!oldtce)
+ 			continue;
  
--	/*
--	 * In case we have reserved the first bit, we should not emit
--	 * the warning below.
--	 */
--	if (tbl->it_offset == 0)
--		clear_bit(0, tbl->it_map);
-+	iommu_reset_table(tbl, node_name);
- 
- #ifdef CONFIG_IOMMU_API
- 	if (table_group->group) {
-@@ -747,17 +769,6 @@ void iommu_free_table(struct iommu_table *tbl, const char *node_name)
+-		page = pfn_to_page(oldtce >> PAGE_SHIFT);
+-		WARN_ON(!page);
+-		if (page) {
+-			if (oldtce & TCE_PCI_WRITE)
+-				SetPageDirty(page);
+-			put_page(page);
+-		}
++		tce_iommu_unuse_page(container, (unsigned long) __va(oldtce));
  	}
- #endif
  
--	/* verify that table contains no entries */
--	if (!bitmap_empty(tbl->it_map, tbl->it_size))
--		pr_warn("%s: Unexpected TCEs for %s\n", __func__, node_name);
--
--	/* calculate bitmap size in bytes */
--	bitmap_sz = BITS_TO_LONGS(tbl->it_size) * sizeof(unsigned long);
--
--	/* free bitmap */
--	order = get_order(bitmap_sz);
--	free_pages((unsigned long) tbl->it_map, order);
--
- 	/* free table */
- 	kfree(table_group);
+ 	return 0;
  }
+ 
++static int tce_get_hva(unsigned long tce, unsigned long *hva)
++{
++	struct page *page = NULL;
++	enum dma_data_direction direction = iommu_tce_direction(tce);
++
++	if (get_user_pages_fast(tce & PAGE_MASK, 1,
++			direction != DMA_TO_DEVICE, &page) != 1)
++		return -EFAULT;
++
++	*hva = (unsigned long) page_address(page);
++
++	return 0;
++}
++
+ static long tce_iommu_build(struct tce_container *container,
+ 		struct iommu_table *tbl,
+ 		unsigned long entry, unsigned long tce, unsigned long pages)
+ {
+ 	long i, ret = 0;
+-	struct page *page = NULL;
++	struct page *page;
+ 	unsigned long hva;
+ 	enum dma_data_direction direction = iommu_tce_direction(tce);
+ 
+ 	for (i = 0; i < pages; ++i) {
+-		ret = get_user_pages_fast(tce & PAGE_MASK, 1,
+-				direction != DMA_TO_DEVICE, &page);
+-		if (unlikely(ret != 1)) {
+-			ret = -EFAULT;
++		ret = tce_get_hva(tce, &hva);
++		if (ret)
+ 			break;
+-		}
+ 
++		page = pfn_to_page(__pa(hva) >> PAGE_SHIFT);
+ 		if (!tce_page_is_contained(page, tbl->it_page_shift)) {
+ 			ret = -EPERM;
+ 			break;
+ 		}
+ 
+-		hva = (unsigned long) page_address(page) +
+-			(tce & IOMMU_PAGE_MASK(tbl) & ~PAGE_MASK);
++		/* Preserve offset within IOMMU page */
++		hva |= tce & IOMMU_PAGE_MASK(tbl) & ~PAGE_MASK;
+ 
+ 		ret = iommu_tce_build(tbl, entry + i, hva, direction);
+ 		if (ret) {
+-			put_page(page);
++			tce_iommu_unuse_page(container, hva);
+ 			pr_err("iommu_tce: %s failed ioba=%lx, tce=%lx, ret=%ld\n",
+ 					__func__, entry << tbl->it_page_shift,
+ 					tce, ret);
 -- 
 2.0.0
