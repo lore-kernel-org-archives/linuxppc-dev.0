@@ -1,31 +1,31 @@
 Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C59011A2D61
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 18:31:25 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8FA381A2B0C
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 18:31:27 +1000 (AEST)
 Received: from /spool/local
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Fri, 10 Apr 2015 18:31:25 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 7E6C32CE804E
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 18:31:21 +1000 (EST)
+ Fri, 10 Apr 2015 18:31:27 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 77B552CE8040
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 18:31:24 +1000 (EST)
 Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t3A8VDaf47841420
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 18:31:21 +1000
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t3A8VGIL28180674
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 18:31:24 +1000
 Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
  by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t3A8UlWe026088
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 18:30:47 +1000
+ t3A8UoS5026160
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 18:30:50 +1000
 From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH V3 07/13] selftests,
- powerpc: Add test for explicitly changing DSCR value
-Date: Fri, 10 Apr 2015 14:00:06 +0530
-Message-Id: <1428654612-23539-8-git-send-email-khandual@linux.vnet.ibm.com>
+Subject: [PATCH V3 09/13] selftests,
+ powerpc: Add test for DSCR value inheritence across fork
+Date: Fri, 10 Apr 2015 14:00:08 +0530
+Message-Id: <1428654612-23539-10-git-send-email-khandual@linux.vnet.ibm.com>
 In-Reply-To: <1428654612-23539-1-git-send-email-khandual@linux.vnet.ibm.com>
 References: <1428654612-23539-1-git-send-email-khandual@linux.vnet.ibm.com>
 Cc: mikey@neuling.org, shuahkh@osg.samsung.com
@@ -38,40 +38,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch adds a test which modifies the DSCR using mtspr instruction
-and verifies the change using mfspr instruction. It uses both the
-privilege state SPR as well as the problem state SPR for the purpose.
+This patch adds a test to verify that the changed DSCR value inside
+any process would be inherited to it's child process across the fork
+system call.
 
 Acked-by: Shuah Khan <shuahkh@osg.samsung.com>
 Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 ---
- tools/testing/selftests/powerpc/dscr/Makefile      |  2 +-
- .../selftests/powerpc/dscr/dscr_explicit_test.c    | 72 ++++++++++++++++++++++
- 2 files changed, 73 insertions(+), 1 deletion(-)
- create mode 100644 tools/testing/selftests/powerpc/dscr/dscr_explicit_test.c
+ tools/testing/selftests/powerpc/dscr/Makefile      |  3 +-
+ .../selftests/powerpc/dscr/dscr_inherit_test.c     | 96 ++++++++++++++++++++++
+ 2 files changed, 98 insertions(+), 1 deletion(-)
+ create mode 100644 tools/testing/selftests/powerpc/dscr/dscr_inherit_test.c
 
 diff --git a/tools/testing/selftests/powerpc/dscr/Makefile b/tools/testing/selftests/powerpc/dscr/Makefile
-index 0aa90ab..aede453 100644
+index ae865d8..81239e2 100644
 --- a/tools/testing/selftests/powerpc/dscr/Makefile
 +++ b/tools/testing/selftests/powerpc/dscr/Makefile
-@@ -1,4 +1,4 @@
--PROGS := dscr_default_test
-+PROGS := dscr_default_test dscr_explicit_test
+@@ -1,4 +1,5 @@
+-PROGS := dscr_default_test dscr_explicit_test dscr_user_test
++PROGS := dscr_default_test dscr_explicit_test dscr_user_test	\
++	 dscr_inherit_test
  
  CFLAGS := $(CFLAGS) -lpthread
  
-diff --git a/tools/testing/selftests/powerpc/dscr/dscr_explicit_test.c b/tools/testing/selftests/powerpc/dscr/dscr_explicit_test.c
+diff --git a/tools/testing/selftests/powerpc/dscr/dscr_inherit_test.c b/tools/testing/selftests/powerpc/dscr/dscr_inherit_test.c
 new file mode 100644
-index 0000000..5c0b7c1
+index 0000000..f1add77
 --- /dev/null
-+++ b/tools/testing/selftests/powerpc/dscr/dscr_explicit_test.c
-@@ -0,0 +1,72 @@
++++ b/tools/testing/selftests/powerpc/dscr/dscr_inherit_test.c
+@@ -0,0 +1,96 @@
 +/*
-+ * POWER Data Stream Control Register (DSCR) explicit test
++ * POWER Data Stream Control Register (DSCR) fork test
 + *
-+ * This test modifies the DSCR value using mtspr instruction and
-+ * verifies the change with mfspr instruction. It uses both the
-+ * privilege state SPR and the problem state SPR for this purpose.
++ * This testcase modifies the DSCR using mtspr, forks and then
++ * verifies that the child process has the correct changed DSCR
++ * value using mfspr.
 + *
 + * When using the privilege state SPR, the instructions such as
 + * mfspr or mtspr are priviledged and the kernel emulates them
@@ -92,43 +93,67 @@ index 0000000..5c0b7c1
 +int test_body(void)
 +{
 +	unsigned long i, dscr = 0;
++	pid_t pid;
 +
 +	srand(getpid());
 +	set_dscr(dscr);
 +
 +	for (i = 0; i < COUNT; i++) {
 +		unsigned long cur_dscr, cur_dscr_usr;
-+		double ret = uniform_deviate(rand());
 +
-+		if (ret < 0.001) {
-+			dscr++;
-+			if (dscr > DSCR_MAX)
-+				dscr = 0;
++		dscr++;
++		if (dscr > DSCR_MAX)
++			dscr = 0;
 +
-+			set_dscr(dscr);
-+		}
-+
-+		cur_dscr = get_dscr();
-+		if (cur_dscr != dscr) {
-+			fprintf(stderr, "Kernel DSCR should be %ld but "
-+					"is %ld\n", dscr, cur_dscr);
-+			return 1;
-+		}
-+
-+		ret = uniform_deviate(rand());
-+		if (ret < 0.001) {
-+			dscr++;
-+			if (dscr > DSCR_MAX)
-+				dscr = 0;
-+
++		if (i % 2 == 0)
 +			set_dscr_usr(dscr);
-+		}
++		else
++			set_dscr(dscr);
 +
-+		cur_dscr_usr = get_dscr_usr();
-+		if (cur_dscr_usr != dscr) {
-+			fprintf(stderr, "User DSCR should be %ld but "
-+					"is %ld\n", dscr, cur_dscr_usr);
-+			return 1;
++		/*
++		 * XXX: Force a context switch out so that DSCR
++		 * current value is copied into the thread struct
++		 * which is required for the child to inherit the
++		 * changed value.
++		 */
++		sleep(1);
++
++		pid = fork();
++		if (pid == -1) {
++			perror("fork() failed\n");
++			exit(1);
++		} else if (pid) {
++			int status;
++
++			if (waitpid(pid, &status, 0) == -1) {
++				perror("waitpid() failed\n");
++				exit(1);
++			}
++
++			if (!WIFEXITED(status)) {
++				fprintf(stderr, "Child didn't exit cleanly\n");
++				exit(1);
++			}
++
++			if (WEXITSTATUS(status) != 0) {
++				fprintf(stderr, "Child didn't exit cleanly\n");
++				return 1;
++			}
++		} else {
++			cur_dscr = get_dscr();
++			if (cur_dscr != dscr) {
++				fprintf(stderr, "Kernel DSCR should be %ld "
++					"but is %ld\n", dscr, cur_dscr);
++				exit(1);
++			}
++
++			cur_dscr_usr = get_dscr_usr();
++			if (cur_dscr_usr != dscr) {
++				fprintf(stderr, "User DSCR should be %ld "
++					"but is %ld\n", dscr, cur_dscr_usr);
++				exit(1);
++			}
++			exit(0);
 +		}
 +	}
 +	return 0;
@@ -136,7 +161,7 @@ index 0000000..5c0b7c1
 +
 +int main(int argc, char *argv[])
 +{
-+	return test_harness(test_body, "dscr_explicit_test");
++	return test_harness(test_body, "dscr_inherit_test");
 +}
 -- 
 1.9.3
