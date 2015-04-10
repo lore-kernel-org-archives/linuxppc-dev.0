@@ -1,41 +1,26 @@
-Return-Path: <mikey@neuling.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <dja@axtens.net>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B3FBF1A0415
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 13:03:54 +1000 (AEST)
-Message-ID: <1428635033.1554.49.camel@neuling.org>
-Subject: Re: [V6,1/9] elf: Add new powerpc specifc core note sections
-From: Michael Neuling <mikey@neuling.org>
-To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Date: Fri, 10 Apr 2015 13:03:53 +1000
-In-Reply-To: <55267595.9030202@linux.vnet.ibm.com>
-References: <20141203052204.9DA8F1400DD@ozlabs.org>
- <547EB253.5050307@linux.vnet.ibm.com> <548578A8.5020901@linux.vnet.ibm.com>
- <54947C64.4030206@linux.vnet.ibm.com> <54A50094.5070902@linux.vnet.ibm.com>
- <1421883597.30744.3.camel@neuling.org>
- <OFC6CFC348.C619B89D-ONC1257DD5.0056279B-C1257DD5.00577002@de.ibm.com>
- <1421963049.30744.23.camel@neuling.org>
- <1422419289.9646.20.camel@neuling.org>
- <OFE5516C3F.3C4884DE-ONC1257DE4.004E7852-C1257DE4.00514232@de.ibm.com>
- <1424667110.16027.6.camel@neuling.org>
- <OF5DE08D4B.0B79C501-ONC1257E0C.0044F80B-C1257E0C.0046DC8F@de.ibm.com>
- <1426718702.4866.2.camel@neuling.org> <1426719027.4866.4.camel@neuling.org>
- <550FEC36.8080803@linux.vnet.ibm.com>
- <OF91038A37.65C405E5-ONC1257E21.0061938F-C1257E21.00620A03@de.ibm.com>
- <1428534695.4682.18.camel@neuling.org>
- <55267595.9030202@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: james.hogan@imgtec.com, avagin@openvz.org, Paul.Clothier@imgtec.com,
- linuxppc-dev@ozlabs.org, peterz@infradead.org, palves@redhat.com,
- davem@davemloft.net, shuahkh@osg.samsung.com, akpm@linux-foundation.org,
- linux-kernel@vger.kernel.org, dhowells@redhat.com,
- Ulrich Weigand <Ulrich.Weigand@de.ibm.com>, kirjanov@gmail.com,
- oleg@redhat.com, davej@redhat.com, tglx@linutronix.de,
- sukadev@linux.vnet.ibm.com,
- Edjunior Barbosa Machado <emachado@linux.vnet.ibm.com>,
- sam.bobroff@au1.ibm.com
+ by lists.ozlabs.org (Postfix) with ESMTPS id AA2221A04DD
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Apr 2015 13:16:01 +1000 (AEST)
+Received: from mail-pa0-x22f.google.com (mail-pa0-x22f.google.com
+ [IPv6:2607:f8b0:400e:c03::22f])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id E5B9F140218
+ for <linuxppc-dev@ozlabs.org>; Fri, 10 Apr 2015 13:15:59 +1000 (AEST)
+Received: by pacyx8 with SMTP id yx8so7989980pac.1
+ for <linuxppc-dev@ozlabs.org>; Thu, 09 Apr 2015 20:15:58 -0700 (PDT)
+From: Daniel Axtens <dja@axtens.net>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH v4 16/19] powerpc: fsl_pci,
+ swiotlb: Move controller ops from ppc_md to controller_ops
+Date: Fri, 10 Apr 2015 13:15:47 +1000
+Message-Id: <1428635747-9754-1-git-send-email-dja@axtens.net>
+In-Reply-To: <1428624718-13564-1-git-send-email-dja@axtens.net>
+References: <1428624718-13564-1-git-send-email-dja@axtens.net>
+Cc: Scott Wood <scottwood@freescale.com>, Daniel Axtens <dja@axtens.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,58 +30,97 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2015-04-09 at 18:20 +0530, Anshuman Khandual wrote:
-> On 04/09/2015 04:41 AM, Michael Neuling wrote:
-> > On Wed, 2015-04-08 at 19:50 +0200, Ulrich Weigand wrote:
-> >> Anshuman Khandual <khandual@linux.vnet.ibm.com> wrote on 23.03.2015
-> >> 11:34:30:
-> >>
-> >>>> With that in mind, do we have a way to set the top 32bits of the MSR
-> >>>> (which contain the TM bits) when ptracing 32 bit processes?  I can't
-> >>>> find anything like that in this patch set.
-> >>>
-> >>> No, we dont have that yet. When ptracing in 32-bit mode the MSR value
-> >>> which can be viewed or set from the user space through PTRACE_GETREGS
-> >>> PTRACE_SETREGS call is it's lower 32 bits only. Either we can club
-> >>> the upper 32 bits of MSR as part of one of the ELF core notes we are
-> >>> adding in the patch series or we can create one more separate ELF cor=
-e
-> >>> note for that purpose. Let me know your opinion on this.
-> >>
-> >> I'm not sure I understand this.  I thought we had the following:
-> >>
-> >> - If the process calling ptrace is itself 64-bit (which is how GDB is
-> >>   built on all current Linux distributions), then PTRACE_GETREGS etc.
-> >>   will *always* operate on 64-bit register sets, even if the target
-> >>   process is 32-bit.
-> >>
-> >> - If the process calling ptrace is 32-bit, then PTRACE_GETREGS will
-> >>   operate on 32-bit register sets.   However, there is a separate
-> >>   PTRACE_GETREGS64 / PTRACE_SETREGS64 call that will also provide
-> >>   the opportunity to operate on the full 64-bit register set.  Both
-> >>   apply independently of whether the target process is 32-bit or
-> >>   64-bit.
-> >>
-> >> Is this not correct?
-> >=20
-> > I think you're correct.  We should be right.  I'd forgotten about the
-> > GET/SETREGS64 interfaces.
->=20
-> In that case, is the patch series complete and okay ? Is there any thing
-> else we need to verify other than waiting for the GDB test results which
-> Edjunior has been working on. But I am not aware of the status on the GDB
-> test development front.
+Move the installation of DMA operations out of swiotlb's subsys
+initcall, and into the generic PCI controller operations struct.
 
-I think we are good.
+These ops are installed conditionally, based on the ppc_swiotlb_enable
+global. The global can be set in two places:
+ - swiotlb_detect_4g, which is always called at the arch initcall level
+ - setup_pci_atmu, which is called as part of the fsl_add_bridge and
+fsl_pci_syscore_do_resume.
 
-Mikey
+fsl_pci_syscore_do_resume is called late enough that any changes as a
+result of that call will have no effect.
 
->=20
-> Edjunior,
->=20
-> Do you have any updates ?
->=20
-> Regards
-> Anshuman
->=20
->=20
+As such, if we test the global and set the operations as part of
+fsl_add_bridge, after the call to setup_pci_atmu, we can be confident
+that it will cover all the PCI implementations affected by the changes
+to dma-swiotlb.c.
+
+Signed-off-by: Daniel Axtens <dja@axtens.net>
+
+---
+
+v1 --> v2:
+ - Move the setup call to after setup_pci_atmu().
+
+v2 --> v3:
+ - Only set the affected op, not the entire structure. Thanks mpe.
+
+v3 --> v4:
+ - Improved commit message, thanks Scott Wood.
+---
+ arch/powerpc/kernel/dma-swiotlb.c | 11 ++++-------
+ arch/powerpc/sysdev/fsl_pci.c     | 15 +++++++++++++++
+ 2 files changed, 19 insertions(+), 7 deletions(-)
+
+diff --git a/arch/powerpc/kernel/dma-swiotlb.c b/arch/powerpc/kernel/dma-swiotlb.c
+index 7359797..6e8d764 100644
+--- a/arch/powerpc/kernel/dma-swiotlb.c
++++ b/arch/powerpc/kernel/dma-swiotlb.c
+@@ -116,16 +116,13 @@ void __init swiotlb_detect_4g(void)
+ 	}
+ }
+ 
+-static int __init swiotlb_late_init(void)
++static int __init check_swiotlb_enabled(void)
+ {
+-	if (ppc_swiotlb_enable) {
++	if (ppc_swiotlb_enable)
+ 		swiotlb_print_info();
+-		set_pci_dma_ops(&swiotlb_dma_ops);
+-		ppc_md.pci_dma_dev_setup = pci_dma_dev_setup_swiotlb;
+-	} else {
++	else
+ 		swiotlb_free();
+-	}
+ 
+ 	return 0;
+ }
+-subsys_initcall(swiotlb_late_init);
++subsys_initcall(check_swiotlb_enabled);
+diff --git a/arch/powerpc/sysdev/fsl_pci.c b/arch/powerpc/sysdev/fsl_pci.c
+index 4b74c27..9a8fcf0 100644
+--- a/arch/powerpc/sysdev/fsl_pci.c
++++ b/arch/powerpc/sysdev/fsl_pci.c
+@@ -111,6 +111,18 @@ static struct pci_ops fsl_indirect_pcie_ops =
+ #define MAX_PHYS_ADDR_BITS	40
+ static u64 pci64_dma_offset = 1ull << MAX_PHYS_ADDR_BITS;
+ 
++#ifdef CONFIG_SWIOTLB
++static void setup_swiotlb_ops(struct pci_controller *hose)
++{
++	if (ppc_swiotlb_enable) {
++		hose->controller_ops.dma_dev_setup = pci_dma_dev_setup_swiotlb;
++		set_pci_dma_ops(&swiotlb_dma_ops);
++	}
++}
++#else
++static inline void setup_swiotlb_ops(struct pci_controller *hose) {}
++#endif
++
+ static int fsl_pci_dma_set_mask(struct device *dev, u64 dma_mask)
+ {
+ 	if (!dev->dma_mask || !dma_supported(dev, dma_mask))
+@@ -548,6 +560,9 @@ int fsl_add_bridge(struct platform_device *pdev, int is_primary)
+ 	/* Setup PEX window registers */
+ 	setup_pci_atmu(hose);
+ 
++	/* Set up controller operations */
++	setup_swiotlb_ops(hose);
++
+ 	return 0;
+ 
+ no_bridge:
+-- 
+2.1.4
