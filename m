@@ -1,20 +1,20 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bn0108.outbound.protection.outlook.com [157.56.110.108])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1BCD51A03C8
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Apr 2015 10:45:20 +1000 (AEST)
-From: Scott Wood <scottwood@freescale.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Michael Ellerman
- <mpe@ellerman.id.au>
-Subject: [PATCH] powerpc/hugetlb: Call mm_dec_nr_pmds() in
- hugetlb_free_pmd_range()
-Date: Fri, 10 Apr 2015 19:45:05 -0500
-Message-ID: <1428713105-11796-1-git-send-email-scottwood@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id A0E181A086D
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Apr 2015 20:39:12 +1000 (AEST)
+Message-ID: <1428748751.1552.0.camel@ellerman.id.au>
+Subject: Re: linux-next: build failure after merge of the powerpc-mpe tree
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Sat, 11 Apr 2015 20:39:11 +1000
+In-Reply-To: <20150410200240.13471ce4@canb.auug.org.au>
+References: <20150410200240.13471ce4@canb.auug.org.au>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Andrew Morton <akpm@linux-foundation.org>, linux-next@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,36 +24,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Commit dc6c9a35b66b5 ("mm: account pmd page tables to the process")
-added a counter that is incremented whenever a PMD is allocated and
-decremented whenever a PMD is freed.  For hugepages on PPC, common code
-is used to allocated PMDs, but arch-specific code is used to free PMDs.
+On Fri, 2015-04-10 at 20:02 +1000, Stephen Rothwell wrote:
+> Hi all,
+> 
+> After merging the powerpc-mpe tree, today's linux-next build (powerpc
+> allyesconfig) failed like this:
+> 
+> mm/gup.c: In function 'gup_pte_range':
+> mm/gup.c:904:3: error: conversion to non-scalar type requested
+>    pte_t pte = ACCESS_ONCE(*ptep);
+>    ^
+> mm/gup.c: In function '__get_user_pages_fast':
+> mm/gup.c:1194:3: error: conversion to non-scalar type requested
+>    pgd_t pgd = ACCESS_ONCE(*pgdp);
+>    ^
+> 
+> Caused by commit 4bcad5b3b3ea ("powerpc: Make STRICT_MM_TYPECHECKS a
+> config option").
+> 
+> I have reverted that commit for today.
 
-This results in kernel output such as "BUG: non-zero nr_pmds on freeing
-mm: 1" when using hugepages.
+I've dropped it from my tree for now.
 
-Update the PPC hugepage PMD freeing code to decrement the count, just
-as the above commit did for free_pmd_range().
+You can kill me on Monday.
 
-Fixes: dc6c9a35b66b5 ("mm: account pmd page tables to the process")
-Signed-off-by: Scott Wood <scottwood@freescale.com>
----
-Should we also be touching nr_ptes when we alloc/free hugepage PTEs?
-
- arch/powerpc/mm/hugetlbpage.c | 1 +
- 1 file changed, 1 insertion(+)
-
-diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
-index 7e408bf..cecbe00 100644
---- a/arch/powerpc/mm/hugetlbpage.c
-+++ b/arch/powerpc/mm/hugetlbpage.c
-@@ -581,6 +581,7 @@ static void hugetlb_free_pmd_range(struct mmu_gather *tlb, pud_t *pud,
- 	pmd = pmd_offset(pud, start);
- 	pud_clear(pud);
- 	pmd_free_tlb(tlb, pmd, start);
-+	mm_dec_nr_pmds(tlb->mm);
- }
- 
- static void hugetlb_free_pud_range(struct mmu_gather *tlb, pgd_t *pgd,
--- 
-2.1.0
+cheers
