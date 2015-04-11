@@ -1,20 +1,16 @@
 Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A0E181A086D
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 11 Apr 2015 20:39:12 +1000 (AEST)
-Message-ID: <1428748751.1552.0.camel@ellerman.id.au>
-Subject: Re: linux-next: build failure after merge of the powerpc-mpe tree
+Message-ID: <1428748932.1552.1.camel@ellerman.id.au>
+Subject: Re: powerpc: CONFIG_PPC_CELLEB leftovers
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Sat, 11 Apr 2015 20:39:11 +1000
-In-Reply-To: <20150410200240.13471ce4@canb.auug.org.au>
-References: <20150410200240.13471ce4@canb.auug.org.au>
+To: Valentin Rothberg <valentinrothberg@gmail.com>
+Date: Sat, 11 Apr 2015 20:42:12 +1000
+In-Reply-To: <20150410115410.GA21121@station.rsr.lip6.fr>
+References: <20150410115410.GA21121@station.rsr.lip6.fr>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: Andrew Morton <akpm@linux-foundation.org>, linux-next@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: cbe-oss-dev@lists.ozlabs.org, pebolle@tiscali.nl,
+ linux-kernel@vger.kernel.org, paulus@samba.org, jk@ozlabs.org,
+ rupran@einserver.de, linuxppc-dev@lists.ozlabs.org, stefan.hengelein@fau.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,28 +20,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2015-04-10 at 20:02 +1000, Stephen Rothwell wrote:
-> Hi all,
-> 
-> After merging the powerpc-mpe tree, today's linux-next build (powerpc
-> allyesconfig) failed like this:
-> 
-> mm/gup.c: In function 'gup_pte_range':
-> mm/gup.c:904:3: error: conversion to non-scalar type requested
->    pte_t pte = ACCESS_ONCE(*ptep);
->    ^
-> mm/gup.c: In function '__get_user_pages_fast':
-> mm/gup.c:1194:3: error: conversion to non-scalar type requested
->    pgd_t pgd = ACCESS_ONCE(*pgdp);
->    ^
-> 
-> Caused by commit 4bcad5b3b3ea ("powerpc: Make STRICT_MM_TYPECHECKS a
-> config option").
-> 
-> I have reverted that commit for today.
+On Fri, 2015-04-10 at 13:54 +0200, Valentin Rothberg wrote:
+> Hi Michael,
 
-I've dropped it from my tree for now.
+Hi Valentin,
 
-You can kill me on Monday.
+> your commit bf4981a00636 ("powerpc: Remove the celleb support") in
+> today's Linux next tree removes the Kconfig option PPC_CELLEB.  It looks
+> like there are some leftovers in Kconfig dependencies on this option which
+> avoid to properly set others (see list below).  Is there a patch queued
+> somewhere to fix the issue?
+
+There are not yet patches to fix those.
+
+> 0 drivers/ata/Kconfig                  734 depends on PCI && PPC_CELLEB
+> 1 drivers/ide/Kconfig                  648 depends on PPC_CELLEB
+> 2 drivers/net/ethernet/toshiba/Kconfig   8 depends on PCI && (PPC_IBM_CELL_BLADE || PPC_CELLEB || MIPS) || PPC_PS3
+> 3 drivers/net/ethernet/toshiba/Kconfig  45 depends on PCI && (PPC_IBM_CELL_BLADE || PPC_CELLEB)
+> 4 drivers/tty/hvc/Kconfig               47 depends on PPC_CELLEB
+> 
+> I detected the issue with ./scripts/checkkonfigsymbols.py by diffing
+> today's and yesterday's Linux next trees.
+
+Thanks.
+
+I'll try and get patches for those done this week, but no promises.
 
 cheers
