@@ -1,16 +1,24 @@
-Return-Path: <mpe@ellerman.id.au>
-Message-ID: <1428748932.1552.1.camel@ellerman.id.au>
-Subject: Re: powerpc: CONFIG_PPC_CELLEB leftovers
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Valentin Rothberg <valentinrothberg@gmail.com>
-Date: Sat, 11 Apr 2015 20:42:12 +1000
-In-Reply-To: <20150410115410.GA21121@station.rsr.lip6.fr>
-References: <20150410115410.GA21121@station.rsr.lip6.fr>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: cbe-oss-dev@lists.ozlabs.org, pebolle@tiscali.nl,
- linux-kernel@vger.kernel.org, paulus@samba.org, jk@ozlabs.org,
- rupran@einserver.de, linuxppc-dev@lists.ozlabs.org, stefan.hengelein@fau.de
+Return-Path: <Igal.Liberman@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bbn0102.outbound.protection.outlook.com [157.56.111.102])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 783F21A0A01
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Apr 2015 01:54:20 +1000 (AEST)
+From: "Igal.Liberman@freescale.com" <Igal.Liberman@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: RE: [v2] dt/bindings: qoriq-clock: Add binding for FMan clock mux
+Date: Sun, 12 Apr 2015 15:54:11 +0000
+Message-ID: <DM2PR03MB3835E1F5A269C969994FDA0E6F80@DM2PR03MB383.namprd03.prod.outlook.com>
+References: <1428479031-26597-1-git-send-email-igal.liberman@freescale.com>
+ <1428527516.22867.509.camel@freescale.com>
+ <DM2PR03MB383D9FD2888970950261FB2E6FB0@DM2PR03MB383.namprd03.prod.outlook.com>
+ <1428598976.22867.535.camel@freescale.com>
+In-Reply-To: <1428598976.22867.535.camel@freescale.com>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,30 +28,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2015-04-10 at 13:54 +0200, Valentin Rothberg wrote:
-> Hi Michael,
-
-Hi Valentin,
-
-> your commit bf4981a00636 ("powerpc: Remove the celleb support") in
-> today's Linux next tree removes the Kconfig option PPC_CELLEB.  It looks
-> like there are some leftovers in Kconfig dependencies on this option which
-> avoid to properly set others (see list below).  Is there a patch queued
-> somewhere to fix the issue?
-
-There are not yet patches to fix those.
-
-> 0 drivers/ata/Kconfig                  734 depends on PCI && PPC_CELLEB
-> 1 drivers/ide/Kconfig                  648 depends on PPC_CELLEB
-> 2 drivers/net/ethernet/toshiba/Kconfig   8 depends on PCI && (PPC_IBM_CELL_BLADE || PPC_CELLEB || MIPS) || PPC_PS3
-> 3 drivers/net/ethernet/toshiba/Kconfig  45 depends on PCI && (PPC_IBM_CELL_BLADE || PPC_CELLEB)
-> 4 drivers/tty/hvc/Kconfig               47 depends on PPC_CELLEB
-> 
-> I detected the issue with ./scripts/checkkonfigsymbols.py by diffing
-> today's and yesterday's Linux next trees.
-
-Thanks.
-
-I'll try and get patches for those done this week, but no promises.
-
-cheers
+DQoNClJlZ2FyZHMsDQpJZ2FsIExpYmVybWFuLg0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0t
+LS0tDQo+IEZyb206IFdvb2QgU2NvdHQtQjA3NDIxDQo+IFNlbnQ6IFRodXJzZGF5LCBBcHJpbCAw
+OSwgMjAxNSA4OjAzIFBNDQo+IFRvOiBMaWJlcm1hbiBJZ2FsLUIzMTk1MA0KPiBDYzogZGV2aWNl
+dHJlZUB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnDQo+IFN1
+YmplY3Q6IFJlOiBbdjJdIGR0L2JpbmRpbmdzOiBxb3JpcS1jbG9jazogQWRkIGJpbmRpbmcgZm9y
+IEZNYW4gY2xvY2sgbXV4DQo+IA0KPiBPbiBUaHUsIDIwMTUtMDQtMDkgYXQgMDI6MTggLTA1MDAs
+IExpYmVybWFuIElnYWwtQjMxOTUwIHdyb3RlOg0KPiA+DQo+ID4NCj4gPiBSZWdhcmRzLA0KPiA+
+IElnYWwgTGliZXJtYW4uDQo+ID4NCj4gPiA+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+
+ID4gPiBGcm9tOiBXb29kIFNjb3R0LUIwNzQyMQ0KPiA+ID4gU2VudDogVGh1cnNkYXksIEFwcmls
+IDA5LCAyMDE1IDEyOjEyIEFNDQo+ID4gPiBUbzogTGliZXJtYW4gSWdhbC1CMzE5NTANCj4gPiA+
+IENjOiBkZXZpY2V0cmVlQHZnZXIua2VybmVsLm9yZzsgbGludXhwcGMtZGV2QGxpc3RzLm96bGFi
+cy5vcmcNCj4gPiA+IFN1YmplY3Q6IFJlOiBbdjJdIGR0L2JpbmRpbmdzOiBxb3JpcS1jbG9jazog
+QWRkIGJpbmRpbmcgZm9yIEZNYW4NCj4gPiA+IGNsb2NrIG11eA0KPiA+ID4NCj4gPiA+IE9uIFdl
+ZCwgMjAxNS0wNC0wOCBhdCAxMDo0MyArMDMwMCwgSWdhbC5MaWJlcm1hbiB3cm90ZToNCj4gPiA+
+ID4gQEAgLTc2LDYgKzc3LDUyIEBAIFJlcXVpcmVkIHByb3BlcnRpZXM6DQo+ID4gPiA+DQo+ID4g
+PiA+ICBSZWNvbW1lbmRlZCBwcm9wZXJ0aWVzOg0KPiA+ID4gPiAgLSBjbG9ja3M6IFNob3VsZCBi
+ZSB0aGUgcGhhbmRsZSBvZiBpbnB1dCBwYXJlbnQgY2xvY2sNCj4gPiA+ID4gKwlGb3IgImZzbCxm
+bWFuLWNsay1tdXgiIGNsb2NrIHRoZXJlIGFyZSBzZXZlcmFsIG9wdGlvbnMgZm9yIHBhcmVudA0K
+PiA+ID4gPiArCWNsb2NrIChjbG9jayBwcm92aWRlciksIHRoZSBwYXJlbnQgaXMgZGV0ZXJtaW5l
+ZCBhY2NvcmRpbmcgdG8gdGhlDQo+ID4gPiA+ICsJUmVzZXQgQ29uZmlndXJhdGlvbiBXb3JkIG9m
+IHRoZSBzcGVjaWZpYyBkZXZpY2U6DQo+ID4gPiA+ICsJCSogUDIwNDEsIFAzMDQxOg0KPiA+ID4g
+PiArCQkJKiAwIC0gZXF1YWwgdG8gcGxhdGZvcm0gUExMIGRpdmlkZWQgYnkgMg0KPiA+ID4gPiAr
+CQkJKiAxIC0gZXF1YWwgdG8gUExMMiBkaXZpZGVkIGJ5IDINCj4gPiA+ID4gKwkJKiBQNDA4MCAo
+Qm90aCBGTWFucyk6DQo+ID4gPiA+ICsJCQkqIDAgLSBlcXVhbCB0byBwbGF0Zm9ybSBQTEwgZGl2
+aWRlZCBieSAyDQo+ID4gPiA+ICsJCQkqIDEgLSBlcXVhbCB0byBQTEwzIGRpdmlkZWQgYnkgMg0K
+PiA+ID4gLi4uDQo+ID4gPg0KPiA+ID4NCj4gPiA+IEFnYWluLCB0aGUgY2xvY2sgc3BlY2lmaWVy
+IGZvcm1hdCBpcyBkZXRlcm1pbmVkIGJ5IHRoZSBjbG9jaw0KPiA+ID4gcHJvdmlkZXIsIG5vdCB0
+aGUgY2xvY2sgY29uc3VtZXIuDQo+ID4gPg0KPiA+DQo+ID4gU2NvdHQsDQo+ID4gVGhlICJjbG9j
+a3MiIHByb3BlcnR5IGNvbnRhaW5zIGFsbCBwb3NzaWJsZSBjbG9jayBwcm92aWRlcnMsIHJpZ2h0
+Pw0KPiA+IEluIHRoZSB0ZXh0IGFib3ZlIEknbSB0cnlpbmcgdG8gZXhwbGFpbiBob3cgdGhlIEZN
+YW4gY2xvY2sgcHJvdmlkZXIgaXMNCj4gZGV0ZXJtaW5lZCBhbmQgd2hhdCBhcmUgdGhlIG9wdGlv
+bnMgZm9yIGVhY2ggU29DLg0KPiA+IERvIHlvdSB0aGluayB0aGF0IHdlIHNob3VsZG4ndCBoYXZl
+IHRoaXMgZXhwbGFuYXRpb24/IENhbiB5b3UgcGxlYXNlDQo+IGVsYWJvcmF0ZT8NCj4gDQo+IEkn
+bSBzYXlpbmcgdGhhdCB0aGUgY2xvY2sgc3BlY2lmaWVycyBtdXN0IGJlIHRoZSBzYW1lIHJlZ2Fy
+ZGxlc3Mgb2YgdGhlIG5vZGUNCj4gdGhhdCBpcyBjb25zdW1pbmcgdGhlIGNsb2NrLiAgWW91IGNh
+bid0IGRlZmluZSBjZXJ0YWluIHZhbHVlcyBhcyBvbmx5IGJlaW5nICJmb3INCj4gZnNsLGZtYW4t
+Y2xrLW11eCIuDQo+IA0KDQpKdXN0IHRvIG1ha2UgdGhpbmdzIGNsZWFyLA0KSW4gImZtMGNsay9m
+bTFjbGsiIG5vZGUsICJjbG9ja3MiIGhvbGRzIGEgbGlzdCBvZiBjbG9jayBzcGVjaWZpZXJzLg0K
+VGhpcyBsaXN0IHJlZmxlY3RzIGFsbCBvcHRpb25hbCBjbG9jayBwcm92aWRlcnMgZm9yIGEgc3Bl
+Y2lmaWMgaGFyZHdhcmUsIHRoaXMgbGlzdCB2YXJpZXMgYmV0d2VlbiBkaWZmZXJlbnQgU29Dcy4N
+CkFsbCB0aG9zZSBwb3NzaWJsZSBwcm92aWRlcnMgZGVzY3JpYmVkIGJ5IG90aGVyIG5vZGVzLCBh
+cyBjbG9jayBwcm92aWRlcnMuDQpQbGVhc2Ugbm90aWNlIHRoYXQgdGhpcyBiaW5kaW5ncyBkZXNj
+cmliZXMgdGhlIHBvc3NpYmxlIHNvdXJjZSBjbG9jayBmb3IgRk1hbiBtdXgsIG5vdCB0aGUgcHJv
+dmlkZXJzIHRoZW1zZWx2ZXMuDQoNCllvdSBtZW50aW9uZWQgdGhlIGZvbGxvd2luZzogIllvdSBj
+YW4ndCBkZWZpbmUgY2VydGFpbiB2YWx1ZXMgYXMgb25seSBiZWluZyAiZm9yIGZzbCxmbWFuLWNs
+ay1tdXgiLiINCkknbSBkZWZpbmluZyB0aG9zZSB2YWx1ZXMgaW4gdGhlIGNsb2NrIHByb3ZpZGVy
+IG5vZGVzIGFuZCB1c2luZyB0aG9zZSB2YWx1ZXMgYXMgY2xvY2sgcHJvdmlkZXJzIGZvciBGTWFu
+IG11eCwgaXQgY2FuIGJlIHVzZWQgYmUgb3RoZXIgSFcgYmxvY2tzIHRvby4NCiANCklnYWwuDQoN
+Cj4gLVNjb3R0DQo+IA0KDQo=
