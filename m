@@ -1,23 +1,20 @@
-Return-Path: <Igal.Liberman@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0131.outbound.protection.outlook.com [157.56.111.131])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A96EF1A0A01
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Apr 2015 02:01:48 +1000 (AEST)
-From: "Igal.Liberman@freescale.com" <Igal.Liberman@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: RE: [PATCH] powerpc/dts: Add some SoC specific "fsl, *-device-config"
- compatibles
-Date: Sun, 12 Apr 2015 16:01:38 +0000
-Message-ID: <DM2PR03MB383C3457454CA9297696FE2E6F80@DM2PR03MB383.namprd03.prod.outlook.com>
-References: <1428560482-30938-1-git-send-email-igal.liberman@freescale.com>
- <1428598922.22867.534.camel@freescale.com>
-In-Reply-To: <1428598922.22867.534.camel@freescale.com>
-Content-Type: text/plain; charset="utf-8"
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ by lists.ozlabs.org (Postfix) with ESMTP id 83A771A0B99
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Apr 2015 02:16:33 +1000 (AEST)
+Message-ID: <552A9A5D.4070208@c-s.fr>
+Date: Sun, 12 Apr 2015 18:16:29 +0200
+From: leroy christophe <christophe.leroy@c-s.fr>
 MIME-Version: 1.0
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [v3, 01/11] powerpc/8xx: remove remaining unnecessary code in
+ FixupDAR
+References: <20150203113816.E77811A5F13@localhost.localdomain>
+ <20150326213215.GA21815@home.buserror.net>
+In-Reply-To: <20150326213215.GA21815@home.buserror.net>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,42 +24,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNClJlZ2FyZHMsDQpJZ2FsIExpYmVybWFuLg0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0t
-LS0tDQo+IEZyb206IFdvb2QgU2NvdHQtQjA3NDIxDQo+IFNlbnQ6IFRodXJzZGF5LCBBcHJpbCAw
-OSwgMjAxNSA4OjAyIFBNDQo+IFRvOiBMaWJlcm1hbiBJZ2FsLUIzMTk1MA0KPiBDYzogZGV2aWNl
-dHJlZUB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnDQo+IFN1
-YmplY3Q6IFJlOiBbUEFUQ0hdIHBvd2VycGMvZHRzOiBBZGQgc29tZSBTb0Mgc3BlY2lmaWMgImZz
-bCwqLWRldmljZS0NCj4gY29uZmlnIiBjb21wYXRpYmxlcw0KPiANCj4gT24gVGh1LCAyMDE1LTA0
-LTA5IGF0IDA5OjIxICswMzAwLCBJZ2FsLkxpYmVybWFuIHdyb3RlOg0KPiA+IEZyb206IElnYWwg
-TGliZXJtYW4gPElnYWwuTGliZXJtYW5AZnJlZXNjYWxlLmNvbT4NCj4gPg0KPiA+IFRoaXMgcGF0
-Y2ggaXMgcmVxdWlyZWQgZm9yOiBodHRwczovL3BhdGNod29yay5vemxhYnMub3JnL3BhdGNoLzQ1
-OTU4NC8NCj4gDQo+IElmIGl0J3MgcmVxdWlyZWQgZm9yIHRoYXQgcGF0Y2gsIHdoeSBhcmVuJ3Qg
-dGhleSBwYXJ0IG9mIGEgcGF0Y2hzZXQgcmF0aGVyIHRoYW4NCj4gaW5kZXBlbmRlbnRseSBwb3N0
-ZWQ/ICBJIGRvbid0IHNlZSBhbnkgbWVudGlvbiBvZiBhIGRlcGVuZGVuY3kgaW4gdGhhdA0KPiBw
-YXRjaCwgc28gaG93IHdvdWxkIEkgaGF2ZSBrbm93biBub3QgdG8gYXBwbHkgaXQ/DQo+IA0KDQpU
-aGlzIHBhdGNoIHdhcyBsZWZ0IG91dCBmcm9tIHRoZSBvcmlnaW5hbCBzdWJtaXNzaW9ucy4NCkkn
-bGwgYWRkIGEgY29tbWVudCBpbiB0aGUgbmV4dCBzdWJtaXNzaW9uIG9mIGh0dHBzOi8vcGF0Y2h3
-b3JrLm96bGFicy5vcmcvcGF0Y2gvNDU5NTg0Lw0KDQoNCj4gPiBTaWduZWQtb2ZmLWJ5OiBJZ2Fs
-IExpYmVybWFuIDxJZ2FsLkxpYmVybWFuQGZyZWVzY2FsZS5jb20+DQo+ID4gLS0tDQo+ID4gIGFy
-Y2gvcG93ZXJwYy9ib290L2R0cy9mc2wvYjQ0MjBzaS1wb3N0LmR0c2kgfCAgICAzICsrLQ0KPiA+
-ICBhcmNoL3Bvd2VycGMvYm9vdC9kdHMvZnNsL2I0ODYwc2ktcG9zdC5kdHNpIHwgICAgMyArKy0N
-Cj4gPiAgYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL2ZzbC9iNHNpLXBvc3QuZHRzaSAgICB8ICAgIDMg
-KystDQo+ID4gIGFyY2gvcG93ZXJwYy9ib290L2R0cy9mc2wvcDIwNDFzaS1wb3N0LmR0c2kgfCAg
-ICAzICsrLQ0KPiA+ICBhcmNoL3Bvd2VycGMvYm9vdC9kdHMvZnNsL3AzMDQxc2ktcG9zdC5kdHNp
-IHwgICAgMyArKy0NCj4gPiAgYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL2ZzbC9wNDA4MHNpLXBvc3Qu
-ZHRzaSB8ICAgIDMgKystDQo+ID4gIGFyY2gvcG93ZXJwYy9ib290L2R0cy9mc2wvcDUwMjBzaS1w
-b3N0LmR0c2kgfCAgICAzICsrLQ0KPiA+ICA3IGZpbGVzIGNoYW5nZWQsIDE0IGluc2VydGlvbnMo
-KyksIDcgZGVsZXRpb25zKC0pDQo+ID4NCj4gPiBkaWZmIC0tZ2l0IGEvYXJjaC9wb3dlcnBjL2Jv
-b3QvZHRzL2ZzbC9iNDQyMHNpLXBvc3QuZHRzaQ0KPiA+IGIvYXJjaC9wb3dlcnBjL2Jvb3QvZHRz
-L2ZzbC9iNDQyMHNpLXBvc3QuZHRzaQ0KPiA+IGluZGV4IDFlYTg2MDIuLjliMTRmMjQgMTAwNjQ0
-DQo+ID4gLS0tIGEvYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL2ZzbC9iNDQyMHNpLXBvc3QuZHRzaQ0K
-PiA+ICsrKyBiL2FyY2gvcG93ZXJwYy9ib290L2R0cy9mc2wvYjQ0MjBzaS1wb3N0LmR0c2kNCj4g
-PiBAQCAtNzcsNyArNzcsOCBAQA0KPiA+ICAJfTsNCj4gPg0KPiA+ICAJZ3V0czogZ2xvYmFsLXV0
-aWxpdGllc0BlMDAwMCB7DQo+ID4gLQkJY29tcGF0aWJsZSA9ICJmc2wsYjQ0MjAtZGV2aWNlLWNv
-bmZpZyIsICJmc2wscW9yaXEtZGV2aWNlLQ0KPiBjb25maWctMi4wIjsNCj4gPiArCQljb21wYXRp
-YmxlID0gImZzbCxiNDQyMC1kZXZpY2UtY29uZmlnIiwgImZzbCxiNC1kZXZpY2UtDQo+IGNvbmZp
-ZyIsDQo+ID4gKwkJCSAgICAgICJmc2wscW9yaXEtZGV2aWNlLWNvbmZpZy0yLjAiOw0KPiANCj4g
-V2h5Pw0KPiANCg0KV2Ugd2FudGVkIHRvIGJlIGFibGUgdG8gZGV0ZXJtaW5lIGI0IGRlcml2YXRp
-dmVzIHRvZ2V0aGVyIGluIHRoZSBGTWFuIGNsb2NrIGluaXRpYWxpemF0aW9uICh3aXRob3V0IGNo
-ZWNraW5nIGI0ODYwL2I0NDIwIGNvbXBhdGlibGUpLiANCg0KPiAtU2NvdHQNCj4gDQoNCklnYWwN
-Cg==
+
+
+Le 26/03/2015 22:32, Scott Wood a écrit :
+> On Tue, Feb 03, 2015 at 12:38:16PM +0100, LEROY Christophe wrote:
+>> Since commit 33fb845a6f01 ("powerpc/8xx: Don't use MD_TWC for walk"), MD_EPN and
+>> MD_TWC are not writen anymore in FixupDAR so saving r3 has become useless.
+>>
+>> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+>> ---
+>> v2: no change
+>> v3: no change
+> This doesn't apply cleanly.
+>
+>
+You already applied part of that patchset it in your next tree, 
+including that one (commit 2374d0a).
+You told me to re-submit a patchset with only the remaining ones, 
+therefore I sent v4 on the 4th of Feb, based on your tree.
+
+Christophe
