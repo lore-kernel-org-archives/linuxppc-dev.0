@@ -1,25 +1,23 @@
 Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0134.outbound.protection.outlook.com [157.56.110.134])
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0135.outbound.protection.outlook.com [207.46.100.135])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B16631A074A
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2015 06:21:11 +1000 (AEST)
-Message-ID: <1428956457.22867.629.camel@freescale.com>
-Subject: Re: [v2] dt/bindings: qoriq-clock: Add binding for FMan clock mux
+ by lists.ozlabs.org (Postfix) with ESMTPS id 303071A074A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2015 06:26:58 +1000 (AEST)
+Message-ID: <1428956804.22867.632.camel@freescale.com>
+Subject: Re: [v3, 01/11] powerpc/8xx: remove remaining unnecessary code in
+ FixupDAR
 From: Scott Wood <scottwood@freescale.com>
-To: Liberman Igal-B31950 <Igal.Liberman@freescale.com>
-Date: Mon, 13 Apr 2015 15:20:57 -0500
-In-Reply-To: <DM2PR03MB3835E1F5A269C969994FDA0E6F80@DM2PR03MB383.namprd03.prod.outlook.com>
-References: <1428479031-26597-1-git-send-email-igal.liberman@freescale.com>
- <1428527516.22867.509.camel@freescale.com>
- <DM2PR03MB383D9FD2888970950261FB2E6FB0@DM2PR03MB383.namprd03.prod.outlook.com>
- <1428598976.22867.535.camel@freescale.com>
- <DM2PR03MB3835E1F5A269C969994FDA0E6F80@DM2PR03MB383.namprd03.prod.outlook.com>
+To: leroy christophe <christophe.leroy@c-s.fr>
+Date: Mon, 13 Apr 2015 15:26:44 -0500
+In-Reply-To: <552A9A5D.4070208@c-s.fr>
+References: <20150203113816.E77811A5F13@localhost.localdomain>
+ <20150326213215.GA21815@home.buserror.net> <552A9A5D.4070208@c-s.fr>
 Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,76 +27,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2015-04-12 at 10:54 -0500, Liberman Igal-B31950 wrote:
+On Sun, 2015-04-12 at 18:16 +0200, leroy christophe wrote:
 > 
-> 
-> Regards,
-> Igal Liberman.
-> 
-> > -----Original Message-----
-> > From: Wood Scott-B07421
-> > Sent: Thursday, April 09, 2015 8:03 PM
-> > To: Liberman Igal-B31950
-> > Cc: devicetree@vger.kernel.org; linuxppc-dev@lists.ozlabs.org
-> > Subject: Re: [v2] dt/bindings: qoriq-clock: Add binding for FMan clock mux
-> > 
-> > On Thu, 2015-04-09 at 02:18 -0500, Liberman Igal-B31950 wrote:
-> > >
-> > >
-> > > Regards,
-> > > Igal Liberman.
-> > >
-> > > > -----Original Message-----
-> > > > From: Wood Scott-B07421
-> > > > Sent: Thursday, April 09, 2015 12:12 AM
-> > > > To: Liberman Igal-B31950
-> > > > Cc: devicetree@vger.kernel.org; linuxppc-dev@lists.ozlabs.org
-> > > > Subject: Re: [v2] dt/bindings: qoriq-clock: Add binding for FMan
-> > > > clock mux
-> > > >
-> > > > On Wed, 2015-04-08 at 10:43 +0300, Igal.Liberman wrote:
-> > > > > @@ -76,6 +77,52 @@ Required properties:
-> > > > >
-> > > > >  Recommended properties:
-> > > > >  - clocks: Should be the phandle of input parent clock
-> > > > > +	For "fsl,fman-clk-mux" clock there are several options for parent
-> > > > > +	clock (clock provider), the parent is determined according to the
-> > > > > +	Reset Configuration Word of the specific device:
-> > > > > +		* P2041, P3041:
-> > > > > +			* 0 - equal to platform PLL divided by 2
-> > > > > +			* 1 - equal to PLL2 divided by 2
-> > > > > +		* P4080 (Both FMans):
-> > > > > +			* 0 - equal to platform PLL divided by 2
-> > > > > +			* 1 - equal to PLL3 divided by 2
-> > > > ...
-> > > >
-> > > >
-> > > > Again, the clock specifier format is determined by the clock
-> > > > provider, not the clock consumer.
-> > > >
-> > >
-> > > Scott,
-> > > The "clocks" property contains all possible clock providers, right?
-> > > In the text above I'm trying to explain how the FMan clock provider is
-> > determined and what are the options for each SoC.
-> > > Do you think that we shouldn't have this explanation? Can you please
-> > elaborate?
-> > 
-> > I'm saying that the clock specifiers must be the same regardless of the node
-> > that is consuming the clock.  You can't define certain values as only being "for
-> > fsl,fman-clk-mux".
-> > 
-> 
-> Just to make things clear,
-> In "fm0clk/fm1clk" node, "clocks" holds a list of clock specifiers.
-> This list reflects all optional clock providers for a specific hardware, this list varies between different SoCs.
-> All those possible providers described by other nodes, as clock providers.
-> Please notice that this bindings describes the possible source clock for FMan mux, not the providers themselves.
-> 
-> You mentioned the following: "You can't define certain values as only being "for fsl,fman-clk-mux"."
-> I'm defining those values in the clock provider nodes and using those values as clock providers for FMan mux, it can be used be other HW blocks too.
+> Le 26/03/2015 22:32, Scott Wood a écrit :
+> > On Tue, Feb 03, 2015 at 12:38:16PM +0100, LEROY Christophe wrote:
+> >> Since commit 33fb845a6f01 ("powerpc/8xx: Don't use MD_TWC for walk"), MD_EPN and
+> >> MD_TWC are not writen anymore in FixupDAR so saving r3 has become useless.
+> >>
+> >> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> >> ---
+> >> v2: no change
+> >> v3: no change
+> > This doesn't apply cleanly.
+> >
+> >
+> You already applied part of that patchset it in your next tree, 
+> including that one (commit 2374d0a).
+> You told me to re-submit a patchset with only the remaining ones, 
+> therefore I sent v4 on the 4th of Feb, based on your tree.
 
-My point is that the encoding of the clock specifier is not
-fman-specific and thus fman should not appear in the description.
+OK.  I applied v2, and didn't remember that when I came across v3 in
+patchwork.
 
 -Scott
