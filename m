@@ -1,29 +1,25 @@
-Return-Path: <robherring2@gmail.com>
-Received: from mail-wi0-x22e.google.com (mail-wi0-x22e.google.com
- [IPv6:2a00:1450:400c:c05::22e])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1on0134.outbound.protection.outlook.com [157.56.110.134])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5A0501A0094
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2015 02:49:55 +1000 (AEST)
-Received: by wiax7 with SMTP id x7so69324548wia.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Apr 2015 09:49:52 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id B16631A074A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2015 06:21:11 +1000 (AEST)
+Message-ID: <1428956457.22867.629.camel@freescale.com>
+Subject: Re: [v2] dt/bindings: qoriq-clock: Add binding for FMan clock mux
+From: Scott Wood <scottwood@freescale.com>
+To: Liberman Igal-B31950 <Igal.Liberman@freescale.com>
+Date: Mon, 13 Apr 2015 15:20:57 -0500
+In-Reply-To: <DM2PR03MB3835E1F5A269C969994FDA0E6F80@DM2PR03MB383.namprd03.prod.outlook.com>
+References: <1428479031-26597-1-git-send-email-igal.liberman@freescale.com>
+ <1428527516.22867.509.camel@freescale.com>
+ <DM2PR03MB383D9FD2888970950261FB2E6FB0@DM2PR03MB383.namprd03.prod.outlook.com>
+ <1428598976.22867.535.camel@freescale.com>
+ <DM2PR03MB3835E1F5A269C969994FDA0E6F80@DM2PR03MB383.namprd03.prod.outlook.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-In-Reply-To: <552BC6E8.1040400@yandex-team.ru>
-References: <20150408165920.25007.6869.stgit@buzz>
- <CAL_JsqKQPtNPfTAiqsKnFuU6e-qozzPgujM=8MHseG75R9cbSA@mail.gmail.com>
- <552BC6E8.1040400@yandex-team.ru>
-From: Rob Herring <robherring2@gmail.com>
-Date: Mon, 13 Apr 2015 11:49:31 -0500
-Message-ID: <CAL_Jsq+vaufZJAchHC1OaV9g18zFfkXyRZ9j5wm0VWosh9i4kQ@mail.gmail.com>
-Subject: Re: [PATCH] of: return NUMA_NO_NODE from fallback of_node_to_nid()
-To: Konstantin Khlebnikov <khlebnikov@yandex-team.ru>
-Content-Type: text/plain; charset=UTF-8
 Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linux-mm@kvack.org" <linux-mm@kvack.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- sparclinux@vger.kernel.org, Rob Herring <robh+dt@kernel.org>,
- Grant Likely <grant.likely@linaro.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,52 +29,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Apr 13, 2015 at 8:38 AM, Konstantin Khlebnikov
-<khlebnikov@yandex-team.ru> wrote:
-> On 13.04.2015 16:22, Rob Herring wrote:
->>
->> On Wed, Apr 8, 2015 at 11:59 AM, Konstantin Khlebnikov
->> <khlebnikov@yandex-team.ru> wrote:
->>>
->>> Node 0 might be offline as well as any other numa node,
->>> in this case kernel cannot handle memory allocation and crashes.
->>>
->>> Signed-off-by: Konstantin Khlebnikov <khlebnikov@yandex-team.ru>
->>> Fixes: 0c3f061c195c ("of: implement of_node_to_nid as a weak function")
->>> ---
->>>   drivers/of/base.c  |    2 +-
->>>   include/linux/of.h |    5 ++++-
->>>   2 files changed, 5 insertions(+), 2 deletions(-)
->>>
->>> diff --git a/drivers/of/base.c b/drivers/of/base.c
->>> index 8f165b112e03..51f4bd16e613 100644
->>> --- a/drivers/of/base.c
->>> +++ b/drivers/of/base.c
->>> @@ -89,7 +89,7 @@ EXPORT_SYMBOL(of_n_size_cells);
->>>   #ifdef CONFIG_NUMA
->>>   int __weak of_node_to_nid(struct device_node *np)
->>>   {
->>> -       return numa_node_id();
->>> +       return NUMA_NO_NODE;
->>
->>
->> This is going to break any NUMA machine that enables OF and expects
->> the weak function to work.
->
->
-> Why? NUMA_NO_NODE == -1 -- this's standard "no-affinity" signal.
-> As I see powerpc/sparc versions of of_node_to_nid returns -1 if they
-> cannot find out which node should be used.
+On Sun, 2015-04-12 at 10:54 -0500, Liberman Igal-B31950 wrote:
+> 
+> 
+> Regards,
+> Igal Liberman.
+> 
+> > -----Original Message-----
+> > From: Wood Scott-B07421
+> > Sent: Thursday, April 09, 2015 8:03 PM
+> > To: Liberman Igal-B31950
+> > Cc: devicetree@vger.kernel.org; linuxppc-dev@lists.ozlabs.org
+> > Subject: Re: [v2] dt/bindings: qoriq-clock: Add binding for FMan clock mux
+> > 
+> > On Thu, 2015-04-09 at 02:18 -0500, Liberman Igal-B31950 wrote:
+> > >
+> > >
+> > > Regards,
+> > > Igal Liberman.
+> > >
+> > > > -----Original Message-----
+> > > > From: Wood Scott-B07421
+> > > > Sent: Thursday, April 09, 2015 12:12 AM
+> > > > To: Liberman Igal-B31950
+> > > > Cc: devicetree@vger.kernel.org; linuxppc-dev@lists.ozlabs.org
+> > > > Subject: Re: [v2] dt/bindings: qoriq-clock: Add binding for FMan
+> > > > clock mux
+> > > >
+> > > > On Wed, 2015-04-08 at 10:43 +0300, Igal.Liberman wrote:
+> > > > > @@ -76,6 +77,52 @@ Required properties:
+> > > > >
+> > > > >  Recommended properties:
+> > > > >  - clocks: Should be the phandle of input parent clock
+> > > > > +	For "fsl,fman-clk-mux" clock there are several options for parent
+> > > > > +	clock (clock provider), the parent is determined according to the
+> > > > > +	Reset Configuration Word of the specific device:
+> > > > > +		* P2041, P3041:
+> > > > > +			* 0 - equal to platform PLL divided by 2
+> > > > > +			* 1 - equal to PLL2 divided by 2
+> > > > > +		* P4080 (Both FMans):
+> > > > > +			* 0 - equal to platform PLL divided by 2
+> > > > > +			* 1 - equal to PLL3 divided by 2
+> > > > ...
+> > > >
+> > > >
+> > > > Again, the clock specifier format is determined by the clock
+> > > > provider, not the clock consumer.
+> > > >
+> > >
+> > > Scott,
+> > > The "clocks" property contains all possible clock providers, right?
+> > > In the text above I'm trying to explain how the FMan clock provider is
+> > determined and what are the options for each SoC.
+> > > Do you think that we shouldn't have this explanation? Can you please
+> > elaborate?
+> > 
+> > I'm saying that the clock specifiers must be the same regardless of the node
+> > that is consuming the clock.  You can't define certain values as only being "for
+> > fsl,fman-clk-mux".
+> > 
+> 
+> Just to make things clear,
+> In "fm0clk/fm1clk" node, "clocks" holds a list of clock specifiers.
+> This list reflects all optional clock providers for a specific hardware, this list varies between different SoCs.
+> All those possible providers described by other nodes, as clock providers.
+> Please notice that this bindings describes the possible source clock for FMan mux, not the providers themselves.
+> 
+> You mentioned the following: "You can't define certain values as only being "for fsl,fman-clk-mux"."
+> I'm defining those values in the clock provider nodes and using those values as clock providers for FMan mux, it can be used be other HW blocks too.
 
-Ah, I was thinking those platforms were relying on the default
-implementation. I guess any real NUMA support is going to need to
-override this function. The arm64 patch series does that as well. We
-need to be sure this change is correct for metag which appears to be
-the only other OF enabled platform with NUMA support.
+My point is that the encoding of the clock specifier is not
+fman-specific and thus fman should not appear in the description.
 
-In that case, then there is little reason to keep the inline and we
-can just always enable the weak function (with your change). It is
-slightly less optimal, but the few callers hardly appear to be hot
-paths.
-
-Rob
+-Scott
