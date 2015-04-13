@@ -1,19 +1,39 @@
-Return-Path: <dgibson@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <weiyang@linux.vnet.ibm.com>
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E9B151A01A3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Apr 2015 15:40:25 +1000 (AEST)
-Resent-Message-ID: <20150413054025.GF20172@voom.fritz.box>
-From: David Gibson <david@gibson.dropbear.id.au>
-To: anton@au.ibm.com,
-	benh@kernel.crashing.org,
-	michael@ellerman.id.au
-Subject: [PATCH] ibmveth: Fix off-by-one error in ibmveth_change_mtu()
-Date: Mon, 13 Apr 2015 15:39:46 +1000
-Message-Id: <1428903586-21442-1-git-send-email-david@gibson.dropbear.id.au>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@vger.kernel.org,
- David Gibson <david@gibson.dropbear.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id C15CE1A01A3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Apr 2015 16:10:05 +1000 (AEST)
+Received: from /spool/local
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
+ Mon, 13 Apr 2015 16:10:05 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 080D03578047
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Apr 2015 16:10:04 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t3D69taT35127546
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Apr 2015 16:10:03 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t3D69TPH011462
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Apr 2015 16:09:30 +1000
+Date: Mon, 13 Apr 2015 14:09:13 +0800
+From: Wei Yang <weiyang@linux.vnet.ibm.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: linux-next: manual merge of the powerpc-mpe tree with the
+ powerpc tree
+Message-ID: <20150413060913.GA2365@richard>
+Reply-To: Wei Yang <weiyang@linux.vnet.ibm.com>
+References: <20150413132715.2303253f@canb.auug.org.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20150413132715.2303253f@canb.auug.org.au>
+Cc: Wei Yang <weiyang@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+ linux-next@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Daniel Axtens <dja@axtens.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,38 +43,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-AFAIK the PAPR document which defines the virtual device interface used by
-the ibmveth driver doesn't specify a specific maximum MTU.  So, in the
-ibmveth driver, the maximum allowed MTU is determined by the maximum
-allocated buffer size of 64k (corresponding to one page in the common case)
-minus the per-buffer overhead IBMVETH_BUFF_OH (which has value 22 for 14
-bytes of ethernet header, plus 8 bytes for an opaque handle).
+On Mon, Apr 13, 2015 at 01:27:15PM +1000, Stephen Rothwell wrote:
+>Hi all,
+>
+>Today's linux-next merge of the powerpc-mpe tree got a conflict in
+>arch/powerpc/include/asm/machdep.h between commit 6e628c7d33d9
+>("powerpc/powernv: Reserve additional space for IOV BAR according to
+>the number of total_pe") from the  tree and commit 467efc2e4fdc
+>("powerpc: Remove shims for pci_controller_ops operations") from the
+>powerpc-mpe tree.
+>
+>I fixed it up (see below) and can carry the fix as necessary (no action
+>is required).
 
-This suggests a maximum allowable MTU of 65514 bytes, but in fact the
-driver only permits a maximum MTU of 65513.  This is because there is a <
-instead of an <= in ibmveth_change_mtu(), which only permits an MTU which
-is strictly smaller than the buffer size, rather than allowing the buffer
-to be completely filled.
+Hi, Stephen,
 
-This patch fixes the buglet.
+Thanks for your finding :-) Your fix looks good to me.
 
-Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
----
- drivers/net/ethernet/ibm/ibmveth.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Michael & Ben,
 
-diff --git a/drivers/net/ethernet/ibm/ibmveth.c b/drivers/net/ethernet/ibm/ibmveth.c
-index cd7675a..3aa280a 100644
---- a/drivers/net/ethernet/ibm/ibmveth.c
-+++ b/drivers/net/ethernet/ibm/ibmveth.c
-@@ -1257,7 +1257,7 @@ static int ibmveth_change_mtu(struct net_device *dev, int new_mtu)
- 	for (i = 0; i < IBMVETH_NUM_BUFF_POOLS; i++) {
- 		adapter->rx_buff_pool[i].active = 1;
- 
--		if (new_mtu_oh < adapter->rx_buff_pool[i].buff_size) {
-+		if (new_mtu_oh <= adapter->rx_buff_pool[i].buff_size) {
- 			dev->mtu = new_mtu;
- 			vio_cmo_set_dev_desired(viodev,
- 						ibmveth_get_desired_dma
+Do I need to rebase the patch or what should I do?
+
+>
+>-- 
+>Cheers,
+>Stephen Rothwell                    sfr@canb.auug.org.au
+>
+>diff --cc arch/powerpc/include/asm/machdep.h
+>index 1b268044f290,5c19ac527a8e..000000000000
+>--- a/arch/powerpc/include/asm/machdep.h
+>+++ b/arch/powerpc/include/asm/machdep.h
+>@@@ -240,21 -236,6 +236,11 @@@ struct machdep_calls 
+>  	/* Called after scan and before resource survey */
+>  	void (*pcibios_fixup_phb)(struct pci_controller *hose);
+>  
+>- 	/* Called during PCI resource reassignment */
+>- 	resource_size_t (*pcibios_window_alignment)(struct pci_bus *, unsigned long type);
+>- 
+>- 	/* Reset the secondary bus of bridge */
+>- 	void  (*pcibios_reset_secondary_bus)(struct pci_dev *dev);
+>- 
+> +#ifdef CONFIG_PCI_IOV
+> +	void (*pcibios_fixup_sriov)(struct pci_dev *pdev);
+> +	resource_size_t (*pcibios_iov_resource_alignment)(struct pci_dev *, int resno);
+> +#endif /* CONFIG_PCI_IOV */
+> +
+>  	/* Called to shutdown machine specific hardware not already controlled
+>  	 * by other drivers.
+>  	 */
+
+
+
 -- 
-2.1.0
+Richard Yang
+Help you, Help me
