@@ -1,41 +1,61 @@
-Return-Path: <weiyang@linux.vnet.ibm.com>
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5A2DB1A0BEF
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Apr 2015 18:49:07 +1000 (AEST)
+Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 265321A01C9
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Apr 2015 18:48:33 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTPS id A9B941402F6
+ for <linuxppc-dev@ozlabs.org>; Mon, 13 Apr 2015 18:49:06 +1000 (AEST)
 Received: from /spool/local
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
- Mon, 13 Apr 2015 18:48:32 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id E414A357804F
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Apr 2015 18:48:28 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t3D8mK5447382556
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Apr 2015 18:48:28 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t3D8lsPp022878
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Apr 2015 18:47:55 +1000
-Date: Mon, 13 Apr 2015 16:47:37 +0800
-From: Wei Yang <weiyang@linux.vnet.ibm.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: linux-next: manual merge of the powerpc-mpe tree with the
- powerpc tree
-Message-ID: <20150413084737.GA24116@richard>
-Reply-To: Wei Yang <weiyang@linux.vnet.ibm.com>
-References: <20150413132715.2303253f@canb.auug.org.au>
- <20150413060913.GA2365@richard>
- <20150413175531.13d4ceb7@canb.auug.org.au>
+ for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Mon, 13 Apr 2015 14:19:04 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 76A8B394005C
+ for <linuxppc-dev@ozlabs.org>; Mon, 13 Apr 2015 14:19:02 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t3D8n1oS61407400
+ for <linuxppc-dev@ozlabs.org>; Mon, 13 Apr 2015 14:19:01 +0530
+Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t3D8mwXX026101
+ for <linuxppc-dev@ozlabs.org>; Mon, 13 Apr 2015 14:19:01 +0530
+Message-ID: <552B82F9.3080108@linux.vnet.ibm.com>
+Date: Mon, 13 Apr 2015 14:18:57 +0530
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150413175531.13d4ceb7@canb.auug.org.au>
-Cc: Wei Yang <weiyang@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
- linux-next@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Daniel Axtens <dja@axtens.net>
+To: Ulrich Weigand <Ulrich.Weigand@de.ibm.com>
+Subject: Re: [V6,1/9] elf: Add new powerpc specifc core note sections
+References: <20141203052204.9DA8F1400DD@ozlabs.org>
+ <548578A8.5020901@linux.vnet.ibm.com> <54947C64.4030206@linux.vnet.ibm.com>
+ <54A50094.5070902@linux.vnet.ibm.com> <1421883597.30744.3.camel@neuling.org>
+ <OFC6CFC348.C619B89D-ONC1257DD5.0056279B-C1257DD5.00577002@de.ibm.com>
+ <1421963049.30744.23.camel@neuling.org>
+ <1422419289.9646.20.camel@neuling.org>
+ <OFE5516C3F.3C4884DE-ONC1257DE4.004E7852-C1257DE4.00514232@de.ibm.com>
+ <1424667110.16027.6.camel@neuling.org>
+ <OF5DE08D4B.0B79C501-ONC1257E0C.0044F80B-C1257E0C.0046DC8F@de.ibm.com>
+ <1426718702.4866.2.camel@neuling.org> <1426719027.4866.4.camel@neuling.org>
+ <550FEC36.8080803@linux.vnet.ibm.com>
+ <OF91038A37.65C405E5-ONC1257E21.0061938F-C1257E21.00620A03@de.ibm.com>
+ <1428534695.4682.18.camel@neuling.org> <55267595.90
+ <5527938B.1030901@linux.vnet.ibm.com>
+ <OFCDE0430E.A5CD2FAF-ONC1257E23.003813C4-C1257E23.0039F950@de.ibm.com>
+In-Reply-To: <OFCDE0430E.A5CD2FAF-ONC1257E23.003813C4-C1257E23.0039F950@de.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: shuahkh@osg.samsung.com, Michael Neuling <mikey@neuling.org>,
+ james.hogan@imgtec.com, avagin@openvz.org, Paul.Clothier@imgtec.com,
+ peterz@infradead.org, palves@redhat.com, linux-kernel@vger.kernel.org,
+ davem@davemloft.net, dhowells@redhat.com, linuxppc-dev@ozlabs.org,
+ kirjanov@gmail.com, tglx@linutronix.de, oleg@redhat.com, davej@redhat.com,
+ akpm@linux-foundation.org, sukadev@linux.vnet.ibm.com,
+ Edjunior Barbosa Machado <emachado@linux.vnet.ibm.com>,
+ sam.bobroff@au1.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,31 +65,113 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Apr 13, 2015 at 05:55:31PM +1000, Stephen Rothwell wrote:
->Hi,
->
->On Mon, 13 Apr 2015 14:09:13 +0800 Wei Yang <weiyang@linux.vnet.ibm.com> wrote:
+On 04/10/2015 04:03 PM, Ulrich Weigand wrote:
+> Anshuman Khandual <khandual@linux.vnet.ibm.com> wrote on 10.04.2015
+> 11:10:35:
+> 
+>> I had posted a newer version [V7] of this patch series couple of months
+> back
+>> which got ignored while the discussion continued in this version.
 >>
->> Hi, Stephen,
->> 
->> Thanks for your finding :-) Your fix looks good to me.
->> 
->> Michael & Ben,
->> 
->> Do I need to rebase the patch or what should I do?
->
->You should have nothing to do, Michael has fixed it up when he merged
->Ben's tree into his.
+>> V7: https://lkml.org/lkml/2015/1/14/19
+> 
+> Ah, with all the back-and-forth on the checkpointed state, I never looked
+> at this.  Unfortunately, there's still a number of issues with this, I
+> think:
+> 
+> - You provide checkpointed FPR and VMX registers, but there doesn't seem
+>   to be any way to get at the checkpointed *VSX* registers (i.e. the part
+>   that is neither covered by FPR or VMX, corresponding to NT_PPC_VSX).
 
-OK, thanks :-)
+Will change vsr_get, vsr_set functions as we have done for fpr_get and fpr_set
+functions. Also will add one more ELF core note NT_PPC_TM_CVSX to fetch the
+check pointed state of VSX register while inside the transaction.
 
->
->-- 
->Cheers,
->Stephen Rothwell                    sfr@canb.auug.org.au
+> 
+> - We may have had this discussion in the past, but I still do not like the
+>   notion of a "misc" register set, in particular since the three registers
+>   in it are available at different architecture levels and categories.
 
+Misc category as always stands for registers which can not be easily classified
+into any meaningful categories.
 
+> 
+>   I would much prefer three separate regsets (e.g. NT_PPC_DSCR, NT_PPC_PPR,
+>   and NT_PPC_TAR), each of which is available and valid if and only if the
+>   current processor actually has the register in question.
 
--- 
-Richard Yang
-Help you, Help me
+Thats like adding one ELF core note for every single register because we cannot
+put them in any category. Then as Michael Ellerman had pointed out to include
+a lot more registers in this MISC category (which we are not doing right now
+in the interest of having minimum support available before we look at the full
+possible list of MISC registers), we should add one ELF core note section for
+each of those individual registers ? I am not sure.
+
+> 
+>   If we do have a single regset, at the very least a "get" operation should
+>   set registers unvailable on the machine to a defined state (zero?)
+>   instead of simply leaving memory uninitialized.
+
+Yeah sure, we can do that.
+
+> 
+> - Similarly, the NT_PPC_TM_SPR regset as currently defined mixes and
+> matches
+>   registers with different "lifetimes".  The transactional memory registers
+>   (TFHAR, TEXASR, TFIAR) are available *always* on machines that support
+>   transactions.  But the other registers in that regset are checkpointed
+>   versions that are only available/valid within a transaction.  I think a
+>   better way to faithfully represent this would be to have the
+> NT_PPC_TM_SPR
+>   regset only contain the transcational memory registers, and use separate
+>   regsets for the checkpointed registers -- those should parallel the non-
+>   checkpointed register regset.
+
+Right now, we support NT_PPC_TM_SPR only inside the transaction, so we dont
+have the problem with different "lifetimes" registers accessed together. But
+yes, I get your point.
+
+> 
+>   For example, if we have NT_PPC_DSCR, there should be a NT_PPC_CDSCR for
+>   the checkpointed version etc.  (If we do stay with MISC, there should
+> then
+>   be a CMISC).
+
+But then NT_PPC_MISC and NT_PPC_CMISC can contain different set of registers.
+NT_PPC_CMISC will contain the orig_msr for now which the other elf core note
+does not have and NT_PPC_MISC will grow to have lot more registers in the
+future leaving behind NT_PPC_CMISC as it is. Need to take care of these.
+
+> 
+> - Particularly confusing to me is the "checkpointed original MSR" which
+>   currently also resides in NT_PPC_TM_SPR.  What exactly is this?  How
+>   does that differ from the MSR slot in the NT_PPC_TM_CGPR regset?
+
+I believed it stores the check pointed MSR value which was in the register
+before the transaction started. But then how it is different from the
+ckpt_regs.msr, I am not sure. Mikey or Michael should be able to clarify
+more on this. I can see "orig_msr" getting used in many places to hold the
+check pointed value of MSR.
+
+> 
+>   I may be misreading kernel code, but it seems the kernel does not
+> actually
+>   use the ckpt_regs.msr slot at all, and therefore the corresponding slot
+> of
+>   the NT_PPC_TM_CGPR regset is likewise undefined/unused.  Would it not be
+>   more consistent to use that slot to pass the checkpointed MSR?
+
+Hmm. Its a valid point. Would like to get some more clarity on this from
+Mikey whether that slot can be used for check pointed MSR value or not.
+Then why did we have these two slots to hold the same check pointed MSR
+value in the first place at all. Getting confused a bit.
+
+> 
+>   In any case, it seems the ptrace set-register case currently allows user
+>   space to restore *any* arbitrary value into the checkpointed MSR, which
+>   would presumably get restored into the real MSR at some point, unless I'm
+>   missing something here.  Do we not need a check that only safe bits are
+>   modified, just like with ptrace access to the real MSR?
+
+Where and which safe bits do we check before writing any value into the MSR
+register from ptrace interface ? May be I am missing something here.
