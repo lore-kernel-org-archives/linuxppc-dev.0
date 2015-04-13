@@ -1,21 +1,38 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <christoffer.dall@linaro.org>
+Received: from mail-la0-f53.google.com (mail-la0-f53.google.com
+ [209.85.215.53])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 116391A01A7
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Apr 2015 21:20:54 +1000 (AEST)
-Date: Mon, 13 Apr 2015 21:20:48 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Andrew Morton <akpm@linux-foundation.org>, Michael Ellerman
- <mpe@ellerman.id.au>, Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- <linuxppc-dev@lists.ozlabs.org>
-Subject: linux-next: build failure after merge of the akpm-current tree
-Message-ID: <20150413212048.0db6414f@canb.auug.org.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9C6BA1A01C9
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Apr 2015 21:55:33 +1000 (AEST)
+Received: by labbd9 with SMTP id bd9so55040672lab.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Apr 2015 04:55:30 -0700 (PDT)
+Date: Mon, 13 Apr 2015 13:55:35 +0200
+From: Christoffer Dall <christoffer.dall@linaro.org>
+To: Alex =?iso-8859-1?Q?Benn=E9e?= <alex.bennee@linaro.org>
+Subject: Re: [PATCH v2 02/10] KVM: define common __KVM_GUESTDBG_USE_SW/HW_BP
+ values
+Message-ID: <20150413115535.GM6186@cbox>
+References: <1427814488-28467-1-git-send-email-alex.bennee@linaro.org>
+ <1427814488-28467-3-git-send-email-alex.bennee@linaro.org>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- boundary="Sig_/.jAhx/jos5s_FkjcKlzyLOM"; protocol="application/pgp-signature"
-Cc: linux-next@vger.kernel.org, linux-kernel@vger.kernel.org,
- Anton Blanchard <anton@samba.org>, Ulrich Obergfell <uobergfe@redhat.com>
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <1427814488-28467-3-git-send-email-alex.bennee@linaro.org>
+Cc: peter.maydell@linaro.org, kvm@vger.kernel.org,
+ Alexey Kardashevskiy <aik@ozlabs.ru>,
+ Bharat Bhushan <Bharat.Bhushan@freescale.com>,
+ Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
+ kvmarm@lists.cs.columbia.edu, Nadav Amit <namit@cs.technion.ac.il>,
+ "maintainer:X86 ARCHITECTURE..." <x86@kernel.org>, agraf@suse.de,
+ Gleb Natapov <gleb@kernel.org>, Ingo Molnar <mingo@redhat.com>,
+ zhichao.huang@linaro.org, jan.kiszka@siemens.com,
+ Mihai Caraman <mihai.caraman@freescale.com>, bp@suse.de, drjones@redhat.com,
+ marc.zyngier@arm.com, r65777@freescale.com,
+ Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
+ "open list:ABI/API" <linux-api@vger.kernel.org>,
+ open list <linux-kernel@vger.kernel.org>, dahi@linux.vnet.ibm.com,
+ pbonzini@redhat.com,
+ "open list:LINUX FOR POWERPC..." <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,80 +42,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Sig_/.jAhx/jos5s_FkjcKlzyLOM
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+On Tue, Mar 31, 2015 at 04:08:00PM +0100, Alex Bennée wrote:
+> Currently x86, powerpc and soon arm64 use the same two architecture
+> specific bits for guest debug support for software and hardware
+> breakpoints. This makes the shared values explicit while leaving the
+> gate open for another architecture to use some other value if they
+> really really want to.
+> 
+> Signed-off-by: Alex Bennée <alex.bennee@linaro.org>
+> 
+> diff --git a/arch/powerpc/include/uapi/asm/kvm.h b/arch/powerpc/include/uapi/asm/kvm.h
+> index ab4d473..1731569 100644
+> --- a/arch/powerpc/include/uapi/asm/kvm.h
+> +++ b/arch/powerpc/include/uapi/asm/kvm.h
+> @@ -310,8 +310,8 @@ struct kvm_guest_debug_arch {
+>   * and upper 16 bits are architecture specific. Architecture specific defines
+>   * that ioctl is for setting hardware breakpoint or software breakpoint.
+>   */
+> -#define KVM_GUESTDBG_USE_SW_BP		0x00010000
+> -#define KVM_GUESTDBG_USE_HW_BP		0x00020000
+> +#define KVM_GUESTDBG_USE_SW_BP		__KVM_GUESTDBG_USE_SW_BP
+> +#define KVM_GUESTDBG_USE_HW_BP		__KVM_GUESTDBG_USE_HW_BP
+>  
+>  /* definition of registers in kvm_run */
+>  struct kvm_sync_regs {
+> diff --git a/arch/x86/include/uapi/asm/kvm.h b/arch/x86/include/uapi/asm/kvm.h
+> index d7dcef5..1438202 100644
+> --- a/arch/x86/include/uapi/asm/kvm.h
+> +++ b/arch/x86/include/uapi/asm/kvm.h
+> @@ -250,8 +250,8 @@ struct kvm_debug_exit_arch {
+>  	__u64 dr7;
+>  };
+>  
+> -#define KVM_GUESTDBG_USE_SW_BP		0x00010000
+> -#define KVM_GUESTDBG_USE_HW_BP		0x00020000
+> +#define KVM_GUESTDBG_USE_SW_BP		__KVM_GUESTDBG_USE_SW_BP
+> +#define KVM_GUESTDBG_USE_HW_BP		__KVM_GUESTDBG_USE_HW_BP
+>  #define KVM_GUESTDBG_INJECT_DB		0x00040000
+>  #define KVM_GUESTDBG_INJECT_BP		0x00080000
+>  
+> diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
+> index 5eedf84..ce2db14 100644
+> --- a/include/uapi/linux/kvm.h
+> +++ b/include/uapi/linux/kvm.h
+> @@ -525,8 +525,16 @@ struct kvm_s390_irq {
+>  
+>  /* for KVM_SET_GUEST_DEBUG */
+>  
+> -#define KVM_GUESTDBG_ENABLE		0x00000001
+> -#define KVM_GUESTDBG_SINGLESTEP		0x00000002
+> +#define KVM_GUESTDBG_ENABLE		(1 << 0)
+> +#define KVM_GUESTDBG_SINGLESTEP	(1 << 1)
+> +
+> +/*
+> + * Architecture specific stuff uses the top 16 bits of the field,
 
-Hi Andrew,
+can you be more specific than 'stuff' here?  features?
 
-After merging the akpm-current tree, today's linux-next build (powerpc
-ppc64_defconfig) failed like this:
+> + * however there is some shared commonality for the common cases
 
-arch/powerpc/kernel/setup_64.c: In function 'disable_hardlockup_detector':
-arch/powerpc/kernel/setup_64.c:796:2: error: implicit declaration of functi=
-on 'watchdog_enable_hardlockup_detector' [-Werror=3Dimplicit-function-decla=
-ration]
-  watchdog_enable_hardlockup_detector(false);
-  ^
+I don't like this sentence; shared commonality is a pleonasm and the use
+of however makes it sounds like there's some caveat here.
 
-Caused by commit 069bb95b9e38 ("watchdog: introduce the
-hardlockup_detector_disable() function") interacting with commit
-c54b2bf1b5e9 ("powerpc: Add ppc64 hard lockup detector support") from
-the powerpc-mpe tree.
+If the top 16 bits are indeed arhictecture specific, then I think they
+should just be defined in their architecture specific headers.  Unless
+the idea here is that there's a fixed set of of flags that architectures
+can choose to support, in which case it should simply be defined in the
+common header.
 
-I applied the following merge fix patch (hopefully that is all that is
-required):
 
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-Date: Mon, 13 Apr 2015 21:18:01 +1000
-Subject: [PATCH] powerpc: merge fix for watchdog_enable_hardlockup_detector=
- API change
-
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- arch/powerpc/kernel/setup_64.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index 7551e5692597..c69671c03c3b 100644
---- a/arch/powerpc/kernel/setup_64.c
-+++ b/arch/powerpc/kernel/setup_64.c
-@@ -793,7 +793,7 @@ u64 hw_nmi_get_sample_period(int watchdog_thresh)
-  */
- static int __init disable_hardlockup_detector(void)
- {
--	watchdog_enable_hardlockup_detector(false);
-+	hardlockup_detector_disable();
-=20
- 	return 0;
- }
---=20
-2.1.4
-
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
---Sig_/.jAhx/jos5s_FkjcKlzyLOM
-Content-Type: application/pgp-signature
-Content-Description: OpenPGP digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJVK6aUAAoJEMDTa8Ir7ZwVjb0QAIkE5wzBA60xNHSTpcxBqrnW
-KsIbwjwqAa/jmRHKK6Zo5H1ehgmvd7ze/m8P7mOpDMbQiZ2Y7S5D56o+z69tzvHs
-kaV4Xs6nnoSBiFegnVtr1qC053hexOTWbtwVALpUdXfuQ1SHfvPmV2uGrEj80f5Q
-xbQnyrmDX9PzLyXgloG3jQgoxCl0OcNneyFYISlGTNCMROkJ76YeuNl25pklMtZr
-YV5tvGSyxBoQ/Lg9XKg/yGNcK7Ol+lF14hsudxVKaBSISsf7xqPufgoEqIhnRGgX
-OtxedW7z2CpxOhEwTqQCb9tbZHESkFaMR2rawLJUsxAw7G/s4bNAriMZw1Pb6WqH
-zpiCTtdn8QGZkJUvG9SyykWoGJPMXRdOH0ckjaF6qIOvkyV7EUhRXk51Hr5BLc1k
-VQVcB1pgBU9Vgkmhm9SGgnGsO6O72BSEDN1/BivLMic+dOjuvjr8PbUJzUVhPCHy
-bN1VIED1tPSVIqqIofpiFAmRensF2Pik553hMaBfc9fg0dJbNy+RVEj80ZsCSDy7
-+6Zi5CU3xd9Cc6WT58zfQe5ca9qHHg6DZPZFTl/Wop0Chvjmz577TmL3LEhQm8pC
-pII00tIotWqOOxPv+9Hvhy7/G6dWFUaEsO+cz22bx6ope1OExZwqruxXY0WJyTzE
-ePVA2nylOsRUnblyevnw
-=O5gX
------END PGP SIGNATURE-----
-
---Sig_/.jAhx/jos5s_FkjcKlzyLOM--
+> + */
+> +#define __KVM_GUESTDBG_USE_SW_BP	(1 << 16)
+> +#define __KVM_GUESTDBG_USE_HW_BP	(1 << 17)
+> +
+>  
+>  struct kvm_guest_debug {
+>  	__u32 control;
+> -- 
+> 2.3.4
+> 
