@@ -1,26 +1,20 @@
-Return-Path: <hongtao.jia@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0146.outbound.protection.outlook.com [207.46.100.146])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <sfr@canb.auug.org.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BD9D61A01A3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Apr 2015 12:59:40 +1000 (AEST)
-From: Hongtao Jia <hongtao.jia@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: RE: [PATCH] QorIQ/TMU: add TMU node to device tree for QorIQ T104x
-Date: Mon, 13 Apr 2015 02:25:31 +0000
-Message-ID: <BLUPR03MB149C37D2049044E873F0CA5E1E70@BLUPR03MB149.namprd03.prod.outlook.com>
-References: <1427782669-20368-1-git-send-email-hongtao.jia@freescale.com>
- <1428638140.22867.583.camel@freescale.com>
- <BLUPR03MB14924B9EBBD1C5635B0487DE1FA0@BLUPR03MB149.namprd03.prod.outlook.com>
- <1428705646.22867.601.camel@freescale.com>
-In-Reply-To: <1428705646.22867.601.camel@freescale.com>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3BAEB1A01A3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Apr 2015 13:27:23 +1000 (AEST)
+Date: Mon, 13 Apr 2015 13:27:15 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, <linuxppc-dev@lists.ozlabs.org>
+Subject: linux-next: manual merge of the powerpc-mpe tree with the powerpc tree
+Message-ID: <20150413132715.2303253f@canb.auug.org.au>
 MIME-Version: 1.0
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "rui.zhang@intel.com" <rui.zhang@intel.com>,
- "robh+dt@kernel.org" <robh+dt@kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ boundary="Sig_/vCE.Ag9oszeqkSw+UY9v6PH"; protocol="application/pgp-signature"
+Cc: Wei Yang <weiyang@linux.vnet.ibm.com>, linux-next@vger.kernel.org,
+ linux-kernel@vger.kernel.org, Daniel Axtens <dja@axtens.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,61 +24,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IFdvb2QgU2NvdHQtQjA3NDIx
-DQo+IFNlbnQ6IFNhdHVyZGF5LCBBcHJpbCAxMSwgMjAxNSA2OjQxIEFNDQo+IFRvOiBKaWEgSG9u
-Z3Rhby1CMzg5NTENCj4gQ2M6IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnOyBkZXZpY2V0
-cmVlQHZnZXIua2VybmVsLm9yZzsNCj4gcm9iaCtkdEBrZXJuZWwub3JnOyBydWkuemhhbmdAaW50
-ZWwuY29tDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0hdIFFvcklRL1RNVTogYWRkIFRNVSBub2RlIHRv
-IGRldmljZSB0cmVlIGZvciBRb3JJUQ0KPiBUMTA0eA0KPiANCj4gT24gRnJpLCAyMDE1LTA0LTEw
-IGF0IDAxOjIzIC0wNTAwLCBKaWEgSG9uZ3Rhby1CMzg5NTEgd3JvdGU6DQo+ID4NCj4gPg0KPiA+
-ID4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gPiA+IEZyb206IFdvb2QgU2NvdHQtQjA3
-NDIxDQo+ID4gPiBTZW50OiBGcmlkYXksIEFwcmlsIDEwLCAyMDE1IDExOjU2IEFNDQo+ID4gPiBU
-bzogSmlhIEhvbmd0YW8tQjM4OTUxDQo+ID4gPiBDYzogbGludXhwcGMtZGV2QGxpc3RzLm96bGFi
-cy5vcmc7IGRldmljZXRyZWVAdmdlci5rZXJuZWwub3JnOw0KPiA+ID4gcm9iaCtkdEBrZXJuZWwu
-b3JnOyBydWkuemhhbmdAaW50ZWwuY29tDQo+ID4gPiBTdWJqZWN0OiBSZTogW1BBVENIXSBRb3JJ
-US9UTVU6IGFkZCBUTVUgbm9kZSB0byBkZXZpY2UgdHJlZSBmb3INCj4gPiA+IFFvcklRIFQxMDR4
-DQo+ID4gPg0KPiA+ID4gT24gVHVlLCAyMDE1LTAzLTMxIGF0IDE0OjE3ICswODAwLCBKaWEgSG9u
-Z3RhbyB3cm90ZToNCj4gPiA+ID4gVGhpcyBpcyBUaGVybWFsIE1vbml0b3JpbmcgVW5pdCBmb3Ig
-UW9ySVEgcGxhdGZvcm0uDQo+ID4gPiA+DQo+ID4gPiA+IFNpZ25lZC1vZmYtYnk6IEppYSBIb25n
-dGFvIDxob25ndGFvLmppYUBmcmVlc2NhbGUuY29tPg0KPiA+ID4gPiAtLS0NCj4gPiA+ID4gIC4u
-Li9kZXZpY2V0cmVlL2JpbmRpbmdzL3RoZXJtYWwvcW9yaXEtdGhlcm1hbC50eHQgIHwgNTgNCj4g
-PiA+ICsrKysrKysrKysrKysrKw0KPiA+ID4gPiAgYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL2ZzbC9x
-b3JpcS10bXUtdDEwNHhzaS5kdHNpICAgfCA4Mg0KPiA+ID4gKysrKysrKysrKysrKysrKysrKysr
-Kw0KPiA+ID4gPiAgYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL2ZzbC90MTA0MHNpLXBvc3QuZHRzaSAg
-ICAgICAgfCAgMSArDQo+ID4gPiA+ICAzIGZpbGVzIGNoYW5nZWQsIDE0MSBpbnNlcnRpb25zKCsp
-ICBjcmVhdGUgbW9kZSAxMDA2NDQNCj4gPiA+ID4gRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2Jp
-bmRpbmdzL3RoZXJtYWwvcW9yaXEtdGhlcm1hbC50eHQNCj4gPiA+ID4gIGNyZWF0ZSBtb2RlIDEw
-MDY0NA0KPiA+ID4gPiBhcmNoL3Bvd2VycGMvYm9vdC9kdHMvZnNsL3FvcmlxLXRtdS10MTA0eHNp
-LmR0c2kNCj4gPiA+ID4NCj4gPiA+ID4gZGlmZiAtLWdpdA0KPiA+ID4gPiBhL0RvY3VtZW50YXRp
-b24vZGV2aWNldHJlZS9iaW5kaW5ncy90aGVybWFsL3FvcmlxLXRoZXJtYWwudHh0DQo+ID4gPiA+
-IGIvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL3RoZXJtYWwvcW9yaXEtdGhlcm1h
-bC50eHQNCj4gPiA+ID4gbmV3IGZpbGUgbW9kZSAxMDA2NDQNCj4gPiA+ID4gaW5kZXggMDAwMDAw
-MC4uZGZjMTdmYQ0KPiA+ID4gPiAtLS0gL2Rldi9udWxsDQo+ID4gPiA+ICsrKyBiL0RvY3VtZW50
-YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy90aGVybWFsL3FvcmlxLXRoZXJtYWwudHh0DQo+ID4g
-PiA+IEBAIC0wLDAgKzEsNTggQEANCj4gPiA+ID4gKyogVGhlcm1hbCBNb25pdG9yaW5nIFVuaXQg
-KFRNVSkgb24gRnJlZXNjYWxlIFFvcklRIFNvQ3MNCj4gPiA+ID4gKw0KPiA+ID4gPiArUmVxdWly
-ZWQgcHJvcGVydGllczoNCj4gPiA+ID4gKy0gY29tcGF0aWJsZSA6ICJmc2wscW9yaXEtdG11Ii4N
-Cj4gPiA+DQo+ID4gPiBjb21wYXRpYmxlOiBNdXN0IGluY2x1ZGUgImZzbCxxb3JpcS10bXUiLiBU
-aGUgdmVyc2lvbiBvZiB0aGUgZGV2aWNlDQo+IGlzDQo+ID4gPiAJICAgIGRldGVybWluZWQgYnkg
-dGhlIFRNVSBJUCBCbG9jayBSZXZpc2lvbiBSZWdpc3RlciAoSVBCUlIwKQ0KPiA+ID4gCSAgICBh
-dCBvZmZzZXQgMHgwQkY4Lg0KPiA+ID4NCj4gPiA+IAkgICAgVGFibGUgb2YgY29ycmVzcG9uZGVu
-Y2VzIGJldHdlZW4gSVBCUlIwIHZhbHVlcyBhbmQgZXhhbXBsZQ0KPiA+ID4gCSAgICBjaGlwczoN
-Cj4gPiA+IAkJVmFsdWUgICAgICAgICAgIERldmljZQ0KPiA+ID4gCQktLS0tLS0tLS0tLSAgICAg
-LS0tLS0tLQ0KPiA+ID4gCQkweDAxOTAwMTAyICAgICAgVDEwNDANCj4gPg0KPiA+IEkgd2lsbCB1
-cGRhdGUgaXQgaW4gbmV4dCB2ZXJzaW9uLg0KPiA+DQo+ID4gPg0KPiA+ID4gPiArLSByZWcgOiBh
-ZGRyZXNzIHJhbmdlIG9mIFRNVSByZWdpc3RlcnMuDQo+ID4gPiA+ICstIGludGVycnVwdHMgOiBz
-aG91bGQgY29udGFpbiB0aGUgaW50ZXJydXB0IGZvciBUTVUuDQo+ID4gPg0KPiA+ID4gcy9zaG91
-bGQgY29udGFpbi9jb250YWlucy8NCj4gPg0KPiA+IFRoYW5rcyBmb3IgdGhlIGNvcnJlY3Rpb24u
-DQo+ID4NCj4gPiA+DQo+ID4gPiA+ICstIGNhbGlicmF0aW9uIDogY2FsaWJyYXRpb24gdGFibGUg
-Zm9yIFRNVS4NCj4gPiA+DQo+ID4gPiBXaGF0IGlzIHRoZSBmb3JtYXQgb2YgdGhlIGNhbGlicmF0
-aW9uIHRhYmxlLCBhbmQgd2hlcmUgZG9lcyBvbmUgZ2V0DQo+ID4gPiB0aGUgZGF0YT8NCj4gPg0K
-PiA+IFRoZXJlIGFyZSBmb3VyIGNhbGlicmF0aW9uIGNvbmZpZyByYW5nZSwgZm9yIGVhY2ggcmFu
-Z2Ugd2UgZ290IGENCj4gPiBjb3VwbGUgb2YgcGFpcnMgZm9ybWF0dGVkIGxpa2UgPFRUQ0ZHUiwg
-VFNDRkdSPiBhdCBvZmZzZXQgb2YgPDB4MDA4MCwNCj4gMHgwMDg0Pi4NCj4gDQo+IFRoZSBiaW5k
-aW5nIGRvY3VtZW50IG5lZWRzIHRvIGV4cGxhaW4gdGhpcywgaW4gbW9yZSBkZXRhaWwsIGFzIHdl
-bGwgYXMNCj4gaG93IG9uZSBkZXRlcm1pbmVzIHRoZSBkYXRhLg0KDQpSaWdodCwgSSB3aWxsIGFk
-ZCBkZXRhaWxzLg0KDQo+IA0KPiBJcyB0aGlzIGNvbmZpZ3VyYXRpb24gb3IgaGFyZHdhcmUgZGVz
-Y3JpcHRpb24/DQoNClRvIG15IHVuZGVyc3RhbmRpbmcgdGhpcyBpcyBraW5kIG9mIGhhcmR3YXJl
-IGRlc2NyaXB0aW9uLg0KVGhlIGNhbGlicmF0aW9uIGRhdGEgaXMgdmFyeSB3aXRoIGRpZmZlcmVu
-dCBTb0NzLg0KVGhlc2UgZGF0YSBpcyBwcm92aWRlZCBieSBoYXJkd2FyZSB2ZXJpZmljYXRpb24g
-dGVhbS4NCg0KLUhvbmd0YW8NCg0KPiANCj4gLVNjb3R0DQo+IA0KDQo=
+--Sig_/vCE.Ag9oszeqkSw+UY9v6PH
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
+
+Hi all,
+
+Today's linux-next merge of the powerpc-mpe tree got a conflict in
+arch/powerpc/include/asm/machdep.h between commit 6e628c7d33d9
+("powerpc/powernv: Reserve additional space for IOV BAR according to
+the number of total_pe") from the  tree and commit 467efc2e4fdc
+("powerpc: Remove shims for pci_controller_ops operations") from the
+powerpc-mpe tree.
+
+I fixed it up (see below) and can carry the fix as necessary (no action
+is required).
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+diff --cc arch/powerpc/include/asm/machdep.h
+index 1b268044f290,5c19ac527a8e..000000000000
+--- a/arch/powerpc/include/asm/machdep.h
++++ b/arch/powerpc/include/asm/machdep.h
+@@@ -240,21 -236,6 +236,11 @@@ struct machdep_calls=20
+  	/* Called after scan and before resource survey */
+  	void (*pcibios_fixup_phb)(struct pci_controller *hose);
+ =20
+- 	/* Called during PCI resource reassignment */
+- 	resource_size_t (*pcibios_window_alignment)(struct pci_bus *, unsigned l=
+ong type);
+-=20
+- 	/* Reset the secondary bus of bridge */
+- 	void  (*pcibios_reset_secondary_bus)(struct pci_dev *dev);
+-=20
+ +#ifdef CONFIG_PCI_IOV
+ +	void (*pcibios_fixup_sriov)(struct pci_dev *pdev);
+ +	resource_size_t (*pcibios_iov_resource_alignment)(struct pci_dev *, int =
+resno);
+ +#endif /* CONFIG_PCI_IOV */
+ +
+  	/* Called to shutdown machine specific hardware not already controlled
+  	 * by other drivers.
+  	 */
+
+--Sig_/vCE.Ag9oszeqkSw+UY9v6PH
+Content-Type: application/pgp-signature
+Content-Description: OpenPGP digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBCAAGBQJVKzeYAAoJEMDTa8Ir7ZwVYIcP/RTe5SnFq9TW81VW0WFV5s7U
+rz3Nqpji+aS1nYXFOjNnjAPSiZ2dSJOrQNCc/rbBqRohf4+RTrGOF32bDkkcSWcz
+0jsUW2YGsY5MJxkxP4YrdByZUK1VRQcwgUQFwLdL5rYpsJc5cVZ5qwNvCRxHAAI5
+nLwHFLRQTOntpq5j8fQSdNrZRKbBb8qJsisOwzpH9UXAG7jPgMLZVWKlnh/P/xxY
+TUNDwT5wa/DuTyTr15ghrUacC4Zs5dSaezL533QEojrkEo1D6jpUIE4CBZbi5goo
+DGh/7Ga+qw6Pcsybod5xzj+ebE1QzGZUOjIeqUYrMkcJzAXCs/JSCC8/+AAdvTMu
+NBPhyvvl/FAA+mGJRxk3mtR7S6dDEM+rCdhAg+8fx22nnzxbDuHJNiSElb6naJXP
+dLhIUZ98fpjpHI5TZu/o7iNgh/XhH2YARvnbJNDc05XYLy+wlxgBZH0wnddyR8fN
+0TOGBwGI8ROHze/iN+rakoUeQRWQKqSTnqT+3I0p+ZGyfJ7YxbvBdSidxy2+MEYJ
+BG70kNrZ8szqBZ7COvYbG4UtGzr7Se54xakobPO2XJmRX0WU+dBsFWWwtr+HicWj
+dpC6cDB1anwHqQZb1dMKmJ3wdiV7u2XW7sa44Cwh/UhPzxv5hu3ACWY9Y+SfO7n2
+6VIEewE0rSCOiTktLtyK
+=dLhJ
+-----END PGP SIGNATURE-----
+
+--Sig_/vCE.Ag9oszeqkSw+UY9v6PH--
