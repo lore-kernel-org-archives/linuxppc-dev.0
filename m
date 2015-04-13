@@ -1,26 +1,26 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <hongtao.jia@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0146.outbound.protection.outlook.com [207.46.100.146])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D08081A0176
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Apr 2015 11:03:18 +1000 (AEST)
-Message-ID: <1428886998.9400.2.camel@ellerman.id.au>
-Subject: Re: [PATCH] powerpc/pasemi: Only the build the pasemi MSI code for
- PASEMI=y
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Date: Mon, 13 Apr 2015 11:03:18 +1000
-In-Reply-To: <20150412190409.GA16978@gate.crashing.org>
-References: <1428630726-12905-1-git-send-email-mpe@ellerman.id.au>
- <20150410142414.0ea55c4b@canb.auug.org.au>
- <1428643714.30592.4.camel@ellerman.id.au>
- <20150410164208.1cc2a994@canb.auug.org.au>
- <1428662335.21137.1.camel@ellerman.id.au>
- <20150412190409.GA16978@gate.crashing.org>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Olof Johannsson <olof@lixom.net>, Stephen Rothwell <sfr@canb.auug.org.au>,
- linuxppc-dev@ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id BD9D61A01A3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Apr 2015 12:59:40 +1000 (AEST)
+From: Hongtao Jia <hongtao.jia@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: RE: [PATCH] QorIQ/TMU: add TMU node to device tree for QorIQ T104x
+Date: Mon, 13 Apr 2015 02:25:31 +0000
+Message-ID: <BLUPR03MB149C37D2049044E873F0CA5E1E70@BLUPR03MB149.namprd03.prod.outlook.com>
+References: <1427782669-20368-1-git-send-email-hongtao.jia@freescale.com>
+ <1428638140.22867.583.camel@freescale.com>
+ <BLUPR03MB14924B9EBBD1C5635B0487DE1FA0@BLUPR03MB149.namprd03.prod.outlook.com>
+ <1428705646.22867.601.camel@freescale.com>
+In-Reply-To: <1428705646.22867.601.camel@freescale.com>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "rui.zhang@intel.com" <rui.zhang@intel.com>,
+ "robh+dt@kernel.org" <robh+dt@kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,21 +30,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2015-04-12 at 14:04 -0500, Segher Boessenkool wrote:
-> On Fri, Apr 10, 2015 at 08:38:55PM +1000, Michael Ellerman wrote:
-> > BUT, I can't work out how to tell git-send-email I *always* want to pass -M, so
-> > I'll probably forget next time :)
-> 
-> In your config:
-> 
-> --
-> [diff]
-> 	renames = true
-> --
-> 
-> but this will do it for all diffs, not just for format-patch.
-
-Ah thanks. That's probably good enough for me. If folks need a patch(1) diff
-they can ask for it.
-
-cheers
+DQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IFdvb2QgU2NvdHQtQjA3NDIx
+DQo+IFNlbnQ6IFNhdHVyZGF5LCBBcHJpbCAxMSwgMjAxNSA2OjQxIEFNDQo+IFRvOiBKaWEgSG9u
+Z3Rhby1CMzg5NTENCj4gQ2M6IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnOyBkZXZpY2V0
+cmVlQHZnZXIua2VybmVsLm9yZzsNCj4gcm9iaCtkdEBrZXJuZWwub3JnOyBydWkuemhhbmdAaW50
+ZWwuY29tDQo+IFN1YmplY3Q6IFJlOiBbUEFUQ0hdIFFvcklRL1RNVTogYWRkIFRNVSBub2RlIHRv
+IGRldmljZSB0cmVlIGZvciBRb3JJUQ0KPiBUMTA0eA0KPiANCj4gT24gRnJpLCAyMDE1LTA0LTEw
+IGF0IDAxOjIzIC0wNTAwLCBKaWEgSG9uZ3Rhby1CMzg5NTEgd3JvdGU6DQo+ID4NCj4gPg0KPiA+
+ID4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gPiA+IEZyb206IFdvb2QgU2NvdHQtQjA3
+NDIxDQo+ID4gPiBTZW50OiBGcmlkYXksIEFwcmlsIDEwLCAyMDE1IDExOjU2IEFNDQo+ID4gPiBU
+bzogSmlhIEhvbmd0YW8tQjM4OTUxDQo+ID4gPiBDYzogbGludXhwcGMtZGV2QGxpc3RzLm96bGFi
+cy5vcmc7IGRldmljZXRyZWVAdmdlci5rZXJuZWwub3JnOw0KPiA+ID4gcm9iaCtkdEBrZXJuZWwu
+b3JnOyBydWkuemhhbmdAaW50ZWwuY29tDQo+ID4gPiBTdWJqZWN0OiBSZTogW1BBVENIXSBRb3JJ
+US9UTVU6IGFkZCBUTVUgbm9kZSB0byBkZXZpY2UgdHJlZSBmb3INCj4gPiA+IFFvcklRIFQxMDR4
+DQo+ID4gPg0KPiA+ID4gT24gVHVlLCAyMDE1LTAzLTMxIGF0IDE0OjE3ICswODAwLCBKaWEgSG9u
+Z3RhbyB3cm90ZToNCj4gPiA+ID4gVGhpcyBpcyBUaGVybWFsIE1vbml0b3JpbmcgVW5pdCBmb3Ig
+UW9ySVEgcGxhdGZvcm0uDQo+ID4gPiA+DQo+ID4gPiA+IFNpZ25lZC1vZmYtYnk6IEppYSBIb25n
+dGFvIDxob25ndGFvLmppYUBmcmVlc2NhbGUuY29tPg0KPiA+ID4gPiAtLS0NCj4gPiA+ID4gIC4u
+Li9kZXZpY2V0cmVlL2JpbmRpbmdzL3RoZXJtYWwvcW9yaXEtdGhlcm1hbC50eHQgIHwgNTgNCj4g
+PiA+ICsrKysrKysrKysrKysrKw0KPiA+ID4gPiAgYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL2ZzbC9x
+b3JpcS10bXUtdDEwNHhzaS5kdHNpICAgfCA4Mg0KPiA+ID4gKysrKysrKysrKysrKysrKysrKysr
+Kw0KPiA+ID4gPiAgYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL2ZzbC90MTA0MHNpLXBvc3QuZHRzaSAg
+ICAgICAgfCAgMSArDQo+ID4gPiA+ICAzIGZpbGVzIGNoYW5nZWQsIDE0MSBpbnNlcnRpb25zKCsp
+ICBjcmVhdGUgbW9kZSAxMDA2NDQNCj4gPiA+ID4gRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2Jp
+bmRpbmdzL3RoZXJtYWwvcW9yaXEtdGhlcm1hbC50eHQNCj4gPiA+ID4gIGNyZWF0ZSBtb2RlIDEw
+MDY0NA0KPiA+ID4gPiBhcmNoL3Bvd2VycGMvYm9vdC9kdHMvZnNsL3FvcmlxLXRtdS10MTA0eHNp
+LmR0c2kNCj4gPiA+ID4NCj4gPiA+ID4gZGlmZiAtLWdpdA0KPiA+ID4gPiBhL0RvY3VtZW50YXRp
+b24vZGV2aWNldHJlZS9iaW5kaW5ncy90aGVybWFsL3FvcmlxLXRoZXJtYWwudHh0DQo+ID4gPiA+
+IGIvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL3RoZXJtYWwvcW9yaXEtdGhlcm1h
+bC50eHQNCj4gPiA+ID4gbmV3IGZpbGUgbW9kZSAxMDA2NDQNCj4gPiA+ID4gaW5kZXggMDAwMDAw
+MC4uZGZjMTdmYQ0KPiA+ID4gPiAtLS0gL2Rldi9udWxsDQo+ID4gPiA+ICsrKyBiL0RvY3VtZW50
+YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy90aGVybWFsL3FvcmlxLXRoZXJtYWwudHh0DQo+ID4g
+PiA+IEBAIC0wLDAgKzEsNTggQEANCj4gPiA+ID4gKyogVGhlcm1hbCBNb25pdG9yaW5nIFVuaXQg
+KFRNVSkgb24gRnJlZXNjYWxlIFFvcklRIFNvQ3MNCj4gPiA+ID4gKw0KPiA+ID4gPiArUmVxdWly
+ZWQgcHJvcGVydGllczoNCj4gPiA+ID4gKy0gY29tcGF0aWJsZSA6ICJmc2wscW9yaXEtdG11Ii4N
+Cj4gPiA+DQo+ID4gPiBjb21wYXRpYmxlOiBNdXN0IGluY2x1ZGUgImZzbCxxb3JpcS10bXUiLiBU
+aGUgdmVyc2lvbiBvZiB0aGUgZGV2aWNlDQo+IGlzDQo+ID4gPiAJICAgIGRldGVybWluZWQgYnkg
+dGhlIFRNVSBJUCBCbG9jayBSZXZpc2lvbiBSZWdpc3RlciAoSVBCUlIwKQ0KPiA+ID4gCSAgICBh
+dCBvZmZzZXQgMHgwQkY4Lg0KPiA+ID4NCj4gPiA+IAkgICAgVGFibGUgb2YgY29ycmVzcG9uZGVu
+Y2VzIGJldHdlZW4gSVBCUlIwIHZhbHVlcyBhbmQgZXhhbXBsZQ0KPiA+ID4gCSAgICBjaGlwczoN
+Cj4gPiA+IAkJVmFsdWUgICAgICAgICAgIERldmljZQ0KPiA+ID4gCQktLS0tLS0tLS0tLSAgICAg
+LS0tLS0tLQ0KPiA+ID4gCQkweDAxOTAwMTAyICAgICAgVDEwNDANCj4gPg0KPiA+IEkgd2lsbCB1
+cGRhdGUgaXQgaW4gbmV4dCB2ZXJzaW9uLg0KPiA+DQo+ID4gPg0KPiA+ID4gPiArLSByZWcgOiBh
+ZGRyZXNzIHJhbmdlIG9mIFRNVSByZWdpc3RlcnMuDQo+ID4gPiA+ICstIGludGVycnVwdHMgOiBz
+aG91bGQgY29udGFpbiB0aGUgaW50ZXJydXB0IGZvciBUTVUuDQo+ID4gPg0KPiA+ID4gcy9zaG91
+bGQgY29udGFpbi9jb250YWlucy8NCj4gPg0KPiA+IFRoYW5rcyBmb3IgdGhlIGNvcnJlY3Rpb24u
+DQo+ID4NCj4gPiA+DQo+ID4gPiA+ICstIGNhbGlicmF0aW9uIDogY2FsaWJyYXRpb24gdGFibGUg
+Zm9yIFRNVS4NCj4gPiA+DQo+ID4gPiBXaGF0IGlzIHRoZSBmb3JtYXQgb2YgdGhlIGNhbGlicmF0
+aW9uIHRhYmxlLCBhbmQgd2hlcmUgZG9lcyBvbmUgZ2V0DQo+ID4gPiB0aGUgZGF0YT8NCj4gPg0K
+PiA+IFRoZXJlIGFyZSBmb3VyIGNhbGlicmF0aW9uIGNvbmZpZyByYW5nZSwgZm9yIGVhY2ggcmFu
+Z2Ugd2UgZ290IGENCj4gPiBjb3VwbGUgb2YgcGFpcnMgZm9ybWF0dGVkIGxpa2UgPFRUQ0ZHUiwg
+VFNDRkdSPiBhdCBvZmZzZXQgb2YgPDB4MDA4MCwNCj4gMHgwMDg0Pi4NCj4gDQo+IFRoZSBiaW5k
+aW5nIGRvY3VtZW50IG5lZWRzIHRvIGV4cGxhaW4gdGhpcywgaW4gbW9yZSBkZXRhaWwsIGFzIHdl
+bGwgYXMNCj4gaG93IG9uZSBkZXRlcm1pbmVzIHRoZSBkYXRhLg0KDQpSaWdodCwgSSB3aWxsIGFk
+ZCBkZXRhaWxzLg0KDQo+IA0KPiBJcyB0aGlzIGNvbmZpZ3VyYXRpb24gb3IgaGFyZHdhcmUgZGVz
+Y3JpcHRpb24/DQoNClRvIG15IHVuZGVyc3RhbmRpbmcgdGhpcyBpcyBraW5kIG9mIGhhcmR3YXJl
+IGRlc2NyaXB0aW9uLg0KVGhlIGNhbGlicmF0aW9uIGRhdGEgaXMgdmFyeSB3aXRoIGRpZmZlcmVu
+dCBTb0NzLg0KVGhlc2UgZGF0YSBpcyBwcm92aWRlZCBieSBoYXJkd2FyZSB2ZXJpZmljYXRpb24g
+dGVhbS4NCg0KLUhvbmd0YW8NCg0KPiANCj4gLVNjb3R0DQo+IA0KDQo=
