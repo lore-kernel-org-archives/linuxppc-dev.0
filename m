@@ -1,20 +1,21 @@
-Return-Path: <anton@samba.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id EF4061A091B
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2015 07:51:04 +1000 (AEST)
-Date: Tue, 14 Apr 2015 07:51:03 +1000
-From: Anton Blanchard <anton@samba.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
- <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- stewart@linux.vnet.ibm.com
-Subject: [PATCH] powerpc/perf: Cap 64bit userspace backtraces to
- PERF_MAX_STACK_DEPTH
-Message-ID: <20150414075103.265073a6@kryten>
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ by lists.ozlabs.org (Postfix) with ESMTP id 2732D1A019A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2015 08:19:29 +1000 (AEST)
+Message-ID: <552C40EB.2000407@c-s.fr>
+Date: Tue, 14 Apr 2015 00:19:23 +0200
+From: leroy christophe <christophe.leroy@c-s.fr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@lists.ozlabs.org
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [v3, 01/11] powerpc/8xx: remove remaining unnecessary code in
+ FixupDAR
+References: <20150203113816.E77811A5F13@localhost.localdomain>	
+ <20150326213215.GA21815@home.buserror.net> <552A9A5D.4070208@c-s.fr>
+ <1428956804.22867.632.camel@freescale.com>
+In-Reply-To: <1428956804.22867.632.camel@freescale.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,27 +25,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We cap 32bit userspace backtraces to PERF_MAX_STACK_DEPTH
-(currently 127), but we forgot to do the same for 64bit backtraces.
 
-Cc: stable@vger.kernel.org
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
- arch/powerpc/perf/callchain.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/perf/callchain.c b/arch/powerpc/perf/callchain.c
-index 2396dda..ead5535 100644
---- a/arch/powerpc/perf/callchain.c
-+++ b/arch/powerpc/perf/callchain.c
-@@ -243,7 +243,7 @@ static void perf_callchain_user_64(struct perf_callchain_entry *entry,
- 	sp = regs->gpr[1];
- 	perf_callchain_store(entry, next_ip);
- 
--	for (;;) {
-+	while (entry->nr < PERF_MAX_STACK_DEPTH) {
- 		fp = (unsigned long __user *) sp;
- 		if (!valid_user_sp(sp, 1) || read_user_stack_64(fp, &next_sp))
- 			return;
--- 
-2.1.0
+Le 13/04/2015 22:26, Scott Wood a écrit :
+> On Sun, 2015-04-12 at 18:16 +0200, leroy christophe wrote:
+>> Le 26/03/2015 22:32, Scott Wood a écrit :
+>>> On Tue, Feb 03, 2015 at 12:38:16PM +0100, LEROY Christophe wrote:
+>>>> Since commit 33fb845a6f01 ("powerpc/8xx: Don't use MD_TWC for walk"), MD_EPN and
+>>>> MD_TWC are not writen anymore in FixupDAR so saving r3 has become useless.
+>>>>
+>>>> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+>>>> ---
+>>>> v2: no change
+>>>> v3: no change
+>>> This doesn't apply cleanly.
+>>>
+>>>
+>> You already applied part of that patchset it in your next tree,
+>> including that one (commit 2374d0a).
+>> You told me to re-submit a patchset with only the remaining ones,
+>> therefore I sent v4 on the 4th of Feb, based on your tree.
+> OK.  I applied v2, and didn't remember that when I came across v3 in
+> patchwork.
+>
+>
+What about v4 (the remaining ones) ? You got comments on the last one of 
+the set, have you applied the other ones or shall I re-sumbit a full v5 ?
+
+Christophe
