@@ -1,38 +1,23 @@
-Return-Path: <christoffer.dall@linaro.org>
-Received: from mail-la0-f53.google.com (mail-la0-f53.google.com
- [209.85.215.53])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9C6BA1A01C9
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Apr 2015 21:55:33 +1000 (AEST)
-Received: by labbd9 with SMTP id bd9so55040672lab.2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Apr 2015 04:55:30 -0700 (PDT)
-Date: Mon, 13 Apr 2015 13:55:35 +0200
-From: Christoffer Dall <christoffer.dall@linaro.org>
-To: Alex =?iso-8859-1?Q?Benn=E9e?= <alex.bennee@linaro.org>
-Subject: Re: [PATCH v2 02/10] KVM: define common __KVM_GUESTDBG_USE_SW/HW_BP
- values
-Message-ID: <20150413115535.GM6186@cbox>
-References: <1427814488-28467-1-git-send-email-alex.bennee@linaro.org>
- <1427814488-28467-3-git-send-email-alex.bennee@linaro.org>
+Return-Path: <kas@node.shutemov.name>
+Received: from kirsi1.inet.fi (mta-out1.inet.fi [62.71.2.195])
+ by lists.ozlabs.org (Postfix) with ESMTP id E88BA1A01C9
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Apr 2015 22:05:22 +1000 (AEST)
+Date: Mon, 13 Apr 2015 14:58:11 +0300
+From: "Kirill A. Shutemov" <kirill@shutemov.name>
+To: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+Subject: Re: [RESEND PATCH v3 1/2] mm: Introducing arch_remap hook
+Message-ID: <20150413115811.GA12354@node.dhcp.inet.fi>
+References: <cover.1428916945.git.ldufour@linux.vnet.ibm.com>
+ <9d827fc618a718830b2c47aa87e8be546914c897.1428916945.git.ldufour@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <1427814488-28467-3-git-send-email-alex.bennee@linaro.org>
-Cc: peter.maydell@linaro.org, kvm@vger.kernel.org,
- Alexey Kardashevskiy <aik@ozlabs.ru>,
- Bharat Bhushan <Bharat.Bhushan@freescale.com>,
- Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
- kvmarm@lists.cs.columbia.edu, Nadav Amit <namit@cs.technion.ac.il>,
- "maintainer:X86 ARCHITECTURE..." <x86@kernel.org>, agraf@suse.de,
- Gleb Natapov <gleb@kernel.org>, Ingo Molnar <mingo@redhat.com>,
- zhichao.huang@linaro.org, jan.kiszka@siemens.com,
- Mihai Caraman <mihai.caraman@freescale.com>, bp@suse.de, drjones@redhat.com,
- marc.zyngier@arm.com, r65777@freescale.com,
- Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
- "open list:ABI/API" <linux-api@vger.kernel.org>,
- open list <linux-kernel@vger.kernel.org>, dahi@linux.vnet.ibm.com,
- pbonzini@redhat.com,
- "open list:LINUX FOR POWERPC..." <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <9d827fc618a718830b2c47aa87e8be546914c897.1428916945.git.ldufour@linux.vnet.ibm.com>
+Cc: Rik van Riel <riel@redhat.com>, Pavel Emelyanov <xemul@parallels.com>,
+ Hugh Dickins <hughd@google.com>, linux-kernel@vger.kernel.org, criu@openvz.org,
+ linux-mm@kvack.org, Paul Mackerras <paulus@samba.org>,
+ Mel Gorman <mgorman@suse.de>, Andrew Morton <akpm@linux-foundation.org>,
+ linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@kernel.org>,
+ "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, cov@codeaurora.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,82 +27,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Mar 31, 2015 at 04:08:00PM +0100, Alex Bennée wrote:
-> Currently x86, powerpc and soon arm64 use the same two architecture
-> specific bits for guest debug support for software and hardware
-> breakpoints. This makes the shared values explicit while leaving the
-> gate open for another architecture to use some other value if they
-> really really want to.
+On Mon, Apr 13, 2015 at 11:56:27AM +0200, Laurent Dufour wrote:
+> Some architecture would like to be triggered when a memory area is moved
+> through the mremap system call.
 > 
-> Signed-off-by: Alex Bennée <alex.bennee@linaro.org>
+> This patch is introducing a new arch_remap mm hook which is placed in the
+> path of mremap, and is called before the old area is unmapped (and the
+> arch_unmap hook is called).
 > 
-> diff --git a/arch/powerpc/include/uapi/asm/kvm.h b/arch/powerpc/include/uapi/asm/kvm.h
-> index ab4d473..1731569 100644
-> --- a/arch/powerpc/include/uapi/asm/kvm.h
-> +++ b/arch/powerpc/include/uapi/asm/kvm.h
-> @@ -310,8 +310,8 @@ struct kvm_guest_debug_arch {
->   * and upper 16 bits are architecture specific. Architecture specific defines
->   * that ioctl is for setting hardware breakpoint or software breakpoint.
->   */
-> -#define KVM_GUESTDBG_USE_SW_BP		0x00010000
-> -#define KVM_GUESTDBG_USE_HW_BP		0x00020000
-> +#define KVM_GUESTDBG_USE_SW_BP		__KVM_GUESTDBG_USE_SW_BP
-> +#define KVM_GUESTDBG_USE_HW_BP		__KVM_GUESTDBG_USE_HW_BP
+> The architectures which need to call this hook should define
+> __HAVE_ARCH_REMAP in their asm/mmu_context.h and provide the arch_remap
+> service with the following prototype:
+> void arch_remap(struct mm_struct *mm,
+>                 unsigned long old_start, unsigned long old_end,
+>                 unsigned long new_start, unsigned long new_end);
+> 
+> Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+> Reviewed-by: Ingo Molnar <mingo@kernel.org>
+> ---
+>  mm/mremap.c | 19 +++++++++++++------
+>  1 file changed, 13 insertions(+), 6 deletions(-)
+> 
+> diff --git a/mm/mremap.c b/mm/mremap.c
+> index 2dc44b1cb1df..009db5565893 100644
+> --- a/mm/mremap.c
+> +++ b/mm/mremap.c
+> @@ -25,6 +25,7 @@
 >  
->  /* definition of registers in kvm_run */
->  struct kvm_sync_regs {
-> diff --git a/arch/x86/include/uapi/asm/kvm.h b/arch/x86/include/uapi/asm/kvm.h
-> index d7dcef5..1438202 100644
-> --- a/arch/x86/include/uapi/asm/kvm.h
-> +++ b/arch/x86/include/uapi/asm/kvm.h
-> @@ -250,8 +250,8 @@ struct kvm_debug_exit_arch {
->  	__u64 dr7;
->  };
+>  #include <asm/cacheflush.h>
+>  #include <asm/tlbflush.h>
+> +#include <asm/mmu_context.h>
 >  
-> -#define KVM_GUESTDBG_USE_SW_BP		0x00010000
-> -#define KVM_GUESTDBG_USE_HW_BP		0x00020000
-> +#define KVM_GUESTDBG_USE_SW_BP		__KVM_GUESTDBG_USE_SW_BP
-> +#define KVM_GUESTDBG_USE_HW_BP		__KVM_GUESTDBG_USE_HW_BP
->  #define KVM_GUESTDBG_INJECT_DB		0x00040000
->  #define KVM_GUESTDBG_INJECT_BP		0x00080000
+>  #include "internal.h"
 >  
-> diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
-> index 5eedf84..ce2db14 100644
-> --- a/include/uapi/linux/kvm.h
-> +++ b/include/uapi/linux/kvm.h
-> @@ -525,8 +525,16 @@ struct kvm_s390_irq {
->  
->  /* for KVM_SET_GUEST_DEBUG */
->  
-> -#define KVM_GUESTDBG_ENABLE		0x00000001
-> -#define KVM_GUESTDBG_SINGLESTEP		0x00000002
-> +#define KVM_GUESTDBG_ENABLE		(1 << 0)
-> +#define KVM_GUESTDBG_SINGLESTEP	(1 << 1)
-> +
-> +/*
-> + * Architecture specific stuff uses the top 16 bits of the field,
+> @@ -286,13 +287,19 @@ static unsigned long move_vma(struct vm_area_struct *vma,
+>  		old_len = new_len;
+>  		old_addr = new_addr;
+>  		new_addr = -ENOMEM;
+> -	} else if (vma->vm_file && vma->vm_file->f_op->mremap) {
+> -		err = vma->vm_file->f_op->mremap(vma->vm_file, new_vma);
+> -		if (err < 0) {
+> -			move_page_tables(new_vma, new_addr, vma, old_addr,
+> -					 moved_len, true);
+> -			return err;
+> +	} else {
+> +		if (vma->vm_file && vma->vm_file->f_op->mremap) {
+> +			err = vma->vm_file->f_op->mremap(vma->vm_file, new_vma);
+> +			if (err < 0) {
+> +				move_page_tables(new_vma, new_addr, vma,
+> +						  old_addr, moved_len, true);
+> +				return err;
+> +			}
+>  		}
+> +#ifdef __HAVE_ARCH_REMAP
 
-can you be more specific than 'stuff' here?  features?
-
-> + * however there is some shared commonality for the common cases
-
-I don't like this sentence; shared commonality is a pleonasm and the use
-of however makes it sounds like there's some caveat here.
-
-If the top 16 bits are indeed arhictecture specific, then I think they
-should just be defined in their architecture specific headers.  Unless
-the idea here is that there's a fixed set of of flags that architectures
-can choose to support, in which case it should simply be defined in the
-common header.
+It would be cleaner to provide dummy arch_remap() for !__HAVE_ARCH_REMAP
+in some generic header.
 
 
-> + */
-> +#define __KVM_GUESTDBG_USE_SW_BP	(1 << 16)
-> +#define __KVM_GUESTDBG_USE_HW_BP	(1 << 17)
-> +
+> +		arch_remap(mm, old_addr, old_addr+old_len,
+> +			   new_addr, new_addr+new_len);
+
+Spaces around '+'?
+
+> +#endif
+>  	}
 >  
->  struct kvm_guest_debug {
->  	__u32 control;
+>  	/* Conceal VM_ACCOUNT so old reservation is not undone */
 > -- 
-> 2.3.4
+> 1.9.1
 > 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
+
+-- 
+ Kirill A. Shutemov
