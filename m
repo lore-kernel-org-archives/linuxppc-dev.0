@@ -1,23 +1,15 @@
-Return-Path: <cyrilbur@gmail.com>
-Received: from mail-pa0-x233.google.com (mail-pa0-x233.google.com
- [IPv6:2607:f8b0:400e:c03::233])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 060A61A01A3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Apr 2015 14:22:56 +1000 (AEST)
-Received: by pabsx10 with SMTP id sx10so89332768pab.3
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 12 Apr 2015 21:22:53 -0700 (PDT)
-Message-ID: <1428898964.2881.9.camel@cyril>
-Subject: Re: [PATCH 0/2] Add a MTD driver for OpenPower PNOR flash
-From: Cyril Bur <cyrilbur@gmail.com>
-To: linux-mtd@lists.infradead.org, David Woodhouse <dwmw2@infradead.org>
-Date: Mon, 13 Apr 2015 14:22:44 +1000
-In-Reply-To: <1427868330.741478.119647151764.0.gpush@pablo>
-References: <1427868330.741478.119647151764.0.gpush@pablo>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, Joel Stanley <joel@jms.id.au>,
- Jeremy Kerr <jk@ozlabs.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 111C61A01A3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Apr 2015 14:37:50 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: stable@vger.kernel.org
+Subject: [PATCH] powerpc: Re-enable dynticks
+Date: Mon, 13 Apr 2015 14:37:45 +1000
+Message-Id: <1428899865-29258-1-git-send-email-mpe@ellerman.id.au>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,47 +19,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2015-04-01 at 14:05 +0800, Jeremy Kerr wrote:
-> Hi all,
-> 
-> This series implements a simple mtd device to allow access to the PNOR
-> flash on OpenPower machines. The flash is accessed through firmware
-> calls.
-> 
-> Patch 1/2 adds the Linux interface to these calls. Patch 2/2 adds a mtd
-> driver that uses these calls.
-> 
-> Because there's two subsystems involved here, there are a couple of
-> methods to merge this:
-> 
->  1) The powerpc folks take 1/2, and the mtd folks take 2/2, to be
->     applied once 1/2 is available (Michael has created a topic branch for
->     this in the past, which can make things a little easier), or
-> 
->  2) One of the maintainers takes both patches, once the other has acked
->     their patch. I'd suggest that it goes through the powerpc tree in
->     this case, as that will be less likely to conflict.
-> 
-Ping about this patchset. What do the MTD maintainers think?
+From: Paul Clarke <pc@us.ibm.com>
 
-Hi David,
+Commit fea559f303567e558bfab9c8ba4a2af5b309205a upstream, for 3.19.
 
-Jeremy mentioned you might be interested in seeing these.
+Implement arch_irq_work_has_interrupt() for powerpc
 
+Commit 9b01f5bf3 introduced a dependency on "IRQ work self-IPIs" for
+full dynamic ticks to be enabled, by expecting architectures to
+implement a suitable arch_irq_work_has_interrupt() routine.
 
-Thanks,
+Several arches have implemented this routine, including x86 (3010279f)
+and arm (09f6edd4), but powerpc was omitted.
 
-Cyril
+This patch implements this routine for powerpc.
 
-> Either way, I'm happy.
-> 
-> Cheers,
-> 
-> 	
-> Jeremy
-> 
-> ---
-> Cyril Bur (2):
->       powerpc/powernv: Add interfaces for flash device access
->       drivers/mtd: add powernv flash MTD abstraction driver
-> 
+The symptom, at boot (on powerpc systems) with "nohz_full=<CPU list>"
+is displayed:
+
+     NO_HZ: Can't run full dynticks because arch doesn't support irq work self-IPIs
+
+after this patch:
+
+     NO_HZ: Full dynticks CPUs: <CPU list>.
+
+Tested against 3.19.
+
+powerpc implements "IRQ work self-IPIs" by setting the decrementer to 1 in
+arch_irq_work_raise(), which causes a decrementer exception on the next
+timebase tick. We then handle the work in __timer_interrupt().
+
+CC: Frederic Weisbecker <fweisbec@gmail.com>
+Signed-off-by: Paul A. Clarke <pc@us.ibm.com>
+Reviewed-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+[mpe: Flesh out change log, fix ws & include guards, remove include of processor.h]
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/include/asm/irq_work.h | 9 +++++++++
+ 1 file changed, 9 insertions(+)
+ create mode 100644 arch/powerpc/include/asm/irq_work.h
+
+diff --git a/arch/powerpc/include/asm/irq_work.h b/arch/powerpc/include/asm/irq_work.h
+new file mode 100644
+index 000000000000..744fd54de374
+--- /dev/null
++++ b/arch/powerpc/include/asm/irq_work.h
+@@ -0,0 +1,9 @@
++#ifndef _ASM_POWERPC_IRQ_WORK_H
++#define _ASM_POWERPC_IRQ_WORK_H
++
++static inline bool arch_irq_work_has_interrupt(void)
++{
++	return true;
++}
++
++#endif /* _ASM_POWERPC_IRQ_WORK_H */
+-- 
+2.1.0
