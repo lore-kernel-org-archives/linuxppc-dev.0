@@ -1,21 +1,20 @@
-Return-Path: <andreas.ruprecht@fau.de>
-Received: from mx-rz-2.rrze.uni-erlangen.de (mx-rz-2.rrze.uni-erlangen.de
- [131.188.11.21])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <anton@samba.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2D02A1A074A
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2015 04:33:32 +1000 (AEST)
-Message-ID: <552C0AA6.4010403@fau.de>
-Date: Mon, 13 Apr 2015 20:27:50 +0200
-From: Andreas Ruprecht <andreas.ruprecht@fau.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id EF4061A091B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2015 07:51:04 +1000 (AEST)
+Date: Tue, 14 Apr 2015 07:51:03 +1000
+From: Anton Blanchard <anton@samba.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Paul Mackerras
+ <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ stewart@linux.vnet.ibm.com
+Subject: [PATCH] powerpc/perf: Cap 64bit userspace backtraces to
+ PERF_MAX_STACK_DEPTH
+Message-ID: <20150414075103.265073a6@kryten>
 MIME-Version: 1.0
-To: Daniel Axtens <dja@axtens.net>
-Subject: powerpc: Dead code in commit bdc728a849a7
-Content-Type: text/plain; charset=utf-8
-Cc: Paul Bolle <pebolle@tiscali.nl>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- linuxppc-dev@lists.ozlabs.org, Stefan Hengelein <stefan.hengelein@fau.de>,
- Valentin Rothberg <valentinrothberg@gmail.com>
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,29 +24,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Daniel,
+We cap 32bit userspace backtraces to PERF_MAX_STACK_DEPTH
+(currently 127), but we forgot to do the same for 64bit backtraces.
 
-your commit bdc728a849a7 ("powerpc: move find_and_init_phbs() to pSeries
-specific code") in today's Linux next tree moves a function into the
-pSeries specific setup.c file. I noticed it because I'm running an
-automated bot on top of linux-next which looks for variability-related
-defects with undertaker-checkpatch[0].
+Cc: stable@vger.kernel.org
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
+ arch/powerpc/perf/callchain.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Inside the function, there is an #ifdef block which depends on
-CONFIG_PPC32 to be set. However, the file at
-arch/powerpc/platforms/pseries/setup.c will only be built if
-CONFIG_PPC_PSERIES is enabled[1], which through its Kconfig dependencies
-can only be selected if CONFIG_PPC64 is enabled[2]. As CONFIG_PPC32 and
-CONFIG_PPC64 are mutually exclusive, the #ifdef can never evaluate to
-true, and the corresponding code is dead.
-
-Should I send a patch which removes the #ifdef and the dead code or
-would you prefer to do this yourself?
-
-Best regards,
-
-Andreas
-
-[0] https://undertaker.cs.fau.de
-[1] arch/powerpc/platforms/Makefile, line 18
-[2] arch/powerpc/platforms/pseries/Kconfig, line 2
+diff --git a/arch/powerpc/perf/callchain.c b/arch/powerpc/perf/callchain.c
+index 2396dda..ead5535 100644
+--- a/arch/powerpc/perf/callchain.c
++++ b/arch/powerpc/perf/callchain.c
+@@ -243,7 +243,7 @@ static void perf_callchain_user_64(struct perf_callchain_entry *entry,
+ 	sp = regs->gpr[1];
+ 	perf_callchain_store(entry, next_ip);
+ 
+-	for (;;) {
++	while (entry->nr < PERF_MAX_STACK_DEPTH) {
+ 		fp = (unsigned long __user *) sp;
+ 		if (!valid_user_sp(sp, 1) || read_user_stack_64(fp, &next_sp))
+ 			return;
+-- 
+2.1.0
