@@ -1,31 +1,34 @@
 Return-Path: <tlfalcon@linux.vnet.ibm.com>
-Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 588131A0143
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2015 06:35:12 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 535341A0143
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2015 06:35:14 +1000 (AEST)
 Received: from /spool/local
- by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <tlfalcon@linux.vnet.ibm.com>;
- Tue, 14 Apr 2015 14:35:10 -0600
-Received: from b03cxnp08025.gho.boulder.ibm.com
- (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 995D23E4003B
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2015 14:35:06 -0600 (MDT)
+ Tue, 14 Apr 2015 14:35:12 -0600
+Received: from b03cxnp07028.gho.boulder.ibm.com
+ (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id AB2F019D8048
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2015 14:26:15 -0600 (MDT)
 Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
- by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t3EKYm3E33882116
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2015 13:34:48 -0700
+ by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t3EKXHbv33030310
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2015 13:33:17 -0700
 Received: from d03av03.boulder.ibm.com (localhost [127.0.0.1])
  by d03av03.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t3EKZ5pj014389
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2015 14:35:05 -0600
+ t3EKZ9gA014775
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2015 14:35:09 -0600
 From: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
 To: netdev@vger.kernel.org
-Subject: [PATCH 1/5] ibmveth: change rx buffer default allocation for CMO
-Date: Tue, 14 Apr 2015 15:35:00 -0500
-Message-Id: <1429043704-22552-1-git-send-email-tlfalcon@linux.vnet.ibm.com>
+Subject: [PATCH 5/5] ibmveth: Add ethtool statistics for tx and rx large
+ packets
+Date: Tue, 14 Apr 2015 15:35:04 -0500
+Message-Id: <1429043704-22552-5-git-send-email-tlfalcon@linux.vnet.ibm.com>
+In-Reply-To: <1429043704-22552-1-git-send-email-tlfalcon@linux.vnet.ibm.com>
+References: <1429043704-22552-1-git-send-email-tlfalcon@linux.vnet.ibm.com>
 Cc: Brian King <brking@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -36,44 +39,57 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch enables 64k rx buffer pools by default.  If Cooperative
-Memory Overcommitment (CMO) is enabled, the number of 64k buffers
-is reduced to save memory.
+This patch includes counters for transmitted and received large
+packets.
 
 Cc: Brian King <brking@linux.vnet.ibm.com>
 Signed-off-by: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
 ---
- drivers/net/ethernet/ibm/ibmveth.c | 3 +++
- drivers/net/ethernet/ibm/ibmveth.h | 3 ++-
- 2 files changed, 5 insertions(+), 1 deletion(-)
+ drivers/net/ethernet/ibm/ibmveth.c | 4 ++++
+ drivers/net/ethernet/ibm/ibmveth.h | 2 ++
+ 2 files changed, 6 insertions(+)
 
 diff --git a/drivers/net/ethernet/ibm/ibmveth.c b/drivers/net/ethernet/ibm/ibmveth.c
-index cd7675a..0210622 100644
+index 05eaca6a..39ab41e 100644
 --- a/drivers/net/ethernet/ibm/ibmveth.c
 +++ b/drivers/net/ethernet/ibm/ibmveth.c
-@@ -1424,6 +1424,9 @@ static int ibmveth_probe(struct vio_dev *dev, const struct vio_device_id *id)
+@@ -100,6 +100,8 @@ struct ibmveth_stat ibmveth_stats[] = {
+ 	{ "tx_send_failed", IBMVETH_STAT_OFF(tx_send_failed) },
+ 	{ "fw_enabled_ipv4_csum", IBMVETH_STAT_OFF(fw_ipv4_csum_support) },
+ 	{ "fw_enabled_ipv6_csum", IBMVETH_STAT_OFF(fw_ipv6_csum_support) },
++	{ "tx_large_packets", IBMVETH_STAT_OFF(tx_large_packets) },
++	{ "rx_large_packets", IBMVETH_STAT_OFF(rx_large_packets) }
+ };
  
- 	memcpy(netdev->dev_addr, mac_addr_p, ETH_ALEN);
+ /* simple methods of getting data from the current rxq entry */
+@@ -1045,6 +1047,7 @@ retry_bounce:
+ 		 */
+ 		ip_hdr(skb)->check = 0xffff;
+ 		tcp_hdr(skb)->check = cpu_to_be16(skb_shinfo(skb)->gso_size);
++		adapter->tx_large_packets++;
+ 	}
  
-+	if (firmware_has_feature(FW_FEATURE_CMO))
-+		memcpy(pool_count, pool_count_cmo, sizeof(pool_count));
-+
- 	for (i = 0; i < IBMVETH_NUM_BUFF_POOLS; i++) {
- 		struct kobject *kobj = &adapter->rx_buff_pool[i].kobj;
- 		int error;
+ 	if (ibmveth_send(adapter, descs)) {
+@@ -1147,6 +1150,7 @@ restart_poll:
+ 					 */
+ 					if (iph->check == 0xffff)
+ 						iph->check = ip_fast_csum((unsigned char *)iph, iph->ihl);
++						adapter->rx_large_packets++;
+ 				}
+ 			}
+ 
 diff --git a/drivers/net/ethernet/ibm/ibmveth.h b/drivers/net/ethernet/ibm/ibmveth.h
-index 1f37499..0dc664b 100644
+index 0dc664b..41dedb1 100644
 --- a/drivers/net/ethernet/ibm/ibmveth.h
 +++ b/drivers/net/ethernet/ibm/ibmveth.h
-@@ -104,7 +104,8 @@ static inline long h_illan_attributes(unsigned long unit_address,
+@@ -161,6 +161,8 @@ struct ibmveth_adapter {
+     u64 rx_no_buffer;
+     u64 tx_map_failed;
+     u64 tx_send_failed;
++    u64 tx_large_packets;
++    u64 rx_large_packets;
+ };
  
- static int pool_size[] = { 512, 1024 * 2, 1024 * 16, 1024 * 32, 1024 * 64 };
- static int pool_count[] = { 256, 512, 256, 256, 256 };
--static int pool_active[] = { 1, 1, 0, 0, 0};
-+static int pool_count_cmo[] = { 256, 512, 256, 256, 64 };
-+static int pool_active[] = { 1, 1, 0, 0, 1};
- 
- #define IBM_VETH_INVALID_MAP ((u16)0xffff)
- 
+ /*
 -- 
 1.8.3.1
