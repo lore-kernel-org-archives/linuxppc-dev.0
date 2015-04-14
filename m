@@ -1,25 +1,33 @@
-Return-Path: <dja@axtens.net>
-Received: from mail-pa0-x231.google.com (mail-pa0-x231.google.com
- [IPv6:2607:f8b0:400e:c03::231])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <shreyas@linux.vnet.ibm.com>
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 845981A074A
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2015 10:17:14 +1000 (AEST)
-Received: by paboj16 with SMTP id oj16so118875426pab.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Apr 2015 17:17:11 -0700 (PDT)
-From: Daniel Axtens <dja@axtens.net>
-To: Andreas Ruprecht <andreas.ruprecht@fau.de>
-Subject: [PATCH] powerpc: Remove PPC32 code from pseries specific
- find_and_init_phbs()
-Date: Tue, 14 Apr 2015 10:16:47 +1000
-Message-Id: <1428970607-17513-1-git-send-email-dja@axtens.net>
-In-Reply-To: <552C0AA6.4010403@fau.de>
-References: <552C0AA6.4010403@fau.de>
-Cc: Paul Bolle <pebolle@tiscali.nl>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Daniel Axtens <dja@axtens.net>, linuxppc-dev@lists.ozlabs.org,
- Stefan Hengelein <stefan.hengelein@fau.de>,
- Valentin Rothberg <valentinrothberg@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6C2431A0ABD
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2015 11:58:00 +1000 (AEST)
+Received: from /spool/local
+ by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <shreyas@linux.vnet.ibm.com>;
+ Mon, 13 Apr 2015 19:57:57 -0600
+Received: from b03cxnp07028.gho.boulder.ibm.com
+ (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id C49A319D8040
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Apr 2015 19:49:00 -0600 (MDT)
+Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
+ by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with
+ ESMTP id t3E1u2AM28377148
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Apr 2015 18:56:03 -0700
+Received: from d03av05.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t3E1vsa0030183
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Apr 2015 19:57:55 -0600
+From: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH v4 0/3] powerpc: powernv: Fastsleep workaround behavior
+Date: Tue, 14 Apr 2015 07:26:50 +0530
+Message-Id: <1428976613-13007-1-git-send-email-shreyas@linux.vnet.ibm.com>
+Cc: preeti@linux.vnet.ibm.com, "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,36 +37,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In bdc728a849a7 ("powerpc: move find_and_init_phbs() to pSeries
-specific code"), find_and_init_phbs() was moved into a pseries
-specific file, but PPC32 code wasn't removed. Remove it.
+Fastsleep is one of the idle state which cpuidle subsystem currently
+uses on power8 machines. In this state L2 cache is brought down to a
+threshold voltage. Therefore when the core is in fastsleep, the 
+communication between L2 and L3 needs to be fenced. But there is a bug 
+in the current power8 chips surrounding this fencing.
 
-See https://lkml.kernel.org/r/552C0AA6.4010403@fau.de
+OPAL provides a workaround which precludes the possibility of hitting
+this bug. But running with this workaround applied causes checkstop
+if any correctable error in L2 cache directory is detected. Hence OPAL
+also provides a way to undo the workaround.
 
-Reported-by: Andreas Ruprecht <andreas.ruprecht@fau.de>
-Fixes: bdc728a849a7
-Signed-off-by: Daniel Axtens <dja@axtens.net>
----
- arch/powerpc/platforms/pseries/setup.c | 7 -------
- 1 file changed, 7 deletions(-)
+In the existing implementation, workaround is applied by the last thread
+of the core entering fastsleep and undone by the first thread waking up. 
+But this has a performance cost. These OPAL calls account for roughly
+4000 cycles everytime the core has to enter or wakeup from fastsleep.
 
-diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
-index 328e318..baefd3e 100644
---- a/arch/powerpc/platforms/pseries/setup.c
-+++ b/arch/powerpc/platforms/pseries/setup.c
-@@ -499,13 +499,6 @@ static void __init find_and_init_phbs(void)
- 			else
- 				pci_clear_flags(PCI_PROBE_ONLY);
- 		}
--
--#ifdef CONFIG_PPC32 /* Will be made generic soon */
--		prop = of_get_property(of_chosen,
--				"linux,pci-assign-all-buses", NULL);
--		if (prop && *prop)
--			pci_add_flags(PCI_REASSIGN_ALL_BUS);
--#endif /* CONFIG_PPC32 */
- 	}
- }
- 
+This patchset introduces a sysfs attribute (fastsleep_workaround_state)
+to choose the behavior of this workaround.
+
+Patch 1/3 fixes cpu_online_cores_map which is used by Patch 3/3. 
+Patch 2/3 is a clean up patch. It moves all cpuidle related code into 
+a new file. 
+Patch 3/3 introduces the sysfs attribute to control fastsleep workaround
+behavior
+
+
+Changes in v4:
+-------------
+-Handling patch_instruction and OPAL call errors
+-Sysfs attribute takes string ("dynamic" vs "applyonce") as input. 
+-Improved changelogs
+
+Changes in v3:
+--------------
+-Kernel parameter changed to sysfs attribute
+
+Changes in v2:
+--------------
+-Changed commit message to accurately describe the downside
+ of running workaround always applied.
+
+Shreyas B. Prabhu (3):
+  powerpc: Fix cpu_online_cores_map to return only online threads mask
+  powerpc/powernv: Move cpuidle related code from setup.c to new file
+  powerpc/powernv: Introduce sysfs control for fastsleep workaround
+    behavior
+
+ arch/powerpc/include/asm/cputhreads.h          |  13 +-
+ arch/powerpc/include/asm/opal-api.h            |   7 +
+ arch/powerpc/include/asm/opal.h                |   1 +
+ arch/powerpc/platforms/powernv/Makefile        |   2 +-
+ arch/powerpc/platforms/powernv/idle.c          | 323 +++++++++++++++++++++++++
+ arch/powerpc/platforms/powernv/opal-wrappers.S |   1 +
+ arch/powerpc/platforms/powernv/setup.c         | 171 -------------
+ 7 files changed, 341 insertions(+), 177 deletions(-)
+ create mode 100644 arch/powerpc/platforms/powernv/idle.c
+
 -- 
-2.1.4
+1.9.3
