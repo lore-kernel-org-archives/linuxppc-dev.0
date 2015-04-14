@@ -1,22 +1,38 @@
-Return-Path: <dja@axtens.net>
-Received: from mail-pa0-x22e.google.com (mail-pa0-x22e.google.com
- [IPv6:2607:f8b0:400e:c03::22e])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <hegdevasant@linux.vnet.ibm.com>
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5907A1A1183
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2015 15:29:28 +1000 (AEST)
-Received: by paboj16 with SMTP id oj16so126418634pab.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Apr 2015 22:29:26 -0700 (PDT)
-From: Daniel Axtens <dja@axtens.net>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH v2 3/3] tty/hvc: remove celleb-only beat driver
-Date: Tue, 14 Apr 2015 15:28:46 +1000
-Message-Id: <1428989326-7637-3-git-send-email-dja@axtens.net>
-In-Reply-To: <1428989326-7637-1-git-send-email-dja@axtens.net>
-References: <1428989326-7637-1-git-send-email-dja@axtens.net>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Jiri Slaby <jslaby@suse.cz>, Daniel Axtens <dja@axtens.net>,
- linuxppc-dev@lists.ozlabs.org, Valentin Rothberg <valentinrothberg@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40DD31A0C47
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2015 15:41:26 +1000 (AEST)
+Received: from /spool/local
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <hegdevasant@linux.vnet.ibm.com>;
+ Tue, 14 Apr 2015 15:41:25 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 5E17C2CE8040
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2015 15:41:21 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t3E5fCRa22413476
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2015 15:41:21 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t3E5el1a024837
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2015 15:40:47 +1000
+Message-ID: <552CA84E.50705@linux.vnet.ibm.com>
+Date: Tue, 14 Apr 2015 11:10:30 +0530
+From: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: cooloney@gmail.com, rpurdie@rpsys.net
+Subject: Re: [PATCH v2 2/2] leds/powernv: Add driver for PowerNV platform
+References: <20150320105921.14866.83209.stgit@localhost.localdomain>
+ <20150320110328.14866.98225.stgit@localhost.localdomain>
+ <1427260873.6468.68.camel@kernel.crashing.org>
+In-Reply-To: <1427260873.6468.68.camel@kernel.crashing.org>
+Content-Type: text/plain; charset=utf-8
+Cc: stewart@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ linux-leds@vger.kernel.org, khandual@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,196 +42,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The beat hvc driver is only used by celleb.
-celleb has been dropped [1], so drop the drivers.
+On 03/25/2015 10:51 AM, Benjamin Herrenschmidt wrote:
+> On Fri, 2015-03-20 at 16:34 +0530, Vasant Hegde wrote:
+>> From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+>>
+>> This patch implements LED driver for PowerNV platform using the existing
+>> generic LED class framework. It registers classdev structures for all
+>> individual LEDs detected on the system through LED specific device tree
+>> nodes. Device tree nodes specify what all kind of LEDs present on the
+>> same location code. It registers LED classdev structure for each of them.
+>>
+>> The platform level implementation of LED get and set state has been
+>> achieved through OPAL calls. These calls are made available for the
+>> driver by exporting from architecture specific codes.
+>>
+>> As per the LED class framework, the 'brightness_set' function should not
+>> sleep. Hence these functions have been implemented through global work
+>> queue tasks which might sleep on OPAL async call completion.
+>>
+>> All the system LEDs can be found in the same regular path /sys/class/leds/.
+>> There are two different kind of LEDs present for the same location code,
+>> one being the identify indicator and other one being the fault indicator.
+>> We don't use LED colors. Hence our LEDs have names in this format.
+>>
+>>         <location_code>:<ATTENTION|IDENTIFY|FAULT>
+>>
+>> Any positive brightness value would turn on the LED and a zero value
+>> would turn off the LED. The driver will return LED_FULL (255) for any
+>> turned on LED and LED_OFF for any turned off LED.
+> 
 
-[1] http://patchwork.ozlabs.org/patch/451730/
+Bryan, Richard,
 
-CC: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-CC: Jiri Slaby <jslaby@suse.cz>
-CC: Valentin Rothberg <valentinrothberg@gmail.com>
-CC: mpe@ellerman.id.au
-CC: linuxppc-dev@lists.ozlabs.org
-Signed-off-by: Daniel Axtens <dja@axtens.net>
+  Did you get a chance to review this patchset?
 
----
-v2: get name of ozlab*s*.org right. Sorry all.
----
- drivers/tty/hvc/Kconfig    |   7 ---
- drivers/tty/hvc/Makefile   |   1 -
- drivers/tty/hvc/hvc_beat.c | 134 ---------------------------------------------
- 3 files changed, 142 deletions(-)
- delete mode 100644 drivers/tty/hvc/hvc_beat.c
+-Vasant
 
-diff --git a/drivers/tty/hvc/Kconfig b/drivers/tty/hvc/Kconfig
-index 8902f9b..2509d05 100644
---- a/drivers/tty/hvc/Kconfig
-+++ b/drivers/tty/hvc/Kconfig
-@@ -42,13 +42,6 @@ config HVC_RTAS
- 	help
- 	  IBM Console device driver which makes use of RTAS
- 
--config HVC_BEAT
--	bool "Toshiba's Beat Hypervisor Console support"
--	depends on PPC_CELLEB
--	select HVC_DRIVER
--	help
--	  Toshiba's Cell Reference Set Beat Console device driver
--
- config HVC_IUCV
- 	bool "z/VM IUCV Hypervisor console support (VM only)"
- 	depends on S390
-diff --git a/drivers/tty/hvc/Makefile b/drivers/tty/hvc/Makefile
-index 4ca3723..6a2702b 100644
---- a/drivers/tty/hvc/Makefile
-+++ b/drivers/tty/hvc/Makefile
-@@ -4,7 +4,6 @@ obj-$(CONFIG_HVC_OLD_HVSI)	+= hvsi.o
- obj-$(CONFIG_HVC_RTAS)		+= hvc_rtas.o
- obj-$(CONFIG_HVC_TILE)		+= hvc_tile.o
- obj-$(CONFIG_HVC_DCC)		+= hvc_dcc.o
--obj-$(CONFIG_HVC_BEAT)		+= hvc_beat.o
- obj-$(CONFIG_HVC_DRIVER)	+= hvc_console.o
- obj-$(CONFIG_HVC_IRQ)		+= hvc_irq.o
- obj-$(CONFIG_HVC_XEN)		+= hvc_xen.o
-diff --git a/drivers/tty/hvc/hvc_beat.c b/drivers/tty/hvc/hvc_beat.c
-deleted file mode 100644
-index 1560d23..0000000
---- a/drivers/tty/hvc/hvc_beat.c
-+++ /dev/null
-@@ -1,134 +0,0 @@
--/*
-- * Beat hypervisor console driver
-- *
-- * (C) Copyright 2006 TOSHIBA CORPORATION
-- *
-- * This code is based on drivers/char/hvc_rtas.c:
-- * (C) Copyright IBM Corporation 2001-2005
-- * (C) Copyright Red Hat, Inc. 2005
-- *
-- * This program is free software; you can redistribute it and/or modify
-- * it under the terms of the GNU General Public License as published by
-- * the Free Software Foundation; either version 2 of the License, or
-- * (at your option) any later version.
-- *
-- * This program is distributed in the hope that it will be useful,
-- * but WITHOUT ANY WARRANTY; without even the implied warranty of
-- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-- * GNU General Public License for more details.
-- *
-- * You should have received a copy of the GNU General Public License along
-- * with this program; if not, write to the Free Software Foundation, Inc.,
-- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-- */
--
--#include <linux/module.h>
--#include <linux/init.h>
--#include <linux/err.h>
--#include <linux/string.h>
--#include <linux/console.h>
--#include <asm/prom.h>
--#include <asm/hvconsole.h>
--#include <asm/firmware.h>
--
--#include "hvc_console.h"
--
--extern int64_t beat_get_term_char(uint64_t, uint64_t *, uint64_t *, uint64_t *);
--extern int64_t beat_put_term_char(uint64_t, uint64_t, uint64_t, uint64_t);
--
--struct hvc_struct *hvc_beat_dev = NULL;
--
--/* bug: only one queue is available regardless of vtermno */
--static int hvc_beat_get_chars(uint32_t vtermno, char *buf, int cnt)
--{
--	static unsigned char q[sizeof(unsigned long) * 2]
--		__attribute__((aligned(sizeof(unsigned long))));
--	static int qlen = 0;
--	u64 got;
--
--again:
--	if (qlen) {
--		if (qlen > cnt) {
--			memcpy(buf, q, cnt);
--			qlen -= cnt;
--			memmove(q + cnt, q, qlen);
--			return cnt;
--		} else {	/* qlen <= cnt */
--			int	r;
--
--			memcpy(buf, q, qlen);
--			r = qlen;
--			qlen = 0;
--			return r;
--		}
--	}
--	if (beat_get_term_char(vtermno, &got,
--		((u64 *)q), ((u64 *)q) + 1) == 0) {
--		qlen = got;
--		goto again;
--	}
--	return 0;
--}
--
--static int hvc_beat_put_chars(uint32_t vtermno, const char *buf, int cnt)
--{
--	unsigned long kb[2];
--	int rest, nlen;
--
--	for (rest = cnt; rest > 0; rest -= nlen) {
--		nlen = (rest > 16) ? 16 : rest;
--		memcpy(kb, buf, nlen);
--		beat_put_term_char(vtermno, nlen, kb[0], kb[1]);
--		buf += nlen;
--	}
--	return cnt;
--}
--
--static const struct hv_ops hvc_beat_get_put_ops = {
--	.get_chars = hvc_beat_get_chars,
--	.put_chars = hvc_beat_put_chars,
--};
--
--static int hvc_beat_useit = 1;
--
--static int hvc_beat_config(char *p)
--{
--	hvc_beat_useit = simple_strtoul(p, NULL, 0);
--	return 0;
--}
--
--static int __init hvc_beat_console_init(void)
--{
--	if (hvc_beat_useit && of_machine_is_compatible("Beat")) {
--		hvc_instantiate(0, 0, &hvc_beat_get_put_ops);
--	}
--	return 0;
--}
--
--/* temp */
--static int __init hvc_beat_init(void)
--{
--	struct hvc_struct *hp;
--
--	if (!firmware_has_feature(FW_FEATURE_BEAT))
--		return -ENODEV;
--
--	hp = hvc_alloc(0, 0, &hvc_beat_get_put_ops, 16);
--	if (IS_ERR(hp))
--		return PTR_ERR(hp);
--	hvc_beat_dev = hp;
--	return 0;
--}
--
--static void __exit hvc_beat_exit(void)
--{
--	if (hvc_beat_dev)
--		hvc_remove(hvc_beat_dev);
--}
--
--module_init(hvc_beat_init);
--module_exit(hvc_beat_exit);
--
--__setup("hvc_beat=", hvc_beat_config);
--
--console_initcall(hvc_beat_console_init);
--- 
-2.1.4
+> Any comment from the LEDs folks ? I am not too familiar with the LED
+> subsystem so I would appreciate at least a cursory review of the high
+> level design :-)
