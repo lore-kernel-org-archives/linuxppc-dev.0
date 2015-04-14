@@ -1,33 +1,26 @@
-Return-Path: <mingo.kernel.org@gmail.com>
-Received: from mail-wg0-x22b.google.com (mail-wg0-x22b.google.com
- [IPv6:2a00:1450:400c:c00::22b])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <sandeep@freescale.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B57D31A0A01
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2015 22:58:30 +1000 (AEST)
-Received: by wgso17 with SMTP id o17so10983962wgs.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2015 05:58:26 -0700 (PDT)
-Sender: Ingo Molnar <mingo.kernel.org@gmail.com>
-Date: Tue, 14 Apr 2015 14:58:22 +0200
-From: Ingo Molnar <mingo@kernel.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: 'perf upgrade' (was: Re: [PATCH v9 00/11] Add support for JSON
- event files.)
-Message-ID: <20150414125822.GA32761@gmail.com>
-References: <1428993665-2133-1-git-send-email-sukadev@linux.vnet.ibm.com>
- <20150414085541.GA30202@gmail.com>
- <1429010508.27414.1.camel@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id C44F01A0176
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2015 23:51:06 +1000 (AEST)
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1on0143.outbound.protection.outlook.com [157.56.110.143])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id D9E39140142
+ for <linuxppc-dev@ozlabs.org>; Tue, 14 Apr 2015 23:51:04 +1000 (AEST)
+From: "sandeep@freescale.com" <sandeep@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: RE: [1/3][PATCH][v2] Device Tree bindings for Freescale TDM controller
+Date: Tue, 14 Apr 2015 13:50:58 +0000
+Message-ID: <DM2PR0301MB0622ECC6C5C64135B1BCA12CB1E60@DM2PR0301MB0622.namprd03.prod.outlook.com>
+References: <1427971677-32395-1-git-send-email-sandeep@freescale.com>
+ <1428023676.22867.320.camel@freescale.com>
+In-Reply-To: <1428023676.22867.320.camel@freescale.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1429010508.27414.1.camel@ellerman.id.au>
-Cc: Arnaldo Carvalho de Melo <acme@infradead.org>, ak@linux.intel.com,
- Peter Zijlstra <a.p.zijlstra@chello.nl>, peterz@infradead.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Arnaldo Carvalho de Melo <acme@kernel.org>,
- Linus Torvalds <torvalds@linux-foundation.org>, mingo@redhat.com,
- namhyung@kernel.org, Thomas Gleixner <tglx@linutronix.de>,
- Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>, Jiri Olsa <jolsa@redhat.com>,
- Pekka Enberg <penberg@iki.fi>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,53 +30,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-* Michael Ellerman <mpe@ellerman.id.au> wrote:
-
-> On Tue, 2015-04-14 at 10:55 +0200, Ingo Molnar wrote:
-> > * Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com> wrote:
-> > 
-> > > This is another attempt to resurrect Andi Kleen's patchset so users
-> > > can specify perf events by their event names rather than raw codes.
-> > > 
-> > > This is a rebase of Andi Kleen's patchset from Jul 30, 2014[1] to 4.0.
-> > > (I fixed minor and not so minor conflicts).
-> > 
-> > So this series shows some progress, but instead of this limited 
-> > checkout ability I'd still prefer it if 'perf download' downloaded 
-> > the latest perf code itself and built it - it shouldn't be limited 
-> > to just a small subset of the perf source code!
-> 
-> Ingo, can you please stop blocking this? It's getting ridiculous.
-> 
-> We've been waiting over 8 months for this to go in.
-
-We just merged a patch series that was first sent in 2013. Some things 
-take time to get right.
-
-> While we've been waiting most of our users have learnt to use operf 
-> instead, which doesn't require raw codes.
-> 
-> I would also add that exactly zero users have asked for a feature 
-> where perf downloads and rebuilds itself. In fact many of them would 
-> consider that a security breach.
-
-Fetching tracing scripts, plugins or other instrumentation scripts can 
-be considered a 'security breach' as well. Fetching external tables 
-(or network access to begin with) can be considered a 'security 
-breach' as well, depending on how restricted an environment is.
-
-But we don't design our code based on the most restrictive 
-environments that are hostile to open source concepts!
-
-Unfortunate users that are not allowed to update open source code that 
-they are using should probably not update it. The other 99.9% of perf 
-users would benefit from a properly done upgrading/updating feature.
-
-Please stop thinking in terms of restricted, closed environments. 
-Packaged perf will still work fine for them, and changes will still 
-trickle down to them.
-
-Thanks,
-
-	Ingo
+SGkgU2NvdHQsDQoNClRoYW5rcyBmb3IgeW91ciBjb21tZW50cy4gUmVwbHkgaW5saW5lLg0KDQpS
+ZWdhcmRzDQpTYW5kZWVwDQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTog
+V29vZCBTY290dC1CMDc0MjENCj4gU2VudDogRnJpZGF5LCBBcHJpbCAwMywgMjAxNSA2OjQ1IEFN
+DQo+IFRvOiBTaW5naCBTYW5kZWVwLUIzNzQwMA0KPiBDYzogbGludXhwcGMtZGV2QG96bGFicy5v
+cmcNCj4gU3ViamVjdDogUmU6IFsxLzNdW1BBVENIXVt2Ml0gRGV2aWNlIFRyZWUgYmluZGluZ3Mg
+Zm9yIEZyZWVzY2FsZSBURE0gY29udHJvbGxlcg0KPiANCj4gT24gVGh1LCAyMDE1LTA0LTAyIGF0
+IDE2OjE3ICswNTMwLCBzYW5kZWVwQGZyZWVzY2FsZS5jb20gd3JvdGU6DQo+ID4gRnJvbTogU2Fu
+ZGVlcCBTaW5naCA8c2FuZGVlcEBmcmVlc2NhbGUuY29tPg0KPiA+DQo+ID4gVGhpcyBjb250cm9s
+bGVyIGlzIGF2YWlsYWJsZSBvbiBtYW55IEZyZWVzY2FsZSBTT0NzIGxpa2UgTVBDODMxNSwNCj4g
+PiBQMTAyMCwgUDEwMTAsDQo+ID4gUDEwMjIgYW5kIFAxMDI0DQo+ID4NCj4gPiBTaWduZWQtb2Zm
+LWJ5OiBTYW5kZWVwIFNpbmdoIDxTYW5kZWVwQGZyZWVzY2FsZS5jb20+DQo+ID4gU2lnbmVkLW9m
+Zi1ieTogUG9vbmFtIEFnZ3J3YWwgPHBvb25hbS5hZ2dyd2FsQGZyZWVzY2FsZS5jb20+DQo+ID4g
+LS0tDQo+ID4gIERvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy90ZG0vZnNsLXRkbS50
+eHQgfCAgIDY1DQo+ICsrKysrKysrKysrKysrKysrKysrKw0KPiA+ICAxIGZpbGVzIGNoYW5nZWQs
+IDY1IGluc2VydGlvbnMoKyksIDAgZGVsZXRpb25zKC0pICBjcmVhdGUgbW9kZSAxMDA2NDQNCj4g
+PiBEb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvdGRtL2ZzbC10ZG0udHh0DQo+IA0K
+PiBBZGQgZGV2aWNldHJlZUB2Z2VyLmtlcm5lbC5vcmcgdG8gQ0MgZm9yIGRldmljZSB0cmVlIHBh
+dGNoZXMuDQo+IA0KPiANCj4gPiBkaWZmIC0tZ2l0IGEvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVl
+L2JpbmRpbmdzL3RkbS9mc2wtdGRtLnR4dA0KPiA+IGIvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVl
+L2JpbmRpbmdzL3RkbS9mc2wtdGRtLnR4dA0KPiA+IG5ldyBmaWxlIG1vZGUgMTAwNjQ0DQo+ID4g
+aW5kZXggMDAwMDAwMC4uMTI1OGI4OQ0KPiA+IC0tLSAvZGV2L251bGwNCj4gPiArKysgYi9Eb2N1
+bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvdGRtL2ZzbC10ZG0udHh0DQo+ID4gQEAgLTAs
+MCArMSw2NSBAQA0KPiA+DQo+ICs9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PQ0KPiA9PT09DQo+ID4gK1RETSBEZXZpY2UgVHJl
+ZSBCaW5kaW5nDQo+ID4gK0NvcHlyaWdodCAoQykgMjAxMiBGcmVlc2NhbGUgU2VtaWNvbmR1Y3Rv
+ciBJbmMuDQo+ID4gKw0KPiA+ICtOT1RFOiBUaGUgYmluZGluZ3MgZGVzY3JpYmVkIGluIHRoaXMg
+ZG9jdW1lbnQgYXJlIHByZWxpbWluYXJ5IGFuZA0KPiA+ICtzdWJqZWN0IHRvIGNoYW5nZS4NCj4g
+DQo+IEdldCByaWQgb2YgdGhpcyBub3RlLiAgQmluZGluZ3MgYXJlIGV4cGVjdGVkIHRvIGJlIHN0
+YWJsZSBBQkkgb25jZSBtZXJnZWQuDQo+IA0KPiA+DQo+ICs9PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQ0KPiA9PT09DQo+ID4g
+K1RETSAoVGltZSBEaXZpc2lvbiBNdWx0aXBsZXhpbmcpDQo+ID4gKw0KPiA+ICtERVNDUklQVElP
+Tg0KPiA+ICsNCj4gPiArVGhlIFRETSBpcyBmdWxsIGR1cGxleCBzZXJpYWwgcG9ydCBkZXNpZ25l
+ZCB0byBhbGxvdyB2YXJpb3VzIGRldmljZXMNCj4gPiAraW5jbHVkaW5nIGRpZ2l0YWwgc2lnbmFs
+IHByb2Nlc3NvcnMgKERTUHMpIHRvIGNvbW11bmljYXRlIHdpdGggYQ0KPiA+ICt2YXJpZXR5IG9m
+IHNlcmlhbCBkZXZpY2VzIGluY2x1ZGluZyBpbmR1c3RyeSBzdGFuZGFyZCBmcmFtZXJzLCBjb2Rl
+Y3MsIG90aGVyDQo+IERTUHMgYW5kIG1pY3JvcHJvY2Vzc29ycy4NCj4gPiArDQo+ID4gK1RoZSBi
+ZWxvdyBwcm9wZXJ0aWVzIGRlc2NyaWJlIHRoZSBkZXZpY2UgdHJlZSBiaW5kaW5ncyBmb3IgRnJl
+ZXNjYWxlDQo+ID4gK1RETSBjb250cm9sbGVyLg0KPiA+ICtUaGlzIFRETSBjb250cm9sbGVyIGlz
+IGF2YWlsYWJsZSBvbiB2YXJpb3VzIEZyZWVzY2FsZSBQcm9jZXNzb3JzIGxpa2UNCj4gPiArTVBD
+ODMxMywgUDEwMjAsIFAxMDIyIGFuZCBQMTAxMC4NCj4gPiArDQo+ID4gK1BST1BFUlRJRVMNCj4g
+PiArDQo+ID4gKyAgLSBjb21wYXRpYmxlDQo+ID4gKyAgICAgIFVzYWdlOiByZXF1aXJlZA0KPiA+
+ICsgICAgICBWYWx1ZSB0eXBlOiA8c3RyaW5nPg0KPiA+ICsgICAgICBEZWZpbml0aW9uOiBTaG91
+bGQgY29udGFpbiAiZnNsLHRkbTEuMCIuDQo+IA0KPiBXaGF0IGRvZXMgMS4wIHJlZmVyIHRvPyAg
+SXMgdGhlIFRETSBibG9jayBpZGVudGljYWwgb24gYWxsIHRoZSBjaGlwcyB0aGF0IGN1cnJlbnRs
+eQ0KPiBoYXZlIGl0PyAgSXMgdGhpcyBhIHJlYWwgdmVyc2lvbiBudW1iZXIgc2NoZW1lIChwdWJs
+aWMgb3INCj4gb3RoZXJ3aXNlKSBvciBzb21ldGhpbmcgbWFkZSB1cCBmb3Igc29mdHdhcmU/DQpb
+U2FuZGVlcF0gU3RhcmxpdGUgVERNIGJsb2NrIGlzIGlkZW50aWNhbCBvbiBhbGwgdGhlIGNoaXBz
+LiBUaGlzIGlzIGEgc29mdHdhcmUgb25seSB2ZXJzaW9uLg0KPiANCj4gPiArICAtIHJlZw0KPiA+
+ICsgICAgICBVc2FnZTogcmVxdWlyZWQNCj4gPiArICAgICAgRGVmaW5pdGlvbjogQSBzdGFuZGFy
+ZCBwcm9wZXJ0eS4gVGhlIGZpcnN0IHJlZyBzcGVjaWZpZXIgZGVzY3JpYmVzIHRoZQ0KPiA+ICsg
+ICAgICAgICAgVERNIHJlZ2lzdGVycywgYW5kIHRoZSBzZWNvbmQgZGVzY3JpYmVzIHRoZSBURE0g
+RE1BQyByZWdpc3RlcnMuDQo+ID4gKw0KPiA+ICsgIC0gY2xvY2stZnJlcXVlbmN5DQo+ID4gKyAg
+ICAgIFVzYWdlOiBvcHRpb25hbA0KPiA+ICsgICAgICBWYWx1ZSB0eXBlOiA8dTMyIG9yIHU2ND4N
+Cj4gPiArICAgICAgRGVmaW5pdGlvbjogVGhlIGZyZXF1ZW5jeSBhdCB3aGljaCB0aGUgVERNIGJs
+b2NrIGlzIG9wZXJhdGluZy4NCj4gDQo+IEl0J2QgYmUgbmljZSBpZiBuZXcgYmluZGluZ3MgdXNl
+ZCBjbG9jayBub2RlcyByYXRoZXIgdGhhbiByZWx5aW5nIG9uIFUtQm9vdCBmaXh1cHMuDQpbU2Fu
+ZGVlcF0gVGhpcyBmaWVsZCBpcyBub3QgY3VycmVudGx5IHVzZWQsIGJ1dCBpcyBwbGFubmVkIHRv
+IGJlIHVzZWQgaW4gZnV0dXJlLg0KPiANCj4gPiArICAtIGludGVycnVwdHMNCj4gPiArICAgICAg
+VXNhZ2U6IHJlcXVpcmVkDQo+ID4gKyAgICAgIERlZmluaXRpb246IERlZmluaXRpb246IFR3byBp
+bnRlcnJ1cHQgc3BlY2lmaWVycy4gIFRoZSBmaXJzdCBpcyBURE0NCj4gPiArICAgICAgICAgIGVy
+cm9yLCBhbmQgdGhlIHNlY29uZCBpcyBURE0gRU1BQy4NCj4gPiArDQo+ID4gKyAgLSBwaHktaGFu
+ZGxlDQo+ID4gKyAgICAgIFVzYWdlOiBvcHRpb25hbA0KPiA+ICsgICAgICBWYWx1ZSB0eXBlOiA8
+cGhhbmRsZT4NCj4gPiArICAgICAgRGVmaW5pdGlvbjogUGhhbmRsZSBvZiB0aGUgbGluZSBjb250
+cm9sbGVyIG5vZGUgb3IgZnJhbWVyIG5vZGUgZWcuIFNMSUMsDQo+ID4gKyAgICAgICAgICBFMS9U
+MSBldGMuDQo+ID4gKw0KPiA+ICsgIC0gZnNsLG1heC10aW1lLXNsb3RzDQo+ID4gKyAgICAgIFVz
+YWdlOiByZXF1aXJlZA0KPiA+ICsgICAgICBWYWx1ZSB0eXBlOiA8dTMyPg0KPiA+ICsgICAgICBE
+ZWZpbml0aW9uOiBNYXhpbXVtIG51bWJlciBvZiA4LWJpdCB0aW1lIHNsb3RzIGluIG9uZSBURE0g
+ZnJhbWUuDQo+ID4gKyAgICAgICAgICBUaGlzIGlzIHRoZSBtYXhpbXVtIG51bWJlciB3aGljaCBU
+RE0gaGFyZHdhcmUgc3VwcG9ydHMuDQo+ID4gKw0KPiA+ICtFWEFNUExFDQo+ID4gKw0KPiA+ICsJ
+dGRtQDE2MDAwIHsNCj4gPiArCQljb21wYXRpYmxlID0gImZzbCx0ZG0xLjAiOw0KPiA+ICsJCXJl
+ZyA9IDwweDE2MDAwIDB4MjAwIDB4MmMwMDAgMHgyMDAwPjsNCj4gPiArCQljbG9jay1mcmVxdWVu
+Y3kgPSA8MD47DQo+ID4gKwkJaW50ZXJydXB0cyA9IDwxNiA4IDYyIDg+Ow0KPiA+ICsJCXBoeS1o
+YW5kbGUgPSA8JnphcmxpbmsxPjsNCj4gPiArCQlmc2wsbWF4LXRpbWUtc2xvdHMgPSA8MTI4PjsN
+Cj4gPiArCX07DQo+IA0KPiBUaGUgZXhhbXBsZSByZWZlcnMgdG8gYSAiemFybGluazEiIG5vZGUg
+YnV0IGl0IGlzIG5vdCBwcmVzZW50LiAgV2hhdCBkb2VzIGEgImxpbmUNCj4gY29udHJvbGxlciBv
+ciBmcmFtZXIgbm9kZSIgbG9vayBsaWtlPw0KW1NhbmRlZXBdIHBoeS1oYW5kbGUgYWdhaW4gaXMg
+Y3VycmVudGx5IG5vdCBiZWluZyB1c2VkLiBBZGRlZCBmb3IgZnV0dXJlIHVzZS4NCj4gDQo+IC1T
+Y290dA0KPiANCg0K
