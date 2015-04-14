@@ -1,19 +1,21 @@
-Return-Path: <linux@roeck-us.net>
-Received: from bh-25.webhostbox.net (bh-25.webhostbox.net [208.91.199.152])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bon0141.outbound.protection.outlook.com [157.56.111.141])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id EF5201A0094
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2015 05:53:04 +1000 (AEST)
-Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.82)
- (envelope-from <linux@roeck-us.net>) id 1Yi6tJ-003XlP-R8
- for linuxppc-dev@lists.ozlabs.org; Tue, 14 Apr 2015 19:53:02 +0000
-From: Guenter Roeck <linux@roeck-us.net>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH] powerpc: Fix build error seen with powermac smp builds
-Date: Tue, 14 Apr 2015 12:52:50 -0700
-Message-Id: <1429041170-17695-1-git-send-email-linux@roeck-us.net>
-Cc: linuxppc-dev@lists.ozlabs.org, Paul Mackerras <paulus@samba.org>,
- linux-kernel@vger.kernel.org, Guenter Roeck <linux@roeck-us.net>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5685D1A0094
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2015 06:09:39 +1000 (AEST)
+Message-ID: <1429042165.22867.683.camel@freescale.com>
+Subject: Re: [v2] powerpc/dts: Add some SoC specific "fsl,*-device-config"
+ compatibles
+From: Scott Wood <scottwood@freescale.com>
+To: Igal.Liberman <igal.liberman@freescale.com>
+Date: Tue, 14 Apr 2015 15:09:25 -0500
+In-Reply-To: <1429007123-24649-1-git-send-email-igal.liberman@freescale.com>
+References: <1429007123-24649-1-git-send-email-igal.liberman@freescale.com>
+Content-Type: text/plain; charset="UTF-8"
+MIME-Version: 1.0
+Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,69 +25,42 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-powermac smp builds fail with
+On Tue, 2015-04-14 at 13:25 +0300, Igal.Liberman wrote:
+> From: Igal Liberman <Igal.Liberman@freescale.com>
+> 
+> This patch adds "fsl,<chip>-device-config" compatibles to guts node.
+> The added compatibles used in Freescale FMan clock initialization.
+>  
+> This patches is described by the following binding document update:
+> 	https://patchwork.ozlabs.org/patch/461153/
+> 
+> v2: Updated commit message
+> 
+> Signed-off-by: Igal Liberman <Igal.Liberman@freescale.com>
+> ---
+>  arch/powerpc/boot/dts/fsl/b4420si-post.dtsi |    3 ++-
+>  arch/powerpc/boot/dts/fsl/b4860si-post.dtsi |    3 ++-
+>  arch/powerpc/boot/dts/fsl/b4si-post.dtsi    |    3 ++-
+>  arch/powerpc/boot/dts/fsl/p2041si-post.dtsi |    3 ++-
+>  arch/powerpc/boot/dts/fsl/p3041si-post.dtsi |    3 ++-
+>  arch/powerpc/boot/dts/fsl/p4080si-post.dtsi |    3 ++-
+>  arch/powerpc/boot/dts/fsl/p5020si-post.dtsi |    3 ++-
+>  7 files changed, 14 insertions(+), 7 deletions(-)
+> 
+> diff --git a/arch/powerpc/boot/dts/fsl/b4420si-post.dtsi b/arch/powerpc/boot/dts/fsl/b4420si-post.dtsi
+> index 1ea8602..9b14f24 100644
+> --- a/arch/powerpc/boot/dts/fsl/b4420si-post.dtsi
+> +++ b/arch/powerpc/boot/dts/fsl/b4420si-post.dtsi
+> @@ -77,7 +77,8 @@
+>  	};
+>  
+>  	guts: global-utilities@e0000 {
+> -		compatible = "fsl,b4420-device-config", "fsl,qoriq-device-config-2.0";
+> +		compatible = "fsl,b4420-device-config", "fsl,b4-device-config",
+> +			      "fsl,qoriq-device-config-2.0";
+>  	};
 
-arch/powerpc/platforms/powermac/smp.c: In function 'smp_psurge_probe':
-arch/powerpc/platforms/powermac/smp.c:278:3: error:
-		'return' with a value, in function returning void
+I thought you said you were going to drop this?  Please just use the
+existing compatibles.
 
-There are several instances of this error.
-
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Fixes: a7f4ee1fe93a ("powerpc: Drop return value of smp_ops->probe()")
-Signed-off-by: Guenter Roeck <linux@roeck-us.net>
----
-Seen in next-20150414.
-
- arch/powerpc/platforms/powermac/smp.c | 10 ++++------
- 1 file changed, 4 insertions(+), 6 deletions(-)
-
-diff --git a/arch/powerpc/platforms/powermac/smp.c b/arch/powerpc/platforms/powermac/smp.c
-index f84ac7e..28a147c 100644
---- a/arch/powerpc/platforms/powermac/smp.c
-+++ b/arch/powerpc/platforms/powermac/smp.c
-@@ -275,7 +275,7 @@ static void __init smp_psurge_probe(void)
- 
- 	/* We don't do SMP on the PPC601 -- paulus */
- 	if (PVR_VER(mfspr(SPRN_PVR)) == 1)
--		return 1;
-+		return;
- 
- 	/*
- 	 * The powersurge cpu board can be used in the generation
-@@ -289,7 +289,7 @@ static void __init smp_psurge_probe(void)
- 	 */
- 	dn = of_find_node_by_name(NULL, "hammerhead");
- 	if (dn == NULL)
--		return 1;
-+		return;
- 	of_node_put(dn);
- 
- 	hhead_base = ioremap(HAMMERHEAD_BASE, 0x800);
-@@ -310,13 +310,13 @@ static void __init smp_psurge_probe(void)
- 			/* not a dual-cpu card */
- 			iounmap(hhead_base);
- 			psurge_type = PSURGE_NONE;
--			return 1;
-+			return;
- 		}
- 		ncpus = 2;
- 	}
- 
- 	if (psurge_secondary_ipi_init())
--		return 1;
-+		return;
- 
- 	psurge_start = ioremap(PSURGE_START, 4);
- 	psurge_pri_intr = ioremap(PSURGE_PRI_INTR, 4);
-@@ -332,8 +332,6 @@ static void __init smp_psurge_probe(void)
- 		set_cpu_present(i, true);
- 
- 	if (ppc_md.progress) ppc_md.progress("smp_psurge_probe - done", 0x352);
--
--	return ncpus;
- }
- 
- static int __init smp_psurge_kick_cpu(int nr)
--- 
-2.1.0
+-Scott
