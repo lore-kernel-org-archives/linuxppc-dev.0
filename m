@@ -1,36 +1,34 @@
-Return-Path: <nfont@linux.vnet.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <akpm@linux-foundation.org>
+Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
+ [140.211.169.12])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C51801A0ACC
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2015 04:40:56 +1000 (AEST)
-Received: from /spool/local
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
- Tue, 14 Apr 2015 12:40:54 -0600
-Received: from b03cxnp08026.gho.boulder.ibm.com
- (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id CD92319D8026
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2015 12:31:55 -0600 (MDT)
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
- by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t3EIeoBS36372490
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2015 11:40:50 -0700
-Received: from d03av02.boulder.ibm.com (localhost [127.0.0.1])
- by d03av02.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t3EIenO6009417
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2015 12:40:49 -0600
-Message-ID: <552D5F30.6080902@linux.vnet.ibm.com>
-Date: Tue, 14 Apr 2015 13:40:48 -0500
-From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: Alexey Kardashevskiy <aik@ozlabs.ru>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH kernel] powerpc/pseries: Fix compile of memory hotplug
- without CONFIG_MEMORY_HOTREMOVE
-References: <1428994916-25779-1-git-send-email-aik@ozlabs.ru>
-In-Reply-To: <1428994916-25779-1-git-send-email-aik@ozlabs.ru>
-Content-Type: text/plain; charset=windows-1252
+ by lists.ozlabs.org (Postfix) with ESMTPS id C7C4F1A0ACC
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2015 05:38:57 +1000 (AEST)
+Date: Tue, 14 Apr 2015 12:38:53 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+Subject: Re: [RESEND PATCH v3 1/2] mm: Introducing arch_remap hook
+Message-Id: <20150414123853.a3e61b7fa95b6c634e0fcce0@linux-foundation.org>
+In-Reply-To: <552CDD35.2030901@linux.vnet.ibm.com>
+References: <cover.1428916945.git.ldufour@linux.vnet.ibm.com>
+ <9d827fc618a718830b2c47aa87e8be546914c897.1428916945.git.ldufour@linux.vnet.ibm.com>
+ <20150413115811.GA12354@node.dhcp.inet.fi>
+ <552BB972.3010704@linux.vnet.ibm.com>
+ <20150413131357.GC12354@node.dhcp.inet.fi>
+ <552BC2CA.80309@linux.vnet.ibm.com>
+ <552BC619.9080603@parallels.com>
+ <20150413140219.GA14480@node.dhcp.inet.fi>
+ <20150413135951.b3d9f431892dbfa7156cc1b0@linux-foundation.org>
+ <552CDD35.2030901@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Rik van Riel <riel@redhat.com>, Pavel Emelyanov <xemul@parallels.com>,
+ Hugh Dickins <hughd@google.com>, linux-kernel@vger.kernel.org, criu@openvz.org,
+ linux-mm@kvack.org, Paul Mackerras <paulus@samba.org>,
+ Mel Gorman <mgorman@suse.de>, "Kirill A. Shutemov" <kirill@shutemov.name>,
+ linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@kernel.org>,
+ "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, cov@codeaurora.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,52 +38,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/14/2015 02:01 AM, Alexey Kardashevskiy wrote:
-> 51925fb3c5 "powerpc/pseries: Implement memory hotplug remove in the kernel"
-> broke compile when CONFIG_MEMORY_HOTREMOVE is not defined due to missing
-> symbols. This fixes the issue by adding the missing symbols.
-> 
-I think the real fix should be a more invasive patch so that these routines
-are not used outside of CONFIG_MEMORY_HOPLUG. These symbols really
-are only needed for memory remove.
+On Tue, 14 Apr 2015 11:26:13 +0200 Laurent Dufour <ldufour@linux.vnet.ibm.com> wrote:
 
-I'm fine with this patch to correct the build break and will work
-on a patch to move code aound when I return from vacation next week.
+> > Do away with __HAVE_ARCH_REMAP and do it like this:
+> > 
+> > arch/x/include/asm/y.h:
+> > 
+> > 	extern void arch_remap(...);
+> > 	#define arch_remap arch_remap
+> > 
+> > include/linux/z.h:
+> > 
+> > 	#include <asm/y.h>
+> > 
+> > 	#ifndef arch_remap
+> > 	static inline void arch_remap(...) { }
+> > 	#define arch_remap arch_remap
+> > 	#endif
+> 
+> Hi Andrew,
+> 
+> I like your idea, but I can't find any good candidate for <asm/y.h> and
+> <linux/z.h>.
+> 
+> I tried with <linux/mm.h> and <asm/mmu_context.h> but
+> <asm/mmu_context.h> is already including <linux/mm.h>.
+> 
+> Do you have any suggestion ?
+> 
+> Another option could be to do it like the actual arch_unmap() in
+> <asm-generic/mm_hooks.h> but this is the opposite of your idea, and Ingo
+> was not comfortable with this idea due to the impact of the other
+> architectures.
 
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-Acked-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+I don't see any appropriate header files for this.  mman.h is kinda
+close.
 
-> ---
-> 
-> This is made against ad30cb99465 (mpe/next) and can be squashed into 51925fb3c5
-> if not too late.
-> 
-> 
-> ---
->  arch/powerpc/platforms/pseries/hotplug-memory.c | 13 +++++++++++++
->  1 file changed, 13 insertions(+)
-> 
-> diff --git a/arch/powerpc/platforms/pseries/hotplug-memory.c b/arch/powerpc/platforms/pseries/hotplug-memory.c
-> index 5cefcad..0ced387 100644
-> --- a/arch/powerpc/platforms/pseries/hotplug-memory.c
-> +++ b/arch/powerpc/platforms/pseries/hotplug-memory.c
-> @@ -369,6 +369,19 @@ static inline int dlpar_memory_remove(struct pseries_hp_errorlog *hp_elog)
->  {
->  	return -EOPNOTSUPP;
->  }
-> +static int dlpar_remove_lmb(struct of_drconf_cell *lmb)
-> +{
-> +	return -EOPNOTSUPP;
-> +}
-> +static int dlpar_memory_remove_by_count(u32 lmbs_to_remove,
-> +					struct property *prop)
-> +{
-> +	return -EOPNOTSUPP;
-> +}
-> +static int dlpar_memory_remove_by_index(u32 drc_index, struct property *prop)
-> +{
-> +	return -EOPNOTSUPP;
-> +}
-> 
->  #endif /* CONFIG_MEMORY_HOTREMOVE */
-> 
+So we create new header files, that's not a problem.  I'm torn between
+
+a) include/linux/mm-arch-hooks.h (and 31
+   arch/X/include/asm/mm-arch-hooks.h).  Mandate: mm stuff which can be
+   overridded by arch
+
+versus
+
+b) include/linux/mremap.h (+31), with a narrower mandate.
+
+
+This comes up fairly regularly so I suspect a) is better.  We'll add
+things to it over time, and various bits of existing ad-hackery can be
+moved over as cleanups.
