@@ -1,21 +1,25 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id 2732D1A019A
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2015 08:19:29 +1000 (AEST)
-Message-ID: <552C40EB.2000407@c-s.fr>
-Date: Tue, 14 Apr 2015 00:19:23 +0200
-From: leroy christophe <christophe.leroy@c-s.fr>
-MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [v3, 01/11] powerpc/8xx: remove remaining unnecessary code in
- FixupDAR
-References: <20150203113816.E77811A5F13@localhost.localdomain>	
- <20150326213215.GA21815@home.buserror.net> <552A9A5D.4070208@c-s.fr>
- <1428956804.22867.632.camel@freescale.com>
-In-Reply-To: <1428956804.22867.632.camel@freescale.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Return-Path: <dja@axtens.net>
+Received: from mail-pa0-x231.google.com (mail-pa0-x231.google.com
+ [IPv6:2607:f8b0:400e:c03::231])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 845981A074A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2015 10:17:14 +1000 (AEST)
+Received: by paboj16 with SMTP id oj16so118875426pab.0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 13 Apr 2015 17:17:11 -0700 (PDT)
+From: Daniel Axtens <dja@axtens.net>
+To: Andreas Ruprecht <andreas.ruprecht@fau.de>
+Subject: [PATCH] powerpc: Remove PPC32 code from pseries specific
+ find_and_init_phbs()
+Date: Tue, 14 Apr 2015 10:16:47 +1000
+Message-Id: <1428970607-17513-1-git-send-email-dja@axtens.net>
+In-Reply-To: <552C0AA6.4010403@fau.de>
+References: <552C0AA6.4010403@fau.de>
+Cc: Paul Bolle <pebolle@tiscali.nl>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ Daniel Axtens <dja@axtens.net>, linuxppc-dev@lists.ozlabs.org,
+ Stefan Hengelein <stefan.hengelein@fau.de>,
+ Valentin Rothberg <valentinrothberg@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,31 +29,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+In bdc728a849a7 ("powerpc: move find_and_init_phbs() to pSeries
+specific code"), find_and_init_phbs() was moved into a pseries
+specific file, but PPC32 code wasn't removed. Remove it.
 
+See https://lkml.kernel.org/r/552C0AA6.4010403@fau.de
 
-Le 13/04/2015 22:26, Scott Wood a écrit :
-> On Sun, 2015-04-12 at 18:16 +0200, leroy christophe wrote:
->> Le 26/03/2015 22:32, Scott Wood a écrit :
->>> On Tue, Feb 03, 2015 at 12:38:16PM +0100, LEROY Christophe wrote:
->>>> Since commit 33fb845a6f01 ("powerpc/8xx: Don't use MD_TWC for walk"), MD_EPN and
->>>> MD_TWC are not writen anymore in FixupDAR so saving r3 has become useless.
->>>>
->>>> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
->>>> ---
->>>> v2: no change
->>>> v3: no change
->>> This doesn't apply cleanly.
->>>
->>>
->> You already applied part of that patchset it in your next tree,
->> including that one (commit 2374d0a).
->> You told me to re-submit a patchset with only the remaining ones,
->> therefore I sent v4 on the 4th of Feb, based on your tree.
-> OK.  I applied v2, and didn't remember that when I came across v3 in
-> patchwork.
->
->
-What about v4 (the remaining ones) ? You got comments on the last one of 
-the set, have you applied the other ones or shall I re-sumbit a full v5 ?
+Reported-by: Andreas Ruprecht <andreas.ruprecht@fau.de>
+Fixes: bdc728a849a7
+Signed-off-by: Daniel Axtens <dja@axtens.net>
+---
+ arch/powerpc/platforms/pseries/setup.c | 7 -------
+ 1 file changed, 7 deletions(-)
 
-Christophe
+diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
+index 328e318..baefd3e 100644
+--- a/arch/powerpc/platforms/pseries/setup.c
++++ b/arch/powerpc/platforms/pseries/setup.c
+@@ -499,13 +499,6 @@ static void __init find_and_init_phbs(void)
+ 			else
+ 				pci_clear_flags(PCI_PROBE_ONLY);
+ 		}
+-
+-#ifdef CONFIG_PPC32 /* Will be made generic soon */
+-		prop = of_get_property(of_chosen,
+-				"linux,pci-assign-all-buses", NULL);
+-		if (prop && *prop)
+-			pci_add_flags(PCI_REASSIGN_ALL_BUS);
+-#endif /* CONFIG_PPC32 */
+ 	}
+ }
+ 
+-- 
+2.1.4
