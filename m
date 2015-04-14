@@ -2,23 +2,24 @@ Return-Path: <dja@axtens.net>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E99831A0176
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2015 14:28:20 +1000 (AEST)
-Received: from mail-pd0-x22a.google.com (mail-pd0-x22a.google.com
- [IPv6:2607:f8b0:400e:c02::22a])
+ by lists.ozlabs.org (Postfix) with ESMTPS id E8ECB1A0BBE
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2015 14:28:23 +1000 (AEST)
+Received: from mail-pa0-x231.google.com (mail-pa0-x231.google.com
+ [IPv6:2607:f8b0:400e:c03::231])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 6811B1402A8
- for <linuxppc-dev@ozlabs.org>; Tue, 14 Apr 2015 14:28:20 +1000 (AEST)
-Received: by pdea3 with SMTP id a3so130489648pde.3
- for <linuxppc-dev@ozlabs.org>; Mon, 13 Apr 2015 21:28:18 -0700 (PDT)
+ by ozlabs.org (Postfix) with ESMTPS id 678D01402A8
+ for <linuxppc-dev@ozlabs.org>; Tue, 14 Apr 2015 14:28:23 +1000 (AEST)
+Received: by paboj16 with SMTP id oj16so124964318pab.0
+ for <linuxppc-dev@ozlabs.org>; Mon, 13 Apr 2015 21:28:22 -0700 (PDT)
 From: Daniel Axtens <dja@axtens.net>
 To: linuxppc-dev@ozlabs.org,
 	benh@kernel.crashing.org,
 	mpe@ellerman.id.au
-Subject: [PATCH 01/10] powerpc: Add MSI operations to pci_controller_ops struct
-Date: Tue, 14 Apr 2015 14:27:54 +1000
-Message-Id: <1428985683-24767-2-git-send-email-dja@axtens.net>
+Subject: [PATCH 02/10] powerpc/powernv: Move MSI-related ops to
+ pci_controller_ops
+Date: Tue, 14 Apr 2015 14:27:55 +1000
+Message-Id: <1428985683-24767-3-git-send-email-dja@axtens.net>
 In-Reply-To: <1428985683-24767-1-git-send-email-dja@axtens.net>
 References: <1428985683-24767-1-git-send-email-dja@axtens.net>
 Cc: Daniel Axtens <dja@axtens.net>
@@ -31,71 +32,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add MSI setup and teardown functions to pci_controller_ops.
-
-Patch the callsites (arch_{setup,teardown}_msi_irqs) to prefer the
-controller ops version if it's available.
+Move the PowerNV/BML platform to use the pci_controller_ops structure
+rather than ppc_md for MSI related PCI controller operations.
 
 Signed-off-by: Daniel Axtens <dja@axtens.net>
 ---
- arch/powerpc/include/asm/pci-bridge.h |  6 ++++++
- arch/powerpc/kernel/msi.c             | 18 +++++++++++++++---
- 2 files changed, 21 insertions(+), 3 deletions(-)
+ arch/powerpc/platforms/powernv/pci.c | 10 ++++------
+ 1 file changed, 4 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
-index 1811c44..a3b6252 100644
---- a/arch/powerpc/include/asm/pci-bridge.h
-+++ b/arch/powerpc/include/asm/pci-bridge.h
-@@ -30,6 +30,12 @@ struct pci_controller_ops {
- 	/* Called during PCI resource reassignment */
- 	resource_size_t (*window_alignment)(struct pci_bus *, unsigned long type);
- 	void		(*reset_secondary_bus)(struct pci_dev *dev);
-+
+diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
+index bca2aeb..0f04940 100644
+--- a/arch/powerpc/platforms/powernv/pci.c
++++ b/arch/powerpc/platforms/powernv/pci.c
+@@ -768,16 +768,14 @@ void __init pnv_pci_init(void)
+ 	ppc_md.tce_free_rm = pnv_tce_free_rm;
+ 	ppc_md.tce_get = pnv_tce_get;
+ 	set_pci_dma_ops(&dma_iommu_ops);
+-
+-	/* Configure MSIs */
+-#ifdef CONFIG_PCI_MSI
+-	ppc_md.setup_msi_irqs = pnv_setup_msi_irqs;
+-	ppc_md.teardown_msi_irqs = pnv_teardown_msi_irqs;
+-#endif
+ }
+ 
+ machine_subsys_initcall_sync(powernv, tce_iommu_bus_notifier_init);
+ 
+ struct pci_controller_ops pnv_pci_controller_ops = {
+ 	.dma_dev_setup = pnv_pci_dma_dev_setup,
 +#ifdef CONFIG_PCI_MSI
-+	int		(*setup_msi_irqs)(struct pci_dev *dev,
-+					  int nvec, int type);
-+	void		(*teardown_msi_irqs)(struct pci_dev *dev);
++	.setup_msi_irqs = pnv_setup_msi_irqs,
++	.teardown_msi_irqs = pnv_teardown_msi_irqs,
 +#endif
  };
- 
- /*
-diff --git a/arch/powerpc/kernel/msi.c b/arch/powerpc/kernel/msi.c
-index 71bd161..3d452f7 100644
---- a/arch/powerpc/kernel/msi.c
-+++ b/arch/powerpc/kernel/msi.c
-@@ -15,7 +15,11 @@
- 
- int arch_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
- {
--	if (!ppc_md.setup_msi_irqs || !ppc_md.teardown_msi_irqs) {
-+	struct pci_controller *phb = pci_bus_to_host(dev->bus);
-+
-+	if ((!phb->controller_ops.setup_msi_irqs ||
-+	     !phb->controller_ops.teardown_msi_irqs) &&
-+	    (!ppc_md.setup_msi_irqs || !ppc_md.teardown_msi_irqs)) {
- 		pr_debug("msi: Platform doesn't provide MSI callbacks.\n");
- 		return -ENOSYS;
- 	}
-@@ -24,10 +28,18 @@ int arch_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
- 	if (type == PCI_CAP_ID_MSI && nvec > 1)
- 		return 1;
- 
--	return ppc_md.setup_msi_irqs(dev, nvec, type);
-+	if (phb->controller_ops.setup_msi_irqs)
-+		return phb->controller_ops.setup_msi_irqs(dev, nvec, type);
-+	else
-+		return ppc_md.setup_msi_irqs(dev, nvec, type);
- }
- 
- void arch_teardown_msi_irqs(struct pci_dev *dev)
- {
--	ppc_md.teardown_msi_irqs(dev);
-+	struct pci_controller *phb = pci_bus_to_host(dev->bus);
-+
-+	if (phb->controller_ops.teardown_msi_irqs)
-+		phb->controller_ops.teardown_msi_irqs(dev);
-+	else
-+		ppc_md.teardown_msi_irqs(dev);
- }
 -- 
 2.1.4
