@@ -1,32 +1,39 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+Return-Path: <shreyas@linux.vnet.ibm.com>
+Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CB76D1A0E00
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2015 17:37:18 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id F06E01A0143
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2015 18:10:40 +1000 (AEST)
 Received: from /spool/local
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Tue, 14 Apr 2015 17:37:17 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 384EE2CE804E
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2015 17:37:15 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t3E7b6wL47251534
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2015 17:37:15 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t3E7afgE018352
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2015 17:36:41 +1000
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
-Subject: [PATCH V2] powerpc/mm: Add trace point for tracking hash pte fault
-Date: Tue, 14 Apr 2015 13:05:57 +0530
-Message-Id: <1428996957-26176-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <shreyas@linux.vnet.ibm.com>;
+ Tue, 14 Apr 2015 13:40:38 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 2B346E005A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2015 13:43:07 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t3E8AYqG63832234
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2015 13:40:35 +0530
+Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t3E8AW3t020338
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2015 13:40:32 +0530
+Message-ID: <552CCB77.1000307@linux.vnet.ibm.com>
+Date: Tue, 14 Apr 2015 13:40:31 +0530
+From: Shreyas B Prabhu <shreyas@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: Preeti U Murthy <preeti@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+ Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH v4 3/3] powerpc/powernv: Introduce sysfs control for
+ fastsleep workaround behavior
+References: <1428976613-13007-1-git-send-email-shreyas@linux.vnet.ibm.com>
+ <1428976613-13007-4-git-send-email-shreyas@linux.vnet.ibm.com>
+ <552CACD2.5060600@linux.vnet.ibm.com>
+In-Reply-To: <552CACD2.5060600@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,118 +43,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This enables us to understand how many hash fault we are taking
-when running benchmarks.
 
-For ex:
--bash-4.2# ./perf stat -e  powerpc:hash_fault -e page-faults /tmp/ebizzy.ppc64 -S 30  -P -n 1000
-...
+>>
+>> By default, fastsleep_workaround_state = dynamic. In this case, workaround
+>> is applied/undone everytime the core enters/exits fastsleep.
+>>
+>> fastsleep_workaround_state = applyonce. In this case the workaround is
+>> applied once on all the cores and never undone. This can be triggered by
+>> echo applyonce > /sys/devices/system/cpu/fastsleep_workaround_state
+> 
+> I was wondering if we really need such an elaborate design for this
+> sysfs file. Why not a sysfs file called fastsleep_workaround_apply_once,
+> which is set to '0' by default and the only value that it can take is
+> '1' ? The name easily implies that the workaround is applied only once
+> if it is set. I can see that this can cut down a good chunk of code from
+> this patch. I just didn't find too much value in having so much code for
+> a simple 'on' knob.
 
- Performance counter stats for '/tmp/ebizzy.ppc64 -S 30 -P -n 1000':
+I was considering something similar too. But then moved to this format
+as I thought this was unambiguous. Also moving to a binary attribute
+will reduces code only in show_fastsleep_workaround_state which I don't
+feel is much.
+That said, if you feel strongly about it, I can change it to the format
+you suggested.
 
-       1,10,04,075      powerpc:hash_fault
-       1,10,03,429      page-faults
-
-      30.865978991 seconds time elapsed
-
-NOTE:
-The impact of the tracepoint was not noticeable when running test. It was
-within the run-time variance of the test. For ex:
-
-without-patch:
---------------
-
- Performance counter stats for './a.out 3000 300':
-
-	       643      page-faults               #    0.089 M/sec
-	  7.236562      task-clock (msec)         #    0.928 CPUs utilized
-	 2,179,213      stalled-cycles-frontend   #    0.00% frontend cycles idle
-	17,174,367      stalled-cycles-backend    #    0.00% backend  cycles idle
-		 0      context-switches          #    0.000 K/sec
-
-       0.007794658 seconds time elapsed
-
-And with-patch:
----------------
-
- Performance counter stats for './a.out 3000 300':
-
-	       643      page-faults               #    0.089 M/sec
-	  7.233746      task-clock (msec)         #    0.921 CPUs utilized
-		 0      context-switches          #    0.000 K/sec
-
-       0.007854876 seconds time elapsed
-
- Performance counter stats for './a.out 3000 300':
-
-	       643      page-faults               #    0.087 M/sec
-	       649      powerpc:hash_fault        #    0.087 M/sec
-	  7.430376      task-clock (msec)         #    0.938 CPUs utilized
-	 2,347,174      stalled-cycles-frontend   #    0.00% frontend cycles idle
-	17,524,282      stalled-cycles-backend    #    0.00% backend  cycles idle
-		 0      context-switches          #    0.000 K/sec
-
-       0.007920284 seconds time elapsed
-
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/trace.h | 21 +++++++++++++++++++++
- arch/powerpc/mm/hash_utils_64.c  |  2 ++
- 2 files changed, 23 insertions(+)
-
-diff --git a/arch/powerpc/include/asm/trace.h b/arch/powerpc/include/asm/trace.h
-index c15da6073cb8..ded56b183888 100644
---- a/arch/powerpc/include/asm/trace.h
-+++ b/arch/powerpc/include/asm/trace.h
-@@ -142,8 +142,29 @@ TRACE_EVENT_FN(opal_exit,
- 
- 	opal_tracepoint_regfunc, opal_tracepoint_unregfunc
- );
-+
- #endif
- 
-+TRACE_EVENT(hash_fault,
-+
-+	    TP_PROTO(unsigned long addr, unsigned long access, unsigned long trap),
-+	    TP_ARGS(addr, access, trap),
-+	    TP_STRUCT__entry(
-+		    __field(unsigned long, addr)
-+		    __field(unsigned long, access)
-+		    __field(unsigned long, trap)
-+		    ),
-+
-+	    TP_fast_assign(
-+		    __entry->addr = addr;
-+		    __entry->access = access;
-+		    __entry->trap = trap;
-+		    ),
-+
-+	    TP_printk("hash fault with addr 0x%lx and access = 0x%lx trap = 0x%lx",
-+		      __entry->addr, __entry->access, __entry->trap)
-+);
-+
- #endif /* _TRACE_POWERPC_H */
- 
- #undef TRACE_INCLUDE_PATH
-diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-index 2c2022d16059..7e88470a876f 100644
---- a/arch/powerpc/mm/hash_utils_64.c
-+++ b/arch/powerpc/mm/hash_utils_64.c
-@@ -57,6 +57,7 @@
- #include <asm/fadump.h>
- #include <asm/firmware.h>
- #include <asm/tm.h>
-+#include <asm/trace.h>
- 
- #ifdef DEBUG
- #define DBG(fmt...) udbg_printf(fmt)
-@@ -1004,6 +1005,7 @@ int hash_page_mm(struct mm_struct *mm, unsigned long ea,
- 
- 	DBG_LOW("hash_page(ea=%016lx, access=%lx, trap=%lx\n",
- 		ea, access, trap);
-+	trace_hash_fault(ea, access, trap);
- 
- 	/* Get region & vsid */
-  	switch (REGION_ID(ea)) {
--- 
-2.1.0
+Thanks,
+Shreyas
