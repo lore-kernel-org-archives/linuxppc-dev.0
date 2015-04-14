@@ -1,30 +1,30 @@
-Return-Path: <dja@axtens.net>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4073A1A0094
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2015 08:46:48 +1000 (AEST)
-Received: from mail-pa0-x22b.google.com (mail-pa0-x22b.google.com
- [IPv6:2607:f8b0:400e:c03::22b])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3E6941402EB
- for <linuxppc-dev@ozlabs.org>; Wed, 15 Apr 2015 08:46:46 +1000 (AEST)
-Received: by pacyx8 with SMTP id yx8so27602426pac.1
- for <linuxppc-dev@ozlabs.org>; Tue, 14 Apr 2015 15:46:44 -0700 (PDT)
-Message-ID: <1429051591.13579.1.camel@axtens.net>
-Subject: Re: [PATCH 2/2] powerpc/cell: Fix iommu breakage caused by
- controller_ops change
-From: Daniel Axtens <dja@axtens.net>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Date: Wed, 15 Apr 2015 08:46:31 +1000
-In-Reply-To: <1428994146-23180-2-git-send-email-mpe@ellerman.id.au>
-References: <1428994146-23180-1-git-send-email-mpe@ellerman.id.au>
- <1428994146-23180-2-git-send-email-mpe@ellerman.id.au>
-Content-Type: multipart/signed; micalg="pgp-sha256";
- protocol="application/pgp-signature"; boundary="=-EMYDPa28+yHeCLh5npFm"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 647B91A012A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2015 08:53:25 +1000 (AEST)
+Message-ID: <1429052004.10000.1.camel@ellerman.id.au>
+Subject: Re: 'perf upgrade' (was: Re: [PATCH v9 00/11] Add support for JSON
+ event files.)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Ingo Molnar <mingo@kernel.org>
+Date: Wed, 15 Apr 2015 08:53:24 +1000
+In-Reply-To: <20150414125822.GA32761@gmail.com>
+References: <1428993665-2133-1-git-send-email-sukadev@linux.vnet.ibm.com>
+ <20150414085541.GA30202@gmail.com>
+ <1429010508.27414.1.camel@ellerman.id.au>
+ <20150414125822.GA32761@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, gwshan@linux.vnet.ibm.com
+Cc: Arnaldo Carvalho de Melo <acme@infradead.org>, ak@linux.intel.com,
+ Peter Zijlstra <a.p.zijlstra@chello.nl>, peterz@infradead.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Arnaldo Carvalho de Melo <acme@kernel.org>,
+ Linus Torvalds <torvalds@linux-foundation.org>, mingo@redhat.com,
+ namhyung@kernel.org, Thomas Gleixner <tglx@linutronix.de>,
+ Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>, Jiri Olsa <jolsa@redhat.com>,
+ Pekka Enberg <penberg@iki.fi>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,54 +34,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Tue, 2015-04-14 at 14:58 +0200, Ingo Molnar wrote:
+> * Michael Ellerman <mpe@ellerman.id.au> wrote:
+> 
+> > On Tue, 2015-04-14 at 10:55 +0200, Ingo Molnar wrote:
+> > > * Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com> wrote:
+> > > 
+> > > > This is another attempt to resurrect Andi Kleen's patchset so users
+> > > > can specify perf events by their event names rather than raw codes.
+> > > > 
+> > > > This is a rebase of Andi Kleen's patchset from Jul 30, 2014[1] to 4.0.
+> > > > (I fixed minor and not so minor conflicts).
+> > > 
+> > > So this series shows some progress, but instead of this limited 
+> > > checkout ability I'd still prefer it if 'perf download' downloaded 
+> > > the latest perf code itself and built it - it shouldn't be limited 
+> > > to just a small subset of the perf source code!
+> > 
+> > Ingo, can you please stop blocking this? It's getting ridiculous.
+> > 
+> > We've been waiting over 8 months for this to go in.
+> 
+> We just merged a patch series that was first sent in 2013. Some things 
+> take time to get right.
 
---=-EMYDPa28+yHeCLh5npFm
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+The first attempt to get symbolic event name support into perf was sent in
+2010, that's FIVE years ago [1].
 
-On Tue, 2015-04-14 at 16:49 +1000, Michael Ellerman wrote:
-> The recent patch to convert cell to use pci_controller_ops had a small
-> bug which broke machines using an iommu.
->=20
-Oops.
+And what complicated feature are we asking for? The ability to map a human
+readable name to a hex code, it has the complexity of a first year programming
+assignment.
 
-> The set of phb->controller_ops was added after the check for name !=3D
-> "pci", meaning pcix/pcie PHBs weren't getting their ops set correctly.
->=20
-> Fixes: 9c1368fc50e7 ("powerpc/cell: Move controller ops from ppc_md to co=
-ntroller_ops")
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+Variations have been submitted by IBM [1], by Facebook [2], now by Intel, and
+Google have just given up and carry the libpfm4 patch in their perf tool [3].
+
+Can we please just get this merged.
+
+If you *then* want to add support for perf auto-updating that's fine, but don't
+conflate the two.
+ 
+cheers
 
 
-Thanks for that.
-
-Acked-by: Daniel Axtens <dja@axtens.net>
-
-Regards,
-Daniel
-
---=-EMYDPa28+yHeCLh5npFm
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: This is a digitally signed message part
-Content-Transfer-Encoding: 7bit
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-Comment: GPGTools - https://gpgtools.org
-
-iQIcBAABCAAGBQJVLZjRAAoJEPC3R3P2I92FyCQP/AqEoEwVLCsc99hVc0TWu+0j
-Ty9+FztvI02H1RPia4fU3HfqPhSVD67tIRQ1T9irwgSiNF2Ox8hFQu0O3CEPccy+
-zvK8sh2ff6rCqN7Zxd6aaa4ExPqE4sPjVb6QNi/Q8JDwOf1Uq8GnwRWGtYQFngfT
-XIyGhoFB8vHK2EEZRb0TBQyIkIAHLNlJcNUqq0l7mIIn44QCOoH4p/P7tK+Dk3Ou
-0umHH7q7hH3X3KZTZ2dqmYahUQ9sIVTpEgBrBZAYX9h2j1xL0brtLS5AJy5pvnaI
-hNkLoi7l/ftMxCAyxTAWkev7VLCPWsnfZw6SXwsa6FkNVXYJZibcjvOSx17BWfKU
-7FWxoADtqgi2OVlic2m5vv5ir5kK7QeUK2jH6R04PaXC41oB+tg66E2WshXRWHTl
-NrTxlYTtLsFJZUb0LtaZm0g9U7ud6rjZHfT2Ek/jogERoTXF5/itIXYPa4f9DhQ+
-AJ7M6JmYIY8YVwv4mTJMBd8SWPYwFtyMKdUEIpb0pNlIT3Tu1H9N+wqvXxBOZInN
-vwTwsA6rR+3cjMjuYxnTa/BgF4Zmy5pzT2a6cXTwIZErXnqXEIn/k2WICOn5g275
-KSYFsUPh3KDSP/EV8bndLBzyk/a98d2go1x7zTd1ke0ctOqohFJebu4lpxQI9FMP
-zjA3aqsPygHWiiq8Fx4w
-=Fze6
------END PGP SIGNATURE-----
-
---=-EMYDPa28+yHeCLh5npFm--
+[1]: https://lkml.org/lkml/2010/3/11/146
+[2]: http://article.gmane.org/gmane.comp.linux.perfmon2.devel/2912
+[3]: https://github.com/David-Levinthal/gooda/blob/master/gooda-analyzer/perf-patches/linux-v3.17/0001-perf-tools-add-support-for-libpfm4.patch
