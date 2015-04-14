@@ -1,28 +1,28 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <b.zolnierkie@samsung.com>
+Received: from mailout1.samsung.com (mailout1.samsung.com [203.254.224.24])
+ (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1491C1A0A01
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2015 21:21:50 +1000 (AEST)
-Message-ID: <1429010508.27414.1.camel@ellerman.id.au>
-Subject: Re: 'perf upgrade' (was: Re: [PATCH v9 00/11] Add support for JSON
- event files.)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Ingo Molnar <mingo@kernel.org>
-Date: Tue, 14 Apr 2015 21:21:48 +1000
-In-Reply-To: <20150414085541.GA30202@gmail.com>
-References: <1428993665-2133-1-git-send-email-sukadev@linux.vnet.ibm.com>
- <20150414085541.GA30202@gmail.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Arnaldo Carvalho de Melo <acme@infradead.org>, ak@linux.intel.com,
- Peter Zijlstra <a.p.zijlstra@chello.nl>, peterz@infradead.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Arnaldo Carvalho de Melo <acme@kernel.org>,
- Linus Torvalds <torvalds@linux-foundation.org>, mingo@redhat.com,
- namhyung@kernel.org, Thomas Gleixner <tglx@linutronix.de>,
- Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>, Jiri Olsa <jolsa@redhat.com>,
- Pekka Enberg <penberg@iki.fi>
+ by lists.ozlabs.org (Postfix) with ESMTPS id D05E41A0A01
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2015 22:11:00 +1000 (AEST)
+Received: from epcpsbgm2.samsung.com (epcpsbgm2 [203.254.230.27])
+ by mailout1.samsung.com
+ (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May 5 2014))
+ with ESMTP id <0NMS00BZVPDHPAB0@mailout1.samsung.com> for
+ linuxppc-dev@lists.ozlabs.org; Tue, 14 Apr 2015 21:00:53 +0900 (KST)
+From: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+To: Daniel Axtens <dja@axtens.net>
+Subject: Re: [PATCH v2 2/3] Remove celleb-only SCC PATA drivers
+Date: Tue, 14 Apr 2015 13:58:14 +0200
+Message-id: <7604591.MsqiRRA37E@amdc1032>
+In-reply-to: <1428989326-7637-2-git-send-email-dja@axtens.net>
+References: <1428989326-7637-1-git-send-email-dja@axtens.net>
+ <1428989326-7637-2-git-send-email-dja@axtens.net>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+Cc: linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org,
+ Tejun Heo <tj@kernel.org>, linuxppc-dev@lists.ozlabs.org,
+ "David S. Miller" <davem@davemloft.net>,
+ Valentin Rothberg <valentinrothberg@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,29 +32,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-04-14 at 10:55 +0200, Ingo Molnar wrote:
-> * Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com> wrote:
+
+Hi,
+
+On Tuesday, April 14, 2015 03:28:45 PM Daniel Axtens wrote:
+> The SCC PATA interface is only used by celleb.
+> celleb has been dropped [1], so drop the drivers.
 > 
-> > This is another attempt to resurrect Andi Kleen's patchset so users
-> > can specify perf events by their event names rather than raw codes.
-> > 
-> > This is a rebase of Andi Kleen's patchset from Jul 30, 2014[1] to 4.0.
-> > (I fixed minor and not so minor conflicts).
+> [1] http://patchwork.ozlabs.org/patch/451730/
 > 
-> So this series shows some progress, but instead of this limited 
-> checkout ability I'd still prefer it if 'perf download' downloaded the 
-> latest perf code itself and built it - it shouldn't be limited to just 
-> a small subset of the perf source code!
+> CC: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
+> CC: Tejun Heo <tj@kernel.org>
+> CC: "David S. Miller" <davem@davemloft.net>
+> CC: linux-ide@vger.kernel.org
+> CC: Valentin Rothberg <valentinrothberg@gmail.com>
+> CC: mpe@ellerman.id.au
+> CC: linuxppc-dev@lists.ozlabs.org
+> Signed-off-by: Daniel Axtens <dja@axtens.net>
+> 
+> ---
+> v2: get name of ozlab*s*.org right. Sorry all.
+> ---
+>  drivers/ata/Kconfig    |    9 -
+>  drivers/ata/Makefile   |    1 -
+>  drivers/ata/pata_scc.c | 1110 ------------------------------------------------
+>  drivers/ide/Kconfig    |    9 -
+>  drivers/ide/Makefile   |    1 -
+>  drivers/ide/scc_pata.c |  887 --------------------------------------
+>  6 files changed, 2017 deletions(-)
+>  delete mode 100644 drivers/ata/pata_scc.c
+>  delete mode 100644 drivers/ide/scc_pata.c
 
-Ingo, can you please stop blocking this? It's getting ridiculous.
+For PATA part:
 
-We've been waiting over 8 months for this to go in.
+Acked-by: Bartlomiej Zolnierkiewicz <b.zolnierkie@samsung.com>
 
-While we've been waiting most of our users have learnt to use operf instead,
-which doesn't require raw codes.
+If Tejun & Dave are OK with it this patch can go through libata tree.
+Otherwise you will need to split it on separate libata/IDE patches.
 
-I would also add that exactly zero users have asked for a feature where perf
-downloads and rebuilds itself. In fact many of them would consider that a
-security breach.
-
-cheers
+Best regards,
+--
+Bartlomiej Zolnierkiewicz
+Samsung R&D Institute Poland
+Samsung Electronics
