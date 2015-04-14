@@ -1,34 +1,34 @@
 Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
+Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 375031A0C8E
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2015 16:41:24 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6F3CD1A0CAE
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2015 16:41:26 +1000 (AEST)
 Received: from /spool/local
- by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Tue, 14 Apr 2015 02:41:22 -0400
-Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com
- [9.57.198.28])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 860D2C9004A
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2015 02:32:29 -0400 (EDT)
+ Tue, 14 Apr 2015 02:41:24 -0400
+Received: from b01cxnp22035.gho.pok.ibm.com (b01cxnp22035.gho.pok.ibm.com
+ [9.57.198.25])
+ by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 603A66E804C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2015 02:33:10 -0400 (EDT)
 Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
- by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t3E6fKBX25428086
+ by b01cxnp22035.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t3E6fK9e19529864
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2015 06:41:20 GMT
 Received: from d01av02.pok.ibm.com (localhost [127.0.0.1])
  by d01av02.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t3E6fHq7021762
+ t3E6fJmY021815
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2015 02:41:19 -0400
 From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 To: mingo@redhat.com, ak@linux.intel.com,
  Michael Ellerman <mpe@ellerman.id.au>, Jiri Olsa <jolsa@redhat.com>,
  Arnaldo Carvalho de Melo <acme@kernel.org>
-Subject: [PATCH v9 02/11] perf,
- tools: Add support for text descriptions of events and alias add
-Date: Mon, 13 Apr 2015 23:40:55 -0700
-Message-Id: <1428993665-2133-3-git-send-email-sukadev@linux.vnet.ibm.com>
+Subject: [PATCH v9 03/11] perf, tools,
+ list: Update perf list to output descriptions
+Date: Mon, 13 Apr 2015 23:40:56 -0700
+Message-Id: <1428993665-2133-4-git-send-email-sukadev@linux.vnet.ibm.com>
 In-Reply-To: <1428993665-2133-1-git-send-email-sukadev@linux.vnet.ibm.com>
 References: <1428993665-2133-1-git-send-email-sukadev@linux.vnet.ibm.com>
 Cc: peterz@infradead.org, namhyung@kernel.org, linuxppc-dev@lists.ozlabs.org,
@@ -44,128 +44,167 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Andi Kleen <ak@linux.intel.com>
 
-Change pmu.c to allow descriptions of events and add interfaces
-to add aliases at runtime from another file. To be used by jevents in
-a followon patch
+Add support to perf list to print aliases with descriptions.
+Support word wrapping for descriptions.
+Fix up the sorting code to put aliases with descriptions
+last.
 
-Acked-by: Namhyung Kim <namhyung@kernel.org>
 Signed-off-by: Andi Kleen <ak@linux.intel.com>
 Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 ---
-Changelog[v9] by Sukadev Bhattiprolu
-	Rebase to 4.0
-	v2: Move perf list changes to other patch.
----
- tools/perf/util/json.c |    1 +
- tools/perf/util/pmu.c  |   48 +++++++++++++++++++++++++++++++++---------------
- tools/perf/util/pmu.h  |    1 +
- 3 files changed, 35 insertions(+), 15 deletions(-)
 
-diff --git a/tools/perf/util/json.c b/tools/perf/util/json.c
-index e20001f..2219844 100644
---- a/tools/perf/util/json.c
-+++ b/tools/perf/util/json.c
-@@ -38,6 +38,7 @@
- #include "jsmn.h"
- #include "json.h"
- #include <linux/kernel.h>
-+#include "debug.h"
- 
- static char *mapfile(const char *fn, size_t *size)
- {
+Changelov[v9] by Sukadev Bhattiprolu
+	Rebase to 4.0 and fix conflicts in tools/perf/util/pmu.c
+---
+ tools/perf/util/pmu.c |   86 ++++++++++++++++++++++++++++++++++++++++---------
+ 1 file changed, 70 insertions(+), 16 deletions(-)
+
 diff --git a/tools/perf/util/pmu.c b/tools/perf/util/pmu.c
-index 4841167..527da74 100644
+index 527da74..623b107 100644
 --- a/tools/perf/util/pmu.c
 +++ b/tools/perf/util/pmu.c
-@@ -198,17 +198,12 @@ static int perf_pmu__parse_snapshot(struct perf_pmu_alias *alias,
- 	return 0;
+@@ -877,11 +877,51 @@ static char *format_alias_or(char *buf, int len, struct perf_pmu *pmu,
+ 	return buf;
  }
  
--static int perf_pmu__new_alias(struct list_head *list, char *dir, char *name, FILE *file)
-+static int __perf_pmu__new_alias(struct list_head *list, char *name, char *dir,
-+			char *desc, char *val)
+-static int cmp_string(const void *a, const void *b)
++struct pair {
++	char *name;
++	char *desc;
++};
++
++static int cmp_pair(const void *a, const void *b)
  {
- 	struct perf_pmu_alias *alias;
--	char buf[256];
- 	int ret;
- 
--	ret = fread(buf, 1, sizeof(buf), file);
--	if (ret == 0)
--		return -EINVAL;
--	buf[ret] = 0;
--
- 	alias = malloc(sizeof(*alias));
- 	if (!alias)
- 		return -ENOMEM;
-@@ -218,26 +213,49 @@ static int perf_pmu__new_alias(struct list_head *list, char *dir, char *name, FI
- 	alias->unit[0] = '\0';
- 	alias->per_pkg = false;
- 
--	ret = parse_events_terms(&alias->terms, buf);
-+	ret = parse_events_terms(&alias->terms, val);
- 	if (ret) {
-+		pr_err("Cannot parse alias %s: %d\n", val, ret);
- 		free(alias);
- 		return ret;
- 	}
- 
- 	alias->name = strdup(name);
--	/*
--	 * load unit name and scale if available
--	 */
--	perf_pmu__parse_unit(alias, dir, name);
--	perf_pmu__parse_scale(alias, dir, name);
--	perf_pmu__parse_per_pkg(alias, dir, name);
--	perf_pmu__parse_snapshot(alias, dir, name);
+-	const char * const *as = a;
+-	const char * const *bs = b;
+-	return strcmp(*as, *bs);
++	const struct pair *as = a;
++	const struct pair *bs = b;
 +
-+	if (dir) {
-+		/*
-+		 * load unit name and scale if available
-+		 */
-+		perf_pmu__parse_unit(alias, dir, name);
-+		perf_pmu__parse_scale(alias, dir, name);
-+		perf_pmu__parse_per_pkg(alias, dir, name);
-+		perf_pmu__parse_snapshot(alias, dir, name);
-+	}
-+
-+	alias->desc = desc ? strdup(desc) : NULL;
- 
- 	list_add_tail(&alias->list, list);
- 
- 	return 0;
- }
- 
-+static int perf_pmu__new_alias(struct list_head *list,
-+		char *dir,
-+		char *name,
-+		FILE *file)
-+{
-+	char buf[256];
-+	int ret;
-+
-+	ret = fread(buf, 1, sizeof(buf), file);
-+	if (ret == 0)
-+		return -EINVAL;
-+	buf[ret] = 0;
-+
-+	return __perf_pmu__new_alias(list, name, dir, NULL, buf);
++	/* Put downloaded event list last */
++	if (!!as->desc != !!bs->desc)
++		return !!as->desc - !!bs->desc;
++	return strcmp(as->name, bs->name);
 +}
 +
++static void wordwrap(char *s, int start, int max, int corr)
++{
++	int column = start;
++	int n;
 +
- static inline bool pmu_alias_info_file(char *name)
- {
- 	size_t len;
-diff --git a/tools/perf/util/pmu.h b/tools/perf/util/pmu.h
-index 6b1249f..d06496d 100644
---- a/tools/perf/util/pmu.h
-+++ b/tools/perf/util/pmu.h
-@@ -37,6 +37,7 @@ struct perf_pmu_info {
++	while (*s) {
++		int wlen = strcspn(s, " \t");
++
++		if (column + wlen >= max && column > start) {
++			printf("\n%*s", start, "");
++			column = start + corr;
++		}
++		n = printf("%s%.*s", column > start ? " " : "", wlen, s);
++		if (n <= 0)
++			break;
++		s += wlen;
++		column += n;
++		while (isspace(*s))
++			s++;
++	}
++}
++
++static int get_columns(void)
++{
++	/*
++	 * Should ask the terminal with TIOCGWINSZ here, but we
++	 * need the original fd before the pager.
++	 */
++	return 79;
+ }
  
- struct perf_pmu_alias {
- 	char *name;
-+	char *desc;
- 	struct list_head terms; /* HEAD struct parse_events_term -> list */
- 	struct list_head list;  /* ELEM */
- 	char unit[UNIT_MAX_LEN+1];
+ void print_pmu_events(const char *event_glob, bool name_only)
+@@ -891,7 +931,9 @@ void print_pmu_events(const char *event_glob, bool name_only)
+ 	char buf[1024];
+ 	int printed = 0;
+ 	int len, j;
+-	char **aliases;
++	struct pair *aliases;
++	int numdesc = 0;
++	int columns = get_columns();
+ 
+ 	pmu = NULL;
+ 	len = 0;
+@@ -901,14 +943,15 @@ void print_pmu_events(const char *event_glob, bool name_only)
+ 		if (pmu->selectable)
+ 			len++;
+ 	}
+-	aliases = zalloc(sizeof(char *) * len);
++	aliases = zalloc(sizeof(struct pair) * len);
+ 	if (!aliases)
+ 		goto out_enomem;
+ 	pmu = NULL;
+ 	j = 0;
+ 	while ((pmu = perf_pmu__scan(pmu)) != NULL) {
+ 		list_for_each_entry(alias, &pmu->aliases, list) {
+-			char *name = format_alias(buf, sizeof(buf), pmu, alias);
++			char *name = alias->desc ? alias->name :
++				format_alias(buf, sizeof(buf), pmu, alias);
+ 			bool is_cpu = !strcmp(pmu->name, "cpu");
+ 
+ 			if (event_glob != NULL &&
+@@ -917,11 +960,14 @@ void print_pmu_events(const char *event_glob, bool name_only)
+ 						       event_glob))))
+ 				continue;
+ 
+-			if (is_cpu && !name_only)
+-				name = format_alias_or(buf, sizeof(buf), pmu, alias);
++			aliases[j].name = name;
++			if (is_cpu && !name_only && !alias->desc)
++				aliases[j].name = format_alias_or(buf,
++						sizeof(buf), pmu, alias);
+ 
+-			aliases[j] = strdup(name);
+-			if (aliases[j] == NULL)
++			aliases[j].name = strdup(aliases[j].name);
++			aliases[j].desc = alias->desc;
++			if (aliases[j].name == NULL)
+ 				goto out_enomem;
+ 			j++;
+ 		}
+@@ -929,25 +975,33 @@ void print_pmu_events(const char *event_glob, bool name_only)
+ 			char *s;
+ 			if (asprintf(&s, "%s//", pmu->name) < 0)
+ 				goto out_enomem;
+-			aliases[j] = s;
++			aliases[j].name = s;
+ 			j++;
+ 		}
+ 	}
+ 	len = j;
+-	qsort(aliases, len, sizeof(char *), cmp_string);
++	qsort(aliases, len, sizeof(struct pair), cmp_pair);
+ 	for (j = 0; j < len; j++) {
+ 		if (name_only) {
+-			printf("%s ", aliases[j]);
++			printf("%s ", aliases[j].name);
+ 			continue;
+ 		}
+-		printf("  %-50s [Kernel PMU event]\n", aliases[j]);
++		if (aliases[j].desc) {
++			if (numdesc++ == 0 && printed)
++				printf("\n");
++			printf("  %-50s [", aliases[j].name);
++			wordwrap(aliases[j].desc, 53, columns, 1);
++			printf("]\n");
++		} else
++			printf("  %-50s [Kernel PMU event]\n", aliases[j].name);
++		zfree(&aliases[j].name);
+ 		printed++;
+ 	}
+ 	if (printed)
+ 		printf("\n");
+ out_free:
+ 	for (j = 0; j < len; j++)
+-		zfree(&aliases[j]);
++		zfree(&aliases[j].name);
+ 	zfree(&aliases);
+ 	return;
+ 
 -- 
 1.7.9.5
