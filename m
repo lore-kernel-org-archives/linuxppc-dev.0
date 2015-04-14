@@ -1,27 +1,34 @@
-Return-Path: <scottwood@freescale.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <tlfalcon@linux.vnet.ibm.com>
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id F31FB1A0034
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2015 06:32:57 +1000 (AEST)
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0124.outbound.protection.outlook.com [207.46.100.124])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 2AC41140281
- for <linuxppc-dev@ozlabs.org>; Wed, 15 Apr 2015 06:32:56 +1000 (AEST)
-Message-ID: <1429042666.22867.686.camel@freescale.com>
-Subject: Re: [1/3][PATCH][v2] Device Tree bindings for Freescale TDM controller
-From: Scott Wood <scottwood@freescale.com>
-To: Singh Sandeep-B37400 <sandeep@freescale.com>
-Date: Tue, 14 Apr 2015 15:17:46 -0500
-In-Reply-To: <DM2PR0301MB0622ECC6C5C64135B1BCA12CB1E60@DM2PR0301MB0622.namprd03.prod.outlook.com>
-References: <1427971677-32395-1-git-send-email-sandeep@freescale.com>
- <1428023676.22867.320.camel@freescale.com>
- <DM2PR0301MB0622ECC6C5C64135B1BCA12CB1E60@DM2PR0301MB0622.namprd03.prod.outlook.com>
-Content-Type: text/plain; charset="UTF-8"
-MIME-Version: 1.0
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8F7AB1A0143
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2015 06:35:11 +1000 (AEST)
+Received: from /spool/local
+ by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <tlfalcon@linux.vnet.ibm.com>;
+ Tue, 14 Apr 2015 14:35:09 -0600
+Received: from b03cxnp08027.gho.boulder.ibm.com
+ (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id BF4BE3E40048
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2015 14:35:06 -0600 (MDT)
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+ by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t3EKZ6sQ34996364
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2015 13:35:06 -0700
+Received: from d03av03.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av03.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t3EKZ6FC014461
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2015 14:35:06 -0600
+From: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
+To: netdev@vger.kernel.org
+Subject: [PATCH 2/5] ibmveth: Add support for TSO
+Date: Tue, 14 Apr 2015 15:35:01 -0500
+Message-Id: <1429043704-22552-2-git-send-email-tlfalcon@linux.vnet.ibm.com>
+In-Reply-To: <1429043704-22552-1-git-send-email-tlfalcon@linux.vnet.ibm.com>
+References: <1429043704-22552-1-git-send-email-tlfalcon@linux.vnet.ibm.com>
+Cc: Brian King <brking@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,66 +38,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-04-14 at 08:50 -0500, Singh Sandeep-B37400 wrote:
-> > > +TDM (Time Division Multiplexing)
-> > > +
-> > > +DESCRIPTION
-> > > +
-> > > +The TDM is full duplex serial port designed to allow various devices
-> > > +including digital signal processors (DSPs) to communicate with a
-> > > +variety of serial devices including industry standard framers, codecs, other
-> > DSPs and microprocessors.
-> > > +
-> > > +The below properties describe the device tree bindings for Freescale
-> > > +TDM controller.
-> > > +This TDM controller is available on various Freescale Processors like
-> > > +MPC8313, P1020, P1022 and P1010.
-> > > +
-> > > +PROPERTIES
-> > > +
-> > > +  - compatible
-> > > +      Usage: required
-> > > +      Value type: <string>
-> > > +      Definition: Should contain "fsl,tdm1.0".
-> > 
-> > What does 1.0 refer to?  Is the TDM block identical on all the chips that currently
-> > have it?  Is this a real version number scheme (public or
-> > otherwise) or something made up for software?
-> [Sandeep] Starlite TDM block is identical on all the chips. This is a software only version.
+Add support for TSO.  TSO is turned off by default and
+must be enabled and configured by the user.  The driver
+version number is increased so that users can be sure
+that they are using ibmveth with TSO support.
 
-Then I recommend arbitrarily picking one of the chips and naming the
-compatible after that: "fsl,mpc8313-tdm".
+Cc: Brian King <brking@linux.vnet.ibm.com>
+Signed-off-by: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
+---
+ drivers/net/ethernet/ibm/ibmveth.c | 17 ++++++++++++++++-
+ 1 file changed, 16 insertions(+), 1 deletion(-)
 
-> > > +  - reg
-> > > +      Usage: required
-> > > +      Definition: A standard property. The first reg specifier describes the
-> > > +          TDM registers, and the second describes the TDM DMAC registers.
-> > > +
-> > > +  - clock-frequency
-> > > +      Usage: optional
-> > > +      Value type: <u32 or u64>
-> > > +      Definition: The frequency at which the TDM block is operating.
-> > 
-> > It'd be nice if new bindings used clock nodes rather than relying on U-Boot fixups.
-> [Sandeep] This field is not currently used, but is planned to be used in future.
-
-I don't see how that answers my request.
-
-> > > +EXAMPLE
-> > > +
-> > > +	tdm@16000 {
-> > > +		compatible = "fsl,tdm1.0";
-> > > +		reg = <0x16000 0x200 0x2c000 0x2000>;
-> > > +		clock-frequency = <0>;
-> > > +		interrupts = <16 8 62 8>;
-> > > +		phy-handle = <&zarlink1>;
-> > > +		fsl,max-time-slots = <128>;
-> > > +	};
-> > 
-> > The example refers to a "zarlink1" node but it is not present.  What does a "line
-> > controller or framer node" look like?
-> [Sandeep] phy-handle again is currently not being used. Added for future use.
-
-Please submit a complete binding.
-
--Scott
+diff --git a/drivers/net/ethernet/ibm/ibmveth.c b/drivers/net/ethernet/ibm/ibmveth.c
+index 0210622..2911a57 100644
+--- a/drivers/net/ethernet/ibm/ibmveth.c
++++ b/drivers/net/ethernet/ibm/ibmveth.c
+@@ -58,7 +58,7 @@ static struct kobj_type ktype_veth_pool;
+ 
+ static const char ibmveth_driver_name[] = "ibmveth";
+ static const char ibmveth_driver_string[] = "IBM Power Virtual Ethernet Driver";
+-#define ibmveth_driver_version "1.04"
++#define ibmveth_driver_version "1.05"
+ 
+ MODULE_AUTHOR("Santiago Leon <santil@linux.vnet.ibm.com>");
+ MODULE_DESCRIPTION("IBM Power Virtual Ethernet Driver");
+@@ -852,6 +852,10 @@ static int ibmveth_set_features(struct net_device *dev,
+ 	struct ibmveth_adapter *adapter = netdev_priv(dev);
+ 	int rx_csum = !!(features & NETIF_F_RXCSUM);
+ 	int rc;
++	netdev_features_t changed = features ^ dev->features;
++
++	if (features & NETIF_F_TSO & changed)
++		netdev_info(dev, "TSO feature requires all partitions to have updated driver");
+ 
+ 	if (rx_csum == adapter->rx_csum)
+ 		return 0;
+@@ -1035,6 +1039,14 @@ retry_bounce:
+ 		descs[i+1].fields.address = dma_addr;
+ 	}
+ 
++	if (skb_is_gso(skb) && !skb_is_gso_v6(skb)) {
++		/* Put -1 in the IP checksum to tell phyp it
++		 *  is a largesend packet and put the mss in the TCP checksum.
++		 */
++		ip_hdr(skb)->check = 0xffff;
++		tcp_hdr(skb)->check = cpu_to_be16(skb_shinfo(skb)->gso_size);
++	}
++
+ 	if (ibmveth_send(adapter, descs)) {
+ 		adapter->tx_send_failed++;
+ 		netdev->stats.tx_dropped++;
+@@ -1422,6 +1434,9 @@ static int ibmveth_probe(struct vio_dev *dev, const struct vio_device_id *id)
+ 		NETIF_F_IP_CSUM | NETIF_F_IPV6_CSUM;
+ 	netdev->features |= netdev->hw_features;
+ 
++	/* TSO is disabled by default */
++	netdev->hw_features |= NETIF_F_TSO;
++
+ 	memcpy(netdev->dev_addr, mac_addr_p, ETH_ALEN);
+ 
+ 	if (firmware_has_feature(FW_FEATURE_CMO))
+-- 
+1.8.3.1
