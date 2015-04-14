@@ -1,21 +1,25 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0141.outbound.protection.outlook.com [157.56.111.141])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5685D1A0094
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2015 06:09:39 +1000 (AEST)
-Message-ID: <1429042165.22867.683.camel@freescale.com>
-Subject: Re: [v2] powerpc/dts: Add some SoC specific "fsl,*-device-config"
- compatibles
-From: Scott Wood <scottwood@freescale.com>
-To: Igal.Liberman <igal.liberman@freescale.com>
-Date: Tue, 14 Apr 2015 15:09:25 -0500
-In-Reply-To: <1429007123-24649-1-git-send-email-igal.liberman@freescale.com>
-References: <1429007123-24649-1-git-send-email-igal.liberman@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
+Return-Path: <ak@linux.intel.com>
+Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
+ by lists.ozlabs.org (Postfix) with ESMTP id 44F891A0143
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2015 06:16:45 +1000 (AEST)
+Date: Tue, 14 Apr 2015 13:16:43 -0700
+From: Andi Kleen <ak@linux.intel.com>
+To: Ingo Molnar <mingo@kernel.org>
+Subject: Re: 'perf upgrade' (was: Re: [PATCH v9 00/11] Add support for JSON
+ event files.)
+Message-ID: <20150414201643.GY15335@tassilo.jf.intel.com>
+References: <1428993665-2133-1-git-send-email-sukadev@linux.vnet.ibm.com>
+ <20150414085541.GA30202@gmail.com>
 MIME-Version: 1.0
-Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20150414085541.GA30202@gmail.com>
+Cc: Arnaldo Carvalho de Melo <acme@infradead.org>,
+ Peter Zijlstra <a.p.zijlstra@chello.nl>, peterz@infradead.org,
+ linuxppc-dev@lists.ozlabs.org, Arnaldo Carvalho de Melo <acme@kernel.org>,
+ linux-kernel@vger.kernel.org, mingo@redhat.com, namhyung@kernel.org,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>, Jiri Olsa <jolsa@redhat.com>,
+ Pekka Enberg <penberg@iki.fi>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,42 +29,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-04-14 at 13:25 +0300, Igal.Liberman wrote:
-> From: Igal Liberman <Igal.Liberman@freescale.com>
+On Tue, Apr 14, 2015 at 10:55:41AM +0200, Ingo Molnar wrote:
 > 
-> This patch adds "fsl,<chip>-device-config" compatibles to guts node.
-> The added compatibles used in Freescale FMan clock initialization.
->  
-> This patches is described by the following binding document update:
-> 	https://patchwork.ozlabs.org/patch/461153/
+> * Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com> wrote:
 > 
-> v2: Updated commit message
+> > This is another attempt to resurrect Andi Kleen's patchset so users
+> > can specify perf events by their event names rather than raw codes.
+> > 
+> > This is a rebase of Andi Kleen's patchset from Jul 30, 2014[1] to 4.0.
+> > (I fixed minor and not so minor conflicts).
 > 
-> Signed-off-by: Igal Liberman <Igal.Liberman@freescale.com>
-> ---
->  arch/powerpc/boot/dts/fsl/b4420si-post.dtsi |    3 ++-
->  arch/powerpc/boot/dts/fsl/b4860si-post.dtsi |    3 ++-
->  arch/powerpc/boot/dts/fsl/b4si-post.dtsi    |    3 ++-
->  arch/powerpc/boot/dts/fsl/p2041si-post.dtsi |    3 ++-
->  arch/powerpc/boot/dts/fsl/p3041si-post.dtsi |    3 ++-
->  arch/powerpc/boot/dts/fsl/p4080si-post.dtsi |    3 ++-
->  arch/powerpc/boot/dts/fsl/p5020si-post.dtsi |    3 ++-
->  7 files changed, 14 insertions(+), 7 deletions(-)
-> 
-> diff --git a/arch/powerpc/boot/dts/fsl/b4420si-post.dtsi b/arch/powerpc/boot/dts/fsl/b4420si-post.dtsi
-> index 1ea8602..9b14f24 100644
-> --- a/arch/powerpc/boot/dts/fsl/b4420si-post.dtsi
-> +++ b/arch/powerpc/boot/dts/fsl/b4420si-post.dtsi
-> @@ -77,7 +77,8 @@
->  	};
->  
->  	guts: global-utilities@e0000 {
-> -		compatible = "fsl,b4420-device-config", "fsl,qoriq-device-config-2.0";
-> +		compatible = "fsl,b4420-device-config", "fsl,b4-device-config",
-> +			      "fsl,qoriq-device-config-2.0";
->  	};
+> So this series shows some progress, but instead of this limited 
+> checkout ability I'd still prefer it if 'perf download' downloaded the 
+> latest perf code itself and built it - it shouldn't be limited to just 
+> a small subset of the perf source code!
 
-I thought you said you were going to drop this?  Please just use the
-existing compatibles.
+I'm not against that idea (and can see it being useful in some cases[1]), 
+but this would need some authentication. 
 
--Scott
+Otherwise it would be a "$bigbrother/nsa/anyone controling your network
+can run everything on your computer" style hole.
+
+The original JSON files don't have this problem because they didn't contain
+any code.
+
+-Andi
+
+[1] especially to work around the broken perf setup on d./u. distros.
