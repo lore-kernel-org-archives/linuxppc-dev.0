@@ -1,36 +1,40 @@
-Return-Path: <mingo.kernel.org@gmail.com>
-Received: from mail-wi0-x22d.google.com (mail-wi0-x22d.google.com
- [IPv6:2a00:1450:400c:c05::22d])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <hegdevasant@linux.vnet.ibm.com>
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8893D1A0B87
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2015 19:26:06 +1000 (AEST)
-Received: by wiun10 with SMTP id n10so52492997wiu.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2015 02:26:02 -0700 (PDT)
-Sender: Ingo Molnar <mingo.kernel.org@gmail.com>
-Date: Wed, 15 Apr 2015 11:25:58 +0200
-From: Ingo Molnar <mingo@kernel.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: 'perf upgrade' (was: Re: [PATCH v9 00/11] Add support for JSON
- event files.)
-Message-ID: <20150415092557.GA14942@gmail.com>
-References: <1428993665-2133-1-git-send-email-sukadev@linux.vnet.ibm.com>
- <20150414085541.GA30202@gmail.com>
- <1429010508.27414.1.camel@ellerman.id.au>
- <20150414125822.GA32761@gmail.com>
- <1429052004.10000.1.camel@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5B9581A0058
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2015 20:16:46 +1000 (AEST)
+Received: from /spool/local
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <hegdevasant@linux.vnet.ibm.com>;
+ Wed, 15 Apr 2015 20:16:44 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 6CD952BB004D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2015 20:16:42 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t3FAGYbA13762676
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2015 20:16:42 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t3FAG8WC021458
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2015 20:16:08 +1000
+Message-ID: <552E3A56.8030300@linux.vnet.ibm.com>
+Date: Wed, 15 Apr 2015 15:45:50 +0530
+From: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1429052004.10000.1.camel@ellerman.id.au>
-Cc: Arnaldo Carvalho de Melo <acme@infradead.org>, ak@linux.intel.com,
- Peter Zijlstra <a.p.zijlstra@chello.nl>, peterz@infradead.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Arnaldo Carvalho de Melo <acme@kernel.org>,
- Linus Torvalds <torvalds@linux-foundation.org>, mingo@redhat.com,
- Borislav Petkov <bp@alien8.de>, namhyung@kernel.org,
- Thomas Gleixner <tglx@linutronix.de>,
- Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>, Jiri Olsa <jolsa@redhat.com>,
- Pekka Enberg <penberg@iki.fi>
+To: Jacek Anaszewski <j.anaszewski@samsung.com>
+Subject: Re: [PATCH v2 2/2] leds/powernv: Add driver for PowerNV platform
+References: <20150320105921.14866.83209.stgit@localhost.localdomain>
+ <20150320110328.14866.98225.stgit@localhost.localdomain>
+ <552D303A.5080506@samsung.com> <552E049D.2030604@linux.vnet.ibm.com>
+ <552E2480.9060102@samsung.com>
+In-Reply-To: <552E2480.9060102@samsung.com>
+Content-Type: text/plain; charset=utf-8
+Cc: stewart@linux.vnet.ibm.com, cooloney@gmail.com, rpurdie@rpsys.net,
+ linuxppc-dev@lists.ozlabs.org, linux-leds@vger.kernel.org,
+ khandual@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,128 +44,252 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
-* Michael Ellerman <mpe@ellerman.id.au> wrote:
-
-> > We just merged a patch series that was first sent in 2013. Some 
-> > things take time to get right.
+On 04/15/2015 02:12 PM, Jacek Anaszewski wrote:
+> Hi Vasant,
 > 
-> The first attempt to get symbolic event name support into perf was 
-> sent in 2010, that's FIVE years ago [1].
+> On 04/15/2015 08:26 AM, Vasant Hegde wrote:
+>> On 04/14/2015 08:50 PM, Jacek Anaszewski wrote:
+>>> Hi Vasant,
+>>
+>> Hi Jacek,
+>>
+>>>>
+>>>> This patch implements LED driver for PowerNV platform using the existing
+>>>> generic LED class framework. It registers classdev structures for all
+>>>> individual LEDs detected on the system through LED specific device tree
+>>>> nodes. Device tree nodes specify what all kind of LEDs present on the
+>>>> same location code. It registers LED classdev structure for each of them.
+>>>>
+>>>> The platform level implementation of LED get and set state has been
+>>>> achieved through OPAL calls. These calls are made available for the
+>>>> driver by exporting from architecture specific codes.
+>>>>
+>>>> As per the LED class framework, the 'brightness_set' function should not
+>>>> sleep. Hence these functions have been implemented through global work
+>>>> queue tasks which might sleep on OPAL async call completion.
+>>>
+>>> Wouldn't it be easier to implement synchronization on the OPAL side?
+>>
+>> We had thought about this.. But OPAL intern depends on service processor to
+>> enable/disable indicator. So we can't make this as synchronous one.
+> 
+> I've revised this one more time and I think that use of spin locks is an
+> overkill in this case. It would suffice to define three work queues -
+> one per led and one common mutex.
 
-kgdb took even longer, I think it was first proposed before 2000, over 
-10 years before it got merged?
+Will try work queue option/
 
-fs/overlayfs/ took similarly long I think, the first (Unionfs) patches 
-I remember were from around 2003 - 11 years before the functionality 
-was merged?
+> 
+> powernv_led_set and powernv_led_get would have to be called under the
+> mutex. Please refer to the existing LED class drivers of the LED
+> controllers with many sub-LEDs to control: e.g.:
+> drivers/leds/leds-lm355x.c
 
-> And what complicated feature are we asking for? The ability to map a 
-> human readable name to a hex code, it has the complexity of a first 
-> year programming assignment.
+Ok. Will look into it. Thanks!
 
-No, what you are asking for, and which I NAK-ed, is:
+.../...
 
- - to add a very limited 'update perf' capability which only updates a
-   single issue that you care about, with no ability to do more.
-   The 'perf upgrade' prototype I sent can update all or part of perf. 
-   (The latest version is attached further below.)
+>>
+>>>
+>>>> +
+>>>> +#include <asm/opal.h>
+>>>> +
+>>>> +#define LED_STR_ATTENTION    ":ATTENTION"
+>>>> +#define LED_STR_IDENT        ":IDENTIFY"
+>>>> +#define LED_STR_FAULT        ":FAULT"
+>>>
+>>> Namespacing prefix is required here. LED is reserved for
+>>> LED subsystem global macros. How about POWERNV_LED_* ?
+>>
+>> Yep... Its my fault.. Makes sense to have POWERNV_*.
+> 
+> You could also skip STR segment and have e.g. POWERNV_LED_ATTENTION.
 
- - to break the 'single binary' property of perf that many people rely on
+Agree. Fixed.
 
- - to add JSON parsing overhead to every invocation of perf instead of
-   pre-parsing the event tables at build time and putting them into 
-   a nice data structure.
+> 
+>>>
+>>>> +
+>>>> +/*
+>>>> + * LED operation state
+>>>> + *
+>>>> + * led_classdev_unregister resets the brightness values. However
+>>>> + * we want to retain the LED state across boot.
+>>>
+>>> What boot are you thinking of here?
+>>>
+>>>> Hence disable
+>>>> + * LED operation before calling led_classdev_unregister.
+>>>> + */
+>>>
+>>> This comment is unclear for me, as this is static initialization,
+>>> unrelated to to any function call.
+>>>
+>>
+>> I mean, we have to retain the state of LED across system reboot.
+> 
+> Static variables are reinitialized on system reboot, aren't they?
 
- - to blindly follow some poorly constructed vendor format with no 
-   high level structure, that IMHO didn't work very well when OProfile 
-   was written, and misrepresenting it as 'symbolic event names'.
+Sorry. I think comment was confusing..
 
-   Take a look at:
+As I understood, classdev_unregister call resets all LEDs state. However in our
+case, we don't
+want to change the LED state during system shutdown/reboot.
 
-     https://download.01.org/perfmon/HSW/Haswell_core_V17.json
+Hence I have introduced state variable here. So during register call, I just
+disable LEDs so that any further call will just return. That way we retain LED
+state even after unloading module.
 
-   and weep. How is one supposed to see the higher level structure of
-   the events with a format like that?
+Please let me know if there is any better way to achieve this.
 
- - to add an ABI to support those vendor files
 
-And those are IMHO five good technical reasons to disagree with your 
-approach.
+> 
+>>>> +static bool led_disabled = false;
+>>>
+>>> Static variables are initialized to 0 by default.
+>>
+>> Fixed.
+>>
+>> .../...
+>>
+>>>> +/*
+>>>> + * powernv_led_compact_work_list
+>>>> + *
+>>>> + * This function goes through the entire list of scheduled powernv_led_work
+>>>> + * nodes and removes the nodes which have already processed one set LED
+>>>> + * state request from request list and has been marked for deletion. This is
+>>>> + * essential for cleaning the list before adding new elements into it. This
+>>>> + * also tracks the total number of pending tasks. Once it reaches the
+>>>> + * threshold the function will throttle till all the scheduled tasks completes
+>>>> + * execution during which the user space thread will block and will be
+>>>> + * prevented from queuing up more LED state change requests.
+>>>> + */
+>>>
+>>> Did you test the driver with led-triggers?
+>>
+>> I have tested set/reset LEDs .. not triggers as our user space dont' use that.
+> 
+> At this moment it doesn't, but it can use them in the future. Besides,
+> I think that you wouldn't like to see someone testing your driver with
+> led-triggers and having it crashed? :)
 
-My suggestion to resolve the technical objections and lift the NAK 
-would be:
+Yep. I will test this before posting next version.
 
- - to add the tables to the source code, in a more human readable 
-   format and (optionally) structure the event names better into a 
-   higher level hierarchy, than the humungous linear dumps with no 
-   explanations that you propose - while still supporting the 'raw' 
-   vendor event names you want to use, for those people who are used 
-   to them.
+> 
+> Testing LED subsystem drivers with led-triggers is useful also because
+> some triggers (e.g. timer) call brightness_set op from the interrupt
+> context. It allows to detect some non-obvious issues.
+> 
+>>>> +
+>>>> +    switch (led_type) {
+>>>> +    case OPAL_SLOT_LED_TYPE_ATTN:
+>>>> +        loc_code[strlen(loc_code) - strlen(LED_STR_ATTENTION)] = '\0';
+>>>> +        break;
+>>>> +    case OPAL_SLOT_LED_TYPE_ID:
+>>>> +        loc_code[strlen(loc_code) - strlen(LED_STR_IDENT)] = '\0';
+>>>> +        break;
+>>>> +    case OPAL_SLOT_LED_TYPE_FAULT:
+>>>> +        loc_code[strlen(loc_code) - strlen(LED_STR_FAULT)] = '\0';
+>>>> +        break;
+>>>> +    default:    /* Unknown LED type */
+>>>> +        goto out_loc;
+>>>> +    }
+>>>
+>>> Above sequence is repeated in the function below - it could be wrapped
+>>> with a new function.
+>>
+>> Agree. Will fix.
+>>
+>> .../...
+>>
+>>>> +
+>>>> +/*
+>>>> + * power_led_classdev
+>>>> + *
+>>>> + * This function registers classdev structure for any given type of LED on
+>>>> + * a given child LED device node.
+>>>> + */
+>>>> +static int power_led_classdev(struct platform_device *pdev,
+>>>> +                  struct device_node *cled, u64 led_type)
+>>>> +{
+>>>> +    int rc;
+>>>> +    unsigned long flags;
+>>>> +    struct powernv_led *cpled;
+>>>> +
+>>>> +    cpled = kzalloc(sizeof(struct powernv_led), GFP_KERNEL);
+>>>> +    if (!cpled) {
+>>>> +        pr_err("Memory allocation failed at %s\n", __func__);
+>>>> +        return -ENOMEM;
+>>>> +    }
+>>>> +
+>>>> +    /* Create the name for classdev */
+>>>> +    switch (led_type) {
+>>>> +    case OPAL_SLOT_LED_TYPE_ATTN:
+>>>> +        cpled->cdev.name = kasprintf(GFP_KERNEL, "%s%s",
+>>>> +                         cled->name, LED_STR_ATTENTION);
+>>>
+>>> We have a 'label' DT property for naming LED Flash class devices.
+>>> Please refer to Documentation/devicetree/bindings/leds/common.txt.
+>>>
+>>
+>> In Power Systems LEDs are overloaded (meaning same LED is used for identify and
+>> fault depending on their state  ---  blinking = identify and solid = fault).
+>> Hence here append LED type info.
+> 
+> The label could be composed of segments and an ordinal number as
+> labels have to be unique, e.g. attn_ident_0, attn_ident_1.
+> The segments would have to be parsed by the driver to discover
+> all the LED's available modes.
+> 
+> nitpicking: identify is a verb and is not a proper name for the LED.
+> Could you describe the purpose of this mode, so that we could come
+> up with a better name?
 
- - to pre-parse the event descriptions at build time - beyond the 
-   speedup this also keeps the 'single binary' property of perf.
+Each component (Field Replacement Unit) will have service indicator (LEDS) which
+can have below states :
+  - OFF 	: no action
+  - Identify: blinking state (user can use this state to identify particular
+component).
+       In Power Systems world we call it as "identify" indicator.. Hence I
+retained same name here.
+       How about just "ident" ?
+  - fault : solid state (when component goes bad, LED goes to solid state)
+     Note that our FW is capable of isolating some of the issues and it can turn
+on LEDs without OS
+      interference.
 
- - to upgrade perf as a whole unit: this helps not just your usecase
-   but many other usecases as well.
+We have one more System level LED (System Attention Indicator).. This LED has
+two states:
+  - OFF : Everything is fine
+  - ON : Some component has issues and needs attention.
 
-   For those who only want to update event tables: with
-   'perf upgrade stable' basically only new event tables (backported 
-   to -stable) would be picked up, plus regression fixes: it pretty 
-   much does what your proposed 'perf download' solution does, except 
-   it's much more capable.
+> 
+> 
+>>
+>> .../...
+>>
+>>>> +
+>>>> +static struct platform_driver powernv_led_driver = {
+>>>> +    .probe    = powernv_led_probe,
+>>>> +    .remove = powernv_led_remove,
+>>>> +    .driver = {
+>>>> +        .name = "powernv-led-driver",
+>>>> +        .owner = THIS_MODULE,
+>>>> +        .of_match_table = powernv_led_match,
+>>>
+>>> Is somewhere DT documentation available for these leds?
+>>
+>> These are PowerNV platform specific properties. I don't think its
+>> specified/documented in kernel side.
+>> These are documented in OPAL (firmware) side.
+> 
+> Every driver using DT bindings needs DT documentation.
+> Moreover the one exists for powerenv platform:
+> 
+> Documentation/devicetree/bindings/hwmon/ibmpowernv.txt
 
-Saying 'no' and suggesting better solutions is my job as a maintainer.
+Right.  I missed to add binding for LEDs.
 
-Thanks,
+I will add Documentation/devicetree/bindings/leds/leds-powernv.txt.
 
-	Ingo
-
-======={ perf-upgrade.sh }===========>
-
-#!/bin/bash
-#
-# Simple script that fetches the 'perf' utility from Linus's tree, builds and
-# installs it, by creating a shallow clone and a sparse checkout for Linux's
-# tools/ directory and related dependencies:
-#
-
-DIR=~/.perf/git
-
-rm -rf $DIR
-mkdir -p $DIR || { echo 'error: No write permissions in the current directory?'; exit -1; }
-cd $DIR
-
-#REPO=git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git
-#BRANCH=HEAD
-REPO=git://git.kernel.org/pub/scm/linux/kernel/git/tip/tip.git
-BRANCH=perf/core
-
-REFERENCE="."
-[ -d ~/linux/.git     ] && REFERENCE=~/linux/
-[ -d ~/linux.git/.git ] && REFERENCE=~/linux.git/
-[ -d ~/tip/.git       ] && REFERENCE=~/tip/
-[ -d ~/tip.git/.git   ] && REFERENCE=~/tip.git/
-[ -d ~/git/linux      ] && REFERENCE=~/git/linux/
-
-git clone --reference $REFERENCE --depth 1 --bare $REPO --branch $BRANCH .git
-git config --local core.bare false
-
-git config --local core.sparseCheckout true
-git remote remove origin
-git remote add -f origin $REPO -t $BRANCH
-
-(
-  echo '/tools/*'
-  echo '/lib/*'
-  echo '/include/*'
-  echo '/arch/x86/lib/*'
-  echo '/arch/x86/include/*'
-  echo 'Makefile'
-  echo '/scripts/*'
-
-) > .git/info/sparse-checkout
-
-git checkout $BRANCH
-
-make -C tools/perf/ install
+-Vasant
