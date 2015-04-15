@@ -1,14 +1,20 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bbn0104.outbound.protection.outlook.com [157.56.111.104])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 40E3F1A0B86
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2015 12:17:09 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH] powerpc: Show utsname->machine in boot-up banner
-Date: Wed, 15 Apr 2015 12:17:07 +1000
-Message-Id: <1429064227-21689-1-git-send-email-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id CFDDA1A0B8D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2015 12:24:56 +1000 (AEST)
+Message-ID: <1429064677.22867.715.camel@freescale.com>
+Subject: Re: [v3] clk: qoriq: Add support for the FMan clock
+From: Scott Wood <scottwood@freescale.com>
+To: Igal.Liberman <igal.liberman@freescale.com>
+Date: Tue, 14 Apr 2015 21:24:37 -0500
+In-Reply-To: <1429010123-24764-1-git-send-email-igal.liberman@freescale.com>
+References: <1429010123-24764-1-git-send-email-igal.liberman@freescale.com>
+Content-Type: text/plain; charset="UTF-8"
+MIME-Version: 1.0
+Cc: mturquette@linaro.org, linuxppc-dev@lists.ozlabs.org, sboyd@codeaurora.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,32 +24,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Currently we print "Starting Linux PPC64" at boot. But we don't mention
-anywhere whether the kernel is big or little endian.
+On Tue, 2015-04-14 at 14:15 +0300, Igal.Liberman wrote:
+> +static int get_fm_clk_idx(int fm_id, int *fm_clk_idx)
+> +{
+> +	struct ccsr_guts __iomem *guts_regs = NULL;
+> +	struct device_node *guts;
+> +	uint32_t reg = 0;
+> +	int clk_src = 0;
+> +
+> +	guts = of_find_matching_node(NULL, guts_device_ids);
+> +	if (!guts) {
+> +		pr_err("could not find GUTS node\n");
+> +		return -ENODEV;
+> +	}
+> +
+> +	guts_regs = of_iomap(guts, 0);
+> +	of_node_put(guts);
+> +	if (!guts_regs) {
+> +		pr_err("ioremap of GUTS node failed\n");
+> +		return -ENODEV;
+> +	}
 
-If we print the utsname->machine value instead we get either "ppc64" or
-"ppc64le" which is much more informative, eg:
+Error messages should include more context -- at least __func__.
 
-  Starting Linux ppc64le #1 SMP Wed Apr 15 12:12:20 AEST 2015
-
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/kernel/setup_64.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
-index 49f553bbb360..dfbeabad523b 100644
---- a/arch/powerpc/kernel/setup_64.c
-+++ b/arch/powerpc/kernel/setup_64.c
-@@ -522,7 +522,8 @@ void __init setup_system(void)
- 	smp_release_cpus();
- #endif
- 
--	pr_info("Starting Linux PPC64 %s\n", init_utsname()->version);
-+	pr_info("Starting Linux %s %s\n", init_utsname()->machine,
-+		 init_utsname()->version);
- 
- 	pr_info("-----------------------------------------------------\n");
- 	pr_info("ppc64_pft_size    = 0x%llx\n", ppc64_pft_size);
--- 
-2.1.0
+-Scott
