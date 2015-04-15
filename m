@@ -1,46 +1,21 @@
-Return-Path: <ldufour@linux.vnet.ibm.com>
-Received: from e06smtp16.uk.ibm.com (e06smtp16.uk.ibm.com [195.75.94.112])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <sandeep@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0142.outbound.protection.outlook.com [207.46.100.142])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6A71E1A0BD8
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Apr 2015 00:17:14 +1000 (AEST)
-Received: from /spool/local
- by e06smtp16.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
- Wed, 15 Apr 2015 15:17:11 +0100
-Received: from b06cxnps4074.portsmouth.uk.ibm.com
- (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
- by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id 293061B08069
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2015 15:17:42 +0100 (BST)
-Received: from d06av11.portsmouth.uk.ibm.com (d06av11.portsmouth.uk.ibm.com
- [9.149.37.252])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t3FEH7OV56295448
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2015 14:17:07 GMT
-Received: from d06av11.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av11.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t3FEH67L018343
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2015 08:17:07 -0600
-From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>,
- "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>,
- Hugh Dickins <hughd@google.com>, Rik van Riel <riel@redhat.com>,
- Mel Gorman <mgorman@suse.de>, Pavel Emelyanov <xemul@parallels.com>,
- linux-mm@kvack.org, linux-kernel@vger.kernel.org,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Ingo Molnar <mingo@kernel.org>,
- linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v5 3/3] powerpc/mm: Tracking vDSO remap
-Date: Wed, 15 Apr 2015 16:16:58 +0200
-Message-Id: <29c21a607c8083626e3ce9f4a19cb00b0205dbaa.1429104776.git.ldufour@linux.vnet.ibm.com>
-In-Reply-To: <cover.1429104776.git.ldufour@linux.vnet.ibm.com>
-References: <cover.1429104776.git.ldufour@linux.vnet.ibm.com>
-In-Reply-To: <cover.1429104776.git.ldufour@linux.vnet.ibm.com>
-References: <20150414123853.a3e61b7fa95b6c634e0fcce0@linux-foundation.org>
- <cover.1429104776.git.ldufour@linux.vnet.ibm.com>
-Cc: criu@openvz.org, cov@codeaurora.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 20B9C1A0143
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Apr 2015 01:35:16 +1000 (AEST)
+From: "sandeep@freescale.com" <sandeep@freescale.com>
+To: "Laurentiu.Tudor@freescale.com" <Laurentiu.Tudor@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Subject: RE: [1/3][PATCH][v2] Device Tree bindings for Freescale TDM controller
+Date: Wed, 15 Apr 2015 15:00:38 +0000
+Message-ID: <CY1PR0301MB0619DAE2905DFD9CC29F9386B1E50@CY1PR0301MB0619.namprd03.prod.outlook.com>
+References: <1427971677-32395-1-git-send-email-sandeep@freescale.com>
+ <551D2E32.1080008@freescale.com>
+In-Reply-To: <551D2E32.1080008@freescale.com>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,81 +25,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Some processes (CRIU) are moving the vDSO area using the mremap system
-call. As a consequence the kernel reference to the vDSO base address is
-no more valid and the signal return frame built once the vDSO has been
-moved is not pointing to the new sigreturn address.
-
-This patch handles vDSO remapping and unmapping.
-
-Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-Reviewed-by: Ingo Molnar <mingo@kernel.org>
----
- arch/powerpc/include/asm/mm-arch-hooks.h | 13 +++++++++++++
- arch/powerpc/include/asm/mmu_context.h   | 23 ++++++++++++++++++++++-
- 2 files changed, 35 insertions(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/include/asm/mm-arch-hooks.h b/arch/powerpc/include/asm/mm-arch-hooks.h
-index 63091a19de9f..f2a2da895897 100644
---- a/arch/powerpc/include/asm/mm-arch-hooks.h
-+++ b/arch/powerpc/include/asm/mm-arch-hooks.h
-@@ -12,4 +12,17 @@
- #ifndef _ASM_POWERPC_MM_ARCH_HOOKS_H
- #define _ASM_POWERPC_MM_ARCH_HOOKS_H
- 
-+static inline void arch_remap(struct mm_struct *mm,
-+			      unsigned long old_start, unsigned long old_end,
-+			      unsigned long new_start, unsigned long new_end)
-+{
-+	/*
-+	 * mremap() doesn't allow moving multiple vmas so we can limit the
-+	 * check to old_start == vdso_base.
-+	 */
-+	if (old_start == mm->context.vdso_base)
-+		mm->context.vdso_base = new_start;
-+}
-+#define arch_remap arch_remap
-+
- #endif /* _ASM_POWERPC_MM_ARCH_HOOKS_H */
-diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/include/asm/mmu_context.h
-index 73382eba02dc..825cb232eab6 100644
---- a/arch/powerpc/include/asm/mmu_context.h
-+++ b/arch/powerpc/include/asm/mmu_context.h
-@@ -8,7 +8,6 @@
- #include <linux/spinlock.h>
- #include <asm/mmu.h>	
- #include <asm/cputable.h>
--#include <asm-generic/mm_hooks.h>
- #include <asm/cputhreads.h>
- 
- /*
-@@ -109,5 +108,27 @@ static inline void enter_lazy_tlb(struct mm_struct *mm,
- #endif
- }
- 
-+static inline void arch_dup_mmap(struct mm_struct *oldmm,
-+				 struct mm_struct *mm)
-+{
-+}
-+
-+static inline void arch_exit_mmap(struct mm_struct *mm)
-+{
-+}
-+
-+static inline void arch_unmap(struct mm_struct *mm,
-+			      struct vm_area_struct *vma,
-+			      unsigned long start, unsigned long end)
-+{
-+	if (start <= mm->context.vdso_base && mm->context.vdso_base < end)
-+		mm->context.vdso_base = 0;
-+}
-+
-+static inline void arch_bprm_mm_init(struct mm_struct *mm,
-+				     struct vm_area_struct *vma)
-+{
-+}
-+
- #endif /* __KERNEL__ */
- #endif /* __ASM_POWERPC_MMU_CONTEXT_H */
--- 
-1.9.1
+SGkgTGF1cmVudGl1LA0KDQpUaGFua3MgZm9yIHlvdXIgY29tbWVudHMuIFJlcGx5IGlubGluZS4N
+Cg0KUmVnYXJkcw0KU2FuZGVlcA0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZy
+b206IExpbnV4cHBjLWRldiBbbWFpbHRvOmxpbnV4cHBjLWRldi0NCj4gYm91bmNlcytzYW5kZWVw
+PWZyZWVzY2FsZS5jb21AbGlzdHMub3psYWJzLm9yZ10gT24gQmVoYWxmIE9mIExhdXJlbnRpdSBU
+dWRvcg0KPiBTZW50OiBUaHVyc2RheSwgQXByaWwgMDIsIDIwMTUgNToyNiBQTQ0KPiBUbzogbGlu
+dXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmcNCj4gU3ViamVjdDogUmU6IFsxLzNdW1BBVENIXVt2
+Ml0gRGV2aWNlIFRyZWUgYmluZGluZ3MgZm9yIEZyZWVzY2FsZSBURE0gY29udHJvbGxlcg0KPiAN
+Cj4gSGkgU2FuZGVlcCwNCj4gDQo+IFNtYWxsIG5pdCBpbnNpZGUuDQo+IA0KPiBPbiAwNC8wMi8y
+MDE1IDAxOjQ3IFBNLCBzYW5kZWVwQGZyZWVzY2FsZS5jb20gd3JvdGU6DQo+ID4gRnJvbTogU2Fu
+ZGVlcCBTaW5naCA8c2FuZGVlcEBmcmVlc2NhbGUuY29tPg0KPiA+DQo+ID4gVGhpcyBjb250cm9s
+bGVyIGlzIGF2YWlsYWJsZSBvbiBtYW55IEZyZWVzY2FsZSBTT0NzIGxpa2UgTVBDODMxNSwNCj4g
+PiBQMTAyMCwgUDEwMTAsDQo+ID4gUDEwMjIgYW5kIFAxMDI0DQo+ID4NCj4gPiBTaWduZWQtb2Zm
+LWJ5OiBTYW5kZWVwIFNpbmdoIDxTYW5kZWVwQGZyZWVzY2FsZS5jb20+DQo+ID4gU2lnbmVkLW9m
+Zi1ieTogUG9vbmFtIEFnZ3J3YWwgPHBvb25hbS5hZ2dyd2FsQGZyZWVzY2FsZS5jb20+DQo+ID4g
+LS0tDQo+ID4gIERvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy90ZG0vZnNsLXRkbS50
+eHQgfCAgIDY1DQo+ICsrKysrKysrKysrKysrKysrKysrKw0KPiA+ICAxIGZpbGVzIGNoYW5nZWQs
+IDY1IGluc2VydGlvbnMoKyksIDAgZGVsZXRpb25zKC0pICBjcmVhdGUgbW9kZSAxMDA2NDQNCj4g
+PiBEb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvdGRtL2ZzbC10ZG0udHh0DQo+ID4N
+Cj4gPiBkaWZmIC0tZ2l0IGEvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL3RkbS9m
+c2wtdGRtLnR4dA0KPiA+IGIvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL3RkbS9m
+c2wtdGRtLnR4dA0KPiA+IG5ldyBmaWxlIG1vZGUgMTAwNjQ0DQo+ID4gaW5kZXggMDAwMDAwMC4u
+MTI1OGI4OQ0KPiA+IC0tLSAvZGV2L251bGwNCj4gPiArKysgYi9Eb2N1bWVudGF0aW9uL2Rldmlj
+ZXRyZWUvYmluZGluZ3MvdGRtL2ZzbC10ZG0udHh0DQo+ID4gQEAgLTAsMCArMSw2NSBAQA0KPiA+
+DQo+ICs9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PQ0KPiA9PT09DQo+ID4gK1RETSBEZXZpY2UgVHJlZSBCaW5kaW5nDQo+ID4g
+K0NvcHlyaWdodCAoQykgMjAxMiBGcmVlc2NhbGUgU2VtaWNvbmR1Y3RvciBJbmMuDQo+ID4gKw0K
+PiA+ICtOT1RFOiBUaGUgYmluZGluZ3MgZGVzY3JpYmVkIGluIHRoaXMgZG9jdW1lbnQgYXJlIHBy
+ZWxpbWluYXJ5IGFuZA0KPiA+ICtzdWJqZWN0IHRvIGNoYW5nZS4NCj4gPiArDQo+ID4NCj4gKz09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09DQo+ID09PT0NCj4gPiArVERNIChUaW1lIERpdmlzaW9uIE11bHRpcGxleGluZykNCj4g
+PiArDQo+ID4gK0RFU0NSSVBUSU9ODQo+ID4gKw0KPiA+ICtUaGUgVERNIGlzIGZ1bGwgZHVwbGV4
+IHNlcmlhbCBwb3J0IGRlc2lnbmVkIHRvIGFsbG93IHZhcmlvdXMgZGV2aWNlcw0KPiA+ICtpbmNs
+dWRpbmcgZGlnaXRhbCBzaWduYWwgcHJvY2Vzc29ycyAoRFNQcykgdG8gY29tbXVuaWNhdGUgd2l0
+aCBhDQo+ID4gK3ZhcmlldHkgb2Ygc2VyaWFsIGRldmljZXMgaW5jbHVkaW5nIGluZHVzdHJ5IHN0
+YW5kYXJkIGZyYW1lcnMsIGNvZGVjcywgb3RoZXINCj4gRFNQcyBhbmQgbWljcm9wcm9jZXNzb3Jz
+Lg0KPiA+ICsNCj4gPiArVGhlIGJlbG93IHByb3BlcnRpZXMgZGVzY3JpYmUgdGhlIGRldmljZSB0
+cmVlIGJpbmRpbmdzIGZvciBGcmVlc2NhbGUNCj4gPiArVERNIGNvbnRyb2xsZXIuDQo+ID4gK1Ro
+aXMgVERNIGNvbnRyb2xsZXIgaXMgYXZhaWxhYmxlIG9uIHZhcmlvdXMgRnJlZXNjYWxlIFByb2Nl
+c3NvcnMgbGlrZQ0KPiA+ICtNUEM4MzEzLCBQMTAyMCwgUDEwMjIgYW5kIFAxMDEwLg0KPiA+ICsN
+Cj4gPiArUFJPUEVSVElFUw0KPiA+ICsNCj4gPiArICAtIGNvbXBhdGlibGUNCj4gPiArICAgICAg
+VXNhZ2U6IHJlcXVpcmVkDQo+ID4gKyAgICAgIFZhbHVlIHR5cGU6IDxzdHJpbmc+DQo+ID4gKyAg
+ICAgIERlZmluaXRpb246IFNob3VsZCBjb250YWluICJmc2wsdGRtMS4wIi4NCj4gPiArDQo+ID4g
+KyAgLSByZWcNCj4gPiArICAgICAgVXNhZ2U6IHJlcXVpcmVkDQo+ID4gKyAgICAgIERlZmluaXRp
+b246IEEgc3RhbmRhcmQgcHJvcGVydHkuIFRoZSBmaXJzdCByZWcgc3BlY2lmaWVyIGRlc2NyaWJl
+cyB0aGUNCj4gPiArICAgICAgICAgIFRETSByZWdpc3RlcnMsIGFuZCB0aGUgc2Vjb25kIGRlc2Ny
+aWJlcyB0aGUgVERNIERNQUMgcmVnaXN0ZXJzLg0KPiA+ICsNCj4gPiArICAtIGNsb2NrLWZyZXF1
+ZW5jeQ0KPiA+ICsgICAgICBVc2FnZTogb3B0aW9uYWwNCj4gPiArICAgICAgVmFsdWUgdHlwZTog
+PHUzMiBvciB1NjQ+DQo+ID4gKyAgICAgIERlZmluaXRpb246IFRoZSBmcmVxdWVuY3kgYXQgd2hp
+Y2ggdGhlIFRETSBibG9jayBpcyBvcGVyYXRpbmcuDQo+ID4gKw0KPiA+ICsgIC0gaW50ZXJydXB0
+cw0KPiA+ICsgICAgICBVc2FnZTogcmVxdWlyZWQNCj4gPiArICAgICAgRGVmaW5pdGlvbjogRGVm
+aW5pdGlvbjogVHdvIGludGVycnVwdCBzcGVjaWZpZXJzLiAgVGhlIGZpcnN0IGlzDQo+ID4gKyBU
+RE0NCj4gDQo+IEV4dHJhICJEZWZpbml0aW9uOiIgaGVyZS4NCltTYW5kZWVwXSBZZXMsIHdpbGwg
+cmVtb3ZlIGl0Lg0KPiANCj4gLS0tDQo+IEJlc3QgUmVnYXJkcywgTGF1cmVudGl1DQo+IF9fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fDQo+IExpbnV4cHBjLWRl
+diBtYWlsaW5nIGxpc3QNCj4gTGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmcNCj4gaHR0cHM6
+Ly9saXN0cy5vemxhYnMub3JnL2xpc3RpbmZvL2xpbnV4cHBjLWRldg0K
