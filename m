@@ -1,24 +1,14 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0105.outbound.protection.outlook.com [65.55.169.105])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5C54B1A019F
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2015 10:51:46 +1000 (AEST)
-Message-ID: <1429059092.22867.713.camel@freescale.com>
-Subject: Re: [v3, 01/11] powerpc/8xx: remove remaining unnecessary code in
- FixupDAR
-From: Scott Wood <scottwood@freescale.com>
-To: leroy christophe <christophe.leroy@c-s.fr>
-Date: Tue, 14 Apr 2015 19:51:32 -0500
-In-Reply-To: <552C40EB.2000407@c-s.fr>
-References: <20150203113816.E77811A5F13@localhost.localdomain>
- <20150326213215.GA21815@home.buserror.net> <552A9A5D.4070208@c-s.fr>
- <1428956804.22867.632.camel@freescale.com> <552C40EB.2000407@c-s.fr>
-Content-Type: text/plain; charset="UTF-8"
-MIME-Version: 1.0
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40E3F1A0B86
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2015 12:17:09 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: <linuxppc-dev@ozlabs.org>
+Subject: [PATCH] powerpc: Show utsname->machine in boot-up banner
+Date: Wed, 15 Apr 2015 12:17:07 +1000
+Message-Id: <1429064227-21689-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,33 +18,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-04-14 at 00:19 +0200, leroy christophe wrote:
-> 
-> Le 13/04/2015 22:26, Scott Wood a écrit :
-> > On Sun, 2015-04-12 at 18:16 +0200, leroy christophe wrote:
-> >> Le 26/03/2015 22:32, Scott Wood a écrit :
-> >>> On Tue, Feb 03, 2015 at 12:38:16PM +0100, LEROY Christophe wrote:
-> >>>> Since commit 33fb845a6f01 ("powerpc/8xx: Don't use MD_TWC for walk"), MD_EPN and
-> >>>> MD_TWC are not writen anymore in FixupDAR so saving r3 has become useless.
-> >>>>
-> >>>> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
-> >>>> ---
-> >>>> v2: no change
-> >>>> v3: no change
-> >>> This doesn't apply cleanly.
-> >>>
-> >>>
-> >> You already applied part of that patchset it in your next tree,
-> >> including that one (commit 2374d0a).
-> >> You told me to re-submit a patchset with only the remaining ones,
-> >> therefore I sent v4 on the 4th of Feb, based on your tree.
-> > OK.  I applied v2, and didn't remember that when I came across v3 in
-> > patchwork.
-> >
-> >
-> What about v4 (the remaining ones) ? You got comments on the last one of 
-> the set, have you applied the other ones or shall I re-sumbit a full v5 ?
+Currently we print "Starting Linux PPC64" at boot. But we don't mention
+anywhere whether the kernel is big or little endian.
 
-I haven't applied them yet.
+If we print the utsname->machine value instead we get either "ppc64" or
+"ppc64le" which is much more informative, eg:
 
--Scott
+  Starting Linux ppc64le #1 SMP Wed Apr 15 12:12:20 AEST 2015
+
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
+ arch/powerpc/kernel/setup_64.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/kernel/setup_64.c b/arch/powerpc/kernel/setup_64.c
+index 49f553bbb360..dfbeabad523b 100644
+--- a/arch/powerpc/kernel/setup_64.c
++++ b/arch/powerpc/kernel/setup_64.c
+@@ -522,7 +522,8 @@ void __init setup_system(void)
+ 	smp_release_cpus();
+ #endif
+ 
+-	pr_info("Starting Linux PPC64 %s\n", init_utsname()->version);
++	pr_info("Starting Linux %s %s\n", init_utsname()->machine,
++		 init_utsname()->version);
+ 
+ 	pr_info("-----------------------------------------------------\n");
+ 	pr_info("ppc64_pft_size    = 0x%llx\n", ppc64_pft_size);
+-- 
+2.1.0
