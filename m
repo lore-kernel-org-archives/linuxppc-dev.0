@@ -1,36 +1,39 @@
-Return-Path: <shreyas@linux.vnet.ibm.com>
-Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
+Return-Path: <hegdevasant@linux.vnet.ibm.com>
+Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BE2BD1A0C00
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2015 16:24:31 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 09CFE1A1861
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2015 16:27:46 +1000 (AEST)
 Received: from /spool/local
- by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <shreyas@linux.vnet.ibm.com>;
- Wed, 15 Apr 2015 00:24:29 -0600
-Received: from b03cxnp07029.gho.boulder.ibm.com
- (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id C764F3E4003B
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2015 00:24:28 -0600 (MDT)
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
- by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t3F6OSfs39977130
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Apr 2015 23:24:28 -0700
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
- by d03av04.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t3F6ORlS012164
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2015 00:24:28 -0600
-From: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH v5 3/3] powerpc/powernv: Introduce sysfs control for fastsleep
- workaround behavior
-Date: Wed, 15 Apr 2015 11:54:09 +0530
-Message-Id: <1429079049-5955-4-git-send-email-shreyas@linux.vnet.ibm.com>
-In-Reply-To: <1429079049-5955-1-git-send-email-shreyas@linux.vnet.ibm.com>
-References: <1429079049-5955-1-git-send-email-shreyas@linux.vnet.ibm.com>
-Cc: ego@linux.vnet.ibm.com, "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>,
- preeti@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+ for <linuxppc-dev@lists.ozlabs.org> from <hegdevasant@linux.vnet.ibm.com>;
+ Wed, 15 Apr 2015 11:57:44 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id D16C2E0045
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2015 12:00:13 +0530 (IST)
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t3F6ReGk66846884
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2015 11:57:40 +0530
+Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t3F6Qctr011810
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2015 11:56:40 +0530
+Message-ID: <552E049D.2030604@linux.vnet.ibm.com>
+Date: Wed, 15 Apr 2015 11:56:37 +0530
+From: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: Jacek Anaszewski <j.anaszewski@samsung.com>
+Subject: Re: [PATCH v2 2/2] leds/powernv: Add driver for PowerNV platform
+References: <20150320105921.14866.83209.stgit@localhost.localdomain>
+ <20150320110328.14866.98225.stgit@localhost.localdomain>
+ <552D303A.5080506@samsung.com>
+In-Reply-To: <552D303A.5080506@samsung.com>
+Content-Type: text/plain; charset=utf-8
+Cc: stewart@linux.vnet.ibm.com, cooloney@gmail.com, rpurdie@rpsys.net,
+ linuxppc-dev@lists.ozlabs.org, linux-leds@vger.kernel.org,
+ khandual@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,245 +43,300 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Fastsleep is one of the idle state which cpuidle subsystem currently
-uses on power8 machines. In this state L2 cache is brought down to a
-threshold voltage. Therefore when the core is in fastsleep, the
-communication between L2 and L3 needs to be fenced. But there is a bug
-in the current power8 chips surrounding this fencing.
+On 04/14/2015 08:50 PM, Jacek Anaszewski wrote:
+> Hi Vasant,
 
-OPAL provides a workaround which precludes the possibility of hitting
-this bug. But running with this workaround applied causes checkstop
-if any correctable error in L2 cache directory is detected. Hence OPAL
-also provides a way to undo the workaround.
+Hi Jacek,
 
-In the existing implementation, workaround is applied by the last thread
-of the core entering fastsleep and undone by the first thread waking up.
-But this has a performance cost. These OPAL calls account for roughly
-4000 cycles everytime the core has to enter or wakeup from fastsleep.
+>>
+>> This patch implements LED driver for PowerNV platform using the existing
+>> generic LED class framework. It registers classdev structures for all
+>> individual LEDs detected on the system through LED specific device tree
+>> nodes. Device tree nodes specify what all kind of LEDs present on the
+>> same location code. It registers LED classdev structure for each of them.
+>>
+>> The platform level implementation of LED get and set state has been
+>> achieved through OPAL calls. These calls are made available for the
+>> driver by exporting from architecture specific codes.
+>>
+>> As per the LED class framework, the 'brightness_set' function should not
+>> sleep. Hence these functions have been implemented through global work
+>> queue tasks which might sleep on OPAL async call completion.
+> 
+> Wouldn't it be easier to implement synchronization on the OPAL side?
 
-This patch introduces a sysfs attribute (fastsleep_workaround_state)
-to choose the behavior of this workaround.
+We had thought about this.. But OPAL intern depends on service processor to
+enable/disable indicator. So we can't make this as synchronous one.
 
-By default, fastsleep_workaround_state = dynamic. In this case, workaround
-is applied/undone everytime the core enters/exits fastsleep.
 
-fastsleep_workaround_state = applyonce. In this case the workaround is
-applied once on all the cores and never undone. This can be triggered by
-echo applyonce > /sys/devices/system/cpu/fastsleep_workaround_state
+.../...
 
-For simplicity this attribute can be modified only once. Implying, once
-fastsleep_workaround_state is changed to applyonce, it cannot be reverted
-to the default state.
+>>
+>> diff --git a/arch/powerpc/platforms/powernv/opal.c
+>> b/arch/powerpc/platforms/powernv/opal.c
+>> index 142a08a..fbfd9c1 100644
+>> --- a/arch/powerpc/platforms/powernv/opal.c
+>> +++ b/arch/powerpc/platforms/powernv/opal.c
+>> @@ -746,7 +746,7 @@ static void __init opal_irq_init(struct device_node *dn)
+>>
+>>   static int __init opal_init(void)
+>>   {
+>> -    struct device_node *np, *consoles;
+>> +    struct device_node *np, *consoles, *led;
+>>       int rc;
+>>
+>>       opal_node = of_find_node_by_path("/ibm,opal");
+>> @@ -772,6 +772,13 @@ static int __init opal_init(void)
+>>       /* Create i2c platform devices */
+>>       opal_i2c_create_devs();
+>>
+>> +    /* Create led platform devices */
+>> +    led = of_find_node_by_path("/ibm,opal/led");
+>> +    if (led) {
+>> +        of_platform_device_create(led, "opal_led", NULL);
+>> +        of_node_put(led);
+>> +    }
+>> +
+>>       /* Find all OPAL interrupts and request them */
+>>       opal_irq_init(opal_node);
+>>
+>> @@ -904,3 +911,6 @@ EXPORT_SYMBOL_GPL(opal_rtc_write);
+>>   EXPORT_SYMBOL_GPL(opal_tpo_read);
+>>   EXPORT_SYMBOL_GPL(opal_tpo_write);
+>>   EXPORT_SYMBOL_GPL(opal_i2c_request);
+>> +/* Export these symbols for PowerNV LED class driver */
+>> +EXPORT_SYMBOL_GPL(opal_leds_get_ind);
+>> +EXPORT_SYMBOL_GPL(opal_leds_set_ind);
+> 
+> Please split the above part to the separate patch and put it in the
+> series before this one.
 
-Signed-off-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/opal-api.h            |   7 ++
- arch/powerpc/include/asm/opal.h                |   1 +
- arch/powerpc/platforms/powernv/idle.c          | 134 +++++++++++++++++++++++++
- arch/powerpc/platforms/powernv/opal-wrappers.S |   1 +
- 4 files changed, 143 insertions(+)
+Sure. Will split it in next version.
 
-diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
-index 0321a90..a49e5fa 100644
---- a/arch/powerpc/include/asm/opal-api.h
-+++ b/arch/powerpc/include/asm/opal-api.h
-@@ -165,6 +165,13 @@
- #define OPAL_PM_WINKLE_ENABLED		0x00040000
- #define OPAL_PM_SLEEP_ENABLED_ER1	0x00080000 /* with workaround */
- 
-+/*
-+ * OPAL_CONFIG_CPU_IDLE_STATE parameters
-+ */
-+#define OPAL_CONFIG_IDLE_FASTSLEEP	1
-+#define OPAL_CONFIG_IDLE_UNDO		0
-+#define OPAL_CONFIG_IDLE_APPLY		1
-+
- #ifndef __ASSEMBLY__
- 
- /* Other enums */
-diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
-index 042af1a..9a47813 100644
---- a/arch/powerpc/include/asm/opal.h
-+++ b/arch/powerpc/include/asm/opal.h
-@@ -186,6 +186,7 @@ int64_t opal_handle_hmi(void);
- int64_t opal_register_dump_region(uint32_t id, uint64_t start, uint64_t end);
- int64_t opal_unregister_dump_region(uint32_t id);
- int64_t opal_slw_set_reg(uint64_t cpu_pir, uint64_t sprn, uint64_t val);
-+int64_t opal_config_cpu_idle_state(uint64_t state, uint64_t flag);
- int64_t opal_pci_set_phb_cxl_mode(uint64_t phb_id, uint64_t mode, uint64_t pe_number);
- int64_t opal_ipmi_send(uint64_t interface, struct opal_ipmi_msg *msg,
- 		uint64_t msg_len);
-diff --git a/arch/powerpc/platforms/powernv/idle.c b/arch/powerpc/platforms/powernv/idle.c
-index 104235a..eac7211 100644
---- a/arch/powerpc/platforms/powernv/idle.c
-+++ b/arch/powerpc/platforms/powernv/idle.c
-@@ -13,6 +13,8 @@
- #include <linux/mm.h>
- #include <linux/slab.h>
- #include <linux/of.h>
-+#include <linux/device.h>
-+#include <linux/cpu.h>
- 
- #include <asm/firmware.h>
- #include <asm/opal.h>
-@@ -136,6 +138,129 @@ u32 pnv_get_supported_cpuidle_states(void)
- }
- EXPORT_SYMBOL_GPL(pnv_get_supported_cpuidle_states);
- 
-+
-+static void pnv_fastsleep_workaround_apply(void *info)
-+
-+{
-+	int rc;
-+	int *err = info;
-+
-+	rc = opal_config_cpu_idle_state(OPAL_CONFIG_IDLE_FASTSLEEP,
-+					OPAL_CONFIG_IDLE_APPLY);
-+	if (rc)
-+		*err = 1;
-+}
-+
-+/*
-+ * Used to store fastsleep workaround state
-+ * 0 - Workaround applied/undone at fastsleep entry/exit path (Default)
-+ * 1 - Workaround applied once, never undone.
-+ */
-+static u8 fastsleep_workaround_state;
-+
-+static const char * const fastsleep_workaround_avail_states[] = {
-+	"dynamic", "applyonce"
-+};
-+
-+/*
-+ * fastsleep_workaround_avail_states values
-+ */
-+enum {
-+	WORKAROUND_DYNAMIC,
-+	WORKAROUND_APPLYONCE
-+};
-+static ssize_t show_fastsleep_workaround_state(struct device *dev,
-+		struct device_attribute *attr, char *buf)
-+{
-+	char *s = buf;
-+
-+	if (fastsleep_workaround_state == 0) {
-+		s += sprintf(s, "[%s] ",
-+			fastsleep_workaround_avail_states[WORKAROUND_DYNAMIC]);
-+		s += sprintf(s, "%s\n",
-+			fastsleep_workaround_avail_states[WORKAROUND_APPLYONCE]);
-+	} else {
-+		s += sprintf(s, "%s ",
-+			fastsleep_workaround_avail_states[WORKAROUND_DYNAMIC]);
-+		s += sprintf(s, "[%s]\n",
-+			fastsleep_workaround_avail_states[WORKAROUND_APPLYONCE]);
-+	}
-+	return (s - buf);
-+}
-+
-+static ssize_t store_fastsleep_workaround_state(struct device *dev,
-+		struct device_attribute *attr, const char *buf,
-+		size_t count)
-+{
-+	cpumask_t primary_thread_mask;
-+	int err;
-+	int len;
-+	char *p;
-+	const char * const *s;
-+
-+	p = memchr(buf, '\n', count);
-+	len = p ? p - buf : count;
-+	s = &fastsleep_workaround_avail_states[WORKAROUND_APPLYONCE];
-+	if (len != strlen(*s) || strncmp(buf, *s, len))
-+		return -EINVAL;
-+
-+	/*
-+	 * If fastsleep_workaround_state already equals WORKAROUND_APPLYONCE,
-+	 * there is nothing to do.
-+	 */
-+	if (fastsleep_workaround_state == WORKAROUND_APPLYONCE)
-+		return count;
-+
-+	/*
-+	 * fastsleep_workaround_state = WORKAROUND_APPLYONCE implies
-+	 * fastsleep workaround needs to be left in 'applied' state on all
-+	 * the cores. Do this by-
-+	 * 1. Patching out the call to 'undo' workaround in fastsleep exit path
-+	 * 2. Sending ipi to all the cores which have atleast one online thread
-+	 * 3. Patching out the call to 'apply' workaround in fastsleep entry
-+	 * path
-+	 * There is no need to send ipi to cores which have all threads
-+	 * offlined, as last thread of the core entering fastsleep or deeper
-+	 * state would have applied workaround.
-+	 */
-+	err = patch_instruction(
-+		(unsigned int *)pnv_fastsleep_workaround_at_exit,
-+		PPC_INST_NOP);
-+	if (err) {
-+		pr_err("fastsleep_workaround_state change failed while patching pnv_fastsleep_workaround_at_exit");
-+		goto fail;
-+	}
-+
-+	get_online_cpus();
-+	primary_thread_mask = cpu_online_cores_map();
-+	on_each_cpu_mask(&primary_thread_mask,
-+				pnv_fastsleep_workaround_apply,
-+				&err, 1);
-+	put_online_cpus();
-+	if (err) {
-+		pr_err("fastsleep_workaround_state change failed while running pnv_fastsleep_workaround_apply");
-+		goto fail;
-+	}
-+
-+	err = patch_instruction(
-+		(unsigned int *)pnv_fastsleep_workaround_at_entry,
-+		PPC_INST_NOP);
-+	if (err) {
-+		pr_err("fastsleep_workaround_state change failed while patching pnv_fastsleep_workaround_at_entry");
-+		goto fail;
-+	}
-+
-+	fastsleep_workaround_state = WORKAROUND_APPLYONCE;
-+
-+	return count;
-+fail:
-+	return -EIO;
-+}
-+
-+static DEVICE_ATTR(fastsleep_workaround_state, 0600,
-+			show_fastsleep_workaround_state,
-+			store_fastsleep_workaround_state);
-+
- static int __init pnv_init_idle_states(void)
- {
- 	struct device_node *power_mgt;
-@@ -180,7 +305,16 @@ static int __init pnv_init_idle_states(void)
- 		patch_instruction(
- 			(unsigned int *)pnv_fastsleep_workaround_at_exit,
- 			PPC_INST_NOP);
-+	} else {
-+		/*
-+		 * OPAL_PM_SLEEP_ENABLED_ER1 is set. It indicates that
-+		 * workaround is needed to use fastsleep. Provide sysfs
-+		 * control to choose how this workaround has to be applied.
-+		 */
-+		device_create_file(cpu_subsys.dev_root,
-+					&dev_attr_fastsleep_workaround_state);
- 	}
-+
- 	pnv_alloc_idle_core_states();
- out_free:
- 	kfree(flags);
-diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
-index a7ade94..bf15ead 100644
---- a/arch/powerpc/platforms/powernv/opal-wrappers.S
-+++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
-@@ -283,6 +283,7 @@ OPAL_CALL(opal_sensor_read,			OPAL_SENSOR_READ);
- OPAL_CALL(opal_get_param,			OPAL_GET_PARAM);
- OPAL_CALL(opal_set_param,			OPAL_SET_PARAM);
- OPAL_CALL(opal_handle_hmi,			OPAL_HANDLE_HMI);
-+OPAL_CALL(opal_config_cpu_idle_state,		OPAL_CONFIG_CPU_IDLE_STATE);
- OPAL_CALL(opal_slw_set_reg,			OPAL_SLW_SET_REG);
- OPAL_CALL(opal_register_dump_region,		OPAL_REGISTER_DUMP_REGION);
- OPAL_CALL(opal_unregister_dump_region,		OPAL_UNREGISTER_DUMP_REGION);
--- 
-1.9.3
+> 
+>> diff --git a/drivers/leds/Kconfig b/drivers/leds/Kconfig
+>> index 25b320d..a93223c 100644
+>> --- a/drivers/leds/Kconfig
+>> +++ b/drivers/leds/Kconfig
+>> @@ -508,6 +508,15 @@ config LEDS_BLINKM
+>>         This option enables support for the BlinkM RGB LED connected
+>>         through I2C. Say Y to enable support for the BlinkM LED.
+>>
+>> +config LEDS_POWERNV
+>> +    tristate "LED support for PowerNV Platform"
+>> +    depends on LEDS_CLASS
+>> +    depends on PPC_POWERNV
+> 
+> OF dependency is missing here.
+
+Agree. Will fix.
+
+> 
+>> +    help
+>> +      This option enables support for the system LEDs present on
+>> +      PowerNV platforms. Say 'y' to enable this support in kernel.
+>> +      Say 'm' enable this support as module.
+> 
+> Please change the last line to:
+> 
+> To compile this driver as a module, choose M here: the module will
+> be called leds-powernv.
+> 
+
+Sure. Will fix.
+
+> 
+>> +
+>>   config LEDS_SYSCON
+>>       bool "LED support for LEDs on system controllers"
+>>       depends on LEDS_CLASS=y
+>> diff --git a/drivers/leds/Makefile b/drivers/leds/Makefile
+>> index cbba921..604ffc9 100644
+>> --- a/drivers/leds/Makefile
+>> +++ b/drivers/leds/Makefile
+>> @@ -58,6 +58,7 @@ obj-$(CONFIG_LEDS_BLINKM)        += leds-blinkm.o
+>>   obj-$(CONFIG_LEDS_SYSCON)        += leds-syscon.o
+>>   obj-$(CONFIG_LEDS_VERSATILE)        += leds-versatile.o
+>>   obj-$(CONFIG_LEDS_MENF21BMC)        += leds-menf21bmc.o
+>> +obj-$(CONFIG_LEDS_POWERNV)        += leds-powernv.o
+>>
+>>   # LED SPI Drivers
+>>   obj-$(CONFIG_LEDS_DAC124S085)        += leds-dac124s085.o
+>> diff --git a/drivers/leds/leds-powernv.c b/drivers/leds/leds-powernv.c
+>> new file mode 100644
+>> index 0000000..0c9f958
+>> --- /dev/null
+>> +++ b/drivers/leds/leds-powernv.c
+>> @@ -0,0 +1,620 @@
+>> +/*
+>> + * PowerNV LED Driver
+>> + *
+>> + * Copyright IBM Corp. 2015
+>> + *
+>> + * Author: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+>> + * Author: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
+>> + *
+>> + * This program is free software; you can redistribute it and/or
+>> + * modify it under the terms of the GNU General Public License
+>> + * as published by the Free Software Foundation; either version
+>> + * 2 of the License, or (at your option) any later version.
+>> + */
+>> +
+>> +#define PREFIX        "POWERNV_LED"
+>> +#define pr_fmt(fmt)    PREFIX ": " fmt
+> 
+> Wouldn't you mind using dev_* prefixed logging?
+> Unless you have a good reason not to do it.
+> 
+
+I don't see any specific reason to use pr_fmt. Will convert this to dev_*.
+
+
+>> +
+>> +#include <linux/platform_device.h>
+>> +#include <linux/leds.h>
+>> +#include <linux/module.h>
+>> +#include <linux/of.h>
+>> +#include <linux/slab.h>
+>> +#include <linux/list.h>
+> 
+> Please keep alphabetical order.
+
+Sure.
+
+> 
+>> +
+>> +#include <asm/opal.h>
+>> +
+>> +#define LED_STR_ATTENTION    ":ATTENTION"
+>> +#define LED_STR_IDENT        ":IDENTIFY"
+>> +#define LED_STR_FAULT        ":FAULT"
+> 
+> Namespacing prefix is required here. LED is reserved for
+> LED subsystem global macros. How about POWERNV_LED_* ?
+
+Yep... Its my fault.. Makes sense to have POWERNV_*.
+
+> 
+>> +
+>> +/*
+>> + * LED operation state
+>> + *
+>> + * led_classdev_unregister resets the brightness values. However
+>> + * we want to retain the LED state across boot.
+> 
+> What boot are you thinking of here?
+> 
+>> Hence disable
+>> + * LED operation before calling led_classdev_unregister.
+>> + */
+> 
+> This comment is unclear for me, as this is static initialization,
+> unrelated to to any function call.
+> 
+
+I mean, we have to retain the state of LED across system reboot.
+
+>> +static bool led_disabled = false;
+> 
+> Static variables are initialized to 0 by default.
+
+Fixed.
+
+.../...
+
+>> +/*
+>> + * powernv_led_compact_work_list
+>> + *
+>> + * This function goes through the entire list of scheduled powernv_led_work
+>> + * nodes and removes the nodes which have already processed one set LED
+>> + * state request from request list and has been marked for deletion. This is
+>> + * essential for cleaning the list before adding new elements into it. This
+>> + * also tracks the total number of pending tasks. Once it reaches the
+>> + * threshold the function will throttle till all the scheduled tasks completes
+>> + * execution during which the user space thread will block and will be
+>> + * prevented from queuing up more LED state change requests.
+>> + */
+> 
+> Did you test the driver with led-triggers?
+
+I have tested set/reset LEDs .. not triggers as our user space dont' use that.
+
+>> +
+>> +    switch (led_type) {
+>> +    case OPAL_SLOT_LED_TYPE_ATTN:
+>> +        loc_code[strlen(loc_code) - strlen(LED_STR_ATTENTION)] = '\0';
+>> +        break;
+>> +    case OPAL_SLOT_LED_TYPE_ID:
+>> +        loc_code[strlen(loc_code) - strlen(LED_STR_IDENT)] = '\0';
+>> +        break;
+>> +    case OPAL_SLOT_LED_TYPE_FAULT:
+>> +        loc_code[strlen(loc_code) - strlen(LED_STR_FAULT)] = '\0';
+>> +        break;
+>> +    default:    /* Unknown LED type */
+>> +        goto out_loc;
+>> +    }
+> 
+> Above sequence is repeated in the function below - it could be wrapped
+> with a new function.
+
+Agree. Will fix.
+
+.../...
+
+>> +
+>> +/*
+>> + * power_led_classdev
+>> + *
+>> + * This function registers classdev structure for any given type of LED on
+>> + * a given child LED device node.
+>> + */
+>> +static int power_led_classdev(struct platform_device *pdev,
+>> +                  struct device_node *cled, u64 led_type)
+>> +{
+>> +    int rc;
+>> +    unsigned long flags;
+>> +    struct powernv_led *cpled;
+>> +
+>> +    cpled = kzalloc(sizeof(struct powernv_led), GFP_KERNEL);
+>> +    if (!cpled) {
+>> +        pr_err("Memory allocation failed at %s\n", __func__);
+>> +        return -ENOMEM;
+>> +    }
+>> +
+>> +    /* Create the name for classdev */
+>> +    switch (led_type) {
+>> +    case OPAL_SLOT_LED_TYPE_ATTN:
+>> +        cpled->cdev.name = kasprintf(GFP_KERNEL, "%s%s",
+>> +                         cled->name, LED_STR_ATTENTION);
+> 
+> We have a 'label' DT property for naming LED Flash class devices.
+> Please refer to Documentation/devicetree/bindings/leds/common.txt.
+> 
+
+In Power Systems LEDs are overloaded (meaning same LED is used for identify and
+fault depending on their state  ---  blinking = identify and solid = fault).
+Hence here append LED type info.
+
+
+.../...
+
+>> +
+>> +static struct platform_driver powernv_led_driver = {
+>> +    .probe    = powernv_led_probe,
+>> +    .remove = powernv_led_remove,
+>> +    .driver = {
+>> +        .name = "powernv-led-driver",
+>> +        .owner = THIS_MODULE,
+>> +        .of_match_table = powernv_led_match,
+> 
+> Is somewhere DT documentation available for these leds?
+
+These are PowerNV platform specific properties. I don't think its
+specified/documented in kernel side.
+These are documented in OPAL (firmware) side.
+
+
+Thanks for valuable review. Will post v3 ASAP.
+
+-Vasant
