@@ -1,27 +1,27 @@
 Return-Path: <ldufour@linux.vnet.ibm.com>
-Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
+Received: from e06smtp16.uk.ibm.com (e06smtp16.uk.ibm.com [195.75.94.112])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4B0BB1A0B86
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Apr 2015 00:17:08 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4F6AF1A0B87
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Apr 2015 00:17:12 +1000 (AEST)
 Received: from /spool/local
- by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp16.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
- Wed, 15 Apr 2015 15:17:05 +0100
-Received: from b06cxnps3074.portsmouth.uk.ibm.com
- (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
- by d06dlp01.portsmouth.uk.ibm.com (Postfix) with ESMTP id EF85817D805A
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2015 15:17:37 +0100 (BST)
+ Wed, 15 Apr 2015 15:17:08 +0100
+Received: from b06cxnps4074.portsmouth.uk.ibm.com
+ (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
+ by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id B83DB1B0806B
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2015 15:17:39 +0100 (BST)
 Received: from d06av11.portsmouth.uk.ibm.com (d06av11.portsmouth.uk.ibm.com
  [9.149.37.252])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t3FEH1iv59179128
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2015 14:17:01 GMT
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t3FEH5sF49938440
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2015 14:17:05 GMT
 Received: from d06av11.portsmouth.uk.ibm.com (localhost [127.0.0.1])
  by d06av11.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t3FEH0Po017945
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2015 08:17:01 -0600
+ t3FEH3ku018205
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2015 08:17:05 -0600
 From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
 To: Andrew Morton <akpm@linux-foundation.org>,
  "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>,
@@ -32,11 +32,14 @@ To: Andrew Morton <akpm@linux-foundation.org>,
  Paul Mackerras <paulus@samba.org>,
  Michael Ellerman <mpe@ellerman.id.au>, Ingo Molnar <mingo@kernel.org>,
  linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v5 0/3] Tracking user space vDSO remaping
-Date: Wed, 15 Apr 2015 16:16:55 +0200
-Message-Id: <cover.1429104776.git.ldufour@linux.vnet.ibm.com>
-In-Reply-To: <20150414123853.a3e61b7fa95b6c634e0fcce0@linux-foundation.org>
+Subject: [PATCH v5 2/3] mm: New arch_remap hook
+Date: Wed, 15 Apr 2015 16:16:57 +0200
+Message-Id: <906bea3fec14227486b155d79bd99e871c0c4b0c.1429104776.git.ldufour@linux.vnet.ibm.com>
+In-Reply-To: <cover.1429104776.git.ldufour@linux.vnet.ibm.com>
+References: <cover.1429104776.git.ldufour@linux.vnet.ibm.com>
+In-Reply-To: <cover.1429104776.git.ldufour@linux.vnet.ibm.com>
 References: <20150414123853.a3e61b7fa95b6c634e0fcce0@linux-foundation.org>
+ <cover.1429104776.git.ldufour@linux.vnet.ibm.com>
 Cc: criu@openvz.org, cov@codeaurora.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -47,107 +50,72 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-CRIU is recreating the process memory layout by remapping the checkpointee
-memory area on top of the current process (criu). This includes remapping
-the vDSO to the place it has at checkpoint time.
+Some architecture would like to be triggered when a memory area is moved
+through the mremap system call.
 
-However some architectures like powerpc are keeping a reference to the vDSO
-base address to build the signal return stack frame by calling the vDSO
-sigreturn service. So once the vDSO has been moved, this reference is no
-more valid and the signal frame built later are not usable.
+This patch is introducing a new arch_remap mm hook which is placed in the
+path of mremap, and is called before the old area is unmapped (and the
+arch_unmap hook is called).
 
-This patch serie is introducing a new mm hook framework, and a new
-arch_remap hook which is called when mremap is done and the mm lock still
-hold. The next patch is adding the vDSO remap and unmap tracking to the
-powerpc architecture.
+Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+---
+ include/linux/mm-arch-hooks.h |  9 +++++++++
+ mm/mremap.c                   | 17 +++++++++++------
+ 2 files changed, 20 insertions(+), 6 deletions(-)
 
-Changes in v5:
-- Jumping over v4 which was too complex (PowerPC part) for the need.
-- Introducing new mm hook framework as suggested by Andrew Morton.
-
-Changes in v4:
-- Reviewing the PowerPC part of the patch to handle partial unmap and remap
-  of the vDSO.
-
-Changes in v3:
-- Fixed grammatical error in a comment of the second patch. 
-  Thanks again, Ingo.
-
-Changes in v2:
---------------
-- Following the Ingo Molnar's advice, enabling the call to arch_remap through
-  the __HAVE_ARCH_REMAP macro. This reduces considerably the first patch.
-
-Laurent Dufour (3):
-  mm: New mm hook framework
-  mm: New arch_remap hook
-  powerpc/mm: Tracking vDSO remap
-
- arch/alpha/include/asm/mm-arch-hooks.h      | 15 +++++++++++++++
- arch/arc/include/asm/mm-arch-hooks.h        | 15 +++++++++++++++
- arch/arm/include/asm/mm-arch-hooks.h        | 15 +++++++++++++++
- arch/arm64/include/asm/mm-arch-hooks.h      | 15 +++++++++++++++
- arch/avr32/include/asm/mm-arch-hooks.h      | 15 +++++++++++++++
- arch/blackfin/include/asm/mm-arch-hooks.h   | 15 +++++++++++++++
- arch/c6x/include/asm/mm-arch-hooks.h        | 15 +++++++++++++++
- arch/cris/include/asm/mm-arch-hooks.h       | 15 +++++++++++++++
- arch/frv/include/asm/mm-arch-hooks.h        | 15 +++++++++++++++
- arch/hexagon/include/asm/mm-arch-hooks.h    | 15 +++++++++++++++
- arch/ia64/include/asm/mm-arch-hooks.h       | 15 +++++++++++++++
- arch/m32r/include/asm/mm-arch-hooks.h       | 15 +++++++++++++++
- arch/m68k/include/asm/mm-arch-hooks.h       | 15 +++++++++++++++
- arch/metag/include/asm/mm-arch-hooks.h      | 15 +++++++++++++++
- arch/microblaze/include/asm/mm-arch-hooks.h | 15 +++++++++++++++
- arch/mips/include/asm/mm-arch-hooks.h       | 15 +++++++++++++++
- arch/mn10300/include/asm/mm-arch-hooks.h    | 15 +++++++++++++++
- arch/nios2/include/asm/mm-arch-hooks.h      | 15 +++++++++++++++
- arch/openrisc/include/asm/mm-arch-hooks.h   | 15 +++++++++++++++
- arch/parisc/include/asm/mm-arch-hooks.h     | 15 +++++++++++++++
- arch/powerpc/include/asm/mm-arch-hooks.h    | 28 ++++++++++++++++++++++++++++
- arch/powerpc/include/asm/mmu_context.h      | 23 ++++++++++++++++++++++-
- arch/s390/include/asm/mm-arch-hooks.h       | 15 +++++++++++++++
- arch/score/include/asm/mm-arch-hooks.h      | 15 +++++++++++++++
- arch/sh/include/asm/mm-arch-hooks.h         | 15 +++++++++++++++
- arch/sparc/include/asm/mm-arch-hooks.h      | 15 +++++++++++++++
- arch/tile/include/asm/mm-arch-hooks.h       | 15 +++++++++++++++
- arch/um/include/asm/mm-arch-hooks.h         | 15 +++++++++++++++
- arch/unicore32/include/asm/mm-arch-hooks.h  | 15 +++++++++++++++
- arch/x86/include/asm/mm-arch-hooks.h        | 15 +++++++++++++++
- arch/xtensa/include/asm/mm-arch-hooks.h     | 15 +++++++++++++++
- include/linux/mm-arch-hooks.h               | 25 +++++++++++++++++++++++++
- mm/mremap.c                                 | 17 +++++++++++------
- 33 files changed, 521 insertions(+), 7 deletions(-)
- create mode 100644 arch/alpha/include/asm/mm-arch-hooks.h
- create mode 100644 arch/arc/include/asm/mm-arch-hooks.h
- create mode 100644 arch/arm/include/asm/mm-arch-hooks.h
- create mode 100644 arch/arm64/include/asm/mm-arch-hooks.h
- create mode 100644 arch/avr32/include/asm/mm-arch-hooks.h
- create mode 100644 arch/blackfin/include/asm/mm-arch-hooks.h
- create mode 100644 arch/c6x/include/asm/mm-arch-hooks.h
- create mode 100644 arch/cris/include/asm/mm-arch-hooks.h
- create mode 100644 arch/frv/include/asm/mm-arch-hooks.h
- create mode 100644 arch/hexagon/include/asm/mm-arch-hooks.h
- create mode 100644 arch/ia64/include/asm/mm-arch-hooks.h
- create mode 100644 arch/m32r/include/asm/mm-arch-hooks.h
- create mode 100644 arch/m68k/include/asm/mm-arch-hooks.h
- create mode 100644 arch/metag/include/asm/mm-arch-hooks.h
- create mode 100644 arch/microblaze/include/asm/mm-arch-hooks.h
- create mode 100644 arch/mips/include/asm/mm-arch-hooks.h
- create mode 100644 arch/mn10300/include/asm/mm-arch-hooks.h
- create mode 100644 arch/nios2/include/asm/mm-arch-hooks.h
- create mode 100644 arch/openrisc/include/asm/mm-arch-hooks.h
- create mode 100644 arch/parisc/include/asm/mm-arch-hooks.h
- create mode 100644 arch/powerpc/include/asm/mm-arch-hooks.h
- create mode 100644 arch/s390/include/asm/mm-arch-hooks.h
- create mode 100644 arch/score/include/asm/mm-arch-hooks.h
- create mode 100644 arch/sh/include/asm/mm-arch-hooks.h
- create mode 100644 arch/sparc/include/asm/mm-arch-hooks.h
- create mode 100644 arch/tile/include/asm/mm-arch-hooks.h
- create mode 100644 arch/um/include/asm/mm-arch-hooks.h
- create mode 100644 arch/unicore32/include/asm/mm-arch-hooks.h
- create mode 100644 arch/x86/include/asm/mm-arch-hooks.h
- create mode 100644 arch/xtensa/include/asm/mm-arch-hooks.h
- create mode 100644 include/linux/mm-arch-hooks.h
-
+diff --git a/include/linux/mm-arch-hooks.h b/include/linux/mm-arch-hooks.h
+index 63005e367abd..4efc3f56e6df 100644
+--- a/include/linux/mm-arch-hooks.h
++++ b/include/linux/mm-arch-hooks.h
+@@ -13,4 +13,13 @@
+ 
+ #include <asm/mm-arch-hooks.h>
+ 
++#ifndef arch_remap
++static inline void arch_remap(struct mm_struct *mm,
++			      unsigned long old_start, unsigned long old_end,
++			      unsigned long new_start, unsigned long new_end)
++{
++}
++#define arch_remap arch_remap
++#endif
++
+ #endif /* _LINUX_MM_ARCH_HOOKS_H */
+diff --git a/mm/mremap.c b/mm/mremap.c
+index 2dc44b1cb1df..7597af900d07 100644
+--- a/mm/mremap.c
++++ b/mm/mremap.c
+@@ -22,6 +22,7 @@
+ #include <linux/mmu_notifier.h>
+ #include <linux/sched/sysctl.h>
+ #include <linux/uaccess.h>
++#include <linux/mm-arch-hooks.h>
+ 
+ #include <asm/cacheflush.h>
+ #include <asm/tlbflush.h>
+@@ -286,13 +287,17 @@ static unsigned long move_vma(struct vm_area_struct *vma,
+ 		old_len = new_len;
+ 		old_addr = new_addr;
+ 		new_addr = -ENOMEM;
+-	} else if (vma->vm_file && vma->vm_file->f_op->mremap) {
+-		err = vma->vm_file->f_op->mremap(vma->vm_file, new_vma);
+-		if (err < 0) {
+-			move_page_tables(new_vma, new_addr, vma, old_addr,
+-					 moved_len, true);
+-			return err;
++	} else {
++		if (vma->vm_file && vma->vm_file->f_op->mremap) {
++			err = vma->vm_file->f_op->mremap(vma->vm_file, new_vma);
++			if (err < 0) {
++				move_page_tables(new_vma, new_addr, vma,
++						 old_addr, moved_len, true);
++				return err;
++			}
+ 		}
++		arch_remap(mm, old_addr, old_addr + old_len,
++			   new_addr, new_addr + new_len);
+ 	}
+ 
+ 	/* Conceal VM_ACCOUNT so old reservation is not undone */
 -- 
 1.9.1
