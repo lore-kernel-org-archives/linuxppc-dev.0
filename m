@@ -1,40 +1,23 @@
-Return-Path: <shreyas@linux.vnet.ibm.com>
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <dgibson@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id EF8C21A0B86
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2015 16:06:51 +1000 (AEST)
-Received: from /spool/local
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <shreyas@linux.vnet.ibm.com>;
- Wed, 15 Apr 2015 16:06:49 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 34FAB2BB0055
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2015 16:06:46 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t3F66bkA59637924
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2015 16:06:46 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t3F66Bxu002488
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2015 16:06:12 +1000
-Message-ID: <552DFFC1.6050806@linux.vnet.ibm.com>
-Date: Wed, 15 Apr 2015 11:35:53 +0530
-From: Shreyas B Prabhu <shreyas@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5B7411A0B87
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2015 16:10:09 +1000 (AEST)
+Date: Wed, 15 Apr 2015 14:09:15 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Subject: Re: [PATCH kernel v8 05/31] vfio: powerpc/spapr: Move locked_vm
+ accounting to helpers
+Message-ID: <20150415040915.GF25040@voom.redhat.com>
+References: <1428647473-11738-1-git-send-email-aik@ozlabs.ru>
+ <1428647473-11738-6-git-send-email-aik@ozlabs.ru>
 MIME-Version: 1.0
-To: Preeti U Murthy <preeti@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
- Michael Ellerman <mpe@ellerman.id.au>,
- "benh@kernel.crashing.org" <benh@kernel.crashing.org>
-Subject: Re: [PATCH v4 3/3] powerpc/powernv: Introduce sysfs control for
- fastsleep workaround behavior
-References: <1428976613-13007-1-git-send-email-shreyas@linux.vnet.ibm.com>
- <1428976613-13007-4-git-send-email-shreyas@linux.vnet.ibm.com>
- <552CCF5E.5040201@linux.vnet.ibm.com>
-In-Reply-To: <552CCF5E.5040201@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
-Cc: linuxppc-dev@lists.ozlabs.org
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="JcvBIhDvR6w3jUPA"
+In-Reply-To: <1428647473-11738-6-git-send-email-aik@ozlabs.ru>
+Cc: Alex Williamson <alex.williamson@redhat.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,30 +28,56 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
-> 
-> A point that bothers me here is if we can potentially race with cpu
-> hotplug ? If cpuX and its siblings are offline and it was interrupted to
-> come online:
-> 
-> cpuX                                     cpuY
-> Interrupted to come online
-> Undo workaround
-> 
->                                 Nop the fastsleep_workaround_exit path
->                                 IPI online cores: apply workaround once
-> 
-> Set yourself in the online mask
->                                 Nop the fastsleep_workaround_entry path
-> 
-> 
-> This results in cpuX undoing the workaround on its core, never to set it
-> back again.
-> 
-> So should we protect the region between the beginning and end of
-> patching instructions with get_online_cpus() and put_online_cpus() ?
-> 
+--JcvBIhDvR6w3jUPA
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Nice catch. I had missed this. Sending out a patch correcting this.
+On Fri, Apr 10, 2015 at 04:30:47PM +1000, Alexey Kardashevskiy wrote:
+> There moves locked pages accounting to helpers.
+> Later they will be reused for Dynamic DMA windows (DDW).
+>=20
+> This reworks debug messages to show the current value and the limit.
+>=20
+> This stores the locked pages number in the container so when unlocking
+> the iommu table pointer won't be needed. This does not have an effect
+> now but it will with the multiple tables per container as then we will
+> allow attaching/detaching groups on fly and we may end up having
+> a container with no group attached but with the counter incremented.
+>=20
+> While we are here, update the comment explaining why RLIMIT_MEMLOCK
+> might be required to be bigger than the guest RAM. This also prints
+> pid of the current process in pr_warn/pr_debug.
+>=20
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 
-Thanks,
-Shreyas
+Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
+
+--=20
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
+
+--JcvBIhDvR6w3jUPA
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJVLeRrAAoJEGw4ysog2bOSWOEQALYjA9ivZxL7aAXjmVLnphtT
+jSX8ecLUTdyOtCAJ8QRAMN+r+e3BCItlVRx0xuRr4it0QvrZgDxHgsB6fq7Zg1ha
+EMORgnN22UfC0pF+sTTdob1WvGiRHgHohwiSLiRvyApz0pv2BIGUuUbDmCQTWIYc
+Q+Z5rwcU6nCb15SXrUwzUFrulMfyYgwacMv9oAcO07yaClvSSXiIkzyAmzhHiLc5
+uYuVezeI2+WynlpTFHoK4CqVV7jRZyTgFUtIyQFxI2pE3QmtkZ0OFnW0l9dOxcGW
+H+3C+jiHj03/P7kMYyjxZOMGnLtkaXwjcaeRnB2F+qx+AA4rjGLFFDhixA+rK2tp
+KzWsWcxg9y6lTcOG9fVq4LkXgYaELtfKnNbdBqeDEETHp9Gq/T1tbRGL4TgO/t8b
+/hmsnyeXI1TYi3Qax4qQ1YcFn5X7/n1j9No+MZOuSGCNCqlSCSy+qnHd70AluWW5
+9B2LNRdFyQUS12FD8kCd2/DAkUqqSkhC+BP6PgDR8EYdZ/OkoHn/76nIA6RM5NHj
+acSfdKfbVJgeqUxPNYOTjsUHHaFSIQVhorOgo9glFrlSqBGv83uJRexMCe5OWURa
+raLBQtzotT2BYPlWEzVHpZgefKiIf4uiSiuSlNvTKTVB6t8e/6gZumumlFIim+n4
+jMTMGgpbwNrkfeYOWYRH
+=mLY6
+-----END PGP SIGNATURE-----
+
+--JcvBIhDvR6w3jUPA--
