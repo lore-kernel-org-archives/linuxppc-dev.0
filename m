@@ -1,23 +1,51 @@
-Return-Path: <Igal.Liberman@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0131.outbound.protection.outlook.com [157.56.111.131])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <ldufour@linux.vnet.ibm.com>
+Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6DE7F1A0B86
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2015 21:07:42 +1000 (AEST)
-From: "Igal.Liberman@freescale.com" <Igal.Liberman@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: RE: [PATCH] powerpc/dts: Update the core cluster PLL node(s)
-Date: Wed, 15 Apr 2015 11:07:34 +0000
-Message-ID: <DM2PR03MB3831BEEDD2C17991818FFA9E6E50@DM2PR03MB383.namprd03.prod.outlook.com>
-References: <1429005306-24544-1-git-send-email-igal.liberman@freescale.com>
- <1429042868.22867.689.camel@freescale.com>
- <1429042950.22867.690.camel@freescale.com>
-In-Reply-To: <1429042950.22867.690.camel@freescale.com>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0283E1A0B86
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2015 21:57:58 +1000 (AEST)
+Received: from /spool/local
+ by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
+ Wed, 15 Apr 2015 12:57:54 +0100
+Received: from b06cxnps3074.portsmouth.uk.ibm.com
+ (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
+ by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id B122A1B08076
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2015 12:58:24 +0100 (BST)
+Received: from d06av07.portsmouth.uk.ibm.com (d06av07.portsmouth.uk.ibm.com
+ [9.149.37.248])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t3FBvoNN58982596
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2015 11:57:50 GMT
+Received: from d06av07.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av07.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t3FBvmcD005950
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2015 07:57:50 -0400
+Message-ID: <552E523A.1020905@linux.vnet.ibm.com>
+Date: Wed, 15 Apr 2015 13:57:46 +0200
+From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [RESEND PATCH v3 1/2] mm: Introducing arch_remap hook
+References: <cover.1428916945.git.ldufour@linux.vnet.ibm.com>
+ <9d827fc618a718830b2c47aa87e8be546914c897.1428916945.git.ldufour@linux.vnet.ibm.com>
+ <20150413115811.GA12354@node.dhcp.inet.fi>
+ <552BB972.3010704@linux.vnet.ibm.com>
+ <20150413131357.GC12354@node.dhcp.inet.fi>
+ <552BC2CA.80309@linux.vnet.ibm.com>	<552BC619.9080603@parallels.com>
+ <20150413140219.GA14480@node.dhcp.inet.fi>
+ <20150413135951.b3d9f431892dbfa7156cc1b0@linux-foundation.org>
+ <552CDD35.2030901@linux.vnet.ibm.com>
+ <20150414123853.a3e61b7fa95b6c634e0fcce0@linux-foundation.org>
+In-Reply-To: <20150414123853.a3e61b7fa95b6c634e0fcce0@linux-foundation.org>
+Content-Type: text/plain; charset=windows-1252
+Cc: Rik van Riel <riel@redhat.com>, Pavel Emelyanov <xemul@parallels.com>,
+ Hugh Dickins <hughd@google.com>, linux-kernel@vger.kernel.org, criu@openvz.org,
+ linux-mm@kvack.org, Paul Mackerras <paulus@samba.org>,
+ Mel Gorman <mgorman@suse.de>, "Kirill A. Shutemov" <kirill@shutemov.name>,
+ linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@kernel.org>,
+ "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, cov@codeaurora.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,51 +55,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNClJlZ2FyZHMsDQpJZ2FsIExpYmVybWFuLg0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0t
-LS0tDQo+IEZyb206IFdvb2QgU2NvdHQtQjA3NDIxDQo+IFNlbnQ6IFR1ZXNkYXksIEFwcmlsIDE0
-LCAyMDE1IDExOjIzIFBNDQo+IFRvOiBMaWJlcm1hbiBJZ2FsLUIzMTk1MA0KPiBDYzogZGV2aWNl
-dHJlZUB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnDQo+IFN1
-YmplY3Q6IFJlOiBbUEFUQ0hdIHBvd2VycGMvZHRzOiBVcGRhdGUgdGhlIGNvcmUgY2x1c3RlciBQ
-TEwgbm9kZShzKQ0KPiANCj4gT24gVHVlLCAyMDE1LTA0LTE0IGF0IDE1OjIxIC0wNTAwLCBTY290
-dCBXb29kIHdyb3RlOg0KPiA+IE9uIFR1ZSwgMjAxNS0wNC0xNCBhdCAxMjo1NSArMDMwMCwgSWdh
-bC5MaWJlcm1hbiB3cm90ZToNCj4gPiA+IEZyb206IElnYWwgTGliZXJtYW4gPElnYWwuTGliZXJt
-YW5AZnJlZXNjYWxlLmNvbT4NCj4gPiA+DQo+ID4gPiBUaGlzIHBhdGNoIHJlcGxhY2VzIHRoZSBm
-b2xsb3dpbmc6DQo+ID4gPiAJaHR0cHM6Ly9wYXRjaHdvcmsub3psYWJzLm9yZy9wYXRjaC80Mjc2
-NjQvDQo+ID4gPg0KPiA+ID4gVGhpcyBwYXRjaCBpcyBkZXNjcmliZWQgYnkgdGhlIGZvbGxvd2lu
-ZyBiaW5kaW5nIGRvY3VtZW50IHVwZGF0ZToNCj4gPiA+IAlodHRwczovL3BhdGNod29yay5vemxh
-YnMub3JnL3BhdGNoLzQ2MTE1MC8NCj4gPiA+DQo+ID4gPiBTaWduZWQtb2ZmLWJ5OiBJZ2FsIExp
-YmVybWFuIDxJZ2FsLkxpYmVybWFuQGZyZWVzY2FsZS5jb20+DQo+ID4gPiAtLS0NCj4gPiA+ICBh
-cmNoL3Bvd2VycGMvYm9vdC9kdHMvZnNsL3FvcmlxLWNsb2NrZ2VuMi5kdHNpIHwgICAgNiArKysr
-LS0NCj4gPiA+ICAxIGZpbGUgY2hhbmdlZCwgNCBpbnNlcnRpb25zKCspLCAyIGRlbGV0aW9ucygt
-KQ0KPiA+ID4NCj4gPiA+IGRpZmYgLS1naXQgYS9hcmNoL3Bvd2VycGMvYm9vdC9kdHMvZnNsL3Fv
-cmlxLWNsb2NrZ2VuMi5kdHNpDQo+ID4gPiBiL2FyY2gvcG93ZXJwYy9ib290L2R0cy9mc2wvcW9y
-aXEtY2xvY2tnZW4yLmR0c2kNCj4gPiA+IGluZGV4IDQ4ZTBiNmUuLjdlMWYwNzQgMTAwNjQ0DQo+
-ID4gPiAtLS0gYS9hcmNoL3Bvd2VycGMvYm9vdC9kdHMvZnNsL3FvcmlxLWNsb2NrZ2VuMi5kdHNp
-DQo+ID4gPiArKysgYi9hcmNoL3Bvd2VycGMvYm9vdC9kdHMvZnNsL3FvcmlxLWNsb2NrZ2VuMi5k
-dHNpDQo+ID4gPiBAQCAtNDksMTQgKzQ5LDE2IEBAIGdsb2JhbC11dGlsaXRpZXNAZTEwMDAgew0K
-PiA+ID4gIAkJcmVnID0gPDB4ODAwIDB4ND47DQo+ID4gPiAgCQljb21wYXRpYmxlID0gImZzbCxx
-b3JpcS1jb3JlLXBsbC0yLjAiOw0KPiA+ID4gIAkJY2xvY2tzID0gPCZzeXNjbGs+Ow0KPiA+ID4g
-LQkJY2xvY2stb3V0cHV0LW5hbWVzID0gInBsbDAiLCAicGxsMC1kaXYyIiwgInBsbDAtZGl2NCI7
-DQo+ID4gPiArCQljbG9jay1vdXRwdXQtbmFtZXMgPSAicGxsMCIsICJwbGwwLWRpdjIiLCAicGxs
-MC1kaXYzIiwNCj4gPiA+ICsJCQkJICAgICAgInBsbDAtZGl2NCI7DQo+ID4gPiAgCX07DQo+ID4g
-PiAgCXBsbDE6IHBsbDFAODIwIHsNCj4gPiA+ICAJCSNjbG9jay1jZWxscyA9IDwxPjsNCj4gPiA+
-ICAJCXJlZyA9IDwweDgyMCAweDQ+Ow0KPiA+ID4gIAkJY29tcGF0aWJsZSA9ICJmc2wscW9yaXEt
-Y29yZS1wbGwtMi4wIjsNCj4gPiA+ICAJCWNsb2NrcyA9IDwmc3lzY2xrPjsNCj4gPiA+IC0JCWNs
-b2NrLW91dHB1dC1uYW1lcyA9ICJwbGwxIiwgInBsbDEtZGl2MiIsICJwbGwxLWRpdjQiOw0KPiA+
-ID4gKwkJY2xvY2stb3V0cHV0LW5hbWVzID0gInBsbDEiLCAicGxsMS1kaXYyIiwgInBsbDEtZGl2
-MyIsDQo+ID4gPiArCQkJCSAgICAgICJwbGwxLWRpdjQiOw0KPiA+DQo+ID4gV2FpdCwgc28gaWYg
-dGhlIGRyaXZlciBpbXBsZW1lbnRzIHRoZSBiaW5kaW5nIHlvdSBzdWJtaXR0ZWQsIHlvdSdsbA0K
-PiA+IGJyZWFrIGNvbXBhdGliaWxpdHkgd2l0aCB0aGVzZSBvbGRlciBkZXZpY2UgdHJlZXMuLi4N
-Cj4gPg0KPiA+IEkgdGhpbmsgd2UgbmVlZCB0byBqdXN0IGFjY2VwdCB0aGUgdWdseSBjb3VudC10
-aGUtY2xvY2stbmFtZXMgYXBwcm9hY2gNCj4gPiBhbmQgZG9jdW1lbnQgaXQuDQo+IA0KPiBJcyB0
-aGVyZSBhbnkgY3VycmVudCAyLjAgY2xvY2sgY29uc3VtZXIgdGhhdCByZWZlcmVuY2VzIHBsbC1k
-aXY0Pw0KPiANCg0KSSBsb29rZWQgYXQgVDQyNDAgZm9yIGV4YW1wbGUsIHRoZXJlJ3MgYSBtdXgg
-bm9kZSB3aGljaCBhZGRzIHBsbC1kaXY0IG9wdGlvbjoNCm11eDA6IG11eDBAMCB7DQoJI2Nsb2Nr
-LWNlbGxzID0gPDA+Ow0KCXJlZyA9IDwweDAgMHg0PjsNCgljb21wYXRpYmxlID0gImZzbCxxb3Jp
-cS1jb3JlLW11eC0yLjAiOw0KCWNsb2NrcyA9IDwmcGxsMCAwPiwgPCZwbGwwIDE+LCA8JnBsbDAg
-Mj4sDQoJCTwmcGxsMSAwPiwgPCZwbGwxIDE+LCA8JnBsbDEgMj4sDQoJCTwmcGxsMiAwPiwgPCZw
-bGwyIDE+LCA8JnBsbDIgMj47DQoJY2xvY2stbmFtZXMgPSAicGxsMCIsICJwbGwwLWRpdjIiLCAi
-cGxsMC1kaXY0IiwNCgkJInBsbDEiLCAicGxsMS1kaXYyIiwgInBsbDEtZGl2NCIsDQoJCSJwbGwy
-IiwgInBsbDItZGl2MiIsICJwbGwyLWRpdjQiOw0KCWNsb2NrLW91dHB1dC1uYW1lcyA9ICJjbXV4
-MCI7DQp9Ow0KDQpBZnRlciB0aGlzIGNoYW5nZSA8JnBsbDAgMj4gd2lsbCByZXByZXNlbnQgInBs
-bDAtZGl2MyIgYW5kIG5vdCAicGxsMC1kaXY0Ii4NCiANCj4gLVNjb3R0DQoNCg==
+On 14/04/2015 21:38, Andrew Morton wrote:
+> On Tue, 14 Apr 2015 11:26:13 +0200 Laurent Dufour <ldufour@linux.vnet.ibm.com> wrote:
+> 
+>>> Do away with __HAVE_ARCH_REMAP and do it like this:
+>>>
+>>> arch/x/include/asm/y.h:
+>>>
+>>> 	extern void arch_remap(...);
+>>> 	#define arch_remap arch_remap
+>>>
+>>> include/linux/z.h:
+>>>
+>>> 	#include <asm/y.h>
+>>>
+>>> 	#ifndef arch_remap
+>>> 	static inline void arch_remap(...) { }
+>>> 	#define arch_remap arch_remap
+>>> 	#endif
+>>
+>> Hi Andrew,
+>>
+>> I like your idea, but I can't find any good candidate for <asm/y.h> and
+>> <linux/z.h>.
+>>
+>> I tried with <linux/mm.h> and <asm/mmu_context.h> but
+>> <asm/mmu_context.h> is already including <linux/mm.h>.
+>>
+>> Do you have any suggestion ?
+>>
+>> Another option could be to do it like the actual arch_unmap() in
+>> <asm-generic/mm_hooks.h> but this is the opposite of your idea, and Ingo
+>> was not comfortable with this idea due to the impact of the other
+>> architectures.
+> 
+> I don't see any appropriate header files for this.  mman.h is kinda
+> close.
+> 
+> So we create new header files, that's not a problem.  I'm torn between
+> 
+> a) include/linux/mm-arch-hooks.h (and 31
+>    arch/X/include/asm/mm-arch-hooks.h).  Mandate: mm stuff which can be
+>    overridded by arch
+> 
+> versus
+> 
+> b) include/linux/mremap.h (+31), with a narrower mandate.
+> 
+> 
+> This comes up fairly regularly so I suspect a) is better.  We'll add
+> things to it over time, and various bits of existing ad-hackery can be
+> moved over as cleanups.
+
+Thanks for the advice,
+
+I'll do a), starting with the arch_remap macro, adding the 30 "empty"
+arch/x/include/asm/mm-arch-hooks.h files, and implementing arch_remap
+for powerpc.
+
+Then, if the first patch is accepted, I may move the arch_*() stuff
+defined in include/asm-generic/mm_hooks.h into
+include/linux/mm-arch-hooks.h and filled some
+arch/X/include/asm/mm-arch-hooks.h. The file
+include/asm-generic/mm_hooks.h will then become empty, and been removed.
+
+Cheers,
+Laurent.
+
+
+  * Anglais - détecté
+  * Français
+  * Anglais
+
+  * Français
+  * Anglais
+
+ <javascript:void(0);>
