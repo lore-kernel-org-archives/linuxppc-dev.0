@@ -1,19 +1,22 @@
-Return-Path: <hongtao.jia@freescale.com>
+Return-Path: <Igal.Liberman@freescale.com>
 Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0119.outbound.protection.outlook.com [157.56.111.119])
+ (mail-bn1bbn0103.outbound.protection.outlook.com [157.56.111.103])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AE37D1A1885
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2015 18:37:08 +1000 (AEST)
-From: Jia Hongtao <hongtao.jia@freescale.com>
-To: <scottwood@freescale.com>
-Subject: [PATCH V2] QorIQ/TMU: add TMU node to device tree for QorIQ T104x
-Date: Wed, 15 Apr 2015 16:17:48 +0800
-Message-ID: <1429085868-47577-1-git-send-email-hongtao.jia@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 025E31A0B8D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2015 18:43:38 +1000 (AEST)
+From: "Igal.Liberman@freescale.com" <Igal.Liberman@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: RE: [v2] dt/bindings: fsl/guts: Added global-utilities compatibles
+Date: Wed, 15 Apr 2015 08:43:28 +0000
+Message-ID: <DM2PR03MB3837B6B30125C77F1C6F89EE6E50@DM2PR03MB383.namprd03.prod.outlook.com>
+References: <1429006329-24597-1-git-send-email-igal.liberman@freescale.com>
+ <1429042131.22867.682.camel@freescale.com>
+In-Reply-To: <1429042131.22867.682.camel@freescale.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: hongtao.jia@freescale.com, devicetree@vger.kernel.org, rui.zhang@intel.com,
- robh+dt@kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,193 +26,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is Thermal Monitoring Unit for QorIQ platform.
-
-Signed-off-by: Jia Hongtao <hongtao.jia@freescale.com>
----
-Changes from V1:
-* Provide more details on compatible and calibration properties.
-
- .../devicetree/bindings/thermal/qoriq-thermal.txt  | 68 ++++++++++++++++++
- arch/powerpc/boot/dts/fsl/qoriq-tmu-t104xsi.dtsi   | 82 ++++++++++++++++++++++
- arch/powerpc/boot/dts/fsl/t1040si-post.dtsi        |  1 +
- 3 files changed, 151 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/thermal/qoriq-thermal.txt
- create mode 100644 arch/powerpc/boot/dts/fsl/qoriq-tmu-t104xsi.dtsi
-
-diff --git a/Documentation/devicetree/bindings/thermal/qoriq-thermal.txt b/Documentation/devicetree/bindings/thermal/qoriq-thermal.txt
-new file mode 100644
-index 0000000..48e7fff
---- /dev/null
-+++ b/Documentation/devicetree/bindings/thermal/qoriq-thermal.txt
-@@ -0,0 +1,68 @@
-+* Thermal Monitoring Unit (TMU) on Freescale QorIQ SoCs
-+
-+Required properties:
-+- compatible : Must include "fsl,qoriq-tmu". The version of the device is
-+	determined by the TMU IP Block Revision Register (IPBRR0) at
-+	offset 0x0BF8.
-+	Table of correspondences between IPBRR0 values and example  chips:
-+		Value           Device
-+		----------      -----
-+		0x01900102      T1040
-+- reg : Address range of TMU registers.
-+- interrupts : Contains the interrupt for TMU.
-+- calibration : Calibration table for TMU. This is required to determine
-+	what a specific sensor reading translates to in degrees Celsius.
-+	There are four calibration config ranges, for each range we need
-+	a couple of calibration data formatted like <TTCFGR, TSCFGR>.
-+	Freescale provides the data required.
-+
-+Example:
-+
-+tmu@f0000 {
-+	compatible = "fsl,qoriq-tmu";
-+	reg = <0xf0000 0x1000>;
-+	interrupts = <18 2 0 0>;
-+	calibration = <0x00000000 0x0000000f
-+		       0x00000001 0x00000017
-+		       0x00000002 0x0000001e
-+		       0x00000003 0x00000026
-+		       0x00000004 0x0000002e
-+		       0x00000005 0x00000035
-+		       0x00000006 0x0000003d
-+		       0x00000007 0x00000044
-+		       0x00000008 0x0000004c
-+		       0x00000009 0x00000053
-+		       0x0000000a 0x0000005b
-+		       0x0000000b 0x00000062
-+
-+		       0x00010000 0x00000011
-+		       0x00010001 0x00000019
-+		       0x00010002 0x00000021
-+		       0x00010003 0x0000002a
-+		       0x00010004 0x00000032
-+		       0x00010005 0x0000003a
-+		       0x00010006 0x00000042
-+		       0x00010007 0x0000004b
-+		       0x00010008 0x00000053
-+		       0x00010009 0x0000005b
-+		       0x0001000a 0x00000063
-+
-+		       0x00020000 0x00000012
-+		       0x00020001 0x0000001b
-+		       0x00020002 0x00000024
-+		       0x00020003 0x0000002c
-+		       0x00020004 0x00000035
-+		       0x00020005 0x0000003d
-+		       0x00020006 0x00000046
-+		       0x00020007 0x0000004e
-+		       0x00020008 0x00000057
-+
-+		       0x00030000 0x00000009
-+		       0x00030001 0x00000011
-+		       0x00030002 0x00000019
-+		       0x00030003 0x00000021
-+		       0x00030004 0x00000029
-+		       0x00030005 0x00000031
-+		       0x00030006 0x00000039
-+		       0x00030007 0x00000041>;
-+};
-diff --git a/arch/powerpc/boot/dts/fsl/qoriq-tmu-t104xsi.dtsi b/arch/powerpc/boot/dts/fsl/qoriq-tmu-t104xsi.dtsi
-new file mode 100644
-index 0000000..d85c77d
---- /dev/null
-+++ b/arch/powerpc/boot/dts/fsl/qoriq-tmu-t104xsi.dtsi
-@@ -0,0 +1,82 @@
-+/*
-+ * QorIQ TMU device tree stub [ controller @ offset 0xf0000 ]
-+ *
-+ * Copyright 2015 Freescale Semiconductor Inc.
-+ *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions are met:
-+ *     * Redistributions of source code must retain the above copyright
-+ *       notice, this list of conditions and the following disclaimer.
-+ *     * Redistributions in binary form must reproduce the above copyright
-+ *       notice, this list of conditions and the following disclaimer in the
-+ *       documentation and/or other materials provided with the distribution.
-+ *     * Neither the name of Freescale Semiconductor nor the
-+ *       names of its contributors may be used to endorse or promote products
-+ *       derived from this software without specific prior written permission.
-+ *
-+ *
-+ * ALTERNATIVELY, this software may be distributed under the terms of the
-+ * GNU General Public License ("GPL") as published by the Free Software
-+ * Foundation, either version 2 of that License or (at your option) any
-+ * later version.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY Freescale Semiconductor ``AS IS'' AND ANY
-+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
-+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-+ * DISCLAIMED. IN NO EVENT SHALL Freescale Semiconductor BE LIABLE FOR ANY
-+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
-+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
-+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-+ */
-+
-+tmu@f0000 {
-+	compatible = "fsl,qoriq-tmu";
-+	reg = <0xf0000 0x1000>;
-+	interrupts = <18 2 0 0>;
-+	calibration = <0x00000000 0x0000000f
-+		       0x00000001 0x00000017
-+		       0x00000002 0x0000001e
-+		       0x00000003 0x00000026
-+		       0x00000004 0x0000002e
-+		       0x00000005 0x00000035
-+		       0x00000006 0x0000003d
-+		       0x00000007 0x00000044
-+		       0x00000008 0x0000004c
-+		       0x00000009 0x00000053
-+		       0x0000000a 0x0000005b
-+		       0x0000000b 0x00000062
-+
-+		       0x00010000 0x00000011
-+		       0x00010001 0x00000019
-+		       0x00010002 0x00000021
-+		       0x00010003 0x0000002a
-+		       0x00010004 0x00000032
-+		       0x00010005 0x0000003a
-+		       0x00010006 0x00000042
-+		       0x00010007 0x0000004b
-+		       0x00010008 0x00000053
-+		       0x00010009 0x0000005b
-+		       0x0001000a 0x00000063
-+
-+		       0x00020000 0x00000012
-+		       0x00020001 0x0000001b
-+		       0x00020002 0x00000024
-+		       0x00020003 0x0000002c
-+		       0x00020004 0x00000035
-+		       0x00020005 0x0000003d
-+		       0x00020006 0x00000046
-+		       0x00020007 0x0000004e
-+		       0x00020008 0x00000057
-+
-+		       0x00030000 0x00000009
-+		       0x00030001 0x00000011
-+		       0x00030002 0x00000019
-+		       0x00030003 0x00000021
-+		       0x00030004 0x00000029
-+		       0x00030005 0x00000031
-+		       0x00030006 0x00000039
-+		       0x00030007 0x00000041>;
-+};
-diff --git a/arch/powerpc/boot/dts/fsl/t1040si-post.dtsi b/arch/powerpc/boot/dts/fsl/t1040si-post.dtsi
-index 15ae462..bb9f792 100644
---- a/arch/powerpc/boot/dts/fsl/t1040si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/t1040si-post.dtsi
-@@ -345,6 +345,7 @@
- 		reg	   = <0xea000 0x4000>;
- 	};
- 
-+/include/ "qoriq-tmu-t104xsi.dtsi"
- /include/ "elo3-dma-0.dtsi"
- /include/ "elo3-dma-1.dtsi"
- /include/ "qoriq-espi-0.dtsi"
--- 
-2.1.0.27.g96db324
+DQoNClJlZ2FyZHMsDQpJZ2FsIExpYmVybWFuLg0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0t
+LS0tDQo+IEZyb206IFdvb2QgU2NvdHQtQjA3NDIxDQo+IFNlbnQ6IFR1ZXNkYXksIEFwcmlsIDE0
+LCAyMDE1IDExOjA5IFBNDQo+IFRvOiBMaWJlcm1hbiBJZ2FsLUIzMTk1MA0KPiBDYzogZGV2aWNl
+dHJlZUB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnDQo+IFN1
+YmplY3Q6IFJlOiBbdjJdIGR0L2JpbmRpbmdzOiBmc2wvZ3V0czogQWRkZWQgZ2xvYmFsLXV0aWxp
+dGllcyBjb21wYXRpYmxlcw0KPiANCj4gT24gVHVlLCAyMDE1LTA0LTE0IGF0IDEzOjEyICswMzAw
+LCBJZ2FsLkxpYmVybWFuIHdyb3RlOg0KPiA+IEZyb206IElnYWwgTGliZXJtYW4gPElnYWwuTGli
+ZXJtYW5AZnJlZXNjYWxlLmNvbT4NCj4gPg0KPiA+IHYyIC0gQWRkcmVzc2VkIFNjb3R0J3MgZmVl
+ZGJhY2sNCj4gPg0KPiA+IFNpZ25lZC1vZmYtYnk6IElnYWwgTGliZXJtYW4gPElnYWwuTGliZXJt
+YW5AZnJlZXNjYWxlLmNvbT4NCj4gPiAtLS0NCj4gPiAgLi4uL2RldmljZXRyZWUvYmluZGluZ3Mv
+cG93ZXJwYy9mc2wvZ3V0cy50eHQgICAgICAgfCAgICA0ICsrKysNCj4gPiAgMSBmaWxlIGNoYW5n
+ZWQsIDQgaW5zZXJ0aW9ucygrKQ0KPiA+DQo+ID4gZGlmZiAtLWdpdCBhL0RvY3VtZW50YXRpb24v
+ZGV2aWNldHJlZS9iaW5kaW5ncy9wb3dlcnBjL2ZzbC9ndXRzLnR4dA0KPiBiL0RvY3VtZW50YXRp
+b24vZGV2aWNldHJlZS9iaW5kaW5ncy9wb3dlcnBjL2ZzbC9ndXRzLnR4dA0KPiA+IGluZGV4IDdm
+MTUwYjUuLjY5NjQ0ZTYgMTAwNjQ0DQo+ID4gLS0tIGEvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVl
+L2JpbmRpbmdzL3Bvd2VycGMvZnNsL2d1dHMudHh0DQo+ID4gKysrIGIvRG9jdW1lbnRhdGlvbi9k
+ZXZpY2V0cmVlL2JpbmRpbmdzL3Bvd2VycGMvZnNsL2d1dHMudHh0DQo+ID4gQEAgLTksNiArOSwx
+MCBAQCBSZXF1aXJlZCBwcm9wZXJ0aWVzOg0KPiA+DQo+ID4gICAtIGNvbXBhdGlibGUgOiBTaG91
+bGQgZGVmaW5lIHRoZSBjb21wYXRpYmxlIGRldmljZSB0eXBlIGZvcg0KPiA+ICAgICBnbG9iYWwt
+dXRpbGl0aWVzLg0KPiA+ICsgICBQb3NzaWJsZSBjb21wYXRpYmxlczoNCj4gPiArCSJmc2wscW9y
+aXEtZGV2aWNlLWNvbmZpZy0xLjAiDQo+ID4gKwkiZnNsLHFvcmlxLWRldmljZS1jb25maWctMi4w
+Ig0KPiA+ICsJImZzbCw8Y2hpcD4tZGV2aWNlLWNvbmZpZyINCj4gDQo+IGZzbCw8Y2hpcD4tZ3V0
+cyBpcyBhbHNvIHBvc3NpYmxlIG9uIG5vbi1jb3JlbmV0IGNoaXBzLg0KPiANCg0KSSBhZGRlZCBj
+b21wYXRpYmxlcyB3aGljaCBhcmUgdXNlZCBmb3IgRk1hbiBDbG9jayBvbmx5Lg0KRG8geW91IHdh
+bnQgdG8gYWRkIG90aGVyIGNvbXBhdGlibGVzIHRvbz8gV2hpY2g/IE9yIGp1c3QgbWVudGlvbiB0
+aGF0IHRoZSAzIGNvbXBhdGlibGVzIEkndmUgYWRkZWQgZG9lc24ndCBjb3ZlciBhbGwgYXZhaWxh
+YmxlIG9wdGlvbnM/DQoNCj4gLVNjb3R0DQo+IA0KDQpJZ2FsDQoNCg==
