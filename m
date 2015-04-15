@@ -1,40 +1,30 @@
-Return-Path: <stewart@linux.vnet.ibm.com>
-Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4E80D1A0BBD
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Apr 2015 05:01:34 +1000 (AEST)
-Received: from /spool/local
- by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <stewart@linux.vnet.ibm.com>;
- Wed, 15 Apr 2015 15:01:32 -0400
-Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
- [9.57.198.29])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id DD3A4C90057
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2015 14:47:37 -0400 (EDT)
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
- by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t3FIuSbf37355688
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2015 18:56:28 GMT
-Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
- by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t3FIuSEv029931
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2015 14:56:28 -0400
-From: Stewart Smith <stewart@linux.vnet.ibm.com>
-To: Jacek Anaszewski <j.anaszewski@samsung.com>,
- Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2 2/2] leds/powernv: Add driver for PowerNV platform
-In-Reply-To: <552D303A.5080506@samsung.com>
-References: <20150320105921.14866.83209.stgit@localhost.localdomain>
- <20150320110328.14866.98225.stgit@localhost.localdomain>
- <552D303A.5080506@samsung.com>
-Date: Wed, 15 Apr 2015 11:50:22 -0700
-Message-ID: <m3zj69ql8x.fsf@oc8180480414.ibm.com>
+Return-Path: <ak@linux.intel.com>
+Received: from mga11.intel.com (mga11.intel.com [192.55.52.93])
+ by lists.ozlabs.org (Postfix) with ESMTP id C39E51A0BBE
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Apr 2015 05:17:37 +1000 (AEST)
+Date: Wed, 15 Apr 2015 12:17:34 -0700
+From: Andi Kleen <ak@linux.intel.com>
+To: Ingo Molnar <mingo@kernel.org>
+Subject: Re: 'perf upgrade' (was: Re: [PATCH v9 00/11] Add support for JSON
+ event files.)
+Message-ID: <20150415191734.GC15335@tassilo.jf.intel.com>
+References: <1428993665-2133-1-git-send-email-sukadev@linux.vnet.ibm.com>
+ <20150414085541.GA30202@gmail.com>
+ <1429010508.27414.1.camel@ellerman.id.au>
+ <20150414125822.GA32761@gmail.com>
+ <1429052004.10000.1.camel@ellerman.id.au>
+ <20150415092557.GA14942@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Cc: cooloney@gmail.com, rpurdie@rpsys.net, linuxppc-dev@lists.ozlabs.org,
- linux-leds@vger.kernel.org, khandual@linux.vnet.ibm.com
+In-Reply-To: <20150415092557.GA14942@gmail.com>
+Cc: Arnaldo Carvalho de Melo <acme@infradead.org>,
+ Peter Zijlstra <a.p.zijlstra@chello.nl>, peterz@infradead.org,
+ linuxppc-dev@lists.ozlabs.org, Arnaldo Carvalho de Melo <acme@kernel.org>,
+ linux-kernel@vger.kernel.org, Linus Torvalds <torvalds@linux-foundation.org>,
+ mingo@redhat.com, Borislav Petkov <bp@alien8.de>, namhyung@kernel.org,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>, Jiri Olsa <jolsa@redhat.com>,
+ Pekka Enberg <penberg@iki.fi>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,23 +34,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Jacek Anaszewski <j.anaszewski@samsung.com> writes:
->> +static struct platform_driver powernv_led_driver = {
->> +	.probe	= powernv_led_probe,
->> +	.remove = powernv_led_remove,
->> +	.driver = {
->> +		.name = "powernv-led-driver",
->> +		.owner = THIS_MODULE,
->> +		.of_match_table = powernv_led_match,
->
-> Is somewhere DT documentation available for these leds?
+> My suggestion to resolve the technical objections and lift the NAK 
+> would be:
+> 
+>  - to add the tables to the source code, in a more human readable 
+>    format and (optionally) structure the event names better into a 
+>    higher level hierarchy, than the humungous linear dumps with no 
+>    explanations that you propose - while still supporting the 'raw' 
+>    vendor event names you want to use, for those people who are used 
+>    to them.
 
-https://github.com/open-power/skiboot/blob/master/doc/device-tree/ibm%2Copal/led.txt
+Trying to understand what you mean with high level hierarchy:
 
-We've been documenting things in firmware source, and I'm open to if we
-should mirror this somewhere (somewhere in linux Documentation/ ?).
+Do you mean something like the oprofile event / unit mask split,
+with events having a default unit mask?
 
-If we duplicate everything, we shouldn't let things get out of date.
+This one actually works poorly for modern Intel systems, as
+unit masks can completely change the behavior, so there is 
+not necessarily a direct relation between the name before the dot and the one
+after, or a concept of a "default" unit mask.
 
-FWIW I won't merge code that changes device tree that skiboot emits
-without associated documentation.
+Or do you mean someone creating a tree hierarchy of events to systematically
+debug some particular problem?
+
+I implemented this in my toplev tool here:
+https://github.com/andikleen/pmu-tools/wiki/toplev-manual
+http://github.com/andikleen/pmu-tools
+
+But it's quite complicated and cannot really be done portable in
+a full way without completely turning perf into an architecture specific
+tool (which I assume you're opposed to)
+
+Or just some sections grouping events into different topics?
+"branches", "caches", "execution" or somesuch.
+
+I think this could be done with the JSON format. Just add a new header.
+Print them as sections in perf list.
+
+Or do you mean something like the perf cache events tables?
+We already have those. But they cannot replace direct micro architectural
+specific events, as the cache event tables do not necessarily express
+everything a given micro architecture supports. And also there is a lot
+of documentation using the vendor event names, which the users
+then want to use.
+
+If it's something else please explain.
+
+> 
+>  - to pre-parse the event descriptions at build time - beyond the 
+>    speedup 
+
+FWIW I just measured it and the overhead parse time for the haswell JSON file on
+my laptop is about 33ms. 
+
+# with event map
+% time ./obj-perf/perf list > /dev/null
+real    0m0.045s
+user    0m0.041s
+sys     0m0.003s
+
+% export EVENTMAP=/dev/zero
+% time perf list > /dev/null
+
+real    0m0.011s
+user    0m0.004s
+sys     0m0.006s
+
+
+>  - to upgrade perf as a whole unit: this helps not just your usecase
+>    but many other usecases as well.
+
+With the downloader it actually automatically downloads any missing
+files, so the upgrading just works.
+
+-Andi
