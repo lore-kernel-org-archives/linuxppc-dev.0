@@ -1,21 +1,24 @@
-Return-Path: <sandeep@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0142.outbound.protection.outlook.com [207.46.100.142])
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bon0138.outbound.protection.outlook.com [157.56.111.138])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 20B9C1A0143
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Apr 2015 01:35:16 +1000 (AEST)
-From: "sandeep@freescale.com" <sandeep@freescale.com>
-To: "Laurentiu.Tudor@freescale.com" <Laurentiu.Tudor@freescale.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Subject: RE: [1/3][PATCH][v2] Device Tree bindings for Freescale TDM controller
-Date: Wed, 15 Apr 2015 15:00:38 +0000
-Message-ID: <CY1PR0301MB0619DAE2905DFD9CC29F9386B1E50@CY1PR0301MB0619.namprd03.prod.outlook.com>
-References: <1427971677-32395-1-git-send-email-sandeep@freescale.com>
- <551D2E32.1080008@freescale.com>
-In-Reply-To: <551D2E32.1080008@freescale.com>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 53B4E1A0143
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Apr 2015 03:14:56 +1000 (AEST)
+Message-ID: <1429118075.22867.719.camel@freescale.com>
+Subject: Re: [PATCH] powerpc/dts: Update the core cluster PLL node(s)
+From: Scott Wood <scottwood@freescale.com>
+To: Liberman Igal-B31950 <Igal.Liberman@freescale.com>
+Date: Wed, 15 Apr 2015 12:14:35 -0500
+In-Reply-To: <DM2PR03MB3831BEEDD2C17991818FFA9E6E50@DM2PR03MB383.namprd03.prod.outlook.com>
+References: <1429005306-24544-1-git-send-email-igal.liberman@freescale.com>
+ <1429042868.22867.689.camel@freescale.com>
+ <1429042950.22867.690.camel@freescale.com>
+ <DM2PR03MB3831BEEDD2C17991818FFA9E6E50@DM2PR03MB383.namprd03.prod.outlook.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,59 +28,83 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-SGkgTGF1cmVudGl1LA0KDQpUaGFua3MgZm9yIHlvdXIgY29tbWVudHMuIFJlcGx5IGlubGluZS4N
-Cg0KUmVnYXJkcw0KU2FuZGVlcA0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZy
-b206IExpbnV4cHBjLWRldiBbbWFpbHRvOmxpbnV4cHBjLWRldi0NCj4gYm91bmNlcytzYW5kZWVw
-PWZyZWVzY2FsZS5jb21AbGlzdHMub3psYWJzLm9yZ10gT24gQmVoYWxmIE9mIExhdXJlbnRpdSBU
-dWRvcg0KPiBTZW50OiBUaHVyc2RheSwgQXByaWwgMDIsIDIwMTUgNToyNiBQTQ0KPiBUbzogbGlu
-dXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmcNCj4gU3ViamVjdDogUmU6IFsxLzNdW1BBVENIXVt2
-Ml0gRGV2aWNlIFRyZWUgYmluZGluZ3MgZm9yIEZyZWVzY2FsZSBURE0gY29udHJvbGxlcg0KPiAN
-Cj4gSGkgU2FuZGVlcCwNCj4gDQo+IFNtYWxsIG5pdCBpbnNpZGUuDQo+IA0KPiBPbiAwNC8wMi8y
-MDE1IDAxOjQ3IFBNLCBzYW5kZWVwQGZyZWVzY2FsZS5jb20gd3JvdGU6DQo+ID4gRnJvbTogU2Fu
-ZGVlcCBTaW5naCA8c2FuZGVlcEBmcmVlc2NhbGUuY29tPg0KPiA+DQo+ID4gVGhpcyBjb250cm9s
-bGVyIGlzIGF2YWlsYWJsZSBvbiBtYW55IEZyZWVzY2FsZSBTT0NzIGxpa2UgTVBDODMxNSwNCj4g
-PiBQMTAyMCwgUDEwMTAsDQo+ID4gUDEwMjIgYW5kIFAxMDI0DQo+ID4NCj4gPiBTaWduZWQtb2Zm
-LWJ5OiBTYW5kZWVwIFNpbmdoIDxTYW5kZWVwQGZyZWVzY2FsZS5jb20+DQo+ID4gU2lnbmVkLW9m
-Zi1ieTogUG9vbmFtIEFnZ3J3YWwgPHBvb25hbS5hZ2dyd2FsQGZyZWVzY2FsZS5jb20+DQo+ID4g
-LS0tDQo+ID4gIERvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy90ZG0vZnNsLXRkbS50
-eHQgfCAgIDY1DQo+ICsrKysrKysrKysrKysrKysrKysrKw0KPiA+ICAxIGZpbGVzIGNoYW5nZWQs
-IDY1IGluc2VydGlvbnMoKyksIDAgZGVsZXRpb25zKC0pICBjcmVhdGUgbW9kZSAxMDA2NDQNCj4g
-PiBEb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvdGRtL2ZzbC10ZG0udHh0DQo+ID4N
-Cj4gPiBkaWZmIC0tZ2l0IGEvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL3RkbS9m
-c2wtdGRtLnR4dA0KPiA+IGIvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL3RkbS9m
-c2wtdGRtLnR4dA0KPiA+IG5ldyBmaWxlIG1vZGUgMTAwNjQ0DQo+ID4gaW5kZXggMDAwMDAwMC4u
-MTI1OGI4OQ0KPiA+IC0tLSAvZGV2L251bGwNCj4gPiArKysgYi9Eb2N1bWVudGF0aW9uL2Rldmlj
-ZXRyZWUvYmluZGluZ3MvdGRtL2ZzbC10ZG0udHh0DQo+ID4gQEAgLTAsMCArMSw2NSBAQA0KPiA+
-DQo+ICs9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PQ0KPiA9PT09DQo+ID4gK1RETSBEZXZpY2UgVHJlZSBCaW5kaW5nDQo+ID4g
-K0NvcHlyaWdodCAoQykgMjAxMiBGcmVlc2NhbGUgU2VtaWNvbmR1Y3RvciBJbmMuDQo+ID4gKw0K
-PiA+ICtOT1RFOiBUaGUgYmluZGluZ3MgZGVzY3JpYmVkIGluIHRoaXMgZG9jdW1lbnQgYXJlIHBy
-ZWxpbWluYXJ5IGFuZA0KPiA+ICtzdWJqZWN0IHRvIGNoYW5nZS4NCj4gPiArDQo+ID4NCj4gKz09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09DQo+ID09PT0NCj4gPiArVERNIChUaW1lIERpdmlzaW9uIE11bHRpcGxleGluZykNCj4g
-PiArDQo+ID4gK0RFU0NSSVBUSU9ODQo+ID4gKw0KPiA+ICtUaGUgVERNIGlzIGZ1bGwgZHVwbGV4
-IHNlcmlhbCBwb3J0IGRlc2lnbmVkIHRvIGFsbG93IHZhcmlvdXMgZGV2aWNlcw0KPiA+ICtpbmNs
-dWRpbmcgZGlnaXRhbCBzaWduYWwgcHJvY2Vzc29ycyAoRFNQcykgdG8gY29tbXVuaWNhdGUgd2l0
-aCBhDQo+ID4gK3ZhcmlldHkgb2Ygc2VyaWFsIGRldmljZXMgaW5jbHVkaW5nIGluZHVzdHJ5IHN0
-YW5kYXJkIGZyYW1lcnMsIGNvZGVjcywgb3RoZXINCj4gRFNQcyBhbmQgbWljcm9wcm9jZXNzb3Jz
-Lg0KPiA+ICsNCj4gPiArVGhlIGJlbG93IHByb3BlcnRpZXMgZGVzY3JpYmUgdGhlIGRldmljZSB0
-cmVlIGJpbmRpbmdzIGZvciBGcmVlc2NhbGUNCj4gPiArVERNIGNvbnRyb2xsZXIuDQo+ID4gK1Ro
-aXMgVERNIGNvbnRyb2xsZXIgaXMgYXZhaWxhYmxlIG9uIHZhcmlvdXMgRnJlZXNjYWxlIFByb2Nl
-c3NvcnMgbGlrZQ0KPiA+ICtNUEM4MzEzLCBQMTAyMCwgUDEwMjIgYW5kIFAxMDEwLg0KPiA+ICsN
-Cj4gPiArUFJPUEVSVElFUw0KPiA+ICsNCj4gPiArICAtIGNvbXBhdGlibGUNCj4gPiArICAgICAg
-VXNhZ2U6IHJlcXVpcmVkDQo+ID4gKyAgICAgIFZhbHVlIHR5cGU6IDxzdHJpbmc+DQo+ID4gKyAg
-ICAgIERlZmluaXRpb246IFNob3VsZCBjb250YWluICJmc2wsdGRtMS4wIi4NCj4gPiArDQo+ID4g
-KyAgLSByZWcNCj4gPiArICAgICAgVXNhZ2U6IHJlcXVpcmVkDQo+ID4gKyAgICAgIERlZmluaXRp
-b246IEEgc3RhbmRhcmQgcHJvcGVydHkuIFRoZSBmaXJzdCByZWcgc3BlY2lmaWVyIGRlc2NyaWJl
-cyB0aGUNCj4gPiArICAgICAgICAgIFRETSByZWdpc3RlcnMsIGFuZCB0aGUgc2Vjb25kIGRlc2Ny
-aWJlcyB0aGUgVERNIERNQUMgcmVnaXN0ZXJzLg0KPiA+ICsNCj4gPiArICAtIGNsb2NrLWZyZXF1
-ZW5jeQ0KPiA+ICsgICAgICBVc2FnZTogb3B0aW9uYWwNCj4gPiArICAgICAgVmFsdWUgdHlwZTog
-PHUzMiBvciB1NjQ+DQo+ID4gKyAgICAgIERlZmluaXRpb246IFRoZSBmcmVxdWVuY3kgYXQgd2hp
-Y2ggdGhlIFRETSBibG9jayBpcyBvcGVyYXRpbmcuDQo+ID4gKw0KPiA+ICsgIC0gaW50ZXJydXB0
-cw0KPiA+ICsgICAgICBVc2FnZTogcmVxdWlyZWQNCj4gPiArICAgICAgRGVmaW5pdGlvbjogRGVm
-aW5pdGlvbjogVHdvIGludGVycnVwdCBzcGVjaWZpZXJzLiAgVGhlIGZpcnN0IGlzDQo+ID4gKyBU
-RE0NCj4gDQo+IEV4dHJhICJEZWZpbml0aW9uOiIgaGVyZS4NCltTYW5kZWVwXSBZZXMsIHdpbGwg
-cmVtb3ZlIGl0Lg0KPiANCj4gLS0tDQo+IEJlc3QgUmVnYXJkcywgTGF1cmVudGl1DQo+IF9fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fDQo+IExpbnV4cHBjLWRl
-diBtYWlsaW5nIGxpc3QNCj4gTGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmcNCj4gaHR0cHM6
-Ly9saXN0cy5vemxhYnMub3JnL2xpc3RpbmZvL2xpbnV4cHBjLWRldg0K
+On Wed, 2015-04-15 at 06:07 -0500, Liberman Igal-B31950 wrote:
+> 
+> 
+> Regards,
+> Igal Liberman.
+> 
+> > -----Original Message-----
+> > From: Wood Scott-B07421
+> > Sent: Tuesday, April 14, 2015 11:23 PM
+> > To: Liberman Igal-B31950
+> > Cc: devicetree@vger.kernel.org; linuxppc-dev@lists.ozlabs.org
+> > Subject: Re: [PATCH] powerpc/dts: Update the core cluster PLL node(s)
+> > 
+> > On Tue, 2015-04-14 at 15:21 -0500, Scott Wood wrote:
+> > > On Tue, 2015-04-14 at 12:55 +0300, Igal.Liberman wrote:
+> > > > From: Igal Liberman <Igal.Liberman@freescale.com>
+> > > >
+> > > > This patch replaces the following:
+> > > > 	https://patchwork.ozlabs.org/patch/427664/
+> > > >
+> > > > This patch is described by the following binding document update:
+> > > > 	https://patchwork.ozlabs.org/patch/461150/
+> > > >
+> > > > Signed-off-by: Igal Liberman <Igal.Liberman@freescale.com>
+> > > > ---
+> > > >  arch/powerpc/boot/dts/fsl/qoriq-clockgen2.dtsi |    6 ++++--
+> > > >  1 file changed, 4 insertions(+), 2 deletions(-)
+> > > >
+> > > > diff --git a/arch/powerpc/boot/dts/fsl/qoriq-clockgen2.dtsi
+> > > > b/arch/powerpc/boot/dts/fsl/qoriq-clockgen2.dtsi
+> > > > index 48e0b6e..7e1f074 100644
+> > > > --- a/arch/powerpc/boot/dts/fsl/qoriq-clockgen2.dtsi
+> > > > +++ b/arch/powerpc/boot/dts/fsl/qoriq-clockgen2.dtsi
+> > > > @@ -49,14 +49,16 @@ global-utilities@e1000 {
+> > > >  		reg = <0x800 0x4>;
+> > > >  		compatible = "fsl,qoriq-core-pll-2.0";
+> > > >  		clocks = <&sysclk>;
+> > > > -		clock-output-names = "pll0", "pll0-div2", "pll0-div4";
+> > > > +		clock-output-names = "pll0", "pll0-div2", "pll0-div3",
+> > > > +				      "pll0-div4";
+> > > >  	};
+> > > >  	pll1: pll1@820 {
+> > > >  		#clock-cells = <1>;
+> > > >  		reg = <0x820 0x4>;
+> > > >  		compatible = "fsl,qoriq-core-pll-2.0";
+> > > >  		clocks = <&sysclk>;
+> > > > -		clock-output-names = "pll1", "pll1-div2", "pll1-div4";
+> > > > +		clock-output-names = "pll1", "pll1-div2", "pll1-div3",
+> > > > +				      "pll1-div4";
+> > >
+> > > Wait, so if the driver implements the binding you submitted, you'll
+> > > break compatibility with these older device trees...
+> > >
+> > > I think we need to just accept the ugly count-the-clock-names approach
+> > > and document it.
+> > 
+> > Is there any current 2.0 clock consumer that references pll-div4?
+> > 
+> 
+> I looked at T4240 for example, there's a mux node which adds pll-div4 option:
+> mux0: mux0@0 {
+> 	#clock-cells = <0>;
+> 	reg = <0x0 0x4>;
+> 	compatible = "fsl,qoriq-core-mux-2.0";
+> 	clocks = <&pll0 0>, <&pll0 1>, <&pll0 2>,
+> 		<&pll1 0>, <&pll1 1>, <&pll1 2>,
+> 		<&pll2 0>, <&pll2 1>, <&pll2 2>;
+> 	clock-names = "pll0", "pll0-div2", "pll0-div4",
+> 		"pll1", "pll1-div2", "pll1-div4",
+> 		"pll2", "pll2-div2", "pll2-div4";
+> 	clock-output-names = "cmux0";
+> };
+> 
+> After this change <&pll0 2> will represent "pll0-div3" and not "pll0-div4".
+
+So this needs to be updated to match -- and it confirms that existing
+device trees will be broken if you base the interpretation on compatible
+rather than the number of clock-output-names.
+
+-Scott
