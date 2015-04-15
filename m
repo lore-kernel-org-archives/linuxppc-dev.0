@@ -2,20 +2,20 @@ Return-Path: <dgibson@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 951F01A0B8D
+ by lists.ozlabs.org (Postfix) with ESMTPS id B05801A0B8E
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2015 16:10:09 +1000 (AEST)
-Date: Wed, 15 Apr 2015 14:03:25 +1000
+Date: Wed, 15 Apr 2015 13:56:25 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
 To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Subject: Re: [PATCH kernel v8 03/31] vfio: powerpc/spapr: Check that IOMMU
- page is fully contained by system page
-Message-ID: <20150415040325.GE25040@voom.redhat.com>
+Subject: Re: [PATCH kernel v8 01/31] vfio: powerpc/spapr: Move page pinning
+ from arch code to VFIO IOMMU driver
+Message-ID: <20150415035625.GC25040@voom.redhat.com>
 References: <1428647473-11738-1-git-send-email-aik@ozlabs.ru>
- <1428647473-11738-4-git-send-email-aik@ozlabs.ru>
+ <1428647473-11738-2-git-send-email-aik@ozlabs.ru>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="lkTb+7nhmha7W+c3"
-In-Reply-To: <1428647473-11738-4-git-send-email-aik@ozlabs.ru>
+ protocol="application/pgp-signature"; boundary="XWOWbaMNXpFDWE00"
+In-Reply-To: <1428647473-11738-2-git-send-email-aik@ozlabs.ru>
 Cc: Alex Williamson <alex.williamson@redhat.com>, linuxppc-dev@lists.ozlabs.org,
  linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,32 +28,28 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---lkTb+7nhmha7W+c3
+--XWOWbaMNXpFDWE00
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, Apr 10, 2015 at 04:30:45PM +1000, Alexey Kardashevskiy wrote:
-> This checks that the TCE table page size is not bigger that the size of
-> a page we just pinned and going to put its physical address to the table.
+On Fri, Apr 10, 2015 at 04:30:43PM +1000, Alexey Kardashevskiy wrote:
+> This moves page pinning (get_user_pages_fast()/put_page()) code out of
+> the platform IOMMU code and puts it to VFIO IOMMU driver where it belongs
+> to as the platform code does not deal with page pinning.
 >=20
-> Otherwise the hardware gets unwanted access to physical memory between
-> the end of the actual page and the end of the aligned up TCE page.
+> This makes iommu_take_ownership()/iommu_release_ownership() deal with
+> the IOMMU table bitmap only.
 >=20
-> Since compound_order() and compound_head() work correctly on non-huge
-> pages, there is no need for additional check whether the page is huge.
+> This removes page unpinning from iommu_take_ownership() as the actual
+> TCE table might contain garbage and doing put_page() on it is undefined
+> behaviour.
+>=20
+> Besides the last part, the rest of the patch is mechanical.
 >=20
 > Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 
 Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
-
-Only thing I'm not sure about is...
-
-> +		if (!tce_page_is_contained(page, tbl->it_page_shift)) {
-> +			ret =3D -EPERM;
-> +			break;
-
-=2E. whether EPERM is the right error code.
 
 --=20
 David Gibson			| I'll have my music baroque, and my code
@@ -61,25 +57,25 @@ david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
 				| _way_ _around_!
 http://www.ozlabs.org/~dgibson
 
---lkTb+7nhmha7W+c3
+--XWOWbaMNXpFDWE00
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBAgAGBQJVLeMNAAoJEGw4ysog2bOSD7IP+gP6DCTkkMcGtjVWSXJ3KqZn
-Jk1fjxFEMD6sD6eSq5+KtH1W1Da91u+/4Uplltw3iq2a26W/rsgoR5dE3TXiEv9q
-/iO8J0MFh2xKXkeFaz3qfPW+kFFZ/4n5LohxvtgAOies65ZXcuLPPl193ADbI1oN
-8JuG9bRHcKnxibRqkQqgirD6Mn8UD2jEgdwcz9s/dbIR6g2V2jS2UICYbTkbkwUi
-RCxN0BHNTun6IkvnHqrVH3ndJDvykBsJZ/ZdRVK4ST5EFIZrt8+pUy1s7h9CAP02
-CZcrOqVRwIf8adlqLIUZ4ZMxA8yhby4ughJSa52JOtcpstP9fYpwmNZ4qpJwiMBL
-bcn8EFWWTPoO8KwPt1NTNAhyFaoSTdUZGRO/Xn3MCMbtiep2zv3T9eB69el1X89B
-xqDbUwKcPaKxVoKxu3Gpf44gMUgyRk9e/N+mt4SImOn0J52P0gyF4VUtR6IBTFkC
-KVn6BRQYPSJcCtFmfpqlzmKREQ4Eac1XSkJUFh5A5kYKR+OKiZlygIT/o+4OEmj6
-pASGVjp2XRuZhN1S3YYmFkdqtHK0Zw2w2oYfw5x1HgHoJVwLHlwcedKdwf1xpYzH
-m82fVPoEK0oew8Z79+ni2cTIWIHFZiAPmxQJt3Uhh2xJQYitqQCAZa+50WgWCPbc
-TafD2eV9guSPPUmbbckf
-=unh+
+iQIcBAEBAgAGBQJVLeFpAAoJEGw4ysog2bOS3qoQANL8sRRY6PrThqDs1zQS0QRb
+YRt+4bR1w0WWVG2dLMymNKE5twedOB5IFmhlHzZd3ptx8c0epkdLDQyd+V+ReFuB
+DeZCyx67vkrMkGNxouXkvN8L7J52ILJhmTIYodpaDrFzDzUEiMLMyalQxElsN4QH
+E/a4Q5ACPkBYaAWequGAGDnzC6USyT2CesyxkEwQXXenpvHg9xXqBVzkDMLG1o76
+8GyT4ZKWkUmFF0CcPjI3iApqhE8tcQHkeNdgZl0HsXg4R/RGP5eqOS3QejWxgVGF
+OA/0+E8+7X8rMcacSA8Q025HFb0+9S/b15JqwOye6Pg5lqSizIi8VeCrGXSPE839
+aKOORSABRl/j577p0MmR9I+o4yjICWB74OgZ8l/2ISVLu1Vy9Sw/E7Opkec7svsY
+ziQNktvBFl1rD5Spe65nKwMxM8R1RSqhShGimm5C8R8IMZYvey4cgJuGzj2KlE+P
+c5wvZB3GBU8EIZ9dVr9SC8Rs2SgZ2/f9NiB4ZzbN/sRMVkIz9AFiOiX11vvS147o
+XpksesI1zCOq/cW/P5t0U+Mpc6Gp/pJbucfCk238sqxCONLpe93lv7dfT/uLL3Je
+FVYuTfRD6Kl0aRS75gPBXzsNBlSKssHW/XjynxD7GITSFwYTj/4Xcp55h8Y4KMeL
+Ts9+wUaGDy0J3aBm7oLa
+=+LTt
 -----END PGP SIGNATURE-----
 
---lkTb+7nhmha7W+c3--
+--XWOWbaMNXpFDWE00--
