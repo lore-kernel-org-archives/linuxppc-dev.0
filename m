@@ -1,22 +1,36 @@
-Return-Path: <Igal.Liberman@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bbn0103.outbound.protection.outlook.com [157.56.111.103])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <mingo.kernel.org@gmail.com>
+Received: from mail-wi0-x22d.google.com (mail-wi0-x22d.google.com
+ [IPv6:2a00:1450:400c:c05::22d])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 025E31A0B8D
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2015 18:43:38 +1000 (AEST)
-From: "Igal.Liberman@freescale.com" <Igal.Liberman@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: RE: [v2] dt/bindings: fsl/guts: Added global-utilities compatibles
-Date: Wed, 15 Apr 2015 08:43:28 +0000
-Message-ID: <DM2PR03MB3837B6B30125C77F1C6F89EE6E50@DM2PR03MB383.namprd03.prod.outlook.com>
-References: <1429006329-24597-1-git-send-email-igal.liberman@freescale.com>
- <1429042131.22867.682.camel@freescale.com>
-In-Reply-To: <1429042131.22867.682.camel@freescale.com>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8893D1A0B87
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2015 19:26:06 +1000 (AEST)
+Received: by wiun10 with SMTP id n10so52492997wiu.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2015 02:26:02 -0700 (PDT)
+Sender: Ingo Molnar <mingo.kernel.org@gmail.com>
+Date: Wed, 15 Apr 2015 11:25:58 +0200
+From: Ingo Molnar <mingo@kernel.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: 'perf upgrade' (was: Re: [PATCH v9 00/11] Add support for JSON
+ event files.)
+Message-ID: <20150415092557.GA14942@gmail.com>
+References: <1428993665-2133-1-git-send-email-sukadev@linux.vnet.ibm.com>
+ <20150414085541.GA30202@gmail.com>
+ <1429010508.27414.1.camel@ellerman.id.au>
+ <20150414125822.GA32761@gmail.com>
+ <1429052004.10000.1.camel@ellerman.id.au>
 MIME-Version: 1.0
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1429052004.10000.1.camel@ellerman.id.au>
+Cc: Arnaldo Carvalho de Melo <acme@infradead.org>, ak@linux.intel.com,
+ Peter Zijlstra <a.p.zijlstra@chello.nl>, peterz@infradead.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ Arnaldo Carvalho de Melo <acme@kernel.org>,
+ Linus Torvalds <torvalds@linux-foundation.org>, mingo@redhat.com,
+ Borislav Petkov <bp@alien8.de>, namhyung@kernel.org,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>, Jiri Olsa <jolsa@redhat.com>,
+ Pekka Enberg <penberg@iki.fi>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,30 +40,128 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNClJlZ2FyZHMsDQpJZ2FsIExpYmVybWFuLg0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0t
-LS0tDQo+IEZyb206IFdvb2QgU2NvdHQtQjA3NDIxDQo+IFNlbnQ6IFR1ZXNkYXksIEFwcmlsIDE0
-LCAyMDE1IDExOjA5IFBNDQo+IFRvOiBMaWJlcm1hbiBJZ2FsLUIzMTk1MA0KPiBDYzogZGV2aWNl
-dHJlZUB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnDQo+IFN1
-YmplY3Q6IFJlOiBbdjJdIGR0L2JpbmRpbmdzOiBmc2wvZ3V0czogQWRkZWQgZ2xvYmFsLXV0aWxp
-dGllcyBjb21wYXRpYmxlcw0KPiANCj4gT24gVHVlLCAyMDE1LTA0LTE0IGF0IDEzOjEyICswMzAw
-LCBJZ2FsLkxpYmVybWFuIHdyb3RlOg0KPiA+IEZyb206IElnYWwgTGliZXJtYW4gPElnYWwuTGli
-ZXJtYW5AZnJlZXNjYWxlLmNvbT4NCj4gPg0KPiA+IHYyIC0gQWRkcmVzc2VkIFNjb3R0J3MgZmVl
-ZGJhY2sNCj4gPg0KPiA+IFNpZ25lZC1vZmYtYnk6IElnYWwgTGliZXJtYW4gPElnYWwuTGliZXJt
-YW5AZnJlZXNjYWxlLmNvbT4NCj4gPiAtLS0NCj4gPiAgLi4uL2RldmljZXRyZWUvYmluZGluZ3Mv
-cG93ZXJwYy9mc2wvZ3V0cy50eHQgICAgICAgfCAgICA0ICsrKysNCj4gPiAgMSBmaWxlIGNoYW5n
-ZWQsIDQgaW5zZXJ0aW9ucygrKQ0KPiA+DQo+ID4gZGlmZiAtLWdpdCBhL0RvY3VtZW50YXRpb24v
-ZGV2aWNldHJlZS9iaW5kaW5ncy9wb3dlcnBjL2ZzbC9ndXRzLnR4dA0KPiBiL0RvY3VtZW50YXRp
-b24vZGV2aWNldHJlZS9iaW5kaW5ncy9wb3dlcnBjL2ZzbC9ndXRzLnR4dA0KPiA+IGluZGV4IDdm
-MTUwYjUuLjY5NjQ0ZTYgMTAwNjQ0DQo+ID4gLS0tIGEvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVl
-L2JpbmRpbmdzL3Bvd2VycGMvZnNsL2d1dHMudHh0DQo+ID4gKysrIGIvRG9jdW1lbnRhdGlvbi9k
-ZXZpY2V0cmVlL2JpbmRpbmdzL3Bvd2VycGMvZnNsL2d1dHMudHh0DQo+ID4gQEAgLTksNiArOSwx
-MCBAQCBSZXF1aXJlZCBwcm9wZXJ0aWVzOg0KPiA+DQo+ID4gICAtIGNvbXBhdGlibGUgOiBTaG91
-bGQgZGVmaW5lIHRoZSBjb21wYXRpYmxlIGRldmljZSB0eXBlIGZvcg0KPiA+ICAgICBnbG9iYWwt
-dXRpbGl0aWVzLg0KPiA+ICsgICBQb3NzaWJsZSBjb21wYXRpYmxlczoNCj4gPiArCSJmc2wscW9y
-aXEtZGV2aWNlLWNvbmZpZy0xLjAiDQo+ID4gKwkiZnNsLHFvcmlxLWRldmljZS1jb25maWctMi4w
-Ig0KPiA+ICsJImZzbCw8Y2hpcD4tZGV2aWNlLWNvbmZpZyINCj4gDQo+IGZzbCw8Y2hpcD4tZ3V0
-cyBpcyBhbHNvIHBvc3NpYmxlIG9uIG5vbi1jb3JlbmV0IGNoaXBzLg0KPiANCg0KSSBhZGRlZCBj
-b21wYXRpYmxlcyB3aGljaCBhcmUgdXNlZCBmb3IgRk1hbiBDbG9jayBvbmx5Lg0KRG8geW91IHdh
-bnQgdG8gYWRkIG90aGVyIGNvbXBhdGlibGVzIHRvbz8gV2hpY2g/IE9yIGp1c3QgbWVudGlvbiB0
-aGF0IHRoZSAzIGNvbXBhdGlibGVzIEkndmUgYWRkZWQgZG9lc24ndCBjb3ZlciBhbGwgYXZhaWxh
-YmxlIG9wdGlvbnM/DQoNCj4gLVNjb3R0DQo+IA0KDQpJZ2FsDQoNCg==
+
+* Michael Ellerman <mpe@ellerman.id.au> wrote:
+
+> > We just merged a patch series that was first sent in 2013. Some 
+> > things take time to get right.
+> 
+> The first attempt to get symbolic event name support into perf was 
+> sent in 2010, that's FIVE years ago [1].
+
+kgdb took even longer, I think it was first proposed before 2000, over 
+10 years before it got merged?
+
+fs/overlayfs/ took similarly long I think, the first (Unionfs) patches 
+I remember were from around 2003 - 11 years before the functionality 
+was merged?
+
+> And what complicated feature are we asking for? The ability to map a 
+> human readable name to a hex code, it has the complexity of a first 
+> year programming assignment.
+
+No, what you are asking for, and which I NAK-ed, is:
+
+ - to add a very limited 'update perf' capability which only updates a
+   single issue that you care about, with no ability to do more.
+   The 'perf upgrade' prototype I sent can update all or part of perf. 
+   (The latest version is attached further below.)
+
+ - to break the 'single binary' property of perf that many people rely on
+
+ - to add JSON parsing overhead to every invocation of perf instead of
+   pre-parsing the event tables at build time and putting them into 
+   a nice data structure.
+
+ - to blindly follow some poorly constructed vendor format with no 
+   high level structure, that IMHO didn't work very well when OProfile 
+   was written, and misrepresenting it as 'symbolic event names'.
+
+   Take a look at:
+
+     https://download.01.org/perfmon/HSW/Haswell_core_V17.json
+
+   and weep. How is one supposed to see the higher level structure of
+   the events with a format like that?
+
+ - to add an ABI to support those vendor files
+
+And those are IMHO five good technical reasons to disagree with your 
+approach.
+
+My suggestion to resolve the technical objections and lift the NAK 
+would be:
+
+ - to add the tables to the source code, in a more human readable 
+   format and (optionally) structure the event names better into a 
+   higher level hierarchy, than the humungous linear dumps with no 
+   explanations that you propose - while still supporting the 'raw' 
+   vendor event names you want to use, for those people who are used 
+   to them.
+
+ - to pre-parse the event descriptions at build time - beyond the 
+   speedup this also keeps the 'single binary' property of perf.
+
+ - to upgrade perf as a whole unit: this helps not just your usecase
+   but many other usecases as well.
+
+   For those who only want to update event tables: with
+   'perf upgrade stable' basically only new event tables (backported 
+   to -stable) would be picked up, plus regression fixes: it pretty 
+   much does what your proposed 'perf download' solution does, except 
+   it's much more capable.
+
+Saying 'no' and suggesting better solutions is my job as a maintainer.
+
+Thanks,
+
+	Ingo
+
+======={ perf-upgrade.sh }===========>
+
+#!/bin/bash
+#
+# Simple script that fetches the 'perf' utility from Linus's tree, builds and
+# installs it, by creating a shallow clone and a sparse checkout for Linux's
+# tools/ directory and related dependencies:
+#
+
+DIR=~/.perf/git
+
+rm -rf $DIR
+mkdir -p $DIR || { echo 'error: No write permissions in the current directory?'; exit -1; }
+cd $DIR
+
+#REPO=git://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git
+#BRANCH=HEAD
+REPO=git://git.kernel.org/pub/scm/linux/kernel/git/tip/tip.git
+BRANCH=perf/core
+
+REFERENCE="."
+[ -d ~/linux/.git     ] && REFERENCE=~/linux/
+[ -d ~/linux.git/.git ] && REFERENCE=~/linux.git/
+[ -d ~/tip/.git       ] && REFERENCE=~/tip/
+[ -d ~/tip.git/.git   ] && REFERENCE=~/tip.git/
+[ -d ~/git/linux      ] && REFERENCE=~/git/linux/
+
+git clone --reference $REFERENCE --depth 1 --bare $REPO --branch $BRANCH .git
+git config --local core.bare false
+
+git config --local core.sparseCheckout true
+git remote remove origin
+git remote add -f origin $REPO -t $BRANCH
+
+(
+  echo '/tools/*'
+  echo '/lib/*'
+  echo '/include/*'
+  echo '/arch/x86/lib/*'
+  echo '/arch/x86/include/*'
+  echo 'Makefile'
+  echo '/scripts/*'
+
+) > .git/info/sparse-checkout
+
+git checkout $BRANCH
+
+make -C tools/perf/ install
