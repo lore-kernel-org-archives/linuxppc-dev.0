@@ -1,39 +1,46 @@
-Return-Path: <preeti@linux.vnet.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+Return-Path: <ldufour@linux.vnet.ibm.com>
+Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DD41C1A0143
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2015 22:22:42 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5BF611A0B87
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Apr 2015 00:17:09 +1000 (AEST)
 Received: from /spool/local
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
- Wed, 15 Apr 2015 06:22:40 -0600
-Received: from b03cxnp08028.gho.boulder.ibm.com
- (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 41A603E40044
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2015 06:22:38 -0600 (MDT)
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
- by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t3FCMM8m43384886
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2015 05:22:22 -0700
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
- by d03av04.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t3FCMYHK001342
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2015 06:22:35 -0600
-Message-ID: <552E5806.6070103@linux.vnet.ibm.com>
-Date: Wed, 15 Apr 2015 17:52:30 +0530
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>,
- linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v5 3/3] powerpc/powernv: Introduce sysfs control for
- fastsleep workaround behavior
-References: <1429079049-5955-1-git-send-email-shreyas@linux.vnet.ibm.com>
- <1429079049-5955-4-git-send-email-shreyas@linux.vnet.ibm.com>
-In-Reply-To: <1429079049-5955-4-git-send-email-shreyas@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: ego@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+ for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
+ Wed, 15 Apr 2015 15:17:06 +0100
+Received: from b06cxnps4076.portsmouth.uk.ibm.com
+ (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
+ by d06dlp01.portsmouth.uk.ibm.com (Postfix) with ESMTP id CB12017D8042
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2015 15:17:39 +0100 (BST)
+Received: from d06av11.portsmouth.uk.ibm.com (d06av11.portsmouth.uk.ibm.com
+ [9.149.37.252])
+ by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t3FEH3KM10944982
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2015 14:17:03 GMT
+Received: from d06av11.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av11.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t3FEH2GO018047
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2015 08:17:03 -0600
+From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+ "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>,
+ Hugh Dickins <hughd@google.com>, Rik van Riel <riel@redhat.com>,
+ Mel Gorman <mgorman@suse.de>, Pavel Emelyanov <xemul@parallels.com>,
+ linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Ingo Molnar <mingo@kernel.org>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v5 1/3] mm: New mm hook framework
+Date: Wed, 15 Apr 2015 16:16:56 +0200
+Message-Id: <1e5f6a7cc2c5b1b3d09afad37e5dc0c2910cf811.1429104776.git.ldufour@linux.vnet.ibm.com>
+In-Reply-To: <cover.1429104776.git.ldufour@linux.vnet.ibm.com>
+References: <cover.1429104776.git.ldufour@linux.vnet.ibm.com>
+In-Reply-To: <cover.1429104776.git.ldufour@linux.vnet.ibm.com>
+References: <20150414123853.a3e61b7fa95b6c634e0fcce0@linux-foundation.org>
+ <cover.1429104776.git.ldufour@linux.vnet.ibm.com>
+Cc: criu@openvz.org, cov@codeaurora.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,144 +50,737 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/15/2015 11:54 AM, Shreyas B. Prabhu wrote:
-> +/*
-> + * Used to store fastsleep workaround state
-> + * 0 - Workaround applied/undone at fastsleep entry/exit path (Default)
-> + * 1 - Workaround applied once, never undone.
-> + */
-> +static u8 fastsleep_workaround_state;
-> +
-> +static const char * const fastsleep_workaround_avail_states[] = {
-> +	"dynamic", "applyonce"
-> +};
-> +
-> +/*
-> + * fastsleep_workaround_avail_states values
-> + */
-> +enum {
-> +	WORKAROUND_DYNAMIC,
-> +	WORKAROUND_APPLYONCE
-> +};
+This patch introduces a new set of header file to manage mm hooks:
+- per architecture empty header file (arch/x/include/asm/mm-arch-hooks.h)
+- a generic header (include/linux/mm-arch-hooks.h)
 
-Is there a strong reason to use the above and not a boolean
-fastsleep_workaround_once knob ? I also don't know what the user can
-make out from 'dynamic'. Its not straight forward and is open to a great
-deal of interpretation.
+The architecture which need to overwrite a hook as to redefine it in its
+header file, while architecture which doesn't need have nothing to do.
 
-Why is this called the 'available' states. You can only echo applyonce
-to it. And once applied it cannot be reverted.  'dynamic' is not a state
-that is available to the user to choose. It is the default value. It is
-therefore misleading.
+The default hooks are defined in the generic header and are used in the case
+the architecture is not defining it.
 
-My point is lets make the purpose and usage of this knob clear to the
-user. Instead if we have fastsleep_workaround_once set to a default
-value of 0. If it is 1, it is clear that  the workaround is applied only
-once. If it is '0' it is not the case and that it is repeatedly applied
-somewhere.There are some advantages when we do this during printing of
-errors as well. See below:
+In a next step, mm hooks defined in include/asm-generic/mm_hooks.h should be
+moved here.
 
-> +	/*
-> +	 * fastsleep_workaround_state = WORKAROUND_APPLYONCE implies
-> +	 * fastsleep workaround needs to be left in 'applied' state on all
-> +	 * the cores. Do this by-
-> +	 * 1. Patching out the call to 'undo' workaround in fastsleep exit path
-> +	 * 2. Sending ipi to all the cores which have atleast one online thread
-> +	 * 3. Patching out the call to 'apply' workaround in fastsleep entry
-> +	 * path
-> +	 * There is no need to send ipi to cores which have all threads
-> +	 * offlined, as last thread of the core entering fastsleep or deeper
-> +	 * state would have applied workaround.
-> +	 */
-> +	err = patch_instruction(
-> +		(unsigned int *)pnv_fastsleep_workaround_at_exit,
-> +		PPC_INST_NOP);
-> +	if (err) {
-> +		pr_err("fastsleep_workaround_state change failed while patching pnv_fastsleep_workaround_at_exit");
-> +		goto fail;
-> +	}
-> +
-> +	get_online_cpus();
-> +	primary_thread_mask = cpu_online_cores_map();
-> +	on_each_cpu_mask(&primary_thread_mask,
-> +				pnv_fastsleep_workaround_apply,
-> +				&err, 1);
-> +	put_online_cpus();
-> +	if (err) {
-> +		pr_err("fastsleep_workaround_state change failed while running pnv_fastsleep_workaround_apply");
-> +		goto fail;
-> +	}
+Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+Suggested-by: Andrew Morton <akpm@linux-foundation.org>
+---
+ arch/alpha/include/asm/mm-arch-hooks.h      | 15 +++++++++++++++
+ arch/arc/include/asm/mm-arch-hooks.h        | 15 +++++++++++++++
+ arch/arm/include/asm/mm-arch-hooks.h        | 15 +++++++++++++++
+ arch/arm64/include/asm/mm-arch-hooks.h      | 15 +++++++++++++++
+ arch/avr32/include/asm/mm-arch-hooks.h      | 15 +++++++++++++++
+ arch/blackfin/include/asm/mm-arch-hooks.h   | 15 +++++++++++++++
+ arch/c6x/include/asm/mm-arch-hooks.h        | 15 +++++++++++++++
+ arch/cris/include/asm/mm-arch-hooks.h       | 15 +++++++++++++++
+ arch/frv/include/asm/mm-arch-hooks.h        | 15 +++++++++++++++
+ arch/hexagon/include/asm/mm-arch-hooks.h    | 15 +++++++++++++++
+ arch/ia64/include/asm/mm-arch-hooks.h       | 15 +++++++++++++++
+ arch/m32r/include/asm/mm-arch-hooks.h       | 15 +++++++++++++++
+ arch/m68k/include/asm/mm-arch-hooks.h       | 15 +++++++++++++++
+ arch/metag/include/asm/mm-arch-hooks.h      | 15 +++++++++++++++
+ arch/microblaze/include/asm/mm-arch-hooks.h | 15 +++++++++++++++
+ arch/mips/include/asm/mm-arch-hooks.h       | 15 +++++++++++++++
+ arch/mn10300/include/asm/mm-arch-hooks.h    | 15 +++++++++++++++
+ arch/nios2/include/asm/mm-arch-hooks.h      | 15 +++++++++++++++
+ arch/openrisc/include/asm/mm-arch-hooks.h   | 15 +++++++++++++++
+ arch/parisc/include/asm/mm-arch-hooks.h     | 15 +++++++++++++++
+ arch/powerpc/include/asm/mm-arch-hooks.h    | 15 +++++++++++++++
+ arch/s390/include/asm/mm-arch-hooks.h       | 15 +++++++++++++++
+ arch/score/include/asm/mm-arch-hooks.h      | 15 +++++++++++++++
+ arch/sh/include/asm/mm-arch-hooks.h         | 15 +++++++++++++++
+ arch/sparc/include/asm/mm-arch-hooks.h      | 15 +++++++++++++++
+ arch/tile/include/asm/mm-arch-hooks.h       | 15 +++++++++++++++
+ arch/um/include/asm/mm-arch-hooks.h         | 15 +++++++++++++++
+ arch/unicore32/include/asm/mm-arch-hooks.h  | 15 +++++++++++++++
+ arch/x86/include/asm/mm-arch-hooks.h        | 15 +++++++++++++++
+ arch/xtensa/include/asm/mm-arch-hooks.h     | 15 +++++++++++++++
+ include/linux/mm-arch-hooks.h               | 16 ++++++++++++++++
+ 31 files changed, 466 insertions(+)
+ create mode 100644 arch/alpha/include/asm/mm-arch-hooks.h
+ create mode 100644 arch/arc/include/asm/mm-arch-hooks.h
+ create mode 100644 arch/arm/include/asm/mm-arch-hooks.h
+ create mode 100644 arch/arm64/include/asm/mm-arch-hooks.h
+ create mode 100644 arch/avr32/include/asm/mm-arch-hooks.h
+ create mode 100644 arch/blackfin/include/asm/mm-arch-hooks.h
+ create mode 100644 arch/c6x/include/asm/mm-arch-hooks.h
+ create mode 100644 arch/cris/include/asm/mm-arch-hooks.h
+ create mode 100644 arch/frv/include/asm/mm-arch-hooks.h
+ create mode 100644 arch/hexagon/include/asm/mm-arch-hooks.h
+ create mode 100644 arch/ia64/include/asm/mm-arch-hooks.h
+ create mode 100644 arch/m32r/include/asm/mm-arch-hooks.h
+ create mode 100644 arch/m68k/include/asm/mm-arch-hooks.h
+ create mode 100644 arch/metag/include/asm/mm-arch-hooks.h
+ create mode 100644 arch/microblaze/include/asm/mm-arch-hooks.h
+ create mode 100644 arch/mips/include/asm/mm-arch-hooks.h
+ create mode 100644 arch/mn10300/include/asm/mm-arch-hooks.h
+ create mode 100644 arch/nios2/include/asm/mm-arch-hooks.h
+ create mode 100644 arch/openrisc/include/asm/mm-arch-hooks.h
+ create mode 100644 arch/parisc/include/asm/mm-arch-hooks.h
+ create mode 100644 arch/powerpc/include/asm/mm-arch-hooks.h
+ create mode 100644 arch/s390/include/asm/mm-arch-hooks.h
+ create mode 100644 arch/score/include/asm/mm-arch-hooks.h
+ create mode 100644 arch/sh/include/asm/mm-arch-hooks.h
+ create mode 100644 arch/sparc/include/asm/mm-arch-hooks.h
+ create mode 100644 arch/tile/include/asm/mm-arch-hooks.h
+ create mode 100644 arch/um/include/asm/mm-arch-hooks.h
+ create mode 100644 arch/unicore32/include/asm/mm-arch-hooks.h
+ create mode 100644 arch/x86/include/asm/mm-arch-hooks.h
+ create mode 100644 arch/xtensa/include/asm/mm-arch-hooks.h
+ create mode 100644 include/linux/mm-arch-hooks.h
 
-
-> +
-> +	err = patch_instruction(
-> +		(unsigned int *)pnv_fastsleep_workaround_at_entry,
-> +		PPC_INST_NOP);
-> +	if (err) {
-> +		pr_err("fastsleep_workaround_state change failed while patching pnv_fastsleep_workaround_at_entry");
-> +		goto fail;
-> +	}
-
-Now in all the above error conditions, we know that the workaround will
-end up being applied always. But the error messages don't indicate that
-since it says state change failed. state change to 'what' failed? I
-understand that the user in question can make sense of it, but it seems
-to indicate that there is a state machine in question and that the user
-can rotate among them, when there is only one state that he can choose.
-If we instead use fastsleep_workaround_once, all the above error
-messages will simply fallback to 'fastsleep_workaround_once failed',
-which indicates clearly that the workaround will be repeatedly applied
-somewhere. When the user tries to echo a '0' after a 1, we can fail with
-"fastsleep_workaround_once cannot be reverted", indicating its applied
-once now and nothing can be done about it.
-
-Thus the consequence of every action of the user becomes explicit,
-informing even a clueless user what can be done with this knob IMO.
-
-Regards
-Preeti U Murthy
-> +
-> +	fastsleep_workaround_state = WORKAROUND_APPLYONCE;
-> +
-> +	return count;
-> +fail:
-> +	return -EIO;
-> +}
-> +
-> +static DEVICE_ATTR(fastsleep_workaround_state, 0600,
-> +			show_fastsleep_workaround_state,
-> +			store_fastsleep_workaround_state);
-> +
->  static int __init pnv_init_idle_states(void)
->  {
->  	struct device_node *power_mgt;
-> @@ -180,7 +305,16 @@ static int __init pnv_init_idle_states(void)
->  		patch_instruction(
->  			(unsigned int *)pnv_fastsleep_workaround_at_exit,
->  			PPC_INST_NOP);
-> +	} else {
-> +		/*
-> +		 * OPAL_PM_SLEEP_ENABLED_ER1 is set. It indicates that
-> +		 * workaround is needed to use fastsleep. Provide sysfs
-> +		 * control to choose how this workaround has to be applied.
-> +		 */
-> +		device_create_file(cpu_subsys.dev_root,
-> +					&dev_attr_fastsleep_workaround_state);
->  	}
-> +
->  	pnv_alloc_idle_core_states();
->  out_free:
->  	kfree(flags);
-> diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
-> index a7ade94..bf15ead 100644
-> --- a/arch/powerpc/platforms/powernv/opal-wrappers.S
-> +++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
-> @@ -283,6 +283,7 @@ OPAL_CALL(opal_sensor_read,			OPAL_SENSOR_READ);
->  OPAL_CALL(opal_get_param,			OPAL_GET_PARAM);
->  OPAL_CALL(opal_set_param,			OPAL_SET_PARAM);
->  OPAL_CALL(opal_handle_hmi,			OPAL_HANDLE_HMI);
-> +OPAL_CALL(opal_config_cpu_idle_state,		OPAL_CONFIG_CPU_IDLE_STATE);
->  OPAL_CALL(opal_slw_set_reg,			OPAL_SLW_SET_REG);
->  OPAL_CALL(opal_register_dump_region,		OPAL_REGISTER_DUMP_REGION);
->  OPAL_CALL(opal_unregister_dump_region,		OPAL_UNREGISTER_DUMP_REGION);
-> 
+diff --git a/arch/alpha/include/asm/mm-arch-hooks.h b/arch/alpha/include/asm/mm-arch-hooks.h
+new file mode 100644
+index 000000000000..b07fd862fec3
+--- /dev/null
++++ b/arch/alpha/include/asm/mm-arch-hooks.h
+@@ -0,0 +1,15 @@
++/*
++ * Architecture specific mm hooks
++ *
++ * Copyright (C) 2015, IBM Corporation
++ * Author: Laurent Dufour <ldufour@linux.vnet.ibm.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#ifndef _ASM_ALPHA_MM_ARCH_HOOKS_H
++#define _ASM_ALPHA_MM_ARCH_HOOKS_H
++
++#endif /* _ASM_ALPHA_MM_ARCH_HOOKS_H */
+diff --git a/arch/arc/include/asm/mm-arch-hooks.h b/arch/arc/include/asm/mm-arch-hooks.h
+new file mode 100644
+index 000000000000..c37541c5f8ba
+--- /dev/null
++++ b/arch/arc/include/asm/mm-arch-hooks.h
+@@ -0,0 +1,15 @@
++/*
++ * Architecture specific mm hooks
++ *
++ * Copyright (C) 2015, IBM Corporation
++ * Author: Laurent Dufour <ldufour@linux.vnet.ibm.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#ifndef _ASM_ARC_MM_ARCH_HOOKS_H
++#define _ASM_ARC_MM_ARCH_HOOKS_H
++
++#endif /* _ASM_ARC_MM_ARCH_HOOKS_H */
+diff --git a/arch/arm/include/asm/mm-arch-hooks.h b/arch/arm/include/asm/mm-arch-hooks.h
+new file mode 100644
+index 000000000000..7056660c7cc4
+--- /dev/null
++++ b/arch/arm/include/asm/mm-arch-hooks.h
+@@ -0,0 +1,15 @@
++/*
++ * Architecture specific mm hooks
++ *
++ * Copyright (C) 2015, IBM Corporation
++ * Author: Laurent Dufour <ldufour@linux.vnet.ibm.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#ifndef _ASM_ARM_MM_ARCH_HOOKS_H
++#define _ASM_ARM_MM_ARCH_HOOKS_H
++
++#endif /* _ASM_ARM_MM_ARCH_HOOKS_H */
+diff --git a/arch/arm64/include/asm/mm-arch-hooks.h b/arch/arm64/include/asm/mm-arch-hooks.h
+new file mode 100644
+index 000000000000..562b655f5ba9
+--- /dev/null
++++ b/arch/arm64/include/asm/mm-arch-hooks.h
+@@ -0,0 +1,15 @@
++/*
++ * Architecture specific mm hooks
++ *
++ * Copyright (C) 2015, IBM Corporation
++ * Author: Laurent Dufour <ldufour@linux.vnet.ibm.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#ifndef _ASM_ARM64_MM_ARCH_HOOKS_H
++#define _ASM_ARM64_MM_ARCH_HOOKS_H
++
++#endif /* _ASM_ARM64_MM_ARCH_HOOKS_H */
+diff --git a/arch/avr32/include/asm/mm-arch-hooks.h b/arch/avr32/include/asm/mm-arch-hooks.h
+new file mode 100644
+index 000000000000..145452ffbdad
+--- /dev/null
++++ b/arch/avr32/include/asm/mm-arch-hooks.h
+@@ -0,0 +1,15 @@
++/*
++ * Architecture specific mm hooks
++ *
++ * Copyright (C) 2015, IBM Corporation
++ * Author: Laurent Dufour <ldufour@linux.vnet.ibm.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#ifndef _ASM_AVR32_MM_ARCH_HOOKS_H
++#define _ASM_AVR32_MM_ARCH_HOOKS_H
++
++#endif /* _ASM_AVR32_MM_ARCH_HOOKS_H */
+diff --git a/arch/blackfin/include/asm/mm-arch-hooks.h b/arch/blackfin/include/asm/mm-arch-hooks.h
+new file mode 100644
+index 000000000000..1c5211ec338f
+--- /dev/null
++++ b/arch/blackfin/include/asm/mm-arch-hooks.h
+@@ -0,0 +1,15 @@
++/*
++ * Architecture specific mm hooks
++ *
++ * Copyright (C) 2015, IBM Corporation
++ * Author: Laurent Dufour <ldufour@linux.vnet.ibm.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#ifndef _ASM_BLACKFIN_MM_ARCH_HOOKS_H
++#define _ASM_BLACKFIN_MM_ARCH_HOOKS_H
++
++#endif /* _ASM_BLACKFIN_MM_ARCH_HOOKS_H */
+diff --git a/arch/c6x/include/asm/mm-arch-hooks.h b/arch/c6x/include/asm/mm-arch-hooks.h
+new file mode 100644
+index 000000000000..bb3c4a6ce8e9
+--- /dev/null
++++ b/arch/c6x/include/asm/mm-arch-hooks.h
+@@ -0,0 +1,15 @@
++/*
++ * Architecture specific mm hooks
++ *
++ * Copyright (C) 2015, IBM Corporation
++ * Author: Laurent Dufour <ldufour@linux.vnet.ibm.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#ifndef _ASM_C6X_MM_ARCH_HOOKS_H
++#define _ASM_C6X_MM_ARCH_HOOKS_H
++
++#endif /* _ASM_C6X_MM_ARCH_HOOKS_H */
+diff --git a/arch/cris/include/asm/mm-arch-hooks.h b/arch/cris/include/asm/mm-arch-hooks.h
+new file mode 100644
+index 000000000000..314f774db2b0
+--- /dev/null
++++ b/arch/cris/include/asm/mm-arch-hooks.h
+@@ -0,0 +1,15 @@
++/*
++ * Architecture specific mm hooks
++ *
++ * Copyright (C) 2015, IBM Corporation
++ * Author: Laurent Dufour <ldufour@linux.vnet.ibm.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#ifndef _ASM_CRIS_MM_ARCH_HOOKS_H
++#define _ASM_CRIS_MM_ARCH_HOOKS_H
++
++#endif /* _ASM_CRIS_MM_ARCH_HOOKS_H */
+diff --git a/arch/frv/include/asm/mm-arch-hooks.h b/arch/frv/include/asm/mm-arch-hooks.h
+new file mode 100644
+index 000000000000..51d13a870404
+--- /dev/null
++++ b/arch/frv/include/asm/mm-arch-hooks.h
+@@ -0,0 +1,15 @@
++/*
++ * Architecture specific mm hooks
++ *
++ * Copyright (C) 2015, IBM Corporation
++ * Author: Laurent Dufour <ldufour@linux.vnet.ibm.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#ifndef _ASM_FRV_MM_ARCH_HOOKS_H
++#define _ASM_FRV_MM_ARCH_HOOKS_H
++
++#endif /* _ASM_FRV_MM_ARCH_HOOKS_H */
+diff --git a/arch/hexagon/include/asm/mm-arch-hooks.h b/arch/hexagon/include/asm/mm-arch-hooks.h
+new file mode 100644
+index 000000000000..05e8b939e416
+--- /dev/null
++++ b/arch/hexagon/include/asm/mm-arch-hooks.h
+@@ -0,0 +1,15 @@
++/*
++ * Architecture specific mm hooks
++ *
++ * Copyright (C) 2015, IBM Corporation
++ * Author: Laurent Dufour <ldufour@linux.vnet.ibm.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#ifndef _ASM_HEXAGON_MM_ARCH_HOOKS_H
++#define _ASM_HEXAGON_MM_ARCH_HOOKS_H
++
++#endif /* _ASM_HEXAGON_MM_ARCH_HOOKS_H */
+diff --git a/arch/ia64/include/asm/mm-arch-hooks.h b/arch/ia64/include/asm/mm-arch-hooks.h
+new file mode 100644
+index 000000000000..ab4b5c698322
+--- /dev/null
++++ b/arch/ia64/include/asm/mm-arch-hooks.h
+@@ -0,0 +1,15 @@
++/*
++ * Architecture specific mm hooks
++ *
++ * Copyright (C) 2015, IBM Corporation
++ * Author: Laurent Dufour <ldufour@linux.vnet.ibm.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#ifndef _ASM_IA64_MM_ARCH_HOOKS_H
++#define _ASM_IA64_MM_ARCH_HOOKS_H
++
++#endif /* _ASM_IA64_MM_ARCH_HOOKS_H */
+diff --git a/arch/m32r/include/asm/mm-arch-hooks.h b/arch/m32r/include/asm/mm-arch-hooks.h
+new file mode 100644
+index 000000000000..6d60b4750f41
+--- /dev/null
++++ b/arch/m32r/include/asm/mm-arch-hooks.h
+@@ -0,0 +1,15 @@
++/*
++ * Architecture specific mm hooks
++ *
++ * Copyright (C) 2015, IBM Corporation
++ * Author: Laurent Dufour <ldufour@linux.vnet.ibm.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#ifndef _ASM_M32R_MM_ARCH_HOOKS_H
++#define _ASM_M32R_MM_ARCH_HOOKS_H
++
++#endif /* _ASM_M32R_MM_ARCH_HOOKS_H */
+diff --git a/arch/m68k/include/asm/mm-arch-hooks.h b/arch/m68k/include/asm/mm-arch-hooks.h
+new file mode 100644
+index 000000000000..7e8709bc90ae
+--- /dev/null
++++ b/arch/m68k/include/asm/mm-arch-hooks.h
+@@ -0,0 +1,15 @@
++/*
++ * Architecture specific mm hooks
++ *
++ * Copyright (C) 2015, IBM Corporation
++ * Author: Laurent Dufour <ldufour@linux.vnet.ibm.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#ifndef _ASM_M68K_MM_ARCH_HOOKS_H
++#define _ASM_M68K_MM_ARCH_HOOKS_H
++
++#endif /* _ASM_M68K_MM_ARCH_HOOKS_H */
+diff --git a/arch/metag/include/asm/mm-arch-hooks.h b/arch/metag/include/asm/mm-arch-hooks.h
+new file mode 100644
+index 000000000000..b0072b2eb0de
+--- /dev/null
++++ b/arch/metag/include/asm/mm-arch-hooks.h
+@@ -0,0 +1,15 @@
++/*
++ * Architecture specific mm hooks
++ *
++ * Copyright (C) 2015, IBM Corporation
++ * Author: Laurent Dufour <ldufour@linux.vnet.ibm.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#ifndef _ASM_METAG_MM_ARCH_HOOKS_H
++#define _ASM_METAG_MM_ARCH_HOOKS_H
++
++#endif /* _ASM_METAG_MM_ARCH_HOOKS_H */
+diff --git a/arch/microblaze/include/asm/mm-arch-hooks.h b/arch/microblaze/include/asm/mm-arch-hooks.h
+new file mode 100644
+index 000000000000..5c4065911bda
+--- /dev/null
++++ b/arch/microblaze/include/asm/mm-arch-hooks.h
+@@ -0,0 +1,15 @@
++/*
++ * Architecture specific mm hooks
++ *
++ * Copyright (C) 2015, IBM Corporation
++ * Author: Laurent Dufour <ldufour@linux.vnet.ibm.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#ifndef _ASM_MICROBLAZE_MM_ARCH_HOOKS_H
++#define _ASM_MICROBLAZE_MM_ARCH_HOOKS_H
++
++#endif /* _ASM_MICROBLAZE_MM_ARCH_HOOKS_H */
+diff --git a/arch/mips/include/asm/mm-arch-hooks.h b/arch/mips/include/asm/mm-arch-hooks.h
+new file mode 100644
+index 000000000000..b5609fe8e475
+--- /dev/null
++++ b/arch/mips/include/asm/mm-arch-hooks.h
+@@ -0,0 +1,15 @@
++/*
++ * Architecture specific mm hooks
++ *
++ * Copyright (C) 2015, IBM Corporation
++ * Author: Laurent Dufour <ldufour@linux.vnet.ibm.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#ifndef _ASM_MIPS_MM_ARCH_HOOKS_H
++#define _ASM_MIPS_MM_ARCH_HOOKS_H
++
++#endif /* _ASM_MIPS_MM_ARCH_HOOKS_H */
+diff --git a/arch/mn10300/include/asm/mm-arch-hooks.h b/arch/mn10300/include/asm/mm-arch-hooks.h
+new file mode 100644
+index 000000000000..e2029a652f4c
+--- /dev/null
++++ b/arch/mn10300/include/asm/mm-arch-hooks.h
+@@ -0,0 +1,15 @@
++/*
++ * Architecture specific mm hooks
++ *
++ * Copyright (C) 2015, IBM Corporation
++ * Author: Laurent Dufour <ldufour@linux.vnet.ibm.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#ifndef _ASM_MN10300_MM_ARCH_HOOKS_H
++#define _ASM_MN10300_MM_ARCH_HOOKS_H
++
++#endif /* _ASM_MN10300_MM_ARCH_HOOKS_H */
+diff --git a/arch/nios2/include/asm/mm-arch-hooks.h b/arch/nios2/include/asm/mm-arch-hooks.h
+new file mode 100644
+index 000000000000..d7290dc68558
+--- /dev/null
++++ b/arch/nios2/include/asm/mm-arch-hooks.h
+@@ -0,0 +1,15 @@
++/*
++ * Architecture specific mm hooks
++ *
++ * Copyright (C) 2015, IBM Corporation
++ * Author: Laurent Dufour <ldufour@linux.vnet.ibm.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#ifndef _ASM_NIOS2_MM_ARCH_HOOKS_H
++#define _ASM_NIOS2_MM_ARCH_HOOKS_H
++
++#endif /* _ASM_NIOS2_MM_ARCH_HOOKS_H */
+diff --git a/arch/openrisc/include/asm/mm-arch-hooks.h b/arch/openrisc/include/asm/mm-arch-hooks.h
+new file mode 100644
+index 000000000000..6d33cb555fe1
+--- /dev/null
++++ b/arch/openrisc/include/asm/mm-arch-hooks.h
+@@ -0,0 +1,15 @@
++/*
++ * Architecture specific mm hooks
++ *
++ * Copyright (C) 2015, IBM Corporation
++ * Author: Laurent Dufour <ldufour@linux.vnet.ibm.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#ifndef _ASM_OPENRISC_MM_ARCH_HOOKS_H
++#define _ASM_OPENRISC_MM_ARCH_HOOKS_H
++
++#endif /* _ASM_OPENRISC_MM_ARCH_HOOKS_H */
+diff --git a/arch/parisc/include/asm/mm-arch-hooks.h b/arch/parisc/include/asm/mm-arch-hooks.h
+new file mode 100644
+index 000000000000..654ec63b0ee9
+--- /dev/null
++++ b/arch/parisc/include/asm/mm-arch-hooks.h
+@@ -0,0 +1,15 @@
++/*
++ * Architecture specific mm hooks
++ *
++ * Copyright (C) 2015, IBM Corporation
++ * Author: Laurent Dufour <ldufour@linux.vnet.ibm.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#ifndef _ASM_PARISC_MM_ARCH_HOOKS_H
++#define _ASM_PARISC_MM_ARCH_HOOKS_H
++
++#endif /* _ASM_PARISC_MM_ARCH_HOOKS_H */
+diff --git a/arch/powerpc/include/asm/mm-arch-hooks.h b/arch/powerpc/include/asm/mm-arch-hooks.h
+new file mode 100644
+index 000000000000..63091a19de9f
+--- /dev/null
++++ b/arch/powerpc/include/asm/mm-arch-hooks.h
+@@ -0,0 +1,15 @@
++/*
++ * Architecture specific mm hooks
++ *
++ * Copyright (C) 2015, IBM Corporation
++ * Author: Laurent Dufour <ldufour@linux.vnet.ibm.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#ifndef _ASM_POWERPC_MM_ARCH_HOOKS_H
++#define _ASM_POWERPC_MM_ARCH_HOOKS_H
++
++#endif /* _ASM_POWERPC_MM_ARCH_HOOKS_H */
+diff --git a/arch/s390/include/asm/mm-arch-hooks.h b/arch/s390/include/asm/mm-arch-hooks.h
+new file mode 100644
+index 000000000000..07680b2f3c59
+--- /dev/null
++++ b/arch/s390/include/asm/mm-arch-hooks.h
+@@ -0,0 +1,15 @@
++/*
++ * Architecture specific mm hooks
++ *
++ * Copyright (C) 2015, IBM Corporation
++ * Author: Laurent Dufour <ldufour@linux.vnet.ibm.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#ifndef _ASM_S390_MM_ARCH_HOOKS_H
++#define _ASM_S390_MM_ARCH_HOOKS_H
++
++#endif /* _ASM_S390_MM_ARCH_HOOKS_H */
+diff --git a/arch/score/include/asm/mm-arch-hooks.h b/arch/score/include/asm/mm-arch-hooks.h
+new file mode 100644
+index 000000000000..5e38689f189a
+--- /dev/null
++++ b/arch/score/include/asm/mm-arch-hooks.h
+@@ -0,0 +1,15 @@
++/*
++ * Architecture specific mm hooks
++ *
++ * Copyright (C) 2015, IBM Corporation
++ * Author: Laurent Dufour <ldufour@linux.vnet.ibm.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#ifndef _ASM_SCORE_MM_ARCH_HOOKS_H
++#define _ASM_SCORE_MM_ARCH_HOOKS_H
++
++#endif /* _ASM_SCORE_MM_ARCH_HOOKS_H */
+diff --git a/arch/sh/include/asm/mm-arch-hooks.h b/arch/sh/include/asm/mm-arch-hooks.h
+new file mode 100644
+index 000000000000..18087298b728
+--- /dev/null
++++ b/arch/sh/include/asm/mm-arch-hooks.h
+@@ -0,0 +1,15 @@
++/*
++ * Architecture specific mm hooks
++ *
++ * Copyright (C) 2015, IBM Corporation
++ * Author: Laurent Dufour <ldufour@linux.vnet.ibm.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#ifndef _ASM_SH_MM_ARCH_HOOKS_H
++#define _ASM_SH_MM_ARCH_HOOKS_H
++
++#endif /* _ASM_SH_MM_ARCH_HOOKS_H */
+diff --git a/arch/sparc/include/asm/mm-arch-hooks.h b/arch/sparc/include/asm/mm-arch-hooks.h
+new file mode 100644
+index 000000000000..b89ba44c16f1
+--- /dev/null
++++ b/arch/sparc/include/asm/mm-arch-hooks.h
+@@ -0,0 +1,15 @@
++/*
++ * Architecture specific mm hooks
++ *
++ * Copyright (C) 2015, IBM Corporation
++ * Author: Laurent Dufour <ldufour@linux.vnet.ibm.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#ifndef _ASM_SPARC_MM_ARCH_HOOKS_H
++#define _ASM_SPARC_MM_ARCH_HOOKS_H
++
++#endif /* _ASM_SPARC_MM_ARCH_HOOKS_H */
+diff --git a/arch/tile/include/asm/mm-arch-hooks.h b/arch/tile/include/asm/mm-arch-hooks.h
+new file mode 100644
+index 000000000000..d1709ea774f7
+--- /dev/null
++++ b/arch/tile/include/asm/mm-arch-hooks.h
+@@ -0,0 +1,15 @@
++/*
++ * Architecture specific mm hooks
++ *
++ * Copyright (C) 2015, IBM Corporation
++ * Author: Laurent Dufour <ldufour@linux.vnet.ibm.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#ifndef _ASM_TILE_MM_ARCH_HOOKS_H
++#define _ASM_TILE_MM_ARCH_HOOKS_H
++
++#endif /* _ASM_TILE_MM_ARCH_HOOKS_H */
+diff --git a/arch/um/include/asm/mm-arch-hooks.h b/arch/um/include/asm/mm-arch-hooks.h
+new file mode 100644
+index 000000000000..a7c8b0dfdd4e
+--- /dev/null
++++ b/arch/um/include/asm/mm-arch-hooks.h
+@@ -0,0 +1,15 @@
++/*
++ * Architecture specific mm hooks
++ *
++ * Copyright (C) 2015, IBM Corporation
++ * Author: Laurent Dufour <ldufour@linux.vnet.ibm.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#ifndef _ASM_UM_MM_ARCH_HOOKS_H
++#define _ASM_UM_MM_ARCH_HOOKS_H
++
++#endif /* _ASM_UM_MM_ARCH_HOOKS_H */
+diff --git a/arch/unicore32/include/asm/mm-arch-hooks.h b/arch/unicore32/include/asm/mm-arch-hooks.h
+new file mode 100644
+index 000000000000..4d79a850c509
+--- /dev/null
++++ b/arch/unicore32/include/asm/mm-arch-hooks.h
+@@ -0,0 +1,15 @@
++/*
++ * Architecture specific mm hooks
++ *
++ * Copyright (C) 2015, IBM Corporation
++ * Author: Laurent Dufour <ldufour@linux.vnet.ibm.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#ifndef _ASM_UNICORE32_MM_ARCH_HOOKS_H
++#define _ASM_UNICORE32_MM_ARCH_HOOKS_H
++
++#endif /* _ASM_UNICORE32_MM_ARCH_HOOKS_H */
+diff --git a/arch/x86/include/asm/mm-arch-hooks.h b/arch/x86/include/asm/mm-arch-hooks.h
+new file mode 100644
+index 000000000000..4e881a342236
+--- /dev/null
++++ b/arch/x86/include/asm/mm-arch-hooks.h
+@@ -0,0 +1,15 @@
++/*
++ * Architecture specific mm hooks
++ *
++ * Copyright (C) 2015, IBM Corporation
++ * Author: Laurent Dufour <ldufour@linux.vnet.ibm.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#ifndef _ASM_X86_MM_ARCH_HOOKS_H
++#define _ASM_X86_MM_ARCH_HOOKS_H
++
++#endif /* _ASM_X86_MM_ARCH_HOOKS_H */
+diff --git a/arch/xtensa/include/asm/mm-arch-hooks.h b/arch/xtensa/include/asm/mm-arch-hooks.h
+new file mode 100644
+index 000000000000..d2e5cfd3dd02
+--- /dev/null
++++ b/arch/xtensa/include/asm/mm-arch-hooks.h
+@@ -0,0 +1,15 @@
++/*
++ * Architecture specific mm hooks
++ *
++ * Copyright (C) 2015, IBM Corporation
++ * Author: Laurent Dufour <ldufour@linux.vnet.ibm.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++
++#ifndef _ASM_XTENSA_MM_ARCH_HOOKS_H
++#define _ASM_XTENSA_MM_ARCH_HOOKS_H
++
++#endif /* _ASM_XTENSA_MM_ARCH_HOOKS_H */
+diff --git a/include/linux/mm-arch-hooks.h b/include/linux/mm-arch-hooks.h
+new file mode 100644
+index 000000000000..63005e367abd
+--- /dev/null
++++ b/include/linux/mm-arch-hooks.h
+@@ -0,0 +1,16 @@
++/*
++ * Generic mm no-op hooks.
++ *
++ * Copyright (C) 2015, IBM Corporation
++ * Author: Laurent Dufour <ldufour@linux.vnet.ibm.com>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License version 2 as
++ * published by the Free Software Foundation.
++ */
++#ifndef _LINUX_MM_ARCH_HOOKS_H
++#define _LINUX_MM_ARCH_HOOKS_H
++
++#include <asm/mm-arch-hooks.h>
++
++#endif /* _LINUX_MM_ARCH_HOOKS_H */
+-- 
+1.9.1
