@@ -1,51 +1,26 @@
-Return-Path: <ldufour@linux.vnet.ibm.com>
-Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pa0-f47.google.com (mail-pa0-f47.google.com
+ [209.85.220.47])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0283E1A0B86
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2015 21:57:58 +1000 (AEST)
-Received: from /spool/local
- by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
- Wed, 15 Apr 2015 12:57:54 +0100
-Received: from b06cxnps3074.portsmouth.uk.ibm.com
- (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
- by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id B122A1B08076
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2015 12:58:24 +0100 (BST)
-Received: from d06av07.portsmouth.uk.ibm.com (d06av07.portsmouth.uk.ibm.com
- [9.149.37.248])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t3FBvoNN58982596
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2015 11:57:50 GMT
-Received: from d06av07.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av07.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t3FBvmcD005950
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2015 07:57:50 -0400
-Message-ID: <552E523A.1020905@linux.vnet.ibm.com>
-Date: Wed, 15 Apr 2015 13:57:46 +0200
-From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 88BEF1A0143
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2015 22:09:55 +1000 (AEST)
+Received: by pacyx8 with SMTP id yx8so49014670pac.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2015 05:09:54 -0700 (PDT)
+Message-ID: <552E550A.9080609@ozlabs.ru>
+Date: Wed, 15 Apr 2015 22:09:46 +1000
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
 MIME-Version: 1.0
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [RESEND PATCH v3 1/2] mm: Introducing arch_remap hook
-References: <cover.1428916945.git.ldufour@linux.vnet.ibm.com>
- <9d827fc618a718830b2c47aa87e8be546914c897.1428916945.git.ldufour@linux.vnet.ibm.com>
- <20150413115811.GA12354@node.dhcp.inet.fi>
- <552BB972.3010704@linux.vnet.ibm.com>
- <20150413131357.GC12354@node.dhcp.inet.fi>
- <552BC2CA.80309@linux.vnet.ibm.com>	<552BC619.9080603@parallels.com>
- <20150413140219.GA14480@node.dhcp.inet.fi>
- <20150413135951.b3d9f431892dbfa7156cc1b0@linux-foundation.org>
- <552CDD35.2030901@linux.vnet.ibm.com>
- <20150414123853.a3e61b7fa95b6c634e0fcce0@linux-foundation.org>
-In-Reply-To: <20150414123853.a3e61b7fa95b6c634e0fcce0@linux-foundation.org>
-Content-Type: text/plain; charset=windows-1252
-Cc: Rik van Riel <riel@redhat.com>, Pavel Emelyanov <xemul@parallels.com>,
- Hugh Dickins <hughd@google.com>, linux-kernel@vger.kernel.org, criu@openvz.org,
- linux-mm@kvack.org, Paul Mackerras <paulus@samba.org>,
- Mel Gorman <mgorman@suse.de>, "Kirill A. Shutemov" <kirill@shutemov.name>,
- linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@kernel.org>,
- "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>, cov@codeaurora.org
+To: David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: [PATCH kernel v8 07/31] vfio: powerpc/spapr: Moving
+ pinning/unpinning to helpers
+References: <1428647473-11738-1-git-send-email-aik@ozlabs.ru>
+ <1428647473-11738-8-git-send-email-aik@ozlabs.ru>
+ <20150415071031.GI25040@voom.redhat.com>
+In-Reply-To: <20150415071031.GI25040@voom.redhat.com>
+Content-Type: text/plain; charset=koi8-r; format=flowed
+Cc: Alex Williamson <alex.williamson@redhat.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -55,79 +30,177 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 14/04/2015 21:38, Andrew Morton wrote:
-> On Tue, 14 Apr 2015 11:26:13 +0200 Laurent Dufour <ldufour@linux.vnet.ibm.com> wrote:
-> 
->>> Do away with __HAVE_ARCH_REMAP and do it like this:
->>>
->>> arch/x/include/asm/y.h:
->>>
->>> 	extern void arch_remap(...);
->>> 	#define arch_remap arch_remap
->>>
->>> include/linux/z.h:
->>>
->>> 	#include <asm/y.h>
->>>
->>> 	#ifndef arch_remap
->>> 	static inline void arch_remap(...) { }
->>> 	#define arch_remap arch_remap
->>> 	#endif
+On 04/15/2015 05:10 PM, David Gibson wrote:
+> On Fri, Apr 10, 2015 at 04:30:49PM +1000, Alexey Kardashevskiy wrote:
+>> This is a pretty mechanical patch to make next patches simpler.
 >>
->> Hi Andrew,
+>> New tce_iommu_unuse_page() helper does put_page() now but it might skip
+>> that after the memory registering patch applied.
 >>
->> I like your idea, but I can't find any good candidate for <asm/y.h> and
->> <linux/z.h>.
+>> As we are here, this removes unnecessary checks for a value returned
+>> by pfn_to_page() as it cannot possibly return NULL.
 >>
->> I tried with <linux/mm.h> and <asm/mmu_context.h> but
->> <asm/mmu_context.h> is already including <linux/mm.h>.
+>> This moves tce_iommu_disable() later to let tce_iommu_clear() know if
+>> the container has been enabled because if it has not been, then
+>> put_page() must not be called on TCEs from the TCE table. This situation
+>> is not yet possible but it will after KVM acceleration patchset is
+>> applied.
 >>
->> Do you have any suggestion ?
+>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+>> ---
+>> Changes:
+>> v6:
+>> * tce_get_hva() returns hva via a pointer
+>> ---
+>>   drivers/vfio/vfio_iommu_spapr_tce.c | 68 +++++++++++++++++++++++++++----------
+>>   1 file changed, 50 insertions(+), 18 deletions(-)
 >>
->> Another option could be to do it like the actual arch_unmap() in
->> <asm-generic/mm_hooks.h> but this is the opposite of your idea, and Ingo
->> was not comfortable with this idea due to the impact of the other
->> architectures.
-> 
-> I don't see any appropriate header files for this.  mman.h is kinda
-> close.
-> 
-> So we create new header files, that's not a problem.  I'm torn between
-> 
-> a) include/linux/mm-arch-hooks.h (and 31
->    arch/X/include/asm/mm-arch-hooks.h).  Mandate: mm stuff which can be
->    overridded by arch
-> 
-> versus
-> 
-> b) include/linux/mremap.h (+31), with a narrower mandate.
-> 
-> 
-> This comes up fairly regularly so I suspect a) is better.  We'll add
-> things to it over time, and various bits of existing ad-hackery can be
-> moved over as cleanups.
+>> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
+>> index c137bb3..ec5ee83 100644
+>> --- a/drivers/vfio/vfio_iommu_spapr_tce.c
+>> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
+>> @@ -196,7 +196,6 @@ static void tce_iommu_release(void *iommu_data)
+>>   	struct iommu_table *tbl = container->tbl;
+>>
+>>   	WARN_ON(tbl && !tbl->it_group);
+>> -	tce_iommu_disable(container);
+>>
+>>   	if (tbl) {
+>>   		tce_iommu_clear(container, tbl,	tbl->it_offset, tbl->it_size);
+>> @@ -204,63 +203,96 @@ static void tce_iommu_release(void *iommu_data)
+>>   		if (tbl->it_group)
+>>   			tce_iommu_detach_group(iommu_data, tbl->it_group);
+>>   	}
+>> +
+>> +	tce_iommu_disable(container);
+>> +
+>>   	mutex_destroy(&container->lock);
+>>
+>>   	kfree(container);
+>>   }
+>>
+>> +static void tce_iommu_unuse_page(struct tce_container *container,
+>> +		unsigned long oldtce)
+>> +{
+>> +	struct page *page;
+>> +
+>> +	if (!(oldtce & (TCE_PCI_READ | TCE_PCI_WRITE)))
+>> +		return;
+>> +
+>> +	/*
+>> +	 * VFIO cannot map/unmap when a container is not enabled so
+>> +	 * we would not need this check but KVM could map/unmap and if
+>> +	 * this happened, we must not put pages as KVM does not get them as
+>> +	 * it expects memory pre-registation to do this part.
+>> +	 */
+>> +	if (!container->enabled)
+>> +		return;
+>
+> This worries me a bit.  How can whether the contained is enabled now
+> safely tell you whether get_page() at some earlier point in time?
 
-Thanks for the advice,
 
-I'll do a), starting with the arch_remap macro, adding the 30 "empty"
-arch/x/include/asm/mm-arch-hooks.h files, and implementing arch_remap
-for powerpc.
-
-Then, if the first patch is accepted, I may move the arch_*() stuff
-defined in include/asm-generic/mm_hooks.h into
-include/linux/mm-arch-hooks.h and filled some
-arch/X/include/asm/mm-arch-hooks.h. The file
-include/asm-generic/mm_hooks.h will then become empty, and been removed.
-
-Cheers,
-Laurent.
+This is a leftover, I'll remove it as after the "iommu v2" patch there will 
+be tce_iommu_unuse_page_v2().
 
 
-  * Anglais - détecté
-  * Français
-  * Anglais
+>> +
+>> +	page = pfn_to_page(__pa(oldtce) >> PAGE_SHIFT);
+>> +
+>> +	if (oldtce & TCE_PCI_WRITE)
+>> +		SetPageDirty(page);
+>> +
+>> +	put_page(page);
+>> +}
+>> +
+>>   static int tce_iommu_clear(struct tce_container *container,
+>>   		struct iommu_table *tbl,
+>>   		unsigned long entry, unsigned long pages)
+>>   {
+>>   	unsigned long oldtce;
+>> -	struct page *page;
+>>
+>>   	for ( ; pages; --pages, ++entry) {
+>>   		oldtce = iommu_clear_tce(tbl, entry);
+>>   		if (!oldtce)
+>>   			continue;
+>>
+>> -		page = pfn_to_page(oldtce >> PAGE_SHIFT);
+>> -		WARN_ON(!page);
+>> -		if (page) {
+>> -			if (oldtce & TCE_PCI_WRITE)
+>> -				SetPageDirty(page);
+>> -			put_page(page);
+>> -		}
+>> +		tce_iommu_unuse_page(container, (unsigned long) __va(oldtce));
+>>   	}
+>>
+>>   	return 0;
+>>   }
+>>
+>> +static int tce_get_hva(unsigned long tce, unsigned long *hva)
+>> +{
+>> +	struct page *page = NULL;
+>> +	enum dma_data_direction direction = iommu_tce_direction(tce);
+>> +
+>> +	if (get_user_pages_fast(tce & PAGE_MASK, 1,
+>> +			direction != DMA_TO_DEVICE, &page) != 1)
+>> +		return -EFAULT;
+>> +
+>> +	*hva = (unsigned long) page_address(page);
+>> +
+>> +	return 0;
+>> +}
+>
+> I'd prefer to see this called tce_iommu_use_page() for symmetry.
 
-  * Français
-  * Anglais
 
- <javascript:void(0);>
+If I rename this one, then what would I call tce_get_hva_cached() from 
+"fio: powerpc/spapr: Register memory and define IOMMU v2"?
+
+
+>
+>> +
+>>   static long tce_iommu_build(struct tce_container *container,
+>>   		struct iommu_table *tbl,
+>>   		unsigned long entry, unsigned long tce, unsigned long pages)
+>>   {
+>>   	long i, ret = 0;
+>> -	struct page *page = NULL;
+>> +	struct page *page;
+>>   	unsigned long hva;
+>>   	enum dma_data_direction direction = iommu_tce_direction(tce);
+>>
+>>   	for (i = 0; i < pages; ++i) {
+>> -		ret = get_user_pages_fast(tce & PAGE_MASK, 1,
+>> -				direction != DMA_TO_DEVICE, &page);
+>> -		if (unlikely(ret != 1)) {
+>> -			ret = -EFAULT;
+>> +		ret = tce_get_hva(tce, &hva);
+>> +		if (ret)
+>>   			break;
+>> -		}
+>>
+>> +		page = pfn_to_page(__pa(hva) >> PAGE_SHIFT);
+>>   		if (!tce_page_is_contained(page, tbl->it_page_shift)) {
+>>   			ret = -EPERM;
+>>   			break;
+>>   		}
+>>
+>> -		hva = (unsigned long) page_address(page) +
+>> -			(tce & IOMMU_PAGE_MASK(tbl) & ~PAGE_MASK);
+>> +		/* Preserve offset within IOMMU page */
+>> +		hva |= tce & IOMMU_PAGE_MASK(tbl) & ~PAGE_MASK;
+>>
+>>   		ret = iommu_tce_build(tbl, entry + i, hva, direction);
+>>   		if (ret) {
+>> -			put_page(page);
+>> +			tce_iommu_unuse_page(container, hva);
+>>   			pr_err("iommu_tce: %s failed ioba=%lx, tce=%lx, ret=%ld\n",
+>>   					__func__, entry << tbl->it_page_shift,
+>>   					tce, ret);
+>
+
+
+-- 
+Alexey
