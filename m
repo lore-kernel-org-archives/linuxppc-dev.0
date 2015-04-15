@@ -1,26 +1,39 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pa0-f47.google.com (mail-pa0-f47.google.com
- [209.85.220.47])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <preeti@linux.vnet.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 88BEF1A0143
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2015 22:09:55 +1000 (AEST)
-Received: by pacyx8 with SMTP id yx8so49014670pac.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2015 05:09:54 -0700 (PDT)
-Message-ID: <552E550A.9080609@ozlabs.ru>
-Date: Wed, 15 Apr 2015 22:09:46 +1000
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
+ by lists.ozlabs.org (Postfix) with ESMTPS id DD41C1A0143
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2015 22:22:42 +1000 (AEST)
+Received: from /spool/local
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
+ Wed, 15 Apr 2015 06:22:40 -0600
+Received: from b03cxnp08028.gho.boulder.ibm.com
+ (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 41A603E40044
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2015 06:22:38 -0600 (MDT)
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+ by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t3FCMM8m43384886
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2015 05:22:22 -0700
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av04.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t3FCMYHK001342
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Apr 2015 06:22:35 -0600
+Message-ID: <552E5806.6070103@linux.vnet.ibm.com>
+Date: Wed, 15 Apr 2015 17:52:30 +0530
+From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: [PATCH kernel v8 07/31] vfio: powerpc/spapr: Moving
- pinning/unpinning to helpers
-References: <1428647473-11738-1-git-send-email-aik@ozlabs.ru>
- <1428647473-11738-8-git-send-email-aik@ozlabs.ru>
- <20150415071031.GI25040@voom.redhat.com>
-In-Reply-To: <20150415071031.GI25040@voom.redhat.com>
-Content-Type: text/plain; charset=koi8-r; format=flowed
-Cc: Alex Williamson <alex.williamson@redhat.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>
+To: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>,
+ linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v5 3/3] powerpc/powernv: Introduce sysfs control for
+ fastsleep workaround behavior
+References: <1429079049-5955-1-git-send-email-shreyas@linux.vnet.ibm.com>
+ <1429079049-5955-4-git-send-email-shreyas@linux.vnet.ibm.com>
+In-Reply-To: <1429079049-5955-4-git-send-email-shreyas@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: ego@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,177 +43,144 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/15/2015 05:10 PM, David Gibson wrote:
-> On Fri, Apr 10, 2015 at 04:30:49PM +1000, Alexey Kardashevskiy wrote:
->> This is a pretty mechanical patch to make next patches simpler.
->>
->> New tce_iommu_unuse_page() helper does put_page() now but it might skip
->> that after the memory registering patch applied.
->>
->> As we are here, this removes unnecessary checks for a value returned
->> by pfn_to_page() as it cannot possibly return NULL.
->>
->> This moves tce_iommu_disable() later to let tce_iommu_clear() know if
->> the container has been enabled because if it has not been, then
->> put_page() must not be called on TCEs from the TCE table. This situation
->> is not yet possible but it will after KVM acceleration patchset is
->> applied.
->>
->> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
->> ---
->> Changes:
->> v6:
->> * tce_get_hva() returns hva via a pointer
->> ---
->>   drivers/vfio/vfio_iommu_spapr_tce.c | 68 +++++++++++++++++++++++++++----------
->>   1 file changed, 50 insertions(+), 18 deletions(-)
->>
->> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
->> index c137bb3..ec5ee83 100644
->> --- a/drivers/vfio/vfio_iommu_spapr_tce.c
->> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
->> @@ -196,7 +196,6 @@ static void tce_iommu_release(void *iommu_data)
->>   	struct iommu_table *tbl = container->tbl;
->>
->>   	WARN_ON(tbl && !tbl->it_group);
->> -	tce_iommu_disable(container);
->>
->>   	if (tbl) {
->>   		tce_iommu_clear(container, tbl,	tbl->it_offset, tbl->it_size);
->> @@ -204,63 +203,96 @@ static void tce_iommu_release(void *iommu_data)
->>   		if (tbl->it_group)
->>   			tce_iommu_detach_group(iommu_data, tbl->it_group);
->>   	}
->> +
->> +	tce_iommu_disable(container);
->> +
->>   	mutex_destroy(&container->lock);
->>
->>   	kfree(container);
->>   }
->>
->> +static void tce_iommu_unuse_page(struct tce_container *container,
->> +		unsigned long oldtce)
->> +{
->> +	struct page *page;
->> +
->> +	if (!(oldtce & (TCE_PCI_READ | TCE_PCI_WRITE)))
->> +		return;
->> +
->> +	/*
->> +	 * VFIO cannot map/unmap when a container is not enabled so
->> +	 * we would not need this check but KVM could map/unmap and if
->> +	 * this happened, we must not put pages as KVM does not get them as
->> +	 * it expects memory pre-registation to do this part.
->> +	 */
->> +	if (!container->enabled)
->> +		return;
->
-> This worries me a bit.  How can whether the contained is enabled now
-> safely tell you whether get_page() at some earlier point in time?
+On 04/15/2015 11:54 AM, Shreyas B. Prabhu wrote:
+> +/*
+> + * Used to store fastsleep workaround state
+> + * 0 - Workaround applied/undone at fastsleep entry/exit path (Default)
+> + * 1 - Workaround applied once, never undone.
+> + */
+> +static u8 fastsleep_workaround_state;
+> +
+> +static const char * const fastsleep_workaround_avail_states[] = {
+> +	"dynamic", "applyonce"
+> +};
+> +
+> +/*
+> + * fastsleep_workaround_avail_states values
+> + */
+> +enum {
+> +	WORKAROUND_DYNAMIC,
+> +	WORKAROUND_APPLYONCE
+> +};
+
+Is there a strong reason to use the above and not a boolean
+fastsleep_workaround_once knob ? I also don't know what the user can
+make out from 'dynamic'. Its not straight forward and is open to a great
+deal of interpretation.
+
+Why is this called the 'available' states. You can only echo applyonce
+to it. And once applied it cannot be reverted.  'dynamic' is not a state
+that is available to the user to choose. It is the default value. It is
+therefore misleading.
+
+My point is lets make the purpose and usage of this knob clear to the
+user. Instead if we have fastsleep_workaround_once set to a default
+value of 0. If it is 1, it is clear that  the workaround is applied only
+once. If it is '0' it is not the case and that it is repeatedly applied
+somewhere.There are some advantages when we do this during printing of
+errors as well. See below:
+
+> +	/*
+> +	 * fastsleep_workaround_state = WORKAROUND_APPLYONCE implies
+> +	 * fastsleep workaround needs to be left in 'applied' state on all
+> +	 * the cores. Do this by-
+> +	 * 1. Patching out the call to 'undo' workaround in fastsleep exit path
+> +	 * 2. Sending ipi to all the cores which have atleast one online thread
+> +	 * 3. Patching out the call to 'apply' workaround in fastsleep entry
+> +	 * path
+> +	 * There is no need to send ipi to cores which have all threads
+> +	 * offlined, as last thread of the core entering fastsleep or deeper
+> +	 * state would have applied workaround.
+> +	 */
+> +	err = patch_instruction(
+> +		(unsigned int *)pnv_fastsleep_workaround_at_exit,
+> +		PPC_INST_NOP);
+> +	if (err) {
+> +		pr_err("fastsleep_workaround_state change failed while patching pnv_fastsleep_workaround_at_exit");
+> +		goto fail;
+> +	}
+> +
+> +	get_online_cpus();
+> +	primary_thread_mask = cpu_online_cores_map();
+> +	on_each_cpu_mask(&primary_thread_mask,
+> +				pnv_fastsleep_workaround_apply,
+> +				&err, 1);
+> +	put_online_cpus();
+> +	if (err) {
+> +		pr_err("fastsleep_workaround_state change failed while running pnv_fastsleep_workaround_apply");
+> +		goto fail;
+> +	}
 
 
-This is a leftover, I'll remove it as after the "iommu v2" patch there will 
-be tce_iommu_unuse_page_v2().
+> +
+> +	err = patch_instruction(
+> +		(unsigned int *)pnv_fastsleep_workaround_at_entry,
+> +		PPC_INST_NOP);
+> +	if (err) {
+> +		pr_err("fastsleep_workaround_state change failed while patching pnv_fastsleep_workaround_at_entry");
+> +		goto fail;
+> +	}
 
+Now in all the above error conditions, we know that the workaround will
+end up being applied always. But the error messages don't indicate that
+since it says state change failed. state change to 'what' failed? I
+understand that the user in question can make sense of it, but it seems
+to indicate that there is a state machine in question and that the user
+can rotate among them, when there is only one state that he can choose.
+If we instead use fastsleep_workaround_once, all the above error
+messages will simply fallback to 'fastsleep_workaround_once failed',
+which indicates clearly that the workaround will be repeatedly applied
+somewhere. When the user tries to echo a '0' after a 1, we can fail with
+"fastsleep_workaround_once cannot be reverted", indicating its applied
+once now and nothing can be done about it.
 
->> +
->> +	page = pfn_to_page(__pa(oldtce) >> PAGE_SHIFT);
->> +
->> +	if (oldtce & TCE_PCI_WRITE)
->> +		SetPageDirty(page);
->> +
->> +	put_page(page);
->> +}
->> +
->>   static int tce_iommu_clear(struct tce_container *container,
->>   		struct iommu_table *tbl,
->>   		unsigned long entry, unsigned long pages)
->>   {
->>   	unsigned long oldtce;
->> -	struct page *page;
->>
->>   	for ( ; pages; --pages, ++entry) {
->>   		oldtce = iommu_clear_tce(tbl, entry);
->>   		if (!oldtce)
->>   			continue;
->>
->> -		page = pfn_to_page(oldtce >> PAGE_SHIFT);
->> -		WARN_ON(!page);
->> -		if (page) {
->> -			if (oldtce & TCE_PCI_WRITE)
->> -				SetPageDirty(page);
->> -			put_page(page);
->> -		}
->> +		tce_iommu_unuse_page(container, (unsigned long) __va(oldtce));
->>   	}
->>
->>   	return 0;
->>   }
->>
->> +static int tce_get_hva(unsigned long tce, unsigned long *hva)
->> +{
->> +	struct page *page = NULL;
->> +	enum dma_data_direction direction = iommu_tce_direction(tce);
->> +
->> +	if (get_user_pages_fast(tce & PAGE_MASK, 1,
->> +			direction != DMA_TO_DEVICE, &page) != 1)
->> +		return -EFAULT;
->> +
->> +	*hva = (unsigned long) page_address(page);
->> +
->> +	return 0;
->> +}
->
-> I'd prefer to see this called tce_iommu_use_page() for symmetry.
+Thus the consequence of every action of the user becomes explicit,
+informing even a clueless user what can be done with this knob IMO.
 
-
-If I rename this one, then what would I call tce_get_hva_cached() from 
-"fio: powerpc/spapr: Register memory and define IOMMU v2"?
-
-
->
->> +
->>   static long tce_iommu_build(struct tce_container *container,
->>   		struct iommu_table *tbl,
->>   		unsigned long entry, unsigned long tce, unsigned long pages)
->>   {
->>   	long i, ret = 0;
->> -	struct page *page = NULL;
->> +	struct page *page;
->>   	unsigned long hva;
->>   	enum dma_data_direction direction = iommu_tce_direction(tce);
->>
->>   	for (i = 0; i < pages; ++i) {
->> -		ret = get_user_pages_fast(tce & PAGE_MASK, 1,
->> -				direction != DMA_TO_DEVICE, &page);
->> -		if (unlikely(ret != 1)) {
->> -			ret = -EFAULT;
->> +		ret = tce_get_hva(tce, &hva);
->> +		if (ret)
->>   			break;
->> -		}
->>
->> +		page = pfn_to_page(__pa(hva) >> PAGE_SHIFT);
->>   		if (!tce_page_is_contained(page, tbl->it_page_shift)) {
->>   			ret = -EPERM;
->>   			break;
->>   		}
->>
->> -		hva = (unsigned long) page_address(page) +
->> -			(tce & IOMMU_PAGE_MASK(tbl) & ~PAGE_MASK);
->> +		/* Preserve offset within IOMMU page */
->> +		hva |= tce & IOMMU_PAGE_MASK(tbl) & ~PAGE_MASK;
->>
->>   		ret = iommu_tce_build(tbl, entry + i, hva, direction);
->>   		if (ret) {
->> -			put_page(page);
->> +			tce_iommu_unuse_page(container, hva);
->>   			pr_err("iommu_tce: %s failed ioba=%lx, tce=%lx, ret=%ld\n",
->>   					__func__, entry << tbl->it_page_shift,
->>   					tce, ret);
->
-
-
--- 
-Alexey
+Regards
+Preeti U Murthy
+> +
+> +	fastsleep_workaround_state = WORKAROUND_APPLYONCE;
+> +
+> +	return count;
+> +fail:
+> +	return -EIO;
+> +}
+> +
+> +static DEVICE_ATTR(fastsleep_workaround_state, 0600,
+> +			show_fastsleep_workaround_state,
+> +			store_fastsleep_workaround_state);
+> +
+>  static int __init pnv_init_idle_states(void)
+>  {
+>  	struct device_node *power_mgt;
+> @@ -180,7 +305,16 @@ static int __init pnv_init_idle_states(void)
+>  		patch_instruction(
+>  			(unsigned int *)pnv_fastsleep_workaround_at_exit,
+>  			PPC_INST_NOP);
+> +	} else {
+> +		/*
+> +		 * OPAL_PM_SLEEP_ENABLED_ER1 is set. It indicates that
+> +		 * workaround is needed to use fastsleep. Provide sysfs
+> +		 * control to choose how this workaround has to be applied.
+> +		 */
+> +		device_create_file(cpu_subsys.dev_root,
+> +					&dev_attr_fastsleep_workaround_state);
+>  	}
+> +
+>  	pnv_alloc_idle_core_states();
+>  out_free:
+>  	kfree(flags);
+> diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
+> index a7ade94..bf15ead 100644
+> --- a/arch/powerpc/platforms/powernv/opal-wrappers.S
+> +++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
+> @@ -283,6 +283,7 @@ OPAL_CALL(opal_sensor_read,			OPAL_SENSOR_READ);
+>  OPAL_CALL(opal_get_param,			OPAL_GET_PARAM);
+>  OPAL_CALL(opal_set_param,			OPAL_SET_PARAM);
+>  OPAL_CALL(opal_handle_hmi,			OPAL_HANDLE_HMI);
+> +OPAL_CALL(opal_config_cpu_idle_state,		OPAL_CONFIG_CPU_IDLE_STATE);
+>  OPAL_CALL(opal_slw_set_reg,			OPAL_SLW_SET_REG);
+>  OPAL_CALL(opal_register_dump_region,		OPAL_REGISTER_DUMP_REGION);
+>  OPAL_CALL(opal_unregister_dump_region,		OPAL_UNREGISTER_DUMP_REGION);
+> 
