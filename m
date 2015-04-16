@@ -1,28 +1,39 @@
-Return-Path: <ppc@mindchasers.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <hegdevasant@linux.vnet.ibm.com>
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 588891A0021
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Apr 2015 14:49:50 +1000 (AEST)
-Received: from resqmta-ch2-05v.sys.comcast.net
- (resqmta-ch2-05v.sys.comcast.net [IPv6:2001:558:fe21:29:69:252:207:37])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 8A3671401AB
- for <linuxppc-dev@ozlabs.org>; Thu, 16 Apr 2015 14:49:48 +1000 (AEST)
-Message-ID: <552F3E37.7030507@mindchasers.com>
-Date: Thu, 16 Apr 2015 00:44:39 -0400
-From: Bob Cochran <ppc@mindchasers.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3BD0F1A0021
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Apr 2015 15:08:07 +1000 (AEST)
+Received: from /spool/local
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <hegdevasant@linux.vnet.ibm.com>;
+ Thu, 16 Apr 2015 15:08:05 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 296E93578048
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Apr 2015 15:08:02 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t3G57rIu58589400
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Apr 2015 15:08:01 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t3G57Swc020694
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Apr 2015 15:07:28 +1000
+Message-ID: <552F437E.4020409@linux.vnet.ibm.com>
+Date: Thu, 16 Apr 2015 10:37:10 +0530
+From: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>,
- Pan Lijun-B44306 <Lijun.Pan@freescale.com>
-Subject: Re: new way of writing defconfigs for freescale's powerpc platforms
-References: <DM2PR03MB3689ECA6BC27B156BD10F76FCFB0@DM2PR03MB368.namprd03.prod.outlook.com>
- <1428618671.22867.551.camel@freescale.com>
-In-Reply-To: <1428618671.22867.551.camel@freescale.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
- Schmitt Richard-B43082 <richard.schmitt@freescale.com>
+To: Stewart Smith <stewart@linux.vnet.ibm.com>,
+ Jacek Anaszewski <j.anaszewski@samsung.com>
+Subject: Re: [PATCH v2 2/2] leds/powernv: Add driver for PowerNV platform
+References: <20150320105921.14866.83209.stgit@localhost.localdomain>
+ <20150320110328.14866.98225.stgit@localhost.localdomain>
+ <552D303A.5080506@samsung.com> <m3zj69ql8x.fsf@oc8180480414.ibm.com>
+In-Reply-To: <m3zj69ql8x.fsf@oc8180480414.ibm.com>
+Content-Type: text/plain; charset=windows-1252
+Cc: cooloney@gmail.com, rpurdie@rpsys.net, linuxppc-dev@lists.ozlabs.org,
+ linux-leds@vger.kernel.org, khandual@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,63 +43,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/09/2015 06:31 PM, Scott Wood wrote:
-> On Thu, 2015-04-09 at 16:52 -0500, Pan Lijun-B44306 wrote:
->> Hi Maintainers,
+On 04/16/2015 12:20 AM, Stewart Smith wrote:
+> Jacek Anaszewski <j.anaszewski@samsung.com> writes:
+>>> +static struct platform_driver powernv_led_driver = {
+>>> +	.probe	= powernv_led_probe,
+>>> +	.remove = powernv_led_remove,
+>>> +	.driver = {
+>>> +		.name = "powernv-led-driver",
+>>> +		.owner = THIS_MODULE,
+>>> +		.of_match_table = powernv_led_match,
 >>
->> We have a proposal for writing the defconfigs for freescale's powperpc platforms in a new way.
->> Can you take a look and provide some feedback?
->>
->> You know currently we have mpc85xx_defconfig, corenet32_defconfig, bsc913x_defconfig, *fman*_defconfig, etc.
->> We are going to extract some common parts from the existing defconfigs, and name it, say, fsl_basic_defconfig.
->> Then, we could create some defconfigs targeting specific features or specific platforms.
->> Say, features specific: kvm_defconfig, fman_defconfig, etc.
->> Platforms specific: p1_defconfig, p2_defcongfig, p4_defconfig, t1_defconfig, t2_defconfig, t2_defconfig, b4_defconfig, etc
->> When we want to make a kernel image for p1 platform,
->> Using the following steps:
->>
->> make ./scripts/kconfig/merge_config.sh arch/powerpc/configs/fsl_basic_config p1_defconfig
->> make
->>
->> What do you think of this new approach?
->> Will you accept this approach?
->
-> I'm OK with a merge_config approach.
->
-> I'm not OK with having separate builds for p1/p2/p4/t1/t2/b4.
->
-> -Scott
+>> Is somewhere DT documentation available for these leds?
+> 
+> https://github.com/open-power/skiboot/blob/master/doc/device-tree/ibm%2Copal/led.txt
+> 
+> We've been documenting things in firmware source, and I'm open to if we
+> should mirror this somewhere (somewhere in linux Documentation/ ?).
 
+Stewart,
 
-As you probably know, Freescale makes use of the Yocto Project build 
-system for its SDK and submits patches to the SDK at a public 
-meta-fsl-ppc repo at http://git.yoctoproject.org/cgit/cgit.cgi/meta-fsl-ppc/
+I'm adding Documentation/devicetree/bindings/leds/leds-powernv.txt ...which is
+pretty much similar to the device tree documentation we have in OPAL side.
 
-I have seen some kernel related patches in the past come across the 
-Yocto Project site that made use of the Yocto Project kernel tools, 
-which includes a process for maintaining kernel configuration fragments. 
-  It sounds like the requirements you have could be met with Yocto's 
-existing process.
+> 
+> If we duplicate everything, we shouldn't let things get out of date.
 
-I was hoping to see Freescale continue to move in the direction of using 
-the Yocto kernel tools rather than roll its own solution.
-
-The Yocto kernel tools make use of description files (*.scc) and 
-configuration fragments (*.cfg).
-
-Here is a link to the latest stable Yocto kernel development manual: 
-http://www.yoctoproject.org/docs/1.7.1/kernel-dev/kernel-dev.html
-
-Bob
-
-
-
-
-
->
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
->
+-Vasant
