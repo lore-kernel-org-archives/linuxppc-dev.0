@@ -1,26 +1,27 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pd0-f180.google.com (mail-pd0-f180.google.com
- [209.85.192.180])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <Lijun.Pan@freescale.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3BB851A0048
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Apr 2015 02:29:31 +1000 (AEST)
-Received: by pdbqd1 with SMTP id qd1so97431648pdb.2
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Apr 2015 09:29:29 -0700 (PDT)
-Message-ID: <552FE363.2060604@ozlabs.ru>
-Date: Fri, 17 Apr 2015 02:29:23 +1000
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9CAB31A0021
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Apr 2015 03:04:46 +1000 (AEST)
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0132.outbound.protection.outlook.com [65.55.169.132])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 49AFF1402F5
+ for <linuxppc-dev@ozlabs.org>; Fri, 17 Apr 2015 03:04:44 +1000 (AEST)
+From: Lijun Pan <Lijun.Pan@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: RE: new way of writing defconfigs for freescale's powerpc platforms
+Date: Thu, 16 Apr 2015 17:04:39 +0000
+Message-ID: <DM2PR03MB36891C0386416E91A15E323FCE40@DM2PR03MB368.namprd03.prod.outlook.com>
+References: <DM2PR03MB3689ECA6BC27B156BD10F76FCFB0@DM2PR03MB368.namprd03.prod.outlook.com>
+ <1428618671.22867.551.camel@freescale.com>
+In-Reply-To: <1428618671.22867.551.camel@freescale.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-To: David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: [PATCH kernel v8 21/31] powerpc/iommu: Split iommu_free_table
- into 2 helpers
-References: <1428647473-11738-1-git-send-email-aik@ozlabs.ru>
- <1428647473-11738-22-git-send-email-aik@ozlabs.ru>
- <20150416064637.GL3632@voom.redhat.com>
-In-Reply-To: <20150416064637.GL3632@voom.redhat.com>
-Content-Type: text/plain; charset=koi8-r; format=flowed
-Cc: Alex Williamson <alex.williamson@redhat.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+ Richard Schmitt <richard.schmitt@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,124 +31,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/16/2015 04:46 PM, David Gibson wrote:
-> On Fri, Apr 10, 2015 at 04:31:03PM +1000, Alexey Kardashevskiy wrote:
->> The iommu_free_table helper release memory it is using (the TCE table and
->> @it_map) and release the iommu_table struct as well. We might not want
->> the very last step as we store iommu_table in parent structures.
->
-> Yeah, as I commented on the earlier patch, freeing the surrounding
-> group from a function taking just the individual table is wrong.
-
-
-This is iommu tables created by the old code which stores these iommu_table 
-struct pointers in device nodes. I believe there is a plan to get rid of 
-iommu tables there and when this is done, this workaround will be gone.
-
-
->
->>
->> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
->> ---
->>   arch/powerpc/include/asm/iommu.h |  1 +
->>   arch/powerpc/kernel/iommu.c      | 57 ++++++++++++++++++++++++----------------
->>   2 files changed, 35 insertions(+), 23 deletions(-)
->>
->> diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
->> index bde7ee7..8ed4648 100644
->> --- a/arch/powerpc/include/asm/iommu.h
->> +++ b/arch/powerpc/include/asm/iommu.h
->> @@ -127,6 +127,7 @@ static inline void *get_iommu_table_base(struct device *dev)
->>
->>   extern struct iommu_table *iommu_table_alloc(int node);
->>   /* Frees table for an individual device node */
->> +extern void iommu_reset_table(struct iommu_table *tbl, const char *node_name);
->>   extern void iommu_free_table(struct iommu_table *tbl, const char *node_name);
->>
->>   /* Initializes an iommu_table based in values set in the passed-in
->> diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
->> index 501e8ee..0bcd988 100644
->> --- a/arch/powerpc/kernel/iommu.c
->> +++ b/arch/powerpc/kernel/iommu.c
->> @@ -721,24 +721,46 @@ struct iommu_table *iommu_table_alloc(int node)
->>   	return &table_group->tables[0];
->>   }
->>
->> +void iommu_reset_table(struct iommu_table *tbl, const char *node_name)
->> +{
->> +	if (!tbl)
->> +		return;
->> +
->> +	if (tbl->it_map) {
->> +		unsigned long bitmap_sz;
->> +		unsigned int order;
->> +
->> +		/*
->> +		 * In case we have reserved the first bit, we should not emit
->> +		 * the warning below.
->> +		 */
->> +		if (tbl->it_offset == 0)
->> +			clear_bit(0, tbl->it_map);
->> +
->> +		/* verify that table contains no entries */
->> +		if (!bitmap_empty(tbl->it_map, tbl->it_size))
->> +			pr_warn("%s: Unexpected TCEs for %s\n", __func__,
->> +					node_name);
->> +
->> +		/* calculate bitmap size in bytes */
->> +		bitmap_sz = BITS_TO_LONGS(tbl->it_size) * sizeof(unsigned long);
->> +
->> +		/* free bitmap */
->> +		order = get_order(bitmap_sz);
->> +		free_pages((unsigned long) tbl->it_map, order);
->> +	}
->> +
->> +	memset(tbl, 0, sizeof(*tbl));
->> +}
->> +
->>   void iommu_free_table(struct iommu_table *tbl, const char *node_name)
->>   {
->> -	unsigned long bitmap_sz;
->> -	unsigned int order;
->>   	struct iommu_table_group *table_group = tbl->it_group;
->>
->> -	if (!tbl || !tbl->it_map) {
->> -		printk(KERN_ERR "%s: expected TCE map for %s\n", __func__,
->> -				node_name);
->> +	if (!tbl)
->>   		return;
->> -	}
->>
->> -	/*
->> -	 * In case we have reserved the first bit, we should not emit
->> -	 * the warning below.
->> -	 */
->> -	if (tbl->it_offset == 0)
->> -		clear_bit(0, tbl->it_map);
->> +	iommu_reset_table(tbl, node_name);
->>
->>   #ifdef CONFIG_IOMMU_API
->>   	if (table_group->group) {
->> @@ -747,17 +769,6 @@ void iommu_free_table(struct iommu_table *tbl, const char *node_name)
->>   	}
->>   #endif
->>
->> -	/* verify that table contains no entries */
->> -	if (!bitmap_empty(tbl->it_map, tbl->it_size))
->> -		pr_warn("%s: Unexpected TCEs for %s\n", __func__, node_name);
->> -
->> -	/* calculate bitmap size in bytes */
->> -	bitmap_sz = BITS_TO_LONGS(tbl->it_size) * sizeof(unsigned long);
->> -
->> -	/* free bitmap */
->> -	order = get_order(bitmap_sz);
->> -	free_pages((unsigned long) tbl->it_map, order);
->> -
->>   	/* free table */
->>   	kfree(table_group);
->>   }
->
-
-
--- 
-Alexey
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
+MjENCj4gU2VudDogVGh1cnNkYXksIEFwcmlsIDA5LCAyMDE1IDU6MzEgUE0NCj4gVG86IFBhbiBM
+aWp1bi1CNDQzMDYNCj4gQ2M6IGxpbnV4cHBjLWRldkBvemxhYnMub3JnOyBTY2htaXR0IFJpY2hh
+cmQtQjQzMDgyDQo+IFN1YmplY3Q6IFJlOiBuZXcgd2F5IG9mIHdyaXRpbmcgZGVmY29uZmlncyBm
+b3IgZnJlZXNjYWxlJ3MgcG93ZXJwYyBwbGF0Zm9ybXMNCj4gDQo+IE9uIFRodSwgMjAxNS0wNC0w
+OSBhdCAxNjo1MiAtMDUwMCwgUGFuIExpanVuLUI0NDMwNiB3cm90ZToNCj4gPiBIaSBNYWludGFp
+bmVycywNCj4gPg0KPiA+IFdlIGhhdmUgYSBwcm9wb3NhbCBmb3Igd3JpdGluZyB0aGUgZGVmY29u
+ZmlncyBmb3IgZnJlZXNjYWxlJ3MgcG93cGVycGMNCj4gcGxhdGZvcm1zIGluIGEgbmV3IHdheS4N
+Cj4gPiBDYW4geW91IHRha2UgYSBsb29rIGFuZCBwcm92aWRlIHNvbWUgZmVlZGJhY2s/DQo+ID4N
+Cj4gPiBZb3Uga25vdyBjdXJyZW50bHkgd2UgaGF2ZSBtcGM4NXh4X2RlZmNvbmZpZywgY29yZW5l
+dDMyX2RlZmNvbmZpZywNCj4gYnNjOTEzeF9kZWZjb25maWcsICpmbWFuKl9kZWZjb25maWcsIGV0
+Yy4NCj4gPiBXZSBhcmUgZ29pbmcgdG8gZXh0cmFjdCBzb21lIGNvbW1vbiBwYXJ0cyBmcm9tIHRo
+ZSBleGlzdGluZyBkZWZjb25maWdzLA0KPiBhbmQgbmFtZSBpdCwgc2F5LCBmc2xfYmFzaWNfZGVm
+Y29uZmlnLg0KPiA+IFRoZW4sIHdlIGNvdWxkIGNyZWF0ZSBzb21lIGRlZmNvbmZpZ3MgdGFyZ2V0
+aW5nIHNwZWNpZmljIGZlYXR1cmVzIG9yIHNwZWNpZmljDQo+IHBsYXRmb3Jtcy4NCj4gPiBTYXks
+IGZlYXR1cmVzIHNwZWNpZmljOiBrdm1fZGVmY29uZmlnLCBmbWFuX2RlZmNvbmZpZywgZXRjLg0K
+PiA+IFBsYXRmb3JtcyBzcGVjaWZpYzogcDFfZGVmY29uZmlnLCBwMl9kZWZjb25nZmlnLCBwNF9k
+ZWZjb25maWcsDQo+ID4gdDFfZGVmY29uZmlnLCB0Ml9kZWZjb25maWcsIHQyX2RlZmNvbmZpZywg
+YjRfZGVmY29uZmlnLCBldGMgV2hlbiB3ZQ0KPiA+IHdhbnQgdG8gbWFrZSBhIGtlcm5lbCBpbWFn
+ZSBmb3IgcDEgcGxhdGZvcm0sIFVzaW5nIHRoZSBmb2xsb3dpbmcgc3RlcHM6DQo+ID4NCj4gPiBt
+YWtlIC4vc2NyaXB0cy9rY29uZmlnL21lcmdlX2NvbmZpZy5zaA0KPiA+IGFyY2gvcG93ZXJwYy9j
+b25maWdzL2ZzbF9iYXNpY19jb25maWcgcDFfZGVmY29uZmlnIG1ha2UNCj4gPg0KPiA+IFdoYXQg
+ZG8geW91IHRoaW5rIG9mIHRoaXMgbmV3IGFwcHJvYWNoPw0KPiA+IFdpbGwgeW91IGFjY2VwdCB0
+aGlzIGFwcHJvYWNoPw0KPiANCj4gSSdtIE9LIHdpdGggYSBtZXJnZV9jb25maWcgYXBwcm9hY2gu
+DQo+IA0KPiBJJ20gbm90IE9LIHdpdGggaGF2aW5nIHNlcGFyYXRlIGJ1aWxkcyBmb3IgcDEvcDIv
+cDQvdDEvdDIvYjQuDQoNCklmIHdlIGRvbid0IGhhdmUgc2VwYXJhdGUgYnVpbGQgZm9yIHAxL3Ay
+L3A0L3QxL3QyL2I0LCBpbiB3aGF0IHdheSBkbyB3ZQ0KYnVpbGQgZm9yIHRoZXNlIFNvQyB3aXRo
+IG1lcmdlX2NvbmZpZyBhcHByb2FjaD8gRG8geW91IGhhdmUgYW55IHN1Z2dlc3Rpb25zPyANCg0K
+PiANCj4gLVNjb3R0DQo+IA0KDQo=
