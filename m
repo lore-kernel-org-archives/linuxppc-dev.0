@@ -1,33 +1,32 @@
-Return-Path: <shreyas@linux.vnet.ibm.com>
-Received: from e9.ny.us.ibm.com (e9.ny.us.ibm.com [32.97.182.139])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <j.anaszewski@samsung.com>
+Received: from mailout1.w1.samsung.com (mailout1.w1.samsung.com
+ [210.118.77.11])
+ (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0EE271A0021
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Apr 2015 20:58:37 +1000 (AEST)
-Received: from /spool/local
- by e9.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <shreyas@linux.vnet.ibm.com>;
- Thu, 16 Apr 2015 06:58:35 -0400
-Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
- [9.57.198.24])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 9F7166E803C
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Apr 2015 06:50:12 -0400 (EDT)
-Received: from d01av05.pok.ibm.com (d01av05.pok.ibm.com [9.56.224.195])
- by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t3GAwMQx61931650
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Apr 2015 10:58:23 GMT
-Received: from d01av05.pok.ibm.com (localhost [127.0.0.1])
- by d01av05.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t3GAwMOS018950
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Apr 2015 06:58:22 -0400
-From: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
-To: mpe@ellerman.id.au
-Subject: [PATCH] kvm: powerpc: Fix ppc64_defconfig + PPC_POWERNV=n build error
-Date: Thu, 16 Apr 2015 16:28:09 +0530
-Message-Id: <1429181889-1448-1-git-send-email-shreyas@linux.vnet.ibm.com>
-Cc: ego@linux.vnet.ibm.com, "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, agraf@suse.de
+ by lists.ozlabs.org (Postfix) with ESMTPS id D9FB71A0021
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Apr 2015 21:34:23 +1000 (AEST)
+Received: from eucpsbgm1.samsung.com (unknown [203.254.199.244])
+ by mailout1.w1.samsung.com
+ (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May 5 2014))
+ with ESMTP id <0NMW00HRJDNZAO60@mailout1.w1.samsung.com> for
+ linuxppc-dev@lists.ozlabs.org; Thu, 16 Apr 2015 12:38:23 +0100 (BST)
+Message-id: <552F9E39.4050801@samsung.com>
+Date: Thu, 16 Apr 2015 13:34:17 +0200
+From: Jacek Anaszewski <j.anaszewski@samsung.com>
+MIME-version: 1.0
+To: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
+Subject: Re: [PATCH v2 2/2] leds/powernv: Add driver for PowerNV platform
+References: <20150320105921.14866.83209.stgit@localhost.localdomain>
+ <20150320110328.14866.98225.stgit@localhost.localdomain>
+ <552D303A.5080506@samsung.com> <552E049D.2030604@linux.vnet.ibm.com>
+ <552E2480.9060102@samsung.com> <552E3A56.8030300@linux.vnet.ibm.com>
+ <552E63D2.4070209@samsung.com> <552F5C1A.3060701@linux.vnet.ibm.com>
+ <552F7807.9080605@samsung.com> <552F8E48.6070903@linux.vnet.ibm.com>
+In-reply-to: <552F8E48.6070903@linux.vnet.ibm.com>
+Content-type: text/plain; charset=UTF-8; format=flowed
+Cc: stewart@linux.vnet.ibm.com, cooloney@gmail.com, rpurdie@rpsys.net,
+ linuxppc-dev@lists.ozlabs.org, linux-leds@vger.kernel.org,
+ khandual@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,35 +36,171 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-kvm_no_guest function calls power7_wakeup_loss to put the thread into
-the deepest supported idle state. power7_wakeup_loss is defined in
-arch/powerpc/kernel/idle_power7.S, which is compiled only when PPC_P7_NAP=y.
-And PPC_P7_NAP is selected when PPC_POWERNV=y.
-Hence in cases where PPC_POWERNV=n and KVM_BOOK3S_64_HV=y we see the
-following error:
+On 04/16/2015 12:26 PM, Vasant Hegde wrote:
+> On 04/16/2015 02:21 PM, Jacek Anaszewski wrote:
+>> Hi Vasant,
+>>
+>> On 04/16/2015 08:52 AM, Vasant Hegde wrote:
+>>> On 04/15/2015 06:42 PM, Jacek Anaszewski wrote:
+>>>> On 04/15/2015 12:15 PM, Vasant Hegde wrote:
+>>>>> On 04/15/2015 02:12 PM, Jacek Anaszewski wrote:
+>>>>>> Hi Vasant,
+>>>
+>>> Hi Jacek,
+>>>
+>>> .../...
+>>>
+>>>>>>>>
+>>>>>>>
+>>>>>>> I mean, we have to retain the state of LED across system reboot.
+>>>>>>
+>>>>>> Static variables are reinitialized on system reboot, aren't they?
+>>>>>
+>>>>> Sorry. I think comment was confusing..
+>>>>>
+>>>>> As I understood, classdev_unregister call resets all LEDs state. However in our
+>>>>> case, we don't
+>>>>> want to change the LED state during system shutdown/reboot.
+>>>>>
+>>>>> Hence I have introduced state variable here. So during register call, I just
+>>>>> disable LEDs so that any further call will just return. That way we retain LED
+>>>>> state even after unloading module.
+>>>>>
+>>>>> Please let me know if there is any better way to achieve this.
+>>>>
+>>>> Since this is not a feature of the device, but rather a use case, then
+>>>> it cannot be hard coded in the driver this way. The solution I see is
+>>>> introducing a sysfs attribute that would determine if we want the
+>>>> LED to be turned off on unregistration or not.
+>>>
+>>> Hmmm. I thought having simple various is enough ..
+>>>
+>>> I don't know the usage of other LED drivers .. Just a thought .. How about
+>>> enabling this feature in LED class itself ...Something like:
+>>>     - Add new attribute to generic LED class (say persistent)?
+>>>     - If drivers wants to retain LED state across reboot, then enable this option
+>>>     - During unregister call check for this attribute
+>>>
+>>>>
+>>>> You can refer to the following driver to find out how to add the
+>>>> sysfs attribute:
+>>>>
+>>>> drivers/leds/leds-lm3533.c
+>>>>
+>>>> The attribute will also have to be documented, similarly to these:
+>>>>
+>>>> Documentation/ABI/testing/sysfs-class-led-driver-lm3533
+>>>>
+>>>> Currently I don't have a good candidate for attribute
+>>>> name, so feel free to propose one.
+>>>
+>>> If you don't like generic attribute, then shall I introduce "persistent"
+>>> attribute inside my driver. ?
+>>>     - By default this attribute is ON and if user wants he can disable this .
+>>>     - And I will have another variable (say op_support).. which I will disable in
+>>> unload path..
+>>> .../...
+>>>
+>>>>>>
+>>>>>> The label could be composed of segments and an ordinal number as
+>>>>>> labels have to be unique, e.g. attn_ident_0, attn_ident_1.
+>>>>>> The segments would have to be parsed by the driver to discover
+>>>>>> all the LED's available modes.
+>>>>>>
+>>>>>> nitpicking: identify is a verb and is not a proper name for the LED.
+>>>>>> Could you describe the purpose of this mode, so that we could come
+>>>>>> up with a better name?
+>>>>>
+>>>>> Each component (Field Replacement Unit) will have service indicator (LEDS)
+>>>>> which
+>>>>> can have below states :
+>>>>>      - OFF     : no action
+>>>>>      - Identify: blinking state (user can use this state to identify particular
+>>>>> component).
+>>>>>           In Power Systems world we call it as "identify" indicator.. Hence I
+>>>>> retained same name here.
+>>>>>           How about just "ident" ?
+>>>>
+>>>> Sounds good.
+>>>>
+>>>>>      - fault : solid state (when component goes bad, LED goes to solid state)
+>>>>>         Note that our FW is capable of isolating some of the issues and it
+>>>>> can turn
+>>>>> on LEDs without OS
+>>>>>          interference.
+>>>>
+>>>> Does it mean that the LED can be controlled from hardware?
+>>>> If so, what would be software use cases then? The same question is
+>>>> related to the attn and indent states.
+>>>
+>>> - Identify LEDs:
+>>>     We have service processor interface to set/reset this LEDs.. Similar operation
+>>> can be done from inband interface as well (via user space tools in Linux)..
+>>> Later management layer can make use of this.
+>>>
+>>> - Fault / Attention :
+>>>     FW can SET these LEDs if its capable of isolating problem.
+>>>     Similarly host/user space can SET these LEDs if then can do fine grained
+>>> problem isolation etc.
+>>>     Host/user space can RESET these LEDs.
+>>>
+>>> Hence we are adding host support to all the LEDs which can be modified by host.
+>>>
+>>> Hope this clarifies.
+>>
+>> Thanks for this explanation.
+>>
+>> I am changing my mind about these LEDs. Since they can be controlled
+>> from hardware without any system interaction, then turning them off
+>> on driver removal makes no sense. The LEDs could be turned on again even
+>> if the driver is unloaded.
+>> Since the driver doesn't perform any initialization of the LEDs,
+>> neither should it turn them off on removal.
+>>
+>> If I understand this correctly, then the solution with variable would
+>> do and no sysfs attribute would be required.
+>>
+>
+> Jacek,
+>
+> Thanks. Then I will retain current method.
+>
+> One question..What is the preferred way to name LED node in this case ?
+>
+>     <location_code>:<ATTENTION|IDENTIFY|FAULT>
+>     OR
+>     <location_code>
+>          ident  <- attribute under each node
+>          fault
+>          attention
 
-arch/powerpc/kvm/built-in.o: In function `kvm_no_guest':
-arch/powerpc/kvm/book3s_hv_rmhandlers.o:(.text+0x42c): undefined reference to `power7_wakeup_loss'
 
-Fix this by adding PPC_POWERNV as a dependency for KVM_BOOK3S_64_HV.
+If possible locations are eclosure/descendent as in the documentation
+you gave a reference to, then the related identifiers could be:
 
-Signed-off-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
----
- arch/powerpc/kvm/Kconfig | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+enclosure: encl
+descendent: desc or fru (how does fru expand btw?)
 
-diff --git a/arch/powerpc/kvm/Kconfig b/arch/powerpc/kvm/Kconfig
-index 11850f3..b3b3d9f 100644
---- a/arch/powerpc/kvm/Kconfig
-+++ b/arch/powerpc/kvm/Kconfig
-@@ -75,7 +75,7 @@ config KVM_BOOK3S_64
- 
- config KVM_BOOK3S_64_HV
- 	tristate "KVM support for POWER7 and PPC970 using hypervisor mode in host"
--	depends on KVM_BOOK3S_64
-+	depends on KVM_BOOK3S_64 && PPC_POWERNV
- 	select KVM_BOOK3S_HV_POSSIBLE
- 	select MMU_NOTIFIER
- 	select CMA
+
+Child nodes could be defined as follows:
+
+
+led0 {	
+	label = "powernv0:encl:attn:ident:fault"
+}
+
+led1 {	
+	label = "powernv1:encl::ident:fault"
+}
+
+led2 {	
+	label = "powernv2:desc:attn::fault:"
+}
+
+led2 {	
+	label = "powernv3:desc:::fault:"
+}
+
 -- 
-1.9.3
+Best Regards,
+Jacek Anaszewski
