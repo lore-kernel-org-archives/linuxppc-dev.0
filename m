@@ -1,23 +1,22 @@
-Return-Path: <dgibson@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <Igal.Liberman@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bon0116.outbound.protection.outlook.com [157.56.111.116])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 14DDB1A0021
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Apr 2015 16:11:09 +1000 (AEST)
-Date: Thu, 16 Apr 2015 16:07:03 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Subject: Re: [PATCH kernel v8 14/31] vfio: powerpc/spapr:
- powerpc/powernv/ioda2: Rework IOMMU ownership control
-Message-ID: <20150416060703.GE3632@voom.redhat.com>
-References: <1428647473-11738-1-git-send-email-aik@ozlabs.ru>
- <1428647473-11738-15-git-send-email-aik@ozlabs.ru>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 854D31A0BF0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Apr 2015 16:11:20 +1000 (AEST)
+From: "Igal.Liberman@freescale.com" <Igal.Liberman@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: RE: [v3] dt/bindings: qoriq-clock: Add binding for FMan clock mux
+Date: Thu, 16 Apr 2015 06:11:11 +0000
+Message-ID: <DM2PR03MB38330DBBFFD1BC45D58F447E6E40@DM2PR03MB383.namprd03.prod.outlook.com>
+References: <1429008968-24707-1-git-send-email-igal.liberman@freescale.com>
+ <1429119357.22867.724.camel@freescale.com>
+In-Reply-To: <1429119357.22867.724.camel@freescale.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="C94crkcyjafcjHxo"
-In-Reply-To: <1428647473-11738-15-git-send-email-aik@ozlabs.ru>
-Cc: Alex Williamson <alex.williamson@redhat.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,238 +26,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
---C94crkcyjafcjHxo
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Fri, Apr 10, 2015 at 04:30:56PM +1000, Alexey Kardashevskiy wrote:
-> At the moment the iommu_table struct has a set_bypass() which enables/
-> disables DMA bypass on IODA2 PHB. This is exposed to POWERPC IOMMU code
-> which calls this callback when external IOMMU users such as VFIO are
-> about to get over a PHB.
->=20
-> The set_bypass() callback is not really an iommu_table function but
-> IOMMU/PE function. This introduces a iommu_table_group_ops struct and
-> adds a set_ownership() callback to it which is called when an external
-> user takes control over the IOMMU.
-
-Do you really need separate ops structures at both the single table
-and table group level?  The different tables in a group will all
-belong to the same basic iommu won't they?
-
-> This renames set_bypass() to set_ownership() as it is not necessarily
-> just enabling bypassing, it can be something else/more so let's give it
-> more generic name. The bool parameter is inverted.
->=20
-> The callback is implemented for IODA2 only. Other platforms (P5IOC2,
-> IODA1) will use the old iommu_take_ownership/iommu_release_ownership API.
->=20
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> ---
->  arch/powerpc/include/asm/iommu.h          | 14 +++++++++++++-
->  arch/powerpc/platforms/powernv/pci-ioda.c | 30 ++++++++++++++++++++++---=
------
->  drivers/vfio/vfio_iommu_spapr_tce.c       | 25 +++++++++++++++++++++----
->  3 files changed, 56 insertions(+), 13 deletions(-)
->=20
-> diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/=
-iommu.h
-> index b9e50d3..d1f8c6c 100644
-> --- a/arch/powerpc/include/asm/iommu.h
-> +++ b/arch/powerpc/include/asm/iommu.h
-> @@ -92,7 +92,6 @@ struct iommu_table {
->  	unsigned long  it_page_shift;/* table iommu page size */
->  	struct iommu_table_group *it_group;
->  	struct iommu_table_ops *it_ops;
-> -	void (*set_bypass)(struct iommu_table *tbl, bool enable);
->  };
-> =20
->  /* Pure 2^n version of get_order */
-> @@ -127,11 +126,24 @@ extern struct iommu_table *iommu_init_table(struct =
-iommu_table * tbl,
-> =20
->  #define IOMMU_TABLE_GROUP_MAX_TABLES	1
-> =20
-> +struct iommu_table_group;
-> +
-> +struct iommu_table_group_ops {
-> +	/*
-> +	 * Switches ownership from the kernel itself to an external
-> +	 * user. While onwership is enabled, the kernel cannot use IOMMU
-> +	 * for itself.
-> +	 */
-> +	void (*set_ownership)(struct iommu_table_group *table_group,
-> +			bool enable);
-
-The meaning of "enable" in a function called "set_ownership" is
-entirely obscure.
-
-> +};
-> +
->  struct iommu_table_group {
->  #ifdef CONFIG_IOMMU_API
->  	struct iommu_group *group;
->  #endif
->  	struct iommu_table tables[IOMMU_TABLE_GROUP_MAX_TABLES];
-> +	struct iommu_table_group_ops *ops;
->  };
-> =20
->  #ifdef CONFIG_IOMMU_API
-> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/pla=
-tforms/powernv/pci-ioda.c
-> index a964c50..9687731 100644
-> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
-> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-> @@ -1255,10 +1255,8 @@ static void pnv_pci_ioda_setup_dma_pe(struct pnv_p=
-hb *phb,
->  		__free_pages(tce_mem, get_order(TCE32_TABLE_SIZE * segs));
->  }
-> =20
-> -static void pnv_pci_ioda2_set_bypass(struct iommu_table *tbl, bool enabl=
-e)
-> +static void pnv_pci_ioda2_set_bypass(struct pnv_ioda_pe *pe, bool enable)
->  {
-> -	struct pnv_ioda_pe *pe =3D container_of(tbl->it_group, struct pnv_ioda_=
-pe,
-> -					      table_group);
->  	uint16_t window_id =3D (pe->pe_number << 1 ) + 1;
->  	int64_t rc;
-> =20
-> @@ -1286,7 +1284,8 @@ static void pnv_pci_ioda2_set_bypass(struct iommu_t=
-able *tbl, bool enable)
->  		 * host side.
->  		 */
->  		if (pe->pdev)
-> -			set_iommu_table_base(&pe->pdev->dev, tbl);
-> +			set_iommu_table_base(&pe->pdev->dev,
-> +					&pe->table_group.tables[0]);
->  		else
->  			pnv_ioda_setup_bus_dma(pe, pe->pbus, false);
->  	}
-> @@ -1302,13 +1301,27 @@ static void pnv_pci_ioda2_setup_bypass_pe(struct =
-pnv_phb *phb,
->  	/* TVE #1 is selected by PCI address bit 59 */
->  	pe->tce_bypass_base =3D 1ull << 59;
-> =20
-> -	/* Install set_bypass callback for VFIO */
-> -	pe->table_group.tables[0].set_bypass =3D pnv_pci_ioda2_set_bypass;
-> -
->  	/* Enable bypass by default */
-> -	pnv_pci_ioda2_set_bypass(&pe->table_group.tables[0], true);
-> +	pnv_pci_ioda2_set_bypass(pe, true);
->  }
-> =20
-> +static void pnv_ioda2_set_ownership(struct iommu_table_group *table_grou=
-p,
-> +				     bool enable)
-> +{
-> +	struct pnv_ioda_pe *pe =3D container_of(table_group, struct pnv_ioda_pe,
-> +						table_group);
-> +	if (enable)
-> +		iommu_take_ownership(table_group);
-> +	else
-> +		iommu_release_ownership(table_group);
-> +
-> +	pnv_pci_ioda2_set_bypass(pe, !enable);
-> +}
-> +
-> +static struct iommu_table_group_ops pnv_pci_ioda2_ops =3D {
-> +	.set_ownership =3D pnv_ioda2_set_ownership,
-> +};
-> +
->  static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
->  				       struct pnv_ioda_pe *pe)
->  {
-> @@ -1376,6 +1389,7 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_p=
-hb *phb,
->  	}
->  	tbl->it_ops =3D &pnv_iommu_ops;
->  	iommu_init_table(tbl, phb->hose->node);
-> +	pe->table_group.ops =3D &pnv_pci_ioda2_ops;
->  	iommu_register_group(&pe->table_group, phb->hose->global_number,
->  			pe->pe_number);
-> =20
-> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iomm=
-u_spapr_tce.c
-> index 9f38351..d5d8c50 100644
-> --- a/drivers/vfio/vfio_iommu_spapr_tce.c
-> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
-> @@ -535,9 +535,22 @@ static int tce_iommu_attach_group(void *iommu_data,
->  		goto unlock_exit;
->  	}
-> =20
-> -	ret =3D iommu_take_ownership(table_group);
-> -	if (!ret)
-> -		container->grp =3D iommu_group;
-> +	if (!table_group->ops || !table_group->ops->set_ownership) {
-> +		ret =3D iommu_take_ownership(table_group);
-> +	} else {
-> +		/*
-> +		 * Disable iommu bypass, otherwise the user can DMA to all of
-> +		 * our physical memory via the bypass window instead of just
-> +		 * the pages that has been explicitly mapped into the iommu
-> +		 */
-> +		table_group->ops->set_ownership(table_group, true);
-
-And here to disable bypass you call it with enable=3Dtrue, so it doesn't
-even have the same meaning as it used to.
-
-Plus, you should fold the logic to call the callback if necessary into
-iommu_take_ownership().
-
-> +		ret =3D 0;
-> +	}
-> +
-> +	if (ret)
-> +		goto unlock_exit;
-> +
-> +	container->grp =3D iommu_group;
-> =20
->  unlock_exit:
->  	mutex_unlock(&container->lock);
-> @@ -572,7 +585,11 @@ static void tce_iommu_detach_group(void *iommu_data,
->  	table_group =3D iommu_group_get_iommudata(iommu_group);
->  	BUG_ON(!table_group);
-> =20
-> -	iommu_release_ownership(table_group);
-> +	/* Kernel owns the device now, we can restore bypass */
-> +	if (!table_group->ops || !table_group->ops->set_ownership)
-> +		iommu_release_ownership(table_group);
-> +	else
-> +		table_group->ops->set_ownership(table_group, false);
-
-Likewise fold this if into iommu_release_ownership().
-
->  unlock_exit:
->  	mutex_unlock(&container->lock);
-
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
-
---C94crkcyjafcjHxo
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJVL1GGAAoJEGw4ysog2bOS0moP/3qwK1/MhRMSG1AACp36Ekx9
-1UAglE1HD0xYZ/VwfMRzaZnqTDXUS1oCTmb7GZ7OkXOn86W8M+r+LEBRrTgII4Qw
-KwbyqLllNDUMWqm3TdVL/LtfgtOUn6cO4q02nLM6KEHI30Mw9iJwLDk9xt9oxFxu
-5Fxw2G/IGQUuF3fV0R5NQmC1jFBrN0SeopjryFpoV5JLwwXooGQtPJ3xJH2D7JtF
-xIYNy0TkD9nHv+a/lX6O56uM/rjneaVtVtjPianrCT1N8eroqvwTeR6fUe30RjUK
-QYC8rTgYmhk7oNQ6TVX3DCbUGQr8326t781PJV8Tr3qNrawNkaEmQzPzAmDnsd6v
-QuOZp5LjRlZkzy0KKAnmpFBn3pALWWGTZyTDCeZ4VJMf7CvmQXQRkQ7cvCcIhyzv
-2O/w9we/8fU9imBfdqDbD0/rE0EVXOT5Ecl0F4Qxo1Igfz299hmbl97WyRvDY+hB
-aeF6yJfLU1j6+VPRHuu/nIeJMly1CP7RyBrLrA0393TVqaq9QKSUW55Tk3YEx8OX
-wXD14b/Ten+znSPQfSFqrLkgiGXFdlWOak2TF95nTeukbB1ts6eHHtzvOXbIhsKI
-d9FxMF2W79ZLee2r4Y/dEerPrX6lg7DMQ1QaP2m7aZE6FYlTdZvZozR6tmNx0Nho
-YOLxs1Mv3EXH3K35JAPZ
-=mLxd
------END PGP SIGNATURE-----
-
---C94crkcyjafcjHxo--
+DQoNClJlZ2FyZHMsDQpJZ2FsIExpYmVybWFuLg0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0t
+LS0tDQo+IEZyb206IFdvb2QgU2NvdHQtQjA3NDIxDQo+IFNlbnQ6IFdlZG5lc2RheSwgQXByaWwg
+MTUsIDIwMTUgODozNiBQTQ0KPiBUbzogTGliZXJtYW4gSWdhbC1CMzE5NTANCj4gQ2M6IGRldmlj
+ZXRyZWVAdmdlci5rZXJuZWwub3JnOyBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZw0KPiBT
+dWJqZWN0OiBSZTogW3YzXSBkdC9iaW5kaW5nczogcW9yaXEtY2xvY2s6IEFkZCBiaW5kaW5nIGZv
+ciBGTWFuIGNsb2NrIG11eA0KPiANCj4gT24gVHVlLCAyMDE1LTA0LTE0IGF0IDEzOjU2ICswMzAw
+LCBJZ2FsLkxpYmVybWFuIHdyb3RlOg0KPiA+IEZyb206IElnYWwgTGliZXJtYW4gPElnYWwuTGli
+ZXJtYW5AZnJlZXNjYWxlLmNvbT4NCj4gPg0KPiA+IHYzOiBBZGRyZXNzZWQgZmVlZGJhY2sgZnJv
+bSBTY290dDoNCj4gPiAJLSBSZW1vdmVkIGNsb2NrIHNwZWNpZmllciBkZXNjcmlwdGlvbi4NCj4g
+Pg0KPiA+IHYyOiBBZGRyZXNzZWQgZmVlZGJhY2sgZnJvbSBTY290dDoNCj4gPiAJLSBNb3ZlZCB0
+aGUgImZtYW4tY2xrLW11eCIgY2xvY2sgcHJvdmlkZXIgZGV0YWlscw0KPiA+IAkgIHVuZGVyICJj
+bG9ja3MiIHByb3BlcnR5Lg0KPiA+DQo+ID4gU2lnbmVkLW9mZi1ieTogSWdhbCBMaWJlcm1hbiA8
+SWdhbC5MaWJlcm1hbkBmcmVlc2NhbGUuY29tPg0KPiA+IC0tLQ0KPiA+ICAuLi4vZGV2aWNldHJl
+ZS9iaW5kaW5ncy9jbG9jay9xb3JpcS1jbG9jay50eHQgICAgICB8ICAgMTcgKysrKysrKysrKysr
+KysrLS0NCj4gPiAgMSBmaWxlIGNoYW5nZWQsIDE1IGluc2VydGlvbnMoKyksIDIgZGVsZXRpb25z
+KC0pDQo+ID4NCj4gPiBkaWZmIC0tZ2l0IGEvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRp
+bmdzL2Nsb2NrL3FvcmlxLWNsb2NrLnR4dA0KPiA+IGIvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVl
+L2JpbmRpbmdzL2Nsb2NrL3FvcmlxLWNsb2NrLnR4dA0KPiA+IGluZGV4IGIwZDdiNzMuLjJiYjNi
+MzggMTAwNjQ0DQo+ID4gLS0tIGEvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL2Ns
+b2NrL3FvcmlxLWNsb2NrLnR4dA0KPiA+ICsrKyBiL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9i
+aW5kaW5ncy9jbG9jay9xb3JpcS1jbG9jay50eHQNCj4gPiBAQCAtNjUsOSArNjUsMTAgQEAgUmVx
+dWlyZWQgcHJvcGVydGllczoNCj4gPiAgCQlJdCB0YWtlcyBwYXJlbnQncyBjbG9jay1mcmVxdWVu
+Y3kgYXMgaXRzIGNsb2NrLg0KPiA+ICAJKiAiZnNsLHFvcmlxLXBsYXRmb3JtLXBsbC0xLjAiIGZv
+ciB0aGUgcGxhdGZvcm0gUExMIGNsb2NrICh2MS4wKQ0KPiA+ICAJKiAiZnNsLHFvcmlxLXBsYXRm
+b3JtLXBsbC0yLjAiIGZvciB0aGUgcGxhdGZvcm0gUExMIGNsb2NrICh2Mi4wKQ0KPiA+ICsJKiAi
+ZnNsLGZtYW4tY2xrLW11eCIgZm9yIHRoZSBGcmFtZSBNYW5hZ2VyIGNsb2NrLg0KPiA+ICAtICNj
+bG9jay1jZWxsczogRnJvbSBjb21tb24gY2xvY2sgYmluZGluZy4gVGhlIG51bWJlciBvZiBjZWxs
+cyBpbiBhDQo+ID4gLQljbG9jay1zcGVjaWZpZXIuIFNob3VsZCBiZSA8MD4gZm9yICJmc2wscW9y
+aXEtc3lzY2xrLVsxLDJdLjAiDQo+ID4gLQljbG9ja3MsIG9yIDwxPiBmb3IgImZzbCxxb3JpcS1j
+b3JlLXBsbC1bMSwyXS4wIiBjbG9ja3MuDQo+ID4gKwljbG9jay1zcGVjaWZpZXIuIFNob3VsZCBi
+ZSA8MD4gZm9yICJmc2wscW9yaXEtc3lzY2xrLVsxLDJdLjAiIGFuZA0KPiA+ICsJImZzbCxmbWFu
+LWNsay1tdXgiIGNsb2NrcyBvciA8MT4gZm9yICJmc2wscW9yaXEtY29yZS1wbGwtWzEsMl0uMCIu
+DQo+ID4gIAlGb3IgImZzbCxxb3JpcS1jb3JlLXBsbC0xLjAiIGNsb2NrcywgdGhlIHNpbmdsZQ0K
+PiA+ICAJY2xvY2stc3BlY2lmaWVyIGNlbGwgbWF5IHRha2UgdGhlIGZvbGxvd2luZyB2YWx1ZXM6
+DQo+ID4gIAkqIDAgLSBlcXVhbCB0byB0aGUgUExMIGZyZXF1ZW5jeQ0KPiA+IEBAIC0xNDUsNiAr
+MTQ2LDE4IEBAIEV4YW1wbGUgZm9yIGNsb2NrIGJsb2NrIGFuZCBjbG9jayBwcm92aWRlcjoNCj4g
+PiAgCQkJY2xvY2tzID0gPCZzeXNjbGs+Ow0KPiA+ICAJCQljbG9jay1vdXRwdXQtbmFtZXMgPSAi
+cGxhdGZvcm0tcGxsIiwgInBsYXRmb3JtLXBsbC0NCj4gZGl2MiI7DQo+ID4gIAkJfTsNCj4gPiAr
+DQo+ID4gKwkJZm0wY2xrOiBmbTAtY2xrLW11eCB7DQo+ID4gKwkJCSNjbG9jay1jZWxscyA9IDww
+PjsNCj4gPiArCQkJcmVnID0gPDB4MTAgND4NCj4gPiArCQkJY29tcGF0aWJsZSA9ICJmc2wsZm1h
+bi1jbGstbXV4IjsNCj4gPiArCQkJY2xvY2tzID0gPCZwbGwwIDA+LCA8JnBsbDAgMT4sIDwmcGxs
+MCAyPiwgPCZwbGwwIDM+LA0KPiA+ICsJCQkJIDwmcGxhdGZvcm1fcGxsIDA+LCA8JnBsbDEgMT4s
+IDwmcGxsMSAyPjsNCj4gPiArCQkJY2xvY2stbmFtZXMgPSAicGxsMCIsICJwbGwwLWRpdjIiLCAi
+cGxsMC1kaXYzIiwNCj4gPiArCQkJCSAgICAgICJwbGwwLWRpdjQiLCAicGxhdGZvcm0tcGxsIiwg
+InBsbDEtZGl2MiIsDQo+ID4gKwkJCQkgICAgICAicGxsMS1kaXYzIjsNCj4gPiArCQkJY2xvY2st
+b3V0cHV0LW5hbWVzID0gImZtMC1jbGsiOw0KPiA+ICsJCX07DQo+ID4gIAl9Ow0KPiA+ICB9Ow0K
+PiA+DQo+IA0KPiBJIGRvbid0IHNlZSB0aGlzIHJlZ2lzdGVyIGluIHRoZSBtYW51YWxzIGZvciBv
+bGRlciBEUEFBIGNoaXBzLCBzdWNoIGFzDQo+IHA0MDgwIG9yIHAzMDQxLiAgSXMgaXQgcHJlc2Vu
+dCBidXQgdW5kb2N1bWVudGVkPyAgU2hvdWxkIEkgYmUgbG9va2luZw0KPiBzb21ld2hlcmUgb3Ro
+ZXIgdGhhbiAiQ2xvY2tpbmcgTWVtb3J5IE1hcCI/DQo+IA0KDQpJdCdzIGF2YWlsYWJsZSBvbmx5
+IGluIHBhcnQgb2YgdGhlIG5ldyBjaGlwcyAoVDQsIFQyLCBCNCkuDQpJbiBUMTAyNC9UMTA0MCB0
+aGVyZSdzIG9ubHkgb25lIG9wdGlvbiBmb3IgRk1hbiBjbG9jayBzbyB0aGlzIHJlZ2lzdGVyIGlz
+IG5vdCBhdmFpbGFibGUuDQoNCj4gLVNjb3R0DQo+IA0KDQpJZ2FsLg0KDQo=
