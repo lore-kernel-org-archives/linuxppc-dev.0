@@ -2,20 +2,20 @@ Return-Path: <dgibson@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 05C871A001E
+ by lists.ozlabs.org (Postfix) with ESMTPS id 23DF31A0058
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Apr 2015 16:11:09 +1000 (AEST)
-Date: Thu, 16 Apr 2015 16:00:36 +1000
+Date: Thu, 16 Apr 2015 16:10:49 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
 To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Subject: Re: [PATCH kernel v8 13/31] vfio: powerpc/spapr: powerpc/iommu:
- Rework IOMMU ownership control
-Message-ID: <20150416060036.GD3632@voom.redhat.com>
+Subject: Re: [PATCH kernel v8 15/31] powerpc/iommu: Fix IOMMU ownership
+ control functions
+Message-ID: <20150416061049.GF3632@voom.redhat.com>
 References: <1428647473-11738-1-git-send-email-aik@ozlabs.ru>
- <1428647473-11738-14-git-send-email-aik@ozlabs.ru>
+ <1428647473-11738-16-git-send-email-aik@ozlabs.ru>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="zS7rBR6csb6tI2e1"
-In-Reply-To: <1428647473-11738-14-git-send-email-aik@ozlabs.ru>
+ protocol="application/pgp-signature"; boundary="m1UC1K4AOz1Ywdkx"
+In-Reply-To: <1428647473-11738-16-git-send-email-aik@ozlabs.ru>
 Cc: Alex Williamson <alex.williamson@redhat.com>, linuxppc-dev@lists.ozlabs.org,
  linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -28,156 +28,99 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---zS7rBR6csb6tI2e1
+--m1UC1K4AOz1Ywdkx
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, Apr 10, 2015 at 04:30:55PM +1000, Alexey Kardashevskiy wrote:
-> This replaces iommu_take_ownership()/iommu_release_ownership() calls
-> with the callback calls and it is up to the platform code to call
-> iommu_take_ownership()/iommu_release_ownership() if needed.
-
-I think this commit message is out of date - I don't see any callbacks
-here.
-
+On Fri, Apr 10, 2015 at 04:30:57PM +1000, Alexey Kardashevskiy wrote:
+> This adds missing locks in iommu_take_ownership()/
+> iommu_release_ownership().
+>=20
+> This marks all pages busy in iommu_table::it_map in order to catch
+> errors if there is an attempt to use this table while ownership over it
+> is taken.
+>=20
+> This only clears TCE content if there is no page marked busy in it_map.
+> Clearing must be done outside of the table locks as iommu_clear_tce()
+> called from iommu_clear_tces_and_put_pages() does this.
+>=20
 > Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 > ---
->  arch/powerpc/include/asm/iommu.h    |  4 +--
->  arch/powerpc/kernel/iommu.c         | 50 ++++++++++++++++++++++++++++---=
-------
->  drivers/vfio/vfio_iommu_spapr_tce.c |  4 +--
->  3 files changed, 42 insertions(+), 16 deletions(-)
+> Changes:
+> v5:
+> * do not store bit#0 value, it has to be set for zero-based table
+> anyway
+> * removed test_and_clear_bit
+> ---
+>  arch/powerpc/kernel/iommu.c | 26 ++++++++++++++++++++++----
+>  1 file changed, 22 insertions(+), 4 deletions(-)
 >=20
-> diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/=
-iommu.h
-> index 667aa1a..b9e50d3 100644
-> --- a/arch/powerpc/include/asm/iommu.h
-> +++ b/arch/powerpc/include/asm/iommu.h
-> @@ -225,8 +225,8 @@ extern unsigned long iommu_clear_tce(struct iommu_tab=
-le *tbl,
->  		unsigned long entry);
-> =20
->  extern void iommu_flush_tce(struct iommu_table *tbl);
-> -extern int iommu_take_ownership(struct iommu_table *tbl);
-> -extern void iommu_release_ownership(struct iommu_table *tbl);
-> +extern int iommu_take_ownership(struct iommu_table_group *table_group);
-> +extern void iommu_release_ownership(struct iommu_table_group *table_grou=
-p);
-> =20
->  extern enum dma_data_direction iommu_tce_direction(unsigned long tce);
->  extern unsigned long iommu_direction_to_tce_perm(enum dma_data_direction=
- dir);
 > diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
-> index fd49c8e..7d6089b 100644
+> index 7d6089b..068fe4ff 100644
 > --- a/arch/powerpc/kernel/iommu.c
 > +++ b/arch/powerpc/kernel/iommu.c
-> @@ -1050,7 +1050,7 @@ int iommu_tce_build(struct iommu_table *tbl, unsign=
-ed long entry,
->  }
->  EXPORT_SYMBOL_GPL(iommu_tce_build);
+> @@ -1052,17 +1052,28 @@ EXPORT_SYMBOL_GPL(iommu_tce_build);
 > =20
-> -int iommu_take_ownership(struct iommu_table *tbl)
-> +static int iommu_table_take_ownership(struct iommu_table *tbl)
+>  static int iommu_table_take_ownership(struct iommu_table *tbl)
 >  {
->  	unsigned long sz =3D (tbl->it_size + 7) >> 3;
+> -	unsigned long sz =3D (tbl->it_size + 7) >> 3;
+> +	unsigned long flags, i, sz =3D (tbl->it_size + 7) >> 3;
+> +	int ret =3D 0;
+> +
+> +	spin_lock_irqsave(&tbl->large_pool.lock, flags);
+> +	for (i =3D 0; i < tbl->nr_pools; i++)
+> +		spin_lock(&tbl->pools[i].lock);
 > =20
-> @@ -1064,19 +1064,36 @@ int iommu_take_ownership(struct iommu_table *tbl)
+>  	if (tbl->it_offset =3D=3D 0)
+>  		clear_bit(0, tbl->it_map);
 > =20
->  	memset(tbl->it_map, 0xff, sz);
-> =20
-> -	/*
-> -	 * Disable iommu bypass, otherwise the user can DMA to all of
-> -	 * our physical memory via the bypass window instead of just
-> -	 * the pages that has been explicitly mapped into the iommu
-> -	 */
-> -	if (tbl->set_bypass)
-> -		tbl->set_bypass(tbl, false);
+>  	if (!bitmap_empty(tbl->it_map, tbl->it_size)) {
+>  		pr_err("iommu_tce: it_map is not empty");
+> -		return -EBUSY;
+> +		ret =3D -EBUSY;
+> +		if (tbl->it_offset =3D=3D 0)
+> +			set_bit(0, tbl->it_map);
 
-The code to disable bypass is removed, and doesn't seem to be replaced
-with anything.  That doesn't look safe.
+This really needs a comment.  Why on earth are you changing the it_map
+on a failure case?
 
-> +	return 0;
-> +}
-> +
-> +static void iommu_table_release_ownership(struct iommu_table *tbl);
-> +
-> +int iommu_take_ownership(struct iommu_table_group *table_group)
-> +{
-> +	int i, j, rc =3D 0;
-> +
-> +	for (i =3D 0; i < IOMMU_TABLE_GROUP_MAX_TABLES; ++i) {
-> +		struct iommu_table *tbl =3D &table_group->tables[i];
-> +
-> +		if (!tbl->it_map)
-> +			continue;
-> +
-> +		rc =3D iommu_table_take_ownership(tbl);
-> +		if (rc) {
-> +			for (j =3D 0; j < i; ++j)
-> +				iommu_table_release_ownership(
-> +						&table_group->tables[j]);
-> +
-> +			return rc;
-> +		}
-> +	}
+> +	} else {
+> +		memset(tbl->it_map, 0xff, sz);
+>  	}
+> =20
+> -	memset(tbl->it_map, 0xff, sz);
+> +	for (i =3D 0; i < tbl->nr_pools; i++)
+> +		spin_unlock(&tbl->pools[i].lock);
+> +	spin_unlock_irqrestore(&tbl->large_pool.lock, flags);
 > =20
 >  	return 0;
 >  }
->  EXPORT_SYMBOL_GPL(iommu_take_ownership);
+> @@ -1095,7 +1106,11 @@ EXPORT_SYMBOL_GPL(iommu_take_ownership);
 > =20
-> -void iommu_release_ownership(struct iommu_table *tbl)
-> +static void iommu_table_release_ownership(struct iommu_table *tbl)
+>  static void iommu_table_release_ownership(struct iommu_table *tbl)
 >  {
->  	unsigned long sz =3D (tbl->it_size + 7) >> 3;
+> -	unsigned long sz =3D (tbl->it_size + 7) >> 3;
+> +	unsigned long flags, i, sz =3D (tbl->it_size + 7) >> 3;
+> +
+> +	spin_lock_irqsave(&tbl->large_pool.lock, flags);
+> +	for (i =3D 0; i < tbl->nr_pools; i++)
+> +		spin_lock(&tbl->pools[i].lock);
 > =20
-> @@ -1086,9 +1103,18 @@ void iommu_release_ownership(struct iommu_table *t=
-bl)
+>  	memset(tbl->it_map, 0, sz);
+> =20
+> @@ -1103,6 +1118,9 @@ static void iommu_table_release_ownership(struct io=
+mmu_table *tbl)
 >  	if (tbl->it_offset =3D=3D 0)
 >  		set_bit(0, tbl->it_map);
 > =20
-> -	/* The kernel owns the device now, we can restore the iommu bypass */
-> -	if (tbl->set_bypass)
-> -		tbl->set_bypass(tbl, true);
-> +}
-> +
-> +extern void iommu_release_ownership(struct iommu_table_group *table_grou=
-p)
-> +{
-> +	int i;
-> +
-> +	for (i =3D 0; i < IOMMU_TABLE_GROUP_MAX_TABLES; ++i) {
-> +		struct iommu_table *tbl =3D &table_group->tables[i];
-> +
-> +		if (tbl->it_map)
-> +			iommu_table_release_ownership(tbl);
-> +	}
+> +	for (i =3D 0; i < tbl->nr_pools; i++)
+> +		spin_unlock(&tbl->pools[i].lock);
+> +	spin_unlock_irqrestore(&tbl->large_pool.lock, flags);
 >  }
->  EXPORT_SYMBOL_GPL(iommu_release_ownership);
 > =20
-> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iomm=
-u_spapr_tce.c
-> index d61aad2..9f38351 100644
-> --- a/drivers/vfio/vfio_iommu_spapr_tce.c
-> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
-> @@ -535,7 +535,7 @@ static int tce_iommu_attach_group(void *iommu_data,
->  		goto unlock_exit;
->  	}
-> =20
-> -	ret =3D iommu_take_ownership(&table_group->tables[0]);
-> +	ret =3D iommu_take_ownership(table_group);
->  	if (!ret)
->  		container->grp =3D iommu_group;
-> =20
-> @@ -572,7 +572,7 @@ static void tce_iommu_detach_group(void *iommu_data,
->  	table_group =3D iommu_group_get_iommudata(iommu_group);
->  	BUG_ON(!table_group);
-> =20
-> -	iommu_release_ownership(&table_group->tables[0]);
-> +	iommu_release_ownership(table_group);
-> =20
->  unlock_exit:
->  	mutex_unlock(&container->lock);
+>  extern void iommu_release_ownership(struct iommu_table_group *table_grou=
+p)
 
 --=20
 David Gibson			| I'll have my music baroque, and my code
@@ -185,25 +128,25 @@ david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
 				| _way_ _around_!
 http://www.ozlabs.org/~dgibson
 
---zS7rBR6csb6tI2e1
+--m1UC1K4AOz1Ywdkx
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBAgAGBQJVL1AEAAoJEGw4ysog2bOS4BYQAKC+gha/+4952kVMMRwCzbQr
-W1KZ7w8t1HbW7kX7OPcHMFwdLj02wWUKQTyE4ZaVkdxyA92imcXzUeBoLcgx2lqr
-FGK24P0yKKMaDuddB8NX5CV7rTbBXfOeEQ76NPvC5MaDAXiZwn1GoJ84muq/5XN9
-6kn1xcYZs4kCbrvVxk19rDNGfbD2V7tb9zne83QWXrREp7BHfsIX6UUHpMo+P4fg
-qcVkLqwmOU4vopDcxabHwqAe6T+ilGYSfgOzXSmabfIza0U4uVZDtXN0dFxKPNVu
-6AbREQLE1FtcQeM6k3BxuUH9lBGkzlkmVYqPyf1BwOzoVJoc9x53ULZtA4Vm5nHL
-57gsTe2dadwEchtHGN8tivjSfZx0bS6Maq0w5ejnQ4tONpgAIEL4xUOejxB7tOo/
-as+Gbv0snZF7g43Y9hTdKzcRk98f+gD19jDs4riG8AR6sEA+odEqHF11Elds0mTa
-Lee+xkvddOKo8ZAvClyowElZG4n80izF9p67fohCC4/roELeHVfZtnEO84Wt9Di/
-v1xJc7LzAbUhXHM5ip8cwJyXhzhHPChZQrl69LAOXqzh006clkrfTtSSAgZT2FN6
-zO1SzQwytfe0OwWU7q7sJmOE6133CI0vzqjYD66O3N+pcZkdkelKEtlMIa5HqcEc
-1fYGdZKIWfbndvgNSkxW
-=RUAS
+iQIcBAEBAgAGBQJVL1JpAAoJEGw4ysog2bOSqa4P/0b+69waGMjpJoyyBzDmQj4S
+krhYlnE0a6ymqufwqFFtxCekvmdoCW0kXYE+l2I8Q94BE5Zl/FX2bqfda6Jg1rUU
+7kO6zmj+7/6G7lxaRbxJdLi39Z1ZtCcm2aXQUcYbREyjfsUhCsMiwqRGtyWIsm6L
+G41dQjODaQ9WyK5+flbFv6KMJ3GwhudGDoh8GOXOmCyaFdH6dHy2LWGIgBFEZa0O
+fIJHth4HY9jFS/abQXehoOJjmEeIl8TPzqtdpYjuxCtiaSLExvPNw2UxFZDrE+5m
+0WJPPMGIOaoYNGrMspeLAasyxQ2o8NimhZLL9Nk7B2iq7veFQN9h9DqyaOVVHmdb
+M3cxfrQ636IGKyAHmc34JjGUkPEnIgs+wMxHhV7hDovyqZu4vP8pX/DOn8cRxqZw
+WcYShElUGKalgi6R5kLL2ewT0itPDBdkfRWWOEHwjYbC6v17oa5nY6oUY14IwUfY
+vBr2p5EnW/ysblfOaR+LARDk4ltSBADXS8Ay2+6VatbykifvbPqye/gn6+e9Kvki
+Wf8/yU36kZINIBHMAbBDaAYFqr6w3OBt9Ce/CLL+W8wDFbLdmG9Jylhqr7aPymUf
+dVhINlDMHl65hYxVovBM8UsMeP+vjMWq49523gh+Wr003O5qoeWLK4RRTv74ZIVi
+yOBelN2yzqwB6Zu3WZee
+=SsZl
 -----END PGP SIGNATURE-----
 
---zS7rBR6csb6tI2e1--
+--m1UC1K4AOz1Ywdkx--
