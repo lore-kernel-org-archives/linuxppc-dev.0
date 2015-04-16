@@ -1,19 +1,28 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0138.outbound.protection.outlook.com [157.56.110.138])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <ppc@mindchasers.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BD6831A0034
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Apr 2015 10:40:51 +1000 (AEST)
-From: Scott Wood <scottwood@freescale.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, Michael Ellerman
- <mpe@ellerman.id.au>
-Subject: [PATCH] powerpc/mm: Don't call __flush_dcache_icache_phys() with PA>VA
-Date: Wed, 15 Apr 2015 19:40:23 -0500
-Message-ID: <1429144823-24820-1-git-send-email-scottwood@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 588891A0021
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Apr 2015 14:49:50 +1000 (AEST)
+Received: from resqmta-ch2-05v.sys.comcast.net
+ (resqmta-ch2-05v.sys.comcast.net [IPv6:2001:558:fe21:29:69:252:207:37])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 8A3671401AB
+ for <linuxppc-dev@ozlabs.org>; Thu, 16 Apr 2015 14:49:48 +1000 (AEST)
+Message-ID: <552F3E37.7030507@mindchasers.com>
+Date: Thu, 16 Apr 2015 00:44:39 -0400
+From: Bob Cochran <ppc@mindchasers.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Scott Wood <scottwood@freescale.com>, linuxppc-dev@lists.ozlabs.org
+To: Scott Wood <scottwood@freescale.com>,
+ Pan Lijun-B44306 <Lijun.Pan@freescale.com>
+Subject: Re: new way of writing defconfigs for freescale's powerpc platforms
+References: <DM2PR03MB3689ECA6BC27B156BD10F76FCFB0@DM2PR03MB368.namprd03.prod.outlook.com>
+ <1428618671.22867.551.camel@freescale.com>
+In-Reply-To: <1428618671.22867.551.camel@freescale.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+ Schmitt Richard-B43082 <richard.schmitt@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,63 +32,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-__flush_dcache_icache_phys() requires the ability to access the
-memory with the MMU disabled, which means that on a 32-bit system
-any memory above 4 GiB is inaccessible.  In particular, mpc86xx is
-32-bit and can have more than 4 GiB of RAM.
+On 04/09/2015 06:31 PM, Scott Wood wrote:
+> On Thu, 2015-04-09 at 16:52 -0500, Pan Lijun-B44306 wrote:
+>> Hi Maintainers,
+>>
+>> We have a proposal for writing the defconfigs for freescale's powperpc platforms in a new way.
+>> Can you take a look and provide some feedback?
+>>
+>> You know currently we have mpc85xx_defconfig, corenet32_defconfig, bsc913x_defconfig, *fman*_defconfig, etc.
+>> We are going to extract some common parts from the existing defconfigs, and name it, say, fsl_basic_defconfig.
+>> Then, we could create some defconfigs targeting specific features or specific platforms.
+>> Say, features specific: kvm_defconfig, fman_defconfig, etc.
+>> Platforms specific: p1_defconfig, p2_defcongfig, p4_defconfig, t1_defconfig, t2_defconfig, t2_defconfig, b4_defconfig, etc
+>> When we want to make a kernel image for p1 platform,
+>> Using the following steps:
+>>
+>> make ./scripts/kconfig/merge_config.sh arch/powerpc/configs/fsl_basic_config p1_defconfig
+>> make
+>>
+>> What do you think of this new approach?
+>> Will you accept this approach?
+>
+> I'm OK with a merge_config approach.
+>
+> I'm not OK with having separate builds for p1/p2/p4/t1/t2/b4.
+>
+> -Scott
 
-Signed-off-by: Scott Wood <scottwood@freescale.com>
----
- arch/powerpc/include/asm/cacheflush.h |  7 ++++++-
- arch/powerpc/mm/mem.c                 | 14 +++++++-------
- 2 files changed, 13 insertions(+), 8 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/cacheflush.h b/arch/powerpc/include/asm/cacheflush.h
-index 30b35ff..6229e6b 100644
---- a/arch/powerpc/include/asm/cacheflush.h
-+++ b/arch/powerpc/include/asm/cacheflush.h
-@@ -40,7 +40,12 @@ extern void __flush_dcache_icache(void *page_va);
- extern void flush_dcache_icache_page(struct page *page);
- #if defined(CONFIG_PPC32) && !defined(CONFIG_BOOKE)
- extern void __flush_dcache_icache_phys(unsigned long physaddr);
--#endif /* CONFIG_PPC32 && !CONFIG_BOOKE */
-+#else
-+static inline void __flush_dcache_icache_phys(unsigned long physaddr)
-+{
-+	BUG();
-+}
-+#endif
- 
- extern void flush_dcache_range(unsigned long start, unsigned long stop);
- #ifdef CONFIG_PPC32
-diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-index b7285a5..7297d204 100644
---- a/arch/powerpc/mm/mem.c
-+++ b/arch/powerpc/mm/mem.c
-@@ -417,17 +417,17 @@ void flush_dcache_icache_page(struct page *page)
- 		return;
- 	}
- #endif
--#ifdef CONFIG_BOOKE
--	{
-+#if defined(CONFIG_8xx) || defined(CONFIG_PPC64)
-+	/* On 8xx there is no need to kmap since highmem is not supported */
-+	__flush_dcache_icache(page_address(page));
-+#else
-+	if (IS_ENABLED(CONFIG_BOOKE) || sizeof(phys_addr_t) > sizeof(void *)) {
- 		void *start = kmap_atomic(page);
- 		__flush_dcache_icache(start);
- 		kunmap_atomic(start);
-+	} else {
-+		__flush_dcache_icache_phys(page_to_pfn(page) << PAGE_SHIFT);
- 	}
--#elif defined(CONFIG_8xx) || defined(CONFIG_PPC64)
--	/* On 8xx there is no need to kmap since highmem is not supported */
--	__flush_dcache_icache(page_address(page)); 
--#else
--	__flush_dcache_icache_phys(page_to_pfn(page) << PAGE_SHIFT);
- #endif
- }
- EXPORT_SYMBOL(flush_dcache_icache_page);
--- 
-2.1.0
+As you probably know, Freescale makes use of the Yocto Project build 
+system for its SDK and submits patches to the SDK at a public 
+meta-fsl-ppc repo at http://git.yoctoproject.org/cgit/cgit.cgi/meta-fsl-ppc/
+
+I have seen some kernel related patches in the past come across the 
+Yocto Project site that made use of the Yocto Project kernel tools, 
+which includes a process for maintaining kernel configuration fragments. 
+  It sounds like the requirements you have could be met with Yocto's 
+existing process.
+
+I was hoping to see Freescale continue to move in the direction of using 
+the Yocto kernel tools rather than roll its own solution.
+
+The Yocto kernel tools make use of description files (*.scc) and 
+configuration fragments (*.cfg).
+
+Here is a link to the latest stable Yocto kernel development manual: 
+http://www.yoctoproject.org/docs/1.7.1/kernel-dev/kernel-dev.html
+
+Bob
+
+
+
+
+
+>
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+>
