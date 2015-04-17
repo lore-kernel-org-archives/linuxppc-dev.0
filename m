@@ -1,19 +1,25 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id F10941A182C
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Apr 2015 00:32:24 +1000 (AEST)
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v3 17/17] crypto: talitos - Update DT bindings with SEC1
-To: Kim Phillips <kim.phillips@freescale.com>,
- Herbert Xu <herbert@gondor.apana.org.au>,
- "David S. Miller" <davem@davemloft.net>, Rob Herring <robh+dt@kernel.org>,
- Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>,
- Ian Campbell <ijc+devicetree@hellion.org.uk>,
- Kumar Gala <galak@codeaurora.org>
-Message-Id: <20150417143222.31AFE1A242C@localhost.localdomain>
-Date: Fri, 17 Apr 2015 16:32:22 +0200 (CEST)
-Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org
+Return-Path: <David.Laight@ACULAB.COM>
+Received: from smtp-out6.electric.net (smtp-out6.electric.net
+ [192.162.217.181])
+ (using TLSv1.1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 990441A0BEA
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Apr 2015 01:15:27 +1000 (AEST)
+From: David Laight <David.Laight@ACULAB.COM>
+To: 'Christophe Leroy' <christophe.leroy@c-s.fr>, Kim Phillips
+ <kim.phillips@freescale.com>, Herbert Xu <herbert@gondor.apana.org.au>, David
+ S Miller <davem@davemloft.net>
+Subject: RE: [PATCH v3 03/17] crypto: talitos - talitos_ptr renamed ptr for
+ more lisibility
+Date: Fri, 17 Apr 2015 15:14:18 +0000
+Message-ID: <063D6719AE5E284EB5DD2968C1650D6D1CB21235@AcuExch.aculab.com>
+References: <20150417142356.797BC1A242C@localhost.localdomain>
+In-Reply-To: <20150417142356.797BC1A242C@localhost.localdomain>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,30 +29,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch updates the documentation by including SEC1 into SEC2/3 doc
-
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- Documentation/devicetree/bindings/crypto/fsl-sec2.txt | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
-
-diff --git a/Documentation/devicetree/bindings/crypto/fsl-sec2.txt b/Documentation/devicetree/bindings/crypto/fsl-sec2.txt
-index 38988ef..f0d926b 100644
---- a/Documentation/devicetree/bindings/crypto/fsl-sec2.txt
-+++ b/Documentation/devicetree/bindings/crypto/fsl-sec2.txt
-@@ -1,9 +1,11 @@
--Freescale SoC SEC Security Engines versions 2.x-3.x
-+Freescale SoC SEC Security Engines versions 1.x-2.x-3.x
- 
- Required properties:
- 
- - compatible : Should contain entries for this and backward compatible
--  SEC versions, high to low, e.g., "fsl,sec2.1", "fsl,sec2.0"
-+  SEC versions, high to low, e.g., "fsl,sec2.1", "fsl,sec2.0" (SEC2/3)
-+                             e.g., "fsl,sec1.2", "fsl,sec1.0" (SEC1)
-+    warning: SEC1 and SEC2 are mutually exclusive
- - reg : Offset and length of the register set for the device
- - interrupts : the SEC's interrupt number
- - fsl,num-channels : An integer representing the number of channels
--- 
-2.1.0
+RnJvbTogQ2hyaXN0b3BoZSBMZXJveQ0KPiBMaW51eCBDb2R5aW5nU3R5bGUgcmVjb21tZW5kcyB0
+byB1c2Ugc2hvcnQgdmFyaWFibGVzIGZvciBsb2NhbA0KPiB2YXJpYWJsZXMuIHB0ciBpcyBqdXN0
+IGdvb2QgZW5vdWdoIGZvciB0aG9zZSAzIGxpbmVzIGZ1bmN0aW9ucy4NCj4gSXQgaGVscHMga2Vl
+cCBzaW5nbGUgbGluZXMgc2hvcnRlciB0aGFuIDgwIGNoYXJhY3RlcnMuDQouLi4NCj4gLXN0YXRp
+YyB2b2lkIHRvX3RhbGl0b3NfcHRyKHN0cnVjdCB0YWxpdG9zX3B0ciAqdGFsaXRvc19wdHIsIGRt
+YV9hZGRyX3QgZG1hX2FkZHIpDQo+ICtzdGF0aWMgdm9pZCB0b190YWxpdG9zX3B0cihzdHJ1Y3Qg
+dGFsaXRvc19wdHIgKnB0ciwgZG1hX2FkZHJfdCBkbWFfYWRkcikNCj4gIHsNCj4gLQl0YWxpdG9z
+X3B0ci0+cHRyID0gY3B1X3RvX2JlMzIobG93ZXJfMzJfYml0cyhkbWFfYWRkcikpOw0KPiAtCXRh
+bGl0b3NfcHRyLT5lcHRyID0gdXBwZXJfMzJfYml0cyhkbWFfYWRkcik7DQo+ICsJcHRyLT5wdHIg
+PSBjcHVfdG9fYmUzMihsb3dlcl8zMl9iaXRzKGRtYV9hZGRyKSk7DQo+ICsJcHRyLT5lcHRyID0g
+dXBwZXJfMzJfYml0cyhkbWFfYWRkcik7DQo+ICB9DQouLi4NCg0KTWF5YmUsIGJ1dCAncHRyJyBp
+c24ndCBhIGdvb2QgY2hvaWNlLg0KDQoJRGF2aWQNCg0K
