@@ -1,15 +1,15 @@
 Return-Path: <christophe.leroy@c-s.fr>
 Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id A117D1A170C
+ by lists.ozlabs.org (Postfix) with ESMTP id C7BE71A172A
  for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Apr 2015 02:33:01 +1000 (AEST)
-Message-Id: <261ddd7713486fb325a945f77b7e9a5a6061879f.1429287688.git.christophe.leroy@c-s.fr>
+Message-Id: <04fd0663392681a88fac90c851b0d767484786f5.1429287688.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1429287688.git.christophe.leroy@c-s.fr>
 References: <cover.1429287688.git.christophe.leroy@c-s.fr>
-Subject: [PATCH v5 1/5] powerpc/8xx: macro for handling CPU15 errata
+Subject: [PATCH v5 3/5] powerpc/8xx: dont save CR in SCRATCH registers
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  scottwood@freescale.com
-Date: Fri, 17 Apr 2015 18:32:52 +0200 (CEST)
+Date: Fri, 17 Apr 2015 18:32:56 +0200 (CEST)
 From: christophe.leroy@c-s.fr (root)
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -21,48 +21,96 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Having a macro will help keep clear code.
+CR only needs to be preserved when checking if we are handling a kernel address.
+So we can preserve CR in a register:
+- In ITLBMiss, check is done only when CONFIG_MODULES is defined. Otherwise we
+don't need to do anything at all with CR.
+- We use r10, then we reload SRR0/MD_EPN into r10 when CR is restored
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/kernel/head_8xx.S | 18 ++++++++++++------
- 1 file changed, 12 insertions(+), 6 deletions(-)
+ arch/powerpc/kernel/head_8xx.S | 29 +++++++++++++++--------------
+ 1 file changed, 15 insertions(+), 14 deletions(-)
 
 diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index 9b53fe1..1279018 100644
+index 5a69c5e..150d03f 100644
 --- a/arch/powerpc/kernel/head_8xx.S
 +++ b/arch/powerpc/kernel/head_8xx.S
-@@ -297,6 +297,17 @@ SystemCall:
-  * We have to use the MD_xxx registers for the tablewalk because the
-  * equivalent MI_xxx registers only perform the attribute functions.
-  */
-+
-+#ifdef CONFIG_8xx_CPU15
-+#define INVALIDATE_ADJACENT_PAGES_CPU15(tmp, addr)	\
-+	addi	tmp, addr, PAGE_SIZE;	\
-+	tlbie	tmp;			\
-+	addi	tmp, addr, -PAGE_SIZE;	\
-+	tlbie	tmp
-+#else
-+#define INVALIDATE_ADJACENT_PAGES_CPU15(tmp, addr)
-+#endif
-+
- InstructionTLBMiss:
- #ifdef CONFIG_8xx_CPU6
+@@ -312,10 +312,6 @@ InstructionTLBMiss:
  	mtspr	SPRN_DAR, r3
-@@ -304,12 +315,7 @@ InstructionTLBMiss:
+ #endif
  	EXCEPTION_PROLOG_0
- 	mtspr	SPRN_SPRG_SCRATCH2, r10
- 	mfspr	r10, SPRN_SRR0	/* Get effective address of fault */
--#ifdef CONFIG_8xx_CPU15
--	addi	r11, r10, PAGE_SIZE
--	tlbie	r11
--	addi	r11, r10, -PAGE_SIZE
--	tlbie	r11
--#endif
-+	INVALIDATE_ADJACENT_PAGES_CPU15(r11, r10)
+-	mfcr	r10
+-	mtspr	SPRN_SPRG_SCRATCH2, r10
+-	mfspr	r10, SPRN_SRR0	/* Get effective address of fault */
+-	INVALIDATE_ADJACENT_PAGES_CPU15(r11, r10)
  
  	/* If we are faulting a kernel address, we have to use the
  	 * kernel page tables.
+@@ -323,13 +319,20 @@ InstructionTLBMiss:
+ #ifdef CONFIG_MODULES
+ 	/* Only modules will cause ITLB Misses as we always
+ 	 * pin the first 8MB of kernel memory */
+-	andis.	r11, r10, 0x8000	/* Address >= 0x80000000 */
+-#endif
++	mfspr	r11, SPRN_SRR0	/* Get effective address of fault */
++	INVALIDATE_ADJACENT_PAGES_CPU15(r10, r11)
++	mfcr	r10
++	andis.	r11, r11, 0x8000	/* Address >= 0x80000000 */
+ 	mfspr	r11, SPRN_M_TW	/* Get level 1 table */
+-#ifdef CONFIG_MODULES
+ 	beq	3f
+ 	lis	r11, (swapper_pg_dir-PAGE_OFFSET)@ha
+ 3:
++	mtcr	r10
++	mfspr	r10, SPRN_SRR0	/* Get effective address of fault */
++#else
++	mfspr	r10, SPRN_SRR0	/* Get effective address of fault */
++	INVALIDATE_ADJACENT_PAGES_CPU15(r11, r10)
++	mfspr	r11, SPRN_M_TW	/* Get level 1 table base address */
+ #endif
+ 	/* Insert level 1 index */
+ 	rlwimi	r11, r10, 32 - ((PAGE_SHIFT - 2) << 1), (PAGE_SHIFT - 2) << 1, 29
+@@ -362,8 +365,6 @@ InstructionTLBMiss:
+ 	mfspr	r3, SPRN_DAR
+ 	mtspr	SPRN_DAR, r11	/* Tag DAR */
+ #endif
+-	mfspr	r10, SPRN_SPRG_SCRATCH2
+-	mtcr	r10
+ 	EXCEPTION_EPILOG_0
+ 	rfi
+ 
+@@ -374,17 +375,19 @@ DataStoreTLBMiss:
+ #endif
+ 	EXCEPTION_PROLOG_0
+ 	mfcr	r10
+-	mtspr	SPRN_SPRG_SCRATCH2, r10
+-	mfspr	r10, SPRN_MD_EPN
+ 
+ 	/* If we are faulting a kernel address, we have to use the
+ 	 * kernel page tables.
+ 	 */
+-	andis.	r11, r10, 0x8000
++	mfspr	r11, SPRN_MD_EPN
++	andis.	r11, r11, 0x8000
+ 	mfspr	r11, SPRN_M_TW	/* Get level 1 table */
+ 	beq	3f
+ 	lis	r11, (swapper_pg_dir-PAGE_OFFSET)@ha
+ 3:
++	mtcr	r10
++	mfspr	r10, SPRN_MD_EPN
++
+ 	/* Insert level 1 index */
+ 	rlwimi	r11, r10, 32 - ((PAGE_SHIFT - 2) << 1), (PAGE_SHIFT - 2) << 1, 29
+ 	lwz	r11, (swapper_pg_dir-PAGE_OFFSET)@l(r11)	/* Get the level 1 entry */
+@@ -438,8 +441,6 @@ DataStoreTLBMiss:
+ 	mfspr	r3, SPRN_DAR
+ #endif
+ 	mtspr	SPRN_DAR, r11	/* Tag DAR */
+-	mfspr	r10, SPRN_SPRG_SCRATCH2
+-	mtcr	r10
+ 	EXCEPTION_EPILOG_0
+ 	rfi
+ 
 -- 
 2.1.0
