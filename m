@@ -1,26 +1,24 @@
-Return-Path: <olaf@aepfle.de>
-Received: from mo6-p00-ob.smtp.rzone.de (mo6-p00-ob.smtp.rzone.de
- [IPv6:2a01:238:20a:202:5300::10])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 228751A0BD7
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Apr 2015 01:32:48 +1000 (AEST)
-Date: Fri, 17 Apr 2015 17:26:42 +0200
-From: Olaf Hering <olaf@aepfle.de>
-To: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: Re: [PATCH v3 00/17] crypto: talitos - Add support for SEC1
-Message-ID: <20150417152642.GA7671@aepfle.de>
-References: <20150417143147.154871A242C@localhost.localdomain>
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ by lists.ozlabs.org (Postfix) with ESMTP id 6FE3A1A11BC
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Apr 2015 02:26:04 +1000 (AEST)
+Message-ID: <55313413.2050604@c-s.fr>
+Date: Fri, 17 Apr 2015 18:25:55 +0200
+From: leroy christophe <christophe.leroy@c-s.fr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20150417143147.154871A242C@localhost.localdomain>
-Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org,
+To: David Laight <David.Laight@ACULAB.COM>,
  Kim Phillips <kim.phillips@freescale.com>,
- Herbert Xu <herbert@gondor.apana.org.au>, Pawel Moll <pawel.moll@arm.com>,
- Ian Campbell <ijc+devicetree@hellion.org.uk>, linux-kernel@vger.kernel.org,
- Rob Herring <robh+dt@kernel.org>, linux-crypto@vger.kernel.org,
- Kumar Gala <galak@codeaurora.org>, linuxppc-dev@lists.ozlabs.org,
- "David S. Miller" <davem@davemloft.net>
+ Herbert Xu <herbert@gondor.apana.org.au>,
+ David S Miller <davem@davemloft.net>
+Subject: Re: [PATCH v3 03/17] crypto: talitos - talitos_ptr renamed ptr for
+ more lisibility
+References: <20150417142356.797BC1A242C@localhost.localdomain>
+ <063D6719AE5E284EB5DD2968C1650D6D1CB21235@AcuExch.aculab.com>
+In-Reply-To: <063D6719AE5E284EB5DD2968C1650D6D1CB21235@AcuExch.aculab.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,14 +28,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Apr 17, Christophe Leroy wrote:
+Le 17/04/2015 17:14, David Laight a écrit :
+> From: Christophe Leroy
+>> Linux CodyingStyle recommends to use short variables for local
+>> variables. ptr is just good enough for those 3 lines functions.
+>> It helps keep single lines shorter than 80 characters.
+> ...
+>> -static void to_talitos_ptr(struct talitos_ptr *talitos_ptr, dma_addr_t dma_addr)
+>> +static void to_talitos_ptr(struct talitos_ptr *ptr, dma_addr_t dma_addr)
+>>   {
+>> -	talitos_ptr->ptr = cpu_to_be32(lower_32_bits(dma_addr));
+>> -	talitos_ptr->eptr = upper_32_bits(dma_addr);
+>> +	ptr->ptr = cpu_to_be32(lower_32_bits(dma_addr));
+>> +	ptr->eptr = upper_32_bits(dma_addr);
+>>   }
+> ...
+>
+> Maybe, but 'ptr' isn't a good choice.
+>
+>
+Any suggestion ?
 
-> v3 is a complete rework of the patchset. Since a kernel can be built
-> with support for both MPC82xx and MPC83xx at the same time, talitos
-> driver shall support both SEC1 and SEC2+ at the same time.
-
-The used git send-email command lacked the --thread option.
-
->From this perspective: NACK to the whole series...
-
-Olaf
+Christophe
