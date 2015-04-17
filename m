@@ -1,15 +1,15 @@
 Return-Path: <christophe.leroy@c-s.fr>
 Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id AC3191A1713
+ by lists.ozlabs.org (Postfix) with ESMTP id A117D1A170C
  for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Apr 2015 02:33:01 +1000 (AEST)
-Message-Id: <c8e529bf94151c9f4915a1fff3e569f980c64793.1429287688.git.christophe.leroy@c-s.fr>
+Message-Id: <261ddd7713486fb325a945f77b7e9a5a6061879f.1429287688.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1429287688.git.christophe.leroy@c-s.fr>
 References: <cover.1429287688.git.christophe.leroy@c-s.fr>
-Subject: [PATCH v5 4/5] powerpc/8xx: Use SPRG2 instead of DAR for saving r3
+Subject: [PATCH v5 1/5] powerpc/8xx: macro for handling CPU15 errata
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  scottwood@freescale.com
-Date: Fri, 17 Apr 2015 18:32:58 +0200 (CEST)
+Date: Fri, 17 Apr 2015 18:32:52 +0200 (CEST)
 From: christophe.leroy@c-s.fr (root)
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -21,54 +21,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We now have SPRG2 available as in it not used anymore for saving CR, so we don't
-need to crash DAR anymore for saving r3 for CPU6 ERRATA handling.
+Having a macro will help keep clear code.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/kernel/head_8xx.S | 9 ++++-----
- 1 file changed, 4 insertions(+), 5 deletions(-)
+ arch/powerpc/kernel/head_8xx.S | 18 ++++++++++++------
+ 1 file changed, 12 insertions(+), 6 deletions(-)
 
 diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index 150d03f..ba2dc53 100644
+index 9b53fe1..1279018 100644
 --- a/arch/powerpc/kernel/head_8xx.S
 +++ b/arch/powerpc/kernel/head_8xx.S
-@@ -309,7 +309,7 @@ SystemCall:
- 
+@@ -297,6 +297,17 @@ SystemCall:
+  * We have to use the MD_xxx registers for the tablewalk because the
+  * equivalent MI_xxx registers only perform the attribute functions.
+  */
++
++#ifdef CONFIG_8xx_CPU15
++#define INVALIDATE_ADJACENT_PAGES_CPU15(tmp, addr)	\
++	addi	tmp, addr, PAGE_SIZE;	\
++	tlbie	tmp;			\
++	addi	tmp, addr, -PAGE_SIZE;	\
++	tlbie	tmp
++#else
++#define INVALIDATE_ADJACENT_PAGES_CPU15(tmp, addr)
++#endif
++
  InstructionTLBMiss:
  #ifdef CONFIG_8xx_CPU6
--	mtspr	SPRN_DAR, r3
-+	mtspr	SPRN_SPRG_SCRATCH2, r3
- #endif
+ 	mtspr	SPRN_DAR, r3
+@@ -304,12 +315,7 @@ InstructionTLBMiss:
  	EXCEPTION_PROLOG_0
+ 	mtspr	SPRN_SPRG_SCRATCH2, r10
+ 	mfspr	r10, SPRN_SRR0	/* Get effective address of fault */
+-#ifdef CONFIG_8xx_CPU15
+-	addi	r11, r10, PAGE_SIZE
+-	tlbie	r11
+-	addi	r11, r10, -PAGE_SIZE
+-	tlbie	r11
+-#endif
++	INVALIDATE_ADJACENT_PAGES_CPU15(r11, r10)
  
-@@ -362,8 +362,7 @@ InstructionTLBMiss:
- 
- 	/* Restore registers */
- #ifdef CONFIG_8xx_CPU6
--	mfspr	r3, SPRN_DAR
--	mtspr	SPRN_DAR, r11	/* Tag DAR */
-+	mfspr	r3, SPRN_SPRG_SCRATCH2
- #endif
- 	EXCEPTION_EPILOG_0
- 	rfi
-@@ -371,7 +370,7 @@ InstructionTLBMiss:
- 	. = 0x1200
- DataStoreTLBMiss:
- #ifdef CONFIG_8xx_CPU6
--	mtspr	SPRN_DAR, r3
-+	mtspr	SPRN_SPRG_SCRATCH2, r3
- #endif
- 	EXCEPTION_PROLOG_0
- 	mfcr	r10
-@@ -438,7 +437,7 @@ DataStoreTLBMiss:
- 
- 	/* Restore registers */
- #ifdef CONFIG_8xx_CPU6
--	mfspr	r3, SPRN_DAR
-+	mfspr	r3, SPRN_SPRG_SCRATCH2
- #endif
- 	mtspr	SPRN_DAR, r11	/* Tag DAR */
- 	EXCEPTION_EPILOG_0
+ 	/* If we are faulting a kernel address, we have to use the
+ 	 * kernel page tables.
 -- 
 2.1.0
