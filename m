@@ -1,15 +1,21 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id 77A311A1B77
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Apr 2015 02:37:27 +1000 (AEST)
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- scottwood@freescale.com
-Subject: [PATCH] powerpc/8xx: mmu_virtual_psize incorrect for 16k pages
-Message-Id: <20150417163717.EFE071A242C@localhost.localdomain>
-Date: Fri, 17 Apr 2015 18:37:17 +0200 (CEST)
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0134.outbound.protection.outlook.com [65.55.169.134])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 527321A0047
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Apr 2015 03:26:00 +1000 (AEST)
+Message-ID: <1429291534.4352.2.camel@freescale.com>
+Subject: Re: [PATCH v5 0/5] powerpc8xx: Further optimisation of TLB handling
+From: Scott Wood <scottwood@freescale.com>
+To: root <christophe.leroy@c-s.fr>
+Date: Fri, 17 Apr 2015 12:25:34 -0500
+In-Reply-To: <cover.1429287688.git.christophe.leroy@c-s.fr>
+References: <cover.1429287688.git.christophe.leroy@c-s.fr>
+Content-Type: text/plain; charset="UTF-8"
+MIME-Version: 1.0
+Cc: linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,33 +25,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-mmu_virtual_psize shall be set to MMU_PAGE_16K when 16k pages have
-been selected
+On Fri, 2015-04-17 at 18:32 +0200, root wrote:
+> This patchset provides a further optimisation of TLB handling in the 8xx.
+> Changes are:
+> - Not saving registers like CR when not needed
+> - Adding support to any TASK_SIZE
+> 
+> Only the last patch of the set is changed compared to v4
+> 
+> Christophe Leroy (5):
+>   powerpc/8xx: macro for handling CPU15 errata
+>   powerpc/8xx: Handle CR out of exception PROLOG/EPILOG
+>   powerpc/8xx: dont save CR in SCRATCH registers
+>   powerpc/8xx: Use SPRG2 instead of DAR for saving r3
+>   powerpc/8xx: Add support for TASK_SIZE greater than 0x80000000
+> 
+>  arch/powerpc/kernel/head_8xx.S | 79 +++++++++++++++++++++++++++---------------
+>  1 file changed, 51 insertions(+), 28 deletions(-)
+> 
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+Do you really want your name in the git history to be "root"?
 
----
- arch/powerpc/include/asm/mmu-8xx.h | 7 +++++++
- 1 file changed, 7 insertions(+)
-
-diff --git a/arch/powerpc/include/asm/mmu-8xx.h b/arch/powerpc/include/asm/mmu-8xx.h
-index 986b9e1..d41200c 100644
---- a/arch/powerpc/include/asm/mmu-8xx.h
-+++ b/arch/powerpc/include/asm/mmu-8xx.h
-@@ -145,7 +145,14 @@ typedef struct {
- } mm_context_t;
- #endif /* !__ASSEMBLY__ */
- 
-+#if (PAGE_SHIFT == 12)
- #define mmu_virtual_psize	MMU_PAGE_4K
-+#elif (PAGE_SHIFT == 14)
-+#define mmu_virtual_psize	MMU_PAGE_16K
-+#else
-+#error "Unsupported PAGE_SIZE"
-+#endif
-+
- #define mmu_linear_psize	MMU_PAGE_8M
- 
- #endif /* _ASM_POWERPC_MMU_8XX_H_ */
--- 
-2.1.0
+-Scott
