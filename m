@@ -1,30 +1,15 @@
-Return-Path: <gregkh@linuxfoundation.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 21AE01A0030
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Apr 2015 23:38:14 +1000 (AEST)
-Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
- [140.211.169.12])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id CDD1C1402B5
- for <linuxppc-dev@ozlabs.org>; Fri, 17 Apr 2015 23:38:13 +1000 (AEST)
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH 3.19 097/101] timers/tick/broadcast-hrtimer: Fix suspicious
- RCU usage in idle loop
-Date: Fri, 17 Apr 2015 15:29:25 +0200
-Message-Id: <20150417132518.542763939@linuxfoundation.org>
-In-Reply-To: <20150417132514.379828774@linuxfoundation.org>
-References: <20150417132514.379828774@linuxfoundation.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-15
-Cc: "Peter Zijlstra \(Intel\)" <peterz@infradead.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, stable@vger.kernel.org,
- linuxppc-dev@ozlabs.org, Preeti U Murthy <preeti@linux.vnet.ibm.com>,
- tglx@linutronix.de, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- Ingo Molnar <mingo@kernel.org>
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ by lists.ozlabs.org (Postfix) with ESMTP id A81A71A0030
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Apr 2015 00:23:58 +1000 (AEST)
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+Subject: [PATCH v3 01/17] crypto: talitos - Use zero entry to init descriptors
+ ptrs to zero
+To: Kim Phillips <kim.phillips@freescale.com>,
+ Herbert Xu <herbert@gondor.apana.org.au>, David S Miller <davem@davemloft.net>
+Message-Id: <20150417142354.5AE601A242C@localhost.localdomain>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-crypto@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,74 +18,41 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Date: Fri, 17 Apr 2015 14:24:00 -0000
 
-3.19-stable review patch.  If anyone has any objections, please let me know.
+Do use zero_entry value to init the descriptors ptrs to zero instead of
+writing 0 in each field
 
-------------------
-
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-
-commit a127d2bcf1fbc8c8e0b5cf0dab54f7d3ff50ce47 upstream.
-
-The hrtimer mode of broadcast queues hrtimers in the idle entry
-path so as to wakeup cpus in deep idle states. The associated
-call graph is :
-
-	cpuidle_idle_call()
-	|____ clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ENTER, ....))
-	     |_____tick_broadcast_set_event()
-		   |____clockevents_program_event()
-			|____bc_set_next()
-
-The hrtimer_{start/cancel} functions call into tracing which uses RCU.
-But it is not legal to call into RCU in cpuidle because it is one of the
-quiescent states. Hence protect this region with RCU_NONIDLE which informs
-RCU that the cpu is momentarily non-idle.
-
-As an aside it is helpful to point out that the clock event device that is
-programmed here is not a per-cpu clock device; it is a
-pseudo clock device, used by the broadcast framework alone.
-The per-cpu clock device programming never goes through bc_set_next().
-
-Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
-Reviewed-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-Cc: linuxppc-dev@ozlabs.org
-Cc: mpe@ellerman.id.au
-Cc: tglx@linutronix.de
-Link: http://lkml.kernel.org/r/20150318104705.17763.56668.stgit@preeti.in.ibm.com
-Signed-off-by: Ingo Molnar <mingo@kernel.org>
-Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- kernel/time/tick-broadcast-hrtimer.c |   11 +++++++++--
- 1 file changed, 9 insertions(+), 2 deletions(-)
+ drivers/crypto/talitos.c | 8 ++------
+ 1 file changed, 2 insertions(+), 6 deletions(-)
 
---- a/kernel/time/tick-broadcast-hrtimer.c
-+++ b/kernel/time/tick-broadcast-hrtimer.c
-@@ -49,6 +49,7 @@ static void bc_set_mode(enum clock_event
-  */
- static int bc_set_next(ktime_t expires, struct clock_event_device *bc)
- {
-+	int bc_moved;
- 	/*
- 	 * We try to cancel the timer first. If the callback is on
- 	 * flight on some other cpu then we let it handle it. If we
-@@ -60,9 +61,15 @@ static int bc_set_next(ktime_t expires,
- 	 * restart the timer because we are in the callback, but we
- 	 * can set the expiry time and let the callback return
- 	 * HRTIMER_RESTART.
-+	 *
-+	 * Since we are in the idle loop at this point and because
-+	 * hrtimer_{start/cancel} functions call into tracing,
-+	 * calls to these functions must be bound within RCU_NONIDLE.
- 	 */
--	if (hrtimer_try_to_cancel(&bctimer) >= 0) {
--		hrtimer_start(&bctimer, expires, HRTIMER_MODE_ABS_PINNED);
-+	RCU_NONIDLE(bc_moved = (hrtimer_try_to_cancel(&bctimer) >= 0) ?
-+		!hrtimer_start(&bctimer, expires, HRTIMER_MODE_ABS_PINNED) :
-+			0);
-+	if (bc_moved) {
- 		/* Bind the "device" to the cpu */
- 		bc->bound_on = smp_processor_id();
- 	} else if (bc->bound_on == smp_processor_id()) {
+diff --git a/drivers/crypto/talitos.c b/drivers/crypto/talitos.c
+index 857414a..7bf1b2b 100644
+--- a/drivers/crypto/talitos.c
++++ b/drivers/crypto/talitos.c
+@@ -1373,9 +1373,7 @@ static int common_nonsnoop(struct talitos_edesc *edesc,
+ 	int sg_count, ret;
+ 
+ 	/* first DWORD empty */
+-	desc->ptr[0].len = 0;
+-	to_talitos_ptr(&desc->ptr[0], 0);
+-	desc->ptr[0].j_extent = 0;
++	desc->ptr[0] = zero_entry;
+ 
+ 	/* cipher iv */
+ 	to_talitos_ptr(&desc->ptr[1], edesc->iv_dma);
+@@ -1445,9 +1443,7 @@ static int common_nonsnoop(struct talitos_edesc *edesc,
+ 			       DMA_FROM_DEVICE);
+ 
+ 	/* last DWORD empty */
+-	desc->ptr[6].len = 0;
+-	to_talitos_ptr(&desc->ptr[6], 0);
+-	desc->ptr[6].j_extent = 0;
++	desc->ptr[6] = zero_entry;
+ 
+ 	ret = talitos_submit(dev, ctx->ch, desc, callback, areq);
+ 	if (ret != -EINPROGRESS) {
+-- 
+2.1.0
