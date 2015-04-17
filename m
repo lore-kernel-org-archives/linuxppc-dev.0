@@ -1,19 +1,16 @@
 Return-Path: <christophe.leroy@c-s.fr>
 Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id CD9181A1B41
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Apr 2015 00:31:49 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTP id 5D0081A1B6B
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Apr 2015 00:31:51 +1000 (AEST)
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v3 00/17] crypto: talitos - Add support for SEC1
+Subject: [PATCH v3 01/17] crypto: talitos - Use zero entry to init descriptors
+ ptrs to zero
 To: Kim Phillips <kim.phillips@freescale.com>,
- Herbert Xu <herbert@gondor.apana.org.au>,
- "David S. Miller" <davem@davemloft.net>, Rob Herring <robh+dt@kernel.org>,
- Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>,
- Ian Campbell <ijc+devicetree@hellion.org.uk>,
- Kumar Gala <galak@codeaurora.org>
-Message-Id: <20150417143147.154871A242C@localhost.localdomain>
-Date: Fri, 17 Apr 2015 16:31:47 +0200 (CEST)
-Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org
+ Herbert Xu <herbert@gondor.apana.org.au>, David S Miller <davem@davemloft.net>
+Message-Id: <20150417143149.2193E1A242C@localhost.localdomain>
+Date: Fri, 17 Apr 2015 16:31:49 +0200 (CEST)
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-crypto@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,40 +20,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The purpose of this set of patchs is to add to talitos crypto driver
-the support for the SEC1 version of the security engine, which is
-found in mpc885 and mpc8272 processors.
+Do use zero_entry value to init the descriptors ptrs to zero instead of
+writing 0 in each field
 
-v3 is a complete rework of the patchset. Since a kernel can be built
-with support for both MPC82xx and MPC83xx at the same time, talitos
-driver shall support both SEC1 and SEC2+ at the same time.
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ drivers/crypto/talitos.c | 8 ++------
+ 1 file changed, 2 insertions(+), 6 deletions(-)
 
-Based on cryptodev-2.6 tree
-
-Christophe Leroy (17):
-  crypto: talitos - Use zero entry to init descriptors ptrs to zero
-  crypto: talitos - Refactor the sg in/out chain allocation
-  crypto: talitos - talitos_ptr renamed ptr for more lisibility
-  crypto: talitos - Add a helper function to clear j_extent field
-  crypto: talitos - remove param 'extent' in map_single_talitos_ptr()
-  crypto: talitos - helper function for ptr len
-  crypto: talitos - enhanced talitos_desc struct for SEC1
-  crypto: talitos - add sub-choice in talitos CONFIG for SEC1
-  crypto: talitos - Add a feature to tag SEC1
-  crypto: talitos - fill in talitos descriptor iaw SEC1 or SEC2+
-  crypto: talitos - adaptation of talitos_submit() for SEC1
-  crypto: talitos - base address for Execution Units
-  crypto: talitos - adapt interrupts and reset functions to SEC1
-  crypto: talitos - implement scatter/gather copy for SEC1
-  crypto: talitos - SEC1 bugs on 0 data hash
-  crypto: talitos - Add fsl,sec1.0 compatible
-  crypto: talitos - Update DT bindings with SEC1
-
- .../devicetree/bindings/crypto/fsl-sec2.txt        |   6 +-
- drivers/crypto/Kconfig                             |  18 +
- drivers/crypto/talitos.c                           | 727 +++++++++++++++------
- drivers/crypto/talitos.h                           | 153 +++--
- 4 files changed, 644 insertions(+), 260 deletions(-)
-
+diff --git a/drivers/crypto/talitos.c b/drivers/crypto/talitos.c
+index 857414a..7bf1b2b 100644
+--- a/drivers/crypto/talitos.c
++++ b/drivers/crypto/talitos.c
+@@ -1373,9 +1373,7 @@ static int common_nonsnoop(struct talitos_edesc *edesc,
+ 	int sg_count, ret;
+ 
+ 	/* first DWORD empty */
+-	desc->ptr[0].len = 0;
+-	to_talitos_ptr(&desc->ptr[0], 0);
+-	desc->ptr[0].j_extent = 0;
++	desc->ptr[0] = zero_entry;
+ 
+ 	/* cipher iv */
+ 	to_talitos_ptr(&desc->ptr[1], edesc->iv_dma);
+@@ -1445,9 +1443,7 @@ static int common_nonsnoop(struct talitos_edesc *edesc,
+ 			       DMA_FROM_DEVICE);
+ 
+ 	/* last DWORD empty */
+-	desc->ptr[6].len = 0;
+-	to_talitos_ptr(&desc->ptr[6], 0);
+-	desc->ptr[6].j_extent = 0;
++	desc->ptr[6] = zero_entry;
+ 
+ 	ret = talitos_submit(dev, ctx->ch, desc, callback, areq);
+ 	if (ret != -EINPROGRESS) {
 -- 
 2.1.0
