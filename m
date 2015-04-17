@@ -1,13 +1,12 @@
 Return-Path: <christophe.leroy@c-s.fr>
 Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id B03671A0938
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Apr 2015 00:23:58 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTP id 5E5B71A0030
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Apr 2015 00:24:02 +1000 (AEST)
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v3 02/17] crypto: talitos - Refactor the sg in/out chain
- allocation
+Subject: [PATCH v3 06/17] crypto: talitos - helper function for ptr len
 To: Kim Phillips <kim.phillips@freescale.com>,
  Herbert Xu <herbert@gondor.apana.org.au>, David S Miller <davem@davemloft.net>
-Message-Id: <20150417142355.6A53C1A242C@localhost.localdomain>
+Message-Id: <20150417142359.A79D21A242C@localhost.localdomain>
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  linux-crypto@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -18,237 +17,96 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Date: Fri, 17 Apr 2015 14:24:01 -0000
+Date: Fri, 17 Apr 2015 14:24:03 -0000
 
-This patch refactors the handling of the input and output data that is quite
-similar in several functions
+This patch adds a helper function for reads and writes of the len
+param of the talitos descriptor. This will help implement
+SEC1 later.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- drivers/crypto/talitos.c | 159 ++++++++++++++++++++++++-----------------------
- 1 file changed, 81 insertions(+), 78 deletions(-)
+ drivers/crypto/talitos.c | 24 +++++++++++++++++-------
+ 1 file changed, 17 insertions(+), 7 deletions(-)
 
 diff --git a/drivers/crypto/talitos.c b/drivers/crypto/talitos.c
-index 7bf1b2b..5a7e345 100644
+index 81e5636..bca6ded 100644
 --- a/drivers/crypto/talitos.c
 +++ b/drivers/crypto/talitos.c
-@@ -1327,16 +1327,23 @@ static int ablkcipher_setkey(struct crypto_ablkcipher *cipher,
- 	return 0;
+@@ -61,6 +61,16 @@ static void to_talitos_ptr(struct talitos_ptr *ptr, dma_addr_t dma_addr)
+ 	ptr->eptr = upper_32_bits(dma_addr);
  }
  
-+static void unmap_sg_talitos_ptr(struct device *dev, struct scatterlist *src,
-+				 struct scatterlist *dst, unsigned int len,
-+				 struct talitos_edesc *edesc)
++static void to_talitos_ptr_len(struct talitos_ptr *ptr, unsigned short len)
 +{
-+	talitos_sg_unmap(dev, edesc, src, dst);
++	ptr->len = cpu_to_be16(len);
 +}
 +
- static void common_nonsnoop_unmap(struct device *dev,
- 				  struct talitos_edesc *edesc,
- 				  struct ablkcipher_request *areq)
++static unsigned short from_talitos_ptr_len(struct talitos_ptr *ptr)
++{
++	return be16_to_cpu(ptr->len);
++}
++
+ static void to_talitos_ptr_extent_clear(struct talitos_ptr *ptr)
  {
- 	unmap_single_talitos_ptr(dev, &edesc->desc.ptr[5], DMA_FROM_DEVICE);
-+
-+	unmap_sg_talitos_ptr(dev, areq->src, areq->dst, areq->nbytes, edesc);
- 	unmap_single_talitos_ptr(dev, &edesc->desc.ptr[2], DMA_TO_DEVICE);
- 	unmap_single_talitos_ptr(dev, &edesc->desc.ptr[1], DMA_TO_DEVICE);
+ 	ptr->j_extent = 0;
+@@ -76,7 +86,7 @@ static void map_single_talitos_ptr(struct device *dev,
+ {
+ 	dma_addr_t dma_addr = dma_map_single(dev, data, len, dir);
  
--	talitos_sg_unmap(dev, edesc, areq->src, areq->dst);
--
- 	if (edesc->dma_len)
- 		dma_unmap_single(dev, edesc->dma_link_tbl, edesc->dma_len,
- 				 DMA_BIDIRECTIONAL);
-@@ -1358,6 +1365,65 @@ static void ablkcipher_done(struct device *dev,
- 	areq->base.complete(&areq->base, err);
+-	ptr->len = cpu_to_be16(len);
++	to_talitos_ptr_len(ptr, len);
+ 	to_talitos_ptr(ptr, dma_addr);
+ 	to_talitos_ptr_extent_clear(ptr);
+ }
+@@ -89,7 +99,7 @@ static void unmap_single_talitos_ptr(struct device *dev,
+ 				     enum dma_data_direction dir)
+ {
+ 	dma_unmap_single(dev, be32_to_cpu(ptr->ptr),
+-			 be16_to_cpu(ptr->len), dir);
++			 from_talitos_ptr_len(ptr), dir);
  }
  
-+int map_sg_in_talitos_ptr(struct device *dev, struct scatterlist *src,
-+			  unsigned int len, struct talitos_edesc *edesc,
-+			  enum dma_data_direction dir, struct talitos_ptr *ptr)
-+{
-+	int sg_count;
-+
-+	ptr->len = cpu_to_be16(len);
-+	ptr->j_extent = 0;
-+
-+	sg_count = talitos_map_sg(dev, src, edesc->src_nents ? : 1, dir,
-+				  edesc->src_chained);
-+
-+	if (sg_count == 1) {
-+		to_talitos_ptr(ptr, sg_dma_address(src));
-+	} else {
-+		sg_count = sg_to_link_tbl(src, sg_count, len,
-+					  &edesc->link_tbl[0]);
-+		if (sg_count > 1) {
-+			to_talitos_ptr(ptr, edesc->dma_link_tbl);
-+			ptr->j_extent |= DESC_PTR_LNKTBL_JUMP;
-+			dma_sync_single_for_device(dev, edesc->dma_link_tbl,
-+						   edesc->dma_len,
-+						   DMA_BIDIRECTIONAL);
-+		} else {
-+			/* Only one segment now, so no link tbl needed */
-+			to_talitos_ptr(ptr, sg_dma_address(src));
-+		}
-+	}
-+	return sg_count;
-+}
-+
-+void map_sg_out_talitos_ptr(struct device *dev, struct scatterlist *dst,
-+			    unsigned int len, struct talitos_edesc *edesc,
-+			    enum dma_data_direction dir,
-+			    struct talitos_ptr *ptr, int sg_count)
-+{
-+	ptr->len = cpu_to_be16(len);
-+	ptr->j_extent = 0;
-+
-+	if (dir != DMA_NONE)
-+		sg_count = talitos_map_sg(dev, dst, edesc->dst_nents ? : 1,
-+					  dir, edesc->dst_chained);
-+
-+	if (sg_count == 1) {
-+		to_talitos_ptr(ptr, sg_dma_address(dst));
-+	} else {
-+		struct talitos_ptr *link_tbl_ptr =
-+			&edesc->link_tbl[edesc->src_nents + 1];
-+
-+		to_talitos_ptr(ptr, edesc->dma_link_tbl +
-+					      (edesc->src_nents + 1) *
-+					      sizeof(struct talitos_ptr));
-+		ptr->j_extent |= DESC_PTR_LNKTBL_JUMP;
-+		sg_count = sg_to_link_tbl(dst, sg_count, len, link_tbl_ptr);
-+		dma_sync_single_for_device(dev, edesc->dma_link_tbl,
-+					   edesc->dma_len, DMA_BIDIRECTIONAL);
-+	}
-+}
-+
- static int common_nonsnoop(struct talitos_edesc *edesc,
- 			   struct ablkcipher_request *areq,
- 			   void (*callback) (struct device *dev,
-@@ -1387,56 +1453,16 @@ static int common_nonsnoop(struct talitos_edesc *edesc,
- 	/*
- 	 * cipher in
- 	 */
--	desc->ptr[3].len = cpu_to_be16(cryptlen);
--	desc->ptr[3].j_extent = 0;
--
--	sg_count = talitos_map_sg(dev, areq->src, edesc->src_nents ? : 1,
--				  (areq->src == areq->dst) ? DMA_BIDIRECTIONAL
--							   : DMA_TO_DEVICE,
--				  edesc->src_chained);
--
--	if (sg_count == 1) {
--		to_talitos_ptr(&desc->ptr[3], sg_dma_address(areq->src));
--	} else {
--		sg_count = sg_to_link_tbl(areq->src, sg_count, cryptlen,
--					  &edesc->link_tbl[0]);
--		if (sg_count > 1) {
--			to_talitos_ptr(&desc->ptr[3], edesc->dma_link_tbl);
--			desc->ptr[3].j_extent |= DESC_PTR_LNKTBL_JUMP;
--			dma_sync_single_for_device(dev, edesc->dma_link_tbl,
--						   edesc->dma_len,
--						   DMA_BIDIRECTIONAL);
--		} else {
--			/* Only one segment now, so no link tbl needed */
--			to_talitos_ptr(&desc->ptr[3],
--				       sg_dma_address(areq->src));
--		}
--	}
-+	sg_count = map_sg_in_talitos_ptr(dev, areq->src, cryptlen, edesc,
-+					 (areq->src == areq->dst) ?
-+					  DMA_BIDIRECTIONAL : DMA_TO_DEVICE,
-+					  &desc->ptr[3]);
+ static int reset_channel(struct device *dev, int ch)
+@@ -1375,7 +1385,7 @@ int map_sg_in_talitos_ptr(struct device *dev, struct scatterlist *src,
+ {
+ 	int sg_count;
  
- 	/* cipher out */
--	desc->ptr[4].len = cpu_to_be16(cryptlen);
--	desc->ptr[4].j_extent = 0;
--
--	if (areq->src != areq->dst)
--		sg_count = talitos_map_sg(dev, areq->dst,
--					  edesc->dst_nents ? : 1,
--					  DMA_FROM_DEVICE, edesc->dst_chained);
--
--	if (sg_count == 1) {
--		to_talitos_ptr(&desc->ptr[4], sg_dma_address(areq->dst));
--	} else {
--		struct talitos_ptr *link_tbl_ptr =
--			&edesc->link_tbl[edesc->src_nents + 1];
--
--		to_talitos_ptr(&desc->ptr[4], edesc->dma_link_tbl +
--					      (edesc->src_nents + 1) *
--					      sizeof(struct talitos_ptr));
--		desc->ptr[4].j_extent |= DESC_PTR_LNKTBL_JUMP;
--		sg_count = sg_to_link_tbl(areq->dst, sg_count, cryptlen,
--					  link_tbl_ptr);
--		dma_sync_single_for_device(ctx->dev, edesc->dma_link_tbl,
--					   edesc->dma_len, DMA_BIDIRECTIONAL);
--	}
-+	map_sg_out_talitos_ptr(dev, areq->dst, cryptlen, edesc,
-+			       (areq->src == areq->dst) ? DMA_NONE
-+							: DMA_FROM_DEVICE,
-+			       &desc->ptr[4], sg_count);
+-	ptr->len = cpu_to_be16(len);
++	to_talitos_ptr_len(ptr, len);
+ 	to_talitos_ptr_extent_clear(ptr);
  
- 	/* iv out */
- 	map_single_talitos_ptr(dev, &desc->ptr[5], ivsize, ctx->iv, 0,
-@@ -1506,6 +1532,8 @@ static void common_nonsnoop_hash_unmap(struct device *dev,
+ 	sg_count = talitos_map_sg(dev, src, edesc->src_nents ? : 1, dir,
+@@ -1405,7 +1415,7 @@ void map_sg_out_talitos_ptr(struct device *dev, struct scatterlist *dst,
+ 			    enum dma_data_direction dir,
+ 			    struct talitos_ptr *ptr, int sg_count)
+ {
+-	ptr->len = cpu_to_be16(len);
++	to_talitos_ptr_len(ptr, len);
+ 	to_talitos_ptr_extent_clear(ptr);
  
- 	unmap_single_talitos_ptr(dev, &edesc->desc.ptr[5], DMA_FROM_DEVICE);
+ 	if (dir != DMA_NONE)
+@@ -1447,7 +1457,7 @@ static int common_nonsnoop(struct talitos_edesc *edesc,
  
-+	unmap_sg_talitos_ptr(dev, req_ctx->psrc, NULL, 0, edesc);
-+
+ 	/* cipher iv */
+ 	to_talitos_ptr(&desc->ptr[1], edesc->iv_dma);
+-	desc->ptr[1].len = cpu_to_be16(ivsize);
++	to_talitos_ptr_len(&desc->ptr[1], ivsize);
+ 	to_talitos_ptr_extent_clear(&desc->ptr[1]);
+ 
+ 	/* cipher key */
+@@ -1539,11 +1549,11 @@ static void common_nonsnoop_hash_unmap(struct device *dev,
+ 	unmap_sg_talitos_ptr(dev, req_ctx->psrc, NULL, 0, edesc);
+ 
  	/* When using hashctx-in, must unmap it. */
- 	if (edesc->desc.ptr[1].len)
+-	if (edesc->desc.ptr[1].len)
++	if (from_talitos_ptr_len(&edesc->desc.ptr[1]))
  		unmap_single_talitos_ptr(dev, &edesc->desc.ptr[1],
-@@ -1515,8 +1543,6 @@ static void common_nonsnoop_hash_unmap(struct device *dev,
+ 					 DMA_TO_DEVICE);
+ 
+-	if (edesc->desc.ptr[2].len)
++	if (from_talitos_ptr_len(&edesc->desc.ptr[2]))
  		unmap_single_talitos_ptr(dev, &edesc->desc.ptr[2],
  					 DMA_TO_DEVICE);
  
--	talitos_sg_unmap(dev, edesc, req_ctx->psrc, NULL);
--
- 	if (edesc->dma_len)
- 		dma_unmap_single(dev, edesc->dma_link_tbl, edesc->dma_len,
- 				 DMA_BIDIRECTIONAL);
-@@ -1555,7 +1581,7 @@ static int common_nonsnoop_hash(struct talitos_edesc *edesc,
- 	struct talitos_ahash_req_ctx *req_ctx = ahash_request_ctx(areq);
- 	struct device *dev = ctx->dev;
- 	struct talitos_desc *desc = &edesc->desc;
--	int sg_count, ret;
-+	int ret;
- 
- 	/* first DWORD empty */
- 	desc->ptr[0] = zero_entry;
-@@ -1583,31 +1609,8 @@ static int common_nonsnoop_hash(struct talitos_edesc *edesc,
- 	/*
- 	 * data in
- 	 */
--	desc->ptr[3].len = cpu_to_be16(length);
--	desc->ptr[3].j_extent = 0;
--
--	sg_count = talitos_map_sg(dev, req_ctx->psrc,
--				  edesc->src_nents ? : 1,
--				  DMA_TO_DEVICE, edesc->src_chained);
--
--	if (sg_count == 1) {
--		to_talitos_ptr(&desc->ptr[3], sg_dma_address(req_ctx->psrc));
--	} else {
--		sg_count = sg_to_link_tbl(req_ctx->psrc, sg_count, length,
--					  &edesc->link_tbl[0]);
--		if (sg_count > 1) {
--			desc->ptr[3].j_extent |= DESC_PTR_LNKTBL_JUMP;
--			to_talitos_ptr(&desc->ptr[3], edesc->dma_link_tbl);
--			dma_sync_single_for_device(ctx->dev,
--						   edesc->dma_link_tbl,
--						   edesc->dma_len,
--						   DMA_BIDIRECTIONAL);
--		} else {
--			/* Only one segment now, so no link tbl needed */
--			to_talitos_ptr(&desc->ptr[3],
--				       sg_dma_address(req_ctx->psrc));
--		}
--	}
-+	map_sg_in_talitos_ptr(dev, req_ctx->psrc, length, edesc,
-+			      DMA_TO_DEVICE, &desc->ptr[3]);
- 
- 	/* fifth DWORD empty */
- 	desc->ptr[4] = zero_entry;
 -- 
 2.1.0
