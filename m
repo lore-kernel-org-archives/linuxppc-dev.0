@@ -1,25 +1,32 @@
-Return-Path: <David.Laight@ACULAB.COM>
-Received: from smtp-out6.electric.net (smtp-out6.electric.net
- [192.162.217.181])
- (using TLSv1.1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <jolsa@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 990441A0BEA
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Apr 2015 01:15:27 +1000 (AEST)
-From: David Laight <David.Laight@ACULAB.COM>
-To: 'Christophe Leroy' <christophe.leroy@c-s.fr>, Kim Phillips
- <kim.phillips@freescale.com>, Herbert Xu <herbert@gondor.apana.org.au>, David
- S Miller <davem@davemloft.net>
-Subject: RE: [PATCH v3 03/17] crypto: talitos - talitos_ptr renamed ptr for
- more lisibility
-Date: Fri, 17 Apr 2015 15:14:18 +0000
-Message-ID: <063D6719AE5E284EB5DD2968C1650D6D1CB21235@AcuExch.aculab.com>
-References: <20150417142356.797BC1A242C@localhost.localdomain>
-In-Reply-To: <20150417142356.797BC1A242C@localhost.localdomain>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7F6931A0BD7
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Apr 2015 01:32:48 +1000 (AEST)
+Date: Fri, 17 Apr 2015 17:31:26 +0200
+From: Jiri Olsa <jolsa@redhat.com>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Subject: Re: 'perf upgrade' (was: Re: [PATCH v9 00/11] Add support for JSON
+ event files.)
+Message-ID: <20150417153126.GA17654@krava>
+References: <1428993665-2133-1-git-send-email-sukadev@linux.vnet.ibm.com>
+ <20150414085541.GA30202@gmail.com>
+ <1429010508.27414.1.camel@ellerman.id.au>
+ <20150414125822.GA32761@gmail.com>
+ <1429052004.10000.1.camel@ellerman.id.au>
+ <20150415092557.GA14942@gmail.com>
+ <20150415205042.GA11620@us.ibm.com>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "linux-crypto@vger.kernel.org" <linux-crypto@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20150415205042.GA11620@us.ibm.com>
+Cc: Arnaldo Carvalho de Melo <acme@infradead.org>, ak@linux.intel.com,
+ Peter Zijlstra <a.p.zijlstra@chello.nl>, peterz@infradead.org,
+ linux-kernel@vger.kernel.org, Arnaldo Carvalho de Melo <acme@kernel.org>,
+ Pekka Enberg <penberg@iki.fi>, Linus Torvalds <torvalds@linux-foundation.org>,
+ mingo@redhat.com, Borislav Petkov <bp@alien8.de>, namhyung@kernel.org,
+ Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
+ Ingo Molnar <mingo@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,15 +36,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-RnJvbTogQ2hyaXN0b3BoZSBMZXJveQ0KPiBMaW51eCBDb2R5aW5nU3R5bGUgcmVjb21tZW5kcyB0
-byB1c2Ugc2hvcnQgdmFyaWFibGVzIGZvciBsb2NhbA0KPiB2YXJpYWJsZXMuIHB0ciBpcyBqdXN0
-IGdvb2QgZW5vdWdoIGZvciB0aG9zZSAzIGxpbmVzIGZ1bmN0aW9ucy4NCj4gSXQgaGVscHMga2Vl
-cCBzaW5nbGUgbGluZXMgc2hvcnRlciB0aGFuIDgwIGNoYXJhY3RlcnMuDQouLi4NCj4gLXN0YXRp
-YyB2b2lkIHRvX3RhbGl0b3NfcHRyKHN0cnVjdCB0YWxpdG9zX3B0ciAqdGFsaXRvc19wdHIsIGRt
-YV9hZGRyX3QgZG1hX2FkZHIpDQo+ICtzdGF0aWMgdm9pZCB0b190YWxpdG9zX3B0cihzdHJ1Y3Qg
-dGFsaXRvc19wdHIgKnB0ciwgZG1hX2FkZHJfdCBkbWFfYWRkcikNCj4gIHsNCj4gLQl0YWxpdG9z
-X3B0ci0+cHRyID0gY3B1X3RvX2JlMzIobG93ZXJfMzJfYml0cyhkbWFfYWRkcikpOw0KPiAtCXRh
-bGl0b3NfcHRyLT5lcHRyID0gdXBwZXJfMzJfYml0cyhkbWFfYWRkcik7DQo+ICsJcHRyLT5wdHIg
-PSBjcHVfdG9fYmUzMihsb3dlcl8zMl9iaXRzKGRtYV9hZGRyKSk7DQo+ICsJcHRyLT5lcHRyID0g
-dXBwZXJfMzJfYml0cyhkbWFfYWRkcik7DQo+ICB9DQouLi4NCg0KTWF5YmUsIGJ1dCAncHRyJyBp
-c24ndCBhIGdvb2QgY2hvaWNlLg0KDQoJRGF2aWQNCg0K
+On Wed, Apr 15, 2015 at 01:50:42PM -0700, Sukadev Bhattiprolu wrote:
+
+SNIP
+
+> | 
+> |  - to blindly follow some poorly constructed vendor format with no 
+> |    high level structure, that IMHO didn't work very well when OProfile 
+> |    was written, and misrepresenting it as 'symbolic event names'.
+> | 
+> |    Take a look at:
+> | 
+> |      https://download.01.org/perfmon/HSW/Haswell_core_V17.json
+> | 
+> |    and weep.
+> 
+> Evil vendor formats, but to be fair, here is what _we_ have today:
+> 
+> 	perf stat -e r10068,r20036,r40060,r40ac sleep 1
+
+hum, you could also use the 'cpu/event=.../' syntax right?
+It's not symbolic name, just to be fair ;-)
+
+jirka
