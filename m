@@ -1,17 +1,14 @@
 Return-Path: <christophe.leroy@c-s.fr>
 Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id 6FA4C1A173B
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Apr 2015 02:33:11 +1000 (AEST)
-Message-Id: <8ca2a6fd05eb1ec388a8637a130e3f4bfc2de373.1429287688.git.christophe.leroy@c-s.fr>
-In-Reply-To: <cover.1429287688.git.christophe.leroy@c-s.fr>
-References: <cover.1429287688.git.christophe.leroy@c-s.fr>
-Subject: [PATCH v5 5/5] powerpc/8xx: Add support for TASK_SIZE greater than
- 0x80000000
+ by lists.ozlabs.org (Postfix) with ESMTP id 77A311A1B77
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Apr 2015 02:37:27 +1000 (AEST)
+From: Christophe Leroy <christophe.leroy@c-s.fr>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  scottwood@freescale.com
-Date: Fri, 17 Apr 2015 18:33:00 +0200 (CEST)
-From: christophe.leroy@c-s.fr (root)
+Subject: [PATCH] powerpc/8xx: mmu_virtual_psize incorrect for 16k pages
+Message-Id: <20150417163717.EFE071A242C@localhost.localdomain>
+Date: Fri, 17 Apr 2015 18:37:17 +0200 (CEST)
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -22,77 +19,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-By default, TASK_SIZE is set to 0x80000000 for PPC_8xx, which is most
-likely sufficient for most cases. However, kernel configuration allows
-to set TASK_SIZE to another value, so the 8xx shall handle it.
-
-This patch also takes into account the case of PAGE_OFFSET lower than
-0x80000000, allthought most of the time it is equal to 0xC0000000
+mmu_virtual_psize shall be set to MMU_PAGE_16K when 16k pages have
+been selected
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- arch/powerpc/kernel/head_8xx.S | 25 +++++++++++++++++++------
- 1 file changed, 19 insertions(+), 6 deletions(-)
 
-diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index ba2dc53..c640bbb 100644
---- a/arch/powerpc/kernel/head_8xx.S
-+++ b/arch/powerpc/kernel/head_8xx.S
-@@ -48,6 +48,19 @@
- 	mtspr	spr, reg
- #endif
+---
+ arch/powerpc/include/asm/mmu-8xx.h | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/arch/powerpc/include/asm/mmu-8xx.h b/arch/powerpc/include/asm/mmu-8xx.h
+index 986b9e1..d41200c 100644
+--- a/arch/powerpc/include/asm/mmu-8xx.h
++++ b/arch/powerpc/include/asm/mmu-8xx.h
+@@ -145,7 +145,14 @@ typedef struct {
+ } mm_context_t;
+ #endif /* !__ASSEMBLY__ */
  
-+/* Macro to test if an address is a kernel address */
-+#if CONFIG_TASK_SIZE <= 0x80000000 && CONFIG_PAGE_OFFSET >= 0x80000000
-+#define IS_KERNEL(tmp, addr)		\
-+	andis.	tmp, addr, 0x8000	/* Address >= 0x80000000 */
-+#define BRANCH_UNLESS_KERNEL(label)	beq	label
++#if (PAGE_SHIFT == 12)
+ #define mmu_virtual_psize	MMU_PAGE_4K
++#elif (PAGE_SHIFT == 14)
++#define mmu_virtual_psize	MMU_PAGE_16K
 +#else
-+#define IS_KERNEL(tmp, addr)		\
-+	rlwinm	tmp, addr, 16, 16, 31;	\
-+	cmpli	cr0, tmp, PAGE_OFFSET >> 16
-+#define BRANCH_UNLESS_KERNEL(label)	blt	label
++#error "Unsupported PAGE_SIZE"
 +#endif
 +
-+
- /*
-  * Value for the bits that have fixed value in RPN entries.
-  * Also used for tagging DAR for DTLBerror.
-@@ -322,9 +335,9 @@ InstructionTLBMiss:
- 	mfspr	r11, SPRN_SRR0	/* Get effective address of fault */
- 	INVALIDATE_ADJACENT_PAGES_CPU15(r10, r11)
- 	mfcr	r10
--	andis.	r11, r11, 0x8000	/* Address >= 0x80000000 */
-+	IS_KERNEL(r11, r11)
- 	mfspr	r11, SPRN_M_TW	/* Get level 1 table */
--	beq	3f
-+	BRANCH_UNLESS_KERNEL(3f)
- 	lis	r11, (swapper_pg_dir-PAGE_OFFSET)@ha
- 3:
- 	mtcr	r10
-@@ -379,9 +392,9 @@ DataStoreTLBMiss:
- 	 * kernel page tables.
- 	 */
- 	mfspr	r11, SPRN_MD_EPN
--	andis.	r11, r11, 0x8000
-+	IS_KERNEL(r11, r11)
- 	mfspr	r11, SPRN_M_TW	/* Get level 1 table */
--	beq	3f
-+	BRANCH_UNLESS_KERNEL(3f)
- 	lis	r11, (swapper_pg_dir-PAGE_OFFSET)@ha
- 3:
- 	mtcr	r10
-@@ -513,9 +526,9 @@ FixupDAR:/* Entry point for dcbx workaround. */
- 	mtspr	SPRN_SPRG_SCRATCH2, r10
- 	/* fetch instruction from memory. */
- 	mfspr	r10, SPRN_SRR0
--	andis.	r11, r10, 0x8000	/* Address >= 0x80000000 */
-+	IS_KERNEL(r11, r10)
- 	mfspr	r11, SPRN_M_TW	/* Get level 1 table */
--	beq	3f
-+	BRANCH_UNLESS_KERNEL(3f)
- 	lis	r11, (swapper_pg_dir-PAGE_OFFSET)@ha
- 	/* Insert level 1 index */
- 3:	rlwimi	r11, r10, 32 - ((PAGE_SHIFT - 2) << 1), (PAGE_SHIFT - 2) << 1, 29
+ #define mmu_linear_psize	MMU_PAGE_8M
+ 
+ #endif /* _ASM_POWERPC_MMU_8XX_H_ */
 -- 
 2.1.0
