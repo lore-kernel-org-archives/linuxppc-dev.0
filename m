@@ -1,29 +1,30 @@
-Return-Path: <Lijun.Pan@freescale.com>
+Return-Path: <scottwood@freescale.com>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3DEC71A0030
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Apr 2015 04:50:39 +1000 (AEST)
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0138.outbound.protection.outlook.com [65.55.169.138])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 21A3F1A0030
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Apr 2015 04:52:53 +1000 (AEST)
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0123.outbound.protection.outlook.com [207.46.100.123])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id B7AFB1401AF
- for <linuxppc-dev@ozlabs.org>; Sat, 18 Apr 2015 04:50:36 +1000 (AEST)
-From: Lijun Pan <Lijun.Pan@freescale.com>
-To: Michael Ellerman <mpe@ellerman.id.au>, Scott Wood <scottwood@freescale.com>
-Subject: RE: new way of writing defconfigs for freescale's powerpc platforms
-Date: Fri, 17 Apr 2015 18:50:32 +0000
-Message-ID: <DM2PR03MB3688B52A469BA5BDD57E3C3FCE30@DM2PR03MB368.namprd03.prod.outlook.com>
+ by ozlabs.org (Postfix) with ESMTPS id 584471402E3
+ for <linuxppc-dev@ozlabs.org>; Sat, 18 Apr 2015 04:52:51 +1000 (AEST)
+Message-ID: <1429296759.4352.8.camel@freescale.com>
+Subject: Re: new way of writing defconfigs for freescale's powerpc platforms
+From: Scott Wood <scottwood@freescale.com>
+To: Pan Lijun-B44306 <Lijun.Pan@freescale.com>
+Date: Fri, 17 Apr 2015 13:52:39 -0500
+In-Reply-To: <DM2PR03MB3688B52A469BA5BDD57E3C3FCE30@DM2PR03MB368.namprd03.prod.outlook.com>
 References: <DM2PR03MB3689ECA6BC27B156BD10F76FCFB0@DM2PR03MB368.namprd03.prod.outlook.com>
  <1429232060.22546.7.camel@ellerman.id.au>
  <1429244000.32545.51.camel@freescale.com>
  <1429251526.22546.8.camel@ellerman.id.au>
-In-Reply-To: <1429251526.22546.8.camel@ellerman.id.au>
-Content-Type: text/plain; charset="utf-8"
+ <DM2PR03MB3688B52A469BA5BDD57E3C3FCE30@DM2PR03MB368.namprd03.prod.outlook.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
- Richard Schmitt <richard.schmitt@freescale.com>
+Cc: Schmitt Richard-B43082 <richard.schmitt@freescale.com>,
+ "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,72 +34,86 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogTWljaGFlbCBFbGxlcm1h
-biBbbWFpbHRvOm1wZUBlbGxlcm1hbi5pZC5hdV0NCj4gU2VudDogRnJpZGF5LCBBcHJpbCAxNywg
-MjAxNSAxOjE5IEFNDQo+IFRvOiBXb29kIFNjb3R0LUIwNzQyMQ0KPiBDYzogUGFuIExpanVuLUI0
-NDMwNjsgbGludXhwcGMtZGV2QG96bGFicy5vcmc7IFNjaG1pdHQgUmljaGFyZC1CNDMwODINCj4g
-U3ViamVjdDogUmU6IG5ldyB3YXkgb2Ygd3JpdGluZyBkZWZjb25maWdzIGZvciBmcmVlc2NhbGUn
-cyBwb3dlcnBjIHBsYXRmb3Jtcw0KPiANCj4gT24gVGh1LCAyMDE1LTA0LTE2IGF0IDIzOjEzIC0w
-NTAwLCBTY290dCBXb29kIHdyb3RlOg0KPiA+IE9uIEZyaSwgMjAxNS0wNC0xNyBhdCAxMDo1NCAr
-MTAwMCwgTWljaGFlbCBFbGxlcm1hbiB3cm90ZToNCj4gPiA+IE9uIFRodSwgMjAxNS0wNC0wOSBh
-dCAyMTo1MiArMDAwMCwgTGlqdW4gUGFuIHdyb3RlOg0KPiA+ID4gPiBIaSBNYWludGFpbmVycywN
-Cj4gPiA+ID4NCj4gPiA+ID4gV2UgaGF2ZSBhIHByb3Bvc2FsIGZvciB3cml0aW5nIHRoZSBkZWZj
-b25maWdzIGZvciBmcmVlc2NhbGUncyBwb3dwZXJwYw0KPiBwbGF0Zm9ybXMgaW4gYSBuZXcgd2F5
-Lg0KPiA+ID4gPiBDYW4geW91IHRha2UgYSBsb29rIGFuZCBwcm92aWRlIHNvbWUgZmVlZGJhY2s/
-DQo+ID4gPiA+DQo+ID4gPiA+IFlvdSBrbm93IGN1cnJlbnRseSB3ZSBoYXZlIG1wYzg1eHhfZGVm
-Y29uZmlnLCBjb3JlbmV0MzJfZGVmY29uZmlnLA0KPiBic2M5MTN4X2RlZmNvbmZpZywgKmZtYW4q
-X2RlZmNvbmZpZywgZXRjLg0KPiA+ID4gPiBXZSBhcmUgZ29pbmcgdG8gZXh0cmFjdCBzb21lIGNv
-bW1vbiBwYXJ0cyBmcm9tIHRoZSBleGlzdGluZyBkZWZjb25maWdzLA0KPiBhbmQgbmFtZSBpdCwg
-c2F5LCBmc2xfYmFzaWNfZGVmY29uZmlnLg0KPiA+ID4gPiBUaGVuLCB3ZSBjb3VsZCBjcmVhdGUg
-c29tZSBkZWZjb25maWdzIHRhcmdldGluZyBzcGVjaWZpYyBmZWF0dXJlcyBvcg0KPiBzcGVjaWZp
-YyBwbGF0Zm9ybXMuDQo+ID4gPiA+IFNheSwgZmVhdHVyZXMgc3BlY2lmaWM6IGt2bV9kZWZjb25m
-aWcsIGZtYW5fZGVmY29uZmlnLCBldGMuDQo+ID4gPiA+IFBsYXRmb3JtcyBzcGVjaWZpYzogcDFf
-ZGVmY29uZmlnLCBwMl9kZWZjb25nZmlnLCBwNF9kZWZjb25maWcsDQo+ID4gPiA+IHQxX2RlZmNv
-bmZpZywgdDJfZGVmY29uZmlnLCB0Ml9kZWZjb25maWcsIGI0X2RlZmNvbmZpZywgZXRjIFdoZW4N
-Cj4gPiA+ID4gd2Ugd2FudCB0byBtYWtlIGEga2VybmVsIGltYWdlIGZvciBwMSBwbGF0Zm9ybSwg
-VXNpbmcgdGhlIGZvbGxvd2luZw0KPiBzdGVwczoNCj4gPiA+ID4NCj4gPiA+ID4gbWFrZSAuL3Nj
-cmlwdHMva2NvbmZpZy9tZXJnZV9jb25maWcuc2gNCj4gPiA+ID4gYXJjaC9wb3dlcnBjL2NvbmZp
-Z3MvZnNsX2Jhc2ljX2NvbmZpZyBwMV9kZWZjb25maWcgbWFrZQ0KPiA+ID4gPg0KPiA+ID4gPiBX
-aGF0IGRvIHlvdSB0aGluayBvZiB0aGlzIG5ldyBhcHByb2FjaD8NCj4gPiA+DQo+ID4gPiBJIGRv
-bid0IGxpa2UgdGhhdCB0aGUgdXNlciBoYXMgdG8gbWFudWFsbHkgcnVuIG1lcmdlX2NvbmZpZy5z
-aC4NCj4gPiA+DQo+ID4gPiBIb3cgZG9lcyBhIHVzZXIgZXZlbiBrbm93IHRoYXQgaXQncyBhbiBv
-cHRpb24/DQo+ID4gPg0KPiA+ID4gSXQgYWxzbyBicmVha3Mgc2NyaXB0cyB0aGF0IGF1dG8gYnVp
-bGQgdGhlIGtlcm5lbCwgd2hpY2ggZXhwZWN0IHRvIGJlIGFibGUgdG8NCj4gZG86DQo+ID4gPg0K
-PiA+ID4gICAkIG1ha2UgZm9vX2RlZmNvbmZpZw0KPiA+ID4gICAkIG1ha2UNCj4gPiA+DQo+ID4g
-PiBTY3JpcHRzIGxpa2UgbWluZSBmb3IgZXhhbXBsZSA6KQ0KPiA+ID4NCj4gPiA+ICAgaHR0cDov
-L2tpc3NrYi5lbGxlcm1hbi5pZC5hdS9raXNza2IvaGVhZC84NzM0Lw0KPiA+ID4NCj4gPiA+IFdo
-YXQgSSdkIGJlIGhhcHB5IHdpdGggaXMgc29tZXRoaW5nIHRoYXQgZG9lcyBtZXJnZV9jb25maWcg
-dW5kZXIgdGhlDQo+ID4gPiBjb3ZlcnMuIFNvIGEgdXNlciBzdGlsbCBydW5zICdtYWtlIGZzbF9w
-bGF0X2Zvb19kZWZjb25maWcnLCBidXQNCj4gPiA+IHVuZGVyIHRoZSBjb3ZlcnMgaXQgZG9lcyBh
-IG1lcmdlIGNvbmZpZy4NCj4gPiA+DQo+ID4gPiBrdm1jb25maWcgYW5kIHRpbnljb25maWcgYXJl
-IGltcGxlbWVudGVkIHRoYXQgd2F5IGFscmVhZHksIHNvIHdpdGggYQ0KPiA+ID4gYml0IG1vcmUg
-d29yayBob3BlZnVsbHkgeW91IGNhbiBkbyB0aGF0IGZvciBhcmNoIGNvbmZpZ3MgYWxzby4NCj4g
-Pg0KPiA+IGt2bWNvbmZpZyBhbmQgdGlueWNvbmZpZyBhcmUgc3RpbGwgc2VwYXJhdGUgdXNlci12
-aXNpYmxlIHN0ZXBzIHRvIGJlDQo+ID4gYXBwbGllZCBhZnRlciBydW5uaW5nIGEgYmFzZSBkZWZj
-b25maWcuDQo+IA0KPiBOb3QgYXMgb2YgcmVjZW50bHk6DQo+IA0KPiANCj4gaHR0cHM6Ly9naXQu
-a2VybmVsLm9yZy9jZ2l0L2xpbnV4L2tlcm5lbC9naXQvdG9ydmFsZHMvbGludXguZ2l0L2NvbW1p
-dC9zY3JpcHRzL2tjDQo+IG9uZmlnL01ha2VmaWxlP2lkPTYzYTkxMDMzZDUyZTY0YTIyZTU3MWZl
-ODQ5MjRjMGI3ZjIxYzI4MGQNCj4gDQoNCkFib3ZlIHBhdGNoIGlzIHZlcnkgZ2VuZXJpYy4NCldp
-dGggdGhpcyBwYXRjaCwgd2UgZG9uJ3QgZXZlbiBuZWVkIHRvIG1vZGlmeSBhcmNoL3Bvd2VycGMv
-TWFrZWZpbGUuDQpXZSBjYW4ganVzdCBhZGQgZnJhZ21lbnRzIChsaWtlIHNtcC5jb25maWcsIGt2
-bV9ndWVzdC5jb25maWcsIGV0YykgdW5kZXINCmFyY2gvcG93ZXJwYy9jb25maWdzLyBvcg0KYWRk
-IHBsYXRmb3JtIGluZGVwZW5kZW50IGNvbmZpZyB1bmRlciBrZXJuZWwvY29uZmlncy8NCg0KZXhh
-bXBsZSBtaWdodCBiZToNCm1ha2UgbXBjODV4eF9kZWZjb25maWcNCm1ha2Ugc21wLmNvbmZpZw0K
-bWFrZSBrdm1fZ3Vlc3QuY29uZmlnDQoNCj4gDQo+IFdoaWNoIHByZXR0eSBtdWNoIGRvZXMgd2hh
-dCB5b3UgZGVzY3JpYmUgYmVsb3cgSSB0aGluay4NCj4gDQo+ID4gRm9yIGJyZWFraW5nIGEgcGxh
-dGZvcm0gZGVmY29uZmlnIGludG8gY29tcG9uZW50cywgd2UgY291bGQgZG8NCj4gPiBzb21ldGhp
-bmcgbGlrZSB0aGlzIGluIGFyY2gvcG93ZXJwYy9NYWtlZmlsZToNCj4gPg0KPiA+ICMgQ2FuJ3Qg
-Y2FsbCBtZXJnZWNvbmZpZyBkaXJlY3RseSBhcyBpdCBpc24ndCBkZWZpbmVkIGF0IHRoaXMgcG9p
-bnQNCj4gPiBkZWZpbmUgZG9tZXJnZQ0KPiA+ICAgICAgICBAJChNQUtFKSAtZiAkKHNyY3RyZWUp
-L3NjcmlwdHMva2NvbmZpZy9NYWtlZmlsZSAkKDEpLmNvbmZpZw0KPiA+IGVuZGVmDQo+ID4NCj4g
-PiBjb3JlbmV0NjRfc21wX2RlZmNvbmZpZzogY29yZW5ldDY0X2Jhc2ljX2RlZmNvbmZpZw0KPiA+
-IAkkKGNhbGwgZG9tZXJnZSxzbXApDQo+ID4gCSQoY2FsbCBkb21lcmdlLGFsdGl2ZWMpDQo+ID4g
-CSQoY2FsbCBkb21lcmdlLGNvcmVuZXRfZHJpdmVycykNCj4gPiAJJChjYWxsIGRvbWVyZ2UsZW1i
-ZWRkZWRfbWlzYykgIyBmaWxlc3lzdGVtcyBldGMNCj4gPg0KPiA+IEFuZCB0aGlzIGluIHNjcmlw
-dHMva2NvbmZpZy9NYWtlZmlsZToNCj4gPg0KPiA+ICUuY29uZmlnOg0KPiA+ICAgICAgICAkKGNh
-bGwgbWVyZ2Vjb25maWcsJCopDQo+ID4NCj4gPiBPbmUgaXNzdWUgd2l0aCB0aGlzIGlzIHRoYXQg
-d2UnZCBsb3NlIHRoZSBhYmlsaXR5IHRvIHVzZSBzYXZlZGVmY29uZmlnDQo+ID4gKGF0IGxlYXN0
-IHdpdGhvdXQgbWFudWFsIG1hbmlwdWxhdGlvbiBvZiB0aGUgcmVzdWx0cykgdG8gbWFpbnRhaW4g
-dGhlDQo+ID4gZGVmY29uZmlncy9mcmFnbWVudHMuDQo+IA0KPiBUaGF0J3MgcHJvYmFibHkgT0ss
-IGl0J3Mgb25seSBtYWludGFpbmVycyB3aG8gbmVlZCB0byBkbyB0aGF0Lg0KPiANCj4gY2hlZXJz
-DQo+IA0KDQo=
+On Fri, 2015-04-17 at 13:50 -0500, Pan Lijun-B44306 wrote:
+> 
+> 
+> > -----Original Message-----
+> > From: Michael Ellerman [mailto:mpe@ellerman.id.au]
+> > Sent: Friday, April 17, 2015 1:19 AM
+> > To: Wood Scott-B07421
+> > Cc: Pan Lijun-B44306; linuxppc-dev@ozlabs.org; Schmitt Richard-B43082
+> > Subject: Re: new way of writing defconfigs for freescale's powerpc platforms
+> > 
+> > On Thu, 2015-04-16 at 23:13 -0500, Scott Wood wrote:
+> > > On Fri, 2015-04-17 at 10:54 +1000, Michael Ellerman wrote:
+> > > > On Thu, 2015-04-09 at 21:52 +0000, Lijun Pan wrote:
+> > > > > Hi Maintainers,
+> > > > >
+> > > > > We have a proposal for writing the defconfigs for freescale's powperpc
+> > platforms in a new way.
+> > > > > Can you take a look and provide some feedback?
+> > > > >
+> > > > > You know currently we have mpc85xx_defconfig, corenet32_defconfig,
+> > bsc913x_defconfig, *fman*_defconfig, etc.
+> > > > > We are going to extract some common parts from the existing defconfigs,
+> > and name it, say, fsl_basic_defconfig.
+> > > > > Then, we could create some defconfigs targeting specific features or
+> > specific platforms.
+> > > > > Say, features specific: kvm_defconfig, fman_defconfig, etc.
+> > > > > Platforms specific: p1_defconfig, p2_defcongfig, p4_defconfig,
+> > > > > t1_defconfig, t2_defconfig, t2_defconfig, b4_defconfig, etc When
+> > > > > we want to make a kernel image for p1 platform, Using the following
+> > steps:
+> > > > >
+> > > > > make ./scripts/kconfig/merge_config.sh
+> > > > > arch/powerpc/configs/fsl_basic_config p1_defconfig make
+> > > > >
+> > > > > What do you think of this new approach?
+> > > >
+> > > > I don't like that the user has to manually run merge_config.sh.
+> > > >
+> > > > How does a user even know that it's an option?
+> > > >
+> > > > It also breaks scripts that auto build the kernel, which expect to be able to
+> > do:
+> > > >
+> > > >   $ make foo_defconfig
+> > > >   $ make
+> > > >
+> > > > Scripts like mine for example :)
+> > > >
+> > > >   http://kisskb.ellerman.id.au/kisskb/head/8734/
+> > > >
+> > > > What I'd be happy with is something that does merge_config under the
+> > > > covers. So a user still runs 'make fsl_plat_foo_defconfig', but
+> > > > under the covers it does a merge config.
+> > > >
+> > > > kvmconfig and tinyconfig are implemented that way already, so with a
+> > > > bit more work hopefully you can do that for arch configs also.
+> > >
+> > > kvmconfig and tinyconfig are still separate user-visible steps to be
+> > > applied after running a base defconfig.
+> > 
+> > Not as of recently:
+> > 
+> > 
+> > https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/commit/scripts/kc
+> > onfig/Makefile?id=63a91033d52e64a22e571fe84924c0b7f21c280d
+> > 
+> 
+> Above patch is very generic.
+> With this patch, we don't even need to modify arch/powerpc/Makefile.
+> We can just add fragments (like smp.config, kvm_guest.config, etc) under
+> arch/powerpc/configs/ or
+> add platform independent config under kernel/configs/
+> 
+> example might be:
+> make mpc85xx_defconfig
+> make smp.config
+> make kvm_guest.config
+
+The point is that the user should not have to do that.  They can if they
+want, but there should still be traditional named configs, which would
+just work differently under the hood.
+
+-Scott
