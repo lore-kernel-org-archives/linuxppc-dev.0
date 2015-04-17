@@ -1,14 +1,13 @@
 Return-Path: <christophe.leroy@c-s.fr>
 Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id A92401A0C57
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Apr 2015 00:32:04 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTP id DB6AD1A188B
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Apr 2015 00:32:07 +1000 (AEST)
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v3 08/17] crypto: talitos - add sub-choice in talitos CONFIG
- for SEC1
+Subject: [PATCH v3 09/17] crypto: talitos - Add a feature to tag SEC1
 To: Kim Phillips <kim.phillips@freescale.com>,
  Herbert Xu <herbert@gondor.apana.org.au>, David S Miller <davem@davemloft.net>
-Message-Id: <20150417143203.8BAEC1A242C@localhost.localdomain>
-Date: Fri, 17 Apr 2015 16:32:03 +0200 (CEST)
+Message-Id: <20150417143205.9D8171A242C@localhost.localdomain>
+Date: Fri, 17 Apr 2015 16:32:05 +0200 (CEST)
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  linux-crypto@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -20,41 +19,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch adds a CONFIG option to select SEC1, SEC2+ or both.
+We add a new feature in the features field, to mark compatible
+"fsl,sec1.0"
+We also define a helper function called has_ftr_sec1() to help
+functions quickly determine if they are running on SEC1 or SEC2+.
+When only SEC1 or SEC2 is compiled in, has_ftr_sec1() return
+trivial corresponding value. If both are compiled in, feature
+field is checked.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- drivers/crypto/Kconfig | 18 ++++++++++++++++++
- 1 file changed, 18 insertions(+)
+ drivers/crypto/talitos.c |  3 +++
+ drivers/crypto/talitos.h | 17 +++++++++++++++++
+ 2 files changed, 20 insertions(+)
 
-diff --git a/drivers/crypto/Kconfig b/drivers/crypto/Kconfig
-index 800bf41..8a76a01 100644
---- a/drivers/crypto/Kconfig
-+++ b/drivers/crypto/Kconfig
-@@ -222,6 +222,24 @@ config CRYPTO_DEV_TALITOS
- 	  To compile this driver as a module, choose M here: the module
- 	  will be called talitos.
+diff --git a/drivers/crypto/talitos.c b/drivers/crypto/talitos.c
+index bca6ded..db95023 100644
+--- a/drivers/crypto/talitos.c
++++ b/drivers/crypto/talitos.c
+@@ -2709,6 +2709,9 @@ static int talitos_probe(struct platform_device *ofdev)
+ 				  TALITOS_FTR_SHA224_HWINIT |
+ 				  TALITOS_FTR_HMAC_OK;
  
-+config CRYPTO_DEV_TALITOS1
-+	bool "SEC1 (SEC 1.0 and SEC Lite 1.2)"
-+	depends on CRYPTO_DEV_TALITOS
-+	depends on PPC_8xx || PPC_82xx
-+	default y
-+	help
-+	  Say 'Y' here to use the Freescale Security Engine (SEC) version 1.0
-+	  found on MPC82xx or the Freescale Security Engine (SEC Lite)
-+	  version 1.2 found on MPC8xx
++	if (of_device_is_compatible(np, "fsl,sec1.0"))
++		priv->features |= TALITOS_FTR_SEC1;
 +
-+config CRYPTO_DEV_TALITOS2
-+	bool "SEC2+ (SEC version 2.0 or upper)"
-+	depends on CRYPTO_DEV_TALITOS
-+	default y if !PPC_8xx
-+	help
-+	  Say 'Y' here to use the Freescale Security Engine (SEC)
-+	  version 2 and following as found on MPC83xx, MPC85xx, etc ...
+ 	priv->chan = kzalloc(sizeof(struct talitos_channel) *
+ 			     priv->num_channels, GFP_KERNEL);
+ 	if (!priv->chan) {
+diff --git a/drivers/crypto/talitos.h b/drivers/crypto/talitos.h
+index f078da1..b0bdb4e 100644
+--- a/drivers/crypto/talitos.h
++++ b/drivers/crypto/talitos.h
+@@ -156,6 +156,23 @@ extern int talitos_submit(struct device *dev, int ch, struct talitos_desc *desc,
+ #define TALITOS_FTR_HW_AUTH_CHECK 0x00000002
+ #define TALITOS_FTR_SHA224_HWINIT 0x00000004
+ #define TALITOS_FTR_HMAC_OK 0x00000008
++#define TALITOS_FTR_SEC1 0x00000010
 +
- config CRYPTO_DEV_IXP4XX
- 	tristate "Driver for IXP4xx crypto hardware acceleration"
- 	depends on ARCH_IXP4XX && IXP4XX_QMGR && IXP4XX_NPE
++/*
++ * If both CONFIG_CRYPTO_DEV_TALITOS1 and CONFIG_CRYPTO_DEV_TALITOS2 are
++ * defined, we check the features which are set according to the device tree.
++ * Otherwise, we answer true or false directly
++ */
++static inline bool has_ftr_sec1(struct talitos_private *priv)
++{
++#if defined(CONFIG_CRYPTO_DEV_TALITOS1) && defined(CONFIG_CRYPTO_DEV_TALITOS2)
++	return priv->features & TALITOS_FTR_SEC1 ? true : false;
++#elif defined(CONFIG_CRYPTO_DEV_TALITOS1)
++	return true;
++#else
++	return false;
++#endif
++}
+ 
+ /*
+  * TALITOS_xxx_LO addresses point to the low data bits (32-63) of the register
 -- 
 2.1.0
