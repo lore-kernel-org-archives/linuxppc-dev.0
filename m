@@ -1,19 +1,15 @@
 Return-Path: <christophe.leroy@c-s.fr>
 Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id AA1611A0047
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Apr 2015 00:23:58 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTP id C6B8C1A0ABE
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Apr 2015 00:23:59 +1000 (AEST)
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Date: Fri, 17 Apr 2015 15:47:30 +0200
-Subject: [PATCH v3 00/17] crypto: talitos - Add support for SEC1
+Subject: [PATCH v3 04/17] crypto: talitos - Add a helper function to clear
+ j_extent field
 To: Kim Phillips <kim.phillips@freescale.com>,
- Herbert Xu <herbert@gondor.apana.org.au>,
- "David S. Miller" <davem@davemloft.net>, Rob Herring <robh+dt@kernel.org>,
- Pawel Moll <pawel.moll@arm.com>, Mark Rutland <mark.rutland@arm.com>,
- Ian Campbell <ijc+devicetree@hellion.org.uk>,
- Kumar Gala <galak@codeaurora.org>
-Message-Id: <20150417142353.76D561A242C@localhost.localdomain>
-Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org
+ Herbert Xu <herbert@gondor.apana.org.au>, David S Miller <davem@davemloft.net>
+Message-Id: <20150417142357.88EB51A242C@localhost.localdomain>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-crypto@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,41 +18,58 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
+Date: Fri, 17 Apr 2015 14:24:00 -0000
 
-The purpose of this set of patchs is to add to talitos crypto driver
-the support for the SEC1 version of the security engine, which is
-found in mpc885 and mpc8272 processors.
+j_extent field is specific to SEC2 so we add a helper function to clear it
+so that SEC1 can redefine that function as nop
 
-v3 is a complete rework of the patchset. Since a kernel can be built
-with support for both MPC82xx and MPC83xx at the same time, talitos
-driver shall support both SEC1 and SEC2+ at the same time.
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ drivers/crypto/talitos.c | 11 ++++++++---
+ 1 file changed, 8 insertions(+), 3 deletions(-)
 
-Based on cryptodev-2.6 tree
-
-Christophe Leroy (17):
-  crypto: talitos - Use zero entry to init descriptors ptrs to zero
-  crypto: talitos - Refactor the sg in/out chain allocation
-  crypto: talitos - talitos_ptr renamed ptr for more lisibility
-  crypto: talitos - Add a helper function to clear j_extent field
-  crypto: talitos - remove param 'extent' in map_single_talitos_ptr()
-  crypto: talitos - helper function for ptr len
-  crypto: talitos - enhanced talitos_desc struct for SEC1
-  crypto: talitos - add sub-choice in talitos CONFIG for SEC1
-  crypto: talitos - Add a feature to tag SEC1
-  crypto: talitos - fill in talitos descriptor iaw SEC1 or SEC2+
-  crypto: talitos - adaptation of talitos_submit() for SEC1
-  crypto: talitos - base address for Execution Units
-  crypto: talitos - adapt interrupts and reset functions to SEC1
-  crypto: talitos - implement scatter/gather copy for SEC1
-  crypto: talitos - SEC1 bugs on 0 data hash
-  crypto: talitos - Add fsl,sec1.0 compatible
-  crypto: talitos - Update DT bindings with SEC1
-
- .../devicetree/bindings/crypto/fsl-sec2.txt        |   6 +-
- drivers/crypto/Kconfig                             |  18 +
- drivers/crypto/talitos.c                           | 727 +++++++++++++++------
- drivers/crypto/talitos.h                           | 153 +++--
- 4 files changed, 644 insertions(+), 260 deletions(-)
-
+diff --git a/drivers/crypto/talitos.c b/drivers/crypto/talitos.c
+index fca0aed..c93f79b 100644
+--- a/drivers/crypto/talitos.c
++++ b/drivers/crypto/talitos.c
+@@ -61,6 +61,11 @@ static void to_talitos_ptr(struct talitos_ptr *ptr, dma_addr_t dma_addr)
+ 	ptr->eptr = upper_32_bits(dma_addr);
+ }
+ 
++static void to_talitos_ptr_extent_clear(struct talitos_ptr *ptr)
++{
++	ptr->j_extent = 0;
++}
++
+ /*
+  * map virtual single (contiguous) pointer to h/w descriptor pointer
+  */
+@@ -1372,7 +1377,7 @@ int map_sg_in_talitos_ptr(struct device *dev, struct scatterlist *src,
+ 	int sg_count;
+ 
+ 	ptr->len = cpu_to_be16(len);
+-	ptr->j_extent = 0;
++	to_talitos_ptr_extent_clear(ptr);
+ 
+ 	sg_count = talitos_map_sg(dev, src, edesc->src_nents ? : 1, dir,
+ 				  edesc->src_chained);
+@@ -1402,7 +1407,7 @@ void map_sg_out_talitos_ptr(struct device *dev, struct scatterlist *dst,
+ 			    struct talitos_ptr *ptr, int sg_count)
+ {
+ 	ptr->len = cpu_to_be16(len);
+-	ptr->j_extent = 0;
++	to_talitos_ptr_extent_clear(ptr);
+ 
+ 	if (dir != DMA_NONE)
+ 		sg_count = talitos_map_sg(dev, dst, edesc->dst_nents ? : 1,
+@@ -1444,7 +1449,7 @@ static int common_nonsnoop(struct talitos_edesc *edesc,
+ 	/* cipher iv */
+ 	to_talitos_ptr(&desc->ptr[1], edesc->iv_dma);
+ 	desc->ptr[1].len = cpu_to_be16(ivsize);
+-	desc->ptr[1].j_extent = 0;
++	to_talitos_ptr_extent_clear(&desc->ptr[1]);
+ 
+ 	/* cipher key */
+ 	map_single_talitos_ptr(dev, &desc->ptr[2], ctx->keylen,
 -- 
 2.1.0
