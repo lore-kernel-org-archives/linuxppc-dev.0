@@ -1,13 +1,13 @@
 Return-Path: <christophe.leroy@c-s.fr>
 Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id 0547C1A0938
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Apr 2015 00:24:02 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTP id BF2E61A0ACC
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Apr 2015 00:24:03 +1000 (AEST)
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v3 07/17] crypto: talitos - enhanced talitos_desc struct for
- SEC1
+Subject: [PATCH v3 08/17] crypto: talitos - add sub-choice in talitos CONFIG
+ for SEC1
 To: Kim Phillips <kim.phillips@freescale.com>,
  Herbert Xu <herbert@gondor.apana.org.au>, David S Miller <davem@davemloft.net>
-Message-Id: <20150417142400.BCABD1A242C@localhost.localdomain>
+Message-Id: <20150417142401.CB8331A242C@localhost.localdomain>
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  linux-crypto@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -18,57 +18,43 @@ List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
-Date: Fri, 17 Apr 2015 14:24:03 -0000
+Date: Fri, 17 Apr 2015 14:24:04 -0000
 
-This patch enhances the talitos_desc struct with fields for SEC1.
-SEC1 has only one header field, and has a 'next_desc' field in
-addition.
-This mixed descriptor will continue to fit SEC2, and for SEC1
-we will recopy hdr value into hdr1 value in talitos_submit()
+This patch adds a CONFIG option to select SEC1, SEC2+ or both.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- drivers/crypto/talitos.h | 20 ++++++++++++++++----
- 1 file changed, 16 insertions(+), 4 deletions(-)
+ drivers/crypto/Kconfig | 18 ++++++++++++++++++
+ 1 file changed, 18 insertions(+)
 
-diff --git a/drivers/crypto/talitos.h b/drivers/crypto/talitos.h
-index 61a1405..f078da1 100644
---- a/drivers/crypto/talitos.h
-+++ b/drivers/crypto/talitos.h
-@@ -37,9 +37,17 @@
+diff --git a/drivers/crypto/Kconfig b/drivers/crypto/Kconfig
+index 800bf41..8a76a01 100644
+--- a/drivers/crypto/Kconfig
++++ b/drivers/crypto/Kconfig
+@@ -222,6 +222,24 @@ config CRYPTO_DEV_TALITOS
+ 	  To compile this driver as a module, choose M here: the module
+ 	  will be called talitos.
  
- /* descriptor pointer entry */
- struct talitos_ptr {
--	__be16 len;     /* length */
--	u8 j_extent;    /* jump to sg link table and/or extent */
--	u8 eptr;        /* extended address */
-+	union {
-+		struct {		/* SEC2 format */
-+			__be16 len;     /* length */
-+			u8 j_extent;    /* jump to sg link table and/or extent*/
-+			u8 eptr;        /* extended address */
-+		};
-+		struct {			/* SEC1 format */
-+			__be16 res;
-+			__be16 len1;	/* length */
-+		};
-+	};
- 	__be32 ptr;     /* address */
- };
- 
-@@ -53,8 +61,12 @@ static const struct talitos_ptr zero_entry = {
- /* descriptor */
- struct talitos_desc {
- 	__be32 hdr;                     /* header high bits */
--	__be32 hdr_lo;                  /* header low bits */
-+	union {
-+		__be32 hdr_lo;		/* header low bits */
-+		__be32 hdr1;		/* header for SEC1 */
-+	};
- 	struct talitos_ptr ptr[7];      /* ptr/len pair array */
-+	__be32 next_desc;		/* next descriptor (SEC1) */
- };
- 
- /**
++config CRYPTO_DEV_TALITOS1
++	bool "SEC1 (SEC 1.0 and SEC Lite 1.2)"
++	depends on CRYPTO_DEV_TALITOS
++	depends on PPC_8xx || PPC_82xx
++	default y
++	help
++	  Say 'Y' here to use the Freescale Security Engine (SEC) version 1.0
++	  found on MPC82xx or the Freescale Security Engine (SEC Lite)
++	  version 1.2 found on MPC8xx
++
++config CRYPTO_DEV_TALITOS2
++	bool "SEC2+ (SEC version 2.0 or upper)"
++	depends on CRYPTO_DEV_TALITOS
++	default y if !PPC_8xx
++	help
++	  Say 'Y' here to use the Freescale Security Engine (SEC)
++	  version 2 and following as found on MPC83xx, MPC85xx, etc ...
++
+ config CRYPTO_DEV_IXP4XX
+ 	tristate "Driver for IXP4xx crypto hardware acceleration"
+ 	depends on ARCH_IXP4XX && IXP4XX_QMGR && IXP4XX_NPE
 -- 
 2.1.0
