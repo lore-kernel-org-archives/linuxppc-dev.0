@@ -1,25 +1,23 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0136.outbound.protection.outlook.com [157.56.111.136])
+Return-Path: <Lijun.Pan@freescale.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id EA2911A0034
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Apr 2015 14:50:13 +1000 (AEST)
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0145.outbound.protection.outlook.com [65.55.169.145])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7A0081A0028
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Apr 2015 08:53:38 +1000 (AEST)
-From: Scott Wood <scottwood@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>
-Subject: [PATCH 2/2] powerpc/mpc85xx: Add FSL QorIQ DPAA QMan support to
- device tree(s)
-Date: Fri, 17 Apr 2015 17:53:07 -0500
-Message-ID: <1429311187-19062-2-git-send-email-scottwood@freescale.com>
-In-Reply-To: <1429311187-19062-1-git-send-email-scottwood@freescale.com>
-References: <1429311187-19062-1-git-send-email-scottwood@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id 5E844140283
+ for <linuxppc-dev@ozlabs.org>; Sat, 18 Apr 2015 14:50:11 +1000 (AEST)
+From: Lijun Pan <Lijun.Pan@freescale.com>
+To: <linuxppc-dev@ozlabs.org>
+Subject: [PATCH] powerpc/defconfig: new way of writing defconfig
+Date: Fri, 17 Apr 2015 23:47:21 -0500
+Message-ID: <1429332441-18647-1-git-send-email-Lijun.Pan@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
-Cc: devicetree@vger.kernel.org, Poonam Aggrwal <poonam.aggrwal@freescale.com>,
- Geoff Thorpe <Geoff.Thorpe@freescale.com>,
- Emil Medve <Emilian.Medve@Freescale.com>, Scott Wood <scottwood@freescale.com>,
- Madalin-Cristian Bucur <madalin.bucur@freescale.com>,
- Chunhe Lan <Chunhe.Lan@freescale.com>
+Cc: Lijun Pan <Lijun.Pan@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,1627 +27,346 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Kumar Gala <galak@kernel.crashing.org>
+It is always a headache dealing with different defconfigs
+though they only differ in few places. Hence we are proposing a new
+way of writing defconfig:
+1. Define a basic defconfig say mpc85xx_basic_defconfig
+2. Spin off as much features as possible from mpc85xx_defconfig
+	and create a separate config file, say, kvm_guest.config
+Every time we add a new feature, we don't need to change several
+defconfigs, we just add a new *.config
+And you could merge any fragments you want into .config with the
+current kconfig in Kernel.
 
-Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
-Signed-off-by: Geoff Thorpe <Geoff.Thorpe@freescale.com>
-Signed-off-by: Hai-Ying Wang <Haiying.Wang@freescale.com>
-Signed-off-by: Chunhe Lan <Chunhe.Lan@freescale.com>
-Signed-off-by: Poonam Aggrwal <poonam.aggrwal@freescale.com>
-[Emil Medve: Sync with the upstream binding]
-Signed-off-by: Emil Medve <Emilian.Medve@Freescale.com>
-[Scott Wood: s/fsl,qman-channel-id/cell-index]
-Signed-off-by: Scott Wood <scottwood@freescale.com>
-Cc: Madalin-Cristian Bucur <madalin.bucur@freescale.com>
+Say you want to build mpc85xx_smp_defconfig, you do 3 steps
+make mpc85xx_basic_defconfig
+make smp.config
+make kvm_guest.config
+
+or just
+make mpc85xx_smp_defconfig
+
+Signed-off-by: Lijun Pan <Lijun.Pan@freescale.com>
 ---
- arch/powerpc/boot/dts/b4qds.dtsi                   |  12 +
- arch/powerpc/boot/dts/fsl/b4860si-post.dtsi        |  69 +++++
- arch/powerpc/boot/dts/fsl/b4si-post.dtsi           | 106 +++++++
- arch/powerpc/boot/dts/fsl/p1023si-post.dtsi        |  43 +++
- arch/powerpc/boot/dts/fsl/p2041si-post.dtsi        |  13 +
- arch/powerpc/boot/dts/fsl/p3041si-post.dtsi        |  13 +
- arch/powerpc/boot/dts/fsl/p4080si-post.dtsi        |  13 +
- arch/powerpc/boot/dts/fsl/p5020si-post.dtsi        |  13 +
- arch/powerpc/boot/dts/fsl/p5040si-post.dtsi        |  13 +
- arch/powerpc/boot/dts/fsl/qoriq-qman1-portals.dtsi |  20 +-
- arch/powerpc/boot/dts/fsl/t1040si-post.dtsi        |  78 +++++
- arch/powerpc/boot/dts/fsl/t2081si-post.dtsi        | 126 ++++++++
- arch/powerpc/boot/dts/fsl/t4240si-post.dtsi        | 318 +++++++++++++++++++++
- arch/powerpc/boot/dts/kmcoge4.dts                  |  12 +
- arch/powerpc/boot/dts/oca4080.dts                  |  12 +
- arch/powerpc/boot/dts/p1023rdb.dts                 |  12 +
- arch/powerpc/boot/dts/p2041rdb.dts                 |  12 +
- arch/powerpc/boot/dts/p3041ds.dts                  |  12 +
- arch/powerpc/boot/dts/p4080ds.dts                  |  12 +
- arch/powerpc/boot/dts/p5020ds.dts                  |  12 +
- arch/powerpc/boot/dts/p5040ds.dts                  |  12 +
- arch/powerpc/boot/dts/t104xqds.dtsi                |  12 +
- arch/powerpc/boot/dts/t104xrdb.dtsi                |  12 +
- arch/powerpc/boot/dts/t208xqds.dtsi                |  12 +
- arch/powerpc/boot/dts/t208xrdb.dtsi                |  12 +
- arch/powerpc/boot/dts/t4240qds.dts                 |  12 +
- arch/powerpc/boot/dts/t4240rdb.dts                 |  12 +
- 27 files changed, 995 insertions(+), 10 deletions(-)
+ arch/powerpc/Makefile                              |  17 ++
+ ...t32_smp_defconfig => corenet32_basic_defconfig} |   0
+ ...t64_smp_defconfig => corenet64_basic_defconfig} |   0
+ arch/powerpc/configs/kvm_guest.config              |   2 +
+ .../{mpc85xx_defconfig => mpc85xx_basic_defconfig} |   0
+ arch/powerpc/configs/mpc85xx_smp_defconfig         | 244 ---------------------
+ arch/powerpc/configs/smp.config                    |   1 +
+ 7 files changed, 20 insertions(+), 244 deletions(-)
+ rename arch/powerpc/configs/{corenet32_smp_defconfig => corenet32_basic_defconfig} (100%)
+ rename arch/powerpc/configs/{corenet64_smp_defconfig => corenet64_basic_defconfig} (100%)
+ create mode 100644 arch/powerpc/configs/kvm_guest.config
+ rename arch/powerpc/configs/{mpc85xx_defconfig => mpc85xx_basic_defconfig} (100%)
+ delete mode 100644 arch/powerpc/configs/mpc85xx_smp_defconfig
+ create mode 100644 arch/powerpc/configs/smp.config
 
-diff --git a/arch/powerpc/boot/dts/b4qds.dtsi b/arch/powerpc/boot/dts/b4qds.dtsi
-index 24ed80d..559d006 100644
---- a/arch/powerpc/boot/dts/b4qds.dtsi
-+++ b/arch/powerpc/boot/dts/b4qds.dtsi
-@@ -106,6 +106,14 @@
- 			size = <0 0x1000000>;
- 			alignment = <0 0x1000000>;
- 		};
-+		qman_fqd: qman-fqd {
-+			size = <0 0x400000>;
-+			alignment = <0 0x400000>;
-+		};
-+		qman_pfdr: qman-pfdr {
-+			size = <0 0x2000000>;
-+			alignment = <0 0x2000000>;
-+		};
- 	};
+diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
+index fc502e0..590b441 100644
+--- a/arch/powerpc/Makefile
++++ b/arch/powerpc/Makefile
+@@ -269,6 +269,23 @@ bootwrapper_install:
+ %.dtb: scripts
+ 	$(Q)$(MAKE) ARCH=ppc64 $(build)=$(boot) $(patsubst %,$(boot)/%,$@)
  
- 	dcsr: dcsr@f00000000 {
-@@ -116,6 +124,10 @@
- 		ranges = <0x0 0xf 0xf4000000 0x2000000>;
- 	};
- 
-+	qportals: qman-portals@ff6000000 {
-+		ranges = <0x0 0xf 0xf6000000 0x2000000>;
-+	};
++define domerge
++       $(Q)$(CONFIG_SHELL) $(srctree)/scripts/kconfig/merge_config.sh $(srctree)/.config $(srctree)/arch/powerpc/configs/$(1).config
++endef
 +
- 	soc: soc@ffe000000 {
- 		ranges = <0x00000000 0xf 0xfe000000 0x1000000>;
- 		reg = <0xf 0xfe000000 0 0x00001000>;
-diff --git a/arch/powerpc/boot/dts/fsl/b4860si-post.dtsi b/arch/powerpc/boot/dts/fsl/b4860si-post.dtsi
-index f35e9e0..5af90fd 100644
---- a/arch/powerpc/boot/dts/fsl/b4860si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/b4860si-post.dtsi
-@@ -167,6 +167,75 @@
- 	};
- };
- 
-+&qportals {
-+	qportal14: qman-portal@38000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x38000 0x4000>, <0x100e000 0x1000>;
-+		interrupts = <132 0x2 0 0>;
-+		cell-index = <0xe>;
-+	};
-+	qportal15: qman-portal@3c000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x3c000 0x4000>, <0x100f000 0x1000>;
-+		interrupts = <134 0x2 0 0>;
-+		cell-index = <0xf>;
-+	};
-+	qportal16: qman-portal@40000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x40000 0x4000>, <0x1010000 0x1000>;
-+		interrupts = <136 0x2 0 0>;
-+		cell-index = <0x10>;
-+	};
-+	qportal17: qman-portal@44000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x44000 0x4000>, <0x1011000 0x1000>;
-+		interrupts = <138 0x2 0 0>;
-+		cell-index = <0x11>;
-+	};
-+	qportal18: qman-portal@48000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x48000 0x4000>, <0x1012000 0x1000>;
-+		interrupts = <140 0x2 0 0>;
-+		cell-index = <0x12>;
-+	};
-+	qportal19: qman-portal@4c000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x4c000 0x4000>, <0x1013000 0x1000>;
-+		interrupts = <142 0x2 0 0>;
-+		cell-index = <0x13>;
-+	};
-+	qportal20: qman-portal@50000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x50000 0x4000>, <0x1014000 0x1000>;
-+		interrupts = <144 0x2 0 0>;
-+		cell-index = <0x14>;
-+	};
-+	qportal21: qman-portal@54000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x54000 0x4000>, <0x1015000 0x1000>;
-+		interrupts = <146 0x2 0 0>;
-+		cell-index = <0x15>;
-+	};
-+	qportal22: qman-portal@58000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x58000 0x4000>, <0x1016000 0x1000>;
-+		interrupts = <148 0x2 0 0>;
-+		cell-index = <0x16>;
-+	};
-+	qportal23: qman-portal@5c000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x5c000 0x4000>, <0x1017000 0x1000>;
-+		interrupts = <150 0x2 0 0>;
-+		cell-index = <0x17>;
-+	};
-+	qportal24: qman-portal@60000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x60000 0x4000>, <0x1018000 0x1000>;
-+		interrupts = <152 0x2 0 0>;
-+		cell-index = <0x18>;
-+	};
-+};
++mpc85xx_defconfig: mpc85xx_basic_defconfig
++	@:
 +
- &soc {
- 	ddr2: memory-controller@9000 {
- 		compatible = "fsl,qoriq-memory-controller-v4.5", "fsl,qoriq-memory-controller";
-diff --git a/arch/powerpc/boot/dts/fsl/b4si-post.dtsi b/arch/powerpc/boot/dts/fsl/b4si-post.dtsi
-index 73136c0..fafb1d9 100644
---- a/arch/powerpc/boot/dts/fsl/b4si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/b4si-post.dtsi
-@@ -37,6 +37,16 @@
- 	alloc-ranges = <0 0 0x10000 0>;
- };
- 
-+&qman_fqd {
-+	compatible = "fsl,qman-fqd";
-+	alloc-ranges = <0 0 0x10000 0>;
-+};
++mpc85xx_smp_defconfig: mpc85xx_basic_defconfig
++	$(call domerge,smp)
++	$(call domerge,kvm_guest)
 +
-+&qman_pfdr {
-+	compatible = "fsl,qman-pfdr";
-+	alloc-ranges = <0 0 0x10000 0>;
-+};
++corenet32_smp_defconfig: corenet32_basic_defconfig
++	$(call domerge,smp)
 +
- &ifc {
- 	#address-cells = <2>;
- 	#size-cells = <1>;
-@@ -210,6 +220,97 @@
- 	};
- };
- 
-+&qportals {
-+	#address-cells = <0x1>;
-+	#size-cells = <0x1>;
-+	compatible = "simple-bus";
++corenet64_smp_defconfig: corenet64_basic_defconfig
++	$(call domerge,smp)
 +
-+	qportal0: qman-portal@0 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x0 0x4000>, <0x1000000 0x1000>;
-+		interrupts = <104 0x2 0 0>;
-+		cell-index = <0x0>;
-+	};
-+	qportal1: qman-portal@4000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x4000 0x4000>, <0x1001000 0x1000>;
-+		interrupts = <106 0x2 0 0>;
-+		cell-index = <0x1>;
-+	};
-+	qportal2: qman-portal@8000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x8000 0x4000>, <0x1002000 0x1000>;
-+		interrupts = <108 0x2 0 0>;
-+		cell-index = <0x2>;
-+	};
-+	qportal3: qman-portal@c000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0xc000 0x4000>, <0x1003000 0x1000>;
-+		interrupts = <110 0x2 0 0>;
-+		cell-index = <0x3>;
-+	};
-+	qportal4: qman-portal@10000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x10000 0x4000>, <0x1004000 0x1000>;
-+		interrupts = <112 0x2 0 0>;
-+		cell-index = <0x4>;
-+	};
-+	qportal5: qman-portal@14000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x14000 0x4000>, <0x1005000 0x1000>;
-+		interrupts = <114 0x2 0 0>;
-+		cell-index = <0x5>;
-+	};
-+	qportal6: qman-portal@18000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x18000 0x4000>, <0x1006000 0x1000>;
-+		interrupts = <116 0x2 0 0>;
-+		cell-index = <0x6>;
-+	};
-+	qportal7: qman-portal@1c000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x1c000 0x4000>, <0x1007000 0x1000>;
-+		interrupts = <118 0x2 0 0>;
-+		cell-index = <0x7>;
-+	};
-+	qportal8: qman-portal@20000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x20000 0x4000>, <0x1008000 0x1000>;
-+		interrupts = <120 0x2 0 0>;
-+		cell-index = <0x8>;
-+	};
-+	qportal9: qman-portal@24000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x24000 0x4000>, <0x1009000 0x1000>;
-+		interrupts = <122 0x2 0 0>;
-+		cell-index = <0x9>;
-+	};
-+	qportal10: qman-portal@28000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x28000 0x4000>, <0x100a000 0x1000>;
-+		interrupts = <124 0x2 0 0>;
-+		cell-index = <0xa>;
-+	};
-+	qportal11: qman-portal@2c000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x2c000 0x4000>, <0x100b000 0x1000>;
-+		interrupts = <126 0x2 0 0>;
-+		cell-index = <0xb>;
-+	};
-+	qportal12: qman-portal@30000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x30000 0x4000>, <0x100c000 0x1000>;
-+		interrupts = <128 0x2 0 0>;
-+		cell-index = <0xc>;
-+	};
-+	qportal13: qman-portal@34000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x34000 0x4000>, <0x100d000 0x1000>;
-+		interrupts = <130 0x2 0 0>;
-+		cell-index = <0xd>;
-+	};
-+};
-+
- &soc {
- 	#address-cells = <1>;
- 	#size-cells = <1>;
-@@ -343,6 +444,11 @@
- /include/ "qoriq-duart-1.dtsi"
- /include/ "qoriq-sec5.3-0.dtsi"
- 
-+/include/ "qoriq-qman3.dtsi"
-+	qman: qman@318000 {
-+		interrupts = <16 2 1 28>;
-+	};
-+
- /include/ "qoriq-bman1.dtsi"
- 	bman: bman@31a000 {
- 		interrupts = <16 2 1 29>;
-diff --git a/arch/powerpc/boot/dts/fsl/p1023si-post.dtsi b/arch/powerpc/boot/dts/fsl/p1023si-post.dtsi
-index 7780f21..da6d3fc 100644
---- a/arch/powerpc/boot/dts/fsl/p1023si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/p1023si-post.dtsi
-@@ -37,6 +37,16 @@
- 	alloc-ranges = <0 0 0x10 0>;
- };
- 
-+&qman_fqd {
-+	compatible = "fsl,qman-fqd";
-+	alloc-ranges = <0 0 0x10 0>;
-+};
-+
-+&qman_pfdr {
-+	compatible = "fsl,qman-pfdr";
-+	alloc-ranges = <0 0 0x10 0>;
-+};
-+
- &lbc {
- 	#address-cells = <2>;
- 	#size-cells = <1>;
-@@ -102,6 +112,31 @@
- 	};
- };
- 
-+&qportals {
-+	#address-cells = <1>;
-+	#size-cells = <1>;
-+	compatible = "simple-bus";
-+
-+	qportal0: qman-portal@0 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x0 0x4000>, <0x100000 0x1000>;
-+		interrupts = <29 2 0 0>;
-+		cell-index = <0>;
-+	};
-+	qportal1: qman-portal@4000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x4000 0x4000>, <0x101000 0x1000>;
-+		interrupts = <31 2 0 0>;
-+		cell-index = <1>;
-+	};
-+	qportal2: qman-portal@8000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x8000 0x4000>, <0x102000 0x1000>;
-+		interrupts = <33 2 0 0>;
-+		cell-index = <2>;
-+	};
-+};
-+
- &bportals {
- 	#address-cells = <1>;
- 	#size-cells = <1>;
-@@ -248,6 +283,14 @@
- /include/ "pq3-mpic.dtsi"
- /include/ "pq3-mpic-timer-B.dtsi"
- 
-+	qman: qman@88000 {
-+		compatible = "fsl,qman";
-+		reg = <0x88000 0x1000>;
-+		interrupts = <16 2 0 0>;
-+		fsl,qman-portals = <&qportals>;
-+		memory-region = <&qman_fqd &qman_pfdr>;
-+	};
-+
- 	bman: bman@8a000 {
- 		compatible = "fsl,bman";
- 		reg = <0x8a000 0x1000>;
-diff --git a/arch/powerpc/boot/dts/fsl/p2041si-post.dtsi b/arch/powerpc/boot/dts/fsl/p2041si-post.dtsi
-index f2feacf..1f18b8b 100644
---- a/arch/powerpc/boot/dts/fsl/p2041si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/p2041si-post.dtsi
-@@ -37,6 +37,16 @@
- 	alloc-ranges = <0 0 0x10 0>;
- };
- 
-+&qman_fqd {
-+	compatible = "fsl,qman-fqd";
-+	alloc-ranges = <0 0 0x10 0>;
-+};
-+
-+&qman_pfdr {
-+	compatible = "fsl,qman-pfdr";
-+	alloc-ranges = <0 0 0x10 0>;
-+};
-+
- &lbc {
- 	compatible = "fsl,p2041-elbc", "fsl,elbc", "simple-bus";
- 	interrupts = <25 2 0 0>;
-@@ -223,6 +233,8 @@
- 
- /include/ "qoriq-bman1-portals.dtsi"
- 
-+/include/ "qoriq-qman1-portals.dtsi"
-+
- &soc {
- 	#address-cells = <1>;
- 	#size-cells = <1>;
-@@ -415,5 +427,6 @@ crypto: crypto@300000 {
- 		fsl,iommu-parent = <&pamu1>;
- 	};
- 
-+/include/ "qoriq-qman1.dtsi"
- /include/ "qoriq-bman1.dtsi"
- };
-diff --git a/arch/powerpc/boot/dts/fsl/p3041si-post.dtsi b/arch/powerpc/boot/dts/fsl/p3041si-post.dtsi
-index d6fea37..a555d24 100644
---- a/arch/powerpc/boot/dts/fsl/p3041si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/p3041si-post.dtsi
-@@ -37,6 +37,16 @@
- 	alloc-ranges = <0 0 0x10 0>;
- };
- 
-+&qman_fqd {
-+	compatible = "fsl,qman-fqd";
-+	alloc-ranges = <0 0 0x10 0>;
-+};
-+
-+&qman_pfdr {
-+	compatible = "fsl,qman-pfdr";
-+	alloc-ranges = <0 0 0x10 0>;
-+};
-+
- &lbc {
- 	compatible = "fsl,p3041-elbc", "fsl,elbc", "simple-bus";
- 	interrupts = <25 2 0 0>;
-@@ -250,6 +260,8 @@
- 
- /include/ "qoriq-bman1-portals.dtsi"
- 
-+/include/ "qoriq-qman1-portals.dtsi"
-+
- &soc {
- 	#address-cells = <1>;
- 	#size-cells = <1>;
-@@ -442,5 +454,6 @@ crypto: crypto@300000 {
- 		fsl,iommu-parent = <&pamu1>;
- 	};
- 
-+/include/ "qoriq-qman1.dtsi"
- /include/ "qoriq-bman1.dtsi"
- };
-diff --git a/arch/powerpc/boot/dts/fsl/p4080si-post.dtsi b/arch/powerpc/boot/dts/fsl/p4080si-post.dtsi
-index 89482c9..0fe7281 100644
---- a/arch/powerpc/boot/dts/fsl/p4080si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/p4080si-post.dtsi
-@@ -37,6 +37,16 @@
- 	alloc-ranges = <0 0 0x10 0>;
- };
- 
-+&qman_fqd {
-+	compatible = "fsl,qman-fqd";
-+	alloc-ranges = <0 0 0x10 0>;
-+};
-+
-+&qman_pfdr {
-+	compatible = "fsl,qman-pfdr";
-+	alloc-ranges = <0 0 0x10 0>;
-+};
-+
- &lbc {
- 	compatible = "fsl,p4080-elbc", "fsl,elbc", "simple-bus";
- 	interrupts = <25 2 0 0>;
-@@ -250,6 +260,8 @@
- 
- /include/ "qoriq-bman1-portals.dtsi"
- 
-+/include/ "qoriq-qman1-portals.dtsi"
-+
- &soc {
- 	#address-cells = <1>;
- 	#size-cells = <1>;
-@@ -498,5 +510,6 @@ crypto: crypto@300000 {
- 		fsl,iommu-parent = <&pamu1>;
- 	};
- 
-+/include/ "qoriq-qman1.dtsi"
- /include/ "qoriq-bman1.dtsi"
- };
-diff --git a/arch/powerpc/boot/dts/fsl/p5020si-post.dtsi b/arch/powerpc/boot/dts/fsl/p5020si-post.dtsi
-index 6e04851..a34ca20 100644
---- a/arch/powerpc/boot/dts/fsl/p5020si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/p5020si-post.dtsi
-@@ -37,6 +37,16 @@
- 	alloc-ranges = <0 0 0x10000 0>;
- };
- 
-+&qman_fqd {
-+	compatible = "fsl,qman-fqd";
-+	alloc-ranges = <0 0 0x10000 0>;
-+};
-+
-+&qman_pfdr {
-+	compatible = "fsl,qman-pfdr";
-+	alloc-ranges = <0 0 0x10000 0>;
-+};
-+
- &lbc {
- 	compatible = "fsl,p5020-elbc", "fsl,elbc", "simple-bus";
- 	interrupts = <25 2 0 0>;
-@@ -247,6 +257,8 @@
- 
- /include/ "qoriq-bman1-portals.dtsi"
- 
-+/include/ "qoriq-qman1-portals.dtsi"
-+
- &soc {
- 	#address-cells = <1>;
- 	#size-cells = <1>;
-@@ -428,6 +440,7 @@
- 		fsl,iommu-parent = <&pamu1>;
- 	};
- 
-+/include/ "qoriq-qman1.dtsi"
- /include/ "qoriq-bman1.dtsi"
- 
- /include/ "qoriq-raid1.0-0.dtsi"
-diff --git a/arch/powerpc/boot/dts/fsl/p5040si-post.dtsi b/arch/powerpc/boot/dts/fsl/p5040si-post.dtsi
-index 5e44dfa..bf57513 100644
---- a/arch/powerpc/boot/dts/fsl/p5040si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/p5040si-post.dtsi
-@@ -37,6 +37,16 @@
- 	alloc-ranges = <0 0 0x10000 0>;
- };
- 
-+&qman_fqd {
-+	compatible = "fsl,qman-fqd";
-+	alloc-ranges = <0 0 0x10000 0>;
-+};
-+
-+&qman_pfdr {
-+	compatible = "fsl,qman-pfdr";
-+	alloc-ranges = <0 0 0x10000 0>;
-+};
-+
- &lbc {
- 	compatible = "fsl,p5040-elbc", "fsl,elbc", "simple-bus";
- 	interrupts = <25 2 0 0>;
-@@ -202,6 +212,8 @@
- 
- /include/ "qoriq-bman1-portals.dtsi"
- 
-+/include/ "qoriq-qman1-portals.dtsi"
-+
- &soc {
- 	#address-cells = <1>;
- 	#size-cells = <1>;
-@@ -407,5 +419,6 @@
- 		fsl,iommu-parent = <&pamu4>;
- 	};
- 
-+/include/ "qoriq-qman1.dtsi"
- /include/ "qoriq-bman1.dtsi"
- };
-diff --git a/arch/powerpc/boot/dts/fsl/qoriq-qman1-portals.dtsi b/arch/powerpc/boot/dts/fsl/qoriq-qman1-portals.dtsi
-index 05d51ac..e77e4b4 100644
---- a/arch/powerpc/boot/dts/fsl/qoriq-qman1-portals.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/qoriq-qman1-portals.dtsi
-@@ -41,61 +41,61 @@
- 		compatible = "fsl,qman-portal";
- 		reg = <0x0 0x4000>, <0x100000 0x1000>;
- 		interrupts = <104 2 0 0>;
--		fsl,qman-channel-id = <0x0>;
-+		cell-index = <0x0>;
- 	};
- 	qportal1: qman-portal@4000 {
- 		compatible = "fsl,qman-portal";
- 		reg = <0x4000 0x4000>, <0x101000 0x1000>;
- 		interrupts = <106 2 0 0>;
--		fsl,qman-channel-id = <1>;
-+		cell-index = <1>;
- 	};
- 	qportal2: qman-portal@8000 {
- 		compatible = "fsl,qman-portal";
- 		reg = <0x8000 0x4000>, <0x102000 0x1000>;
- 		interrupts = <108 2 0 0>;
--		fsl,qman-channel-id = <2>;
-+		cell-index = <2>;
- 	};
- 	qportal3: qman-portal@c000 {
- 		compatible = "fsl,qman-portal";
- 		reg = <0xc000 0x4000>, <0x103000 0x1000>;
- 		interrupts = <110 2 0 0>;
--		fsl,qman-channel-id = <3>;
-+		cell-index = <3>;
- 	};
- 	qportal4: qman-portal@10000 {
- 		compatible = "fsl,qman-portal";
- 		reg = <0x10000 0x4000>, <0x104000 0x1000>;
- 		interrupts = <112 2 0 0>;
--		fsl,qman-channel-id = <4>;
-+		cell-index = <4>;
- 	};
- 	qportal5: qman-portal@14000 {
- 		compatible = "fsl,qman-portal";
- 		reg = <0x14000 0x4000>, <0x105000 0x1000>;
- 		interrupts = <114 2 0 0>;
--		fsl,qman-channel-id = <5>;
-+		cell-index = <5>;
- 	};
- 	qportal6: qman-portal@18000 {
- 		compatible = "fsl,qman-portal";
- 		reg = <0x18000 0x4000>, <0x106000 0x1000>;
- 		interrupts = <116 2 0 0>;
--		fsl,qman-channel-id = <6>;
-+		cell-index = <6>;
- 	};
- 
- 	qportal7: qman-portal@1c000 {
- 		compatible = "fsl,qman-portal";
- 		reg = <0x1c000 0x4000>, <0x107000 0x1000>;
- 		interrupts = <118 2 0 0>;
--		fsl,qman-channel-id = <7>;
-+		cell-index = <7>;
- 	};
- 	qportal8: qman-portal@20000 {
- 		compatible = "fsl,qman-portal";
- 		reg = <0x20000 0x4000>, <0x108000 0x1000>;
- 		interrupts = <120 2 0 0>;
--		fsl,qman-channel-id = <8>;
-+		cell-index = <8>;
- 	};
- 	qportal9: qman-portal@24000 {
- 		compatible = "fsl,qman-portal";
- 		reg = <0x24000 0x4000>, <0x109000 0x1000>;
- 		interrupts = <122 2 0 0>;
--		fsl,qman-channel-id = <9>;
-+		cell-index = <9>;
- 	};
- };
-diff --git a/arch/powerpc/boot/dts/fsl/t1040si-post.dtsi b/arch/powerpc/boot/dts/fsl/t1040si-post.dtsi
-index 5cc01be..9e9f7e2 100644
---- a/arch/powerpc/boot/dts/fsl/t1040si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/t1040si-post.dtsi
-@@ -37,6 +37,16 @@
- 	alloc-ranges = <0 0 0x10000 0>;
- };
- 
-+&qman_fqd {
-+	compatible = "fsl,qman-fqd";
-+	alloc-ranges = <0 0 0x10000 0>;
-+};
-+
-+&qman_pfdr {
-+	compatible = "fsl,qman-pfdr";
-+	alloc-ranges = <0 0 0x10000 0>;
-+};
-+
- &ifc {
- 	#address-cells = <2>;
- 	#size-cells = <1>;
-@@ -280,6 +290,73 @@
- 	};
- };
- 
-+&qportals {
-+	#address-cells = <0x1>;
-+	#size-cells = <0x1>;
-+	compatible = "simple-bus";
-+
-+	qportal0: qman-portal@0 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x0 0x4000>, <0x1000000 0x1000>;
-+		interrupts = <104 0x2 0 0>;
-+		cell-index = <0x0>;
-+	};
-+	qportal1: qman-portal@4000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x4000 0x4000>, <0x1001000 0x1000>;
-+		interrupts = <106 0x2 0 0>;
-+		cell-index = <0x1>;
-+	};
-+	qportal2: qman-portal@8000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x8000 0x4000>, <0x1002000 0x1000>;
-+		interrupts = <108 0x2 0 0>;
-+		cell-index = <0x2>;
-+	};
-+	qportal3: qman-portal@c000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0xc000 0x4000>, <0x1003000 0x1000>;
-+		interrupts = <110 0x2 0 0>;
-+		cell-index = <0x3>;
-+	};
-+	qportal4: qman-portal@10000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x10000 0x4000>, <0x1004000 0x1000>;
-+		interrupts = <112 0x2 0 0>;
-+		cell-index = <0x4>;
-+	};
-+	qportal5: qman-portal@14000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x14000 0x4000>, <0x1005000 0x1000>;
-+		interrupts = <114 0x2 0 0>;
-+		cell-index = <0x5>;
-+	};
-+	qportal6: qman-portal@18000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x18000 0x4000>, <0x1006000 0x1000>;
-+		interrupts = <116 0x2 0 0>;
-+		cell-index = <0x6>;
-+	};
-+	qportal7: qman-portal@1c000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x1c000 0x4000>, <0x1007000 0x1000>;
-+		interrupts = <118 0x2 0 0>;
-+		cell-index = <0x7>;
-+	};
-+	qportal8: qman-portal@20000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x20000 0x4000>, <0x1008000 0x1000>;
-+		interrupts = <120 0x2 0 0>;
-+		cell-index = <0x8>;
-+	};
-+	qportal9: qman-portal@24000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x24000 0x4000>, <0x1009000 0x1000>;
-+		interrupts = <122 0x2 0 0>;
-+		cell-index = <0x9>;
-+	};
-+};
-+
- &soc {
- 	#address-cells = <1>;
- 	#size-cells = <1>;
-@@ -463,5 +540,6 @@
- 		fsl,liodn-reg = <&guts 0x554>; /* SATA2LIODNR */
- 	};
- /include/ "qoriq-sec5.0-0.dtsi"
-+/include/ "qoriq-qman3.dtsi"
- /include/ "qoriq-bman1.dtsi"
- };
-diff --git a/arch/powerpc/boot/dts/fsl/t2081si-post.dtsi b/arch/powerpc/boot/dts/fsl/t2081si-post.dtsi
-index 86bdaf6..8ebf738 100644
---- a/arch/powerpc/boot/dts/fsl/t2081si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/t2081si-post.dtsi
-@@ -37,6 +37,16 @@
- 	alloc-ranges = <0 0 0x10000 0>;
- };
- 
-+&qman_fqd {
-+	compatible = "fsl,qman-fqd";
-+	alloc-ranges = <0 0 0x10000 0>;
-+};
-+
-+&qman_pfdr {
-+	compatible = "fsl,qman-pfdr";
-+	alloc-ranges = <0 0 0x10000 0>;
-+};
-+
- &ifc {
- 	#address-cells = <2>;
- 	#size-cells = <1>;
-@@ -326,6 +336,121 @@
- 	};
- };
- 
-+&qportals {
-+	#address-cells = <0x1>;
-+	#size-cells = <0x1>;
-+	compatible = "simple-bus";
-+
-+	qportal0: qman-portal@0 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x0 0x4000>, <0x1000000 0x1000>;
-+		interrupts = <104 0x2 0 0>;
-+		cell-index = <0x0>;
-+	};
-+	qportal1: qman-portal@4000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x4000 0x4000>, <0x1001000 0x1000>;
-+		interrupts = <106 0x2 0 0>;
-+		cell-index = <0x1>;
-+	};
-+	qportal2: qman-portal@8000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x8000 0x4000>, <0x1002000 0x1000>;
-+		interrupts = <108 0x2 0 0>;
-+		cell-index = <0x2>;
-+	};
-+	qportal3: qman-portal@c000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0xc000 0x4000>, <0x1003000 0x1000>;
-+		interrupts = <110 0x2 0 0>;
-+		cell-index = <0x3>;
-+	};
-+	qportal4: qman-portal@10000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x10000 0x4000>, <0x1004000 0x1000>;
-+		interrupts = <112 0x2 0 0>;
-+		cell-index = <0x4>;
-+	};
-+	qportal5: qman-portal@14000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x14000 0x4000>, <0x1005000 0x1000>;
-+		interrupts = <114 0x2 0 0>;
-+		cell-index = <0x5>;
-+	};
-+	qportal6: qman-portal@18000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x18000 0x4000>, <0x1006000 0x1000>;
-+		interrupts = <116 0x2 0 0>;
-+		cell-index = <0x6>;
-+	};
-+	qportal7: qman-portal@1c000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x1c000 0x4000>, <0x1007000 0x1000>;
-+		interrupts = <118 0x2 0 0>;
-+		cell-index = <0x7>;
-+	};
-+	qportal8: qman-portal@20000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x20000 0x4000>, <0x1008000 0x1000>;
-+		interrupts = <120 0x2 0 0>;
-+		cell-index = <0x8>;
-+	};
-+	qportal9: qman-portal@24000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x24000 0x4000>, <0x1009000 0x1000>;
-+		interrupts = <122 0x2 0 0>;
-+		cell-index = <0x9>;
-+	};
-+	qportal10: qman-portal@28000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x28000 0x4000>, <0x100a000 0x1000>;
-+		interrupts = <124 0x2 0 0>;
-+		cell-index = <0xa>;
-+	};
-+	qportal11: qman-portal@2c000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x2c000 0x4000>, <0x100b000 0x1000>;
-+		interrupts = <126 0x2 0 0>;
-+		cell-index = <0xb>;
-+	};
-+	qportal12: qman-portal@30000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x30000 0x4000>, <0x100c000 0x1000>;
-+		interrupts = <128 0x2 0 0>;
-+		cell-index = <0xc>;
-+	};
-+	qportal13: qman-portal@34000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x34000 0x4000>, <0x100d000 0x1000>;
-+		interrupts = <130 0x2 0 0>;
-+		cell-index = <0xd>;
-+	};
-+	qportal14: qman-portal@38000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x38000 0x4000>, <0x100e000 0x1000>;
-+		interrupts = <132 0x2 0 0>;
-+		cell-index = <0xe>;
-+	};
-+	qportal15: qman-portal@3c000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x3c000 0x4000>, <0x100f000 0x1000>;
-+		interrupts = <134 0x2 0 0>;
-+		cell-index = <0xf>;
-+	};
-+	qportal16: qman-portal@40000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x40000 0x4000>, <0x1010000 0x1000>;
-+		interrupts = <136 0x2 0 0>;
-+		cell-index = <0x10>;
-+	};
-+	qportal17: qman-portal@44000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x44000 0x4000>, <0x1011000 0x1000>;
-+		interrupts = <138 0x2 0 0>;
-+		cell-index = <0x11>;
-+	};
-+};
-+
- &soc {
- 	#address-cells = <1>;
- 	#size-cells = <1>;
-@@ -502,6 +627,7 @@
- 		phy_type = "utmi";
- 	};
- /include/ "qoriq-sec5.2-0.dtsi"
-+/include/ "qoriq-qman3.dtsi"
- /include/ "qoriq-bman1.dtsi"
- 
- 	L2_1: l2-cache-controller@c20000 {
-diff --git a/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi b/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
-index 4d4f258..d806360 100644
---- a/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
-@@ -37,6 +37,16 @@
- 	alloc-ranges = <0 0 0x10000 0>;
- };
- 
-+&qman_fqd {
-+	compatible = "fsl,qman-fqd";
-+	alloc-ranges = <0 0 0x10000 0>;
-+};
-+
-+&qman_pfdr {
-+	compatible = "fsl,qman-pfdr";
-+	alloc-ranges = <0 0 0x10000 0>;
-+};
-+
- &ifc {
- 	#address-cells = <2>;
- 	#size-cells = <1>;
-@@ -556,6 +566,313 @@
- 	};
- };
- 
-+&qportals {
-+	#address-cells = <0x1>;
-+	#size-cells = <0x1>;
-+	compatible = "simple-bus";
-+
-+	qportal0: qman-portal@0 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x0 0x4000>, <0x1000000 0x1000>;
-+		interrupts = <104 0x2 0 0>;
-+		cell-index = <0x0>;
-+	};
-+	qportal1: qman-portal@4000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x4000 0x4000>, <0x1001000 0x1000>;
-+		interrupts = <106 0x2 0 0>;
-+		cell-index = <0x1>;
-+	};
-+	qportal2: qman-portal@8000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x8000 0x4000>, <0x1002000 0x1000>;
-+		interrupts = <108 0x2 0 0>;
-+		cell-index = <0x2>;
-+	};
-+	qportal3: qman-portal@c000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0xc000 0x4000>, <0x1003000 0x1000>;
-+		interrupts = <110 0x2 0 0>;
-+		cell-index = <0x3>;
-+	};
-+	qportal4: qman-portal@10000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x10000 0x4000>, <0x1004000 0x1000>;
-+		interrupts = <112 0x2 0 0>;
-+		cell-index = <0x4>;
-+	};
-+	qportal5: qman-portal@14000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x14000 0x4000>, <0x1005000 0x1000>;
-+		interrupts = <114 0x2 0 0>;
-+		cell-index = <0x5>;
-+	};
-+	qportal6: qman-portal@18000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x18000 0x4000>, <0x1006000 0x1000>;
-+		interrupts = <116 0x2 0 0>;
-+		cell-index = <0x6>;
-+	};
-+	qportal7: qman-portal@1c000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x1c000 0x4000>, <0x1007000 0x1000>;
-+		interrupts = <118 0x2 0 0>;
-+		cell-index = <0x7>;
-+	};
-+	qportal8: qman-portal@20000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x20000 0x4000>, <0x1008000 0x1000>;
-+		interrupts = <120 0x2 0 0>;
-+		cell-index = <0x8>;
-+	};
-+	qportal9: qman-portal@24000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x24000 0x4000>, <0x1009000 0x1000>;
-+		interrupts = <122 0x2 0 0>;
-+		cell-index = <0x9>;
-+	};
-+	qportal10: qman-portal@28000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x28000 0x4000>, <0x100a000 0x1000>;
-+		interrupts = <124 0x2 0 0>;
-+		cell-index = <0xa>;
-+	};
-+	qportal11: qman-portal@2c000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x2c000 0x4000>, <0x100b000 0x1000>;
-+		interrupts = <126 0x2 0 0>;
-+		cell-index = <0xb>;
-+	};
-+	qportal12: qman-portal@30000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x30000 0x4000>, <0x100c000 0x1000>;
-+		interrupts = <128 0x2 0 0>;
-+		cell-index = <0xc>;
-+	};
-+	qportal13: qman-portal@34000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x34000 0x4000>, <0x100d000 0x1000>;
-+		interrupts = <130 0x2 0 0>;
-+		cell-index = <0xd>;
-+	};
-+	qportal14: qman-portal@38000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x38000 0x4000>, <0x100e000 0x1000>;
-+		interrupts = <132 0x2 0 0>;
-+		cell-index = <0xe>;
-+	};
-+	qportal15: qman-portal@3c000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x3c000 0x4000>, <0x100f000 0x1000>;
-+		interrupts = <134 0x2 0 0>;
-+		cell-index = <0xf>;
-+	};
-+	qportal16: qman-portal@40000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x40000 0x4000>, <0x1010000 0x1000>;
-+		interrupts = <136 0x2 0 0>;
-+		cell-index = <0x10>;
-+	};
-+	qportal17: qman-portal@44000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x44000 0x4000>, <0x1011000 0x1000>;
-+		interrupts = <138 0x2 0 0>;
-+		cell-index = <0x11>;
-+	};
-+	qportal18: qman-portal@48000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x48000 0x4000>, <0x1012000 0x1000>;
-+		interrupts = <140 0x2 0 0>;
-+		cell-index = <0x12>;
-+	};
-+	qportal19: qman-portal@4c000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x4c000 0x4000>, <0x1013000 0x1000>;
-+		interrupts = <142 0x2 0 0>;
-+		cell-index = <0x13>;
-+	};
-+	qportal20: qman-portal@50000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x50000 0x4000>, <0x1014000 0x1000>;
-+		interrupts = <144 0x2 0 0>;
-+		cell-index = <0x14>;
-+	};
-+	qportal21: qman-portal@54000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x54000 0x4000>, <0x1015000 0x1000>;
-+		interrupts = <146 0x2 0 0>;
-+		cell-index = <0x15>;
-+	};
-+	qportal22: qman-portal@58000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x58000 0x4000>, <0x1016000 0x1000>;
-+		interrupts = <148 0x2 0 0>;
-+		cell-index = <0x16>;
-+	};
-+	qportal23: qman-portal@5c000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x5c000 0x4000>, <0x1017000 0x1000>;
-+		interrupts = <150 0x2 0 0>;
-+		cell-index = <0x17>;
-+	};
-+	qportal24: qman-portal@60000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x60000 0x4000>, <0x1018000 0x1000>;
-+		interrupts = <152 0x2 0 0>;
-+		cell-index = <0x18>;
-+	};
-+	qportal25: qman-portal@64000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x64000 0x4000>, <0x1019000 0x1000>;
-+		interrupts = <154 0x2 0 0>;
-+		cell-index = <0x19>;
-+	};
-+	qportal26: qman-portal@68000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x68000 0x4000>, <0x101a000 0x1000>;
-+		interrupts = <156 0x2 0 0>;
-+		cell-index = <0x1a>;
-+	};
-+	qportal27: qman-portal@6c000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x6c000 0x4000>, <0x101b000 0x1000>;
-+		interrupts = <158 0x2 0 0>;
-+		cell-index = <0x1b>;
-+	};
-+	qportal28: qman-portal@70000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x70000 0x4000>, <0x101c000 0x1000>;
-+		interrupts = <160 0x2 0 0>;
-+		cell-index = <0x1c>;
-+	};
-+	qportal29: qman-portal@74000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x74000 0x4000>, <0x101d000 0x1000>;
-+		interrupts = <162 0x2 0 0>;
-+		cell-index = <0x1d>;
-+	};
-+	qportal30: qman-portal@78000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x78000 0x4000>, <0x101e000 0x1000>;
-+		interrupts = <164 0x2 0 0>;
-+		cell-index = <0x1e>;
-+	};
-+	qportal31: qman-portal@7c000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x7c000 0x4000>, <0x101f000 0x1000>;
-+		interrupts = <166 0x2 0 0>;
-+		cell-index = <0x1f>;
-+	};
-+	qportal32: qman-portal@80000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x80000 0x4000>, <0x1020000 0x1000>;
-+		interrupts = <168 0x2 0 0>;
-+		cell-index = <0x20>;
-+	};
-+	qportal33: qman-portal@84000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x84000 0x4000>, <0x1021000 0x1000>;
-+		interrupts = <170 0x2 0 0>;
-+		cell-index = <0x21>;
-+	};
-+	qportal34: qman-portal@88000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x88000 0x4000>, <0x1022000 0x1000>;
-+		interrupts = <172 0x2 0 0>;
-+		cell-index = <0x22>;
-+	};
-+	qportal35: qman-portal@8c000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x8c000 0x4000>, <0x1023000 0x1000>;
-+		interrupts = <174 0x2 0 0>;
-+		cell-index = <0x23>;
-+	};
-+	qportal36: qman-portal@90000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x90000 0x4000>, <0x1024000 0x1000>;
-+		interrupts = <384 0x2 0 0>;
-+		cell-index = <0x24>;
-+	};
-+	qportal37: qman-portal@94000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x94000 0x4000>, <0x1025000 0x1000>;
-+		interrupts = <386 0x2 0 0>;
-+		cell-index = <0x25>;
-+	};
-+	qportal38: qman-portal@98000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x98000 0x4000>, <0x1026000 0x1000>;
-+		interrupts = <388 0x2 0 0>;
-+		cell-index = <0x26>;
-+	};
-+	qportal39: qman-portal@9c000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0x9c000 0x4000>, <0x1027000 0x1000>;
-+		interrupts = <390 0x2 0 0>;
-+		cell-index = <0x27>;
-+	};
-+	qportal40: qman-portal@a0000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0xa0000 0x4000>, <0x1028000 0x1000>;
-+		interrupts = <392 0x2 0 0>;
-+		cell-index = <0x28>;
-+	};
-+	qportal41: qman-portal@a4000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0xa4000 0x4000>, <0x1029000 0x1000>;
-+		interrupts = <394 0x2 0 0>;
-+		cell-index = <0x29>;
-+	};
-+	qportal42: qman-portal@a8000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0xa8000 0x4000>, <0x102a000 0x1000>;
-+		interrupts = <396 0x2 0 0>;
-+		cell-index = <0x2a>;
-+	};
-+	qportal43: qman-portal@ac000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0xac000 0x4000>, <0x102b000 0x1000>;
-+		interrupts = <398 0x2 0 0>;
-+		cell-index = <0x2b>;
-+	};
-+	qportal44: qman-portal@b0000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0xb0000 0x4000>, <0x102c000 0x1000>;
-+		interrupts = <400 0x2 0 0>;
-+		cell-index = <0x2c>;
-+	};
-+	qportal45: qman-portal@b4000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0xb4000 0x4000>, <0x102d000 0x1000>;
-+		interrupts = <402 0x2 0 0>;
-+		cell-index = <0x2d>;
-+	};
-+	qportal46: qman-portal@b8000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0xb8000 0x4000>, <0x102e000 0x1000>;
-+		interrupts = <404 0x2 0 0>;
-+		cell-index = <0x2e>;
-+	};
-+	qportal47: qman-portal@bc000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0xbc000 0x4000>, <0x102f000 0x1000>;
-+		interrupts = <406 0x2 0 0>;
-+		cell-index = <0x2f>;
-+	};
-+	qportal48: qman-portal@c0000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0xc0000 0x4000>, <0x1030000 0x1000>;
-+		interrupts = <408 0x2 0 0>;
-+		cell-index = <0x30>;
-+	};
-+	qportal49: qman-portal@c4000 {
-+		compatible = "fsl,qman-portal";
-+		reg = <0xc4000 0x4000>, <0x1031000 0x1000>;
-+		interrupts = <410 0x2 0 0>;
-+		cell-index = <0x31>;
-+	};
-+};
-+
- &soc {
- 	#address-cells = <1>;
- 	#size-cells = <1>;
-@@ -748,6 +1065,7 @@
- /include/ "qoriq-sata2-0.dtsi"
- /include/ "qoriq-sata2-1.dtsi"
- /include/ "qoriq-sec5.0-0.dtsi"
-+/include/ "qoriq-qman3.dtsi"
- /include/ "qoriq-bman1.dtsi"
- 
- 	L2_1: l2-cache-controller@c20000 {
-diff --git a/arch/powerpc/boot/dts/kmcoge4.dts b/arch/powerpc/boot/dts/kmcoge4.dts
-index 97e6d11..48dab6a 100644
---- a/arch/powerpc/boot/dts/kmcoge4.dts
-+++ b/arch/powerpc/boot/dts/kmcoge4.dts
-@@ -34,6 +34,14 @@
- 			size = <0 0x1000000>;
- 			alignment = <0 0x1000000>;
- 		};
-+		qman_fqd: qman-fqd {
-+			size = <0 0x400000>;
-+			alignment = <0 0x400000>;
-+		};
-+		qman_pfdr: qman-pfdr {
-+			size = <0 0x2000000>;
-+			alignment = <0 0x2000000>;
-+		};
- 	};
- 
- 	dcsr: dcsr@f00000000 {
-@@ -44,6 +52,10 @@
- 		ranges = <0x0 0xf 0xf4000000 0x200000>;
- 	};
- 
-+	qportals: qman-portals@ff4200000 {
-+		ranges = <0x0 0xf 0xf4200000 0x200000>;
-+	};
-+
- 	soc: soc@ffe000000 {
- 		ranges = <0x00000000 0xf 0xfe000000 0x1000000>;
- 		reg = <0xf 0xfe000000 0 0x00001000>;
-diff --git a/arch/powerpc/boot/dts/oca4080.dts b/arch/powerpc/boot/dts/oca4080.dts
-index eb76caa..42796c5 100644
---- a/arch/powerpc/boot/dts/oca4080.dts
-+++ b/arch/powerpc/boot/dts/oca4080.dts
-@@ -58,6 +58,14 @@
- 			size = <0 0x1000000>;
- 			alignment = <0 0x1000000>;
- 		};
-+		qman_fqd: qman-fqd {
-+			size = <0 0x400000>;
-+			alignment = <0 0x400000>;
-+		};
-+		qman_pfdr: qman-pfdr {
-+			size = <0 0x2000000>;
-+			alignment = <0 0x2000000>;
-+		};
- 	};
- 
- 	dcsr: dcsr@f00000000 {
-@@ -68,6 +76,10 @@
- 		ranges = <0x0 0xf 0xf4000000 0x200000>;
- 	};
- 
-+	qportals: qman-portals@ff4200000 {
-+		ranges = <0x0 0xf 0xf4200000 0x200000>;
-+	};
-+
- 	soc: soc@ffe000000 {
- 		ranges = <0x00000000 0xf 0xfe000000 0x1000000>;
- 		reg = <0xf 0xfe000000 0 0x00001000>;
-diff --git a/arch/powerpc/boot/dts/p1023rdb.dts b/arch/powerpc/boot/dts/p1023rdb.dts
-index 9236e37..05a00a4 100644
---- a/arch/powerpc/boot/dts/p1023rdb.dts
-+++ b/arch/powerpc/boot/dts/p1023rdb.dts
-@@ -56,6 +56,18 @@
- 			size = <0 0x1000000>;
- 			alignment = <0 0x1000000>;
- 		};
-+		qman_fqd: qman-fqd {
-+			size = <0 0x400000>;
-+			alignment = <0 0x400000>;
-+		};
-+		qman_pfdr: qman-pfdr {
-+			size = <0 0x2000000>;
-+			alignment = <0 0x2000000>;
-+		};
-+	};
-+
-+	qportals: qman-portals@ff000000 {
-+		ranges = <0x0 0xf 0xff000000 0x200000>;
- 	};
- 
- 	bportals: bman-portals@ff200000 {
-diff --git a/arch/powerpc/boot/dts/p2041rdb.dts b/arch/powerpc/boot/dts/p2041rdb.dts
-index c1e69dc..d2bb0765 100644
---- a/arch/powerpc/boot/dts/p2041rdb.dts
-+++ b/arch/powerpc/boot/dts/p2041rdb.dts
-@@ -54,6 +54,14 @@
- 			size = <0 0x1000000>;
- 			alignment = <0 0x1000000>;
- 		};
-+		qman_fqd: qman-fqd {
-+			size = <0 0x400000>;
-+			alignment = <0 0x400000>;
-+		};
-+		qman_pfdr: qman-pfdr {
-+			size = <0 0x2000000>;
-+			alignment = <0 0x2000000>;
-+		};
- 	};
- 
- 	dcsr: dcsr@f00000000 {
-@@ -64,6 +72,10 @@
- 		ranges = <0x0 0xf 0xf4000000 0x200000>;
- 	};
- 
-+	qportals: qman-portals@ff4200000 {
-+		ranges = <0x0 0xf 0xf4200000 0x200000>;
-+	};
-+
- 	soc: soc@ffe000000 {
- 		ranges = <0x00000000 0xf 0xfe000000 0x1000000>;
- 		reg = <0xf 0xfe000000 0 0x00001000>;
-diff --git a/arch/powerpc/boot/dts/p3041ds.dts b/arch/powerpc/boot/dts/p3041ds.dts
-index 2192fe9..eca6c69 100644
---- a/arch/powerpc/boot/dts/p3041ds.dts
-+++ b/arch/powerpc/boot/dts/p3041ds.dts
-@@ -54,6 +54,14 @@
- 			size = <0 0x1000000>;
- 			alignment = <0 0x1000000>;
- 		};
-+		qman_fqd: qman-fqd {
-+			size = <0 0x400000>;
-+			alignment = <0 0x400000>;
-+		};
-+		qman_pfdr: qman-pfdr {
-+			size = <0 0x2000000>;
-+			alignment = <0 0x2000000>;
-+		};
- 	};
- 
- 	dcsr: dcsr@f00000000 {
-@@ -64,6 +72,10 @@
- 		ranges = <0x0 0xf 0xf4000000 0x200000>;
- 	};
- 
-+	qportals: qman-portals@ff4200000 {
-+		ranges = <0x0 0xf 0xf4200000 0x200000>;
-+	};
-+
- 	soc: soc@ffe000000 {
- 		ranges = <0x00000000 0xf 0xfe000000 0x1000000>;
- 		reg = <0xf 0xfe000000 0 0x00001000>;
-diff --git a/arch/powerpc/boot/dts/p4080ds.dts b/arch/powerpc/boot/dts/p4080ds.dts
-index fad4416..4f80c9d 100644
---- a/arch/powerpc/boot/dts/p4080ds.dts
-+++ b/arch/powerpc/boot/dts/p4080ds.dts
-@@ -54,6 +54,14 @@
- 			size = <0 0x1000000>;
- 			alignment = <0 0x1000000>;
- 		};
-+		qman_fqd: qman-fqd {
-+			size = <0 0x400000>;
-+			alignment = <0 0x400000>;
-+		};
-+		qman_pfdr: qman-pfdr {
-+			size = <0 0x2000000>;
-+			alignment = <0 0x2000000>;
-+		};
- 	};
- 
- 	dcsr: dcsr@f00000000 {
-@@ -64,6 +72,10 @@
- 		ranges = <0x0 0xf 0xf4000000 0x200000>;
- 	};
- 
-+	qportals: qman-portals@ff4200000 {
-+		ranges = <0x0 0xf 0xf4200000 0x200000>;
-+	};
-+
- 	soc: soc@ffe000000 {
- 		ranges = <0x00000000 0xf 0xfe000000 0x1000000>;
- 		reg = <0xf 0xfe000000 0 0x00001000>;
-diff --git a/arch/powerpc/boot/dts/p5020ds.dts b/arch/powerpc/boot/dts/p5020ds.dts
-index 7382636..d0309a8 100644
---- a/arch/powerpc/boot/dts/p5020ds.dts
-+++ b/arch/powerpc/boot/dts/p5020ds.dts
-@@ -54,6 +54,14 @@
- 			size = <0 0x1000000>;
- 			alignment = <0 0x1000000>;
- 		};
-+		qman_fqd: qman-fqd {
-+			size = <0 0x400000>;
-+			alignment = <0 0x400000>;
-+		};
-+		qman_pfdr: qman-pfdr {
-+			size = <0 0x2000000>;
-+			alignment = <0 0x2000000>;
-+		};
- 	};
- 
- 	dcsr: dcsr@f00000000 {
-@@ -64,6 +72,10 @@
- 		ranges = <0x0 0xf 0xf4000000 0x200000>;
- 	};
- 
-+	qportals: qman-portals@ff4200000 {
-+		ranges = <0x0 0xf 0xf4200000 0x200000>;
-+	};
-+
- 	soc: soc@ffe000000 {
- 		ranges = <0x00000000 0xf 0xfe000000 0x1000000>;
- 		reg = <0xf 0xfe000000 0 0x00001000>;
-diff --git a/arch/powerpc/boot/dts/p5040ds.dts b/arch/powerpc/boot/dts/p5040ds.dts
-index 35dabf5..0516823 100644
---- a/arch/powerpc/boot/dts/p5040ds.dts
-+++ b/arch/powerpc/boot/dts/p5040ds.dts
-@@ -54,6 +54,14 @@
- 			size = <0 0x1000000>;
- 			alignment = <0 0x1000000>;
- 		};
-+		qman_fqd: qman-fqd {
-+			size = <0 0x400000>;
-+			alignment = <0 0x400000>;
-+		};
-+		qman_pfdr: qman-pfdr {
-+			size = <0 0x2000000>;
-+			alignment = <0 0x2000000>;
-+		};
- 	};
- 
- 	dcsr: dcsr@f00000000 {
-@@ -64,6 +72,10 @@
- 		ranges = <0x0 0xf 0xf4000000 0x200000>;
- 	};
- 
-+	qportals: qman-portals@ff4200000 {
-+		ranges = <0x0 0xf 0xf4200000 0x200000>;
-+	};
-+
- 	soc: soc@ffe000000 {
- 		ranges = <0x00000000 0xf 0xfe000000 0x1000000>;
- 		reg = <0xf 0xfe000000 0 0x00001000>;
-diff --git a/arch/powerpc/boot/dts/t104xqds.dtsi b/arch/powerpc/boot/dts/t104xqds.dtsi
-index f7e9bfb..1498d1e 100644
---- a/arch/powerpc/boot/dts/t104xqds.dtsi
-+++ b/arch/powerpc/boot/dts/t104xqds.dtsi
-@@ -47,6 +47,14 @@
- 			size = <0 0x1000000>;
- 			alignment = <0 0x1000000>;
- 		};
-+		qman_fqd: qman-fqd {
-+			size = <0 0x400000>;
-+			alignment = <0 0x400000>;
-+		};
-+		qman_pfdr: qman-pfdr {
-+			size = <0 0x2000000>;
-+			alignment = <0 0x2000000>;
-+		};
- 	};
- 
- 	ifc: localbus@ffe124000 {
-@@ -92,6 +100,10 @@
- 		ranges = <0x0 0xf 0xf4000000 0x2000000>;
- 	};
- 
-+	qportals: qman-portals@ff6000000 {
-+		ranges = <0x0 0xf 0xf6000000 0x2000000>;
-+	};
-+
- 	soc: soc@ffe000000 {
- 		ranges = <0x00000000 0xf 0xfe000000 0x1000000>;
- 		reg = <0xf 0xfe000000 0 0x00001000>;
-diff --git a/arch/powerpc/boot/dts/t104xrdb.dtsi b/arch/powerpc/boot/dts/t104xrdb.dtsi
-index 76e07a3..830ea48 100644
---- a/arch/powerpc/boot/dts/t104xrdb.dtsi
-+++ b/arch/powerpc/boot/dts/t104xrdb.dtsi
-@@ -42,6 +42,14 @@
- 			size = <0 0x1000000>;
- 			alignment = <0 0x1000000>;
- 		};
-+		qman_fqd: qman-fqd {
-+			size = <0 0x400000>;
-+			alignment = <0 0x400000>;
-+		};
-+		qman_pfdr: qman-pfdr {
-+			size = <0 0x2000000>;
-+			alignment = <0 0x2000000>;
-+		};
- 	};
- 
- 	ifc: localbus@ffe124000 {
-@@ -83,6 +91,10 @@
- 		ranges = <0x0 0xf 0xf4000000 0x2000000>;
- 	};
- 
-+	qportals: qman-portals@ff6000000 {
-+		ranges = <0x0 0xf 0xf6000000 0x2000000>;
-+	};
-+
- 	soc: soc@ffe000000 {
- 		ranges = <0x00000000 0xf 0xfe000000 0x1000000>;
- 		reg = <0xf 0xfe000000 0 0x00001000>;
-diff --git a/arch/powerpc/boot/dts/t208xqds.dtsi b/arch/powerpc/boot/dts/t208xqds.dtsi
-index c42e07f..869f915 100644
---- a/arch/powerpc/boot/dts/t208xqds.dtsi
-+++ b/arch/powerpc/boot/dts/t208xqds.dtsi
-@@ -48,6 +48,14 @@
- 			size = <0 0x1000000>;
- 			alignment = <0 0x1000000>;
- 		};
-+		qman_fqd: qman-fqd {
-+			size = <0 0x400000>;
-+			alignment = <0 0x400000>;
-+		};
-+		qman_pfdr: qman-pfdr {
-+			size = <0 0x2000000>;
-+			alignment = <0 0x2000000>;
-+		};
- 	};
- 
- 	ifc: localbus@ffe124000 {
-@@ -93,6 +101,10 @@
- 		ranges = <0x0 0xf 0xf4000000 0x2000000>;
- 	};
- 
-+	qportals: qman-portals@ff6000000 {
-+		ranges = <0x0 0xf 0xf6000000 0x2000000>;
-+	};
-+
- 	soc: soc@ffe000000 {
- 		ranges = <0x00000000 0xf 0xfe000000 0x1000000>;
- 		reg = <0xf 0xfe000000 0 0x00001000>;
-diff --git a/arch/powerpc/boot/dts/t208xrdb.dtsi b/arch/powerpc/boot/dts/t208xrdb.dtsi
-index e1463b1..693d2a8 100644
---- a/arch/powerpc/boot/dts/t208xrdb.dtsi
-+++ b/arch/powerpc/boot/dts/t208xrdb.dtsi
-@@ -48,6 +48,14 @@
- 			size = <0 0x1000000>;
- 			alignment = <0 0x1000000>;
- 		};
-+		qman_fqd: qman-fqd {
-+			size = <0 0x400000>;
-+			alignment = <0 0x400000>;
-+		};
-+		qman_pfdr: qman-pfdr {
-+			size = <0 0x2000000>;
-+			alignment = <0 0x2000000>;
-+		};
- 	};
- 
- 	ifc: localbus@ffe124000 {
-@@ -94,6 +102,10 @@
- 		ranges = <0x0 0xf 0xf4000000 0x2000000>;
- 	};
- 
-+	qportals: qman-portals@ff6000000 {
-+		ranges = <0x0 0xf 0xf6000000 0x2000000>;
-+	};
-+
- 	soc: soc@ffe000000 {
- 		ranges = <0x00000000 0xf 0xfe000000 0x1000000>;
- 		reg = <0xf 0xfe000000 0 0x00001000>;
-diff --git a/arch/powerpc/boot/dts/t4240qds.dts b/arch/powerpc/boot/dts/t4240qds.dts
-index 6df7776..93722da 100644
---- a/arch/powerpc/boot/dts/t4240qds.dts
-+++ b/arch/powerpc/boot/dts/t4240qds.dts
-@@ -109,6 +109,14 @@
- 			size = <0 0x1000000>;
- 			alignment = <0 0x1000000>;
- 		};
-+		qman_fqd: qman-fqd {
-+			size = <0 0x400000>;
-+			alignment = <0 0x400000>;
-+		};
-+		qman_pfdr: qman-pfdr {
-+			size = <0 0x2000000>;
-+			alignment = <0 0x2000000>;
-+		};
- 	};
- 
- 	dcsr: dcsr@f00000000 {
-@@ -119,6 +127,10 @@
- 		ranges = <0x0 0xf 0xf4000000 0x2000000>;
- 	};
- 
-+	qportals: qman-portals@ff6000000 {
-+		ranges = <0x0 0xf 0xf6000000 0x2000000>;
-+	};
-+
- 	soc: soc@ffe000000 {
- 		ranges = <0x00000000 0xf 0xfe000000 0x1000000>;
- 		reg = <0xf 0xfe000000 0 0x00001000>;
-diff --git a/arch/powerpc/boot/dts/t4240rdb.dts b/arch/powerpc/boot/dts/t4240rdb.dts
-index 46049cf..993eb4b 100644
---- a/arch/powerpc/boot/dts/t4240rdb.dts
-+++ b/arch/powerpc/boot/dts/t4240rdb.dts
-@@ -78,6 +78,14 @@
- 			size = <0 0x1000000>;
- 			alignment = <0 0x1000000>;
- 		};
-+		qman_fqd: qman-fqd {
-+			size = <0 0x400000>;
-+			alignment = <0 0x400000>;
-+		};
-+		qman_pfdr: qman-pfdr {
-+			size = <0 0x2000000>;
-+			alignment = <0 0x2000000>;
-+		};
- 	};
- 
- 	dcsr: dcsr@f00000000 {
-@@ -88,6 +96,10 @@
- 		ranges = <0x0 0xf 0xf4000000 0x2000000>;
- 	};
- 
-+	qportals: qman-portals@ff6000000 {
-+		ranges = <0x0 0xf 0xf6000000 0x2000000>;
-+	};
-+
- 	soc: soc@ffe000000 {
- 		ranges = <0x00000000 0xf 0xfe000000 0x1000000>;
- 		reg = <0xf 0xfe000000 0 0x00001000>;
+ define archhelp
+   @echo '* zImage          - Build default images selected by kernel config'
+   @echo '  zImage.*        - Compressed kernel image (arch/$(ARCH)/boot/zImage.*)'
+diff --git a/arch/powerpc/configs/corenet32_smp_defconfig b/arch/powerpc/configs/corenet32_basic_defconfig
+similarity index 100%
+rename from arch/powerpc/configs/corenet32_smp_defconfig
+rename to arch/powerpc/configs/corenet32_basic_defconfig
+diff --git a/arch/powerpc/configs/corenet64_smp_defconfig b/arch/powerpc/configs/corenet64_basic_defconfig
+similarity index 100%
+rename from arch/powerpc/configs/corenet64_smp_defconfig
+rename to arch/powerpc/configs/corenet64_basic_defconfig
+diff --git a/arch/powerpc/configs/kvm_guest.config b/arch/powerpc/configs/kvm_guest.config
+new file mode 100644
+index 0000000..615b0a0
+--- /dev/null
++++ b/arch/powerpc/configs/kvm_guest.config
+@@ -0,0 +1,2 @@
++CONFIG_KVM_GUEST=y
++CONFIG_PPC_QEMU_E500=y
+diff --git a/arch/powerpc/configs/mpc85xx_defconfig b/arch/powerpc/configs/mpc85xx_basic_defconfig
+similarity index 100%
+rename from arch/powerpc/configs/mpc85xx_defconfig
+rename to arch/powerpc/configs/mpc85xx_basic_defconfig
+diff --git a/arch/powerpc/configs/mpc85xx_smp_defconfig b/arch/powerpc/configs/mpc85xx_smp_defconfig
+deleted file mode 100644
+index b6c7111..0000000
+--- a/arch/powerpc/configs/mpc85xx_smp_defconfig
++++ /dev/null
+@@ -1,244 +0,0 @@
+-CONFIG_PPC_85xx=y
+-CONFIG_PHYS_64BIT=y
+-CONFIG_SMP=y
+-CONFIG_NR_CPUS=8
+-CONFIG_SYSVIPC=y
+-CONFIG_POSIX_MQUEUE=y
+-CONFIG_AUDIT=y
+-CONFIG_IRQ_DOMAIN_DEBUG=y
+-CONFIG_NO_HZ=y
+-CONFIG_HIGH_RES_TIMERS=y
+-CONFIG_BSD_PROCESS_ACCT=y
+-CONFIG_IKCONFIG=y
+-CONFIG_IKCONFIG_PROC=y
+-CONFIG_LOG_BUF_SHIFT=14
+-CONFIG_BLK_DEV_INITRD=y
+-CONFIG_EXPERT=y
+-CONFIG_KALLSYMS_ALL=y
+-CONFIG_MODULES=y
+-CONFIG_MODULE_UNLOAD=y
+-CONFIG_MODULE_FORCE_UNLOAD=y
+-CONFIG_MODVERSIONS=y
+-# CONFIG_BLK_DEV_BSG is not set
+-CONFIG_PARTITION_ADVANCED=y
+-CONFIG_MAC_PARTITION=y
+-CONFIG_C293_PCIE=y
+-CONFIG_MPC8540_ADS=y
+-CONFIG_MPC8560_ADS=y
+-CONFIG_MPC85xx_CDS=y
+-CONFIG_MPC85xx_MDS=y
+-CONFIG_MPC8536_DS=y
+-CONFIG_MPC85xx_DS=y
+-CONFIG_MPC85xx_RDB=y
+-CONFIG_P1010_RDB=y
+-CONFIG_P1022_DS=y
+-CONFIG_P1022_RDK=y
+-CONFIG_P1023_RDB=y
+-CONFIG_SOCRATES=y
+-CONFIG_KSI8560=y
+-CONFIG_XES_MPC85xx=y
+-CONFIG_STX_GP3=y
+-CONFIG_TQM8540=y
+-CONFIG_TQM8541=y
+-CONFIG_TQM8548=y
+-CONFIG_TQM8555=y
+-CONFIG_TQM8560=y
+-CONFIG_SBC8548=y
+-CONFIG_QUICC_ENGINE=y
+-CONFIG_QE_GPIO=y
+-CONFIG_HIGHMEM=y
+-CONFIG_BINFMT_MISC=m
+-CONFIG_MATH_EMULATION=y
+-CONFIG_FORCE_MAX_ZONEORDER=12
+-CONFIG_PCI=y
+-CONFIG_PCI_MSI=y
+-CONFIG_RAPIDIO=y
+-CONFIG_NET=y
+-CONFIG_PACKET=y
+-CONFIG_UNIX=y
+-CONFIG_XFRM_USER=y
+-CONFIG_NET_KEY=y
+-CONFIG_INET=y
+-CONFIG_IP_MULTICAST=y
+-CONFIG_IP_ADVANCED_ROUTER=y
+-CONFIG_IP_MULTIPLE_TABLES=y
+-CONFIG_IP_ROUTE_MULTIPATH=y
+-CONFIG_IP_ROUTE_VERBOSE=y
+-CONFIG_IP_PNP=y
+-CONFIG_IP_PNP_DHCP=y
+-CONFIG_IP_PNP_BOOTP=y
+-CONFIG_IP_PNP_RARP=y
+-CONFIG_NET_IPIP=y
+-CONFIG_IP_MROUTE=y
+-CONFIG_IP_PIMSM_V1=y
+-CONFIG_IP_PIMSM_V2=y
+-CONFIG_INET_ESP=y
+-# CONFIG_INET_XFRM_MODE_BEET is not set
+-# CONFIG_INET_LRO is not set
+-CONFIG_IPV6=y
+-CONFIG_IP_SCTP=m
+-CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
+-CONFIG_DEVTMPFS=y
+-CONFIG_DEVTMPFS_MOUNT=y
+-CONFIG_MTD=y
+-CONFIG_MTD_CMDLINE_PARTS=y
+-CONFIG_MTD_BLOCK=y
+-CONFIG_FTL=y
+-CONFIG_MTD_CFI=y
+-CONFIG_MTD_CFI_INTELEXT=y
+-CONFIG_MTD_CFI_AMDSTD=y
+-CONFIG_MTD_PHYSMAP_OF=y
+-CONFIG_MTD_NAND=y
+-CONFIG_MTD_NAND_FSL_ELBC=y
+-CONFIG_MTD_NAND_FSL_IFC=y
+-CONFIG_MTD_SPI_NOR=y
+-CONFIG_MTD_UBI=y
+-CONFIG_BLK_DEV_LOOP=y
+-CONFIG_BLK_DEV_NBD=y
+-CONFIG_BLK_DEV_RAM=y
+-CONFIG_BLK_DEV_RAM_SIZE=131072
+-CONFIG_EEPROM_AT24=y
+-CONFIG_EEPROM_LEGACY=y
+-CONFIG_BLK_DEV_SD=y
+-CONFIG_CHR_DEV_ST=y
+-CONFIG_BLK_DEV_SR=y
+-CONFIG_CHR_DEV_SG=y
+-CONFIG_SCSI_LOGGING=y
+-CONFIG_ATA=y
+-CONFIG_SATA_AHCI=y
+-CONFIG_SATA_FSL=y
+-CONFIG_SATA_SIL24=y
+-CONFIG_PATA_ALI=y
+-CONFIG_NETDEVICES=y
+-CONFIG_DUMMY=y
+-CONFIG_FS_ENET=y
+-CONFIG_UCC_GETH=y
+-CONFIG_GIANFAR=y
+-CONFIG_E1000E=y
+-CONFIG_AT803X_PHY=y
+-CONFIG_MARVELL_PHY=y
+-CONFIG_DAVICOM_PHY=y
+-CONFIG_CICADA_PHY=y
+-CONFIG_VITESSE_PHY=y
+-CONFIG_FIXED_PHY=y
+-CONFIG_INPUT_FF_MEMLESS=m
+-# CONFIG_INPUT_MOUSEDEV is not set
+-# CONFIG_INPUT_KEYBOARD is not set
+-# CONFIG_INPUT_MOUSE is not set
+-CONFIG_SERIO_LIBPS2=y
+-CONFIG_SERIAL_8250=y
+-CONFIG_SERIAL_8250_CONSOLE=y
+-CONFIG_SERIAL_8250_NR_UARTS=2
+-CONFIG_SERIAL_8250_RUNTIME_UARTS=2
+-CONFIG_SERIAL_8250_MANY_PORTS=y
+-CONFIG_SERIAL_8250_DETECT_IRQ=y
+-CONFIG_SERIAL_8250_RSA=y
+-CONFIG_SERIAL_QE=m
+-CONFIG_NVRAM=y
+-CONFIG_I2C=y
+-CONFIG_I2C_CHARDEV=y
+-CONFIG_I2C_CPM=m
+-CONFIG_I2C_MPC=y
+-CONFIG_SPI=y
+-CONFIG_SPI_FSL_SPI=y
+-CONFIG_SPI_FSL_ESPI=y
+-CONFIG_GPIO_MPC8XXX=y
+-CONFIG_SENSORS_LM90=y
+-CONFIG_FB=y
+-CONFIG_FB_FSL_DIU=y
+-# CONFIG_VGA_CONSOLE is not set
+-CONFIG_FRAMEBUFFER_CONSOLE=y
+-CONFIG_SOUND=y
+-CONFIG_SND=y
+-# CONFIG_SND_SUPPORT_OLD_API is not set
+-# CONFIG_SND_DRIVERS is not set
+-CONFIG_SND_INTEL8X0=y
+-# CONFIG_SND_PPC is not set
+-# CONFIG_SND_USB is not set
+-CONFIG_SND_SOC=y
+-CONFIG_SND_POWERPC_SOC=y
+-CONFIG_HID_A4TECH=y
+-CONFIG_HID_APPLE=y
+-CONFIG_HID_BELKIN=y
+-CONFIG_HID_CHERRY=y
+-CONFIG_HID_CHICONY=y
+-CONFIG_HID_CYPRESS=y
+-CONFIG_HID_EZKEY=y
+-CONFIG_HID_GYRATION=y
+-CONFIG_HID_LOGITECH=y
+-CONFIG_HID_MICROSOFT=y
+-CONFIG_HID_MONTEREY=y
+-CONFIG_HID_PANTHERLORD=y
+-CONFIG_HID_PETALYNX=y
+-CONFIG_HID_SAMSUNG=y
+-CONFIG_HID_SUNPLUS=y
+-CONFIG_USB=y
+-CONFIG_USB_MON=y
+-CONFIG_USB_EHCI_HCD=y
+-CONFIG_USB_EHCI_FSL=y
+-CONFIG_USB_OHCI_HCD=y
+-CONFIG_USB_OHCI_HCD_PPC_OF_BE=y
+-CONFIG_USB_OHCI_HCD_PPC_OF_LE=y
+-CONFIG_USB_STORAGE=y
+-CONFIG_MMC=y
+-CONFIG_MMC_SDHCI=y
+-CONFIG_MMC_SDHCI_PLTFM=y
+-CONFIG_MMC_SDHCI_OF_ESDHC=y
+-CONFIG_EDAC=y
+-CONFIG_EDAC_MM_EDAC=y
+-CONFIG_RTC_CLASS=y
+-CONFIG_RTC_DRV_DS1307=y
+-CONFIG_RTC_DRV_DS1374=y
+-CONFIG_RTC_DRV_DS3232=y
+-CONFIG_RTC_DRV_CMOS=y
+-CONFIG_DMADEVICES=y
+-CONFIG_FSL_DMA=y
+-CONFIG_EXT2_FS=y
+-CONFIG_EXT3_FS=y
+-# CONFIG_EXT3_DEFAULTS_TO_ORDERED is not set
+-CONFIG_ISO9660_FS=m
+-CONFIG_JOLIET=y
+-CONFIG_ZISOFS=y
+-CONFIG_UDF_FS=m
+-CONFIG_MSDOS_FS=m
+-CONFIG_VFAT_FS=y
+-CONFIG_NTFS_FS=y
+-CONFIG_PROC_KCORE=y
+-CONFIG_TMPFS=y
+-CONFIG_HUGETLBFS=y
+-CONFIG_ADFS_FS=m
+-CONFIG_AFFS_FS=m
+-CONFIG_HFS_FS=m
+-CONFIG_HFSPLUS_FS=m
+-CONFIG_BEFS_FS=m
+-CONFIG_BFS_FS=m
+-CONFIG_EFS_FS=m
+-CONFIG_JFFS2_FS=y
+-CONFIG_JFFS2_FS_DEBUG=1
+-CONFIG_UBIFS_FS=y
+-CONFIG_CRAMFS=y
+-CONFIG_VXFS_FS=m
+-CONFIG_HPFS_FS=m
+-CONFIG_QNX4FS_FS=m
+-CONFIG_SYSV_FS=m
+-CONFIG_UFS_FS=m
+-CONFIG_NFS_FS=y
+-CONFIG_NFS_V4=y
+-CONFIG_ROOT_NFS=y
+-CONFIG_NFSD=y
+-CONFIG_NLS_CODEPAGE_437=y
+-CONFIG_NLS_CODEPAGE_850=y
+-CONFIG_NLS_ISO8859_1=y
+-CONFIG_CRC_T10DIF=y
+-CONFIG_FONTS=y
+-CONFIG_FONT_8x8=y
+-CONFIG_FONT_8x16=y
+-CONFIG_DEBUG_INFO=y
+-CONFIG_DEBUG_FS=y
+-CONFIG_DETECT_HUNG_TASK=y
+-CONFIG_CRYPTO_PCBC=m
+-CONFIG_CRYPTO_SHA256=y
+-CONFIG_CRYPTO_SHA512=y
+-# CONFIG_CRYPTO_ANSI_CPRNG is not set
+-CONFIG_CRYPTO_DEV_FSL_CAAM=y
+-CONFIG_CRYPTO_DEV_TALITOS=y
+diff --git a/arch/powerpc/configs/smp.config b/arch/powerpc/configs/smp.config
+new file mode 100644
+index 0000000..1cbf7ec
+--- /dev/null
++++ b/arch/powerpc/configs/smp.config
+@@ -0,0 +1 @@
++CONFIG_SMP=y
 -- 
-2.1.0
+1.9.3
