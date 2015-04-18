@@ -1,28 +1,34 @@
-Return-Path: <richard.schmitt@freescale.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <jolsa@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0AC9E1A001E
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Apr 2015 00:10:09 +1000 (AEST)
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bn0105.outbound.protection.outlook.com [157.56.110.105])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 1FB1B1401AF
- for <linuxppc-dev@ozlabs.org>; Fri, 17 Apr 2015 00:10:06 +1000 (AEST)
-From: Richard Schmitt <richard.schmitt@freescale.com>
-To: Bob Cochran <ppc@mindchasers.com>, Scott Wood <scottwood@freescale.com>,
- Lijun Pan <Lijun.Pan@freescale.com>
-Subject: RE: new way of writing defconfigs for freescale's powerpc platforms
-Date: Thu, 16 Apr 2015 13:37:16 +0000
-Message-ID: <BN1PR0301MB064195A228E24F566AF75008ECE40@BN1PR0301MB0641.namprd03.prod.outlook.com>
-References: <DM2PR03MB3689ECA6BC27B156BD10F76FCFB0@DM2PR03MB368.namprd03.prod.outlook.com>
- <1428618671.22867.551.camel@freescale.com> <552F3E37.7030507@mindchasers.com>
- <552FB721.1070605@mindchasers.com>
-In-Reply-To: <552FB721.1070605@mindchasers.com>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6EC2A1A001D
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 18 Apr 2015 23:06:54 +1000 (AEST)
+Date: Sat, 18 Apr 2015 15:05:36 +0200
+From: Jiri Olsa <jolsa@redhat.com>
+To: Andi Kleen <ak@linux.intel.com>
+Subject: Re: 'perf upgrade' (was: Re: [PATCH v9 00/11] Add support for JSON
+ event files.)
+Message-ID: <20150418130536.GA1514@krava.brq.redhat.com>
+References: <1428993665-2133-1-git-send-email-sukadev@linux.vnet.ibm.com>
+ <20150414085541.GA30202@gmail.com>
+ <1429010508.27414.1.camel@ellerman.id.au>
+ <20150414125822.GA32761@gmail.com>
+ <1429052004.10000.1.camel@ellerman.id.au>
+ <20150415092557.GA14942@gmail.com>
+ <20150415205042.GA11620@us.ibm.com> <20150417153126.GA17654@krava>
+ <20150417200954.GA7056@tassilo.jf.intel.com>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20150417200954.GA7056@tassilo.jf.intel.com>
+Cc: Arnaldo Carvalho de Melo <acme@infradead.org>,
+ Peter Zijlstra <a.p.zijlstra@chello.nl>, peterz@infradead.org,
+ linux-kernel@vger.kernel.org, Arnaldo Carvalho de Melo <acme@kernel.org>,
+ Pekka Enberg <penberg@iki.fi>, Linus Torvalds <torvalds@linux-foundation.org>,
+ mingo@redhat.com, Borislav Petkov <bp@alien8.de>, namhyung@kernel.org,
+ Thomas Gleixner <tglx@linutronix.de>,
+ Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, Ingo Molnar <mingo@kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,73 +38,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogQm9iIENvY2hyYW4gW21h
-aWx0bzpwcGNAbWluZGNoYXNlcnMuY29tXQ0KPiBTZW50OiBUaHVyc2RheSwgQXByaWwgMTYsIDIw
-MTUgODoyMSBBTQ0KPiBUbzogV29vZCBTY290dC1CMDc0MjE7IFBhbiBMaWp1bi1CNDQzMDYNCj4g
-Q2M6IGxpbnV4cHBjLWRldkBvemxhYnMub3JnOyBTY2htaXR0IFJpY2hhcmQtQjQzMDgyDQo+IFN1
-YmplY3Q6IFJlOiBuZXcgd2F5IG9mIHdyaXRpbmcgZGVmY29uZmlncyBmb3IgZnJlZXNjYWxlJ3Mg
-cG93ZXJwYyBwbGF0Zm9ybXMNCj4gDQo+IE9uIDA0LzE2LzIwMTUgMTI6NDQgQU0sIEJvYiBDb2No
-cmFuIHdyb3RlOg0KPiA+IE9uIDA0LzA5LzIwMTUgMDY6MzEgUE0sIFNjb3R0IFdvb2Qgd3JvdGU6
-DQo+ID4+IE9uIFRodSwgMjAxNS0wNC0wOSBhdCAxNjo1MiAtMDUwMCwgUGFuIExpanVuLUI0NDMw
-NiB3cm90ZToNCj4gPj4+IEhpIE1haW50YWluZXJzLA0KPiA+Pj4NCj4gPj4+IFdlIGhhdmUgYSBw
-cm9wb3NhbCBmb3Igd3JpdGluZyB0aGUgZGVmY29uZmlncyBmb3IgZnJlZXNjYWxlJ3MNCj4gPj4+
-IHBvd3BlcnBjIHBsYXRmb3JtcyBpbiBhIG5ldyB3YXkuDQo+ID4+PiBDYW4geW91IHRha2UgYSBs
-b29rIGFuZCBwcm92aWRlIHNvbWUgZmVlZGJhY2s/DQo+ID4+Pg0KPiA+Pj4gWW91IGtub3cgY3Vy
-cmVudGx5IHdlIGhhdmUgbXBjODV4eF9kZWZjb25maWcsIGNvcmVuZXQzMl9kZWZjb25maWcsDQo+
-ID4+PiBic2M5MTN4X2RlZmNvbmZpZywgKmZtYW4qX2RlZmNvbmZpZywgZXRjLg0KPiA+Pj4gV2Ug
-YXJlIGdvaW5nIHRvIGV4dHJhY3Qgc29tZSBjb21tb24gcGFydHMgZnJvbSB0aGUgZXhpc3RpbmcN
-Cj4gPj4+IGRlZmNvbmZpZ3MsIGFuZCBuYW1lIGl0LCBzYXksIGZzbF9iYXNpY19kZWZjb25maWcu
-DQo+ID4+PiBUaGVuLCB3ZSBjb3VsZCBjcmVhdGUgc29tZSBkZWZjb25maWdzIHRhcmdldGluZyBz
-cGVjaWZpYyBmZWF0dXJlcyBvcg0KPiA+Pj4gc3BlY2lmaWMgcGxhdGZvcm1zLg0KPiA+Pj4gU2F5
-LCBmZWF0dXJlcyBzcGVjaWZpYzoga3ZtX2RlZmNvbmZpZywgZm1hbl9kZWZjb25maWcsIGV0Yy4N
-Cj4gPj4+IFBsYXRmb3JtcyBzcGVjaWZpYzogcDFfZGVmY29uZmlnLCBwMl9kZWZjb25nZmlnLCBw
-NF9kZWZjb25maWcsDQo+ID4+PiB0MV9kZWZjb25maWcsIHQyX2RlZmNvbmZpZywgdDJfZGVmY29u
-ZmlnLCBiNF9kZWZjb25maWcsIGV0YyBXaGVuIHdlDQo+ID4+PiB3YW50IHRvIG1ha2UgYSBrZXJu
-ZWwgaW1hZ2UgZm9yIHAxIHBsYXRmb3JtLCBVc2luZyB0aGUgZm9sbG93aW5nDQo+ID4+PiBzdGVw
-czoNCj4gPj4+DQo+ID4+PiBtYWtlIC4vc2NyaXB0cy9rY29uZmlnL21lcmdlX2NvbmZpZy5zaA0K
-PiA+Pj4gYXJjaC9wb3dlcnBjL2NvbmZpZ3MvZnNsX2Jhc2ljX2NvbmZpZyBwMV9kZWZjb25maWcg
-bWFrZQ0KPiA+Pj4NCj4gPj4+IFdoYXQgZG8geW91IHRoaW5rIG9mIHRoaXMgbmV3IGFwcHJvYWNo
-Pw0KPiA+Pj4gV2lsbCB5b3UgYWNjZXB0IHRoaXMgYXBwcm9hY2g/DQo+ID4+DQo+ID4+IEknbSBP
-SyB3aXRoIGEgbWVyZ2VfY29uZmlnIGFwcHJvYWNoLg0KPiA+Pg0KPiA+PiBJJ20gbm90IE9LIHdp
-dGggaGF2aW5nIHNlcGFyYXRlIGJ1aWxkcyBmb3IgcDEvcDIvcDQvdDEvdDIvYjQuDQo+ID4+DQo+
-ID4+IC1TY290dA0KPiA+DQo+ID4NCj4gPiBBcyB5b3UgcHJvYmFibHkga25vdywgRnJlZXNjYWxl
-IG1ha2VzIHVzZSBvZiB0aGUgWW9jdG8gUHJvamVjdCBidWlsZA0KPiA+IHN5c3RlbSBmb3IgaXRz
-IFNESyBhbmQgc3VibWl0cyBwYXRjaGVzIHRvIHRoZSBTREsgYXQgYSBwdWJsaWMNCj4gPiBtZXRh
-LWZzbC1wcGMgcmVwbyBhdA0KPiA+IGh0dHA6Ly9naXQueW9jdG9wcm9qZWN0Lm9yZy9jZ2l0L2Nn
-aXQuY2dpL21ldGEtZnNsLXBwYy8NCj4gPg0KPiA+IEkgaGF2ZSBzZWVuIHNvbWUga2VybmVsIHJl
-bGF0ZWQgcGF0Y2hlcyBpbiB0aGUgcGFzdCBjb21lIGFjcm9zcyB0aGUNCj4gPiBZb2N0byBQcm9q
-ZWN0IHNpdGUgdGhhdCBtYWRlIHVzZSBvZiB0aGUgWW9jdG8gUHJvamVjdCBrZXJuZWwgdG9vbHMs
-DQo+ID4gd2hpY2ggaW5jbHVkZXMgYSBwcm9jZXNzIGZvciBtYWludGFpbmluZyBrZXJuZWwgY29u
-ZmlndXJhdGlvbiBmcmFnbWVudHMuDQo+IA0KPiANCj4gSGVyZSBpcyBhIGxpbmsgdG8gYSBwYXRj
-aCBmcm9tIGEgRnJlZXNjYWxlIGRldmVsb3BlciBpbnRyb2R1Y2luZyBZb2N0byBrZXJuZWwNCj4g
-dG9vbCBzdXBwb3J0IChkZXNjcmlwdGlvbiBmaWxlcyAmIGNvbmZpZ3VyYXRpb24gZnJhZ21lbnRz
-KSB0byB0aGUgbWV0YS1mc2wtcHBjDQo+IHJlcG8gKEZTTCBRb3JJUSBTREsgb24gWW9jdG8pLg0K
-PiANCj4gaHR0cHM6Ly9saXN0cy55b2N0b3Byb2plY3Qub3JnL3BpcGVybWFpbC9tZXRhLWZyZWVz
-Y2FsZS8yMDE0LQ0KPiBPY3RvYmVyLzAxMDg5MC5odG1sDQo+IA0KPiANClllcywgd2UgZG8gYWxz
-byBpbnRlbmQgdG8gc3VwcG9ydCB0aGlzIGluIFlvY3RvIGFuZCB0aGF0IHRoZSBmcmFnbWVudHMg
-d2lsbCBiZSBhcHBsaWVkIGR1cmluZyB0aGUgYnVpbGQgcHJvY2VzcyBhcyBwYXJ0IG9mIFlvY3Rv
-IHJlY2lwZXMgYW5kIEtlcm5lbCBGZWF0dXJlcy4gICBUaGUgZmlyc3Qgc3RlcCBpbiBkb2luZyB0
-aGlzIGlzIGNyZWF0aW5nIHRoZSBmcmFnbWVudHMgYW5kIHByb3ZpZGluZyBhIG1lYW5zIHRvIGNy
-ZWF0ZSB0aGUgcGxhdGZvcm0gZGVmY29uZmlncyB3aXRob3V0IFlvY3RvLiAgDQo+IA0KPiA+ICAg
-SXQgc291bmRzIGxpa2UgdGhlIHJlcXVpcmVtZW50cyB5b3UgaGF2ZSBjb3VsZCBiZSBtZXQgd2l0
-aCBZb2N0bydzDQo+ID4gZXhpc3RpbmcgcHJvY2Vzcy4NCj4gPg0KPiA+IEkgd2FzIGhvcGluZyB0
-byBzZWUgRnJlZXNjYWxlIGNvbnRpbnVlIHRvIG1vdmUgaW4gdGhlIGRpcmVjdGlvbiBvZg0KPiA+
-IHVzaW5nIHRoZSBZb2N0byBrZXJuZWwgdG9vbHMgcmF0aGVyIHRoYW4gcm9sbCBpdHMgb3duIHNv
-bHV0aW9uLg0KDQpUaGVyZSBhcmUgYSBudW1iZXIgb2YgYWN0aXZpdGllcyB3ZSBhcmUgZG9pbmcg
-dGhhdCB3aWxsIGJyaW5nIHVzIG1vcmUgaW4gdGhlIGRpcmVjdGlvbiBvZiB0aGUgWW9jdG8ga2Vy
-bmVsIHRvb2xzLiAgQnV0IGFnYWluLCBZb2N0byBpcyBvbmUgd2F5LCBub3QgdGhlIG9ubHkgd2F5
-LiAgU28gd2UgaW50ZW5kIHRvIHN1cHBvcnQgYSBNYWtlZmlsZSBhcHByb2FjaCB0byBidWlsZGlu
-ZyBjb25maWdzIChzaW1pbGFyIHRvIEludGVsKSBhcyB3ZWxsIGFzIGEgWW9jdG8gYXBwcm9hY2gg
-dG8gYnVpbGRpbmcgY29uZmlncy4NCj4gPg0KPiA+IFRoZSBZb2N0byBrZXJuZWwgdG9vbHMgbWFr
-ZSB1c2Ugb2YgZGVzY3JpcHRpb24gZmlsZXMgKCouc2NjKSBhbmQNCj4gPiBjb25maWd1cmF0aW9u
-IGZyYWdtZW50cyAoKi5jZmcpLg0KPiA+DQo+ID4gSGVyZSBpcyBhIGxpbmsgdG8gdGhlIGxhdGVz
-dCBzdGFibGUgWW9jdG8ga2VybmVsIGRldmVsb3BtZW50IG1hbnVhbDoNCj4gPiBodHRwOi8vd3d3
-LnlvY3RvcHJvamVjdC5vcmcvZG9jcy8xLjcuMS9rZXJuZWwtZGV2L2tlcm5lbC1kZXYuaHRtbA0K
-PiA+DQo+ID4gQm9iDQo+ID4NCj4gPg0KUmljaA0KDQo+ID4NCj4gPg0KPiA+DQo+ID4+DQo+ID4+
-DQo+ID4+IF9fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fDQo+
-ID4+IExpbnV4cHBjLWRldiBtYWlsaW5nIGxpc3QNCj4gPj4gTGludXhwcGMtZGV2QGxpc3RzLm96
-bGFicy5vcmcNCj4gPj4gaHR0cHM6Ly9saXN0cy5vemxhYnMub3JnL2xpc3RpbmZvL2xpbnV4cHBj
-LWRldg0KPiA+Pg0KPiA+DQo+ID4gX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX18NCj4gPiBMaW51eHBwYy1kZXYgbWFpbGluZyBsaXN0DQo+ID4gTGludXhwcGMt
-ZGV2QGxpc3RzLm96bGFicy5vcmcNCj4gPiBodHRwczovL2xpc3RzLm96bGFicy5vcmcvbGlzdGlu
-Zm8vbGludXhwcGMtZGV2DQoNCg==
+On Fri, Apr 17, 2015 at 01:09:54PM -0700, Andi Kleen wrote:
+> On Fri, Apr 17, 2015 at 05:31:26PM +0200, Jiri Olsa wrote:
+> > On Wed, Apr 15, 2015 at 01:50:42PM -0700, Sukadev Bhattiprolu wrote:
+> > 
+> > SNIP
+> > 
+> > > | 
+> > > |  - to blindly follow some poorly constructed vendor format with no 
+> > > |    high level structure, that IMHO didn't work very well when OProfile 
+> > > |    was written, and misrepresenting it as 'symbolic event names'.
+> > > | 
+> > > |    Take a look at:
+> > > | 
+> > > |      https://download.01.org/perfmon/HSW/Haswell_core_V17.json
+> > > | 
+> > > |    and weep.
+> > > 
+> > > Evil vendor formats, but to be fair, here is what _we_ have today:
+> > > 
+> > > 	perf stat -e r10068,r20036,r40060,r40ac sleep 1
+> > 
+> > hum, you could also use the 'cpu/event=.../' syntax right?
+> 
+> That's even worse -- same hex numbers, just more redundancy.
+
+no, it's far more readable then the rXXXX format,
+you can just put in whatevent is in the spec..
+event,umask,any etc and dont bother with making
+rXXXX value
+
+but I mentioned it just to give the whole picture,
+I agree that we need the symbolic names support
+
+jirka
