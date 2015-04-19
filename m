@@ -1,20 +1,19 @@
-Return-Path: <kiran1677@gmail.com>
-Received: from mail-qg0-x232.google.com (mail-qg0-x232.google.com
- [IPv6:2607:f8b0:400d:c04::232])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6E5761A0BC5
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Apr 2015 17:50:37 +1000 (AEST)
-Received: by qgdy78 with SMTP id y78so39912244qgd.0
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Apr 2015 00:50:35 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7A9371A0BDC
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Apr 2015 18:56:20 +1000 (AEST)
+To: Ajit Phadnis <ajitsp2001@gmail.com>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: uboot parsing
 MIME-Version: 1.0
-Date: Sun, 19 Apr 2015 13:20:34 +0530
-Message-ID: <CAPbBx=5chsiOxT+GiEX19At6p-pCaa7GckZFUPYo-7YGuphN2g@mail.gmail.com>
-Subject: Regarding storing and parsing in Uboot
-From: Kiran Kumar <kiran1677@gmail.com>
-To: linuxppc-embedded-confirm+7f24a11fc6fcc59e94e351a947756ea5a83eabaf@ozlabs.org,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Content-Type: multipart/alternative; boundary=001a1147a37e8a8ee605140f1137
+Content-type: text/plain; charset=UTF-8
+In-reply-to: <CAKNr0CiLK3bfGWzuwEs1KHqeCan6q5bPJ2psn6gNmBTobCS3Ug@mail.gmail.com>
+References: <CAKNr0CiLK3bfGWzuwEs1KHqeCan6q5bPJ2psn6gNmBTobCS3Ug@mail.gmail.com>
+Date: Sun, 19 Apr 2015 10:50:23 +0200
+Message-Id: <20150419085023.71726380907@gemini.denx.de>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,46 +23,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---001a1147a37e8a8ee605140f1137
-Content-Type: text/plain; charset=UTF-8
+Dear Ajit Phadnis,
 
-Hello team,
+In message <CAKNr0CiLK3bfGWzuwEs1KHqeCan6q5bPJ2psn6gNmBTobCS3Ug@mail.gmail.com> you wrote:
+>
+> Would like to how to store the response command of a run command
 
-I have a problem.
+You should ask U-Boot related questions on the U-Boot mailing list [1] 
+instead; chances for a helpful reply are much better there than on
+lists that do not actually deal with U-Boot.
 
-In uboot, i run some IPMI commands and I have to store that value in uboot
-and also extract the interim byte of the output value.
+> Would to store the outcome of  "run addr" in into a variable and grep for
+> the characters or string in Uboot.
 
-I dont see the support for the same in Uboot or I'm missing something.
+Unfortunately, there is currently no way (yet) to do that.  When the
+hush shell was ported to U-Boot, it was configured and modified for
+minimal memory footprint; one of the features that have not been
+included is command substitution.
 
-eg:
+If you really need such a feature, you could port (or have ported) a
+more recent version of hush and include this feature.  Today's systems
+usually have much more resources than we had at the time when hush was
+added, so the additional memory footprint should be acceptable
+(especially if you make that option configurable, so those who are not
+interested in it or are already tight on memory can opt out).
 
-uboot> run <IPMIcmd>
-The output of this has to be stored in some variable of Uboot, which I'm
-unable to do.
+Further discussions should be done on the U-Boot list [1].
 
-Output of above step would be something like this: b1 87 98 76 *90 *87 00 91
-I have to extract the value '*90*' out of it and do some oprations
+[1] http://lists.denx.de/mailman/listinfo/u-boot
 
-Your help is much appreciated
 
-regards,
-Kiran
+Best regards,
 
---001a1147a37e8a8ee605140f1137
-Content-Type: text/html; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Wolfgang Denk
 
-<div dir=3D"ltr"><div><div><div><div><div><div><div><div>Hello team,<br><br=
-></div>I have a problem.<br><br></div>In
- uboot, i run some IPMI commands and I have to store that value in uboot
- and also extract the interim byte of the output value.<br><br></div>I dont=
- see the support for the same in Uboot or I&#39;m missing something.<br><br=
-></div>eg: <br><br>uboot&gt; run &lt;IPMIcmd&gt; <br>The output of this has=
- to be stored in some variable of Uboot, which I&#39;m unable to do.<br><br=
-></div>Output of above step would be something like this: b1 87 98 76 <b>90=
- </b>87 00 91<br></div>I have to extract the value &#39;<b>90</b>&#39; out =
-of it and do some oprations <br><br></div><div>Your help is much appreciate=
-d<br><br></div>regards,<br></div>Kiran</div>
-
---001a1147a37e8a8ee605140f1137--
+-- 
+DENX Software Engineering GmbH,      Managing Director: Wolfgang Denk
+HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+In an organization, each person rises to the level of his own  incom-
+petency                                         - The Peter Principle
