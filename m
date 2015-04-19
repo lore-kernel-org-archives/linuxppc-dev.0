@@ -2,18 +2,18 @@ Return-Path: <wd@denx.de>
 Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
  (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7A9371A0BDC
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Apr 2015 18:56:20 +1000 (AEST)
-To: Ajit Phadnis <ajitsp2001@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id D1D0F1A0BDC
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Apr 2015 19:01:20 +1000 (AEST)
+To: Kiran Kumar <kiran1677@gmail.com>
 From: Wolfgang Denk <wd@denx.de>
-Subject: Re: uboot parsing
+Subject: Re: Regarding storing and parsing in Uboot
 MIME-Version: 1.0
 Content-type: text/plain; charset=UTF-8
-In-reply-to: <CAKNr0CiLK3bfGWzuwEs1KHqeCan6q5bPJ2psn6gNmBTobCS3Ug@mail.gmail.com>
-References: <CAKNr0CiLK3bfGWzuwEs1KHqeCan6q5bPJ2psn6gNmBTobCS3Ug@mail.gmail.com>
-Date: Sun, 19 Apr 2015 10:50:23 +0200
-Message-Id: <20150419085023.71726380907@gemini.denx.de>
-Cc: linuxppc-dev@lists.ozlabs.org
+In-reply-to: <CAPbBx=5chsiOxT+GiEX19At6p-pCaa7GckZFUPYo-7YGuphN2g@mail.gmail.com>
+References: <CAPbBx=5chsiOxT+GiEX19At6p-pCaa7GckZFUPYo-7YGuphN2g@mail.gmail.com>
+Date: Sun, 19 Apr 2015 10:53:04 +0200
+Message-Id: <20150419085304.31FEF380907@gemini.denx.de>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, linuxppc-embedded@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,35 +23,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Dear Ajit Phadnis,
+Dear Kiran,
 
-In message <CAKNr0CiLK3bfGWzuwEs1KHqeCan6q5bPJ2psn6gNmBTobCS3Ug@mail.gmail.com> you wrote:
->
-> Would like to how to store the response command of a run command
+arghhh... Please do not post the same question in several messages to
+many addrresses; if you really feel you need to send it to all, then
+please put all on Cc: so all can receive the replies, too.
 
-You should ask U-Boot related questions on the U-Boot mailing list [1] 
-instead; chances for a helpful reply are much better there than on
-lists that do not actually deal with U-Boot.
+I answered before:
 
-> Would to store the outcome of  "run addr" in into a variable and grep for
-> the characters or string in Uboot.
+In message <CAPbBx=45O4UrKLoVjCvg5wEnTab-dGo=-O5SH6OwgD49Cq6w+Q@mail.gmail.com> you wrote:
+> 
+> In uboot, i run some IPMI commands and I have to store that value in uboot
+> and also extract the interim byte of the output value.
 
-Unfortunately, there is currently no way (yet) to do that.  When the
-hush shell was ported to U-Boot, it was configured and modified for
-minimal memory footprint; one of the features that have not been
-included is command substitution.
-
-If you really need such a feature, you could port (or have ported) a
-more recent version of hush and include this feature.  Today's systems
-usually have much more resources than we had at the time when hush was
-added, so the additional memory footprint should be acceptable
-(especially if you make that option configurable, so those who are not
-interested in it or are already tight on memory can opt out).
-
-Further discussions should be done on the U-Boot list [1].
-
-[1] http://lists.denx.de/mailman/listinfo/u-boot
-
+I'm afraid we cannot help you with that.  We know only the mainline
+code of U-Boot, and this does not include any kind of IPMI support.
+Apparently you are using some vendor version with specific extensions.
+Without knowing this code it is impossible for us to help you, sorry.
 
 Best regards,
 
@@ -61,5 +49,6 @@ Wolfgang Denk
 DENX Software Engineering GmbH,      Managing Director: Wolfgang Denk
 HRB 165235 Munich, Office: Kirchenstr.5, D-82194 Groebenzell, Germany
 Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-In an organization, each person rises to the level of his own  incom-
-petency                                         - The Peter Principle
+The reasonable man adapts himself to the world; the unreasonable  one
+persists  in  trying  to  adapt  the  world to himself. Therefore all
+progress depends on the unreasonable man."      - George Bernard Shaw
