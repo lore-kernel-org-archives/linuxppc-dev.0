@@ -1,24 +1,19 @@
-Return-Path: <herbert@gondor.apana.org.au>
-Received: from helcar.hengli.com.au (helcar.hengli.com.au [209.40.204.226])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <ajitsp2001@gmail.com>
+Received: from mail-ob0-x22c.google.com (mail-ob0-x22c.google.com
+ [IPv6:2607:f8b0:4003:c01::22c])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C8E811A0023
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Apr 2015 15:49:38 +1000 (AEST)
-Date: Sun, 19 Apr 2015 13:48:47 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: Re: [PATCH v3 00/17] crypto: talitos - Add support for SEC1
-Message-ID: <20150419054847.GB11255@gondor.apana.org.au>
-References: <20150417143147.154871A242C@localhost.localdomain>
+ by lists.ozlabs.org (Postfix) with ESMTPS id BA00A1A0BC5
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Apr 2015 17:49:29 +1000 (AEST)
+Received: by oblw8 with SMTP id w8so99017071obl.0
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Apr 2015 00:49:27 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150417143147.154871A242C@localhost.localdomain>
-Cc: Mark Rutland <mark.rutland@arm.com>, devicetree@vger.kernel.org,
- Kim Phillips <kim.phillips@freescale.com>, Pawel Moll <pawel.moll@arm.com>,
- Ian Campbell <ijc+devicetree@hellion.org.uk>, linux-kernel@vger.kernel.org,
- Rob Herring <robh+dt@kernel.org>, linux-crypto@vger.kernel.org,
- Kumar Gala <galak@codeaurora.org>, linuxppc-dev@lists.ozlabs.org,
- "David S. Miller" <davem@davemloft.net>
+Date: Sun, 19 Apr 2015 13:19:27 +0530
+Message-ID: <CAKNr0CiLK3bfGWzuwEs1KHqeCan6q5bPJ2psn6gNmBTobCS3Ug@mail.gmail.com>
+Subject: uboot parsing
+From: Ajit Phadnis <ajitsp2001@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Content-Type: multipart/alternative; boundary=001a11c2b79a8750de05140f0def
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,19 +23,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, Apr 17, 2015 at 04:31:47PM +0200, Christophe Leroy wrote:
-> The purpose of this set of patchs is to add to talitos crypto driver
-> the support for the SEC1 version of the security engine, which is
-> found in mpc885 and mpc8272 processors.
-> 
-> v3 is a complete rework of the patchset. Since a kernel can be built
-> with support for both MPC82xx and MPC83xx at the same time, talitos
-> driver shall support both SEC1 and SEC2+ at the same time.
-> 
-> Based on cryptodev-2.6 tree
+--001a11c2b79a8750de05140f0def
+Content-Type: text/plain; charset=UTF-8
 
-All applied.
+Hi Folks,
+
+Would like to how to store the response command of a run command
+
+
+=>setenv addr  'ping 192.172.24.24'
+
+=>setenv ping_resp 'run  addr'
+
+Would to store the outcome of  "run addr" in into a variable and grep for
+the characters or string in Uboot.
+
+// Expecting the output as ping response string and parse the outcome with
+grep !!
+=> echo $ping_respone
+
+
 -- 
-Email: Herbert Xu <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+Thanks,
+Ajit
+
+--001a11c2b79a8750de05140f0def
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+
+<div dir=3D"ltr">Hi Folks,<div><br></div><div>Would like to how to store th=
+e response command of a run command</div><div><br></div><div><br></div><div=
+>=3D&gt;setenv addr =C2=A0&#39;ping 192.172.24.24&#39;</div><div><br></div>=
+<div>=3D&gt;setenv ping_resp &#39;run =C2=A0addr&#39;<br></div><div><div><b=
+r></div><div>Would to store the outcome of =C2=A0&quot;run addr&quot; in in=
+to a variable and grep for the characters or string in Uboot.</div><div><br=
+></div><div>// Expecting the output as ping response string and parse the o=
+utcome with grep !!</div><div>=3D&gt; echo $ping_respone=C2=A0</div><div><b=
+r></div><div><br></div>-- <br><div class=3D"gmail_signature"><font color=3D=
+"#ff6600">Thanks,</font><div><font color=3D"#ff6600">Ajit</font></div></div=
+>
+</div></div>
+
+--001a11c2b79a8750de05140f0def--
