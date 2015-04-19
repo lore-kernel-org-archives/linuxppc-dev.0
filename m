@@ -1,19 +1,20 @@
-Return-Path: <ajitsp2001@gmail.com>
-Received: from mail-ob0-x22c.google.com (mail-ob0-x22c.google.com
- [IPv6:2607:f8b0:4003:c01::22c])
+Return-Path: <kiran1677@gmail.com>
+Received: from mail-qg0-x232.google.com (mail-qg0-x232.google.com
+ [IPv6:2607:f8b0:400d:c04::232])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BA00A1A0BC5
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Apr 2015 17:49:29 +1000 (AEST)
-Received: by oblw8 with SMTP id w8so99017071obl.0
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Apr 2015 00:49:27 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6E5761A0BC5
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Apr 2015 17:50:37 +1000 (AEST)
+Received: by qgdy78 with SMTP id y78so39912244qgd.0
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Apr 2015 00:50:35 -0700 (PDT)
 MIME-Version: 1.0
-Date: Sun, 19 Apr 2015 13:19:27 +0530
-Message-ID: <CAKNr0CiLK3bfGWzuwEs1KHqeCan6q5bPJ2psn6gNmBTobCS3Ug@mail.gmail.com>
-Subject: uboot parsing
-From: Ajit Phadnis <ajitsp2001@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Content-Type: multipart/alternative; boundary=001a11c2b79a8750de05140f0def
+Date: Sun, 19 Apr 2015 13:20:34 +0530
+Message-ID: <CAPbBx=5chsiOxT+GiEX19At6p-pCaa7GckZFUPYo-7YGuphN2g@mail.gmail.com>
+Subject: Regarding storing and parsing in Uboot
+From: Kiran Kumar <kiran1677@gmail.com>
+To: linuxppc-embedded-confirm+7f24a11fc6fcc59e94e351a947756ea5a83eabaf@ozlabs.org,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: multipart/alternative; boundary=001a1147a37e8a8ee605140f1137
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,45 +24,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---001a11c2b79a8750de05140f0def
+--001a1147a37e8a8ee605140f1137
 Content-Type: text/plain; charset=UTF-8
 
-Hi Folks,
+Hello team,
 
-Would like to how to store the response command of a run command
+I have a problem.
 
+In uboot, i run some IPMI commands and I have to store that value in uboot
+and also extract the interim byte of the output value.
 
-=>setenv addr  'ping 192.172.24.24'
+I dont see the support for the same in Uboot or I'm missing something.
 
-=>setenv ping_resp 'run  addr'
+eg:
 
-Would to store the outcome of  "run addr" in into a variable and grep for
-the characters or string in Uboot.
+uboot> run <IPMIcmd>
+The output of this has to be stored in some variable of Uboot, which I'm
+unable to do.
 
-// Expecting the output as ping response string and parse the outcome with
-grep !!
-=> echo $ping_respone
+Output of above step would be something like this: b1 87 98 76 *90 *87 00 91
+I have to extract the value '*90*' out of it and do some oprations
 
+Your help is much appreciated
 
--- 
-Thanks,
-Ajit
+regards,
+Kiran
 
---001a11c2b79a8750de05140f0def
+--001a1147a37e8a8ee605140f1137
 Content-Type: text/html; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
 
-<div dir=3D"ltr">Hi Folks,<div><br></div><div>Would like to how to store th=
-e response command of a run command</div><div><br></div><div><br></div><div=
->=3D&gt;setenv addr =C2=A0&#39;ping 192.172.24.24&#39;</div><div><br></div>=
-<div>=3D&gt;setenv ping_resp &#39;run =C2=A0addr&#39;<br></div><div><div><b=
-r></div><div>Would to store the outcome of =C2=A0&quot;run addr&quot; in in=
-to a variable and grep for the characters or string in Uboot.</div><div><br=
-></div><div>// Expecting the output as ping response string and parse the o=
-utcome with grep !!</div><div>=3D&gt; echo $ping_respone=C2=A0</div><div><b=
-r></div><div><br></div>-- <br><div class=3D"gmail_signature"><font color=3D=
-"#ff6600">Thanks,</font><div><font color=3D"#ff6600">Ajit</font></div></div=
->
-</div></div>
+<div dir=3D"ltr"><div><div><div><div><div><div><div><div>Hello team,<br><br=
+></div>I have a problem.<br><br></div>In
+ uboot, i run some IPMI commands and I have to store that value in uboot
+ and also extract the interim byte of the output value.<br><br></div>I dont=
+ see the support for the same in Uboot or I&#39;m missing something.<br><br=
+></div>eg: <br><br>uboot&gt; run &lt;IPMIcmd&gt; <br>The output of this has=
+ to be stored in some variable of Uboot, which I&#39;m unable to do.<br><br=
+></div>Output of above step would be something like this: b1 87 98 76 <b>90=
+ </b>87 00 91<br></div>I have to extract the value &#39;<b>90</b>&#39; out =
+of it and do some oprations <br><br></div><div>Your help is much appreciate=
+d<br><br></div>regards,<br></div>Kiran</div>
 
---001a11c2b79a8750de05140f0def--
+--001a1147a37e8a8ee605140f1137--
