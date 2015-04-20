@@ -1,36 +1,31 @@
-Return-Path: <hemant@linux.vnet.ibm.com>
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <j.anaszewski@samsung.com>
+Received: from mailout2.w1.samsung.com (mailout2.w1.samsung.com
+ [210.118.77.12])
+ (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D27431A0CC8
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Apr 2015 01:04:20 +1000 (AEST)
-Received: from /spool/local
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <hemant@linux.vnet.ibm.com>;
- Mon, 20 Apr 2015 20:34:17 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 02D8FE0059
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Apr 2015 20:36:52 +0530 (IST)
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t3KF4EQg63307948
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Apr 2015 20:34:14 +0530
-Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t3KEf6hS018998
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Apr 2015 20:11:06 +0530
-From: Hemant Kumar <hemant@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 5/5] perf/kvm: HCALL events analysis
-Date: Mon, 20 Apr 2015 20:32:15 +0530
-Message-Id: <1429542135-10632-6-git-send-email-hemant@linux.vnet.ibm.com>
-In-Reply-To: <1429542135-10632-1-git-send-email-hemant@linux.vnet.ibm.com>
-References: <1429542135-10632-1-git-send-email-hemant@linux.vnet.ibm.com>
-Cc: maddy@linux.vnet.ibm.com, srikar@linux.vnet.ibm.com, peterz@infradead.org,
- linux-kernel@vger.kernel.org, acme@kernel.org, paulus@samba.org,
- warrier@linux.vnet.ibm.com, Hemant Kumar <hemant@linux.vnet.ibm.com>,
- mingo@kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4C0EC1A0BF1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Apr 2015 01:21:05 +1000 (AEST)
+Received: from eucpsbgm1.samsung.com (unknown [203.254.199.244])
+ by mailout2.w1.samsung.com
+ (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May 5 2014))
+ with ESMTP id <0NN4008242UJ1P60@mailout2.w1.samsung.com> for
+ linuxppc-dev@lists.ozlabs.org; Mon, 20 Apr 2015 16:25:31 +0100 (BST)
+Message-id: <5535195B.5010101@samsung.com>
+Date: Mon, 20 Apr 2015 17:20:59 +0200
+From: Jacek Anaszewski <j.anaszewski@samsung.com>
+MIME-version: 1.0
+To: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
+Subject: Re: [PATCH v2 2/2] leds/powernv: Add driver for PowerNV platform
+References: <20150320105921.14866.83209.stgit@localhost.localdomain>
+ <20150320110328.14866.98225.stgit@localhost.localdomain>
+ <552D303A.5080506@samsung.com> <552E049D.2030604@linux.vnet.ibm.com>
+ <552E2480.9060102@samsung.com> <552E3A56.8030300@linux.vnet.ibm.com>
+ <5534E6D9.6060804@samsung.com> <5534F240.3020907@linux.vnet.ibm.com>
+In-reply-to: <5534F240.3020907@linux.vnet.ibm.com>
+Content-type: text/plain; charset=UTF-8; format=flowed
+Cc: stewart@linux.vnet.ibm.com, cooloney@gmail.com, rpurdie@rpsys.net,
+ linuxppc-dev@lists.ozlabs.org, linux-leds@vger.kernel.org,
+ khandual@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,159 +35,157 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch adds KVM hypervisor call analysis to perf for powerpc.
- - Trace hcall events :
-  perf kvm stat record
+On 04/20/2015 02:34 PM, Vasant Hegde wrote:
+> On 04/20/2015 05:15 PM, Jacek Anaszewski wrote:
+>> Hi Vasant,
+>>
+>> I'd like to clarify some details regarding your explanation.
+>>
+>> On 04/15/2015 12:15 PM, Vasant Hegde wrote:
+>> [...]
+>>>>>
+>>>>> In Power Systems LEDs are overloaded (meaning same LED is used for identify and
+>>>>> fault depending on their state  ---  blinking = identify and solid = fault).
+>>>>> Hence here append LED type info.
+>>>>
+>>>> The label could be composed of segments and an ordinal number as
+>>>> labels have to be unique, e.g. attn_ident_0, attn_ident_1.
+>>>> The segments would have to be parsed by the driver to discover
+>>>> all the LED's available modes.
+>>>>
+>>>> nitpicking: identify is a verb and is not a proper name for the LED.
+>>>> Could you describe the purpose of this mode, so that we could come
+>>>> up with a better name?
+>>>
+>>> Each component (Field Replacement Unit) will have service indicator (LEDS) which
+>>> can have below states :
+>>>     - OFF     : no action
+>>>     - Identify: blinking state (user can use this state to identify particular
+>>> component).
+>>>          In Power Systems world we call it as "identify" indicator.. Hence I
+>>> retained same name here.
+>>>          How about just "ident" ?
+>>>     - fault : solid state (when component goes bad, LED goes to solid state)
+>>>        Note that our FW is capable of isolating some of the issues and it can turn
+>>> on LEDs without OS
+>>>         interference.
+>>>
+>>> We have one more System level LED (System Attention Indicator).. This LED has
+>>> two states:
+>>>     - OFF : Everything is fine
+>>>     - ON : Some component has issues and needs attention.
+>>
+>> We have three modes:
+>> - identify        - blinking
+>> - fault            - solid
+>> - attention indicator    - solid
+>>
+>> How does LED operation differ for fault and attention modes?
+>> Does a LED have different intensity?
+>
+> Jacek,
+>
+> System Attention LED is special LED and its single LED available/system. where
+> as identify and fault is applicable to all field replaceable units in the system..
+>
+> So Typical server will have
+>     1   System Attention LED
+>      N  Identify/fault LED (N = Field Replaceable Unit).
+>
+> Apart from above two, we do have two more LEDs/Enclosure (external visible LEDs)
+>    - Enclosure Identify
+>    - Enclosure fault
+>        These LEDs reflects state of all Field Replaceable Units (FRU) inside this
+> enclosure
+>         If any of FRU state is ON, this will become ON
+>         Also we can independently enable this LED!!
+>
+>      But from kernel side implementation point of view, I just treat this as
+> another LED.. as our platform code (OPAL firmware) takes care of roll up etc.
+>
+>
+> Now our LED can operate in two mode (Depending on our service model, typically
+> one/two socket servers are Light Path mode, whereas high end servers are Guiding
+> Light Mode).
+>
+>   1.  Guiding Light
+>       Only Identify indicator is support.. Fault is not supported
+>       System attention indicator is used to point there is some problem in system
+> and need attention
+>    2. Light Path mode
+>      Both identify and fault indicator is supported ..
+>      Fault is ON whenever some component is faulty
+>      System attention indicator is used to point that FW/OS is not able to
+> isolate the problem and needs user to look into serviceable event (like syslog/
+> our agents like ESA which analyzes and reports events)
+>
+>
+> Handling LED states :
+>    - Though physically single LED is overloaded for identify and fault, logically
+> (FW/OS level) we treat them as separate LED.
+>    - We can enable both fault and identify simultaneously.
+>    - Hardware decides physical LED state (rule : identify has priority over fault).
+>       ex: Say location code 'X',
+>             Identify = ON, fault = ON ,   state of 'X' = identify (blinking)
+>             Identify = OFF, fault = ON,   state of 'X'  = fault  (solid)
+>             Identify = OFF, fault = ON,   state of 'X'  = identify (blinking)
+> 	   Identify = OFF, fault = OFF , state of 'X'  = OFF
+>
+> Since we have various above combinations, I thought its best to have separate
+> class dev for each individual LEDs. That way we keep everything simple and let
+> firmware handle all complexities.
+>
+> Hope this clarifies.
+>
+> I just posted v3 where I addressed your comments.
+>     https://lists.ozlabs.org/pipermail/linuxppc-dev/2015-April/127702.html
+>
+> Please let me know if you have any comments/suggestions.
 
- - Show the results :
-  perf kvm stat report --event=hcall
+ From what I can see from the driver code the LEDs are set with:
 
-The results show the number of hypervisor calls from the guest grouped
-into their respective reasons displayed with the frequency.
+opal_leds_set_ind(token, loc_code, led_mask, led_value, &max_led_type);
 
-This patch makes use of two additional tracepoints "kvm_hv:kvm_hcall_enter"
-and "kvm_hv:kvm_hcall_exit". It uses the pSeries hypervisor codes
-exported through uapi to classify the hcalls into their respective reasons.
+and their state can be read with:
 
- # pgrep qemu
-A sample output :
-19378
-60515
+opal_leds_get_ind(loc_code, &led_mask, &led_value, &max_led_type)
 
-2 VMs running.
+ From the kernel point of view these are very simple operations.
 
- # perf kvm stat record -a
-^C[ perf record: Woken up 1 times to write data ]
-[ perf record: Captured and wrote 4.153 MB perf.data.guest (39624 samples) ]
+All the logic you described should be handled by user space.
+If you need to be able to specify the LED mode you want to set/read,
+then additional 'mode' sysfs attribute should be added by the driver.
+There would have to be also additional sysfs attribute 'available_modes"
+provided. The ABI documentation should inform how the mode identifiers
+map to the modes. I already explained how to add it, when we were
+discussing about retaining led state on remove.
 
- # perf kvm stat report -p 60515 --event=hcall
-Analyze events for pid(s) 60515, all VCPUs:
 
-         HCALL-EVENT    Samples  Samples%     Time%    Min Time    Max Time         Avg time
+I'd see following use cases.
 
-        H_VIO_SIGNAL       1034    38.44%    15.77%      0.36us      1.59us      0.44us ( +-   0.66% )
-          H_SEND_CRQ        652    24.24%    10.97%      0.39us      1.84us      0.49us ( +-   1.20% )
-               H_IPI        523    19.44%    62.05%      1.35us     19.70us      3.44us ( +-   2.88% )
-     H_PUT_TERM_CHAR        411    15.28%     8.03%      0.38us      3.77us      0.57us ( +-   1.61% )
-     H_GET_TERM_CHAR         50     1.86%     0.99%      0.40us      0.98us      0.57us ( +-   3.37% )
-               H_EOI         20     0.74%     2.19%      2.22us      4.72us      3.17us ( +-   5.96% )
+(let's assume that modes are defined as follows:
+0: ident, 1: attn, 2: fault)
 
-Total Samples:2690, Total events handled time:2896.94us.
+#cat available_modes
+#0 1 2
+#echo 0 > mode  //set ident mode
+#echo 1 > brightness //set ident state
+#echo 2 > mode  //set fault mode
+#cat brightness //read fault state
+#0
+#echo 1 > attn //set attn mode
+#echo 1 > brightness
 
-Signed-off-by: Hemant Kumar <hemant@linux.vnet.ibm.com>
----
- arch/powerpc/include/uapi/asm/kvm_perf.h |  4 +++
- tools/perf/arch/powerpc/util/kvm-stat.c  | 61 ++++++++++++++++++++++++++++++++
- 2 files changed, 65 insertions(+)
+This would set the LED in blinking mode, so I am wondering if we
+shouldn't employ timer trigger for this to keep the LED API consistent.
 
-diff --git a/arch/powerpc/include/uapi/asm/kvm_perf.h b/arch/powerpc/include/uapi/asm/kvm_perf.h
-index 30fa670..440902e 100644
---- a/arch/powerpc/include/uapi/asm/kvm_perf.h
-+++ b/arch/powerpc/include/uapi/asm/kvm_perf.h
-@@ -3,6 +3,7 @@
- 
- #include <asm/trace_book3s.h>
- #include <asm/kvm.h>
-+#include <asm/trace_hcall.h>
- 
- #define DECODE_STR_LEN 20
- 
-@@ -11,5 +12,8 @@
- #define KVM_ENTRY_TRACE "kvm_hv:kvm_guest_enter"
- #define KVM_EXIT_TRACE "kvm_hv:kvm_guest_exit"
- #define KVM_EXIT_REASON "trap"
-+#define KVM_HCALL_ENTRY_TRACE "kvm_hv:kvm_hcall_enter"
-+#define KVM_HCALL_EXIT_TRACE "kvm_hv:kvm_hcall_exit"
-+#define KVM_HCALL_REASON "req"
- 
- #endif /* _ASM_POWERPC_KVM_PERF_H */
-diff --git a/tools/perf/arch/powerpc/util/kvm-stat.c b/tools/perf/arch/powerpc/util/kvm-stat.c
-index 62cdcc1..685201c 100644
---- a/tools/perf/arch/powerpc/util/kvm-stat.c
-+++ b/tools/perf/arch/powerpc/util/kvm-stat.c
-@@ -1,7 +1,9 @@
- #include "../../util/kvm-stat.h"
- #include <asm/kvm_perf.h>
-+#include "../../util/debug.h"
- 
- define_exit_reasons_table(hv_exit_reasons, kvm_trace_symbol_exit);
-+define_exit_reasons_table(hcall_reasons, kvm_trace_symbol_hcall);
- 
- static struct kvm_events_ops exit_events = {
- 	.is_begin_event = exit_event_begin,
-@@ -10,14 +12,73 @@ static struct kvm_events_ops exit_events = {
- 	.name = "VM-EXIT"
- };
- 
-+static void hcall_event_get_key(struct perf_evsel *evsel,
-+				struct perf_sample *sample,
-+				struct event_key *key)
-+{
-+	key->info = 0;
-+	key->key = perf_evsel__intval(evsel, sample, KVM_HCALL_REASON);
-+}
-+
-+static const char *get_exit_reason(u64 exit_code)
-+{
-+	struct exit_reasons_table *tbl = hcall_reasons;
-+
-+	while (tbl->reason != NULL) {
-+		if (tbl->exit_code == exit_code)
-+			return tbl->reason;
-+		tbl++;
-+	}
-+
-+	pr_err("Unknown kvm hcall exit code: %lld\n",
-+	       (unsigned long long)exit_code);
-+	return "UNKNOWN";
-+}
-+
-+static bool hcall_event_end(struct perf_evsel *evsel,
-+			    struct perf_sample *sample __maybe_unused,
-+			    struct event_key *key __maybe_unused)
-+{
-+	return (!strcmp(evsel->name, KVM_HCALL_EXIT_TRACE));
-+}
-+
-+static bool hcall_event_begin(struct perf_evsel *evsel,
-+			      struct perf_sample *sample, struct event_key *key)
-+{
-+	if (!strcmp(evsel->name, KVM_HCALL_ENTRY_TRACE)) {
-+		hcall_event_get_key(evsel, sample, key);
-+		return true;
-+	}
-+
-+        return false;
-+}
-+static void hcall_event_decode_key(struct perf_kvm_stat *kvm __maybe_unused,
-+				   struct event_key *key,
-+				   char *decode)
-+{
-+	const char *hcall_reason = get_exit_reason(key->key);
-+
-+	scnprintf(decode, DECODE_STR_LEN, "%s", hcall_reason);
-+}
-+
-+static struct kvm_events_ops hcall_events = {
-+	.is_begin_event = hcall_event_begin,
-+	.is_end_event = hcall_event_end,
-+	.decode_key = hcall_event_decode_key,
-+	.name = "HCALL-EVENT",
-+};
-+
- const char *const kvm_events_tp[] = {
- 	"kvm_hv:kvm_guest_exit",
- 	"kvm_hv:kvm_guest_enter",
-+	"kvm_hv:kvm_hcall_enter",
-+	"kvm_hv:kvm_hcall_exit",
- 	NULL,
- };
- 
- struct kvm_reg_events_ops kvm_reg_events_ops[] = {
- 	{ .name = "vmexit", .ops = &exit_events },
-+	{ .name = "hcall", .ops = &hcall_events },
- 	{ NULL, NULL },
- };
- 
+Can a single LED support other mode than 'attention'? I'd like to know
+if a LED in attention mode (blinking), can be set to some solid
+mode?
+
+Please let me know if such an approach would still not fit for your
+requirements.
+
 -- 
-1.9.3
+Best Regards,
+Jacek Anaszewski
