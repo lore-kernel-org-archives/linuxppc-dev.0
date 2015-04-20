@@ -1,14 +1,14 @@
 Return-Path: <christophe.leroy@c-s.fr>
 Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id 0A7BA1A0BDD
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Apr 2015 15:26:30 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTP id AF1131A0BF0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Apr 2015 15:26:32 +1000 (AEST)
 From: Christophe Leroy <christophe.leroy@c-s.fr>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  scottwood@freescale.com
-Subject: [PATCH 03/11] powerpc32: Use kmem_cache memory for PGDIR
-Message-Id: <20150420052628.CB1741A242C@localhost.localdomain>
-Date: Mon, 20 Apr 2015 07:26:28 +0200 (CEST)
+Subject: [PATCH 04/11] powerpc/8xx: Take benefit of aligned PGDIR
+Message-Id: <20150420052630.DA6751A242C@localhost.localdomain>
+Date: Mon, 20 Apr 2015 07:26:30 +0200 (CEST)
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -19,75 +19,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When pages are not 4K, PGDIR table is allocated with kmalloc(). In order to
-optimise TLB handlers, aligned memory is needed. kmalloc() doesn't provide
-aligned memory blocks, so lets use a kmem_cache pool instead.
+L1 base address is now aligned so we can insert L1 index into r11 directly and
+then preserve r10
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
 ---
- arch/powerpc/include/asm/pgtable-ppc32.h |  4 ++++
- arch/powerpc/mm/pgtable_32.c             | 16 ++++++++++++++--
- 2 files changed, 18 insertions(+), 2 deletions(-)
+ arch/powerpc/kernel/head_8xx.S | 34 +++++++++++++++-------------------
+ 1 file changed, 15 insertions(+), 19 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/pgtable-ppc32.h b/arch/powerpc/include/asm/pgtable-ppc32.h
-index 543bb8e..d323e8b 100644
---- a/arch/powerpc/include/asm/pgtable-ppc32.h
-+++ b/arch/powerpc/include/asm/pgtable-ppc32.h
-@@ -346,10 +346,14 @@ static inline void __ptep_set_access_flags(pte_t *ptep, pte_t entry)
- #define pte_to_pgoff(pte)	(pte_val(pte) >> 3)
- #define pgoff_to_pte(off)	((pte_t) { ((off) << 3) | _PAGE_FILE })
- 
-+#ifndef CONFIG_PPC_4K_PAGES
-+void pgtable_cache_init(void);
-+#else
- /*
-  * No page table caches to initialise
-  */
- #define pgtable_cache_init()	do { } while (0)
-+#endif
- 
- extern int get_pteptr(struct mm_struct *mm, unsigned long addr, pte_t **ptep,
- 		      pmd_t **pmdp);
-diff --git a/arch/powerpc/mm/pgtable_32.c b/arch/powerpc/mm/pgtable_32.c
-index cf11342..730dc2d 100644
---- a/arch/powerpc/mm/pgtable_32.c
-+++ b/arch/powerpc/mm/pgtable_32.c
-@@ -73,13 +73,25 @@ extern unsigned long p_mapped_by_tlbcam(phys_addr_t pa);
- 
- #define PGDIR_ORDER	(32 + PGD_T_LOG2 - PGDIR_SHIFT)
- 
-+#ifndef CONFIG_PPC_4K_PAGES
-+static struct kmem_cache *pgtable_cache;
-+
-+void pgtable_cache_init(void)
-+{
-+	pgtable_cache = kmem_cache_create("PGDIR cache", 1 << PGDIR_ORDER,
-+					  1 << PGDIR_ORDER, 0, NULL);
-+	if (pgtable_cache == NULL)
-+		panic("Couldn't allocate pgtable caches");
-+}
-+#endif
-+
- pgd_t *pgd_alloc(struct mm_struct *mm)
- {
- 	pgd_t *ret;
- 
- 	/* pgdir take page or two with 4K pages and a page fraction otherwise */
- #ifndef CONFIG_PPC_4K_PAGES
--	ret = kzalloc(1 << PGDIR_ORDER, GFP_KERNEL);
-+	ret = kmem_cache_alloc(pgtable_cache, GFP_KERNEL | __GFP_ZERO);
- #else
- 	ret = (pgd_t *)__get_free_pages(GFP_KERNEL|__GFP_ZERO,
- 			PGDIR_ORDER - PAGE_SHIFT);
-@@ -90,7 +102,7 @@ pgd_t *pgd_alloc(struct mm_struct *mm)
- void pgd_free(struct mm_struct *mm, pgd_t *pgd)
- {
- #ifndef CONFIG_PPC_4K_PAGES
--	kfree((void *)pgd);
-+	kmem_cache_free(pgtable_cache, (void *)pgd);
- #else
- 	free_pages((unsigned long)pgd, PGDIR_ORDER - PAGE_SHIFT);
+diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
+index 2c329f1..ae05f28 100644
+--- a/arch/powerpc/kernel/head_8xx.S
++++ b/arch/powerpc/kernel/head_8xx.S
+@@ -326,16 +326,15 @@ InstructionTLBMiss:
+ 	ori	r11, r11, (swapper_pg_dir-PAGE_OFFSET)@l
+ 3:
  #endif
+-	/* Extract level 1 index */
+-	rlwinm	r10, r10, 32 - ((PAGE_SHIFT - 2) << 1), (PAGE_SHIFT - 2) << 1, 29
+-	lwzx	r11, r10, r11	/* Get the level 1 entry */
+-	rlwinm	r10, r11,0,0,19	/* Extract page descriptor page address */
++	/* Insert level 1 index */
++	rlwimi	r11, r10, 32 - ((PAGE_SHIFT - 2) << 1), (PAGE_SHIFT - 2) << 1, 29
++	lwz	r11, 0(r11)	/* Get the level 1 entry */
+ 
+ 	/* Load the MI_TWC with the attributes for this "segment." */
+ 	MTSPR_CPU6(SPRN_MI_TWC, r11, r3)	/* Set segment attributes */
+-	mfspr	r11, SPRN_SRR0	/* Get effective address of fault */
++	rlwinm	r11, r11,0,0,19	/* Extract page descriptor page address */
+ 	/* Extract level 2 index */
+-	rlwinm	r11, r11, 32 - (PAGE_SHIFT - 2), 32 - PAGE_SHIFT, 29
++	rlwinm	r10, r10, 32 - (PAGE_SHIFT - 2), 32 - PAGE_SHIFT, 29
+ 	lwzx	r10, r10, r11	/* Get the pte */
+ 
+ #ifdef CONFIG_SWAP
+@@ -380,13 +379,12 @@ DataStoreTLBMiss:
+ 	lis	r11, (swapper_pg_dir-PAGE_OFFSET)@h
+ 	ori	r11, r11, (swapper_pg_dir-PAGE_OFFSET)@l
+ 3:
+-	/* Extract level 1 index */
+-	rlwinm	r10, r10, 32 - ((PAGE_SHIFT - 2) << 1), (PAGE_SHIFT - 2) << 1, 29
+-	lwzx	r11, r10, r11	/* Get the level 1 entry */
++	/* Insert level 1 index */
++	rlwimi	r11, r10, 32 - ((PAGE_SHIFT - 2) << 1), (PAGE_SHIFT - 2) << 1, 29
++	lwz	r11, 0(r11)	/* Get the level 1 entry */
+ 
+ 	/* We have a pte table, so load fetch the pte from the table.
+ 	 */
+-	mfspr	r10, SPRN_MD_EPN	/* Get address of fault */
+ 	/* Extract level 2 index */
+ 	rlwinm	r10, r10, 32 - (PAGE_SHIFT - 2), 32 - PAGE_SHIFT, 29
+ 	rlwimi	r10, r11, 0, 0, 32 - PAGE_SHIFT - 1	/* Add level 2 base */
+@@ -515,16 +513,14 @@ FixupDAR:/* Entry point for dcbx workaround. */
+ 	beq-	3f		/* Branch if user space */
+ 	lis	r11, (swapper_pg_dir-PAGE_OFFSET)@h
+ 	ori	r11, r11, (swapper_pg_dir-PAGE_OFFSET)@l
+-	/* Extract level 1 index */
+-3:	rlwinm	r10, r10, 32 - ((PAGE_SHIFT - 2) << 1), (PAGE_SHIFT - 2) << 1, 29
+-	lwzx	r11, r10, r11	/* Get the level 1 entry */
+-	rlwinm	r10, r11,0,0,19	/* Extract page descriptor page address */
+-	mfspr	r11, SPRN_SRR0	/* Get effective address of fault */
+-	/* Extract level 2 index */
+-	rlwinm	r11, r11, 32 - (PAGE_SHIFT - 2), 32 - PAGE_SHIFT, 29
+-	lwzx	r11, r10, r11	/* Get the pte */
++	/* Insert level 1 index */
++3:	rlwimi	r11, r10, 32 - ((PAGE_SHIFT - 2) << 1), (PAGE_SHIFT - 2) << 1, 29
++	lwz	r11, 0(r11)	/* Get the level 1 entry */
++	rlwinm	r11, r11,0,0,19	/* Extract page descriptor page address */
++	/* Insert level 2 index */
++	rlwimi	r11, r10, 32 - (PAGE_SHIFT - 2), 32 - PAGE_SHIFT, 29
++	lwz	r11, 0(r11)	/* Get the pte */
+ 	/* concat physical page address(r11) and page offset(r10) */
+-	mfspr	r10, SPRN_SRR0
+ 	rlwimi	r11, r10, 0, 32 - PAGE_SHIFT, 31
+ 	lwz	r11,0(r11)
+ /* Check if it really is a dcbx instruction. */
 -- 
 2.1.0
