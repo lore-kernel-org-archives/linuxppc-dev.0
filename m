@@ -1,27 +1,23 @@
-Return-Path: <j.anaszewski@samsung.com>
-Received: from mailout1.w1.samsung.com (mailout1.w1.samsung.com
- [210.118.77.11])
- (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A71C91A1C1C
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Apr 2015 17:29:14 +1000 (AEST)
-Received: from eucpsbgm2.samsung.com (unknown [203.254.199.245])
- by mailout1.w1.samsung.com
- (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May 5 2014))
- with ESMTP id <0NN300GXRGSKUA40@mailout1.w1.samsung.com> for
- linuxppc-dev@lists.ozlabs.org; Mon, 20 Apr 2015 08:29:09 +0100 (BST)
-Message-id: <5534AAC1.1060405@samsung.com>
-Date: Mon, 20 Apr 2015 09:29:05 +0200
-From: Jacek Anaszewski <j.anaszewski@samsung.com>
-MIME-version: 1.0
-To: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2 2/2] leds/powernv: Add driver for PowerNV platform
-References: <552F9E39.4050801@samsung.com>
-In-reply-to: <552F9E39.4050801@samsung.com>
-Content-type: text/plain; charset=UTF-8; format=flowed
-Cc: stewart@linux.vnet.ibm.com, Bryan Wu <cooloney@gmail.com>,
- Richard Purdie <rpurdie@rpsys.net>, linuxppc-dev@lists.ozlabs.org,
- Linux LED Subsystem <linux-leds@vger.kernel.org>, khandual@linux.vnet.ibm.com
+ by lists.ozlabs.org (Postfix) with ESMTPS id A1A731A0E61
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Apr 2015 17:38:41 +1000 (AEST)
+Message-ID: <1429515520.12716.3.camel@ellerman.id.au>
+Subject: Re: Fwd: Re: sparc64: Build failure due to commit f1600e549b94
+ (sparc: Make sparc64 use scalable lib/iommu-common.c functions)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Guenter Roeck <linux@roeck-us.net>
+Date: Mon, 20 Apr 2015 17:38:40 +1000
+In-Reply-To: <55348BE1.4010305@roeck-us.net>
+References: <20150419183625.GA18901@oracle.com>
+ <1429498885.28239.4.camel@ellerman.id.au> <55348BE1.4010305@roeck-us.net>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: aik@au1.ibm.com, Sowmini Varadhan <sowmini.varadhan@oracle.com>,
+ anton@au1.ibm.com, linux-kernel@vger.kernel.org, paulus@samba.org,
+ sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,182 +27,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Resending, as there were some problems with delivering this message.
+On Sun, 2015-04-19 at 22:17 -0700, Guenter Roeck wrote:
+> Hi Michael,
 
--------- Original Message --------
-Subject: Re: [PATCH v2 2/2] leds/powernv: Add driver for PowerNV platform
-Date: Thu, 16 Apr 2015 13:34:17 +0200
-From: Jacek Anaszewski <j.anaszewski@samsung.com>
-To: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
-CC: linuxppc-dev@lists.ozlabs.org, linux-leds@vger.kernel.org, 
-stewart@linux.vnet.ibm.com, mpe@ellerman.id.au, cooloney@gmail.com, 
-rpurdie@rpsys.net, khandual@linux.vnet.ibm.com
+Hi Guenter,
 
-On 04/16/2015 12:26 PM, Vasant Hegde wrote:
-> On 04/16/2015 02:21 PM, Jacek Anaszewski wrote:
->> Hi Vasant,
->>
->> On 04/16/2015 08:52 AM, Vasant Hegde wrote:
->>> On 04/15/2015 06:42 PM, Jacek Anaszewski wrote:
->>>> On 04/15/2015 12:15 PM, Vasant Hegde wrote:
->>>>> On 04/15/2015 02:12 PM, Jacek Anaszewski wrote:
->>>>>> Hi Vasant,
->>>
->>> Hi Jacek,
->>>
->>> .../...
->>>
->>>>>>>>
->>>>>>>
->>>>>>> I mean, we have to retain the state of LED across system reboot.
->>>>>>
->>>>>> Static variables are reinitialized on system reboot, aren't they?
->>>>>
->>>>> Sorry. I think comment was confusing..
->>>>>
->>>>> As I understood, classdev_unregister call resets all LEDs state. However in our
->>>>> case, we don't
->>>>> want to change the LED state during system shutdown/reboot.
->>>>>
->>>>> Hence I have introduced state variable here. So during register call, I just
->>>>> disable LEDs so that any further call will just return. That way we retain LED
->>>>> state even after unloading module.
->>>>>
->>>>> Please let me know if there is any better way to achieve this.
->>>>
->>>> Since this is not a feature of the device, but rather a use case, then
->>>> it cannot be hard coded in the driver this way. The solution I see is
->>>> introducing a sysfs attribute that would determine if we want the
->>>> LED to be turned off on unregistration or not.
->>>
->>> Hmmm. I thought having simple various is enough ..
->>>
->>> I don't know the usage of other LED drivers .. Just a thought .. How about
->>> enabling this feature in LED class itself ...Something like:
->>>     - Add new attribute to generic LED class (say persistent)?
->>>     - If drivers wants to retain LED state across reboot, then enable this option
->>>     - During unregister call check for this attribute
->>>
->>>>
->>>> You can refer to the following driver to find out how to add the
->>>> sysfs attribute:
->>>>
->>>> drivers/leds/leds-lm3533.c
->>>>
->>>> The attribute will also have to be documented, similarly to these:
->>>>
->>>> Documentation/ABI/testing/sysfs-class-led-driver-lm3533
->>>>
->>>> Currently I don't have a good candidate for attribute
->>>> name, so feel free to propose one.
->>>
->>> If you don't like generic attribute, then shall I introduce "persistent"
->>> attribute inside my driver. ?
->>>     - By default this attribute is ON and if user wants he can disable this .
->>>     - And I will have another variable (say op_support).. which I will disable in
->>> unload path..
->>> .../...
->>>
->>>>>>
->>>>>> The label could be composed of segments and an ordinal number as
->>>>>> labels have to be unique, e.g. attn_ident_0, attn_ident_1.
->>>>>> The segments would have to be parsed by the driver to discover
->>>>>> all the LED's available modes.
->>>>>>
->>>>>> nitpicking: identify is a verb and is not a proper name for the LED.
->>>>>> Could you describe the purpose of this mode, so that we could come
->>>>>> up with a better name?
->>>>>
->>>>> Each component (Field Replacement Unit) will have service indicator (LEDS)
->>>>> which
->>>>> can have below states :
->>>>>      - OFF     : no action
->>>>>      - Identify: blinking state (user can use this state to identify particular
->>>>> component).
->>>>>           In Power Systems world we call it as "identify" indicator.. Hence I
->>>>> retained same name here.
->>>>>           How about just "ident" ?
->>>>
->>>> Sounds good.
->>>>
->>>>>      - fault : solid state (when component goes bad, LED goes to solid state)
->>>>>         Note that our FW is capable of isolating some of the issues and it
->>>>> can turn
->>>>> on LEDs without OS
->>>>>          interference.
->>>>
->>>> Does it mean that the LED can be controlled from hardware?
->>>> If so, what would be software use cases then? The same question is
->>>> related to the attn and indent states.
->>>
->>> - Identify LEDs:
->>>     We have service processor interface to set/reset this LEDs.. Similar operation
->>> can be done from inband interface as well (via user space tools in Linux)..
->>> Later management layer can make use of this.
->>>
->>> - Fault / Attention :
->>>     FW can SET these LEDs if its capable of isolating problem.
->>>     Similarly host/user space can SET these LEDs if then can do fine grained
->>> problem isolation etc.
->>>     Host/user space can RESET these LEDs.
->>>
->>> Hence we are adding host support to all the LEDs which can be modified by host.
->>>
->>> Hope this clarifies.
->>
->> Thanks for this explanation.
->>
->> I am changing my mind about these LEDs. Since they can be controlled
->> from hardware without any system interaction, then turning them off
->> on driver removal makes no sense. The LEDs could be turned on again even
->> if the driver is unloaded.
->> Since the driver doesn't perform any initialization of the LEDs,
->> neither should it turn them off on removal.
->>
->> If I understand this correctly, then the solution with variable would
->> do and no sysfs attribute would be required.
->>
->
-> Jacek,
->
-> Thanks. Then I will retain current method.
->
-> One question..What is the preferred way to name LED node in this case ?
->
->     <location_code>:<ATTENTION|IDENTIFY|FAULT>
->     OR
->     <location_code>
->          ident  <- attribute under each node
->          fault
->          attention
+> On 04/19/2015 08:01 PM, Michael Ellerman wrote:
+> 
+> > Someone needs to be doing s390/alpha builds with that enabled anyway, because
+> > otherwise a clash between generic code and s390/alpha won't be caught.
+> >
+> > Or if that's too hard we can rename the powerpc version, but it seems silly to
+> > rename a powerpc variable to deal with a debug option that is only useful for
+> > s390/alpha.
+> 
+> The debug option is intended for all _other_ architectures, to ensure that
+> changes made for those don't break alpha/s390 builds. alpha/s390 have
+> ARCH_NEEDS_WEAK_PER_CPU and don't need the debug option.
 
+But that can't actually work. If you introduce a percpu variable in generic
+code that has the same name as a variable in the s390/alpha code, the only way
+you can detect that is by building for s390/alpha.
 
-If possible locations are eclosure/descendent as in the documentation
-you gave a reference to, then the related identifiers could be:
+Sure it might catch two variables in generic code that have the same name, but
+that will get caught as soon as someone does a s390/alpha build anyway - which
+is at least every night for linux-next.
 
-enclosure: encl
-descendent: desc or fru (how does fru expand btw?)
+More likely it catches cases like this, which is variables in code that will
+never build for s390/alpha. So it just seems like a PITA to me.
 
+> Sowmini's patch would change the variable name in the lib/ code. But that was
+> not the question here. The question was if the powerpc code could be changed
+> to use the generic iommu code instead of using the powerpc specific code.
 
-Child nodes could be defined as follows:
+Not for this merge window sorry, we need to test it properly.
 
-
-led0 {	
-	label = "powernv0:encl:attn:ident:fault"
-}
-
-led1 {	
-	label = "powernv1:encl::ident:fault"
-}
-
-led2 {	
-	label = "powernv2:desc:attn::fault:"
-}
-
-led2 {	
-	label = "powernv3:desc:::fault:"
-}
-
--- 
-Best Regards,
-Jacek Anaszewski
+cheers
