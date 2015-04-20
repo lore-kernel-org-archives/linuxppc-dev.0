@@ -1,23 +1,23 @@
 Return-Path: <dgibson@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4EAA41A2C4E
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6042C1A2C55
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Apr 2015 16:02:53 +1000 (AEST)
-Date: Mon, 20 Apr 2015 12:37:09 +1000
+Date: Mon, 20 Apr 2015 12:46:38 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
 To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Subject: Re: [PATCH kernel v8 12/31] powerpc/spapr: vfio: Switch from
- iommu_table to new iommu_table_group
-Message-ID: <20150420023709.GC10218@voom>
+Subject: Re: [PATCH kernel v8 15/31] powerpc/iommu: Fix IOMMU ownership
+ control functions
+Message-ID: <20150420024638.GE10218@voom>
 References: <1428647473-11738-1-git-send-email-aik@ozlabs.ru>
- <1428647473-11738-13-git-send-email-aik@ozlabs.ru>
- <20150416055555.GC3632@voom.redhat.com>
- <5530D66F.3070208@ozlabs.ru>
+ <1428647473-11738-16-git-send-email-aik@ozlabs.ru>
+ <20150416061049.GF3632@voom.redhat.com>
+ <5530DD6D.8000001@ozlabs.ru>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="7qSK/uQB79J36Y4o"
-In-Reply-To: <5530D66F.3070208@ozlabs.ru>
+ protocol="application/pgp-signature"; boundary="J4XPiPrVK1ev6Sgr"
+In-Reply-To: <5530DD6D.8000001@ozlabs.ru>
 Cc: Alex Williamson <alex.williamson@redhat.com>, linuxppc-dev@lists.ozlabs.org,
  linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -30,71 +30,76 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---7qSK/uQB79J36Y4o
+--J4XPiPrVK1ev6Sgr
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, Apr 17, 2015 at 07:46:23PM +1000, Alexey Kardashevskiy wrote:
-> On 04/16/2015 03:55 PM, David Gibson wrote:
-> >On Fri, Apr 10, 2015 at 04:30:54PM +1000, Alexey Kardashevskiy wrote:
-> >>Modern IBM POWERPC systems support multiple (currently two) TCE tables
-> >>per IOMMU group (a.k.a. PE). This adds a iommu_table_group container
-> >>for TCE tables. Right now just one table is supported.
+On Fri, Apr 17, 2015 at 08:16:13PM +1000, Alexey Kardashevskiy wrote:
+> On 04/16/2015 04:10 PM, David Gibson wrote:
+> >On Fri, Apr 10, 2015 at 04:30:57PM +1000, Alexey Kardashevskiy wrote:
+> >>This adds missing locks in iommu_take_ownership()/
+> >>iommu_release_ownership().
+> >>
+> >>This marks all pages busy in iommu_table::it_map in order to catch
+> >>errors if there is an attempt to use this table while ownership over it
+> >>is taken.
+> >>
+> >>This only clears TCE content if there is no page marked busy in it_map.
+> >>Clearing must be done outside of the table locks as iommu_clear_tce()
+> >>called from iommu_clear_tces_and_put_pages() does this.
 > >>
 > >>Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 > >>---
-> >>  arch/powerpc/include/asm/iommu.h            |  18 +++--
-> >>  arch/powerpc/kernel/iommu.c                 |  34 ++++----
-> >>  arch/powerpc/platforms/powernv/pci-ioda.c   |  38 +++++----
-> >>  arch/powerpc/platforms/powernv/pci-p5ioc2.c |  17 ++--
-> >>  arch/powerpc/platforms/powernv/pci.c        |   2 +-
-> >>  arch/powerpc/platforms/powernv/pci.h        |   4 +-
-> >>  arch/powerpc/platforms/pseries/iommu.c      |   9 ++-
-> >>  drivers/vfio/vfio_iommu_spapr_tce.c         | 120 +++++++++++++++++++=
-+--------
-> >>  8 files changed, 160 insertions(+), 82 deletions(-)
+> >>Changes:
+> >>v5:
+> >>* do not store bit#0 value, it has to be set for zero-based table
+> >>anyway
+> >>* removed test_and_clear_bit
+> >>---
+> >>  arch/powerpc/kernel/iommu.c | 26 ++++++++++++++++++++++----
+> >>  1 file changed, 22 insertions(+), 4 deletions(-)
 > >>
-> >>diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/as=
-m/iommu.h
-> >>index eb75726..667aa1a 100644
-> >>--- a/arch/powerpc/include/asm/iommu.h
-> >>+++ b/arch/powerpc/include/asm/iommu.h
-> >>@@ -90,9 +90,7 @@ struct iommu_table {
-> >>  	struct iommu_pool pools[IOMMU_NR_POOLS];
-> >>  	unsigned long *it_map;       /* A simple allocation bitmap for now */
-> >>  	unsigned long  it_page_shift;/* table iommu page size */
-> >>-#ifdef CONFIG_IOMMU_API
-> >>-	struct iommu_group *it_group;
-> >>-#endif
-> >>+	struct iommu_table_group *it_group;
-> >>  	struct iommu_table_ops *it_ops;
-> >>  	void (*set_bypass)(struct iommu_table *tbl, bool enable);
-> >>  };
-> >>@@ -126,14 +124,24 @@ extern void iommu_free_table(struct iommu_table *=
-tbl, const char *node_name);
-> >>   */
-> >>  extern struct iommu_table *iommu_init_table(struct iommu_table * tbl,
-> >>  					    int nid);
+> >>diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
+> >>index 7d6089b..068fe4ff 100644
+> >>--- a/arch/powerpc/kernel/iommu.c
+> >>+++ b/arch/powerpc/kernel/iommu.c
+> >>@@ -1052,17 +1052,28 @@ EXPORT_SYMBOL_GPL(iommu_tce_build);
+> >>
+> >>  static int iommu_table_take_ownership(struct iommu_table *tbl)
+> >>  {
+> >>-	unsigned long sz =3D (tbl->it_size + 7) >> 3;
+> >>+	unsigned long flags, i, sz =3D (tbl->it_size + 7) >> 3;
+> >>+	int ret =3D 0;
 > >>+
-> >>+#define IOMMU_TABLE_GROUP_MAX_TABLES	1
-> >>+
-> >>+struct iommu_table_group {
-> >>  #ifdef CONFIG_IOMMU_API
-> >>-extern void iommu_register_group(struct iommu_table *tbl,
-> >>+	struct iommu_group *group;
-> >>+#endif
-> >>+	struct iommu_table tables[IOMMU_TABLE_GROUP_MAX_TABLES];
+> >>+	spin_lock_irqsave(&tbl->large_pool.lock, flags);
+> >>+	for (i =3D 0; i < tbl->nr_pools; i++)
+> >>+		spin_lock(&tbl->pools[i].lock);
+> >>
+> >>  	if (tbl->it_offset =3D=3D 0)
+> >>  		clear_bit(0, tbl->it_map);
+> >>
+> >>  	if (!bitmap_empty(tbl->it_map, tbl->it_size)) {
+> >>  		pr_err("iommu_tce: it_map is not empty");
+> >>-		return -EBUSY;
+> >>+		ret =3D -EBUSY;
+> >>+		if (tbl->it_offset =3D=3D 0)
+> >>+			set_bit(0, tbl->it_map);
 > >
-> >There's nothing to indicate which of the tables are in use at the
-> >current time.  I mean, it doesn't matter now because there's only one,
-> >but the patch doesn't make a whole lot of sense without that.
+> >This really needs a comment.  Why on earth are you changing the it_map
+> >on a failure case?
 >=20
 >=20
-> Later in the patchset, the code will look at @it_size to know if the table
-> is in use.
+> Does this explain?
+>=20
+> /*
+>  * The platform code reserves zero address in iommu_init_table().
+>  * As we cleared busy bit for page @0 before using bitmap_empty(),
+>  * we are restoring it now.
+>  */
 
-Ok, that makes sense.  Might be worth a comment here.
+Only partly.  What's it reserved for, and why do you know it was
+always set on entry?
 
 --=20
 David Gibson			| I'll have my music baroque, and my code
@@ -102,25 +107,25 @@ david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
 				| _way_ _around_!
 http://www.ozlabs.org/~dgibson
 
---7qSK/uQB79J36Y4o
+--J4XPiPrVK1ev6Sgr
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBAgAGBQJVNGZVAAoJEGw4ysog2bOSaq8QAIO5PUXneUmVb+ZhFKTKhw63
-e44U1SBuJA7nRttnXCGw79MXNTE0l/EFOItfJ8zvrsFn+BYp1TXnkt1Yp6RjgTXP
-D3JyLNXVlg5MclmfPhF6X3qQrbdRzPh77zysPCWmzGp4wo+rDWLGDK2JuDhwCHxC
-2vBN00Agydn2vxF+x6aBFCcCPafawMJ8mstDM0rZ4CW8eYvgMXNQJLlLumTwKOf3
-uNE/uHS3WZMK/HrGGPbm9GnHnWUNuejISWsektAdTzSI+5kR9H1cophBrTmGNprC
-oFaorqAbcD7nXbQiOZjibvi0qP5q5dX8aJsCaNOKNWvQuK8QiYTAHsIvCTEssfTK
-qEFBBZrX6c9hdHiioCwycUG/fcrdmcGWmzrPaezBhO5BWMbMNk2QtLqzw1iw9qme
-oL8/7aId2nPHPZk3JTeXsn0XmS7pqf9tmrGLY+q2n3htaZJ/AsXYVIxaeNQ12bwT
-R+ciZVauZlm6qE/wdcwLZdKXJAsmVTqIF8FjIjoz32t/zR11E0KE01z1cdkW6k9y
-yJPftnY1B4kZeIzxARyOrEY//VZSAI5wMMZoQN4iGz6vriK7Rp7ZLXyEj56KExXu
-t0BLcRSvn87St2Phve2EwsfxxHajUPoqWXLCK336d64dxQq7+Eg3MeUPCY39jDX/
-L3VzKQjnH8bNuGR1vijd
-=m6Mj
+iQIcBAEBAgAGBQJVNGiOAAoJEGw4ysog2bOSjysP/0JjZNc2tq4hsjZHokGXiHir
+1hbpSqBj/UyXQk9IAwmZDsL+gSV2ixtyPeDqjnIWLbCsYfExrsA8ZgyouwjxGLYV
+/Av3agLQYNoDwZWvbxGQq5anscFF+X/69s0yVEEPPCMoAy4JQm4T+Br25whqiRL3
+uePbcNxTKD601MVJqnxts7jG2a4zdIbNgUe53HE4ZjbMtPyT1SZhkUl66wUET+ab
+zUcc5XuHDdY/zx7FKvLiVBqo0J2EzgABXNqU826ft9bdu6VUaY7xhWKP88nzFeEM
+ndTUOIVLu1t2RH4mtwtqO6mPLVmLbcx4WsbF9KCoMocpMB0rHIQf87dygbChxy8g
+P20NDgVLpQCrdKLSGKbON3s3GX5kDvt9w/W2q9r+w0N5Kx8sJTBXhlNa7mvyl9i8
+DGCrcTe7Z/ipew6w4LFWfFF4zdFaEcyXiPbvV8+dcEj24ri6pvlDB2L5qLmn2y/i
+JxKwioGzx13/EPGaCknkOQEKFvI60LbVF5ApI8h90Yike8IhP4K6CVrv/UxqEdTa
+H992jYaEhYK3Qd0ov/NrnpK0ofmDBBr2zqOoJrg+4kR+j25g7t/ZvLq99P+RCKwB
+INBb4ud6QSBxhYSfyPvli0HEKT1k325XeeCs164gzMkQVagWphGbZMVQWq2gIh1+
+d16F+QzxXKe55m0Ib40Y
+=GmA0
 -----END PGP SIGNATURE-----
 
---7qSK/uQB79J36Y4o--
+--J4XPiPrVK1ev6Sgr--
