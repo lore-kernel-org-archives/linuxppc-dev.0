@@ -1,23 +1,30 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0109.outbound.protection.outlook.com [207.46.100.109])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <tglx@linutronix.de>
+Received: from Galois.linutronix.de (Galois.linutronix.de
+ [IPv6:2001:470:1f0b:db:abcd:42:0:1])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 16FC21A0BE0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Apr 2015 05:37:20 +1000 (AEST)
-Message-ID: <1429558605.4352.21.camel@freescale.com>
-Subject: Re: [PATCH] powerpc/dts: Move pll0/1-div4 index
-From: Scott Wood <scottwood@freescale.com>
-To: Liberman Igal-B31950 <Igal.Liberman@freescale.com>
-Date: Mon, 20 Apr 2015 14:36:45 -0500
-In-Reply-To: <DM2PR03MB38320A3D701B771E163B8F3E6E00@DM2PR03MB383.namprd03.prod.outlook.com>
-References: <1429186105-6991-1-git-send-email-igal.liberman@freescale.com>
- <1429249343.32545.53.camel@freescale.com>
- <DM2PR03MB38320A3D701B771E163B8F3E6E00@DM2PR03MB383.namprd03.prod.outlook.com>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6CA0B1A0BE0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Apr 2015 05:54:24 +1000 (AEST)
+Date: Mon, 20 Apr 2015 21:15:55 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Baolin Wang <baolin.wang@linaro.org>
+Subject: Re: [PATCH 03/11] time/hrtimer:Introduce hrtimer_get_res64() with
+ timespec64 type for getting the timer resolution
+In-Reply-To: <1429509459-17068-4-git-send-email-baolin.wang@linaro.org>
+Message-ID: <alpine.DEB.2.11.1504202114360.13914@nanos>
+References: <1429509459-17068-1-git-send-email-baolin.wang@linaro.org>
+ <1429509459-17068-4-git-send-email-baolin.wang@linaro.org>
 MIME-Version: 1.0
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: pang.xunlei@linaro.org, peterz@infradead.org, heiko.carstens@de.ibm.com,
+ paulus@samba.org, cl@linux.com, heenasirwani@gmail.com,
+ linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, y2038@lists.linaro.org,
+ rafael.j.wysocki@intel.com, ahh@google.com, fweisbec@gmail.com, pjt@google.com,
+ riel@redhat.com, arnd@arndb.de, richardcochran@gmail.com,
+ schwidefsky@de.ibm.com, john.stultz@linaro.org, rth@twiddle.net,
+ gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org,
+ netdev@vger.kernel.org, tj@kernel.org, linux390@de.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,51 +34,13 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2015-04-20 at 06:10 -0500, Liberman Igal-B31950 wrote:
-> 
-> 
-> Regards,
-> Igal Liberman.
-> 
-> > -----Original Message-----
-> > From: Wood Scott-B07421
-> > Sent: Friday, April 17, 2015 8:42 AM
-> > To: Liberman Igal-B31950
-> > Cc: devicetree@vger.kernel.org; linuxppc-dev@lists.ozlabs.org
-> > Subject: Re: [PATCH] powerpc/dts: Move pll0/1-div4 index
-> > 
-> > On Thu, 2015-04-16 at 15:08 +0300, Igal.Liberman wrote:
-> > > From: Igal Liberman <Igal.Liberman@freescale.com>
-> > >
-> > > This patch updates pll0/1-div4 index to '3'.
-> > > Originally it was '2'.
-> > >
-> > > The following patch adds pll0/1-div3 option:
-> > > 	https://patchwork.ozlabs.org/patch/461151/
-> > > After this patch, index '2' becomes pll0/1-div3.
-> > >
-> > > This patch based on top of the following:
-> > > 	https://patchwork.ozlabs.org/patch/461811/
-> > >
-> > > Signed-off-by: Igal Liberman <Igal.Liberman@freescale.com>
-> > 
-> > This needs to be done in the same patch as the provider change, to avoid a
-> > buggy intermediate state.
-> > 
-> > Will there be a new binding patch coming?
-> > 
-> 
-> OK, I'll add those changes as on patch.
-> 
-> Regarding the binding,
-> I already submitted https://patchwork.ozlabs.org/patch/461150/
+On Mon, 20 Apr 2015, Baolin Wang wrote:
+> This patch introduces hrtimer_get_res64() function to get the timer resolution
+> with timespec64 type, and moves the hrtimer_get_res() function into
 
-Which is an incompatible change as I noted in a comment on a different
-patch.
+FYI, That function is about to go away, but it's not a big deal to
+sort that out once I applied the hrtimer rework to the tip tree.
 
-> Do you mean that I should add comment that the driver parses the node by reading the number of input clocks and not the compatible?
+Thanks,
 
-No, you should make the binding document reflect how things currently
-work.
-
--Scott
+	tglx
