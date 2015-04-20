@@ -1,30 +1,35 @@
-Return-Path: <j.anaszewski@samsung.com>
-Received: from mailout2.w1.samsung.com (mailout2.w1.samsung.com
- [210.118.77.12])
- (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <baolin.wang@linaro.org>
+Received: from mail-wi0-f181.google.com (mail-wi0-f181.google.com
+ [209.85.212.181])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 532D31A0BE2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Apr 2015 21:45:35 +1000 (AEST)
-Received: from eucpsbgm2.samsung.com (unknown [203.254.199.245])
- by mailout2.w1.samsung.com
- (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May 5 2014))
- with ESMTP id <0NN3008GHSVK9Z00@mailout2.w1.samsung.com> for
- linuxppc-dev@lists.ozlabs.org; Mon, 20 Apr 2015 12:50:08 +0100 (BST)
-Message-id: <5534E6D9.6060804@samsung.com>
-Date: Mon, 20 Apr 2015 13:45:29 +0200
-From: Jacek Anaszewski <j.anaszewski@samsung.com>
-MIME-version: 1.0
-To: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2 2/2] leds/powernv: Add driver for PowerNV platform
-References: <20150320105921.14866.83209.stgit@localhost.localdomain>
- <20150320110328.14866.98225.stgit@localhost.localdomain>
- <552D303A.5080506@samsung.com> <552E049D.2030604@linux.vnet.ibm.com>
- <552E2480.9060102@samsung.com> <552E3A56.8030300@linux.vnet.ibm.com>
-In-reply-to: <552E3A56.8030300@linux.vnet.ibm.com>
-Content-type: text/plain; charset=UTF-8; format=flowed
-Cc: stewart@linux.vnet.ibm.com, cooloney@gmail.com, rpurdie@rpsys.net,
- linuxppc-dev@lists.ozlabs.org, linux-leds@vger.kernel.org,
- khandual@linux.vnet.ibm.com
+ by lists.ozlabs.org (Postfix) with ESMTPS id 04B821A1972
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Apr 2015 20:55:36 +1000 (AEST)
+Received: by wiun10 with SMTP id n10so86588611wiu.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Apr 2015 03:55:32 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <5534CB9D.1080600@cogentembedded.com>
+References: <1429509459-17068-1-git-send-email-baolin.wang@linaro.org>
+ <1429509459-17068-2-git-send-email-baolin.wang@linaro.org>
+ <5534CB9D.1080600@cogentembedded.com>
+Date: Mon, 20 Apr 2015 18:55:32 +0800
+Message-ID: <CAMz4kuJ+Kh++H1O9YSYjV+dz9fCXHP7uqbkmN0qjqNp+Rcr86w@mail.gmail.com>
+Subject: Re: [PATCH 01/11] linux/time64.h:Introduce the 'struct itimerspec64'
+ for 64bit
+From: Baolin Wang <baolin.wang@linaro.org>
+To: Sergei Shtylyov <sergei.shtylyov@cogentembedded.com>
+Content-Type: multipart/alternative; boundary=089e0122f074d7efa6051425c45d
+Cc: pang.xunlei@linaro.org, peterz@infradead.org, heiko.carstens@de.ibm.com,
+ paulus@samba.org, cl@linux.com, heenasirwani@gmail.com,
+ linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
+ y2038 Mailman List <y2038@lists.linaro.org>, rafael.j.wysocki@intel.com,
+ ahh@google.com, fweisbec@gmail.com, pjt@google.com, riel@redhat.com,
+ Arnd Bergmann <arnd@arndb.de>, Richard Cochran <richardcochran@gmail.com>,
+ schwidefsky@de.ibm.com, John Stultz <john.stultz@linaro.org>,
+ Thomas Gleixner <tglx@linutronix.de>, rth@twiddle.net,
+ gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org,
+ netdev@vger.kernel.org, tj@kernel.org, linux390@de.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,56 +39,84 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Vasant,
+--089e0122f074d7efa6051425c45d
+Content-Type: text/plain; charset=UTF-8
 
-I'd like to clarify some details regarding your explanation.
+On 20 April 2015 at 17:49, Sergei Shtylyov <
+sergei.shtylyov@cogentembedded.com> wrote:
 
-On 04/15/2015 12:15 PM, Vasant Hegde wrote:
-[...]
->>>
->>> In Power Systems LEDs are overloaded (meaning same LED is used for identify and
->>> fault depending on their state  ---  blinking = identify and solid = fault).
->>> Hence here append LED type info.
->>
->> The label could be composed of segments and an ordinal number as
->> labels have to be unique, e.g. attn_ident_0, attn_ident_1.
->> The segments would have to be parsed by the driver to discover
->> all the LED's available modes.
->>
->> nitpicking: identify is a verb and is not a proper name for the LED.
->> Could you describe the purpose of this mode, so that we could come
->> up with a better name?
+> Hello.
 >
-> Each component (Field Replacement Unit) will have service indicator (LEDS) which
-> can have below states :
->    - OFF 	: no action
->    - Identify: blinking state (user can use this state to identify particular
-> component).
->         In Power Systems world we call it as "identify" indicator.. Hence I
-> retained same name here.
->         How about just "ident" ?
->    - fault : solid state (when component goes bad, LED goes to solid state)
->       Note that our FW is capable of isolating some of the issues and it can turn
-> on LEDs without OS
->        interference.
+> On 4/20/2015 8:57 AM, Baolin Wang wrote:
 >
-> We have one more System level LED (System Attention Indicator).. This LED has
-> two states:
->    - OFF : Everything is fine
->    - ON : Some component has issues and needs attention.
+>  This patch introduces the 'struct itimerspec64' for 64bit to replace
+>> itimerspec,
+>> and also introduces the conversion methods: itimerspec64_to_itimerspec()
+>> and
+>> itimerspec_to_itimerspec64(), that makes itimerspec to ready for 2038
+>> year.
+>>
+>
+>    "To" not needed here.
+>
+>  Signed-off-by: Baolin Wang <baolin.wang@linaro.org>
+>>
+>
+> [...]
+>
+> WBR, Sergei
+>
+>
+Hi Sergei,
 
-We have three modes:
-- identify		- blinking
-- fault			- solid
-- attention indicator	- solid
+Sorry for the mistake. Thank you for your comments. I'll fix that in next
+patch.
 
-How does LED operation differ for fault and attention modes?
-Does a LED have different intensity?
-
-I'd rather avoid creating separate LED class devices for each mode.
-
-For blinking we could use existing timer trigger.
 
 -- 
-Best Regards,
-Jacek Anaszewski
+Baolin.wang
+Best Regards
+
+--089e0122f074d7efa6051425c45d
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+
+<div dir=3D"ltr"><br><div class=3D"gmail_extra"><br><div class=3D"gmail_quo=
+te">On 20 April 2015 at 17:49, Sergei Shtylyov <span dir=3D"ltr">&lt;<a hre=
+f=3D"mailto:sergei.shtylyov@cogentembedded.com" target=3D"_blank">sergei.sh=
+tylyov@cogentembedded.com</a>&gt;</span> wrote:<br><blockquote class=3D"gma=
+il_quote" style=3D"margin:0 0 0 .8ex;border-left:1px #ccc solid;padding-lef=
+t:1ex">Hello.<span class=3D""><br>
+<br>
+On 4/20/2015 8:57 AM, Baolin Wang wrote:<br>
+<br>
+<blockquote class=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;border-left:1p=
+x #ccc solid;padding-left:1ex">
+This patch introduces the &#39;struct itimerspec64&#39; for 64bit to replac=
+e itimerspec,<br>
+and also introduces the conversion methods: itimerspec64_to_itimerspec() an=
+d<br>
+itimerspec_to_itimerspec64(), that makes itimerspec to ready for 2038 year.=
+<br>
+</blockquote>
+<br></span>
+=C2=A0 =C2=A0&quot;To&quot; not needed here.<br>
+<br>
+<blockquote class=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;border-left:1p=
+x #ccc solid;padding-left:1ex">
+Signed-off-by: Baolin Wang &lt;<a href=3D"mailto:baolin.wang@linaro.org" ta=
+rget=3D"_blank">baolin.wang@linaro.org</a>&gt;<br>
+</blockquote>
+<br>
+[...]<br>
+<br>
+WBR, Sergei<br>
+<br>
+</blockquote></div><div class=3D"gmail_extra"><br></div>Hi Sergei,</div><di=
+v class=3D"gmail_extra"><br></div><div class=3D"gmail_extra">Sorry for the =
+mistake. Thank you for your comments. I&#39;ll fix that in next patch.<br><=
+br clear=3D"all"><div><br></div>-- <br><div class=3D"gmail_signature"><div =
+dir=3D"ltr"><div>Baolin.wang<br></div>Best Regards<br></div></div>
+</div></div>
+
+--089e0122f074d7efa6051425c45d--
