@@ -1,17 +1,18 @@
 Return-Path: <christophe.leroy@c-s.fr>
 Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id 5577A1A1172
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Apr 2015 15:54:48 +1000 (AEST)
-Message-Id: <8ca2a6fd05eb1ec388a8637a130e3f4bfc2de373.1429287689.git.christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-In-Reply-To: <cover.1429287689.git.christophe.leroy@c-s.fr>
-References: <cover.1429287689.git.christophe.leroy@c-s.fr>
-Subject: [PATCH RESEND v5 5/5] powerpc/8xx: Add support for TASK_SIZE greater
- than 0x80000000
+ by lists.ozlabs.org (Postfix) with ESMTP id 500531A19CC
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Apr 2015 15:55:39 +1000 (AEST)
+Message-ID: <553494D8.8000801@c-s.fr>
+Date: Mon, 20 Apr 2015 07:55:36 +0200
+From: leroy christophe <christophe.leroy@c-s.fr>
+MIME-Version: 1.0
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- scottwood@freescale.com
-Date: Mon, 20 Apr 2015 07:54:46 +0200 (CEST)
+ Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, scottwood@freescale.com
+Subject: Re: [PATCH 00/11] powerpc8xx: Further optimisation of TLB handling
+References: <20150420052622.7EC181A242C@localhost.localdomain>
+In-Reply-To: <20150420052622.7EC181A242C@localhost.localdomain>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -22,77 +23,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-By default, TASK_SIZE is set to 0x80000000 for PPC_8xx, which is most
-likely sufficient for most cases. However, kernel configuration allows
-to set TASK_SIZE to another value, so the 8xx shall handle it.
+Le 20/04/2015 07:26, Christophe Leroy a écrit :
+> This patchset provides a further optimisation of TLB handling in the 8xx.
+> Main changes are based on:
+> - Using processor handling of PGD/PTE Validity bits instead of testing ourselves
+> the entries validity
+> - Aligning PGD address to allow direct bit manipulation
+> - Not saving registers like CR when not needed
+>
+> It also adds support to any TASK_SIZE
+>
+> Patchset:
+> 01 - powerpc/8xx: remove remaining unnecessary code in FixupDAR
+> 02 - powerpc/8xx: remove tests on PGDIR entry validity
+> 03 - powerpc32: Use kmem_cache memory for PGDIR
+> 04 - powerpc/8xx: Take benefit of aligned PGDIR
+> 05 - powerpc/8xx: Optimise access to swapper_pg_dir
+> 06 - powerpc/8xx: Remove duplicated code in set_context()
+> 07 - powerpc/8xx: macro for handling CPU15 errata
+> 08 - powerpc/8xx: Handle CR out of exception PROLOG/EPILOG
+> 09 - powerpc/8xx: dont save CR in SCRATCH registers
+> 10 - powerpc/8xx: Use SPRG2 instead of DAR for saving r3
+> 11 - powerpc/8xx: Add support for TASK_SIZE greater than 0x80000000
+>
+> All changes have been successfully tested on MPC885
+>
+> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+> Tested-by: Christophe Leroy <christophe.leroy@c-s.fr>
+Sorry, forget than one, my finger slipped and I resent a very old one 
+already applied
 
-This patch also takes into account the case of PAGE_OFFSET lower than
-0x80000000, allthought most of the time it is equal to 0xC0000000
-
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
----
- arch/powerpc/kernel/head_8xx.S | 25 +++++++++++++++++++------
- 1 file changed, 19 insertions(+), 6 deletions(-)
-
-diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index ba2dc53..c640bbb 100644
---- a/arch/powerpc/kernel/head_8xx.S
-+++ b/arch/powerpc/kernel/head_8xx.S
-@@ -48,6 +48,19 @@
- 	mtspr	spr, reg
- #endif
- 
-+/* Macro to test if an address is a kernel address */
-+#if CONFIG_TASK_SIZE <= 0x80000000 && CONFIG_PAGE_OFFSET >= 0x80000000
-+#define IS_KERNEL(tmp, addr)		\
-+	andis.	tmp, addr, 0x8000	/* Address >= 0x80000000 */
-+#define BRANCH_UNLESS_KERNEL(label)	beq	label
-+#else
-+#define IS_KERNEL(tmp, addr)		\
-+	rlwinm	tmp, addr, 16, 16, 31;	\
-+	cmpli	cr0, tmp, PAGE_OFFSET >> 16
-+#define BRANCH_UNLESS_KERNEL(label)	blt	label
-+#endif
-+
-+
- /*
-  * Value for the bits that have fixed value in RPN entries.
-  * Also used for tagging DAR for DTLBerror.
-@@ -322,9 +335,9 @@ InstructionTLBMiss:
- 	mfspr	r11, SPRN_SRR0	/* Get effective address of fault */
- 	INVALIDATE_ADJACENT_PAGES_CPU15(r10, r11)
- 	mfcr	r10
--	andis.	r11, r11, 0x8000	/* Address >= 0x80000000 */
-+	IS_KERNEL(r11, r11)
- 	mfspr	r11, SPRN_M_TW	/* Get level 1 table */
--	beq	3f
-+	BRANCH_UNLESS_KERNEL(3f)
- 	lis	r11, (swapper_pg_dir-PAGE_OFFSET)@ha
- 3:
- 	mtcr	r10
-@@ -379,9 +392,9 @@ DataStoreTLBMiss:
- 	 * kernel page tables.
- 	 */
- 	mfspr	r11, SPRN_MD_EPN
--	andis.	r11, r11, 0x8000
-+	IS_KERNEL(r11, r11)
- 	mfspr	r11, SPRN_M_TW	/* Get level 1 table */
--	beq	3f
-+	BRANCH_UNLESS_KERNEL(3f)
- 	lis	r11, (swapper_pg_dir-PAGE_OFFSET)@ha
- 3:
- 	mtcr	r10
-@@ -513,9 +526,9 @@ FixupDAR:/* Entry point for dcbx workaround. */
- 	mtspr	SPRN_SPRG_SCRATCH2, r10
- 	/* fetch instruction from memory. */
- 	mfspr	r10, SPRN_SRR0
--	andis.	r11, r10, 0x8000	/* Address >= 0x80000000 */
-+	IS_KERNEL(r11, r10)
- 	mfspr	r11, SPRN_M_TW	/* Get level 1 table */
--	beq	3f
-+	BRANCH_UNLESS_KERNEL(3f)
- 	lis	r11, (swapper_pg_dir-PAGE_OFFSET)@ha
- 	/* Insert level 1 index */
- 3:	rlwimi	r11, r10, 32 - ((PAGE_SHIFT - 2) << 1), (PAGE_SHIFT - 2) << 1, 29
--- 
-2.1.0
+Christophe
