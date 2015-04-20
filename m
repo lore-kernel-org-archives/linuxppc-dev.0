@@ -1,62 +1,41 @@
-Return-Path: <ulrich.weigand@de.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6BAC21A0BD8
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Apr 2015 22:32:30 +1000 (AEST)
-Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
+Return-Path: <hegdevasant@linux.vnet.ibm.com>
+Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 21798140291
- for <linuxppc-dev@ozlabs.org>; Mon, 20 Apr 2015 22:32:28 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id B068C1A0BDF
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Apr 2015 22:34:35 +1000 (AEST)
 Received: from /spool/local
- by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <ulrich.weigand@de.ibm.com>;
- Mon, 20 Apr 2015 13:32:25 +0100
-Received: from b06cxnps3075.portsmouth.uk.ibm.com
- (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
- by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id E6F501B08061
- for <linuxppc-dev@ozlabs.org>; Mon, 20 Apr 2015 13:32:58 +0100 (BST)
-Received: from d06av12.portsmouth.uk.ibm.com (d06av12.portsmouth.uk.ibm.com
- [9.149.37.247])
- by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t3KCWMjd54394978
- for <linuxppc-dev@ozlabs.org>; Mon, 20 Apr 2015 12:32:22 GMT
-Received: from d06av12.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av12.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t3KCWJEY015075
- for <linuxppc-dev@ozlabs.org>; Mon, 20 Apr 2015 06:32:22 -0600
-In-Reply-To: <552B82F9.3080108@linux.vnet.ibm.com>
-References: <20141203052204.9DA8F1400DD@ozlabs.org>
- <54947C64.4030206@linux.vnet.ibm.com> <54A50094.5070902@linux.vnet.ibm.com>
- <1421883597.30744.3.camel@neuling.org>
- <OFC6CFC348.C619B89D-ONC1257DD5.0056279B-C1257DD5.00577002@de.ibm.com>
- <1421963049.30744.23.camel@neuling.org>
- <1422419289.9646.20.camel@neuling.org>
- <OFE5516C3F.3C4884DE-ONC1257DE4.004E7852-C1257DE4.00514232@de.ibm.com>
- <1424667110.16027.6.camel@neuling.org>
- <OF5DE08D4B.0B79C501-ONC1257E0C.0044F80B-C1257E0C.0046DC8F@de.ibm.com>
- <1426718702.4866.2.camel@neuling.org> <1426719027.4866.4.camel@neuling.org>
- <550FEC36.8080803@linux.vnet.ibm.com>
- <OF91038A37.65C405E5-ONC1257E21.0061938F-C1257E21.00620A03@de.ibm.com>
- <1428534695.4682.18.camel@neuling.org> <55267595.90
- <5527938B.1030901@linux.vnet.ibm.com> <552B82F9.3080108@linux.vnet.ibm.com>
-Subject: Re: [V6,1/9] elf: Add new powerpc specifc core note sections
-To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Message-ID: <OF939465E0.3429202B-ONC1257E2D.0043E1D3-C1257E2D.004479F6@de.ibm.com>
-From: Ulrich Weigand <Ulrich.Weigand@de.ibm.com>
-Date: Mon, 20 Apr 2015 14:27:56 +0200
+ for <linuxppc-dev@lists.ozlabs.org> from <hegdevasant@linux.vnet.ibm.com>;
+ Mon, 20 Apr 2015 18:04:33 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 3EC7BE0067
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Apr 2015 18:07:07 +0530 (IST)
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t3KCYAac48234692
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Apr 2015 18:04:11 +0530
+Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t3KCB49O024166
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Apr 2015 17:41:04 +0530
+Message-ID: <5534F240.3020907@linux.vnet.ibm.com>
+Date: Mon, 20 Apr 2015 18:04:08 +0530
+From: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
-Cc: shuahkh@osg.samsung.com, Michael Neuling <mikey@neuling.org>,
- james.hogan@imgtec.com, avagin@openvz.org, Paul.Clothier@imgtec.com,
- peterz@infradead.org, palves@redhat.com, linux-kernel@vger.kernel.org,
- davem@davemloft.net, dhowells@redhat.com, linuxppc-dev@ozlabs.org,
- kirjanov@gmail.com, tglx@linutronix.de, oleg@redhat.com, davej@redhat.com,
- akpm@linux-foundation.org, sukadev@linux.vnet.ibm.com,
- Edjunior Barbosa Machado <emachado@linux.vnet.ibm.com>,
- sam.bobroff@au1.ibm.com
+To: Jacek Anaszewski <j.anaszewski@samsung.com>
+Subject: Re: [PATCH v2 2/2] leds/powernv: Add driver for PowerNV platform
+References: <20150320105921.14866.83209.stgit@localhost.localdomain>
+ <20150320110328.14866.98225.stgit@localhost.localdomain>
+ <552D303A.5080506@samsung.com> <552E049D.2030604@linux.vnet.ibm.com>
+ <552E2480.9060102@samsung.com> <552E3A56.8030300@linux.vnet.ibm.com>
+ <5534E6D9.6060804@samsung.com>
+In-Reply-To: <5534E6D9.6060804@samsung.com>
+Content-Type: text/plain; charset=utf-8
+Cc: stewart@linux.vnet.ibm.com, cooloney@gmail.com, rpurdie@rpsys.net,
+ linuxppc-dev@lists.ozlabs.org, linux-leds@vger.kernel.org,
+ khandual@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -66,119 +45,116 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Anshuman Khandual <khandual@linux.vnet.ibm.com> wrote on 13.04.2015
-10:48:57:
-> On 04/10/2015 04:03 PM, Ulrich Weigand wrote:
-> > - You provide checkpointed FPR and VMX registers, but there doesn't
-seem
-> >   to be any way to get at the checkpointed *VSX* registers (i.e. the
-part
-> >   that is neither covered by FPR or VMX, corresponding to NT_PPC_VSX).
+On 04/20/2015 05:15 PM, Jacek Anaszewski wrote:
+> Hi Vasant,
+> 
+> I'd like to clarify some details regarding your explanation.
+> 
+> On 04/15/2015 12:15 PM, Vasant Hegde wrote:
+> [...]
+>>>>
+>>>> In Power Systems LEDs are overloaded (meaning same LED is used for identify and
+>>>> fault depending on their state  ---  blinking = identify and solid = fault).
+>>>> Hence here append LED type info.
+>>>
+>>> The label could be composed of segments and an ordinal number as
+>>> labels have to be unique, e.g. attn_ident_0, attn_ident_1.
+>>> The segments would have to be parsed by the driver to discover
+>>> all the LED's available modes.
+>>>
+>>> nitpicking: identify is a verb and is not a proper name for the LED.
+>>> Could you describe the purpose of this mode, so that we could come
+>>> up with a better name?
+>>
+>> Each component (Field Replacement Unit) will have service indicator (LEDS) which
+>> can have below states :
+>>    - OFF     : no action
+>>    - Identify: blinking state (user can use this state to identify particular
+>> component).
+>>         In Power Systems world we call it as "identify" indicator.. Hence I
+>> retained same name here.
+>>         How about just "ident" ?
+>>    - fault : solid state (when component goes bad, LED goes to solid state)
+>>       Note that our FW is capable of isolating some of the issues and it can turn
+>> on LEDs without OS
+>>        interference.
+>>
+>> We have one more System level LED (System Attention Indicator).. This LED has
+>> two states:
+>>    - OFF : Everything is fine
+>>    - ON : Some component has issues and needs attention.
+> 
+> We have three modes:
+> - identify        - blinking
+> - fault            - solid
+> - attention indicator    - solid
 >
-> Will change vsr_get, vsr_set functions as we have done for fpr_get and
-fpr_set
-> functions. Also will add one more ELF core note NT_PPC_TM_CVSX to fetch
-the
-> check pointed state of VSX register while inside the transaction.
+> How does LED operation differ for fault and attention modes?
+> Does a LED have different intensity?
 
-OK.
+Jacek,
 
-> >   I would much prefer three separate regsets (e.g. NT_PPC_DSCR,
-NT_PPC_PPR,
-> >   and NT_PPC_TAR), each of which is available and valid if and only if
-the
-> >   current processor actually has the register in question.
->
-> Thats like adding one ELF core note for every single register
-> because we cannot
-> put them in any category. Then as Michael Ellerman had pointed out to
-include
-> a lot more registers in this MISC category (which we are not doing right
-now
-> in the interest of having minimum support available before we look at the
-full
-> possible list of MISC registers), we should add one ELF core note section
-for
-> each of those individual registers ? I am not sure.
+System Attention LED is special LED and its single LED available/system. where
+as identify and fault is applicable to all field replaceable units in the system..
 
-This confuses me a bit.  My understanding was that ptrace regsets, once
-defined, should never change in the future.  (GDB will only check whether
-or not a regset is supported; if it is, it will expect the contents to be
-as it expects them to be.)  "Including a lot more registers" would
-therefore
-seem to require adding new regsets anyway, which is one of the reasons why
-I disagree a "MISC" regset is particularly useful.
+So Typical server will have
+   1   System Attention LED
+    N  Identify/fault LED (N = Field Replaceable Unit).
 
-> > - Similarly, the NT_PPC_TM_SPR regset as currently defined mixes and
-> > matches
-> >   registers with different "lifetimes".  The transactional memory
-registers
-> >   (TFHAR, TEXASR, TFIAR) are available *always* on machines that
-support
-> >   transactions.  But the other registers in that regset are
-checkpointed
-> >   versions that are only available/valid within a transaction.  I think
-a
-> >   better way to faithfully represent this would be to have the
-> > NT_PPC_TM_SPR
-> >   regset only contain the transcational memory registers, and use
-separate
-> >   regsets for the checkpointed registers -- those should parallel the
-non-
-> >   checkpointed register regset.
->
-> Right now, we support NT_PPC_TM_SPR only inside the transaction, so we
-dont
-> have the problem with different "lifetimes" registers accessed together.
-But
-> yes, I get your point.
+Apart from above two, we do have two more LEDs/Enclosure (external visible LEDs)
+  - Enclosure Identify
+  - Enclosure fault
+      These LEDs reflects state of all Field Replaceable Units (FRU) inside this
+enclosure
+       If any of FRU state is ON, this will become ON
+       Also we can independently enable this LED!!
 
-Since the transactional SPRs are accessible from user space outside of a
-transaction, it would make sense for them to accessible from ptrace as
-well.
-If the current patch set doesn't do that, I guess it would be better to
-change that.
+    But from kernel side implementation point of view, I just treat this as
+another LED.. as our platform code (OPAL firmware) takes care of roll up etc.
 
-> > - Particularly confusing to me is the "checkpointed original MSR" which
-> >   currently also resides in NT_PPC_TM_SPR.  What exactly is this?  How
-> >   does that differ from the MSR slot in the NT_PPC_TM_CGPR regset?
->
-> I believed it stores the check pointed MSR value which was in the
-register
-> before the transaction started. But then how it is different from the
-> ckpt_regs.msr, I am not sure. Mikey or Michael should be able to clarify
-> more on this. I can see "orig_msr" getting used in many places to hold
-the
-> check pointed value of MSR.
 
-Your other mail states that the orig_mst may be irrelevant for ptrace
-anyway ... that would be OK with me as well.
+Now our LED can operate in two mode (Depending on our service model, typically
+one/two socket servers are Light Path mode, whereas high end servers are Guiding
+Light Mode).
 
-> >   In any case, it seems the ptrace set-register case currently allows
-user
-> >   space to restore *any* arbitrary value into the checkpointed MSR,
-which
-> >   would presumably get restored into the real MSR at some point, unless
-I'm
-> >   missing something here.  Do we not need a check that only safe bits
-are
-> >   modified, just like with ptrace access to the real MSR?
->
-> Where and which safe bits do we check before writing any value into the
-MSR
-> register from ptrace interface ? May be I am missing something here.
+ 1.  Guiding Light
+     Only Identify indicator is support.. Fault is not supported
+     System attention indicator is used to point there is some problem in system
+and need attention
+  2. Light Path mode
+    Both identify and fault indicator is supported ..
+    Fault is ON whenever some component is faulty
+    System attention indicator is used to point that FW/OS is not able to
+isolate the problem and needs user to look into serviceable event (like syslog/
+our agents like ESA which analyzes and reports events)
 
-All ptrace accesses to *set* the regular msr go via this routine:
 
-static int set_user_msr(struct task_struct *task, unsigned long msr)
-{
-        task->thread.regs->msr &= ~MSR_DEBUGCHANGE;
-        task->thread.regs->msr |= msr & MSR_DEBUGCHANGE;
-        return 0;
-}
+Handling LED states :
+  - Though physically single LED is overloaded for identify and fault, logically
+(FW/OS level) we treat them as separate LED.
+  - We can enable both fault and identify simultaneously.
+  - Hardware decides physical LED state (rule : identify has priority over fault).
+     ex: Say location code 'X',
+           Identify = ON, fault = ON ,   state of 'X' = identify (blinking)
+           Identify = OFF, fault = ON,   state of 'X'  = fault  (solid)
+           Identify = OFF, fault = ON,   state of 'X'  = identify (blinking)
+	   Identify = OFF, fault = OFF , state of 'X'  = OFF
 
-I think we'd need to do the equivalent whenever changing the checkpointed
-MSR.
+Since we have various above combinations, I thought its best to have separate
+class dev for each individual LEDs. That way we keep everything simple and let
+firmware handle all complexities.
 
-Bye,
-Ulrich
+Hope this clarifies.
+
+I just posted v3 where I addressed your comments.
+   https://lists.ozlabs.org/pipermail/linuxppc-dev/2015-April/127702.html
+
+Please let me know if you have any comments/suggestions.
+
+-Vasant
+
+> 
+> I'd rather avoid creating separate LED class devices for each mode.
+> 
+> For blinking we could use existing timer trigger.
+> 
