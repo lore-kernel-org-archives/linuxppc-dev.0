@@ -1,14 +1,14 @@
 Return-Path: <christophe.leroy@c-s.fr>
 Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id AF1131A0BF0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Apr 2015 15:26:32 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTP id C71F01A0BD9
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Apr 2015 15:26:35 +1000 (AEST)
 From: Christophe Leroy <christophe.leroy@c-s.fr>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  scottwood@freescale.com
-Subject: [PATCH 04/11] powerpc/8xx: Take benefit of aligned PGDIR
-Message-Id: <20150420052630.DA6751A242C@localhost.localdomain>
-Date: Mon, 20 Apr 2015 07:26:30 +0200 (CEST)
+Subject: [PATCH 05/11] powerpc/8xx: Optimise access to swapper_pg_dir
+Message-Id: <20150420052632.EE60F1A242C@localhost.localdomain>
+Date: Mon, 20 Apr 2015 07:26:32 +0200 (CEST)
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -19,81 +19,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-L1 base address is now aligned so we can insert L1 index into r11 directly and
-then preserve r10
+All accessed to PGD entries are done via 0(r11).
+By using lower part of swapper_pg_dir as load index to r11, we can remove the
+ori instruction.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
 ---
- arch/powerpc/kernel/head_8xx.S | 34 +++++++++++++++-------------------
- 1 file changed, 15 insertions(+), 19 deletions(-)
+ arch/powerpc/kernel/head_8xx.S | 22 ++++++++++------------
+ 1 file changed, 10 insertions(+), 12 deletions(-)
 
 diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index 2c329f1..ae05f28 100644
+index ae05f28..aa45225 100644
 --- a/arch/powerpc/kernel/head_8xx.S
 +++ b/arch/powerpc/kernel/head_8xx.S
-@@ -326,16 +326,15 @@ InstructionTLBMiss:
- 	ori	r11, r11, (swapper_pg_dir-PAGE_OFFSET)@l
+@@ -322,13 +322,12 @@ InstructionTLBMiss:
+ 	mfspr	r11, SPRN_M_TW	/* Get level 1 table base address */
+ #ifdef CONFIG_MODULES
+ 	beq	3f
+-	lis	r11, (swapper_pg_dir-PAGE_OFFSET)@h
+-	ori	r11, r11, (swapper_pg_dir-PAGE_OFFSET)@l
++	lis	r11, (swapper_pg_dir-PAGE_OFFSET)@ha
  3:
  #endif
--	/* Extract level 1 index */
--	rlwinm	r10, r10, 32 - ((PAGE_SHIFT - 2) << 1), (PAGE_SHIFT - 2) << 1, 29
--	lwzx	r11, r10, r11	/* Get the level 1 entry */
--	rlwinm	r10, r11,0,0,19	/* Extract page descriptor page address */
-+	/* Insert level 1 index */
-+	rlwimi	r11, r10, 32 - ((PAGE_SHIFT - 2) << 1), (PAGE_SHIFT - 2) << 1, 29
-+	lwz	r11, 0(r11)	/* Get the level 1 entry */
+ 	/* Insert level 1 index */
+ 	rlwimi	r11, r10, 32 - ((PAGE_SHIFT - 2) << 1), (PAGE_SHIFT - 2) << 1, 29
+-	lwz	r11, 0(r11)	/* Get the level 1 entry */
++	lwz	r11, (swapper_pg_dir-PAGE_OFFSET)@l(r11)	/* Get the level 1 entry */
  
  	/* Load the MI_TWC with the attributes for this "segment." */
  	MTSPR_CPU6(SPRN_MI_TWC, r11, r3)	/* Set segment attributes */
--	mfspr	r11, SPRN_SRR0	/* Get effective address of fault */
-+	rlwinm	r11, r11,0,0,19	/* Extract page descriptor page address */
- 	/* Extract level 2 index */
--	rlwinm	r11, r11, 32 - (PAGE_SHIFT - 2), 32 - PAGE_SHIFT, 29
-+	rlwinm	r10, r10, 32 - (PAGE_SHIFT - 2), 32 - PAGE_SHIFT, 29
- 	lwzx	r10, r10, r11	/* Get the pte */
- 
- #ifdef CONFIG_SWAP
-@@ -380,13 +379,12 @@ DataStoreTLBMiss:
- 	lis	r11, (swapper_pg_dir-PAGE_OFFSET)@h
- 	ori	r11, r11, (swapper_pg_dir-PAGE_OFFSET)@l
+@@ -376,12 +375,11 @@ DataStoreTLBMiss:
+ 	andis.	r11, r10, 0x8000
+ 	mfspr	r11, SPRN_M_TW	/* Get level 1 table base address */
+ 	beq	3f
+-	lis	r11, (swapper_pg_dir-PAGE_OFFSET)@h
+-	ori	r11, r11, (swapper_pg_dir-PAGE_OFFSET)@l
++	lis	r11, (swapper_pg_dir-PAGE_OFFSET)@ha
  3:
--	/* Extract level 1 index */
--	rlwinm	r10, r10, 32 - ((PAGE_SHIFT - 2) << 1), (PAGE_SHIFT - 2) << 1, 29
--	lwzx	r11, r10, r11	/* Get the level 1 entry */
-+	/* Insert level 1 index */
-+	rlwimi	r11, r10, 32 - ((PAGE_SHIFT - 2) << 1), (PAGE_SHIFT - 2) << 1, 29
-+	lwz	r11, 0(r11)	/* Get the level 1 entry */
+ 	/* Insert level 1 index */
+ 	rlwimi	r11, r10, 32 - ((PAGE_SHIFT - 2) << 1), (PAGE_SHIFT - 2) << 1, 29
+-	lwz	r11, 0(r11)	/* Get the level 1 entry */
++	lwz	r11, (swapper_pg_dir-PAGE_OFFSET)@l(r11)	/* Get the level 1 entry */
  
  	/* We have a pte table, so load fetch the pte from the table.
  	 */
--	mfspr	r10, SPRN_MD_EPN	/* Get address of fault */
- 	/* Extract level 2 index */
- 	rlwinm	r10, r10, 32 - (PAGE_SHIFT - 2), 32 - PAGE_SHIFT, 29
- 	rlwimi	r10, r11, 0, 0, 32 - PAGE_SHIFT - 1	/* Add level 2 base */
-@@ -515,16 +513,14 @@ FixupDAR:/* Entry point for dcbx workaround. */
- 	beq-	3f		/* Branch if user space */
- 	lis	r11, (swapper_pg_dir-PAGE_OFFSET)@h
- 	ori	r11, r11, (swapper_pg_dir-PAGE_OFFSET)@l
--	/* Extract level 1 index */
--3:	rlwinm	r10, r10, 32 - ((PAGE_SHIFT - 2) << 1), (PAGE_SHIFT - 2) << 1, 29
--	lwzx	r11, r10, r11	/* Get the level 1 entry */
--	rlwinm	r10, r11,0,0,19	/* Extract page descriptor page address */
--	mfspr	r11, SPRN_SRR0	/* Get effective address of fault */
--	/* Extract level 2 index */
--	rlwinm	r11, r11, 32 - (PAGE_SHIFT - 2), 32 - PAGE_SHIFT, 29
--	lwzx	r11, r10, r11	/* Get the pte */
-+	/* Insert level 1 index */
-+3:	rlwimi	r11, r10, 32 - ((PAGE_SHIFT - 2) << 1), (PAGE_SHIFT - 2) << 1, 29
-+	lwz	r11, 0(r11)	/* Get the level 1 entry */
-+	rlwinm	r11, r11,0,0,19	/* Extract page descriptor page address */
-+	/* Insert level 2 index */
-+	rlwimi	r11, r10, 32 - (PAGE_SHIFT - 2), 32 - PAGE_SHIFT, 29
-+	lwz	r11, 0(r11)	/* Get the pte */
- 	/* concat physical page address(r11) and page offset(r10) */
--	mfspr	r10, SPRN_SRR0
- 	rlwimi	r11, r10, 0, 32 - PAGE_SHIFT, 31
- 	lwz	r11,0(r11)
- /* Check if it really is a dcbx instruction. */
+@@ -510,12 +508,11 @@ FixupDAR:/* Entry point for dcbx workaround. */
+ 	mfspr	r10, SPRN_SRR0
+ 	andis.	r11, r10, 0x8000	/* Address >= 0x80000000 */
+ 	mfspr	r11, SPRN_M_TW	/* Get level 1 table base address */
+-	beq-	3f		/* Branch if user space */
+-	lis	r11, (swapper_pg_dir-PAGE_OFFSET)@h
+-	ori	r11, r11, (swapper_pg_dir-PAGE_OFFSET)@l
++	beq	3f
++	lis	r11, (swapper_pg_dir-PAGE_OFFSET)@ha
+ 	/* Insert level 1 index */
+ 3:	rlwimi	r11, r10, 32 - ((PAGE_SHIFT - 2) << 1), (PAGE_SHIFT - 2) << 1, 29
+-	lwz	r11, 0(r11)	/* Get the level 1 entry */
++	lwz	r11, (swapper_pg_dir-PAGE_OFFSET)@l(r11)	/* Get the level 1 entry */
+ 	rlwinm	r11, r11,0,0,19	/* Extract page descriptor page address */
+ 	/* Insert level 2 index */
+ 	rlwimi	r11, r10, 32 - (PAGE_SHIFT - 2), 32 - PAGE_SHIFT, 29
+@@ -670,8 +667,7 @@ start_here:
+ 	 * init's THREAD like the context switch code does, but this is
+ 	 * easier......until someone changes init's static structures.
+ 	 */
+-	lis	r6, swapper_pg_dir@h
+-	ori	r6, r6, swapper_pg_dir@l
++	lis	r6, swapper_pg_dir@ha
+ 	tophys(r6,r6)
+ #ifdef CONFIG_8xx_CPU6
+ 	lis	r4, cpu6_errata_word@h
+@@ -850,6 +846,8 @@ _GLOBAL(set_context)
+ 	stw	r4, 0x4(r5)
+ #endif
+ 
++	li	r5, (swapper_pg_dir-PAGE_OFFSET)@l
++	sub	r4, r4, r5
+ #ifdef CONFIG_8xx_CPU6
+ 	lis	r6, cpu6_errata_word@h
+ 	ori	r6, r6, cpu6_errata_word@l
 -- 
 2.1.0
