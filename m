@@ -1,18 +1,20 @@
 Return-Path: <baolin.wang@linaro.org>
-Received: from mail-pa0-f45.google.com (mail-pa0-f45.google.com
- [209.85.220.45])
+Received: from mail-pd0-f180.google.com (mail-pd0-f180.google.com
+ [209.85.192.180])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E38BE1A1D79
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Apr 2015 15:58:11 +1000 (AEST)
-Received: by pabsx10 with SMTP id sx10so196473792pab.3
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Apr 2015 22:58:10 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id E72641A1A24
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Apr 2015 15:58:22 +1000 (AEST)
+Received: by pdbqd1 with SMTP id qd1so197597571pdb.2
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 19 Apr 2015 22:58:21 -0700 (PDT)
 From: Baolin Wang <baolin.wang@linaro.org>
 To: tglx@linutronix.de
-Subject: [PATCH 00/11] Convert the posix_clock_operations and k_clock
- structure to ready for 2038
-Date: Mon, 20 Apr 2015 13:57:28 +0800
-Message-Id: <1429509459-17068-1-git-send-email-baolin.wang@linaro.org>
+Subject: [PATCH 01/11] linux/time64.h:Introduce the 'struct itimerspec64' for
+ 64bit
+Date: Mon, 20 Apr 2015 13:57:29 +0800
+Message-Id: <1429509459-17068-2-git-send-email-baolin.wang@linaro.org>
+In-Reply-To: <1429509459-17068-1-git-send-email-baolin.wang@linaro.org>
+References: <1429509459-17068-1-git-send-email-baolin.wang@linaro.org>
 Cc: pang.xunlei@linaro.org, peterz@infradead.org, heiko.carstens@de.ibm.com,
  paulus@samba.org, cl@linux.com, heenasirwani@gmail.com,
  linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, y2038@lists.linaro.org,
@@ -31,58 +33,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch series changes the 32-bit time type (timespec/itimerspec) to the 64-bit one
-(timespec64/itimerspec64), since 32-bit time types will break in the year 2038.
+This patch introduces the 'struct itimerspec64' for 64bit to replace itimerspec,
+and also introduces the conversion methods: itimerspec64_to_itimerspec() and
+itimerspec_to_itimerspec64(), that makes itimerspec to ready for 2038 year.
 
-This patch series introduces new methods with timespec64/itimerspec64 type,
-and removes the old ones with timespec/itimerspec type for posix_clock_operations
-and k_clock structure.
+Signed-off-by: Baolin Wang <baolin.wang@linaro.org>
+---
+ include/linux/time64.h |   13 +++++++++++++
+ 1 file changed, 13 insertions(+)
 
-Also introduces some new functions with timespec64/itimerspec64 type, like current_kernel_time64(),
-hrtimer_get_res64(), cputime_to_timespec64() and timespec64_to_cputime().
-
-Baolin Wang (11):
-  linux/time64.h:Introduce the 'struct itimerspec64' for 64bit
-  timekeeping:Introduce the current_kernel_time64() function with
-    timespec64 type
-  time/hrtimer:Introduce hrtimer_get_res64() with timespec64 type for
-    getting the timer resolution
-  posix timers:Introduce the 64bit methods with timespec64 type for
-    k_clock structure
-  time/posix-timers:Convert to the 64bit methods for k_clock callback
-    functions
-  char/mmtimer:Convert to the 64bit methods for k_clock callback
-    function
-  time/alarmtimer:Convert to the new methods for k_clock structure
-  time/posix-clock:Convert to the 64bit methods for k_clock and
-    posix_clock_operations structure
-  cputime:Introduce the cputime_to_timespec64/timespec64_to_cputime
-    function
-  time/posix-cpu-timers:Convert to the 64bit methods for k_clock
-    structure
-  k_clock:Remove the 32bit methods with timespec type
-
- arch/powerpc/include/asm/cputime.h    |    6 +-
- arch/s390/include/asm/cputime.h       |    8 +-
- drivers/char/mmtimer.c                |   36 ++++----
- drivers/ptp/ptp_clock.c               |   26 ++----
- include/asm-generic/cputime_jiffies.h |   10 +--
- include/linux/cputime.h               |   15 ++++
- include/linux/hrtimer.h               |   12 ++-
- include/linux/jiffies.h               |    3 +
- include/linux/posix-clock.h           |   10 +--
- include/linux/posix-timers.h          |   18 ++--
- include/linux/time64.h                |   13 +++
- include/linux/timekeeping.h           |   14 ++-
- kernel/time/alarmtimer.c              |   43 ++++-----
- kernel/time/hrtimer.c                 |   10 +--
- kernel/time/posix-clock.c             |   20 ++---
- kernel/time/posix-cpu-timers.c        |   83 +++++++++--------
- kernel/time/posix-timers.c            |  157 +++++++++++++++++++--------------
- kernel/time/time.c                    |   21 +++++
- kernel/time/timekeeping.c             |    6 +-
- kernel/time/timekeeping.h             |    2 +-
- 20 files changed, 302 insertions(+), 211 deletions(-)
-
+diff --git a/include/linux/time64.h b/include/linux/time64.h
+index a383147..3647bdd 100644
+--- a/include/linux/time64.h
++++ b/include/linux/time64.h
+@@ -18,6 +18,11 @@ struct timespec64 {
+ };
+ #endif
+ 
++struct itimerspec64 {
++	struct timespec64 it_interval;  /* timer period */
++	struct timespec64 it_value;     /* timer expiration */
++};
++
+ /* Parameters used to convert the timespec values: */
+ #define MSEC_PER_SEC	1000L
+ #define USEC_PER_MSEC	1000L
+@@ -187,4 +192,12 @@ static __always_inline void timespec64_add_ns(struct timespec64 *a, u64 ns)
+ 
+ #endif
+ 
++#define itimerspec64_to_itimerspec(its64) \
++	({ (struct itimerspec){ .it_interval = timespec64_to_timespec((its64).it_interval), \
++				.it_value = timespec64_to_timespec((its64).it_value) }; })
++
++#define itimerspec_to_itimerspec64(its) \
++	({ (struct itimerspec64){ .it_interval = timespec_to_timespec64((its).it_interval), \
++				  .it_value = timespec_to_timespec64((its).it_value) }; })
++
+ #endif /* _LINUX_TIME64_H */
 -- 
 1.7.9.5
