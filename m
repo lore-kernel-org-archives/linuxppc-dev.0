@@ -1,32 +1,24 @@
-Return-Path: <B43198@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0141.outbound.protection.outlook.com [157.56.110.141])
+Return-Path: <Igal.Liberman@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0124.outbound.protection.outlook.com [65.55.169.124])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B050C1A1972
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Apr 2015 20:53:55 +1000 (AEST)
-Message-ID: <5534DAA4.3050809@freescale.com>
-Date: Mon, 20 Apr 2015 13:53:24 +0300
-From: Purcareata Bogdan <b43198@freescale.com>
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id D9A0E1A0BEB
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Apr 2015 21:07:25 +1000 (AEST)
+From: "Igal.Liberman@freescale.com" <Igal.Liberman@freescale.com>
 To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 0/2] powerpc/kvm: Enable running guests on RT Linux
-References: <1424251955-308-1-git-send-email-bogdan.purcareata@freescale.com>				
- <54E73A6C.9080500@suse.de> <54E740E7.5090806@redhat.com>				
- <54E74A8C.30802@linutronix.de> <1424734051.4698.17.camel@freescale.com>				
- <54EF196E.4090805@redhat.com> <54EF2025.80404@linutronix.de>			
- <1424999159.4698.78.camel@freescale.com> <55158E6D.40304@freescale.com>		
- <1428016310.22867.289.camel@freescale.com>	 <551E4A41.1080705@freescale.com>
- <1428096375.22867.369.camel@freescale.com>	 <55262DD3.2050707@freescale.com>
- <1428623611.22867.561.camel@freescale.com>
-In-Reply-To: <1428623611.22867.561.camel@freescale.com>
-Content-Type: text/plain; charset="utf-8"; format=flowed
-Cc: linux-rt-users@vger.kernel.org,
- Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
- Alexander Graf <agraf@suse.de>, linux-kernel@vger.kernel.org,
- Bogdan Purcareata <bogdan.purcareata@freescale.com>,
- mihai.caraman@freescale.com, Paolo Bonzini <pbonzini@redhat.com>,
- Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org
+Subject: RE: [v3] dt/bindings: qoriq-clock: Add binding for FMan clock mux
+Date: Mon, 20 Apr 2015 11:07:17 +0000
+Message-ID: <DM2PR03MB38396D79588E66194EC7608E6E00@DM2PR03MB383.namprd03.prod.outlook.com>
+References: <1429008968-24707-1-git-send-email-igal.liberman@freescale.com>
+ <1429119357.22867.724.camel@freescale.com>
+ <DM2PR03MB38330DBBFFD1BC45D58F447E6E40@DM2PR03MB383.namprd03.prod.outlook.com>
+ <1429249281.32545.52.camel@freescale.com>
+In-Reply-To: <1429249281.32545.52.camel@freescale.com>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,50 +28,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 10.04.2015 02:53, Scott Wood wrote:
-> On Thu, 2015-04-09 at 10:44 +0300, Purcareata Bogdan wrote:
->> So at this point I was getting kinda frustrated so I decided to measure
->> the time spend in kvm_mpic_write and kvm_mpic_read. I assumed these were
->> the main entry points in the in-kernel MPIC and were basically executed
->> while holding the spinlock. The scenario was the same - 24 VCPUs guest,
->> with 24 virtio+vhost interfaces, only this time I ran 24 ping flood
->> threads to another board instead of netperf. I assumed this would impose
->> a heavier stress.
->>
->> The latencies look pretty ok, around 1-2 us on average, with the max
->> shown below:
->>
->> .kvm_mpic_read	14.560
->> .kvm_mpic_write	12.608
->>
->> Those are also microseconds. This was run for about 15 mins.
->
-> What about other entry points such as kvm_set_msi() and
-> kvmppc_mpic_set_epr()?
-
-Thanks for the pointers! I redid the measurements, this time for the functions 
-run with the openpic lock down:
-
-.kvm_mpic_read_internal (.kvm_mpic_read)	1.664
-.kvmppc_mpic_set_epr				6.880
-.kvm_mpic_write_internal (.kvm_mpic_write)	7.840
-.openpic_msi_write (.kvm_set_msi)		10.560
-
-Same scenario, 15 mins, numbers are microseconds.
-
-There was a weird situation for .kvmppc_mpic_set_epr - its corresponding inner 
-function is kvmppc_set_epr, which is a static inline. Removing the static inline 
-yields a compiler crash (Segmentation fault (core dumped) - 
-scripts/Makefile.build:441: recipe for target 'arch/powerpc/kvm/kvm.o' failed), 
-but that's a different story, so I just let it be for now. Point is the time may 
-include other work after the lock has been released, but before the function 
-actually returned. I noticed this was the case for .kvm_set_msi, which could 
-work up to 90 ms, not actually under the lock. This made me change what I'm 
-looking at.
-
-So far it looks pretty decent. Are there any other MPIC entry points worthy of 
-investigation? Or perhaps a different stress scenario involving a lot of VCPUs 
-and external interrupts?
-
-Thanks,
-Bogdan P.
+DQoNClJlZ2FyZHMsDQpJZ2FsIExpYmVybWFuLg0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0t
+LS0tDQo+IEZyb206IFdvb2QgU2NvdHQtQjA3NDIxDQo+IFNlbnQ6IEZyaWRheSwgQXByaWwgMTcs
+IDIwMTUgODo0MSBBTQ0KPiBUbzogTGliZXJtYW4gSWdhbC1CMzE5NTANCj4gQ2M6IGRldmljZXRy
+ZWVAdmdlci5rZXJuZWwub3JnOyBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZw0KPiBTdWJq
+ZWN0OiBSZTogW3YzXSBkdC9iaW5kaW5nczogcW9yaXEtY2xvY2s6IEFkZCBiaW5kaW5nIGZvciBG
+TWFuIGNsb2NrIG11eA0KPiANCj4gT24gVGh1LCAyMDE1LTA0LTE2IGF0IDAxOjExIC0wNTAwLCBM
+aWJlcm1hbiBJZ2FsLUIzMTk1MCB3cm90ZToNCj4gPg0KPiA+DQo+ID4gUmVnYXJkcywNCj4gPiBJ
+Z2FsIExpYmVybWFuLg0KPiA+DQo+ID4gPiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+
+ID4gRnJvbTogV29vZCBTY290dC1CMDc0MjENCj4gPiA+IFNlbnQ6IFdlZG5lc2RheSwgQXByaWwg
+MTUsIDIwMTUgODozNiBQTQ0KPiA+ID4gVG86IExpYmVybWFuIElnYWwtQjMxOTUwDQo+ID4gPiBD
+YzogZGV2aWNldHJlZUB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMu
+b3JnDQo+ID4gPiBTdWJqZWN0OiBSZTogW3YzXSBkdC9iaW5kaW5nczogcW9yaXEtY2xvY2s6IEFk
+ZCBiaW5kaW5nIGZvciBGTWFuDQo+ID4gPiBjbG9jayBtdXgNCj4gPiA+DQo+ID4gPiBPbiBUdWUs
+IDIwMTUtMDQtMTQgYXQgMTM6NTYgKzAzMDAsIElnYWwuTGliZXJtYW4gd3JvdGU6DQo+ID4gPiA+
+IEZyb206IElnYWwgTGliZXJtYW4gPElnYWwuTGliZXJtYW5AZnJlZXNjYWxlLmNvbT4NCj4gPiA+
+ID4NCj4gPiA+ID4gdjM6IEFkZHJlc3NlZCBmZWVkYmFjayBmcm9tIFNjb3R0Og0KPiA+ID4gPiAJ
+LSBSZW1vdmVkIGNsb2NrIHNwZWNpZmllciBkZXNjcmlwdGlvbi4NCj4gPiA+ID4NCj4gPiA+ID4g
+djI6IEFkZHJlc3NlZCBmZWVkYmFjayBmcm9tIFNjb3R0Og0KPiA+ID4gPiAJLSBNb3ZlZCB0aGUg
+ImZtYW4tY2xrLW11eCIgY2xvY2sgcHJvdmlkZXIgZGV0YWlscw0KPiA+ID4gPiAJICB1bmRlciAi
+Y2xvY2tzIiBwcm9wZXJ0eS4NCj4gPiA+ID4NCj4gPiA+ID4gU2lnbmVkLW9mZi1ieTogSWdhbCBM
+aWJlcm1hbiA8SWdhbC5MaWJlcm1hbkBmcmVlc2NhbGUuY29tPg0KPiA+ID4gPiAtLS0NCj4gPiA+
+ID4gIC4uLi9kZXZpY2V0cmVlL2JpbmRpbmdzL2Nsb2NrL3FvcmlxLWNsb2NrLnR4dCAgICAgIHwg
+ICAxNw0KPiArKysrKysrKysrKysrKystLQ0KPiA+ID4gPiAgMSBmaWxlIGNoYW5nZWQsIDE1IGlu
+c2VydGlvbnMoKyksIDIgZGVsZXRpb25zKC0pDQo+ID4gPiA+DQo+ID4gPiA+IGRpZmYgLS1naXQN
+Cj4gPiA+ID4gYS9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvY2xvY2svcW9yaXEt
+Y2xvY2sudHh0DQo+ID4gPiA+IGIvRG9jdW1lbnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL2Ns
+b2NrL3FvcmlxLWNsb2NrLnR4dA0KPiA+ID4gPiBpbmRleCBiMGQ3YjczLi4yYmIzYjM4IDEwMDY0
+NA0KPiA+ID4gPiAtLS0gYS9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmluZGluZ3MvY2xvY2sv
+cW9yaXEtY2xvY2sudHh0DQo+ID4gPiA+ICsrKyBiL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9i
+aW5kaW5ncy9jbG9jay9xb3JpcS1jbG9jay50eHQNCj4gPiA+ID4gQEAgLTY1LDkgKzY1LDEwIEBA
+IFJlcXVpcmVkIHByb3BlcnRpZXM6DQo+ID4gPiA+ICAJCUl0IHRha2VzIHBhcmVudCdzIGNsb2Nr
+LWZyZXF1ZW5jeSBhcyBpdHMgY2xvY2suDQo+ID4gPiA+ICAJKiAiZnNsLHFvcmlxLXBsYXRmb3Jt
+LXBsbC0xLjAiIGZvciB0aGUgcGxhdGZvcm0gUExMIGNsb2NrICh2MS4wKQ0KPiA+ID4gPiAgCSog
+ImZzbCxxb3JpcS1wbGF0Zm9ybS1wbGwtMi4wIiBmb3IgdGhlIHBsYXRmb3JtIFBMTCBjbG9jayAo
+djIuMCkNCj4gPiA+ID4gKwkqICJmc2wsZm1hbi1jbGstbXV4IiBmb3IgdGhlIEZyYW1lIE1hbmFn
+ZXIgY2xvY2suDQo+ID4gPiA+ICAtICNjbG9jay1jZWxsczogRnJvbSBjb21tb24gY2xvY2sgYmlu
+ZGluZy4gVGhlIG51bWJlciBvZiBjZWxscyBpbiBhDQo+ID4gPiA+IC0JY2xvY2stc3BlY2lmaWVy
+LiBTaG91bGQgYmUgPDA+IGZvciAiZnNsLHFvcmlxLXN5c2Nsay1bMSwyXS4wIg0KPiA+ID4gPiAt
+CWNsb2Nrcywgb3IgPDE+IGZvciAiZnNsLHFvcmlxLWNvcmUtcGxsLVsxLDJdLjAiIGNsb2Nrcy4N
+Cj4gPiA+ID4gKwljbG9jay1zcGVjaWZpZXIuIFNob3VsZCBiZSA8MD4gZm9yICJmc2wscW9yaXEt
+c3lzY2xrLVsxLDJdLjAiIGFuZA0KPiA+ID4gPiArCSJmc2wsZm1hbi1jbGstbXV4IiBjbG9ja3Mg
+b3IgPDE+IGZvciAiZnNsLHFvcmlxLWNvcmUtcGxsLVsxLDJdLjAiLg0KPiA+ID4gPiAgCUZvciAi
+ZnNsLHFvcmlxLWNvcmUtcGxsLTEuMCIgY2xvY2tzLCB0aGUgc2luZ2xlDQo+ID4gPiA+ICAJY2xv
+Y2stc3BlY2lmaWVyIGNlbGwgbWF5IHRha2UgdGhlIGZvbGxvd2luZyB2YWx1ZXM6DQo+ID4gPiA+
+ICAJKiAwIC0gZXF1YWwgdG8gdGhlIFBMTCBmcmVxdWVuY3kgQEAgLTE0NSw2ICsxNDYsMTggQEAg
+RXhhbXBsZQ0KPiA+ID4gPiBmb3IgY2xvY2sgYmxvY2sgYW5kIGNsb2NrIHByb3ZpZGVyOg0KPiA+
+ID4gPiAgCQkJY2xvY2tzID0gPCZzeXNjbGs+Ow0KPiA+ID4gPiAgCQkJY2xvY2stb3V0cHV0LW5h
+bWVzID0gInBsYXRmb3JtLXBsbCIsICJwbGF0Zm9ybS1wbGwtDQo+ID4gPiBkaXYyIjsNCj4gPiA+
+ID4gIAkJfTsNCj4gPiA+ID4gKw0KPiA+ID4gPiArCQlmbTBjbGs6IGZtMC1jbGstbXV4IHsNCj4g
+PiA+ID4gKwkJCSNjbG9jay1jZWxscyA9IDwwPjsNCj4gPiA+ID4gKwkJCXJlZyA9IDwweDEwIDQ+
+DQo+ID4gPiA+ICsJCQljb21wYXRpYmxlID0gImZzbCxmbWFuLWNsay1tdXgiOw0KPiA+ID4gPiAr
+CQkJY2xvY2tzID0gPCZwbGwwIDA+LCA8JnBsbDAgMT4sIDwmcGxsMCAyPiwgPCZwbGwwIDM+LA0K
+PiA+ID4gPiArCQkJCSA8JnBsYXRmb3JtX3BsbCAwPiwgPCZwbGwxIDE+LCA8JnBsbDEgMj47DQo+
+ID4gPiA+ICsJCQljbG9jay1uYW1lcyA9ICJwbGwwIiwgInBsbDAtZGl2MiIsICJwbGwwLWRpdjMi
+LA0KPiA+ID4gPiArCQkJCSAgICAgICJwbGwwLWRpdjQiLCAicGxhdGZvcm0tcGxsIiwgInBsbDEt
+ZGl2MiIsDQo+ID4gPiA+ICsJCQkJICAgICAgInBsbDEtZGl2MyI7DQo+ID4gPiA+ICsJCQljbG9j
+ay1vdXRwdXQtbmFtZXMgPSAiZm0wLWNsayI7DQo+ID4gPiA+ICsJCX07DQo+ID4gPiA+ICAJfTsN
+Cj4gPiA+ID4gIH07DQo+ID4gPiA+DQo+ID4gPg0KPiA+ID4gSSBkb24ndCBzZWUgdGhpcyByZWdp
+c3RlciBpbiB0aGUgbWFudWFscyBmb3Igb2xkZXIgRFBBQSBjaGlwcywgc3VjaA0KPiA+ID4gYXMN
+Cj4gPiA+IHA0MDgwIG9yIHAzMDQxLiAgSXMgaXQgcHJlc2VudCBidXQgdW5kb2N1bWVudGVkPyAg
+U2hvdWxkIEkgYmUNCj4gPiA+IGxvb2tpbmcgc29tZXdoZXJlIG90aGVyIHRoYW4gIkNsb2NraW5n
+IE1lbW9yeSBNYXAiPw0KPiA+ID4NCj4gPg0KPiA+IEl0J3MgYXZhaWxhYmxlIG9ubHkgaW4gcGFy
+dCBvZiB0aGUgbmV3IGNoaXBzIChUNCwgVDIsIEI0KS4NCj4gPiBJbiBUMTAyNC9UMTA0MCB0aGVy
+ZSdzIG9ubHkgb25lIG9wdGlvbiBmb3IgRk1hbiBjbG9jayBzbyB0aGlzIHJlZ2lzdGVyIGlzIG5v
+dA0KPiBhdmFpbGFibGUuDQo+IA0KPiBTbyBpdCdzIHBhcnQgb2YgdGhlIDIuMCBjaGFzc2lzPyAg
+SSdkIHN0aWNrIGEgMi4wIGluIHRoZXJlLCB0aGVuLiAgV2hvIGtub3dzIHdoYXQNCj4gd2UgbWF5
+IHNlZSBpbiB0aGUgZnV0dXJlLg0KPiANCg0KT0ssDQpXZSBjYW4gZ28gd2l0aCAiZnNsLGZtYW4t
+Y2xrLW11eC0xLzItMC4iLg0KSW4gdGhhdCBjYXNlLCB3ZSBuZWVkIHRvIHVwZGF0ZSBGTWFuIG5v
+ZGVzIGFuZCB0aGUgY2xvY2sgZHJpdmVyOg0KaHR0cHM6Ly9wYXRjaHdvcmsub3psYWJzLm9yZy9w
+YXRjaC80NDM5NzMvDQpodHRwczovL3BhdGNod29yay5vemxhYnMub3JnL3BhdGNoLzQ2MTgxMy8N
+Ckkgd2lsbCB1cGRhdGUgdGhvc2UgcGF0Y2hlcyBzZXBhcmF0ZWx5Lg0KDQo+IC1TY290dA0KPiAN
+Cg0KSWdhbA0KDQo=
