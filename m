@@ -1,30 +1,25 @@
-Return-Path: <tglx@linutronix.de>
-Received: from Galois.linutronix.de (Galois.linutronix.de
- [IPv6:2001:470:1f0b:db:abcd:42:0:1])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0108.outbound.protection.outlook.com [65.55.169.108])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A5F0A1A0007
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Apr 2015 07:09:32 +1000 (AEST)
-Date: Mon, 20 Apr 2015 23:09:17 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Baolin Wang <baolin.wang@linaro.org>
-Subject: Re: [PATCH 09/11] cputime:Introduce the
- cputime_to_timespec64/timespec64_to_cputime function
-In-Reply-To: <1429509459-17068-10-git-send-email-baolin.wang@linaro.org>
-Message-ID: <alpine.DEB.2.11.1504202249590.13914@nanos>
-References: <1429509459-17068-1-git-send-email-baolin.wang@linaro.org>
- <1429509459-17068-10-git-send-email-baolin.wang@linaro.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id C80BF1A0028
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Apr 2015 09:57:04 +1000 (AEST)
+Message-ID: <1429574206.4352.53.camel@freescale.com>
+Subject: Re: [RFC,1/8] soc/fman: Add FMan MURAM support
+From: Scott Wood <scottwood@freescale.com>
+To: Liberman Igal-B31950 <Igal.Liberman@freescale.com>
+Date: Mon, 20 Apr 2015 18:56:46 -0500
+In-Reply-To: <DM2PR03MB3835BC56CD47613CB1AD4EBE6E00@DM2PR03MB383.namprd03.prod.outlook.com>
+References: <1426050469-12507-1-git-send-email-igal.liberman@freescale.com>
+ <32CF85E2-A8AA-454D-A46F-0E778DAF97ED@kernel.crashing.org>
+ <DM2PR03MB3835BC56CD47613CB1AD4EBE6E00@DM2PR03MB383.namprd03.prod.outlook.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: pang.xunlei@linaro.org, peterz@infradead.org, heiko.carstens@de.ibm.com,
- paulus@samba.org, cl@linux.com, heenasirwani@gmail.com,
- linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, y2038@lists.linaro.org,
- rafael.j.wysocki@intel.com, ahh@google.com, fweisbec@gmail.com, pjt@google.com,
- riel@redhat.com, arnd@arndb.de, richardcochran@gmail.com,
- schwidefsky@de.ibm.com, john.stultz@linaro.org, rth@twiddle.net,
- gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org,
- netdev@vger.kernel.org, tj@kernel.org, linux390@de.ibm.com,
- linuxppc-dev@lists.ozlabs.org
+Cc: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ Bucur Madalin-Cristian-B32716 <madalin.bucur@freescale.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,49 +29,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 20 Apr 2015, Baolin Wang wrote:
+On Mon, 2015-04-20 at 03:58 -0500, Liberman Igal-B31950 wrote:
+> 
+> Regards,
+> Igal Liberman.
+> 
+> > -----Original Message-----
+> > From: Kumar Gala [mailto:galak@kernel.crashing.org]
+> > Sent: Thursday, March 12, 2015 5:57 PM
+> > To: Liberman Igal-B31950
+> > Cc: linuxppc-dev@lists.ozlabs.org; netdev@vger.kernel.org; linux-
+> > kernel@vger.kernel.org; Wood Scott-B07421
+> > Subject: Re: [RFC,1/8] soc/fman: Add FMan MURAM support
+> > 
+> > 
+> > On Mar 11, 2015, at 12:07 AM, Igal.Liberman <igal.liberman@freescale.com>
+> > wrote:
+> > 
+> > > From: Igal Liberman <Igal.Liberman@freescale.com>
+> > >
+> > > Add Frame Manager Multi-User RAM support.
+> > >
+> > > Signed-off-by: Igal Liberman <Igal.Liberman@freescale.com>
+> > > ---
+> > > drivers/soc/fsl/fman/Kconfig            |    1 +
+> > > drivers/soc/fsl/fman/Makefile           |    5 +-
+> > > drivers/soc/fsl/fman/fm_muram.c         |  174
+> > +++++++++++++++++++++++++++++++
+> > > drivers/soc/fsl/fman/inc/fm_muram_ext.h |   98 +++++++++++++++++
+> > > 4 files changed, 276 insertions(+), 2 deletions(-) create mode 100644
+> > > drivers/soc/fsl/fman/fm_muram.c create mode 100644
+> > > drivers/soc/fsl/fman/inc/fm_muram_ext.h
+> > >
+> > 
+> > use lib/genalloc instead of rheap
+> > 
+> 
+> Hi Kumar,
+> I looked into lib/genalloc allocator.
+> As far as I see, the genalloc allocator doesn't allow to control the memory alignment when you allocate a chunk of memory.
+> Two important notes regarding MURAM memory:
+> - The allocated memory chunks should have specific alignment (might be different in each chunk).
+> - The allocations must be efficient, we don't want to "waste" MURAM due to alignment issues.
 
-> This patch introduces some functions for converting cputime to timespec64 and back,
-> that repalce the timespec type with timespec64 type, as well as for arch/s390 and
-> arch/powerpc architecture.
+If the requirement is that allocations must be size-aligned, use
+gen_pool_first_fit_order_align.  Otherwise, improve genalloc to do what
+you need.
 
-No. We want a patch which adds the functions and then a patch which
-uses them. This stuff is tricky and hard to review. So please split
-the patches into smaller chunks.
-
-> +unsigned long
-> +timespec64_to_jiffies(const struct timespec64 *value)
-> +{
-> +	return __timespec_to_jiffies(value->tv_sec, value->tv_nsec);
-> +}
-> +EXPORT_SYMBOL(timespec64_to_jiffies);
-
-So we have now two exports which are doing exactly the same
-thing. Copy and paste is wonderful, right?
-
-What about exporting __timespec_to_jiffies() and providing inlines for
-timespec_to_jiffies() and timespec64_to_jiffies() ?
-
-EXPORT_SYMBOL is not just a stupid annotation. Its impact on the
-resulting kernel size is larger than the actual function
-implementation.
-
-> +void
-> +jiffies_to_timespec64(const unsigned long jiffies, struct timespec64 *value)
-> +{
-> +	/*
-> +	 * Convert jiffies to nanoseconds and separate with
-> +	 * one divide.
-> +	 */
-> +	u32 rem;
-> +	value->tv_sec = div_u64_rem((u64)jiffies * TICK_NSEC,
-> +				   NSEC_PER_SEC, &rem);
-> +	value->tv_nsec = rem;
-> +}
-> +EXPORT_SYMBOL(jiffies_to_timespec64);
-
-Sigh.
-
-Thanks,
-
-	tglx
+-Scott
