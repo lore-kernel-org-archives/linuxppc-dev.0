@@ -1,27 +1,25 @@
 Return-Path: <j.anaszewski@samsung.com>
-Received: from mailout2.w1.samsung.com (mailout2.w1.samsung.com
- [210.118.77.12])
+Received: from mailout4.w1.samsung.com (mailout4.w1.samsung.com
+ [210.118.77.14])
  (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4C0EC1A0BF1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Apr 2015 01:21:05 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id F14051A0C5A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Apr 2015 01:21:18 +1000 (AEST)
 Received: from eucpsbgm1.samsung.com (unknown [203.254.199.244])
- by mailout2.w1.samsung.com
+ by mailout4.w1.samsung.com
  (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May 5 2014))
- with ESMTP id <0NN4008242UJ1P60@mailout2.w1.samsung.com> for
- linuxppc-dev@lists.ozlabs.org; Mon, 20 Apr 2015 16:25:31 +0100 (BST)
-Message-id: <5535195B.5010101@samsung.com>
-Date: Mon, 20 Apr 2015 17:20:59 +0200
+ with ESMTP id <0NN40057J2US5P60@mailout4.w1.samsung.com> for
+ linuxppc-dev@lists.ozlabs.org; Mon, 20 Apr 2015 16:25:40 +0100 (BST)
+Message-id: <55351969.2020604@samsung.com>
+Date: Mon, 20 Apr 2015 17:21:13 +0200
 From: Jacek Anaszewski <j.anaszewski@samsung.com>
 MIME-version: 1.0
 To: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2 2/2] leds/powernv: Add driver for PowerNV platform
-References: <20150320105921.14866.83209.stgit@localhost.localdomain>
- <20150320110328.14866.98225.stgit@localhost.localdomain>
- <552D303A.5080506@samsung.com> <552E049D.2030604@linux.vnet.ibm.com>
- <552E2480.9060102@samsung.com> <552E3A56.8030300@linux.vnet.ibm.com>
- <5534E6D9.6060804@samsung.com> <5534F240.3020907@linux.vnet.ibm.com>
-In-reply-to: <5534F240.3020907@linux.vnet.ibm.com>
+Subject: Re: [PATCH v3 1/3] powerpc/powernv: Add OPAL interfaces for accessing
+ and modifying system LED states
+References: <20150420075558.12371.6697.stgit@localhost.localdomain>
+ <20150420075927.12371.59080.stgit@localhost.localdomain>
+In-reply-to: <20150420075927.12371.59080.stgit@localhost.localdomain>
 Content-type: text/plain; charset=UTF-8; format=flowed
 Cc: stewart@linux.vnet.ibm.com, cooloney@gmail.com, rpurdie@rpsys.net,
  linuxppc-dev@lists.ozlabs.org, linux-leds@vger.kernel.org,
@@ -35,156 +33,110 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/20/2015 02:34 PM, Vasant Hegde wrote:
-> On 04/20/2015 05:15 PM, Jacek Anaszewski wrote:
->> Hi Vasant,
->>
->> I'd like to clarify some details regarding your explanation.
->>
->> On 04/15/2015 12:15 PM, Vasant Hegde wrote:
->> [...]
->>>>>
->>>>> In Power Systems LEDs are overloaded (meaning same LED is used for identify and
->>>>> fault depending on their state  ---  blinking = identify and solid = fault).
->>>>> Hence here append LED type info.
->>>>
->>>> The label could be composed of segments and an ordinal number as
->>>> labels have to be unique, e.g. attn_ident_0, attn_ident_1.
->>>> The segments would have to be parsed by the driver to discover
->>>> all the LED's available modes.
->>>>
->>>> nitpicking: identify is a verb and is not a proper name for the LED.
->>>> Could you describe the purpose of this mode, so that we could come
->>>> up with a better name?
->>>
->>> Each component (Field Replacement Unit) will have service indicator (LEDS) which
->>> can have below states :
->>>     - OFF     : no action
->>>     - Identify: blinking state (user can use this state to identify particular
->>> component).
->>>          In Power Systems world we call it as "identify" indicator.. Hence I
->>> retained same name here.
->>>          How about just "ident" ?
->>>     - fault : solid state (when component goes bad, LED goes to solid state)
->>>        Note that our FW is capable of isolating some of the issues and it can turn
->>> on LEDs without OS
->>>         interference.
->>>
->>> We have one more System level LED (System Attention Indicator).. This LED has
->>> two states:
->>>     - OFF : Everything is fine
->>>     - ON : Some component has issues and needs attention.
->>
->> We have three modes:
->> - identify        - blinking
->> - fault            - solid
->> - attention indicator    - solid
->>
->> How does LED operation differ for fault and attention modes?
->> Does a LED have different intensity?
->
-> Jacek,
->
-> System Attention LED is special LED and its single LED available/system. where
-> as identify and fault is applicable to all field replaceable units in the system..
->
-> So Typical server will have
->     1   System Attention LED
->      N  Identify/fault LED (N = Field Replaceable Unit).
->
-> Apart from above two, we do have two more LEDs/Enclosure (external visible LEDs)
->    - Enclosure Identify
->    - Enclosure fault
->        These LEDs reflects state of all Field Replaceable Units (FRU) inside this
-> enclosure
->         If any of FRU state is ON, this will become ON
->         Also we can independently enable this LED!!
->
->      But from kernel side implementation point of view, I just treat this as
-> another LED.. as our platform code (OPAL firmware) takes care of roll up etc.
->
->
-> Now our LED can operate in two mode (Depending on our service model, typically
-> one/two socket servers are Light Path mode, whereas high end servers are Guiding
-> Light Mode).
->
->   1.  Guiding Light
->       Only Identify indicator is support.. Fault is not supported
->       System attention indicator is used to point there is some problem in system
-> and need attention
->    2. Light Path mode
->      Both identify and fault indicator is supported ..
->      Fault is ON whenever some component is faulty
->      System attention indicator is used to point that FW/OS is not able to
-> isolate the problem and needs user to look into serviceable event (like syslog/
-> our agents like ESA which analyzes and reports events)
->
->
-> Handling LED states :
->    - Though physically single LED is overloaded for identify and fault, logically
-> (FW/OS level) we treat them as separate LED.
->    - We can enable both fault and identify simultaneously.
->    - Hardware decides physical LED state (rule : identify has priority over fault).
->       ex: Say location code 'X',
->             Identify = ON, fault = ON ,   state of 'X' = identify (blinking)
->             Identify = OFF, fault = ON,   state of 'X'  = fault  (solid)
->             Identify = OFF, fault = ON,   state of 'X'  = identify (blinking)
-> 	   Identify = OFF, fault = OFF , state of 'X'  = OFF
->
-> Since we have various above combinations, I thought its best to have separate
-> class dev for each individual LEDs. That way we keep everything simple and let
-> firmware handle all complexities.
->
-> Hope this clarifies.
->
-> I just posted v3 where I addressed your comments.
->     https://lists.ozlabs.org/pipermail/linuxppc-dev/2015-April/127702.html
->
-> Please let me know if you have any comments/suggestions.
+Hi Vasant, Anshuman,
 
- From what I can see from the driver code the LEDs are set with:
+Thanks for the update.
 
-opal_leds_set_ind(token, loc_code, led_mask, led_value, &max_led_type);
+On 04/20/2015 09:59 AM, Vasant Hegde wrote:
+> From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+>
+> This patch registers the following two new OPAL interfaces calls
+> for the platform LED subsystem. With the help of these new OPAL calls,
+> the kernel will be able to get or set the state of various individual
+> LEDs on the system at any given location code which is passed through
+> the LED specific device tree nodes.
+>
+> 	(1) OPAL_LEDS_GET_INDICATOR     opal_leds_get_ind
+> 	(2) OPAL_LEDS_SET_INDICATOR     opal_leds_set_ind
+>
+> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+> Signed-off-by: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
+> Acked-by: Stewart Smith <stewart@linux.vnet.ibm.com>
+> Tested-by: Stewart Smith <stewart@linux.vnet.ibm.com>
+> ---
+>   arch/powerpc/include/asm/opal-api.h            |   29 +++++++++++++++++++++++-
+>   arch/powerpc/include/asm/opal.h                |    5 ++++
+>   arch/powerpc/platforms/powernv/opal-wrappers.S |    2 ++
+>   3 files changed, 35 insertions(+), 1 deletion(-)
+>
+> diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
+> index 0321a90..64508eb 100644
+> --- a/arch/powerpc/include/asm/opal-api.h
+> +++ b/arch/powerpc/include/asm/opal-api.h
+> @@ -153,7 +153,9 @@
+>   #define OPAL_FLASH_READ				110
+>   #define OPAL_FLASH_WRITE			111
+>   #define OPAL_FLASH_ERASE			112
+> -#define OPAL_LAST				112
+> +#define OPAL_LEDS_GET_INDICATOR			114
+> +#define OPAL_LEDS_SET_INDICATOR			115
+> +#define OPAL_LAST				115
+>
+>   /* Device tree flags */
+>
+> @@ -730,6 +732,31 @@ struct opal_i2c_request {
+>   	__be64 buffer_ra;		/* Buffer real address */
+>   };
+>
+> +/* LED Mode */
+> +#define LED_MODE_LIGHT_PATH	"lightpath"
+> +#define LED_MODE_GUIDING_LIGHT	"guidinglight"
+> +
+> +/* LED type */
+> +#define LED_TYPE_IDENTIFY	"identify"
+> +#define LED_TYPE_FAULT		"fault"
+> +#define LED_TYPE_ATTENTION	"attention"
+> +
+> +/* LED location */
+> +#define LED_LOC_ENCLOSURE	"enclosure"
+> +#define LED_LOC_DESCENDENT	"descendent"
 
-and their state can be read with:
+These macros should also have POWERNV_LED prefix.
 
-opal_leds_get_ind(loc_code, &led_mask, &led_value, &max_led_type)
+> +enum OpalSlotLedType {
+> +	OPAL_SLOT_LED_TYPE_ID = 0,	/* IDENTIFY LED */
+> +	OPAL_SLOT_LED_TYPE_FAULT = 1,	/* FAULT LED */
+> +	OPAL_SLOT_LED_TYPE_ATTN = 2,	/* System Attention LED */
+> +	OPAL_SLOT_LED_TYPE_MAX = 3
+> +};
+> +
+> +enum OpalSlotLedState {
+> +	OPAL_SLOT_LED_STATE_OFF = 0,	/* LED is OFF */
+> +	OPAL_SLOT_LED_STATE_ON = 1	/* LED is ON */
+> +};
+> +
+>   #endif /* __ASSEMBLY__ */
+>
+>   #endif /* __OPAL_API_H */
+> diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
+> index 042af1a..e06dc7e 100644
+> --- a/arch/powerpc/include/asm/opal.h
+> +++ b/arch/powerpc/include/asm/opal.h
+> @@ -193,6 +193,11 @@ int64_t opal_ipmi_recv(uint64_t interface, struct opal_ipmi_msg *msg,
+>   		uint64_t *msg_len);
+>   int64_t opal_i2c_request(uint64_t async_token, uint32_t bus_id,
+>   			 struct opal_i2c_request *oreq);
+> +int64_t opal_leds_get_ind(char *loc_code, u64 *led_mask,
+> +			  u64 *led_value, u64 *max_led_type);
+> +int64_t opal_leds_set_ind(uint64_t token, char *loc_code, const u64 led_mask,
+> +			  const u64 led_value, u64 *max_led_type);
+> +
+>
+>   int64_t opal_flash_read(uint64_t id, uint64_t offset, uint64_t buf,
+>   		uint64_t size, uint64_t token);
+> diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
+> index 4e74037..20d4da4 100644
+> --- a/arch/powerpc/platforms/powernv/opal-wrappers.S
+> +++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
+> @@ -295,3 +295,5 @@ OPAL_CALL(opal_i2c_request,			OPAL_I2C_REQUEST);
+>   OPAL_CALL(opal_flash_read,			OPAL_FLASH_READ);
+>   OPAL_CALL(opal_flash_write,			OPAL_FLASH_WRITE);
+>   OPAL_CALL(opal_flash_erase,			OPAL_FLASH_ERASE);
+> +OPAL_CALL(opal_leds_get_ind,			OPAL_LEDS_GET_INDICATOR);
+> +OPAL_CALL(opal_leds_set_ind,			OPAL_LEDS_SET_INDICATOR);
+>
+>
 
- From the kernel point of view these are very simple operations.
-
-All the logic you described should be handled by user space.
-If you need to be able to specify the LED mode you want to set/read,
-then additional 'mode' sysfs attribute should be added by the driver.
-There would have to be also additional sysfs attribute 'available_modes"
-provided. The ABI documentation should inform how the mode identifiers
-map to the modes. I already explained how to add it, when we were
-discussing about retaining led state on remove.
-
-
-I'd see following use cases.
-
-(let's assume that modes are defined as follows:
-0: ident, 1: attn, 2: fault)
-
-#cat available_modes
-#0 1 2
-#echo 0 > mode  //set ident mode
-#echo 1 > brightness //set ident state
-#echo 2 > mode  //set fault mode
-#cat brightness //read fault state
-#0
-#echo 1 > attn //set attn mode
-#echo 1 > brightness
-
-This would set the LED in blinking mode, so I am wondering if we
-shouldn't employ timer trigger for this to keep the LED API consistent.
-
-Can a single LED support other mode than 'attention'? I'd like to know
-if a LED in attention mode (blinking), can be set to some solid
-mode?
-
-Please let me know if such an approach would still not fit for your
-requirements.
 
 -- 
 Best Regards,
