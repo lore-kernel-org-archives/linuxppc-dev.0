@@ -1,17 +1,16 @@
 Return-Path: <christophe.leroy@c-s.fr>
 Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id 679301A1148
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Apr 2015 15:54:42 +1000 (AEST)
-Message-Id: <1189dbe5a19e8170873f48fd8bd450c2174db9b9.1429287689.git.christophe.leroy@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTP id C2DD01A1153
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Apr 2015 15:54:43 +1000 (AEST)
+Message-Id: <04fd0663392681a88fac90c851b0d767484786f5.1429287689.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1429287689.git.christophe.leroy@c-s.fr>
 References: <cover.1429287689.git.christophe.leroy@c-s.fr>
-Subject: [PATCH RESEND v5 2/5] powerpc/8xx: Handle CR out of exception
- PROLOG/EPILOG
+Subject: [PATCH RESEND v5 3/5] powerpc/8xx: dont save CR in SCRATCH registers
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  scottwood@freescale.com
-Date: Mon, 20 Apr 2015 07:54:40 +0200 (CEST)
+Date: Mon, 20 Apr 2015 07:54:42 +0200 (CEST)
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -22,81 +21,96 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In order to be able to reduce scope during which CR is saved, we take
-CR saving/restoring out of exception PROLOG and EPILOG
+CR only needs to be preserved when checking if we are handling a kernel address.
+So we can preserve CR in a register:
+- In ITLBMiss, check is done only when CONFIG_MODULES is defined. Otherwise we
+don't need to do anything at all with CR.
+- We use r10, then we reload SRR0/MD_EPN into r10 when CR is restored
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/kernel/head_8xx.S | 10 +++++++---
- 1 file changed, 7 insertions(+), 3 deletions(-)
+ arch/powerpc/kernel/head_8xx.S | 29 +++++++++++++++--------------
+ 1 file changed, 15 insertions(+), 14 deletions(-)
 
 diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index 1279018..5a69c5e 100644
+index 5a69c5e..150d03f 100644
 --- a/arch/powerpc/kernel/head_8xx.S
 +++ b/arch/powerpc/kernel/head_8xx.S
-@@ -116,13 +116,13 @@ turn_on_mmu:
-  */
- #define EXCEPTION_PROLOG	\
- 	EXCEPTION_PROLOG_0;	\
-+	mfcr	r10;		\
- 	EXCEPTION_PROLOG_1;	\
- 	EXCEPTION_PROLOG_2
- 
- #define EXCEPTION_PROLOG_0	\
- 	mtspr	SPRN_SPRG_SCRATCH0,r10;	\
--	mtspr	SPRN_SPRG_SCRATCH1,r11;	\
+@@ -312,10 +312,6 @@ InstructionTLBMiss:
+ 	mtspr	SPRN_DAR, r3
+ #endif
+ 	EXCEPTION_PROLOG_0
 -	mfcr	r10
-+	mtspr	SPRN_SPRG_SCRATCH1,r11
+-	mtspr	SPRN_SPRG_SCRATCH2, r10
+-	mfspr	r10, SPRN_SRR0	/* Get effective address of fault */
+-	INVALIDATE_ADJACENT_PAGES_CPU15(r11, r10)
  
- #define EXCEPTION_PROLOG_1	\
- 	mfspr	r11,SPRN_SRR1;		/* check whether user or kernel */ \
-@@ -162,7 +162,6 @@ turn_on_mmu:
-  * Exception exit code.
-  */
- #define EXCEPTION_EPILOG_0	\
--	mtcr	r10;		\
- 	mfspr	r10,SPRN_SPRG_SCRATCH0;	\
- 	mfspr	r11,SPRN_SPRG_SCRATCH1
- 
-@@ -313,6 +312,7 @@ InstructionTLBMiss:
- 	mtspr	SPRN_DAR, r3
- #endif
- 	EXCEPTION_PROLOG_0
+ 	/* If we are faulting a kernel address, we have to use the
+ 	 * kernel page tables.
+@@ -323,13 +319,20 @@ InstructionTLBMiss:
+ #ifdef CONFIG_MODULES
+ 	/* Only modules will cause ITLB Misses as we always
+ 	 * pin the first 8MB of kernel memory */
+-	andis.	r11, r10, 0x8000	/* Address >= 0x80000000 */
+-#endif
++	mfspr	r11, SPRN_SRR0	/* Get effective address of fault */
++	INVALIDATE_ADJACENT_PAGES_CPU15(r10, r11)
 +	mfcr	r10
- 	mtspr	SPRN_SPRG_SCRATCH2, r10
- 	mfspr	r10, SPRN_SRR0	/* Get effective address of fault */
- 	INVALIDATE_ADJACENT_PAGES_CPU15(r11, r10)
-@@ -363,6 +363,7 @@ InstructionTLBMiss:
++	andis.	r11, r11, 0x8000	/* Address >= 0x80000000 */
+ 	mfspr	r11, SPRN_M_TW	/* Get level 1 table */
+-#ifdef CONFIG_MODULES
+ 	beq	3f
+ 	lis	r11, (swapper_pg_dir-PAGE_OFFSET)@ha
+ 3:
++	mtcr	r10
++	mfspr	r10, SPRN_SRR0	/* Get effective address of fault */
++#else
++	mfspr	r10, SPRN_SRR0	/* Get effective address of fault */
++	INVALIDATE_ADJACENT_PAGES_CPU15(r11, r10)
++	mfspr	r11, SPRN_M_TW	/* Get level 1 table base address */
+ #endif
+ 	/* Insert level 1 index */
+ 	rlwimi	r11, r10, 32 - ((PAGE_SHIFT - 2) << 1), (PAGE_SHIFT - 2) << 1, 29
+@@ -362,8 +365,6 @@ InstructionTLBMiss:
+ 	mfspr	r3, SPRN_DAR
  	mtspr	SPRN_DAR, r11	/* Tag DAR */
  #endif
- 	mfspr	r10, SPRN_SPRG_SCRATCH2
-+	mtcr	r10
+-	mfspr	r10, SPRN_SPRG_SCRATCH2
+-	mtcr	r10
  	EXCEPTION_EPILOG_0
  	rfi
  
-@@ -372,6 +373,7 @@ DataStoreTLBMiss:
- 	mtspr	SPRN_DAR, r3
+@@ -374,17 +375,19 @@ DataStoreTLBMiss:
  #endif
  	EXCEPTION_PROLOG_0
-+	mfcr	r10
- 	mtspr	SPRN_SPRG_SCRATCH2, r10
- 	mfspr	r10, SPRN_MD_EPN
+ 	mfcr	r10
+-	mtspr	SPRN_SPRG_SCRATCH2, r10
+-	mfspr	r10, SPRN_MD_EPN
  
-@@ -437,6 +439,7 @@ DataStoreTLBMiss:
+ 	/* If we are faulting a kernel address, we have to use the
+ 	 * kernel page tables.
+ 	 */
+-	andis.	r11, r10, 0x8000
++	mfspr	r11, SPRN_MD_EPN
++	andis.	r11, r11, 0x8000
+ 	mfspr	r11, SPRN_M_TW	/* Get level 1 table */
+ 	beq	3f
+ 	lis	r11, (swapper_pg_dir-PAGE_OFFSET)@ha
+ 3:
++	mtcr	r10
++	mfspr	r10, SPRN_MD_EPN
++
+ 	/* Insert level 1 index */
+ 	rlwimi	r11, r10, 32 - ((PAGE_SHIFT - 2) << 1), (PAGE_SHIFT - 2) << 1, 29
+ 	lwz	r11, (swapper_pg_dir-PAGE_OFFSET)@l(r11)	/* Get the level 1 entry */
+@@ -438,8 +441,6 @@ DataStoreTLBMiss:
+ 	mfspr	r3, SPRN_DAR
  #endif
  	mtspr	SPRN_DAR, r11	/* Tag DAR */
- 	mfspr	r10, SPRN_SPRG_SCRATCH2
-+	mtcr	r10
+-	mfspr	r10, SPRN_SPRG_SCRATCH2
+-	mtcr	r10
  	EXCEPTION_EPILOG_0
  	rfi
  
-@@ -462,6 +465,7 @@ InstructionTLBError:
- 	. = 0x1400
- DataTLBError:
- 	EXCEPTION_PROLOG_0
-+	mfcr	r10
- 
- 	mfspr	r11, SPRN_DAR
- 	cmpwi	cr0, r11, RPN_PATTERN
 -- 
 2.1.0
