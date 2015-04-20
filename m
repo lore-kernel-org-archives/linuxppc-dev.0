@@ -1,14 +1,16 @@
 Return-Path: <christophe.leroy@c-s.fr>
 Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id DD50E1A1146
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Apr 2015 15:54:38 +1000 (AEST)
-Message-Id: <cover.1429287689.git.christophe.leroy@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTP id 3C4711A1146
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 20 Apr 2015 15:54:40 +1000 (AEST)
+Message-Id: <261ddd7713486fb325a945f77b7e9a5a6061879f.1429287689.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH RESEND v5 0/5] powerpc8xx: Further optimisation of TLB handling
+In-Reply-To: <cover.1429287689.git.christophe.leroy@c-s.fr>
+References: <cover.1429287689.git.christophe.leroy@c-s.fr>
+Subject: [PATCH RESEND v5 1/5] powerpc/8xx: macro for handling CPU15 errata
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  scottwood@freescale.com
-Date: Mon, 20 Apr 2015 07:54:36 +0200 (CEST)
+Date: Mon, 20 Apr 2015 07:54:38 +0200 (CEST)
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -19,24 +21,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patchset provides a further optimisation of TLB handling in the 8xx.
-Changes are:
-- Not saving registers like CR when not needed
-- Adding support to any TASK_SIZE
+Having a macro will help keep clear code.
 
-Only the last patch of the set is changed compared to v4
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ arch/powerpc/kernel/head_8xx.S | 18 ++++++++++++------
+ 1 file changed, 12 insertions(+), 6 deletions(-)
 
-Resending with proper From: this time.
-
-Christophe Leroy (5):
-  powerpc/8xx: macro for handling CPU15 errata
-  powerpc/8xx: Handle CR out of exception PROLOG/EPILOG
-  powerpc/8xx: dont save CR in SCRATCH registers
-  powerpc/8xx: Use SPRG2 instead of DAR for saving r3
-  powerpc/8xx: Add support for TASK_SIZE greater than 0x80000000
-
- arch/powerpc/kernel/head_8xx.S | 79 +++++++++++++++++++++++++++---------------
- 1 file changed, 51 insertions(+), 28 deletions(-)
-
+diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
+index 9b53fe1..1279018 100644
+--- a/arch/powerpc/kernel/head_8xx.S
++++ b/arch/powerpc/kernel/head_8xx.S
+@@ -297,6 +297,17 @@ SystemCall:
+  * We have to use the MD_xxx registers for the tablewalk because the
+  * equivalent MI_xxx registers only perform the attribute functions.
+  */
++
++#ifdef CONFIG_8xx_CPU15
++#define INVALIDATE_ADJACENT_PAGES_CPU15(tmp, addr)	\
++	addi	tmp, addr, PAGE_SIZE;	\
++	tlbie	tmp;			\
++	addi	tmp, addr, -PAGE_SIZE;	\
++	tlbie	tmp
++#else
++#define INVALIDATE_ADJACENT_PAGES_CPU15(tmp, addr)
++#endif
++
+ InstructionTLBMiss:
+ #ifdef CONFIG_8xx_CPU6
+ 	mtspr	SPRN_DAR, r3
+@@ -304,12 +315,7 @@ InstructionTLBMiss:
+ 	EXCEPTION_PROLOG_0
+ 	mtspr	SPRN_SPRG_SCRATCH2, r10
+ 	mfspr	r10, SPRN_SRR0	/* Get effective address of fault */
+-#ifdef CONFIG_8xx_CPU15
+-	addi	r11, r10, PAGE_SIZE
+-	tlbie	r11
+-	addi	r11, r10, -PAGE_SIZE
+-	tlbie	r11
+-#endif
++	INVALIDATE_ADJACENT_PAGES_CPU15(r11, r10)
+ 
+ 	/* If we are faulting a kernel address, we have to use the
+ 	 * kernel page tables.
 -- 
 2.1.0
