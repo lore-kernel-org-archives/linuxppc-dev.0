@@ -1,17 +1,26 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <dgibson@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DE46C1A0025
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Apr 2015 19:42:00 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 2/2] powerpc: Disable building the 32-bit VDSO on little endian
-Date: Tue, 21 Apr 2015 19:41:52 +1000
-Message-Id: <1429609312-32638-2-git-send-email-mpe@ellerman.id.au>
-In-Reply-To: <1429609312-32638-1-git-send-email-mpe@ellerman.id.au>
-References: <1429609312-32638-1-git-send-email-mpe@ellerman.id.au>
-Cc: sam.mj@au1.ibm.com, Anton Blanchard <anton@samba.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0EFA01A0DEC
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Apr 2015 19:43:17 +1000 (AEST)
+Date: Tue, 21 Apr 2015 19:43:07 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Subject: Re: [PATCH kernel v8 14/31] vfio: powerpc/spapr:
+ powerpc/powernv/ioda2: Rework IOMMU ownership control
+Message-ID: <20150421094307.GG31815@voom.redhat.com>
+References: <1428647473-11738-1-git-send-email-aik@ozlabs.ru>
+ <1428647473-11738-15-git-send-email-aik@ozlabs.ru>
+ <20150416060703.GE3632@voom.redhat.com>
+ <5530DBD9.9090004@ozlabs.ru> <20150420024446.GD10218@voom>
+ <5534A2E4.8090109@ozlabs.ru>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="NY6JkbSqL3W9mApi"
+In-Reply-To: <5534A2E4.8090109@ozlabs.ru>
+Cc: Alex Williamson <alex.williamson@redhat.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,351 +30,289 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The only little endian configuration we support is ppc64le. As such if
-we're building little endian we don't need a 32-bit VDSO, because there
-is no 32-bit userspace.
 
-This patch is a fairly ugly mess of #ifdefs, but is the minimal logic
-required to disable the 32-bit VDSO. We can hopefully clean up the
-result in future with some further refactoring.
+--NY6JkbSqL3W9mApi
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/kernel/Makefile           |  3 ++-
- arch/powerpc/kernel/signal_32.c        | 11 ++++++++--
- arch/powerpc/kernel/vdso.c             | 38 +++++++++++++++++++++++++++++++++-
- arch/powerpc/perf/callchain.c          |  5 +++++
- arch/powerpc/platforms/Kconfig.cputype | 10 +++++++++
- 5 files changed, 63 insertions(+), 4 deletions(-)
+On Mon, Apr 20, 2015 at 04:55:32PM +1000, Alexey Kardashevskiy wrote:
+> On 04/20/2015 12:44 PM, David Gibson wrote:
+> >On Fri, Apr 17, 2015 at 08:09:29PM +1000, Alexey Kardashevskiy wrote:
+> >>On 04/16/2015 04:07 PM, David Gibson wrote:
+> >>>On Fri, Apr 10, 2015 at 04:30:56PM +1000, Alexey Kardashevskiy wrote:
+> >>>>At the moment the iommu_table struct has a set_bypass() which enables/
+> >>>>disables DMA bypass on IODA2 PHB. This is exposed to POWERPC IOMMU co=
+de
+> >>>>which calls this callback when external IOMMU users such as VFIO are
+> >>>>about to get over a PHB.
+> >>>>
+> >>>>The set_bypass() callback is not really an iommu_table function but
+> >>>>IOMMU/PE function. This introduces a iommu_table_group_ops struct and
+> >>>>adds a set_ownership() callback to it which is called when an external
+> >>>>user takes control over the IOMMU.
+> >>>
+> >>>Do you really need separate ops structures at both the single table
+> >>>and table group level?  The different tables in a group will all
+> >>>belong to the same basic iommu won't they?
+> >>
+> >>
+> >>IOMMU tables exist alone in VIO. Also, the platform code uses just a ta=
+ble
+> >>(or it is in bypass mode) and does not care about table groups. It look=
+ed
+> >>more clean for myself to keep them separated. Should I still merge
+> >>those?
+> >
+> >Ok, that sounds like a reasonable argument for keeping them separate,
+> >at least for now.
+> >
+> >>>>This renames set_bypass() to set_ownership() as it is not necessarily
+> >>>>just enabling bypassing, it can be something else/more so let's give =
+it
+> >>>>more generic name. The bool parameter is inverted.
+> >>>>
+> >>>>The callback is implemented for IODA2 only. Other platforms (P5IOC2,
+> >>>>IODA1) will use the old iommu_take_ownership/iommu_release_ownership =
+API.
+> >>>>
+> >>>>Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> >>>>---
+> >>>>  arch/powerpc/include/asm/iommu.h          | 14 +++++++++++++-
+> >>>>  arch/powerpc/platforms/powernv/pci-ioda.c | 30 ++++++++++++++++++++=
+++--------
+> >>>>  drivers/vfio/vfio_iommu_spapr_tce.c       | 25 ++++++++++++++++++++=
++----
+> >>>>  3 files changed, 56 insertions(+), 13 deletions(-)
+> >>>>
+> >>>>diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/=
+asm/iommu.h
+> >>>>index b9e50d3..d1f8c6c 100644
+> >>>>--- a/arch/powerpc/include/asm/iommu.h
+> >>>>+++ b/arch/powerpc/include/asm/iommu.h
+> >>>>@@ -92,7 +92,6 @@ struct iommu_table {
+> >>>>  	unsigned long  it_page_shift;/* table iommu page size */
+> >>>>  	struct iommu_table_group *it_group;
+> >>>>  	struct iommu_table_ops *it_ops;
+> >>>>-	void (*set_bypass)(struct iommu_table *tbl, bool enable);
+> >>>>  };
+> >>>>
+> >>>>  /* Pure 2^n version of get_order */
+> >>>>@@ -127,11 +126,24 @@ extern struct iommu_table *iommu_init_table(str=
+uct iommu_table * tbl,
+> >>>>
+> >>>>  #define IOMMU_TABLE_GROUP_MAX_TABLES	1
+> >>>>
+> >>>>+struct iommu_table_group;
+> >>>>+
+> >>>>+struct iommu_table_group_ops {
+> >>>>+	/*
+> >>>>+	 * Switches ownership from the kernel itself to an external
+> >>>>+	 * user. While onwership is enabled, the kernel cannot use IOMMU
+> >>>>+	 * for itself.
+> >>>>+	 */
+> >>>>+	void (*set_ownership)(struct iommu_table_group *table_group,
+> >>>>+			bool enable);
+> >>>
+> >>>The meaning of "enable" in a function called "set_ownership" is
+> >>>entirely obscure.
+> >>
+> >>Suggest something better please :) I have nothing better...
+> >
+> >Well, given it's "set_ownershuip" you could have "owner" - that would
+> >want to be an enum with OWNER_KERNEL and OWNER_VFIO or something
+> >rather than a bool.
+>=20
+>=20
+> It is iommu_take_ownership() in upstream and it is assumed that the owner=
+ is
+> anything but the platform code (for now and probably for ever - VFIO). I =
+am
+> not changing this now, just using same naming approach when adding a
+> callback with a similar name.
 
-diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-index c1ebbdaac28f..87c7d1473488 100644
---- a/arch/powerpc/kernel/Makefile
-+++ b/arch/powerpc/kernel/Makefile
-@@ -33,11 +33,12 @@ obj-y				:= cputable.o ptrace.o syscalls.o \
- 				   signal.o sysfs.o cacheinfo.o time.o \
- 				   prom.o traps.o setup-common.o \
- 				   udbg.o misc.o io.o dma.o \
--				   misc_$(CONFIG_WORD_SIZE).o vdso32/ \
-+				   misc_$(CONFIG_WORD_SIZE).o \
- 				   of_platform.o prom_parse.o
- obj-$(CONFIG_PPC64)		+= setup_64.o sys_ppc32.o \
- 				   signal_64.o ptrace32.o \
- 				   paca.o nvram_64.o firmware.o
-+obj-$(CONFIG_VDSO32)		+= vdso32/
- obj-$(CONFIG_HAVE_HW_BREAKPOINT)	+= hw_breakpoint.o
- obj-$(CONFIG_PPC_BOOK3S_64)	+= cpu_setup_ppc970.o cpu_setup_pa6t.o
- obj-$(CONFIG_PPC_BOOK3S_64)	+= cpu_setup_power.o
-diff --git a/arch/powerpc/kernel/signal_32.c b/arch/powerpc/kernel/signal_32.c
-index d3a831ac0f92..561df3c153cc 100644
---- a/arch/powerpc/kernel/signal_32.c
-+++ b/arch/powerpc/kernel/signal_32.c
-@@ -1011,10 +1011,14 @@ int handle_rt_signal32(struct ksignal *ksig, sigset_t *oldset,
- 	/* Save user registers on the stack */
- 	frame = &rt_sf->uc.uc_mcontext;
- 	addr = frame;
-+
-+#ifdef CONFIG_VDSO32
- 	if (vdso32_rt_sigtramp && current->mm->context.vdso_base) {
- 		sigret = 0;
- 		tramp = current->mm->context.vdso_base + vdso32_rt_sigtramp;
--	} else {
-+	} else
-+#endif
-+	{
- 		sigret = __NR_rt_sigreturn;
- 		tramp = (unsigned long) frame->tramp;
- 	}
-@@ -1436,10 +1440,13 @@ int handle_signal32(struct ksignal *ksig, sigset_t *oldset, struct pt_regs *regs
- 	    || __put_user(ksig->sig, &sc->signal))
- 		goto badframe;
- 
-+#ifdef CONFIG_VDSO32
- 	if (vdso32_sigtramp && current->mm->context.vdso_base) {
- 		sigret = 0;
- 		tramp = current->mm->context.vdso_base + vdso32_sigtramp;
--	} else {
-+	} else
-+#endif
-+	{
- 		sigret = __NR_sigreturn;
- 		tramp = (unsigned long) frame->mctx.tramp;
- 	}
-diff --git a/arch/powerpc/kernel/vdso.c b/arch/powerpc/kernel/vdso.c
-index 305eb0d9b768..3cdf4e87917d 100644
---- a/arch/powerpc/kernel/vdso.c
-+++ b/arch/powerpc/kernel/vdso.c
-@@ -49,12 +49,14 @@
- /* The alignment of the vDSO */
- #define VDSO_ALIGNMENT	(1 << 16)
- 
-+#ifdef CONFIG_VDSO32
- extern char vdso32_start, vdso32_end;
- static void *vdso32_kbase = &vdso32_start;
- static unsigned int vdso32_pages;
- static struct page **vdso32_pagelist;
- unsigned long vdso32_sigtramp;
- unsigned long vdso32_rt_sigtramp;
-+#endif
- 
- #ifdef CONFIG_PPC64
- extern char vdso64_start, vdso64_end;
-@@ -159,6 +161,7 @@ static void dump_vdso_pages(struct vm_area_struct * vma)
- {
- 	int i;
- 
-+#ifdef CONFIG_VDSO32
- 	if (!vma || is_32bit_task()) {
- 		printk("vDSO32 @ %016lx:\n", (unsigned long)vdso32_kbase);
- 		for (i=0; i<vdso32_pages; i++) {
-@@ -170,6 +173,8 @@ static void dump_vdso_pages(struct vm_area_struct * vma)
- 			dump_one_vdso_page(pg, upg);
- 		}
- 	}
-+#endif
-+
- 	if (!vma || !is_32bit_task()) {
- 		printk("vDSO64 @ %016lx:\n", (unsigned long)vdso64_kbase);
- 		for (i=0; i<vdso64_pages; i++) {
-@@ -200,11 +205,14 @@ int arch_setup_additional_pages(struct linux_binprm *bprm, int uses_interp)
- 		return 0;
- 
- #ifdef CONFIG_PPC64
-+#ifdef CONFIG_VDSO32
- 	if (is_32bit_task()) {
- 		vdso_pagelist = vdso32_pagelist;
- 		vdso_pages = vdso32_pages;
- 		vdso_base = VDSO32_MBASE;
--	} else {
-+	} else
-+#endif
-+	{
- 		vdso_pagelist = vdso64_pagelist;
- 		vdso_pages = vdso64_pages;
- 		/*
-@@ -292,6 +300,7 @@ const char *arch_vma_name(struct vm_area_struct *vma)
- 
- 
- 
-+#ifdef CONFIG_VDSO32
- static void * __init find_section32(Elf32_Ehdr *ehdr, const char *secname,
- 				  unsigned long *size)
- {
-@@ -314,7 +323,9 @@ static void * __init find_section32(Elf32_Ehdr *ehdr, const char *secname,
- 	*size = 0;
- 	return NULL;
- }
-+#endif
- 
-+#ifdef CONFIG_VDSO32
- static Elf32_Sym * __init find_symbol32(struct lib32_elfinfo *lib,
- 					const char *symname)
- {
-@@ -334,7 +345,9 @@ static Elf32_Sym * __init find_symbol32(struct lib32_elfinfo *lib,
- 	}
- 	return NULL;
- }
-+#endif
- 
-+#ifdef CONFIG_VDSO32
- /* Note that we assume the section is .text and the symbol is relative to
-  * the library base
-  */
-@@ -379,6 +392,7 @@ static int __init vdso_do_func_patch32(struct lib32_elfinfo *v32,
- 
- 	return 0;
- }
-+#endif
- 
- 
- #ifdef CONFIG_PPC64
-@@ -489,6 +503,7 @@ static __init int vdso_do_find_sections(struct lib32_elfinfo *v32,
- 	 * Locate symbol tables & text section
- 	 */
- 
-+#ifdef CONFIG_VDSO32
- 	v32->dynsym = find_section32(v32->hdr, ".dynsym", &v32->dynsymsize);
- 	v32->dynstr = find_section32(v32->hdr, ".dynstr", NULL);
- 	if (v32->dynsym == NULL || v32->dynstr == NULL) {
-@@ -501,6 +516,7 @@ static __init int vdso_do_find_sections(struct lib32_elfinfo *v32,
- 		return -1;
- 	}
- 	v32->text = sect - vdso32_kbase;
-+#endif
- 
- #ifdef CONFIG_PPC64
- 	v64->dynsym = find_section64(v64->hdr, ".dynsym", &v64->dynsymsize);
-@@ -530,14 +546,18 @@ static __init void vdso_setup_trampolines(struct lib32_elfinfo *v32,
- #ifdef CONFIG_PPC64
- 	vdso64_rt_sigtramp = find_function64(v64, "__kernel_sigtramp_rt64");
- #endif
-+#ifdef CONFIG_VDSO32
- 	vdso32_sigtramp	   = find_function32(v32, "__kernel_sigtramp32");
- 	vdso32_rt_sigtramp = find_function32(v32, "__kernel_sigtramp_rt32");
-+#endif
- }
- 
- static __init int vdso_fixup_datapage(struct lib32_elfinfo *v32,
- 				       struct lib64_elfinfo *v64)
- {
-+#ifdef CONFIG_VDSO32
- 	Elf32_Sym *sym32;
-+#endif
- #ifdef CONFIG_PPC64
- 	Elf64_Sym *sym64;
- 
-@@ -552,6 +572,7 @@ static __init int vdso_fixup_datapage(struct lib32_elfinfo *v32,
- 		(sym64->st_value - VDSO64_LBASE);
- #endif /* CONFIG_PPC64 */
- 
-+#ifdef CONFIG_VDSO32
- 	sym32 = find_symbol32(v32, "__kernel_datapage_offset");
- 	if (sym32 == NULL) {
- 		printk(KERN_ERR "vDSO32: Can't find symbol "
-@@ -561,6 +582,7 @@ static __init int vdso_fixup_datapage(struct lib32_elfinfo *v32,
- 	*((int *)(vdso32_kbase + (sym32->st_value - VDSO32_LBASE))) =
- 		(vdso32_pages << PAGE_SHIFT) -
- 		(sym32->st_value - VDSO32_LBASE);
-+#endif
- 
- 	return 0;
- }
-@@ -569,8 +591,10 @@ static __init int vdso_fixup_datapage(struct lib32_elfinfo *v32,
- static __init int vdso_fixup_features(struct lib32_elfinfo *v32,
- 				      struct lib64_elfinfo *v64)
- {
-+#ifdef CONFIG_VDSO32
- 	void *start32;
- 	unsigned long size32;
-+#endif
- 
- #ifdef CONFIG_PPC64
- 	void *start64;
-@@ -597,6 +621,7 @@ static __init int vdso_fixup_features(struct lib32_elfinfo *v32,
- 				 start64, start64 + size64);
- #endif /* CONFIG_PPC64 */
- 
-+#ifdef CONFIG_VDSO32
- 	start32 = find_section32(v32->hdr, "__ftr_fixup", &size32);
- 	if (start32)
- 		do_feature_fixups(cur_cpu_spec->cpu_features,
-@@ -618,6 +643,7 @@ static __init int vdso_fixup_features(struct lib32_elfinfo *v32,
- 	if (start32)
- 		do_lwsync_fixups(cur_cpu_spec->cpu_features,
- 				 start32, start32 + size32);
-+#endif
- 
- 	return 0;
- }
-@@ -643,8 +669,10 @@ static __init int vdso_fixup_alt_funcs(struct lib32_elfinfo *v32,
- 		 * It would be easy to do, but doesn't seem to be necessary,
- 		 * patching the OPD symbol is enough.
- 		 */
-+#ifdef CONFIG_VDSO32
- 		vdso_do_func_patch32(v32, v64, patch->gen_name,
- 				     patch->fix_name);
-+#endif
- #ifdef CONFIG_PPC64
- 		vdso_do_func_patch64(v32, v64, patch->gen_name,
- 				     patch->fix_name);
-@@ -660,7 +688,9 @@ static __init int vdso_setup(void)
- 	struct lib32_elfinfo	v32;
- 	struct lib64_elfinfo	v64;
- 
-+#ifdef CONFIG_VDSO32
- 	v32.hdr = vdso32_kbase;
-+#endif
- #ifdef CONFIG_PPC64
- 	v64.hdr = vdso64_kbase;
- #endif
-@@ -779,11 +809,13 @@ static int __init vdso_init(void)
- #endif /* CONFIG_PPC64 */
- 
- 
-+#ifdef CONFIG_VDSO32
- 	/*
- 	 * Calculate the size of the 32 bits vDSO
- 	 */
- 	vdso32_pages = (&vdso32_end - &vdso32_start) >> PAGE_SHIFT;
- 	DBG("vdso32_kbase: %p, 0x%x pages\n", vdso32_kbase, vdso32_pages);
-+#endif
- 
- 
- 	/*
-@@ -797,13 +829,16 @@ static int __init vdso_init(void)
- 	 */
- 	if (vdso_setup()) {
- 		printk(KERN_ERR "vDSO setup failure, not enabled !\n");
-+#ifdef CONFIG_VDSO32
- 		vdso32_pages = 0;
-+#endif
- #ifdef CONFIG_PPC64
- 		vdso64_pages = 0;
- #endif
- 		return 0;
- 	}
- 
-+#ifdef CONFIG_VDSO32
- 	/* Make sure pages are in the correct state */
- 	vdso32_pagelist = kzalloc(sizeof(struct page *) * (vdso32_pages + 2),
- 				  GFP_KERNEL);
-@@ -816,6 +851,7 @@ static int __init vdso_init(void)
- 	}
- 	vdso32_pagelist[i++] = virt_to_page(vdso_data);
- 	vdso32_pagelist[i] = NULL;
-+#endif
- 
- #ifdef CONFIG_PPC64
- 	vdso64_pagelist = kzalloc(sizeof(struct page *) * (vdso64_pages + 2),
-diff --git a/arch/powerpc/perf/callchain.c b/arch/powerpc/perf/callchain.c
-index ead55351b254..4ebb6640b23f 100644
---- a/arch/powerpc/perf/callchain.c
-+++ b/arch/powerpc/perf/callchain.c
-@@ -364,9 +364,11 @@ static int is_sigreturn_32_address(unsigned int nip, unsigned int fp)
- {
- 	if (nip == fp + offsetof(struct signal_frame_32, mctx.mc_pad))
- 		return 1;
-+#ifdef CONFIG_VDSO32
- 	if (vdso32_sigtramp && current->mm->context.vdso_base &&
- 	    nip == current->mm->context.vdso_base + vdso32_sigtramp)
- 		return 1;
-+#endif
- 	return 0;
- }
- 
-@@ -375,9 +377,12 @@ static int is_rt_sigreturn_32_address(unsigned int nip, unsigned int fp)
- 	if (nip == fp + offsetof(struct rt_signal_frame_32,
- 				 uc.uc_mcontext.mc_pad))
- 		return 1;
-+
-+#ifdef CONFIG_VDSO32
- 	if (vdso32_rt_sigtramp && current->mm->context.vdso_base &&
- 	    nip == current->mm->context.vdso_base + vdso32_rt_sigtramp)
- 		return 1;
-+#endif
- 	return 0;
- }
- 
-diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-index 12fc443b9d54..1324f589f43a 100644
---- a/arch/powerpc/platforms/Kconfig.cputype
-+++ b/arch/powerpc/platforms/Kconfig.cputype
-@@ -405,6 +405,16 @@ config PPC_DOORBELL
- 
- endmenu
- 
-+config VDSO32
-+	def_bool y
-+	depends on PPC32 || CPU_BIG_ENDIAN
-+	help
-+	  This symbol controls whether we build the 32-bit VDSO. We obviously
-+	  want to do that if we're building a 32-bit kernel. If we're building
-+	  a 64-bit kernel then we only want a 32-bit VDSO if we're building for
-+	  big endian. That is because the only little endian configuration we
-+	  support is ppc64le which is 64-bit only.
-+
- choice
- 	prompt "Endianness selection"
- 	default CPU_BIG_ENDIAN
--- 
-2.1.0
+So "enabled" is actually that non kernel ownership is enabled.  That
+is totally non-obvious.
+
+> >Or you could leave it a bool but call it "allow_bypass".
+>=20
+> Commented below.
+>=20
+> >>>>+};
+> >>>>+
+> >>>>  struct iommu_table_group {
+> >>>>  #ifdef CONFIG_IOMMU_API
+> >>>>  	struct iommu_group *group;
+> >>>>  #endif
+> >>>>  	struct iommu_table tables[IOMMU_TABLE_GROUP_MAX_TABLES];
+> >>>>+	struct iommu_table_group_ops *ops;
+> >>>>  };
+> >>>>
+> >>>>  #ifdef CONFIG_IOMMU_API
+> >>>>diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc=
+/platforms/powernv/pci-ioda.c
+> >>>>index a964c50..9687731 100644
+> >>>>--- a/arch/powerpc/platforms/powernv/pci-ioda.c
+> >>>>+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+> >>>>@@ -1255,10 +1255,8 @@ static void pnv_pci_ioda_setup_dma_pe(struct p=
+nv_phb *phb,
+> >>>>  		__free_pages(tce_mem, get_order(TCE32_TABLE_SIZE * segs));
+> >>>>  }
+> >>>>
+> >>>>-static void pnv_pci_ioda2_set_bypass(struct iommu_table *tbl, bool e=
+nable)
+> >>>>+static void pnv_pci_ioda2_set_bypass(struct pnv_ioda_pe *pe, bool en=
+able)
+> >>>>  {
+> >>>>-	struct pnv_ioda_pe *pe =3D container_of(tbl->it_group, struct pnv_i=
+oda_pe,
+> >>>>-					      table_group);
+> >>>>  	uint16_t window_id =3D (pe->pe_number << 1 ) + 1;
+> >>>>  	int64_t rc;
+> >>>>
+> >>>>@@ -1286,7 +1284,8 @@ static void pnv_pci_ioda2_set_bypass(struct iom=
+mu_table *tbl, bool enable)
+> >>>>  		 * host side.
+> >>>>  		 */
+> >>>>  		if (pe->pdev)
+> >>>>-			set_iommu_table_base(&pe->pdev->dev, tbl);
+> >>>>+			set_iommu_table_base(&pe->pdev->dev,
+> >>>>+					&pe->table_group.tables[0]);
+> >>>>  		else
+> >>>>  			pnv_ioda_setup_bus_dma(pe, pe->pbus, false);
+> >>>>  	}
+> >>>>@@ -1302,13 +1301,27 @@ static void pnv_pci_ioda2_setup_bypass_pe(str=
+uct pnv_phb *phb,
+> >>>>  	/* TVE #1 is selected by PCI address bit 59 */
+> >>>>  	pe->tce_bypass_base =3D 1ull << 59;
+> >>>>
+> >>>>-	/* Install set_bypass callback for VFIO */
+> >>>>-	pe->table_group.tables[0].set_bypass =3D pnv_pci_ioda2_set_bypass;
+> >>>>-
+> >>>>  	/* Enable bypass by default */
+> >>>>-	pnv_pci_ioda2_set_bypass(&pe->table_group.tables[0], true);
+> >>>>+	pnv_pci_ioda2_set_bypass(pe, true);
+> >>>>  }
+> >>>>
+> >>>>+static void pnv_ioda2_set_ownership(struct iommu_table_group *table_=
+group,
+> >>>>+				     bool enable)
+> >>>>+{
+> >>>>+	struct pnv_ioda_pe *pe =3D container_of(table_group, struct pnv_iod=
+a_pe,
+> >>>>+						table_group);
+> >>>>+	if (enable)
+> >>>>+		iommu_take_ownership(table_group);
+> >>>>+	else
+> >>>>+		iommu_release_ownership(table_group);
+> >>>>+
+> >>>>+	pnv_pci_ioda2_set_bypass(pe, !enable);
+> >>>>+}
+> >>>>+
+> >>>>+static struct iommu_table_group_ops pnv_pci_ioda2_ops =3D {
+> >>>>+	.set_ownership =3D pnv_ioda2_set_ownership,
+> >>>>+};
+> >>>>+
+> >>>>  static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
+> >>>>  				       struct pnv_ioda_pe *pe)
+> >>>>  {
+> >>>>@@ -1376,6 +1389,7 @@ static void pnv_pci_ioda2_setup_dma_pe(struct p=
+nv_phb *phb,
+> >>>>  	}
+> >>>>  	tbl->it_ops =3D &pnv_iommu_ops;
+> >>>>  	iommu_init_table(tbl, phb->hose->node);
+> >>>>+	pe->table_group.ops =3D &pnv_pci_ioda2_ops;
+> >>>>  	iommu_register_group(&pe->table_group, phb->hose->global_number,
+> >>>>  			pe->pe_number);
+> >>>>
+> >>>>diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_=
+iommu_spapr_tce.c
+> >>>>index 9f38351..d5d8c50 100644
+> >>>>--- a/drivers/vfio/vfio_iommu_spapr_tce.c
+> >>>>+++ b/drivers/vfio/vfio_iommu_spapr_tce.c
+> >>>>@@ -535,9 +535,22 @@ static int tce_iommu_attach_group(void *iommu_da=
+ta,
+> >>>>  		goto unlock_exit;
+> >>>>  	}
+> >>>>
+> >>>>-	ret =3D iommu_take_ownership(table_group);
+> >>>>-	if (!ret)
+> >>>>-		container->grp =3D iommu_group;
+> >>>>+	if (!table_group->ops || !table_group->ops->set_ownership) {
+> >>>>+		ret =3D iommu_take_ownership(table_group);
+> >>>>+	} else {
+> >>>>+		/*
+> >>>>+		 * Disable iommu bypass, otherwise the user can DMA to all of
+> >>>>+		 * our physical memory via the bypass window instead of just
+> >>>>+		 * the pages that has been explicitly mapped into the iommu
+> >>>>+		 */
+> >>>>+		table_group->ops->set_ownership(table_group, true);
+> >>>
+> >>>And here to disable bypass you call it with enable=3Dtrue, so it doesn=
+'t
+> >>>even have the same meaning as it used to.
+> >>
+> >>
+> >>I do not disable bypass per se (even if it what set_ownership(true) doe=
+s) as
+> >>it is IODA business and VFIO has no idea about it. I do take control ov=
+er
+> >>the group. I am not following you here - what used to have the same
+> >>meaning?
+> >
+> >Well, in set_bypass, the enable parameter was whether bypass was
+> >enabled.  Here you're setting enable to true, when you want to
+> >*disable* bypass (in the existing case).  If the "enable" parameter
+> >isn't about enabling bypass, it's meaning is even more confusing than
+> >I thought.
+>=20
+>=20
+> Its meaning is "take ownership over the group". In this patch
+> set_ownership(true) means set_bypass(false).
+
+Ok.  So "take_ownership" isn't quite as clear as I'd like, but it's
+not too bad because it's implied that it's the caller that's taking
+the ownership.  *set* ownership makes no sense without saying who the
+new owner is.  "enable" has no clear meaning in that context.
+
+Calling it "kernel_owned" or "non_kernel_owned" would be ok if a bit
+clunky.
+
+> But later (in 25/31) set_ownership(true) becomes unset(windows0) +
+> free(table0) + set_bypass(false) =3D clear DMA setup for the group (i.e.
+> invalidate both TVTs) so it is not just about bypass (which is TVT#1 but =
+not
+> TVT#0) anymore.
+
+Right, I have no problem with a combined function for the operation
+here.  It's purely a naming thing "set_ownership" and "enable" are
+just not concepts that fit together sensibly.
+
+--=20
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
+
+--NY6JkbSqL3W9mApi
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJVNhurAAoJEGw4ysog2bOS32AP/i/JbBnkFLUFOIduUHYNXeYK
+Xcn2lcrwEjnOEVxmeMpGBIoWNzG9yU8pOXWJU8DFBP3zeBNzR9K5Y2qowQRVXhp1
+WGCPhON4HG7laKO94401izNhmC7StBHupvOwZ/jUCxGmNT0kQNoiEPexSCB1QdL5
+Ti3//FPRYiYrALiOeiSipFx71U+VNaia+ujUK+8ceM/tu2+nv4htZwnBGbMidvuG
+GCiXAm5fGYFL/Zq6zfzlvvlL151WrmQdTyJcbmVtjfswy6L+ssnEKbZT6THDR72S
+kjaKY8x5tjK0cN+BDmcqoHAkAOxdn6d3bhikbzsJNNzCyhMZJtbNbwkibLgK+FJl
+RRrBpaIBHDJeW5IweWY4fIKOB1iXqPOcsF3ojoFwnhOZCgIEPMCTavMU6O9kg/LP
+2iCbAy2v5UGCWKqxIhcpoMenGv77bxgI/JCEhFtkNaPs962vxOGWGJGL1HfvEfgc
+Z4PhE0MTSyE1FBI54EAn6ju8yL7aCpqunkq5B4HnJjQ6X0GMbPlwFFk8Du9DS6HK
+k+3TIxUTw1KUZoS4skjWnbq9TVM1AO76V7nhymc8oDlBR414+v4j88uzMHc/YFHL
+JHO/txqRAfcaQFTGw4hvyNdaYsI4u74SHzkB2UBRPIUDLH4pNZhhySg9oP+n5Deu
+ied5jmH0cbrx1ZT3xts+
+=i6Ln
+-----END PGP SIGNATURE-----
+
+--NY6JkbSqL3W9mApi--
