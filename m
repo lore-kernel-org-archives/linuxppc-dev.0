@@ -1,23 +1,42 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <stewart@linux.vnet.ibm.com>
+Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 928331A0245
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Apr 2015 08:23:39 +1000 (AEST)
-Date: Wed, 22 Apr 2015 08:23:22 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH 2/2] powerpc: Disable building the 32-bit VDSO on little
- endian
-Message-ID: <20150422082322.7779e6b7@canb.auug.org.au>
-In-Reply-To: <1429609312-32638-2-git-send-email-mpe@ellerman.id.au>
-References: <1429609312-32638-1-git-send-email-mpe@ellerman.id.au>
- <1429609312-32638-2-git-send-email-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5D2AD1A0245
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Apr 2015 09:03:45 +1000 (AEST)
+Received: from /spool/local
+ by e7.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <stewart@linux.vnet.ibm.com>;
+ Tue, 21 Apr 2015 19:03:41 -0400
+Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com
+ [9.57.198.28])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 8CD8738C8041
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Apr 2015 19:03:39 -0400 (EDT)
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+ by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t3LN3dkH58392582
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Apr 2015 23:03:39 GMT
+Received: from d01av04.pok.ibm.com (localhost [127.0.0.1])
+ by d01av04.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t3LN3cNm027265
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Apr 2015 19:03:39 -0400
+From: Stewart Smith <stewart@linux.vnet.ibm.com>
+To: mpe@ellerman.id.au
+Subject: Re: [PATCH v2 2/2] leds/powernv: Add driver for PowerNV platform
+In-Reply-To: <552F437E.4020409@linux.vnet.ibm.com>
+References: <20150320105921.14866.83209.stgit@localhost.localdomain>
+ <20150320110328.14866.98225.stgit@localhost.localdomain>
+ <552D303A.5080506@samsung.com> <m3zj69ql8x.fsf@oc8180480414.ibm.com>
+ <552F437E.4020409@linux.vnet.ibm.com>
+Date: Wed, 22 Apr 2015 09:03:36 +1000
+Message-ID: <m3sibtozhz.fsf@oc8180480414.ibm.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- boundary="Sig_/8yKqhz236jwW6+J7+lsg8wF"; protocol="application/pgp-signature"
-Cc: linuxppc-dev@ozlabs.org, sam.mj@au1.ibm.com,
- Anton Blanchard <anton@samba.org>
+Content-Type: text/plain; charset=us-ascii
+Cc: cooloney@gmail.com, Vasant Hegde <hegdevasant@linux.vnet.ibm.com>,
+ rpurdie@rpsys.net, linuxppc-dev@lists.ozlabs.org,
+ Jacek Anaszewski <j.anaszewski@samsung.com>, linux-leds@vger.kernel.org,
+ khandual@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,61 +46,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---Sig_/8yKqhz236jwW6+J7+lsg8wF
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
-
-Hi Michael,
-
-On Tue, 21 Apr 2015 19:41:52 +1000 Michael Ellerman <mpe@ellerman.id.au> wr=
-ote:
+Vasant Hegde <hegdevasant@linux.vnet.ibm.com> writes:
+> On 04/16/2015 12:20 AM, Stewart Smith wrote:
+>> Jacek Anaszewski <j.anaszewski@samsung.com> writes:
+>>>> +static struct platform_driver powernv_led_driver = {
+>>>> +	.probe	= powernv_led_probe,
+>>>> +	.remove = powernv_led_remove,
+>>>> +	.driver = {
+>>>> +		.name = "powernv-led-driver",
+>>>> +		.owner = THIS_MODULE,
+>>>> +		.of_match_table = powernv_led_match,
+>>>
+>>> Is somewhere DT documentation available for these leds?
+>> 
+>> https://github.com/open-power/skiboot/blob/master/doc/device-tree/ibm%2Copal/led.txt
+>> 
+>> We've been documenting things in firmware source, and I'm open to if we
+>> should mirror this somewhere (somewhere in linux Documentation/ ?).
 >
-> The only little endian configuration we support is ppc64le. As such if
-> we're building little endian we don't need a 32-bit VDSO, because there
-> is no 32-bit userspace.
->=20
-> This patch is a fairly ugly mess of #ifdefs, but is the minimal logic
-> required to disable the 32-bit VDSO. We can hopefully clean up the
-> result in future with some further refactoring.
->=20
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-> ---
->  arch/powerpc/kernel/Makefile           |  3 ++-
->  arch/powerpc/kernel/signal_32.c        | 11 ++++++++--
->  arch/powerpc/kernel/vdso.c             | 38 ++++++++++++++++++++++++++++=
-+++++-
->  arch/powerpc/perf/callchain.c          |  5 +++++
->  arch/powerpc/platforms/Kconfig.cputype | 10 +++++++++
->  5 files changed, 63 insertions(+), 4 deletions(-)
+> Stewart,
+>
+> I'm adding Documentation/devicetree/bindings/leds/leds-powernv.txt ...which is
+> pretty much similar to the device tree documentation we have in OPAL side.
 
-I think you could avoid the patches to signal_32.c and callchain.c by
-defining vdso32{,_rt}_sigtramp to be 0 in
-arch/powerpc/include/asm/vdso.h. There may be other similar fixes.
+Michael,
 
---=20
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
---Sig_/8yKqhz236jwW6+J7+lsg8wF
-Content-Type: application/pgp-signature
-Content-Description: OpenPGP digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQIcBAEBCAAGBQJVNs3pAAoJEMDTa8Ir7ZwV1wMP/jeq4Moxd6/VSndtbqtt3Z8j
-oxgpMMkGK7f8cyPYiXPBQ/w9F1doIDwMV7iswBMuflrVNh58SvbkUFa8Cs3/Xd1Y
-smrBdkvtL00Vwgv7Rn1d/WiOkWDzfZjK63CfAaLHgqFPiWrGePHzqoQYiW51Ukgi
-W89f7n+HUhJIB6Xe8mmL3LGDRuYBh9x/LSE4tCfyPT9LC8wDHkoL4GUzLSTYDpXh
-kZ0ypQmlrBBm+b5sdvj1Gqv+6zoGRwUABLE9a50Q43IB9gC+xmKcr2yPuKjnSMFq
-xPcLa5kTPqmk6wfd+yJnVZW51chapVnaCEu/OdXYAFdMpovgAOP1c2Lf5oBeHRhp
-4LDpm6NhJIcG472jRnj8NhMyVJuaH+rirxsrHUKJtJPraFN52CAY2yBKkVeulXu2
-rZ2ZHZpzFN5VLj/DSS3fQxKslQNWbI98iMeonKKafffdDDKHSOXL1LkamnwOLcbA
-C8nzvD/EgrBokM7uZmXey74elQ+dNEskdKCtgM2uAB3EljLF5jQncwdpaGT3lDAr
-CKTgJGnAiHIaftEiXEzspI7a4E1EbHyfRuswpGvzf2+mxMNsWF5ZmAGUvZsWJHVR
-56+zsYoj1jfDgjb5knKOxtvGVUBiKfTMzZ+3xBMeiUjbQjQrDmqyB+diNZIj10nt
-onv50BB4buVmWEhpWlKt
-=kzwU
------END PGP SIGNATURE-----
-
---Sig_/8yKqhz236jwW6+J7+lsg8wF--
+I know we've kind of discussed this in the past, but perhaps we should
+come up with a conistent way of doing this for OPAL related docs.
