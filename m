@@ -1,26 +1,36 @@
-Return-Path: <dgibson@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <baolin.wang@linaro.org>
+Received: from mail-wi0-f179.google.com (mail-wi0-f179.google.com
+ [209.85.212.179])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id ED4061A0025
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Apr 2015 17:28:55 +1000 (AEST)
-Date: Tue, 21 Apr 2015 17:12:33 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Subject: Re: [PATCH kernel v8 15/31] powerpc/iommu: Fix IOMMU ownership
- control functions
-Message-ID: <20150421071233.GF31815@voom.redhat.com>
-References: <1428647473-11738-1-git-send-email-aik@ozlabs.ru>
- <1428647473-11738-16-git-send-email-aik@ozlabs.ru>
- <20150416061049.GF3632@voom.redhat.com>
- <5530DD6D.8000001@ozlabs.ru> <20150420024638.GE10218@voom>
- <55349DF0.6090301@ozlabs.ru>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 58F351A0025
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Apr 2015 18:19:19 +1000 (AEST)
+Received: by widdi4 with SMTP id di4so129268166wid.0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Apr 2015 01:19:15 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="twz1s1Hj1O0rHoT0"
-In-Reply-To: <55349DF0.6090301@ozlabs.ru>
-Cc: Alex Williamson <alex.williamson@redhat.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>
+In-Reply-To: <alpine.DEB.2.11.1504202112130.13914@nanos>
+References: <1429509459-17068-1-git-send-email-baolin.wang@linaro.org>
+ <1429509459-17068-2-git-send-email-baolin.wang@linaro.org>
+ <alpine.DEB.2.11.1504202112130.13914@nanos>
+Date: Tue, 21 Apr 2015 16:19:15 +0800
+Message-ID: <CAMz4kuJ958NnuDV9NLZk2yGqH0wC8UaRsUTPsFutcxq-4ZpmHw@mail.gmail.com>
+Subject: Re: [PATCH 01/11] linux/time64.h:Introduce the 'struct itimerspec64'
+ for 64bit
+From: Baolin Wang <baolin.wang@linaro.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Content-Type: multipart/alternative; boundary=f46d04343dd0c8ed17051437b366
+Cc: Xunlei Pang <pang.xunlei@linaro.org>, peterz@infradead.org,
+ heiko.carstens@de.ibm.com, paulus@samba.org, cl@linux.com,
+ Heena Sirwani <heenasirwani@gmail.com>, linux-arch@vger.kernel.org,
+ linux-s390@vger.kernel.org, y2038 Mailman List <y2038@lists.linaro.org>,
+ rafael.j.wysocki@intel.com, Andrew Hunter <ahh@google.com>,
+ =?UTF-8?B?RnLDqWTDqXJpYyBXZWlzYmVja2Vy?= <fweisbec@gmail.com>,
+ Paul Turner <pjt@google.com>, riel@redhat.com, Arnd Bergmann <arnd@arndb.de>,
+ Richard Cochran <richardcochran@gmail.com>, schwidefsky@de.ibm.com,
+ John Stultz <john.stultz@linaro.org>, rth@twiddle.net,
+ gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org,
+ netdev@vger.kernel.org, tj@kernel.org, linux390@de.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,116 +40,124 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+--f46d04343dd0c8ed17051437b366
+Content-Type: text/plain; charset=UTF-8
 
---twz1s1Hj1O0rHoT0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+On 21 April 2015 at 03:14, Thomas Gleixner <tglx@linutronix.de> wrote:
+
+> On Mon, 20 Apr 2015, Baolin Wang wrote:
+> > This patch introduces the 'struct itimerspec64' for 64bit to replace
+> itimerspec,
+> > and also introduces the conversion methods: itimerspec64_to_itimerspec()
+> and
+> > itimerspec_to_itimerspec64(), that makes itimerspec to ready for 2038
+> year.
+> >
+> > Signed-off-by: Baolin Wang <baolin.wang@linaro.org>
+> > ---
+> >  include/linux/time64.h |   13 +++++++++++++
+> >  1 file changed, 13 insertions(+)
+> >
+> > diff --git a/include/linux/time64.h b/include/linux/time64.h
+> > index a383147..3647bdd 100644
+> > --- a/include/linux/time64.h
+> > +++ b/include/linux/time64.h
+> > @@ -18,6 +18,11 @@ struct timespec64 {
+> >  };
+> >  #endif
+> >
+> > +struct itimerspec64 {
+> > +     struct timespec64 it_interval;  /* timer period */
+> > +     struct timespec64 it_value;     /* timer expiration */
+> > +};
+> > +
+> >  /* Parameters used to convert the timespec values: */
+> >  #define MSEC_PER_SEC 1000L
+> >  #define USEC_PER_MSEC        1000L
+> > @@ -187,4 +192,12 @@ static __always_inline void
+> timespec64_add_ns(struct timespec64 *a, u64 ns)
+> >
+> >  #endif
+> >
+> > +#define itimerspec64_to_itimerspec(its64) \
+>
+> > +#define itimerspec_to_itimerspec64(its) \
+>
+> 1.) Make these static inlines please. These macros are not typesafe.
+>
+> 2.) Use pointers to the input value.
+>
+> Thanks.
+>
+>         tglx
+>
+
+
+Thanks for your comments, i'll fix in next patch.
+-- 
+Baolin.wang
+Best Regards
+
+--f46d04343dd0c8ed17051437b366
+Content-Type: text/html; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
 
-On Mon, Apr 20, 2015 at 04:34:24PM +1000, Alexey Kardashevskiy wrote:
-> On 04/20/2015 12:46 PM, David Gibson wrote:
-> >On Fri, Apr 17, 2015 at 08:16:13PM +1000, Alexey Kardashevskiy wrote:
-> >>On 04/16/2015 04:10 PM, David Gibson wrote:
-> >>>On Fri, Apr 10, 2015 at 04:30:57PM +1000, Alexey Kardashevskiy wrote:
-> >>>>This adds missing locks in iommu_take_ownership()/
-> >>>>iommu_release_ownership().
-> >>>>
-> >>>>This marks all pages busy in iommu_table::it_map in order to catch
-> >>>>errors if there is an attempt to use this table while ownership over =
-it
-> >>>>is taken.
-> >>>>
-> >>>>This only clears TCE content if there is no page marked busy in it_ma=
-p.
-> >>>>Clearing must be done outside of the table locks as iommu_clear_tce()
-> >>>>called from iommu_clear_tces_and_put_pages() does this.
-> >>>>
-> >>>>Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> >>>>---
-> >>>>Changes:
-> >>>>v5:
-> >>>>* do not store bit#0 value, it has to be set for zero-based table
-> >>>>anyway
-> >>>>* removed test_and_clear_bit
-> >>>>---
-> >>>>  arch/powerpc/kernel/iommu.c | 26 ++++++++++++++++++++++----
-> >>>>  1 file changed, 22 insertions(+), 4 deletions(-)
-> >>>>
-> >>>>diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
-> >>>>index 7d6089b..068fe4ff 100644
-> >>>>--- a/arch/powerpc/kernel/iommu.c
-> >>>>+++ b/arch/powerpc/kernel/iommu.c
-> >>>>@@ -1052,17 +1052,28 @@ EXPORT_SYMBOL_GPL(iommu_tce_build);
-> >>>>
-> >>>>  static int iommu_table_take_ownership(struct iommu_table *tbl)
-> >>>>  {
-> >>>>-	unsigned long sz =3D (tbl->it_size + 7) >> 3;
-> >>>>+	unsigned long flags, i, sz =3D (tbl->it_size + 7) >> 3;
-> >>>>+	int ret =3D 0;
-> >>>>+
-> >>>>+	spin_lock_irqsave(&tbl->large_pool.lock, flags);
-> >>>>+	for (i =3D 0; i < tbl->nr_pools; i++)
-> >>>>+		spin_lock(&tbl->pools[i].lock);
-> >>>>
-> >>>>  	if (tbl->it_offset =3D=3D 0)
-> >>>>  		clear_bit(0, tbl->it_map);
-> >>>>
-> >>>>  	if (!bitmap_empty(tbl->it_map, tbl->it_size)) {
-> >>>>  		pr_err("iommu_tce: it_map is not empty");
-> >>>>-		return -EBUSY;
-> >>>>+		ret =3D -EBUSY;
-> >>>>+		if (tbl->it_offset =3D=3D 0)
-> >>>>+			set_bit(0, tbl->it_map);
-> >>>
-> >>>This really needs a comment.  Why on earth are you changing the it_map
-> >>>on a failure case?
-> >>
-> >>
-> >>Does this explain?
-> >>
-> >>/*
-> >>  * The platform code reserves zero address in iommu_init_table().
-> >>  * As we cleared busy bit for page @0 before using bitmap_empty(),
-> >>  * we are restoring it now.
-> >>  */
-> >
-> >Only partly.  What's it reserved for, and why do you know it was
-> >always set on entry?
->=20
->=20
-> Because it is only handled in this file and I can see it in the code. Or I
-> did not understand the question here...
+<div dir=3D"ltr"><br><div class=3D"gmail_extra"><br><div class=3D"gmail_quo=
+te">On 21 April 2015 at 03:14, Thomas Gleixner <span dir=3D"ltr">&lt;<a hre=
+f=3D"mailto:tglx@linutronix.de" target=3D"_blank">tglx@linutronix.de</a>&gt=
+;</span> wrote:<br><blockquote class=3D"gmail_quote" style=3D"margin:0 0 0 =
+.8ex;border-left:1px #ccc solid;padding-left:1ex"><div class=3D"HOEnZb"><di=
+v class=3D"h5">On Mon, 20 Apr 2015, Baolin Wang wrote:<br>
+&gt; This patch introduces the &#39;struct itimerspec64&#39; for 64bit to r=
+eplace itimerspec,<br>
+&gt; and also introduces the conversion methods: itimerspec64_to_itimerspec=
+() and<br>
+&gt; itimerspec_to_itimerspec64(), that makes itimerspec to ready for 2038 =
+year.<br>
+&gt;<br>
+&gt; Signed-off-by: Baolin Wang &lt;<a href=3D"mailto:baolin.wang@linaro.or=
+g">baolin.wang@linaro.org</a>&gt;<br>
+&gt; ---<br>
+&gt;=C2=A0 include/linux/time64.h |=C2=A0 =C2=A013 +++++++++++++<br>
+&gt;=C2=A0 1 file changed, 13 insertions(+)<br>
+&gt;<br>
+&gt; diff --git a/include/linux/time64.h b/include/linux/time64.h<br>
+&gt; index a383147..3647bdd 100644<br>
+&gt; --- a/include/linux/time64.h<br>
+&gt; +++ b/include/linux/time64.h<br>
+&gt; @@ -18,6 +18,11 @@ struct timespec64 {<br>
+&gt;=C2=A0 };<br>
+&gt;=C2=A0 #endif<br>
+&gt;<br>
+&gt; +struct itimerspec64 {<br>
+&gt; +=C2=A0 =C2=A0 =C2=A0struct timespec64 it_interval;=C2=A0 /* timer per=
+iod */<br>
+&gt; +=C2=A0 =C2=A0 =C2=A0struct timespec64 it_value;=C2=A0 =C2=A0 =C2=A0/*=
+ timer expiration */<br>
+&gt; +};<br>
+&gt; +<br>
+&gt;=C2=A0 /* Parameters used to convert the timespec values: */<br>
+&gt;=C2=A0 #define MSEC_PER_SEC 1000L<br>
+&gt;=C2=A0 #define USEC_PER_MSEC=C2=A0 =C2=A0 =C2=A0 =C2=A0 1000L<br>
+&gt; @@ -187,4 +192,12 @@ static __always_inline void timespec64_add_ns(str=
+uct timespec64 *a, u64 ns)<br>
+&gt;<br>
+&gt;=C2=A0 #endif<br>
+&gt;<br>
+&gt; +#define itimerspec64_to_itimerspec(its64) \<br>
+<br>
+</div></div>&gt; +#define itimerspec_to_itimerspec64(its) \<br>
+<br>
+1.) Make these static inlines please. These macros are not typesafe.<br>
+<br>
+2.) Use pointers to the input value.<br>
+<br>
+Thanks.<br>
+<br>
+=C2=A0 =C2=A0 =C2=A0 =C2=A0 tglx<br>
+</blockquote></div><br><br clear=3D"all"><div>Thanks for your comments, i&#=
+39;ll fix in next patch.</div>-- <br><div class=3D"gmail_signature"><div di=
+r=3D"ltr"><div>Baolin.wang<br></div>Best Regards<br></div></div>
+</div></div>
 
-Sure, you can see it in the code, but you've been looking at this code
-for months and years.  For anyone looking at this function who's not
-familiar with the rest of the IOMMU code, a pointer to what's going on
-here would be really helpful.
-
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
-
---twz1s1Hj1O0rHoT0
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJVNfhhAAoJEGw4ysog2bOS0yYQAIJzLtMYffwoZS9Fafr8/61k
-DEJ2uNXLXoFUxF5VS95EQpx/i11LqqjqtphbNQMcOFkUdQDiOj6LhoIcvqoLpcCJ
-QZTv+x/Zft+Uja7V0/n6DEWfaJVMZpEHVLNVfBxDMUbnHuIQjGO0hD7og5HvBmA0
-JK9KMQ9xEPdMbneBbS79WPfl3m8rLZTO/l0S7y5gXWyoojYv72nzKPcx4W3jT88O
-TlSadMC5z/lSnnel8Js0fubqTS+Zl1B1/P4tGasWGOzcvfq3p5+3BSuw4JIVOR0S
-04hHB8BRb+Hjt85L6ProIyBYcIp7W8bUnkPi0FzeJGtn/p8zt8YOOz88tjzVxoeU
-KsF6Bn3aRihYvaRNIVMdbeqMZ0EPVaxc1du9rd0yMXVhmCTEcY5IOZO6otWV3b8s
-pUN42P6Men0zvBtyo6bch9GgkunCuSSRkYksJ6vgfg/okTSQrQvtsGX5bcm2mg3W
-li09uakOcHayMmV+VArmtxeWOzNtO3NXI9FLpqWLGRifq32pQO05Ja29vYOPKRxS
-96c8lu0d01Cl5CyiMHTbVHy4Id0YBfy7ZXBktzY/2vJ7jASpqd4RTyOtsq6+sjt3
-9SKellO7CxXQuQvkOK587FEAdaDR7Ncpp/b+Z3GY1htTkoDq6PUcAtA5Ca9N+Pvb
-qtomuJ6BHS4capTg6vxv
-=jdv/
------END PGP SIGNATURE-----
-
---twz1s1Hj1O0rHoT0--
+--f46d04343dd0c8ed17051437b366--
