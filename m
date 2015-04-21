@@ -1,25 +1,31 @@
-Return-Path: <scottwood@freescale.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <tglx@linutronix.de>
+Received: from Galois.linutronix.de (Galois.linutronix.de
+ [IPv6:2001:470:1f0b:db:abcd:42:0:1])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7C7A21A0205
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Apr 2015 06:07:14 +1000 (AEST)
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bbn0101.outbound.protection.outlook.com [157.56.111.101])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 4F0CB14007D
- for <linuxppc-dev@ozlabs.org>; Wed, 22 Apr 2015 06:07:12 +1000 (AEST)
-Message-ID: <1429646822.4352.112.camel@freescale.com>
-Subject: Re: [PATCH] powerpc/defconfig: new way of writing defconfig
-From: Scott Wood <scottwood@freescale.com>
-To: Lijun Pan <Lijun.Pan@freescale.com>
-Date: Tue, 21 Apr 2015 15:07:02 -0500
-In-Reply-To: <1429332441-18647-1-git-send-email-Lijun.Pan@freescale.com>
-References: <1429332441-18647-1-git-send-email-Lijun.Pan@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 714E21A0205
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Apr 2015 06:14:04 +1000 (AEST)
+Date: Tue, 21 Apr 2015 22:13:42 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [Y2038] [PATCH 04/11] posix timers:Introduce the 64bit methods
+ with timespec64 type for k_clock structure
+In-Reply-To: <2819798.f0KhjY3UAe@wuerfel>
+Message-ID: <alpine.DEB.2.11.1504212204130.13914@nanos>
+References: <1429509459-17068-1-git-send-email-baolin.wang@linaro.org>
+ <3231171.5TrYVVBLh4@wuerfel> <alpine.DEB.2.11.1504211701140.13914@nanos>
+ <2819798.f0KhjY3UAe@wuerfel>
 MIME-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: pang.xunlei@linaro.org, peterz@infradead.org, heiko.carstens@de.ibm.com,
+ paulus@samba.org, cl@linux.com, heenasirwani@gmail.com,
+ linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, y2038@lists.linaro.org,
+ rafael.j.wysocki@intel.com, ahh@google.com, fweisbec@gmail.com, pjt@google.com,
+ riel@redhat.com, richardcochran@gmail.com, tj@kernel.org,
+ john.stultz@linaro.org, rth@twiddle.net, Baolin Wang <baolin.wang@linaro.org>,
+ gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org,
+ netdev@vger.kernel.org, schwidefsky@de.ibm.com, linux390@de.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,20 +35,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2015-04-17 at 23:47 -0500, Lijun Pan wrote:
-> diff --git a/arch/powerpc/configs/kvm_guest.config b/arch/powerpc/configs/kvm_guest.config
-> new file mode 100644
-> index 0000000..615b0a0
-> --- /dev/null
-> +++ b/arch/powerpc/configs/kvm_guest.config
-> @@ -0,0 +1,2 @@
-> +CONFIG_KVM_GUEST=y
-> +CONFIG_PPC_QEMU_E500=y
-> diff --git a/arch/powerpc/configs/mpc85xx_defconfig b/arch/powerpc/configs/mpc85xx_basic_defconfig
-> similarity index 100%
-> rename from arch/powerpc/configs/mpc85xx_defconfig
-> rename to arch/powerpc/configs/mpc85xx_basic_defconfig
+On Tue, 21 Apr 2015, Arnd Bergmann wrote:
+> I know there are concerns about this, in particular because C11 and
+> POSIX both require tv_nsec to be 'long', unlike timeval->tv_usec,
+> which is a 'suseconds_t' and can be defined as 'long long'.
+>
+> a)
+> 
+> struct timespec {
+> 	time_t tv_sec;
+> 	long long tv_nsec; /* or typedef long long snseconds_t */
+> };
+> 
+> This is not directly compatible with C11 or POSIX.1-2008, but it
+> matches what we do inside of 64-bit kernels, so probably has the
+> highest chance of working correctly in practice
 
-If you're just renaming it then it's not basic.
+After reading Linus rant in the x32 thread again (thanks for the
+reminder), and looking at b/c/d - which rate between ugly and butt
+ugly - I think we should go for a) and screw POSIX and C11 as those
+committee dinosaurs seem to completely ignore the 2038 problem on
+32bit machines. At least I have not found any hint that these folks
+care at all. So why should we comply to something which is completely
+useless?
 
--Scott
+That also makes the question about the upper 32bits check moot, so
+it's the simplest and clearest of the possible solutions.
+
+Thanks,
+
+	tglx
