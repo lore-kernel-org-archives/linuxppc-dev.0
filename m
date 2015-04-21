@@ -1,21 +1,29 @@
-Return-Path: <luis.henriques@canonical.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <arnd@arndb.de>
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.24])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 66A9E1A0245
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Apr 2015 01:34:14 +1000 (AEST)
-From: Luis Henriques <luis.henriques@canonical.com>
-To: linux-kernel@vger.kernel.org, stable@vger.kernel.org,
- kernel-team@lists.ubuntu.com
-Subject: [PATCH 3.16.y-ckt 078/144] timers/tick/broadcast-hrtimer: Fix
- suspicious RCU usage in idle loop
-Date: Tue, 21 Apr 2015 16:31:03 +0100
-Message-Id: <1429630329-21748-79-git-send-email-luis.henriques@canonical.com>
-In-Reply-To: <1429630329-21748-1-git-send-email-luis.henriques@canonical.com>
-References: <1429630329-21748-1-git-send-email-luis.henriques@canonical.com>
-Cc: "Peter Zijlstra \(Intel\)" <peterz@infradead.org>, linuxppc-dev@ozlabs.org,
- Preeti U Murthy <preeti@linux.vnet.ibm.com>, tglx@linutronix.de,
- Ingo Molnar <mingo@kernel.org>, Luis Henriques <luis.henriques@canonical.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 23D501A0205
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Apr 2015 01:41:36 +1000 (AEST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: Thomas Gleixner <tglx@linutronix.de>
+Subject: Re: [Y2038] [PATCH 04/11] posix timers:Introduce the 64bit methods
+ with timespec64 type for k_clock structure
+Date: Tue, 21 Apr 2015 17:40:32 +0200
+Message-ID: <2819798.f0KhjY3UAe@wuerfel>
+In-Reply-To: <alpine.DEB.2.11.1504211701140.13914@nanos>
+References: <1429509459-17068-1-git-send-email-baolin.wang@linaro.org>
+ <3231171.5TrYVVBLh4@wuerfel> <alpine.DEB.2.11.1504211701140.13914@nanos>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Cc: pang.xunlei@linaro.org, peterz@infradead.org, heiko.carstens@de.ibm.com,
+ paulus@samba.org, cl@linux.com, heenasirwani@gmail.com,
+ linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, y2038@lists.linaro.org,
+ rafael.j.wysocki@intel.com, ahh@google.com, fweisbec@gmail.com, pjt@google.com,
+ riel@redhat.com, richardcochran@gmail.com, tj@kernel.org,
+ john.stultz@linaro.org, rth@twiddle.net, Baolin Wang <baolin.wang@linaro.org>,
+ gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org,
+ netdev@vger.kernel.org, schwidefsky@de.ibm.com, linux390@de.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,74 +33,121 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-3.16.7-ckt10 -stable review patch.  If anyone has any objections, please let me know.
+On Tuesday 21 April 2015 17:13:32 Thomas Gleixner wrote:
+> On Tue, 21 Apr 2015, Arnd Bergmann wrote:
+> > On Tuesday 21 April 2015 16:14:26 Thomas Gleixner wrote:
+> > > > Note the use of a separate __kernel_itimerspec64 for the user interface
+> > > > here, which I think will be needed to hide the differences between the
+> > > > normal itimerspec on 64-bit machines, and the new itimerspec on 32-bit
+> > > > platforms that will be defined differently (using 'long long').
+> > > 
+> > > Confused.
+> > > 
+> > > timespec64 / itimerspec64 should be the same independent of 64bit and
+> > > 32bit. So why do we need another variant ?
+> > 
+> > There are multiple reasons:
+> > 
+> > * On 64-bit systems, timespec64 would always be defined in the same way
+> >   as struct timespec { __kernel_time_t tv_sec; long tv_nsec; }, with
+> >   __kernel_time_t being 'long'. On 32-bit, we probably need to make both
+> >   members 'long long' for the user space side, in order to share the
+> >   syscall implementation with the kernel side, but we may also want to
+> >   keep the internal timespec64 using a 'long' for tv_nsec, as we do
+> >   today. This means that both the binary layout (padding or no padding)
+> >   and the basic types (long or long long) are different between 32-bit
+> >   and 64-bit, and between kernel and user space
+> 
+> So you want to avoid a compat syscall for 32bit applications on a
+> 64bit kernel, right?
 
-------------------
+That is the idea at the moment, yes. At least for the kernel-user
+interface.
 
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+> That burdens 32bit with the extra 'long long' in user space. Not sure
+> whether user space folks will be happy about it.
 
-commit a127d2bcf1fbc8c8e0b5cf0dab54f7d3ff50ce47 upstream.
+I know there are concerns about this, in particular because C11 and
+POSIX both require tv_nsec to be 'long', unlike timeval->tv_usec,
+which is a 'suseconds_t' and can be defined as 'long long'.
 
-The hrtimer mode of broadcast queues hrtimers in the idle entry
-path so as to wakeup cpus in deep idle states. The associated
-call graph is :
+There are four possible ways that 32-bit user space could define
+timespec based on the uncontroversial (I hope) 'typedef long long
+time_t;'.
 
-	cpuidle_idle_call()
-	|____ clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ENTER, ....))
-	     |_____tick_broadcast_set_event()
-		   |____clockevents_program_event()
-			|____bc_set_next()
+a)
 
-The hrtimer_{start/cancel} functions call into tracing which uses RCU.
-But it is not legal to call into RCU in cpuidle because it is one of the
-quiescent states. Hence protect this region with RCU_NONIDLE which informs
-RCU that the cpu is momentarily non-idle.
+struct timespec {
+	time_t tv_sec;
+	long long tv_nsec; /* or typedef long long snseconds_t */
+};
 
-As an aside it is helpful to point out that the clock event device that is
-programmed here is not a per-cpu clock device; it is a
-pseudo clock device, used by the broadcast framework alone.
-The per-cpu clock device programming never goes through bc_set_next().
+This is not directly compatible with C11 or POSIX.1-2008, but it
+matches what we do inside of 64-bit kernels, so probably has the
+highest chance of working correctly in practice
 
-Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
-Reviewed-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-Cc: linuxppc-dev@ozlabs.org
-Cc: mpe@ellerman.id.au
-Cc: tglx@linutronix.de
-Link: http://lkml.kernel.org/r/20150318104705.17763.56668.stgit@preeti.in.ibm.com
-Signed-off-by: Ingo Molnar <mingo@kernel.org>
-Signed-off-by: Luis Henriques <luis.henriques@canonical.com>
----
- kernel/time/tick-broadcast-hrtimer.c | 11 +++++++++--
- 1 file changed, 9 insertions(+), 2 deletions(-)
+b)
 
-diff --git a/kernel/time/tick-broadcast-hrtimer.c b/kernel/time/tick-broadcast-hrtimer.c
-index eb682d5c697c..6aac4beedbbe 100644
---- a/kernel/time/tick-broadcast-hrtimer.c
-+++ b/kernel/time/tick-broadcast-hrtimer.c
-@@ -49,6 +49,7 @@ static void bc_set_mode(enum clock_event_mode mode,
-  */
- static int bc_set_next(ktime_t expires, struct clock_event_device *bc)
- {
-+	int bc_moved;
- 	/*
- 	 * We try to cancel the timer first. If the callback is on
- 	 * flight on some other cpu then we let it handle it. If we
-@@ -60,9 +61,15 @@ static int bc_set_next(ktime_t expires, struct clock_event_device *bc)
- 	 * restart the timer because we are in the callback, but we
- 	 * can set the expiry time and let the callback return
- 	 * HRTIMER_RESTART.
-+	 *
-+	 * Since we are in the idle loop at this point and because
-+	 * hrtimer_{start/cancel} functions call into tracing,
-+	 * calls to these functions must be bound within RCU_NONIDLE.
- 	 */
--	if (hrtimer_try_to_cancel(&bctimer) >= 0) {
--		hrtimer_start(&bctimer, expires, HRTIMER_MODE_ABS_PINNED);
-+	RCU_NONIDLE(bc_moved = (hrtimer_try_to_cancel(&bctimer) >= 0) ?
-+		!hrtimer_start(&bctimer, expires, HRTIMER_MODE_ABS_PINNED) :
-+			0);
-+	if (bc_moved) {
- 		/* Bind the "device" to the cpu */
- 		bc->bound_on = smp_processor_id();
- 	} else if (bc->bound_on == smp_processor_id()) {
+struct timespec {
+	time_t tv_sec;
+	long tv_nsec;
+};
+
+This is the definition according to C11 and POSIX, and the main problem
+here is the padding, which may cause a 4-byte data leak and has the tv_nsec
+in the wrong place when used together with the timespec we have in the kernel
+on big-endian 64-bit machines.
+
+c)
+
+struct timespec {
+	time_t tv_sec;
+#if __BITS_PER_LONG == 32 && __BYTE_ORDER == __BIG_ENDIAN
+	long __pad;
+#endif
+	long tv_nsec; /* or typedef long long snseconds_t */
+#if __BITS_PER_LONG == 32 && __BYTE_ORDER == __LITTLE_ENDIAN
+	long __pad;
+#endif
+};
+
+This version could be used transparently by user space, but has
+the potential to cause problems with existing user space doing
+things like
+
+struct timespec ts = { 0, 1000 }; /* one microsecond */
+
+even though it is probably compliant.
+
+d)
+
+struct timespec {
+	time_t tv_sec;
+#if __BITS_PER_LONG == 32 && __BYTE_ORDER == __BIG_ENDIAN
+	long :32;
+#endif
+	long tv_nsec; /* or typedef long long snseconds_t */
+#if __BITS_PER_LONG == 32 && __BYTE_ORDER == __LITTLE_ENDIAN
+	long :32;
+#endif
+};
+
+This is very similar to c, but trades the problem I described
+above for a dependency on a gcc extension that is not part of
+C11 or any earlier standard.
+
+
+>From the kernel's point of view, b), c) and d) can all be
+treated the same for output data, as we only ever pass back
+normalized timespec structures that have zeroes in the upper
+bits of timespec. However, for input to the kernel, we would
+require an extra conditional on 64-bit kernels to decide whether
+we ignore the upper bits (doing tv->tv_nsec &= 0xffffffff) or 
+a structure that has the upper bits set  needs to cause EINVAL.
+We could still do that in get_timespec() if we decide to not to
+go with a).
+
+See also https://lwn.net/Articles/457089/ for an earlier discussion
+on the topic when debating the x32 ABI.
+
+	Arnd
