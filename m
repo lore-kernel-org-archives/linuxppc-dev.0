@@ -1,26 +1,34 @@
 Return-Path: <scottwood@freescale.com>
 Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bn0101.outbound.protection.outlook.com [157.56.110.101])
+ (mail-bn1bon0145.outbound.protection.outlook.com [157.56.111.145])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 222EA1A0028
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Apr 2015 10:52:02 +1000 (AEST)
-Message-ID: <1429577504.4352.67.camel@freescale.com>
-Subject: Re: [v3] dt/bindings: qoriq-clock: Add binding for FMan clock mux
+ by lists.ozlabs.org (Postfix) with ESMTPS id DB2A81A03AA
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Apr 2015 10:52:59 +1000 (AEST)
+Message-ID: <1429577566.4352.68.camel@freescale.com>
+Subject: Re: [PATCH 0/2] powerpc/kvm: Enable running guests on RT Linux
 From: Scott Wood <scottwood@freescale.com>
-To: Liberman Igal-B31950 <Igal.Liberman@freescale.com>
-Date: Mon, 20 Apr 2015 19:51:44 -0500
-In-Reply-To: <DM2PR03MB383E5F67C358CCE2E38EA71E6E00@DM2PR03MB383.namprd03.prod.outlook.com>
-References: <1429008968-24707-1-git-send-email-igal.liberman@freescale.com>
- <1429119357.22867.724.camel@freescale.com>
- <DM2PR03MB38330DBBFFD1BC45D58F447E6E40@DM2PR03MB383.namprd03.prod.outlook.com>
- <1429249281.32545.52.camel@freescale.com>
- <DM2PR03MB383E5F67C358CCE2E38EA71E6E00@DM2PR03MB383.namprd03.prod.outlook.com>
+To: Purcareata Bogdan <b43198@freescale.com>
+Date: Mon, 20 Apr 2015 19:52:46 -0500
+In-Reply-To: <5534DAA4.3050809@freescale.com>
+References: <1424251955-308-1-git-send-email-bogdan.purcareata@freescale.com>
+ <54E73A6C.9080500@suse.de> <54E740E7.5090806@redhat.com>
+ <54E74A8C.30802@linutronix.de> <1424734051.4698.17.camel@freescale.com>
+ <54EF196E.4090805@redhat.com> <54EF2025.80404@linutronix.de>
+ <1424999159.4698.78.camel@freescale.com> <55158E6D.40304@freescale.com>
+ <1428016310.22867.289.camel@freescale.com>
+ <551E4A41.1080705@freescale.com>
+ <1428096375.22867.369.camel@freescale.com>
+ <55262DD3.2050707@freescale.com>
+ <1428623611.22867.561.camel@freescale.com> <5534DAA4.3050809@freescale.com>
 Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Yuantian.Tang@freescale.com
+Cc: linux-rt-users@vger.kernel.org,
+ Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
+ Alexander Graf <agraf@suse.de>, linux-kernel@vger.kernel.org,
+ Bogdan Purcareata <bogdan.purcareata@freescale.com>,
+ mihai.caraman@freescale.com, Paolo Bonzini <pbonzini@redhat.com>,
+ Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,165 +38,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2015-04-20 at 06:40 -0500, Liberman Igal-B31950 wrote:
+On Mon, 2015-04-20 at 13:53 +0300, Purcareata Bogdan wrote:
+> On 10.04.2015 02:53, Scott Wood wrote:
+> > On Thu, 2015-04-09 at 10:44 +0300, Purcareata Bogdan wrote:
+> >> So at this point I was getting kinda frustrated so I decided to measure
+> >> the time spend in kvm_mpic_write and kvm_mpic_read. I assumed these were
+> >> the main entry points in the in-kernel MPIC and were basically executed
+> >> while holding the spinlock. The scenario was the same - 24 VCPUs guest,
+> >> with 24 virtio+vhost interfaces, only this time I ran 24 ping flood
+> >> threads to another board instead of netperf. I assumed this would impose
+> >> a heavier stress.
+> >>
+> >> The latencies look pretty ok, around 1-2 us on average, with the max
+> >> shown below:
+> >>
+> >> .kvm_mpic_read	14.560
+> >> .kvm_mpic_write	12.608
+> >>
+> >> Those are also microseconds. This was run for about 15 mins.
+> >
+> > What about other entry points such as kvm_set_msi() and
+> > kvmppc_mpic_set_epr()?
 > 
+> Thanks for the pointers! I redid the measurements, this time for the functions 
+> run with the openpic lock down:
 > 
-> Regards,
-> Igal Liberman.
+> .kvm_mpic_read_internal (.kvm_mpic_read)	1.664
+> .kvmppc_mpic_set_epr				6.880
+> .kvm_mpic_write_internal (.kvm_mpic_write)	7.840
+> .openpic_msi_write (.kvm_set_msi)		10.560
 > 
-> > -----Original Message-----
-> > From: Liberman Igal-B31950
-> > Sent: Monday, April 20, 2015 2:07 PM
-> > To: Wood Scott-B07421
-> > Cc: devicetree@vger.kernel.org; linuxppc-dev@lists.ozlabs.org
-> > Subject: RE: [v3] dt/bindings: qoriq-clock: Add binding for FMan clock mux
-> > 
-> > 
-> > 
-> > Regards,
-> > Igal Liberman.
-> > 
-> > > -----Original Message-----
-> > > From: Wood Scott-B07421
-> > > Sent: Friday, April 17, 2015 8:41 AM
-> > > To: Liberman Igal-B31950
-> > > Cc: devicetree@vger.kernel.org; linuxppc-dev@lists.ozlabs.org
-> > > Subject: Re: [v3] dt/bindings: qoriq-clock: Add binding for FMan clock
-> > > mux
-> > >
-> > > On Thu, 2015-04-16 at 01:11 -0500, Liberman Igal-B31950 wrote:
-> > > >
-> > > >
-> > > > Regards,
-> > > > Igal Liberman.
-> > > >
-> > > > > -----Original Message-----
-> > > > > From: Wood Scott-B07421
-> > > > > Sent: Wednesday, April 15, 2015 8:36 PM
-> > > > > To: Liberman Igal-B31950
-> > > > > Cc: devicetree@vger.kernel.org; linuxppc-dev@lists.ozlabs.org
-> > > > > Subject: Re: [v3] dt/bindings: qoriq-clock: Add binding for FMan
-> > > > > clock mux
-> > > > >
-> > > > > On Tue, 2015-04-14 at 13:56 +0300, Igal.Liberman wrote:
-> > > > > > From: Igal Liberman <Igal.Liberman@freescale.com>
-> > > > > >
-> > > > > > v3: Addressed feedback from Scott:
-> > > > > > 	- Removed clock specifier description.
-> > > > > >
-> > > > > > v2: Addressed feedback from Scott:
-> > > > > > 	- Moved the "fman-clk-mux" clock provider details
-> > > > > > 	  under "clocks" property.
-> > > > > >
-> > > > > > Signed-off-by: Igal Liberman <Igal.Liberman@freescale.com>
-> > > > > > ---
-> > > > > >  .../devicetree/bindings/clock/qoriq-clock.txt      |   17
-> > > +++++++++++++++--
-> > > > > >  1 file changed, 15 insertions(+), 2 deletions(-)
-> > > > > >
-> > > > > > diff --git
-> > > > > > a/Documentation/devicetree/bindings/clock/qoriq-clock.txt
-> > > > > > b/Documentation/devicetree/bindings/clock/qoriq-clock.txt
-> > > > > > index b0d7b73..2bb3b38 100644
-> > > > > > --- a/Documentation/devicetree/bindings/clock/qoriq-clock.txt
-> > > > > > +++ b/Documentation/devicetree/bindings/clock/qoriq-clock.txt
-> > > > > > @@ -65,9 +65,10 @@ Required properties:
-> > > > > >  		It takes parent's clock-frequency as its clock.
-> > > > > >  	* "fsl,qoriq-platform-pll-1.0" for the platform PLL clock (v1.0)
-> > > > > >  	* "fsl,qoriq-platform-pll-2.0" for the platform PLL clock
-> > > > > > (v2.0)
-> > > > > > +	* "fsl,fman-clk-mux" for the Frame Manager clock.
-> > > > > >  - #clock-cells: From common clock binding. The number of cells in a
-> > > > > > -	clock-specifier. Should be <0> for "fsl,qoriq-sysclk-[1,2].0"
-> > > > > > -	clocks, or <1> for "fsl,qoriq-core-pll-[1,2].0" clocks.
-> > > > > > +	clock-specifier. Should be <0> for "fsl,qoriq-sysclk-[1,2].0"
-> > and
-> > > > > > +	"fsl,fman-clk-mux" clocks or <1> for "fsl,qoriq-core-pll-
-> > [1,2].0".
-> > > > > >  	For "fsl,qoriq-core-pll-1.0" clocks, the single
-> > > > > >  	clock-specifier cell may take the following values:
-> > > > > >  	* 0 - equal to the PLL frequency @@ -145,6 +146,18 @@
-> > Example
-> > > > > > for clock block and clock provider:
-> > > > > >  			clocks = <&sysclk>;
-> > > > > >  			clock-output-names = "platform-pll",
-> > "platform-pll-
-> > > > > div2";
-> > > > > >  		};
-> > > > > > +
-> > > > > > +		fm0clk: fm0-clk-mux {
-> > > > > > +			#clock-cells = <0>;
-> > > > > > +			reg = <0x10 4>
-> > > > > > +			compatible = "fsl,fman-clk-mux";
-> > > > > > +			clocks = <&pll0 0>, <&pll0 1>, <&pll0 2>,
-> > <&pll0 3>,
-> > > > > > +				 <&platform_pll 0>, <&pll1 1>, <&pll1
-> > 2>;
-> > > > > > +			clock-names = "pll0", "pll0-div2", "pll0-div3",
-> > > > > > +				      "pll0-div4", "platform-pll", "pll1-
-> > div2",
-> > > > > > +				      "pll1-div3";
-> > > > > > +			clock-output-names = "fm0-clk";
-> > > > > > +		};
-> > > > > >  	};
-> > > > > >  };
-> > > > > >
-> > > > >
-> > > > > I don't see this register in the manuals for older DPAA chips,
-> > > > > such as
-> > > > > p4080 or p3041.  Is it present but undocumented?  Should I be
-> > > > > looking somewhere other than "Clocking Memory Map"?
-> > > > >
-> > > >
-> > > > It's available only in part of the new chips (T4, T2, B4).
-> > > > In T1024/T1040 there's only one option for FMan clock so this
-> > > > register is not
-> > > available.
-> > >
-> > > So it's part of the 2.0 chassis?  I'd stick a 2.0 in there, then.  Who
-> > > knows what we may see in the future.
-> > >
-> > 
-> > OK,
-> > We can go with "fsl,fman-clk-mux-1/2-0.".
-> > In that case, we need to update FMan nodes and the clock driver:
-> > https://patchwork.ozlabs.org/patch/443973/
-> > https://patchwork.ozlabs.org/patch/461813/
-> > I will update those patches separately.
-> > 
+> Same scenario, 15 mins, numbers are microseconds.
 > 
-> Scott,
-> There are 2 options:
-> Use "fsl,fman-clk-mux-1.0" for SoC without CLKCGnHWACSR register.
-> Use "fsl,fman-clk-mux-2.0" for SoC with CLKCGnHWACSR register.
-> Or
-> Use "fsl,fman-clk-mux-1.0" for SoC which support FMan V2 (Pxxxx)
-> Use "fsl,fman-clk-mux-2.0" for SoC which support FMan V3 (B/T)
+> There was a weird situation for .kvmppc_mpic_set_epr - its corresponding inner 
+> function is kvmppc_set_epr, which is a static inline. Removing the static inline 
+> yields a compiler crash (Segmentation fault (core dumped) - 
+> scripts/Makefile.build:441: recipe for target 'arch/powerpc/kvm/kvm.o' failed), 
+> but that's a different story, so I just let it be for now. Point is the time may 
+> include other work after the lock has been released, but before the function 
+> actually returned. I noticed this was the case for .kvm_set_msi, which could 
+> work up to 90 ms, not actually under the lock. This made me change what I'm 
+> looking at.
 
-1.0/2.0 in the clockgen node refers to chassis version.  It has nothing
-to do with FMan version.
+kvm_set_msi does pretty much nothing outside the lock -- I suspect
+you're measuring an interrupt that happened as soon as the lock was
+released.
 
-In fact, fman should not be in the compatible because, now that I found
-the documentation for this, I see that it's more generic than that.
-"fman-clk-mux" should be replaced with "qoriq-hwacsr".
+> So far it looks pretty decent. Are there any other MPIC entry points worthy of 
+> investigation?
 
-> Using the 1st option might be confusing because core pll/mux 2.0 represents B/T devices and 1.0 represent Pxxxx.
-> In this case, T1040 uses "fsl,qoriq-core-pll/mux-2.0" and "fsl,fman-clk-mux-1.0".
-> On the other hand, the second option doesn't distinguishes between T4 and T1 (for example), as T1 doesn't have reg property while T4 has.
+I don't think so.
 
-How would t1040 have a so-called "fman-clk-mux" node at all if it
-doesn't have this register?
+>  Or perhaps a different stress scenario involving a lot of VCPUs 
+> and external interrupts?
 
-I think we've made a mess of the clock bindings and this is only going
-to make it worse.  We need to stay compatible with the mess we've made,
-but I'm inclined to say that we shouldn't add more nodes to it.  
-
-Instead, have the toplevel clockgen node have a chip-based compatible in
-addition to version (e.g. compatible = "fsl,t4240-clockgen",
-"fsl,qoriq-clockgen-2.0") and have the toplevel node export whatever
-clocks are needed.  Put the logic to deal with all the different
-dividers, register values, and such in code, not the device tree.  The
-binding should be focused on how to encode the specifier of the exported
-clocks.
+You could instrument the MPIC code to find out how many loop iterations
+you maxed out on, and compare that to the theoretical maximum.
 
 -Scott
