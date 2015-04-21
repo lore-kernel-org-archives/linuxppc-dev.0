@@ -1,31 +1,41 @@
-Return-Path: <tglx@linutronix.de>
-Received: from Galois.linutronix.de (Galois.linutronix.de
- [IPv6:2001:470:1f0b:db:abcd:42:0:1])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 019091A0025
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Apr 2015 00:15:11 +1000 (AEST)
-Date: Tue, 21 Apr 2015 16:14:26 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [Y2038] [PATCH 04/11] posix timers:Introduce the 64bit methods
- with timespec64 type for k_clock structure
-In-Reply-To: <3755355.Xf0HbltZXg@wuerfel>
-Message-ID: <alpine.DEB.2.11.1504211528040.13914@nanos>
-References: <1429509459-17068-1-git-send-email-baolin.wang@linaro.org>
- <1429509459-17068-5-git-send-email-baolin.wang@linaro.org>
- <alpine.DEB.2.11.1504202131500.13914@nanos> <3755355.Xf0HbltZXg@wuerfel>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 71D3E1A0025
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Apr 2015 00:39:41 +1000 (AEST)
+Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 9315F14009B
+ for <linuxppc-dev@ozlabs.org>; Wed, 22 Apr 2015 00:39:40 +1000 (AEST)
+Received: from /spool/local
+ by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Tue, 21 Apr 2015 20:09:38 +0530
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 657C3E0044
+ for <linuxppc-dev@ozlabs.org>; Tue, 21 Apr 2015 20:12:13 +0530 (IST)
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t3LEdXvA54132882
+ for <linuxppc-dev@ozlabs.org>; Tue, 21 Apr 2015 20:09:34 +0530
+Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t3LEdXsR013442
+ for <linuxppc-dev@ozlabs.org>; Tue, 21 Apr 2015 20:09:33 +0530
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Anshuman Khandual <khandual@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] powerpc,
+ mm: Fix build failure due to CONFIG_PPC_TRANSACTIONAL_MEM
+In-Reply-To: <1429614284-16528-1-git-send-email-khandual@linux.vnet.ibm.com>
+References: <1429614284-16528-1-git-send-email-khandual@linux.vnet.ibm.com>
+Date: Tue, 21 Apr 2015 20:09:32 +0530
+Message-ID: <87mw21ilzv.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: pang.xunlei@linaro.org, peterz@infradead.org, heiko.carstens@de.ibm.com,
- paulus@samba.org, cl@linux.com, heenasirwani@gmail.com,
- linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, y2038@lists.linaro.org,
- rafael.j.wysocki@intel.com, ahh@google.com, fweisbec@gmail.com, pjt@google.com,
- riel@redhat.com, richardcochran@gmail.com, tj@kernel.org,
- john.stultz@linaro.org, rth@twiddle.net, Baolin Wang <baolin.wang@linaro.org>,
- gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org,
- netdev@vger.kernel.org, schwidefsky@de.ibm.com, linux390@de.ibm.com,
- linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=utf-8
+Cc: mikey@neuling.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,46 +45,117 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 21 Apr 2015, Arnd Bergmann wrote:
-> > COMPAT_SYSCALL_DEFINE2(timer_gettime, timer_t, timer_id,
-> >                        struct compat_itimerspec __user *, setting)
-> 
-> As a side note, I want to kill off the get_fs()/set_fs() calls in
-> the process. These always make me dizzy when I try to work out whether
-> there is a potential security hole (there is not in this case), and
-> they can be slow on some architectures.
+Anshuman Khandual <khandual@linux.vnet.ibm.com> writes:
 
-Yeah. I have to take a deep breath every time I look at those :)
- 
-> My preferred solution is one where we end up with the same syscalls
-> for both 32-bit and 64-bit, and basically use the
-> compat_sys_timer_gettime() implementation (or a simplified version)
-> for the existing , something like this:
+> The function flush_hash_page fails to compile when the transaction memory
+> config option is turned off because there is a label at end of compound
+> statement. This patch moves the code block into a function tm_abort_tlbi
+> and calls it after the label thus fixing the build problem.
+>
+> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+> ---
+> arch/powerpc/mm/hash_utils_64.c: In function =E2=80=98flush_hash_hugepage=
+=E2=80=99:
+> arch/powerpc/mm/hash_utils_64.c:1381:1: error: label at end of compound s=
+tatement
+>  tm_abort:
+>  ^
+> make[1]: *** [arch/powerpc/mm/hash_utils_64.o] Error 1
+> make: *** [arch/powerpc/mm] Error 2
+>
+>  arch/powerpc/mm/hash_utils_64.c | 35 ++++++++++++++++++++---------------
+>  1 file changed, 20 insertions(+), 15 deletions(-)
+>
+> diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils=
+_64.c
+> index 2c2022d..b30b2b5 100644
+> --- a/arch/powerpc/mm/hash_utils_64.c
+> +++ b/arch/powerpc/mm/hash_utils_64.c
+> @@ -1326,6 +1326,25 @@ void flush_hash_page(unsigned long vpn, real_pte_t=
+ pte, int psize, int ssize,
+>  }
+>
+>  #ifdef CONFIG_TRANSPARENT_HUGEPAGE
+> +static void tm_abort_tlbi(int local)
+> +{
+> +#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+> +	/* Transactions are not aborted by tlbiel, only tlbie.
+> +	 * Without, syncing a page back to a block device w/ PIO could pick up
+> +	 * transactional data (bad!) so we force an abort here.  Before the
+> +	 * sync the page will be made read-only, which will flush_hash_page.
+> +	 * BIG ISSUE here: if the kernel uses a page from userspace without
+> +	 * unmapping it first, it may see the speculated version.
+> +	 */
+> +	if (local && cpu_has_feature(CPU_FTR_TM) &&
+> +	    current->thread.regs &&
+> +	    MSR_TM_ACTIVE(current->thread.regs->msr)) {
+> +		tm_enable();
+> +		tm_abort(TM_CAUSE_TLBI);
+> +	}
+> +#endif
+> +}
+> +
+>  void flush_hash_hugepage(unsigned long vsid, unsigned long addr,
+>  			 pmd_t *pmdp, unsigned int psize, int ssize,
+>  			 unsigned long flags)
+> @@ -1379,21 +1398,7 @@ void flush_hash_hugepage(unsigned long vsid, unsig=
+ned long addr,
+>  				       MMU_PAGE_16M, ssize, local);
+>  	}
+>  tm_abort:
+> -#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+> -	/* Transactions are not aborted by tlbiel, only tlbie.
+> -	 * Without, syncing a page back to a block device w/ PIO could pick up
+> -	 * transactional data (bad!) so we force an abort here.  Before the
+> -	 * sync the page will be made read-only, which will flush_hash_page.
+> -	 * BIG ISSUE here: if the kernel uses a page from userspace without
+> -	 * unmapping it first, it may see the speculated version.
+> -	 */
+> -	if (local && cpu_has_feature(CPU_FTR_TM) &&
+> -	    current->thread.regs &&
+> -	    MSR_TM_ACTIVE(current->thread.regs->msr)) {
+> -		tm_enable();
+> -		tm_abort(TM_CAUSE_TLBI);
+> -	}
+> -#endif
+> +	tm_abort_tlbi(local);
+>  }
+>  #endif /* CONFIG_TRANSPARENT_HUGEPAGE */
+>
+> --=20
 
-No objections from my side. I was not looking into the syscall magic
-yet. I just wanted to avoid the code churn and have the guts of the
-syscalls factored out for simple reusage.
+Why not just do ?. I will send a seperate patch=20
 
-....
- 
-> Note the use of a separate __kernel_itimerspec64 for the user interface
-> here, which I think will be needed to hide the differences between the
-> normal itimerspec on 64-bit machines, and the new itimerspec on 32-bit
-> platforms that will be defined differently (using 'long long').
 
-Confused.
+commit 52b6dcc8fe34b9d05b8a0f14d45fcdc3bef6c84f
+Author: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+Date:   Tue Apr 21 19:51:10 2015 +0530
 
-timespec64 / itimerspec64 should be the same independent of 64bit and
-32bit. So why do we need another variant ?
+    powerpc/mm: Fix build error with CONFIG_PPC_TRANSACTIONAL_MEM disabled
+=20=20=20=20
+    This fix the below build error
+=20=20=20=20
+    arch/powerpc/mm/hash_utils_64.c: In function =E2=80=98flush_hash_hugepa=
+ge=E2=80=99:
+    arch/powerpc/mm/hash_utils_64.c:1381:1: error: label at end of compound=
+ statement
+     tm_abort:
+     ^
+    make[1]: *** [arch/powerpc/mm/hash_utils_64.o] Error 1
+=20=20=20=20
+    Reported-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+    Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 
-> I would also prefer not too many people to work on the syscalls, and
-> would rather have Baolin not touch any of the syscall prototypes for
-> the moment.
-
-I did not ask him to change any of the syscall prototypes. I just
-wanted him to split out the guts of the syscall into a seperate static
-function to avoid all that code churn.
-
-Thanks,
-
-	tglx
+diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_6=
+4.c
+index 2c2022d16059..ac5c4373cd8b 100644
+--- a/arch/powerpc/mm/hash_utils_64.c
++++ b/arch/powerpc/mm/hash_utils_64.c
+@@ -1394,6 +1394,7 @@ tm_abort:
+ 		tm_abort(TM_CAUSE_TLBI);
+ 	}
+ #endif
++	return;
+ }
+ #endif /* CONFIG_TRANSPARENT_HUGEPAGE */
+=20
