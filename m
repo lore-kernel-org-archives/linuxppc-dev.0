@@ -1,31 +1,21 @@
-Return-Path: <tglx@linutronix.de>
-Received: from Galois.linutronix.de (Galois.linutronix.de
- [IPv6:2001:470:1f0b:db:abcd:42:0:1])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <luis.henriques@canonical.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 691D41A0214
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Apr 2015 01:14:10 +1000 (AEST)
-Date: Tue, 21 Apr 2015 17:13:32 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [Y2038] [PATCH 04/11] posix timers:Introduce the 64bit methods
- with timespec64 type for k_clock structure
-In-Reply-To: <3231171.5TrYVVBLh4@wuerfel>
-Message-ID: <alpine.DEB.2.11.1504211701140.13914@nanos>
-References: <1429509459-17068-1-git-send-email-baolin.wang@linaro.org>
- <3755355.Xf0HbltZXg@wuerfel> <alpine.DEB.2.11.1504211528040.13914@nanos>
- <3231171.5TrYVVBLh4@wuerfel>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: pang.xunlei@linaro.org, peterz@infradead.org, heiko.carstens@de.ibm.com,
- paulus@samba.org, cl@linux.com, heenasirwani@gmail.com,
- linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, y2038@lists.linaro.org,
- rafael.j.wysocki@intel.com, ahh@google.com, fweisbec@gmail.com, pjt@google.com,
- riel@redhat.com, richardcochran@gmail.com, tj@kernel.org,
- john.stultz@linaro.org, rth@twiddle.net, Baolin Wang <baolin.wang@linaro.org>,
- gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org,
- netdev@vger.kernel.org, schwidefsky@de.ibm.com, linux390@de.ibm.com,
- linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 66A9E1A0245
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Apr 2015 01:34:14 +1000 (AEST)
+From: Luis Henriques <luis.henriques@canonical.com>
+To: linux-kernel@vger.kernel.org, stable@vger.kernel.org,
+ kernel-team@lists.ubuntu.com
+Subject: [PATCH 3.16.y-ckt 078/144] timers/tick/broadcast-hrtimer: Fix
+ suspicious RCU usage in idle loop
+Date: Tue, 21 Apr 2015 16:31:03 +0100
+Message-Id: <1429630329-21748-79-git-send-email-luis.henriques@canonical.com>
+In-Reply-To: <1429630329-21748-1-git-send-email-luis.henriques@canonical.com>
+References: <1429630329-21748-1-git-send-email-luis.henriques@canonical.com>
+Cc: "Peter Zijlstra \(Intel\)" <peterz@infradead.org>, linuxppc-dev@ozlabs.org,
+ Preeti U Murthy <preeti@linux.vnet.ibm.com>, tglx@linutronix.de,
+ Ingo Molnar <mingo@kernel.org>, Luis Henriques <luis.henriques@canonical.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,54 +25,74 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 21 Apr 2015, Arnd Bergmann wrote:
-> On Tuesday 21 April 2015 16:14:26 Thomas Gleixner wrote:
-> > > Note the use of a separate __kernel_itimerspec64 for the user interface
-> > > here, which I think will be needed to hide the differences between the
-> > > normal itimerspec on 64-bit machines, and the new itimerspec on 32-bit
-> > > platforms that will be defined differently (using 'long long').
-> > 
-> > Confused.
-> > 
-> > timespec64 / itimerspec64 should be the same independent of 64bit and
-> > 32bit. So why do we need another variant ?
-> 
-> There are multiple reasons:
-> 
-> * On 64-bit systems, timespec64 would always be defined in the same way
->   as struct timespec { __kernel_time_t tv_sec; long tv_nsec; }, with
->   __kernel_time_t being 'long'. On 32-bit, we probably need to make both
->   members 'long long' for the user space side, in order to share the
->   syscall implementation with the kernel side, but we may also want to
->   keep the internal timespec64 using a 'long' for tv_nsec, as we do
->   today. This means that both the binary layout (padding or no padding)
->   and the basic types (long or long long) are different between 32-bit
->   and 64-bit, and between kernel and user space
+3.16.7-ckt10 -stable review patch.  If anyone has any objections, please let me know.
 
-So you want to avoid a compat syscall for 32bit applications on a
-64bit kernel, right?
+------------------
 
-That burdens 32bit with the extra 'long long' in user space. Not sure
-whether user space folks will be happy about it.
+From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
 
-> * We should not put 'struct timespec64' into the user space namespace,
->   as applications might already use that identifier. This is similar
->   to the __u32/u32 or __kernel_time_t/time_t tuple of types for interface
->   and in-kernel uses. This is particularly important when embedding a
->   timespec in another data structure.
+commit a127d2bcf1fbc8c8e0b5cf0dab54f7d3ff50ce47 upstream.
 
-Fair enough.
+The hrtimer mode of broadcast queues hrtimers in the idle entry
+path so as to wakeup cpus in deep idle states. The associated
+call graph is :
 
-> * My plan is to use a temporary hack where I actually define
->   __kernel_timespec64 to look like the 32-bit version of timespec,
->   as an intermediate step when converting all 32-bit architectures over
->   to use the compat_*() syscalls in place of the existing ones, so
->   I can change over the normal syscalls to use __kernel_timespec64
->   without having to change all architectures at once, or having to
->   modify each syscall multiple times.
+	cpuidle_idle_call()
+	|____ clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ENTER, ....))
+	     |_____tick_broadcast_set_event()
+		   |____clockevents_program_event()
+			|____bc_set_next()
 
-Makes sense.
+The hrtimer_{start/cancel} functions call into tracing which uses RCU.
+But it is not legal to call into RCU in cpuidle because it is one of the
+quiescent states. Hence protect this region with RCU_NONIDLE which informs
+RCU that the cpu is momentarily non-idle.
 
-Thanks,
+As an aside it is helpful to point out that the clock event device that is
+programmed here is not a per-cpu clock device; it is a
+pseudo clock device, used by the broadcast framework alone.
+The per-cpu clock device programming never goes through bc_set_next().
 
-	tglx
+Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+Reviewed-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+Cc: linuxppc-dev@ozlabs.org
+Cc: mpe@ellerman.id.au
+Cc: tglx@linutronix.de
+Link: http://lkml.kernel.org/r/20150318104705.17763.56668.stgit@preeti.in.ibm.com
+Signed-off-by: Ingo Molnar <mingo@kernel.org>
+Signed-off-by: Luis Henriques <luis.henriques@canonical.com>
+---
+ kernel/time/tick-broadcast-hrtimer.c | 11 +++++++++--
+ 1 file changed, 9 insertions(+), 2 deletions(-)
+
+diff --git a/kernel/time/tick-broadcast-hrtimer.c b/kernel/time/tick-broadcast-hrtimer.c
+index eb682d5c697c..6aac4beedbbe 100644
+--- a/kernel/time/tick-broadcast-hrtimer.c
++++ b/kernel/time/tick-broadcast-hrtimer.c
+@@ -49,6 +49,7 @@ static void bc_set_mode(enum clock_event_mode mode,
+  */
+ static int bc_set_next(ktime_t expires, struct clock_event_device *bc)
+ {
++	int bc_moved;
+ 	/*
+ 	 * We try to cancel the timer first. If the callback is on
+ 	 * flight on some other cpu then we let it handle it. If we
+@@ -60,9 +61,15 @@ static int bc_set_next(ktime_t expires, struct clock_event_device *bc)
+ 	 * restart the timer because we are in the callback, but we
+ 	 * can set the expiry time and let the callback return
+ 	 * HRTIMER_RESTART.
++	 *
++	 * Since we are in the idle loop at this point and because
++	 * hrtimer_{start/cancel} functions call into tracing,
++	 * calls to these functions must be bound within RCU_NONIDLE.
+ 	 */
+-	if (hrtimer_try_to_cancel(&bctimer) >= 0) {
+-		hrtimer_start(&bctimer, expires, HRTIMER_MODE_ABS_PINNED);
++	RCU_NONIDLE(bc_moved = (hrtimer_try_to_cancel(&bctimer) >= 0) ?
++		!hrtimer_start(&bctimer, expires, HRTIMER_MODE_ABS_PINNED) :
++			0);
++	if (bc_moved) {
+ 		/* Bind the "device" to the cpu */
+ 		bc->bound_on = smp_processor_id();
+ 	} else if (bc->bound_on == smp_processor_id()) {
