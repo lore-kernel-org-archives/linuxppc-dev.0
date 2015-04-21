@@ -1,17 +1,26 @@
-Return-Path: <dgibson@ozlabs.org>
+Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D8F321A01E7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Apr 2015 11:07:57 +1000 (AEST)
-From: David Gibson <david@gibson.dropbear.id.au>
-To: anton@au1.ibm.com
-Subject: [PATCHv2] ibmveth: Fix off-by-one error in ibmveth_change_mtu()
-Date: Tue, 21 Apr 2015 11:07:51 +1000
-Message-Id: <1429578471-9717-1-git-send-email-david@gibson.dropbear.id.au>
-Cc: michael@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
- tlfalcon@linux.vnet.ibm.com, linux-kernel@vger.kernel.org,
- David Gibson <david@gibson.dropbear.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id A39E61A0028
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Apr 2015 11:54:11 +1000 (AEST)
+Message-ID: <1429581250.9619.6.camel@ellerman.id.au>
+Subject: Re: sparc64: Build failure due to commit f1600e549b94 (sparc: Make
+ sparc64 use scalable lib/iommu-common.c functions)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: David Miller <davem@davemloft.net>
+Date: Tue, 21 Apr 2015 11:54:10 +1000
+In-Reply-To: <20150420.125050.2036067807685492178.davem@davemloft.net>
+References: <55348BE1.4010305@roeck-us.net>
+ <20150420.122519.1661605449214047938.davem@davemloft.net>
+ <20150420164431.GA30837@roeck-us.net>
+ <20150420.125050.2036067807685492178.davem@davemloft.net>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linux-s390@vger.kernel.org, aik@au1.ibm.com, sowmini.varadhan@oracle.com,
+ anton@au1.ibm.com, heiko.carstens@de.ibm.com, linux-kernel@vger.kernel.org,
+ schwidefsky@de.ibm.com, paulus@samba.org, sparclinux@vger.kernel.org,
+ linux390@de.ibm.com, linuxppc-dev@lists.ozlabs.org, linux@roeck-us.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,51 +30,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-AFAIK the PAPR document which defines the virtual device interface used by
-the ibmveth driver doesn't specify a specific maximum MTU.  So, in the
-ibmveth driver, the maximum allowed MTU is determined by the maximum
-allocated buffer size of 64k (corresponding to one page in the common case)
-minus the per-buffer overhead IBMVETH_BUFF_OH (which has value 22 for 14
-bytes of ethernet header, plus 8 bytes for an opaque handle).
+On Mon, 2015-04-20 at 12:50 -0400, David Miller wrote:
+> From: Guenter Roeck <linux@roeck-us.net>
+> Date: Mon, 20 Apr 2015 09:44:31 -0700
+> 
+> > On Mon, Apr 20, 2015 at 12:25:19PM -0400, David Miller wrote:
+> >> From: Guenter Roeck <linux@roeck-us.net>
+> >> Date: Sun, 19 Apr 2015 22:17:21 -0700
+> >> 
+> >> > The debug option is intended for all _other_ architectures, to
+> >> > ensure that changes made for those don't break alpha/s390
+> >> > builds. alpha/s390 have ARCH_NEEDS_WEAK_PER_CPU and don't need the
+> >> > debug option.
+> >> 
+> >> Ironically this would not create a build failure for the architectures
+> >> where this matters, because only powerpc has the like named percpu
+> >> symbol.
+> >> 
+> >> So it's not really meeting the stated objective in this case.
+> > 
+> > Yes, that is correct; it can only find problems in non-architecture
+> > code, and on the downside produces false positives and thus build errors
+> > like this one.
+> > 
+> > Which makes the fix a bit philosophical. Rename iommu_pool_hash in
+> > iommu-common, or drop DEBUG_FORCE_WEAK_PER_CPU. I would rename
+> > iommu_pool_hash, but that is just me. Ultimately, I don't really
+> > care one way or another, as long as the problem gets fixed.
+> 
+> If nightly builds of s390 and alpha, the two platforms where this
+> matters, are being done as reported in this thread, then I really
+> don't see the value in DEBUG_FORCE_WEAK_PER_CPU.
 
-This suggests a maximum allowable MTU of 65514 bytes, but in fact the
-driver only permits a maximum MTU of 65513.  This is because there is a <
-instead of an <= in ibmveth_change_mtu(), which only permits an MTU which
-is strictly smaller than the buffer size, rather than allowing the buffer
-to be completely filled.
+We do an s390 allmodconfig for every linux-next release:
 
-This patch fixes the buglet.
+  http://kisskb.ellerman.id.au/kisskb/target/573/
 
-Signed-off-by: David Gibson <david@gibson.dropbear.id.au>1
----
- drivers/net/ethernet/ibm/ibmveth.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+And also for Linus' tree:
 
-Changes since v1:
- * Fixed a second instance of the same off-by-one error.  Thanks to
-   Thomas Falcon for spotting this.
+  http://kisskb.ellerman.id.au/kisskb/target/568/
 
-diff --git a/drivers/net/ethernet/ibm/ibmveth.c b/drivers/net/ethernet/ibm/ibmveth.c
-index cd7675a..1813476 100644
---- a/drivers/net/ethernet/ibm/ibmveth.c
-+++ b/drivers/net/ethernet/ibm/ibmveth.c
-@@ -1238,7 +1238,7 @@ static int ibmveth_change_mtu(struct net_device *dev, int new_mtu)
- 		return -EINVAL;
- 
- 	for (i = 0; i < IBMVETH_NUM_BUFF_POOLS; i++)
--		if (new_mtu_oh < adapter->rx_buff_pool[i].buff_size)
-+		if (new_mtu_oh <= adapter->rx_buff_pool[i].buff_size)
- 			break;
- 
- 	if (i == IBMVETH_NUM_BUFF_POOLS)
-@@ -1257,7 +1257,7 @@ static int ibmveth_change_mtu(struct net_device *dev, int new_mtu)
- 	for (i = 0; i < IBMVETH_NUM_BUFF_POOLS; i++) {
- 		adapter->rx_buff_pool[i].active = 1;
- 
--		if (new_mtu_oh < adapter->rx_buff_pool[i].buff_size) {
-+		if (new_mtu_oh <= adapter->rx_buff_pool[i].buff_size) {
- 			dev->mtu = new_mtu;
- 			vio_cmo_set_dev_desired(viodev,
- 						ibmveth_get_desired_dma
--- 
-2.1.0
+We don't have alpha allmodconfig enabled, though we could, but we do build the
+defconfig:
+
+  http://kisskb.ellerman.id.au/kisskb/target/2499/
+  http://kisskb.ellerman.id.au/kisskb/target/2494/
+
+So I think that should be sufficient to catch any percpus that are introduced
+in generic code with the same name as s390/alpha variables.
+
+
+> But I guess that's a more involved longer-term discussion and I guess
+> I'll apply Sowmini's patches for now.
+
+Yeah I guess it is. Thanks for merging the fix.
+
+cheers
