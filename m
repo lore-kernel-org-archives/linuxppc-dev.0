@@ -1,24 +1,38 @@
-Return-Path: <arnd@arndb.de>
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.130])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5E9D21A18E6
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Apr 2015 01:47:28 +1000 (AEST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: Suman Tripathi <stripathi@apm.com>
-Subject: Re: [PATCH v2 RESEND 2/2] mmc: host: Add some quirks to be read from
- fdt in sdhci-pltm.c
-Date: Tue, 21 Apr 2015 17:46:38 +0200
-Message-ID: <8525627.D1S9aInyMV@wuerfel>
-In-Reply-To: <1429630959-32649-3-git-send-email-stripathi@apm.com>
-References: <1429630959-32649-1-git-send-email-stripathi@apm.com>
- <1429630959-32649-3-git-send-email-stripathi@apm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1820E1A0205
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Apr 2015 03:55:29 +1000 (AEST)
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1on0145.outbound.protection.outlook.com [157.56.110.145])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 4B2A614011B
+ for <linuxppc-dev@ozlabs.org>; Wed, 22 Apr 2015 03:55:27 +1000 (AEST)
+Message-ID: <1429638909.4352.87.camel@freescale.com>
+Subject: Re: new way of writing defconfigs for freescale's powerpc platforms
+From: Scott Wood <scottwood@freescale.com>
+To: Timur Tabi <timur@codeaurora.org>
+Date: Tue, 21 Apr 2015 12:55:09 -0500
+In-Reply-To: <55364FB9.9000106@codeaurora.org>
+References: <DM2PR03MB3689ECA6BC27B156BD10F76FCFB0@DM2PR03MB368.namprd03.prod.outlook.com>
+ <1429232060.22546.7.camel@ellerman.id.au>
+ <1429244000.32545.51.camel@freescale.com>
+ <1429251526.22546.8.camel@ellerman.id.au>
+ <DM2PR03MB3688B52A469BA5BDD57E3C3FCE30@DM2PR03MB368.namprd03.prod.outlook.com>
+ <1429296759.4352.8.camel@freescale.com>
+ <DM2PR03MB368C00B6505BB6338074268FCE20@DM2PR03MB368.namprd03.prod.outlook.com>
+ <CAOZdJXVPCNVewAc_=JCMvBG7PccJ1KHnQ5m_WC-GjohFQ_0ZTA@mail.gmail.com>
+ <1429561902.4352.29.camel@freescale.com>
+ <CAOZdJXWnh3PbZ8FRFzJ9=h+bFF3_Uqeu=hzoqD6GYF8acQ21kQ@mail.gmail.com>
+ <1429582152.4352.73.camel@freescale.com> <5535C70A.9070607@codeaurora.org>
+ <1429592509.4352.79.camel@freescale.com> <55364FB9.9000106@codeaurora.org>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Cc: devicetree@vger.kernel.org, ulf.hansson@linaro.org, mlangsdo@redhat.com,
- jcm@redhat.com, anton@enomsg.org, linux-mmc@vger.kernel.org, chris@printf.net,
- patches@apm.com, ddutile@redhat.com, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+ Richard Schmitt <richard.schmitt@freescale.com>,
+ Lijun Pan <Lijun.Pan@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,41 +42,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tuesday 21 April 2015 21:12:39 Suman Tripathi wrote:
-> index bef250e..9f6a4b9 100644
-> --- a/drivers/mmc/host/sdhci-pltfm.c
-> +++ b/drivers/mmc/host/sdhci-pltfm.c
-> @@ -85,6 +85,21 @@ void sdhci_get_of_property(struct platform_device *pdev)
->  
->                 if (of_get_property(np, "broken-cd", NULL))
->                         host->quirks |= SDHCI_QUIRK_BROKEN_CARD_DETECTION;
-> +               
-> +               if (of_get_property(np, "delay-after-power", NULL))
-> +                       host->quirks |= SDHCI_QUIRK_DELAY_AFTER_POWER;
-> +
-> +               if (of_get_property(np, "no-hispd", NULL))
-> +                       host->quirks |= SDHCI_QUIRK_NO_HISPD_BIT;
-> +
-> +               if (of_get_property(np, "broken-adma", NULL))
-> +                       host->quirks |= SDHCI_QUIRK_BROKEN_ADMA;
-> +               
-> +               if (of_get_property(np, "broken-dma", NULL))
-> +                       host->quirks |= SDHCI_QUIRK_BROKEN_DMA;
-> +
-> +               if (of_get_property(np, "no-cmd23", NULL))
-> +                       host->quirks2 |= SDHCI_QUIRK2_HOST_NO_CMD23;
->  
->                 if (of_get_property(np, "no-1-8-v", NULL))
->                         host->quirks2 |= SDHCI_QUIRK2_NO_1_8_V;
+On Tue, 2015-04-21 at 08:25 -0500, Timur Tabi wrote:
+> Scott Wood wrote:
+> > We want single-name config targets to still work from the user's
+> > perspective, but we want to reduce the (often imperfect) duplication
+> > under the hood.
 > 
+> Ok, then define a new Kconfig option that merge_config.sh will look for. 
+>   So in p1_defconfig, there will be this line:
+> 
+> CONFIG_OTHER_DEFCONFIGS=fsl_basic_config
 
-Any property you add needs to be documented in the DT binding.
+If you want to do that go ahead.  In the meantime we'll use the
+mechanism that already exists.
 
-If possible, add generic properties for each bug you have mmc.txt
-rather than the driver specific sdhci.txt, and implement the
-parsing in a common function that is used for all mmc hosts.
-
-An alternative would be to set all these bits based on the compatible
-string of your host, if that is the only one that has all these bugs.
-
-	Arnd
+-Scott
