@@ -1,32 +1,39 @@
-Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7F5CE1A0D70
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Apr 2015 21:04:52 +1000 (AEST)
+Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 34A761A01E7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Apr 2015 21:04:13 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTPS id B1B84140213
+ for <linuxppc-dev@ozlabs.org>; Tue, 21 Apr 2015 21:04:51 +1000 (AEST)
 Received: from /spool/local
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Tue, 21 Apr 2015 16:34:10 +0530
+ for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Tue, 21 Apr 2015 16:34:49 +0530
 Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 77CEAE0059
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Apr 2015 16:36:46 +0530 (IST)
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id C1F62125805F
+ for <linuxppc-dev@ozlabs.org>; Tue, 21 Apr 2015 16:36:43 +0530 (IST)
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
  by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t3LB3wow32178408
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Apr 2015 16:33:59 +0530
-Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t3LB3nKr000665
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Apr 2015 16:33:50 +0530
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH RFC] powerpc/ftrace: add powerpc timebase as a trace clock
- source
-Date: Tue, 21 Apr 2015 16:33:36 +0530
-Message-Id: <1429614216-30538-1-git-send-email-naveen.n.rao@linux.vnet.ibm.com>
-Cc: paulus@samba.org, rostedt@goodmis.org
+ t3LB4luo55640064
+ for <linuxppc-dev@ozlabs.org>; Tue, 21 Apr 2015 16:34:47 +0530
+Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t3LAf7mS030676
+ for <linuxppc-dev@ozlabs.org>; Tue, 21 Apr 2015 16:11:08 +0530
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc,
+ mm: Fix build failure due to CONFIG_PPC_TRANSACTIONAL_MEM
+Date: Tue, 21 Apr 2015 16:34:44 +0530
+Message-Id: <1429614284-16528-1-git-send-email-khandual@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Cc: mikey@neuling.org, aneesh.kumar@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,122 +43,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add a new powerpc-specific trace clock using the timebase register,
-similar to x86-tsc. This gives us a fast, monotonic, cross-cpu clock
-for trace entries and can be used to correlate events across cpus as
-well as across hypervisor and guest (assuming it is not a migrated guest
-with a non-zero tb_offset).
+The function flush_hash_page fails to compile when the transaction memory
+config option is turned off because there is a label at end of compound
+statement. This patch moves the code block into a function tm_abort_tlbi
+and calls it after the label thus fixing the build problem.
 
-Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 ---
-I have followed the approach used by x86-tsc here, but we could get rid of
-trace_clock.c if we directly use get_tb() with perhaps the notrace annotation.
-Would that be preferable?
+arch/powerpc/mm/hash_utils_64.c: In function ‘flush_hash_hugepage’:
+arch/powerpc/mm/hash_utils_64.c:1381:1: error: label at end of compound statement
+ tm_abort:
+ ^
+make[1]: *** [arch/powerpc/mm/hash_utils_64.o] Error 1
+make: *** [arch/powerpc/mm] Error 2
 
-Thanks,
-Naveen
+ arch/powerpc/mm/hash_utils_64.c | 35 ++++++++++++++++++++---------------
+ 1 file changed, 20 insertions(+), 15 deletions(-)
 
-
- Documentation/trace/ftrace.txt         |  5 +++++
- arch/powerpc/include/asm/Kbuild        |  1 -
- arch/powerpc/include/asm/trace_clock.h | 27 +++++++++++++++++++++++++++
- arch/powerpc/kernel/Makefile           |  1 +
- arch/powerpc/kernel/trace_clock.c      | 15 +++++++++++++++
- 5 files changed, 48 insertions(+), 1 deletion(-)
- create mode 100644 arch/powerpc/include/asm/trace_clock.h
- create mode 100644 arch/powerpc/kernel/trace_clock.c
-
-diff --git a/Documentation/trace/ftrace.txt b/Documentation/trace/ftrace.txt
-index 572ca92..689f61a 100644
---- a/Documentation/trace/ftrace.txt
-+++ b/Documentation/trace/ftrace.txt
-@@ -346,6 +346,11 @@ of ftrace. Here is a list of some of the key files:
- 	  x86-tsc: Architectures may define their own clocks. For
- 	  	   example, x86 uses its own TSC cycle clock here.
+diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+index 2c2022d..b30b2b5 100644
+--- a/arch/powerpc/mm/hash_utils_64.c
++++ b/arch/powerpc/mm/hash_utils_64.c
+@@ -1326,6 +1326,25 @@ void flush_hash_page(unsigned long vpn, real_pte_t pte, int psize, int ssize,
+ }
  
-+	  ppc-tb: This uses the powerpc timebase register value.
-+		  This is in sync across CPUs and can also be used
-+		  to correlate events across hypervisor/guest if
-+		  tb_offset is known.
-+
- 	To set a clock, simply echo the clock name into this file.
- 
- 	  echo global > trace_clock
-diff --git a/arch/powerpc/include/asm/Kbuild b/arch/powerpc/include/asm/Kbuild
-index 382b28e..5041c66 100644
---- a/arch/powerpc/include/asm/Kbuild
-+++ b/arch/powerpc/include/asm/Kbuild
-@@ -5,5 +5,4 @@ generic-y += mcs_spinlock.h
- generic-y += preempt.h
- generic-y += rwsem.h
- generic-y += scatterlist.h
--generic-y += trace_clock.h
- generic-y += vtime.h
-diff --git a/arch/powerpc/include/asm/trace_clock.h b/arch/powerpc/include/asm/trace_clock.h
-new file mode 100644
-index 0000000..0b0d094
---- /dev/null
-+++ b/arch/powerpc/include/asm/trace_clock.h
-@@ -0,0 +1,27 @@
-+/*
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License, version 2, as
-+ * published by the Free Software Foundation.
-+ *
-+ * Copyright (C) 2015 Naveen N. Rao, IBM Corporation
-+ */
-+
-+#ifndef _ASM_PPC_TRACE_CLOCK_H
-+#define _ASM_PPC_TRACE_CLOCK_H
-+
-+#include <linux/compiler.h>
-+#include <linux/types.h>
-+
-+#ifdef CONFIG_TRACE_CLOCK
-+
-+extern u64 notrace trace_clock_ppc_tb(void);
-+
-+#define ARCH_TRACE_CLOCKS { trace_clock_ppc_tb, "ppc-tb", 0 },
-+
-+#else
-+
-+#define ARCH_TRACE_CLOCKS
-+
-+#endif /* CONFIG_TRACE_CLOCK */
-+
-+#endif  /* _ASM_PPC_TRACE_CLOCK_H */
-diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-index 502cf69..f9936f3 100644
---- a/arch/powerpc/kernel/Makefile
-+++ b/arch/powerpc/kernel/Makefile
-@@ -118,6 +118,7 @@ obj-$(CONFIG_PPC_IO_WORKAROUNDS)	+= io-workarounds.o
- obj-$(CONFIG_DYNAMIC_FTRACE)	+= ftrace.o
- obj-$(CONFIG_FUNCTION_GRAPH_TRACER)	+= ftrace.o
- obj-$(CONFIG_FTRACE_SYSCALLS)	+= ftrace.o
-+obj-$(CONFIG_TRACE_CLOCK)	+= trace_clock.o
- 
- ifneq ($(CONFIG_PPC_INDIRECT_PIO),y)
- obj-y				+= iomap.o
-diff --git a/arch/powerpc/kernel/trace_clock.c b/arch/powerpc/kernel/trace_clock.c
-new file mode 100644
-index 0000000..4917069
---- /dev/null
-+++ b/arch/powerpc/kernel/trace_clock.c
-@@ -0,0 +1,15 @@
-+/*
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License, version 2, as
-+ * published by the Free Software Foundation.
-+ *
-+ * Copyright (C) 2015 Naveen N. Rao, IBM Corporation
-+ */
-+
-+#include <asm/trace_clock.h>
-+#include <asm/time.h>
-+
-+u64 notrace trace_clock_ppc_tb(void)
+ #ifdef CONFIG_TRANSPARENT_HUGEPAGE
++static void tm_abort_tlbi(int local)
 +{
-+	return get_tb();
++#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
++	/* Transactions are not aborted by tlbiel, only tlbie.
++	 * Without, syncing a page back to a block device w/ PIO could pick up
++	 * transactional data (bad!) so we force an abort here.  Before the
++	 * sync the page will be made read-only, which will flush_hash_page.
++	 * BIG ISSUE here: if the kernel uses a page from userspace without
++	 * unmapping it first, it may see the speculated version.
++	 */
++	if (local && cpu_has_feature(CPU_FTR_TM) &&
++	    current->thread.regs &&
++	    MSR_TM_ACTIVE(current->thread.regs->msr)) {
++		tm_enable();
++		tm_abort(TM_CAUSE_TLBI);
++	}
++#endif
 +}
++
+ void flush_hash_hugepage(unsigned long vsid, unsigned long addr,
+ 			 pmd_t *pmdp, unsigned int psize, int ssize,
+ 			 unsigned long flags)
+@@ -1379,21 +1398,7 @@ void flush_hash_hugepage(unsigned long vsid, unsigned long addr,
+ 				       MMU_PAGE_16M, ssize, local);
+ 	}
+ tm_abort:
+-#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+-	/* Transactions are not aborted by tlbiel, only tlbie.
+-	 * Without, syncing a page back to a block device w/ PIO could pick up
+-	 * transactional data (bad!) so we force an abort here.  Before the
+-	 * sync the page will be made read-only, which will flush_hash_page.
+-	 * BIG ISSUE here: if the kernel uses a page from userspace without
+-	 * unmapping it first, it may see the speculated version.
+-	 */
+-	if (local && cpu_has_feature(CPU_FTR_TM) &&
+-	    current->thread.regs &&
+-	    MSR_TM_ACTIVE(current->thread.regs->msr)) {
+-		tm_enable();
+-		tm_abort(TM_CAUSE_TLBI);
+-	}
+-#endif
++	tm_abort_tlbi(local);
+ }
+ #endif /* CONFIG_TRANSPARENT_HUGEPAGE */
+ 
 -- 
-2.3.5
+1.9.3
