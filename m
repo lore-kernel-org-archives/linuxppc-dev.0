@@ -1,36 +1,30 @@
-Return-Path: <scottwood@freescale.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <linux@roeck-us.net>
+Received: from bh-25.webhostbox.net (bh-25.webhostbox.net [208.91.199.152])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0A2121A0205
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Apr 2015 12:09:33 +1000 (AEST)
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0104.outbound.protection.outlook.com [207.46.100.104])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 667CF1401AD
- for <linuxppc-dev@ozlabs.org>; Tue, 21 Apr 2015 12:09:31 +1000 (AEST)
-Message-ID: <1429582152.4352.73.camel@freescale.com>
-Subject: Re: new way of writing defconfigs for freescale's powerpc platforms
-From: Scott Wood <scottwood@freescale.com>
-To: Timur Tabi <timur@codeaurora.org>
-Date: Mon, 20 Apr 2015 21:09:12 -0500
-In-Reply-To: <CAOZdJXWnh3PbZ8FRFzJ9=h+bFF3_Uqeu=hzoqD6GYF8acQ21kQ@mail.gmail.com>
-References: <DM2PR03MB3689ECA6BC27B156BD10F76FCFB0@DM2PR03MB368.namprd03.prod.outlook.com>
- <1429232060.22546.7.camel@ellerman.id.au>
- <1429244000.32545.51.camel@freescale.com>
- <1429251526.22546.8.camel@ellerman.id.au>
- <DM2PR03MB3688B52A469BA5BDD57E3C3FCE30@DM2PR03MB368.namprd03.prod.outlook.com>
- <1429296759.4352.8.camel@freescale.com>
- <DM2PR03MB368C00B6505BB6338074268FCE20@DM2PR03MB368.namprd03.prod.outlook.com>
- <CAOZdJXVPCNVewAc_=JCMvBG7PccJ1KHnQ5m_WC-GjohFQ_0ZTA@mail.gmail.com>
- <1429561902.4352.29.camel@freescale.com>
- <CAOZdJXWnh3PbZ8FRFzJ9=h+bFF3_Uqeu=hzoqD6GYF8acQ21kQ@mail.gmail.com>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8C76A1A01E7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Apr 2015 12:32:52 +1000 (AEST)
+Received: from mailnull by bh-25.webhostbox.net with sa-checked (Exim 4.85)
+ (envelope-from <linux@roeck-us.net>) id 1YkNzV-0027x8-Hl
+ for linuxppc-dev@lists.ozlabs.org; Tue, 21 Apr 2015 02:32:49 +0000
+Message-ID: <5535B6C1.5040502@roeck-us.net>
+Date: Mon, 20 Apr 2015 19:32:33 -0700
+From: Guenter Roeck <linux@roeck-us.net>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
- Richard Schmitt <richard.schmitt@freescale.com>,
- Lijun Pan <Lijun.Pan@freescale.com>
+To: Michael Ellerman <mpe@ellerman.id.au>, David Miller <davem@davemloft.net>
+Subject: Re: sparc64: Build failure due to commit f1600e549b94 (sparc: Make
+ sparc64 use scalable lib/iommu-common.c functions)
+References: <55348BE1.4010305@roeck-us.net>	
+ <20150420.122519.1661605449214047938.davem@davemloft.net>	
+ <20150420164431.GA30837@roeck-us.net>	
+ <20150420.125050.2036067807685492178.davem@davemloft.net>
+ <1429581250.9619.6.camel@ellerman.id.au>
+In-Reply-To: <1429581250.9619.6.camel@ellerman.id.au>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Cc: linux-s390@vger.kernel.org, aik@au1.ibm.com, sowmini.varadhan@oracle.com,
+ anton@au1.ibm.com, heiko.carstens@de.ibm.com, linux-kernel@vger.kernel.org,
+ schwidefsky@de.ibm.com, paulus@samba.org, sparclinux@vger.kernel.org,
+ linux390@de.ibm.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,24 +34,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2015-04-20 at 21:02 -0500, Timur Tabi wrote:
-> On Mon, Apr 20, 2015 at 3:31 PM, Scott Wood <scottwood@freescale.com> wrote:
-> >
-> >
-> > The ability to merge configs is already there.  We're just talking about
-> > using that functionality.
-> 
-> Why do you need a powerpc-specific way to use merge_config.sh?  Other
-> architectures have the same problem with defconfigs.
+On 04/20/2015 06:54 PM, Michael Ellerman wrote:
+> On Mon, 2015-04-20 at 12:50 -0400, David Miller wrote:
+>> From: Guenter Roeck <linux@roeck-us.net>
+>> Date: Mon, 20 Apr 2015 09:44:31 -0700
+>>
+>>> On Mon, Apr 20, 2015 at 12:25:19PM -0400, David Miller wrote:
+>>>> From: Guenter Roeck <linux@roeck-us.net>
+>>>> Date: Sun, 19 Apr 2015 22:17:21 -0700
+>>>>
+>>>>> The debug option is intended for all _other_ architectures, to
+>>>>> ensure that changes made for those don't break alpha/s390
+>>>>> builds. alpha/s390 have ARCH_NEEDS_WEAK_PER_CPU and don't need the
+>>>>> debug option.
+>>>>
+>>>> Ironically this would not create a build failure for the architectures
+>>>> where this matters, because only powerpc has the like named percpu
+>>>> symbol.
+>>>>
+>>>> So it's not really meeting the stated objective in this case.
+>>>
+>>> Yes, that is correct; it can only find problems in non-architecture
+>>> code, and on the downside produces false positives and thus build errors
+>>> like this one.
+>>>
+>>> Which makes the fix a bit philosophical. Rename iommu_pool_hash in
+>>> iommu-common, or drop DEBUG_FORCE_WEAK_PER_CPU. I would rename
+>>> iommu_pool_hash, but that is just me. Ultimately, I don't really
+>>> care one way or another, as long as the problem gets fixed.
+>>
+>> If nightly builds of s390 and alpha, the two platforms where this
+>> matters, are being done as reported in this thread, then I really
+>> don't see the value in DEBUG_FORCE_WEAK_PER_CPU.
 
-What are you perceiving as "powerpc-specific" about what we're
-proposing?  Are you complaining about the actual content of which
-fragments to use to produce which defconfigs going in arch/powerpc?
+Me not either, but, as you say, that is a different discussion.
 
-> Besides, wouldn't it make more sense to define a new defconfig type,
-> like p1_defconfig.merge, and if you do "make p1_defconfig.merge" it
-> knows to call merge_config.sh?
+>
+> We do an s390 allmodconfig for every linux-next release:
+>
+>    http://kisskb.ellerman.id.au/kisskb/target/573/
+>
+> And also for Linus' tree:
+>
+>    http://kisskb.ellerman.id.au/kisskb/target/568/
+>
+> We don't have alpha allmodconfig enabled, though we could, but we do build the
+> defconfig:
+>
+>    http://kisskb.ellerman.id.au/kisskb/target/2499/
+>    http://kisskb.ellerman.id.au/kisskb/target/2494/
+>
+I cover alpha:allmodconfig in my builds for -next, mainline, as well as all
+kernel.org stable releases and release candidates. This discussion is a good
+argument for enabling s390:allmodconfig as well.
 
-That's already there.  "make <foo>.config".
+> So I think that should be sufficient to catch any percpus that are introduced
+> in generic code with the same name as s390/alpha variables.
+>
+Yes, but unfortunately only after the fact, though I don't see a means
+to avoid that.
 
--Scott
+>
+>> But I guess that's a more involved longer-term discussion and I guess
+>> I'll apply Sowmini's patches for now.
+>
+Thanks!
+
+Guenter
