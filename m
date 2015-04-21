@@ -1,37 +1,32 @@
-Return-Path: <baolin.wang@linaro.org>
-Received: from mail-wi0-f178.google.com (mail-wi0-f178.google.com
- [209.85.212.178])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
+Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A61A01A0025
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Apr 2015 18:55:23 +1000 (AEST)
-Received: by wiun10 with SMTP id n10so13288564wiu.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Apr 2015 01:55:20 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <8072977.i0FsrGW3CD@wuerfel>
-References: <1429509459-17068-1-git-send-email-baolin.wang@linaro.org>
- <alpine.DEB.2.11.1504202243070.13914@nanos>
- <CAMz4kuKF2sU4tMD7UtDobu2kVDMp7cfHNERSPQ9Yyzs80tOzYg@mail.gmail.com>
- <8072977.i0FsrGW3CD@wuerfel>
-Date: Tue, 21 Apr 2015 16:55:19 +0800
-Message-ID: <CAMz4ku+EHpp4G6xu_P9f4G+zZgh9_bn7cTCgH-rEqNXiYTpU7w@mail.gmail.com>
-Subject: Re: [Y2038] [PATCH 05/11] time/posix-timers:Convert to the 64bit
- methods for k_clock callback functions
-From: Baolin Wang <baolin.wang@linaro.org>
-To: Arnd Bergmann <arnd@arndb.de>
-Content-Type: multipart/alternative; boundary=f46d043c7f46c8f2d40514383460
-Cc: Xunlei Pang <pang.xunlei@linaro.org>, peterz@infradead.org,
- heiko.carstens@de.ibm.com, paulus@samba.org, cl@linux.com,
- Heena Sirwani <heenasirwani@gmail.com>, linux-arch@vger.kernel.org,
- linux-s390@vger.kernel.org, y2038 Mailman List <y2038@lists.linaro.org>,
- rafael.j.wysocki@intel.com, Andrew Hunter <ahh@google.com>,
- =?UTF-8?B?RnLDqWTDqXJpYyBXZWlzYmVja2Vy?= <fweisbec@gmail.com>,
- Paul Turner <pjt@google.com>, riel@redhat.com,
- Richard Cochran <richardcochran@gmail.com>, tj@kernel.org,
- John Stultz <john.stultz@linaro.org>, Thomas Gleixner <tglx@linutronix.de>,
- rth@twiddle.net, gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org,
- netdev@vger.kernel.org, schwidefsky@de.ibm.com, linux390@de.ibm.com,
- linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 34A761A01E7
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Apr 2015 21:04:13 +1000 (AEST)
+Received: from /spool/local
+ by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
+ Tue, 21 Apr 2015 16:34:10 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 77CEAE0059
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Apr 2015 16:36:46 +0530 (IST)
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t3LB3wow32178408
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Apr 2015 16:33:59 +0530
+Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t3LB3nKr000665
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Apr 2015 16:33:50 +0530
+From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH RFC] powerpc/ftrace: add powerpc timebase as a trace clock
+ source
+Date: Tue, 21 Apr 2015 16:33:36 +0530
+Message-Id: <1429614216-30538-1-git-send-email-naveen.n.rao@linux.vnet.ibm.com>
+Cc: paulus@samba.org, rostedt@goodmis.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,105 +36,122 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---f46d043c7f46c8f2d40514383460
-Content-Type: text/plain; charset=UTF-8
+Add a new powerpc-specific trace clock using the timebase register,
+similar to x86-tsc. This gives us a fast, monotonic, cross-cpu clock
+for trace entries and can be used to correlate events across cpus as
+well as across hypervisor and guest (assuming it is not a migrated guest
+with a non-zero tb_offset).
 
-On 21 April 2015 at 16:45, Arnd Bergmann <arnd@arndb.de> wrote:
+Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+---
+I have followed the approach used by x86-tsc here, but we could get rid of
+trace_clock.c if we directly use get_tb() with perhaps the notrace annotation.
+Would that be preferable?
 
-> On Tuesday 21 April 2015 16:36:13 Baolin Wang wrote:
-> > On 21 April 2015 at 04:48, Thomas Gleixner <tglx@linutronix.de> wrote:
-> >
-> > > On Mon, 20 Apr 2015, Baolin Wang wrote:
-> > > >  /* Set clock_realtime */
-> > > >  static int posix_clock_realtime_set(const clockid_t which_clock,
-> > > > -                                 const struct timespec *tp)
-> > > > +                                 const struct timespec64 *tp)
-> > > >  {
-> > > > -     return do_sys_settimeofday(tp, NULL);
-> > > > +     struct timespec ts = timespec64_to_timespec(*tp);
-> > > > +
-> > > > +     return do_sys_settimeofday(&ts, NULL);
-> > >
-> > > Sigh. No. We first provide a proper function for this, which takes a
-> > > timespec64, i.e. do_sys_settimeofday64() instead of having this
-> > > wrapper mess all over the place.
-> > >
-> >
-> > Thanks for your comments,but if use do_sys_settimeofday64() here that
-> > will  introduce
-> > a security bug: do_sys_settimeofday contains a capability
-> > check that normally prevents non-root users from setting the time.
-> >
-> > With your change, any user can set the system time.
->
-> He was asking for a new do_sys_settimeofday64 function to be added,
-> not using the low-level do_settimeofday64.
->
->         Arnd
->
+Thanks,
+Naveen
 
-Sorry for the misunderstand, i'll fix that in next patch. Thanks.
 
+ Documentation/trace/ftrace.txt         |  5 +++++
+ arch/powerpc/include/asm/Kbuild        |  1 -
+ arch/powerpc/include/asm/trace_clock.h | 27 +++++++++++++++++++++++++++
+ arch/powerpc/kernel/Makefile           |  1 +
+ arch/powerpc/kernel/trace_clock.c      | 15 +++++++++++++++
+ 5 files changed, 48 insertions(+), 1 deletion(-)
+ create mode 100644 arch/powerpc/include/asm/trace_clock.h
+ create mode 100644 arch/powerpc/kernel/trace_clock.c
+
+diff --git a/Documentation/trace/ftrace.txt b/Documentation/trace/ftrace.txt
+index 572ca92..689f61a 100644
+--- a/Documentation/trace/ftrace.txt
++++ b/Documentation/trace/ftrace.txt
+@@ -346,6 +346,11 @@ of ftrace. Here is a list of some of the key files:
+ 	  x86-tsc: Architectures may define their own clocks. For
+ 	  	   example, x86 uses its own TSC cycle clock here.
+ 
++	  ppc-tb: This uses the powerpc timebase register value.
++		  This is in sync across CPUs and can also be used
++		  to correlate events across hypervisor/guest if
++		  tb_offset is known.
++
+ 	To set a clock, simply echo the clock name into this file.
+ 
+ 	  echo global > trace_clock
+diff --git a/arch/powerpc/include/asm/Kbuild b/arch/powerpc/include/asm/Kbuild
+index 382b28e..5041c66 100644
+--- a/arch/powerpc/include/asm/Kbuild
++++ b/arch/powerpc/include/asm/Kbuild
+@@ -5,5 +5,4 @@ generic-y += mcs_spinlock.h
+ generic-y += preempt.h
+ generic-y += rwsem.h
+ generic-y += scatterlist.h
+-generic-y += trace_clock.h
+ generic-y += vtime.h
+diff --git a/arch/powerpc/include/asm/trace_clock.h b/arch/powerpc/include/asm/trace_clock.h
+new file mode 100644
+index 0000000..0b0d094
+--- /dev/null
++++ b/arch/powerpc/include/asm/trace_clock.h
+@@ -0,0 +1,27 @@
++/*
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License, version 2, as
++ * published by the Free Software Foundation.
++ *
++ * Copyright (C) 2015 Naveen N. Rao, IBM Corporation
++ */
++
++#ifndef _ASM_PPC_TRACE_CLOCK_H
++#define _ASM_PPC_TRACE_CLOCK_H
++
++#include <linux/compiler.h>
++#include <linux/types.h>
++
++#ifdef CONFIG_TRACE_CLOCK
++
++extern u64 notrace trace_clock_ppc_tb(void);
++
++#define ARCH_TRACE_CLOCKS { trace_clock_ppc_tb, "ppc-tb", 0 },
++
++#else
++
++#define ARCH_TRACE_CLOCKS
++
++#endif /* CONFIG_TRACE_CLOCK */
++
++#endif  /* _ASM_PPC_TRACE_CLOCK_H */
+diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
+index 502cf69..f9936f3 100644
+--- a/arch/powerpc/kernel/Makefile
++++ b/arch/powerpc/kernel/Makefile
+@@ -118,6 +118,7 @@ obj-$(CONFIG_PPC_IO_WORKAROUNDS)	+= io-workarounds.o
+ obj-$(CONFIG_DYNAMIC_FTRACE)	+= ftrace.o
+ obj-$(CONFIG_FUNCTION_GRAPH_TRACER)	+= ftrace.o
+ obj-$(CONFIG_FTRACE_SYSCALLS)	+= ftrace.o
++obj-$(CONFIG_TRACE_CLOCK)	+= trace_clock.o
+ 
+ ifneq ($(CONFIG_PPC_INDIRECT_PIO),y)
+ obj-y				+= iomap.o
+diff --git a/arch/powerpc/kernel/trace_clock.c b/arch/powerpc/kernel/trace_clock.c
+new file mode 100644
+index 0000000..4917069
+--- /dev/null
++++ b/arch/powerpc/kernel/trace_clock.c
+@@ -0,0 +1,15 @@
++/*
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License, version 2, as
++ * published by the Free Software Foundation.
++ *
++ * Copyright (C) 2015 Naveen N. Rao, IBM Corporation
++ */
++
++#include <asm/trace_clock.h>
++#include <asm/time.h>
++
++u64 notrace trace_clock_ppc_tb(void)
++{
++	return get_tb();
++}
 -- 
-Baolin.wang
-Best Regards
-
---f46d043c7f46c8f2d40514383460
-Content-Type: text/html; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-
-<div dir=3D"ltr"><br><div class=3D"gmail_extra"><br><div class=3D"gmail_quo=
-te">On 21 April 2015 at 16:45, Arnd Bergmann <span dir=3D"ltr">&lt;<a href=
-=3D"mailto:arnd@arndb.de" target=3D"_blank">arnd@arndb.de</a>&gt;</span> wr=
-ote:<br><blockquote class=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;border=
--left:1px #ccc solid;padding-left:1ex"><span class=3D"">On Tuesday 21 April=
- 2015 16:36:13 Baolin Wang wrote:<br>
-&gt; On 21 April 2015 at 04:48, Thomas Gleixner &lt;<a href=3D"mailto:tglx@=
-linutronix.de">tglx@linutronix.de</a>&gt; wrote:<br>
-&gt;<br>
-&gt; &gt; On Mon, 20 Apr 2015, Baolin Wang wrote:<br>
-&gt; &gt; &gt;=C2=A0 /* Set clock_realtime */<br>
-&gt; &gt; &gt;=C2=A0 static int posix_clock_realtime_set(const clockid_t wh=
-ich_clock,<br>
-&gt; &gt; &gt; -=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0const struct tim=
-espec *tp)<br>
-&gt; &gt; &gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0const struct tim=
-espec64 *tp)<br>
-&gt; &gt; &gt;=C2=A0 {<br>
-&gt; &gt; &gt; -=C2=A0 =C2=A0 =C2=A0return do_sys_settimeofday(tp, NULL);<b=
-r>
-&gt; &gt; &gt; +=C2=A0 =C2=A0 =C2=A0struct timespec ts =3D timespec64_to_ti=
-mespec(*tp);<br>
-&gt; &gt; &gt; +<br>
-&gt; &gt; &gt; +=C2=A0 =C2=A0 =C2=A0return do_sys_settimeofday(&amp;ts, NUL=
-L);<br>
-&gt; &gt;<br>
-&gt; &gt; Sigh. No. We first provide a proper function for this, which take=
-s a<br>
-&gt; &gt; timespec64, i.e. do_sys_settimeofday64() instead of having this<b=
-r>
-&gt; &gt; wrapper mess all over the place.<br>
-&gt; &gt;<br>
-&gt;<br>
-&gt; Thanks for your comments,but if use do_sys_settimeofday64() here that<=
-br>
-&gt; will=C2=A0 introduce<br>
-&gt; a security bug: do_sys_settimeofday contains a capability<br>
-&gt; check that normally prevents non-root users from setting the time.<br>
-&gt;<br>
-&gt; With your change, any user can set the system time.<br>
-<br>
-</span>He was asking for a new do_sys_settimeofday64 function to be added,<=
-br>
-not using the low-level do_settimeofday64.<br>
-<span class=3D"HOEnZb"><font color=3D"#888888"><br>
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 Arnd<br>
-</font></span></blockquote></div><br>Sorry for the misunderstand, i&#39;ll =
-fix that in next patch. Thanks.<br clear=3D"all"><div><br></div>-- <br><div=
- class=3D"gmail_signature"><div dir=3D"ltr"><div>Baolin.wang<br></div>Best =
-Regards<br></div></div>
-</div></div>
-
---f46d043c7f46c8f2d40514383460--
+2.3.5
