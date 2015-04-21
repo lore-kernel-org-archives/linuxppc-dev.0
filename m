@@ -1,16 +1,26 @@
-Return-Path: <michael@ozlabs.org>
+Return-Path: <dgibson@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 352F31A0025
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Apr 2015 16:15:40 +1000 (AEST)
-In-Reply-To: <1429332441-18647-1-git-send-email-Lijun.Pan@freescale.com>
-To: Lijun Pan <LIJUN.PAN@FREESCALE.COM>, <linuxppc-dev@ozlabs.org>
-From: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: powerpc/defconfig: new way of writing defconfig
-Message-Id: <20150421061539.78B071401F6@ozlabs.org>
-Date: Tue, 21 Apr 2015 16:15:39 +1000 (AEST)
-Cc: Lijun Pan <Lijun.Pan@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id ED4061A0025
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Apr 2015 17:28:55 +1000 (AEST)
+Date: Tue, 21 Apr 2015 17:12:33 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Subject: Re: [PATCH kernel v8 15/31] powerpc/iommu: Fix IOMMU ownership
+ control functions
+Message-ID: <20150421071233.GF31815@voom.redhat.com>
+References: <1428647473-11738-1-git-send-email-aik@ozlabs.ru>
+ <1428647473-11738-16-git-send-email-aik@ozlabs.ru>
+ <20150416061049.GF3632@voom.redhat.com>
+ <5530DD6D.8000001@ozlabs.ru> <20150420024638.GE10218@voom>
+ <55349DF0.6090301@ozlabs.ru>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="twz1s1Hj1O0rHoT0"
+In-Reply-To: <55349DF0.6090301@ozlabs.ru>
+Cc: Alex Williamson <alex.williamson@redhat.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,99 +30,116 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2015-18-04 at 04:47:21 UTC, Lijun Pan wrote:
-> It is always a headache dealing with different defconfigs
-> though they only differ in few places. Hence we are proposing a new
-> way of writing defconfig:
 
-So on the whole this is looking promising, some comments ...
+--twz1s1Hj1O0rHoT0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> 1. Define a basic defconfig say mpc85xx_basic_defconfig
+On Mon, Apr 20, 2015 at 04:34:24PM +1000, Alexey Kardashevskiy wrote:
+> On 04/20/2015 12:46 PM, David Gibson wrote:
+> >On Fri, Apr 17, 2015 at 08:16:13PM +1000, Alexey Kardashevskiy wrote:
+> >>On 04/16/2015 04:10 PM, David Gibson wrote:
+> >>>On Fri, Apr 10, 2015 at 04:30:57PM +1000, Alexey Kardashevskiy wrote:
+> >>>>This adds missing locks in iommu_take_ownership()/
+> >>>>iommu_release_ownership().
+> >>>>
+> >>>>This marks all pages busy in iommu_table::it_map in order to catch
+> >>>>errors if there is an attempt to use this table while ownership over =
+it
+> >>>>is taken.
+> >>>>
+> >>>>This only clears TCE content if there is no page marked busy in it_ma=
+p.
+> >>>>Clearing must be done outside of the table locks as iommu_clear_tce()
+> >>>>called from iommu_clear_tces_and_put_pages() does this.
+> >>>>
+> >>>>Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> >>>>---
+> >>>>Changes:
+> >>>>v5:
+> >>>>* do not store bit#0 value, it has to be set for zero-based table
+> >>>>anyway
+> >>>>* removed test_and_clear_bit
+> >>>>---
+> >>>>  arch/powerpc/kernel/iommu.c | 26 ++++++++++++++++++++++----
+> >>>>  1 file changed, 22 insertions(+), 4 deletions(-)
+> >>>>
+> >>>>diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
+> >>>>index 7d6089b..068fe4ff 100644
+> >>>>--- a/arch/powerpc/kernel/iommu.c
+> >>>>+++ b/arch/powerpc/kernel/iommu.c
+> >>>>@@ -1052,17 +1052,28 @@ EXPORT_SYMBOL_GPL(iommu_tce_build);
+> >>>>
+> >>>>  static int iommu_table_take_ownership(struct iommu_table *tbl)
+> >>>>  {
+> >>>>-	unsigned long sz =3D (tbl->it_size + 7) >> 3;
+> >>>>+	unsigned long flags, i, sz =3D (tbl->it_size + 7) >> 3;
+> >>>>+	int ret =3D 0;
+> >>>>+
+> >>>>+	spin_lock_irqsave(&tbl->large_pool.lock, flags);
+> >>>>+	for (i =3D 0; i < tbl->nr_pools; i++)
+> >>>>+		spin_lock(&tbl->pools[i].lock);
+> >>>>
+> >>>>  	if (tbl->it_offset =3D=3D 0)
+> >>>>  		clear_bit(0, tbl->it_map);
+> >>>>
+> >>>>  	if (!bitmap_empty(tbl->it_map, tbl->it_size)) {
+> >>>>  		pr_err("iommu_tce: it_map is not empty");
+> >>>>-		return -EBUSY;
+> >>>>+		ret =3D -EBUSY;
+> >>>>+		if (tbl->it_offset =3D=3D 0)
+> >>>>+			set_bit(0, tbl->it_map);
+> >>>
+> >>>This really needs a comment.  Why on earth are you changing the it_map
+> >>>on a failure case?
+> >>
+> >>
+> >>Does this explain?
+> >>
+> >>/*
+> >>  * The platform code reserves zero address in iommu_init_table().
+> >>  * As we cleared busy bit for page @0 before using bitmap_empty(),
+> >>  * we are restoring it now.
+> >>  */
+> >
+> >Only partly.  What's it reserved for, and why do you know it was
+> >always set on entry?
+>=20
+>=20
+> Because it is only handled in this file and I can see it in the code. Or I
+> did not understand the question here...
 
-Why can't we just use mpc85xx_defconfig ?
+Sure, you can see it in the code, but you've been looking at this code
+for months and years.  For anyone looking at this function who's not
+familiar with the rest of the IOMMU code, a pointer to what's going on
+here would be really helpful.
 
-> 2. Spin off as much features as possible from mpc85xx_defconfig
-> 	and create a separate config file, say, kvm_guest.config
+--=20
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
 
-> Every time we add a new feature, we don't need to change several
-> defconfigs, we just add a new *.config
-> And you could merge any fragments you want into .config with the
-> current kconfig in Kernel.
-> 
-> Say you want to build mpc85xx_smp_defconfig, you do 3 steps
-> make mpc85xx_basic_defconfig
-> make smp.config
-> make kvm_guest.config
+--twz1s1Hj1O0rHoT0
+Content-Type: application/pgp-signature
 
-I'm not a big fan of that approach, but I guess it's fine for the more esoteric
-combinations.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
 
+iQIcBAEBAgAGBQJVNfhhAAoJEGw4ysog2bOS0yYQAIJzLtMYffwoZS9Fafr8/61k
+DEJ2uNXLXoFUxF5VS95EQpx/i11LqqjqtphbNQMcOFkUdQDiOj6LhoIcvqoLpcCJ
+QZTv+x/Zft+Uja7V0/n6DEWfaJVMZpEHVLNVfBxDMUbnHuIQjGO0hD7og5HvBmA0
+JK9KMQ9xEPdMbneBbS79WPfl3m8rLZTO/l0S7y5gXWyoojYv72nzKPcx4W3jT88O
+TlSadMC5z/lSnnel8Js0fubqTS+Zl1B1/P4tGasWGOzcvfq3p5+3BSuw4JIVOR0S
+04hHB8BRb+Hjt85L6ProIyBYcIp7W8bUnkPi0FzeJGtn/p8zt8YOOz88tjzVxoeU
+KsF6Bn3aRihYvaRNIVMdbeqMZ0EPVaxc1du9rd0yMXVhmCTEcY5IOZO6otWV3b8s
+pUN42P6Men0zvBtyo6bch9GgkunCuSSRkYksJ6vgfg/okTSQrQvtsGX5bcm2mg3W
+li09uakOcHayMmV+VArmtxeWOzNtO3NXI9FLpqWLGRifq32pQO05Ja29vYOPKRxS
+96c8lu0d01Cl5CyiMHTbVHy4Id0YBfy7ZXBktzY/2vJ7jASpqd4RTyOtsq6+sjt3
+9SKellO7CxXQuQvkOK587FEAdaDR7Ncpp/b+Z3GY1htTkoDq6PUcAtA5Ca9N+Pvb
+qtomuJ6BHS4capTg6vxv
+=jdv/
+-----END PGP SIGNATURE-----
 
-> Signed-off-by: Lijun Pan <Lijun.Pan@freescale.com>
-> ---
->  arch/powerpc/Makefile                              |  17 ++
->  ...t32_smp_defconfig => corenet32_basic_defconfig} |   0
->  ...t64_smp_defconfig => corenet64_basic_defconfig} |   0
->  arch/powerpc/configs/kvm_guest.config              |   2 +
->  .../{mpc85xx_defconfig => mpc85xx_basic_defconfig} |   0
->  arch/powerpc/configs/mpc85xx_smp_defconfig         | 244 ---------------------
->  arch/powerpc/configs/smp.config                    |   1 +
->  7 files changed, 20 insertions(+), 244 deletions(-)
->  rename arch/powerpc/configs/{corenet32_smp_defconfig => corenet32_basic_defconfig} (100%)
->  rename arch/powerpc/configs/{corenet64_smp_defconfig => corenet64_basic_defconfig} (100%)
->  create mode 100644 arch/powerpc/configs/kvm_guest.config
->  rename arch/powerpc/configs/{mpc85xx_defconfig => mpc85xx_basic_defconfig} (100%)
->  delete mode 100644 arch/powerpc/configs/mpc85xx_smp_defconfig
->  create mode 100644 arch/powerpc/configs/smp.config
-> 
-> diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-> index fc502e0..590b441 100644
-> --- a/arch/powerpc/Makefile
-> +++ b/arch/powerpc/Makefile
-> @@ -269,6 +269,23 @@ bootwrapper_install:
->  %.dtb: scripts
->  	$(Q)$(MAKE) ARCH=ppc64 $(build)=$(boot) $(patsubst %,$(boot)/%,$@)
->  
-> +define domerge
-> +       $(Q)$(CONFIG_SHELL) $(srctree)/scripts/kconfig/merge_config.sh $(srctree)/.config $(srctree)/arch/powerpc/configs/$(1).config
-> +endef
-
-Please look at mergeconfig in scripts/kconfig/Makefile. This needs to:
- - deal with objtree/srctree
- - run oldconfig
- - can you call it mergeconfig
-
-> +mpc85xx_defconfig: mpc85xx_basic_defconfig
-> +	@:
-> +
-> +mpc85xx_smp_defconfig: mpc85xx_basic_defconfig
-> +	$(call domerge,smp)
-> +	$(call domerge,kvm_guest)
-> +
-> +corenet32_smp_defconfig: corenet32_basic_defconfig
-> +	$(call domerge,smp)
-> +
-> +corenet64_smp_defconfig: corenet64_basic_defconfig
-> +	$(call domerge,smp)
-
-Can these be further consolidated into a corenet_defconfig and then a 32-bit
-and 64-bit config?
-
-
-> diff --git a/arch/powerpc/configs/kvm_guest.config b/arch/powerpc/configs/kvm_guest.config
-> new file mode 100644
-> index 0000000..615b0a0
-> --- /dev/null
-> +++ b/arch/powerpc/configs/kvm_guest.config
-> @@ -0,0 +1,2 @@
-> +CONFIG_KVM_GUEST=y
-> +CONFIG_PPC_QEMU_E500=y
-
-This isn't a general "kvm_guest" config, ie. we don't want that enabled on
-64-bit guest kernels. So can you call it kvm_e500.config or something.
-
-
-Finally can you do some tests to show that the resulting .config is identical
-before and after your patch, and demonstrate that in your changelog.
-
-cheers
+--twz1s1Hj1O0rHoT0--
