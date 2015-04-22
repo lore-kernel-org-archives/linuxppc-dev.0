@@ -1,19 +1,35 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <tglx@linutronix.de>
+Received: from Galois.linutronix.de (Galois.linutronix.de
+ [IPv6:2001:470:1f0b:db:abcd:42:0:1])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2E50C1A0317
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Apr 2015 15:40:49 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 3/3] powerpc/vdso: Disable building the 32-bit VDSO on little
- endian
-Date: Wed, 22 Apr 2015 15:40:36 +1000
-Message-Id: <1429681236-11644-3-git-send-email-mpe@ellerman.id.au>
-In-Reply-To: <1429681236-11644-1-git-send-email-mpe@ellerman.id.au>
-References: <1429681236-11644-1-git-send-email-mpe@ellerman.id.au>
-Cc: scottwood@freescale.com, sam.mj@au1.ibm.com,
- Anton Blanchard <anton@samba.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1B83E1A0317
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Apr 2015 18:45:52 +1000 (AEST)
+Date: Wed, 22 Apr 2015 10:45:23 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [Y2038] [PATCH 04/11] posix timers:Introduce the 64bit methods
+ with timespec64 type for k_clock structure
+In-Reply-To: <alpine.DEB.2.11.1504212204130.13914@nanos>
+Message-ID: <alpine.DEB.2.11.1504220946460.13914@nanos>
+References: <1429509459-17068-1-git-send-email-baolin.wang@linaro.org>
+ <3231171.5TrYVVBLh4@wuerfel> <alpine.DEB.2.11.1504211701140.13914@nanos>
+ <2819798.f0KhjY3UAe@wuerfel> <alpine.DEB.2.11.1504212204130.13914@nanos>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: pang.xunlei@linaro.org, Peter Zijlstra <peterz@infradead.org>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, Paul Mackerras <paulus@samba.org>,
+ cl@linux.com, Ingo Molnar <mingo@kernel.org>, heenasirwani@gmail.com,
+ linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, y2038@lists.linaro.org,
+ rafael.j.wysocki@intel.com, ahh@google.com,
+ Frederic Weisbecker <fweisbec@gmail.com>,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, pjt@google.com,
+ riel@redhat.com, richardcochran@gmail.com, Tejun Heo <tj@kernel.org>,
+ John Stultz <john.stultz@linaro.org>, rth@twiddle.net,
+ Baolin Wang <baolin.wang@linaro.org>, gregkh@linuxfoundation.org,
+ LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>, linux390@de.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,215 +39,119 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The only little endian configuration we support is ppc64le. As such if
-we're building little endian we don't need a 32-bit VDSO, because there
-is no 32-bit userspace.
+On Tue, 21 Apr 2015, Thomas Gleixner wrote:
+> On Tue, 21 Apr 2015, Arnd Bergmann wrote:
+> > I know there are concerns about this, in particular because C11 and
+> > POSIX both require tv_nsec to be 'long', unlike timeval->tv_usec,
+> > which is a 'suseconds_t' and can be defined as 'long long'.
+> >
+> > a)
+> > 
+> > struct timespec {
+> > 	time_t tv_sec;
+> > 	long long tv_nsec; /* or typedef long long snseconds_t */
+> > };
+> > 
+> > This is not directly compatible with C11 or POSIX.1-2008, but it
+> > matches what we do inside of 64-bit kernels, so probably has the
+> > highest chance of working correctly in practice
+> 
+> After reading Linus rant in the x32 thread again (thanks for the
+> reminder), and looking at b/c/d - which rate between ugly and butt
+> ugly - I think we should go for a) and screw POSIX and C11 as those
+> committee dinosaurs seem to completely ignore the 2038 problem on
+> 32bit machines. At least I have not found any hint that these folks
+> care at all. So why should we comply to something which is completely
+> useless?
+> 
+> That also makes the question about the upper 32bits check moot, so
+> it's the simplest and clearest of the possible solutions.
 
-This patch is a fairly ugly mess of #ifdefs, but is the minimal logic
-required to disable the 32-bit VDSO. We can hopefully clean up the
-result in future with some further refactoring.
+Second thoughts after some sleep.
 
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/include/asm/vdso.h        |  1 +
- arch/powerpc/kernel/Makefile           |  3 ++-
- arch/powerpc/kernel/vdso.c             | 40 ++++++++++++++++++++++++++++++----
- arch/powerpc/platforms/Kconfig.cputype | 10 +++++++++
- 4 files changed, 49 insertions(+), 5 deletions(-)
+So the outcome of this is going to be that user space libraries will
+not expose the syscall variant of
 
-diff --git a/arch/powerpc/include/asm/vdso.h b/arch/powerpc/include/asm/vdso.h
-index c53f5f6d1761..f455adb471e7 100644
---- a/arch/powerpc/include/asm/vdso.h
-+++ b/arch/powerpc/include/asm/vdso.h
-@@ -19,6 +19,7 @@
- 
- /* Offsets relative to thread->vdso_base */
- extern unsigned long vdso64_rt_sigtramp;
-+
- extern unsigned long vdso32_sigtramp;
- extern unsigned long vdso32_rt_sigtramp;
- 
-diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-index c1ebbdaac28f..87c7d1473488 100644
---- a/arch/powerpc/kernel/Makefile
-+++ b/arch/powerpc/kernel/Makefile
-@@ -33,11 +33,12 @@ obj-y				:= cputable.o ptrace.o syscalls.o \
- 				   signal.o sysfs.o cacheinfo.o time.o \
- 				   prom.o traps.o setup-common.o \
- 				   udbg.o misc.o io.o dma.o \
--				   misc_$(CONFIG_WORD_SIZE).o vdso32/ \
-+				   misc_$(CONFIG_WORD_SIZE).o \
- 				   of_platform.o prom_parse.o
- obj-$(CONFIG_PPC64)		+= setup_64.o sys_ppc32.o \
- 				   signal_64.o ptrace32.o \
- 				   paca.o nvram_64.o firmware.o
-+obj-$(CONFIG_VDSO32)		+= vdso32/
- obj-$(CONFIG_HAVE_HW_BREAKPOINT)	+= hw_breakpoint.o
- obj-$(CONFIG_PPC_BOOK3S_64)	+= cpu_setup_ppc970.o cpu_setup_pa6t.o
- obj-$(CONFIG_PPC_BOOK3S_64)	+= cpu_setup_power.o
-diff --git a/arch/powerpc/kernel/vdso.c b/arch/powerpc/kernel/vdso.c
-index 8331d0bef0fb..c2bd45187315 100644
---- a/arch/powerpc/kernel/vdso.c
-+++ b/arch/powerpc/kernel/vdso.c
-@@ -49,12 +49,15 @@
- /* The alignment of the vDSO */
- #define VDSO_ALIGNMENT	(1 << 16)
- 
--extern char vdso32_start, vdso32_end;
--static void *vdso32_kbase = &vdso32_start;
- static unsigned int vdso32_pages;
-+static void *vdso32_kbase;
- static struct page **vdso32_pagelist;
--unsigned long vdso32_sigtramp;
--unsigned long vdso32_rt_sigtramp;
-+unsigned long vdso32_sigtramp = 0;
-+unsigned long vdso32_rt_sigtramp = 0;
-+
-+#ifdef CONFIG_VDSO32
-+extern char vdso32_start, vdso32_end;
-+#endif
- 
- #ifdef CONFIG_PPC64
- extern char vdso64_start, vdso64_end;
-@@ -248,6 +251,7 @@ const char *arch_vma_name(struct vm_area_struct *vma)
- 
- 
- 
-+#ifdef CONFIG_VDSO32
- static void * __init find_section32(Elf32_Ehdr *ehdr, const char *secname,
- 				  unsigned long *size)
- {
-@@ -335,6 +339,20 @@ static int __init vdso_do_func_patch32(struct lib32_elfinfo *v32,
- 
- 	return 0;
- }
-+#else /* !CONFIG_VDSO32 */
-+static unsigned long __init find_function32(struct lib32_elfinfo *lib,
-+					    const char *symname)
-+{
-+	return 0;
-+}
-+
-+static int __init vdso_do_func_patch32(struct lib32_elfinfo *v32,
-+				       struct lib64_elfinfo *v64,
-+				       const char *orig, const char *fix)
-+{
-+	return 0;
-+}
-+#endif /* CONFIG_VDSO32 */
- 
- 
- #ifdef CONFIG_PPC64
-@@ -445,6 +463,7 @@ static __init int vdso_do_find_sections(struct lib32_elfinfo *v32,
- 	 * Locate symbol tables & text section
- 	 */
- 
-+#ifdef CONFIG_VDSO32
- 	v32->dynsym = find_section32(v32->hdr, ".dynsym", &v32->dynsymsize);
- 	v32->dynstr = find_section32(v32->hdr, ".dynstr", NULL);
- 	if (v32->dynsym == NULL || v32->dynstr == NULL) {
-@@ -457,6 +476,7 @@ static __init int vdso_do_find_sections(struct lib32_elfinfo *v32,
- 		return -1;
- 	}
- 	v32->text = sect - vdso32_kbase;
-+#endif
- 
- #ifdef CONFIG_PPC64
- 	v64->dynsym = find_section64(v64->hdr, ".dynsym", &v64->dynsymsize);
-@@ -493,7 +513,9 @@ static __init void vdso_setup_trampolines(struct lib32_elfinfo *v32,
- static __init int vdso_fixup_datapage(struct lib32_elfinfo *v32,
- 				       struct lib64_elfinfo *v64)
- {
-+#ifdef CONFIG_VDSO32
- 	Elf32_Sym *sym32;
-+#endif
- #ifdef CONFIG_PPC64
- 	Elf64_Sym *sym64;
- 
-@@ -508,6 +530,7 @@ static __init int vdso_fixup_datapage(struct lib32_elfinfo *v32,
- 		(sym64->st_value - VDSO64_LBASE);
- #endif /* CONFIG_PPC64 */
- 
-+#ifdef CONFIG_VDSO32
- 	sym32 = find_symbol32(v32, "__kernel_datapage_offset");
- 	if (sym32 == NULL) {
- 		printk(KERN_ERR "vDSO32: Can't find symbol "
-@@ -517,6 +540,7 @@ static __init int vdso_fixup_datapage(struct lib32_elfinfo *v32,
- 	*((int *)(vdso32_kbase + (sym32->st_value - VDSO32_LBASE))) =
- 		(vdso32_pages << PAGE_SHIFT) -
- 		(sym32->st_value - VDSO32_LBASE);
-+#endif
- 
- 	return 0;
- }
-@@ -550,6 +574,7 @@ static __init int vdso_fixup_features(struct lib32_elfinfo *v32,
- 				 start, start + size);
- #endif /* CONFIG_PPC64 */
- 
-+#ifdef CONFIG_VDSO32
- 	start = find_section32(v32->hdr, "__ftr_fixup", &size);
- 	if (start)
- 		do_feature_fixups(cur_cpu_spec->cpu_features,
-@@ -571,6 +596,7 @@ static __init int vdso_fixup_features(struct lib32_elfinfo *v32,
- 	if (start)
- 		do_lwsync_fixups(cur_cpu_spec->cpu_features,
- 				 start, start + size);
-+#endif
- 
- 	return 0;
- }
-@@ -732,11 +758,15 @@ static int __init vdso_init(void)
- #endif /* CONFIG_PPC64 */
- 
- 
-+#ifdef CONFIG_VDSO32
-+	vdso32_kbase = &vdso32_start;
-+
- 	/*
- 	 * Calculate the size of the 32 bits vDSO
- 	 */
- 	vdso32_pages = (&vdso32_end - &vdso32_start) >> PAGE_SHIFT;
- 	DBG("vdso32_kbase: %p, 0x%x pages\n", vdso32_kbase, vdso32_pages);
-+#endif
- 
- 
- 	/*
-@@ -757,6 +787,7 @@ static int __init vdso_init(void)
- 		return 0;
- 	}
- 
-+#ifdef CONFIG_VDSO32
- 	/* Make sure pages are in the correct state */
- 	vdso32_pagelist = kzalloc(sizeof(struct page *) * (vdso32_pages + 2),
- 				  GFP_KERNEL);
-@@ -769,6 +800,7 @@ static int __init vdso_init(void)
- 	}
- 	vdso32_pagelist[i++] = virt_to_page(vdso_data);
- 	vdso32_pagelist[i] = NULL;
-+#endif
- 
- #ifdef CONFIG_PPC64
- 	vdso64_pagelist = kzalloc(sizeof(struct page *) * (vdso64_pages + 2),
-diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
-index c8ae35f564fd..c140e94c7c72 100644
---- a/arch/powerpc/platforms/Kconfig.cputype
-+++ b/arch/powerpc/platforms/Kconfig.cputype
-@@ -405,6 +405,16 @@ config PPC_DOORBELL
- 
- endmenu
- 
-+config VDSO32
-+	def_bool y
-+	depends on PPC32 || CPU_BIG_ENDIAN
-+	help
-+	  This symbol controls whether we build the 32-bit VDSO. We obviously
-+	  want to do that if we're building a 32-bit kernel. If we're building
-+	  a 64-bit kernel then we only want a 32-bit VDSO if we're building for
-+	  big endian. That is because the only little endian configuration we
-+	  support is ppc64le which is 64-bit only.
-+
- choice
- 	prompt "Endianness selection"
- 	default CPU_BIG_ENDIAN
--- 
-2.1.0
+    syscall_timespec64 {
+           s64 tv_sec;
+	   s64 tv_nsec;
+    };
+
+to applications. The libs will translate them to spec conforming
+
+   timespec {
+           time_t tv_sec;
+	   long   tv_nsec;
+   };
+
+anyway. That means we have two translation steps on 32bit systems:
+
+  1) user space timespec -> syscall timespec64
+
+  2) syscall timespec64 -> scalar nsec s64 (ktime_t)
+
+and the other way round. The kernel internal representation is simply
+s64 (nsec) based all over the place.
+
+So we could save one translation step if we implement new syscalls
+which have a scalar nsec interface instead of the timespec/timeval
+cruft and let user space do the translation to whatever it wants.
+
+So
+
+sys_clock_nanosleep(const clockid_t which_clock, int flags,
+	            const struct timespec __user *expires,
+		    struct timespec __user *reminder)
+
+would get the new syscall variant:
+
+sys_clock_nanosleep_ns(const clockid_t which_clock, int flags,
+		       const s64 expires, s64 __user *reminder)
+
+I personally would welcome such an interface as it makes user space
+programming simpler. Just (re)arming a periodic nanosleep based on
+absolute expiry time is horrible stupid today:
+
+	 struct timespec expires;
+	 ....
+	 while ()
+	       expires.tv_nsec += period.tv_nsec;
+	       expires.tv_sec += period.tv_sec;
+	       normalize_timespec(&expires);
+	       sys_clock_nanosleep(CLOCK_ID, ABS, &expires, NULL);
+
+So with a scalar interface this would reduce to:
+
+	 s64 expires;
+	 ....
+	 while ()
+	       expires += period;
+	       sys_clock_nanosleep_ns(CLOCK_ID, ABS, &expires, NULL);
+
+There is a difference both in text and storage size plus the avoidance
+of the two translation steps (one translation step on 64bit).
+
+I know that this is non portable, but OTOH if I look at the non
+portable mechanisms which are used by data bases, java VMs and other
+apps which exist to squeeze the last cycles out of the system, there
+is certainly some value to that.
+
+The portable/spec conforming apps can still use the user space
+assisted translated timespec/timeval mechanisms.
+
+There is one caveat though: sys_clock_gettime and sys_gettimeofday
+will still need a syscall_timespec64 variant. We have no double
+translation steps there because we maintain the timespec
+representation in the timekeeping code for performance reasons to
+avoid the division in the syscall interface. But everything else can
+do nicely without the timespec cruft.
+
+We really should talk to libc folks and high performance users about
+this before blindly adding a gazillion of new timespec64 based
+interfaces.
+
+Thoughts?
+
+Thanks,
+
+	tglx
