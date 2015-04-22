@@ -1,35 +1,34 @@
-Return-Path: <arnd@arndb.de>
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.131])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <B43198@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bon0113.outbound.protection.outlook.com [157.56.111.113])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B9D1A1A06BA
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Apr 2015 21:15:29 +1000 (AEST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: y2038@lists.linaro.org
-Subject: Re: [Y2038] [PATCH 04/11] posix timers:Introduce the 64bit methods
- with timespec64 type for k_clock structure
-Date: Wed, 22 Apr 2015 13:07:44 +0200
-Message-ID: <2233518.Z2Q4dpO62C@wuerfel>
-In-Reply-To: <alpine.DEB.2.11.1504220946460.13914@nanos>
-References: <1429509459-17068-1-git-send-email-baolin.wang@linaro.org>
- <alpine.DEB.2.11.1504212204130.13914@nanos>
- <alpine.DEB.2.11.1504220946460.13914@nanos>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6C6E01A06C9
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Apr 2015 22:06:55 +1000 (AEST)
+Message-ID: <55378EC4.2080302@freescale.com>
+Date: Wed, 22 Apr 2015 15:06:28 +0300
+From: Purcareata Bogdan <b43198@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Cc: pang.xunlei@linaro.org, Peter Zijlstra <peterz@infradead.org>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, Paul Mackerras <paulus@samba.org>,
- cl@linux.com, Ingo Molnar <mingo@kernel.org>, heenasirwani@gmail.com,
- linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
- rafael.j.wysocki@intel.com, ahh@google.com,
- Frederic Weisbecker <fweisbec@gmail.com>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, pjt@google.com,
- riel@redhat.com, richardcochran@gmail.com,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- John Stultz <john.stultz@linaro.org>, Thomas Gleixner <tglx@linutronix.de>,
- rth@twiddle.net, Baolin Wang <baolin.wang@linaro.org>,
- gregkh@linuxfoundation.org, LKML <linux-kernel@vger.kernel.org>,
- netdev@vger.kernel.org, Tejun Heo <tj@kernel.org>, linux390@de.ibm.com,
- linuxppc-dev@lists.ozlabs.org
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 0/2] powerpc/kvm: Enable running guests on RT Linux
+References: <1424251955-308-1-git-send-email-bogdan.purcareata@freescale.com>					
+ <54E73A6C.9080500@suse.de> <54E740E7.5090806@redhat.com>					
+ <54E74A8C.30802@linutronix.de> <1424734051.4698.17.camel@freescale.com>					
+ <54EF196E.4090805@redhat.com> <54EF2025.80404@linutronix.de>				
+ <1424999159.4698.78.camel@freescale.com> <55158E6D.40304@freescale.com>			
+ <1428016310.22867.289.camel@freescale.com>		
+ <551E4A41.1080705@freescale.com>	
+ <1428096375.22867.369.camel@freescale.com>		
+ <55262DD3.2050707@freescale.com>	 <1428623611.22867.561.camel@freescale.com>
+ <5534DAA4.3050809@freescale.com> <1429577566.4352.68.camel@freescale.com>
+In-Reply-To: <1429577566.4352.68.camel@freescale.com>
+Content-Type: text/plain; charset="utf-8"; format=flowed
+Cc: Laurentiu Tudor <b10716@freescale.com>, linux-rt-users@vger.kernel.org,
+ Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
+ Alexander Graf <agraf@suse.de>, linux-kernel@vger.kernel.org,
+ Bogdan Purcareata <bogdan.purcareata@freescale.com>,
+ mihai.caraman@freescale.com, Paolo Bonzini <pbonzini@redhat.com>,
+ Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,101 +38,80 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wednesday 22 April 2015 10:45:23 Thomas Gleixner wrote:
-> On Tue, 21 Apr 2015, Thomas Gleixner wrote:
+On 21.04.2015 03:52, Scott Wood wrote:
+> On Mon, 2015-04-20 at 13:53 +0300, Purcareata Bogdan wrote:
+>> There was a weird situation for .kvmppc_mpic_set_epr - its corresponding inner
+>> function is kvmppc_set_epr, which is a static inline. Removing the static inline
+>> yields a compiler crash (Segmentation fault (core dumped) -
+>> scripts/Makefile.build:441: recipe for target 'arch/powerpc/kvm/kvm.o' failed),
+>> but that's a different story, so I just let it be for now. Point is the time may
+>> include other work after the lock has been released, but before the function
+>> actually returned. I noticed this was the case for .kvm_set_msi, which could
+>> work up to 90 ms, not actually under the lock. This made me change what I'm
+>> looking at.
+>
+> kvm_set_msi does pretty much nothing outside the lock -- I suspect
+> you're measuring an interrupt that happened as soon as the lock was
+> released.
 
-> So we could save one translation step if we implement new syscalls
-> which have a scalar nsec interface instead of the timespec/timeval
-> cruft and let user space do the translation to whatever it wants.
-> 
-> So
-> 
-> sys_clock_nanosleep(const clockid_t which_clock, int flags,
-> 	            const struct timespec __user *expires,
-> 		    struct timespec __user *reminder)
-> 
-> would get the new syscall variant:
-> 
-> sys_clock_nanosleep_ns(const clockid_t which_clock, int flags,
-> 		       const s64 expires, s64 __user *reminder)
+That's exactly right. I've seen things like a timer interrupt occuring right 
+after the spinlock_irqrestore, but before kvm_set_msi actually returned.
 
-As you might expect, there are a number of complications with this
-approach:
+[...]
 
-- John Stultz likes to point out that it's easier to do one change
-  at a time, so extending the interface to 64-bit has less potential
-  of breaking things than a more fundamental change. I think it's
-  useful to drop a lot of the syscalls when a more modern version
-  is around (e.g. let libc implement usleep and nanosleep through
-  clock_nanosleep), but keep the syscalls as close to the known-working
-  64-bit versions as we can.
-- The inode timestamp related syscalls (stat, utimes and variants
-  thereof) require the full range of time64_t and cannot use ktime_t.
-- converting between timespec types of different size is cheap,
-  converting timespec to ktime_t is still relatively cheap, but
-  converting ktime_t to timespec is rather expensive (at least eight
-  32-bit multiplies, plus a few shifts and additions if you don't
-  have 64-bit arithmetic).
-- ioctls that pass a timespec need to keep doing that or would require
-  a source-level change in user space instead of recompiling.
+>>   Or perhaps a different stress scenario involving a lot of VCPUs
+>> and external interrupts?
+>
+> You could instrument the MPIC code to find out how many loop iterations
+> you maxed out on, and compare that to the theoretical maximum.
 
-> I personally would welcome such an interface as it makes user space
-> programming simpler. Just (re)arming a periodic nanosleep based on
-> absolute expiry time is horrible stupid today:
-> 
-> 	 struct timespec expires;
-> 	 ....
-> 	 while ()
-> 	       expires.tv_nsec += period.tv_nsec;
-> 	       expires.tv_sec += period.tv_sec;
-> 	       normalize_timespec(&expires);
-> 	       sys_clock_nanosleep(CLOCK_ID, ABS, &expires, NULL);
-> 
-> So with a scalar interface this would reduce to:
-> 
-> 	 s64 expires;
-> 	 ....
-> 	 while ()
-> 	       expires += period;
-> 	       sys_clock_nanosleep_ns(CLOCK_ID, ABS, &expires, NULL);
-> 
-> There is a difference both in text and storage size plus the avoidance
-> of the two translation steps (one translation step on 64bit).
+Numbers are pretty low, and I'll try to explain based on my observations.
 
-We should probably look at it separately for each syscall. It's
-quite possible that we find a number of them for which it helps
-and others for which it hurts, so we need to see the big pictures.
+The problematic section in openpic_update_irq is this [1], since it loops 
+through all VCPUs, and IRQ_local_pipe further calls IRQ_check, which loops 
+through all pending interrupts for a VCPU [2].
 
-There are also a few other calls that will never need 64-bit
-time_t because the range is limited by the need to only ever
-pass relative timeouts (select, poll, io_getevents, recvmmsg,
-clock_getres, rt_sigtimedwait, sched_rr_get_interval, getrusage,
-waitid, semtimedop, sysinfo), so we could actually leave them
-using a 32-bit structure and have the libc do the conversion.
+The guest interfaces are virtio-vhostnet, which are based on MSI 
+(/proc/interrupts in guest shows they are MSI). For external interrupts to the 
+guest, the irq_source destmask is currently 0, and last_cpu is 0 (unitialized), 
+so [1] will go on and deliver the interrupt directly and unicast (no VCPUs loop).
 
-> I know that this is non portable, but OTOH if I look at the non
-> portable mechanisms which are used by data bases, java VMs and other
-> apps which exist to squeeze the last cycles out of the system, there
-> is certainly some value to that.
-> 
-> The portable/spec conforming apps can still use the user space
-> assisted translated timespec/timeval mechanisms.
-> 
-> There is one caveat though: sys_clock_gettime and sys_gettimeofday
-> will still need a syscall_timespec64 variant. We have no double
-> translation steps there because we maintain the timespec
-> representation in the timekeeping code for performance reasons to
-> avoid the division in the syscall interface. But everything else can
-> do nicely without the timespec cruft.
-> 
-> We really should talk to libc folks and high performance users about
-> this before blindly adding a gazillion of new timespec64 based
-> interfaces.
+I activated the pr_debugs in arch/powerpc/kvm/mpic.c, to see how many interrupts 
+are actually pending for the destination VCPU. At most, there were 3 interrupts 
+- n_IRQ = {224,225,226} - even for 24 flows of ping flood. I understand that 
+guest virtio interrupts are cascaded over 1 or a couple of shared MSI interrupts.
 
-I've started a list of affected syscalls at
-https://docs.google.com/spreadsheets/d/1HCYwHXxs48TsTb6IGUduNjQnmfRvMPzCN6T_0YiQwis/edit?usp=sharing
+So worst case, in this scenario, was checking the priorities for 3 pending 
+interrupts for 1 VCPU. Something like this (some of my prints included):
 
-Still adding more calls and description, let me know if you want edit
-permissions.
+[61010.582033] openpic_update_irq: destmask 1 last_cpu 0
+[61010.582034] openpic_update_irq: Only one CPU is allowed to receive this IRQ
+[61010.582036] IRQ_local_pipe: IRQ 224 active 0 was 1
+[61010.582037] IRQ_check: irq 226 set ivpr_pr=8 pr=-1
+[61010.582038] IRQ_check: irq 225 set ivpr_pr=8 pr=-1
+[61010.582039] IRQ_check: irq 224 set ivpr_pr=8 pr=-1
 
-	Arnd
+It would be really helpful to get your comments regarding whether these are 
+realistical number for everyday use, or they are relevant only to this 
+particular scenario.
+
+- Can these interrupts be used in directed delivery, so that the destination 
+mask can include multiple VCPUs? The MPIC manual states that timer and IPI 
+interrupts are supported for directed delivery, altough I'm not sure how much of 
+this is used in the emulation. I know that kvmppc uses the decrementer outside 
+of the MPIC.
+
+- How are virtio interrupts cascaded over the shared MSI interrupts? 
+/proc/device-tree/soc@e0000000/msi@41600/interrupts in the guest shows 8 values 
+- 224 - 231 - so at most there might be 8 pending interrupts in IRQ_check, is 
+that correct?
+
+Looking forward to your feedback.
+
+[1] http://lxr.free-electrons.com/source/arch/powerpc/kvm/mpic.c#L454
+[2] http://lxr.free-electrons.com/source/arch/powerpc/kvm/mpic.c#L303
+[3] 
+https://www-01.ibm.com/chips/techlib/techlib.nsf/techdocs/F27971551C9EED8E8525774A0048770A/$file/mpic_db_05_16_2011.pdf
+
+Best regards,
+Bogdan P.
