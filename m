@@ -1,42 +1,21 @@
-Return-Path: <stewart@linux.vnet.ibm.com>
-Received: from e7.ny.us.ibm.com (e7.ny.us.ibm.com [32.97.182.137])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5D2AD1A0245
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Apr 2015 09:03:45 +1000 (AEST)
-Received: from /spool/local
- by e7.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <stewart@linux.vnet.ibm.com>;
- Tue, 21 Apr 2015 19:03:41 -0400
-Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com
- [9.57.198.28])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 8CD8738C8041
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Apr 2015 19:03:39 -0400 (EDT)
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
- by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t3LN3dkH58392582
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Apr 2015 23:03:39 GMT
-Received: from d01av04.pok.ibm.com (localhost [127.0.0.1])
- by d01av04.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t3LN3cNm027265
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Apr 2015 19:03:39 -0400
-From: Stewart Smith <stewart@linux.vnet.ibm.com>
-To: mpe@ellerman.id.au
-Subject: Re: [PATCH v2 2/2] leds/powernv: Add driver for PowerNV platform
-In-Reply-To: <552F437E.4020409@linux.vnet.ibm.com>
-References: <20150320105921.14866.83209.stgit@localhost.localdomain>
- <20150320110328.14866.98225.stgit@localhost.localdomain>
- <552D303A.5080506@samsung.com> <m3zj69ql8x.fsf@oc8180480414.ibm.com>
- <552F437E.4020409@linux.vnet.ibm.com>
-Date: Wed, 22 Apr 2015 09:03:36 +1000
-Message-ID: <m3sibtozhz.fsf@oc8180480414.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: cooloney@gmail.com, Vasant Hegde <hegdevasant@linux.vnet.ibm.com>,
- rpurdie@rpsys.net, linuxppc-dev@lists.ozlabs.org,
- Jacek Anaszewski <j.anaszewski@samsung.com>, linux-leds@vger.kernel.org,
- khandual@linux.vnet.ibm.com
+ by lists.ozlabs.org (Postfix) with ESMTPS id A909B1A0245
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Apr 2015 10:27:12 +1000 (AEST)
+Message-ID: <1429662432.15241.1.camel@ellerman.id.au>
+Subject: Re: [PATCH 1/2] powerpc: Little endian should depend on PPC64
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Scott Wood <scottwood@freescale.com>
+Date: Wed, 22 Apr 2015 10:27:12 +1000
+In-Reply-To: <1429641183.4352.108.camel@freescale.com>
+References: <1429609312-32638-1-git-send-email-mpe@ellerman.id.au>
+ <1429641183.4352.108.camel@freescale.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, sam.mj@au1.ibm.com,
+ Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,30 +25,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Vasant Hegde <hegdevasant@linux.vnet.ibm.com> writes:
-> On 04/16/2015 12:20 AM, Stewart Smith wrote:
->> Jacek Anaszewski <j.anaszewski@samsung.com> writes:
->>>> +static struct platform_driver powernv_led_driver = {
->>>> +	.probe	= powernv_led_probe,
->>>> +	.remove = powernv_led_remove,
->>>> +	.driver = {
->>>> +		.name = "powernv-led-driver",
->>>> +		.owner = THIS_MODULE,
->>>> +		.of_match_table = powernv_led_match,
->>>
->>> Is somewhere DT documentation available for these leds?
->> 
->> https://github.com/open-power/skiboot/blob/master/doc/device-tree/ibm%2Copal/led.txt
->> 
->> We've been documenting things in firmware source, and I'm open to if we
->> should mirror this somewhere (somewhere in linux Documentation/ ?).
->
-> Stewart,
->
-> I'm adding Documentation/devicetree/bindings/leds/leds-powernv.txt ...which is
-> pretty much similar to the device tree documentation we have in OPAL side.
+On Tue, 2015-04-21 at 13:33 -0500, Scott Wood wrote:
+> On Tue, 2015-04-21 at 19:41 +1000, Michael Ellerman wrote:
+> > The only little endian configuration we support is ppc64le, so we
+> > shouldn't be asking which endian to use when building 32-bit kernels,
+> > they are always big endian.
+> > 
+> > Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> > ---
+> >  arch/powerpc/platforms/Kconfig.cputype | 1 +
+> >  1 file changed, 1 insertion(+)
+> > 
+> > diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
+> > index 7264e91190be..12fc443b9d54 100644
+> > --- a/arch/powerpc/platforms/Kconfig.cputype
+> > +++ b/arch/powerpc/platforms/Kconfig.cputype
+> > @@ -421,6 +421,7 @@ config CPU_BIG_ENDIAN
+> >  
+> >  config CPU_LITTLE_ENDIAN
+> >  	bool "Build little endian kernel"
+> > +	depends on PPC64
+> >  	select PPC64_BOOT_WRAPPER
+> >  	help
+> >  	  Build a little endian kernel.
+> 
+> Shouldn't this be PPC_BOOK3S_64?
 
-Michael,
+Ah yeah, stupid BOOKE :)
 
-I know we've kind of discussed this in the past, but perhaps we should
-come up with a conistent way of doing this for OPAL related docs.
+Currently it's nothing so PPC64 was an improvement, but you're right, if we're
+building 64-bit BOOKE then we shouldn't prompt.
+
+cheers
