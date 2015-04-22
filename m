@@ -1,35 +1,60 @@
-Return-Path: <tglx@linutronix.de>
-Received: from Galois.linutronix.de (Galois.linutronix.de
- [IPv6:2001:470:1f0b:db:abcd:42:0:1])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1B83E1A0317
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Apr 2015 18:45:52 +1000 (AEST)
-Date: Wed, 22 Apr 2015 10:45:23 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [Y2038] [PATCH 04/11] posix timers:Introduce the 64bit methods
- with timespec64 type for k_clock structure
-In-Reply-To: <alpine.DEB.2.11.1504212204130.13914@nanos>
-Message-ID: <alpine.DEB.2.11.1504220946460.13914@nanos>
-References: <1429509459-17068-1-git-send-email-baolin.wang@linaro.org>
- <3231171.5TrYVVBLh4@wuerfel> <alpine.DEB.2.11.1504211701140.13914@nanos>
- <2819798.f0KhjY3UAe@wuerfel> <alpine.DEB.2.11.1504212204130.13914@nanos>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 81F421A03A3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Apr 2015 19:25:57 +1000 (AEST)
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 52D1814011D
+ for <linuxppc-dev@ozlabs.org>; Wed, 22 Apr 2015 19:25:57 +1000 (AEST)
+Received: from /spool/local
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Wed, 22 Apr 2015 19:25:56 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 3D7222CE8054
+ for <linuxppc-dev@ozlabs.org>; Wed, 22 Apr 2015 19:25:51 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t3M9PhxW41550012
+ for <linuxppc-dev@ozlabs.org>; Wed, 22 Apr 2015 19:25:51 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t3M9PGaK013743
+ for <linuxppc-dev@ozlabs.org>; Wed, 22 Apr 2015 19:25:18 +1000
+Message-ID: <553768D1.1080208@linux.vnet.ibm.com>
+Date: Wed, 22 Apr 2015 14:54:33 +0530
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: pang.xunlei@linaro.org, Peter Zijlstra <peterz@infradead.org>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, Paul Mackerras <paulus@samba.org>,
- cl@linux.com, Ingo Molnar <mingo@kernel.org>, heenasirwani@gmail.com,
- linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, y2038@lists.linaro.org,
- rafael.j.wysocki@intel.com, ahh@google.com,
- Frederic Weisbecker <fweisbec@gmail.com>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, pjt@google.com,
- riel@redhat.com, richardcochran@gmail.com, Tejun Heo <tj@kernel.org>,
- John Stultz <john.stultz@linaro.org>, rth@twiddle.net,
- Baolin Wang <baolin.wang@linaro.org>, gregkh@linuxfoundation.org,
- LKML <linux-kernel@vger.kernel.org>, netdev@vger.kernel.org,
- Martin Schwidefsky <schwidefsky@de.ibm.com>, linux390@de.ibm.com,
- linuxppc-dev@lists.ozlabs.org
+To: Ulrich Weigand <Ulrich.Weigand@de.ibm.com>
+Subject: Re: [V6,1/9] elf: Add new powerpc specifc core note sections
+References: <20141203052204.9DA8F1400DD@ozlabs.org>
+ <54A50094.5070902@linux.vnet.ibm.com> <1421883597.30744.3.camel@neuling.org>
+ <OFC6CFC348.C619B89D-ONC1257DD5.0056279B-C1257DD5.00577002@de.ibm.com>
+ <1421963049.30744.23.camel@neuling.org>
+ <1422419289.9646.20.camel@neuling.org>
+ <OFE5516C3F.3C4884DE-ONC1257DE4.004E7852-C1257DE4.00514232@de.ibm.com>
+ <1424667110.16027.6.camel@neuling.org>
+ <OF5DE08D4B.0B79C501-ONC1257E0C.0044F80B-C1257E0C.0046DC8F@de.ibm.com>
+ <1426718702.4866.2.camel@neuling.org> <1426719027.4866.4.camel@neuling.org>
+ <550FEC36.8080803@linux.vnet.ibm.com>
+ <OF91038A37.65C405E5-ONC1257E21.0061938F-C1257E21.00620A03@de.ibm.com>
+ <1428534695.4682.18.camel@neuling.org> <55267595.90
+ <5527938B.1030901@linux.vnet.ibm.com> <552B82F9.3080108@linux.vnet.ibm.com>
+ <5535D83C.1060302@linux.vnet.ibm.com>
+ <OF1F8375CD.27A71A83-ONC1257E2E.00506121-C1257E2E.0050AC3C@de.ibm.com>
+In-Reply-To: <OF1F8375CD.27A71A83-ONC1257E2E.00506121-C1257E2E.0050AC3C@de.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: Michael Neuling <mikey@neuling.org>, james.hogan@imgtec.com,
+ avagin@openvz.org, Paul.Clothier@imgtec.com, peterz@infradead.org,
+ palves@redhat.com, Edjunior Barbosa Machado <emachado@linux.vnet.ibm.com>,
+ shuahkh@osg.samsung.com, akpm@linux-foundation.org,
+ linux-kernel@vger.kernel.org, dhowells@redhat.com, linuxppc-dev@ozlabs.org,
+ kirjanov@gmail.com, oleg@redhat.com, davej@redhat.com, tglx@linutronix.de,
+ sukadev@linux.vnet.ibm.com, davem@davemloft.net, sam.bobroff@au1.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,119 +64,94 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 21 Apr 2015, Thomas Gleixner wrote:
-> On Tue, 21 Apr 2015, Arnd Bergmann wrote:
-> > I know there are concerns about this, in particular because C11 and
-> > POSIX both require tv_nsec to be 'long', unlike timeval->tv_usec,
-> > which is a 'suseconds_t' and can be defined as 'long long'.
-> >
-> > a)
-> > 
-> > struct timespec {
-> > 	time_t tv_sec;
-> > 	long long tv_nsec; /* or typedef long long snseconds_t */
-> > };
-> > 
-> > This is not directly compatible with C11 or POSIX.1-2008, but it
-> > matches what we do inside of 64-bit kernels, so probably has the
-> > highest chance of working correctly in practice
+On 04/21/2015 08:11 PM, Ulrich Weigand wrote:
+> Anshuman Khandual <khandual@linux.vnet.ibm.com> wrote on 21.04.2015
+> 06:55:24:
 > 
-> After reading Linus rant in the x32 thread again (thanks for the
-> reminder), and looking at b/c/d - which rate between ugly and butt
-> ugly - I think we should go for a) and screw POSIX and C11 as those
-> committee dinosaurs seem to completely ignore the 2038 problem on
-> 32bit machines. At least I have not found any hint that these folks
-> care at all. So why should we comply to something which is completely
-> useless?
+>> Changed ELF core note sections
+>> ------------------------------
+>> These core note sections need to be changed to accommodate the in
+>> transaction ptrace requests when the running/current value of these
+>> registers will reside some where else instead of the original places
+>> of thread_struct.
+>>
+>> /* Running register state */
+>> (1) NT_PRFPREG            (Accessible always)
+>> (2) NT_PPC_VMX            (Accessible always)
+>> (3) NT_PPC_VSX            (Accessible always)
+>>
+>> New ELF core note sections
+>> --------------------------
+>> /* TM check pointed register set */
+>> (1) NT_PPC_TM_CGPR   --> NT_PRSTATUS   (Accessible inside TM)
+>> (2) NT_PPC_TM_CFPR   --> NT_PRFPREG   (Accessible inside TM)
+>> (3) NT_PPC_TM_CVMX   --> NT_PPC_VMX   (Accessible inside TM)
+>> (4) NT_PPC_TM_CVSX   --> NT_PPC_VSX   (Accessible inside TM)
+>>
+>> NOTE: The register set data structure for these ELF core not
+>> sections would exactly match with that of the corresponding
+>> running value register sets indicated above.
 > 
-> That also makes the question about the upper 32bits check moot, so
-> it's the simplest and clearest of the possible solutions.
+> OK.
+> 
+>> /* TM SPR set */         (Accessible always)
+>> (5) NT_PPC_TM_SPR   thread->tm_tfhar
+>>          thread->tm_tfiar
+>>          thread->ttm_exasr
+> 
+> OK.
+> 
+>> /* TM check pointed misc register set */
+>> (6) NT_PPC_TM_TAR   thread->tm_tar   (Accessible inside TM)
+>> (7) NT_PPC_TM_PPR   thread->tm_ppr   (Accessible inside TM)
+>> (8) NT_PPC_TM_DSCR   thread->tm_dscr (Accessible inside TM)
+>>
+>> NOTE: Application can have a different set of TAR, PPR and DSCR
+>> registers inside the transaction compared that of the outside.
+>> Also seems like they are *not* the check pointed ones, will
+>> double check on this. Changed the core note section name from
+>> NT_PPC_TM_CTAR to just NT_PPC_TM_TAR and for all the others.
+> 
+> Huh?  How is this not the checkpointed set?  I would have
+> expected that NT_PPC_TAR contains the current tar (which is
+> the one in the transaction if we're within one), while
+> NT_PPC_TM_CTAR contains the checkpointed value that will be
+> restored once the transaction aborts.  Why is this not the
+> case?
 
-Second thoughts after some sleep.
+Yeah you are right. There is one running value always which is
+'thread->tm_tar' when TM is active and it is 'thread->tar' when
+TM is not active. This can be accessed *always* with NT_PPC_TAR.
+The check pointed TAR is 'thread->tar' only when *TM is active*
+which can be accessed via NT_PPC_TM_CTAR. Will update the ELF
+core note list with lifetimes.
 
-So the outcome of this is going to be that user space libraries will
-not expose the syscall variant of
+> 
+>> NOTE: They are like any other special purpose register which can
+>> be changed from the user space. So the elf core note section name
+>> can be generic. Here are some optional ELF core note sections
+>> which we can also add like the above ones.
+>>
+>> (12)   NT_PPC_EBBRR   thread->ebbrr   (Accessible inside EBB)
+>> (13)   NT_PPC_EBBHR   thread->ebbhr   (Accessible inside EBB)
+>> (14)   NT_PPC_BESCR   thread->bescr   (Accessible inside EBB)
+>> (15)   NT_PPC_SIAR   thread->siar   (Accessible inside EBB)
+>> (16)    NT_PPC_SDAR   thread->sdar   (Accessible inside EBB)
+>> (17)   NT_PPC_SIER   thread->sier   (Accessible inside EBB)
+>> (18)   NT_PPC_MMCR2   thread->mmcr2   (Accessible inside EBB)
+>> (19)   NT_PPC_MMCR0   thread->mmcr0   (Accessible inside EBB)
+> 
+> So I'm not really familiar with the EBB stuff.  But just as a
+> general note, if those are in fact related (i.e. on every machine
+> that has EBB, all those registers will be available), it might
+> indeed make more sense to collect them into a single note section
+> (NT_PPC_EBB?) after all.
 
-    syscall_timespec64 {
-           s64 tv_sec;
-	   s64 tv_nsec;
-    };
-
-to applications. The libs will translate them to spec conforming
-
-   timespec {
-           time_t tv_sec;
-	   long   tv_nsec;
-   };
-
-anyway. That means we have two translation steps on 32bit systems:
-
-  1) user space timespec -> syscall timespec64
-
-  2) syscall timespec64 -> scalar nsec s64 (ktime_t)
-
-and the other way round. The kernel internal representation is simply
-s64 (nsec) based all over the place.
-
-So we could save one translation step if we implement new syscalls
-which have a scalar nsec interface instead of the timespec/timeval
-cruft and let user space do the translation to whatever it wants.
-
-So
-
-sys_clock_nanosleep(const clockid_t which_clock, int flags,
-	            const struct timespec __user *expires,
-		    struct timespec __user *reminder)
-
-would get the new syscall variant:
-
-sys_clock_nanosleep_ns(const clockid_t which_clock, int flags,
-		       const s64 expires, s64 __user *reminder)
-
-I personally would welcome such an interface as it makes user space
-programming simpler. Just (re)arming a periodic nanosleep based on
-absolute expiry time is horrible stupid today:
-
-	 struct timespec expires;
-	 ....
-	 while ()
-	       expires.tv_nsec += period.tv_nsec;
-	       expires.tv_sec += period.tv_sec;
-	       normalize_timespec(&expires);
-	       sys_clock_nanosleep(CLOCK_ID, ABS, &expires, NULL);
-
-So with a scalar interface this would reduce to:
-
-	 s64 expires;
-	 ....
-	 while ()
-	       expires += period;
-	       sys_clock_nanosleep_ns(CLOCK_ID, ABS, &expires, NULL);
-
-There is a difference both in text and storage size plus the avoidance
-of the two translation steps (one translation step on 64bit).
-
-I know that this is non portable, but OTOH if I look at the non
-portable mechanisms which are used by data bases, java VMs and other
-apps which exist to squeeze the last cycles out of the system, there
-is certainly some value to that.
-
-The portable/spec conforming apps can still use the user space
-assisted translated timespec/timeval mechanisms.
-
-There is one caveat though: sys_clock_gettime and sys_gettimeofday
-will still need a syscall_timespec64 variant. We have no double
-translation steps there because we maintain the timespec
-representation in the timekeeping code for performance reasons to
-avoid the division in the syscall interface. But everything else can
-do nicely without the timespec cruft.
-
-We really should talk to libc folks and high performance users about
-this before blindly adding a gazillion of new timespec64 based
-interfaces.
-
-Thoughts?
-
-Thanks,
-
-	tglx
+I agree that would save us precious ELF core note section entry slots
+which are 256 in total ever for powerpc arch. Right now all these
+register states in thread_struct are getting used for EBB only. But
+again these are PMU related registers, in future we may need to access
+them for purposes other than EBB. Yes, that will be a problem for us
+to solve later on. Right now it makes more sense to group them together
+under EBB heading and pass them as a group which saves ELF core note
+entries for powerpc. Hopefully Mikey and Michael will agree on this.
