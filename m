@@ -1,18 +1,18 @@
 Return-Path: <arnd@arndb.de>
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.187])
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.10])
  (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 167361A068E
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Apr 2015 01:39:24 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0BF571A0BF6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Apr 2015 01:39:32 +1000 (AEST)
 From: Arnd Bergmann <arnd@arndb.de>
-To: Luc Van Oostenryck <luc.vanoostenryck@gmail.com>
+To: Richard Cochran <richardcochran@gmail.com>
 Subject: Re: [Y2038] [PATCH 04/11] posix timers:Introduce the 64bit methods
  with timespec64 type for k_clock structure
-Date: Wed, 22 Apr 2015 17:38:28 +0200
-Message-ID: <2088991.9ogxlI08JT@wuerfel>
-In-Reply-To: <20150422151445.GA2165@macpro.local>
+Date: Wed, 22 Apr 2015 17:37:46 +0200
+Message-ID: <2593711.uvCiD7pHri@wuerfel>
+In-Reply-To: <20150422145432.GA31405@localhost.localdomain>
 References: <1429509459-17068-1-git-send-email-baolin.wang@linaro.org>
- <2500914.bVUENZ0dAZ@wuerfel> <20150422151445.GA2165@macpro.local>
+ <2500914.bVUENZ0dAZ@wuerfel> <20150422145432.GA31405@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
 Cc: pang.xunlei@linaro.org, Peter Zijlstra <peterz@infradead.org>,
@@ -22,7 +22,7 @@ Cc: pang.xunlei@linaro.org, Peter Zijlstra <peterz@infradead.org>,
  rafael.j.wysocki@intel.com, ahh@google.com,
  Frederic Weisbecker <fweisbec@gmail.com>,
  "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, pjt@google.com,
- riel@redhat.com, richardcochran@gmail.com, Tejun Heo <tj@kernel.org>,
+ riel@redhat.com, Tejun Heo <tj@kernel.org>,
  John Stultz <john.stultz@linaro.org>, Thomas Gleixner <tglx@linutronix.de>,
  rth@twiddle.net, Baolin Wang <baolin.wang@linaro.org>,
  gregkh@linuxfoundation.org, LKML <linux-kernel@vger.kernel.org>,
@@ -37,15 +37,16 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wednesday 22 April 2015 17:14:47 Luc Van Oostenryck wrote:
+On Wednesday 22 April 2015 16:54:32 Richard Cochran wrote:
 > On Wed, Apr 22, 2015 at 03:50:45PM +0200, Arnd Bergmann wrote:
-> > On Wednesday 22 April 2015 13:07:44 Arnd Bergmann wrote:
-> ...
-> > select, old_selct, pselect6: deprecated
+> > time, stime, gettimeofday, settimeofday, adjtimex, nanosleep,
+> > getitimer, setitimer:
+> >  all deprecated => wontfix
 > 
-> Small, copy&paste error here for pselect6.
-> 
+> If adjtimex is deprecated, what will replace it?  It is really
+> important for ntp.
 
-Right, that should have been poll.
+clock_adjtime(). Basically all all the basic time related syscalls
+are superceded by the clock_* calls that can take a clockid argument.
 
 	Arnd
