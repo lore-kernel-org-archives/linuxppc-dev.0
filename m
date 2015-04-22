@@ -1,12 +1,13 @@
 Return-Path: <christophe.leroy@c-s.fr>
 Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id E4F1E1A0BE0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Apr 2015 00:17:24 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTP id 13B2B1A0BE1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Apr 2015 00:28:23 +1000 (AEST)
 From: Christophe Leroy <christophe.leroy@c-s.fr>
 To: Mark Brown <broonie@kernel.org>
-Subject: [PATCH v2] spi: fsl-spi: use of_iomap() to map parameter ram on CPM1
-Message-Id: <20150422141721.D3F8C1A242E@localhost.localdomain>
-Date: Wed, 22 Apr 2015 16:17:21 +0200 (CEST)
+Subject: [PATCH v3] spi: fsl-spi: use devm_ioremap_resource() to map parameter
+ ram on CPM1
+Message-Id: <20150422142820.4267B1A242E@localhost.localdomain>
+Date: Wed, 22 Apr 2015 16:28:20 +0200 (CEST)
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
  linux-spi@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -22,25 +23,26 @@ On CPM2, the SPI parameter RAM is dynamically allocated in the
 dualport RAM whereas in CPM1, it is statically allocated to a default
 address with capability to relocate it somewhere else via the use of
 CPM micropatch. The address of the parameter RAM is given by the boot
-loader and expected to be mapped via of_iomap()
+loader and expected to be mapped via devm_ioremap_resource()
 
 In the current implementation, in function fsl_spi_cpm_get_pram()
 there is a confusion between the SPI_BASE register and the base of the
 SPI parameter RAM. Fortunatly, it is working properly with MPC866 and
 MPC885 because they do set SPI_BASE, but on MPC860 and other old
 MPC8xx that doesn't set SPI_BASE, pram_ofs is not properly set.
-Also, the parameter RAM is not properly mapped with of_iomap() as it
-should but still gets accessible by chance through the full RAM which
-is mapped from somewhere else.
+Also, the parameter RAM is not properly mapped with
+devm_ioremap_resource() as it should but still gets accessible by
+chance through the full RAM which is mapped from somewhere else.
 
 This patch applies to the SPI driver the same principle as for the
-CPM UART: when the CPM is of type CPM1, we simply do an of_iomap() of
-the area provided via the device tree.
+CPM UART: when the CPM is of type CPM1, we simply do an
+devm_ioremap_resource() of the area provided via the device tree.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
 ---
  v2: Use devm_ioremap_resource() instead of_iomap()
+ v3: Replaced of_iomap() by devm_ioremap_resource() in the patch text
 
  drivers/spi/spi-fsl-cpm.c | 35 ++++++++++++++++++-----------------
  1 file changed, 18 insertions(+), 17 deletions(-)
