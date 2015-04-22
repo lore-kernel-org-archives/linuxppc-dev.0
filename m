@@ -1,33 +1,14 @@
-Return-Path: <arnd@arndb.de>
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.13])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CAFF21A0B77
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Apr 2015 23:55:08 +1000 (AEST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: y2038@lists.linaro.org
-Subject: Re: [Y2038] [PATCH 04/11] posix timers:Introduce the 64bit methods
- with timespec64 type for k_clock structure
-Date: Wed, 22 Apr 2015 15:50:45 +0200
-Message-ID: <2500914.bVUENZ0dAZ@wuerfel>
-In-Reply-To: <2233518.Z2Q4dpO62C@wuerfel>
-References: <1429509459-17068-1-git-send-email-baolin.wang@linaro.org>
- <alpine.DEB.2.11.1504220946460.13914@nanos> <2233518.Z2Q4dpO62C@wuerfel>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Cc: pang.xunlei@linaro.org, Peter Zijlstra <peterz@infradead.org>,
- Heiko Carstens <heiko.carstens@de.ibm.com>, Paul Mackerras <paulus@samba.org>,
- cl@linux.com, Ingo Molnar <mingo@kernel.org>, heenasirwani@gmail.com,
- linux-arch@vger.kernel.org, linux-s390@vger.kernel.org,
- rafael.j.wysocki@intel.com, ahh@google.com,
- Frederic Weisbecker <fweisbec@gmail.com>,
- "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, pjt@google.com,
- riel@redhat.com, richardcochran@gmail.com, Tejun Heo <tj@kernel.org>,
- John Stultz <john.stultz@linaro.org>, Thomas Gleixner <tglx@linutronix.de>,
- rth@twiddle.net, Baolin Wang <baolin.wang@linaro.org>,
- gregkh@linuxfoundation.org, LKML <linux-kernel@vger.kernel.org>,
- netdev@vger.kernel.org, Martin Schwidefsky <schwidefsky@de.ibm.com>,
- linux390@de.ibm.com, linuxppc-dev@lists.ozlabs.org
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ by lists.ozlabs.org (Postfix) with ESMTP id E4F1E1A0BE0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Apr 2015 00:17:24 +1000 (AEST)
+From: Christophe Leroy <christophe.leroy@c-s.fr>
+To: Mark Brown <broonie@kernel.org>
+Subject: [PATCH v2] spi: fsl-spi: use of_iomap() to map parameter ram on CPM1
+Message-Id: <20150422141721.D3F8C1A242E@localhost.localdomain>
+Date: Wed, 22 Apr 2015 16:17:21 +0200 (CEST)
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-spi@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,122 +18,113 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wednesday 22 April 2015 13:07:44 Arnd Bergmann wrote:
-> 
-> I've started a list of affected syscalls at
-> https://docs.google.com/spreadsheets/d/1HCYwHXxs48TsTb6IGUduNjQnmfRvMPzCN6T_0YiQwis/edit?usp=sharing
-> 
-> Still adding more calls and description, let me know if you want edit
-> permissions.
-> 
+On CPM2, the SPI parameter RAM is dynamically allocated in the
+dualport RAM whereas in CPM1, it is statically allocated to a default
+address with capability to relocate it somewhere else via the use of
+CPM micropatch. The address of the parameter RAM is given by the boot
+loader and expected to be mapped via of_iomap()
 
-Got a first draft now, I'm relatively sure that the list is complete,
-but it's not the end of the world if I missed a syscall now.
+In the current implementation, in function fsl_spi_cpm_get_pram()
+there is a confusion between the SPI_BASE register and the base of the
+SPI parameter RAM. Fortunatly, it is working properly with MPC866 and
+MPC885 because they do set SPI_BASE, but on MPC860 and other old
+MPC8xx that doesn't set SPI_BASE, pram_ofs is not properly set.
+Also, the parameter RAM is not properly mapped with of_iomap() as it
+should but still gets accessible by chance through the full RAM which
+is mapped from somewhere else.
 
-Here are my findings, and I guess we should discuss these with the libc
-folks too. I'll group the syscalls according to subsystems:
+This patch applies to the SPI driver the same principle as for the
+CPM UART: when the CPM is of type CPM1, we simply do an of_iomap() of
+the area provided via the device tree.
 
-=== clocks and timers ===
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 
-clock_gettime, clock_settime, clock_adjtime, clock_getres, clock_nanosleep,
-timer_gettime, timer_settime, timerfd_gettime, timerfd_settime:
+---
+ v2: Use devm_ioremap_resource() instead of_iomap()
 
- these should be done consistently, either using timespec64 or 64-bit
- nanoseconds, either one works. 64-bit nanoseconds would simplify the
- kernel internally quite a bit by avoiding the double timekeeping (we
- keep track of both nanoseconds and timespec in the timekeeper struct).
- the downside of nanoseconds-only is that each existing caller would
- need a conversion in user space, where currently we can avoid the
- expensive ktime_to_ts() for some cases.
+ drivers/spi/spi-fsl-cpm.c | 35 ++++++++++++++++++-----------------
+ 1 file changed, 18 insertions(+), 17 deletions(-)
 
-time, stime, gettimeofday, settimeofday, adjtimex, nanosleep,
-getitimer, setitimer:
- all deprecated => wontfix
-
-=== i/o ===
-
-pselect6, ppoll, io_getevents, recvmmsg:
- These currently pass a timespec into the kernel with *relative*
- timeouts. Internally, they convert it to ktime_t and back on the
- way out. We have three options:
- - leave as is, get the libc to convert 64-bit timespec to 32-bit
-   timespec on the way into the kernel and back on the way out,
-   which works because the relative timeout will not overflow
- - use ktime_t to make these more efficient in the kernel, at the
-   expense of requiring user space to convert it (all except 
-   io_getevents pass back the remaining time).
- - leave the current behavior, but use 64-bit timespec.
-
-select, old_selct, pselect6: deprecated
-
-=== ipc ===
-
-mq_timedsend, mqtimedreceive: These get an *absolute* timeout,
-so we have to change them. Internally they use ktime_t, so that
-would be the natural interface, but timespec64 would work as well.
-
-semtimedop: This uses a relative timeout that is converted to
-jiffies internally, so using ktime_t would not be as natural,
-unless we rewrite the function to use hrtimers.
-
-msgctl, semctl, shmctl: These have an output, which is a time_t
-that stores the absolute seconds value of the last time something
-happened. Internally this comes from get_seconds(), which has to
-be efficient anyway. The best way forward is probably to use a
-structure layout for these that is compatible with what 64-bit
-architectures do. Note that the structures sometimes have padding
-to deal with the extension of time_t to 64-bit, but not all
-architectures have that, and some (notably big-endian arm) have
-it in the wrong place, so my feeling is that we're better off not
-using that padding and instead doing something that works for
-everyone.
-
-=== inodes and filesystems ===
-
-utimesnsat, fstat64, fstatat64:
-
-inode timestamps need to represent times before 1970 and way into
-the future, so we need 64-bit time_t here, I see no other alternatives
-here, so we have to pass struct timespec64 into utimensat, and
-create version 4 of 'struct stat' to pass into the future fstat and
-fstatat. I would use a version that matches the 64-bit layout
-of 'struct stat'.
-
-utime, utimes, futimensat, oldstat, oldlstat, oldfstat, newstat,
-newlstat, newfstat, newfstatat, stat64 and lstat64: these are all
-deprecated now, we have to stop getting this wrong!
-
-=== tasks ===
-
-getrusage, waitid: these pass a 'struct rusage' that contains a
-'struct timeval' with elapsed time. Again there are multiple options:
-- We could change rusage to contain a new 'struct relative_timeval'
-  instead, with an unchanged layout, which makes the format incompatible
-  with a standard libc that uses a 64-bit based timeval.
-- We could make the layout the same as on 64-bit machines, as x32 does,
-  which is again incompatible with posix but would work better
-- We could make the layout what glibc expects, using 64-bit based
-  timeval structures at the beginning.
-- We could define a new structure usings pure nanosecond counters.
-
-rt_sigtimedwait: This passes a relative timespec value in back out,
-so we could keep the current layout and have glibc convert it, or
-change it to something else. The kernel internally converts to jiffies
-to call schedule_timeout.
-
-futex: this passes a relative *or* absolute timespec in, so we have to
-change it. The kernel uses ktime_t internally here, so we could make
-the interface nanosecond based or stick with timespec64.
-
-sched_rr_get_interval: This returns a timespec with the schedule interval
-to user space, using a 32-bit based format is fine here, or we could
-convert to timespec64. The kernel uses jiffies internally.
-
-wait4: replaced by waitid
-
-=== system wide ===
-
-sysinfo: struct sysinfo contains '__kernel_long_t uptime', we can keep
-that, it's fine.
-
-	Arnd
+diff --git a/drivers/spi/spi-fsl-cpm.c b/drivers/spi/spi-fsl-cpm.c
+index e85ab1c..4e5c945 100644
+--- a/drivers/spi/spi-fsl-cpm.c
++++ b/drivers/spi/spi-fsl-cpm.c
+@@ -23,6 +23,7 @@
+ #include <linux/of_address.h>
+ #include <linux/spi/spi.h>
+ #include <linux/types.h>
++#include <linux/platform_device.h>
+ 
+ #include "spi-fsl-cpm.h"
+ #include "spi-fsl-lib.h"
+@@ -264,17 +265,6 @@ static unsigned long fsl_spi_cpm_get_pram(struct mpc8xxx_spi *mspi)
+ 	if (mspi->flags & SPI_CPM2) {
+ 		pram_ofs = cpm_muram_alloc(SPI_PRAM_SIZE, 64);
+ 		out_be16(spi_base, pram_ofs);
+-	} else {
+-		struct spi_pram __iomem *pram = spi_base;
+-		u16 rpbase = in_be16(&pram->rpbase);
+-
+-		/* Microcode relocation patch applied? */
+-		if (rpbase) {
+-			pram_ofs = rpbase;
+-		} else {
+-			pram_ofs = cpm_muram_alloc(SPI_PRAM_SIZE, 64);
+-			out_be16(spi_base, pram_ofs);
+-		}
+ 	}
+ 
+ 	iounmap(spi_base);
+@@ -287,7 +277,6 @@ int fsl_spi_cpm_init(struct mpc8xxx_spi *mspi)
+ 	struct device_node *np = dev->of_node;
+ 	const u32 *iprop;
+ 	int size;
+-	unsigned long pram_ofs;
+ 	unsigned long bds_ofs;
+ 
+ 	if (!(mspi->flags & SPI_CPM_MODE))
+@@ -314,8 +303,21 @@ int fsl_spi_cpm_init(struct mpc8xxx_spi *mspi)
+ 		}
+ 	}
+ 
+-	pram_ofs = fsl_spi_cpm_get_pram(mspi);
+-	if (IS_ERR_VALUE(pram_ofs)) {
++	if (mspi->flags & SPI_CPM1) {
++		struct resource *res;
++
++		res = platform_get_resource(to_platform_device(dev),
++					    IORESOURCE_MEM, 1);
++		mspi->pram = devm_ioremap_resource(dev, res);
++	} else {
++		unsigned long pram_ofs = fsl_spi_cpm_get_pram(mspi);
++
++		if (IS_ERR_VALUE(pram_ofs))
++			mspi->pram = NULL;
++		else
++			mspi->pram = cpm_muram_addr(pram_ofs);
++	}
++	if (mspi->pram == NULL) {
+ 		dev_err(dev, "can't allocate spi parameter ram\n");
+ 		goto err_pram;
+ 	}
+@@ -341,8 +343,6 @@ int fsl_spi_cpm_init(struct mpc8xxx_spi *mspi)
+ 		goto err_dummy_rx;
+ 	}
+ 
+-	mspi->pram = cpm_muram_addr(pram_ofs);
+-
+ 	mspi->tx_bd = cpm_muram_addr(bds_ofs);
+ 	mspi->rx_bd = cpm_muram_addr(bds_ofs + sizeof(*mspi->tx_bd));
+ 
+@@ -370,7 +370,8 @@ err_dummy_rx:
+ err_dummy_tx:
+ 	cpm_muram_free(bds_ofs);
+ err_bds:
+-	cpm_muram_free(pram_ofs);
++	if (!(mspi->flags & SPI_CPM1))
++		cpm_muram_free(cpm_muram_offset(mspi->pram));
+ err_pram:
+ 	fsl_spi_free_dummy_rx();
+ 	return -ENOMEM;
+-- 
+2.1.0
