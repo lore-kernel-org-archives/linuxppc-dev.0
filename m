@@ -1,16 +1,16 @@
 Return-Path: <christophe.leroy@c-s.fr>
 Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id 6D6DD1A0490
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Apr 2015 20:06:48 +1000 (AEST)
-Message-Id: <1bf5ce30a4bfb2004e248406c867417a60ab91de.1429696335.git.christophe.leroy@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTP id A79A41A03AA
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Apr 2015 20:06:49 +1000 (AEST)
+Message-Id: <77ae326f3637ae008e33875b7be792d64b24461f.1429696335.git.christophe.leroy@c-s.fr>
 In-Reply-To: <cover.1429696335.git.christophe.leroy@c-s.fr>
 References: <cover.1429696335.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH 2/3] powerpc/8xx: Handle PAGE_USER via APG bits
+Subject: [PATCH 3/3] powerpc/8xx: Implementation of PAGE_EXEC
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  scottwood@freescale.com
-Date: Wed, 22 Apr 2015 12:06:43 +0200 (CEST)
+Date: Wed, 22 Apr 2015 12:06:45 +0200 (CEST)
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -21,173 +21,144 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Use of APG for handling PAGE_USER.
+This patch implements PAGE_EXEC capability on the 8xx.
 
-All pages PP exec bits are set to either 000 or 011, which means
-respectively RW for Supervisor and no access for User, or RO for
-Supervisor and no access for user.
+All pages PP exec bits are set to 000, which means Execute for
+Supervisor and no Execute for User.
+Then we use the APG to say whether accesses are according to Page
+rules, "all Supervisor" rules (Exec for all) and
+"all User" rules (Exec for noone)
 
-Then we use the APG to say whether accesses are according to
-Page rules or "all Supervisor" rules (Access to all)
-
-Therefore, we define 2 APG groups corresponding to _PAGE_USER.
-Mx_AP are initialised as follows:
-GP0 => No user => 01 (all accesses performed according
-				to page definition)
-GP1 => User => 00 (all accesses performed as supervisor
-                                according to page definition)
-
-This removes the special 8xx handling in pte_update()
+Therefore, we define 4 APG groups. msb is _PAGE_EXEC,
+lsb is _PAGE_USER. MI_AP is initialised as follows:
+GP0 (00) => Not User, no exec => 11 (all accesses performed as user)
+GP1 (01) => User but no exec => 11 (all accesses performed as user)
+GP2 (10) => Not User, exec => 01 (rights according to page definition)
+GP3 (11) => User, exec => 00 (all accesses performed as supervisor)
 
 Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
 ---
- arch/powerpc/include/asm/pgtable-ppc32.h | 19 -------------------
- arch/powerpc/include/asm/pte-8xx.h       | 27 +++++++++------------------
- arch/powerpc/kernel/head_8xx.S           | 21 ++++++++++++---------
- 3 files changed, 21 insertions(+), 46 deletions(-)
+ arch/powerpc/include/asm/cputable.h |  2 +-
+ arch/powerpc/include/asm/mmu-8xx.h  | 26 ++++++++++++++++++++++++++
+ arch/powerpc/include/asm/pte-8xx.h  |  3 ++-
+ arch/powerpc/kernel/head_8xx.S      | 12 +++++++++---
+ 4 files changed, 38 insertions(+), 5 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/pgtable-ppc32.h b/arch/powerpc/include/asm/pgtable-ppc32.h
-index b3e9a3e..d280fa2 100644
---- a/arch/powerpc/include/asm/pgtable-ppc32.h
-+++ b/arch/powerpc/include/asm/pgtable-ppc32.h
-@@ -170,24 +170,6 @@ static inline unsigned long pte_update(pte_t *p,
- #ifdef PTE_ATOMIC_UPDATES
- 	unsigned long old, tmp;
+diff --git a/arch/powerpc/include/asm/cputable.h b/arch/powerpc/include/asm/cputable.h
+index daa5af9..c9aa2db 100644
+--- a/arch/powerpc/include/asm/cputable.h
++++ b/arch/powerpc/include/asm/cputable.h
+@@ -360,7 +360,7 @@ extern const char *powerpc_base_platform;
+ 	    CPU_FTR_USE_TB | CPU_FTR_MAYBE_CAN_NAP | \
+ 	    CPU_FTR_COMMON | CPU_FTR_FPU_UNAVAILABLE)
+ #define CPU_FTRS_CLASSIC32	(CPU_FTR_COMMON | CPU_FTR_USE_TB)
+-#define CPU_FTRS_8XX	(CPU_FTR_USE_TB)
++#define CPU_FTRS_8XX	(CPU_FTR_USE_TB | CPU_FTR_NOEXECUTE)
+ #define CPU_FTRS_40X	(CPU_FTR_USE_TB | CPU_FTR_NODSISRALIGN | CPU_FTR_NOEXECUTE)
+ #define CPU_FTRS_44X	(CPU_FTR_USE_TB | CPU_FTR_NODSISRALIGN | CPU_FTR_NOEXECUTE)
+ #define CPU_FTRS_440x6	(CPU_FTR_USE_TB | CPU_FTR_NODSISRALIGN | CPU_FTR_NOEXECUTE | \
+diff --git a/arch/powerpc/include/asm/mmu-8xx.h b/arch/powerpc/include/asm/mmu-8xx.h
+index d41200c..1407034 100644
+--- a/arch/powerpc/include/asm/mmu-8xx.h
++++ b/arch/powerpc/include/asm/mmu-8xx.h
+@@ -27,6 +27,19 @@
+ #define MI_Ks		0x80000000	/* Should not be set */
+ #define MI_Kp		0x40000000	/* Should always be set */
  
--#ifdef CONFIG_PPC_8xx
--	unsigned long tmp2;
--
--	__asm__ __volatile__("\
--1:	lwarx	%0,0,%4\n\
--	andc	%1,%0,%5\n\
--	or	%1,%1,%6\n\
--	/* 0x200 == Extended encoding, bit 22 */ \
--	/* Bit 22 has to be 1 when _PAGE_USER is unset and _PAGE_RO is set */ \
--	rlwimi	%1,%1,32-1,0x200\n /* get _PAGE_RO */ \
--	rlwinm	%3,%1,32-2,0x200\n /* get _PAGE_USER */ \
--	andc	%1,%1,%3\n\
--	stwcx.	%1,0,%4\n\
--	bne-	1b"
--	: "=&r" (old), "=&r" (tmp), "=m" (*p), "=&r" (tmp2)
--	: "r" (p), "r" (clr), "r" (set), "m" (*p)
--	: "cc" );
--#else /* CONFIG_PPC_8xx */
- 	__asm__ __volatile__("\
- 1:	lwarx	%0,0,%3\n\
- 	andc	%1,%0,%4\n\
-@@ -198,7 +180,6 @@ static inline unsigned long pte_update(pte_t *p,
- 	: "=&r" (old), "=&r" (tmp), "=m" (*p)
- 	: "r" (p), "r" (clr), "r" (set), "m" (*p)
- 	: "cc" );
--#endif /* CONFIG_PPC_8xx */
- #else /* PTE_ATOMIC_UPDATES */
- 	unsigned long old = pte_val(*p);
- 	*p = __pte((old & ~clr) | set);
++/*
++ * All pages PP exec bits are set to 000, which means Execute for Supervisor
++ * and no Execute for User.
++ * Then we use the APG to say whether accesses are according to Page rules,
++ * "all Supervisor" rules (Exec for all) and "all User" rules (Exec for noone)
++ * Therefore, we define 4 APG groups. msb is _PAGE_EXEC, lsb is _PAGE_USER
++ * 0 (00) => Not User, no exec => 11 (all accesses performed as user)
++ * 1 (01) => User but no exec => 11 (all accesses performed as user)
++ * 2 (10) => Not User, exec => 01 (rights according to page definition)
++ * 3 (11) => User, exec => 00 (all accesses performed as supervisor)
++ */
++#define MI_APG_INIT	0xf4ffffff
++
+ /* The effective page number register.  When read, contains the information
+  * about the last instruction TLB miss.  When MI_RPN is written, bits in
+  * this register are used to create the TLB entry.
+@@ -87,6 +100,19 @@
+ #define MD_Ks		0x80000000	/* Should not be set */
+ #define MD_Kp		0x40000000	/* Should always be set */
+ 
++/*
++ * All pages PP exec bits are set to either 000 or 011, which means respectively
++ * RW for Supervisor and no access for User, or RO for Supervisor and no access
++ * for user.
++ * Then we use the APG to say whether accesses are according to Page rules or
++ * "all Supervisor" rules (Access to all)
++ * Therefore, we define 2 APG groups. lsb is _PAGE_USER
++ * 0 => No user => 01 (all accesses performed according to page definition)
++ * 1 => User => 00 (all accesses performed as supervisor
++ *                                 according to page definition)
++ */
++#define MD_APG_INIT	0x4fffffff
++
+ /* The effective page number register.  When read, contains the information
+  * about the last instruction TLB miss.  When MD_RPN is written, bits in
+  * this register are used to create the TLB entry.
 diff --git a/arch/powerpc/include/asm/pte-8xx.h b/arch/powerpc/include/asm/pte-8xx.h
-index c8aacad..7926d4e 100644
+index 7926d4e..eae9b05 100644
 --- a/arch/powerpc/include/asm/pte-8xx.h
 +++ b/arch/powerpc/include/asm/pte-8xx.h
-@@ -35,36 +35,27 @@
- #define _PAGE_SPECIAL	0x0008	/* SW entry, forced to 0 by the TLB miss */
- #define _PAGE_DIRTY	0x0100	/* C: page changed */
- 
--/* These 4 software bits must be masked out when the entry is loaded
-- * into the TLB, 1 SW bit left(0x0080).
-+/* These 4 software bits must be masked out when the L2 entry is loaded
-+ * into the TLB.
+@@ -40,8 +40,9 @@
   */
--#define _PAGE_GUARDED	0x0010	/* software: guarded access */
--#define _PAGE_ACCESSED	0x0020	/* software: page referenced */
--#define _PAGE_WRITETHRU	0x0040	/* software: caching is write through */
-+#define _PAGE_GUARDED	0x0010	/* Copied to L1 G entry in DTLB */
-+#define _PAGE_USER	0x0020	/* Copied to L1 APG lsb */
-+#define _PAGE_ACCESSED	0x0040	/* software: page referenced */
-+#define _PAGE_WRITETHRU	0x0080	/* software: caching is write through */
+ #define _PAGE_GUARDED	0x0010	/* Copied to L1 G entry in DTLB */
+ #define _PAGE_USER	0x0020	/* Copied to L1 APG lsb */
+-#define _PAGE_ACCESSED	0x0040	/* software: page referenced */
++#define _PAGE_EXEC	0x0040	/* Copied to L1 APG */
+ #define _PAGE_WRITETHRU	0x0080	/* software: caching is write through */
++#define _PAGE_ACCESSED	0x0800	/* software: page referenced */
  
--/* Setting any bits in the nibble with the follow two controls will
-- * require a TLB exception handler change.  It is assumed unused bits
-- * are always zero.
-- */
--#define _PAGE_RO	0x0400	/* lsb PP bits */
--#define _PAGE_USER	0x0800	/* msb PP bits */
--/* set when _PAGE_USER is unset and _PAGE_RO is set */
--#define _PAGE_KNLRO	0x0200
-+#define _PAGE_RO	0x0600	/* Supervisor RO, User no access */
+ #define _PAGE_RO	0x0600	/* Supervisor RO, User no access */
  
- #define _PMD_PRESENT	0x0001
- #define _PMD_BAD	0x0ff0
- #define _PMD_PAGE_MASK	0x000c
- #define _PMD_PAGE_8M	0x000c
- 
--#define _PTE_NONE_MASK _PAGE_KNLRO
--
- /* Until my rework is finished, 8xx still needs atomic PTE updates */
- #define PTE_ATOMIC_UPDATES	1
- 
- /* We need to add _PAGE_SHARED to kernel pages */
--#define _PAGE_KERNEL_RO	(_PAGE_SHARED | _PAGE_RO | _PAGE_KNLRO)
--#define _PAGE_KERNEL_ROX	(_PAGE_SHARED | _PAGE_RO | _PAGE_KNLRO | \
--				 _PAGE_EXEC)
-+#define _PAGE_KERNEL_RO		(_PAGE_SHARED | _PAGE_RO)
-+#define _PAGE_KERNEL_ROX	(_PAGE_SHARED | _PAGE_RO | _PAGE_EXEC)
- #define _PAGE_KERNEL_RW		(_PAGE_SHARED | _PAGE_DIRTY | _PAGE_RW | \
- 				 _PAGE_HWWRITE)
- #define _PAGE_KERNEL_RWX	(_PAGE_SHARED | _PAGE_DIRTY | _PAGE_RW | \
 diff --git a/arch/powerpc/kernel/head_8xx.S b/arch/powerpc/kernel/head_8xx.S
-index 20c082c..508c645 100644
+index 508c645..29a5c1a 100644
 --- a/arch/powerpc/kernel/head_8xx.S
 +++ b/arch/powerpc/kernel/head_8xx.S
-@@ -363,12 +363,15 @@ InstructionTLBMiss:
- 	rlwimi	r11, r10, 32 - ((PAGE_SHIFT - 2) << 1), (PAGE_SHIFT - 2) << 1, 29
- 	lwz	r11, (swapper_pg_dir-PAGE_OFFSET)@l(r11)	/* Get the level 1 entry */
- 
--	/* Load the MI_TWC with the attributes for this "segment." */
--	MTSPR_CPU6(SPRN_MI_TWC, r11, r3)	/* Set segment attributes */
--	rlwinm	r11, r11,0,0,19	/* Extract page descriptor page address */
- 	/* Extract level 2 index */
- 	rlwinm	r10, r10, 32 - (PAGE_SHIFT - 2), 32 - PAGE_SHIFT, 29
--	lwzx	r10, r10, r11	/* Get the pte */
-+	rlwimi	r10, r11, 0, 0, 32 - PAGE_SHIFT - 1	/* Add level 2 base */
-+	lwz	r10, 0(r10)	/* Get the pte */
-+
-+	/* Insert the APG into the TWC from the Linux PTE. */
-+	rlwimi	r11, r10, 0, 26, 26
-+	/* Load the MI_TWC with the attributes for this "segment." */
-+	MTSPR_CPU6(SPRN_MI_TWC, r11, r3)	/* Set segment attributes */
- 
- #ifdef CONFIG_SWAP
- 	rlwinm	r11, r10, 32-5, _PAGE_PRESENT
-@@ -377,12 +380,12 @@ InstructionTLBMiss:
- #endif
- 	li	r11, RPN_PATTERN
- 	/* The Linux PTE won't go exactly into the MMU TLB.
--	 * Software indicator bits 21 and 28 must be clear.
-+	 * Software indicator bits 20-23 and 28 must be clear.
- 	 * Software indicator bits 24, 25, 26, and 27 must be
- 	 * set.  All other Linux PTE bits control the behavior
- 	 * of the MMU.
- 	 */
--	rlwimi	r10, r11, 0, 0x07f8	/* Set 24-27, clear 21-23,28 */
-+	rlwimi	r10, r11, 0, 0x0ff8	/* Set 24-27, clear 20-23,28 */
- 	MTSPR_CPU6(SPRN_MI_RPN, r10, r3)	/* Update TLB entry */
- 
- 	/* Restore registers */
-@@ -431,13 +434,13 @@ DataStoreTLBMiss:
- 	rlwimi	r10, r11, 0, 0, 32 - PAGE_SHIFT - 1	/* Add level 2 base */
+@@ -369,7 +369,7 @@ InstructionTLBMiss:
  	lwz	r10, 0(r10)	/* Get the pte */
  
--	/* Insert the Guarded flag into the TWC from the Linux PTE.
--	 * It is bit 27 of both the Linux PTE and the TWC (at least
-+	/* Insert the Guarded flag and APG into the TWC from the Linux PTE.
-+	 * It is bit 26-27 of both the Linux PTE and the TWC (at least
- 	 * I got that right :-).  It will be better when we can put
- 	 * this into the Linux pgd/pmd and load it in the operation
- 	 * above.
+ 	/* Insert the APG into the TWC from the Linux PTE. */
+-	rlwimi	r11, r10, 0, 26, 26
++	rlwimi	r11, r10, 0, 25, 26
+ 	/* Load the MI_TWC with the attributes for this "segment." */
+ 	MTSPR_CPU6(SPRN_MI_TWC, r11, r3)	/* Set segment attributes */
+ 
+@@ -469,6 +469,7 @@ DataStoreTLBMiss:
  	 */
--	rlwimi	r11, r10, 0, 27, 27
-+	rlwimi	r11, r10, 0, 26, 27
- 	/* Insert the WriteThru flag into the TWC from the Linux PTE.
- 	 * It is bit 25 in the Linux PTE and bit 30 in the TWC
- 	 */
+ 	li	r11, RPN_PATTERN
+ 	rlwimi	r10, r11, 0, 24, 28	/* Set 24-27, clear 28 */
++	rlwimi	r10, r11, 0, 20, 20	/* clear 20 */
+ 	MTSPR_CPU6(SPRN_MD_RPN, r10, r3)	/* Update TLB entry */
+ 
+ 	/* Restore registers */
+@@ -789,15 +790,20 @@ initial_mmu:
+ 	ori	r8, r8, MI_EVALID	/* Mark it valid */
+ 	mtspr	SPRN_MI_EPN, r8
+ 	mtspr	SPRN_MD_EPN, r8
+-	li	r8, MI_PS8MEG		/* Set 8M byte page */
++	li	r8, MI_PS8MEG | (2 << 5)	/* Set 8M byte page, APG 2 */
+ 	ori	r8, r8, MI_SVALID	/* Make it valid */
+ 	mtspr	SPRN_MI_TWC, r8
++	li	r8, MI_PS8MEG		/* Set 8M byte page, APG 0 */
++	ori	r8, r8, MI_SVALID	/* Make it valid */
+ 	mtspr	SPRN_MD_TWC, r8
+ 	li	r8, MI_BOOTINIT		/* Create RPN for address 0 */
+ 	mtspr	SPRN_MI_RPN, r8		/* Store TLB entry */
+ 	mtspr	SPRN_MD_RPN, r8
+-	lis	r8, MI_Kp@h		/* Set the protection mode */
++	lis	r8, MI_APG_INIT@h	/* Set protection modes */
++	ori	r8, r8, MI_APG_INIT@l
+ 	mtspr	SPRN_MI_AP, r8
++	lis	r8, MD_APG_INIT@h
++	ori	r8, r8, MD_APG_INIT@l
+ 	mtspr	SPRN_MD_AP, r8
+ 
+ 	/* Map another 8 MByte at the IMMR to get the processor
 -- 
 2.1.0
