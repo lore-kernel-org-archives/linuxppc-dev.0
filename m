@@ -1,37 +1,37 @@
-Return-Path: <tlfalcon@linux.vnet.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <luc.vanoostenryck@gmail.com>
+Received: from mail-wi0-x244.google.com (mail-wi0-x244.google.com
+ [IPv6:2a00:1450:400c:c05::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 006331A068E
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Apr 2015 07:42:45 +1000 (AEST)
-Received: from /spool/local
- by e32.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <tlfalcon@linux.vnet.ibm.com>;
- Wed, 22 Apr 2015 15:42:43 -0600
-Received: from b03cxnp07028.gho.boulder.ibm.com
- (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
- by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 25C9A3E4003E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Apr 2015 15:42:40 -0600 (MDT)
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
- by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t3MLeh8h30933110
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Apr 2015 14:40:43 -0700
-Received: from d03av01.boulder.ibm.com (localhost [127.0.0.1])
- by d03av01.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t3MLgdGS031378
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Apr 2015 15:42:39 -0600
-Message-ID: <553815CD.1000407@linux.vnet.ibm.com>
-Date: Wed, 22 Apr 2015 16:42:37 -0500
-From: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5FE6C1A0541
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Apr 2015 01:15:01 +1000 (AEST)
+Received: by wivz2 with SMTP id z2so6928950wiv.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Apr 2015 08:14:57 -0700 (PDT)
+Date: Wed, 22 Apr 2015 17:14:47 +0200
+From: Luc Van Oostenryck <luc.vanoostenryck@gmail.com>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [Y2038] [PATCH 04/11] posix timers:Introduce the 64bit methods
+ with timespec64 type for k_clock structure
+Message-ID: <20150422151445.GA2165@macpro.local>
+References: <1429509459-17068-1-git-send-email-baolin.wang@linaro.org>
+ <alpine.DEB.2.11.1504220946460.13914@nanos>
+ <2233518.Z2Q4dpO62C@wuerfel> <2500914.bVUENZ0dAZ@wuerfel>
 MIME-Version: 1.0
-To: David Gibson <david@gibson.dropbear.id.au>, anton@au1.ibm.com
-Subject: Re: [PATCHv2] ibmveth: Fix off-by-one error in ibmveth_change_mtu()
-References: <1429578471-9717-1-git-send-email-david@gibson.dropbear.id.au>
-In-Reply-To: <1429578471-9717-1-git-send-email-david@gibson.dropbear.id.au>
-Content-Type: text/plain; charset=utf-8
-Cc: michael@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <2500914.bVUENZ0dAZ@wuerfel>
+Cc: pang.xunlei@linaro.org, Peter Zijlstra <peterz@infradead.org>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>, Paul Mackerras <paulus@samba.org>,
+ cl@linux.com, Ingo Molnar <mingo@kernel.org>, heenasirwani@gmail.com,
+ linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, y2038@lists.linaro.org,
+ rafael.j.wysocki@intel.com, ahh@google.com,
+ Frederic Weisbecker <fweisbec@gmail.com>,
+ "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>, pjt@google.com,
+ riel@redhat.com, richardcochran@gmail.com, Tejun Heo <tj@kernel.org>,
+ John Stultz <john.stultz@linaro.org>, Thomas Gleixner <tglx@linutronix.de>,
+ rth@twiddle.net, Baolin Wang <baolin.wang@linaro.org>,
+ gregkh@linuxfoundation.org, LKML <linux-kernel@vger.kernel.org>,
+ netdev@vger.kernel.org, Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ linux390@de.ibm.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,55 +41,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/20/2015 08:07 PM, David Gibson wrote:
-> AFAIK the PAPR document which defines the virtual device interface used by
-> the ibmveth driver doesn't specify a specific maximum MTU.  So, in the
-> ibmveth driver, the maximum allowed MTU is determined by the maximum
-> allocated buffer size of 64k (corresponding to one page in the common case)
-> minus the per-buffer overhead IBMVETH_BUFF_OH (which has value 22 for 14
-> bytes of ethernet header, plus 8 bytes for an opaque handle).
->
-> This suggests a maximum allowable MTU of 65514 bytes, but in fact the
-> driver only permits a maximum MTU of 65513.  This is because there is a <
-> instead of an <= in ibmveth_change_mtu(), which only permits an MTU which
-> is strictly smaller than the buffer size, rather than allowing the buffer
-> to be completely filled.
->
-> This patch fixes the buglet.
+On Wed, Apr 22, 2015 at 03:50:45PM +0200, Arnd Bergmann wrote:
+> On Wednesday 22 April 2015 13:07:44 Arnd Bergmann wrote:
+...
+> select, old_selct, pselect6: deprecated
 
-Thanks!
+Small, copy&paste error here for pselect6.
 
-Acked-by: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
 
->
-> Signed-off-by: David Gibson <david@gibson.dropbear.id.au>1
-> ---
->  drivers/net/ethernet/ibm/ibmveth.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
->
-> Changes since v1:
->  * Fixed a second instance of the same off-by-one error.  Thanks to
->    Thomas Falcon for spotting this.
->
-> diff --git a/drivers/net/ethernet/ibm/ibmveth.c b/drivers/net/ethernet/ibm/ibmveth.c
-> index cd7675a..1813476 100644
-> --- a/drivers/net/ethernet/ibm/ibmveth.c
-> +++ b/drivers/net/ethernet/ibm/ibmveth.c
-> @@ -1238,7 +1238,7 @@ static int ibmveth_change_mtu(struct net_device *dev, int new_mtu)
->  		return -EINVAL;
->  
->  	for (i = 0; i < IBMVETH_NUM_BUFF_POOLS; i++)
-> -		if (new_mtu_oh < adapter->rx_buff_pool[i].buff_size)
-> +		if (new_mtu_oh <= adapter->rx_buff_pool[i].buff_size)
->  			break;
->  
->  	if (i == IBMVETH_NUM_BUFF_POOLS)
-> @@ -1257,7 +1257,7 @@ static int ibmveth_change_mtu(struct net_device *dev, int new_mtu)
->  	for (i = 0; i < IBMVETH_NUM_BUFF_POOLS; i++) {
->  		adapter->rx_buff_pool[i].active = 1;
->  
-> -		if (new_mtu_oh < adapter->rx_buff_pool[i].buff_size) {
-> +		if (new_mtu_oh <= adapter->rx_buff_pool[i].buff_size) {
->  			dev->mtu = new_mtu;
->  			vio_cmo_set_dev_desired(viodev,
->  						ibmveth_get_desired_dma
+Luc
