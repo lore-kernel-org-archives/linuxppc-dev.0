@@ -1,41 +1,23 @@
-Return-Path: <shilpa.bhat@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <broonie@sirena.org.uk>
+Received: from mezzanine.sirena.org.uk (mezzanine.sirena.org.uk
+ [IPv6:2400:8900::f03c:91ff:fedb:4f4])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 74ACC1A0C78
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Apr 2015 03:06:49 +1000 (AEST)
-Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id BBBBD1400A0
- for <linuxppc-dev@ozlabs.org>; Thu, 23 Apr 2015 03:06:48 +1000 (AEST)
-Received: from /spool/local
- by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <shilpa.bhat@linux.vnet.ibm.com>;
- Wed, 22 Apr 2015 22:36:46 +0530
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 182261258056
- for <linuxppc-dev@ozlabs.org>; Wed, 22 Apr 2015 22:38:41 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t3MH6hKp55771366
- for <linuxppc-dev@ozlabs.org>; Wed, 22 Apr 2015 22:36:43 +0530
-Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t3MH6gJh009136
- for <linuxppc-dev@ozlabs.org>; Wed, 22 Apr 2015 22:36:43 +0530
-From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: [PATCH 2/2] cpufreq: powernv: Register for OCC related opal_message
- notification
-Date: Wed, 22 Apr 2015 22:34:25 +0530
-Message-Id: <1429722265-2953-2-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-In-Reply-To: <1429722265-2953-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-References: <1429722265-2953-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-Cc: Viresh Kumar <viresh.kumar@linaro.org>,
- "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, linux-pm@vger.kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id D29F21A0C10
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Apr 2015 05:47:03 +1000 (AEST)
+Date: Wed, 22 Apr 2015 20:46:55 +0100
+From: Mark Brown <broonie@kernel.org>
+To: Christophe Leroy <christophe.leroy@c-s.fr>
+Message-ID: <20150422194655.GJ22845@sirena.org.uk>
+References: <20150422142820.4267B1A242E@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="LkBseQZEL/3d2JPd"
+In-Reply-To: <20150422142820.4267B1A242E@localhost.localdomain>
+Subject: Re: [PATCH v3] spi: fsl-spi: use devm_ioremap_resource() to map
+ parameter ram on CPM1
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-spi@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,130 +27,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-OCC is an On-Chip-Controller which takes care of power and thermal
-safety of the chip. During runtime due to power failure or
-overtemperature the OCC may throttle the frequencies of the CPUs to
-remain within the power budget.
 
-We want the cpufreq driver to be aware of such situations to be able
-to report it to the user. We register to opal_message_notifier to
-receive OCC messages from opal.
+--LkBseQZEL/3d2JPd
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-powernv_cpufreq_throttle_check() reports any frequency throttling and
-this patch will report the reason or event that caused throttling. We
-can be throttled if OCC is reset or OCC limits Pmax due to power or
-thermal reasons. We are also notified of unthrottling after an OCC
-reset or if OCC restores Pmax on the chip.
+On Wed, Apr 22, 2015 at 04:28:20PM +0200, Christophe Leroy wrote:
+> On CPM2, the SPI parameter RAM is dynamically allocated in the
+> dualport RAM whereas in CPM1, it is statically allocated to a default
+> address with capability to relocate it somewhere else via the use of
+> CPM micropatch. The address of the parameter RAM is given by the boot
+> loader and expected to be mapped via devm_ioremap_resource()
 
-Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-CC: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-CC: Viresh Kumar <viresh.kumar@linaro.org>
-CC: linux-pm@vger.kernel.org
----
- drivers/cpufreq/powernv-cpufreq.c | 70 ++++++++++++++++++++++++++++++++++++++-
- 1 file changed, 69 insertions(+), 1 deletion(-)
+Applied, thanks.
 
-diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-index ebef0d8..5718765 100644
---- a/drivers/cpufreq/powernv-cpufreq.c
-+++ b/drivers/cpufreq/powernv-cpufreq.c
-@@ -32,6 +32,7 @@
- #include <asm/firmware.h>
- #include <asm/reg.h>
- #include <asm/smp.h> /* Required for cpu_sibling_mask() in UP configs */
-+#include <asm/opal.h>
- 
- #define POWERNV_MAX_PSTATES	256
- #define PMSR_PSAFE_ENABLE	(1UL << 30)
-@@ -40,7 +41,7 @@
- #define PMSR_LP(x)		((x >> 48) & 0xFF)
- 
- static struct cpufreq_frequency_table powernv_freqs[POWERNV_MAX_PSTATES+1];
--static bool rebooting, throttled;
-+static bool rebooting, throttled, occ_reset;
- 
- /*
-  * Note: The set of pstates consists of contiguous integers, the
-@@ -395,6 +396,72 @@ static struct notifier_block powernv_cpufreq_reboot_nb = {
- 	.notifier_call = powernv_cpufreq_reboot_notifier,
- };
- 
-+static char throttle_reason[6][50] = {	"No throttling",
-+					"Power Cap",
-+					"Processor Over Temperature",
-+					"Power Supply Failure",
-+					"OverCurrent",
-+					"OCC Reset"
-+				     };
-+
-+static int powernv_cpufreq_occ_msg(struct notifier_block *nb,
-+		unsigned long msg_type, void *msg)
-+{
-+	struct opal_msg *occ_msg = msg;
-+	uint64_t token;
-+	uint64_t chip_id, reason;
-+
-+	if (msg_type != OPAL_MSG_OCC)
-+		return 0;
-+	token = be64_to_cpu(occ_msg->params[0]);
-+	switch (token) {
-+	case 0:
-+		occ_reset = true;
-+		/*
-+		 * powernv_cpufreq_throttle_check() is called in
-+		 * target() callback which can detect the throttle state
-+		 * for governors like ondemand.
-+		 * But static governors will not call target() often thus
-+		 * report throttling here.
-+		 */
-+		if (!throttled) {
-+			throttled = true;
-+			pr_crit("CPU Frequency is throttled\n");
-+		}
-+		pr_info("OCC in Reset\n");
-+		break;
-+	case 1:
-+		pr_info("OCC is Loaded\n");
-+		break;
-+	case 2:
-+		chip_id = be64_to_cpu(occ_msg->params[1]);
-+		reason = be64_to_cpu(occ_msg->params[2]);
-+		if (occ_reset) {
-+			occ_reset = false;
-+			throttled = false;
-+			pr_info("OCC is Active\n");
-+			/* Sanity check for static governors */
-+			powernv_cpufreq_throttle_check(smp_processor_id());
-+		} else if (reason) {
-+			throttled = true;
-+			pr_info("Pmax reduced due to %s on chip %x\n",
-+					throttle_reason[reason], (int)chip_id);
-+		} else {
-+			throttled = false;
-+			pr_info("%s on chip %x\n",
-+					throttle_reason[reason], (int)chip_id);
-+		}
-+		break;
-+	}
-+	return 0;
-+}
-+
-+static struct notifier_block powernv_cpufreq_opal_nb = {
-+	.notifier_call	= powernv_cpufreq_occ_msg,
-+	.next		= NULL,
-+	.priority	= 0,
-+};
-+
- static void powernv_cpufreq_stop_cpu(struct cpufreq_policy *policy)
- {
- 	struct powernv_smp_call_data freq_data;
-@@ -430,6 +497,7 @@ static int __init powernv_cpufreq_init(void)
- 	}
- 
- 	register_reboot_notifier(&powernv_cpufreq_reboot_nb);
-+	opal_message_notifier_register(OPAL_MSG_OCC, &powernv_cpufreq_opal_nb);
- 	return cpufreq_register_driver(&powernv_cpufreq_driver);
- }
- module_init(powernv_cpufreq_init);
--- 
-1.9.3
+--LkBseQZEL/3d2JPd
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBCAAGBQJVN/quAAoJECTWi3JdVIfQ0yQH/2DJ9S8GfJwPwo8ruC+0YONd
+SroWJBoDjaXQs8IdvGag/sge4We8f4OAC8gSef3wS/IVp45IHiEH5wzRKiO52Mey
+GObMbcLhwX3ASMF5h4wIIV7C4G5sSkam/9awUZghlUNV8m+3dhc1gBmpgYAIwldp
+mDv53gkJLt7bC+0vYmIU2Iuyf7z0bEODVuICsuPEes5GRsWCwELnIQ0aOIOq5GAc
+kAaV56UV69E2/eXeGpq7O4fcwENe0uDFgt7dzzQK8lXO0GYbTk/c8+nY1oCA2Hsk
+pj18A+AsFnKbaNpSMvNB4B05mi9gAyZqaMR7KQfty9BJX0oM1f4iKW+g+wj8RwE=
+=Yt/f
+-----END PGP SIGNATURE-----
+
+--LkBseQZEL/3d2JPd--
