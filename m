@@ -1,37 +1,40 @@
-Return-Path: <hegdevasant@linux.vnet.ibm.com>
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
+Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A7FE31A0BF1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Apr 2015 14:58:35 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4563E1A0C16
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Apr 2015 15:18:01 +1000 (AEST)
 Received: from /spool/local
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <hegdevasant@linux.vnet.ibm.com>;
- Thu, 23 Apr 2015 14:58:34 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id E8338357804C
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Apr 2015 14:58:31 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t3N4wNph66912396
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Apr 2015 14:58:31 +1000
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t3N4vvXc011771
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Apr 2015 14:57:57 +1000
-Message-ID: <55387BC2.1050004@linux.vnet.ibm.com>
-Date: Thu, 23 Apr 2015 10:27:38 +0530
-From: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
+ Thu, 23 Apr 2015 10:47:57 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 4FCC11258056
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Apr 2015 10:49:52 +0530 (IST)
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t3N5Hsst57475326
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Apr 2015 10:47:54 +0530
+Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t3N4rDgP016280
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Apr 2015 10:23:14 +0530
+Date: Thu, 23 Apr 2015 10:47:32 +0530
+From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH RFC] powerpc/ftrace: add powerpc timebase as a trace
+ clock source
+Message-ID: <20150423051732.GB14738@naverao1-tp.in.ibm.com>
+References: <1429614216-30538-1-git-send-email-naveen.n.rao@linux.vnet.ibm.com>
+ <20150421092541.295dd72b@gandalf.local.home>
+ <20150422051855.GE2327@naverao1-tp.ibm.com>
+ <1429758884.4672.4.camel@ellerman.id.au>
 MIME-Version: 1.0
-To: Jacek Anaszewski <j.anaszewski81@gmail.com>
-Subject: Re: [PATCH v3 3/3] leds/powernv: Add driver for PowerNV platform
-References: <20150422234524.305b5324@ja.home>
-In-Reply-To: <20150422234524.305b5324@ja.home>
-Content-Type: text/plain; charset=windows-1252
-Cc: stewart@linux.vnet.ibm.com, devicetree@vger.kernel.org, cooloney@gmail.com,
- rpurdie@rpsys.net, linuxppc-dev@lists.ozlabs.org, linux-leds@vger.kernel.org,
- khandual@linux.vnet.ibm.com
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1429758884.4672.4.camel@ellerman.id.au>
+Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org,
+ Steven Rostedt <rostedt@goodmis.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,217 +44,126 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/23/2015 03:15 AM, Jacek Anaszewski wrote:
->> On 21.04.2015 07:50, Vasant Hegde wrote:
->> On 04/20/2015 08:57 PM, Jacek Anaszewski wrote:
->>> Hi Vasant,
->>>
->>
-
-Jacek,
-
-.../...
-
->>>>
->>>> All the system LEDs can be found in the same regular
->>>> path /sys/class/leds/. We don't use LED colors. Hence our LEDs have
->>>> names in this format.
->>>>
->>>>           <location_code>:<ATTENTION|IDENT|FAULT>
->>>
->>> I think that powernv prefix should be also present in the beginning.
->>> What would be the format of <location_code> ? Does it identify a LED
->>> uniquely.
->>
->> Location code is unique and its guaranteed that we don't clash here.
->> Also this is platform specific LEDs and I don't see any value by
->> prefixing "powernv". Hence I think its fine with current format.
->>
->> Sample location code : U78C9.001.RST0027-P1-C1
->>    Here "U78C9.001.RST0027" represents the system model
->>               P1 - Planar 1
->>               C1 - Card 1
+On 2015/04/23 01:14PM, Michael Ellerman wrote:
+> On Wed, 2015-04-22 at 10:48 +0530, Naveen N. Rao wrote:
+> > On 2015/04/21 09:25AM, Steven Rostedt wrote:
+> > > On Tue, 21 Apr 2015 16:33:36 +0530
+> > > "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
+> > > 
+> > > > Add a new powerpc-specific trace clock using the timebase register,
+> > > > similar to x86-tsc. This gives us a fast, monotonic, cross-cpu clock
+> > > > for trace entries and can be used to correlate events across cpus as
+> > > > well as across hypervisor and guest (assuming it is not a migrated guest
+> > > > with a non-zero tb_offset).
+> > > > 
+> > > > Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+> > > > ---
+> > > > I have followed the approach used by x86-tsc here, but we could get rid of
+> > > > trace_clock.c if we directly use get_tb() with perhaps the notrace annotation.
+> > > > Would that be preferable?
+> > > > 
+> > > 
+> > > Probably. But all clocks used by tracing should be marked by notrace.
+> > > Don't just wrap it with a notrace. But looking at the code, it seems
+> > > that get_tb() is a static inline, which wont work as a pointer. Seems
+> > > you still need the indirect function call.
+> > > 
+> > > Note, all "inline" functions are notrace by default, so you do not need
+> > > to add any notrace annotation to an inlined function.
+> > 
+> > Steve,
+> > Thanks for the clarification - the current approach is better in that 
+> > case.
+> > 
+> > Paul, Mike,
+> > Can you please let me know your thoughts on this?
 > 
-> I consulted ePAPR standard and all the characters used for location code
-> are allowed. Nonetheless AFAIK no existing bindings use uppercase for
-> node name.
-> 
+> What is the value in adding a powerpc specific clock, which requires educating
+> people to use it, vs just using the global clock?
 
-These are PowerNV platform specific properties..
+Hi Michael,
+There are two reasons:
+- One, using the timebase register gives us a very fast (just one 
+  instruction) hardware clock source for trace entries compared to the 
+  global clock.
+- Two, using the timebase values allows us to correlate trace events 
+  across hypervisor and guest, which is not possible using the other 
+  trace clocks. [With migrated guests, there could be a non-zero 
+  tb_offset which we may also want to make available to userspace in 
+  some manner. Any suggestions?]
+
+This will show up as an additional trace clock and can be selected if 
+one wishes to use it. As an example:
+
+[root@rhel7-img ~]# cd /sys/kernel/debug/tracing
+[root@rhel7-img tracing]# cat trace_clock
+[local] global counter uptime perf mono ppc-tb
+[root@rhel7-img tracing]# head -30 trace
+# tracer: nop
+#
+# entries-in-buffer/entries-written: 534/534   #P:4
+#
+#                              _-----=> irqs-off
+#                             / _----=> need-resched
+#                            | / _---=> hardirq/softirq
+#                            || / _--=> preempt-depth
+#                            ||| /     delay
+#           TASK-PID   CPU#  ||||    TIMESTAMP  FUNCTION
+#              | |       |   ||||       |         |
+           tuned-1080  [003] ....  1108.294606: sys_select -> 0x0
+           tuned-1080  [003] ....  1108.294655: sys_select(n: 0, inp: 0, outp: 0, exp: 0, tvp: 3fff9b7fcdf0)
+            bash-2732  [001] ....  1108.336317: sys_write -> 0x6
+            bash-2732  [001] ....  1108.336321: sys_dup2(oldfd: a, newfd: 1)
+            bash-2732  [001] ....  1108.336323: sys_dup2 -> 0x1
+            bash-2732  [001] ....  1108.336327: sys_fcntl(fd: a, cmd: 1, arg: 0)
+            bash-2732  [001] ....  1108.336328: sys_fcntl -> 0x1
+            bash-2732  [001] ....  1108.336330: sys_close(fd: a)
+            bash-2732  [001] ....  1108.336330: sys_close -> 0x0
+            bash-2732  [001] ....  1108.336340: sys_rt_sigprocmask(how: 0, nset: 0, oset: 10146e48, sigsetsize: 8)
+            bash-2732  [001] ....  1108.336341: sys_rt_sigprocmask -> 0x0
+            bash-2732  [001] ....  1108.336342: sys_rt_sigaction(sig: 2, act: 3fffc17d8e20, oact: 3fffc17d8d80, sigsetsize: 8)
+            bash-2732  [001] ....  1108.336343: sys_rt_sigaction -> 0x0
+            bash-2732  [001] ....  1108.336352: sys_rt_sigprocmask(how: 0, nset: 0, oset: 10146e48, sigsetsize: 8)
+            bash-2732  [001] ....  1108.336352: sys_rt_sigprocmask -> 0x0
+            bash-2732  [001] ....  1108.336476: sys_write(fd: 1, buf: 3fff7f370000, count: 2d)
+            bash-2732  [001] ....  1108.336484: sys_write -> 0x2d
+            bash-2732  [001] ....  1108.336512: sys_rt_sigprocmask(how: 0, nset: 3fffc17d7c40, oset: 3fffc17d7cc0, sigsetsize: 8)
+            bash-2732  [001] ....  1108.336513: sys_rt_sigprocmask -> 0x0
+[root@rhel7-img tracing]# echo ppc-tb > trace_clock
+[root@rhel7-img tracing]# cat trace_clock
+local global counter uptime perf mono [ppc-tb]
+[root@rhel7-img tracing]# echo 0 > trace
+[root@rhel7-img tracing]# head -30 trace
+# tracer: nop
+#
+# entries-in-buffer/entries-written: 396/396   #P:4
+#
+#                              _-----=> irqs-off
+#                             / _----=> need-resched
+#                            | / _---=> hardirq/softirq
+#                            || / _--=> preempt-depth
+#                            ||| /     delay
+#           TASK-PID   CPU#  ||||    TIMESTAMP  FUNCTION
+#              | |       |   ||||       |         |
+            bash-2732  [002] .... 34405585249004: sys_write -> 0x7
+            bash-2732  [002] .... 34405585251162: sys_dup2(oldfd: a, newfd: 1)
+            bash-2732  [002] .... 34405585252104: sys_dup2 -> 0x1
+            bash-2732  [002] .... 34405585253774: sys_fcntl(fd: a, cmd: 1, arg: 0)
+            bash-2732  [002] .... 34405585254385: sys_fcntl -> 0x1
+            bash-2732  [002] .... 34405585255051: sys_close(fd: a)
+            bash-2732  [002] .... 34405585255589: sys_close -> 0x0
+            bash-2732  [002] .... 34405585260898: sys_rt_sigprocmask(how: 0, nset: 0, oset: 10146e48, sigsetsize: 8)
+            bash-2732  [002] .... 34405585261482: sys_rt_sigprocmask -> 0x0
+            bash-2732  [002] .... 34405585262339: sys_rt_sigaction(sig: 2, act: 3fffc17d8e20, oact: 3fffc17d8d80, sigsetsize: 8)
+            bash-2732  [002] .... 34405585262927: sys_rt_sigaction -> 0x0
+            bash-2732  [002] .... 34405585267215: sys_rt_sigprocmask(how: 0, nset: 0, oset: 10146e48, sigsetsize: 8)
+            bash-2732  [002] .... 34405585267690: sys_rt_sigprocmask -> 0x0
+            bash-2732  [002] .... 34405585345924: sys_write(fd: 1, buf: 3fff7f370000, count: 2d)
+            bash-2732  [002] .n.. 34405585350359: sys_write -> 0x2d
+            bash-2732  [002] .... 34405585428096: sys_rt_sigprocmask(how: 0, nset: 3fffc17d7c40, oset: 3fffc17d7cc0, sigsetsize: 8)
+            bash-2732  [002] .... 34405585447011: sys_rt_sigprocmask -> 0x0
+            bash-2732  [002] .... 34405585447956: sys_ioctl(fd: ff, cmd: 80047476, arg: 3fffc17d7c08)
+            bash-2732  [002] .... 34405585449451: sys_ioctl -> 0x0
 
 
-> 
-> We will need DT maintainer's ack here too, so cc DT list.
-> Please CC devicetree@vger.kernel.org next time, especially for
-> DT documentation patch.
-> 
-
-Sure. Next time I will CC DT mailing list.
-
-@Ben,
-  Any comments?
-
->> .../...
->>
->>>> +led {
->>>> +    compatible = "ibm,opal-v3-led";
->>>> +    phandle = <0x1000006b>;
->>>> +    linux,phandle = <0x1000006b>;
->>>> +    led-mode = "lightpath";
->>>> +
->>>> +    U78C9.001.RST0027-P1-C1 {
->>>
->>> DT node names should be in lowercase form.
->>> Is U78C9.001.RST0027-P1-C1 a location code?
->>
->> Yes ... Node presents the location code.. Platform provides these
->> location code in upper case. Hence our OPAL firmware exposes them in
->> upper case.
->>
->>>
->>>> +        led-types = "identify", "fault";
->>>> +        led-loc = "descendent";
->>>> +        phandle = <0x1000006f>;
->>>> +        linux,phandle = <0x1000006f>;
-> 
-> I think that all these properties will not be needed.
-
-These properties are coming from our firmware which is static.
-
-phandle property is default .. which is required to uniquely identify node
-inside  DT.
-led-loc property is not used today. If its not going to be used forever then I
-can request
-FW folks to remove it later.
-
-
-> 
->>>> +    };
->>>> +    ...
->>>> +    ...
->>>> +};
->>>> +
->>>> +
->>>> +'compatible' property describes LEDs compatibility.
->>>
->>> compatible doesn't need to be mentioned here.
->>
->> Removed.
->>
->>>
->>>> +'led-mode' property describes service indicator mode
->>>> (lightpath/guidinglight).
->>>
->>> You don't parse this in the driver? What is its purpose?
->>
->> As mentioned in other thread, currently our driver doesn't parse
->> this. (As mode is provided by platform and its static).
->>
->> Do you want me to elaborate this property here?
-> 
-> I don't think so. At least for now :)
-
-Ok.
-
-> 
->> .../...
->>
->>>> +
->>>> +/*
->>>> + * By default unload path resets all the LEDs. But on PowerNV
->>>> platform
->>>> + * we want to retain LED state across reboot as these are
->>>> controlled by
->>>> + * firmware. Also service processor can modify the LEDs
->>>> independent of
->>>> + * OS. Hence avoid resetting LEDs in unload path.
->>>> + */
->>>> +static bool led_disabled;
->>>
->>> I think that we have to make it configurable from the Device Tree
->>> level. There could be a 'retain-state-removed' property introduced.
->>
->> Hmmm.. In my case, LED behavior is not going to change. Hence I don't
->> think we need this property.
-> 
-> Can you guarantee that the next version of the platform will have also
-> the same requirements? What if it would be made available to choose
-> that the LEDs are software-only controlled?
-
-This design exists for ages.. IMO if we change this to software control (or
-dynamic property which can be changed during runtime) then it completely defeats
-the LED purpose. Hence I don't think it will change anytime.
-
-> 
-> If these are unjustified doubts, I'm ok with leaving the static
-> variable.
-> 
->>>
->>> There is also another implication - you define LED_CORE_SUSPENDRESUME
->>> flag. With current approach it wouldn't turn the led off on suspend.
->>> Please either drop the flag or assure correct behaviour on suspend.
->>
->> I will drop this.
->>
->>> You can also make this configurable like retain-state-suspended
->>> property in Documentation/devicetree/bindings/leds/leds-gpio.txt.
->>>
->>
->> .../...
->>
->>>> +
->>>> +    if (powernv_get_loc_code(led_type, loc_code) != 0)
->>>> +        goto out_loc;
->>>> +
->>>> +    /* Prepare for the OPAL call */
->>>> +    max_led_type = cpu_to_be64(OPAL_SLOT_LED_TYPE_MAX);
->>>> +    led_mask = OPAL_SLOT_LED_STATE_ON << led_type;
->>>> +    if (value)
->>>> +        led_value = OPAL_SLOT_LED_STATE_ON << led_type;
->>>
->>>          led_value = led_mask;
->>
->> Fixed.
->>
->> .../...
->>
->>>> +
->>>> +/* Schedule work to update LED state */
->>>> +static void powernv_led_set_queue(struct led_classdev *led_cdev,
->>>> +                  enum led_brightness value, u64 led_type)
->>>
->>> It doesn't set any queue. It should be powernv_brightness_set.
->>
->> Make sense. Fixed.
->>
->> .../...
->>
->>>> +    /* Create the name for classdev */
->>>> +    switch (led_type) {
->>>> +    case OPAL_SLOT_LED_TYPE_ATTN:
->>>> +        powernv_led->cdev.name = kasprintf(GFP_KERNEL,
->>>> +                           "%s%s", node->name,
->>>> +                           POWERNV_LED_ATTN);
->>>
->>> LED name should be taken from of_node name or label property
->>> directly. Please refer to the other LED class drivers.
->>
->> Hmmm.. Our  current FW provides led-types property which tells
->> available type for given location code..
->> like
->>    led-types = "identify" "fault"..
->>
->> Can I use this ? So the names will be
->>     <location_code>:<identify|fault|attention>
-> 
-> I adressed this in the other message.
-> 
->> And if this approach fine,  I can fix (assuming maintainer agrees :-)
->> ) firmware side to change identify -> ident.
-> 
-> Let's leave it. It seems to be platform specific.
-
-Sure.
-
-Thanks!
--Vasant
+- Naveen
