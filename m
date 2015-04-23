@@ -1,22 +1,37 @@
-Return-Path: <j.anaszewski81@gmail.com>
-Received: from mail-wg0-x235.google.com (mail-wg0-x235.google.com
- [IPv6:2a00:1450:400c:c00::235])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bn0109.outbound.protection.outlook.com [157.56.110.109])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 365DA1A068E
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Apr 2015 07:45:33 +1000 (AEST)
-Received: by wgen6 with SMTP id n6so46045738wge.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Apr 2015 14:45:30 -0700 (PDT)
-Date: Wed, 22 Apr 2015 23:45:24 +0200
-From: Jacek Anaszewski <j.anaszewski81@gmail.com>
-To: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
-Subject: Re: [PATCH v3 3/3] leds/powernv: Add driver for PowerNV platform
-Message-ID: <20150422234524.305b5324@ja.home>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: stewart@linux.vnet.ibm.com, devicetree@vger.kernel.org, cooloney@gmail.com,
- rpurdie@rpsys.net, linuxppc-dev@lists.ozlabs.org, linux-leds@vger.kernel.org,
- khandual@linux.vnet.ibm.com
+ by lists.ozlabs.org (Postfix) with ESMTPS id 427141A0BE0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Apr 2015 10:30:16 +1000 (AEST)
+Message-ID: <1429749001.16357.7.camel@freescale.com>
+Subject: Re: [PATCH 0/2] powerpc/kvm: Enable running guests on RT Linux
+From: Scott Wood <scottwood@freescale.com>
+To: Purcareata Bogdan <b43198@freescale.com>
+Date: Wed, 22 Apr 2015 19:30:01 -0500
+In-Reply-To: <55378EC4.2080302@freescale.com>
+References: <1424251955-308-1-git-send-email-bogdan.purcareata@freescale.com>
+ <54E73A6C.9080500@suse.de> <54E740E7.5090806@redhat.com>
+ <54E74A8C.30802@linutronix.de>
+ <1424734051.4698.17.camel@freescale.com>					 <54EF196E.4090805@redhat.com>
+ <54EF2025.80404@linutronix.de>				 <1424999159.4698.78.camel@freescale.com>
+ <55158E6D.40304@freescale.com>
+ <1428016310.22867.289.camel@freescale.com>
+ <551E4A41.1080705@freescale.com>
+ <1428096375.22867.369.camel@freescale.com>
+ <55262DD3.2050707@freescale.com>
+ <1428623611.22867.561.camel@freescale.com>
+ <5534DAA4.3050809@freescale.com> <1429577566.4352.68.camel@freescale.com>
+ <55378EC4.2080302@freescale.com>
+Content-Type: text/plain; charset="UTF-8"
+MIME-Version: 1.0
+Cc: Laurentiu Tudor <b10716@freescale.com>, linux-rt-users@vger.kernel.org,
+ Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
+ Alexander Graf <agraf@suse.de>, linux-kernel@vger.kernel.org,
+ Bogdan Purcareata <bogdan.purcareata@freescale.com>,
+ mihai.caraman@freescale.com, Paolo Bonzini <pbonzini@redhat.com>,
+ Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,217 +41,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> On 21.04.2015 07:50, Vasant Hegde wrote:
-> On 04/20/2015 08:57 PM, Jacek Anaszewski wrote:
->> Hi Vasant,
->>
+On Wed, 2015-04-22 at 15:06 +0300, Purcareata Bogdan wrote:
+> On 21.04.2015 03:52, Scott Wood wrote:
+> > On Mon, 2015-04-20 at 13:53 +0300, Purcareata Bogdan wrote:
+> >> There was a weird situation for .kvmppc_mpic_set_epr - its corresponding inner
+> >> function is kvmppc_set_epr, which is a static inline. Removing the static inline
+> >> yields a compiler crash (Segmentation fault (core dumped) -
+> >> scripts/Makefile.build:441: recipe for target 'arch/powerpc/kvm/kvm.o' failed),
+> >> but that's a different story, so I just let it be for now. Point is the time may
+> >> include other work after the lock has been released, but before the function
+> >> actually returned. I noticed this was the case for .kvm_set_msi, which could
+> >> work up to 90 ms, not actually under the lock. This made me change what I'm
+> >> looking at.
+> >
+> > kvm_set_msi does pretty much nothing outside the lock -- I suspect
+> > you're measuring an interrupt that happened as soon as the lock was
+> > released.
 > 
-> Jacek,
+> That's exactly right. I've seen things like a timer interrupt occuring right 
+> after the spinlock_irqrestore, but before kvm_set_msi actually returned.
 > 
-> Thanks for the review.
+> [...]
+> 
+> >>   Or perhaps a different stress scenario involving a lot of VCPUs
+> >> and external interrupts?
+> >
+> > You could instrument the MPIC code to find out how many loop iterations
+> > you maxed out on, and compare that to the theoretical maximum.
+> 
+> Numbers are pretty low, and I'll try to explain based on my observations.
+> 
+> The problematic section in openpic_update_irq is this [1], since it loops 
+> through all VCPUs, and IRQ_local_pipe further calls IRQ_check, which loops 
+> through all pending interrupts for a VCPU [2].
+> 
+> The guest interfaces are virtio-vhostnet, which are based on MSI 
+> (/proc/interrupts in guest shows they are MSI). For external interrupts to the 
+> guest, the irq_source destmask is currently 0, and last_cpu is 0 (unitialized), 
+> so [1] will go on and deliver the interrupt directly and unicast (no VCPUs loop).
+> 
+> I activated the pr_debugs in arch/powerpc/kvm/mpic.c, to see how many interrupts 
+> are actually pending for the destination VCPU. At most, there were 3 interrupts 
+> - n_IRQ = {224,225,226} - even for 24 flows of ping flood. I understand that 
+> guest virtio interrupts are cascaded over 1 or a couple of shared MSI interrupts.
+> 
+> So worst case, in this scenario, was checking the priorities for 3 pending 
+> interrupts for 1 VCPU. Something like this (some of my prints included):
+> 
+> [61010.582033] openpic_update_irq: destmask 1 last_cpu 0
+> [61010.582034] openpic_update_irq: Only one CPU is allowed to receive this IRQ
+> [61010.582036] IRQ_local_pipe: IRQ 224 active 0 was 1
+> [61010.582037] IRQ_check: irq 226 set ivpr_pr=8 pr=-1
+> [61010.582038] IRQ_check: irq 225 set ivpr_pr=8 pr=-1
+> [61010.582039] IRQ_check: irq 224 set ivpr_pr=8 pr=-1
+> 
+> It would be really helpful to get your comments regarding whether these are 
+> realistical number for everyday use, or they are relevant only to this 
+> particular scenario.
 
-You are welcome.
+RT isn't about "realistic numbers for everyday use".  It's about worst
+cases.
 
->> Thanks for the update.
->>
->> On 04/20/2015 10:01 AM, Vasant Hegde wrote:
->>> This patch implements LED driver for PowerNV platform using the
->>> existing generic LED class framework.
->>>
->>> PowerNV platform has below type of LEDs:
->>>     - System attention
->>>         Indicates there is a problem with the system that needs
->>> attention.
->>>     - Identify
->>>         Helps the user locate/identify a particular FRU or resource
->>> in the system.
->>>     - Fault
->>>         Indicates there is a problem with the FRU or resource at the
->>>         location with which the indicator is associated.
->>>
->>> We registers classdev structures for all individual LEDs detected
->>> on the
->>
->> s/registers/register
-> 
-> Fixed.
-> 
->>
->>> system through LED specific device tree nodes. Device tree nodes
->>> specify what  all kind of LEDs present on the same location code.It
->>> registers LED classdev structure for each of them.
->>>
->>> All the system LEDs can be found in the same regular
->>> path /sys/class/leds/. We don't use LED colors. Hence our LEDs have
->>> names in this format.
->>>
->>>           <location_code>:<ATTENTION|IDENT|FAULT>
->>
->> I think that powernv prefix should be also present in the beginning.
->> What would be the format of <location_code> ? Does it identify a LED
->> uniquely.
-> 
-> Location code is unique and its guaranteed that we don't clash here.
-> Also this is platform specific LEDs and I don't see any value by
-> prefixing "powernv". Hence I think its fine with current format.
-> 
-> Sample location code : U78C9.001.RST0027-P1-C1
->    Here "U78C9.001.RST0027" represents the system model
->               P1 - Planar 1
->               C1 - Card 1
+> - Can these interrupts be used in directed delivery, so that the destination 
+> mask can include multiple VCPUs?
 
-I consulted ePAPR standard and all the characters used for location code
-are allowed. Nonetheless AFAIK no existing bindings use uppercase for
-node name.
+The Freescale MPIC does not support multiple destinations for most
+interrupts, but the (non-FSL-specific) emulation code appears to allow
+it.
 
+>  The MPIC manual states that timer and IPI 
+> interrupts are supported for directed delivery, altough I'm not sure how much of 
+> this is used in the emulation. I know that kvmppc uses the decrementer outside 
+> of the MPIC.
+> 
+> - How are virtio interrupts cascaded over the shared MSI interrupts? 
+> /proc/device-tree/soc@e0000000/msi@41600/interrupts in the guest shows 8 values 
+> - 224 - 231 - so at most there might be 8 pending interrupts in IRQ_check, is 
+> that correct?
 
-We will need DT maintainer's ack here too, so cc DT list.
-Please CC devicetree@vger.kernel.org next time, especially for
-DT documentation patch.
+It looks like that's currently the case, but actual hardware supports
+more than that, so it's possible (albeit unlikely any time soon) that
+the emulation eventually does as well.
 
-> .../...
-> 
->>> +led {
->>> +    compatible = "ibm,opal-v3-led";
->>> +    phandle = <0x1000006b>;
->>> +    linux,phandle = <0x1000006b>;
->>> +    led-mode = "lightpath";
->>> +
->>> +    U78C9.001.RST0027-P1-C1 {
->>
->> DT node names should be in lowercase form.
->> Is U78C9.001.RST0027-P1-C1 a location code?
-> 
-> Yes ... Node presents the location code.. Platform provides these
-> location code in upper case. Hence our OPAL firmware exposes them in
-> upper case.
-> 
->>
->>> +        led-types = "identify", "fault";
->>> +        led-loc = "descendent";
->>> +        phandle = <0x1000006f>;
->>> +        linux,phandle = <0x1000006f>;
+But it's possible to have interrupts other than MSIs...
 
-I think that all these properties will not be needed.
-
->>> +    };
->>> +    ...
->>> +    ...
->>> +};
->>> +
->>> +
->>> +'compatible' property describes LEDs compatibility.
->>
->> compatible doesn't need to be mentioned here.
-> 
-> Removed.
-> 
->>
->>> +'led-mode' property describes service indicator mode
->>> (lightpath/guidinglight).
->>
->> You don't parse this in the driver? What is its purpose?
-> 
-> As mentioned in other thread, currently our driver doesn't parse
-> this. (As mode is provided by platform and its static).
-> 
-> Do you want me to elaborate this property here?
-
-I don't think so. At least for now :)
-
-> .../...
-> 
->>> +
->>> +/*
->>> + * By default unload path resets all the LEDs. But on PowerNV
->>> platform
->>> + * we want to retain LED state across reboot as these are
->>> controlled by
->>> + * firmware. Also service processor can modify the LEDs
->>> independent of
->>> + * OS. Hence avoid resetting LEDs in unload path.
->>> + */
->>> +static bool led_disabled;
->>
->> I think that we have to make it configurable from the Device Tree
->> level. There could be a 'retain-state-removed' property introduced.
-> 
-> Hmmm.. In my case, LED behavior is not going to change. Hence I don't
-> think we need this property.
-
-Can you guarantee that the next version of the platform will have also
-the same requirements? What if it would be made available to choose
-that the LEDs are software-only controlled?
-
-If these are unjustified doubts, I'm ok with leaving the static
-variable.
-
->>
->> There is also another implication - you define LED_CORE_SUSPENDRESUME
->> flag. With current approach it wouldn't turn the led off on suspend.
->> Please either drop the flag or assure correct behaviour on suspend.
-> 
-> I will drop this.
-> 
->> You can also make this configurable like retain-state-suspended
->> property in Documentation/devicetree/bindings/leds/leds-gpio.txt.
->>
-> 
-> .../...
-> 
->>> +
->>> +    if (powernv_get_loc_code(led_type, loc_code) != 0)
->>> +        goto out_loc;
->>> +
->>> +    /* Prepare for the OPAL call */
->>> +    max_led_type = cpu_to_be64(OPAL_SLOT_LED_TYPE_MAX);
->>> +    led_mask = OPAL_SLOT_LED_STATE_ON << led_type;
->>> +    if (value)
->>> +        led_value = OPAL_SLOT_LED_STATE_ON << led_type;
->>
->>          led_value = led_mask;
-> 
-> Fixed.
-> 
-> .../...
-> 
->>> +
->>> +/* Schedule work to update LED state */
->>> +static void powernv_led_set_queue(struct led_classdev *led_cdev,
->>> +                  enum led_brightness value, u64 led_type)
->>
->> It doesn't set any queue. It should be powernv_brightness_set.
-> 
-> Make sense. Fixed.
-> 
-> .../...
-> 
->>> +    /* Create the name for classdev */
->>> +    switch (led_type) {
->>> +    case OPAL_SLOT_LED_TYPE_ATTN:
->>> +        powernv_led->cdev.name = kasprintf(GFP_KERNEL,
->>> +                           "%s%s", node->name,
->>> +                           POWERNV_LED_ATTN);
->>
->> LED name should be taken from of_node name or label property
->> directly. Please refer to the other LED class drivers.
-> 
-> Hmmm.. Our  current FW provides led-types property which tells
-> available type for given location code..
-> like
->    led-types = "identify" "fault"..
-> 
-> Can I use this ? So the names will be
->     <location_code>:<identify|fault|attention>
-
-I adressed this in the other message.
-
-> And if this approach fine,  I can fix (assuming maintainer agrees :-)
-> ) firmware side to change identify -> ident.
-
-Let's leave it. It seems to be platform specific.
-
-
--- 
-Best Regards,
-Jacek Anaszewski
+-Scott
