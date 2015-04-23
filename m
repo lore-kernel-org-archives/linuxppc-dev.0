@@ -1,37 +1,22 @@
 Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bn0109.outbound.protection.outlook.com [157.56.110.109])
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0146.outbound.protection.outlook.com [65.55.169.146])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 427141A0BE0
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Apr 2015 10:30:16 +1000 (AEST)
-Message-ID: <1429749001.16357.7.camel@freescale.com>
-Subject: Re: [PATCH 0/2] powerpc/kvm: Enable running guests on RT Linux
+ by lists.ozlabs.org (Postfix) with ESMTPS id CC7531A0BE7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Apr 2015 11:46:44 +1000 (AEST)
+Message-ID: <1429753587.16357.9.camel@freescale.com>
+Subject: Re: [PATCH 3/3] powerpc/8xx: Implementation of PAGE_EXEC
 From: Scott Wood <scottwood@freescale.com>
-To: Purcareata Bogdan <b43198@freescale.com>
-Date: Wed, 22 Apr 2015 19:30:01 -0500
-In-Reply-To: <55378EC4.2080302@freescale.com>
-References: <1424251955-308-1-git-send-email-bogdan.purcareata@freescale.com>
- <54E73A6C.9080500@suse.de> <54E740E7.5090806@redhat.com>
- <54E74A8C.30802@linutronix.de>
- <1424734051.4698.17.camel@freescale.com>					 <54EF196E.4090805@redhat.com>
- <54EF2025.80404@linutronix.de>				 <1424999159.4698.78.camel@freescale.com>
- <55158E6D.40304@freescale.com>
- <1428016310.22867.289.camel@freescale.com>
- <551E4A41.1080705@freescale.com>
- <1428096375.22867.369.camel@freescale.com>
- <55262DD3.2050707@freescale.com>
- <1428623611.22867.561.camel@freescale.com>
- <5534DAA4.3050809@freescale.com> <1429577566.4352.68.camel@freescale.com>
- <55378EC4.2080302@freescale.com>
+To: Christophe Leroy <christophe.leroy@c-s.fr>
+Date: Wed, 22 Apr 2015 20:46:27 -0500
+In-Reply-To: <77ae326f3637ae008e33875b7be792d64b24461f.1429696335.git.christophe.leroy@c-s.fr>
+References: <cover.1429696335.git.christophe.leroy@c-s.fr>
+ <77ae326f3637ae008e33875b7be792d64b24461f.1429696335.git.christophe.leroy@c-s.fr>
 Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Cc: Laurentiu Tudor <b10716@freescale.com>, linux-rt-users@vger.kernel.org,
- Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
- Alexander Graf <agraf@suse.de>, linux-kernel@vger.kernel.org,
- Bogdan Purcareata <bogdan.purcareata@freescale.com>,
- mihai.caraman@freescale.com, Paolo Bonzini <pbonzini@redhat.com>,
- Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org
+Cc: linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,88 +26,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2015-04-22 at 15:06 +0300, Purcareata Bogdan wrote:
-> On 21.04.2015 03:52, Scott Wood wrote:
-> > On Mon, 2015-04-20 at 13:53 +0300, Purcareata Bogdan wrote:
-> >> There was a weird situation for .kvmppc_mpic_set_epr - its corresponding inner
-> >> function is kvmppc_set_epr, which is a static inline. Removing the static inline
-> >> yields a compiler crash (Segmentation fault (core dumped) -
-> >> scripts/Makefile.build:441: recipe for target 'arch/powerpc/kvm/kvm.o' failed),
-> >> but that's a different story, so I just let it be for now. Point is the time may
-> >> include other work after the lock has been released, but before the function
-> >> actually returned. I noticed this was the case for .kvm_set_msi, which could
-> >> work up to 90 ms, not actually under the lock. This made me change what I'm
-> >> looking at.
-> >
-> > kvm_set_msi does pretty much nothing outside the lock -- I suspect
-> > you're measuring an interrupt that happened as soon as the lock was
-> > released.
-> 
-> That's exactly right. I've seen things like a timer interrupt occuring right 
-> after the spinlock_irqrestore, but before kvm_set_msi actually returned.
-> 
-> [...]
-> 
-> >>   Or perhaps a different stress scenario involving a lot of VCPUs
-> >> and external interrupts?
-> >
-> > You could instrument the MPIC code to find out how many loop iterations
-> > you maxed out on, and compare that to the theoretical maximum.
-> 
-> Numbers are pretty low, and I'll try to explain based on my observations.
-> 
-> The problematic section in openpic_update_irq is this [1], since it loops 
-> through all VCPUs, and IRQ_local_pipe further calls IRQ_check, which loops 
-> through all pending interrupts for a VCPU [2].
-> 
-> The guest interfaces are virtio-vhostnet, which are based on MSI 
-> (/proc/interrupts in guest shows they are MSI). For external interrupts to the 
-> guest, the irq_source destmask is currently 0, and last_cpu is 0 (unitialized), 
-> so [1] will go on and deliver the interrupt directly and unicast (no VCPUs loop).
-> 
-> I activated the pr_debugs in arch/powerpc/kvm/mpic.c, to see how many interrupts 
-> are actually pending for the destination VCPU. At most, there were 3 interrupts 
-> - n_IRQ = {224,225,226} - even for 24 flows of ping flood. I understand that 
-> guest virtio interrupts are cascaded over 1 or a couple of shared MSI interrupts.
-> 
-> So worst case, in this scenario, was checking the priorities for 3 pending 
-> interrupts for 1 VCPU. Something like this (some of my prints included):
-> 
-> [61010.582033] openpic_update_irq: destmask 1 last_cpu 0
-> [61010.582034] openpic_update_irq: Only one CPU is allowed to receive this IRQ
-> [61010.582036] IRQ_local_pipe: IRQ 224 active 0 was 1
-> [61010.582037] IRQ_check: irq 226 set ivpr_pr=8 pr=-1
-> [61010.582038] IRQ_check: irq 225 set ivpr_pr=8 pr=-1
-> [61010.582039] IRQ_check: irq 224 set ivpr_pr=8 pr=-1
-> 
-> It would be really helpful to get your comments regarding whether these are 
-> realistical number for everyday use, or they are relevant only to this 
-> particular scenario.
+On Wed, 2015-04-22 at 12:06 +0200, Christophe Leroy wrote:
+> diff --git a/arch/powerpc/include/asm/mmu-8xx.h b/arch/powerpc/include/asm/mmu-8xx.h
+> index d41200c..1407034 100644
+> --- a/arch/powerpc/include/asm/mmu-8xx.h
+> +++ b/arch/powerpc/include/asm/mmu-8xx.h
+> @@ -27,6 +27,19 @@
+>  #define MI_Ks		0x80000000	/* Should not be set */
+>  #define MI_Kp		0x40000000	/* Should always be set */
+>  
+> +/*
+> + * All pages PP exec bits are set to 000, which means Execute for Supervisor
+> + * and no Execute for User.
+> + * Then we use the APG to say whether accesses are according to Page rules,
+> + * "all Supervisor" rules (Exec for all) and "all User" rules (Exec for noone)
+> + * Therefore, we define 4 APG groups. msb is _PAGE_EXEC, lsb is _PAGE_USER
+> + * 0 (00) => Not User, no exec => 11 (all accesses performed as user)
+> + * 1 (01) => User but no exec => 11 (all accesses performed as user)
+> + * 2 (10) => Not User, exec => 01 (rights according to page definition)
+> + * 3 (11) => User, exec => 00 (all accesses performed as supervisor)
+> + */
+> +#define MI_APG_INIT	0xf4ffffff
+> +
+>  /* The effective page number register.  When read, contains the information
+>   * about the last instruction TLB miss.  When MI_RPN is written, bits in
+>   * this register are used to create the TLB entry.
+> @@ -87,6 +100,19 @@
+>  #define MD_Ks		0x80000000	/* Should not be set */
+>  #define MD_Kp		0x40000000	/* Should always be set */
+>  
+> +/*
+> + * All pages PP exec bits are set to either 000 or 011, which means respectively
+> + * RW for Supervisor and no access for User, or RO for Supervisor and no access
+> + * for user.
+> + * Then we use the APG to say whether accesses are according to Page rules or
+> + * "all Supervisor" rules (Access to all)
+> + * Therefore, we define 2 APG groups. lsb is _PAGE_USER
+> + * 0 => No user => 01 (all accesses performed according to page definition)
+> + * 1 => User => 00 (all accesses performed as supervisor
+> + *                                 according to page definition)
+> + */
+> +#define MD_APG_INIT	0x4fffffff
 
-RT isn't about "realistic numbers for everyday use".  It's about worst
-cases.
-
-> - Can these interrupts be used in directed delivery, so that the destination 
-> mask can include multiple VCPUs?
-
-The Freescale MPIC does not support multiple destinations for most
-interrupts, but the (non-FSL-specific) emulation code appears to allow
-it.
-
->  The MPIC manual states that timer and IPI 
-> interrupts are supported for directed delivery, altough I'm not sure how much of 
-> this is used in the emulation. I know that kvmppc uses the decrementer outside 
-> of the MPIC.
-> 
-> - How are virtio interrupts cascaded over the shared MSI interrupts? 
-> /proc/device-tree/soc@e0000000/msi@41600/interrupts in the guest shows 8 values 
-> - 224 - 231 - so at most there might be 8 pending interrupts in IRQ_check, is 
-> that correct?
-
-It looks like that's currently the case, but actual hardware supports
-more than that, so it's possible (albeit unlikely any time soon) that
-the emulation eventually does as well.
-
-But it's possible to have interrupts other than MSIs...
+"exec" bits or data?
 
 -Scott
