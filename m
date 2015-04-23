@@ -1,26 +1,39 @@
-Return-Path: <sasha.levin@oracle.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1on0114.outbound.protection.outlook.com [157.56.110.114])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BAA031A0CF3
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Apr 2015 05:03:23 +1000 (AEST)
-Received: from aserp1040.oracle.com (aserp1040.oracle.com [141.146.126.69])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3A7B114010F
- for <linuxppc-dev@ozlabs.org>; Fri, 24 Apr 2015 05:03:23 +1000 (AEST)
-From: Sasha Levin <sasha.levin@oracle.com>
-To: stable@vger.kernel.org, stable-commits@vger.kernel.org
-Subject: [added to the 3.18 stable tree] timers/tick/broadcast-hrtimer: Fix
- suspicious RCU usage in idle loop
-Date: Thu, 23 Apr 2015 15:01:00 -0400
-Message-Id: <1429815663-25702-84-git-send-email-sasha.levin@oracle.com>
-In-Reply-To: <1429815663-25702-1-git-send-email-sasha.levin@oracle.com>
-References: <1429815663-25702-1-git-send-email-sasha.levin@oracle.com>
-Cc: "Peter Zijlstra \(Intel\)" <peterz@infradead.org>, linuxppc-dev@ozlabs.org,
- Preeti U Murthy <preeti@linux.vnet.ibm.com>,
- Sasha Levin <sasha.levin@oracle.com>, tglx@linutronix.de,
- Ingo Molnar <mingo@kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id C61391A0CF7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Apr 2015 07:27:13 +1000 (AEST)
+Message-ID: <1429824418.16357.26.camel@freescale.com>
+Subject: Re: [PATCH 0/2] powerpc/kvm: Enable running guests on RT Linux
+From: Scott Wood <scottwood@freescale.com>
+To: Purcareata Bogdan <b43198@freescale.com>
+Date: Thu, 23 Apr 2015 16:26:58 -0500
+In-Reply-To: <5538E624.8080904@freescale.com>
+References: <1424251955-308-1-git-send-email-bogdan.purcareata@freescale.com>
+ <54E73A6C.9080500@suse.de> <54E740E7.5090806@redhat.com>
+ <54E74A8C.30802@linutronix.de>
+ <1424734051.4698.17.camel@freescale.com>
+ <54EF196E.4090805@redhat.com>	 <54EF2025.80404@linutronix.de>
+ <1424999159.4698.78.camel@freescale.com>
+ <55158E6D.40304@freescale.com>
+ <1428016310.22867.289.camel@freescale.com>
+ <551E4A41.1080705@freescale.com>
+ <1428096375.22867.369.camel@freescale.com>
+ <55262DD3.2050707@freescale.com>
+ <1428623611.22867.561.camel@freescale.com>
+ <5534DAA4.3050809@freescale.com> <1429577566.4352.68.camel@freescale.com>
+ <55378EC4.2080302@freescale.com> <1429749001.16357.7.camel@freescale.com>
+ <5538E624.8080904@freescale.com>
+Content-Type: text/plain; charset="UTF-8"
+MIME-Version: 1.0
+Cc: Laurentiu Tudor <b10716@freescale.com>, linux-rt-users@vger.kernel.org,
+ Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
+ Alexander Graf <agraf@suse.de>, linux-kernel@vger.kernel.org,
+ Bogdan Purcareata <bogdan.purcareata@freescale.com>,
+ mihai.caraman@freescale.com, Paolo Bonzini <pbonzini@redhat.com>,
+ Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,77 +43,102 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+On Thu, 2015-04-23 at 15:31 +0300, Purcareata Bogdan wrote:
+> On 23.04.2015 03:30, Scott Wood wrote:
+> > On Wed, 2015-04-22 at 15:06 +0300, Purcareata Bogdan wrote:
+> >> On 21.04.2015 03:52, Scott Wood wrote:
+> >>> On Mon, 2015-04-20 at 13:53 +0300, Purcareata Bogdan wrote:
+> >>>> There was a weird situation for .kvmppc_mpic_set_epr - its corresponding inner
+> >>>> function is kvmppc_set_epr, which is a static inline. Removing the static inline
+> >>>> yields a compiler crash (Segmentation fault (core dumped) -
+> >>>> scripts/Makefile.build:441: recipe for target 'arch/powerpc/kvm/kvm.o' failed),
+> >>>> but that's a different story, so I just let it be for now. Point is the time may
+> >>>> include other work after the lock has been released, but before the function
+> >>>> actually returned. I noticed this was the case for .kvm_set_msi, which could
+> >>>> work up to 90 ms, not actually under the lock. This made me change what I'm
+> >>>> looking at.
+> >>>
+> >>> kvm_set_msi does pretty much nothing outside the lock -- I suspect
+> >>> you're measuring an interrupt that happened as soon as the lock was
+> >>> released.
+> >>
+> >> That's exactly right. I've seen things like a timer interrupt occuring right
+> >> after the spinlock_irqrestore, but before kvm_set_msi actually returned.
+> >>
+> >> [...]
+> >>
+> >>>>    Or perhaps a different stress scenario involving a lot of VCPUs
+> >>>> and external interrupts?
+> >>>
+> >>> You could instrument the MPIC code to find out how many loop iterations
+> >>> you maxed out on, and compare that to the theoretical maximum.
+> >>
+> >> Numbers are pretty low, and I'll try to explain based on my observations.
+> >>
+> >> The problematic section in openpic_update_irq is this [1], since it loops
+> >> through all VCPUs, and IRQ_local_pipe further calls IRQ_check, which loops
+> >> through all pending interrupts for a VCPU [2].
+> >>
+> >> The guest interfaces are virtio-vhostnet, which are based on MSI
+> >> (/proc/interrupts in guest shows they are MSI). For external interrupts to the
+> >> guest, the irq_source destmask is currently 0, and last_cpu is 0 (unitialized),
+> >> so [1] will go on and deliver the interrupt directly and unicast (no VCPUs loop).
+> >>
+> >> I activated the pr_debugs in arch/powerpc/kvm/mpic.c, to see how many interrupts
+> >> are actually pending for the destination VCPU. At most, there were 3 interrupts
+> >> - n_IRQ = {224,225,226} - even for 24 flows of ping flood. I understand that
+> >> guest virtio interrupts are cascaded over 1 or a couple of shared MSI interrupts.
+> >>
+> >> So worst case, in this scenario, was checking the priorities for 3 pending
+> >> interrupts for 1 VCPU. Something like this (some of my prints included):
+> >>
+> >> [61010.582033] openpic_update_irq: destmask 1 last_cpu 0
+> >> [61010.582034] openpic_update_irq: Only one CPU is allowed to receive this IRQ
+> >> [61010.582036] IRQ_local_pipe: IRQ 224 active 0 was 1
+> >> [61010.582037] IRQ_check: irq 226 set ivpr_pr=8 pr=-1
+> >> [61010.582038] IRQ_check: irq 225 set ivpr_pr=8 pr=-1
+> >> [61010.582039] IRQ_check: irq 224 set ivpr_pr=8 pr=-1
+> >>
+> >> It would be really helpful to get your comments regarding whether these are
+> >> realistical number for everyday use, or they are relevant only to this
+> >> particular scenario.
+> >
+> > RT isn't about "realistic numbers for everyday use".  It's about worst
+> > cases.
+> >
+> >> - Can these interrupts be used in directed delivery, so that the destination
+> >> mask can include multiple VCPUs?
+> >
+> > The Freescale MPIC does not support multiple destinations for most
+> > interrupts, but the (non-FSL-specific) emulation code appears to allow
+> > it.
+> >
+> >>   The MPIC manual states that timer and IPI
+> >> interrupts are supported for directed delivery, altough I'm not sure how much of
+> >> this is used in the emulation. I know that kvmppc uses the decrementer outside
+> >> of the MPIC.
+> >>
+> >> - How are virtio interrupts cascaded over the shared MSI interrupts?
+> >> /proc/device-tree/soc@e0000000/msi@41600/interrupts in the guest shows 8 values
+> >> - 224 - 231 - so at most there might be 8 pending interrupts in IRQ_check, is
+> >> that correct?
+> >
+> > It looks like that's currently the case, but actual hardware supports
+> > more than that, so it's possible (albeit unlikely any time soon) that
+> > the emulation eventually does as well.
+> >
+> > But it's possible to have interrupts other than MSIs...
+> 
+> Right.
+> 
+> So given that the raw spinlock conversion is not suitable for all the scenarios 
+> supported by the OpenPIC emulation, is it ok that my next step would be to send 
+> a patch containing both the raw spinlock conversion and a mandatory disable of 
+> the in-kernel MPIC? This is actually the last conclusion we came up with some 
+> time ago, but I guess it was good to get some more insight on how things 
+> actually work (at least for me).
 
-This patch has been added to the 3.18 stable tree. If you have any
-objections, please let us know.
+Fine with me.  Have you given any thought to ways to restructure the
+code to eliminate the problem?
 
-===============
-
-[ Upstream commit a127d2bcf1fbc8c8e0b5cf0dab54f7d3ff50ce47 ]
-
-The hrtimer mode of broadcast queues hrtimers in the idle entry
-path so as to wakeup cpus in deep idle states. The associated
-call graph is :
-
-	cpuidle_idle_call()
-	|____ clockevents_notify(CLOCK_EVT_NOTIFY_BROADCAST_ENTER, ....))
-	     |_____tick_broadcast_set_event()
-		   |____clockevents_program_event()
-			|____bc_set_next()
-
-The hrtimer_{start/cancel} functions call into tracing which uses RCU.
-But it is not legal to call into RCU in cpuidle because it is one of the
-quiescent states. Hence protect this region with RCU_NONIDLE which informs
-RCU that the cpu is momentarily non-idle.
-
-As an aside it is helpful to point out that the clock event device that is
-programmed here is not a per-cpu clock device; it is a
-pseudo clock device, used by the broadcast framework alone.
-The per-cpu clock device programming never goes through bc_set_next().
-
-Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
-Reviewed-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-Cc: linuxppc-dev@ozlabs.org
-Cc: mpe@ellerman.id.au
-Cc: tglx@linutronix.de
-Link: http://lkml.kernel.org/r/20150318104705.17763.56668.stgit@preeti.in.ibm.com
-Signed-off-by: Ingo Molnar <mingo@kernel.org>
-Signed-off-by: Sasha Levin <sasha.levin@oracle.com>
----
- kernel/time/tick-broadcast-hrtimer.c | 11 +++++++++--
- 1 file changed, 9 insertions(+), 2 deletions(-)
-
-diff --git a/kernel/time/tick-broadcast-hrtimer.c b/kernel/time/tick-broadcast-hrtimer.c
-index eb682d5..6aac4be 100644
---- a/kernel/time/tick-broadcast-hrtimer.c
-+++ b/kernel/time/tick-broadcast-hrtimer.c
-@@ -49,6 +49,7 @@ static void bc_set_mode(enum clock_event_mode mode,
-  */
- static int bc_set_next(ktime_t expires, struct clock_event_device *bc)
- {
-+	int bc_moved;
- 	/*
- 	 * We try to cancel the timer first. If the callback is on
- 	 * flight on some other cpu then we let it handle it. If we
-@@ -60,9 +61,15 @@ static int bc_set_next(ktime_t expires, struct clock_event_device *bc)
- 	 * restart the timer because we are in the callback, but we
- 	 * can set the expiry time and let the callback return
- 	 * HRTIMER_RESTART.
-+	 *
-+	 * Since we are in the idle loop at this point and because
-+	 * hrtimer_{start/cancel} functions call into tracing,
-+	 * calls to these functions must be bound within RCU_NONIDLE.
- 	 */
--	if (hrtimer_try_to_cancel(&bctimer) >= 0) {
--		hrtimer_start(&bctimer, expires, HRTIMER_MODE_ABS_PINNED);
-+	RCU_NONIDLE(bc_moved = (hrtimer_try_to_cancel(&bctimer) >= 0) ?
-+		!hrtimer_start(&bctimer, expires, HRTIMER_MODE_ABS_PINNED) :
-+			0);
-+	if (bc_moved) {
- 		/* Bind the "device" to the cpu */
- 		bc->bound_on = smp_processor_id();
- 	} else if (bc->bound_on == smp_processor_id()) {
--- 
-2.1.0
+-Scott
