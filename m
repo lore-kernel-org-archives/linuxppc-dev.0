@@ -1,40 +1,37 @@
-Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
+Return-Path: <hegdevasant@linux.vnet.ibm.com>
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4563E1A0C16
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Apr 2015 15:18:01 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id DF87A1A0C1A
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Apr 2015 15:26:35 +1000 (AEST)
 Received: from /spool/local
- by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Thu, 23 Apr 2015 10:47:57 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 4FCC11258056
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Apr 2015 10:49:52 +0530 (IST)
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t3N5Hsst57475326
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Apr 2015 10:47:54 +0530
-Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t3N4rDgP016280
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Apr 2015 10:23:14 +0530
-Date: Thu, 23 Apr 2015 10:47:32 +0530
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH RFC] powerpc/ftrace: add powerpc timebase as a trace
- clock source
-Message-ID: <20150423051732.GB14738@naverao1-tp.in.ibm.com>
-References: <1429614216-30538-1-git-send-email-naveen.n.rao@linux.vnet.ibm.com>
- <20150421092541.295dd72b@gandalf.local.home>
- <20150422051855.GE2327@naverao1-tp.ibm.com>
- <1429758884.4672.4.camel@ellerman.id.au>
+ for <linuxppc-dev@lists.ozlabs.org> from <hegdevasant@linux.vnet.ibm.com>;
+ Thu, 23 Apr 2015 15:26:34 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 828732CE8040
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Apr 2015 15:26:31 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t3N5QNYU38666372
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Apr 2015 15:26:31 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t3N5Pv39025218
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Apr 2015 15:25:58 +1000
+Message-ID: <55388254.4000606@linux.vnet.ibm.com>
+Date: Thu, 23 Apr 2015 10:55:40 +0530
+From: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1429758884.4672.4.camel@ellerman.id.au>
-Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org,
- Steven Rostedt <rostedt@goodmis.org>
+To: Jacek Anaszewski <j.anaszewski81@gmail.com>
+Subject: Re: [PATCH v2 2/2] leds/powernv: Add driver for PowerNV platform
+References: <20150422234509.626d9dc7@ja.home>
+In-Reply-To: <20150422234509.626d9dc7@ja.home>
+Content-Type: text/plain; charset=windows-1252
+Cc: stewart@linux.vnet.ibm.com, cooloney@gmail.com, rpurdie@rpsys.net,
+ linuxppc-dev@lists.ozlabs.org, linux-leds@vger.kernel.org,
+ khandual@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,126 +41,177 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2015/04/23 01:14PM, Michael Ellerman wrote:
-> On Wed, 2015-04-22 at 10:48 +0530, Naveen N. Rao wrote:
-> > On 2015/04/21 09:25AM, Steven Rostedt wrote:
-> > > On Tue, 21 Apr 2015 16:33:36 +0530
-> > > "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
-> > > 
-> > > > Add a new powerpc-specific trace clock using the timebase register,
-> > > > similar to x86-tsc. This gives us a fast, monotonic, cross-cpu clock
-> > > > for trace entries and can be used to correlate events across cpus as
-> > > > well as across hypervisor and guest (assuming it is not a migrated guest
-> > > > with a non-zero tb_offset).
-> > > > 
-> > > > Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
-> > > > ---
-> > > > I have followed the approach used by x86-tsc here, but we could get rid of
-> > > > trace_clock.c if we directly use get_tb() with perhaps the notrace annotation.
-> > > > Would that be preferable?
-> > > > 
-> > > 
-> > > Probably. But all clocks used by tracing should be marked by notrace.
-> > > Don't just wrap it with a notrace. But looking at the code, it seems
-> > > that get_tb() is a static inline, which wont work as a pointer. Seems
-> > > you still need the indirect function call.
-> > > 
-> > > Note, all "inline" functions are notrace by default, so you do not need
-> > > to add any notrace annotation to an inlined function.
-> > 
-> > Steve,
-> > Thanks for the clarification - the current approach is better in that 
-> > case.
-> > 
-> > Paul, Mike,
-> > Can you please let me know your thoughts on this?
+On 04/23/2015 03:15 AM, Jacek Anaszewski wrote:
+> Hi Vasant,
 > 
-> What is the value in adding a powerpc specific clock, which requires educating
-> people to use it, vs just using the global clock?
 
-Hi Michael,
-There are two reasons:
-- One, using the timebase register gives us a very fast (just one 
-  instruction) hardware clock source for trace entries compared to the 
-  global clock.
-- Two, using the timebase values allows us to correlate trace events 
-  across hypervisor and guest, which is not possible using the other 
-  trace clocks. [With migrated guests, there could be a non-zero 
-  tb_offset which we may also want to make available to userspace in 
-  some manner. Any suggestions?]
-
-This will show up as an additional trace clock and can be selected if 
-one wishes to use it. As an example:
-
-[root@rhel7-img ~]# cd /sys/kernel/debug/tracing
-[root@rhel7-img tracing]# cat trace_clock
-[local] global counter uptime perf mono ppc-tb
-[root@rhel7-img tracing]# head -30 trace
-# tracer: nop
-#
-# entries-in-buffer/entries-written: 534/534   #P:4
-#
-#                              _-----=> irqs-off
-#                             / _----=> need-resched
-#                            | / _---=> hardirq/softirq
-#                            || / _--=> preempt-depth
-#                            ||| /     delay
-#           TASK-PID   CPU#  ||||    TIMESTAMP  FUNCTION
-#              | |       |   ||||       |         |
-           tuned-1080  [003] ....  1108.294606: sys_select -> 0x0
-           tuned-1080  [003] ....  1108.294655: sys_select(n: 0, inp: 0, outp: 0, exp: 0, tvp: 3fff9b7fcdf0)
-            bash-2732  [001] ....  1108.336317: sys_write -> 0x6
-            bash-2732  [001] ....  1108.336321: sys_dup2(oldfd: a, newfd: 1)
-            bash-2732  [001] ....  1108.336323: sys_dup2 -> 0x1
-            bash-2732  [001] ....  1108.336327: sys_fcntl(fd: a, cmd: 1, arg: 0)
-            bash-2732  [001] ....  1108.336328: sys_fcntl -> 0x1
-            bash-2732  [001] ....  1108.336330: sys_close(fd: a)
-            bash-2732  [001] ....  1108.336330: sys_close -> 0x0
-            bash-2732  [001] ....  1108.336340: sys_rt_sigprocmask(how: 0, nset: 0, oset: 10146e48, sigsetsize: 8)
-            bash-2732  [001] ....  1108.336341: sys_rt_sigprocmask -> 0x0
-            bash-2732  [001] ....  1108.336342: sys_rt_sigaction(sig: 2, act: 3fffc17d8e20, oact: 3fffc17d8d80, sigsetsize: 8)
-            bash-2732  [001] ....  1108.336343: sys_rt_sigaction -> 0x0
-            bash-2732  [001] ....  1108.336352: sys_rt_sigprocmask(how: 0, nset: 0, oset: 10146e48, sigsetsize: 8)
-            bash-2732  [001] ....  1108.336352: sys_rt_sigprocmask -> 0x0
-            bash-2732  [001] ....  1108.336476: sys_write(fd: 1, buf: 3fff7f370000, count: 2d)
-            bash-2732  [001] ....  1108.336484: sys_write -> 0x2d
-            bash-2732  [001] ....  1108.336512: sys_rt_sigprocmask(how: 0, nset: 3fffc17d7c40, oset: 3fffc17d7cc0, sigsetsize: 8)
-            bash-2732  [001] ....  1108.336513: sys_rt_sigprocmask -> 0x0
-[root@rhel7-img tracing]# echo ppc-tb > trace_clock
-[root@rhel7-img tracing]# cat trace_clock
-local global counter uptime perf mono [ppc-tb]
-[root@rhel7-img tracing]# echo 0 > trace
-[root@rhel7-img tracing]# head -30 trace
-# tracer: nop
-#
-# entries-in-buffer/entries-written: 396/396   #P:4
-#
-#                              _-----=> irqs-off
-#                             / _----=> need-resched
-#                            | / _---=> hardirq/softirq
-#                            || / _--=> preempt-depth
-#                            ||| /     delay
-#           TASK-PID   CPU#  ||||    TIMESTAMP  FUNCTION
-#              | |       |   ||||       |         |
-            bash-2732  [002] .... 34405585249004: sys_write -> 0x7
-            bash-2732  [002] .... 34405585251162: sys_dup2(oldfd: a, newfd: 1)
-            bash-2732  [002] .... 34405585252104: sys_dup2 -> 0x1
-            bash-2732  [002] .... 34405585253774: sys_fcntl(fd: a, cmd: 1, arg: 0)
-            bash-2732  [002] .... 34405585254385: sys_fcntl -> 0x1
-            bash-2732  [002] .... 34405585255051: sys_close(fd: a)
-            bash-2732  [002] .... 34405585255589: sys_close -> 0x0
-            bash-2732  [002] .... 34405585260898: sys_rt_sigprocmask(how: 0, nset: 0, oset: 10146e48, sigsetsize: 8)
-            bash-2732  [002] .... 34405585261482: sys_rt_sigprocmask -> 0x0
-            bash-2732  [002] .... 34405585262339: sys_rt_sigaction(sig: 2, act: 3fffc17d8e20, oact: 3fffc17d8d80, sigsetsize: 8)
-            bash-2732  [002] .... 34405585262927: sys_rt_sigaction -> 0x0
-            bash-2732  [002] .... 34405585267215: sys_rt_sigprocmask(how: 0, nset: 0, oset: 10146e48, sigsetsize: 8)
-            bash-2732  [002] .... 34405585267690: sys_rt_sigprocmask -> 0x0
-            bash-2732  [002] .... 34405585345924: sys_write(fd: 1, buf: 3fff7f370000, count: 2d)
-            bash-2732  [002] .n.. 34405585350359: sys_write -> 0x2d
-            bash-2732  [002] .... 34405585428096: sys_rt_sigprocmask(how: 0, nset: 3fffc17d7c40, oset: 3fffc17d7cc0, sigsetsize: 8)
-            bash-2732  [002] .... 34405585447011: sys_rt_sigprocmask -> 0x0
-            bash-2732  [002] .... 34405585447956: sys_ioctl(fd: ff, cmd: 80047476, arg: 3fffc17d7c08)
-            bash-2732  [002] .... 34405585449451: sys_ioctl -> 0x0
+Hi Jacek,
 
 
-- Naveen
+.../...
+
+>>
+>>>
+>>>  From what I can see from the driver code the LEDs are set with:
+>>>
+>>> opal_leds_set_ind(token, loc_code, led_mask, led_value,
+>>> &max_led_type);
+>>>
+>>> and their state can be read with:
+>>>
+>>> opal_leds_get_ind(loc_code, &led_mask, &led_value, &max_led_type)
+>>>
+>>>  From the kernel point of view these are very simple operations.
+>>>
+>>> All the logic you described should be handled by user space.
+>>> If you need to be able to specify the LED mode you want to set/read,
+>>> then additional 'mode' sysfs attribute should be added by the driver.
+>>> There would have to be also additional sysfs attribute
+>>> 'available_modes" provided. The ABI documentation should inform how
+>>> the mode identifiers map to the modes. I already explained how to
+>>> add it, when we were discussing about retaining led state on remove.
+>>
+>> Sorry..My fault.. I should have elaborated mode operation...
+> 
+> What I was thinking about here was actually LED type, not mode in terms
+> of Guiding Light/Light Path. However, please look at the newest
+> approach in the end of this message.
+> 
+
+No problem.
+
+>> I forgot to mention that LED mode is static... meaning platform
+>> provides this information, but we cannot change during runtime..
+>>
+>> Presently we have this information in Device Tree. Since this is
+>> static one (and also LED Mode is system wide.. nothing to do
+>> individual LED),  I didn't add it in LED driver code.. .Do you think
+>> we should add that property ?
+> 
+> The property shouldn't be documented at all if it isn't to be used.
+
+Ok . I will remove this.
+
+> 
+>>>
+>>>
+>>> I'd see following use cases.
+>>>
+>>> (let's assume that modes are defined as follows:
+>>> 0: ident, 1: attn, 2: fault)
+>>
+>> Modes are : Guiding Light / Light Path ... which is static and
+>> platform provides this information.
+>>
+>> LED types : IDENT, FAULT and ATTN .... which can be get/set/reset by
+>> OS (kernel/userspace)
+>>
+>> Also only 1 LED can be ATTN ...
+>>
+>>> #cat available_modes
+>>> #0 1 2
+>>> #echo 0 > mode  //set ident mode
+>>> #echo 1 > brightness //set ident state
+>>> #echo 2 > mode  //set fault mode
+>>> #cat brightness //read fault state
+>>> #0
+>>> #echo 1 > attn //set attn mode
+>>> #echo 1 > brightness
+>>>
+>>> This would set the LED in blinking mode, so I am wondering if we
+>>> shouldn't employ timer trigger for this to keep the LED API
+>>> consistent.
+>>>
+>>> Can a single LED support other mode than 'attention'? I'd like to
+>>> know if a LED in attention mode (blinking), can be set to some solid
+>>> mode?
+>>
+>> No.. Its always single attention LED/system ... which can be Set
+>> (Solid) / reset state.
+> 
+> I confused it with ident.
+
+No problem. We have many hardware specific jargon's which is enough to confuse
+anyone :-)
+
+> 
+>>>
+>>> Please let me know if such an approach would still not fit for your
+>>> requirements.
+>>>
+>>
+>> Given above conditions, I think current approach (my v3 patchset) is
+>> simple and works better. What you say?
+> 
+> Yes, but we still have naming and blinking issues to solve.
+> 
+> Please look at this draft design of device tree node:
+> 
+> opal-leds {
+>         compatible = "ibm,opal-v3-led";
+> 
+>         U78C9.001.RST0027-P1-C1:attn {
+>         };
+> 
+>         U78C9.001.RST0027-P2-C1:identify:fault 
+>         };
+> 
+>         U78C9.001.RST0027-P3-C2:identify:fault {
+>         };
+>     };
+> };
+> 
+> The LED nodes could be empty as the name would convey all the
+> required information. The implications would be as follows:
+> 
+
+These device tree comes from out firmware ... which is immutable .
+We can use LED node name + led-type property for naming...which is what I do
+currently (v4.. which I haven't posted)
+
+
+> 1. Each LED would have one corresponding LED class device.
+> 
+> 2. Operations on attn and fault LED types:
+> 	turn on:
+> 		echo 255 > brightness
+> 	turn off:
+> 		echo 0 > brightness
+> 	get status
+> 		cat brightness
+> 	
+> 3. Operations on identify LED:
+> 	turn on:
+> 		echo "timer" > trigger
+> 		(blink_set op would have to be implemented in the
+> 		driver)
+> 	turn off:
+> 		echo 0 > brightness
+> 	get status:
+> 		support for this would have to be added to the LED
+> 		subsystem core
+
+I see few issues here.
+  - Overloading same LED device with multiple opeartion complicates things .. as
+these operations can be done independently (say user is allowed to enable both
+identify and fault simultaneously)
+  - point 3: IIUC after duration value expires identify indicator reverts.. we
+don't want to revert until user asks .
+  - point 3: if I use brightness for both identify/fault, how to disable these
+LEDs independently?
+  - Also how to use trigger property for each LED (if at all we want to use them
+later)?
+
+
+> 
+> 4. Since 'identify' is the platform specific name it could be preserved
+> 
+
+Ok sure.
+
+> 
+> Does it work for you?
+> 
+
+Thanks
+Vasant
