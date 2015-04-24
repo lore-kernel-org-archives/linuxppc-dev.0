@@ -1,39 +1,40 @@
-Return-Path: <stewart@linux.vnet.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1A6981A0CF7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Apr 2015 15:02:56 +1000 (AEST)
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 701B21A0D50
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Apr 2015 14:18:37 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTPS id E122C140157
+ for <linuxppc-dev@ozlabs.org>; Fri, 24 Apr 2015 15:02:55 +1000 (AEST)
 Received: from /spool/local
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <stewart@linux.vnet.ibm.com>;
- Thu, 23 Apr 2015 22:18:34 -0600
-Received: from b03cxnp08026.gho.boulder.ibm.com
- (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id E7E141FF001F
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Apr 2015 22:09:42 -0600 (MDT)
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
- by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t3O4ITPj10813668
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Apr 2015 21:18:29 -0700
-Received: from d03av03.boulder.ibm.com (localhost [127.0.0.1])
- by d03av03.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t3O4IVu5024775
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Apr 2015 22:18:32 -0600
-From: Stewart Smith <stewart@linux.vnet.ibm.com>
-To: Jacek Anaszewski <j.anaszewski81@gmail.com>,
- Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2 2/2] leds/powernv: Add driver for PowerNV platform
-In-Reply-To: <20150423161342.55e9ac8f@ja.home>
-References: <20150422234509.626d9dc7@ja.home>
- <55388254.4000606@linux.vnet.ibm.com> <20150423161342.55e9ac8f@ja.home>
-Date: Fri, 24 Apr 2015 14:18:30 +1000
-Message-ID: <m3egnama5l.fsf@oc8180480414.ibm.com>
+ for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Fri, 24 Apr 2015 15:02:54 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 0F912357804F
+ for <linuxppc-dev@ozlabs.org>; Fri, 24 Apr 2015 15:02:52 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t3O52hCB11469244
+ for <linuxppc-dev@ozlabs.org>; Fri, 24 Apr 2015 15:02:51 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t3O52H5x028402
+ for <linuxppc-dev@ozlabs.org>; Fri, 24 Apr 2015 15:02:18 +1000
+Message-ID: <5539CE40.100@linux.vnet.ibm.com>
+Date: Fri, 24 Apr 2015 10:31:52 +0530
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@lists.ozlabs.org, cooloney@gmail.com, rpurdie@rpsys.net,
- linux-leds@vger.kernel.org, khandual@linux.vnet.ibm.com
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [RFC] powerpc, tm: Drop tm_orig_msr from thread_struct
+References: <1429517754-7988-1-git-send-email-khandual@linux.vnet.ibm.com>
+In-Reply-To: <1429517754-7988-1-git-send-email-khandual@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: mikey@neuling.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,22 +44,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Jacek Anaszewski <j.anaszewski81@gmail.com> writes:
->> These device tree comes from out firmware ... which is immutable .
->
-> How the firmware is related to kernel? These bindings are for kernel,
-> not for the firmware.
->
-> DT bindings are compiled to *.dtb file which is concatenated with
-> zImage. During system boot device drivers are matched with DT bindings
-> through 'compatible' property. A driver should have single matching DT
-> node, i.e. no other driver can probe with the same DT node.
-> This implies that the node should contain only the properties required
-> for configuring the related device.
+On 04/20/2015 01:45 PM, Anshuman Khandual wrote:
+> Currently tm_orig_msr is getting used during process context switch only.
+> Then there is ckpt_regs which saves the checkpointed userspace context
+> The MSR slot contained in ckpt_regs structure can be used during process
+> context switch instead of tm_orig_msr, thus allowing us to drop it from
+> thread_struct structure. This patch does that change.
+> 
+> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+> ---
+> This issue came up in the discussion regarding ptrace interface for TM
+> specific registers https://lkml.org/lkml/2015/4/20/100, so just wanted
+> to give this a try. The basic TM tests still pass after this change.
 
-For OPAL firmware on POWER, firmware hands kernel a flattened device
-tree of the machine it's booting on. It's not added to kernel as the
-kernels aren't board specific - they're generic.
+Hey Michael/Mikey,
 
-https://github.com/open-power/skiboot/ is the firmware that generates
-the device tree for booting under OPAL.
+Whats your thoughts on this ? Can we drop tm_orig_msr ?
