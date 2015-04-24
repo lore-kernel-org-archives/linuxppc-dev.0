@@ -1,24 +1,21 @@
-Return-Path: <thuth@redhat.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id EF15E1A0C9F
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Apr 2015 05:31:12 +1000 (AEST)
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 8C0D11402DA
- for <linuxppc-dev@ozlabs.org>; Sat, 25 Apr 2015 05:31:12 +1000 (AEST)
-Date: Fri, 24 Apr 2015 21:30:58 +0200
-From: Thomas Huth <thuth@redhat.com>
-To: Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>
-Subject: Re: [PATCH 2/2] pci: Use Qemu created PCI device nodes
-Message-ID: <20150424213058.2889af29@thh440s>
-In-Reply-To: <1429700240-32373-2-git-send-email-nikunj@linux.vnet.ibm.com>
-References: <1429700240-32373-2-git-send-email-nikunj@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: aik@ozlabs.ru, linuxppc-dev@ozlabs.org, david@gibson.dropbear.id.au
+ by lists.ozlabs.org (Postfix) with ESMTPS id D9D181A0CA1
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Apr 2015 08:56:37 +1000 (AEST)
+Message-ID: <1429916196.8599.1.camel@ellerman.id.au>
+Subject: [git pull] Please pull mpe/linux.git powerpc-4.1-2 tag
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Sat, 25 Apr 2015 08:56:36 +1000
+Content-Type: multipart/signed; micalg="pgp-sha1";
+ protocol="application/pgp-signature";
+ boundary="=-3YrgJShytr+cQp5k0PMk"
+Mime-Version: 1.0
+Cc: scottwood@freescale.com, shreyas@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, aneesh.kumar@linux.vnet.ibm.com,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,76 +26,93 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
- Hi Nikunj,
+--=-3YrgJShytr+cQp5k0PMk
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Wed, 22 Apr 2015 16:27:20 +0530
-Nikunj A Dadhania <nikunj@linux.vnet.ibm.com> wrote:
+Hi Linus,
 
-> PCI Enumeration has been part of SLOF. Now with hotplug code addition
-> in Qemu, it makes more sense to have this code a one place, i.e. Qemu.
+Please pull powerpc fixes for 4.1:
 
-s/Qemu/QEMU/ and s/code a one place/code in one place/ ?
+The following changes since commit d19d5efd8c8840aa4f38a6dfbfe500d8cc27de46=
+:
 
-> Adding routines to walk through the device nodes created by Qemu. SLOF
-> will configure the device/bridges and program the BARs for
-> communicating with the devices.
+  Merge tag 'powerpc-4.1-1' of git://git.kernel.org/pub/scm/linux/kernel/gi=
+t/mpe/linux (2015-04-16 13:53:32 -0500)
 
-I wonder whether it would make more sense to also set up the BARs etc.
-in QEMU instead of SLOF?
+are available in the git repository at:
 
-> 
-> diff --git a/board-qemu/slof/pci-phb.fs b/board-qemu/slof/pci-phb.fs
-> index e307d95..30b7443 100644
-> --- a/board-qemu/slof/pci-phb.fs
-> +++ b/board-qemu/slof/pci-phb.fs
-> @@ -283,6 +283,41 @@ setup-puid
->     THEN
->  ;
->  
-> +: phb-pci-walk-bridge ( -- )
-> +    phb-debug? IF ."   Calling pci-walk-bridge " pwd cr THEN
-> +
-> +    get-node child ?dup 0= IF EXIT THEN    \ get and check if we have children
-> +    BEGIN
-> +        dup                           \ Continue as long as there are children
-> +    WHILE
+  git://git.kernel.org/pub/scm/linux/kernel/git/mpe/linux.git tags/powerpc-=
+4.1-2
 
-Most Forth code uses the same indentation for the code between
-BEGIN...WHILE and WHILE...REPEAT ... so I think you could decrease the
-indentation of the following block by one level.
+for you to fetch changes up to 2e826695d87c2d213def07bc344ae97d88384f62:
 
-> +            \ Set child node as current node:
-> +            dup set-node
+  powerpc/mm: Fix build error with CONFIG_PPC_TRANSACTIONAL_MEM disabled (2=
+015-04-23 17:42:14 +1000)
 
-Below you are calling pci-device-setup which in turn might include some
-pci-class_*.fs or pci-device_*.fs files (or even run some FCODE?). At
-least pci-class_02.fs seems to use an INSTANCE VARIABLE, i.e. the
-instance template should get modified in that case ==> Please
-double-check whether you need to use extend-device here instead (I'm
-not 100% sure right now ... what happens
-for example when you run qemu with a network device that SLOF does not
-provide a pci-device_*.fs for? I guess it will try to include
-pci-class_02.fs and fail due to the INSTANCE VARIABLE ?)
+----------------------------------------------------------------
+powerpc fixes for 4.1
 
-> +            my-space pci-set-slot       \ set the slot bit
+- Fix for mm_dec_nr_pmds() from Scott.
+- Fixes for oopses seen with KVM + THP from Aneesh.
+- Build fixes from Aneesh & Shreyas.
 
-pci-set-slot seems to rely on the pci-device-slots global variable.
-This is normally initialized by pci-probe-bus. Now that you provide
-your own implementation of that function below, I think it should
-likely also set up the pci-device-slots variable, shouldn't it?
+----------------------------------------------------------------
+Aneesh Kumar K.V (5):
+      KVM: PPC: Use READ_ONCE when dereferencing pte_t pointer
+      KVM: PPC: Remove page table walk helpers
+      powerpc/mm/thp: Make page table walk safe against thp split/collapse
+      powerpc/mm/thp: Return pte address if we find trans_splitting.
+      powerpc/mm: Fix build error with CONFIG_PPC_TRANSACTIONAL_MEM disable=
+d
 
-> +            my-space pci-htype@         \ read HEADER-Type
-> +            7f and                      \ Mask bit 7 - multifunction device
-> +            CASE
-> +               0 OF my-space pci-device-setup ENDOF  \ | set up the device
-> +               1 OF my-space pci-bridge-setup ENDOF  \ | set up the bridge
-> +               dup OF my-space pci-htype@ pci-out ENDOF
-> +           ENDCASE
-> +           peer
-> +    REPEAT drop
-> +    get-parent set-node
-> +;
+Michael Ellerman (1):
+      Merge branch 'master' of git://git.kernel.org/.../scottwood/linux int=
+o fixes
 
-The remaining part of the patch looks ok to me.
+Scott Wood (1):
+      powerpc/hugetlb: Call mm_dec_nr_pmds() in hugetlb_free_pmd_range()
 
- Thomas
+Shreyas B. Prabhu (1):
+      powerpc/kvm: Fix ppc64_defconfig + PPC_POWERNV=3Dn build error
+
+ arch/powerpc/include/asm/kvm_book3s_64.h | 17 +++----
+ arch/powerpc/include/asm/pgtable.h       | 28 +++--------
+ arch/powerpc/kernel/eeh.c                |  6 ++-
+ arch/powerpc/kernel/io-workarounds.c     | 10 ++--
+ arch/powerpc/kvm/Kconfig                 |  2 +-
+ arch/powerpc/kvm/book3s_64_mmu_hv.c      | 14 +++---
+ arch/powerpc/kvm/book3s_hv_rm_mmu.c      | 86 +++++++++++++++++-----------=
+----
+ arch/powerpc/kvm/e500_mmu_host.c         | 32 ++++++++----
+ arch/powerpc/mm/hash_utils_64.c          |  3 +-
+ arch/powerpc/mm/hugetlbpage.c            | 32 ++++++++----
+ arch/powerpc/perf/callchain.c            | 24 +++++----
+ 11 files changed, 137 insertions(+), 117 deletions(-)
+
+
+
+--=-3YrgJShytr+cQp5k0PMk
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part
+Content-Transfer-Encoding: 7bit
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAABAgAGBQJVOsokAAoJEFHr6jzI4aWAe7oQAJSTttpz7Zl/SNQwMfOt44/y
+GcAfeRMN2XAYU8zdN6DHNGmO7SaTZsstzWH05qJEYprjiuELg4zZ+dMTLuMQ0g8g
+xeeNhmdw7l3y133Dr/wVNNgxlNrQvYvtdR1QEdXBQaWZLWyzeWCETOeFsikJp5a/
+niuYMCFlX/+ci8DzMdvVSlYlHT/w61bx4tvU48ll9EYWMzW15oP29F9/wI4eGOaC
+S3yxdCONtb0yxUKQTHRAN9rkaBPnKC4KUuBFk5LWUOdt1L/AzF+vKInu/0GDvPRb
+jV8Meuzng6SSTPRRk8ULdHMydQrs4jbM5ELye0DSdIfU24BgjfZVJpBFz9eDrzjv
+nlZwiIoT0AXWw/uofVjJwRW81i9Z/o2FSkpgIwnOEX8whD1+woqbTRaf/+mKj03p
+VgUP9+RjYKIVFFtoMo3EWTz2VtbIsD+YzbGNBSYcKdNfYXQvWGFkpnKHUgLCFR0l
+WLJpsGcGC3ANDqJYvDqh1T6YiSPjFq429+RcLiRepV82Fe8hsLL7rrNs4tHGQ8yI
+viRgYZDwRcwCiXerGozvMF9H3cNpQh5s1wIBQBZH/w3rjalU0EUAVBmanl5fJqvj
+ZJadMGnd6nCCtypQk4ZZDjk1IoqVOFSP6KxQyG5dcK2cWCX8+1eeUJychkYGDj5E
+g4+l4+Nx0gPpynHfyivI
+=TMeh
+-----END PGP SIGNATURE-----
+
+--=-3YrgJShytr+cQp5k0PMk--
