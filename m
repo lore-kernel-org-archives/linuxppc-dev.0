@@ -1,32 +1,27 @@
-Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <j.anaszewski81@gmail.com>
+Received: from mail-wg0-x22a.google.com (mail-wg0-x22a.google.com
+ [IPv6:2a00:1450:400c:c00::22a])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0EDEA1A0C3D
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Apr 2015 18:55:21 +1000 (AEST)
-Received: from /spool/local
- by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Fri, 24 Apr 2015 14:25:18 +0530
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id DF263125804F
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Apr 2015 14:27:14 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t3O8tEo166257134
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Apr 2015 14:25:15 +0530
-Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t3O8tEsp029987
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Apr 2015 14:25:14 +0530
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, rostedt@goodmis.org
-Subject: [PATCH v2] powerpc/ftrace: add powerpc timebase as a trace clock
- source
-Date: Fri, 24 Apr 2015 14:24:44 +0530
-Message-Id: <1429865684-6214-1-git-send-email-naveen.n.rao@linux.vnet.ibm.com>
-Cc: paulus@samba.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id B7D621A0D82
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Apr 2015 20:16:03 +1000 (AEST)
+Received: by wgso17 with SMTP id o17so45611363wgs.1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Apr 2015 03:16:00 -0700 (PDT)
+Date: Fri, 24 Apr 2015 12:15:49 +0200
+From: Jacek Anaszewski <j.anaszewski81@gmail.com>
+To: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
+Subject: Re: [PATCH v2 2/2] leds/powernv: Add driver for PowerNV platform
+Message-ID: <20150424121549.27b74b25@ja.home>
+In-Reply-To: <5539D501.3040601@linux.vnet.ibm.com>
+References: <20150422234509.626d9dc7@ja.home>
+ <55388254.4000606@linux.vnet.ibm.com>
+ <20150423161342.55e9ac8f@ja.home>
+ <5539D501.3040601@linux.vnet.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: stewart@linux.vnet.ibm.com, cooloney@gmail.com, rpurdie@rpsys.net,
+ linuxppc-dev@lists.ozlabs.org, linux-leds@vger.kernel.org,
+ khandual@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,111 +31,188 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add a new powerpc-specific trace clock using the timebase register,
-similar to x86-tsc. This gives us
-- a fast, monotonic, hardware clock source for trace entries, and
-- a clock that can be used to correlate events across cpus as well as across
-  hypervisor and guests.
+On Fri, 24 Apr 2015 11:00:41 +0530
+Hi Vasant,
 
-Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
----
-Changes since v1:
-- removed unnecessary #ifdef in trace_clock.h
-- changed config build dependency for trace_clock.o from TRACE_CLOCK to TRACING
+Vasant Hegde <hegdevasant@linux.vnet.ibm.com> wrote:
 
+> On 04/23/2015 07:43 PM, Jacek Anaszewski wrote:
+> > On Thu, 23 Apr 2015 10:55:40 +0530
+> > Vasant Hegde <hegdevasant@linux.vnet.ibm.com> wrote:
+> > 
+> 
+> Hi Jacek,
+> 
+> .../...
+> 
+> >>
+> >> These device tree comes from out firmware ... which is immutable .
+> > 
+> > How the firmware is related to kernel? These bindings are for
+> > kernel, not for the firmware.
+> > 
+> > DT bindings are compiled to *.dtb file which is concatenated with
+> > zImage. During system boot device drivers are matched with DT
+> > bindings through 'compatible' property. A driver should have single
+> > matching DT node, i.e. no other driver can probe with the same DT
+> > node. This implies that the node should contain only the properties
+> > required for configuring the related device.
+> > 
+> 
+> As Stewart mentioned, its not .dtb file in our case.. we pass
+> flattened device tree .. which is built by OPAL.
 
- Documentation/trace/ftrace.txt         |  5 +++++
- arch/powerpc/include/asm/Kbuild        |  1 -
- arch/powerpc/include/asm/trace_clock.h | 19 +++++++++++++++++++
- arch/powerpc/kernel/Makefile           |  1 +
- arch/powerpc/kernel/trace_clock.c      | 15 +++++++++++++++
- 5 files changed, 40 insertions(+), 1 deletion(-)
- create mode 100644 arch/powerpc/include/asm/trace_clock.h
- create mode 100644 arch/powerpc/kernel/trace_clock.c
+No matter what format of device tree OPAL produces, I assume that
+it must compile it from some sources.
 
-diff --git a/Documentation/trace/ftrace.txt b/Documentation/trace/ftrace.txt
-index 572ca92..689f61a 100644
---- a/Documentation/trace/ftrace.txt
-+++ b/Documentation/trace/ftrace.txt
-@@ -346,6 +346,11 @@ of ftrace. Here is a list of some of the key files:
- 	  x86-tsc: Architectures may define their own clocks. For
- 	  	   example, x86 uses its own TSC cycle clock here.
+dtb file is a compiled form of human readable dts file containing
+Flattened Device Tree - a data structure for describing the hardware
+in the system.
+
+Please refer to: http://elinux.org/Device_Tree
+
+> >> We can use LED node name + led-type property for naming...which is
+> >> what I do currently (v4.. which I haven't posted)
+> >>
+> >>
+> >>> 1. Each LED would have one corresponding LED class device.
+> >>>
+> >>> 2. Operations on attn and fault LED types:
+> >>> 	turn on:
+> >>> 		echo 255 > brightness
+> >>> 	turn off:
+> >>> 		echo 0 > brightness
+> >>> 	get status
+> >>> 		cat brightness
+> >>> 	
+> >>> 3. Operations on identify LED:
+> >>> 	turn on:
+> >>> 		echo "timer" > trigger
+> >>> 		(blink_set op would have to be implemented in the
+> >>> 		driver)
+> >>> 	turn off:
+> >>> 		echo 0 > brightness
+> >>> 	get status:
+> >>> 		support for this would have to be added to the LED
+> >>> 		subsystem core
+> >>
+> >> I see few issues here.
+> >>   - Overloading same LED device with multiple opeartion complicates
+> >> things .. as these operations can be done independently (say user
+> >> is allowed to enable both identify and fault simultaneously)
+> > 
+> > I agree, it would be hard to distinguish whether by executing
+> > `echo 0 > brightness` we want to turn off identify or fault
+> > function.
+> > 
+> >>   - point 3: IIUC after duration value expires identify indicator
+> >> reverts.. we don't want to revert until user asks .
+> > 
+> > From what you shared, blinking has hardware acceleration on OPAL
+> > side. At first timer trigger tries to use HW accelerated blinking by
+> > calling blink_set op and resorts to using software fallback only if
+> > the op fails or is not defined.
+> 
+> Blinking is the physical state of LED to represent "identify" state.
+> which is taken care by hardware. and OS doesn't have control on
+> this ..
+
+I am aware of it. Therefore we would probably need to add a flag
+LED_BLINK_HW_ONLY to the LED subsystem core and modify led_blink_set
+function to log an error and avoid setting software fallback in
+case blink_set op fails and the flag is set.
+
+Nevertheless, I am leaning towards using brightness_set op for this.
+
+> From software point of view its just another LED with two state (ON
+> and OFF).
+>
+> > 
+> > BTW timer trigger re-sets blink after timer expires, unless
+> > LED_BLINK_ONESHOT flag is set by LED class device.
+> 
+> In my case, I want to retain the state.'
+>
+> > 
+> >>   - point 3: if I use brightness for both identify/fault, how to
+> >> disable these LEDs independently?
+> > 
+> > Another sysfs attribute would be required, but it would be ugly.
+> 
+> yeah.
+> 
+> 
+> >>   - Also how to use trigger property for each LED (if at all we
+> >> want to use them later)?
+> >>
+> > 
+> > After analyzing pros and cons I think that separate LED class
+> > devices for each LED type would be most suitable solution in this
+> > case.
+> 
+> Agree.
+> 
+> > 
+> > For 'identify' LED the operation would be:
+> > 
+> > #echo "timer" > trigger		//set 'identify' (blinking)
+> > #cat trigger			//check "identify" state
+> > #none [timer]			//'identify' is ON
+> > #echo 0 > brightness		//unset 'identify
+> > #cat trigger
+> > #[none] timer			//'identify' is OFF
+> > 
+> > You would have to implement blink_set op
+> > (see Documentation/leds/leds-class.txt and other LED class drivers
+> > for reference).
+> 
+> Implementing another op should be fine.. I can try to implement it.
+> 
+> But from user perspective identify is just another LED. Hence can we
+> just use "brightness" property itself?
+
+OK, let's use only brightness. Usage of blinking API would impose
+turning on led-triggers, which would be used only for exposing trigger
+sysfs attribute. Triggers however would not be used, as the intention
+is using only HW accelerated blinking.
+
+Please add comment to the driver, describing the reasons for abusing API
+semantics.
  
-+	  ppc-tb: This uses the powerpc timebase register value.
-+		  This is in sync across CPUs and can also be used
-+		  to correlate events across hypervisor/guest if
-+		  tb_offset is known.
-+
- 	To set a clock, simply echo the clock name into this file.
- 
- 	  echo global > trace_clock
-diff --git a/arch/powerpc/include/asm/Kbuild b/arch/powerpc/include/asm/Kbuild
-index 382b28e..5041c66 100644
---- a/arch/powerpc/include/asm/Kbuild
-+++ b/arch/powerpc/include/asm/Kbuild
-@@ -5,5 +5,4 @@ generic-y += mcs_spinlock.h
- generic-y += preempt.h
- generic-y += rwsem.h
- generic-y += scatterlist.h
--generic-y += trace_clock.h
- generic-y += vtime.h
-diff --git a/arch/powerpc/include/asm/trace_clock.h b/arch/powerpc/include/asm/trace_clock.h
-new file mode 100644
-index 0000000..cf1ee75
---- /dev/null
-+++ b/arch/powerpc/include/asm/trace_clock.h
-@@ -0,0 +1,19 @@
-+/*
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License, version 2, as
-+ * published by the Free Software Foundation.
-+ *
-+ * Copyright (C) 2015 Naveen N. Rao, IBM Corporation
-+ */
-+
-+#ifndef _ASM_PPC_TRACE_CLOCK_H
-+#define _ASM_PPC_TRACE_CLOCK_H
-+
-+#include <linux/compiler.h>
-+#include <linux/types.h>
-+
-+extern u64 notrace trace_clock_ppc_tb(void);
-+
-+#define ARCH_TRACE_CLOCKS { trace_clock_ppc_tb, "ppc-tb", 0 },
-+
-+#endif  /* _ASM_PPC_TRACE_CLOCK_H */
-diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
-index 502cf69..18e038e 100644
---- a/arch/powerpc/kernel/Makefile
-+++ b/arch/powerpc/kernel/Makefile
-@@ -118,6 +118,7 @@ obj-$(CONFIG_PPC_IO_WORKAROUNDS)	+= io-workarounds.o
- obj-$(CONFIG_DYNAMIC_FTRACE)	+= ftrace.o
- obj-$(CONFIG_FUNCTION_GRAPH_TRACER)	+= ftrace.o
- obj-$(CONFIG_FTRACE_SYSCALLS)	+= ftrace.o
-+obj-$(CONFIG_TRACING)		+= trace_clock.o
- 
- ifneq ($(CONFIG_PPC_INDIRECT_PIO),y)
- obj-y				+= iomap.o
-diff --git a/arch/powerpc/kernel/trace_clock.c b/arch/powerpc/kernel/trace_clock.c
-new file mode 100644
-index 0000000..4917069
---- /dev/null
-+++ b/arch/powerpc/kernel/trace_clock.c
-@@ -0,0 +1,15 @@
-+/*
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License, version 2, as
-+ * published by the Free Software Foundation.
-+ *
-+ * Copyright (C) 2015 Naveen N. Rao, IBM Corporation
-+ */
-+
-+#include <asm/trace_clock.h>
-+#include <asm/time.h>
-+
-+u64 notrace trace_clock_ppc_tb(void)
-+{
-+	return get_tb();
-+}
+> 
+> > 
+> > For attention and fault LEDs only brightness attribute would matter.
+> > 
+> 
+> Sure.
+> 
+> > DT bindings would look as follows:
+> > 
+> > opal-leds {
+> >         compatible = "ibm,opal-leds";
+> > 
+> >         U78C9.001.RST0027-P1-C1:fault {
+> >         };
+> > 
+> >         U78C9.001.RST0027-P1-C1:indent {
+> >         };
+> > 
+> >         U78C9.001.RST0027-P2-C1:attn
+> >         };
+> >     }
+> > }
+> > 
+> 
+> As mentioned earlier DT is coming from our firmware. For now I will
+> respin another round of patches by using led-types property and run
+> it through DT experts (DT mailing list). If they insist this method
+> is better than what I already have , then will work with my firmware
+> folks to see what we can do better.
+
+Please hold on with sending the patches until we clarify all the
+DT related issues. Having full picture will help to adjust the
+bindings better to LED common bindings specification.
+
 -- 
-2.3.5
+Best Regards,
+Jacek Anaszewski
