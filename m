@@ -1,39 +1,23 @@
-Return-Path: <tyreld@linux.vnet.ibm.com>
-Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <sfr@canb.auug.org.au>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 992031A0D1E
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Apr 2015 09:12:57 +1000 (AEST)
-Received: from /spool/local
- by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <tyreld@linux.vnet.ibm.com>;
- Thu, 23 Apr 2015 17:12:55 -0600
-Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
- [9.57.198.24])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 6C0EF6E8045
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Apr 2015 19:04:40 -0400 (EDT)
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
- by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t3NNCp9p63766664
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Apr 2015 23:12:51 GMT
-Received: from d01av03.pok.ibm.com (localhost [127.0.0.1])
- by d01av03.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t3NNCoZn013479
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Apr 2015 19:12:50 -0400
-Message-ID: <55397C70.2060209@linux.vnet.ibm.com>
-Date: Thu, 23 Apr 2015 16:12:48 -0700
-From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id D1A6E1A0C2F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Apr 2015 12:10:41 +1000 (AEST)
+Date: Fri, 24 Apr 2015 12:10:36 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Marcelo Tosatti <mtosatti@redhat.com>, Gleb Natapov <gleb@kernel.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, <linuxppc-dev@lists.ozlabs.org>
+Subject: linux-next: manual merge of the kvm tree with the powerpc-merge-mpe
+ tree
+Message-ID: <20150424121036.55fabf0f@canb.auug.org.au>
 MIME-Version: 1.0
-To: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>,
- David Gibson <david@gibson.dropbear.id.au>, anton@au1.ibm.com
-Subject: Re: [PATCHv2] ibmveth: Fix off-by-one error in ibmveth_change_mtu()
-References: <1429578471-9717-1-git-send-email-david@gibson.dropbear.id.au>
- <553815CD.1000407@linux.vnet.ibm.com>
-In-Reply-To: <553815CD.1000407@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
-Cc: michael@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ boundary="Sig_/jlzC.SkQG4xZc3Cg9AMVVy3"; protocol="application/pgp-signature"
+Cc: Alexander Graf <agraf@suse.de>, linux-next@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, linux-kernel@vger.kernel.org, "Aneesh Kumar
+ K.V" <aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,69 +27,79 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/22/2015 02:42 PM, Thomas Falcon wrote:
-> On 04/20/2015 08:07 PM, David Gibson wrote:
->> AFAIK the PAPR document which defines the virtual device interface used by
->> the ibmveth driver doesn't specify a specific maximum MTU.  So, in the
+--Sig_/jlzC.SkQG4xZc3Cg9AMVVy3
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-PAPR itself doesn't, but the max-frame-size property, which I understand
-to be synonymous with max MTU, is required by PAPR to be present in the
-Logical LAN OF node corresponding to the ibmveth device.
+Hi all,
 
--Tyrel
+Today's linux-next merge of the kvm tree got a conflict in
+arch/powerpc/kvm/book3s_hv_rm_mmu.c between commit dac565706791 ("KVM:
+PPC: Remove page table walk helpers") from the powerpc-merge-mpe tree
+and commit a4bd6eb07ca7 ("KVM: PPC: Book3S HV: Add helpers for
+lock/unlock hpte") from the kvm tree.
 
->> ibmveth driver, the maximum allowed MTU is determined by the maximum
->> allocated buffer size of 64k (corresponding to one page in the common case)
->> minus the per-buffer overhead IBMVETH_BUFF_OH (which has value 22 for 14
->> bytes of ethernet header, plus 8 bytes for an opaque handle).
->>
->> This suggests a maximum allowable MTU of 65514 bytes, but in fact the
->> driver only permits a maximum MTU of 65513.  This is because there is a <
->> instead of an <= in ibmveth_change_mtu(), which only permits an MTU which
->> is strictly smaller than the buffer size, rather than allowing the buffer
->> to be completely filled.
->>
->> This patch fixes the buglet.
-> 
-> Thanks!
-> 
-> Acked-by: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
-> 
->>
->> Signed-off-by: David Gibson <david@gibson.dropbear.id.au>1
->> ---
->>  drivers/net/ethernet/ibm/ibmveth.c | 4 ++--
->>  1 file changed, 2 insertions(+), 2 deletions(-)
->>
->> Changes since v1:
->>  * Fixed a second instance of the same off-by-one error.  Thanks to
->>    Thomas Falcon for spotting this.
->>
->> diff --git a/drivers/net/ethernet/ibm/ibmveth.c b/drivers/net/ethernet/ibm/ibmveth.c
->> index cd7675a..1813476 100644
->> --- a/drivers/net/ethernet/ibm/ibmveth.c
->> +++ b/drivers/net/ethernet/ibm/ibmveth.c
->> @@ -1238,7 +1238,7 @@ static int ibmveth_change_mtu(struct net_device *dev, int new_mtu)
->>  		return -EINVAL;
->>  
->>  	for (i = 0; i < IBMVETH_NUM_BUFF_POOLS; i++)
->> -		if (new_mtu_oh < adapter->rx_buff_pool[i].buff_size)
->> +		if (new_mtu_oh <= adapter->rx_buff_pool[i].buff_size)
->>  			break;
->>  
->>  	if (i == IBMVETH_NUM_BUFF_POOLS)
->> @@ -1257,7 +1257,7 @@ static int ibmveth_change_mtu(struct net_device *dev, int new_mtu)
->>  	for (i = 0; i < IBMVETH_NUM_BUFF_POOLS; i++) {
->>  		adapter->rx_buff_pool[i].active = 1;
->>  
->> -		if (new_mtu_oh < adapter->rx_buff_pool[i].buff_size) {
->> +		if (new_mtu_oh <= adapter->rx_buff_pool[i].buff_size) {
->>  			dev->mtu = new_mtu;
->>  			vio_cmo_set_dev_desired(viodev,
->>  						ibmveth_get_desired_dma
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
-> 
+I fixed it up (see below) and can carry the fix as necessary (no action
+is required).
+
+--=20
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+diff --cc arch/powerpc/kvm/book3s_hv_rm_mmu.c
+index d839f08cb903,f6bf0b1de6d7..000000000000
+--- a/arch/powerpc/kvm/book3s_hv_rm_mmu.c
++++ b/arch/powerpc/kvm/book3s_hv_rm_mmu.c
+@@@ -134,12 -131,25 +134,6 @@@ static void remove_revmap_chain(struct=20
+  	unlock_rmap(rmap);
+  }
+ =20
+- static inline void unlock_hpte(__be64 *hpte, unsigned long hpte_v)
+ -static pte_t lookup_linux_pte_and_update(pgd_t *pgdir, unsigned long hva,
+ -			      int writing, unsigned long *pte_sizep)
+--{
+- 	asm volatile(PPC_RELEASE_BARRIER "" : : : "memory");
+- 	hpte[0] =3D cpu_to_be64(hpte_v);
+ -	pte_t *ptep;
+ -	unsigned long ps =3D *pte_sizep;
+ -	unsigned int hugepage_shift;
+ -
+ -	ptep =3D find_linux_pte_or_hugepte(pgdir, hva, &hugepage_shift);
+ -	if (!ptep)
+ -		return __pte(0);
+ -	if (hugepage_shift)
+ -		*pte_sizep =3D 1ul << hugepage_shift;
+ -	else
+ -		*pte_sizep =3D PAGE_SIZE;
+ -	if (ps > *pte_sizep)
+ -		return __pte(0);
+ -	return kvmppc_read_update_linux_pte(ptep, writing, hugepage_shift);
+--}
+--
+  long kvmppc_do_h_enter(struct kvm *kvm, unsigned long flags,
+  		       long pte_index, unsigned long pteh, unsigned long ptel,
+  		       pgd_t *pgdir, bool realmode, unsigned long *pte_idx_ret)
+
+--Sig_/jlzC.SkQG4xZc3Cg9AMVVy3
+Content-Type: application/pgp-signature
+Content-Description: OpenPGP digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQIcBAEBCAAGBQJVOaYgAAoJEMDTa8Ir7ZwVUn4P/3r+jZZO/rToCkLUnY0519IJ
+ombF+4XRSLZZalcO18oPF096vVQpczF7cr3Ojpur1GzR32tioUSOK8hSQh8uyMrU
+NQbti/dsBK2eAitZLBx71plc+eiu/xAY9LyxsEMxO87z80LL3fZSDtOZ3KrAkrIl
+8fKaHbvt9YjC5wjAX+m04TKD7epajNqcXEB1FCj1MoT/pyFQ9fBuAOTjcjIAW9Q+
+snE5UbgSBOwDCvuao1BrY8oJABCAApr8cm0qt/UNwvXFJCszc4CvzBokmNWrxjai
+M09xmxnVavS91ovp4Yh+CzLrLEPhWyKS8mzYlDA/fzq1dyf9uqkMYJrthBQUsx4s
+qs7BY2MyUeQP//evlxVGngFwsKC0bMesVvBRVQAGBpE2mLqb+Qz5FltEDlT2YTAT
+tujLWjkiaAqa4YCtiYoKOeEyWEK4FwbJdC35UpKr2GRsm9iMflrXuYU+3qv8oh+y
+KTvW9/8lCxVS3xJ96/CTWUsY/GhQ4bDH45OFUBdiEuNoMjCIZML1Fh5ziQGqWCsb
+yJgvlcgNreDYK8xf9SEkr9zCeG+omOgVxEPQARQaQHyR0bbaBlUpupG5IFuob6rJ
+zOzIM41d1e+AILd3p3oThaQ5uORS6o072/MR1g4WI+e8NFIZXHE4EIiRuY2c+2CT
+uV+tLIYrvZkC66zqCult
+=Aqwa
+-----END PGP SIGNATURE-----
+
+--Sig_/jlzC.SkQG4xZc3Cg9AMVVy3--
