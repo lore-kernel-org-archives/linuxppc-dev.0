@@ -1,16 +1,37 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DAC211A0D38
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Apr 2015 15:52:38 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: <netdev@vger.kernel.org>
-Subject: [PATCH] ehea: Fix memory hook reference counting crashes
-Date: Fri, 24 Apr 2015 15:52:32 +1000
-Message-Id: <1429854752-5698-1-git-send-email-mpe@ellerman.id.au>
-Cc: linuxppc-dev@ozlabs.org, "David S. Miller" <davem@davemloft.net>,
- Anton Blanchard <anton@samba.org>, cascardo@linux.vnet.ibm.com
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1B7EF1A0D6C
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Apr 2015 18:09:16 +1000 (AEST)
+Received: from /spool/local
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
+ Fri, 24 Apr 2015 18:09:13 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 9E4CF3578053
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Apr 2015 18:09:08 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t3O890P644433462
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Apr 2015 18:09:08 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t3O88YjK026322
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Apr 2015 18:08:35 +1000
+Date: Fri, 24 Apr 2015 13:37:49 +0530
+From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+To: Steven Rostedt <rostedt@goodmis.org>
+Subject: Re: [PATCH] powerpc/ftrace: add powerpc timebase as a trace clock
+ source
+Message-ID: <20150424080749.GB32293@naverao1-tp.in.ibm.com>
+References: <1429771504-32688-1-git-send-email-naveen.n.rao@linux.vnet.ibm.com>
+ <20150423091003.168efa55@gandalf.local.home>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20150423091003.168efa55@gandalf.local.home>
+Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,65 +41,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The recent commit to only register the EHEA memory hotplug hooks on
-adapter probe has a few problems.
+On 2015/04/23 09:10AM, Steven Rostedt wrote:
+> On Thu, 23 Apr 2015 12:15:04 +0530
+> "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com> wrote:
+> 
+> > diff --git a/arch/powerpc/include/asm/trace_clock.h b/arch/powerpc/include/asm/trace_clock.h
+> > new file mode 100644
+> > index 0000000..0b0d094
+> > --- /dev/null
+> > +++ b/arch/powerpc/include/asm/trace_clock.h
+> > @@ -0,0 +1,27 @@
+> > +/*
+> > + * This program is free software; you can redistribute it and/or modify
+> > + * it under the terms of the GNU General Public License, version 2, as
+> > + * published by the Free Software Foundation.
+> > + *
+> > + * Copyright (C) 2015 Naveen N. Rao, IBM Corporation
+> > + */
+> > +
+> > +#ifndef _ASM_PPC_TRACE_CLOCK_H
+> > +#define _ASM_PPC_TRACE_CLOCK_H
+> > +
+> > +#include <linux/compiler.h>
+> > +#include <linux/types.h>
+> > +
+> > +#ifdef CONFIG_TRACE_CLOCK
+> 
+> You don't need this #if statement. What else is using this besides
+> kernel/trace/trace.c, which selects TRACE_CLOCK if it is compiled.
+> 
+> If you were trying to match x86, where it has:
+> 
+> #ifdef CONFIG_X86_TSC
+> 
+> where you have CONFIG_TRACE_CLOCK. We needed the #ifdef because you
+> can compile the x86 kernel without TSC support, and we did not want to
+> export a tsc tracing clock if one did not exist.
+> 
+> And the only place that I see that even includes this header in ppc, is
+> also only compiled if CONFIG_TRACE_CLOCK is selected.
 
-Firstly the reference counting is wrong for multiple adapters, in that
-the hooks are registered multiple times. Secondly the check in the tear
-down path is backward. Finally the error path doesn't decrement the
-count.
+Ah yes, agreed. I have removed it and seeing as CONFIG_TRACE_CLOCK is 
+really for the generic clocks, I have moved the dependency on 
+arch/powerpc/kernel/trace_clock.o to CONFIG_TRACING since that is what 
+gates kernel/trace/trace.o
 
-The multiple registration of the hooks is the biggest problem, as it
-leads to oopses when the system is rebooted, and/or errors during memory
-hotplug, eg:
+> 
+> I'm fine with the change, just nuke the unnecessary #ifdef.
 
-  $ ./mem-on-off-test.sh -r 2
-  ...
-  ehea: memory is going offline
-  ehea: LPAR memory changed - re-initializing driver
-  ehea: re-initializing driver complete
-  ehea: memory is going offline
-  ehea: LPAR memory changed - re-initializing driver
-  ehea: opcode=26c ret=fffffffffffffffc arg1=8000000003000003 arg2=0 arg3=700000060000d600 arg4=3fded0000 arg5=200 arg6=0 arg7=0
-  ehea: register_rpage_mr failed
-  ehea: registering mr failed
-  ehea: register MR failed - driver inoperable!
-  ehea: memory is going offline
-
-Fixes: aa183323312d ("ehea: Register memory hotplug, reboot and crash hooks on adapter probe")
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- drivers/net/ethernet/ibm/ehea/ehea_main.c | 6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/net/ethernet/ibm/ehea/ehea_main.c b/drivers/net/ethernet/ibm/ehea/ehea_main.c
-index c05e50759621..00d86be0c831 100644
---- a/drivers/net/ethernet/ibm/ehea/ehea_main.c
-+++ b/drivers/net/ethernet/ibm/ehea/ehea_main.c
-@@ -3347,7 +3347,7 @@ static int ehea_register_memory_hooks(void)
- {
- 	int ret = 0;
+Thanks for the review!
+- Naveen
  
--	if (atomic_inc_and_test(&ehea_memory_hooks_registered))
-+	if (atomic_inc_return(&ehea_memory_hooks_registered) > 1)
- 		return 0;
- 
- 	ret = ehea_create_busmap();
-@@ -3381,12 +3381,14 @@ out3:
- out2:
- 	unregister_reboot_notifier(&ehea_reboot_nb);
- out:
-+	atomic_dec(&ehea_memory_hooks_registered);
- 	return ret;
- }
- 
- static void ehea_unregister_memory_hooks(void)
- {
--	if (atomic_read(&ehea_memory_hooks_registered))
-+	/* Only remove the hooks if we've registered them */
-+	if (atomic_read(&ehea_memory_hooks_registered) == 0)
- 		return;
- 
- 	unregister_reboot_notifier(&ehea_reboot_nb);
--- 
-2.1.0
