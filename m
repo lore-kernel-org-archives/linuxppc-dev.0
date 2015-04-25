@@ -1,31 +1,30 @@
 Return-Path: <aik@ozlabs.ru>
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2ED5C1A0490
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8E8AA1A0BE1
  for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Apr 2015 22:16:24 +1000 (AEST)
 Received: from /spool/local
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aik@ozlabs.ru>;
  Sat, 25 Apr 2015 22:16:23 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 1B3352BB0054
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Apr 2015 22:16:20 +1000 (EST)
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id EDBDB3578053
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Apr 2015 22:16:19 +1000 (EST)
 Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t3PCGC5934930734
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Apr 2015 22:16:20 +1000
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t3PCGBBs48038050
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Apr 2015 22:16:19 +1000
 Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
  by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t3PCFk0B014050
+ t3PCFkYw014042
  for <linuxppc-dev@lists.ozlabs.org>; Sat, 25 Apr 2015 22:15:46 +1000
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH kernel v9 17/32] powerpc/powernv: Implement accessor to TCE
- entry
-Date: Sat, 25 Apr 2015 22:14:41 +1000
-Message-Id: <1429964096-11524-18-git-send-email-aik@ozlabs.ru>
+Subject: [PATCH kernel v9 05/32] vfio: powerpc/spapr: Use it_page_size
+Date: Sat, 25 Apr 2015 22:14:29 +1000
+Message-Id: <1429964096-11524-6-git-send-email-aik@ozlabs.ru>
 In-Reply-To: <1429964096-11524-1-git-send-email-aik@ozlabs.ru>
 References: <1429964096-11524-1-git-send-email-aik@ozlabs.ru>
 Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
@@ -41,88 +40,106 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This replaces direct accesses to TCE table with a helper which
-returns an TCE entry address. This does not make difference now but will
-when multi-level TCE tables get introduces.
+This makes use of the it_page_size from the iommu_table struct
+as page size can differ.
 
-No change in behavior is expected.
+This replaces missing IOMMU_PAGE_SHIFT macro in commented debug code
+as recently introduced IOMMU_PAGE_XXX macros do not include
+IOMMU_PAGE_SHIFT.
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
+[aw: for the vfio related changes]
+Acked-by: Alex Williamson <alex.williamson@redhat.com>
 ---
-Changes:
-v9:
-* new patch in the series to separate this mechanical change from
-functional changes; this is not right before
-"powerpc/powernv: Implement multilevel TCE tables" but here in order
-to let the next patch - "powerpc/iommu/powernv: Release replaced TCE" -
-use pnv_tce() and avoid changing the same code twice
----
- arch/powerpc/platforms/powernv/pci.c | 34 +++++++++++++++++++++-------------
- 1 file changed, 21 insertions(+), 13 deletions(-)
+ drivers/vfio/vfio_iommu_spapr_tce.c | 26 +++++++++++++-------------
+ 1 file changed, 13 insertions(+), 13 deletions(-)
 
-diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
-index 84b4ea4..ba75aa5 100644
---- a/arch/powerpc/platforms/powernv/pci.c
-+++ b/arch/powerpc/platforms/powernv/pci.c
-@@ -572,38 +572,46 @@ struct pci_ops pnv_pci_ops = {
- 	.write = pnv_pci_write_config,
- };
+diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
+index 735b308..64300cc 100644
+--- a/drivers/vfio/vfio_iommu_spapr_tce.c
++++ b/drivers/vfio/vfio_iommu_spapr_tce.c
+@@ -91,7 +91,7 @@ static int tce_iommu_enable(struct tce_container *container)
+ 	 * enforcing the limit based on the max that the guest can map.
+ 	 */
+ 	down_write(&current->mm->mmap_sem);
+-	npages = (tbl->it_size << IOMMU_PAGE_SHIFT_4K) >> PAGE_SHIFT;
++	npages = (tbl->it_size << tbl->it_page_shift) >> PAGE_SHIFT;
+ 	locked = current->mm->locked_vm + npages;
+ 	lock_limit = rlimit(RLIMIT_MEMLOCK) >> PAGE_SHIFT;
+ 	if (locked > lock_limit && !capable(CAP_IPC_LOCK)) {
+@@ -120,7 +120,7 @@ static void tce_iommu_disable(struct tce_container *container)
  
-+static __be64 *pnv_tce(struct iommu_table *tbl, long idx)
-+{
-+	__be64 *tmp = ((__be64 *)tbl->it_base);
-+
-+	return tmp + idx;
-+}
-+
- int pnv_tce_build(struct iommu_table *tbl, long index, long npages,
- 		unsigned long uaddr, enum dma_data_direction direction,
- 		struct dma_attrs *attrs)
- {
- 	u64 proto_tce = iommu_direction_to_tce_perm(direction);
--	__be64 *tcep;
--	u64 rpn;
-+	u64 rpn = __pa(uaddr) >> tbl->it_page_shift;
-+	long i;
- 
--	tcep = ((__be64 *)tbl->it_base) + index - tbl->it_offset;
--	rpn = __pa(uaddr) >> tbl->it_page_shift;
--
--	while (npages--)
--		*(tcep++) = cpu_to_be64(proto_tce |
--				(rpn++ << tbl->it_page_shift));
-+	for (i = 0; i < npages; i++) {
-+		unsigned long newtce = proto_tce |
-+			((rpn + i) << tbl->it_page_shift);
-+		unsigned long idx = index - tbl->it_offset + i;
- 
-+		*(pnv_tce(tbl, idx)) = cpu_to_be64(newtce);
-+	}
- 
- 	return 0;
+ 	down_write(&current->mm->mmap_sem);
+ 	current->mm->locked_vm -= (container->tbl->it_size <<
+-			IOMMU_PAGE_SHIFT_4K) >> PAGE_SHIFT;
++			container->tbl->it_page_shift) >> PAGE_SHIFT;
+ 	up_write(&current->mm->mmap_sem);
  }
  
- void pnv_tce_free(struct iommu_table *tbl, long index, long npages)
- {
--	__be64 *tcep;
-+	long i;
+@@ -215,7 +215,7 @@ static long tce_iommu_build(struct tce_container *container,
+ 					tce, ret);
+ 			break;
+ 		}
+-		tce += IOMMU_PAGE_SIZE_4K;
++		tce += IOMMU_PAGE_SIZE(tbl);
+ 	}
  
--	tcep = ((__be64 *)tbl->it_base) + index - tbl->it_offset;
-+	for (i = 0; i < npages; i++) {
-+		unsigned long idx = index - tbl->it_offset + i;
+ 	if (ret)
+@@ -260,8 +260,8 @@ static long tce_iommu_ioctl(void *iommu_data,
+ 		if (info.argsz < minsz)
+ 			return -EINVAL;
  
--	while (npages--)
--		*(tcep++) = cpu_to_be64(0);
-+		*(pnv_tce(tbl, idx)) = cpu_to_be64(0);
-+	}
- }
+-		info.dma32_window_start = tbl->it_offset << IOMMU_PAGE_SHIFT_4K;
+-		info.dma32_window_size = tbl->it_size << IOMMU_PAGE_SHIFT_4K;
++		info.dma32_window_start = tbl->it_offset << tbl->it_page_shift;
++		info.dma32_window_size = tbl->it_size << tbl->it_page_shift;
+ 		info.flags = 0;
  
- unsigned long pnv_tce_get(struct iommu_table *tbl, long index)
- {
--	return ((u64 *)tbl->it_base)[index - tbl->it_offset];
-+	return *(pnv_tce(tbl, index - tbl->it_offset));
- }
+ 		if (copy_to_user((void __user *)arg, &info, minsz))
+@@ -291,8 +291,8 @@ static long tce_iommu_ioctl(void *iommu_data,
+ 				VFIO_DMA_MAP_FLAG_WRITE))
+ 			return -EINVAL;
  
- void pnv_pci_setup_iommu_table(struct iommu_table *tbl,
+-		if ((param.size & ~IOMMU_PAGE_MASK_4K) ||
+-				(param.vaddr & ~IOMMU_PAGE_MASK_4K))
++		if ((param.size & ~IOMMU_PAGE_MASK(tbl)) ||
++				(param.vaddr & ~IOMMU_PAGE_MASK(tbl)))
+ 			return -EINVAL;
+ 
+ 		/* iova is checked by the IOMMU API */
+@@ -307,8 +307,8 @@ static long tce_iommu_ioctl(void *iommu_data,
+ 			return ret;
+ 
+ 		ret = tce_iommu_build(container, tbl,
+-				param.iova >> IOMMU_PAGE_SHIFT_4K,
+-				tce, param.size >> IOMMU_PAGE_SHIFT_4K);
++				param.iova >> tbl->it_page_shift,
++				tce, param.size >> tbl->it_page_shift);
+ 
+ 		iommu_flush_tce(tbl);
+ 
+@@ -334,17 +334,17 @@ static long tce_iommu_ioctl(void *iommu_data,
+ 		if (param.flags)
+ 			return -EINVAL;
+ 
+-		if (param.size & ~IOMMU_PAGE_MASK_4K)
++		if (param.size & ~IOMMU_PAGE_MASK(tbl))
+ 			return -EINVAL;
+ 
+ 		ret = iommu_tce_clear_param_check(tbl, param.iova, 0,
+-				param.size >> IOMMU_PAGE_SHIFT_4K);
++				param.size >> tbl->it_page_shift);
+ 		if (ret)
+ 			return ret;
+ 
+ 		ret = tce_iommu_clear(container, tbl,
+-				param.iova >> IOMMU_PAGE_SHIFT_4K,
+-				param.size >> IOMMU_PAGE_SHIFT_4K);
++				param.iova >> tbl->it_page_shift,
++				param.size >> tbl->it_page_shift);
+ 		iommu_flush_tce(tbl);
+ 
+ 		return ret;
 -- 
 2.0.0
