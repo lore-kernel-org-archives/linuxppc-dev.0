@@ -1,28 +1,23 @@
-Return-Path: <arnd@arndb.de>
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.131])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <alex.williamson@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B10291A017B
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Apr 2015 05:50:06 +1000 (AEST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: Suman Tripathi <stripathi@apm.com>
-Subject: Re: [PATCH v2 RESEND 2/2] mmc: host: Add some quirks to be read from
- fdt in sdhci-pltm.c
-Date: Mon, 27 Apr 2015 21:49:14 +0200
-Message-ID: <6927395.c8hJ4o34f5@wuerfel>
-In-Reply-To: <CAOHikRDX7RZUkHFUmNs0kY+aYqXra5i=3cukpjz5yOECkcffbQ@mail.gmail.com>
-References: <1429630959-32649-1-git-send-email-stripathi@apm.com>
- <5771531.b7UhrXUGmv@wuerfel>
- <CAOHikRDX7RZUkHFUmNs0kY+aYqXra5i=3cukpjz5yOECkcffbQ@mail.gmail.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Ulf Hansson <ulf.hansson@linaro.org>, Mark Langsdorf <mlangsdo@redhat.com>,
- Jon Masters <jcm@redhat.com>, Anton Vorontsov <anton@enomsg.org>,
- linux-mmc <linux-mmc@vger.kernel.org>, Chris Ball <chris@printf.net>,
- patches <patches@apm.com>, Don Dutile <ddutile@redhat.com>,
- linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id B0AE41A024B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Apr 2015 07:05:16 +1000 (AEST)
+Message-ID: <1430168702.4472.116.camel@redhat.com>
+Subject: Re: [PATCH kernel v9 02/32] Revert "powerpc/powernv: Allocate
+ struct pnv_ioda_pe iommu_table dynamically"
+From: Alex Williamson <alex.williamson@redhat.com>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Date: Mon, 27 Apr 2015 15:05:02 -0600
+In-Reply-To: <1429964096-11524-3-git-send-email-aik@ozlabs.ru>
+References: <1429964096-11524-1-git-send-email-aik@ozlabs.ru>
+ <1429964096-11524-3-git-send-email-aik@ozlabs.ru>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linux-kernel@vger.kernel.org, Gavin Shan <gwshan@linux.vnet.ibm.com>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,85 +27,176 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Monday 27 April 2015 21:25:20 Suman Tripathi wrote:
-> > On Monday 27 April 2015 20:33:25 Suman Tripathi wrote:
-> > > > On Tuesday 21 April 2015 21:12:39 Suman Tripathi wrote:
-> > > > > +                       host->quirks |= SDHCI_QUIRK_BROKEN_DMA;
-> > > > > +
-> > > > > +               if (of_get_property(np, "no-cmd23", NULL))
-> > > > > +                       host->quirks2 |= SDHCI_QUIRK2_HOST_NO_CMD23;
-> > > > > 
-> > > > >                 if (of_get_property(np, "no-1-8-v", NULL))
-> > > > >                 
-> > > > >                         host->quirks2 |= SDHCI_QUIRK2_NO_1_8_V;
-> > > > 
-> > > > Any property you add needs to be documented in the DT binding.
-> > > > If possible, add generic properties for each bug you have mmc.txt
-> > > > rather than the driver specific sdhci.txt, and implement the
-> > > 
-> > > I will add the binding in mmc.txt. I thought this was present but not.
-> > > 
-> > > > parsing in a common function that is used for all mmc hosts.
-> > > 
-> > > As per mine understanding the sdhci_get_of_porperty is a common
-> > > parsing function  . Am I wrong ??
+On Sat, 2015-04-25 at 22:14 +1000, Alexey Kardashevskiy wrote:
+> This reverts commit 9e8d4a19ab66ec9e132d405357b9108a4f26efd3 as
+> tce32_table has exactly the same life time as the whole PE.
+
+scripts/checkpatch.pl would like your commit reference to appear as:
+
+commit 9e8d4a19ab66 ("powerpc/powernv: Allocate struct pnv_ioda_pe
+iommu_table dynamically")
+
 > 
-
-A small side note: please fix your email client to use proper attribution
-of the citations. The way you reply, nobody knows what you are saying
-compare to what you quote. Also, reduce the quotation to the parts you
-are replying to.
-
-> > No, this is only used for sdhci, not for the other controllers.
+> This makes use of a new iommu_reset_table() helper instead.
 > 
-> But our's is a SHCI variant so I added it in this file.
-
-That's my point: a lot of the bugs are independent of the specific
-host controller and could happen with any one of them. We want to
-ensure that nobody tries to add another property with similar
-semantics and a different name just because they are using a
-different driver.
- 
-> > > An alternative would be to set all these bits based on the compatible
-> > > string of your host, if that is the only one that has all these bugs.
-> >
-> > The host driver  (arasan) is reused but this quirks are needed due to
-> > board issues. so I have a control over dtb only to fix this.
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> ---
+>  arch/powerpc/include/asm/iommu.h          |  3 ---
+>  arch/powerpc/platforms/powernv/pci-ioda.c | 35 +++++++++++++------------------
+>  arch/powerpc/platforms/powernv/pci.h      |  2 +-
+>  3 files changed, 15 insertions(+), 25 deletions(-)
 > 
-> What is the nature of the bug on that board? Is there a different
-> way to describe that without introducing six new properties?
-> 
-> Sorry it is board and IP as well SoC errata's,
-> 
-> 1. Delay after power is required due to some voltage issues that will
-> be fixed in next board revision
-
-This is clearly not sdhci-specific, so make that a generic property
-for all mmc.
-
-> 2. We need to support PIO mode as of now because DMA or ADMA requires
-> some kind of translation driver that I am working on.
-
-But this does not describe the hardware properties. Don't add properties
-that describe the lack of a kernel driver. If you can't do DMA yet,
-use a dma-ranges property that lists one empty range to prevent
-dma_set_mask() from working, so it will fall back to PIO mode. You
-may have to fix the driver if that doesn't already work.
-
-What kind of driver do you need here?
-
-> 3. The version of arasan variant we have in our SoC doesn't have the
-> HISPD  bit field in HI-SPEED SD card. So this makes HI-SPEED sdcard
-> work.
-> 
-> 4. NO_CMD23 is required for eMMC cards.
-> 
-> These are not new properties.  Only the fact is I am using it for our
-> SoC from dtb. These quirks are already there in mmc common framework.
-> Nothing is new.
-
-Are you sure that you have version 8.9a of the Arasan SDHCI? This sounds
-like version specific quirks, so they are probably present in each
-SoC that uses the same version.
-
-	Arnd
+> diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
+> index e2cef38..9d320e0 100644
+> --- a/arch/powerpc/include/asm/iommu.h
+> +++ b/arch/powerpc/include/asm/iommu.h
+> @@ -79,9 +79,6 @@ struct iommu_table {
+>  	struct iommu_group *it_group;
+>  #endif
+>  	void (*set_bypass)(struct iommu_table *tbl, bool enable);
+> -#ifdef CONFIG_PPC_POWERNV
+> -	void           *data;
+> -#endif
+>  };
+>  
+>  /* Pure 2^n version of get_order */
+> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+> index 920c252..eff26ed 100644
+> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+> @@ -1086,10 +1086,6 @@ static void pnv_ioda_setup_bus_PE(struct pci_bus *bus, int all)
+>  		return;
+>  	}
+>  
+> -	pe->tce32_table = kzalloc_node(sizeof(struct iommu_table),
+> -			GFP_KERNEL, hose->node);
+> -	pe->tce32_table->data = pe;
+> -
+>  	/* Associate it with all child devices */
+>  	pnv_ioda_setup_same_PE(bus, pe);
+>  
+> @@ -1295,7 +1291,7 @@ static void pnv_pci_ioda2_release_dma_pe(struct pci_dev *dev, struct pnv_ioda_pe
+>  	bus = dev->bus;
+>  	hose = pci_bus_to_host(bus);
+>  	phb = hose->private_data;
+> -	tbl = pe->tce32_table;
+> +	tbl = &pe->tce32_table;
+>  	addr = tbl->it_base;
+>  
+>  	opal_pci_map_pe_dma_window(phb->opal_id, pe->pe_number,
+> @@ -1310,9 +1306,8 @@ static void pnv_pci_ioda2_release_dma_pe(struct pci_dev *dev, struct pnv_ioda_pe
+>  	if (rc)
+>  		pe_warn(pe, "OPAL error %ld release DMA window\n", rc);
+>  
+> -	iommu_free_table(tbl, of_node_full_name(dev->dev.of_node));
+> +	iommu_reset_table(tbl, of_node_full_name(dev->dev.of_node));
+>  	free_pages(addr, get_order(TCE32_TABLE_SIZE));
+> -	pe->tce32_table = NULL;
+>  }
+>  
+>  static void pnv_ioda_release_vf_PE(struct pci_dev *pdev, u16 num_vfs)
+> @@ -1460,10 +1455,6 @@ static void pnv_ioda_setup_vf_PE(struct pci_dev *pdev, u16 num_vfs)
+>  			continue;
+>  		}
+>  
+> -		pe->tce32_table = kzalloc_node(sizeof(struct iommu_table),
+> -				GFP_KERNEL, hose->node);
+> -		pe->tce32_table->data = pe;
+> -
+>  		/* Put PE to the list */
+>  		mutex_lock(&phb->ioda.pe_list_mutex);
+>  		list_add_tail(&pe->list, &phb->ioda.pe_list);
+> @@ -1598,7 +1589,7 @@ static void pnv_pci_ioda_dma_dev_setup(struct pnv_phb *phb, struct pci_dev *pdev
+>  
+>  	pe = &phb->ioda.pe_array[pdn->pe_number];
+>  	WARN_ON(get_dma_ops(&pdev->dev) != &dma_iommu_ops);
+> -	set_iommu_table_base_and_group(&pdev->dev, pe->tce32_table);
+> +	set_iommu_table_base_and_group(&pdev->dev, &pe->tce32_table);
+>  }
+>  
+>  static int pnv_pci_ioda_dma_set_mask(struct pnv_phb *phb,
+> @@ -1625,7 +1616,7 @@ static int pnv_pci_ioda_dma_set_mask(struct pnv_phb *phb,
+>  	} else {
+>  		dev_info(&pdev->dev, "Using 32-bit DMA via iommu\n");
+>  		set_dma_ops(&pdev->dev, &dma_iommu_ops);
+> -		set_iommu_table_base(&pdev->dev, pe->tce32_table);
+> +		set_iommu_table_base(&pdev->dev, &pe->tce32_table);
+>  	}
+>  	*pdev->dev.dma_mask = dma_mask;
+>  	return 0;
+> @@ -1662,9 +1653,9 @@ static void pnv_ioda_setup_bus_dma(struct pnv_ioda_pe *pe,
+>  	list_for_each_entry(dev, &bus->devices, bus_list) {
+>  		if (add_to_iommu_group)
+>  			set_iommu_table_base_and_group(&dev->dev,
+> -						       pe->tce32_table);
+> +						       &pe->tce32_table);
+>  		else
+> -			set_iommu_table_base(&dev->dev, pe->tce32_table);
+> +			set_iommu_table_base(&dev->dev, &pe->tce32_table);
+>  
+>  		if (dev->subordinate)
+>  			pnv_ioda_setup_bus_dma(pe, dev->subordinate,
+> @@ -1754,7 +1745,8 @@ static void pnv_pci_ioda2_tce_invalidate(struct pnv_ioda_pe *pe,
+>  void pnv_pci_ioda_tce_invalidate(struct iommu_table *tbl,
+>  				 __be64 *startp, __be64 *endp, bool rm)
+>  {
+> -	struct pnv_ioda_pe *pe = tbl->data;
+> +	struct pnv_ioda_pe *pe = container_of(tbl, struct pnv_ioda_pe,
+> +					      tce32_table);
+>  	struct pnv_phb *phb = pe->phb;
+>  
+>  	if (phb->type == PNV_PHB_IODA1)
+> @@ -1817,7 +1809,7 @@ static void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
+>  	}
+>  
+>  	/* Setup linux iommu table */
+> -	tbl = pe->tce32_table;
+> +	tbl = &pe->tce32_table;
+>  	pnv_pci_setup_iommu_table(tbl, addr, TCE32_TABLE_SIZE * segs,
+>  				  base << 28, IOMMU_PAGE_SHIFT_4K);
+>  
+> @@ -1862,7 +1854,8 @@ static void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
+>  
+>  static void pnv_pci_ioda2_set_bypass(struct iommu_table *tbl, bool enable)
+>  {
+> -	struct pnv_ioda_pe *pe = tbl->data;
+> +	struct pnv_ioda_pe *pe = container_of(tbl, struct pnv_ioda_pe,
+> +					      tce32_table);
+>  	uint16_t window_id = (pe->pe_number << 1 ) + 1;
+>  	int64_t rc;
+>  
+> @@ -1907,10 +1900,10 @@ static void pnv_pci_ioda2_setup_bypass_pe(struct pnv_phb *phb,
+>  	pe->tce_bypass_base = 1ull << 59;
+>  
+>  	/* Install set_bypass callback for VFIO */
+> -	pe->tce32_table->set_bypass = pnv_pci_ioda2_set_bypass;
+> +	pe->tce32_table.set_bypass = pnv_pci_ioda2_set_bypass;
+>  
+>  	/* Enable bypass by default */
+> -	pnv_pci_ioda2_set_bypass(pe->tce32_table, true);
+> +	pnv_pci_ioda2_set_bypass(&pe->tce32_table, true);
+>  }
+>  
+>  static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
+> @@ -1958,7 +1951,7 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
+>  	}
+>  
+>  	/* Setup linux iommu table */
+> -	tbl = pe->tce32_table;
+> +	tbl = &pe->tce32_table;
+>  	pnv_pci_setup_iommu_table(tbl, addr, tce_table_size, 0,
+>  			IOMMU_PAGE_SHIFT_4K);
+>  
+> diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
+> index 070ee88..c954c64 100644
+> --- a/arch/powerpc/platforms/powernv/pci.h
+> +++ b/arch/powerpc/platforms/powernv/pci.h
+> @@ -57,7 +57,7 @@ struct pnv_ioda_pe {
+>  	/* "Base" iommu table, ie, 4K TCEs, 32-bit DMA */
+>  	int			tce32_seg;
+>  	int			tce32_segcount;
+> -	struct iommu_table	*tce32_table;
+> +	struct iommu_table	tce32_table;
+>  	phys_addr_t		tce_inval_reg_phys;
+>  
+>  	/* 64-bit TCE bypass region */
