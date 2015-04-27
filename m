@@ -1,30 +1,33 @@
 Return-Path: <weiyang@linux.vnet.ibm.com>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9E8DE1A0271
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2015 11:26:12 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4519C1A0CD3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2015 11:26:33 +1000 (AEST)
 Received: from /spool/local
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
- Mon, 27 Apr 2015 11:26:10 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 76304357804C
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2015 11:26:08 +1000 (EST)
+ Mon, 27 Apr 2015 11:26:31 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id B4D322BB0040
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2015 11:26:28 +1000 (EST)
 Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t3R1Pxl423462136
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2015 11:26:08 +1000
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t3R1QKFc36044926
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2015 11:26:28 +1000
 Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
  by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t3R1PY99005957
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2015 11:25:34 +1000
+ t3R1PtA5006539
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2015 11:25:55 +1000
 From: Wei Yang <weiyang@linux.vnet.ibm.com>
 To: gwshan@linux.vnet.ibm.com
-Subject: [PATCH V2 0/4] EEH Cleanup
-Date: Mon, 27 Apr 2015 09:25:08 +0800
-Message-Id: <1430097912-6207-1-git-send-email-weiyang@linux.vnet.ibm.com>
+Subject: [PATCH V2 1/4] powerpc/eeh: fix start/end/flags type in struct
+ pci_io_addr_range{}
+Date: Mon, 27 Apr 2015 09:25:09 +0800
+Message-Id: <1430097912-6207-2-git-send-email-weiyang@linux.vnet.ibm.com>
+In-Reply-To: <1430097912-6207-1-git-send-email-weiyang@linux.vnet.ibm.com>
+References: <1430097912-6207-1-git-send-email-weiyang@linux.vnet.ibm.com>
 Cc: Wei Yang <weiyang@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -35,24 +38,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Four patches to cleanup the EEH, in type, comment and logic
+struct pci_io_addr_range{} stores the information of pci resources. It
+would be better to keep these related fields have the same type as in
+struct resource{}.
 
+This patch fixes the start/end/flags type in struct pci_io_addr_range{} to
+have the same type as in struct resource{}.
+
+Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
+Acked-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 ---
-v2:
-   * rebased on the latest kernel
+ arch/powerpc/kernel/eeh_cache.c |   16 ++++++++--------
+ 1 file changed, 8 insertions(+), 8 deletions(-)
 
-Wei Yang (4):
-  powerpc/eeh: fix start/end/flags type in struct pci_io_addr_range{}
-  powerpc/eeh: fix comment for wait_state()
-  powerpc/eeh: fix powernv_eeh_wait_state delay logic
-  powerpc/eeh: remove unused macro IS_BRIDGE
-
- arch/powerpc/kernel/eeh.c                    |    2 --
- arch/powerpc/kernel/eeh_cache.c              |   16 ++++++++--------
- arch/powerpc/kernel/eeh_driver.c             |    2 +-
- arch/powerpc/platforms/powernv/eeh-powernv.c |    4 ++--
- arch/powerpc/platforms/pseries/eeh_pseries.c |    2 +-
- 5 files changed, 12 insertions(+), 14 deletions(-)
-
+diff --git a/arch/powerpc/kernel/eeh_cache.c b/arch/powerpc/kernel/eeh_cache.c
+index eeabeab..a1e86e1 100644
+--- a/arch/powerpc/kernel/eeh_cache.c
++++ b/arch/powerpc/kernel/eeh_cache.c
+@@ -48,11 +48,11 @@
+  */
+ struct pci_io_addr_range {
+ 	struct rb_node rb_node;
+-	unsigned long addr_lo;
+-	unsigned long addr_hi;
++	resource_size_t addr_lo;
++	resource_size_t addr_hi;
+ 	struct eeh_dev *edev;
+ 	struct pci_dev *pcidev;
+-	unsigned int flags;
++	unsigned long flags;
+ };
+ 
+ static struct pci_io_addr_cache {
+@@ -125,8 +125,8 @@ static void eeh_addr_cache_print(struct pci_io_addr_cache *cache)
+ 
+ /* Insert address range into the rb tree. */
+ static struct pci_io_addr_range *
+-eeh_addr_cache_insert(struct pci_dev *dev, unsigned long alo,
+-		      unsigned long ahi, unsigned int flags)
++eeh_addr_cache_insert(struct pci_dev *dev, resource_size_t alo,
++		      resource_size_t ahi, unsigned long flags)
+ {
+ 	struct rb_node **p = &pci_io_addr_cache_root.rb_root.rb_node;
+ 	struct rb_node *parent = NULL;
+@@ -197,9 +197,9 @@ static void __eeh_addr_cache_insert_dev(struct pci_dev *dev)
+ 
+ 	/* Walk resources on this device, poke them into the tree */
+ 	for (i = 0; i < DEVICE_COUNT_RESOURCE; i++) {
+-		unsigned long start = pci_resource_start(dev,i);
+-		unsigned long end = pci_resource_end(dev,i);
+-		unsigned int flags = pci_resource_flags(dev,i);
++		resource_size_t start = pci_resource_start(dev,i);
++		resource_size_t end = pci_resource_end(dev,i);
++		unsigned long flags = pci_resource_flags(dev,i);
+ 
+ 		/* We are interested only bus addresses, not dma or other stuff */
+ 		if (0 == (flags & (IORESOURCE_IO | IORESOURCE_MEM)))
 -- 
 1.7.9.5
