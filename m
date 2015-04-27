@@ -1,35 +1,35 @@
 Return-Path: <nikunj@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 095D41A0245
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2015 18:03:35 +1000 (AEST)
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 519FC1A0245
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2015 18:03:36 +1000 (AEST)
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id D2E65140328
- for <linuxppc-dev@ozlabs.org>; Mon, 27 Apr 2015 18:03:34 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTPS id 15B9F140328
+ for <linuxppc-dev@ozlabs.org>; Mon, 27 Apr 2015 18:03:36 +1000 (AEST)
 Received: from /spool/local
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <nikunj@linux.vnet.ibm.com>;
- Mon, 27 Apr 2015 18:03:34 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 50A613578047
- for <linuxppc-dev@ozlabs.org>; Mon, 27 Apr 2015 18:03:31 +1000 (EST)
+ Mon, 27 Apr 2015 18:03:35 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 82C102BB0040
+ for <linuxppc-dev@ozlabs.org>; Mon, 27 Apr 2015 18:03:33 +1000 (EST)
 Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t3R83MqX3539368
- for <linuxppc-dev@ozlabs.org>; Mon, 27 Apr 2015 18:03:30 +1000
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t3R83OXA47251592
+ for <linuxppc-dev@ozlabs.org>; Mon, 27 Apr 2015 18:03:32 +1000
 Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
  by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t3R82vBZ005515
- for <linuxppc-dev@ozlabs.org>; Mon, 27 Apr 2015 18:02:57 +1000
+ t3R82wkL005576
+ for <linuxppc-dev@ozlabs.org>; Mon, 27 Apr 2015 18:02:58 +1000
 From: Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>
 To: linuxppc-dev@ozlabs.org, thuth@redhat.com
-Subject: [PATCH v2 2/4] pci: Support 64-bit address translation
-Date: Mon, 27 Apr 2015 13:32:31 +0530
-Message-Id: <1430121753-24818-3-git-send-email-nikunj@linux.vnet.ibm.com>
+Subject: [PATCH v2 3/4] usb: support 64-bit pci bars
+Date: Mon, 27 Apr 2015 13:32:32 +0530
+Message-Id: <1430121753-24818-4-git-send-email-nikunj@linux.vnet.ibm.com>
 In-Reply-To: <1430121753-24818-1-git-send-email-nikunj@linux.vnet.ibm.com>
 References: <1430121753-24818-1-git-send-email-nikunj@linux.vnet.ibm.com>
 Cc: aik@ozlabs.ru, nikunj@linux.vnet.ibm.com, david@gibson.dropbear.id.au
@@ -42,28 +42,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+With the addition of 64-bit bar ranges (commit: 9fbfed08 - pci: use
+64bit bar ranges), the usb-setup-hcidev needs to handle 64-bit
+addresses.
+
+For example, QEMU provided NEC USB XHCI device requests 64-bit memory
+address. Added code to check the memory type before address
+translation.
+
 Signed-off-by: Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>
 ---
- slof/fs/translate.fs | 6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
+ slof/fs/devices/pci-class_0c.fs | 10 ++++++++--
+ 1 file changed, 8 insertions(+), 2 deletions(-)
 
-diff --git a/slof/fs/translate.fs b/slof/fs/translate.fs
-index e2633e5..9654f24 100644
---- a/slof/fs/translate.fs
-+++ b/slof/fs/translate.fs
-@@ -33,11 +33,9 @@
-       dup l@ FF AND 0<> ( prop_type address data cfgspace_offset? )
-       3 pick 0= ( prop_type address data cfgspace_offset? reg_prop? )
-       AND NOT IF 
--         2dup 8 + ( prop_type address data address data' )
--         2dup l@ 2 pick 8 + l@ + <= -rot l@  >= and  IF
-+         2dup 4 + ( prop_type address data address data' )
-+         2dup @ 2 pick 8 + @ + <= -rot @  >= and  IF
-             l@ 03000000 and 18 rshift nip
--            \ no 64bit translations supported pretend it is 32bit
--            dup 3 = IF  1-  THEN
-             ( prop_type type )
-             swap drop ( type )
-             UNLOOP EXIT
+diff --git a/slof/fs/devices/pci-class_0c.fs b/slof/fs/devices/pci-class_0c.fs
+index 9c47325..39453fb 100644
+--- a/slof/fs/devices/pci-class_0c.fs
++++ b/slof/fs/devices/pci-class_0c.fs
+@@ -25,8 +25,14 @@ CONSTANT /hci-dev
+ 
+ : usb-setup-hcidev ( num hci-dev -- )
+     >r
+-    10 config-l@ translate-my-address
+-    3 not AND
++    10 config-l@ F AND case
++	0 OF 10 config-l@ translate-my-address ENDOF       \ 32-bit memory space
++	4 OF                                               \ 64-bit memory space
++	    14 config-l@ 20 lshift                         \ Read two bars
++	    10 config-l@ OR translate-my-address
++	ENDOF
++    ENDCASE
++    F not AND
+     ( io-base ) r@ hcd>base !
+     08 config-l@ 8 rshift  0000000F0 AND 4 rshift
+     ( usb-type ) r@ hcd>type !
 -- 
 1.8.3.1
