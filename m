@@ -1,25 +1,26 @@
 Return-Path: <thuth@redhat.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 697481A1186
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2015 18:38:35 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id AAE5E1A001E
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2015 19:32:52 +1000 (AEST)
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id E81BB14007D
- for <linuxppc-dev@ozlabs.org>; Mon, 27 Apr 2015 18:38:34 +1000 (AEST)
-Date: Mon, 27 Apr 2015 10:38:16 +0200
+ by ozlabs.org (Postfix) with ESMTPS id 1AC2B140082
+ for <linuxppc-dev@ozlabs.org>; Mon, 27 Apr 2015 19:32:51 +1000 (AEST)
+Date: Mon, 27 Apr 2015 11:32:29 +0200
 From: Thomas Huth <thuth@redhat.com>
 To: Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2 4/4] pci: Use QEMU created PCI device nodes
-Message-ID: <20150427103816.4ce59f10@thh440s>
-In-Reply-To: <1430121753-24818-5-git-send-email-nikunj@linux.vnet.ibm.com>
+Subject: Re: [PATCH v2 2/4] pci: Support 64-bit address translation
+Message-ID: <20150427113229.294bf50d@thh440s>
+In-Reply-To: <1430121753-24818-3-git-send-email-nikunj@linux.vnet.ibm.com>
 References: <1430121753-24818-1-git-send-email-nikunj@linux.vnet.ibm.com>
- <1430121753-24818-5-git-send-email-nikunj@linux.vnet.ibm.com>
+ <1430121753-24818-3-git-send-email-nikunj@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Cc: aik@ozlabs.ru, linuxppc-dev@ozlabs.org, david@gibson.dropbear.id.au
+Cc: aik@ozlabs.ru, linuxppc-dev@ozlabs.org, david@gibson.dropbear.id.au,
+ Adrian Reber <adrian@lisas.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,115 +30,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 27 Apr 2015 13:32:33 +0530
+On Mon, 27 Apr 2015 13:32:31 +0530
 Nikunj A Dadhania <nikunj@linux.vnet.ibm.com> wrote:
 
-> PCI Enumeration has been part of SLOF. Now with hotplug code addition
-> in QEMU, it makes more sense to have this code in one place,
-> i.e. QEMU.
-> 
-> Adding routines to walk through the device nodes created by QEMU. SLOF
-> will now configure the device/bridges and program the BARs for
-> communicating with the devices.
-> 
 > Signed-off-by: Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>
 > ---
->  board-qemu/slof/pci-phb.fs | 44 +++++++++++++++++++++++++++++++++++++++++++-
->  slof/fs/pci-properties.fs  |  6 +++++-
->  2 files changed, 48 insertions(+), 2 deletions(-)
+>  slof/fs/translate.fs | 6 ++----
+>  1 file changed, 2 insertions(+), 4 deletions(-)
 > 
-> diff --git a/board-qemu/slof/pci-phb.fs b/board-qemu/slof/pci-phb.fs
-> index 529772f..a8fb7ca 100644
-> --- a/board-qemu/slof/pci-phb.fs
-> +++ b/board-qemu/slof/pci-phb.fs
-> @@ -282,6 +282,41 @@ setup-puid
->     THEN
->  ;
->  
-> +: phb-pci-walk-bridge ( -- )
-> +    phb-debug? IF ."   Calling pci-walk-bridge " pwd cr THEN
-> +
-> +    get-node child ?dup 0= IF EXIT THEN    \ get and check if we have children
-> +    0 to pci-device-slots                  \ reset slot array to unpoppulated
-> +    BEGIN
-> +        dup                                \ Continue as long as there are children
-> +    WHILE
-> +        dup set-node                       \ Set child node as current node
-> +        my-space pci-set-slot              \ set the slot bit
-> +        my-space pci-htype@                \ read HEADER-Type
-> +        7f and                             \ Mask bit 7 - multifunction device
-> +        CASE
-> +            0 OF my-space pci-device-setup ENDOF  \ | set up the device
-> +            1 OF my-space pci-bridge-setup ENDOF  \ | set up the bridge
-> +            dup OF my-space pci-htype@ pci-out ENDOF
-> +        ENDCASE
-> +        peer
-> +    REPEAT drop
-> +    get-parent set-node
-> +;
-> +
-> +\ Landing routing to probe the popuated device tree
-> +: phb-pci-probe-bus ( busnr -- )
-> +    drop phb-pci-walk-bridge
-> +;
-> +
-> +\ Stub routine, as qemu has enumerated, we already have the device
-> +\ properties set.
-> +: phb-pci-device-props ( addr -- )
-> +    dup pci-class-name device-name
-> +    dup pci-device-assigned-addresses-prop
-> +    drop
-> +;
-> +
->  \ Scan the child nodes of the pci root node to assign bars, fixup
->  \ properties etc.
->  : phb-setup-children
-> @@ -289,7 +324,14 @@ setup-puid
->     my-puid TO puid                  \ Set current puid
->     phb-parse-ranges
->     1 TO pci-hotplug-enabled
-> -   1 0 (probe-pci-host-bridge)
-> +   s" qemu,phb-enumerated" get-node get-property 0<> IF
+> diff --git a/slof/fs/translate.fs b/slof/fs/translate.fs
+> index e2633e5..9654f24 100644
+> --- a/slof/fs/translate.fs
+> +++ b/slof/fs/translate.fs
+> @@ -33,11 +33,9 @@
+>        dup l@ FF AND 0<> ( prop_type address data cfgspace_offset? )
+>        3 pick 0= ( prop_type address data cfgspace_offset? reg_prop? )
+>        AND NOT IF 
+> -         2dup 8 + ( prop_type address data address data' )
+> -         2dup l@ 2 pick 8 + l@ + <= -rot l@  >= and  IF
+> +         2dup 4 + ( prop_type address data address data' )
+> +         2dup @ 2 pick 8 + @ + <= -rot @  >= and  IF
+>              l@ 03000000 and 18 rshift nip
+> -            \ no 64bit translations supported pretend it is 32bit
+> -            dup 3 = IF  1-  THEN
+>              ( prop_type type )
+>              swap drop ( type )
+>              UNLOOP EXIT
 
-I think you could simply omit the "0<>" in the above line (get-property
-returns TRUE if the property has not been found and FALSE if it has
-been found, so the topmost stack item is already suitable for the IF
-statement)
+Phew, translate-address stuff ... one of my "favorites" ;-)
+I wonder whether this will break "legacy" code like board-js2x ...
+there might have been a reason for this "pretend it is 32bit" hack
+(I've put Adrian Reber on CC:, maybe he still remembers why this was
+needed).
 
-> +       1 0 (probe-pci-host-bridge)
-> +   ELSE
-> +       2drop
-> +       ['] phb-pci-probe-bus TO func-pci-probe-bus
-> +       ['] phb-pci-device-props TO func-pci-device-props
-> +       phb-pci-walk-bridge          \ PHB device tree is already populated.
-> +   THEN
->     r> TO puid                       \ Restore previous puid
->  ;
->  phb-setup-children
-> diff --git a/slof/fs/pci-properties.fs b/slof/fs/pci-properties.fs
-> index 9efa87e..4f13402 100644
-> --- a/slof/fs/pci-properties.fs
-> +++ b/slof/fs/pci-properties.fs
-> @@ -651,6 +651,8 @@
->          r> TO pci-device-slots          \ and reset the slot array
->  ;
->  
-> +DEFER func-pci-device-props
-> +
->  \ used for an gerneric device set up
->  \ if a device has no special handling for setup
->  \ the device file (pci-device_VENDOR_DEVICE.fs) can call
-> @@ -659,6 +661,8 @@
->          dup assign-all-device-bars      \ calc all BARs
->          dup pci-set-irq-line            \ set the interrupt pin
->          dup pci-set-capabilities        \ set up the capabilities
-> -        dup pci-device-props            \ and generate all properties
-> +        dup func-pci-device-props       \ and generate all properties
->          drop                            \ forget the config-addr
->  ;
-> +
-> +' pci-device-props TO func-pci-device-props
+Anyway, I think we can fix that up as soon as somebody tries to run the
+js2x code again (I still have a YDL PowerStation at home somewhere,
+maybe I will have enough spare time to reactivate it one day).
 
-Apart from the minor nit, looks fine to me now.
+And since your changes itself looks fine to me:
 
 Reviewed-by: Thomas Huth <thuth@redhat.com>
