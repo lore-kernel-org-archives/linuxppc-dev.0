@@ -2,29 +2,31 @@ Return-Path: <gwshan@linux.vnet.ibm.com>
 Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6EC7E1A0727
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2015 16:38:55 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 84C901A0724
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2015 16:38:56 +1000 (AEST)
 Received: from /spool/local
  by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Mon, 27 Apr 2015 16:38:55 +1000
+ Mon, 27 Apr 2015 16:38:56 +1000
 Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 558133578053
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2015 16:38:52 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 968FD3578048
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2015 16:38:53 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
  by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t3R6ci2728639320
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2015 16:38:52 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t3R6cIfd012387
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2015 16:38:18 +1000
+ t3R6cjlK35913980
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2015 16:38:53 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t3R6cJvx008923
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2015 16:38:20 +1000
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v3 00/21] PowerPC/PowerNV: PCI Slot Management
-Date: Mon, 27 Apr 2015 16:37:32 +1000
-Message-Id: <1430116673-22500-1-git-send-email-gwshan@linux.vnet.ibm.com>
+Subject: [PATCH v3 02/21] powerpc/powernv: Enable M64 on P7IOC
+Date: Mon, 27 Apr 2015 16:37:34 +1000
+Message-Id: <1430116673-22500-3-git-send-email-gwshan@linux.vnet.ibm.com>
+In-Reply-To: <1430116673-22500-1-git-send-email-gwshan@linux.vnet.ibm.com>
+References: <1430116673-22500-1-git-send-email-gwshan@linux.vnet.ibm.com>
 Cc: bhelgaas@google.com, linux-pci@vger.kernel.org,
  Gavin Shan <gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -36,112 +38,180 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The series of patches intend to support PCI slot for PowerPC PowerNV platform,
-which is running on top of skiboot firmware. The patchset requires corresponding
-changes from skiboot firmware, which is sent to skiboot@lists.ozlabs.org for
-review. The PCI slots are exposed by skiboot with device node properties, and
-kernel utilizes those properties to populated PCI slots accordingly.
+The patch enables M64 window on P7IOC, which has been enabled on
+PHB3. Comparing to PHB3, there are 16 M64 BARs and each of them
+are divided to 8 segments. So each PHB can support 128 M64 segments.
+Also, P7IOC has M64DT, which helps mapping one particular M64
+segment# to arbitrary PE#. However, we just provide 128 M64 (16 BARs)
+segments and fixed mapping between PE# and M64 segment# in order
+to keep same logic to support M64 for PHB3 and P7IOC. In turn, we
+just need different phb->init_m64() hooks for P7IOC and PHB3.
 
-The original PCI infrastructure on PowerNV platform can't support hotplug because
-the PE is assigned during PHB fixup time, which is called for once during system
-boot time. For this, the PCI infrastructure on PowerNV platform has been reworked
-for a lot. After that, the PE and its corresponding resources (IODT, M32DT, M64
-segments, DMA32 and bypass window) are assigned upon updating PCI bridge's
-resources, which might decide PE# assigned to the PE (e.g. M64 resources, on P8
-strictly speaking). Each PE will maintain a reference count, which is (number of
-child PCI devices + 1). That indicates when last child PCI device leaves the PE,
-the PE and its included resources will be relased and put back into free pool
-again. With this design, the PE will be released when EEH PE is released.
-PATCH[1 - 8] are related to this part.
+Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+---
+ arch/powerpc/platforms/powernv/pci-ioda.c | 115 ++++++++++++++++++++++++++----
+ 1 file changed, 103 insertions(+), 12 deletions(-)
 
->From skiboot perspective, PCI slot is providing (hot/fundamental/complete) resets
-to EEH. The kernel gets to know if skiboot supports various reset on one particular
-PCI slot through device-tree node. If it does, EEH will utilize the functionality
-provided by skiboot. Besides, the device-tree nodes have to change in order to
-support PCI hotplug. For example, when one PCI adapter inserted to one slot,
-its device-tree node should be added to the system dynamically. Conversely, the
-device-tree node should be removed from the system when the PCI adapter is going
-to be offline. Since pci_dn and eeh_dev have same life cyle as PCI device nodes,
-they should be added/removed accordingly during PCI hotplug. Patch[9 - 20] are
-doing the related work.
-
-The last patch is the standalone PCI hotplug driver for PowerNV platform. When
-removing PCI adapter from one PCI slot, which is invoked by command in userland,
-the skiboot will power off the slot to save power and remove all device-tree
-nodes for all PCI devices behind the slot. Conversely, the Power to the slot
-is turned on, the PCI devices behind the slot is rescanned, and the device-tree
-nodes for those newly detected PCI devices will be built in skiboot. For both
-of cases, one message will be sent to kernel by skiboot so that the kernel
-can adjust the device-tree accordingly. At the same time, the kernel also have
-to deallocate or allocate PE# and its related resources (PE# and so on) for the
-removed/added PCI devices.
-
-Changelog
-=========
-v3:
-   * Rebased to 4.1.RC0
-   * PowerNV PCI infrasturcture is total refactored in order to support PCI
-     hotplug. The PowerNV hotplug driver is also reworked a lot because of
-     the changes in skiboot in order to support PCI hotplug.
-
-
-Gavin Shan (21):
-  pci: Add pcibios_setup_bridge()
-  powerpc/powernv: Enable M64 on P7IOC
-  powerpc/powernv: M64 support improvement
-  powerpc/powernv: Improve IO and M32 mapping
-  powerpc/powernv: Improve DMA32 segment assignment
-  powerpc/powernv: Create PEs dynamically
-  powerpc/powernv: Release PEs dynamically
-  powerpc/powernv: Drop pnv_ioda_setup_dev_PE()
-  powerpc/eeh: Delay probing EEH device during hotplug
-  powerpc/powernv: Use PCI slot reset infrastructure
-  powerpc/powernv: Fundamental reset for PCI bus reset
-  powerpc/pci: Don't scan empty slot
-  powerpc/pci: Move pcibios_find_pci_bus() around
-  powerpc/powernv: Introduce pnv_pci_poll()
-  powerpc/powernv: Functions to get/reset PCI slot status
-  powerpc/pci: Delay creating pci_dn
-  powerpc/pci: Create eeh_dev while creating pci_dn
-  powerpc/pci: Export traverse_pci_device_nodes()
-  powerpc/pci: Update bridge windows on PCI plugging
-  powerpc/powernv: Select OF_DYNAMIC
-  pci/hotplug: PowerPC PowerNV PCI hotplug driver
-
- arch/powerpc/include/asm/eeh.h                 |    7 +-
- arch/powerpc/include/asm/opal-api.h            |    7 +-
- arch/powerpc/include/asm/opal.h                |    7 +-
- arch/powerpc/include/asm/pci-bridge.h          |    7 +-
- arch/powerpc/include/asm/pnv-pci.h             |    5 +
- arch/powerpc/include/asm/ppc-pci.h             |    7 +-
- arch/powerpc/kernel/eeh.c                      |    7 +
- arch/powerpc/kernel/eeh_dev.c                  |   20 +-
- arch/powerpc/kernel/pci-common.c               |   18 +-
- arch/powerpc/kernel/pci-hotplug.c              |   44 +-
- arch/powerpc/kernel/pci_dn.c                   |  119 +-
- arch/powerpc/platforms/maple/pci.c             |   35 +-
- arch/powerpc/platforms/pasemi/pci.c            |    3 -
- arch/powerpc/platforms/powermac/pci.c          |   39 +-
- arch/powerpc/platforms/powernv/Kconfig         |    1 +
- arch/powerpc/platforms/powernv/eeh-powernv.c   |  245 ++--
- arch/powerpc/platforms/powernv/opal-wrappers.S |    3 +
- arch/powerpc/platforms/powernv/pci-ioda.c      | 1657 +++++++++++++++---------
- arch/powerpc/platforms/powernv/pci.c           |   64 +-
- arch/powerpc/platforms/powernv/pci.h           |   52 +-
- arch/powerpc/platforms/pseries/msi.c           |    4 +-
- arch/powerpc/platforms/pseries/pci_dlpar.c     |   32 -
- arch/powerpc/platforms/pseries/setup.c         |    9 +-
- drivers/pci/hotplug/Kconfig                    |   12 +
- drivers/pci/hotplug/Makefile                   |    4 +
- drivers/pci/hotplug/powernv_php.c              |  146 +++
- drivers/pci/hotplug/powernv_php.h              |   78 ++
- drivers/pci/hotplug/powernv_php_slot.c         |  913 +++++++++++++
- drivers/pci/setup-bus.c                        |   12 +-
- include/linux/pci.h                            |    1 +
- 30 files changed, 2623 insertions(+), 935 deletions(-)
- create mode 100644 drivers/pci/hotplug/powernv_php.c
- create mode 100644 drivers/pci/hotplug/powernv_php.h
- create mode 100644 drivers/pci/hotplug/powernv_php_slot.c
-
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index f8bc950..646962f 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -165,6 +165,67 @@ static void pnv_ioda_free_pe(struct pnv_phb *phb, int pe)
+ 	clear_bit(pe, phb->ioda.pe_alloc);
+ }
+ 
++static int pnv_ioda1_init_m64(struct pnv_phb *phb)
++{
++	struct resource *r;
++	int seg;
++	s64 rc;
++
++	/* Each PHB supports 16 separate M64 BARs, each of which are
++	 * divided into 8 segments. So there are number of M64 segments
++	 * as total PE#, which is 128.
++	 */
++	for (seg = 0; seg < phb->ioda.total_pe; seg += 8) {
++		unsigned long base;
++
++		base = phb->ioda.m64_base + seg * phb->ioda.m64_segsize;
++		rc = opal_pci_set_phb_mem_window(phb->opal_id,
++						 OPAL_M64_WINDOW_TYPE,
++						 seg / 8,
++						 base,
++						 0, /* unused */
++						 8 * phb->ioda.m64_segsize);
++		if (rc != OPAL_SUCCESS) {
++			pr_warn("  Failure %lld configuring M64 BAR#%d on PHB#%d\n",
++				rc, seg / 8, phb->hose->global_number);
++			goto fail;
++		}
++
++		rc = opal_pci_phb_mmio_enable(phb->opal_id,
++					      OPAL_M64_WINDOW_TYPE,
++					      seg / 8,
++					      OPAL_ENABLE_M64_SPLIT);
++		if (rc != OPAL_SUCCESS) {
++			pr_warn("  Failure %lld enabling M64 BAR#%d on PHB#%d\n",
++				rc, seg / 8, phb->hose->global_number);
++			goto fail;
++		}
++	}
++
++	/* Strip of the segment used by the reserved PE, which
++	 * is expected to be 0 or last supported PE#
++	 */
++	r = &phb->hose->mem_resources[1];
++	if (phb->ioda.reserved_pe == 0)
++		r->start += phb->ioda.m64_segsize;
++	else if (phb->ioda.reserved_pe == (phb->ioda.total_pe - 1))
++		r->end -= phb->ioda.m64_segsize;
++	else
++		pr_warn("  Cannot strip M64 segment for reserved PE#%d\n",
++			phb->ioda.reserved_pe);
++
++	return 0;
++
++fail:
++	for ( ; seg >= 0; seg -= 8)
++		opal_pci_phb_mmio_enable(phb->opal_id,
++					 OPAL_M64_WINDOW_TYPE,
++					 seg / 8,
++					 OPAL_DISABLE_M64);
++
++	return -EIO;
++}
++
+ /* The default M64 BAR is shared by all PEs */
+ static int pnv_ioda2_init_m64(struct pnv_phb *phb)
+ {
+@@ -222,7 +283,7 @@ fail:
+ 	return -EIO;
+ }
+ 
+-static void pnv_ioda2_reserve_m64_pe(struct pnv_phb *phb)
++static void pnv_ioda_reserve_m64_pe(struct pnv_phb *phb)
+ {
+ 	resource_size_t sgsz = phb->ioda.m64_segsize;
+ 	struct pci_dev *pdev;
+@@ -248,8 +309,8 @@ static void pnv_ioda2_reserve_m64_pe(struct pnv_phb *phb)
+ 	}
+ }
+ 
+-static int pnv_ioda2_pick_m64_pe(struct pnv_phb *phb,
+-				 struct pci_bus *bus, int all)
++static int pnv_ioda_pick_m64_pe(struct pnv_phb *phb,
++				struct pci_bus *bus, int all)
+ {
+ 	resource_size_t segsz = phb->ioda.m64_segsize;
+ 	struct pci_dev *pdev;
+@@ -346,6 +407,28 @@ done:
+ 			pe->master = master_pe;
+ 			list_add_tail(&pe->list, &master_pe->slaves);
+ 		}
++
++		/* P7IOC supports M64DT, which helps mapping M64 segment
++		 * to one particular PE#. Unfortunately, PHB3 has fixed
++		 * mapping between M64 segment and PE#. In order for same
++		 * logic for P7IOC and PHB3, we enforce fixed mapping
++		 * between M64 segment and PE# on P7IOC.
++		 */
++		if (phb->type == PNV_PHB_IODA1) {
++			int64_t rc;
++
++			rc = opal_pci_map_pe_mmio_window(phb->opal_id,
++							 pe->pe_number,
++							 OPAL_M64_WINDOW_TYPE,
++							 pe->pe_number / 8,
++							 pe->pe_number % 8);
++			if (rc != OPAL_SUCCESS)
++				pr_warn("%s: Failure %lld mapping "
++					"M64 for PHB#%d-PE#%d\n",
++					__func__, rc,
++					phb->hose->global_number,
++					pe->pe_number);
++		}
+ 	}
+ 
+ 	kfree(pe_alloc);
+@@ -360,12 +443,6 @@ static void __init pnv_ioda_parse_m64_window(struct pnv_phb *phb)
+ 	const u32 *r;
+ 	u64 pci_addr;
+ 
+-	/* FIXME: Support M64 for P7IOC */
+-	if (phb->type != PNV_PHB_IODA2) {
+-		pr_info("  Not support M64 window\n");
+-		return;
+-	}
+-
+ 	if (!firmware_has_feature(FW_FEATURE_OPALv3)) {
+ 		pr_info("  Firmware too old to support M64 window\n");
+ 		return;
+@@ -394,9 +471,23 @@ static void __init pnv_ioda_parse_m64_window(struct pnv_phb *phb)
+ 
+ 	/* Use last M64 BAR to cover M64 window */
+ 	phb->ioda.m64_bar_idx = 15;
+-	phb->init_m64 = pnv_ioda2_init_m64;
+-	phb->reserve_m64_pe = pnv_ioda2_reserve_m64_pe;
+-	phb->pick_m64_pe = pnv_ioda2_pick_m64_pe;
++	phb->reserve_m64_pe = pnv_ioda_reserve_m64_pe;
++	phb->pick_m64_pe = pnv_ioda_pick_m64_pe;
++	switch (phb->type) {
++	case PNV_PHB_IODA1:
++		phb->init_m64 = pnv_ioda1_init_m64;
++		break;
++	case PNV_PHB_IODA2:
++		phb->init_m64 = pnv_ioda2_init_m64;
++		break;
++	default:
++		phb->init_m64 = NULL;
++		phb->reserve_m64_pe = NULL;
++		phb->pick_m64_pe = NULL;
++		phb->ioda.m64_size = 0;
++		phb->ioda.m64_segsize = 0;
++		phb->ioda.m64_base = 0;
++	}
+ }
+ 
+ static void pnv_ioda_freeze_pe(struct pnv_phb *phb, int pe_no)
 -- 
 2.1.0
