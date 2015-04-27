@@ -1,26 +1,25 @@
-Return-Path: <thuth@redhat.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AAE5E1A001E
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2015 19:32:52 +1000 (AEST)
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 1AC2B140082
- for <linuxppc-dev@ozlabs.org>; Mon, 27 Apr 2015 19:32:51 +1000 (AEST)
-Date: Mon, 27 Apr 2015 11:32:29 +0200
-From: Thomas Huth <thuth@redhat.com>
-To: Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2 2/4] pci: Support 64-bit address translation
-Message-ID: <20150427113229.294bf50d@thh440s>
-In-Reply-To: <1430121753-24818-3-git-send-email-nikunj@linux.vnet.ibm.com>
-References: <1430121753-24818-1-git-send-email-nikunj@linux.vnet.ibm.com>
- <1430121753-24818-3-git-send-email-nikunj@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: aik@ozlabs.ru, linuxppc-dev@ozlabs.org, david@gibson.dropbear.id.au,
- Adrian Reber <adrian@lisas.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id BB65C1A08C0
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2015 19:54:23 +1000 (AEST)
+Message-ID: <1430128435.16571.110.camel@kernel.crashing.org>
+Subject: Re: [PATCH v2 2/2] leds/powernv: Add driver for PowerNV platform
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Jacek Anaszewski <j.anaszewski@samsung.com>
+Date: Mon, 27 Apr 2015 19:53:55 +1000
+In-Reply-To: <553DE41A.5070703@samsung.com>
+References: <20150422234509.626d9dc7@ja.home>
+ <55388254.4000606@linux.vnet.ibm.com> <20150423161342.55e9ac8f@ja.home>
+ <1430086038.16571.78.camel@kernel.crashing.org>
+ <553DE41A.5070703@samsung.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: stewart@linux.vnet.ibm.com, cooloney@gmail.com,
+ Vasant Hegde <hegdevasant@linux.vnet.ibm.com>, rpurdie@rpsys.net,
+ linuxppc-dev@lists.ozlabs.org, linux-leds@vger.kernel.org,
+ khandual@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,43 +29,21 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 27 Apr 2015 13:32:31 +0530
-Nikunj A Dadhania <nikunj@linux.vnet.ibm.com> wrote:
+On Mon, 2015-04-27 at 09:24 +0200, Jacek Anaszewski wrote:
+> I was not aware that some other entity than the driver could be
+> interested in the information provided by DT node. I will no longer
+> object, provided that we will get an ack from DT maintainer.
 
-> Signed-off-by: Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>
-> ---
->  slof/fs/translate.fs | 6 ++----
->  1 file changed, 2 insertions(+), 4 deletions(-)
-> 
-> diff --git a/slof/fs/translate.fs b/slof/fs/translate.fs
-> index e2633e5..9654f24 100644
-> --- a/slof/fs/translate.fs
-> +++ b/slof/fs/translate.fs
-> @@ -33,11 +33,9 @@
->        dup l@ FF AND 0<> ( prop_type address data cfgspace_offset? )
->        3 pick 0= ( prop_type address data cfgspace_offset? reg_prop? )
->        AND NOT IF 
-> -         2dup 8 + ( prop_type address data address data' )
-> -         2dup l@ 2 pick 8 + l@ + <= -rot l@  >= and  IF
-> +         2dup 4 + ( prop_type address data address data' )
-> +         2dup @ 2 pick 8 + @ + <= -rot @  >= and  IF
->              l@ 03000000 and 18 rshift nip
-> -            \ no 64bit translations supported pretend it is 32bit
-> -            dup 3 = IF  1-  THEN
->              ( prop_type type )
->              swap drop ( type )
->              UNLOOP EXIT
+My understanding is that we no longer need bindings to be accepted by DT
+maintainers.
 
-Phew, translate-address stuff ... one of my "favorites" ;-)
-I wonder whether this will break "legacy" code like board-js2x ...
-there might have been a reason for this "pretend it is 32bit" hack
-(I've put Adrian Reber on CC:, maybe he still remembers why this was
-needed).
+That being said, I would like to review this one before it is accepted,
+as I haven't had a chance to do so yet :-) (I was mostly responding to
+you, I haven't caught up with the full thread yet).
 
-Anyway, I think we can fix that up as soon as somebody tries to run the
-js2x code again (I still have a YDL PowerStation at home somewhere,
-maybe I will have enough spare time to reactivate it one day).
+Please wait for an ack from myself or Michael Ellerman (the two powerpc
+maintainers). Either that or provide your ack and we'll merge it via our
+tree if we are happy with it.
 
-And since your changes itself looks fine to me:
-
-Reviewed-by: Thomas Huth <thuth@redhat.com>
+Cheers,
+Ben.
