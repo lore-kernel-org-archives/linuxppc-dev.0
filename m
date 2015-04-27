@@ -1,39 +1,42 @@
-Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+Return-Path: <nikunj@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id BA4CF1A0724
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2015 15:41:57 +1000 (AEST)
+Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D2E3F1A0727
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2015 15:11:24 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTPS id E6D53140318
+ for <linuxppc-dev@ozlabs.org>; Mon, 27 Apr 2015 15:41:56 +1000 (AEST)
 Received: from /spool/local
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Mon, 27 Apr 2015 15:11:23 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 72AAF357804C
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2015 15:11:21 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t3R5BDvc49414344
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2015 15:11:21 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t3R5AlTR024014
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2015 15:10:47 +1000
-Date: Mon, 27 Apr 2015 10:39:53 +0530
-From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-To: Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>
-Subject: Re: [PATCHv2 2/8] perf probe: Improve detection of file/function
- name in the probe pattern
-Message-ID: <20150427050952.GD6113@naverao1-tp.in.ibm.com>
-References: <cover.1418654435.git.naveen.n.rao@linux.vnet.ibm.com>
- <d60cf320bc3d51ca8980e48bc31044cacba8a920.1418654436.git.naveen.n.rao@linux.vnet.ibm.com>
- <20150312202414.GD3550@kernel.org> <5502C7EF.8080007@hitachi.com>
+ for <linuxppc-dev@ozlabs.org> from <nikunj@linux.vnet.ibm.com>;
+ Mon, 27 Apr 2015 11:11:54 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 6435BE004C
+ for <linuxppc-dev@ozlabs.org>; Mon, 27 Apr 2015 11:14:36 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t3R5foDV55312508
+ for <linuxppc-dev@ozlabs.org>; Mon, 27 Apr 2015 11:11:50 +0530
+Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t3R5fna4020951
+ for <linuxppc-dev@ozlabs.org>; Mon, 27 Apr 2015 11:11:50 +0530
+From: Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>
+To: Thomas Huth <thuth@redhat.com>
+Subject: Re: [PATCH 1/2] pci-phb: check for the 32-bit overflow
+In-Reply-To: <20150424130630.00bb9412@thh440s>
+References: <1429700240-32373-1-git-send-email-nikunj@linux.vnet.ibm.com>
+ <20150423154314.595b8439@thh440s> <871tjaxjwe.fsf@abhimanyu.in.ibm.com>
+ <20150424125657.7e1d5140@thh440s> <20150424130630.00bb9412@thh440s>
+Date: Mon, 27 Apr 2015 11:11:49 +0530
+Message-ID: <87mw1uqg9u.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <5502C7EF.8080007@hitachi.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- Arnaldo Carvalho de Melo <acme@kernel.org>
+Content-Type: text/plain
+Cc: aik@ozlabs.ru, linuxppc-dev@ozlabs.org, david@gibson.dropbear.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,28 +46,92 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2015/03/13 08:20PM, Masami Hiramatsu wrote:
-> (2015/03/13 5:24), Arnaldo Carvalho de Melo wrote:
-> > Em Mon, Dec 15, 2014 at 08:20:32PM +0530, Naveen N. Rao escreveu:
-> >> Currently, perf probe considers patterns including a '.' to be a file.
-> >> However, this causes problems on powerpc ABIv1 where all functions have
-> >> a leading '.':
-> >>
-> >>   $ perf probe -F | grep schedule_timeout_interruptible
-> >>   .schedule_timeout_interruptible
-> >>   $ perf probe .schedule_timeout_interruptible
-> >>   Semantic error :File always requires line number or lazy pattern.
-> >>     Error: Command Parse Error.
-> >>
-> >> Fix this by checking the probe pattern in more detail.
-> > 
-> > Masami, can I have your Acked-by or Reviewed-by?
-> 
-> As far as I can see, this is not enough for fixing that issue.
-> Could you fold the first half of [4/8] to this patch?
-> I also have some comments on it. See below.
+Thomas Huth <thuth@redhat.com> writes:
 
-Masami, Arnaldo,
-Thanks for the review. v3 patches forthcoming...
+> On Fri, 24 Apr 2015 12:56:57 +0200
+> Thomas Huth <thuth@redhat.com> wrote:
+>
+>> On Fri, 24 Apr 2015 09:22:33 +0530
+>> Nikunj A Dadhania <nikunj@linux.vnet.ibm.com> wrote:
+>> 
+>> > 
+>> > Hi Thomas,
+>> > 
+>> > Thomas Huth <thuth@redhat.com> writes:
+>> > > Am Wed, 22 Apr 2015 16:27:19 +0530
+>> > > schrieb Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>:
+>> > >
+>> > >> With the addition of 64-bit BARS and increase in the mmio address
+>> > >> space, the code was hitting this limit. The memory of pci devices
+>> > >> across the bridges were not accessible due to which the drivers
+>> > >> failed.
+>> > >> 
+>> > >> Signed-off-by: Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>
+>> > >> ---
+>> > >>  board-qemu/slof/pci-phb.fs | 3 ++-
+>> > >>  1 file changed, 2 insertions(+), 1 deletion(-)
+>> > >> 
+>> > >> diff --git a/board-qemu/slof/pci-phb.fs b/board-qemu/slof/pci-phb.fs
+>> > >> index 529772f..e307d95 100644
+>> > >> --- a/board-qemu/slof/pci-phb.fs
+>> > >> +++ b/board-qemu/slof/pci-phb.fs
+>> > >> @@ -258,7 +258,8 @@ setup-puid
+>> > >>              decode-64 2 / dup >r                \ Decode and calc size/2
+>> > >>              pci-next-mem @ + dup pci-max-mem !  \ and calc max mem address
+>> > >
+>> > > Could pci-max-mem overflow, too?
+>> > 
+>> > Should not, its only the boundary that was an issue.
+>> > 
+>> > Qemu sends base and size, base + size can be till uint32 max. So for
+>> > example base was 0xC000.0000 and size was 0x4000.0000, we add up base +
+>> > size and put pci-max-mmio as 0x1.0000.0000, which would get programmend
+>> > in the bridge bars: lower limit as 0xC000 and 0x0000 as upper
+>> > limit. And no mmio access were going across the bridge.
+>> > 
+>> > In my testing, I have found one more issue with translate-my-address,
+>> > it does not take care of 64-bit addresses. I have a patch working for
+>> > SLOF, but its breaking the guest kernel booting.
+>> > 
+>> > >
+>> > >>              dup pci-next-mmio !                 \ which is the same as MMIO base
+>> > >> -            r> + pci-max-mmio !                 \ calc max MMIO address
+>> > >> +            r> + FFFFFFFF min pci-max-mmio !    \ calc max MMIO address and
+>> > >> +                                                \ check the 32-bit boundary
+>> 
+>> Ok, thanks a lot for the example! I think your patch likely works in
+>> practice, but after staring at the code for a while, I think the real
+>> bug is slightly different. If I get the code above right, pci-max-mmio
+>> is normally set to the first address that is _not_ part of the mmio
+>> window anymore, right. Now have a look at pci-bridge-set-mmio-base in
+>> pci-scan.fs:
+>> 
+>> : pci-bridge-set-mmio-base ( addr -- )
+>>         pci-next-mmio @ 100000 #aligned         \ read the current Value and align to 1MB boundary
+>>         dup 100000 + pci-next-mmio !            \ and write back with 1MB for bridge
+>>         10 rshift                               \ mmio-base reg is only the upper 16 bits
+>>         pci-max-mmio @ FFFF0000 and or          \ and Insert mmio Limit (set it to max)
+>>         swap 20 + rtas-config-l!                \ and write it into the bridge
+>> ;
+>> 
+>> Seems like the pci-max-mmio, i.e. the first address that is not in the
+>> window anymore, is programmed into the memory limit register here - but
+>> according to the pci-to-pci bridge specification, it should be the last
+>> address of the window instead.
+>> 
+>> So I think the correct fix would be to decrease the pci-max-mmio
+>> value in pci-bridge-set-mmio-base by 1- before programming it into the
+>> limit register (note: in pci-bridge-set-mmio-limit you can find a "1-"
+>> already, so I think this also should be done in
+>> pci-bridge-set-mmio-base, too)
+>> 
+>> So if you've got some spare minutes, could you please check whether that
+>> would fix the issue, too?
+>
+> By the way, if I'm right, pci-bridge-set-mem-base seems to suffer from
+> the same problem, too.
 
-- Naveen
+And pci-bridge-set-io-base as well.
+
+Regards
+Nikunj
