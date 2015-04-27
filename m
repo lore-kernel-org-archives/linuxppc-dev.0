@@ -1,39 +1,30 @@
-Return-Path: <B43198@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bbn0102.outbound.protection.outlook.com [157.56.111.102])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <j.anaszewski@samsung.com>
+Received: from mailout4.w1.samsung.com (mailout4.w1.samsung.com
+ [210.118.77.14])
+ (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47CD41A1BB1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2015 16:45:41 +1000 (AEST)
-Message-ID: <553DDAF5.6030005@freescale.com>
-Date: Mon, 27 Apr 2015 09:45:09 +0300
-From: Purcareata Bogdan <b43198@freescale.com>
-MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 0/2] powerpc/kvm: Enable running guests on RT Linux
-References: <1424251955-308-1-git-send-email-bogdan.purcareata@freescale.com>							
- <54E73A6C.9080500@suse.de> <54E740E7.5090806@redhat.com>							
- <54E74A8C.30802@linutronix.de>		
- <1424734051.4698.17.camel@freescale.com>						 <54EF196E.4090805@redhat.com>	
- <54EF2025.80404@linutronix.de>					
- <1424999159.4698.78.camel@freescale.com>		
- <55158E6D.40304@freescale.com>					
- <1428016310.22867.289.camel@freescale.com>				
- <551E4A41.1080705@freescale.com>			
- <1428096375.22867.369.camel@freescale.com>				
- <55262DD3.2050707@freescale.com>			
- <1428623611.22867.561.camel@freescale.com>		 <5534DAA4.3050809@freescale.com>
- <1429577566.4352.68.camel@freescale.com>		 <55378EC4.2080302@freescale.com>
- <1429749001.16357.7.camel@freescale.com>	 <5538E624.8080904@freescale.com>
- <1429824418.16357.26.camel@freescale.com>
-In-Reply-To: <1429824418.16357.26.camel@freescale.com>
-Content-Type: text/plain; charset="utf-8"; format=flowed
-Cc: Laurentiu Tudor <b10716@freescale.com>, linux-rt-users@vger.kernel.org,
- Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
- Alexander Graf <agraf@suse.de>, linux-kernel@vger.kernel.org,
- Bogdan Purcareata <bogdan.purcareata@freescale.com>,
- mihai.caraman@freescale.com, Paolo Bonzini <pbonzini@redhat.com>,
- Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id C35AA1A0724
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2015 17:24:17 +1000 (AEST)
+Received: from eucpsbgm1.samsung.com (unknown [203.254.199.244])
+ by mailout4.w1.samsung.com
+ (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May 5 2014))
+ with ESMTP id <0NNG002TCF8CA000@mailout4.w1.samsung.com> for
+ linuxppc-dev@lists.ozlabs.org; Mon, 27 Apr 2015 08:24:12 +0100 (BST)
+Message-id: <553DE41A.5070703@samsung.com>
+Date: Mon, 27 Apr 2015 09:24:10 +0200
+From: Jacek Anaszewski <j.anaszewski@samsung.com>
+MIME-version: 1.0
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH v2 2/2] leds/powernv: Add driver for PowerNV platform
+References: <20150422234509.626d9dc7@ja.home>
+ <55388254.4000606@linux.vnet.ibm.com> <20150423161342.55e9ac8f@ja.home>
+ <1430086038.16571.78.camel@kernel.crashing.org>
+In-reply-to: <1430086038.16571.78.camel@kernel.crashing.org>
+Content-type: text/plain; charset=UTF-8; format=flowed
+Cc: stewart@linux.vnet.ibm.com, cooloney@gmail.com,
+ Vasant Hegde <hegdevasant@linux.vnet.ibm.com>, rpurdie@rpsys.net,
+ linuxppc-dev@lists.ozlabs.org, linux-leds@vger.kernel.org,
+ khandual@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,115 +34,63 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 24.04.2015 00:26, Scott Wood wrote:
-> On Thu, 2015-04-23 at 15:31 +0300, Purcareata Bogdan wrote:
->> On 23.04.2015 03:30, Scott Wood wrote:
->>> On Wed, 2015-04-22 at 15:06 +0300, Purcareata Bogdan wrote:
->>>> On 21.04.2015 03:52, Scott Wood wrote:
->>>>> On Mon, 2015-04-20 at 13:53 +0300, Purcareata Bogdan wrote:
->>>>>> There was a weird situation for .kvmppc_mpic_set_epr - its corresponding inner
->>>>>> function is kvmppc_set_epr, which is a static inline. Removing the static inline
->>>>>> yields a compiler crash (Segmentation fault (core dumped) -
->>>>>> scripts/Makefile.build:441: recipe for target 'arch/powerpc/kvm/kvm.o' failed),
->>>>>> but that's a different story, so I just let it be for now. Point is the time may
->>>>>> include other work after the lock has been released, but before the function
->>>>>> actually returned. I noticed this was the case for .kvm_set_msi, which could
->>>>>> work up to 90 ms, not actually under the lock. This made me change what I'm
->>>>>> looking at.
->>>>>
->>>>> kvm_set_msi does pretty much nothing outside the lock -- I suspect
->>>>> you're measuring an interrupt that happened as soon as the lock was
->>>>> released.
->>>>
->>>> That's exactly right. I've seen things like a timer interrupt occuring right
->>>> after the spinlock_irqrestore, but before kvm_set_msi actually returned.
->>>>
->>>> [...]
->>>>
->>>>>>     Or perhaps a different stress scenario involving a lot of VCPUs
->>>>>> and external interrupts?
->>>>>
->>>>> You could instrument the MPIC code to find out how many loop iterations
->>>>> you maxed out on, and compare that to the theoretical maximum.
->>>>
->>>> Numbers are pretty low, and I'll try to explain based on my observations.
->>>>
->>>> The problematic section in openpic_update_irq is this [1], since it loops
->>>> through all VCPUs, and IRQ_local_pipe further calls IRQ_check, which loops
->>>> through all pending interrupts for a VCPU [2].
->>>>
->>>> The guest interfaces are virtio-vhostnet, which are based on MSI
->>>> (/proc/interrupts in guest shows they are MSI). For external interrupts to the
->>>> guest, the irq_source destmask is currently 0, and last_cpu is 0 (unitialized),
->>>> so [1] will go on and deliver the interrupt directly and unicast (no VCPUs loop).
->>>>
->>>> I activated the pr_debugs in arch/powerpc/kvm/mpic.c, to see how many interrupts
->>>> are actually pending for the destination VCPU. At most, there were 3 interrupts
->>>> - n_IRQ = {224,225,226} - even for 24 flows of ping flood. I understand that
->>>> guest virtio interrupts are cascaded over 1 or a couple of shared MSI interrupts.
->>>>
->>>> So worst case, in this scenario, was checking the priorities for 3 pending
->>>> interrupts for 1 VCPU. Something like this (some of my prints included):
->>>>
->>>> [61010.582033] openpic_update_irq: destmask 1 last_cpu 0
->>>> [61010.582034] openpic_update_irq: Only one CPU is allowed to receive this IRQ
->>>> [61010.582036] IRQ_local_pipe: IRQ 224 active 0 was 1
->>>> [61010.582037] IRQ_check: irq 226 set ivpr_pr=8 pr=-1
->>>> [61010.582038] IRQ_check: irq 225 set ivpr_pr=8 pr=-1
->>>> [61010.582039] IRQ_check: irq 224 set ivpr_pr=8 pr=-1
->>>>
->>>> It would be really helpful to get your comments regarding whether these are
->>>> realistical number for everyday use, or they are relevant only to this
->>>> particular scenario.
->>>
->>> RT isn't about "realistic numbers for everyday use".  It's about worst
->>> cases.
->>>
->>>> - Can these interrupts be used in directed delivery, so that the destination
->>>> mask can include multiple VCPUs?
->>>
->>> The Freescale MPIC does not support multiple destinations for most
->>> interrupts, but the (non-FSL-specific) emulation code appears to allow
->>> it.
->>>
->>>>    The MPIC manual states that timer and IPI
->>>> interrupts are supported for directed delivery, altough I'm not sure how much of
->>>> this is used in the emulation. I know that kvmppc uses the decrementer outside
->>>> of the MPIC.
->>>>
->>>> - How are virtio interrupts cascaded over the shared MSI interrupts?
->>>> /proc/device-tree/soc@e0000000/msi@41600/interrupts in the guest shows 8 values
->>>> - 224 - 231 - so at most there might be 8 pending interrupts in IRQ_check, is
->>>> that correct?
->>>
->>> It looks like that's currently the case, but actual hardware supports
->>> more than that, so it's possible (albeit unlikely any time soon) that
->>> the emulation eventually does as well.
->>>
->>> But it's possible to have interrupts other than MSIs...
->>
->> Right.
->>
->> So given that the raw spinlock conversion is not suitable for all the scenarios
->> supported by the OpenPIC emulation, is it ok that my next step would be to send
->> a patch containing both the raw spinlock conversion and a mandatory disable of
->> the in-kernel MPIC? This is actually the last conclusion we came up with some
->> time ago, but I guess it was good to get some more insight on how things
->> actually work (at least for me).
+Hi Benjamin,
+
+Thanks for your explanation.
+
+On 04/27/2015 12:07 AM, Benjamin Herrenschmidt wrote:
+> On Thu, 2015-04-23 at 16:13 +0200, Jacek Anaszewski wrote:
 >
-> Fine with me.  Have you given any thought to ways to restructure the
-> code to eliminate the problem?
+>> How the firmware is related to kernel? These bindings are for kernel,
+>> not for the firmware.
+>
+> There should be no relation. DT bindings should be kernel agnostic and
+> represent the HW layout, not be designed based on what a given kernel
+> driver wants, but I'm digressing...
+>
+>> DT bindings are compiled to *.dtb file which is concatenated with
+>> zImage.
+>
+> No. First, a "binding" isn't compiled to a dtb, a binding is a piece
+> documentation. A flat device tree *might* be compiled from a dts to a
+> dtb but that isn't necessarily the case.
+>
+> For example, any machine with an actual implementation of Open Firmware
+> will essentially flatten OF internal tree into a dtb at boot time, and
+> that tree is itself generated by forth code.
+>
+> In our case, the device tree is procedurally generated by two layers of
+> firmware, there is no dts "compilation" happening. HostBoot generates a
+> shell and OPAL extends it before flattening it and passing it to the
+> kernel.
+>
+> The "concatenated with zImage" point you make is also a very ARM centric
+> one. ARM provides the *optional* ability to concatenate a dtb with a
+> zImage, but that's specific to ARM zImage wrapper. For example, powerpc
+> can do something similar (but not identical) using the "wrapper" script
+> we have in arch/powerpc/boot where we embed the dtb. However, this too
+> is optional, we have a longer history of having firwmares generating
+> device-trees.
+>
+> Note: We invented the whole FDT business :-)
+>
+>> During system boot device drivers are matched with DT bindings
+>> through 'compatible' property. A driver should have single matching DT
+>> node, i.e. no other driver can probe with the same DT node.
+>> This implies that the node should contain only the properties required
+>> for configuring the related device.
+>
+> I don't see how you goes from A to implying B here. Yes, a device
+> generally will have a single representing node but that doesn't mean
+> that the node only contains what the driver needs. The DT node can
+> contain all sort of auxilliary informations that the driver may or may
+> not be interested in that was deemed potentially relevant or useful by
+> the platform designer.
 
-My first thought would be to create a separate lock for each VCPU pending 
-interrupts queue, so that we make the whole openpic_irq_update more granular. 
-However, this is just a very preliminary thought. Before I can come up with 
-anything worthy of consideration, I must read the OpenPIC specification and the 
-current KVM emulated OpenPIC implementation thoroughly. I currently have other 
-things on my hands, and will come back to this once I have some time.
+I was not aware that some other entity than the driver could be
+interested in the information provided by DT node. I will no longer
+object, provided that we will get an ack from DT maintainer.
 
-Meanwhile, I've sent a v2 on the PPC and RT mailing lists for this raw_spinlock 
-conversion, alongside disabling the in-kernel MPIC emulation for PREEMPT_RT. I 
-would be grateful to hear your feedback on that, so that it can get applied.
-
-Thank you,
-Bogdan P.
+-- 
+Best Regards,
+Jacek Anaszewski
