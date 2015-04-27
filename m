@@ -1,30 +1,39 @@
-Return-Path: <j.anaszewski@samsung.com>
-Received: from mailout4.w1.samsung.com (mailout4.w1.samsung.com
- [210.118.77.14])
- (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <nikunj@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C35AA1A0724
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2015 17:24:17 +1000 (AEST)
-Received: from eucpsbgm1.samsung.com (unknown [203.254.199.244])
- by mailout4.w1.samsung.com
- (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May 5 2014))
- with ESMTP id <0NNG002TCF8CA000@mailout4.w1.samsung.com> for
- linuxppc-dev@lists.ozlabs.org; Mon, 27 Apr 2015 08:24:12 +0100 (BST)
-Message-id: <553DE41A.5070703@samsung.com>
-Date: Mon, 27 Apr 2015 09:24:10 +0200
-From: Jacek Anaszewski <j.anaszewski@samsung.com>
-MIME-version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH v2 2/2] leds/powernv: Add driver for PowerNV platform
-References: <20150422234509.626d9dc7@ja.home>
- <55388254.4000606@linux.vnet.ibm.com> <20150423161342.55e9ac8f@ja.home>
- <1430086038.16571.78.camel@kernel.crashing.org>
-In-reply-to: <1430086038.16571.78.camel@kernel.crashing.org>
-Content-type: text/plain; charset=UTF-8; format=flowed
-Cc: stewart@linux.vnet.ibm.com, cooloney@gmail.com,
- Vasant Hegde <hegdevasant@linux.vnet.ibm.com>, rpurdie@rpsys.net,
- linuxppc-dev@lists.ozlabs.org, linux-leds@vger.kernel.org,
- khandual@linux.vnet.ibm.com
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2A1051A0245
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2015 18:03:34 +1000 (AEST)
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id B8CC4140328
+ for <linuxppc-dev@ozlabs.org>; Mon, 27 Apr 2015 18:03:33 +1000 (AEST)
+Received: from /spool/local
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <nikunj@linux.vnet.ibm.com>;
+ Mon, 27 Apr 2015 18:03:32 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id BBBAA2CE8040
+ for <linuxppc-dev@ozlabs.org>; Mon, 27 Apr 2015 18:03:29 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t3R83L3V45547748
+ for <linuxppc-dev@ozlabs.org>; Mon, 27 Apr 2015 18:03:29 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t3R82tow005453
+ for <linuxppc-dev@ozlabs.org>; Mon, 27 Apr 2015 18:02:56 +1000
+From: Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>
+To: linuxppc-dev@ozlabs.org, thuth@redhat.com
+Subject: [PATCH v2 1/4] pci: program correct bridge limit registers during
+ probe
+Date: Mon, 27 Apr 2015 13:32:30 +0530
+Message-Id: <1430121753-24818-2-git-send-email-nikunj@linux.vnet.ibm.com>
+In-Reply-To: <1430121753-24818-1-git-send-email-nikunj@linux.vnet.ibm.com>
+References: <1430121753-24818-1-git-send-email-nikunj@linux.vnet.ibm.com>
+Cc: aik@ozlabs.ru, nikunj@linux.vnet.ibm.com, david@gibson.dropbear.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,63 +43,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Benjamin,
+According to the pci-to-pci bridge specification, memory/io limit
+should be the last address of the window, while currently its set to
+last + 1. It broke when the memory range was increased and hit 32-bit
+limit. The last address in the window is 0xFFFF.FFFF and max-mmio is
+0x1.0000.0000, because of the bug 0x0000 got programmed in the memory
+limit register. All the mmio reads across the pci-to-pci bridge
+started failing during probe.
 
-Thanks for your explanation.
+All pci-bridge-set-[mmio,mem,io]-base sufferred from similar problem.
 
-On 04/27/2015 12:07 AM, Benjamin Herrenschmidt wrote:
-> On Thu, 2015-04-23 at 16:13 +0200, Jacek Anaszewski wrote:
->
->> How the firmware is related to kernel? These bindings are for kernel,
->> not for the firmware.
->
-> There should be no relation. DT bindings should be kernel agnostic and
-> represent the HW layout, not be designed based on what a given kernel
-> driver wants, but I'm digressing...
->
->> DT bindings are compiled to *.dtb file which is concatenated with
->> zImage.
->
-> No. First, a "binding" isn't compiled to a dtb, a binding is a piece
-> documentation. A flat device tree *might* be compiled from a dts to a
-> dtb but that isn't necessarily the case.
->
-> For example, any machine with an actual implementation of Open Firmware
-> will essentially flatten OF internal tree into a dtb at boot time, and
-> that tree is itself generated by forth code.
->
-> In our case, the device tree is procedurally generated by two layers of
-> firmware, there is no dts "compilation" happening. HostBoot generates a
-> shell and OPAL extends it before flattening it and passing it to the
-> kernel.
->
-> The "concatenated with zImage" point you make is also a very ARM centric
-> one. ARM provides the *optional* ability to concatenate a dtb with a
-> zImage, but that's specific to ARM zImage wrapper. For example, powerpc
-> can do something similar (but not identical) using the "wrapper" script
-> we have in arch/powerpc/boot where we embed the dtb. However, this too
-> is optional, we have a longer history of having firwmares generating
-> device-trees.
->
-> Note: We invented the whole FDT business :-)
->
->> During system boot device drivers are matched with DT bindings
->> through 'compatible' property. A driver should have single matching DT
->> node, i.e. no other driver can probe with the same DT node.
->> This implies that the node should contain only the properties required
->> for configuring the related device.
->
-> I don't see how you goes from A to implying B here. Yes, a device
-> generally will have a single representing node but that doesn't mean
-> that the node only contains what the driver needs. The DT node can
-> contain all sort of auxilliary informations that the driver may or may
-> not be interested in that was deemed potentially relevant or useful by
-> the platform designer.
+Suggested-by: Thomas Huth <thuth@redhat.com>
+Signed-off-by: Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>
+---
+ slof/fs/pci-scan.fs | 6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-I was not aware that some other entity than the driver could be
-interested in the information provided by DT node. I will no longer
-object, provided that we will get an ack from DT maintainer.
-
+diff --git a/slof/fs/pci-scan.fs b/slof/fs/pci-scan.fs
+index 15d0c8e..b8b9fe6 100644
+--- a/slof/fs/pci-scan.fs
++++ b/slof/fs/pci-scan.fs
+@@ -87,7 +87,7 @@ here 100 allot CONSTANT pci-device-vec
+         pci-next-mmio @ 100000 #aligned         \ read the current Value and align to 1MB boundary
+         dup 100000 + pci-next-mmio !            \ and write back with 1MB for bridge
+         10 rshift                               \ mmio-base reg is only the upper 16 bits
+-        pci-max-mmio @ FFFF0000 and or          \ and Insert mmio Limit (set it to max)
++        pci-max-mmio @ 1- FFFF0000 and or       \ and Insert mmio Limit (set it to max)
+         swap 20 + rtas-config-l!                \ and write it into the bridge
+ ;
+ 
+@@ -116,7 +116,7 @@ here 100 allot CONSTANT pci-device-vec
+                 2 pick 2C + rtas-config-l!      \ | and set the Limit
+         THEN                                    \ FI
+         10 rshift                               \ keep upper 16 bits
+-        pci-max-mem @ FFFF0000 and or           \ and Insert mmem Limit (set it to max)
++        pci-max-mem @ 1- FFFF0000 and or        \ and Insert mmem Limit (set it to max)
+         swap 24 + rtas-config-l!                \ and write it into the bridge
+ ;
+ 
+@@ -150,7 +150,7 @@ here 100 allot CONSTANT pci-device-vec
+                 swap 30 + rtas-config-l!        \ | and write it into the Base-Upper16-bits
+         THEN                                    \ FI
+         8 rshift 000000FF and                   \ keep upper 8 bits
+-        pci-max-io @ 0000FF00 and or            \ insert upper 8 bits of Max-Limit
++        pci-max-io @ 1- 0000FF00 and or         \ insert upper 8 bits of Max-Limit
+         over rtas-config-l@ FFFF0000 and        \ fetch original Value
+         or swap 1C + rtas-config-l!             \ and write it into the bridge
+ ;
 -- 
-Best Regards,
-Jacek Anaszewski
+1.8.3.1
