@@ -1,30 +1,30 @@
 Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9CE181A0BF2
+ by lists.ozlabs.org (Postfix) with ESMTPS id B3E641A0C02
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2015 16:39:20 +1000 (AEST)
 Received: from /spool/local
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Mon, 27 Apr 2015 16:39:20 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id E14F62BB005B
+ Mon, 27 Apr 2015 16:39:19 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id A1BAB2BB0055
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2015 16:39:16 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t3R6d8Rd45613196
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t3R6d8Kr14221640
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2015 16:39:16 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t3R6ch8S013068
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t3R6cgDt016101
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2015 16:38:43 +1000
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v3 21/21] pci/hotplug: PowerPC PowerNV PCI hotplug driver
-Date: Mon, 27 Apr 2015 16:37:53 +1000
-Message-Id: <1430116673-22500-22-git-send-email-gwshan@linux.vnet.ibm.com>
+Subject: [PATCH v3 05/21] powerpc/powernv: Improve DMA32 segment assignment
+Date: Mon, 27 Apr 2015 16:37:37 +1000
+Message-Id: <1430116673-22500-6-git-send-email-gwshan@linux.vnet.ibm.com>
 In-Reply-To: <1430116673-22500-1-git-send-email-gwshan@linux.vnet.ibm.com>
 References: <1430116673-22500-1-git-send-email-gwshan@linux.vnet.ibm.com>
 Cc: bhelgaas@google.com, linux-pci@vger.kernel.org,
@@ -38,1230 +38,403 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The patch intends to add standalone driver to support PCI hotplug
-for PowerPC PowerNV platform, which runs on top of skiboot firmware.
-The firmware identified hotpluggable slots and marked their device
-tree node with proper "ibm,slot-pluggable" and "ibm,reset-by-firmware".
-The driver simply scans device-tree to create/register PCI hotplug slot
-accordingly.
+For P7IOC, the whole available DMA32 space, which is below the
+MEM32 space, is evenly divided into 256MB segments. How many
+continuous segments assigned to one particular PE depends on
+the PE's DMA weight that is figured out from the type of each
+PCI devices contained in the PE, and PHB's DMA weight which is
+accumulative DMA weight of PEs contained in the PHB. It means
+that the PHB's DMA weight calculation depends on existing PEs,
+which works perfectly now, but not hotplug friendly. As the
+whole available DMA32 space can be assigned to one PE on PHB3,
+so we don't have the issue on PHB3.
 
-If the skiboot firmware doesn't support slot status retrieval, the PCI
-slot device node shouldn't have property "ibm,reset-by-firmware". In
-that case, none of valid PCI slots will be detected from device tree.
-The skiboot firmware doesn't export the capability to access attention
-LEDs yet and it's something for TBD.
+The patch improves DMA32 segment assignment by removing the
+dependency of existing PEs to make the piece of logic friendly
+to PCI hotplug. Besides, it's always worthy to trace the DMA32
+segments consumed by one PE, which can be released at PCI
+unplugging time.
 
 Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 ---
- drivers/pci/hotplug/Kconfig            |  12 +
- drivers/pci/hotplug/Makefile           |   4 +
- drivers/pci/hotplug/powernv_php.c      | 146 ++++++
- drivers/pci/hotplug/powernv_php.h      |  78 +++
- drivers/pci/hotplug/powernv_php_slot.c | 913 +++++++++++++++++++++++++++++++++
- 5 files changed, 1153 insertions(+)
- create mode 100644 drivers/pci/hotplug/powernv_php.c
- create mode 100644 drivers/pci/hotplug/powernv_php.h
- create mode 100644 drivers/pci/hotplug/powernv_php_slot.c
+ arch/powerpc/platforms/powernv/pci-ioda.c | 204 ++++++++++++++++--------------
+ arch/powerpc/platforms/powernv/pci.h      |  24 +---
+ 2 files changed, 116 insertions(+), 112 deletions(-)
 
-diff --git a/drivers/pci/hotplug/Kconfig b/drivers/pci/hotplug/Kconfig
-index df8caec..ef55dae 100644
---- a/drivers/pci/hotplug/Kconfig
-+++ b/drivers/pci/hotplug/Kconfig
-@@ -113,6 +113,18 @@ config HOTPLUG_PCI_SHPC
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index 7e6e266..9ef745e 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -976,8 +976,11 @@ static void pnv_ioda_link_pe_by_weight(struct pnv_phb *phb,
+ 	list_add_tail(&pe->dma_link, &phb->ioda.pe_dma_list);
+ }
  
- 	  When in doubt, say N.
+-static unsigned int pnv_ioda_dma_weight(struct pci_dev *dev)
++static unsigned int pnv_ioda_dev_dma_weight(struct pci_dev *dev)
+ {
++	struct pci_controller *hose = pci_bus_to_host(dev->bus);
++	struct pnv_phb *phb = hose->private_data;
++
+ 	/* This is quite simplistic. The "base" weight of a device
+ 	 * is 10. 0 means no DMA is to be accounted for it.
+ 	 */
+@@ -990,14 +993,33 @@ static unsigned int pnv_ioda_dma_weight(struct pci_dev *dev)
+ 	if (dev->class == PCI_CLASS_SERIAL_USB_UHCI ||
+ 	    dev->class == PCI_CLASS_SERIAL_USB_OHCI ||
+ 	    dev->class == PCI_CLASS_SERIAL_USB_EHCI)
+-		return 3;
++		return 3 * phb->ioda.tce32_count;
  
-+config HOTPLUG_PCI_POWERNV
-+	tristate "PowerPC PowerNV PCI Hotplug driver"
-+	depends on PPC_POWERNV && EEH
-+	help
-+	  Say Y here if you run PowerPC PowerNV platform that supports
-+          PCI Hotplug
-+
-+	  To compile this driver as a module, choose M here: the
-+	  module will be called powernv-php.
-+
-+	  When in doubt, say N.
-+
- config HOTPLUG_PCI_RPA
- 	tristate "RPA PCI Hotplug driver"
- 	depends on PPC_PSERIES && EEH
-diff --git a/drivers/pci/hotplug/Makefile b/drivers/pci/hotplug/Makefile
-index 4a9aa08..a69665e 100644
---- a/drivers/pci/hotplug/Makefile
-+++ b/drivers/pci/hotplug/Makefile
-@@ -14,6 +14,7 @@ obj-$(CONFIG_HOTPLUG_PCI_PCIE)		+= pciehp.o
- obj-$(CONFIG_HOTPLUG_PCI_CPCI_ZT5550)	+= cpcihp_zt5550.o
- obj-$(CONFIG_HOTPLUG_PCI_CPCI_GENERIC)	+= cpcihp_generic.o
- obj-$(CONFIG_HOTPLUG_PCI_SHPC)		+= shpchp.o
-+obj-$(CONFIG_HOTPLUG_PCI_POWERNV)	+= powernv-php.o
- obj-$(CONFIG_HOTPLUG_PCI_RPA)		+= rpaphp.o
- obj-$(CONFIG_HOTPLUG_PCI_RPA_DLPAR)	+= rpadlpar_io.o
- obj-$(CONFIG_HOTPLUG_PCI_SGI)		+= sgi_hotplug.o
-@@ -50,6 +51,9 @@ ibmphp-objs		:=	ibmphp_core.o	\
- acpiphp-objs		:=	acpiphp_core.o	\
- 				acpiphp_glue.o
+ 	/* Increase the weight of RAID (includes Obsidian) */
+ 	if ((dev->class >> 8) == PCI_CLASS_STORAGE_RAID)
+-		return 15;
++		return 15 * phb->ioda.tce32_count;
  
-+powernv-php-objs	:=	powernv_php.o	\
-+				powernv_php_slot.o
-+
- rpaphp-objs		:=	rpaphp_core.o	\
- 				rpaphp_pci.o	\
- 				rpaphp_slot.o
-diff --git a/drivers/pci/hotplug/powernv_php.c b/drivers/pci/hotplug/powernv_php.c
-new file mode 100644
-index 0000000..5cf9e717
---- /dev/null
-+++ b/drivers/pci/hotplug/powernv_php.c
-@@ -0,0 +1,146 @@
-+/*
-+ * PCI Hotplug Driver for PowerPC PowerNV platform.
-+ *
-+ * Copyright Gavin Shan, IBM Corporation 2015.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/sysfs.h>
-+#include <linux/pci.h>
-+#include <linux/pci_hotplug.h>
-+#include <linux/string.h>
-+#include <linux/slab.h>
-+#include <asm/opal.h>
-+#include <asm/pnv-pci.h>
-+
-+#include "powernv_php.h"
-+
-+#define DRIVER_VERSION	"0.1"
-+#define DRIVER_AUTHOR	"Gavin Shan, IBM Corporation"
-+#define DRIVER_DESC	"PowerPC PowerNV PCI Hotplug Driver"
-+
-+static struct notifier_block php_msg_nb = {
-+	.notifier_call	= powernv_php_msg_handler,
-+	.next		= NULL,
-+	.priority	= 0,
-+};
-+
-+static int powernv_php_register_one(struct device_node *dn)
-+{
-+	struct powernv_php_slot *slot;
-+	const __be32 *prop32;
-+	int ret;
-+
-+	/* Check if it's hotpluggable slot */
-+	prop32 = of_get_property(dn, "ibm,slot-pluggable", NULL);
-+	if (!prop32 || !of_read_number(prop32, 1))
-+		return 0;
-+
-+	prop32 = of_get_property(dn, "ibm,reset-by-firmware", NULL);
-+	if (!prop32 || !of_read_number(prop32, 1))
-+		return 0;
-+
-+	/* Allocate slot */
-+	slot = powernv_php_slot_alloc(dn);
-+	if (!slot)
-+		return -ENODEV;
-+
-+	/* Register it */
-+	ret = powernv_php_slot_register(slot);
-+	if (ret) {
-+		powernv_php_slot_put(slot);
-+		return ret;
-+	}
-+
-+	return powernv_php_slot_enable(slot->php_slot, false, false);
+ 	/* Default */
+-	return 10;
++	return 10 * phb->ioda.tce32_count;
 +}
 +
-+int powernv_php_register(struct device_node *dn)
++static int __pnv_ioda_phb_dma_weight(struct pci_dev *pdev, void *data)
 +{
-+	struct device_node *child;
-+	int ret = 0;
++	unsigned int *dma_weight = data;
 +
-+	/*
-+	 * The parent slots should be registered before their
-+	 * child slots.
-+	 */
-+	for_each_child_of_node(dn, child) {
-+		ret = powernv_php_register_one(child);
-+		if (ret)
-+			break;
-+
-+		powernv_php_register(child);
-+	}
-+
-+	return ret;
++	*dma_weight += pnv_ioda_dev_dma_weight(pdev);
++	return 0;
 +}
 +
-+static void powernv_php_unregister_one(struct device_node *dn)
++static void pnv_ioda_phb_dma_weight(struct pnv_phb *phb)
 +{
-+	struct powernv_php_slot *slot;
-+
-+	slot = powernv_php_slot_find(dn);
-+	if (!slot)
++	phb->ioda.dma_weight = 0;
++	if (!phb->hose->bus)
 +		return;
 +
-+	pci_hp_deregister(slot->php_slot);
-+}
-+
-+void powernv_php_unregister(struct device_node *dn)
++	pci_walk_bus(phb->hose->bus,
++		     __pnv_ioda_phb_dma_weight,
++		     &phb->ioda.dma_weight);
+ }
+ 
+ #ifdef CONFIG_PCI_IOV
+@@ -1156,7 +1178,7 @@ static void pnv_ioda_setup_same_PE(struct pci_bus *bus, struct pnv_ioda_pe *pe)
+ 			continue;
+ 		}
+ 		pdn->pe_number = pe->pe_number;
+-		pe->dma_weight += pnv_ioda_dma_weight(dev);
++		pe->dma_weight += pnv_ioda_dev_dma_weight(dev);
+ 		if ((pe->flags & PNV_IODA_PE_BUS_ALL) && dev->subordinate)
+ 			pnv_ioda_setup_same_PE(dev->subordinate, pe);
+ 	}
+@@ -1193,7 +1215,6 @@ static void pnv_ioda_setup_bus_PE(struct pci_bus *bus, int all)
+ 	pe->flags |= (all ? PNV_IODA_PE_BUS_ALL : PNV_IODA_PE_BUS);
+ 	pe->pbus = bus;
+ 	pe->pdev = NULL;
+-	pe->tce32_seg = -1;
+ 	pe->mve_number = -1;
+ 	pe->rid = bus->busn_res.start << 8;
+ 	pe->dma_weight = 0;
+@@ -1223,14 +1244,6 @@ static void pnv_ioda_setup_bus_PE(struct pci_bus *bus, int all)
+ 	/* Put PE to the list */
+ 	list_add_tail(&pe->list, &phb->ioda.pe_list);
+ 
+-	/* Account for one DMA PE if at least one DMA capable device exist
+-	 * below the bridge
+-	 */
+-	if (pe->dma_weight != 0) {
+-		phb->ioda.dma_weight += pe->dma_weight;
+-		phb->ioda.dma_pe_count++;
+-	}
+-
+ 	/* Link the PE */
+ 	pnv_ioda_link_pe_by_weight(phb, pe);
+ }
+@@ -1569,7 +1582,6 @@ static void pnv_ioda_setup_vf_PE(struct pci_dev *pdev, u16 num_vfs)
+ 		pe->flags = PNV_IODA_PE_VF;
+ 		pe->pbus = NULL;
+ 		pe->parent_dev = pdev;
+-		pe->tce32_seg = -1;
+ 		pe->mve_number = -1;
+ 		pe->rid = (pci_iov_virtfn_bus(pdev, vf_index) << 8) |
+ 			   pci_iov_virtfn_devfn(pdev, vf_index);
+@@ -1890,28 +1902,70 @@ void pnv_pci_ioda_tce_invalidate(struct iommu_table *tbl,
+ 		pnv_pci_ioda2_tce_invalidate(pe, tbl, startp, endp, rm);
+ }
+ 
+-static void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
+-				      struct pnv_ioda_pe *pe, unsigned int base,
+-				      unsigned int segs)
++static int pnv_pci_ioda1_dma_segment_alloc(struct pnv_phb *phb,
++					   struct pnv_ioda_pe *pe)
 +{
-+	struct device_node *child;
++	unsigned int weight, base, segs;
 +
-+	/* The child slots should go before their parent slots */
-+	for_each_child_of_node(dn, child) {
-+		powernv_php_unregister(child);
-+		powernv_php_unregister_one(child);
-+	}
-+}
-+
-+static int __init powernv_php_init(void)
-+{
-+	struct device_node *dn;
-+
-+	pr_info(DRIVER_DESC " version: " DRIVER_VERSION "\n");
-+
-+	/* Register hotplug message handler */
-+	if (pnv_pci_hotplug_notifier(&php_msg_nb, true)) {
-+		pr_warn("%s: Cannot register hotplug message notifier\n",
-+			__func__);
-+		return -EIO;
-+	}
-+
-+	/* Scan PHB nodes and their children */
-+	for_each_compatible_node(dn, NULL, "ibm,ioda-phb")
-+		powernv_php_register(dn);
-+	for_each_compatible_node(dn, NULL, "ibm,ioda2-phb")
-+		powernv_php_register(dn);
-+
-+	return 0;
-+}
-+
-+static void __exit powernv_php_exit(void)
-+{
-+	struct device_node *dn;
-+
-+	pnv_pci_hotplug_notifier(&php_msg_nb, false);
-+
-+	for_each_compatible_node(dn, NULL, "ibm,ioda-phb")
-+		powernv_php_unregister(dn);
-+	for_each_compatible_node(dn, NULL, "ibm,ioda2-phb")
-+		powernv_php_unregister(dn);
-+}
-+
-+module_init(powernv_php_init);
-+module_exit(powernv_php_exit);
-+
-+MODULE_VERSION(DRIVER_VERSION);
-+MODULE_LICENSE("GPL v2");
-+MODULE_AUTHOR(DRIVER_AUTHOR);
-+MODULE_DESCRIPTION(DRIVER_DESC);
-diff --git a/drivers/pci/hotplug/powernv_php.h b/drivers/pci/hotplug/powernv_php.h
-new file mode 100644
-index 0000000..87ba0d0
---- /dev/null
-+++ b/drivers/pci/hotplug/powernv_php.h
-@@ -0,0 +1,78 @@
-+/*
-+ * PCI Hotplug Driver for PowerPC PowerNV platform.
-+ *
-+ * Copyright Gavin Shan, IBM Corporation 2015.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ */
-+
-+#ifndef _POWERNV_PHP_H
-+#define _POWERNV_PHP_H
-+
-+/* Slot power status */
-+#define POWERNV_PHP_SLOT_POWER_OFF	0
-+#define POWERNV_PHP_SLOT_POWER_ON	1
-+
-+/* Slot presence status */
-+#define POWERNV_PHP_SLOT_EMPTY		0
-+#define POWERNV_PHP_SLOT_PRESENT	1
-+
-+/* Slot attention status */
-+#define POWERNV_PHP_SLOT_ATTEN_OFF	0
-+#define POWERNV_PHP_SLOT_ATTEN_ON	1
-+#define POWERNV_PHP_SLOT_ATTEN_IND	2
-+#define POWERNV_PHP_SLOT_ATTEN_ACT	3
-+
-+struct powernv_php_slot {
-+	struct kref		kref;
-+	int			state;
-+#define POWERNV_PHP_SLOT_STATE_INIT		0x0
-+#define POWERNV_PHP_SLOT_STATE_REGISTER		0x1
-+#define POWERNV_PHP_SLOT_STATE_POPULATED	0x2
-+	char			*name;
-+	struct device_node	*dn;
-+	struct pci_bus		*bus;
-+	uint64_t		id;
-+	int			slot_no;
-+	int			check_power_status;
-+	int			status_confirmed;
-+	struct opal_msg		*msg;
-+	struct work_struct	work;
-+	wait_queue_head_t	queue;
-+	struct hotplug_slot	*php_slot;
-+	struct powernv_php_slot	*parent;
-+	void (*release)(struct kref *kref);
-+	struct list_head	children;
-+	struct list_head	link;
-+};
-+
-+#define to_powernv_php_slot(kref) container_of(kref, struct powernv_php_slot, kref)
-+
-+static inline void powernv_php_slot_get(struct powernv_php_slot *slot)
-+{
-+	if (slot)
-+		kref_get(&slot->kref);
-+}
-+
-+static inline int powernv_php_slot_put(struct powernv_php_slot *slot)
-+{
-+	if (slot)
-+		return kref_put(&slot->kref, slot->release);
-+
-+	return 0;
-+}
-+
-+int powernv_php_msg_handler(struct notifier_block *nb,
-+			    unsigned long type, void *message);
-+struct powernv_php_slot *powernv_php_slot_find(struct device_node *dn);
-+struct powernv_php_slot *powernv_php_slot_alloc(struct device_node *dn);
-+int powernv_php_slot_register(struct powernv_php_slot *slot);
-+int powernv_php_slot_enable(struct hotplug_slot *php_slot,
-+			    bool rescan_bus, bool rescan_slot);
-+int powernv_php_register(struct device_node *dn);
-+void powernv_php_unregister(struct device_node *dn);
-+
-+#endif /* !_POWERNV_PHP_H */
-diff --git a/drivers/pci/hotplug/powernv_php_slot.c b/drivers/pci/hotplug/powernv_php_slot.c
-new file mode 100644
-index 0000000..847a84e
---- /dev/null
-+++ b/drivers/pci/hotplug/powernv_php_slot.c
-@@ -0,0 +1,913 @@
-+/*
-+ * PCI Hotplug Driver for PowerPC PowerNV platform.
-+ *
-+ * Copyright Gavin Shan, IBM Corporation 2015.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/sysfs.h>
-+#include <linux/pci.h>
-+#include <linux/pci_hotplug.h>
-+#include <linux/string.h>
-+#include <linux/slab.h>
-+#include <linux/spinlock.h>
-+#include <linux/wait.h>
-+#include <linux/workqueue.h>
-+
-+#include <asm/opal.h>
-+#include <asm/pnv-pci.h>
-+#include <asm/ppc-pci.h>
-+
-+#include "powernv_php.h"
-+
-+static LIST_HEAD(php_slot_list);
-+static DEFINE_SPINLOCK(php_slot_lock);
-+
-+/*
-+ * Release firmware data for all child device nodes of the
-+ * indicated one.
-+ */
-+static void release_device_nodes_info(struct device_node *np)
-+{
-+	struct device_node *child;
-+
-+	for_each_child_of_node(np, child) {
-+		/* In depth first */
-+		release_device_nodes_info(child);
-+
-+		remove_pci_device_node_info(child);
-+	}
-+}
-+
-+/*
-+ * Release all subordinate device nodes of the indicated one.
-+ * Those device nodes in deepest path should be released firstly.
-+ */
-+static int release_device_nodes(struct device_node *parent)
-+{
-+	struct device_node *np, *child;
-+	int ret = 0;
-+
-+	/* If the device node has children, remove them firstly */
-+	for_each_child_of_node(parent, np) {
-+		ret = release_device_nodes(np);
-+		if (ret)
-+			return ret;
-+
-+		/* The device shouldn't have alive children */
-+		child = of_get_next_child(np, NULL);
-+		if (child) {
-+			of_node_put(child);
-+			of_node_put(np);
-+			pr_err("%s: Alive children of node <%s>\n",
-+			       __func__, of_node_full_name(np));
-+			return -EBUSY;
-+		}
-+
-+		/* Detach the device node */
-+		of_detach_node(np);
-+		of_node_put(np);
-+	}
-+
-+	return 0;
-+}
-+
-+/*
-+ * The function processes the message sent by firmware
-+ * to remove all device tree nodes beneath the slot's
-+ * nodes, and the associated auxillary data.
-+ */
-+static void slot_power_off_handler(struct powernv_php_slot *slot)
-+{
-+	int ret;
-+
-+	/* Release the firmware data for the child device nodes */
-+	release_device_nodes_info(slot->dn);
-+
-+	/* Release the child device nodes */
-+	ret = release_device_nodes(slot->dn);
-+	if (ret) {
-+		pr_warn("%s: Error %d releasing children of <%s>\n",
-+			__func__, ret, of_node_full_name(slot->dn));
-+		return;
-+	}
-+
-+	/* The event is handled completely */
-+	slot->status_confirmed = 1;
-+	wake_up_interruptible(&slot->queue);
-+}
-+
-+/*
-+ * Locate the prefix for device node or property, which are [NODE]
-+ * and [PROP] separately. Due to arbitrary combination included
-+ * in the property value, string searching functions aren't
-+ * reliable. So we have to check characters.
-+ */
-+static char *get_next_prefix(char *start, char *end, const char *needle)
-+{
-+	char *p = start;
-+	int i;
-+
-+	while (end - p >= strlen(needle)) {
-+		for (i = 0; i < strlen(needle); i++)
-+			if (p[i] != needle[i])
-+				break;
-+
-+		/* Matched pattern */
-+		if (i >= strlen(needle))
-+			return p;
-+
-+		/* Try next one */
-+		p++;
-+	}
-+
-+	return NULL;
-+}
-+
-+/*
-+ * Get property name, value and its length. Besides, the starting
-+ * position of next valid property or the ending position of the
-+ * device node will be returned.
-+ */
-+static char *get_next_property(char *start, char *end,
-+			       char **name, char **val, int *len)
-+{
-+	char *next, *p = start, *tmp;
-+
-+	/* Property prefix */
-+	next = get_next_prefix(p, end, "[PROP] ");
-+	if (!next)
-+		goto no_property;
-+	p = next + 7;
-+
-+	/* Property name */
-+	next = strchr(p, ' ');
-+	if (!next || next >= end)
-+		goto no_property;
-+	*next = '\0';
-+	if (!(*name = kstrdup(p, GFP_KERNEL)))
-+		goto no_property;
-+
-+	/* Property length */
-+	p = next + 1;
-+	next = strchr(p, ' ');
-+	if (!next || next >= end) {
-+		kfree(*name);
-+		goto no_property;
-+	}
-+	*next = '\0';
-+	*len = -1;
-+	*len = simple_strtoul(p, &tmp, 10);
-+	if (*len == -1 || *tmp != '\0' || tmp >= end) {
-+		kfree(*name);
-+		goto no_property;
-+	}
-+
-+	/* Property value */
-+	p = next + 1;
-+	*val = p;
-+
-+	return p + *len + 1;
-+
-+no_property:
-+	*name = NULL;
-+	*val = NULL;
-+	*len = 0;
-+	return NULL;
-+}
-+
-+/*
-+ * Get full name of device node. Besides, the starting position
-+ * of property and the ending position of device node will be
-+ * returned if there is one valid device node. Otherwise, NULL
-+ * will be returned.
-+ */
-+static char *get_next_node(char *start, char *end,
-+			   char **path, char **node_end)
-+{
-+	char *p, *next;
-+
-+	/* Find current node */
-+	p = start;
-+	p = get_next_prefix(p, end, "[NODE] ");
-+	if (!p)
-+		goto no_node;
-+
-+	/* Get the path */
-+	p += 7;
-+	next = strchr(p, ' ');
-+	if (!next || next >= end)
-+		goto no_node;
-+	*next = '\0';
-+	*path = p;
-+
-+	/* Search for the end of properties */
-+	p = next + 1;
-+	next = get_next_prefix(p, end, "[NODE] ");
-+	if (!next)
-+		*node_end = end;
-+	else
-+		*node_end = next;
-+
-+	/* Start of the properties */
-+	return p;
-+
-+no_node:
-+	*path = NULL;
-+	*node_end = NULL;
-+	return NULL;
-+}
-+
-+/* Helper function to free indicated device node */
-+static void free_device_node(struct device_node *np)
-+{
-+	struct property *prop;
-+
-+	if (!np)
-+		return;
-+
-+	/* Free properties */
-+	while ((prop = np->properties)) {
-+		np->properties = prop->next;
-+
-+		if (prop->value)
-+			kfree(prop->value);
-+		if (np->name)
-+			kfree(prop->name);
-+		kfree(prop);
-+	}
-+
-+	/* Dereferencing the parent node */
-+	if (np->parent)
-+		of_node_put(np->parent);
-+
-+	/* Free full name the node itself */
-+	if (np->full_name)
-+		kfree(np->full_name);
-+	kfree(np);
-+}
-+
-+static int add_device_nodes(char *start, char *end)
-+{
-+	struct device_node *np;
-+	char *n_start, *n_end, *path, *tmp;
-+	struct property *prop;
-+	char *p_start, *p_name, *p_val;
-+	int p_len, ret = -ENOMEM;
-+
-+	n_start = start;
-+	while ((n_start = get_next_node(n_start, end, &path, &n_end))) {
-+		/* Allocate device node */
-+		np = kzalloc(sizeof(*np), GFP_KERNEL);
-+		if (!np) {
-+			pr_warn("%s: Cannot allocate new node\n",
-+				__func__);
-+			return -ENOMEM;
-+		}
-+
-+		np->full_name = kstrdup(path, GFP_KERNEL);
-+		if (!np->full_name) {
-+			pr_warn("%s: Cannot duplicate node name <%s>\n",
-+				__func__, path);
-+			goto error;
-+		}
-+
-+		/* Find the parent */
-+		tmp = strrchr(path, '/');
-+		if (tmp) {
-+			*tmp = '\0';
-+			np->parent = of_find_node_by_path(path);
-+		}
-+		if (!np->parent) {
-+			pr_warn("%s: No parent node <%s>\n",
-+				__func__, path);
-+			goto error;
-+		}
-+
-+		/* Properties */
-+		p_start = n_start;
-+		while ((p_start = get_next_property(p_start, n_end,
-+					&p_name, &p_val, &p_len))) {
-+			/* Property */
-+			prop = kzalloc(sizeof(*prop), GFP_KERNEL);
-+			if (!prop) {
-+				pr_warn("%s: No mem for property %s::%s\n",
-+					__func__, of_node_full_name(np),
-+					p_name);
-+				goto error;
-+			}
-+
-+			/* Put to the list of node */
-+			prop->next = np->properties;
-+			np->properties = prop;
-+
-+			/* Property name */
-+			prop->name = kstrdup(p_name, GFP_KERNEL);
-+			if (!prop->name) {
-+				pr_warn("%s: No mem for property name %s::%s\n",
-+					__func__, of_node_full_name(np),
-+					p_name);
-+				goto error;
-+			}
-+
-+			/* Proper value */
-+			prop->length = p_len;
-+			prop->value = kmemdup(p_val, prop->length, GFP_KERNEL);
-+			if (!prop->value) {
-+				pr_warn("%s: No mem for property val %s::%s\n",
-+					__func__, of_node_full_name(np),
-+					p_name);
-+				goto error;
-+			}
-+
-+			/* Mark the property as dynamic */
-+			of_property_set_flag(prop, OF_DYNAMIC);
-+		}
-+
-+		/* Mark the node as dynamic */
-+		of_node_set_flag(np, OF_DYNAMIC);
-+
-+		/* Initialize the device node */
-+		of_node_init(np);
-+
-+		/* Attach device node */
-+		ret = of_attach_node(np);
-+		if (ret) {
-+			pr_warn("%s: Error %d attaching <%s>\n",
-+				__func__, ret, of_node_full_name(np));
-+			goto error;
-+		}
-+
-+		/* For next node */
-+		of_node_put(np->parent);
-+		n_start = n_end;
-+	}
-+
-+	return 0;
-+error:
-+	free_device_node(np);
-+	return -ENOMEM;
-+}
-+
-+static void slot_power_on_handler(struct powernv_php_slot *slot)
-+{
-+	struct opal_msg *msg = slot->msg;
-+	unsigned long phys = be64_to_cpu(msg->params[2]);
-+	unsigned long len = be64_to_cpu(msg->params[3]);
-+	char *virt = (phys && len > 7) ? __va(phys) : NULL;
-+	char *buf = NULL;
-+	int ret;
-+
-+	/* There might have nothing behind the slot yet */
-+	if (!virt)
-+		goto out;
-+
-+	/* Copy the buffer over */
-+	buf = kzalloc(len, GFP_KERNEL);
-+	if (!buf) {
-+		pr_warn("%s: Out of memory!\n", __func__);
-+		goto out;
-+	}
-+	memcpy(buf, virt, len);
-+
-+	/* Add the device nodes */
-+	ret = add_device_nodes(buf, buf + len);
-+	if (ret) {
-+		kfree(buf);
-+		pr_warn("%s: Error %d adding child nodes for <%s>\n",
-+			__func__, ret, of_node_full_name(slot->dn));
-+		goto out;
-+	}
-+
-+	/* Add device node firmware data */
-+	traverse_pci_device_nodes(slot->dn,
-+				  add_pci_device_node_info,
-+				  pci_bus_to_host(slot->bus));
-+
-+	/* Confirm status change */
-+out:
-+	slot->status_confirmed = 1;
-+	wake_up_interruptible(&slot->queue);
-+}
-+
-+static void powernv_php_slot_work(struct work_struct *data)
-+{
-+	struct powernv_php_slot *slot = container_of(data,
-+						     struct powernv_php_slot,
-+						     work);
-+	uint64_t php_event = be64_to_cpu(slot->msg->params[0]);
-+
-+	switch (php_event) {
-+	case 0: /* Slot power off */
-+		slot_power_off_handler(slot);
-+		break;
-+	case 1: /* Slot power on */
-+		slot_power_on_handler(slot);
-+		break;
-+	default:
-+		pr_warn("%s: Unsupported hotplug event %lld\n",
-+			__func__, php_event);
-+	}
-+
-+	of_node_put(slot->dn);
-+}
-+
-+int powernv_php_msg_handler(struct notifier_block *nb,
-+			    unsigned long type, void *message)
-+{
-+	phandle h;
-+	struct device_node *np;
-+	struct powernv_php_slot *slot;
-+	struct opal_msg *msg = message;
-+
-+	/* Check the message type */
-+	if (type != OPAL_MSG_PCI_HOTPLUG) {
-+		pr_warn("%s: Wrong message type %ld received!\n",
-+			__func__, type);
-+		return 0;
-+	}
-+
-+	/* Find the device node */
-+	h = (phandle)be64_to_cpu(msg->params[1]);
-+	np = of_find_node_by_phandle(h);
-+	if (!np) {
-+		pr_warn("%s: No device node for phandle 0x%08x\n",
-+			__func__, h);
-+		return 0;
-+	}
-+
-+	/* Find the slot */
-+	slot = powernv_php_slot_find(np);
-+	if (!slot) {
-+		pr_warn("%s: No slot found for node <%s>\n",
-+			__func__, of_node_full_name(np));
-+		of_node_put(np);
-+		return 0;
-+	}
-+
-+	/* Schedule the work */
-+	slot->msg = msg;
-+	schedule_work(&slot->work);
-+	return 0;
-+}
-+
-+static int set_power_status(struct hotplug_slot *php_slot, u8 val)
-+{
-+	struct powernv_php_slot *slot = php_slot->private;
-+	int ret;
-+
-+	/* Set power status */
-+	slot->status_confirmed = 0;
-+	ret = pnv_pci_set_power_status(slot->id, val);
-+	if (ret) {
-+		pr_warn("%s: Error %d powering %s slot %016llx\n",
-+			__func__, ret, val ? "on" : "off", slot->id);
-+		return ret;
-+	}
-+
-+	/* Waiting until the device tree is updated */
-+	ret = wait_event_timeout(slot->queue,
-+				 !slot->status_confirmed,
-+				 10 * HZ);
-+	if (ret) {
-+		pr_warn("%s: Error %d completing power-%s slot %016llx\n",
-+			__func__, ret, val ? "on" : "off", slot->id);
-+		return ret;
-+	}
-+
-+	return 0;
-+}
-+
-+static int get_power_status(struct hotplug_slot *php_slot, u8 *val)
-+{
-+	struct powernv_php_slot *slot = php_slot->private;
-+	uint8_t state;
-+	int ret;
-+
-+	/*
-+	 * Retrieve power status from firmware. If we fail
-+	 * getting that, the power status fails back to
-+	 * be on.
-+	 */
-+	ret = pnv_pci_get_power_status(slot->id, &state);
-+	if (ret) {
-+		*val = POWERNV_PHP_SLOT_POWER_ON;
-+		pr_warn("%s: Error %d getting power status of slot %016llx\n",
-+			__func__, ret, slot->id);
-+	} else {
-+		*val = state ? POWERNV_PHP_SLOT_POWER_ON :
-+			       POWERNV_PHP_SLOT_POWER_OFF;
-+		php_slot->info->power_status = *val;
-+	}
-+
-+	return 0;
-+}
-+
-+static int get_adapter_status(struct hotplug_slot *php_slot, u8 *val)
-+{
-+	struct powernv_php_slot *slot = php_slot->private;
-+	uint8_t state;
-+	int ret;
-+
-+	/*
-+	 * Retrieve presence status from firmware. If we can't
-+	 * get that, it will fail back to be empty.
-+	 */
-+	ret = pnv_pci_get_presence_status(slot->id, &state);
-+	if (ret >= 0) {
-+                *val = state ? POWERNV_PHP_SLOT_PRESENT :
-+                               POWERNV_PHP_SLOT_EMPTY;
-+                php_slot->info->adapter_status = *val;
-+	} else {
-+		*val = POWERNV_PHP_SLOT_EMPTY;
-+		pr_warn("%s: Error %d getting presence of slot %016llx\n",
-+			__func__, ret, slot->id);
-+	}
-+
-+	return ret < 0 ? ret : 0;
-+}
-+
-+static int set_attention_status(struct hotplug_slot *php_slot, u8 val)
-+{
-+	/* The default operation would to turn on the attention */
-+	switch (val) {
-+	case POWERNV_PHP_SLOT_ATTEN_OFF:
-+	case POWERNV_PHP_SLOT_ATTEN_ON:
-+	case POWERNV_PHP_SLOT_ATTEN_IND:
-+	case POWERNV_PHP_SLOT_ATTEN_ACT:
-+		break;
-+	default:
-+		val = POWERNV_PHP_SLOT_ATTEN_ON;
-+	}
-+
-+	/* FIXME: Make it real once firmware supports it */
-+	php_slot->info->attention_status = val;
-+
-+	return 0;
-+}
-+
-+int powernv_php_slot_enable(struct hotplug_slot *php_slot,
-+			    bool rescan_bus, bool rescan_slot)
-+{
-+	struct powernv_php_slot *slot = php_slot->private;
-+	uint8_t presence, power_status;
-+	int ret;
-+
-+	/* Check if the slot has been configured */
-+	if (slot->state != POWERNV_PHP_SLOT_STATE_REGISTER)
-+		return 0;
-+
-+	/* Retrieve slot presence status */
-+	ret = php_slot->ops->get_adapter_status(php_slot, &presence);
-+	if (ret) {
-+		pr_warn("%s: Error %d getting presence of slot %016llx\n",
-+			__func__, ret, slot->id);
-+		return ret;
-+	}
-+
-+	/* Proceed if there have nothing behind the slot */
-+	if (presence == POWERNV_PHP_SLOT_EMPTY)
-+		goto scan;
-+
-+	/*
-+	 * If we don't detect something behind the slot, we need
-+	 * make sure the power suply to the slot is on. Otherwise,
-+	 * the slot downstream PCIe linkturn should be down.
-+	 *
-+	 * On the first time, we don't change the power status to
-+	 * boost system boot with assumption that the firmware
-+	 * supplies consistent slot power status: empty slot always
-+	 * has its power off and non-empty slot has its power on.
-+	 */
-+	if (!slot->check_power_status) {
-+		slot->check_power_status = 1;
-+		goto scan;
-+	}
-+
-+	/* Check the power status. Scan the slot if that's already on */
-+	ret = php_slot->ops->get_power_status(php_slot, &power_status);
-+	if (ret) {
-+		pr_warn("%s: Error %d getting power status of slot %016llx\n",
-+			__func__, ret, slot->id);
-+		return ret;
-+	}
-+	if (power_status == POWERNV_PHP_SLOT_POWER_ON)
-+		goto scan;
-+
-+	/* Power is off, turn it on and then scan the slot */
-+	ret = set_power_status(php_slot, POWERNV_PHP_SLOT_POWER_ON);
-+	if (ret) {
-+		pr_warn("%s: Error %d powering on slot %016llx\n",
-+			__func__, ret, slot->id);
-+		return ret;
-+	}
-+
-+scan:
-+	switch (presence) {
-+	case POWERNV_PHP_SLOT_PRESENT:
-+		if (rescan_bus) {
-+			pci_lock_rescan_remove();
-+			pcibios_add_pci_devices(slot->bus);
-+			pci_unlock_rescan_remove();
-+		}
-+
-+		/* Rescan for child hotpluggable slots */
-+		slot->state = POWERNV_PHP_SLOT_STATE_POPULATED;
-+		if (rescan_slot)
-+			powernv_php_register(slot->dn);
-+		break;
-+	case POWERNV_PHP_SLOT_EMPTY:
-+		slot->state = POWERNV_PHP_SLOT_STATE_POPULATED;
-+		break;
-+	default:
-+		pr_warn("%s: Invalid presence status %d of slot %016llx\n",
-+			__func__, presence, slot->id);
-+		return -EINVAL;
-+	}
-+
-+	return 0;
-+}
-+
-+static int enable_slot(struct hotplug_slot *php_slot)
-+{
-+	return powernv_php_slot_enable(php_slot, true, true);
-+}
-+
-+static int disable_slot(struct hotplug_slot *php_slot)
-+{
-+	struct powernv_php_slot *slot = php_slot->private;
-+	uint8_t power_status;
-+	int ret;
-+
-+	if (slot->state != POWERNV_PHP_SLOT_STATE_POPULATED)
-+		return 0;
-+
-+	/* Remove all devices behind the slot */
-+	pci_lock_rescan_remove();
-+	pcibios_remove_pci_devices(slot->bus);
-+	pci_unlock_rescan_remove();
-+
-+	/* Detach the child hotpluggable slots */
-+	powernv_php_unregister(slot->dn);
-+
-+	/*
-+	 * Check the power status and turn it off if necessary. If we
-+	 * fail to get the power status, the power will be forced to
-+	 * be off.
-+	 */
-+	ret = php_slot->ops->get_power_status(php_slot, &power_status);
-+	if (ret || power_status == POWERNV_PHP_SLOT_POWER_ON) {
-+		ret = set_power_status(php_slot, POWERNV_PHP_SLOT_POWER_OFF);
-+		if (ret)
-+			pr_warn("%s: Error %d powering off slot %016llx\n",
-+				__func__, ret, slot->id);
-+	}
-+
-+	/* Update slot state */
-+	slot->state = POWERNV_PHP_SLOT_STATE_REGISTER;
-+	return 0;
-+}
-+
-+static struct hotplug_slot_ops php_slot_ops = {
-+	.get_power_status	= get_power_status,
-+	.get_adapter_status	= get_adapter_status,
-+	.set_attention_status	= set_attention_status,
-+	.enable_slot		= enable_slot,
-+	.disable_slot		= disable_slot,
-+};
-+
-+static struct powernv_php_slot *php_slot_match(struct device_node *dn,
-+					       struct powernv_php_slot *slot)
-+{
-+	struct powernv_php_slot *target, *tmp;
-+
-+	if (slot->dn == dn)
-+		return slot;
-+
-+	list_for_each_entry(tmp, &slot->children, link) {
-+		target = php_slot_match(dn, tmp);
-+		if (target)
-+			return target;
-+	}
-+
-+	return NULL;
-+}
-+
-+struct powernv_php_slot *powernv_php_slot_find(struct device_node *dn)
-+{
-+	struct powernv_php_slot *slot, *tmp;
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&php_slot_lock, flags);
-+	list_for_each_entry(tmp, &php_slot_list, link) {
-+		slot = php_slot_match(dn, tmp);
-+		if (slot) {
-+			spin_unlock_irqrestore(&php_slot_lock, flags);
-+			return slot;
-+		}
-+	}
-+	spin_unlock_irqrestore(&php_slot_lock, flags);
-+
-+	return NULL;
-+}
-+
-+static void php_slot_free(struct kref *kref)
-+{
-+	struct powernv_php_slot *slot = to_powernv_php_slot(kref);
-+
-+	WARN_ON(!list_empty(&slot->children));
-+	kfree(slot->name);
-+	kfree(slot);
-+}
-+
-+static void php_slot_release(struct hotplug_slot *hp_slot)
-+{
-+	struct powernv_php_slot *slot = hp_slot->private;
-+	unsigned long flags;
-+
-+	/* Remove from global or child list */
-+	spin_lock_irqsave(&php_slot_lock, flags);
-+	list_del(&slot->link);
-+	spin_unlock_irqrestore(&php_slot_lock, flags);
-+
-+	/* Detach from parent */
-+	powernv_php_slot_put(slot);
-+	powernv_php_slot_put(slot->parent);
-+}
-+
-+static bool php_slot_get_id(struct device_node *dn,
-+			    uint64_t *id)
-+{
-+	struct device_node *parent = dn;
-+	const __be64 *prop64;
-+	const __be32 *prop32;
-+
-+	/*
-+	 * The hotpluggable slot always has a compound Id, which
-+	 * consists of 16-bits PHB Id, 16 bits bus/slot/function
-+	 * number, and compound indicator
-+	 */
-+	*id = (0x1ul << 63);
-+
-+	/* Bus/Slot/Function number */
-+	prop32 = of_get_property(dn, "reg", NULL);
-+	if (!prop32)
-+		return false;
-+	*id |= ((of_read_number(prop32, 1) & 0x00ffff00) << 8);
-+
-+	/* PHB Id */
-+	while ((parent = of_get_parent(parent))) {
-+		if (!PCI_DN(parent)) {
-+			of_node_put(parent);
-+			break;
-+		}
-+
-+		if (!of_device_is_compatible(parent, "ibm,ioda2-phb") &&
-+		    !of_device_is_compatible(parent, "ibm,ioda-phb")) {
-+			of_node_put(parent);
-+			continue;
-+		}
-+
-+		prop64 = of_get_property(parent, "ibm,opal-phbid", NULL);
-+		if (!prop64) {
-+			of_node_put(parent);
-+			return false;
-+		}
-+
-+		*id |= be64_to_cpup(prop64);
-+		of_node_put(parent);
-+		return true;
-+	}
-+
-+        return false;
-+}
-+
-+struct powernv_php_slot *powernv_php_slot_alloc(struct device_node *dn)
-+{
-+	struct pci_bus *bus;
-+	struct powernv_php_slot *slot;
-+	const char *label;
-+	uint64_t id;
-+	int slot_no;
-+	size_t size;
-+	void *pmem;
-+
-+	/* Slot name */
-+	label = of_get_property(dn, "ibm,slot-label", NULL);
-+	if (!label)
-+		return NULL;
-+
-+	/* Slot indentifier */
-+	if (!php_slot_get_id(dn, &id))
-+		return NULL;
-+
-+	/* PCI bus */
-+	bus = pcibios_find_pci_bus(dn);
-+	if (!bus)
-+		return NULL;
-+
-+	/* Slot number */
-+	if (dn->child && PCI_DN(dn->child))
-+		slot_no = PCI_SLOT(PCI_DN(dn->child)->devfn);
-+	else
-+		slot_no = -1;
-+
-+	/* Allocate slot */
-+	size = sizeof(struct powernv_php_slot) +
-+	       sizeof(struct hotplug_slot) +
-+	       sizeof(struct hotplug_slot_info);
-+	pmem = kzalloc(size, GFP_KERNEL);
-+	if (!pmem) {
-+		pr_warn("%s: Cannot allocate slot for node %s\n",
-+			__func__, dn->full_name);
-+		return NULL;
-+	}
-+
-+	/* Assign memory blocks */
-+	slot = pmem;
-+	slot->php_slot = pmem + sizeof(struct powernv_php_slot);
-+	slot->php_slot->info = pmem + sizeof(struct powernv_php_slot) +
-+			      sizeof(struct hotplug_slot);
-+	slot->name = kstrdup(label, GFP_KERNEL);
-+	if (!slot->name) {
-+		pr_warn("%s: Cannot populate name for node %s\n",
-+			__func__, dn->full_name);
-+		kfree(pmem);
-+		return NULL;
-+	}
-+
-+	/* Initialize slot */
-+	kref_init(&slot->kref);
-+	slot->state = POWERNV_PHP_SLOT_STATE_INIT;
-+	slot->dn = dn;
-+	slot->bus = bus;
-+	slot->id = id;
-+	slot->slot_no = slot_no;
-+	INIT_WORK(&slot->work, powernv_php_slot_work);
-+	init_waitqueue_head(&slot->queue);
-+	slot->check_power_status = 0;
-+	slot->status_confirmed = 0;
-+	slot->release = php_slot_free;
-+	slot->php_slot->ops = &php_slot_ops;
-+	slot->php_slot->release = php_slot_release;
-+	slot->php_slot->private = slot;
-+	INIT_LIST_HEAD(&slot->children);
-+	INIT_LIST_HEAD(&slot->link);
-+
-+	return slot;
-+}
-+
-+int powernv_php_slot_register(struct powernv_php_slot *slot)
-+{
-+	struct powernv_php_slot *parent;
-+	struct device_node *dn = slot->dn;
-+	unsigned long flags;
-+	int ret;
-+
-+	/* Avoid register same slot for twice */
-+	if (powernv_php_slot_find(slot->dn))
++	/* We shouldn't already have 32-bits DMA associated */
++	if (WARN_ON(pe->tce32_seg_start || pe->tce32_seg_end))
 +		return -EEXIST;
 +
-+	/* Register slot */
-+	ret = pci_hp_register(slot->php_slot, slot->bus,
-+			      slot->slot_no, slot->name);
-+	if (ret) {
-+		pr_warn("%s: Cannot register slot %s (%d)\n",
-+			__func__, slot->name, ret);
-+		return ret;
-+	}
++	/* Needn't setup TCE table for non-DMA capable PE */
++	weight = pe->dma_weight;
++	if (!weight)
++		return -ENODEV;
 +
-+	/* Put into global or parent list */
-+	while ((dn = of_get_parent(dn))) {
-+		if (!PCI_DN(dn)) {
-+			of_node_put(dn);
-+			break;
-+		}
++	/* Calculate the DMA segments that PE needs. It's guaranteed
++	 * that the PE will have one segment at least.
++	 */
++	if (weight < phb->ioda.dma_weight / phb->ioda.tce32_count)
++		weight = phb->ioda.dma_weight / phb->ioda.tce32_count;
++	segs = (weight * phb->ioda.tce32_count) / phb->ioda.dma_weight;
 +
-+		parent = powernv_php_slot_find(dn);
-+		if (parent) {
-+			of_node_put(dn);
-+			break;
-+		}
-+	}
++	/* Reserve the DMA segments with back-off way, which should
++	 * give us one segment at least.
++	 */
++	do {
++		base = bitmap_find_next_zero_area(phb->ioda.tce32_segmap,
++						  phb->ioda.tce32_count,
++						  0, segs, 0);
++		if (base < phb->ioda.tce32_count)
++			bitmap_set(phb->ioda.tce32_segmap, base, segs);
++	} while ((base > phb->ioda.tce32_count) && (--segs));
 +
-+	spin_lock_irqsave(&php_slot_lock, flags);
-+	if (parent) {
-+		powernv_php_slot_get(parent);
-+		slot->parent = parent;
-+		list_add_tail(&slot->link, &parent->children);
-+	} else {
-+		list_add_tail(&slot->link, &php_slot_list);
-+	}
-+	spin_unlock_irqrestore(&php_slot_lock, flags);
++	/* There are possibly no DMA32 segments */
++	if (!segs)
++		return -ENODEV;
 +
-+	/* Update slot state */
-+	slot->state = POWERNV_PHP_SLOT_STATE_REGISTER;
++	pe->tce32_seg_start = base;
++	pe->tce32_seg_end = base + segs;
 +	return 0;
 +}
++
++static void pnv_pci_ioda1_setup_dma_pe(struct pnv_phb *phb,
++				       struct pnv_ioda_pe *pe)
+ {
+ 
+ 	struct page *tce_mem = NULL;
+ 	const __be64 *swinvp;
+ 	struct iommu_table *tbl;
+-	unsigned int i;
+-	int64_t rc;
+ 	void *addr;
++	unsigned int base, segs, i;
++	int64_t rc;
+ 
+ 	/* XXX FIXME: Handle 64-bit only DMA devices */
+ 	/* XXX FIXME: Provide 64-bit DMA facilities & non-4K TCE tables etc.. */
+-	/* XXX FIXME: Allocate multi-level tables on PHB3 */
+ 
+-	/* We shouldn't already have a 32-bit DMA associated */
+-	if (WARN_ON(pe->tce32_seg >= 0))
++	/* Allocate TCE32 segments */
++	if (pnv_pci_ioda1_dma_segment_alloc(phb, pe)) {
++		pe_err(pe, " Cannot setting up 32-bits TCE table\n");
+ 		return;
++	}
+ 
+-	/* Grab a 32-bit TCE table */
+-	pe->tce32_seg = base;
++	/* Build a 32-bits TCE table */
++	base = pe->tce32_seg_start;
++	segs = pe->tce32_seg_end - pe->tce32_seg_start;
+ 	pe_info(pe, " Setting up 32-bit TCE table at %08x..%08x\n",
+ 		(base << 28), ((base + segs) << 28) - 1);
+ 
+@@ -1943,6 +1997,10 @@ static void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
+ 		}
+ 	}
+ 
++	/* Print some info */
++	pe_info(pe, "DMA weight %d, assigned (%d %d) DMA32 segments\n",
++		pe->dma_weight, base, segs);
++
+ 	/* Setup linux iommu table */
+ 	tbl = pe->tce32_table;
+ 	pnv_pci_setup_iommu_table(tbl, addr, TCE32_TABLE_SIZE * segs,
+@@ -1981,8 +2039,8 @@ static void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
+ 	return;
+  fail:
+ 	/* XXX Failure: Try to fallback to 64-bit only ? */
+-	if (pe->tce32_seg >= 0)
+-		pe->tce32_seg = -1;
++	bitmap_clear(phb->ioda.tce32_segmap, base, segs);
++	pe->tce32_seg_start = pe->tce32_seg_end = 0;
+ 	if (tce_mem)
+ 		__free_pages(tce_mem, get_order(TCE32_TABLE_SIZE * segs));
+ }
+@@ -2051,11 +2109,10 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
+ 	int64_t rc;
+ 
+ 	/* We shouldn't already have a 32-bit DMA associated */
+-	if (WARN_ON(pe->tce32_seg >= 0))
++	if (WARN_ON(pe->tce32_seg_end > pe->tce32_seg_start))
+ 		return;
+ 
+ 	/* The PE will reserve all possible 32-bits space */
+-	pe->tce32_seg = 0;
+ 	end = (1 << ilog2(phb->ioda.m32_pci_base));
+ 	tce_table_size = (end / 0x1000) * 8;
+ 	pe_info(pe, "Setting up 32-bit TCE table at 0..%08x\n",
+@@ -2066,7 +2123,7 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
+ 				   get_order(tce_table_size));
+ 	if (!tce_mem) {
+ 		pe_err(pe, "Failed to allocate a 32-bit TCE memory\n");
+-		goto fail;
++		return;
+ 	}
+ 	addr = page_address(tce_mem);
+ 	memset(addr, 0, tce_table_size);
+@@ -2079,11 +2136,16 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
+ 					pe->pe_number << 1, 1, __pa(addr),
+ 					tce_table_size, 0x1000);
+ 	if (rc) {
++		__free_pages(tce_mem, get_order(tce_table_size));
+ 		pe_err(pe, "Failed to configure 32-bit TCE table,"
+ 		       " err %ld\n", rc);
+-		goto fail;
++		return;
+ 	}
+ 
++	/* Print some info */
++	pe->tce32_seg_end = pe->tce32_seg_start + 1;
++	pe_info(pe, "Assigned DMA32 space\n");
++
+ 	/* Setup linux iommu table */
+ 	tbl = pe->tce32_table;
+ 	pnv_pci_setup_iommu_table(tbl, addr, tce_table_size, 0,
+@@ -2120,76 +2182,30 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
+ 	/* Also create a bypass window */
+ 	if (!pnv_iommu_bypass_disabled)
+ 		pnv_pci_ioda2_setup_bypass_pe(phb, pe);
+-
+-	return;
+-fail:
+-	if (pe->tce32_seg >= 0)
+-		pe->tce32_seg = -1;
+-	if (tce_mem)
+-		__free_pages(tce_mem, get_order(tce_table_size));
+ }
+ 
+-static void pnv_ioda_setup_dma(struct pnv_phb *phb)
++void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
++			       struct pnv_ioda_pe *pe)
+ {
+-	struct pci_controller *hose = phb->hose;
+-	unsigned int residual, remaining, segs, tw, base;
+-	struct pnv_ioda_pe *pe;
+-
+-	/* If we have more PE# than segments available, hand out one
+-	 * per PE until we run out and let the rest fail. If not,
+-	 * then we assign at least one segment per PE, plus more based
+-	 * on the amount of devices under that PE
++	/* Recalculate the PHB's total DMA weight, which depends on
++	 * PCI devices. That means the PCI devices beneath the PHB
++	 * should have been probed successfully. Otherwise, the
++	 * calculated PHB's DMA weight won't be accurate.
+ 	 */
+-	if (phb->ioda.dma_pe_count > phb->ioda.tce32_count)
+-		residual = 0;
+-	else
+-		residual = phb->ioda.tce32_count -
+-			phb->ioda.dma_pe_count;
++	pnv_ioda_phb_dma_weight(phb);
+ 
+-	pr_info("PCI: Domain %04x has %ld available 32-bit DMA segments\n",
+-		hose->global_number, phb->ioda.tce32_count);
+-	pr_info("PCI: %d PE# for a total weight of %d\n",
+-		phb->ioda.dma_pe_count, phb->ioda.dma_weight);
+-
+-	/* Walk our PE list and configure their DMA segments, hand them
+-	 * out one base segment plus any residual segments based on
+-	 * weight
+-	 */
+-	remaining = phb->ioda.tce32_count;
+-	tw = phb->ioda.dma_weight;
+-	base = 0;
+-	list_for_each_entry(pe, &phb->ioda.pe_dma_list, dma_link) {
+-		if (!pe->dma_weight)
+-			continue;
+-		if (!remaining) {
+-			pe_warn(pe, "No DMA32 resources available\n");
+-			continue;
+-		}
+-		segs = 1;
+-		if (residual) {
+-			segs += ((pe->dma_weight * residual)  + (tw / 2)) / tw;
+-			if (segs > remaining)
+-				segs = remaining;
+-		}
++	if (phb->type == PNV_PHB_IODA1)
++		pnv_pci_ioda1_setup_dma_pe(phb, pe);
++	else if (phb->type == PNV_PHB_IODA2)
++		pnv_pci_ioda2_setup_dma_pe(phb, pe);
++}
+ 
+-		/*
+-		 * For IODA2 compliant PHB3, we needn't care about the weight.
+-		 * The all available 32-bits DMA space will be assigned to
+-		 * the specific PE.
+-		 */
+-		if (phb->type == PNV_PHB_IODA1) {
+-			pe_info(pe, "DMA weight %d, assigned %d DMA32 segments\n",
+-				pe->dma_weight, segs);
+-			pnv_pci_ioda_setup_dma_pe(phb, pe, base, segs);
+-		} else {
+-			pe_info(pe, "Assign DMA32 space\n");
+-			segs = 0;
+-			pnv_pci_ioda2_setup_dma_pe(phb, pe);
+-		}
++static void pnv_ioda_setup_dma(struct pnv_phb *phb)
++{
++	struct pnv_ioda_pe *pe;
+ 
+-		remaining -= segs;
+-		base += segs;
+-	}
++	list_for_each_entry(pe, &phb->ioda.pe_dma_list, dma_link)
++		pnv_pci_ioda_setup_dma_pe(phb, pe);
+ }
+ 
+ #ifdef CONFIG_PCI_MSI
+diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
+index f604bb7..2784951 100644
+--- a/arch/powerpc/platforms/powernv/pci.h
++++ b/arch/powerpc/platforms/powernv/pci.h
+@@ -58,15 +58,11 @@ struct pnv_ioda_pe {
+ 	unsigned long		m32_segmap[8];
+ 	unsigned long		m64_segmap[8];
+ 
+-	/* "Weight" assigned to the PE for the sake of DMA resource
+-	 * allocations
+-	 */
+-	unsigned int		dma_weight;
+-
+-	/* "Base" iommu table, ie, 4K TCEs, 32-bit DMA */
+-	int			tce32_seg;
+-	int			tce32_segcount;
++	/* 32-bits DMA */
+ 	struct iommu_table	*tce32_table;
++	unsigned int		dma_weight;
++	unsigned int		tce32_seg_start;
++	unsigned int		tce32_seg_end;
+ 	phys_addr_t		tce_inval_reg_phys;
+ 
+ 	/* 64-bit TCE bypass region */
+@@ -183,17 +179,9 @@ struct pnv_phb {
+ 			unsigned char		pe_rmap[0x10000];
+ 
+ 			/* 32-bit TCE tables allocation */
+-			unsigned long		tce32_count;
+-
+-			/* Total "weight" for the sake of DMA resources
+-			 * allocation
+-			 */
+ 			unsigned int		dma_weight;
+-			unsigned int		dma_pe_count;
+-
+-			/* Sorted list of used PE's, sorted at
+-			 * boot for resource allocation purposes
+-			 */
++			unsigned long		tce32_count;
++			unsigned long		tce32_segmap[8];
+ 			struct list_head	pe_dma_list;
+ 		} ioda;
+ 	};
 -- 
 2.1.0
