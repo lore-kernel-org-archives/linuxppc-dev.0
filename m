@@ -2,17 +2,17 @@ Return-Path: <alex.williamson@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B0AE41A024B
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Apr 2015 07:05:16 +1000 (AEST)
-Message-ID: <1430168702.4472.116.camel@redhat.com>
-Subject: Re: [PATCH kernel v9 02/32] Revert "powerpc/powernv: Allocate
- struct pnv_ioda_pe iommu_table dynamically"
+ by lists.ozlabs.org (Postfix) with ESMTPS id F34CB1A0CAD
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Apr 2015 07:05:31 +1000 (AEST)
+Message-ID: <1430168721.4472.117.camel@redhat.com>
+Subject: Re: [PATCH kernel v9 16/32] powerpc/powernv/ioda: Move TCE kill
+ register address to PE
 From: Alex Williamson <alex.williamson@redhat.com>
 To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Date: Mon, 27 Apr 2015 15:05:02 -0600
-In-Reply-To: <1429964096-11524-3-git-send-email-aik@ozlabs.ru>
+Date: Mon, 27 Apr 2015 15:05:21 -0600
+In-Reply-To: <1429964096-11524-17-git-send-email-aik@ozlabs.ru>
 References: <1429964096-11524-1-git-send-email-aik@ozlabs.ru>
- <1429964096-11524-3-git-send-email-aik@ozlabs.ru>
+ <1429964096-11524-17-git-send-email-aik@ozlabs.ru>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 Cc: linux-kernel@vger.kernel.org, Gavin Shan <gwshan@linux.vnet.ibm.com>,
@@ -28,175 +28,200 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On Sat, 2015-04-25 at 22:14 +1000, Alexey Kardashevskiy wrote:
-> This reverts commit 9e8d4a19ab66ec9e132d405357b9108a4f26efd3 as
-> tce32_table has exactly the same life time as the whole PE.
-
-scripts/checkpatch.pl would like your commit reference to appear as:
-
-commit 9e8d4a19ab66 ("powerpc/powernv: Allocate struct pnv_ioda_pe
-iommu_table dynamically")
-
+> At the moment the DMA setup code looks for the "ibm,opal-tce-kill" property
+> which contains the TCE kill register address. Writes to this register
+> invalidates TCE cache on IODA/IODA2 hub.
 > 
-> This makes use of a new iommu_reset_table() helper instead.
+> This moves the register address from iommu_table to pnv_ioda_pe as
+> later there will be 2 tables per PE and it will be used for both tables.
+> 
+> This moves the property reading/remapping code to a helper to reduce
+> code duplication.
+> 
+> This adds a new pnv_pci_ioda2_tvt_invalidate() helper which invalidates
+> the entire table. It should be called after every call to
+> opal_pci_map_pe_dma_window(). It was not required before because
+> there is just a single TCE table and 64bit DMA is handled via bypass
+> window (which has no table so no chache is used) but this is going
+> to change with Dynamic DMA windows (DDW).
 > 
 > Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 > ---
->  arch/powerpc/include/asm/iommu.h          |  3 ---
->  arch/powerpc/platforms/powernv/pci-ioda.c | 35 +++++++++++++------------------
->  arch/powerpc/platforms/powernv/pci.h      |  2 +-
->  3 files changed, 15 insertions(+), 25 deletions(-)
+> Changes:
+> v9:
+> * new in the series
+> ---
+>  arch/powerpc/platforms/powernv/pci-ioda.c | 69 +++++++++++++++++++------------
+>  arch/powerpc/platforms/powernv/pci.h      |  1 +
+>  2 files changed, 44 insertions(+), 26 deletions(-)
 > 
-> diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
-> index e2cef38..9d320e0 100644
-> --- a/arch/powerpc/include/asm/iommu.h
-> +++ b/arch/powerpc/include/asm/iommu.h
-> @@ -79,9 +79,6 @@ struct iommu_table {
->  	struct iommu_group *it_group;
->  #endif
->  	void (*set_bypass)(struct iommu_table *tbl, bool enable);
-> -#ifdef CONFIG_PPC_POWERNV
-> -	void           *data;
-> -#endif
->  };
->  
->  /* Pure 2^n version of get_order */
 > diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-> index 920c252..eff26ed 100644
+> index f070c44..b22b3ca 100644
 > --- a/arch/powerpc/platforms/powernv/pci-ioda.c
 > +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-> @@ -1086,10 +1086,6 @@ static void pnv_ioda_setup_bus_PE(struct pci_bus *bus, int all)
->  		return;
->  	}
+> @@ -1672,7 +1672,7 @@ static void pnv_pci_ioda1_tce_invalidate(struct iommu_table *tbl,
+>  			struct pnv_ioda_pe, table_group);
+>  	__be64 __iomem *invalidate = rm ?
+>  		(__be64 __iomem *)pe->tce_inval_reg_phys :
+> -		(__be64 __iomem *)tbl->it_index;
+> +		pe->tce_inval_reg;
+>  	unsigned long start, end, inc;
+>  	const unsigned shift = tbl->it_page_shift;
 >  
-> -	pe->tce32_table = kzalloc_node(sizeof(struct iommu_table),
-> -			GFP_KERNEL, hose->node);
-> -	pe->tce32_table->data = pe;
-> -
->  	/* Associate it with all child devices */
->  	pnv_ioda_setup_same_PE(bus, pe);
+> @@ -1743,6 +1743,18 @@ static struct iommu_table_ops pnv_ioda1_iommu_ops = {
+>  	.get = pnv_tce_get,
+>  };
 >  
-> @@ -1295,7 +1291,7 @@ static void pnv_pci_ioda2_release_dma_pe(struct pci_dev *dev, struct pnv_ioda_pe
->  	bus = dev->bus;
->  	hose = pci_bus_to_host(bus);
->  	phb = hose->private_data;
-> -	tbl = pe->tce32_table;
-> +	tbl = &pe->tce32_table;
->  	addr = tbl->it_base;
->  
->  	opal_pci_map_pe_dma_window(phb->opal_id, pe->pe_number,
-> @@ -1310,9 +1306,8 @@ static void pnv_pci_ioda2_release_dma_pe(struct pci_dev *dev, struct pnv_ioda_pe
->  	if (rc)
->  		pe_warn(pe, "OPAL error %ld release DMA window\n", rc);
->  
-> -	iommu_free_table(tbl, of_node_full_name(dev->dev.of_node));
-> +	iommu_reset_table(tbl, of_node_full_name(dev->dev.of_node));
->  	free_pages(addr, get_order(TCE32_TABLE_SIZE));
-> -	pe->tce32_table = NULL;
->  }
->  
->  static void pnv_ioda_release_vf_PE(struct pci_dev *pdev, u16 num_vfs)
-> @@ -1460,10 +1455,6 @@ static void pnv_ioda_setup_vf_PE(struct pci_dev *pdev, u16 num_vfs)
->  			continue;
->  		}
->  
-> -		pe->tce32_table = kzalloc_node(sizeof(struct iommu_table),
-> -				GFP_KERNEL, hose->node);
-> -		pe->tce32_table->data = pe;
-> -
->  		/* Put PE to the list */
->  		mutex_lock(&phb->ioda.pe_list_mutex);
->  		list_add_tail(&pe->list, &phb->ioda.pe_list);
-> @@ -1598,7 +1589,7 @@ static void pnv_pci_ioda_dma_dev_setup(struct pnv_phb *phb, struct pci_dev *pdev
->  
->  	pe = &phb->ioda.pe_array[pdn->pe_number];
->  	WARN_ON(get_dma_ops(&pdev->dev) != &dma_iommu_ops);
-> -	set_iommu_table_base_and_group(&pdev->dev, pe->tce32_table);
-> +	set_iommu_table_base_and_group(&pdev->dev, &pe->tce32_table);
->  }
->  
->  static int pnv_pci_ioda_dma_set_mask(struct pnv_phb *phb,
-> @@ -1625,7 +1616,7 @@ static int pnv_pci_ioda_dma_set_mask(struct pnv_phb *phb,
->  	} else {
->  		dev_info(&pdev->dev, "Using 32-bit DMA via iommu\n");
->  		set_dma_ops(&pdev->dev, &dma_iommu_ops);
-> -		set_iommu_table_base(&pdev->dev, pe->tce32_table);
-> +		set_iommu_table_base(&pdev->dev, &pe->tce32_table);
->  	}
->  	*pdev->dev.dma_mask = dma_mask;
->  	return 0;
-> @@ -1662,9 +1653,9 @@ static void pnv_ioda_setup_bus_dma(struct pnv_ioda_pe *pe,
->  	list_for_each_entry(dev, &bus->devices, bus_list) {
->  		if (add_to_iommu_group)
->  			set_iommu_table_base_and_group(&dev->dev,
-> -						       pe->tce32_table);
-> +						       &pe->tce32_table);
->  		else
-> -			set_iommu_table_base(&dev->dev, pe->tce32_table);
-> +			set_iommu_table_base(&dev->dev, &pe->tce32_table);
->  
->  		if (dev->subordinate)
->  			pnv_ioda_setup_bus_dma(pe, dev->subordinate,
-> @@ -1754,7 +1745,8 @@ static void pnv_pci_ioda2_tce_invalidate(struct pnv_ioda_pe *pe,
->  void pnv_pci_ioda_tce_invalidate(struct iommu_table *tbl,
->  				 __be64 *startp, __be64 *endp, bool rm)
+> +static inline void pnv_pci_ioda2_tvt_invalidate(struct pnv_ioda_pe *pe)
+> +{
+> +	/* 01xb - invalidate TCEs that match the specified PE# */
+> +	unsigned long addr = (0x4ull << 60) | (pe->pe_number & 0xFF);
+> +
+> +	if (!pe->tce_inval_reg)
+> +		return;
+> +
+> +        mb(); /* Ensure above stores are visible */
+
+
+ERROR: code indent should use tabs where possible
+
+
+> +	__raw_writeq(cpu_to_be64(addr), pe->tce_inval_reg);
+> +}
+> +
+>  static void pnv_pci_ioda2_tce_invalidate(struct iommu_table *tbl,
+>  		unsigned long index, unsigned long npages, bool rm)
 >  {
-> -	struct pnv_ioda_pe *pe = tbl->data;
-> +	struct pnv_ioda_pe *pe = container_of(tbl, struct pnv_ioda_pe,
-> +					      tce32_table);
->  	struct pnv_phb *phb = pe->phb;
+> @@ -1751,7 +1763,7 @@ static void pnv_pci_ioda2_tce_invalidate(struct iommu_table *tbl,
+>  	unsigned long start, end, inc;
+>  	__be64 __iomem *invalidate = rm ?
+>  		(__be64 __iomem *)pe->tce_inval_reg_phys :
+> -		(__be64 __iomem *)tbl->it_index;
+> +		pe->tce_inval_reg;
+>  	const unsigned shift = tbl->it_page_shift;
 >  
->  	if (phb->type == PNV_PHB_IODA1)
-> @@ -1817,7 +1809,7 @@ static void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
->  	}
+>  	/* We'll invalidate DMA address in PE scope */
+> @@ -1803,13 +1815,31 @@ static struct iommu_table_ops pnv_ioda2_iommu_ops = {
+>  	.get = pnv_tce_get,
+>  };
 >  
->  	/* Setup linux iommu table */
-> -	tbl = pe->tce32_table;
-> +	tbl = &pe->tce32_table;
->  	pnv_pci_setup_iommu_table(tbl, addr, TCE32_TABLE_SIZE * segs,
+> +static void pnv_pci_ioda_setup_opal_tce_kill(struct pnv_phb *phb,
+> +		struct pnv_ioda_pe *pe)
+> +{
+> +	const __be64 *swinvp;
+> +
+> +	/* OPAL variant of PHB3 invalidated TCEs */
+> +	swinvp = of_get_property(phb->hose->dn, "ibm,opal-tce-kill", NULL);
+> +	if (!swinvp)
+> +		return;
+> +
+> +	/* We need a couple more fields -- an address and a data
+> +	 * to or.  Since the bus is only printed out on table free
+> +	 * errors, and on the first pass the data will be a relative
+> +	 * bus number, print that out instead.
+> +	 */
+> +	pe->tce_inval_reg_phys = be64_to_cpup(swinvp);
+> +	pe->tce_inval_reg = ioremap(pe->tce_inval_reg_phys, 8);
+> +}
+> +
+>  static void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
+>  				      struct pnv_ioda_pe *pe, unsigned int base,
+>  				      unsigned int segs)
+>  {
+>  
+>  	struct page *tce_mem = NULL;
+> -	const __be64 *swinvp;
+>  	struct iommu_table *tbl;
+>  	unsigned int i;
+>  	int64_t rc;
+> @@ -1823,6 +1853,8 @@ static void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
+>  	if (WARN_ON(pe->tce32_seg >= 0))
+>  		return;
+>  
+> +	pnv_pci_ioda_setup_opal_tce_kill(phb, pe);
+> +
+>  	/* Grab a 32-bit TCE table */
+>  	pe->tce32_seg = base;
+>  	pe_info(pe, " Setting up 32-bit TCE table at %08x..%08x\n",
+> @@ -1865,20 +1897,11 @@ static void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
 >  				  base << 28, IOMMU_PAGE_SHIFT_4K);
 >  
-> @@ -1862,7 +1854,8 @@ static void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
+>  	/* OPAL variant of P7IOC SW invalidated TCEs */
+> -	swinvp = of_get_property(phb->hose->dn, "ibm,opal-tce-kill", NULL);
+> -	if (swinvp) {
+> -		/* We need a couple more fields -- an address and a data
+> -		 * to or.  Since the bus is only printed out on table free
+> -		 * errors, and on the first pass the data will be a relative
+> -		 * bus number, print that out instead.
+> -		 */
+> -		pe->tce_inval_reg_phys = be64_to_cpup(swinvp);
+> -		tbl->it_index = (unsigned long)ioremap(pe->tce_inval_reg_phys,
+> -				8);
+> +	if (pe->tce_inval_reg)
+>  		tbl->it_type |= (TCE_PCI_SWINV_CREATE |
+>  				 TCE_PCI_SWINV_FREE   |
+>  				 TCE_PCI_SWINV_PAIR);
+> -	}
+> +
+>  	tbl->it_ops = &pnv_ioda1_iommu_ops;
+>  	iommu_init_table(tbl, phb->hose->node);
 >  
->  static void pnv_pci_ioda2_set_bypass(struct iommu_table *tbl, bool enable)
+> @@ -1984,7 +2007,6 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
 >  {
-> -	struct pnv_ioda_pe *pe = tbl->data;
-> +	struct pnv_ioda_pe *pe = container_of(tbl, struct pnv_ioda_pe,
-> +					      tce32_table);
->  	uint16_t window_id = (pe->pe_number << 1 ) + 1;
+>  	struct page *tce_mem = NULL;
+>  	void *addr;
+> -	const __be64 *swinvp;
+>  	struct iommu_table *tbl;
+>  	unsigned int tce_table_size, end;
 >  	int64_t rc;
+> @@ -1993,6 +2015,8 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
+>  	if (WARN_ON(pe->tce32_seg >= 0))
+>  		return;
 >  
-> @@ -1907,10 +1900,10 @@ static void pnv_pci_ioda2_setup_bypass_pe(struct pnv_phb *phb,
->  	pe->tce_bypass_base = 1ull << 59;
->  
->  	/* Install set_bypass callback for VFIO */
-> -	pe->tce32_table->set_bypass = pnv_pci_ioda2_set_bypass;
-> +	pe->tce32_table.set_bypass = pnv_pci_ioda2_set_bypass;
->  
->  	/* Enable bypass by default */
-> -	pnv_pci_ioda2_set_bypass(pe->tce32_table, true);
-> +	pnv_pci_ioda2_set_bypass(&pe->tce32_table, true);
->  }
->  
->  static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
-> @@ -1958,7 +1951,7 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
+> +	pnv_pci_ioda_setup_opal_tce_kill(phb, pe);
+> +
+>  	/* The PE will reserve all possible 32-bits space */
+>  	pe->tce32_seg = 0;
+>  	end = (1 << ilog2(phb->ioda.m32_pci_base));
+> @@ -2023,6 +2047,8 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
+>  		goto fail;
 >  	}
 >  
->  	/* Setup linux iommu table */
-> -	tbl = pe->tce32_table;
-> +	tbl = &pe->tce32_table;
->  	pnv_pci_setup_iommu_table(tbl, addr, tce_table_size, 0,
+> +	pnv_pci_ioda2_tvt_invalidate(pe);
+> +
+>  	/* Setup iommu */
+>  	pe->table_group.tables[0].it_table_group = &pe->table_group;
+>  
+> @@ -2032,18 +2058,9 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
 >  			IOMMU_PAGE_SHIFT_4K);
 >  
+>  	/* OPAL variant of PHB3 invalidated TCEs */
+> -	swinvp = of_get_property(phb->hose->dn, "ibm,opal-tce-kill", NULL);
+> -	if (swinvp) {
+> -		/* We need a couple more fields -- an address and a data
+> -		 * to or.  Since the bus is only printed out on table free
+> -		 * errors, and on the first pass the data will be a relative
+> -		 * bus number, print that out instead.
+> -		 */
+> -		pe->tce_inval_reg_phys = be64_to_cpup(swinvp);
+> -		tbl->it_index = (unsigned long)ioremap(pe->tce_inval_reg_phys,
+> -				8);
+> +	if (pe->tce_inval_reg)
+>  		tbl->it_type |= (TCE_PCI_SWINV_CREATE | TCE_PCI_SWINV_FREE);
+> -	}
+> +
+>  	tbl->it_ops = &pnv_ioda2_iommu_ops;
+>  	iommu_init_table(tbl, phb->hose->node);
+>  #ifdef CONFIG_IOMMU_API
 > diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
-> index 070ee88..c954c64 100644
+> index 368d4ed..bd83d85 100644
 > --- a/arch/powerpc/platforms/powernv/pci.h
 > +++ b/arch/powerpc/platforms/powernv/pci.h
-> @@ -57,7 +57,7 @@ struct pnv_ioda_pe {
->  	/* "Base" iommu table, ie, 4K TCEs, 32-bit DMA */
->  	int			tce32_seg;
+> @@ -59,6 +59,7 @@ struct pnv_ioda_pe {
 >  	int			tce32_segcount;
-> -	struct iommu_table	*tce32_table;
-> +	struct iommu_table	tce32_table;
+>  	struct iommu_table_group table_group;
 >  	phys_addr_t		tce_inval_reg_phys;
+> +	__be64 __iomem		*tce_inval_reg;
 >  
 >  	/* 64-bit TCE bypass region */
+>  	bool			tce_bypass_enabled;
