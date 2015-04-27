@@ -1,30 +1,31 @@
 Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AD6CC1A0BEE
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2015 16:39:18 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 098B11A0A96
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2015 16:39:19 +1000 (AEST)
 Received: from /spool/local
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
  Mon, 27 Apr 2015 16:39:18 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id A28FD2CE8052
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id A26F52CE8040
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2015 16:39:16 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t3R6d8dE45285480
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t3R6d8rx5439522
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2015 16:39:16 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t3R6chaF016106
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t3R6cgik013052
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2015 16:38:43 +1000
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v3 16/21] powerpc/pci: Delay creating pci_dn
-Date: Mon, 27 Apr 2015 16:37:48 +1000
-Message-Id: <1430116673-22500-17-git-send-email-gwshan@linux.vnet.ibm.com>
+Subject: [PATCH v3 15/21] powerpc/powernv: Functions to get/reset PCI slot
+ status
+Date: Mon, 27 Apr 2015 16:37:47 +1000
+Message-Id: <1430116673-22500-16-git-send-email-gwshan@linux.vnet.ibm.com>
 In-Reply-To: <1430116673-22500-1-git-send-email-gwshan@linux.vnet.ibm.com>
 References: <1430116673-22500-1-git-send-email-gwshan@linux.vnet.ibm.com>
 Cc: bhelgaas@google.com, linux-pci@vger.kernel.org,
@@ -38,270 +39,148 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The pci_dn instances are allocated from memblock or bootmem when
-creating PCI controller (hoses) in setup_arch(). The PCI hotplug,
-which will be supported by proceeding patches, will release PCI
-device nodes and their corresponding pci_dn on unplugging event.
-The pci_dn instance memory chunks alloed from memblock or bootmem
-are hard to reused after being released.
+The patch exports 3 functions, which base on corresponding OPAL
+APIs to get or set PCI slot status. Those functions are going to
+be used by PCI hotplug module in subsequent patches:
 
-The patch delay creating pci_dn so that they can be allocated from
-slab. In turn, the memory chunks for them can be reused after being
-released without problem. The creation of eeh_dev instances, which
-depends on pci_dn, is delayed a bit as well.
+   pnv_pci_get_presence_status()  opal_pci_get_presence_status()
+   pnv_pci_get_power_status()     opal_pci_get_power_status()
+   pnv_pci_set_power_status()     opal_pci_set_power_status()
+
+Besides, the patch also exports pnv_pci_hotplug_notifier() to allow
+registering PCI hotplug notifier, which will be used to receive PCI
+hotplug message from skiboot firmware.
 
 Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/ppc-pci.h     |  1 -
- arch/powerpc/kernel/eeh_dev.c          |  2 +-
- arch/powerpc/kernel/pci_dn.c           | 40 +++++++++++++++++++---------------
- arch/powerpc/platforms/maple/pci.c     | 35 +++++++++++++++++------------
- arch/powerpc/platforms/pasemi/pci.c    |  3 ---
- arch/powerpc/platforms/powermac/pci.c  | 39 ++++++++++++++++++++-------------
- arch/powerpc/platforms/powernv/pci.c   |  3 ---
- arch/powerpc/platforms/pseries/setup.c |  1 -
- 8 files changed, 68 insertions(+), 56 deletions(-)
+ arch/powerpc/include/asm/opal-api.h            |  7 +++-
+ arch/powerpc/include/asm/opal.h                |  3 ++
+ arch/powerpc/include/asm/pnv-pci.h             |  5 +++
+ arch/powerpc/platforms/powernv/opal-wrappers.S |  3 ++
+ arch/powerpc/platforms/powernv/pci.c           | 45 ++++++++++++++++++++++++++
+ 5 files changed, 62 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/ppc-pci.h b/arch/powerpc/include/asm/ppc-pci.h
-index 4122a86..7388316 100644
---- a/arch/powerpc/include/asm/ppc-pci.h
-+++ b/arch/powerpc/include/asm/ppc-pci.h
-@@ -40,7 +40,6 @@ void *traverse_pci_dn(struct pci_dn *root,
- 		      void *(*fn)(struct pci_dn *, void *),
- 		      void *data);
+diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
+index 0321a90..29b407d 100644
+--- a/arch/powerpc/include/asm/opal-api.h
++++ b/arch/powerpc/include/asm/opal-api.h
+@@ -153,7 +153,10 @@
+ #define OPAL_FLASH_READ				110
+ #define OPAL_FLASH_WRITE			111
+ #define OPAL_FLASH_ERASE			112
+-#define OPAL_LAST				112
++#define OPAL_PCI_GET_PRESENCE_STATUS		116
++#define OPAL_PCI_GET_POWER_STATUS		117
++#define OPAL_PCI_SET_POWER_STATUS		118
++#define OPAL_LAST				118
  
--extern void pci_devs_phb_init(void);
- extern void pci_devs_phb_init_dynamic(struct pci_controller *phb);
+ /* Device tree flags */
  
- /* From rtas_pci.h */
-diff --git a/arch/powerpc/kernel/eeh_dev.c b/arch/powerpc/kernel/eeh_dev.c
-index aabba94..f33ce5b 100644
---- a/arch/powerpc/kernel/eeh_dev.c
-+++ b/arch/powerpc/kernel/eeh_dev.c
-@@ -110,4 +110,4 @@ static int __init eeh_dev_phb_init(void)
- 	return 0;
- }
+@@ -352,6 +355,8 @@ enum opal_msg_type {
+ 	OPAL_MSG_SHUTDOWN,		/* params[0] = 1 reboot, 0 shutdown */
+ 	OPAL_MSG_HMI_EVT,
+ 	OPAL_MSG_DPO,
++	OPAL_MSG_PRD,
++	OPAL_MSG_PCI_HOTPLUG,
+ 	OPAL_MSG_TYPE_MAX,
+ };
  
--core_initcall(eeh_dev_phb_init);
-+core_initcall_sync(eeh_dev_phb_init);
-diff --git a/arch/powerpc/kernel/pci_dn.c b/arch/powerpc/kernel/pci_dn.c
-index b3b4df9..d3833af 100644
---- a/arch/powerpc/kernel/pci_dn.c
-+++ b/arch/powerpc/kernel/pci_dn.c
-@@ -277,7 +277,7 @@ void *update_dn_pci_info(struct device_node *dn, void *data)
- 	struct device_node *parent;
- 	struct pci_dn *pdn;
+diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
+index 6d467df..a0eb206 100644
+--- a/arch/powerpc/include/asm/opal.h
++++ b/arch/powerpc/include/asm/opal.h
+@@ -200,6 +200,9 @@ int64_t opal_flash_write(uint64_t id, uint64_t offset, uint64_t buf,
+ 		uint64_t size, uint64_t token);
+ int64_t opal_flash_erase(uint64_t id, uint64_t offset, uint64_t size,
+ 		uint64_t token);
++int64_t opal_pci_get_presence_status(uint64_t id, uint8_t *status);
++int64_t opal_pci_get_power_status(uint64_t id, uint8_t *status);
++int64_t opal_pci_set_power_status(uint64_t id, uint8_t status);
  
--	pdn = zalloc_maybe_bootmem(sizeof(*pdn), GFP_KERNEL);
-+	pdn = kzalloc(sizeof(*pdn), GFP_KERNEL);
- 	if (pdn == NULL)
- 		return NULL;
- 	dn->data = pdn;
-@@ -442,33 +442,37 @@ void pci_devs_phb_init_dynamic(struct pci_controller *phb)
- 	traverse_pci_devices(dn, update_dn_pci_info, phb);
- }
+ /* Internal functions */
+ extern int early_init_dt_scan_opal(unsigned long node, const char *uname,
+diff --git a/arch/powerpc/include/asm/pnv-pci.h b/arch/powerpc/include/asm/pnv-pci.h
+index f9b4982..50d92a4 100644
+--- a/arch/powerpc/include/asm/pnv-pci.h
++++ b/arch/powerpc/include/asm/pnv-pci.h
+@@ -13,6 +13,11 @@
+ #include <linux/pci.h>
+ #include <misc/cxl.h>
  
--/** 
-+static void pci_dev_pdn_setup(struct pci_dev *pdev)
-+{
-+	struct pci_dn *pdn;
++extern int pnv_pci_get_presence_status(uint64_t id, uint8_t *status);
++extern int pnv_pci_get_power_status(uint64_t id, uint8_t *status);
++extern int pnv_pci_set_power_status(uint64_t id, uint8_t status);
++extern int pnv_pci_hotplug_notifier(struct notifier_block *nb, bool enable);
 +
-+	if (pdev->dev.archdata.pci_data)
-+		return;
-+
-+	/* Setup the fast path */
-+	pdn = pci_get_pdn(pdev);
-+	pdev->dev.archdata.pci_data = pdn;
-+}
-+DECLARE_PCI_FIXUP_EARLY(PCI_ANY_ID, PCI_ANY_ID, pci_dev_pdn_setup);
-+
-+/*
-  * pci_devs_phb_init - Initialize phbs and pci devs under them.
-- * 
-- * This routine walks over all phb's (pci-host bridges) on the
-- * system, and sets up assorted pci-related structures 
-+ *
-+ * This routine walks over all phb's (pci-host bridges) on
-+ * the system, and sets up assorted pci-related structures
-  * (including pci info in the device node structs) for each
-  * pci device found underneath.  This routine runs once,
-  * early in the boot sequence.
-  */
--void __init pci_devs_phb_init(void)
-+static int __init pci_devs_phb_init(void)
- {
- 	struct pci_controller *phb, *tmp;
- 
- 	/* This must be done first so the device nodes have valid pci info! */
- 	list_for_each_entry_safe(phb, tmp, &hose_list, list_node)
- 		pci_devs_phb_init_dynamic(phb);
--}
--
--static void pci_dev_pdn_setup(struct pci_dev *pdev)
--{
--	struct pci_dn *pdn;
- 
--	if (pdev->dev.archdata.pci_data)
--		return;
--
--	/* Setup the fast path */
--	pdn = pci_get_pdn(pdev);
--	pdev->dev.archdata.pci_data = pdn;
-+	return 0;
- }
--DECLARE_PCI_FIXUP_EARLY(PCI_ANY_ID, PCI_ANY_ID, pci_dev_pdn_setup);
-+
-+core_initcall(pci_devs_phb_init);
-diff --git a/arch/powerpc/platforms/maple/pci.c b/arch/powerpc/platforms/maple/pci.c
-index a923230..04a69a8 100644
---- a/arch/powerpc/platforms/maple/pci.c
-+++ b/arch/powerpc/platforms/maple/pci.c
-@@ -568,6 +568,26 @@ void maple_pci_irq_fixup(struct pci_dev *dev)
- 	DBG(" <- maple_pci_irq_fixup\n");
- }
- 
-+static int maple_pci_root_bridge_prepare(struct pci_host_bridge *bridge)
-+{
-+	struct pci_controller *hose = pci_bus_to_host(bridge->bus);
-+	struct device_node *np, *child;
-+
-+	if (hose != u3_agp)
-+		return 0;
-+
-+	/* Fixup the PCI<->OF mapping for U3 AGP due to bus renumbering. We
-+	 * assume there is no P2P bridge on the AGP bus, which should be a
-+	 * safe assumptions hopefully.
-+	 */
-+	np = hose->dn;
-+	PCI_DN(np)->busno = 0xf0;
-+	for_each_child_of_node(np, child)
-+		PCI_DN(child)->busno = 0xf0;
-+
-+	return 0;
-+}
-+
- void __init maple_pci_init(void)
- {
- 	struct device_node *np, *root;
-@@ -605,20 +625,7 @@ void __init maple_pci_init(void)
- 	if (ht && maple_add_bridge(ht) != 0)
- 		of_node_put(ht);
- 
--	/* Setup the linkage between OF nodes and PHBs */ 
--	pci_devs_phb_init();
--
--	/* Fixup the PCI<->OF mapping for U3 AGP due to bus renumbering. We
--	 * assume there is no P2P bridge on the AGP bus, which should be a
--	 * safe assumptions hopefully.
--	 */
--	if (u3_agp) {
--		struct device_node *np = u3_agp->dn;
--		PCI_DN(np)->busno = 0xf0;
--		for (np = np->child; np; np = np->sibling)
--			PCI_DN(np)->busno = 0xf0;
--	}
--
-+	ppc_md.pcibios_root_bridge_prepare = maple_pci_root_bridge_prepare;
- 	/* Tell pci.c to not change any resource allocations.  */
- 	pci_add_flags(PCI_PROBE_ONLY);
- }
-diff --git a/arch/powerpc/platforms/pasemi/pci.c b/arch/powerpc/platforms/pasemi/pci.c
-index f3a68a0..10c4e8f 100644
---- a/arch/powerpc/platforms/pasemi/pci.c
-+++ b/arch/powerpc/platforms/pasemi/pci.c
-@@ -229,9 +229,6 @@ void __init pas_pci_init(void)
- 			of_node_get(np);
- 
- 	of_node_put(root);
--
--	/* Setup the linkage between OF nodes and PHBs */
--	pci_devs_phb_init();
- }
- 
- void __iomem *pasemi_pci_getcfgaddr(struct pci_dev *dev, int offset)
-diff --git a/arch/powerpc/platforms/powermac/pci.c b/arch/powerpc/platforms/powermac/pci.c
-index 59ab16f..368716f 100644
---- a/arch/powerpc/platforms/powermac/pci.c
-+++ b/arch/powerpc/platforms/powermac/pci.c
-@@ -878,6 +878,29 @@ void pmac_pci_irq_fixup(struct pci_dev *dev)
- #endif /* CONFIG_PPC32 */
- }
- 
-+#ifdef CONFIG_PPC64
-+static int pmac_pci_root_bridge_prepare(struct pci_hot_bridge *bridge)
-+{
-+	struct pci_controller *hose = pci_bus_to_host(bridge->bus);
-+	struct device_node *np, *child;
-+
-+	if (hose != u3_agp)
-+		return 0;
-+
-+	/* Fixup the PCI<->OF mapping for U3 AGP due to bus renumbering. We
-+	 * assume there is no P2P bridge on the AGP bus, which should be a
-+	 * safe assumptions for now. We should do something better in the
-+	 * future though
-+	 */
-+	np = hose->dn;
-+	PCI_DN(np)->busno = 0xf0;
-+	for_each_child_of_node(np, child)
-+		PCI_DN(child)->busno = 0xf0;
-+
-+	return 0;
-+}
-+#endif /* CONFIG_PPC64 */
-+
- void __init pmac_pci_init(void)
- {
- 	struct device_node *np, *root;
-@@ -914,22 +937,8 @@ void __init pmac_pci_init(void)
- 	if (ht && pmac_add_bridge(ht) != 0)
- 		of_node_put(ht);
- 
--	/* Setup the linkage between OF nodes and PHBs */
--	pci_devs_phb_init();
--
--	/* Fixup the PCI<->OF mapping for U3 AGP due to bus renumbering. We
--	 * assume there is no P2P bridge on the AGP bus, which should be a
--	 * safe assumptions for now. We should do something better in the
--	 * future though
--	 */
--	if (u3_agp) {
--		struct device_node *np = u3_agp->dn;
--		PCI_DN(np)->busno = 0xf0;
--		for (np = np->child; np; np = np->sibling)
--			PCI_DN(np)->busno = 0xf0;
--	}
- 	/* pmac_check_ht_link(); */
--
-+	ppc_md.pcibios_root_bridge_prepare = pmac_pci_root_bridge_prepare;
- #else /* CONFIG_PPC64 */
- 	init_p2pbridge();
- 	init_second_ohare();
+ int pnv_phb_to_cxl_mode(struct pci_dev *dev, uint64_t mode);
+ int pnv_cxl_ioda_msi_setup(struct pci_dev *dev, unsigned int hwirq,
+ 			   unsigned int virq);
+diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
+index a7ade94..aa95dcb 100644
+--- a/arch/powerpc/platforms/powernv/opal-wrappers.S
++++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
+@@ -295,3 +295,6 @@ OPAL_CALL(opal_i2c_request,			OPAL_I2C_REQUEST);
+ OPAL_CALL(opal_flash_read,			OPAL_FLASH_READ);
+ OPAL_CALL(opal_flash_write,			OPAL_FLASH_WRITE);
+ OPAL_CALL(opal_flash_erase,			OPAL_FLASH_ERASE);
++OPAL_CALL(opal_pci_get_presence_status,		OPAL_PCI_GET_PRESENCE_STATUS);
++OPAL_CALL(opal_pci_get_power_status,		OPAL_PCI_GET_POWER_STATUS);
++OPAL_CALL(opal_pci_set_power_status,		OPAL_PCI_SET_POWER_STATUS);
 diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
-index 60e6d65..21a4eb3 100644
+index a2da9a3..60e6d65 100644
 --- a/arch/powerpc/platforms/powernv/pci.c
 +++ b/arch/powerpc/platforms/powernv/pci.c
-@@ -819,9 +819,6 @@ void __init pnv_pci_init(void)
- 	for_each_compatible_node(np, NULL, "ibm,ioda2-phb")
- 		pnv_pci_init_ioda2_phb(np);
+@@ -60,6 +60,51 @@ int pnv_pci_poll(uint64_t id, int64_t rval, uint8_t *pval)
+ 	return rval ? -EIO : 0;
+ }
  
--	/* Setup the linkage between OF nodes and PHBs */
--	pci_devs_phb_init();
--
- 	/* Configure IOMMU DMA hooks */
- 	ppc_md.tce_build = pnv_tce_build_vm;
- 	ppc_md.tce_free = pnv_tce_free_vm;
-diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
-index df6a704..5f80758 100644
---- a/arch/powerpc/platforms/pseries/setup.c
-+++ b/arch/powerpc/platforms/pseries/setup.c
-@@ -482,7 +482,6 @@ static void __init find_and_init_phbs(void)
- 	}
- 
- 	of_node_put(root);
--	pci_devs_phb_init();
- 
- 	/*
- 	 * PCI_PROBE_ONLY and PCI_REASSIGN_ALL_BUS can be set via properties
++int pnv_pci_get_presence_status(uint64_t id, uint8_t *status)
++{
++	long rc;
++
++	if (!opal_check_token(OPAL_PCI_GET_PRESENCE_STATUS))
++		return -ENXIO;
++
++	rc = opal_pci_get_presence_status(id, status);
++	return pnv_pci_poll(id, rc, status);
++}
++EXPORT_SYMBOL_GPL(pnv_pci_get_presence_status);
++
++int pnv_pci_get_power_status(uint64_t id, uint8_t *status)
++{
++	long rc;
++
++	if (!opal_check_token(OPAL_PCI_GET_POWER_STATUS))
++		return -ENXIO;
++
++	rc = opal_pci_get_power_status(id, status);
++	return pnv_pci_poll(id, rc, status);
++}
++EXPORT_SYMBOL_GPL(pnv_pci_get_power_status);
++
++int pnv_pci_set_power_status(uint64_t id, uint8_t status)
++{
++	long rc;
++
++	if (!opal_check_token(OPAL_PCI_SET_POWER_STATUS))
++		return -ENXIO;
++
++	rc = opal_pci_set_power_status(id, status);
++	return pnv_pci_poll(id, rc, NULL);
++}
++EXPORT_SYMBOL_GPL(pnv_pci_set_power_status);
++
++int pnv_pci_hotplug_notifier(struct notifier_block *nb, bool enable)
++{
++	if (enable)
++		return opal_message_notifier_register(OPAL_MSG_PCI_HOTPLUG, nb);
++
++	return opal_message_notifier_unregister(OPAL_MSG_PCI_HOTPLUG, nb);
++}
++EXPORT_SYMBOL_GPL(pnv_pci_hotplug_notifier);
++
+ #ifdef CONFIG_PCI_MSI
+ static int pnv_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type)
+ {
 -- 
 2.1.0
