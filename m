@@ -1,20 +1,43 @@
-Return-Path: <k.kozlowski.k@gmail.com>
-Received: from mail-pd0-x235.google.com (mail-pd0-x235.google.com
- [IPv6:2607:f8b0:400e:c02::235])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <hegdevasant@linux.vnet.ibm.com>
+Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2641A1A075B
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2015 22:49:03 +1000 (AEST)
-Received: by pdbqa5 with SMTP id qa5so127496780pdb.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2015 05:49:01 -0700 (PDT)
-From: Krzysztof Kozlowski <k.kozlowski.k@gmail.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] powerpc: Constify irq_domain_ops
-Date: Mon, 27 Apr 2015 21:48:47 +0900
-Message-Id: <1430138927-3364-1-git-send-email-k.kozlowski.k@gmail.com>
-Cc: Krzysztof Kozlowski <k.kozlowski.k@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 298A51A075B
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2015 23:48:09 +1000 (AEST)
+Received: from /spool/local
+ by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <hegdevasant@linux.vnet.ibm.com>;
+ Mon, 27 Apr 2015 19:18:06 +0530
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id CFC323940057
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2015 19:18:03 +0530 (IST)
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay01.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t3RDlrBd2752888
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2015 19:17:53 +0530
+Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t3RDlqTI025826
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2015 19:17:52 +0530
+Message-ID: <553E3E06.6070605@linux.vnet.ibm.com>
+Date: Mon, 27 Apr 2015 19:17:50 +0530
+From: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: Jacek Anaszewski <j.anaszewski@samsung.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH v2 2/2] leds/powernv: Add driver for PowerNV platform
+References: <20150422234509.626d9dc7@ja.home>
+ <55388254.4000606@linux.vnet.ibm.com> <20150423161342.55e9ac8f@ja.home>
+ <1430086038.16571.78.camel@kernel.crashing.org>
+ <553DE41A.5070703@samsung.com>
+ <1430128435.16571.110.camel@kernel.crashing.org>
+ <553E1A65.5080409@samsung.com>
+In-Reply-To: <553E1A65.5080409@samsung.com>
+Content-Type: text/plain; charset=utf-8
+Cc: stewart@linux.vnet.ibm.com, cooloney@gmail.com, rpurdie@rpsys.net,
+ linuxppc-dev@lists.ozlabs.org, linux-leds@vger.kernel.org,
+ khandual@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,152 +47,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The irq_domain_ops are not modified by the driver and the irqdomain core
-code accepts pointer to a const data.
+On 04/27/2015 04:45 PM, Jacek Anaszewski wrote:
+> On 04/27/2015 11:53 AM, Benjamin Herrenschmidt wrote:
+>> On Mon, 2015-04-27 at 09:24 +0200, Jacek Anaszewski wrote:
+>>> I was not aware that some other entity than the driver could be
+>>> interested in the information provided by DT node. I will no longer
+>>> object, provided that we will get an ack from DT maintainer.
+>>
 
-Signed-off-by: Krzysztof Kozlowski <k.kozlowski.k@gmail.com>
----
- arch/powerpc/sysdev/i8259.c            | 2 +-
- arch/powerpc/sysdev/ipic.c             | 2 +-
- arch/powerpc/sysdev/mpc8xx_pic.c       | 2 +-
- arch/powerpc/sysdev/mpic.c             | 2 +-
- arch/powerpc/sysdev/mv64x60_pic.c      | 2 +-
- arch/powerpc/sysdev/qe_lib/qe_ic.c     | 2 +-
- arch/powerpc/sysdev/tsi108_pci.c       | 2 +-
- arch/powerpc/sysdev/uic.c              | 2 +-
- arch/powerpc/sysdev/xics/xics-common.c | 2 +-
- arch/powerpc/sysdev/xilinx_intc.c      | 2 +-
- 10 files changed, 10 insertions(+), 10 deletions(-)
+Jacket,
 
-diff --git a/arch/powerpc/sysdev/i8259.c b/arch/powerpc/sysdev/i8259.c
-index 45598da0b321..31c33475c7b7 100644
---- a/arch/powerpc/sysdev/i8259.c
-+++ b/arch/powerpc/sysdev/i8259.c
-@@ -204,7 +204,7 @@ static int i8259_host_xlate(struct irq_domain *h, struct device_node *ct,
- 	return 0;
- }
- 
--static struct irq_domain_ops i8259_host_ops = {
-+static const struct irq_domain_ops i8259_host_ops = {
- 	.match = i8259_host_match,
- 	.map = i8259_host_map,
- 	.xlate = i8259_host_xlate,
-diff --git a/arch/powerpc/sysdev/ipic.c b/arch/powerpc/sysdev/ipic.c
-index b28733727ed3..d78f1364b639 100644
---- a/arch/powerpc/sysdev/ipic.c
-+++ b/arch/powerpc/sysdev/ipic.c
-@@ -691,7 +691,7 @@ static int ipic_host_map(struct irq_domain *h, unsigned int virq,
- 	return 0;
- }
- 
--static struct irq_domain_ops ipic_host_ops = {
-+static const struct irq_domain_ops ipic_host_ops = {
- 	.match	= ipic_host_match,
- 	.map	= ipic_host_map,
- 	.xlate	= irq_domain_xlate_onetwocell,
-diff --git a/arch/powerpc/sysdev/mpc8xx_pic.c b/arch/powerpc/sysdev/mpc8xx_pic.c
-index c4828c0be5bd..d93a78be4346 100644
---- a/arch/powerpc/sysdev/mpc8xx_pic.c
-+++ b/arch/powerpc/sysdev/mpc8xx_pic.c
-@@ -120,7 +120,7 @@ static int mpc8xx_pic_host_xlate(struct irq_domain *h, struct device_node *ct,
- }
- 
- 
--static struct irq_domain_ops mpc8xx_pic_host_ops = {
-+static const struct irq_domain_ops mpc8xx_pic_host_ops = {
- 	.map = mpc8xx_pic_host_map,
- 	.xlate = mpc8xx_pic_host_xlate,
- };
-diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
-index b2b8447a227a..c8e73332eaad 100644
---- a/arch/powerpc/sysdev/mpic.c
-+++ b/arch/powerpc/sysdev/mpic.c
-@@ -1195,7 +1195,7 @@ static void mpic_cascade(unsigned int irq, struct irq_desc *desc)
- 	chip->irq_eoi(&desc->irq_data);
- }
- 
--static struct irq_domain_ops mpic_host_ops = {
-+static const struct irq_domain_ops mpic_host_ops = {
- 	.match = mpic_host_match,
- 	.map = mpic_host_map,
- 	.xlate = mpic_host_xlate,
-diff --git a/arch/powerpc/sysdev/mv64x60_pic.c b/arch/powerpc/sysdev/mv64x60_pic.c
-index 8848e99a83f2..0f842dd16bcd 100644
---- a/arch/powerpc/sysdev/mv64x60_pic.c
-+++ b/arch/powerpc/sysdev/mv64x60_pic.c
-@@ -223,7 +223,7 @@ static int mv64x60_host_map(struct irq_domain *h, unsigned int virq,
- 	return 0;
- }
- 
--static struct irq_domain_ops mv64x60_host_ops = {
-+static const struct irq_domain_ops mv64x60_host_ops = {
- 	.map   = mv64x60_host_map,
- };
- 
-diff --git a/arch/powerpc/sysdev/qe_lib/qe_ic.c b/arch/powerpc/sysdev/qe_lib/qe_ic.c
-index 543765e1ef14..6512cd8caa51 100644
---- a/arch/powerpc/sysdev/qe_lib/qe_ic.c
-+++ b/arch/powerpc/sysdev/qe_lib/qe_ic.c
-@@ -271,7 +271,7 @@ static int qe_ic_host_map(struct irq_domain *h, unsigned int virq,
- 	return 0;
- }
- 
--static struct irq_domain_ops qe_ic_host_ops = {
-+static const struct irq_domain_ops qe_ic_host_ops = {
- 	.match = qe_ic_host_match,
- 	.map = qe_ic_host_map,
- 	.xlate = irq_domain_xlate_onetwocell,
-diff --git a/arch/powerpc/sysdev/tsi108_pci.c b/arch/powerpc/sysdev/tsi108_pci.c
-index 188012c58f7f..57b54476e747 100644
---- a/arch/powerpc/sysdev/tsi108_pci.c
-+++ b/arch/powerpc/sysdev/tsi108_pci.c
-@@ -397,7 +397,7 @@ static int pci_irq_host_map(struct irq_domain *h, unsigned int virq,
- 	return 0;
- }
- 
--static struct irq_domain_ops pci_irq_domain_ops = {
-+static const struct irq_domain_ops pci_irq_domain_ops = {
- 	.map = pci_irq_host_map,
- 	.xlate = pci_irq_host_xlate,
- };
-diff --git a/arch/powerpc/sysdev/uic.c b/arch/powerpc/sysdev/uic.c
-index 7c37157d4c24..1cd057f11725 100644
---- a/arch/powerpc/sysdev/uic.c
-+++ b/arch/powerpc/sysdev/uic.c
-@@ -189,7 +189,7 @@ static int uic_host_map(struct irq_domain *h, unsigned int virq,
- 	return 0;
- }
- 
--static struct irq_domain_ops uic_host_ops = {
-+static const struct irq_domain_ops uic_host_ops = {
- 	.map	= uic_host_map,
- 	.xlate	= irq_domain_xlate_twocell,
- };
-diff --git a/arch/powerpc/sysdev/xics/xics-common.c b/arch/powerpc/sysdev/xics/xics-common.c
-index 878a54036a25..5bc5889d4acc 100644
---- a/arch/powerpc/sysdev/xics/xics-common.c
-+++ b/arch/powerpc/sysdev/xics/xics-common.c
-@@ -360,7 +360,7 @@ static int xics_host_xlate(struct irq_domain *h, struct device_node *ct,
- 	return 0;
- }
- 
--static struct irq_domain_ops xics_host_ops = {
-+static const struct irq_domain_ops xics_host_ops = {
- 	.match = xics_host_match,
- 	.map = xics_host_map,
- 	.xlate = xics_host_xlate,
-diff --git a/arch/powerpc/sysdev/xilinx_intc.c b/arch/powerpc/sysdev/xilinx_intc.c
-index 56f0524e47a6..43b8b275bc5c 100644
---- a/arch/powerpc/sysdev/xilinx_intc.c
-+++ b/arch/powerpc/sysdev/xilinx_intc.c
-@@ -179,7 +179,7 @@ static int xilinx_intc_map(struct irq_domain *h, unsigned int virq,
- 	return 0;
- }
- 
--static struct irq_domain_ops xilinx_intc_ops = {
-+static const struct irq_domain_ops xilinx_intc_ops = {
- 	.map = xilinx_intc_map,
- 	.xlate = xilinx_intc_xlate,
- };
--- 
-2.1.0
+>> My understanding is that we no longer need bindings to be accepted by DT
+>> maintainers.
+> 
+> I've just skimmed through the patches in
+> Documentation/devicetree/bindings/powerpc and they indeed don't have
+> acks from DT maintainers.
+
+Sure.. I have addressed all other issues we discussed earlier. Will respin v4 soon.
+
+> 
+>> That being said, I would like to review this one before it is accepted,
+>> as I haven't had a chance to do so yet :-) (I was mostly responding to
+>> you, I haven't caught up with the full thread yet).
+>>
+>> Please wait for an ack from myself or Michael Ellerman (the two powerpc
+>> maintainers). Either that or provide your ack and we'll merge it via our
+>> tree if we are happy with it.
+> 
+> Since this driver is for LED subsystem it should better go via leds tree.
+> 
+
+Sure.. Will send v4 and request benh/mpe to review/ack from powerpc side.
+
+-Vasant
