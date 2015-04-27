@@ -1,37 +1,37 @@
 Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
+Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0B6111A0724
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2015 15:07:30 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id A2C6E1A08BD
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2015 15:08:52 +1000 (AEST)
 Received: from /spool/local
- by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Mon, 27 Apr 2015 10:37:28 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 93C761258059
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2015 10:39:24 +0530 (IST)
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t3R57N5v1311190
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2015 10:37:23 +0530
-Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t3R57MZV019242
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2015 10:37:22 +0530
-Date: Mon, 27 Apr 2015 10:36:53 +0530
+ Mon, 27 Apr 2015 10:38:49 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 2229AE0054
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2015 10:41:31 +0530 (IST)
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t3R58lCu41484294
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2015 10:38:47 +0530
+Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t3R58kbV030251
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2015 10:38:47 +0530
+Date: Mon, 27 Apr 2015 10:38:18 +0530
 From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
 To: Arnaldo Carvalho de Melo <acme@kernel.org>
-Subject: Re: [PATCHv2 3/8] perf probe powerpc: Fix symbol fixup issues due to
- ELF type
-Message-ID: <20150427050653.GB6113@naverao1-tp.in.ibm.com>
+Subject: Re: [PATCHv2 5/8] perf probe powerpc: Allow matching against dot
+ symbols
+Message-ID: <20150427050818.GC6113@naverao1-tp.in.ibm.com>
 References: <cover.1418654435.git.naveen.n.rao@linux.vnet.ibm.com>
- <a31f3cfd0841bea8e615ebd6f8f0ec5a0d1f1eaa.1418654436.git.naveen.n.rao@linux.vnet.ibm.com>
- <20150312202340.GC3550@kernel.org>
+ <062b1dbee6747d8013ea91d7020216969aefb128.1418654436.git.naveen.n.rao@linux.vnet.ibm.com>
+ <20150312203059.GG3550@kernel.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150312202340.GC3550@kernel.org>
+In-Reply-To: <20150312203059.GG3550@kernel.org>
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -42,66 +42,171 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 2015/03/12 05:23PM, Arnaldo Carvalho de Melo wrote:
-> Em Mon, Dec 15, 2014 at 08:20:33PM +0530, Naveen N. Rao escreveu:
-> > If using the symbol table, symbol addresses are not being fixed up
-> > properly, resulting in probes being placed at wrong addresses:
+On 2015/03/12 05:30PM, Arnaldo Carvalho de Melo wrote:
+> Em Mon, Dec 15, 2014 at 08:20:35PM +0530, Naveen N. Rao escreveu:
+> > Allow perf probe to work on powerpc ABIv1 without the need to specify
+> > the leading dot '.' for functions. 'perf probe do_fork' works with this
+> > patch.
 > > 
-> >   # perf probe do_fork
-> >   Added new event:
-> >     probe:do_fork        (on do_fork)
-> > 
-> >   You can now use it in all perf tools, such as:
-> > 
-> > 	  perf record -e probe:do_fork -aR sleep 1
-> > 
-> >   # cat /sys/kernel/debug/tracing/kprobe_events
-> >   p:probe/do_fork _text+635952
-> >   # printf "%x" 635952
-> >   9b430
-> >   # grep do_fork /boot/System.map
-> >   c0000000000ab430 T .do_fork
-> > 
-> > Fix by checking for ELF type ET_DYN used by ppc64 kernels.
+> > Introduce HAVE_ARCH_SYMBOL_HANDLING to indicate need for special
+> > handling of symbols. In this patch, we override probe_function_filter()
+> > on powerpc to account for dot symbols.
 > 
-> Sorry if this was answered already, its been a while since this was
-> posted/discussed... Are you completely sure this is not a problem on
-> !ppc?
+> This one looks better, does arch specific stuff in tools/perf/arch,
+> good, some nits below.
 > 
-> Woudln't it be more conservative to somehow only adjust symbols for this
-> ET_DYN type if the arch is ppc? I.e. something like moving that
-> adjust_symbols logic to be arch_adjust_symbols(), provide a default and
-> then override it for ppc to include also ET_DYN?
+> > Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+> > ---
+> > Changes from the previous patchset:
+> > Introduced arch helper to override the way probe function filter works.
+> > 
+> >  tools/perf/arch/powerpc/Makefile            |  1 +
+> >  tools/perf/arch/powerpc/util/sym-handling.c | 28 ++++++++++++++++++++++++++++
+> >  tools/perf/config/Makefile                  |  1 +
+> >  tools/perf/util/probe-event.c               | 10 +++++-----
+> >  tools/perf/util/probe-event.h               |  5 +++++
+> >  5 files changed, 40 insertions(+), 5 deletions(-)
+> >  create mode 100644 tools/perf/arch/powerpc/util/sym-handling.c
+> > 
+> > diff --git a/tools/perf/arch/powerpc/Makefile b/tools/perf/arch/powerpc/Makefile
+> > index 6f7782b..1c3d435 100644
+> > --- a/tools/perf/arch/powerpc/Makefile
+> > +++ b/tools/perf/arch/powerpc/Makefile
+> > @@ -3,4 +3,5 @@ PERF_HAVE_DWARF_REGS := 1
+> >  LIB_OBJS += $(OUTPUT)arch/$(ARCH)/util/dwarf-regs.o
+> >  LIB_OBJS += $(OUTPUT)arch/$(ARCH)/util/skip-callchain-idx.o
+> >  endif
+> > +LIB_OBJS += $(OUTPUT)arch/$(ARCH)/util/sym-handling.o
+> >  LIB_OBJS += $(OUTPUT)arch/$(ARCH)/util/header.o
+> > diff --git a/tools/perf/arch/powerpc/util/sym-handling.c b/tools/perf/arch/powerpc/util/sym-handling.c
+> > new file mode 100644
+> > index 0000000..0a77825
+> > --- /dev/null
+> > +++ b/tools/perf/arch/powerpc/util/sym-handling.c
+> > @@ -0,0 +1,28 @@
+> > +/*
+> > + * Special symbol handling for PowerPC:
+> > + * - Handle dot symbols on ABIv1
+> > + *
+> > + * Copyright (C) 2014 Naveen N Rao, IBM Corporation.
+> > + *
+> > + * This program is free software; you can redistribute it and/or
+> > + * modify it under the terms of the GNU General Public License
+> > + * as published by the Free Software Foundation; either version
+> > + * 2 of the License, or (at your option) any later version.
+> > + */
+> > +
+> > +#include "map.h"
+> > +#include "symbol.h"
+> > +#include "probe-event.h"
+> > +
+> > +int probe_function_filter(struct map *map __maybe_unused, struct symbol *sym)
+> > +{
+> > +	if (sym->binding == STB_GLOBAL || sym->binding == STB_LOCAL) {
+> > +		if ((strcmp(looking_function_name, sym->name) == 0) ||
+> > +		    (sym->name[0] == '.' && looking_function_name[0] != '.' &&
+> > +		     strcmp(looking_function_name, sym->name+1) == 0)) {
+> > +			num_matched_functions++;
+> > +			return 0;
+> > +		}
+> > +	}
+> > +	return 1;
+> > +}
+> > diff --git a/tools/perf/config/Makefile b/tools/perf/config/Makefile
+> > index 5d4b039..35cf934 100644
+> > --- a/tools/perf/config/Makefile
+> > +++ b/tools/perf/config/Makefile
+> > @@ -383,6 +383,7 @@ ifeq ($(ARCH),powerpc)
+> >    ifndef NO_DWARF
+> >      CFLAGS += -DHAVE_SKIP_CALLCHAIN_IDX
+> >    endif
+> > +  CFLAGS += -DHAVE_ARCH_SYMBOL_HANDLING
+> 
+> 
+> Dunno about this naming, looks too general: SYMBOL_HANDLING, but can't
+> come to some better one now, anyone?
+> 
+> >  endif
+> >  
+> >  ifndef NO_LIBUNWIND
+> > diff --git a/tools/perf/util/probe-event.c b/tools/perf/util/probe-event.c
+> > index 74b7fef..7eb9b27 100644
+> > --- a/tools/perf/util/probe-event.c
+> > +++ b/tools/perf/util/probe-event.c
+> > @@ -50,6 +50,8 @@
+> >  #define PERFPROBE_GROUP "probe"
+> >  
+> >  bool probe_event_dry_run;	/* Dry run flag */
+> > +char *looking_function_name;
+> > +int num_matched_functions;
+> >  
+> >  #define semantic_error(msg ...) pr_err("Semantic error :" msg)
+> >  
+> > @@ -2210,11 +2212,8 @@ static int __add_probe_trace_events(struct perf_probe_event *pev,
+> >  	return ret;
+> >  }
+> >  
+> > -static char *looking_function_name;
+> > -static int num_matched_functions;
+> > -
+> > -static int probe_function_filter(struct map *map __maybe_unused,
+> > -				      struct symbol *sym)
+> > +#ifndef HAVE_ARCH_SYMBOL_HANDLING
+> > +int probe_function_filter(struct map *map __maybe_unused, struct symbol *sym)
+> >  {
+> >  	if ((sym->binding == STB_GLOBAL || sym->binding == STB_LOCAL) &&
+> >  	    strcmp(looking_function_name, sym->name) == 0) {
+> > @@ -2223,6 +2222,7 @@ static int probe_function_filter(struct map *map __maybe_unused,
+> >  	}
+> >  	return 1;
+> >  }
+> > +#endif /* HAVE_ARCH_SYMBOL_HANDLING */
+> 
+> Can't we do something like providing a weak function and let the linked
+> to its work? I guess we have cases like this in tools/ already. I.e. not
+> using the ifndef block. Minor nit tho.
 
-I did check and I don't think any other arch kernel uses ET_DYN, but 
-yes, being conservative, I could just make this a arch helper. Will do.
+That sounds like a good idea. I will move these over to use __weak 
+functions.
+
+> 
+> >  
+> >  #define strdup_or_goto(str, label)	\
+> >  	({ char *__p = strdup(str); if (!__p) goto label; __p; })
+> > diff --git a/tools/perf/util/probe-event.h b/tools/perf/util/probe-event.h
+> > index e01e994..8564451 100644
+> > --- a/tools/perf/util/probe-event.h
+> > +++ b/tools/perf/util/probe-event.h
+> > @@ -7,6 +7,8 @@
+> >  #include "strfilter.h"
+> >  
+> >  extern bool probe_event_dry_run;
+> > +extern char *looking_function_name;
+> > +extern int num_matched_functions;
+> 
+> >  
+> >  /* kprobe-tracer and uprobe-tracer tracing point */
+> >  struct probe_trace_point {
+> > @@ -136,6 +138,9 @@ extern int show_available_vars(struct perf_probe_event *pevs, int npevs,
+> >  extern int show_available_funcs(const char *module, struct strfilter *filter,
+> >  				bool user);
+> >  
+> > +extern int probe_function_filter(struct map *map __maybe_unused,
+> > +					struct symbol *sym);
+> > +
+> 
+> Please do not prefix function declarations with 'extern', even when we
+> have one just before, its not needed, patches removing the existing ones
+> would be accepted.
+
+Sure.
 
 - Naveen
 
 > 
-> Looking at the other patches...
-> 
-> - Arnaldo
-> 
-> > Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
-> > ---
-> >  tools/perf/util/symbol-elf.c | 3 ++-
-> >  1 file changed, 2 insertions(+), 1 deletion(-)
-> > 
-> > diff --git a/tools/perf/util/symbol-elf.c b/tools/perf/util/symbol-elf.c
-> > index 06fcd1b..7ac4e4c 100644
-> > --- a/tools/perf/util/symbol-elf.c
-> > +++ b/tools/perf/util/symbol-elf.c
-> > @@ -683,7 +683,8 @@ int symsrc__init(struct symsrc *ss, struct dso *dso, const char *name,
-> >  						     NULL) != NULL);
-> >  	} else {
-> >  		ss->adjust_symbols = ehdr.e_type == ET_EXEC ||
-> > -				     ehdr.e_type == ET_REL;
-> > +				     ehdr.e_type == ET_REL ||
-> > +				     ehdr.e_type == ET_DYN;
-> >  	}
+> >  /* Maximum index number of event-name postfix */
+> >  #define MAX_EVENT_INDEX	1024
 > >  
-> >  	ss->name   = strdup(name);
 > > -- 
 > > 2.1.3
 > 
