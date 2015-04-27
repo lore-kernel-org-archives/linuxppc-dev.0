@@ -1,42 +1,34 @@
-Return-Path: <nikunj@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BA4CF1A0724
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2015 15:41:57 +1000 (AEST)
-Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id E6D53140318
- for <linuxppc-dev@ozlabs.org>; Mon, 27 Apr 2015 15:41:56 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6E20E1A0724
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2015 16:38:55 +1000 (AEST)
 Received: from /spool/local
- by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <nikunj@linux.vnet.ibm.com>;
- Mon, 27 Apr 2015 11:11:54 +0530
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 6435BE004C
- for <linuxppc-dev@ozlabs.org>; Mon, 27 Apr 2015 11:14:36 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t3R5foDV55312508
- for <linuxppc-dev@ozlabs.org>; Mon, 27 Apr 2015 11:11:50 +0530
-Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t3R5fna4020951
- for <linuxppc-dev@ozlabs.org>; Mon, 27 Apr 2015 11:11:50 +0530
-From: Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>
-To: Thomas Huth <thuth@redhat.com>
-Subject: Re: [PATCH 1/2] pci-phb: check for the 32-bit overflow
-In-Reply-To: <20150424130630.00bb9412@thh440s>
-References: <1429700240-32373-1-git-send-email-nikunj@linux.vnet.ibm.com>
- <20150423154314.595b8439@thh440s> <871tjaxjwe.fsf@abhimanyu.in.ibm.com>
- <20150424125657.7e1d5140@thh440s> <20150424130630.00bb9412@thh440s>
-Date: Mon, 27 Apr 2015 11:11:49 +0530
-Message-ID: <87mw1uqg9u.fsf@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: aik@ozlabs.ru, linuxppc-dev@ozlabs.org, david@gibson.dropbear.id.au
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Mon, 27 Apr 2015 16:38:54 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id D74392BB0054
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2015 16:38:52 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t3R6ciQN33423586
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2015 16:38:52 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t3R6cJLI028925
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2015 16:38:19 +1000
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v3 01/21] pci: Add pcibios_setup_bridge()
+Date: Mon, 27 Apr 2015 16:37:33 +1000
+Message-Id: <1430116673-22500-2-git-send-email-gwshan@linux.vnet.ibm.com>
+In-Reply-To: <1430116673-22500-1-git-send-email-gwshan@linux.vnet.ibm.com>
+References: <1430116673-22500-1-git-send-email-gwshan@linux.vnet.ibm.com>
+Cc: bhelgaas@google.com, linux-pci@vger.kernel.org,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,92 +38,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Thomas Huth <thuth@redhat.com> writes:
+Currently, PowerPC PowerNV platform utilizes ppc_md.pcibios_fixup(),
+which is called for once after PCI probing and resource assignment
+are completed, to allocate platform required resources for PCI devices:
+PE#, IO and MMIO mapping, DMA address translation (TCE) table etc.
+Obviously, it's not hotplug friendly.
 
-> On Fri, 24 Apr 2015 12:56:57 +0200
-> Thomas Huth <thuth@redhat.com> wrote:
->
->> On Fri, 24 Apr 2015 09:22:33 +0530
->> Nikunj A Dadhania <nikunj@linux.vnet.ibm.com> wrote:
->> 
->> > 
->> > Hi Thomas,
->> > 
->> > Thomas Huth <thuth@redhat.com> writes:
->> > > Am Wed, 22 Apr 2015 16:27:19 +0530
->> > > schrieb Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>:
->> > >
->> > >> With the addition of 64-bit BARS and increase in the mmio address
->> > >> space, the code was hitting this limit. The memory of pci devices
->> > >> across the bridges were not accessible due to which the drivers
->> > >> failed.
->> > >> 
->> > >> Signed-off-by: Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>
->> > >> ---
->> > >>  board-qemu/slof/pci-phb.fs | 3 ++-
->> > >>  1 file changed, 2 insertions(+), 1 deletion(-)
->> > >> 
->> > >> diff --git a/board-qemu/slof/pci-phb.fs b/board-qemu/slof/pci-phb.fs
->> > >> index 529772f..e307d95 100644
->> > >> --- a/board-qemu/slof/pci-phb.fs
->> > >> +++ b/board-qemu/slof/pci-phb.fs
->> > >> @@ -258,7 +258,8 @@ setup-puid
->> > >>              decode-64 2 / dup >r                \ Decode and calc size/2
->> > >>              pci-next-mem @ + dup pci-max-mem !  \ and calc max mem address
->> > >
->> > > Could pci-max-mem overflow, too?
->> > 
->> > Should not, its only the boundary that was an issue.
->> > 
->> > Qemu sends base and size, base + size can be till uint32 max. So for
->> > example base was 0xC000.0000 and size was 0x4000.0000, we add up base +
->> > size and put pci-max-mmio as 0x1.0000.0000, which would get programmend
->> > in the bridge bars: lower limit as 0xC000 and 0x0000 as upper
->> > limit. And no mmio access were going across the bridge.
->> > 
->> > In my testing, I have found one more issue with translate-my-address,
->> > it does not take care of 64-bit addresses. I have a patch working for
->> > SLOF, but its breaking the guest kernel booting.
->> > 
->> > >
->> > >>              dup pci-next-mmio !                 \ which is the same as MMIO base
->> > >> -            r> + pci-max-mmio !                 \ calc max MMIO address
->> > >> +            r> + FFFFFFFF min pci-max-mmio !    \ calc max MMIO address and
->> > >> +                                                \ check the 32-bit boundary
->> 
->> Ok, thanks a lot for the example! I think your patch likely works in
->> practice, but after staring at the code for a while, I think the real
->> bug is slightly different. If I get the code above right, pci-max-mmio
->> is normally set to the first address that is _not_ part of the mmio
->> window anymore, right. Now have a look at pci-bridge-set-mmio-base in
->> pci-scan.fs:
->> 
->> : pci-bridge-set-mmio-base ( addr -- )
->>         pci-next-mmio @ 100000 #aligned         \ read the current Value and align to 1MB boundary
->>         dup 100000 + pci-next-mmio !            \ and write back with 1MB for bridge
->>         10 rshift                               \ mmio-base reg is only the upper 16 bits
->>         pci-max-mmio @ FFFF0000 and or          \ and Insert mmio Limit (set it to max)
->>         swap 20 + rtas-config-l!                \ and write it into the bridge
->> ;
->> 
->> Seems like the pci-max-mmio, i.e. the first address that is not in the
->> window anymore, is programmed into the memory limit register here - but
->> according to the pci-to-pci bridge specification, it should be the last
->> address of the window instead.
->> 
->> So I think the correct fix would be to decrease the pci-max-mmio
->> value in pci-bridge-set-mmio-base by 1- before programming it into the
->> limit register (note: in pci-bridge-set-mmio-limit you can find a "1-"
->> already, so I think this also should be done in
->> pci-bridge-set-mmio-base, too)
->> 
->> So if you've got some spare minutes, could you please check whether that
->> would fix the issue, too?
->
-> By the way, if I'm right, pci-bridge-set-mem-base seems to suffer from
-> the same problem, too.
+The patch adds weak function pcibios_setup_bridge(), which is called
+by pci_setup_bridge(). PowerPC PowerNV platform will reuse the function
+to assign above platform required resources to newly added PCI devices,
+in order to support PCI hotplug on PowerPC PowerNV platform.
 
-And pci-bridge-set-io-base as well.
+Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+---
+ drivers/pci/setup-bus.c | 12 +++++++++---
+ include/linux/pci.h     |  1 +
+ 2 files changed, 10 insertions(+), 3 deletions(-)
 
-Regards
-Nikunj
+diff --git a/drivers/pci/setup-bus.c b/drivers/pci/setup-bus.c
+index 4fd0cac..a7d0c3c 100644
+--- a/drivers/pci/setup-bus.c
++++ b/drivers/pci/setup-bus.c
+@@ -674,7 +674,8 @@ static void pci_setup_bridge_mmio_pref(struct pci_dev *bridge)
+ 	pci_write_config_dword(bridge, PCI_PREF_LIMIT_UPPER32, lu);
+ }
+ 
+-static void __pci_setup_bridge(struct pci_bus *bus, unsigned long type)
++
++void pci_setup_bridge_resources(struct pci_bus *bus, unsigned long type)
+ {
+ 	struct pci_dev *bridge = bus->self;
+ 
+@@ -693,12 +694,17 @@ static void __pci_setup_bridge(struct pci_bus *bus, unsigned long type)
+ 	pci_write_config_word(bridge, PCI_BRIDGE_CONTROL, bus->bridge_ctl);
+ }
+ 
++void __weak pcibios_setup_bridge(struct pci_bus *bus, unsigned long type)
++{
++	pci_setup_bridge_resources(bus, type);
++}
++
+ void pci_setup_bridge(struct pci_bus *bus)
+ {
+ 	unsigned long type = IORESOURCE_IO | IORESOURCE_MEM |
+ 				  IORESOURCE_PREFETCH;
+ 
+-	__pci_setup_bridge(bus, type);
++	pcibios_setup_bridge(bus, type);
+ }
+ 
+ 
+@@ -1467,7 +1473,7 @@ static void pci_bridge_release_resources(struct pci_bus *bus,
+ 		/* avoiding touch the one without PREF */
+ 		if (type & IORESOURCE_PREFETCH)
+ 			type = IORESOURCE_PREFETCH;
+-		__pci_setup_bridge(bus, type);
++		pci_setup_bridge_resources(bus, type);
+ 		/* for next child res under same bridge */
+ 		r->flags = old_flags;
+ 	}
+diff --git a/include/linux/pci.h b/include/linux/pci.h
+index 353db8d..68c5ef9 100644
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -1175,6 +1175,7 @@ void pci_walk_bus(struct pci_bus *top, int (*cb)(struct pci_dev *, void *),
+ 		  void *userdata);
+ int pci_cfg_space_size(struct pci_dev *dev);
+ unsigned char pci_bus_max_busnr(struct pci_bus *bus);
++void pci_setup_bridge_resources(struct pci_bus *bus, unsigned long type);
+ void pci_setup_bridge(struct pci_bus *bus);
+ resource_size_t pcibios_window_alignment(struct pci_bus *bus,
+ 					 unsigned long type);
+-- 
+2.1.0
