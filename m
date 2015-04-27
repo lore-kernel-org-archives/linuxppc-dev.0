@@ -1,35 +1,23 @@
-Return-Path: <tlfalcon@linux.vnet.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <alex.williamson@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9050B1A0BF0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Apr 2015 08:11:09 +1000 (AEST)
-Received: from /spool/local
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <tlfalcon@linux.vnet.ibm.com>;
- Mon, 27 Apr 2015 16:11:07 -0600
-Received: from b03cxnp08027.gho.boulder.ibm.com
- (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id D983819D803E
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2015 16:02:08 -0600 (MDT)
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
- by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t3RMB4Gt34406590
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2015 15:11:04 -0700
-Received: from d03av03.boulder.ibm.com (localhost [127.0.0.1])
- by d03av03.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t3RMB3SO028891
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2015 16:11:03 -0600
-From: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
-To: netdev@vger.kernel.org
-Subject: [PATCH net-next v2 4/4] ibmveth: Add support for Large Receive Offload
-Date: Mon, 27 Apr 2015 17:10:55 -0500
-Message-Id: <1430172655-17606-4-git-send-email-tlfalcon@linux.vnet.ibm.com>
-In-Reply-To: <1430172655-17606-1-git-send-email-tlfalcon@linux.vnet.ibm.com>
-References: <1430172655-17606-1-git-send-email-tlfalcon@linux.vnet.ibm.com>
-Cc: Brian King <brking@linux.vnet.ibm.com>, nfont@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org, eric.dumazet@gmail.com
+ by lists.ozlabs.org (Postfix) with ESMTPS id D0AE31A024B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Apr 2015 08:18:26 +1000 (AEST)
+Message-ID: <1430173102.4472.118.camel@redhat.com>
+Subject: Re: [PATCH kernel v9 30/32] vfio: powerpc/spapr: Use 32bit DMA
+ window properties from table_group
+From: Alex Williamson <alex.williamson@redhat.com>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Date: Mon, 27 Apr 2015 16:18:22 -0600
+In-Reply-To: <1429964096-11524-31-git-send-email-aik@ozlabs.ru>
+References: <1429964096-11524-1-git-send-email-aik@ozlabs.ru>
+ <1429964096-11524-31-git-send-email-aik@ozlabs.ru>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linux-kernel@vger.kernel.org, Gavin Shan <gwshan@linux.vnet.ibm.com>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,78 +27,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Enables receiving large packets from other LPARs. These packets
-have a -1 IP header checksum, so we must recalculate to have
-a valid checksum.
+On Sat, 2015-04-25 at 22:14 +1000, Alexey Kardashevskiy wrote:
+> A table group might not have a table but it always has the default 32bit
+> window parameters so use these.
+> 
+> No change in behavior is expected.
+> 
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> ---
+> Changes:
+> v9:
+> * new in the series - to make the next patch simpler
+> ---
+>  drivers/vfio/vfio_iommu_spapr_tce.c | 19 +++++++++++--------
+>  1 file changed, 11 insertions(+), 8 deletions(-)
 
-Signed-off-by: Brian King <brking@linux.vnet.ibm.com>
-Signed-off-by: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
----
-v2: 
- -Included statistics that were previously in a separate patch
- -Zeroed the IP header checksum before calling ip_fast_csum
-  Thanks to Eric Dumazet.
 
- drivers/net/ethernet/ibm/ibmveth.c | 19 ++++++++++++++++++-
- drivers/net/ethernet/ibm/ibmveth.h |  1 +
- 2 files changed, 19 insertions(+), 1 deletion(-)
+Acked-by: Alex Williamson <alex.williamson@redhat.com>
 
-diff --git a/drivers/net/ethernet/ibm/ibmveth.c b/drivers/net/ethernet/ibm/ibmveth.c
-index f0ec4e5..3bab896 100644
---- a/drivers/net/ethernet/ibm/ibmveth.c
-+++ b/drivers/net/ethernet/ibm/ibmveth.c
-@@ -101,6 +101,7 @@ struct ibmveth_stat ibmveth_stats[] = {
- 	{ "fw_enabled_ipv4_csum", IBMVETH_STAT_OFF(fw_ipv4_csum_support) },
- 	{ "fw_enabled_ipv6_csum", IBMVETH_STAT_OFF(fw_ipv6_csum_support) },
- 	{ "tx_large_packets", IBMVETH_STAT_OFF(tx_large_packets) },
-+	{ "rx_large_packets", IBMVETH_STAT_OFF(rx_large_packets) }
- };
- 
- /* simple methods of getting data from the current rxq entry */
-@@ -1094,6 +1095,7 @@ static int ibmveth_poll(struct napi_struct *napi, int budget)
- 	struct net_device *netdev = adapter->netdev;
- 	int frames_processed = 0;
- 	unsigned long lpar_rc;
-+	struct iphdr *iph;
- 
- restart_poll:
- 	while (frames_processed < budget) {
-@@ -1136,8 +1138,23 @@ restart_poll:
- 			skb_put(skb, length);
- 			skb->protocol = eth_type_trans(skb, netdev);
- 
--			if (csum_good)
-+			if (csum_good) {
- 				skb->ip_summed = CHECKSUM_UNNECESSARY;
-+				if (be16_to_cpu(skb->protocol) == ETH_P_IP) {
-+					skb_set_network_header(skb, 0);
-+					skb_set_transport_header(skb, sizeof(struct iphdr));
-+					iph = ip_hdr(skb);
-+
-+					/* If the IP checksum is not offloaded and if the packet
-+					 *  is large send, the checksum must be rebuilt.
-+					 */
-+					if (iph->check == 0xffff) {
-+						iph->check = 0;
-+						iph->check = ip_fast_csum((unsigned char *)iph, iph->ihl);
-+						adapter->rx_large_packets++;
-+					}
-+				}
-+			}
- 
- 			napi_gro_receive(napi, skb);	/* send it up */
- 
-diff --git a/drivers/net/ethernet/ibm/ibmveth.h b/drivers/net/ethernet/ibm/ibmveth.h
-index 56d1e22..41dedb1 100644
---- a/drivers/net/ethernet/ibm/ibmveth.h
-+++ b/drivers/net/ethernet/ibm/ibmveth.h
-@@ -162,6 +162,7 @@ struct ibmveth_adapter {
-     u64 tx_map_failed;
-     u64 tx_send_failed;
-     u64 tx_large_packets;
-+    u64 rx_large_packets;
- };
- 
- /*
--- 
-1.9.3
+
+> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
+> index 4cfc2c1..a7d6729 100644
+> --- a/drivers/vfio/vfio_iommu_spapr_tce.c
+> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
+> @@ -185,7 +185,6 @@ static int tce_iommu_enable(struct tce_container *container)
+>  {
+>  	int ret = 0;
+>  	unsigned long locked;
+> -	struct iommu_table *tbl;
+>  	struct iommu_table_group *table_group;
+>  
+>  	if (!container->grp)
+> @@ -221,13 +220,19 @@ static int tce_iommu_enable(struct tce_container *container)
+>  	 * this is that we cannot tell here the amount of RAM used by the guest
+>  	 * as this information is only available from KVM and VFIO is
+>  	 * KVM agnostic.
+> +	 *
+> +	 * So we do not allow enabling a container without a group attached
+> +	 * as there is no way to know how much we should increment
+> +	 * the locked_vm counter.
+>  	 */
+>  	table_group = iommu_group_get_iommudata(container->grp);
+>  	if (!table_group)
+>  		return -ENODEV;
+>  
+> -	tbl = &table_group->tables[0];
+> -	locked = (tbl->it_size << tbl->it_page_shift) >> PAGE_SHIFT;
+> +	if (!table_group->tce32_size)
+> +		return -EPERM;
+> +
+> +	locked = table_group->tce32_size >> PAGE_SHIFT;
+>  	ret = try_increment_locked_vm(locked);
+>  	if (ret)
+>  		return ret;
+> @@ -504,7 +509,6 @@ static long tce_iommu_ioctl(void *iommu_data,
+>  
+>  	case VFIO_IOMMU_SPAPR_TCE_GET_INFO: {
+>  		struct vfio_iommu_spapr_tce_info info;
+> -		struct iommu_table *tbl;
+>  		struct iommu_table_group *table_group;
+>  
+>  		if (WARN_ON(!container->grp))
+> @@ -512,8 +516,7 @@ static long tce_iommu_ioctl(void *iommu_data,
+>  
+>  		table_group = iommu_group_get_iommudata(container->grp);
+>  
+> -		tbl = &table_group->tables[0];
+> -		if (WARN_ON_ONCE(!tbl))
+> +		if (!table_group)
+>  			return -ENXIO;
+>  
+>  		minsz = offsetofend(struct vfio_iommu_spapr_tce_info,
+> @@ -525,8 +528,8 @@ static long tce_iommu_ioctl(void *iommu_data,
+>  		if (info.argsz < minsz)
+>  			return -EINVAL;
+>  
+> -		info.dma32_window_start = tbl->it_offset << tbl->it_page_shift;
+> -		info.dma32_window_size = tbl->it_size << tbl->it_page_shift;
+> +		info.dma32_window_start = table_group->tce32_start;
+> +		info.dma32_window_size = table_group->tce32_size;
+>  		info.flags = 0;
+>  
+>  		if (copy_to_user((void __user *)arg, &info, minsz))
