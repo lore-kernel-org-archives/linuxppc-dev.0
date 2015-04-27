@@ -1,38 +1,35 @@
 Return-Path: <nikunj@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2A1051A0245
+ by lists.ozlabs.org (Postfix) with ESMTPS id B85511A0245
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2015 18:03:34 +1000 (AEST)
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id B8CC4140328
- for <linuxppc-dev@ozlabs.org>; Mon, 27 Apr 2015 18:03:33 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTPS id 89893140328
+ for <linuxppc-dev@ozlabs.org>; Mon, 27 Apr 2015 18:03:34 +1000 (AEST)
 Received: from /spool/local
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <nikunj@linux.vnet.ibm.com>;
- Mon, 27 Apr 2015 18:03:32 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id BBBAA2CE8040
- for <linuxppc-dev@ozlabs.org>; Mon, 27 Apr 2015 18:03:29 +1000 (EST)
+ Mon, 27 Apr 2015 18:03:33 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 7D0822BB004D
+ for <linuxppc-dev@ozlabs.org>; Mon, 27 Apr 2015 18:03:28 +1000 (EST)
 Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t3R83L3V45547748
- for <linuxppc-dev@ozlabs.org>; Mon, 27 Apr 2015 18:03:29 +1000
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t3R83KEm47775932
+ for <linuxppc-dev@ozlabs.org>; Mon, 27 Apr 2015 18:03:28 +1000
 Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
  by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t3R82tow005453
- for <linuxppc-dev@ozlabs.org>; Mon, 27 Apr 2015 18:02:56 +1000
+ t3R82s9i005409
+ for <linuxppc-dev@ozlabs.org>; Mon, 27 Apr 2015 18:02:54 +1000
 From: Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>
 To: linuxppc-dev@ozlabs.org, thuth@redhat.com
-Subject: [PATCH v2 1/4] pci: program correct bridge limit registers during
- probe
-Date: Mon, 27 Apr 2015 13:32:30 +0530
-Message-Id: <1430121753-24818-2-git-send-email-nikunj@linux.vnet.ibm.com>
-In-Reply-To: <1430121753-24818-1-git-send-email-nikunj@linux.vnet.ibm.com>
-References: <1430121753-24818-1-git-send-email-nikunj@linux.vnet.ibm.com>
+Subject: [PATCH v2 0/4] PCI: Generic fixes and moving enumeration back to QEMU
+Date: Mon, 27 Apr 2015 13:32:29 +0530
+Message-Id: <1430121753-24818-1-git-send-email-nikunj@linux.vnet.ibm.com>
 Cc: aik@ozlabs.ru, nikunj@linux.vnet.ibm.com, david@gibson.dropbear.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -43,52 +40,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-According to the pci-to-pci bridge specification, memory/io limit
-should be the last address of the window, while currently its set to
-last + 1. It broke when the memory range was increased and hit 32-bit
-limit. The last address in the window is 0xFFFF.FFFF and max-mmio is
-0x1.0000.0000, because of the bug 0x0000 got programmed in the memory
-limit register. All the mmio reads across the pci-to-pci bridge
-started failing during probe.
+patch 1:   Fixes a bug in pci-to-pci bridge while programming the limit 
+           registers during probe
+patch 2,3: Support 64-bit address translation and usb devices can have
+      	   64-bit pci memory BARs
+patch 4:   Use QEMU create device tree nodes and program the BARs
 
-All pci-bridge-set-[mmio,mem,io]-base sufferred from similar problem.
 
-Suggested-by: Thomas Huth <thuth@redhat.com>
-Signed-off-by: Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>
----
- slof/fs/pci-scan.fs | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+Nikunj A Dadhania (4):
+  pci: program correct bridge limit registers during probe
+  pci: Support 64-bit address translation
+  usb: support 64-bit pci bars
+  pci: Use QEMU created PCI device nodes
 
-diff --git a/slof/fs/pci-scan.fs b/slof/fs/pci-scan.fs
-index 15d0c8e..b8b9fe6 100644
---- a/slof/fs/pci-scan.fs
-+++ b/slof/fs/pci-scan.fs
-@@ -87,7 +87,7 @@ here 100 allot CONSTANT pci-device-vec
-         pci-next-mmio @ 100000 #aligned         \ read the current Value and align to 1MB boundary
-         dup 100000 + pci-next-mmio !            \ and write back with 1MB for bridge
-         10 rshift                               \ mmio-base reg is only the upper 16 bits
--        pci-max-mmio @ FFFF0000 and or          \ and Insert mmio Limit (set it to max)
-+        pci-max-mmio @ 1- FFFF0000 and or       \ and Insert mmio Limit (set it to max)
-         swap 20 + rtas-config-l!                \ and write it into the bridge
- ;
- 
-@@ -116,7 +116,7 @@ here 100 allot CONSTANT pci-device-vec
-                 2 pick 2C + rtas-config-l!      \ | and set the Limit
-         THEN                                    \ FI
-         10 rshift                               \ keep upper 16 bits
--        pci-max-mem @ FFFF0000 and or           \ and Insert mmem Limit (set it to max)
-+        pci-max-mem @ 1- FFFF0000 and or        \ and Insert mmem Limit (set it to max)
-         swap 24 + rtas-config-l!                \ and write it into the bridge
- ;
- 
-@@ -150,7 +150,7 @@ here 100 allot CONSTANT pci-device-vec
-                 swap 30 + rtas-config-l!        \ | and write it into the Base-Upper16-bits
-         THEN                                    \ FI
-         8 rshift 000000FF and                   \ keep upper 8 bits
--        pci-max-io @ 0000FF00 and or            \ insert upper 8 bits of Max-Limit
-+        pci-max-io @ 1- 0000FF00 and or         \ insert upper 8 bits of Max-Limit
-         over rtas-config-l@ FFFF0000 and        \ fetch original Value
-         or swap 1C + rtas-config-l!             \ and write it into the bridge
- ;
+ board-qemu/slof/pci-phb.fs      | 44 ++++++++++++++++++++++++++++++++++++++++-
+ slof/fs/devices/pci-class_0c.fs | 10 ++++++++--
+ slof/fs/pci-properties.fs       |  6 +++++-
+ slof/fs/pci-scan.fs             |  6 +++---
+ slof/fs/translate.fs            |  6 ++----
+ 5 files changed, 61 insertions(+), 11 deletions(-)
+
 -- 
 1.8.3.1
