@@ -1,16 +1,22 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 892811A0244
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Apr 2015 10:42:50 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5BDD01A0244
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Apr 2015 11:12:25 +1000 (AEST)
+Message-ID: <1430183545.7246.1.camel@ellerman.id.au>
+Subject: Re: Kernel 4.1-rc1 build fails  on Sam460ex amcc 460ex powerpc
+ Canyonlands
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH] powerpc/kvm: Fix SMP=n build error in book3s_xics.c
-Date: Tue, 28 Apr 2015 10:42:47 +1000
-Message-Id: <1430181767-2193-1-git-send-email-mpe@ellerman.id.au>
-Cc: warrier@linux.vnet.ibm.com, Paul Mackerras <paulus@samba.org>,
- agraf@suse.de
+To: Julian Margetson <runaway@candw.ms>
+Date: Tue, 28 Apr 2015 11:12:25 +1000
+In-Reply-To: <553E16A0.704@candw.ms>
+References: <54E08E06.8060607@candw.ms>
+ <1424045921.3018.4.camel@ellerman.id.au> <553E16A0.704@candw.ms>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: tj@kernel.org, andriy.shevchenko@linux.intel.com,
+ linuxppc-dev@lists.ozlabs.org, Ian Munsie <imunsie@au1.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,39 +26,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Commit 34cb7954c0aa "Convert ICS mutex lock to spin lock" added an
-include of asm/spinlock.h, which does not work in the SMP=n case.
+On Mon, 2015-04-27 at 06:59 -0400, Julian Margetson wrote:
+> Kernel 4.1-rc1 build fails  on Sam460ex amcc 460ex powerpc Canyonlands with 
+> CONFIG_SATA_DWC=y
+> 
+> sata_dwc_460ex.c:(.text+0xa165c): undefined reference to `dw_dma_remove'
+> drivers/built-in.o: In function `sata_dwc_probe':
+> sata_dwc_460ex.c:(.text+0xa1900): undefined reference to `dw_dma_probe'
+> sata_dwc_460ex.c:(.text+0xa1954): undefined reference to `dw_dma_remove'
+> make: *** [vmlinux] Error 1
 
-It should instead include linux/spinlock.h
+Looks like it was caused by:
 
-Fixes: 34cb7954c0aa ("KVM: PPC: Book3S HV: Convert ICS mutex lock to spin lock")
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
+commit 8b3444852a2b58129ee68a8dd69fef81ceb902a1
+Author: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Date:   Tue Mar 3 22:41:21 2015 +0200
 
-I'll drop this in my fixes branch for tomorrow unless someone objects.
+    sata_dwc_460ex: move to generic DMA driver
+    
+    The SATA implementation based on two actually different devices, i.e. SATA and
+    DMA controllers.
+    
+    For Synopsys DesignWare DMA we have already a generic implementation of the
+    driver. Thus, the patch converts the code to use DMAEngine framework and
+    dw_dmac driver.
+    
+    In future it will be better to split the devices inside DTS as well like it's
+    done on other platforms.
+    
+    Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+    Signed-off-by: Tejun Heo <tj@kernel.org>
 
- arch/powerpc/kvm/book3s_xics.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/kvm/book3s_xics.c b/arch/powerpc/kvm/book3s_xics.c
-index 8f3e6cc54d95..c6ca7db64673 100644
---- a/arch/powerpc/kvm/book3s_xics.c
-+++ b/arch/powerpc/kvm/book3s_xics.c
-@@ -12,6 +12,7 @@
- #include <linux/err.h>
- #include <linux/gfp.h>
- #include <linux/anon_inodes.h>
-+#include <linux/spinlock.h>
- 
- #include <asm/uaccess.h>
- #include <asm/kvm_book3s.h>
-@@ -20,7 +21,6 @@
- #include <asm/xics.h>
- #include <asm/debug.h>
- #include <asm/time.h>
--#include <asm/spinlock.h>
- 
- #include <linux/debugfs.h>
- #include <linux/seq_file.h>
--- 
-2.1.0
+cheers
