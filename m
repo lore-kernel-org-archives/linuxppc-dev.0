@@ -1,43 +1,38 @@
-Return-Path: <hegdevasant@linux.vnet.ibm.com>
-Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
+Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
+Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 262DC1A0244
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Apr 2015 21:07:07 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id B8F121A02BF
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Apr 2015 22:06:15 +1000 (AEST)
 Received: from /spool/local
- by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <hegdevasant@linux.vnet.ibm.com>;
- Tue, 28 Apr 2015 16:37:04 +0530
+ for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
+ Tue, 28 Apr 2015 17:36:12 +0530
 Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 0FE44394005A
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Apr 2015 16:37:00 +0530 (IST)
-Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 4EC313940061
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Apr 2015 17:36:10 +0530 (IST)
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
  by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t3SB6x0P64291024
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Apr 2015 16:36:59 +0530
-Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
- by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t3SB6QPf009310
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Apr 2015 16:36:27 +0530
-Message-ID: <553F69B2.1030602@linux.vnet.ibm.com>
-Date: Tue, 28 Apr 2015 16:36:26 +0530
-From: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: Jacek Anaszewski <j.anaszewski@samsung.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH v2 2/2] leds/powernv: Add driver for PowerNV platform
-References: <20150422234509.626d9dc7@ja.home>
- <55388254.4000606@linux.vnet.ibm.com> <20150423161342.55e9ac8f@ja.home>
- <1430086038.16571.78.camel@kernel.crashing.org>
- <553DE41A.5070703@samsung.com>
- <1430128435.16571.110.camel@kernel.crashing.org>
- <553E1A65.5080409@samsung.com> <553E3E06.6070605@linux.vnet.ibm.com>
-In-Reply-To: <553E3E06.6070605@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=utf-8
-Cc: stewart@linux.vnet.ibm.com, cooloney@gmail.com, rpurdie@rpsys.net,
- linuxppc-dev@lists.ozlabs.org, linux-leds@vger.kernel.org,
- khandual@linux.vnet.ibm.com
+ t3SC69Lw47251496
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Apr 2015 17:36:09 +0530
+Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t3SC67vt004037
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Apr 2015 17:36:09 +0530
+From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+To: acme@kernel.org
+Subject: [PATCH v3 3/7] perf probe/ppc: Use the right prefix when ignoring SyS
+ symbols on ppc
+Date: Tue, 28 Apr 2015 17:35:36 +0530
+Message-Id: <adf1f98b121ecaf292777fe5cc69fe1038feabce.1430217967.git.naveen.n.rao@linux.vnet.ibm.com>
+In-Reply-To: <cover.1430217967.git.naveen.n.rao@linux.vnet.ibm.com>
+References: <cover.1430217967.git.naveen.n.rao@linux.vnet.ibm.com>
+In-Reply-To: <cover.1430217967.git.naveen.n.rao@linux.vnet.ibm.com>
+References: <cover.1430217967.git.naveen.n.rao@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, masami.hiramatsu.pt@hitachi.com,
+ sukadev@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ srikar@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -47,18 +42,101 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/27/2015 07:17 PM, Vasant Hegde wrote:
-> On 04/27/2015 04:45 PM, Jacek Anaszewski wrote:
->> On 04/27/2015 11:53 AM, Benjamin Herrenschmidt wrote:
->>> On Mon, 2015-04-27 at 09:24 +0200, Jacek Anaszewski wrote:
->>>> I was not aware that some other entity than the driver could be
->>>> interested in the information provided by DT node. I will no longer
->>>> object, provided that we will get an ack from DT maintainer.
->>>
-> 
-> Jacket,
+Use the proper prefix when ignoring SyS symbols on ppc ABIv1. While at
+it, generalize symbol selection so architectures can implement their
+own logic.
 
-Oops.. Sorry..  It was a typo .. I meant Jacek..
+Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+Reviewed-by: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+---
+Changes:
+- Move logic to arch helper.
 
+ tools/perf/arch/powerpc/util/sym-handling.c | 20 ++++++++++++++++++++
+ tools/perf/util/symbol.c                    | 21 ++++++++++++---------
+ tools/perf/util/symbol.h                    |  5 +++++
+ 3 files changed, 37 insertions(+), 9 deletions(-)
 
--Vasant
+diff --git a/tools/perf/arch/powerpc/util/sym-handling.c b/tools/perf/arch/powerpc/util/sym-handling.c
+index c9de001..5522a40 100644
+--- a/tools/perf/arch/powerpc/util/sym-handling.c
++++ b/tools/perf/arch/powerpc/util/sym-handling.c
+@@ -17,3 +17,23 @@ bool elf__needs_adjust_symbols(GElf_Ehdr ehdr)
+ 	       ehdr.e_type == ET_DYN;
+ }
+ #endif
++
++#if !defined(_CALL_ELF) || _CALL_ELF != 2
++int arch__choose_best_symbol(struct symbol *syma,
++			     struct symbol *symb __maybe_unused)
++{
++	char *sym = syma->name;
++
++	/* Skip over any initial dot */
++	if (*sym == '.')
++		sym++;
++
++	/* Avoid "SyS" kernel syscall aliases */
++	if (strlen(sym) >= 3 && !strncmp(sym, "SyS", 3))
++		return SYMBOL_B;
++	if (strlen(sym) >= 10 && !strncmp(sym, "compat_SyS", 10))
++		return SYMBOL_B;
++
++	return SYMBOL_A;
++}
++#endif
+diff --git a/tools/perf/util/symbol.c b/tools/perf/util/symbol.c
+index 201f6c4c..f805757 100644
+--- a/tools/perf/util/symbol.c
++++ b/tools/perf/util/symbol.c
+@@ -85,8 +85,17 @@ static int prefix_underscores_count(const char *str)
+ 	return tail - str;
+ }
+ 
+-#define SYMBOL_A 0
+-#define SYMBOL_B 1
++int __weak arch__choose_best_symbol(struct symbol *syma,
++				    struct symbol *symb __maybe_unused)
++{
++	/* Avoid "SyS" kernel syscall aliases */
++	if (strlen(syma->name) >= 3 && !strncmp(syma->name, "SyS", 3))
++		return SYMBOL_B;
++	if (strlen(syma->name) >= 10 && !strncmp(syma->name, "compat_SyS", 10))
++		return SYMBOL_B;
++
++	return SYMBOL_A;
++}
+ 
+ static int choose_best_symbol(struct symbol *syma, struct symbol *symb)
+ {
+@@ -134,13 +143,7 @@ static int choose_best_symbol(struct symbol *syma, struct symbol *symb)
+ 	else if (na < nb)
+ 		return SYMBOL_B;
+ 
+-	/* Avoid "SyS" kernel syscall aliases */
+-	if (na >= 3 && !strncmp(syma->name, "SyS", 3))
+-		return SYMBOL_B;
+-	if (na >= 10 && !strncmp(syma->name, "compat_SyS", 10))
+-		return SYMBOL_B;
+-
+-	return SYMBOL_A;
++	return arch__choose_best_symbol(syma, symb);
+ }
+ 
+ void symbols__fixup_duplicate(struct rb_root *symbols)
+diff --git a/tools/perf/util/symbol.h b/tools/perf/util/symbol.h
+index 8cb0af4..bd50ba0 100644
+--- a/tools/perf/util/symbol.h
++++ b/tools/perf/util/symbol.h
+@@ -307,4 +307,9 @@ int setup_intlist(struct intlist **list, const char *list_str,
+ bool elf__needs_adjust_symbols(GElf_Ehdr ehdr);
+ #endif
+ 
++#define SYMBOL_A 0
++#define SYMBOL_B 1
++
++int arch__choose_best_symbol(struct symbol *syma, struct symbol *symb);
++
+ #endif /* __PERF_SYMBOL */
+-- 
+2.3.5
