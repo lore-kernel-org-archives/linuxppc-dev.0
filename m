@@ -1,21 +1,19 @@
-Return-Path: <acme@kernel.org>
-Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
- by lists.ozlabs.org (Postfix) with ESMTP id E671C1A0211
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Apr 2015 02:40:35 +1000 (AEST)
-Date: Tue, 28 Apr 2015 13:40:30 -0300
-From: Arnaldo Carvalho de Melo <acme@kernel.org>
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
-Subject: Re: [PATCH v3 0/7] Fixes for perf probe issues on ppc
-Message-ID: <20150428164030.GA27827@kernel.org>
-References: <cover.1430217967.git.naveen.n.rao@linux.vnet.ibm.com>
- <20150428135453.GL16849@kernel.org>
- <20150428161217.GA31661@naverao1-tp.ibm.com>
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ by lists.ozlabs.org (Postfix) with ESMTP id 6A4481A0BEF
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Apr 2015 05:07:56 +1000 (AEST)
+Message-ID: <553FDA87.3010104@c-s.fr>
+Date: Tue, 28 Apr 2015 21:07:51 +0200
+From: christophe leroy <christophe.leroy@c-s.fr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150428161217.GA31661@naverao1-tp.ibm.com>
-Cc: linux-kernel@vger.kernel.org, masami.hiramatsu.pt@hitachi.com,
- sukadev@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
- srikar@linux.vnet.ibm.com
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: powerpc32: rearrange instructions order in ip_fast_csum()
+References: <20150203113927.B909E1A5F15@localhost.localdomain>
+ <20150325012248.GA7270@home.buserror.net>
+In-Reply-To: <20150325012248.GA7270@home.buserror.net>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,31 +23,55 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Em Tue, Apr 28, 2015 at 09:42:17PM +0530, Naveen N. Rao escreveu:
-> On 2015/04/28 10:54AM, Arnaldo Carvalho de Melo wrote:
-> > Em Tue, Apr 28, 2015 at 05:35:33PM +0530, Naveen N. Rao escreveu:
-> > > This patchset fixes various issues with perf probe on powerpc across ABIv1 and
-> > > ABIv2:
-> > > - in the presence of DWARF debug-info,
-> > > - in the absence of DWARF, but with the symbol table, and
-> > > - in the absence of debug-info, but with kallsyms.
-> > > 
-> > > Arnaldo,
-> > > I have moved all patches to use __weak functions. Kindly take a look and let me
-> > > know if this is what you had in mind.
-> > 
-> > Ok, I applied all but the first, for which I am waiting for Masami's
-> > reaction, I kept Srikar's reviewed-by for the other patches, but would
-> > as well like to get his word that he keeps it after the __weak changes.
-> > 
-> > So, for now, I'll leave it for a while sitting in my local tree, to give
-> > time to Masami and Srikar, ok?
-> 
-> Sure. We will wait for Masami and Srikar to review/confirm, but Srikar's 
-> reviewed-by is for the current revision.
 
-Well, then I can go ahead and push it, later today, as I have applied
-all of the patches that Srikar has reviewed, the one I'm waiting for
-Masami can go when he reacts.
 
-- Arnaldo
+Le 25/03/2015 02:22, Scott Wood a écrit :
+> On Tue, Feb 03, 2015 at 12:39:27PM +0100, LEROY Christophe wrote:
+>> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+>> ---
+>>   arch/powerpc/lib/checksum_32.S | 10 +++++++---
+>>   1 file changed, 7 insertions(+), 3 deletions(-)
+>>
+>> diff --git a/arch/powerpc/lib/checksum_32.S b/arch/powerpc/lib/checksum_32.S
+>> index 6d67e05..5500704 100644
+>> --- a/arch/powerpc/lib/checksum_32.S
+>> +++ b/arch/powerpc/lib/checksum_32.S
+>> @@ -26,13 +26,17 @@
+>>   _GLOBAL(ip_fast_csum)
+>>   	lwz	r0,0(r3)
+>>   	lwzu	r5,4(r3)
+>> -	addic.	r4,r4,-2
+>> +	addic.	r4,r4,-4
+>>   	addc	r0,r0,r5
+>>   	mtctr	r4
+>>   	blelr-
+>> -1:	lwzu	r4,4(r3)
+>> -	adde	r0,r0,r4
+>> +	lwzu	r5,4(r3)
+>> +	lwzu	r4,4(r3)
+> The blelr is pointless since len is guaranteed to be >= 5 (assuming that
+> comment is accurate), but now it's both pointless and in the wrong place,
+> since you haven't yet finished the four words that you subtracted from
+> r4.
+The blelr is just there to protect the function against negative value 
+of r4 hence ctr.
+In any case, the returned result in that case in not correct, has we do 
+not touch r3.
+>
+> How about keeping the blelr, without the -, moving it after the initial
+> words, and changing the number of inital words to 5?
+We can't just do blelr, we would need to fold the result first.
+But indeed, this would be useless because I quickly checked and it seems 
+that all functions calling ip_fast_csum()
+check that the length is not lower than 5.
+So I will just remove the blelr
+> Also maybe do all
+> the loads up front, since many PPC chips have a three cycle load latency
+> rather than two.
+ok
+
+Christophe
+
+---
+L'absence de virus dans ce courrier électronique a été vérifiée par le logiciel antivirus Avast.
+http://www.avast.com
