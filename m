@@ -1,30 +1,37 @@
-Return-Path: <j.anaszewski@samsung.com>
-Received: from mailout3.w1.samsung.com (mailout3.w1.samsung.com
- [210.118.77.13])
- (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <hegdevasant@linux.vnet.ibm.com>
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 64E391A01E7
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Apr 2015 19:10:15 +1000 (AEST)
-Received: from eucpsbgm1.samsung.com (unknown [203.254.199.244])
- by mailout3.w1.samsung.com
- (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May 5 2014))
- with ESMTP id <0NNI00KFAESX5H10@mailout3.w1.samsung.com> for
- linuxppc-dev@lists.ozlabs.org; Tue, 28 Apr 2015 10:10:09 +0100 (BST)
-Message-id: <553F4E70.3020604@samsung.com>
-Date: Tue, 28 Apr 2015 11:10:08 +0200
-From: Jacek Anaszewski <j.anaszewski@samsung.com>
-MIME-version: 1.0
-To: Stewart Smith <stewart@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2 2/2] leds/powernv: Add driver for PowerNV platform
-References: <20150422234509.626d9dc7@ja.home>
- <55388254.4000606@linux.vnet.ibm.com> <20150423161342.55e9ac8f@ja.home>
- <m3egnama5l.fsf@oc8180480414.ibm.com> <20150424121629.69a159b3@ja.home>
- <m3zj5slovt.fsf@oc8180480414.ibm.com>
-In-reply-to: <m3zj5slovt.fsf@oc8180480414.ibm.com>
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Jacek Anaszewski <j.anaszewski81@gmail.com>, cooloney@gmail.com,
- rpurdie@rpsys.net, linuxppc-dev@lists.ozlabs.org, linux-leds@vger.kernel.org,
- khandual@linux.vnet.ibm.com
+ by lists.ozlabs.org (Postfix) with ESMTPS id E8BD11A021C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Apr 2015 20:10:31 +1000 (AEST)
+Received: from /spool/local
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <hegdevasant@linux.vnet.ibm.com>;
+ Tue, 28 Apr 2015 20:10:30 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id CBDB92CE8052
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Apr 2015 20:10:26 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t3SAAIhd2949536
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Apr 2015 20:10:26 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t3SA9qkF009760
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Apr 2015 20:09:53 +1000
+Subject: [PATCH v4 1/3] powerpc/powernv: Add OPAL interfaces for accessing
+ and modifying system LED states
+From: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, linux-leds@vger.kernel.org
+Date: Tue, 28 Apr 2015 15:39:34 +0530
+Message-ID: <20150428100913.26912.81177.stgit@localhost.localdomain>
+In-Reply-To: <20150428100535.26912.29607.stgit@localhost.localdomain>
+References: <20150428100535.26912.29607.stgit@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Cc: stewart@linux.vnet.ibm.com, j.anaszewski81@gmail.com, cooloney@gmail.com,
+ rpurdie@rpsys.net, khandual@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,42 +41,101 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/28/2015 08:59 AM, Stewart Smith wrote:
-> Jacek Anaszewski <j.anaszewski81@gmail.com> writes:
->> Is the DT node we are discussing used by some other drivers than the
->> LED class driver? Or is it required in this form by other components of
->> your platform?
->
-> OS kernels are the chief consumers, Linux being the overwhelmingly major
-> one here.
->
-> But this is what firmware currently produces.
->
-> Changing the DT representation at this stage is perhaps *possible*
-> without creating a bunch of pain (I'd have to audit a bunch of things to
-> see if we have GA shipping systems with this functionality for instance,
-> and then evaluate the impact to partners and our various labs) which is
-> a lot of work I don't particularly want to do and is well below urgent
-> item 248 on my TODO list, especially for what seems to be largely a
-> cosmetic suggestion?
->
-> That being said, more and better review of things we're putting in the
-> device tree in firmware is probably a good thing. After all, once we
-> release we do kind of have to live with it essentially forever. If
-> people are able to aid in that kind of code review, I'd be most welcome
-> to hear it.
->
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-leds" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
->
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 
-As we agreed with Ben - DT bindings are platform specific and they will
-have to be acked by powerpc maintainers. I have only DT related
-experience from ARM based platforms, but it seems not to be applicable
-to powerpc.
+This patch registers the following two new OPAL interfaces calls
+for the platform LED subsystem. With the help of these new OPAL calls,
+the kernel will be able to get or set the state of various individual
+LEDs on the system at any given location code which is passed through
+the LED specific device tree nodes.
 
--- 
-Best Regards,
-Jacek Anaszewski
+	(1) OPAL_LEDS_GET_INDICATOR     opal_leds_get_ind
+	(2) OPAL_LEDS_SET_INDICATOR     opal_leds_set_ind
+
+Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Signed-off-by: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
+Acked-by: Stewart Smith <stewart@linux.vnet.ibm.com>
+Tested-by: Stewart Smith <stewart@linux.vnet.ibm.com>
+
+---
+Changes in v4:
+  - Updated macros to reflect platform.
+
+ arch/powerpc/include/asm/opal-api.h            |   29 +++++++++++++++++++++++-
+ arch/powerpc/include/asm/opal.h                |    5 ++++
+ arch/powerpc/platforms/powernv/opal-wrappers.S |    2 ++
+ 3 files changed, 35 insertions(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
+index 0321a90..ff85397 100644
+--- a/arch/powerpc/include/asm/opal-api.h
++++ b/arch/powerpc/include/asm/opal-api.h
+@@ -153,7 +153,9 @@
+ #define OPAL_FLASH_READ				110
+ #define OPAL_FLASH_WRITE			111
+ #define OPAL_FLASH_ERASE			112
+-#define OPAL_LAST				112
++#define OPAL_LEDS_GET_INDICATOR			114
++#define OPAL_LEDS_SET_INDICATOR			115
++#define OPAL_LAST				115
+ 
+ /* Device tree flags */
+ 
+@@ -730,6 +732,31 @@ struct opal_i2c_request {
+ 	__be64 buffer_ra;		/* Buffer real address */
+ };
+ 
++/* LED Mode */
++#define POWERNV_LED_MODE_LIGHT_PATH	"lightpath"
++#define POWERNV_LED_MODE_GUIDING_LIGHT	"guidinglight"
++
++/* LED type */
++#define POWERNV_LED_TYPE_IDENTIFY	"identify"
++#define POWERNV_LED_TYPE_FAULT		"fault"
++#define POWERNV_LED_TYPE_ATTENTION	"attention"
++
++/* LED location */
++#define POWERNV_LED_LOC_ENCLOSURE	"enclosure"
++#define POWERNV_LED_LOC_DESCENDENT	"descendent"
++
++enum OpalSlotLedType {
++	OPAL_SLOT_LED_TYPE_ID = 0,	/* IDENTIFY LED */
++	OPAL_SLOT_LED_TYPE_FAULT = 1,	/* FAULT LED */
++	OPAL_SLOT_LED_TYPE_ATTN = 2,	/* System Attention LED */
++	OPAL_SLOT_LED_TYPE_MAX = 3
++};
++
++enum OpalSlotLedState {
++	OPAL_SLOT_LED_STATE_OFF = 0,	/* LED is OFF */
++	OPAL_SLOT_LED_STATE_ON = 1	/* LED is ON */
++};
++
+ #endif /* __ASSEMBLY__ */
+ 
+ #endif /* __OPAL_API_H */
+diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
+index 042af1a..e06dc7e 100644
+--- a/arch/powerpc/include/asm/opal.h
++++ b/arch/powerpc/include/asm/opal.h
+@@ -193,6 +193,11 @@ int64_t opal_ipmi_recv(uint64_t interface, struct opal_ipmi_msg *msg,
+ 		uint64_t *msg_len);
+ int64_t opal_i2c_request(uint64_t async_token, uint32_t bus_id,
+ 			 struct opal_i2c_request *oreq);
++int64_t opal_leds_get_ind(char *loc_code, u64 *led_mask,
++			  u64 *led_value, u64 *max_led_type);
++int64_t opal_leds_set_ind(uint64_t token, char *loc_code, const u64 led_mask,
++			  const u64 led_value, u64 *max_led_type);
++
+ 
+ int64_t opal_flash_read(uint64_t id, uint64_t offset, uint64_t buf,
+ 		uint64_t size, uint64_t token);
+diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
+index 4e74037..20d4da4 100644
+--- a/arch/powerpc/platforms/powernv/opal-wrappers.S
++++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
+@@ -295,3 +295,5 @@ OPAL_CALL(opal_i2c_request,			OPAL_I2C_REQUEST);
+ OPAL_CALL(opal_flash_read,			OPAL_FLASH_READ);
+ OPAL_CALL(opal_flash_write,			OPAL_FLASH_WRITE);
+ OPAL_CALL(opal_flash_erase,			OPAL_FLASH_ERASE);
++OPAL_CALL(opal_leds_get_ind,			OPAL_LEDS_GET_INDICATOR);
++OPAL_CALL(opal_leds_set_ind,			OPAL_LEDS_SET_INDICATOR);
