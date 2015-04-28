@@ -1,33 +1,30 @@
 Return-Path: <hegdevasant@linux.vnet.ibm.com>
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E8BD11A021C
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Apr 2015 20:10:31 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id B004F1A021C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Apr 2015 20:10:33 +1000 (AEST)
 Received: from /spool/local
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <hegdevasant@linux.vnet.ibm.com>;
- Tue, 28 Apr 2015 20:10:30 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id CBDB92CE8052
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Apr 2015 20:10:26 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t3SAAIhd2949536
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Apr 2015 20:10:26 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t3SA9qkF009760
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Apr 2015 20:09:53 +1000
-Subject: [PATCH v4 1/3] powerpc/powernv: Add OPAL interfaces for accessing
- and modifying system LED states
+ Tue, 28 Apr 2015 15:40:30 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 65EE01258059
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Apr 2015 15:42:27 +0530 (IST)
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t3SAAPxi393684
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Apr 2015 15:40:25 +0530
+Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t3S9eRrW028960
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Apr 2015 15:10:28 +0530
+Subject: [PATCH v4 0/3] LED interface for PowerNV platform
 From: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, linux-leds@vger.kernel.org
-Date: Tue, 28 Apr 2015 15:39:34 +0530
-Message-ID: <20150428100913.26912.81177.stgit@localhost.localdomain>
-In-Reply-To: <20150428100535.26912.29607.stgit@localhost.localdomain>
-References: <20150428100535.26912.29607.stgit@localhost.localdomain>
+Date: Tue, 28 Apr 2015 15:39:08 +0530
+Message-ID: <20150428100535.26912.29607.stgit@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Cc: stewart@linux.vnet.ibm.com, j.anaszewski81@gmail.com, cooloney@gmail.com,
@@ -41,101 +38,149 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+The following series implements LED driver for PowerNV platform.
 
-This patch registers the following two new OPAL interfaces calls
-for the platform LED subsystem. With the help of these new OPAL calls,
-the kernel will be able to get or set the state of various individual
-LEDs on the system at any given location code which is passed through
-the LED specific device tree nodes.
+PowerNV platform has below type of LEDs:
+  - System attention
+      Indicates there is a problem with the system that needs attention.
+  - Identify
+      Helps the user locate/identify a particular FRU or resource in the
+      system.
+  - Fault
+      Indicates there is a problem with the FRU or resource at the
+      location with which the indicator is associated.
 
-	(1) OPAL_LEDS_GET_INDICATOR     opal_leds_get_ind
-	(2) OPAL_LEDS_SET_INDICATOR     opal_leds_set_ind
+On PowerNV (Non Virtualized) platform OPAL firmware provides LED information
+to host via device tree (location code and LED type). During init we check
+for 'ibm,opal/led' node in device tree to enable LED driver. And we use
+OPAL API's to get/set LEDs.
 
-Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Signed-off-by: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
-Acked-by: Stewart Smith <stewart@linux.vnet.ibm.com>
-Tested-by: Stewart Smith <stewart@linux.vnet.ibm.com>
+Note that on PowerNV platform firmware can activate fault LED, if it can isolate
+the problem. Also one can modify the LEDs using service processor interface. None
+of these involes kernel. Hence we retain LED state in unload path.
 
----
+Sample LED device tree output:
+------------------------------
+led {
+	compatible = "ibm,opal-v3-led";
+	phandle = <0x1000006b>;
+	linux,phandle = <0x1000006b>;
+	led-mode = "lightpath";
+
+	U78C9.001.RST0027-P1-C1 {
+		led-types = "identify", "fault";
+		led-loc = "descendent";
+		phandle = <0x1000006f>;
+		linux,phandle = <0x1000006f>;
+	};
+	...
+	...
+    }
+
+Sample sysfs output:
+--------------------
+.
+├── U78CB.001.WZS008R-A1:fault
+│   ├── brightness
+│   ├── device -> ../../../opal_led
+│   ├── max_brightness
+│   ├── power
+│   │   ├── async
+│   │   ├── autosuspend_delay_ms
+│   │   ├── control
+│   │   ├── runtime_active_kids
+│   │   ├── runtime_active_time
+│   │   ├── runtime_enabled
+│   │   ├── runtime_status
+│   │   ├── runtime_suspended_time
+│   │   └── runtime_usage
+│   ├── subsystem -> ../../../../../class/leds
+│   ├── trigger
+│   └── uevent
+├── U78CB.001.WZS008R-A1:identify
+│   ├── brightness
+│   ├── device -> ../../../opal_led
+│   ├── max_brightness
+│   ├── power
+│   │   ├── async
+│   │   ├── autosuspend_delay_ms
+│   │   ├── control
+│   │   ├── runtime_active_kids
+│   │   ├── runtime_active_time
+│   │   ├── runtime_enabled
+│   │   ├── runtime_status
+│   │   ├── runtime_suspended_time
+│   │   └── runtime_usage
+│   ├── subsystem -> ../../../../../class/leds
+│   ├── trigger
+│   └── uevent
+....
+....
+....
+
+patch 1/2: PowerNV architecture specific code. This adds necessary
+           OPAL APIs.
+patch 2/2: Create LED platform device and export OPAL symbols
+patch 3/3: Actual LED driver implemenation for PowerNV platform.
+
+This patchset is based on top of mpe's next branch:
+  https://git.kernel.org/cgit/linux/kernel/git/mpe/linux.git/log/?h=next
+
+Previous patchset:
+  v3: https://lists.ozlabs.org/pipermail/linuxppc-dev/2015-April/127702.html
+  v2: https://lists.ozlabs.org/pipermail/linuxppc-dev/2015-March/126301.html
+  v1: https://lists.ozlabs.org/pipermail/linuxppc-dev/2015-March/125705.html
+
 Changes in v4:
   - Updated macros to reflect platform.
+  - s/u64/__be64/g for big endian data we get from firmware
+  - Addressed review comments from Jacek. Major once are:
+    Removed list in powernv_led_data structure
+    s/kzalloc/devm_kzalloc/
+    Removed compatible property from documentation
+    s/powernv_led_set_queue/powernv_brightness_set/
+  - Removed LED specific brightness_set/get function. Instead this version
+    uses single function to queue all LED set/get requests. Later we use
+    LED name to detect LED type and value.
+  - Removed hardcoded LED type used in previous version. Instead we use
+    led-types property to form LED classdev.
 
- arch/powerpc/include/asm/opal-api.h            |   29 +++++++++++++++++++++++-
- arch/powerpc/include/asm/opal.h                |    5 ++++
- arch/powerpc/platforms/powernv/opal-wrappers.S |    2 ++
- 3 files changed, 35 insertions(+), 1 deletion(-)
+Changes in v3:
+  - Addressed review comments from Jacek. Major once are:
+    Replaced spin lock and mutex and removed redundant structures
+    Replaced pr_* with dev_*
+    Moved OPAL platform sepcific part to separate patch
+    Moved repteated code to common function
+    Added device tree documentation for LEDs
 
-diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
-index 0321a90..ff85397 100644
---- a/arch/powerpc/include/asm/opal-api.h
-+++ b/arch/powerpc/include/asm/opal-api.h
-@@ -153,7 +153,9 @@
- #define OPAL_FLASH_READ				110
- #define OPAL_FLASH_WRITE			111
- #define OPAL_FLASH_ERASE			112
--#define OPAL_LAST				112
-+#define OPAL_LEDS_GET_INDICATOR			114
-+#define OPAL_LEDS_SET_INDICATOR			115
-+#define OPAL_LAST				115
- 
- /* Device tree flags */
- 
-@@ -730,6 +732,31 @@ struct opal_i2c_request {
- 	__be64 buffer_ra;		/* Buffer real address */
- };
- 
-+/* LED Mode */
-+#define POWERNV_LED_MODE_LIGHT_PATH	"lightpath"
-+#define POWERNV_LED_MODE_GUIDING_LIGHT	"guidinglight"
-+
-+/* LED type */
-+#define POWERNV_LED_TYPE_IDENTIFY	"identify"
-+#define POWERNV_LED_TYPE_FAULT		"fault"
-+#define POWERNV_LED_TYPE_ATTENTION	"attention"
-+
-+/* LED location */
-+#define POWERNV_LED_LOC_ENCLOSURE	"enclosure"
-+#define POWERNV_LED_LOC_DESCENDENT	"descendent"
-+
-+enum OpalSlotLedType {
-+	OPAL_SLOT_LED_TYPE_ID = 0,	/* IDENTIFY LED */
-+	OPAL_SLOT_LED_TYPE_FAULT = 1,	/* FAULT LED */
-+	OPAL_SLOT_LED_TYPE_ATTN = 2,	/* System Attention LED */
-+	OPAL_SLOT_LED_TYPE_MAX = 3
-+};
-+
-+enum OpalSlotLedState {
-+	OPAL_SLOT_LED_STATE_OFF = 0,	/* LED is OFF */
-+	OPAL_SLOT_LED_STATE_ON = 1	/* LED is ON */
-+};
-+
- #endif /* __ASSEMBLY__ */
- 
- #endif /* __OPAL_API_H */
-diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
-index 042af1a..e06dc7e 100644
---- a/arch/powerpc/include/asm/opal.h
-+++ b/arch/powerpc/include/asm/opal.h
-@@ -193,6 +193,11 @@ int64_t opal_ipmi_recv(uint64_t interface, struct opal_ipmi_msg *msg,
- 		uint64_t *msg_len);
- int64_t opal_i2c_request(uint64_t async_token, uint32_t bus_id,
- 			 struct opal_i2c_request *oreq);
-+int64_t opal_leds_get_ind(char *loc_code, u64 *led_mask,
-+			  u64 *led_value, u64 *max_led_type);
-+int64_t opal_leds_set_ind(uint64_t token, char *loc_code, const u64 led_mask,
-+			  const u64 led_value, u64 *max_led_type);
-+
- 
- int64_t opal_flash_read(uint64_t id, uint64_t offset, uint64_t buf,
- 		uint64_t size, uint64_t token);
-diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
-index 4e74037..20d4da4 100644
---- a/arch/powerpc/platforms/powernv/opal-wrappers.S
-+++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
-@@ -295,3 +295,5 @@ OPAL_CALL(opal_i2c_request,			OPAL_I2C_REQUEST);
- OPAL_CALL(opal_flash_read,			OPAL_FLASH_READ);
- OPAL_CALL(opal_flash_write,			OPAL_FLASH_WRITE);
- OPAL_CALL(opal_flash_erase,			OPAL_FLASH_ERASE);
-+OPAL_CALL(opal_leds_get_ind,			OPAL_LEDS_GET_INDICATOR);
-+OPAL_CALL(opal_leds_set_ind,			OPAL_LEDS_SET_INDICATOR);
+Changes in v2:
+  - Rebased patches on top of mpe's next branch
+    https://git.kernel.org/cgit/linux/kernel/git/mpe/linux.git/log/?h=next
+  - Added System Attention Indicator support
+  - Removed redundant code in leds-powernv.c file
+
+
+---
+
+Anshuman Khandual (1):
+      powerpc/powernv: Add OPAL interfaces for accessing and modifying system LED states
+
+Vasant Hegde (2):
+      powerpc/powernv: Create LED platform device
+      leds/powernv: Add driver for PowerNV platform
+
+
+ .../devicetree/bindings/leds/leds-powernv.txt      |   29 +
+ arch/powerpc/include/asm/opal-api.h                |   29 +
+ arch/powerpc/include/asm/opal.h                    |    5 
+ arch/powerpc/platforms/powernv/opal-wrappers.S     |    2 
+ arch/powerpc/platforms/powernv/opal.c              |   12 -
+ drivers/leds/Kconfig                               |   11 
+ drivers/leds/Makefile                              |    1 
+ drivers/leds/leds-powernv.c                        |  472 ++++++++++++++++++++
+ 8 files changed, 559 insertions(+), 2 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/leds/leds-powernv.txt
+ create mode 100644 drivers/leds/leds-powernv.c
+
+--
+Vasant
