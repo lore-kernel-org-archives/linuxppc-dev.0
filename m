@@ -1,39 +1,31 @@
-Return-Path: <stewart@linux.vnet.ibm.com>
-Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <geert.uytterhoeven@gmail.com>
+Received: from mail-oi0-x22d.google.com (mail-oi0-x22d.google.com
+ [IPv6:2607:f8b0:4003:c06::22d])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1D2101A031C
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Apr 2015 16:59:26 +1000 (AEST)
-Received: from /spool/local
- by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <stewart@linux.vnet.ibm.com>;
- Tue, 28 Apr 2015 00:59:24 -0600
-Received: from b01cxnp22035.gho.pok.ibm.com (b01cxnp22035.gho.pok.ibm.com
- [9.57.198.25])
- by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 12EDD38C8026
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Apr 2015 02:59:22 -0400 (EDT)
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
- by b01cxnp22035.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t3S6xMBi53805076
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Apr 2015 06:59:22 GMT
-Received: from d01av02.pok.ibm.com (localhost [127.0.0.1])
- by d01av02.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t3S6xKW5011746
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Apr 2015 02:59:20 -0400
-From: Stewart Smith <stewart@linux.vnet.ibm.com>
-To: Jacek Anaszewski <j.anaszewski81@gmail.com>
-Subject: Re: [PATCH v2 2/2] leds/powernv: Add driver for PowerNV platform
-In-Reply-To: <20150424121629.69a159b3@ja.home>
-References: <20150422234509.626d9dc7@ja.home>
- <55388254.4000606@linux.vnet.ibm.com> <20150423161342.55e9ac8f@ja.home>
- <m3egnama5l.fsf@oc8180480414.ibm.com> <20150424121629.69a159b3@ja.home>
-Date: Tue, 28 Apr 2015 16:59:18 +1000
-Message-ID: <m3zj5slovt.fsf@oc8180480414.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 072101A031C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Apr 2015 17:12:40 +1000 (AEST)
+Received: by oica37 with SMTP id a37so109167295oic.0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Apr 2015 00:12:38 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@lists.ozlabs.org, cooloney@gmail.com, rpurdie@rpsys.net,
- linux-leds@vger.kernel.org, khandual@linux.vnet.ibm.com
+Sender: geert.uytterhoeven@gmail.com
+In-Reply-To: <871tj4uara.fsf@rustcorp.com.au>
+References: <1430128286-8952-1-git-send-email-geert@linux-m68k.org>
+ <CAMuHMdWoUPZ92GX9fe8eq87buLQOT9GMb6Ru3_bQJpkZTFph0g@mail.gmail.com>
+ <871tj4uara.fsf@rustcorp.com.au>
+Date: Tue, 28 Apr 2015 09:12:38 +0200
+Message-ID: <CAMuHMdWj=khxL5dw=O3ymdTE+kBfxa0-gFKZ-ngQ-x4Fzzav1Q@mail.gmail.com>
+Subject: Re: Build regressions/improvements in v4.1-rc1
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: Rusty Russell <rusty@rustcorp.com.au>
+Content-Type: text/plain; charset=UTF-8
+Cc: Linux MIPS Mailing List <linux-mips@linux-mips.org>,
+ Rasmus Villemoes <linux@rasmusvillemoes.dk>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ DRI Development <dri-devel@lists.freedesktop.org>,
+ Mark Brown <broonie@kernel.org>, sparclinux <sparclinux@vger.kernel.org>,
+ Matthew Wilcox <willy@linux.intel.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,26 +35,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Jacek Anaszewski <j.anaszewski81@gmail.com> writes:
-> Is the DT node we are discussing used by some other drivers than the
-> LED class driver? Or is it required in this form by other components of
-> your platform?
+On Tue, Apr 28, 2015 at 6:39 AM, Rusty Russell <rusty@rustcorp.com.au> wrote:
+>>>   + /home/kisskb/slave/src/arch/mips/cavium-octeon/smp.c: error: passing argument 2 of 'cpumask_clear_cpu' discards 'volatile' qualifier from pointer target type [-Werror]:  => 242:2
+>>>   + /home/kisskb/slave/src/arch/mips/kernel/process.c: error: passing argument 2 of 'cpumask_test_cpu' discards 'volatile' qualifier from pointer target type [-Werror]:  => 52:2
+>>>   + /home/kisskb/slave/src/arch/mips/kernel/smp.c: error: passing argument 2 of 'cpumask_set_cpu' discards 'volatile' qualifier from pointer target type [-Werror]:  => 149:2, 211:2
+>>>   + /home/kisskb/slave/src/arch/mips/kernel/smp.c: error: passing argument 2 of 'cpumask_test_cpu' discards 'volatile' qualifier from pointer target type [-Werror]:  => 221:2
 
-OS kernels are the chief consumers, Linux being the overwhelmingly major
-one here.
+> and related warnings due to lack of -Werror on
 
-But this is what firmware currently produces.
+>> tilegx_defconfig
+>
+> Can't see that one with a simple grep: can you post warning?
 
-Changing the DT representation at this stage is perhaps *possible*
-without creating a bunch of pain (I'd have to audit a bunch of things to
-see if we have GA shipping systems with this functionality for instance,
-and then evaluate the impact to partners and our various labs) which is
-a lot of work I don't particularly want to do and is well below urgent
-item 248 on my TODO list, especially for what seems to be largely a
-cosmetic suggestion?
+/home/kisskb/slave/src/arch/tile/kernel/setup.c: In function 'zone_sizes_init':
+/home/kisskb/slave/src/arch/tile/kernel/setup.c:777:3: warning:
+passing argument 2 of 'cpumask_test_cpu' from incompatible pointer
+type [enabled by default]
+/home/kisskb/slave/src/include/linux/cpumask.h:294:19: note: expected
+'const struct cpumask *' but argument is of type 'struct nodemask_t *'
 
-That being said, more and better review of things we're putting in the
-device tree in firmware is probably a good thing. After all, once we
-release we do kind of have to live with it essentially forever. If
-people are able to aid in that kind of code review, I'd be most welcome
-to hear it.
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
