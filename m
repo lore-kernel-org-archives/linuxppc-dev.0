@@ -1,25 +1,16 @@
-Return-Path: <eric.dumazet@gmail.com>
-Received: from mail-ig0-x232.google.com (mail-ig0-x232.google.com
- [IPv6:2607:f8b0:4001:c05::232])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 44A531A0140
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Apr 2015 10:25:08 +1000 (AEST)
-Received: by igbhj9 with SMTP id hj9so8085324igb.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Apr 2015 17:25:06 -0700 (PDT)
-Message-ID: <1430179812.22254.240.camel@edumazet-glaptop2.roam.corp.google.com>
-Subject: Re: [PATCH net-next v2 4/4] ibmveth: Add support for Large Receive
- Offload
-From: Eric Dumazet <eric.dumazet@gmail.com>
-To: Thomas Falcon <tlfalcon@linux.vnet.ibm.com>
-In-Reply-To: <1430172655-17606-4-git-send-email-tlfalcon@linux.vnet.ibm.com>
-References: <1430172655-17606-1-git-send-email-tlfalcon@linux.vnet.ibm.com>
- <1430172655-17606-4-git-send-email-tlfalcon@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Date: Mon, 27 Apr 2015 17:10:12 -0700
-Mime-Version: 1.0
-Cc: Brian King <brking@linux.vnet.ibm.com>, netdev@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, nfont@linux.vnet.ibm.com
+ by lists.ozlabs.org (Postfix) with ESMTPS id 892811A0244
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Apr 2015 10:42:50 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: <linuxppc-dev@ozlabs.org>
+Subject: [PATCH] powerpc/kvm: Fix SMP=n build error in book3s_xics.c
+Date: Tue, 28 Apr 2015 10:42:47 +1000
+Message-Id: <1430181767-2193-1-git-send-email-mpe@ellerman.id.au>
+Cc: warrier@linux.vnet.ibm.com, Paul Mackerras <paulus@samba.org>,
+ agraf@suse.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,23 +20,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2015-04-27 at 17:10 -0500, Thomas Falcon wrote:
+Commit 34cb7954c0aa "Convert ICS mutex lock to spin lock" added an
+include of asm/spinlock.h, which does not work in the SMP=n case.
 
+It should instead include linux/spinlock.h
 
+Fixes: 34cb7954c0aa ("KVM: PPC: Book3S HV: Convert ICS mutex lock to spin lock")
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
 
+I'll drop this in my fixes branch for tomorrow unless someone objects.
 
-> +				if (be16_to_cpu(skb->protocol) == ETH_P_IP) {
-> +					skb_set_network_header(skb, 0);
-> +					skb_set_transport_header(skb, sizeof(struct iphdr));
-> +					iph = ip_hdr(skb);
-> +
+ arch/powerpc/kvm/book3s_xics.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-All this should really be :
-
-if (skb->protocol == htons(ETH_P_IP)) {
-	iph = (struct iphdr *)skb->data;
-
-Because setting network header and a (potentially wrong) transport
-header is confusing at this stage.
-
-(It should be done later in core networking stack)
+diff --git a/arch/powerpc/kvm/book3s_xics.c b/arch/powerpc/kvm/book3s_xics.c
+index 8f3e6cc54d95..c6ca7db64673 100644
+--- a/arch/powerpc/kvm/book3s_xics.c
++++ b/arch/powerpc/kvm/book3s_xics.c
+@@ -12,6 +12,7 @@
+ #include <linux/err.h>
+ #include <linux/gfp.h>
+ #include <linux/anon_inodes.h>
++#include <linux/spinlock.h>
+ 
+ #include <asm/uaccess.h>
+ #include <asm/kvm_book3s.h>
+@@ -20,7 +21,6 @@
+ #include <asm/xics.h>
+ #include <asm/debug.h>
+ #include <asm/time.h>
+-#include <asm/spinlock.h>
+ 
+ #include <linux/debugfs.h>
+ #include <linux/seq_file.h>
+-- 
+2.1.0
