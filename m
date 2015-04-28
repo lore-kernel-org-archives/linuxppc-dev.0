@@ -1,34 +1,21 @@
-Return-Path: <geert.uytterhoeven@gmail.com>
-Received: from mail-ob0-x22f.google.com (mail-ob0-x22f.google.com
- [IPv6:2607:f8b0:4003:c01::22f])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 877F11A017C
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Apr 2015 22:29:30 +1000 (AEST)
-Received: by oblw8 with SMTP id w8so106801385obl.0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Apr 2015 05:29:27 -0700 (PDT)
+Return-Path: <acme@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
+ by lists.ozlabs.org (Postfix) with ESMTP id 6DCDB1A0211
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Apr 2015 23:46:17 +1000 (AEST)
+Date: Tue, 28 Apr 2015 10:46:12 -0300
+From: Arnaldo Carvalho de Melo <acme@kernel.org>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+Subject: Re: [PATCH v3 1/7] perf probe: Improve detection of file/function
+ name in the probe pattern
+Message-ID: <20150428134612.GJ16849@kernel.org>
+References: <cover.1430217967.git.naveen.n.rao@linux.vnet.ibm.com>
+ <db680f7cb11c4452b632f908e67151f3aa0f4602.1430217967.git.naveen.n.rao@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Sender: geert.uytterhoeven@gmail.com
-In-Reply-To: <87pp6osaog.fsf@rustcorp.com.au>
-References: <1430128286-8952-1-git-send-email-geert@linux-m68k.org>
- <CAMuHMdWoUPZ92GX9fe8eq87buLQOT9GMb6Ru3_bQJpkZTFph0g@mail.gmail.com>
- <871tj4uara.fsf@rustcorp.com.au>
- <CAMuHMdWj=khxL5dw=O3ymdTE+kBfxa0-gFKZ-ngQ-x4Fzzav1Q@mail.gmail.com>
- <87pp6osaog.fsf@rustcorp.com.au>
-Date: Tue, 28 Apr 2015 14:29:27 +0200
-Message-ID: <CAMuHMdXEH6ZnTSdBi2uJzPriqTLvJvd0bPYH3NPWV5LjZB5S=A@mail.gmail.com>
-Subject: Re: Build regressions/improvements in v4.1-rc1
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: Rusty Russell <rusty@rustcorp.com.au>
-Content-Type: text/plain; charset=UTF-8
-Cc: Linux MIPS Mailing List <linux-mips@linux-mips.org>,
- Rasmus Villemoes <linux@rasmusvillemoes.dk>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- DRI Development <dri-devel@lists.freedesktop.org>,
- Chris Metcalf <cmetcalf@ezchip.com>, Mark Brown <broonie@kernel.org>,
- sparclinux <sparclinux@vger.kernel.org>,
- Matthew Wilcox <willy@linux.intel.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <db680f7cb11c4452b632f908e67151f3aa0f4602.1430217967.git.naveen.n.rao@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, masami.hiramatsu.pt@hitachi.com,
+ sukadev@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ srikar@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,21 +25,105 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-cc Chris
+Em Tue, Apr 28, 2015 at 05:35:34PM +0530, Naveen N. Rao escreveu:
+> Currently, perf probe considers patterns including a '.' to be a file.
+> However, this causes problems on powerpc ABIv1 where all functions have
+> a leading '.':
+> 
+>   $ perf probe -F | grep schedule_timeout_interruptible
+>   .schedule_timeout_interruptible
+>   $ perf probe .schedule_timeout_interruptible
+>   Semantic error :File always requires line number or lazy pattern.
+>     Error: Command Parse Error.
 
-On Tue, Apr 28, 2015 at 2:24 PM, Rusty Russell <rusty@rustcorp.com.au> wrote:
-> Geert Uytterhoeven <geert@linux-m68k.org> writes:
->>> Can't see that one with a simple grep: can you post warning?
->>
->> /home/kisskb/slave/src/arch/tile/kernel/setup.c: In function 'zone_sizes_init':
->> /home/kisskb/slave/src/arch/tile/kernel/setup.c:777:3: warning:
->> passing argument 2 of 'cpumask_test_cpu' from incompatible pointer
->> type [enabled by default]
->> /home/kisskb/slave/src/include/linux/cpumask.h:294:19: note: expected
->> 'const struct cpumask *' but argument is of type 'struct nodemask_t *'
->
-> Um, I turned the cpu_isset() into cpumask_test_cpu(), but that just
-> showed this bug up.  The tile maintainers need to fix this one.
->
-> Thanks,
-> Rusty.
+Just gave this a real quick look, saw no problems, but I'll defer this
+to Masami, a reviewed-by tag from him, ok Masami?
+
+- Arnaldo
+ 
+> Fix this:
+> - by checking the probe pattern in more detail, and
+> - skipping leading dot if one exists when creating/deleting events.
+> 
+> Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+> Reviewed-by: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+> ---
+> Changes:
+> - Folded initial part of patch 04 [now 03] into this per Masami.
+> - Moved to using a bool file_spec and some whitespace changes.
+> 
+> 
+>  tools/perf/util/probe-event.c | 29 ++++++++++++++++++++++++++---
+>  1 file changed, 26 insertions(+), 3 deletions(-)
+> 
+> diff --git a/tools/perf/util/probe-event.c b/tools/perf/util/probe-event.c
+> index d8bb616..a8c19d5 100644
+> --- a/tools/perf/util/probe-event.c
+> +++ b/tools/perf/util/probe-event.c
+> @@ -1077,6 +1077,7 @@ static int parse_perf_probe_point(char *arg, struct perf_probe_event *pev)
+>  	struct perf_probe_point *pp = &pev->point;
+>  	char *ptr, *tmp;
+>  	char c, nc = 0;
+> +	bool file_spec = false;
+>  	/*
+>  	 * <Syntax>
+>  	 * perf probe [EVENT=]SRC[:LN|;PTN]
+> @@ -1105,6 +1106,23 @@ static int parse_perf_probe_point(char *arg, struct perf_probe_event *pev)
+>  		arg = tmp;
+>  	}
+>  
+> +	/*
+> +	 * Check arg is function or file name and copy it.
+> +	 *
+> +	 * We consider arg to be a file spec if and only if it satisfies
+> +	 * all of the below criteria::
+> +	 * - it does not include any of "+@%",
+> +	 * - it includes one of ":;", and
+> +	 * - it has a period '.' in the name.
+> +	 *
+> +	 * Otherwise, we consider arg to be a function specification.
+> +	 */
+> +	if (!strpbrk(arg, "+@%") && (ptr = strpbrk(arg, ";:")) != NULL) {
+> +		/* This is a file spec if it includes a '.' before ; or : */
+> +		if (memchr(arg, '.', ptr - arg))
+> +			file_spec = true;
+> +	}
+> +
+>  	ptr = strpbrk(arg, ";:+@%");
+>  	if (ptr) {
+>  		nc = *ptr;
+> @@ -1115,10 +1133,9 @@ static int parse_perf_probe_point(char *arg, struct perf_probe_event *pev)
+>  	if (tmp == NULL)
+>  		return -ENOMEM;
+>  
+> -	/* Check arg is function or file and copy it */
+> -	if (strchr(tmp, '.'))	/* File */
+> +	if (file_spec)
+>  		pp->file = tmp;
+> -	else			/* Function */
+> +	else
+>  		pp->function = tmp;
+>  
+>  	/* Parse other options */
+> @@ -2265,6 +2282,9 @@ static int get_new_event_name(char *buf, size_t len, const char *base,
+>  {
+>  	int i, ret;
+>  
+> +	if (*base == '.')
+> +		base++;
+> +
+>  	/* Try no suffix */
+>  	ret = e_snprintf(buf, len, "%s", base);
+>  	if (ret < 0) {
+> @@ -2751,6 +2771,9 @@ int del_perf_probe_events(struct strlist *dellist)
+>  			event = str;
+>  		}
+>  
+> +		if (event && *event == '.')
+> +			event++;
+> +
+>  		ret = e_snprintf(buf, 128, "%s:%s", group, event);
+>  		if (ret < 0) {
+>  			pr_err("Failed to copy event.");
+> -- 
+> 2.3.5
