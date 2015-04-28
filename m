@@ -1,26 +1,46 @@
-Return-Path: <dja@axtens.net>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <shilpa.bhat@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9DCB11A0567
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Apr 2015 15:12:38 +1000 (AEST)
-Received: from mail-pa0-x235.google.com (mail-pa0-x235.google.com
- [IPv6:2607:f8b0:400e:c03::235])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ by lists.ozlabs.org (Postfix) with ESMTPS id 54DE91A0244
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Apr 2015 15:37:15 +1000 (AEST)
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 16603140083
- for <linuxppc-dev@ozlabs.org>; Tue, 28 Apr 2015 15:12:38 +1000 (AEST)
-Received: by pabtp1 with SMTP id tp1so152823345pab.2
- for <linuxppc-dev@ozlabs.org>; Mon, 27 Apr 2015 22:12:36 -0700 (PDT)
-From: Daniel Axtens <dja@axtens.net>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 3/3] powerpc/powernv: Move dma_set_mask from pnv_phb to
- pci_controller_ops
-Date: Tue, 28 Apr 2015 15:12:07 +1000
-Message-Id: <1430197927-24814-4-git-send-email-dja@axtens.net>
-In-Reply-To: <1430197927-24814-1-git-send-email-dja@axtens.net>
-References: <1430197927-24814-1-git-send-email-dja@axtens.net>
-Cc: Daniel Axtens <dja@axtens.net>
+ by ozlabs.org (Postfix) with ESMTPS id 244A714007D
+ for <linuxppc-dev@ozlabs.org>; Tue, 28 Apr 2015 15:37:15 +1000 (AEST)
+Received: from /spool/local
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <shilpa.bhat@linux.vnet.ibm.com>;
+ Tue, 28 Apr 2015 15:37:12 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id D9EF42BB004D
+ for <linuxppc-dev@ozlabs.org>; Tue, 28 Apr 2015 15:37:07 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t3S5axRB25952336
+ for <linuxppc-dev@ozlabs.org>; Tue, 28 Apr 2015 15:37:07 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t3S5aY41000522
+ for <linuxppc-dev@ozlabs.org>; Tue, 28 Apr 2015 15:36:34 +1000
+Message-ID: <553F1C51.4060901@linux.vnet.ibm.com>
+Date: Tue, 28 Apr 2015 11:06:17 +0530
+From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: Viresh Kumar <viresh.kumar@linaro.org>
+Subject: Re: [PATCH 2/2] cpufreq: powernv: Register for OCC related
+ opal_message notification
+References: <1429722265-2953-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ <1429722265-2953-2-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ <CAKohpo=8m=PAof-AF2AQ+rMu-0bF8CvGywb-YaN=u3sJXjLvnw@mail.gmail.com>
+In-Reply-To: <CAKohpo=8m=PAof-AF2AQ+rMu-0bF8CvGywb-YaN=u3sJXjLvnw@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,161 +50,115 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Previously, dma_set_mask on powernv was convoluted:
-0) Call dma_set_mask (kernel/dma.c)
-1) In dma_set_mask, ppc_md.dma_set_mask exists, so call it.
-2) On powernv, that function pointer is pnv_dma_set_mask.
-   In pnv_dma_set_mask, the device is pci, so call pnv_pci_dma_set_mask.
-3) In pnv_pci_dma_set_mask, call pnv_phb->set_dma_mask if it exists.
-4) It only exists in the ioda case, where it points to
-   pnv_pci_ioda_dma_set_mask, which is the final function.
+Hi Viresh,
 
-So the call chain is:
- dma_set_mask ->
-  pnv_dma_set_mask ->
-   pnv_pci_dma_set_mask ->
-    pnv_pci_ioda_dma_set_mask
-Both ppc_md and pnv_phb function pointers are used
+On 04/27/2015 10:02 AM, Viresh Kumar wrote:
+> On 22 April 2015 at 22:34, Shilpasri G Bhat
+> <shilpa.bhat@linux.vnet.ibm.com> wrote:
+>> diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+> 
+>> +static char throttle_reason[6][50] = { "No throttling",
+> 
+> Don't need to mention 6 here.
+> 
+> And the max length you need right now is 27, so maybe s/50/30 ?
+> 
+> Also, start 'No Throttling' in a new line, like below.
 
-Rip out the ppc_md call, pnv_dma_set_mask, pnv_pci_dma_set_mask.
-Instead:
-0) Call dma_set_mask (kernel/dma.c)
-1) In dma_set_mask, the device is pci, and pci_controller_ops.dma_set_mask
-   exists, so call pci_controller_ops.dma_set_mask
-2) In the ioda case, that points to pnv_pci_ioda_dma_set_mask.
+Will do.
+> 
+>> +                                       "Power Cap",
+>> +                                       "Processor Over Temperature",
+>> +                                       "Power Supply Failure",
+>> +                                       "OverCurrent",
+> 
+> s/OverCurrent/Over Current/ ?
 
-The new call chain is
- dma_set_mask ->
-  pnv_pci_ioda_dma_set_mask
-Now only the pci_controller_ops function pointer is used.
+Okay.
+> 
+>> +                                       "OCC Reset"
+>> +                                    };
+>> +
+>> +static int powernv_cpufreq_occ_msg(struct notifier_block *nb,
+>> +               unsigned long msg_type, void *msg)
+>> +{
+>> +       struct opal_msg *occ_msg = msg;
+>> +       uint64_t token;
+>> +       uint64_t chip_id, reason;
+>> +
+>> +       if (msg_type != OPAL_MSG_OCC)
+>> +               return 0;
+> 
+> Blank line here.
 
-The fallback paths for p5ioc2 are the same.
-Previously, pnv_pci_dma_set_mask would find no pnv_phb->set_dma_mask
-function, to it would call __set_dma_mask.
-Now, dma_set_mask finds no ppc_md call or pci_controller_ops call,
-so it calls __set_dma_mask.
+Okay
+> 
+>> +       token = be64_to_cpu(occ_msg->params[0]);
+> 
+> Here as well..
+> 
+>> +       switch (token) {
+>> +       case 0:
+>> +               occ_reset = true;
+>> +               /*
+>> +                * powernv_cpufreq_throttle_check() is called in
+>> +                * target() callback which can detect the throttle state
+>> +                * for governors like ondemand.
+>> +                * But static governors will not call target() often thus
+>> +                * report throttling here.
+>> +                */
+> 
+> Now, do I understand correctly that this notifier will be called as
+> soon as we switch throttling state ?
+> 
+> If yes, then do we still need the throttle_check() routine you added
+> earlier ? Maybe not.
 
-Signed-off-by: Daniel Axtens <dja@axtens.net>
----
- arch/powerpc/platforms/powernv/pci-ioda.c |  7 ++++---
- arch/powerpc/platforms/powernv/pci.c      | 10 ----------
- arch/powerpc/platforms/powernv/pci.h      |  2 --
- arch/powerpc/platforms/powernv/powernv.h  |  6 ------
- arch/powerpc/platforms/powernv/setup.c    |  8 --------
- 5 files changed, 4 insertions(+), 29 deletions(-)
+We cannot remove throttle_check() routine for the following reasons:
+1) To report old firmware bugs which do not restore frequency control to host
+after an OCC reset.
+2) In BMC based boxes if OCC crashes currently firmware will not send 'reset'
+and 'load' messages, in such cases throttle_check() will be sufficient to
+monitor a throttled state caused by 'reset'.
+3) Throttle reporting in old firmwares which do not have this notification.
 
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index c853b62..1e77a50 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -1603,9 +1603,10 @@ static void pnv_pci_ioda_dma_dev_setup(struct pnv_phb *phb, struct pci_dev *pdev
- 	set_iommu_table_base_and_group(&pdev->dev, pe->tce32_table);
- }
- 
--static int pnv_pci_ioda_dma_set_mask(struct pnv_phb *phb,
--				     struct pci_dev *pdev, u64 dma_mask)
-+static int pnv_pci_ioda_dma_set_mask(struct pci_dev *pdev, u64 dma_mask)
- {
-+	struct pci_controller *hose = pci_bus_to_host(pdev->bus);
-+	struct pnv_phb *phb = hose->private_data;
- 	struct pci_dn *pdn = pci_get_pdn(pdev);
- 	struct pnv_ioda_pe *pe;
- 	uint64_t top;
-@@ -2793,7 +2794,6 @@ static void __init pnv_pci_init_ioda_phb(struct device_node *np,
- 
- 	/* Setup TCEs */
- 	phb->dma_dev_setup = pnv_pci_ioda_dma_dev_setup;
--	phb->dma_set_mask = pnv_pci_ioda_dma_set_mask;
- 	phb->dma_get_required_mask = pnv_pci_ioda_dma_get_required_mask;
- 
- 	/* Setup shutdown function for kexec */
-@@ -2877,4 +2877,5 @@ static const struct pci_controller_ops pnv_pci_ioda_controller_ops = {
-        .enable_device_hook = pnv_pci_enable_device_hook,
-        .window_alignment = pnv_pci_window_alignment,
-        .reset_secondary_bus = pnv_pci_reset_secondary_bus,
-+       .dma_set_mask = pnv_pci_ioda_dma_set_mask,
- };
-diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
-index d7e37d8..acc0ced 100644
---- a/arch/powerpc/platforms/powernv/pci.c
-+++ b/arch/powerpc/platforms/powernv/pci.c
-@@ -689,16 +689,6 @@ void pnv_pci_dma_dev_setup(struct pci_dev *pdev)
- 		phb->dma_dev_setup(phb, pdev);
- }
- 
--int pnv_pci_dma_set_mask(struct pci_dev *pdev, u64 dma_mask)
--{
--	struct pci_controller *hose = pci_bus_to_host(pdev->bus);
--	struct pnv_phb *phb = hose->private_data;
--
--	if (phb && phb->dma_set_mask)
--		return phb->dma_set_mask(phb, pdev, dma_mask);
--	return __dma_set_mask(&pdev->dev, dma_mask);
--}
--
- u64 pnv_pci_dma_get_required_mask(struct pci_dev *pdev)
- {
- 	struct pci_controller *hose = pci_bus_to_host(pdev->bus);
-diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
-index b6d1290..60bb935 100644
---- a/arch/powerpc/platforms/powernv/pci.h
-+++ b/arch/powerpc/platforms/powernv/pci.h
-@@ -106,8 +106,6 @@ struct pnv_phb {
- 			 unsigned int hwirq, unsigned int virq,
- 			 unsigned int is_64, struct msi_msg *msg);
- 	void (*dma_dev_setup)(struct pnv_phb *phb, struct pci_dev *pdev);
--	int (*dma_set_mask)(struct pnv_phb *phb, struct pci_dev *pdev,
--			    u64 dma_mask);
- 	u64 (*dma_get_required_mask)(struct pnv_phb *phb,
- 				     struct pci_dev *pdev);
- 	void (*fixup_phb)(struct pci_controller *hose);
-diff --git a/arch/powerpc/platforms/powernv/powernv.h b/arch/powerpc/platforms/powernv/powernv.h
-index 604c48e..1e56962 100644
---- a/arch/powerpc/platforms/powernv/powernv.h
-+++ b/arch/powerpc/platforms/powernv/powernv.h
-@@ -12,17 +12,11 @@ struct pci_dev;
- #ifdef CONFIG_PCI
- extern void pnv_pci_init(void);
- extern void pnv_pci_shutdown(void);
--extern int pnv_pci_dma_set_mask(struct pci_dev *pdev, u64 dma_mask);
- extern u64 pnv_pci_dma_get_required_mask(struct pci_dev *pdev);
- #else
- static inline void pnv_pci_init(void) { }
- static inline void pnv_pci_shutdown(void) { }
- 
--static inline int pnv_pci_dma_set_mask(struct pci_dev *pdev, u64 dma_mask)
--{
--	return -ENODEV;
--}
--
- static inline u64 pnv_pci_dma_get_required_mask(struct pci_dev *pdev)
- {
- 	return 0;
-diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
-index 16fdcb2..92fcc04 100644
---- a/arch/powerpc/platforms/powernv/setup.c
-+++ b/arch/powerpc/platforms/powernv/setup.c
-@@ -169,13 +169,6 @@ static void pnv_progress(char *s, unsigned short hex)
- {
- }
- 
--static int pnv_dma_set_mask(struct device *dev, u64 dma_mask)
--{
--	if (dev_is_pci(dev))
--		return pnv_pci_dma_set_mask(to_pci_dev(dev), dma_mask);
--	return __dma_set_mask(dev, dma_mask);
--}
--
- static u64 pnv_dma_get_required_mask(struct device *dev)
- {
- 	if (dev_is_pci(dev))
-@@ -492,7 +485,6 @@ define_machine(powernv) {
- 	.machine_shutdown	= pnv_shutdown,
- 	.power_save             = power7_idle,
- 	.calibrate_decr		= generic_calibrate_decr,
--	.dma_set_mask		= pnv_dma_set_mask,
- 	.dma_get_required_mask	= pnv_dma_get_required_mask,
- #ifdef CONFIG_KEXEC
- 	.kexec_cpu_down		= pnv_kexec_cpu_down,
--- 
-2.1.4
+> 
+>> +               if (!throttled) {
+>> +                       throttled = true;
+>> +                       pr_crit("CPU Frequency is throttled\n");
+>> +               }
+>> +               pr_info("OCC in Reset\n");
+>> +               break;
+>> +       case 1:
+>> +               pr_info("OCC is Loaded\n");
+>> +               break;
+>> +       case 2:
+>> +               chip_id = be64_to_cpu(occ_msg->params[1]);
+>> +               reason = be64_to_cpu(occ_msg->params[2]);
+> 
+> Blank line here.
+
+Okay
+> 
+>> +               if (occ_reset) {
+>> +                       occ_reset = false;
+>> +                       throttled = false;
+>> +                       pr_info("OCC is Active\n");
+>> +                       /* Sanity check for static governors */
+>> +                       powernv_cpufreq_throttle_check(smp_processor_id());
+>> +               } else if (reason) {
+>> +                       throttled = true;
+>> +                       pr_info("Pmax reduced due to %s on chip %x\n",
+>> +                                       throttle_reason[reason], (int)chip_id);
+>> +               } else {
+>> +                       throttled = false;
+>> +                       pr_info("%s on chip %x\n",
+>> +                                       throttle_reason[reason], (int)chip_id);
+>> +               }
+> 
+> Run checkpatch with --strict option, and you will see some warnings.
+
+Okay will do.
+
+Thanks and Regards,
+Shilpa
