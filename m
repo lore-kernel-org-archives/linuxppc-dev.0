@@ -1,19 +1,38 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
+Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E59DE1A0025
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Apr 2015 14:53:27 +1000 (AEST)
-Message-ID: <1430283207.12906.1.camel@ellerman.id.au>
-Subject: Re: [PATCH] Correct cpu affinity for dlpar added cpus
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-Date: Wed, 29 Apr 2015 14:53:27 +1000
-In-Reply-To: <553FA94D.2000608@linux.vnet.ibm.com>
-References: <553FA94D.2000608@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id AECAE1A0025
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Apr 2015 15:19:22 +1000 (AEST)
+Received: from /spool/local
+ by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
+ Wed, 29 Apr 2015 10:49:19 +0530
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 7BFA31258044
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Apr 2015 10:51:18 +0530 (IST)
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay01.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t3T5JFYv3146076
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Apr 2015 10:49:16 +0530
+Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t3T5JEQP026592
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Apr 2015 10:49:15 +0530
+Date: Wed, 29 Apr 2015 10:48:45 +0530
+From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
+To: Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>
+Subject: Re: [PATCH v3 0/7] Fixes for perf probe issues on ppc
+Message-ID: <20150429051845.GD31661@naverao1-tp.ibm.com>
+References: <cover.1430217967.git.naveen.n.rao@linux.vnet.ibm.com>
+ <20150428135453.GL16849@kernel.org> <554006DD.50202@hitachi.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <554006DD.50202@hitachi.com>
+Cc: linux-kernel@vger.kernel.org, Arnaldo Carvalho de Melo <acme@kernel.org>,
+ sukadev@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
+ srikar@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,40 +42,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Subject should be "powerpc/pseries: ..." please.
+On 2015/04/29 07:17AM, Masami Hiramatsu wrote:
+> On 2015/04/28 22:54, Arnaldo Carvalho de Melo wrote:
+> > Em Tue, Apr 28, 2015 at 05:35:33PM +0530, Naveen N. Rao escreveu:
+> >> This patchset fixes various issues with perf probe on powerpc across ABIv1 and
+> >> ABIv2:
+> >> - in the presence of DWARF debug-info,
+> >> - in the absence of DWARF, but with the symbol table, and
+> >> - in the absence of debug-info, but with kallsyms.
+> >>
+> >> Arnaldo,
+> >> I have moved all patches to use __weak functions. Kindly take a look and let me
+> >> know if this is what you had in mind.
+> > 
+> > Ok, I applied all but the first, for which I am waiting for Masami's
+> > reaction, I kept Srikar's reviewed-by for the other patches, but would
+> > as well like to get his word that he keeps it after the __weak changes.
+> > 
+> > So, for now, I'll leave it for a while sitting in my local tree, to give
+> > time to Masami and Srikar, ok?
+> 
+> OK, I reviewed all the patches in this series :)
 
-On Tue, 2015-04-28 at 10:37 -0500, Nathan Fontenot wrote:
-> The incorrect ordering of operations during cpu dlpar causes the affinity
-> of cpus being added to be invalid. Phyp does not assign affinity information
-> for a cpu until the rtas set-indicator calls are made to set the isolation
-> and allocation state. In the current code we call rtas configure-connector
-> before making the set-indicator calls which results in invalid data in the
-> ibm,associativity property for the cpu we're adding.
+Thanks for the review!
+- Naveen
 
-Invalid and benign? Or invalid and causes an oops or ..?
-
-> This patch corrects the order of operations to make the set-indicator
-> calls (done in acquire_drc) before calling configure-connector.
-
-Which commit added the code and/or caused it to be wrong?
-
-  https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/Documentation/SubmittingPatches#n187
-
-
-While looking at the code I notice it looks like we leak a reference if
-dlpar_configure_connector() fails:
-
-	parent = of_find_node_by_path("/cpus");
-	if (!parent)
-		return -ENODEV;
-
-	dn = dlpar_configure_connector(cpu_to_be32(drc_index), parent);
-	if (!dn)
-		return -EINVAL;
-
-	of_node_put(parent);
-
-
-Please send a separate patch to fix that.
-
-cheers
+> 
+> Acked-by: Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>
+> for this series.
+> 
+> Thank you!
+> 
+> -- 
+> Masami HIRAMATSU
+> Linux Technology Research Center, System Productivity Research Dept.
+> Center for Technology Innovation - Systems Engineering
+> Hitachi, Ltd., Research & Development Group
+> E-mail: masami.hiramatsu.pt@hitachi.com
+> 
