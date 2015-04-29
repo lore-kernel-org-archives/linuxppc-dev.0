@@ -1,28 +1,20 @@
-Return-Path: <arnd@arndb.de>
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.10])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <madalin.bucur@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bon0119.outbound.protection.outlook.com [157.56.111.119])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7B3E01A0E8B
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Apr 2015 00:45:43 +1000 (AEST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: Suman Tripathi <stripathi@apm.com>
-Subject: Re: [PATCH v2 RESEND 2/2] mmc: host: Add some quirks to be read from
- fdt in sdhci-pltm.c
-Date: Wed, 29 Apr 2015 16:45:30 +0200
-Message-ID: <2511590.IBzkZm5Ibi@wuerfel>
-In-Reply-To: <CAOHikRD6enDS2VyYH4Nz_+wz_m2v-61QyBDLixZxm-Y0qYtojA@mail.gmail.com>
-References: <1429630959-32649-1-git-send-email-stripathi@apm.com>
- <17258495.kJWOqBBcrn@wuerfel>
- <CAOHikRD6enDS2VyYH4Nz_+wz_m2v-61QyBDLixZxm-Y0qYtojA@mail.gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id E25E31A0EC7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Apr 2015 00:56:24 +1000 (AEST)
+From: Madalin Bucur <madalin.bucur@freescale.com>
+To: <netdev@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>
+Subject: [RFC,v3 00/10] Introduce DPAA Ethernet driver
+Date: Wed, 29 Apr 2015 17:56:07 +0300
+Message-ID: <1430319367-31234-1-git-send-email-madalin.bucur@freescale.com>
+Reply-To: <madalin.bucur@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Ulf Hansson <ulf.hansson@linaro.org>, Mark Langsdorf <mlangsdo@redhat.com>,
- Jon Masters <jcm@redhat.com>, Anton Vorontsov <anton@enomsg.org>,
- linux-mmc <linux-mmc@vger.kernel.org>, Chris Ball <chris@printf.net>,
- patches <patches@apm.com>, Don Dutile <ddutile@redhat.com>,
- linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain
+Cc: joe@perches.com, pebolle@tiscali.nl, linux-kernel@vger.kernel.org,
+ Madalin Bucur <madalin.bucur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,28 +24,96 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wednesday 29 April 2015 19:55:53 Suman Tripathi wrote:
-> >
-> > The above assumes that the limitation is enforced by the bus (e.g. an
-> > AHB bus can only do 32-bit DMA). It would be a little different if you
-> > have a 64-bit AXI bus and the Arasan device itself is limited to 32-bit
-> > independent of the width of the bus it is connected to. Can you find out
-> > which of these two cases you have?
-> >
-> 
-> We have 64 bit AXI and Arasan device or controller is 32 bit . So there is
-> 64 bit AXI to 32 bit AHB translation.
+This is the 3rd version of a patch series that adds
+the Ethernet driver for the Freescale QorIQ Data Path
+Acceleration Architecture (DPAA).
 
-Please be very specific here. If this is an AHB based MMC controller, you
-should model that AHB bus in DT, with the 32-bit dma-ranges.
+This version addresses the feedback received from Joe
+Perches and Paul Bolle. 
 
-However, if this is an AXI based MMC controller that is limited to 32-bit
-DMA, the correct change would be to make ensure that the driver never
-asks for a 64-bit DMA mask with this hardware.
+Together with the driver a managed version of alloc_percpu
+is provided that simplifies the release of percpu memory.
 
-Both will result in a 32-bit dma mask being used, and high DMA handled
-through the block bounce code or swiotlb, but it's best to ensure that
-the DT representation matches the actual hardware as closely as possible,
-so it keeps working when you change something in a future chip.
+The Freescale DPAA architecture consists in a series of
+hardware blocks that support the Ethernet connectivity.
+the Ethernet driver depends upon the Peripheral Access
+Memory Unit (PAMU), Frame Manager (FMan), Queue Manager
+(QMan), Buffer Manager (BMan). Drivers for these blocks
+are currently in the kernel or in review.
 
-	Arnd
+The current set of RFC patches is meant to provide early
+access to the codebase and also provide context and aid
+the review of the latest FMan driver patches submitted
+by Igal Liberman:
+
+https://patchwork.ozlabs.org/project/linuxppc-dev/list/?submitter=Igal.Liberman&state=*&q=RFC%2Cv3
+
+These patches rely also on the Q/BMan drivers submitted
+by Emil Medve:
+
+https://patchwork.ozlabs.org/project/linuxppc-dev/list/?submitter=Emil+Medve&state=*&q=RFC
+
+The complete set of patches will be available soon in this
+public git repository under the ldup_public_git_20150429 tag:
+http://git.freescale.com/git/cgit.cgi/ppc/upstream/linux.git/
+
+Due to device tree binding changes, a u-boot patch is also
+required to be applied to enable this set of drivers.
+The u-boot patch is available in this public git under the 
+ldup_public_git_20150410 tag:
+
+http://git.freescale.com/git/cgit.cgi/ppc/upstream/u-boot.git/
+
+The actual patch is 052f94430230e7ff388e6ae7daec45ba4f2f6b2f
+powerpc/mpc85xx: align to the new FMan compatibles
+
+http://git.freescale.com/git/cgit.cgi/ppc/upstream/u-boot.git/commit/?id=052f94430230e7ff388e6ae7daec45ba4f2f6b2f
+
+The SDK documentation and source code, documentation for
+the DPAA hardware are available at the company website.
+
+Madalin Bucur (10):
+  devres: add devm_alloc_percpu()
+  dpaa_eth: add support for DPAA Ethernet
+  dpaa_eth: add configurable bpool thresholds
+  dpaa_eth: add support for S/G frames
+  dpaa_eth: add driver's Tx queue selection mechanism
+  dpaa_eth: add ethtool functionality
+  dpaa_eth: add sysfs exports
+  dpaa_eth: add debugfs counters
+  dpaa_eth: add debugfs entries
+  dpaa_eth: add trace points
+
+ Documentation/driver-model/devres.txt              |    4 +
+ drivers/base/devres.c                              |   64 +
+ drivers/net/ethernet/freescale/Kconfig             |    2 +
+ drivers/net/ethernet/freescale/Makefile            |    1 +
+ drivers/net/ethernet/freescale/dpaa/Kconfig        |   81 ++
+ drivers/net/ethernet/freescale/dpaa/Makefile       |   17 +
+ drivers/net/ethernet/freescale/dpaa/dpaa_debugfs.c |  273 ++++
+ drivers/net/ethernet/freescale/dpaa/dpaa_debugfs.h |   43 +
+ drivers/net/ethernet/freescale/dpaa/dpaa_eth.c     |  875 +++++++++++++
+ drivers/net/ethernet/freescale/dpaa/dpaa_eth.h     |  495 +++++++
+ .../net/ethernet/freescale/dpaa/dpaa_eth_common.c  | 1379 ++++++++++++++++++++
+ .../net/ethernet/freescale/dpaa/dpaa_eth_common.h  |  130 ++
+ drivers/net/ethernet/freescale/dpaa/dpaa_eth_sg.c  |  726 +++++++++++
+ .../net/ethernet/freescale/dpaa/dpaa_eth_sysfs.c   |  168 +++
+ .../net/ethernet/freescale/dpaa/dpaa_eth_trace.h   |  141 ++
+ drivers/net/ethernet/freescale/dpaa/dpaa_ethtool.c |  247 ++++
+ include/linux/device.h                             |   19 +
+ 17 files changed, 4665 insertions(+)
+ create mode 100644 drivers/net/ethernet/freescale/dpaa/Kconfig
+ create mode 100644 drivers/net/ethernet/freescale/dpaa/Makefile
+ create mode 100644 drivers/net/ethernet/freescale/dpaa/dpaa_debugfs.c
+ create mode 100644 drivers/net/ethernet/freescale/dpaa/dpaa_debugfs.h
+ create mode 100644 drivers/net/ethernet/freescale/dpaa/dpaa_eth.c
+ create mode 100644 drivers/net/ethernet/freescale/dpaa/dpaa_eth.h
+ create mode 100644 drivers/net/ethernet/freescale/dpaa/dpaa_eth_common.c
+ create mode 100644 drivers/net/ethernet/freescale/dpaa/dpaa_eth_common.h
+ create mode 100644 drivers/net/ethernet/freescale/dpaa/dpaa_eth_sg.c
+ create mode 100644 drivers/net/ethernet/freescale/dpaa/dpaa_eth_sysfs.c
+ create mode 100644 drivers/net/ethernet/freescale/dpaa/dpaa_eth_trace.h
+ create mode 100644 drivers/net/ethernet/freescale/dpaa/dpaa_ethtool.c
+
+-- 
+1.7.11.7
