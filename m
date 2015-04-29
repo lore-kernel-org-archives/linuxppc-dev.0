@@ -2,20 +2,20 @@ Return-Path: <dgibson@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AD8231A0CBD
+ by lists.ozlabs.org (Postfix) with ESMTPS id D67181A0CD3
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Apr 2015 13:26:04 +1000 (AEST)
-Date: Wed, 29 Apr 2015 12:03:18 +1000
+Date: Wed, 29 Apr 2015 12:14:03 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
 To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Subject: Re: [PATCH kernel v9 01/32] powerpc/iommu: Split iommu_free_table
- into 2 helpers
-Message-ID: <20150429020318.GE32589@voom.redhat.com>
+Subject: Re: [PATCH kernel v9 08/32] vfio: powerpc/spapr: Moving
+ pinning/unpinning to helpers
+Message-ID: <20150429021403.GG32589@voom.redhat.com>
 References: <1429964096-11524-1-git-send-email-aik@ozlabs.ru>
- <1429964096-11524-2-git-send-email-aik@ozlabs.ru>
+ <1429964096-11524-9-git-send-email-aik@ozlabs.ru>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="UnaWdueM1EBWVRzC"
-In-Reply-To: <1429964096-11524-2-git-send-email-aik@ozlabs.ru>
+ protocol="application/pgp-signature"; boundary="YH9Qf6Fh2G5kB/85"
+In-Reply-To: <1429964096-11524-9-git-send-email-aik@ozlabs.ru>
 Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
  Alex Williamson <alex.williamson@redhat.com>,
  Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
@@ -29,17 +29,35 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---UnaWdueM1EBWVRzC
+--YH9Qf6Fh2G5kB/85
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Sat, Apr 25, 2015 at 10:14:25PM +1000, Alexey Kardashevskiy wrote:
-> The iommu_free_table helper release memory it is using (the TCE table and
-> @it_map) and release the iommu_table struct as well. We might not want
-> the very last step as we store iommu_table in parent structures.
+On Sat, Apr 25, 2015 at 10:14:32PM +1000, Alexey Kardashevskiy wrote:
+> This is a pretty mechanical patch to make next patches simpler.
+>=20
+> New tce_iommu_unuse_page() helper does put_page() now but it might skip
+> that after the memory registering patch applied.
+>=20
+> As we are here, this removes unnecessary checks for a value returned
+> by pfn_to_page() as it cannot possibly return NULL.
+>=20
+> This moves tce_iommu_disable() later to let tce_iommu_clear() know if
+> the container has been enabled because if it has not been, then
+> put_page() must not be called on TCEs from the TCE table. This situation
+> is not yet possible but it will after KVM acceleration patchset is
+> applied.
+>=20
+> This changes code to work with physical addresses rather than linear
+> mapping addresses for better code readability. Following patches will
+> add an xchg() callback for an IOMMU table which will accept/return
+> physical addresses (unlike current tce_build()) which will eliminate
+> redundant conversions.
 >=20
 > Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> [aw: for the vfio related changes]
+> Acked-by: Alex Williamson <alex.williamson@redhat.com>
 
 Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 
@@ -49,25 +67,25 @@ david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
 				| _way_ _around_!
 http://www.ozlabs.org/~dgibson
 
---UnaWdueM1EBWVRzC
+--YH9Qf6Fh2G5kB/85
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBAgAGBQJVQDvlAAoJEGw4ysog2bOSeuoP/ilRSVW6EpkL32s9bVO1gLbP
-t3NAlNQxLyqylMNndohFRLLaI0ZCkFyi9PsF1fCAK+pyMzFWDC4CiSUPAzNu5PjA
-o8DRMHxybVaxzaImiotMxQgnsnLAXDsza3FtSc01qJwpjJs89KtgRQIObqa7+Xyj
-DjbR1ODYSkwxFbD3r9Y/WChxuUVj2xaNBMcsXyoXyMKTjf/kJ3QnXoeS9Pcow0L6
-w83UZisXgnQAIdZ+dTlulDK68EwvuTCuSChs6CMHDxNIgilEpgzq54qtnDTW8dRW
-7MG4/KfWs9UKVQWjxPXrJ9xWxZc7Mffcsjim0qoJdvLWfeBvKrwygBA+CkJLFozL
-xPlEAbAul1h4bPuB4vw7amMOAoqKCXQSUC7FkJArhvMTktLNZzyGW75Iu/+bp4dv
-HKp6N36yBTYt5iV6QFQWFMp10GbTXsW/4t+6WpoV8ezidFWIYEK84lVLfZcZZvJj
-Af9GP3n+pQ6fuLjy/jgGsKmwlIi4s0NfhwpSuujMS3qQtJj6FVuBD39AhVp0Xa3Z
-VQpstp6wYhYy4rvlXlBhR413WV8E0wxC55LpKaxk97eh2cdCFzzPJk/eycloRcXH
-o9orPy9AbgC0LbTXlKmcLhG4yf8JLUL+4PlUxFfU2ZS0sYhgeKcVMBuOo3cm+bPP
-Uk2s6HmSaq+CUn32ePXW
-=4u28
+iQIcBAEBAgAGBQJVQD5rAAoJEGw4ysog2bOSTGcP/jFZBLEMaDST9qBuxdE8Fb6y
+Zl5/TmUWX4Cs6yVMuu3+7AuQpGWeanNOauEv9o4O4BnRv/mykLVgrZ70qbfOnad0
+PcTt0m3BjkrXT6/tILD6+xktFDmmpOnjDTV6klKkCaSrKc9/UEAkx9SjgOLmFqjq
+qNORcMWgcOx48MHK2V4Pp6cy+G8YRKHcS6VxVHdCykNkOWdWSuRpB2ZQh7VMDmVn
+bKVgjXJEVs9/9DhtVm3m2sxtWSIVzRI+fEuEJg974iwlismRL45qL4yqOsVy1Qnx
+JaCJYWPLV+9QI4qP60WP9C/GHy7y2gkOiWrl7hyIXb7nnVms0X+QQA8k58LIqsNv
+50lyCgMAhlc1UUQSPnQ4z6oGPJWnuGT7FktNhTw41Ox7mU+fD83lXvh5WIZG6Usa
+DT64NFuisSbapleoCW1AOd9V8NDtnhASZQrDIbwnMD3T2YntYLUaifSvXxbFM4G1
+/zMZPHdzAsSZ4/8TJCkZVnztbNgpBuxgkiqRW+D6s87P+JvJRzYlbOkhq4RbIzIZ
+1oyxyDus6lfTV8zYu2hTryZ0oFcWq5Mdr0re+LRnKYpqNlOczAIxt8kHj7Ef0ioW
+dFf5CPFB/Ri2EIG386uNHAWoXE7DVa+522dWhtIm9+XrivpK+Djd1bkfrsRjSWeH
+XEenY0PMMnbaRCm9niDl
+=wyZS
 -----END PGP SIGNATURE-----
 
---UnaWdueM1EBWVRzC--
+--YH9Qf6Fh2G5kB/85--
