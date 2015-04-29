@@ -1,31 +1,27 @@
-Return-Path: <khlebnikov@yandex-team.ru>
-Received: from forward-corp1f.mail.yandex.net (forward-corp1f.mail.yandex.net
- [IPv6:2a02:6b8:0:801::10])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pd0-f177.google.com (mail-pd0-f177.google.com
+ [209.85.192.177])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 881CB1A0201
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Apr 2015 18:30:31 +1000 (AEST)
-Message-ID: <55409696.8010209@yandex-team.ru>
-Date: Wed, 29 Apr 2015 11:30:14 +0300
-From: Konstantin Khlebnikov <khlebnikov@yandex-team.ru>
+ by lists.ozlabs.org (Postfix) with ESMTPS id A8D0F1A0201
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Apr 2015 19:00:39 +1000 (AEST)
+Received: by pdbnk13 with SMTP id nk13so22538727pdb.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Apr 2015 02:00:37 -0700 (PDT)
+Message-ID: <55409DAE.2000400@ozlabs.ru>
+Date: Wed, 29 Apr 2015 19:00:30 +1000
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
 MIME-Version: 1.0
-To: "songxiumiao@inspur.com" <songxiumiao@inspur.com>,
- Rob Herring <robherring2@gmail.com>
-Subject: Re: [PATCH] of: return NUMA_NO_NODE from fallback of_node_to_nid()
-References: <20150408165920.25007.6869.stgit@buzz>,
- <CAL_JsqKQPtNPfTAiqsKnFuU6e-qozzPgujM=8MHseG75R9cbSA@mail.gmail.com>,
- <552BC6E8.1040400@yandex-team.ru>,
- <CAL_Jsq+vaufZJAchHC1OaV9g18zFfkXyRZ9j5wm0VWosh9i4kQ@mail.gmail.com>
- <201504290910595113455@inspur.com>
-In-Reply-To: <201504290910595113455@inspur.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>, x86@kernel.org,
- "linux-mm@kvack.org" <linux-mm@kvack.org>,
- yanxiaofeng <yanxiaofeng@inspur.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "sparclinux@vger.kernel.org" <sparclinux@vger.kernel.org>,
- Rob Herring <robh+dt@kernel.org>, Grant Likely <grant.likely@linaro.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, linux-metag@vger.kernel.org
+To: David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: [PATCH kernel v9 16/32] powerpc/powernv/ioda: Move TCE kill
+ register address to PE
+References: <1429964096-11524-1-git-send-email-aik@ozlabs.ru>
+ <1429964096-11524-17-git-send-email-aik@ozlabs.ru>
+ <20150429032517.GM32589@voom.redhat.com>
+In-Reply-To: <20150429032517.GM32589@voom.redhat.com>
+Content-Type: text/plain; charset=koi8-r; format=flowed
+Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,157 +31,232 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-+x86@kernel.org
-+linux-metag@vger.kernel.org
-
-here is proposed fix:
-https://www.mail-archive.com/linux-kernel@vger.kernel.org/msg864009.html
-
-It returns NUMA_NO_NODE from both static-inline (CONFIG_OF=n) and weak
-version of of_node_to_nid(). This change might affect few arches which
-whave CONFIG_OF=y but doesn't implement of_node_to_nid() (i.e. depends
-on default behavior of weak function). It seems this is only metag.
-
- From mm/ point of view returning NUMA_NO_NODE is a right choice when
-code have no idea which numa node should be used -- memory allocation
-functions choose current numa node (but they might use any).
-
-On 29.04.2015 04:11, songxiumiao@inspur.com wrote:
-> When we test the cpu and memory hotplug feature in the server with x86
-> architecture and kernel4.0-rc4,we met the similar problem.
+On 04/29/2015 01:25 PM, David Gibson wrote:
+> On Sat, Apr 25, 2015 at 10:14:40PM +1000, Alexey Kardashevskiy wrote:
+>> At the moment the DMA setup code looks for the "ibm,opal-tce-kill" property
+>> which contains the TCE kill register address. Writes to this register
+>> invalidates TCE cache on IODA/IODA2 hub.
+>>
+>> This moves the register address from iommu_table to pnv_ioda_pe as
+>> later there will be 2 tables per PE and it will be used for both tables.
+>>
+>> This moves the property reading/remapping code to a helper to reduce
+>> code duplication.
+>>
+>> This adds a new pnv_pci_ioda2_tvt_invalidate() helper which invalidates
+>> the entire table. It should be called after every call to
+>> opal_pci_map_pe_dma_window(). It was not required before because
+>> there is just a single TCE table and 64bit DMA is handled via bypass
+>> window (which has no table so no chache is used) but this is going
+>> to change with Dynamic DMA windows (DDW).
+>>
+>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+>> ---
+>> Changes:
+>> v9:
+>> * new in the series
+>> ---
+>>   arch/powerpc/platforms/powernv/pci-ioda.c | 69 +++++++++++++++++++------------
+>>   arch/powerpc/platforms/powernv/pci.h      |  1 +
+>>   2 files changed, 44 insertions(+), 26 deletions(-)
+>>
+>> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+>> index f070c44..b22b3ca 100644
+>> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+>> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+>> @@ -1672,7 +1672,7 @@ static void pnv_pci_ioda1_tce_invalidate(struct iommu_table *tbl,
+>>   			struct pnv_ioda_pe, table_group);
+>>   	__be64 __iomem *invalidate = rm ?
+>>   		(__be64 __iomem *)pe->tce_inval_reg_phys :
+>> -		(__be64 __iomem *)tbl->it_index;
+>> +		pe->tce_inval_reg;
+>>   	unsigned long start, end, inc;
+>>   	const unsigned shift = tbl->it_page_shift;
+>>
+>> @@ -1743,6 +1743,18 @@ static struct iommu_table_ops pnv_ioda1_iommu_ops = {
+>>   	.get = pnv_tce_get,
+>>   };
+>>
+>> +static inline void pnv_pci_ioda2_tvt_invalidate(struct pnv_ioda_pe *pe)
+>> +{
+>> +	/* 01xb - invalidate TCEs that match the specified PE# */
+>> +	unsigned long addr = (0x4ull << 60) | (pe->pe_number & 0xFF);
 >
-> The situation is that when memory in node0 is offline,the system is down
-> during booting.
+> This doesn't really look like an address, but rather the data you're
+> writing to the register.
+
+
+This thing is made of "invalidate operation" (0x4 here), "invalidate 
+address" (pci address but it is zero here as we reset everything, most bits 
+are here) and "invalidate PE number". So what should I call it? :)
+
+
+
+>> +	if (!pe->tce_inval_reg)
+>> +		return;
+>> +
+>> +        mb(); /* Ensure above stores are visible */
+>> +	__raw_writeq(cpu_to_be64(addr), pe->tce_inval_reg);
+>> +}
+>> +
+>>   static void pnv_pci_ioda2_tce_invalidate(struct iommu_table *tbl,
+>>   		unsigned long index, unsigned long npages, bool rm)
+>>   {
+>> @@ -1751,7 +1763,7 @@ static void pnv_pci_ioda2_tce_invalidate(struct iommu_table *tbl,
+>>   	unsigned long start, end, inc;
+>>   	__be64 __iomem *invalidate = rm ?
+>>   		(__be64 __iomem *)pe->tce_inval_reg_phys :
+>> -		(__be64 __iomem *)tbl->it_index;
+>> +		pe->tce_inval_reg;
+>>   	const unsigned shift = tbl->it_page_shift;
+>>
+>>   	/* We'll invalidate DMA address in PE scope */
+>> @@ -1803,13 +1815,31 @@ static struct iommu_table_ops pnv_ioda2_iommu_ops = {
+>>   	.get = pnv_tce_get,
+>>   };
+>>
+>> +static void pnv_pci_ioda_setup_opal_tce_kill(struct pnv_phb *phb,
+>> +		struct pnv_ioda_pe *pe)
+>> +{
+>> +	const __be64 *swinvp;
+>> +
+>> +	/* OPAL variant of PHB3 invalidated TCEs */
+>> +	swinvp = of_get_property(phb->hose->dn, "ibm,opal-tce-kill", NULL);
+>> +	if (!swinvp)
+>> +		return;
+>> +
+>> +	/* We need a couple more fields -- an address and a data
+>> +	 * to or.  Since the bus is only printed out on table free
+>> +	 * errors, and on the first pass the data will be a relative
+>> +	 * bus number, print that out instead.
+>> +	 */
 >
-> Following is the bug information:
-> [    0.335176] BUG: unable to handle kernel paging request at
-> 0000000000001b08
-> [    0.342164] IP: [<ffffffff81182587>] __alloc_pages_nodemask+0xb7/0x940
-> [    0.348706] PGD 0
-> [    0.350735] Oops: 0000 [#1] SMP
-> [ 0.353993] Modules linked in:
-> [    0.357063] CPU: 0 PID: 1 Comm: swapper/0 Not tainted 4.0.0-rc4 #1
-> [    0.363232] Hardware name: Inspur TS860/TS860, BIOS TS860_2.0.0
-> 2015/03/24
-> [    0.370095] task: ffff88085b1e0000 ti: ffff88085b1e8000 task.ti:
-> ffff88085b1e8000
-> [    0.377564] RIP: 0010:[<ffffffff81182587>]  [<ffffffff81182587>]
-> __alloc_pages_nodemask+0xb7/0x940
-> [    0.386524] RSP: 0000:ffff88085b1ebac8  EFLAGS: 00010246
-> [    0.391828] RAX: 0000000000001b00 RBX: 0000000000000010 RCX:
-> 0000000000000000
-> [    0.398953] RDX: 0000000000000000 RSI: 0000000000000000 RDI:
-> 00000000002052d0
-> [    0.406075] RBP: ffff88085b1ebbb8 R08: ffff88085b13fec0 R09:
-> 000000005b13fe01
-> [    0.413198] R10: ffff88085e807300 R11: ffffffff810d4bc1 R12:
-> 000000000001002a
-> [    0.420321] R13: 00000000002052d0 R14: 0000000000000001 R15:
-> 00000000000040d0
-> [    0.427446] FS: 0000000000000000(0000) GS:ffff88085ee00000(0000)
-> knlGS:0000000000000000
-> [    0.435522] CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
-> [    0.441259] CR2: 0000000000001b08 CR3: 00000000019ae000 CR4:
-> 00000000001406f0
-> [    0.448382] Stack:
-> [ 0.450392]  ffff88085b1e0000 0000000000000400 ffff88085b1effff
-> ffff88085b1ebb68
-> [    0.457846]  000000000000007b ffff88085b12d140 ffff88085b249000
-> 000000000000007b
-> [ 0.465298]  ffff88085b1ebb28 ffffffff81af2900 0000000000000000
-> 002052d05b12d140
-> [    0.472750] Call Trace:
-> [    0.475206]  [<ffffffff811d27b3>] ? deactivate_slab+0x383/0x400
-> [    0.481123] [<ffffffff811d3947>] new_slab+0xa7/0x460
-> [ 0.486174]  [<ffffffff816789e5>] __slab_alloc+0x310/0x470
-> [    0.491655] [<ffffffff8105304f>] ? dmar_msi_set_affinity+0x8f/0xc0
-> [    0.497921] [<ffffffff810d4bc1>] ? __irq_domain_add+0x41/0x100
-> [ 0.503838]  [<ffffffff810d0fee>] ? irq_do_set_affinity+0x5e/0x70
-> [    0.509920] [<ffffffff811d571d>] __kmalloc_node+0xad/0x2e0
-> [ 0.515483]  [<ffffffff810d4bc1>] ? __irq_domain_add+0x41/0x100
-> [    0.521392] [<ffffffff810d4bc1>] __irq_domain_add+0x41/0x100
-> [ 0.527133]  [<ffffffff8105102e>] mp_irqdomain_create+0x9e/0x120
-> [    0.533140] [<ffffffff81b2fb14>] setup_IO_APIC+0x64/0x1be
-> [ 0.538622]  [<ffffffff81b2e226>] apic_bsp_setup+0xa2/0xae
-> [    0.544099] [<ffffffff81b2bc70>] native_smp_prepare_cpus+0x267/0x2b2
-> [    0.550531] [<ffffffff81b1927b>] kernel_init_freeable+0xf2/0x253
-> [    0.556625] [<ffffffff8166b960>] ? rest_init+0x80/0x80
-> [ 0.561845]  [<ffffffff8166b96e>] kernel_init+0xe/0xf0
-> [    0.566979] [<ffffffff81681bd8>] ret_from_fork+0x58/0x90
-> [ 0.572374]  [<ffffffff8166b960>] ? rest_init+0x80/0x80
-> [    0.577591] Code: 30 97 00 89 45 bc 83 e1 0f b8 22 01 32 01 01 c9 d3
-> f8 83 e0 03 89 9d 6c ff ff ff 83 e3 10 89 45 c0 0f 85 6d 01 00 00 48 8b
-> 45 88 <48> 83 78 08 00 0f 84 51 01 00 00 b8 01 00 00 00 44 89 f1 d3 e0
-> [    0.597537] RIP [<ffffffff81182587>] __alloc_pages_nodemask+0xb7/0x940
-> [    0.604158]  RSP <ffff88085b1ebac8>
-> [    0.607643] CR2: 0000000000001b08
-> [    0.610962] ---[ end trace 0a600c0841386992 ]---
-> [    0.615573] Kernel panic - not syncing: Fatal exception
-> [    0.620792] ---[ end Kernel panic - not syncing: Fatal exception
-> *From:* Rob Herring <mailto:robherring2@gmail.com>
-> *Date:* 2015-04-14 00:49
-> *To:* Konstantin Khlebnikov <mailto:khlebnikov@yandex-team.ru>
-> *CC:* Grant Likely <mailto:grant.likely@linaro.org>;
-> devicetree@vger.kernel.org <mailto:devicetree@vger.kernel.org>; Rob
-> Herring <mailto:robh+dt@kernel.org>; linux-kernel@vger.kernel.org
-> <mailto:linux-kernel@vger.kernel.org>; sparclinux@vger.kernel.org
-> <mailto:sparclinux@vger.kernel.org>; linux-mm@kvack.org
-> <mailto:linux-mm@kvack.org>; linuxppc-dev
-> <mailto:linuxppc-dev@lists.ozlabs.org>
-> *Subject:* Re: [PATCH] of: return NUMA_NO_NODE from fallback
-> of_node_to_nid()
-> On Mon, Apr 13, 2015 at 8:38 AM, Konstantin Khlebnikov
-> <khlebnikov@yandex-team.ru> wrote:
->  > On 13.04.2015 16:22, Rob Herring wrote:
->  >>
->  >> On Wed, Apr 8, 2015 at 11:59 AM, Konstantin Khlebnikov
->  >> <khlebnikov@yandex-team.ru> wrote:
->  >>>
->  >>> Node 0 might be offline as well as any other numa node,
->  >>> in this case kernel cannot handle memory allocation and crashes.
->  >>>
->  >>> Signed-off-by: Konstantin Khlebnikov <khlebnikov@yandex-team.ru>
->  >>> Fixes: 0c3f061c195c ("of: implement of_node_to_nid as a weak function")
->  >>> ---
->  >>>   drivers/of/base.c  |    2 +-
->  >>>   include/linux/of.h |    5 ++++-
->  >>>   2 files changed, 5 insertions(+), 2 deletions(-)
->  >>>
->  >>> diff --git a/drivers/of/base.c b/drivers/of/base.c
->  >>> index 8f165b112e03..51f4bd16e613 100644
->  >>> --- a/drivers/of/base.c
->  >>> +++ b/drivers/of/base.c
->  >>> @@ -89,7 +89,7 @@ EXPORT_SYMBOL(of_n_size_cells);
->  >>>   #ifdef CONFIG_NUMA
->  >>>   int __weak of_node_to_nid(struct device_node *np)
->  >>>   {
->  >>> -       return numa_node_id();
->  >>> +       return NUMA_NO_NODE;
->  >>
->  >>
->  >> This is going to break any NUMA machine that enables OF and expects
->  >> the weak function to work.
->  >
->  >
->  > Why? NUMA_NO_NODE == -1 -- this's standard "no-affinity" signal.
->  > As I see powerpc/sparc versions of of_node_to_nid returns -1 if they
->  > cannot find out which node should be used.
-> Ah, I was thinking those platforms were relying on the default
-> implementation. I guess any real NUMA support is going to need to
-> override this function. The arm64 patch series does that as well. We
-> need to be sure this change is correct for metag which appears to be
-> the only other OF enabled platform with NUMA support.
-> In that case, then there is little reason to keep the inline and we
-> can just always enable the weak function (with your change). It is
-> slightly less optimal, but the few callers hardly appear to be hot
-> paths.
-> Rob
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at http://vger.kernel.org/majordomo-info.html
-> Please read the FAQ at  http://www.tux.org/lkml/
+> The comment above appears to have nothing to do with the surrounding code.
+
+I'll just remove it.
+
+
+>
+>> +	pe->tce_inval_reg_phys = be64_to_cpup(swinvp);
+>> +	pe->tce_inval_reg = ioremap(pe->tce_inval_reg_phys, 8);
+>> +}
+>> +
+>>   static void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
+>>   				      struct pnv_ioda_pe *pe, unsigned int base,
+>>   				      unsigned int segs)
+>>   {
+>>
+>>   	struct page *tce_mem = NULL;
+>> -	const __be64 *swinvp;
+>>   	struct iommu_table *tbl;
+>>   	unsigned int i;
+>>   	int64_t rc;
+>> @@ -1823,6 +1853,8 @@ static void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
+>>   	if (WARN_ON(pe->tce32_seg >= 0))
+>>   		return;
+>>
+>> +	pnv_pci_ioda_setup_opal_tce_kill(phb, pe);
+>> +
+>>   	/* Grab a 32-bit TCE table */
+>>   	pe->tce32_seg = base;
+>>   	pe_info(pe, " Setting up 32-bit TCE table at %08x..%08x\n",
+>> @@ -1865,20 +1897,11 @@ static void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
+>>   				  base << 28, IOMMU_PAGE_SHIFT_4K);
+>>
+>>   	/* OPAL variant of P7IOC SW invalidated TCEs */
+>> -	swinvp = of_get_property(phb->hose->dn, "ibm,opal-tce-kill", NULL);
+>> -	if (swinvp) {
+>> -		/* We need a couple more fields -- an address and a data
+>> -		 * to or.  Since the bus is only printed out on table free
+>> -		 * errors, and on the first pass the data will be a relative
+>> -		 * bus number, print that out instead.
+>> -		 */
+>
+> .. although I guess it didn't make any more sense in its original context.
+>
+>> -		pe->tce_inval_reg_phys = be64_to_cpup(swinvp);
+>> -		tbl->it_index = (unsigned long)ioremap(pe->tce_inval_reg_phys,
+>> -				8);
+>> +	if (pe->tce_inval_reg)
+>>   		tbl->it_type |= (TCE_PCI_SWINV_CREATE |
+>>   				 TCE_PCI_SWINV_FREE   |
+>>   				 TCE_PCI_SWINV_PAIR);
+>> -	}
+>> +
+>>   	tbl->it_ops = &pnv_ioda1_iommu_ops;
+>>   	iommu_init_table(tbl, phb->hose->node);
+>>
+>> @@ -1984,7 +2007,6 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
+>>   {
+>>   	struct page *tce_mem = NULL;
+>>   	void *addr;
+>> -	const __be64 *swinvp;
+>>   	struct iommu_table *tbl;
+>>   	unsigned int tce_table_size, end;
+>>   	int64_t rc;
+>> @@ -1993,6 +2015,8 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
+>>   	if (WARN_ON(pe->tce32_seg >= 0))
+>>   		return;
+>>
+>> +	pnv_pci_ioda_setup_opal_tce_kill(phb, pe);
+>> +
+>>   	/* The PE will reserve all possible 32-bits space */
+>>   	pe->tce32_seg = 0;
+>>   	end = (1 << ilog2(phb->ioda.m32_pci_base));
+>> @@ -2023,6 +2047,8 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
+>>   		goto fail;
+>>   	}
+>>
+>> +	pnv_pci_ioda2_tvt_invalidate(pe);
+>> +
+>
+> This looks to be a change in behavbiour - if it's replacing a previous
+> invalidation, I'm not seeing where.
+
+
+It is a new thing and the patch adds it. And it does not say anywhere that 
+this patch does not change behavior.
+
+
+>
+>>   	/* Setup iommu */
+>>   	pe->table_group.tables[0].it_table_group = &pe->table_group;
+>>
+>> @@ -2032,18 +2058,9 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
+>>   			IOMMU_PAGE_SHIFT_4K);
+>>
+>>   	/* OPAL variant of PHB3 invalidated TCEs */
+>> -	swinvp = of_get_property(phb->hose->dn, "ibm,opal-tce-kill", NULL);
+>> -	if (swinvp) {
+>> -		/* We need a couple more fields -- an address and a data
+>> -		 * to or.  Since the bus is only printed out on table free
+>> -		 * errors, and on the first pass the data will be a relative
+>> -		 * bus number, print that out instead.
+>> -		 */
+>> -		pe->tce_inval_reg_phys = be64_to_cpup(swinvp);
+>> -		tbl->it_index = (unsigned long)ioremap(pe->tce_inval_reg_phys,
+>> -				8);
+>> +	if (pe->tce_inval_reg)
+>>   		tbl->it_type |= (TCE_PCI_SWINV_CREATE | TCE_PCI_SWINV_FREE);
+>> -	}
+>> +
+>>   	tbl->it_ops = &pnv_ioda2_iommu_ops;
+>>   	iommu_init_table(tbl, phb->hose->node);
+>>   #ifdef CONFIG_IOMMU_API
+>> diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
+>> index 368d4ed..bd83d85 100644
+>> --- a/arch/powerpc/platforms/powernv/pci.h
+>> +++ b/arch/powerpc/platforms/powernv/pci.h
+>> @@ -59,6 +59,7 @@ struct pnv_ioda_pe {
+>>   	int			tce32_segcount;
+>>   	struct iommu_table_group table_group;
+>>   	phys_addr_t		tce_inval_reg_phys;
+>> +	__be64 __iomem		*tce_inval_reg;
+>>
+>>   	/* 64-bit TCE bypass region */
+>>   	bool			tce_bypass_enabled;
+>
 
 
 -- 
-Konstantin
+Alexey
