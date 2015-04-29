@@ -1,33 +1,19 @@
-Return-Path: <vaibhav@linux.vnet.ibm.com>
-Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <Igal.Liberman@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bbn0106.outbound.protection.outlook.com [157.56.111.106])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47A781A0201
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Apr 2015 20:17:51 +1000 (AEST)
-Received: from /spool/local
- by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <vaibhav@linux.vnet.ibm.com>;
- Wed, 29 Apr 2015 15:47:48 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 459C5E0059
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Apr 2015 15:50:31 +0530 (IST)
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t3TAHZT639321780
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Apr 2015 15:47:37 +0530
-Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t3T9nFhh032093
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Apr 2015 15:19:15 +0530
-From: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] cxl: Implement an ioctl to fetch afu card-id,
- offset-id and mode
-Date: Wed, 29 Apr 2015 15:47:23 +0530
-Message-Id: <1430302643-10772-1-git-send-email-vaibhav@linux.vnet.ibm.com>
-Cc: Michael Neuling <mikey@neuling.org>, Ian Munsie <imunsie@au1.ibm.com>,
- Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 767621A0201
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Apr 2015 23:33:55 +1000 (AEST)
+From: Igal.Liberman <igal.liberman@freescale.com>
+To: <netdev@vger.kernel.org>
+Subject: [RFC,v3,00/12] Freescale DPAA FMan
+Date: Wed, 29 Apr 2015 12:26:23 +0300
+Message-ID: <1430299583-29031-1-git-send-email-igal.liberman@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: Igal Liberman <Igal.Liberman@freescale.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, madalin.bucur@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,120 +23,186 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Given a file descriptor on an afu device, libcxl currently uses the
-major/minor number obtained from fstat on the fd to construct path to
-the afu's sysfs directory. However it is possible that rather than using
-one of the device in /dev/cxl, a kernel driver creates its own device
-which export generic cxl interface to the userspace. This causes
-problems with libcxl as it tries to use a wrong major/minor number to
-construct the sysfs path and fail.
+From: Igal Liberman <Igal.Liberman@freescale.com>
 
-So this patch introduces a new ioctl called CXL_IOCTL_GET_AFU_ID on the
-afu file descriptor to fetch the cxl_afu_id struct that holds the
-card/offset-id and mode information. These info is then used by libcxl to
-construct the correct path to the afu sysfs directory.
+The Freescale Data Path Acceleration Architecture (DPAA)
+is a set of hardware components on specific QorIQ multicore
+processors. This architecture provides the infrastructure to
+support simplified sharing of networking interfaces and
+accelerators by multiple CPU cores and the accelerators.
 
-Testing:
-	- Build against pseries be/le configs
-	- Testing with corresponding libcxl changes to verify that it constructs
-	  right sysfs path to the afu.
+One of the DPAA accelerators is the Frame Manager (FMan)
+which contains a series of hardware blocks:
+ports, Ethernet MACs, a multi user RAM (MURAM) and
+Storage Profile (SP).
 
-Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
----
- drivers/misc/cxl/cxl.h  |  2 --
- drivers/misc/cxl/file.c | 22 ++++++++++++++++++++++
- include/uapi/misc/cxl.h | 22 ++++++++++++++++++++++
- 3 files changed, 44 insertions(+), 2 deletions(-)
+This patch set introduced the FMan driver code that configures
+and initializes the FMan hardware blocks, offering support for
+three different types of MACs.
+The first 6 patches present the FMan Foundation Libraries (FLIBs),
+the FMan FLib provides the basic API used by the FMan drivers
+to configure and control the FMan hardware.
+The following patches present the FMan driver itself,
+split into patches for each required hardware module.
 
-diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
-index a1cee47..9f280e3 100644
---- a/drivers/misc/cxl/cxl.h
-+++ b/drivers/misc/cxl/cxl.h
-@@ -315,8 +315,6 @@ static const cxl_p2n_reg_t CXL_PSL_WED_An     = {0x0A0};
- #define CXL_MAX_SLICES 4
- #define MAX_AFU_MMIO_REGS 3
- 
--#define CXL_MODE_DEDICATED   0x1
--#define CXL_MODE_DIRECTED    0x2
- #define CXL_MODE_TIME_SLICED 0x4
- #define CXL_SUPPORTED_MODES (CXL_MODE_DEDICATED | CXL_MODE_DIRECTED)
- 
-diff --git a/drivers/misc/cxl/file.c b/drivers/misc/cxl/file.c
-index 2364bca..9855234 100644
---- a/drivers/misc/cxl/file.c
-+++ b/drivers/misc/cxl/file.c
-@@ -212,6 +212,25 @@ static long afu_ioctl_process_element(struct cxl_context *ctx,
- 	return 0;
- }
- 
-+static long afu_ioctl_get_afu_id(struct cxl_context *ctx,
-+				 struct cxl_afu_id __user *upafuid)
-+{
-+	struct cxl_afu_id afuid = { 0 };
-+
-+	afuid.card_id = ctx->afu->adapter->adapter_num;
-+	afuid.afu_offset = ctx->afu->slice;
-+	afuid.afu_mode = ctx->afu->current_mode;
-+
-+	/* set the flag bit in case the afu is a slave */
-+	if (ctx->afu->current_mode == CXL_MODE_DIRECTED && !ctx->master)
-+		afuid.flags |= CXL_AFUID_FLAG_SLAVE;
-+
-+	if (copy_to_user(upafuid, &afuid, sizeof(afuid)))
-+		return -EFAULT;
-+
-+	return 0;
-+}
-+
- static long afu_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
- {
- 	struct cxl_context *ctx = file->private_data;
-@@ -225,6 +244,9 @@ static long afu_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
- 		return afu_ioctl_start_work(ctx, (struct cxl_ioctl_start_work __user *)arg);
- 	case CXL_IOCTL_GET_PROCESS_ELEMENT:
- 		return afu_ioctl_process_element(ctx, (__u32 __user *)arg);
-+	case CXL_IOCTL_GET_AFU_ID:
-+		return afu_ioctl_get_afu_id(ctx, (struct cxl_afu_id __user *)
-+					    arg);
- 	}
- 	return -EINVAL;
- }
-diff --git a/include/uapi/misc/cxl.h b/include/uapi/misc/cxl.h
-index cd6d789..99a8ca1 100644
---- a/include/uapi/misc/cxl.h
-+++ b/include/uapi/misc/cxl.h
-@@ -32,10 +32,32 @@ struct cxl_ioctl_start_work {
- #define CXL_START_WORK_ALL		(CXL_START_WORK_AMR |\
- 					 CXL_START_WORK_NUM_IRQS)
- 
-+
-+/* Possible modes that an afu can be in */
-+#define CXL_MODE_DEDICATED   0x1
-+#define CXL_MODE_DIRECTED    0x2
-+
-+/* possible flags for the cxl_afu_id flags field */
-+#define CXL_AFUID_FLAG_SLAVE    0x1  /* In directed-mode afu is in slave mode */
-+
-+struct cxl_afu_id {
-+	__u64 flags;     /* One of CXL_AFUID_FLAG_X */
-+	__u32 card_id;
-+	__u32 afu_offset;
-+	__u32 afu_mode;  /* one of the CXL_MODE_X */
-+	__u32 reserved1;
-+	__u64 reserved2;
-+	__u64 reserved3;
-+	__u64 reserved4;
-+	__u64 reserved5;
-+	__u64 reserved6;
-+};
-+
- /* ioctl numbers */
- #define CXL_MAGIC 0xCA
- #define CXL_IOCTL_START_WORK		_IOW(CXL_MAGIC, 0x00, struct cxl_ioctl_start_work)
- #define CXL_IOCTL_GET_PROCESS_ELEMENT	_IOR(CXL_MAGIC, 0x01, __u32)
-+#define CXL_IOCTL_GET_AFU_ID            _IOR(CXL_MAGIC, 0x02, struct cxl_afu_id)
- 
- #define CXL_READ_MIN_SIZE 0x1000 /* 4K */
- 
+v3:	- Moved FMan to ./drivers/net/ethernet/freescale/
+	- Use genalloc for MURAM management.
+	- Some updates for T1024 support.
+
+v2:	- This set of patches combines the following submissions:
+		- v2 of FMan (RFC)
+		- v3 of FMan FLib
+	- Reduced FMan code size:
+		- Reduced FMan FLib's size:
+			Removed code for future support.
+		- Removed Priority Flow Control (PFC) support.
+		- Removed rate-limiter.
+		- Removed some MAC features.
+		- Removed Real Time Clock (RTC) support.
+
+Igal Liberman (12):
+  fsl/fman: Add the FMan FLIB headers
+  fsl/fman: Add the FMan FLIB
+  fsl/fman: Add the FMan port FLIB headers
+  fsl/fman: Add the FMan port FLIB
+  fsl/fman: Add the FMan MAC FLIB headers
+  fsl/fman: Add the FMan MAC FLIB
+  fsl/fman: Add FMan MURAM support
+  fsl/fman: Add Frame Manager support
+  fsl/fman: Add FMan MAC support
+  fsl/fman: Add FMan SP support
+  fsl/fman: Add FMan Port Support
+  fsl/fman: Add FMan MAC driver
+
+ drivers/net/ethernet/freescale/Kconfig             |    1 +
+ drivers/net/ethernet/freescale/Makefile            |    2 +
+ drivers/net/ethernet/freescale/fman/Kconfig        |   46 +
+ drivers/net/ethernet/freescale/fman/Makefile       |   12 +
+ .../ethernet/freescale/fman/flib/common/general.h  |   41 +
+ .../net/ethernet/freescale/fman/flib/fman_common.h |   73 +
+ .../net/ethernet/freescale/fman/flib/fsl_enet.h    |  275 +++
+ .../net/ethernet/freescale/fman/flib/fsl_fman.h    |  743 +++++++
+ .../ethernet/freescale/fman/flib/fsl_fman_dtsec.h  |  791 ++++++++
+ .../freescale/fman/flib/fsl_fman_dtsec_mii_acc.h   |  103 +
+ .../ethernet/freescale/fman/flib/fsl_fman_memac.h  |  453 +++++
+ .../freescale/fman/flib/fsl_fman_memac_mii_acc.h   |   76 +
+ .../ethernet/freescale/fman/flib/fsl_fman_port.h   |  462 +++++
+ .../net/ethernet/freescale/fman/flib/fsl_fman_sp.h |   66 +
+ .../ethernet/freescale/fman/flib/fsl_fman_tgec.h   |  409 ++++
+ drivers/net/ethernet/freescale/fman/fm.c           | 2082 ++++++++++++++++++++
+ drivers/net/ethernet/freescale/fman/fm.h           |  488 +++++
+ drivers/net/ethernet/freescale/fman/fm_common.h    |  538 +++++
+ drivers/net/ethernet/freescale/fman/fm_drv.c       |  973 +++++++++
+ drivers/net/ethernet/freescale/fman/fm_drv.h       |  123 ++
+ drivers/net/ethernet/freescale/fman/fm_muram.c     |  114 ++
+ drivers/net/ethernet/freescale/fman/fm_port_drv.c  |  536 +++++
+ drivers/net/ethernet/freescale/fman/fm_sp_common.h |  104 +
+ drivers/net/ethernet/freescale/fman/fman.c         |  978 +++++++++
+ .../ethernet/freescale/fman/inc/crc_mac_addr_ext.h |  343 ++++
+ drivers/net/ethernet/freescale/fman/inc/dpaa_ext.h |  253 +++
+ .../freescale/fman/inc/dpaa_integration_ext.h      |  120 ++
+ drivers/net/ethernet/freescale/fman/inc/enet_ext.h |  199 ++
+ drivers/net/ethernet/freescale/fman/inc/fm_ext.h   |  715 +++++++
+ .../net/ethernet/freescale/fman/inc/fm_mac_ext.h   |  452 +++++
+ .../net/ethernet/freescale/fman/inc/fm_muram_ext.h |   89 +
+ .../net/ethernet/freescale/fman/inc/fm_port_ext.h  |  397 ++++
+ .../net/ethernet/freescale/fman/inc/fsl_fman_drv.h |  192 ++
+ drivers/net/ethernet/freescale/fman/inc/mac.h      |  125 ++
+ drivers/net/ethernet/freescale/fman/inc/net_ext.h  |  534 +++++
+ drivers/net/ethernet/freescale/fman/inc/service.h  |   90 +
+ drivers/net/ethernet/freescale/fman/mac/Makefile   |    9 +
+ drivers/net/ethernet/freescale/fman/mac/dtsec.c    | 1226 ++++++++++++
+ drivers/net/ethernet/freescale/fman/mac/dtsec.h    |  185 ++
+ .../ethernet/freescale/fman/mac/dtsec_mii_acc.c    |   82 +
+ .../ethernet/freescale/fman/mac/dtsec_mii_acc.h    |   43 +
+ drivers/net/ethernet/freescale/fman/mac/fm_mac.c   |  510 +++++
+ drivers/net/ethernet/freescale/fman/mac/fm_mac.h   |  183 ++
+ .../net/ethernet/freescale/fman/mac/fman_crc32.c   |  116 ++
+ .../net/ethernet/freescale/fman/mac/fman_crc32.h   |   39 +
+ .../net/ethernet/freescale/fman/mac/fman_dtsec.c   |  571 ++++++
+ .../freescale/fman/mac/fman_dtsec_mii_acc.c        |  168 ++
+ .../net/ethernet/freescale/fman/mac/fman_memac.c   |  365 ++++
+ .../freescale/fman/mac/fman_memac_mii_acc.c        |  217 ++
+ .../net/ethernet/freescale/fman/mac/fman_tgec.c    |  217 ++
+ drivers/net/ethernet/freescale/fman/mac/mac-api.c  |  605 ++++++
+ drivers/net/ethernet/freescale/fman/mac/mac.c      |  527 +++++
+ drivers/net/ethernet/freescale/fman/mac/memac.c    |  837 ++++++++
+ drivers/net/ethernet/freescale/fman/mac/memac.h    |  103 +
+ .../ethernet/freescale/fman/mac/memac_mii_acc.c    |   66 +
+ .../ethernet/freescale/fman/mac/memac_mii_acc.h    |   50 +
+ drivers/net/ethernet/freescale/fman/mac/tgec.c     |  797 ++++++++
+ drivers/net/ethernet/freescale/fman/mac/tgec.h     |  112 ++
+ .../net/ethernet/freescale/fman/mac/tgec_mii_acc.h |   66 +
+ drivers/net/ethernet/freescale/fman/port/Makefile  |    3 +
+ drivers/net/ethernet/freescale/fman/port/fm_port.c | 1484 ++++++++++++++
+ drivers/net/ethernet/freescale/fman/port/fm_port.h |  711 +++++++
+ .../net/ethernet/freescale/fman/port/fman_port.c   |  728 +++++++
+ drivers/net/ethernet/freescale/fman/sp/Makefile    |    3 +
+ drivers/net/ethernet/freescale/fman/sp/fm_sp.c     |  398 ++++
+ 65 files changed, 23419 insertions(+)
+ create mode 100644 drivers/net/ethernet/freescale/fman/Kconfig
+ create mode 100644 drivers/net/ethernet/freescale/fman/Makefile
+ create mode 100644 drivers/net/ethernet/freescale/fman/flib/common/general.h
+ create mode 100644 drivers/net/ethernet/freescale/fman/flib/fman_common.h
+ create mode 100644 drivers/net/ethernet/freescale/fman/flib/fsl_enet.h
+ create mode 100644 drivers/net/ethernet/freescale/fman/flib/fsl_fman.h
+ create mode 100644 drivers/net/ethernet/freescale/fman/flib/fsl_fman_dtsec.h
+ create mode 100644 drivers/net/ethernet/freescale/fman/flib/fsl_fman_dtsec_mii_acc.h
+ create mode 100644 drivers/net/ethernet/freescale/fman/flib/fsl_fman_memac.h
+ create mode 100644 drivers/net/ethernet/freescale/fman/flib/fsl_fman_memac_mii_acc.h
+ create mode 100644 drivers/net/ethernet/freescale/fman/flib/fsl_fman_port.h
+ create mode 100644 drivers/net/ethernet/freescale/fman/flib/fsl_fman_sp.h
+ create mode 100644 drivers/net/ethernet/freescale/fman/flib/fsl_fman_tgec.h
+ create mode 100644 drivers/net/ethernet/freescale/fman/fm.c
+ create mode 100644 drivers/net/ethernet/freescale/fman/fm.h
+ create mode 100644 drivers/net/ethernet/freescale/fman/fm_common.h
+ create mode 100644 drivers/net/ethernet/freescale/fman/fm_drv.c
+ create mode 100644 drivers/net/ethernet/freescale/fman/fm_drv.h
+ create mode 100644 drivers/net/ethernet/freescale/fman/fm_muram.c
+ create mode 100644 drivers/net/ethernet/freescale/fman/fm_port_drv.c
+ create mode 100644 drivers/net/ethernet/freescale/fman/fm_sp_common.h
+ create mode 100644 drivers/net/ethernet/freescale/fman/fman.c
+ create mode 100644 drivers/net/ethernet/freescale/fman/inc/crc_mac_addr_ext.h
+ create mode 100644 drivers/net/ethernet/freescale/fman/inc/dpaa_ext.h
+ create mode 100644 drivers/net/ethernet/freescale/fman/inc/dpaa_integration_ext.h
+ create mode 100644 drivers/net/ethernet/freescale/fman/inc/enet_ext.h
+ create mode 100644 drivers/net/ethernet/freescale/fman/inc/fm_ext.h
+ create mode 100644 drivers/net/ethernet/freescale/fman/inc/fm_mac_ext.h
+ create mode 100644 drivers/net/ethernet/freescale/fman/inc/fm_muram_ext.h
+ create mode 100644 drivers/net/ethernet/freescale/fman/inc/fm_port_ext.h
+ create mode 100644 drivers/net/ethernet/freescale/fman/inc/fsl_fman_drv.h
+ create mode 100644 drivers/net/ethernet/freescale/fman/inc/mac.h
+ create mode 100644 drivers/net/ethernet/freescale/fman/inc/net_ext.h
+ create mode 100644 drivers/net/ethernet/freescale/fman/inc/service.h
+ create mode 100644 drivers/net/ethernet/freescale/fman/mac/Makefile
+ create mode 100644 drivers/net/ethernet/freescale/fman/mac/dtsec.c
+ create mode 100644 drivers/net/ethernet/freescale/fman/mac/dtsec.h
+ create mode 100644 drivers/net/ethernet/freescale/fman/mac/dtsec_mii_acc.c
+ create mode 100644 drivers/net/ethernet/freescale/fman/mac/dtsec_mii_acc.h
+ create mode 100644 drivers/net/ethernet/freescale/fman/mac/fm_mac.c
+ create mode 100644 drivers/net/ethernet/freescale/fman/mac/fm_mac.h
+ create mode 100644 drivers/net/ethernet/freescale/fman/mac/fman_crc32.c
+ create mode 100644 drivers/net/ethernet/freescale/fman/mac/fman_crc32.h
+ create mode 100644 drivers/net/ethernet/freescale/fman/mac/fman_dtsec.c
+ create mode 100644 drivers/net/ethernet/freescale/fman/mac/fman_dtsec_mii_acc.c
+ create mode 100644 drivers/net/ethernet/freescale/fman/mac/fman_memac.c
+ create mode 100644 drivers/net/ethernet/freescale/fman/mac/fman_memac_mii_acc.c
+ create mode 100644 drivers/net/ethernet/freescale/fman/mac/fman_tgec.c
+ create mode 100644 drivers/net/ethernet/freescale/fman/mac/mac-api.c
+ create mode 100644 drivers/net/ethernet/freescale/fman/mac/mac.c
+ create mode 100644 drivers/net/ethernet/freescale/fman/mac/memac.c
+ create mode 100644 drivers/net/ethernet/freescale/fman/mac/memac.h
+ create mode 100644 drivers/net/ethernet/freescale/fman/mac/memac_mii_acc.c
+ create mode 100644 drivers/net/ethernet/freescale/fman/mac/memac_mii_acc.h
+ create mode 100644 drivers/net/ethernet/freescale/fman/mac/tgec.c
+ create mode 100644 drivers/net/ethernet/freescale/fman/mac/tgec.h
+ create mode 100644 drivers/net/ethernet/freescale/fman/mac/tgec_mii_acc.h
+ create mode 100644 drivers/net/ethernet/freescale/fman/port/Makefile
+ create mode 100644 drivers/net/ethernet/freescale/fman/port/fm_port.c
+ create mode 100644 drivers/net/ethernet/freescale/fman/port/fm_port.h
+ create mode 100644 drivers/net/ethernet/freescale/fman/port/fman_port.c
+ create mode 100644 drivers/net/ethernet/freescale/fman/sp/Makefile
+ create mode 100644 drivers/net/ethernet/freescale/fman/sp/fm_sp.c
+
 -- 
-2.2.1
+1.7.9.5
