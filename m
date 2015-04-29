@@ -1,29 +1,21 @@
-Return-Path: <htejun@gmail.com>
-Received: from mail-qg0-x22d.google.com (mail-qg0-x22d.google.com
- [IPv6:2607:f8b0:400d:c04::22d])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 37F4B1A0045
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 May 2015 04:13:51 +1000 (AEST)
-Received: by qgej70 with SMTP id j70so69648296qge.2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 04 May 2015 11:13:49 -0700 (PDT)
-Sender: Tejun Heo <htejun@gmail.com>
-Date: Mon, 4 May 2015 14:13:45 -0400
-From: Tejun Heo <tj@kernel.org>
-To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-Subject: Re: Kernel 4.1-rc1 build fails  on Sam460ex amcc 460ex powerpc
- Canyonlands
-Message-ID: <20150504181345.GF1971@htj.duckdns.org>
-References: <54E08E06.8060607@candw.ms>
- <1424045921.3018.4.camel@ellerman.id.au> <553E16A0.704@candw.ms>
- <1430183545.7246.1.camel@ellerman.id.au>
- <20150428034946.GE2152@htj.duckdns.org>
- <1430759910.4526.16.camel@linux.intel.com>
+Return-Path: <acme@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
+ by lists.ozlabs.org (Postfix) with ESMTP id 4CF0D1A00CA
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 May 2015 06:55:01 +1000 (AEST)
+Date: Wed, 29 Apr 2015 19:09:19 -0300
+From: Arnaldo Carvalho de Melo <acme@kernel.org>
+To: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+Subject: Re: [PATCH v3 0/7] Fixes for perf probe issues on ppc
+Message-ID: <20150429220919.GC29633@kernel.org>
+References: <cover.1430217967.git.naveen.n.rao@linux.vnet.ibm.com>
+ <20150428135453.GL16849@kernel.org>
+ <20150429053758.GA17469@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1430759910.4526.16.camel@linux.intel.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Ian Munsie <imunsie@au1.ibm.com>,
- Julian Margetson <runaway@candw.ms>
+In-Reply-To: <20150429053758.GA17469@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, masami.hiramatsu.pt@hitachi.com,
+ "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>, sukadev@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,37 +25,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, May 04, 2015 at 08:18:30PM +0300, Andy Shevchenko wrote:
-> On Mon, 2015-04-27 at 23:49 -0400, Tejun Heo wrote:
-> > On Tue, Apr 28, 2015 at 11:12:25AM +1000, Michael Ellerman wrote:
-> > > On Mon, 2015-04-27 at 06:59 -0400, Julian Margetson wrote:
-> > > > Kernel 4.1-rc1 build fails  on Sam460ex amcc 460ex powerpc Canyonlands with 
-> > > > CONFIG_SATA_DWC=y
-> > > > 
-> > > > sata_dwc_460ex.c:(.text+0xa165c): undefined reference to `dw_dma_remove'
-> > > > drivers/built-in.o: In function `sata_dwc_probe':
-> > > > sata_dwc_460ex.c:(.text+0xa1900): undefined reference to `dw_dma_probe'
-> > > > sata_dwc_460ex.c:(.text+0xa1954): undefined reference to `dw_dma_remove'
-> > > > make: *** [vmlinux] Error 1
+Em Wed, Apr 29, 2015 at 11:07:58AM +0530, Srikar Dronamraju escreveu:
+> * Arnaldo Carvalho de Melo <acme@kernel.org> [2015-04-28 10:54:53]:
+> 
+> > Em Tue, Apr 28, 2015 at 05:35:33PM +0530, Naveen N. Rao escreveu:
+> > > This patchset fixes various issues with perf probe on powerpc across ABIv1 and
+> > > ABIv2:
+> > > - in the presence of DWARF debug-info,
+> > > - in the absence of DWARF, but with the symbol table, and
+> > > - in the absence of debug-info, but with kallsyms.
 > > > 
-> > > Looks like it was caused by:
-> > > 
-> > > commit 8b3444852a2b58129ee68a8dd69fef81ceb902a1
-> > > Author: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-> > > Date:   Tue Mar 3 22:41:21 2015 +0200
-> > > 
-> > >     sata_dwc_460ex: move to generic DMA driver
+> > > Arnaldo,
+> > > I have moved all patches to use __weak functions. Kindly take a look and let me
+> > > know if this is what you had in mind.
 > > 
-> > Oops, Andy?
+> > Ok, I applied all but the first, for which I am waiting for Masami's
+> > reaction, I kept Srikar's reviewed-by for the other patches, but would
+> > as well like to get his word that he keeps it after the __weak changes.
+> > 
+> > So, for now, I'll leave it for a while sitting in my local tree, to give
+> > time to Masami and Srikar, ok?
 > > 
 > 
-> Sorry for late answer. It requires CONFIG_DW_DMAC=y as well. I don't
-> know the details of PPC configuration, we might add this to
-> configuration.
+> Yes Arnaldo, I have looked at the patches after the __weak changes and
+> they look good to me.
 
-Can you send a patch please?
+Thanks everybody, I got it merged on my perf/core branch, that I'll
+submit as soon as I see an Ingo :-)
 
-Thanks.
-
--- 
-tejun
+- Arnaldo
