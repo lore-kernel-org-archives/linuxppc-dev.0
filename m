@@ -1,19 +1,23 @@
-Return-Path: <Pengbo.Li@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0119.outbound.protection.outlook.com [207.46.100.119])
+Return-Path: <Lijun.Pan@freescale.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id F318A1A0D73
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Apr 2015 15:29:04 +1000 (AEST)
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bbn0107.outbound.protection.outlook.com [157.56.111.107])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E1AD41A0415
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Apr 2015 14:35:22 +1000 (AEST)
-From: Pengbo Li <Pengbo.Li@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>, <scottwood@freescale.com>
-Subject: [PATCH] powerpc/85xx: p1025twr: add module conditional to fix QE-uart
- issue
-Date: Thu, 30 Apr 2015 10:56:50 +0800
-Message-ID: <1430362610-35564-1-git-send-email-Pengbo.Li@freescale.com>
+ by ozlabs.org (Postfix) with ESMTPS id D6882140310
+ for <linuxppc-dev@ozlabs.org>; Thu, 30 Apr 2015 15:29:02 +1000 (AEST)
+From: Lijun Pan <Lijun.Pan@freescale.com>
+To: <linuxppc-dev@ozlabs.org>
+Subject: [PATCH v2] powerpc/defconfig: new way of writing defconfig
+Date: Thu, 30 Apr 2015 00:26:19 -0500
+Message-ID: <1430371579-1323-1-git-send-email-Lijun.Pan@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
-Cc: Xie Xiaobo <X.Xie@freescale.com>
+Cc: Lijun Pan <Lijun.Pan@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,36 +27,585 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Xie Xiaobo <X.Xie@freescale.com>
+It is always a headache dealing with different defconfigs
+though they only differ in a few places. Hence we are proposing a new
+way of writing the defconfig:
+1. Define a basic defconfig say mpc85xx_basic_defconfig
+2. Spin off as much features as possible from the current mpc85xx_defconfig
+	and create a separate config file, say, smp.config, kvm_500.config
+Every time we add a new feature, we don't need to change several
+defconfigs, we just add a new *.config
+And you could merge any fragments you want into .config with the
+current kconfig in Kernel.
 
-A ioport setting was needed when used the QE uart function on TWR-P1025.
-Added a conditional definition to avoid missing this setting when the
-QE-uart driver was bulit to a module.
+Say you want to build mpc85xx_smp_defconfig, you do 4 steps:
+make mpc85xx_basic_defconfig
+make 32bit.config
+make smp.config
+make kvm_e500.config
 
-Signed-off-by: Xie Xiaobo <X.Xie@freescale.com>
-Change-Id: I95b40c760335ce5fa7a27a94287dbef28219b5fa
-Reviewed-on: http://git.am.freescale.net:8181/6643
-Tested-by: Review Code-CDREVIEW <CDREVIEW@freescale.com>
-Reviewed-by: Yang Li <LeoLi@freescale.com>
-Reviewed-by: Thomas Trefny <Tom.Trefny@freescale.com>
-Reviewed-on: http://git.am.freescale.net:8181/12045
-Reviewed-by: Jose Rivera <German.Rivera@freescale.com>
+With the new rules added into arch/powerpc/Makefile,
+you can do it in one step:
+make mpc85xx_smp_defconfig
+
+The reason why I add new rules in arch/powerpc/Makefile is
+because I don't want to break the build for existing defconfigs.
+
+Signed-off-by: Lijun Pan <Lijun.Pan@freescale.com>
 ---
- arch/powerpc/platforms/85xx/twr_p102x.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/platforms/85xx/twr_p102x.c b/arch/powerpc/platforms/85xx/twr_p102x.c
-index 1eadb6d..069e19b 100644
---- a/arch/powerpc/platforms/85xx/twr_p102x.c
-+++ b/arch/powerpc/platforms/85xx/twr_p102x.c
-@@ -101,7 +101,7 @@ static void __init twr_p1025_setup_arch(void)
- 					MPC85xx_PMUXCR_QE(12));
- 			iounmap(guts);
+v2 changes:
+ rename kvm_guest.config to kvm_e500.config
+ utilize the definition of mergeconfig in scripts/kconfig/Makefile
+ .config before and after this patch differs, need to investigate more
+ need suggestions on what other features to spin off mpc85xx corenet32/64
  
--#if defined(CONFIG_SERIAL_QE)
-+#if defined(CONFIG_SERIAL_QE) || defined(CONFIG_SERIAL_QE_MODULE)
- 			/* On P1025TWR board, the UCC7 acted as UART port.
- 			 * However, The UCC7's CTS pin is low level in default,
- 			 * it will impact the transmission in full duplex
+ arch/powerpc/Makefile                              |  29 +++
+ arch/powerpc/configs/32-bit.config                 |   1 +
+ arch/powerpc/configs/64-bit.config                 |   3 +
+ arch/powerpc/configs/corenet64_smp_defconfig       | 176 ---------------
+ .../{corenet32_smp_defconfig => corenet_defconfig} |   3 -
+ arch/powerpc/configs/kvm_e500.config               |   2 +
+ .../{mpc85xx_defconfig => mpc85xx_basic_defconfig} |   1 -
+ arch/powerpc/configs/mpc85xx_smp_defconfig         | 244 ---------------------
+ arch/powerpc/configs/smp.config                    |   1 +
+ 9 files changed, 36 insertions(+), 424 deletions(-)
+ create mode 100644 arch/powerpc/configs/32-bit.config
+ create mode 100644 arch/powerpc/configs/64-bit.config
+ delete mode 100644 arch/powerpc/configs/corenet64_smp_defconfig
+ rename arch/powerpc/configs/{corenet32_smp_defconfig => corenet_defconfig} (98%)
+ create mode 100644 arch/powerpc/configs/kvm_e500.config
+ rename arch/powerpc/configs/{mpc85xx_defconfig => mpc85xx_basic_defconfig} (99%)
+ delete mode 100644 arch/powerpc/configs/mpc85xx_smp_defconfig
+ create mode 100644 arch/powerpc/configs/smp.config
+
+diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
+index fc502e0..89a7627 100644
+--- a/arch/powerpc/Makefile
++++ b/arch/powerpc/Makefile
+@@ -269,6 +269,35 @@ bootwrapper_install:
+ %.dtb: scripts
+ 	$(Q)$(MAKE) ARCH=ppc64 $(build)=$(boot) $(patsubst %,$(boot)/%,$@)
+ 
++configfiles=$(wildcard $(srctree)/kernel/configs/$(1).config $(srctree)/arch/$(SRCARCH)/configs/$(1).config)
++
++define mergeconfig
++$(if $(wildcard $(objtree)/.config),, $(error You need an existing .config for this target))
++$(if $(call configfiles,$(1)),, $(error No configuration exists for this target on this architecture))
++$(Q)$(CONFIG_SHELL) $(srctree)/scripts/kconfig/merge_config.sh -m -O $(objtree) $(objtree)/.config $(call configfiles,$(1))
++endef
++
++mpc85xx_defconfig: mpc85xx_basic_defconfig
++	$(call mergeconfig,32-bit)
++	$(Q)yes "" | $(MAKE) -f $(srctree)/Makefile oldconfig
++
++mpc85xx_smp_defconfig: mpc85xx_basic_defconfig
++	$(call mergeconfig,32-bit)
++	$(call mergeconfig,smp)
++	$(call mergeconfig,kvm_e500)
++	$(Q)yes "" | $(MAKE) -f $(srctree)/Makefile oldconfig
++
++corenet32_smp_defconfig: corenet_defconfig
++	$(call mergeconfig,32-bit)
++	$(call mergeconfig,smp)
++	$(Q)yes "" | $(MAKE) -f $(srctree)/Makefile oldconfig
++
++corenet64_smp_defconfig: corenet_defconfig
++	$(call mergeconfig,64-bit)
++	$(call mergeconfig,smp)
++	$(Q)yes "" | $(MAKE) -f $(srctree)/Makefile oldconfig
++
++
+ define archhelp
+   @echo '* zImage          - Build default images selected by kernel config'
+   @echo '  zImage.*        - Compressed kernel image (arch/$(ARCH)/boot/zImage.*)'
+diff --git a/arch/powerpc/configs/32-bit.config b/arch/powerpc/configs/32-bit.config
+new file mode 100644
+index 0000000..3b8b43b
+--- /dev/null
++++ b/arch/powerpc/configs/32-bit.config
+@@ -0,0 +1 @@
++CONFIG_PPC_85xx=y
+diff --git a/arch/powerpc/configs/64-bit.config b/arch/powerpc/configs/64-bit.config
+new file mode 100644
+index 0000000..b53af55
+--- /dev/null
++++ b/arch/powerpc/configs/64-bit.config
+@@ -0,0 +1,3 @@
++CONFIG_PPC64=y
++CONFIG_PPC_BOOK3E_64=y
++CONFIG_ALTIVEC=y
+diff --git a/arch/powerpc/configs/corenet64_smp_defconfig b/arch/powerpc/configs/corenet64_smp_defconfig
+deleted file mode 100644
+index 33cd1df..0000000
+--- a/arch/powerpc/configs/corenet64_smp_defconfig
++++ /dev/null
+@@ -1,176 +0,0 @@
+-CONFIG_PPC64=y
+-CONFIG_PPC_BOOK3E_64=y
+-CONFIG_ALTIVEC=y
+-CONFIG_SMP=y
+-CONFIG_NR_CPUS=24
+-CONFIG_SYSVIPC=y
+-CONFIG_FHANDLE=y
+-CONFIG_IRQ_DOMAIN_DEBUG=y
+-CONFIG_NO_HZ=y
+-CONFIG_HIGH_RES_TIMERS=y
+-CONFIG_BSD_PROCESS_ACCT=y
+-CONFIG_IKCONFIG=y
+-CONFIG_IKCONFIG_PROC=y
+-CONFIG_LOG_BUF_SHIFT=14
+-CONFIG_CGROUPS=y
+-CONFIG_CPUSETS=y
+-CONFIG_CGROUP_CPUACCT=y
+-CONFIG_CGROUP_SCHED=y
+-CONFIG_BLK_DEV_INITRD=y
+-CONFIG_EXPERT=y
+-CONFIG_KALLSYMS_ALL=y
+-CONFIG_MODULES=y
+-CONFIG_MODULE_UNLOAD=y
+-CONFIG_MODULE_FORCE_UNLOAD=y
+-CONFIG_MODVERSIONS=y
+-# CONFIG_BLK_DEV_BSG is not set
+-CONFIG_PARTITION_ADVANCED=y
+-CONFIG_MAC_PARTITION=y
+-CONFIG_CORENET_GENERIC=y
+-# CONFIG_PPC_OF_BOOT_TRAMPOLINE is not set
+-CONFIG_BINFMT_MISC=m
+-CONFIG_MATH_EMULATION=y
+-CONFIG_MATH_EMULATION_HW_UNIMPLEMENTED=y
+-CONFIG_PCIEPORTBUS=y
+-CONFIG_PCI_MSI=y
+-CONFIG_RAPIDIO=y
+-CONFIG_FSL_RIO=y
+-CONFIG_NET=y
+-CONFIG_PACKET=y
+-CONFIG_UNIX=y
+-CONFIG_XFRM_USER=y
+-CONFIG_NET_KEY=y
+-CONFIG_INET=y
+-CONFIG_IP_MULTICAST=y
+-CONFIG_IP_ADVANCED_ROUTER=y
+-CONFIG_IP_MULTIPLE_TABLES=y
+-CONFIG_IP_ROUTE_MULTIPATH=y
+-CONFIG_IP_ROUTE_VERBOSE=y
+-CONFIG_IP_PNP=y
+-CONFIG_IP_PNP_DHCP=y
+-CONFIG_IP_PNP_BOOTP=y
+-CONFIG_IP_PNP_RARP=y
+-CONFIG_NET_IPIP=y
+-CONFIG_IP_MROUTE=y
+-CONFIG_IP_PIMSM_V1=y
+-CONFIG_IP_PIMSM_V2=y
+-CONFIG_INET_ESP=y
+-# CONFIG_INET_XFRM_MODE_BEET is not set
+-# CONFIG_INET_LRO is not set
+-CONFIG_IPV6=y
+-CONFIG_IP_SCTP=m
+-CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
+-CONFIG_DEVTMPFS=y
+-CONFIG_DEVTMPFS_MOUNT=y
+-CONFIG_MTD=y
+-CONFIG_MTD_CMDLINE_PARTS=y
+-CONFIG_MTD_BLOCK=y
+-CONFIG_FTL=y
+-CONFIG_MTD_CFI=y
+-CONFIG_MTD_CFI_INTELEXT=y
+-CONFIG_MTD_CFI_AMDSTD=y
+-CONFIG_MTD_PHYSMAP_OF=y
+-CONFIG_MTD_NAND=y
+-CONFIG_MTD_NAND_FSL_ELBC=y
+-CONFIG_MTD_NAND_FSL_IFC=y
+-CONFIG_MTD_SPI_NOR=y
+-CONFIG_MTD_UBI=y
+-CONFIG_BLK_DEV_LOOP=y
+-CONFIG_BLK_DEV_RAM=y
+-CONFIG_BLK_DEV_RAM_SIZE=131072
+-CONFIG_EEPROM_LEGACY=y
+-CONFIG_BLK_DEV_SD=y
+-CONFIG_BLK_DEV_SR=y
+-CONFIG_BLK_DEV_SR_VENDOR=y
+-CONFIG_CHR_DEV_SG=y
+-CONFIG_ATA=y
+-CONFIG_SATA_FSL=y
+-CONFIG_SATA_SIL24=y
+-CONFIG_NETDEVICES=y
+-CONFIG_DUMMY=y
+-CONFIG_FSL_PQ_MDIO=y
+-CONFIG_FSL_XGMAC_MDIO=y
+-CONFIG_E1000E=y
+-CONFIG_VITESSE_PHY=y
+-CONFIG_FIXED_PHY=y
+-CONFIG_MDIO_BUS_MUX_GPIO=y
+-CONFIG_MDIO_BUS_MUX_MMIOREG=y
+-CONFIG_INPUT_FF_MEMLESS=m
+-# CONFIG_INPUT_MOUSEDEV is not set
+-# CONFIG_INPUT_KEYBOARD is not set
+-# CONFIG_INPUT_MOUSE is not set
+-CONFIG_SERIO_LIBPS2=y
+-CONFIG_PPC_EPAPR_HV_BYTECHAN=y
+-CONFIG_SERIAL_8250=y
+-CONFIG_SERIAL_8250_CONSOLE=y
+-CONFIG_SERIAL_8250_MANY_PORTS=y
+-CONFIG_SERIAL_8250_DETECT_IRQ=y
+-CONFIG_SERIAL_8250_RSA=y
+-CONFIG_I2C=y
+-CONFIG_I2C_CHARDEV=y
+-CONFIG_I2C_MPC=y
+-CONFIG_I2C_MUX=y
+-CONFIG_I2C_MUX_PCA954x=y
+-CONFIG_SPI=y
+-CONFIG_SPI_GPIO=y
+-CONFIG_SPI_FSL_SPI=y
+-CONFIG_SPI_FSL_ESPI=y
+-CONFIG_SENSORS_LM90=y
+-CONFIG_SENSORS_INA2XX=y
+-CONFIG_USB_HID=m
+-CONFIG_USB=y
+-CONFIG_USB_MON=y
+-CONFIG_USB_EHCI_HCD=y
+-CONFIG_USB_EHCI_FSL=y
+-CONFIG_USB_STORAGE=y
+-CONFIG_MMC=y
+-CONFIG_MMC_SDHCI=y
+-CONFIG_EDAC=y
+-CONFIG_EDAC_MM_EDAC=y
+-CONFIG_RTC_CLASS=y
+-CONFIG_RTC_DRV_DS1307=y
+-CONFIG_RTC_DRV_DS1374=y
+-CONFIG_RTC_DRV_DS3232=y
+-CONFIG_DMADEVICES=y
+-CONFIG_FSL_DMA=y
+-CONFIG_VIRT_DRIVERS=y
+-CONFIG_FSL_HV_MANAGER=y
+-CONFIG_CLK_QORIQ=y
+-CONFIG_FSL_CORENET_CF=y
+-CONFIG_EXT2_FS=y
+-CONFIG_EXT3_FS=y
+-CONFIG_ISO9660_FS=m
+-CONFIG_JOLIET=y
+-CONFIG_ZISOFS=y
+-CONFIG_UDF_FS=m
+-CONFIG_MSDOS_FS=m
+-CONFIG_VFAT_FS=y
+-CONFIG_NTFS_FS=y
+-CONFIG_PROC_KCORE=y
+-CONFIG_TMPFS=y
+-CONFIG_HUGETLBFS=y
+-CONFIG_JFFS2_FS=y
+-CONFIG_JFFS2_FS_DEBUG=1
+-CONFIG_UBIFS_FS=y
+-CONFIG_NFS_FS=y
+-CONFIG_NFS_V4=y
+-CONFIG_ROOT_NFS=y
+-CONFIG_NFSD=m
+-CONFIG_NLS_CODEPAGE_437=y
+-CONFIG_NLS_CODEPAGE_850=y
+-CONFIG_NLS_ISO8859_1=y
+-CONFIG_NLS_UTF8=m
+-CONFIG_CRC_T10DIF=y
+-CONFIG_DEBUG_INFO=y
+-CONFIG_FRAME_WARN=1024
+-CONFIG_DEBUG_FS=y
+-CONFIG_MAGIC_SYSRQ=y
+-CONFIG_DEBUG_SHIRQ=y
+-CONFIG_DETECT_HUNG_TASK=y
+-CONFIG_CRYPTO_NULL=y
+-CONFIG_CRYPTO_PCBC=m
+-CONFIG_CRYPTO_MD4=y
+-CONFIG_CRYPTO_SHA256=y
+-CONFIG_CRYPTO_SHA512=y
+-# CONFIG_CRYPTO_ANSI_CPRNG is not set
+-CONFIG_CRYPTO_DEV_FSL_CAAM=y
+diff --git a/arch/powerpc/configs/corenet32_smp_defconfig b/arch/powerpc/configs/corenet_defconfig
+similarity index 98%
+rename from arch/powerpc/configs/corenet32_smp_defconfig
+rename to arch/powerpc/configs/corenet_defconfig
+index 3765993..6228fcd 100644
+--- a/arch/powerpc/configs/corenet32_smp_defconfig
++++ b/arch/powerpc/configs/corenet_defconfig
+@@ -1,6 +1,3 @@
+-CONFIG_PPC_85xx=y
+-CONFIG_SMP=y
+-CONFIG_NR_CPUS=8
+ CONFIG_SYSVIPC=y
+ CONFIG_POSIX_MQUEUE=y
+ CONFIG_AUDIT=y
+diff --git a/arch/powerpc/configs/kvm_e500.config b/arch/powerpc/configs/kvm_e500.config
+new file mode 100644
+index 0000000..615b0a0
+--- /dev/null
++++ b/arch/powerpc/configs/kvm_e500.config
+@@ -0,0 +1,2 @@
++CONFIG_KVM_GUEST=y
++CONFIG_PPC_QEMU_E500=y
+diff --git a/arch/powerpc/configs/mpc85xx_defconfig b/arch/powerpc/configs/mpc85xx_basic_defconfig
+similarity index 99%
+rename from arch/powerpc/configs/mpc85xx_defconfig
+rename to arch/powerpc/configs/mpc85xx_basic_defconfig
+index 6ecf7bd..a80ff74 100644
+--- a/arch/powerpc/configs/mpc85xx_defconfig
++++ b/arch/powerpc/configs/mpc85xx_basic_defconfig
+@@ -1,4 +1,3 @@
+-CONFIG_PPC_85xx=y
+ CONFIG_PHYS_64BIT=y
+ CONFIG_SYSVIPC=y
+ CONFIG_POSIX_MQUEUE=y
+diff --git a/arch/powerpc/configs/mpc85xx_smp_defconfig b/arch/powerpc/configs/mpc85xx_smp_defconfig
+deleted file mode 100644
+index b6c7111..0000000
+--- a/arch/powerpc/configs/mpc85xx_smp_defconfig
++++ /dev/null
+@@ -1,244 +0,0 @@
+-CONFIG_PPC_85xx=y
+-CONFIG_PHYS_64BIT=y
+-CONFIG_SMP=y
+-CONFIG_NR_CPUS=8
+-CONFIG_SYSVIPC=y
+-CONFIG_POSIX_MQUEUE=y
+-CONFIG_AUDIT=y
+-CONFIG_IRQ_DOMAIN_DEBUG=y
+-CONFIG_NO_HZ=y
+-CONFIG_HIGH_RES_TIMERS=y
+-CONFIG_BSD_PROCESS_ACCT=y
+-CONFIG_IKCONFIG=y
+-CONFIG_IKCONFIG_PROC=y
+-CONFIG_LOG_BUF_SHIFT=14
+-CONFIG_BLK_DEV_INITRD=y
+-CONFIG_EXPERT=y
+-CONFIG_KALLSYMS_ALL=y
+-CONFIG_MODULES=y
+-CONFIG_MODULE_UNLOAD=y
+-CONFIG_MODULE_FORCE_UNLOAD=y
+-CONFIG_MODVERSIONS=y
+-# CONFIG_BLK_DEV_BSG is not set
+-CONFIG_PARTITION_ADVANCED=y
+-CONFIG_MAC_PARTITION=y
+-CONFIG_C293_PCIE=y
+-CONFIG_MPC8540_ADS=y
+-CONFIG_MPC8560_ADS=y
+-CONFIG_MPC85xx_CDS=y
+-CONFIG_MPC85xx_MDS=y
+-CONFIG_MPC8536_DS=y
+-CONFIG_MPC85xx_DS=y
+-CONFIG_MPC85xx_RDB=y
+-CONFIG_P1010_RDB=y
+-CONFIG_P1022_DS=y
+-CONFIG_P1022_RDK=y
+-CONFIG_P1023_RDB=y
+-CONFIG_SOCRATES=y
+-CONFIG_KSI8560=y
+-CONFIG_XES_MPC85xx=y
+-CONFIG_STX_GP3=y
+-CONFIG_TQM8540=y
+-CONFIG_TQM8541=y
+-CONFIG_TQM8548=y
+-CONFIG_TQM8555=y
+-CONFIG_TQM8560=y
+-CONFIG_SBC8548=y
+-CONFIG_QUICC_ENGINE=y
+-CONFIG_QE_GPIO=y
+-CONFIG_HIGHMEM=y
+-CONFIG_BINFMT_MISC=m
+-CONFIG_MATH_EMULATION=y
+-CONFIG_FORCE_MAX_ZONEORDER=12
+-CONFIG_PCI=y
+-CONFIG_PCI_MSI=y
+-CONFIG_RAPIDIO=y
+-CONFIG_NET=y
+-CONFIG_PACKET=y
+-CONFIG_UNIX=y
+-CONFIG_XFRM_USER=y
+-CONFIG_NET_KEY=y
+-CONFIG_INET=y
+-CONFIG_IP_MULTICAST=y
+-CONFIG_IP_ADVANCED_ROUTER=y
+-CONFIG_IP_MULTIPLE_TABLES=y
+-CONFIG_IP_ROUTE_MULTIPATH=y
+-CONFIG_IP_ROUTE_VERBOSE=y
+-CONFIG_IP_PNP=y
+-CONFIG_IP_PNP_DHCP=y
+-CONFIG_IP_PNP_BOOTP=y
+-CONFIG_IP_PNP_RARP=y
+-CONFIG_NET_IPIP=y
+-CONFIG_IP_MROUTE=y
+-CONFIG_IP_PIMSM_V1=y
+-CONFIG_IP_PIMSM_V2=y
+-CONFIG_INET_ESP=y
+-# CONFIG_INET_XFRM_MODE_BEET is not set
+-# CONFIG_INET_LRO is not set
+-CONFIG_IPV6=y
+-CONFIG_IP_SCTP=m
+-CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
+-CONFIG_DEVTMPFS=y
+-CONFIG_DEVTMPFS_MOUNT=y
+-CONFIG_MTD=y
+-CONFIG_MTD_CMDLINE_PARTS=y
+-CONFIG_MTD_BLOCK=y
+-CONFIG_FTL=y
+-CONFIG_MTD_CFI=y
+-CONFIG_MTD_CFI_INTELEXT=y
+-CONFIG_MTD_CFI_AMDSTD=y
+-CONFIG_MTD_PHYSMAP_OF=y
+-CONFIG_MTD_NAND=y
+-CONFIG_MTD_NAND_FSL_ELBC=y
+-CONFIG_MTD_NAND_FSL_IFC=y
+-CONFIG_MTD_SPI_NOR=y
+-CONFIG_MTD_UBI=y
+-CONFIG_BLK_DEV_LOOP=y
+-CONFIG_BLK_DEV_NBD=y
+-CONFIG_BLK_DEV_RAM=y
+-CONFIG_BLK_DEV_RAM_SIZE=131072
+-CONFIG_EEPROM_AT24=y
+-CONFIG_EEPROM_LEGACY=y
+-CONFIG_BLK_DEV_SD=y
+-CONFIG_CHR_DEV_ST=y
+-CONFIG_BLK_DEV_SR=y
+-CONFIG_CHR_DEV_SG=y
+-CONFIG_SCSI_LOGGING=y
+-CONFIG_ATA=y
+-CONFIG_SATA_AHCI=y
+-CONFIG_SATA_FSL=y
+-CONFIG_SATA_SIL24=y
+-CONFIG_PATA_ALI=y
+-CONFIG_NETDEVICES=y
+-CONFIG_DUMMY=y
+-CONFIG_FS_ENET=y
+-CONFIG_UCC_GETH=y
+-CONFIG_GIANFAR=y
+-CONFIG_E1000E=y
+-CONFIG_AT803X_PHY=y
+-CONFIG_MARVELL_PHY=y
+-CONFIG_DAVICOM_PHY=y
+-CONFIG_CICADA_PHY=y
+-CONFIG_VITESSE_PHY=y
+-CONFIG_FIXED_PHY=y
+-CONFIG_INPUT_FF_MEMLESS=m
+-# CONFIG_INPUT_MOUSEDEV is not set
+-# CONFIG_INPUT_KEYBOARD is not set
+-# CONFIG_INPUT_MOUSE is not set
+-CONFIG_SERIO_LIBPS2=y
+-CONFIG_SERIAL_8250=y
+-CONFIG_SERIAL_8250_CONSOLE=y
+-CONFIG_SERIAL_8250_NR_UARTS=2
+-CONFIG_SERIAL_8250_RUNTIME_UARTS=2
+-CONFIG_SERIAL_8250_MANY_PORTS=y
+-CONFIG_SERIAL_8250_DETECT_IRQ=y
+-CONFIG_SERIAL_8250_RSA=y
+-CONFIG_SERIAL_QE=m
+-CONFIG_NVRAM=y
+-CONFIG_I2C=y
+-CONFIG_I2C_CHARDEV=y
+-CONFIG_I2C_CPM=m
+-CONFIG_I2C_MPC=y
+-CONFIG_SPI=y
+-CONFIG_SPI_FSL_SPI=y
+-CONFIG_SPI_FSL_ESPI=y
+-CONFIG_GPIO_MPC8XXX=y
+-CONFIG_SENSORS_LM90=y
+-CONFIG_FB=y
+-CONFIG_FB_FSL_DIU=y
+-# CONFIG_VGA_CONSOLE is not set
+-CONFIG_FRAMEBUFFER_CONSOLE=y
+-CONFIG_SOUND=y
+-CONFIG_SND=y
+-# CONFIG_SND_SUPPORT_OLD_API is not set
+-# CONFIG_SND_DRIVERS is not set
+-CONFIG_SND_INTEL8X0=y
+-# CONFIG_SND_PPC is not set
+-# CONFIG_SND_USB is not set
+-CONFIG_SND_SOC=y
+-CONFIG_SND_POWERPC_SOC=y
+-CONFIG_HID_A4TECH=y
+-CONFIG_HID_APPLE=y
+-CONFIG_HID_BELKIN=y
+-CONFIG_HID_CHERRY=y
+-CONFIG_HID_CHICONY=y
+-CONFIG_HID_CYPRESS=y
+-CONFIG_HID_EZKEY=y
+-CONFIG_HID_GYRATION=y
+-CONFIG_HID_LOGITECH=y
+-CONFIG_HID_MICROSOFT=y
+-CONFIG_HID_MONTEREY=y
+-CONFIG_HID_PANTHERLORD=y
+-CONFIG_HID_PETALYNX=y
+-CONFIG_HID_SAMSUNG=y
+-CONFIG_HID_SUNPLUS=y
+-CONFIG_USB=y
+-CONFIG_USB_MON=y
+-CONFIG_USB_EHCI_HCD=y
+-CONFIG_USB_EHCI_FSL=y
+-CONFIG_USB_OHCI_HCD=y
+-CONFIG_USB_OHCI_HCD_PPC_OF_BE=y
+-CONFIG_USB_OHCI_HCD_PPC_OF_LE=y
+-CONFIG_USB_STORAGE=y
+-CONFIG_MMC=y
+-CONFIG_MMC_SDHCI=y
+-CONFIG_MMC_SDHCI_PLTFM=y
+-CONFIG_MMC_SDHCI_OF_ESDHC=y
+-CONFIG_EDAC=y
+-CONFIG_EDAC_MM_EDAC=y
+-CONFIG_RTC_CLASS=y
+-CONFIG_RTC_DRV_DS1307=y
+-CONFIG_RTC_DRV_DS1374=y
+-CONFIG_RTC_DRV_DS3232=y
+-CONFIG_RTC_DRV_CMOS=y
+-CONFIG_DMADEVICES=y
+-CONFIG_FSL_DMA=y
+-CONFIG_EXT2_FS=y
+-CONFIG_EXT3_FS=y
+-# CONFIG_EXT3_DEFAULTS_TO_ORDERED is not set
+-CONFIG_ISO9660_FS=m
+-CONFIG_JOLIET=y
+-CONFIG_ZISOFS=y
+-CONFIG_UDF_FS=m
+-CONFIG_MSDOS_FS=m
+-CONFIG_VFAT_FS=y
+-CONFIG_NTFS_FS=y
+-CONFIG_PROC_KCORE=y
+-CONFIG_TMPFS=y
+-CONFIG_HUGETLBFS=y
+-CONFIG_ADFS_FS=m
+-CONFIG_AFFS_FS=m
+-CONFIG_HFS_FS=m
+-CONFIG_HFSPLUS_FS=m
+-CONFIG_BEFS_FS=m
+-CONFIG_BFS_FS=m
+-CONFIG_EFS_FS=m
+-CONFIG_JFFS2_FS=y
+-CONFIG_JFFS2_FS_DEBUG=1
+-CONFIG_UBIFS_FS=y
+-CONFIG_CRAMFS=y
+-CONFIG_VXFS_FS=m
+-CONFIG_HPFS_FS=m
+-CONFIG_QNX4FS_FS=m
+-CONFIG_SYSV_FS=m
+-CONFIG_UFS_FS=m
+-CONFIG_NFS_FS=y
+-CONFIG_NFS_V4=y
+-CONFIG_ROOT_NFS=y
+-CONFIG_NFSD=y
+-CONFIG_NLS_CODEPAGE_437=y
+-CONFIG_NLS_CODEPAGE_850=y
+-CONFIG_NLS_ISO8859_1=y
+-CONFIG_CRC_T10DIF=y
+-CONFIG_FONTS=y
+-CONFIG_FONT_8x8=y
+-CONFIG_FONT_8x16=y
+-CONFIG_DEBUG_INFO=y
+-CONFIG_DEBUG_FS=y
+-CONFIG_DETECT_HUNG_TASK=y
+-CONFIG_CRYPTO_PCBC=m
+-CONFIG_CRYPTO_SHA256=y
+-CONFIG_CRYPTO_SHA512=y
+-# CONFIG_CRYPTO_ANSI_CPRNG is not set
+-CONFIG_CRYPTO_DEV_FSL_CAAM=y
+-CONFIG_CRYPTO_DEV_TALITOS=y
+diff --git a/arch/powerpc/configs/smp.config b/arch/powerpc/configs/smp.config
+new file mode 100644
+index 0000000..1cbf7ec
+--- /dev/null
++++ b/arch/powerpc/configs/smp.config
+@@ -0,0 +1 @@
++CONFIG_SMP=y
 -- 
-2.1.0.27.g96db324
+1.9.3
