@@ -1,28 +1,26 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0127.outbound.protection.outlook.com [65.55.169.127])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <dgibson@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E0D401A04B7
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Apr 2015 10:30:49 +1000 (AEST)
-Message-ID: <1430353832.16357.138.camel@freescale.com>
-Subject: Re: [v3] dt/bindings: qoriq-clock: Add binding for FMan clock mux
-From: Scott Wood <scottwood@freescale.com>
-To: Liberman Igal-B31950 <Igal.Liberman@freescale.com>
-Date: Wed, 29 Apr 2015 19:30:32 -0500
-In-Reply-To: <DM2PR03MB383C35FA5959662DD48D00BE6EE0@DM2PR03MB383.namprd03.prod.outlook.com>
-References: <1429008968-24707-1-git-send-email-igal.liberman@freescale.com>
- <1429119357.22867.724.camel@freescale.com>
- <DM2PR03MB38330DBBFFD1BC45D58F447E6E40@DM2PR03MB383.namprd03.prod.outlook.com>
- <1429249281.32545.52.camel@freescale.com>
- <DM2PR03MB383E5F67C358CCE2E38EA71E6E00@DM2PR03MB383.namprd03.prod.outlook.com>
- <1429577504.4352.67.camel@freescale.com>
- <DM2PR03MB383C35FA5959662DD48D00BE6EE0@DM2PR03MB383.namprd03.prod.outlook.com>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3C0ED1A04B7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Apr 2015 10:38:28 +1000 (AEST)
+Date: Thu, 30 Apr 2015 10:13:27 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Subject: Re: [PATCH kernel v9 17/32] powerpc/powernv: Implement accessor to
+ TCE entry
+Message-ID: <20150430001327.GZ32589@voom.redhat.com>
+References: <1429964096-11524-1-git-send-email-aik@ozlabs.ru>
+ <1429964096-11524-18-git-send-email-aik@ozlabs.ru>
+ <20150429040436.GN32589@voom.redhat.com>
+ <55409E19.3090204@ozlabs.ru>
 MIME-Version: 1.0
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Tang
- Yuantian-B29983 <Yuantian.Tang@freescale.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="3rx43rDlPB5nB2+S"
+In-Reply-To: <55409E19.3090204@ozlabs.ru>
+Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,228 +30,100 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2015-04-22 at 05:47 -0500, Liberman Igal-B31950 wrote:
-> 
-> 
-> Regards,
-> Igal Liberman.
-> 
-> > -----Original Message-----
-> > From: Wood Scott-B07421
-> > Sent: Tuesday, April 21, 2015 3:52 AM
-> > To: Liberman Igal-B31950
-> > Cc: devicetree@vger.kernel.org; linuxppc-dev@lists.ozlabs.org; Tang
-> > Yuantian-B29983
-> > Subject: Re: [v3] dt/bindings: qoriq-clock: Add binding for FMan clock mux
-> > 
-> > On Mon, 2015-04-20 at 06:40 -0500, Liberman Igal-B31950 wrote:
-> > >
-> > >
-> > > Regards,
-> > > Igal Liberman.
-> > >
-> > > > -----Original Message-----
-> > > > From: Liberman Igal-B31950
-> > > > Sent: Monday, April 20, 2015 2:07 PM
-> > > > To: Wood Scott-B07421
-> > > > Cc: devicetree@vger.kernel.org; linuxppc-dev@lists.ozlabs.org
-> > > > Subject: RE: [v3] dt/bindings: qoriq-clock: Add binding for FMan
-> > > > clock mux
-> > > >
-> > > >
-> > > >
-> > > > Regards,
-> > > > Igal Liberman.
-> > > >
-> > > > > -----Original Message-----
-> > > > > From: Wood Scott-B07421
-> > > > > Sent: Friday, April 17, 2015 8:41 AM
-> > > > > To: Liberman Igal-B31950
-> > > > > Cc: devicetree@vger.kernel.org; linuxppc-dev@lists.ozlabs.org
-> > > > > Subject: Re: [v3] dt/bindings: qoriq-clock: Add binding for FMan
-> > > > > clock mux
-> > > > >
-> > > > > On Thu, 2015-04-16 at 01:11 -0500, Liberman Igal-B31950 wrote:
-> > > > > >
-> > > > > >
-> > > > > > Regards,
-> > > > > > Igal Liberman.
-> > > > > >
-> > > > > > > -----Original Message-----
-> > > > > > > From: Wood Scott-B07421
-> > > > > > > Sent: Wednesday, April 15, 2015 8:36 PM
-> > > > > > > To: Liberman Igal-B31950
-> > > > > > > Cc: devicetree@vger.kernel.org; linuxppc-dev@lists.ozlabs.org
-> > > > > > > Subject: Re: [v3] dt/bindings: qoriq-clock: Add binding for
-> > > > > > > FMan clock mux
-> > > > > > >
-> > > > > > > On Tue, 2015-04-14 at 13:56 +0300, Igal.Liberman wrote:
-> > > > > > > > From: Igal Liberman <Igal.Liberman@freescale.com>
-> > > > > > > >
-> > > > > > > > v3: Addressed feedback from Scott:
-> > > > > > > > 	- Removed clock specifier description.
-> > > > > > > >
-> > > > > > > > v2: Addressed feedback from Scott:
-> > > > > > > > 	- Moved the "fman-clk-mux" clock provider details
-> > > > > > > > 	  under "clocks" property.
-> > > > > > > >
-> > > > > > > > Signed-off-by: Igal Liberman <Igal.Liberman@freescale.com>
-> > > > > > > > ---
-> > > > > > > >  .../devicetree/bindings/clock/qoriq-clock.txt      |   17
-> > > > > +++++++++++++++--
-> > > > > > > >  1 file changed, 15 insertions(+), 2 deletions(-)
-> > > > > > > >
-> > > > > > > > diff --git
-> > > > > > > > a/Documentation/devicetree/bindings/clock/qoriq-clock.txt
-> > > > > > > > b/Documentation/devicetree/bindings/clock/qoriq-clock.txt
-> > > > > > > > index b0d7b73..2bb3b38 100644
-> > > > > > > > ---
-> > > > > > > > a/Documentation/devicetree/bindings/clock/qoriq-clock.txt
-> > > > > > > > +++ b/Documentation/devicetree/bindings/clock/qoriq-clock.tx
-> > > > > > > > +++ t
-> > > > > > > > @@ -65,9 +65,10 @@ Required properties:
-> > > > > > > >  		It takes parent's clock-frequency as its clock.
-> > > > > > > >  	* "fsl,qoriq-platform-pll-1.0" for the platform PLL clock (v1.0)
-> > > > > > > >  	* "fsl,qoriq-platform-pll-2.0" for the platform PLL clock
-> > > > > > > > (v2.0)
-> > > > > > > > +	* "fsl,fman-clk-mux" for the Frame Manager clock.
-> > > > > > > >  - #clock-cells: From common clock binding. The number of cells in
-> > a
-> > > > > > > > -	clock-specifier. Should be <0> for "fsl,qoriq-sysclk-[1,2].0"
-> > > > > > > > -	clocks, or <1> for "fsl,qoriq-core-pll-[1,2].0" clocks.
-> > > > > > > > +	clock-specifier. Should be <0> for "fsl,qoriq-sysclk-[1,2].0"
-> > > > and
-> > > > > > > > +	"fsl,fman-clk-mux" clocks or <1> for "fsl,qoriq-core-pll-
-> > > > [1,2].0".
-> > > > > > > >  	For "fsl,qoriq-core-pll-1.0" clocks, the single
-> > > > > > > >  	clock-specifier cell may take the following values:
-> > > > > > > >  	* 0 - equal to the PLL frequency @@ -145,6 +146,18 @@
-> > > > Example
-> > > > > > > > for clock block and clock provider:
-> > > > > > > >  			clocks = <&sysclk>;
-> > > > > > > >  			clock-output-names = "platform-pll",
-> > > > "platform-pll-
-> > > > > > > div2";
-> > > > > > > >  		};
-> > > > > > > > +
-> > > > > > > > +		fm0clk: fm0-clk-mux {
-> > > > > > > > +			#clock-cells = <0>;
-> > > > > > > > +			reg = <0x10 4>
-> > > > > > > > +			compatible = "fsl,fman-clk-mux";
-> > > > > > > > +			clocks = <&pll0 0>, <&pll0 1>, <&pll0 2>,
-> > > > <&pll0 3>,
-> > > > > > > > +				 <&platform_pll 0>, <&pll1 1>, <&pll1
-> > > > 2>;
-> > > > > > > > +			clock-names = "pll0", "pll0-div2", "pll0-div3",
-> > > > > > > > +				      "pll0-div4", "platform-pll", "pll1-
-> > > > div2",
-> > > > > > > > +				      "pll1-div3";
-> > > > > > > > +			clock-output-names = "fm0-clk";
-> > > > > > > > +		};
-> > > > > > > >  	};
-> > > > > > > >  };
-> > > > > > > >
-> > > > > > >
-> > > > > > > I don't see this register in the manuals for older DPAA chips,
-> > > > > > > such as
-> > > > > > > p4080 or p3041.  Is it present but undocumented?  Should I be
-> > > > > > > looking somewhere other than "Clocking Memory Map"?
-> > > > > > >
-> > > > > >
-> > > > > > It's available only in part of the new chips (T4, T2, B4).
-> > > > > > In T1024/T1040 there's only one option for FMan clock so this
-> > > > > > register is not
-> > > > > available.
-> > > > >
-> > > > > So it's part of the 2.0 chassis?  I'd stick a 2.0 in there, then.
-> > > > > Who knows what we may see in the future.
-> > > > >
-> > > >
-> > > > OK,
-> > > > We can go with "fsl,fman-clk-mux-1/2-0.".
-> > > > In that case, we need to update FMan nodes and the clock driver:
-> > > > https://patchwork.ozlabs.org/patch/443973/
-> > > > https://patchwork.ozlabs.org/patch/461813/
-> > > > I will update those patches separately.
-> > > >
-> > >
-> > > Scott,
-> > > There are 2 options:
-> > > Use "fsl,fman-clk-mux-1.0" for SoC without CLKCGnHWACSR register.
-> > > Use "fsl,fman-clk-mux-2.0" for SoC with CLKCGnHWACSR register.
-> > > Or
-> > > Use "fsl,fman-clk-mux-1.0" for SoC which support FMan V2 (Pxxxx) Use
-> > > "fsl,fman-clk-mux-2.0" for SoC which support FMan V3 (B/T)
-> > 
-> > 1.0/2.0 in the clockgen node refers to chassis version.  It has nothing to do
-> > with FMan version.
-> > 
-> 
-> I know. However there's a match: 1.0 chassis used in SoC with FMan v2 and 2.0 chassis in SoC with FMan v3.
-> 
-> > In fact, fman should not be in the compatible because, now that I found the
-> > documentation for this, I see that it's more generic than that.
-> > "fman-clk-mux" should be replaced with "qoriq-hwacsr".
-> > 
-> > > Using the 1st option might be confusing because core pll/mux 2.0
-> > represents B/T devices and 1.0 represent Pxxxx.
-> > > In this case, T1040 uses "fsl,qoriq-core-pll/mux-2.0" and "fsl,fman-clk-mux-
-> > 1.0".
-> > > On the other hand, the second option doesn't distinguishes between T4
-> > and T1 (for example), as T1 doesn't have reg property while T4 has.
-> > 
-> > How would t1040 have a so-called "fman-clk-mux" node at all if it doesn't
-> > have this register?
-> > 
-> > I think we've made a mess of the clock bindings and this is only going to make
-> > it worse.  We need to stay compatible with the mess we've made, but I'm
-> > inclined to say that we shouldn't add more nodes to it.
-> > 
-> > Instead, have the toplevel clockgen node have a chip-based compatible in
-> > addition to version (e.g. compatible = "fsl,t4240-clockgen",
-> > "fsl,qoriq-clockgen-2.0") and have the toplevel node export whatever clocks
-> > are needed.  Put the logic to deal with all the different dividers, register
-> > values, and such in code, not the device tree.  The binding should be focused
-> > on how to encode the specifier of the exported clocks.
-> > 
-> 
-> We have 2 cases:
-> 	- Devices (T2/T4/B4) with CLKCG1HWACSR register.
-> 	- Devices (Pxxxx, T1) without CLKCG1HWACSR register (Pxxxx devices have many options, T1 has only one option)
-> 
-> For the first group, we can have " qoriq-hwacsr" property in the clock node.
 
-No, we're not going to describe every register with its own property.
-Describe the chip and let the driver be the place with the knowledge of
-what each chip is like.
+--3rx43rDlPB5nB2+S
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-> Currently T4 FMan clock mux node is the following:
-> 	fm1clk: fm1-clk-mux {
-> 		#clock-cells = <0>;
-> 		compatible = "fsl,fman-clk-mux";
-> 		clocks = <&pll1 1>, <&pll1 2>, <&pll1 3>,
-> 			 <&platform_pll 0>, <&pll0 1>, <&pll0 2>;
-> 		clock-names = "pll1-div2", "pll1-div3", "pll1-div4",
-> 			      "platform-pll", "pll0-div2", "pll0-div3";
-> 		clock-output-names = "fm1-clk";
-> 	};
-> As far as I understand we need to move the node to the top level clock node.
-> In addition we need to add reg property and change the name of the node and the compatible.
-> In that case, the driver can read this register instead of parsing the RCW.
+On Wed, Apr 29, 2015 at 07:02:17PM +1000, Alexey Kardashevskiy wrote:
+> On 04/29/2015 02:04 PM, David Gibson wrote:
+> >On Sat, Apr 25, 2015 at 10:14:41PM +1000, Alexey Kardashevskiy wrote:
+> >>This replaces direct accesses to TCE table with a helper which
+> >>returns an TCE entry address. This does not make difference now but will
+> >>when multi-level TCE tables get introduces.
+> >>
+> >>No change in behavior is expected.
+> >>
+> >>Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> >
+> >Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
+> >
+> >
+> >>---
+> >>Changes:
+> >>v9:
+> >>* new patch in the series to separate this mechanical change from
+> >>functional changes; this is not right before
+> >>"powerpc/powernv: Implement multilevel TCE tables" but here in order
+> >>to let the next patch - "powerpc/iommu/powernv: Release replaced TCE" -
+> >>use pnv_tce() and avoid changing the same code twice
+> >>---
+> >>  arch/powerpc/platforms/powernv/pci.c | 34 +++++++++++++++++++++------=
+-------
+> >>  1 file changed, 21 insertions(+), 13 deletions(-)
+> >>
+> >>diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platfo=
+rms/powernv/pci.c
+> >>index 84b4ea4..ba75aa5 100644
+> >>--- a/arch/powerpc/platforms/powernv/pci.c
+> >>+++ b/arch/powerpc/platforms/powernv/pci.c
+> >>@@ -572,38 +572,46 @@ struct pci_ops pnv_pci_ops =3D {
+> >>  	.write =3D pnv_pci_write_config,
+> >>  };
+> >>
+> >>+static __be64 *pnv_tce(struct iommu_table *tbl, long idx)
+> >>+{
+> >>+	__be64 *tmp =3D ((__be64 *)tbl->it_base);
+> >>+
+> >>+	return tmp + idx;
+> >>+}
+> >>+
+> >>  int pnv_tce_build(struct iommu_table *tbl, long index, long npages,
+> >>  		unsigned long uaddr, enum dma_data_direction direction,
+> >>  		struct dma_attrs *attrs)
+> >>  {
+> >>  	u64 proto_tce =3D iommu_direction_to_tce_perm(direction);
+> >>-	__be64 *tcep;
+> >>-	u64 rpn;
+> >>+	u64 rpn =3D __pa(uaddr) >> tbl->it_page_shift;
+> >
+> >I guess this was a problem in the existing code, not this patch.  But
+> >"uaddr" is a really bad name (and unsigned long is a bad type) for
+> >what must actually be a kernel linear mapping address.
+>=20
+>=20
+> Yes and may be one day I'll clean this up. s/uaddr/linear/ and s/hwaddr/h=
+pa/
+> are the first things to do globally but not in this patchset.
 
-I'm having a hard time following.  What I'm suggesting is eliminating
-the above and having the clockgen node itself (which already has a reg
-property) be a clock source with a clock specifier encoding that
-distinguishes the fman clock from other clocks.
+Ok.
 
-> What about the devices of the second group?
-> In this case we don't have a register to determine the source clock. So we need access to guts registers, 
+--=20
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
 
-I never suggested taking away access to the guts registers.
+--3rx43rDlPB5nB2+S
+Content-Type: application/pgp-signature
 
-> like we have currently.
-> The suggestion above doesn’t suit for those devices. 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
 
-How is the clock determined on those chips?
+iQIcBAEBAgAGBQJVQXOnAAoJEGw4ysog2bOSrQMP/1Ar5IePUlCg1JjlkWDqe7ab
+AJlizBRTnjgdKo7Mf53y6kBx/uZe3mgr5QQNnLcXl+KoWlXOiCI5yX83qeDGsbc6
+RteWzju76A6373beQA1YKXXRraMnWY/sted0h8flaMB/NPHFgWIcZOByNaiPscyO
+eDNIbU+8SslCFHNc1/d+r7gTxhQnq8t0R/MLabKsVz594/D3xg4ehY0RV9ZZep+s
+UhsO29o0VGGlgRScj9N8ZCiu4Hmrs9L86lE2s3x9ZkODulJ4xgRcvuEMsS2/1RVf
++rmWbdE7VVtL3XeSkcK2plaleOrT/Suw16wI3fRxDyJbhtKVnRhJdEf9BJ1/Hr6u
+1ceVCo+VI7xVv8ltZ8mZ4uBhlWW2xjYcj2NVXV4uK7HkvV6famdVhfuZTbTpLIJB
+8vkyCX3nQaOwHnHzKr/BUjxPnQXFibsEpn7+w2jFsYwmpwnaSGzR1/JoBB52qZ72
+ZXpw0uU6LbumacG7PUYYaqB109oziTYY0zhcuQUv0Ia6TUcJDMzp4rbav7NLYaFc
+tA0vO7/SSWE9CWfXGcuqtRyB3biXNryWG70EuJ8QBBE8HsFK4xz8LPR57Q/v10Dx
+gQO2E3j5IE2RSMeJ8xxTczsuaz6XuWi6KhrUgX12EzReVlMDu29tk80s9TYDVLRo
+aKgODyOqFRq/DiTYzyky
+=1jJK
+-----END PGP SIGNATURE-----
 
--Scott
+--3rx43rDlPB5nB2+S--
