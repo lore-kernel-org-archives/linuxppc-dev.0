@@ -1,20 +1,22 @@
-Return-Path: <haokexin@gmail.com>
-Received: from mail-yk0-x235.google.com (mail-yk0-x235.google.com
- [IPv6:2607:f8b0:4002:c07::235])
+Return-Path: <robherring2@gmail.com>
+Received: from mail-oi0-x22a.google.com (mail-oi0-x22a.google.com
+ [IPv6:2607:f8b0:4003:c06::22a])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1401E1A01F1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Apr 2015 22:30:26 +1000 (AEST)
-Received: by ykep21 with SMTP id p21so13075503yke.3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Apr 2015 05:30:23 -0700 (PDT)
-From: Kevin Hao <haokexin@gmail.com>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 2/2] powerpc: merge the RELOCATABLE config entries for ppc32
- and ppc64
-Date: Thu, 30 Apr 2015 20:29:57 +0800
-Message-Id: <1430396997-14656-3-git-send-email-haokexin@gmail.com>
-In-Reply-To: <1430396997-14656-1-git-send-email-haokexin@gmail.com>
-References: <1430396997-14656-1-git-send-email-haokexin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5C9031A0140
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Apr 2015 23:14:43 +1000 (AEST)
+Received: by oign205 with SMTP id n205so47273866oig.2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Apr 2015 06:14:40 -0700 (PDT)
+Sender: Rob Herring <robherring2@gmail.com>
+From: Rob Herring <robh@kernel.org>
+To: devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH 1/2] libfdt: add fdt type definitions
+Date: Thu, 30 Apr 2015 08:14:12 -0500
+Message-Id: <1430399653-30269-1-git-send-email-robh@kernel.org>
+Cc: Rob Herring <robh@kernel.org>, Russell King <linux@arm.linux.org.uk>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,105 +26,80 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-It makes no sense to keep two separate RELOCATABLE config entries for
-ppc32 and ppc64 respectively. Merge them into one and move it to
-a common place. The dependency on ADVANCED_OPTIONS for ppc32 seems
-unnecessary, also drop it.
+In preparation for libfdt/dtc update, add the new fdt specific types.
 
-Signed-off-by: Kevin Hao <haokexin@gmail.com>
+Signed-off-by: Rob Herring <robh@kernel.org>
+Cc: Russell King <linux@arm.linux.org.uk>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linux-arm-kernel@lists.infradead.org
+Cc: linuxppc-dev@lists.ozlabs.org
 ---
- arch/powerpc/Kconfig | 65 ++++++++++++++++++++++------------------------------
- 1 file changed, 27 insertions(+), 38 deletions(-)
+ arch/arm/boot/compressed/libfdt_env.h | 4 ++++
+ arch/powerpc/boot/libfdt_env.h        | 4 ++++
+ arch/powerpc/boot/of.h                | 2 ++
+ include/linux/libfdt_env.h            | 4 ++++
+ 4 files changed, 14 insertions(+)
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index d6bbf4f6f869..4080a14707bb 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -427,6 +427,33 @@ config KEXEC
- 	  interface is strongly in flux, so no good recommendation can be
- 	  made.
+diff --git a/arch/arm/boot/compressed/libfdt_env.h b/arch/arm/boot/compressed/libfdt_env.h
+index 1f4e718..17ae0f3 100644
+--- a/arch/arm/boot/compressed/libfdt_env.h
++++ b/arch/arm/boot/compressed/libfdt_env.h
+@@ -5,6 +5,10 @@
+ #include <linux/string.h>
+ #include <asm/byteorder.h>
  
-+config RELOCATABLE
-+	bool "Build a relocatable kernel"
-+	depends on (PPC64 && !COMPILE_TEST) || (FLATMEM && (44x || FSL_BOOKE))
-+	select NONSTATIC_KERNEL
-+	help
-+	  This builds a kernel image that is capable of running at the
-+	  location the kernel is loaded at. For ppc32, there is no any
-+	  alignment restrictions, and this feature is a superset of
-+	  DYNAMIC_MEMSTART and hence overrides it. For ppc64, we should use
-+	  16k-aligned base address. The kernel is linked as a
-+	  position-independent executable (PIE) and contains dynamic relocations
-+	  which are processed early in the bootup process.
++typedef __be16 fdt16_t;
++typedef __be32 fdt32_t;
++typedef __be64 fdt64_t;
 +
-+	  One use is for the kexec on panic case where the recovery kernel
-+	  must live at a different physical address than the primary
-+	  kernel.
-+
-+	  Note: If CONFIG_RELOCATABLE=y, then the kernel runs from the address
-+	  it has been loaded at and the compile time physical addresses
-+	  CONFIG_PHYSICAL_START is ignored.  However CONFIG_PHYSICAL_START
-+	  setting can still be useful to bootwrappers that need to know the
-+	  load address of the kernel (eg. u-boot/mkimage).
-+
-+config RELOCATABLE_PPC32
-+	def_bool y
-+	depends on PPC32 && RELOCATABLE
-+
- config CRASH_DUMP
- 	bool "Build a kdump crash kernel"
- 	depends on 6xx || ((PPC64 || FSL_BOOKE || (44x && !SMP)) && RELOCATABLE)
-@@ -926,29 +953,6 @@ config DYNAMIC_MEMSTART
+ #define fdt16_to_cpu(x)		be16_to_cpu(x)
+ #define cpu_to_fdt16(x)		cpu_to_be16(x)
+ #define fdt32_to_cpu(x)		be32_to_cpu(x)
+diff --git a/arch/powerpc/boot/libfdt_env.h b/arch/powerpc/boot/libfdt_env.h
+index 8dcd744..7e3789e 100644
+--- a/arch/powerpc/boot/libfdt_env.h
++++ b/arch/powerpc/boot/libfdt_env.h
+@@ -10,6 +10,10 @@ typedef u32 uint32_t;
+ typedef u64 uint64_t;
+ typedef unsigned long uintptr_t;
  
- 	  This option is overridden by CONFIG_RELOCATABLE
++typedef __be16 fdt16_t;
++typedef __be32 fdt32_t;
++typedef __be64 fdt64_t;
++
+ #define fdt16_to_cpu(x)		be16_to_cpu(x)
+ #define cpu_to_fdt16(x)		cpu_to_be16(x)
+ #define fdt32_to_cpu(x)		be32_to_cpu(x)
+diff --git a/arch/powerpc/boot/of.h b/arch/powerpc/boot/of.h
+index 5603320..53f8f27 100644
+--- a/arch/powerpc/boot/of.h
++++ b/arch/powerpc/boot/of.h
+@@ -21,7 +21,9 @@ int of_setprop(const void *phandle, const char *name, const void *buf,
+ /* Console functions */
+ void of_console_init(void);
  
--config RELOCATABLE
--	bool "Build a relocatable kernel"
--	depends on ADVANCED_OPTIONS && FLATMEM && (44x || FSL_BOOKE)
--	select NONSTATIC_KERNEL
--	help
--	  This builds a kernel image that is capable of running at the
--	  location the kernel is loaded at, without any alignment restrictions.
--	  This feature is a superset of DYNAMIC_MEMSTART and hence overrides it.
--
--	  One use is for the kexec on panic case where the recovery kernel
--	  must live at a different physical address than the primary
--	  kernel.
--
--	  Note: If CONFIG_RELOCATABLE=y, then the kernel runs from the address
--	  it has been loaded at and the compile time physical addresses
--	  CONFIG_PHYSICAL_START is ignored.  However CONFIG_PHYSICAL_START
--	  setting can still be useful to bootwrappers that need to know the
--	  load address of the kernel (eg. u-boot/mkimage).
--
--config RELOCATABLE_PPC32
--	def_bool y
--	depends on PPC32 && RELOCATABLE
--
- config PAGE_OFFSET_BOOL
- 	bool "Set custom page offset address"
- 	depends on ADVANCED_OPTIONS
-@@ -1034,21 +1038,6 @@ config PIN_TLB
- endmenu
++typedef u16			__be16;
+ typedef u32			__be32;
++typedef u64			__be64;
  
- if PPC64
--config RELOCATABLE
--	bool "Build a relocatable kernel"
--	depends on !COMPILE_TEST
--	select NONSTATIC_KERNEL
--	help
--	  This builds a kernel image that is capable of running anywhere
--	  in the RMA (real memory area) at any 16k-aligned base address.
--	  The kernel is linked as a position-independent executable (PIE)
--	  and contains dynamic relocations which are processed early
--	  in the bootup process.
--
--	  One use is for the kexec on panic case where the recovery kernel
--	  must live at a different physical address than the primary
--	  kernel.
--
- # This value must have zeroes in the bottom 60 bits otherwise lots will break
- config PAGE_OFFSET
- 	hex
+ #ifdef __LITTLE_ENDIAN__
+ #define cpu_to_be16(x) swab16(x)
+diff --git a/include/linux/libfdt_env.h b/include/linux/libfdt_env.h
+index 01508c7..2a663c6 100644
+--- a/include/linux/libfdt_env.h
++++ b/include/linux/libfdt_env.h
+@@ -5,6 +5,10 @@
+ 
+ #include <asm/byteorder.h>
+ 
++typedef __be16 fdt16_t;
++typedef __be32 fdt32_t;
++typedef __be64 fdt64_t;
++
+ #define fdt32_to_cpu(x) be32_to_cpu(x)
+ #define cpu_to_fdt32(x) cpu_to_be32(x)
+ #define fdt64_to_cpu(x) be64_to_cpu(x)
 -- 
 2.1.0
