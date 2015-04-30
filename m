@@ -1,29 +1,28 @@
-Return-Path: <Igal.Liberman@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0136.outbound.protection.outlook.com [207.46.100.136])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <j.anaszewski@samsung.com>
+Received: from mailout3.w1.samsung.com (mailout3.w1.samsung.com
+ [210.118.77.13])
+ (using TLSv1 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 411DB1A0033
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 May 2015 00:28:34 +1000 (AEST)
-From: "Igal.Liberman@freescale.com" <Igal.Liberman@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: RE: [v3] dt/bindings: qoriq-clock: Add binding for FMan clock mux
-Date: Thu, 30 Apr 2015 14:28:27 +0000
-Message-ID: <DM2PR03MB3839C9D3FDFD7978C1A3497E6D60@DM2PR03MB383.namprd03.prod.outlook.com>
-References: <1429008968-24707-1-git-send-email-igal.liberman@freescale.com>
- <1429119357.22867.724.camel@freescale.com>
- <DM2PR03MB38330DBBFFD1BC45D58F447E6E40@DM2PR03MB383.namprd03.prod.outlook.com>
- <1429249281.32545.52.camel@freescale.com>
- <DM2PR03MB383E5F67C358CCE2E38EA71E6E00@DM2PR03MB383.namprd03.prod.outlook.com>
- <1429577504.4352.67.camel@freescale.com>
- <DM2PR03MB383C35FA5959662DD48D00BE6EE0@DM2PR03MB383.namprd03.prod.outlook.com>
- <1430353832.16357.138.camel@freescale.com>
-In-Reply-To: <1430353832.16357.138.camel@freescale.com>
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Yuantian
- Tang <Yuantian.Tang@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 721B31A0E1D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 May 2015 00:29:32 +1000 (AEST)
+Received: from eucpsbgm1.samsung.com (unknown [203.254.199.244])
+ by mailout3.w1.samsung.com
+ (Oracle Communications Messaging Server 7.0.5.31.0 64bit (built May 5 2014))
+ with ESMTP id <0NNM005VXIX3E350@mailout3.w1.samsung.com> for
+ linuxppc-dev@lists.ozlabs.org; Thu, 30 Apr 2015 15:29:27 +0100 (BST)
+Message-id: <55423C45.3070601@samsung.com>
+Date: Thu, 30 Apr 2015 16:29:25 +0200
+From: Jacek Anaszewski <j.anaszewski@samsung.com>
+MIME-version: 1.0
+To: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
+Subject: Re: [PATCH v4 3/3] leds/powernv: Add driver for PowerNV platform
+References: <20150428100535.26912.29607.stgit@localhost.localdomain>
+ <20150428101008.26912.38735.stgit@localhost.localdomain>
+In-reply-to: <20150428101008.26912.38735.stgit@localhost.localdomain>
+Content-type: text/plain; charset=UTF-8; format=flowed
+Cc: stewart@linux.vnet.ibm.com, j.anaszewski81@gmail.com, cooloney@gmail.com,
+ rpurdie@rpsys.net, linuxppc-dev@lists.ozlabs.org, linux-leds@vger.kernel.org,
+ khandual@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,210 +32,657 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNClJlZ2FyZHMsDQpJZ2FsIExpYmVybWFuLg0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0t
-LS0tDQo+IEZyb206IFdvb2QgU2NvdHQtQjA3NDIxDQo+IFNlbnQ6IFRodXJzZGF5LCBBcHJpbCAz
-MCwgMjAxNSAzOjMxIEFNDQo+IFRvOiBMaWJlcm1hbiBJZ2FsLUIzMTk1MA0KPiBDYzogZGV2aWNl
-dHJlZUB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnOyBUYW5n
-DQo+IFl1YW50aWFuLUIyOTk4Mw0KPiBTdWJqZWN0OiBSZTogW3YzXSBkdC9iaW5kaW5nczogcW9y
-aXEtY2xvY2s6IEFkZCBiaW5kaW5nIGZvciBGTWFuIGNsb2NrIG11eA0KPiANCj4gT24gV2VkLCAy
-MDE1LTA0LTIyIGF0IDA1OjQ3IC0wNTAwLCBMaWJlcm1hbiBJZ2FsLUIzMTk1MCB3cm90ZToNCj4g
-Pg0KPiA+DQo+ID4gUmVnYXJkcywNCj4gPiBJZ2FsIExpYmVybWFuLg0KPiA+DQo+ID4gPiAtLS0t
-LU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+ID4gRnJvbTogV29vZCBTY290dC1CMDc0MjENCj4g
-PiA+IFNlbnQ6IFR1ZXNkYXksIEFwcmlsIDIxLCAyMDE1IDM6NTIgQU0NCj4gPiA+IFRvOiBMaWJl
-cm1hbiBJZ2FsLUIzMTk1MA0KPiA+ID4gQ2M6IGRldmljZXRyZWVAdmdlci5rZXJuZWwub3JnOyBs
-aW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZzsgVGFuZw0KPiA+ID4gWXVhbnRpYW4tQjI5OTgz
-DQo+ID4gPiBTdWJqZWN0OiBSZTogW3YzXSBkdC9iaW5kaW5nczogcW9yaXEtY2xvY2s6IEFkZCBi
-aW5kaW5nIGZvciBGTWFuDQo+ID4gPiBjbG9jayBtdXgNCj4gPiA+DQo+ID4gPiBPbiBNb24sIDIw
-MTUtMDQtMjAgYXQgMDY6NDAgLTA1MDAsIExpYmVybWFuIElnYWwtQjMxOTUwIHdyb3RlOg0KPiA+
-ID4gPg0KPiA+ID4gPg0KPiA+ID4gPiBSZWdhcmRzLA0KPiA+ID4gPiBJZ2FsIExpYmVybWFuLg0K
-PiA+ID4gPg0KPiA+ID4gPiA+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+ID4gPiA+ID4g
-RnJvbTogTGliZXJtYW4gSWdhbC1CMzE5NTANCj4gPiA+ID4gPiBTZW50OiBNb25kYXksIEFwcmls
-IDIwLCAyMDE1IDI6MDcgUE0NCj4gPiA+ID4gPiBUbzogV29vZCBTY290dC1CMDc0MjENCj4gPiA+
-ID4gPiBDYzogZGV2aWNldHJlZUB2Z2VyLmtlcm5lbC5vcmc7IGxpbnV4cHBjLWRldkBsaXN0cy5v
-emxhYnMub3JnDQo+ID4gPiA+ID4gU3ViamVjdDogUkU6IFt2M10gZHQvYmluZGluZ3M6IHFvcmlx
-LWNsb2NrOiBBZGQgYmluZGluZyBmb3IgRk1hbg0KPiA+ID4gPiA+IGNsb2NrIG11eA0KPiA+ID4g
-PiA+DQo+ID4gPiA+ID4NCj4gPiA+ID4gPg0KPiA+ID4gPiA+IFJlZ2FyZHMsDQo+ID4gPiA+ID4g
-SWdhbCBMaWJlcm1hbi4NCj4gPiA+ID4gPg0KPiA+ID4gPiA+ID4gLS0tLS1PcmlnaW5hbCBNZXNz
-YWdlLS0tLS0NCj4gPiA+ID4gPiA+IEZyb206IFdvb2QgU2NvdHQtQjA3NDIxDQo+ID4gPiA+ID4g
-PiBTZW50OiBGcmlkYXksIEFwcmlsIDE3LCAyMDE1IDg6NDEgQU0NCj4gPiA+ID4gPiA+IFRvOiBM
-aWJlcm1hbiBJZ2FsLUIzMTk1MA0KPiA+ID4gPiA+ID4gQ2M6IGRldmljZXRyZWVAdmdlci5rZXJu
-ZWwub3JnOyBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZw0KPiA+ID4gPiA+ID4gU3ViamVj
-dDogUmU6IFt2M10gZHQvYmluZGluZ3M6IHFvcmlxLWNsb2NrOiBBZGQgYmluZGluZyBmb3INCj4g
-PiA+ID4gPiA+IEZNYW4gY2xvY2sgbXV4DQo+ID4gPiA+ID4gPg0KPiA+ID4gPiA+ID4gT24gVGh1
-LCAyMDE1LTA0LTE2IGF0IDAxOjExIC0wNTAwLCBMaWJlcm1hbiBJZ2FsLUIzMTk1MCB3cm90ZToN
-Cj4gPiA+ID4gPiA+ID4NCj4gPiA+ID4gPiA+ID4NCj4gPiA+ID4gPiA+ID4gUmVnYXJkcywNCj4g
-PiA+ID4gPiA+ID4gSWdhbCBMaWJlcm1hbi4NCj4gPiA+ID4gPiA+ID4NCj4gPiA+ID4gPiA+ID4g
-PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+ID4gPiA+ID4gPiA+IEZyb206IFdvb2Qg
-U2NvdHQtQjA3NDIxDQo+ID4gPiA+ID4gPiA+ID4gU2VudDogV2VkbmVzZGF5LCBBcHJpbCAxNSwg
-MjAxNSA4OjM2IFBNDQo+ID4gPiA+ID4gPiA+ID4gVG86IExpYmVybWFuIElnYWwtQjMxOTUwDQo+
-ID4gPiA+ID4gPiA+ID4gQ2M6IGRldmljZXRyZWVAdmdlci5rZXJuZWwub3JnOw0KPiA+ID4gPiA+
-ID4gPiA+IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnDQo+ID4gPiA+ID4gPiA+ID4gU3Vi
-amVjdDogUmU6IFt2M10gZHQvYmluZGluZ3M6IHFvcmlxLWNsb2NrOiBBZGQgYmluZGluZw0KPiA+
-ID4gPiA+ID4gPiA+IGZvciBGTWFuIGNsb2NrIG11eA0KPiA+ID4gPiA+ID4gPiA+DQo+ID4gPiA+
-ID4gPiA+ID4gT24gVHVlLCAyMDE1LTA0LTE0IGF0IDEzOjU2ICswMzAwLCBJZ2FsLkxpYmVybWFu
-IHdyb3RlOg0KPiA+ID4gPiA+ID4gPiA+ID4gRnJvbTogSWdhbCBMaWJlcm1hbiA8SWdhbC5MaWJl
-cm1hbkBmcmVlc2NhbGUuY29tPg0KPiA+ID4gPiA+ID4gPiA+ID4NCj4gPiA+ID4gPiA+ID4gPiA+
-IHYzOiBBZGRyZXNzZWQgZmVlZGJhY2sgZnJvbSBTY290dDoNCj4gPiA+ID4gPiA+ID4gPiA+IAkt
-IFJlbW92ZWQgY2xvY2sgc3BlY2lmaWVyIGRlc2NyaXB0aW9uLg0KPiA+ID4gPiA+ID4gPiA+ID4N
-Cj4gPiA+ID4gPiA+ID4gPiA+IHYyOiBBZGRyZXNzZWQgZmVlZGJhY2sgZnJvbSBTY290dDoNCj4g
-PiA+ID4gPiA+ID4gPiA+IAktIE1vdmVkIHRoZSAiZm1hbi1jbGstbXV4IiBjbG9jayBwcm92aWRl
-ciBkZXRhaWxzDQo+ID4gPiA+ID4gPiA+ID4gPiAJICB1bmRlciAiY2xvY2tzIiBwcm9wZXJ0eS4N
-Cj4gPiA+ID4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiA+ID4gPiBTaWduZWQtb2ZmLWJ5OiBJZ2Fs
-IExpYmVybWFuDQo+ID4gPiA+ID4gPiA+ID4gPiA8SWdhbC5MaWJlcm1hbkBmcmVlc2NhbGUuY29t
-Pg0KPiA+ID4gPiA+ID4gPiA+ID4gLS0tDQo+ID4gPiA+ID4gPiA+ID4gPiAgLi4uL2RldmljZXRy
-ZWUvYmluZGluZ3MvY2xvY2svcW9yaXEtY2xvY2sudHh0ICAgICAgfCAgIDE3DQo+ID4gPiA+ID4g
-PiArKysrKysrKysrKysrKystLQ0KPiA+ID4gPiA+ID4gPiA+ID4gIDEgZmlsZSBjaGFuZ2VkLCAx
-NSBpbnNlcnRpb25zKCspLCAyIGRlbGV0aW9ucygtKQ0KPiA+ID4gPiA+ID4gPiA+ID4NCj4gPiA+
-ID4gPiA+ID4gPiA+IGRpZmYgLS1naXQNCj4gPiA+ID4gPiA+ID4gPiA+IGEvRG9jdW1lbnRhdGlv
-bi9kZXZpY2V0cmVlL2JpbmRpbmdzL2Nsb2NrL3FvcmlxLWNsb2NrLnR4DQo+ID4gPiA+ID4gPiA+
-ID4gPiB0DQo+ID4gPiA+ID4gPiA+ID4gPiBiL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5k
-aW5ncy9jbG9jay9xb3JpcS1jbG9jay50eA0KPiA+ID4gPiA+ID4gPiA+ID4gdCBpbmRleCBiMGQ3
-YjczLi4yYmIzYjM4IDEwMDY0NA0KPiA+ID4gPiA+ID4gPiA+ID4gLS0tDQo+ID4gPiA+ID4gPiA+
-ID4gPiBhL0RvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9jbG9jay9xb3JpcS1jbG9j
-ay50eA0KPiA+ID4gPiA+ID4gPiA+ID4gdA0KPiA+ID4gPiA+ID4gPiA+ID4gKysrIGIvRG9jdW1l
-bnRhdGlvbi9kZXZpY2V0cmVlL2JpbmRpbmdzL2Nsb2NrL3FvcmlxLWNsb2MNCj4gPiA+ID4gPiA+
-ID4gPiA+ICsrKyBrLnR4DQo+ID4gPiA+ID4gPiA+ID4gPiArKysgdA0KPiA+ID4gPiA+ID4gPiA+
-ID4gQEAgLTY1LDkgKzY1LDEwIEBAIFJlcXVpcmVkIHByb3BlcnRpZXM6DQo+ID4gPiA+ID4gPiA+
-ID4gPiAgCQlJdCB0YWtlcyBwYXJlbnQncyBjbG9jay1mcmVxdWVuY3kgYXMgaXRzIGNsb2NrLg0K
-PiA+ID4gPiA+ID4gPiA+ID4gIAkqICJmc2wscW9yaXEtcGxhdGZvcm0tcGxsLTEuMCIgZm9yIHRo
-ZSBwbGF0Zm9ybSBQTEwgY2xvY2sgKHYxLjApDQo+ID4gPiA+ID4gPiA+ID4gPiAgCSogImZzbCxx
-b3JpcS1wbGF0Zm9ybS1wbGwtMi4wIiBmb3IgdGhlIHBsYXRmb3JtIFBMTA0KPiA+ID4gPiA+ID4g
-PiA+ID4gY2xvY2sNCj4gPiA+ID4gPiA+ID4gPiA+ICh2Mi4wKQ0KPiA+ID4gPiA+ID4gPiA+ID4g
-KwkqICJmc2wsZm1hbi1jbGstbXV4IiBmb3IgdGhlIEZyYW1lIE1hbmFnZXIgY2xvY2suDQo+ID4g
-PiA+ID4gPiA+ID4gPiAgLSAjY2xvY2stY2VsbHM6IEZyb20gY29tbW9uIGNsb2NrIGJpbmRpbmcu
-IFRoZSBudW1iZXINCj4gPiA+ID4gPiA+ID4gPiA+IG9mIGNlbGxzIGluDQo+ID4gPiBhDQo+ID4g
-PiA+ID4gPiA+ID4gPiAtCWNsb2NrLXNwZWNpZmllci4gU2hvdWxkIGJlIDwwPiBmb3IgImZzbCxx
-b3JpcS1zeXNjbGstWzEsMl0uMCINCj4gPiA+ID4gPiA+ID4gPiA+IC0JY2xvY2tzLCBvciA8MT4g
-Zm9yICJmc2wscW9yaXEtY29yZS1wbGwtWzEsMl0uMCIgY2xvY2tzLg0KPiA+ID4gPiA+ID4gPiA+
-ID4gKwljbG9jay1zcGVjaWZpZXIuIFNob3VsZCBiZSA8MD4gZm9yICJmc2wscW9yaXEtc3lzY2xr
-LQ0KPiBbMSwyXS4wIg0KPiA+ID4gPiA+IGFuZA0KPiA+ID4gPiA+ID4gPiA+ID4gKwkiZnNsLGZt
-YW4tY2xrLW11eCIgY2xvY2tzIG9yIDwxPiBmb3INCj4gPiA+ID4gPiA+ID4gPiA+ICsiZnNsLHFv
-cmlxLWNvcmUtcGxsLQ0KPiA+ID4gPiA+IFsxLDJdLjAiLg0KPiA+ID4gPiA+ID4gPiA+ID4gIAlG
-b3IgImZzbCxxb3JpcS1jb3JlLXBsbC0xLjAiIGNsb2NrcywgdGhlIHNpbmdsZQ0KPiA+ID4gPiA+
-ID4gPiA+ID4gIAljbG9jay1zcGVjaWZpZXIgY2VsbCBtYXkgdGFrZSB0aGUgZm9sbG93aW5nIHZh
-bHVlczoNCj4gPiA+ID4gPiA+ID4gPiA+ICAJKiAwIC0gZXF1YWwgdG8gdGhlIFBMTCBmcmVxdWVu
-Y3kgQEAgLTE0NSw2ICsxNDYsMTggQEANCj4gPiA+ID4gPiBFeGFtcGxlDQo+ID4gPiA+ID4gPiA+
-ID4gPiBmb3IgY2xvY2sgYmxvY2sgYW5kIGNsb2NrIHByb3ZpZGVyOg0KPiA+ID4gPiA+ID4gPiA+
-ID4gIAkJCWNsb2NrcyA9IDwmc3lzY2xrPjsNCj4gPiA+ID4gPiA+ID4gPiA+ICAJCQljbG9jay1v
-dXRwdXQtbmFtZXMgPSAicGxhdGZvcm0tcGxsIiwNCj4gPiA+ID4gPiAicGxhdGZvcm0tcGxsLQ0K
-PiA+ID4gPiA+ID4gPiA+IGRpdjIiOw0KPiA+ID4gPiA+ID4gPiA+ID4gIAkJfTsNCj4gPiA+ID4g
-PiA+ID4gPiA+ICsNCj4gPiA+ID4gPiA+ID4gPiA+ICsJCWZtMGNsazogZm0wLWNsay1tdXggew0K
-PiA+ID4gPiA+ID4gPiA+ID4gKwkJCSNjbG9jay1jZWxscyA9IDwwPjsNCj4gPiA+ID4gPiA+ID4g
-PiA+ICsJCQlyZWcgPSA8MHgxMCA0Pg0KPiA+ID4gPiA+ID4gPiA+ID4gKwkJCWNvbXBhdGlibGUg
-PSAiZnNsLGZtYW4tY2xrLW11eCI7DQo+ID4gPiA+ID4gPiA+ID4gPiArCQkJY2xvY2tzID0gPCZw
-bGwwIDA+LCA8JnBsbDAgMT4sIDwmcGxsMA0KPiAyPiwNCj4gPiA+ID4gPiA8JnBsbDAgMz4sDQo+
-ID4gPiA+ID4gPiA+ID4gPiArCQkJCSA8JnBsYXRmb3JtX3BsbCAwPiwgPCZwbGwxIDE+LA0KPiA8
-JnBsbDENCj4gPiA+ID4gPiAyPjsNCj4gPiA+ID4gPiA+ID4gPiA+ICsJCQljbG9jay1uYW1lcyA9
-ICJwbGwwIiwgInBsbDAtZGl2MiIsDQo+ICJwbGwwLWRpdjMiLA0KPiA+ID4gPiA+ID4gPiA+ID4g
-KwkJCQkgICAgICAicGxsMC1kaXY0IiwgInBsYXRmb3JtLXBsbCIsDQo+ICJwbGwxLQ0KPiA+ID4g
-PiA+IGRpdjIiLA0KPiA+ID4gPiA+ID4gPiA+ID4gKwkJCQkgICAgICAicGxsMS1kaXYzIjsNCj4g
-PiA+ID4gPiA+ID4gPiA+ICsJCQljbG9jay1vdXRwdXQtbmFtZXMgPSAiZm0wLWNsayI7DQo+ID4g
-PiA+ID4gPiA+ID4gPiArCQl9Ow0KPiA+ID4gPiA+ID4gPiA+ID4gIAl9Ow0KPiA+ID4gPiA+ID4g
-PiA+ID4gIH07DQo+ID4gPiA+ID4gPiA+ID4gPg0KPiA+ID4gPiA+ID4gPiA+DQo+ID4gPiA+ID4g
-PiA+ID4gSSBkb24ndCBzZWUgdGhpcyByZWdpc3RlciBpbiB0aGUgbWFudWFscyBmb3Igb2xkZXIg
-RFBBQQ0KPiA+ID4gPiA+ID4gPiA+IGNoaXBzLCBzdWNoIGFzDQo+ID4gPiA+ID4gPiA+ID4gcDQw
-ODAgb3IgcDMwNDEuICBJcyBpdCBwcmVzZW50IGJ1dCB1bmRvY3VtZW50ZWQ/ICBTaG91bGQgSQ0K
-PiA+ID4gPiA+ID4gPiA+IGJlIGxvb2tpbmcgc29tZXdoZXJlIG90aGVyIHRoYW4gIkNsb2NraW5n
-IE1lbW9yeSBNYXAiPw0KPiA+ID4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiA+DQo+ID4gPiA+ID4g
-PiA+IEl0J3MgYXZhaWxhYmxlIG9ubHkgaW4gcGFydCBvZiB0aGUgbmV3IGNoaXBzIChUNCwgVDIs
-IEI0KS4NCj4gPiA+ID4gPiA+ID4gSW4gVDEwMjQvVDEwNDAgdGhlcmUncyBvbmx5IG9uZSBvcHRp
-b24gZm9yIEZNYW4gY2xvY2sgc28NCj4gPiA+ID4gPiA+ID4gdGhpcyByZWdpc3RlciBpcyBub3QN
-Cj4gPiA+ID4gPiA+IGF2YWlsYWJsZS4NCj4gPiA+ID4gPiA+DQo+ID4gPiA+ID4gPiBTbyBpdCdz
-IHBhcnQgb2YgdGhlIDIuMCBjaGFzc2lzPyAgSSdkIHN0aWNrIGEgMi4wIGluIHRoZXJlLCB0aGVu
-Lg0KPiA+ID4gPiA+ID4gV2hvIGtub3dzIHdoYXQgd2UgbWF5IHNlZSBpbiB0aGUgZnV0dXJlLg0K
-PiA+ID4gPiA+ID4NCj4gPiA+ID4gPg0KPiA+ID4gPiA+IE9LLA0KPiA+ID4gPiA+IFdlIGNhbiBn
-byB3aXRoICJmc2wsZm1hbi1jbGstbXV4LTEvMi0wLiIuDQo+ID4gPiA+ID4gSW4gdGhhdCBjYXNl
-LCB3ZSBuZWVkIHRvIHVwZGF0ZSBGTWFuIG5vZGVzIGFuZCB0aGUgY2xvY2sgZHJpdmVyOg0KPiA+
-ID4gPiA+IGh0dHBzOi8vcGF0Y2h3b3JrLm96bGFicy5vcmcvcGF0Y2gvNDQzOTczLw0KPiA+ID4g
-PiA+IGh0dHBzOi8vcGF0Y2h3b3JrLm96bGFicy5vcmcvcGF0Y2gvNDYxODEzLw0KPiA+ID4gPiA+
-IEkgd2lsbCB1cGRhdGUgdGhvc2UgcGF0Y2hlcyBzZXBhcmF0ZWx5Lg0KPiA+ID4gPiA+DQo+ID4g
-PiA+DQo+ID4gPiA+IFNjb3R0LA0KPiA+ID4gPiBUaGVyZSBhcmUgMiBvcHRpb25zOg0KPiA+ID4g
-PiBVc2UgImZzbCxmbWFuLWNsay1tdXgtMS4wIiBmb3IgU29DIHdpdGhvdXQgQ0xLQ0duSFdBQ1NS
-IHJlZ2lzdGVyLg0KPiA+ID4gPiBVc2UgImZzbCxmbWFuLWNsay1tdXgtMi4wIiBmb3IgU29DIHdp
-dGggQ0xLQ0duSFdBQ1NSIHJlZ2lzdGVyLg0KPiA+ID4gPiBPcg0KPiA+ID4gPiBVc2UgImZzbCxm
-bWFuLWNsay1tdXgtMS4wIiBmb3IgU29DIHdoaWNoIHN1cHBvcnQgRk1hbiBWMiAoUHh4eHgpDQo+
-ID4gPiA+IFVzZSAiZnNsLGZtYW4tY2xrLW11eC0yLjAiIGZvciBTb0Mgd2hpY2ggc3VwcG9ydCBG
-TWFuIFYzIChCL1QpDQo+ID4gPg0KPiA+ID4gMS4wLzIuMCBpbiB0aGUgY2xvY2tnZW4gbm9kZSBy
-ZWZlcnMgdG8gY2hhc3NpcyB2ZXJzaW9uLiAgSXQgaGFzDQo+ID4gPiBub3RoaW5nIHRvIGRvIHdp
-dGggRk1hbiB2ZXJzaW9uLg0KPiA+ID4NCj4gPg0KPiA+IEkga25vdy4gSG93ZXZlciB0aGVyZSdz
-IGEgbWF0Y2g6IDEuMCBjaGFzc2lzIHVzZWQgaW4gU29DIHdpdGggRk1hbiB2MiBhbmQNCj4gMi4w
-IGNoYXNzaXMgaW4gU29DIHdpdGggRk1hbiB2My4NCj4gPg0KPiA+ID4gSW4gZmFjdCwgZm1hbiBz
-aG91bGQgbm90IGJlIGluIHRoZSBjb21wYXRpYmxlIGJlY2F1c2UsIG5vdyB0aGF0IEkNCj4gPiA+
-IGZvdW5kIHRoZSBkb2N1bWVudGF0aW9uIGZvciB0aGlzLCBJIHNlZSB0aGF0IGl0J3MgbW9yZSBn
-ZW5lcmljIHRoYW4gdGhhdC4NCj4gPiA+ICJmbWFuLWNsay1tdXgiIHNob3VsZCBiZSByZXBsYWNl
-ZCB3aXRoICJxb3JpcS1od2Fjc3IiLg0KPiA+ID4NCj4gPiA+ID4gVXNpbmcgdGhlIDFzdCBvcHRp
-b24gbWlnaHQgYmUgY29uZnVzaW5nIGJlY2F1c2UgY29yZSBwbGwvbXV4IDIuMA0KPiA+ID4gcmVw
-cmVzZW50cyBCL1QgZGV2aWNlcyBhbmQgMS4wIHJlcHJlc2VudCBQeHh4eC4NCj4gPiA+ID4gSW4g
-dGhpcyBjYXNlLCBUMTA0MCB1c2VzICJmc2wscW9yaXEtY29yZS1wbGwvbXV4LTIuMCIgYW5kDQo+
-ID4gPiA+ICJmc2wsZm1hbi1jbGstbXV4LQ0KPiA+ID4gMS4wIi4NCj4gPiA+ID4gT24gdGhlIG90
-aGVyIGhhbmQsIHRoZSBzZWNvbmQgb3B0aW9uIGRvZXNuJ3QgZGlzdGluZ3Vpc2hlcyBiZXR3ZWVu
-DQo+ID4gPiA+IFQ0DQo+ID4gPiBhbmQgVDEgKGZvciBleGFtcGxlKSwgYXMgVDEgZG9lc24ndCBo
-YXZlIHJlZyBwcm9wZXJ0eSB3aGlsZSBUNCBoYXMuDQo+ID4gPg0KPiA+ID4gSG93IHdvdWxkIHQx
-MDQwIGhhdmUgYSBzby1jYWxsZWQgImZtYW4tY2xrLW11eCIgbm9kZSBhdCBhbGwgaWYgaXQNCj4g
-PiA+IGRvZXNuJ3QgaGF2ZSB0aGlzIHJlZ2lzdGVyPw0KPiA+ID4NCj4gPiA+IEkgdGhpbmsgd2Un
-dmUgbWFkZSBhIG1lc3Mgb2YgdGhlIGNsb2NrIGJpbmRpbmdzIGFuZCB0aGlzIGlzIG9ubHkNCj4g
-PiA+IGdvaW5nIHRvIG1ha2UgaXQgd29yc2UuICBXZSBuZWVkIHRvIHN0YXkgY29tcGF0aWJsZSB3
-aXRoIHRoZSBtZXNzDQo+ID4gPiB3ZSd2ZSBtYWRlLCBidXQgSSdtIGluY2xpbmVkIHRvIHNheSB0
-aGF0IHdlIHNob3VsZG4ndCBhZGQgbW9yZSBub2RlcyB0bw0KPiBpdC4NCj4gPiA+DQo+ID4gPiBJ
-bnN0ZWFkLCBoYXZlIHRoZSB0b3BsZXZlbCBjbG9ja2dlbiBub2RlIGhhdmUgYSBjaGlwLWJhc2Vk
-DQo+ID4gPiBjb21wYXRpYmxlIGluIGFkZGl0aW9uIHRvIHZlcnNpb24gKGUuZy4gY29tcGF0aWJs
-ZSA9DQo+ID4gPiAiZnNsLHQ0MjQwLWNsb2NrZ2VuIiwNCj4gPiA+ICJmc2wscW9yaXEtY2xvY2tn
-ZW4tMi4wIikgYW5kIGhhdmUgdGhlIHRvcGxldmVsIG5vZGUgZXhwb3J0IHdoYXRldmVyDQo+ID4g
-PiBjbG9ja3MgYXJlIG5lZWRlZC4gIFB1dCB0aGUgbG9naWMgdG8gZGVhbCB3aXRoIGFsbCB0aGUg
-ZGlmZmVyZW50DQo+ID4gPiBkaXZpZGVycywgcmVnaXN0ZXIgdmFsdWVzLCBhbmQgc3VjaCBpbiBj
-b2RlLCBub3QgdGhlIGRldmljZSB0cmVlLg0KPiA+ID4gVGhlIGJpbmRpbmcgc2hvdWxkIGJlIGZv
-Y3VzZWQgb24gaG93IHRvIGVuY29kZSB0aGUgc3BlY2lmaWVyIG9mIHRoZQ0KPiBleHBvcnRlZCBj
-bG9ja3MuDQo+ID4gPg0KPiA+DQo+ID4gV2UgaGF2ZSAyIGNhc2VzOg0KPiA+IAktIERldmljZXMg
-KFQyL1Q0L0I0KSB3aXRoIENMS0NHMUhXQUNTUiByZWdpc3Rlci4NCj4gPiAJLSBEZXZpY2VzIChQ
-eHh4eCwgVDEpIHdpdGhvdXQgQ0xLQ0cxSFdBQ1NSIHJlZ2lzdGVyIChQeHh4eA0KPiBkZXZpY2Vz
-DQo+ID4gaGF2ZSBtYW55IG9wdGlvbnMsIFQxIGhhcyBvbmx5IG9uZSBvcHRpb24pDQo+ID4NCj4g
-PiBGb3IgdGhlIGZpcnN0IGdyb3VwLCB3ZSBjYW4gaGF2ZSAiIHFvcmlxLWh3YWNzciIgcHJvcGVy
-dHkgaW4gdGhlIGNsb2NrIG5vZGUuDQo+IA0KPiBObywgd2UncmUgbm90IGdvaW5nIHRvIGRlc2Ny
-aWJlIGV2ZXJ5IHJlZ2lzdGVyIHdpdGggaXRzIG93biBwcm9wZXJ0eS4NCj4gRGVzY3JpYmUgdGhl
-IGNoaXAgYW5kIGxldCB0aGUgZHJpdmVyIGJlIHRoZSBwbGFjZSB3aXRoIHRoZSBrbm93bGVkZ2Ug
-b2Ygd2hhdA0KPiBlYWNoIGNoaXAgaXMgbGlrZS4NCj4gDQoNCkkgdGhpbmsgdGhhdCBGTWFuIGNs
-b2NrIG11eCAoYXMgd2UgZGVmaW5lZCBpdCkgaXMgc2ltaWxhciB0byBvdGhlciBtdXhlcyBhdmFp
-bGFibGUgaW4gb3VyIFNvQy4NCklmIHdlIHRha2UgVDQgYXMgZXhhbXBsZSwgaXQgaGFzIDMgbXV4
-ZXMgZGVmaW5lZCBpbiB0aGUgZGV2aWNlIHRyZWUgKG11eDAsIG11eDEgYW5kIG11eDIpLg0KRWFj
-aCBtdXggaGFzIGl0cyBvd24gcmVnIHByb3BlcnR5IChhbmQgY2xvY2sgcHJvdmlkZXJzKS4NCglt
-dXgyOiBtdXgyQDQwIHsNCgkJI2Nsb2NrLWNlbGxzID0gPDA+Ow0KCQlyZWcgPSA8MHg0MCAweDQ+
-Ow0KCQljb21wYXRpYmxlID0gImZzbCxxb3JpcS1jb3JlLW11eC0yLjAiOw0KCQljbG9ja3MgPSA8
-JnBsbDMgMD4sIDwmcGxsMyAxPiwgPCZwbGwzIDI+LA0KCQkJPCZwbGw0IDA+LCA8JnBsbDQgMT4s
-IDwmcGxsNCAyPjsNCgkJY2xvY2stbmFtZXMgPSAicGxsMyIsICJwbGwzLWRpdjIiLCAicGxsMy1k
-aXY0IiwNCgkJCSJwbGw0IiwgInBsbDQtZGl2MiIsICJwbGw0LWRpdjQiOw0KCQljbG9jay1vdXRw
-dXQtbmFtZXMgPSAiY211eDIiOw0KCX07DQoNCkkgYWdyZWUgdGhhdCAiZm0xLWNsay1tdXgiIG5l
-ZWQgdG8gYmUgbW92ZWQgZnJvbSB0aGUgImd1dHMiIG5vZGUgdG8gImNsb2NrZ2VuIiBub2RlLg0K
-SG93ZXZlciwgSSdtIG5vdCBzdXJlIHdoaWNoIGNoYW5nZXMgeW91IHdhbnQgdG8gcGVyZm9ybSBp
-biB0aGUgbm9kZSAoYmVzaWRlIGFkZGluZyByZWcgcHJvcGVydHkgZm9yIFNvQyB3aGljaCBoYXMg
-aXQgZm9yIEZNYW4gY2xvY2spLg0KDQo+ID4gQ3VycmVudGx5IFQ0IEZNYW4gY2xvY2sgbXV4IG5v
-ZGUgaXMgdGhlIGZvbGxvd2luZzoNCj4gPiAJZm0xY2xrOiBmbTEtY2xrLW11eCB7DQo+ID4gCQkj
-Y2xvY2stY2VsbHMgPSA8MD47DQo+ID4gCQljb21wYXRpYmxlID0gImZzbCxmbWFuLWNsay1tdXgi
-Ow0KPiA+IAkJY2xvY2tzID0gPCZwbGwxIDE+LCA8JnBsbDEgMj4sIDwmcGxsMSAzPiwNCj4gPiAJ
-CQkgPCZwbGF0Zm9ybV9wbGwgMD4sIDwmcGxsMCAxPiwgPCZwbGwwIDI+Ow0KPiA+IAkJY2xvY2st
-bmFtZXMgPSAicGxsMS1kaXYyIiwgInBsbDEtZGl2MyIsICJwbGwxLWRpdjQiLA0KPiA+IAkJCSAg
-ICAgICJwbGF0Zm9ybS1wbGwiLCAicGxsMC1kaXYyIiwgInBsbDAtZGl2MyI7DQo+ID4gCQljbG9j
-ay1vdXRwdXQtbmFtZXMgPSAiZm0xLWNsayI7DQo+ID4gCX07DQo+ID4gQXMgZmFyIGFzIEkgdW5k
-ZXJzdGFuZCB3ZSBuZWVkIHRvIG1vdmUgdGhlIG5vZGUgdG8gdGhlIHRvcCBsZXZlbCBjbG9jaw0K
-PiBub2RlLg0KPiA+IEluIGFkZGl0aW9uIHdlIG5lZWQgdG8gYWRkIHJlZyBwcm9wZXJ0eSBhbmQg
-Y2hhbmdlIHRoZSBuYW1lIG9mIHRoZSBub2RlDQo+IGFuZCB0aGUgY29tcGF0aWJsZS4NCj4gPiBJ
-biB0aGF0IGNhc2UsIHRoZSBkcml2ZXIgY2FuIHJlYWQgdGhpcyByZWdpc3RlciBpbnN0ZWFkIG9m
-IHBhcnNpbmcgdGhlIFJDVy4NCj4gDQo+IEknbSBoYXZpbmcgYSBoYXJkIHRpbWUgZm9sbG93aW5n
-LiAgV2hhdCBJJ20gc3VnZ2VzdGluZyBpcyBlbGltaW5hdGluZyB0aGUNCj4gYWJvdmUgYW5kIGhh
-dmluZyB0aGUgY2xvY2tnZW4gbm9kZSBpdHNlbGYgKHdoaWNoIGFscmVhZHkgaGFzIGEgcmVnDQo+
-IHByb3BlcnR5KSBiZSBhIGNsb2NrIHNvdXJjZSB3aXRoIGEgY2xvY2sgc3BlY2lmaWVyIGVuY29k
-aW5nIHRoYXQgZGlzdGluZ3Vpc2hlcw0KPiB0aGUgZm1hbiBjbG9jayBmcm9tIG90aGVyIGNsb2Nr
-cy4NCj4gDQo+ID4gV2hhdCBhYm91dCB0aGUgZGV2aWNlcyBvZiB0aGUgc2Vjb25kIGdyb3VwPw0K
-PiA+IEluIHRoaXMgY2FzZSB3ZSBkb24ndCBoYXZlIGEgcmVnaXN0ZXIgdG8gZGV0ZXJtaW5lIHRo
-ZSBzb3VyY2UgY2xvY2suDQo+ID4gU28gd2UgbmVlZCBhY2Nlc3MgdG8gZ3V0cyByZWdpc3RlcnMs
-DQo+IA0KPiBJIG5ldmVyIHN1Z2dlc3RlZCB0YWtpbmcgYXdheSBhY2Nlc3MgdG8gdGhlIGd1dHMg
-cmVnaXN0ZXJzLg0KPiANCg0KSSBkaWRuJ3QgbWVudGlvbiB0aGF0IHlvdSB3YW50IHRvIHJlbW92
-ZSB0aGVtLg0KSnVzdCB0cmllZCB0byBleHBsYWluIHRoYXQgZm9yIFB4eHh4IGRldmljZXMsIHdl
-IG5lZWQgdG8gdXNlIHRoZSBjdXJyZW50IG1ldGhvZCAoZXhwbGFpbmVkIGxhdGVyKS4NCg0KPiA+
-IGxpa2Ugd2UgaGF2ZSBjdXJyZW50bHkuDQo+ID4gVGhlIHN1Z2dlc3Rpb24gYWJvdmUgZG9lc27i
-gJl0IHN1aXQgZm9yIHRob3NlIGRldmljZXMuDQo+IA0KPiBIb3cgaXMgdGhlIGNsb2NrIGRldGVy
-bWluZWQgb24gdGhvc2UgY2hpcHM/DQo+IA0KDQpJbiB0aG9zZSBjaGlwcyAoYW5kIGN1cnJlbnRs
-eSBvdGhlcnMpLCBjdXJyZW50bHksIGluIHRoZSBkZXZpY2UgdHJlZSB3ZSBoYXZlIGFsbCBvcHRp
-b25hbCBGTWFuIGNsb2NrIHByb3ZpZGVycyAoZGlmZmVyZW50IGJldHdlZW4gZWFjaCBTb0MpLg0K
-VGhlIGNsb2NrIGRyaXZlciByZWFkcyB0aGUgUkNXIGluIG9yZGVyIHRvIGRldGVybWluZSB0aGUg
-Y2xvY2sgcHJvdmlkZXIgYW5kIHNhdmVzIHRoZSBpbmRleCwgbGF0ZXIgZ2V0X2ZtX2Nsa19wYXJl
-bnQgcmV0dXJucyB0aGUgaW5kZXguDQoNCj4gLVNjb3R0DQo+IA0KDQpJZ2FsDQoNCg==
+Hi Vasant,
+
+On 04/28/2015 12:10 PM, Vasant Hegde wrote:
+> This patch implements LED driver for PowerNV platform using the existing
+> generic LED class framework.
+>
+> PowerNV platform has below type of LEDs:
+>    - System attention
+>        Indicates there is a problem with the system that needs attention.
+>    - Identify
+>        Helps the user locate/identify a particular FRU or resource in the
+>        system.
+>    - Fault
+>        Indicates there is a problem with the FRU or resource at the
+>        location with which the indicator is associated.
+>
+> We register classdev structures for all individual LEDs detected on the
+> system through LED specific device tree nodes. Device tree nodes specify
+> what all kind of LEDs present on the same location code. It registers
+> LED classdev structure for each of them.
+>
+> All the system LEDs can be found in the same regular path /sys/class/leds/.
+> We don't use LED colors. We use LED node and led-types property to form
+> LED classdev. Our LEDs have names in this format.
+>
+>          <location_code>:<attention|identify|fault>
+>
+> Any positive brightness value would turn on the LED and a zero value would
+> turn off the LED. The driver will return LED_FULL (255) for any turned on
+> LED and LED_OFF (0) for any turned off LED.
+>
+> As per the LED class framework, the 'brightness_set' function should not
+> sleep. Hence these functions have been implemented through global work
+> queue tasks which might sleep on OPAL async call completion.
+>
+> The platform level implementation of LED get and set state has been achieved
+> through OPAL calls. These calls are made available for the driver by
+> exporting from architecture specific codes.
+>
+> Signed-off-by: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
+> Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+> Acked-by: Stewart Smith <stewart@linux.vnet.ibm.com>
+> Tested-by: Stewart Smith <stewart@linux.vnet.ibm.com>
+>
+> ---
+> Changes in v4:
+>    - s/u64/__be64/g for big endian data we get from firmware
+>    - Addressed review comments from Jacek. Major once are:
+>      Removed list in powernv_led_data structure
+>      s/kzalloc/devm_kzalloc/
+>      Removed compatible property from documentation
+>      s/powernv_led_set_queue/powernv_brightness_set/
+>    - Removed LED specific brightness_set/get function. Instead this version
+>      uses single function to queue all LED set/get requests. Later we use
+>      LED name to detect LED type and value.
+>    - Removed hardcoded LED type used in previous version. Instead we use
+>      led-types property to form LED classdev.
+>
+>
+> Changes in v3:
+>    - Addressed review comments from Jacek. Major once are:
+>      Replaced spin lock and mutex and removed redundant structures
+>      Replaced pr_* with dev_*
+>      Moved OPAL platform sepcific part to separate patch
+>      Moved repteated code to common function
+>      Added device tree documentation for LEDs
+>
+>
+> Changes in v2:
+>    - Added System Attention indicator support
+>    - Moved common code to powernv_led_set_queue()
+>
+>
+>   .../devicetree/bindings/leds/leds-powernv.txt      |   29 +
+>   drivers/leds/Kconfig                               |   11
+>   drivers/leds/Makefile                              |    1
+>   drivers/leds/leds-powernv.c                        |  472 ++++++++++++++++++++
+>   4 files changed, 513 insertions(+)
+>   create mode 100644 Documentation/devicetree/bindings/leds/leds-powernv.txt
+>   create mode 100644 drivers/leds/leds-powernv.c
+>
+> diff --git a/Documentation/devicetree/bindings/leds/leds-powernv.txt b/Documentation/devicetree/bindings/leds/leds-powernv.txt
+> new file mode 100644
+> index 0000000..6bb0e7e
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/leds/leds-powernv.txt
+> @@ -0,0 +1,29 @@
+> +Device Tree binding for LEDs on IBM Power Systems
+> +-------------------------------------------------
+> +
+> +The 'led' node under '/ibm,opal' lists service indicators available in the
+> +system and their capabilities.
+> +
+> +led {
+> +	compatible = "ibm,opal-v3-led";
+> +	phandle = <0x1000006b>;
+> +	linux,phandle = <0x1000006b>;
+> +	led-mode = "lightpath";
+> +
+> +	U78C9.001.RST0027-P1-C1 {
+> +		led-types = "identify", "fault";
+> +		led-loc = "descendent";
+> +		phandle = <0x1000006f>;
+> +		linux,phandle = <0x1000006f>;
+> +	};
+> +	...
+> +	...
+> +};
+> +
+> +Each node under 'led' node describes location code of FRU/Enclosure.
+> +
+> +The properties under each node:
+> +
+> +  led-types : Supported LED types (attention/identify/fault).
+> +
+> +  led-loc   : enclosure/descendent(FRU) location code.
+
+DT documentation it usually constructed so that properties are
+described in the beginning and the file ends with an example.
+
+Also last time I mistakenly requested to remove description of
+compatible property, but it should also be present here and
+the entry should described it in detail, like:
+
+- compatible : Should be "ibm,opal-v3-led".
+
+Please refer to the other bindings,
+
+I will express my opinion on the LED part after powerpc maintainer
+will ack DT bindings.
+
+> diff --git a/drivers/leds/Kconfig b/drivers/leds/Kconfig
+> index 25b320d..2ea0849 100644
+> --- a/drivers/leds/Kconfig
+> +++ b/drivers/leds/Kconfig
+> @@ -508,6 +508,17 @@ config LEDS_BLINKM
+>   	  This option enables support for the BlinkM RGB LED connected
+>   	  through I2C. Say Y to enable support for the BlinkM LED.
+>
+> +config LEDS_POWERNV
+> +	tristate "LED support for PowerNV Platform"
+> +	depends on LEDS_CLASS
+> +	depends on PPC_POWERNV
+> +	depends on OF
+> +	help
+> +	  This option enables support for the system LEDs present on
+> +	  PowerNV platforms. Say 'y' to enable this support in kernel.
+> +	  To compile this driver as a module, choose 'm' here: the module
+> +	  will be called leds-powernv.
+> +
+>   config LEDS_SYSCON
+>   	bool "LED support for LEDs on system controllers"
+>   	depends on LEDS_CLASS=y
+> diff --git a/drivers/leds/Makefile b/drivers/leds/Makefile
+> index cbba921..604ffc9 100644
+> --- a/drivers/leds/Makefile
+> +++ b/drivers/leds/Makefile
+> @@ -58,6 +58,7 @@ obj-$(CONFIG_LEDS_BLINKM)		+= leds-blinkm.o
+>   obj-$(CONFIG_LEDS_SYSCON)		+= leds-syscon.o
+>   obj-$(CONFIG_LEDS_VERSATILE)		+= leds-versatile.o
+>   obj-$(CONFIG_LEDS_MENF21BMC)		+= leds-menf21bmc.o
+> +obj-$(CONFIG_LEDS_POWERNV)		+= leds-powernv.o
+>
+>   # LED SPI Drivers
+>   obj-$(CONFIG_LEDS_DAC124S085)		+= leds-dac124s085.o
+> diff --git a/drivers/leds/leds-powernv.c b/drivers/leds/leds-powernv.c
+> new file mode 100644
+> index 0000000..bea46fd
+> --- /dev/null
+> +++ b/drivers/leds/leds-powernv.c
+> @@ -0,0 +1,472 @@
+> +/*
+> + * PowerNV LED Driver
+> + *
+> + * Copyright IBM Corp. 2015
+> + *
+> + * Author: Vasant Hegde <hegdevasant@linux.vnet.ibm.com>
+> + * Author: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+> + *
+> + * This program is free software; you can redistribute it and/or
+> + * modify it under the terms of the GNU General Public License
+> + * as published by the Free Software Foundation; either version
+> + * 2 of the License, or (at your option) any later version.
+> + */
+> +
+> +#include <linux/leds.h>
+> +#include <linux/module.h>
+> +#include <linux/of.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/slab.h>
+> +#include <linux/types.h>
+> +
+> +#include <asm/opal.h>
+> +
+> +/*
+> + * LED support for PowerNV platform:
+> + * - Identify and fault LEDs are overloaded (meaning we use single LED to
+> + *   represent both state).
+> + *   Physical LED state : off = normal, blinking = identify, solid = fault
+> + *   Hardware takes care of maintaining/changing LED state. From user point
+> + *   of view these are two different LEDs. Hence we use separate led
+> + *   classsdev for identify and fault.
+> + * - By default unload path resets all the LEDs. But on PowerNV platform
+> + *   we want to retain LED state across reboot as these are controlled by
+> + *   firmware. Also service processor can modify the LEDs independent of
+> + *   OS. Hence avoid resetting LEDs in unload path.
+> + */
+> +
+> +/* Disable LED support in unload path */
+> +static bool led_disabled;
+> +
+> +/* Map LED type to description. */
+> +struct led_type_map {
+> +	const int	type;
+> +	const char	*desc;
+> +};
+> +static const struct led_type_map led_type_map[] = {
+> +	{OPAL_SLOT_LED_TYPE_ID,		POWERNV_LED_TYPE_IDENTIFY},
+> +	{OPAL_SLOT_LED_TYPE_FAULT,	POWERNV_LED_TYPE_FAULT},
+> +	{OPAL_SLOT_LED_TYPE_ATTN,	POWERNV_LED_TYPE_ATTENTION},
+> +	{-1,				NULL},
+> +};
+> +
+> +/*
+> + * LED set routines have been implemented as work queue tasks scheduled
+> + * on the global work queue. Individual task calls OPAL interface to set
+> + * the LED state which might sleep for some time.
+> + */
+> +struct powernv_led_data {
+> +	struct led_classdev	cdev;
+> +	enum led_brightness	value;     /* Brightness value */
+> +	struct mutex		lock;
+> +	struct work_struct	work_led; /* LED update workqueue */
+> +};
+> +
+> +struct powernv_leds_priv {
+> +	int num_leds;
+> +	struct powernv_led_data powernv_leds[];
+> +};
+> +
+> +
+> +static inline int sizeof_powernv_leds_priv(int num_leds)
+> +{
+> +	return sizeof(struct powernv_leds_priv) +
+> +		(sizeof(struct powernv_led_data) * num_leds);
+> +}
+> +
+> +/* Returns OPAL_SLOT_LED_TYPE_* for given led type string */
+> +static int powernv_get_led_type(struct led_classdev *led_cdev)
+> +{
+> +	char *desc;
+> +	int i;
+> +
+> +	desc = strstr(led_cdev->name, ":");
+> +	if (!desc)
+> +		return -1;
+> +	desc++;
+> +	if (!desc)
+> +		return -1;
+> +
+> +	for (i = 0; i < ARRAY_SIZE(led_type_map); i++)
+> +		if (!strcmp(led_type_map[i].desc, desc))
+> +			return led_type_map[i].type;
+> +
+> +	return -1;
+> +}
+> +
+> +/* This function gets LED location code for given LED classdev */
+> +static char *powernv_get_location_code(struct led_classdev *led_cdev)
+> +{
+> +	char *loc_code;
+> +	char *colon;
+> +
+> +	/* Location code of the LED */
+> +	loc_code = kasprintf(GFP_KERNEL, "%s", led_cdev->name);
+> +	if (!loc_code) {
+> +		dev_err(led_cdev->dev,
+> +			"%s: Memory allocation failed\n", __func__);
+> +		return NULL;
+> +	}
+> +
+> +	colon = strstr(loc_code, ":");
+> +	if (!colon) {
+> +		kfree(loc_code);
+> +		return NULL;
+> +	}
+> +
+> +	*colon = '\0';
+> +	return loc_code;
+> +}
+> +
+> +/*
+> + * This commits the state change of the requested LED through an OPAL call.
+> + * This function is called from work queue task context when ever it gets
+> + * scheduled. This function can sleep at opal_async_wait_response call.
+> + */
+> +static void powernv_led_set(struct led_classdev *led_cdev,
+> +			    enum led_brightness value)
+> +{
+> +	char *loc_code;
+> +	int rc, token, led_type;
+> +	u64 led_mask, led_value = 0;
+> +	__be64 max_led_type;
+> +	struct opal_msg msg;
+> +
+> +	led_type = powernv_get_led_type(led_cdev);
+> +	if (led_type == -1)
+> +		return;
+> +
+> +	loc_code = powernv_get_location_code(led_cdev);
+> +	if (!loc_code)
+> +		return;
+> +
+> +	/* Prepare for the OPAL call */
+> +	max_led_type = cpu_to_be64(OPAL_SLOT_LED_TYPE_MAX);
+> +	led_mask = OPAL_SLOT_LED_STATE_ON << led_type;
+> +	if (value)
+> +		led_value = led_mask;
+> +
+> +	/* OPAL async call */
+> +	token = opal_async_get_token_interruptible();
+> +	if (token < 0) {
+> +		if (token != -ERESTARTSYS)
+> +			dev_err(led_cdev->dev,
+> +				"%s: Couldn't get OPAL async token\n",
+> +				__func__);
+> +		goto out_loc;
+> +	}
+> +
+> +	rc = opal_leds_set_ind(token, loc_code,
+> +			       led_mask, led_value, &max_led_type);
+> +	if (rc != OPAL_ASYNC_COMPLETION) {
+> +		dev_err(led_cdev->dev,
+> +			"%s: OPAL set LED call failed for %s [rc=%d]\n",
+> +			__func__, loc_code, rc);
+> +		goto out_token;
+> +	}
+> +
+> +	rc = opal_async_wait_response(token, &msg);
+> +	if (rc) {
+> +		dev_err(led_cdev->dev,
+> +			"%s: Failed to wait for the async response [rc=%d]\n",
+> +			__func__, rc);
+> +		goto out_token;
+> +	}
+> +
+> +	rc = be64_to_cpu(msg.params[1]);
+> +	if (rc != OPAL_SUCCESS)
+> +		dev_err(led_cdev->dev,
+> +			"%s : OAPL async call returned failed [rc=%d]\n",
+> +			__func__, rc);
+> +
+> +out_token:
+> +	opal_async_release_token(token);
+> +
+> +out_loc:
+> +	kfree(loc_code);
+> +}
+> +
+> +/*
+> + * This function fetches the LED state for a given LED type for
+> + * mentioned LED classdev structure.
+> + */
+> +static enum led_brightness powernv_led_get(struct led_classdev *led_cdev)
+> +{
+> +	char *loc_code;
+> +	int rc, led_type;
+> +	__be64 led_mask, led_value, max_led_type;
+> +
+> +	led_type = powernv_get_led_type(led_cdev);
+> +	if (led_type == -1)
+> +		return LED_OFF;
+> +
+> +	loc_code = powernv_get_location_code(led_cdev);
+> +	if (!loc_code)
+> +		return LED_OFF;
+> +
+> +	/* Fetch all LED status */
+> +	led_mask = cpu_to_be64(0);
+> +	led_value = cpu_to_be64(0);
+> +	max_led_type = cpu_to_be64(OPAL_SLOT_LED_TYPE_MAX);
+> +
+> +	rc = opal_leds_get_ind(loc_code, &led_mask, &led_value, &max_led_type);
+> +	if (rc != OPAL_SUCCESS && rc != OPAL_PARTIAL) {
+> +		dev_err(led_cdev->dev,
+> +			"%s: OPAL get led call failed [rc=%d]\n",
+> +			__func__, rc);
+> +		goto led_fail;
+> +	}
+> +
+> +	led_mask = be64_to_cpu(led_mask);
+> +	led_value = be64_to_cpu(led_value);
+> +
+> +	/* LED status available */
+> +	if (!((led_mask >> led_type) & OPAL_SLOT_LED_STATE_ON)) {
+> +		dev_err(led_cdev->dev,
+> +			"%s: LED status not available for %s\n",
+> +			__func__, led_cdev->name);
+> +		goto led_fail;
+> +	}
+> +
+> +	/* LED status value */
+> +	if ((led_value >> led_type) & OPAL_SLOT_LED_STATE_ON) {
+> +		kfree(loc_code);
+> +		return LED_FULL;
+> +	}
+> +
+> +led_fail:
+> +	kfree(loc_code);
+> +	return LED_OFF;
+> +}
+> +
+> +/* Execute LED set task for given led classdev */
+> +static void powernv_deferred_led_set(struct work_struct *work)
+> +{
+> +	struct powernv_led_data *powernv_led =
+> +		container_of(work, struct powernv_led_data, work_led);
+> +
+> +	mutex_lock(&powernv_led->lock);
+> +	powernv_led_set(&powernv_led->cdev, powernv_led->value);
+> +	mutex_unlock(&powernv_led->lock);
+> +}
+> +
+> +/*
+> + * LED classdev 'brightness_get' function. This schedules work
+> + * to update LED state.
+> + */
+> +static void powernv_brightness_set(struct led_classdev *led_cdev,
+> +				   enum led_brightness value)
+> +{
+> +	struct powernv_led_data *powernv_led =
+> +		container_of(led_cdev, struct powernv_led_data, cdev);
+> +
+> +	/* Do not modify LED in unload path */
+> +	if (led_disabled)
+> +		return;
+> +
+> +	/* Prepare the request */
+> +	powernv_led->value = value;
+> +
+> +	/* Schedule the new task */
+> +	schedule_work(&powernv_led->work_led);
+> +}
+> +
+> +/* LED classdev 'brightness_get' function */
+> +static enum led_brightness
+> +powernv_brightness_get(struct led_classdev *led_cdev)
+> +{
+> +	return powernv_led_get(led_cdev);
+> +}
+> +
+> +
+> +/*
+> + * This function registers classdev structure for any given type of LED on
+> + * a given child LED device node.
+> + */
+> +static int powernv_led_create(struct device *dev,
+> +			      struct powernv_led_data *powernv_led,
+> +			      const char *led_name, const char *led_type_desc)
+> +{
+> +	int rc;
+> +
+> +	/* Create the name for classdev */
+> +	powernv_led->cdev.name = kasprintf(GFP_KERNEL, "%s:%s",
+> +					   led_name, led_type_desc);
+> +	if (!powernv_led->cdev.name) {
+> +		dev_err(dev,
+> +			"%s: Memory allocation failed for classdev name\n",
+> +			__func__);
+> +		return -ENOMEM;
+> +	}
+> +
+> +	/* Make sure LED type is supported */
+> +	if (powernv_get_led_type(&powernv_led->cdev) == -1) {
+> +		kfree(powernv_led->cdev.name);
+> +		return -EINVAL;
+> +	}
+> +
+> +	powernv_led->cdev.brightness_set = powernv_brightness_set;
+> +	powernv_led->cdev.brightness_get = powernv_brightness_get;
+> +	powernv_led->cdev.brightness = LED_OFF;
+> +	powernv_led->cdev.max_brightness = LED_FULL;
+> +
+> +	mutex_init(&powernv_led->lock);
+> +	INIT_WORK(&powernv_led->work_led, powernv_deferred_led_set);
+> +
+> +	/* Register the classdev */
+> +	rc = led_classdev_register(dev, &powernv_led->cdev);
+> +	if (rc) {
+> +		dev_err(dev, "%s: Classdev registration failed for %s\n",
+> +			__func__, powernv_led->cdev.name);
+> +		kfree(powernv_led->cdev.name);
+> +	}
+> +
+> +	return rc;
+> +}
+> +
+> +/* Unregister classdev structure for any given LED */
+> +static void powernv_led_delete(struct powernv_led_data *powernv_led)
+> +{
+> +	led_classdev_unregister(&powernv_led->cdev);
+> +}
+> +
+> +/* Go through LED device tree node and register LED classdev structure */
+> +static int powernv_led_classdev(struct platform_device *pdev,
+> +				struct device_node *led_node,
+> +				struct powernv_leds_priv *priv, int num_leds)
+> +{
+> +	const char *cur = NULL;
+> +	int i, rc = -1;
+> +	struct property *p;
+> +	struct device_node *np;
+> +	struct powernv_led_data *powernv_led;
+> +	struct device *dev = &pdev->dev;
+> +
+> +	for_each_child_of_node(led_node, np) {
+> +		p = of_find_property(np, "led-types", NULL);
+> +		if (!p)
+> +			continue;
+> +
+> +		while ((cur = of_prop_next_string(p, cur)) != NULL) {
+> +			powernv_led = &priv->powernv_leds[priv->num_leds++];
+> +			if (priv->num_leds > num_leds) {
+> +				rc = -ENOMEM;
+> +				goto classdev_fail;
+> +			}
+> +			rc = powernv_led_create(dev,
+> +						powernv_led, np->name, cur);
+> +			if (rc)
+> +				goto classdev_fail;
+> +		} /* while end */
+> +	}
+> +
+> +	platform_set_drvdata(pdev, priv);
+> +	return rc;
+> +
+> +classdev_fail:
+> +	for (i = priv->num_leds - 2; i > 0; i--)
+> +		powernv_led_delete(&priv->powernv_leds[i]);
+> +
+> +	return rc;
+> +}
+> +
+> +/*
+> + * We want to populate LED device for each LED type. Hence we
+> + * have to calculate count explicitly.
+> + */
+> +static int powernv_leds_count(struct device_node *led_node)
+> +{
+> +	const char *cur = NULL;
+> +	int num_leds = 0;
+> +	struct property *p;
+> +	struct device_node *np;
+> +
+> +	for_each_child_of_node(led_node, np) {
+> +		p = of_find_property(np, "led-types", NULL);
+> +		if (!p)
+> +			continue;
+> +
+> +		while ((cur = of_prop_next_string(p, cur)) != NULL)
+> +			num_leds++;
+> +	}
+> +
+> +	return num_leds;
+> +}
+> +
+> +/* Platform driver probe */
+> +static int powernv_led_probe(struct platform_device *pdev)
+> +{
+> +	int num_leds;
+> +	struct device_node *led_node;
+> +	struct powernv_leds_priv *priv;
+> +
+> +	led_node = of_find_node_by_path("/ibm,opal/led");
+> +	if (!led_node) {
+> +		dev_err(&pdev->dev,
+> +			"%s: LED parent device node not found\n", __func__);
+> +		return -EINVAL;
+> +	}
+> +
+> +	num_leds = powernv_leds_count(led_node);
+> +	if (num_leds <= 0) {
+> +		dev_err(&pdev->dev,
+> +			"%s: No location code found under LED node\n",
+> +			__func__);
+> +		return -EINVAL;
+> +	}
+> +
+> +	priv = devm_kzalloc(&pdev->dev,
+> +			    sizeof_powernv_leds_priv(num_leds),
+> +			    GFP_KERNEL);
+> +	if (!priv)
+> +		return -ENOMEM;
+> +
+> +	return powernv_led_classdev(pdev, led_node, priv, num_leds);
+> +}
+> +
+> +/* Platform driver remove */
+> +static int powernv_led_remove(struct platform_device *pdev)
+> +{
+> +	int i;
+> +	struct powernv_led_data *powernv_led;
+> +	struct powernv_leds_priv *priv;
+> +
+> +	/* Disable LED operation */
+> +	led_disabled = true;
+> +
+> +	priv = platform_get_drvdata(pdev);
+> +
+> +	for (i = 0; i < priv->num_leds; i++) {
+> +		powernv_led = &priv->powernv_leds[i];
+> +		powernv_led_delete(powernv_led);
+> +		flush_work(&powernv_led->work_led);
+> +	}
+> +
+> +	dev_info(&pdev->dev, "PowerNV led module unregistered\n");
+> +	return 0;
+> +}
+> +
+> +/* Platform driver property match */
+> +static const struct of_device_id powernv_led_match[] = {
+> +	{
+> +		.compatible	= "ibm,opal-v3-led",
+> +	},
+> +	{},
+> +};
+> +MODULE_DEVICE_TABLE(of, powernv_led_match);
+> +
+> +static struct platform_driver powernv_led_driver = {
+> +	.probe	= powernv_led_probe,
+> +	.remove = powernv_led_remove,
+> +	.driver = {
+> +		.name = "powernv-led-driver",
+> +		.owner = THIS_MODULE,
+> +		.of_match_table = powernv_led_match,
+> +	},
+> +};
+> +
+> +module_platform_driver(powernv_led_driver);
+> +
+> +MODULE_LICENSE("GPL");
+> +MODULE_DESCRIPTION("PowerNV LED driver");
+> +MODULE_AUTHOR("Vasant Hegde <hegdevasant@linux.vnet.ibm.com>");
+>
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-leds" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+>
+
+
+-- 
+Best Regards,
+Jacek Anaszewski
