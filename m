@@ -1,27 +1,27 @@
 Return-Path: <neelegup@linux.vnet.ibm.com>
-Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
+Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8A35D1A0099
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 May 2015 04:31:25 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 938C61A0CD7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 May 2015 04:44:10 +1000 (AEST)
 Received: from /spool/local
- by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <neelegup@linux.vnet.ibm.com>;
- Fri, 1 May 2015 00:01:22 +0530
+ Fri, 1 May 2015 00:14:07 +0530
 Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 088D93940049
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 May 2015 00:01:18 +0530 (IST)
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 1C0E03940048
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 May 2015 00:14:04 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
  by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t3UIVAkG62652418
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 May 2015 00:01:10 +0530
-Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t3UIUrUm008214
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 May 2015 00:00:54 +0530
-Message-ID: <554274DC.6040308@linux.vnet.ibm.com>
-Date: Fri, 01 May 2015 00:00:52 +0530
+ t3UIi4mr1573274
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 May 2015 00:14:04 +0530
+Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t3UIi3ni020746
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 May 2015 00:14:03 +0530
+Message-ID: <554277F1.9050006@linux.vnet.ibm.com>
+Date: Fri, 01 May 2015 00:14:01 +0530
 From: Neelesh Gupta <neelegup@linux.vnet.ibm.com>
 MIME-Version: 1.0
 To: Alistair Popple <alistair@popple.id.au>, linuxppc-dev@lists.ozlabs.org
@@ -30,7 +30,7 @@ Subject: Re: [PATCH V2 1/8] powerpc/powernv: Add a virtual irqchip for opal
 References: <1428654294-9177-1-git-send-email-alistair@popple.id.au>
 In-Reply-To: <1428654294-9177-1-git-send-email-alistair@popple.id.au>
 Content-Type: multipart/alternative;
- boundary="------------080605090900050906010903"
+ boundary="------------030203060009010709060008"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,16 +41,17 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 This is a multi-part message in MIME format.
---------------080605090900050906010903
+--------------030203060009010709060008
 Content-Type: text/plain; charset=utf-8; format=flowed
 Content-Transfer-Encoding: 8bit
 
 Hi Alistair,
 
-With all the patches applied on top of 'v4.0-rc7', I see this issue during
-the boot itself http://pastebin.hursley.ibm.com/918
+Applied all of the patches on top of 'v4.0-rc7', found this issue during
+the boot itself http://pastebin.hursley.ibm.com/918.
 
-Few compile warnings and minor comments.
+There are few compile warnings and minor comments.
+
 drivers/tty/hvc/hvc_opal.c: In function ‘hvc_opal_probe’:
 drivers/tty/hvc/hvc_opal.c:174:6: warning: unused variable ‘rc’ 
 [-Wunused-variable]
@@ -61,7 +62,8 @@ drivers/tty/hvc/hvc_opal.c:65:13: warning: ‘hvc_opal_event_registered’
 defined but not used [-Wunused-variable]
   static bool hvc_opal_event_registered;
 
-
+Regards,
+Neelesh.
 
 On 04/10/2015 01:54 PM, Alistair Popple wrote:
 > Whenever an interrupt is received for opal the linux kernel gets a
@@ -83,7 +85,6 @@ On 04/10/2015 01:54 PM, Alistair Popple wrote:
 > Signed-off-by: Alistair Popple <alistair@popple.id.au>
 > ---
 >
-> +
 > +static int __init opal_event_init(void)
 > +{
 > +	struct device_node *dn, *opal_node;
@@ -118,20 +119,17 @@ A macro would be better, which is maximum event bits we have.
 > +
 > +	/* Get interrupt property */
 > +	irqs = of_get_property(opal_node, "opal-interrupts", &irqlen);
+> +	opal_irq_count = irqs ? (irqlen / 4) : 0;
 
 of_node_put()
-Should decrement the refcount of the nodes 'opal_node' and 'dn' (if !NULL)
-before returning from the function.
+Need to decrement the refcount of these nodes, 'opal_node' & 'dn' (if !NULL)
 
-> +	opal_irq_count = irqs ? (irqlen / 4) : 0;
 > +	pr_debug("Found %d interrupts reserved for OPAL\n", opal_irq_count);
 > +
 > +	/* Install interrupt handlers */
 > +	opal_irqs = kcalloc(opal_irq_count, sizeof(unsigned int), GFP_KERNEL);
 
-Safer to use 'sizeof(*opal_irqs)'
-
-Neelesh.
+Safe to use 'sizeof(*opal_irqs)'
 
 > +	for (i = 0; irqs && i < opal_irq_count; i++, irqs++) {
 > +		unsigned int irq, virq;
@@ -165,7 +163,7 @@ Neelesh.
 >
 
 
---------------080605090900050906010903
+--------------030203060009010709060008
 Content-Type: text/html; charset=utf-8
 Content-Transfer-Encoding: 8bit
 
@@ -176,11 +174,12 @@ Content-Transfer-Encoding: 8bit
   <body bgcolor="#FFFFFF" text="#000000">
     <font size="-1">Hi Alistair,<br>
       <br>
-      With all the patches applied on top of 'v4.0-rc7', I see this
-      issue during<br>
-      the boot itself <a class="moz-txt-link-freetext" href="http://pastebin.hursley.ibm.com/918">http://pastebin.hursley.ibm.com/918</a><br>
+      Applied all of the patches on top of 'v4.0-rc7', found this issue
+      during<br>
+      the boot itself <a class="moz-txt-link-freetext" href="http://pastebin.hursley.ibm.com/918">http://pastebin.hursley.ibm.com/918</a>.<br>
       <br>
-      Few compile warnings and minor comments.<br>
+      There are few compile warnings and minor comments.<br>
+      <br>
       drivers/tty/hvc/hvc_opal.c: In function ‘hvc_opal_probe’:<br>
       drivers/tty/hvc/hvc_opal.c:174:6: warning: unused variable ‘rc’
       [-Wunused-variable]<br>
@@ -192,7 +191,8 @@ Content-Transfer-Encoding: 8bit
       [-Wunused-variable]<br>
        static bool hvc_opal_event_registered;<br>
       <br>
-      <br>
+      Regards,<br>
+      Neelesh.<br>
     </font><br>
     <div class="moz-cite-prefix">On 04/10/2015 01:54 PM, Alistair Popple
       wrote:<br>
@@ -219,7 +219,6 @@ standard kernel calls such as irq_of_parse_and_map().
 Signed-off-by: Alistair Popple <a class="moz-txt-link-rfc2396E" href="mailto:alistair@popple.id.au">&lt;alistair@popple.id.au&gt;</a>
 ---
 
-+
 +static int __init opal_event_init(void)
 +{
 +	struct device_node *dn, *opal_node;
@@ -258,28 +257,25 @@ Signed-off-by: Alistair Popple <a class="moz-txt-link-rfc2396E" href="mailto:ali
 +	}
 +
 +	/* Get interrupt property */
-+	irqs = of_get_property(opal_node, "opal-interrupts", &amp;irqlen);</pre>
++	irqs = of_get_property(opal_node, "opal-interrupts", &amp;irqlen);
++	opal_irq_count = irqs ? (irqlen / 4) : 0;</pre>
     </blockquote>
     <br>
     <small>of_node_put()</small><br>
-    <small>Should decrement the refcount of the nodes 'opal_node' and
-      'dn' (if !NULL)<br>
-      before returning from the function.<br>
-    </small><br>
+    <font size="-1">Need to decrement the refcount of these nodes,
+      'opal_node' &amp; 'dn' (if !NULL)<br>
+    </font><br>
     <blockquote
       cite="mid:1428654294-9177-1-git-send-email-alistair@popple.id.au"
       type="cite">
       <pre wrap="">
-+	opal_irq_count = irqs ? (irqlen / 4) : 0;
 +	pr_debug("Found %d interrupts reserved for OPAL\n", opal_irq_count);
 +
 +	/* Install interrupt handlers */
 +	opal_irqs = kcalloc(opal_irq_count, sizeof(unsigned int), GFP_KERNEL);</pre>
     </blockquote>
     <br>
-    <small><small><big>Safer to use 'sizeof(*opal_irqs)'</big></small></small><br>
-    <br>
-    <small>Neelesh.</small><br>
+    <small>Safe to use 'sizeof(*opal_irqs)'</small><br>
     <br>
     <blockquote
       cite="mid:1428654294-9177-1-git-send-email-alistair@popple.id.au"
@@ -321,4 +317,4 @@ Signed-off-by: Alistair Popple <a class="moz-txt-link-rfc2396E" href="mailto:ali
   </body>
 </html>
 
---------------080605090900050906010903--
+--------------030203060009010709060008--
