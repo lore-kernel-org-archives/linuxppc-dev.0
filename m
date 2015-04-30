@@ -2,22 +2,22 @@ Return-Path: <dgibson@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8B3301A05E6
+ by lists.ozlabs.org (Postfix) with ESMTPS id B63341A04B2
  for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Apr 2015 14:37:59 +1000 (AEST)
-Date: Thu, 30 Apr 2015 14:24:07 +1000
+Date: Thu, 30 Apr 2015 14:08:28 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
 To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Subject: Re: [PATCH kernel v9 20/32] powerpc/powernv/ioda2: Introduce
- pnv_pci_create_table/pnv_pci_free_table
-Message-ID: <20150430042407.GF15238@voom.redhat.com>
+Subject: Re: [PATCH kernel v9 13/32] vfio: powerpc/spapr/iommu/powernv/ioda2:
+ Rework IOMMU ownership control
+Message-ID: <20150430040828.GB15238@voom.redhat.com>
 References: <1429964096-11524-1-git-send-email-aik@ozlabs.ru>
- <1429964096-11524-21-git-send-email-aik@ozlabs.ru>
- <20150429043949.GQ32589@voom.redhat.com>
- <5540A085.8080606@ozlabs.ru>
+ <1429964096-11524-14-git-send-email-aik@ozlabs.ru>
+ <20150429030250.GJ32589@voom.redhat.com>
+ <5540A237.6070007@ozlabs.ru>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="K/NRh952CO+2tg14"
-In-Reply-To: <5540A085.8080606@ozlabs.ru>
+ protocol="application/pgp-signature"; boundary="A6N2fC+uXW/VQSAv"
+In-Reply-To: <5540A237.6070007@ozlabs.ru>
 Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
  Alex Williamson <alex.williamson@redhat.com>,
  Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
@@ -31,162 +31,328 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---K/NRh952CO+2tg14
+--A6N2fC+uXW/VQSAv
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, Apr 29, 2015 at 07:12:37PM +1000, Alexey Kardashevskiy wrote:
-> On 04/29/2015 02:39 PM, David Gibson wrote:
-> >On Sat, Apr 25, 2015 at 10:14:44PM +1000, Alexey Kardashevskiy wrote:
-> >>This is a part of moving TCE table allocation into an iommu_ops
-> >>callback to support multiple IOMMU groups per one VFIO container.
+On Wed, Apr 29, 2015 at 07:19:51PM +1000, Alexey Kardashevskiy wrote:
+> On 04/29/2015 01:02 PM, David Gibson wrote:
+> >On Sat, Apr 25, 2015 at 10:14:37PM +1000, Alexey Kardashevskiy wrote:
+> >>This adds tce_iommu_take_ownership() and tce_iommu_release_ownership
+> >>which call in a loop iommu_take_ownership()/iommu_release_ownership()
+> >>for every table on the group. As there is just one now, no change in
+> >>behaviour is expected.
 > >>
-> >>This moves a table creation window to the file with common powernv-pci
-> >>helpers as it does not do anything IODA2-specific.
+> >>At the moment the iommu_table struct has a set_bypass() which enables/
+> >>disables DMA bypass on IODA2 PHB. This is exposed to POWERPC IOMMU code
+> >>which calls this callback when external IOMMU users such as VFIO are
+> >>about to get over a PHB.
 > >>
-> >>This adds pnv_pci_free_table() helper to release the actual TCE table.
+> >>The set_bypass() callback is not really an iommu_table function but
+> >>IOMMU/PE function. This introduces a iommu_table_group_ops struct and
+> >>adds take_ownership()/release_ownership() callbacks to it which are
+> >>called when an external user takes/releases control over the IOMMU.
 > >>
-> >>This enforces window size to be a power of two.
+> >>This replaces set_bypass() with ownership callbacks as it is not
+> >>necessarily just bypass enabling, it can be something else/more
+> >>so let's give it more generic name.
 > >>
-> >>This should cause no behavioural change.
+> >>The callbacks is implemented for IODA2 only. Other platforms (P5IOC2,
+> >>IODA1) will use the old iommu_take_ownership/iommu_release_ownership AP=
+I.
+> >>The following patches will replace iommu_take_ownership/
+> >>iommu_release_ownership calls in IODA2 with full IOMMU table release/
+> >>create.
 > >>
 > >>Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> >>Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
+> >>[aw: for the vfio related changes]
+> >>Acked-by: Alex Williamson <alex.williamson@redhat.com>
 > >>---
 > >>Changes:
 > >>v9:
-> >>* moved helpers to the common powernv pci.c file from pci-ioda.c
-> >>* moved bits from pnv_pci_create_table() to pnv_alloc_tce_table_pages()
+> >>* squashed "vfio: powerpc/spapr: powerpc/iommu: Rework IOMMU ownership =
+control"
+> >>and "vfio: powerpc/spapr: powerpc/powernv/ioda2: Rework IOMMU ownership=
+ control"
+> >>into a single patch
+> >>* moved helpers with a loop through tables in a group
+> >>to vfio_iommu_spapr_tce.c to keep the platform code free of IOMMU table
+> >>groups as much as possible
+> >>* added missing tce_iommu_clear() to tce_iommu_release_ownership()
+> >>* replaced the set_ownership(enable) callback with take_ownership() and
+> >>release_ownership()
 > >>---
-> >>  arch/powerpc/platforms/powernv/pci-ioda.c | 36 ++++++------------
-> >>  arch/powerpc/platforms/powernv/pci.c      | 61 ++++++++++++++++++++++=
-+++++++++
-> >>  arch/powerpc/platforms/powernv/pci.h      |  4 ++
-> >>  3 files changed, 76 insertions(+), 25 deletions(-)
+> >>  arch/powerpc/include/asm/iommu.h          | 13 +++++-
+> >>  arch/powerpc/kernel/iommu.c               | 11 ------
+> >>  arch/powerpc/platforms/powernv/pci-ioda.c | 40 +++++++++++++++----
+> >>  drivers/vfio/vfio_iommu_spapr_tce.c       | 66 ++++++++++++++++++++++=
++++++----
+> >>  4 files changed, 103 insertions(+), 27 deletions(-)
+> >>
+> >>diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/as=
+m/iommu.h
+> >>index fa37519..e63419e 100644
+> >>--- a/arch/powerpc/include/asm/iommu.h
+> >>+++ b/arch/powerpc/include/asm/iommu.h
+> >>@@ -93,7 +93,6 @@ struct iommu_table {
+> >>  	unsigned long  it_page_shift;/* table iommu page size */
+> >>  	struct iommu_table_group *it_table_group;
+> >>  	struct iommu_table_ops *it_ops;
+> >>-	void (*set_bypass)(struct iommu_table *tbl, bool enable);
+> >>  };
+> >>
+> >>  /* Pure 2^n version of get_order */
+> >>@@ -128,11 +127,23 @@ extern struct iommu_table *iommu_init_table(struc=
+t iommu_table * tbl,
+> >>
+> >>  #define IOMMU_TABLE_GROUP_MAX_TABLES	1
+> >>
+> >>+struct iommu_table_group;
+> >>+
+> >>+struct iommu_table_group_ops {
+> >>+	/*
+> >>+	 * Switches ownership from the kernel itself to an external
+> >>+	 * user. While onwership is taken, the kernel cannot use IOMMU itself.
+> >
+> >Typo in "onwership".  I'd also like to see this be even more explicit
+> >that "take" is the "core kernel -> vfio/whatever" transition and
+> >release is the reverse.
+>=20
+>=20
+> Will this work?
+>=20
+> /*
+>  * Switches ownership from the kernel itself to an external
+>  * user.
+>  * The ownership is taken when VFIO starts using the IOMMU group
+>  * and released when the platform code gets the control over the group ba=
+ck.
+>  * While ownership is taken, the platform code cannot use IOMMU itself.
+>  */
+
+Hrm, verbose and still doesn't emphasise the point that always
+confuses me enough.  I'd prefer:
+
+/* Switch ownership from platform code to external user (e.g. VFIO) */
+
+above "take" then
+
+/* Switch ownership from external user (e.g. VFIO) back to core */
+
+above "release"..
+
+>=20
+>=20
+> >>+	 */
+> >>+	void (*take_ownership)(struct iommu_table_group *table_group);
+> >>+	void (*release_ownership)(struct iommu_table_group *table_group);
+> >>+};
+> >>+
+> >>  struct iommu_table_group {
+> >>  #ifdef CONFIG_IOMMU_API
+> >>  	struct iommu_group *group;
+> >>  #endif
+> >>  	struct iommu_table tables[IOMMU_TABLE_GROUP_MAX_TABLES];
+> >>+	struct iommu_table_group_ops *ops;
+> >>  };
+> >>
+> >>  #ifdef CONFIG_IOMMU_API
+> >>diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
+> >>index 005146b..2856d27 100644
+> >>--- a/arch/powerpc/kernel/iommu.c
+> >>+++ b/arch/powerpc/kernel/iommu.c
+> >>@@ -1057,13 +1057,6 @@ int iommu_take_ownership(struct iommu_table *tbl)
+> >>
+> >>  	memset(tbl->it_map, 0xff, sz);
+> >>
+> >>-	/*
+> >>-	 * Disable iommu bypass, otherwise the user can DMA to all of
+> >>-	 * our physical memory via the bypass window instead of just
+> >>-	 * the pages that has been explicitly mapped into the iommu
+> >>-	 */
+> >>-	if (tbl->set_bypass)
+> >>-		tbl->set_bypass(tbl, false);
+> >>
+> >>  	return 0;
+> >>  }
+> >>@@ -1078,10 +1071,6 @@ void iommu_release_ownership(struct iommu_table =
+*tbl)
+> >>  	/* Restore bit#0 set by iommu_init_table() */
+> >>  	if (tbl->it_offset =3D=3D 0)
+> >>  		set_bit(0, tbl->it_map);
+> >>-
+> >>-	/* The kernel owns the device now, we can restore the iommu bypass */
+> >>-	if (tbl->set_bypass)
+> >>-		tbl->set_bypass(tbl, true);
+> >>  }
+> >>  EXPORT_SYMBOL_GPL(iommu_release_ownership);
 > >>
 > >>diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/p=
 latforms/powernv/pci-ioda.c
-> >>index a80be34..b9b3773 100644
+> >>index 88472cb..718d5cc 100644
 > >>--- a/arch/powerpc/platforms/powernv/pci-ioda.c
 > >>+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-> >>@@ -1307,8 +1307,7 @@ static void pnv_pci_ioda2_release_dma_pe(struct p=
-ci_dev *dev, struct pnv_ioda_pe
-> >>  	if (rc)
-> >>  		pe_warn(pe, "OPAL error %ld release DMA window\n", rc);
-> >>
-> >>-	iommu_reset_table(tbl, of_node_full_name(dev->dev.of_node));
-> >>-	free_pages(addr, get_order(TCE32_TABLE_SIZE));
-> >>+	pnv_pci_free_table(tbl);
+> >>@@ -1870,10 +1870,8 @@ static void pnv_pci_ioda_setup_dma_pe(struct pnv=
+_phb *phb,
+> >>  		__free_pages(tce_mem, get_order(TCE32_TABLE_SIZE * segs));
 > >>  }
 > >>
-> >>  static void pnv_ioda_release_vf_PE(struct pci_dev *pdev, u16 num_vfs)
-> >>@@ -2039,10 +2038,7 @@ static struct iommu_table_group_ops pnv_pci_ioda=
-2_ops =3D {
+> >>-static void pnv_pci_ioda2_set_bypass(struct iommu_table *tbl, bool ena=
+ble)
+> >>+static void pnv_pci_ioda2_set_bypass(struct pnv_ioda_pe *pe, bool enab=
+le)
+> >>  {
+> >>-	struct pnv_ioda_pe *pe =3D container_of(tbl->it_table_group,
+> >>-			struct pnv_ioda_pe, table_group);
+> >>  	uint16_t window_id =3D (pe->pe_number << 1 ) + 1;
+> >>  	int64_t rc;
+> >>
+> >>@@ -1901,7 +1899,8 @@ static void pnv_pci_ioda2_set_bypass(struct iommu=
+_table *tbl, bool enable)
+> >>  		 * host side.
+> >>  		 */
+> >>  		if (pe->pdev)
+> >>-			set_iommu_table_base(&pe->pdev->dev, tbl);
+> >>+			set_iommu_table_base(&pe->pdev->dev,
+> >>+					&pe->table_group.tables[0]);
+> >>  		else
+> >>  			pnv_ioda_setup_bus_dma(pe, pe->pbus, false);
+> >>  	}
+> >>@@ -1917,13 +1916,35 @@ static void pnv_pci_ioda2_setup_bypass_pe(struc=
+t pnv_phb *phb,
+> >>  	/* TVE #1 is selected by PCI address bit 59 */
+> >>  	pe->tce_bypass_base =3D 1ull << 59;
+> >>
+> >>-	/* Install set_bypass callback for VFIO */
+> >>-	pe->table_group.tables[0].set_bypass =3D pnv_pci_ioda2_set_bypass;
+> >>-
+> >>  	/* Enable bypass by default */
+> >>-	pnv_pci_ioda2_set_bypass(&pe->table_group.tables[0], true);
+> >>+	pnv_pci_ioda2_set_bypass(pe, true);
+> >>  }
+> >>
+> >>+#ifdef CONFIG_IOMMU_API
+> >>+static void pnv_ioda2_take_ownership(struct iommu_table_group *table_g=
+roup)
+> >>+{
+> >>+	struct pnv_ioda_pe *pe =3D container_of(table_group, struct pnv_ioda_=
+pe,
+> >>+						table_group);
+> >>+
+> >>+	iommu_take_ownership(&table_group->tables[0]);
+> >>+	pnv_pci_ioda2_set_bypass(pe, false);
+> >>+}
+> >>+
+> >>+static void pnv_ioda2_release_ownership(struct iommu_table_group *tabl=
+e_group)
+> >>+{
+> >>+	struct pnv_ioda_pe *pe =3D container_of(table_group, struct pnv_ioda_=
+pe,
+> >>+						table_group);
+> >>+
+> >>+	iommu_release_ownership(&table_group->tables[0]);
+> >>+	pnv_pci_ioda2_set_bypass(pe, true);
+> >>+}
+> >>+
+> >>+static struct iommu_table_group_ops pnv_pci_ioda2_ops =3D {
+> >>+	.take_ownership =3D pnv_ioda2_take_ownership,
+> >>+	.release_ownership =3D pnv_ioda2_release_ownership,
+> >>+};
+> >>+#endif
+> >>+
 > >>  static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
 > >>  				       struct pnv_ioda_pe *pe)
 > >>  {
-> >>-	struct page *tce_mem =3D NULL;
-> >>-	void *addr;
-> >>  	struct iommu_table *tbl =3D &pe->table_group.tables[0];
-> >>-	unsigned int tce_table_size, end;
-> >>  	int64_t rc;
-> >>
-> >>  	/* We shouldn't already have a 32-bit DMA associated */
-> >>@@ -2053,29 +2049,20 @@ static void pnv_pci_ioda2_setup_dma_pe(struct p=
-nv_phb *phb,
-> >>
-> >>  	/* The PE will reserve all possible 32-bits space */
-> >>  	pe->tce32_seg =3D 0;
-> >>-	end =3D (1 << ilog2(phb->ioda.m32_pci_base));
-> >>-	tce_table_size =3D (end / 0x1000) * 8;
-> >>  	pe_info(pe, "Setting up 32-bit TCE table at 0..%08x\n",
-> >>-		end);
-> >>+		phb->ioda.m32_pci_base);
-> >>
-> >>-	/* Allocate TCE table */
-> >>-	tce_mem =3D alloc_pages_node(phb->hose->node, GFP_KERNEL,
-> >>-				   get_order(tce_table_size));
-> >>-	if (!tce_mem) {
-> >>-		pe_err(pe, "Failed to allocate a 32-bit TCE memory\n");
-> >>-		goto fail;
-> >>+	rc =3D pnv_pci_create_table(&pe->table_group, pe->phb->hose->node,
-> >>+			0, IOMMU_PAGE_SHIFT_4K, phb->ioda.m32_pci_base, tbl);
-> >>+	if (rc) {
-> >>+		pe_err(pe, "Failed to create 32-bit TCE table, err %ld", rc);
-> >>+		return;
-> >>  	}
-> >>-	addr =3D page_address(tce_mem);
-> >>-	memset(addr, 0, tce_table_size);
-> >>-
-> >>-	/* Setup iommu */
-> >>-	tbl->it_table_group =3D &pe->table_group;
-> >>-
-> >>-	/* Setup linux iommu table */
-> >>-	pnv_pci_setup_iommu_table(tbl, addr, tce_table_size, 0,
-> >>-			IOMMU_PAGE_SHIFT_4K);
-> >>
-> >>  	tbl->it_ops =3D &pnv_ioda2_iommu_ops;
-> >>+
-> >>+	/* Setup iommu */
-> >>+	tbl->it_table_group =3D &pe->table_group;
-> >>  	iommu_init_table(tbl, phb->hose->node);
-> >>  #ifdef CONFIG_IOMMU_API
-> >>  	pe->table_group.ops =3D &pnv_pci_ioda2_ops;
-> >>@@ -2121,8 +2108,7 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv=
+> >>@@ -1991,6 +2012,9 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv=
 _phb *phb,
-> >>  fail:
-> >>  	if (pe->tce32_seg >=3D 0)
-> >>  		pe->tce32_seg =3D -1;
-> >>-	if (tce_mem)
-> >>-		__free_pages(tce_mem, get_order(tce_table_size));
-> >>+	pnv_pci_free_table(tbl);
+> >>  	}
+> >>  	tbl->it_ops =3D &pnv_ioda2_iommu_ops;
+> >>  	iommu_init_table(tbl, phb->hose->node);
+> >>+#ifdef CONFIG_IOMMU_API
+> >>+	pe->table_group.ops =3D &pnv_pci_ioda2_ops;
+> >>+#endif
+> >>
+> >>  	if (pe->flags & PNV_IODA_PE_DEV) {
+> >>  		iommu_register_group(&pe->table_group, phb->hose->global_number,
+> >>diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_io=
+mmu_spapr_tce.c
+> >>index 17e884a..dacc738 100644
+> >>--- a/drivers/vfio/vfio_iommu_spapr_tce.c
+> >>+++ b/drivers/vfio/vfio_iommu_spapr_tce.c
+> >>@@ -483,6 +483,43 @@ static long tce_iommu_ioctl(void *iommu_data,
+> >>  	return -ENOTTY;
 > >>  }
 > >>
-> >>  static void pnv_ioda_setup_dma(struct pnv_phb *phb)
-> >>diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platfo=
-rms/powernv/pci.c
-> >>index e8802ac..6bcfad5 100644
-> >>--- a/arch/powerpc/platforms/powernv/pci.c
-> >>+++ b/arch/powerpc/platforms/powernv/pci.c
-> >>@@ -20,7 +20,9 @@
-> >>  #include <linux/io.h>
-> >>  #include <linux/msi.h>
-> >>  #include <linux/iommu.h>
-> >>+#include <linux/memblock.h>
+> >>+static void tce_iommu_release_ownership(struct tce_container *containe=
+r,
+> >>+		struct iommu_table_group *table_group)
+> >>+{
+> >>+	int i;
+> >>+
+> >>+	for (i =3D 0; i < IOMMU_TABLE_GROUP_MAX_TABLES; ++i) {
+> >>+		struct iommu_table *tbl =3D &table_group->tables[i];
+> >>+
+> >>+		tce_iommu_clear(container, tbl, tbl->it_offset, tbl->it_size);
+> >>+		if (tbl->it_map)
+> >>+			iommu_release_ownership(tbl);
+> >>+	}
+> >>+}
+> >>+
+> >>+static int tce_iommu_take_ownership(struct iommu_table_group *table_gr=
+oup)
+> >>+{
+> >>+	int i, j, rc =3D 0;
+> >>+
+> >>+	for (i =3D 0; i < IOMMU_TABLE_GROUP_MAX_TABLES; ++i) {
+> >>+		struct iommu_table *tbl =3D &table_group->tables[i];
+> >>+
+> >>+		if (!tbl->it_map)
+> >>+			continue;
+> >>+
+> >>+		rc =3D iommu_take_ownership(tbl);
+> >>+		if (rc) {
+> >>+			for (j =3D 0; j < i; ++j)
+> >>+				iommu_release_ownership(
+> >>+						&table_group->tables[j]);
+> >>+
+> >>+			return rc;
+> >>+		}
+> >>+	}
+> >>+
+> >>+	return 0;
+> >>+}
+> >>+
+> >>  static int tce_iommu_attach_group(void *iommu_data,
+> >>  		struct iommu_group *iommu_group)
+> >>  {
+> >>@@ -515,9 +552,23 @@ static int tce_iommu_attach_group(void *iommu_data,
+> >>  		goto unlock_exit;
+> >>  	}
 > >>
-> >>+#include <asm/mmzone.h>
-> >>  #include <asm/sections.h>
-> >>  #include <asm/io.h>
-> >>  #include <asm/prom.h>
-> >>@@ -645,6 +647,65 @@ void pnv_pci_setup_iommu_table(struct iommu_table =
-*tbl,
-> >>  	tbl->it_type =3D TCE_PCI;
-> >>  }
-> >>
-> >>+static __be64 *pnv_alloc_tce_table_pages(int nid, unsigned shift,
-> >>+		unsigned long *tce_table_allocated)
+> >>-	ret =3D iommu_take_ownership(&table_group->tables[0]);
+> >>-	if (!ret)
+> >>-		container->grp =3D iommu_group;
+> >>+	if (!table_group->ops || !table_group->ops->take_ownership ||
+> >>+			!table_group->ops->release_ownership) {
+> >>+		ret =3D tce_iommu_take_ownership(table_group);
 > >
-> >I'm a bit confused by the tce_table_allocated parameter.  What's the
-> >circumstance where more memory is requested than required, and why
-> >does it matter to the caller?
+> >Haven't looked at the rest of the series.  I'm hoping that you're
+> >eventually planning to replace this fallback with setting the
+> >take_ownership call for p5ioc etc. to point to
+> >tce_iommu_take_ownership.
 >=20
-> It does not make much sense here but it does for "powerpc/powernv: Implem=
-ent
-> multilevel TCE tables" - I was trying to avoid changing same lines many
-> times.
 >=20
-> The idea is if multilevel table is requested, I do not really want to
-> allocate the whole tree. For example, if the userspace asked for 64K table
-> and 5 levels, the result will be a list of just 5 pages - last one will be
-> the actual table and upper levels will have a single valud TCE entry
-> pointing to next level.
->=20
-> But I change the prototype there anyway so I'll just move this
-> tce_table_allocated thing there.
+> Why? I do not really want p5ioc2 or ioda1 to have
+> take_ownership/release_ownership callbacks defined as they will only do t=
+his
+> default stuff which is not going to change ever as this hardware is quite
+> old and extremely rare so there is no real customer for it. Should I still
+> convert these to callbacks?
 
-Yeah, I think that's better.  It is more churn, but I think the
-clearer reviewability is worth it.
+Leave it for now - having this fallback makes more sense in light of
+the changes later in the series that I hadn't read when I made the
+comment.
 
 --=20
 David Gibson			| I'll have my music baroque, and my code
@@ -194,25 +360,25 @@ david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
 				| _way_ _around_!
 http://www.ozlabs.org/~dgibson
 
---K/NRh952CO+2tg14
+--A6N2fC+uXW/VQSAv
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBAgAGBQJVQa5nAAoJEGw4ysog2bOScr0P/jakUXLDF38mYuHHFKfMM+P7
-Yc/gZYT0WrZTJ+kFzRr017My0syIaImNYBCMrPy+7dX/N5ipHhVF4kWQrwzcUoIY
-iUmhyFu9om0uOxlB/hgmQMXlgj9zj3OtXX3kz6g3D0qNWR7mNE5LUgPV4Ac4VZz6
-yzKl2t2a9d53d/aU6jaCSqvXC4cEfEsEYMBDu0/0s1wLoZMygakSLYmp/Z0NSbqZ
-VBCjaMkK1eqIp1PQL5YLzVrP+8Tf9OR4koAJ5Kt4K5HS1kXqEgiYoi3mQVi+y+Qu
-BEOkp9EsaC1qY/rBoGY0G5Y4/nwIdD2RwOX2zPM8kTpUyJDi3VmS5S4WllJnse+R
-GZk+UNhNJUUhc5zIA3Svo3u6RYnxYooaTMifpSRta2OgtVShdNieC68GFafysn8I
-rCsu/8TmGebOo/5iJl8J+GhVyyG5tKx1Ld+/BPHIZVNJsb+r/b0lYX+uRkTdaBws
-br6mUaSS9SQUe6V3GSyM/VLqWRjZxZoxX/uV0jCB4xhP4oOQ5tRB8vDcQvBHffIb
-Tuy0Jv/U3aT9pU4WJ/QyX88WyG511/5/p4v3+SsrHdig2wDPmuAqkoYqFhGYAS12
-xCrMQJ8rUS4Ueqv09SHNl8dH0QWGQIl7d82Wji7CimQExN/YxX0pPuWTf27l8ABZ
-7n9wfW0C0W7ZurGmznqR
-=UxHx
+iQIcBAEBAgAGBQJVQaq8AAoJEGw4ysog2bOSkEIP/2goqV9qmwRPPJj34KMCVVLD
+hcEn3vXT9zqjVheG8MtkclX5lNFBodM2zsjGtepqokhVbZS6Aun9EbxN9TKXC0SB
+C1Fk0bQABOYFS7ATXnQPhYwwP+J7FK4mNi4cKOQTWdSQf9HBgGNto6piuzPcOf7s
+ZB+Y9M+Bt0QmGS1d85SuPf/vEWWgplMP6TEJEL1GpM8pkl4ML7F9ATkWxVRLEvgP
+9zTLhsi7+ipMC51bcCsr6swJpxG3at+xiZXl7k9CU3SefrPd30m8+ohSgNDv2HS5
+VLKnYNxm3iuMDU0Y/hx83GHoo4S5CksaCgFxNJOe3HTgUbq1yRCTpVqTyLbc0F2V
+mib3QcpAVwYYoj9mv1l1bv6vSiRRWXS33+z7Scut7YefQ2eAHrjTXvmx7mOP1uo7
+Zr0acYDmD56Msr6fqzebN7Cji8sm/4/USxue4rf7jQGu1qjmRHX7ByQ8Cf+b1D+m
+R9v60n+sdeijQlV2ZcAGzMddcCxyOIB0afklpRJSUWVBkFo1RHh0LRbXKpgi0k6Q
+qxdgzO6cUUhfKERnOGrLI57MoPjFt/TK2p14H6BVF0QW3RKRlW4Qks87YRWNX2Og
+nZsFInFOJMB9E0FNU8XLYoBxGBh7On21eSwumh6IQVQlv/elkC7o/VYrm8vn7hnw
+QwwUkhkR7f0lTPuxo77r
+=0gzQ
 -----END PGP SIGNATURE-----
 
---K/NRh952CO+2tg14--
+--A6N2fC+uXW/VQSAv--
