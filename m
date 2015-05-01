@@ -1,21 +1,27 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pd0-f180.google.com (mail-pd0-f180.google.com
+ [209.85.192.180])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 864461A0D15
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 May 2015 18:31:40 +1000 (AEST)
-Message-ID: <1430469091.7979.52.camel@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc/powernv: Add opal-prd channel
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Jeremy Kerr <jk@ozlabs.org>
-Date: Fri, 01 May 2015 18:31:31 +1000
-In-Reply-To: <5542F6FA.5020702@ozlabs.org>
-References: <1427868428.289931.158677373296.1.gpush@pablo>
- <1430356826.17831.157.camel@kernel.crashing.org>
- <5542F6FA.5020702@ozlabs.org>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 707B81A11B7
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 May 2015 19:49:02 +1000 (AEST)
+Received: by pdbqd1 with SMTP id qd1so88029320pdb.2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 01 May 2015 02:49:00 -0700 (PDT)
+Message-ID: <55434C01.90808@ozlabs.ru>
+Date: Fri, 01 May 2015 19:48:49 +1000
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+MIME-Version: 1.0
+To: David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: [PATCH kernel v9 22/32] powerpc/powernv: Implement multilevel
+ TCE tables
+References: <1429964096-11524-1-git-send-email-aik@ozlabs.ru>
+ <1429964096-11524-23-git-send-email-aik@ozlabs.ru>
+ <20150429050408.GS32589@voom.redhat.com>
+In-Reply-To: <20150429050408.GS32589@voom.redhat.com>
+Content-Type: text/plain; charset=koi8-r; format=flowed
+Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,205 +31,328 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2015-05-01 at 11:46 +0800, Jeremy Kerr wrote:
-> Hi Ben,
-> 
-> >> +static LIST_HEAD(opal_prd_msg_queue);
-> >> +static DEFINE_SPINLOCK(opal_prd_msg_queue_lock);
-> >> +static DECLARE_WAIT_QUEUE_HEAD(opal_prd_msg_wait);
-> >> +static atomic_t usage;
-> > 
-> > opal_prd_usage ... otherwise  it's a mess in the symbols map
-> 
-> OK, I'll change this.
-> 
-> > Also why limit the number of opens ? we might want to have tools using
-> > the opal prd for xscom :-) (in absence of debugfs). .. as long as not
-> > two people read() it should be ok. Or a tool to dump the regions etc...
-> > 
-> > I don't see any reason to block multiple open's.
-> 
-> Simplicity, really. We can do a "get exclusive", but there's no
-> (current) use-case for multiple openers on a PRD interface.
-
-Sure but if we want to add one we have to change the kernel which is
-nasty ... I always try to think a bit ahead when it comes to kernel
-interfaces.
-
-> Pulling this thread a little, you've hit on a key decision point of the
-> prd design - I see there being two directions we could take with this:
-> 
->  1) This interface is specifically for PRD functions, or
-> 
->  2) This interface is a generic userspace interface to OPAL,
->     and PRD is a subset of that.
+On 04/29/2015 03:04 PM, David Gibson wrote:
+> On Sat, Apr 25, 2015 at 10:14:46PM +1000, Alexey Kardashevskiy wrote:
+>> TCE tables might get too big in case of 4K IOMMU pages and DDW enabled
+>> on huge guests (hundreds of GB of RAM) so the kernel might be unable to
+>> allocate contiguous chunk of physical memory to store the TCE table.
+>>
+>> To address this, POWER8 CPU (actually, IODA2) supports multi-level TCE tables,
+>> up to 5 levels which splits the table into a tree of smaller subtables.
+>>
+>> This adds multi-level TCE tables support to pnv_pci_create_table()
+>> and pnv_pci_free_table() helpers.
+>>
+>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+>> ---
+>> Changes:
+>> v9:
+>> * moved from ioda2 to common powernv pci code
+>> * fixed cleanup if allocation fails in a middle
+>> * removed check for the size - all boundary checks happen in the calling code
+>> anyway
+>> ---
+>>   arch/powerpc/include/asm/iommu.h          |  2 +
+>>   arch/powerpc/platforms/powernv/pci-ioda.c | 15 +++--
+>>   arch/powerpc/platforms/powernv/pci.c      | 94 +++++++++++++++++++++++++++++--
+>>   arch/powerpc/platforms/powernv/pci.h      |  4 +-
+>>   4 files changed, 104 insertions(+), 11 deletions(-)
+>>
+>> diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
+>> index 7e7ca0a..0f50ee2 100644
+>> --- a/arch/powerpc/include/asm/iommu.h
+>> +++ b/arch/powerpc/include/asm/iommu.h
+>> @@ -96,6 +96,8 @@ struct iommu_pool {
+>>   struct iommu_table {
+>>   	unsigned long  it_busno;     /* Bus number this table belongs to */
+>>   	unsigned long  it_size;      /* Size of iommu table in entries */
+>> +	unsigned long  it_indirect_levels;
+>> +	unsigned long  it_level_size;
+>>   	unsigned long  it_offset;    /* Offset into global table */
+>>   	unsigned long  it_base;      /* mapped address of tce table */
+>>   	unsigned long  it_index;     /* which iommu table this is */
+>> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+>> index 59baa15..cc1d09c 100644
+>> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+>> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+>> @@ -1967,13 +1967,17 @@ static long pnv_pci_ioda2_set_window(struct iommu_table_group *table_group,
+>>   			table_group);
+>>   	struct pnv_phb *phb = pe->phb;
+>>   	int64_t rc;
+>> +	const unsigned long size = tbl->it_indirect_levels ?
+>> +			tbl->it_level_size : tbl->it_size;
+>>   	const __u64 start_addr = tbl->it_offset << tbl->it_page_shift;
+>>   	const __u64 win_size = tbl->it_size << tbl->it_page_shift;
+>>
+>>   	pe_info(pe, "Setting up window at %llx..%llx "
+>> -			"pgsize=0x%x tablesize=0x%lx\n",
+>> +			"pgsize=0x%x tablesize=0x%lx "
+>> +			"levels=%d levelsize=%x\n",
+>>   			start_addr, start_addr + win_size - 1,
+>> -			1UL << tbl->it_page_shift, tbl->it_size << 3);
+>> +			1UL << tbl->it_page_shift, tbl->it_size << 3,
+>> +			tbl->it_indirect_levels + 1, tbl->it_level_size << 3);
+>>
+>>   	tbl->it_table_group = &pe->table_group;
+>>
+>> @@ -1984,9 +1988,9 @@ static long pnv_pci_ioda2_set_window(struct iommu_table_group *table_group,
+>>   	rc = opal_pci_map_pe_dma_window(phb->opal_id,
+>>   			pe->pe_number,
+>>   			pe->pe_number << 1,
+>> -			1,
+>> +			tbl->it_indirect_levels + 1,
+>>   			__pa(tbl->it_base),
+>> -			tbl->it_size << 3,
+>> +			size << 3,
+>>   			1ULL << tbl->it_page_shift);
+>>   	if (rc) {
+>>   		pe_err(pe, "Failed to configure TCE table, err %ld\n", rc);
+>> @@ -2099,7 +2103,8 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
+>>   		phb->ioda.m32_pci_base);
+>>
+>>   	rc = pnv_pci_create_table(&pe->table_group, pe->phb->hose->node,
+>> -			0, IOMMU_PAGE_SHIFT_4K, phb->ioda.m32_pci_base, tbl);
+>> +			0, IOMMU_PAGE_SHIFT_4K, phb->ioda.m32_pci_base,
+>> +			POWERNV_IOMMU_DEFAULT_LEVELS, tbl);
+>>   	if (rc) {
+>>   		pe_err(pe, "Failed to create 32-bit TCE table, err %ld", rc);
+>>   		return;
+>> diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
+>> index 6bcfad5..fc129c4 100644
+>> --- a/arch/powerpc/platforms/powernv/pci.c
+>> +++ b/arch/powerpc/platforms/powernv/pci.c
+>> @@ -46,6 +46,8 @@
+>>   #define cfg_dbg(fmt...)	do { } while(0)
+>>   //#define cfg_dbg(fmt...)	printk(fmt)
+>>
+>> +#define ROUND_UP(x, n) (((x) + (n) - 1ULL) & ~((n) - 1ULL))
 >
-> I've been aiming for (1) with the current code; and the nature of the
-> generic read() & write() operations being PRD-specific enforces that.
-> 
-> Allowing multiple openers will help with (2), but if we want to go in
-> that direction, I think we'd be better off doing a couple of other
-> changes too:
-> 
->  * move the general functions (eg xscom, range mappings, OCC control)
->    to a separate interface that isn't tied to PRD - say just /dev/opal
+> Use the existing ALIGN_UP macro instead of creating a new one.
 
-Well, there's debugfs but then we don't want to *rely* on that as API
 
->  * using this prd code for only the prd-event handling, possibly
->    renamed to /dev/opal-prd-events. This would still need some
->    method of enforcing exclusive access.
-> 
-> In this case, the actual PRD application would use both devices,
-> dequeueing events (and updating the ipoll mask) from the latter, and
-> using the former for helper functionality.
-> 
-> Other tools (eg generic xscom access) would just use the generic
-> interface, and not the PRD one, which wouldn't enforce exclusive access.
+Ok. I knew it existed, it is just _ALIGN_UP (with an underscore) and 
+PPC-only - this is why I did not find it :)
 
-Or make it all /dev/opal with an ioctl to receive the PRD messages which
-only one open fd can do. Keeps things simpler. Ie, rename /dev/prd
-to /dev/opal and add _IOC_PRD :-)
 
-> Regardless of the choice here, we could also remove the single-open
-> exclusion, and shift that responsibility to userspace (eg, flock() on
-> the PRD device node?). The main reason for the exclusion is to prevent
-> multiple prd daemons running, which may get messy when updating the
-> ipoll mask.
+>>   #ifdef CONFIG_PCI_MSI
+>>   static int pnv_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type)
+>>   {
+>> @@ -577,6 +579,19 @@ struct pci_ops pnv_pci_ops = {
+>>   static __be64 *pnv_tce(struct iommu_table *tbl, long idx)
+>>   {
+>>   	__be64 *tmp = ((__be64 *)tbl->it_base);
+>> +	int  level = tbl->it_indirect_levels;
+>> +	const long shift = ilog2(tbl->it_level_size);
+>> +	unsigned long mask = (tbl->it_level_size - 1) << (level * shift);
+>> +
+>> +	while (level) {
+>> +		int n = (idx & mask) >> (level * shift);
+>> +		unsigned long tce = be64_to_cpu(tmp[n]);
+>> +
+>> +		tmp = __va(tce & ~(TCE_PCI_READ | TCE_PCI_WRITE));
+>> +		idx &= ~mask;
+>> +		mask >>= shift;
+>> +		--level;
+>> +	}
+>>
+>>   	return tmp + idx;
+>>   }
+>> @@ -648,12 +663,18 @@ void pnv_pci_setup_iommu_table(struct iommu_table *tbl,
+>>   }
+>>
+>>   static __be64 *pnv_alloc_tce_table_pages(int nid, unsigned shift,
+>> +		unsigned levels, unsigned long limit,
+>>   		unsigned long *tce_table_allocated)
+>>   {
+>>   	struct page *tce_mem = NULL;
+>> -	__be64 *addr;
+>> +	__be64 *addr, *tmp;
+>>   	unsigned order = max_t(unsigned, shift, PAGE_SHIFT) - PAGE_SHIFT;
+>>   	unsigned long local_allocated = 1UL << (order + PAGE_SHIFT);
+>> +	unsigned entries = 1UL << (shift - 3);
+>> +	long i;
+>> +
+>> +	if (limit == *tce_table_allocated)
+>> +		return NULL;
+>
+> If this is for what I think, it seems a bit unsafe.  Shouldn't it be
+>> =, otherwise it could fail to trip if the limit isn't exactly a
+>> multiple of the bottom level allocation unit.
 
-Well, the exclusion on _IOC_PRD that enables reception of PRD messages
-works. Unless we want a way to "sniff" PRD messages but that gets harder
-if the kernel has to maintain multiple queues so let's not go there.
+Good point, will fix.
 
-> > Should we rely exclusively on userspace setting the right permissions or
-> > should we check CAP_SYSADMIN here ?
-> 
-> I'm okay with relying on userspace, is there any reason not to?
 
-Not really I suppose. What does /dev/mem do ?
+>>   	tce_mem = alloc_pages_node(nid, GFP_KERNEL, order);
+>>   	if (!tce_mem) {
+>> @@ -662,14 +683,33 @@ static __be64 *pnv_alloc_tce_table_pages(int nid, unsigned shift,
+>>   	}
+>>   	addr = page_address(tce_mem);
+>>   	memset(addr, 0, local_allocated);
+>> -	*tce_table_allocated = local_allocated;
+>> +
+>> +	--levels;
+>> +	if (!levels) {
+>> +		/* Update tce_table_allocated with bottom level table size only */
+>> +		*tce_table_allocated += local_allocated;
+>> +		return addr;
+>> +	}
+>> +
+>> +	for (i = 0; i < entries; ++i) {
+>> +		tmp = pnv_alloc_tce_table_pages(nid, shift, levels, limit,
+>> +				tce_table_allocated);
+>
+> Urgh.. it's a limited depth so it *might* be ok, but recursion is
+> generally avoided in the kernel, becuase of the very limited stack
+> size.
 
-> 
-> >> +	vma->vm_page_prot = phys_mem_access_prot(file, vma->vm_pgoff,
-> >> +						 size, vma->vm_page_prot)
-> >> +				| _PAGE_SPECIAL;
-> >> +
-> >> +	rc = remap_pfn_range(vma, vma->vm_start, vma->vm_pgoff, size,
-> >> +			vma->vm_page_prot);
-> > 
-> > Do we still have the warnings of process exist about the map count or is
-> > that fixed ?
-> 
-> No, not fixed at present. I'll need to chat to you about that.
 
-Ok, I need to figure out/remember what we need to do to avoid it.
+It is 5 levels max 7 64bit values, there should be room for it. Avoiding 
+recursion here - I can do that but it is going to look ugly :-/
 
-> >> +	case OPAL_PRD_SCOM_READ:
-> >> +		rc = copy_from_user(&scom, (void __user *)param, sizeof(scom));
-> >> +		if (rc)
-> >> +			return -EFAULT;
-> >> +
-> >> +		rc = opal_xscom_read(scom.chip, scom.addr,
-> >> +				(__be64 *)&scom.data);
-> > 
-> > Are we exporting these for modules ?
-> 
-> No, but opal-prd isn't configurable as a module at the moment.
 
-Why ?
+>> +		if (!tmp)
+>> +			break;
+>> +
+>> +		addr[i] = cpu_to_be64(__pa(tmp) |
+>> +				TCE_PCI_READ | TCE_PCI_WRITE);
+>> +	}
+>
+> It also seems like it would make sense for this function ti set
+> it_indirect_levels ant it_level_size, rather than leaving it to the
+> caller.
 
-> > 
-> >> +		scom.data = be64_to_cpu(scom.data);
-> >> +		pr_debug("ioctl SCOM_READ: chip %llx addr %016llx "
-> >> +				"data %016llx rc %d\n",
-> >> +				scom.chip, scom.addr, scom.data, rc);
-> > 
-> > pr_devel ?
-> 
-> This removes the possibility of CONFIG_DYNAMIC_DEBUG, is that intentional?
 
-Too noisy. Enabling DYNAMIC_DEBUG doesn't mean I want to have my log
-flooded with the thousands of SCOMs that PRD is going to do.
+Mmm. Sure? It calls itself in recursion, does not seem like it is the right 
+place for setting up it_indirect_levels ant it_level_size.
 
-> > 
-> >> +		if (rc)
-> >> +			return -EIO;
-> > 
-> > Should we consider returning more info about the SCOM error ? HBRT might
-> > actually need that... Maybe opal_prd_scom needs a field for the OPAL rc
-> > which is currently not very descriptive but that's fixable.
-> 
-> Sounds good, I'll add that in. On error, we'll return -EIO and have the
-> OPAL error code in the struct for further detail.
 
-No, don't return -EIO, that would indicate that you didn't update the
-structure. Return 0 and put the error code in the structure.
+>>   	return addr;
+>>   }
+>>
+>> +static void pnv_free_tce_table_pages(unsigned long addr, unsigned long size,
+>> +		unsigned level);
+>> +
+>>   long pnv_pci_create_table(struct iommu_table_group *table_group, int nid,
+>>   		__u64 bus_offset, __u32 page_shift, __u64 window_size,
+>> -		struct iommu_table *tbl)
+>> +		__u32 levels, struct iommu_table *tbl)
+>>   {
+>>   	void *addr;
+>>   	unsigned long tce_table_allocated = 0;
+>> @@ -678,16 +718,34 @@ long pnv_pci_create_table(struct iommu_table_group *table_group, int nid,
+>>   	unsigned table_shift = entries_shift + 3;
+>>   	const unsigned long tce_table_size = max(0x1000UL, 1UL << table_shift);
+>>
+>> +	if (!levels || (levels > POWERNV_IOMMU_MAX_LEVELS))
+>> +		return -EINVAL;
+>> +
+>>   	if ((window_size > memory_hotplug_max()) || !is_power_of_2(window_size))
+>>   		return -EINVAL;
+>>
+>> +	/* Adjust direct table size from window_size and levels */
+>> +	entries_shift = ROUND_UP(entries_shift, levels) / levels;
+>
+> ROUND_UP() only works if the second parameter is a power of 2.  Is
+> that always true for levels?
+>
+> For division rounding up, the usual idiom is just ((a + (b - 1)) / b)
 
-> >> +	nr_ranges = of_property_count_strings(np, "reserved-names");
-> >> +	ranges_prop = of_get_property(np, "reserved-ranges", NULL);
-> >> +	if (!ranges_prop) {
-> >> +		of_node_put(np);
-> >> +		return -ENODEV;
-> >> +	}
-> > 
-> > Didn't we say we had a problem with using those properties due to
-> > coalescing ? Shouldn't we define specific ones for the HBRT regions ?
-> 
-> There's not a problem at the moment, but one day we will need to expand
-> the PRD's get_reserved_mem interface to allow per-chip ranges. This
-> would use a different device-tree representation.
-> 
-> However, I think it'd be better to remove this code entirely (ie, remove
-> the range member of struct opal_prd_info), and require userspace to do
-> the device-tree parsing.
 
-But that means /dev/prd just grew a generic "mmap any piece of memory"
-capability ... Oh well.
+Yes, I think this is what I actually wanted.
 
-> >> +static int __init opal_prd_init(void)
-> >> +{
-> >> +	int rc;
-> >> +
-> >> +	/* parse the code region information from the device tree */
-> >> +	rc = parse_regions();
-> >> +	if (rc) {
-> >> +		pr_err("Couldn't parse region information from DT\n");
-> >> +		return rc;
-> >> +	}
-> > 
-> > Should we create a virtual device under the OPAL node in FW so we have
-> > something to attach to ? That way we get module autoload as well...
-> 
-> Can do, if we want to support modules...
 
-Or if we make this /dev/opal, just attach to the ibm,opal node itself
-and make it a platform device like we do for i2c etc...
+>> +	table_shift = entries_shift + 3;
+>> +	table_shift = max_t(unsigned, table_shift, PAGE_SHIFT);
+>
+> Does the PAGE_SHIFT rounding make sense any more?  I would have
+> thought you'd round the level size up to page size, rather than the
+> whole thing.
 
-> >> +	rc = opal_message_notifier_register(OPAL_MSG_PRD, &opal_prd_event_nb);
-> >> +	if (rc) {
-> >> +		pr_err("Couldn't register event notifier\n");
-> >> +		return rc;
-> >> +	}
-> >> +
-> >> +	rc = misc_register(&opal_prd_dev);
-> >> +	if (rc) {
-> >> +		pr_err("failed to register miscdev\n");
-> >> +		return rc;
-> >> +	}
-> >> +
-> >> +	return 0;
-> >> +}
-> >> +
-> >> +static void __exit opal_prd_exit(void)
-> >> +{
-> >> +	misc_deregister(&opal_prd_dev);
-> >> +	opal_message_notifier_unregister(OPAL_MSG_PRD, &opal_prd_event_nb);
-> >> +}
-> > 
-> > Shouldn't you deregister the notifier first ?
-> 
-> Yup, updated.
-> 
-> Cheers,
-> 
-> 
-> Jeremy
+
+At this point in the code @table_shift is level_shift but it is not that 
+obvious :) I'll rework it. Thanks.
+
+
+>>   	/* Allocate TCE table */
+>>   	addr = pnv_alloc_tce_table_pages(nid, table_shift,
+>> -			&tce_table_allocated);
+>> +			levels, tce_table_size, &tce_table_allocated);
+>> +	if (!addr)
+>> +		return -ENOMEM;
+>> +
+>> +	if (tce_table_size != tce_table_allocated) {
+>> +		pnv_free_tce_table_pages((unsigned long) addr,
+>> +				tbl->it_level_size, tbl->it_indirect_levels);
+>> +		return -ENOMEM;
+>> +	}
+>>
+>>   	/* Setup linux iommu table */
+>>   	pnv_pci_setup_iommu_table(tbl, addr, tce_table_size, bus_offset,
+>>   			page_shift);
+>> +	tbl->it_level_size = 1ULL << (table_shift - 3);
+>> +	tbl->it_indirect_levels = levels - 1;
+>>
+>>   	pr_info("Created TCE table: window size = %08llx, "
+>>   			"tablesize = %lx (%lx), start @%08llx\n",
+>> @@ -697,12 +755,38 @@ long pnv_pci_create_table(struct iommu_table_group *table_group, int nid,
+>>   	return 0;
+>>   }
+>>
+>> +static void pnv_free_tce_table_pages(unsigned long addr, unsigned long size,
+>> +		unsigned level)
+>> +{
+>> +	addr &= ~(TCE_PCI_READ | TCE_PCI_WRITE);
+>> +
+>> +	if (level) {
+>> +		long i;
+>> +		u64 *tmp = (u64 *) addr;
+>> +
+>> +		for (i = 0; i < size; ++i) {
+>> +			unsigned long hpa = be64_to_cpu(tmp[i]);
+>> +
+>> +			if (!(hpa & (TCE_PCI_READ | TCE_PCI_WRITE)))
+>> +				continue;
+>> +
+>> +			pnv_free_tce_table_pages((unsigned long) __va(hpa),
+>> +					size, level - 1);
+>> +		}
+>> +	}
+>> +
+>> +	free_pages(addr, get_order(size << 3));
+>> +}
+>> +
+>>   void pnv_pci_free_table(struct iommu_table *tbl)
+>>   {
+>> +	const unsigned long size = tbl->it_indirect_levels ?
+>> +			tbl->it_level_size : tbl->it_size;
+>> +
+>>   	if (!tbl->it_size)
+>>   		return;
+>>
+>> -	free_pages(tbl->it_base, get_order(tbl->it_size << 3));
+>> +	pnv_free_tce_table_pages(tbl->it_base, size, tbl->it_indirect_levels);
+>>   	iommu_reset_table(tbl, "pnv");
+>>   }
+>>
+>> diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
+>> index e6cbbec..3d1ff584 100644
+>> --- a/arch/powerpc/platforms/powernv/pci.h
+>> +++ b/arch/powerpc/platforms/powernv/pci.h
+>> @@ -218,9 +218,11 @@ int pnv_pci_cfg_write(struct pci_dn *pdn,
+>>   extern void pnv_pci_setup_iommu_table(struct iommu_table *tbl,
+>>   				      void *tce_mem, u64 tce_size,
+>>   				      u64 dma_offset, unsigned page_shift);
+>> +#define POWERNV_IOMMU_DEFAULT_LEVELS	1
+>> +#define POWERNV_IOMMU_MAX_LEVELS	5
+>>   extern long pnv_pci_create_table(struct iommu_table_group *table_group, int nid,
+>>   		__u64 bus_offset, __u32 page_shift, __u64 window_size,
+>> -		struct iommu_table *tbl);
+>> +		__u32 levels, struct iommu_table *tbl);
+>>   extern void pnv_pci_free_table(struct iommu_table *tbl);
+>>   extern void pnv_pci_init_p5ioc2_hub(struct device_node *np);
+>>   extern void pnv_pci_init_ioda_hub(struct device_node *np);
+>
+
+
+-- 
+Alexey
