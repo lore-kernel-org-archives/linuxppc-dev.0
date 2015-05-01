@@ -1,30 +1,30 @@
 Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3CF0A1A025F
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4825F1A0D82
  for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 May 2015 16:04:12 +1000 (AEST)
 Received: from /spool/local
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
  Fri, 1 May 2015 16:04:11 +1000
 Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id C6F873578048
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 May 2015 16:04:09 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id E32842CE8040
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 May 2015 16:04:08 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
  by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t41641tm32702632
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 May 2015 16:04:09 +1000
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t4163ask009166
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 May 2015 16:03:36 +1000
+ t41640157471244
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 May 2015 16:04:08 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t4163YLR005540
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 May 2015 16:03:35 +1000
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v4 04/21] powerpc/powernv: Improve IO and M32 mapping
-Date: Fri,  1 May 2015 16:02:51 +1000
-Message-Id: <1430460188-31343-5-git-send-email-gwshan@linux.vnet.ibm.com>
+Subject: [PATCH v4 02/21] powerpc/powernv: Enable M64 on P7IOC
+Date: Fri,  1 May 2015 16:02:49 +1000
+Message-Id: <1430460188-31343-3-git-send-email-gwshan@linux.vnet.ibm.com>
 In-Reply-To: <1430460188-31343-1-git-send-email-gwshan@linux.vnet.ibm.com>
 References: <1430460188-31343-1-git-send-email-gwshan@linux.vnet.ibm.com>
 Cc: bhelgaas@google.com, linux-pci@vger.kernel.org,
@@ -38,249 +38,180 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The PHB's IO or M32 window is divided evenly to segments, each of
-them can be mapped to arbitrary PE# by IODT or M32DT. Current code
-figures out the consumed IO and M32 segments by one particular PE
-from the windows of the PE's upstream bridge. It won't be reliable
-once we extend M64 windows of root port, or the upstream port of
-the PCIE switch behind root port to PHB's IO or M32 window, in order
-to support PCI hotplug in future.
-
-The patch improves pnv_ioda_setup_pe_seg() to calculate PE's consumed
-IO or M32 segments from its contained devices, no bridge involved any
-more. Also, the logic to mapping IO and M32 segments are combined to
-simplify the code. Besides, it's always worthy to trace the IO and M32
-segments consumed by one PE, which can be released at PCI unplugging
-time.
+The patch enables M64 window on P7IOC, which has been enabled on
+PHB3. Comparing to PHB3, there are 16 M64 BARs and each of them
+are divided to 8 segments. So each PHB can support 128 M64 segments.
+Also, P7IOC has M64DT, which helps mapping one particular M64
+segment# to arbitrary PE#. However, we just provide 128 M64 (16 BARs)
+segments and fixed mapping between PE# and M64 segment# in order
+to keep same logic to support M64 for PHB3 and P7IOC. In turn, we
+just need different phb->init_m64() hooks for P7IOC and PHB3.
 
 Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/powernv/pci-ioda.c | 150 ++++++++++++++++--------------
- arch/powerpc/platforms/powernv/pci.h      |  13 +--
- 2 files changed, 85 insertions(+), 78 deletions(-)
+ arch/powerpc/platforms/powernv/pci-ioda.c | 115 ++++++++++++++++++++++++++----
+ 1 file changed, 103 insertions(+), 12 deletions(-)
 
 diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index a994882..7e6e266 100644
+index f8bc950..646962f 100644
 --- a/arch/powerpc/platforms/powernv/pci-ioda.c
 +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -2543,77 +2543,92 @@ static void pnv_pci_ioda_fixup_iov_resources(struct pci_dev *pdev)
+@@ -165,6 +165,67 @@ static void pnv_ioda_free_pe(struct pnv_phb *phb, int pe)
+ 	clear_bit(pe, phb->ioda.pe_alloc);
  }
- #endif /* CONFIG_PCI_IOV */
  
--/*
-- * This function is supposed to be called on basis of PE from top
-- * to bottom style. So the the I/O or MMIO segment assigned to
-- * parent PE could be overrided by its child PEs if necessary.
-- */
--static void pnv_ioda_setup_pe_seg(struct pci_controller *hose,
--				  struct pnv_ioda_pe *pe)
-+static int pnv_ioda_map_pe_one_res(struct pci_controller *hose,
-+				   struct pnv_ioda_pe *pe,
-+				   struct resource *res)
- {
- 	struct pnv_phb *phb = hose->private_data;
- 	struct pci_bus_region region;
--	struct resource *res;
--	int i, index;
--	int rc;
-+	unsigned int segsize, index;
-+	unsigned long *segmap, *pe_segmap;
-+	uint16_t win_type;
-+	int64_t rc;
- 
--	/*
--	 * NOTE: We only care PCI bus based PE for now. For PCI
--	 * device based PE, for example SRIOV sensitive VF should
--	 * be figured out later.
--	 */
--	BUG_ON(!(pe->flags & (PNV_IODA_PE_BUS | PNV_IODA_PE_BUS_ALL)));
-+	/* Check if we need map the resource */
-+	if (!res->parent || !res->flags ||
-+	    res->start > res->end ||
-+	    pnv_pci_is_mem_pref_64(res->flags))
-+		return 0;
- 
--	pci_bus_for_each_resource(pe->pbus, res, i) {
--		if (!res || !res->flags ||
--		    res->start > res->end)
--			continue;
-+	if (res->flags & IORESOURCE_IO) {
-+		segmap = phb->ioda.io_segmap;
-+		pe_segmap = pe->io_segmap;
-+		region.start = res->start - phb->ioda.io_pci_base;
-+		region.end = res->end - phb->ioda.io_pci_base;
-+		segsize = phb->ioda.io_segsize;
-+		win_type = OPAL_IO_WINDOW_TYPE;
-+	} else {
-+		segmap = phb->ioda.m32_segmap;
-+		pe_segmap = pe->m32_segmap;
-+		region.start = res->start -
-+			       hose->mem_offset[0] -
-+			       phb->ioda.m32_pci_base;
-+		region.end = res->end -
-+			     hose->mem_offset[0] -
-+			     phb->ioda.m32_pci_base;
-+		segsize = phb->ioda.m32_segsize;
-+		win_type = OPAL_M32_WINDOW_TYPE;
-+	}
-+
-+	index = region.start / segsize;
-+	while (index < phb->ioda.total_pe &&
-+	       region.start <= region.end) {
-+		rc = opal_pci_map_pe_mmio_window(phb->opal_id,
-+				pe->pe_number, win_type, 0, index);
-+		if (rc != OPAL_SUCCESS) {
-+			pr_warn("%s: Error %lld mapping (%d) seg#%d to PE#%d\n",
-+				__func__, rc, win_type, index, pe->pe_number);
-+			return -EIO;
-+		}
- 
--		if (res->flags & IORESOURCE_IO) {
--			region.start = res->start - phb->ioda.io_pci_base;
--			region.end   = res->end - phb->ioda.io_pci_base;
--			index = region.start / phb->ioda.io_segsize;
-+		set_bit(index, segmap);
-+		set_bit(index, pe_segmap);
-+		region.start += segsize;
-+		index++;
-+	}
- 
--			while (index < phb->ioda.total_pe &&
--			       region.start <= region.end) {
--				phb->ioda.io_segmap[index] = pe->pe_number;
--				rc = opal_pci_map_pe_mmio_window(phb->opal_id,
--					pe->pe_number, OPAL_IO_WINDOW_TYPE, 0, index);
--				if (rc != OPAL_SUCCESS) {
--					pr_err("%s: OPAL error %d when mapping IO "
--					       "segment #%d to PE#%d\n",
--					       __func__, rc, index, pe->pe_number);
--					break;
--				}
-+	return 0;
-+}
- 
--				region.start += phb->ioda.io_segsize;
--				index++;
--			}
--		} else if ((res->flags & IORESOURCE_MEM) &&
--			   !pnv_pci_is_mem_pref_64(res->flags)) {
--			region.start = res->start -
--				       hose->mem_offset[0] -
--				       phb->ioda.m32_pci_base;
--			region.end   = res->end -
--				       hose->mem_offset[0] -
--				       phb->ioda.m32_pci_base;
--			index = region.start / phb->ioda.m32_segsize;
--
--			while (index < phb->ioda.total_pe &&
--			       region.start <= region.end) {
--				phb->ioda.m32_segmap[index] = pe->pe_number;
--				rc = opal_pci_map_pe_mmio_window(phb->opal_id,
--					pe->pe_number, OPAL_M32_WINDOW_TYPE, 0, index);
--				if (rc != OPAL_SUCCESS) {
--					pr_err("%s: OPAL error %d when mapping M32 "
--					       "segment#%d to PE#%d",
--					       __func__, rc, index, pe->pe_number);
--					break;
--				}
-+static void pnv_ioda_setup_pe_seg(struct pci_controller *hose,
-+				  struct pnv_ioda_pe *pe)
++static int pnv_ioda1_init_m64(struct pnv_phb *phb)
 +{
-+	struct pci_dev *pdev;
-+	struct resource *res;
-+	int i;
- 
--				region.start += phb->ioda.m32_segsize;
--				index++;
--			}
-+	/* This function only works for bus dependent PE */
-+	BUG_ON(!(pe->flags & (PNV_IODA_PE_BUS | PNV_IODA_PE_BUS_ALL)));
++	struct resource *r;
++	int seg;
++	s64 rc;
 +
-+	list_for_each_entry(pdev, &pe->pbus->devices, bus_list) {
-+		for (i = 0; i <= PCI_ROM_RESOURCE; i++) {
-+			res = &pdev->resource[i];
-+			if (pnv_ioda_map_pe_one_res(hose, pe, res))
-+				return;
++	/* Each PHB supports 16 separate M64 BARs, each of which are
++	 * divided into 8 segments. So there are number of M64 segments
++	 * as total PE#, which is 128.
++	 */
++	for (seg = 0; seg < phb->ioda.total_pe; seg += 8) {
++		unsigned long base;
++
++		base = phb->ioda.m64_base + seg * phb->ioda.m64_segsize;
++		rc = opal_pci_set_phb_mem_window(phb->opal_id,
++						 OPAL_M64_WINDOW_TYPE,
++						 seg / 8,
++						 base,
++						 0, /* unused */
++						 8 * phb->ioda.m64_segsize);
++		if (rc != OPAL_SUCCESS) {
++			pr_warn("  Failure %lld configuring M64 BAR#%d on PHB#%d\n",
++				rc, seg / 8, phb->hose->global_number);
++			goto fail;
 +		}
 +
-+		/* If the PE contains all subordinate PCI buses, the
-+		 * resources of the child bridges should be mapped
-+		 * to the PE as well.
-+		 */
-+		if (!(pe->flags & PNV_IODA_PE_BUS_ALL) ||
-+		    (pdev->class >> 8) != PCI_CLASS_BRIDGE_PCI)
-+			continue;
++		rc = opal_pci_phb_mmio_enable(phb->opal_id,
++					      OPAL_M64_WINDOW_TYPE,
++					      seg / 8,
++					      OPAL_ENABLE_M64_SPLIT);
++		if (rc != OPAL_SUCCESS) {
++			pr_warn("  Failure %lld enabling M64 BAR#%d on PHB#%d\n",
++				rc, seg / 8, phb->hose->global_number);
++			goto fail;
++		}
++	}
 +
-+		for (i = 0; i <= PCI_BRIDGE_RESOURCE_NUM; i++) {
-+			res = &pdev->resource[PCI_BRIDGE_RESOURCES + i];
-+			if (pnv_ioda_map_pe_one_res(hose, pe, res))
-+				return;
- 		}
++	/* Strip of the segment used by the reserved PE, which
++	 * is expected to be 0 or last supported PE#
++	 */
++	r = &phb->hose->mem_resources[1];
++	if (phb->ioda.reserved_pe == 0)
++		r->start += phb->ioda.m64_segsize;
++	else if (phb->ioda.reserved_pe == (phb->ioda.total_pe - 1))
++		r->end -= phb->ioda.m64_segsize;
++	else
++		pr_warn("  Cannot strip M64 segment for reserved PE#%d\n",
++			phb->ioda.reserved_pe);
++
++	return 0;
++
++fail:
++	for ( ; seg >= 0; seg -= 8)
++		opal_pci_phb_mmio_enable(phb->opal_id,
++					 OPAL_M64_WINDOW_TYPE,
++					 seg / 8,
++					 OPAL_DISABLE_M64);
++
++	return -EIO;
++}
++
+ /* The default M64 BAR is shared by all PEs */
+ static int pnv_ioda2_init_m64(struct pnv_phb *phb)
+ {
+@@ -222,7 +283,7 @@ fail:
+ 	return -EIO;
+ }
+ 
+-static void pnv_ioda2_reserve_m64_pe(struct pnv_phb *phb)
++static void pnv_ioda_reserve_m64_pe(struct pnv_phb *phb)
+ {
+ 	resource_size_t sgsz = phb->ioda.m64_segsize;
+ 	struct pci_dev *pdev;
+@@ -248,8 +309,8 @@ static void pnv_ioda2_reserve_m64_pe(struct pnv_phb *phb)
  	}
  }
-@@ -2780,7 +2795,7 @@ static void __init pnv_pci_init_ioda_phb(struct device_node *np,
+ 
+-static int pnv_ioda2_pick_m64_pe(struct pnv_phb *phb,
+-				 struct pci_bus *bus, int all)
++static int pnv_ioda_pick_m64_pe(struct pnv_phb *phb,
++				struct pci_bus *bus, int all)
  {
- 	struct pci_controller *hose;
- 	struct pnv_phb *phb;
--	unsigned long size, m32map_off, pemap_off, iomap_off = 0;
-+	unsigned long size, pemap_off;
- 	const __be64 *prop64;
- 	const __be32 *prop32;
- 	int len;
-@@ -2865,19 +2880,10 @@ static void __init pnv_pci_init_ioda_phb(struct device_node *np,
+ 	resource_size_t segsz = phb->ioda.m64_segsize;
+ 	struct pci_dev *pdev;
+@@ -346,6 +407,28 @@ done:
+ 			pe->master = master_pe;
+ 			list_add_tail(&pe->list, &master_pe->slaves);
+ 		}
++
++		/* P7IOC supports M64DT, which helps mapping M64 segment
++		 * to one particular PE#. Unfortunately, PHB3 has fixed
++		 * mapping between M64 segment and PE#. In order for same
++		 * logic for P7IOC and PHB3, we enforce fixed mapping
++		 * between M64 segment and PE# on P7IOC.
++		 */
++		if (phb->type == PNV_PHB_IODA1) {
++			int64_t rc;
++
++			rc = opal_pci_map_pe_mmio_window(phb->opal_id,
++							 pe->pe_number,
++							 OPAL_M64_WINDOW_TYPE,
++							 pe->pe_number / 8,
++							 pe->pe_number % 8);
++			if (rc != OPAL_SUCCESS)
++				pr_warn("%s: Failure %lld mapping "
++					"M64 for PHB#%d-PE#%d\n",
++					__func__, rc,
++					phb->hose->global_number,
++					pe->pe_number);
++		}
+ 	}
  
- 	/* Allocate aux data & arrays. We don't have IO ports on PHB3 */
- 	size = _ALIGN_UP(phb->ioda.total_pe / 8, sizeof(unsigned long));
--	m32map_off = size;
--	size += phb->ioda.total_pe * sizeof(phb->ioda.m32_segmap[0]);
--	if (phb->type == PNV_PHB_IODA1) {
--		iomap_off = size;
--		size += phb->ioda.total_pe * sizeof(phb->ioda.io_segmap[0]);
+ 	kfree(pe_alloc);
+@@ -360,12 +443,6 @@ static void __init pnv_ioda_parse_m64_window(struct pnv_phb *phb)
+ 	const u32 *r;
+ 	u64 pci_addr;
+ 
+-	/* FIXME: Support M64 for P7IOC */
+-	if (phb->type != PNV_PHB_IODA2) {
+-		pr_info("  Not support M64 window\n");
+-		return;
 -	}
- 	pemap_off = size;
- 	size += phb->ioda.total_pe * sizeof(struct pnv_ioda_pe);
- 	aux = memblock_virt_alloc(size, 0);
- 	phb->ioda.pe_alloc = aux;
--	phb->ioda.m32_segmap = aux + m32map_off;
--	if (phb->type == PNV_PHB_IODA1)
--		phb->ioda.io_segmap = aux + iomap_off;
- 	phb->ioda.pe_array = aux + pemap_off;
- 	set_bit(phb->ioda.reserved_pe, phb->ioda.pe_alloc);
+-
+ 	if (!firmware_has_feature(FW_FEATURE_OPALv3)) {
+ 		pr_info("  Firmware too old to support M64 window\n");
+ 		return;
+@@ -394,9 +471,23 @@ static void __init pnv_ioda_parse_m64_window(struct pnv_phb *phb)
  
-diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
-index 19022cf..f604bb7 100644
---- a/arch/powerpc/platforms/powernv/pci.h
-+++ b/arch/powerpc/platforms/powernv/pci.h
-@@ -54,6 +54,8 @@ struct pnv_ioda_pe {
- 	 * by slave PEs will be contributed to the master PE. One
- 	 * PE can own multiple IO and M32 segments.
- 	 */
-+	unsigned long		io_segmap[8];
-+	unsigned long		m32_segmap[8];
- 	unsigned long		m64_segmap[8];
+ 	/* Use last M64 BAR to cover M64 window */
+ 	phb->ioda.m64_bar_idx = 15;
+-	phb->init_m64 = pnv_ioda2_init_m64;
+-	phb->reserve_m64_pe = pnv_ioda2_reserve_m64_pe;
+-	phb->pick_m64_pe = pnv_ioda2_pick_m64_pe;
++	phb->reserve_m64_pe = pnv_ioda_reserve_m64_pe;
++	phb->pick_m64_pe = pnv_ioda_pick_m64_pe;
++	switch (phb->type) {
++	case PNV_PHB_IODA1:
++		phb->init_m64 = pnv_ioda1_init_m64;
++		break;
++	case PNV_PHB_IODA2:
++		phb->init_m64 = pnv_ioda2_init_m64;
++		break;
++	default:
++		phb->init_m64 = NULL;
++		phb->reserve_m64_pe = NULL;
++		phb->pick_m64_pe = NULL;
++		phb->ioda.m64_size = 0;
++		phb->ioda.m64_segsize = 0;
++		phb->ioda.m64_base = 0;
++	}
+ }
  
- 	/* "Weight" assigned to the PE for the sake of DMA resource
-@@ -154,16 +156,15 @@ struct pnv_phb {
- 			unsigned int		io_segsize;
- 			unsigned int		io_pci_base;
- 
--			/* PE allocation bitmap */
-+			/* PE allocation */
-+			struct pnv_ioda_pe	*pe_array;
- 			unsigned long		*pe_alloc;
--			/* PE allocation mutex */
- 			struct mutex		pe_alloc_mutex;
- 
--			/* M32 & IO segment maps */
-+			/* IO/M32/M64 segment bitmaps */
-+			unsigned long		io_segmap[8];
-+			unsigned long		m32_segmap[8];
- 			unsigned long		m64_segmap[8];
--			unsigned int		*m32_segmap;
--			unsigned int		*io_segmap;
--			struct pnv_ioda_pe	*pe_array;
- 
- 			/* IRQ chip */
- 			int			irq_chip_init;
+ static void pnv_ioda_freeze_pe(struct pnv_phb *phb, int pe_no)
 -- 
 2.1.0
