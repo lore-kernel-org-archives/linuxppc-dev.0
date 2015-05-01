@@ -1,27 +1,26 @@
 Return-Path: <dgibson@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E6C4F1A0D10
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 May 2015 13:55:56 +1000 (AEST)
-Date: Fri, 1 May 2015 13:36:58 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 21CAB1A0D10
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 May 2015 13:55:57 +1000 (AEST)
+Date: Fri, 1 May 2015 13:39:53 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Subject: Re: [PATCH kernel v9 23/32] powerpc/powernv/ioda: Define and
- implement DMA table/window management callbacks
-Message-ID: <20150501033658.GI24886@voom.redhat.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH kernel v9 28/32] powerpc/mmu: Add userspace-to-physical
+ addresses translation cache
+Message-ID: <20150501033953.GJ24886@voom.redhat.com>
 References: <1429964096-11524-1-git-send-email-aik@ozlabs.ru>
- <1429964096-11524-24-git-send-email-aik@ozlabs.ru>
- <20150429053051.GT32589@voom.redhat.com> <5540A7F4.70903@ozlabs.ru>
- <20150430043750.GH15238@voom.redhat.com>
- <5541FC41.9040409@ozlabs.ru>
+ <1429964096-11524-29-git-send-email-aik@ozlabs.ru>
+ <20150430063455.GA24886@voom.redhat.com>
+ <20150430082525.GA22373@iris.ozlabs.ibm.com>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="J+eNKFoVC4T1DV3f"
-In-Reply-To: <5541FC41.9040409@ozlabs.ru>
-Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
- Alex Williamson <alex.williamson@redhat.com>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+ protocol="application/pgp-signature"; boundary="EVh9lyqKgK19OcEf"
+In-Reply-To: <20150430082525.GA22373@iris.ozlabs.ibm.com>
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+ Alex Williamson <alex.williamson@redhat.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,235 +31,98 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---J+eNKFoVC4T1DV3f
+--EVh9lyqKgK19OcEf
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, Apr 30, 2015 at 07:56:17PM +1000, Alexey Kardashevskiy wrote:
-> On 04/30/2015 02:37 PM, David Gibson wrote:
-> >On Wed, Apr 29, 2015 at 07:44:20PM +1000, Alexey Kardashevskiy wrote:
-> >>On 04/29/2015 03:30 PM, David Gibson wrote:
-> >>>On Sat, Apr 25, 2015 at 10:14:47PM +1000, Alexey Kardashevskiy wrote:
-> >>>>This extends iommu_table_group_ops by a set of callbacks to support
-> >>>>dynamic DMA windows management.
-> >>>>
-> >>>>create_table() creates a TCE table with specific parameters.
-> >>>>it receives iommu_table_group to know nodeid in order to allocate
-> >>>>TCE table memory closer to the PHB. The exact format of allocated
-> >>>>multi-level table might be also specific to the PHB model (not
-> >>>>the case now though).
-> >>>>This callback calculated the DMA window offset on a PCI bus from @num
-> >>>>and stores it in a just created table.
-> >>>>
-> >>>>set_window() sets the window at specified TVT index + @num on PHB.
-> >>>>
-> >>>>unset_window() unsets the window from specified TVT.
-> >>>>
-> >>>>This adds a free() callback to iommu_table_ops to free the memory
-> >>>>(potentially a tree of tables) allocated for the TCE table.
-> >>>
-> >>>Doesn't the free callback belong with the previous patch introducing
-> >>>multi-level tables?
-> >>
-> >>
-> >>
-> >>If I did that, you would say "why is it here if nothing calls it" on
-> >>"multilevel" patch and "I see the allocation but I do not see memory
-> >>release" ;)
-> >
-> >Yeah, fair enough ;)
-> >
-> >>I need some rule of thumb here. I think it is a bit cleaner if the same
-> >>patch adds a callback for memory allocation and its counterpart, no?
-> >
-> >On further consideration, yes, I think you're right.
-> >
-> >>>>create_table() and free() are supposed to be called once per
-> >>>>VFIO container and set_window()/unset_window() are supposed to be
-> >>>>called for every group in a container.
-> >>>>
-> >>>>This adds IOMMU capabilities to iommu_table_group such as default
-> >>>>32bit window parameters and others.
-> >>>>
-> >>>>Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> >>>>---
-> >>>>  arch/powerpc/include/asm/iommu.h            | 19 ++++++++
-> >>>>  arch/powerpc/platforms/powernv/pci-ioda.c   | 75 ++++++++++++++++++=
-++++++++---
-> >>>>  arch/powerpc/platforms/powernv/pci-p5ioc2.c | 12 +++--
-> >>>>  3 files changed, 96 insertions(+), 10 deletions(-)
-> >>>>
-> >>>>diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/=
-asm/iommu.h
-> >>>>index 0f50ee2..7694546 100644
-> >>>>--- a/arch/powerpc/include/asm/iommu.h
-> >>>>+++ b/arch/powerpc/include/asm/iommu.h
-> >>>>@@ -70,6 +70,7 @@ struct iommu_table_ops {
-> >>>>  	/* get() returns a physical address */
-> >>>>  	unsigned long (*get)(struct iommu_table *tbl, long index);
-> >>>>  	void (*flush)(struct iommu_table *tbl);
-> >>>>+	void (*free)(struct iommu_table *tbl);
-> >>>>  };
-> >>>>
-> >>>>  /* These are used by VIO */
-> >>>>@@ -148,6 +149,17 @@ extern struct iommu_table *iommu_init_table(stru=
-ct iommu_table * tbl,
-> >>>>  struct iommu_table_group;
-> >>>>
-> >>>>  struct iommu_table_group_ops {
-> >>>>+	long (*create_table)(struct iommu_table_group *table_group,
-> >>>>+			int num,
-> >>>>+			__u32 page_shift,
-> >>>>+			__u64 window_size,
-> >>>>+			__u32 levels,
-> >>>>+			struct iommu_table *tbl);
-> >>>>+	long (*set_window)(struct iommu_table_group *table_group,
-> >>>>+			int num,
-> >>>>+			struct iommu_table *tblnew);
-> >>>>+	long (*unset_window)(struct iommu_table_group *table_group,
-> >>>>+			int num);
-> >>>>  	/*
-> >>>>  	 * Switches ownership from the kernel itself to an external
-> >>>>  	 * user. While onwership is taken, the kernel cannot use IOMMU its=
-elf.
-> >>>>@@ -160,6 +172,13 @@ struct iommu_table_group {
-> >>>>  #ifdef CONFIG_IOMMU_API
-> >>>>  	struct iommu_group *group;
-> >>>>  #endif
-> >>>>+	/* Some key properties of IOMMU */
-> >>>>+	__u32 tce32_start;
-> >>>>+	__u32 tce32_size;
-> >>>>+	__u64 pgsizes; /* Bitmap of supported page sizes */
-> >>>>+	__u32 max_dynamic_windows_supported;
-> >>>>+	__u32 max_levels;
-> >>>
-> >>>With this information, table_group seems even more like a bad name.
-> >>>"iommu_state" maybe?
-> >>
-> >>
-> >>Please, no. We will never come to agreement then :( And "iommu_state" i=
-s too
-> >>general anyway, it won't pass.
-> >>
-> >>
-> >>>>  	struct iommu_table tables[IOMMU_TABLE_GROUP_MAX_TABLES];
-> >>>>  	struct iommu_table_group_ops *ops;
-> >>>>  };
-> >>>>diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc=
-/platforms/powernv/pci-ioda.c
-> >>>>index cc1d09c..4828837 100644
-> >>>>--- a/arch/powerpc/platforms/powernv/pci-ioda.c
-> >>>>+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-> >>>>@@ -24,6 +24,7 @@
-> >>>>  #include <linux/msi.h>
-> >>>>  #include <linux/memblock.h>
-> >>>>  #include <linux/iommu.h>
-> >>>>+#include <linux/sizes.h>
-> >>>>
-> >>>>  #include <asm/sections.h>
-> >>>>  #include <asm/io.h>
-> >>>>@@ -1846,6 +1847,7 @@ static struct iommu_table_ops pnv_ioda2_iommu_o=
-ps =3D {
-> >>>>  #endif
-> >>>>  	.clear =3D pnv_ioda2_tce_free,
-> >>>>  	.get =3D pnv_tce_get,
-> >>>>+	.free =3D pnv_pci_free_table,
-> >>>>  };
-> >>>>
-> >>>>  static void pnv_pci_ioda_setup_opal_tce_kill(struct pnv_phb *phb,
-> >>>>@@ -1936,6 +1938,8 @@ static void pnv_pci_ioda_setup_dma_pe(struct pn=
-v_phb *phb,
-> >>>>  				 TCE_PCI_SWINV_PAIR);
-> >>>>
-> >>>>  	tbl->it_ops =3D &pnv_ioda1_iommu_ops;
-> >>>>+	pe->table_group.tce32_start =3D tbl->it_offset << tbl->it_page_shif=
-t;
-> >>>>+	pe->table_group.tce32_size =3D tbl->it_size << tbl->it_page_shift;
-> >>>>  	iommu_init_table(tbl, phb->hose->node);
-> >>>>
-> >>>>  	if (pe->flags & PNV_IODA_PE_DEV) {
-> >>>>@@ -1961,7 +1965,7 @@ static void pnv_pci_ioda_setup_dma_pe(struct pn=
-v_phb *phb,
-> >>>>  }
-> >>>>
-> >>>>  static long pnv_pci_ioda2_set_window(struct iommu_table_group *tabl=
-e_group,
-> >>>>-		struct iommu_table *tbl)
-> >>>>+		int num, struct iommu_table *tbl)
-> >>>>  {
-> >>>>  	struct pnv_ioda_pe *pe =3D container_of(table_group, struct pnv_io=
-da_pe,
-> >>>>  			table_group);
-> >>>>@@ -1972,9 +1976,10 @@ static long pnv_pci_ioda2_set_window(struct io=
-mmu_table_group *table_group,
-> >>>>  	const __u64 start_addr =3D tbl->it_offset << tbl->it_page_shift;
-> >>>>  	const __u64 win_size =3D tbl->it_size << tbl->it_page_shift;
-> >>>>
-> >>>>-	pe_info(pe, "Setting up window at %llx..%llx "
-> >>>>+	pe_info(pe, "Setting up window#%d at %llx..%llx "
-> >>>>  			"pgsize=3D0x%x tablesize=3D0x%lx "
-> >>>>  			"levels=3D%d levelsize=3D%x\n",
-> >>>>+			num,
-> >>>>  			start_addr, start_addr + win_size - 1,
-> >>>>  			1UL << tbl->it_page_shift, tbl->it_size << 3,
-> >>>>  			tbl->it_indirect_levels + 1, tbl->it_level_size << 3);
-> >>>>@@ -1987,7 +1992,7 @@ static long pnv_pci_ioda2_set_window(struct iom=
-mu_table_group *table_group,
-> >>>>  	 */
-> >>>>  	rc =3D opal_pci_map_pe_dma_window(phb->opal_id,
-> >>>>  			pe->pe_number,
-> >>>>-			pe->pe_number << 1,
-> >>>>+			(pe->pe_number << 1) + num,
-> >>>
-> >>>Heh, yes, well, that makes it rather clear that only 2 tables are poss=
-ible.
-> >>>
-> >>>>  			tbl->it_indirect_levels + 1,
-> >>>>  			__pa(tbl->it_base),
-> >>>>  			size << 3,
-> >>>>@@ -2000,7 +2005,7 @@ static long pnv_pci_ioda2_set_window(struct iom=
-mu_table_group *table_group,
-> >>>>  	pnv_pci_ioda2_tvt_invalidate(pe);
-> >>>>
-> >>>>  	/* Store fully initialized *tbl (may be external) in PE */
-> >>>>-	pe->table_group.tables[0] =3D *tbl;
-> >>>>+	pe->table_group.tables[num] =3D *tbl;
-> >>>
-> >>>I'm a bit confused by this whole set_window thing.  Is the idea that
-> >>>with multiple groups in a container you have multiple table_group s
-> >>>each with different copies of the iommu_table structures, but pointing
-> >>>to the same actual TCE entries (it_base)?
-> >>
-> >>Yes.
-> >>
-> >>>It seems to me not terribly
-> >>>obvious when you "create" a table and when you "set" a window.
-> >>
-> >>
-> >>A table is not attached anywhere until its address is programmed (in
-> >>set_window()) to the hardware, it is just a table in memory. For
-> >>POWER8/IODA2, I create a table before I attach any group to a container,
-> >>then I program this table to every attached container, right now it is =
-done
-> >>in container's attach_group(). So later we can hotplug any host PCI dev=
-ice
-> >>to a container - it will program same TCE table to every new group in t=
-he
-> >>container.
-> >
-> >So you "create" once, then "set" it to one or more table_groups?  It
-> >seems odd that "create" is a table_group callback in that case.
+On Thu, Apr 30, 2015 at 06:25:25PM +1000, Paul Mackerras wrote:
+> On Thu, Apr 30, 2015 at 04:34:55PM +1000, David Gibson wrote:
+> > On Sat, Apr 25, 2015 at 10:14:52PM +1000, Alexey Kardashevskiy wrote:
+> > > We are adding support for DMA memory pre-registration to be used in
+> > > conjunction with VFIO. The idea is that the userspace which is going =
+to
+> > > run a guest may want to pre-register a user space memory region so
+> > > it all gets pinned once and never goes away. Having this done,
+> > > a hypervisor will not have to pin/unpin pages on every DMA map/unmap
+> > > request. This is going to help with multiple pinning of the same memo=
+ry
+> > > and in-kernel acceleration of DMA requests.
+> > >=20
+> > > This adds a list of memory regions to mm_context_t. Each region consi=
+sts
+> > > of a header and a list of physical addresses. This adds API to:
+> > > 1. register/unregister memory regions;
+> > > 2. do final cleanup (which puts all pre-registered pages);
+> > > 3. do userspace to physical address translation;
+> > > 4. manage a mapped pages counter; when it is zero, it is safe to
+> > > unregister the region.
+> > >=20
+> > > Multiple registration of the same region is allowed, kref is used to
+> > > track the number of registrations.
+> >=20
+> > [snip]
+> > > +long mm_iommu_alloc(unsigned long ua, unsigned long entries,
+> > > +		struct mm_iommu_table_group_mem_t **pmem)
+> > > +{
+> > > +	struct mm_iommu_table_group_mem_t *mem;
+> > > +	long i, j;
+> > > +	struct page *page =3D NULL;
+> > > +
+> > > +	list_for_each_entry_rcu(mem, &current->mm->context.iommu_group_mem_=
+list,
+> > > +			next) {
+> > > +		if ((mem->ua =3D=3D ua) && (mem->entries =3D=3D entries))
+> > > +			return -EBUSY;
+> > > +
+> > > +		/* Overlap? */
+> > > +		if ((mem->ua < (ua + (entries << PAGE_SHIFT))) &&
+> > > +				(ua < (mem->ua + (mem->entries << PAGE_SHIFT))))
+> > > +			return -EINVAL;
+> > > +	}
+> > > +
+> > > +	mem =3D kzalloc(sizeof(*mem), GFP_KERNEL);
+> > > +	if (!mem)
+> > > +		return -ENOMEM;
+> > > +
+> > > +	mem->hpas =3D vzalloc(entries * sizeof(mem->hpas[0]));
+> > > +	if (!mem->hpas) {
+> > > +		kfree(mem);
+> > > +		return -ENOMEM;
+> > > +	}
+> >=20
+> > So, I've thought more about this and I'm really confused as to what
+> > this is supposed to be accomplishing.
+> >=20
+> > I see that you need to keep track of what regions are registered, so
+> > you don't double lock or unlock, but I don't see what the point of
+> > actualy storing the translations in hpas is.
+> >=20
+> > I had assumed it was so that you could later on get to the
+> > translations in real mode when you do in-kernel acceleration.  But
+> > that doesn't make sense, because the array is vmalloc()ed, so can't be
+> > accessed in real mode anyway.
 >=20
->=20
-> Where else could it be? ppc_md? We are getting rid of these. Some global
-> function? We do not want VFIO to know about this. I run out of ideas here.
+> We can access vmalloc'd arrays in real mode using real_vmalloc_addr().
 
-Yeah, I guess it has to be in table_group, despite the oddness.  I
-guess the point is that it's the first group that determines the type
-of IOMMU you're using for this container.  IIRC you already check on
-set_window that any additional groups have a compatible
-(i.e. identical) IOMMU.
+Ah, ok.
+
+> > I can't think of a circumstance in which you can use hpas where you
+> > couldn't just walk the page tables anyway.
+>=20
+> The problem with walking the page tables is that there is no guarantee
+> that the page you find that way is the page that was returned by the
+> gup_fast() we did earlier.  Storing the hpas means that we know for
+> sure that the page we're doing DMA to is one that we have an elevated
+> page count on.
+>=20
+> Also, there are various points where a Linux PTE is made temporarily
+> invalid for a short time.  If we happened to do a H_PUT_TCE on one cpu
+> while another cpu was doing that, we'd get a spurious failure returned
+> by the H_PUT_TCE.
+
+I think we want this explanation in the commit message.  Anr/or in a
+comment somewhere, I'm not sure.
 
 --=20
 David Gibson			| I'll have my music baroque, and my code
@@ -268,25 +130,25 @@ david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
 				| _way_ _around_!
 http://www.ozlabs.org/~dgibson
 
---J+eNKFoVC4T1DV3f
+--EVh9lyqKgK19OcEf
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBAgAGBQJVQvTZAAoJEGw4ysog2bOS6BYQAIgK2jJg2ssz5bH9KxBr7jnr
-Hr5SJ3MaLsvZ+tARMjHSvlJcZcmGS5Ypm7C0g0tl315sit0sTYzeCwOMWfZ9BSB0
-EjfPh+0E/DSLaU1l0owp3oqRvvAXpOA19bLSKxHQpJjjDWjVHGEWoRpFxfzaDIiH
-tUF8PKmLJr2LMGYDelGqgLPyetAnXpMZmrab74lSTe1exUIuHtRvuKQGZx+tiDW4
-LQAo7caGMeggDzHblplGoSCi50u3T59TRISPXg3d+gEdukWY/dmG7QeJhDrpunUY
-0/FQ3+bR2YLmYy012wtqzNfEw9JUvsJl4qZTvib5ceH0VBRQC1k1l2qc1RuK2obB
-VjyiH9ZcixKNePqGiFmBJreYTPdCvsa9GkS5sL8hSNo0V6QXmmhWtRFqsAZfXbBU
-GlttljgABx+pi626lYSRO1EU0c96m0IvUOAbk3CO4HnDQItdJrIggDgywsa14mDO
-jIcYUiiwkF+Vd3UnG9VOXlgKv2RwkYGi3dKiLtU0ZvA/vSimXXMXxCCXaJ+ahQF4
-Lp5GMYD/qmf4O/y4Ijd8QMW30MZ1kenZboy5BOqJqV7ZnswDm4v8+iqcuMay+T+G
-+lcAxs4l7BVle875Dbc5ySRVFTvx0Slu2xEREZbIJyXZcDwcS/5i0mkFOaLK08Gj
-XziaoOdw4/OKr294cjIU
-=F3Sm
+iQIcBAEBAgAGBQJVQvWJAAoJEGw4ysog2bOSpakP/2IOLF57JwJN3EGsv/BMKTll
+DM46DVph7O8+GusMz2uoolRfmnYcifY+lpYv/NJ+sfQ1ByZN6QKFgEpOuSdq4FC3
+PbckNVLeTABRBIHfrV4np4Q1ur51KGE7pG9wj+iuz82Cd9Pg3+yJsgFQvk7rpu/7
+WShDjHS75Z2Yc3N4JuWDunmzOIljKsYsDm/5FMNwDbp1Atx/TFtalT4LXRNc1605
+onKV61YjatywCKbI2ILuLyPoLFsZVF/ZtZK8FLJiQ6LkTZ14lr9a17oi9emfu7Pk
+d43HyE+6eK3vAKSdvmRFreXwlwrxegZPyM2Y/bDmH4Wwgj1smts7mrRzqVnSGxgy
+brAfq0SYmym35NejMu/2u/T13XBEQjIVaMXgH0w9htu2vvJLVSYf+6StB/+Wy1f/
+ynpb/tpL5kNLyztK8Un/VLFCkYevdyY7L7kSAaCkOmeiQTAyWInGTGxCQAlh8eOs
+JeO4Qu5k/u75A0JeGOFyJS7jplHroyoqNhhvfzlgl86KutbFhFP9ydOz3XW5Px1k
++G8W3hw9Dw31or2G3HbKMw1Y1Kq+/ya82Kf9w98pJ4SC8ABBHml36NeV5XThTQ+v
+CvGKYkb8qS0kxVzsEREPyOlqjXBrNBJfLb1YLjMEPXyC2PYgZLa8GsfXQ+CWbmZy
+0VtYid2/+tHG6ixsZZfv
+=o3fh
 -----END PGP SIGNATURE-----
 
---J+eNKFoVC4T1DV3f--
+--EVh9lyqKgK19OcEf--
