@@ -1,28 +1,29 @@
-Return-Path: <broonie@sirena.org.uk>
-Received: from mezzanine.sirena.org.uk (mezzanine.sirena.org.uk
- [IPv6:2400:8900::f03c:91ff:fedb:4f4])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <robherring2@gmail.com>
+Received: from mail-yk0-x234.google.com (mail-yk0-x234.google.com
+ [IPv6:2607:f8b0:4002:c07::234])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 67A991A0D4C
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 May 2015 02:54:15 +1000 (AEST)
-Date: Fri, 1 May 2015 17:54:05 +0100
-From: Mark Brown <broonie@kernel.org>
-To: Krzysztof Kozlowski <k.kozlowski.k@gmail.com>
-Message-ID: <20150501165405.GP22845@sirena.org.uk>
-References: <1430496014-32309-1-git-send-email-k.kozlowski.k@gmail.com>
- <1430496014-32309-4-git-send-email-k.kozlowski.k@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8772C1A0D6C
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 May 2015 04:47:07 +1000 (AEST)
+Received: by ykft189 with SMTP id t189so20131774ykf.1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 01 May 2015 11:47:04 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="BktmtKUJXfGkDXG3"
-In-Reply-To: <1430496014-32309-4-git-send-email-k.kozlowski.k@gmail.com>
-Subject: Re: [PATCH 4/4] ASoC: samsung: Constify platform_device_id
-Cc: alsa-devel@alsa-project.org, linux-samsung-soc@vger.kernel.org,
- Xiubo Li <Xiubo.Lee@gmail.com>, Takashi Iwai <tiwai@suse.de>,
- linux-kernel@vger.kernel.org, Timur Tabi <timur@tabi.org>,
- Liam Girdwood <lgirdwood@gmail.com>, Nicolin Chen <nicoleotsuka@gmail.com>,
- Sangbeom Kim <sbkim73@samsung.com>, Kukjin Kim <kgene@kernel.org>,
- Jaroslav Kysela <perex@perex.cz>, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org
+In-Reply-To: <1430493730.7979.58.camel@kernel.crashing.org>
+References: <1430460188-31343-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <1430460188-31343-20-git-send-email-gwshan@linux.vnet.ibm.com>
+ <CAL_JsqKEUevxSe0Q=pGdsWOiT+TW9iAnCsAWuuqOYj3ZPOG7dg@mail.gmail.com>
+ <1430493730.7979.58.camel@kernel.crashing.org>
+From: Rob Herring <robherring2@gmail.com>
+Date: Fri, 1 May 2015 13:46:44 -0500
+Message-ID: <CAL_JsqLrBSB4y_0j+i=kXbDA08HO23JuYjJGHR9nhsPnMC_Zyg@mail.gmail.com>
+Subject: Re: [PATCH v4 19/21] drivers/of: Support adding sub-tree
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Content-Type: text/plain; charset=UTF-8
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>, Grant Likely <grant.likely@linaro.org>,
+ Bjorn Helgaas <bhelgaas@google.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,31 +33,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Fri, May 1, 2015 at 10:22 AM, Benjamin Herrenschmidt
+<benh@kernel.crashing.org> wrote:
+> On Fri, 2015-05-01 at 07:54 -0500, Rob Herring wrote:
+>
+>> The difference seems to be whether you allocate space or just point to
+>> the FDT for various strings/data. Is that right?
+>>
+>> >    * of_fdt_add_subtree() is the introduced API to do the work.
+>>
+>> Have you looked at overlays and if so why do they not work for your purposes?
+>>
+>> Why do you need to do this with the flattened tree?
+>
+> The basic idea I asked Gavin to implement is that since the FW needs to
+> provide a bunch of DT updates to Linux at runtime in the form of new
+> nodes below an existing one, rather than doing it via some new/custom
+> format, instead, have it send a bit of FDT blob to expand under an
+> existing node.
 
---BktmtKUJXfGkDXG3
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Overlay = an FDT blob to graft into a live running system. Sounds like
+the same thing.
 
-On Sat, May 02, 2015 at 01:00:14AM +0900, Krzysztof Kozlowski wrote:
-> The platform_device_id is not modified by the driver and core uses it as
-> const.
+> As for the details of Gavin implementation, I haven't looked at it in
+> details yet so there might be issues there, however I don't know what
+> you mean by "overlays", any pointer ?
 
-Applied, thanks.
+CONFIG_OF_OVERLAY
 
---BktmtKUJXfGkDXG3
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+http://events.linuxfoundation.org/sites/events/files/slides/dynamic-dt-keynote-v3.pdf
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBCAAGBQJVQ6+sAAoJECTWi3JdVIfQPkUH/AmZWavLaSNSnNx6XX1Q1hns
-FFXoaPjZK6LQ3tRtPlyxj9qXjvbyOnKoNWJX04AU8/Pkq9ca/0G9fpTpSGvbCpLk
-ymBImJHtPLP+JE6O3DKUuJ0/6V/ROVC1tyO7XRdjDUZRArcFriYV6H8FKa06Kxz0
-r7SkAVIafPXd3AjIUB6o66PqsLwNbaNV2Rk0V2LQlgO/ChME3wHVlkAinDkJrGcO
-Hgo4ROodt4LiYlQT7crdXG2pVB0L2ncF6QTeeTVfi2T/XgMVNJ9CIp7z+QZUb+Fu
-h7AVD1vc3+Q5pckYZxjnmnNhfOKVg1bCgj8ASEWOgvS8+RhU9uWA0p8XycQCMiY=
-=nag6
------END PGP SIGNATURE-----
-
---BktmtKUJXfGkDXG3--
+Rob
