@@ -1,22 +1,25 @@
-Return-Path: <akinobu.mita@gmail.com>
-Received: from mail-pa0-x22f.google.com (mail-pa0-x22f.google.com
- [IPv6:2607:f8b0:400e:c03::22f])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id ED42E1A0D1F
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 May 2015 23:57:24 +1000 (AEST)
-Received: by pacwv17 with SMTP id wv17so91701735pac.0
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 01 May 2015 06:57:22 -0700 (PDT)
-From: Akinobu Mita <akinobu.mita@gmail.com>
-To: linux-kernel@vger.kernel.org,
-	akpm@linux-foundation.org
-Subject: [PATCH v2 08/10] powerpc: use for_each_sg()
-Date: Fri,  1 May 2015 22:56:41 +0900
-Message-Id: <1430488603-11055-8-git-send-email-akinobu.mita@gmail.com>
-In-Reply-To: <1430488603-11055-1-git-send-email-akinobu.mita@gmail.com>
-References: <1430488603-11055-1-git-send-email-akinobu.mita@gmail.com>
-Cc: linux-arch@vger.kernel.org, Akinobu Mita <akinobu.mita@gmail.com>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4AE321A0D1F
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 May 2015 01:23:01 +1000 (AEST)
+Message-ID: <1430493730.7979.58.camel@kernel.crashing.org>
+Subject: Re: [PATCH v4 19/21] drivers/of: Support adding sub-tree
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Rob Herring <robherring2@gmail.com>
+Date: Sat, 02 May 2015 01:22:10 +1000
+In-Reply-To: <CAL_JsqKEUevxSe0Q=pGdsWOiT+TW9iAnCsAWuuqOYj3ZPOG7dg@mail.gmail.com>
+References: <1430460188-31343-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <1430460188-31343-20-git-send-email-gwshan@linux.vnet.ibm.com>
+ <CAL_JsqKEUevxSe0Q=pGdsWOiT+TW9iAnCsAWuuqOYj3ZPOG7dg@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>, Grant Likely <grant.likely@linaro.org>,
+ Bjorn Helgaas <bhelgaas@google.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,64 +29,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This replaces the plain loop over the sglist array with for_each_sg()
-macro which consists of sg_next() function calls.  Since powerpc does
-select ARCH_HAS_SG_CHAIN, it is necessary to use for_each_sg() in
-order to loop over each sg element.  This also help find problems with
-drivers that do not properly initialize their sg tables when
-CONFIG_DEBUG_SG is enabled.
+On Fri, 2015-05-01 at 07:54 -0500, Rob Herring wrote:
 
-Signed-off-by: Akinobu Mita <akinobu.mita@gmail.com>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: linux-arch@vger.kernel.org
----
-* New patch from v2
+> The difference seems to be whether you allocate space or just point to
+> the FDT for various strings/data. Is that right?
+> 
+> >    * of_fdt_add_subtree() is the introduced API to do the work.
+> 
+> Have you looked at overlays and if so why do they not work for your purposes?
+> 
+> Why do you need to do this with the flattened tree?
 
- arch/powerpc/kernel/vio.c | 10 +++++-----
- 1 file changed, 5 insertions(+), 5 deletions(-)
+The basic idea I asked Gavin to implement is that since the FW needs to
+provide a bunch of DT updates to Linux at runtime in the form of new
+nodes below an existing one, rather than doing it via some new/custom
+format, instead, have it send a bit of FDT blob to expand under an
+existing node.
 
-diff --git a/arch/powerpc/kernel/vio.c b/arch/powerpc/kernel/vio.c
-index 5bfdab9..b7a6844 100644
---- a/arch/powerpc/kernel/vio.c
-+++ b/arch/powerpc/kernel/vio.c
-@@ -557,11 +557,11 @@ static int vio_dma_iommu_map_sg(struct device *dev, struct scatterlist *sglist,
- 	struct vio_dev *viodev = to_vio_dev(dev);
- 	struct iommu_table *tbl;
- 	struct scatterlist *sgl;
--	int ret, count = 0;
-+	int ret, count;
- 	size_t alloc_size = 0;
- 
- 	tbl = get_iommu_table_base(dev);
--	for (sgl = sglist; count < nelems; count++, sgl++)
-+	for_each_sg(sglist, sgl, nelems, count)
- 		alloc_size += roundup(sgl->length, IOMMU_PAGE_SIZE(tbl));
- 
- 	if (vio_cmo_alloc(viodev, alloc_size)) {
-@@ -577,7 +577,7 @@ static int vio_dma_iommu_map_sg(struct device *dev, struct scatterlist *sglist,
- 		return ret;
- 	}
- 
--	for (sgl = sglist, count = 0; count < ret; count++, sgl++)
-+	for_each_sg(sglist, sgl, ret, count)
- 		alloc_size -= roundup(sgl->dma_length, IOMMU_PAGE_SIZE(tbl));
- 	if (alloc_size)
- 		vio_cmo_dealloc(viodev, alloc_size);
-@@ -594,10 +594,10 @@ static void vio_dma_iommu_unmap_sg(struct device *dev,
- 	struct iommu_table *tbl;
- 	struct scatterlist *sgl;
- 	size_t alloc_size = 0;
--	int count = 0;
-+	int count;
- 
- 	tbl = get_iommu_table_base(dev);
--	for (sgl = sglist; count < nelems; count++, sgl++)
-+	for_each_sg(sglist, sgl, nelems, count)
- 		alloc_size += roundup(sgl->dma_length, IOMMU_PAGE_SIZE(tbl));
- 
- 	dma_iommu_ops.unmap_sg(dev, sglist, nelems, direction, attrs);
--- 
-1.9.1
+As for the details of Gavin implementation, I haven't looked at it in
+details yet so there might be issues there, however I don't know what
+you mean by "overlays", any pointer ?
+
+Cheers,
+Ben.
