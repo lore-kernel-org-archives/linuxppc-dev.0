@@ -1,17 +1,28 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pa0-f42.google.com (mail-pa0-f42.google.com
+ [209.85.220.42])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 98F241A0D5C
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 May 2015 16:50:35 +1000 (AEST)
-Message-ID: <1430463034.11970.4.camel@ellerman.id.au>
-Subject: [PATCH] powernv/powerpc: restore non-volatile CRs after nap
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Date: Fri, 01 May 2015 16:50:34 +1000
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Paul Mackerras <paulus@samba.org>, sam.bobroff@au1.ibm.com
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0E03F1A0E6D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 May 2015 16:53:17 +1000 (AEST)
+Received: by pabsx10 with SMTP id sx10so83252495pab.3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Apr 2015 23:53:15 -0700 (PDT)
+Message-ID: <554322D4.7070508@ozlabs.ru>
+Date: Fri, 01 May 2015 16:53:08 +1000
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+MIME-Version: 1.0
+To: David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: [PATCH kernel v9 27/32] powerpc/iommu/ioda2: Add get_table_size()
+ to calculate the size of future table
+References: <1429964096-11524-1-git-send-email-aik@ozlabs.ru>
+ <1429964096-11524-28-git-send-email-aik@ozlabs.ru>
+ <20150429064029.GX32589@voom.redhat.com> <5542FCD2.9000601@ozlabs.ru>
+ <20150501051247.GP24886@voom.redhat.com>
+In-Reply-To: <20150501051247.GP24886@voom.redhat.com>
+Content-Type: text/plain; charset=koi8-r; format=flowed
+Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,61 +32,159 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Sam Bobroff <sam.bobroff@au1.ibm.com>
+On 05/01/2015 03:12 PM, David Gibson wrote:
+> On Fri, May 01, 2015 at 02:10:58PM +1000, Alexey Kardashevskiy wrote:
+>> On 04/29/2015 04:40 PM, David Gibson wrote:
+>>> On Sat, Apr 25, 2015 at 10:14:51PM +1000, Alexey Kardashevskiy wrote:
+>>>> This adds a way for the IOMMU user to know how much a new table will
+>>>> use so it can be accounted in the locked_vm limit before allocation
+>>>> happens.
+>>>>
+>>>> This stores the allocated table size in pnv_pci_create_table()
+>>>> so the locked_vm counter can be updated correctly when a table is
+>>>> being disposed.
+>>>>
+>>>> This defines an iommu_table_group_ops callback to let VFIO know
+>>>> how much memory will be locked if a table is created.
+>>>>
+>>>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+>>>> ---
+>>>> Changes:
+>>>> v9:
+>>>> * reimplemented the whole patch
+>>>> ---
+>>>>   arch/powerpc/include/asm/iommu.h          |  5 +++++
+>>>>   arch/powerpc/platforms/powernv/pci-ioda.c | 14 ++++++++++++
+>>>>   arch/powerpc/platforms/powernv/pci.c      | 36 +++++++++++++++++++++++++++++++
+>>>>   arch/powerpc/platforms/powernv/pci.h      |  2 ++
+>>>>   4 files changed, 57 insertions(+)
+>>>>
+>>>> diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
+>>>> index 1472de3..9844c106 100644
+>>>> --- a/arch/powerpc/include/asm/iommu.h
+>>>> +++ b/arch/powerpc/include/asm/iommu.h
+>>>> @@ -99,6 +99,7 @@ struct iommu_table {
+>>>>   	unsigned long  it_size;      /* Size of iommu table in entries */
+>>>>   	unsigned long  it_indirect_levels;
+>>>>   	unsigned long  it_level_size;
+>>>> +	unsigned long  it_allocated_size;
+>>>>   	unsigned long  it_offset;    /* Offset into global table */
+>>>>   	unsigned long  it_base;      /* mapped address of tce table */
+>>>>   	unsigned long  it_index;     /* which iommu table this is */
+>>>> @@ -155,6 +156,10 @@ extern struct iommu_table *iommu_init_table(struct iommu_table * tbl,
+>>>>   struct iommu_table_group;
+>>>>
+>>>>   struct iommu_table_group_ops {
+>>>> +	unsigned long (*get_table_size)(
+>>>> +			__u32 page_shift,
+>>>> +			__u64 window_size,
+>>>> +			__u32 levels);
+>>>>   	long (*create_table)(struct iommu_table_group *table_group,
+>>>>   			int num,
+>>>>   			__u32 page_shift,
+>>>> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+>>>> index e0be556..7f548b4 100644
+>>>> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+>>>> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+>>>> @@ -2062,6 +2062,18 @@ static void pnv_pci_ioda2_setup_bypass_pe(struct pnv_phb *phb,
+>>>>   }
+>>>>
+>>>>   #ifdef CONFIG_IOMMU_API
+>>>> +static unsigned long pnv_pci_ioda2_get_table_size(__u32 page_shift,
+>>>> +		__u64 window_size, __u32 levels)
+>>>> +{
+>>>> +	unsigned long ret = pnv_get_table_size(page_shift, window_size, levels);
+>>>> +
+>>>> +	if (!ret)
+>>>> +		return ret;
+>>>> +
+>>>> +	/* Add size of it_userspace */
+>>>> +	return ret + (window_size >> page_shift) * sizeof(unsigned long);
+>>>
+>>> This doesn't make much sense.  The userspace view can't possibly be a
+>>> property of the specific low-level IOMMU model.
+>>
+>>
+>> This it_userspace thing is all about memory preregistration.
+>>
+>> I need some way to track how many actual mappings the
+>> mm_iommu_table_group_mem_t has in order to decide whether to allow
+>> unregistering or not.
+>>
+>> When I clear TCE, I can read the old value which is host physical address
+>> which I cannot use to find the preregistered region and adjust the mappings
+>> counter; I can only use userspace addresses for this (not even guest
+>> physical addresses as it is VFIO and probably no KVM).
+>>
+>> So I have to keep userspace addresses somewhere, one per IOMMU page, and the
+>> iommu_table seems a natural place for this.
+>
+> Well.. sort of.  But as noted elsewhere this pulls VFIO specific
+> constraints into a platform code structure.  And whether you get this
+> table depends on the platform IOMMU type rather than on what VFIO
+> wants to do with it, which doesn't make sense.
+>
+> What might make more sense is an opaque pointer io iommu_table for use
+> by the table "owner" (in the take_ownership sense).  The pointer would
+> be stored in iommu_table, but VFIO is responsible for populating and
+> managing its contents.
+>
+> Or you could just put the userspace mappings in the container.
+> Although you might want a different data structure in that case.
 
-Patches 7cba160ad "powernv/cpuidle: Redesign idle states management"
-and 77b54e9f2 "powernv/powerpc: Add winkle support for offline cpus"
-use non-volatile condition registers (cr2, cr3 and cr4) early in the system
-reset interrupt handler (system_reset_pSeries()) before it has been determined
-if state loss has occurred. If state loss has not occurred, control returns via
-the power7_wakeup_noloss() path which does not restore those condition
-registers, leaving them corrupted.
+Nope. I need this table in in-kernel acceleration to update the mappings 
+counter per mm_iommu_table_group_mem_t. In KVM's real mode handlers, I only 
+have IOMMU tables, not containers or groups. QEMU creates a guest view of 
+the table (KVM_CREATE_SPAPR_TCE) specifying a LIOBN, and then attaches TCE 
+tables to it via set of ioctls (one per IOMMU group) to VFIO KVM device.
 
-Fix this by restoring the condition registers in the power7_wakeup_noloss()
-case.
+So if I call it it_opaque (instead of it_userspace), I will still need a 
+common place (visible to VFIO and PowerKVM) for this to put:
+#define IOMMU_TABLE_USERSPACE_ENTRY(tbl, entry)
 
-This is apparent when running a KVM guest on hardware that does not
-support winkle or sleep and the guest makes use of secondary threads. In
-practice this means Power7 machines, though some early unreleased Power8
-machines may also be susceptible.
+So far this place was arch/powerpc/include/asm/iommu.h and the iommu_table 
+struct.
 
-The secondary CPUs are taken off line before the guest is started and
-they call pnv_smp_cpu_kill_self(). This checks support for sleep
-states (in this case there is no support) and power7_nap() is called.
 
-When the CPU is woken, power7_nap() returns and because the CPU is
-still off line, the main while loop executes again. The sleep states
-support test is executed again, but because the tested values cannot
-have changed, the compiler has optimized the test away and instead we
-rely on the result of the first test, which has been left in cr3
-and/or cr4. With the result overwritten, the wrong branch is taken and
-power7_winkle() is called on a CPU that does not support it, leading
-to it stalling.
+> The other thing to bear in mind is that registered regions are likely
+> to be large contiguous blocks in user addresses, though obviously not
+> contiguous in physical addr.  So you might be able to compaticfy this
+> information by storing it as a list of variable length blocks in
+> userspace address space, rather than a per-page address..
 
-Fixes: 7cba160ad789 ("powernv/cpuidle: Redesign idle states management")
-Fixes: 77b54e9f213f ("powernv/powerpc: Add winkle support for offline cpus")
-[mpe: Massage change log a bit more]
-Signed-off-by: Sam Bobroff <sam.bobroff@au1.ibm.com>
----
+It is 8 bytes per system page - 8/65536 = 0.00012 (or 26MB for 200GB guest) 
+- very little overhead.
 
- arch/powerpc/kernel/idle_power7.S |    2 ++
- 1 file changed, 2 insertions(+)
 
-diff --git a/arch/powerpc/kernel/idle_power7.S b/arch/powerpc/kernel/idle_power7.S
-index eeaa0d5..ccde8f0 100644
---- a/arch/powerpc/kernel/idle_power7.S
-+++ b/arch/powerpc/kernel/idle_power7.S
-@@ -501,9 +501,11 @@ BEGIN_FTR_SECTION
- 	CHECK_HMI_INTERRUPT
- END_FTR_SECTION_IFSET(CPU_FTR_HVMODE)
- 	ld	r1,PACAR1(r13)
-+	ld	r6,_CCR(r1)
- 	ld	r4,_MSR(r1)
- 	ld	r5,_NIP(r1)
- 	addi	r1,r1,INT_FRAME_SIZE
-+	mtcr	r6
- 	mtspr	SPRN_SRR1,r4
- 	mtspr	SPRN_SRR0,r5
- 	rfid
+> But.. isn't there a bigger problem here.  As Paulus was pointing out,
+> there's nothing guaranteeing the page tables continue to contain the
+> same page as was there at gup() time.
+
+This can happen if the userspace remaps memory which it registered/mapped 
+for DMA via VFIO, no? If so, then the userspace just should not do this, it 
+is DMA, it cannot be moved like this. What am I missing here?
+
+
+> What's going to happen if you REGISTER a memory region, then mremap()
+> over it?
+
+The registered pages will remain pinned and PUT_TCE will use that region 
+for translation (and this will fail as the userspace addresses changed).
+
+I do not see how it is different from the situation when the userspace 
+mapped a page and mremap()ed it while it is DMA-mapped.
+
+> Then attempt to PUT_TCE a page in the region? Or what if you
+> mremap() it to someplace else then try to PUT_TCE a page there?
+
+This will fail - a new userspace address has to be preregistered.
+
+> Or REGISTER it again in its new location?
+
+It will be pinned twice + some memory overhead to store the same host 
+physical address(es) twice.
+
+
+
 -- 
-1.7.10.4
+Alexey
