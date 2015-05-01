@@ -1,13 +1,13 @@
 Return-Path: <stripath@apm.com>
 Received: from denmail01.amcc.com (unknown [192.195.68.30])
- by lists.ozlabs.org (Postfix) with ESMTP id EF4F81A11A3
+ by lists.ozlabs.org (Postfix) with ESMTP id 016091A118E
  for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 May 2015 14:55:32 +1000 (AEST)
 From: Suman Tripathi <stripathi@apm.com>
 To: chris@printf.net, anton@enomsg.org, arnd@arndb.de, michal.simek@xilinx.com
-Subject: [PATCH v3 1/3] arm64: dts: Add the arasan sdhc nodes in
- apm-storm.dtsi.
-Date: Fri,  1 May 2015 10:24:10 +0530
-Message-Id: <1430456052-8888-2-git-send-email-stripathi@apm.com>
+Subject: [PATCH v3 2/3] mmc: host: arasan: Add the support for
+ sdhci-arasan4.9a in sdhci-of-arasan.c.
+Date: Fri,  1 May 2015 10:24:11 +0530
+Message-Id: <1430456052-8888-3-git-send-email-stripathi@apm.com>
 In-Reply-To: <1430456052-8888-1-git-send-email-stripathi@apm.com>
 References: <1430456052-8888-1-git-send-email-stripathi@apm.com>
 Cc: devicetree@vger.kernel.org, mlangsdo@redhat.com,
@@ -23,88 +23,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch adds the arasan sdhc nodes to reuse the of-arasan
-driver for APM X-Gene SoC.
+This patch adds the quirks and compatible string in sdhci-of-arasan.c
+to support sdhci-arasan4.9a version of controller.
 
 Signed-off-by: Suman Tripathi <stripathi@apm.com>
 ---
- arch/arm64/boot/dts/apm-mustang.dts |  4 ++++
- arch/arm64/boot/dts/apm-storm.dtsi  | 44 +++++++++++++++++++++++++++++++++++++
- 2 files changed, 48 insertions(+)
+ drivers/mmc/host/sdhci-of-arasan.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
 
-diff --git a/arch/arm64/boot/dts/apm-mustang.dts b/arch/arm64/boot/dts/apm-mustang.dts
-index 8eb6d94..d0e52a9 100644
---- a/arch/arm64/boot/dts/apm-mustang.dts
-+++ b/arch/arm64/boot/dts/apm-mustang.dts
-@@ -44,3 +44,7 @@
- &xgenet {
- 	status = "ok";
+diff --git a/drivers/mmc/host/sdhci-of-arasan.c b/drivers/mmc/host/sdhci-of-arasan.c
+index 981d66e..92a4222 100644
+--- a/drivers/mmc/host/sdhci-of-arasan.c
++++ b/drivers/mmc/host/sdhci-of-arasan.c
+@@ -20,6 +20,7 @@
+  */
+
+ #include <linux/module.h>
++#include <linux/of_device.h>
+ #include "sdhci-pltfm.h"
+
+ #define SDHCI_ARASAN_CLK_CTRL_OFFSET	0x2c
+@@ -169,6 +170,11 @@ static int sdhci_arasan_probe(struct platform_device *pdev)
+ 		goto clk_disable_all;
+ 	}
+
++	if (of_device_is_compatible(pdev->dev.of_node, "arasan,sdhci-4.9a")) {
++		host->quirks |= SDHCI_QUIRK_NO_HISPD_BIT;
++		host->quirks2 |= SDHCI_QUIRK2_HOST_NO_CMD23;
++	}
++
+ 	sdhci_get_of_property(pdev);
+ 	pltfm_host = sdhci_priv(host);
+ 	pltfm_host->priv = sdhci_arasan;
+@@ -206,6 +212,7 @@ static int sdhci_arasan_remove(struct platform_device *pdev)
+
+ static const struct of_device_id sdhci_arasan_of_match[] = {
+ 	{ .compatible = "arasan,sdhci-8.9a" },
++	{ .compatible = "arasan,sdhci-4.9a" },
+ 	{ }
  };
-+
-+&sdhc0 {
-+	status = "ok";
-+};
-diff --git a/arch/arm64/boot/dts/apm-storm.dtsi b/arch/arm64/boot/dts/apm-storm.dtsi
-index 87d3205..d6c2216 100644
---- a/arch/arm64/boot/dts/apm-storm.dtsi
-+++ b/arch/arm64/boot/dts/apm-storm.dtsi
-@@ -144,6 +144,40 @@
- 				clock-output-names = "socplldiv2";
- 			};
-
-+			ahbclk: ahbclk@1f2ac000 {
-+				compatible = "apm,xgene-device-clock";
-+				#clock-cells = <1>;
-+				clocks = <&socplldiv2 0>;
-+				reg = <0x0 0x1f2ac000 0x0 0x1000
-+					0x0 0x17000000 0x0 0x2000>;
-+				reg-names = "csr-reg", "div-reg";
-+				csr-offset = <0x0>;
-+				csr-mask = <0x1>;
-+				enable-offset = <0x8>;
-+				enable-mask = <0x1>;
-+				divider-offset = <0x164>;
-+				divider-width = <0x5>;
-+				divider-shift = <0x0>;
-+				clock-output-names = "ahbclk";
-+			};
-+
-+			sdioclk: sdioclk@1f2ac000 {
-+				compatible = "apm,xgene-device-clock";
-+				#clock-cells = <1>;
-+				clocks = <&socplldiv2 0>;
-+				reg = <0x0 0x1f2ac000 0x0 0x1000
-+					0x0 0x17000000 0x0 0x2000>;
-+				reg-names = "csr-reg", "div-reg";
-+				csr-offset = <0x0>;
-+				csr-mask = <0x2>;
-+				enable-offset = <0x8>;
-+				enable-mask = <0x2>;
-+				divider-offset = <0x178>;
-+				divider-width = <0x8>;
-+				divider-shift = <0x0>;
-+				clock-output-names = "sdioclk";
-+			};
-+
- 			qmlclk: qmlclk {
- 				compatible = "apm,xgene-device-clock";
- 				#clock-cells = <1>;
-@@ -503,6 +537,16 @@
- 			interrupts = <0x0 0x4f 0x4>;
- 		};
-
-+		sdhc0: sdhc@1c000000 {
-+			device_type = "sdhc";
-+			compatible = "arasan,sdhci-8.9a", "arasan,sdhci-4.9a";
-+			reg = <0x0 0x1c000000 0x0 0x100>;
-+			interrupts = <0x0 0x49 0x4>;
-+			dma-coherent;
-+			clock-names = "clk_xin", "clk_ahb";
-+			clocks = <&sdioclk 0>, <&ahbclk 0>;
-+		};
-+
- 		phy1: phy@1f21a000 {
- 			compatible = "apm,xgene-phy";
- 			reg = <0x0 0x1f21a000 0x0 0x100>;
+ MODULE_DEVICE_TABLE(of, sdhci_arasan_of_match);
 --
 1.8.2.1
