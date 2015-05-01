@@ -1,27 +1,26 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pd0-f179.google.com (mail-pd0-f179.google.com
- [209.85.192.179])
+Return-Path: <robherring2@gmail.com>
+Received: from mail-yk0-x233.google.com (mail-yk0-x233.google.com
+ [IPv6:2607:f8b0:4002:c07::233])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BB5881A0D1F
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 May 2015 21:26:58 +1000 (AEST)
-Received: by pdbqd1 with SMTP id qd1so89955118pdb.2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 01 May 2015 04:26:57 -0700 (PDT)
-Message-ID: <554362F8.105@ozlabs.ru>
-Date: Fri, 01 May 2015 21:26:48 +1000
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6F1961A0D1F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 May 2015 22:54:26 +1000 (AEST)
+Received: by ykft189 with SMTP id t189so18495921ykf.1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 01 May 2015 05:54:24 -0700 (PDT)
 MIME-Version: 1.0
-To: David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: [PATCH kernel v9 28/32] powerpc/mmu: Add userspace-to-physical
- addresses translation cache
-References: <1429964096-11524-1-git-send-email-aik@ozlabs.ru>
- <1429964096-11524-29-git-send-email-aik@ozlabs.ru>
- <20150429070149.GY32589@voom.redhat.com>
-In-Reply-To: <20150429070149.GY32589@voom.redhat.com>
-Content-Type: text/plain; charset=koi8-r; format=flowed
-Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
- Alex Williamson <alex.williamson@redhat.com>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <1430460188-31343-20-git-send-email-gwshan@linux.vnet.ibm.com>
+References: <1430460188-31343-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <1430460188-31343-20-git-send-email-gwshan@linux.vnet.ibm.com>
+From: Rob Herring <robherring2@gmail.com>
+Date: Fri, 1 May 2015 07:54:03 -0500
+Message-ID: <CAL_JsqKEUevxSe0Q=pGdsWOiT+TW9iAnCsAWuuqOYj3ZPOG7dg@mail.gmail.com>
+Subject: Re: [PATCH v4 19/21] drivers/of: Support adding sub-tree
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ Grant Likely <grant.likely@linaro.org>, Bjorn Helgaas <bhelgaas@google.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,421 +30,347 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 04/29/2015 05:01 PM, David Gibson wrote:
-> On Sat, Apr 25, 2015 at 10:14:52PM +1000, Alexey Kardashevskiy wrote:
->> We are adding support for DMA memory pre-registration to be used in
->> conjunction with VFIO. The idea is that the userspace which is going to
->> run a guest may want to pre-register a user space memory region so
->> it all gets pinned once and never goes away. Having this done,
->> a hypervisor will not have to pin/unpin pages on every DMA map/unmap
->> request. This is going to help with multiple pinning of the same memory
->> and in-kernel acceleration of DMA requests.
->>
->> This adds a list of memory regions to mm_context_t. Each region consists
->> of a header and a list of physical addresses. This adds API to:
->> 1. register/unregister memory regions;
->> 2. do final cleanup (which puts all pre-registered pages);
->> 3. do userspace to physical address translation;
->> 4. manage a mapped pages counter; when it is zero, it is safe to
->> unregister the region.
->>
->> Multiple registration of the same region is allowed, kref is used to
->> track the number of registrations.
->>
->> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
->> ---
->> Changes:
->> v8:
->> * s/mm_iommu_table_group_mem_t/struct mm_iommu_table_group_mem_t/
->> * fixed error fallback look (s/[i]/[j]/)
->> ---
->>   arch/powerpc/include/asm/mmu-hash64.h      |   3 +
->>   arch/powerpc/include/asm/mmu_context.h     |  17 +++
->>   arch/powerpc/mm/Makefile                   |   1 +
->>   arch/powerpc/mm/mmu_context_hash64.c       |   6 +
->>   arch/powerpc/mm/mmu_context_hash64_iommu.c | 215 +++++++++++++++++++++++++++++
->>   5 files changed, 242 insertions(+)
->>   create mode 100644 arch/powerpc/mm/mmu_context_hash64_iommu.c
->>
->> diff --git a/arch/powerpc/include/asm/mmu-hash64.h b/arch/powerpc/include/asm/mmu-hash64.h
->> index 1da6a81..a82f534 100644
->> --- a/arch/powerpc/include/asm/mmu-hash64.h
->> +++ b/arch/powerpc/include/asm/mmu-hash64.h
->> @@ -536,6 +536,9 @@ typedef struct {
->>   	/* for 4K PTE fragment support */
->>   	void *pte_frag;
->>   #endif
->> +#ifdef CONFIG_SPAPR_TCE_IOMMU
->> +	struct list_head iommu_group_mem_list;
->> +#endif
++dt list
+
+On Fri, May 1, 2015 at 1:03 AM, Gavin Shan <gwshan@linux.vnet.ibm.com> wrote:
+> The requirement is raised when developing the PCI hotplug feature
+> for PowerPC PowerNV platform, which runs on top of skiboot firmware.
+> When plugging PCI adapter to one PCI slot, the firmware rescans the
+> slot and build FDT (Flat Device Tree) blob, which is sent to the
+> PowerNV PCI hotplug driver for processing. The new constructed device
+> nodes from the FDT blob are expected to be attached to the device
+> node of the PCI slot. Unfortunately, it seems we don't have a API
+> to support the scenario. The patch intends to support it by newly
+> introduced function of_fdt_add_subtree(), the design behind it is
+> shown as below:
 >
-> Urgh.  I know I'm not one to talk, having done the hugepage crap in
-> there, but man mm_context_t has grown to a bloated mess from orginally
-> being just intended as a context ID integer :/.
+>    * When the sub-tree FDT blob, which is owned by firmware, is
+>      received by kernel. It's copied over to the blob, which is
+>      dynamically allocated. Since then, the FDT blob owned by
+>      firmware isn't touched.
+>    * Rework unflatten_dt_node() so that the device nodes in current
+>      and deeper depth have been constructed from the FDT blob. All
+>      device nodes are marked with flag OF_DYNAMIC_HYBIRD, which is
 
+Perhaps you meant HYBRID?
 
-Where else to put it then?... The other way to go would be some global map 
-of pid<->iommu_group_mem_list which needs to be available from both VFIO 
-and KVM.
+>      similar to OF_DYNAMIC. However, device node with the flag set
+>      can be free'd, but in the way other than that for OF_DYNAMIC
+>      device nodes.
 
+The difference seems to be whether you allocate space or just point to
+the FDT for various strings/data. Is that right?
 
->>   } mm_context_t;
->>
->>
->> diff --git a/arch/powerpc/include/asm/mmu_context.h b/arch/powerpc/include/asm/mmu_context.h
->> index 73382eb..d6116ca 100644
->> --- a/arch/powerpc/include/asm/mmu_context.h
->> +++ b/arch/powerpc/include/asm/mmu_context.h
->> @@ -16,6 +16,23 @@
->>    */
->>   extern int init_new_context(struct task_struct *tsk, struct mm_struct *mm);
->>   extern void destroy_context(struct mm_struct *mm);
->> +#ifdef CONFIG_SPAPR_TCE_IOMMU
->> +struct mm_iommu_table_group_mem_t;
->> +
->> +extern bool mm_iommu_preregistered(void);
->> +extern long mm_iommu_alloc(unsigned long ua, unsigned long entries,
->> +		struct mm_iommu_table_group_mem_t **pmem);
->> +extern struct mm_iommu_table_group_mem_t *mm_iommu_get(unsigned long ua,
->> +		unsigned long entries);
->> +extern long mm_iommu_put(struct mm_iommu_table_group_mem_t *mem);
->> +extern void mm_iommu_cleanup(mm_context_t *ctx);
->> +extern struct mm_iommu_table_group_mem_t *mm_iommu_lookup(unsigned long ua,
->> +		unsigned long size);
->> +extern long mm_iommu_ua_to_hpa(struct mm_iommu_table_group_mem_t *mem,
->> +		unsigned long ua, unsigned long *hpa);
->> +extern long mm_iommu_mapped_update(struct mm_iommu_table_group_mem_t *mem,
->> +		bool inc);
->> +#endif
->>
->>   extern void switch_mmu_context(struct mm_struct *prev, struct mm_struct *next);
->>   extern void switch_slb(struct task_struct *tsk, struct mm_struct *mm);
->> diff --git a/arch/powerpc/mm/Makefile b/arch/powerpc/mm/Makefile
->> index 9c8770b..e216704 100644
->> --- a/arch/powerpc/mm/Makefile
->> +++ b/arch/powerpc/mm/Makefile
->> @@ -36,3 +36,4 @@ obj-$(CONFIG_PPC_SUBPAGE_PROT)	+= subpage-prot.o
->>   obj-$(CONFIG_NOT_COHERENT_CACHE) += dma-noncoherent.o
->>   obj-$(CONFIG_HIGHMEM)		+= highmem.o
->>   obj-$(CONFIG_PPC_COPRO_BASE)	+= copro_fault.o
->> +obj-$(CONFIG_SPAPR_TCE_IOMMU)	+= mmu_context_hash64_iommu.o
->> diff --git a/arch/powerpc/mm/mmu_context_hash64.c b/arch/powerpc/mm/mmu_context_hash64.c
->> index 178876ae..eb3080c 100644
->> --- a/arch/powerpc/mm/mmu_context_hash64.c
->> +++ b/arch/powerpc/mm/mmu_context_hash64.c
->> @@ -89,6 +89,9 @@ int init_new_context(struct task_struct *tsk, struct mm_struct *mm)
->>   #ifdef CONFIG_PPC_64K_PAGES
->>   	mm->context.pte_frag = NULL;
->>   #endif
->> +#ifdef CONFIG_SPAPR_TCE_IOMMU
->> +	INIT_LIST_HEAD_RCU(&mm->context.iommu_group_mem_list);
->> +#endif
->>   	return 0;
->>   }
->>
->> @@ -132,6 +135,9 @@ static inline void destroy_pagetable_page(struct mm_struct *mm)
->>
->>   void destroy_context(struct mm_struct *mm)
->>   {
->> +#ifdef CONFIG_SPAPR_TCE_IOMMU
->> +	mm_iommu_cleanup(&mm->context);
->> +#endif
->>
->>   #ifdef CONFIG_PPC_ICSWX
->>   	drop_cop(mm->context.acop, mm);
->> diff --git a/arch/powerpc/mm/mmu_context_hash64_iommu.c b/arch/powerpc/mm/mmu_context_hash64_iommu.c
->> new file mode 100644
->> index 0000000..af7668c
->> --- /dev/null
->> +++ b/arch/powerpc/mm/mmu_context_hash64_iommu.c
->> @@ -0,0 +1,215 @@
->> +/*
->> + *  IOMMU helpers in MMU context.
->> + *
->> + *  Copyright (C) 2015 IBM Corp. <aik@ozlabs.ru>
->> + *
->> + *  This program is free software; you can redistribute it and/or
->> + *  modify it under the terms of the GNU General Public License
->> + *  as published by the Free Software Foundation; either version
->> + *  2 of the License, or (at your option) any later version.
->> + *
->> + */
->> +
->> +#include <linux/sched.h>
->> +#include <linux/slab.h>
->> +#include <linux/rculist.h>
->> +#include <linux/vmalloc.h>
->> +#include <linux/kref.h>
->> +#include <asm/mmu_context.h>
->> +
->> +struct mm_iommu_table_group_mem_t {
->> +	struct list_head next;
->> +	struct rcu_head rcu;
->> +	struct kref kref;	/* one reference per VFIO container */
->> +	atomic_t mapped;	/* number of currently mapped pages */
->> +	u64 ua;			/* userspace address */
->> +	u64 entries;		/* number of entries in hpas[] */
+>    * of_fdt_add_subtree() is the introduced API to do the work.
+
+Have you looked at overlays and if so why do they not work for your purposes?
+
+Why do you need to do this with the flattened tree?
+
+Rob
+
 >
-> Maybe 'npages', since this is used to determine the range of user
-> addresses covered, not just the number of entries in hpas.
-
-
-Hm. Ok :)
-
-
->> +	u64 *hpas;		/* vmalloc'ed */
->> +};
->> +
->> +bool mm_iommu_preregistered(void)
->> +{
->> +	if (!current || !current->mm)
->> +		return false;
->> +
->> +	return !list_empty(&current->mm->context.iommu_group_mem_list);
->> +}
->> +EXPORT_SYMBOL_GPL(mm_iommu_preregistered);
->> +
->> +long mm_iommu_alloc(unsigned long ua, unsigned long entries,
->> +		struct mm_iommu_table_group_mem_t **pmem)
->> +{
->> +	struct mm_iommu_table_group_mem_t *mem;
->> +	long i, j;
->> +	struct page *page = NULL;
->> +
->> +	list_for_each_entry_rcu(mem, &current->mm->context.iommu_group_mem_list,
->> +			next) {
->> +		if ((mem->ua == ua) && (mem->entries == entries))
->> +			return -EBUSY;
->> +
->> +		/* Overlap? */
->> +		if ((mem->ua < (ua + (entries << PAGE_SHIFT))) &&
->> +				(ua < (mem->ua + (mem->entries << PAGE_SHIFT))))
->> +			return -EINVAL;
->> +	}
->> +
->> +	mem = kzalloc(sizeof(*mem), GFP_KERNEL);
->> +	if (!mem)
->> +		return -ENOMEM;
->> +
->> +	mem->hpas = vzalloc(entries * sizeof(mem->hpas[0]));
->> +	if (!mem->hpas) {
->> +		kfree(mem);
->> +		return -ENOMEM;
->> +	}
->> +
->> +	for (i = 0; i < entries; ++i) {
->> +		if (1 != get_user_pages_fast(ua + (i << PAGE_SHIFT),
->> +					1/* pages */, 1/* iswrite */, &page)) {
+> Cc: Grant Likely <grant.likely@linaro.org>
+> Cc: Rob Herring <robh+dt@kernel.org>
+> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+> ---
+>  drivers/of/dynamic.c   |  19 +++++--
+>  drivers/of/fdt.c       | 133 ++++++++++++++++++++++++++++++++++++++++---------
+>  include/linux/of.h     |   2 +
+>  include/linux/of_fdt.h |   1 +
+>  4 files changed, 127 insertions(+), 28 deletions(-)
 >
-> Do you really need to call gup() in a loop?  It can do more than one
-> page at a time..
-
-
-Ufff. gup() returns the number of pages pinned or -errno if none. So if the 
-return value is positive but less than the requested number of pages, it is 
-still an error. Functions like this make me nervous :(
-
-
-> That might work better if you kept a list of struct page *s instead of
-> hpas.
-
-I only need struct page* when release the registered area. In other cases I 
-just need fast conversion from an userspace address to a host physical 
-address, including real mode. Ideally I would have to use page_address() 
-which will work in real mode in my case but in general it does not have to. 
-Using addresses rather than page structs makes it more explicit - I need an 
-address, I store an address, simple.
-
-I can change to page structs if you think it makes more sense, should I?
-
-
-
-
->> +			for (j = 0; j < i; ++j)
->> +				put_page(pfn_to_page(
->> +						mem->hpas[j] >> PAGE_SHIFT));
->> +			vfree(mem->hpas);
->> +			kfree(mem);
->> +			return -EFAULT;
->> +		}
->> +
->> +		mem->hpas[i] = page_to_pfn(page) << PAGE_SHIFT;
->> +	}
->> +
->> +	kref_init(&mem->kref);
->> +	atomic_set(&mem->mapped, 0);
->> +	mem->ua = ua;
->> +	mem->entries = entries;
->> +	*pmem = mem;
->> +
->> +	list_add_rcu(&mem->next, &current->mm->context.iommu_group_mem_list);
->> +
->> +	return 0;
->> +}
->> +EXPORT_SYMBOL_GPL(mm_iommu_alloc);
->> +
->> +static void mm_iommu_unpin(struct mm_iommu_table_group_mem_t *mem)
->> +{
->> +	long i;
->> +	struct page *page = NULL;
->> +
->> +	for (i = 0; i < mem->entries; ++i) {
->> +		if (!mem->hpas[i])
->> +			continue;
->> +
->> +		page = pfn_to_page(mem->hpas[i] >> PAGE_SHIFT);
->> +		if (!page)
->> +			continue;
->> +
->> +		put_page(page);
->> +		mem->hpas[i] = 0;
->> +	}
->> +}
->> +
->> +static void mm_iommu_free(struct rcu_head *head)
->> +{
->> +	struct mm_iommu_table_group_mem_t *mem = container_of(head,
->> +			struct mm_iommu_table_group_mem_t, rcu);
->> +
->> +	mm_iommu_unpin(mem);
->> +	vfree(mem->hpas);
->> +	kfree(mem);
->> +}
->> +
->> +static void mm_iommu_release(struct kref *kref)
->> +{
->> +	struct mm_iommu_table_group_mem_t *mem = container_of(kref,
->> +			struct mm_iommu_table_group_mem_t, kref);
->> +
->> +	list_del_rcu(&mem->next);
->> +	call_rcu(&mem->rcu, mm_iommu_free);
->> +}
->> +
->> +struct mm_iommu_table_group_mem_t *mm_iommu_get(unsigned long ua,
->> +		unsigned long entries)
->> +{
->> +	struct mm_iommu_table_group_mem_t *mem;
->> +
->> +	list_for_each_entry_rcu(mem, &current->mm->context.iommu_group_mem_list,
->> +			next) {
->> +		if ((mem->ua == ua) && (mem->entries == entries)) {
->> +			kref_get(&mem->kref);
->> +			return mem;
->> +		}
->> +	}
->> +
->> +	return NULL;
->> +}
->> +EXPORT_SYMBOL_GPL(mm_iommu_get);
->> +
->> +long mm_iommu_put(struct mm_iommu_table_group_mem_t *mem)
->> +{
->> +	if (atomic_read(&mem->mapped))
->> +		return -EBUSY;
+> diff --git a/drivers/of/dynamic.c b/drivers/of/dynamic.c
+> index 3351ef4..f562080 100644
+> --- a/drivers/of/dynamic.c
+> +++ b/drivers/of/dynamic.c
+> @@ -330,13 +330,22 @@ void of_node_release(struct kobject *kobj)
+>                 return;
+>         }
 >
-> What prevents a race between the atomic_read() above and the release below?
-
-Ouch. Nothing. And I cannot think of any nice fast solution here...
-I can remove @mapped at all and do kref_get/put(&mem->kref) instead; a 
-container will hold one reference too. And add a flag to 
-mm_iommu_table_group_mem_t to know if mm_iommu_release has been called - 
-this way I will know that was the very last reference, otherwise I'll 
-return -EBUSY.
-
-Or change mm_iommu_lookup() to do kref_get() and require every caller of it 
-also call mm_iommu_put() and only call mm_iommu_mapped_update() when the 
-reference is elevated. And change mm_iommu_put() to return a special code 
-if that was the very last put() (will be checked by 
-VFIO_IOMMU_SPAPR_UNREGISTER_MEMORY handler only, others would not care).
-
-Any ideas?
-
-I am pretty sure there is something very cool (like RCU) which allows 
-avoiding locks in this situation, I am just too ignorant and do not know it :)
-
-
->> +	kref_put(&mem->kref, mm_iommu_release);
->> +
->> +	return 0;
->> +}
->> +EXPORT_SYMBOL_GPL(mm_iommu_put);
->> +
->> +struct mm_iommu_table_group_mem_t *mm_iommu_lookup(unsigned long ua,
->> +		unsigned long size)
->> +{
->> +	struct mm_iommu_table_group_mem_t *mem, *ret = NULL;
->> +
->> +	list_for_each_entry_rcu(mem,
->> +			&current->mm->context.iommu_group_mem_list,
->> +			next) {
->> +		if ((mem->ua <= ua) &&
->> +				(ua + size <= mem->ua +
->> +				 (mem->entries << PAGE_SHIFT))) {
->> +			ret = mem;
->> +			break;
->> +		}
->> +	}
->> +
->> +	return ret;
->> +}
->> +EXPORT_SYMBOL_GPL(mm_iommu_lookup);
->> +
->> +long mm_iommu_ua_to_hpa(struct mm_iommu_table_group_mem_t *mem,
->> +		unsigned long ua, unsigned long *hpa)
+> -       if (!of_node_check_flag(node, OF_DYNAMIC))
+> +       /* Release the subtree */
+> +       if (node->subtree) {
+> +               kfree(node->subtree);
+> +               node->subtree = NULL;
+> +       }
+> +
+> +       if (!of_node_check_flag(node, OF_DYNAMIC) &&
+> +           !of_node_check_flag(node, OF_DYNAMIC_HYBIRD))
+>                 return;
 >
-> Return type should be int, it's just an error code.
-
-
-Is it some generic rule that errors must always be "int"? I was just told 
-that gcc on PPC64 will generate an extra instruction to cut 64bit long to 
-32bit int so I am just trying to use "long" everywhere. Very simple but 
-still optimization :)
-
-
->> +{
->> +	const long entry = (ua - mem->ua) >> PAGE_SHIFT;
->> +	u64 *va = &mem->hpas[entry];
->> +
->> +	if (entry >= mem->entries)
->> +		return -EFAULT;
->> +
->> +	*hpa = *va | (ua & ~PAGE_MASK);
->> +
->> +	return 0;
->> +}
->> +EXPORT_SYMBOL_GPL(mm_iommu_ua_to_hpa);
->> +
->> +long mm_iommu_mapped_update(struct mm_iommu_table_group_mem_t *mem, bool inc)
->> +{
->> +	long ret = 0;
->> +
->> +	if (inc)
->> +		atomic_inc(&mem->mapped);
->> +	else
->> +		ret = atomic_dec_if_positive(&mem->mapped);
->> +
->> +	return ret;
->> +}
->> +EXPORT_SYMBOL_GPL(mm_iommu_mapped_update);
+>         while (prop) {
+>                 struct property *next = prop->next;
+> -               kfree(prop->name);
+> -               kfree(prop->value);
+> +               if (of_node_check_flag(node, OF_DYNAMIC)) {
+> +                       kfree(prop->name);
+> +                       kfree(prop->value);
+> +               }
+>                 kfree(prop);
+>                 prop = next;
 >
-> I think this would be clearer as separate inc and dec functions.
-
-Okay.
-
-
->> +
->> +void mm_iommu_cleanup(mm_context_t *ctx)
->> +{
->> +	while (!list_empty(&ctx->iommu_group_mem_list)) {
->> +		struct mm_iommu_table_group_mem_t *mem;
->> +
->> +		mem = list_first_entry(&ctx->iommu_group_mem_list,
->> +				struct mm_iommu_table_group_mem_t, next);
->> +		mm_iommu_release(&mem->kref);
->> +	}
->> +}
+> @@ -345,7 +354,9 @@ void of_node_release(struct kobject *kobj)
+>                         node->deadprops = NULL;
+>                 }
+>         }
+> -       kfree(node->full_name);
+> +
+> +       if (of_node_check_flag(node, OF_DYNAMIC))
+> +               kfree(node->full_name);
+>         kfree(node->data);
+>         kfree(node);
+>  }
+> diff --git a/drivers/of/fdt.c b/drivers/of/fdt.c
+> index cde35c5d01..7659560 100644
+> --- a/drivers/of/fdt.c
+> +++ b/drivers/of/fdt.c
+> @@ -28,6 +28,10 @@
+>  #include <asm/setup.h>  /* for COMMAND_LINE_SIZE */
+>  #include <asm/page.h>
 >
-
-
--- 
-Alexey
+> +#include "of_private.h"
+> +
+> +static int cur_node_depth;
+> +
+>  /*
+>   * of_fdt_limit_memory - limit the number of regions in the /memory node
+>   * @limit: maximum entries
+> @@ -168,20 +172,20 @@ static void *unflatten_dt_alloc(void **mem, unsigned long size,
+>   * @dad: Parent struct device_node
+>   * @fpsize: Size of the node path up at the current depth.
+>   */
+> -static void * unflatten_dt_node(void *blob,
+> -                               void *mem,
+> -                               int *poffset,
+> -                               struct device_node *dad,
+> -                               struct device_node **nodepp,
+> -                               unsigned long fpsize,
+> -                               bool dryrun)
+> +static void *unflatten_dt_node(void *blob,
+> +                              void *mem,
+> +                              int *poffset,
+> +                              struct device_node *dad,
+> +                              struct device_node **nodepp,
+> +                              unsigned long fpsize,
+> +                              bool dryrun,
+> +                              bool dynamic)
+>  {
+>         const __be32 *p;
+>         struct device_node *np;
+>         struct property *pp, **prev_pp = NULL;
+>         const char *pathp;
+>         unsigned int l, allocl;
+> -       static int depth = 0;
+>         int old_depth;
+>         int offset;
+>         int has_name = 0;
+> @@ -219,12 +223,18 @@ static void * unflatten_dt_node(void *blob,
+>                 }
+>         }
+>
+> -       np = unflatten_dt_alloc(&mem, sizeof(struct device_node) + allocl,
+> +       if (dynamic)
+> +               np = kzalloc(sizeof(struct device_node) + allocl, GFP_KERNEL);
+> +       else
+> +               np = unflatten_dt_alloc(&mem,
+> +                               sizeof(struct device_node) + allocl,
+>                                 __alignof__(struct device_node));
+>         if (!dryrun) {
+>                 char *fn;
+>                 of_node_init(np);
+>                 np->full_name = fn = ((char *)np) + sizeof(*np);
+> +               if (dynamic)
+> +                       of_node_set_flag(np, OF_DYNAMIC_HYBIRD);
+>                 if (new_format) {
+>                         /* rebuild full path for new format */
+>                         if (dad && dad->parent) {
+> @@ -267,8 +277,12 @@ static void * unflatten_dt_node(void *blob,
+>                 }
+>                 if (strcmp(pname, "name") == 0)
+>                         has_name = 1;
+> -               pp = unflatten_dt_alloc(&mem, sizeof(struct property),
+> -                                       __alignof__(struct property));
+> +
+> +               if (dynamic)
+> +                       pp = kzalloc(sizeof(struct property), GFP_KERNEL);
+> +               else
+> +                       pp = unflatten_dt_alloc(&mem, sizeof(struct property),
+> +                                               __alignof__(struct property));
+>                 if (!dryrun) {
+>                         /* We accept flattened tree phandles either in
+>                          * ePAPR-style "phandle" properties, or the
+> @@ -309,8 +323,13 @@ static void * unflatten_dt_node(void *blob,
+>                 if (pa < ps)
+>                         pa = p1;
+>                 sz = (pa - ps) + 1;
+> -               pp = unflatten_dt_alloc(&mem, sizeof(struct property) + sz,
+> -                                       __alignof__(struct property));
+> +
+> +               if (dynamic)
+> +                       pp = kzalloc(sizeof(struct property) + sz, GFP_KERNEL);
+> +               else
+> +                       pp = unflatten_dt_alloc(&mem,
+> +                                               sizeof(struct property) + sz,
+> +                                               __alignof__(struct property));
+>                 if (!dryrun) {
+>                         pp->name = "name";
+>                         pp->length = sz;
+> @@ -334,13 +353,21 @@ static void * unflatten_dt_node(void *blob,
+>                         np->type = "<NULL>";
+>         }
+>
+> -       old_depth = depth;
+> -       *poffset = fdt_next_node(blob, *poffset, &depth);
+> -       if (depth < 0)
+> -               depth = 0;
+> -       while (*poffset > 0 && depth > old_depth)
+> -               mem = unflatten_dt_node(blob, mem, poffset, np, NULL,
+> -                                       fpsize, dryrun);
+> +       old_depth = cur_node_depth;
+> +       *poffset = fdt_next_node(blob, *poffset, &cur_node_depth);
+> +       while (*poffset > 0) {
+> +               if (cur_node_depth < old_depth)
+> +                       break;
+> +
+> +               if (cur_node_depth == old_depth)
+> +                       mem = unflatten_dt_node(blob, mem, poffset,
+> +                                               dad, NULL, fpsize,
+> +                                               dryrun, dynamic);
+> +               else if (cur_node_depth > old_depth)
+> +                       mem = unflatten_dt_node(blob, mem, poffset,
+> +                                               np, NULL, fpsize,
+> +                                               dryrun, dynamic);
+> +       }
+>
+>         if (*poffset < 0 && *poffset != -FDT_ERR_NOTFOUND)
+>                 pr_err("unflatten: error %d processing FDT\n", *poffset);
+> @@ -379,8 +406,8 @@ static void * unflatten_dt_node(void *blob,
+>   * for the resulting tree
+>   */
+>  static void __unflatten_device_tree(void *blob,
+> -                            struct device_node **mynodes,
+> -                            void * (*dt_alloc)(u64 size, u64 align))
+> +                               struct device_node **mynodes,
+> +                               void * (*dt_alloc)(u64 size, u64 align))
+>  {
+>         unsigned long size;
+>         int start;
+> @@ -405,7 +432,9 @@ static void __unflatten_device_tree(void *blob,
+>
+>         /* First pass, scan for size */
+>         start = 0;
+> -       size = (unsigned long)unflatten_dt_node(blob, NULL, &start, NULL, NULL, 0, true);
+> +       cur_node_depth = 1;
+> +       size = (unsigned long)unflatten_dt_node(blob, NULL, &start, NULL,
+> +                                               NULL, 0, true, false);
+>         size = ALIGN(size, 4);
+>
+>         pr_debug("  size is %lx, allocating...\n", size);
+> @@ -420,7 +449,8 @@ static void __unflatten_device_tree(void *blob,
+>
+>         /* Second pass, do actual unflattening */
+>         start = 0;
+> -       unflatten_dt_node(blob, mem, &start, NULL, mynodes, 0, false);
+> +       cur_node_depth = 1;
+> +       unflatten_dt_node(blob, mem, &start, NULL, mynodes, 0, false, false);
+>         if (be32_to_cpup(mem + size) != 0xdeadbeef)
+>                 pr_warning("End of tree marker overwritten: %08x\n",
+>                            be32_to_cpup(mem + size));
+> @@ -448,6 +478,61 @@ void of_fdt_unflatten_tree(unsigned long *blob,
+>  }
+>  EXPORT_SYMBOL_GPL(of_fdt_unflatten_tree);
+>
+> +static void populate_sysfs_for_child_nodes(struct device_node *parent)
+> +{
+> +       struct device_node *child;
+> +
+> +       for_each_child_of_node(parent, child) {
+> +               __of_attach_node_sysfs(child);
+> +               populate_sysfs_for_child_nodes(child);
+> +       }
+> +}
+> +
+> +/**
+> + * of_fdt_add_substree - Create sub-tree of device nodes
+> + * @parent: parent device node to which the sub-tree will attach
+> + * @blob: flat device tree blob representing the sub-tree
+> + *
+> + * Copy over the FDT blob, which passed from firmware, and then
+> + * unflatten the sub-tree.
+> + */
+> +void of_fdt_add_subtree(struct device_node *parent, void *blob)
+> +{
+> +       int start = 0;
+> +
+> +       /* Validate the header */
+> +       if (!blob || fdt_check_header(blob)) {
+> +               pr_err("%s: Invalid device-tree blob header at 0x%p\n",
+> +                      __func__, blob);
+> +               return;
+> +       }
+> +
+> +       /* Free the flat blob for last time lazily */
+> +       if (parent->subtree) {
+> +               kfree(parent->subtree);
+> +               parent->subtree = NULL;
+> +       }
+> +
+> +       /* Copy over the flat blob */
+> +       parent->subtree = kzalloc(fdt_totalsize(blob), GFP_KERNEL);
+> +       if (!parent->subtree) {
+> +               pr_err("%s: Cannot copy over device-tree blob\n",
+> +                      __func__);
+> +               return;
+> +       }
+> +
+> +       memcpy(parent->subtree, blob, fdt_totalsize(blob));
+> +
+> +       /* Unflatten it */
+> +       mutex_lock(&of_mutex);
+> +       cur_node_depth = 1;
+> +       unflatten_dt_node(parent->subtree, NULL, &start, parent, NULL,
+> +                         strlen(parent->full_name), false, true);
+> +       populate_sysfs_for_child_nodes(parent);
+> +       mutex_unlock(&of_mutex);
+> +}
+> +EXPORT_SYMBOL(of_fdt_add_subtree);
+> +
+>  /* Everything below here references initial_boot_params directly. */
+>  int __initdata dt_root_addr_cells;
+>  int __initdata dt_root_size_cells;
+> diff --git a/include/linux/of.h b/include/linux/of.h
+> index ddeaae6..ac50b02 100644
+> --- a/include/linux/of.h
+> +++ b/include/linux/of.h
+> @@ -60,6 +60,7 @@ struct device_node {
+>         struct  device_node *sibling;
+>         struct  kobject kobj;
+>         unsigned long _flags;
+> +       void    *subtree;
+>         void    *data;
+>  #if defined(CONFIG_SPARC)
+>         const char *path_component_name;
+> @@ -222,6 +223,7 @@ static inline unsigned long of_read_ulong(const __be32 *cell, int size)
+>  #define OF_DETACHED    2 /* node has been detached from the device tree */
+>  #define OF_POPULATED   3 /* device already created for the node */
+>  #define OF_POPULATED_BUS       4 /* of_platform_populate recursed to children of this node */
+> +#define OF_DYNAMIC_HYBIRD      5 /* similar to OF_DYNAMIC, but partially */
+>
+>  #define OF_IS_DYNAMIC(x) test_bit(OF_DYNAMIC, &x->_flags)
+>  #define OF_MARK_DYNAMIC(x) set_bit(OF_DYNAMIC, &x->_flags)
+> diff --git a/include/linux/of_fdt.h b/include/linux/of_fdt.h
+> index 587ee50..1fb47d7 100644
+> --- a/include/linux/of_fdt.h
+> +++ b/include/linux/of_fdt.h
+> @@ -39,6 +39,7 @@ extern int of_fdt_match(const void *blob, unsigned long node,
+>                         const char *const *compat);
+>  extern void of_fdt_unflatten_tree(unsigned long *blob,
+>                                struct device_node **mynodes);
+> +extern void of_fdt_add_subtree(struct device_node *parent, void *blob);
+>
+>  /* TBD: Temporary export of fdt globals - remove when code fully merged */
+>  extern int __initdata dt_root_addr_cells;
+> --
+> 2.1.0
+>
