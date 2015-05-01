@@ -1,30 +1,30 @@
 Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B57681A0E06
+ by lists.ozlabs.org (Postfix) with ESMTPS id DF3851A0DEC
  for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 May 2015 16:04:34 +1000 (AEST)
 Received: from /spool/local
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
  Fri, 1 May 2015 16:04:34 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 714B32BB004D
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 1DAFE357804F
  for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 May 2015 16:04:32 +1000 (EST)
 Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t4164OTs20840668
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t4164NBa33423398
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 May 2015 16:04:32 +1000
 Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
  by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t4163wBL009660
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 May 2015 16:03:59 +1000
+ t4163vnK009572
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 May 2015 16:03:58 +1000
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v4 09/21] powerpc/powernv: Use PCI slot reset infrastructure
-Date: Fri,  1 May 2015 16:02:56 +1000
-Message-Id: <1430460188-31343-10-git-send-email-gwshan@linux.vnet.ibm.com>
+Subject: [PATCH v4 05/21] powerpc/powernv: Improve DMA32 segment assignment
+Date: Fri,  1 May 2015 16:02:52 +1000
+Message-Id: <1430460188-31343-6-git-send-email-gwshan@linux.vnet.ibm.com>
 In-Reply-To: <1430460188-31343-1-git-send-email-gwshan@linux.vnet.ibm.com>
 References: <1430460188-31343-1-git-send-email-gwshan@linux.vnet.ibm.com>
 Cc: bhelgaas@google.com, linux-pci@vger.kernel.org,
@@ -38,323 +38,403 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-For PowerNV platform, running on top of skiboot, all PE level reset
-should be routed to firmware if the bridge of the PE primary bus has
-device-node property "ibm,reset-by-firmware". Otherwise, the kernel
-has to issue hot reset on PE's primary bus despite the requested reset
-types, which is the behaviour before the firmware supports PCI slot
-reset. So the changes don't depend on the PCI slot reset capability
-exposed from the firmware.
+For P7IOC, the whole available DMA32 space, which is below the
+MEM32 space, is evenly divided into 256MB segments. How many
+continuous segments assigned to one particular PE depends on
+the PE's DMA weight that is figured out from the type of each
+PCI devices contained in the PE, and PHB's DMA weight which is
+accumulative DMA weight of PEs contained in the PHB. It means
+that the PHB's DMA weight calculation depends on existing PEs,
+which works perfectly now, but not hotplug friendly. As the
+whole available DMA32 space can be assigned to one PE on PHB3,
+so we don't have the issue on PHB3.
+
+The patch improves DMA32 segment assignment by removing the
+dependency of existing PEs to make the piece of logic friendly
+to PCI hotplug. Besides, it's always worthy to trace the DMA32
+segments consumed by one PE, which can be released at PCI
+unplugging time.
 
 Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/eeh.h               |   1 +
- arch/powerpc/include/asm/opal.h              |   4 +-
- arch/powerpc/platforms/powernv/eeh-powernv.c | 206 +++++++++++++--------------
- 3 files changed, 102 insertions(+), 109 deletions(-)
+ arch/powerpc/platforms/powernv/pci-ioda.c | 204 ++++++++++++++++--------------
+ arch/powerpc/platforms/powernv/pci.h      |  24 +---
+ 2 files changed, 116 insertions(+), 112 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
-index c5eb86f..2793d24 100644
---- a/arch/powerpc/include/asm/eeh.h
-+++ b/arch/powerpc/include/asm/eeh.h
-@@ -190,6 +190,7 @@ enum {
- #define EEH_RESET_DEACTIVATE	0	/* Deactivate the PE reset	*/
- #define EEH_RESET_HOT		1	/* Hot reset			*/
- #define EEH_RESET_FUNDAMENTAL	3	/* Fundamental reset		*/
-+#define EEH_RESET_COMPLETE	4	/* PHB complete reset           */
- #define EEH_LOG_TEMP		1	/* EEH temporary error log	*/
- #define EEH_LOG_PERM		2	/* EEH permanent error log	*/
- 
-diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
-index 042af1a..6d467df 100644
---- a/arch/powerpc/include/asm/opal.h
-+++ b/arch/powerpc/include/asm/opal.h
-@@ -129,7 +129,7 @@ int64_t opal_pci_map_pe_dma_window(uint64_t phb_id, uint16_t pe_number, uint16_t
- int64_t opal_pci_map_pe_dma_window_real(uint64_t phb_id, uint16_t pe_number,
- 					uint16_t dma_window_number, uint64_t pci_start_addr,
- 					uint64_t pci_mem_size);
--int64_t opal_pci_reset(uint64_t phb_id, uint8_t reset_scope, uint8_t assert_state);
-+int64_t opal_pci_reset(uint64_t id, uint8_t reset_scope, uint8_t assert_state);
- 
- int64_t opal_pci_get_hub_diag_data(uint64_t hub_id, void *diag_buffer,
- 				   uint64_t diag_buffer_len);
-@@ -145,7 +145,7 @@ int64_t opal_get_epow_status(__be64 *status);
- int64_t opal_set_system_attention_led(uint8_t led_action);
- int64_t opal_pci_next_error(uint64_t phb_id, __be64 *first_frozen_pe,
- 			    __be16 *pci_error_type, __be16 *severity);
--int64_t opal_pci_poll(uint64_t phb_id);
-+int64_t opal_pci_poll(uint64_t id, uint8_t *val);
- int64_t opal_return_cpu(void);
- int64_t opal_check_token(uint64_t token);
- int64_t opal_reinit_cpus(uint64_t flags);
-diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
-index ce738ab..3c01095 100644
---- a/arch/powerpc/platforms/powernv/eeh-powernv.c
-+++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
-@@ -742,12 +742,12 @@ static int pnv_eeh_get_state(struct eeh_pe *pe, int *delay)
- 	return ret;
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index 7e6e266..9ef745e 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -976,8 +976,11 @@ static void pnv_ioda_link_pe_by_weight(struct pnv_phb *phb,
+ 	list_add_tail(&pe->dma_link, &phb->ioda.pe_dma_list);
  }
  
--static s64 pnv_eeh_phb_poll(struct pnv_phb *phb)
-+static s64 pnv_eeh_poll(uint64_t id)
+-static unsigned int pnv_ioda_dma_weight(struct pci_dev *dev)
++static unsigned int pnv_ioda_dev_dma_weight(struct pci_dev *dev)
  {
- 	s64 rc = OPAL_HARDWARE;
- 
- 	while (1) {
--		rc = opal_pci_poll(phb->opal_id);
-+		rc = opal_pci_poll(id, NULL);
- 		if (rc <= 0)
- 			break;
- 
-@@ -763,84 +763,38 @@ static s64 pnv_eeh_phb_poll(struct pnv_phb *phb)
- int pnv_eeh_phb_reset(struct pci_controller *hose, int option)
- {
- 	struct pnv_phb *phb = hose->private_data;
-+	uint8_t scope;
- 	s64 rc = OPAL_HARDWARE;
- 
- 	pr_debug("%s: Reset PHB#%x, option=%d\n",
- 		 __func__, hose->global_number, option);
--
--	/* Issue PHB complete reset request */
--	if (option == EEH_RESET_FUNDAMENTAL ||
--	    option == EEH_RESET_HOT)
--		rc = opal_pci_reset(phb->opal_id,
--				    OPAL_RESET_PHB_COMPLETE,
--				    OPAL_ASSERT_RESET);
--	else if (option == EEH_RESET_DEACTIVATE)
--		rc = opal_pci_reset(phb->opal_id,
--				    OPAL_RESET_PHB_COMPLETE,
--				    OPAL_DEASSERT_RESET);
--	if (rc < 0)
--		goto out;
--
--	/*
--	 * Poll state of the PHB until the request is done
--	 * successfully. The PHB reset is usually PHB complete
--	 * reset followed by hot reset on root bus. So we also
--	 * need the PCI bus settlement delay.
--	 */
--	rc = pnv_eeh_phb_poll(phb);
--	if (option == EEH_RESET_DEACTIVATE) {
--		if (system_state < SYSTEM_RUNNING)
--			udelay(1000 * EEH_PE_RST_SETTLE_TIME);
--		else
--			msleep(EEH_PE_RST_SETTLE_TIME);
-+	switch (option) {
-+	case EEH_RESET_HOT:
-+		scope = OPAL_RESET_PCI_HOT;
-+		break;
-+	case EEH_RESET_FUNDAMENTAL:
-+		scope = OPAL_RESET_PCI_FUNDAMENTAL;
-+		break;
-+	case EEH_RESET_COMPLETE:
-+		scope = OPAL_RESET_PHB_COMPLETE;
-+		break;
-+	case EEH_RESET_DEACTIVATE:
-+		return 0;
-+	default:
-+		pr_warn("%s: Unsupported option %d\n",
-+			__func__, option);
-+		return -EINVAL;
- 	}
--out:
--	if (rc != OPAL_SUCCESS)
--		return -EIO;
- 
--	return 0;
--}
--
--static int pnv_eeh_root_reset(struct pci_controller *hose, int option)
--{
--	struct pnv_phb *phb = hose->private_data;
--	s64 rc = OPAL_HARDWARE;
-+	/* Issue reset and poll until it's completed */
-+	rc = opal_pci_reset(phb->opal_id, scope, OPAL_ASSERT_RESET);
-+	if (rc > 0)
-+		rc = pnv_eeh_poll(phb->opal_id);
- 
--	pr_debug("%s: Reset PHB#%x, option=%d\n",
--		 __func__, hose->global_number, option);
--
--	/*
--	 * During the reset deassert time, we needn't care
--	 * the reset scope because the firmware does nothing
--	 * for fundamental or hot reset during deassert phase.
--	 */
--	if (option == EEH_RESET_FUNDAMENTAL)
--		rc = opal_pci_reset(phb->opal_id,
--				    OPAL_RESET_PCI_FUNDAMENTAL,
--				    OPAL_ASSERT_RESET);
--	else if (option == EEH_RESET_HOT)
--		rc = opal_pci_reset(phb->opal_id,
--				    OPAL_RESET_PCI_HOT,
--				    OPAL_ASSERT_RESET);
--	else if (option == EEH_RESET_DEACTIVATE)
--		rc = opal_pci_reset(phb->opal_id,
--				    OPAL_RESET_PCI_HOT,
--				    OPAL_DEASSERT_RESET);
--	if (rc < 0)
--		goto out;
--
--	/* Poll state of the PHB until the request is done */
--	rc = pnv_eeh_phb_poll(phb);
--	if (option == EEH_RESET_DEACTIVATE)
--		msleep(EEH_PE_RST_SETTLE_TIME);
--out:
--	if (rc != OPAL_SUCCESS)
--		return -EIO;
--
--	return 0;
-+	return (rc == OPAL_SUCCESS) ? 0 : -EIO;
- }
- 
--static int pnv_eeh_bridge_reset(struct pci_dev *dev, int option)
-+static int __pnv_eeh_bridge_reset(struct pci_dev *dev, int option)
- {
- 	struct pci_dn *pdn = pci_get_pdn_by_devfn(dev->bus, dev->devfn);
- 	struct eeh_dev *edev = pdn_to_eeh_dev(pdn);
-@@ -891,14 +845,57 @@ static int pnv_eeh_bridge_reset(struct pci_dev *dev, int option)
- 	return 0;
- }
- 
-+static int pnv_eeh_bridge_reset(struct pci_dev *dev, int option)
-+{
-+	struct pci_controller *hose;
-+	struct pnv_phb *phb;
-+	struct device_node *dn = dev ? pci_device_to_OF_node(dev) : NULL;
-+	uint64_t id = (0x1ul << 60);
-+	uint8_t scope;
-+	s64 rc;
++	struct pci_controller *hose = pci_bus_to_host(dev->bus);
++	struct pnv_phb *phb = hose->private_data;
 +
-+	/*
-+	 * If the firmware can't handle it, we will issue hot reset
-+	 * on the secondary bus despite the requested reset type
-+	 */
-+	if (!dn || !of_get_property(dn, "ibm,reset-by-firmware", NULL))
-+		return __pnv_eeh_bridge_reset(dev, option);
-+
-+	/* The firmware can handle the request */
-+	switch (option) {
-+	case EEH_RESET_HOT:
-+		scope = OPAL_RESET_PCI_HOT;
-+		break;
-+	case EEH_RESET_FUNDAMENTAL:
-+		scope = OPAL_RESET_PCI_FUNDAMENTAL;
-+		break;
-+	case EEH_RESET_DEACTIVATE:
-+		return 0;
-+	case EEH_RESET_COMPLETE:
-+	default:
-+		pr_warn("%s: Unsupported option %d on device %s\n",
-+			__func__, option, pci_name(dev));
-+		return -EINVAL;
-+	}
-+
-+	hose = pci_bus_to_host(dev->bus);
-+	phb = hose->private_data;
-+	id |= (dev->bus->number << 24) | (dev->devfn << 16) | phb->opal_id;
-+	rc = opal_pci_reset(id, scope, OPAL_ASSERT_RESET);
-+	if (rc > 0)
-+		rc = pnv_eeh_poll(id);
-+
-+	return (rc == OPAL_SUCCESS) ? 0 : -EIO;
+ 	/* This is quite simplistic. The "base" weight of a device
+ 	 * is 10. 0 means no DMA is to be accounted for it.
+ 	 */
+@@ -990,14 +993,33 @@ static unsigned int pnv_ioda_dma_weight(struct pci_dev *dev)
+ 	if (dev->class == PCI_CLASS_SERIAL_USB_UHCI ||
+ 	    dev->class == PCI_CLASS_SERIAL_USB_OHCI ||
+ 	    dev->class == PCI_CLASS_SERIAL_USB_EHCI)
+-		return 3;
++		return 3 * phb->ioda.tce32_count;
+ 
+ 	/* Increase the weight of RAID (includes Obsidian) */
+ 	if ((dev->class >> 8) == PCI_CLASS_STORAGE_RAID)
+-		return 15;
++		return 15 * phb->ioda.tce32_count;
+ 
+ 	/* Default */
+-	return 10;
++	return 10 * phb->ioda.tce32_count;
 +}
 +
- void pnv_pci_reset_secondary_bus(struct pci_dev *dev)
- {
- 	struct pci_controller *hose;
- 
- 	if (pci_is_root_bus(dev->bus)) {
- 		hose = pci_bus_to_host(dev->bus);
--		pnv_eeh_root_reset(hose, EEH_RESET_HOT);
--		pnv_eeh_root_reset(hose, EEH_RESET_DEACTIVATE);
-+		pnv_eeh_phb_reset(hose, EEH_RESET_HOT);
-+		pnv_eeh_phb_reset(hose, EEH_RESET_DEACTIVATE);
- 	} else {
- 		pnv_eeh_bridge_reset(dev, EEH_RESET_HOT);
- 		pnv_eeh_bridge_reset(dev, EEH_RESET_DEACTIVATE);
-@@ -920,8 +917,9 @@ void pnv_pci_reset_secondary_bus(struct pci_dev *dev)
- static int pnv_eeh_reset(struct eeh_pe *pe, int option)
- {
- 	struct pci_controller *hose = pe->phb;
-+	struct pnv_phb *phb;
- 	struct pci_bus *bus;
--	int ret;
-+	s64 rc;
- 
- 	/*
- 	 * For PHB reset, we always have complete reset. For those PEs whose
-@@ -937,43 +935,37 @@ static int pnv_eeh_reset(struct eeh_pe *pe, int option)
- 	 * reset. The side effect is that EEH core has to clear the frozen
- 	 * state explicitly after BAR restore.
- 	 */
--	if (pe->type & EEH_PE_PHB) {
--		ret = pnv_eeh_phb_reset(hose, option);
--	} else {
--		struct pnv_phb *phb;
--		s64 rc;
-+	if (pe->type & EEH_PE_PHB)
-+		return pnv_eeh_phb_reset(hose, EEH_RESET_COMPLETE);
- 
--		/*
--		 * The frozen PE might be caused by PAPR error injection
--		 * registers, which are expected to be cleared after hitting
--		 * frozen PE as stated in the hardware spec. Unfortunately,
--		 * that's not true on P7IOC. So we have to clear it manually
--		 * to avoid recursive EEH errors during recovery.
--		 */
--		phb = hose->private_data;
--		if (phb->model == PNV_PHB_MODEL_P7IOC &&
--		    (option == EEH_RESET_HOT ||
--		    option == EEH_RESET_FUNDAMENTAL)) {
--			rc = opal_pci_reset(phb->opal_id,
--					    OPAL_RESET_PHB_ERROR,
--					    OPAL_ASSERT_RESET);
--			if (rc != OPAL_SUCCESS) {
--				pr_warn("%s: Failure %lld clearing "
--					"error injection registers\n",
--					__func__, rc);
--				return -EIO;
--			}
-+	/*
-+	 * The frozen PE might be caused by PAPR error injection
-+	 * registers, which are expected to be cleared after hitting
-+	 * frozen PE as stated in the hardware spec. Unfortunately,
-+	 * that's not true on P7IOC. So we have to clear it manually
-+	 * to avoid recursive EEH errors during recovery.
-+	 */
-+	phb = hose->private_data;
-+	if (phb->model == PNV_PHB_MODEL_P7IOC &&
-+	    (option == EEH_RESET_HOT ||
-+	    option == EEH_RESET_FUNDAMENTAL)) {
-+		rc = opal_pci_reset(phb->opal_id,
-+				    OPAL_RESET_PHB_ERROR,
-+				    OPAL_ASSERT_RESET);
-+		if (rc != OPAL_SUCCESS) {
-+			pr_warn("%s: Failure %lld clearing error "
-+				"injection registers on PHB#%d\n",
-+				__func__, rc, hose->global_number);
-+			return -EIO;
- 		}
--
--		bus = eeh_pe_bus_get(pe);
--		if (pci_is_root_bus(bus) ||
--			pci_is_root_bus(bus->parent))
--			ret = pnv_eeh_root_reset(hose, option);
--		else
--			ret = pnv_eeh_bridge_reset(bus->self, option);
- 	}
- 
--	return ret;
-+	/* Route the reset request to PHB or upstream bridge */
-+	bus = eeh_pe_bus_get(pe);
-+	if (pci_is_root_bus(bus))
-+		return pnv_eeh_phb_reset(hose, option);
++static int __pnv_ioda_phb_dma_weight(struct pci_dev *pdev, void *data)
++{
++	unsigned int *dma_weight = data;
 +
-+	return pnv_eeh_bridge_reset(bus->self, option);
++	*dma_weight += pnv_ioda_dev_dma_weight(pdev);
++	return 0;
++}
++
++static void pnv_ioda_phb_dma_weight(struct pnv_phb *phb)
++{
++	phb->ioda.dma_weight = 0;
++	if (!phb->hose->bus)
++		return;
++
++	pci_walk_bus(phb->hose->bus,
++		     __pnv_ioda_phb_dma_weight,
++		     &phb->ioda.dma_weight);
  }
  
- /**
+ #ifdef CONFIG_PCI_IOV
+@@ -1156,7 +1178,7 @@ static void pnv_ioda_setup_same_PE(struct pci_bus *bus, struct pnv_ioda_pe *pe)
+ 			continue;
+ 		}
+ 		pdn->pe_number = pe->pe_number;
+-		pe->dma_weight += pnv_ioda_dma_weight(dev);
++		pe->dma_weight += pnv_ioda_dev_dma_weight(dev);
+ 		if ((pe->flags & PNV_IODA_PE_BUS_ALL) && dev->subordinate)
+ 			pnv_ioda_setup_same_PE(dev->subordinate, pe);
+ 	}
+@@ -1193,7 +1215,6 @@ static void pnv_ioda_setup_bus_PE(struct pci_bus *bus, int all)
+ 	pe->flags |= (all ? PNV_IODA_PE_BUS_ALL : PNV_IODA_PE_BUS);
+ 	pe->pbus = bus;
+ 	pe->pdev = NULL;
+-	pe->tce32_seg = -1;
+ 	pe->mve_number = -1;
+ 	pe->rid = bus->busn_res.start << 8;
+ 	pe->dma_weight = 0;
+@@ -1223,14 +1244,6 @@ static void pnv_ioda_setup_bus_PE(struct pci_bus *bus, int all)
+ 	/* Put PE to the list */
+ 	list_add_tail(&pe->list, &phb->ioda.pe_list);
+ 
+-	/* Account for one DMA PE if at least one DMA capable device exist
+-	 * below the bridge
+-	 */
+-	if (pe->dma_weight != 0) {
+-		phb->ioda.dma_weight += pe->dma_weight;
+-		phb->ioda.dma_pe_count++;
+-	}
+-
+ 	/* Link the PE */
+ 	pnv_ioda_link_pe_by_weight(phb, pe);
+ }
+@@ -1569,7 +1582,6 @@ static void pnv_ioda_setup_vf_PE(struct pci_dev *pdev, u16 num_vfs)
+ 		pe->flags = PNV_IODA_PE_VF;
+ 		pe->pbus = NULL;
+ 		pe->parent_dev = pdev;
+-		pe->tce32_seg = -1;
+ 		pe->mve_number = -1;
+ 		pe->rid = (pci_iov_virtfn_bus(pdev, vf_index) << 8) |
+ 			   pci_iov_virtfn_devfn(pdev, vf_index);
+@@ -1890,28 +1902,70 @@ void pnv_pci_ioda_tce_invalidate(struct iommu_table *tbl,
+ 		pnv_pci_ioda2_tce_invalidate(pe, tbl, startp, endp, rm);
+ }
+ 
+-static void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
+-				      struct pnv_ioda_pe *pe, unsigned int base,
+-				      unsigned int segs)
++static int pnv_pci_ioda1_dma_segment_alloc(struct pnv_phb *phb,
++					   struct pnv_ioda_pe *pe)
++{
++	unsigned int weight, base, segs;
++
++	/* We shouldn't already have 32-bits DMA associated */
++	if (WARN_ON(pe->tce32_seg_start || pe->tce32_seg_end))
++		return -EEXIST;
++
++	/* Needn't setup TCE table for non-DMA capable PE */
++	weight = pe->dma_weight;
++	if (!weight)
++		return -ENODEV;
++
++	/* Calculate the DMA segments that PE needs. It's guaranteed
++	 * that the PE will have one segment at least.
++	 */
++	if (weight < phb->ioda.dma_weight / phb->ioda.tce32_count)
++		weight = phb->ioda.dma_weight / phb->ioda.tce32_count;
++	segs = (weight * phb->ioda.tce32_count) / phb->ioda.dma_weight;
++
++	/* Reserve the DMA segments with back-off way, which should
++	 * give us one segment at least.
++	 */
++	do {
++		base = bitmap_find_next_zero_area(phb->ioda.tce32_segmap,
++						  phb->ioda.tce32_count,
++						  0, segs, 0);
++		if (base < phb->ioda.tce32_count)
++			bitmap_set(phb->ioda.tce32_segmap, base, segs);
++	} while ((base > phb->ioda.tce32_count) && (--segs));
++
++	/* There are possibly no DMA32 segments */
++	if (!segs)
++		return -ENODEV;
++
++	pe->tce32_seg_start = base;
++	pe->tce32_seg_end = base + segs;
++	return 0;
++}
++
++static void pnv_pci_ioda1_setup_dma_pe(struct pnv_phb *phb,
++				       struct pnv_ioda_pe *pe)
+ {
+ 
+ 	struct page *tce_mem = NULL;
+ 	const __be64 *swinvp;
+ 	struct iommu_table *tbl;
+-	unsigned int i;
+-	int64_t rc;
+ 	void *addr;
++	unsigned int base, segs, i;
++	int64_t rc;
+ 
+ 	/* XXX FIXME: Handle 64-bit only DMA devices */
+ 	/* XXX FIXME: Provide 64-bit DMA facilities & non-4K TCE tables etc.. */
+-	/* XXX FIXME: Allocate multi-level tables on PHB3 */
+ 
+-	/* We shouldn't already have a 32-bit DMA associated */
+-	if (WARN_ON(pe->tce32_seg >= 0))
++	/* Allocate TCE32 segments */
++	if (pnv_pci_ioda1_dma_segment_alloc(phb, pe)) {
++		pe_err(pe, " Cannot setting up 32-bits TCE table\n");
+ 		return;
++	}
+ 
+-	/* Grab a 32-bit TCE table */
+-	pe->tce32_seg = base;
++	/* Build a 32-bits TCE table */
++	base = pe->tce32_seg_start;
++	segs = pe->tce32_seg_end - pe->tce32_seg_start;
+ 	pe_info(pe, " Setting up 32-bit TCE table at %08x..%08x\n",
+ 		(base << 28), ((base + segs) << 28) - 1);
+ 
+@@ -1943,6 +1997,10 @@ static void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
+ 		}
+ 	}
+ 
++	/* Print some info */
++	pe_info(pe, "DMA weight %d, assigned (%d %d) DMA32 segments\n",
++		pe->dma_weight, base, segs);
++
+ 	/* Setup linux iommu table */
+ 	tbl = pe->tce32_table;
+ 	pnv_pci_setup_iommu_table(tbl, addr, TCE32_TABLE_SIZE * segs,
+@@ -1981,8 +2039,8 @@ static void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
+ 	return;
+  fail:
+ 	/* XXX Failure: Try to fallback to 64-bit only ? */
+-	if (pe->tce32_seg >= 0)
+-		pe->tce32_seg = -1;
++	bitmap_clear(phb->ioda.tce32_segmap, base, segs);
++	pe->tce32_seg_start = pe->tce32_seg_end = 0;
+ 	if (tce_mem)
+ 		__free_pages(tce_mem, get_order(TCE32_TABLE_SIZE * segs));
+ }
+@@ -2051,11 +2109,10 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
+ 	int64_t rc;
+ 
+ 	/* We shouldn't already have a 32-bit DMA associated */
+-	if (WARN_ON(pe->tce32_seg >= 0))
++	if (WARN_ON(pe->tce32_seg_end > pe->tce32_seg_start))
+ 		return;
+ 
+ 	/* The PE will reserve all possible 32-bits space */
+-	pe->tce32_seg = 0;
+ 	end = (1 << ilog2(phb->ioda.m32_pci_base));
+ 	tce_table_size = (end / 0x1000) * 8;
+ 	pe_info(pe, "Setting up 32-bit TCE table at 0..%08x\n",
+@@ -2066,7 +2123,7 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
+ 				   get_order(tce_table_size));
+ 	if (!tce_mem) {
+ 		pe_err(pe, "Failed to allocate a 32-bit TCE memory\n");
+-		goto fail;
++		return;
+ 	}
+ 	addr = page_address(tce_mem);
+ 	memset(addr, 0, tce_table_size);
+@@ -2079,11 +2136,16 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
+ 					pe->pe_number << 1, 1, __pa(addr),
+ 					tce_table_size, 0x1000);
+ 	if (rc) {
++		__free_pages(tce_mem, get_order(tce_table_size));
+ 		pe_err(pe, "Failed to configure 32-bit TCE table,"
+ 		       " err %ld\n", rc);
+-		goto fail;
++		return;
+ 	}
+ 
++	/* Print some info */
++	pe->tce32_seg_end = pe->tce32_seg_start + 1;
++	pe_info(pe, "Assigned DMA32 space\n");
++
+ 	/* Setup linux iommu table */
+ 	tbl = pe->tce32_table;
+ 	pnv_pci_setup_iommu_table(tbl, addr, tce_table_size, 0,
+@@ -2120,76 +2182,30 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
+ 	/* Also create a bypass window */
+ 	if (!pnv_iommu_bypass_disabled)
+ 		pnv_pci_ioda2_setup_bypass_pe(phb, pe);
+-
+-	return;
+-fail:
+-	if (pe->tce32_seg >= 0)
+-		pe->tce32_seg = -1;
+-	if (tce_mem)
+-		__free_pages(tce_mem, get_order(tce_table_size));
+ }
+ 
+-static void pnv_ioda_setup_dma(struct pnv_phb *phb)
++void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
++			       struct pnv_ioda_pe *pe)
+ {
+-	struct pci_controller *hose = phb->hose;
+-	unsigned int residual, remaining, segs, tw, base;
+-	struct pnv_ioda_pe *pe;
+-
+-	/* If we have more PE# than segments available, hand out one
+-	 * per PE until we run out and let the rest fail. If not,
+-	 * then we assign at least one segment per PE, plus more based
+-	 * on the amount of devices under that PE
++	/* Recalculate the PHB's total DMA weight, which depends on
++	 * PCI devices. That means the PCI devices beneath the PHB
++	 * should have been probed successfully. Otherwise, the
++	 * calculated PHB's DMA weight won't be accurate.
+ 	 */
+-	if (phb->ioda.dma_pe_count > phb->ioda.tce32_count)
+-		residual = 0;
+-	else
+-		residual = phb->ioda.tce32_count -
+-			phb->ioda.dma_pe_count;
++	pnv_ioda_phb_dma_weight(phb);
+ 
+-	pr_info("PCI: Domain %04x has %ld available 32-bit DMA segments\n",
+-		hose->global_number, phb->ioda.tce32_count);
+-	pr_info("PCI: %d PE# for a total weight of %d\n",
+-		phb->ioda.dma_pe_count, phb->ioda.dma_weight);
+-
+-	/* Walk our PE list and configure their DMA segments, hand them
+-	 * out one base segment plus any residual segments based on
+-	 * weight
+-	 */
+-	remaining = phb->ioda.tce32_count;
+-	tw = phb->ioda.dma_weight;
+-	base = 0;
+-	list_for_each_entry(pe, &phb->ioda.pe_dma_list, dma_link) {
+-		if (!pe->dma_weight)
+-			continue;
+-		if (!remaining) {
+-			pe_warn(pe, "No DMA32 resources available\n");
+-			continue;
+-		}
+-		segs = 1;
+-		if (residual) {
+-			segs += ((pe->dma_weight * residual)  + (tw / 2)) / tw;
+-			if (segs > remaining)
+-				segs = remaining;
+-		}
++	if (phb->type == PNV_PHB_IODA1)
++		pnv_pci_ioda1_setup_dma_pe(phb, pe);
++	else if (phb->type == PNV_PHB_IODA2)
++		pnv_pci_ioda2_setup_dma_pe(phb, pe);
++}
+ 
+-		/*
+-		 * For IODA2 compliant PHB3, we needn't care about the weight.
+-		 * The all available 32-bits DMA space will be assigned to
+-		 * the specific PE.
+-		 */
+-		if (phb->type == PNV_PHB_IODA1) {
+-			pe_info(pe, "DMA weight %d, assigned %d DMA32 segments\n",
+-				pe->dma_weight, segs);
+-			pnv_pci_ioda_setup_dma_pe(phb, pe, base, segs);
+-		} else {
+-			pe_info(pe, "Assign DMA32 space\n");
+-			segs = 0;
+-			pnv_pci_ioda2_setup_dma_pe(phb, pe);
+-		}
++static void pnv_ioda_setup_dma(struct pnv_phb *phb)
++{
++	struct pnv_ioda_pe *pe;
+ 
+-		remaining -= segs;
+-		base += segs;
+-	}
++	list_for_each_entry(pe, &phb->ioda.pe_dma_list, dma_link)
++		pnv_pci_ioda_setup_dma_pe(phb, pe);
+ }
+ 
+ #ifdef CONFIG_PCI_MSI
+diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
+index f604bb7..2784951 100644
+--- a/arch/powerpc/platforms/powernv/pci.h
++++ b/arch/powerpc/platforms/powernv/pci.h
+@@ -58,15 +58,11 @@ struct pnv_ioda_pe {
+ 	unsigned long		m32_segmap[8];
+ 	unsigned long		m64_segmap[8];
+ 
+-	/* "Weight" assigned to the PE for the sake of DMA resource
+-	 * allocations
+-	 */
+-	unsigned int		dma_weight;
+-
+-	/* "Base" iommu table, ie, 4K TCEs, 32-bit DMA */
+-	int			tce32_seg;
+-	int			tce32_segcount;
++	/* 32-bits DMA */
+ 	struct iommu_table	*tce32_table;
++	unsigned int		dma_weight;
++	unsigned int		tce32_seg_start;
++	unsigned int		tce32_seg_end;
+ 	phys_addr_t		tce_inval_reg_phys;
+ 
+ 	/* 64-bit TCE bypass region */
+@@ -183,17 +179,9 @@ struct pnv_phb {
+ 			unsigned char		pe_rmap[0x10000];
+ 
+ 			/* 32-bit TCE tables allocation */
+-			unsigned long		tce32_count;
+-
+-			/* Total "weight" for the sake of DMA resources
+-			 * allocation
+-			 */
+ 			unsigned int		dma_weight;
+-			unsigned int		dma_pe_count;
+-
+-			/* Sorted list of used PE's, sorted at
+-			 * boot for resource allocation purposes
+-			 */
++			unsigned long		tce32_count;
++			unsigned long		tce32_segmap[8];
+ 			struct list_head	pe_dma_list;
+ 		} ioda;
+ 	};
 -- 
 2.1.0
