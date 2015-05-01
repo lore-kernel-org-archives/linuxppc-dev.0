@@ -2,29 +2,29 @@ Return-Path: <gwshan@linux.vnet.ibm.com>
 Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BD8601A0FE0
+ by lists.ozlabs.org (Postfix) with ESMTPS id B57681A0E06
  for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 May 2015 16:04:34 +1000 (AEST)
 Received: from /spool/local
  by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
  Fri, 1 May 2015 16:04:34 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id DFA612CE8059
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 May 2015 16:04:31 +1000 (EST)
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 714B32BB004D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 May 2015 16:04:32 +1000 (EST)
 Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t4164NsO5046524
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 May 2015 16:04:31 +1000
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t4164OTs20840668
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 May 2015 16:04:32 +1000
 Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
  by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t4163vms009584
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 May 2015 16:03:58 +1000
+ t4163wBL009660
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 May 2015 16:03:59 +1000
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v4 15/21] powerpc/pci: Delay creating pci_dn
-Date: Fri,  1 May 2015 16:03:02 +1000
-Message-Id: <1430460188-31343-16-git-send-email-gwshan@linux.vnet.ibm.com>
+Subject: [PATCH v4 09/21] powerpc/powernv: Use PCI slot reset infrastructure
+Date: Fri,  1 May 2015 16:02:56 +1000
+Message-Id: <1430460188-31343-10-git-send-email-gwshan@linux.vnet.ibm.com>
 In-Reply-To: <1430460188-31343-1-git-send-email-gwshan@linux.vnet.ibm.com>
 References: <1430460188-31343-1-git-send-email-gwshan@linux.vnet.ibm.com>
 Cc: bhelgaas@google.com, linux-pci@vger.kernel.org,
@@ -38,270 +38,323 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The pci_dn instances are allocated from memblock or bootmem when
-creating PCI controller (hoses) in setup_arch(). The PCI hotplug,
-which will be supported by proceeding patches, will release PCI
-device nodes and their corresponding pci_dn on unplugging event.
-The pci_dn instance memory chunks alloed from memblock or bootmem
-are hard to reused after being released.
-
-The patch delay creating pci_dn so that they can be allocated from
-slab. In turn, the memory chunks for them can be reused after being
-released without problem. The creation of eeh_dev instances, which
-depends on pci_dn, is delayed a bit as well.
+For PowerNV platform, running on top of skiboot, all PE level reset
+should be routed to firmware if the bridge of the PE primary bus has
+device-node property "ibm,reset-by-firmware". Otherwise, the kernel
+has to issue hot reset on PE's primary bus despite the requested reset
+types, which is the behaviour before the firmware supports PCI slot
+reset. So the changes don't depend on the PCI slot reset capability
+exposed from the firmware.
 
 Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/ppc-pci.h     |  1 -
- arch/powerpc/kernel/eeh_dev.c          |  2 +-
- arch/powerpc/kernel/pci_dn.c           | 40 +++++++++++++++++++---------------
- arch/powerpc/platforms/maple/pci.c     | 35 +++++++++++++++++------------
- arch/powerpc/platforms/pasemi/pci.c    |  3 ---
- arch/powerpc/platforms/powermac/pci.c  | 39 ++++++++++++++++++++-------------
- arch/powerpc/platforms/powernv/pci.c   |  3 ---
- arch/powerpc/platforms/pseries/setup.c |  1 -
- 8 files changed, 68 insertions(+), 56 deletions(-)
+ arch/powerpc/include/asm/eeh.h               |   1 +
+ arch/powerpc/include/asm/opal.h              |   4 +-
+ arch/powerpc/platforms/powernv/eeh-powernv.c | 206 +++++++++++++--------------
+ 3 files changed, 102 insertions(+), 109 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/ppc-pci.h b/arch/powerpc/include/asm/ppc-pci.h
-index 4122a86..7388316 100644
---- a/arch/powerpc/include/asm/ppc-pci.h
-+++ b/arch/powerpc/include/asm/ppc-pci.h
-@@ -40,7 +40,6 @@ void *traverse_pci_dn(struct pci_dn *root,
- 		      void *(*fn)(struct pci_dn *, void *),
- 		      void *data);
+diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
+index c5eb86f..2793d24 100644
+--- a/arch/powerpc/include/asm/eeh.h
++++ b/arch/powerpc/include/asm/eeh.h
+@@ -190,6 +190,7 @@ enum {
+ #define EEH_RESET_DEACTIVATE	0	/* Deactivate the PE reset	*/
+ #define EEH_RESET_HOT		1	/* Hot reset			*/
+ #define EEH_RESET_FUNDAMENTAL	3	/* Fundamental reset		*/
++#define EEH_RESET_COMPLETE	4	/* PHB complete reset           */
+ #define EEH_LOG_TEMP		1	/* EEH temporary error log	*/
+ #define EEH_LOG_PERM		2	/* EEH permanent error log	*/
  
--extern void pci_devs_phb_init(void);
- extern void pci_devs_phb_init_dynamic(struct pci_controller *phb);
+diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
+index 042af1a..6d467df 100644
+--- a/arch/powerpc/include/asm/opal.h
++++ b/arch/powerpc/include/asm/opal.h
+@@ -129,7 +129,7 @@ int64_t opal_pci_map_pe_dma_window(uint64_t phb_id, uint16_t pe_number, uint16_t
+ int64_t opal_pci_map_pe_dma_window_real(uint64_t phb_id, uint16_t pe_number,
+ 					uint16_t dma_window_number, uint64_t pci_start_addr,
+ 					uint64_t pci_mem_size);
+-int64_t opal_pci_reset(uint64_t phb_id, uint8_t reset_scope, uint8_t assert_state);
++int64_t opal_pci_reset(uint64_t id, uint8_t reset_scope, uint8_t assert_state);
  
- /* From rtas_pci.h */
-diff --git a/arch/powerpc/kernel/eeh_dev.c b/arch/powerpc/kernel/eeh_dev.c
-index aabba94..f33ce5b 100644
---- a/arch/powerpc/kernel/eeh_dev.c
-+++ b/arch/powerpc/kernel/eeh_dev.c
-@@ -110,4 +110,4 @@ static int __init eeh_dev_phb_init(void)
+ int64_t opal_pci_get_hub_diag_data(uint64_t hub_id, void *diag_buffer,
+ 				   uint64_t diag_buffer_len);
+@@ -145,7 +145,7 @@ int64_t opal_get_epow_status(__be64 *status);
+ int64_t opal_set_system_attention_led(uint8_t led_action);
+ int64_t opal_pci_next_error(uint64_t phb_id, __be64 *first_frozen_pe,
+ 			    __be16 *pci_error_type, __be16 *severity);
+-int64_t opal_pci_poll(uint64_t phb_id);
++int64_t opal_pci_poll(uint64_t id, uint8_t *val);
+ int64_t opal_return_cpu(void);
+ int64_t opal_check_token(uint64_t token);
+ int64_t opal_reinit_cpus(uint64_t flags);
+diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
+index ce738ab..3c01095 100644
+--- a/arch/powerpc/platforms/powernv/eeh-powernv.c
++++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
+@@ -742,12 +742,12 @@ static int pnv_eeh_get_state(struct eeh_pe *pe, int *delay)
+ 	return ret;
+ }
+ 
+-static s64 pnv_eeh_phb_poll(struct pnv_phb *phb)
++static s64 pnv_eeh_poll(uint64_t id)
+ {
+ 	s64 rc = OPAL_HARDWARE;
+ 
+ 	while (1) {
+-		rc = opal_pci_poll(phb->opal_id);
++		rc = opal_pci_poll(id, NULL);
+ 		if (rc <= 0)
+ 			break;
+ 
+@@ -763,84 +763,38 @@ static s64 pnv_eeh_phb_poll(struct pnv_phb *phb)
+ int pnv_eeh_phb_reset(struct pci_controller *hose, int option)
+ {
+ 	struct pnv_phb *phb = hose->private_data;
++	uint8_t scope;
+ 	s64 rc = OPAL_HARDWARE;
+ 
+ 	pr_debug("%s: Reset PHB#%x, option=%d\n",
+ 		 __func__, hose->global_number, option);
+-
+-	/* Issue PHB complete reset request */
+-	if (option == EEH_RESET_FUNDAMENTAL ||
+-	    option == EEH_RESET_HOT)
+-		rc = opal_pci_reset(phb->opal_id,
+-				    OPAL_RESET_PHB_COMPLETE,
+-				    OPAL_ASSERT_RESET);
+-	else if (option == EEH_RESET_DEACTIVATE)
+-		rc = opal_pci_reset(phb->opal_id,
+-				    OPAL_RESET_PHB_COMPLETE,
+-				    OPAL_DEASSERT_RESET);
+-	if (rc < 0)
+-		goto out;
+-
+-	/*
+-	 * Poll state of the PHB until the request is done
+-	 * successfully. The PHB reset is usually PHB complete
+-	 * reset followed by hot reset on root bus. So we also
+-	 * need the PCI bus settlement delay.
+-	 */
+-	rc = pnv_eeh_phb_poll(phb);
+-	if (option == EEH_RESET_DEACTIVATE) {
+-		if (system_state < SYSTEM_RUNNING)
+-			udelay(1000 * EEH_PE_RST_SETTLE_TIME);
+-		else
+-			msleep(EEH_PE_RST_SETTLE_TIME);
++	switch (option) {
++	case EEH_RESET_HOT:
++		scope = OPAL_RESET_PCI_HOT;
++		break;
++	case EEH_RESET_FUNDAMENTAL:
++		scope = OPAL_RESET_PCI_FUNDAMENTAL;
++		break;
++	case EEH_RESET_COMPLETE:
++		scope = OPAL_RESET_PHB_COMPLETE;
++		break;
++	case EEH_RESET_DEACTIVATE:
++		return 0;
++	default:
++		pr_warn("%s: Unsupported option %d\n",
++			__func__, option);
++		return -EINVAL;
+ 	}
+-out:
+-	if (rc != OPAL_SUCCESS)
+-		return -EIO;
+ 
+-	return 0;
+-}
+-
+-static int pnv_eeh_root_reset(struct pci_controller *hose, int option)
+-{
+-	struct pnv_phb *phb = hose->private_data;
+-	s64 rc = OPAL_HARDWARE;
++	/* Issue reset and poll until it's completed */
++	rc = opal_pci_reset(phb->opal_id, scope, OPAL_ASSERT_RESET);
++	if (rc > 0)
++		rc = pnv_eeh_poll(phb->opal_id);
+ 
+-	pr_debug("%s: Reset PHB#%x, option=%d\n",
+-		 __func__, hose->global_number, option);
+-
+-	/*
+-	 * During the reset deassert time, we needn't care
+-	 * the reset scope because the firmware does nothing
+-	 * for fundamental or hot reset during deassert phase.
+-	 */
+-	if (option == EEH_RESET_FUNDAMENTAL)
+-		rc = opal_pci_reset(phb->opal_id,
+-				    OPAL_RESET_PCI_FUNDAMENTAL,
+-				    OPAL_ASSERT_RESET);
+-	else if (option == EEH_RESET_HOT)
+-		rc = opal_pci_reset(phb->opal_id,
+-				    OPAL_RESET_PCI_HOT,
+-				    OPAL_ASSERT_RESET);
+-	else if (option == EEH_RESET_DEACTIVATE)
+-		rc = opal_pci_reset(phb->opal_id,
+-				    OPAL_RESET_PCI_HOT,
+-				    OPAL_DEASSERT_RESET);
+-	if (rc < 0)
+-		goto out;
+-
+-	/* Poll state of the PHB until the request is done */
+-	rc = pnv_eeh_phb_poll(phb);
+-	if (option == EEH_RESET_DEACTIVATE)
+-		msleep(EEH_PE_RST_SETTLE_TIME);
+-out:
+-	if (rc != OPAL_SUCCESS)
+-		return -EIO;
+-
+-	return 0;
++	return (rc == OPAL_SUCCESS) ? 0 : -EIO;
+ }
+ 
+-static int pnv_eeh_bridge_reset(struct pci_dev *dev, int option)
++static int __pnv_eeh_bridge_reset(struct pci_dev *dev, int option)
+ {
+ 	struct pci_dn *pdn = pci_get_pdn_by_devfn(dev->bus, dev->devfn);
+ 	struct eeh_dev *edev = pdn_to_eeh_dev(pdn);
+@@ -891,14 +845,57 @@ static int pnv_eeh_bridge_reset(struct pci_dev *dev, int option)
  	return 0;
  }
  
--core_initcall(eeh_dev_phb_init);
-+core_initcall_sync(eeh_dev_phb_init);
-diff --git a/arch/powerpc/kernel/pci_dn.c b/arch/powerpc/kernel/pci_dn.c
-index b3b4df9..d3833af 100644
---- a/arch/powerpc/kernel/pci_dn.c
-+++ b/arch/powerpc/kernel/pci_dn.c
-@@ -277,7 +277,7 @@ void *update_dn_pci_info(struct device_node *dn, void *data)
- 	struct device_node *parent;
- 	struct pci_dn *pdn;
- 
--	pdn = zalloc_maybe_bootmem(sizeof(*pdn), GFP_KERNEL);
-+	pdn = kzalloc(sizeof(*pdn), GFP_KERNEL);
- 	if (pdn == NULL)
- 		return NULL;
- 	dn->data = pdn;
-@@ -442,33 +442,37 @@ void pci_devs_phb_init_dynamic(struct pci_controller *phb)
- 	traverse_pci_devices(dn, update_dn_pci_info, phb);
- }
- 
--/** 
-+static void pci_dev_pdn_setup(struct pci_dev *pdev)
++static int pnv_eeh_bridge_reset(struct pci_dev *dev, int option)
 +{
-+	struct pci_dn *pdn;
++	struct pci_controller *hose;
++	struct pnv_phb *phb;
++	struct device_node *dn = dev ? pci_device_to_OF_node(dev) : NULL;
++	uint64_t id = (0x1ul << 60);
++	uint8_t scope;
++	s64 rc;
 +
-+	if (pdev->dev.archdata.pci_data)
-+		return;
-+
-+	/* Setup the fast path */
-+	pdn = pci_get_pdn(pdev);
-+	pdev->dev.archdata.pci_data = pdn;
-+}
-+DECLARE_PCI_FIXUP_EARLY(PCI_ANY_ID, PCI_ANY_ID, pci_dev_pdn_setup);
-+
-+/*
-  * pci_devs_phb_init - Initialize phbs and pci devs under them.
-- * 
-- * This routine walks over all phb's (pci-host bridges) on the
-- * system, and sets up assorted pci-related structures 
-+ *
-+ * This routine walks over all phb's (pci-host bridges) on
-+ * the system, and sets up assorted pci-related structures
-  * (including pci info in the device node structs) for each
-  * pci device found underneath.  This routine runs once,
-  * early in the boot sequence.
-  */
--void __init pci_devs_phb_init(void)
-+static int __init pci_devs_phb_init(void)
- {
- 	struct pci_controller *phb, *tmp;
- 
- 	/* This must be done first so the device nodes have valid pci info! */
- 	list_for_each_entry_safe(phb, tmp, &hose_list, list_node)
- 		pci_devs_phb_init_dynamic(phb);
--}
--
--static void pci_dev_pdn_setup(struct pci_dev *pdev)
--{
--	struct pci_dn *pdn;
- 
--	if (pdev->dev.archdata.pci_data)
--		return;
--
--	/* Setup the fast path */
--	pdn = pci_get_pdn(pdev);
--	pdev->dev.archdata.pci_data = pdn;
-+	return 0;
- }
--DECLARE_PCI_FIXUP_EARLY(PCI_ANY_ID, PCI_ANY_ID, pci_dev_pdn_setup);
-+
-+core_initcall(pci_devs_phb_init);
-diff --git a/arch/powerpc/platforms/maple/pci.c b/arch/powerpc/platforms/maple/pci.c
-index a923230..04a69a8 100644
---- a/arch/powerpc/platforms/maple/pci.c
-+++ b/arch/powerpc/platforms/maple/pci.c
-@@ -568,6 +568,26 @@ void maple_pci_irq_fixup(struct pci_dev *dev)
- 	DBG(" <- maple_pci_irq_fixup\n");
- }
- 
-+static int maple_pci_root_bridge_prepare(struct pci_host_bridge *bridge)
-+{
-+	struct pci_controller *hose = pci_bus_to_host(bridge->bus);
-+	struct device_node *np, *child;
-+
-+	if (hose != u3_agp)
-+		return 0;
-+
-+	/* Fixup the PCI<->OF mapping for U3 AGP due to bus renumbering. We
-+	 * assume there is no P2P bridge on the AGP bus, which should be a
-+	 * safe assumptions hopefully.
++	/*
++	 * If the firmware can't handle it, we will issue hot reset
++	 * on the secondary bus despite the requested reset type
 +	 */
-+	np = hose->dn;
-+	PCI_DN(np)->busno = 0xf0;
-+	for_each_child_of_node(np, child)
-+		PCI_DN(child)->busno = 0xf0;
++	if (!dn || !of_get_property(dn, "ibm,reset-by-firmware", NULL))
++		return __pnv_eeh_bridge_reset(dev, option);
 +
-+	return 0;
-+}
-+
- void __init maple_pci_init(void)
- {
- 	struct device_node *np, *root;
-@@ -605,20 +625,7 @@ void __init maple_pci_init(void)
- 	if (ht && maple_add_bridge(ht) != 0)
- 		of_node_put(ht);
- 
--	/* Setup the linkage between OF nodes and PHBs */ 
--	pci_devs_phb_init();
--
--	/* Fixup the PCI<->OF mapping for U3 AGP due to bus renumbering. We
--	 * assume there is no P2P bridge on the AGP bus, which should be a
--	 * safe assumptions hopefully.
--	 */
--	if (u3_agp) {
--		struct device_node *np = u3_agp->dn;
--		PCI_DN(np)->busno = 0xf0;
--		for (np = np->child; np; np = np->sibling)
--			PCI_DN(np)->busno = 0xf0;
--	}
--
-+	ppc_md.pcibios_root_bridge_prepare = maple_pci_root_bridge_prepare;
- 	/* Tell pci.c to not change any resource allocations.  */
- 	pci_add_flags(PCI_PROBE_ONLY);
- }
-diff --git a/arch/powerpc/platforms/pasemi/pci.c b/arch/powerpc/platforms/pasemi/pci.c
-index f3a68a0..10c4e8f 100644
---- a/arch/powerpc/platforms/pasemi/pci.c
-+++ b/arch/powerpc/platforms/pasemi/pci.c
-@@ -229,9 +229,6 @@ void __init pas_pci_init(void)
- 			of_node_get(np);
- 
- 	of_node_put(root);
--
--	/* Setup the linkage between OF nodes and PHBs */
--	pci_devs_phb_init();
- }
- 
- void __iomem *pasemi_pci_getcfgaddr(struct pci_dev *dev, int offset)
-diff --git a/arch/powerpc/platforms/powermac/pci.c b/arch/powerpc/platforms/powermac/pci.c
-index 59ab16f..368716f 100644
---- a/arch/powerpc/platforms/powermac/pci.c
-+++ b/arch/powerpc/platforms/powermac/pci.c
-@@ -878,6 +878,29 @@ void pmac_pci_irq_fixup(struct pci_dev *dev)
- #endif /* CONFIG_PPC32 */
- }
- 
-+#ifdef CONFIG_PPC64
-+static int pmac_pci_root_bridge_prepare(struct pci_hot_bridge *bridge)
-+{
-+	struct pci_controller *hose = pci_bus_to_host(bridge->bus);
-+	struct device_node *np, *child;
-+
-+	if (hose != u3_agp)
++	/* The firmware can handle the request */
++	switch (option) {
++	case EEH_RESET_HOT:
++		scope = OPAL_RESET_PCI_HOT;
++		break;
++	case EEH_RESET_FUNDAMENTAL:
++		scope = OPAL_RESET_PCI_FUNDAMENTAL;
++		break;
++	case EEH_RESET_DEACTIVATE:
 +		return 0;
++	case EEH_RESET_COMPLETE:
++	default:
++		pr_warn("%s: Unsupported option %d on device %s\n",
++			__func__, option, pci_name(dev));
++		return -EINVAL;
++	}
 +
-+	/* Fixup the PCI<->OF mapping for U3 AGP due to bus renumbering. We
-+	 * assume there is no P2P bridge on the AGP bus, which should be a
-+	 * safe assumptions for now. We should do something better in the
-+	 * future though
-+	 */
-+	np = hose->dn;
-+	PCI_DN(np)->busno = 0xf0;
-+	for_each_child_of_node(np, child)
-+		PCI_DN(child)->busno = 0xf0;
++	hose = pci_bus_to_host(dev->bus);
++	phb = hose->private_data;
++	id |= (dev->bus->number << 24) | (dev->devfn << 16) | phb->opal_id;
++	rc = opal_pci_reset(id, scope, OPAL_ASSERT_RESET);
++	if (rc > 0)
++		rc = pnv_eeh_poll(id);
 +
-+	return 0;
++	return (rc == OPAL_SUCCESS) ? 0 : -EIO;
 +}
-+#endif /* CONFIG_PPC64 */
 +
- void __init pmac_pci_init(void)
+ void pnv_pci_reset_secondary_bus(struct pci_dev *dev)
  {
- 	struct device_node *np, *root;
-@@ -914,22 +937,8 @@ void __init pmac_pci_init(void)
- 	if (ht && pmac_add_bridge(ht) != 0)
- 		of_node_put(ht);
+ 	struct pci_controller *hose;
  
--	/* Setup the linkage between OF nodes and PHBs */
--	pci_devs_phb_init();
--
--	/* Fixup the PCI<->OF mapping for U3 AGP due to bus renumbering. We
--	 * assume there is no P2P bridge on the AGP bus, which should be a
--	 * safe assumptions for now. We should do something better in the
--	 * future though
--	 */
--	if (u3_agp) {
--		struct device_node *np = u3_agp->dn;
--		PCI_DN(np)->busno = 0xf0;
--		for (np = np->child; np; np = np->sibling)
--			PCI_DN(np)->busno = 0xf0;
--	}
- 	/* pmac_check_ht_link(); */
--
-+	ppc_md.pcibios_root_bridge_prepare = pmac_pci_root_bridge_prepare;
- #else /* CONFIG_PPC64 */
- 	init_p2pbridge();
- 	init_second_ohare();
-diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
-index 60e6d65..21a4eb3 100644
---- a/arch/powerpc/platforms/powernv/pci.c
-+++ b/arch/powerpc/platforms/powernv/pci.c
-@@ -819,9 +819,6 @@ void __init pnv_pci_init(void)
- 	for_each_compatible_node(np, NULL, "ibm,ioda2-phb")
- 		pnv_pci_init_ioda2_phb(np);
- 
--	/* Setup the linkage between OF nodes and PHBs */
--	pci_devs_phb_init();
--
- 	/* Configure IOMMU DMA hooks */
- 	ppc_md.tce_build = pnv_tce_build_vm;
- 	ppc_md.tce_free = pnv_tce_free_vm;
-diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
-index df6a704..5f80758 100644
---- a/arch/powerpc/platforms/pseries/setup.c
-+++ b/arch/powerpc/platforms/pseries/setup.c
-@@ -482,7 +482,6 @@ static void __init find_and_init_phbs(void)
- 	}
- 
- 	of_node_put(root);
--	pci_devs_phb_init();
+ 	if (pci_is_root_bus(dev->bus)) {
+ 		hose = pci_bus_to_host(dev->bus);
+-		pnv_eeh_root_reset(hose, EEH_RESET_HOT);
+-		pnv_eeh_root_reset(hose, EEH_RESET_DEACTIVATE);
++		pnv_eeh_phb_reset(hose, EEH_RESET_HOT);
++		pnv_eeh_phb_reset(hose, EEH_RESET_DEACTIVATE);
+ 	} else {
+ 		pnv_eeh_bridge_reset(dev, EEH_RESET_HOT);
+ 		pnv_eeh_bridge_reset(dev, EEH_RESET_DEACTIVATE);
+@@ -920,8 +917,9 @@ void pnv_pci_reset_secondary_bus(struct pci_dev *dev)
+ static int pnv_eeh_reset(struct eeh_pe *pe, int option)
+ {
+ 	struct pci_controller *hose = pe->phb;
++	struct pnv_phb *phb;
+ 	struct pci_bus *bus;
+-	int ret;
++	s64 rc;
  
  	/*
- 	 * PCI_PROBE_ONLY and PCI_REASSIGN_ALL_BUS can be set via properties
+ 	 * For PHB reset, we always have complete reset. For those PEs whose
+@@ -937,43 +935,37 @@ static int pnv_eeh_reset(struct eeh_pe *pe, int option)
+ 	 * reset. The side effect is that EEH core has to clear the frozen
+ 	 * state explicitly after BAR restore.
+ 	 */
+-	if (pe->type & EEH_PE_PHB) {
+-		ret = pnv_eeh_phb_reset(hose, option);
+-	} else {
+-		struct pnv_phb *phb;
+-		s64 rc;
++	if (pe->type & EEH_PE_PHB)
++		return pnv_eeh_phb_reset(hose, EEH_RESET_COMPLETE);
+ 
+-		/*
+-		 * The frozen PE might be caused by PAPR error injection
+-		 * registers, which are expected to be cleared after hitting
+-		 * frozen PE as stated in the hardware spec. Unfortunately,
+-		 * that's not true on P7IOC. So we have to clear it manually
+-		 * to avoid recursive EEH errors during recovery.
+-		 */
+-		phb = hose->private_data;
+-		if (phb->model == PNV_PHB_MODEL_P7IOC &&
+-		    (option == EEH_RESET_HOT ||
+-		    option == EEH_RESET_FUNDAMENTAL)) {
+-			rc = opal_pci_reset(phb->opal_id,
+-					    OPAL_RESET_PHB_ERROR,
+-					    OPAL_ASSERT_RESET);
+-			if (rc != OPAL_SUCCESS) {
+-				pr_warn("%s: Failure %lld clearing "
+-					"error injection registers\n",
+-					__func__, rc);
+-				return -EIO;
+-			}
++	/*
++	 * The frozen PE might be caused by PAPR error injection
++	 * registers, which are expected to be cleared after hitting
++	 * frozen PE as stated in the hardware spec. Unfortunately,
++	 * that's not true on P7IOC. So we have to clear it manually
++	 * to avoid recursive EEH errors during recovery.
++	 */
++	phb = hose->private_data;
++	if (phb->model == PNV_PHB_MODEL_P7IOC &&
++	    (option == EEH_RESET_HOT ||
++	    option == EEH_RESET_FUNDAMENTAL)) {
++		rc = opal_pci_reset(phb->opal_id,
++				    OPAL_RESET_PHB_ERROR,
++				    OPAL_ASSERT_RESET);
++		if (rc != OPAL_SUCCESS) {
++			pr_warn("%s: Failure %lld clearing error "
++				"injection registers on PHB#%d\n",
++				__func__, rc, hose->global_number);
++			return -EIO;
+ 		}
+-
+-		bus = eeh_pe_bus_get(pe);
+-		if (pci_is_root_bus(bus) ||
+-			pci_is_root_bus(bus->parent))
+-			ret = pnv_eeh_root_reset(hose, option);
+-		else
+-			ret = pnv_eeh_bridge_reset(bus->self, option);
+ 	}
+ 
+-	return ret;
++	/* Route the reset request to PHB or upstream bridge */
++	bus = eeh_pe_bus_get(pe);
++	if (pci_is_root_bus(bus))
++		return pnv_eeh_phb_reset(hose, option);
++
++	return pnv_eeh_bridge_reset(bus->self, option);
+ }
+ 
+ /**
 -- 
 2.1.0
