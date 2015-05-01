@@ -1,30 +1,30 @@
 Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id F221B1A025F
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 May 2015 16:04:12 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 482201A1050
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 May 2015 16:04:33 +1000 (AEST)
 Received: from /spool/local
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Fri, 1 May 2015 16:04:11 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 322212BB004D
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 May 2015 16:04:09 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t41640HM38928634
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 May 2015 16:04:08 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t4163Zcf005558
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 May 2015 16:03:35 +1000
+ Fri, 1 May 2015 16:04:32 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id AB0793578054
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 May 2015 16:04:31 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t4164NPe45547666
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 May 2015 16:04:31 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t4163vrr000785
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 May 2015 16:03:58 +1000
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v4 03/21] powerpc/powernv: M64 support improvement
-Date: Fri,  1 May 2015 16:02:50 +1000
-Message-Id: <1430460188-31343-4-git-send-email-gwshan@linux.vnet.ibm.com>
+Subject: [PATCH v4 16/21] powerpc/pci: Create eeh_dev while creating pci_dn
+Date: Fri,  1 May 2015 16:03:03 +1000
+Message-Id: <1430460188-31343-17-git-send-email-gwshan@linux.vnet.ibm.com>
 In-Reply-To: <1430460188-31343-1-git-send-email-gwshan@linux.vnet.ibm.com>
 References: <1430460188-31343-1-git-send-email-gwshan@linux.vnet.ibm.com>
 Cc: bhelgaas@google.com, linux-pci@vger.kernel.org,
@@ -38,316 +38,146 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We're having the hardware or enforced (on P7IOC) limitation: M64
-segment#x can only be assigned to PE#x. IO and M32 segment can be
-mapped to arbitrary PE# via IODT and M32DT. It means the PE number
-should be x if M64 segment#x has been assigned to the PE. Also, each
-PE own one M64 segment at most. Currently, we are reserving PE#
-according to root port's M64 window. It won't be reliable once we
-extend M64 windows of root port, or the upstream port of the PCIE
-switch behind root port to PHB's M64 window, in order to support
-PCI hotplug in future.
-
-The patch reserves PE# for M64 segments according to the M64 resources
-of the PCI devices (not bridges) contained in the PE. Besides, it's
-always worthy to trace the M64 segments consumed by the PE, which can
-be released at PCI unplugging time.
+The eeh_dev is always created based on pci_dn, but with initcall
+supported by core_initcall_sync(). The patch creates eeh_dev
+when pci_dn is created, indicating they have same life cycle.
 
 Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/powernv/pci-ioda.c | 190 ++++++++++++++++++------------
- arch/powerpc/platforms/powernv/pci.h      |  10 +-
- 2 files changed, 122 insertions(+), 78 deletions(-)
+ arch/powerpc/include/asm/eeh.h         |  6 ++++--
+ arch/powerpc/kernel/eeh_dev.c          | 18 ++++--------------
+ arch/powerpc/kernel/pci_dn.c           | 12 ++++++++++++
+ arch/powerpc/platforms/pseries/setup.c |  6 +-----
+ 4 files changed, 21 insertions(+), 21 deletions(-)
 
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index 646962f..a994882 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -283,28 +283,78 @@ fail:
- 	return -EIO;
+diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
+index 2793d24..4ed88f6 100644
+--- a/arch/powerpc/include/asm/eeh.h
++++ b/arch/powerpc/include/asm/eeh.h
+@@ -269,7 +269,8 @@ void eeh_pe_restore_bars(struct eeh_pe *pe);
+ const char *eeh_pe_loc_get(struct eeh_pe *pe);
+ struct pci_bus *eeh_pe_bus_get(struct eeh_pe *pe);
+ 
+-void *eeh_dev_init(struct pci_dn *pdn, void *data);
++struct eeh_dev *eeh_dev_init(struct pci_dn *pdn,
++			     struct pci_controller *phb);
+ void eeh_dev_phb_init_dynamic(struct pci_controller *phb);
+ int eeh_init(void);
+ int __init eeh_ops_register(struct eeh_ops *ops);
+@@ -322,7 +323,8 @@ static inline int eeh_init(void)
+ 	return 0;
  }
  
--static void pnv_ioda_reserve_m64_pe(struct pnv_phb *phb)
-+/* We extend the M64 window of root port, or the upstream bridge port
-+ * of the PCIE switch behind root port. So we shouldn't reserve PEs
-+ * for M64 resources because there are no (normal) PCI devices consuming
-+ * M64 resources on the PCI buses leading from root port, or the upstream
-+ * bridge port. The function returns true if the indicated PCI bus needs
-+ * reserved PEs because of M64 resources in advance. Otherwise, the
-+ * function returns false.
-+ */
-+static bool pnv_ioda_need_m64_pe(struct pnv_phb *phb,
-+				 struct pci_bus *bus)
+-static inline void *eeh_dev_init(struct pci_dn *pdn, void *data)
++static inline struct eeh_dev *eeh_dev_init(struct pci_dn *pdn,
++					   struct pci_controller *phb)
  {
--	resource_size_t sgsz = phb->ioda.m64_segsize;
-+	/* Root bus */
-+	if (!bus || pci_is_root_bus(bus))
-+		return false;
-+
-+	/* Bus leading from root port. We need check what types of PCI
-+	 * devices on the bus. If it's connecting PCI bridge, we don't
-+	 * need reserve M64 PEs for it. Otherwise, we still need to do
-+	 * that.
-+	 */
-+	if (pci_is_root_bus(bus->self->bus)) {
-+		struct pci_dev *pdev;
-+
-+		list_for_each_entry(pdev, &bus->devices, bus_list) {
-+			if (pdev->hdr_type == PCI_HEADER_TYPE_NORMAL)
-+				return true;
-+		}
-+
-+		return false;
-+	}
-+
-+	/* Bus leading from the upstream bridge port on top level */
-+	if (pci_is_root_bus(bus->self->bus->self->bus))
-+		return false;
-+
-+	return true;
-+}
-+
-+static void pnv_ioda_reserve_m64_pe(struct pnv_phb *phb,
-+				    struct pci_bus *bus)
-+{
-+	resource_size_t segsz = phb->ioda.m64_segsize;
- 	struct pci_dev *pdev;
- 	struct resource *r;
--	int base, step, i;
-+	unsigned long pe_no, limit;
-+	int i;
- 
--	/*
--	 * Root bus always has full M64 range and root port has
--	 * M64 range used in reality. So we're checking root port
--	 * instead of root bus.
-+	if (!pnv_ioda_need_m64_pe(phb, bus))
-+		return;
-+
-+	/* The bridge's M64 window might have been extended to the
-+	 * PHB's M64 window in order to support PCI hotplug. So the
-+	 * bridge's M64 window isn't reliable to be used for picking
-+	 * PE# for its leading PCI bus. We have to check the M64
-+	 * resources consumed by the PCI devices, which seat on the
-+	 * PCI bus.
- 	 */
--	list_for_each_entry(pdev, &phb->hose->bus->devices, bus_list) {
--		for (i = 0; i < PCI_BRIDGE_RESOURCE_NUM; i++) {
--			r = &pdev->resource[PCI_BRIDGE_RESOURCES + i];
--			if (!r->parent ||
--			    !pnv_pci_is_mem_pref_64(r->flags))
-+	list_for_each_entry(pdev, &bus->devices, bus_list) {
-+		for (i = 0; i < PCI_NUM_RESOURCES; i++) {
-+#ifdef CONFIG_PCI_IOV
-+			if (i >= PCI_IOV_RESOURCES && i <= PCI_IOV_RESOURCE_END)
-+				continue;
-+#endif
-+			r = &pdev->resource[i];
-+			if (!r->flags || r->start >= r->end ||
-+			    !r->parent || !pnv_pci_is_mem_pref_64(r->flags))
- 				continue;
- 
--			base = (r->start - phb->ioda.m64_base) / sgsz;
--			for (step = 0; step < resource_size(r) / sgsz; step++)
--				pnv_ioda_reserve_pe(phb, base + step);
-+			pe_no = (r->start - phb->ioda.m64_base) / segsz;
-+			limit = ALIGN(r->end - phb->ioda.m64_base, segsz) / segsz;
-+			for (; pe_no < limit; pe_no++)
-+				pnv_ioda_reserve_pe(phb, pe_no);
- 		}
- 	}
+ 	return NULL;
  }
-@@ -316,85 +366,64 @@ static int pnv_ioda_pick_m64_pe(struct pnv_phb *phb,
- 	struct pci_dev *pdev;
- 	struct resource *r;
- 	struct pnv_ioda_pe *master_pe, *pe;
--	unsigned long size, *pe_alloc;
--	bool found;
--	int start, i, j;
+diff --git a/arch/powerpc/kernel/eeh_dev.c b/arch/powerpc/kernel/eeh_dev.c
+index f33ce5b..7486932 100644
+--- a/arch/powerpc/kernel/eeh_dev.c
++++ b/arch/powerpc/kernel/eeh_dev.c
+@@ -44,14 +44,14 @@
+ /**
+  * eeh_dev_init - Create EEH device according to OF node
+  * @pdn: PCI device node
+- * @data: PHB
++ * @phb: PCI controller
+  *
+  * It will create EEH device according to the given OF node. The function
+  * might be called by PCI emunation, DR, PHB hotplug.
+  */
+-void *eeh_dev_init(struct pci_dn *pdn, void *data)
++struct eeh_dev *eeh_dev_init(struct pci_dn *pdn,
++			     struct pci_controller *phb)
+ {
+-	struct pci_controller *phb = data;
+ 	struct eeh_dev *edev;
+ 
+ 	/* Allocate EEH device */
+@@ -68,7 +68,7 @@ void *eeh_dev_init(struct pci_dn *pdn, void *data)
+ 	edev->phb = phb;
+ 	INIT_LIST_HEAD(&edev->list);
+ 
+-	return NULL;
++	return edev;
+ }
+ 
+ /**
+@@ -80,16 +80,8 @@ void *eeh_dev_init(struct pci_dn *pdn, void *data)
+  */
+ void eeh_dev_phb_init_dynamic(struct pci_controller *phb)
+ {
+-	struct pci_dn *root = phb->pci_data;
 -
--	/* Root bus shouldn't use M64 */
--	if (pci_is_root_bus(bus))
--		return IODA_INVALID_PE;
+ 	/* EEH PE for PHB */
+ 	eeh_phb_pe_create(phb);
 -
--	/* We support only one M64 window on each bus */
--	found = false;
--	pci_bus_for_each_resource(bus, r, i) {
--		if (r && r->parent &&
--		    pnv_pci_is_mem_pref_64(r->flags)) {
--			found = true;
--			break;
+-	/* EEH device for PHB */
+-	eeh_dev_init(root, phb);
+-
+-	/* EEH devices for children OF nodes */
+-	traverse_pci_dn(root, eeh_dev_init, phb);
+ }
+ 
+ /**
+@@ -105,8 +97,6 @@ static int __init eeh_dev_phb_init(void)
+ 	list_for_each_entry_safe(phb, tmp, &hose_list, list_node)
+ 		eeh_dev_phb_init_dynamic(phb);
+ 
+-	pr_info("EEH: devices created\n");
+-
+ 	return 0;
+ }
+ 
+diff --git a/arch/powerpc/kernel/pci_dn.c b/arch/powerpc/kernel/pci_dn.c
+index d3833af..abc81fa 100644
+--- a/arch/powerpc/kernel/pci_dn.c
++++ b/arch/powerpc/kernel/pci_dn.c
+@@ -276,6 +276,9 @@ void *update_dn_pci_info(struct device_node *dn, void *data)
+ 	const __be32 *regs;
+ 	struct device_node *parent;
+ 	struct pci_dn *pdn;
++#ifdef CONFIG_EEH
++	struct eeh_dev *edev;
++#endif
+ 
+ 	pdn = kzalloc(sizeof(*pdn), GFP_KERNEL);
+ 	if (pdn == NULL)
+@@ -306,6 +309,15 @@ void *update_dn_pci_info(struct device_node *dn, void *data)
+ 	/* Extended config space */
+ 	pdn->pci_ext_config_space = (type && of_read_number(type, 1) == 1);
+ 
++	/* Initialize EEH device */
++#ifdef CONFIG_EEH
++	edev = eeh_dev_init(pdn, phb);
++	if (!edev) {
++		kfree(pdn);
++		return NULL;
++	}
++#endif
++
+ 	/* Attach to parent node */
+ 	INIT_LIST_HEAD(&pdn->child_list);
+ 	INIT_LIST_HEAD(&pdn->list);
+diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
+index 5f80758..92974aa 100644
+--- a/arch/powerpc/platforms/pseries/setup.c
++++ b/arch/powerpc/platforms/pseries/setup.c
+@@ -261,12 +261,8 @@ static int pci_dn_reconfig_notifier(struct notifier_block *nb, unsigned long act
+ 	switch (action) {
+ 	case OF_RECONFIG_ATTACH_NODE:
+ 		pci = np->parent->data;
+-		if (pci) {
++		if (pci)
+ 			update_dn_pci_info(np, pci->phb);
+-
+-			/* Create EEH device for the OF node */
+-			eeh_dev_init(PCI_DN(np), pci->phb);
 -		}
--	}
-+	unsigned long size, *pe_bitsmap;
-+	unsigned long pe_no, limit;
-+	int i;
- 
--	/* No M64 window found ? */
--	if (!found)
-+	if (!pnv_ioda_need_m64_pe(phb, bus))
- 		return IODA_INVALID_PE;
- 
--	/* Allocate bitmap */
-+        /* Allocate bitmap */
- 	size = _ALIGN_UP(phb->ioda.total_pe / 8, sizeof(unsigned long));
--	pe_alloc = kzalloc(size, GFP_KERNEL);
--	if (!pe_alloc) {
--		pr_warn("%s: Out of memory !\n",
--			__func__);
-+	pe_bitsmap = kzalloc(size, GFP_KERNEL);
-+	if (!pe_bitsmap) {
-+		pr_warn("%s: Out of memory !\n", __func__);
- 		return IODA_INVALID_PE;
- 	}
- 
--	/*
--	 * Figure out reserved PE numbers by the PE
--	 * the its child PEs.
--	 */
--	start = (r->start - phb->ioda.m64_base) / segsz;
--	for (i = 0; i < resource_size(r) / segsz; i++)
--		set_bit(start + i, pe_alloc);
--
--	if (all)
--		goto done;
--
--	/*
--	 * If the PE doesn't cover all subordinate buses,
--	 * we need subtract from reserved PEs for children.
-+	/* The bridge's M64 window might be extended to PHB's M64
-+	 * window by intention to support PCI hotplug. So we have
-+	 * to check the M64 resources consumed by the PCI devices
-+	 * on the PCI bus.
- 	 */
- 	list_for_each_entry(pdev, &bus->devices, bus_list) {
--		if (!pdev->subordinate)
--			continue;
-+		for (i = 0; i < PCI_NUM_RESOURCES; i++) {
-+#ifdef CONFIG_PCI_IOV
-+			if (i >= PCI_IOV_RESOURCES &&
-+			    i <= PCI_IOV_RESOURCE_END)
-+				continue;
-+#endif
-+			/* Don't scan bridge's window if the PE
-+			 * doesn't contain its subordinate bus.
-+			 */
-+			if (!all && i >= PCI_BRIDGE_RESOURCES &&
-+			    i <= PCI_BRIDGE_RESOURCE_END)
-+				continue;
- 
--		pci_bus_for_each_resource(pdev->subordinate, r, i) {
--			if (!r || !r->parent ||
--			    !pnv_pci_is_mem_pref_64(r->flags))
-+			r = &pdev->resource[i];
-+			if (!r->flags || r->start >= r->end ||
-+			    !r->parent || !pnv_pci_is_mem_pref_64(r->flags))
- 				continue;
- 
--			start = (r->start - phb->ioda.m64_base) / segsz;
--			for (j = 0; j < resource_size(r) / segsz ; j++)
--				clear_bit(start + j, pe_alloc);
--                }
--        }
-+			pe_no = (r->start - phb->ioda.m64_base) / segsz;
-+			limit = ALIGN(r->end - phb->ioda.m64_base, segsz) / segsz;
-+			for (; pe_no < limit; pe_no++)
-+				set_bit(pe_no, pe_bitsmap);
-+		}
-+	}
- 
--	/*
--	 * the current bus might not own M64 window and that's all
--	 * contributed by its child buses. For the case, we needn't
--	 * pick M64 dependent PE#.
--	 */
--	if (bitmap_empty(pe_alloc, phb->ioda.total_pe)) {
--		kfree(pe_alloc);
-+	/* No M64 window found ? */
-+	if (bitmap_empty(pe_bitsmap, phb->ioda.total_pe)) {
-+		kfree(pe_bitsmap);
- 		return IODA_INVALID_PE;
- 	}
- 
--	/*
--	 * Figure out the master PE and put all slave PEs to master
--	 * PE's list to form compound PE.
-+	/* Figure out the master PE and put all slave PEs
-+	 * to master PE's list to form compound PE.
- 	 */
--done:
- 	master_pe = NULL;
- 	i = -1;
--	while ((i = find_next_bit(pe_alloc, phb->ioda.total_pe, i + 1)) <
-+	while ((i = find_next_bit(pe_bitsmap, phb->ioda.total_pe, i + 1)) <
- 		phb->ioda.total_pe) {
- 		pe = &phb->ioda.pe_array[i];
- 
-@@ -408,6 +437,13 @@ done:
- 			list_add_tail(&pe->list, &master_pe->slaves);
- 		}
- 
-+		/* Pick the M64 segment, which should be available. Also,
-+		 * those M64 segments consumed by slave PEs are contributed
-+		 * to the master PE.
-+		 */
-+		BUG_ON(test_and_set_bit(pe->pe_number, phb->ioda.m64_segmap));
-+		BUG_ON(test_and_set_bit(pe->pe_number, master_pe->m64_segmap));
-+
- 		/* P7IOC supports M64DT, which helps mapping M64 segment
- 		 * to one particular PE#. Unfortunately, PHB3 has fixed
- 		 * mapping between M64 segment and PE#. In order for same
-@@ -431,7 +467,7 @@ done:
- 		}
- 	}
- 
--	kfree(pe_alloc);
-+	kfree(pe_bitsmap);
- 	return master_pe->pe_number;
- }
- 
-@@ -1233,7 +1269,7 @@ static void pnv_pci_ioda_setup_PEs(void)
- 
- 		/* M64 layout might affect PE allocation */
- 		if (phb->reserve_m64_pe)
--			phb->reserve_m64_pe(phb);
-+			phb->reserve_m64_pe(phb, phb->hose->bus);
- 
- 		pnv_ioda_setup_PEs(hose->bus);
- 	}
-diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
-index 070ee88..19022cf 100644
---- a/arch/powerpc/platforms/powernv/pci.h
-+++ b/arch/powerpc/platforms/powernv/pci.h
-@@ -49,6 +49,13 @@ struct pnv_ioda_pe {
- 	/* PE number */
- 	unsigned int		pe_number;
- 
-+	/* IO/M32/M64 segments consumed by the PE. Each PE can
-+	 * have one M64 segment at most, but M64 segments consumed
-+	 * by slave PEs will be contributed to the master PE. One
-+	 * PE can own multiple IO and M32 segments.
-+	 */
-+	unsigned long		m64_segmap[8];
-+
- 	/* "Weight" assigned to the PE for the sake of DMA resource
- 	 * allocations
- 	 */
-@@ -114,7 +121,7 @@ struct pnv_phb {
- 	u32 (*bdfn_to_pe)(struct pnv_phb *phb, struct pci_bus *bus, u32 devfn);
- 	void (*shutdown)(struct pnv_phb *phb);
- 	int (*init_m64)(struct pnv_phb *phb);
--	void (*reserve_m64_pe)(struct pnv_phb *phb);
-+	void (*reserve_m64_pe)(struct pnv_phb *phb, struct pci_bus *bus);
- 	int (*pick_m64_pe)(struct pnv_phb *phb, struct pci_bus *bus, int all);
- 	int (*get_pe_state)(struct pnv_phb *phb, int pe_no);
- 	void (*freeze_pe)(struct pnv_phb *phb, int pe_no);
-@@ -153,6 +160,7 @@ struct pnv_phb {
- 			struct mutex		pe_alloc_mutex;
- 
- 			/* M32 & IO segment maps */
-+			unsigned long		m64_segmap[8];
- 			unsigned int		*m32_segmap;
- 			unsigned int		*io_segmap;
- 			struct pnv_ioda_pe	*pe_array;
+ 		break;
+ 	default:
+ 		err = NOTIFY_DONE;
 -- 
 2.1.0
