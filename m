@@ -1,28 +1,35 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pa0-f42.google.com (mail-pa0-f42.google.com
- [209.85.220.42])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <sukadev@linux.vnet.ibm.com>
+Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0E03F1A0E6D
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 May 2015 16:53:17 +1000 (AEST)
-Received: by pabsx10 with SMTP id sx10so83252495pab.3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Apr 2015 23:53:15 -0700 (PDT)
-Message-ID: <554322D4.7070508@ozlabs.ru>
-Date: Fri, 01 May 2015 16:53:08 +1000
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-MIME-Version: 1.0
-To: David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: [PATCH kernel v9 27/32] powerpc/iommu/ioda2: Add get_table_size()
- to calculate the size of future table
-References: <1429964096-11524-1-git-send-email-aik@ozlabs.ru>
- <1429964096-11524-28-git-send-email-aik@ozlabs.ru>
- <20150429064029.GX32589@voom.redhat.com> <5542FCD2.9000601@ozlabs.ru>
- <20150501051247.GP24886@voom.redhat.com>
-In-Reply-To: <20150501051247.GP24886@voom.redhat.com>
-Content-Type: text/plain; charset=koi8-r; format=flowed
-Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
- Alex Williamson <alex.williamson@redhat.com>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 40E381A0DEB
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 May 2015 17:06:00 +1000 (AEST)
+Received: from /spool/local
+ by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
+ Fri, 1 May 2015 03:05:57 -0400
+Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
+ [9.57.198.24])
+ by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 231196E8040
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 May 2015 02:57:43 -0400 (EDT)
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+ by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t4175sk539256234
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 May 2015 07:05:54 GMT
+Received: from d01av02.pok.ibm.com (localhost [127.0.0.1])
+ by d01av02.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t4175qSs027349
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 May 2015 03:05:53 -0400
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: mingo@redhat.com, ak@linux.intel.com,
+ Michael Ellerman <mpe@ellerman.id.au>, Jiri Olsa <jolsa@redhat.com>,
+ Arnaldo Carvalho de Melo <acme@kernel.org>,
+ Paul Mackerras <paulus@samba.org>
+Subject: [RFC][PATCH 0/4] perf: Enable symbolic event names
+Date: Fri,  1 May 2015 00:05:37 -0700
+Message-Id: <1430463941-26109-1-git-send-email-sukadev@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,159 +39,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/01/2015 03:12 PM, David Gibson wrote:
-> On Fri, May 01, 2015 at 02:10:58PM +1000, Alexey Kardashevskiy wrote:
->> On 04/29/2015 04:40 PM, David Gibson wrote:
->>> On Sat, Apr 25, 2015 at 10:14:51PM +1000, Alexey Kardashevskiy wrote:
->>>> This adds a way for the IOMMU user to know how much a new table will
->>>> use so it can be accounted in the locked_vm limit before allocation
->>>> happens.
->>>>
->>>> This stores the allocated table size in pnv_pci_create_table()
->>>> so the locked_vm counter can be updated correctly when a table is
->>>> being disposed.
->>>>
->>>> This defines an iommu_table_group_ops callback to let VFIO know
->>>> how much memory will be locked if a table is created.
->>>>
->>>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
->>>> ---
->>>> Changes:
->>>> v9:
->>>> * reimplemented the whole patch
->>>> ---
->>>>   arch/powerpc/include/asm/iommu.h          |  5 +++++
->>>>   arch/powerpc/platforms/powernv/pci-ioda.c | 14 ++++++++++++
->>>>   arch/powerpc/platforms/powernv/pci.c      | 36 +++++++++++++++++++++++++++++++
->>>>   arch/powerpc/platforms/powernv/pci.h      |  2 ++
->>>>   4 files changed, 57 insertions(+)
->>>>
->>>> diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
->>>> index 1472de3..9844c106 100644
->>>> --- a/arch/powerpc/include/asm/iommu.h
->>>> +++ b/arch/powerpc/include/asm/iommu.h
->>>> @@ -99,6 +99,7 @@ struct iommu_table {
->>>>   	unsigned long  it_size;      /* Size of iommu table in entries */
->>>>   	unsigned long  it_indirect_levels;
->>>>   	unsigned long  it_level_size;
->>>> +	unsigned long  it_allocated_size;
->>>>   	unsigned long  it_offset;    /* Offset into global table */
->>>>   	unsigned long  it_base;      /* mapped address of tce table */
->>>>   	unsigned long  it_index;     /* which iommu table this is */
->>>> @@ -155,6 +156,10 @@ extern struct iommu_table *iommu_init_table(struct iommu_table * tbl,
->>>>   struct iommu_table_group;
->>>>
->>>>   struct iommu_table_group_ops {
->>>> +	unsigned long (*get_table_size)(
->>>> +			__u32 page_shift,
->>>> +			__u64 window_size,
->>>> +			__u32 levels);
->>>>   	long (*create_table)(struct iommu_table_group *table_group,
->>>>   			int num,
->>>>   			__u32 page_shift,
->>>> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
->>>> index e0be556..7f548b4 100644
->>>> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
->>>> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
->>>> @@ -2062,6 +2062,18 @@ static void pnv_pci_ioda2_setup_bypass_pe(struct pnv_phb *phb,
->>>>   }
->>>>
->>>>   #ifdef CONFIG_IOMMU_API
->>>> +static unsigned long pnv_pci_ioda2_get_table_size(__u32 page_shift,
->>>> +		__u64 window_size, __u32 levels)
->>>> +{
->>>> +	unsigned long ret = pnv_get_table_size(page_shift, window_size, levels);
->>>> +
->>>> +	if (!ret)
->>>> +		return ret;
->>>> +
->>>> +	/* Add size of it_userspace */
->>>> +	return ret + (window_size >> page_shift) * sizeof(unsigned long);
->>>
->>> This doesn't make much sense.  The userspace view can't possibly be a
->>> property of the specific low-level IOMMU model.
->>
->>
->> This it_userspace thing is all about memory preregistration.
->>
->> I need some way to track how many actual mappings the
->> mm_iommu_table_group_mem_t has in order to decide whether to allow
->> unregistering or not.
->>
->> When I clear TCE, I can read the old value which is host physical address
->> which I cannot use to find the preregistered region and adjust the mappings
->> counter; I can only use userspace addresses for this (not even guest
->> physical addresses as it is VFIO and probably no KVM).
->>
->> So I have to keep userspace addresses somewhere, one per IOMMU page, and the
->> iommu_table seems a natural place for this.
->
-> Well.. sort of.  But as noted elsewhere this pulls VFIO specific
-> constraints into a platform code structure.  And whether you get this
-> table depends on the platform IOMMU type rather than on what VFIO
-> wants to do with it, which doesn't make sense.
->
-> What might make more sense is an opaque pointer io iommu_table for use
-> by the table "owner" (in the take_ownership sense).  The pointer would
-> be stored in iommu_table, but VFIO is responsible for populating and
-> managing its contents.
->
-> Or you could just put the userspace mappings in the container.
-> Although you might want a different data structure in that case.
+Implement ability to specify Power PMU events by their symbolic event
+names rather than raw codes. This approach pulls tables of the Power7
+and Power8 PMU events into the perf source tree and uses these tables
+to create aliases for the PMU events. With these aliases users can run:
 
-Nope. I need this table in in-kernel acceleration to update the mappings 
-counter per mm_iommu_table_group_mem_t. In KVM's real mode handlers, I only 
-have IOMMU tables, not containers or groups. QEMU creates a guest view of 
-the table (KVM_CREATE_SPAPR_TCE) specifying a LIOBN, and then attaches TCE 
-tables to it via set of ioctls (one per IOMMU group) to VFIO KVM device.
+	perf stat -e PM_1PLUS_PPC_CMPL:ku sleep 1
+or
+	perf stat -e cpu/PM_VSU_SINGLE/ sleep 1
 
-So if I call it it_opaque (instead of it_userspace), I will still need a 
-common place (visible to VFIO and PowerKVM) for this to put:
-#define IOMMU_TABLE_USERSPACE_ENTRY(tbl, entry)
+This is an early POC patchset based on discussions with Jiri Olsa,
+Michael Ellerman and Ingo Molnar. Lightly tested on Power7 and Power8.
 
-So far this place was arch/powerpc/include/asm/iommu.h and the iommu_table 
-struct.
+Can other architectures can implement arch_get_events_table() and similarly 
+use symoblic event names?
+
+I am also assuming that if the header files like power8-events.h are
+easily readable, we don't need the JSON files anymore?
+
+TODO:
+	- Maybe translate event names to lower-case?
+	- Allow perf to process event descriptions (need Andi Kleen's patch)
 
 
-> The other thing to bear in mind is that registered regions are likely
-> to be large contiguous blocks in user addresses, though obviously not
-> contiguous in physical addr.  So you might be able to compaticfy this
-> information by storing it as a list of variable length blocks in
-> userspace address space, rather than a per-page address..
+Sukadev Bhattiprolu (4):
+  perf: Create a table of Power7 PMU events
+  perf: Create a table of Power8 PMU events
+  perf/powerpc: Move mfspr and friends to header file
+  perf: Create aliases for Power PMU events
 
-It is 8 bytes per system page - 8/65536 = 0.00012 (or 26MB for 200GB guest) 
-- very little overhead.
-
-
-> But.. isn't there a bigger problem here.  As Paulus was pointing out,
-> there's nothing guaranteeing the page tables continue to contain the
-> same page as was there at gup() time.
-
-This can happen if the userspace remaps memory which it registered/mapped 
-for DMA via VFIO, no? If so, then the userspace just should not do this, it 
-is DMA, it cannot be moved like this. What am I missing here?
-
-
-> What's going to happen if you REGISTER a memory region, then mremap()
-> over it?
-
-The registered pages will remain pinned and PUT_TCE will use that region 
-for translation (and this will fail as the userspace addresses changed).
-
-I do not see how it is different from the situation when the userspace 
-mapped a page and mremap()ed it while it is DMA-mapped.
-
-> Then attempt to PUT_TCE a page in the region? Or what if you
-> mremap() it to someplace else then try to PUT_TCE a page there?
-
-This will fail - a new userspace address has to be preregistered.
-
-> Or REGISTER it again in its new location?
-
-It will be pinned twice + some memory overhead to store the same host 
-physical address(es) twice.
-
-
+ tools/perf/arch/powerpc/util/Build           |    2 +-
+ tools/perf/arch/powerpc/util/header.c        |    9 +-
+ tools/perf/arch/powerpc/util/header.h        |    9 +
+ tools/perf/arch/powerpc/util/pmu-events.c    |   52 +
+ tools/perf/arch/powerpc/util/pmu-events.h    |   17 +
+ tools/perf/arch/powerpc/util/power7-events.h | 3315 +++++++++++++
+ tools/perf/arch/powerpc/util/power8-events.h | 6408 ++++++++++++++++++++++++++
+ tools/perf/util/pmu.c                        |   77 +
+ tools/perf/util/pmu.h                        |   10 +
+ 9 files changed, 9890 insertions(+), 9 deletions(-)
+ create mode 100644 tools/perf/arch/powerpc/util/header.h
+ create mode 100644 tools/perf/arch/powerpc/util/pmu-events.c
+ create mode 100644 tools/perf/arch/powerpc/util/pmu-events.h
+ create mode 100644 tools/perf/arch/powerpc/util/power7-events.h
+ create mode 100644 tools/perf/arch/powerpc/util/power8-events.h
 
 -- 
-Alexey
+1.7.9.5
