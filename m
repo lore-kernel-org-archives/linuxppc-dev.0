@@ -1,31 +1,30 @@
 Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E58CB1A113B
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 May 2015 16:04:37 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id D3FB01A1144
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 May 2015 16:04:59 +1000 (AEST)
 Received: from /spool/local
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Fri, 1 May 2015 16:04:37 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id E43EF2CE8052
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 May 2015 16:04:33 +1000 (EST)
+ Fri, 1 May 2015 16:04:58 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 0F8B62BB004D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 May 2015 16:04:56 +1000 (EST)
 Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t4164PcN40370190
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 May 2015 16:04:33 +1000
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t4164lWP46727380
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 May 2015 16:04:55 +1000
 Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
  by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t41640vG000860
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 May 2015 16:04:00 +1000
+ t4164LA0001364
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 1 May 2015 16:04:22 +1000
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v4 14/21] powerpc/powernv: Functions to get/reset PCI slot
- status
-Date: Fri,  1 May 2015 16:03:01 +1000
-Message-Id: <1430460188-31343-15-git-send-email-gwshan@linux.vnet.ibm.com>
+Subject: [PATCH v4 18/21] powerpc/pci: Update bridge windows on PCI plugging
+Date: Fri,  1 May 2015 16:03:05 +1000
+Message-Id: <1430460188-31343-19-git-send-email-gwshan@linux.vnet.ibm.com>
 In-Reply-To: <1430460188-31343-1-git-send-email-gwshan@linux.vnet.ibm.com>
 References: <1430460188-31343-1-git-send-email-gwshan@linux.vnet.ibm.com>
 Cc: bhelgaas@google.com, linux-pci@vger.kernel.org,
@@ -39,148 +38,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The patch exports 3 functions, which base on corresponding OPAL
-APIs to get or set PCI slot status. Those functions are going to
-be used by PCI hotplug module in subsequent patches:
+During the PCI plugging event, the PCI devices are rescanned and
+their IO and MMIO resources are reassigned. However, the PowerNV
+platform will assign PE# based on that, which depends on updating
+to window of bridge of the PE's primary bus.
 
-   pnv_pci_get_presence_status()  opal_pci_get_presence_status()
-   pnv_pci_get_power_status()     opal_pci_get_power_status()
-   pnv_pci_set_power_status()     opal_pci_set_power_status()
-
-Besides, the patch also exports pnv_pci_hotplug_notifier() to allow
-registering PCI hotplug notifier, which will be used to receive PCI
-hotplug message from skiboot firmware.
+The patch updates the windows of bridge of PE's primary bus if
+we have valid bridge. Otherwise, we assume it's root bus or SRIOV
+virtual bus and PE won't be assigned during PCI plugging time.
 
 Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/opal-api.h            |  7 +++-
- arch/powerpc/include/asm/opal.h                |  3 ++
- arch/powerpc/include/asm/pnv-pci.h             |  5 +++
- arch/powerpc/platforms/powernv/opal-wrappers.S |  3 ++
- arch/powerpc/platforms/powernv/pci.c           | 45 ++++++++++++++++++++++++++
- 5 files changed, 62 insertions(+), 1 deletion(-)
+ arch/powerpc/kernel/pci-common.c | 8 ++++++--
+ 1 file changed, 6 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
-index 0321a90..29b407d 100644
---- a/arch/powerpc/include/asm/opal-api.h
-+++ b/arch/powerpc/include/asm/opal-api.h
-@@ -153,7 +153,10 @@
- #define OPAL_FLASH_READ				110
- #define OPAL_FLASH_WRITE			111
- #define OPAL_FLASH_ERASE			112
--#define OPAL_LAST				112
-+#define OPAL_PCI_GET_PRESENCE_STATUS		116
-+#define OPAL_PCI_GET_POWER_STATUS		117
-+#define OPAL_PCI_SET_POWER_STATUS		118
-+#define OPAL_LAST				118
+diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
+index 01d2a84..cb0bb3f 100644
+--- a/arch/powerpc/kernel/pci-common.c
++++ b/arch/powerpc/kernel/pci-common.c
+@@ -1473,8 +1473,12 @@ void pcibios_finish_adding_to_bus(struct pci_bus *bus)
+ 	/* Allocate bus and devices resources */
+ 	pcibios_allocate_bus_resources(bus);
+ 	pcibios_claim_one_bus(bus);
+-	if (!pci_has_flag(PCI_PROBE_ONLY))
+-		pci_assign_unassigned_bus_resources(bus);
++	if (!pci_has_flag(PCI_PROBE_ONLY)) {
++		if (bus->self)
++			pci_assign_unassigned_bridge_resources(bus->self);
++		else
++			pci_assign_unassigned_bus_resources(bus);
++	}
  
- /* Device tree flags */
- 
-@@ -352,6 +355,8 @@ enum opal_msg_type {
- 	OPAL_MSG_SHUTDOWN,		/* params[0] = 1 reboot, 0 shutdown */
- 	OPAL_MSG_HMI_EVT,
- 	OPAL_MSG_DPO,
-+	OPAL_MSG_PRD,
-+	OPAL_MSG_PCI_HOTPLUG,
- 	OPAL_MSG_TYPE_MAX,
- };
- 
-diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
-index 6d467df..a0eb206 100644
---- a/arch/powerpc/include/asm/opal.h
-+++ b/arch/powerpc/include/asm/opal.h
-@@ -200,6 +200,9 @@ int64_t opal_flash_write(uint64_t id, uint64_t offset, uint64_t buf,
- 		uint64_t size, uint64_t token);
- int64_t opal_flash_erase(uint64_t id, uint64_t offset, uint64_t size,
- 		uint64_t token);
-+int64_t opal_pci_get_presence_status(uint64_t id, uint8_t *status);
-+int64_t opal_pci_get_power_status(uint64_t id, uint8_t *status);
-+int64_t opal_pci_set_power_status(uint64_t id, uint8_t status);
- 
- /* Internal functions */
- extern int early_init_dt_scan_opal(unsigned long node, const char *uname,
-diff --git a/arch/powerpc/include/asm/pnv-pci.h b/arch/powerpc/include/asm/pnv-pci.h
-index f9b4982..50d92a4 100644
---- a/arch/powerpc/include/asm/pnv-pci.h
-+++ b/arch/powerpc/include/asm/pnv-pci.h
-@@ -13,6 +13,11 @@
- #include <linux/pci.h>
- #include <misc/cxl.h>
- 
-+extern int pnv_pci_get_presence_status(uint64_t id, uint8_t *status);
-+extern int pnv_pci_get_power_status(uint64_t id, uint8_t *status);
-+extern int pnv_pci_set_power_status(uint64_t id, uint8_t status);
-+extern int pnv_pci_hotplug_notifier(struct notifier_block *nb, bool enable);
-+
- int pnv_phb_to_cxl_mode(struct pci_dev *dev, uint64_t mode);
- int pnv_cxl_ioda_msi_setup(struct pci_dev *dev, unsigned int hwirq,
- 			   unsigned int virq);
-diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
-index a7ade94..aa95dcb 100644
---- a/arch/powerpc/platforms/powernv/opal-wrappers.S
-+++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
-@@ -295,3 +295,6 @@ OPAL_CALL(opal_i2c_request,			OPAL_I2C_REQUEST);
- OPAL_CALL(opal_flash_read,			OPAL_FLASH_READ);
- OPAL_CALL(opal_flash_write,			OPAL_FLASH_WRITE);
- OPAL_CALL(opal_flash_erase,			OPAL_FLASH_ERASE);
-+OPAL_CALL(opal_pci_get_presence_status,		OPAL_PCI_GET_PRESENCE_STATUS);
-+OPAL_CALL(opal_pci_get_power_status,		OPAL_PCI_GET_POWER_STATUS);
-+OPAL_CALL(opal_pci_set_power_status,		OPAL_PCI_SET_POWER_STATUS);
-diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
-index a2da9a3..60e6d65 100644
---- a/arch/powerpc/platforms/powernv/pci.c
-+++ b/arch/powerpc/platforms/powernv/pci.c
-@@ -60,6 +60,51 @@ int pnv_pci_poll(uint64_t id, int64_t rval, uint8_t *pval)
- 	return rval ? -EIO : 0;
- }
- 
-+int pnv_pci_get_presence_status(uint64_t id, uint8_t *status)
-+{
-+	long rc;
-+
-+	if (!opal_check_token(OPAL_PCI_GET_PRESENCE_STATUS))
-+		return -ENXIO;
-+
-+	rc = opal_pci_get_presence_status(id, status);
-+	return pnv_pci_poll(id, rc, status);
-+}
-+EXPORT_SYMBOL_GPL(pnv_pci_get_presence_status);
-+
-+int pnv_pci_get_power_status(uint64_t id, uint8_t *status)
-+{
-+	long rc;
-+
-+	if (!opal_check_token(OPAL_PCI_GET_POWER_STATUS))
-+		return -ENXIO;
-+
-+	rc = opal_pci_get_power_status(id, status);
-+	return pnv_pci_poll(id, rc, status);
-+}
-+EXPORT_SYMBOL_GPL(pnv_pci_get_power_status);
-+
-+int pnv_pci_set_power_status(uint64_t id, uint8_t status)
-+{
-+	long rc;
-+
-+	if (!opal_check_token(OPAL_PCI_SET_POWER_STATUS))
-+		return -ENXIO;
-+
-+	rc = opal_pci_set_power_status(id, status);
-+	return pnv_pci_poll(id, rc, NULL);
-+}
-+EXPORT_SYMBOL_GPL(pnv_pci_set_power_status);
-+
-+int pnv_pci_hotplug_notifier(struct notifier_block *nb, bool enable)
-+{
-+	if (enable)
-+		return opal_message_notifier_register(OPAL_MSG_PCI_HOTPLUG, nb);
-+
-+	return opal_message_notifier_unregister(OPAL_MSG_PCI_HOTPLUG, nb);
-+}
-+EXPORT_SYMBOL_GPL(pnv_pci_hotplug_notifier);
-+
- #ifdef CONFIG_PCI_MSI
- static int pnv_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type)
- {
+ 	/* Fixup EEH */
+ 	eeh_add_device_tree_late(bus);
 -- 
 2.1.0
