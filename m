@@ -1,28 +1,21 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pa0-f49.google.com (mail-pa0-f49.google.com
- [209.85.220.49])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DD92F1A0FE1
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 May 2015 17:12:54 +1000 (AEST)
-Received: by pacyx8 with SMTP id yx8so83755759pac.1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 01 May 2015 00:12:53 -0700 (PDT)
-Message-ID: <5543276D.1090708@ozlabs.ru>
-Date: Fri, 01 May 2015 17:12:45 +1000
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-MIME-Version: 1.0
-To: David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: [PATCH kernel v9 26/32] powerpc/iommu: Add userspace view of
- TCE table
-References: <1429964096-11524-1-git-send-email-aik@ozlabs.ru>
- <1429964096-11524-27-git-send-email-aik@ozlabs.ru>
- <20150429063113.GW32589@voom.redhat.com> <5542FA8D.2060400@ozlabs.ru>
- <20150501042319.GM24886@voom.redhat.com>
-In-Reply-To: <20150501042319.GM24886@voom.redhat.com>
-Content-Type: text/plain; charset=koi8-r; format=flowed
-Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
- Alex Williamson <alex.williamson@redhat.com>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 864461A0D15
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 May 2015 18:31:40 +1000 (AEST)
+Message-ID: <1430469091.7979.52.camel@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc/powernv: Add opal-prd channel
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Jeremy Kerr <jk@ozlabs.org>
+Date: Fri, 01 May 2015 18:31:31 +1000
+In-Reply-To: <5542F6FA.5020702@ozlabs.org>
+References: <1427868428.289931.158677373296.1.gpush@pablo>
+ <1430356826.17831.157.camel@kernel.crashing.org>
+ <5542F6FA.5020702@ozlabs.org>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,132 +25,205 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/01/2015 02:23 PM, David Gibson wrote:
-> On Fri, May 01, 2015 at 02:01:17PM +1000, Alexey Kardashevskiy wrote:
->> On 04/29/2015 04:31 PM, David Gibson wrote:
->>> On Sat, Apr 25, 2015 at 10:14:50PM +1000, Alexey Kardashevskiy wrote:
->>>> In order to support memory pre-registration, we need a way to track
->>>> the use of every registered memory region and only allow unregistration
->>>> if a region is not in use anymore. So we need a way to tell from what
->>>> region the just cleared TCE was from.
->>>>
->>>> This adds a userspace view of the TCE table into iommu_table struct.
->>>> It contains userspace address, one per TCE entry. The table is only
->>>> allocated when the ownership over an IOMMU group is taken which means
->>>> it is only used from outside of the powernv code (such as VFIO).
->>>>
->>>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
->>>> ---
->>>> Changes:
->>>> v9:
->>>> * fixed code flow in error cases added in v8
->>>>
->>>> v8:
->>>> * added ENOMEM on failed vzalloc()
->>>> ---
->>>>   arch/powerpc/include/asm/iommu.h          |  6 ++++++
->>>>   arch/powerpc/kernel/iommu.c               | 18 ++++++++++++++++++
->>>>   arch/powerpc/platforms/powernv/pci-ioda.c | 22 ++++++++++++++++++++--
->>>>   3 files changed, 44 insertions(+), 2 deletions(-)
->>>>
->>>> diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
->>>> index 7694546..1472de3 100644
->>>> --- a/arch/powerpc/include/asm/iommu.h
->>>> +++ b/arch/powerpc/include/asm/iommu.h
->>>> @@ -111,9 +111,15 @@ struct iommu_table {
->>>>   	unsigned long *it_map;       /* A simple allocation bitmap for now */
->>>>   	unsigned long  it_page_shift;/* table iommu page size */
->>>>   	struct iommu_table_group *it_table_group;
->>>> +	unsigned long *it_userspace; /* userspace view of the table */
->>>
->>> A single unsigned long doesn't seem like enough.
->>
->> Why single? This is an array.
+On Fri, 2015-05-01 at 11:46 +0800, Jeremy Kerr wrote:
+> Hi Ben,
+> 
+> >> +static LIST_HEAD(opal_prd_msg_queue);
+> >> +static DEFINE_SPINLOCK(opal_prd_msg_queue_lock);
+> >> +static DECLARE_WAIT_QUEUE_HEAD(opal_prd_msg_wait);
+> >> +static atomic_t usage;
+> > 
+> > opal_prd_usage ... otherwise  it's a mess in the symbols map
+> 
+> OK, I'll change this.
+> 
+> > Also why limit the number of opens ? we might want to have tools using
+> > the opal prd for xscom :-) (in absence of debugfs). .. as long as not
+> > two people read() it should be ok. Or a tool to dump the regions etc...
+> > 
+> > I don't see any reason to block multiple open's.
+> 
+> Simplicity, really. We can do a "get exclusive", but there's no
+> (current) use-case for multiple openers on a PRD interface.
+
+Sure but if we want to add one we have to change the kernel which is
+nasty ... I always try to think a bit ahead when it comes to kernel
+interfaces.
+
+> Pulling this thread a little, you've hit on a key decision point of the
+> prd design - I see there being two directions we could take with this:
+> 
+>  1) This interface is specifically for PRD functions, or
+> 
+>  2) This interface is a generic userspace interface to OPAL,
+>     and PRD is a subset of that.
 >
-> As in single per page.
+> I've been aiming for (1) with the current code; and the nature of the
+> generic read() & write() operations being PRD-specific enforces that.
+> 
+> Allowing multiple openers will help with (2), but if we want to go in
+> that direction, I think we'd be better off doing a couple of other
+> changes too:
+> 
+>  * move the general functions (eg xscom, range mappings, OCC control)
+>    to a separate interface that isn't tied to PRD - say just /dev/opal
 
+Well, there's debugfs but then we don't want to *rely* on that as API
 
-Sorry, I am not following you here.
-It is per IOMMU page. MAP/UNMAP work with IOMMU pages which are fully 
-backed with either system page or a huge page.
+>  * using this prd code for only the prd-event handling, possibly
+>    renamed to /dev/opal-prd-events. This would still need some
+>    method of enforcing exclusive access.
+> 
+> In this case, the actual PRD application would use both devices,
+> dequeueing events (and updating the ipoll mask) from the latter, and
+> using the former for helper functionality.
+> 
+> Other tools (eg generic xscom access) would just use the generic
+> interface, and not the PRD one, which wouldn't enforce exclusive access.
 
+Or make it all /dev/opal with an ioctl to receive the PRD messages which
+only one open fd can do. Keeps things simpler. Ie, rename /dev/prd
+to /dev/opal and add _IOC_PRD :-)
 
->
->>> How do you know
->>> which process's address space this address refers to?
->>
->> It is a current task. Multiple userspaces cannot use the same container/tables.
->
-> Where is that enforced?
+> Regardless of the choice here, we could also remove the single-open
+> exclusion, and shift that responsibility to userspace (eg, flock() on
+> the PRD device node?). The main reason for the exclusion is to prevent
+> multiple prd daemons running, which may get messy when updating the
+> ipoll mask.
 
+Well, the exclusion on _IOC_PRD that enables reception of PRD messages
+works. Unless we want a way to "sniff" PRD messages but that gets harder
+if the kernel has to maintain multiple queues so let's not go there.
 
-It is accessed from VFIO DMA map/unmap which are ioctls() to a container's 
-fd which is per a process. Same for KVM - when it registers IOMMU groups in 
-KVM, fd's of opened IOMMU groups are passed there. Or I did not understand 
-the question...
+> > Should we rely exclusively on userspace setting the right permissions or
+> > should we check CAP_SYSADMIN here ?
+> 
+> I'm okay with relying on userspace, is there any reason not to?
 
+Not really I suppose. What does /dev/mem do ?
 
-> More to the point, that's a VFIO constraint, but it's here affecting
-> the design of a structure owned by the platform code.
+> 
+> >> +	vma->vm_page_prot = phys_mem_access_prot(file, vma->vm_pgoff,
+> >> +						 size, vma->vm_page_prot)
+> >> +				| _PAGE_SPECIAL;
+> >> +
+> >> +	rc = remap_pfn_range(vma, vma->vm_start, vma->vm_pgoff, size,
+> >> +			vma->vm_page_prot);
+> > 
+> > Do we still have the warnings of process exist about the map count or is
+> > that fixed ?
+> 
+> No, not fixed at present. I'll need to chat to you about that.
 
-Right. But keeping in mind KVM, I cannot think of any better design here.
+Ok, I need to figure out/remember what we need to do to avoid it.
 
+> >> +	case OPAL_PRD_SCOM_READ:
+> >> +		rc = copy_from_user(&scom, (void __user *)param, sizeof(scom));
+> >> +		if (rc)
+> >> +			return -EFAULT;
+> >> +
+> >> +		rc = opal_xscom_read(scom.chip, scom.addr,
+> >> +				(__be64 *)&scom.data);
+> > 
+> > Are we exporting these for modules ?
+> 
+> No, but opal-prd isn't configurable as a module at the moment.
 
-> [snip]
->>>>   static void pnv_pci_ioda_setup_opal_tce_kill(struct pnv_phb *phb,
->>>> @@ -2062,12 +2071,21 @@ static long pnv_pci_ioda2_create_table(struct iommu_table_group *table_group,
->>>>   	int nid = pe->phb->hose->node;
->>>>   	__u64 bus_offset = num ? pe->tce_bypass_base : 0;
->>>>   	long ret;
->>>> +	unsigned long *uas, uas_cb = sizeof(*uas) * (window_size >> page_shift);
->>>> +
->>>> +	uas = vzalloc(uas_cb);
->>>> +	if (!uas)
->>>> +		return -ENOMEM;
->>>
->>> I don't see why this is allocated both here as well as in
->>> take_ownership.
->>
->> Where else? The only alternative is vfio_iommu_spapr_tce but I really do not
->> want to touch iommu_table fields there.
->
-> Well to put it another way, why isn't take_ownership calling create
-> itself (or at least a common helper).
+Why ?
 
-I am trying to keep DDW stuff away from platform-oriented 
-arch/powerpc/kernel/iommu.c which main purpose is to implement 
-iommu_alloc()&co. It already has
+> > 
+> >> +		scom.data = be64_to_cpu(scom.data);
+> >> +		pr_debug("ioctl SCOM_READ: chip %llx addr %016llx "
+> >> +				"data %016llx rc %d\n",
+> >> +				scom.chip, scom.addr, scom.data, rc);
+> > 
+> > pr_devel ?
+> 
+> This removes the possibility of CONFIG_DYNAMIC_DEBUG, is that intentional?
 
-I'd rather move it_userspace allocation completely to vfio_iommu_spapr_tce 
-(should have done earlier, actually), would this be ok?
+Too noisy. Enabling DYNAMIC_DEBUG doesn't mean I want to have my log
+flooded with the thousands of SCOMs that PRD is going to do.
 
+> > 
+> >> +		if (rc)
+> >> +			return -EIO;
+> > 
+> > Should we consider returning more info about the SCOM error ? HBRT might
+> > actually need that... Maybe opal_prd_scom needs a field for the OPAL rc
+> > which is currently not very descriptive but that's fixable.
+> 
+> Sounds good, I'll add that in. On error, we'll return -EIO and have the
+> OPAL error code in the struct for further detail.
 
-> Clearly the it_userspace table needs to have lifetime which matches
-> the TCE table itself, so there should be a single function that marks
-> the beginning of that joint lifetime.
+No, don't return -EIO, that would indicate that you didn't update the
+structure. Return 0 and put the error code in the structure.
 
+> >> +	nr_ranges = of_property_count_strings(np, "reserved-names");
+> >> +	ranges_prop = of_get_property(np, "reserved-ranges", NULL);
+> >> +	if (!ranges_prop) {
+> >> +		of_node_put(np);
+> >> +		return -ENODEV;
+> >> +	}
+> > 
+> > Didn't we say we had a problem with using those properties due to
+> > coalescing ? Shouldn't we define specific ones for the HBRT regions ?
+> 
+> There's not a problem at the moment, but one day we will need to expand
+> the PRD's get_reserved_mem interface to allow per-chip ranges. This
+> would use a different device-tree representation.
+> 
+> However, I think it'd be better to remove this code entirely (ie, remove
+> the range member of struct opal_prd_info), and require userspace to do
+> the device-tree parsing.
 
-No. it_userspace lives as long as the platform code does not control the 
-table. For IODA2 it is equal for the lifetime of the table, for 
-IODA1/P5IOC2 it is not.
+But that means /dev/prd just grew a generic "mmap any piece of memory"
+capability ... Oh well.
 
+> >> +static int __init opal_prd_init(void)
+> >> +{
+> >> +	int rc;
+> >> +
+> >> +	/* parse the code region information from the device tree */
+> >> +	rc = parse_regions();
+> >> +	if (rc) {
+> >> +		pr_err("Couldn't parse region information from DT\n");
+> >> +		return rc;
+> >> +	}
+> > 
+> > Should we create a virtual device under the OPAL node in FW so we have
+> > something to attach to ? That way we get module autoload as well...
+> 
+> Can do, if we want to support modules...
 
+Or if we make this /dev/opal, just attach to the ibm,opal node itself
+and make it a platform device like we do for i2c etc...
 
->>> Isn't this function used for core-kernel users of the
->>> iommu as well, in which case it shouldn't need the it_userspace.
->>
->>
->> No. This is an iommu_table_group_ops callback which calls what the platform
->> code calls (pnv_pci_create_table()) plus allocates this it_userspace thing.
->> The callback is only called from VFIO.
->
-> Ok.
->
-> As touched on above it seems more like this should be owned by VFIO
-> code than the platform code.
-
-Agree now :) I'll move the allocation to VFIO. Thanks!
-
-
--- 
-Alexey
+> >> +	rc = opal_message_notifier_register(OPAL_MSG_PRD, &opal_prd_event_nb);
+> >> +	if (rc) {
+> >> +		pr_err("Couldn't register event notifier\n");
+> >> +		return rc;
+> >> +	}
+> >> +
+> >> +	rc = misc_register(&opal_prd_dev);
+> >> +	if (rc) {
+> >> +		pr_err("failed to register miscdev\n");
+> >> +		return rc;
+> >> +	}
+> >> +
+> >> +	return 0;
+> >> +}
+> >> +
+> >> +static void __exit opal_prd_exit(void)
+> >> +{
+> >> +	misc_deregister(&opal_prd_dev);
+> >> +	opal_message_notifier_unregister(OPAL_MSG_PRD, &opal_prd_event_nb);
+> >> +}
+> > 
+> > Shouldn't you deregister the notifier first ?
+> 
+> Yup, updated.
+> 
+> Cheers,
+> 
+> 
+> Jeremy
