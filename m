@@ -1,13 +1,15 @@
 Return-Path: <stripath@apm.com>
 Received: from denmail01.amcc.com (unknown [192.195.68.30])
- by lists.ozlabs.org (Postfix) with ESMTP id F40D21A0D67
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 May 2015 14:55:29 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTP id EF4F81A11A3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 May 2015 14:55:32 +1000 (AEST)
 From: Suman Tripathi <stripathi@apm.com>
 To: chris@printf.net, anton@enomsg.org, arnd@arndb.de, michal.simek@xilinx.com
-Subject: [PATCH v3 0/3] Add SDHCI support for APM X-Gene SoC using ARASAN
- SDHCI controller.
-Date: Fri,  1 May 2015 10:24:09 +0530
-Message-Id: <1430456052-8888-1-git-send-email-stripathi@apm.com>
+Subject: [PATCH v3 1/3] arm64: dts: Add the arasan sdhc nodes in
+ apm-storm.dtsi.
+Date: Fri,  1 May 2015 10:24:10 +0530
+Message-Id: <1430456052-8888-2-git-send-email-stripathi@apm.com>
+In-Reply-To: <1430456052-8888-1-git-send-email-stripathi@apm.com>
+References: <1430456052-8888-1-git-send-email-stripathi@apm.com>
 Cc: devicetree@vger.kernel.org, mlangsdo@redhat.com,
  Suman Tripathi <stripathi@apm.com>, jcm@redhat.com, linux-mmc@vger.kernel.org,
  patches@apm.com, ddutile@redhat.com, linuxppc-dev@lists.ozlabs.org,
@@ -21,34 +23,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch adds the SDHCI support for APM X-Gene SoC using ARASAN SDHCI controller.
-
-v1 change:
- * Use the CONFIG_ARM64_DMA_HAS_IOMMU for dma-mapping.
-
-v2 change:
- * Drop the IOMMU support and switching to PIO mode for arasan.
-   controller integrated inside APM X-Gene SoC.
-
-v3 change:
- * Change the sdhci-of-arasan.c to support arasan4.9a.
- * Add quirks for arasan4.9a.
+This patch adds the arasan sdhc nodes to reuse the of-arasan
+driver for APM X-Gene SoC.
 
 Signed-off-by: Suman Tripathi <stripathi@apm.com>
 ---
+ arch/arm64/boot/dts/apm-mustang.dts |  4 ++++
+ arch/arm64/boot/dts/apm-storm.dtsi  | 44 +++++++++++++++++++++++++++++++++++++
+ 2 files changed, 48 insertions(+)
 
-Suman Tripathi (3):
-  arm64: dts: Add the arasan sdhc nodes in apm-storm.dtsi.
-  mmc: host: arasan: Add the support for sdhci-arasan4.9a in
-    sdhci-of-arasan.c
-  Documentation: mmc: Update Arasan SDHC documentation to support 4.9a
-    version of     Arasan SDHC controller.
+diff --git a/arch/arm64/boot/dts/apm-mustang.dts b/arch/arm64/boot/dts/apm-mustang.dts
+index 8eb6d94..d0e52a9 100644
+--- a/arch/arm64/boot/dts/apm-mustang.dts
++++ b/arch/arm64/boot/dts/apm-mustang.dts
+@@ -44,3 +44,7 @@
+ &xgenet {
+ 	status = "ok";
+ };
++
++&sdhc0 {
++	status = "ok";
++};
+diff --git a/arch/arm64/boot/dts/apm-storm.dtsi b/arch/arm64/boot/dts/apm-storm.dtsi
+index 87d3205..d6c2216 100644
+--- a/arch/arm64/boot/dts/apm-storm.dtsi
++++ b/arch/arm64/boot/dts/apm-storm.dtsi
+@@ -144,6 +144,40 @@
+ 				clock-output-names = "socplldiv2";
+ 			};
 
- .../devicetree/bindings/mmc/arasan,sdhci.txt       |  5 ++-
- arch/arm64/boot/dts/apm-mustang.dts                |  4 ++
- arch/arm64/boot/dts/apm-storm.dtsi                 | 44 ++++++++++++++++++++++
- drivers/mmc/host/sdhci-of-arasan.c                 |  7 ++++
- 4 files changed, 58 insertions(+), 2 deletions(-)
++			ahbclk: ahbclk@1f2ac000 {
++				compatible = "apm,xgene-device-clock";
++				#clock-cells = <1>;
++				clocks = <&socplldiv2 0>;
++				reg = <0x0 0x1f2ac000 0x0 0x1000
++					0x0 0x17000000 0x0 0x2000>;
++				reg-names = "csr-reg", "div-reg";
++				csr-offset = <0x0>;
++				csr-mask = <0x1>;
++				enable-offset = <0x8>;
++				enable-mask = <0x1>;
++				divider-offset = <0x164>;
++				divider-width = <0x5>;
++				divider-shift = <0x0>;
++				clock-output-names = "ahbclk";
++			};
++
++			sdioclk: sdioclk@1f2ac000 {
++				compatible = "apm,xgene-device-clock";
++				#clock-cells = <1>;
++				clocks = <&socplldiv2 0>;
++				reg = <0x0 0x1f2ac000 0x0 0x1000
++					0x0 0x17000000 0x0 0x2000>;
++				reg-names = "csr-reg", "div-reg";
++				csr-offset = <0x0>;
++				csr-mask = <0x2>;
++				enable-offset = <0x8>;
++				enable-mask = <0x2>;
++				divider-offset = <0x178>;
++				divider-width = <0x8>;
++				divider-shift = <0x0>;
++				clock-output-names = "sdioclk";
++			};
++
+ 			qmlclk: qmlclk {
+ 				compatible = "apm,xgene-device-clock";
+ 				#clock-cells = <1>;
+@@ -503,6 +537,16 @@
+ 			interrupts = <0x0 0x4f 0x4>;
+ 		};
 
++		sdhc0: sdhc@1c000000 {
++			device_type = "sdhc";
++			compatible = "arasan,sdhci-8.9a", "arasan,sdhci-4.9a";
++			reg = <0x0 0x1c000000 0x0 0x100>;
++			interrupts = <0x0 0x49 0x4>;
++			dma-coherent;
++			clock-names = "clk_xin", "clk_ahb";
++			clocks = <&sdioclk 0>, <&ahbclk 0>;
++		};
++
+ 		phy1: phy@1f21a000 {
+ 			compatible = "apm,xgene-phy";
+ 			reg = <0x0 0x1f21a000 0x0 0x100>;
 --
 1.8.2.1
