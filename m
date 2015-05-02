@@ -1,22 +1,29 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bn0103.outbound.protection.outlook.com [157.56.110.103])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 481901A0D1E
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 May 2015 11:00:27 +1000 (AEST)
-Message-ID: <1430528414.16357.201.camel@freescale.com>
-Subject: Re: [v2,2/2] powerpc32: add support for csum_add()
-From: Scott Wood <scottwood@freescale.com>
-To: christophe leroy <christophe.leroy@c-s.fr>
-Date: Fri, 1 May 2015 20:00:14 -0500
-In-Reply-To: <553FD904.8000309@c-s.fr>
-References: <20150203113927.8604D1A5F14@localhost.localdomain>
- <20150325013023.GA7588@home.buserror.net> <553FD904.8000309@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 713B31A0D15
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 May 2015 12:48:45 +1000 (AEST)
+Message-ID: <1430534906.7979.85.camel@kernel.crashing.org>
+Subject: Re: [PATCH v4 19/21] drivers/of: Support adding sub-tree
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Rob Herring <robherring2@gmail.com>
+Date: Sat, 02 May 2015 12:48:26 +1000
+In-Reply-To: <1430522976.7979.78.camel@kernel.crashing.org>
+References: <1430460188-31343-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <1430460188-31343-20-git-send-email-gwshan@linux.vnet.ibm.com>
+ <CAL_JsqKEUevxSe0Q=pGdsWOiT+TW9iAnCsAWuuqOYj3ZPOG7dg@mail.gmail.com>
+ <1430493730.7979.58.camel@kernel.crashing.org>
+ <CAL_JsqLrBSB4y_0j+i=kXbDA08HO23JuYjJGHR9nhsPnMC_Zyg@mail.gmail.com>
+ <1430521038.7979.70.camel@kernel.crashing.org>
+ <1430522976.7979.78.camel@kernel.crashing.org>
 Content-Type: text/plain; charset="UTF-8"
-MIME-Version: 1.0
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Mime-Version: 1.0
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>, Grant Likely <grant.likely@linaro.org>,
+ Bjorn Helgaas <bhelgaas@google.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,80 +33,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-04-28 at 21:01 +0200, christophe leroy wrote:
+On Sat, 2015-05-02 at 09:29 +1000, Benjamin Herrenschmidt wrote:
+
+> Looking a bit more at it, I don't quite see how I can attach a subtree
+> using that stuff.
 > 
+> Instead, each node in the overlay seems to need extra nodes and
+> properties to refer to the original.
 > 
-> Le 25/03/2015 02:30, Scott Wood a écrit :
+> So the FW would essentially have to create something a lot more complex
+> than just reflattening a bit of its internal tree. For each internal
+> node, it will need to add all those __overlay__ nodes and properties.
 > 
-> > On Tue, Feb 03, 2015 at 12:39:27PM +0100, LEROY Christophe wrote:
-> > > The C version of csum_add() as defined in include/net/checksum.h gives the
-> > > following assembly:
-> > >        0:       7c 04 1a 14     add     r0,r4,r3
-> > >        4:       7c 64 00 10     subfc   r3,r4,r0
-> > >        8:       7c 63 19 10     subfe   r3,r3,r3
-> > >        c:       7c 63 00 50     subf    r3,r3,r0
-> > > 
-> > > include/net/checksum.h also offers the possibility to define an arch specific
-> > > function.
-> > > This patch provides a ppc32 specific csum_add() inline function.
-> > What makes it 32-bit specific?
-> > 
-> > 
-> As far as I understand, the 64-bit will do a 64 bit addition, so we
-> will have to handle differently the carry, can't just be an addze like
-> in 32-bit.
-
-OK.  Before I couldn't find where this was ifdeffed to 32-bit, but it's
-in patch 1/2.
-
-> The generated code is most likely different on ppc64. I have no ppc64
-> compiler so I can't check what gcc generates for the following code:
+> That is not going to fly for me at all. It's order of magnitudes more
+> complex than the solution we are pursuing.
 > 
-> __wsum csum_add(__wsum csum, __wsum addend)
-> {
-> 	u32 res = (__force u32)csum;
-> 	res += (__force u32)addend;
-> 	return (__force __wsum)(res + (res < (__force u32)addend));
-> }
-> 
-> Can someone with a ppc64 compiler tell what we get ?
+> So I think for our use case, we should continue in the direction of
+> having a helper to unflatten a piece of FDT underneath an existing
+> node. I don't like the "HYBRID" stuff though, we should not refer to
+> the original FDT, we should just make them normal dynamic nodes.
 
-With CONFIG_GENERIC_CPU:
+A bit more thought... if we were to use the overlay stuff, Gavin, what
+we *could* do is add to OPAL FW internal representation a generation
+count to every node and property.
 
-   0xc000000000001af8 <+0>:	add     r3,r3,r4
-   0xc000000000001afc <+4>:	cmplw   cr7,r3,r4
-   0xc000000000001b00 <+8>:	mfcr    r4
-   0xc000000000001b04 <+12>:	rlwinm  r4,r4,29,31,31
-   0xc000000000001b08 <+16>:	add     r3,r4,r3
-   0xc000000000001b0c <+20>:	clrldi  r3,r3,32
-   0xc000000000001b10 <+24>:	blr
+That way we could essentially know whenever something's changed from
+what we flattened originally for the kernel.
 
-The mfcr is particularly nasty, at least on our chips.
+We can then create a generic (not PCI specific) call that generates
+an overlay tree for every node and property that has a generation
+count that is newer than what was flattened (or passed by the OS).
 
-With CONFIG_CPU_E6500:
+It's still a LOT more complex than what we need though...
 
-   0xc000000000001b30 <+0>:	add     r3,r3,r4
-   0xc000000000001b34 <+4>:	cmplw   cr7,r3,r4
-   0xc000000000001b38 <+8>:	mfocrf  r4,1
-   0xc000000000001b3c <+12>:	rlwinm  r4,r4,29,31,31
-   0xc000000000001b40 <+16>:	add     r3,r4,r3
-   0xc000000000001b44 <+20>:	clrldi  r3,r3,32
-   0xc000000000001b48 <+24>:	blr
-
-Ideal (short of a 64-bit __wsum) would probably be something like (untested):
-
-	add	r3,r3,r4
-	srdi	r5,r3,32
-	add	r3,r3,r5
-	clrldi	r3,r3,32
-
-Or in C code (which would let the compiler schedule it better):
-
-static inline __wsum csum_add(__wsum csum, __wsum addend)
-{
-        u64 res = (__force u64)csum;
-        res += (__force u32)addend;
-        return (__force __wsum)((u32)res + (res >> 32));
-}
-
--Scott
+Cheers,
+Ben.
