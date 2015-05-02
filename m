@@ -3,16 +3,16 @@ Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
  [140.211.169.12])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 983701A0D91
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  3 May 2015 05:18:54 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 307B71A001E
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  3 May 2015 05:35:21 +1000 (AEST)
 From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 To: linux-kernel@vger.kernel.org
-Subject: [PATCH 4.0 145/220] powerpc,
+Subject: [PATCH 3.19 118/177] powerpc,
  jump_label: Include linux/jump_label.h to get HAVE_JUMP_LABEL define
-Date: Sat,  2 May 2015 21:01:00 +0200
-Message-Id: <20150502185900.592074628@linuxfoundation.org>
-In-Reply-To: <20150502185854.333748961@linuxfoundation.org>
-References: <20150502185854.333748961@linuxfoundation.org>
+Date: Sat,  2 May 2015 21:02:20 +0200
+Message-Id: <20150502190125.524876055@linuxfoundation.org>
+In-Reply-To: <20150502190119.666291882@linuxfoundation.org>
+References: <20150502190119.666291882@linuxfoundation.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-15
 Cc: "Peter Zijlstra \(Intel\)" <peterz@infradead.org>,
@@ -35,7 +35,7 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-4.0-stable review patch.  If anyone has any objections, please let me know.
+3.19-stable review patch.  If anyone has any objections, please let me know.
 
 ------------------
 
