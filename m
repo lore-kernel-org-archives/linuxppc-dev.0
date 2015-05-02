@@ -1,30 +1,22 @@
 Return-Path: <scottwood@freescale.com>
 Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bn0105.outbound.protection.outlook.com [157.56.110.105])
+ (mail-bn1bn0103.outbound.protection.outlook.com [157.56.110.103])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id F3CB71A0D05
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 May 2015 09:43:14 +1000 (AEST)
-Message-ID: <1430523775.16357.177.camel@freescale.com>
-Subject: Re: [v3] dt/bindings: qoriq-clock: Add binding for FMan clock mux
+ by lists.ozlabs.org (Postfix) with ESMTPS id 481901A0D1E
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 May 2015 11:00:27 +1000 (AEST)
+Message-ID: <1430528414.16357.201.camel@freescale.com>
+Subject: Re: [v2,2/2] powerpc32: add support for csum_add()
 From: Scott Wood <scottwood@freescale.com>
-To: Liberman Igal-B31950 <Igal.Liberman@freescale.com>
-Date: Fri, 1 May 2015 18:42:55 -0500
-In-Reply-To: <DM2PR03MB3839C9D3FDFD7978C1A3497E6D60@DM2PR03MB383.namprd03.prod.outlook.com>
-References: <1429008968-24707-1-git-send-email-igal.liberman@freescale.com>
- <1429119357.22867.724.camel@freescale.com>
- <DM2PR03MB38330DBBFFD1BC45D58F447E6E40@DM2PR03MB383.namprd03.prod.outlook.com>
- <1429249281.32545.52.camel@freescale.com>
- <DM2PR03MB383E5F67C358CCE2E38EA71E6E00@DM2PR03MB383.namprd03.prod.outlook.com>
- <1429577504.4352.67.camel@freescale.com>
- <DM2PR03MB383C35FA5959662DD48D00BE6EE0@DM2PR03MB383.namprd03.prod.outlook.com>
- <1430353832.16357.138.camel@freescale.com>
- <DM2PR03MB3839C9D3FDFD7978C1A3497E6D60@DM2PR03MB383.namprd03.prod.outlook.com>
+To: christophe leroy <christophe.leroy@c-s.fr>
+Date: Fri, 1 May 2015 20:00:14 -0500
+In-Reply-To: <553FD904.8000309@c-s.fr>
+References: <20150203113927.8604D1A5F14@localhost.localdomain>
+ <20150325013023.GA7588@home.buserror.net> <553FD904.8000309@c-s.fr>
 Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Tang
- Yuantian-B29983 <Yuantian.Tang@freescale.com>
+Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,56 +26,80 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2015-04-30 at 09:28 -0500, Liberman Igal-B31950 wrote:
-> > -----Original Message-----
-> > From: Wood Scott-B07421
-> > Sent: Thursday, April 30, 2015 3:31 AM
-> > To: Liberman Igal-B31950
-> > Cc: devicetree@vger.kernel.org; linuxppc-dev@lists.ozlabs.org; Tang
-> > Yuantian-B29983
-> > Subject: Re: [v3] dt/bindings: qoriq-clock: Add binding for FMan clock mux
-> > 
-> > On Wed, 2015-04-22 at 05:47 -0500, Liberman Igal-B31950 wrote:
-> > > We have 2 cases:
-> > > 	- Devices (T2/T4/B4) with CLKCG1HWACSR register.
-> > > 	- Devices (Pxxxx, T1) without CLKCG1HWACSR register (Pxxxx
-> > devices
-> > > have many options, T1 has only one option)
-> > >
-> > > For the first group, we can have " qoriq-hwacsr" property in the clock node.
-> > 
-> > No, we're not going to describe every register with its own property.
-> > Describe the chip and let the driver be the place with the knowledge of what
-> > each chip is like.
-> > 
+On Tue, 2015-04-28 at 21:01 +0200, christophe leroy wrote:
 > 
-> I think that FMan clock mux (as we defined it) is similar to other muxes available in our SoC.
-
-I realize that.  I'm saying the way we described existing muxes seems to
-be a mistake.  We're putting too much complexity in the device tree.
-Better to put the complexity in a place that isn't stable ABI.
-
-> If we take T4 as example, it has 3 muxes defined in the device tree (mux0, mux1 and mux2).
-> Each mux has its own reg property (and clock providers).
-> 	mux2: mux2@40 {
-> 		#clock-cells = <0>;
-> 		reg = <0x40 0x4>;
-> 		compatible = "fsl,qoriq-core-mux-2.0";
-> 		clocks = <&pll3 0>, <&pll3 1>, <&pll3 2>,
-> 			<&pll4 0>, <&pll4 1>, <&pll4 2>;
-> 		clock-names = "pll3", "pll3-div2", "pll3-div4",
-> 			"pll4", "pll4-div2", "pll4-div4";
-> 		clock-output-names = "cmux2";
-> 	};
 > 
-> I agree that "fm1-clk-mux" need to be moved from the "guts" node to "clockgen" node.
+> Le 25/03/2015 02:30, Scott Wood a écrit :
+> 
+> > On Tue, Feb 03, 2015 at 12:39:27PM +0100, LEROY Christophe wrote:
+> > > The C version of csum_add() as defined in include/net/checksum.h gives the
+> > > following assembly:
+> > >        0:       7c 04 1a 14     add     r0,r4,r3
+> > >        4:       7c 64 00 10     subfc   r3,r4,r0
+> > >        8:       7c 63 19 10     subfe   r3,r3,r3
+> > >        c:       7c 63 00 50     subf    r3,r3,r0
+> > > 
+> > > include/net/checksum.h also offers the possibility to define an arch specific
+> > > function.
+> > > This patch provides a ppc32 specific csum_add() inline function.
+> > What makes it 32-bit specific?
+> > 
+> > 
+> As far as I understand, the 64-bit will do a 64 bit addition, so we
+> will have to handle differently the carry, can't just be an addze like
+> in 32-bit.
 
-That's not what I was saying.  I'm saying get rid of the node entirely,
-in favor of having the clockgen node itself be a clock source with
-multiple post-mux outputs.
+OK.  Before I couldn't find where this was ifdeffed to 32-bit, but it's
+in patch 1/2.
 
-> However, I'm not sure which changes you want to perform in the node (beside adding reg property for SoC which has it for FMan clock).
+> The generated code is most likely different on ppc64. I have no ppc64
+> compiler so I can't check what gcc generates for the following code:
+> 
+> __wsum csum_add(__wsum csum, __wsum addend)
+> {
+> 	u32 res = (__force u32)csum;
+> 	res += (__force u32)addend;
+> 	return (__force __wsum)(res + (res < (__force u32)addend));
+> }
+> 
+> Can someone with a ppc64 compiler tell what we get ?
 
-Again, the clockgen node already has a reg property.
+With CONFIG_GENERIC_CPU:
+
+   0xc000000000001af8 <+0>:	add     r3,r3,r4
+   0xc000000000001afc <+4>:	cmplw   cr7,r3,r4
+   0xc000000000001b00 <+8>:	mfcr    r4
+   0xc000000000001b04 <+12>:	rlwinm  r4,r4,29,31,31
+   0xc000000000001b08 <+16>:	add     r3,r4,r3
+   0xc000000000001b0c <+20>:	clrldi  r3,r3,32
+   0xc000000000001b10 <+24>:	blr
+
+The mfcr is particularly nasty, at least on our chips.
+
+With CONFIG_CPU_E6500:
+
+   0xc000000000001b30 <+0>:	add     r3,r3,r4
+   0xc000000000001b34 <+4>:	cmplw   cr7,r3,r4
+   0xc000000000001b38 <+8>:	mfocrf  r4,1
+   0xc000000000001b3c <+12>:	rlwinm  r4,r4,29,31,31
+   0xc000000000001b40 <+16>:	add     r3,r4,r3
+   0xc000000000001b44 <+20>:	clrldi  r3,r3,32
+   0xc000000000001b48 <+24>:	blr
+
+Ideal (short of a 64-bit __wsum) would probably be something like (untested):
+
+	add	r3,r3,r4
+	srdi	r5,r3,32
+	add	r3,r3,r5
+	clrldi	r3,r3,32
+
+Or in C code (which would let the compiler schedule it better):
+
+static inline __wsum csum_add(__wsum csum, __wsum addend)
+{
+        u64 res = (__force u64)csum;
+        res += (__force u32)addend;
+        return (__force __wsum)((u32)res + (res >> 32));
+}
 
 -Scott
