@@ -1,22 +1,31 @@
-Return-Path: <jolsa@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+Return-Path: <gregkh@linuxfoundation.org>
+Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
+ [140.211.169.12])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8B8A01A0D0F
- for <linuxppc-dev@lists.ozlabs.org>; Sun,  3 May 2015 01:38:32 +1000 (AEST)
-Date: Sat, 2 May 2015 17:38:14 +0200
-From: Jiri Olsa <jolsa@redhat.com>
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-Subject: Re: [RFC][PATCH 4/4] perf: Create aliases for PMU events
-Message-ID: <20150502153814.GA21242@krava.redhat.com>
-References: <1430463941-26109-1-git-send-email-sukadev@linux.vnet.ibm.com>
- <1430463941-26109-5-git-send-email-sukadev@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 983701A0D91
+ for <linuxppc-dev@lists.ozlabs.org>; Sun,  3 May 2015 05:18:54 +1000 (AEST)
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH 4.0 145/220] powerpc,
+ jump_label: Include linux/jump_label.h to get HAVE_JUMP_LABEL define
+Date: Sat,  2 May 2015 21:01:00 +0200
+Message-Id: <20150502185900.592074628@linuxfoundation.org>
+In-Reply-To: <20150502185854.333748961@linuxfoundation.org>
+References: <20150502185854.333748961@linuxfoundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1430463941-26109-5-git-send-email-sukadev@linux.vnet.ibm.com>
-Cc: ak@linux.intel.com, linux-kernel@vger.kernel.org,
- Arnaldo Carvalho de Melo <acme@kernel.org>, mingo@redhat.com,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-15
+Cc: "Peter Zijlstra \(Intel\)" <peterz@infradead.org>,
+ heiko.carstens@de.ibm.com, paulus@samba.org, stable@vger.kernel.org,
+ Ingo Molnar <mingo@kernel.org>, linux@arm.linux.org.uk,
+ Linus Torvalds <torvalds@linux-foundation.org>, mgorman@suse.de,
+ catalin.marinas@arm.com, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ liuj97@gmail.com, will.deacon@arm.com, rostedt@goodmis.org, jbaron@akamai.com,
+ Anton Blanchard <anton@samba.org>, Thomas Gleixner <tglx@linutronix.de>,
+ mmarek@suse.cz, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ ralf@linux-mips.org, schwidefsky@de.ibm.com,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ davem@davemloft.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,95 +35,94 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, May 01, 2015 at 12:05:41AM -0700, Sukadev Bhattiprolu wrote:
+4.0-stable review patch.  If anyone has any objections, please let me know.
 
-SNIP
+------------------
 
-> +
-> +static int pmu_add_cpu_aliases(char *cpustr, void *data)
-> +{
-> +	struct list_head *head = (struct list_head *)data;
-> +	struct perf_pmu_alias *alias;
-> +	int i;
-> +	struct perf_pmu_event *events_table, *event;
-> +	struct parse_events_term *term;
-> +
-> +	events_table = arch_get_events_table(cpustr);
-> +	if (!events_table)
-> +		return 0;
-> +
-> +	for (i = 0; events_table[i].name != NULL; i++) {
-> +		event = &events_table[i];
-> +
-> +		alias = malloc(sizeof(*alias));
-> +		if (!alias)
-> +			return -ENOMEM;
-> +
-> +		term = malloc(sizeof(*term));
-> +		if (!term) {
-> +			/*
-> +			 * TODO: cleanup aliases allocated so far?
-> +			 */
-> +			free(alias);
-> +			return -ENOMEM;
-> +		}
-> +
-> +		/* ->config is not const; cast to override */
-> +		term->config = (char *)"event";
-> +		term->val.num = event->code;
-> +		term->type_val = PARSE_EVENTS__TERM_TYPE_NUM;
-> +		term->type_term = PARSE_EVENTS__TERM_TYPE_USER;
-> +		INIT_LIST_HEAD(&term->list);
-> +		term->used = 0;
+From: Anton Blanchard <anton@samba.org>
 
-hum, so I checked and for x86 the 'struct perf_pmu_event::code' is not enough
+commit 58995a9a5b292458f94a2356b8c878230fa56fe0 upstream.
 
-Andi introduced following JSON notation for event:
+Commit 1bc9e47aa8e4 ("powerpc/jump_label: Use HAVE_JUMP_LABEL")
+converted uses of CONFIG_JUMP_LABEL to HAVE_JUMP_LABEL in
+some assembly files.
 
-[
-  {
-    "EventCode": "0x00",
-    "UMask": "0x01",
-    "EventName": "INST_RETIRED.ANY",
-    "BriefDescription": "Instructions retired from execution.",
-    "PublicDescription": "Instructions retired from execution.",
-    "Counter": "Fixed counter 1",
-    "CounterHTOff": "Fixed counter 1",
-    "SampleAfterValue": "2000003",
-    "MSRIndex": "0",
-    "MSRValue": "0",
-    "TakenAlone": "0",
-    "CounterMask": "0",
-    "Invert": "0",
-    "AnyThread": "0",
-    "EdgeDetect": "0",
-    "PEBS": "0",
-    "PRECISE_STORE": "0",
-    "Errata": "null",
-    "Offcore": "0"
-  }
+HAVE_JUMP_LABEL is defined in linux/jump_label.h, so we need to
+include this or we always get the non jump label fallback code.
 
-which gets processed/translated into string of terms "event=..,umask=,..."
-which is used to create alias 'struct perf_pmu_alias'
+Signed-off-by: Anton Blanchard <anton@samba.org>
+Acked-by: Michael Ellerman <mpe@ellerman.id.au>
+Acked-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: benh@kernel.crashing.org
+Cc: catalin.marinas@arm.com
+Cc: davem@davemloft.net
+Cc: heiko.carstens@de.ibm.com
+Cc: jbaron@akamai.com
+Cc: linux@arm.linux.org.uk
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: liuj97@gmail.com
+Cc: mgorman@suse.de
+Cc: mmarek@suse.cz
+Cc: paulus@samba.org
+Cc: ralf@linux-mips.org
+Cc: rostedt@goodmis.org
+Cc: schwidefsky@de.ibm.com
+Cc: will.deacon@arm.com
+Fixes: 1bc9e47aa8e4 ("powerpc/jump_label: Use HAVE_JUMP_LABEL")
+Link: http://lkml.kernel.org/r/1428551492-21977-3-git-send-email-anton@samba.org
+Signed-off-by: Ingo Molnar <mingo@kernel.org>
+Signed-off-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 
-please check Andi's patch:
-  [PATCH v9 04/11] perf, tools: Add support for reading JSON event files
+---
+ arch/powerpc/platforms/powernv/opal-wrappers.S |    2 +-
+ arch/powerpc/platforms/pseries/hvCall.S        |    2 +-
+ arch/powerpc/platforms/pseries/lpar.c          |    2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
 
-  function json_events
-
-
-I wonder we should stay with JSON description during build time
-translate all (for architecture) events into strings in term format
-"event=..,umask=,...'  and this array of string would be loaded
-as aliases in runtime
-
-so we would have architecture specific tool that would translate
-JSON events data into array of strings (events in terms form for
-given architecture) which would get compiled into perf
-
-I personaly like having set of event files in JSON notation
-rather than having them directly in C structure
-
-thoughts?
-
-jirka
+--- a/arch/powerpc/platforms/powernv/opal-wrappers.S
++++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
+@@ -9,11 +9,11 @@
+  * 2 of the License, or (at your option) any later version.
+  */
+ 
++#include <linux/jump_label.h>
+ #include <asm/ppc_asm.h>
+ #include <asm/hvcall.h>
+ #include <asm/asm-offsets.h>
+ #include <asm/opal.h>
+-#include <asm/jump_label.h>
+ 
+ 	.section	".text"
+ 
+--- a/arch/powerpc/platforms/pseries/hvCall.S
++++ b/arch/powerpc/platforms/pseries/hvCall.S
+@@ -7,12 +7,12 @@
+  * as published by the Free Software Foundation; either version
+  * 2 of the License, or (at your option) any later version.
+  */
++#include <linux/jump_label.h>
+ #include <asm/hvcall.h>
+ #include <asm/processor.h>
+ #include <asm/ppc_asm.h>
+ #include <asm/asm-offsets.h>
+ #include <asm/ptrace.h>
+-#include <asm/jump_label.h>
+ 
+ 	.section	".text"
+ 	
+--- a/arch/powerpc/platforms/pseries/lpar.c
++++ b/arch/powerpc/platforms/pseries/lpar.c
+@@ -26,7 +26,7 @@
+ #include <linux/dma-mapping.h>
+ #include <linux/console.h>
+ #include <linux/export.h>
+-#include <linux/static_key.h>
++#include <linux/jump_label.h>
+ #include <asm/processor.h>
+ #include <asm/mmu.h>
+ #include <asm/page.h>
