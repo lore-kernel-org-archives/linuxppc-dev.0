@@ -1,37 +1,42 @@
-Return-Path: <neelegup@linux.vnet.ibm.com>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A72861A0D1C
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 May 2015 21:15:24 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3871E1A02EE
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 May 2015 09:29:34 +1000 (AEST)
 Received: from /spool/local
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <neelegup@linux.vnet.ibm.com>;
- Sat, 2 May 2015 21:15:22 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id D54563578048
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 May 2015 21:15:19 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t42BFAMg37093396
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 2 May 2015 21:15:19 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t42BELol022238
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 2 May 2015 21:14:21 +1000
-Message-ID: <5544B179.1050901@linux.vnet.ibm.com>
-Date: Sat, 02 May 2015 16:44:01 +0530
-From: Neelesh Gupta <neelegup@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Mon, 4 May 2015 09:29:32 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 24D043578048
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 May 2015 09:29:23 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t43NTEhC45678804
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 May 2015 09:29:23 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t43NSnN3006637
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 May 2015 09:28:50 +1000
+Date: Mon, 4 May 2015 09:28:24 +1000
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: Rob Herring <robherring2@gmail.com>
+Subject: Re: [PATCH v4 19/21] drivers/of: Support adding sub-tree
+Message-ID: <20150503232824.GA5318@gwshan>
+Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+References: <1430460188-31343-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <1430460188-31343-20-git-send-email-gwshan@linux.vnet.ibm.com>
+ <CAL_JsqKEUevxSe0Q=pGdsWOiT+TW9iAnCsAWuuqOYj3ZPOG7dg@mail.gmail.com>
 MIME-Version: 1.0
-To: Vipin K Parashar <vipin@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc/powernv: Add poweroff (EPOW, DPO) events support
- for PowerNV platform
-References: <1430374028-32181-1-git-send-email-vipin@linux.vnet.ibm.com>
-In-Reply-To: <1430374028-32181-1-git-send-email-vipin@linux.vnet.ibm.com>
-Content-Type: multipart/alternative;
- boundary="------------040008030303060900050405"
-Cc: stewart@linux.vnet.ibm.com, joel@jms.id.au
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <CAL_JsqKEUevxSe0Q=pGdsWOiT+TW9iAnCsAWuuqOYj3ZPOG7dg@mail.gmail.com>
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>, Grant Likely <grant.likely@linaro.org>,
+ Bjorn Helgaas <bhelgaas@google.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,915 +46,369 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------040008030303060900050405
-Content-Type: text/plain; charset=utf-8; format=flowed
-Content-Transfer-Encoding: 7bit
+On Fri, May 01, 2015 at 07:54:03AM -0500, Rob Herring wrote:
+>+dt list
+>
+>On Fri, May 1, 2015 at 1:03 AM, Gavin Shan <gwshan@linux.vnet.ibm.com> wrote:
+>> The requirement is raised when developing the PCI hotplug feature
+>> for PowerPC PowerNV platform, which runs on top of skiboot firmware.
+>> When plugging PCI adapter to one PCI slot, the firmware rescans the
+>> slot and build FDT (Flat Device Tree) blob, which is sent to the
+>> PowerNV PCI hotplug driver for processing. The new constructed device
+>> nodes from the FDT blob are expected to be attached to the device
+>> node of the PCI slot. Unfortunately, it seems we don't have a API
+>> to support the scenario. The patch intends to support it by newly
+>> introduced function of_fdt_add_subtree(), the design behind it is
+>> shown as below:
+>>
+>>    * When the sub-tree FDT blob, which is owned by firmware, is
+>>      received by kernel. It's copied over to the blob, which is
+>>      dynamically allocated. Since then, the FDT blob owned by
+>>      firmware isn't touched.
+>>    * Rework unflatten_dt_node() so that the device nodes in current
+>>      and deeper depth have been constructed from the FDT blob. All
+>>      device nodes are marked with flag OF_DYNAMIC_HYBIRD, which is
+>
+>Perhaps you meant HYBRID?
+>
+
+Yeah, It should be "HYBRID".
+
+>>      similar to OF_DYNAMIC. However, device node with the flag set
+>>      can be free'd, but in the way other than that for OF_DYNAMIC
+>>      device nodes.
+>
+>The difference seems to be whether you allocate space or just point to
+>the FDT for various strings/data. Is that right?
+>
+
+It's correct. The FDT blob passed from firmware is copied by kernel to
+the memory chunk, which is allocated from slab. That means the FDT blob
+managed by firmware can be released in time. In kernel, the instances of
+"struct device_node" and "struct property" are allocated from slab
+dynamically, but some of their fields are points to the (copied) FDT
+blob. It indicates the (copied) FDT can only be released when the sub-tree
+is cut off completely.
 
 
+>>    * of_fdt_add_subtree() is the introduced API to do the work.
+>
+>Have you looked at overlays and if so why do they not work for your purposes?
+>
+>Why do you need to do this with the flattened tree?
+>
 
-On 04/30/2015 11:37 AM, Vipin K Parashar wrote:
-> diff --git a/arch/powerpc/platforms/powernv/opal-poweroff-events.c b/arch/powerpc/platforms/powernv/opal-poweroff-events.c
-> new file mode 100644
-> index 0000000..9b169e2
-> --- /dev/null
-> +++ b/arch/powerpc/platforms/powernv/opal-poweroff-events.c
-> @@ -0,0 +1,358 @@
-> +/*
-> + * PowerNV poweroff events support
-> + *
-> + * Copyright 2015 IBM Corp.
-> + *
-> + * This program is free software; you can redistribute it and/or
-> + * modify it under the terms of the GNU General Public License
-> + * as published by the Free Software Foundation; either version
-> + * 2 of the License, or (at your option) any later version.
-> + */
-> +
-> +#define pr_fmt(fmt)	"POWEROFF_EVENT: "    fmt
-> +
-> +#include <linux/kernel.h>
-> +#include <linux/spinlock.h>
-> +#include <linux/timer.h>
-> +#include <linux/reboot.h>
-> +#include <asm/opal.h>
-> +#include <asm/machdep.h>
-> +
-> +/* System EPOW status */
-> +u32 epow_status[OPAL_MAX_EPOW_CLASSES];
-> +int num_epow_classes;
+It seems that Ben already helped answering the questions. I'll reply
+in other threads if necessary. Rob, thanks for review.
 
-static
+Thanks,
+Gavin
 
-> +
-> +/* EPOW event timer and corresponding locks */
-> +static struct timer_list epow_timer;
-> +static DEFINE_SPINLOCK(epow_timer_spinlock);
-> +
-> +/* EPOW, DPO event status values */
-> +#define	DPO_DETECTED	1
-> +#define	EPOW_DETECTED	1
-> +
-> +/* EPOW events supported */
-> +#define EPOW_POWER_UPS          0
-> +#define EPOW_POWER_UPS_LOW      1
-> +#define EPOW_TEMP_HIGH_AMB      2
-> +#define EPOW_TEMP_CRIT_AMB      3
-> +#define EPOW_TEMP_HIGH_INT      4
-> +#define EPOW_TEMP_CRIT_INT      5
-> +#define MAX_EPOW_EVENTS		6
-> +
-> +/* EPOW events description */
-> +static const char * const epow_events_map[] = {
-> +	[EPOW_POWER_UPS]	= "UPS",
-> +	[EPOW_POWER_UPS_LOW]	= "UPS-low",
-> +	[EPOW_TEMP_HIGH_AMB]	= "high-ambient-temp",
-> +	[EPOW_TEMP_CRIT_AMB]	= "crit-ambient-temp",
-> +	[EPOW_TEMP_HIGH_INT]	= "high-internal-temp",
-> +	[EPOW_TEMP_CRIT_INT]	= "crit-internal-temp",
-> +};
-> +
-> +/* EPOW events timeout values */
-> +static int epow_timeout[MAX_EPOW_EVENTS];
-> +
-> +/*
-> + * TODO: Export various event timeout values via device tree.
-> + *  Zero timeout value for any event suggests that it needs
-> + *  immediate shutdown.
-> + */
-> +#define TIMEOUT_EPOW_POWER_UPS		450
-> +#define TIMEOUT_EPOW_TEMP_HIGH_AMB	450
-> +
-> +/*
-> + * Get various EPOW event timeouts.
-> + * TODO: For now hardcoding timeout values but they need to be
-> + * obtained via firmware device-tree.
-> + */
-> +void get_epow_timeouts(void)
-
-static ?
-
-> +{
-> +	epow_timeout[EPOW_POWER_UPS] = TIMEOUT_EPOW_POWER_UPS;
-> +	epow_timeout[EPOW_TEMP_HIGH_AMB] = TIMEOUT_EPOW_TEMP_HIGH_AMB;
-
-What about the timeout values for other cases ? don't see assigned
-anywhere but used in the process_epow() function..
-
-> +}
-> +
-> +/* EPOW poweroff function. */
-> +static void epow_poweroff(unsigned long event)
-> +{
-> +	pr_info("Powering off system due to %s EPOW event\n",
-> +				epow_events_map[event]);
-> +	orderly_poweroff(true);
-> +}
-> +
-> +/* Start EPOW poweroff timer */
-> +static void start_epow_timer(unsigned long event, int32_t timeout)
-
-'event' is of type 'int' which you are passing..
-
-> +{
-> +	unsigned long flags;
-> +
-> +	spin_lock_irqsave(&epow_timer_spinlock, flags);
-> +	/* Check for already running epow poweroff timer */
-> +	if (timer_pending(&epow_timer)) {
-> +		/* Timer for same event */
-> +		if (epow_timer.data == event) {
-> +			spin_unlock_irqrestore(&epow_timer_spinlock, flags);
-> +			return;
-> +		}
-> +
-> +		/* Timer with early poweroff timeout */
-> +		if (epow_timer.expires < (jiffies + timeout * HZ)) {
-
-Should it also return for the equal condition ?
-
-if (epow_timer.expires <= (jiffies + timeout * HZ))
-
-> +			event = epow_timer.data;
-> +			spin_unlock_irqrestore(&epow_timer_spinlock, flags);
-> +			pr_info("Poweroff already scheduled for %s EPOW event "
-> +					"with earlier timeout.\n",
-> +					epow_events_map[event]);
-> +			return;
-> +		}
-> +	}
-> +
-> +	/* Start a new timer/modify existing timer with new timeout value */
-> +	epow_timer.data = event;
-> +	mod_timer(&epow_timer, jiffies + timeout  * HZ);
-> +	spin_unlock_irqrestore(&epow_timer_spinlock, flags);
-> +	pr_info("Scheduled system poweroff due to %s EPOW event "
-> +			"after %d seconds\n", epow_events_map[event], timeout);
-> +}
-> +
-> +/* Stop poweroff timer */
-> +static void stop_epow_timer(void)
-> +{
-> +	int rc;
-> +	unsigned long flags;
-> +
-> +	spin_lock_irqsave(&epow_timer_spinlock, flags);
-> +	rc = del_timer(&epow_timer);
-> +	spin_unlock_irqrestore(&epow_timer_spinlock, flags);
-> +
-> +	if (rc)
-> +		pr_info("Poweroff timer deactivated\n");
-> +}
-> +
-> +/* Get DPO status */
-> +static int get_dpo_status(int32_t *dpo_timeout)
-> +{
-> +	int rc;
-> +	__be32 opal_dpo_timeout;
-> +
-> +	rc = opal_get_dpo_status(&opal_dpo_timeout);
-> +	if (rc == OPAL_WRONG_STATE) {
-> +		*dpo_timeout = 0;
-> +		return 0;
-> +	}
-> +
-> +	*dpo_timeout = be32_to_cpu(opal_dpo_timeout);
-> +	return DPO_DETECTED;
-> +}
-> +
-> +/* Process DPO event */
-> +void process_dpo(void)
-
-static function ?
-
-> +{
-> +	pr_info("Powering off system due to poweroff request.\n");
-> +	orderly_poweroff(true);
-> +}
-> +
-> +/* Get EPOW status */
-> +static int get_epow_status(void)
-> +{
-> +	int i;
-> +	bool epow_detected = false;
-> +
-> +	__be32 opal_epow_status[OPAL_MAX_EPOW_CLASSES];
-> +	__be32 opal_epow_classes;
-> +
-> +	opal_epow_classes = cpu_to_be32(OPAL_MAX_EPOW_CLASSES);
-> +	for (i = 0; i < OPAL_MAX_EPOW_CLASSES; i++)
-> +		opal_epow_status[i] = cpu_to_be32(0);
-> +
-> +	/* Get EPOW events information from OPAL */
-> +	opal_get_epow_status(opal_epow_status, &opal_epow_classes);
-> +
-> +	/* Copy EPOW status */
-> +	memset(epow_status, 0, sizeof(epow_status[0] * OPAL_MAX_EPOW_CLASSES));
-> +	num_epow_classes = be32_to_cpu(opal_epow_classes);
-> +	for (i = 0; i < num_epow_classes; i++) {
-> +		epow_status[i] = be32_to_cpu(opal_epow_status[i]);
-> +		if (epow_status[i])
-> +			epow_detected = true;
-> +	}
-> +
-> +	pr_info("EPOW classes supported OPAL = %d, Host = %d "
-> +			"EPOW Status = 0x%x, 0x%x, 0x%x\n",
-> +			num_epow_classes, OPAL_MAX_EPOW_CLASSES,
-> +			epow_status[0], epow_status[1], epow_status[2]);
-> +
-> +	if (epow_detected)
-> +		return EPOW_DETECTED;
-> +
-> +	return 0;
-> +}
-> +
-> +/* Process EPOW information */
-> +void process_epow(void)
-> +{
-> +	int i, timeout = 0, event = -1;
-> +	bool epow_normal = false;
-> +
-> +	/* Check for EPOW return to normal state */
-> +	for (i = 0; i < OPAL_MAX_EPOW_CLASSES; i++) {
-
-s/OPAL_MAX_EPOW_CLASSES/num_epow_classes
-
-> +		if (epow_status[i])
-> +			break;
-> +	}
-> +
-> +	if (i == OPAL_MAX_EPOW_CLASSES)
-> +		epow_normal = true;
-> +
-> +	/* Cancel any pending shutdown timer due to EPOW normal state.*/
-> +	if (epow_normal) {
-> +		stop_epow_timer();
-> +		return;
-> +	}
-> +
-> +	/* Determine EPOW events and poweroff timeouts */
-> +	if (epow_status[OPAL_EPOW_POWER] & OPAL_EPOW_POWER_UPS) {
-> +		pr_info("EPOW due to system running on UPS power\n");
-> +		event = EPOW_POWER_UPS;
-> +		timeout = epow_timeout[EPOW_POWER_UPS];
-> +	}
-> +
-> +	if (epow_status[OPAL_EPOW_POWER] & OPAL_EPOW_POWER_UPS_LOW) {
-> +		pr_info("EPOW due to system running on UPS power "
-> +				"with low battery\n");
-> +		event = EPOW_POWER_UPS_LOW;
-> +		timeout = epow_timeout[EPOW_POWER_UPS_LOW];
-> +	}
-> +
-> +	if (epow_status[OPAL_EPOW_TEMP] & OPAL_EPOW_TEMP_HIGH_AMB) {
-> +		pr_info("EPOW due to high ambient temperature\n");
-> +		event = EPOW_TEMP_HIGH_AMB;
-> +		timeout = epow_timeout[EPOW_TEMP_HIGH_AMB];
-> +	}
-> +
-> +	if (epow_status[OPAL_EPOW_TEMP] & OPAL_EPOW_TEMP_CRIT_AMB) {
-> +		pr_info("EPOW due to critical ambient temperature\n");
-> +		event = EPOW_TEMP_CRIT_AMB;
-> +		timeout = epow_timeout[EPOW_TEMP_CRIT_AMB];
-> +	}
-> +
-> +	if (epow_status[OPAL_EPOW_TEMP] & OPAL_EPOW_TEMP_HIGH_INT) {
-> +		pr_info("EPOW due to high internal temperature\n");
-> +		event = EPOW_TEMP_HIGH_INT;
-> +		timeout = epow_timeout[EPOW_TEMP_HIGH_INT];
-> +	}
-> +
-> +	if (epow_status[OPAL_EPOW_TEMP] & OPAL_EPOW_TEMP_CRIT_INT) {
-> +		pr_info("EPOW due to critical internal temperature\n");
-> +		event = EPOW_TEMP_CRIT_INT;
-> +		timeout = epow_timeout[EPOW_TEMP_CRIT_INT];
-> +	}
-
-'event' & 'timeout' values are getting updated after each check, I guess
-for multiple types of epow cases.. Can it be changed to if-elseif-if 
-construct..
-and check based on the criticality ...?
-
-> +
-> +	if (event == -1) {
-> +		pr_err("Unknown EPOW event\n");
-> +		return;
-> +	}
-> +
-> +	/* Start EPOW poweroff timer */
-> +	start_epow_timer(event, timeout);
-> +}
-> +
-> +/* Check for any existing EPOW, DPO events and process them, if existing */
-> +static void process_existing_poweroff_events(void)
-> +{
-> +	int rc;
-> +	int32_t dpo_timeout;
-> +
-> +	/* Check for any existing DPO event */
-> +	rc = get_dpo_status(&dpo_timeout);
-> +	if (rc == DPO_DETECTED) {
-> +		pr_info("Existing DPO event detected\n");
-> +		process_dpo();
-> +		return;
-> +	 } else
-> +		pr_info("No existing DPO event detected\n");
-> +
-> +	/* Check for any existing EPOW event */
-> +	rc = get_epow_status();
-> +	if (rc == EPOW_DETECTED) {
-> +		pr_info("Existing EPOW event detected.\n");
-> +		process_epow();
-> +	} else
-> +		pr_info("No existing EPOW event detected\n");
-> +
-> +}
-> +
-> +/* Platform EPOW message received */
-> +static int opal_epow_event(struct notifier_block *nb,
-> +			unsigned long msg_type, void *msg)
-> +{
-> +	pr_info("EPOW event received\n");
-> +
-> +	/* Get EPOW event details */
-> +	get_epow_status();
-> +
-> +	/* Process EPOW event information */
-> +	process_epow();
-> +
-> +	return 0;
-> +}
-> +
-> +
-> +/* Platform DPO message received */
-> +static int opal_dpo_event(struct notifier_block *nb,
-> +				unsigned long msg_type, void *msg)
-> +{
-> +	pr_info("DPO event received.\n");
-> +	process_dpo();
-> +
-> +	return 0;
-> +}
-> +
-> +
-> +/* OPAL EPOW event notifier block */
-> +static struct notifier_block opal_epow_nb = {
-> +	.notifier_call  = opal_epow_event,
-> +	.next           = NULL,
-> +	.priority       = 0,
-> +};
-> +
-> +/* OPAL DPO event notifier block */
-> +static struct notifier_block opal_dpo_nb = {
-> +	.notifier_call  = opal_dpo_event,
-> +	.next           = NULL,
-> +	.priority       = 0,
-> +};
-> +
-> +/* Poweroff events init */
-> +static int opal_poweroff_events_init(void)
-
-Use '__init' macro for the initialization function.
-
-> +{
-> +	int ret;
-> +
-> +	/* Initialize poweroff timer */
-> +	init_timer(&epow_timer);
-> +	epow_timer.function = epow_poweroff;
-> +
-> +	/* Get EPOW event timeout values */
-> +	get_epow_timeouts();
-> +
-> +	/* Check for any existing EPOW or DPO events. */
-> +	process_existing_poweroff_events();
-> +
-> +	/* Register EPOW event notifier */
-> +	ret = opal_message_notifier_register(OPAL_MSG_EPOW, &opal_epow_nb);
-> +	if (ret) {
-> +		pr_err("EPOW event notifier registration failed\n");
-> +		return ret;
-> +	}
-> +
-> +	/* Register DPO event notifier */
-> +	ret = opal_message_notifier_register(OPAL_MSG_DPO, &opal_dpo_nb);
-> +	if (ret) {
-> +		pr_err("DPO event notifier registration failed\n");
-> +		opal_notifier_unregister(&opal_epow_nb);
-
-opal_message_notifier_unregister() instead.
-plus delete the timer too.
-
-Regards,
-Neelesh.
-
-> +		return ret;
-> +	}
-> +
-> +
-> +	pr_info("OPAL poweroff events support initialized\n");
-> +
-> +	return 0;
-> +}
-> +
-> +machine_subsys_initcall(powernv, opal_poweroff_events_init);
-> diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
-> index a7ade94..5d3c8e3 100644
-> --- a/arch/powerpc/platforms/powernv/opal-wrappers.S
-> +++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
-> @@ -249,6 +249,7 @@ OPAL_CALL(opal_pci_reinit,			OPAL_PCI_REINIT);
->   OPAL_CALL(opal_pci_mask_pe_error,		OPAL_PCI_MASK_PE_ERROR);
->   OPAL_CALL(opal_set_slot_led_status,		OPAL_SET_SLOT_LED_STATUS);
->   OPAL_CALL(opal_get_epow_status,			OPAL_GET_EPOW_STATUS);
-> +OPAL_CALL(opal_get_dpo_status,			OPAL_GET_DPO_STATUS);
->   OPAL_CALL(opal_set_system_attention_led,	OPAL_SET_SYSTEM_ATTENTION_LED);
->   OPAL_CALL(opal_pci_next_error,			OPAL_PCI_NEXT_ERROR);
->   OPAL_CALL(opal_pci_poll,			OPAL_PCI_POLL);
-
-
---------------040008030303060900050405
-Content-Type: text/html; charset=utf-8
-Content-Transfer-Encoding: 7bit
-
-<html>
-  <head>
-    <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
-  </head>
-  <body bgcolor="#FFFFFF" text="#000000">
-    <br>
-    <br>
-    <div class="moz-cite-prefix">On 04/30/2015 11:37 AM, Vipin K
-      Parashar wrote:<br>
-    </div>
-    <blockquote
-      cite="mid:1430374028-32181-1-git-send-email-vipin@linux.vnet.ibm.com"
-      type="cite">
-      <pre wrap="">
-diff --git a/arch/powerpc/platforms/powernv/opal-poweroff-events.c b/arch/powerpc/platforms/powernv/opal-poweroff-events.c
-new file mode 100644
-index 0000000..9b169e2
---- /dev/null
-+++ b/arch/powerpc/platforms/powernv/opal-poweroff-events.c
-@@ -0,0 +1,358 @@
-+/*
-+ * PowerNV poweroff events support
-+ *
-+ * Copyright 2015 IBM Corp.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ */
-+
-+#define pr_fmt(fmt)	"POWEROFF_EVENT: "    fmt
-+
-+#include &lt;linux/kernel.h&gt;
-+#include &lt;linux/spinlock.h&gt;
-+#include &lt;linux/timer.h&gt;
-+#include &lt;linux/reboot.h&gt;
-+#include &lt;asm/opal.h&gt;
-+#include &lt;asm/machdep.h&gt;
-+
-+/* System EPOW status */
-+u32 epow_status[OPAL_MAX_EPOW_CLASSES];
-+int num_epow_classes;</pre>
-    </blockquote>
-    <br>
-    <small>static</small><br>
-    <br>
-    <blockquote
-      cite="mid:1430374028-32181-1-git-send-email-vipin@linux.vnet.ibm.com"
-      type="cite">
-      <pre wrap="">+
-+/* EPOW event timer and corresponding locks */
-+static struct timer_list epow_timer;
-+static DEFINE_SPINLOCK(epow_timer_spinlock);
-+
-+/* EPOW, DPO event status values */
-+#define	DPO_DETECTED	1
-+#define	EPOW_DETECTED	1
-+
-+/* EPOW events supported */
-+#define EPOW_POWER_UPS          0
-+#define EPOW_POWER_UPS_LOW      1
-+#define EPOW_TEMP_HIGH_AMB      2
-+#define EPOW_TEMP_CRIT_AMB      3
-+#define EPOW_TEMP_HIGH_INT      4
-+#define EPOW_TEMP_CRIT_INT      5
-+#define MAX_EPOW_EVENTS		6
-+
-+/* EPOW events description */
-+static const char * const epow_events_map[] = {
-+	[EPOW_POWER_UPS]	= "UPS",
-+	[EPOW_POWER_UPS_LOW]	= "UPS-low",
-+	[EPOW_TEMP_HIGH_AMB]	= "high-ambient-temp",
-+	[EPOW_TEMP_CRIT_AMB]	= "crit-ambient-temp",
-+	[EPOW_TEMP_HIGH_INT]	= "high-internal-temp",
-+	[EPOW_TEMP_CRIT_INT]	= "crit-internal-temp",
-+};
-+
-+/* EPOW events timeout values */
-+static int epow_timeout[MAX_EPOW_EVENTS];
-+
-+/*
-+ * TODO: Export various event timeout values via device tree.
-+ *  Zero timeout value for any event suggests that it needs
-+ *  immediate shutdown.
-+ */
-+#define TIMEOUT_EPOW_POWER_UPS		450
-+#define TIMEOUT_EPOW_TEMP_HIGH_AMB	450
-+
-+/*
-+ * Get various EPOW event timeouts.
-+ * TODO: For now hardcoding timeout values but they need to be
-+ * obtained via firmware device-tree.
-+ */
-+void get_epow_timeouts(void)</pre>
-    </blockquote>
-    <br>
-    <small>static ?</small><br>
-    <br>
-    <blockquote
-      cite="mid:1430374028-32181-1-git-send-email-vipin@linux.vnet.ibm.com"
-      type="cite">
-      <pre wrap="">+{
-+	epow_timeout[EPOW_POWER_UPS] = TIMEOUT_EPOW_POWER_UPS;
-+	epow_timeout[EPOW_TEMP_HIGH_AMB] = TIMEOUT_EPOW_TEMP_HIGH_AMB;</pre>
-    </blockquote>
-    <br>
-    <small>What about the timeout values for other cases ? don't see
-      assigned<br>
-      anywhere but used in the process_epow() function..</small><br>
-    <br>
-    <blockquote
-      cite="mid:1430374028-32181-1-git-send-email-vipin@linux.vnet.ibm.com"
-      type="cite">
-      <pre wrap="">
-+}
-+
-+/* EPOW poweroff function. */
-+static void epow_poweroff(unsigned long event)
-+{
-+	pr_info("Powering off system due to %s EPOW event\n",
-+				epow_events_map[event]);
-+	orderly_poweroff(true);
-+}
-+
-+/* Start EPOW poweroff timer */
-+static void start_epow_timer(unsigned long event, int32_t timeout)</pre>
-    </blockquote>
-    <br>
-    <small>'event' is of type 'int' which you are passing..</small><br>
-    <br>
-    <blockquote
-      cite="mid:1430374028-32181-1-git-send-email-vipin@linux.vnet.ibm.com"
-      type="cite">
-      <pre wrap="">
-+{
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&amp;epow_timer_spinlock, flags);
-+	/* Check for already running epow poweroff timer */
-+	if (timer_pending(&amp;epow_timer)) {
-+		/* Timer for same event */
-+		if (epow_timer.data == event) {
-+			spin_unlock_irqrestore(&amp;epow_timer_spinlock, flags);
-+			return;
-+		}
-+
-+		/* Timer with early poweroff timeout */
-+		if (epow_timer.expires &lt; (jiffies + timeout * HZ)) {</pre>
-    </blockquote>
-    <br>
-    <small>Should it also return for the equal condition ?</small><br>
-    <pre wrap="">if (epow_timer.expires &lt;= (jiffies + timeout * HZ))</pre>
-    <blockquote
-      cite="mid:1430374028-32181-1-git-send-email-vipin@linux.vnet.ibm.com"
-      type="cite">
-      <pre wrap="">
-+			event = epow_timer.data;
-+			spin_unlock_irqrestore(&amp;epow_timer_spinlock, flags);
-+			pr_info("Poweroff already scheduled for %s EPOW event "
-+					"with earlier timeout.\n",
-+					epow_events_map[event]);
-+			return;
-+		}
-+	}
-+
-+	/* Start a new timer/modify existing timer with new timeout value */
-+	epow_timer.data = event;
-+	mod_timer(&amp;epow_timer, jiffies + timeout  * HZ);
-+	spin_unlock_irqrestore(&amp;epow_timer_spinlock, flags);
-+	pr_info("Scheduled system poweroff due to %s EPOW event "
-+			"after %d seconds\n", epow_events_map[event], timeout);
-+}
-+
-+/* Stop poweroff timer */
-+static void stop_epow_timer(void)
-+{
-+	int rc;
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&amp;epow_timer_spinlock, flags);
-+	rc = del_timer(&amp;epow_timer);
-+	spin_unlock_irqrestore(&amp;epow_timer_spinlock, flags);
-+
-+	if (rc)
-+		pr_info("Poweroff timer deactivated\n");
-+}
-+
-+/* Get DPO status */
-+static int get_dpo_status(int32_t *dpo_timeout)
-+{
-+	int rc;
-+	__be32 opal_dpo_timeout;
-+
-+	rc = opal_get_dpo_status(&amp;opal_dpo_timeout);
-+	if (rc == OPAL_WRONG_STATE) {
-+		*dpo_timeout = 0;
-+		return 0;
-+	}
-+
-+	*dpo_timeout = be32_to_cpu(opal_dpo_timeout);
-+	return DPO_DETECTED;
-+}
-+
-+/* Process DPO event */
-+void process_dpo(void)</pre>
-    </blockquote>
-    <br>
-    <small>static</small> <small>function ?</small><br>
-    <br>
-    <blockquote
-      cite="mid:1430374028-32181-1-git-send-email-vipin@linux.vnet.ibm.com"
-      type="cite">
-      <pre wrap="">+{
-+	pr_info("Powering off system due to poweroff request.\n");
-+	orderly_poweroff(true);
-+}
-+
-+/* Get EPOW status */
-+static int get_epow_status(void)
-+{
-+	int i;
-+	bool epow_detected = false;
-+
-+	__be32 opal_epow_status[OPAL_MAX_EPOW_CLASSES];
-+	__be32 opal_epow_classes;
-+
-+	opal_epow_classes = cpu_to_be32(OPAL_MAX_EPOW_CLASSES);
-+	for (i = 0; i &lt; OPAL_MAX_EPOW_CLASSES; i++)
-+		opal_epow_status[i] = cpu_to_be32(0);
-+
-+	/* Get EPOW events information from OPAL */
-+	opal_get_epow_status(opal_epow_status, &amp;opal_epow_classes);
-+
-+	/* Copy EPOW status */
-+	memset(epow_status, 0, sizeof(epow_status[0] * OPAL_MAX_EPOW_CLASSES));
-+	num_epow_classes = be32_to_cpu(opal_epow_classes);
-+	for (i = 0; i &lt; num_epow_classes; i++) {
-+		epow_status[i] = be32_to_cpu(opal_epow_status[i]);
-+		if (epow_status[i])
-+			epow_detected = true;
-+	}
-+
-+	pr_info("EPOW classes supported OPAL = %d, Host = %d "
-+			"EPOW Status = 0x%x, 0x%x, 0x%x\n",
-+			num_epow_classes, OPAL_MAX_EPOW_CLASSES,
-+			epow_status[0], epow_status[1], epow_status[2]);
-+
-+	if (epow_detected)
-+		return EPOW_DETECTED;
-+
-+	return 0;
-+}
-+
-+/* Process EPOW information */
-+void process_epow(void)
-+{
-+	int i, timeout = 0, event = -1;
-+	bool epow_normal = false;
-+
-+	/* Check for EPOW return to normal state */
-+	for (i = 0; i &lt; OPAL_MAX_EPOW_CLASSES; i++) {</pre>
-    </blockquote>
-    <br>
-    <small>s/OPAL_MAX_EPOW_CLASSES/num_epow_classes</small><br>
-    <br>
-    <blockquote
-      cite="mid:1430374028-32181-1-git-send-email-vipin@linux.vnet.ibm.com"
-      type="cite">
-      <pre wrap="">+		if (epow_status[i])
-+			break;
-+	}
-+
-+	if (i == OPAL_MAX_EPOW_CLASSES)
-+		epow_normal = true;
-+
-+	/* Cancel any pending shutdown timer due to EPOW normal state.*/
-+	if (epow_normal) {
-+		stop_epow_timer();
-+		return;
-+	}
-+
-+	/* Determine EPOW events and poweroff timeouts */
-+	if (epow_status[OPAL_EPOW_POWER] &amp; OPAL_EPOW_POWER_UPS) {
-+		pr_info("EPOW due to system running on UPS power\n");
-+		event = EPOW_POWER_UPS;
-+		timeout = epow_timeout[EPOW_POWER_UPS];
-+	}
-+
-+	if (epow_status[OPAL_EPOW_POWER] &amp; OPAL_EPOW_POWER_UPS_LOW) {
-+		pr_info("EPOW due to system running on UPS power "
-+				"with low battery\n");
-+		event = EPOW_POWER_UPS_LOW;
-+		timeout = epow_timeout[EPOW_POWER_UPS_LOW];
-+	}
-+
-+	if (epow_status[OPAL_EPOW_TEMP] &amp; OPAL_EPOW_TEMP_HIGH_AMB) {
-+		pr_info("EPOW due to high ambient temperature\n");
-+		event = EPOW_TEMP_HIGH_AMB;
-+		timeout = epow_timeout[EPOW_TEMP_HIGH_AMB];
-+	}
-+
-+	if (epow_status[OPAL_EPOW_TEMP] &amp; OPAL_EPOW_TEMP_CRIT_AMB) {
-+		pr_info("EPOW due to critical ambient temperature\n");
-+		event = EPOW_TEMP_CRIT_AMB;
-+		timeout = epow_timeout[EPOW_TEMP_CRIT_AMB];
-+	}
-+
-+	if (epow_status[OPAL_EPOW_TEMP] &amp; OPAL_EPOW_TEMP_HIGH_INT) {
-+		pr_info("EPOW due to high internal temperature\n");
-+		event = EPOW_TEMP_HIGH_INT;
-+		timeout = epow_timeout[EPOW_TEMP_HIGH_INT];
-+	}
-+
-+	if (epow_status[OPAL_EPOW_TEMP] &amp; OPAL_EPOW_TEMP_CRIT_INT) {
-+		pr_info("EPOW due to critical internal temperature\n");
-+		event = EPOW_TEMP_CRIT_INT;
-+		timeout = epow_timeout[EPOW_TEMP_CRIT_INT];
-+	}</pre>
-    </blockquote>
-    <br>
-    <small>'event' &amp; 'timeout' values are getting updated after each
-      check, I guess<br>
-      for multiple types of epow cases.. Can it be changed to
-      if-elseif-if construct..<br>
-      and check based on the criticality ...?<br>
-    </small><br>
-    <blockquote
-      cite="mid:1430374028-32181-1-git-send-email-vipin@linux.vnet.ibm.com"
-      type="cite">
-      <pre wrap="">
-+
-+	if (event == -1) {
-+		pr_err("Unknown EPOW event\n");
-+		return;
-+	}
-+
-+	/* Start EPOW poweroff timer */
-+	start_epow_timer(event, timeout);
-+}
-+
-+/* Check for any existing EPOW, DPO events and process them, if existing */
-+static void process_existing_poweroff_events(void)
-+{
-+	int rc;
-+	int32_t dpo_timeout;
-+
-+	/* Check for any existing DPO event */
-+	rc = get_dpo_status(&amp;dpo_timeout);
-+	if (rc == DPO_DETECTED) {
-+		pr_info("Existing DPO event detected\n");
-+		process_dpo();
-+		return;
-+	 } else
-+		pr_info("No existing DPO event detected\n");
-+
-+	/* Check for any existing EPOW event */
-+	rc = get_epow_status();
-+	if (rc == EPOW_DETECTED) {
-+		pr_info("Existing EPOW event detected.\n");
-+		process_epow();
-+	} else
-+		pr_info("No existing EPOW event detected\n");
-+
-+}
-+
-+/* Platform EPOW message received */
-+static int opal_epow_event(struct notifier_block *nb,
-+			unsigned long msg_type, void *msg)
-+{
-+	pr_info("EPOW event received\n");
-+
-+	/* Get EPOW event details */
-+	get_epow_status();
-+
-+	/* Process EPOW event information */
-+	process_epow();
-+
-+	return 0;
-+}
-+
-+
-+/* Platform DPO message received */
-+static int opal_dpo_event(struct notifier_block *nb,
-+				unsigned long msg_type, void *msg)
-+{
-+	pr_info("DPO event received.\n");
-+	process_dpo();
-+
-+	return 0;
-+}
-+
-+
-+/* OPAL EPOW event notifier block */
-+static struct notifier_block opal_epow_nb = {
-+	.notifier_call  = opal_epow_event,
-+	.next           = NULL,
-+	.priority       = 0,
-+};
-+
-+/* OPAL DPO event notifier block */
-+static struct notifier_block opal_dpo_nb = {
-+	.notifier_call  = opal_dpo_event,
-+	.next           = NULL,
-+	.priority       = 0,
-+};
-+
-+/* Poweroff events init */
-+static int opal_poweroff_events_init(void)</pre>
-    </blockquote>
-    <br>
-    <small>Use '__init' macro for the initialization function.</small><br>
-    <br>
-    <blockquote
-      cite="mid:1430374028-32181-1-git-send-email-vipin@linux.vnet.ibm.com"
-      type="cite">
-      <pre wrap="">+{
-+	int ret;
-+
-+	/* Initialize poweroff timer */
-+	init_timer(&amp;epow_timer);
-+	epow_timer.function = epow_poweroff;
-+
-+	/* Get EPOW event timeout values */
-+	get_epow_timeouts();
-+
-+	/* Check for any existing EPOW or DPO events. */
-+	process_existing_poweroff_events();
-+
-+	/* Register EPOW event notifier */
-+	ret = opal_message_notifier_register(OPAL_MSG_EPOW, &amp;opal_epow_nb);
-+	if (ret) {
-+		pr_err("EPOW event notifier registration failed\n");
-+		return ret;
-+	}
-+
-+	/* Register DPO event notifier */
-+	ret = opal_message_notifier_register(OPAL_MSG_DPO, &amp;opal_dpo_nb);
-+	if (ret) {
-+		pr_err("DPO event notifier registration failed\n");
-+		opal_notifier_unregister(&amp;opal_epow_nb);</pre>
-    </blockquote>
-    <br>
-    <small>opal_message_notifier_unregister() instead.</small><br>
-    <small>plus delete the timer too.</small><br>
-    <br>
-    <small>Regards,<br>
-      Neelesh.<br>
-      <br>
-    </small>
-    <blockquote
-      cite="mid:1430374028-32181-1-git-send-email-vipin@linux.vnet.ibm.com"
-      type="cite">
-      <pre wrap="">+		return ret;
-+	}
-+
-+
-+	pr_info("OPAL poweroff events support initialized\n");
-+
-+	return 0;
-+}
-+
-+machine_subsys_initcall(powernv, opal_poweroff_events_init);
-diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
-index a7ade94..5d3c8e3 100644
---- a/arch/powerpc/platforms/powernv/opal-wrappers.S
-+++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
-@@ -249,6 +249,7 @@ OPAL_CALL(opal_pci_reinit,			OPAL_PCI_REINIT);
- OPAL_CALL(opal_pci_mask_pe_error,		OPAL_PCI_MASK_PE_ERROR);
- OPAL_CALL(opal_set_slot_led_status,		OPAL_SET_SLOT_LED_STATUS);
- OPAL_CALL(opal_get_epow_status,			OPAL_GET_EPOW_STATUS);
-+OPAL_CALL(opal_get_dpo_status,			OPAL_GET_DPO_STATUS);
- OPAL_CALL(opal_set_system_attention_led,	OPAL_SET_SYSTEM_ATTENTION_LED);
- OPAL_CALL(opal_pci_next_error,			OPAL_PCI_NEXT_ERROR);
- OPAL_CALL(opal_pci_poll,			OPAL_PCI_POLL);
-</pre>
-    </blockquote>
-    <br>
-  </body>
-</html>
-
---------------040008030303060900050405--
+>Rob
+>
+>>
+>> Cc: Grant Likely <grant.likely@linaro.org>
+>> Cc: Rob Herring <robh+dt@kernel.org>
+>> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+>> ---
+>>  drivers/of/dynamic.c   |  19 +++++--
+>>  drivers/of/fdt.c       | 133 ++++++++++++++++++++++++++++++++++++++++---------
+>>  include/linux/of.h     |   2 +
+>>  include/linux/of_fdt.h |   1 +
+>>  4 files changed, 127 insertions(+), 28 deletions(-)
+>>
+>> diff --git a/drivers/of/dynamic.c b/drivers/of/dynamic.c
+>> index 3351ef4..f562080 100644
+>> --- a/drivers/of/dynamic.c
+>> +++ b/drivers/of/dynamic.c
+>> @@ -330,13 +330,22 @@ void of_node_release(struct kobject *kobj)
+>>                 return;
+>>         }
+>>
+>> -       if (!of_node_check_flag(node, OF_DYNAMIC))
+>> +       /* Release the subtree */
+>> +       if (node->subtree) {
+>> +               kfree(node->subtree);
+>> +               node->subtree = NULL;
+>> +       }
+>> +
+>> +       if (!of_node_check_flag(node, OF_DYNAMIC) &&
+>> +           !of_node_check_flag(node, OF_DYNAMIC_HYBIRD))
+>>                 return;
+>>
+>>         while (prop) {
+>>                 struct property *next = prop->next;
+>> -               kfree(prop->name);
+>> -               kfree(prop->value);
+>> +               if (of_node_check_flag(node, OF_DYNAMIC)) {
+>> +                       kfree(prop->name);
+>> +                       kfree(prop->value);
+>> +               }
+>>                 kfree(prop);
+>>                 prop = next;
+>>
+>> @@ -345,7 +354,9 @@ void of_node_release(struct kobject *kobj)
+>>                         node->deadprops = NULL;
+>>                 }
+>>         }
+>> -       kfree(node->full_name);
+>> +
+>> +       if (of_node_check_flag(node, OF_DYNAMIC))
+>> +               kfree(node->full_name);
+>>         kfree(node->data);
+>>         kfree(node);
+>>  }
+>> diff --git a/drivers/of/fdt.c b/drivers/of/fdt.c
+>> index cde35c5d01..7659560 100644
+>> --- a/drivers/of/fdt.c
+>> +++ b/drivers/of/fdt.c
+>> @@ -28,6 +28,10 @@
+>>  #include <asm/setup.h>  /* for COMMAND_LINE_SIZE */
+>>  #include <asm/page.h>
+>>
+>> +#include "of_private.h"
+>> +
+>> +static int cur_node_depth;
+>> +
+>>  /*
+>>   * of_fdt_limit_memory - limit the number of regions in the /memory node
+>>   * @limit: maximum entries
+>> @@ -168,20 +172,20 @@ static void *unflatten_dt_alloc(void **mem, unsigned long size,
+>>   * @dad: Parent struct device_node
+>>   * @fpsize: Size of the node path up at the current depth.
+>>   */
+>> -static void * unflatten_dt_node(void *blob,
+>> -                               void *mem,
+>> -                               int *poffset,
+>> -                               struct device_node *dad,
+>> -                               struct device_node **nodepp,
+>> -                               unsigned long fpsize,
+>> -                               bool dryrun)
+>> +static void *unflatten_dt_node(void *blob,
+>> +                              void *mem,
+>> +                              int *poffset,
+>> +                              struct device_node *dad,
+>> +                              struct device_node **nodepp,
+>> +                              unsigned long fpsize,
+>> +                              bool dryrun,
+>> +                              bool dynamic)
+>>  {
+>>         const __be32 *p;
+>>         struct device_node *np;
+>>         struct property *pp, **prev_pp = NULL;
+>>         const char *pathp;
+>>         unsigned int l, allocl;
+>> -       static int depth = 0;
+>>         int old_depth;
+>>         int offset;
+>>         int has_name = 0;
+>> @@ -219,12 +223,18 @@ static void * unflatten_dt_node(void *blob,
+>>                 }
+>>         }
+>>
+>> -       np = unflatten_dt_alloc(&mem, sizeof(struct device_node) + allocl,
+>> +       if (dynamic)
+>> +               np = kzalloc(sizeof(struct device_node) + allocl, GFP_KERNEL);
+>> +       else
+>> +               np = unflatten_dt_alloc(&mem,
+>> +                               sizeof(struct device_node) + allocl,
+>>                                 __alignof__(struct device_node));
+>>         if (!dryrun) {
+>>                 char *fn;
+>>                 of_node_init(np);
+>>                 np->full_name = fn = ((char *)np) + sizeof(*np);
+>> +               if (dynamic)
+>> +                       of_node_set_flag(np, OF_DYNAMIC_HYBIRD);
+>>                 if (new_format) {
+>>                         /* rebuild full path for new format */
+>>                         if (dad && dad->parent) {
+>> @@ -267,8 +277,12 @@ static void * unflatten_dt_node(void *blob,
+>>                 }
+>>                 if (strcmp(pname, "name") == 0)
+>>                         has_name = 1;
+>> -               pp = unflatten_dt_alloc(&mem, sizeof(struct property),
+>> -                                       __alignof__(struct property));
+>> +
+>> +               if (dynamic)
+>> +                       pp = kzalloc(sizeof(struct property), GFP_KERNEL);
+>> +               else
+>> +                       pp = unflatten_dt_alloc(&mem, sizeof(struct property),
+>> +                                               __alignof__(struct property));
+>>                 if (!dryrun) {
+>>                         /* We accept flattened tree phandles either in
+>>                          * ePAPR-style "phandle" properties, or the
+>> @@ -309,8 +323,13 @@ static void * unflatten_dt_node(void *blob,
+>>                 if (pa < ps)
+>>                         pa = p1;
+>>                 sz = (pa - ps) + 1;
+>> -               pp = unflatten_dt_alloc(&mem, sizeof(struct property) + sz,
+>> -                                       __alignof__(struct property));
+>> +
+>> +               if (dynamic)
+>> +                       pp = kzalloc(sizeof(struct property) + sz, GFP_KERNEL);
+>> +               else
+>> +                       pp = unflatten_dt_alloc(&mem,
+>> +                                               sizeof(struct property) + sz,
+>> +                                               __alignof__(struct property));
+>>                 if (!dryrun) {
+>>                         pp->name = "name";
+>>                         pp->length = sz;
+>> @@ -334,13 +353,21 @@ static void * unflatten_dt_node(void *blob,
+>>                         np->type = "<NULL>";
+>>         }
+>>
+>> -       old_depth = depth;
+>> -       *poffset = fdt_next_node(blob, *poffset, &depth);
+>> -       if (depth < 0)
+>> -               depth = 0;
+>> -       while (*poffset > 0 && depth > old_depth)
+>> -               mem = unflatten_dt_node(blob, mem, poffset, np, NULL,
+>> -                                       fpsize, dryrun);
+>> +       old_depth = cur_node_depth;
+>> +       *poffset = fdt_next_node(blob, *poffset, &cur_node_depth);
+>> +       while (*poffset > 0) {
+>> +               if (cur_node_depth < old_depth)
+>> +                       break;
+>> +
+>> +               if (cur_node_depth == old_depth)
+>> +                       mem = unflatten_dt_node(blob, mem, poffset,
+>> +                                               dad, NULL, fpsize,
+>> +                                               dryrun, dynamic);
+>> +               else if (cur_node_depth > old_depth)
+>> +                       mem = unflatten_dt_node(blob, mem, poffset,
+>> +                                               np, NULL, fpsize,
+>> +                                               dryrun, dynamic);
+>> +       }
+>>
+>>         if (*poffset < 0 && *poffset != -FDT_ERR_NOTFOUND)
+>>                 pr_err("unflatten: error %d processing FDT\n", *poffset);
+>> @@ -379,8 +406,8 @@ static void * unflatten_dt_node(void *blob,
+>>   * for the resulting tree
+>>   */
+>>  static void __unflatten_device_tree(void *blob,
+>> -                            struct device_node **mynodes,
+>> -                            void * (*dt_alloc)(u64 size, u64 align))
+>> +                               struct device_node **mynodes,
+>> +                               void * (*dt_alloc)(u64 size, u64 align))
+>>  {
+>>         unsigned long size;
+>>         int start;
+>> @@ -405,7 +432,9 @@ static void __unflatten_device_tree(void *blob,
+>>
+>>         /* First pass, scan for size */
+>>         start = 0;
+>> -       size = (unsigned long)unflatten_dt_node(blob, NULL, &start, NULL, NULL, 0, true);
+>> +       cur_node_depth = 1;
+>> +       size = (unsigned long)unflatten_dt_node(blob, NULL, &start, NULL,
+>> +                                               NULL, 0, true, false);
+>>         size = ALIGN(size, 4);
+>>
+>>         pr_debug("  size is %lx, allocating...\n", size);
+>> @@ -420,7 +449,8 @@ static void __unflatten_device_tree(void *blob,
+>>
+>>         /* Second pass, do actual unflattening */
+>>         start = 0;
+>> -       unflatten_dt_node(blob, mem, &start, NULL, mynodes, 0, false);
+>> +       cur_node_depth = 1;
+>> +       unflatten_dt_node(blob, mem, &start, NULL, mynodes, 0, false, false);
+>>         if (be32_to_cpup(mem + size) != 0xdeadbeef)
+>>                 pr_warning("End of tree marker overwritten: %08x\n",
+>>                            be32_to_cpup(mem + size));
+>> @@ -448,6 +478,61 @@ void of_fdt_unflatten_tree(unsigned long *blob,
+>>  }
+>>  EXPORT_SYMBOL_GPL(of_fdt_unflatten_tree);
+>>
+>> +static void populate_sysfs_for_child_nodes(struct device_node *parent)
+>> +{
+>> +       struct device_node *child;
+>> +
+>> +       for_each_child_of_node(parent, child) {
+>> +               __of_attach_node_sysfs(child);
+>> +               populate_sysfs_for_child_nodes(child);
+>> +       }
+>> +}
+>> +
+>> +/**
+>> + * of_fdt_add_substree - Create sub-tree of device nodes
+>> + * @parent: parent device node to which the sub-tree will attach
+>> + * @blob: flat device tree blob representing the sub-tree
+>> + *
+>> + * Copy over the FDT blob, which passed from firmware, and then
+>> + * unflatten the sub-tree.
+>> + */
+>> +void of_fdt_add_subtree(struct device_node *parent, void *blob)
+>> +{
+>> +       int start = 0;
+>> +
+>> +       /* Validate the header */
+>> +       if (!blob || fdt_check_header(blob)) {
+>> +               pr_err("%s: Invalid device-tree blob header at 0x%p\n",
+>> +                      __func__, blob);
+>> +               return;
+>> +       }
+>> +
+>> +       /* Free the flat blob for last time lazily */
+>> +       if (parent->subtree) {
+>> +               kfree(parent->subtree);
+>> +               parent->subtree = NULL;
+>> +       }
+>> +
+>> +       /* Copy over the flat blob */
+>> +       parent->subtree = kzalloc(fdt_totalsize(blob), GFP_KERNEL);
+>> +       if (!parent->subtree) {
+>> +               pr_err("%s: Cannot copy over device-tree blob\n",
+>> +                      __func__);
+>> +               return;
+>> +       }
+>> +
+>> +       memcpy(parent->subtree, blob, fdt_totalsize(blob));
+>> +
+>> +       /* Unflatten it */
+>> +       mutex_lock(&of_mutex);
+>> +       cur_node_depth = 1;
+>> +       unflatten_dt_node(parent->subtree, NULL, &start, parent, NULL,
+>> +                         strlen(parent->full_name), false, true);
+>> +       populate_sysfs_for_child_nodes(parent);
+>> +       mutex_unlock(&of_mutex);
+>> +}
+>> +EXPORT_SYMBOL(of_fdt_add_subtree);
+>> +
+>>  /* Everything below here references initial_boot_params directly. */
+>>  int __initdata dt_root_addr_cells;
+>>  int __initdata dt_root_size_cells;
+>> diff --git a/include/linux/of.h b/include/linux/of.h
+>> index ddeaae6..ac50b02 100644
+>> --- a/include/linux/of.h
+>> +++ b/include/linux/of.h
+>> @@ -60,6 +60,7 @@ struct device_node {
+>>         struct  device_node *sibling;
+>>         struct  kobject kobj;
+>>         unsigned long _flags;
+>> +       void    *subtree;
+>>         void    *data;
+>>  #if defined(CONFIG_SPARC)
+>>         const char *path_component_name;
+>> @@ -222,6 +223,7 @@ static inline unsigned long of_read_ulong(const __be32 *cell, int size)
+>>  #define OF_DETACHED    2 /* node has been detached from the device tree */
+>>  #define OF_POPULATED   3 /* device already created for the node */
+>>  #define OF_POPULATED_BUS       4 /* of_platform_populate recursed to children of this node */
+>> +#define OF_DYNAMIC_HYBIRD      5 /* similar to OF_DYNAMIC, but partially */
+>>
+>>  #define OF_IS_DYNAMIC(x) test_bit(OF_DYNAMIC, &x->_flags)
+>>  #define OF_MARK_DYNAMIC(x) set_bit(OF_DYNAMIC, &x->_flags)
+>> diff --git a/include/linux/of_fdt.h b/include/linux/of_fdt.h
+>> index 587ee50..1fb47d7 100644
+>> --- a/include/linux/of_fdt.h
+>> +++ b/include/linux/of_fdt.h
+>> @@ -39,6 +39,7 @@ extern int of_fdt_match(const void *blob, unsigned long node,
+>>                         const char *const *compat);
+>>  extern void of_fdt_unflatten_tree(unsigned long *blob,
+>>                                struct device_node **mynodes);
+>> +extern void of_fdt_add_subtree(struct device_node *parent, void *blob);
+>>
+>>  /* TBD: Temporary export of fdt globals - remove when code fully merged */
+>>  extern int __initdata dt_root_addr_cells;
+>> --
+>> 2.1.0
+>>
+>
