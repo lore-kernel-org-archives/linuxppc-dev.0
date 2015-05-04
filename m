@@ -1,18 +1,31 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <cyrilbur@gmail.com>
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5BA6E1A02EB
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 May 2015 16:27:01 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH] perf_event: Don't allow vmalloc backed perf on powerpc
-Date: Mon,  4 May 2015 16:26:39 +1000
-Message-Id: <1430720799-18426-1-git-send-email-mpe@ellerman.id.au>
-Cc: Andrew Morton <akpm@osdl.org>, a.p.zijlstra@chello.nl,
- linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- Anton Blanchard <anton@samba.org>, acme@ghostprotocols.net,
- sukadev@linux.vnet.ibm.com, mingo@kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id C4BCE1A033E
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 May 2015 16:44:17 +1000 (AEST)
+Received: from /spool/local
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <cyrilbur@gmail.com>;
+ Mon, 4 May 2015 16:44:15 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 8C532357804C
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 May 2015 16:44:11 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t446i2VS19464276
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 May 2015 16:44:11 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t446hcSW016253
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 May 2015 16:43:38 +1000
+From: Cyril Bur <cyrilbur@gmail.com>
+To: linux-mtd@lists.infradead.org, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] Add a MTD driver for OpenPower PNOR flash
+Date: Mon,  4 May 2015 16:42:18 +1000
+Message-Id: <1430721739-17517-1-git-send-email-cyrilbur@gmail.com>
+Cc: dwmw2@infradead.org, jk@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,33 +35,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On powerpc the perf event interrupt is not masked when interrupts are
-disabled, allowing it to function as an NMI.
+Hi,
 
-This causes problems if perf is using vmalloc. If we take a page fault
-on the vmalloc region the fault handler will fail the page fault because
-it detects we are coming in from an NMI (see do_hash_page()).
+I'm resending the patch that Jeremy Kerr sent a while back.
 
-We don't actually need or want vmalloc backed perf so just disable it on
-powerpc.
+This patch implements a simple mtd device to allow access to the PNOR
+flash on OpenPower machines. The flash is accessed through firmware
+calls.
 
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- init/Kconfig | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+The firmware calls are already merged in:
+commit ed59190e41b725e1cfd79541f5fc66c20adb0671
+Author: Cyril Bur <cyrilbur@gmail.com>
+Date:   Wed Apr 1 14:05:30 2015 +0800
 
-diff --git a/init/Kconfig b/init/Kconfig
-index dc24dec60232..81050e4d9941 100644
---- a/init/Kconfig
-+++ b/init/Kconfig
-@@ -1637,7 +1637,7 @@ config PERF_EVENTS
- config DEBUG_PERF_USE_VMALLOC
- 	default n
- 	bool "Debug: use vmalloc to back perf mmap() buffers"
--	depends on PERF_EVENTS && DEBUG_KERNEL
-+	depends on PERF_EVENTS && DEBUG_KERNEL && !PPC
- 	select PERF_USE_VMALLOC
- 	help
- 	 Use vmalloc memory to back perf mmap() buffers.
+    powerpc/powernv: Add interfaces for flash device access
+
+Cheers,
+
+Cyril
+
+
+
+Cyril Bur (1):
+  drivers/mtd: add powernv flash MTD abstraction driver
+
+ drivers/mtd/devices/Kconfig         |   6 +
+ drivers/mtd/devices/Makefile        |   1 +
+ drivers/mtd/devices/powernv_flash.c | 288 ++++++++++++++++++++++++++++++++++++
+ 3 files changed, 295 insertions(+)
+ create mode 100644 drivers/mtd/devices/powernv_flash.c
+
 -- 
-2.1.0
+1.9.1
