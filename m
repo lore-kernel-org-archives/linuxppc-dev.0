@@ -1,47 +1,28 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 02B141A024B
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 May 2015 11:31:15 +1000 (AEST)
-Received: from /spool/local
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Mon, 4 May 2015 11:31:14 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 3B3CC2CE8040
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 May 2015 11:31:11 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t441V2ac46071868
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 May 2015 11:31:11 +1000
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t441Ubcb024382
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 May 2015 11:30:38 +1000
-Date: Mon, 4 May 2015 11:30:12 +1000
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH v4 19/21] drivers/of: Support adding sub-tree
-Message-ID: <20150504013012.GA15561@gwshan>
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <1430460188-31343-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1430460188-31343-20-git-send-email-gwshan@linux.vnet.ibm.com>
- <CAL_JsqKEUevxSe0Q=pGdsWOiT+TW9iAnCsAWuuqOYj3ZPOG7dg@mail.gmail.com>
- <1430493730.7979.58.camel@kernel.crashing.org>
- <CAL_JsqLrBSB4y_0j+i=kXbDA08HO23JuYjJGHR9nhsPnMC_Zyg@mail.gmail.com>
- <1430521038.7979.70.camel@kernel.crashing.org>
- <1430522976.7979.78.camel@kernel.crashing.org>
- <1430534906.7979.85.camel@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1430534906.7979.85.camel@kernel.crashing.org>
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- Gavin Shan <gwshan@linux.vnet.ibm.com>, Grant Likely <grant.likely@linaro.org>,
- Rob Herring <robherring2@gmail.com>, Bjorn Helgaas <bhelgaas@google.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <jiang.liu@linux.intel.com>
+Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
+ by lists.ozlabs.org (Postfix) with ESMTP id 7CB901A02EB
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 May 2015 13:17:29 +1000 (AEST)
+From: Jiang Liu <jiang.liu@linux.intel.com>
+To: Thomas Gleixner <tglx@linutronix.de>, Bjorn Helgaas <bhelgaas@google.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+ Randy Dunlap <rdunlap@infradead.org>, Yinghai Lu <yinghai@kernel.org>,
+ Borislav Petkov <bp@alien8.de>, Tony Luck <tony.luck@intel.com>,
+ Fenghua Yu <fenghua.yu@intel.com>, Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Chris Metcalf <cmetcalf@ezchip.com>,
+ Jiang Liu <jiang.liu@linux.intel.com>,
+ Rusty Russell <rusty@rustcorp.com.au>, Tejun Heo <tj@kernel.org>,
+ Joe Perches <joe@perches.com>
+Subject: [RFC v1 09/11] genirq: Use helper function to access
+ irq_data->msi_desc
+Date: Mon,  4 May 2015 11:15:37 +0800
+Message-Id: <1430709339-29083-10-git-send-email-jiang.liu@linux.intel.com>
+In-Reply-To: <1430709339-29083-1-git-send-email-jiang.liu@linux.intel.com>
+References: <1430709339-29083-1-git-send-email-jiang.liu@linux.intel.com>
+Cc: linux-ia64@vger.kernel.org, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
+ linux-pci@vger.kernel.org, x86@kernel.org, linux-kernel@vger.kernel.org,
+ linux-acpi@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,60 +32,96 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, May 02, 2015 at 12:48:26PM +1000, Benjamin Herrenschmidt wrote:
->On Sat, 2015-05-02 at 09:29 +1000, Benjamin Herrenschmidt wrote:
->
->> Looking a bit more at it, I don't quite see how I can attach a subtree
->> using that stuff.
->> 
->> Instead, each node in the overlay seems to need extra nodes and
->> properties to refer to the original.
->> 
->> So the FW would essentially have to create something a lot more complex
->> than just reflattening a bit of its internal tree. For each internal
->> node, it will need to add all those __overlay__ nodes and properties.
->> 
->> That is not going to fly for me at all. It's order of magnitudes more
->> complex than the solution we are pursuing.
->> 
->> So I think for our use case, we should continue in the direction of
->> having a helper to unflatten a piece of FDT underneath an existing
->> node. I don't like the "HYBRID" stuff though, we should not refer to
->> the original FDT, we should just make them normal dynamic nodes.
+Use helper function to access irq_data->msi_desc, so we could move
+msi_desc from struct irq_data into struct irq_common_data later.
 
-Just took a close look on the overlay code. Hopefully I understand
-how it works completely. Yeah, there is one questions according to my
-understanding. The "overlay" device node should have been in child list
-of the device node, who also has the indicator to "target" node. That
-means some one else has to create "overlay" node and figure out the
-"target" node in advance, then invokes overlay module to apply the
-changes. From this perspective, the mechanism is something used to
-apply the changes to device-tree, not parsing and create device nodes
-from input. It does gurantee all the changes will be applied or none
-of them. So I agree on what Ben suggested: to continue the direction
-of having a helper to unflatten FDT blobk underneath the existing node,
-and "HYBRID" should be replaced with "OF_DYNAMIC".
+Signed-off-by: Jiang Liu <jiang.liu@linux.intel.com>
+---
+ arch/ia64/kernel/msi_ia64.c         |    2 +-
+ arch/ia64/sn/kernel/msi_sn.c        |    2 +-
+ arch/powerpc/sysdev/xics/ics-opal.c |    2 +-
+ arch/powerpc/sysdev/xics/ics-rtas.c |    2 +-
+ arch/tile/kernel/pci_gx.c           |    2 +-
+ drivers/pci/msi.c                   |    2 +-
+ 6 files changed, 6 insertions(+), 6 deletions(-)
 
->
->A bit more thought... if we were to use the overlay stuff, Gavin, what
->we *could* do is add to OPAL FW internal representation a generation
->count to every node and property.
->
->That way we could essentially know whenever something's changed from
->what we flattened originally for the kernel.
->
->We can then create a generic (not PCI specific) call that generates
->an overlay tree for every node and property that has a generation
->count that is newer than what was flattened (or passed by the OS).
->
->It's still a LOT more complex than what we need though...
->
-
-Thanks, Ben. If we really need utilize overlay to support our case,
-we need some one to parse the input (device-tree changes) from firmware
-and create "overlay" device node and "target" node as I mentioned above.
-It's not simpler than the way we had to support our case. I'm not sure
-if we really need utilize overlay for our case.
-
-Thanks,
-Gavin
+diff --git a/arch/ia64/kernel/msi_ia64.c b/arch/ia64/kernel/msi_ia64.c
+index 6c50d332b7d7..591b66d21bd1 100644
+--- a/arch/ia64/kernel/msi_ia64.c
++++ b/arch/ia64/kernel/msi_ia64.c
+@@ -23,7 +23,7 @@ static int ia64_set_msi_irq_affinity(struct irq_data *idata,
+ 	if (irq_prepare_move(irq, cpu))
+ 		return -1;
+ 
+-	__get_cached_msi_msg(idata->msi_desc, &msg);
++	__get_cached_msi_msg(irq_data_get_msi(idata), &msg);
+ 
+ 	addr = msg.address_lo;
+ 	addr &= MSI_ADDR_DEST_ID_MASK;
+diff --git a/arch/ia64/sn/kernel/msi_sn.c b/arch/ia64/sn/kernel/msi_sn.c
+index 42b5a13af142..6ccc39b36947 100644
+--- a/arch/ia64/sn/kernel/msi_sn.c
++++ b/arch/ia64/sn/kernel/msi_sn.c
+@@ -175,7 +175,7 @@ static int sn_set_msi_irq_affinity(struct irq_data *data,
+ 	 * Release XIO resources for the old MSI PCI address
+ 	 */
+ 
+-	__get_cached_msi_msg(data->msi_desc, &msg);
++	__get_cached_msi_msg(irq_data_get_msi(data), &msg);
+ 	sn_pdev = (struct pcidev_info *)sn_irq_info->irq_pciioinfo;
+ 	pdev = sn_pdev->pdi_linux_pcidev;
+ 	provider = SN_PCIDEV_BUSPROVIDER(pdev);
+diff --git a/arch/powerpc/sysdev/xics/ics-opal.c b/arch/powerpc/sysdev/xics/ics-opal.c
+index 3996393c254d..a709d81f885a 100644
+--- a/arch/powerpc/sysdev/xics/ics-opal.c
++++ b/arch/powerpc/sysdev/xics/ics-opal.c
+@@ -72,7 +72,7 @@ static unsigned int ics_opal_startup(struct irq_data *d)
+ 	 * card, using the MSI mask bits. Firmware doesn't appear to unmask
+ 	 * at that level, so we do it here by hand.
+ 	 */
+-	if (d->msi_desc)
++	if (irq_data_get_msi(d))
+ 		pci_msi_unmask_irq(d);
+ #endif
+ 
+diff --git a/arch/powerpc/sysdev/xics/ics-rtas.c b/arch/powerpc/sysdev/xics/ics-rtas.c
+index e2665a9dfc0f..f09a7b3136b2 100644
+--- a/arch/powerpc/sysdev/xics/ics-rtas.c
++++ b/arch/powerpc/sysdev/xics/ics-rtas.c
+@@ -75,7 +75,7 @@ static unsigned int ics_rtas_startup(struct irq_data *d)
+ 	 * card, using the MSI mask bits. Firmware doesn't appear to unmask
+ 	 * at that level, so we do it here by hand.
+ 	 */
+-	if (d->msi_desc)
++	if (irq_data_get_msi(d))
+ 		pci_msi_unmask_irq(d);
+ #endif
+ 	/* unmask it */
+diff --git a/arch/tile/kernel/pci_gx.c b/arch/tile/kernel/pci_gx.c
+index b1df847d0686..1438c60e263d 100644
+--- a/arch/tile/kernel/pci_gx.c
++++ b/arch/tile/kernel/pci_gx.c
+@@ -1442,7 +1442,7 @@ static struct pci_ops tile_cfg_ops = {
+ /* MSI support starts here. */
+ static unsigned int tilegx_msi_startup(struct irq_data *d)
+ {
+-	if (d->msi_desc)
++	if (irq_data_get_msi(d))
+ 		pci_msi_unmask_irq(d);
+ 
+ 	return 0;
+diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
+index c3e7dfcf9ff5..74b48ea0cf26 100644
+--- a/drivers/pci/msi.c
++++ b/drivers/pci/msi.c
+@@ -1178,7 +1178,7 @@ EXPORT_SYMBOL(pci_enable_msix_range);
+  */
+ void pci_msi_domain_write_msg(struct irq_data *irq_data, struct msi_msg *msg)
+ {
+-	struct msi_desc *desc = irq_data->msi_desc;
++	struct msi_desc *desc = irq_data_get_msi(irq_data);
+ 
+ 	/*
+ 	 * For MSI-X desc->irq is always equal to irq_data->irq. For
+-- 
+1.7.10.4
