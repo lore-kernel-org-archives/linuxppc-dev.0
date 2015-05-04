@@ -1,30 +1,30 @@
 Return-Path: <weiyang@linux.vnet.ibm.com>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A5C521A1167
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 May 2015 17:10:45 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id F2D081A18F2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 May 2015 17:11:02 +1000 (AEST)
 Received: from /spool/local
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
- Mon, 4 May 2015 17:10:44 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 4F0523578053
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 May 2015 17:10:42 +1000 (EST)
+ Mon, 4 May 2015 17:11:02 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 78D502BB0040
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 May 2015 17:11:00 +1000 (EST)
 Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t447AYwF31916146
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 May 2015 17:10:42 +1000
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t447AqHV11010254
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 May 2015 17:11:00 +1000
 Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
  by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t447A9Gl002597
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 May 2015 17:10:09 +1000
+ t447ARTR003120
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 May 2015 17:10:28 +1000
 From: Wei Yang <weiyang@linux.vnet.ibm.com>
 To: gwshan@linux.vnet.ibm.com, bhelgaas@google.com
-Subject: [PATCH V3 7/9] powerpc/powernv: Support EEH reset for VFs
-Date: Mon,  4 May 2015 15:07:36 +0800
-Message-Id: <1430723258-21299-8-git-send-email-weiyang@linux.vnet.ibm.com>
+Subject: [PATCH V3 8/9] powerpc/powernv: Support PCI config restore for VFs
+Date: Mon,  4 May 2015 15:07:37 +0800
+Message-Id: <1430723258-21299-9-git-send-email-weiyang@linux.vnet.ibm.com>
 In-Reply-To: <1430723258-21299-1-git-send-email-weiyang@linux.vnet.ibm.com>
 References: <1430723258-21299-1-git-send-email-weiyang@linux.vnet.ibm.com>
 Cc: linux-pci@vger.kernel.org, Wei Yang <weiyang@linux.vnet.ibm.com>,
@@ -38,173 +38,128 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Before VF PE introduced, there isn't a method to reset an individual pci
-function. And since FW is not aware of the VF, the VF's reset should be
-done in kernel.
+Since FW is not aware of VFs, the restore action for VF should be done in
+kernel.
 
-This patch introduce a pnv_eeh_vf_pe_reset() to do the flr or af_flr to a
-VF.
+This patch introduces pnv_eeh_vf_restore_config() for VF.
 
 Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/eeh.h               |    1 +
- arch/powerpc/platforms/powernv/eeh-powernv.c |  111 +++++++++++++++++++++++++-
- 2 files changed, 111 insertions(+), 1 deletion(-)
+ arch/powerpc/include/asm/pci-bridge.h        |    1 +
+ arch/powerpc/platforms/powernv/eeh-powernv.c |   77 +++++++++++++++++++++++++-
+ 2 files changed, 77 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
-index 2067de4..78c8bec 100644
---- a/arch/powerpc/include/asm/eeh.h
-+++ b/arch/powerpc/include/asm/eeh.h
-@@ -135,6 +135,7 @@ struct eeh_dev {
- 	int pcix_cap;			/* Saved PCIx capability	*/
- 	int pcie_cap;			/* Saved PCIe capability	*/
- 	int aer_cap;			/* Saved AER capability		*/
-+	int af_cap;			/* Saved AF capability		*/
- 	struct eeh_pe *pe;		/* Associated PE		*/
- 	struct list_head list;		/* Form link list in the PE	*/
- 	struct pci_controller *phb;	/* Associated PHB		*/
+diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
+index 9582aa2..de55ef6 100644
+--- a/arch/powerpc/include/asm/pci-bridge.h
++++ b/arch/powerpc/include/asm/pci-bridge.h
+@@ -205,6 +205,7 @@ struct pci_dn {
+ 	int     m64_per_iov;
+ #define IODA_INVALID_M64        (-1)
+ 	int     m64_wins[PCI_SRIOV_NUM_BARS][M64_PER_IOV];
++	int	mps;
+ #endif /* CONFIG_PCI_IOV */
+ #endif
+ 	struct list_head child_list;
 diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
-index 5447481..1ad322f 100644
+index 1ad322f..6ba6d87 100644
 --- a/arch/powerpc/platforms/powernv/eeh-powernv.c
 +++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
-@@ -402,6 +402,7 @@ static void *pnv_eeh_probe(struct pci_dn *pdn, void *data)
- 	edev->pcix_cap = pnv_eeh_find_cap(pdn, PCI_CAP_ID_PCIX);
- 	edev->pcie_cap = pnv_eeh_find_cap(pdn, PCI_CAP_ID_EXP);
- 	edev->aer_cap  = pnv_eeh_find_ecap(pdn, PCI_EXT_CAP_ID_ERR);
-+	edev->af_cap   = pnv_eeh_find_cap(pdn, PCI_CAP_ID_AF);
- 	if ((edev->class_code >> 8) == PCI_CLASS_BRIDGE_PCI) {
- 		edev->mode |= EEH_DEV_BRIDGE;
- 		if (edev->pcie_cap) {
-@@ -891,6 +892,105 @@ static int pnv_eeh_bridge_reset(struct pci_dev *dev, int option)
- 	return 0;
+@@ -1589,6 +1589,59 @@ static int pnv_eeh_next_error(struct eeh_pe **pe)
+ 	return ret;
  }
  
-+static int pnv_pci_wait_for_pending(struct pci_dn *pdn, int pos, u16 mask)
++#ifdef CONFIG_PCI_IOV
++static int pnv_eeh_vf_restore_config(struct pci_dn *pdn)
 +{
-+	int i;
++	int pcie_cap, aer_cap, old_mps;
++	u32 devctl, cmd, cap2, aer_capctl;
 +
-+	/* Wait for Transaction Pending bit clean */
-+	for (i = 0; i < 4; i++) {
-+		u32 status;
-+		if (i)
-+			msleep((1 << (i - 1)) * 100);
++	/* Restore MPS */
++	pcie_cap = pnv_eeh_find_cap(pdn, PCI_CAP_ID_EXP);
++	if (pcie_cap) {
++		old_mps = (ffs(pdn->mps) - 8) << 5;
++		pnv_pci_cfg_read(pdn, pcie_cap + PCI_EXP_DEVCTL, 2, &devctl);
++		devctl &= ~PCI_EXP_DEVCTL_PAYLOAD;
++		devctl |= old_mps;
++		pnv_pci_cfg_write(pdn, pcie_cap + PCI_EXP_DEVCTL, 2, devctl);
++	}
 +
-+		eeh_ops->read_config(pdn, pos, 2, &status);
-+		if (!(status & mask))
-+			return 1;
++	/* Disable Completion Timeout */
++	if (pcie_cap) {
++		pnv_pci_cfg_read(pdn, pcie_cap + PCI_EXP_DEVCAP2, 4, &cap2);
++		if (cap2 & 0x10) {
++			pnv_pci_cfg_read(pdn, pcie_cap + PCI_EXP_DEVCTL2, 4, &cap2);
++			cap2 |= 0x10;
++			pnv_pci_cfg_write(pdn, pcie_cap + PCI_EXP_DEVCTL2, 4, cap2);
++		}
++	}
++
++	/* Enable SERR and parity checking */
++	pnv_pci_cfg_read(pdn, PCI_COMMAND, 2, &cmd);
++	cmd |= (PCI_COMMAND_PARITY | PCI_COMMAND_SERR);
++	pnv_pci_cfg_write(pdn, PCI_COMMAND, 2, cmd);
++
++	/* Enable report various errors */
++	if (pcie_cap) {
++		pnv_pci_cfg_read(pdn, pcie_cap + PCI_EXP_DEVCTL, 2, &devctl);
++		devctl &= ~PCI_EXP_DEVCTL_CERE;
++		devctl |= (PCI_EXP_DEVCTL_NFERE |
++			   PCI_EXP_DEVCTL_FERE |
++			   PCI_EXP_DEVCTL_URRE);
++		pnv_pci_cfg_write(pdn, pcie_cap + PCI_EXP_DEVCTL, 2, devctl);
++	}
++
++	/* Enable ECRC generation and check */
++	if (pcie_cap) {
++		aer_cap = pnv_eeh_find_ecap(pdn, PCI_EXT_CAP_ID_ERR);
++		pnv_pci_cfg_read(pdn, aer_cap + PCI_ERR_CAP, 4, &aer_capctl);
++		aer_capctl |= (PCI_ERR_CAP_ECRC_GENE | PCI_ERR_CAP_ECRC_CHKE);
++		pnv_pci_cfg_write(pdn, aer_cap + PCI_ERR_CAP, 4, aer_capctl);
 +	}
 +
 +	return 0;
 +}
++#endif /* CONFIG_PCI_IOV */
 +
-+static int pnv_eeh_do_flr(struct pci_dn *pdn)
-+{
-+	u32 cap;
-+	struct eeh_dev *edev = pdn_to_eeh_dev(pdn);
-+
-+	eeh_ops->read_config(pdn, edev->pcie_cap + PCI_EXP_DEVCAP, 4, &cap);
-+	if (!(cap & PCI_EXP_DEVCAP_FLR))
-+		return -ENOTTY;
-+
-+	if (!pnv_pci_wait_for_pending(pdn, edev->pcie_cap + PCI_EXP_DEVSTA, PCI_EXP_DEVSTA_TRPND))
-+		pr_err("%04x:%02x:%02x:%01x timed out waiting for pending transaction; performing function level reset anyway\n",
-+			edev->phb->global_number, pdn->busno,
-+			PCI_SLOT(pdn->devfn), PCI_FUNC(pdn->devfn));
-+
-+	eeh_ops->read_config(pdn, edev->pcie_cap + PCI_EXP_DEVCTL, 4, &cap);
-+	cap |= PCI_EXP_DEVCTL_BCR_FLR;
-+	eeh_ops->write_config(pdn, edev->pcie_cap + PCI_EXP_DEVCTL, 4, cap);
-+	msleep(100);
-+	return 0;
-+}
-+
-+static int pnv_eeh_do_af_flr(struct pci_dn *pdn)
-+{
-+	u32 cap;
-+	struct eeh_dev *edev = pdn_to_eeh_dev(pdn);
-+
-+	if (!edev->af_cap)
-+		return -ENOTTY;
-+
-+	eeh_ops->read_config(pdn, edev->af_cap + PCI_AF_CAP, 1, &cap);
-+	if (!(cap & PCI_AF_CAP_TP) || !(cap & PCI_AF_CAP_FLR))
-+		return -ENOTTY;
-+
-+	/*
-+	 * Wait for Transaction Pending bit to clear.  A word-aligned test
-+	 * is used, so we use the conrol offset rather than status and shift
-+	 * the test bit to match.
-+	 */
-+	if (!pnv_pci_wait_for_pending(pdn, edev->af_cap + PCI_AF_CTRL,
-+				 PCI_AF_STATUS_TP << 8))
-+		pr_err("%04x:%02x:%02x:%01x timed out waiting for pending transaction; performing AF function level reset anyway\n",
-+			edev->phb->global_number, pdn->busno,
-+			PCI_SLOT(pdn->devfn), PCI_FUNC(pdn->devfn));
-+
-+	eeh_ops->write_config(pdn, edev->af_cap + PCI_AF_CTRL, 1, PCI_AF_CTRL_FLR);
-+	msleep(100);
-+	return 0;
-+}
-+
-+static int pnv_eeh_reset_vf(struct pci_dn *pdn)
-+{
-+	int rc;
-+
-+	might_sleep();
-+
-+	rc = pnv_eeh_do_flr(pdn);
-+	if (rc != -ENOTTY)
-+		goto done;
-+
-+	rc = pnv_eeh_do_af_flr(pdn);
-+	if (rc != -ENOTTY)
-+		goto done;
-+
-+done:
-+	return rc;
-+}
-+
-+static int pnv_eeh_vf_pe_reset(struct eeh_pe *pe, int option)
-+{
-+	struct eeh_dev *edev, *tmp;
-+	struct pci_dn *pdn;
-+	int ret = 0;
-+
-+	eeh_pe_for_each_dev(pe, edev, tmp) {
-+		pdn = eeh_dev_to_pdn(edev);
-+		ret |= pnv_eeh_reset_vf(pdn);
-+	}
-+
-+	return ret;
-+}
-+
- void pnv_pci_reset_secondary_bus(struct pci_dev *dev)
+ static int pnv_eeh_restore_config(struct pci_dn *pdn)
  {
- 	struct pci_controller *hose;
-@@ -966,7 +1066,9 @@ static int pnv_eeh_reset(struct eeh_pe *pe, int option)
- 		}
+ 	struct eeh_dev *edev = pdn_to_eeh_dev(pdn);
+@@ -1599,7 +1652,13 @@ static int pnv_eeh_restore_config(struct pci_dn *pdn)
+ 		return -EEXIST;
  
- 		bus = eeh_pe_bus_get(pe);
--		if (pci_is_root_bus(bus) ||
-+		if (pe->type & EEH_PE_VF)
-+			ret = pnv_eeh_vf_pe_reset(pe, option);
-+		else if (pci_is_root_bus(bus) ||
- 			pci_is_root_bus(bus->parent))
- 			ret = pnv_eeh_root_reset(hose, option);
- 		else
-@@ -1106,6 +1208,13 @@ static inline bool pnv_eeh_cfg_blocked(struct pci_dn *pdn)
- 	if (!edev || !edev->pe)
- 		return false;
- 
-+	/*
-+	 * For VF's reset operation, we need to rely on the kernel to
-+	 * do those pci read/write, since FW isn't aware of VFs.
-+	 */
-+	if ((edev->mode & EEH_DEV_VF) && (edev->pe->state & EEH_PE_RESET))
-+		return true;
+ 	phb = edev->phb->private_data;
+-	ret = opal_pci_reinit(phb->opal_id,
++#ifdef CONFIG_PCI_IOV
++	/* FW is not VF aware, we rely on OS to restore it */
++	if (edev->mode & EEH_DEV_VF)
++		ret = pnv_eeh_vf_restore_config(pdn);
++	else
++#endif
++		ret = opal_pci_reinit(phb->opal_id,
+ 			      OPAL_REINIT_PCI_DEV, edev->config_addr);
+ 	if (ret) {
+ 		pr_warn("%s: Can't reinit PCI dev 0x%x (%lld)\n",
+@@ -1660,4 +1719,20 @@ static void pnv_pci_fixup_vf_eeh(struct pci_dev *pdev)
+ 	}
+ }
+ DECLARE_PCI_FIXUP_FINAL(PCI_ANY_ID, PCI_ANY_ID, pnv_pci_fixup_vf_eeh);
 +
- 	if (edev->pe->state & EEH_PE_CFG_BLOCKED)
- 		return true;
- 
++static void pnv_pci_fixup_vf_caps(struct pci_dev *pdev)
++{
++	struct pci_dn *pdn = pci_get_pdn(pdev);
++	int parent_mps;
++
++	if (!pdev->is_virtfn)
++		return;
++
++	/* Synchronize MPS for VF and PF */
++	parent_mps = pcie_get_mps(pdev->physfn);
++	if ((128 << pdev->pcie_mpss) >= parent_mps)
++		pcie_set_mps(pdev, parent_mps);
++	pdn->mps = pcie_get_mps(pdev);
++}
++DECLARE_PCI_FIXUP_HEADER(PCI_ANY_ID, PCI_ANY_ID, pnv_pci_fixup_vf_caps);
+ #endif /* CONFIG_PCI_IOV */
 -- 
 1.7.9.5
