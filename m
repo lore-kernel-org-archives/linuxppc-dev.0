@@ -1,22 +1,35 @@
-Return-Path: <andriy.shevchenko@linux.intel.com>
-Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
- by lists.ozlabs.org (Postfix) with ESMTP id CB2B61A0024
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 May 2015 03:18:35 +1000 (AEST)
-Message-ID: <1430759910.4526.16.camel@linux.intel.com>
-Subject: Re: Kernel 4.1-rc1 build fails  on Sam460ex amcc 460ex powerpc
- Canyonlands
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-To: Tejun Heo <tj@kernel.org>
-Date: Mon, 04 May 2015 20:18:30 +0300
-In-Reply-To: <20150428034946.GE2152@htj.duckdns.org>
-References: <54E08E06.8060607@candw.ms>
- <1424045921.3018.4.camel@ellerman.id.au> <553E16A0.704@candw.ms>
- <1430183545.7246.1.camel@ellerman.id.au>
- <20150428034946.GE2152@htj.duckdns.org>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org, Ian Munsie <imunsie@au1.ibm.com>,
- Julian Margetson <runaway@candw.ms>
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5196C1A0024
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 May 2015 03:29:33 +1000 (AEST)
+Received: from /spool/local
+ by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Mon, 4 May 2015 22:59:30 +0530
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 3CEDEE0056
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 May 2015 23:02:19 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay01.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t44HTRH862586972
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 May 2015 22:59:27 +0530
+Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t44HTQAL022252
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 May 2015 22:59:26 +0530
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: akpm@linux-foundation.org, mpe@ellerman.id.au, paulus@samba.org,
+ benh@kernel.crashing.org, kirill.shutemov@linux.intel.com,
+ aarcange@redhat.com
+Subject: [RFC PATCH] mm/thp: Use new function to clear pmd before THP splitting
+Date: Mon,  4 May 2015 22:59:16 +0530
+Message-Id: <1430760556-28137-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,33 +39,100 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2015-04-27 at 23:49 -0400, Tejun Heo wrote:
-> On Tue, Apr 28, 2015 at 11:12:25AM +1000, Michael Ellerman wrote:
-> > On Mon, 2015-04-27 at 06:59 -0400, Julian Margetson wrote:
-> > > Kernel 4.1-rc1 build fails  on Sam460ex amcc 460ex powerpc Canyonlands with 
-> > > CONFIG_SATA_DWC=y
-> > > 
-> > > sata_dwc_460ex.c:(.text+0xa165c): undefined reference to `dw_dma_remove'
-> > > drivers/built-in.o: In function `sata_dwc_probe':
-> > > sata_dwc_460ex.c:(.text+0xa1900): undefined reference to `dw_dma_probe'
-> > > sata_dwc_460ex.c:(.text+0xa1954): undefined reference to `dw_dma_remove'
-> > > make: *** [vmlinux] Error 1
-> > 
-> > Looks like it was caused by:
-> > 
-> > commit 8b3444852a2b58129ee68a8dd69fef81ceb902a1
-> > Author: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-> > Date:   Tue Mar 3 22:41:21 2015 +0200
-> > 
-> >     sata_dwc_460ex: move to generic DMA driver
-> 
-> Oops, Andy?
-> 
+Archs like ppc64 require pte_t * to remain stable in some code path.
+They use local_irq_disable to prevent a parallel split. Generic code
+clear pmd instead of marking it _PAGE_SPLITTING in code path
+where we can afford to mark pmd none before splitting. Use a
+variant of pmdp_splitting_clear_notify that arch can override.
 
-Sorry for late answer. It requires CONFIG_DW_DMAC=y as well. I don't
-know the details of PPC configuration, we might add this to
-configuration.
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/pgtable-ppc64.h |  4 ++++
+ arch/powerpc/mm/pgtable_64.c             | 11 +++++++++++
+ include/asm-generic/pgtable.h            |  4 ++++
+ mm/huge_memory.c                         |  4 ++--
+ 4 files changed, 21 insertions(+), 2 deletions(-)
 
+diff --git a/arch/powerpc/include/asm/pgtable-ppc64.h b/arch/powerpc/include/asm/pgtable-ppc64.h
+index 43e6ad424c7f..307e705cbead 100644
+--- a/arch/powerpc/include/asm/pgtable-ppc64.h
++++ b/arch/powerpc/include/asm/pgtable-ppc64.h
+@@ -576,6 +576,10 @@ static inline void pmdp_set_wrprotect(struct mm_struct *mm, unsigned long addr,
+ extern void pmdp_splitting_flush(struct vm_area_struct *vma,
+ 				 unsigned long address, pmd_t *pmdp);
+ 
++#define __HAVE_ARCH_PMDP_SPLITTING_CLEAR_NOTIFY
++extern void pmdp_splitting_clear_notify(struct vm_area_struct *vma,
++					unsigned long address, pmd_t *pmdp);
++
+ #define __HAVE_ARCH_PGTABLE_DEPOSIT
+ extern void pgtable_trans_huge_deposit(struct mm_struct *mm, pmd_t *pmdp,
+ 				       pgtable_t pgtable);
+diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
+index 59daa5eeec25..c30b15894edf 100644
+--- a/arch/powerpc/mm/pgtable_64.c
++++ b/arch/powerpc/mm/pgtable_64.c
+@@ -36,6 +36,7 @@
+ #include <linux/memblock.h>
+ #include <linux/slab.h>
+ #include <linux/hugetlb.h>
++#include <linux/mmu_notifier.h>
+ 
+ #include <asm/pgalloc.h>
+ #include <asm/page.h>
+@@ -598,6 +599,16 @@ pmd_t pmdp_clear_flush(struct vm_area_struct *vma, unsigned long address,
+ 	return pmd;
+ }
+ 
++void pmdp_splitting_clear_notify(struct vm_area_struct *vma,
++				 unsigned long address, pmd_t *pmdp)
++{
++	pmdp_clear_flush_notify(vma, address, pmdp);
++	/*
++	 * Serialize against find_linux_pte_or_hugepte
++	 */
++	kick_all_cpus_sync();
++}
++
+ int pmdp_test_and_clear_young(struct vm_area_struct *vma,
+ 			      unsigned long address, pmd_t *pmdp)
+ {
+diff --git a/include/asm-generic/pgtable.h b/include/asm-generic/pgtable.h
+index 39f1d6a2b04d..83ed56c8594a 100644
+--- a/include/asm-generic/pgtable.h
++++ b/include/asm-generic/pgtable.h
+@@ -189,6 +189,10 @@ extern void pmdp_splitting_flush(struct vm_area_struct *vma,
+ 				 unsigned long address, pmd_t *pmdp);
+ #endif
+ 
++#ifndef __HAVE_ARCH_PMDP_SPLITTING_CLEAR_NOTIFY
++#define pmdp_splitting_clear_notify pmdp_clear_flush_notify
++#endif
++
+ #ifndef __HAVE_ARCH_PGTABLE_DEPOSIT
+ extern void pgtable_trans_huge_deposit(struct mm_struct *mm, pmd_t *pmdp,
+ 				       pgtable_t pgtable);
+diff --git a/mm/huge_memory.c b/mm/huge_memory.c
+index 078832cf3636..f596312980f9 100644
+--- a/mm/huge_memory.c
++++ b/mm/huge_memory.c
+@@ -1031,7 +1031,7 @@ static int do_huge_pmd_wp_page_fallback(struct mm_struct *mm,
+ 		goto out_free_pages;
+ 	VM_BUG_ON_PAGE(!PageHead(page), page);
+ 
+-	pmdp_clear_flush_notify(vma, haddr, pmd);
++	pmdp_splitting_clear_notify(vma, haddr, pmd);
+ 	/* leave pmd empty until pte is filled */
+ 
+ 	pgtable = pgtable_trans_huge_withdraw(mm, pmd);
+@@ -2865,7 +2865,7 @@ static void __split_huge_zero_page_pmd(struct vm_area_struct *vma,
+ 	pmd_t _pmd;
+ 	int i;
+ 
+-	pmdp_clear_flush_notify(vma, haddr, pmd);
++	pmdp_splitting_clear_notify(vma, haddr, pmd);
+ 	/* leave pmd empty until pte is filled */
+ 
+ 	pgtable = pgtable_trans_huge_withdraw(mm, pmd);
 -- 
-Andy Shevchenko <andriy.shevchenko@intel.com>
-Intel Finland Oy
+2.1.4
