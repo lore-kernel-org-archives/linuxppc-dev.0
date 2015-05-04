@@ -1,34 +1,37 @@
-Return-Path: <weiyang@linux.vnet.ibm.com>
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+Return-Path: <shilpa.bhat@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 223CF1A0008
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 May 2015 19:00:23 +1000 (AEST)
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DC0161A1185
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 May 2015 17:11:22 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTPS id C796D140157
+ for <linuxppc-dev@ozlabs.org>; Mon,  4 May 2015 19:00:22 +1000 (AEST)
 Received: from /spool/local
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
- Mon, 4 May 2015 17:11:22 +1000
+ for <linuxppc-dev@ozlabs.org> from <shilpa.bhat@linux.vnet.ibm.com>;
+ Mon, 4 May 2015 19:00:22 +1000
 Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 75DA4357804C
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 May 2015 17:11:19 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 96DB93578055
+ for <linuxppc-dev@ozlabs.org>; Mon,  4 May 2015 19:00:19 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
  by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t447BAtS43450466
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 May 2015 17:11:18 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t447Aj2q003597
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 May 2015 17:10:45 +1000
-From: Wei Yang <weiyang@linux.vnet.ibm.com>
-To: gwshan@linux.vnet.ibm.com, bhelgaas@google.com
-Subject: [PATCH V3 9/9] powerpc/eeh: handle VF PE properly
-Date: Mon,  4 May 2015 15:07:38 +0800
-Message-Id: <1430723258-21299-10-git-send-email-weiyang@linux.vnet.ibm.com>
-In-Reply-To: <1430723258-21299-1-git-send-email-weiyang@linux.vnet.ibm.com>
-References: <1430723258-21299-1-git-send-email-weiyang@linux.vnet.ibm.com>
-Cc: linux-pci@vger.kernel.org, Wei Yang <weiyang@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+ t4490AVw47186074
+ for <linuxppc-dev@ozlabs.org>; Mon, 4 May 2015 19:00:19 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t448xjTk023403
+ for <linuxppc-dev@ozlabs.org>; Mon, 4 May 2015 18:59:46 +1000
+From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Subject: [PATCH v3 0/6] powernv: cpufreq: Report frequency throttle by OCC
+Date: Mon,  4 May 2015 14:24:06 +0530
+Message-Id: <1430729652-14813-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+Cc: preeti@linux.vnet.ibm.com, viresh.kumar@linaro.org, rjw@rjwysocki.net,
+ Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, linux-pm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,262 +41,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Compared with Bus PE, VF PE just has one single pci function. This
-introduces the difference of error handling on a VF PE.
+This patchset intends to add frequency throttle reporting mechanism
+to powernv-cpufreq driver when OCC throttles the frequency. OCC is an
+On-Chip-Controller which takes care of the power and thermal safety of
+the chip. The CPU frequency can be throttled during an OCC reset or
+when OCC tries to limit the max allowed frequency. The patchset will
+report such conditions so as to keep the user informed about reason
+for the drop in performance of workloads when frequency is throttled.
 
-For example in the hotplug case, EEH needs to remove and re-create the VF
-properly. In the case when PF's error_detected() disable SRIOV, this patch
-introduces a flag to mark the eeh_dev of a VF to avoid the slot_reset() and
-resume(). Since the FW is not ware of the VF, this patch handles the VF
-restore/reset in kernel directly.
+Changes from v2:
+- Split into multiple patches
+- Semantic fixes
 
-This patch is to handle the VF PE properly in these cases.
+Shilpasri G Bhat (6):
+  cpufreq: poowernv: Handle throttling due to Pmax capping at chip level
+  powerpc/powernv: Add definition of OPAL_MSG_OCC message type
+  cpufreq: powernv: Register for OCC related opal_message notification
+  cpufreq: powernv: Call throttle_check() on receiving OCC_THROTTLE
+  cpufreq: powernv: Report Psafe only if PMSR.psafe_mode_active bit is
+    set
+  cpufreq: powernv: Restore cpu frequency to policy->cur on unthrottling
 
-Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/eeh.h   |    1 +
- arch/powerpc/kernel/eeh.c        |    1 +
- arch/powerpc/kernel/eeh_driver.c |  108 ++++++++++++++++++++++++++++++--------
- arch/powerpc/kernel/eeh_pe.c     |    3 +-
- 4 files changed, 90 insertions(+), 23 deletions(-)
+ arch/powerpc/include/asm/opal-api.h |   8 ++
+ drivers/cpufreq/powernv-cpufreq.c   | 199 +++++++++++++++++++++++++++++++++---
+ 2 files changed, 192 insertions(+), 15 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
-index 78c8bec..43e8a24 100644
---- a/arch/powerpc/include/asm/eeh.h
-+++ b/arch/powerpc/include/asm/eeh.h
-@@ -141,6 +141,7 @@ struct eeh_dev {
- 	struct pci_controller *phb;	/* Associated PHB		*/
- 	struct pci_dn *pdn;		/* Associated PCI device node	*/
- 	struct pci_dev *pdev;		/* Associated PCI device	*/
-+	int    in_error;		/* Error flag for eeh_dev	*/
- #ifdef CONFIG_PCI_IOV
- 	struct pci_dev *physfn;		/* Associated PF PORT		*/
- #endif /* CONFIG_PCI_IOV */
-diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
-index 221e280..077c3d1 100644
---- a/arch/powerpc/kernel/eeh.c
-+++ b/arch/powerpc/kernel/eeh.c
-@@ -1226,6 +1226,7 @@ void eeh_remove_device(struct pci_dev *dev)
- 	 * from the parent PE during the BAR resotre.
- 	 */
- 	edev->pdev = NULL;
-+	edev->in_error = 0;
- 	dev->dev.archdata.edev = NULL;
- 	if (!(edev->pe->state & EEH_PE_KEEP))
- 		eeh_rmv_from_parent_pe(edev);
-diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
-index 89eb4bc..6e42cad 100644
---- a/arch/powerpc/kernel/eeh_driver.c
-+++ b/arch/powerpc/kernel/eeh_driver.c
-@@ -211,6 +211,7 @@ static void *eeh_report_error(void *data, void *userdata)
- 	if (rc == PCI_ERS_RESULT_NEED_RESET) *res = rc;
- 	if (*res == PCI_ERS_RESULT_NONE) *res = rc;
- 
-+	edev->in_error = 1;
- 	eeh_pcid_put(dev);
- 	return NULL;
- }
-@@ -282,7 +283,8 @@ static void *eeh_report_reset(void *data, void *userdata)
- 
- 	if (!driver->err_handler ||
- 	    !driver->err_handler->slot_reset ||
--	    (edev->mode & EEH_DEV_NO_HANDLER)) {
-+	    (edev->mode & EEH_DEV_NO_HANDLER) ||
-+	    (!edev->in_error)) {
- 		eeh_pcid_put(dev);
- 		return NULL;
- 	}
-@@ -339,14 +341,16 @@ static void *eeh_report_resume(void *data, void *userdata)
- 
- 	if (!driver->err_handler ||
- 	    !driver->err_handler->resume ||
--	    (edev->mode & EEH_DEV_NO_HANDLER)) {
-+	    (edev->mode & EEH_DEV_NO_HANDLER) ||
-+	    (!edev->in_error)) {
- 		edev->mode &= ~EEH_DEV_NO_HANDLER;
--		eeh_pcid_put(dev);
--		return NULL;
-+		goto out;
- 	}
- 
- 	driver->err_handler->resume(dev);
- 
-+out:
-+	edev->in_error = 0;
- 	eeh_pcid_put(dev);
- 	return NULL;
- }
-@@ -386,12 +390,42 @@ static void *eeh_report_failure(void *data, void *userdata)
- 	return NULL;
- }
- 
-+#ifdef CONFIG_PCI_IOV
-+static void *eeh_add_virt_device(void *data, void *userdata)
-+{
-+	struct pci_driver *driver;
-+	struct eeh_dev *edev = (struct eeh_dev *)data;
-+	struct pci_dev *dev = eeh_dev_to_pci_dev(edev);
-+	struct pci_dn *pdn = eeh_dev_to_pdn(edev);
-+
-+	if (!(edev->mode & EEH_DEV_VF)) {
-+		pr_warn("EEH: eeh_dev(%04x:%02x:%02x:%01x) is not a VF\n",
-+			edev->phb->global_number, pdn->busno,
-+			PCI_SLOT(pdn->devfn), PCI_FUNC(pdn->devfn));
-+		return NULL;
-+	}
-+
-+	driver = eeh_pcid_get(dev);
-+	if (driver) {
-+		eeh_pcid_put(dev);
-+		if (driver->err_handler)
-+			return NULL;
-+	}
-+
-+	pci_iov_virtfn_add(edev->physfn, pdn->vf_index, 0);
-+	return NULL;
-+}
-+#endif /* CONFIG_PCI_IOV */
-+
- static void *eeh_rmv_device(void *data, void *userdata)
- {
- 	struct pci_driver *driver;
- 	struct eeh_dev *edev = (struct eeh_dev *)data;
- 	struct pci_dev *dev = eeh_dev_to_pci_dev(edev);
- 	int *removed = (int *)userdata;
-+#ifdef CONFIG_PCI_IOV
-+	struct pci_dn *pdn = eeh_dev_to_pdn(edev);
-+#endif
- 
- 	/*
- 	 * Actually, we should remove the PCI bridges as well.
-@@ -416,7 +450,7 @@ static void *eeh_rmv_device(void *data, void *userdata)
- 	driver = eeh_pcid_get(dev);
- 	if (driver) {
- 		eeh_pcid_put(dev);
--		if (driver->err_handler)
-+		if (removed && driver->err_handler)
- 			return NULL;
- 	}
- 
-@@ -425,11 +459,21 @@ static void *eeh_rmv_device(void *data, void *userdata)
- 		 pci_name(dev));
- 	edev->bus = dev->bus;
- 	edev->mode |= EEH_DEV_DISCONNECTED;
--	(*removed)++;
--
--	pci_lock_rescan_remove();
--	pci_stop_and_remove_bus_device(dev);
--	pci_unlock_rescan_remove();
-+	if (removed)
-+		(*removed)++;
-+
-+#ifdef CONFIG_PCI_IOV
-+	if (edev->mode & EEH_DEV_VF) {
-+		pci_iov_virtfn_remove(edev->physfn, pdn->vf_index, 0);
-+		edev->pdev = NULL;
-+		pdn->pe_number = IODA_INVALID_PE;
-+	} else
-+#endif
-+	{
-+		pci_lock_rescan_remove();
-+		pci_stop_and_remove_bus_device(dev);
-+		pci_unlock_rescan_remove();
-+	}
- 
- 	return NULL;
- }
-@@ -548,6 +592,7 @@ static int eeh_reset_device(struct eeh_pe *pe, struct pci_bus *bus)
- 	struct pci_bus *frozen_bus = eeh_pe_bus_get(pe);
- 	struct timeval tstamp;
- 	int cnt, rc, removed = 0;
-+	struct eeh_dev *edev;
- 
- 	/* pcibios will clear the counter; save the value */
- 	cnt = pe->freeze_count;
-@@ -561,12 +606,15 @@ static int eeh_reset_device(struct eeh_pe *pe, struct pci_bus *bus)
- 	 */
- 	eeh_pe_state_mark(pe, EEH_PE_KEEP);
- 	if (bus) {
--		pci_lock_rescan_remove();
--		pcibios_remove_pci_devices(bus);
--		pci_unlock_rescan_remove();
--	} else if (frozen_bus) {
-+		if (pe->type & EEH_PE_VF)
-+			eeh_pe_dev_traverse(pe, eeh_rmv_device, NULL);
-+		else {
-+			pci_lock_rescan_remove();
-+			pcibios_remove_pci_devices(bus);
-+			pci_unlock_rescan_remove();
-+		}
-+	} else if (frozen_bus)
- 		eeh_pe_dev_traverse(pe, eeh_rmv_device, &removed);
--	}
- 
- 	/*
- 	 * Reset the pci controller. (Asserts RST#; resets config space).
-@@ -607,14 +655,26 @@ static int eeh_reset_device(struct eeh_pe *pe, struct pci_bus *bus)
- 		 * PE. We should disconnect it so the binding can be
- 		 * rebuilt when adding PCI devices.
- 		 */
-+		edev = list_first_entry(&pe->edevs, struct eeh_dev, list);
- 		eeh_pe_traverse(pe, eeh_pe_detach_dev, NULL);
--		pcibios_add_pci_devices(bus);
-+#ifdef CONFIG_PCI_IOV
-+		if (pe->type & EEH_PE_VF)
-+			eeh_add_virt_device(edev, NULL);
-+		else
-+#endif
-+			pcibios_add_pci_devices(bus);
- 	} else if (frozen_bus && removed) {
- 		pr_info("EEH: Sleep 5s ahead of partial hotplug\n");
- 		ssleep(5);
- 
-+		edev = list_first_entry(&pe->edevs, struct eeh_dev, list);
- 		eeh_pe_traverse(pe, eeh_pe_detach_dev, NULL);
--		pcibios_add_pci_devices(frozen_bus);
-+#ifdef CONFIG_PCI_IOV
-+		if (pe->type & EEH_PE_VF)
-+			eeh_add_virt_device(edev, NULL);
-+		else
-+#endif
-+			pcibios_add_pci_devices(frozen_bus);
- 	}
- 	eeh_pe_state_clear(pe, EEH_PE_KEEP);
- 
-@@ -792,11 +852,15 @@ perm_error:
- 	 * the their PCI config any more.
- 	 */
- 	if (frozen_bus) {
--		eeh_pe_dev_mode_mark(pe, EEH_DEV_REMOVED);
--
--		pci_lock_rescan_remove();
--		pcibios_remove_pci_devices(frozen_bus);
--		pci_unlock_rescan_remove();
-+		if (pe->type & EEH_PE_VF) {
-+			eeh_pe_dev_traverse(pe, eeh_rmv_device, NULL);
-+			eeh_pe_dev_mode_mark(pe, EEH_DEV_REMOVED);
-+		} else {
-+			eeh_pe_dev_mode_mark(pe, EEH_DEV_REMOVED);
-+			pci_lock_rescan_remove();
-+			pcibios_remove_pci_devices(frozen_bus);
-+			pci_unlock_rescan_remove();
-+		}
- 	}
- }
- 
-diff --git a/arch/powerpc/kernel/eeh_pe.c b/arch/powerpc/kernel/eeh_pe.c
-index edfe63a..3b8b32f 100644
---- a/arch/powerpc/kernel/eeh_pe.c
-+++ b/arch/powerpc/kernel/eeh_pe.c
-@@ -916,7 +916,8 @@ struct pci_bus *eeh_pe_bus_get(struct eeh_pe *pe)
- 	if (pe->type & EEH_PE_PHB) {
- 		bus = pe->phb->bus;
- 	} else if (pe->type & EEH_PE_BUS ||
--		   pe->type & EEH_PE_DEVICE) {
-+		   pe->type & EEH_PE_DEVICE ||
-+		   pe->type & EEH_PE_VF) {
- 		if (pe->bus) {
- 			bus = pe->bus;
- 			goto out;
 -- 
-1.7.9.5
+1.9.3
