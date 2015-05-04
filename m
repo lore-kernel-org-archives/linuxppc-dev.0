@@ -1,20 +1,19 @@
-Return-Path: <BATV+fa775b7f4a918d778493+4271+infradead.org+acme@bombadil.srs.infradead.org>
-Received: from bombadil.infradead.org (bombadil.infradead.org
- [IPv6:2001:1868:205::9])
+Return-Path: <BATV+578e219acb784a2ea3b2+4271+infradead.org+acme@casper.srs.infradead.org>
+Received: from casper.infradead.org (casper.infradead.org [85.118.1.10])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6D0DC1A057B
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 May 2015 07:36:48 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 48BB91A099E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 May 2015 07:36:59 +1000 (AEST)
 From: Arnaldo Carvalho de Melo <acme@kernel.org>
 To: Ingo Molnar <mingo@kernel.org>
-Subject: [PATCH 05/21] perf probe ppc64le: Prefer symbol table lookup over
- DWARF
-Date: Mon,  4 May 2015 18:36:14 -0300
-Message-Id: <1430775390-22523-6-git-send-email-acme@kernel.org>
+Subject: [PATCH 12/21] perf probe: Improve detection of file/function name in
+ the probe pattern
+Date: Mon,  4 May 2015 18:36:21 -0300
+Message-Id: <1430775390-22523-13-git-send-email-acme@kernel.org>
 In-Reply-To: <1430775390-22523-1-git-send-email-acme@kernel.org>
 References: <1430775390-22523-1-git-send-email-acme@kernel.org>
-Cc: linux-kernel@vger.kernel.org, Arnaldo Carvalho de Melo <acme@redhat.com>,
- Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>,
+Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+ Arnaldo Carvalho de Melo <acme@redhat.com>,
  "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
  Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
  linuxppc-dev@lists.ozlabs.org
@@ -29,97 +28,102 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
 
-Use symbol table lookups by default if DWARF is not necessary, since
-powerpc ABIv2 encodes local entry points in the symbol table and the
-function entry address in DWARF may not be appropriate for kprobes, as
-described here:
+Currently, perf probe considers patterns including a '.' to be a file.
+However, this causes problems on powerpc ABIv1 where all functions have
+a leading '.':
 
-https://sourceware.org/bugzilla/show_bug.cgi?id=17638
+  $ perf probe -F | grep schedule_timeout_interruptible
+  .schedule_timeout_interruptible
+  $ perf probe .schedule_timeout_interruptible
+  Semantic error :File always requires line number or lazy pattern.
+    Error: Command Parse Error.
 
-"The DWARF address ranges deliberately include the *whole* function,
-both global and local entry points."
-...
-"If you want to set probes on a local entry point, you should look up
-the symbol in the main symbol table (not DWARF), and check the st_other
-bits; they will indicate whether the function has a local entry point,
-and what its offset from the global entry point is.  Note that GDB does
-the same when setting a breakpoint on a function entry."
+Fix this:
+- by checking the probe pattern in more detail, and
+- skipping leading dot if one exists when creating/deleting events.
 
 Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
 Reviewed-by: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+Acked-by: Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>
 Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-Cc: Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>
 Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
 Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 Cc: linuxppc-dev@lists.ozlabs.org
-Link: http://lkml.kernel.org/r/88a10e22f4aaba2aef812824ca4b10d7beeea012.1430217967.git.naveen.n.rao@linux.vnet.ibm.com
+Link: http://lkml.kernel.org/r/db680f7cb11c4452b632f908e67151f3aa0f4602.1430217967.git.naveen.n.rao@linux.vnet.ibm.com
 Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
 ---
- tools/perf/arch/powerpc/util/sym-handling.c | 8 ++++++++
- tools/perf/util/probe-event.c               | 8 ++++++++
- tools/perf/util/probe-event.h               | 1 +
- 3 files changed, 17 insertions(+)
+ tools/perf/util/probe-event.c | 29 ++++++++++++++++++++++++++---
+ 1 file changed, 26 insertions(+), 3 deletions(-)
 
-diff --git a/tools/perf/arch/powerpc/util/sym-handling.c b/tools/perf/arch/powerpc/util/sym-handling.c
-index 012a0f8..a170060 100644
---- a/tools/perf/arch/powerpc/util/sym-handling.c
-+++ b/tools/perf/arch/powerpc/util/sym-handling.c
-@@ -9,6 +9,7 @@
- #include "debug.h"
- #include "symbol.h"
- #include "map.h"
-+#include "probe-event.h"
- 
- #ifdef HAVE_LIBELF_SUPPORT
- bool elf__needs_adjust_symbols(GElf_Ehdr ehdr)
-@@ -57,3 +58,10 @@ int arch__compare_symbol_names(const char *namea, const char *nameb)
- 	return strcmp(namea, nameb);
- }
- #endif
-+
-+#if defined(_CALL_ELF) && _CALL_ELF == 2
-+bool arch__prefers_symtab(void)
-+{
-+	return true;
-+}
-+#endif
 diff --git a/tools/perf/util/probe-event.c b/tools/perf/util/probe-event.c
-index 291bf23..4dfb412 100644
+index eb75a5e..416c10f 100644
 --- a/tools/perf/util/probe-event.c
 +++ b/tools/perf/util/probe-event.c
-@@ -2567,6 +2567,8 @@ err_out:
- 	goto out;
- }
- 
-+bool __weak arch__prefers_symtab(void) { return false; }
-+
- static int convert_to_probe_trace_events(struct perf_probe_event *pev,
- 					  struct probe_trace_event **tevs,
- 					  int max_tevs, const char *target)
-@@ -2582,6 +2584,12 @@ static int convert_to_probe_trace_events(struct perf_probe_event *pev,
- 		}
+@@ -1077,6 +1077,7 @@ static int parse_perf_probe_point(char *arg, struct perf_probe_event *pev)
+ 	struct perf_probe_point *pp = &pev->point;
+ 	char *ptr, *tmp;
+ 	char c, nc = 0;
++	bool file_spec = false;
+ 	/*
+ 	 * <Syntax>
+ 	 * perf probe [EVENT=]SRC[:LN|;PTN]
+@@ -1105,6 +1106,23 @@ static int parse_perf_probe_point(char *arg, struct perf_probe_event *pev)
+ 		arg = tmp;
  	}
  
-+	if (arch__prefers_symtab() && !perf_probe_event_need_dwarf(pev)) {
-+		ret = find_probe_trace_events_from_map(pev, tevs, max_tevs, target);
-+		if (ret > 0)
-+			return ret; /* Found in symbol table */
++	/*
++	 * Check arg is function or file name and copy it.
++	 *
++	 * We consider arg to be a file spec if and only if it satisfies
++	 * all of the below criteria::
++	 * - it does not include any of "+@%",
++	 * - it includes one of ":;", and
++	 * - it has a period '.' in the name.
++	 *
++	 * Otherwise, we consider arg to be a function specification.
++	 */
++	if (!strpbrk(arg, "+@%") && (ptr = strpbrk(arg, ";:")) != NULL) {
++		/* This is a file spec if it includes a '.' before ; or : */
++		if (memchr(arg, '.', ptr - arg))
++			file_spec = true;
 +	}
 +
- 	/* Convert perf_probe_event with debuginfo */
- 	ret = try_to_find_probe_trace_events(pev, tevs, max_tevs, target);
- 	if (ret != 0)
-diff --git a/tools/perf/util/probe-event.h b/tools/perf/util/probe-event.h
-index d6b7834..52bca4b 100644
---- a/tools/perf/util/probe-event.h
-+++ b/tools/perf/util/probe-event.h
-@@ -135,6 +135,7 @@ extern int show_available_vars(struct perf_probe_event *pevs, int npevs,
- 			       struct strfilter *filter, bool externs);
- extern int show_available_funcs(const char *module, struct strfilter *filter,
- 				bool user);
-+bool arch__prefers_symtab(void);
+ 	ptr = strpbrk(arg, ";:+@%");
+ 	if (ptr) {
+ 		nc = *ptr;
+@@ -1115,10 +1133,9 @@ static int parse_perf_probe_point(char *arg, struct perf_probe_event *pev)
+ 	if (tmp == NULL)
+ 		return -ENOMEM;
  
- /* Maximum index number of event-name postfix */
- #define MAX_EVENT_INDEX	1024
+-	/* Check arg is function or file and copy it */
+-	if (strchr(tmp, '.'))	/* File */
++	if (file_spec)
+ 		pp->file = tmp;
+-	else			/* Function */
++	else
+ 		pp->function = tmp;
+ 
+ 	/* Parse other options */
+@@ -2265,6 +2282,9 @@ static int get_new_event_name(char *buf, size_t len, const char *base,
+ {
+ 	int i, ret;
+ 
++	if (*base == '.')
++		base++;
++
+ 	/* Try no suffix */
+ 	ret = e_snprintf(buf, len, "%s", base);
+ 	if (ret < 0) {
+@@ -2766,6 +2786,9 @@ int del_perf_probe_events(struct strlist *dellist)
+ 			event = str;
+ 		}
+ 
++		if (event && *event == '.')
++			event++;
++
+ 		ret = e_snprintf(buf, 128, "%s:%s", group, event);
+ 		if (ret < 0) {
+ 			pr_err("Failed to copy event.");
 -- 
 2.1.0
