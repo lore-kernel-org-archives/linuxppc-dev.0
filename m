@@ -1,23 +1,14 @@
-Return-Path: <arnd@arndb.de>
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.187])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A4EFA1A024B
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 May 2015 01:27:41 +1000 (AEST)
-From: Arnd Bergmann <arnd@arndb.de>
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from smtp.transmode.se (smtp.transmode.se [31.15.61.139])
+ by lists.ozlabs.org (Postfix) with ESMTP id 1EAEB1A02EA
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 May 2015 02:39:20 +1000 (AEST)
+From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v4 0/3] Add SDHCI support for APM X-Gene SoC using ARASAN
- SDHCI controller.
-Date: Mon, 04 May 2015 17:27:11 +0200
-Message-ID: <8897362.mqzfqi11lX@wuerfel>
-In-Reply-To: <1430746792-32574-1-git-send-email-stripathi@apm.com>
-References: <1430746792-32574-1-git-send-email-stripathi@apm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Cc: devicetree@vger.kernel.org, mlangsdo@redhat.com,
- Suman Tripathi <stripathi@apm.com>, jcm@redhat.com, anton@enomsg.org,
- linux-mmc@vger.kernel.org, chris@printf.net, michal.simek@xilinx.com,
- patches@apm.com, ddutile@redhat.com, linux-arm-kernel@lists.infradead.org
+Subject: [PATCH 2/2] sdhci-of-esdhc: Pre divider starts at 1
+Date: Mon,  4 May 2015 18:31:32 +0200
+Message-Id: <1430757092-15847-2-git-send-email-joakim.tjernlund@transmode.se>
+In-Reply-To: <1430757092-15847-1-git-send-email-joakim.tjernlund@transmode.se>
+References: <1430757092-15847-1-git-send-email-joakim.tjernlund@transmode.se>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,24 +18,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Monday 04 May 2015 19:09:49 Suman Tripathi wrote:
-> This patch adds the SDHCI support for APM X-Gene SoC using ARASAN SDHCI controller.
-> 
-> v1 change:
->  * Use the CONFIG_ARM64_DMA_HAS_IOMMU for dma-mapping.
-> 
-> v2 change:
->  * Drop the IOMMU support and switching to PIO mode for arasan.
->    controller integrated inside APM X-Gene SoC.
-> 
-> v3 change:
->  * Change the sdhci-of-arasan.c to support arasan4.9a.
->  * Add quirks for arasan4.9a.
-> 
-> v4 change:
->  * Cleanup the Documentation and dts.
-> 
+For PowerPC esdhc pre divider starts at 1, fixing this increases
+the actual clock from 40 MHz to 50 MHz.
 
-All three patches
+Signed-off-by: Joakim Tjernlund <joakim.tjernlund@transmode.se>
+---
+ drivers/mmc/host/sdhci-of-esdhc.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Acked-by: Arnd Bergmann <arnd@arndb.de>
+diff --git a/drivers/mmc/host/sdhci-of-esdhc.c b/drivers/mmc/host/sdhci-of-esdhc.c
+index 7130130..ffd5625 100644
+--- a/drivers/mmc/host/sdhci-of-esdhc.c
++++ b/drivers/mmc/host/sdhci-of-esdhc.c
+@@ -207,7 +207,7 @@ static unsigned int esdhc_of_get_min_clock(struct sdhci_host *host)
+ 
+ static void esdhc_of_set_clock(struct sdhci_host *host, unsigned int clock)
+ {
+-	int pre_div = 2;
++	int pre_div = 1;
+ 	int div = 1;
+ 	u32 temp;
+ 
+@@ -237,7 +237,7 @@ static void esdhc_of_set_clock(struct sdhci_host *host, unsigned int clock)
+ 
+ 	dev_dbg(mmc_dev(host->mmc), "desired SD clock: %d, actual: %d\n",
+ 		clock, host->max_clk / pre_div / div);
+-
++	host->mmc->actual_clock = host->max_clk / pre_div / div;
+ 	pre_div >>= 1;
+ 	div--;
+ 
+-- 
+2.3.6
