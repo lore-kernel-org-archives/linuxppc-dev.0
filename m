@@ -1,14 +1,12 @@
 Return-Path: <joakim.tjernlund@transmode.se>
 Received: from smtp.transmode.se (smtp.transmode.se [31.15.61.139])
- by lists.ozlabs.org (Postfix) with ESMTP id 1EAEB1A02EA
+ by lists.ozlabs.org (Postfix) with ESMTP id 1CCF31A024B
  for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 May 2015 02:39:20 +1000 (AEST)
 From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 2/2] sdhci-of-esdhc: Pre divider starts at 1
-Date: Mon,  4 May 2015 18:31:32 +0200
-Message-Id: <1430757092-15847-2-git-send-email-joakim.tjernlund@transmode.se>
-In-Reply-To: <1430757092-15847-1-git-send-email-joakim.tjernlund@transmode.se>
-References: <1430757092-15847-1-git-send-email-joakim.tjernlund@transmode.se>
+Subject: [PATCH 1/2] sdhci-of-esdhc: Support 8BIT bus width.
+Date: Mon,  4 May 2015 18:31:31 +0200
+Message-Id: <1430757092-15847-1-git-send-email-joakim.tjernlund@transmode.se>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,35 +16,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-For PowerPC esdhc pre divider starts at 1, fixing this increases
-the actual clock from 40 MHz to 50 MHz.
-
 Signed-off-by: Joakim Tjernlund <joakim.tjernlund@transmode.se>
 ---
- drivers/mmc/host/sdhci-of-esdhc.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ drivers/mmc/host/sdhci-of-esdhc.c | 10 ++++++++++
+ 1 file changed, 10 insertions(+)
 
 diff --git a/drivers/mmc/host/sdhci-of-esdhc.c b/drivers/mmc/host/sdhci-of-esdhc.c
-index 7130130..ffd5625 100644
+index 22e9111..7130130 100644
 --- a/drivers/mmc/host/sdhci-of-esdhc.c
 +++ b/drivers/mmc/host/sdhci-of-esdhc.c
-@@ -207,7 +207,7 @@ static unsigned int esdhc_of_get_min_clock(struct sdhci_host *host)
+@@ -82,6 +82,10 @@ static u8 esdhc_readb(struct sdhci_host *host, int reg)
+ 		/* fixup the result */
+ 		ret &= ~SDHCI_CTRL_DMA_MASK;
+ 		ret |= dma_bits;
++
++		/* 8BIT is bit 29 in Control register */
++		ret |= ((ret << 3) & SDHCI_CTRL_8BITBUS);
++		ret &= ~(SDHCI_CTRL_8BITBUS >> 3);
+ 	}
  
- static void esdhc_of_set_clock(struct sdhci_host *host, unsigned int clock)
- {
--	int pre_div = 2;
-+	int pre_div = 1;
- 	int div = 1;
- 	u32 temp;
+ 	return ret;
+@@ -134,6 +138,10 @@ static void esdhc_writeb(struct sdhci_host *host, u8 val, int reg)
+ 			dma_bits);
+ 		val &= ~SDHCI_CTRL_DMA_MASK;
+ 		val |= in_be32(host->ioaddr + reg) & SDHCI_CTRL_DMA_MASK;
++
++		/* 8BIT is bit 29 in Control register */
++		val |= ((val & SDHCI_CTRL_8BITBUS) >> 3);
++		val = (val & ~SDHCI_CTRL_8BITBUS);
+ 	}
  
-@@ -237,7 +237,7 @@ static void esdhc_of_set_clock(struct sdhci_host *host, unsigned int clock)
+ 	/* Prevent SDHCI core from writing reserved bits (e.g. HISPD). */
+@@ -252,6 +260,8 @@ static void esdhc_of_platform_init(struct sdhci_host *host)
  
- 	dev_dbg(mmc_dev(host->mmc), "desired SD clock: %d, actual: %d\n",
- 		clock, host->max_clk / pre_div / div);
--
-+	host->mmc->actual_clock = host->max_clk / pre_div / div;
- 	pre_div >>= 1;
- 	div--;
+ 	if (vvn > VENDOR_V_22)
+ 		host->quirks &= ~SDHCI_QUIRK_NO_BUSY_IRQ;
++
++	host->mmc->caps |= MMC_CAP_8_BIT_DATA;
+ }
  
+ static void esdhc_pltfm_set_bus_width(struct sdhci_host *host, int width)
 -- 
 2.3.6
