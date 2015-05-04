@@ -1,27 +1,23 @@
-Return-Path: <panto@antoniou-consulting.com>
-Received: from li42-95.members.linode.com (li42-95.members.linode.com
- [209.123.162.95])
- by lists.ozlabs.org (Postfix) with ESMTP id C946A1A0024
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 May 2015 02:50:22 +1000 (AEST)
-Subject: Re: [PATCH v4 19/21] drivers/of: Support adding sub-tree
-Mime-Version: 1.0 (Mac OS X Mail 8.2 \(2098\))
-Content-Type: text/plain; charset=utf-8
-From: Pantelis Antoniou <panto@antoniou-consulting.com>
-In-Reply-To: <1430521038.7979.70.camel@kernel.crashing.org>
-Date: Mon, 4 May 2015 19:41:59 +0300
-Message-Id: <A6DF99C6-7059-4670-86D0-6926861F0164@antoniou-consulting.com>
-References: <1430460188-31343-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1430460188-31343-20-git-send-email-gwshan@linux.vnet.ibm.com>
- <CAL_JsqKEUevxSe0Q=pGdsWOiT+TW9iAnCsAWuuqOYj3ZPOG7dg@mail.gmail.com>
- <1430493730.7979.58.camel@kernel.crashing.org>
- <CAL_JsqLrBSB4y_0j+i=kXbDA08HO23JuYjJGHR9nhsPnMC_Zyg@mail.gmail.com>
- <1430521038.7979.70.camel@kernel.crashing.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- Gavin Shan <gwshan@linux.vnet.ibm.com>, Grant Likely <grant.likely@linaro.org>,
- Rob Herring <robherring2@gmail.com>, Bjorn Helgaas <bhelgaas@google.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <BATV+fa775b7f4a918d778493+4271+infradead.org+acme@bombadil.srs.infradead.org>
+Received: from bombadil.infradead.org (bombadil.infradead.org
+ [IPv6:2001:1868:205::9])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6D0DC1A057B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 May 2015 07:36:48 +1000 (AEST)
+From: Arnaldo Carvalho de Melo <acme@kernel.org>
+To: Ingo Molnar <mingo@kernel.org>
+Subject: [PATCH 05/21] perf probe ppc64le: Prefer symbol table lookup over
+ DWARF
+Date: Mon,  4 May 2015 18:36:14 -0300
+Message-Id: <1430775390-22523-6-git-send-email-acme@kernel.org>
+In-Reply-To: <1430775390-22523-1-git-send-email-acme@kernel.org>
+References: <1430775390-22523-1-git-send-email-acme@kernel.org>
+Cc: linux-kernel@vger.kernel.org, Arnaldo Carvalho de Melo <acme@redhat.com>,
+ Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>,
+ "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,97 +27,99 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Ben,
+From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
 
-> On May 2, 2015, at 01:57 , Benjamin Herrenschmidt =
-<benh@kernel.crashing.org> wrote:
->=20
-> On Fri, 2015-05-01 at 13:46 -0500, Rob Herring wrote:
->> On Fri, May 1, 2015 at 10:22 AM, Benjamin Herrenschmidt
->> <benh@kernel.crashing.org> wrote:
->>> On Fri, 2015-05-01 at 07:54 -0500, Rob Herring wrote:
->>>=20
->>>> The difference seems to be whether you allocate space or just point =
-to
->>>> the FDT for various strings/data. Is that right?
->>>>=20
->>>>>   * of_fdt_add_subtree() is the introduced API to do the work.
->>>>=20
->>>> Have you looked at overlays and if so why do they not work for your =
-purposes?
->>>>=20
->>>> Why do you need to do this with the flattened tree?
->>>=20
->>> The basic idea I asked Gavin to implement is that since the FW needs =
-to
->>> provide a bunch of DT updates to Linux at runtime in the form of new
->>> nodes below an existing one, rather than doing it via some =
-new/custom
->>> format, instead, have it send a bit of FDT blob to expand under an
->>> existing node.
->>=20
->> Overlay =3D an FDT blob to graft into a live running system. Sounds =
-like
->> the same thing.
->>=20
->>> As for the details of Gavin implementation, I haven't looked at it =
-in
->>> details yet so there might be issues there, however I don't know =
-what
->>> you mean by "overlays", any pointer ?
->>=20
->> CONFIG_OF_OVERLAY
->>=20
->> =
-http://events.linuxfoundation.org/sites/events/files/slides/dynamic-dt-key=
-note-v3.pdf
->=20
-> Well, that looks horrendously complicated, poorly documented and =
-totally
-> unused in-tree outside of the unittest stuff, yay ! It has all sort of
-> "features" that I don't really care about.
->=20
+Use symbol table lookups by default if DWARF is not necessary, since
+powerpc ABIv2 encodes local entry points in the symbol table and the
+function entry address in DWARF may not be appropriate for kprobes, as
+described here:
 
-If it was easy to get stuff in, it would get more of the real-use =
-drivers
-in.
+https://sourceware.org/bugzilla/show_bug.cgi?id=17638
 
-> I still don't see what it buys me other than making my FW a lot more
-> complex having to generate all that additional fixup etc... crap that =
-I
-> don't totally get yet.
->=20
+"The DWARF address ranges deliberately include the *whole* function,
+both global and local entry points."
+...
+"If you want to set probes on a local entry point, you should look up
+the symbol in the main symbol table (not DWARF), and check the st_other
+bits; they will indicate whether the function has a local entry point,
+and what its offset from the global entry point is.  Note that GDB does
+the same when setting a breakpoint on a function entry."
 
-You don=E2=80=99t generate any additional fixups. You just compile with =
-the option
-that generates all the fixups for you.
+Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
+Reviewed-by: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+Cc: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+Cc: Masami Hiramatsu <masami.hiramatsu.pt@hitachi.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+Link: http://lkml.kernel.org/r/88a10e22f4aaba2aef812824ca4b10d7beeea012.1430217967.git.naveen.n.rao@linux.vnet.ibm.com
+Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
+---
+ tools/perf/arch/powerpc/util/sym-handling.c | 8 ++++++++
+ tools/perf/util/probe-event.c               | 8 ++++++++
+ tools/perf/util/probe-event.h               | 1 +
+ 3 files changed, 17 insertions(+)
 
-> What's wrong with just unflattening the nodes in place ? The DT comes
-> from the FW in the first place so all the phandles are already good in
-> the new added blob. Internally, the FW created new nodes in its =
-internal
-> representation and flattened the subtree and sends that subtree to
-> Linux.
->=20
-> I don't plan to play "revert" either, if you unplug, I do need to =
-remove
-> what's under the slot but that's true of boot time devices, not just
-> "new" ones, so the overlay stuff won't do the trick and I certainly
-> don't want to keep track=E2=80=A6
->=20
-
-You get all of the corner cases handled for free. Perhaps it works for =
-your
-case too.
-
-Perhaps you can educate me on what you need supported and we can make =
-sure
-it=E2=80=99s included.
-
-> Ben.
->=20
->=20
-
-Regards
-
-=E2=80=94 Pantelis
+diff --git a/tools/perf/arch/powerpc/util/sym-handling.c b/tools/perf/arch/powerpc/util/sym-handling.c
+index 012a0f8..a170060 100644
+--- a/tools/perf/arch/powerpc/util/sym-handling.c
++++ b/tools/perf/arch/powerpc/util/sym-handling.c
+@@ -9,6 +9,7 @@
+ #include "debug.h"
+ #include "symbol.h"
+ #include "map.h"
++#include "probe-event.h"
+ 
+ #ifdef HAVE_LIBELF_SUPPORT
+ bool elf__needs_adjust_symbols(GElf_Ehdr ehdr)
+@@ -57,3 +58,10 @@ int arch__compare_symbol_names(const char *namea, const char *nameb)
+ 	return strcmp(namea, nameb);
+ }
+ #endif
++
++#if defined(_CALL_ELF) && _CALL_ELF == 2
++bool arch__prefers_symtab(void)
++{
++	return true;
++}
++#endif
+diff --git a/tools/perf/util/probe-event.c b/tools/perf/util/probe-event.c
+index 291bf23..4dfb412 100644
+--- a/tools/perf/util/probe-event.c
++++ b/tools/perf/util/probe-event.c
+@@ -2567,6 +2567,8 @@ err_out:
+ 	goto out;
+ }
+ 
++bool __weak arch__prefers_symtab(void) { return false; }
++
+ static int convert_to_probe_trace_events(struct perf_probe_event *pev,
+ 					  struct probe_trace_event **tevs,
+ 					  int max_tevs, const char *target)
+@@ -2582,6 +2584,12 @@ static int convert_to_probe_trace_events(struct perf_probe_event *pev,
+ 		}
+ 	}
+ 
++	if (arch__prefers_symtab() && !perf_probe_event_need_dwarf(pev)) {
++		ret = find_probe_trace_events_from_map(pev, tevs, max_tevs, target);
++		if (ret > 0)
++			return ret; /* Found in symbol table */
++	}
++
+ 	/* Convert perf_probe_event with debuginfo */
+ 	ret = try_to_find_probe_trace_events(pev, tevs, max_tevs, target);
+ 	if (ret != 0)
+diff --git a/tools/perf/util/probe-event.h b/tools/perf/util/probe-event.h
+index d6b7834..52bca4b 100644
+--- a/tools/perf/util/probe-event.h
++++ b/tools/perf/util/probe-event.h
+@@ -135,6 +135,7 @@ extern int show_available_vars(struct perf_probe_event *pevs, int npevs,
+ 			       struct strfilter *filter, bool externs);
+ extern int show_available_funcs(const char *module, struct strfilter *filter,
+ 				bool user);
++bool arch__prefers_symtab(void);
+ 
+ /* Maximum index number of event-name postfix */
+ #define MAX_EVENT_INDEX	1024
+-- 
+2.1.0
