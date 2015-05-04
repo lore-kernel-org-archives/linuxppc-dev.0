@@ -1,12 +1,22 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from smtp.transmode.se (smtp.transmode.se [31.15.61.139])
- by lists.ozlabs.org (Postfix) with ESMTP id 1CCF31A024B
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 May 2015 02:39:20 +1000 (AEST)
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH 1/2] sdhci-of-esdhc: Support 8BIT bus width.
-Date: Mon,  4 May 2015 18:31:31 +0200
-Message-Id: <1430757092-15847-1-git-send-email-joakim.tjernlund@transmode.se>
+Return-Path: <andriy.shevchenko@linux.intel.com>
+Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
+ by lists.ozlabs.org (Postfix) with ESMTP id CB2B61A0024
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 May 2015 03:18:35 +1000 (AEST)
+Message-ID: <1430759910.4526.16.camel@linux.intel.com>
+Subject: Re: Kernel 4.1-rc1 build fails  on Sam460ex amcc 460ex powerpc
+ Canyonlands
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+To: Tejun Heo <tj@kernel.org>
+Date: Mon, 04 May 2015 20:18:30 +0300
+In-Reply-To: <20150428034946.GE2152@htj.duckdns.org>
+References: <54E08E06.8060607@candw.ms>
+ <1424045921.3018.4.camel@ellerman.id.au> <553E16A0.704@candw.ms>
+ <1430183545.7246.1.camel@ellerman.id.au>
+ <20150428034946.GE2152@htj.duckdns.org>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org, Ian Munsie <imunsie@au1.ibm.com>,
+ Julian Margetson <runaway@candw.ms>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -16,45 +26,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Joakim Tjernlund <joakim.tjernlund@transmode.se>
----
- drivers/mmc/host/sdhci-of-esdhc.c | 10 ++++++++++
- 1 file changed, 10 insertions(+)
+On Mon, 2015-04-27 at 23:49 -0400, Tejun Heo wrote:
+> On Tue, Apr 28, 2015 at 11:12:25AM +1000, Michael Ellerman wrote:
+> > On Mon, 2015-04-27 at 06:59 -0400, Julian Margetson wrote:
+> > > Kernel 4.1-rc1 build fails  on Sam460ex amcc 460ex powerpc Canyonlands with 
+> > > CONFIG_SATA_DWC=y
+> > > 
+> > > sata_dwc_460ex.c:(.text+0xa165c): undefined reference to `dw_dma_remove'
+> > > drivers/built-in.o: In function `sata_dwc_probe':
+> > > sata_dwc_460ex.c:(.text+0xa1900): undefined reference to `dw_dma_probe'
+> > > sata_dwc_460ex.c:(.text+0xa1954): undefined reference to `dw_dma_remove'
+> > > make: *** [vmlinux] Error 1
+> > 
+> > Looks like it was caused by:
+> > 
+> > commit 8b3444852a2b58129ee68a8dd69fef81ceb902a1
+> > Author: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+> > Date:   Tue Mar 3 22:41:21 2015 +0200
+> > 
+> >     sata_dwc_460ex: move to generic DMA driver
+> 
+> Oops, Andy?
+> 
 
-diff --git a/drivers/mmc/host/sdhci-of-esdhc.c b/drivers/mmc/host/sdhci-of-esdhc.c
-index 22e9111..7130130 100644
---- a/drivers/mmc/host/sdhci-of-esdhc.c
-+++ b/drivers/mmc/host/sdhci-of-esdhc.c
-@@ -82,6 +82,10 @@ static u8 esdhc_readb(struct sdhci_host *host, int reg)
- 		/* fixup the result */
- 		ret &= ~SDHCI_CTRL_DMA_MASK;
- 		ret |= dma_bits;
-+
-+		/* 8BIT is bit 29 in Control register */
-+		ret |= ((ret << 3) & SDHCI_CTRL_8BITBUS);
-+		ret &= ~(SDHCI_CTRL_8BITBUS >> 3);
- 	}
- 
- 	return ret;
-@@ -134,6 +138,10 @@ static void esdhc_writeb(struct sdhci_host *host, u8 val, int reg)
- 			dma_bits);
- 		val &= ~SDHCI_CTRL_DMA_MASK;
- 		val |= in_be32(host->ioaddr + reg) & SDHCI_CTRL_DMA_MASK;
-+
-+		/* 8BIT is bit 29 in Control register */
-+		val |= ((val & SDHCI_CTRL_8BITBUS) >> 3);
-+		val = (val & ~SDHCI_CTRL_8BITBUS);
- 	}
- 
- 	/* Prevent SDHCI core from writing reserved bits (e.g. HISPD). */
-@@ -252,6 +260,8 @@ static void esdhc_of_platform_init(struct sdhci_host *host)
- 
- 	if (vvn > VENDOR_V_22)
- 		host->quirks &= ~SDHCI_QUIRK_NO_BUSY_IRQ;
-+
-+	host->mmc->caps |= MMC_CAP_8_BIT_DATA;
- }
- 
- static void esdhc_pltfm_set_bus_width(struct sdhci_host *host, int width)
+Sorry for late answer. It requires CONFIG_DW_DMAC=y as well. I don't
+know the details of PPC configuration, we might add this to
+configuration.
+
 -- 
-2.3.6
+Andy Shevchenko <andriy.shevchenko@intel.com>
+Intel Finland Oy
