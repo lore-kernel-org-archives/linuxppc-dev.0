@@ -1,26 +1,47 @@
-Return-Path: <mr.triggtrigg@gmail.com>
-Received: from mail-pd0-x22c.google.com (mail-pd0-x22c.google.com
- [IPv6:2607:f8b0:400e:c02::22c])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B249E1A029E
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 May 2015 11:06:15 +1000 (AEST)
-Received: by pdea3 with SMTP id a3so149265661pde.3
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 03 May 2015 18:06:12 -0700 (PDT)
-Content-Type: multipart/alternative;
- boundary=Apple-Mail-6D6C0AC9-C6E6-43C5-9F75-3CCE3993BD6C
-Mime-Version: 1.0 (1.0)
-Subject: Re: [PATCH] powerpc/powernv: Add poweroff (EPOW,
- DPO) events support for PowerNV platform
-From: Triggering <mr.triggtrigg@gmail.com>
-In-Reply-To: <1430374028-32181-1-git-send-email-vipin@linux.vnet.ibm.com>
-Date: Mon, 4 May 2015 06:36:08 +0530
-Message-Id: <59507A7B-F599-4EE5-B15F-1C70597B6CB3@gmail.com>
-References: <1430374028-32181-1-git-send-email-vipin@linux.vnet.ibm.com>
-To: Vipin K Parashar <vipin@linux.vnet.ibm.com>
-Cc: "stewart@linux.vnet.ibm.com" <stewart@linux.vnet.ibm.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "joel@jms.id.au" <joel@jms.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 02B141A024B
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 May 2015 11:31:15 +1000 (AEST)
+Received: from /spool/local
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Mon, 4 May 2015 11:31:14 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 3B3CC2CE8040
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 May 2015 11:31:11 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t441V2ac46071868
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 May 2015 11:31:11 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t441Ubcb024382
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 4 May 2015 11:30:38 +1000
+Date: Mon, 4 May 2015 11:30:12 +1000
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH v4 19/21] drivers/of: Support adding sub-tree
+Message-ID: <20150504013012.GA15561@gwshan>
+Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+References: <1430460188-31343-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <1430460188-31343-20-git-send-email-gwshan@linux.vnet.ibm.com>
+ <CAL_JsqKEUevxSe0Q=pGdsWOiT+TW9iAnCsAWuuqOYj3ZPOG7dg@mail.gmail.com>
+ <1430493730.7979.58.camel@kernel.crashing.org>
+ <CAL_JsqLrBSB4y_0j+i=kXbDA08HO23JuYjJGHR9nhsPnMC_Zyg@mail.gmail.com>
+ <1430521038.7979.70.camel@kernel.crashing.org>
+ <1430522976.7979.78.camel@kernel.crashing.org>
+ <1430534906.7979.85.camel@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1430534906.7979.85.camel@kernel.crashing.org>
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>, Grant Likely <grant.likely@linaro.org>,
+ Rob Herring <robherring2@gmail.com>, Bjorn Helgaas <bhelgaas@google.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,954 +51,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Sat, May 02, 2015 at 12:48:26PM +1000, Benjamin Herrenschmidt wrote:
+>On Sat, 2015-05-02 at 09:29 +1000, Benjamin Herrenschmidt wrote:
+>
+>> Looking a bit more at it, I don't quite see how I can attach a subtree
+>> using that stuff.
+>> 
+>> Instead, each node in the overlay seems to need extra nodes and
+>> properties to refer to the original.
+>> 
+>> So the FW would essentially have to create something a lot more complex
+>> than just reflattening a bit of its internal tree. For each internal
+>> node, it will need to add all those __overlay__ nodes and properties.
+>> 
+>> That is not going to fly for me at all. It's order of magnitudes more
+>> complex than the solution we are pursuing.
+>> 
+>> So I think for our use case, we should continue in the direction of
+>> having a helper to unflatten a piece of FDT underneath an existing
+>> node. I don't like the "HYBRID" stuff though, we should not refer to
+>> the original FDT, we should just make them normal dynamic nodes.
 
---Apple-Mail-6D6C0AC9-C6E6-43C5-9F75-3CCE3993BD6C
-Content-Type: text/plain;
-	charset=us-ascii
-Content-Transfer-Encoding: quoted-printable
+Just took a close look on the overlay code. Hopefully I understand
+how it works completely. Yeah, there is one questions according to my
+understanding. The "overlay" device node should have been in child list
+of the device node, who also has the indicator to "target" node. That
+means some one else has to create "overlay" node and figure out the
+"target" node in advance, then invokes overlay module to apply the
+changes. From this perspective, the mechanism is something used to
+apply the changes to device-tree, not parsing and create device nodes
+from input. It does gurantee all the changes will be applied or none
+of them. So I agree on what Ben suggested: to continue the direction
+of having a helper to unflatten FDT blobk underneath the existing node,
+and "HYBRID" should be replaced with "OF_DYNAMIC".
 
+>
+>A bit more thought... if we were to use the overlay stuff, Gavin, what
+>we *could* do is add to OPAL FW internal representation a generation
+>count to every node and property.
+>
+>That way we could essentially know whenever something's changed from
+>what we flattened originally for the kernel.
+>
+>We can then create a generic (not PCI specific) call that generates
+>an overlay tree for every node and property that has a generation
+>count that is newer than what was flattened (or passed by the OS).
+>
+>It's still a LOT more complex than what we need though...
+>
 
+Thanks, Ben. If we really need utilize overlay to support our case,
+we need some one to parse the input (device-tree changes) from firmware
+and create "overlay" device node and "target" node as I mentioned above.
+It's not simpler than the way we had to support our case. I'm not sure
+if we really need utilize overlay for our case.
 
-> On 30-Apr-2015, at 11:37, Vipin K Parashar <vipin@linux.vnet.ibm.com> wrot=
-e:
->=20
-> This patch adds support for FSP EPOW (Early Power Off Warning) and
-> DPO (Delayed Power Off) events support for PowerNV platform.  EPOW events
-> are generated by SPCN/FSP due to various critical system conditions that
-> need system shutdown.  Few examples of these conditions are high ambient
-> temperature or system running on UPS power with low UPS battery. DPO event=
-
-> is generated in response to admin initiated system shutdown request.
->    This patch enables host kernel on PowerNV platform to handle OPAL
-> notifications for these events and initiate system poweroff. Since EPOW
-> notifications are sent in advance of impending shutdown event and thus thi=
-s
-> patch also adds functionality to wait for EPOW condition to return to
-> normal.  If EPOW condition doesn't return to normal in estimated time it
-> proceeds with graceful system shutdown. System admin can also add host
-> userspace scripts to perform any specific actions like graceful guest
-> shutdown upon system poweroff.
->=20
-> Signed-off-by: Vipin K Parashar <vipin@linux.vnet.ibm.com>
-> ---
-> arch/powerpc/include/asm/opal-api.h                |  30 ++
-> arch/powerpc/include/asm/opal.h                    |   3 +-
-> arch/powerpc/platforms/powernv/Makefile            |   1 +
-> .../platforms/powernv/opal-poweroff-events.c       | 358 +++++++++++++++++=
-++++
-> arch/powerpc/platforms/powernv/opal-wrappers.S     |   1 +
-> 5 files changed, 392 insertions(+), 1 deletion(-)
-> create mode 100644 arch/powerpc/platforms/powernv/opal-poweroff-events.c
->=20
-> diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/as=
-m/opal-api.h
-> index 0321a90..03b3cef 100644
-> --- a/arch/powerpc/include/asm/opal-api.h
-> +++ b/arch/powerpc/include/asm/opal-api.h
-> @@ -730,6 +730,36 @@ struct opal_i2c_request {
->    __be64 buffer_ra;        /* Buffer real address */
-> };
->=20
-> +/*
-> + * EPOW status sharing (OPAL and the host)
-> + *
-> + * The host will pass on OPAL, a buffer of length OPAL_EPOW_MAX_CLASSES
-> + * to fetch system wide EPOW status. Each element in the returned buffer
-> + * will contain bitwise EPOW status for each EPOW sub class.
-> + */
-> +
-> +/* EPOW types */
-> +enum OpalEpow {
-> +    OPAL_EPOW_POWER         =3D 0,    /* Power EPOW */
-> +    OPAL_EPOW_TEMP          =3D 1,    /* Temperature EPOW */
-> +    OPAL_EPOW_COOLING       =3D 2,    /* Cooling EPOW */
-> +    OPAL_MAX_EPOW_CLASSES   =3D 3,    /* Max EPOW categories */
-> +};
-> +
-> +/* Power EPOW events */
-> +enum OpalEpowPower {
-> +    OPAL_EPOW_POWER_UPS     =3D 0x1, /* System on UPS power */
-> +    OPAL_EPOW_POWER_UPS_LOW =3D 0x2, /* System on UPS power with low batt=
-ery*/
-> +};
-> +
-> +/* Temperature EPOW events */
-> +enum OpalEpowTemp {
-> +    OPAL_EPOW_TEMP_HIGH_AMB =3D 0x1, /* High ambient temperature */
-> +    OPAL_EPOW_TEMP_CRIT_AMB =3D 0x2, /* Critical ambient temperature */
-> +    OPAL_EPOW_TEMP_HIGH_INT =3D 0x4, /* High internal temperature */
-> +    OPAL_EPOW_TEMP_CRIT_INT =3D 0x8, /* Critical internal temperature */
-> +};
-> +
-> #endif /* __ASSEMBLY__ */
->=20
-> #endif /* __OPAL_API_H */
-> diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/op=
-al.h
-> index 042af1a..0777864 100644
-> --- a/arch/powerpc/include/asm/opal.h
-> +++ b/arch/powerpc/include/asm/opal.h
-> @@ -141,7 +141,6 @@ int64_t opal_pci_fence_phb(uint64_t phb_id);
-> int64_t opal_pci_reinit(uint64_t phb_id, uint64_t reinit_scope, uint64_t d=
-ata);
-> int64_t opal_pci_mask_pe_error(uint64_t phb_id, uint16_t pe_number, uint8_=
-t error_type, uint8_t mask_action);
-> int64_t opal_set_slot_led_status(uint64_t phb_id, uint64_t slot_id, uint8_=
-t led_type, uint8_t led_action);
-> -int64_t opal_get_epow_status(__be64 *status);
-> int64_t opal_set_system_attention_led(uint8_t led_action);
-> int64_t opal_pci_next_error(uint64_t phb_id, __be64 *first_frozen_pe,
->                __be16 *pci_error_type, __be16 *severity);
-> @@ -200,6 +199,8 @@ int64_t opal_flash_write(uint64_t id, uint64_t offset,=
- uint64_t buf,
->        uint64_t size, uint64_t token);
-> int64_t opal_flash_erase(uint64_t id, uint64_t offset, uint64_t size,
->        uint64_t token);
-> +int32_t opal_get_epow_status(__be32 *status, __be32 *num_classes);
-> +int32_t opal_get_dpo_status(__be32 *timeout);
->=20
-> /* Internal functions */
-> extern int early_init_dt_scan_opal(unsigned long node, const char *uname,
-> diff --git a/arch/powerpc/platforms/powernv/Makefile b/arch/powerpc/platfo=
-rms/powernv/Makefile
-> index 33e44f3..b817bdb 100644
-> --- a/arch/powerpc/platforms/powernv/Makefile
-> +++ b/arch/powerpc/platforms/powernv/Makefile
-> @@ -2,6 +2,7 @@ obj-y            +=3D setup.o opal-wrappers.o opal.o opal-=
-async.o
-> obj-y            +=3D opal-rtc.o opal-nvram.o opal-lpc.o opal-flash.o
-> obj-y            +=3D rng.o opal-elog.o opal-dump.o opal-sysparam.o opal-s=
-ensor.o
-> obj-y            +=3D opal-msglog.o opal-hmi.o opal-power.o
-> +obj-y            +=3D opal-poweroff-events.o
->=20
-> obj-$(CONFIG_SMP)    +=3D smp.o subcore.o subcore-asm.o
-> obj-$(CONFIG_PCI)    +=3D pci.o pci-p5ioc2.o pci-ioda.o
-> diff --git a/arch/powerpc/platforms/powernv/opal-poweroff-events.c b/arch/=
-powerpc/platforms/powernv/opal-poweroff-events.c
-> new file mode 100644
-> index 0000000..9b169e2
-> --- /dev/null
-> +++ b/arch/powerpc/platforms/powernv/opal-poweroff-events.c
-> @@ -0,0 +1,358 @@
-Instead of creating a new file can you merge this functionality with existin=
-g code in opal-power.c. It seems to be doing work similar to what you are do=
-ing in this code.
-> +/*
-> + * PowerNV poweroff events support
-> + *
-> + * Copyright 2015 IBM Corp.
-> + *
-> + * This program is free software; you can redistribute it and/or
-> + * modify it under the terms of the GNU General Public License
-> + * as published by the Free Software Foundation; either version
-> + * 2 of the License, or (at your option) any later version.
-> + */
-> +
-> +#define pr_fmt(fmt)    "POWEROFF_EVENT: "    fmt
-> +
-> +#include <linux/kernel.h>
-> +#include <linux/spinlock.h>
-> +#include <linux/timer.h>
-> +#include <linux/reboot.h>
-> +#include <asm/opal.h>
-> +#include <asm/machdep.h>
-> +
-> +/* System EPOW status */
-> +u32 epow_status[OPAL_MAX_EPOW_CLASSES];
-> +int num_epow_classes;
-> +
-> +/* EPOW event timer and corresponding locks */
-> +static struct timer_list epow_timer;
-> +static DEFINE_SPINLOCK(epow_timer_spinlock);
-> +
-> +/* EPOW, DPO event status values */
-> +#define    DPO_DETECTED    1
-> +#define    EPOW_DETECTED    1
-Instead of macros for this can you simply return a bool from corresponding f=
-unctions.
-> +
-> +/* EPOW events supported */
-> +#define EPOW_POWER_UPS          0
-> +#define EPOW_POWER_UPS_LOW      1
-> +#define EPOW_TEMP_HIGH_AMB      2
-> +#define EPOW_TEMP_CRIT_AMB      3
-> +#define EPOW_TEMP_HIGH_INT      4
-> +#define EPOW_TEMP_CRIT_INT      5
-> +#define MAX_EPOW_EVENTS        6
-> +
-> +/* EPOW events description */
-> +static const char * const epow_events_map[] =3D {
-> +    [EPOW_POWER_UPS]    =3D "UPS",
-> +    [EPOW_POWER_UPS_LOW]    =3D "UPS-low",
-> +    [EPOW_TEMP_HIGH_AMB]    =3D "high-ambient-temp",
-> +    [EPOW_TEMP_CRIT_AMB]    =3D "crit-ambient-temp",
-> +    [EPOW_TEMP_HIGH_INT]    =3D "high-internal-temp",
-> +    [EPOW_TEMP_CRIT_INT]    =3D "crit-internal-temp",
-> +};
-> +
-> +/* EPOW events timeout values */
-> +static int epow_timeout[MAX_EPOW_EVENTS];
-> +
-> +/*
-> + * TODO: Export various event timeout values via device tree.
-> + *  Zero timeout value for any event suggests that it needs
-> + *  immediate shutdown.
-> + */
-> +#define TIMEOUT_EPOW_POWER_UPS        450
-> +#define TIMEOUT_EPOW_TEMP_HIGH_AMB    450
-> +
-> +/*
-> + * Get various EPOW event timeouts.
-> + * TODO: For now hardcoding timeout values but they need to be
-> + * obtained via firmware device-tree.
-> + */
-> +void get_epow_timeouts(void)
-> +{
-> +    epow_timeout[EPOW_POWER_UPS] =3D TIMEOUT_EPOW_POWER_UPS;
-> +    epow_timeout[EPOW_TEMP_HIGH_AMB] =3D TIMEOUT_EPOW_TEMP_HIGH_AMB;
-> +}
-> +
-Instead of having a separate function function for initialising the array yo=
-u can use array initialisers.
-> +/* EPOW poweroff function. */
-> +static void epow_poweroff(unsigned long event)
-> +{
-> +    pr_info("Powering off system due to %s EPOW event\n",
-> +                epow_events_map[event]);
-> +    orderly_poweroff(true);
-> +}
-> +
-> +/* Start EPOW poweroff timer */
-> +static void start_epow_timer(unsigned long event, int32_t timeout)
-> +{
-> +    unsigned long flags;
-> +
-> +    spin_lock_irqsave(&epow_timer_spinlock, flags);
-> +    /* Check for already running epow poweroff timer */
-> +    if (timer_pending(&epow_timer)) {
-> +        /* Timer for same event */
-> +        if (epow_timer.data =3D=3D event) {
-> +            spin_unlock_irqrestore(&epow_timer_spinlock, flags);
-> +            return;
-> +        }
-> +
-> +        /* Timer with early poweroff timeout */
-> +        if (epow_timer.expires < (jiffies + timeout * HZ)) {
-> +            event =3D epow_timer.data;
-> +            spin_unlock_irqrestore(&epow_timer_spinlock, flags);
-> +            pr_info("Poweroff already scheduled for %s EPOW event "
-> +                    "with earlier timeout.\n",
-> +                    epow_events_map[event]);
-> +            return;
-> +        }
-> +    }
-> +
-> +    /* Start a new timer/modify existing timer with new timeout value */
-> +    epow_timer.data =3D event;
-> +    mod_timer(&epow_timer, jiffies + timeout  * HZ);
-> +    spin_unlock_irqrestore(&epow_timer_spinlock, flags);
-> +    pr_info("Scheduled system poweroff due to %s EPOW event "
-> +            "after %d seconds\n", epow_events_map[event], timeout);
-> +}
-> +
-> +/* Stop poweroff timer */
-> +static void stop_epow_timer(void)
-> +{
-> +    int rc;
-> +    unsigned long flags;
-> +
-> +    spin_lock_irqsave(&epow_timer_spinlock, flags);
-> +    rc =3D del_timer(&epow_timer);
-> +    spin_unlock_irqrestore(&epow_timer_spinlock, flags);
-> +
-> +    if (rc)
-> +        pr_info("Poweroff timer deactivated\n");
-> +}
-> +
-> +/* Get DPO status */
-> +static int get_dpo_status(int32_t *dpo_timeout)
-> +{
-> +    int rc;
-> +    __be32 opal_dpo_timeout;
-> +
-> +    rc =3D opal_get_dpo_status(&opal_dpo_timeout);
-> +    if (rc =3D=3D OPAL_WRONG_STATE) {
-> +        *dpo_timeout =3D 0;
-> +        return 0;
-> +    }
-> +
-> +    *dpo_timeout =3D be32_to_cpu(opal_dpo_timeout);
-> +    return DPO_DETECTED;
-> +}
-> +
-> +/* Process DPO event */
-> +void process_dpo(void)
-> +{
-> +    pr_info("Powering off system due to poweroff request.\n");
-> +    orderly_poweroff(true);
-> +}
-Function too small and can be combined with function opal_dpo_event.
-> +
-> +/* Get EPOW status */
-> +static int get_epow_status(void)
-> +{
-> +    int i;
-> +    bool epow_detected =3D false;
-> +
-> +    __be32 opal_epow_status[OPAL_MAX_EPOW_CLASSES];
-> +    __be32 opal_epow_classes;
-> +
-> +    opal_epow_classes =3D cpu_to_be32(OPAL_MAX_EPOW_CLASSES);
-> +    for (i =3D 0; i < OPAL_MAX_EPOW_CLASSES; i++)
-> +        opal_epow_status[i] =3D cpu_to_be32(0);
-0 is represented same in be or le. So instead use static initialiser for the=
- array.
-> +
-> +    /* Get EPOW events information from OPAL */
-> +    opal_get_epow_status(opal_epow_status, &opal_epow_classes);
-Since you get the number of classes copied to the array back from opal, you m=
-ay not need to initialise it to zero in the loop above.
-> +
-> +    /* Copy EPOW status */
-> +     memset(epow_status, 0, sizeof(epow_status[0] * OPAL_MAX_EPOW_CLASSES=
-);
-Simple memset(epow_status, 0, sizeof(epow_status)) should have the same effe=
-ct
-> +    num_epos_classes =3D be32_to_cpu(opal_epow_classes);
-> +    for (i =3D 0; i < num_epow_classes; i++) {
-> +        epow_status[i] =3D be32_to_cpu(opal_epow_status[i]);
-> +        if (epow_status[i])
-> +            epow_detected =3D true;
-> +    }
-> +
-> +    pr_info("EPOW classes supported OPAL =3D %d, Host =3D %d "
-> +            "EPOW Status =3D 0x%x, 0x%x, 0x%x\n",
-> +            num_epow_classes, OPAL_MAX_EPOW_CLASSES,
-> +            epow_status[0], epow_status[1], epow_status[2]);
-> +
-> +    if (epow_detected)
-> +        return EPOW_DETECTED;
-> +
-> +    return 0;
-> +}
-> +
-> +/* Process EPOW information */
-> +void process_epow(void)
-> +{
-> +    int i, timeout =3D 0, event =3D -1;
-> +    bool epow_normal =3D false;
-> +
-> +    /* Check for EPOW return to normal state */
-> +    for (i =3D 0; i < OPAL_MAX_EPOW_CLASSES; i++) {
-> +        if (epow_status[i])
-> +            break;
-> +    }
-This is the same check you do in func get_epow_status. Instead refactor the c=
-ode to do this check only once.
-> +
-> +    if (i =3D=3D OPAL_MAX_EPOW_CLASSES)
-> +        epow_normal =3D true;
-> +
-> +    /* Cancel any pending shutdown timer due to EPOW normal state.*/
-> +    if (epow_normal) {
-> +        stop_epow_timer();=20
-> +        return;
-> +    }
-Can merge the two if conditions above to eliminate variable epow_normal.
-> +
-> +    /* Determine EPOW events and poweroff timeouts */
-> +    if (epow_status[OPAL_EPOW_POWER] & OPAL_EPOW_POWER_UPS) {
-> +        pr_info("EPOW due to system running on UPS power\n");
-> +        event =3D EPOW_POWER_UPS;
-> +        timeout =3D epow_timeout[EPOW_POWER_UPS];
-> +    }
-> +
-> +    if (epow_status[OPAL_EPOW_POWER] & OPAL_EPOW_POWER_UPS_LOW) {
-> +        pr_info("EPOW due to system running on UPS power "
-> +                "with low battery\n
-> +        event =3D EPOW_POWER_UPS_LOW;
-> +        timeout =3D epow_timeout[EPOW_POWER_UPS_LOW];
-> +    }
-> +
-> +    if (epow_status[OPAL_EPOW_TEMP] & OPAL_EPOW_TEMP_HIGH_AMB) {
-> +        pr_info("EPOW due to high ambient temperature\n");
-> +        event =3D EPOW_TEMP_HIGH_AMB;
-> +        timeout =3D epow_timeout[EPOW_TEMP_HIGH_AMB];
-> +    }
-> +
-> +    if (epow_status[OPAL_EPOW_TEMP] & OPAL_EPOW_TEMP_CRIT_AMB) {
-> +        pr_info("EPOW due to critical ambient temperature\n");
-> +        event =3D EPOW_TEMP_CRIT_AMB;
-> +        timeout =3D epow_timeout[EPOW_TEMP_CRIT_AMB];
-> +    }
-> +
-> +    if (epow_status[OPAL_EPOW_TEMP] & OPAL_EPOW_TEMP_HIGH_INT) {
-> +        pr_info("EPOW due to high internal temperature\n");
-> +        event =3D EPOW_TEMP_HIGH_INT;
-> +        timeout =3D epow_timeout[EPOW_TEMP_HIGH_INT];
-> +    }
-> +
-> +    if (epow_status[OPAL_EPOW_TEMP] & OPAL_EPOW_TEMP_CRIT_INT) {
-> +        pr_info("EPOW due to critical internal temperature\n");
-> +        event =3D EPOW_TEMP_CRIT_INT;
-> +        timeout =3D epow_timeout[EPOW_TEMP_CRIT_INT];
-> +    }
-> +
-> +    if (event =3D=3D -1) {
-> +        pr_err("Unknown EPOW event\n");
-> +        return;
-> +    }
-> +
-> +    /* Start EPOW poweroff timer */
-> +    start_epow_timer(event, timeout);
-> +}
-> +
-> +/* Check for any existing EPOW, DPO events and process them, if existing *=
-/
-> +static void process_existing_poweroff_events(void)
-> +{
-> +    int rc;
-> +    int32_t dpo_timeout;
-> +
-> +    /* Check for any existing DPO event */
-> +    rc =3D get_dpo_status(&dpo_timeout);
-> +    if (rc =3D=3D DPO_DETECTED) {
-> +        pr_info("Existing DPO event detected\n");
-> +        process_dpo();
-> +        return;
-> +     } else
-> +        pr_info("No existing DPO event detected\n");
-> +
-> +    /* Check for any existing EPOW event */
-> +    rc =3D get_epow_status();
-> +    if (rc =3D=3D EPOW_DETECTED) {
-> +        pr_info("Existing EPOW event detected.\n");
-> +        process_epow();
-> +    } else
-> +        pr_info("No existing EPOW event detected\n");
-> +
-> +}
-> +
-> +/* Platform EPOW message received */
-> +static int opal_epow_event(struct notifier_block *nb,
-> +            unsigned long msg_type, void *msg)
-> +{
-> +    pr_info("EPOW event received\n");
-> +
-> +    /* Get EPOW event details */
-> +    get_epow_status();
-> +
-> +    /* Process EPOW event information */
-> +    process_epow();
-> +
-> +    return 0;
-> +}
-> +
-> +
-> +/* Platform DPO message received */
-> +static int opal_dpo_event(struct notifier_block *nb,
-> +                unsigned long msg_type, void *msg)
-> +{
-> +    pr_info("DPO event received.\n");
-> +    process_dpo();
-> +
-> +    return 0;
-> +}
-> +
-> +
-> +/* OPAL EPOW event notifier block */
-> +static struct notifier_block opal_epow_nb =3D {
-> +    .notifier_call  =3D opal_epow_event,
-> +    .next           =3D NULL,
-> +    .priority       =3D 0,
-> +};
-> +
-> +/* OPAL DPO event notifier block */
-> +static struct notifier_block opal_dpo_nb =3D {
-> +    .notifier_call  =3D opal_dpo_event,
-> +    .next           =3D NULL,
-> +    .priority       =3D 0,
-> +};
-> +
-> +/* Poweroff events init */
-> +static int opal_poweroff_events_init(void)
-> +{
-> +    int ret;
-> +
-> +    /* Initialize poweroff timer */
-> +    init_timer(&epow_timer);
-> +    epow_timer.function =3D epow_poweroff;
-> +
-> +    /* Get EPOW event timeout values */
-> +    get_epow_timeouts();
-> +
-> +    /* Check for any existing EPOW or DPO events. */
-> +    process_existing_poweroff_events();
-> +
-> +    /* Register EPOW event notifier */
-> +    ret =3D opal_message_notifier_register(OPAL_MSG_EPOW, &opal_epow_nb);=
-
-> +    if (ret) {
-> +        pr_err("EPOW event notifier registration failed\n");
-> +        return ret;
-> +    }
-Timing issue. You may miss some events that occur between process existing p=
-ower off event and registering message notifies. Instead first register your=
- notifier  and then process any existing  events.
-> +
-> +    /* Register DPO event notifier */
-> +    ret =3D opal_message_notifier_register(OPAL_MSG_DPO, &opal_dpo_nb);
-> +    if (ret) {
-> +        pr_err("DPO event notifier registration failed\n");
-> +        opal_notifier_unregister(&opal_epow_nb);
-> +        return ret;
-> +    }
-> +
-> +
-> +    pr_info("OPAL poweroff events support initialized\n");
-> +
-> +    return 0;
-> +}
-> +
-> +machine_subsys_initcall(powernv, opal_poweroff_events_init);
-> diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc=
-/platforms/powernv/opal-wrappers.S
-> index a7ade94..5d3c8e3 100644
-> --- a/arch/powerpc/platforms/powernv/opal-wrappers.S
-> +++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
-> @@ -249,6 +249,7 @@ OPAL_CALL(opal_pci_reinit,            OPAL_PCI_REINIT)=
-;
-> OPAL_CALL(opal_pci_mask_pe_error,        OPAL_PCI_MASK_PE_ERROR);
-> OPAL_CALL(opal_set_slot_led_status,        OPAL_SET_SLOT_LED_STATUS);
-> OPAL_CALL(opal_get_epow_status,            OPAL_GET_EPOW_STATUS);
-> +OPAL_CALL(opal_get_dpo_status,            OPAL_GET_DPO_STATUS);
-> OPAL_CALL(opal_set_system_attention_led,    OPAL_SET_SYSTEM_ATTENTION_LED)=
-;
-> OPAL_CALL(opal_pci_next_error,            OPAL_PCI_NEXT_ERROR);
-> OPAL_CALL(opal_pci_poll,            OPAL_PCI_POLL);
-> --=20
-> 1.9.3
->=20
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
-
---Apple-Mail-6D6C0AC9-C6E6-43C5-9F75-3CCE3993BD6C
-Content-Type: text/html;
-	charset=utf-8
-Content-Transfer-Encoding: quoted-printable
-
-<html><head><meta http-equiv=3D"content-type" content=3D"text/html; charset=3D=
-utf-8"></head><body dir=3D"auto"><div><span></span></div><div><div><br></div=
-><div><br>On 30-Apr-2015, at 11:37, Vipin K Parashar &lt;<a href=3D"mailto:v=
-ipin@linux.vnet.ibm.com">vipin@linux.vnet.ibm.com</a>&gt; wrote:<br><br></di=
-v><blockquote type=3D"cite"><div><span>This patch adds support for FSP EPOW (=
-Early Power Off Warning) and</span><br><span>DPO (Delayed Power Off) events s=
-upport for PowerNV platform. &nbsp;EPOW events</span><br><span>are generated=
- by SPCN/FSP due to various critical system conditions that</span><br><span>=
-need system shutdown. &nbsp;Few examples of these conditions are high ambien=
-t</span><br><span>temperature or system running on UPS power with low UPS ba=
-ttery. DPO event</span><br><span>is generated in response to admin initiated=
- system shutdown request.</span><br><span> &nbsp; &nbsp;This patch enables h=
-ost kernel on PowerNV platform to handle OPAL</span><br><span>notifications f=
-or these events and initiate system poweroff. Since EPOW</span><br><span>not=
-ifications are sent in advance of impending shutdown event and thus this</sp=
-an><br><span>patch also adds functionality to wait for EPOW condition to ret=
-urn to</span><br><span>normal. &nbsp;If EPOW condition doesn't return to nor=
-mal in estimated time it</span><br><span>proceeds with graceful system shutd=
-own. System admin can also add host</span><br><span>userspace scripts to per=
-form any specific actions like graceful guest</span><br><span>shutdown upon s=
-ystem poweroff.</span><br><span></span><br><span>Signed-off-by: Vipin K Para=
-shar &lt;<a href=3D"mailto:vipin@linux.vnet.ibm.com">vipin@linux.vnet.ibm.co=
-m</a>&gt;</span><br><span>---</span><br><span> arch/powerpc/include/asm/opal=
--api.h &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;| &nbsp;30 ++</span><br><span> arch/powerpc/include/asm=
-/opal.h &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| &nbsp;&nbsp;3 +-</span><br><=
-span> arch/powerpc/platforms/powernv/Makefile &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;| &nbsp;&nbsp;1 +</span><br><span> .../p=
-latforms/powernv/opal-poweroff-events.c &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
-| 358 +++++++++++++++++++++</span><br><span> arch/powerpc/platforms/powernv/=
-opal-wrappers.S &nbsp;&nbsp;&nbsp;&nbsp;| &nbsp;&nbsp;1 +</span><br><span> 5=
- files changed, 392 insertions(+), 1 deletion(-)</span><br><span> create mod=
-e 100644 arch/powerpc/platforms/powernv/opal-poweroff-events.c</span><br><sp=
-an></span><br><span>diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/=
-powerpc/include/asm/opal-api.h</span><br><span>index 0321a90..03b3cef 100644=
-</span><br><span>--- a/arch/powerpc/include/asm/opal-api.h</span><br><span>+=
-++ b/arch/powerpc/include/asm/opal-api.h</span><br><span>@@ -730,6 +730,36 @=
-@ struct opal_i2c_request {</span><br><span>  &nbsp; &nbsp;__be64 buffer_ra;=
- &nbsp; &nbsp; &nbsp; &nbsp;/* Buffer real address */</span><br><span> };</s=
-pan><br><span></span><br><span>+/*</span><br><span>+ * EPOW status sharing (=
-OPAL and the host)</span><br><span>+ *</span><br><span>+ * The host will pas=
-s on OPAL, a buffer of length OPAL_EPOW_MAX_CLASSES</span><br><span>+ * to f=
-etch system wide EPOW status. Each element in the returned buffer</span><br>=
-<span>+ * will contain bitwise EPOW status for each EPOW sub class.</span><b=
-r><span>+ */</span><br><span>+</span><br><span>+/* EPOW types */</span><br><=
-span>+enum OpalEpow {</span><br><span>+ &nbsp; &nbsp;OPAL_EPOW_POWER &nbsp;&=
-nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=3D 0, &nbsp;&nbsp;&nbsp;/* Power E=
-POW */</span><br><span>+ &nbsp; &nbsp;OPAL_EPOW_TEMP &nbsp;&nbsp;&nbsp;&nbsp=
-;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=3D 1, &nbsp;&nbsp;&nbsp;/* Temperature EPOW *=
-/</span><br><span>+ &nbsp; &nbsp;OPAL_EPOW_COOLING &nbsp;&nbsp;&nbsp;&nbsp;&=
-nbsp;&nbsp;=3D 2, &nbsp;&nbsp;&nbsp;/* Cooling EPOW */</span><br><span>+ &nb=
-sp; &nbsp;OPAL_MAX_EPOW_CLASSES &nbsp;&nbsp;=3D 3, &nbsp;&nbsp;&nbsp;/* Max E=
-POW categories */</span><br><span>+};</span><br><span>+</span><br><span>+/* P=
-ower EPOW events */</span><br><span>+enum OpalEpowPower {</span><br><span>+ &=
-nbsp; &nbsp;OPAL_EPOW_POWER_UPS &nbsp;&nbsp;&nbsp;&nbsp;=3D 0x1, /* System o=
-n UPS power */</span><br><span>+ &nbsp; &nbsp;OPAL_EPOW_POWER_UPS_LOW =3D 0x=
-2, /* System on UPS power with low battery*/</span><br><span>+};</span><br><=
-span>+</span><br><span>+/* Temperature EPOW events */</span><br><span>+enum O=
-palEpowTemp {</span><br><span>+ &nbsp; &nbsp;OPAL_EPOW_TEMP_HIGH_AMB =3D 0x1=
-, /* High ambient temperature */</span><br><span>+ &nbsp; &nbsp;OPAL_EPOW_TE=
-MP_CRIT_AMB =3D 0x2, /* Critical ambient temperature */</span><br><span>+ &n=
-bsp; &nbsp;OPAL_EPOW_TEMP_HIGH_INT =3D 0x4, /* High internal temperature */<=
-/span><br><span>+ &nbsp; &nbsp;OPAL_EPOW_TEMP_CRIT_INT =3D 0x8, /* Critical i=
-nternal temperature */</span><br><span>+};</span><br><span>+</span><br><span=
-> #endif /* __ASSEMBLY__ */</span><br><span></span><br><span> #endif /* __OP=
-AL_API_H */</span><br><span>diff --git a/arch/powerpc/include/asm/opal.h b/a=
-rch/powerpc/include/asm/opal.h</span><br><span>index 042af1a..0777864 100644=
-</span><br><span>--- a/arch/powerpc/include/asm/opal.h</span><br><span>+++ b=
-/arch/powerpc/include/asm/opal.h</span><br><span>@@ -141,7 +141,6 @@ int64_t=
- opal_pci_fence_phb(uint64_t phb_id);</span><br><span> int64_t opal_pci_rein=
-it(uint64_t phb_id, uint64_t reinit_scope, uint64_t data);</span><br><span> i=
-nt64_t opal_pci_mask_pe_error(uint64_t phb_id, uint16_t pe_number, uint8_t e=
-rror_type, uint8_t mask_action);</span><br><span> int64_t opal_set_slot_led_=
-status(uint64_t phb_id, uint64_t slot_id, uint8_t led_type, uint8_t led_acti=
-on);</span><br><span>-int64_t opal_get_epow_status(__be64 *status);</span><b=
-r><span> int64_t opal_set_system_attention_led(uint8_t led_action);</span><b=
-r><span> int64_t opal_pci_next_error(uint64_t phb_id, __be64 *first_frozen_p=
-e,</span><br><span>  &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;&nbsp;&=
-nbsp;__be16 *pci_error_type, __be16 *severity);</span><br><span>@@ -200,6 +1=
-99,8 @@ int64_t opal_flash_write(uint64_t id, uint64_t offset, uint64_t buf,=
-</span><br><span>  &nbsp; &nbsp; &nbsp; &nbsp;uint64_t size, uint64_t token)=
-;</span><br><span> int64_t opal_flash_erase(uint64_t id, uint64_t offset, ui=
-nt64_t size,</span><br><span>  &nbsp; &nbsp; &nbsp; &nbsp;uint64_t token);</=
-span><br><span>+int32_t opal_get_epow_status(__be32 *status, __be32 *num_cla=
-sses);</span><br><span>+int32_t opal_get_dpo_status(__be32 *timeout);</span>=
-<br><span></span><br><span> /* Internal functions */</span><br><span> extern=
- int early_init_dt_scan_opal(unsigned long node, const char *uname,</span><b=
-r><span>diff --git a/arch/powerpc/platforms/powernv/Makefile b/arch/powerpc/=
-platforms/powernv/Makefile</span><br><span>index 33e44f3..b817bdb 100644</sp=
-an><br><span>--- a/arch/powerpc/platforms/powernv/Makefile</span><br><span>+=
-++ b/arch/powerpc/platforms/powernv/Makefile</span><br><span>@@ -2,6 +2,7 @@=
- obj-y &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;+=3D setup.o opal-wrappers.o=
- opal.o opal-async.o</span><br><span> obj-y &nbsp; &nbsp; &nbsp; &nbsp; &nbs=
-p; &nbsp;+=3D opal-rtc.o opal-nvram.o opal-lpc.o opal-flash.o</span><br><spa=
-n> obj-y &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;+=3D rng.o opal-elog.o opa=
-l-dump.o opal-sysparam.o opal-sensor.o</span><br><span> obj-y &nbsp; &nbsp; &=
-nbsp; &nbsp; &nbsp; &nbsp;+=3D opal-msglog.o opal-hmi.o opal-power.o</span><=
-br><span>+obj-y &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;+=3D opal-poweroff-=
-events.o</span><br><span></span><br><span> obj-$(CONFIG_SMP) &nbsp; &nbsp;+=3D=
- smp.o subcore.o subcore-asm.o</span><br><span> obj-$(CONFIG_PCI) &nbsp; &nb=
-sp;+=3D pci.o pci-p5ioc2.o pci-ioda.o</span><br><span>diff --git a/arch/powe=
-rpc/platforms/powernv/opal-poweroff-events.c b/arch/powerpc/platforms/powern=
-v/opal-poweroff-events.c</span><br><span>new file mode 100644</span><br><spa=
-n>index 0000000..9b169e2</span><br><span>--- /dev/null</span><br><span>+++ b=
-/arch/powerpc/platforms/powernv/opal-poweroff-events.c</span><br><span>@@ -0=
-,0 +1,358 @@</span><br></div></blockquote>Instead of creating a new file can=
- you merge this functionality with existing code in opal-power.c. It seems t=
-o be doing work similar to what you are doing in this code.<br><blockquote t=
-ype=3D"cite"><div><span>+/*</span><br><span>+ * PowerNV poweroff events supp=
-ort</span><br><span>+ *</span><br><span>+ * Copyright 2015 IBM Corp.</span><=
-br><span>+ *</span><br><span>+ * This program is free software; you can redi=
-stribute it and/or</span><br><span>+ * modify it under the terms of the GNU G=
-eneral Public License</span><br><span>+ * as published by the Free Software =
-Foundation; either version</span><br><span>+ * 2 of the License, or (at your=
- option) any later version.</span><br><span>+ */</span><br><span>+</span><br=
-><span>+#define pr_fmt(fmt) &nbsp; &nbsp;"POWEROFF_EVENT: " &nbsp;&nbsp;&nbs=
-p;fmt</span><br><span>+</span><br><span>+#include &lt;linux/kernel.h&gt;</sp=
-an><br><span>+#include &lt;linux/spinlock.h&gt;</span><br><span>+#include &l=
-t;linux/timer.h&gt;</span><br><span>+#include &lt;linux/reboot.h&gt;</span><=
-br><span>+#include &lt;asm/opal.h&gt;</span><br><span>+#include &lt;asm/mach=
-dep.h&gt;</span><br><span>+</span><br><span>+/* System EPOW status */</span>=
-<br><span>+u32 epow_status[OPAL_MAX_EPOW_CLASSES];</span><br><span>+int num_=
-epow_classes;</span><br><span>+</span><br><span>+/* EPOW event timer and cor=
-responding locks */</span><br><span>+static struct timer_list epow_timer;</s=
-pan><br><span>+static DEFINE_SPINLOCK(epow_timer_spinlock);</span><br><span>=
-+</span><br><span>+/* EPOW, DPO event status values */</span><br><span>+#def=
-ine &nbsp; &nbsp;DPO_DETECTED &nbsp; &nbsp;1</span><br><span>+#define &nbsp;=
- &nbsp;EPOW_DETECTED &nbsp; &nbsp;1</span><br></div></blockquote>Instead of m=
-acros for this can you simply return a bool from corresponding functions.<br=
-><blockquote type=3D"cite"><div><span>+</span><br><span>+/* EPOW events supp=
-orted */</span><br><span>+#define EPOW_POWER_UPS &nbsp;&nbsp;&nbsp;&nbsp;&nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;0</span><br><span>+#define EPOW_POWER_UPS_LOW &nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;1</span><br><span>+#define EPOW_TEMP_HIGH_AMB &nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;2</span><br><span>+#define EPOW_TEMP_CRIT_AMB &nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;3</span><br><span>+#define EPOW_TEMP_HIGH_INT &nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;4</span><br><span>+#define EPOW_TEMP_CRIT_INT &nb=
-sp;&nbsp;&nbsp;&nbsp;&nbsp;5</span><br><span>+#define MAX_EPOW_EVENTS &nbsp;=
- &nbsp; &nbsp; &nbsp;6</span><br><span>+</span><br><span>+/* EPOW events des=
-cription */</span><br><span>+static const char * const epow_events_map[] =3D=
- {</span><br><span>+ &nbsp; &nbsp;[EPOW_POWER_UPS] &nbsp; &nbsp;=3D "UPS",</=
-span><br><span>+ &nbsp; &nbsp;[EPOW_POWER_UPS_LOW] &nbsp; &nbsp;=3D "UPS-low=
-",</span><br><span>+ &nbsp; &nbsp;[EPOW_TEMP_HIGH_AMB] &nbsp; &nbsp;=3D "hig=
-h-ambient-temp",</span><br><span>+ &nbsp; &nbsp;[EPOW_TEMP_CRIT_AMB] &nbsp; &=
-nbsp;=3D "crit-ambient-temp",</span><br><span>+ &nbsp; &nbsp;[EPOW_TEMP_HIGH=
-_INT] &nbsp; &nbsp;=3D "high-internal-temp",</span><br><span>+ &nbsp; &nbsp;=
-[EPOW_TEMP_CRIT_INT] &nbsp; &nbsp;=3D "crit-internal-temp",</span><br><span>=
-+};</span><br><span>+</span><br><span>+/* EPOW events timeout values */</spa=
-n><br><span>+static int epow_timeout[MAX_EPOW_EVENTS];</span><br><span>+</sp=
-an><br><span>+/*</span><br><span>+ * TODO: Export various event timeout valu=
-es via device tree.</span><br><span>+ * &nbsp;Zero timeout value for any eve=
-nt suggests that it needs</span><br><span>+ * &nbsp;immediate shutdown.</spa=
-n><br><span>+ */</span><br><span>+#define TIMEOUT_EPOW_POWER_UPS &nbsp; &nbs=
-p; &nbsp; &nbsp;450</span><br><span>+#define TIMEOUT_EPOW_TEMP_HIGH_AMB &nbs=
-p; &nbsp;450</span><br><span>+</span><br><span>+/*</span><br><span>+ * Get v=
-arious EPOW event timeouts.</span><br><span>+ * TODO: For now hardcoding tim=
-eout values but they need to be</span><br><span>+ * obtained via firmware de=
-vice-tree.</span><br><span>+ */</span><br><span>+void get_epow_timeouts(void=
-)</span><br><span>+{</span><br><span>+ &nbsp; &nbsp;epow_timeout[EPOW_POWER_=
-UPS] =3D TIMEOUT_EPOW_POWER_UPS;</span><br><span>+ &nbsp; &nbsp;epow_timeout=
-[EPOW_TEMP_HIGH_AMB] =3D TIMEOUT_EPOW_TEMP_HIGH_AMB;</span><br><span>+}</spa=
-n><br><span>+</span><br></div></blockquote>Instead of having a separate func=
-tion function for initialising the array you can use array initialisers.<br>=
-<blockquote type=3D"cite"><div><span>+/* EPOW poweroff function. */</span><b=
-r><span>+static void epow_poweroff(unsigned long event)</span><br><span>+{</=
-span><br><span>+ &nbsp; &nbsp;pr_info("Powering off system due to %s EPOW ev=
-ent\n",</span><br><span>+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &=
-nbsp;epow_events_map[event]);</span><br><span>+ &nbsp; &nbsp;orderly_powerof=
-f(true);</span><br><span>+}</span><br><span>+</span><br><span>+/* Start EPOW=
- poweroff timer */</span><br><span>+static void start_epow_timer(unsigned lo=
-ng event, int32_t timeout)</span><br><span>+{</span><br><span>+ &nbsp; &nbsp=
-;unsigned long flags;</span><br><span>+</span><br><span>+ &nbsp; &nbsp;spin_=
-lock_irqsave(&amp;epow_timer_spinlock, flags);</span><br><span>+ &nbsp; &nbs=
-p;/* Check for already running epow poweroff timer */</span><br><span>+ &nbs=
-p; &nbsp;if (timer_pending(&amp;epow_timer)) {</span><br><span>+ &nbsp; &nbs=
-p; &nbsp; &nbsp;/* Timer for same event */</span><br><span>+ &nbsp; &nbsp; &=
-nbsp; &nbsp;if (epow_timer.data =3D=3D event) {</span><br><span>+ &nbsp; &nb=
-sp; &nbsp; &nbsp; &nbsp; &nbsp;spin_unlock_irqrestore(&amp;epow_timer_spinlo=
-ck, flags);</span><br><span>+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;retur=
-n;</span><br><span>+ &nbsp; &nbsp; &nbsp; &nbsp;}</span><br><span>+</span><b=
-r><span>+ &nbsp; &nbsp; &nbsp; &nbsp;/* Timer with early poweroff timeout */=
-</span><br><span>+ &nbsp; &nbsp; &nbsp; &nbsp;if (epow_timer.expires &lt; (j=
-iffies + timeout * HZ)) {</span><br><span>+ &nbsp; &nbsp; &nbsp; &nbsp; &nbs=
-p; &nbsp;event =3D epow_timer.data;</span><br><span>+ &nbsp; &nbsp; &nbsp; &=
-nbsp; &nbsp; &nbsp;spin_unlock_irqrestore(&amp;epow_timer_spinlock, flags);<=
-/span><br><span>+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;pr_info("Poweroff=
- already scheduled for %s EPOW event "</span><br><span>+ &nbsp; &nbsp; &nbsp=
-; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;"with earlier timeout.\n",=
-</span><br><span>+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &=
-nbsp; &nbsp;epow_events_map[event]);</span><br><span>+ &nbsp; &nbsp; &nbsp; &=
-nbsp; &nbsp; &nbsp;return;</span><br><span>+ &nbsp; &nbsp; &nbsp; &nbsp;}</s=
-pan><br><span>+ &nbsp; &nbsp;}</span><br><span>+</span><br><span>+ &nbsp; &n=
-bsp;/* Start a new timer/modify existing timer with new timeout value */</sp=
-an><br><span>+ &nbsp; &nbsp;epow_timer.data =3D event;</span><br><span>+ &nb=
-sp; &nbsp;mod_timer(&amp;epow_timer, jiffies + timeout &nbsp;* HZ);</span><b=
-r><span>+ &nbsp; &nbsp;spin_unlock_irqrestore(&amp;epow_timer_spinlock, flag=
-s);</span><br><span>+ &nbsp; &nbsp;pr_info("Scheduled system poweroff due to=
- %s EPOW event "</span><br><span>+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;=
-"after %d seconds\n", epow_events_map[event], timeout);</span><br><span>+}</=
-span><br><span>+</span><br><span>+/* Stop poweroff timer */</span><br><span>=
-+static void stop_epow_timer(void)</span><br><span>+{</span><br><span>+ &nbs=
-p; &nbsp;int rc;</span><br><span>+ &nbsp; &nbsp;unsigned long flags;</span><=
-br><span>+</span><br><span>+ &nbsp; &nbsp;spin_lock_irqsave(&amp;epow_timer_=
-spinlock, flags);</span><br><span>+ &nbsp; &nbsp;rc =3D del_timer(&amp;epow_=
-timer);</span><br><span>+ &nbsp; &nbsp;spin_unlock_irqrestore(&amp;epow_time=
-r_spinlock, flags);</span><br><span>+</span><br><span>+ &nbsp; &nbsp;if (rc)=
-</span><br><span>+ &nbsp; &nbsp; &nbsp; &nbsp;pr_info("Poweroff timer deacti=
-vated\n");</span><br><span>+}</span><br><span>+</span><br><span>+/* Get DPO s=
-tatus */</span><br><span>+static int get_dpo_status(int32_t *dpo_timeout)</s=
-pan><br><span>+{</span><br><span>+ &nbsp; &nbsp;int rc;</span><br><span>+ &n=
-bsp; &nbsp;__be32 opal_dpo_timeout;</span><br><span>+</span><br><span>+ &nbs=
-p; &nbsp;rc =3D opal_get_dpo_status(&amp;opal_dpo_timeout);</span><br><span>=
-+ &nbsp; &nbsp;if (rc =3D=3D OPAL_WRONG_STATE) {</span><br><span>+ &nbsp; &n=
-bsp; &nbsp; &nbsp;*dpo_timeout =3D 0;</span><br><span>+ &nbsp; &nbsp; &nbsp;=
- &nbsp;return 0;</span><br><span>+ &nbsp; &nbsp;}</span><br><span>+</span><b=
-r><span>+ &nbsp; &nbsp;*dpo_timeout =3D be32_to_cpu(opal_dpo_timeout);</span=
-><br><span>+ &nbsp; &nbsp;return DPO_DETECTED;</span><br><span>+}</span><br>=
-<span>+</span><br><span>+/* Process DPO event */</span><br><span>+void proce=
-ss_dpo(void)</span><br><span>+{</span><br><span>+ &nbsp; &nbsp;pr_info("Powe=
-ring off system due to poweroff request.\n");</span><br><span>+ &nbsp; &nbsp=
-;orderly_poweroff(true);</span><br><span>+}</span><br></div></blockquote>Fun=
-ction too small and can be combined with function opal_dpo_event.<br><blockq=
-uote type=3D"cite"><div><span>+</span><br><span>+/* Get EPOW status */</span=
-><br><span>+static int get_epow_status(void)</span><br><span>+{</span><br><s=
-pan>+ &nbsp; &nbsp;int i;</span><br><span>+ &nbsp; &nbsp;bool epow_detected =3D=
- false;</span><br><span>+</span><br><span>+ &nbsp; &nbsp;__be32 opal_epow_st=
-atus[OPAL_MAX_EPOW_CLASSES];</span><br><span>+ &nbsp; &nbsp;__be32 opal_epow=
-_classes;</span><br><span>+</span><br><span>+ &nbsp; &nbsp;opal_epow_classes=
- =3D cpu_to_be32(OPAL_MAX_EPOW_CLASSES);</span><br><span>+ &nbsp; &nbsp;for (=
-i =3D 0; i &lt; OPAL_MAX_EPOW_CLASSES; i++)</span><br><span>+ &nbsp; &nbsp; &=
-nbsp; &nbsp;opal_epow_status[i] =3D cpu_to_be32(0);</span><br></div></blockq=
-uote>0 is represented same in be or le. So instead use static initialiser fo=
-r the array.<br><blockquote type=3D"cite"><div><span>+</span><br><span>+ &nb=
-sp; &nbsp;/* Get EPOW events information from OPAL */</span><br><span>+ &nbs=
-p; &nbsp;opal_get_epow_status(opal_epow_status, &amp;opal_epow_classes);</sp=
-an><br></div></blockquote>Since you get the number of classes copied to the a=
-rray back from opal, you may not need to initialise it to zero in the loop a=
-bove.<br><blockquote type=3D"cite"><div><span>+</span><br><span>+ &nbsp; &nb=
-sp;/* Copy EPOW status */</span><br><span>+ &nbsp; &nbsp;</span><font color=3D=
-"#000000"><span style=3D"background-color: rgba(255, 255, 255, 0);">&nbsp;me=
-mset(epow_status, 0, sizeof(epow_status[0] * OPAL_MAX_EPOW_CLASSES);</span><=
-/font></div></blockquote>Simple&nbsp;<span style=3D"background-color: rgba(2=
-55, 255, 255, 0);">memset(epow_status, 0, sizeof(epow_status)) should have t=
-he same effect</span><br><blockquote type=3D"cite"><div><span>+ &nbsp; &nbsp=
-;num_epos_classes =3D be32_to_cpu(opal_epow_classes);</span><br><span>+ &nbs=
-p; &nbsp;for (i =3D 0; i &lt; num_epow_classes; i++) {</span><br><span>+ &nb=
-sp; &nbsp; &nbsp; &nbsp;epow_status[i] =3D be32_to_cpu(opal_epow_status[i]);=
-</span><br><span>+ &nbsp; &nbsp; &nbsp; &nbsp;if (epow_status[i])</span><br>=
-<span>+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;epow_detected =3D true;</sp=
-an><br><span>+ &nbsp; &nbsp;}</span><br><span>+</span><br><span>+ &nbsp; &nb=
-sp;pr_info("EPOW classes supported OPAL =3D %d, Host =3D %d "</span><br><spa=
-n>+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;"EPOW Status =3D 0x%x, 0x%x, 0x=
-%x\n",</span><br><span>+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;num_epow_c=
-lasses, OPAL_MAX_EPOW_CLASSES,</span><br><span>+ &nbsp; &nbsp; &nbsp; &nbsp;=
- &nbsp; &nbsp;epow_status[0], epow_status[1], epow_status[2]);</span><br><sp=
-an>+</span><br><span>+ &nbsp; &nbsp;if (epow_detected)</span><br><span>+ &nb=
-sp; &nbsp; &nbsp; &nbsp;return EPOW_DETECTED;</span><br><span>+</span><br><s=
-pan>+ &nbsp; &nbsp;return 0;</span><br><span>+}</span><br><span>+</span><br>=
-<span>+/* Process EPOW information */</span><br><span>+void process_epow(voi=
-d)</span><br><span>+{</span><br><span>+ &nbsp; &nbsp;int i, timeout =3D 0, e=
-vent =3D -1;</span><br><span>+ &nbsp; &nbsp;bool epow_normal =3D false;</spa=
-n><br><span>+</span><br><span>+ &nbsp; &nbsp;/* Check for EPOW return to nor=
-mal state */</span><br><span>+ &nbsp; &nbsp;for (i =3D 0; i &lt; OPAL_MAX_EP=
-OW_CLASSES; i++) {</span><br><span>+ &nbsp; &nbsp; &nbsp; &nbsp;if (epow_sta=
-tus[i])</span><br><span>+ &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;break;</s=
-pan><br><span>+ &nbsp; &nbsp;}</span><br></div></blockquote>This is the same=
- check you do in func get_epow_status. Instead refactor the code to do this c=
-heck only once.<br><blockquote type=3D"cite"><div><span>+</span><br><span>+ &=
-nbsp; &nbsp;if (i =3D=3D OPAL_MAX_EPOW_CLASSES)</span><br><span>+ &nbsp; &nb=
-sp; &nbsp; &nbsp;epow_normal =3D true;</span><br><span>+</span><br><span>+ &=
-nbsp; &nbsp;/* Cancel any pending shutdown timer due to EPOW normal state.*/=
-</span><br><span>+ &nbsp; &nbsp;if (epow_normal) {</span><br><span>+ &nbsp; &=
-nbsp; &nbsp; &nbsp;stop_epow_timer();&nbsp;</span><br><span>+ &nbsp; &nbsp; &=
-nbsp; &nbsp;return;</span><br><span>+ &nbsp; &nbsp;}</span><br></div></block=
-quote>Can merge the two if conditions above to eliminate variable epow_norma=
-l.<br><blockquote type=3D"cite"><div><span>+</span><br><span>+ &nbsp; &nbsp;=
-/* Determine EPOW events and poweroff timeouts */</span><br><span>+ &nbsp; &=
-nbsp;if (epow_status[OPAL_EPOW_POWER] &amp; OPAL_EPOW_POWER_UPS) {</span><br=
-><span>+ &nbsp; &nbsp; &nbsp; &nbsp;pr_info("EPOW due to system running on U=
-PS power\n");</span><br><span>+ &nbsp; &nbsp; &nbsp; &nbsp;event =3D EPOW_PO=
-WER_UPS;</span><br><span>+ &nbsp; &nbsp; &nbsp; &nbsp;timeout =3D epow_timeo=
-ut[EPOW_POWER_UPS];</span><br><span>+ &nbsp; &nbsp;}</span><br><span>+</span=
-><br><span>+ &nbsp; &nbsp;if (epow_status[OPAL_EPOW_POWER] &amp; OPAL_EPOW_P=
-OWER_UPS_LOW) {</span><br><span>+ &nbsp; &nbsp; &nbsp; &nbsp;pr_info("EPOW d=
-ue to system running on UPS power "</span><br><span>+ &nbsp; &nbsp; &nbsp; &=
-nbsp; &nbsp; &nbsp; &nbsp; &nbsp;"with low battery\n</span><br><span>+ &nbsp=
-; &nbsp; &nbsp; &nbsp;event =3D EPOW_POWER_UPS_LOW;</span><br><span>+ &nbsp;=
- &nbsp; &nbsp; &nbsp;timeout =3D epow_timeout[EPOW_POWER_UPS_LOW];</span><br=
-><span>+ &nbsp; &nbsp;}</span><br><span>+</span><br><span>+ &nbsp; &nbsp;if (=
-epow_status[OPAL_EPOW_TEMP] &amp; OPAL_EPOW_TEMP_HIGH_AMB) {</span><br><span=
->+ &nbsp; &nbsp; &nbsp; &nbsp;pr_info("EPOW due to high ambient temperature\=
-n");</span><br><span>+ &nbsp; &nbsp; &nbsp; &nbsp;event =3D EPOW_TEMP_HIGH_A=
-MB;</span><br><span>+ &nbsp; &nbsp; &nbsp; &nbsp;timeout =3D epow_timeout[EP=
-OW_TEMP_HIGH_AMB];</span><br><span>+ &nbsp; &nbsp;}</span><br><span>+</span>=
-<br><span>+ &nbsp; &nbsp;if (epow_status[OPAL_EPOW_TEMP] &amp; OPAL_EPOW_TEM=
-P_CRIT_AMB) {</span><br><span>+ &nbsp; &nbsp; &nbsp; &nbsp;pr_info("EPOW due=
- to critical ambient temperature\n");</span><br><span>+ &nbsp; &nbsp; &nbsp;=
- &nbsp;event =3D EPOW_TEMP_CRIT_AMB;</span><br><span>+ &nbsp; &nbsp; &nbsp; &=
-nbsp;timeout =3D epow_timeout[EPOW_TEMP_CRIT_AMB];</span><br><span>+ &nbsp; &=
-nbsp;}</span><br><span>+</span><br><span>+ &nbsp; &nbsp;if (epow_status[OPAL=
-_EPOW_TEMP] &amp; OPAL_EPOW_TEMP_HIGH_INT) {</span><br><span>+ &nbsp; &nbsp;=
- &nbsp; &nbsp;pr_info("EPOW due to high internal temperature\n");</span><br>=
-<span>+ &nbsp; &nbsp; &nbsp; &nbsp;event =3D EPOW_TEMP_HIGH_INT;</span><br><=
-span>+ &nbsp; &nbsp; &nbsp; &nbsp;timeout =3D epow_timeout[EPOW_TEMP_HIGH_IN=
-T];</span><br><span>+ &nbsp; &nbsp;}</span><br><span>+</span><br><span>+ &nb=
-sp; &nbsp;if (epow_status[OPAL_EPOW_TEMP] &amp; OPAL_EPOW_TEMP_CRIT_INT) {</=
-span><br><span>+ &nbsp; &nbsp; &nbsp; &nbsp;pr_info("EPOW due to critical in=
-ternal temperature\n");</span><br><span>+ &nbsp; &nbsp; &nbsp; &nbsp;event =3D=
- EPOW_TEMP_CRIT_INT;</span><br><span>+ &nbsp; &nbsp; &nbsp; &nbsp;timeout =3D=
- epow_timeout[EPOW_TEMP_CRIT_INT];</span><br><span>+ &nbsp; &nbsp;}</span><b=
-r><span>+</span><br><span>+ &nbsp; &nbsp;if (event =3D=3D -1) {</span><br><s=
-pan>+ &nbsp; &nbsp; &nbsp; &nbsp;pr_err("Unknown EPOW event\n");</span><br><=
-span>+ &nbsp; &nbsp; &nbsp; &nbsp;return;</span><br><span>+ &nbsp; &nbsp;}</=
-span><br><span>+</span><br><span>+ &nbsp; &nbsp;/* Start EPOW poweroff timer=
- */</span><br><span>+ &nbsp; &nbsp;start_epow_timer(event, timeout);</span><=
-br><span>+}</span><br><span>+</span><br><span>+/* Check for any existing EPO=
-W, DPO events and process them, if existing */</span><br><span>+static void p=
-rocess_existing_poweroff_events(void)</span><br><span>+{</span><br><span>+ &=
-nbsp; &nbsp;int rc;</span><br><span>+ &nbsp; &nbsp;int32_t dpo_timeout;</spa=
-n><br><span>+</span><br><span>+ &nbsp; &nbsp;/* Check for any existing DPO e=
-vent */</span><br><span>+ &nbsp; &nbsp;rc =3D get_dpo_status(&amp;dpo_timeou=
-t);</span><br><span>+ &nbsp; &nbsp;if (rc =3D=3D DPO_DETECTED) {</span><br><=
-span>+ &nbsp; &nbsp; &nbsp; &nbsp;pr_info("Existing DPO event detected\n");<=
-/span><br><span>+ &nbsp; &nbsp; &nbsp; &nbsp;process_dpo();</span><br><span>=
-+ &nbsp; &nbsp; &nbsp; &nbsp;return;</span></div></blockquote><blockquote ty=
-pe=3D"cite"><div><span>+ &nbsp; &nbsp; } else</span><br><span>+ &nbsp; &nbsp=
-; &nbsp; &nbsp;pr_info("No existing DPO event detected\n");</span><br><span>=
-+</span><br><span>+ &nbsp; &nbsp;/* Check for any existing EPOW event */</sp=
-an><br><span>+ &nbsp; &nbsp;rc =3D get_epow_status();</span><br><span>+ &nbs=
-p; &nbsp;if (rc =3D=3D EPOW_DETECTED) {</span><br><span>+ &nbsp; &nbsp; &nbs=
-p; &nbsp;pr_info("Existing EPOW event detected.\n");</span><br><span>+ &nbsp=
-; &nbsp; &nbsp; &nbsp;process_epow();</span><br><span>+ &nbsp; &nbsp;} else<=
-/span><br><span>+ &nbsp; &nbsp; &nbsp; &nbsp;pr_info("No existing EPOW event=
- detected\n");</span><br><span>+</span><br><span>+}</span><br><span>+</span>=
-<br><span>+/* Platform EPOW message received */</span><br><span>+static int o=
-pal_epow_event(struct notifier_block *nb,</span><br><span>+ &nbsp; &nbsp; &n=
-bsp; &nbsp; &nbsp; &nbsp;unsigned long msg_type, void *msg)</span><br><span>=
-+{</span><br><span>+ &nbsp; &nbsp;pr_info("EPOW event received\n");</span><b=
-r><span>+</span><br><span>+ &nbsp; &nbsp;/* Get EPOW event details */</span>=
-<br><span>+ &nbsp; &nbsp;get_epow_status();</span><br><span>+</span><br><spa=
-n>+ &nbsp; &nbsp;/* Process EPOW event information */</span><br><span>+ &nbs=
-p; &nbsp;process_epow();</span><br><span>+</span><br><span>+ &nbsp; &nbsp;re=
-turn 0;</span><br><span>+}</span><br><span>+</span><br><span>+</span><br><sp=
-an>+/* Platform DPO message received */</span><br><span>+static int opal_dpo=
-_event(struct notifier_block *nb,</span><br><span>+ &nbsp; &nbsp; &nbsp; &nb=
-sp; &nbsp; &nbsp; &nbsp; &nbsp;unsigned long msg_type, void *msg)</span><br>=
-<span>+{</span><br><span>+ &nbsp; &nbsp;pr_info("DPO event received.\n");</s=
-pan><br><span>+ &nbsp; &nbsp;process_dpo();</span><br><span>+</span><br><spa=
-n>+ &nbsp; &nbsp;return 0;</span><br><span>+}</span><br><span>+</span><br><s=
-pan>+</span><br><span>+/* OPAL EPOW event notifier block */</span><br><span>=
-+static struct notifier_block opal_epow_nb =3D {</span><br><span>+ &nbsp; &n=
-bsp;.notifier_call &nbsp;=3D opal_epow_event,</span><br><span>+ &nbsp; &nbsp=
-;.next &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=3D NULL,=
-</span><br><span>+ &nbsp; &nbsp;.priority &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbs=
-p;=3D 0,</span><br><span>+};</span><br><span>+</span><br><span>+/* OPAL DPO e=
-vent notifier block */</span><br><span>+static struct notifier_block opal_dp=
-o_nb =3D {</span><br><span>+ &nbsp; &nbsp;.notifier_call &nbsp;=3D opal_dpo_=
-event,</span><br><span>+ &nbsp; &nbsp;.next &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
-bsp;&nbsp;&nbsp;&nbsp;&nbsp;=3D NULL,</span><br><span>+ &nbsp; &nbsp;.priori=
-ty &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=3D 0,</span><br><span>+};</span><br>=
-<span>+</span><br><span>+/* Poweroff events init */</span><br><span>+static i=
-nt opal_poweroff_events_init(void)</span><br><span>+{</span><br><span>+ &nbs=
-p; &nbsp;int ret;</span><br><span>+</span><br><span>+ &nbsp; &nbsp;/* Initia=
-lize poweroff timer */</span><br><span>+ &nbsp; &nbsp;init_timer(&amp;epow_t=
-imer);</span><br><span>+ &nbsp; &nbsp;epow_timer.function =3D epow_poweroff;=
-</span><br><span>+</span><br><span>+ &nbsp; &nbsp;/* Get EPOW event timeout v=
-alues */</span><br><span>+ &nbsp; &nbsp;get_epow_timeouts();</span><br><span=
->+</span><br><span>+ &nbsp; &nbsp;/* Check for any existing EPOW or DPO even=
-ts. */</span><br><span>+ &nbsp; &nbsp;process_existing_poweroff_events();</s=
-pan><br><span>+</span><br><span>+ &nbsp; &nbsp;/* Register EPOW event notifi=
-er */</span><br><span>+ &nbsp; &nbsp;ret =3D opal_message_notifier_register(=
-OPAL_MSG_EPOW, &amp;opal_epow_nb);</span><br><span>+ &nbsp; &nbsp;if (ret) {=
-</span><br><span>+ &nbsp; &nbsp; &nbsp; &nbsp;pr_err("EPOW event notifier re=
-gistration failed\n");</span><br><span>+ &nbsp; &nbsp; &nbsp; &nbsp;return r=
-et;</span><br><span>+ &nbsp; &nbsp;}</span><br></div></blockquote>Timing iss=
-ue. You may miss some events that occur between process existing power off e=
-vent and registering message notifies. Instead first register your notifier &=
-nbsp;and then process any existing &nbsp;events.<br><blockquote type=3D"cite=
-"><div><span>+</span><br><span>+ &nbsp; &nbsp;/* Register DPO event notifier=
- */</span><br><span>+ &nbsp; &nbsp;ret =3D opal_message_notifier_register(OP=
-AL_MSG_DPO, &amp;opal_dpo_nb);</span><br><span>+ &nbsp; &nbsp;if (ret) {</sp=
-an><br><span>+ &nbsp; &nbsp; &nbsp; &nbsp;pr_err("DPO event notifier registr=
-ation failed\n");</span><br><span>+ &nbsp; &nbsp; &nbsp; &nbsp;opal_notifier=
-_unregister(&amp;opal_epow_nb);</span><br><span>+ &nbsp; &nbsp; &nbsp; &nbsp=
-;return ret;</span><br><span>+ &nbsp; &nbsp;}</span><br><span>+</span><br><s=
-pan>+</span><br><span>+ &nbsp; &nbsp;pr_info("OPAL poweroff events support i=
-nitialized\n");</span><br><span>+</span><br><span>+ &nbsp; &nbsp;return 0;</=
-span><br><span>+}</span><br><span>+</span><br><span>+machine_subsys_initcall=
-(powernv, opal_poweroff_events_init);</span><br><span>diff --git a/arch/powe=
-rpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-=
-wrappers.S</span><br><span>index a7ade94..5d3c8e3 100644</span><br><span>---=
- a/arch/powerpc/platforms/powernv/opal-wrappers.S</span><br><span>+++ b/arch=
-/powerpc/platforms/powernv/opal-wrappers.S</span><br><span>@@ -249,6 +249,7 @=
-@ OPAL_CALL(opal_pci_reinit, &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;OPAL_P=
-CI_REINIT);</span><br><span> OPAL_CALL(opal_pci_mask_pe_error, &nbsp; &nbsp;=
- &nbsp; &nbsp;OPAL_PCI_MASK_PE_ERROR);</span><br><span> OPAL_CALL(opal_set_s=
-lot_led_status, &nbsp; &nbsp; &nbsp; &nbsp;OPAL_SET_SLOT_LED_STATUS);</span>=
-<br><span> OPAL_CALL(opal_get_epow_status, &nbsp; &nbsp; &nbsp; &nbsp; &nbsp=
-; &nbsp;OPAL_GET_EPOW_STATUS);</span><br><span>+OPAL_CALL(opal_get_dpo_statu=
-s, &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;OPAL_GET_DPO_STATUS);</span><br>=
-<span> OPAL_CALL(opal_set_system_attention_led, &nbsp; &nbsp;OPAL_SET_SYSTEM=
-_ATTENTION_LED);</span><br><span> OPAL_CALL(opal_pci_next_error, &nbsp; &nbs=
-p; &nbsp; &nbsp; &nbsp; &nbsp;OPAL_PCI_NEXT_ERROR);</span><br><span> OPAL_CA=
-LL(opal_pci_poll, &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;OPAL_PCI_POLL);</=
-span><br><span>-- </span><br><span>1.9.3</span><br><span></span><br><span>__=
-_____________________________________________</span><br><span>Linuxppc-dev m=
-ailing list</span><br><span><a href=3D"mailto:Linuxppc-dev@lists.ozlabs.org"=
->Linuxppc-dev@lists.ozlabs.org</a></span><br><span><a href=3D"https://lists.=
-ozlabs.org/listinfo/linuxppc-dev">https://lists.ozlabs.org/listinfo/linuxppc=
--dev</a></span></div></blockquote></div></body></html>=
-
---Apple-Mail-6D6C0AC9-C6E6-43C5-9F75-3CCE3993BD6C--
+Thanks,
+Gavin
