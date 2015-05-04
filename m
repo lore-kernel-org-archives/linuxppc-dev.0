@@ -1,22 +1,22 @@
 Return-Path: <michal.simek@xilinx.com>
 Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0077.outbound.protection.outlook.com [157.56.110.77])
+ (mail-bn1on0064.outbound.protection.outlook.com [157.56.110.64])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 31C1D1A02EB
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 May 2015 16:16:30 +1000 (AEST)
-Date: Mon, 4 May 2015 08:00:19 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id EAF501A033E
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 May 2015 16:36:10 +1000 (AEST)
+Date: Mon, 4 May 2015 08:03:31 +0200
 From: Michal Simek <michal.simek@xilinx.com>
 MIME-Version: 1.0
 To: Suman Tripathi <stripathi@apm.com>, <chris@printf.net>,
  <anton@enomsg.org>, <arnd@arndb.de>, <michal.simek@xilinx.com>
-Subject: Re: [PATCH v3 3/3] Documentation: mmc: Update Arasan SDHC
- documentation to support 4.9a version of Arasan SDHC controller.
+Subject: Re: [PATCH v3 1/3] arm64: dts: Add the arasan sdhc nodes in
+ apm-storm.dtsi.
 References: <1430456052-8888-1-git-send-email-stripathi@apm.com>
- <1430456052-8888-4-git-send-email-stripathi@apm.com>
-In-Reply-To: <1430456052-8888-4-git-send-email-stripathi@apm.com>
+ <1430456052-8888-2-git-send-email-stripathi@apm.com>
+In-Reply-To: <1430456052-8888-2-git-send-email-stripathi@apm.com>
 Content-Type: text/plain; charset="windows-1252"
-Message-ID: <f442e594-ac5c-4e77-ab80-3055fb791066@BN1AFFO11FD021.protection.gbl>
+Message-ID: <19876f56-d3ce-4b70-9cb9-fcb43151d52d@BL2FFO11FD044.protection.gbl>
 Cc: devicetree@vger.kernel.org, mlangsdo@redhat.com, jcm@redhat.com,
  linux-mmc@vger.kernel.org, patches@apm.com, ddutile@redhat.com,
  linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org
@@ -30,37 +30,82 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On 05/01/2015 06:54 AM, Suman Tripathi wrote:
-> This patch updates Arasan SDHC documentation to support
-> 4.9a version of Arasan SDHC controller.
+> This patch adds the arasan sdhc nodes to reuse the of-arasan
+> driver for APM X-Gene SoC.
 > 
 > Signed-off-by: Suman Tripathi <stripathi@apm.com>
 > ---
->  Documentation/devicetree/bindings/mmc/arasan,sdhci.txt | 5 +++--
->  1 file changed, 3 insertions(+), 2 deletions(-)
+>  arch/arm64/boot/dts/apm-mustang.dts |  4 ++++
+>  arch/arm64/boot/dts/apm-storm.dtsi  | 44 +++++++++++++++++++++++++++++++++++++
+>  2 files changed, 48 insertions(+)
 > 
-> diff --git a/Documentation/devicetree/bindings/mmc/arasan,sdhci.txt b/Documentation/devicetree/bindings/mmc/arasan,sdhci.txt
-> index 98ee2ab..f01d41a 100644
-> --- a/Documentation/devicetree/bindings/mmc/arasan,sdhci.txt
-> +++ b/Documentation/devicetree/bindings/mmc/arasan,sdhci.txt
-> @@ -8,7 +8,8 @@ Device Tree Bindings for the Arasan SDHCI Controller
->    [3] Documentation/devicetree/bindings/interrupt-controller/interrupts.txt
->  
->  Required Properties:
-> -  - compatible: Compatibility string. Must be 'arasan,sdhci-8.9a'
-> +  - compatible: Compatibility string. Must be 'arasan,sdhci-8.9a' or
-> +                'arasan,sdhci-4.9a'           
->    - reg: From mmc bindings: Register location and length.
->    - clocks: From clock bindings: Handles to clock inputs.
->    - clock-names: From clock bindings: Tuple including "clk_xin" and "clk_ahb"
-> @@ -18,7 +19,7 @@ Required Properties:
->  
->  Example:
->  	sdhci@e0100000 {
-> -		compatible = "arasan,sdhci-8.9a";
-> +		compatible = "arasan,sdhci-8.9a", "arasan,sdhci-4.9a";
+> diff --git a/arch/arm64/boot/dts/apm-mustang.dts b/arch/arm64/boot/dts/apm-mustang.dts
+> index 8eb6d94..d0e52a9 100644
+> --- a/arch/arm64/boot/dts/apm-mustang.dts
+> +++ b/arch/arm64/boot/dts/apm-mustang.dts
+> @@ -44,3 +44,7 @@
+>  &xgenet {
+>  	status = "ok";
+>  };
+> +
+> +&sdhc0 {
+> +	status = "ok";
+> +};
+> diff --git a/arch/arm64/boot/dts/apm-storm.dtsi b/arch/arm64/boot/dts/apm-storm.dtsi
+> index 87d3205..d6c2216 100644
+> --- a/arch/arm64/boot/dts/apm-storm.dtsi
+> +++ b/arch/arm64/boot/dts/apm-storm.dtsi
+> @@ -144,6 +144,40 @@
+>  				clock-output-names = "socplldiv2";
+>  			};
+> 
+> +			ahbclk: ahbclk@1f2ac000 {
+> +				compatible = "apm,xgene-device-clock";
+> +				#clock-cells = <1>;
+> +				clocks = <&socplldiv2 0>;
+> +				reg = <0x0 0x1f2ac000 0x0 0x1000
+> +					0x0 0x17000000 0x0 0x2000>;
+> +				reg-names = "csr-reg", "div-reg";
+> +				csr-offset = <0x0>;
+> +				csr-mask = <0x1>;
+> +				enable-offset = <0x8>;
+> +				enable-mask = <0x1>;
+> +				divider-offset = <0x164>;
+> +				divider-width = <0x5>;
+> +				divider-shift = <0x0>;
+> +				clock-output-names = "ahbclk";
+> +			};
+> +
+> +			sdioclk: sdioclk@1f2ac000 {
+> +				compatible = "apm,xgene-device-clock";
+> +				#clock-cells = <1>;
+> +				clocks = <&socplldiv2 0>;
+> +				reg = <0x0 0x1f2ac000 0x0 0x1000
+> +					0x0 0x17000000 0x0 0x2000>;
+> +				reg-names = "csr-reg", "div-reg";
+> +				csr-offset = <0x0>;
+> +				csr-mask = <0x2>;
+> +				enable-offset = <0x8>;
+> +				enable-mask = <0x2>;
+> +				divider-offset = <0x178>;
+> +				divider-width = <0x8>;
+> +				divider-shift = <0x0>;
+> +				clock-output-names = "sdioclk";
+> +			};
+> +
+>  			qmlclk: qmlclk {
+>  				compatible = "apm,xgene-device-clock";
+>  				#clock-cells = <1>;
+> @@ -503,6 +537,16 @@
+>  			interrupts = <0x0 0x4f 0x4>;
+>  		};
+> 
+> +		sdhc0: sdhc@1c000000 {
+> +			device_type = "sdhc";
+> +			compatible = "arasan,sdhci-8.9a", "arasan,sdhci-4.9a";
 
-Is there any reason to change this example?
-You probably want to have just one compatible string not both.
+I would just add 4.9a here because you want to use that quirks. We can
+add some quirks to 8.9a version if any new problem arises.
 
 Thanks,
 Michal
