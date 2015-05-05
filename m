@@ -2,13 +2,14 @@ Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7CA381A066A
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 May 2015 21:12:49 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 26A981A066A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 May 2015 21:12:50 +1000 (AEST)
 From: Michael Ellerman <mpe@ellerman.id.au>
 To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 2/6] powerpc: Add cpu name to dump stack arch description
-Date: Tue,  5 May 2015 21:12:13 +1000
-Message-Id: <1430824337-15339-2-git-send-email-mpe@ellerman.id.au>
+Subject: [PATCH 3/6] powerpc: Add device-tree model to dump stack arch
+ description
+Date: Tue,  5 May 2015 21:12:14 +1000
+Message-Id: <1430824337-15339-3-git-send-email-mpe@ellerman.id.au>
 In-Reply-To: <1430824337-15339-1-git-send-email-mpe@ellerman.id.au>
 References: <1430824337-15339-1-git-send-email-mpe@ellerman.id.au>
 Cc: tj@kernel.org, Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
@@ -22,34 +23,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-As soon as we know the name of the cpu we're on, add it to the dump
+As soon as we know the model of the machine we're on, add it to the dump
 stack arch description, which is printed in case of an oops.
 
 Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
- arch/powerpc/kernel/cputable.c | 3 +++
- 1 file changed, 3 insertions(+)
+ arch/powerpc/kernel/prom.c | 20 ++++++++++++++++++++
+ 1 file changed, 20 insertions(+)
 
-diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
-index 60262fdf35ba..cf5e0c9b80cb 100644
---- a/arch/powerpc/kernel/cputable.c
-+++ b/arch/powerpc/kernel/cputable.c
-@@ -15,6 +15,7 @@
- #include <linux/threads.h>
- #include <linux/init.h>
- #include <linux/export.h>
+diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+index 308c5e15676b..a8ac55f7bd7b 100644
+--- a/arch/powerpc/kernel/prom.c
++++ b/arch/powerpc/kernel/prom.c
+@@ -34,6 +34,7 @@
+ #include <linux/of.h>
+ #include <linux/of_fdt.h>
+ #include <linux/libfdt.h>
 +#include <linux/printk.h>
  
- #include <asm/oprofile_impl.h>
- #include <asm/cputable.h>
-@@ -2174,6 +2175,8 @@ static struct cpu_spec * __init setup_cpu_spec(unsigned long offset,
- 	}
- #endif /* CONFIG_PPC64 || CONFIG_BOOKE */
- 
-+	dump_stack_add_arch_desc(t->cpu_name);
-+
- 	return t;
+ #include <asm/prom.h>
+ #include <asm/rtas.h>
+@@ -642,6 +643,23 @@ static void __init early_reserve_mem(void)
+ #endif
  }
  
++static int __init
++early_init_dt_scan_model(unsigned long node, const char *uname,
++			 int depth, void *data)
++{
++	const char *prop;
++
++	if (depth != 0)
++		return 0;
++
++	prop = of_get_flat_dt_prop(node, "model", NULL);
++	if (prop)
++		dump_stack_add_arch_desc(prop);
++
++	/* break now */
++	return 1;
++}
++
+ void __init early_init_devtree(void *params)
+ {
+ 	phys_addr_t limit;
+@@ -652,6 +670,8 @@ void __init early_init_devtree(void *params)
+ 	if (!early_init_dt_verify(params))
+ 		panic("BUG: Failed verifying flat device tree, bad version?");
+ 
++	of_scan_flat_dt(early_init_dt_scan_model, NULL);
++
+ #ifdef CONFIG_PPC_RTAS
+ 	/* Some machines might need RTAS info for debugging, grab it now. */
+ 	of_scan_flat_dt(early_init_dt_scan_rtas, NULL);
 -- 
 2.1.0
