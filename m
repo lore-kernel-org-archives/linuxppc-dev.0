@@ -1,33 +1,21 @@
-Return-Path: <ldufour@linux.vnet.ibm.com>
-Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8DC051A066A
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 May 2015 01:30:30 +1000 (AEST)
-Received: from /spool/local
- by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
- Tue, 5 May 2015 16:30:27 +0100
-Received: from b06cxnps4075.portsmouth.uk.ibm.com
- (d06relay12.portsmouth.uk.ibm.com [9.149.109.197])
- by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id 54CC91B0805F
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 May 2015 16:31:05 +0100 (BST)
-Received: from d06av05.portsmouth.uk.ibm.com (d06av05.portsmouth.uk.ibm.com
- [9.149.37.229])
- by b06cxnps4075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t45FUNsS49676456
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 5 May 2015 15:30:23 GMT
-Received: from d06av05.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av05.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t45FUMZ1017674
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 5 May 2015 09:30:22 -0600
-From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
-Subject: [PATCH] powerpc: Enabling sys_kcmp for CRIU
-Date: Tue,  5 May 2015 17:30:21 +0200
-Message-Id: <1430839821-9259-1-git-send-email-ldufour@linux.vnet.ibm.com>
-Cc: paulus@samba.org, linux-kernel@vger.kernel.org
+Return-Path: <james.smart@emulex.com>
+Received: from CMRELAYP1.ad.emulex.com (unknown [138.239.112.140])
+ by lists.ozlabs.org (Postfix) with ESMTP id AE6951A0010
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 May 2015 01:50:35 +1000 (AEST)
+Message-ID: <5548E2C1.3070209@emulex.com>
+Date: Tue, 05 May 2015 11:33:21 -0400
+From: James Smart <james.smart@emulex.com>
+Reply-To: james.smart@emulex.com
+MIME-Version: 1.0
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Subject: Re: [PATCH kernel] commit 4fbdf9cb ("lpfc: Fix for lun discovery
+ issue with saturn adapter.")
+References: <1430209582-23925-1-git-send-email-aik@ozlabs.ru>
+In-Reply-To: <1430209582-23925-1-git-send-email-aik@ozlabs.ru>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linux-scsi@vger.kernel.org, "James E . J . Bottomley" <JBottomley@odin.com>,
+ linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org, Sebastian Herbszt <herbszt@gmx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,38 +25,100 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The commit 8170a83f15ee ("powerpc: Wireup the kcmp syscall to sys_ni") has
-disabled the kcmp syscall for powerpc.  This has been done due to the use
-of unsigned long parameters which may require a dedicated wrapper to handle
-32bit process on top of 64bit kernel.  However in the kcmp() case, the 2
-unsigned long parameters are currently only used to carry file descriptors
-from user space to the kernel.  Since such a parameter is passed through
-register, and file descriptor doesn't need to get extended, there is,
-today, no need for a wrapper.
+Reviewed-By: James Smart <james.smart@emulex.com>
 
-In the case there will be a need to pass address in or out of this system
-call, then a wrapper could be required, it will then be to care of it.
 
-As today this is not the case, it is safe to enable kcmp() on powerpc.
+Alexey, Sebastian,
 
-Cc: Tony Breeds <tony@bakeyournoodle.com>
-Signed-off-by: Laurent Dufour <ldufour@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/systbl.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Yes - this section needs to be reverted.  This patch is good.
 
-diff --git a/arch/powerpc/include/asm/systbl.h b/arch/powerpc/include/asm/systbl.h
-index 91062eef582f..b257f02ab6bf 100644
---- a/arch/powerpc/include/asm/systbl.h
-+++ b/arch/powerpc/include/asm/systbl.h
-@@ -358,7 +358,7 @@ SYSCALL_SPU(setns)
- COMPAT_SYS(process_vm_readv)
- COMPAT_SYS(process_vm_writev)
- SYSCALL(finit_module)
--SYSCALL(ni_syscall) /* sys_kcmp */
-+SYSCALL(kcmp) /* sys_kcmp */
- SYSCALL_SPU(sched_setattr)
- SYSCALL_SPU(sched_getattr)
- SYSCALL_SPU(renameat2)
--- 
-1.9.1
+-- james s
+
+
+
+
+On 4/28/2015 4:26 AM, Alexey Kardashevskiy wrote:
+> This reverts 4fbdf9cb is breaks LPFC on POWER7 machine, big endian kernel.
+>
+> This is the hardware used for verification:
+> 0005:01:00.0 Fibre Channel [0c04]: Emulex Corporation Saturn-X: LightPulse Fibre Channel Host Adapter [10df:f100] (rev 03)
+> 0005:01:00.1 Fibre Channel [0c04]: Emulex Corporation Saturn-X: LightPulse Fibre Channel Host Adapter [10df:f100] (rev 03)
+>
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> ---
+>   drivers/scsi/lpfc/lpfc_scsi.c | 41 +++++++++++++++++++++--------------------
+>   1 file changed, 21 insertions(+), 20 deletions(-)
+>
+> diff --git a/drivers/scsi/lpfc/lpfc_scsi.c b/drivers/scsi/lpfc/lpfc_scsi.c
+> index cb73cf9..c140f99 100644
+> --- a/drivers/scsi/lpfc/lpfc_scsi.c
+> +++ b/drivers/scsi/lpfc/lpfc_scsi.c
+> @@ -1130,25 +1130,6 @@ lpfc_release_scsi_buf(struct lpfc_hba *phba, struct lpfc_scsi_buf *psb)
+>   }
+>   
+>   /**
+> - * lpfc_fcpcmd_to_iocb - copy the fcp_cmd data into the IOCB
+> - * @data: A pointer to the immediate command data portion of the IOCB.
+> - * @fcp_cmnd: The FCP Command that is provided by the SCSI layer.
+> - *
+> - * The routine copies the entire FCP command from @fcp_cmnd to @data while
+> - * byte swapping the data to big endian format for transmission on the wire.
+> - **/
+> -static void
+> -lpfc_fcpcmd_to_iocb(uint8_t *data, struct fcp_cmnd *fcp_cmnd)
+> -{
+> -	int i, j;
+> -
+> -	for (i = 0, j = 0; i < sizeof(struct fcp_cmnd);
+> -	     i += sizeof(uint32_t), j++) {
+> -		((uint32_t *)data)[j] = cpu_to_be32(((uint32_t *)fcp_cmnd)[j]);
+> -	}
+> -}
+> -
+> -/**
+>    * lpfc_scsi_prep_dma_buf_s3 - DMA mapping for scsi buffer to SLI3 IF spec
+>    * @phba: The Hba for which this call is being executed.
+>    * @lpfc_cmd: The scsi buffer which is going to be mapped.
+> @@ -1283,7 +1264,6 @@ lpfc_scsi_prep_dma_buf_s3(struct lpfc_hba *phba, struct lpfc_scsi_buf *lpfc_cmd)
+>   	 * we need to set word 4 of IOCB here
+>   	 */
+>   	iocb_cmd->un.fcpi.fcpi_parm = scsi_bufflen(scsi_cmnd);
+> -	lpfc_fcpcmd_to_iocb(iocb_cmd->unsli3.fcp_ext.icd, fcp_cmnd);
+>   	return 0;
+>   }
+>   
+> @@ -4147,6 +4127,24 @@ lpfc_scsi_cmd_iocb_cmpl(struct lpfc_hba *phba, struct lpfc_iocbq *pIocbIn,
+>   }
+>   
+>   /**
+> + * lpfc_fcpcmd_to_iocb - copy the fcp_cmd data into the IOCB
+> + * @data: A pointer to the immediate command data portion of the IOCB.
+> + * @fcp_cmnd: The FCP Command that is provided by the SCSI layer.
+> + *
+> + * The routine copies the entire FCP command from @fcp_cmnd to @data while
+> + * byte swapping the data to big endian format for transmission on the wire.
+> + **/
+> +static void
+> +lpfc_fcpcmd_to_iocb(uint8_t *data, struct fcp_cmnd *fcp_cmnd)
+> +{
+> +	int i, j;
+> +	for (i = 0, j = 0; i < sizeof(struct fcp_cmnd);
+> +	     i += sizeof(uint32_t), j++) {
+> +		((uint32_t *)data)[j] = cpu_to_be32(((uint32_t *)fcp_cmnd)[j]);
+> +	}
+> +}
+> +
+> +/**
+>    * lpfc_scsi_prep_cmnd - Wrapper func for convert scsi cmnd to FCP info unit
+>    * @vport: The virtual port for which this call is being executed.
+>    * @lpfc_cmd: The scsi command which needs to send.
+> @@ -4225,6 +4223,9 @@ lpfc_scsi_prep_cmnd(struct lpfc_vport *vport, struct lpfc_scsi_buf *lpfc_cmd,
+>   		fcp_cmnd->fcpCntl3 = 0;
+>   		phba->fc4ControlRequests++;
+>   	}
+> +	if (phba->sli_rev == 3 &&
+> +	    !(phba->sli3_options & LPFC_SLI3_BG_ENABLED))
+> +		lpfc_fcpcmd_to_iocb(iocb_cmd->unsli3.fcp_ext.icd, fcp_cmnd);
+>   	/*
+>   	 * Finish initializing those IOCB fields that are independent
+>   	 * of the scsi_cmnd request_buffer
