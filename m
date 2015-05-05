@@ -1,19 +1,24 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <runaway@candw.ms>
+Received: from mail-vn0-f46.google.com (mail-vn0-f46.google.com
+ [209.85.216.46])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 950671A066A
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 May 2015 21:12:51 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 6/6] powerpc/pseries: Add firmware details to dump stack arch
- description
-Date: Tue,  5 May 2015 21:12:17 +1000
-Message-Id: <1430824337-15339-6-git-send-email-mpe@ellerman.id.au>
-In-Reply-To: <1430824337-15339-1-git-send-email-mpe@ellerman.id.au>
-References: <1430824337-15339-1-git-send-email-mpe@ellerman.id.au>
-Cc: tj@kernel.org, Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
- Anton Blanchard <anton@samba.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3F6771A066A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 May 2015 21:37:33 +1000 (AEST)
+Received: by vnbf62 with SMTP id f62so16649619vnb.3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 05 May 2015 04:37:30 -0700 (PDT)
+Message-ID: <5548AB77.4000208@candw.ms>
+Date: Tue, 05 May 2015 07:37:27 -0400
+From: Julian Margetson <runaway@candw.ms>
+MIME-Version: 1.0
+To: Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ linuxppc-dev@lists.ozlabs.org, Ian Munsie <imunsie@au1.ibm.com>,
+ Tejun Heo <tj@kernel.org>, linux-ide@vger.kernel.org
+Subject: Re: [PATCH 1/1] ata: select DW_DMAC in case of SATA_DWC
+References: <1430817243-98654-1-git-send-email-andriy.shevchenko@linux.intel.com>
+In-Reply-To: <1430817243-98654-1-git-send-email-andriy.shevchenko@linux.intel.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,72 +28,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Once we have unflattened the device tree we can easily grab these
-firmware version details and add them to dump stack arch description,
-which is printed in case of an oops.
+Thank you.
+this resolves the build issue .
 
-Currently /hypervisor only exists on KVM, so if we don't find that look
-for something that suggests we're on phyp and if so that's probably a
-good guess. The actual content of the ibm,fw-net-version seems to be
-a full path so is too long to add to the description.
-
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/platforms/pseries/setup.c | 35 ++++++++++++++++++++++++++++++++++
- 1 file changed, 35 insertions(+)
-
-diff --git a/arch/powerpc/platforms/pseries/setup.c b/arch/powerpc/platforms/pseries/setup.c
-index df6a7041922b..e89282c4f799 100644
---- a/arch/powerpc/platforms/pseries/setup.c
-+++ b/arch/powerpc/platforms/pseries/setup.c
-@@ -680,6 +680,39 @@ static void pSeries_cmo_feature_init(void)
- 	pr_debug(" <- fw_cmo_feature_init()\n");
- }
- 
-+static void __init pseries_add_dump_stack_arch_desc(void)
-+{
-+	struct device_node *dn;
-+	const char *prop;
-+
-+	dn = of_find_node_by_path("/openprom");
-+	if (dn) {
-+		prop = of_get_property(dn, "model", NULL);
-+		if (prop)
-+			dump_stack_add_arch_desc("prom:%s", prop);
-+
-+		of_node_put(dn);
-+	}
-+
-+	dn = of_find_node_by_path("/hypervisor");
-+	if (dn) {
-+		prop = of_get_property(dn, "compatible", NULL);
-+		if (prop)
-+			dump_stack_add_arch_desc("hv:%s", prop);
-+
-+		of_node_put(dn);
-+	} else {
-+		dn = of_find_node_by_path("/");
-+		if (dn) {
-+			prop = of_get_property(dn, "ibm,fw-net-version", NULL);
-+			if (prop)
-+				dump_stack_add_arch_desc("hv:phyp");
-+
-+			of_node_put(dn);
-+		}
-+	}
-+}
-+
- /*
-  * Early initialization.  Relocation is on but do not reference unbolted pages
-  */
-@@ -687,6 +720,8 @@ static void __init pSeries_init_early(void)
- {
- 	pr_debug(" -> pSeries_init_early()\n");
- 
-+	pseries_add_dump_stack_arch_desc();
-+
- #ifdef CONFIG_HVC_CONSOLE
- 	if (firmware_has_feature(FW_FEATURE_LPAR))
- 		hvc_vio_init_early();
--- 
-2.1.0
+On 5/5/2015 5:14 AM, Andy Shevchenko wrote:
+> Since sata_dwc_460ex.c was moved to generic DMA driver we have to ensure that
+> user can still compile it.
+>
+> Fixes: 8b3444852a2b (sata_dwc_460ex: move to generic DMA driver)
+> Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+> ---
+>   drivers/ata/Kconfig | 1 +
+>   1 file changed, 1 insertion(+)
+>
+> diff --git a/drivers/ata/Kconfig b/drivers/ata/Kconfig
+> index ee5209f..9dca4b9 100644
+> --- a/drivers/ata/Kconfig
+> +++ b/drivers/ata/Kconfig
+> @@ -270,6 +270,7 @@ config ATA_PIIX
+>   config SATA_DWC
+>   	tristate "DesignWare Cores SATA support"
+>   	depends on 460EX
+> +	select DW_DMAC
+>   	help
+>   	  This option enables support for the on-chip SATA controller of the
+>   	  AppliedMicro processor 460EX.
