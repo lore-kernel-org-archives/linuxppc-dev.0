@@ -1,15 +1,17 @@
-Return-Path: <andriy.shevchenko@linux.intel.com>
-Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
- by lists.ozlabs.org (Postfix) with ESMTP id AF08E1A0767
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 May 2015 19:14:09 +1000 (AEST)
-From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
-To: Michael Ellerman <mpe@ellerman.id.au>, Julian Margetson <runaway@candw.ms>,
- linuxppc-dev@lists.ozlabs.org, Ian Munsie <imunsie@au1.ibm.com>,
- Tejun Heo <tj@kernel.org>, linux-ide@vger.kernel.org
-Subject: [PATCH 1/1] ata: select DW_DMAC in case of SATA_DWC
-Date: Tue,  5 May 2015 12:14:03 +0300
-Message-Id: <1430817243-98654-1-git-send-email-andriy.shevchenko@linux.intel.com>
-Cc: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+Return-Path: <stripath@apm.com>
+Received: from denmail01.amcc.com (unknown [192.195.68.30])
+ by lists.ozlabs.org (Postfix) with ESMTP id C30401A066D
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 May 2015 19:18:09 +1000 (AEST)
+From: Suman Tripathi <stripathi@apm.com>
+To: chris@printf.net, anton@enomsg.org, arnd@arndb.de, michal.simek@xilinx.com
+Subject: [PATCH v5 0/1] Add SDHCI support for APM X-Gene SoC using ARASAN
+ SDHCI controller.
+Date: Tue,  5 May 2015 14:47:05 +0530
+Message-Id: <1430817426-5241-1-git-send-email-stripathi@apm.com>
+Cc: devicetree@vger.kernel.org, mlangsdo@redhat.com,
+ Suman Tripathi <stripathi@apm.com>, jcm@redhat.com, linux-mmc@vger.kernel.org,
+ patches@apm.com, ddutile@redhat.com, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -19,26 +21,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Since sata_dwc_460ex.c was moved to generic DMA driver we have to ensure that
-user can still compile it.
+This patch adds the SDHCI support for APM X-Gene SoC using ARASAN SDHCI controller.
 
-Fixes: 8b3444852a2b (sata_dwc_460ex: move to generic DMA driver)
-Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+v1 change:
+ * Use the CONFIG_ARM64_DMA_HAS_IOMMU for dma-mapping.
+
+v2 change:
+ * Drop the IOMMU support and switching to PIO mode for arasan.
+   controller integrated inside APM X-Gene SoC.
+
+v3 change:
+ * Change the sdhci-of-arasan.c to support arasan4.9a.
+ * Add quirks for arasan4.9a.
+
+v4 change:
+ * Cleanup the Documentation and dts.
+
+v5 change:
+ * Rebase the dts files.
+ * Drop patch 2 and 3 as it is applied
+
+Signed-off-by: Suman Tripathi <stripathi@apm.com>
 ---
- drivers/ata/Kconfig | 1 +
- 1 file changed, 1 insertion(+)
 
-diff --git a/drivers/ata/Kconfig b/drivers/ata/Kconfig
-index ee5209f..9dca4b9 100644
---- a/drivers/ata/Kconfig
-+++ b/drivers/ata/Kconfig
-@@ -270,6 +270,7 @@ config ATA_PIIX
- config SATA_DWC
- 	tristate "DesignWare Cores SATA support"
- 	depends on 460EX
-+	select DW_DMAC
- 	help
- 	  This option enables support for the on-chip SATA controller of the
- 	  AppliedMicro processor 460EX.
--- 
-2.1.4
+Suman Tripathi (1):
+  arm64: dts: Add the arasan sdhc nodes in apm-storm.dtsi.
+
+ arch/arm64/boot/dts/apm/apm-mustang.dts |  4 +++
+ arch/arm64/boot/dts/apm/apm-storm.dtsi  | 44 +++++++++++++++++++++++++++++++++
+ 2 files changed, 48 insertions(+)
+
+--
+1.8.2.1
