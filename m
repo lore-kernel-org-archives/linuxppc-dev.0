@@ -1,23 +1,31 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0111.outbound.protection.outlook.com [157.56.110.111])
+Return-Path: <Igal.Liberman@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0106.outbound.protection.outlook.com [207.46.100.106])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7CC641A035B
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 May 2015 06:45:57 +1000 (AEST)
-Message-ID: <1430858734.16357.256.camel@freescale.com>
-Subject: Re: [PATCH 1/2] powerpc/qman: Change fsl,qman-channel-id to cell-index
-From: Scott Wood <scottwood@freescale.com>
-To: Pledge Roy-R01356 <roy.pledge@freescale.com>
-Date: Tue, 5 May 2015 15:45:34 -0500
-In-Reply-To: <BN3PR0301MB126796C0EC18EEBB26702C588CD10@BN3PR0301MB1267.namprd03.prod.outlook.com>
-References: <1429311187-19062-1-git-send-email-scottwood@freescale.com>
- <BN3PR0301MB126796C0EC18EEBB26702C588CD10@BN3PR0301MB1267.namprd03.prod.outlook.com>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 68E471A035B
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 May 2015 07:02:35 +1000 (AEST)
+From: "Igal.Liberman@freescale.com" <Igal.Liberman@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: RE: [v3] dt/bindings: qoriq-clock: Add binding for FMan clock mux
+Date: Tue, 5 May 2015 21:02:27 +0000
+Message-ID: <BY2PR03MB3794413FB3FF795DF520D23E6D10@BY2PR03MB379.namprd03.prod.outlook.com>
+References: <1429008968-24707-1-git-send-email-igal.liberman@freescale.com>
+ <1429119357.22867.724.camel@freescale.com>
+ <DM2PR03MB38330DBBFFD1BC45D58F447E6E40@DM2PR03MB383.namprd03.prod.outlook.com>
+ <1429249281.32545.52.camel@freescale.com>
+ <DM2PR03MB383E5F67C358CCE2E38EA71E6E00@DM2PR03MB383.namprd03.prod.outlook.com>
+ <1429577504.4352.67.camel@freescale.com>
+ <DM2PR03MB383C35FA5959662DD48D00BE6EE0@DM2PR03MB383.namprd03.prod.outlook.com>
+ <1430353832.16357.138.camel@freescale.com>
+ <DM2PR03MB3839C9D3FDFD7978C1A3497E6D60@DM2PR03MB383.namprd03.prod.outlook.com>
+ <1430523775.16357.177.camel@freescale.com>
+In-Reply-To: <1430523775.16357.177.camel@freescale.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Bucur
- Madalin-Cristian-B32716 <madalin.bucur@freescale.com>
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Yuantian
+ Tang <Yuantian.Tang@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,37 +35,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-05-05 at 11:04 -0500, Pledge Roy-R01356 wrote:
-> Sorry for the slow reply.
-> 
-> I don't believe this is correct - let me explain the rational why we had two properties in the QMan portal to begin with.
-> 
-> The two properties in question are cell-index and fsl,qman-channel-id.
-> 
-> The cell-index property is used in u-boot as an index for the software portal ID when adding the fsl,liodn from the U-boot table into the device tree.
-
-The device tree is not supposed to contain arbitrary software
-identifiers.
-
-> The  fsl,qman-channel-id property is used in Linux and corresponds to a
-> hardware value that indicates which channel is dedicated to the
-> software portal.
-> 
-> While I'm not aware of a current SoC where the channel ID for a
-> software portal does not match the index (i.e. SWP 0 uses channel 0,
-> etc.) 
-
-Thus there's no backward compatibility issue with redefining cell-index
-to mean the channel ID.
-
-> it is possible that future SoCs could stray from this model,
-> there is no reason for portal index to equal channel ID at all times.
-
-How can future SoCs dictate how we assign a software-defined identifier?
-If software wants it to be the same as the channel id, then it will be.
-
-If there is some aspect of the hardware itself (not the documentation)
-that cell-index currently corresponds to, other than the channel id,
-please make that clear.
-
--Scott
+DQoNClJlZ2FyZHMsDQpJZ2FsIExpYmVybWFuLg0KDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0t
+LS0tDQo+IEZyb206IFdvb2QgU2NvdHQtQjA3NDIxDQo+IFNlbnQ6IFNhdHVyZGF5LCBNYXkgMDIs
+IDIwMTUgMjo0MyBBTQ0KPiBUbzogTGliZXJtYW4gSWdhbC1CMzE5NTANCj4gQ2M6IGRldmljZXRy
+ZWVAdmdlci5rZXJuZWwub3JnOyBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZzsgVGFuZw0K
+PiBZdWFudGlhbi1CMjk5ODMNCj4gU3ViamVjdDogUmU6IFt2M10gZHQvYmluZGluZ3M6IHFvcmlx
+LWNsb2NrOiBBZGQgYmluZGluZyBmb3IgRk1hbiBjbG9jayBtdXgNCj4gDQo+IE9uIFRodSwgMjAx
+NS0wNC0zMCBhdCAwOToyOCAtMDUwMCwgTGliZXJtYW4gSWdhbC1CMzE5NTAgd3JvdGU6DQo+ID4g
+PiAtLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KPiA+ID4gRnJvbTogV29vZCBTY290dC1CMDc0
+MjENCj4gPiA+IFNlbnQ6IFRodXJzZGF5LCBBcHJpbCAzMCwgMjAxNSAzOjMxIEFNDQo+ID4gPiBU
+bzogTGliZXJtYW4gSWdhbC1CMzE5NTANCj4gPiA+IENjOiBkZXZpY2V0cmVlQHZnZXIua2VybmVs
+Lm9yZzsgbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IFRhbmcNCj4gPiA+IFl1YW50aWFu
+LUIyOTk4Mw0KPiA+ID4gU3ViamVjdDogUmU6IFt2M10gZHQvYmluZGluZ3M6IHFvcmlxLWNsb2Nr
+OiBBZGQgYmluZGluZyBmb3IgRk1hbg0KPiA+ID4gY2xvY2sgbXV4DQo+ID4gPg0KPiA+ID4gT24g
+V2VkLCAyMDE1LTA0LTIyIGF0IDA1OjQ3IC0wNTAwLCBMaWJlcm1hbiBJZ2FsLUIzMTk1MCB3cm90
+ZToNCj4gPiA+ID4gV2UgaGF2ZSAyIGNhc2VzOg0KPiA+ID4gPiAJLSBEZXZpY2VzIChUMi9UNC9C
+NCkgd2l0aCBDTEtDRzFIV0FDU1IgcmVnaXN0ZXIuDQo+ID4gPiA+IAktIERldmljZXMgKFB4eHh4
+LCBUMSkgd2l0aG91dCBDTEtDRzFIV0FDU1IgcmVnaXN0ZXIgKFB4eHh4DQo+ID4gPiBkZXZpY2Vz
+DQo+ID4gPiA+IGhhdmUgbWFueSBvcHRpb25zLCBUMSBoYXMgb25seSBvbmUgb3B0aW9uKQ0KPiA+
+ID4gPg0KPiA+ID4gPiBGb3IgdGhlIGZpcnN0IGdyb3VwLCB3ZSBjYW4gaGF2ZSAiIHFvcmlxLWh3
+YWNzciIgcHJvcGVydHkgaW4gdGhlIGNsb2NrDQo+IG5vZGUuDQo+ID4gPg0KPiA+ID4gTm8sIHdl
+J3JlIG5vdCBnb2luZyB0byBkZXNjcmliZSBldmVyeSByZWdpc3RlciB3aXRoIGl0cyBvd24gcHJv
+cGVydHkuDQo+ID4gPiBEZXNjcmliZSB0aGUgY2hpcCBhbmQgbGV0IHRoZSBkcml2ZXIgYmUgdGhl
+IHBsYWNlIHdpdGggdGhlIGtub3dsZWRnZQ0KPiA+ID4gb2Ygd2hhdCBlYWNoIGNoaXAgaXMgbGlr
+ZS4NCj4gPiA+DQo+ID4NCj4gPiBJIHRoaW5rIHRoYXQgRk1hbiBjbG9jayBtdXggKGFzIHdlIGRl
+ZmluZWQgaXQpIGlzIHNpbWlsYXIgdG8gb3RoZXIgbXV4ZXMNCj4gYXZhaWxhYmxlIGluIG91ciBT
+b0MuDQo+IA0KPiBJIHJlYWxpemUgdGhhdC4gIEknbSBzYXlpbmcgdGhlIHdheSB3ZSBkZXNjcmli
+ZWQgZXhpc3RpbmcgbXV4ZXMgc2VlbXMgdG8gYmUgYQ0KPiBtaXN0YWtlLiAgV2UncmUgcHV0dGlu
+ZyB0b28gbXVjaCBjb21wbGV4aXR5IGluIHRoZSBkZXZpY2UgdHJlZS4NCj4gQmV0dGVyIHRvIHB1
+dCB0aGUgY29tcGxleGl0eSBpbiBhIHBsYWNlIHRoYXQgaXNuJ3Qgc3RhYmxlIEFCSS4NCj4gDQo+
+ID4gSWYgd2UgdGFrZSBUNCBhcyBleGFtcGxlLCBpdCBoYXMgMyBtdXhlcyBkZWZpbmVkIGluIHRo
+ZSBkZXZpY2UgdHJlZSAobXV4MCwNCj4gbXV4MSBhbmQgbXV4MikuDQo+ID4gRWFjaCBtdXggaGFz
+IGl0cyBvd24gcmVnIHByb3BlcnR5IChhbmQgY2xvY2sgcHJvdmlkZXJzKS4NCj4gPiAJbXV4Mjog
+bXV4MkA0MCB7DQo+ID4gCQkjY2xvY2stY2VsbHMgPSA8MD47DQo+ID4gCQlyZWcgPSA8MHg0MCAw
+eDQ+Ow0KPiA+IAkJY29tcGF0aWJsZSA9ICJmc2wscW9yaXEtY29yZS1tdXgtMi4wIjsNCj4gPiAJ
+CWNsb2NrcyA9IDwmcGxsMyAwPiwgPCZwbGwzIDE+LCA8JnBsbDMgMj4sDQo+ID4gCQkJPCZwbGw0
+IDA+LCA8JnBsbDQgMT4sIDwmcGxsNCAyPjsNCj4gPiAJCWNsb2NrLW5hbWVzID0gInBsbDMiLCAi
+cGxsMy1kaXYyIiwgInBsbDMtZGl2NCIsDQo+ID4gCQkJInBsbDQiLCAicGxsNC1kaXYyIiwgInBs
+bDQtZGl2NCI7DQo+ID4gCQljbG9jay1vdXRwdXQtbmFtZXMgPSAiY211eDIiOw0KPiA+IAl9Ow0K
+PiA+DQo+ID4gSSBhZ3JlZSB0aGF0ICJmbTEtY2xrLW11eCIgbmVlZCB0byBiZSBtb3ZlZCBmcm9t
+IHRoZSAiZ3V0cyIgbm9kZSB0bw0KPiAiY2xvY2tnZW4iIG5vZGUuDQo+IA0KPiBUaGF0J3Mgbm90
+IHdoYXQgSSB3YXMgc2F5aW5nLiAgSSdtIHNheWluZyBnZXQgcmlkIG9mIHRoZSBub2RlIGVudGly
+ZWx5LCBpbiBmYXZvcg0KPiBvZiBoYXZpbmcgdGhlIGNsb2NrZ2VuIG5vZGUgaXRzZWxmIGJlIGEg
+Y2xvY2sgc291cmNlIHdpdGggbXVsdGlwbGUgcG9zdC1tdXgNCj4gb3V0cHV0cy4NCj4gDQoNClNj
+b3R0LA0KQ3VycmVudGx5IHRoZSBjbG9ja2dlbiBub2RlIGhhcyBhIG51bWJlciBvZiBzdWIgbm9k
+ZXMgKHBsYXRmb3JtIGNsb2NrLCBzeXNjbG9jaywgUExMcyBhbmQgbXV4ZXMsIHRoZSBudW1iZXIg
+b2YgbXV4ZXMvUExMcyBpcyBTb0MgZGVwZW5kZW50KS4NClRoZSBjbG9ja2dlbiBub2RlIGhhcyBy
+ZWcgcHJvcGVydHksIGhvd2V2ZXIsIGFsbCBvdGhlciBub2RlcyBoYXZlIHJlZyBwcm9wZXJ0eSB0
+b28gKFRoZSBjbG9ja2dlbiBwb2ludHMgdG8gdGhlIGNsb2NraW5nIGJsb2NrIGFkZHJlc3MgYW5k
+IHRoZSBzdWIgbm9kZXMgcG9pbnQgdG8gdGhlIHNwZWNpZmljIHJlZ2lzdGVyIGluIHRoZSBjbG9j
+ayBibG9jaykuDQpEbyB5b3Ugd2FudCB0byBjaGFuZ2UgdGhpcyBzdHJ1Y3R1cmUgY29tcGxldGVs
+eT8NCkknbSBub3Qgc3VyZSBJIHVuZGVyc3RhbmQgdGhlIGV4YWN0IHdheSB5b3Ugd2FudCBzZWUg
+dGhvc2Ugbm9kZXMgKGluIHRoZSBmaW5hbCBzdGF0ZSkuDQoNCj4gPiBIb3dldmVyLCBJJ20gbm90
+IHN1cmUgd2hpY2ggY2hhbmdlcyB5b3Ugd2FudCB0byBwZXJmb3JtIGluIHRoZSBub2RlDQo+IChi
+ZXNpZGUgYWRkaW5nIHJlZyBwcm9wZXJ0eSBmb3IgU29DIHdoaWNoIGhhcyBpdCBmb3IgRk1hbiBj
+bG9jaykuDQo+IA0KPiBBZ2FpbiwgdGhlIGNsb2NrZ2VuIG5vZGUgYWxyZWFkeSBoYXMgYSByZWcg
+cHJvcGVydHkuDQo+IA0KPiAtU2NvdHQNCj4gDQoNCg==
