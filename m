@@ -1,42 +1,29 @@
-Return-Path: <mahesh@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <ulf.hansson@linaro.org>
+Received: from mail-qg0-f52.google.com (mail-qg0-f52.google.com
+ [209.85.192.52])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 025131A114B
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 May 2015 18:06:46 +1000 (AEST)
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id C4686140788
- for <linuxppc-dev@ozlabs.org>; Tue,  5 May 2015 18:06:45 +1000 (AEST)
-Received: from /spool/local
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
- Tue, 5 May 2015 18:06:44 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id DCDD8357804F
- for <linuxppc-dev@ozlabs.org>; Tue,  5 May 2015 18:06:41 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t4586X3v42991856
- for <linuxppc-dev@ozlabs.org>; Tue, 5 May 2015 18:06:41 +1000
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t45869CE004900
- for <linuxppc-dev@ozlabs.org>; Tue, 5 May 2015 18:06:09 +1000
-Subject: [PATCH v2 2/2] powerpc/powernv: Pull all HMI events before panic.
-From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
-To: linuxppc-dev <linuxppc-dev@ozlabs.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Michael Ellerman <mpe@ellerman.id.au>
-Date: Tue, 05 May 2015 13:35:43 +0530
-Message-ID: <20150505080529.513.66351.stgit@mars.in.ibm.com>
-In-Reply-To: <20150505080431.513.69688.stgit@mars.in.ibm.com>
-References: <20150505080431.513.69688.stgit@mars.in.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7E1091A06B3
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 May 2015 18:36:40 +1000 (AEST)
+Received: by qgej70 with SMTP id j70so77664303qge.2
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 05 May 2015 01:36:38 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: Paul Mackerras <paulus@samba.org>
+In-Reply-To: <1430746792-32574-1-git-send-email-stripathi@apm.com>
+References: <1430746792-32574-1-git-send-email-stripathi@apm.com>
+Date: Tue, 5 May 2015 10:36:37 +0200
+Message-ID: <CAPDyKFqva7jioEpf1qBv+sSo9-ZWU69+wb9qTF1X+4cxOgf2uQ@mail.gmail.com>
+Subject: Re: [PATCH v4 0/3] Add SDHCI support for APM X-Gene SoC using ARASAN
+ SDHCI controller.
+From: Ulf Hansson <ulf.hansson@linaro.org>
+To: Suman Tripathi <stripathi@apm.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ mlangsdo@redhat.com, Arnd Bergmann <arnd@arndb.de>, jcm@redhat.com,
+ Anton Vorontsov <anton@enomsg.org>, linux-mmc <linux-mmc@vger.kernel.org>,
+ Chris Ball <chris@printf.net>, Michal Simek <michal.simek@xilinx.com>,
+ patches@apm.com, Don Dutile <ddutile@redhat.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,67 +33,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+On 4 May 2015 at 15:39, Suman Tripathi <stripathi@apm.com> wrote:
+> This patch adds the SDHCI support for APM X-Gene SoC using ARASAN SDHCI controller.
+>
+> v1 change:
+>  * Use the CONFIG_ARM64_DMA_HAS_IOMMU for dma-mapping.
+>
+> v2 change:
+>  * Drop the IOMMU support and switching to PIO mode for arasan.
+>    controller integrated inside APM X-Gene SoC.
+>
+> v3 change:
+>  * Change the sdhci-of-arasan.c to support arasan4.9a.
+>  * Add quirks for arasan4.9a.
+>
+> v4 change:
+>  * Cleanup the Documentation and dts.
+>
+> Signed-off-by: Suman Tripathi <stripathi@apm.com>
+> ---
+>
+> Suman Tripathi (3):
+>   arm64: dts: Add the arasan sdhc nodes in apm-storm.dtsi.
+>   mmc: host: arasan: Add the support for sdhci-arasan4.9a in
+>     sdhci-of-arasan.c
+>   Documentation: mmc: Update Arasan SDHC documentation to support 4.9a
+>     version of     Arasan SDHC controller.
+>
+>  .../devicetree/bindings/mmc/arasan,sdhci.txt       |  3 +-
+>  arch/arm64/boot/dts/apm-mustang.dts                |  4 ++
+>  arch/arm64/boot/dts/apm-storm.dtsi                 | 44 ++++++++++++++++++++++
+>  drivers/mmc/host/sdhci-of-arasan.c                 |  7 ++++
+>  4 files changed, 57 insertions(+), 1 deletion(-)
+>
 
-In the event of unrecovered HMI the existing code panics as soon as
-it receives the first unrecovered HMI event. This makes host to report
-partial information about HMIs before panic. There may be more errors
-which would have caused the HMI and hence more HMI event would have been
-generated waiting to be pulled by host. This patch implements a logic to
-pull and display all the HMI event before going down panic path.
+Thanks!
 
-Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
----
- arch/powerpc/platforms/powernv/opal-hmi.c |   26 ++++++++++++++++++++++++--
- 1 file changed, 24 insertions(+), 2 deletions(-)
+I have applied patch2 and patch3. Though, I decided to squash them
+into one patch and changed the commit message header a bit.
 
-diff --git a/arch/powerpc/platforms/powernv/opal-hmi.c b/arch/powerpc/platforms/powernv/opal-hmi.c
-index 2668225..26e0f3f 100644
---- a/arch/powerpc/platforms/powernv/opal-hmi.c
-+++ b/arch/powerpc/platforms/powernv/opal-hmi.c
-@@ -235,6 +235,8 @@ static void hmi_event_handler(struct work_struct *work)
- 	struct OpalHMIEvent *hmi_evt;
- 	struct OpalHmiEvtNode *msg_node;
- 	uint8_t disposition;
-+	struct opal_msg msg;
-+	int unrecoverable = 0;
- 
- 	spin_lock_irqsave(&opal_hmi_evt_lock, flags);
- 	while (!list_empty(&opal_hmi_evt_list)) {
-@@ -250,14 +252,34 @@ static void hmi_event_handler(struct work_struct *work)
- 
- 		/*
- 		 * Check if HMI event has been recovered or not. If not
--		 * then we can't continue, invoke panic.
-+		 * then kernel can't continue, we need to panic.
-+		 * But before we do that, display all the HMI event
-+		 * available on the list and set unrecoverable flag to 1.
- 		 */
- 		if (disposition != OpalHMI_DISPOSITION_RECOVERED)
--			panic("Unrecoverable HMI exception");
-+			unrecoverable = 1;
- 
- 		spin_lock_irqsave(&opal_hmi_evt_lock, flags);
- 	}
- 	spin_unlock_irqrestore(&opal_hmi_evt_lock, flags);
-+
-+	if (unrecoverable) {
-+		/* Pull all HMI events from OPAL before we panic. */
-+		while (opal_get_msg(__pa(&msg), sizeof(msg)) == OPAL_SUCCESS) {
-+			u32 type;
-+
-+			type = be32_to_cpu(msg.msg_type);
-+
-+			/* skip if not HMI event */
-+			if (type != OPAL_MSG_HMI_EVT)
-+				continue;
-+
-+			/* HMI event info starts from param[0] */
-+			hmi_evt = (struct OpalHMIEvent *)&msg.params[0];
-+			print_hmi_event_info(hmi_evt);
-+		}
-+		panic("Unrecoverable HMI exception");
-+	}
- }
- 
- static DECLARE_WORK(hmi_event_work, hmi_event_handler);
+I couldn't apply patch 1, so I guess that will be taken through arm soc?
+
+Kind regards
+Uffe
