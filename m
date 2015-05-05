@@ -1,44 +1,42 @@
-Return-Path: <shilpa.bhat@linux.vnet.ibm.com>
+Return-Path: <mahesh@linux.vnet.ibm.com>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 31C2C1A06B0
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 May 2015 16:33:56 +1000 (AEST)
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 11EDD1A066D
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 May 2015 18:06:03 +1000 (AEST)
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 0435014076D
- for <linuxppc-dev@ozlabs.org>; Tue,  5 May 2015 16:33:56 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTPS id DC1A0140786
+ for <linuxppc-dev@ozlabs.org>; Tue,  5 May 2015 18:06:02 +1000 (AEST)
 Received: from /spool/local
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <shilpa.bhat@linux.vnet.ibm.com>;
- Tue, 5 May 2015 16:33:54 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 2D827357804F
- for <linuxppc-dev@ozlabs.org>; Tue,  5 May 2015 16:33:51 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t456Xgi232571508
- for <linuxppc-dev@ozlabs.org>; Tue, 5 May 2015 16:33:51 +1000
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t456XIt4021171
- for <linuxppc-dev@ozlabs.org>; Tue, 5 May 2015 16:33:18 +1000
-Message-ID: <5548641C.5090208@linux.vnet.ibm.com>
-Date: Tue, 05 May 2015 12:03:00 +0530
-From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+ for <linuxppc-dev@ozlabs.org> from <mahesh@linux.vnet.ibm.com>;
+ Tue, 5 May 2015 18:06:01 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 94D3C2CE8040
+ for <linuxppc-dev@ozlabs.org>; Tue,  5 May 2015 18:05:57 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t4585mKY50004050
+ for <linuxppc-dev@ozlabs.org>; Tue, 5 May 2015 18:05:57 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t4585OLV030743
+ for <linuxppc-dev@ozlabs.org>; Tue, 5 May 2015 18:05:24 +1000
+Subject: [PATCH v2 1/2] powerpc/powernv: display reason for Malfunction
+ Alert HMI.
+From: Mahesh J Salgaonkar <mahesh@linux.vnet.ibm.com>
+To: linuxppc-dev <linuxppc-dev@ozlabs.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Michael Ellerman <mpe@ellerman.id.au>
+Date: Tue, 05 May 2015 13:34:58 +0530
+Message-ID: <20150505080431.513.69688.stgit@mars.in.ibm.com>
 MIME-Version: 1.0
-To: Preeti U Murthy <preeti@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org,
- linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v3 4/6] cpufreq: powernv: Call throttle_check() on
- receiving OCC_THROTTLE
-References: <1430729652-14813-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
- <1430729652-14813-5-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
- <55484072.5060400@linux.vnet.ibm.com>
-In-Reply-To: <55484072.5060400@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=iso-8859-6
-Cc: viresh.kumar@linaro.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset="utf-8"
+Cc: Stewart Smith <stewart@linux.vnet.ibm.com>,
+ Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,142 +46,259 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Preeti,
+From: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
 
-On 05/05/2015 09:30 AM, Preeti U Murthy wrote:
-> Hi Shilpa,
-> 
-> On 05/04/2015 02:24 PM, Shilpasri G Bhat wrote:
->> Re-evaluate the chip's throttled state on recieving OCC_THROTTLE
->> notification by executing *throttle_check() on any one of the cpu on
->> the chip. This is a sanity check to verify if we were indeed
->> throttled/unthrottled after receiving OCC_THROTTLE notification.
->>
->> We cannot call *throttle_check() directly from the notification
->> handler because we could be handling chip1's notification in chip2. So
->> initiate an smp_call to execute *throttle_check(). We are irq-disabled
->> in the notification handler, so use a worker thread to smp_call
->> throttle_check() on any of the cpu in the chipmask.
-> 
-> I see that the first patch takes care of reporting *per-chip* throttling
-> for pmax capping condition. But where are we taking care of reporting
-> "pstate set to safe" and "freq control disabled" scenarios per-chip ?
-> 
+The V2 version of HMI event now carries additional information for
+Malfunction Alert. It now contains error information about CORE and NX
+checkstop. This patch checks and displays the check stop reason before
+panic.
 
-IMO let us not have "psafe" and "freq control disabled" states managed per-chip.
-Because when the above two conditions occur it is likely to happen across all
-chips during an OCC reset cycle. So I am setting 'throttled' to false on
-OCC_ACTIVE and re-verifying if it actually is the case by invoking
-*throttle_check().
+Signed-off-by: Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>
+Acked-by: Stewart Smith <stewart@linux.vnet.ibm.com>
+---
+Changes in V2:
+- Rebased it against opal-api.h
 
->>
->> Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
->> ---
->>  drivers/cpufreq/powernv-cpufreq.c | 28 ++++++++++++++++++++++++++--
->>  1 file changed, 26 insertions(+), 2 deletions(-)
->>
->> diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
->> index 9268424..9618813 100644
->> --- a/drivers/cpufreq/powernv-cpufreq.c
->> +++ b/drivers/cpufreq/powernv-cpufreq.c
->> @@ -50,6 +50,8 @@ static bool rebooting, throttled, occ_reset;
->>  static struct chip {
->>  	unsigned int id;
->>  	bool throttled;
->> +	cpumask_t mask;
->> +	struct work_struct throttle;
->>  } *chips;
->>
->>  static int nr_chips;
->> @@ -310,8 +312,9 @@ static inline unsigned int get_nominal_index(void)
->>  	return powernv_pstate_info.max - powernv_pstate_info.nominal;
->>  }
->>
->> -static void powernv_cpufreq_throttle_check(unsigned int cpu)
->> +static void powernv_cpufreq_throttle_check(void *data)
->>  {
->> +	unsigned int cpu = smp_processor_id();
->>  	unsigned long pmsr;
->>  	int pmsr_pmax, pmsr_lp, i;
->>
->> @@ -373,7 +376,7 @@ static int powernv_cpufreq_target_index(struct cpufreq_policy *policy,
->>  		return 0;
->>
->>  	if (!throttled)
->> -		powernv_cpufreq_throttle_check(smp_processor_id());
->> +		powernv_cpufreq_throttle_check(NULL);
->>
->>  	freq_data.pstate_id = powernv_freqs[new_index].driver_data;
->>
->> @@ -418,6 +421,14 @@ static struct notifier_block powernv_cpufreq_reboot_nb = {
->>  	.notifier_call = powernv_cpufreq_reboot_notifier,
->>  };
->>
->> +void powernv_cpufreq_work_fn(struct work_struct *work)
->> +{
->> +	struct chip *chip = container_of(work, struct chip, throttle);
->> +
->> +	smp_call_function_any(&chip->mask,
->> +			      powernv_cpufreq_throttle_check, NULL, 0);
->> +}
->> +
->>  static char throttle_reason[][30] = {
->>  					"No throttling",
->>  					"Power Cap",
->> @@ -433,6 +444,7 @@ static int powernv_cpufreq_occ_msg(struct notifier_block *nb,
->>  	struct opal_msg *occ_msg = msg;
->>  	uint64_t token;
->>  	uint64_t chip_id, reason;
->> +	int i;
->>
->>  	if (msg_type != OPAL_MSG_OCC)
->>  		return 0;
->> @@ -466,6 +478,10 @@ static int powernv_cpufreq_occ_msg(struct notifier_block *nb,
->>  			occ_reset = false;
->>  			throttled = false;
->>  			pr_info("OCC: Active\n");
->> +
->> +			for (i = 0; i < nr_chips; i++)
->> +				schedule_work(&chips[i].throttle);
->> +
->>  			return 0;
->>  		}
->>
->> @@ -476,6 +492,12 @@ static int powernv_cpufreq_occ_msg(struct notifier_block *nb,
->>  		else if (!reason)
->>  			pr_info("OCC: Chip %u %s\n", (unsigned int)chip_id,
->>  				throttle_reason[reason]);
->> +		else
->> +			return 0;
-> 
-> Why the else section ? The code can never reach here, can it ?
+ arch/powerpc/include/asm/opal-api.h       |   61 +++++++++++++
+ arch/powerpc/platforms/powernv/opal-hmi.c |  132 +++++++++++++++++++++++++++++
+ 2 files changed, 193 insertions(+)
 
-When reason > 5 , we dont want to handle it.
-
-> 
->> +
->> +		for (i = 0; i < nr_chips; i++)
->> +			if (chips[i].id == chip_id)
->> +				schedule_work(&chips[i].throttle);
->>  	}
-> 
-> Should we not do this only when we get unthrottled so as to cross verify
-> if it is indeed the case ? In case of throttling notification, opal's
-> verdict is final and there is no need to cross verify right ?
-
-Two reasons for invoking *throttle_check() on throttling:
-1) We just got to know the reason and not the Pmax value we are getting
-throttled to.
-2) It could be a spurious message caused due to late/lost delivery. My point
-here is let us not completely rely on the notification to declare throttling
-unless we verify it from reading PMSR.
-
-> 
-> Perhaps the one thing that needs to be taken care in addition to
-> reporting throttling is setting the chip's throttled parameter to true.
-> This should do right ? I don't see the need to call throttle_check() here.
-> 
->
-
-Thanks and Regards,
-Shilpa
+diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
+index 0321a90..ab245dd 100644
+--- a/arch/powerpc/include/asm/opal-api.h
++++ b/arch/powerpc/include/asm/opal-api.h
+@@ -428,6 +428,7 @@ struct OpalMemoryErrorData {
+ /* HMI interrupt event */
+ enum OpalHMI_Version {
+ 	OpalHMIEvt_V1 = 1,
++	OpalHMIEvt_V2 = 2,
+ };
+ 
+ enum OpalHMI_Severity {
+@@ -458,6 +459,49 @@ enum OpalHMI_ErrType {
+ 	OpalHMI_ERROR_CAPP_RECOVERY,
+ };
+ 
++enum OpalHMI_XstopType {
++	CHECKSTOP_TYPE_UNKNOWN	=	0,
++	CHECKSTOP_TYPE_CORE	=	1,
++	CHECKSTOP_TYPE_NX	=	2,
++};
++
++enum OpalHMI_CoreXstopReason {
++	CORE_CHECKSTOP_IFU_REGFILE		= 0x00000001,
++	CORE_CHECKSTOP_IFU_LOGIC		= 0x00000002,
++	CORE_CHECKSTOP_PC_DURING_RECOV		= 0x00000004,
++	CORE_CHECKSTOP_ISU_REGFILE		= 0x00000008,
++	CORE_CHECKSTOP_ISU_LOGIC		= 0x00000010,
++	CORE_CHECKSTOP_FXU_LOGIC		= 0x00000020,
++	CORE_CHECKSTOP_VSU_LOGIC		= 0x00000040,
++	CORE_CHECKSTOP_PC_RECOV_IN_MAINT_MODE	= 0x00000080,
++	CORE_CHECKSTOP_LSU_REGFILE		= 0x00000100,
++	CORE_CHECKSTOP_PC_FWD_PROGRESS		= 0x00000200,
++	CORE_CHECKSTOP_LSU_LOGIC		= 0x00000400,
++	CORE_CHECKSTOP_PC_LOGIC			= 0x00000800,
++	CORE_CHECKSTOP_PC_HYP_RESOURCE		= 0x00001000,
++	CORE_CHECKSTOP_PC_HANG_RECOV_FAILED	= 0x00002000,
++	CORE_CHECKSTOP_PC_AMBI_HANG_DETECTED	= 0x00004000,
++	CORE_CHECKSTOP_PC_DEBUG_TRIG_ERR_INJ	= 0x00008000,
++	CORE_CHECKSTOP_PC_SPRD_HYP_ERR_INJ	= 0x00010000,
++};
++
++enum OpalHMI_NestAccelXstopReason {
++	NX_CHECKSTOP_SHM_INVAL_STATE_ERR	= 0x00000001,
++	NX_CHECKSTOP_DMA_INVAL_STATE_ERR_1	= 0x00000002,
++	NX_CHECKSTOP_DMA_INVAL_STATE_ERR_2	= 0x00000004,
++	NX_CHECKSTOP_DMA_CH0_INVAL_STATE_ERR	= 0x00000008,
++	NX_CHECKSTOP_DMA_CH1_INVAL_STATE_ERR	= 0x00000010,
++	NX_CHECKSTOP_DMA_CH2_INVAL_STATE_ERR	= 0x00000020,
++	NX_CHECKSTOP_DMA_CH3_INVAL_STATE_ERR	= 0x00000040,
++	NX_CHECKSTOP_DMA_CH4_INVAL_STATE_ERR	= 0x00000080,
++	NX_CHECKSTOP_DMA_CH5_INVAL_STATE_ERR	= 0x00000100,
++	NX_CHECKSTOP_DMA_CH6_INVAL_STATE_ERR	= 0x00000200,
++	NX_CHECKSTOP_DMA_CH7_INVAL_STATE_ERR	= 0x00000400,
++	NX_CHECKSTOP_DMA_CRB_UE			= 0x00000800,
++	NX_CHECKSTOP_DMA_CRB_SUE		= 0x00001000,
++	NX_CHECKSTOP_PBI_ISN_UE			= 0x00002000,
++};
++
+ struct OpalHMIEvent {
+ 	uint8_t		version;	/* 0x00 */
+ 	uint8_t		severity;	/* 0x01 */
+@@ -468,6 +512,23 @@ struct OpalHMIEvent {
+ 	__be64		hmer;
+ 	/* TFMR register. Valid only for TFAC and TFMR_PARITY error type. */
+ 	__be64		tfmr;
++
++	/* version 2 and later */
++	union {
++		/*
++		 * checkstop info (Core/NX).
++		 * Valid for OpalHMI_ERROR_MALFUNC_ALERT.
++		 */
++		struct {
++			uint8_t	xstop_type;	/* enum OpalHMI_XstopType */
++			uint8_t reserved_1[3];
++			__be32  xstop_reason;
++			union {
++				__be32 pir;	/* for CHECKSTOP_TYPE_CORE */
++				__be32 chip_id;	/* for CHECKSTOP_TYPE_NX */
++			} u;
++		} xstop_error;
++	} u;
+ };
+ 
+ enum {
+diff --git a/arch/powerpc/platforms/powernv/opal-hmi.c b/arch/powerpc/platforms/powernv/opal-hmi.c
+index b322bfb..2668225 100644
+--- a/arch/powerpc/platforms/powernv/opal-hmi.c
++++ b/arch/powerpc/platforms/powernv/opal-hmi.c
+@@ -35,9 +35,134 @@ struct OpalHmiEvtNode {
+ 	struct list_head list;
+ 	struct OpalHMIEvent hmi_evt;
+ };
++
++struct xstop_reason {
++	uint32_t xstop_reason;
++	const char *unit_failed;
++	const char *description;
++};
++
+ static LIST_HEAD(opal_hmi_evt_list);
+ static DEFINE_SPINLOCK(opal_hmi_evt_lock);
+ 
++static void print_core_checkstop_reason(const char *level,
++					struct OpalHMIEvent *hmi_evt)
++{
++	int i;
++	static const struct xstop_reason xstop_reason[] = {
++		{ CORE_CHECKSTOP_IFU_REGFILE, "IFU",
++				"RegFile core check stop" },
++		{ CORE_CHECKSTOP_IFU_LOGIC, "IFU", "Logic core check stop" },
++		{ CORE_CHECKSTOP_PC_DURING_RECOV, "PC",
++				"Core checkstop during recovery" },
++		{ CORE_CHECKSTOP_ISU_REGFILE, "ISU",
++				"RegFile core check stop (mapper error)" },
++		{ CORE_CHECKSTOP_ISU_LOGIC, "ISU", "Logic core check stop" },
++		{ CORE_CHECKSTOP_FXU_LOGIC, "FXU", "Logic core check stop" },
++		{ CORE_CHECKSTOP_VSU_LOGIC, "VSU", "Logic core check stop" },
++		{ CORE_CHECKSTOP_PC_RECOV_IN_MAINT_MODE, "PC",
++				"Recovery in maintenance mode" },
++		{ CORE_CHECKSTOP_LSU_REGFILE, "LSU",
++				"RegFile core check stop" },
++		{ CORE_CHECKSTOP_PC_FWD_PROGRESS, "PC",
++				"Forward Progress Error" },
++		{ CORE_CHECKSTOP_LSU_LOGIC, "LSU", "Logic core check stop" },
++		{ CORE_CHECKSTOP_PC_LOGIC, "PC", "Logic core check stop" },
++		{ CORE_CHECKSTOP_PC_HYP_RESOURCE, "PC",
++				"Hypervisor Resource error - core check stop" },
++		{ CORE_CHECKSTOP_PC_HANG_RECOV_FAILED, "PC",
++				"Hang Recovery Failed (core check stop)" },
++		{ CORE_CHECKSTOP_PC_AMBI_HANG_DETECTED, "PC",
++				"Ambiguous Hang Detected (unknown source)" },
++		{ CORE_CHECKSTOP_PC_DEBUG_TRIG_ERR_INJ, "PC",
++				"Debug Trigger Error inject" },
++		{ CORE_CHECKSTOP_PC_SPRD_HYP_ERR_INJ, "PC",
++				"Hypervisor check stop via SPRC/SPRD" },
++	};
++
++	/* Validity check */
++	if (!hmi_evt->u.xstop_error.xstop_reason) {
++		printk("%s	Unknown Core check stop.\n", level);
++		return;
++	}
++
++	printk("%s	CPU PIR: %08x\n", level,
++			be32_to_cpu(hmi_evt->u.xstop_error.u.pir));
++	for (i = 0; i < ARRAY_SIZE(xstop_reason); i++)
++		if (be32_to_cpu(hmi_evt->u.xstop_error.xstop_reason) &
++					xstop_reason[i].xstop_reason)
++			printk("%s	[Unit: %-3s] %s\n", level,
++					xstop_reason[i].unit_failed,
++					xstop_reason[i].description);
++}
++
++static void print_nx_checkstop_reason(const char *level,
++					struct OpalHMIEvent *hmi_evt)
++{
++	int i;
++	static const struct xstop_reason xstop_reason[] = {
++		{ NX_CHECKSTOP_SHM_INVAL_STATE_ERR, "DMA & Engine",
++					"SHM invalid state error" },
++		{ NX_CHECKSTOP_DMA_INVAL_STATE_ERR_1, "DMA & Engine",
++					"DMA invalid state error bit 15" },
++		{ NX_CHECKSTOP_DMA_INVAL_STATE_ERR_2, "DMA & Engine",
++					"DMA invalid state error bit 16" },
++		{ NX_CHECKSTOP_DMA_CH0_INVAL_STATE_ERR, "DMA & Engine",
++					"Channel 0 invalid state error" },
++		{ NX_CHECKSTOP_DMA_CH1_INVAL_STATE_ERR, "DMA & Engine",
++					"Channel 1 invalid state error" },
++		{ NX_CHECKSTOP_DMA_CH2_INVAL_STATE_ERR, "DMA & Engine",
++					"Channel 2 invalid state error" },
++		{ NX_CHECKSTOP_DMA_CH3_INVAL_STATE_ERR, "DMA & Engine",
++					"Channel 3 invalid state error" },
++		{ NX_CHECKSTOP_DMA_CH4_INVAL_STATE_ERR, "DMA & Engine",
++					"Channel 4 invalid state error" },
++		{ NX_CHECKSTOP_DMA_CH5_INVAL_STATE_ERR, "DMA & Engine",
++					"Channel 5 invalid state error" },
++		{ NX_CHECKSTOP_DMA_CH6_INVAL_STATE_ERR, "DMA & Engine",
++					"Channel 6 invalid state error" },
++		{ NX_CHECKSTOP_DMA_CH7_INVAL_STATE_ERR, "DMA & Engine",
++					"Channel 7 invalid state error" },
++		{ NX_CHECKSTOP_DMA_CRB_UE, "DMA & Engine",
++					"UE error on CRB(CSB address, CCB)" },
++		{ NX_CHECKSTOP_DMA_CRB_SUE, "DMA & Engine",
++					"SUE error on CRB(CSB address, CCB)" },
++		{ NX_CHECKSTOP_PBI_ISN_UE, "PowerBus Interface",
++		"CRB Kill ISN received while holding ISN with UE error" },
++	};
++
++	/* Validity check */
++	if (!hmi_evt->u.xstop_error.xstop_reason) {
++		printk("%s	Unknown NX check stop.\n", level);
++		return;
++	}
++
++	printk("%s	NX checkstop on CHIP ID: %x\n", level,
++			be32_to_cpu(hmi_evt->u.xstop_error.u.chip_id));
++	for (i = 0; i < ARRAY_SIZE(xstop_reason); i++)
++		if (be32_to_cpu(hmi_evt->u.xstop_error.xstop_reason) &
++					xstop_reason[i].xstop_reason)
++			printk("%s	[Unit: %-3s] %s\n", level,
++					xstop_reason[i].unit_failed,
++					xstop_reason[i].description);
++}
++
++static void print_checkstop_reason(const char *level,
++					struct OpalHMIEvent *hmi_evt)
++{
++	switch (hmi_evt->u.xstop_error.xstop_type) {
++	case CHECKSTOP_TYPE_CORE:
++		print_core_checkstop_reason(level, hmi_evt);
++		break;
++	case CHECKSTOP_TYPE_NX:
++		print_nx_checkstop_reason(level, hmi_evt);
++		break;
++	case CHECKSTOP_TYPE_UNKNOWN:
++		printk("%s	Unknown Malfunction Alert.\n", level);
++		break;
++	}
++}
++
+ static void print_hmi_event_info(struct OpalHMIEvent *hmi_evt)
+ {
+ 	const char *level, *sevstr, *error_info;
+@@ -95,6 +220,13 @@ static void print_hmi_event_info(struct OpalHMIEvent *hmi_evt)
+ 		(hmi_evt->type == OpalHMI_ERROR_TFMR_PARITY))
+ 		printk("%s	TFMR: %016llx\n", level,
+ 						be64_to_cpu(hmi_evt->tfmr));
++
++	if (hmi_evt->version < OpalHMIEvt_V2)
++		return;
++
++	/* OpalHMIEvt_V2 and above provides reason for malfunction alert. */
++	if (hmi_evt->type == OpalHMI_ERROR_MALFUNC_ALERT)
++		print_checkstop_reason(level, hmi_evt);
+ }
+ 
+ static void hmi_event_handler(struct work_struct *work)
