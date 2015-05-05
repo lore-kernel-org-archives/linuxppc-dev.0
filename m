@@ -2,42 +2,42 @@ Return-Path: <preeti@linux.vnet.ibm.com>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DB0E01A066D
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 May 2015 13:46:10 +1000 (AEST)
-Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 91D821A066D
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 May 2015 13:51:48 +1000 (AEST)
+Received: from e8.ny.us.ibm.com (e8.ny.us.ibm.com [32.97.182.138])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 0DBBB141324
- for <linuxppc-dev@ozlabs.org>; Tue,  5 May 2015 13:46:09 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTPS id B154C14132C
+ for <linuxppc-dev@ozlabs.org>; Tue,  5 May 2015 13:51:47 +1000 (AEST)
 Received: from /spool/local
- by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e8.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <preeti@linux.vnet.ibm.com>;
- Mon, 4 May 2015 23:46:07 -0400
-Received: from b01cxnp23032.gho.pok.ibm.com (b01cxnp23032.gho.pok.ibm.com
- [9.57.198.27])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 2D12D6E803F
- for <linuxppc-dev@ozlabs.org>; Mon,  4 May 2015 23:37:54 -0400 (EDT)
+ Mon, 4 May 2015 23:51:45 -0400
+Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
+ [9.57.198.23])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 4B33938C8041
+ for <linuxppc-dev@ozlabs.org>; Mon,  4 May 2015 23:51:42 -0400 (EDT)
 Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
- by b01cxnp23032.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t453k5uY62193734
- for <linuxppc-dev@ozlabs.org>; Tue, 5 May 2015 03:46:05 GMT
+ by b01cxnp22033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t453pg1d53280990
+ for <linuxppc-dev@ozlabs.org>; Tue, 5 May 2015 03:51:42 GMT
 Received: from d01av04.pok.ibm.com (localhost [127.0.0.1])
  by d01av04.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t453k4Hs026744
- for <linuxppc-dev@ozlabs.org>; Mon, 4 May 2015 23:46:05 -0400
-Message-ID: <55483CFA.9010106@linux.vnet.ibm.com>
-Date: Tue, 05 May 2015 09:16:02 +0530
+ t453pfTt010848
+ for <linuxppc-dev@ozlabs.org>; Mon, 4 May 2015 23:51:42 -0400
+Message-ID: <55483E4B.4080405@linux.vnet.ibm.com>
+Date: Tue, 05 May 2015 09:21:39 +0530
 From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
 MIME-Version: 1.0
 To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org,
  linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v3 5/6] cpufreq: powernv: Report Psafe only if
- PMSR.psafe_mode_active bit is set
+Subject: Re: [PATCH v3 1/6] cpufreq: poowernv: Handle throttling due to Pmax
+ capping at chip level
 References: <1430729652-14813-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
- <1430729652-14813-6-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-In-Reply-To: <1430729652-14813-6-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=UTF-8
+ <1430729652-14813-2-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+In-Reply-To: <1430729652-14813-2-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-6
 Cc: viresh.kumar@linaro.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -48,62 +48,99 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi Shilpa,
+
 On 05/04/2015 02:24 PM, Shilpasri G Bhat wrote:
-> On a reset cycle of OCC, although the system retires from safe
-> frequency state the local pstate is not restored to Pmin or last
-> requested pstate. Now if the cpufreq governor initiates a pstate
-> change, the local pstate will be in Psafe and we will be reporting a
-> false positive when we are not throttled.
+> The On-Chip-Controller(OCC) can throttle cpu frequency by reducing the
+> max allowed frequency for that chip if the chip exceeds its power or
+> temperature limits. As Pmax capping is a chip level condition report
+> this throttling behavior at chip level and also do not set the global
+> 'throttled' on Pmax capping instead set the per-chip throttled
+> variable. Report unthrottling if Pmax is restored after throttling.
 > 
-> So in powernv_cpufreq_throttle_check() remove the condition which
-> checks if local pstate is less than Pmin while checking for Psafe
-> frequency. If the cpus are forced to Psafe then PMSR.psafe_mode_active
-> bit will be set. So, when OCCs become active this bit will be cleared.
-> Let us just rely on this bit for reporting throttling.
+> This patch adds a structure to store chip id and throttled state of
+> the chip.
 > 
 > Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
 > ---
->  drivers/cpufreq/powernv-cpufreq.c | 12 +++---------
->  1 file changed, 3 insertions(+), 9 deletions(-)
+>  drivers/cpufreq/powernv-cpufreq.c | 59 ++++++++++++++++++++++++++++++++++++---
+>  1 file changed, 55 insertions(+), 4 deletions(-)
 > 
 > diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-> index 9618813..0a59d5b 100644
+> index ebef0d8..d0c18c9 100644
 > --- a/drivers/cpufreq/powernv-cpufreq.c
 > +++ b/drivers/cpufreq/powernv-cpufreq.c
-> @@ -39,7 +39,6 @@
->  #define PMSR_PSAFE_ENABLE	(1UL << 30)
->  #define PMSR_SPR_EM_DISABLE	(1UL << 31)
->  #define PMSR_MAX(x)		((x >> 32) & 0xFF)
-> -#define PMSR_LP(x)		((x >> 48) & 0xFF)
->  #define OCC_RESET		0
->  #define OCC_LOAD		1
->  #define OCC_THROTTLE		2
-> @@ -316,7 +315,7 @@ static void powernv_cpufreq_throttle_check(void *data)
+> @@ -27,6 +27,7 @@
+>  #include <linux/smp.h>
+>  #include <linux/of.h>
+>  #include <linux/reboot.h>
+> +#include <linux/slab.h>
+> 
+>  #include <asm/cputhreads.h>
+>  #include <asm/firmware.h>
+> @@ -42,6 +43,13 @@
+>  static struct cpufreq_frequency_table powernv_freqs[POWERNV_MAX_PSTATES+1];
+>  static bool rebooting, throttled;
+> 
+> +static struct chip {
+> +	unsigned int id;
+> +	bool throttled;
+> +} *chips;
+> +
+> +static int nr_chips;
+> +
+>  /*
+>   * Note: The set of pstates consists of contiguous integers, the
+>   * smallest of which is indicated by powernv_pstate_info.min, the
+> @@ -301,22 +309,33 @@ static inline unsigned int get_nominal_index(void)
+>  static void powernv_cpufreq_throttle_check(unsigned int cpu)
 >  {
->  	unsigned int cpu = smp_processor_id();
 >  	unsigned long pmsr;
-> -	int pmsr_pmax, pmsr_lp, i;
-> +	int pmsr_pmax, i;
->  
+> -	int pmsr_pmax, pmsr_lp;
+> +	int pmsr_pmax, pmsr_lp, i;
+> 
 >  	pmsr = get_pmspr(SPRN_PMSR);
->  
-> @@ -338,14 +337,9 @@ static void powernv_cpufreq_throttle_check(void *data)
->  			chips[i].id, pmsr_pmax);
->  	}
->  
-> -	/*
-> -	 * Check for Psafe by reading LocalPstate
-> -	 * or check if Psafe_mode_active is set in PMSR.
-> -	 */
-> +	/* Check if Psafe_mode_active is set in PMSR. */
->  next:
-> -	pmsr_lp = (s8)PMSR_LP(pmsr);
-> -	if ((pmsr_lp < powernv_pstate_info.min) ||
-> -				(pmsr & PMSR_PSAFE_ENABLE)) {
-> +	if (pmsr & PMSR_PSAFE_ENABLE) {
->  		throttled = true;
->  		pr_info("Pstate set to safe frequency\n");
+> 
+> +	for (i = 0; i < nr_chips; i++)
+> +		if (chips[i].id == cpu_to_chip_id(cpu))
+> +			break;
+> +
+>  	/* Check for Pmax Capping */
+>  	pmsr_pmax = (s8)PMSR_MAX(pmsr);
+>  	if (pmsr_pmax != powernv_pstate_info.max) {
+> -		throttled = true;
+> -		pr_info("CPU %d Pmax is reduced to %d\n", cpu, pmsr_pmax);
+> -		pr_info("Max allowed Pstate is capped\n");
+> +		if (chips[i].throttled)
+> +			goto next;
+> +		chips[i].throttled = true;
+> +		pr_info("CPU %d on Chip %u has Pmax reduced to %d\n", cpu,
+> +			chips[i].id, pmsr_pmax);
+> +	} else if (chips[i].throttled) {
+> +		chips[i].throttled = false;
+
+Is this check on pmax sufficient to indicate that the chip is unthrottled ?
+
+> +		pr_info("CPU %d on Chip %u has Pmax restored to %d\n", cpu,
+> +			chips[i].id, pmsr_pmax);
 >  	}
 > 
+>  	/*
+>  	 * Check for Psafe by reading LocalPstate
+>  	 * or check if Psafe_mode_active is set in PMSR.
+>  	 */
+> +next:
+>  	pmsr_lp = (s8)PMSR_LP(pmsr);
+>  	if ((pmsr_lp < powernv_pstate_info.min) ||
+>  				(pmsr & PMSR_PSAFE_ENABLE)) {
+> @@ -414,6 +433,33 @@ static struct cpufreq_driver powernv_cpufreq_driver = {
+>  	.attr		= powernv_cpu_freq_attr,
 
-Reviewed-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+What about the situation where although occ is active, this particular
+chip has been throttled and we end up repeatedly reporting "pstate set
+to safe" and "frequency control disabled from OS" ? Should we not have a
+check on (chips[i].throttled) before reporting an anomaly for these two
+scenarios as well just like you have for pmsr_pmax ?
+
+Regards
+Preeti U Murthy
