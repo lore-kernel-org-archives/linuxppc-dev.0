@@ -1,20 +1,23 @@
-Return-Path: <cmetcalf@ezchip.com>
-Received: from emea01-am1-obe.outbound.protection.outlook.com
- (mail-am1on0096.outbound.protection.outlook.com [157.56.112.96])
+Return-Path: <roy.pledge@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bon0139.outbound.protection.outlook.com [157.56.111.139])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CD91A1A066A
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 May 2015 03:27:11 +1000 (AEST)
-From: Chris Metcalf <cmetcalf@ezchip.com>
-To: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Jiri Slaby
- <jslaby@suse.cz>, <linuxppc-dev@lists.ozlabs.org>,
- <linux-kernel@vger.kernel.org>
-Subject: [PATCH] drivers/tty/hvc/hvc_tile.c: properly return -EAGAIN
-Date: Tue, 5 May 2015 13:11:28 -0400
-Message-ID: <1430845888-22164-1-git-send-email-cmetcalf@ezchip.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id B23841A066A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 May 2015 03:37:39 +1000 (AEST)
+From: Roy Pledge <roy.pledge@freescale.com>
+To: Scott Wood <scottwood@freescale.com>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: RE: [PATCH 1/2] powerpc/qman: Change fsl,qman-channel-id to cell-index
+Date: Tue, 5 May 2015 16:04:11 +0000
+Message-ID: <BN3PR0301MB126796C0EC18EEBB26702C588CD10@BN3PR0301MB1267.namprd03.prod.outlook.com>
+References: <1429311187-19062-1-git-send-email-scottwood@freescale.com>
+In-Reply-To: <1429311187-19062-1-git-send-email-scottwood@freescale.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Chris Metcalf <cmetcalf@ezchip.com>
+Cc: Scott Wood <scottwood@freescale.com>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ Madalin-Cristian Bucur <madalin.bucur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,33 +27,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We were returning zero if no bytes could be written to the Tilera
-hypervisor console device, but this causes the output to be truncated.
-By returning -EAGAIN the tty hvc driver will come back and try again,
-which gives the semantics we want, and avoids dropping console output.
-
-Signed-off-by: Chris Metcalf <cmetcalf@ezchip.com>
----
-I have queued this in the tile tree as a tile-specific device, but
-if someone would prefer to pick it up for a tty or tty/hvc tree,
-that's fine too; just let me know.
-
- drivers/tty/hvc/hvc_tile.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/tty/hvc/hvc_tile.c b/drivers/tty/hvc/hvc_tile.c
-index 3f6cd3102db5..9da1e842bbe9 100644
---- a/drivers/tty/hvc/hvc_tile.c
-+++ b/drivers/tty/hvc/hvc_tile.c
-@@ -51,7 +51,8 @@ int tile_console_write(const char *buf, int count)
- 			      _SIM_CONTROL_OPERATOR_BITS));
- 		return 0;
- 	} else {
--		return hv_console_write((HV_VirtAddr)buf, count);
-+		/* Translate 0 bytes written to EAGAIN for hvc_console_print. */
-+		return hv_console_write((HV_VirtAddr)buf, count) ?: -EAGAIN;
- 	}
- }
- 
--- 
-2.1.2
+U29ycnkgZm9yIHRoZSBzbG93IHJlcGx5Lg0KDQpJIGRvbid0IGJlbGlldmUgdGhpcyBpcyBjb3Jy
+ZWN0IC0gbGV0IG1lIGV4cGxhaW4gdGhlIHJhdGlvbmFsIHdoeSB3ZSBoYWQgdHdvIHByb3BlcnRp
+ZXMgaW4gdGhlIFFNYW4gcG9ydGFsIHRvIGJlZ2luIHdpdGguDQoNClRoZSB0d28gcHJvcGVydGll
+cyBpbiBxdWVzdGlvbiBhcmUgY2VsbC1pbmRleCBhbmQgZnNsLHFtYW4tY2hhbm5lbC1pZC4NCg0K
+VGhlIGNlbGwtaW5kZXggcHJvcGVydHkgaXMgdXNlZCBpbiB1LWJvb3QgYXMgYW4gaW5kZXggZm9y
+IHRoZSBzb2Z0d2FyZSBwb3J0YWwgSUQgd2hlbiBhZGRpbmcgdGhlIGZzbCxsaW9kbiBmcm9tIHRo
+ZSBVLWJvb3QgdGFibGUgaW50byB0aGUgZGV2aWNlIHRyZWUuDQoNClRoZSAgZnNsLHFtYW4tY2hh
+bm5lbC1pZCBwcm9wZXJ0eSBpcyB1c2VkIGluIExpbnV4IGFuZCBjb3JyZXNwb25kcyB0byBhIGhh
+cmR3YXJlIHZhbHVlIHRoYXQgaW5kaWNhdGVzIHdoaWNoIGNoYW5uZWwgaXMgZGVkaWNhdGVkIHRv
+IHRoZSBzb2Z0d2FyZSBwb3J0YWwuDQoNCldoaWxlIEknbSBub3QgYXdhcmUgb2YgYSBjdXJyZW50
+IFNvQyB3aGVyZSB0aGUgY2hhbm5lbCBJRCBmb3IgYSBzb2Z0d2FyZSBwb3J0YWwgZG9lcyBub3Qg
+bWF0Y2ggdGhlIGluZGV4IChpLmUuIFNXUCAwIHVzZXMgY2hhbm5lbCAwLCBldGMuKSBpdCBpcyBw
+b3NzaWJsZSB0aGF0IGZ1dHVyZSBTb0NzIGNvdWxkIHN0cmF5IGZyb20gdGhpcyBtb2RlbCwgdGhl
+cmUgaXMgbm8gcmVhc29uIGZvciBwb3J0YWwgaW5kZXggdG8gZXF1YWwgY2hhbm5lbCBJRCBhdCBh
+bGwgdGltZXMuDQoNClJveQ0KDQoNCi0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQpGcm9tOiBM
+aW51eHBwYy1kZXYgW21haWx0bzpsaW51eHBwYy1kZXYtYm91bmNlcytyb3kucGxlZGdlPWZyZWVz
+Y2FsZS5jb21AbGlzdHMub3psYWJzLm9yZ10gT24gQmVoYWxmIE9mIFNjb3R0IFdvb2QNClNlbnQ6
+IEZyaWRheSwgQXByaWwgMTcsIDIwMTUgNjo1MyBQTQ0KVG86IGxpbnV4cHBjLWRldkBsaXN0cy5v
+emxhYnMub3JnDQpDYzogV29vZCBTY290dC1CMDc0MjE7IGRldmljZXRyZWVAdmdlci5rZXJuZWwu
+b3JnOyBCdWN1ciBNYWRhbGluLUNyaXN0aWFuLUIzMjcxNg0KU3ViamVjdDogW1BBVENIIDEvMl0g
+cG93ZXJwYy9xbWFuOiBDaGFuZ2UgZnNsLHFtYW4tY2hhbm5lbC1pZCB0byBjZWxsLWluZGV4DQoN
+Ckl0IHR1cm5zIG91dCB0aGF0IGV4aXN0aW5nIFUtQm9vdHMgd2lsbCBkZXJlZmVyZW5jZSBOVUxM
+IHBvaW50ZXJzIGlmIHRoZSBkZXZpY2UgdHJlZSBkb2VzIG5vdCBoYXZlIGNlbGwtaW5kZXggaW4g
+dGhlIHBvcnRhbCBub2Rlcy4NCg0KTm8gcGF0Y2ggaGFzIHlldCBiZWVuIG1lcmdlZCBhZGRpbmcg
+ZGV2aWNlIHRyZWUgbm9kZXMgZm9yIHRoaXMgYmluZGluZyAoZXhjZXB0IGEgZHRzaSB0aGF0IGhh
+cyBub3QgeWV0IGJlZW4gcmVmZXJlbmNlZCksIG5vciBoYXMgYW55IGRyaXZlciB5ZXQgYmVlbiBt
+ZXJnZWQgbWFraW5nIHVzZSBvZiB0aGUgYmluZGluZywgc28gaXQncyBub3QgdG9vIGxhdGUgdG8g
+Y2hhbmdlIHRoZSBiaW5kaW5nIGluIG9yZGVyIHRvIGtlZXAgY29tcGF0aWJpbGl0eSB3aXRoIGV4
+aXN0aW5nIFUtQm9vdHMuDQoNClNpZ25lZC1vZmYtYnk6IFNjb3R0IFdvb2QgPHNjb3R0d29vZEBm
+cmVlc2NhbGUuY29tPg0KQ2M6IE1hZGFsaW4tQ3Jpc3RpYW4gQnVjdXIgPG1hZGFsaW4uYnVjdXJA
+ZnJlZXNjYWxlLmNvbT4NCi0tLQ0KIERvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9z
+b2MvZnNsL3FtYW4tcG9ydGFscy50eHQgfCA0ICsrLS0NCiAxIGZpbGUgY2hhbmdlZCwgMiBpbnNl
+cnRpb25zKCspLCAyIGRlbGV0aW9ucygtKQ0KDQpkaWZmIC0tZ2l0IGEvRG9jdW1lbnRhdGlvbi9k
+ZXZpY2V0cmVlL2JpbmRpbmdzL3NvYy9mc2wvcW1hbi1wb3J0YWxzLnR4dCBiL0RvY3VtZW50YXRp
+b24vZGV2aWNldHJlZS9iaW5kaW5ncy9zb2MvZnNsL3FtYW4tcG9ydGFscy50eHQNCmluZGV4IDQ4
+YzRkYWUuLjQ3ZTQ2Y2MgMTAwNjQ0DQotLS0gYS9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmlu
+ZGluZ3Mvc29jL2ZzbC9xbWFuLXBvcnRhbHMudHh0DQorKysgYi9Eb2N1bWVudGF0aW9uL2Rldmlj
+ZXRyZWUvYmluZGluZ3Mvc29jL2ZzbC9xbWFuLXBvcnRhbHMudHh0DQpAQCAtNDcsNyArNDcsNyBA
+QCBQUk9QRVJUSUVTDQogDQogCUZvciBhZGRpdGlvbmFsIGRldGFpbHMgYWJvdXQgdGhlIFBBTVUv
+TElPRE4gYmluZGluZyhzKSBzZWUgcGFtdS50eHQNCiANCi0tIGZzbCxxbWFuLWNoYW5uZWwtaWQN
+CistIGNlbGwtaW5kZXgNCiAJVXNhZ2U6CQlSZXF1aXJlZA0KIAlWYWx1ZSB0eXBlOgk8dTMyPg0K
+IAlEZWZpbml0aW9uOglUaGUgaGFyZHdhcmUgaW5kZXggb2YgdGhlIGNoYW5uZWwuIFRoaXMgY2Fu
+IGFsc28gYmUNCkBAIC0xMzYsNyArMTM2LDcgQEAgVGhlIGV4YW1wbGUgYmVsb3cgc2hvd3MgYSAo
+UDQwODApIFFNYW4gcG9ydGFscyBjb250YWluZXIvYnVzIG5vZGUgd2l0aCB0d28gcG9ydGENCiAJ
+CQlyZWcgPSA8MHg0MDAwIDB4NDAwMD4sIDwweDEwMTAwMCAweDEwMDA+Ow0KIAkJCWludGVycnVw
+dHMgPSA8MTA2IDIgMCAwPjsNCiAJCQlmc2wsbGlvZG4gPSA8MyA0PjsNCi0JCQlmc2wscW1hbi1j
+aGFubmVsLWlkID0gPDE+Ow0KKwkJCWNlbGwtaW5kZXggPSA8MT47DQogDQogCQkJZm1hbjAgew0K
+IAkJCQlmc2wsbGlvZG4gPSA8MHgyMj47DQotLQ0KMi4xLjANCg0KX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX18NCkxpbnV4cHBjLWRldiBtYWlsaW5nIGxpc3QN
+CkxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnDQpodHRwczovL2xpc3RzLm96bGFicy5vcmcv
+bGlzdGluZm8vbGludXhwcGMtZGV2DQo=
