@@ -1,23 +1,31 @@
-Return-Path: <roy.pledge@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0139.outbound.protection.outlook.com [157.56.111.139])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <robherring2@gmail.com>
+Received: from mail-yh0-x231.google.com (mail-yh0-x231.google.com
+ [IPv6:2607:f8b0:4002:c01::231])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B23841A066A
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 May 2015 03:37:39 +1000 (AEST)
-From: Roy Pledge <roy.pledge@freescale.com>
-To: Scott Wood <scottwood@freescale.com>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>
-Subject: RE: [PATCH 1/2] powerpc/qman: Change fsl,qman-channel-id to cell-index
-Date: Tue, 5 May 2015 16:04:11 +0000
-Message-ID: <BN3PR0301MB126796C0EC18EEBB26702C588CD10@BN3PR0301MB1267.namprd03.prod.outlook.com>
-References: <1429311187-19062-1-git-send-email-scottwood@freescale.com>
-In-Reply-To: <1429311187-19062-1-git-send-email-scottwood@freescale.com>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0209B1A0606
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 May 2015 05:41:45 +1000 (AEST)
+Received: by yhw29 with SMTP id 29so43945874yhw.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 05 May 2015 12:41:42 -0700 (PDT)
 MIME-Version: 1.0
-Cc: Scott Wood <scottwood@freescale.com>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Madalin-Cristian Bucur <madalin.bucur@freescale.com>
+In-Reply-To: <1430817426-5241-2-git-send-email-stripathi@apm.com>
+References: <1430817426-5241-1-git-send-email-stripathi@apm.com>
+ <1430817426-5241-2-git-send-email-stripathi@apm.com>
+From: Rob Herring <robherring2@gmail.com>
+Date: Tue, 5 May 2015 14:41:21 -0500
+Message-ID: <CAL_JsqK0pCtL2pbG7RttYd7BDxQHxdECHN_9X9MpLTuVEOxzsQ@mail.gmail.com>
+Subject: Re: [PATCH v5 1/1] arm64: dts: Add the arasan sdhc nodes in
+ apm-storm.dtsi.
+To: Suman Tripathi <stripathi@apm.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ Mark Langsdorf <mlangsdo@redhat.com>, Arnd Bergmann <arnd@arndb.de>,
+ "jcm@redhat.com" <jcm@redhat.com>, Anton Vorontsov <anton@enomsg.org>,
+ "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>,
+ "chris@printf.net" <chris@printf.net>, Michal Simek <michal.simek@xilinx.com>,
+ "patches@apm.com" <patches@apm.com>, ddutile@redhat.com,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,54 +35,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-U29ycnkgZm9yIHRoZSBzbG93IHJlcGx5Lg0KDQpJIGRvbid0IGJlbGlldmUgdGhpcyBpcyBjb3Jy
-ZWN0IC0gbGV0IG1lIGV4cGxhaW4gdGhlIHJhdGlvbmFsIHdoeSB3ZSBoYWQgdHdvIHByb3BlcnRp
-ZXMgaW4gdGhlIFFNYW4gcG9ydGFsIHRvIGJlZ2luIHdpdGguDQoNClRoZSB0d28gcHJvcGVydGll
-cyBpbiBxdWVzdGlvbiBhcmUgY2VsbC1pbmRleCBhbmQgZnNsLHFtYW4tY2hhbm5lbC1pZC4NCg0K
-VGhlIGNlbGwtaW5kZXggcHJvcGVydHkgaXMgdXNlZCBpbiB1LWJvb3QgYXMgYW4gaW5kZXggZm9y
-IHRoZSBzb2Z0d2FyZSBwb3J0YWwgSUQgd2hlbiBhZGRpbmcgdGhlIGZzbCxsaW9kbiBmcm9tIHRo
-ZSBVLWJvb3QgdGFibGUgaW50byB0aGUgZGV2aWNlIHRyZWUuDQoNClRoZSAgZnNsLHFtYW4tY2hh
-bm5lbC1pZCBwcm9wZXJ0eSBpcyB1c2VkIGluIExpbnV4IGFuZCBjb3JyZXNwb25kcyB0byBhIGhh
-cmR3YXJlIHZhbHVlIHRoYXQgaW5kaWNhdGVzIHdoaWNoIGNoYW5uZWwgaXMgZGVkaWNhdGVkIHRv
-IHRoZSBzb2Z0d2FyZSBwb3J0YWwuDQoNCldoaWxlIEknbSBub3QgYXdhcmUgb2YgYSBjdXJyZW50
-IFNvQyB3aGVyZSB0aGUgY2hhbm5lbCBJRCBmb3IgYSBzb2Z0d2FyZSBwb3J0YWwgZG9lcyBub3Qg
-bWF0Y2ggdGhlIGluZGV4IChpLmUuIFNXUCAwIHVzZXMgY2hhbm5lbCAwLCBldGMuKSBpdCBpcyBw
-b3NzaWJsZSB0aGF0IGZ1dHVyZSBTb0NzIGNvdWxkIHN0cmF5IGZyb20gdGhpcyBtb2RlbCwgdGhl
-cmUgaXMgbm8gcmVhc29uIGZvciBwb3J0YWwgaW5kZXggdG8gZXF1YWwgY2hhbm5lbCBJRCBhdCBh
-bGwgdGltZXMuDQoNClJveQ0KDQoNCi0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQpGcm9tOiBM
-aW51eHBwYy1kZXYgW21haWx0bzpsaW51eHBwYy1kZXYtYm91bmNlcytyb3kucGxlZGdlPWZyZWVz
-Y2FsZS5jb21AbGlzdHMub3psYWJzLm9yZ10gT24gQmVoYWxmIE9mIFNjb3R0IFdvb2QNClNlbnQ6
-IEZyaWRheSwgQXByaWwgMTcsIDIwMTUgNjo1MyBQTQ0KVG86IGxpbnV4cHBjLWRldkBsaXN0cy5v
-emxhYnMub3JnDQpDYzogV29vZCBTY290dC1CMDc0MjE7IGRldmljZXRyZWVAdmdlci5rZXJuZWwu
-b3JnOyBCdWN1ciBNYWRhbGluLUNyaXN0aWFuLUIzMjcxNg0KU3ViamVjdDogW1BBVENIIDEvMl0g
-cG93ZXJwYy9xbWFuOiBDaGFuZ2UgZnNsLHFtYW4tY2hhbm5lbC1pZCB0byBjZWxsLWluZGV4DQoN
-Ckl0IHR1cm5zIG91dCB0aGF0IGV4aXN0aW5nIFUtQm9vdHMgd2lsbCBkZXJlZmVyZW5jZSBOVUxM
-IHBvaW50ZXJzIGlmIHRoZSBkZXZpY2UgdHJlZSBkb2VzIG5vdCBoYXZlIGNlbGwtaW5kZXggaW4g
-dGhlIHBvcnRhbCBub2Rlcy4NCg0KTm8gcGF0Y2ggaGFzIHlldCBiZWVuIG1lcmdlZCBhZGRpbmcg
-ZGV2aWNlIHRyZWUgbm9kZXMgZm9yIHRoaXMgYmluZGluZyAoZXhjZXB0IGEgZHRzaSB0aGF0IGhh
-cyBub3QgeWV0IGJlZW4gcmVmZXJlbmNlZCksIG5vciBoYXMgYW55IGRyaXZlciB5ZXQgYmVlbiBt
-ZXJnZWQgbWFraW5nIHVzZSBvZiB0aGUgYmluZGluZywgc28gaXQncyBub3QgdG9vIGxhdGUgdG8g
-Y2hhbmdlIHRoZSBiaW5kaW5nIGluIG9yZGVyIHRvIGtlZXAgY29tcGF0aWJpbGl0eSB3aXRoIGV4
-aXN0aW5nIFUtQm9vdHMuDQoNClNpZ25lZC1vZmYtYnk6IFNjb3R0IFdvb2QgPHNjb3R0d29vZEBm
-cmVlc2NhbGUuY29tPg0KQ2M6IE1hZGFsaW4tQ3Jpc3RpYW4gQnVjdXIgPG1hZGFsaW4uYnVjdXJA
-ZnJlZXNjYWxlLmNvbT4NCi0tLQ0KIERvY3VtZW50YXRpb24vZGV2aWNldHJlZS9iaW5kaW5ncy9z
-b2MvZnNsL3FtYW4tcG9ydGFscy50eHQgfCA0ICsrLS0NCiAxIGZpbGUgY2hhbmdlZCwgMiBpbnNl
-cnRpb25zKCspLCAyIGRlbGV0aW9ucygtKQ0KDQpkaWZmIC0tZ2l0IGEvRG9jdW1lbnRhdGlvbi9k
-ZXZpY2V0cmVlL2JpbmRpbmdzL3NvYy9mc2wvcW1hbi1wb3J0YWxzLnR4dCBiL0RvY3VtZW50YXRp
-b24vZGV2aWNldHJlZS9iaW5kaW5ncy9zb2MvZnNsL3FtYW4tcG9ydGFscy50eHQNCmluZGV4IDQ4
-YzRkYWUuLjQ3ZTQ2Y2MgMTAwNjQ0DQotLS0gYS9Eb2N1bWVudGF0aW9uL2RldmljZXRyZWUvYmlu
-ZGluZ3Mvc29jL2ZzbC9xbWFuLXBvcnRhbHMudHh0DQorKysgYi9Eb2N1bWVudGF0aW9uL2Rldmlj
-ZXRyZWUvYmluZGluZ3Mvc29jL2ZzbC9xbWFuLXBvcnRhbHMudHh0DQpAQCAtNDcsNyArNDcsNyBA
-QCBQUk9QRVJUSUVTDQogDQogCUZvciBhZGRpdGlvbmFsIGRldGFpbHMgYWJvdXQgdGhlIFBBTVUv
-TElPRE4gYmluZGluZyhzKSBzZWUgcGFtdS50eHQNCiANCi0tIGZzbCxxbWFuLWNoYW5uZWwtaWQN
-CistIGNlbGwtaW5kZXgNCiAJVXNhZ2U6CQlSZXF1aXJlZA0KIAlWYWx1ZSB0eXBlOgk8dTMyPg0K
-IAlEZWZpbml0aW9uOglUaGUgaGFyZHdhcmUgaW5kZXggb2YgdGhlIGNoYW5uZWwuIFRoaXMgY2Fu
-IGFsc28gYmUNCkBAIC0xMzYsNyArMTM2LDcgQEAgVGhlIGV4YW1wbGUgYmVsb3cgc2hvd3MgYSAo
-UDQwODApIFFNYW4gcG9ydGFscyBjb250YWluZXIvYnVzIG5vZGUgd2l0aCB0d28gcG9ydGENCiAJ
-CQlyZWcgPSA8MHg0MDAwIDB4NDAwMD4sIDwweDEwMTAwMCAweDEwMDA+Ow0KIAkJCWludGVycnVw
-dHMgPSA8MTA2IDIgMCAwPjsNCiAJCQlmc2wsbGlvZG4gPSA8MyA0PjsNCi0JCQlmc2wscW1hbi1j
-aGFubmVsLWlkID0gPDE+Ow0KKwkJCWNlbGwtaW5kZXggPSA8MT47DQogDQogCQkJZm1hbjAgew0K
-IAkJCQlmc2wsbGlvZG4gPSA8MHgyMj47DQotLQ0KMi4xLjANCg0KX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX18NCkxpbnV4cHBjLWRldiBtYWlsaW5nIGxpc3QN
-CkxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnDQpodHRwczovL2xpc3RzLm96bGFicy5vcmcv
-bGlzdGluZm8vbGludXhwcGMtZGV2DQo=
+On Tue, May 5, 2015 at 4:17 AM, Suman Tripathi <stripathi@apm.com> wrote:
+> This patch adds the arasan sdhc nodes to reuse the of-arasan
+> driver for APM X-Gene SoC.
+>
+> Signed-off-by: Suman Tripathi <stripathi@apm.com>
+> ---
+>  arch/arm64/boot/dts/apm/apm-mustang.dts |  4 +++
+>  arch/arm64/boot/dts/apm/apm-storm.dtsi  | 44 +++++++++++++++++++++++++++++++++
+>  2 files changed, 48 insertions(+)
+
+[...]
+
+> @@ -533,6 +567,16 @@
+>                         interrupts = <0x0 0x4f 0x4>;
+>                 };
+>
+> +               sdhc0: sdhc@1c000000 {
+> +                       device_type = "sdhc";
+
+device_type generally should not be used (there are a few exceptions).
+
+> +                       compatible = "arasan,sdhci-4.9a";
+
+If you ever have an integration or xgene specific problem, you need a
+chip specific compatible.
+
+Rob
