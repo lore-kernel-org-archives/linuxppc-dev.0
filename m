@@ -2,24 +2,23 @@ Return-Path: <dgibson@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1909B1A06B0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0AE9B1A066D
  for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 May 2015 23:09:08 +1000 (AEST)
-Date: Tue, 5 May 2015 21:58:13 +1000
+Date: Tue, 5 May 2015 21:53:05 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
 To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Subject: Re: [PATCH kernel v9 27/32] powerpc/iommu/ioda2: Add
- get_table_size() to calculate the size of future table
-Message-ID: <20150505115813.GL14090@voom.redhat.com>
+Subject: Re: [PATCH kernel v9 29/32] vfio: powerpc/spapr: Register memory and
+ define IOMMU v2
+Message-ID: <20150505115305.GK14090@voom.redhat.com>
 References: <1429964096-11524-1-git-send-email-aik@ozlabs.ru>
- <1429964096-11524-28-git-send-email-aik@ozlabs.ru>
- <20150429064029.GX32589@voom.redhat.com>
- <5542FCD2.9000601@ozlabs.ru>
- <20150501051247.GP24886@voom.redhat.com>
- <554322D4.7070508@ozlabs.ru>
+ <1429964096-11524-30-git-send-email-aik@ozlabs.ru>
+ <20150430065524.GB24886@voom.redhat.com> <5543028B.300@ozlabs.ru>
+ <20150501052357.GQ24886@voom.redhat.com>
+ <55431CE3.6050607@ozlabs.ru>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="Xsbw7+pkldUUnFG3"
-In-Reply-To: <554322D4.7070508@ozlabs.ru>
+ protocol="application/pgp-signature"; boundary="C8M3rclghDj+srEw"
+In-Reply-To: <55431CE3.6050607@ozlabs.ru>
 Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
  Alex Williamson <alex.williamson@redhat.com>,
  Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
@@ -33,184 +32,420 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---Xsbw7+pkldUUnFG3
+--C8M3rclghDj+srEw
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, May 01, 2015 at 04:53:08PM +1000, Alexey Kardashevskiy wrote:
-> On 05/01/2015 03:12 PM, David Gibson wrote:
-> >On Fri, May 01, 2015 at 02:10:58PM +1000, Alexey Kardashevskiy wrote:
-> >>On 04/29/2015 04:40 PM, David Gibson wrote:
-> >>>On Sat, Apr 25, 2015 at 10:14:51PM +1000, Alexey Kardashevskiy wrote:
-> >>>>This adds a way for the IOMMU user to know how much a new table will
-> >>>>use so it can be accounted in the locked_vm limit before allocation
-> >>>>happens.
+On Fri, May 01, 2015 at 04:27:47PM +1000, Alexey Kardashevskiy wrote:
+> On 05/01/2015 03:23 PM, David Gibson wrote:
+> >On Fri, May 01, 2015 at 02:35:23PM +1000, Alexey Kardashevskiy wrote:
+> >>On 04/30/2015 04:55 PM, David Gibson wrote:
+> >>>On Sat, Apr 25, 2015 at 10:14:53PM +1000, Alexey Kardashevskiy wrote:
+> >>>>The existing implementation accounts the whole DMA window in
+> >>>>the locked_vm counter. This is going to be worse with multiple
+> >>>>containers and huge DMA windows. Also, real-time accounting would req=
+uite
+> >>>>additional tracking of accounted pages due to the page size differenc=
+e -
+> >>>>IOMMU uses 4K pages and system uses 4K or 64K pages.
 > >>>>
-> >>>>This stores the allocated table size in pnv_pci_create_table()
-> >>>>so the locked_vm counter can be updated correctly when a table is
-> >>>>being disposed.
+> >>>>Another issue is that actual pages pinning/unpinning happens on every
+> >>>>DMA map/unmap request. This does not affect the performance much now =
+as
+> >>>>we spend way too much time now on switching context between
+> >>>>guest/userspace/host but this will start to matter when we add in-ker=
+nel
+> >>>>DMA map/unmap acceleration.
 > >>>>
-> >>>>This defines an iommu_table_group_ops callback to let VFIO know
-> >>>>how much memory will be locked if a table is created.
+> >>>>This introduces a new IOMMU type for SPAPR - VFIO_SPAPR_TCE_v2_IOMMU.
+> >>>>New IOMMU deprecates VFIO_IOMMU_ENABLE/VFIO_IOMMU_DISABLE and introdu=
+ces
+> >>>>2 new ioctls to register/unregister DMA memory -
+> >>>>VFIO_IOMMU_SPAPR_REGISTER_MEMORY and VFIO_IOMMU_SPAPR_UNREGISTER_MEMO=
+RY -
+> >>>>which receive user space address and size of a memory region which
+> >>>>needs to be pinned/unpinned and counted in locked_vm.
+> >>>>New IOMMU splits physical pages pinning and TCE table update into 2 d=
+ifferent
+> >>>>operations. It requires 1) guest pages to be registered first 2) cons=
+equent
+> >>>>map/unmap requests to work only with pre-registered memory.
+> >>>>For the default single window case this means that the entire guest
+> >>>>(instead of 2GB) needs to be pinned before using VFIO.
+> >>>>When a huge DMA window is added, no additional pinning will be
+> >>>>required, otherwise it would be guest RAM + 2GB.
+> >>>>
+> >>>>The new memory registration ioctls are not supported by
+> >>>>VFIO_SPAPR_TCE_IOMMU. Dynamic DMA window and in-kernel acceleration
+> >>>>will require memory to be preregistered in order to work.
+> >>>>
+> >>>>The accounting is done per the user process.
+> >>>>
+> >>>>This advertises v2 SPAPR TCE IOMMU and restricts what the userspace
+> >>>>can do with v1 or v2 IOMMUs.
 > >>>>
 > >>>>Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> >>>>[aw: for the vfio related changes]
+> >>>>Acked-by: Alex Williamson <alex.williamson@redhat.com>
 > >>>>---
 > >>>>Changes:
 > >>>>v9:
-> >>>>* reimplemented the whole patch
+> >>>>* s/tce_get_hva_cached/tce_iommu_use_page_v2/
+> >>>>
+> >>>>v7:
+> >>>>* now memory is registered per mm (i.e. process)
+> >>>>* moved memory registration code to powerpc/mmu
+> >>>>* merged "vfio: powerpc/spapr: Define v2 IOMMU" into this
+> >>>>* limited new ioctls to v2 IOMMU
+> >>>>* updated doc
+> >>>>* unsupported ioclts return -ENOTTY instead of -EPERM
+> >>>>
+> >>>>v6:
+> >>>>* tce_get_hva_cached() returns hva via a pointer
+> >>>>
+> >>>>v4:
+> >>>>* updated docs
+> >>>>* s/kzmalloc/vzalloc/
+> >>>>* in tce_pin_pages()/tce_unpin_pages() removed @vaddr, @size and
+> >>>>replaced offset with index
+> >>>>* renamed vfio_iommu_type_register_memory to vfio_iommu_spapr_registe=
+r_memory
+> >>>>and removed duplicating vfio_iommu_spapr_register_memory
 > >>>>---
-> >>>>  arch/powerpc/include/asm/iommu.h          |  5 +++++
-> >>>>  arch/powerpc/platforms/powernv/pci-ioda.c | 14 ++++++++++++
-> >>>>  arch/powerpc/platforms/powernv/pci.c      | 36 ++++++++++++++++++++=
-+++++++++++
-> >>>>  arch/powerpc/platforms/powernv/pci.h      |  2 ++
-> >>>>  4 files changed, 57 insertions(+)
+> >>>>  Documentation/vfio.txt              |  23 ++++
+> >>>>  drivers/vfio/vfio_iommu_spapr_tce.c | 230 +++++++++++++++++++++++++=
+++++++++++-
+> >>>>  include/uapi/linux/vfio.h           |  27 +++++
+> >>>>  3 files changed, 274 insertions(+), 6 deletions(-)
 > >>>>
-> >>>>diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/=
-asm/iommu.h
-> >>>>index 1472de3..9844c106 100644
-> >>>>--- a/arch/powerpc/include/asm/iommu.h
-> >>>>+++ b/arch/powerpc/include/asm/iommu.h
-> >>>>@@ -99,6 +99,7 @@ struct iommu_table {
-> >>>>  	unsigned long  it_size;      /* Size of iommu table in entries */
-> >>>>  	unsigned long  it_indirect_levels;
-> >>>>  	unsigned long  it_level_size;
-> >>>>+	unsigned long  it_allocated_size;
-> >>>>  	unsigned long  it_offset;    /* Offset into global table */
-> >>>>  	unsigned long  it_base;      /* mapped address of tce table */
-> >>>>  	unsigned long  it_index;     /* which iommu table this is */
-> >>>>@@ -155,6 +156,10 @@ extern struct iommu_table *iommu_init_table(stru=
-ct iommu_table * tbl,
-> >>>>  struct iommu_table_group;
+> >>>>diff --git a/Documentation/vfio.txt b/Documentation/vfio.txt
+> >>>>index 96978ec..94328c8 100644
+> >>>>--- a/Documentation/vfio.txt
+> >>>>+++ b/Documentation/vfio.txt
+> >>>>@@ -427,6 +427,29 @@ The code flow from the example above should be s=
+lightly changed:
 > >>>>
-> >>>>  struct iommu_table_group_ops {
-> >>>>+	unsigned long (*get_table_size)(
-> >>>>+			__u32 page_shift,
-> >>>>+			__u64 window_size,
-> >>>>+			__u32 levels);
-> >>>>  	long (*create_table)(struct iommu_table_group *table_group,
-> >>>>  			int num,
-> >>>>  			__u32 page_shift,
-> >>>>diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc=
-/platforms/powernv/pci-ioda.c
-> >>>>index e0be556..7f548b4 100644
-> >>>>--- a/arch/powerpc/platforms/powernv/pci-ioda.c
-> >>>>+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-> >>>>@@ -2062,6 +2062,18 @@ static void pnv_pci_ioda2_setup_bypass_pe(stru=
-ct pnv_phb *phb,
+> >>>>  	....
+> >>>>
+> >>>>+5) There is v2 of SPAPR TCE IOMMU. It deprecates VFIO_IOMMU_ENABLE/
+> >>>>+VFIO_IOMMU_DISABLE and implements 2 new ioctls:
+> >>>>+VFIO_IOMMU_SPAPR_REGISTER_MEMORY and VFIO_IOMMU_SPAPR_UNREGISTER_MEM=
+ORY
+> >>>>+(which are unsupported in v1 IOMMU).
+> >>>
+> >>>A summary of the semantic differeces between v1 and v2 would be nice.
+> >>>At this point it's not really clear to me if there's a case for
+> >>>creating v2, or if this could just be done by adding (optional)
+> >>>functionality to v1.
+> >>
+> >>v1: memory preregistration is not supported; explicit enable/disable io=
+ctls
+> >>are required
+> >>
+> >>v2: memory preregistration is required; explicit enable/disable are
+> >>prohibited (as they are not needed).
+> >>
+> >>Mixing these in one IOMMU type caused a lot of problems like should I
+> >>increment locked_vm by the 32bit window size on enable() or not; what d=
+o I
+> >>do about pages pinning when map/map (check if it is from registered mem=
+ory
+> >>and do not pin?).
+> >>
+> >>Having 2 IOMMU models makes everything a lot simpler.
+> >
+> >Ok.  Would it simplify it further if you made v2 only usable on IODA2
+> >hardware?
+>=20
+>=20
+> Very little. V2 addresses memory pinning issue which is handled the same =
+way
+> on ioda2 and older hardware, including KVM acceleration. Whether enable D=
+DW
+> or not - this is handled just fine via extra properties in the GET_INFO
+> ioctl().
+>=20
+> IODA2 and others are different in handling multiple groups per container =
+but
+> this does not require changes to userspace API.
+>=20
+> And remember, the only machine I can use 100% of time is POWER7/P5IOC2 so=
+ it
+> is really useful if at least some bits of the patchset can be tested ther=
+e;
+> if it was a bit less different from IODA2, I would have even implemented =
+DDW
+> there too :)
+
+Hm, ok.
+
+> >>>>+PPC64 paravirtualized guests generate a lot of map/unmap requests,
+> >>>>+and the handling of those includes pinning/unpinning pages and updat=
+ing
+> >>>>+mm::locked_vm counter to make sure we do not exceed the rlimit.
+> >>>>+The v2 IOMMU splits accounting and pinning into separate operations:
+> >>>>+
+> >>>>+- VFIO_IOMMU_SPAPR_REGISTER_MEMORY/VFIO_IOMMU_SPAPR_UNREGISTER_MEMOR=
+Y ioctls
+> >>>>+receive a user space address and size of the block to be pinned.
+> >>>>+Bisecting is not supported and VFIO_IOMMU_UNREGISTER_MEMORY is expec=
+ted to
+> >>>>+be called with the exact address and size used for registering
+> >>>>+the memory block. The userspace is not expected to call these often.
+> >>>>+The ranges are stored in a linked list in a VFIO container.
+> >>>>+
+> >>>>+- VFIO_IOMMU_MAP_DMA/VFIO_IOMMU_UNMAP_DMA ioctls only update the act=
+ual
+> >>>>+IOMMU table and do not do pinning; instead these check that the user=
+space
+> >>>>+address is from pre-registered range.
+> >>>>+
+> >>>>+This separation helps in optimizing DMA for guests.
+> >>>>+
+> >>>>  -------------------------------------------------------------------=
+------------
+> >>>>
+> >>>>  [1] VFIO was originally an acronym for "Virtual Function I/O" in its
+> >>>>diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_=
+iommu_spapr_tce.c
+> >>>>index 892a584..4cfc2c1 100644
+> >>>>--- a/drivers/vfio/vfio_iommu_spapr_tce.c
+> >>>>+++ b/drivers/vfio/vfio_iommu_spapr_tce.c
+> >>>
+> >>>So, from things you said at other points, I thought the idea was that
+> >>>this registration stuff could also be used on non-Power IOMMUs.  Did I
+> >>>misunderstand, or is that a possibility for the future?
+> >>
+> >>
+> >>I never said a thing about non-PPC :) I seriously doubt any other arch =
+has
+> >>this hypervisor interface with H_PUT_TCE (may be s390? :) ); for others
+> >>there is no profit from memory preregistration as they (at least x86) d=
+o map
+> >>the entire guest before it starts which essentially is that preregistra=
+tion.
+> >>
+> >>
+> >>btw later we may want to implement simple IOMMU v3 which will do pinnin=
+g +
+> >>locked_vm when mapping as x86 does, for http://dpdk.org/ - these things=
+ do
+> >>not really have to bother with preregistration (even if it just a single
+> >>additional ioctl).
+> >>
+> >>
+> >>
+> >>>>@@ -21,6 +21,7 @@
+> >>>>  #include <linux/vfio.h>
+> >>>>  #include <asm/iommu.h>
+> >>>>  #include <asm/tce.h>
+> >>>>+#include <asm/mmu_context.h>
+> >>>>
+> >>>>  #define DRIVER_VERSION  "0.1"
+> >>>>  #define DRIVER_AUTHOR   "aik@ozlabs.ru"
+> >>>>@@ -91,8 +92,58 @@ struct tce_container {
+> >>>>  	struct iommu_group *grp;
+> >>>>  	bool enabled;
+> >>>>  	unsigned long locked_pages;
+> >>>>+	bool v2;
+> >>>>  };
+> >>>>
+> >>>>+static long tce_unregister_pages(struct tce_container *container,
+> >>>>+		__u64 vaddr, __u64 size)
+> >>>>+{
+> >>>>+	long ret;
+> >>>>+	struct mm_iommu_table_group_mem_t *mem;
+> >>>>+
+> >>>>+	if ((vaddr & ~PAGE_MASK) || (size & ~PAGE_MASK))
+> >>>>+		return -EINVAL;
+> >>>>+
+> >>>>+	mem =3D mm_iommu_get(vaddr, size >> PAGE_SHIFT);
+> >>>>+	if (!mem)
+> >>>>+		return -EINVAL;
+> >>>>+
+> >>>>+	ret =3D mm_iommu_put(mem); /* undo kref_get() from mm_iommu_get() */
+> >>>>+	if (!ret)
+> >>>>+		ret =3D mm_iommu_put(mem);
+> >>>>+
+> >>>>+	return ret;
+> >>>>+}
+> >>>>+
+> >>>>+static long tce_register_pages(struct tce_container *container,
+> >>>>+		__u64 vaddr, __u64 size)
+> >>>>+{
+> >>>>+	long ret =3D 0;
+> >>>>+	struct mm_iommu_table_group_mem_t *mem;
+> >>>>+	unsigned long entries =3D size >> PAGE_SHIFT;
+> >>>>+
+> >>>>+	if ((vaddr & ~PAGE_MASK) || (size & ~PAGE_MASK) ||
+> >>>>+			((vaddr + size) < vaddr))
+> >>>>+		return -EINVAL;
+> >>>>+
+> >>>>+	mem =3D mm_iommu_get(vaddr, entries);
+> >>>>+	if (!mem) {
+> >>>>+		ret =3D try_increment_locked_vm(entries);
+> >>>>+		if (ret)
+> >>>>+			return ret;
+> >>>>+
+> >>>>+		ret =3D mm_iommu_alloc(vaddr, entries, &mem);
+> >>>>+		if (ret) {
+> >>>>+			decrement_locked_vm(entries);
+> >>>>+			return ret;
+> >>>>+		}
+> >>>>+	}
+> >>>>+
+> >>>>+	container->enabled =3D true;
+> >>>>+
+> >>>>+	return 0;
+> >>>>+}
+> >>>
+> >>>So requiring that registered regions get unregistered with exactly the
+> >>>same addr/length is reasonable.  I'm a bit less convinced that
+> >>>disallowing overlaps is a good idea.  What if two libraries in the
+> >>>same process are trying to use VFIO - they may not know if the regions
+> >>>they try to register are overlapping.
+> >>
+> >>
+> >>Sorry, I do not understand. A library allocates RAM. A library is expec=
+ted
+> >>to do register it via additional ioctl, that's it. Another library allo=
+cates
+> >>another chunk of memory and it won't overlap and the registered areas w=
+on't
+> >>either.
+> >
+> >So the case I'm thinking is where the library does VFIO using a buffer
+> >passed into it from the program at large.  Another library does the
+> >same.
+> >
+> >The main program, unaware of the VFIO shenanigans passes different
+> >parts of the same page to the 2 libraries.
+> >
+> >This is somewhat similar to the case of the horribly, horribly broken
+> >semantics of POSIX file range locks (it's both hard to implement and
+> >dangerous in the multi-library case similar to above).
+>=20
+>=20
+> Ok. I'll implement x86-alike V3 SPAPR TCE IOMMU for these people, later :)
+>=20
+> V2 addresses issues caused by H_PUT_TCE + DDW RTAS interfaces.
+>=20
+>=20
+>=20
+> >>>>  static bool tce_page_is_contained(struct page *page, unsigned page_=
+shift)
+> >>>>  {
+> >>>>  	/*
+> >>>>@@ -205,7 +256,7 @@ static void *tce_iommu_open(unsigned long arg)
+> >>>>  {
+> >>>>  	struct tce_container *container;
+> >>>>
+> >>>>-	if (arg !=3D VFIO_SPAPR_TCE_IOMMU) {
+> >>>>+	if ((arg !=3D VFIO_SPAPR_TCE_IOMMU) && (arg !=3D VFIO_SPAPR_TCE_v2_=
+IOMMU)) {
+> >>>>  		pr_err("tce_vfio: Wrong IOMMU type\n");
+> >>>>  		return ERR_PTR(-EINVAL);
+> >>>>  	}
+> >>>>@@ -215,6 +266,7 @@ static void *tce_iommu_open(unsigned long arg)
+> >>>>  		return ERR_PTR(-ENOMEM);
+> >>>>
+> >>>>  	mutex_init(&container->lock);
+> >>>>+	container->v2 =3D arg =3D=3D VFIO_SPAPR_TCE_v2_IOMMU;
+> >>>>
+> >>>>  	return container;
+> >>>>  }
+> >>>>@@ -243,6 +295,47 @@ static void tce_iommu_unuse_page(struct tce_cont=
+ainer *container,
+> >>>>  	put_page(page);
 > >>>>  }
 > >>>>
-> >>>>  #ifdef CONFIG_IOMMU_API
-> >>>>+static unsigned long pnv_pci_ioda2_get_table_size(__u32 page_shift,
-> >>>>+		__u64 window_size, __u32 levels)
+> >>>>+static int tce_iommu_use_page_v2(unsigned long tce, unsigned long si=
+ze,
+> >>>>+		unsigned long *phpa, struct mm_iommu_table_group_mem_t **pmem)
+> >>
+> >>
+> >>You suggested s/tce_get_hpa/tce_iommu_use_page/ but in this particular =
+patch
+> >>it is confusing as tce_iommu_unuse_page_v2() calls it to find correspon=
+ding
+> >>mm_iommu_table_group_mem_t by the userspace address address of a page b=
+eing
+> >>stopped used.
+> >>
+> >>tce_iommu_use_page (without v2) does use the page but this one I'll ren=
+ame
+> >>back to tce_iommu_ua_to_hpa_v2(), is that ok?
+> >
+> >Sorry, I couldn't follow this comment.
+>=20
+>=20
+> For V1 IOMMU, I used to have:
+> tce_get_hpa() - this converted UA to linear address and did gup();
+> tce_iommu_unuse_page() - this did put_page().
+>=20
+> You suggested (*) to rename the first one to tce_use_page() which makes s=
+ense.
+>=20
+> V2 introduces its own versions of use/unuse but these use preregistered
+> memory and do not do gup()/put_page(). I named them:
+> tce_get_hpa_cached()
+> tce_iommu_unuse_page_v2()
+>=20
+> then, replaying your comment (*) on V2 IOMMU, I renamed tce_get_hpa_cache=
+d()
+> to tce_iommu_use_page_v2(). And I do not like the result now (in the chunk
+> below). I'll rename it to tce_iommu_ua_to_hpa_v2(), will it be ok?
+
+Uh, I guess so.  To me "use_page" suggests incrementing the reference
+or locking it or something along those lines, so I think that name
+should follow the "gup".
+
+>=20
+>=20
+>=20
+> >
+> >>
+> >>
 > >>>>+{
-> >>>>+	unsigned long ret =3D pnv_get_table_size(page_shift, window_size, l=
-evels);
+> >>>>+	long ret =3D 0;
+> >>>>+	struct mm_iommu_table_group_mem_t *mem;
 > >>>>+
-> >>>>+	if (!ret)
-> >>>>+		return ret;
+> >>>>+	mem =3D mm_iommu_lookup(tce, size);
+> >>>>+	if (!mem)
+> >>>>+		return -EINVAL;
 > >>>>+
-> >>>>+	/* Add size of it_userspace */
-> >>>>+	return ret + (window_size >> page_shift) * sizeof(unsigned long);
-> >>>
-> >>>This doesn't make much sense.  The userspace view can't possibly be a
-> >>>property of the specific low-level IOMMU model.
-> >>
-> >>
-> >>This it_userspace thing is all about memory preregistration.
-> >>
-> >>I need some way to track how many actual mappings the
-> >>mm_iommu_table_group_mem_t has in order to decide whether to allow
-> >>unregistering or not.
-> >>
-> >>When I clear TCE, I can read the old value which is host physical addre=
-ss
-> >>which I cannot use to find the preregistered region and adjust the mapp=
-ings
-> >>counter; I can only use userspace addresses for this (not even guest
-> >>physical addresses as it is VFIO and probably no KVM).
-> >>
-> >>So I have to keep userspace addresses somewhere, one per IOMMU page, an=
-d the
-> >>iommu_table seems a natural place for this.
-> >
-> >Well.. sort of.  But as noted elsewhere this pulls VFIO specific
-> >constraints into a platform code structure.  And whether you get this
-> >table depends on the platform IOMMU type rather than on what VFIO
-> >wants to do with it, which doesn't make sense.
-> >
-> >What might make more sense is an opaque pointer io iommu_table for use
-> >by the table "owner" (in the take_ownership sense).  The pointer would
-> >be stored in iommu_table, but VFIO is responsible for populating and
-> >managing its contents.
-> >
-> >Or you could just put the userspace mappings in the container.
-> >Although you might want a different data structure in that case.
->=20
-> Nope. I need this table in in-kernel acceleration to update the mappings
-> counter per mm_iommu_table_group_mem_t. In KVM's real mode handlers, I on=
-ly
-> have IOMMU tables, not containers or groups. QEMU creates a guest view of
-> the table (KVM_CREATE_SPAPR_TCE) specifying a LIOBN, and then attaches TCE
-> tables to it via set of ioctls (one per IOMMU group) to VFIO KVM device.
->=20
-> So if I call it it_opaque (instead of it_userspace), I will still need a
-> common place (visible to VFIO and PowerKVM) for this to put:
-> #define IOMMU_TABLE_USERSPACE_ENTRY(tbl, entry)
-
-I think it should be in a VFIO header.  If I'm understanding right
-this part of the PowerKVM code is explicitly VFIO aware - that's kind
-of the point.
-
-> So far this place was arch/powerpc/include/asm/iommu.h and the iommu_table
-> struct.
->=20
->=20
-> >The other thing to bear in mind is that registered regions are likely
-> >to be large contiguous blocks in user addresses, though obviously not
-> >contiguous in physical addr.  So you might be able to compaticfy this
-> >information by storing it as a list of variable length blocks in
-> >userspace address space, rather than a per-page address..
->=20
-> It is 8 bytes per system page - 8/65536 =3D 0.00012 (or 26MB for 200GB gu=
-est)
-> - very little overhead.
->=20
->=20
-> >But.. isn't there a bigger problem here.  As Paulus was pointing out,
-> >there's nothing guaranteeing the page tables continue to contain the
-> >same page as was there at gup() time.
->=20
-> This can happen if the userspace remaps memory which it registered/mapped
-> for DMA via VFIO, no? If so, then the userspace just should not do this, =
-it
-> is DMA, it cannot be moved like this. What am I missing here?
->=20
->=20
-> >What's going to happen if you REGISTER a memory region, then mremap()
-> >over it?
->=20
-> The registered pages will remain pinned and PUT_TCE will use that region =
-for
-> translation (and this will fail as the userspace addresses changed).
->=20
-> I do not see how it is different from the situation when the userspace
-> mapped a page and mremap()ed it while it is DMA-mapped.
-
-True, it's basically the same.  Hrm, so what guarantees a dma_map,
-mremap() dma_unmap will unreference the correct pages.
-
-> >Then attempt to PUT_TCE a page in the region? Or what if you
-> >mremap() it to someplace else then try to PUT_TCE a page there?
->=20
-> This will fail - a new userspace address has to be preregistered.
->=20
-> >Or REGISTER it again in its new location?
->=20
-> It will be pinned twice + some memory overhead to store the same host
-> physical address(es) twice.
->=20
+> >>>>+	ret =3D mm_iommu_ua_to_hpa(mem, tce, phpa);
+> >>>>+	if (ret)
+> >>>>+		return -EINVAL;
+> >>>>+
+> >>>>+	*pmem =3D mem;
+> >>>>+
+> >>>>+	return 0;
+> >>>>+}
+> >>>>+
+> >>>>+static void tce_iommu_unuse_page_v2(struct iommu_table *tbl,
+> >>>>+		unsigned long entry)
+> >>>>+{
+> >>>>+	struct mm_iommu_table_group_mem_t *mem =3D NULL;
+> >>>>+	int ret;
+> >>>>+	unsigned long hpa =3D 0;
+> >>>>+	unsigned long *pua =3D IOMMU_TABLE_USERSPACE_ENTRY(tbl, entry);
+> >>>>+
+> >>>>+	if (!pua || !current || !current->mm)
+> >>>>+		return;
+> >>>>+
+> >>>>+	ret =3D tce_iommu_use_page_v2(*pua, IOMMU_PAGE_SIZE(tbl),
+> >>>>+			&hpa, &mem);
+> >>>>+	if (ret)
+> >>>>+		pr_debug("%s: tce %lx at #%lx was not cached, ret=3D%d\n",
+> >>>>+				__func__, *pua, entry, ret);
+> >>>>+	if (mem)
+> >>>>+		mm_iommu_mapped_update(mem, false);
+> >>>>+
+> >>>>+	*pua =3D 0;
+> >>>>+}
+> >>>>+
 >=20
 >=20
 
@@ -220,25 +455,25 @@ david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
 				| _way_ _around_!
 http://www.ozlabs.org/~dgibson
 
---Xsbw7+pkldUUnFG3
+--C8M3rclghDj+srEw
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBAgAGBQJVSLBVAAoJEGw4ysog2bOStBYP/jvF/TiNcw0m19sxFDGWnnFh
-iy1Vik6saWyjOx3UcrAFfqGZYmoaeKUzOJxkGNamuAk6wFiyzpohqxE/04yaf+CR
-nLGRb2ATES/gp+yHGNglbcFQLjMnecTQJLqLXHifG+xLz3HN2103ly2nJBS8EEPy
-DiLQEunH+InSZGo7943ikr+7vPAmxdhZNmSsYvriudaERcG1Cad3SWD0PSjY3DMC
-4y6gf6/GBMBmZwq/PWKWrb5cKTSqSTHHFCwM/pQLZ0HLhs05iBkGkgKaJK8My0YC
-b4g2VjaLTzrfdIIVZwy8bH3PtYG23lrIW/Iz06mVDnsnHu7BLVIqs8wteNloKxA4
-NR/+bLEDEaQxSt4DWvcEvFyxaLs+ReElgN8ZaSq7jeAOapQHclTVVtQCjlC/85Kb
-YNq3IcycN4HezZv2Vj1c9FfZPlC93icRO3gIdpr6tC9BW3DFj4Okjnm8d+q0rd8o
-G74owt7MJ6PS4NGR/0P9q/VAQ26+QO8/pgI/g+exeEx0jozOJJ0RNcfQ2ESWbfVX
-Mcmw1C5dgy/dwf9q8VpSrdVkkaIgQzgRunURL9YiwKNqKaGpA0KQzHpFpYJFNl2r
-3bERmffMlL0dv3lTWKSdYQbi37D2LySV744YSoBfolqSXw708wuOcSxjDehU37+5
-29GE0MjgXDrQutWPgoRh
-=Gjip
+iQIcBAEBAgAGBQJVSK8hAAoJEGw4ysog2bOSl6AP/1A0ZypGAByxc/3usYFDf5xs
+wFDytL34Sw/fxu/Yk1GpUqd+RStbXrwh3y0UNh7hIY4DVGt1W4TOMan4KT0N/sNq
+LGKUN+R3EsJb5GvI9sepPvXlxq7TbndqYXj+AFLXVRw8dF22Wuy8XDeLTiYGjEl2
+KEE4rqfVfNSXBKDMmy4ovPgQjY8/9AIMkyUzVLIkBgn+dYzjywbC7m/CqRRSx7SM
+XxlBT95G+n+OxiM5/aM0jpGf/3rzHwxsdJH/948Uip05w0XofFs12idWHMteaW3F
+1bgvmeoRhV7nVfOa39irxTVD9z/cOVyJBGJK3i0Gx1NvoLg11txkK4lp2MQ8nZR/
+qvqpnjY4EQmIp/84s4piNPuKC4c401KOWz4rLKic9wqBv7okJVdSIjm9LE/M0USE
+ms2G6WvsYpAOYYJWFG41wjx49oliwBz3aqtDAQRLLMyd7lT1eirGWg2AGvMZwa8j
+KjtpEut0RuuvGUGKeQc2Bs5YV8nGLBTzszfX1mN7x8OEGn6NZDZbYgqpU0iWSImX
+uK4VfHdMFNWx37ljTzYdQw0d6qpSU2oeL/Z/MJodknShp88RB7AHA7yy5sedD7ns
+rD3Xf1T6Z9N9ND5ryqUWkZeuPCxL3gFBEMm+T6ZNkcVk8Q6Cg3dafxtBLL45qEqA
+OfNex1dJjufydVzDlQfm
+=Z2ME
 -----END PGP SIGNATURE-----
 
---Xsbw7+pkldUUnFG3--
+--C8M3rclghDj+srEw--
