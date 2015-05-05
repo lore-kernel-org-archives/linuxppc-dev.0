@@ -2,41 +2,41 @@ Return-Path: <shilpa.bhat@linux.vnet.ibm.com>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 680CE1A066D
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 May 2015 16:06:59 +1000 (AEST)
-Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 31C2C1A06B0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 May 2015 16:33:56 +1000 (AEST)
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id B992B140D2E
- for <linuxppc-dev@ozlabs.org>; Tue,  5 May 2015 16:06:58 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTPS id 0435014076D
+ for <linuxppc-dev@ozlabs.org>; Tue,  5 May 2015 16:33:56 +1000 (AEST)
 Received: from /spool/local
- by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <shilpa.bhat@linux.vnet.ibm.com>;
- Tue, 5 May 2015 11:36:54 +0530
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id E14FF3940048
- for <linuxppc-dev@ozlabs.org>; Tue,  5 May 2015 11:36:50 +0530 (IST)
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t4566Zbx49545250
- for <linuxppc-dev@ozlabs.org>; Tue, 5 May 2015 11:36:36 +0530
-Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
- by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t4566Y9U017385
- for <linuxppc-dev@ozlabs.org>; Tue, 5 May 2015 11:36:35 +0530
-Message-ID: <55485DE9.4070609@linux.vnet.ibm.com>
-Date: Tue, 05 May 2015 11:36:33 +0530
+ Tue, 5 May 2015 16:33:54 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 2D827357804F
+ for <linuxppc-dev@ozlabs.org>; Tue,  5 May 2015 16:33:51 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t456Xgi232571508
+ for <linuxppc-dev@ozlabs.org>; Tue, 5 May 2015 16:33:51 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t456XIt4021171
+ for <linuxppc-dev@ozlabs.org>; Tue, 5 May 2015 16:33:18 +1000
+Message-ID: <5548641C.5090208@linux.vnet.ibm.com>
+Date: Tue, 05 May 2015 12:03:00 +0530
 From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
 MIME-Version: 1.0
 To: Preeti U Murthy <preeti@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org,
  linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v3 1/6] cpufreq: poowernv: Handle throttling due to Pmax
- capping at chip level
+Subject: Re: [PATCH v3 4/6] cpufreq: powernv: Call throttle_check() on
+ receiving OCC_THROTTLE
 References: <1430729652-14813-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
- <1430729652-14813-2-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
- <55483E4B.4080405@linux.vnet.ibm.com>
-In-Reply-To: <55483E4B.4080405@linux.vnet.ibm.com>
+ <1430729652-14813-5-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ <55484072.5060400@linux.vnet.ibm.com>
+In-Reply-To: <55484072.5060400@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=iso-8859-6
 Cc: viresh.kumar@linaro.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -50,112 +50,140 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 Hi Preeti,
 
-On 05/05/2015 09:21 AM, Preeti U Murthy wrote:
+On 05/05/2015 09:30 AM, Preeti U Murthy wrote:
 > Hi Shilpa,
 > 
 > On 05/04/2015 02:24 PM, Shilpasri G Bhat wrote:
->> The On-Chip-Controller(OCC) can throttle cpu frequency by reducing the
->> max allowed frequency for that chip if the chip exceeds its power or
->> temperature limits. As Pmax capping is a chip level condition report
->> this throttling behavior at chip level and also do not set the global
->> 'throttled' on Pmax capping instead set the per-chip throttled
->> variable. Report unthrottling if Pmax is restored after throttling.
+>> Re-evaluate the chip's throttled state on recieving OCC_THROTTLE
+>> notification by executing *throttle_check() on any one of the cpu on
+>> the chip. This is a sanity check to verify if we were indeed
+>> throttled/unthrottled after receiving OCC_THROTTLE notification.
 >>
->> This patch adds a structure to store chip id and throttled state of
->> the chip.
+>> We cannot call *throttle_check() directly from the notification
+>> handler because we could be handling chip1's notification in chip2. So
+>> initiate an smp_call to execute *throttle_check(). We are irq-disabled
+>> in the notification handler, so use a worker thread to smp_call
+>> throttle_check() on any of the cpu in the chipmask.
+> 
+> I see that the first patch takes care of reporting *per-chip* throttling
+> for pmax capping condition. But where are we taking care of reporting
+> "pstate set to safe" and "freq control disabled" scenarios per-chip ?
+> 
+
+IMO let us not have "psafe" and "freq control disabled" states managed per-chip.
+Because when the above two conditions occur it is likely to happen across all
+chips during an OCC reset cycle. So I am setting 'throttled' to false on
+OCC_ACTIVE and re-verifying if it actually is the case by invoking
+*throttle_check().
+
 >>
 >> Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
 >> ---
->>  drivers/cpufreq/powernv-cpufreq.c | 59 ++++++++++++++++++++++++++++++++++++---
->>  1 file changed, 55 insertions(+), 4 deletions(-)
+>>  drivers/cpufreq/powernv-cpufreq.c | 28 ++++++++++++++++++++++++++--
+>>  1 file changed, 26 insertions(+), 2 deletions(-)
 >>
 >> diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
->> index ebef0d8..d0c18c9 100644
+>> index 9268424..9618813 100644
 >> --- a/drivers/cpufreq/powernv-cpufreq.c
 >> +++ b/drivers/cpufreq/powernv-cpufreq.c
->> @@ -27,6 +27,7 @@
->>  #include <linux/smp.h>
->>  #include <linux/of.h>
->>  #include <linux/reboot.h>
->> +#include <linux/slab.h>
+>> @@ -50,6 +50,8 @@ static bool rebooting, throttled, occ_reset;
+>>  static struct chip {
+>>  	unsigned int id;
+>>  	bool throttled;
+>> +	cpumask_t mask;
+>> +	struct work_struct throttle;
+>>  } *chips;
 >>
->>  #include <asm/cputhreads.h>
->>  #include <asm/firmware.h>
->> @@ -42,6 +43,13 @@
->>  static struct cpufreq_frequency_table powernv_freqs[POWERNV_MAX_PSTATES+1];
->>  static bool rebooting, throttled;
+>>  static int nr_chips;
+>> @@ -310,8 +312,9 @@ static inline unsigned int get_nominal_index(void)
+>>  	return powernv_pstate_info.max - powernv_pstate_info.nominal;
+>>  }
 >>
->> +static struct chip {
->> +	unsigned int id;
->> +	bool throttled;
->> +} *chips;
->> +
->> +static int nr_chips;
->> +
->>  /*
->>   * Note: The set of pstates consists of contiguous integers, the
->>   * smallest of which is indicated by powernv_pstate_info.min, the
->> @@ -301,22 +309,33 @@ static inline unsigned int get_nominal_index(void)
->>  static void powernv_cpufreq_throttle_check(unsigned int cpu)
+>> -static void powernv_cpufreq_throttle_check(unsigned int cpu)
+>> +static void powernv_cpufreq_throttle_check(void *data)
 >>  {
+>> +	unsigned int cpu = smp_processor_id();
 >>  	unsigned long pmsr;
->> -	int pmsr_pmax, pmsr_lp;
->> +	int pmsr_pmax, pmsr_lp, i;
+>>  	int pmsr_pmax, pmsr_lp, i;
 >>
->>  	pmsr = get_pmspr(SPRN_PMSR);
+>> @@ -373,7 +376,7 @@ static int powernv_cpufreq_target_index(struct cpufreq_policy *policy,
+>>  		return 0;
 >>
->> +	for (i = 0; i < nr_chips; i++)
->> +		if (chips[i].id == cpu_to_chip_id(cpu))
->> +			break;
+>>  	if (!throttled)
+>> -		powernv_cpufreq_throttle_check(smp_processor_id());
+>> +		powernv_cpufreq_throttle_check(NULL);
+>>
+>>  	freq_data.pstate_id = powernv_freqs[new_index].driver_data;
+>>
+>> @@ -418,6 +421,14 @@ static struct notifier_block powernv_cpufreq_reboot_nb = {
+>>  	.notifier_call = powernv_cpufreq_reboot_notifier,
+>>  };
+>>
+>> +void powernv_cpufreq_work_fn(struct work_struct *work)
+>> +{
+>> +	struct chip *chip = container_of(work, struct chip, throttle);
 >> +
->>  	/* Check for Pmax Capping */
->>  	pmsr_pmax = (s8)PMSR_MAX(pmsr);
->>  	if (pmsr_pmax != powernv_pstate_info.max) {
->> -		throttled = true;
->> -		pr_info("CPU %d Pmax is reduced to %d\n", cpu, pmsr_pmax);
->> -		pr_info("Max allowed Pstate is capped\n");
->> +		if (chips[i].throttled)
->> +			goto next;
->> +		chips[i].throttled = true;
->> +		pr_info("CPU %d on Chip %u has Pmax reduced to %d\n", cpu,
->> +			chips[i].id, pmsr_pmax);
->> +	} else if (chips[i].throttled) {
->> +		chips[i].throttled = false;
-> 
-> Is this check on pmax sufficient to indicate that the chip is unthrottled ?
-
-Unthrottling due to Pmax uncapping here is specific to a chip. So it is
-sufficient to decide throttling/unthrottling when OCC is active for that chip.
-
-> 
->> +		pr_info("CPU %d on Chip %u has Pmax restored to %d\n", cpu,
->> +			chips[i].id, pmsr_pmax);
->>  	}
+>> +	smp_call_function_any(&chip->mask,
+>> +			      powernv_cpufreq_throttle_check, NULL, 0);
+>> +}
+>> +
+>>  static char throttle_reason[][30] = {
+>>  					"No throttling",
+>>  					"Power Cap",
+>> @@ -433,6 +444,7 @@ static int powernv_cpufreq_occ_msg(struct notifier_block *nb,
+>>  	struct opal_msg *occ_msg = msg;
+>>  	uint64_t token;
+>>  	uint64_t chip_id, reason;
+>> +	int i;
 >>
->>  	/*
->>  	 * Check for Psafe by reading LocalPstate
->>  	 * or check if Psafe_mode_active is set in PMSR.
->>  	 */
->> +next:
->>  	pmsr_lp = (s8)PMSR_LP(pmsr);
->>  	if ((pmsr_lp < powernv_pstate_info.min) ||
->>  				(pmsr & PMSR_PSAFE_ENABLE)) {
->> @@ -414,6 +433,33 @@ static struct cpufreq_driver powernv_cpufreq_driver = {
->>  	.attr		= powernv_cpu_freq_attr,
+>>  	if (msg_type != OPAL_MSG_OCC)
+>>  		return 0;
+>> @@ -466,6 +478,10 @@ static int powernv_cpufreq_occ_msg(struct notifier_block *nb,
+>>  			occ_reset = false;
+>>  			throttled = false;
+>>  			pr_info("OCC: Active\n");
+>> +
+>> +			for (i = 0; i < nr_chips; i++)
+>> +				schedule_work(&chips[i].throttle);
+>> +
+>>  			return 0;
+>>  		}
+>>
+>> @@ -476,6 +492,12 @@ static int powernv_cpufreq_occ_msg(struct notifier_block *nb,
+>>  		else if (!reason)
+>>  			pr_info("OCC: Chip %u %s\n", (unsigned int)chip_id,
+>>  				throttle_reason[reason]);
+>> +		else
+>> +			return 0;
 > 
-> What about the situation where although occ is active, this particular
-> chip has been throttled and we end up repeatedly reporting "pstate set
-> to safe" and "frequency control disabled from OS" ? Should we not have a
-> check on (chips[i].throttled) before reporting an anomaly for these two
-> scenarios as well just like you have for pmsr_pmax ?
+> Why the else section ? The code can never reach here, can it ?
 
-We will not have "Psafe" and "frequency control disabled" repeatedly printed
-because of global variable 'throttled', which is set to true on passing any of
-these two conditions.
+When reason > 5 , we dont want to handle it.
 
-It is quite unlikely behavior to have only one chip in "Psafe" or "frequency
-control disabled" state. These two conditions are most likely to happen during
-an OCC reset cycle which will occur across all chips.
+> 
+>> +
+>> +		for (i = 0; i < nr_chips; i++)
+>> +			if (chips[i].id == chip_id)
+>> +				schedule_work(&chips[i].throttle);
+>>  	}
+> 
+> Should we not do this only when we get unthrottled so as to cross verify
+> if it is indeed the case ? In case of throttling notification, opal's
+> verdict is final and there is no need to cross verify right ?
+
+Two reasons for invoking *throttle_check() on throttling:
+1) We just got to know the reason and not the Pmax value we are getting
+throttled to.
+2) It could be a spurious message caused due to late/lost delivery. My point
+here is let us not completely rely on the notification to declare throttling
+unless we verify it from reading PMSR.
+
+> 
+> Perhaps the one thing that needs to be taken care in addition to
+> reporting throttling is setting the chip's throttled parameter to true.
+> This should do right ? I don't see the need to call throttle_check() here.
+> 
+>
 
 Thanks and Regards,
 Shilpa
