@@ -1,31 +1,23 @@
-Return-Path: <robherring2@gmail.com>
-Received: from mail-yh0-x231.google.com (mail-yh0-x231.google.com
- [IPv6:2607:f8b0:4002:c01::231])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1on0111.outbound.protection.outlook.com [157.56.110.111])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0209B1A0606
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 May 2015 05:41:45 +1000 (AEST)
-Received: by yhw29 with SMTP id 29so43945874yhw.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 05 May 2015 12:41:42 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7CC641A035B
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 May 2015 06:45:57 +1000 (AEST)
+Message-ID: <1430858734.16357.256.camel@freescale.com>
+Subject: Re: [PATCH 1/2] powerpc/qman: Change fsl,qman-channel-id to cell-index
+From: Scott Wood <scottwood@freescale.com>
+To: Pledge Roy-R01356 <roy.pledge@freescale.com>
+Date: Tue, 5 May 2015 15:45:34 -0500
+In-Reply-To: <BN3PR0301MB126796C0EC18EEBB26702C588CD10@BN3PR0301MB1267.namprd03.prod.outlook.com>
+References: <1429311187-19062-1-git-send-email-scottwood@freescale.com>
+ <BN3PR0301MB126796C0EC18EEBB26702C588CD10@BN3PR0301MB1267.namprd03.prod.outlook.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-In-Reply-To: <1430817426-5241-2-git-send-email-stripathi@apm.com>
-References: <1430817426-5241-1-git-send-email-stripathi@apm.com>
- <1430817426-5241-2-git-send-email-stripathi@apm.com>
-From: Rob Herring <robherring2@gmail.com>
-Date: Tue, 5 May 2015 14:41:21 -0500
-Message-ID: <CAL_JsqK0pCtL2pbG7RttYd7BDxQHxdECHN_9X9MpLTuVEOxzsQ@mail.gmail.com>
-Subject: Re: [PATCH v5 1/1] arm64: dts: Add the arasan sdhc nodes in
- apm-storm.dtsi.
-To: Suman Tripathi <stripathi@apm.com>
-Content-Type: text/plain; charset=UTF-8
 Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Mark Langsdorf <mlangsdo@redhat.com>, Arnd Bergmann <arnd@arndb.de>,
- "jcm@redhat.com" <jcm@redhat.com>, Anton Vorontsov <anton@enomsg.org>,
- "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>,
- "chris@printf.net" <chris@printf.net>, Michal Simek <michal.simek@xilinx.com>,
- "patches@apm.com" <patches@apm.com>, ddutile@redhat.com,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Bucur
+ Madalin-Cristian-B32716 <madalin.bucur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,30 +27,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, May 5, 2015 at 4:17 AM, Suman Tripathi <stripathi@apm.com> wrote:
-> This patch adds the arasan sdhc nodes to reuse the of-arasan
-> driver for APM X-Gene SoC.
->
-> Signed-off-by: Suman Tripathi <stripathi@apm.com>
-> ---
->  arch/arm64/boot/dts/apm/apm-mustang.dts |  4 +++
->  arch/arm64/boot/dts/apm/apm-storm.dtsi  | 44 +++++++++++++++++++++++++++++++++
->  2 files changed, 48 insertions(+)
+On Tue, 2015-05-05 at 11:04 -0500, Pledge Roy-R01356 wrote:
+> Sorry for the slow reply.
+> 
+> I don't believe this is correct - let me explain the rational why we had two properties in the QMan portal to begin with.
+> 
+> The two properties in question are cell-index and fsl,qman-channel-id.
+> 
+> The cell-index property is used in u-boot as an index for the software portal ID when adding the fsl,liodn from the U-boot table into the device tree.
 
-[...]
+The device tree is not supposed to contain arbitrary software
+identifiers.
 
-> @@ -533,6 +567,16 @@
->                         interrupts = <0x0 0x4f 0x4>;
->                 };
->
-> +               sdhc0: sdhc@1c000000 {
-> +                       device_type = "sdhc";
+> The  fsl,qman-channel-id property is used in Linux and corresponds to a
+> hardware value that indicates which channel is dedicated to the
+> software portal.
+> 
+> While I'm not aware of a current SoC where the channel ID for a
+> software portal does not match the index (i.e. SWP 0 uses channel 0,
+> etc.) 
 
-device_type generally should not be used (there are a few exceptions).
+Thus there's no backward compatibility issue with redefining cell-index
+to mean the channel ID.
 
-> +                       compatible = "arasan,sdhci-4.9a";
+> it is possible that future SoCs could stray from this model,
+> there is no reason for portal index to equal channel ID at all times.
 
-If you ever have an integration or xgene specific problem, you need a
-chip specific compatible.
+How can future SoCs dictate how we assign a software-defined identifier?
+If software wants it to be the same as the channel id, then it will be.
 
-Rob
+If there is some aspect of the hardware itself (not the documentation)
+that cell-index currently corresponds to, other than the channel id,
+please make that clear.
+
+-Scott
