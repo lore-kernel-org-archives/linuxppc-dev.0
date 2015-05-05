@@ -1,27 +1,23 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <herbszt@gmx.de>
+Received: from mout.gmx.net (mout.gmx.net [212.227.15.18])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6710E1A035B
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 May 2015 07:16:50 +1000 (AEST)
-Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
- [140.211.169.12])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 0E9E914033F
- for <linuxppc-dev@ozlabs.org>; Wed,  6 May 2015 07:16:49 +1000 (AEST)
-Date: Tue, 5 May 2015 14:16:47 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [PATCH 1/6] dump_stack: Support adding to the dump stack arch
- description
-Message-Id: <20150505141647.a1529e46f5ba42645264769c@linux-foundation.org>
-In-Reply-To: <1430824337-15339-1-git-send-email-mpe@ellerman.id.au>
-References: <1430824337-15339-1-git-send-email-mpe@ellerman.id.au>
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 232C31A03B8
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 May 2015 07:47:54 +1000 (AEST)
+Date: Tue, 5 May 2015 23:46:59 +0200
+From: Sebastian Herbszt <herbszt@gmx.de>
+To: james.smart@emulex.com
+Subject: Re: [PATCH kernel] commit 4fbdf9cb ("lpfc: Fix for lun discovery
+ issue with saturn adapter.")
+Message-ID: <20150505234659.00003ab7@localhost>
+In-Reply-To: <5548E2C1.3070209@emulex.com>
+References: <1430209582-23925-1-git-send-email-aik@ozlabs.ru>
+ <5548E2C1.3070209@emulex.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Cc: tj@kernel.org, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
- Andrew Morton <akpm@osdl.org>, Anton Blanchard <anton@samba.org>
+Cc: linux-scsi@vger.kernel.org, Alexey Kardashevskiy <aik@ozlabs.ru>,
+ "James E . J . Bottomley" <JBottomley@odin.com>, linux-kernel@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,82 +27,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue,  5 May 2015 21:12:12 +1000 Michael Ellerman <mpe@ellerman.id.au> wrote:
-
-> Arch code can set a "dump stack arch description string" which is
-> displayed with oops output to describe the hardware platform.
+James Smart wrote:
 > 
-> It is useful to initialise this as early as possible, so that an early
-> oops will have the hardware description.
+> Reviewed-By: James Smart <james.smart@emulex.com>
 > 
-> However in practice we discover the hardware platform in stages, so it
-> would be useful to be able to incrementally fill in the hardware
-> description as we discover it.
 > 
-> This patch adds that ability, by creating dump_stack_add_arch_desc().
+> Alexey, Sebastian,
 > 
-> If there is no existing string it behaves exactly like
-> dump_stack_set_arch_desc(). However if there is an existing string it
-> appends to it, with a leading space.
+> Yes - this section needs to be reverted.  This patch is good.
 > 
-> This makes it easy to call it multiple times from different parts of the
-> code and get a reasonable looking result.
+> -- james s
 
-Some example output in the changelog would be useful, to help people
-understand the value.  In particular, is there any convention for how
-these fields should be presented?  "name:value name:value", etc?  Or it
-is just put random stuff in there, hopefully with self-evident
-meanings.
+Reviewed-by: Sebastian Herbszt <herbszt@gmx.de>
 
-We're going to blow out the 128 byte dump_stack_arch_desc_str[] pretty
-quickly.  Is dynamic allocation a possibility?
-
->  /**
-> + * dump_stack_add_arch_desc - add arch-specific info to show with task dumps
-> + * @fmt: printf-style format string
-> + * @...: arguments for the format string
-> + *
-> + * See dump_stack_set_arch_desc() for why you'd want to use this.
-> + *
-> + * This version adds to any existing string already created with either
-> + * dump_stack_set_arch_desc() or dump_stack_add_arch_desc(). If there is an
-> + * existing string a space will be prepended to the passed string.
-> + */
-> +void __init dump_stack_add_arch_desc(const char *fmt, ...)
-> +{
-> +	va_list args;
-> +	int pos, len;
-> +	char *p;
-> +
-> +	/*
-> +	 * If there's an existing string we snprintf() past the end of it, and
-> +	 * then turn the terminating NULL of the existing string into a space
-> +	 * to create one string separated by a space.
-> +	 *
-> +	 * If there's no existing string we just snprintf() to the buffer, like
-> +	 * dump_stack_set_arch_desc(), but without calling it because we'd need
-> +	 * a varargs version.
-> +	 */
-> +
-> +	len = strnlen(dump_stack_arch_desc_str, sizeof(dump_stack_arch_desc_str));
-> +	pos = len;
-> +
-> +	if (len)
-> +		pos++;
-> +
-> +	if (pos >= sizeof(dump_stack_arch_desc_str))
-> +		return; /* Ran out of space */
-> +
-> +	p = &dump_stack_arch_desc_str[pos];
-> +
-> +	va_start(args, fmt);
-> +	vsnprintf(p, sizeof(dump_stack_arch_desc_str) - pos, fmt, args);
-> +	va_end(args);
-
-This code is almost race-free.  A (documented) smp_wmb() in here would
-make that 100%?
-
-> +	if (len)
-> +		dump_stack_arch_desc_str[len] = ' ';
-> +}
-> +
+Sebastian
