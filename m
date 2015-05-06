@@ -1,32 +1,42 @@
-Return-Path: <stripathi@apm.com>
-Received: from mail-wg0-f47.google.com (exprod5og108.obsmtp.com [64.18.0.186])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <borntraeger@de.ibm.com>
+Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 22D801A199D
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 May 2015 22:01:35 +1000 (AEST)
-Received: by wgyo15 with SMTP id o15so8949971wgy.2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 06 May 2015 05:01:32 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3BE071A00F6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 May 2015 22:46:13 +1000 (AEST)
+Received: from /spool/local
+ by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <borntraeger@de.ibm.com>;
+ Wed, 6 May 2015 13:46:09 +0100
+Received: from b06cxnps4074.portsmouth.uk.ibm.com
+ (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
+ by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id 0E2BA1B08023
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 May 2015 13:46:49 +0100 (BST)
+Received: from d06av06.portsmouth.uk.ibm.com (d06av06.portsmouth.uk.ibm.com
+ [9.149.37.217])
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t46Ck6Ix61014158
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 May 2015 12:46:06 GMT
+Received: from d06av06.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av06.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t467eA1m019685
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 May 2015 03:40:10 -0400
+Message-ID: <554A0D0D.8090209@de.ibm.com>
+Date: Wed, 06 May 2015 14:46:05 +0200
+From: Christian Borntraeger <borntraeger@de.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <CAOHikRBBy2VAG8sO=ZJJqCrqvGaSE1P4kPVvgsx9Q3Q9g8xemQ@mail.gmail.com>
-References: <1430817426-5241-1-git-send-email-stripathi@apm.com>
- <4635229.bceBxngCoe@wuerfel> <5549C68B.9090602@xilinx.com>
- <2568634.iEosTvMJpM@wuerfel>
- <CAOHikRBBy2VAG8sO=ZJJqCrqvGaSE1P4kPVvgsx9Q3Q9g8xemQ@mail.gmail.com>
-Date: Wed, 6 May 2015 17:31:32 +0530
-Message-ID: <CAOHikRC=scGN1_uL1bpSuhQV8VrmDLMV-63KMa14R9fVMwYizQ@mail.gmail.com>
-Subject: Re: [PATCH v5 1/1] arm64: dts: Add the arasan sdhc nodes in
- apm-storm.dtsi.
-From: Suman Tripathi <stripathi@apm.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Content-Type: multipart/alternative; boundary=047d7ba97f1a55651d0515688ec3
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Mark Langsdorf <mlangsdo@redhat.com>, "jcm@redhat.com" <jcm@redhat.com>,
- Anton Vorontsov <anton@enomsg.org>,
- "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>,
- Michal Simek <michal.simek@xilinx.com>, "chris@printf.net" <chris@printf.net>,
- "patches@apm.com" <patches@apm.com>, Rob Herring <robherring2@gmail.com>,
- Don Dutile <ddutile@redhat.com>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
+ linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+ kvm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org
+Subject: Re: [PATCH 3/3] kvm/powerpc: report guest steal time in host
+References: <cover.1430913087.git.naveen.n.rao@linux.vnet.ibm.com>
+ <c0db7eafdd13fcec26a0398e2ad0b7225c3998e9.1430913088.git.naveen.n.rao@linux.vnet.ibm.com>
+In-Reply-To: <c0db7eafdd13fcec26a0398e2ad0b7225c3998e9.1430913088.git.naveen.n.rao@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252
+Cc: ego@linux.vnet.ibm.com, agraf@suse.de, mingo@redhat.com, paulus@samba.org,
+ warrier@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,153 +46,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---047d7ba97f1a55651d0515688ec3
-Content-Type: text/plain; charset=UTF-8
+Am 06.05.2015 um 13:56 schrieb Naveen N. Rao:
+> On powerpc, kvm tracks both the guest steal time as well as the time
+> when guest was idle and this gets sent in to the guest through DTL. The
+> guest accounts these entries as either steal time or idle time based on
+> the last running task. Since the true guest idle status is not visible
+> to the host, we can't accurately expose the guest steal time in the
+> host.
+> 
+> However, tracking the guest vcpu cede status can get us a reasonable
+> (within 5% variation) vcpu steal time since guest vcpus cede the
+> processor on entering the idle task. To do this, we introduce a new
+> field ceded_st in kvm_vcpu_arch structure to accurately track the guest
+> vcpu cede status (this is needed since the existing ceded field is
+> modified before we can use it). During DTL entry creation, we check this
+> flag and account the time as stolen if the guest vcpu had not ceded.
 
-Hi Arnd,
+I think this is more or less a question about the semantic:
 
-On Wed, May 6, 2015 at 5:27 PM, Suman Tripathi <stripathi@apm.com> wrote:
+What would happen if you use  current->sched_info.run_delay like x86 also
+on power? How far are the numbers away? My feeling is, that the semantics
+of "steal time" inside the guest is somewhat different on each platform. 
 
->
->
-> On Wed, May 6, 2015 at 2:10 PM, Arnd Bergmann <arnd@arndb.de> wrote:
->
->> On Wednesday 06 May 2015 09:45:15 Michal Simek wrote:
->> > On 05/06/2015 09:31 AM, Arnd Bergmann wrote:
->> > > On Wednesday 06 May 2015 10:41:07 Suman Tripathi wrote:
->> > >>>> @@ -533,6 +567,16 @@
->> > >>>>                         interrupts = <0x0 0x4f 0x4>;
->> > >>>>                 };
->> > >>>>
->> > >>>> +               sdhc0: sdhc@1c000000 {
->> > >>>> +                       device_type = "sdhc";
->> > >>>
->> > >>> device_type generally should not be used (there are a few
->> exceptions).
->> > >>
->> > >> Okay !!
->> > >>
->> > >
->> > > While we're at it, please change sdhc@1c000000 to mmc@1c000000.
->> > > Even though Linux does not care, we try to use the standard device
->> > > names for consistency.
->> >
->> > Do we have a list of these names somewhere?
->> > Normally I do use ePARP - generic names recommendation but mmc or sdhci
->> > are not listed there.
->> > Both combination mmc@ or sdhci@ are used in the kernel.
->> >
->> > On zynq and zynqmp we do use shdci@.
->> >
->>
->> Ah, I thought ePAPR listed mmc already. Using "sdhci" is a little too
->> specific here, since a lot of mmc hosts are not sdhci compliant, and
->> "sdhc" is completely wrong, because that identifies a specific card
->> type, but a host that supports SDHC cards will generally also work
->> with SD (less than 4GB) or SDXC (more than 48GB) cards.
->>
->
-> Agree on this . Will change it.
->
+This brings me to a 2nd question:
+Do you need to match the host view of guest steal time with the guest view
+or do we want to have a host view that translates as "this is the time that
+the guest was runnable but we were too busy to schedule him"?
+For the former x86 has the best solution, as the host tells the guest its
+understanding of steal - so both match. For the latter we actually try to
+give guest steal a meaning in the host context  - the overload.
+Would /proc/<pid>/schedstat value 2 (time spent waiting on a runqueue)
+meet your requirements from the cover-letter?
 
-One more point as we are resuing the arasan driver,  is it compulsory to
-use the name used in binding info
-for arasan ?? It is sdhci for arasan.
-
-
->
->>         Arnd
->>
->
->
->
-> --
-> Thanks,
-> with regards,
-> Suman Tripathi
->
-
-
-
--- 
-Thanks,
-with regards,
-Suman Tripathi
-
---047d7ba97f1a55651d0515688ec3
-Content-Type: text/html; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-
-<div dir=3D"ltr">Hi Arnd,<br><div class=3D"gmail_extra"><br><div class=3D"g=
-mail_quote">On Wed, May 6, 2015 at 5:27 PM, Suman Tripathi <span dir=3D"ltr=
-">&lt;<a href=3D"mailto:stripathi@apm.com" target=3D"_blank">stripathi@apm.=
-com</a>&gt;</span> wrote:<br><blockquote class=3D"gmail_quote" style=3D"mar=
-gin:0 0 0 .8ex;border-left:1px #ccc solid;padding-left:1ex"><div dir=3D"ltr=
-"><br><div class=3D"gmail_extra"><br><div class=3D"gmail_quote"><div><div c=
-lass=3D"h5">On Wed, May 6, 2015 at 2:10 PM, Arnd Bergmann <span dir=3D"ltr"=
->&lt;<a href=3D"mailto:arnd@arndb.de" target=3D"_blank">arnd@arndb.de</a>&g=
-t;</span> wrote:<br><blockquote class=3D"gmail_quote" style=3D"margin:0 0 0=
- .8ex;border-left:1px #ccc solid;padding-left:1ex"><div><div>On Wednesday 0=
-6 May 2015 09:45:15 Michal Simek wrote:<br>
-&gt; On 05/06/2015 09:31 AM, Arnd Bergmann wrote:<br>
-&gt; &gt; On Wednesday 06 May 2015 10:41:07 Suman Tripathi wrote:<br>
-&gt; &gt;&gt;&gt;&gt; @@ -533,6 +567,16 @@<br>
-&gt; &gt;&gt;&gt;&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0interrupts =3D &lt;0x0 0x4f 0x4&gt;;<=
-br>
-&gt; &gt;&gt;&gt;&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0};<br>
-&gt; &gt;&gt;&gt;&gt;<br>
-&gt; &gt;&gt;&gt;&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0sdhc0: sdhc@1c000000 {<br>
-&gt; &gt;&gt;&gt;&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0device_type =3D &quot;sdhc&quot;;<br>
-&gt; &gt;&gt;&gt;<br>
-&gt; &gt;&gt;&gt; device_type generally should not be used (there are a few=
- exceptions).<br>
-&gt; &gt;&gt;<br>
-&gt; &gt;&gt; Okay !!<br>
-&gt; &gt;&gt;<br>
-&gt; &gt;<br>
-&gt; &gt; While we&#39;re at it, please change sdhc@1c000000 to mmc@1c00000=
-0.<br>
-&gt; &gt; Even though Linux does not care, we try to use the standard devic=
-e<br>
-&gt; &gt; names for consistency.<br>
-&gt;<br>
-&gt; Do we have a list of these names somewhere?<br>
-&gt; Normally I do use ePARP - generic names recommendation but mmc or sdhc=
-i<br>
-&gt; are not listed there.<br>
-&gt; Both combination mmc@ or sdhci@ are used in the kernel.<br>
-&gt;<br>
-&gt; On zynq and zynqmp we do use shdci@.<br>
-&gt;<br>
-<br>
-</div></div>Ah, I thought ePAPR listed mmc already. Using &quot;sdhci&quot;=
- is a little too<br>
-specific here, since a lot of mmc hosts are not sdhci compliant, and<br>
-&quot;sdhc&quot; is completely wrong, because that identifies a specific ca=
-rd<br>
-type, but a host that supports SDHC cards will generally also work<br>
-with SD (less than 4GB) or SDXC (more than 48GB) cards.<br></blockquote><di=
-v><br></div></div></div><div>Agree on this . Will change it. =C2=A0</div></=
-div></div></div></blockquote><div><br></div><div>One more point as we are r=
-esuing the arasan driver, =C2=A0is it compulsory to use the name used in bi=
-nding info</div><div>for arasan ?? It is sdhci for arasan.=C2=A0</div><div>=
-=C2=A0</div><blockquote class=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;bo=
-rder-left:1px #ccc solid;padding-left:1ex"><div dir=3D"ltr"><div class=3D"g=
-mail_extra"><div class=3D"gmail_quote"><blockquote class=3D"gmail_quote" st=
-yle=3D"margin:0 0 0 .8ex;border-left:1px #ccc solid;padding-left:1ex">
-<span><font color=3D"#888888"><br>
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 Arnd<br>
-</font></span></blockquote></div><span class=3D""><br><br clear=3D"all"><di=
-v><br></div>-- <br><div><div dir=3D"ltr"><div>Thanks,</div><div>with regard=
-s,</div>Suman Tripathi</div></div>
-</span></div></div>
-</blockquote></div><br><br clear=3D"all"><div><br></div>-- <br><div class=
-=3D"gmail_signature"><div dir=3D"ltr"><div>Thanks,</div><div>with regards,<=
-/div>Suman Tripathi</div></div>
-</div></div>
-
---047d7ba97f1a55651d0515688ec3--
+Christian
