@@ -1,24 +1,21 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0148.outbound.protection.outlook.com [157.56.110.148])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <mikey@neuling.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D35821A0033
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 May 2015 09:01:19 +1000 (AEST)
-Message-ID: <1430953265.16357.310.camel@freescale.com>
-Subject: Re: [v4] clk: qoriq: Add support for the FMan clock
-From: Scott Wood <scottwood@freescale.com>
-To: Stephen Boyd <sboyd@codeaurora.org>
-Date: Wed, 6 May 2015 18:01:05 -0500
-In-Reply-To: <20150506222508.GA21794@codeaurora.org>
-References: <1429185945-6949-1-git-send-email-igal.liberman@freescale.com>
- <20150506070247.GA27050@codeaurora.org>
- <1430897672.16357.279.camel@freescale.com>
- <20150506222508.GA21794@codeaurora.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 876591A00CA
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 May 2015 09:50:10 +1000 (AEST)
+Message-ID: <1430956210.9675.1.camel@neuling.org>
+Subject: Re: [PATCH 2/6] powerpc: Add cpu name to dump stack arch description
+From: Michael Neuling <mikey@neuling.org>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Date: Thu, 07 May 2015 09:50:10 +1000
+In-Reply-To: <1430824337-15339-2-git-send-email-mpe@ellerman.id.au>
+References: <1430824337-15339-1-git-send-email-mpe@ellerman.id.au>
+ <1430824337-15339-2-git-send-email-mpe@ellerman.id.au>
 Content-Type: text/plain; charset="UTF-8"
-MIME-Version: 1.0
-Cc: "Igal.Liberman" <igal.liberman@freescale.com>,
- linuxppc-dev@lists.ozlabs.org, mturquette@linaro.org
+Mime-Version: 1.0
+Cc: tj@kernel.org, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+ Andrew Morton <akpm@osdl.org>, Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,68 +25,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2015-05-06 at 15:25 -0700, Stephen Boyd wrote:
-> On 05/06, Scott Wood wrote:
-> > On Wed, 2015-05-06 at 00:02 -0700, Stephen Boyd wrote:
-> > > On 04/16, Igal.Liberman wrote:
-> > > > +static int get_fm_clk_idx(int fm_id, int *fm_clk_idx)
-> > > > +{
-> > > > +	struct ccsr_guts __iomem *guts_regs = NULL;
-> > > 
-> > > Unnecessary initialization to NULL. Also, marking a structure as
-> > > __iomem is odd. Why do we need to use a struct to figure out
-> > > offsets for registers? Why not just use #defines? That would
-> > > probably also make it easy to avoid the asm include here.
-> > 
-> > Using a struct for registers is quite common:
-> > scott@snotra:~/fsl/git/linux/upstream$ git grep struct|grep __iomem|wc -l
-> > 3005
-> 
-> $ git grep -E 'struct \w+ __iomem' | wc -l
-> 2212
-> 
-> That's slightly inflated, but ok.
-> 
-> Within drivers/clk there aren't any though, hence my apprehension
-> 
-> $ git grep -E 'struct \w+ __iomem' -- drivers/clk/ | wc -l
-> 0
+On Tue, 2015-05-05 at 21:12 +1000, Michael Ellerman wrote:
+> As soon as we know the name of the cpu we're on, add it to the dump
+> stack arch description, which is printed in case of an oops.
+>=20
+> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+> ---
+>  arch/powerpc/kernel/cputable.c | 3 +++
+>  1 file changed, 3 insertions(+)
+>=20
+> diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputabl=
+e.c
+> index 60262fdf35ba..cf5e0c9b80cb 100644
+> --- a/arch/powerpc/kernel/cputable.c
+> +++ b/arch/powerpc/kernel/cputable.c
+> @@ -15,6 +15,7 @@
+>  #include <linux/threads.h>
+>  #include <linux/init.h>
+>  #include <linux/export.h>
+> +#include <linux/printk.h>
+> =20
+>  #include <asm/oprofile_impl.h>
+>  #include <asm/cputable.h>
+> @@ -2174,6 +2175,8 @@ static struct cpu_spec * __init setup_cpu_spec(unsi=
+gned long offset,
+>  	}
+>  #endif /* CONFIG_PPC64 || CONFIG_BOOKE */
+> =20
+> +	dump_stack_add_arch_desc(t->cpu_name);
+> +
 
-I'm not sure why clk should be special.  Plus, this is a struct that's
-been used by other parts of the kernel since before git history began,
-rather than something defined specifically for drivers/clk.
+Can we make this the PVR instead if the name?  It gives us more fidelity
+on what the hardware revision is.
 
-> > It provides type-safety, and makes accessing the registers more natural.
-> 
-> Sure, we can leave the struct as is, but to make this compile on
-> ARM we need to figure something out. Move the struct definition
-> into include/linux/platform_data/ perhaps?
+Mikey
 
-It's register definition rather than platform data, but yes, it should
-go somewhere in include/linux.  Or I suppose we could put #ifdef
-CONFIG_PPC around the fman stuff.
-
-> > > Also unnecessary initialization.
-> > 
-> > Given the if/else if/else if/... nature of how reg is initialized, this
-> > seems like a useful and harmless way of making behavior predictable if
-> > there is a bug.
-> > 
-> 
-> If there's a possibility of a bug due to missed initialization
-> perhaps it's a sign the code is too complicated and should be
-> broken down into smaller functions.
-
-Well, there's always a possibility. :-)
-
-Though rereading this function, reg is only used in the locations where
-it's set -- not after the if/else stuff -- so I no longer think this is
-a particularly high risk situation.  Plus, GCC's gotten pretty
-aggressive about warning about such possibilities.
-
->  For example, this function could be rewritten to have a match table
-> with function pointers that return the fm_clk_idx.
-
-Yes, that'd be nice.
-
--Scott
+>  	return t;
+>  }
+> =20
