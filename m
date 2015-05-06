@@ -1,38 +1,31 @@
-Return-Path: <nfont@linux.vnet.ibm.com>
-Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <stripathi@apm.com>
+Received: from mail-wi0-f179.google.com (exprod5og108.obsmtp.com [64.18.0.186])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 95CD81A036D
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 May 2015 12:11:16 +1000 (AEST)
-Received: from /spool/local
- by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
- Tue, 5 May 2015 22:11:13 -0400
-Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
- [9.57.198.23])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id E9B866E804C
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 May 2015 22:02:59 -0400 (EDT)
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
- by b01cxnp22033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t462BB7Q51642510
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 May 2015 02:11:11 GMT
-Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
- by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t462BAb5021434
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 5 May 2015 22:11:11 -0400
-Message-ID: <5549783B.4010605@linux.vnet.ibm.com>
-Date: Tue, 05 May 2015 21:11:07 -0500
-From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1DEDF1A0341
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 May 2015 15:11:11 +1000 (AEST)
+Received: by wizk4 with SMTP id k4so187435765wiz.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 05 May 2015 22:11:08 -0700 (PDT)
 MIME-Version: 1.0
-To: Tyrel Datwyler <tyreld@linux.vnet.ibm.ocm>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] powerpc/pseries: hibernation/migration should honor
- topology update policy
-References: <1430848434-25793-1-git-send-email-tyreld@linux.vnet.ibm.ocm>
-In-Reply-To: <1430848434-25793-1-git-send-email-tyreld@linux.vnet.ibm.ocm>
-Content-Type: text/plain; charset=windows-1252
-Cc: nacc@linux.vnet.ibm.com, Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
- stable@vger.kernel.org
+In-Reply-To: <CAL_JsqK0pCtL2pbG7RttYd7BDxQHxdECHN_9X9MpLTuVEOxzsQ@mail.gmail.com>
+References: <1430817426-5241-1-git-send-email-stripathi@apm.com>
+ <1430817426-5241-2-git-send-email-stripathi@apm.com>
+ <CAL_JsqK0pCtL2pbG7RttYd7BDxQHxdECHN_9X9MpLTuVEOxzsQ@mail.gmail.com>
+Date: Wed, 6 May 2015 10:41:07 +0530
+Message-ID: <CAOHikRC1dYd0BqhUCzdeZ8=PhSOj77sQR9kzrM8Gus3AJS1ejw@mail.gmail.com>
+Subject: Re: [PATCH v5 1/1] arm64: dts: Add the arasan sdhc nodes in
+ apm-storm.dtsi.
+From: Suman Tripathi <stripathi@apm.com>
+To: Rob Herring <robherring2@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ Mark Langsdorf <mlangsdo@redhat.com>, Arnd Bergmann <arnd@arndb.de>,
+ "jcm@redhat.com" <jcm@redhat.com>, Anton Vorontsov <anton@enomsg.org>,
+ "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>,
+ "chris@printf.net" <chris@printf.net>, Michal Simek <michal.simek@xilinx.com>,
+ "patches@apm.com" <patches@apm.com>, Don Dutile <ddutile@redhat.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,26 +35,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/05/2015 12:53 PM, Tyrel Datwyler wrote:
-> From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-> 
-> The suspend call paths for hibernation and migration operations call
-> stop_topology_update() and start_topology_update() respectively prior to
-> suspending the LPAR and upon resume. Topology updating can be
-> enabled/disabled from userspace and no check is currently done to determine
-> the current policy. This results in topology updates being started upon
-> resume from hibernation/migration even in the case where topology updates
-> were disabled initially.
-> 
-> This fixes the issue by storing the current policy and only calling
-> start_topology_update() in the case where either PRRN/VPHN were enabled to
-> start with.
-> 
-> Fixes: e04fa61214a3 (powerpc/pseries: Add /proc interface to control topology updates)
-> 
-> Signed-off-by: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
-> Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>
-> Cc: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-> Cc: stable@vger.kernel.org
+On Wed, May 6, 2015 at 1:11 AM, Rob Herring <robherring2@gmail.com> wrote:
+> On Tue, May 5, 2015 at 4:17 AM, Suman Tripathi <stripathi@apm.com> wrote:
+>> This patch adds the arasan sdhc nodes to reuse the of-arasan
+>> driver for APM X-Gene SoC.
+>>
+>> Signed-off-by: Suman Tripathi <stripathi@apm.com>
+>> ---
+>>  arch/arm64/boot/dts/apm/apm-mustang.dts |  4 +++
+>>  arch/arm64/boot/dts/apm/apm-storm.dtsi  | 44 +++++++++++++++++++++++++++++++++
+>>  2 files changed, 48 insertions(+)
+>
+> [...]
+>
+>> @@ -533,6 +567,16 @@
+>>                         interrupts = <0x0 0x4f 0x4>;
+>>                 };
+>>
+>> +               sdhc0: sdhc@1c000000 {
+>> +                       device_type = "sdhc";
+>
+> device_type generally should not be used (there are a few exceptions).
 
-Reviewed-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+Okay !!
+
+>
+>> +                       compatible = "arasan,sdhci-4.9a";
+>
+> If you ever have an integration or xgene specific problem, you need a
+> chip specific compatible.
+
+No it;s a IP level problem. If it's a SoC level then probably we
+cann't reuse the existing  arasan version. If anything happens
+in future we might need our own version.
+
+>
+> Rob
+
+
+
+-- 
+Thanks,
+with regards,
+Suman Tripathi
