@@ -1,32 +1,32 @@
 Return-Path: <naveen.n.rao@linux.vnet.ibm.com>
-Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
+Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9AAD31A17B9
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 May 2015 21:57:20 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id E5C731A17F3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 May 2015 21:57:21 +1000 (AEST)
 Received: from /spool/local
- by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <naveen.n.rao@linux.vnet.ibm.com>;
- Wed, 6 May 2015 17:27:18 +0530
+ Wed, 6 May 2015 17:27:19 +0530
 Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 624DB394005B
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 May 2015 17:27:16 +0530 (IST)
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 9BCB1E0057
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 May 2015 17:30:08 +0530 (IST)
 Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
  by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t46Bueio65667134
+ t46BueAV43712692
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 May 2015 17:26:40 +0530
 Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
  by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t46BN2n1016432
+ t46BN2nL016426
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 May 2015 16:53:02 +0530
 From: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
  kvm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  linux-s390@vger.kernel.org
-Subject: [PATCH 3/3] kvm/powerpc: report guest steal time in host
-Date: Wed,  6 May 2015 17:26:36 +0530
-Message-Id: <c0db7eafdd13fcec26a0398e2ad0b7225c3998e9.1430913088.git.naveen.n.rao@linux.vnet.ibm.com>
+Subject: [PATCH 1/3] procfs: add guest steal time in /proc/<pid>/stat
+Date: Wed,  6 May 2015 17:26:34 +0530
+Message-Id: <763805b68b8741de0172099163d9650c0352d724.1430913087.git.naveen.n.rao@linux.vnet.ibm.com>
 In-Reply-To: <cover.1430913087.git.naveen.n.rao@linux.vnet.ibm.com>
 References: <cover.1430913087.git.naveen.n.rao@linux.vnet.ibm.com>
 In-Reply-To: <cover.1430913087.git.naveen.n.rao@linux.vnet.ibm.com>
@@ -42,100 +42,97 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On powerpc, kvm tracks both the guest steal time as well as the time
-when guest was idle and this gets sent in to the guest through DTL. The
-guest accounts these entries as either steal time or idle time based on
-the last running task. Since the true guest idle status is not visible
-to the host, we can't accurately expose the guest steal time in the
-host.
-
-However, tracking the guest vcpu cede status can get us a reasonable
-(within 5% variation) vcpu steal time since guest vcpus cede the
-processor on entering the idle task. To do this, we introduce a new
-field ceded_st in kvm_vcpu_arch structure to accurately track the guest
-vcpu cede status (this is needed since the existing ceded field is
-modified before we can use it). During DTL entry creation, we check this
-flag and account the time as stolen if the guest vcpu had not ceded.
+Introduce a field in /proc/<pid>/stat to expose guest steal time.
 
 Signed-off-by: Naveen N. Rao <naveen.n.rao@linux.vnet.ibm.com>
 ---
-Tests show that the steal time being reported in the host with this approach is
-around 5% higher than the steal time shown in guest. I'd be interested to know
-if there are ways to achieve better accounting of the guest steal time in host.
+ fs/proc/array.c       | 6 ++++++
+ include/linux/sched.h | 7 +++++++
+ kernel/fork.c         | 2 +-
+ 3 files changed, 14 insertions(+), 1 deletion(-)
 
-Thanks!
-- Naveen
-
- arch/powerpc/include/asm/kvm_host.h     | 1 +
- arch/powerpc/kernel/asm-offsets.c       | 1 +
- arch/powerpc/kvm/book3s_hv.c            | 2 ++
- arch/powerpc/kvm/book3s_hv_rmhandlers.S | 3 +++
- 4 files changed, 7 insertions(+)
-
-diff --git a/arch/powerpc/include/asm/kvm_host.h b/arch/powerpc/include/asm/kvm_host.h
-index a193a13..48cafd6 100644
---- a/arch/powerpc/include/asm/kvm_host.h
-+++ b/arch/powerpc/include/asm/kvm_host.h
-@@ -661,6 +661,7 @@ struct kvm_vcpu_arch {
- 	u64 busy_preempt;
+diff --git a/fs/proc/array.c b/fs/proc/array.c
+index fd02a9e..ad8e616 100644
+--- a/fs/proc/array.c
++++ b/fs/proc/array.c
+@@ -381,6 +381,7 @@ static int do_task_stat(struct seq_file *m, struct pid_namespace *ns,
+ 	unsigned long rsslim = 0;
+ 	char tcomm[sizeof(task->comm)];
+ 	unsigned long flags;
++	cputime_t gstime;
  
- 	u32 emul_inst;
-+	u8 ceded_st;
+ 	state = *get_task_state(task);
+ 	vsize = eip = esp = 0;
+@@ -400,6 +401,7 @@ static int do_task_stat(struct seq_file *m, struct pid_namespace *ns,
+ 	sigemptyset(&sigcatch);
+ 	cutime = cstime = utime = stime = 0;
+ 	cgtime = gtime = 0;
++	gstime = 0;
+ 
+ 	if (lock_task_sighand(task, &flags)) {
+ 		struct signal_struct *sig = task->signal;
+@@ -428,6 +430,7 @@ static int do_task_stat(struct seq_file *m, struct pid_namespace *ns,
+ 				min_flt += t->min_flt;
+ 				maj_flt += t->maj_flt;
+ 				gtime += task_gtime(t);
++				gstime += task_gstime(t);
+ 			} while_each_thread(task, t);
+ 
+ 			min_flt += sig->min_flt;
+@@ -450,6 +453,7 @@ static int do_task_stat(struct seq_file *m, struct pid_namespace *ns,
+ 		maj_flt = task->maj_flt;
+ 		task_cputime_adjusted(task, &utime, &stime);
+ 		gtime = task_gtime(task);
++		gstime = task_gstime(task);
+ 	}
+ 
+ 	/* scale priority and nice values from timeslices to -20..20 */
+@@ -523,6 +527,8 @@ static int do_task_stat(struct seq_file *m, struct pid_namespace *ns,
+ 	else
+ 		seq_put_decimal_ll(m, ' ', 0);
+ 
++	seq_put_decimal_ull(m, ' ', cputime_to_clock_t(gstime));
++
+ 	seq_putc(m, '\n');
+ 	if (mm)
+ 		mmput(mm);
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index 26a2e61..e28f869 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -1430,6 +1430,7 @@ struct task_struct {
+ 
+ 	cputime_t utime, stime, utimescaled, stimescaled;
+ 	cputime_t gtime;
++	cputime_t gstime;
+ #ifndef CONFIG_VIRT_CPU_ACCOUNTING_NATIVE
+ 	struct cputime prev_cputime;
  #endif
+@@ -1956,6 +1957,12 @@ static inline cputime_t task_gtime(struct task_struct *t)
+ 	return t->gtime;
+ }
+ #endif
++
++static inline cputime_t task_gstime(struct task_struct *t)
++{
++	return t->gstime;
++}
++
+ extern void task_cputime_adjusted(struct task_struct *p, cputime_t *ut, cputime_t *st);
+ extern void thread_group_cputime_adjusted(struct task_struct *p, cputime_t *ut, cputime_t *st);
  
- #ifdef CONFIG_KVM_BOOK3S_HV_EXIT_TIMING
-diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
-index 0034b6b..7c11c84 100644
---- a/arch/powerpc/kernel/asm-offsets.c
-+++ b/arch/powerpc/kernel/asm-offsets.c
-@@ -534,6 +534,7 @@ int main(void)
- 	DEFINE(VCPU_DEC_EXPIRES, offsetof(struct kvm_vcpu, arch.dec_expires));
- 	DEFINE(VCPU_PENDING_EXC, offsetof(struct kvm_vcpu, arch.pending_exceptions));
- 	DEFINE(VCPU_CEDED, offsetof(struct kvm_vcpu, arch.ceded));
-+	DEFINE(VCPU_CEDED_ST, offsetof(struct kvm_vcpu, arch.ceded_st));
- 	DEFINE(VCPU_PRODDED, offsetof(struct kvm_vcpu, arch.prodded));
- 	DEFINE(VCPU_MMCR, offsetof(struct kvm_vcpu, arch.mmcr));
- 	DEFINE(VCPU_PMC, offsetof(struct kvm_vcpu, arch.pmc));
-diff --git a/arch/powerpc/kvm/book3s_hv.c b/arch/powerpc/kvm/book3s_hv.c
-index 48d3c5d..7a7e3ab 100644
---- a/arch/powerpc/kvm/book3s_hv.c
-+++ b/arch/powerpc/kvm/book3s_hv.c
-@@ -565,6 +565,8 @@ static void kvmppc_create_dtl_entry(struct kvm_vcpu *vcpu,
- 	spin_lock_irq(&vcpu->arch.tbacct_lock);
- 	stolen += vcpu->arch.busy_stolen;
- 	vcpu->arch.busy_stolen = 0;
-+	if (!vcpu->arch.ceded_st && stolen)
-+		(pid_task(vcpu->pid, PIDTYPE_PID))->gstime += stolen;
- 	spin_unlock_irq(&vcpu->arch.tbacct_lock);
- 	if (!dt || !vpa)
- 		return;
-diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-index 4d70df2..80efc31 100644
---- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-+++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-@@ -924,6 +924,7 @@ deliver_guest_interrupt:
- fast_guest_return:
- 	li	r0,0
- 	stb	r0,VCPU_CEDED(r4)	/* cancel cede */
-+	stb	r0,VCPU_CEDED_ST(r4)	/* cancel cede */
- 	mtspr	SPRN_HSRR0,r10
- 	mtspr	SPRN_HSRR1,r11
+diff --git a/kernel/fork.c b/kernel/fork.c
+index 03c1eaa..edf4ffb 100644
+--- a/kernel/fork.c
++++ b/kernel/fork.c
+@@ -1339,7 +1339,7 @@ static struct task_struct *copy_process(unsigned long clone_flags,
  
-@@ -2059,6 +2060,7 @@ _GLOBAL(kvmppc_h_cede)		/* r3 = vcpu pointer, r11 = msr, r13 = paca */
- 	std	r11,VCPU_MSR(r3)
- 	li	r0,1
- 	stb	r0,VCPU_CEDED(r3)
-+	stb	r0,VCPU_CEDED_ST(r3)
- 	sync			/* order setting ceded vs. testing prodded */
- 	lbz	r5,VCPU_PRODDED(r3)
- 	cmpwi	r5,0
-@@ -2266,6 +2268,7 @@ kvm_cede_prodded:
- 	stb	r0,VCPU_PRODDED(r3)
- 	sync			/* order testing prodded vs. clearing ceded */
- 	stb	r0,VCPU_CEDED(r3)
-+	stb	r0,VCPU_CEDED_ST(r3)
- 	li	r3,H_SUCCESS
- 	blr
+ 	init_sigpending(&p->pending);
  
+-	p->utime = p->stime = p->gtime = 0;
++	p->utime = p->stime = p->gtime = p->gstime = 0;
+ 	p->utimescaled = p->stimescaled = 0;
+ #ifndef CONFIG_VIRT_CPU_ACCOUNTING_NATIVE
+ 	p->prev_cputime.utime = p->prev_cputime.stime = 0;
 -- 
 2.3.7
