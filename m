@@ -1,42 +1,30 @@
-Return-Path: <borntraeger@de.ibm.com>
-Received: from e06smtp11.uk.ibm.com (e06smtp11.uk.ibm.com [195.75.94.107])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <michal.simek@xilinx.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bon0068.outbound.protection.outlook.com [157.56.111.68])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3BE071A00F6
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 May 2015 22:46:13 +1000 (AEST)
-Received: from /spool/local
- by e06smtp11.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <borntraeger@de.ibm.com>;
- Wed, 6 May 2015 13:46:09 +0100
-Received: from b06cxnps4074.portsmouth.uk.ibm.com
- (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
- by d06dlp03.portsmouth.uk.ibm.com (Postfix) with ESMTP id 0E2BA1B08023
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 May 2015 13:46:49 +0100 (BST)
-Received: from d06av06.portsmouth.uk.ibm.com (d06av06.portsmouth.uk.ibm.com
- [9.149.37.217])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t46Ck6Ix61014158
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 May 2015 12:46:06 GMT
-Received: from d06av06.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av06.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t467eA1m019685
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 May 2015 03:40:10 -0400
-Message-ID: <554A0D0D.8090209@de.ibm.com>
-Date: Wed, 06 May 2015 14:46:05 +0200
-From: Christian Borntraeger <borntraeger@de.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id C37131A0276
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 May 2015 22:57:10 +1000 (AEST)
+Message-ID: <554A0C12.7080702@xilinx.com>
+Date: Wed, 6 May 2015 14:41:54 +0200
+From: Michal Simek <michal.simek@xilinx.com>
 MIME-Version: 1.0
-To: "Naveen N. Rao" <naveen.n.rao@linux.vnet.ibm.com>,
- linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
- kvm@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org
-Subject: Re: [PATCH 3/3] kvm/powerpc: report guest steal time in host
-References: <cover.1430913087.git.naveen.n.rao@linux.vnet.ibm.com>
- <c0db7eafdd13fcec26a0398e2ad0b7225c3998e9.1430913088.git.naveen.n.rao@linux.vnet.ibm.com>
-In-Reply-To: <c0db7eafdd13fcec26a0398e2ad0b7225c3998e9.1430913088.git.naveen.n.rao@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=windows-1252
-Cc: ego@linux.vnet.ibm.com, agraf@suse.de, mingo@redhat.com, paulus@samba.org,
- warrier@linux.vnet.ibm.com
+To: Arnd Bergmann <arnd@arndb.de>, Michal Simek <michal.simek@xilinx.com>
+Subject: Re: [PATCH v5 1/1] arm64: dts: Add the arasan sdhc nodes in
+ apm-storm.dtsi.
+References: <1430817426-5241-1-git-send-email-stripathi@apm.com>
+ <4635229.bceBxngCoe@wuerfel> <5549C68B.9090602@xilinx.com>
+ <2568634.iEosTvMJpM@wuerfel>
+In-Reply-To: <2568634.iEosTvMJpM@wuerfel>
+Content-Type: text/plain; charset="windows-1252"
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ Mark Langsdorf <mlangsdo@redhat.com>, Suman Tripathi <stripathi@apm.com>,
+ "jcm@redhat.com" <jcm@redhat.com>, Anton Vorontsov <anton@enomsg.org>,
+ "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>,
+ "chris@printf.net" <chris@printf.net>, "patches@apm.com" <patches@apm.com>,
+ Rob Herring <robherring2@gmail.com>, Don Dutile <ddutile@redhat.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,36 +34,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Am 06.05.2015 um 13:56 schrieb Naveen N. Rao:
-> On powerpc, kvm tracks both the guest steal time as well as the time
-> when guest was idle and this gets sent in to the guest through DTL. The
-> guest accounts these entries as either steal time or idle time based on
-> the last running task. Since the true guest idle status is not visible
-> to the host, we can't accurately expose the guest steal time in the
-> host.
+On 05/06/2015 10:40 AM, Arnd Bergmann wrote:
+> On Wednesday 06 May 2015 09:45:15 Michal Simek wrote:
+>> On 05/06/2015 09:31 AM, Arnd Bergmann wrote:
+>>> On Wednesday 06 May 2015 10:41:07 Suman Tripathi wrote:
+>>>>>> @@ -533,6 +567,16 @@
+>>>>>>                         interrupts = <0x0 0x4f 0x4>;
+>>>>>>                 };
+>>>>>>
+>>>>>> +               sdhc0: sdhc@1c000000 {
+>>>>>> +                       device_type = "sdhc";
+>>>>>
+>>>>> device_type generally should not be used (there are a few exceptions).
+>>>>
+>>>> Okay !!
+>>>>
+>>>
+>>> While we're at it, please change sdhc@1c000000 to mmc@1c000000.
+>>> Even though Linux does not care, we try to use the standard device
+>>> names for consistency.
+>>
+>> Do we have a list of these names somewhere?
+>> Normally I do use ePARP - generic names recommendation but mmc or sdhci
+>> are not listed there.
+>> Both combination mmc@ or sdhci@ are used in the kernel.
+>>
+>> On zynq and zynqmp we do use shdci@.
+>>
 > 
-> However, tracking the guest vcpu cede status can get us a reasonable
-> (within 5% variation) vcpu steal time since guest vcpus cede the
-> processor on entering the idle task. To do this, we introduce a new
-> field ceded_st in kvm_vcpu_arch structure to accurately track the guest
-> vcpu cede status (this is needed since the existing ceded field is
-> modified before we can use it). During DTL entry creation, we check this
-> flag and account the time as stolen if the guest vcpu had not ceded.
+> Ah, I thought ePAPR listed mmc already. Using "sdhci" is a little too
+> specific here, since a lot of mmc hosts are not sdhci compliant, and
+> "sdhc" is completely wrong, because that identifies a specific card
+> type, but a host that supports SDHC cards will generally also work
+> with SD (less than 4GB) or SDXC (more than 48GB) cards.
 
-I think this is more or less a question about the semantic:
+Yes "sdhc" is completely wrong.
 
-What would happen if you use  current->sched_info.run_delay like x86 also
-on power? How far are the numbers away? My feeling is, that the semantics
-of "steal time" inside the guest is somewhat different on each platform. 
+Based on our datasheet(also version used on Zynq and ZynqMP) this IP is
+compliant with SD HC 3.00, SDIO 3.0, SD MC 3.01 SD MCS 1.01, MMC 4.51.
+Not sure about the version which they use.
+Also not sure which spec the IP should have to be able to say that we
+can use sdhci name. Do you have exact SPEC name?
 
-This brings me to a 2nd question:
-Do you need to match the host view of guest steal time with the guest view
-or do we want to have a host view that translates as "this is the time that
-the guest was runnable but we were too busy to schedule him"?
-For the former x86 has the best solution, as the host tells the guest its
-understanding of steal - so both match. For the latter we actually try to
-give guest steal a meaning in the host context  - the overload.
-Would /proc/<pid>/schedstat value 2 (time spent waiting on a runqueue)
-meet your requirements from the cover-letter?
-
-Christian
+Thanks,
+Michal
