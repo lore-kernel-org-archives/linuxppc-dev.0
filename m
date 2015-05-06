@@ -1,31 +1,20 @@
-Return-Path: <stripathi@apm.com>
-Received: from mail-wi0-f179.google.com (exprod5og108.obsmtp.com [64.18.0.186])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <sboyd@codeaurora.org>
+Received: from smtp.codeaurora.org (smtp.codeaurora.org [198.145.29.96])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1DEDF1A0341
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 May 2015 15:11:11 +1000 (AEST)
-Received: by wizk4 with SMTP id k4so187435765wiz.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 05 May 2015 22:11:08 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 99C871A00F6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 May 2015 17:02:52 +1000 (AEST)
+Date: Wed, 6 May 2015 00:02:47 -0700
+From: Stephen Boyd <sboyd@codeaurora.org>
+To: "Igal.Liberman" <igal.liberman@freescale.com>
+Subject: Re: [v4] clk: qoriq: Add support for the FMan clock
+Message-ID: <20150506070247.GA27050@codeaurora.org>
+References: <1429185945-6949-1-git-send-email-igal.liberman@freescale.com>
 MIME-Version: 1.0
-In-Reply-To: <CAL_JsqK0pCtL2pbG7RttYd7BDxQHxdECHN_9X9MpLTuVEOxzsQ@mail.gmail.com>
-References: <1430817426-5241-1-git-send-email-stripathi@apm.com>
- <1430817426-5241-2-git-send-email-stripathi@apm.com>
- <CAL_JsqK0pCtL2pbG7RttYd7BDxQHxdECHN_9X9MpLTuVEOxzsQ@mail.gmail.com>
-Date: Wed, 6 May 2015 10:41:07 +0530
-Message-ID: <CAOHikRC1dYd0BqhUCzdeZ8=PhSOj77sQR9kzrM8Gus3AJS1ejw@mail.gmail.com>
-Subject: Re: [PATCH v5 1/1] arm64: dts: Add the arasan sdhc nodes in
- apm-storm.dtsi.
-From: Suman Tripathi <stripathi@apm.com>
-To: Rob Herring <robherring2@gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Mark Langsdorf <mlangsdo@redhat.com>, Arnd Bergmann <arnd@arndb.de>,
- "jcm@redhat.com" <jcm@redhat.com>, Anton Vorontsov <anton@enomsg.org>,
- "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>,
- "chris@printf.net" <chris@printf.net>, Michal Simek <michal.simek@xilinx.com>,
- "patches@apm.com" <patches@apm.com>, Don Dutile <ddutile@redhat.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1429185945-6949-1-git-send-email-igal.liberman@freescale.com>
+Cc: scottwood@freescale.com, mturquette@linaro.org,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,46 +24,152 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, May 6, 2015 at 1:11 AM, Rob Herring <robherring2@gmail.com> wrote:
-> On Tue, May 5, 2015 at 4:17 AM, Suman Tripathi <stripathi@apm.com> wrote:
->> This patch adds the arasan sdhc nodes to reuse the of-arasan
->> driver for APM X-Gene SoC.
->>
->> Signed-off-by: Suman Tripathi <stripathi@apm.com>
->> ---
->>  arch/arm64/boot/dts/apm/apm-mustang.dts |  4 +++
->>  arch/arm64/boot/dts/apm/apm-storm.dtsi  | 44 +++++++++++++++++++++++++++++++++
->>  2 files changed, 48 insertions(+)
->
-> [...]
->
->> @@ -533,6 +567,16 @@
->>                         interrupts = <0x0 0x4f 0x4>;
->>                 };
->>
->> +               sdhc0: sdhc@1c000000 {
->> +                       device_type = "sdhc";
->
-> device_type generally should not be used (there are a few exceptions).
+On 04/16, Igal.Liberman wrote:
+> From: Igal Liberman <Igal.Liberman@freescale.com>
+> 
+> This patch depends on the following patches:
+> 	https://patchwork.ozlabs.org/patch/461151/
+> 	https://patchwork.ozlabs.org/patch/461155/
+> 
+> This patche is described by the following binding document update:
+> 	https://patchwork.ozlabs.org/patch/461166/
+> 
+> v4:	- Replaced "fsl,b4-device-config" with
+> 	  "fsl,b4860/b4420-device-config"
+> 	- Updated error messages
+> 
+> v3:	Updated commit message
+> 
+> v2:	- Added clock maintainers
+> 	- Cached FMan clock parent during initialization
+> 	- Register the clock after checking if the hardware exists
+> 	- updated error messages
+> 
+> Signed-off-by: Igal Liberman <Igal.Liberman@freescale.com>
+> ---
+>  drivers/clk/clk-qoriq.c |  213 +++++++++++++++++++++++++++++++++++++++++++++++
 
-Okay !!
+If I try to compile this on ARM (the Kconfig for this file shows
+that ARM is possible) then it fails with this error message:
 
->
->> +                       compatible = "arasan,sdhci-4.9a";
->
-> If you ever have an integration or xgene specific problem, you need a
-> chip specific compatible.
+  CC      drivers/clk/clk-qoriq.o
+  drivers/clk/clk-qoriq.c:22:26:
+  fatal error: asm/fsl_guts.h: No such file or directory
+  compilation terminated.
 
-No it;s a IP level problem. If it's a SoC level then probably we
-cann't reuse the existing  arasan version. If anything happens
-in future we might need our own version.
+>  1 file changed, 213 insertions(+)
+> 
+> diff --git a/drivers/clk/clk-qoriq.c b/drivers/clk/clk-qoriq.c
+> index cda90a9..871c6df 100644
+> --- a/drivers/clk/clk-qoriq.c
+> +++ b/drivers/clk/clk-qoriq.c
+> +
+> +static u8 get_fm_clk_parent(struct clk_hw *hw)
+> +{
+> +	return hw->init->flags;
+> +}
 
->
-> Rob
+This is very confusing. How is flags the parent index? Please
+don't abuse framework data structures. I'm actually thinking we
+should replace hw->init with NULL during clk_register() to avoid
+this kind of abuse...
 
+> +
+> +static const struct clk_ops fm_clk_ops = {
+> +	.get_parent = get_fm_clk_parent,
+> +};
+> +
+> +static int get_fm_clk_idx(int fm_id, int *fm_clk_idx)
+> +{
+> +	struct ccsr_guts __iomem *guts_regs = NULL;
 
+Unnecessary initialization to NULL. Also, marking a structure as
+__iomem is odd. Why do we need to use a struct to figure out
+offsets for registers? Why not just use #defines? That would
+probably also make it easy to avoid the asm include here.
+
+> +	struct device_node *guts;
+> +	uint32_t reg = 0;
+
+s/uint32_t/u32/
+
+Also unnecessary initialization.
+
+> +	int clk_src = 0;
+> +
+> +	guts = of_find_matching_node(NULL, guts_device_ids);
+> +	if (!guts) {
+> +		pr_err("%s(): could not find GUTS node\n", __func__);
+> +		return -ENODEV;
+> +	}
+> +
+> +	guts_regs = of_iomap(guts, 0);
+> +	of_node_put(guts);
+> +	if (!guts_regs) {
+> +		pr_err("%s(): ioremap of GUTS node failed\n", __func__);
+> +		return -ENODEV;
+> +	}
+[...]
+> +
+> +static void __init fm_mux_init(struct device_node *np)
+> +{
+> +	struct clk_init_data *init;
+> +	struct clk_hw *hw;
+> +	int count, i, ret, fm_id = 0, fm_clk_idx;
+> +	struct clk *clk;
+> +
+> +	init = kmalloc((sizeof(struct clk_init_data)), GFP_KERNEL);
+
+Please remove extra parens and do sizeof(*init) so that we don't
+have to care about the type matching.
+
+> +	if (!init)
+> +		return;
+> +
+> +	/* get the input clock source count */
+> +	count = of_property_count_strings(np, "clock-names");
+> +	if (count < 0) {
+> +		pr_err("%s(): %s: get clock count error\n",
+> +		       __func__, np->name);
+> +		goto err_init;
+> +	}
+> +
+> +	init->parent_names = kmalloc((sizeof(char *) * count), GFP_KERNEL);
+
+Use kcalloc please
+
+> +	if (!init->parent_names)
+> +		goto err_init;
+> +
+> +	for (i = 0; i < count; i++)
+> +		init->parent_names[i] = of_clk_get_parent_name(np, i);
+> +
+> +	hw = kzalloc(sizeof(*hw), GFP_KERNEL);
+> +	if (!hw)
+> +		goto err_name;
+> +
+> +	ret = of_property_read_string_index(np, "clock-output-names", 0,
+> +					    &init->name);
+> +	if (ret) {
+> +		pr_err("%s(): %s: read clock names error\n",
+> +		       __func__, np->name);
+> +		goto err_clk_hw;
+> +	}
+> +
+> +	if (!strcmp(np->name, "fm1-clk-mux"))
+> +		fm_id = 1;
+> +
+> +	ret = get_fm_clk_idx(fm_id, &fm_clk_idx);
+> +	if (ret)
+> +		goto err_clk_hw;
+> +
+> +	init->ops = &fm_clk_ops;
+> +	init->num_parents = count;
+> +	/* Save clock source index */
+> +	init->flags = fm_clk_idx;
+
+Don't do this.
 
 -- 
-Thanks,
-with regards,
-Suman Tripathi
+Qualcomm Innovation Center, Inc. is a member of Code Aurora Forum,
+a Linux Foundation Collaborative Project
