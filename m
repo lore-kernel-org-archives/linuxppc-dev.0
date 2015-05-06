@@ -1,23 +1,24 @@
 Return-Path: <stripathi@apm.com>
-Received: from mail-wi0-f169.google.com (exprod5og124.obsmtp.com [64.18.0.212])
+Received: from mail-wg0-f47.google.com (exprod5og108.obsmtp.com [64.18.0.186])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5F9471A173B
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 May 2015 21:57:11 +1000 (AEST)
-Received: by wiun10 with SMTP id n10so19283071wiu.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 06 May 2015 04:57:07 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 22D801A199D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 May 2015 22:01:35 +1000 (AEST)
+Received: by wgyo15 with SMTP id o15so8949971wgy.2
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 06 May 2015 05:01:32 -0700 (PDT)
 MIME-Version: 1.0
-In-Reply-To: <2568634.iEosTvMJpM@wuerfel>
+In-Reply-To: <CAOHikRBBy2VAG8sO=ZJJqCrqvGaSE1P4kPVvgsx9Q3Q9g8xemQ@mail.gmail.com>
 References: <1430817426-5241-1-git-send-email-stripathi@apm.com>
  <4635229.bceBxngCoe@wuerfel> <5549C68B.9090602@xilinx.com>
  <2568634.iEosTvMJpM@wuerfel>
-Date: Wed, 6 May 2015 17:27:07 +0530
-Message-ID: <CAOHikRBBy2VAG8sO=ZJJqCrqvGaSE1P4kPVvgsx9Q3Q9g8xemQ@mail.gmail.com>
+ <CAOHikRBBy2VAG8sO=ZJJqCrqvGaSE1P4kPVvgsx9Q3Q9g8xemQ@mail.gmail.com>
+Date: Wed, 6 May 2015 17:31:32 +0530
+Message-ID: <CAOHikRC=scGN1_uL1bpSuhQV8VrmDLMV-63KMa14R9fVMwYizQ@mail.gmail.com>
 Subject: Re: [PATCH v5 1/1] arm64: dts: Add the arasan sdhc nodes in
  apm-storm.dtsi.
 From: Suman Tripathi <stripathi@apm.com>
 To: Arnd Bergmann <arnd@arndb.de>
-Content-Type: multipart/alternative; boundary=047d7ba97f1a8a684b0515687ea2
+Content-Type: multipart/alternative; boundary=047d7ba97f1a55651d0515688ec3
 Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
  Mark Langsdorf <mlangsdo@redhat.com>, "jcm@redhat.com" <jcm@redhat.com>,
  Anton Vorontsov <anton@enomsg.org>,
@@ -35,50 +36,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---047d7ba97f1a8a684b0515687ea2
+--047d7ba97f1a55651d0515688ec3
 Content-Type: text/plain; charset=UTF-8
 
-On Wed, May 6, 2015 at 2:10 PM, Arnd Bergmann <arnd@arndb.de> wrote:
+Hi Arnd,
 
-> On Wednesday 06 May 2015 09:45:15 Michal Simek wrote:
-> > On 05/06/2015 09:31 AM, Arnd Bergmann wrote:
-> > > On Wednesday 06 May 2015 10:41:07 Suman Tripathi wrote:
-> > >>>> @@ -533,6 +567,16 @@
-> > >>>>                         interrupts = <0x0 0x4f 0x4>;
-> > >>>>                 };
-> > >>>>
-> > >>>> +               sdhc0: sdhc@1c000000 {
-> > >>>> +                       device_type = "sdhc";
-> > >>>
-> > >>> device_type generally should not be used (there are a few
-> exceptions).
-> > >>
-> > >> Okay !!
-> > >>
-> > >
-> > > While we're at it, please change sdhc@1c000000 to mmc@1c000000.
-> > > Even though Linux does not care, we try to use the standard device
-> > > names for consistency.
-> >
-> > Do we have a list of these names somewhere?
-> > Normally I do use ePARP - generic names recommendation but mmc or sdhci
-> > are not listed there.
-> > Both combination mmc@ or sdhci@ are used in the kernel.
-> >
-> > On zynq and zynqmp we do use shdci@.
-> >
->
-> Ah, I thought ePAPR listed mmc already. Using "sdhci" is a little too
-> specific here, since a lot of mmc hosts are not sdhci compliant, and
-> "sdhc" is completely wrong, because that identifies a specific card
-> type, but a host that supports SDHC cards will generally also work
-> with SD (less than 4GB) or SDXC (more than 48GB) cards.
->
-
-Agree on this . Will change it.
+On Wed, May 6, 2015 at 5:27 PM, Suman Tripathi <stripathi@apm.com> wrote:
 
 >
->         Arnd
+>
+> On Wed, May 6, 2015 at 2:10 PM, Arnd Bergmann <arnd@arndb.de> wrote:
+>
+>> On Wednesday 06 May 2015 09:45:15 Michal Simek wrote:
+>> > On 05/06/2015 09:31 AM, Arnd Bergmann wrote:
+>> > > On Wednesday 06 May 2015 10:41:07 Suman Tripathi wrote:
+>> > >>>> @@ -533,6 +567,16 @@
+>> > >>>>                         interrupts = <0x0 0x4f 0x4>;
+>> > >>>>                 };
+>> > >>>>
+>> > >>>> +               sdhc0: sdhc@1c000000 {
+>> > >>>> +                       device_type = "sdhc";
+>> > >>>
+>> > >>> device_type generally should not be used (there are a few
+>> exceptions).
+>> > >>
+>> > >> Okay !!
+>> > >>
+>> > >
+>> > > While we're at it, please change sdhc@1c000000 to mmc@1c000000.
+>> > > Even though Linux does not care, we try to use the standard device
+>> > > names for consistency.
+>> >
+>> > Do we have a list of these names somewhere?
+>> > Normally I do use ePARP - generic names recommendation but mmc or sdhci
+>> > are not listed there.
+>> > Both combination mmc@ or sdhci@ are used in the kernel.
+>> >
+>> > On zynq and zynqmp we do use shdci@.
+>> >
+>>
+>> Ah, I thought ePAPR listed mmc already. Using "sdhci" is a little too
+>> specific here, since a lot of mmc hosts are not sdhci compliant, and
+>> "sdhc" is completely wrong, because that identifies a specific card
+>> type, but a host that supports SDHC cards will generally also work
+>> with SD (less than 4GB) or SDXC (more than 48GB) cards.
+>>
+>
+> Agree on this . Will change it.
+>
+
+One more point as we are resuing the arasan driver,  is it compulsory to
+use the name used in binding info
+for arasan ?? It is sdhci for arasan.
+
+
+>
+>>         Arnd
+>>
+>
+>
+>
+> --
+> Thanks,
+> with regards,
+> Suman Tripathi
 >
 
 
@@ -88,16 +109,21 @@ Thanks,
 with regards,
 Suman Tripathi
 
---047d7ba97f1a8a684b0515687ea2
+--047d7ba97f1a55651d0515688ec3
 Content-Type: text/html; charset=UTF-8
 Content-Transfer-Encoding: quoted-printable
 
-<div dir=3D"ltr"><br><div class=3D"gmail_extra"><br><div class=3D"gmail_quo=
-te">On Wed, May 6, 2015 at 2:10 PM, Arnd Bergmann <span dir=3D"ltr">&lt;<a =
-href=3D"mailto:arnd@arndb.de" target=3D"_blank">arnd@arndb.de</a>&gt;</span=
-> wrote:<br><blockquote class=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;bo=
-rder-left:1px #ccc solid;padding-left:1ex"><div class=3D"HOEnZb"><div class=
-=3D"h5">On Wednesday 06 May 2015 09:45:15 Michal Simek wrote:<br>
+<div dir=3D"ltr">Hi Arnd,<br><div class=3D"gmail_extra"><br><div class=3D"g=
+mail_quote">On Wed, May 6, 2015 at 5:27 PM, Suman Tripathi <span dir=3D"ltr=
+">&lt;<a href=3D"mailto:stripathi@apm.com" target=3D"_blank">stripathi@apm.=
+com</a>&gt;</span> wrote:<br><blockquote class=3D"gmail_quote" style=3D"mar=
+gin:0 0 0 .8ex;border-left:1px #ccc solid;padding-left:1ex"><div dir=3D"ltr=
+"><br><div class=3D"gmail_extra"><br><div class=3D"gmail_quote"><div><div c=
+lass=3D"h5">On Wed, May 6, 2015 at 2:10 PM, Arnd Bergmann <span dir=3D"ltr"=
+>&lt;<a href=3D"mailto:arnd@arndb.de" target=3D"_blank">arnd@arndb.de</a>&g=
+t;</span> wrote:<br><blockquote class=3D"gmail_quote" style=3D"margin:0 0 0=
+ .8ex;border-left:1px #ccc solid;padding-left:1ex"><div><div>On Wednesday 0=
+6 May 2015 09:45:15 Michal Simek wrote:<br>
 &gt; On 05/06/2015 09:31 AM, Arnd Bergmann wrote:<br>
 &gt; &gt; On Wednesday 06 May 2015 10:41:07 Suman Tripathi wrote:<br>
 &gt; &gt;&gt;&gt;&gt; @@ -533,6 +567,16 @@<br>
@@ -140,14 +166,23 @@ specific here, since a lot of mmc hosts are not sdhci compliant, and<br>
 rd<br>
 type, but a host that supports SDHC cards will generally also work<br>
 with SD (less than 4GB) or SDXC (more than 48GB) cards.<br></blockquote><di=
-v><br></div><div>Agree on this . Will change it. =C2=A0</div><blockquote cl=
-ass=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;border-left:1px #ccc solid;p=
-adding-left:1ex">
-<span class=3D"HOEnZb"><font color=3D"#888888"><br>
+v><br></div></div></div><div>Agree on this . Will change it. =C2=A0</div></=
+div></div></div></blockquote><div><br></div><div>One more point as we are r=
+esuing the arasan driver, =C2=A0is it compulsory to use the name used in bi=
+nding info</div><div>for arasan ?? It is sdhci for arasan.=C2=A0</div><div>=
+=C2=A0</div><blockquote class=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;bo=
+rder-left:1px #ccc solid;padding-left:1ex"><div dir=3D"ltr"><div class=3D"g=
+mail_extra"><div class=3D"gmail_quote"><blockquote class=3D"gmail_quote" st=
+yle=3D"margin:0 0 0 .8ex;border-left:1px #ccc solid;padding-left:1ex">
+<span><font color=3D"#888888"><br>
 =C2=A0 =C2=A0 =C2=A0 =C2=A0 Arnd<br>
-</font></span></blockquote></div><br><br clear=3D"all"><div><br></div>-- <b=
-r><div class=3D"gmail_signature"><div dir=3D"ltr"><div>Thanks,</div><div>wi=
-th regards,</div>Suman Tripathi</div></div>
+</font></span></blockquote></div><span class=3D""><br><br clear=3D"all"><di=
+v><br></div>-- <br><div><div dir=3D"ltr"><div>Thanks,</div><div>with regard=
+s,</div>Suman Tripathi</div></div>
+</span></div></div>
+</blockquote></div><br><br clear=3D"all"><div><br></div>-- <br><div class=
+=3D"gmail_signature"><div dir=3D"ltr"><div>Thanks,</div><div>with regards,<=
+/div>Suman Tripathi</div></div>
 </div></div>
 
---047d7ba97f1a8a684b0515687ea2--
+--047d7ba97f1a55651d0515688ec3--
