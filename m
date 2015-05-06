@@ -1,31 +1,20 @@
-Return-Path: <stripathi@apm.com>
-Received: from mail-wi0-f182.google.com (exprod5og110.obsmtp.com [64.18.0.20])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0101.outbound.protection.outlook.com [207.46.100.101])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6EDC81A0276
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 May 2015 22:48:05 +1000 (AEST)
-Received: by widdi4 with SMTP id di4so20982669wid.0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 06 May 2015 05:47:58 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1B2921A0050
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 May 2015 06:44:19 +1000 (AEST)
+Message-ID: <1430945040.16357.293.camel@freescale.com>
+Subject: Re: [PATCH] powerpc/dts: Add 1588 timer node for eTSEC
+From: Scott Wood <scottwood@freescale.com>
+To: Yangbo Lu <yangbo.lu@freescale.com>
+Date: Wed, 6 May 2015 15:44:00 -0500
+In-Reply-To: <1430905256-4930-1-git-send-email-yangbo.lu@freescale.com>
+References: <1430905256-4930-1-git-send-email-yangbo.lu@freescale.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-In-Reply-To: <554A0C12.7080702@xilinx.com>
-References: <1430817426-5241-1-git-send-email-stripathi@apm.com>
- <4635229.bceBxngCoe@wuerfel> <5549C68B.9090602@xilinx.com>
- <2568634.iEosTvMJpM@wuerfel> <554A0C12.7080702@xilinx.com>
-Date: Wed, 6 May 2015 18:17:57 +0530
-Message-ID: <CAOHikRDT4vwkOkr8DVk0RrNeqVZwP7PXg53s0VBAXO5U+dpjHQ@mail.gmail.com>
-Subject: Re: [PATCH v5 1/1] arm64: dts: Add the arasan sdhc nodes in
- apm-storm.dtsi.
-From: Suman Tripathi <stripathi@apm.com>
-To: Michal Simek <michal.simek@xilinx.com>
-Content-Type: multipart/alternative; boundary=047d7ba978085ebea8051569341f
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Mark Langsdorf <mlangsdo@redhat.com>, Arnd Bergmann <arnd@arndb.de>,
- "jcm@redhat.com" <jcm@redhat.com>, Anton Vorontsov <anton@enomsg.org>,
- "linux-mmc@vger.kernel.org" <linux-mmc@vger.kernel.org>,
- "chris@printf.net" <chris@printf.net>, "patches@apm.com" <patches@apm.com>,
- Rob Herring <robherring2@gmail.com>, Don Dutile <ddutile@redhat.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,150 +24,80 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---047d7ba978085ebea8051569341f
-Content-Type: text/plain; charset=UTF-8
+On Wed, 2015-05-06 at 17:40 +0800, Yangbo Lu wrote:
+> Add 1588 timer node in files:
+> arch/powerpc/boot/dts/bsc9131rdb.dtsi
+> arch/powerpc/boot/dts/bsc9132qds.dtsi
+> arch/powerpc/boot/dts/p1010rdb.dtsi
+> arch/powerpc/boot/dts/p1020rdb-pd.dts
+> arch/powerpc/boot/dts/p1021rdb-pc.dtsi
+> arch/powerpc/boot/dts/p1022ds.dtsi
+> arch/powerpc/boot/dts/p1025twr.dtsi
+> arch/powerpc/boot/dts/p2020rdb-pc.dtsi
+> 
+> Signed-off-by: Yangbo Lu <yangbo.lu@freescale.com>
+> ---
+>  arch/powerpc/boot/dts/bsc9131rdb.dtsi  | 12 ++++++++++++
+>  arch/powerpc/boot/dts/bsc9132qds.dtsi  | 12 ++++++++++++
+>  arch/powerpc/boot/dts/p1010rdb.dtsi    | 12 ++++++++++++
+>  arch/powerpc/boot/dts/p1020rdb-pd.dts  | 12 ++++++++++++
+>  arch/powerpc/boot/dts/p1021rdb-pc.dtsi | 12 ++++++++++++
+>  arch/powerpc/boot/dts/p1022ds.dtsi     | 12 ++++++++++++
+>  arch/powerpc/boot/dts/p1025twr.dtsi    | 12 ++++++++++++
+>  arch/powerpc/boot/dts/p2020rdb-pc.dtsi | 15 +++++++++------
+>  8 files changed, 93 insertions(+), 6 deletions(-)
+> 
+> diff --git a/arch/powerpc/boot/dts/bsc9131rdb.dtsi b/arch/powerpc/boot/dts/bsc9131rdb.dtsi
+> index 45efcba..629cc03 100644
+> --- a/arch/powerpc/boot/dts/bsc9131rdb.dtsi
+> +++ b/arch/powerpc/boot/dts/bsc9131rdb.dtsi
+> @@ -80,6 +80,18 @@
+>  		status = "disabled";
+>  	};
+>  
+> +	ptp_clock@b0e00 {
+> +		compatible = "fsl,etsec-ptp";
+> +		reg = <0xb0e00 0xb0>;
+> +		interrupts = <68 2 0 0 69 2 0 0>;
+> +		fsl,tclk-period	= <5>;
+> +		fsl,tmr-prsc	= <2>;
+> +		fsl,tmr-add	= <0xcccccccd>;
+> +		fsl,tmr-fiper1	= <0x3b9ac9fb>;
+> +		fsl,tmr-fiper2	= <0x00018696>;
+> +		fsl,max-adj	= <249999999>;
 
-On Wed, May 6, 2015 at 6:11 PM, Michal Simek <michal.simek@xilinx.com>
-wrote:
+Please don't use hex for numbers that make more sense as decimal.
 
-> On 05/06/2015 10:40 AM, Arnd Bergmann wrote:
-> > On Wednesday 06 May 2015 09:45:15 Michal Simek wrote:
-> >> On 05/06/2015 09:31 AM, Arnd Bergmann wrote:
-> >>> On Wednesday 06 May 2015 10:41:07 Suman Tripathi wrote:
-> >>>>>> @@ -533,6 +567,16 @@
-> >>>>>>                         interrupts = <0x0 0x4f 0x4>;
-> >>>>>>                 };
-> >>>>>>
-> >>>>>> +               sdhc0: sdhc@1c000000 {
-> >>>>>> +                       device_type = "sdhc";
-> >>>>>
-> >>>>> device_type generally should not be used (there are a few
-> exceptions).
-> >>>>
-> >>>> Okay !!
-> >>>>
-> >>>
-> >>> While we're at it, please change sdhc@1c000000 to mmc@1c000000.
-> >>> Even though Linux does not care, we try to use the standard device
-> >>> names for consistency.
-> >>
-> >> Do we have a list of these names somewhere?
-> >> Normally I do use ePARP - generic names recommendation but mmc or sdhci
-> >> are not listed there.
-> >> Both combination mmc@ or sdhci@ are used in the kernel.
-> >>
-> >> On zynq and zynqmp we do use shdci@.
-> >>
-> >
-> > Ah, I thought ePAPR listed mmc already. Using "sdhci" is a little too
-> > specific here, since a lot of mmc hosts are not sdhci compliant, and
-> > "sdhc" is completely wrong, because that identifies a specific card
-> > type, but a host that supports SDHC cards will generally also work
-> > with SD (less than 4GB) or SDXC (more than 48GB) cards.
->
-> Yes "sdhc" is completely wrong.
->
+> --- a/arch/powerpc/boot/dts/p2020rdb-pc.dtsi
+> +++ b/arch/powerpc/boot/dts/p2020rdb-pc.dtsi
+> @@ -215,12 +215,15 @@
+>  	};
+>  
+>  	ptp_clock@24e00 {
+> -		fsl,tclk-period = <5>;
+> -		fsl,tmr-prsc = <200>;
+> -		fsl,tmr-add = <0xCCCCCCCD>;
+> -		fsl,tmr-fiper1 = <0x3B9AC9FB>;
+> -		fsl,tmr-fiper2 = <0x0001869B>;
+> -		fsl,max-adj = <249999999>;
+> +		compatible = "fsl,etsec-ptp";
+> +		reg = <0x24e00 0xb0>;
+> +		interrupts = <68 2 0 0 69 2 0 0>;
+> +		fsl,tclk-period	= <5>;
+> +		fsl,tmr-prsc	= <2>;
+> +		fsl,tmr-add	= <0xaaaaaaab>;
+> +		fsl,tmr-fiper1	= <0x3b9ac9fb>;
+> +		fsl,tmr-fiper2	= <0x00018696>;
+> +		fsl,max-adj	= <299999999>;
+>  	};
 
-But spec name in search engine's gives  SDHC 3.0 as general.
+This isn't adding a node -- it's changing values.  If the old ones were
+wrong, explain that in the changelog.
 
->
-> Based on our datasheet(also version used on Zynq and ZynqMP) this IP is
-> compliant with SD HC 3.00, SDIO 3.0, SD MC 3.01 SD MCS 1.01, MMC 4.51.
-> Not sure about the version which they use.
-> Also not sure which spec the IP should have to be able to say that we
-> can use sdhci name. Do you have exact SPEC name?
->
+Also, p2020si-post.dtsi already adds interrupts to this node (and it
+contains one more interrupt than the above), and it includes
+pq3-etsec1-timer-0.dtsi which contains the compatible and reg (and
+interrupts with two specifiers).  Probably all of these should be using
+pq3-etsec1-timer-0.dtsi and only specifying the board-specific values.
 
-I also think sdhci because the binding is sdhci written by Arasan. Anyway I
-will change to sdhci.
-
->
-> Thanks,
-> Michal
->
->
-
-
--- 
-Thanks,
-with regards,
-Suman Tripathi
-
---047d7ba978085ebea8051569341f
-Content-Type: text/html; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-
-<div dir=3D"ltr"><br><div class=3D"gmail_extra"><br><div class=3D"gmail_quo=
-te">On Wed, May 6, 2015 at 6:11 PM, Michal Simek <span dir=3D"ltr">&lt;<a h=
-ref=3D"mailto:michal.simek@xilinx.com" target=3D"_blank">michal.simek@xilin=
-x.com</a>&gt;</span> wrote:<br><blockquote class=3D"gmail_quote" style=3D"m=
-argin:0 0 0 .8ex;border-left:1px #ccc solid;padding-left:1ex"><div class=3D=
-"HOEnZb"><div class=3D"h5">On 05/06/2015 10:40 AM, Arnd Bergmann wrote:<br>
-&gt; On Wednesday 06 May 2015 09:45:15 Michal Simek wrote:<br>
-&gt;&gt; On 05/06/2015 09:31 AM, Arnd Bergmann wrote:<br>
-&gt;&gt;&gt; On Wednesday 06 May 2015 10:41:07 Suman Tripathi wrote:<br>
-&gt;&gt;&gt;&gt;&gt;&gt; @@ -533,6 +567,16 @@<br>
-&gt;&gt;&gt;&gt;&gt;&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0interrupts =3D &lt;0x0 0x4f 0x4&gt=
-;;<br>
-&gt;&gt;&gt;&gt;&gt;&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
-=C2=A0 =C2=A0};<br>
-&gt;&gt;&gt;&gt;&gt;&gt;<br>
-&gt;&gt;&gt;&gt;&gt;&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
-=C2=A0sdhc0: sdhc@1c000000 {<br>
-&gt;&gt;&gt;&gt;&gt;&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0device_type =3D &quot;sdhc&quot;;<br>
-&gt;&gt;&gt;&gt;&gt;<br>
-&gt;&gt;&gt;&gt;&gt; device_type generally should not be used (there are a =
-few exceptions).<br>
-&gt;&gt;&gt;&gt;<br>
-&gt;&gt;&gt;&gt; Okay !!<br>
-&gt;&gt;&gt;&gt;<br>
-&gt;&gt;&gt;<br>
-&gt;&gt;&gt; While we&#39;re at it, please change sdhc@1c000000 to mmc@1c00=
-0000.<br>
-&gt;&gt;&gt; Even though Linux does not care, we try to use the standard de=
-vice<br>
-&gt;&gt;&gt; names for consistency.<br>
-&gt;&gt;<br>
-&gt;&gt; Do we have a list of these names somewhere?<br>
-&gt;&gt; Normally I do use ePARP - generic names recommendation but mmc or =
-sdhci<br>
-&gt;&gt; are not listed there.<br>
-&gt;&gt; Both combination mmc@ or sdhci@ are used in the kernel.<br>
-&gt;&gt;<br>
-&gt;&gt; On zynq and zynqmp we do use shdci@.<br>
-&gt;&gt;<br>
-&gt;<br>
-&gt; Ah, I thought ePAPR listed mmc already. Using &quot;sdhci&quot; is a l=
-ittle too<br>
-&gt; specific here, since a lot of mmc hosts are not sdhci compliant, and<b=
-r>
-&gt; &quot;sdhc&quot; is completely wrong, because that identifies a specif=
-ic card<br>
-&gt; type, but a host that supports SDHC cards will generally also work<br>
-&gt; with SD (less than 4GB) or SDXC (more than 48GB) cards.<br>
-<br>
-</div></div>Yes &quot;sdhc&quot; is completely wrong.<br></blockquote><div>=
-<br></div><div>But spec name in search engine&#39;s gives =C2=A0SDHC 3.0 as=
- general.=C2=A0</div><blockquote class=3D"gmail_quote" style=3D"margin:0 0 =
-0 .8ex;border-left:1px #ccc solid;padding-left:1ex">
-<br>
-Based on our datasheet(also version used on Zynq and ZynqMP) this IP is<br>
-compliant with SD HC 3.00, SDIO 3.0, SD MC 3.01 SD MCS 1.01, MMC 4.51.<br>
-Not sure about the version which they use.<br>
-Also not sure which spec the IP should have to be able to say that we<br>
-can use sdhci name. Do you have exact SPEC name?<br></blockquote><div><br><=
-/div><div>I also think sdhci because the binding is sdhci written by Arasan=
-. Anyway I will change to sdhci.</div><blockquote class=3D"gmail_quote" sty=
-le=3D"margin:0 0 0 .8ex;border-left:1px #ccc solid;padding-left:1ex">
-<br>
-Thanks,<br>
-Michal<br>
-<br>
-</blockquote></div><br><br clear=3D"all"><div><br></div>-- <br><div class=
-=3D"gmail_signature"><div dir=3D"ltr"><div>Thanks,</div><div>with regards,<=
-/div>Suman Tripathi</div></div>
-</div></div>
-
---047d7ba978085ebea8051569341f--
+-Scott
