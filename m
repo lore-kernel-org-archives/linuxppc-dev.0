@@ -1,22 +1,38 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <nfont@linux.vnet.ibm.com>
+Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9DDD11A035A
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 May 2015 10:13:32 +1000 (AEST)
-Message-ID: <1430871212.1759.2.camel@ellerman.id.au>
-Subject: Re: [PATCH 1/6] dump_stack: Support adding to the dump stack arch
- description
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Andrew Morton <akpm@linux-foundation.org>
-Date: Wed, 06 May 2015 10:13:32 +1000
-In-Reply-To: <20150505141647.a1529e46f5ba42645264769c@linux-foundation.org>
-References: <1430824337-15339-1-git-send-email-mpe@ellerman.id.au>
- <20150505141647.a1529e46f5ba42645264769c@linux-foundation.org>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: tj@kernel.org, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
- Andrew Morton <akpm@osdl.org>, Anton Blanchard <anton@samba.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 95CD81A036D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 May 2015 12:11:16 +1000 (AEST)
+Received: from /spool/local
+ by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <nfont@linux.vnet.ibm.com>;
+ Tue, 5 May 2015 22:11:13 -0400
+Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
+ [9.57.198.23])
+ by d01dlp02.pok.ibm.com (Postfix) with ESMTP id E9B866E804C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 May 2015 22:02:59 -0400 (EDT)
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+ by b01cxnp22033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t462BB7Q51642510
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 May 2015 02:11:11 GMT
+Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
+ by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t462BAb5021434
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 5 May 2015 22:11:11 -0400
+Message-ID: <5549783B.4010605@linux.vnet.ibm.com>
+Date: Tue, 05 May 2015 21:11:07 -0500
+From: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: Tyrel Datwyler <tyreld@linux.vnet.ibm.ocm>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc/pseries: hibernation/migration should honor
+ topology update policy
+References: <1430848434-25793-1-git-send-email-tyreld@linux.vnet.ibm.ocm>
+In-Reply-To: <1430848434-25793-1-git-send-email-tyreld@linux.vnet.ibm.ocm>
+Content-Type: text/plain; charset=windows-1252
+Cc: nacc@linux.vnet.ibm.com, Tyrel Datwyler <tyreld@linux.vnet.ibm.com>,
+ stable@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,110 +42,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-05-05 at 14:16 -0700, Andrew Morton wrote:
-> On Tue,  5 May 2015 21:12:12 +1000 Michael Ellerman <mpe@ellerman.id.au> wrote:
+On 05/05/2015 12:53 PM, Tyrel Datwyler wrote:
+> From: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
 > 
-> > Arch code can set a "dump stack arch description string" which is
-> > displayed with oops output to describe the hardware platform.
-> > 
-> > It is useful to initialise this as early as possible, so that an early
-> > oops will have the hardware description.
-> > 
-> > However in practice we discover the hardware platform in stages, so it
-> > would be useful to be able to incrementally fill in the hardware
-> > description as we discover it.
-> > 
-> > This patch adds that ability, by creating dump_stack_add_arch_desc().
-> > 
-> > If there is no existing string it behaves exactly like
-> > dump_stack_set_arch_desc(). However if there is an existing string it
-> > appends to it, with a leading space.
-> > 
-> > This makes it easy to call it multiple times from different parts of the
-> > code and get a reasonable looking result.
+> The suspend call paths for hibernation and migration operations call
+> stop_topology_update() and start_topology_update() respectively prior to
+> suspending the LPAR and upon resume. Topology updating can be
+> enabled/disabled from userspace and no check is currently done to determine
+> the current policy. This results in topology updates being started upon
+> resume from hibernation/migration even in the case where topology updates
+> were disabled initially.
 > 
-> Some example output in the changelog would be useful, to help people
-> understand the value.  
+> This fixes the issue by storing the current policy and only calling
+> start_topology_update() in the case where either PRRN/VPHN were enabled to
+> start with.
+> 
+> Fixes: e04fa61214a3 (powerpc/pseries: Add /proc interface to control topology updates)
+> 
+> Signed-off-by: Tyrel Datwyler <tyreld@linux.vnet.ibm.com>
+> Cc: Nathan Fontenot <nfont@linux.vnet.ibm.com>
+> Cc: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
+> Cc: stable@vger.kernel.org
 
-OK, an example from a power system is:
-
-Hardware name: POWER8E (raw) 8286-42A PowerNV skiboot-5.0 MI SV830_027 SV810_085 SV830_027
-               ^             ^        ^       ^
-	       |             |        |       firmware version
-	       cpu name      |        platform name
-	                     device tree model
-
-Those are all added in separate parts of the code.
-
-> In particular, is there any convention for how these fields should be
-> presented?  "name:value name:value", etc?  Or it is just put random stuff in
-> there, hopefully with self-evident meanings.
-
-I was thinking there was no convention and it's basically up to arch/platform
-authors to put what they want in there. I see it as a human readable bag of
-stuff that might be helpful in diagnosing an oops, with the emphasis being on
-having more information rather than precisely specified fields & values.
-
-Having said that I did use name:value in one of my patches, just to
-differentiate the various version numbers. So maybe I should do that for all
-the fields. Though then we have the problem that the values contain spaces ...
-
-> We're going to blow out the 128 byte dump_stack_arch_desc_str[] pretty
-> quickly.  Is dynamic allocation a possibility?
-
-Are we? I think that's enough for us on most powerpc systems, and ideally it's
-not too long or it will wrap when printed to the console.
-
-I'd be inclined to avoid dynamic allocation until we absolutely need it, if
-anything we could just bump it to 256.
-
-> >  /**
-> > + * dump_stack_add_arch_desc - add arch-specific info to show with task dumps
-> > + * @fmt: printf-style format string
-> > + * @...: arguments for the format string
-> > + *
-> > + * See dump_stack_set_arch_desc() for why you'd want to use this.
-> > + *
-> > + * This version adds to any existing string already created with either
-> > + * dump_stack_set_arch_desc() or dump_stack_add_arch_desc(). If there is an
-> > + * existing string a space will be prepended to the passed string.
-> > + */
-> > +void __init dump_stack_add_arch_desc(const char *fmt, ...)
-> > +{
-> > +	va_list args;
-> > +	int pos, len;
-> > +	char *p;
-> > +
-> > +	/*
-> > +	 * If there's an existing string we snprintf() past the end of it, and
-> > +	 * then turn the terminating NULL of the existing string into a space
-> > +	 * to create one string separated by a space.
-> > +	 *
-> > +	 * If there's no existing string we just snprintf() to the buffer, like
-> > +	 * dump_stack_set_arch_desc(), but without calling it because we'd need
-> > +	 * a varargs version.
-> > +	 */
-> > +
-> > +	len = strnlen(dump_stack_arch_desc_str, sizeof(dump_stack_arch_desc_str));
-> > +	pos = len;
-> > +
-> > +	if (len)
-> > +		pos++;
-> > +
-> > +	if (pos >= sizeof(dump_stack_arch_desc_str))
-> > +		return; /* Ran out of space */
-> > +
-> > +	p = &dump_stack_arch_desc_str[pos];
-> > +
-> > +	va_start(args, fmt);
-> > +	vsnprintf(p, sizeof(dump_stack_arch_desc_str) - pos, fmt, args);
-> > +	va_end(args);
->
-> This code is almost race-free.  A (documented) smp_wmb() in here would
-> make that 100%?
-
-Yeah good idea.
-
-I'll send a v2 with that change and an updated changelog.
-
-cheers
+Reviewed-by: Nathan Fontenot <nfont@linux.vnet.ibm.com>
