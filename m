@@ -1,37 +1,46 @@
 Return-Path: <preeti@linux.vnet.ibm.com>
-Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0B5DE1A058C
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 May 2015 03:47:35 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8432F1A066C
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 May 2015 03:49:42 +1000 (AEST)
 Received: from /spool/local
- by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
- Thu, 7 May 2015 13:47:33 -0400
-Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
- [9.57.198.29])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 696BEC90048
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 May 2015 13:38:37 -0400 (EDT)
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
- by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t47HlTmj59244584
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 May 2015 17:47:29 GMT
-Received: from d01av01.pok.ibm.com (localhost [127.0.0.1])
- by d01av01.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t47HlS1A031482
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 May 2015 13:47:29 -0400
-Subject: [PATCH V2] cpuidle: Handle tick_broadcast_enter() failure gracefully
+ Thu, 7 May 2015 11:49:40 -0600
+Received: from b03cxnp08028.gho.boulder.ibm.com
+ (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 5698519D8048
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 May 2015 11:40:41 -0600 (MDT)
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+ by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t47HnEgE32702698
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 May 2015 10:49:14 -0700
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av04.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t47HnZar001590
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 May 2015 11:49:37 -0600
+Message-ID: <554BA5A8.3040009@linux.vnet.ibm.com>
+Date: Thu, 07 May 2015 23:19:28 +0530
 From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-To: peterz@infradead.org, tglx@linutronix.de, rafael.j.wysocki@intel.com,
- daniel.lezcano@linaro.org
-Date: Thu, 07 May 2015 23:17:21 +0530
-Message-ID: <20150507174355.25321.85885.stgit@preeti.in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: rlippert@google.com, linux-pm@vger.kernel.org, linus.walleij@linaro.org,
- linux-kernel@vger.kernel.org, mingo@redhat.com, sudeep.holla@arm.com,
- linuxppc-dev@lists.ozlabs.org
+To: Sudeep Holla <sudeep.holla@arm.com>
+Subject: Re: [PATCH] cpuidle: Handle tick_broadcast_enter() failure gracefully
+References: <20150507052600.20882.39542.stgit@preeti.in.ibm.com>
+ <554B36DD.5080807@arm.com>
+In-Reply-To: <554B36DD.5080807@arm.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: "rlippert@google.com" <rlippert@google.com>,
+ "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>,
+ "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+ "peterz@infradead.org" <peterz@infradead.org>,
+ "linus.walleij@linaro.org" <linus.walleij@linaro.org>,
+ "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "mingo@redhat.com" <mingo@redhat.com>,
+ "tglx@linutronix.de" <tglx@linutronix.de>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,340 +50,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When a CPU has to enter an idle state where tick stops, it makes a call
-to tick_broadcast_enter(). The call will fail if this CPU is the
-broadcast CPU. Today, under such a circumstance, the arch cpuidle code
-handles this CPU.  This is not convincing because not only are we not
-aware what the arch cpuidle code does, but we also do not account for
-the idle state residency time and usage of such a CPU.
+On 05/07/2015 03:26 PM, Sudeep Holla wrote:
+> Hi Preeti,
+> 
+> On 07/05/15 06:26, Preeti U Murthy wrote:
+>> When a CPU has to enter an idle state where tick stops, it makes a call
+>> to tick_broadcast_enter(). The call will fail if this CPU is the
+>> broadcast CPU. Today, under such a circumstance, the arch cpuidle code
+>> handles this CPU.  This is not convincing because not only are we not
+>> aware what the arch cpuidle code does, but we also do not account for
+>> the idle state residency time and usage of such a CPU.
+>>
+>> This scenario can be handled better by simply asking the cpuidle
+>> governor to choose an idle state where in ticks do not stop. To
+>> accommodate this change move the setting of runqueue idle state from the
+>> core to the cpuidle driver, else the rq->idle_state will be set wrong.
+>>
+>> Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+>> ---
+>> Based on linux-pm/bleeding-edge
+> 
+> I am unable to apply this patch cleanly on linux-pm/bleeding-edge
+> I think it conflicts with few patches that Rafael posted recently
+> which are in the branch now.
 
-This scenario can be handled better by simply asking the cpuidle
-governor to choose an idle state where in ticks do not stop. To
-accommodate this change move the setting of runqueue idle state from the
-core to the cpuidle driver, else the rq->idle_state will be set wrong.
+Thanks so much for pointing out this! I have resent the patch as V2
+after the rebase on the updated linux-pm/bleeding-edge branch
 
-Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
----
-Changes from V1: https://lkml.org/lkml/2015/5/7/24
-Rebased on the latest linux-pm/bleeding-edge
-
- drivers/cpuidle/cpuidle.c          |   21 +++++++++++++++++----
- drivers/cpuidle/governors/ladder.c |   13 ++++++++++---
- drivers/cpuidle/governors/menu.c   |    6 +++++-
- include/linux/cpuidle.h            |    6 +++---
- include/linux/sched.h              |   16 ++++++++++++++++
- kernel/sched/core.c                |   17 +++++++++++++++++
- kernel/sched/fair.c                |    2 +-
- kernel/sched/idle.c                |    8 +-------
- kernel/sched/sched.h               |   24 ------------------------
- 9 files changed, 70 insertions(+), 43 deletions(-)
-
-diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-index 8c24f95..b7e86f4 100644
---- a/drivers/cpuidle/cpuidle.c
-+++ b/drivers/cpuidle/cpuidle.c
-@@ -21,6 +21,7 @@
- #include <linux/module.h>
- #include <linux/suspend.h>
- #include <linux/tick.h>
-+#include <linux/sched.h>
- #include <trace/events/power.h>
- 
- #include "cpuidle.h"
-@@ -168,10 +169,17 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
- 	 * CPU as a broadcast timer, this call may fail if it is not available.
- 	 */
- 	if (broadcast && tick_broadcast_enter()) {
--		default_idle_call();
--		return -EBUSY;
-+		index = cpuidle_select(drv, dev, !broadcast);
-+		if (index < 0) {
-+			default_idle_call();
-+			return -EBUSY;
-+		}
-+		target_state = &drv->states[index];
- 	}
- 
-+	/* Take note of the planned idle state. */
-+	idle_set_state(smp_processor_id(), target_state);
-+
- 	trace_cpu_idle_rcuidle(index, dev->cpu);
- 	time_start = ktime_get();
- 
-@@ -180,6 +188,9 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
- 	time_end = ktime_get();
- 	trace_cpu_idle_rcuidle(PWR_EVENT_EXIT, dev->cpu);
- 
-+	/* The cpu is no longer idle or about to enter idle. */
-+	idle_set_state(smp_processor_id(), NULL);
-+
- 	if (broadcast) {
- 		if (WARN_ON_ONCE(!irqs_disabled()))
- 			local_irq_disable();
-@@ -215,12 +226,14 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
-  *
-  * @drv: the cpuidle driver
-  * @dev: the cpuidle device
-+ * @timer_stop_valid: allow selection of idle state where tick stops
-  *
-  * Returns the index of the idle state.
-  */
--int cpuidle_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
-+int cpuidle_select(struct cpuidle_driver *drv,
-+			struct cpuidle_device *dev, int timer_stop_valid)
- {
--	return cpuidle_curr_governor->select(drv, dev);
-+	return cpuidle_curr_governor->select(drv, dev, timer_stop_valid);
- }
- 
- /**
-diff --git a/drivers/cpuidle/governors/ladder.c b/drivers/cpuidle/governors/ladder.c
-index 401c010..c437322 100644
---- a/drivers/cpuidle/governors/ladder.c
-+++ b/drivers/cpuidle/governors/ladder.c
-@@ -62,9 +62,10 @@ static inline void ladder_do_selection(struct ladder_device *ldev,
-  * ladder_select_state - selects the next state to enter
-  * @drv: cpuidle driver
-  * @dev: the CPU
-+ * @timer_stop_valid: allow selection of idle state where tick stops
-  */
- static int ladder_select_state(struct cpuidle_driver *drv,
--				struct cpuidle_device *dev)
-+				struct cpuidle_device *dev, int timer_stop_valid)
- {
- 	struct ladder_device *ldev = this_cpu_ptr(&ladder_devices);
- 	struct ladder_device_state *last_state;
-@@ -86,6 +87,7 @@ static int ladder_select_state(struct cpuidle_driver *drv,
- 	    !drv->states[last_idx + 1].disabled &&
- 	    !dev->states_usage[last_idx + 1].disable &&
- 	    last_residency > last_state->threshold.promotion_time &&
-+	    !(!timer_stop_valid && (drv->states[last_idx + 1].flags & CPUIDLE_FLAG_TIMER_STOP)) &&
- 	    drv->states[last_idx + 1].exit_latency <= latency_req) {
- 		last_state->stats.promotion_count++;
- 		last_state->stats.demotion_count = 0;
-@@ -99,11 +101,14 @@ static int ladder_select_state(struct cpuidle_driver *drv,
- 	if (last_idx > CPUIDLE_DRIVER_STATE_START &&
- 	    (drv->states[last_idx].disabled ||
- 	    dev->states_usage[last_idx].disable ||
-+	    (!timer_stop_valid && (drv->states[last_idx].flags & CPUIDLE_FLAG_TIMER_STOP)) ||
- 	    drv->states[last_idx].exit_latency > latency_req)) {
- 		int i;
- 
- 		for (i = last_idx - 1; i > CPUIDLE_DRIVER_STATE_START; i--) {
--			if (drv->states[i].exit_latency <= latency_req)
-+			if (drv->states[i].exit_latency <= latency_req &&
-+				!(!timer_stop_valid &&
-+					(drv->states[i].flags & CPUIDLE_FLAG_TIMER_STOP)))
- 				break;
- 		}
- 		ladder_do_selection(ldev, last_idx, i);
-@@ -114,7 +119,9 @@ static int ladder_select_state(struct cpuidle_driver *drv,
- 	    last_residency < last_state->threshold.demotion_time) {
- 		last_state->stats.demotion_count++;
- 		last_state->stats.promotion_count = 0;
--		if (last_state->stats.demotion_count >= last_state->threshold.demotion_count) {
-+		if (last_state->stats.demotion_count >= last_state->threshold.demotion_count &&
-+			!(!timer_stop_valid &&
-+				(drv->states[last_idx - 1].flags & CPUIDLE_FLAG_TIMER_STOP))) {
- 			ladder_do_selection(ldev, last_idx, last_idx - 1);
- 			return last_idx - 1;
- 		}
-diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
-index 22e4463..3faee74 100644
---- a/drivers/cpuidle/governors/menu.c
-+++ b/drivers/cpuidle/governors/menu.c
-@@ -280,8 +280,10 @@ again:
-  * menu_select - selects the next idle state to enter
-  * @drv: cpuidle driver containing state data
-  * @dev: the CPU
-+ * @timer_stop_valid: allow selection of idle state where tick stops
-  */
--static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
-+static int menu_select(struct cpuidle_driver *drv,
-+			struct cpuidle_device *dev, int timer_stop_valid)
- {
- 	struct menu_device *data = this_cpu_ptr(&menu_devices);
- 	int latency_req = pm_qos_request(PM_QOS_CPU_DMA_LATENCY);
-@@ -349,6 +351,8 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
- 			continue;
- 		if (s->exit_latency > latency_req)
- 			continue;
-+		if (!timer_stop_valid && (s->flags & CPUIDLE_FLAG_TIMER_STOP))
-+			continue;
- 
- 		data->last_state_idx = i;
- 	}
-diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
-index 9c5e892..d7c1734 100644
---- a/include/linux/cpuidle.h
-+++ b/include/linux/cpuidle.h
-@@ -129,7 +129,7 @@ extern bool cpuidle_not_available(struct cpuidle_driver *drv,
- 				  struct cpuidle_device *dev);
- 
- extern int cpuidle_select(struct cpuidle_driver *drv,
--			  struct cpuidle_device *dev);
-+			  struct cpuidle_device *dev, int timer_stop_valid);
- extern int cpuidle_enter(struct cpuidle_driver *drv,
- 			 struct cpuidle_device *dev, int index);
- extern void cpuidle_reflect(struct cpuidle_device *dev, int index);
-@@ -163,7 +163,7 @@ static inline bool cpuidle_not_available(struct cpuidle_driver *drv,
- 					 struct cpuidle_device *dev)
- {return true; }
- static inline int cpuidle_select(struct cpuidle_driver *drv,
--				 struct cpuidle_device *dev)
-+				 struct cpuidle_device *dev, int timer_stop_valid)
- {return -ENODEV; }
- static inline int cpuidle_enter(struct cpuidle_driver *drv,
- 				struct cpuidle_device *dev, int index)
-@@ -223,7 +223,7 @@ struct cpuidle_governor {
- 					struct cpuidle_device *dev);
- 
- 	int  (*select)		(struct cpuidle_driver *drv,
--					struct cpuidle_device *dev);
-+					struct cpuidle_device *dev, int timer_stop_valid);
- 	void (*reflect)		(struct cpuidle_device *dev, int index);
- 
- 	struct module 		*owner;
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 26a2e61..fef8359 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -45,6 +45,7 @@ struct sched_param {
- #include <linux/rcupdate.h>
- #include <linux/rculist.h>
- #include <linux/rtmutex.h>
-+#include <linux/cpuidle.h>
- 
- #include <linux/time.h>
- #include <linux/param.h>
-@@ -893,6 +894,21 @@ enum cpu_idle_type {
- 	CPU_MAX_IDLE_TYPES
- };
- 
-+#ifdef CONFIG_CPU_IDLE
-+extern void idle_set_state(int cpu, struct cpuidle_state *idle_state);
-+extern struct cpuidle_state *idle_get_state(int cpu);
-+#else
-+static inline void idle_set_state(int cpu,
-+				  struct cpuidle_state *idle_state)
-+{
-+}
-+
-+static inline struct cpuidle_state *idle_get_state(int cpu)
-+{
-+	return NULL;
-+}
-+#endif
-+
- /*
-  * Increase resolution of cpu_capacity calculations
-  */
-diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-index fe22f75..8e1cc50 100644
---- a/kernel/sched/core.c
-+++ b/kernel/sched/core.c
-@@ -3216,6 +3216,23 @@ struct task_struct *idle_task(int cpu)
- 	return cpu_rq(cpu)->idle;
- }
- 
-+#ifdef CONFIG_CPU_IDLE
-+void idle_set_state(int cpu, struct cpuidle_state *idle_state)
-+{
-+	struct rq *rq = cpu_rq(cpu);
-+
-+	rq->idle_state = idle_state;
-+}
-+
-+struct cpuidle_state *idle_get_state(int cpu)
-+{
-+	struct rq *rq = cpu_rq(cpu);
-+
-+	WARN_ON(!rcu_read_lock_held());
-+	return rq->idle_state;
-+}
-+#endif /* CONFIG_CPU_IDLE */
-+
- /**
-  * find_process_by_pid - find a process with a matching PID value.
-  * @pid: the pid in question.
-diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index ffeaa41..211ef9a 100644
---- a/kernel/sched/fair.c
-+++ b/kernel/sched/fair.c
-@@ -4709,7 +4709,7 @@ find_idlest_cpu(struct sched_group *group, struct task_struct *p, int this_cpu)
- 	for_each_cpu_and(i, sched_group_cpus(group), tsk_cpus_allowed(p)) {
- 		if (idle_cpu(i)) {
- 			struct rq *rq = cpu_rq(i);
--			struct cpuidle_state *idle = idle_get_state(rq);
-+			struct cpuidle_state *idle = idle_get_state(i);
- 			if (idle && idle->exit_latency < min_exit_latency) {
- 				/*
- 				 * We give priority to a CPU whose idle state
-diff --git a/kernel/sched/idle.c b/kernel/sched/idle.c
-index 5933d06..502e915 100644
---- a/kernel/sched/idle.c
-+++ b/kernel/sched/idle.c
-@@ -101,9 +101,6 @@ static int call_cpuidle(struct cpuidle_driver *drv, struct cpuidle_device *dev,
- 		return -EBUSY;
- 	}
- 
--	/* Take note of the planned idle state. */
--	idle_set_state(this_rq(), &drv->states[next_state]);
--
- 	/*
- 	 * Enter the idle state previously returned by the governor decision.
- 	 * This function will block until an interrupt occurs and will take
-@@ -111,9 +108,6 @@ static int call_cpuidle(struct cpuidle_driver *drv, struct cpuidle_device *dev,
- 	 */
- 	entered_state = cpuidle_enter(drv, dev, next_state);
- 
--	/* The cpu is no longer idle or about to enter idle. */
--	idle_set_state(this_rq(), NULL);
--
- 	return entered_state;
- }
- 
-@@ -181,7 +175,7 @@ static void cpuidle_idle_call(void)
- 		/*
- 		 * Ask the cpuidle framework to choose a convenient idle state.
- 		 */
--		next_state = cpuidle_select(drv, dev);
-+		next_state = cpuidle_select(drv, dev, 1);
- 		entered_state = call_cpuidle(drv, dev, next_state);
- 		/*
- 		 * Give the governor an opportunity to reflect on the outcome
-diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
-index e0e1299..2c56caa 100644
---- a/kernel/sched/sched.h
-+++ b/kernel/sched/sched.h
-@@ -1253,30 +1253,6 @@ static inline void idle_exit_fair(struct rq *rq) { }
- 
- #endif
- 
--#ifdef CONFIG_CPU_IDLE
--static inline void idle_set_state(struct rq *rq,
--				  struct cpuidle_state *idle_state)
--{
--	rq->idle_state = idle_state;
--}
--
--static inline struct cpuidle_state *idle_get_state(struct rq *rq)
--{
--	WARN_ON(!rcu_read_lock_held());
--	return rq->idle_state;
--}
--#else
--static inline void idle_set_state(struct rq *rq,
--				  struct cpuidle_state *idle_state)
--{
--}
--
--static inline struct cpuidle_state *idle_get_state(struct rq *rq)
--{
--	return NULL;
--}
--#endif
--
- extern void sysrq_sched_debug_show(void);
- extern void sched_init_granularity(void);
- extern void update_max_interval(void);
+Regards
+Preeti U Murthy
+> 
+> Regards,
+> Sudeep
+> -- 
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
