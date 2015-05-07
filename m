@@ -1,19 +1,37 @@
-Return-Path: <yangbo.lu@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bn0102.outbound.protection.outlook.com [157.56.110.102])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <preeti@linux.vnet.ibm.com>
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8DF701A09CE
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 May 2015 13:47:12 +1000 (AEST)
-From: Yangbo Lu <yangbo.lu@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
- <scottwood@freescale.com>
-Subject: [PATCH v2] powerpc/dts: Add and fix 1588 timer node for eTSEC
-Date: Thu, 7 May 2015 11:29:07 +0800
-Message-ID: <1430969347-13869-1-git-send-email-yangbo.lu@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1A4201A0276
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 May 2015 15:26:38 +1000 (AEST)
+Received: from /spool/local
+ by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
+ Wed, 6 May 2015 23:26:36 -0600
+Received: from b03cxnp07029.gho.boulder.ibm.com
+ (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id C7AEB3E4003B
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 May 2015 23:26:32 -0600 (MDT)
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+ by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t475QWFB52887670
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 May 2015 22:26:32 -0700
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av04.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t475QVhW002239
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 6 May 2015 23:26:32 -0600
+Subject: [PATCH] cpuidle: Handle tick_broadcast_enter() failure gracefully
+From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+To: peterz@infradead.org, tglx@linutronix.de, rafael.j.wysocki@intel.com,
+ daniel.lezcano@linaro.org
+Date: Thu, 07 May 2015 10:56:24 +0530
+Message-ID: <20150507052600.20882.39542.stgit@preeti.in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Yangbo Lu <yangbo.lu@freescale.com>
+Content-Type: text/plain; charset="utf-8"
+Cc: rlippert@google.com, linux-pm@vger.kernel.org, linus.walleij@linaro.org,
+ linux-kernel@vger.kernel.org, mingo@redhat.com, sudeep.holla@arm.com,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,217 +41,337 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add 1588 timer node in files:
-arch/powerpc/boot/dts/bsc9131rdb.dtsi
-arch/powerpc/boot/dts/bsc9132qds.dtsi
-arch/powerpc/boot/dts/p1010rdb.dtsi
-arch/powerpc/boot/dts/p1020rdb-pd.dts
-arch/powerpc/boot/dts/p1021rdb-pc.dtsi
-arch/powerpc/boot/dts/p1022ds.dtsi
-arch/powerpc/boot/dts/p1025twr.dtsi
-Fix 1588 timer node in file:
-arch/powerpc/boot/dts/p2020rdb-pc.dtsi
+When a CPU has to enter an idle state where tick stops, it makes a call
+to tick_broadcast_enter(). The call will fail if this CPU is the
+broadcast CPU. Today, under such a circumstance, the arch cpuidle code
+handles this CPU.  This is not convincing because not only are we not
+aware what the arch cpuidle code does, but we also do not account for
+the idle state residency time and usage of such a CPU.
 
-Signed-off-by: Yangbo Lu <yangbo.lu@freescale.com>
----
-Changes for v2:
-	- Changed hex value to decimal value in dts
-	- Modified commit message
-	- Modified 1588 node in p2020rdb-pc.dtsi
----
- arch/powerpc/boot/dts/bsc9131rdb.dtsi  | 12 ++++++++++++
- arch/powerpc/boot/dts/bsc9132qds.dtsi  | 12 ++++++++++++
- arch/powerpc/boot/dts/p1010rdb.dtsi    | 12 ++++++++++++
- arch/powerpc/boot/dts/p1020rdb-pd.dts  | 12 ++++++++++++
- arch/powerpc/boot/dts/p1021rdb-pc.dtsi | 12 ++++++++++++
- arch/powerpc/boot/dts/p1022ds.dtsi     | 12 ++++++++++++
- arch/powerpc/boot/dts/p1025twr.dtsi    | 12 ++++++++++++
- arch/powerpc/boot/dts/p2020rdb-pc.dtsi | 12 ++++++------
- 8 files changed, 90 insertions(+), 6 deletions(-)
+This scenario can be handled better by simply asking the cpuidle
+governor to choose an idle state where in ticks do not stop. To
+accommodate this change move the setting of runqueue idle state from the
+core to the cpuidle driver, else the rq->idle_state will be set wrong.
 
-diff --git a/arch/powerpc/boot/dts/bsc9131rdb.dtsi b/arch/powerpc/boot/dts/bsc9131rdb.dtsi
-index 45efcba..a6d533e 100644
---- a/arch/powerpc/boot/dts/bsc9131rdb.dtsi
-+++ b/arch/powerpc/boot/dts/bsc9131rdb.dtsi
-@@ -80,6 +80,18 @@
- 		status = "disabled";
- 	};
+Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+---
+Based on linux-pm/bleeding-edge
+
+ drivers/cpuidle/cpuidle.c          |   21 +++++++++++++++++----
+ drivers/cpuidle/governors/ladder.c |   13 ++++++++++---
+ drivers/cpuidle/governors/menu.c   |    6 +++++-
+ include/linux/cpuidle.h            |    6 +++---
+ include/linux/sched.h              |   16 ++++++++++++++++
+ kernel/sched/core.c                |   17 +++++++++++++++++
+ kernel/sched/fair.c                |    2 +-
+ kernel/sched/idle.c                |    8 +-------
+ kernel/sched/sched.h               |   24 ------------------------
+ 9 files changed, 70 insertions(+), 43 deletions(-)
+
+diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+index 61c417b..8f5657e 100644
+--- a/drivers/cpuidle/cpuidle.c
++++ b/drivers/cpuidle/cpuidle.c
+@@ -21,6 +21,7 @@
+ #include <linux/module.h>
+ #include <linux/suspend.h>
+ #include <linux/tick.h>
++#include <linux/sched.h>
+ #include <trace/events/power.h>
  
-+	ptp_clock@b0e00 {
-+		compatible = "fsl,etsec-ptp";
-+		reg = <0xb0e00 0xb0>;
-+		interrupts = <68 2 0 0 69 2 0 0>;
-+		fsl,tclk-period	= <5>;
-+		fsl,tmr-prsc	= <2>;
-+		fsl,tmr-add	= <3435973837>;
-+		fsl,tmr-fiper1	= <999999995>;
-+		fsl,tmr-fiper2	= <99990>;
-+		fsl,max-adj	= <249999999>;
-+	};
+ #include "cpuidle.h"
+@@ -167,8 +168,15 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
+ 	 * local timer will be shut down.  If a local timer is used from another
+ 	 * CPU as a broadcast timer, this call may fail if it is not available.
+ 	 */
+-	if (broadcast && tick_broadcast_enter())
+-		return -EBUSY;
++	if (broadcast && tick_broadcast_enter()) {
++		index = cpuidle_select(drv, dev, !broadcast);
++		if (index < 0)
++			return -EBUSY;
++		target_state = &drv->states[index];
++	}
 +
- 	enet0: ethernet@b0000 {
- 		phy-handle = <&phy0>;
- 		phy-connection-type = "rgmii-id";
-diff --git a/arch/powerpc/boot/dts/bsc9132qds.dtsi b/arch/powerpc/boot/dts/bsc9132qds.dtsi
-index af8e888..ef75804 100644
---- a/arch/powerpc/boot/dts/bsc9132qds.dtsi
-+++ b/arch/powerpc/boot/dts/bsc9132qds.dtsi
-@@ -87,6 +87,18 @@
- 		};
- 	};
++	/* Take note of the planned idle state. */
++	idle_set_state(smp_processor_id(), target_state);
  
-+	ptp_clock@b0e00 {
-+		compatible = "fsl,etsec-ptp";
-+		reg = <0xb0e00 0xb0>;
-+		interrupts = <68 2 0 0 69 2 0 0>;
-+		fsl,tclk-period	= <5>;
-+		fsl,tmr-prsc	= <2>;
-+		fsl,tmr-add	= <3435973837>;
-+		fsl,tmr-fiper1	= <999999995>;
-+		fsl,tmr-fiper2	= <99990>;
-+		fsl,max-adj	= <249999999>;
-+	};
+ 	trace_cpu_idle_rcuidle(index, dev->cpu);
+ 	time_start = ktime_get();
+@@ -178,6 +186,9 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
+ 	time_end = ktime_get();
+ 	trace_cpu_idle_rcuidle(PWR_EVENT_EXIT, dev->cpu);
+ 
++	/* The cpu is no longer idle or about to enter idle. */
++	idle_set_state(smp_processor_id(), NULL);
 +
- 	enet0: ethernet@b0000 {
- 		phy-handle = <&phy0>;
- 		tbi-handle = <&tbi0>;
-diff --git a/arch/powerpc/boot/dts/p1010rdb.dtsi b/arch/powerpc/boot/dts/p1010rdb.dtsi
-index ea534ef..1613678 100644
---- a/arch/powerpc/boot/dts/p1010rdb.dtsi
-+++ b/arch/powerpc/boot/dts/p1010rdb.dtsi
-@@ -186,6 +186,18 @@
- 		};
- 	};
+ 	if (broadcast) {
+ 		if (WARN_ON_ONCE(!irqs_disabled()))
+ 			local_irq_disable();
+@@ -213,12 +224,14 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
+  *
+  * @drv: the cpuidle driver
+  * @dev: the cpuidle device
++ * @timer_stop_valid: allow selection of idle state where tick stops
+  *
+  * Returns the index of the idle state.
+  */
+-int cpuidle_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
++int cpuidle_select(struct cpuidle_driver *drv,
++			struct cpuidle_device *dev, int timer_stop_valid)
+ {
+-	return cpuidle_curr_governor->select(drv, dev);
++	return cpuidle_curr_governor->select(drv, dev, timer_stop_valid);
+ }
  
-+	ptp_clock@b0e00 {
-+		compatible = "fsl,etsec-ptp";
-+		reg = <0xb0e00 0xb0>;
-+		interrupts = <68 2 0 0 69 2 0 0>;
-+		fsl,tclk-period	= <10>;
-+		fsl,tmr-prsc	= <2>;
-+		fsl,tmr-add	= <2147483670>;
-+		fsl,tmr-fiper1	= <999999990>;
-+		fsl,tmr-fiper2	= <99990>;
-+		fsl,max-adj	= <199999999>;
-+	};
+ /**
+diff --git a/drivers/cpuidle/governors/ladder.c b/drivers/cpuidle/governors/ladder.c
+index 401c010..c437322 100644
+--- a/drivers/cpuidle/governors/ladder.c
++++ b/drivers/cpuidle/governors/ladder.c
+@@ -62,9 +62,10 @@ static inline void ladder_do_selection(struct ladder_device *ldev,
+  * ladder_select_state - selects the next state to enter
+  * @drv: cpuidle driver
+  * @dev: the CPU
++ * @timer_stop_valid: allow selection of idle state where tick stops
+  */
+ static int ladder_select_state(struct cpuidle_driver *drv,
+-				struct cpuidle_device *dev)
++				struct cpuidle_device *dev, int timer_stop_valid)
+ {
+ 	struct ladder_device *ldev = this_cpu_ptr(&ladder_devices);
+ 	struct ladder_device_state *last_state;
+@@ -86,6 +87,7 @@ static int ladder_select_state(struct cpuidle_driver *drv,
+ 	    !drv->states[last_idx + 1].disabled &&
+ 	    !dev->states_usage[last_idx + 1].disable &&
+ 	    last_residency > last_state->threshold.promotion_time &&
++	    !(!timer_stop_valid && (drv->states[last_idx + 1].flags & CPUIDLE_FLAG_TIMER_STOP)) &&
+ 	    drv->states[last_idx + 1].exit_latency <= latency_req) {
+ 		last_state->stats.promotion_count++;
+ 		last_state->stats.demotion_count = 0;
+@@ -99,11 +101,14 @@ static int ladder_select_state(struct cpuidle_driver *drv,
+ 	if (last_idx > CPUIDLE_DRIVER_STATE_START &&
+ 	    (drv->states[last_idx].disabled ||
+ 	    dev->states_usage[last_idx].disable ||
++	    (!timer_stop_valid && (drv->states[last_idx].flags & CPUIDLE_FLAG_TIMER_STOP)) ||
+ 	    drv->states[last_idx].exit_latency > latency_req)) {
+ 		int i;
+ 
+ 		for (i = last_idx - 1; i > CPUIDLE_DRIVER_STATE_START; i--) {
+-			if (drv->states[i].exit_latency <= latency_req)
++			if (drv->states[i].exit_latency <= latency_req &&
++				!(!timer_stop_valid &&
++					(drv->states[i].flags & CPUIDLE_FLAG_TIMER_STOP)))
+ 				break;
+ 		}
+ 		ladder_do_selection(ldev, last_idx, i);
+@@ -114,7 +119,9 @@ static int ladder_select_state(struct cpuidle_driver *drv,
+ 	    last_residency < last_state->threshold.demotion_time) {
+ 		last_state->stats.demotion_count++;
+ 		last_state->stats.promotion_count = 0;
+-		if (last_state->stats.demotion_count >= last_state->threshold.demotion_count) {
++		if (last_state->stats.demotion_count >= last_state->threshold.demotion_count &&
++			!(!timer_stop_valid &&
++				(drv->states[last_idx - 1].flags & CPUIDLE_FLAG_TIMER_STOP))) {
+ 			ladder_do_selection(ldev, last_idx, last_idx - 1);
+ 			return last_idx - 1;
+ 		}
+diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
+index b8a5fa1..900404f 100644
+--- a/drivers/cpuidle/governors/menu.c
++++ b/drivers/cpuidle/governors/menu.c
+@@ -280,8 +280,10 @@ again:
+  * menu_select - selects the next idle state to enter
+  * @drv: cpuidle driver containing state data
+  * @dev: the CPU
++ * @timer_stop_valid: allow selection of idle state where tick stops
+  */
+-static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
++static int menu_select(struct cpuidle_driver *drv,
++			struct cpuidle_device *dev, int timer_stop_valid)
+ {
+ 	struct menu_device *data = this_cpu_ptr(&menu_devices);
+ 	int latency_req = pm_qos_request(PM_QOS_CPU_DMA_LATENCY);
+@@ -349,6 +351,8 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
+ 			continue;
+ 		if (s->exit_latency > latency_req)
+ 			continue;
++		if (!timer_stop_valid && (s->flags & CPUIDLE_FLAG_TIMER_STOP))
++			continue;
+ 
+ 		data->last_state_idx = i;
+ 	}
+diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
+index 9c5e892..d7c1734 100644
+--- a/include/linux/cpuidle.h
++++ b/include/linux/cpuidle.h
+@@ -129,7 +129,7 @@ extern bool cpuidle_not_available(struct cpuidle_driver *drv,
+ 				  struct cpuidle_device *dev);
+ 
+ extern int cpuidle_select(struct cpuidle_driver *drv,
+-			  struct cpuidle_device *dev);
++			  struct cpuidle_device *dev, int timer_stop_valid);
+ extern int cpuidle_enter(struct cpuidle_driver *drv,
+ 			 struct cpuidle_device *dev, int index);
+ extern void cpuidle_reflect(struct cpuidle_device *dev, int index);
+@@ -163,7 +163,7 @@ static inline bool cpuidle_not_available(struct cpuidle_driver *drv,
+ 					 struct cpuidle_device *dev)
+ {return true; }
+ static inline int cpuidle_select(struct cpuidle_driver *drv,
+-				 struct cpuidle_device *dev)
++				 struct cpuidle_device *dev, int timer_stop_valid)
+ {return -ENODEV; }
+ static inline int cpuidle_enter(struct cpuidle_driver *drv,
+ 				struct cpuidle_device *dev, int index)
+@@ -223,7 +223,7 @@ struct cpuidle_governor {
+ 					struct cpuidle_device *dev);
+ 
+ 	int  (*select)		(struct cpuidle_driver *drv,
+-					struct cpuidle_device *dev);
++					struct cpuidle_device *dev, int timer_stop_valid);
+ 	void (*reflect)		(struct cpuidle_device *dev, int index);
+ 
+ 	struct module 		*owner;
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index 8222ae4..ff4e2df 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -45,6 +45,7 @@ struct sched_param {
+ #include <linux/rcupdate.h>
+ #include <linux/rculist.h>
+ #include <linux/rtmutex.h>
++#include <linux/cpuidle.h>
+ 
+ #include <linux/time.h>
+ #include <linux/param.h>
+@@ -901,6 +902,21 @@ enum cpu_idle_type {
+ 	CPU_MAX_IDLE_TYPES
+ };
+ 
++#ifdef CONFIG_CPU_IDLE
++extern void idle_set_state(int cpu, struct cpuidle_state *idle_state);
++extern struct cpuidle_state *idle_get_state(int cpu);
++#else
++static inline void idle_set_state(int cpu,
++				  struct cpuidle_state *idle_state)
++{
++}
 +
- 	enet0: ethernet@b0000 {
- 		phy-handle = <&phy0>;
- 		phy-connection-type = "rgmii-id";
-diff --git a/arch/powerpc/boot/dts/p1020rdb-pd.dts b/arch/powerpc/boot/dts/p1020rdb-pd.dts
-index 987017e..52e8fe8 100644
---- a/arch/powerpc/boot/dts/p1020rdb-pd.dts
-+++ b/arch/powerpc/boot/dts/p1020rdb-pd.dts
-@@ -225,6 +225,18 @@
- 			};
- 		};
- 
-+		ptp_clock@b0e00 {
-+			compatible = "fsl,etsec-ptp";
-+			reg = <0xb0e00 0xb0>;
-+			interrupts = <68 2 0 0 69 2 0 0>;
-+			fsl,tclk-period	= <10>;
-+			fsl,tmr-prsc	= <2>;
-+			fsl,tmr-add	= <2147483670>;
-+			fsl,tmr-fiper1	= <999999990>;
-+			fsl,tmr-fiper2	= <99990>;
-+			fsl,max-adj	= <199999999>;
-+		};
++static inline struct cpuidle_state *idle_get_state(int cpu)
++{
++	return NULL;
++}
++#endif
 +
- 		enet0: ethernet@b0000 {
- 			fixed-link = <1 1 1000 0 0>;
- 			phy-connection-type = "rgmii-id";
-diff --git a/arch/powerpc/boot/dts/p1021rdb-pc.dtsi b/arch/powerpc/boot/dts/p1021rdb-pc.dtsi
-index d6274c5..a29c84a 100644
---- a/arch/powerpc/boot/dts/p1021rdb-pc.dtsi
-+++ b/arch/powerpc/boot/dts/p1021rdb-pc.dtsi
-@@ -224,6 +224,18 @@
- 		};
- 	};
+ /*
+  * Increase resolution of cpu_capacity calculations
+  */
+diff --git a/kernel/sched/core.c b/kernel/sched/core.c
+index f9123a8..427e190 100644
+--- a/kernel/sched/core.c
++++ b/kernel/sched/core.c
+@@ -3231,6 +3231,23 @@ struct task_struct *idle_task(int cpu)
+ 	return cpu_rq(cpu)->idle;
+ }
  
-+	ptp_clock@b0e00 {
-+		compatible = "fsl,etsec-ptp";
-+		reg = <0xb0e00 0xb0>;
-+		interrupts = <68 2 0 0 69 2 0 0>;
-+		fsl,tclk-period	= <10>;
-+		fsl,tmr-prsc	= <2>;
-+		fsl,tmr-add	= <2147483670>;
-+		fsl,tmr-fiper1	= <999999990>;
-+		fsl,tmr-fiper2	= <99990>;
-+		fsl,max-adj	= <199999999>;
-+	};
++#ifdef CONFIG_CPU_IDLE
++void idle_set_state(int cpu, struct cpuidle_state *idle_state)
++{
++	struct rq *rq = cpu_rq(cpu);
 +
- 	enet0: ethernet@b0000 {
- 		fixed-link = <1 1 1000 0 0>;
- 		phy-connection-type = "rgmii-id";
-diff --git a/arch/powerpc/boot/dts/p1022ds.dtsi b/arch/powerpc/boot/dts/p1022ds.dtsi
-index 957e0dc..50f915f 100644
---- a/arch/powerpc/boot/dts/p1022ds.dtsi
-+++ b/arch/powerpc/boot/dts/p1022ds.dtsi
-@@ -215,6 +215,18 @@
- 		};
- 	};
- 
-+	ptp_clock@b0e00 {
-+		compatible = "fsl,etsec-ptp";
-+		reg = <0xb0e00 0xb0>;
-+		interrupts = <68 2 0 0 69 2 0 0>;
-+		fsl,tclk-period	= <5>;
-+		fsl,tmr-prsc	= <2>;
-+		fsl,tmr-add	= <3223239997>;
-+		fsl,tmr-fiper1	= <999999995>;
-+		fsl,tmr-fiper2	= <99990>;
-+		fsl,max-adj	= <266499999>;
-+	};
++	rq->idle_state = idle_state;
++}
 +
- 	ethernet@b0000 {
- 		phy-handle = <&phy0>;
- 		phy-connection-type = "rgmii-id";
-diff --git a/arch/powerpc/boot/dts/p1025twr.dtsi b/arch/powerpc/boot/dts/p1025twr.dtsi
-index 8453501..52a6c7e 100644
---- a/arch/powerpc/boot/dts/p1025twr.dtsi
-+++ b/arch/powerpc/boot/dts/p1025twr.dtsi
-@@ -138,6 +138,18 @@
- 		};
- 	};
- 
-+	ptp_clock@b0e00 {
-+		compatible = "fsl,etsec-ptp";
-+		reg = <0xb0e00 0xb0>;
-+		interrupts = <68 2 0 0 69 2 0 0>;
-+		fsl,tclk-period	= <10>;
-+		fsl,tmr-prsc	= <2>;
-+		fsl,tmr-add	= <3221225505>;
-+		fsl,tmr-fiper1	= <999999990>;
-+		fsl,tmr-fiper2	= <99990>;
-+		fsl,max-adj	= <133333332>;
-+	};
++struct cpuidle_state *idle_get_state(int cpu)
++{
++	struct rq *rq = cpu_rq(cpu);
 +
- 	enet0: ethernet@b0000 {
- 		phy-handle = <&phy0>;
- 		phy-connection-type = "rgmii-id";
-diff --git a/arch/powerpc/boot/dts/p2020rdb-pc.dtsi b/arch/powerpc/boot/dts/p2020rdb-pc.dtsi
-index c21d1c7..363172d 100644
---- a/arch/powerpc/boot/dts/p2020rdb-pc.dtsi
-+++ b/arch/powerpc/boot/dts/p2020rdb-pc.dtsi
-@@ -215,12 +215,12 @@
- 	};
++	WARN_ON(!rcu_read_lock_held());
++	return rq->idle_state;
++}
++#endif /* CONFIG_CPU_IDLE */
++
+ /**
+  * find_process_by_pid - find a process with a matching PID value.
+  * @pid: the pid in question.
+diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+index ffeaa41..211ef9a 100644
+--- a/kernel/sched/fair.c
++++ b/kernel/sched/fair.c
+@@ -4709,7 +4709,7 @@ find_idlest_cpu(struct sched_group *group, struct task_struct *p, int this_cpu)
+ 	for_each_cpu_and(i, sched_group_cpus(group), tsk_cpus_allowed(p)) {
+ 		if (idle_cpu(i)) {
+ 			struct rq *rq = cpu_rq(i);
+-			struct cpuidle_state *idle = idle_get_state(rq);
++			struct cpuidle_state *idle = idle_get_state(i);
+ 			if (idle && idle->exit_latency < min_exit_latency) {
+ 				/*
+ 				 * We give priority to a CPU whose idle state
+diff --git a/kernel/sched/idle.c b/kernel/sched/idle.c
+index fefcb1f..5bd766c 100644
+--- a/kernel/sched/idle.c
++++ b/kernel/sched/idle.c
+@@ -131,7 +131,7 @@ static void cpuidle_idle_call(void)
+ 		/*
+ 		 * Ask the cpuidle framework to choose a convenient idle state.
+ 		 */
+-		next_state = cpuidle_select(drv, dev);
++		next_state = cpuidle_select(drv, dev, 1);
+ 	}
+ 	/* Fall back to the default arch idle method on errors. */
+ 	if (next_state < 0)
+@@ -149,9 +149,6 @@ static void cpuidle_idle_call(void)
+ 		goto exit_idle;
+ 	}
  
- 	ptp_clock@24e00 {
--		fsl,tclk-period = <5>;
--		fsl,tmr-prsc = <200>;
--		fsl,tmr-add = <0xCCCCCCCD>;
--		fsl,tmr-fiper1 = <0x3B9AC9FB>;
--		fsl,tmr-fiper2 = <0x0001869B>;
--		fsl,max-adj = <249999999>;
-+		fsl,tclk-period	= <5>;
-+		fsl,tmr-prsc	= <2>;
-+		fsl,tmr-add	= <2863311531>;
-+		fsl,tmr-fiper1	= <999999995>;
-+		fsl,tmr-fiper2	= <99990>;
-+		fsl,max-adj	= <299999999>;
- 	};
+-	/* Take note of the planned idle state. */
+-	idle_set_state(this_rq(), &drv->states[next_state]);
+-
+ 	/*
+ 	 * Enter the idle state previously returned by the governor decision.
+ 	 * This function will block until an interrupt occurs and will take
+@@ -159,9 +156,6 @@ static void cpuidle_idle_call(void)
+ 	 */
+ 	entered_state = cpuidle_enter(drv, dev, next_state);
  
- 	enet0: ethernet@24000 {
--- 
-2.1.0.27.g96db324
+-	/* The cpu is no longer idle or about to enter idle. */
+-	idle_set_state(this_rq(), NULL);
+-
+ 	if (entered_state == -EBUSY)
+ 		goto use_default;
+ 
+diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
+index e0e1299..2c56caa 100644
+--- a/kernel/sched/sched.h
++++ b/kernel/sched/sched.h
+@@ -1253,30 +1253,6 @@ static inline void idle_exit_fair(struct rq *rq) { }
+ 
+ #endif
+ 
+-#ifdef CONFIG_CPU_IDLE
+-static inline void idle_set_state(struct rq *rq,
+-				  struct cpuidle_state *idle_state)
+-{
+-	rq->idle_state = idle_state;
+-}
+-
+-static inline struct cpuidle_state *idle_get_state(struct rq *rq)
+-{
+-	WARN_ON(!rcu_read_lock_held());
+-	return rq->idle_state;
+-}
+-#else
+-static inline void idle_set_state(struct rq *rq,
+-				  struct cpuidle_state *idle_state)
+-{
+-}
+-
+-static inline struct cpuidle_state *idle_get_state(struct rq *rq)
+-{
+-	return NULL;
+-}
+-#endif
+-
+ extern void sysrq_sched_debug_show(void);
+ extern void sched_init_granularity(void);
+ extern void update_max_interval(void);
