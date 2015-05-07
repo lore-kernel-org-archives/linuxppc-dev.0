@@ -1,25 +1,23 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0120.outbound.protection.outlook.com [207.46.100.120])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <bhelgaas@google.com>
+Received: from mail-ie0-x232.google.com (mail-ie0-x232.google.com
+ [IPv6:2607:f8b0:4001:c03::232])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CBB981A0063
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 May 2015 07:33:43 +1000 (AEST)
-Message-ID: <1431034399.16357.403.camel@freescale.com>
-Subject: Re: [PATCH 1/1] powerpc: mpc85xx: Add board support for ucp1020
-From: Scott Wood <scottwood@freescale.com>
-To: Oleksandr G Zhadan <oleks@arcturusnetworks.com>
-Date: Thu, 7 May 2015 16:33:19 -0500
-In-Reply-To: <554BBD10.5050706@arcturusnetworks.com>
-References: <1430841121-1997-1-git-send-email-oleks@arcturusnetworks.com>
- <1430968950.16357.369.camel@freescale.com>
- <554B934C.5090406@arcturusnetworks.com>
- <1431022714.16357.396.camel@freescale.com>
- <554BBD10.5050706@arcturusnetworks.com>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id B13CB1A0063
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 May 2015 08:12:30 +1000 (AEST)
+Received: by iecnq11 with SMTP id nq11so50751335iec.3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 May 2015 15:12:28 -0700 (PDT)
+Date: Thu, 7 May 2015 17:12:24 -0500
+From: Bjorn Helgaas <bhelgaas@google.com>
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Subject: Re: [PATCH v4 01/21] pci: Add pcibios_setup_bridge()
+Message-ID: <20150507221224.GN24643@google.com>
+References: <1430460188-31343-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <1430460188-31343-2-git-send-email-gwshan@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Cc: Michael Durrant <mdurrant@arcturusnetworks.com>,
- linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1430460188-31343-2-git-send-email-gwshan@linux.vnet.ibm.com>
+Cc: linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,75 +27,64 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2015-05-07 at 15:29 -0400, Oleksandr G Zhadan wrote:
-> On 05/07/2015 02:18 PM, Scott Wood wrote:
-> > On Thu, 2015-05-07 at 12:31 -0400, Oleksandr G Zhadan wrote:
-> >>>> diff --git a/arch/powerpc/configs/ucp1020_defconfig b/arch/powerpc/configs/ucp1020_defconfig
-> >>>> new file mode 100644
-> >>>> index 0000000..62f99aa
-> >>>> --- /dev/null
-> >>>> +++ b/arch/powerpc/configs/ucp1020_defconfig
-> >>>
-> >>> Please explain why your board needs its own defconfig.
-> >>>
-> >>
-> >> Because, it's our own board and it has some specific to board
-> >> definitions like CONFIG_DEFAULT_HOSTNAME and some specific to product
-> >> definitions.
-> >>
-> >> If I can do it in some other way could you please give me some example
-> >> if it's possible.
-> >
-> > I don't think stuff like CONFIG_DEFAULT_HOSTNAME belongs upstream.
-> > Could you list what you need to be set that mpc85xx_smp_defconfig
-> > doesn't set?
+Hi Gavin,
+
+[Please run "git log --oneline drivers/pci/setup-bus.c" and observe the
+capitalization convention.]
+
+On Fri, May 01, 2015 at 04:02:48PM +1000, Gavin Shan wrote:
+> Currently, PowerPC PowerNV platform utilizes ppc_md.pcibios_fixup(),
+> which is called for once after PCI probing and resource assignment
+> are completed, to allocate platform required resources for PCI devices:
+> PE#, IO and MMIO mapping, DMA address translation (TCE) table etc.
+> Obviously, it's not hotplug friendly.
 > 
-> I make diff "mpc85xx_smp_defconfig" vs "ucp1020_defconfig after make 
-> savedefconfig" and it's some differences like:
+> The patch adds weak function pcibios_setup_bridge(), which is called
+> by pci_setup_bridge(). PowerPC PowerNV platform will reuse the function
+> to assign above platform required resources to newly added PCI devices,
+> in order to support PCI hotplug on PowerPC PowerNV platform.
 > 
-> - mpc85xx_smp_defconfig has:
-> CONFIG_PHYS_64BIT=y
-> CONFIG_NR_CPUS=8
-
-These won't prevent your board from working.  If you want
-CONFIG_PHYS_64BIT disabled for performance, I could see a fragment being
-used for that as per the recent defconfig discussions.  I wouldn't
-expect NR_CPUS being 8 instead of 2 to be noticeable.
-
-> - it enabled almost all boards to build. What for ?
-
-Because that's what the common defconfigs are for.  We don't want a
-defconfig for each board (most of the board-specific configs that are
-currently there were added long ago).  If you want a config that
-contains nothing your board doesn't need, you can maintain that locally.
-
-> - it has MTD related differences (doesn't enabled spi flashes support we 
-> need):
-> -CONFIG_MTD_M25P80=y
-> -CONFIG_MTD_SST25L=y
-
-So add them to the existing defconfig.
-
-> - It includes some PHY support, but not phy we are using
-
-This should not harm your board.
-
->  and we need include intel wifi support:
-> -CONFIG_MICREL_PHY=y
-> -CONFIG_IWLWIFI=y
-
-So add them to the existing defconfig.
-
-> - It doesn't enable EXT4 fs support.
-
-I think this would be a reasonable thing to add.
-
-
-> Etc...
+> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+> ---
+>  drivers/pci/setup-bus.c | 12 +++++++++---
+>  include/linux/pci.h     |  1 +
+>  2 files changed, 10 insertions(+), 3 deletions(-)
 > 
-> You can see it yourself below:
+> diff --git a/drivers/pci/setup-bus.c b/drivers/pci/setup-bus.c
+> index 4fd0cac..a7d0c3c 100644
+> --- a/drivers/pci/setup-bus.c
+> +++ b/drivers/pci/setup-bus.c
+> @@ -674,7 +674,8 @@ static void pci_setup_bridge_mmio_pref(struct pci_dev *bridge)
+>  	pci_write_config_dword(bridge, PCI_PREF_LIMIT_UPPER32, lu);
+>  }
+>  
+> -static void __pci_setup_bridge(struct pci_bus *bus, unsigned long type)
+> +
+> +void pci_setup_bridge_resources(struct pci_bus *bus, unsigned long type)
+>  {
+>  	struct pci_dev *bridge = bus->self;
+>  
+> @@ -693,12 +694,17 @@ static void __pci_setup_bridge(struct pci_bus *bus, unsigned long type)
+>  	pci_write_config_word(bridge, PCI_BRIDGE_CONTROL, bus->bridge_ctl);
+>  }
+>  
+> +void __weak pcibios_setup_bridge(struct pci_bus *bus, unsigned long type)
+> +{
+> +	pci_setup_bridge_resources(bus, type);
+> +}
 
-That doesn't show me the set of changes that you *need*, only the set of
-changes that you have.
+I'm not opposed to adding a pcibios_setup_bridge(), but I would rather do
+the architected updates in the generic PCI core code instead of down in the
+pcibios code.  In other words, I would rather have this:
 
--Scott
+  void pci_setup_bridge(struct pci_bus *bus)
+  {
+    pcibios_setup_bridge(bus, type);
+    pci_setup_bridge_resources(bus, type);
+  }
+
+That way the default pcibios hook is empty, showing that by default there's
+no arch-specific code in this path, and we only have to look at the generic
+core code to verify that we actually do program the bridge windows.
+
+Bjorn
