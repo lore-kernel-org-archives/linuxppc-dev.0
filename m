@@ -1,27 +1,40 @@
-Return-Path: <ddstreet@gmail.com>
-Received: from mail-ig0-x232.google.com (mail-ig0-x232.google.com
- [IPv6:2607:f8b0:4001:c05::232])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <preeti@linux.vnet.ibm.com>
+Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8E8401A1161
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 May 2015 03:50:11 +1000 (AEST)
-Received: by igbpi8 with SMTP id pi8so471593igb.1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 May 2015 10:50:09 -0700 (PDT)
-Sender: Dan Streetman <ddstreet@gmail.com>
-From: Dan Streetman <ddstreet@ieee.org>
-To: Herbert Xu <herbert@gondor.apana.org.au>,
- "David S. Miller" <davem@davemloft.net>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 10/10] drivers/crypto/nx: add hardware 842 crypto comp alg
-Date: Thu,  7 May 2015 13:49:21 -0400
-Message-Id: <1431020961-22285-11-git-send-email-ddstreet@ieee.org>
-In-Reply-To: <1431020961-22285-1-git-send-email-ddstreet@ieee.org>
-References: <1431020961-22285-1-git-send-email-ddstreet@ieee.org>
-Cc: linux-kernel@vger.kernel.org, Robert Jennings <rob@pochix.net>,
- linux-crypto@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Seth Jennings <sjennings@variantweb.net>, Dan Streetman <ddstreet@ieee.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id CDAD51A1949
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 May 2015 03:52:00 +1000 (AEST)
+Received: from /spool/local
+ by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
+ Thu, 7 May 2015 13:51:57 -0400
+Received: from b01cxnp22035.gho.pok.ibm.com (b01cxnp22035.gho.pok.ibm.com
+ [9.57.198.25])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id EB9D9C90043
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 May 2015 13:43:03 -0400 (EDT)
+Received: from d01av05.pok.ibm.com (d01av05.pok.ibm.com [9.56.224.195])
+ by b01cxnp22035.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t47HptXX61997264
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 May 2015 17:51:55 GMT
+Received: from d01av05.pok.ibm.com (localhost [127.0.0.1])
+ by d01av05.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t47Hpsf0021851
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 May 2015 13:51:55 -0400
+Message-ID: <554BA634.50307@linux.vnet.ibm.com>
+Date: Thu, 07 May 2015 23:21:48 +0530
+From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: peterz@infradead.org, tglx@linutronix.de, rafael.j.wysocki@intel.com,
+ daniel.lezcano@linaro.org
+Subject: Re: [RESEND PATCH] cpuidle: Handle tick_broadcast_enter() failure
+ gracefully
+References: <20150507173803.25119.90827.stgit@preeti.in.ibm.com>
+In-Reply-To: <20150507173803.25119.90827.stgit@preeti.in.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: rlippert@google.com, linux-pm@vger.kernel.org, linus.walleij@linaro.org,
+ linux-kernel@vger.kernel.org, mingo@redhat.com, sudeep.holla@arm.com,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,652 +44,352 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add crypto compression alg for 842 hardware compression and decompression,
-using the alg name "842" and driver_name "842-nx".
+On 05/07/2015 11:09 PM, Preeti U Murthy wrote:
+> When a CPU has to enter an idle state where tick stops, it makes a call
+> to tick_broadcast_enter(). The call will fail if this CPU is the
+> broadcast CPU. Today, under such a circumstance, the arch cpuidle code
+> handles this CPU.  This is not convincing because not only are we not
+> aware what the arch cpuidle code does, but we also do not account for
+> the idle state residency time and usage of such a CPU.
+> 
+> This scenario can be handled better by simply asking the cpuidle
+> governor to choose an idle state where in ticks do not stop. To
+> accommodate this change move the setting of runqueue idle state from the
+> core to the cpuidle driver, else the rq->idle_state will be set wrong.
+> 
+> Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+> ---
+> Rebased on the latest linux-pm/bleeding-edge
 
-This uses only the PowerPC coprocessor hardware for 842 compression.  It
-also uses the hardware for decompression, but if the hardware fails it will
-fall back to the 842 software decompression library, so that decompression
-never fails (for valid 842 compressed buffers).  A header must be used in
-most cases, due to the hardware's restrictions on the buffers being
-specifically aligned and sized.
+Kindly ignore this. I have sent the rebase as V2.
+[PATCH V2] cpuidle: Handle tick_broadcast_enter() failure gracefully
 
-Due to the header this driver adds, compressed buffers it creates cannot be
-directly passed to the 842 software library for decompression.  However,
-compressed buffers created by the software 842 library can be passed to
-this driver for hardware 842 decompression (with the exception of buffers
-containing the "short data" template, as lib/842/842.h explains).
+The below patch is not updated.
 
-Signed-off-by: Dan Streetman <ddstreet@ieee.org>
----
- drivers/crypto/nx/Kconfig         |  10 +
- drivers/crypto/nx/Makefile        |   2 +
- drivers/crypto/nx/nx-842-crypto.c | 585 ++++++++++++++++++++++++++++++++++++++
- 3 files changed, 597 insertions(+)
- create mode 100644 drivers/crypto/nx/nx-842-crypto.c
-
-diff --git a/drivers/crypto/nx/Kconfig b/drivers/crypto/nx/Kconfig
-index ee9e259..3e621ad 100644
---- a/drivers/crypto/nx/Kconfig
-+++ b/drivers/crypto/nx/Kconfig
-@@ -50,4 +50,14 @@ config CRYPTO_DEV_NX_COMPRESS_POWERNV
- 	  algorithm.  This supports NX hardware on the PowerNV platform.
- 	  If you choose 'M' here, this module will be called nx_compress_powernv.
- 
-+config CRYPTO_DEV_NX_COMPRESS_CRYPTO
-+	tristate "Compression acceleration cryptographic interface"
-+	select CRYPTO_ALGAPI
-+	select 842_DECOMPRESS
-+	default y
-+	help
-+	  Support for PowerPC Nest (NX) accelerators using the cryptographic
-+	  API.  If you choose 'M' here, this module will be called
-+	  nx_compress_crypto.
-+
- endif
-diff --git a/drivers/crypto/nx/Makefile b/drivers/crypto/nx/Makefile
-index 6619787..868b5e6 100644
---- a/drivers/crypto/nx/Makefile
-+++ b/drivers/crypto/nx/Makefile
-@@ -13,6 +13,8 @@ nx-crypto-objs := nx.o \
- obj-$(CONFIG_CRYPTO_DEV_NX_COMPRESS) += nx-compress.o
- obj-$(CONFIG_CRYPTO_DEV_NX_COMPRESS_PSERIES) += nx-compress-pseries.o
- obj-$(CONFIG_CRYPTO_DEV_NX_COMPRESS_POWERNV) += nx-compress-powernv.o
-+obj-$(CONFIG_CRYPTO_DEV_NX_COMPRESS_CRYPTO) += nx-compress-crypto.o
- nx-compress-objs := nx-842.o
- nx-compress-pseries-objs := nx-842-pseries.o
- nx-compress-powernv-objs := nx-842-powernv.o
-+nx-compress-crypto-objs := nx-842-crypto.o
-diff --git a/drivers/crypto/nx/nx-842-crypto.c b/drivers/crypto/nx/nx-842-crypto.c
-new file mode 100644
-index 0000000..cb177c3
---- /dev/null
-+++ b/drivers/crypto/nx/nx-842-crypto.c
-@@ -0,0 +1,585 @@
-+/*
-+ * Cryptographic API for the NX-842 hardware compression.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * Copyright (C) IBM Corporation, 2011-2015
-+ *
-+ * Original Authors: Robert Jennings <rcj@linux.vnet.ibm.com>
-+ *                   Seth Jennings <sjenning@linux.vnet.ibm.com>
-+ *
-+ * Rewrite: Dan Streetman <ddstreet@ieee.org>
-+ *
-+ * This is an interface to the NX-842 compression hardware in PowerPC
-+ * processors.  Most of the complexity of this drvier is due to the fact that
-+ * the NX-842 compression hardware requires the input and output data buffers
-+ * to be specifically aligned, to be a specific multiple in length, and within
-+ * specific minimum and maximum lengths.  Those restrictions, provided by the
-+ * nx-842 driver via nx842_constraints, mean this driver must use bounce
-+ * buffers and headers to correct misaligned in or out buffers, and to split
-+ * input buffers that are too large.
-+ *
-+ * This driver will fall back to software decompression if the hardware
-+ * decompression fails, so this driver's decompression should never fail as
-+ * long as the provided compressed buffer is valid.  Any compressed buffer
-+ * created by this driver will have a header (except ones where the input
-+ * perfectly matches the constraints); so users of this driver cannot simply
-+ * pass a compressed buffer created by this driver over to the 842 software
-+ * decompression library.  Instead, users must use this driver to decompress;
-+ * if the hardware fails or is unavailable, the compressed buffer will be
-+ * parsed and the header removed, and the raw 842 buffer(s) passed to the 842
-+ * software decompression library.
-+ *
-+ * This does not fall back to software compression, however, since the caller
-+ * of this function is specifically requesting hardware compression; if the
-+ * hardware compression fails, the caller can fall back to software
-+ * compression, and the raw 842 compressed buffer that the software compressor
-+ * creates can be passed to this driver for hardware decompression; any
-+ * buffer without our specific header magic is assumed to be a raw 842 buffer
-+ * and passed directly to the hardware.  Note that the software compression
-+ * library will produce a compressed buffer that is incompatible with the
-+ * hardware decompressor if the original input buffer length is not a multiple
-+ * of 8; if such a compressed buffer is passed to this driver for
-+ * decompression, the hardware will reject it and this driver will then pass
-+ * it over to the software library for decompression.
-+ */
-+
-+#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
-+
-+#include <linux/init.h>
-+#include <linux/module.h>
-+#include <linux/crypto.h>
-+#include <linux/vmalloc.h>
-+#include <linux/nx842.h>
-+#include <linux/sw842.h>
-+#include <linux/ratelimit.h>
-+
-+/* The first 5 bits of this magic are 0x1f, which is an invalid 842 5-bit
-+ * template (see lib/842/842.h), so this magic number will never appear at
-+ * the start of a raw 842 compressed buffer.  That is important, as any buffer
-+ * passed to us without this magic is assumed to be a raw 842 compressed
-+ * buffer, and passed directly to the hardware to decompress.
-+ */
-+#define NX842_CRYPTO_MAGIC	(0xf842)
-+#define NX842_CRYPTO_GROUP_MAX	(0x20)
-+#define NX842_CRYPTO_HEADER_SIZE(g)				\
-+	(sizeof(struct nx842_crypto_header) +			\
-+	 sizeof(struct nx842_crypto_header_group) * (g))
-+#define NX842_CRYPTO_HEADER_MAX_SIZE				\
-+	NX842_CRYPTO_HEADER_SIZE(NX842_CRYPTO_GROUP_MAX)
-+
-+/* bounce buffer size */
-+#define BOUNCE_BUFFER_ORDER	(2)
-+#define BOUNCE_BUFFER_SIZE					\
-+	((unsigned int)(PAGE_SIZE << BOUNCE_BUFFER_ORDER))
-+
-+/* try longer on comp because we can fallback to sw decomp if hw is busy */
-+#define COMP_BUSY_TIMEOUT	(250) /* ms */
-+#define DECOMP_BUSY_TIMEOUT	(50) /* ms */
-+
-+struct nx842_crypto_header_group {
-+	__be16 padding;			/* unused bytes at start of group */
-+	__be32 compressed_length;	/* compressed bytes in group */
-+	__be32 uncompressed_length;	/* bytes after decompression */
-+} __packed;
-+
-+struct nx842_crypto_header {
-+	__be16 magic;		/* NX842_CRYPTO_MAGIC */
-+	__be16 ignore;		/* decompressed end bytes to ignore */
-+	u8 groups;		/* total groups in this header */
-+	struct nx842_crypto_header_group group[];
-+} __packed;
-+
-+struct nx842_crypto_param {
-+	u8 *in;
-+	unsigned int iremain;
-+	u8 *out;
-+	unsigned int oremain;
-+	unsigned int ototal;
-+};
-+
-+static int update_param(struct nx842_crypto_param *p,
-+			unsigned int slen, unsigned int dlen)
-+{
-+	if (p->iremain < slen)
-+		return -EOVERFLOW;
-+	if (p->oremain < dlen)
-+		return -ENOSPC;
-+
-+	p->in += slen;
-+	p->iremain -= slen;
-+	p->out += dlen;
-+	p->oremain -= dlen;
-+	p->ototal += dlen;
-+
-+	return 0;
-+}
-+
-+struct nx842_crypto_ctx {
-+	u8 *wmem;
-+	u8 *sbounce, *dbounce;
-+
-+	struct nx842_crypto_header header;
-+	struct nx842_crypto_header_group group[NX842_CRYPTO_GROUP_MAX];
-+};
-+
-+static int nx842_crypto_init(struct crypto_tfm *tfm)
-+{
-+	struct nx842_crypto_ctx *ctx = crypto_tfm_ctx(tfm);
-+
-+	ctx->wmem = kmalloc(NX842_MEM_COMPRESS, GFP_KERNEL);
-+	ctx->sbounce = (u8 *)__get_free_pages(GFP_KERNEL, BOUNCE_BUFFER_ORDER);
-+	ctx->dbounce = (u8 *)__get_free_pages(GFP_KERNEL, BOUNCE_BUFFER_ORDER);
-+	if (!ctx->wmem || !ctx->sbounce || !ctx->dbounce) {
-+		kfree(ctx->wmem);
-+		free_page((unsigned long)ctx->sbounce);
-+		free_page((unsigned long)ctx->dbounce);
-+		return -ENOMEM;
-+	}
-+
-+	return 0;
-+}
-+
-+static void nx842_crypto_exit(struct crypto_tfm *tfm)
-+{
-+	struct nx842_crypto_ctx *ctx = crypto_tfm_ctx(tfm);
-+
-+	kfree(ctx->wmem);
-+	free_page((unsigned long)ctx->sbounce);
-+	free_page((unsigned long)ctx->dbounce);
-+}
-+
-+static int read_constraints(struct nx842_constraints *c)
-+{
-+	int ret;
-+
-+	ret = nx842_constraints(c);
-+	if (ret) {
-+		pr_err_ratelimited("could not get nx842 constraints : %d\n",
-+				   ret);
-+		return ret;
-+	}
-+
-+	/* limit maximum, to always have enough bounce buffer to decompress */
-+	if (c->maximum > BOUNCE_BUFFER_SIZE) {
-+		c->maximum = BOUNCE_BUFFER_SIZE;
-+		pr_info_once("limiting nx842 maximum to %x\n", c->maximum);
-+	}
-+
-+	return 0;
-+}
-+
-+static int nx842_crypto_add_header(struct nx842_crypto_header *hdr, u8 *buf)
-+{
-+	int s = NX842_CRYPTO_HEADER_SIZE(hdr->groups);
-+
-+	/* compress should have added space for header */
-+	if (s > be16_to_cpu(hdr->group[0].padding)) {
-+		pr_err("Internal error: no space for header\n");
-+		return -EINVAL;
-+	}
-+
-+	memcpy(buf, hdr, s);
-+
-+	print_hex_dump_debug("header ", DUMP_PREFIX_OFFSET, 16, 1, buf, s, 0);
-+
-+	return 0;
-+}
-+
-+static int compress(struct nx842_crypto_ctx *ctx,
-+		    struct nx842_crypto_param *p,
-+		    struct nx842_crypto_header_group *g,
-+		    struct nx842_constraints *c,
-+		    u16 *ignore,
-+		    unsigned int hdrsize)
-+{
-+	unsigned int slen = p->iremain, dlen = p->oremain, tmplen;
-+	unsigned int adj_slen = slen;
-+	u8 *src = p->in, *dst = p->out;
-+	int ret, dskip = 0;
-+	ktime_t timeout;
-+
-+	if (p->iremain == 0)
-+		return -EOVERFLOW;
-+
-+	if (p->oremain == 0 || hdrsize + c->minimum > dlen)
-+		return -ENOSPC;
-+
-+	if (slen % c->multiple)
-+		adj_slen = round_up(slen, c->multiple);
-+	if (slen < c->minimum)
-+		adj_slen = c->minimum;
-+	if (slen > c->maximum)
-+		adj_slen = slen = c->maximum;
-+	if (adj_slen > slen || (u64)src % c->alignment) {
-+		adj_slen = min(adj_slen, BOUNCE_BUFFER_SIZE);
-+		slen = min(slen, BOUNCE_BUFFER_SIZE);
-+		if (adj_slen > slen)
-+			memset(ctx->sbounce + slen, 0, adj_slen - slen);
-+		memcpy(ctx->sbounce, src, slen);
-+		src = ctx->sbounce;
-+		slen = adj_slen;
-+		pr_debug("using comp sbounce buffer, len %x\n", slen);
-+	}
-+
-+	dst += hdrsize;
-+	dlen -= hdrsize;
-+
-+	if ((u64)dst % c->alignment) {
-+		dskip = (int)(PTR_ALIGN(dst, c->alignment) - dst);
-+		dst += dskip;
-+		dlen -= dskip;
-+	}
-+	if (dlen % c->multiple)
-+		dlen = round_down(dlen, c->multiple);
-+	if (dlen < c->minimum) {
-+nospc:
-+		dst = ctx->dbounce;
-+		dlen = min(p->oremain, BOUNCE_BUFFER_SIZE);
-+		dlen = round_down(dlen, c->multiple);
-+		dskip = 0;
-+		pr_debug("using comp dbounce buffer, len %x\n", dlen);
-+	}
-+	if (dlen > c->maximum)
-+		dlen = c->maximum;
-+
-+	tmplen = dlen;
-+	timeout = ktime_add_ms(ktime_get(), COMP_BUSY_TIMEOUT);
-+	do {
-+		dlen = tmplen; /* reset dlen, if we're retrying */
-+		ret = nx842_compress(src, slen, dst, &dlen, ctx->wmem);
-+		/* possibly we should reduce the slen here, instead of
-+		 * retrying with the dbounce buffer?
-+		 */
-+		if (ret == -ENOSPC && dst != ctx->dbounce)
-+			goto nospc;
-+	} while (ret == -EBUSY && ktime_before(ktime_get(), timeout));
-+	if (ret)
-+		return ret;
-+
-+	dskip += hdrsize;
-+
-+	if (dst == ctx->dbounce)
-+		memcpy(p->out + dskip, dst, dlen);
-+
-+	g->padding = cpu_to_be16(dskip);
-+	g->compressed_length = cpu_to_be32(dlen);
-+	g->uncompressed_length = cpu_to_be32(slen);
-+
-+	if (p->iremain < slen) {
-+		*ignore = slen - p->iremain;
-+		slen = p->iremain;
-+	}
-+
-+	pr_debug("compress slen %x ignore %x dlen %x padding %x\n",
-+		 slen, *ignore, dlen, dskip);
-+
-+	return update_param(p, slen, dskip + dlen);
-+}
-+
-+static int nx842_crypto_compress(struct crypto_tfm *tfm,
-+				 const u8 *src, unsigned int slen,
-+				 u8 *dst, unsigned int *dlen)
-+{
-+	struct nx842_crypto_ctx *ctx = crypto_tfm_ctx(tfm);
-+	struct nx842_crypto_header *hdr = &ctx->header;
-+	struct nx842_crypto_param p;
-+	struct nx842_constraints c;
-+	unsigned int groups, hdrsize, h;
-+	int ret, n;
-+	bool add_header;
-+	u16 ignore = 0;
-+
-+	if (!tfm || !src || !slen || !dst || !dlen)
-+		return -EINVAL;
-+
-+	p.in = (u8 *)src;
-+	p.iremain = slen;
-+	p.out = dst;
-+	p.oremain = *dlen;
-+	p.ototal = 0;
-+
-+	*dlen = 0;
-+
-+	ret = read_constraints(&c);
-+	if (ret)
-+		return ret;
-+
-+	groups = min_t(unsigned int, NX842_CRYPTO_GROUP_MAX,
-+		       DIV_ROUND_UP(p.iremain, c.maximum));
-+	hdrsize = NX842_CRYPTO_HEADER_SIZE(groups);
-+
-+	/* skip adding header if the buffers meet all constraints */
-+	add_header = (p.iremain % c.multiple	||
-+		      p.iremain < c.minimum	||
-+		      p.iremain > c.maximum	||
-+		      (u64)p.in % c.alignment	||
-+		      p.oremain % c.multiple	||
-+		      p.oremain < c.minimum	||
-+		      p.oremain > c.maximum	||
-+		      (u64)p.out % c.alignment);
-+
-+	hdr->magic = cpu_to_be16(NX842_CRYPTO_MAGIC);
-+	hdr->groups = 0;
-+	hdr->ignore = 0;
-+
-+	while (p.iremain > 0) {
-+		n = hdr->groups++;
-+		if (hdr->groups > NX842_CRYPTO_GROUP_MAX)
-+			return -ENOSPC;
-+
-+		/* header goes before first group */
-+		h = !n && add_header ? hdrsize : 0;
-+
-+		if (ignore)
-+			pr_warn("interal error, ignore is set %x\n", ignore);
-+
-+		ret = compress(ctx, &p, &hdr->group[n], &c, &ignore, h);
-+		if (ret)
-+			return ret;
-+	}
-+
-+	if (!add_header && hdr->groups > 1) {
-+		pr_err("Internal error: No header but multiple groups\n");
-+		return -EINVAL;
-+	}
-+
-+	/* ignore indicates the input stream needed to be padded */
-+	hdr->ignore = cpu_to_be16(ignore);
-+	if (ignore)
-+		pr_debug("marked %d bytes as ignore\n", ignore);
-+
-+	if (add_header)
-+		ret = nx842_crypto_add_header(hdr, dst);
-+	if (ret)
-+		return ret;
-+
-+	*dlen = p.ototal;
-+
-+	pr_debug("compress total slen %x dlen %x\n", slen, *dlen);
-+
-+	return 0;
-+}
-+
-+static int decompress(struct nx842_crypto_ctx *ctx,
-+		      struct nx842_crypto_param *p,
-+		      struct nx842_crypto_header_group *g,
-+		      struct nx842_constraints *c,
-+		      u16 ignore,
-+		      bool usehw)
-+{
-+	unsigned int slen = be32_to_cpu(g->compressed_length);
-+	unsigned int required_len = be32_to_cpu(g->uncompressed_length);
-+	unsigned int dlen = p->oremain, tmplen;
-+	unsigned int adj_slen = slen;
-+	u8 *src = p->in, *dst = p->out;
-+	u16 padding = be16_to_cpu(g->padding);
-+	int ret, spadding = 0, dpadding = 0;
-+	ktime_t timeout;
-+
-+	if (!slen || !required_len)
-+		return -EINVAL;
-+
-+	if (p->iremain <= 0 || padding + slen > p->iremain)
-+		return -EOVERFLOW;
-+
-+	if (p->oremain <= 0 || required_len - ignore > p->oremain)
-+		return -ENOSPC;
-+
-+	src += padding;
-+
-+	if (!usehw)
-+		goto usesw;
-+
-+	if (slen % c->multiple)
-+		adj_slen = round_up(slen, c->multiple);
-+	if (slen < c->minimum)
-+		adj_slen = c->minimum;
-+	if (slen > c->maximum)
-+		goto usesw;
-+	if (slen < adj_slen || (u64)src % c->alignment) {
-+		/* we can append padding bytes because the 842 format defines
-+		 * an "end" template (see lib/842/842_decompress.c) and will
-+		 * ignore any bytes following it.
-+		 */
-+		if (slen < adj_slen)
-+			memset(ctx->sbounce + slen, 0, adj_slen - slen);
-+		memcpy(ctx->sbounce, src, slen);
-+		src = ctx->sbounce;
-+		spadding = adj_slen - slen;
-+		slen = adj_slen;
-+		pr_debug("using decomp sbounce buffer, len %x\n", slen);
-+	}
-+
-+	if (dlen % c->multiple)
-+		dlen = round_down(dlen, c->multiple);
-+	if (dlen < required_len || (u64)dst % c->alignment) {
-+		dst = ctx->dbounce;
-+		dlen = min(required_len, BOUNCE_BUFFER_SIZE);
-+		pr_debug("using decomp dbounce buffer, len %x\n", dlen);
-+	}
-+	if (dlen < c->minimum)
-+		goto usesw;
-+	if (dlen > c->maximum)
-+		dlen = c->maximum;
-+
-+	tmplen = dlen;
-+	timeout = ktime_add_ms(ktime_get(), DECOMP_BUSY_TIMEOUT);
-+	do {
-+		dlen = tmplen; /* reset dlen, if we're retrying */
-+		ret = nx842_decompress(src, slen, dst, &dlen, ctx->wmem);
-+	} while (ret == -EBUSY && ktime_before(ktime_get(), timeout));
-+	if (ret) {
-+usesw:
-+		/* reset everything, sw doesn't have constraints */
-+		src = p->in + padding;
-+		slen = be32_to_cpu(g->compressed_length);
-+		spadding = 0;
-+		dst = p->out;
-+		dlen = p->oremain;
-+		dpadding = 0;
-+		if (dlen < required_len) { /* have ignore bytes */
-+			dst = ctx->dbounce;
-+			dlen = BOUNCE_BUFFER_SIZE;
-+		}
-+		pr_info_ratelimited("using software 842 decompression\n");
-+		ret = sw842_decompress(src, slen, dst, &dlen);
-+	}
-+	if (ret)
-+		return ret;
-+
-+	slen -= spadding;
-+
-+	dlen -= ignore;
-+	if (ignore)
-+		pr_debug("ignoring last %x bytes\n", ignore);
-+
-+	if (dst == ctx->dbounce)
-+		memcpy(p->out, dst, dlen);
-+
-+	pr_debug("decompress slen %x padding %x dlen %x ignore %x\n",
-+		 slen, padding, dlen, ignore);
-+
-+	return update_param(p, slen + padding, dlen);
-+}
-+
-+static int nx842_crypto_decompress(struct crypto_tfm *tfm,
-+				   const u8 *src, unsigned int slen,
-+				   u8 *dst, unsigned int *dlen)
-+{
-+	struct nx842_crypto_ctx *ctx = crypto_tfm_ctx(tfm);
-+	struct nx842_crypto_header *hdr;
-+	struct nx842_crypto_param p;
-+	struct nx842_constraints c;
-+	int n, ret, hdr_len;
-+	u16 ignore = 0;
-+	bool usehw = true;
-+
-+	if (!tfm || !src || !slen || !dst || !dlen)
-+		return -EINVAL;
-+
-+	p.in = (u8 *)src;
-+	p.iremain = slen;
-+	p.out = dst;
-+	p.oremain = *dlen;
-+	p.ototal = 0;
-+
-+	*dlen = 0;
-+
-+	if (read_constraints(&c))
-+		usehw = false;
-+
-+	hdr = (struct nx842_crypto_header *)src;
-+
-+	/* If it doesn't start with our header magic number, assume it's a raw
-+	 * 842 compressed buffer and pass it directly to the hardware driver
-+	 */
-+	if (be16_to_cpu(hdr->magic) != NX842_CRYPTO_MAGIC) {
-+		struct nx842_crypto_header_group g = {
-+			.padding =		0,
-+			.compressed_length =	cpu_to_be32(p.iremain),
-+			.uncompressed_length =	cpu_to_be32(p.oremain),
-+		};
-+
-+		ret = decompress(ctx, &p, &g, &c, 0, usehw);
-+		if (ret)
-+			return ret;
-+
-+		*dlen = p.ototal;
-+
-+		return 0;
-+	}
-+
-+	if (!hdr->groups) {
-+		pr_err("header has no groups\n");
-+		return -EINVAL;
-+	}
-+	if (hdr->groups > NX842_CRYPTO_GROUP_MAX) {
-+		pr_err("header has too many groups %x, max %x\n",
-+		       hdr->groups, NX842_CRYPTO_GROUP_MAX);
-+		return -EINVAL;
-+	}
-+
-+	hdr_len = NX842_CRYPTO_HEADER_SIZE(hdr->groups);
-+	if (hdr_len > slen)
-+		return -EOVERFLOW;
-+
-+	memcpy(&ctx->header, src, hdr_len);
-+	hdr = &ctx->header;
-+
-+	for (n = 0; n < hdr->groups; n++) {
-+		/* ignore applies to last group */
-+		if (n + 1 == hdr->groups)
-+			ignore = be16_to_cpu(hdr->ignore);
-+
-+		ret = decompress(ctx, &p, &hdr->group[n], &c, ignore, usehw);
-+		if (ret)
-+			return ret;
-+	}
-+
-+	*dlen = p.ototal;
-+
-+	pr_debug("decompress total slen %x dlen %x\n", slen, *dlen);
-+
-+	return 0;
-+}
-+
-+static struct crypto_alg alg = {
-+	.cra_name		= "842",
-+	.cra_driver_name	= "842-nx",
-+	.cra_priority		= 300,
-+	.cra_flags		= CRYPTO_ALG_TYPE_COMPRESS,
-+	.cra_ctxsize		= sizeof(struct nx842_crypto_ctx),
-+	.cra_module		= THIS_MODULE,
-+	.cra_init		= nx842_crypto_init,
-+	.cra_exit		= nx842_crypto_exit,
-+	.cra_u			= { .compress = {
-+	.coa_compress		= nx842_crypto_compress,
-+	.coa_decompress		= nx842_crypto_decompress } }
-+};
-+
-+static int __init nx842_crypto_mod_init(void)
-+{
-+	return crypto_register_alg(&alg);
-+}
-+module_init(nx842_crypto_mod_init);
-+
-+static void __exit nx842_crypto_mod_exit(void)
-+{
-+	crypto_unregister_alg(&alg);
-+}
-+module_exit(nx842_crypto_mod_exit);
-+
-+MODULE_LICENSE("GPL");
-+MODULE_DESCRIPTION("IBM PowerPC Nest (NX) 842 Hardware Compression Interface");
-+MODULE_ALIAS_CRYPTO("842");
-+MODULE_ALIAS_CRYPTO("842-nx");
-+MODULE_AUTHOR("Dan Streetman <ddstreet@ieee.org>");
--- 
-2.1.0
+Regards
+Preeti U Murthy
+> 
+>  drivers/cpuidle/cpuidle.c          |   21 +++++++++++++++++----
+>  drivers/cpuidle/governors/ladder.c |   13 ++++++++++---
+>  drivers/cpuidle/governors/menu.c   |    6 +++++-
+>  include/linux/cpuidle.h            |    6 +++---
+>  include/linux/sched.h              |   16 ++++++++++++++++
+>  kernel/sched/core.c                |   17 +++++++++++++++++
+>  kernel/sched/fair.c                |    2 +-
+>  kernel/sched/idle.c                |    8 +-------
+>  kernel/sched/sched.h               |   24 ------------------------
+>  9 files changed, 70 insertions(+), 43 deletions(-)
+> 
+> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+> index 61c417b..8f5657e 100644
+> --- a/drivers/cpuidle/cpuidle.c
+> +++ b/drivers/cpuidle/cpuidle.c
+> @@ -21,6 +21,7 @@
+>  #include <linux/module.h>
+>  #include <linux/suspend.h>
+>  #include <linux/tick.h>
+> +#include <linux/sched.h>
+>  #include <trace/events/power.h>
+> 
+>  #include "cpuidle.h"
+> @@ -167,8 +168,15 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
+>  	 * local timer will be shut down.  If a local timer is used from another
+>  	 * CPU as a broadcast timer, this call may fail if it is not available.
+>  	 */
+> -	if (broadcast && tick_broadcast_enter())
+> -		return -EBUSY;
+> +	if (broadcast && tick_broadcast_enter()) {
+> +		index = cpuidle_select(drv, dev, !broadcast);
+> +		if (index < 0)
+> +			return -EBUSY;
+> +		target_state = &drv->states[index];
+> +	}
+> +
+> +	/* Take note of the planned idle state. */
+> +	idle_set_state(smp_processor_id(), target_state);
+> 
+>  	trace_cpu_idle_rcuidle(index, dev->cpu);
+>  	time_start = ktime_get();
+> @@ -178,6 +186,9 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
+>  	time_end = ktime_get();
+>  	trace_cpu_idle_rcuidle(PWR_EVENT_EXIT, dev->cpu);
+> 
+> +	/* The cpu is no longer idle or about to enter idle. */
+> +	idle_set_state(smp_processor_id(), NULL);
+> +
+>  	if (broadcast) {
+>  		if (WARN_ON_ONCE(!irqs_disabled()))
+>  			local_irq_disable();
+> @@ -213,12 +224,14 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
+>   *
+>   * @drv: the cpuidle driver
+>   * @dev: the cpuidle device
+> + * @timer_stop_valid: allow selection of idle state where tick stops
+>   *
+>   * Returns the index of the idle state.
+>   */
+> -int cpuidle_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
+> +int cpuidle_select(struct cpuidle_driver *drv,
+> +			struct cpuidle_device *dev, int timer_stop_valid)
+>  {
+> -	return cpuidle_curr_governor->select(drv, dev);
+> +	return cpuidle_curr_governor->select(drv, dev, timer_stop_valid);
+>  }
+> 
+>  /**
+> diff --git a/drivers/cpuidle/governors/ladder.c b/drivers/cpuidle/governors/ladder.c
+> index 401c010..c437322 100644
+> --- a/drivers/cpuidle/governors/ladder.c
+> +++ b/drivers/cpuidle/governors/ladder.c
+> @@ -62,9 +62,10 @@ static inline void ladder_do_selection(struct ladder_device *ldev,
+>   * ladder_select_state - selects the next state to enter
+>   * @drv: cpuidle driver
+>   * @dev: the CPU
+> + * @timer_stop_valid: allow selection of idle state where tick stops
+>   */
+>  static int ladder_select_state(struct cpuidle_driver *drv,
+> -				struct cpuidle_device *dev)
+> +				struct cpuidle_device *dev, int timer_stop_valid)
+>  {
+>  	struct ladder_device *ldev = this_cpu_ptr(&ladder_devices);
+>  	struct ladder_device_state *last_state;
+> @@ -86,6 +87,7 @@ static int ladder_select_state(struct cpuidle_driver *drv,
+>  	    !drv->states[last_idx + 1].disabled &&
+>  	    !dev->states_usage[last_idx + 1].disable &&
+>  	    last_residency > last_state->threshold.promotion_time &&
+> +	    !(!timer_stop_valid && (drv->states[last_idx + 1].flags & CPUIDLE_FLAG_TIMER_STOP)) &&
+>  	    drv->states[last_idx + 1].exit_latency <= latency_req) {
+>  		last_state->stats.promotion_count++;
+>  		last_state->stats.demotion_count = 0;
+> @@ -99,11 +101,14 @@ static int ladder_select_state(struct cpuidle_driver *drv,
+>  	if (last_idx > CPUIDLE_DRIVER_STATE_START &&
+>  	    (drv->states[last_idx].disabled ||
+>  	    dev->states_usage[last_idx].disable ||
+> +	    (!timer_stop_valid && (drv->states[last_idx].flags & CPUIDLE_FLAG_TIMER_STOP)) ||
+>  	    drv->states[last_idx].exit_latency > latency_req)) {
+>  		int i;
+> 
+>  		for (i = last_idx - 1; i > CPUIDLE_DRIVER_STATE_START; i--) {
+> -			if (drv->states[i].exit_latency <= latency_req)
+> +			if (drv->states[i].exit_latency <= latency_req &&
+> +				!(!timer_stop_valid &&
+> +					(drv->states[i].flags & CPUIDLE_FLAG_TIMER_STOP)))
+>  				break;
+>  		}
+>  		ladder_do_selection(ldev, last_idx, i);
+> @@ -114,7 +119,9 @@ static int ladder_select_state(struct cpuidle_driver *drv,
+>  	    last_residency < last_state->threshold.demotion_time) {
+>  		last_state->stats.demotion_count++;
+>  		last_state->stats.promotion_count = 0;
+> -		if (last_state->stats.demotion_count >= last_state->threshold.demotion_count) {
+> +		if (last_state->stats.demotion_count >= last_state->threshold.demotion_count &&
+> +			!(!timer_stop_valid &&
+> +				(drv->states[last_idx - 1].flags & CPUIDLE_FLAG_TIMER_STOP))) {
+>  			ladder_do_selection(ldev, last_idx, last_idx - 1);
+>  			return last_idx - 1;
+>  		}
+> diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
+> index b8a5fa1..900404f 100644
+> --- a/drivers/cpuidle/governors/menu.c
+> +++ b/drivers/cpuidle/governors/menu.c
+> @@ -280,8 +280,10 @@ again:
+>   * menu_select - selects the next idle state to enter
+>   * @drv: cpuidle driver containing state data
+>   * @dev: the CPU
+> + * @timer_stop_valid: allow selection of idle state where tick stops
+>   */
+> -static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
+> +static int menu_select(struct cpuidle_driver *drv,
+> +			struct cpuidle_device *dev, int timer_stop_valid)
+>  {
+>  	struct menu_device *data = this_cpu_ptr(&menu_devices);
+>  	int latency_req = pm_qos_request(PM_QOS_CPU_DMA_LATENCY);
+> @@ -349,6 +351,8 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
+>  			continue;
+>  		if (s->exit_latency > latency_req)
+>  			continue;
+> +		if (!timer_stop_valid && (s->flags & CPUIDLE_FLAG_TIMER_STOP))
+> +			continue;
+> 
+>  		data->last_state_idx = i;
+>  	}
+> diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
+> index 9c5e892..d7c1734 100644
+> --- a/include/linux/cpuidle.h
+> +++ b/include/linux/cpuidle.h
+> @@ -129,7 +129,7 @@ extern bool cpuidle_not_available(struct cpuidle_driver *drv,
+>  				  struct cpuidle_device *dev);
+> 
+>  extern int cpuidle_select(struct cpuidle_driver *drv,
+> -			  struct cpuidle_device *dev);
+> +			  struct cpuidle_device *dev, int timer_stop_valid);
+>  extern int cpuidle_enter(struct cpuidle_driver *drv,
+>  			 struct cpuidle_device *dev, int index);
+>  extern void cpuidle_reflect(struct cpuidle_device *dev, int index);
+> @@ -163,7 +163,7 @@ static inline bool cpuidle_not_available(struct cpuidle_driver *drv,
+>  					 struct cpuidle_device *dev)
+>  {return true; }
+>  static inline int cpuidle_select(struct cpuidle_driver *drv,
+> -				 struct cpuidle_device *dev)
+> +				 struct cpuidle_device *dev, int timer_stop_valid)
+>  {return -ENODEV; }
+>  static inline int cpuidle_enter(struct cpuidle_driver *drv,
+>  				struct cpuidle_device *dev, int index)
+> @@ -223,7 +223,7 @@ struct cpuidle_governor {
+>  					struct cpuidle_device *dev);
+> 
+>  	int  (*select)		(struct cpuidle_driver *drv,
+> -					struct cpuidle_device *dev);
+> +					struct cpuidle_device *dev, int timer_stop_valid);
+>  	void (*reflect)		(struct cpuidle_device *dev, int index);
+> 
+>  	struct module 		*owner;
+> diff --git a/include/linux/sched.h b/include/linux/sched.h
+> index 8222ae4..ff4e2df 100644
+> --- a/include/linux/sched.h
+> +++ b/include/linux/sched.h
+> @@ -45,6 +45,7 @@ struct sched_param {
+>  #include <linux/rcupdate.h>
+>  #include <linux/rculist.h>
+>  #include <linux/rtmutex.h>
+> +#include <linux/cpuidle.h>
+> 
+>  #include <linux/time.h>
+>  #include <linux/param.h>
+> @@ -901,6 +902,21 @@ enum cpu_idle_type {
+>  	CPU_MAX_IDLE_TYPES
+>  };
+> 
+> +#ifdef CONFIG_CPU_IDLE
+> +extern void idle_set_state(int cpu, struct cpuidle_state *idle_state);
+> +extern struct cpuidle_state *idle_get_state(int cpu);
+> +#else
+> +static inline void idle_set_state(int cpu,
+> +				  struct cpuidle_state *idle_state)
+> +{
+> +}
+> +
+> +static inline struct cpuidle_state *idle_get_state(int cpu)
+> +{
+> +	return NULL;
+> +}
+> +#endif
+> +
+>  /*
+>   * Increase resolution of cpu_capacity calculations
+>   */
+> diff --git a/kernel/sched/core.c b/kernel/sched/core.c
+> index f9123a8..427e190 100644
+> --- a/kernel/sched/core.c
+> +++ b/kernel/sched/core.c
+> @@ -3231,6 +3231,23 @@ struct task_struct *idle_task(int cpu)
+>  	return cpu_rq(cpu)->idle;
+>  }
+> 
+> +#ifdef CONFIG_CPU_IDLE
+> +void idle_set_state(int cpu, struct cpuidle_state *idle_state)
+> +{
+> +	struct rq *rq = cpu_rq(cpu);
+> +
+> +	rq->idle_state = idle_state;
+> +}
+> +
+> +struct cpuidle_state *idle_get_state(int cpu)
+> +{
+> +	struct rq *rq = cpu_rq(cpu);
+> +
+> +	WARN_ON(!rcu_read_lock_held());
+> +	return rq->idle_state;
+> +}
+> +#endif /* CONFIG_CPU_IDLE */
+> +
+>  /**
+>   * find_process_by_pid - find a process with a matching PID value.
+>   * @pid: the pid in question.
+> diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+> index ffeaa41..211ef9a 100644
+> --- a/kernel/sched/fair.c
+> +++ b/kernel/sched/fair.c
+> @@ -4709,7 +4709,7 @@ find_idlest_cpu(struct sched_group *group, struct task_struct *p, int this_cpu)
+>  	for_each_cpu_and(i, sched_group_cpus(group), tsk_cpus_allowed(p)) {
+>  		if (idle_cpu(i)) {
+>  			struct rq *rq = cpu_rq(i);
+> -			struct cpuidle_state *idle = idle_get_state(rq);
+> +			struct cpuidle_state *idle = idle_get_state(i);
+>  			if (idle && idle->exit_latency < min_exit_latency) {
+>  				/*
+>  				 * We give priority to a CPU whose idle state
+> diff --git a/kernel/sched/idle.c b/kernel/sched/idle.c
+> index fefcb1f..5bd766c 100644
+> --- a/kernel/sched/idle.c
+> +++ b/kernel/sched/idle.c
+> @@ -131,7 +131,7 @@ static void cpuidle_idle_call(void)
+>  		/*
+>  		 * Ask the cpuidle framework to choose a convenient idle state.
+>  		 */
+> -		next_state = cpuidle_select(drv, dev);
+> +		next_state = cpuidle_select(drv, dev, 1);
+>  	}
+>  	/* Fall back to the default arch idle method on errors. */
+>  	if (next_state < 0)
+> @@ -149,9 +149,6 @@ static void cpuidle_idle_call(void)
+>  		goto exit_idle;
+>  	}
+> 
+> -	/* Take note of the planned idle state. */
+> -	idle_set_state(this_rq(), &drv->states[next_state]);
+> -
+>  	/*
+>  	 * Enter the idle state previously returned by the governor decision.
+>  	 * This function will block until an interrupt occurs and will take
+> @@ -159,9 +156,6 @@ static void cpuidle_idle_call(void)
+>  	 */
+>  	entered_state = cpuidle_enter(drv, dev, next_state);
+> 
+> -	/* The cpu is no longer idle or about to enter idle. */
+> -	idle_set_state(this_rq(), NULL);
+> -
+>  	if (entered_state == -EBUSY)
+>  		goto use_default;
+> 
+> diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
+> index e0e1299..2c56caa 100644
+> --- a/kernel/sched/sched.h
+> +++ b/kernel/sched/sched.h
+> @@ -1253,30 +1253,6 @@ static inline void idle_exit_fair(struct rq *rq) { }
+> 
+>  #endif
+> 
+> -#ifdef CONFIG_CPU_IDLE
+> -static inline void idle_set_state(struct rq *rq,
+> -				  struct cpuidle_state *idle_state)
+> -{
+> -	rq->idle_state = idle_state;
+> -}
+> -
+> -static inline struct cpuidle_state *idle_get_state(struct rq *rq)
+> -{
+> -	WARN_ON(!rcu_read_lock_held());
+> -	return rq->idle_state;
+> -}
+> -#else
+> -static inline void idle_set_state(struct rq *rq,
+> -				  struct cpuidle_state *idle_state)
+> -{
+> -}
+> -
+> -static inline struct cpuidle_state *idle_get_state(struct rq *rq)
+> -{
+> -	return NULL;
+> -}
+> -#endif
+> -
+>  extern void sysrq_sched_debug_show(void);
+>  extern void sched_init_granularity(void);
+>  extern void update_max_interval(void);
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> 
