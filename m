@@ -1,21 +1,26 @@
 Return-Path: <rjw@rjwysocki.net>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id C989A1A0063
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 May 2015 06:34:48 +1000 (AEST)
 Received: from v094114.home.net.pl (v094114.home.net.pl [79.96.170.134])
- by lists.ozlabs.org (Postfix) with SMTP id EF9241A1057
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 May 2015 06:25:13 +1000 (AEST)
+ by ozlabs.org (Postfix) with SMTP id E52FE1402A0
+ for <linuxppc-dev@ozlabs.org>; Fri,  8 May 2015 06:34:47 +1000 (AEST)
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Subject: Re: [PATCH V2] cpuidle: Handle tick_broadcast_enter() failure
- gracefully
-Date: Thu, 07 May 2015 22:50:14 +0200
-Message-ID: <1562115.g1s3BW0dJA@vostro.rjw.lan>
-In-Reply-To: <20150507174355.25321.85885.stgit@preeti.in.ibm.com>
-References: <20150507174355.25321.85885.stgit@preeti.in.ibm.com>
+Subject: Re: [PATCH v3 4/6] cpufreq: powernv: Call throttle_check() on
+ receiving OCC_THROTTLE
+Date: Thu, 07 May 2015 22:59:51 +0200
+Message-ID: <4161534.4Jyd5dl4um@vostro.rjw.lan>
+In-Reply-To: <554B584A.3030507@linux.vnet.ibm.com>
+References: <1430729652-14813-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ <5548824C.2030602@linux.vnet.ibm.com> <554B584A.3030507@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Cc: rlippert@google.com, daniel.lezcano@linaro.org, linux-pm@vger.kernel.org,
- peterz@infradead.org, linus.walleij@linaro.org, rafael.j.wysocki@intel.com,
- linux-kernel@vger.kernel.org, mingo@redhat.com, sudeep.holla@arm.com,
- tglx@linutronix.de, linuxppc-dev@lists.ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, linux-pm@vger.kernel.org,
+ linux-kernel@vger.kernel.org,
+ Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, viresh.kumar@linaro.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,63 +30,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thursday, May 07, 2015 11:17:21 PM Preeti U Murthy wrote:
-> When a CPU has to enter an idle state where tick stops, it makes a call
-> to tick_broadcast_enter(). The call will fail if this CPU is the
-> broadcast CPU. Today, under such a circumstance, the arch cpuidle code
-> handles this CPU.  This is not convincing because not only are we not
-> aware what the arch cpuidle code does, but we also do not account for
-> the idle state residency time and usage of such a CPU.
+On Thursday, May 07, 2015 05:49:22 PM Preeti U Murthy wrote:
+> On 05/05/2015 02:11 PM, Preeti U Murthy wrote:
+> > On 05/05/2015 12:03 PM, Shilpasri G Bhat wrote:
+> >> Hi Preeti,
+> >>
+> >> On 05/05/2015 09:30 AM, Preeti U Murthy wrote:
+> >>> Hi Shilpa,
+> >>>
+> >>> On 05/04/2015 02:24 PM, Shilpasri G Bhat wrote:
+> >>>> Re-evaluate the chip's throttled state on recieving OCC_THROTTLE
+> >>>> notification by executing *throttle_check() on any one of the cpu on
+> >>>> the chip. This is a sanity check to verify if we were indeed
+> >>>> throttled/unthrottled after receiving OCC_THROTTLE notification.
+> >>>>
+> >>>> We cannot call *throttle_check() directly from the notification
+> >>>> handler because we could be handling chip1's notification in chip2. So
+> >>>> initiate an smp_call to execute *throttle_check(). We are irq-disabled
+> >>>> in the notification handler, so use a worker thread to smp_call
+> >>>> throttle_check() on any of the cpu in the chipmask.
+> >>>
+> >>> I see that the first patch takes care of reporting *per-chip* throttling
+> >>> for pmax capping condition. But where are we taking care of reporting
+> >>> "pstate set to safe" and "freq control disabled" scenarios per-chip ?
+> >>>
+> >>
+> >> IMO let us not have "psafe" and "freq control disabled" states managed per-chip.
+> >> Because when the above two conditions occur it is likely to happen across all
+> >> chips during an OCC reset cycle. So I am setting 'throttled' to false on
+> >> OCC_ACTIVE and re-verifying if it actually is the case by invoking
+> >> *throttle_check().
+> > 
+> > Alright like I pointed in the previous reply, a comment to indicate that
+> > psafe and freq control disabled conditions will fail when occ is
+> > inactive and that all chips face the consequence of this will help.
 > 
-> This scenario can be handled better by simply asking the cpuidle
-> governor to choose an idle state where in ticks do not stop. To
-> accommodate this change move the setting of runqueue idle state from the
-> core to the cpuidle driver, else the rq->idle_state will be set wrong.
+> From your explanation on the thread of the first patch of this series,
+> this will not be required.
 > 
-> Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-> ---
-> Changes from V1: https://lkml.org/lkml/2015/5/7/24
-> Rebased on the latest linux-pm/bleeding-edge
-> 
->  drivers/cpuidle/cpuidle.c          |   21 +++++++++++++++++----
->  drivers/cpuidle/governors/ladder.c |   13 ++++++++++---
->  drivers/cpuidle/governors/menu.c   |    6 +++++-
->  include/linux/cpuidle.h            |    6 +++---
->  include/linux/sched.h              |   16 ++++++++++++++++
->  kernel/sched/core.c                |   17 +++++++++++++++++
->  kernel/sched/fair.c                |    2 +-
->  kernel/sched/idle.c                |    8 +-------
->  kernel/sched/sched.h               |   24 ------------------------
->  9 files changed, 70 insertions(+), 43 deletions(-)
-> 
-> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
-> index 8c24f95..b7e86f4 100644
-> --- a/drivers/cpuidle/cpuidle.c
-> +++ b/drivers/cpuidle/cpuidle.c
-> @@ -21,6 +21,7 @@
->  #include <linux/module.h>
->  #include <linux/suspend.h>
->  #include <linux/tick.h>
-> +#include <linux/sched.h>
->  #include <trace/events/power.h>
->  
->  #include "cpuidle.h"
-> @@ -168,10 +169,17 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
->  	 * CPU as a broadcast timer, this call may fail if it is not available.
->  	 */
->  	if (broadcast && tick_broadcast_enter()) {
-> -		default_idle_call();
-> -		return -EBUSY;
-> +		index = cpuidle_select(drv, dev, !broadcast);
+> So,
+> Reviewed-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
 
-No, you can't do that.
-
-This code path may be used by suspend-to-idle and that should not call
-cpuidle_select().
-
-What's needed here seems to be a fallback mechanism like "choose the
-deepest state shallower than X and such that it won't stop the tick".
-You don't really need to run a full governor for that.
+OK, so is the whole series reviewed now?
 
 
 -- 
