@@ -1,26 +1,33 @@
-Return-Path: <Wenbin.Song@freescale.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4D3621A058C
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 May 2015 20:17:33 +1000 (AEST)
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0133.outbound.protection.outlook.com [207.46.100.133])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 4EB9014010F
- for <linuxppc-dev@ozlabs.org>; Thu,  7 May 2015 20:17:32 +1000 (AEST)
-From: songwenbin <Wenbin.Song@freescale.com>
-To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH v2 2/2] powerpc/mpc85xx: Fix EDAC address capture
-Date: Thu, 7 May 2015 17:41:38 +0800
-Message-ID: <1430991698-29832-2-git-send-email-Wenbin.Song@freescale.com>
-In-Reply-To: <1430991698-29832-1-git-send-email-Wenbin.Song@freescale.com>
-References: <1430991698-29832-1-git-send-email-Wenbin.Song@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Mingkai.hu@freescale.com, York Sun <yorksun@freescale.com>,
- songwenbin <wenbin.song@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3517E1A058C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 May 2015 23:42:10 +1000 (AEST)
+Received: from /spool/local
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Thu, 7 May 2015 23:42:08 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 584A12BB0040
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 May 2015 23:42:01 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t47DfrBo15728670
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 May 2015 23:42:01 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t47DfSaK002338
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 May 2015 23:41:28 +1000
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ david@gibson.dropbear.id.au
+Subject: [PATCH V2] powerpc/mm: Return NULL for not present hugetlb page
+Date: Thu,  7 May 2015 19:11:00 +0530
+Message-Id: <1431006060-5193-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,70 +37,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: York Sun <yorksun@freescale.com>
+We need to check whether pte is present in follow_huge_addr and
+properly return NULL if mapping is not present. Also use READ_ONCE
+when dereferencing pte_t address.
 
-Extend err_addr to cover 64 bits for DDR errors.
-
-Signed-off-by: York Sun <yorksun@freescale.com>
-Signed-off-by: songwenbin <wenbin.song@freescale.com>
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
- drivers/edac/mpc85xx_edac.c | 10 +++++++---
- drivers/edac/mpc85xx_edac.h |  1 +
- 2 files changed, 8 insertions(+), 3 deletions(-)
+Changes from V1:
+--------------
+* Fix build failures with some platform configs.
+  involves pmd_trans_huge(__pmd(pte_val(pte)))
 
-diff --git a/drivers/edac/mpc85xx_edac.c b/drivers/edac/mpc85xx_edac.c
-index 68bf234..23ef8e9 100644
---- a/drivers/edac/mpc85xx_edac.c
-+++ b/drivers/edac/mpc85xx_edac.c
-@@ -811,6 +811,8 @@ static void sbe_ecc_decode(u32 cap_high, u32 cap_low, u32 cap_ecc,
- 	}
- }
- 
-+#define make64(high, low) (((u64)(high) << 32) | (low))
-+
- static void mpc85xx_mc_check(struct mem_ctl_info *mci)
+ arch/powerpc/mm/hugetlbpage.c | 25 ++++++++++++++++---------
+ 1 file changed, 16 insertions(+), 9 deletions(-)
+
+diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
+index 0ce968b00b7c..3385e3d0506e 100644
+--- a/arch/powerpc/mm/hugetlbpage.c
++++ b/arch/powerpc/mm/hugetlbpage.c
+@@ -689,27 +689,34 @@ void hugetlb_free_pgd_range(struct mmu_gather *tlb,
+ struct page *
+ follow_huge_addr(struct mm_struct *mm, unsigned long address, int write)
  {
- 	struct mpc85xx_mc_pdata *pdata = mci->pvt_info;
-@@ -818,7 +820,7 @@ static void mpc85xx_mc_check(struct mem_ctl_info *mci)
- 	u32 bus_width;
- 	u32 err_detect;
- 	u32 syndrome;
--	u32 err_addr;
-+	u64 err_addr;
- 	u32 pfn;
- 	int row_index;
- 	u32 cap_high;
-@@ -849,7 +851,9 @@ static void mpc85xx_mc_check(struct mem_ctl_info *mci)
- 	else
- 		syndrome &= 0xffff;
+-	pte_t *ptep;
+-	struct page *page;
++	pte_t *ptep, pte;
+ 	unsigned shift;
+ 	unsigned long mask, flags;
++	struct page *page = ERR_PTR(-EINVAL);
++
++	local_irq_save(flags);
++	ptep = find_linux_pte_or_hugepte(mm->pgd, address, &shift);
++	if (!ptep)
++		goto no_page;
++	pte = READ_ONCE(*ptep);
+ 	/*
++	 * Verify it is a huge page else bail.
+ 	 * Transparent hugepages are handled by generic code. We can skip them
+ 	 * here.
+ 	 */
+-	local_irq_save(flags);
+-	ptep = find_linux_pte_or_hugepte(mm->pgd, address, &shift);
++	if (!shift || pmd_trans_huge(__pmd(pte_val(pte))))
++		goto no_page;
  
--	err_addr = in_be32(pdata->mc_vbase + MPC85XX_MC_CAPTURE_ADDRESS);
-+	err_addr = make64(
-+		in_be32(pdata->mc_vbase + MPC85XX_MC_CAPTURE_EXT_ADDRESS),
-+		in_be32(pdata->mc_vbase + MPC85XX_MC_CAPTURE_ADDRESS));
- 	pfn = err_addr >> PAGE_SHIFT;
+-	/* Verify it is a huge page else bail. */
+-	if (!ptep || !shift || pmd_trans_huge(*(pmd_t *)ptep)) {
+-		local_irq_restore(flags);
+-		return ERR_PTR(-EINVAL);
++	if (!pte_present(pte)) {
++		page = NULL;
++		goto no_page;
+ 	}
+ 	mask = (1UL << shift) - 1;
+-	page = pte_page(*ptep);
++	page = pte_page(pte);
+ 	if (page)
+ 		page += (address & mask) / PAGE_SIZE;
  
- 	for (row_index = 0; row_index < mci->nr_csrows; row_index++) {
-@@ -886,7 +890,7 @@ static void mpc85xx_mc_check(struct mem_ctl_info *mci)
- 	mpc85xx_mc_printk(mci, KERN_ERR,
- 			"Captured Data / ECC:\t%#8.8x_%08x / %#2.2x\n",
- 			cap_high, cap_low, syndrome);
--	mpc85xx_mc_printk(mci, KERN_ERR, "Err addr: %#8.8x\n", err_addr);
-+	mpc85xx_mc_printk(mci, KERN_ERR, "Err addr: %#8.8llx\n", err_addr);
- 	mpc85xx_mc_printk(mci, KERN_ERR, "PFN: %#8.8x\n", pfn);
- 
- 	/* we are out of range */
-diff --git a/drivers/edac/mpc85xx_edac.h b/drivers/edac/mpc85xx_edac.h
-index 4498baf..9352e88 100644
---- a/drivers/edac/mpc85xx_edac.h
-+++ b/drivers/edac/mpc85xx_edac.h
-@@ -43,6 +43,7 @@
- #define MPC85XX_MC_ERR_INT_EN		0x0e48
- #define MPC85XX_MC_CAPTURE_ATRIBUTES	0x0e4c
- #define MPC85XX_MC_CAPTURE_ADDRESS	0x0e50
-+#define MPC85XX_MC_CAPTURE_EXT_ADDRESS	0x0e54
- #define MPC85XX_MC_ERR_SBE		0x0e58
- 
- #define DSC_MEM_EN	0x80000000
++no_page:
+ 	local_irq_restore(flags);
+ 	return page;
+ }
 -- 
-2.1.0.27.g96db324
+2.1.4
