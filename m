@@ -1,33 +1,21 @@
-Return-Path: <alistair.popple@au1.ibm.com>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bon0146.outbound.protection.outlook.com [157.56.111.146])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AA4221A0E1D
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 May 2015 13:17:56 +1000 (AEST)
-Received: from /spool/local
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <alistair.popple@au1.ibm.com>;
- Thu, 7 May 2015 13:17:55 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id DA69A2CE8052
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 May 2015 13:17:52 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t473HiXB18678004
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 May 2015 13:17:52 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t473HJgO021929
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 May 2015 13:17:20 +1000
-From: Alistair Popple <alistair@popple.id.au>
-To: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
-Subject: [PATCH v3 8/8] opal: Remove events notifier
-Date: Thu,  7 May 2015 13:16:18 +1000
-Message-Id: <1430968578-23527-8-git-send-email-alistair@popple.id.au>
-In-Reply-To: <1430968578-23527-1-git-send-email-alistair@popple.id.au>
-References: <1430968578-23527-1-git-send-email-alistair@popple.id.au>
-Cc: Alistair Popple <alistair@popple.id.au>, linux-kernel@vger.kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6FB521A1D4E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 May 2015 13:22:45 +1000 (AEST)
+Message-ID: <1430968950.16357.369.camel@freescale.com>
+Subject: Re: [PATCH 1/1] powerpc: mpc85xx: Add board support for ucp1020
+From: Scott Wood <scottwood@freescale.com>
+To: Oleksandr G Zhadan <oleks@arcturusnetworks.com>
+Date: Wed, 6 May 2015 22:22:30 -0500
+In-Reply-To: <1430841121-1997-1-git-send-email-oleks@arcturusnetworks.com>
+References: <1430841121-1997-1-git-send-email-oleks@arcturusnetworks.com>
+Content-Type: text/plain; charset="UTF-8"
+MIME-Version: 1.0
+Cc: Michael Durrant <mdurrant@arcturusnetworks.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,184 +25,281 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-All users of the old opal events notifier have been converted over to
-the irq domain so remove the event notifier functions.
+On Tue, 2015-05-05 at 11:52 -0400, Oleksandr G Zhadan wrote:
+> New QorIQ p1020 based board support from Arcturus Networks Inc.
+> http://www.arcturusnetworks.com/products/ucp1020/
+> 
+> Signed-off-by: Michael Durrant <mdurrant@arcturusnetworks.com>
+> Signed-off-by: Oleksandr G Zhadan <oleks@arcturusnetworks.com>
+> ---
+>  Documentation/devicetree/bindings/pci/fsl,pci.txt  |    2 +-
+>  .../devicetree/bindings/powerpc/arcturus/board.txt |  149 ++
+>  .../devicetree/bindings/powerpc/arcturus/ecm.txt   |   64 +
+>  Documentation/devicetree/bindings/usb/fsl-usb.txt  |    2 +-
+>  .../devicetree/bindings/vendor-prefixes.txt        |    1 +
+>  arch/powerpc/boot/dts/fsl/ucp1020som-post.dtsi     |  179 ++
+>  arch/powerpc/boot/dts/fsl/ucp1020som-pre.dtsi      |   70 +
+>  arch/powerpc/boot/dts/ucp1020_32b.dts              |   88 +
+>  arch/powerpc/boot/dts/ucp1020_32b.dtsi             |  174 ++
+>  arch/powerpc/configs/ucp1020_defconfig             | 2731 ++++++++++++++++++++
+>  arch/powerpc/platforms/85xx/Kconfig                |    7 +
+>  arch/powerpc/platforms/85xx/Makefile               |    1 +
+>  arch/powerpc/platforms/85xx/ucp1020_som.c          |  100 +
+>  13 files changed, 3566 insertions(+), 2 deletions(-)
+>  create mode 100644 Documentation/devicetree/bindings/powerpc/arcturus/board.txt
+>  create mode 100644 Documentation/devicetree/bindings/powerpc/arcturus/ecm.txt
+>  create mode 100644 arch/powerpc/boot/dts/fsl/ucp1020som-post.dtsi
+>  create mode 100644 arch/powerpc/boot/dts/fsl/ucp1020som-pre.dtsi
+>  create mode 100644 arch/powerpc/boot/dts/ucp1020_32b.dts
+>  create mode 100644 arch/powerpc/boot/dts/ucp1020_32b.dtsi
+>  create mode 100644 arch/powerpc/configs/ucp1020_defconfig
+>  create mode 100644 arch/powerpc/platforms/85xx/ucp1020_som.c
+> 
+> diff --git a/Documentation/devicetree/bindings/pci/fsl,pci.txt b/Documentation/devicetree/bindings/pci/fsl,pci.txt
+> index d8ac4a7..298a5e6 100644
+> --- a/Documentation/devicetree/bindings/pci/fsl,pci.txt
+> +++ b/Documentation/devicetree/bindings/pci/fsl,pci.txt
+> @@ -20,7 +20,7 @@ Example:
+>  		#interrupt-cells = <1>;
+>  		#size-cells = <2>;
+>  		#address-cells = <3>;
+> -		compatible = "fsl,mpc8540-pcix", "fsl,mpc8540-pci";
+> +		compatible = "fsl,mpc8540-pcix", "fsl,mpc8540-pci", "fsl,mpc8548-pcie";
+>  		device_type = "pci";
+>  		...
+>  		...
+> diff --git a/Documentation/devicetree/bindings/powerpc/arcturus/board.txt b/Documentation/devicetree/bindings/powerpc/arcturus/board.txt
+> new file mode 100644
+> index 0000000..54e9765
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/powerpc/arcturus/board.txt
+> @@ -0,0 +1,149 @@
+> +UCP1020 module Tree Bindings
+> +----------------------------
+> +
+> +Copyright 2013-2015 Arcturus Networks, Inc.
+> +
+> +QorIQ p1020 based board
+> +http://www.arcturusnetworks.com/products/ucp1020/
+> +-------------------------------------------------
+> +
+> +Root Module
+> +
+> +Properties:
+> +- model:		"arcturus,uCP1020"
+> +- compatible:		"arcturus,uCP1020"
+> +- SN:			"1234567890-1234"
+> +
+> +/ {
+> +	model = "arcturus,uCP1020";
+> +	compatible = "arcturus,uCP1020", "fsl,P1020";
+> +	SN = "1234567890-1234";
+> +	...
+> +  }
 
-Signed-off-by: Alistair Popple <alistair@popple.id.au>
----
- arch/powerpc/platforms/powernv/opal-irqchip.c | 16 ++---
- arch/powerpc/platforms/powernv/opal.c         | 84 +--------------------------
- arch/powerpc/platforms/powernv/powernv.h      |  1 -
- arch/powerpc/platforms/powernv/setup.c        |  2 +-
- 4 files changed, 8 insertions(+), 95 deletions(-)
+Drop the "fsl,P1020" compatible.  Top-level compatible strings describe
+the whole board.
 
-diff --git a/arch/powerpc/platforms/powernv/opal-irqchip.c b/arch/powerpc/platforms/powernv/opal-irqchip.c
-index 4b6f951..8c17d81 100644
---- a/arch/powerpc/platforms/powernv/opal-irqchip.c
-+++ b/arch/powerpc/platforms/powernv/opal-irqchip.c
-@@ -100,21 +100,17 @@ void opal_handle_events(uint64_t events)
- {
- 	int virq, hwirq = 0;
- 	u64 mask = opal_event_irqchip.mask;
--	u64 notifier_mask = 0;
- 
--	while (events) {
-+	while (events & mask) {
- 		hwirq = fls64(events) - 1;
--		virq = irq_find_mapping(opal_event_irqchip.domain,
--					hwirq);
--		if (virq) {
--			if (BIT_ULL(hwirq) & mask)
-+		if (BIT_ULL(hwirq) & mask) {
-+			virq = irq_find_mapping(opal_event_irqchip.domain,
-+						hwirq);
-+			if (virq)
- 				generic_handle_irq(virq);
--		} else
--			notifier_mask |= BIT_ULL(hwirq);
-+		}
- 		events &= ~BIT_ULL(hwirq);
- 	}
--
--	opal_do_notifier(notifier_mask);
- }
- 
- static irqreturn_t opal_interrupt(int irq, void *data)
-diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
-index 0196220..a5e48cd 100644
---- a/arch/powerpc/platforms/powernv/opal.c
-+++ b/arch/powerpc/platforms/powernv/opal.c
-@@ -53,11 +53,7 @@ static int mc_recoverable_range_len;
- 
- struct device_node *opal_node;
- static DEFINE_SPINLOCK(opal_write_lock);
--static ATOMIC_NOTIFIER_HEAD(opal_notifier_head);
- static struct atomic_notifier_head opal_msg_notifier_head[OPAL_MSG_TYPE_MAX];
--static DEFINE_SPINLOCK(opal_notifier_lock);
--static uint64_t last_notified_mask = 0x0ul;
--static atomic_t opal_notifier_hold = ATOMIC_INIT(0);
- static uint32_t opal_heartbeat;
- 
- static void opal_reinit_cores(void)
-@@ -223,82 +219,6 @@ static int __init opal_register_exception_handlers(void)
- }
- machine_early_initcall(powernv, opal_register_exception_handlers);
- 
--int opal_notifier_register(struct notifier_block *nb)
--{
--	if (!nb) {
--		pr_warning("%s: Invalid argument (%p)\n",
--			   __func__, nb);
--		return -EINVAL;
--	}
--
--	atomic_notifier_chain_register(&opal_notifier_head, nb);
--	return 0;
--}
--EXPORT_SYMBOL_GPL(opal_notifier_register);
--
--int opal_notifier_unregister(struct notifier_block *nb)
--{
--	if (!nb) {
--		pr_warning("%s: Invalid argument (%p)\n",
--			   __func__, nb);
--		return -EINVAL;
--	}
--
--	atomic_notifier_chain_unregister(&opal_notifier_head, nb);
--	return 0;
--}
--EXPORT_SYMBOL_GPL(opal_notifier_unregister);
--
--void opal_do_notifier(uint64_t events)
--{
--	unsigned long flags;
--	uint64_t changed_mask;
--
--	if (atomic_read(&opal_notifier_hold))
--		return;
--
--	spin_lock_irqsave(&opal_notifier_lock, flags);
--	changed_mask = last_notified_mask ^ events;
--	last_notified_mask = events;
--	spin_unlock_irqrestore(&opal_notifier_lock, flags);
--
--	/*
--	 * We feed with the event bits and changed bits for
--	 * enough information to the callback.
--	 */
--	atomic_notifier_call_chain(&opal_notifier_head,
--				   events, (void *)changed_mask);
--}
--
--void opal_notifier_update_evt(uint64_t evt_mask,
--			      uint64_t evt_val)
--{
--	unsigned long flags;
--
--	spin_lock_irqsave(&opal_notifier_lock, flags);
--	last_notified_mask &= ~evt_mask;
--	last_notified_mask |= evt_val;
--	spin_unlock_irqrestore(&opal_notifier_lock, flags);
--}
--
--void opal_notifier_enable(void)
--{
--	int64_t rc;
--	__be64 evt = 0;
--
--	atomic_set(&opal_notifier_hold, 0);
--
--	/* Process pending events */
--	rc = opal_poll_events(&evt);
--	if (rc == OPAL_SUCCESS && evt)
--		opal_do_notifier(be64_to_cpu(evt));
--}
--
--void opal_notifier_disable(void)
--{
--	atomic_set(&opal_notifier_hold, 1);
--}
--
- /*
-  * Opal message notifier based on message type. Allow subscribers to get
-  * notified for specific messgae type.
-@@ -571,10 +491,8 @@ int opal_handle_hmi_exception(struct pt_regs *regs)
- 
- 	local_paca->hmi_event_available = 0;
- 	rc = opal_poll_events(&evt);
--	if (rc == OPAL_SUCCESS && evt) {
--		opal_do_notifier(be64_to_cpu(evt));
-+	if (rc == OPAL_SUCCESS && evt)
- 		opal_handle_events(be64_to_cpu(evt));
--	}
- 
- 	return 1;
- }
-diff --git a/arch/powerpc/platforms/powernv/powernv.h b/arch/powerpc/platforms/powernv/powernv.h
-index 221d4c8..f907f0a 100644
---- a/arch/powerpc/platforms/powernv/powernv.h
-+++ b/arch/powerpc/platforms/powernv/powernv.h
-@@ -35,7 +35,6 @@ extern u32 pnv_get_supported_cpuidle_states(void);
- 
- extern void pnv_lpc_init(void);
- 
--extern void opal_do_notifier(uint64_t events);
- extern void opal_handle_events(uint64_t events);
- extern void opal_event_shutdown(void);
- 
-diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
-index 16fdcb2..399f1d7 100644
---- a/arch/powerpc/platforms/powernv/setup.c
-+++ b/arch/powerpc/platforms/powernv/setup.c
-@@ -111,7 +111,7 @@ static void pnv_prepare_going_down(void)
- 	 * Disable all notifiers from OPAL, we can't
- 	 * service interrupts anymore anyway
- 	 */
--	opal_notifier_disable();
-+	opal_event_shutdown();
- 
- 	/* Soft disable interrupts */
- 	local_irq_disable();
--- 
-1.8.3.2
+SN is a bad property name.  Call it something like "arcturus,serial#",
+and define what it actually means rather than just giving an example.
+
+> +-------------------------------------------------
+> +
+> +P1020 SPI controller
+> +
+> +Properties:
+> +- compatible:		"spansion,s25fl008k", "winbond,w25q80bl"
+> +
+> +Example:
+> +	spi@7000 {
+> +		flash@0 {
+> +			#address-cells = <1>;
+> +			#size-cells = <1>;
+> +			compatible = "spansion,s25fl008k", "winbond,w25q80bl";
+> +			reg = <0>;
+> +			spi-max-frequency = <40000000>; /* input clock */
+> +			...
+> +		};
+
+This isn't describing the controller, but rather a SPI chip attached to
+the controller.  This also doesn't seem like the right place for random
+SPI chips.
+
+If all you're specifying is the compatible, maybe create a
+spi/trivial-devices.txt similar to i2c/trivial-devices.txt?  Or
+something specific to SPI flash chips to describe the partition
+specification, though I generally recommend against describing
+partitions in the device tree -- especially if this is a developer board
+rather than something fixed-purpose where the partitioning is not going
+to change based on user requirements.
+
+
+> +-------------------------------------------------
+> +
+> +Chipselect/Local Bus
+> +
+> +Properties:
+> +- #address-cells:	<2>.
+> +- #size-cells:		<1>.
+> +- compatible:		"fsl,p1020-elbc", "fsl,elbc", "simple-bus","fsl,p1020-immr"
+> +- interrupts:		interrupts to report localbus events.
+> +
+> +Example:
+> +
+> +&lbc {
+> +	#address-cells = <2>;
+> +	#size-cells = <1>;
+> +	compatible = "fsl,p1020-elbc", "fsl,elbc", "simple-bus";
+> +	interrupts = <19 2 0 0>;
+> +};
+
+There's already a binding for elbc -- and the elbc node certainly should
+not claim compatibility with "fsl,p1020-immr".
+
+
+> +-------------------------------------------------
+> +
+> +Freescale L2 Cache Controller
+> +
+> +L2 cache is present in Freescale's QorIQ and QorIQ Qonverge platforms.
+> +The cache bindings explained below are ePAPR compliant
+> +
+> +Properties:
+> +
+> +- compatible	: Should include "fsl,chip-l2-cache-controller" and "cache"
+> +		  where chip is the processor (bsc9132, npc8572 etc.)
+> +- reg		: Address and size of L2 cache controller registers
+> +- cache-size	: Size of the entire L2 cache
+> +- interrupts	: Error interrupt of L2 controller
+> +- cache-line-size : Size of L2 cache lines
+> +
+> +Example:
+> +
+> +	L2: l2-cache-controller@20000 {
+> +		compatible = "fsl,p1020-l2-cache-controller", "cache";
+> +		reg = <0x20000 0x1000>;
+> +		cache-line-size = <32>; // 32 bytes
+> +		cache-size = <0x40000>; // L2,256K
+> +		interrupts = <16 2 1 0>;
+> +	};
+
+This is copied and pasted from the existing binding.  Ignore
+checkpatch's inability to understand that "fsl,chip-l2-cache-controller"
+includes "fsl,p1020-l2-cache-controller".
+
+Likewise for the other bindings.  If you're going to have a binding
+document for your board, it should only talk about things that are
+specific to your board.
+
+> diff --git a/Documentation/devicetree/bindings/usb/fsl-usb.txt b/Documentation/devicetree/bindings/usb/fsl-usb.txt
+> index 4779c02..a2663ad 100644
+> --- a/Documentation/devicetree/bindings/usb/fsl-usb.txt
+> +++ b/Documentation/devicetree/bindings/usb/fsl-usb.txt
+> @@ -57,7 +57,7 @@ Example multi port host USB controller device node :
+>  
+>  Example dual role USB controller device node :
+>  	usb@23000 {
+> -		compatible = "fsl-usb2-dr";
+> +		compatible = "fsl-usb2-dr", "fsl-usb2-dr-v1.6";
+>  		reg = <23000 1000>;
+>  		#address-cells = <1>;
+>  		#size-cells = <0>;
+
+More specific compatibles come first.
+
+> diff --git a/arch/powerpc/boot/dts/fsl/ucp1020som-post.dtsi b/arch/powerpc/boot/dts/fsl/ucp1020som-post.dtsi
+> new file mode 100644
+> index 0000000..930a6e3
+> --- /dev/null
+> +++ b/arch/powerpc/boot/dts/fsl/ucp1020som-post.dtsi
+
+Why can't you use p1020si-post.dtsi?  The "si" means "silicon" -- it's
+meant to be included by all p1020 boards.
+
+> diff --git a/arch/powerpc/boot/dts/ucp1020_32b.dts b/arch/powerpc/boot/dts/ucp1020_32b.dts
+> new file mode 100644
+> index 0000000..4a8358c
+> --- /dev/null
+> +++ b/arch/powerpc/boot/dts/ucp1020_32b.dts
+> @@ -0,0 +1,88 @@
+> +/*
+> + * uCP1020 Tree Source (32-bit address map)
+
+Do you plan on supporting both 32 and 36 bits?  If not, leave off the
+"_32b".
+
+> diff --git a/arch/powerpc/configs/ucp1020_defconfig b/arch/powerpc/configs/ucp1020_defconfig
+> new file mode 100644
+> index 0000000..62f99aa
+> --- /dev/null
+> +++ b/arch/powerpc/configs/ucp1020_defconfig
+
+Please explain why your board needs its own defconfig.
+
+Plus, all defconfigs need to be run through savedefconfig to trim
+everything that doesn't change a default.
+
+> diff --git a/arch/powerpc/platforms/85xx/ucp1020_som.c b/arch/powerpc/platforms/85xx/ucp1020_som.c
+> new file mode 100644
+> index 0000000..aa98d31
+> --- /dev/null
+> +++ b/arch/powerpc/platforms/85xx/ucp1020_som.c
+> @@ -0,0 +1,100 @@
+> +/*
+> + * Arcturus Networks Inc. uCP1020 system on module Setup
+> + *
+> + * Copyright 2014-2015 Arcturus Networks Inc.
+> + *
+> + * by Oleksandr G Zhadan & Michael Durrant (www.ArcturusNetworks.com)
+> + *
+> + * This program is free software; you can redistribute  it and/or modify it
+> + * under  the terms of  the GNU General  Public License as published by the
+> + * Free Software Foundation;  either version 2 of the  License, or (at your
+> + * option) any later version.
+> + */
+> +
+> +#include <linux/stddef.h>
+> +#include <linux/kernel.h>
+> +#include <linux/pci.h>
+> +#include <linux/kdev_t.h>
+> +#include <linux/delay.h>
+> +#include <linux/seq_file.h>
+> +#include <linux/interrupt.h>
+> +#include <linux/of_platform.h>
+> +
+> +#include <asm/time.h>
+> +#include <asm/machdep.h>
+> +#include <asm/pci-bridge.h>
+> +#include <mm/mmu_decl.h>
+> +#include <asm/prom.h>
+> +#include <asm/udbg.h>
+> +#include <asm/mpic.h>
+> +#include <asm/fsl_guts.h>
+> +
+> +#include <sysdev/fsl_soc.h>
+> +#include <sysdev/fsl_pci.h>
+> +#include "smp.h"
+> +
+> +#include "mpc85xx.h"
+
+You don't need all of these headers.
+
+> +
+> +void __init ucp1020_som_pic_init(void)
+> +{
+> +	struct mpic *mpic;
+> +	unsigned long root = of_get_flat_dt_root();
+> +
+> +	if (of_flat_dt_is_compatible(root, "fsl,MPC85XXRDB-CAMP")) {
+> +		mpic = mpic_alloc(NULL, 0, MPIC_NO_RESET |
+> +				  MPIC_BIG_ENDIAN |
+> +				  MPIC_SINGLE_DEST_CPU, 0, 256, " OpenPIC  ");
+> +	} else {
+> +		mpic = mpic_alloc(NULL, 0,
+> +				  MPIC_BIG_ENDIAN |
+> +				  MPIC_SINGLE_DEST_CPU, 0, 256, " OpenPIC  ");
+> +	}
+
+Why do you have fsl,MPC85XXRDB-CAMP in here?
+
+-Scott
