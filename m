@@ -1,31 +1,30 @@
 Return-Path: <alistair.popple@au1.ibm.com>
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6DE8F1A0033
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 May 2015 13:17:32 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 27DEA1A104F
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 May 2015 13:17:53 +1000 (AEST)
 Received: from /spool/local
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <alistair.popple@au1.ibm.com>;
- Thu, 7 May 2015 13:17:31 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 3A2BF3578048
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 May 2015 13:17:29 +1000 (EST)
+ Thu, 7 May 2015 13:17:53 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 089492BB0052
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 May 2015 13:17:52 +1000 (EST)
 Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t473HLPd44499148
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 May 2015 13:17:29 +1000
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t473HhTF23724106
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 May 2015 13:17:51 +1000
 Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
  by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t473Guj2021114
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 May 2015 13:16:56 +1000
+ t473HJDN021921
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 May 2015 13:17:19 +1000
 From: Alistair Popple <alistair@popple.id.au>
 To: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
-Subject: [PATCH v3 5/8] powernv/opal: Convert opal message events to opal irq
- domain
-Date: Thu,  7 May 2015 13:16:15 +1000
-Message-Id: <1430968578-23527-5-git-send-email-alistair@popple.id.au>
+Subject: [PATCH v3 7/8] powernv/opal-dump: Convert to irq domain
+Date: Thu,  7 May 2015 13:16:17 +1000
+Message-Id: <1430968578-23527-7-git-send-email-alistair@popple.id.au>
 In-Reply-To: <1430968578-23527-1-git-send-email-alistair@popple.id.au>
 References: <1430968578-23527-1-git-send-email-alistair@popple.id.au>
 Cc: Alistair Popple <alistair@popple.id.au>, linux-kernel@vger.kernel.org
@@ -38,66 +37,113 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch converts the opal message event to use the new opal irq
-domain.
+Convert the opal dump driver to the new opal irq domain.
 
 Signed-off-by: Alistair Popple <alistair@popple.id.au>
 ---
- arch/powerpc/platforms/powernv/opal.c | 29 +++++++++++++++--------------
- 1 file changed, 15 insertions(+), 14 deletions(-)
+ arch/powerpc/platforms/powernv/opal-dump.c | 56 +++++++++---------------------
+ 1 file changed, 17 insertions(+), 39 deletions(-)
 
-diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
-index 4399ff2..0196220 100644
---- a/arch/powerpc/platforms/powernv/opal.c
-+++ b/arch/powerpc/platforms/powernv/opal.c
-@@ -362,33 +362,34 @@ static void opal_handle_message(void)
- 	opal_message_do_notify(type, (void *)&msg);
+diff --git a/arch/powerpc/platforms/powernv/opal-dump.c b/arch/powerpc/platforms/powernv/opal-dump.c
+index 5aa9c1c..2ee9643 100644
+--- a/arch/powerpc/platforms/powernv/opal-dump.c
++++ b/arch/powerpc/platforms/powernv/opal-dump.c
+@@ -15,6 +15,7 @@
+ #include <linux/vmalloc.h>
+ #include <linux/pagemap.h>
+ #include <linux/delay.h>
++#include <linux/interrupt.h>
+ 
+ #include <asm/opal.h>
+ 
+@@ -60,7 +61,7 @@ static ssize_t dump_type_show(struct dump_obj *dump_obj,
+ 			      struct dump_attribute *attr,
+ 			      char *buf)
+ {
+-	
++
+ 	return sprintf(buf, "0x%x %s\n", dump_obj->type,
+ 		       dump_type_to_string(dump_obj->type));
+ }
+@@ -363,7 +364,7 @@ static struct dump_obj *create_dump_obj(uint32_t id, size_t size,
+ 	return dump;
  }
  
--static int opal_message_notify(struct notifier_block *nb,
--			  unsigned long events, void *change)
-+static irqreturn_t opal_message_notify(int irq, void *data)
+-static int process_dump(void)
++static irqreturn_t process_dump(int irq, void *data)
  {
--	if (events & OPAL_EVENT_MSG_PENDING)
--		opal_handle_message();
+ 	int rc;
+ 	uint32_t dump_id, dump_size, dump_type;
+@@ -387,45 +388,13 @@ static int process_dump(void)
+ 	if (!dump)
+ 		return -1;
+ 
 -	return 0;
-+	opal_handle_message();
+-}
+-
+-static void dump_work_fn(struct work_struct *work)
+-{
+-	process_dump();
 +	return IRQ_HANDLED;
  }
  
--static struct notifier_block opal_message_nb = {
--	.notifier_call	= opal_message_notify,
--	.next		= NULL,
--	.priority	= 0,
+-static DECLARE_WORK(dump_work, dump_work_fn);
+-
+-static void schedule_process_dump(void)
+-{
+-	schedule_work(&dump_work);
+-}
+-
+-/*
+- * New dump available notification
+- *
+- * Once we get notification, we add sysfs entries for it.
+- * We only fetch the dump on demand, and create sysfs asynchronously.
+- */
+-static int dump_event(struct notifier_block *nb,
+-		      unsigned long events, void *change)
+-{
+-	if (events & OPAL_EVENT_DUMP_AVAIL)
+-		schedule_process_dump();
+-
+-	return 0;
+-}
+-
+-static struct notifier_block dump_nb = {
+-	.notifier_call  = dump_event,
+-	.next           = NULL,
+-	.priority       = 0
 -};
 -
- static int __init opal_message_init(void)
+ void __init opal_platform_dump_init(void)
  {
--	int ret, i;
-+	int ret, i, irq;
+ 	int rc;
++	int dump_irq;
  
- 	for (i = 0; i < OPAL_MSG_TYPE_MAX; i++)
- 		ATOMIC_INIT_NOTIFIER_HEAD(&opal_msg_notifier_head[i]);
+ 	/* ELOG not supported by firmware */
+ 	if (!opal_check_token(OPAL_DUMP_READ))
+@@ -445,10 +414,19 @@ void __init opal_platform_dump_init(void)
+ 		return;
+ 	}
  
--	ret = opal_notifier_register(&opal_message_nb);
-+	irq = opal_event_request(ilog2(OPAL_EVENT_MSG_PENDING));
-+	if (!irq) {
+-	rc = opal_notifier_register(&dump_nb);
++	dump_irq = opal_event_request(ilog2(OPAL_EVENT_DUMP_AVAIL));
++	if (!dump_irq) {
 +		pr_err("%s: Can't register OPAL event irq (%d)\n",
-+		       __func__, irq);
-+		return irq;
++		       __func__, dump_irq);
++		return;
 +	}
 +
-+	ret = request_irq(irq, opal_message_notify,
-+			IRQ_TYPE_LEVEL_HIGH, "opal-msg", NULL);
- 	if (ret) {
--		pr_err("%s: Can't register OPAL event notifier (%d)\n",
++	rc = request_threaded_irq(dump_irq, NULL, process_dump,
++				IRQF_TRIGGER_HIGH | IRQF_ONESHOT,
++				"opal-dump", NULL);
+ 	if (rc) {
+-		pr_warn("%s: Can't register OPAL event notifier (%d)\n",
+-			__func__, rc);
 +		pr_err("%s: Can't request OPAL event irq (%d)\n",
- 		       __func__, ret);
- 		return ret;
++		       __func__, rc);
+ 		return;
  	}
-+
- 	return 0;
- }
- machine_early_initcall(powernv, opal_message_init);
+ 
 -- 
 1.8.3.2
