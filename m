@@ -1,26 +1,45 @@
-Return-Path: <sudeep.holla@arm.com>
-Received: from foss.arm.com (foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 2E18E1A058C
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 May 2015 19:56:51 +1000 (AEST)
-Message-ID: <554B36DD.5080807@arm.com>
-Date: Thu, 07 May 2015 10:56:45 +0100
-From: Sudeep Holla <sudeep.holla@arm.com>
+Return-Path: <shilpa.bhat@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9D6F31A058C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 May 2015 20:35:48 +1000 (AEST)
+Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id E8DBC140079
+ for <linuxppc-dev@ozlabs.org>; Thu,  7 May 2015 20:35:46 +1000 (AEST)
+Received: from /spool/local
+ by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <shilpa.bhat@linux.vnet.ibm.com>;
+ Thu, 7 May 2015 16:05:43 +0530
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id A1489125804B
+ for <linuxppc-dev@ozlabs.org>; Thu,  7 May 2015 16:07:48 +0530 (IST)
+Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
+ by d28relay01.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t47AZeus17301666
+ for <linuxppc-dev@ozlabs.org>; Thu, 7 May 2015 16:05:40 +0530
+Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
+ by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t47AZdVc021008
+ for <linuxppc-dev@ozlabs.org>; Thu, 7 May 2015 16:05:39 +0530
+Message-ID: <554B3FE9.7050908@linux.vnet.ibm.com>
+Date: Thu, 07 May 2015 16:05:21 +0530
+From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Subject: Re: [PATCH] cpuidle: Handle tick_broadcast_enter() failure gracefully
-References: <20150507052600.20882.39542.stgit@preeti.in.ibm.com>
-In-Reply-To: <20150507052600.20882.39542.stgit@preeti.in.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Cc: "rlippert@google.com" <rlippert@google.com>,
- "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>,
- "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
- "peterz@infradead.org" <peterz@infradead.org>,
- "linus.walleij@linaro.org" <linus.walleij@linaro.org>,
- "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "mingo@redhat.com" <mingo@redhat.com>, Sudeep Holla <sudeep.holla@arm.com>,
- "tglx@linutronix.de" <tglx@linutronix.de>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+To: Preeti U Murthy <preeti@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org,
+ linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v3 1/6] cpufreq: poowernv: Handle throttling due to Pmax
+ capping at chip level
+References: <1430729652-14813-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ <1430729652-14813-2-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ <55483E4B.4080405@linux.vnet.ibm.com> <55485DE9.4070609@linux.vnet.ibm.com>
+ <55488188.9070908@linux.vnet.ibm.com>
+In-Reply-To: <55488188.9070908@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8
+Cc: viresh.kumar@linaro.org, rjw@rjwysocki.net, linux-pm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,28 +49,143 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Preeti,
 
-On 07/05/15 06:26, Preeti U Murthy wrote:
-> When a CPU has to enter an idle state where tick stops, it makes a call
-> to tick_broadcast_enter(). The call will fail if this CPU is the
-> broadcast CPU. Today, under such a circumstance, the arch cpuidle code
-> handles this CPU.  This is not convincing because not only are we not
-> aware what the arch cpuidle code does, but we also do not account for
-> the idle state residency time and usage of such a CPU.
->
-> This scenario can be handled better by simply asking the cpuidle
-> governor to choose an idle state where in ticks do not stop. To
-> accommodate this change move the setting of runqueue idle state from the
-> core to the cpuidle driver, else the rq->idle_state will be set wrong.
->
-> Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-> ---
-> Based on linux-pm/bleeding-edge
 
-I am unable to apply this patch cleanly on linux-pm/bleeding-edge
-I think it conflicts with few patches that Rafael posted recently
-which are in the branch now.
+On 05/05/2015 02:08 PM, Preeti U Murthy wrote:
+> On 05/05/2015 11:36 AM, Shilpasri G Bhat wrote:
+>> Hi Preeti,
+>>
+>> On 05/05/2015 09:21 AM, Preeti U Murthy wrote:
+>>> Hi Shilpa,
+>>>
+>>> On 05/04/2015 02:24 PM, Shilpasri G Bhat wrote:
+>>>> The On-Chip-Controller(OCC) can throttle cpu frequency by reducing the
+>>>> max allowed frequency for that chip if the chip exceeds its power or
+>>>> temperature limits. As Pmax capping is a chip level condition report
+>>>> this throttling behavior at chip level and also do not set the global
+>>>> 'throttled' on Pmax capping instead set the per-chip throttled
+>>>> variable. Report unthrottling if Pmax is restored after throttling.
+>>>>
+>>>> This patch adds a structure to store chip id and throttled state of
+>>>> the chip.
+>>>>
+>>>> Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+>>>> ---
+>>>>  drivers/cpufreq/powernv-cpufreq.c | 59 ++++++++++++++++++++++++++++++++++++---
+>>>>  1 file changed, 55 insertions(+), 4 deletions(-)
+>>>>
+>>>> diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
+>>>> index ebef0d8..d0c18c9 100644
+>>>> --- a/drivers/cpufreq/powernv-cpufreq.c
+>>>> +++ b/drivers/cpufreq/powernv-cpufreq.c
+>>>> @@ -27,6 +27,7 @@
+>>>>  #include <linux/smp.h>
+>>>>  #include <linux/of.h>
+>>>>  #include <linux/reboot.h>
+>>>> +#include <linux/slab.h>
+>>>>
+>>>>  #include <asm/cputhreads.h>
+>>>>  #include <asm/firmware.h>
+>>>> @@ -42,6 +43,13 @@
+>>>>  static struct cpufreq_frequency_table powernv_freqs[POWERNV_MAX_PSTATES+1];
+>>>>  static bool rebooting, throttled;
+>>>>
+>>>> +static struct chip {
+>>>> +	unsigned int id;
+>>>> +	bool throttled;
+>>>> +} *chips;
+>>>> +
+>>>> +static int nr_chips;
+>>>> +
+>>>>  /*
+>>>>   * Note: The set of pstates consists of contiguous integers, the
+>>>>   * smallest of which is indicated by powernv_pstate_info.min, the
+>>>> @@ -301,22 +309,33 @@ static inline unsigned int get_nominal_index(void)
+>>>>  static void powernv_cpufreq_throttle_check(unsigned int cpu)
+>>>>  {
+>>>>  	unsigned long pmsr;
+>>>> -	int pmsr_pmax, pmsr_lp;
+>>>> +	int pmsr_pmax, pmsr_lp, i;
+>>>>
+>>>>  	pmsr = get_pmspr(SPRN_PMSR);
+>>>>
+>>>> +	for (i = 0; i < nr_chips; i++)
+>>>> +		if (chips[i].id == cpu_to_chip_id(cpu))
+>>>> +			break;
+>>>> +
+>>>>  	/* Check for Pmax Capping */
+>>>>  	pmsr_pmax = (s8)PMSR_MAX(pmsr);
+>>>>  	if (pmsr_pmax != powernv_pstate_info.max) {
+>>>> -		throttled = true;
+>>>> -		pr_info("CPU %d Pmax is reduced to %d\n", cpu, pmsr_pmax);
+>>>> -		pr_info("Max allowed Pstate is capped\n");
+>>>> +		if (chips[i].throttled)
+>>>> +			goto next;
+>>>> +		chips[i].throttled = true;
+>>>> +		pr_info("CPU %d on Chip %u has Pmax reduced to %d\n", cpu,
+>>>> +			chips[i].id, pmsr_pmax);
+>>>> +	} else if (chips[i].throttled) {
+>>>> +		chips[i].throttled = false;
+>>>
+>>> Is this check on pmax sufficient to indicate that the chip is unthrottled ?
+>>
+>> Unthrottling due to Pmax uncapping here is specific to a chip. So it is
+>> sufficient to decide throttling/unthrottling when OCC is active for that chip.
+> 
+> Ok then we can perhaps exit after detecting unthrottling here.
 
-Regards,
-Sudeep
+This won't work for older firmwares which do not clear "Frequency control
+enabled bit" on OCC reset cycle. So let us check for remaining two conditions on
+unthrottling as well.
+
+>>
+>>>
+>>>> +		pr_info("CPU %d on Chip %u has Pmax restored to %d\n", cpu,
+>>>> +			chips[i].id, pmsr_pmax);
+>>>>  	}
+>>>>
+>>>>  	/*
+>>>>  	 * Check for Psafe by reading LocalPstate
+>>>>  	 * or check if Psafe_mode_active is set in PMSR.
+>>>>  	 */
+>>>> +next:
+>>>>  	pmsr_lp = (s8)PMSR_LP(pmsr);
+>>>>  	if ((pmsr_lp < powernv_pstate_info.min) ||
+>>>>  				(pmsr & PMSR_PSAFE_ENABLE)) {
+>>>> @@ -414,6 +433,33 @@ static struct cpufreq_driver powernv_cpufreq_driver = {
+>>>>  	.attr		= powernv_cpu_freq_attr,
+>>>
+>>> What about the situation where although occ is active, this particular
+>>> chip has been throttled and we end up repeatedly reporting "pstate set
+>>> to safe" and "frequency control disabled from OS" ? Should we not have a
+>>> check on (chips[i].throttled) before reporting an anomaly for these two
+>>> scenarios as well just like you have for pmsr_pmax ?
+>>
+>> We will not have "Psafe" and "frequency control disabled" repeatedly printed
+>> because of global variable 'throttled', which is set to true on passing any of
+>> these two conditions.
+>>
+>> It is quite unlikely behavior to have only one chip in "Psafe" or "frequency
+>> control disabled" state. These two conditions are most likely to happen during
+>> an OCC reset cycle which will occur across all chips.
+> 
+> Let us then add a comment to indicate that Psafe and frequency control
+> disabled conditions will fail *only if OCC is inactive* and not
+> otherwise and that this is a system wide phenomenon.
+> 
+
+I agree that adding a comment here will clear global vs local throttling
+scenarios, but this will contradict the architectural design of OCC wherein it
+can independently go to "Psafe" and "frequency control disabled" state. It is
+the implementation in FSP today that has made the above two states global. My
+point is adding a comment here may be confusing if at all for the future
+firmwares this implementation is changed. Having said that the current patch set
+still seems fit for the newer implementation for the following reason:
+1) The aim here is to identify any sort of throttling and report it to the user
+with least flooding of error messages, which will happen even if OCC can
+independently reset and restore.
+2) On unthrottling verify throttling on the chips with the exception of Pmax
+capping is also taken care by this patch set.
+
+Thanks and Regards,
+Shilpa
