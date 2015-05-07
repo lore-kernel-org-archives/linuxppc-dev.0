@@ -1,20 +1,21 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0131.outbound.protection.outlook.com [157.56.111.131])
+Return-Path: <yangbo.lu@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0130.outbound.protection.outlook.com [65.55.169.130])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D49EF1A0276
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 May 2015 12:34:59 +1000 (AEST)
-Message-ID: <1430966084.16357.335.camel@freescale.com>
-Subject: Re: [PATCH] powerpc/dts: Add 1588 timer node for eTSEC
-From: Scott Wood <scottwood@freescale.com>
-To: Lu Yangbo-B47093 <yangbo.lu@freescale.com>
-Date: Wed, 6 May 2015 21:34:44 -0500
-In-Reply-To: <BY1PR0301MB119235AB83BDACB911B5B93AF2DF0@BY1PR0301MB1192.namprd03.prod.outlook.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 15D7C1A058C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 May 2015 12:50:01 +1000 (AEST)
+From: "yangbo.lu@freescale.com" <yangbo.lu@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: RE: [PATCH] powerpc/dts: Add 1588 timer node for eTSEC
+Date: Thu, 7 May 2015 02:49:52 +0000
+Message-ID: <BY1PR0301MB1192B13C6F6E7A9376809454F2DF0@BY1PR0301MB1192.namprd03.prod.outlook.com>
 References: <1430905256-4930-1-git-send-email-yangbo.lu@freescale.com>
  <1430945040.16357.293.camel@freescale.com>
  <BY1PR0301MB119235AB83BDACB911B5B93AF2DF0@BY1PR0301MB1192.namprd03.prod.outlook.com>
-Content-Type: text/plain; charset="UTF-8"
+ <1430966084.16357.335.camel@freescale.com>
+In-Reply-To: <1430966084.16357.335.camel@freescale.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
 Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
  "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
@@ -27,67 +28,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2015-05-06 at 21:26 -0500, Lu Yangbo-B47093 wrote:
-> Thanks.
-> Pls see my comments below.
-> 
-> -----Original Message-----
-> From: Wood Scott-B07421 
-> Sent: Thursday, May 07, 2015 4:44 AM
-> To: Lu Yangbo-B47093
-> Cc: linuxppc-dev@lists.ozlabs.org; linux-kernel@vger.kernel.org
-> Subject: Re: [PATCH] powerpc/dts: Add 1588 timer node for eTSEC
-> 
-> On Wed, 2015-05-06 at 17:40 +0800, Yangbo Lu wrote:
-> > Add 1588 timer node in files:
-> > arch/powerpc/boot/dts/bsc9131rdb.dtsi
-> > arch/powerpc/boot/dts/bsc9132qds.dtsi
-> > arch/powerpc/boot/dts/p1010rdb.dtsi
-> > arch/powerpc/boot/dts/p1020rdb-pd.dts
-> > arch/powerpc/boot/dts/p1021rdb-pc.dtsi
-> > arch/powerpc/boot/dts/p1022ds.dtsi
-> > arch/powerpc/boot/dts/p1025twr.dtsi
-> > arch/powerpc/boot/dts/p2020rdb-pc.dtsi
-> > 
-> > Signed-off-by: Yangbo Lu <yangbo.lu@freescale.com>
-> > ---
-> >  arch/powerpc/boot/dts/bsc9131rdb.dtsi  | 12 ++++++++++++  
-> > arch/powerpc/boot/dts/bsc9132qds.dtsi  | 12 ++++++++++++
-> >  arch/powerpc/boot/dts/p1010rdb.dtsi    | 12 ++++++++++++
-> >  arch/powerpc/boot/dts/p1020rdb-pd.dts  | 12 ++++++++++++  
-> > arch/powerpc/boot/dts/p1021rdb-pc.dtsi | 12 ++++++++++++
-> >  arch/powerpc/boot/dts/p1022ds.dtsi     | 12 ++++++++++++
-> >  arch/powerpc/boot/dts/p1025twr.dtsi    | 12 ++++++++++++
-> >  arch/powerpc/boot/dts/p2020rdb-pc.dtsi | 15 +++++++++------
-> >  8 files changed, 93 insertions(+), 6 deletions(-)
-> > 
-> > diff --git a/arch/powerpc/boot/dts/bsc9131rdb.dtsi 
-> > b/arch/powerpc/boot/dts/bsc9131rdb.dtsi
-> > index 45efcba..629cc03 100644
-> > --- a/arch/powerpc/boot/dts/bsc9131rdb.dtsi
-> > +++ b/arch/powerpc/boot/dts/bsc9131rdb.dtsi
-> > @@ -80,6 +80,18 @@
-> >  		status = "disabled";
-> >  	};
-> >  
-> > +	ptp_clock@b0e00 {
-> > +		compatible = "fsl,etsec-ptp";
-> > +		reg = <0xb0e00 0xb0>;
-> > +		interrupts = <68 2 0 0 69 2 0 0>;
-> > +		fsl,tclk-period	= <5>;
-> > +		fsl,tmr-prsc	= <2>;
-> > +		fsl,tmr-add	= <0xcccccccd>;
-> > +		fsl,tmr-fiper1	= <0x3b9ac9fb>;
-> > +		fsl,tmr-fiper2	= <0x00018696>;
-> > +		fsl,max-adj	= <249999999>;
-> 
-> Please don't use hex for numbers that make more sense as decimal.
-> [Lu Yangbo-B47093] The hex value is register value, I think it's better to use hex.
-
-Whether it goes into a register doesn't matter.  Hex values are useful
-for values which are subdivided into various bitfields, or whose hex
-representation is simpler than decimal.  I'm not familiar with the
-details of this hardware, but I doubt the former is the case for
-0x3b9ac9fb == 9999999995 or 0x18696 == 99990.
-
--Scott
+DQoNCi0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQpGcm9tOiBXb29kIFNjb3R0LUIwNzQyMSAN
+ClNlbnQ6IFRodXJzZGF5LCBNYXkgMDcsIDIwMTUgMTA6MzUgQU0NClRvOiBMdSBZYW5nYm8tQjQ3
+MDkzDQpDYzogbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IGxpbnV4LWtlcm5lbEB2Z2Vy
+Lmtlcm5lbC5vcmcNClN1YmplY3Q6IFJlOiBbUEFUQ0hdIHBvd2VycGMvZHRzOiBBZGQgMTU4OCB0
+aW1lciBub2RlIGZvciBlVFNFQw0KDQpPbiBXZWQsIDIwMTUtMDUtMDYgYXQgMjE6MjYgLTA1MDAs
+IEx1IFlhbmdiby1CNDcwOTMgd3JvdGU6DQo+IFRoYW5rcy4NCj4gUGxzIHNlZSBteSBjb21tZW50
+cyBiZWxvdy4NCj4gDQo+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+IEZyb206IFdvb2Qg
+U2NvdHQtQjA3NDIxDQo+IFNlbnQ6IFRodXJzZGF5LCBNYXkgMDcsIDIwMTUgNDo0NCBBTQ0KPiBU
+bzogTHUgWWFuZ2JvLUI0NzA5Mw0KPiBDYzogbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7
+IGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmcNCj4gU3ViamVjdDogUmU6IFtQQVRDSF0gcG93
+ZXJwYy9kdHM6IEFkZCAxNTg4IHRpbWVyIG5vZGUgZm9yIGVUU0VDDQo+IA0KPiBPbiBXZWQsIDIw
+MTUtMDUtMDYgYXQgMTc6NDAgKzA4MDAsIFlhbmdibyBMdSB3cm90ZToNCj4gPiBBZGQgMTU4OCB0
+aW1lciBub2RlIGluIGZpbGVzOg0KPiA+IGFyY2gvcG93ZXJwYy9ib290L2R0cy9ic2M5MTMxcmRi
+LmR0c2kNCj4gPiBhcmNoL3Bvd2VycGMvYm9vdC9kdHMvYnNjOTEzMnFkcy5kdHNpDQo+ID4gYXJj
+aC9wb3dlcnBjL2Jvb3QvZHRzL3AxMDEwcmRiLmR0c2kNCj4gPiBhcmNoL3Bvd2VycGMvYm9vdC9k
+dHMvcDEwMjByZGItcGQuZHRzDQo+ID4gYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL3AxMDIxcmRiLXBj
+LmR0c2kNCj4gPiBhcmNoL3Bvd2VycGMvYm9vdC9kdHMvcDEwMjJkcy5kdHNpDQo+ID4gYXJjaC9w
+b3dlcnBjL2Jvb3QvZHRzL3AxMDI1dHdyLmR0c2kNCj4gPiBhcmNoL3Bvd2VycGMvYm9vdC9kdHMv
+cDIwMjByZGItcGMuZHRzaQ0KPiA+IA0KPiA+IFNpZ25lZC1vZmYtYnk6IFlhbmdibyBMdSA8eWFu
+Z2JvLmx1QGZyZWVzY2FsZS5jb20+DQo+ID4gLS0tDQo+ID4gIGFyY2gvcG93ZXJwYy9ib290L2R0
+cy9ic2M5MTMxcmRiLmR0c2kgIHwgMTIgKysrKysrKysrKysrIA0KPiA+IGFyY2gvcG93ZXJwYy9i
+b290L2R0cy9ic2M5MTMycWRzLmR0c2kgIHwgMTIgKysrKysrKysrKysrDQo+ID4gIGFyY2gvcG93
+ZXJwYy9ib290L2R0cy9wMTAxMHJkYi5kdHNpICAgIHwgMTIgKysrKysrKysrKysrDQo+ID4gIGFy
+Y2gvcG93ZXJwYy9ib290L2R0cy9wMTAyMHJkYi1wZC5kdHMgIHwgMTIgKysrKysrKysrKysrIA0K
+PiA+IGFyY2gvcG93ZXJwYy9ib290L2R0cy9wMTAyMXJkYi1wYy5kdHNpIHwgMTIgKysrKysrKysr
+KysrDQo+ID4gIGFyY2gvcG93ZXJwYy9ib290L2R0cy9wMTAyMmRzLmR0c2kgICAgIHwgMTIgKysr
+KysrKysrKysrDQo+ID4gIGFyY2gvcG93ZXJwYy9ib290L2R0cy9wMTAyNXR3ci5kdHNpICAgIHwg
+MTIgKysrKysrKysrKysrDQo+ID4gIGFyY2gvcG93ZXJwYy9ib290L2R0cy9wMjAyMHJkYi1wYy5k
+dHNpIHwgMTUgKysrKysrKysrLS0tLS0tDQo+ID4gIDggZmlsZXMgY2hhbmdlZCwgOTMgaW5zZXJ0
+aW9ucygrKSwgNiBkZWxldGlvbnMoLSkNCj4gPiANCj4gPiBkaWZmIC0tZ2l0IGEvYXJjaC9wb3dl
+cnBjL2Jvb3QvZHRzL2JzYzkxMzFyZGIuZHRzaQ0KPiA+IGIvYXJjaC9wb3dlcnBjL2Jvb3QvZHRz
+L2JzYzkxMzFyZGIuZHRzaQ0KPiA+IGluZGV4IDQ1ZWZjYmEuLjYyOWNjMDMgMTAwNjQ0DQo+ID4g
+LS0tIGEvYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL2JzYzkxMzFyZGIuZHRzaQ0KPiA+ICsrKyBiL2Fy
+Y2gvcG93ZXJwYy9ib290L2R0cy9ic2M5MTMxcmRiLmR0c2kNCj4gPiBAQCAtODAsNiArODAsMTgg
+QEANCj4gPiAgCQlzdGF0dXMgPSAiZGlzYWJsZWQiOw0KPiA+ICAJfTsNCj4gPiAgDQo+ID4gKwlw
+dHBfY2xvY2tAYjBlMDAgew0KPiA+ICsJCWNvbXBhdGlibGUgPSAiZnNsLGV0c2VjLXB0cCI7DQo+
+ID4gKwkJcmVnID0gPDB4YjBlMDAgMHhiMD47DQo+ID4gKwkJaW50ZXJydXB0cyA9IDw2OCAyIDAg
+MCA2OSAyIDAgMD47DQo+ID4gKwkJZnNsLHRjbGstcGVyaW9kCT0gPDU+Ow0KPiA+ICsJCWZzbCx0
+bXItcHJzYwk9IDwyPjsNCj4gPiArCQlmc2wsdG1yLWFkZAk9IDwweGNjY2NjY2NkPjsNCj4gPiAr
+CQlmc2wsdG1yLWZpcGVyMQk9IDwweDNiOWFjOWZiPjsNCj4gPiArCQlmc2wsdG1yLWZpcGVyMgk9
+IDwweDAwMDE4Njk2PjsNCj4gPiArCQlmc2wsbWF4LWFkagk9IDwyNDk5OTk5OTk+Ow0KPiANCj4g
+UGxlYXNlIGRvbid0IHVzZSBoZXggZm9yIG51bWJlcnMgdGhhdCBtYWtlIG1vcmUgc2Vuc2UgYXMg
+ZGVjaW1hbC4NCj4gW0x1IFlhbmdiby1CNDcwOTNdIFRoZSBoZXggdmFsdWUgaXMgcmVnaXN0ZXIg
+dmFsdWUsIEkgdGhpbmsgaXQncyBiZXR0ZXIgdG8gdXNlIGhleC4NCg0KV2hldGhlciBpdCBnb2Vz
+IGludG8gYSByZWdpc3RlciBkb2Vzbid0IG1hdHRlci4gIEhleCB2YWx1ZXMgYXJlIHVzZWZ1bCBm
+b3IgdmFsdWVzIHdoaWNoIGFyZSBzdWJkaXZpZGVkIGludG8gdmFyaW91cyBiaXRmaWVsZHMsIG9y
+IHdob3NlIGhleCByZXByZXNlbnRhdGlvbiBpcyBzaW1wbGVyIHRoYW4gZGVjaW1hbC4gIEknbSBu
+b3QgZmFtaWxpYXIgd2l0aCB0aGUgZGV0YWlscyBvZiB0aGlzIGhhcmR3YXJlLCBidXQgSSBkb3Vi
+dCB0aGUgZm9ybWVyIGlzIHRoZSBjYXNlIGZvciAweDNiOWFjOWZiID09IDk5OTk5OTk5OTUgb3Ig
+MHgxODY5NiA9PSA5OTk5MC4NCltMdSBZYW5nYm8tQjQ3MDkzXSBUaGFua3MgU2NvdHQuIEkgZ290
+IGl0LiBUaGUgaGV4IHZhbHVlIGhlcmUgaXMgbm90IGZvciB2YXJpb3VzIGJpdGZpZWxkcyBidXQg
+YSB2YWx1ZSBjYWxjdWxhdGVkIG1hbnVhbGx5LiBJIHdpbGwgbW9kaWZ5IHRvIGRlY2ltYWxpc20u
+DQoNCi1TY290dA0KDQoNCg==
