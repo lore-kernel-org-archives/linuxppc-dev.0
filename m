@@ -1,32 +1,30 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <ddstreet@gmail.com>
+Received: from mail-ig0-x22a.google.com (mail-ig0-x22a.google.com
+ [IPv6:2607:f8b0:4001:c05::22a])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 381291A058C
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 May 2015 00:21:49 +1000 (AEST)
-Received: from /spool/local
- by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Thu, 7 May 2015 19:51:46 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id B5CEEE0057
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 May 2015 19:54:37 +0530 (IST)
-Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t47ELiJj54788294
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 May 2015 19:51:44 +0530
-Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
- by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t47DlPqG013774
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 May 2015 19:17:25 +0530
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
-Subject: [RFC PATCH] powerpc/mm: Use a non-idle variant of kick_all_cpus_sync
-Date: Thu,  7 May 2015 19:51:37 +0530
-Message-Id: <1431008497-11089-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id ECE021A058C
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 May 2015 01:06:29 +1000 (AEST)
+Received: by igbpi8 with SMTP id pi8so13173010igb.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 May 2015 08:06:26 -0700 (PDT)
+MIME-Version: 1.0
+Sender: ddstreet@gmail.com
+In-Reply-To: <20150507031238.GC29395@gondor.apana.org.au>
+References: <1428428070-17803-1-git-send-email-ddstreet@ieee.org>
+ <1430931066-4536-1-git-send-email-ddstreet@ieee.org>
+ <1430931066-4536-11-git-send-email-ddstreet@ieee.org>
+ <20150507031238.GC29395@gondor.apana.org.au>
+From: Dan Streetman <ddstreet@ieee.org>
+Date: Thu, 7 May 2015 11:06:06 -0400
+Message-ID: <CALZtONBBoy=sM8Qt43-_k8BWTwSKA3FaJg9JMfJHzJ3wh5+kvQ@mail.gmail.com>
+Subject: Re: [PATCH 10/10] drivers/crypto/nx: add hardware 842 crypto comp alg
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Content-Type: text/plain; charset=UTF-8
+Cc: "David S. Miller" <davem@davemloft.net>,
+ linux-kernel <linux-kernel@vger.kernel.org>, Robert Jennings <rob@pochix.net>,
+ Paul Mackerras <paulus@samba.org>, linux-crypto@vger.kernel.org,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Seth Jennings <sjennings@variantweb.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -36,114 +34,53 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-What we really need is the ability to wait for other cpus to
-finish local_irq_save/local_irq_restore region. We don't need to send
-IPI to idle cpus in that case. Add a vairant of kick_all_cpus_sync
-to do that. If idle_cpu_mask change during the call, we should be
-ok because:
-1) new cpus got added. In this case when they enter the critical path
-   they would have seen the new values i modified before smp_wmb();
+On Wed, May 6, 2015 at 11:12 PM, Herbert Xu <herbert@gondor.apana.org.au> wrote:
+> On Wed, May 06, 2015 at 12:51:06PM -0400, Dan Streetman wrote:
+>> Add crypto compression alg for 842 hardware compression and decompression.
+>>
+>> This crypto compression alg is named "nx842" to indicate it uses hardware
+>> to perform the compression and decompression, while the software 842
+>> compression alg is named "sw842".  However, since before this split there
+>> was only one 842 compression alg named "842" which only used hardware,
+>> this is also aliased "842" for backwards compatibility.
+>
+> This should still be called 842.  You can set the driver name to
+> nx842 or 842-nx.
 
-2) cpus got removed: In this case we are ok, because we send stray IPI
-   to them
+ah, ok, will do.
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
----
-NOTE: 
-This need closer review, because I am new to the area of cpu mask.
+So, I'm wondering about the common NX 842 frontend driver, for the
+pSeries and PowerNV platform drivers.  The current setup is:
 
- arch/powerpc/mm/pgtable_64.c |  6 +++---
- include/linux/smp.h          |  9 +++++++++
- kernel/sched/fair.c          | 19 +++++++++++++++++++
- 3 files changed, 31 insertions(+), 3 deletions(-)
+[ crypto "842-nx" driver ]
+           v
+[ nx-842 main driver ]
+          v
+[ nx-842 pSeries driver | nx-842 PowerNV driver ]
 
-diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
-index 049d961802aa..e54b111f8737 100644
---- a/arch/powerpc/mm/pgtable_64.c
-+++ b/arch/powerpc/mm/pgtable_64.c
-@@ -590,7 +590,7 @@ pmd_t pmdp_collapse_flush(struct vm_area_struct *vma, unsigned long address,
- 	 * by sending an IPI to all the cpus and executing a dummy
- 	 * function there.
- 	 */
--	kick_all_cpus_sync();
-+	poke_nonidle_cpus_sync();
- 	/*
- 	 * Now invalidate the hpte entries in the range
- 	 * covered by pmd. This make sure we take a
-@@ -670,7 +670,7 @@ void pmdp_splitting_flush(struct vm_area_struct *vma,
- 	 * This ensures that generic code that rely on IRQ disabling
- 	 * to prevent a parallel THP split work as expected.
- 	 */
--	kick_all_cpus_sync();
-+	poke_nonidle_cpus_sync();
- }
- 
- /*
-@@ -855,7 +855,7 @@ pmd_t pmdp_get_and_clear(struct mm_struct *mm,
- 	 * different code paths. So make sure we wait for the parallel
- 	 * find_linux_pte_or_hugepage to finish.
- 	 */
--	kick_all_cpus_sync();
-+	poke_nonidle_cpus_sync();
- 	return old_pmd;
- }
- 
-diff --git a/include/linux/smp.h b/include/linux/smp.h
-index c4414074bd88..16d539b94c31 100644
---- a/include/linux/smp.h
-+++ b/include/linux/smp.h
-@@ -101,6 +101,14 @@ int smp_call_function_any(const struct cpumask *mask,
- 
- void kick_all_cpus_sync(void);
- void wake_up_all_idle_cpus(void);
-+#ifdef CONFIG_NO_HZ_COMMON
-+void poke_nonidle_cpus_sync(void);
-+#else
-+static inline void poke_nonidle_cpus_sync(void)
-+{
-+	return kick_all_cpus_sync();
-+}
-+#endif
- 
- /*
-  * Generic and arch helpers
-@@ -150,6 +158,7 @@ smp_call_function_any(const struct cpumask *mask, smp_call_func_t func,
- 
- static inline void kick_all_cpus_sync(void) {  }
- static inline void wake_up_all_idle_cpus(void) {  }
-+static inline void poke_nonidle_cpus_sync(void) {  }
- 
- #ifdef CONFIG_UP_LATE_INIT
- extern void __init up_late_init(void);
-diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index ffeaa4105e48..00abc6ae077b 100644
---- a/kernel/sched/fair.c
-+++ b/kernel/sched/fair.c
-@@ -7513,6 +7513,25 @@ static int sched_ilb_notifier(struct notifier_block *nfb,
- 		return NOTIFY_DONE;
- 	}
- }
-+
-+static void do_nothing(void *unused)
-+{
-+}
-+
-+void poke_nonidle_cpus_sync(void)
-+{
-+	struct cpumask mask;
-+
-+	/*
-+	 * Make sure the change is visible before we poke the cpus
-+	 */
-+	smp_mb();
-+	preempt_disable();
-+	cpumask_andnot(&mask, cpu_online_mask, nohz.idle_cpus_mask);
-+	smp_call_function_many(&mask, do_nothing, NULL, 1);
-+	preempt_enable();
-+}
-+EXPORT_SYMBOL_GPL(poke_nonidle_cpus_sync);
- #endif
- 
- static DEFINE_SPINLOCK(balancing);
--- 
-2.1.4
+The main reason for that is that the HW has specific constraints,
+specifically each input and output buffer passed to it for comp or
+decomp has to:
+-be located at a specific alignment
+-have a length of a specific multiple
+-have a length between a specific minimum and maximum
+
+The crypto 842-nx has (significant) code in it to handle any alignment
+and length input buffers, to match them to what the driver requires.
+Would it be better to move that into the crypto code, so that any
+crypto compression hw driver can request buffers be specifically
+aligned/sized?  I did have to use a header on each compressed buffer
+that needed re-alignment or re-sizing, so maybe it's not appropriate
+for common crypto compression code.
+
+Since there doesn't seem to be any other hw compression drivers (yet),
+maybe it should stay in the 842-nx code, at least for now.  Hopefully
+any future compression hw won't have alignment or length multiple
+restrictions...
+
+>
+> Cheers,
+> --
+> Email: Herbert Xu <herbert@gondor.apana.org.au>
+> Home Page: http://gondor.apana.org.au/~herbert/
+> PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
