@@ -1,46 +1,26 @@
-Return-Path: <preeti@linux.vnet.ibm.com>
-Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <ddstreet@gmail.com>
+Received: from mail-ie0-x234.google.com (mail-ie0-x234.google.com
+ [IPv6:2607:f8b0:4001:c03::234])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8432F1A066C
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 May 2015 03:49:42 +1000 (AEST)
-Received: from /spool/local
- by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
- Thu, 7 May 2015 11:49:40 -0600
-Received: from b03cxnp08028.gho.boulder.ibm.com
- (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 5698519D8048
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 May 2015 11:40:41 -0600 (MDT)
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
- by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t47HnEgE32702698
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 May 2015 10:49:14 -0700
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
- by d03av04.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t47HnZar001590
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 May 2015 11:49:37 -0600
-Message-ID: <554BA5A8.3040009@linux.vnet.ibm.com>
-Date: Thu, 07 May 2015 23:19:28 +0530
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: Sudeep Holla <sudeep.holla@arm.com>
-Subject: Re: [PATCH] cpuidle: Handle tick_broadcast_enter() failure gracefully
-References: <20150507052600.20882.39542.stgit@preeti.in.ibm.com>
- <554B36DD.5080807@arm.com>
-In-Reply-To: <554B36DD.5080807@arm.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: "rlippert@google.com" <rlippert@google.com>,
- "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>,
- "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
- "peterz@infradead.org" <peterz@infradead.org>,
- "linus.walleij@linaro.org" <linus.walleij@linaro.org>,
- "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "mingo@redhat.com" <mingo@redhat.com>,
- "tglx@linutronix.de" <tglx@linutronix.de>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7ACAE1A0E96
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 May 2015 03:49:52 +1000 (AEST)
+Received: by iepj10 with SMTP id j10so42332808iep.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 May 2015 10:49:50 -0700 (PDT)
+Sender: Dan Streetman <ddstreet@gmail.com>
+From: Dan Streetman <ddstreet@ieee.org>
+To: Herbert Xu <herbert@gondor.apana.org.au>,
+ "David S. Miller" <davem@davemloft.net>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>
+Subject: [PATCHv3 00/10] add 842 hw compression for PowerNV platform
+Date: Thu,  7 May 2015 13:49:11 -0400
+Message-Id: <1431020961-22285-1-git-send-email-ddstreet@ieee.org>
+In-Reply-To: <1430931066-4536-1-git-send-email-ddstreet@ieee.org>
+Cc: linux-kernel@vger.kernel.org, Robert Jennings <rob@pochix.net>,
+ linux-crypto@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Seth Jennings <sjennings@variantweb.net>, Dan Streetman <ddstreet@ieee.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -50,40 +30,100 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/07/2015 03:26 PM, Sudeep Holla wrote:
-> Hi Preeti,
-> 
-> On 07/05/15 06:26, Preeti U Murthy wrote:
->> When a CPU has to enter an idle state where tick stops, it makes a call
->> to tick_broadcast_enter(). The call will fail if this CPU is the
->> broadcast CPU. Today, under such a circumstance, the arch cpuidle code
->> handles this CPU.  This is not convincing because not only are we not
->> aware what the arch cpuidle code does, but we also do not account for
->> the idle state residency time and usage of such a CPU.
->>
->> This scenario can be handled better by simply asking the cpuidle
->> governor to choose an idle state where in ticks do not stop. To
->> accommodate this change move the setting of runqueue idle state from the
->> core to the cpuidle driver, else the rq->idle_state will be set wrong.
->>
->> Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
->> ---
->> Based on linux-pm/bleeding-edge
-> 
-> I am unable to apply this patch cleanly on linux-pm/bleeding-edge
-> I think it conflicts with few patches that Rafael posted recently
-> which are in the branch now.
+IBM PowerPC processors starting at version P7+ contain a NX coprocessor
+that provides various hw-accelerated functions, one of which is memory
+compression to the IBM "842" compression format.  This NX-842 coprocessor
+is already supported on the pSeries platform, by the nx-842.c driver and
+the crypto compression interface at crypto/842.c.  This patch set adds
+support for NX-842 on the PowerNV (Non-Virtualized) platform, as well as
+adding a full software 842 compression/decompression implementation.
 
-Thanks so much for pointing out this! I have resent the patch as V2
-after the rebase on the updated linux-pm/bleeding-edge branch
+Quick summary of changes: the current 842 crypto compression interface uses
+only the 842 hardware on pSeries platforms, and can handle only page-sized
+and page-aligned uncompressed buffers.  These patches add a full software
+842 impementation, change the crypto/ directory 842 interface to a
+software only implementation, add a 842 hardware crypto compression
+interface that can handle any size and alignment buffers, add a
+driver for 842 hardware on PowerNV platforms, and create a common
+interface for both 842 hardware platform drivers.
 
-Regards
-Preeti U Murthy
-> 
-> Regards,
-> Sudeep
-> -- 
-> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
-> 
+The existing pSeries platform NX-842 driver could not be re-used for the
+PowerNV platform driver, as there are fundamentally different interfaces;
+on pSeries the system hypervisor (pHyp) provides the interface and manages
+communication with the coprocessor, while on PowerNV the kernel talks directly
+to the coprocessor using the ICSWX instruction.  The data structures used to
+describe each compression or decompression request to the coprocessor are
+also different between pHyp's interface and direct communication with ICSWX.
+So, different drivers for pSeries and PowerNV are required.  Adding the new
+PowerNV driver but keeping the interface to the drivers the same required
+adding a new common frontend interface, to which only one of the platform
+drivers will connect (based on what platform the kernel is currently running
+on), and moving some functionality out of the existing pSeries driver into a
+more common location.
+
+The existing crypto/842.c interface is in the wrong place, since crypto/
+should only contain software implementations; so lib/842/ is added
+containing a reference (i.e. rather slow) implementation in software
+of both 842 compression and 842 decompression.  The crypto/842.c interface
+is changed to use only that software implementation.
+
+The hardware 842 crypto compression interface is moved to
+drivers/crypto/nx/nx-842-crypto.c.  It is also modified to be able to
+handle any alignment/length input or output buffer; currently it is only
+able to handle page-size and page-aligned (uncompressed) buffers, due to
+restrictions in the pSeries 842 hardware driver.
+
+v3 changes the sw and hw crypto drivers to use the same alg name "842",
+and different driver names, "842-generic" and "842-nx"
+
+
+Dan Streetman (10):
+  powerpc: export of_get_ibm_chip_id function
+  powerpc: Add ICSWX instruction
+  lib: add software 842 compression/decompression
+  crypto: change 842 alg to use software
+  drivers/crypto/nx: rename nx-842.c to nx-842-pseries.c
+  drivers/crypto/nx: add NX-842 platform frontend driver
+  drivers/crypto/nx: add nx842 constraints
+  drivers/crypto/nx: add PowerNV platform NX-842 driver
+  drivers/crypto/nx: simplify pSeries nx842 driver
+  drivers/crypto/nx: add hardware 842 crypto comp alg
+
+ MAINTAINERS                           |    5 +-
+ arch/powerpc/include/asm/icswx.h      |  184 ++++
+ arch/powerpc/include/asm/ppc-opcode.h |   13 +
+ arch/powerpc/kernel/prom.c            |    1 +
+ crypto/842.c                          |  174 +---
+ crypto/Kconfig                        |    7 +-
+ drivers/crypto/Kconfig                |   10 +-
+ drivers/crypto/nx/Kconfig             |   55 +-
+ drivers/crypto/nx/Makefile            |    6 +
+ drivers/crypto/nx/nx-842-crypto.c     |  585 ++++++++++++
+ drivers/crypto/nx/nx-842-powernv.c    |  625 +++++++++++++
+ drivers/crypto/nx/nx-842-pseries.c    | 1128 +++++++++++++++++++++++
+ drivers/crypto/nx/nx-842.c            | 1623 +++------------------------------
+ drivers/crypto/nx/nx-842.h            |  131 +++
+ include/linux/nx842.h                 |   21 +-
+ include/linux/sw842.h                 |   12 +
+ lib/842/842.h                         |  127 +++
+ lib/842/842_compress.c                |  626 +++++++++++++
+ lib/842/842_debugfs.h                 |   52 ++
+ lib/842/842_decompress.c              |  405 ++++++++
+ lib/842/Makefile                      |    2 +
+ lib/Kconfig                           |    6 +
+ lib/Makefile                          |    2 +
+ 23 files changed, 4120 insertions(+), 1680 deletions(-)
+ create mode 100644 arch/powerpc/include/asm/icswx.h
+ create mode 100644 drivers/crypto/nx/nx-842-crypto.c
+ create mode 100644 drivers/crypto/nx/nx-842-powernv.c
+ create mode 100644 drivers/crypto/nx/nx-842-pseries.c
+ create mode 100644 drivers/crypto/nx/nx-842.h
+ create mode 100644 include/linux/sw842.h
+ create mode 100644 lib/842/842.h
+ create mode 100644 lib/842/842_compress.c
+ create mode 100644 lib/842/842_debugfs.h
+ create mode 100644 lib/842/842_decompress.c
+ create mode 100644 lib/842/Makefile
+
+-- 
+2.1.0
