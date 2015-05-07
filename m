@@ -1,26 +1,25 @@
-Return-Path: <rjw@rjwysocki.net>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0120.outbound.protection.outlook.com [207.46.100.120])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C989A1A0063
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 May 2015 06:34:48 +1000 (AEST)
-Received: from v094114.home.net.pl (v094114.home.net.pl [79.96.170.134])
- by ozlabs.org (Postfix) with SMTP id E52FE1402A0
- for <linuxppc-dev@ozlabs.org>; Fri,  8 May 2015 06:34:47 +1000 (AEST)
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Subject: Re: [PATCH v3 4/6] cpufreq: powernv: Call throttle_check() on
- receiving OCC_THROTTLE
-Date: Thu, 07 May 2015 22:59:51 +0200
-Message-ID: <4161534.4Jyd5dl4um@vostro.rjw.lan>
-In-Reply-To: <554B584A.3030507@linux.vnet.ibm.com>
-References: <1430729652-14813-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
- <5548824C.2030602@linux.vnet.ibm.com> <554B584A.3030507@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id CBB981A0063
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 May 2015 07:33:43 +1000 (AEST)
+Message-ID: <1431034399.16357.403.camel@freescale.com>
+Subject: Re: [PATCH 1/1] powerpc: mpc85xx: Add board support for ucp1020
+From: Scott Wood <scottwood@freescale.com>
+To: Oleksandr G Zhadan <oleks@arcturusnetworks.com>
+Date: Thu, 7 May 2015 16:33:19 -0500
+In-Reply-To: <554BBD10.5050706@arcturusnetworks.com>
+References: <1430841121-1997-1-git-send-email-oleks@arcturusnetworks.com>
+ <1430968950.16357.369.camel@freescale.com>
+ <554B934C.5090406@arcturusnetworks.com>
+ <1431022714.16357.396.camel@freescale.com>
+ <554BBD10.5050706@arcturusnetworks.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: linuxppc-dev@ozlabs.org, linux-pm@vger.kernel.org,
- linux-kernel@vger.kernel.org,
- Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, viresh.kumar@linaro.org
+Cc: Michael Durrant <mdurrant@arcturusnetworks.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,50 +29,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thursday, May 07, 2015 05:49:22 PM Preeti U Murthy wrote:
-> On 05/05/2015 02:11 PM, Preeti U Murthy wrote:
-> > On 05/05/2015 12:03 PM, Shilpasri G Bhat wrote:
-> >> Hi Preeti,
-> >>
-> >> On 05/05/2015 09:30 AM, Preeti U Murthy wrote:
-> >>> Hi Shilpa,
+On Thu, 2015-05-07 at 15:29 -0400, Oleksandr G Zhadan wrote:
+> On 05/07/2015 02:18 PM, Scott Wood wrote:
+> > On Thu, 2015-05-07 at 12:31 -0400, Oleksandr G Zhadan wrote:
+> >>>> diff --git a/arch/powerpc/configs/ucp1020_defconfig b/arch/powerpc/configs/ucp1020_defconfig
+> >>>> new file mode 100644
+> >>>> index 0000000..62f99aa
+> >>>> --- /dev/null
+> >>>> +++ b/arch/powerpc/configs/ucp1020_defconfig
 > >>>
-> >>> On 05/04/2015 02:24 PM, Shilpasri G Bhat wrote:
-> >>>> Re-evaluate the chip's throttled state on recieving OCC_THROTTLE
-> >>>> notification by executing *throttle_check() on any one of the cpu on
-> >>>> the chip. This is a sanity check to verify if we were indeed
-> >>>> throttled/unthrottled after receiving OCC_THROTTLE notification.
-> >>>>
-> >>>> We cannot call *throttle_check() directly from the notification
-> >>>> handler because we could be handling chip1's notification in chip2. So
-> >>>> initiate an smp_call to execute *throttle_check(). We are irq-disabled
-> >>>> in the notification handler, so use a worker thread to smp_call
-> >>>> throttle_check() on any of the cpu in the chipmask.
-> >>>
-> >>> I see that the first patch takes care of reporting *per-chip* throttling
-> >>> for pmax capping condition. But where are we taking care of reporting
-> >>> "pstate set to safe" and "freq control disabled" scenarios per-chip ?
+> >>> Please explain why your board needs its own defconfig.
 > >>>
 > >>
-> >> IMO let us not have "psafe" and "freq control disabled" states managed per-chip.
-> >> Because when the above two conditions occur it is likely to happen across all
-> >> chips during an OCC reset cycle. So I am setting 'throttled' to false on
-> >> OCC_ACTIVE and re-verifying if it actually is the case by invoking
-> >> *throttle_check().
-> > 
-> > Alright like I pointed in the previous reply, a comment to indicate that
-> > psafe and freq control disabled conditions will fail when occ is
-> > inactive and that all chips face the consequence of this will help.
+> >> Because, it's our own board and it has some specific to board
+> >> definitions like CONFIG_DEFAULT_HOSTNAME and some specific to product
+> >> definitions.
+> >>
+> >> If I can do it in some other way could you please give me some example
+> >> if it's possible.
+> >
+> > I don't think stuff like CONFIG_DEFAULT_HOSTNAME belongs upstream.
+> > Could you list what you need to be set that mpc85xx_smp_defconfig
+> > doesn't set?
 > 
-> From your explanation on the thread of the first patch of this series,
-> this will not be required.
+> I make diff "mpc85xx_smp_defconfig" vs "ucp1020_defconfig after make 
+> savedefconfig" and it's some differences like:
 > 
-> So,
-> Reviewed-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+> - mpc85xx_smp_defconfig has:
+> CONFIG_PHYS_64BIT=y
+> CONFIG_NR_CPUS=8
 
-OK, so is the whole series reviewed now?
+These won't prevent your board from working.  If you want
+CONFIG_PHYS_64BIT disabled for performance, I could see a fragment being
+used for that as per the recent defconfig discussions.  I wouldn't
+expect NR_CPUS being 8 instead of 2 to be noticeable.
+
+> - it enabled almost all boards to build. What for ?
+
+Because that's what the common defconfigs are for.  We don't want a
+defconfig for each board (most of the board-specific configs that are
+currently there were added long ago).  If you want a config that
+contains nothing your board doesn't need, you can maintain that locally.
+
+> - it has MTD related differences (doesn't enabled spi flashes support we 
+> need):
+> -CONFIG_MTD_M25P80=y
+> -CONFIG_MTD_SST25L=y
+
+So add them to the existing defconfig.
+
+> - It includes some PHY support, but not phy we are using
+
+This should not harm your board.
+
+>  and we need include intel wifi support:
+> -CONFIG_MICREL_PHY=y
+> -CONFIG_IWLWIFI=y
+
+So add them to the existing defconfig.
+
+> - It doesn't enable EXT4 fs support.
+
+I think this would be a reasonable thing to add.
 
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+> Etc...
+> 
+> You can see it yourself below:
+
+That doesn't show me the set of changes that you *need*, only the set of
+changes that you have.
+
+-Scott
