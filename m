@@ -1,19 +1,37 @@
-Return-Path: <oleks@arcturusnetworks.com>
-Received: from mail.arcturusnetworks.com (mail.arcturusnetworks.com
- [66.11.68.20])
- by lists.ozlabs.org (Postfix) with ESMTP id E24CE1A058C
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 May 2015 02:38:49 +1000 (AEST)
-Message-ID: <554B934C.5090406@arcturusnetworks.com>
-Date: Thu, 07 May 2015 12:31:08 -0400
-From: Oleksandr G Zhadan <oleks@arcturusnetworks.com>
+Return-Path: <preeti@linux.vnet.ibm.com>
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id AD6641A058C
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 May 2015 03:39:26 +1000 (AEST)
+Received: from /spool/local
+ by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
+ Thu, 7 May 2015 11:39:23 -0600
+Received: from b03cxnp08028.gho.boulder.ibm.com
+ (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 7C3B23E40047
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 May 2015 11:39:21 -0600 (MDT)
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+ by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t47Hcwfj41025656
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 May 2015 10:38:58 -0700
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av04.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t47HdIT2017235
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 May 2015 11:39:21 -0600
+Subject: [RESEND PATCH] cpuidle: Handle tick_broadcast_enter() failure
+ gracefully
+From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+To: peterz@infradead.org, tglx@linutronix.de, rafael.j.wysocki@intel.com,
+ daniel.lezcano@linaro.org
+Date: Thu, 07 May 2015 23:09:08 +0530
+Message-ID: <20150507173803.25119.90827.stgit@preeti.in.ibm.com>
 MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 1/1] powerpc: mpc85xx: Add board support for ucp1020
-References: <1430841121-1997-1-git-send-email-oleks@arcturusnetworks.com>
- <1430968950.16357.369.camel@freescale.com>
-In-Reply-To: <1430968950.16357.369.camel@freescale.com>
-Content-Type: text/plain; charset=windows-1252; format=flowed
-Cc: Michael Durrant <mdurrant@arcturusnetworks.com>,
+Content-Type: text/plain; charset="utf-8"
+Cc: rlippert@google.com, linux-pm@vger.kernel.org, linus.walleij@linaro.org,
+ linux-kernel@vger.kernel.org, mingo@redhat.com, sudeep.holla@arm.com,
  linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -24,343 +42,337 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Scott,
+When a CPU has to enter an idle state where tick stops, it makes a call
+to tick_broadcast_enter(). The call will fail if this CPU is the
+broadcast CPU. Today, under such a circumstance, the arch cpuidle code
+handles this CPU.  This is not convincing because not only are we not
+aware what the arch cpuidle code does, but we also do not account for
+the idle state residency time and usage of such a CPU.
 
-Thanks for fast response, please see inline.
+This scenario can be handled better by simply asking the cpuidle
+governor to choose an idle state where in ticks do not stop. To
+accommodate this change move the setting of runqueue idle state from the
+core to the cpuidle driver, else the rq->idle_state will be set wrong.
 
-On 05/06/2015 11:22 PM, Scott Wood wrote:
-> On Tue, 2015-05-05 at 11:52 -0400, Oleksandr G Zhadan wrote:
->> New QorIQ p1020 based board support from Arcturus Networks Inc.
->> http://www.arcturusnetworks.com/products/ucp1020/
->>
->> Signed-off-by: Michael Durrant <mdurrant@arcturusnetworks.com>
->> Signed-off-by: Oleksandr G Zhadan <oleks@arcturusnetworks.com>
->> ---
->>   Documentation/devicetree/bindings/pci/fsl,pci.txt  |    2 +-
->>   .../devicetree/bindings/powerpc/arcturus/board.txt |  149 ++
->>   .../devicetree/bindings/powerpc/arcturus/ecm.txt   |   64 +
->>   Documentation/devicetree/bindings/usb/fsl-usb.txt  |    2 +-
->>   .../devicetree/bindings/vendor-prefixes.txt        |    1 +
->>   arch/powerpc/boot/dts/fsl/ucp1020som-post.dtsi     |  179 ++
->>   arch/powerpc/boot/dts/fsl/ucp1020som-pre.dtsi      |   70 +
->>   arch/powerpc/boot/dts/ucp1020_32b.dts              |   88 +
->>   arch/powerpc/boot/dts/ucp1020_32b.dtsi             |  174 ++
->>   arch/powerpc/configs/ucp1020_defconfig             | 2731 ++++++++++++++++++++
->>   arch/powerpc/platforms/85xx/Kconfig                |    7 +
->>   arch/powerpc/platforms/85xx/Makefile               |    1 +
->>   arch/powerpc/platforms/85xx/ucp1020_som.c          |  100 +
->>   13 files changed, 3566 insertions(+), 2 deletions(-)
->>   create mode 100644 Documentation/devicetree/bindings/powerpc/arcturus/board.txt
->>   create mode 100644 Documentation/devicetree/bindings/powerpc/arcturus/ecm.txt
->>   create mode 100644 arch/powerpc/boot/dts/fsl/ucp1020som-post.dtsi
->>   create mode 100644 arch/powerpc/boot/dts/fsl/ucp1020som-pre.dtsi
->>   create mode 100644 arch/powerpc/boot/dts/ucp1020_32b.dts
->>   create mode 100644 arch/powerpc/boot/dts/ucp1020_32b.dtsi
->>   create mode 100644 arch/powerpc/configs/ucp1020_defconfig
->>   create mode 100644 arch/powerpc/platforms/85xx/ucp1020_som.c
->>
->> diff --git a/Documentation/devicetree/bindings/pci/fsl,pci.txt b/Documentation/devicetree/bindings/pci/fsl,pci.txt
->> index d8ac4a7..298a5e6 100644
->> --- a/Documentation/devicetree/bindings/pci/fsl,pci.txt
->> +++ b/Documentation/devicetree/bindings/pci/fsl,pci.txt
->> @@ -20,7 +20,7 @@ Example:
->>   		#interrupt-cells = <1>;
->>   		#size-cells = <2>;
->>   		#address-cells = <3>;
->> -		compatible = "fsl,mpc8540-pcix", "fsl,mpc8540-pci";
->> +		compatible = "fsl,mpc8540-pcix", "fsl,mpc8540-pci", "fsl,mpc8548-pcie";
->>   		device_type = "pci";
->>   		...
->>   		...
->> diff --git a/Documentation/devicetree/bindings/powerpc/arcturus/board.txt b/Documentation/devicetree/bindings/powerpc/arcturus/board.txt
->> new file mode 100644
->> index 0000000..54e9765
->> --- /dev/null
->> +++ b/Documentation/devicetree/bindings/powerpc/arcturus/board.txt
->> @@ -0,0 +1,149 @@
->> +UCP1020 module Tree Bindings
->> +----------------------------
->> +
->> +Copyright 2013-2015 Arcturus Networks, Inc.
->> +
->> +QorIQ p1020 based board
->> +http://www.arcturusnetworks.com/products/ucp1020/
->> +-------------------------------------------------
->> +
->> +Root Module
->> +
->> +Properties:
->> +- model:		"arcturus,uCP1020"
->> +- compatible:		"arcturus,uCP1020"
->> +- SN:			"1234567890-1234"
->> +
->> +/ {
->> +	model = "arcturus,uCP1020";
->> +	compatible = "arcturus,uCP1020", "fsl,P1020";
->> +	SN = "1234567890-1234";
->> +	...
->> +  }
->
-> Drop the "fsl,P1020" compatible.  Top-level compatible strings describe
-> the whole board.
->
-> SN is a bad property name.  Call it something like "arcturus,serial#",
-> and define what it actually means rather than just giving an example.
->
+Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+---
+Rebased on the latest linux-pm/bleeding-edge
 
-OK, will fix.
+ drivers/cpuidle/cpuidle.c          |   21 +++++++++++++++++----
+ drivers/cpuidle/governors/ladder.c |   13 ++++++++++---
+ drivers/cpuidle/governors/menu.c   |    6 +++++-
+ include/linux/cpuidle.h            |    6 +++---
+ include/linux/sched.h              |   16 ++++++++++++++++
+ kernel/sched/core.c                |   17 +++++++++++++++++
+ kernel/sched/fair.c                |    2 +-
+ kernel/sched/idle.c                |    8 +-------
+ kernel/sched/sched.h               |   24 ------------------------
+ 9 files changed, 70 insertions(+), 43 deletions(-)
 
->> +-------------------------------------------------
->> +
->> +P1020 SPI controller
->> +
->> +Properties:
->> +- compatible:		"spansion,s25fl008k", "winbond,w25q80bl"
->> +
->> +Example:
->> +	spi@7000 {
->> +		flash@0 {
->> +			#address-cells = <1>;
->> +			#size-cells = <1>;
->> +			compatible = "spansion,s25fl008k", "winbond,w25q80bl";
->> +			reg = <0>;
->> +			spi-max-frequency = <40000000>; /* input clock */
->> +			...
->> +		};
->
-> This isn't describing the controller, but rather a SPI chip attached to
-> the controller.  This also doesn't seem like the right place for random
-> SPI chips.
->
-> If all you're specifying is the compatible, maybe create a
-> spi/trivial-devices.txt similar to i2c/trivial-devices.txt?  Or
-> something specific to SPI flash chips to describe the partition
-> specification, though I generally recommend against describing
-> partitions in the device tree -- especially if this is a developer board
-> rather than something fixed-purpose where the partitioning is not going
-> to change based on user requirements.
->
->
-
-Mostly in all Documentation/devicetree/bindings/ I tried to satisfy 
-checkpatch script as simple as possible. And for me as well it looks 
-reasonable to create spi/trivial-devices.txt file and I will.
-
->> +-------------------------------------------------
->> +
->> +Chipselect/Local Bus
->> +
->> +Properties:
->> +- #address-cells:	<2>.
->> +- #size-cells:		<1>.
->> +- compatible:		"fsl,p1020-elbc", "fsl,elbc", "simple-bus","fsl,p1020-immr"
->> +- interrupts:		interrupts to report localbus events.
->> +
->> +Example:
->> +
->> +&lbc {
->> +	#address-cells = <2>;
->> +	#size-cells = <1>;
->> +	compatible = "fsl,p1020-elbc", "fsl,elbc", "simple-bus";
->> +	interrupts = <19 2 0 0>;
->> +};
->
-> There's already a binding for elbc -- and the elbc node certainly should
-> not claim compatibility with "fsl,p1020-immr".
->
->
-
-to satisfy checkpatch script.
-
->> +-------------------------------------------------
->> +
->> +Freescale L2 Cache Controller
->> +
->> +L2 cache is present in Freescale's QorIQ and QorIQ Qonverge platforms.
->> +The cache bindings explained below are ePAPR compliant
->> +
->> +Properties:
->> +
->> +- compatible	: Should include "fsl,chip-l2-cache-controller" and "cache"
->> +		  where chip is the processor (bsc9132, npc8572 etc.)
->> +- reg		: Address and size of L2 cache controller registers
->> +- cache-size	: Size of the entire L2 cache
->> +- interrupts	: Error interrupt of L2 controller
->> +- cache-line-size : Size of L2 cache lines
->> +
->> +Example:
->> +
->> +	L2: l2-cache-controller@20000 {
->> +		compatible = "fsl,p1020-l2-cache-controller", "cache";
->> +		reg = <0x20000 0x1000>;
->> +		cache-line-size = <32>; // 32 bytes
->> +		cache-size = <0x40000>; // L2,256K
->> +		interrupts = <16 2 1 0>;
->> +	};
->
-> This is copied and pasted from the existing binding.  Ignore
-> checkpatch's inability to understand that "fsl,chip-l2-cache-controller"
-> includes "fsl,p1020-l2-cache-controller".
->
-> Likewise for the other bindings.  If you're going to have a binding
-> document for your board, it should only talk about things that are
-> specific to your board.
->
-
-to satisfy checkpatch script.
-
-
->> diff --git a/Documentation/devicetree/bindings/usb/fsl-usb.txt b/Documentation/devicetree/bindings/usb/fsl-usb.txt
->> index 4779c02..a2663ad 100644
->> --- a/Documentation/devicetree/bindings/usb/fsl-usb.txt
->> +++ b/Documentation/devicetree/bindings/usb/fsl-usb.txt
->> @@ -57,7 +57,7 @@ Example multi port host USB controller device node :
->>
->>   Example dual role USB controller device node :
->>   	usb@23000 {
->> -		compatible = "fsl-usb2-dr";
->> +		compatible = "fsl-usb2-dr", "fsl-usb2-dr-v1.6";
->>   		reg = <23000 1000>;
->>   		#address-cells = <1>;
->>   		#size-cells = <0>;
->
-> More specific compatibles come first.
->
-
-OK.
-
->> diff --git a/arch/powerpc/boot/dts/fsl/ucp1020som-post.dtsi b/arch/powerpc/boot/dts/fsl/ucp1020som-post.dtsi
->> new file mode 100644
->> index 0000000..930a6e3
->> --- /dev/null
->> +++ b/arch/powerpc/boot/dts/fsl/ucp1020som-post.dtsi
->
-> Why can't you use p1020si-post.dtsi?  The "si" means "silicon" -- it's
-> meant to be included by all p1020 boards.
->
-
-Yes, silicon is the same, but p1020 boards using all 3 etsec ethernet 
-controllers. Our board using only 2: etsec1 and etsec3. And to avoid 
-using eth0,eth2, and to use eth0,eth1 we make this extra ucp1020som-*.
-
->> diff --git a/arch/powerpc/boot/dts/ucp1020_32b.dts b/arch/powerpc/boot/dts/ucp1020_32b.dts
->> new file mode 100644
->> index 0000000..4a8358c
->> --- /dev/null
->> +++ b/arch/powerpc/boot/dts/ucp1020_32b.dts
->> @@ -0,0 +1,88 @@
->> +/*
->> + * uCP1020 Tree Source (32-bit address map)
->
-> Do you plan on supporting both 32 and 36 bits?  If not, leave off the
-> "_32b".
->
-
-Good point - will rename.
-
->> diff --git a/arch/powerpc/configs/ucp1020_defconfig b/arch/powerpc/configs/ucp1020_defconfig
->> new file mode 100644
->> index 0000000..62f99aa
->> --- /dev/null
->> +++ b/arch/powerpc/configs/ucp1020_defconfig
->
-> Please explain why your board needs its own defconfig.
->
-
-Because, it's our own board and it has some specific to board 
-definitions like CONFIG_DEFAULT_HOSTNAME and some specific to product 
-definitions.
-
-If I can do it in some other way could you please give me some example 
-if it's possible.
-
-
-> Plus, all defconfigs need to be run through savedefconfig to trim
-> everything that doesn't change a default.
->
-
-Sorry, forgot. Will do.
-
->> diff --git a/arch/powerpc/platforms/85xx/ucp1020_som.c b/arch/powerpc/platforms/85xx/ucp1020_som.c
->> new file mode 100644
->> index 0000000..aa98d31
->> --- /dev/null
->> +++ b/arch/powerpc/platforms/85xx/ucp1020_som.c
->> @@ -0,0 +1,100 @@
->> +/*
->> + * Arcturus Networks Inc. uCP1020 system on module Setup
->> + *
->> + * Copyright 2014-2015 Arcturus Networks Inc.
->> + *
->> + * by Oleksandr G Zhadan & Michael Durrant (www.ArcturusNetworks.com)
->> + *
->> + * This program is free software; you can redistribute  it and/or modify it
->> + * under  the terms of  the GNU General  Public License as published by the
->> + * Free Software Foundation;  either version 2 of the  License, or (at your
->> + * option) any later version.
->> + */
->> +
->> +#include <linux/stddef.h>
->> +#include <linux/kernel.h>
->> +#include <linux/pci.h>
->> +#include <linux/kdev_t.h>
->> +#include <linux/delay.h>
->> +#include <linux/seq_file.h>
->> +#include <linux/interrupt.h>
->> +#include <linux/of_platform.h>
->> +
->> +#include <asm/time.h>
->> +#include <asm/machdep.h>
->> +#include <asm/pci-bridge.h>
->> +#include <mm/mmu_decl.h>
->> +#include <asm/prom.h>
->> +#include <asm/udbg.h>
->> +#include <asm/mpic.h>
->> +#include <asm/fsl_guts.h>
->> +
->> +#include <sysdev/fsl_soc.h>
->> +#include <sysdev/fsl_pci.h>
->> +#include "smp.h"
->> +
->> +#include "mpc85xx.h"
->
-> You don't need all of these headers.
->
->> +
->> +void __init ucp1020_som_pic_init(void)
->> +{
->> +	struct mpic *mpic;
->> +	unsigned long root = of_get_flat_dt_root();
->> +
->> +	if (of_flat_dt_is_compatible(root, "fsl,MPC85XXRDB-CAMP")) {
->> +		mpic = mpic_alloc(NULL, 0, MPIC_NO_RESET |
->> +				  MPIC_BIG_ENDIAN |
->> +				  MPIC_SINGLE_DEST_CPU, 0, 256, " OpenPIC  ");
->> +	} else {
->> +		mpic = mpic_alloc(NULL, 0,
->> +				  MPIC_BIG_ENDIAN |
->> +				  MPIC_SINGLE_DEST_CPU, 0, 256, " OpenPIC  ");
->> +	}
->
-> Why do you have fsl,MPC85XXRDB-CAMP in here?
->
-
-ups, didn't notice(cut and paste) will fix.
-
-
-Probably will delay with patches fixes until May 21 - I'll be out of office.
-
-
-Oleks
-
-> -Scott
->
->
->
-
-
--- 
-Oleksandr Zhadan
-Arcturus Networks
-T 416 621-0125 x235
-F 416 621-0190
+diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+index 61c417b..8f5657e 100644
+--- a/drivers/cpuidle/cpuidle.c
++++ b/drivers/cpuidle/cpuidle.c
+@@ -21,6 +21,7 @@
+ #include <linux/module.h>
+ #include <linux/suspend.h>
+ #include <linux/tick.h>
++#include <linux/sched.h>
+ #include <trace/events/power.h>
+ 
+ #include "cpuidle.h"
+@@ -167,8 +168,15 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
+ 	 * local timer will be shut down.  If a local timer is used from another
+ 	 * CPU as a broadcast timer, this call may fail if it is not available.
+ 	 */
+-	if (broadcast && tick_broadcast_enter())
+-		return -EBUSY;
++	if (broadcast && tick_broadcast_enter()) {
++		index = cpuidle_select(drv, dev, !broadcast);
++		if (index < 0)
++			return -EBUSY;
++		target_state = &drv->states[index];
++	}
++
++	/* Take note of the planned idle state. */
++	idle_set_state(smp_processor_id(), target_state);
+ 
+ 	trace_cpu_idle_rcuidle(index, dev->cpu);
+ 	time_start = ktime_get();
+@@ -178,6 +186,9 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
+ 	time_end = ktime_get();
+ 	trace_cpu_idle_rcuidle(PWR_EVENT_EXIT, dev->cpu);
+ 
++	/* The cpu is no longer idle or about to enter idle. */
++	idle_set_state(smp_processor_id(), NULL);
++
+ 	if (broadcast) {
+ 		if (WARN_ON_ONCE(!irqs_disabled()))
+ 			local_irq_disable();
+@@ -213,12 +224,14 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
+  *
+  * @drv: the cpuidle driver
+  * @dev: the cpuidle device
++ * @timer_stop_valid: allow selection of idle state where tick stops
+  *
+  * Returns the index of the idle state.
+  */
+-int cpuidle_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
++int cpuidle_select(struct cpuidle_driver *drv,
++			struct cpuidle_device *dev, int timer_stop_valid)
+ {
+-	return cpuidle_curr_governor->select(drv, dev);
++	return cpuidle_curr_governor->select(drv, dev, timer_stop_valid);
+ }
+ 
+ /**
+diff --git a/drivers/cpuidle/governors/ladder.c b/drivers/cpuidle/governors/ladder.c
+index 401c010..c437322 100644
+--- a/drivers/cpuidle/governors/ladder.c
++++ b/drivers/cpuidle/governors/ladder.c
+@@ -62,9 +62,10 @@ static inline void ladder_do_selection(struct ladder_device *ldev,
+  * ladder_select_state - selects the next state to enter
+  * @drv: cpuidle driver
+  * @dev: the CPU
++ * @timer_stop_valid: allow selection of idle state where tick stops
+  */
+ static int ladder_select_state(struct cpuidle_driver *drv,
+-				struct cpuidle_device *dev)
++				struct cpuidle_device *dev, int timer_stop_valid)
+ {
+ 	struct ladder_device *ldev = this_cpu_ptr(&ladder_devices);
+ 	struct ladder_device_state *last_state;
+@@ -86,6 +87,7 @@ static int ladder_select_state(struct cpuidle_driver *drv,
+ 	    !drv->states[last_idx + 1].disabled &&
+ 	    !dev->states_usage[last_idx + 1].disable &&
+ 	    last_residency > last_state->threshold.promotion_time &&
++	    !(!timer_stop_valid && (drv->states[last_idx + 1].flags & CPUIDLE_FLAG_TIMER_STOP)) &&
+ 	    drv->states[last_idx + 1].exit_latency <= latency_req) {
+ 		last_state->stats.promotion_count++;
+ 		last_state->stats.demotion_count = 0;
+@@ -99,11 +101,14 @@ static int ladder_select_state(struct cpuidle_driver *drv,
+ 	if (last_idx > CPUIDLE_DRIVER_STATE_START &&
+ 	    (drv->states[last_idx].disabled ||
+ 	    dev->states_usage[last_idx].disable ||
++	    (!timer_stop_valid && (drv->states[last_idx].flags & CPUIDLE_FLAG_TIMER_STOP)) ||
+ 	    drv->states[last_idx].exit_latency > latency_req)) {
+ 		int i;
+ 
+ 		for (i = last_idx - 1; i > CPUIDLE_DRIVER_STATE_START; i--) {
+-			if (drv->states[i].exit_latency <= latency_req)
++			if (drv->states[i].exit_latency <= latency_req &&
++				!(!timer_stop_valid &&
++					(drv->states[i].flags & CPUIDLE_FLAG_TIMER_STOP)))
+ 				break;
+ 		}
+ 		ladder_do_selection(ldev, last_idx, i);
+@@ -114,7 +119,9 @@ static int ladder_select_state(struct cpuidle_driver *drv,
+ 	    last_residency < last_state->threshold.demotion_time) {
+ 		last_state->stats.demotion_count++;
+ 		last_state->stats.promotion_count = 0;
+-		if (last_state->stats.demotion_count >= last_state->threshold.demotion_count) {
++		if (last_state->stats.demotion_count >= last_state->threshold.demotion_count &&
++			!(!timer_stop_valid &&
++				(drv->states[last_idx - 1].flags & CPUIDLE_FLAG_TIMER_STOP))) {
+ 			ladder_do_selection(ldev, last_idx, last_idx - 1);
+ 			return last_idx - 1;
+ 		}
+diff --git a/drivers/cpuidle/governors/menu.c b/drivers/cpuidle/governors/menu.c
+index b8a5fa1..900404f 100644
+--- a/drivers/cpuidle/governors/menu.c
++++ b/drivers/cpuidle/governors/menu.c
+@@ -280,8 +280,10 @@ again:
+  * menu_select - selects the next idle state to enter
+  * @drv: cpuidle driver containing state data
+  * @dev: the CPU
++ * @timer_stop_valid: allow selection of idle state where tick stops
+  */
+-static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
++static int menu_select(struct cpuidle_driver *drv,
++			struct cpuidle_device *dev, int timer_stop_valid)
+ {
+ 	struct menu_device *data = this_cpu_ptr(&menu_devices);
+ 	int latency_req = pm_qos_request(PM_QOS_CPU_DMA_LATENCY);
+@@ -349,6 +351,8 @@ static int menu_select(struct cpuidle_driver *drv, struct cpuidle_device *dev)
+ 			continue;
+ 		if (s->exit_latency > latency_req)
+ 			continue;
++		if (!timer_stop_valid && (s->flags & CPUIDLE_FLAG_TIMER_STOP))
++			continue;
+ 
+ 		data->last_state_idx = i;
+ 	}
+diff --git a/include/linux/cpuidle.h b/include/linux/cpuidle.h
+index 9c5e892..d7c1734 100644
+--- a/include/linux/cpuidle.h
++++ b/include/linux/cpuidle.h
+@@ -129,7 +129,7 @@ extern bool cpuidle_not_available(struct cpuidle_driver *drv,
+ 				  struct cpuidle_device *dev);
+ 
+ extern int cpuidle_select(struct cpuidle_driver *drv,
+-			  struct cpuidle_device *dev);
++			  struct cpuidle_device *dev, int timer_stop_valid);
+ extern int cpuidle_enter(struct cpuidle_driver *drv,
+ 			 struct cpuidle_device *dev, int index);
+ extern void cpuidle_reflect(struct cpuidle_device *dev, int index);
+@@ -163,7 +163,7 @@ static inline bool cpuidle_not_available(struct cpuidle_driver *drv,
+ 					 struct cpuidle_device *dev)
+ {return true; }
+ static inline int cpuidle_select(struct cpuidle_driver *drv,
+-				 struct cpuidle_device *dev)
++				 struct cpuidle_device *dev, int timer_stop_valid)
+ {return -ENODEV; }
+ static inline int cpuidle_enter(struct cpuidle_driver *drv,
+ 				struct cpuidle_device *dev, int index)
+@@ -223,7 +223,7 @@ struct cpuidle_governor {
+ 					struct cpuidle_device *dev);
+ 
+ 	int  (*select)		(struct cpuidle_driver *drv,
+-					struct cpuidle_device *dev);
++					struct cpuidle_device *dev, int timer_stop_valid);
+ 	void (*reflect)		(struct cpuidle_device *dev, int index);
+ 
+ 	struct module 		*owner;
+diff --git a/include/linux/sched.h b/include/linux/sched.h
+index 8222ae4..ff4e2df 100644
+--- a/include/linux/sched.h
++++ b/include/linux/sched.h
+@@ -45,6 +45,7 @@ struct sched_param {
+ #include <linux/rcupdate.h>
+ #include <linux/rculist.h>
+ #include <linux/rtmutex.h>
++#include <linux/cpuidle.h>
+ 
+ #include <linux/time.h>
+ #include <linux/param.h>
+@@ -901,6 +902,21 @@ enum cpu_idle_type {
+ 	CPU_MAX_IDLE_TYPES
+ };
+ 
++#ifdef CONFIG_CPU_IDLE
++extern void idle_set_state(int cpu, struct cpuidle_state *idle_state);
++extern struct cpuidle_state *idle_get_state(int cpu);
++#else
++static inline void idle_set_state(int cpu,
++				  struct cpuidle_state *idle_state)
++{
++}
++
++static inline struct cpuidle_state *idle_get_state(int cpu)
++{
++	return NULL;
++}
++#endif
++
+ /*
+  * Increase resolution of cpu_capacity calculations
+  */
+diff --git a/kernel/sched/core.c b/kernel/sched/core.c
+index f9123a8..427e190 100644
+--- a/kernel/sched/core.c
++++ b/kernel/sched/core.c
+@@ -3231,6 +3231,23 @@ struct task_struct *idle_task(int cpu)
+ 	return cpu_rq(cpu)->idle;
+ }
+ 
++#ifdef CONFIG_CPU_IDLE
++void idle_set_state(int cpu, struct cpuidle_state *idle_state)
++{
++	struct rq *rq = cpu_rq(cpu);
++
++	rq->idle_state = idle_state;
++}
++
++struct cpuidle_state *idle_get_state(int cpu)
++{
++	struct rq *rq = cpu_rq(cpu);
++
++	WARN_ON(!rcu_read_lock_held());
++	return rq->idle_state;
++}
++#endif /* CONFIG_CPU_IDLE */
++
+ /**
+  * find_process_by_pid - find a process with a matching PID value.
+  * @pid: the pid in question.
+diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
+index ffeaa41..211ef9a 100644
+--- a/kernel/sched/fair.c
++++ b/kernel/sched/fair.c
+@@ -4709,7 +4709,7 @@ find_idlest_cpu(struct sched_group *group, struct task_struct *p, int this_cpu)
+ 	for_each_cpu_and(i, sched_group_cpus(group), tsk_cpus_allowed(p)) {
+ 		if (idle_cpu(i)) {
+ 			struct rq *rq = cpu_rq(i);
+-			struct cpuidle_state *idle = idle_get_state(rq);
++			struct cpuidle_state *idle = idle_get_state(i);
+ 			if (idle && idle->exit_latency < min_exit_latency) {
+ 				/*
+ 				 * We give priority to a CPU whose idle state
+diff --git a/kernel/sched/idle.c b/kernel/sched/idle.c
+index fefcb1f..5bd766c 100644
+--- a/kernel/sched/idle.c
++++ b/kernel/sched/idle.c
+@@ -131,7 +131,7 @@ static void cpuidle_idle_call(void)
+ 		/*
+ 		 * Ask the cpuidle framework to choose a convenient idle state.
+ 		 */
+-		next_state = cpuidle_select(drv, dev);
++		next_state = cpuidle_select(drv, dev, 1);
+ 	}
+ 	/* Fall back to the default arch idle method on errors. */
+ 	if (next_state < 0)
+@@ -149,9 +149,6 @@ static void cpuidle_idle_call(void)
+ 		goto exit_idle;
+ 	}
+ 
+-	/* Take note of the planned idle state. */
+-	idle_set_state(this_rq(), &drv->states[next_state]);
+-
+ 	/*
+ 	 * Enter the idle state previously returned by the governor decision.
+ 	 * This function will block until an interrupt occurs and will take
+@@ -159,9 +156,6 @@ static void cpuidle_idle_call(void)
+ 	 */
+ 	entered_state = cpuidle_enter(drv, dev, next_state);
+ 
+-	/* The cpu is no longer idle or about to enter idle. */
+-	idle_set_state(this_rq(), NULL);
+-
+ 	if (entered_state == -EBUSY)
+ 		goto use_default;
+ 
+diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
+index e0e1299..2c56caa 100644
+--- a/kernel/sched/sched.h
++++ b/kernel/sched/sched.h
+@@ -1253,30 +1253,6 @@ static inline void idle_exit_fair(struct rq *rq) { }
+ 
+ #endif
+ 
+-#ifdef CONFIG_CPU_IDLE
+-static inline void idle_set_state(struct rq *rq,
+-				  struct cpuidle_state *idle_state)
+-{
+-	rq->idle_state = idle_state;
+-}
+-
+-static inline struct cpuidle_state *idle_get_state(struct rq *rq)
+-{
+-	WARN_ON(!rcu_read_lock_held());
+-	return rq->idle_state;
+-}
+-#else
+-static inline void idle_set_state(struct rq *rq,
+-				  struct cpuidle_state *idle_state)
+-{
+-}
+-
+-static inline struct cpuidle_state *idle_get_state(struct rq *rq)
+-{
+-	return NULL;
+-}
+-#endif
+-
+ extern void sysrq_sched_debug_show(void);
+ extern void sched_init_granularity(void);
+ extern void update_max_interval(void);
