@@ -1,20 +1,20 @@
 Return-Path: <Wenbin.Song@freescale.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6EC791A058C
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 May 2015 19:44:29 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 866741A058C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 May 2015 19:45:24 +1000 (AEST)
 Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0108.outbound.protection.outlook.com [207.46.100.108])
+ (mail-by2on0145.outbound.protection.outlook.com [207.46.100.145])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id AE64114028F
- for <linuxppc-dev@ozlabs.org>; Thu,  7 May 2015 19:44:28 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTPS id C067D14012C
+ for <linuxppc-dev@ozlabs.org>; Thu,  7 May 2015 19:45:23 +1000 (AEST)
 From: songwenbin <Wenbin.Song@freescale.com>
 To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH 1/2] powerpc/mpc8xxx: Change EDAC for FSL SoC
-Date: Thu, 7 May 2015 17:07:29 +0800
-Message-ID: <1430989649-27773-1-git-send-email-Wenbin.Song@freescale.com>
+Subject: [PATCH v2 1/2] powerpc/mpc8xxx: Change EDAC for FSL SoC
+Date: Thu, 7 May 2015 17:41:37 +0800
+Message-ID: <1430991698-29832-1-git-send-email-Wenbin.Song@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: Mingkai.hu@freescale.com, York Sun <yorksun@freescale.com>,
@@ -33,12 +33,6 @@ From: York Sun <yorksun@freescale.com>
 Remove mpc83xx and mpc85xx as dependency.
 
 Signed-off-by: York Sun <yorksun@freescale.com>
-Change-Id: I92ff2ecf38b00e48a713baf2443495f8a1468beb
-Reviewed-on: http://git.am.freescale.net:8181/554
-Reviewed-by: Schmitt Richard-B43082 <B43082@freescale.com>
-Tested-by: Schmitt Richard-B43082 <B43082@freescale.com>
-Reviewed-by: Fleming Andrew-AFLEMING <AFLEMING@freescale.com>
-Tested-by: Fleming Andrew-AFLEMING <AFLEMING@freescale.com>
 Signed-off-by: songwenbin <wenbin.song@freescale.com>
 ---
  drivers/edac/Kconfig | 4 ++--
