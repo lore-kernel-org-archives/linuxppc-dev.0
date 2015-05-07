@@ -1,37 +1,39 @@
 Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
+Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6C6231A058C
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 May 2015 20:57:01 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id BDBD31A058C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 May 2015 21:19:09 +1000 (AEST)
 Received: from /spool/local
- by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Thu, 7 May 2015 16:26:58 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id A5B10125804B
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 May 2015 16:29:01 +0530 (IST)
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t47Aurur917874
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 May 2015 16:26:54 +0530
-Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t47ANnLX022282
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 May 2015 15:53:49 +0530
+ Thu, 7 May 2015 21:19:08 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 6546A3578053
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 May 2015 21:19:04 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t47BItXi24248424
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 May 2015 21:19:04 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t47BIUQH013305
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 7 May 2015 21:18:31 +1000
 From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [RFC PATCH] powerpc/mm: Return NULL for not present hugetlb page
-In-Reply-To: <1430986646.3453.34.camel@kernel.crashing.org>
-References: <1430982981-23700-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1430986646.3453.34.camel@kernel.crashing.org>
-Date: Thu, 07 May 2015 16:26:53 +0530
-Message-ID: <87h9rod5ai.fsf@linux.vnet.ibm.com>
+To: "Kirill A. Shutemov" <kirill@shutemov.name>
+Subject: Re: [PATCH V2 1/2] mm/thp: Split out pmd collpase flush into a
+ seperate functions
+In-Reply-To: <20150507092000.GA18516@node.dhcp.inet.fi>
+References: <1430983408-24924-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <20150507092000.GA18516@node.dhcp.inet.fi>
+Date: Thu, 07 May 2015 16:48:02 +0530
+Message-ID: <87egmsd4b9.fsf@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain
-Cc: paulus@samba.org, linuxppc-dev@lists.ozlabs.org,
- david@gibson.dropbear.id.au
+Cc: aarcange@redhat.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ paulus@samba.org, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
+ kirill.shutemov@linux.intel.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,17 +43,186 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+"Kirill A. Shutemov" <kirill@shutemov.name> writes:
 
-> On Thu, 2015-05-07 at 12:46 +0530, Aneesh Kumar K.V wrote:
->> We need to check whether pte is present in follow_huge_addr and
->> properly return NULL if mapping is not present. Also use READ_ONCE
->> when dereferencing pte_t address.
+> On Thu, May 07, 2015 at 12:53:27PM +0530, Aneesh Kumar K.V wrote:
+>> After this patch pmdp_* functions operate only on hugepage pte,
+>> and not on regular pmd_t values pointing to page table.
+>> 
+>> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+>> ---
+>>  arch/powerpc/include/asm/pgtable-ppc64.h |  4 ++
+>>  arch/powerpc/mm/pgtable_64.c             | 76 +++++++++++++++++---------------
+>>  include/asm-generic/pgtable.h            | 19 ++++++++
+>>  mm/huge_memory.c                         |  2 +-
+>>  4 files changed, 65 insertions(+), 36 deletions(-)
+>> 
+>> diff --git a/arch/powerpc/include/asm/pgtable-ppc64.h b/arch/powerpc/include/asm/pgtable-ppc64.h
+>> index 43e6ad424c7f..50830c9a2116 100644
+>> --- a/arch/powerpc/include/asm/pgtable-ppc64.h
+>> +++ b/arch/powerpc/include/asm/pgtable-ppc64.h
+>> @@ -576,6 +576,10 @@ static inline void pmdp_set_wrprotect(struct mm_struct *mm, unsigned long addr,
+>>  extern void pmdp_splitting_flush(struct vm_area_struct *vma,
+>>  				 unsigned long address, pmd_t *pmdp);
+>>  
+>> +#define __HAVE_ARCH_PMDP_COLLAPSE_FLUSH
+>> +extern pmd_t pmdp_collapse_flush(struct vm_area_struct *vma,
+>> +				 unsigned long address, pmd_t *pmdp);
+>> +
+>>  #define __HAVE_ARCH_PGTABLE_DEPOSIT
+>>  extern void pgtable_trans_huge_deposit(struct mm_struct *mm, pmd_t *pmdp,
+>>  				       pgtable_t pgtable);
+>> diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
+>> index 59daa5eeec25..9171c1a37290 100644
+>> --- a/arch/powerpc/mm/pgtable_64.c
+>> +++ b/arch/powerpc/mm/pgtable_64.c
+>> @@ -560,41 +560,47 @@ pmd_t pmdp_clear_flush(struct vm_area_struct *vma, unsigned long address,
+>>  	pmd_t pmd;
+>>  
+>>  	VM_BUG_ON(address & ~HPAGE_PMD_MASK);
+>> -	if (pmd_trans_huge(*pmdp)) {
+>> -		pmd = pmdp_get_and_clear(vma->vm_mm, address, pmdp);
+>> -	} else {
+>> -		/*
+>> -		 * khugepaged calls this for normal pmd
+>> -		 */
+>> -		pmd = *pmdp;
+>> -		pmd_clear(pmdp);
+>> -		/*
+>> -		 * Wait for all pending hash_page to finish. This is needed
+>> -		 * in case of subpage collapse. When we collapse normal pages
+>> -		 * to hugepage, we first clear the pmd, then invalidate all
+>> -		 * the PTE entries. The assumption here is that any low level
+>> -		 * page fault will see a none pmd and take the slow path that
+>> -		 * will wait on mmap_sem. But we could very well be in a
+>> -		 * hash_page with local ptep pointer value. Such a hash page
+>> -		 * can result in adding new HPTE entries for normal subpages.
+>> -		 * That means we could be modifying the page content as we
+>> -		 * copy them to a huge page. So wait for parallel hash_page
+>> -		 * to finish before invalidating HPTE entries. We can do this
+>> -		 * by sending an IPI to all the cpus and executing a dummy
+>> -		 * function there.
+>> -		 */
+>> -		kick_all_cpus_sync();
+>> -		/*
+>> -		 * Now invalidate the hpte entries in the range
+>> -		 * covered by pmd. This make sure we take a
+>> -		 * fault and will find the pmd as none, which will
+>> -		 * result in a major fault which takes mmap_sem and
+>> -		 * hence wait for collapse to complete. Without this
+>> -		 * the __collapse_huge_page_copy can result in copying
+>> -		 * the old content.
+>> -		 */
+>> -		flush_tlb_pmd_range(vma->vm_mm, &pmd, address);
+>> -	}
+>> +	VM_BUG_ON(!pmd_trans_huge(*pmdp));
+>> +	pmd = pmdp_get_and_clear(vma->vm_mm, address, pmdp);
+>> +	return pmd;
 >
-> Do that need to go to stable as well ?
+> The patches are in reverse order: you need to change pmdp_get_and_clear
+> first otherwise you break bisectability.
+> Or better merge patches together.
 
-Yes. I will like David to take a look at this and give his feedback.
-W.r.t patch itself I hit a build failure on mpc85xx_smp_defconfig. I will
-resent after the test build finish on all configs
+The first patch is really a cleanup and should not result in code
+changes. It just make sure that we use pmdp_* functions only on hugepage
+ptes and not on regular pmd_t pointers to pgtable. It avoid the not so
+nice if (pmd_trans_huge()) check in the code and allows us to do the
+VM_BUG_ON(!pmd_trans_huge(*pmdp)) there. That is really important on
+archs like ppc64 where regular pmd format is different from hugepage pte
+format.
+
+
+>
+>> +}
+>> +
+>> +pmd_t pmdp_collapse_flush(struct vm_area_struct *vma, unsigned long address,
+>> +			  pmd_t *pmdp)
+>> +{
+>> +	pmd_t pmd;
+>> +
+>> +	VM_BUG_ON(address & ~HPAGE_PMD_MASK);
+>> +	VM_BUG_ON(pmd_trans_huge(*pmdp));
+>> +
+>> +	pmd = *pmdp;
+>> +	pmd_clear(pmdp);
+>> +	/*
+>> +	 * Wait for all pending hash_page to finish. This is needed
+>> +	 * in case of subpage collapse. When we collapse normal pages
+>> +	 * to hugepage, we first clear the pmd, then invalidate all
+>> +	 * the PTE entries. The assumption here is that any low level
+>> +	 * page fault will see a none pmd and take the slow path that
+>> +	 * will wait on mmap_sem. But we could very well be in a
+>> +	 * hash_page with local ptep pointer value. Such a hash page
+>> +	 * can result in adding new HPTE entries for normal subpages.
+>> +	 * That means we could be modifying the page content as we
+>> +	 * copy them to a huge page. So wait for parallel hash_page
+>> +	 * to finish before invalidating HPTE entries. We can do this
+>> +	 * by sending an IPI to all the cpus and executing a dummy
+>> +	 * function there.
+>> +	 */
+>> +	kick_all_cpus_sync();
+>> +	/*
+>> +	 * Now invalidate the hpte entries in the range
+>> +	 * covered by pmd. This make sure we take a
+>> +	 * fault and will find the pmd as none, which will
+>> +	 * result in a major fault which takes mmap_sem and
+>> +	 * hence wait for collapse to complete. Without this
+>> +	 * the __collapse_huge_page_copy can result in copying
+>> +	 * the old content.
+>> +	 */
+>> +	flush_tlb_pmd_range(vma->vm_mm, &pmd, address);
+>>  	return pmd;
+>>  }
+>>  
+>> diff --git a/include/asm-generic/pgtable.h b/include/asm-generic/pgtable.h
+>> index 39f1d6a2b04d..80e6d415cd57 100644
+>> --- a/include/asm-generic/pgtable.h
+>> +++ b/include/asm-generic/pgtable.h
+>> @@ -189,6 +189,25 @@ extern void pmdp_splitting_flush(struct vm_area_struct *vma,
+>>  				 unsigned long address, pmd_t *pmdp);
+>>  #endif
+>>  
+>> +#ifndef __HAVE_ARCH_PMDP_COLLAPSE_FLUSH
+>> +#ifdef CONFIG_TRANSPARENT_HUGEPAGE
+>> +static inline pmd_t pmdp_collapse_flush(struct vm_area_struct *vma,
+>> +				       unsigned long address,
+>> +				       pmd_t *pmdp)
+>> +{
+>> +	return pmdp_clear_flush(vma, address, pmdp);
+>> +}
+>> +#else
+>> +static inline pmd_t pmdp_collapse_flush(struct vm_area_struct *vma,
+>> +				       unsigned long address,
+>> +				       pmd_t *pmdp)
+>> +{
+>> +	BUILD_BUG();
+>> +	return __pmd(0);
+>> +}
+>> +#endif /* CONFIG_TRANSPARENT_HUGEPAGE */
+>> +#endif
+>> +
+>>  #ifndef __HAVE_ARCH_PGTABLE_DEPOSIT
+>>  extern void pgtable_trans_huge_deposit(struct mm_struct *mm, pmd_t *pmdp,
+>>  				       pgtable_t pgtable);
+>> diff --git a/mm/huge_memory.c b/mm/huge_memory.c
+>> index 078832cf3636..88f695a4e38b 100644
+>> --- a/mm/huge_memory.c
+>> +++ b/mm/huge_memory.c
+>> @@ -2499,7 +2499,7 @@ static void collapse_huge_page(struct mm_struct *mm,
+>>  	 * huge and small TLB entries for the same virtual address
+>>  	 * to avoid the risk of CPU bugs in that area.
+>>  	 */
+>> -	_pmd = pmdp_clear_flush(vma, address, pmd);
+>> +	_pmd = pmdp_collapse_flush(vma, address, pmd);
+>
+> Why? pmdp_clear_flush() does kick_all_cpus_sync() already.
+
+Here we are clearing the regular pmd_t and for ppc64 that means we need
+to invalidate all the normal page pte mappings we already have inserted
+in the hardware hash page table. But before doing that we need to make
+sure there are no parallel hash page table insert going on. So we need
+to do a kick_all_cpus_sync() before flushing the older hash table
+entries. By moving this to a seperate function we capture these details
+nicely.
 
 -aneesh
