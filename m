@@ -1,22 +1,24 @@
-Return-Path: <yangbo.lu@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0148.outbound.protection.outlook.com [157.56.111.148])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <herbert@gondor.apana.org.au>
+Received: from helcar.hengli.com.au (helcar.hengli.com.au [209.40.204.226])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E51581A0008
- for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 May 2015 13:00:08 +1000 (AEST)
-From: "yangbo.lu@freescale.com" <yangbo.lu@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: RE: [PATCH] powerpc/dts: Add 1588 timer node for eTSEC
-Date: Thu, 7 May 2015 02:26:08 +0000
-Message-ID: <BY1PR0301MB119235AB83BDACB911B5B93AF2DF0@BY1PR0301MB1192.namprd03.prod.outlook.com>
-References: <1430905256-4930-1-git-send-email-yangbo.lu@freescale.com>
- <1430945040.16357.293.camel@freescale.com>
-In-Reply-To: <1430945040.16357.293.camel@freescale.com>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6681E1A0008
+ for <linuxppc-dev@lists.ozlabs.org>; Thu,  7 May 2015 13:07:44 +1000 (AEST)
+Date: Thu, 7 May 2015 11:07:17 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Dan Streetman <ddstreet@ieee.org>
+Subject: Re: [PATCH 04/10] crypto: change 842 alg to use software
+Message-ID: <20150507030717.GB29395@gondor.apana.org.au>
+References: <1428428070-17803-1-git-send-email-ddstreet@ieee.org>
+ <1430931066-4536-1-git-send-email-ddstreet@ieee.org>
+ <1430931066-4536-5-git-send-email-ddstreet@ieee.org>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1430931066-4536-5-git-send-email-ddstreet@ieee.org>
+Cc: "David S. Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+ Robert Jennings <rob@pochix.net>, Paul Mackerras <paulus@samba.org>,
+ linux-crypto@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Seth Jennings <sjennings@variantweb.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,61 +28,18 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-VGhhbmtzLg0KUGxzIHNlZSBteSBjb21tZW50cyBiZWxvdy4NCg0KLS0tLS1PcmlnaW5hbCBNZXNz
-YWdlLS0tLS0NCkZyb206IFdvb2QgU2NvdHQtQjA3NDIxIA0KU2VudDogVGh1cnNkYXksIE1heSAw
-NywgMjAxNSA0OjQ0IEFNDQpUbzogTHUgWWFuZ2JvLUI0NzA5Mw0KQ2M6IGxpbnV4cHBjLWRldkBs
-aXN0cy5vemxhYnMub3JnOyBsaW51eC1rZXJuZWxAdmdlci5rZXJuZWwub3JnDQpTdWJqZWN0OiBS
-ZTogW1BBVENIXSBwb3dlcnBjL2R0czogQWRkIDE1ODggdGltZXIgbm9kZSBmb3IgZVRTRUMNCg0K
-T24gV2VkLCAyMDE1LTA1LTA2IGF0IDE3OjQwICswODAwLCBZYW5nYm8gTHUgd3JvdGU6DQo+IEFk
-ZCAxNTg4IHRpbWVyIG5vZGUgaW4gZmlsZXM6DQo+IGFyY2gvcG93ZXJwYy9ib290L2R0cy9ic2M5
-MTMxcmRiLmR0c2kNCj4gYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL2JzYzkxMzJxZHMuZHRzaQ0KPiBh
-cmNoL3Bvd2VycGMvYm9vdC9kdHMvcDEwMTByZGIuZHRzaQ0KPiBhcmNoL3Bvd2VycGMvYm9vdC9k
-dHMvcDEwMjByZGItcGQuZHRzDQo+IGFyY2gvcG93ZXJwYy9ib290L2R0cy9wMTAyMXJkYi1wYy5k
-dHNpDQo+IGFyY2gvcG93ZXJwYy9ib290L2R0cy9wMTAyMmRzLmR0c2kNCj4gYXJjaC9wb3dlcnBj
-L2Jvb3QvZHRzL3AxMDI1dHdyLmR0c2kNCj4gYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL3AyMDIwcmRi
-LXBjLmR0c2kNCj4gDQo+IFNpZ25lZC1vZmYtYnk6IFlhbmdibyBMdSA8eWFuZ2JvLmx1QGZyZWVz
-Y2FsZS5jb20+DQo+IC0tLQ0KPiAgYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL2JzYzkxMzFyZGIuZHRz
-aSAgfCAxMiArKysrKysrKysrKysgIA0KPiBhcmNoL3Bvd2VycGMvYm9vdC9kdHMvYnNjOTEzMnFk
-cy5kdHNpICB8IDEyICsrKysrKysrKysrKw0KPiAgYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL3AxMDEw
-cmRiLmR0c2kgICAgfCAxMiArKysrKysrKysrKysNCj4gIGFyY2gvcG93ZXJwYy9ib290L2R0cy9w
-MTAyMHJkYi1wZC5kdHMgIHwgMTIgKysrKysrKysrKysrICANCj4gYXJjaC9wb3dlcnBjL2Jvb3Qv
-ZHRzL3AxMDIxcmRiLXBjLmR0c2kgfCAxMiArKysrKysrKysrKysNCj4gIGFyY2gvcG93ZXJwYy9i
-b290L2R0cy9wMTAyMmRzLmR0c2kgICAgIHwgMTIgKysrKysrKysrKysrDQo+ICBhcmNoL3Bvd2Vy
-cGMvYm9vdC9kdHMvcDEwMjV0d3IuZHRzaSAgICB8IDEyICsrKysrKysrKysrKw0KPiAgYXJjaC9w
-b3dlcnBjL2Jvb3QvZHRzL3AyMDIwcmRiLXBjLmR0c2kgfCAxNSArKysrKysrKystLS0tLS0NCj4g
-IDggZmlsZXMgY2hhbmdlZCwgOTMgaW5zZXJ0aW9ucygrKSwgNiBkZWxldGlvbnMoLSkNCj4gDQo+
-IGRpZmYgLS1naXQgYS9hcmNoL3Bvd2VycGMvYm9vdC9kdHMvYnNjOTEzMXJkYi5kdHNpIA0KPiBi
-L2FyY2gvcG93ZXJwYy9ib290L2R0cy9ic2M5MTMxcmRiLmR0c2kNCj4gaW5kZXggNDVlZmNiYS4u
-NjI5Y2MwMyAxMDA2NDQNCj4gLS0tIGEvYXJjaC9wb3dlcnBjL2Jvb3QvZHRzL2JzYzkxMzFyZGIu
-ZHRzaQ0KPiArKysgYi9hcmNoL3Bvd2VycGMvYm9vdC9kdHMvYnNjOTEzMXJkYi5kdHNpDQo+IEBA
-IC04MCw2ICs4MCwxOCBAQA0KPiAgCQlzdGF0dXMgPSAiZGlzYWJsZWQiOw0KPiAgCX07DQo+ICAN
-Cj4gKwlwdHBfY2xvY2tAYjBlMDAgew0KPiArCQljb21wYXRpYmxlID0gImZzbCxldHNlYy1wdHAi
-Ow0KPiArCQlyZWcgPSA8MHhiMGUwMCAweGIwPjsNCj4gKwkJaW50ZXJydXB0cyA9IDw2OCAyIDAg
-MCA2OSAyIDAgMD47DQo+ICsJCWZzbCx0Y2xrLXBlcmlvZAk9IDw1PjsNCj4gKwkJZnNsLHRtci1w
-cnNjCT0gPDI+Ow0KPiArCQlmc2wsdG1yLWFkZAk9IDwweGNjY2NjY2NkPjsNCj4gKwkJZnNsLHRt
-ci1maXBlcjEJPSA8MHgzYjlhYzlmYj47DQo+ICsJCWZzbCx0bXItZmlwZXIyCT0gPDB4MDAwMTg2
-OTY+Ow0KPiArCQlmc2wsbWF4LWFkagk9IDwyNDk5OTk5OTk+Ow0KDQpQbGVhc2UgZG9uJ3QgdXNl
-IGhleCBmb3IgbnVtYmVycyB0aGF0IG1ha2UgbW9yZSBzZW5zZSBhcyBkZWNpbWFsLg0KW0x1IFlh
-bmdiby1CNDcwOTNdIFRoZSBoZXggdmFsdWUgaXMgcmVnaXN0ZXIgdmFsdWUsIEkgdGhpbmsgaXQn
-cyBiZXR0ZXIgdG8gdXNlIGhleC4NCg0KPiAtLS0gYS9hcmNoL3Bvd2VycGMvYm9vdC9kdHMvcDIw
-MjByZGItcGMuZHRzaQ0KPiArKysgYi9hcmNoL3Bvd2VycGMvYm9vdC9kdHMvcDIwMjByZGItcGMu
-ZHRzaQ0KPiBAQCAtMjE1LDEyICsyMTUsMTUgQEANCj4gIAl9Ow0KPiAgDQo+ICAJcHRwX2Nsb2Nr
-QDI0ZTAwIHsNCj4gLQkJZnNsLHRjbGstcGVyaW9kID0gPDU+Ow0KPiAtCQlmc2wsdG1yLXByc2Mg
-PSA8MjAwPjsNCj4gLQkJZnNsLHRtci1hZGQgPSA8MHhDQ0NDQ0NDRD47DQo+IC0JCWZzbCx0bXIt
-ZmlwZXIxID0gPDB4M0I5QUM5RkI+Ow0KPiAtCQlmc2wsdG1yLWZpcGVyMiA9IDwweDAwMDE4NjlC
-PjsNCj4gLQkJZnNsLG1heC1hZGogPSA8MjQ5OTk5OTk5PjsNCj4gKwkJY29tcGF0aWJsZSA9ICJm
-c2wsZXRzZWMtcHRwIjsNCj4gKwkJcmVnID0gPDB4MjRlMDAgMHhiMD47DQo+ICsJCWludGVycnVw
-dHMgPSA8NjggMiAwIDAgNjkgMiAwIDA+Ow0KPiArCQlmc2wsdGNsay1wZXJpb2QJPSA8NT47DQo+
-ICsJCWZzbCx0bXItcHJzYwk9IDwyPjsNCj4gKwkJZnNsLHRtci1hZGQJPSA8MHhhYWFhYWFhYj47
-DQo+ICsJCWZzbCx0bXItZmlwZXIxCT0gPDB4M2I5YWM5ZmI+Ow0KPiArCQlmc2wsdG1yLWZpcGVy
-Mgk9IDwweDAwMDE4Njk2PjsNCj4gKwkJZnNsLG1heC1hZGoJPSA8Mjk5OTk5OTk5PjsNCj4gIAl9
-Ow0KDQpUaGlzIGlzbid0IGFkZGluZyBhIG5vZGUgLS0gaXQncyBjaGFuZ2luZyB2YWx1ZXMuICBJ
-ZiB0aGUgb2xkIG9uZXMgd2VyZSB3cm9uZywgZXhwbGFpbiB0aGF0IGluIHRoZSBjaGFuZ2Vsb2cu
-DQoNCkFsc28sIHAyMDIwc2ktcG9zdC5kdHNpIGFscmVhZHkgYWRkcyBpbnRlcnJ1cHRzIHRvIHRo
-aXMgbm9kZSAoYW5kIGl0IGNvbnRhaW5zIG9uZSBtb3JlIGludGVycnVwdCB0aGFuIHRoZSBhYm92
-ZSksIGFuZCBpdCBpbmNsdWRlcyBwcTMtZXRzZWMxLXRpbWVyLTAuZHRzaSB3aGljaCBjb250YWlu
-cyB0aGUgY29tcGF0aWJsZSBhbmQgcmVnIChhbmQgaW50ZXJydXB0cyB3aXRoIHR3byBzcGVjaWZp
-ZXJzKS4gIFByb2JhYmx5IGFsbCBvZiB0aGVzZSBzaG91bGQgYmUgdXNpbmcgcHEzLWV0c2VjMS10
-aW1lci0wLmR0c2kgYW5kIG9ubHkgc3BlY2lmeWluZyB0aGUgYm9hcmQtc3BlY2lmaWMgdmFsdWVz
-Lg0KDQpbTHUgWWFuZ2JvLUI0NzA5M10gSSB3aWxsIG1vZGlmeSBhY2NvcmRpbmcgeW91ciBjb21t
-ZW50cyBoZXJlLg0KDQotU2NvdHQNCg0KDQo=
+On Wed, May 06, 2015 at 12:51:00PM -0400, Dan Streetman wrote:
+> Change the crypto 842 compression alg to use the software 842 compression
+> and decompression library.  Change the name of this crypto alg to "sw842".
+> Remove the fallback to LZO compression.
+
+That's not how the name works.  All implementations of 842 should
+bear that name.  They should differentiate themselves based on
+cra_driver_name.  For example, we generally call the software
+implementation of foo "foo-generic".
+
+Cheers,
+-- 
+Email: Herbert Xu <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
