@@ -1,48 +1,23 @@
-Return-Path: <nacc@linux.vnet.ibm.com>
-Received: from e18.ny.us.ibm.com (e18.ny.us.ibm.com [129.33.205.208])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pa0-f50.google.com (mail-pa0-f50.google.com
+ [209.85.220.50])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A15CD1A0957
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 May 2015 09:19:01 +1000 (AEST)
-Received: from /spool/local
- by e18.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <nacc@linux.vnet.ibm.com>;
- Fri, 8 May 2015 19:18:58 -0400
-Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
- [9.57.198.29])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id E62626E803C
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 May 2015 19:10:43 -0400 (EDT)
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
- by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t48NItqF63242316
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 8 May 2015 23:18:55 GMT
-Received: from d01av02.pok.ibm.com (localhost [127.0.0.1])
- by d01av02.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t48NIrxp032520
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 8 May 2015 19:18:55 -0400
-Date: Fri, 8 May 2015 16:18:52 -0700
-From: Nishanth Aravamudan <nacc@linux.vnet.ibm.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH v2] mm: vmscan: do not throttle based on pfmemalloc
- reserves if node has no reclaimable pages
-Message-ID: <20150508231852.GA53489@linux.vnet.ibm.com>
-References: <20150327192850.GA18701@linux.vnet.ibm.com>
- <5515BAF7.6070604@intel.com>
- <20150327222350.GA22887@linux.vnet.ibm.com>
- <20150331094829.GE9589@dhcp22.suse.cz> <551E47EF.5030800@suse.cz>
- <20150403174556.GF32318@linux.vnet.ibm.com>
- <20150505220913.GC32719@linux.vnet.ibm.com>
- <5549DEAC.6080709@suse.cz>
- <20150508154726.9969933e6b5ebbb42e65ffae@linux-foundation.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9A8D91A0957
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 May 2015 09:59:35 +1000 (AEST)
+Received: by pabsx10 with SMTP id sx10so61877680pab.3
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 08 May 2015 16:59:32 -0700 (PDT)
+Message-ID: <554D4DDD.6010607@ozlabs.ru>
+Date: Sat, 09 May 2015 09:59:25 +1000
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150508154726.9969933e6b5ebbb42e65ffae@linux-foundation.org>
-Cc: Rik van Riel <riel@redhat.com>, anton@sambar.org, linux-mm@kvack.org,
- linux-kernel@vger.kernel.org, Michal Hocko <mhocko@suse.cz>,
- Dave Hansen <dave.hansen@intel.com>, Dan Streetman <ddstreet@ieee.org>,
- Mel Gorman <mgorman@suse.de>, Johannes Weiner <hannes@cmpxchg.org>,
- linuxppc-dev@lists.ozlabs.org, Vlastimil Babka <vbabka@suse.cz>
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v4 00/21] PowerPC/PowerNV: PCI Slot Management
+References: <1430460188-31343-1-git-send-email-gwshan@linux.vnet.ibm.com>
+In-Reply-To: <1430460188-31343-1-git-send-email-gwshan@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=koi8-r; format=flowed
+Cc: bhelgaas@google.com, linux-pci@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -52,46 +27,135 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 08.05.2015 [15:47:26 -0700], Andrew Morton wrote:
-> On Wed, 06 May 2015 11:28:12 +0200 Vlastimil Babka <vbabka@suse.cz> wrote:
-> 
-> > On 05/06/2015 12:09 AM, Nishanth Aravamudan wrote:
-> > > On 03.04.2015 [10:45:56 -0700], Nishanth Aravamudan wrote:
-> > >>> What I find somewhat worrying though is that we could potentially
-> > >>> break the pfmemalloc_watermark_ok() test in situations where
-> > >>> zone_reclaimable_pages(zone) == 0 is a transient situation (and not
-> > >>> a permanently allocated hugepage). In that case, the throttling is
-> > >>> supposed to help system recover, and we might be breaking that
-> > >>> ability with this patch, no?
-> > >>
-> > >> Well, if it's transient, we'll skip it this time through, and once there
-> > >> are reclaimable pages, we should notice it again.
-> > >>
-> > >> I'm not familiar enough with this logic, so I'll read through the code
-> > >> again soon to see if your concern is valid, as best I can.
-> > >
-> > > In reviewing the code, I think that transiently unreclaimable zones will
-> > > lead to some higher direct reclaim rates and possible contention, but
-> > > shouldn't cause any major harm. The likelihood of that situation, as
-> > > well, in a non-reserved memory setup like the one I described, seems
-> > > exceedingly low.
-> > 
-> > OK, I guess when a reasonably configured system has nothing to reclaim, 
-> > it's already busted and throttling won't change much.
-> > 
-> > Consider the patch Acked-by: Vlastimil Babka <vbabka@suse.cz>
-> 
-> OK, thanks, I'll move this patch into the queue for 4.2-rc1.
+On 05/01/2015 04:02 PM, Gavin Shan wrote:
+> The series of patches intend to support PCI slot for PowerPC PowerNV platform,
+> which is running on top of skiboot firmware. The patchset requires corresponding
+> changes from skiboot firmware, which is sent to skiboot@lists.ozlabs.org
+> for review. The PCI slots are exposed by skiboot with device node properties,
+> and kernel utilizes those properties to populated PCI slots accordingly.
+>
+> The original PCI infrastructure on PowerNV platform can't support hotplug
+> because the PE is assigned during PHB fixup time, which is called for once
+> during system boot time. For this, the PCI infrastructure on PowerNV platform
+> has been reworked for a lot. After that, the PE and its corresponding resources
+> (IODT, M32DT, M64 segments, DMA32 and bypass window) are assigned upon updating
+> PCI bridge's resources, which might decide PE# assigned to the PE (e.g. M64
+> resources, on P8 strictly speaking).
 
-Thank you!
+Out of curiosity - does this PCI scan happen when memory subsystem is 
+initialized? More precisely, after these changes, won't 
+pnv_pci_ioda2_setup_dma_pe() be called too early after boot so I won't be 
+able to use kmalloc() to allocate iommu_table's?
 
-> Or is it important enough to merge into 4.1?
+Also, checkpatch.pl failed multiple times on the series. Please fix.
 
-I think 4.2 is sufficient, but I wonder now if I should have included a
-stable tag? The issue has been around for a while and there's a
-relatively easily workaround (use the per-node sysfs files to manually
-round-robin around the exhausted node) in older kernels, so I had
-decided against it before.
 
-Thanks,
-Nish
+> Each PE will maintain a reference count,
+> which is (number of child PCI devices + 1). That indicates when last child PCI
+> device leaves the PE, the PE and its included resources will be relased and put
+> back into free pool again. With this design, the PE will be released when EEH PE
+> is released. PATCH[1 - 8] are related to this part.
+>
+>  From skiboot perspective, PCI slot is providing (hot/fundamental/complete)
+> resets to EEH. The kernel gets to know if skiboot supports various reset on one
+> particular PCI slot through device-tree node. If it does, EEH will utilize the
+> functionality provided by skiboot. Besides, the device-tree nodes have to change
+> in order to support PCI hotplug. For example, when one PCI adapter inserted to
+> one slot, its device-tree node should be added to the system dynamically. Conversely,
+> the device-tree node should be removed from the system when the PCI adapter is going
+> to be offline. Since pci_dn and eeh_dev have same life cyle as PCI device nodes,
+> they should be added/removed accordingly during PCI hotplug. Patch[9 - 20] are
+> doing the related work.
+>
+> The last patch is the standalone PCI hotplug driver for PowerNV platform. When
+> removing PCI adapter from one PCI slot, which is invoked by command in userland,
+> the skiboot will power off the slot to save power and remove all device-tree
+> nodes for all PCI devices behind the slot. Conversely, the Power to the slot
+> is turned on, the PCI devices behind the slot is rescanned, and the device-tree
+> nodes for those newly detected PCI devices will be built in skiboot. For both
+> of cases, one message will be sent to kernel by skiboot so that the kernel
+> can adjust the device-tree accordingly. At the same time, the kernel also have
+> to deallocate or allocate PE# and its related resources (PE# and so on) for the
+> removed/added PCI devices.
+>
+> Changelog
+> =========
+> v4:
+>     * Rebased to 4.1.RC1
+>     * Added API to unflatten FDT blob to device node sub-tree, which is attached
+>       the indicated parent device node. The original mechanism based on formatted
+>       string stream has been dropped.
+>     * The PATCH[v3 09/21] ("powerpc/eeh: Delay probing EEH device during hotplug")
+>       was picked up sent to linux-ppc@ separately for review as Richard's "VF EEH
+>       Support" depends on that.
+> v3:
+>     * Rebased to 4.1.RC0
+>     * PowerNV PCI infrasturcture is total refactored in order to support PCI
+>       hotplug. The PowerNV hotplug driver is also reworked a lot because of
+>       the changes in skiboot in order to support PCI hotplug.
+>
+> Gavin Shan (21):
+>    pci: Add pcibios_setup_bridge()
+>    powerpc/powernv: Enable M64 on P7IOC
+>    powerpc/powernv: M64 support improvement
+>    powerpc/powernv: Improve IO and M32 mapping
+>    powerpc/powernv: Improve DMA32 segment assignment
+>    powerpc/powernv: Create PEs dynamically
+>    powerpc/powernv: Release PEs dynamically
+>    powerpc/powernv: Drop pnv_ioda_setup_dev_PE()
+>    powerpc/powernv: Use PCI slot reset infrastructure
+>    powerpc/powernv: Fundamental reset for PCI bus reset
+>    powerpc/pci: Don't scan empty slot
+>    powerpc/pci: Move pcibios_find_pci_bus() around
+>    powerpc/powernv: Introduce pnv_pci_poll()
+>    powerpc/powernv: Functions to get/reset PCI slot status
+>    powerpc/pci: Delay creating pci_dn
+>    powerpc/pci: Create eeh_dev while creating pci_dn
+>    powerpc/pci: Export traverse_pci_device_nodes()
+>    powerpc/pci: Update bridge windows on PCI plugging
+>    drivers/of: Support adding sub-tree
+>    powerpc/powernv: Select OF_DYNAMIC
+>    pci/hotplug: PowerPC PowerNV PCI hotplug driver
+>
+>   arch/powerpc/include/asm/eeh.h                 |    7 +-
+>   arch/powerpc/include/asm/opal-api.h            |    7 +-
+>   arch/powerpc/include/asm/opal.h                |    7 +-
+>   arch/powerpc/include/asm/pci-bridge.h          |    7 +-
+>   arch/powerpc/include/asm/pnv-pci.h             |    5 +
+>   arch/powerpc/include/asm/ppc-pci.h             |    7 +-
+>   arch/powerpc/kernel/eeh_dev.c                  |   20 +-
+>   arch/powerpc/kernel/pci-common.c               |   18 +-
+>   arch/powerpc/kernel/pci-hotplug.c              |   44 +-
+>   arch/powerpc/kernel/pci_dn.c                   |  119 +-
+>   arch/powerpc/platforms/maple/pci.c             |   35 +-
+>   arch/powerpc/platforms/pasemi/pci.c            |    3 -
+>   arch/powerpc/platforms/powermac/pci.c          |   39 +-
+>   arch/powerpc/platforms/powernv/Kconfig         |    1 +
+>   arch/powerpc/platforms/powernv/eeh-powernv.c   |  245 ++--
+>   arch/powerpc/platforms/powernv/opal-wrappers.S |    3 +
+>   arch/powerpc/platforms/powernv/pci-ioda.c      | 1657 +++++++++++++++---------
+>   arch/powerpc/platforms/powernv/pci.c           |   64 +-
+>   arch/powerpc/platforms/powernv/pci.h           |   52 +-
+>   arch/powerpc/platforms/pseries/msi.c           |    4 +-
+>   arch/powerpc/platforms/pseries/pci_dlpar.c     |   32 -
+>   arch/powerpc/platforms/pseries/setup.c         |    9 +-
+>   drivers/of/dynamic.c                           |   19 +-
+>   drivers/of/fdt.c                               |  133 +-
+>   drivers/pci/hotplug/Kconfig                    |   12 +
+>   drivers/pci/hotplug/Makefile                   |    4 +
+>   drivers/pci/hotplug/powernv_php.c              |  146 +++
+>   drivers/pci/hotplug/powernv_php.h              |   78 ++
+>   drivers/pci/hotplug/powernv_php_slot.c         |  643 +++++++++
+>   drivers/pci/setup-bus.c                        |   12 +-
+>   include/linux/of.h                             |    2 +
+>   include/linux/of_fdt.h                         |    1 +
+>   include/linux/pci.h                            |    1 +
+>   33 files changed, 2473 insertions(+), 963 deletions(-)
+>   create mode 100644 drivers/pci/hotplug/powernv_php.c
+>   create mode 100644 drivers/pci/hotplug/powernv_php.h
+>   create mode 100644 drivers/pci/hotplug/powernv_php_slot.c
+>
+
+
+-- 
+Alexey
