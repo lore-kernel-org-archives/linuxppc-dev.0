@@ -1,36 +1,27 @@
-Return-Path: <pbonzini@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 424C01A00E9
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 May 2015 21:10:27 +1000 (AEST)
-Message-ID: <554C995B.6050907@redhat.com>
-Date: Fri, 08 May 2015 13:09:15 +0200
-From: Paolo Bonzini <pbonzini@redhat.com>
+Return-Path: <sudeep.holla@arm.com>
+Received: from foss.arm.com (foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id 125851A00E9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 May 2015 22:43:44 +1000 (AEST)
+Message-ID: <554CAF7A.6060609@arm.com>
+Date: Fri, 08 May 2015 13:43:38 +0100
+From: Sudeep Holla <sudeep.holla@arm.com>
 MIME-Version: 1.0
-To: Christoffer Dall <christoffer.dall@linaro.org>, =?windows-1252?Q?Alex?=
- =?windows-1252?Q?_Benn=E9e?= <alex.bennee@linaro.org>
-Subject: Re: [PATCH v3 02/12] KVM: define common __KVM_GUESTDBG_USE_SW/HW_BP
- values
-References: <1430929407-3487-1-git-send-email-alex.bennee@linaro.org>
- <1430929407-3487-3-git-send-email-alex.bennee@linaro.org>
- <20150508092346.GB24744@cbox>
-In-Reply-To: <20150508092346.GB24744@cbox>
-Content-Type: text/plain; charset=windows-1252
-Cc: peter.maydell@linaro.org, kvm@vger.kernel.org,
- Alexey Kardashevskiy <aik@ozlabs.ru>,
- Bharat Bhushan <Bharat.Bhushan@freescale.com>,
- Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
- kvmarm@lists.cs.columbia.edu, Nadav Amit <namit@cs.technion.ac.il>,
- "maintainer:X86 ARCHITECTURE..." <x86@kernel.org>, agraf@suse.de,
- Gleb Natapov <gleb@kernel.org>, Ingo Molnar <mingo@redhat.com>,
- zhichao.huang@linaro.org, jan.kiszka@siemens.com,
- Mihai Caraman <mihai.caraman@freescale.com>, bp@suse.de, drjones@redhat.com,
- marc.zyngier@arm.com, r65777@freescale.com,
- Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
- ABI/API <linux-api@vger.kernel.org>, open list <linux-kernel@vger.kernel.org>,
- dahi@linux.vnet.ibm.com,
- "open list:LINUX FOR POWERPC..." <linuxppc-dev@lists.ozlabs.org>
+To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Subject: Re: [PATCH V3] cpuidle: Handle tick_broadcast_enter() failure
+ gracefully
+References: <20150508073418.28491.4150.stgit@preeti.in.ibm.com>
+In-Reply-To: <20150508073418.28491.4150.stgit@preeti.in.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Cc: "rlippert@google.com" <rlippert@google.com>,
+ "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>,
+ "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+ "peterz@infradead.org" <peterz@infradead.org>,
+ "linus.walleij@linaro.org" <linus.walleij@linaro.org>,
+ "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "mingo@redhat.com" <mingo@redhat.com>, Sudeep Holla <sudeep.holla@arm.com>,
+ "tglx@linutronix.de" <tglx@linutronix.de>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,81 +33,26 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 
 
-On 08/05/2015 11:23, Christoffer Dall wrote:
-> On Wed, May 06, 2015 at 05:23:17PM +0100, Alex Bennée wrote:
->> Currently x86, powerpc and soon arm64 use the same two architecture
->> specific bits for guest debug support for software and hardware
->> breakpoints. This makes the shared values explicit while leaving the
->> gate open for another architecture to use some other value if they
->> really really want to.
->>
->> Signed-off-by: Alex Bennée <alex.bennee@linaro.org>
->> Reviewed-by: Andrew Jones <drjones@redhat.com>
->>
->> diff --git a/arch/powerpc/include/uapi/asm/kvm.h b/arch/powerpc/include/uapi/asm/kvm.h
->> index ab4d473..1731569 100644
->> --- a/arch/powerpc/include/uapi/asm/kvm.h
->> +++ b/arch/powerpc/include/uapi/asm/kvm.h
->> @@ -310,8 +310,8 @@ struct kvm_guest_debug_arch {
->>   * and upper 16 bits are architecture specific. Architecture specific defines
->>   * that ioctl is for setting hardware breakpoint or software breakpoint.
->>   */
->> -#define KVM_GUESTDBG_USE_SW_BP		0x00010000
->> -#define KVM_GUESTDBG_USE_HW_BP		0x00020000
->> +#define KVM_GUESTDBG_USE_SW_BP		__KVM_GUESTDBG_USE_SW_BP
->> +#define KVM_GUESTDBG_USE_HW_BP		__KVM_GUESTDBG_USE_HW_BP
->>  
->>  /* definition of registers in kvm_run */
->>  struct kvm_sync_regs {
->> diff --git a/arch/x86/include/uapi/asm/kvm.h b/arch/x86/include/uapi/asm/kvm.h
->> index d7dcef5..1438202 100644
->> --- a/arch/x86/include/uapi/asm/kvm.h
->> +++ b/arch/x86/include/uapi/asm/kvm.h
->> @@ -250,8 +250,8 @@ struct kvm_debug_exit_arch {
->>  	__u64 dr7;
->>  };
->>  
->> -#define KVM_GUESTDBG_USE_SW_BP		0x00010000
->> -#define KVM_GUESTDBG_USE_HW_BP		0x00020000
->> +#define KVM_GUESTDBG_USE_SW_BP		__KVM_GUESTDBG_USE_SW_BP
->> +#define KVM_GUESTDBG_USE_HW_BP		__KVM_GUESTDBG_USE_HW_BP
->>  #define KVM_GUESTDBG_INJECT_DB		0x00040000
->>  #define KVM_GUESTDBG_INJECT_BP		0x00080000
->>  
->> diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
->> index 70ac641..3b6252e 100644
->> --- a/include/uapi/linux/kvm.h
->> +++ b/include/uapi/linux/kvm.h
->> @@ -570,8 +570,16 @@ struct kvm_s390_irq_state {
->>  
->>  /* for KVM_SET_GUEST_DEBUG */
->>  
->> -#define KVM_GUESTDBG_ENABLE		0x00000001
->> -#define KVM_GUESTDBG_SINGLESTEP		0x00000002
->> +#define KVM_GUESTDBG_ENABLE		(1 << 0)
->> +#define KVM_GUESTDBG_SINGLESTEP	(1 << 1)
->> +
->> +/*
->> + * Architecture specific stuff uses the top 16 bits of the field,
-> 
-> s/stuff/<something more specific>/
-> 
->> + * however there is some shared commonality for the common cases
->> + */
->> +#define __KVM_GUESTDBG_USE_SW_BP	(1 << 16)
->> +#define __KVM_GUESTDBG_USE_HW_BP	(1 << 17)
->> +
->>  
->>  struct kvm_guest_debug {
->>  	__u32 control;
-> 
-> We sort of left this discussion hanging with me expressing slight
-> concern about the usefulness about these defines.
-> 
-> Paolo, what are your thoughts?
+On 08/05/15 08:35, Preeti U Murthy wrote:
+> When a CPU has to enter an idle state where tick stops, it makes a call
+> to tick_broadcast_enter(). The call will fail if this CPU is the
+> broadcast CPU. Today, under such a circumstance, the arch cpuidle code
+> handles this CPU.  This is not convincing because not only do we not
+> know what the arch cpuidle code does, but we also do not account for the
+> idle state residency time and usage of such a CPU.
+>
+> This scenario can be handled better by simply choosing an idle state
+> where in ticks do not stop. To accommodate this change move the setting
+> of runqueue idle state from the core to the cpuidle driver, else the
+> rq->idle_state will be set wrong.
+>
+> Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
 
-I would just lift these two KVM_GUESTDBG_* defines to
-include/uapi/linux/kvm.h and say that architecture specific stuff uses
-the top 14 bits of the field. :)
+I gave it a spin on ARM64 Juno platform with one of the CPU in broadcast
+mode and Vexpress TC2 with broadcast timer. I found no issues in both
+the cases. So, you can add:
 
-Paolo
+Tested-by: Sudeep Holla <sudeep.holla@arm.com>
+
+Regards,
+Sudeep
