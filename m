@@ -1,41 +1,25 @@
-Return-Path: <preeti@linux.vnet.ibm.com>
-Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <mr.triggtrigg@gmail.com>
+Received: from mail-wg0-x236.google.com (mail-wg0-x236.google.com
+ [IPv6:2a00:1450:400c:c00::236])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DDC6D1A1627
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 May 2015 17:36:58 +1000 (AEST)
-Received: from /spool/local
- by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
- Fri, 8 May 2015 01:36:56 -0600
-Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com
- [9.57.198.28])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 6EBB3C90042
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 May 2015 03:28:02 -0400 (EDT)
-Received: from d01av05.pok.ibm.com (d01av05.pok.ibm.com [9.56.224.195])
- by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t487asM439321690
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 8 May 2015 07:36:54 GMT
-Received: from d01av05.pok.ibm.com (localhost [127.0.0.1])
- by d01av05.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t487arBf007717
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 8 May 2015 03:36:54 -0400
-Message-ID: <554C6780.5050306@linux.vnet.ibm.com>
-Date: Fri, 08 May 2015 13:06:32 +0530
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 819051A170E
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 May 2015 17:37:28 +1000 (AEST)
+Received: by wgin8 with SMTP id n8so64606041wgi.0
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 08 May 2015 00:37:24 -0700 (PDT)
 MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH V2] cpuidle: Handle tick_broadcast_enter() failure
- gracefully
-References: <20150507174355.25321.85885.stgit@preeti.in.ibm.com>
- <1562115.g1s3BW0dJA@vostro.rjw.lan>
-In-Reply-To: <1562115.g1s3BW0dJA@vostro.rjw.lan>
+In-Reply-To: <1430991020-7556-2-git-send-email-vipin@linux.vnet.ibm.com>
+References: <1430991020-7556-1-git-send-email-vipin@linux.vnet.ibm.com>
+ <1430991020-7556-2-git-send-email-vipin@linux.vnet.ibm.com>
+Date: Fri, 8 May 2015 13:07:24 +0530
+Message-ID: <CAPfuKj+CpLN7QdRJ+VFTz1_p5QL9fkJ+FOa0tKQ2-YEOoXR+4g@mail.gmail.com>
+Subject: Re: [PATCH v2 1/2] powerpc/powernv: Add poweroff (EPOW, DPO) events
+ support for PowerNV platform
+From: trigg <mr.triggtrigg@gmail.com>
+To: Vipin K Parashar <vipin@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=UTF-8
-Cc: rlippert@google.com, daniel.lezcano@linaro.org, linux-pm@vger.kernel.org,
- peterz@infradead.org, linus.walleij@linaro.org, rafael.j.wysocki@intel.com,
- linux-kernel@vger.kernel.org, mingo@redhat.com, sudeep.holla@arm.com,
- tglx@linutronix.de, linuxppc-dev@lists.ozlabs.org
+Cc: Stewart Smith <stewart@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ joel@jms.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -45,71 +29,579 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/08/2015 02:20 AM, Rafael J. Wysocki wrote:
-> On Thursday, May 07, 2015 11:17:21 PM Preeti U Murthy wrote:
->> When a CPU has to enter an idle state where tick stops, it makes a call
->> to tick_broadcast_enter(). The call will fail if this CPU is the
->> broadcast CPU. Today, under such a circumstance, the arch cpuidle code
->> handles this CPU.  This is not convincing because not only are we not
->> aware what the arch cpuidle code does, but we also do not account for
->> the idle state residency time and usage of such a CPU.
->>
->> This scenario can be handled better by simply asking the cpuidle
->> governor to choose an idle state where in ticks do not stop. To
->> accommodate this change move the setting of runqueue idle state from the
->> core to the cpuidle driver, else the rq->idle_state will be set wrong.
->>
->> Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
->> ---
->> Changes from V1: https://lkml.org/lkml/2015/5/7/24
->> Rebased on the latest linux-pm/bleeding-edge
->>
->>  drivers/cpuidle/cpuidle.c          |   21 +++++++++++++++++----
->>  drivers/cpuidle/governors/ladder.c |   13 ++++++++++---
->>  drivers/cpuidle/governors/menu.c   |    6 +++++-
->>  include/linux/cpuidle.h            |    6 +++---
->>  include/linux/sched.h              |   16 ++++++++++++++++
->>  kernel/sched/core.c                |   17 +++++++++++++++++
->>  kernel/sched/fair.c                |    2 +-
->>  kernel/sched/idle.c                |    8 +-------
->>  kernel/sched/sched.h               |   24 ------------------------
->>  9 files changed, 70 insertions(+), 43 deletions(-)
->>
->> diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
->> index 8c24f95..b7e86f4 100644
->> --- a/drivers/cpuidle/cpuidle.c
->> +++ b/drivers/cpuidle/cpuidle.c
->> @@ -21,6 +21,7 @@
->>  #include <linux/module.h>
->>  #include <linux/suspend.h>
->>  #include <linux/tick.h>
->> +#include <linux/sched.h>
->>  #include <trace/events/power.h>
->>  
->>  #include "cpuidle.h"
->> @@ -168,10 +169,17 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
->>  	 * CPU as a broadcast timer, this call may fail if it is not available.
->>  	 */
->>  	if (broadcast && tick_broadcast_enter()) {
->> -		default_idle_call();
->> -		return -EBUSY;
->> +		index = cpuidle_select(drv, dev, !broadcast);
-> 
-> No, you can't do that.
-> 
-> This code path may be used by suspend-to-idle and that should not call
-> cpuidle_select().
-> 
-> What's needed here seems to be a fallback mechanism like "choose the
-> deepest state shallower than X and such that it won't stop the tick".
-> You don't really need to run a full governor for that.
+Hi Vipin,
 
-Agreed. Makes the patch a lot simpler as well. I have sent out V3 doing
-this.
+These comments are in addition to what Joel has said in his review.
 
-Thank you
+On Thu, May 7, 2015 at 3:00 PM, Vipin K Parashar
+<vipin@linux.vnet.ibm.com> wrote:
+> This patch adds support for FSP EPOW (Early Power Off Warning) and
+> DPO (Delayed Power Off) events support for PowerNV platform.  EPOW events
+> are generated by SPCN/FSP due to various critical system conditions that
+> need system shutdown.  Few examples of these conditions are high ambient
+> temperature or system running on UPS power with low UPS battery. DPO event
+> is generated in response to admin initiated system shutdown request.
+>         This patch enables host kernel on PowerNV platform to handle OPAL
+> notifications for these events and initiate system poweroff. Since EPOW
+> notifications are sent in advance of impending shutdown event and thus
+> this patch also adds functionality to wait for EPOW condition to return to
+> normal. Host allows MAX_POWEROFF_SYS_TIME (600 seconds) as system
+> poweroff time (time for host + guests shutdown) and waits for remaining
+> time for EPOW condition to return to normal. If EPOW condition doesn't
+> return to normal in calculated time it proceeds with graceful system
+> shutdown. For EPOW events with smaller timeouts values than
+> MAX_POWEROFF_SYS_TIME it proceeds with system shutdown without any wait
+> for EPOW condition to return to normal.
+>         System admin can also add systemd service shutdown scripts to
+> perform any specific actions like graceful guest shutdown upon system
+> poweroff. libvirt-guests is systemd service available on recent distros
+> for management of guests at system stat/shutdown time.
+>
+> Signed-off-by: Vipin K Parashar <vipin@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/include/asm/opal-api.h            |  30 ++
+>  arch/powerpc/include/asm/opal.h                |   3 +-
+>  arch/powerpc/platforms/powernv/opal-power.c    | 379 +++++++++++++++++++++++--
+>  arch/powerpc/platforms/powernv/opal-wrappers.S |   1 +
+>  4 files changed, 391 insertions(+), 22 deletions(-)
+>
+> diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
+> index 0321a90..03b3cef 100644
+> --- a/arch/powerpc/include/asm/opal-api.h
+> +++ b/arch/powerpc/include/asm/opal-api.h
+> @@ -730,6 +730,36 @@ struct opal_i2c_request {
+>         __be64 buffer_ra;               /* Buffer real address */
+>  };
+>
+> +/*
+> + * EPOW status sharing (OPAL and the host)
+> + *
+> + * The host will pass on OPAL, a buffer of length OPAL_EPOW_MAX_CLASSES
+> + * to fetch system wide EPOW status. Each element in the returned buffer
+> + * will contain bitwise EPOW status for each EPOW sub class.
+> + */
+> +
+> +/* EPOW types */
+> +enum OpalEpow {
+> +       OPAL_EPOW_POWER         = 0,    /* Power EPOW */
+> +       OPAL_EPOW_TEMP          = 1,    /* Temperature EPOW */
+> +       OPAL_EPOW_COOLING       = 2,    /* Cooling EPOW */
+> +       OPAL_MAX_EPOW_CLASSES   = 3,    /* Max EPOW categories */
+> +};
+Dont explicitly assign sequential numbers in an enum. Its taken care
+of by the compiler.
 
-Regards
-Preeti U Murthy
-> 
-> 
+> +
+> +/* Power EPOW events */
+> +enum OpalEpowPower {
+> +       OPAL_EPOW_POWER_UPS     = 0x1, /* System on UPS power */
+> +       OPAL_EPOW_POWER_UPS_LOW = 0x2, /* System on UPS power with low battery*/
+> +};
+> +
+> +/* Temperature EPOW events */
+> +enum OpalEpowTemp {
+> +       OPAL_EPOW_TEMP_HIGH_AMB = 0x1, /* High ambient temperature */
+> +       OPAL_EPOW_TEMP_CRIT_AMB = 0x2, /* Critical ambient temperature */
+> +       OPAL_EPOW_TEMP_HIGH_INT = 0x4, /* High internal temperature */
+> +       OPAL_EPOW_TEMP_CRIT_INT = 0x8, /* Critical internal temperature */
+> +};
+> +
+>  #endif /* __ASSEMBLY__ */
+>
+>  #endif /* __OPAL_API_H */
+> diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
+> index 042af1a..0777864 100644
+> --- a/arch/powerpc/include/asm/opal.h
+> +++ b/arch/powerpc/include/asm/opal.h
+> @@ -141,7 +141,6 @@ int64_t opal_pci_fence_phb(uint64_t phb_id);
+>  int64_t opal_pci_reinit(uint64_t phb_id, uint64_t reinit_scope, uint64_t data);
+>  int64_t opal_pci_mask_pe_error(uint64_t phb_id, uint16_t pe_number, uint8_t error_type, uint8_t mask_action);
+>  int64_t opal_set_slot_led_status(uint64_t phb_id, uint64_t slot_id, uint8_t led_type, uint8_t led_action);
+> -int64_t opal_get_epow_status(__be64 *status);
+>  int64_t opal_set_system_attention_led(uint8_t led_action);
+>  int64_t opal_pci_next_error(uint64_t phb_id, __be64 *first_frozen_pe,
+>                             __be16 *pci_error_type, __be16 *severity);
+> @@ -200,6 +199,8 @@ int64_t opal_flash_write(uint64_t id, uint64_t offset, uint64_t buf,
+>                 uint64_t size, uint64_t token);
+>  int64_t opal_flash_erase(uint64_t id, uint64_t offset, uint64_t size,
+>                 uint64_t token);
+> +int32_t opal_get_epow_status(__be32 *status, __be32 *num_classes);
+> +int32_t opal_get_dpo_status(__be32 *timeout);
+>
+>  /* Internal functions */
+>  extern int early_init_dt_scan_opal(unsigned long node, const char *uname,
+> diff --git a/arch/powerpc/platforms/powernv/opal-power.c b/arch/powerpc/platforms/powernv/opal-power.c
+> index ac46c2c..7c1b2f8 100644
+> --- a/arch/powerpc/platforms/powernv/opal-power.c
+> +++ b/arch/powerpc/platforms/powernv/opal-power.c
+> @@ -1,5 +1,5 @@
+>  /*
+> - * PowerNV OPAL power control for graceful shutdown handling
+> + * PowerNV poweroff events support
+>   *
+>   * Copyright 2015 IBM Corp.
+>   *
+> @@ -9,58 +9,395 @@
+>   * 2 of the License, or (at your option) any later version.
+>   */
+>
+> +#define pr_fmt(fmt)    "POWEROFF_EVENT: "    fmt
+> +
+>  #include <linux/kernel.h>
+> +#include <linux/spinlock.h>
+> +#include <linux/timer.h>
+>  #include <linux/reboot.h>
+> -#include <linux/notifier.h>
+> -
+> +#include <linux/of.h>
+>  #include <asm/opal.h>
+>  #include <asm/machdep.h>
+>
+> -#define SOFT_OFF 0x00
+> -#define SOFT_REBOOT 0x01
+> +/* Power control event types */
+> +#define SOFT_OFF       0x00
+> +#define SOFT_REBOOT    0x01
+> +
+> +/* Max time for graceful system shutdown including guests. */
+> +#define MAX_POWEROFF_SYS_TIME  600
+> +
+> +/* System EPOW, DPO support variables */
+> +bool epow_supported = false;
+> +bool dpo_supported = false;
+Make them static and no need to set them to false explicitly.
+
+> +
+> +/* System EPOW status */
+> +static u32 epow_status[OPAL_MAX_EPOW_CLASSES];
+> +static int num_epow_classes;
+> +
+> +/* EPOW event timer and corresponding locks */
+> +static struct timer_list epow_timer;
+> +static DEFINE_SPINLOCK(epow_timer_spinlock);
+> +
+> +/* EPOW events types */
+> +#define EPOW_POWER_UPS         0
+> +#define EPOW_POWER_UPS_LOW     1
+> +#define EPOW_TEMP_HIGH_AMB     2
+> +#define EPOW_TEMP_CRIT_AMB     3
+> +#define EPOW_TEMP_HIGH_INT     4
+> +#define EPOW_TEMP_CRIT_INT     5
+> +#define EPOW_UNKNOWN           6
+> +#define MAX_EPOW_EVENTS                7
+Can make these constants enum.
+
+> +
+> +/* Poweroff EPOW events description */
+> +static const char * const epow_events_map[] = {
+> +       [EPOW_POWER_UPS]        = "ups",
+> +       [EPOW_POWER_UPS_LOW]    = "ups-low",
+> +       [EPOW_TEMP_HIGH_AMB]    = "high-ambient-temp",
+> +       [EPOW_TEMP_CRIT_AMB]    = "crit-ambient-temp",
+> +       [EPOW_TEMP_HIGH_INT]    = "high-internal-temp",
+> +       [EPOW_TEMP_CRIT_INT]    = "crit-internal-temp",
+> +       [EPOW_UNKNOWN]          = "Unknown",
+> +};
+> +
+> +/* Poweroff EPOW events timeout values in seconds */
+> +static const int epow_timeout[] = {
+> +       [EPOW_POWER_UPS]        = 900,
+> +       [EPOW_POWER_UPS_LOW]    = 20,
+> +       [EPOW_TEMP_HIGH_AMB]    = 900,
+> +       [EPOW_TEMP_CRIT_AMB]    = 20,
+> +       [EPOW_TEMP_HIGH_INT]    = 900,
+> +       [EPOW_TEMP_CRIT_INT]    = 20,
+> +       [EPOW_UNKNOWN]          = 0,
+> +};
+> +
+> +/* System poweroff function. */
+> +static void epow_poweroff(unsigned long event)
+> +{
+> +       pr_info("Powering off system due to %s EPOW event\n",
+> +                               epow_events_map[event]);
+> +       orderly_poweroff(true);
+> +}
+> +
+> +/* Start EPOW poweroff timer */
+> +static void start_epow_timer(unsigned long event, int32_t timeout)
+> +{
+> +       unsigned long flags;
+> +
+> +       spin_lock_irqsave(&epow_timer_spinlock, flags);
+> +       /* Check for already running epow poweroff timer */
+> +       if (timer_pending(&epow_timer)) {
+> +               /* Timer for same event */
+> +               if (epow_timer.data == event) {
+> +                       spin_unlock_irqrestore(&epow_timer_spinlock, flags);
+> +                       return;
+> +               }
+I dont  think this condition is need as the timeout for an event is
+fixed and event if this
+function is called twice with same event then the condition below will
+take care of it.
+
+> +
+> +               /* Timer with early poweroff timeout */
+> +               if (epow_timer.expires <= (jiffies + timeout * HZ)) {
+> +                       event = epow_timer.data;
+Load/Store not really needed. You can simply use the epow_timer.data.
+The race even if it happens wont be catastrophic.
+
+> +                       spin_unlock_irqrestore(&epow_timer_spinlock, flags);
+> +                       pr_info("Poweroff already scheduled for %s EPOW event "
+> +                                       "with earlier timeout.\n",
+> +                                       epow_events_map[event]);
+> +                       return;
+> +               }
+> +       }
+> +
+> +       /* Start a new timer/modify existing timer with new timeout value */
+> +       epow_timer.data = event;
+> +       mod_timer(&epow_timer, jiffies + timeout  * HZ);
+> +       spin_unlock_irqrestore(&epow_timer_spinlock, flags);
+> +       pr_info("Scheduled system poweroff due to %s EPOW event "
+> +                       "after %d seconds\n", epow_events_map[event], timeout);
+> +}
+> +
+> +/* Stop EPOW poweroff timer */
+> +static void stop_epow_timer(void)
+> +{
+> +       int rc;
+> +       unsigned long flags;
+> +
+> +       spin_lock_irqsave(&epow_timer_spinlock, flags);
+> +       rc = del_timer(&epow_timer);
+> +       spin_unlock_irqrestore(&epow_timer_spinlock, flags);
+> +
+> +       if (rc)
+> +               pr_info("Poweroff timer deactivated\n");
+> +}
+>
+> +/* Get DPO status */
+> +static bool get_dpo_status(int32_t *dpo_timeout)
+> +{
+> +       int rc;
+> +       __be32 opal_dpo_timeout;
+> +
+> +       rc = opal_get_dpo_status(&opal_dpo_timeout);
+> +       if (rc == OPAL_WRONG_STATE) {
+> +               *dpo_timeout = 0;
+> +               return false;
+> +       }
+> +
+> +       *dpo_timeout = be32_to_cpu(opal_dpo_timeout);
+> +       return true;
+> +}
+> +
+> +/* Get EPOW status */
+> +static bool get_epow_status(void)
+> +{
+> +       int i;
+> +       bool epow_detected = false;
+> +
+> +       __be32 opal_epow_status[OPAL_MAX_EPOW_CLASSES] = {0};
+> +       __be32 epow_classes;
+> +
+> +       /* Send kernel EPOW classes supported info to OPAL */
+> +       epow_classes = cpu_to_be32(OPAL_MAX_EPOW_CLASSES);
+> +
+> +       /* Get EPOW events information from OPAL */
+> +       opal_get_epow_status(opal_epow_status, &epow_classes);
+> +
+> +       /* Copy EPOW status obtained from OPAL */
+> +       memset(epow_status, 0, sizeof(epow_status));
+> +       num_epow_classes = be32_to_cpu(epow_classes);
+> +       for (i = 0; i < num_epow_classes; i++) {
+> +               epow_status[i] = be32_to_cpu(opal_epow_status[i]);
+> +               if (epow_status[i])
+> +                       epow_detected = true;
+> +       }
+> +
+> +       pr_info("EPOW classes supported OPAL = %d, Host = %d "
+> +                       "EPOW Status = 0x%x, 0x%x, 0x%x\n",
+> +                       num_epow_classes, OPAL_MAX_EPOW_CLASSES,
+> +                       epow_status[0], epow_status[1], epow_status[2]);
+> +
+> +       return epow_detected;
+> +}
+> +
+> +/* Process EPOW information */
+> +static void process_epow(void)
+> +{
+> +       int timeout;
+> +       unsigned int event = EPOW_UNKNOWN;
+> +
+> +       /* EPOW events in order of criticality */
+> +       if (epow_status[OPAL_EPOW_POWER] & OPAL_EPOW_POWER_UPS) {
+> +               pr_info("EPOW due to system running on UPS power\n");
+> +               event = EPOW_POWER_UPS;
+> +       }
+> +
+> +       if (epow_status[OPAL_EPOW_TEMP] & OPAL_EPOW_TEMP_HIGH_AMB) {
+> +               pr_info("EPOW due to high ambient temperature\n");
+> +               event = EPOW_TEMP_HIGH_AMB;
+> +       }
+> +
+> +       if (epow_status[OPAL_EPOW_TEMP] & OPAL_EPOW_TEMP_HIGH_INT) {
+> +               pr_info("EPOW due to high internal temperature\n");
+> +               event = EPOW_TEMP_HIGH_INT;
+> +       }
+> +
+> +       if (epow_status[OPAL_EPOW_POWER] & OPAL_EPOW_POWER_UPS_LOW) {
+> +               pr_info("EPOW due to system running on UPS power "
+> +                               "with low battery\n");
+> +               event = EPOW_POWER_UPS_LOW;
+> +       }
+> +
+> +       if (epow_status[OPAL_EPOW_TEMP] & OPAL_EPOW_TEMP_CRIT_AMB) {
+> +               pr_info("EPOW due to critical ambient temperature\n");
+> +               event = EPOW_TEMP_CRIT_AMB;
+> +       }
+> +
+> +       if (epow_status[OPAL_EPOW_TEMP] & OPAL_EPOW_TEMP_CRIT_INT) {
+> +               pr_info("EPOW due to critical internal temperature\n");
+> +               event = EPOW_TEMP_CRIT_INT;
+> +       }
+> +
+> +       if (event == EPOW_UNKNOWN) {
+> +               pr_err("Unknown EPOW event.\n");
+> +               return;
+> +       }
+Can convert above series of ifs to an if-else ladder with most
+critical events checked for first.
+In that way you wont be checking against a non critical event when a
+critical event has already arrived.
+
+> +
+> +       /*
+> +       * Check if we have enough time to perform graceful shutdown.
+> +       * Wait for EPOW condition to return to normal if we have more
+> +       * time than needed for graceful shutdown time. Otherwise proceed
+> +       * with immediate system shutdown
+> +       */
+> +       timeout = epow_timeout[event];
+> +       if (timeout <= MAX_POWEROFF_SYS_TIME)
+> +               timeout = 0;
+> +       else
+> +               timeout = timeout - MAX_POWEROFF_SYS_TIME;
+> +
+> +       /* Start EPOW poweroff timer */
+> +       start_epow_timer(event, timeout);
+> +}
+> +
+> +/* Process existing EPOW, DPO events */
+> +static void process_existing_poweroff_events(void)
+> +{
+> +       bool status;
+> +       int32_t dpo_timeout;
+> +
+> +       /* Check for any existing DPO event */
+> +       if (dpo_supported) {
+> +               status = get_dpo_status(&dpo_timeout);
+> +               if (status) {
+> +                       pr_info("Existing DPO event detected. "
+> +                                       "Powering off system\n");
+> +                       orderly_poweroff(true);
+> +                       return;
+> +               }
+> +               pr_info("No existing DPO event detected\n");
+> +       }
+> +
+> +       /* Check for any existing EPOW event */
+> +       if (epow_supported) {
+> +               status = get_epow_status();
+> +               if (status) {
+> +                       pr_info("Existing EPOW event detected.\n");
+> +                       process_epow();
+> +                       return;
+> +               }
+> +               pr_info("No existing EPOW event detected\n");
+> +       }
+> +}
+> +
+> +/* EPOW event notifier */
+> +static int opal_epow_event(struct notifier_block *nb,
+> +                       unsigned long msg_type, void *msg)
+> +{
+> +       bool epow_present;
+> +
+> +       pr_info("EPOW event received\n");
+> +
+> +       /* Get EPOW event details */
+> +       epow_present = get_epow_status();
+> +
+> +       /* Stop shutdown timer if EPOW condition has returned to normal */
+> +       if (!epow_present) {
+Can be replaced with  if (!get_epow_status()) eliminating the variable
+epow_present.
+> +               stop_epow_timer();
+> +               return 0;
+> +       }
+> +
+> +       /* Process EPOW event information */
+> +       process_epow();
+> +
+> +       return 0;
+> +}
+> +
+Not much being done in this function above. May be you can think about merging
+it with process_epow
+
+> +/* DPO event notifier */
+> +static int opal_dpo_event(struct notifier_block *nb,
+> +                               unsigned long msg_type, void *msg)
+> +{
+> +       pr_info("DPO event received. Powering off system as requested\n");
+> +       orderly_poweroff(true);
+> +
+> +       return 0;
+> +}
+> +
+> +/* IPMI power-control events notifier */
+>  static int opal_power_control_event(struct notifier_block *nb,
+> -                                   unsigned long msg_type, void *msg)
+> +                               unsigned long msg_type, void *msg)
+>  {
+> -       struct opal_msg *power_msg = msg;
+>         uint64_t type;
+> +       struct opal_msg *power_msg = msg;
+>
+>         type = be64_to_cpu(power_msg->params[0]);
+>
+>         switch (type) {
+>         case SOFT_REBOOT:
+> -               pr_info("OPAL: reboot requested\n");
+> +               pr_info("Reboot requested\n");
+>                 orderly_reboot();
+>                 break;
+>         case SOFT_OFF:
+> -               pr_info("OPAL: poweroff requested\n");
+> +               pr_info("Poweroff requested\n");
+>                 orderly_poweroff(true);
+>                 break;
+>         default:
+> -               pr_err("OPAL: power control type unexpected %016llx\n", type);
+> +               pr_err("Unknown event %llu\n", type);
+>         }
+>
+>         return 0;
+>  }
+>
+> +/* OPAL EPOW event notifier block */
+> +static struct notifier_block opal_epow_nb = {
+> +       .notifier_call  = opal_epow_event,
+> +       .next           = NULL,
+> +       .priority       = 0,
+> +};
+> +
+> +/* OPAL DPO event notifier block */
+> +static struct notifier_block opal_dpo_nb = {
+> +       .notifier_call  = opal_dpo_event,
+> +       .next           = NULL,
+> +       .priority       = 0,
+> +};
+> +
+> +/* OPAL Power control events */
+>  static struct notifier_block opal_power_control_nb = {
+> -       .notifier_call  = opal_power_control_event,
+> -       .next           = NULL,
+> -       .priority       = 0,
+> +       .notifier_call  = opal_power_control_event,
+> +       .next           = NULL,
+> +       .priority       = 0,
+>  };
+>
+> -static int __init opal_power_control_init(void)
+> +/* Poweroff events init */
+> +static int __init opal_poweroff_events_init(void)
+>  {
+>         int ret;
+> +       struct device_node *node_epow;
+>
+> -       ret = opal_message_notifier_register(OPAL_MSG_SHUTDOWN,
+> -                                            &opal_power_control_nb);
+> -       if (ret) {
+> -               pr_err("%s: Can't register OPAL event notifier (%d)\n",
+> -                               __func__, ret);
+> -               return ret;
+> +       /*
+> +       * Determine EPOW, DPO support in hardware.
+> +       */
+> +       node_epow = of_find_node_by_path("/ibm,opal/epow");
+> +       if (node_epow) {
+> +               if (of_device_is_compatible(node_epow, "ibm,opal-epow")) {
+> +                       epow_supported = true;
+> +                       dpo_supported = true;
+> +                       pr_info("OPAL EPOW, DPO support detected.\n");
+> +               }
+> +               of_node_put(node_epow);
+> +       }
+> +
+> +       /* Prepare to handle EPOW events */
+> +       if (epow_supported) {
+> +               /* Initialize poweroff timer */
+> +               init_timer(&epow_timer);
+> +               epow_timer.function = epow_poweroff;
+Variable initialization should be done while defining the variable
+itself not in the code.
+Consider using DEFINE_TIMER macro to define this.
+
+> +
+> +               /* Register EPOW event notifier */
+> +               ret = opal_message_notifier_register(OPAL_MSG_EPOW,
+> +                               &opal_epow_nb);
+> +               if (ret) {
+> +                       pr_err("EPOW event notifier registration failed, "
+> +                                       "ret = %d\n", ret);
+> +               }
+> +       }
+> +
+> +       if (dpo_supported) {
+> +               /* Register DPO event notifier */
+> +               ret = opal_message_notifier_register(OPAL_MSG_DPO,
+> +                               &opal_dpo_nb);
+> +               if (ret)
+> +                       pr_err("DPO event notifier registration failed, "
+> +                                       "ret = %d\n", ret);
+>         }
+>
+> +       /* Check for any existing EPOW or DPO events. */
+> +       process_existing_poweroff_events();
+Process existing events only after you have registered all the notifiers or you
+may miss some OPAL_MSG_SHUTDOWN notifications.
+
+> +
+> +       /* Register IPMI poweroff events notifier */
+> +       ret = opal_message_notifier_register(OPAL_MSG_SHUTDOWN,
+> +                               &opal_power_control_nb);
+> +       if (ret)
+> +               pr_err("IPMI power-control events notifier registration "
+> +                               "failed, ret = %d\n", ret);
+> +
+> +
+> +       pr_info("Poweroff events support initialized\n");
+> +
+>         return 0;
+>  }
+> -machine_subsys_initcall(powernv, opal_power_control_init);
+> +
+> +machine_subsys_initcall(powernv, opal_poweroff_events_init);
+> diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
+> index a7ade94..5d3c8e3 100644
+> --- a/arch/powerpc/platforms/powernv/opal-wrappers.S
+> +++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
+> @@ -249,6 +249,7 @@ OPAL_CALL(opal_pci_reinit,                  OPAL_PCI_REINIT);
+>  OPAL_CALL(opal_pci_mask_pe_error,              OPAL_PCI_MASK_PE_ERROR);
+>  OPAL_CALL(opal_set_slot_led_status,            OPAL_SET_SLOT_LED_STATUS);
+>  OPAL_CALL(opal_get_epow_status,                        OPAL_GET_EPOW_STATUS);
+> +OPAL_CALL(opal_get_dpo_status,                 OPAL_GET_DPO_STATUS);
+>  OPAL_CALL(opal_set_system_attention_led,       OPAL_SET_SYSTEM_ATTENTION_LED);
+>  OPAL_CALL(opal_pci_next_error,                 OPAL_PCI_NEXT_ERROR);
+>  OPAL_CALL(opal_pci_poll,                       OPAL_PCI_POLL);
+> --
+> 1.9.3
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
