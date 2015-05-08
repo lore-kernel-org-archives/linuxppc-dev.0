@@ -1,29 +1,38 @@
-Return-Path: <stripathi@apm.com>
-Received: from mail-wi0-f174.google.com (exprod5og102.obsmtp.com [64.18.0.143])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <christoffer.dall@linaro.org>
+Received: from mail-la0-f43.google.com (mail-la0-f43.google.com
+ [209.85.215.43])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id EB7871A0272
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 May 2015 18:10:11 +1000 (AEST)
-Received: by wizk4 with SMTP id k4so20184486wiz.1
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 08 May 2015 01:10:08 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 035281A00E9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 May 2015 19:23:46 +1000 (AEST)
+Received: by labbd9 with SMTP id bd9so48622334lab.2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 08 May 2015 02:23:43 -0700 (PDT)
+Date: Fri, 8 May 2015 11:23:46 +0200
+From: Christoffer Dall <christoffer.dall@linaro.org>
+To: Alex =?iso-8859-1?Q?Benn=E9e?= <alex.bennee@linaro.org>
+Subject: Re: [PATCH v3 02/12] KVM: define common __KVM_GUESTDBG_USE_SW/HW_BP
+ values
+Message-ID: <20150508092346.GB24744@cbox>
+References: <1430929407-3487-1-git-send-email-alex.bennee@linaro.org>
+ <1430929407-3487-3-git-send-email-alex.bennee@linaro.org>
 MIME-Version: 1.0
-In-Reply-To: <1430919731-9016-3-git-send-email-stripathi@apm.com>
-References: <1430919731-9016-1-git-send-email-stripathi@apm.com>
- <1430919731-9016-3-git-send-email-stripathi@apm.com>
-Date: Fri, 8 May 2015 13:40:08 +0530
-Message-ID: <CAOHikRBLbf5QkBTiMpL_WEPwq4wZdw3BtooyjkbwLd0A+xunGQ@mail.gmail.com>
-Subject: Re: [PATCH v6 2/2] mmc: sdhci: Add support to disable
- SDR104/SDR50/DDR50 based on capability register 0.
-From: Suman Tripathi <stripathi@apm.com>
-To: Chris Ball <chris@printf.net>, Anton Vorontsov <anton@enomsg.org>,
- Arnd Bergmann <arnd@arndb.de>, Michal Simek <michal.simek@xilinx.com>
-Content-Type: multipart/alternative; boundary=f46d043893c57e703205158d8e78
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Mark Langsdorf <mlangsdo@redhat.com>, Suman Tripathi <stripathi@apm.com>,
- Jon Masters <jcm@redhat.com>, linux-mmc <linux-mmc@vger.kernel.org>,
- patches <patches@apm.com>, Don Dutile <ddutile@redhat.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <1430929407-3487-3-git-send-email-alex.bennee@linaro.org>
+Cc: peter.maydell@linaro.org, kvm@vger.kernel.org,
+ Alexey Kardashevskiy <aik@ozlabs.ru>,
+ Bharat Bhushan <Bharat.Bhushan@freescale.com>,
+ Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
+ kvmarm@lists.cs.columbia.edu, Nadav Amit <namit@cs.technion.ac.il>,
+ "maintainer:X86 ARCHITECTURE..." <x86@kernel.org>, agraf@suse.de,
+ Gleb Natapov <gleb@kernel.org>, Ingo Molnar <mingo@redhat.com>,
+ zhichao.huang@linaro.org, jan.kiszka@siemens.com,
+ Mihai Caraman <mihai.caraman@freescale.com>, bp@suse.de, drjones@redhat.com,
+ marc.zyngier@arm.com, r65777@freescale.com,
+ Thomas Gleixner <tglx@linutronix.de>, linux-arm-kernel@lists.infradead.org,
+ "open list:ABI/API" <linux-api@vger.kernel.org>,
+ open list <linux-kernel@vger.kernel.org>, dahi@linux.vnet.ibm.com,
+ pbonzini@redhat.com,
+ "open list:LINUX FOR POWERPC..." <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,91 +42,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---f46d043893c57e703205158d8e78
-Content-Type: text/plain; charset=UTF-8
+On Wed, May 06, 2015 at 05:23:17PM +0100, Alex Bennée wrote:
+> Currently x86, powerpc and soon arm64 use the same two architecture
+> specific bits for guest debug support for software and hardware
+> breakpoints. This makes the shared values explicit while leaving the
+> gate open for another architecture to use some other value if they
+> really really want to.
+> 
+> Signed-off-by: Alex Bennée <alex.bennee@linaro.org>
+> Reviewed-by: Andrew Jones <drjones@redhat.com>
+> 
+> diff --git a/arch/powerpc/include/uapi/asm/kvm.h b/arch/powerpc/include/uapi/asm/kvm.h
+> index ab4d473..1731569 100644
+> --- a/arch/powerpc/include/uapi/asm/kvm.h
+> +++ b/arch/powerpc/include/uapi/asm/kvm.h
+> @@ -310,8 +310,8 @@ struct kvm_guest_debug_arch {
+>   * and upper 16 bits are architecture specific. Architecture specific defines
+>   * that ioctl is for setting hardware breakpoint or software breakpoint.
+>   */
+> -#define KVM_GUESTDBG_USE_SW_BP		0x00010000
+> -#define KVM_GUESTDBG_USE_HW_BP		0x00020000
+> +#define KVM_GUESTDBG_USE_SW_BP		__KVM_GUESTDBG_USE_SW_BP
+> +#define KVM_GUESTDBG_USE_HW_BP		__KVM_GUESTDBG_USE_HW_BP
+>  
+>  /* definition of registers in kvm_run */
+>  struct kvm_sync_regs {
+> diff --git a/arch/x86/include/uapi/asm/kvm.h b/arch/x86/include/uapi/asm/kvm.h
+> index d7dcef5..1438202 100644
+> --- a/arch/x86/include/uapi/asm/kvm.h
+> +++ b/arch/x86/include/uapi/asm/kvm.h
+> @@ -250,8 +250,8 @@ struct kvm_debug_exit_arch {
+>  	__u64 dr7;
+>  };
+>  
+> -#define KVM_GUESTDBG_USE_SW_BP		0x00010000
+> -#define KVM_GUESTDBG_USE_HW_BP		0x00020000
+> +#define KVM_GUESTDBG_USE_SW_BP		__KVM_GUESTDBG_USE_SW_BP
+> +#define KVM_GUESTDBG_USE_HW_BP		__KVM_GUESTDBG_USE_HW_BP
+>  #define KVM_GUESTDBG_INJECT_DB		0x00040000
+>  #define KVM_GUESTDBG_INJECT_BP		0x00080000
+>  
+> diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
+> index 70ac641..3b6252e 100644
+> --- a/include/uapi/linux/kvm.h
+> +++ b/include/uapi/linux/kvm.h
+> @@ -570,8 +570,16 @@ struct kvm_s390_irq_state {
+>  
+>  /* for KVM_SET_GUEST_DEBUG */
+>  
+> -#define KVM_GUESTDBG_ENABLE		0x00000001
+> -#define KVM_GUESTDBG_SINGLESTEP		0x00000002
+> +#define KVM_GUESTDBG_ENABLE		(1 << 0)
+> +#define KVM_GUESTDBG_SINGLESTEP	(1 << 1)
+> +
+> +/*
+> + * Architecture specific stuff uses the top 16 bits of the field,
 
-On Wed, May 6, 2015 at 7:12 PM, Suman Tripathi <stripathi@apm.com> wrote:
+s/stuff/<something more specific>/
 
-> The sdhci framework disables SDR104/SDR50/DDR50 based on only quirk.
-> This patch adds the support to disable SDR104/SDR50/DDR50 based on
-> reading the capability register 0.
->
-> Signed-off-by: Suman Tripathi <stripathi@apm.com>
-> ---
->  drivers/mmc/host/sdhci.c | 3 ++-
->  1 file changed, 2 insertions(+), 1 deletion(-)
->
-> diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
-> index c80287a..e024c64 100644
-> --- a/drivers/mmc/host/sdhci.c
-> +++ b/drivers/mmc/host/sdhci.c
-> @@ -3199,7 +3199,8 @@ int sdhci_add_host(struct sdhci_host *host)
->                 }
->         }
->
-> -       if (host->quirks2 & SDHCI_QUIRK2_NO_1_8_V)
-> +       if (host->quirks2 & SDHCI_QUIRK2_NO_1_8_V ||
-> +           !(caps[0] & SDHCI_CAN_VDD_180))
->                 caps[1] &= ~(SDHCI_SUPPORT_SDR104 | SDHCI_SUPPORT_SDR50 |
->                        SDHCI_SUPPORT_DDR50);
->
-> --
-> 1.8.2.1
->
->
-Any comments on this patch ??
+> + * however there is some shared commonality for the common cases
+> + */
+> +#define __KVM_GUESTDBG_USE_SW_BP	(1 << 16)
+> +#define __KVM_GUESTDBG_USE_HW_BP	(1 << 17)
+> +
+>  
+>  struct kvm_guest_debug {
+>  	__u32 control;
 
+We sort of left this discussion hanging with me expressing slight
+concern about the usefulness about these defines.
 
--- 
-Thanks,
-with regards,
-Suman Tripathi
+Paolo, what are your thoughts?
 
---f46d043893c57e703205158d8e78
-Content-Type: text/html; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-
-<div dir=3D"ltr"><br><div class=3D"gmail_extra"><br><div class=3D"gmail_quo=
-te">On Wed, May 6, 2015 at 7:12 PM, Suman Tripathi <span dir=3D"ltr">&lt;<a=
- href=3D"mailto:stripathi@apm.com" target=3D"_blank">stripathi@apm.com</a>&=
-gt;</span> wrote:<br><blockquote class=3D"gmail_quote" style=3D"margin:0 0 =
-0 .8ex;border-left:1px #ccc solid;padding-left:1ex">The sdhci framework dis=
-ables SDR104/SDR50/DDR50 based on only quirk.<br>
-This patch adds the support to disable SDR104/SDR50/DDR50 based on<br>
-reading the capability register 0.<br>
-<br>
-Signed-off-by: Suman Tripathi &lt;<a href=3D"mailto:stripathi@apm.com">stri=
-pathi@apm.com</a>&gt;<br>
----<br>
-=C2=A0drivers/mmc/host/sdhci.c | 3 ++-<br>
-=C2=A01 file changed, 2 insertions(+), 1 deletion(-)<br>
-<br>
-diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c<br>
-index c80287a..e024c64 100644<br>
---- a/drivers/mmc/host/sdhci.c<br>
-+++ b/drivers/mmc/host/sdhci.c<br>
-@@ -3199,7 +3199,8 @@ int sdhci_add_host(struct sdhci_host *host)<br>
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 }<br>
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 }<br>
-<br>
--=C2=A0 =C2=A0 =C2=A0 =C2=A0if (host-&gt;quirks2 &amp; SDHCI_QUIRK2_NO_1_8_=
-V)<br>
-+=C2=A0 =C2=A0 =C2=A0 =C2=A0if (host-&gt;quirks2 &amp; SDHCI_QUIRK2_NO_1_8_=
-V ||<br>
-+=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0!(caps[0] &amp; SDHCI_CAN_VDD_180=
-))<br>
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 caps[1] &amp;=3D ~(=
-SDHCI_SUPPORT_SDR104 | SDHCI_SUPPORT_SDR50 |<br>
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=
-=A0 =C2=A0SDHCI_SUPPORT_DDR50);<br>
-<br>
---<br>
-1.8.2.1<br>
-<br>
-</blockquote></div><div class=3D"gmail_extra"><br></div>Any comments on thi=
-s patch ??<br><br clear=3D"all"><div><br></div>-- <br><div class=3D"gmail_s=
-ignature"><div dir=3D"ltr"><div>Thanks,</div><div>with regards,</div>Suman =
-Tripathi</div></div>
-</div></div>
-
---f46d043893c57e703205158d8e78--
+-Christoffer
