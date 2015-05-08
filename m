@@ -1,26 +1,31 @@
-Return-Path: <mingo.kernel.org@gmail.com>
-Received: from mail-wg0-x22f.google.com (mail-wg0-x22f.google.com
- [IPv6:2a00:1450:400c:c00::22f])
+Return-Path: <viresh.kumar@linaro.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id C03AF1A0008
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 May 2015 15:12:37 +1000 (AEST)
+Received: from mail-oi0-f50.google.com (mail-oi0-f50.google.com
+ [209.85.218.50])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DB8531A00E9
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 May 2015 14:29:01 +1000 (AEST)
-Received: by wgic8 with SMTP id c8so35026264wgi.1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 May 2015 21:28:57 -0700 (PDT)
-Sender: Ingo Molnar <mingo.kernel.org@gmail.com>
-Date: Fri, 8 May 2015 06:28:53 +0200
-From: Ingo Molnar <mingo@kernel.org>
-To: Hemant Kumar <hemant@linux.vnet.ibm.com>
-Subject: Re: [PATCH v3 1/2] perf/kvm: Port perf kvm to powerpc
-Message-ID: <20150508042853.GA24391@gmail.com>
-References: <1431047266-6206-1-git-send-email-hemant@linux.vnet.ibm.com>
+ by ozlabs.org (Postfix) with ESMTPS id 45738140283
+ for <linuxppc-dev@ozlabs.org>; Fri,  8 May 2015 15:12:36 +1000 (AEST)
+Received: by oica37 with SMTP id a37so50719001oic.0
+ for <linuxppc-dev@ozlabs.org>; Thu, 07 May 2015 22:12:35 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1431047266-6206-1-git-send-email-hemant@linux.vnet.ibm.com>
-Cc: maddy@linux.vnet.ibm.com, srikar@linux.vnet.ibm.com, peterz@infradead.org,
- agraf@suse.de, kvm-ppc@vger.kernel.org, linux-kernel@vger.kernel.org,
- mingo@redhat.com, paulus@samba.org, acme@kernel.org,
- warrier@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+In-Reply-To: <1430729652-14813-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+References: <1430729652-14813-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+Date: Fri, 8 May 2015 10:42:34 +0530
+Message-ID: <CAKohpokZcJeCEaKnfQC-78s2KKCJ9a7UqSA_R8VbjEX2HUGVNQ@mail.gmail.com>
+Subject: Re: [PATCH v3 0/6] powernv: cpufreq: Report frequency throttle by OCC
+From: Viresh Kumar <viresh.kumar@linaro.org>
+To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: Preeti U Murthy <preeti@linux.vnet.ibm.com>,
+ "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+ "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+ Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+ "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,23 +35,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 4 May 2015 at 14:24, Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com> wrote:
+> This patchset intends to add frequency throttle reporting mechanism
+> to powernv-cpufreq driver when OCC throttles the frequency. OCC is an
+> On-Chip-Controller which takes care of the power and thermal safety of
+> the chip. The CPU frequency can be throttled during an OCC reset or
+> when OCC tries to limit the max allowed frequency. The patchset will
+> report such conditions so as to keep the user informed about reason
+> for the drop in performance of workloads when frequency is throttled.
+>
+> Changes from v2:
+> - Split into multiple patches
+> - Semantic fixes
+>
+> Shilpasri G Bhat (6):
+>   cpufreq: poowernv: Handle throttling due to Pmax capping at chip level
+>   powerpc/powernv: Add definition of OPAL_MSG_OCC message type
+>   cpufreq: powernv: Register for OCC related opal_message notification
+>   cpufreq: powernv: Call throttle_check() on receiving OCC_THROTTLE
+>   cpufreq: powernv: Report Psafe only if PMSR.psafe_mode_active bit is
+>     set
+>   cpufreq: powernv: Restore cpu frequency to policy->cur on unthrottling
+>
+>  arch/powerpc/include/asm/opal-api.h |   8 ++
+>  drivers/cpufreq/powernv-cpufreq.c   | 199 +++++++++++++++++++++++++++++++++---
+>  2 files changed, 192 insertions(+), 15 deletions(-)
 
-* Hemant Kumar <hemant@linux.vnet.ibm.com> wrote:
-
->  # perf kvm stat report -p 60515
-> Analyze events for pid(s) 60515, all VCPUs:
-> 
->        VM-EXIT    Samples  Samples%     Time%    Min Time         Max        Time         Avg time
-> 
-> H_DATA_STORAGE       5006    35.30%     0.13%      1.94us     49.46us     12.37us ( +-   0.52% )
-> HV_DECREMENTER       4457    31.43%     0.02%      0.72us     16.14us      1.91us ( +-   0.96% )
->        SYSCALL       2690    18.97%     0.10%      2.84us    528.24us     18.29us ( +-   3.75% )
-> RETURN_TO_HOST       1789    12.61%    99.76%      1.58us 672791.91us  27470.23us ( +-   3.00% )
->       EXTERNAL        240     1.69%     0.00%        0.69us     10.67us      1.33us ( +-   5.34% )
-
-Where is the last line misaligned? Copy & paste error or does perf kvm 
-produce it in such a way?
-
-Thanks,
-
-	Ingo
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
