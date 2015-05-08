@@ -3,17 +3,16 @@ Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
  [140.211.169.12])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 10A991A0935
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 May 2015 08:21:52 +1000 (AEST)
-Date: Fri, 8 May 2015 15:21:49 -0700
+ by lists.ozlabs.org (Postfix) with ESMTPS id 333241A0935
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 May 2015 08:24:31 +1000 (AEST)
+Date: Fri, 8 May 2015 15:24:28 -0700
 From: Andrew Morton <akpm@linux-foundation.org>
 To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: Re: [PATCH V2 2/2] powerpc/thp: Serialize pmd clear against a linux
- page table walk.
-Message-Id: <20150508152149.7fd52bb4b7c2a0911c33be00@linux-foundation.org>
-In-Reply-To: <1430983408-24924-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Subject: Re: [PATCH V2 1/2] mm/thp: Split out pmd collpase flush into a
+ seperate functions
+Message-Id: <20150508152428.4326eaaae99b74fa53c96f23@linux-foundation.org>
+In-Reply-To: <1430983408-24924-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 References: <1430983408-24924-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1430983408-24924-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Cc: aarcange@redhat.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
@@ -28,17 +27,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu,  7 May 2015 12:53:28 +0530 "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> wrote:
+On Thu,  7 May 2015 12:53:27 +0530 "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> wrote:
 
-> Serialize against find_linux_pte_or_hugepte which does lock-less
-> lookup in page tables with local interrupts disabled. For huge pages
-> it casts pmd_t to pte_t. Since format of pte_t is different from
-> pmd_t we want to prevent transit from pmd pointing to page table
-> to pmd pointing to huge page (and back) while interrupts are disabled.
-> We clear pmd to possibly replace it with page table pointer in
-> different code paths. So make sure we wait for the parallel
-> find_linux_pte_or_hugepage to finish.
+> After this patch pmdp_* functions operate only on hugepage pte,
+> and not on regular pmd_t values pointing to page table.
+> 
 
-I'm not seeing here any description of the problem which is being
-fixed.  Does the patch make the machine faster?  Does the machine
-crash?
+The patch looks like a pretty safe no-op for non-powerpc?
+
+> --- a/arch/powerpc/include/asm/pgtable-ppc64.h
+> +++ b/arch/powerpc/include/asm/pgtable-ppc64.h
+> @@ -576,6 +576,10 @@ static inline void pmdp_set_wrprotect(struct mm_struct *mm, unsigned long addr,
+>  extern void pmdp_splitting_flush(struct vm_area_struct *vma,
+>  				 unsigned long address, pmd_t *pmdp);
+>  
+> +#define __HAVE_ARCH_PMDP_COLLAPSE_FLUSH
+> +extern pmd_t pmdp_collapse_flush(struct vm_area_struct *vma,
+> +				 unsigned long address, pmd_t *pmdp);
+> +
+
+The fashionable way of doing this is
+
+extern pmd_t pmdp_collapse_flush(struct vm_area_struct *vma,
+				 unsigned long address, pmd_t *pmdp);
+#define pmdp_collapse_flush pmdp_collapse_flush
+
+then, elsewhere,
+
+#ifndef pmdp_collapse_flush
+static inline pmd_t pmdp_collapse_flush(...) {}
+#define pmdp_collapse_flush pmdp_collapse_flush
+#endif
+
+It avoids introducing a second (ugly) symbol into the kernel.
