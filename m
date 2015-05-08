@@ -1,27 +1,39 @@
-Return-Path: <sudeep.holla@arm.com>
-Received: from foss.arm.com (foss.arm.com [217.140.101.70])
- by lists.ozlabs.org (Postfix) with ESMTP id 125851A00E9
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 May 2015 22:43:44 +1000 (AEST)
-Message-ID: <554CAF7A.6060609@arm.com>
-Date: Fri, 08 May 2015 13:43:38 +0100
-From: Sudeep Holla <sudeep.holla@arm.com>
-MIME-Version: 1.0
-To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Subject: Re: [PATCH V3] cpuidle: Handle tick_broadcast_enter() failure
- gracefully
-References: <20150508073418.28491.4150.stgit@preeti.in.ibm.com>
-In-Reply-To: <20150508073418.28491.4150.stgit@preeti.in.ibm.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Cc: "rlippert@google.com" <rlippert@google.com>,
- "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>,
- "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
- "peterz@infradead.org" <peterz@infradead.org>,
- "linus.walleij@linaro.org" <linus.walleij@linaro.org>,
- "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "mingo@redhat.com" <mingo@redhat.com>, Sudeep Holla <sudeep.holla@arm.com>,
- "tglx@linutronix.de" <tglx@linutronix.de>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Return-Path: <imunsie@au1.ibm.com>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8AF011A00E9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 May 2015 22:56:34 +1000 (AEST)
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 5F01D1401AB
+ for <linuxppc-dev@ozlabs.org>; Fri,  8 May 2015 22:56:34 +1000 (AEST)
+Received: from /spool/local
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <imunsie@au1.ibm.com>;
+ Fri, 8 May 2015 22:56:33 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 91D042CE804E
+ for <linuxppc-dev@ozlabs.org>; Fri,  8 May 2015 22:56:29 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t48CuLtL15728724
+ for <linuxppc-dev@ozlabs.org>; Fri, 8 May 2015 22:56:29 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t48CtuuY009677
+ for <linuxppc-dev@ozlabs.org>; Fri, 8 May 2015 22:55:57 +1000
+From: "Ian Munsie" <imunsie@au1.ibm.com>
+To: mpe <mpe@ellerman.id.au>
+Subject: [PATCH] cxl: Use call_rcu to reduce latency when releasing the afu fd
+Date: Fri,  8 May 2015 22:55:18 +1000
+Message-Id: <1431089718-25169-1-git-send-email-imunsie@au.ibm.com>
+Cc: mikey <mikey@neuling.org>, Brian Allison <ballis@us.ibm.com>,
+ linux-kernel <linux-kernel@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@ozlabs.org>, Ian Munsie <imunsie@au1.ibm.com>,
+ Fei K Chen <uchen@cn.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,28 +43,71 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+From: Ian Munsie <imunsie@au1.ibm.com>
 
+The afu fd release path was identified as a significant bottleneck in
+the overall performance of cxl. While an optimal AFU design would
+minimise the need to close & reopen the AFU fd, it is not always
+practical to avoid.
 
-On 08/05/15 08:35, Preeti U Murthy wrote:
-> When a CPU has to enter an idle state where tick stops, it makes a call
-> to tick_broadcast_enter(). The call will fail if this CPU is the
-> broadcast CPU. Today, under such a circumstance, the arch cpuidle code
-> handles this CPU.  This is not convincing because not only do we not
-> know what the arch cpuidle code does, but we also do not account for the
-> idle state residency time and usage of such a CPU.
->
-> This scenario can be handled better by simply choosing an idle state
-> where in ticks do not stop. To accommodate this change move the setting
-> of runqueue idle state from the core to the cpuidle driver, else the
-> rq->idle_state will be set wrong.
->
-> Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+The bottleneck seems to be down to the call to synchronize_rcu(), which
+will block until every other thread is guaranteed to be out of an RCU
+critical section. Replace it with call_rcu() to free the context
+structures later so we can return to the application sooner.
 
-I gave it a spin on ARM64 Juno platform with one of the CPU in broadcast
-mode and Vexpress TC2 with broadcast timer. I found no issues in both
-the cases. So, you can add:
+This reduces the time spent in the fd release path from 13356 usec to
+13.3 usec - about a 100x speed up.
 
-Tested-by: Sudeep Holla <sudeep.holla@arm.com>
+Reported-by: Fei K Chen <uchen@cn.ibm.com>
+Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
+---
+ drivers/misc/cxl/context.c | 15 ++++++++++-----
+ drivers/misc/cxl/cxl.h     |  2 ++
+ 2 files changed, 12 insertions(+), 5 deletions(-)
 
-Regards,
-Sudeep
+diff --git a/drivers/misc/cxl/context.c b/drivers/misc/cxl/context.c
+index 22eb338..cea299e 100644
+--- a/drivers/misc/cxl/context.c
++++ b/drivers/misc/cxl/context.c
+@@ -243,12 +243,9 @@ void cxl_context_detach_all(struct cxl_afu *afu)
+ 	mutex_unlock(&afu->contexts_lock);
+ }
+ 
+-void cxl_context_free(struct cxl_context *ctx)
++static void reclaim_ctx(struct rcu_head *rcu)
+ {
+-	mutex_lock(&ctx->afu->contexts_lock);
+-	idr_remove(&ctx->afu->contexts_idr, ctx->pe);
+-	mutex_unlock(&ctx->afu->contexts_lock);
+-	synchronize_rcu();
++	struct cxl_context *ctx = container_of(rcu, struct cxl_context, rcu);
+ 
+ 	free_page((u64)ctx->sstp);
+ 	ctx->sstp = NULL;
+@@ -256,3 +253,11 @@ void cxl_context_free(struct cxl_context *ctx)
+ 	put_pid(ctx->pid);
+ 	kfree(ctx);
+ }
++
++void cxl_context_free(struct cxl_context *ctx)
++{
++	mutex_lock(&ctx->afu->contexts_lock);
++	idr_remove(&ctx->afu->contexts_idr, ctx->pe);
++	mutex_unlock(&ctx->afu->contexts_lock);
++	call_rcu(&ctx->rcu, reclaim_ctx);
++}
+diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
+index 47f655f..ebd2e0d 100644
+--- a/drivers/misc/cxl/cxl.h
++++ b/drivers/misc/cxl/cxl.h
+@@ -460,6 +460,8 @@ struct cxl_context {
+ 	bool pending_irq;
+ 	bool pending_fault;
+ 	bool pending_afu_err;
++
++	struct rcu_head rcu;
+ };
+ 
+ struct cxl {
+-- 
+2.1.4
