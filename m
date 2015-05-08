@@ -1,39 +1,26 @@
-Return-Path: <imunsie@au1.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Return-Path: <rjw@rjwysocki.net>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8AF011A00E9
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 May 2015 22:56:34 +1000 (AEST)
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 5F01D1401AB
- for <linuxppc-dev@ozlabs.org>; Fri,  8 May 2015 22:56:34 +1000 (AEST)
-Received: from /spool/local
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <imunsie@au1.ibm.com>;
- Fri, 8 May 2015 22:56:33 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 91D042CE804E
- for <linuxppc-dev@ozlabs.org>; Fri,  8 May 2015 22:56:29 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t48CuLtL15728724
- for <linuxppc-dev@ozlabs.org>; Fri, 8 May 2015 22:56:29 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t48CtuuY009677
- for <linuxppc-dev@ozlabs.org>; Fri, 8 May 2015 22:55:57 +1000
-From: "Ian Munsie" <imunsie@au1.ibm.com>
-To: mpe <mpe@ellerman.id.au>
-Subject: [PATCH] cxl: Use call_rcu to reduce latency when releasing the afu fd
-Date: Fri,  8 May 2015 22:55:18 +1000
-Message-Id: <1431089718-25169-1-git-send-email-imunsie@au.ibm.com>
-Cc: mikey <mikey@neuling.org>, Brian Allison <ballis@us.ibm.com>,
- linux-kernel <linux-kernel@vger.kernel.org>,
- linuxppc-dev <linuxppc-dev@ozlabs.org>, Ian Munsie <imunsie@au1.ibm.com>,
- Fei K Chen <uchen@cn.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 04D6F1A00E9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 May 2015 23:46:55 +1000 (AEST)
+Received: from v094114.home.net.pl (v094114.home.net.pl [79.96.170.134])
+ by ozlabs.org (Postfix) with SMTP id 2CB0A140283
+ for <linuxppc-dev@ozlabs.org>; Fri,  8 May 2015 23:46:53 +1000 (AEST)
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Subject: Re: [PATCH v3 4/6] cpufreq: powernv: Call throttle_check() on
+ receiving OCC_THROTTLE
+Date: Fri, 08 May 2015 16:11:54 +0200
+Message-ID: <2672050.ByCV8BX0rs@vostro.rjw.lan>
+In-Reply-To: <554C31A4.8050903@linux.vnet.ibm.com>
+References: <1430729652-14813-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ <4161534.4Jyd5dl4um@vostro.rjw.lan> <554C31A4.8050903@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Cc: linuxppc-dev@ozlabs.org, viresh.kumar@linaro.org,
+ linux-kernel@vger.kernel.org,
+ Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, linux-pm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,71 +30,56 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Ian Munsie <imunsie@au1.ibm.com>
+On Friday, May 08, 2015 09:16:44 AM Preeti U Murthy wrote:
+> On 05/08/2015 02:29 AM, Rafael J. Wysocki wrote:
+> > On Thursday, May 07, 2015 05:49:22 PM Preeti U Murthy wrote:
+> >> On 05/05/2015 02:11 PM, Preeti U Murthy wrote:
+> >>> On 05/05/2015 12:03 PM, Shilpasri G Bhat wrote:
+> >>>> Hi Preeti,
+> >>>>
+> >>>> On 05/05/2015 09:30 AM, Preeti U Murthy wrote:
+> >>>>> Hi Shilpa,
+> >>>>>
+> >>>>> On 05/04/2015 02:24 PM, Shilpasri G Bhat wrote:
+> >>>>>> Re-evaluate the chip's throttled state on recieving OCC_THROTTLE
+> >>>>>> notification by executing *throttle_check() on any one of the cpu on
+> >>>>>> the chip. This is a sanity check to verify if we were indeed
+> >>>>>> throttled/unthrottled after receiving OCC_THROTTLE notification.
+> >>>>>>
+> >>>>>> We cannot call *throttle_check() directly from the notification
+> >>>>>> handler because we could be handling chip1's notification in chip2. So
+> >>>>>> initiate an smp_call to execute *throttle_check(). We are irq-disabled
+> >>>>>> in the notification handler, so use a worker thread to smp_call
+> >>>>>> throttle_check() on any of the cpu in the chipmask.
+> >>>>>
+> >>>>> I see that the first patch takes care of reporting *per-chip* throttling
+> >>>>> for pmax capping condition. But where are we taking care of reporting
+> >>>>> "pstate set to safe" and "freq control disabled" scenarios per-chip ?
+> >>>>>
+> >>>>
+> >>>> IMO let us not have "psafe" and "freq control disabled" states managed per-chip.
+> >>>> Because when the above two conditions occur it is likely to happen across all
+> >>>> chips during an OCC reset cycle. So I am setting 'throttled' to false on
+> >>>> OCC_ACTIVE and re-verifying if it actually is the case by invoking
+> >>>> *throttle_check().
+> >>>
+> >>> Alright like I pointed in the previous reply, a comment to indicate that
+> >>> psafe and freq control disabled conditions will fail when occ is
+> >>> inactive and that all chips face the consequence of this will help.
+> >>
+> >> From your explanation on the thread of the first patch of this series,
+> >> this will not be required.
+> >>
+> >> So,
+> >> Reviewed-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+> > 
+> > OK, so is the whole series reviewed now?
+> 
+> Yes the whole series has been reviewed.
 
-The afu fd release path was identified as a significant bottleneck in
-the overall performance of cxl. While an optimal AFU design would
-minimise the need to close & reopen the AFU fd, it is not always
-practical to avoid.
+OK, I'll queue it up for 4.2, then, thanks!
 
-The bottleneck seems to be down to the call to synchronize_rcu(), which
-will block until every other thread is guaranteed to be out of an RCU
-critical section. Replace it with call_rcu() to free the context
-structures later so we can return to the application sooner.
 
-This reduces the time spent in the fd release path from 13356 usec to
-13.3 usec - about a 100x speed up.
-
-Reported-by: Fei K Chen <uchen@cn.ibm.com>
-Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
----
- drivers/misc/cxl/context.c | 15 ++++++++++-----
- drivers/misc/cxl/cxl.h     |  2 ++
- 2 files changed, 12 insertions(+), 5 deletions(-)
-
-diff --git a/drivers/misc/cxl/context.c b/drivers/misc/cxl/context.c
-index 22eb338..cea299e 100644
---- a/drivers/misc/cxl/context.c
-+++ b/drivers/misc/cxl/context.c
-@@ -243,12 +243,9 @@ void cxl_context_detach_all(struct cxl_afu *afu)
- 	mutex_unlock(&afu->contexts_lock);
- }
- 
--void cxl_context_free(struct cxl_context *ctx)
-+static void reclaim_ctx(struct rcu_head *rcu)
- {
--	mutex_lock(&ctx->afu->contexts_lock);
--	idr_remove(&ctx->afu->contexts_idr, ctx->pe);
--	mutex_unlock(&ctx->afu->contexts_lock);
--	synchronize_rcu();
-+	struct cxl_context *ctx = container_of(rcu, struct cxl_context, rcu);
- 
- 	free_page((u64)ctx->sstp);
- 	ctx->sstp = NULL;
-@@ -256,3 +253,11 @@ void cxl_context_free(struct cxl_context *ctx)
- 	put_pid(ctx->pid);
- 	kfree(ctx);
- }
-+
-+void cxl_context_free(struct cxl_context *ctx)
-+{
-+	mutex_lock(&ctx->afu->contexts_lock);
-+	idr_remove(&ctx->afu->contexts_idr, ctx->pe);
-+	mutex_unlock(&ctx->afu->contexts_lock);
-+	call_rcu(&ctx->rcu, reclaim_ctx);
-+}
-diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
-index 47f655f..ebd2e0d 100644
---- a/drivers/misc/cxl/cxl.h
-+++ b/drivers/misc/cxl/cxl.h
-@@ -460,6 +460,8 @@ struct cxl_context {
- 	bool pending_irq;
- 	bool pending_fault;
- 	bool pending_afu_err;
-+
-+	struct rcu_head rcu;
- };
- 
- struct cxl {
 -- 
-2.1.4
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
