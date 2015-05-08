@@ -1,26 +1,32 @@
-Return-Path: <rjw@rjwysocki.net>
+Return-Path: <tipbot@zytor.com>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 04D6F1A00E9
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 May 2015 23:46:55 +1000 (AEST)
-Received: from v094114.home.net.pl (v094114.home.net.pl [79.96.170.134])
- by ozlabs.org (Postfix) with SMTP id 2CB0A140283
- for <linuxppc-dev@ozlabs.org>; Fri,  8 May 2015 23:46:53 +1000 (AEST)
-From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Subject: Re: [PATCH v3 4/6] cpufreq: powernv: Call throttle_check() on
- receiving OCC_THROTTLE
-Date: Fri, 08 May 2015 16:11:54 +0200
-Message-ID: <2672050.ByCV8BX0rs@vostro.rjw.lan>
-In-Reply-To: <554C31A4.8050903@linux.vnet.ibm.com>
-References: <1430729652-14813-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
- <4161534.4Jyd5dl4um@vostro.rjw.lan> <554C31A4.8050903@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id D97251A00E9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 May 2015 23:48:58 +1000 (AEST)
+Received: from mail.zytor.com (terminus.zytor.com [IPv6:2001:1868:205::10])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 908371401AB
+ for <linuxppc-dev@ozlabs.org>; Fri,  8 May 2015 23:48:58 +1000 (AEST)
+Date: Fri, 8 May 2015 06:24:39 -0700
+Sender: tip tree robot <tipbot@zytor.com>
+From: tip-bot for Michael Ellerman <tipbot@zytor.com>
+Message-ID: <tip-cb307113746b4d184155d2c412e8069aeaa60d42@git.kernel.org>
+Reply-To: mpe@ellerman.id.au, bp@alien8.de, hpa@zytor.com,
+ linuxppc-dev@ozlabs.org, paulus@samba.org, akpm@osdl.org,
+ mingo@kernel.org, linux-kernel@vger.kernel.org, tglx@linutronix.de,
+ peterz@infradead.org, anton@samba.org
+In-Reply-To: <1430720799-18426-1-git-send-email-mpe@ellerman.id.au>
+References: <1430720799-18426-1-git-send-email-mpe@ellerman.id.au>
+To: linux-tip-commits@vger.kernel.org
+Subject: [tip:perf/core] perf_event: Don't allow vmalloc()
+ backed perf on powerpc
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Cc: linuxppc-dev@ozlabs.org, viresh.kumar@linaro.org,
- linux-kernel@vger.kernel.org,
- Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>, linux-pm@vger.kernel.org
+Content-Type: text/plain; charset=UTF-8
+Cc: akpm@osdl.org, peterz@infradead.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@ozlabs.org, paulus@samba.org, anton@samba.org, hpa@zytor.com,
+ bp@alien8.de, tglx@linutronix.de, mingo@kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,56 +36,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Friday, May 08, 2015 09:16:44 AM Preeti U Murthy wrote:
-> On 05/08/2015 02:29 AM, Rafael J. Wysocki wrote:
-> > On Thursday, May 07, 2015 05:49:22 PM Preeti U Murthy wrote:
-> >> On 05/05/2015 02:11 PM, Preeti U Murthy wrote:
-> >>> On 05/05/2015 12:03 PM, Shilpasri G Bhat wrote:
-> >>>> Hi Preeti,
-> >>>>
-> >>>> On 05/05/2015 09:30 AM, Preeti U Murthy wrote:
-> >>>>> Hi Shilpa,
-> >>>>>
-> >>>>> On 05/04/2015 02:24 PM, Shilpasri G Bhat wrote:
-> >>>>>> Re-evaluate the chip's throttled state on recieving OCC_THROTTLE
-> >>>>>> notification by executing *throttle_check() on any one of the cpu on
-> >>>>>> the chip. This is a sanity check to verify if we were indeed
-> >>>>>> throttled/unthrottled after receiving OCC_THROTTLE notification.
-> >>>>>>
-> >>>>>> We cannot call *throttle_check() directly from the notification
-> >>>>>> handler because we could be handling chip1's notification in chip2. So
-> >>>>>> initiate an smp_call to execute *throttle_check(). We are irq-disabled
-> >>>>>> in the notification handler, so use a worker thread to smp_call
-> >>>>>> throttle_check() on any of the cpu in the chipmask.
-> >>>>>
-> >>>>> I see that the first patch takes care of reporting *per-chip* throttling
-> >>>>> for pmax capping condition. But where are we taking care of reporting
-> >>>>> "pstate set to safe" and "freq control disabled" scenarios per-chip ?
-> >>>>>
-> >>>>
-> >>>> IMO let us not have "psafe" and "freq control disabled" states managed per-chip.
-> >>>> Because when the above two conditions occur it is likely to happen across all
-> >>>> chips during an OCC reset cycle. So I am setting 'throttled' to false on
-> >>>> OCC_ACTIVE and re-verifying if it actually is the case by invoking
-> >>>> *throttle_check().
-> >>>
-> >>> Alright like I pointed in the previous reply, a comment to indicate that
-> >>> psafe and freq control disabled conditions will fail when occ is
-> >>> inactive and that all chips face the consequence of this will help.
-> >>
-> >> From your explanation on the thread of the first patch of this series,
-> >> this will not be required.
-> >>
-> >> So,
-> >> Reviewed-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-> > 
-> > OK, so is the whole series reviewed now?
-> 
-> Yes the whole series has been reviewed.
+Commit-ID:  cb307113746b4d184155d2c412e8069aeaa60d42
+Gitweb:     http://git.kernel.org/tip/cb307113746b4d184155d2c412e8069aeaa60d42
+Author:     Michael Ellerman <mpe@ellerman.id.au>
+AuthorDate: Mon, 4 May 2015 16:26:39 +1000
+Committer:  Ingo Molnar <mingo@kernel.org>
+CommitDate: Fri, 8 May 2015 12:26:01 +0200
 
-OK, I'll queue it up for 4.2, then, thanks!
+perf_event: Don't allow vmalloc() backed perf on powerpc
 
+On powerpc the perf event interrupt is not masked when interrupts are
+disabled, allowing it to function as an NMI.
 
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+This causes problems if perf is using vmalloc. If we take a page fault
+on the vmalloc region the fault handler will fail the page fault because
+it detects we are coming in from an NMI (see do_hash_page()).
+
+We don't actually need or want vmalloc backed perf so just disable it on
+powerpc.
+
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+Signed-off-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+Cc: <linuxppc-dev@ozlabs.org>
+Cc: Andrew Morton <akpm@osdl.org>
+Cc: Anton Blanchard <anton@samba.org>
+Cc: Borislav Petkov <bp@alien8.de>
+Cc: H. Peter Anvin <hpa@zytor.com>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: acme@ghostprotocols.net
+Cc: sukadev@linux.vnet.ibm.com
+Link: http://lkml.kernel.org/r/1430720799-18426-1-git-send-email-mpe@ellerman.id.au
+Signed-off-by: Ingo Molnar <mingo@kernel.org>
+---
+ init/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/init/Kconfig b/init/Kconfig
+index dc24dec..81050e4 100644
+--- a/init/Kconfig
++++ b/init/Kconfig
+@@ -1637,7 +1637,7 @@ config PERF_EVENTS
+ config DEBUG_PERF_USE_VMALLOC
+ 	default n
+ 	bool "Debug: use vmalloc to back perf mmap() buffers"
+-	depends on PERF_EVENTS && DEBUG_KERNEL
++	depends on PERF_EVENTS && DEBUG_KERNEL && !PPC
+ 	select PERF_USE_VMALLOC
+ 	help
+ 	 Use vmalloc memory to back perf mmap() buffers.
