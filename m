@@ -1,36 +1,25 @@
-Return-Path: <hemant@linux.vnet.ibm.com>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <joel.stan@gmail.com>
+Received: from mail-qg0-x22b.google.com (mail-qg0-x22b.google.com
+ [IPv6:2607:f8b0:400d:c04::22b])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E6C3B1A0DFA
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 May 2015 11:08:58 +1000 (AEST)
-Received: from /spool/local
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <hemant@linux.vnet.ibm.com>;
- Fri, 8 May 2015 11:08:57 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 828852BB0047
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 May 2015 11:08:55 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t4818lq641418908
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 8 May 2015 11:08:55 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t4818MhS003359
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 8 May 2015 11:08:23 +1000
-From: Hemant Kumar <hemant@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH v3 2/2] perf/kvm: Support HCALL events
-Date: Fri,  8 May 2015 06:37:46 +0530
-Message-Id: <1431047266-6206-2-git-send-email-hemant@linux.vnet.ibm.com>
-In-Reply-To: <1431047266-6206-1-git-send-email-hemant@linux.vnet.ibm.com>
-References: <1431047266-6206-1-git-send-email-hemant@linux.vnet.ibm.com>
-Cc: maddy@linux.vnet.ibm.com, srikar@linux.vnet.ibm.com, peterz@infradead.org,
- agraf@suse.de, kvm-ppc@vger.kernel.org,
- Hemant Kumar <hemant@linux.vnet.ibm.com>, mingo@redhat.com, paulus@samba.org,
- acme@kernel.org, warrier@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2EDE51A0148
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 May 2015 11:27:00 +1000 (AEST)
+Received: by qgfi89 with SMTP id i89so30073320qgf.1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 May 2015 18:26:57 -0700 (PDT)
+MIME-Version: 1.0
+Sender: joel.stan@gmail.com
+In-Reply-To: <1430991020-7556-2-git-send-email-vipin@linux.vnet.ibm.com>
+References: <1430991020-7556-1-git-send-email-vipin@linux.vnet.ibm.com>
+ <1430991020-7556-2-git-send-email-vipin@linux.vnet.ibm.com>
+From: Joel Stanley <joel@jms.id.au>
+Date: Fri, 8 May 2015 10:56:36 +0930
+Message-ID: <CACPK8XdvbuUpNkxj2CvWLvgdm8M4un6id0i2E+G2WhFoG_bJpw@mail.gmail.com>
+Subject: Re: [PATCH v2 1/2] powerpc/powernv: Add poweroff (EPOW, DPO) events
+ support for PowerNV platform
+To: Vipin K Parashar <vipin@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Stewart Smith <stewart@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -40,167 +29,233 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-powerpc provides hcall events that also provide insights into guest
-behaviour. Enhance perf kvm to record and analyze hcall events.
+Hello Vipin,
 
- - To trace hcall events :
-  perf kvm stat record
+On Thu, May 7, 2015 at 7:00 PM, Vipin K Parashar
+<vipin@linux.vnet.ibm.com> wrote:
+> This patch adds support for FSP EPOW (Early Power Off Warning) and
+> DPO (Delayed Power Off) events support for PowerNV platform.
 
- - To show the results :
-  perf kvm stat report --event=hcall
+I reviewed this patch for the changes it made to the existing poweroff
+code, you still need someone to look at the EPOW code itself.
 
-The result shows the number of hypervisor calls from the guest grouped
-by their respective reasons displayed with the frequency.
+> Signed-off-by: Vipin K Parashar <vipin@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/include/asm/opal-api.h            |  30 ++
+>  arch/powerpc/include/asm/opal.h                |   3 +-
+>  arch/powerpc/platforms/powernv/opal-power.c    | 379 +++++++++++++++++++++++--
+>  arch/powerpc/platforms/powernv/opal-wrappers.S |   1 +
+>  4 files changed, 391 insertions(+), 22 deletions(-)
+>
 
-This patch makes use of two additional tracepoints "kvm_hv:kvm_hcall_enter"
-and "kvm_hv:kvm_hcall_exit". It uses the pSeries hypervisor codes
-exported through uapi to classify the hcalls into their respective reasons.
+>  /* Internal functions */
+>  extern int early_init_dt_scan_opal(unsigned long node, const char *uname,
+> diff --git a/arch/powerpc/platforms/powernv/opal-power.c b/arch/powerpc/platforms/powernv/opal-power.c
+> index ac46c2c..7c1b2f8 100644
+> --- a/arch/powerpc/platforms/powernv/opal-power.c
+> +++ b/arch/powerpc/platforms/powernv/opal-power.c
+> @@ -1,5 +1,5 @@
+>  /*
+> - * PowerNV OPAL power control for graceful shutdown handling
+> + * PowerNV poweroff events support
+>   *
+>   * Copyright 2015 IBM Corp.
+>   *
+> @@ -9,58 +9,395 @@
+>   * 2 of the License, or (at your option) any later version.
+>   */
+>
+> +#define pr_fmt(fmt)    "POWEROFF_EVENT: "    fmt
 
-Note : This patch has a dependency on "kvm/powerpc: Export HCALL reason
-codes" which exports HCALL reasons through uapi.
+OPAL_POWER?
 
- # pgrep qemu
-A sample output :
-19378
-60515
+> +
+>  #include <linux/kernel.h>
+> +#include <linux/spinlock.h>
+> +#include <linux/timer.h>
+>  #include <linux/reboot.h>
+> -#include <linux/notifier.h>
+> -
+> +#include <linux/of.h>
+>  #include <asm/opal.h>
+>  #include <asm/machdep.h>
+>
+> -#define SOFT_OFF 0x00
+> -#define SOFT_REBOOT 0x01
+> +/* Power control event types */
+> +#define SOFT_OFF       0x00
+> +#define SOFT_REBOOT    0x01
 
-2 VMs running.
+While you're touching this code, I think these should be moved to opal-api.h
 
- # perf kvm stat record -a
-^C[ perf record: Woken up 1 times to write data ]
-[ perf record: Captured and wrote 4.153 MB perf.data.guest (39624 samples) ]
+> +
+> +/* Max time for graceful system shutdown including guests. */
+> +#define MAX_POWEROFF_SYS_TIME  600
+> +
 
- # perf kvm stat report -p 60515 --event=hcall
-Analyze events for pid(s) 60515, all VCPUs:
+> +/* IPMI power-control events notifier */
+>  static int opal_power_control_event(struct notifier_block *nb,
+> -                                   unsigned long msg_type, void *msg)
+> +                               unsigned long msg_type, void *msg)
+>  {
+> -       struct opal_msg *power_msg = msg;
+>         uint64_t type;
+> +       struct opal_msg *power_msg = msg;
+>
+>         type = be64_to_cpu(power_msg->params[0]);
+>
+>         switch (type) {
+>         case SOFT_REBOOT:
+> -               pr_info("OPAL: reboot requested\n");
+> +               pr_info("Reboot requested\n");
 
-         HCALL-EVENT    Samples  Samples%     Time%    Min Time    Max Time         Avg time
+I prefer the OPAL prefix.
 
-        H_VIO_SIGNAL       1034    38.44%    15.77%      0.36us      1.59us      0.44us ( +-   0.66% )
-          H_SEND_CRQ        652    24.24%    10.97%      0.39us      1.84us      0.49us ( +-   1.20% )
-               H_IPI        523    19.44%    62.05%      1.35us     19.70us      3.44us ( +-   2.88% )
-     H_PUT_TERM_CHAR        411    15.28%     8.03%      0.38us      3.77us      0.57us ( +-   1.61% )
-     H_GET_TERM_CHAR         50     1.86%     0.99%      0.40us      0.98us      0.57us ( +-   3.37% )
-               H_EOI         20     0.74%     2.19%      2.22us      4.72us      3.17us ( +-   5.96% )
+>                 orderly_reboot();
+>                 break;
+>         case SOFT_OFF:
+> -               pr_info("OPAL: poweroff requested\n");
+> +               pr_info("Poweroff requested\n");
 
-Total Samples:2690, Total events handled time:2896.94us.
+Ditto.
 
-Signed-off-by: Hemant Kumar <hemant@linux.vnet.ibm.com>
----
-Patch has a dependency on https://patchwork.ozlabs.org/patch/469841/
-which exports the HCALL reason codes to perf.
+>                 orderly_poweroff(true);
+>                 break;
+>         default:
+> -               pr_err("OPAL: power control type unexpected %016llx\n", type);
+> +               pr_err("Unknown event %llu\n", type);
 
- arch/powerpc/include/uapi/asm/kvm_perf.h |  4 +++
- tools/perf/arch/powerpc/util/kvm-stat.c  | 61 ++++++++++++++++++++++++++++++++
- 2 files changed, 65 insertions(+)
+Ditto.
 
-diff --git a/arch/powerpc/include/uapi/asm/kvm_perf.h b/arch/powerpc/include/uapi/asm/kvm_perf.h
-index 30fa670..440902e 100644
---- a/arch/powerpc/include/uapi/asm/kvm_perf.h
-+++ b/arch/powerpc/include/uapi/asm/kvm_perf.h
-@@ -3,6 +3,7 @@
- 
- #include <asm/trace_book3s.h>
- #include <asm/kvm.h>
-+#include <asm/trace_hcall.h>
- 
- #define DECODE_STR_LEN 20
- 
-@@ -11,5 +12,8 @@
- #define KVM_ENTRY_TRACE "kvm_hv:kvm_guest_enter"
- #define KVM_EXIT_TRACE "kvm_hv:kvm_guest_exit"
- #define KVM_EXIT_REASON "trap"
-+#define KVM_HCALL_ENTRY_TRACE "kvm_hv:kvm_hcall_enter"
-+#define KVM_HCALL_EXIT_TRACE "kvm_hv:kvm_hcall_exit"
-+#define KVM_HCALL_REASON "req"
- 
- #endif /* _ASM_POWERPC_KVM_PERF_H */
-diff --git a/tools/perf/arch/powerpc/util/kvm-stat.c b/tools/perf/arch/powerpc/util/kvm-stat.c
-index 62cdcc1..685201c 100644
---- a/tools/perf/arch/powerpc/util/kvm-stat.c
-+++ b/tools/perf/arch/powerpc/util/kvm-stat.c
-@@ -1,7 +1,9 @@
- #include "../../util/kvm-stat.h"
- #include <asm/kvm_perf.h>
-+#include "../../util/debug.h"
- 
- define_exit_reasons_table(hv_exit_reasons, kvm_trace_symbol_exit);
-+define_exit_reasons_table(hcall_reasons, kvm_trace_symbol_hcall);
- 
- static struct kvm_events_ops exit_events = {
- 	.is_begin_event = exit_event_begin,
-@@ -10,14 +12,73 @@ static struct kvm_events_ops exit_events = {
- 	.name = "VM-EXIT"
- };
- 
-+static void hcall_event_get_key(struct perf_evsel *evsel,
-+				struct perf_sample *sample,
-+				struct event_key *key)
-+{
-+	key->info = 0;
-+	key->key = perf_evsel__intval(evsel, sample, KVM_HCALL_REASON);
-+}
-+
-+static const char *get_exit_reason(u64 exit_code)
-+{
-+	struct exit_reasons_table *tbl = hcall_reasons;
-+
-+	while (tbl->reason != NULL) {
-+		if (tbl->exit_code == exit_code)
-+			return tbl->reason;
-+		tbl++;
-+	}
-+
-+	pr_err("Unknown kvm hcall exit code: %lld\n",
-+	       (unsigned long long)exit_code);
-+	return "UNKNOWN";
-+}
-+
-+static bool hcall_event_end(struct perf_evsel *evsel,
-+			    struct perf_sample *sample __maybe_unused,
-+			    struct event_key *key __maybe_unused)
-+{
-+	return (!strcmp(evsel->name, KVM_HCALL_EXIT_TRACE));
-+}
-+
-+static bool hcall_event_begin(struct perf_evsel *evsel,
-+			      struct perf_sample *sample, struct event_key *key)
-+{
-+	if (!strcmp(evsel->name, KVM_HCALL_ENTRY_TRACE)) {
-+		hcall_event_get_key(evsel, sample, key);
-+		return true;
-+	}
-+
-+        return false;
-+}
-+static void hcall_event_decode_key(struct perf_kvm_stat *kvm __maybe_unused,
-+				   struct event_key *key,
-+				   char *decode)
-+{
-+	const char *hcall_reason = get_exit_reason(key->key);
-+
-+	scnprintf(decode, DECODE_STR_LEN, "%s", hcall_reason);
-+}
-+
-+static struct kvm_events_ops hcall_events = {
-+	.is_begin_event = hcall_event_begin,
-+	.is_end_event = hcall_event_end,
-+	.decode_key = hcall_event_decode_key,
-+	.name = "HCALL-EVENT",
-+};
-+
- const char *const kvm_events_tp[] = {
- 	"kvm_hv:kvm_guest_exit",
- 	"kvm_hv:kvm_guest_enter",
-+	"kvm_hv:kvm_hcall_enter",
-+	"kvm_hv:kvm_hcall_exit",
- 	NULL,
- };
- 
- struct kvm_reg_events_ops kvm_reg_events_ops[] = {
- 	{ .name = "vmexit", .ops = &exit_events },
-+	{ .name = "hcall", .ops = &hcall_events },
- 	{ NULL, NULL },
- };
- 
--- 
-1.9.3
+>         }
+>
+>         return 0;
+>  }
+>
+> +/* OPAL EPOW event notifier block */
+> +static struct notifier_block opal_epow_nb = {
+> +       .notifier_call  = opal_epow_event,
+> +       .next           = NULL,
+> +       .priority       = 0,
+> +};
+> +
+> +/* OPAL DPO event notifier block */
+> +static struct notifier_block opal_dpo_nb = {
+> +       .notifier_call  = opal_dpo_event,
+> +       .next           = NULL,
+> +       .priority       = 0,
+> +};
+> +
+> +/* OPAL Power control events */
+>  static struct notifier_block opal_power_control_nb = {
+> -       .notifier_call  = opal_power_control_event,
+> -       .next           = NULL,
+> -       .priority       = 0,
+> +       .notifier_call  = opal_power_control_event,
+> +       .next           = NULL,
+> +       .priority       = 0,
+>  };
+
+Looks like you changed the whitespace?
+
+>
+> -static int __init opal_power_control_init(void)
+> +/* Poweroff events init */
+> +static int __init opal_poweroff_events_init(void)
+
+This comment does not add any value.
+
+Renaming the function doesn't add much either.
+
+>  {
+>         int ret;
+> +       struct device_node *node_epow;
+>
+> -       ret = opal_message_notifier_register(OPAL_MSG_SHUTDOWN,
+> -                                            &opal_power_control_nb);
+> -       if (ret) {
+> -               pr_err("%s: Can't register OPAL event notifier (%d)\n",
+> -                               __func__, ret);
+> -               return ret;
+> +       /*
+> +       * Determine EPOW, DPO support in hardware.
+> +       */
+> +       node_epow = of_find_node_by_path("/ibm,opal/epow");
+> +       if (node_epow) {
+> +               if (of_device_is_compatible(node_epow, "ibm,opal-epow")) {
+> +                       epow_supported = true;
+> +                       dpo_supported = true;
+
+Why are these separate flags? Do we have any systems that will support
+EPOW but not DPO, or DPO without EPOW?
+
+I suggest merging them into the one flag.
+
+> +                       pr_info("OPAL EPOW, DPO support detected.\n");
+> +               }
+> +               of_node_put(node_epow);
+> +       }
+> +
+> +       /* Prepare to handle EPOW events */
+> +       if (epow_supported) {
+> +               /* Initialize poweroff timer */
+> +               init_timer(&epow_timer);
+> +               epow_timer.function = epow_poweroff;
+> +
+> +               /* Register EPOW event notifier */
+> +               ret = opal_message_notifier_register(OPAL_MSG_EPOW,
+> +                               &opal_epow_nb);
+> +               if (ret) {
+> +                       pr_err("EPOW event notifier registration failed, "
+> +                                       "ret = %d\n", ret);
+> +               }
+> +       }
+> +
+> +       if (dpo_supported) {
+> +               /* Register DPO event notifier */
+> +               ret = opal_message_notifier_register(OPAL_MSG_DPO,
+> +                               &opal_dpo_nb);
+> +               if (ret)
+> +                       pr_err("DPO event notifier registration failed, "
+> +                                       "ret = %d\n", ret);
+>         }
+>
+> +       /* Check for any existing EPOW or DPO events. */
+> +       process_existing_poweroff_events();
+> +
+> +       /* Register IPMI poweroff events notifier */
+> +       ret = opal_message_notifier_register(OPAL_MSG_SHUTDOWN,
+> +                               &opal_power_control_nb);
+> +       if (ret)
+> +               pr_err("IPMI power-control events notifier registration "
+> +                               "failed, ret = %d\n", ret);
+
+The comment and the pr_err message are both incorrect; this is not an
+IPMI event but an OPAL event.
+
+> +
+> +
+> +       pr_info("Poweroff events support initialized\n");
+
+This is unnecessary.
+
+>         return 0;
+>  }
+> -machine_subsys_initcall(powernv, opal_power_control_init);
+> +
+> +machine_subsys_initcall(powernv, opal_poweroff_events_init);
+> diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
+> index a7ade94..5d3c8e3 100644
+> --- a/arch/powerpc/platforms/powernv/opal-wrappers.S
+> +++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
+> @@ -249,6 +249,7 @@ OPAL_CALL(opal_pci_reinit,                  OPAL_PCI_REINIT);
+>  OPAL_CALL(opal_pci_mask_pe_error,              OPAL_PCI_MASK_PE_ERROR);
+>  OPAL_CALL(opal_set_slot_led_status,            OPAL_SET_SLOT_LED_STATUS);
+>  OPAL_CALL(opal_get_epow_status,                        OPAL_GET_EPOW_STATUS);
+> +OPAL_CALL(opal_get_dpo_status,                 OPAL_GET_DPO_STATUS);
+>  OPAL_CALL(opal_set_system_attention_led,       OPAL_SET_SYSTEM_ATTENTION_LED);
+>  OPAL_CALL(opal_pci_next_error,                 OPAL_PCI_NEXT_ERROR);
+>  OPAL_CALL(opal_pci_poll,                       OPAL_PCI_POLL);
+> --
+> 1.9.3
+>
