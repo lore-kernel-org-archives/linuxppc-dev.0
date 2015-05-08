@@ -1,25 +1,27 @@
-Return-Path: <joel.stan@gmail.com>
-Received: from mail-qg0-x22b.google.com (mail-qg0-x22b.google.com
- [IPv6:2607:f8b0:400d:c04::22b])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <herbert@gondor.apana.org.au>
+Received: from helcar.hengli.com.au (helcar.hengli.com.au [209.40.204.226])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2EDE51A0148
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 May 2015 11:27:00 +1000 (AEST)
-Received: by qgfi89 with SMTP id i89so30073320qgf.1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 May 2015 18:26:57 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5C1D71A00E9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 May 2015 12:33:00 +1000 (AEST)
+Date: Fri, 8 May 2015 10:32:34 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Dan Streetman <ddstreet@ieee.org>
+Subject: Re: [PATCH 10/10] drivers/crypto/nx: add hardware 842 crypto comp alg
+Message-ID: <20150508023234.GB7803@gondor.apana.org.au>
+References: <1428428070-17803-1-git-send-email-ddstreet@ieee.org>
+ <1430931066-4536-1-git-send-email-ddstreet@ieee.org>
+ <1430931066-4536-11-git-send-email-ddstreet@ieee.org>
+ <20150507031238.GC29395@gondor.apana.org.au>
+ <CALZtONBBoy=sM8Qt43-_k8BWTwSKA3FaJg9JMfJHzJ3wh5+kvQ@mail.gmail.com>
 MIME-Version: 1.0
-Sender: joel.stan@gmail.com
-In-Reply-To: <1430991020-7556-2-git-send-email-vipin@linux.vnet.ibm.com>
-References: <1430991020-7556-1-git-send-email-vipin@linux.vnet.ibm.com>
- <1430991020-7556-2-git-send-email-vipin@linux.vnet.ibm.com>
-From: Joel Stanley <joel@jms.id.au>
-Date: Fri, 8 May 2015 10:56:36 +0930
-Message-ID: <CACPK8XdvbuUpNkxj2CvWLvgdm8M4un6id0i2E+G2WhFoG_bJpw@mail.gmail.com>
-Subject: Re: [PATCH v2 1/2] powerpc/powernv: Add poweroff (EPOW, DPO) events
- support for PowerNV platform
-To: Vipin K Parashar <vipin@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Stewart Smith <stewart@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <CALZtONBBoy=sM8Qt43-_k8BWTwSKA3FaJg9JMfJHzJ3wh5+kvQ@mail.gmail.com>
+Cc: "David S. Miller" <davem@davemloft.net>,
+ linux-kernel <linux-kernel@vger.kernel.org>, Robert Jennings <rob@pochix.net>,
+ Paul Mackerras <paulus@samba.org>, linux-crypto@vger.kernel.org,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Seth Jennings <sjennings@variantweb.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,233 +31,24 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hello Vipin,
+On Thu, May 07, 2015 at 11:06:06AM -0400, Dan Streetman wrote:
+> 
+> The crypto 842-nx has (significant) code in it to handle any alignment
+> and length input buffers, to match them to what the driver requires.
+> Would it be better to move that into the crypto code, so that any
+> crypto compression hw driver can request buffers be specifically
+> aligned/sized?  I did have to use a header on each compressed buffer
+> that needed re-alignment or re-sizing, so maybe it's not appropriate
+> for common crypto compression code.
 
-On Thu, May 7, 2015 at 7:00 PM, Vipin K Parashar
-<vipin@linux.vnet.ibm.com> wrote:
-> This patch adds support for FSP EPOW (Early Power Off Warning) and
-> DPO (Delayed Power Off) events support for PowerNV platform.
+Yes we could certainly move this logic into the crypto layer, as
+we do for ciphers and hashes.
 
-I reviewed this patch for the changes it made to the existing poweroff
-code, you still need someone to look at the EPOW code itself.
+But as you say we could make the next guy who writes a comp driver
+do this :)
 
-> Signed-off-by: Vipin K Parashar <vipin@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/include/asm/opal-api.h            |  30 ++
->  arch/powerpc/include/asm/opal.h                |   3 +-
->  arch/powerpc/platforms/powernv/opal-power.c    | 379 +++++++++++++++++++++++--
->  arch/powerpc/platforms/powernv/opal-wrappers.S |   1 +
->  4 files changed, 391 insertions(+), 22 deletions(-)
->
-
->  /* Internal functions */
->  extern int early_init_dt_scan_opal(unsigned long node, const char *uname,
-> diff --git a/arch/powerpc/platforms/powernv/opal-power.c b/arch/powerpc/platforms/powernv/opal-power.c
-> index ac46c2c..7c1b2f8 100644
-> --- a/arch/powerpc/platforms/powernv/opal-power.c
-> +++ b/arch/powerpc/platforms/powernv/opal-power.c
-> @@ -1,5 +1,5 @@
->  /*
-> - * PowerNV OPAL power control for graceful shutdown handling
-> + * PowerNV poweroff events support
->   *
->   * Copyright 2015 IBM Corp.
->   *
-> @@ -9,58 +9,395 @@
->   * 2 of the License, or (at your option) any later version.
->   */
->
-> +#define pr_fmt(fmt)    "POWEROFF_EVENT: "    fmt
-
-OPAL_POWER?
-
-> +
->  #include <linux/kernel.h>
-> +#include <linux/spinlock.h>
-> +#include <linux/timer.h>
->  #include <linux/reboot.h>
-> -#include <linux/notifier.h>
-> -
-> +#include <linux/of.h>
->  #include <asm/opal.h>
->  #include <asm/machdep.h>
->
-> -#define SOFT_OFF 0x00
-> -#define SOFT_REBOOT 0x01
-> +/* Power control event types */
-> +#define SOFT_OFF       0x00
-> +#define SOFT_REBOOT    0x01
-
-While you're touching this code, I think these should be moved to opal-api.h
-
-> +
-> +/* Max time for graceful system shutdown including guests. */
-> +#define MAX_POWEROFF_SYS_TIME  600
-> +
-
-> +/* IPMI power-control events notifier */
->  static int opal_power_control_event(struct notifier_block *nb,
-> -                                   unsigned long msg_type, void *msg)
-> +                               unsigned long msg_type, void *msg)
->  {
-> -       struct opal_msg *power_msg = msg;
->         uint64_t type;
-> +       struct opal_msg *power_msg = msg;
->
->         type = be64_to_cpu(power_msg->params[0]);
->
->         switch (type) {
->         case SOFT_REBOOT:
-> -               pr_info("OPAL: reboot requested\n");
-> +               pr_info("Reboot requested\n");
-
-I prefer the OPAL prefix.
-
->                 orderly_reboot();
->                 break;
->         case SOFT_OFF:
-> -               pr_info("OPAL: poweroff requested\n");
-> +               pr_info("Poweroff requested\n");
-
-Ditto.
-
->                 orderly_poweroff(true);
->                 break;
->         default:
-> -               pr_err("OPAL: power control type unexpected %016llx\n", type);
-> +               pr_err("Unknown event %llu\n", type);
-
-Ditto.
-
->         }
->
->         return 0;
->  }
->
-> +/* OPAL EPOW event notifier block */
-> +static struct notifier_block opal_epow_nb = {
-> +       .notifier_call  = opal_epow_event,
-> +       .next           = NULL,
-> +       .priority       = 0,
-> +};
-> +
-> +/* OPAL DPO event notifier block */
-> +static struct notifier_block opal_dpo_nb = {
-> +       .notifier_call  = opal_dpo_event,
-> +       .next           = NULL,
-> +       .priority       = 0,
-> +};
-> +
-> +/* OPAL Power control events */
->  static struct notifier_block opal_power_control_nb = {
-> -       .notifier_call  = opal_power_control_event,
-> -       .next           = NULL,
-> -       .priority       = 0,
-> +       .notifier_call  = opal_power_control_event,
-> +       .next           = NULL,
-> +       .priority       = 0,
->  };
-
-Looks like you changed the whitespace?
-
->
-> -static int __init opal_power_control_init(void)
-> +/* Poweroff events init */
-> +static int __init opal_poweroff_events_init(void)
-
-This comment does not add any value.
-
-Renaming the function doesn't add much either.
-
->  {
->         int ret;
-> +       struct device_node *node_epow;
->
-> -       ret = opal_message_notifier_register(OPAL_MSG_SHUTDOWN,
-> -                                            &opal_power_control_nb);
-> -       if (ret) {
-> -               pr_err("%s: Can't register OPAL event notifier (%d)\n",
-> -                               __func__, ret);
-> -               return ret;
-> +       /*
-> +       * Determine EPOW, DPO support in hardware.
-> +       */
-> +       node_epow = of_find_node_by_path("/ibm,opal/epow");
-> +       if (node_epow) {
-> +               if (of_device_is_compatible(node_epow, "ibm,opal-epow")) {
-> +                       epow_supported = true;
-> +                       dpo_supported = true;
-
-Why are these separate flags? Do we have any systems that will support
-EPOW but not DPO, or DPO without EPOW?
-
-I suggest merging them into the one flag.
-
-> +                       pr_info("OPAL EPOW, DPO support detected.\n");
-> +               }
-> +               of_node_put(node_epow);
-> +       }
-> +
-> +       /* Prepare to handle EPOW events */
-> +       if (epow_supported) {
-> +               /* Initialize poweroff timer */
-> +               init_timer(&epow_timer);
-> +               epow_timer.function = epow_poweroff;
-> +
-> +               /* Register EPOW event notifier */
-> +               ret = opal_message_notifier_register(OPAL_MSG_EPOW,
-> +                               &opal_epow_nb);
-> +               if (ret) {
-> +                       pr_err("EPOW event notifier registration failed, "
-> +                                       "ret = %d\n", ret);
-> +               }
-> +       }
-> +
-> +       if (dpo_supported) {
-> +               /* Register DPO event notifier */
-> +               ret = opal_message_notifier_register(OPAL_MSG_DPO,
-> +                               &opal_dpo_nb);
-> +               if (ret)
-> +                       pr_err("DPO event notifier registration failed, "
-> +                                       "ret = %d\n", ret);
->         }
->
-> +       /* Check for any existing EPOW or DPO events. */
-> +       process_existing_poweroff_events();
-> +
-> +       /* Register IPMI poweroff events notifier */
-> +       ret = opal_message_notifier_register(OPAL_MSG_SHUTDOWN,
-> +                               &opal_power_control_nb);
-> +       if (ret)
-> +               pr_err("IPMI power-control events notifier registration "
-> +                               "failed, ret = %d\n", ret);
-
-The comment and the pr_err message are both incorrect; this is not an
-IPMI event but an OPAL event.
-
-> +
-> +
-> +       pr_info("Poweroff events support initialized\n");
-
-This is unnecessary.
-
->         return 0;
->  }
-> -machine_subsys_initcall(powernv, opal_power_control_init);
-> +
-> +machine_subsys_initcall(powernv, opal_poweroff_events_init);
-> diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
-> index a7ade94..5d3c8e3 100644
-> --- a/arch/powerpc/platforms/powernv/opal-wrappers.S
-> +++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
-> @@ -249,6 +249,7 @@ OPAL_CALL(opal_pci_reinit,                  OPAL_PCI_REINIT);
->  OPAL_CALL(opal_pci_mask_pe_error,              OPAL_PCI_MASK_PE_ERROR);
->  OPAL_CALL(opal_set_slot_led_status,            OPAL_SET_SLOT_LED_STATUS);
->  OPAL_CALL(opal_get_epow_status,                        OPAL_GET_EPOW_STATUS);
-> +OPAL_CALL(opal_get_dpo_status,                 OPAL_GET_DPO_STATUS);
->  OPAL_CALL(opal_set_system_attention_led,       OPAL_SET_SYSTEM_ATTENTION_LED);
->  OPAL_CALL(opal_pci_next_error,                 OPAL_PCI_NEXT_ERROR);
->  OPAL_CALL(opal_pci_poll,                       OPAL_PCI_POLL);
-> --
-> 1.9.3
->
+Cheers,
+-- 
+Email: Herbert Xu <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
