@@ -1,39 +1,22 @@
-Return-Path: <hemant@linux.vnet.ibm.com>
-Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <mpe@ellerman.id.au>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1193D1A113B
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 May 2015 16:19:49 +1000 (AEST)
-Received: from /spool/local
- by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <hemant@linux.vnet.ibm.com>;
- Fri, 8 May 2015 11:49:47 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 11855E004C
- for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 May 2015 11:52:38 +0530 (IST)
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t486GwQC36175952
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 8 May 2015 11:49:43 +0530
-Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
- by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t486GqxO010307
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 8 May 2015 11:46:53 +0530
-Message-ID: <554C54D1.9060301@linux.vnet.ibm.com>
-Date: Fri, 08 May 2015 11:46:49 +0530
-From: Hemant Kumar <hemant@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@kernel.org>
-Subject: Re: [PATCH v3 1/2] perf/kvm: Port perf kvm to powerpc
-References: <1431047266-6206-1-git-send-email-hemant@linux.vnet.ibm.com>
- <20150508042853.GA24391@gmail.com>
-In-Reply-To: <20150508042853.GA24391@gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: maddy@linux.vnet.ibm.com, srikar@linux.vnet.ibm.com, peterz@infradead.org,
- agraf@suse.de, kvm-ppc@vger.kernel.org, linux-kernel@vger.kernel.org,
- mingo@redhat.com, paulus@samba.org, acme@kernel.org,
- warrier@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6EEA61A00E9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 May 2015 16:59:19 +1000 (AEST)
+Message-ID: <1431068357.9673.9.camel@ellerman.id.au>
+Subject: Re: [PATCH 1/6] dump_stack: Support adding to the dump stack arch
+ description
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Andrew Morton <akpm@linux-foundation.org>
+Date: Fri, 08 May 2015 16:59:17 +1000
+In-Reply-To: <20150505141647.a1529e46f5ba42645264769c@linux-foundation.org>
+References: <1430824337-15339-1-git-send-email-mpe@ellerman.id.au>
+ <20150505141647.a1529e46f5ba42645264769c@linux-foundation.org>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: tj@kernel.org, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+ Andrew Morton <akpm@osdl.org>, Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,32 +26,50 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Tue, 2015-05-05 at 14:16 -0700, Andrew Morton wrote:
+> On Tue,  5 May 2015 21:12:12 +1000 Michael Ellerman <mpe@ellerman.id.au> wrote:
+> 
+> > Arch code can set a "dump stack arch description string" which is
+> > displayed with oops output to describe the hardware platform.
+> > +
+> > +	len = strnlen(dump_stack_arch_desc_str, sizeof(dump_stack_arch_desc_str));
+> > +	pos = len;
+> > +
+> > +	if (len)
+> > +		pos++;
+> > +
+> > +	if (pos >= sizeof(dump_stack_arch_desc_str))
+> > +		return; /* Ran out of space */
+> > +
+> > +	p = &dump_stack_arch_desc_str[pos];
+> > +
+> > +	va_start(args, fmt);
+> > +	vsnprintf(p, sizeof(dump_stack_arch_desc_str) - pos, fmt, args);
+> > +	va_end(args);
+> 
+> This code is almost race-free.  A (documented) smp_wmb() in here would
+> make that 100%?
+> 
+> > +	if (len)
+> > +		dump_stack_arch_desc_str[len] = ' ';
+> > +}
 
-On 05/08/2015 09:58 AM, Ingo Molnar wrote:
-> * Hemant Kumar <hemant@linux.vnet.ibm.com> wrote:
->
->>   # perf kvm stat report -p 60515
->> Analyze events for pid(s) 60515, all VCPUs:
->>
->>         VM-EXIT    Samples  Samples%     Time%    Min Time         Max        Time         Avg time
->>
->> H_DATA_STORAGE       5006    35.30%     0.13%      1.94us     49.46us     12.37us ( +-   0.52% )
->> HV_DECREMENTER       4457    31.43%     0.02%      0.72us     16.14us      1.91us ( +-   0.96% )
->>         SYSCALL       2690    18.97%     0.10%      2.84us    528.24us     18.29us ( +-   3.75% )
->> RETURN_TO_HOST       1789    12.61%    99.76%      1.58us 672791.91us  27470.23us ( +-   3.00% )
->>        EXTERNAL        240     1.69%     0.00%        0.69us     10.67us      1.33us ( +-   5.34% )
-> Where is the last line misaligned? Copy & paste error or does perf kvm
-> produce it in such a way?
+On second thoughts I don't think it would.
 
-Its a copy-paste error. Thanks for pointing this out.
+It would order the stores in vsnprintf() vs the store of the space. The idea
+being you never see a partially printed string. But for that to actually work
+you need a barrier on the read side, and where do you put it?
 
-Shall I resend the patches with the correct alignment of the o/p?
+The cpu printing the buffer could speculate the load of the tail of the buffer,
+seeing something half printed from vsnprintf(), and then load the head of the
+buffer and see the space, unless you order those loads.
 
-> Thanks,
->
-> 	Ingo
->
+So I don't think we can prevent a crashing cpu seeing a semi-printed buffer
+without a lock, and we don't want to add a lock.
 
--- 
-Thanks,
-Hemant Kumar
+The other issue would be that a reader could miss the trailing NULL from the
+vsnprintf() but see the space, meaning it would wander off the end of the
+buffer. But the buffer's in BSS to start with, and we're careful not to print
+off the end of it, so it should always be NULL terminated.
+
+cheers
