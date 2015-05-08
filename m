@@ -1,28 +1,22 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
- [140.211.169.12])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 877711A0862
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 May 2015 06:15:26 +1000 (AEST)
-Date: Fri, 8 May 2015 13:15:23 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Eric B Munson <emunson@akamai.com>
-Subject: Re: [PATCH 0/3] Allow user to request memory to be locked on page
- fault
-Message-Id: <20150508131523.f970d13a213bca63bd6f2619@linux-foundation.org>
-In-Reply-To: <20150508200610.GB29933@akamai.com>
-References: <1431113626-19153-1-git-send-email-emunson@akamai.com>
- <20150508124203.6679b1d35ad9555425003929@linux-foundation.org>
- <20150508200610.GB29933@akamai.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linux-arch@vger.kernel.org, linux-mips@linux-mips.org,
- linux-parisc@vger.kernel.org, linux-xtensa@linux-xtensa.org,
- linux-api@vger.kernel.org, linux-kernel@vger.kernel.org,
- Shuah Khan <shuahkh@osg.samsung.com>, linux-mm@kvack.org,
- linux-alpha@vger.kernel.org, sparclinux@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
+Return-Path: <rjw@rjwysocki.net>
+Received: from v094114.home.net.pl (v094114.home.net.pl [79.96.170.134])
+ by lists.ozlabs.org (Postfix) with SMTP id 1F3711A0862
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 May 2015 07:26:34 +1000 (AEST)
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Subject: Re: [PATCH V3] cpuidle: Handle tick_broadcast_enter() failure
+ gracefully
+Date: Fri, 08 May 2015 23:51:38 +0200
+Message-ID: <3981224.gz7iCfoVSM@vostro.rjw.lan>
+In-Reply-To: <8680371.ymYIEaFYPT@vostro.rjw.lan>
+References: <20150508073418.28491.4150.stgit@preeti.in.ibm.com>
+ <8680371.ymYIEaFYPT@vostro.rjw.lan>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Cc: rlippert@google.com, daniel.lezcano@linaro.org, linux-pm@vger.kernel.org,
+ peterz@infradead.org, linus.walleij@linaro.org, rafael.j.wysocki@intel.com,
+ linux-kernel@vger.kernel.org, mingo@redhat.com, sudeep.holla@arm.com,
+ tglx@linutronix.de, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,38 +26,201 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 8 May 2015 16:06:10 -0400 Eric B Munson <emunson@akamai.com> wrote:
-
-> On Fri, 08 May 2015, Andrew Morton wrote:
+On Friday, May 08, 2015 04:18:02 PM Rafael J. Wysocki wrote:
+> On Friday, May 08, 2015 01:05:32 PM Preeti U Murthy wrote:
+> > When a CPU has to enter an idle state where tick stops, it makes a call
+> > to tick_broadcast_enter(). The call will fail if this CPU is the
+> > broadcast CPU. Today, under such a circumstance, the arch cpuidle code
+> > handles this CPU.  This is not convincing because not only do we not
+> > know what the arch cpuidle code does, but we also do not account for the
+> > idle state residency time and usage of such a CPU.
+> > 
+> > This scenario can be handled better by simply choosing an idle state
+> > where in ticks do not stop. To accommodate this change move the setting
+> > of runqueue idle state from the core to the cpuidle driver, else the
+> > rq->idle_state will be set wrong.
+> > 
+> > Signed-off-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+> > ---
+> > Changes from V2: https://lkml.org/lkml/2015/5/7/78
+> > Introduce a function in cpuidle core to select an idle state where ticks do not
+> > stop rather than going through the governors.
+> > 
+> > Changes from V1: https://lkml.org/lkml/2015/5/7/24
+> > Rebased on the latest linux-pm/bleeding-edge branch
+> > 
+> >  drivers/cpuidle/cpuidle.c |   45 +++++++++++++++++++++++++++++++++++++++++++--
+> >  include/linux/sched.h     |   16 ++++++++++++++++
+> >  kernel/sched/core.c       |   17 +++++++++++++++++
+> >  kernel/sched/fair.c       |    2 +-
+> >  kernel/sched/idle.c       |    6 ------
+> >  kernel/sched/sched.h      |   24 ------------------------
+> >  6 files changed, 77 insertions(+), 33 deletions(-)
+> > 
+> > diff --git a/drivers/cpuidle/cpuidle.c b/drivers/cpuidle/cpuidle.c
+> > index 8c24f95..d1af760 100644
+> > --- a/drivers/cpuidle/cpuidle.c
+> > +++ b/drivers/cpuidle/cpuidle.c
+> > @@ -21,6 +21,7 @@
+> >  #include <linux/module.h>
+> >  #include <linux/suspend.h>
+> >  #include <linux/tick.h>
+> > +#include <linux/sched.h>
+> >  #include <trace/events/power.h>
+> >  
+> >  #include "cpuidle.h"
+> > @@ -146,6 +147,36 @@ int cpuidle_enter_freeze(struct cpuidle_driver *drv, struct cpuidle_device *dev)
+> >  	return index;
+> >  }
+> >  
+> > +/*
+> > + * find_tick_valid_state - select a state where tick does not stop
+> > + * @dev: cpuidle device for this cpu
+> > + * @drv: cpuidle driver for this cpu
+> > + */
+> > +static int find_tick_valid_state(struct cpuidle_device *dev,
+> > +				struct cpuidle_driver *drv)
+> > +{
+> > +	int i, ret = -1;
+> > +
+> > +	for (i = CPUIDLE_DRIVER_STATE_START; i < drv->state_count; i++) {
+> > +		struct cpuidle_state *s = &drv->states[i];
+> > +		struct cpuidle_state_usage *su = &dev->states_usage[i];
+> > +
+> > +		/*
+> > +		 * We do not explicitly check for latency requirement
+> > +		 * since it is safe to assume that only shallower idle
+> > +		 * states will have the CPUIDLE_FLAG_TIMER_STOP bit
+> > +		 * cleared and they will invariably meet the latency
+> > +		 * requirement.
+> > +		 */
+> > +		if (s->disabled || su->disable ||
+> > +			(s->flags & CPUIDLE_FLAG_TIMER_STOP))
+> > +			continue;
+> > +
+> > +		ret = i;
+> > +	}
+> > +	return ret;
+> > +}
+> > +
+> >  /**
+> >   * cpuidle_enter_state - enter the state and update stats
+> >   * @dev: cpuidle device for this cpu
+> > @@ -168,10 +199,17 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
+> >  	 * CPU as a broadcast timer, this call may fail if it is not available.
+> >  	 */
+> >  	if (broadcast && tick_broadcast_enter()) {
+> > -		default_idle_call();
+> > -		return -EBUSY;
+> > +		index = find_tick_valid_state(dev, drv);
 > 
-> > On Fri,  8 May 2015 15:33:43 -0400 Eric B Munson <emunson@akamai.com> wrote:
-> > 
-> > > mlock() allows a user to control page out of program memory, but this
-> > > comes at the cost of faulting in the entire mapping when it is
-> > > allocated.  For large mappings where the entire area is not necessary
-> > > this is not ideal.
-> > > 
-> > > This series introduces new flags for mmap() and mlockall() that allow a
-> > > user to specify that the covered are should not be paged out, but only
-> > > after the memory has been used the first time.
-> > 
-> > Please tell us much much more about the value of these changes: the use
-> > cases, the behavioural improvements and performance results which the
-> > patchset brings to those use cases, etc.
-> > 
+> Well, the new state needs to be deeper
+
+I should have said "shallower", sorry about that.
+
+The state chosen by the governor satisfies certain latency requirements and we
+can't violate those by choosing a deeper state here.
+
+But the patch I sent actually did the right thing. :-)
+
+> than the old one or you may violate the governor's choice and this doesn't
+> guarantee that.
 > 
-> The primary use case is for mmaping large files read only.  The process
-> knows that some of the data is necessary, but it is unlikely that the
-> entire file will be needed.  The developer only wants to pay the cost to
-> read the data in once.  Unfortunately developer must choose between
-> allowing the kernel to page in the memory as needed and guaranteeing
-> that the data will only be read from disk once.  The first option runs
-> the risk of having the memory reclaimed if the system is under memory
-> pressure, the second forces the memory usage and startup delay when
-> faulting in the entire file.
+> Also I don't quite see a reason to duplicate the find_deepest_state() functionality
+> here.
+> 
+> > +		if (index < 0) {
+> > +			default_idle_call();
+> > +			return -EBUSY;
+> > +		}
+> > +		target_state = &drv->states[index];
+> >  	}
+> >  
+> > +	/* Take note of the planned idle state. */
+> > +	idle_set_state(smp_processor_id(), target_state);
+> 
+> And I wouldn't do this either.
+> 
+> The behavior here is pretty much as though the driver demoted the state chosen
+> by the governor and we don't call idle_set_state() again in those cases.
+> 
+> > +
+> >  	trace_cpu_idle_rcuidle(index, dev->cpu);
+> >  	time_start = ktime_get();
+> 
+> Overall, something like the patch below (untested) should work I suppose?
+> 
+> ---
+>  drivers/cpuidle/cpuidle.c |   21 ++++++++++++++-------
+>  1 file changed, 14 insertions(+), 7 deletions(-)
+> 
+> Index: linux-pm/drivers/cpuidle/cpuidle.c
+> ===================================================================
+> --- linux-pm.orig/drivers/cpuidle/cpuidle.c
+> +++ linux-pm/drivers/cpuidle/cpuidle.c
+> @@ -73,17 +73,19 @@ int cpuidle_play_dead(void)
+>  }
+>  
+>  static int find_deepest_state(struct cpuidle_driver *drv,
+> -			      struct cpuidle_device *dev, bool freeze)
+> +			      struct cpuidle_device *dev, bool freeze,
+> +			      int limit, unsigned int flags_to_avoid)
+>  {
+>  	unsigned int latency_req = 0;
+>  	int i, ret = freeze ? -1 : CPUIDLE_DRIVER_STATE_START - 1;
+>  
+> -	for (i = CPUIDLE_DRIVER_STATE_START; i < drv->state_count; i++) {
+> +	for (i = CPUIDLE_DRIVER_STATE_START; i < limit; i++) {
+>  		struct cpuidle_state *s = &drv->states[i];
+>  		struct cpuidle_state_usage *su = &dev->states_usage[i];
+>  
+>  		if (s->disabled || su->disable || s->exit_latency <= latency_req
+> -		    || (freeze && !s->enter_freeze))
+> +		    || (freeze && !s->enter_freeze)
+> +		    || (s->flags & flags_to_avoid))
+>  			continue;
+>  
+>  		latency_req = s->exit_latency;
+> @@ -100,7 +102,7 @@ static int find_deepest_state(struct cpu
+>  int cpuidle_find_deepest_state(struct cpuidle_driver *drv,
+>  			       struct cpuidle_device *dev)
+>  {
+> -	return find_deepest_state(drv, dev, false);
+> +	return find_deepest_state(drv, dev, false, drv->state_count, 0);
+>  }
+>  
+>  static void enter_freeze_proper(struct cpuidle_driver *drv,
+> @@ -139,7 +141,7 @@ int cpuidle_enter_freeze(struct cpuidle_
+>  	 * that interrupts won't be enabled when it exits and allows the tick to
+>  	 * be frozen safely.
+>  	 */
+> -	index = find_deepest_state(drv, dev, true);
+> +	index = find_deepest_state(drv, dev, true, drv->state_count, 0);
+>  	if (index >= 0)
+>  		enter_freeze_proper(drv, dev, index);
+>  
+> @@ -168,8 +170,13 @@ int cpuidle_enter_state(struct cpuidle_d
+>  	 * CPU as a broadcast timer, this call may fail if it is not available.
+>  	 */
+>  	if (broadcast && tick_broadcast_enter()) {
+> -		default_idle_call();
+> -		return -EBUSY;
+> +		index = find_deepest_state(drv, dev, false, index,
+> +					   CPUIDLE_FLAG_TIMER_STOP);
+> +		if (index < 0) {
+> +			default_idle_call();
+> +			return -EBUSY;
+> +		}
+> +		target_state = &drv->states[index];
+>  	}
+>  
+>  	trace_cpu_idle_rcuidle(index, dev->cpu);
+> 
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
 
-Why can't the application mmap only those parts of the file which it
-wants and mlock those?
-
-> I am working on getting startup times with and without this change for
-> an application, I will post them as soon as I have them.
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
