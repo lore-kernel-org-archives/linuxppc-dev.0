@@ -2,14 +2,14 @@ Return-Path: <wsa@the-dreams.de>
 Received: from pokefinder.org (sauhun.de [89.238.76.85])
  (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A6AC81A0E55
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 May 2015 03:24:02 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8EF081A0E5B
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 May 2015 03:44:06 +1000 (AEST)
 From: Wolfram Sang <wsa@the-dreams.de>
-To: linux-i2c@vger.kernel.org,
+To: alsa-devel@alsa-project.org,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH] i2c: powermac: don't workaround for keywest
-Date: Sat,  9 May 2015 19:23:33 +0200
-Message-Id: <1431192213-2904-1-git-send-email-wsa@the-dreams.de>
+Subject: [PATCH RESEND] sound: ppc: keywest: drop using attach adapter
+Date: Sat,  9 May 2015 19:42:22 +0200
+Message-Id: <1431193342-3864-1-git-send-email-wsa@the-dreams.de>
 Cc: Mark Elliott <txlitebeer@gmail.com>, linuxppc-dev@lists.ozlabs.org,
  Dan DeVoto <dand1972@yahoo.com>, Wolfram Sang <wsa@the-dreams.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -21,55 +21,77 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Commit 3a3dd0186f619b ("i2c/powermac: Improve detection of devices from
-device-tree") added a codec device instantiation workaround
-unconditionally although it is only needed for onyx. Do it conditionally
-since keywest has its own codec instantiation in the sound drivers.
-Thanks must go to GrowlTiger from Gentoo bug report #469132 for
-bisecting.
+As we now have deferred probing, we can use a custom mechanism and
+finally get rid of this legacy interface from the i2c core.
 
-Reported-by: Dan DeVoto <dand1972@yahoo.com>
 Signed-off-by: Wolfram Sang <wsa@the-dreams.de>
 Tested-by: Dan DeVoto <dand1972@yahoo.com>
 Tested-by: Mark Elliott <txlitebeer@gmail.com>
-Fixes: 3a3dd0186f619b ("i2c/powermac: Improve detection of devices from device-tree")
 ---
- drivers/i2c/busses/i2c-powermac.c | 9 +++++----
- 1 file changed, 5 insertions(+), 4 deletions(-)
 
-diff --git a/drivers/i2c/busses/i2c-powermac.c b/drivers/i2c/busses/i2c-powermac.c
-index 6abcf696e3594b..cad5552c0cd4e4 100644
---- a/drivers/i2c/busses/i2c-powermac.c
-+++ b/drivers/i2c/busses/i2c-powermac.c
-@@ -285,7 +285,8 @@ static void i2c_powermac_add_missing(struct i2c_adapter *adap,
+Changes since last time: Added two test tags from the Debian PPC list.
+
+I'd love to have that in 4.2, so I can get rid of that legacy interface.
+I can take it via I2C but ALSA looks like the proper path to me.
+
+ sound/ppc/keywest.c | 23 +++++++++++++++++++----
+ 1 file changed, 19 insertions(+), 4 deletions(-)
+
+diff --git a/sound/ppc/keywest.c b/sound/ppc/keywest.c
+index 0d1c27e911b8dd..d7627bae08362e 100644
+--- a/sound/ppc/keywest.c
++++ b/sound/ppc/keywest.c
+@@ -52,7 +52,7 @@ static int keywest_attach_adapter(struct i2c_adapter *adapter)
+ 		return -EINVAL;
  
- static bool i2c_powermac_get_type(struct i2c_adapter *adap,
- 					    struct device_node *node,
--					    u32 addr, char *type, int type_size)
-+					    u32 addr, char *type, int type_size,
-+					    bool found_onyx)
+ 	if (strncmp(adapter->name, "mac-io", 6))
+-		return 0; /* ignored */
++		return -EINVAL; /* ignored */
+ 
+ 	memset(&info, 0, sizeof(struct i2c_board_info));
+ 	strlcpy(info.type, "keywest", I2C_NAME_SIZE);
+@@ -100,7 +100,6 @@ static struct i2c_driver keywest_driver = {
+ 	.driver = {
+ 		.name = "PMac Keywest Audio",
+ 	},
+-	.attach_adapter = keywest_attach_adapter,
+ 	.probe = keywest_probe,
+ 	.remove = keywest_remove,
+ 	.id_table = keywest_i2c_id,
+@@ -132,16 +131,32 @@ int snd_pmac_tumbler_post_init(void)
+ /* exported */
+ int snd_pmac_keywest_init(struct pmac_keywest *i2c)
  {
- 	char tmp[16];
+-	int err;
++	struct i2c_adapter *adap;
++	int err, i = 0;
  
-@@ -305,8 +306,8 @@ static bool i2c_powermac_get_type(struct i2c_adapter *adap,
- 		return true;
+ 	if (keywest_ctx)
+ 		return -EBUSY;
+ 
++	adap = i2c_get_adapter(0);
++	if (!adap)
++		return -EPROBE_DEFER;
++
+ 	keywest_ctx = i2c;
+ 
+ 	if ((err = i2c_add_driver(&keywest_driver))) {
+ 		snd_printk(KERN_ERR "cannot register keywest i2c driver\n");
++		i2c_put_adapter(adap);
+ 		return err;
  	}
- 
--	/* Now look for known workarounds */
--	if (!strcmp(node->name, "deq")) {
-+	/* Now look for known workarounds for onyx/aoa */
-+	if (found_onyx && !strcmp(node->name, "deq")) {
- 		/* Apple uses address 0x34 for TAS3001 and 0x35 for TAS3004 */
- 		if (addr == 0x34) {
- 			snprintf(type, type_size, "MAC,tas3001");
-@@ -362,7 +363,7 @@ static void i2c_powermac_register_devices(struct i2c_adapter *adap,
- 
- 		/* Make up a modalias */
- 		if (!i2c_powermac_get_type(adap, node, addr,
--					   info.type, sizeof(info.type))) {
-+					   info.type, sizeof(info.type), found_onyx)) {
- 			continue;
- 		}
- 
+-	return 0;
++
++	/* We assume Macs have consecutive I2C bus numbers starting at 0 */
++	while (adap) {
++		err = keywest_attach_adapter(adap);
++		if (!err)
++			return 0;
++		i2c_put_adapter(adap);
++		adap = i2c_get_adapter(++i);
++	}
++
++	return -ENODEV;
+ }
 -- 
 2.1.4
