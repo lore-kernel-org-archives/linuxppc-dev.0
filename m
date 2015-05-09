@@ -1,17 +1,22 @@
-Return-Path: <wsa@the-dreams.de>
-Received: from pokefinder.org (sauhun.de [89.238.76.85])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8EF081A0E5B
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 May 2015 03:44:06 +1000 (AEST)
-From: Wolfram Sang <wsa@the-dreams.de>
-To: alsa-devel@alsa-project.org,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH RESEND] sound: ppc: keywest: drop using attach adapter
-Date: Sat,  9 May 2015 19:42:22 +0200
-Message-Id: <1431193342-3864-1-git-send-email-wsa@the-dreams.de>
-Cc: Mark Elliott <txlitebeer@gmail.com>, linuxppc-dev@lists.ozlabs.org,
- Dan DeVoto <dand1972@yahoo.com>, Wolfram Sang <wsa@the-dreams.de>
+Return-Path: <rjw@rjwysocki.net>
+Received: from v094114.home.net.pl (v094114.home.net.pl [79.96.170.134])
+ by lists.ozlabs.org (Postfix) with SMTP id 38B9E1A0E65
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 May 2015 04:21:17 +1000 (AEST)
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Subject: Re: [PATCH V3] cpuidle: Handle tick_broadcast_enter() failure
+ gracefully
+Date: Sat, 09 May 2015 20:46:20 +0200
+Message-ID: <4263013.jBGApPfu4h@vostro.rjw.lan>
+In-Reply-To: <554D9FDC.6090608@linux.vnet.ibm.com>
+References: <20150508073418.28491.4150.stgit@preeti.in.ibm.com>
+ <8680371.ymYIEaFYPT@vostro.rjw.lan> <554D9FDC.6090608@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+Cc: rlippert@google.com, daniel.lezcano@linaro.org, linux-pm@vger.kernel.org,
+ peterz@infradead.org, linus.walleij@linaro.org, rafael.j.wysocki@intel.com,
+ linux-kernel@vger.kernel.org, mingo@redhat.com, sudeep.holla@arm.com,
+ tglx@linutronix.de, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,77 +26,93 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-As we now have deferred probing, we can use a custom mechanism and
-finally get rid of this legacy interface from the i2c core.
+On Saturday, May 09, 2015 11:19:16 AM Preeti U Murthy wrote:
+> Hi Rafael,
+> 
+> On 05/08/2015 07:48 PM, Rafael J. Wysocki wrote:
+> >> +/*
+> >> + * find_tick_valid_state - select a state where tick does not stop
+> >> + * @dev: cpuidle device for this cpu
+> >> + * @drv: cpuidle driver for this cpu
+> >> + */
+> >> +static int find_tick_valid_state(struct cpuidle_device *dev,
+> >> +				struct cpuidle_driver *drv)
+> >> +{
+> >> +	int i, ret = -1;
+> >> +
+> >> +	for (i = CPUIDLE_DRIVER_STATE_START; i < drv->state_count; i++) {
+> >> +		struct cpuidle_state *s = &drv->states[i];
+> >> +		struct cpuidle_state_usage *su = &dev->states_usage[i];
+> >> +
+> >> +		/*
+> >> +		 * We do not explicitly check for latency requirement
+> >> +		 * since it is safe to assume that only shallower idle
+> >> +		 * states will have the CPUIDLE_FLAG_TIMER_STOP bit
+> >> +		 * cleared and they will invariably meet the latency
+> >> +		 * requirement.
+> >> +		 */
+> >> +		if (s->disabled || su->disable ||
+> >> +			(s->flags & CPUIDLE_FLAG_TIMER_STOP))
+> >> +			continue;
+> >> +
+> >> +		ret = i;
+> >> +	}
+> >> +	return ret;
+> >> +}
+> >> +
+> >>  /**
+> >>   * cpuidle_enter_state - enter the state and update stats
+> >>   * @dev: cpuidle device for this cpu
+> >> @@ -168,10 +199,17 @@ int cpuidle_enter_state(struct cpuidle_device *dev, struct cpuidle_driver *drv,
+> >>  	 * CPU as a broadcast timer, this call may fail if it is not available.
+> >>  	 */
+> >>  	if (broadcast && tick_broadcast_enter()) {
+> >> -		default_idle_call();
+> >> -		return -EBUSY;
+> >> +		index = find_tick_valid_state(dev, drv);
+> > 
+> > Well, the new state needs to be deeper than the old one or you may violate the
+> > governor's choice and this doesn't guarantee that.
+> 
+> The comment above in find_tick_valid_state() explains why we are bound
+> to choose a shallow idle state. I think its safe to assume that any
+> state deeper than this one, would have the CPUIDLE_FLAG_TIMER_STOP flag
+> set and hence would be skipped.
+> 
+> Your patch relies on the assumption that the idle states are arranged in
+> the increasing order of exit_latency/in the order of shallow to deep.
+> This is not guaranteed, is it?
 
-Signed-off-by: Wolfram Sang <wsa@the-dreams.de>
-Tested-by: Dan DeVoto <dand1972@yahoo.com>
-Tested-by: Mark Elliott <txlitebeer@gmail.com>
----
+No, it isn't, which is a good point.  There's no reason to rely on that
+assumption, so appended is an updated version of the patch using a latency
+limit instead of an index limit.
 
-Changes since last time: Added two test tags from the Debian PPC list.
+> 
+> > 
+> > Also I don't quite see a reason to duplicate the find_deepest_state() functionality
+> > here.
+> 
+> Agreed. We could club them like in your patch.
+> 
+> > 
+> >> +		if (index < 0) {
+> >> +			default_idle_call();
+> >> +			return -EBUSY;
+> >> +		}
+> >> +		target_state = &drv->states[index];
+> >>  	}
+> >>  
+> >> +	/* Take note of the planned idle state. */
+> >> +	idle_set_state(smp_processor_id(), target_state);
+> > 
+> > And I wouldn't do this either.
+> > 
+> > The behavior here is pretty much as though the driver demoted the state chosen
+> > by the governor and we don't call idle_set_state() again in those cases.
+> 
+> Why is this wrong?
 
-I'd love to have that in 4.2, so I can get rid of that legacy interface.
-I can take it via I2C but ALSA looks like the proper path to me.
+Because it is inconsistent, but let me reply to this in a separate message.
 
- sound/ppc/keywest.c | 23 +++++++++++++++++++----
- 1 file changed, 19 insertions(+), 4 deletions(-)
-
-diff --git a/sound/ppc/keywest.c b/sound/ppc/keywest.c
-index 0d1c27e911b8dd..d7627bae08362e 100644
---- a/sound/ppc/keywest.c
-+++ b/sound/ppc/keywest.c
-@@ -52,7 +52,7 @@ static int keywest_attach_adapter(struct i2c_adapter *adapter)
- 		return -EINVAL;
- 
- 	if (strncmp(adapter->name, "mac-io", 6))
--		return 0; /* ignored */
-+		return -EINVAL; /* ignored */
- 
- 	memset(&info, 0, sizeof(struct i2c_board_info));
- 	strlcpy(info.type, "keywest", I2C_NAME_SIZE);
-@@ -100,7 +100,6 @@ static struct i2c_driver keywest_driver = {
- 	.driver = {
- 		.name = "PMac Keywest Audio",
- 	},
--	.attach_adapter = keywest_attach_adapter,
- 	.probe = keywest_probe,
- 	.remove = keywest_remove,
- 	.id_table = keywest_i2c_id,
-@@ -132,16 +131,32 @@ int snd_pmac_tumbler_post_init(void)
- /* exported */
- int snd_pmac_keywest_init(struct pmac_keywest *i2c)
- {
--	int err;
-+	struct i2c_adapter *adap;
-+	int err, i = 0;
- 
- 	if (keywest_ctx)
- 		return -EBUSY;
- 
-+	adap = i2c_get_adapter(0);
-+	if (!adap)
-+		return -EPROBE_DEFER;
-+
- 	keywest_ctx = i2c;
- 
- 	if ((err = i2c_add_driver(&keywest_driver))) {
- 		snd_printk(KERN_ERR "cannot register keywest i2c driver\n");
-+		i2c_put_adapter(adap);
- 		return err;
- 	}
--	return 0;
-+
-+	/* We assume Macs have consecutive I2C bus numbers starting at 0 */
-+	while (adap) {
-+		err = keywest_attach_adapter(adap);
-+		if (!err)
-+			return 0;
-+		i2c_put_adapter(adap);
-+		adap = i2c_get_adapter(++i);
-+	}
-+
-+	return -ENODEV;
- }
--- 
-2.1.4
+Anyway, it is a different problem and should be addressed by a separate
+patch IMO.
