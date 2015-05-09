@@ -1,20 +1,20 @@
 Return-Path: <rjw@rjwysocki.net>
 Received: from v094114.home.net.pl (v094114.home.net.pl [79.96.170.134])
- by lists.ozlabs.org (Postfix) with SMTP id AF7CF1A0E3E
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 May 2015 06:08:00 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with SMTP id 668161A002B
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 May 2015 08:55:25 +1000 (AEST)
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
-To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Subject: Re: [PATCH V3] cpuidle: Handle tick_broadcast_enter() failure
- gracefully
-Date: Sat, 09 May 2015 22:33:05 +0200
-Message-ID: <3161640.llJtBoKCBr@vostro.rjw.lan>
-In-Reply-To: <10239011.l6QLHlKIVm@vostro.rjw.lan>
+To: Preeti U Murthy <preeti@linux.vnet.ibm.com>, peterz@infradead.org
+Subject: [PATCH 3/3] cpuidle: Select a different state on
+ tick_broadcast_enter() failures
+Date: Sun, 10 May 2015 01:19:52 +0200
+Message-ID: <4652506.tkuQIhnkdH@vostro.rjw.lan>
+In-Reply-To: <8965830.CMQzZzsqm0@vostro.rjw.lan>
 References: <20150508073418.28491.4150.stgit@preeti.in.ibm.com>
- <554D9FDC.6090608@linux.vnet.ibm.com> <10239011.l6QLHlKIVm@vostro.rjw.lan>
+ <3161640.llJtBoKCBr@vostro.rjw.lan> <8965830.CMQzZzsqm0@vostro.rjw.lan>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Cc: rlippert@google.com, daniel.lezcano@linaro.org, linux-pm@vger.kernel.org,
- peterz@infradead.org, linus.walleij@linaro.org, rafael.j.wysocki@intel.com,
+ linus.walleij@linaro.org, rafael.j.wysocki@intel.com,
  linux-kernel@vger.kernel.org, mingo@redhat.com, sudeep.holla@arm.com,
  tglx@linutronix.de, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -26,43 +26,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Saturday, May 09, 2015 10:11:41 PM Rafael J. Wysocki wrote:
-> On Saturday, May 09, 2015 11:19:16 AM Preeti U Murthy wrote:
-> > Hi Rafael,
-> > 
-> > On 05/08/2015 07:48 PM, Rafael J. Wysocki wrote:
-> 
-> [cut]
-> 
-> > >>  
-> > >> +	/* Take note of the planned idle state. */
-> > >> +	idle_set_state(smp_processor_id(), target_state);
-> > > 
-> > > And I wouldn't do this either.
-> > > 
-> > > The behavior here is pretty much as though the driver demoted the state chosen
-> > > by the governor and we don't call idle_set_state() again in those cases.
-> > 
-> > Why is this wrong?
-> 
-> It is not "wrong", but incomplete, because demotions done by the cpuidle driver
-> should also be taken into account in the same way.
-> 
-> But I'm seeing that the recent patch of mine that made cpuidle_enter_state()
-> call default_idle_call() was a mistake, because it might confuse find_idlest_cpu()
-> significantly as to what state the CPU is in.  I'll drop that one for now.
+From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
 
-OK, done.
+If tick_broadcast_enter() fails in cpuidle_enter_state(),
+try to find another idle state to enter instead of invoking
+default_idle_call() immediately and returning -EBUSY which
+should increase the chances of saving some energy in those
+cases.
 
-So after I've dropped it I think we need to do three things:
-(1) Move the idle_set_state() calls to cpuidle_enter_state().
-(2) Make cpuidle_enter_state() call default_idle_call() again, but this time
-    do that *before* it has called idle_set_state() for target_state.
-(3) Introduce demotion as per my last patch.
+Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+---
+ drivers/cpuidle/cpuidle.c |   20 +++++++++++++++-----
+ 1 file changed, 15 insertions(+), 5 deletions(-)
 
-Let me cut patches for that.
-
-
--- 
-I speak only for myself.
-Rafael J. Wysocki, Intel Open Source Technology Center.
+Index: linux-pm/drivers/cpuidle/cpuidle.c
+===================================================================
+--- linux-pm.orig/drivers/cpuidle/cpuidle.c
++++ linux-pm/drivers/cpuidle/cpuidle.c
+@@ -73,7 +73,10 @@ int cpuidle_play_dead(void)
+ }
+ 
+ static int find_deepest_state(struct cpuidle_driver *drv,
+-			      struct cpuidle_device *dev, bool freeze)
++			      struct cpuidle_device *dev,
++			      unsigned int max_latency,
++			      unsigned int forbidden_flags,
++			      bool freeze)
+ {
+ 	unsigned int latency_req = 0;
+ 	int i, ret = freeze ? -1 : CPUIDLE_DRIVER_STATE_START - 1;
+@@ -83,6 +86,8 @@ static int find_deepest_state(struct cpu
+ 		struct cpuidle_state_usage *su = &dev->states_usage[i];
+ 
+ 		if (s->disabled || su->disable || s->exit_latency <= latency_req
++		    || s->exit_latency > max_latency
++		    || (s->flags & forbidden_flags)
+ 		    || (freeze && !s->enter_freeze))
+ 			continue;
+ 
+@@ -100,7 +105,7 @@ static int find_deepest_state(struct cpu
+ int cpuidle_find_deepest_state(struct cpuidle_driver *drv,
+ 			       struct cpuidle_device *dev)
+ {
+-	return find_deepest_state(drv, dev, false);
++	return find_deepest_state(drv, dev, UINT_MAX, 0, false);
+ }
+ 
+ static void enter_freeze_proper(struct cpuidle_driver *drv,
+@@ -139,7 +144,7 @@ int cpuidle_enter_freeze(struct cpuidle_
+ 	 * that interrupts won't be enabled when it exits and allows the tick to
+ 	 * be frozen safely.
+ 	 */
+-	index = find_deepest_state(drv, dev, true);
++	index = find_deepest_state(drv, dev, UINT_MAX, 0, true);
+ 	if (index >= 0)
+ 		enter_freeze_proper(drv, dev, index);
+ 
+@@ -168,8 +173,13 @@ int cpuidle_enter_state(struct cpuidle_d
+ 	 * CPU as a broadcast timer, this call may fail if it is not available.
+ 	 */
+ 	if (broadcast && tick_broadcast_enter()) {
+-		default_idle_call();
+-		return -EBUSY;
++		index = find_deepest_state(drv, dev, target_state->exit_latency,
++					   CPUIDLE_FLAG_TIMER_STOP, false);
++		if (index < 0) {
++			default_idle_call();
++			return -EBUSY;
++		}
++		target_state = &drv->states[index];
+ 	}
+ 
+ 	/* Take note of the planned idle state. */
