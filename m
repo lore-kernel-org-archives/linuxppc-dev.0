@@ -1,16 +1,16 @@
 Return-Path: <rjw@rjwysocki.net>
 Received: from v094114.home.net.pl (v094114.home.net.pl [79.96.170.134])
- by lists.ozlabs.org (Postfix) with SMTP id 67D291A0031
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 May 2015 08:55:25 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with SMTP id CC7281A0033
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 May 2015 08:55:26 +1000 (AEST)
 From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
 To: Preeti U Murthy <preeti@linux.vnet.ibm.com>, peterz@infradead.org
-Subject: [PATCH 2/3] sched / idle: Call default_idle_call() from
- cpuidle_enter_state()
-Date: Sun, 10 May 2015 01:18:46 +0200
-Message-ID: <7884557.lRUSRr1Rsc@vostro.rjw.lan>
-In-Reply-To: <8965830.CMQzZzsqm0@vostro.rjw.lan>
+Subject: [PATCH 0/3] cpuidle: updates related to tick_broadcast_enter()
+ failures
+Date: Sun, 10 May 2015 01:15:50 +0200
+Message-ID: <8965830.CMQzZzsqm0@vostro.rjw.lan>
+In-Reply-To: <3161640.llJtBoKCBr@vostro.rjw.lan>
 References: <20150508073418.28491.4150.stgit@preeti.in.ibm.com>
- <3161640.llJtBoKCBr@vostro.rjw.lan> <8965830.CMQzZzsqm0@vostro.rjw.lan>
+ <10239011.l6QLHlKIVm@vostro.rjw.lan> <3161640.llJtBoKCBr@vostro.rjw.lan>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Cc: rlippert@google.com, daniel.lezcano@linaro.org, linux-pm@vger.kernel.org,
@@ -26,92 +26,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
+On Saturday, May 09, 2015 10:33:05 PM Rafael J. Wysocki wrote:
+> On Saturday, May 09, 2015 10:11:41 PM Rafael J. Wysocki wrote:
+> > On Saturday, May 09, 2015 11:19:16 AM Preeti U Murthy wrote:
+> > > Hi Rafael,
+> > > 
+> > > On 05/08/2015 07:48 PM, Rafael J. Wysocki wrote:
+> > 
+> > [cut]
+> > 
+> > > >>  
+> > > >> +	/* Take note of the planned idle state. */
+> > > >> +	idle_set_state(smp_processor_id(), target_state);
+> > > > 
+> > > > And I wouldn't do this either.
+> > > > 
+> > > > The behavior here is pretty much as though the driver demoted the state chosen
+> > > > by the governor and we don't call idle_set_state() again in those cases.
+> > > 
+> > > Why is this wrong?
+> > 
+> > It is not "wrong", but incomplete, because demotions done by the cpuidle driver
+> > should also be taken into account in the same way.
+> > 
+> > But I'm seeing that the recent patch of mine that made cpuidle_enter_state()
+> > call default_idle_call() was a mistake, because it might confuse find_idlest_cpu()
+> > significantly as to what state the CPU is in.  I'll drop that one for now.
+> 
+> OK, done.
+> 
+> So after I've dropped it I think we need to do three things:
+> (1) Move the idle_set_state() calls to cpuidle_enter_state().
+> (2) Make cpuidle_enter_state() call default_idle_call() again, but this time
+>     do that *before* it has called idle_set_state() for target_state.
+> (3) Introduce demotion as per my last patch.
+> 
+> Let me cut patches for that.
 
-The check of the cpuidle_enter() return value against -EBUSY
-made in call_cpuidle() will not be necessary any more if
-cpuidle_enter_state() calls default_idle_call() directly when it
-is about to return -EBUSY, so make that happen and eliminate the
-check.
+Done as per the above and the patches follow in replies to this messge.
 
-Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
----
- drivers/cpuidle/cpuidle.c |    4 +++-
- include/linux/cpuidle.h   |    1 +
- kernel/sched/idle.c       |   20 +++++++-------------
- 3 files changed, 11 insertions(+), 14 deletions(-)
+All on top of the current linux-next branch of the linux-pm.git tree.
 
-Index: linux-pm/drivers/cpuidle/cpuidle.c
-===================================================================
---- linux-pm.orig/drivers/cpuidle/cpuidle.c
-+++ linux-pm/drivers/cpuidle/cpuidle.c
-@@ -167,8 +167,10 @@ int cpuidle_enter_state(struct cpuidle_d
- 	 * local timer will be shut down.  If a local timer is used from another
- 	 * CPU as a broadcast timer, this call may fail if it is not available.
- 	 */
--	if (broadcast && tick_broadcast_enter())
-+	if (broadcast && tick_broadcast_enter()) {
-+		default_idle_call();
- 		return -EBUSY;
-+	}
- 
- 	/* Take note of the planned idle state. */
- 	sched_idle_set_state(target_state);
-Index: linux-pm/kernel/sched/idle.c
-===================================================================
---- linux-pm.orig/kernel/sched/idle.c
-+++ linux-pm/kernel/sched/idle.c
-@@ -76,12 +76,13 @@ void __weak arch_cpu_idle(void)
- 	local_irq_enable();
- }
- 
--static void default_idle_call(void)
-+/**
-+ * default_idle_call - Default CPU idle routine.
-+ *
-+ * To use when the cpuidle framework cannot be used.
-+ */
-+void default_idle_call(void)
- {
--	/*
--	 * We can't use the cpuidle framework, let's use the default idle
--	 * routine.
--	 */
- 	if (current_clr_polling_and_test())
- 		local_irq_enable();
- 	else
-@@ -91,8 +92,6 @@ static void default_idle_call(void)
- static int call_cpuidle(struct cpuidle_driver *drv, struct cpuidle_device *dev,
- 		      int next_state)
- {
--	int entered_state;
--
- 	/* Fall back to the default arch idle method on errors. */
- 	if (next_state < 0) {
- 		default_idle_call();
-@@ -114,12 +113,7 @@ static int call_cpuidle(struct cpuidle_d
- 	 * This function will block until an interrupt occurs and will take
- 	 * care of re-enabling the local interrupts
- 	 */
--	entered_state = cpuidle_enter(drv, dev, next_state);
--
--	if (entered_state == -EBUSY)
--		default_idle_call();
--
--	return entered_state;
-+	return cpuidle_enter(drv, dev, next_state);
- }
- 
- /**
-Index: linux-pm/include/linux/cpuidle.h
-===================================================================
---- linux-pm.orig/include/linux/cpuidle.h
-+++ linux-pm/include/linux/cpuidle.h
-@@ -202,6 +202,7 @@ static inline struct cpuidle_driver *cpu
- 
- /* kernel/sched/idle.c */
- extern void sched_idle_set_state(struct cpuidle_state *idle_state);
-+extern void default_idle_call(void);
- 
- #ifdef CONFIG_ARCH_NEEDS_CPU_IDLE_COUPLED
- void cpuidle_coupled_parallel_barrier(struct cpuidle_device *dev, atomic_t *a);
+
+-- 
+I speak only for myself.
+Rafael J. Wysocki, Intel Open Source Technology Center.
