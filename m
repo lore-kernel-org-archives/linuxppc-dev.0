@@ -1,22 +1,23 @@
 Return-Path: <aik@ozlabs.ru>
-Received: from mail-pd0-f170.google.com (mail-pd0-f170.google.com
- [209.85.192.170])
+Received: from mail-pa0-f53.google.com (mail-pa0-f53.google.com
+ [209.85.220.53])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5CB551A0E33
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 May 2015 00:30:15 +1000 (AEST)
-Received: by pdea3 with SMTP id a3so112485703pde.3
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 09 May 2015 07:30:13 -0700 (PDT)
-Message-ID: <554E19EF.1070903@ozlabs.ru>
-Date: Sun, 10 May 2015 00:30:07 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 645441A0E09
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 May 2015 00:44:53 +1000 (AEST)
+Received: by pacwv17 with SMTP id wv17so73630899pac.0
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 09 May 2015 07:44:51 -0700 (PDT)
+Message-ID: <554E1D5D.4000309@ozlabs.ru>
+Date: Sun, 10 May 2015 00:44:45 +1000
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 MIME-Version: 1.0
 To: Gavin Shan <gwshan@linux.vnet.ibm.com>,
  linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v4 13/21] powerpc/powernv: Introduce pnv_pci_poll()
+Subject: Re: [PATCH v4 14/21] powerpc/powernv: Functions to get/reset PCI
+ slot status
 References: <1430460188-31343-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1430460188-31343-14-git-send-email-gwshan@linux.vnet.ibm.com>
-In-Reply-To: <1430460188-31343-14-git-send-email-gwshan@linux.vnet.ibm.com>
+ <1430460188-31343-15-git-send-email-gwshan@linux.vnet.ibm.com>
+In-Reply-To: <1430460188-31343-15-git-send-email-gwshan@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=koi8-r; format=flowed
 Cc: bhelgaas@google.com, linux-pci@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -29,131 +30,159 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 On 05/01/2015 04:03 PM, Gavin Shan wrote:
-> We might not get some PCI slot information (e.g. power status)
-> immediately by OPAL API. Instead, opal_pci_poll() need to be called
-> for the required information.
+> The patch exports 3 functions, which base on corresponding OPAL
+> APIs to get or set PCI slot status. Those functions are going to
+> be used by PCI hotplug module in subsequent patches:
 >
-> The patch introduces pnv_pci_poll(), which bases on original
-> pnv_eeh_poll(), to cover the above case
+>     pnv_pci_get_presence_status()  opal_pci_get_presence_status()
+>     pnv_pci_get_power_status()     opal_pci_get_power_status()
+>     pnv_pci_set_power_status()     opal_pci_set_power_status()
+>
+> Besides, the patch also exports pnv_pci_hotplug_notifier() to allow
+> registering PCI hotplug notifier, which will be used to receive PCI
+> hotplug message from skiboot firmware.
 >
 > Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 > ---
->   arch/powerpc/platforms/powernv/eeh-powernv.c | 28 ++--------------------------
->   arch/powerpc/platforms/powernv/pci.c         | 16 ++++++++++++++++
->   arch/powerpc/platforms/powernv/pci.h         |  1 +
->   3 files changed, 19 insertions(+), 26 deletions(-)
+>   arch/powerpc/include/asm/opal-api.h            |  7 +++-
+>   arch/powerpc/include/asm/opal.h                |  3 ++
+>   arch/powerpc/include/asm/pnv-pci.h             |  5 +++
+>   arch/powerpc/platforms/powernv/opal-wrappers.S |  3 ++
+>   arch/powerpc/platforms/powernv/pci.c           | 45 ++++++++++++++++++++++++++
+>   5 files changed, 62 insertions(+), 1 deletion(-)
 >
-> diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
-> index 58e4dcf..9253b9e 100644
-> --- a/arch/powerpc/platforms/powernv/eeh-powernv.c
-> +++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
-> @@ -742,24 +742,6 @@ static int pnv_eeh_get_state(struct eeh_pe *pe, int *delay)
->   	return ret;
->   }
+> diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
+> index 0321a90..29b407d 100644
+> --- a/arch/powerpc/include/asm/opal-api.h
+> +++ b/arch/powerpc/include/asm/opal-api.h
+> @@ -153,7 +153,10 @@
+>   #define OPAL_FLASH_READ				110
+>   #define OPAL_FLASH_WRITE			111
+>   #define OPAL_FLASH_ERASE			112
+> -#define OPAL_LAST				112
+> +#define OPAL_PCI_GET_PRESENCE_STATUS		116
+> +#define OPAL_PCI_GET_POWER_STATUS		117
+> +#define OPAL_PCI_SET_POWER_STATUS		118
+> +#define OPAL_LAST				118
 >
-> -static s64 pnv_eeh_poll(uint64_t id)
-> -{
-> -	s64 rc = OPAL_HARDWARE;
-> -
-> -	while (1) {
-> -		rc = opal_pci_poll(id, NULL);
-> -		if (rc <= 0)
-> -			break;
-> -
-> -		if (system_state < SYSTEM_RUNNING)
-> -			udelay(1000 * rc);
-> -		else
-> -			msleep(rc);
-> -	}
-> -
-> -	return rc;
-> -}
-> -
->   int pnv_eeh_phb_reset(struct pci_controller *hose, int option)
->   {
->   	struct pnv_phb *phb = hose->private_data;
-> @@ -788,10 +770,7 @@ int pnv_eeh_phb_reset(struct pci_controller *hose, int option)
+>   /* Device tree flags */
 >
->   	/* Issue reset and poll until it's completed */
->   	rc = opal_pci_reset(phb->opal_id, scope, OPAL_ASSERT_RESET);
-> -	if (rc > 0)
-> -		rc = pnv_eeh_poll(phb->opal_id);
-> -
-> -	return (rc == OPAL_SUCCESS) ? 0 : -EIO;
-> +	return pnv_pci_poll(phb->opal_id, rc, NULL);
-
-
-You are carrying a negative value to the new helper too? Looks complicated.
-
-Also, before you only cared if opal_pci_reset() returned negative value, 
-now you treat it as a timeout, is it new change to OPAL or it has always 
-been there?
-
-
->   }
+> @@ -352,6 +355,8 @@ enum opal_msg_type {
+>   	OPAL_MSG_SHUTDOWN,		/* params[0] = 1 reboot, 0 shutdown */
+>   	OPAL_MSG_HMI_EVT,
+>   	OPAL_MSG_DPO,
+> +	OPAL_MSG_PRD,
+> +	OPAL_MSG_PCI_HOTPLUG,
+>   	OPAL_MSG_TYPE_MAX,
+>   };
 >
->   static int __pnv_eeh_bridge_reset(struct pci_dev *dev, int option)
-> @@ -882,10 +861,7 @@ static int pnv_eeh_bridge_reset(struct pci_dev *dev, int option)
->   	phb = hose->private_data;
->   	id |= (dev->bus->number << 24) | (dev->devfn << 16) | phb->opal_id;
->   	rc = opal_pci_reset(id, scope, OPAL_ASSERT_RESET);
-> -	if (rc > 0)
-> -		rc = pnv_eeh_poll(id);
-> -
-> -	return (rc == OPAL_SUCCESS) ? 0 : -EIO;
-> +	return pnv_pci_poll(id, rc, NULL);
->   }
+> diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
+> index 6d467df..a0eb206 100644
+> --- a/arch/powerpc/include/asm/opal.h
+> +++ b/arch/powerpc/include/asm/opal.h
+> @@ -200,6 +200,9 @@ int64_t opal_flash_write(uint64_t id, uint64_t offset, uint64_t buf,
+>   		uint64_t size, uint64_t token);
+>   int64_t opal_flash_erase(uint64_t id, uint64_t offset, uint64_t size,
+>   		uint64_t token);
+> +int64_t opal_pci_get_presence_status(uint64_t id, uint8_t *status);
+> +int64_t opal_pci_get_power_status(uint64_t id, uint8_t *status);
+> +int64_t opal_pci_set_power_status(uint64_t id, uint8_t status);
 >
->   static int pnv_pci_dev_reset_type(struct pci_dev *pdev, void *data)
+>   /* Internal functions */
+>   extern int early_init_dt_scan_opal(unsigned long node, const char *uname,
+> diff --git a/arch/powerpc/include/asm/pnv-pci.h b/arch/powerpc/include/asm/pnv-pci.h
+> index f9b4982..50d92a4 100644
+> --- a/arch/powerpc/include/asm/pnv-pci.h
+> +++ b/arch/powerpc/include/asm/pnv-pci.h
+> @@ -13,6 +13,11 @@
+>   #include <linux/pci.h>
+>   #include <misc/cxl.h>
+>
+> +extern int pnv_pci_get_presence_status(uint64_t id, uint8_t *status);
+> +extern int pnv_pci_get_power_status(uint64_t id, uint8_t *status);
+> +extern int pnv_pci_set_power_status(uint64_t id, uint8_t status);
+> +extern int pnv_pci_hotplug_notifier(struct notifier_block *nb, bool enable);
+> +
+>   int pnv_phb_to_cxl_mode(struct pci_dev *dev, uint64_t mode);
+>   int pnv_cxl_ioda_msi_setup(struct pci_dev *dev, unsigned int hwirq,
+>   			   unsigned int virq);
+> diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
+> index a7ade94..aa95dcb 100644
+> --- a/arch/powerpc/platforms/powernv/opal-wrappers.S
+> +++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
+> @@ -295,3 +295,6 @@ OPAL_CALL(opal_i2c_request,			OPAL_I2C_REQUEST);
+>   OPAL_CALL(opal_flash_read,			OPAL_FLASH_READ);
+>   OPAL_CALL(opal_flash_write,			OPAL_FLASH_WRITE);
+>   OPAL_CALL(opal_flash_erase,			OPAL_FLASH_ERASE);
+> +OPAL_CALL(opal_pci_get_presence_status,		OPAL_PCI_GET_PRESENCE_STATUS);
+> +OPAL_CALL(opal_pci_get_power_status,		OPAL_PCI_GET_POWER_STATUS);
+> +OPAL_CALL(opal_pci_set_power_status,		OPAL_PCI_SET_POWER_STATUS);
 > diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
-> index bca2aeb..a2da9a3 100644
+> index a2da9a3..60e6d65 100644
 > --- a/arch/powerpc/platforms/powernv/pci.c
 > +++ b/arch/powerpc/platforms/powernv/pci.c
-> @@ -44,6 +44,22 @@
->   #define cfg_dbg(fmt...)	do { } while(0)
->   //#define cfg_dbg(fmt...)	printk(fmt)
+> @@ -60,6 +60,51 @@ int pnv_pci_poll(uint64_t id, int64_t rval, uint8_t *pval)
+>   	return rval ? -EIO : 0;
+>   }
 >
-> +int pnv_pci_poll(uint64_t id, int64_t rval, uint8_t *pval)
+> +int pnv_pci_get_presence_status(uint64_t id, uint8_t *status)
 > +{
-> +	while (rval > 0) {
-> +		if (system_state < SYSTEM_RUNNING)
-> +			udelay(1000 * rval);
-> +		else
-> +			msleep(rval);
-
-Are these delays the once removed by "PATCH v4 09/21] powerpc/powernv: Use 
-PCI slot reset infrastructure"? If so, I would merge this patch into 09/24 
-or move this one before that one, for bisect'ability.
-
-
+> +	long rc;
 > +
-> +		rval = opal_pci_poll(id, pval);
-> +		if (rval == OPAL_SUCCESS && pval)
-> +			rval = opal_pci_poll(id, pval);
-
-Why calling it twice?
+> +	if (!opal_check_token(OPAL_PCI_GET_PRESENCE_STATUS))
 
 
-> +	}
+I got a question about the style (i.e. I do not mean the patch is wrong :) )
+
+Everywhere else you use int64_t or s64 for the value returned by OPAL but 
+not with opal_check_point(). And you would compare it to OPAL_SUCCESS 
+rather than plain zero. What does opal_check_token() return when succeeded? 
+1, -1,...? OPAL_SUCCESS means here an error, right?
+
+
+> +		return -ENXIO;
 > +
-> +	return rval ? -EIO : 0;
+> +	rc = opal_pci_get_presence_status(id, status);
+> +	return pnv_pci_poll(id, rc, status);
 > +}
+> +EXPORT_SYMBOL_GPL(pnv_pci_get_presence_status);
+> +
+> +int pnv_pci_get_power_status(uint64_t id, uint8_t *status)
+> +{
+> +	long rc;
+> +
+> +	if (!opal_check_token(OPAL_PCI_GET_POWER_STATUS))
+> +		return -ENXIO;
+> +
+> +	rc = opal_pci_get_power_status(id, status);
+> +	return pnv_pci_poll(id, rc, status);
+> +}
+> +EXPORT_SYMBOL_GPL(pnv_pci_get_power_status);
+> +
+> +int pnv_pci_set_power_status(uint64_t id, uint8_t status)
+> +{
+> +	long rc;
+> +
+> +	if (!opal_check_token(OPAL_PCI_SET_POWER_STATUS))
+> +		return -ENXIO;
+> +
+> +	rc = opal_pci_set_power_status(id, status);
+> +	return pnv_pci_poll(id, rc, NULL);
+> +}
+> +EXPORT_SYMBOL_GPL(pnv_pci_set_power_status);
+> +
+> +int pnv_pci_hotplug_notifier(struct notifier_block *nb, bool enable)
+> +{
+> +	if (enable)
+> +		return opal_message_notifier_register(OPAL_MSG_PCI_HOTPLUG, nb);
+> +
+> +	return opal_message_notifier_unregister(OPAL_MSG_PCI_HOTPLUG, nb);
+> +}
+> +EXPORT_SYMBOL_GPL(pnv_pci_hotplug_notifier);
 > +
 >   #ifdef CONFIG_PCI_MSI
 >   static int pnv_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type)
 >   {
-> diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
-> index 8b10f01..82c5539 100644
-> --- a/arch/powerpc/platforms/powernv/pci.h
-> +++ b/arch/powerpc/platforms/powernv/pci.h
-> @@ -202,6 +202,7 @@ struct pnv_phb {
->
->   extern struct pci_ops pnv_pci_ops;
->
-> +int pnv_pci_poll(uint64_t id, int64_t rval, uint8_t *pval);
->   void pnv_pci_dump_phb_diag_data(struct pci_controller *hose,
->   				unsigned char *log_buff);
->   int pnv_pci_cfg_read(struct pci_dn *pdn,
 >
 
 
