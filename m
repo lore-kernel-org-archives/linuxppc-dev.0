@@ -1,26 +1,24 @@
-Return-Path: <emunson@akamai.com>
-Received: from prod-mail-xrelay07.akamai.com (prod-mail-xrelay07.akamai.com
- [72.246.2.115])
- by lists.ozlabs.org (Postfix) with ESMTP id 588CC1A0862
- for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 May 2015 06:06:15 +1000 (AEST)
-Date: Fri, 8 May 2015 16:06:10 -0400
-From: Eric B Munson <emunson@akamai.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 0/3] Allow user to request memory to be locked on page
- fault
-Message-ID: <20150508200610.GB29933@akamai.com>
-References: <1431113626-19153-1-git-send-email-emunson@akamai.com>
- <20150508124203.6679b1d35ad9555425003929@linux-foundation.org>
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pa0-f51.google.com (mail-pa0-f51.google.com
+ [209.85.220.51])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 198FF1A170C
+ for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 May 2015 10:18:50 +1000 (AEST)
+Received: by pabtp1 with SMTP id tp1so62183965pab.2
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 08 May 2015 17:18:48 -0700 (PDT)
+Message-ID: <554D5262.2030109@ozlabs.ru>
+Date: Sat, 09 May 2015 10:18:42 +1000
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="kORqDWCi7qDJ0mEj"
-In-Reply-To: <20150508124203.6679b1d35ad9555425003929@linux-foundation.org>
-Cc: linux-arch@vger.kernel.org, linux-mips@linux-mips.org,
- linux-parisc@vger.kernel.org, linux-xtensa@linux-xtensa.org,
- linux-api@vger.kernel.org, linux-kernel@vger.kernel.org,
- Shuah Khan <shuahkh@osg.samsung.com>, linux-mm@kvack.org,
- linux-alpha@vger.kernel.org, sparclinux@vger.kernel.org,
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>,
  linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v4 02/21] powerpc/powernv: Enable M64 on P7IOC
+References: <1430460188-31343-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <1430460188-31343-3-git-send-email-gwshan@linux.vnet.ibm.com>
+In-Reply-To: <1430460188-31343-3-git-send-email-gwshan@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=koi8-r; format=flowed
+Cc: bhelgaas@google.com, linux-pci@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,66 +28,235 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 05/01/2015 04:02 PM, Gavin Shan wrote:
+> The patch enables M64 window on P7IOC, which has been enabled on
+> PHB3. Comparing to PHB3, there are 16 M64 BARs and each of them
+> are divided to 8 segments.
 
---kORqDWCi7qDJ0mEj
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+"compared to something" means you will tell about PHB3 too :)
 
-On Fri, 08 May 2015, Andrew Morton wrote:
+Do I understand correctly that IODA==IODA1==P7IOC  and P7IOC != IODA2? The 
+code does not use "PHB3" or "P7IOC" acronym so it is a bit confusing.
 
-> On Fri,  8 May 2015 15:33:43 -0400 Eric B Munson <emunson@akamai.com> wro=
-te:
->=20
-> > mlock() allows a user to control page out of program memory, but this
-> > comes at the cost of faulting in the entire mapping when it is
-> > allocated.  For large mappings where the entire area is not necessary
-> > this is not ideal.
-> >=20
-> > This series introduces new flags for mmap() and mlockall() that allow a
-> > user to specify that the covered are should not be paged out, but only
-> > after the memory has been used the first time.
->=20
-> Please tell us much much more about the value of these changes: the use
-> cases, the behavioural improvements and performance results which the
-> patchset brings to those use cases, etc.
->=20
 
-The primary use case is for mmaping large files read only.  The process
-knows that some of the data is necessary, but it is unlikely that the
-entire file will be needed.  The developer only wants to pay the cost to
-read the data in once.  Unfortunately developer must choose between
-allowing the kernel to page in the memory as needed and guaranteeing
-that the data will only be read from disk once.  The first option runs
-the risk of having the memory reclaimed if the system is under memory
-pressure, the second forces the memory usage and startup delay when
-faulting in the entire file.
+> So each PHB can support 128 M64 segments.
+> Also, P7IOC has M64DT, which helps mapping one particular M64
+> segment# to arbitrary PE#. However, we just provide 128 M64 (16 BARs)
+> segments and fixed mapping between PE# and M64 segment# in order
+> to keep same logic to support M64 for PHB3 and P7IOC. In turn, we
+> just need different phb->init_m64() hooks for P7IOC and PHB3.
+>
+> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+> ---
+>   arch/powerpc/platforms/powernv/pci-ioda.c | 115 ++++++++++++++++++++++++++----
+>   1 file changed, 103 insertions(+), 12 deletions(-)
+>
+> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+> index f8bc950..646962f 100644
+> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+> @@ -165,6 +165,67 @@ static void pnv_ioda_free_pe(struct pnv_phb *phb, int pe)
+>   	clear_bit(pe, phb->ioda.pe_alloc);
+>   }
+>
+> +static int pnv_ioda1_init_m64(struct pnv_phb *phb)
+> +{
+> +	struct resource *r;
+> +	int seg;
+> +	s64 rc;
 
-I am working on getting startup times with and without this change for
-an application, I will post them as soon as I have them.
+Here @rc is of the "s64" type.
 
-Eric
+> +
+> +	/* Each PHB supports 16 separate M64 BARs, each of which are
+> +	 * divided into 8 segments. So there are number of M64 segments
+> +	 * as total PE#, which is 128.
+> +	 */
 
---kORqDWCi7qDJ0mEj
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+"there are as many M64 segments as a maximum number of PEs which is 128"?
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
 
-iQIcBAEBAgAGBQJVTRcyAAoJELbVsDOpoOa9ve0P/31hrYdpIkjcL8etZV7j1Amz
-CbQNUV91heC9gS4zlE+Pkm/1OT+lPBx8qUXxoy1yvGtjh4Hy6dOfkrM/ysC60Xw3
-GCLHqDfNm3GoRK4a4MfebDLlesAjLuRpk8n4dxjyZ8EbL6MeTaiAxDqyZ7YUqfNf
-/OIxvT6zni/Tw1/JhTEE5G2qnjU7MLXJeALQEOISPmb+Fm59/sIOn5jcppYauPvW
-8IieUQkD+BspBKu4L3UG66nhtEc67QX4IMyQCLe4asaZqz2rs4aI9R/YZeuXl+dK
-JYcmsI3bX86XGvSKS0wWySw7/agkzOB/df+alVVtMB6iYFn46fwZ0wlMf051q8V1
-aK9u/5/Fwp945kC0gnMa2qAirbHhDmhrxAJam+bPUaCz58EZq4ItZ6OmDkWVI/O9
-332mvX26Wm5vzKZ9ki5qeh6CdFPBbPWvtxQHo7mx/BVEoJsKR322y73YHY6bsJ4x
-eWSQQ+jNq5Oshogd3x73Fon4/8zjN+vBYFva5P9bSUH9Aq+TQtuc9zl3OD2nbe8x
-j74wSLsyfrpBjBzSDG1lNiWN+3OZKsvxSFPX07SK4hkCOKf3jv/6g8PlftJaQNgJ
-1hFJDRmz0Dr0OLbU8oAaC7A2BiSQLRBpqaW2tcN/igSu1B13adZVPA+WGcjOcqW2
-detDdJZun8mNCxkguBtQ
-=s0uu
------END PGP SIGNATURE-----
+> +	for (seg = 0; seg < phb->ioda.total_pe; seg += 8) {
+> +		unsigned long base;
+> +
+> +		base = phb->ioda.m64_base + seg * phb->ioda.m64_segsize;
+> +		rc = opal_pci_set_phb_mem_window(phb->opal_id,
+> +						 OPAL_M64_WINDOW_TYPE,
+> +						 seg / 8,
+> +						 base,
+> +						 0, /* unused */
+> +						 8 * phb->ioda.m64_segsize);
+> +		if (rc != OPAL_SUCCESS) {
+> +			pr_warn("  Failure %lld configuring M64 BAR#%d on PHB#%d\n",
+> +				rc, seg / 8, phb->hose->global_number);
+> +			goto fail;
+> +		}
+> +
+> +		rc = opal_pci_phb_mmio_enable(phb->opal_id,
+> +					      OPAL_M64_WINDOW_TYPE,
+> +					      seg / 8,
+> +					      OPAL_ENABLE_M64_SPLIT);
+> +		if (rc != OPAL_SUCCESS) {
+> +			pr_warn("  Failure %lld enabling M64 BAR#%d on PHB#%d\n",
+> +				rc, seg / 8, phb->hose->global_number);
+> +			goto fail;
+> +		}
+> +	}
+> +
+> +	/* Strip of the segment used by the reserved PE, which
+> +	 * is expected to be 0 or last supported PE#
+> +	 */
+> +	r = &phb->hose->mem_resources[1];
 
---kORqDWCi7qDJ0mEj--
+mem_resources[0] is IO, mem_resources[1] is MMIO, mem_resources[2] is for 
+what? Would be nice to have this commented somewhere.
+
+
+> +	if (phb->ioda.reserved_pe == 0)
+> +		r->start += phb->ioda.m64_segsize;
+> +	else if (phb->ioda.reserved_pe == (phb->ioda.total_pe - 1))
+> +		r->end -= phb->ioda.m64_segsize;
+> +	else
+> +		pr_warn("  Cannot strip M64 segment for reserved PE#%d\n",
+> +			phb->ioda.reserved_pe);
+> +
+> +	return 0;
+> +
+> +fail:
+> +	for ( ; seg >= 0; seg -= 8)
+> +		opal_pci_phb_mmio_enable(phb->opal_id,
+> +					 OPAL_M64_WINDOW_TYPE,
+> +					 seg / 8,
+> +					 OPAL_DISABLE_M64);
+
+Out of curiosity - is not there a counterpart for 
+opal_pci_set_phb_mem_window() for cleanup?
+
+
+> +
+> +	return -EIO;
+> +}
+> +
+>   /* The default M64 BAR is shared by all PEs */
+>   static int pnv_ioda2_init_m64(struct pnv_phb *phb)
+>   {
+> @@ -222,7 +283,7 @@ fail:
+>   	return -EIO;
+>   }
+>
+> -static void pnv_ioda2_reserve_m64_pe(struct pnv_phb *phb)
+> +static void pnv_ioda_reserve_m64_pe(struct pnv_phb *phb)
+>   {
+>   	resource_size_t sgsz = phb->ioda.m64_segsize;
+>   	struct pci_dev *pdev;
+> @@ -248,8 +309,8 @@ static void pnv_ioda2_reserve_m64_pe(struct pnv_phb *phb)
+>   	}
+>   }
+>
+> -static int pnv_ioda2_pick_m64_pe(struct pnv_phb *phb,
+> -				 struct pci_bus *bus, int all)
+> +static int pnv_ioda_pick_m64_pe(struct pnv_phb *phb,
+> +				struct pci_bus *bus, int all)
+>   {
+>   	resource_size_t segsz = phb->ioda.m64_segsize;
+>   	struct pci_dev *pdev;
+> @@ -346,6 +407,28 @@ done:
+>   			pe->master = master_pe;
+>   			list_add_tail(&pe->list, &master_pe->slaves);
+>   		}
+> +
+> +		/* P7IOC supports M64DT, which helps mapping M64 segment
+> +		 * to one particular PE#. Unfortunately, PHB3 has fixed
+
+Why is it "Unfortunately"? This is just the way it is :)
+
+
+> +		 * mapping between M64 segment and PE#. In order for same
+> +		 * logic for P7IOC and PHB3, we enforce fixed mapping
+> +		 * between M64 segment and PE# on P7IOC.
+> +		 */
+> +		if (phb->type == PNV_PHB_IODA1) {
+> +			int64_t rc;
+
+Here @rc is of the "int64_t" type. And this one and the one above are used 
+for return code from OPAL API. Make them the same (int64_t or long, up to you).
+
+
+> +
+> +			rc = opal_pci_map_pe_mmio_window(phb->opal_id,
+> +							 pe->pe_number,
+> +							 OPAL_M64_WINDOW_TYPE,
+> +							 pe->pe_number / 8,
+> +							 pe->pe_number % 8);
+> +			if (rc != OPAL_SUCCESS)
+> +				pr_warn("%s: Failure %lld mapping "
+> +					"M64 for PHB#%d-PE#%d\n",
+> +					__func__, rc,
+> +					phb->hose->global_number,
+> +					pe->pe_number);
+> +		}
+>   	}
+>
+>   	kfree(pe_alloc);
+> @@ -360,12 +443,6 @@ static void __init pnv_ioda_parse_m64_window(struct pnv_phb *phb)
+>   	const u32 *r;
+>   	u64 pci_addr;
+>
+> -	/* FIXME: Support M64 for P7IOC */
+> -	if (phb->type != PNV_PHB_IODA2) {
+> -		pr_info("  Not support M64 window\n");
+> -		return;
+> -	}
+> -
+>   	if (!firmware_has_feature(FW_FEATURE_OPALv3)) {
+>   		pr_info("  Firmware too old to support M64 window\n");
+>   		return;
+> @@ -394,9 +471,23 @@ static void __init pnv_ioda_parse_m64_window(struct pnv_phb *phb)
+>
+>   	/* Use last M64 BAR to cover M64 window */
+>   	phb->ioda.m64_bar_idx = 15;
+> -	phb->init_m64 = pnv_ioda2_init_m64;
+> -	phb->reserve_m64_pe = pnv_ioda2_reserve_m64_pe;
+> -	phb->pick_m64_pe = pnv_ioda2_pick_m64_pe;
+> +	phb->reserve_m64_pe = pnv_ioda_reserve_m64_pe;
+
+
+reserve_m64_pe() is called once from pnv_pci_ioda_setup_PEs() so it is 
+IODA-only and in this case reserve_m64_pe != NULL and 
+pnv_ioda_reserve_m64_pe() will be called always.
+
+In general, it feels like pnv_phb has too many callbacks while they could 
+be just direct calls.
+
+
+
+> +	phb->pick_m64_pe = pnv_ioda_pick_m64_pe;
+> +	switch (phb->type) {
+> +	case PNV_PHB_IODA1:
+> +		phb->init_m64 = pnv_ioda1_init_m64;
+> +		break;
+> +	case PNV_PHB_IODA2:
+> +		phb->init_m64 = pnv_ioda2_init_m64;
+> +		break;
+> +	default:
+> +		phb->init_m64 = NULL;
+> +		phb->reserve_m64_pe = NULL;
+> +		phb->pick_m64_pe = NULL;
+> +		phb->ioda.m64_size = 0;
+> +		phb->ioda.m64_segsize = 0;
+> +		phb->ioda.m64_base = 0;
+
+There are just 2 PHB types - IODA1 and IODA2, right? And the fields you 
+reset after "default" - they have to be zeroes already, no? And on what 
+hardware would the default branch actuall work? None?
+
+
+> +	}
+>   }
+>
+>   static void pnv_ioda_freeze_pe(struct pnv_phb *phb, int pe_no)
+>
+
+
+-- 
+Alexey
