@@ -1,31 +1,31 @@
 Return-Path: <aik@ozlabs.ru>
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A073D1A0010
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2015 01:40:30 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 204F41A0281
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2015 01:40:49 +1000 (AEST)
 Received: from /spool/local
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aik@ozlabs.ru>;
- Tue, 12 May 2015 01:40:29 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id B057A3578054
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2015 01:40:23 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t4BFeFW337617704
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2015 01:40:23 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t4BFdpsu011176
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2015 01:39:51 +1000
+ Tue, 12 May 2015 01:40:48 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 7D0733578056
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2015 01:40:46 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t4BFec3l21954634
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2015 01:40:46 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t4BFeDPw002039
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2015 01:40:14 +1000
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH kernel v10 02/34] powerpc/iommu/powernv: Get rid of
- set_iommu_table_base_and_group
-Date: Tue, 12 May 2015 01:38:51 +1000
-Message-Id: <1431358763-24371-3-git-send-email-aik@ozlabs.ru>
+Subject: [PATCH kernel v10 15/34] powerpc/powernv/ioda/ioda2: Rework TCE
+ invalidation in tce_build()/tce_free()
+Date: Tue, 12 May 2015 01:39:04 +1000
+Message-Id: <1431358763-24371-16-git-send-email-aik@ozlabs.ru>
 In-Reply-To: <1431358763-24371-1-git-send-email-aik@ozlabs.ru>
 References: <1431358763-24371-1-git-send-email-aik@ozlabs.ru>
 Cc: Wei Yang <weiyang@linux.vnet.ibm.com>, Alexey Kardashevskiy <aik@ozlabs.ru>,
@@ -41,175 +41,221 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The set_iommu_table_base_and_group() name suggests that the function
-sets table base and add a device to an IOMMU group. However actual
-table base setting happens in pnv_pci_ioda_dma_dev_setup().
+The pnv_pci_ioda_tce_invalidate() helper invalidates TCE cache. It is
+supposed to be called on IODA1/2 and not called on p5ioc2. It receives
+start and end host addresses of TCE table.
 
-The actual purpose for table base setting is to put some reference
-into a device so later iommu_add_device() can get the IOMMU group
-reference and the device to the group.
+IODA2 actually needs PCI addresses to invalidate the cache. Those
+can be calculated from host addresses but since we are going
+to implement multi-level TCE tables, calculating PCI address from
+a host address might get either tricky or ugly as TCE table remains flat
+on PCI bus but not in RAM.
 
-At the moment a group cannot be explicitly passed to iommu_add_device()
-as we want it to work from the bus notifier, we can fix it later and
-remove confusing calls of set_iommu_table_base().
+This moves pnv_pci_ioda_tce_invalidate() from generic pnv_tce_build/
+pnt_tce_free and defines IODA1/2-specific callbacks which call generic
+ones and do PHB-model-specific TCE cache invalidation. P5IOC2 keeps
+using generic callbacks as before.
 
-This replaces set_iommu_table_base_and_group() with a couple of
-set_iommu_table_base() + iommu_add_device() which makes reading the code
-easier.
+This changes pnv_pci_ioda2_tce_invalidate() to receives TCE index and
+number of pages which are PCI addresses shifted by IOMMU page shift.
 
-This adds few comments why set_iommu_table_base() and iommu_add_device()
-are called where they are called.
-
-For IODA1/2, this essentially removes iommu_add_device() call from
-the pnv_pci_ioda_dma_dev_setup() as it will always fail at this particular
-place:
-- for physical PE, the device is already attached by iommu_add_device()
-in pnv_pci_ioda_setup_dma_pe();
-- for virtual PE, the sysfs entries are not ready to create all symlinks
-so actual adding is happening in tce_iommu_bus_notifier.
+No change in behaviour is expected.
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 ---
 Changes:
 v10:
-* new to the series
----
- arch/powerpc/include/asm/iommu.h            |  7 -------
- arch/powerpc/platforms/powernv/pci-ioda.c   | 27 +++++++++++++++++++++++----
- arch/powerpc/platforms/powernv/pci-p5ioc2.c |  3 ++-
- arch/powerpc/platforms/pseries/iommu.c      | 15 ++++++++-------
- 4 files changed, 33 insertions(+), 19 deletions(-)
+* moved before "Switch from iommu_table to new iommu_table_group" as it adds
+list of groups to iommu_table and tce invalidation depends on it
 
-diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
-index 1e27d63..8353c86 100644
---- a/arch/powerpc/include/asm/iommu.h
-+++ b/arch/powerpc/include/asm/iommu.h
-@@ -140,13 +140,6 @@ static inline int __init tce_iommu_bus_notifier_init(void)
- }
- #endif /* !CONFIG_IOMMU_API */
- 
--static inline void set_iommu_table_base_and_group(struct device *dev,
--						  void *base)
--{
--	set_iommu_table_base(dev, base);
--	iommu_add_device(dev);
--}
--
- extern int ppc_iommu_map_sg(struct device *dev, struct iommu_table *tbl,
- 			    struct scatterlist *sglist, int nelems,
- 			    unsigned long mask,
+v9:
+* removed confusing comment from commit log about unintentional calling of
+pnv_pci_ioda_tce_invalidate()
+* moved mechanical changes away to "powerpc/iommu: Move tce_xxx callbacks from ppc_md to iommu_table"
+* fixed bug with broken invalidation in pnv_pci_ioda2_tce_invalidate -
+@index includes @tbl->it_offset but old code added it anyway which later broke
+DDW
+---
+ arch/powerpc/platforms/powernv/pci-ioda.c | 81 ++++++++++++++++++++++---------
+ arch/powerpc/platforms/powernv/pci.c      | 17 ++-----
+ 2 files changed, 61 insertions(+), 37 deletions(-)
+
 diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index 2f092bb..9a77f3c 100644
+index 2924abe..1b43e25 100644
 --- a/arch/powerpc/platforms/powernv/pci-ioda.c
 +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -1598,7 +1598,13 @@ static void pnv_pci_ioda_dma_dev_setup(struct pnv_phb *phb, struct pci_dev *pdev
- 
- 	pe = &phb->ioda.pe_array[pdn->pe_number];
- 	WARN_ON(get_dma_ops(&pdev->dev) != &dma_iommu_ops);
--	set_iommu_table_base_and_group(&pdev->dev, pe->tce32_table);
-+	set_iommu_table_base(&pdev->dev, pe->tce32_table);
-+	/*
-+	 * Note: iommu_add_device() will fail here as
-+	 * for physical PE: the device is already added by now;
-+	 * for virtual PE: sysfs entries are not ready yet and
-+	 * tce_iommu_bus_notifier will add the device to a group later.
-+	 */
+@@ -1678,18 +1678,19 @@ static void pnv_ioda_setup_bus_dma(struct pnv_ioda_pe *pe,
+ 	}
  }
  
- static int pnv_pci_ioda_dma_set_mask(struct pnv_phb *phb,
-@@ -1659,7 +1665,8 @@ static void pnv_ioda_setup_bus_dma(struct pnv_ioda_pe *pe,
- 	struct pci_dev *dev;
+-static void pnv_pci_ioda1_tce_invalidate(struct pnv_ioda_pe *pe,
+-					 struct iommu_table *tbl,
+-					 __be64 *startp, __be64 *endp, bool rm)
++static void pnv_pci_ioda1_tce_invalidate(struct iommu_table *tbl,
++		unsigned long index, unsigned long npages, bool rm)
+ {
++	struct pnv_ioda_pe *pe = tbl->data;
+ 	__be64 __iomem *invalidate = rm ?
+ 		(__be64 __iomem *)pe->tce_inval_reg_phys :
+ 		(__be64 __iomem *)tbl->it_index;
+ 	unsigned long start, end, inc;
+ 	const unsigned shift = tbl->it_page_shift;
  
- 	list_for_each_entry(dev, &bus->devices, bus_list) {
--		set_iommu_table_base_and_group(&dev->dev, pe->tce32_table);
-+		set_iommu_table_base(&dev->dev, pe->tce32_table);
-+		iommu_add_device(&dev->dev);
+-	start = __pa(startp);
+-	end = __pa(endp);
++	start = __pa(((__be64 *)tbl->it_base) + index - tbl->it_offset);
++	end = __pa(((__be64 *)tbl->it_base) + index - tbl->it_offset +
++			npages - 1);
  
- 		if (dev->subordinate)
- 			pnv_ioda_setup_bus_dma(pe, dev->subordinate);
-@@ -1835,7 +1842,13 @@ static void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
- 	if (pe->flags & PNV_IODA_PE_DEV) {
- 		iommu_register_group(tbl, phb->hose->global_number,
- 				     pe->pe_number);
--		set_iommu_table_base_and_group(&pe->pdev->dev, tbl);
-+		/*
-+		 * Setting table base here only for carrying iommu_group
-+		 * further down to let iommu_add_device() do the job.
-+		 * pnv_pci_ioda_dma_dev_setup will override it later anyway.
-+		 */
-+		set_iommu_table_base(&pe->pdev->dev, tbl);
-+		iommu_add_device(&pe->pdev->dev);
- 	} else if (pe->flags & (PNV_IODA_PE_BUS | PNV_IODA_PE_BUS_ALL)) {
- 		iommu_register_group(tbl, phb->hose->global_number,
- 				     pe->pe_number);
-@@ -1963,7 +1976,13 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
- 	if (pe->flags & PNV_IODA_PE_DEV) {
- 		iommu_register_group(tbl, phb->hose->global_number,
- 				     pe->pe_number);
--		set_iommu_table_base_and_group(&pe->pdev->dev, tbl);
-+		/*
-+		 * Setting table base here only for carrying iommu_group
-+		 * further down to let iommu_add_device() do the job.
-+		 * pnv_pci_ioda_dma_dev_setup will override it later anyway.
-+		 */
-+		set_iommu_table_base(&pe->pdev->dev, tbl);
-+		iommu_add_device(&pe->pdev->dev);
- 	} else if (pe->flags & (PNV_IODA_PE_BUS | PNV_IODA_PE_BUS_ALL)) {
- 		iommu_register_group(tbl, phb->hose->global_number,
- 				     pe->pe_number);
-diff --git a/arch/powerpc/platforms/powernv/pci-p5ioc2.c b/arch/powerpc/platforms/powernv/pci-p5ioc2.c
-index 4729ca7..b17d93615 100644
---- a/arch/powerpc/platforms/powernv/pci-p5ioc2.c
-+++ b/arch/powerpc/platforms/powernv/pci-p5ioc2.c
-@@ -92,7 +92,8 @@ static void pnv_pci_p5ioc2_dma_dev_setup(struct pnv_phb *phb,
- 				pci_domain_nr(phb->hose->bus), phb->opal_id);
- 	}
- 
--	set_iommu_table_base_and_group(&pdev->dev, &phb->p5ioc2.iommu_table);
-+	set_iommu_table_base(&pdev->dev, &phb->p5ioc2.iommu_table);
-+	iommu_add_device(&pdev->dev);
+ 	/* BML uses this case for p6/p7/galaxy2: Shift addr and put in node */
+ 	if (tbl->it_busno) {
+@@ -1725,16 +1726,39 @@ static void pnv_pci_ioda1_tce_invalidate(struct pnv_ioda_pe *pe,
+ 	 */
  }
  
- static void __init pnv_pci_init_p5ioc2_phb(struct device_node *np, u64 hub_id,
-diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
-index 61d5a17..05ab06d 100644
---- a/arch/powerpc/platforms/pseries/iommu.c
-+++ b/arch/powerpc/platforms/pseries/iommu.c
-@@ -688,8 +688,8 @@ static void pci_dma_dev_setup_pSeries(struct pci_dev *dev)
- 		iommu_table_setparms(phb, dn, tbl);
- 		PCI_DN(dn)->iommu_table = iommu_init_table(tbl, phb->node);
- 		iommu_register_group(tbl, pci_domain_nr(phb->bus), 0);
--		set_iommu_table_base_and_group(&dev->dev,
--					       PCI_DN(dn)->iommu_table);
-+		set_iommu_table_base(&dev->dev, tbl);
-+		iommu_add_device(&dev->dev);
- 		return;
++static int pnv_ioda1_tce_build(struct iommu_table *tbl, long index,
++		long npages, unsigned long uaddr,
++		enum dma_data_direction direction,
++		struct dma_attrs *attrs)
++{
++	long ret = pnv_tce_build(tbl, index, npages, uaddr, direction,
++			attrs);
++
++	if (!ret && (tbl->it_type & TCE_PCI_SWINV_CREATE))
++		pnv_pci_ioda1_tce_invalidate(tbl, index, npages, false);
++
++	return ret;
++}
++
++static void pnv_ioda1_tce_free(struct iommu_table *tbl, long index,
++		long npages)
++{
++	pnv_tce_free(tbl, index, npages);
++
++	if (tbl->it_type & TCE_PCI_SWINV_FREE)
++		pnv_pci_ioda1_tce_invalidate(tbl, index, npages, false);
++}
++
+ static struct iommu_table_ops pnv_ioda1_iommu_ops = {
+-	.set = pnv_tce_build,
+-	.clear = pnv_tce_free,
++	.set = pnv_ioda1_tce_build,
++	.clear = pnv_ioda1_tce_free,
+ 	.get = pnv_tce_get,
+ };
+ 
+-static void pnv_pci_ioda2_tce_invalidate(struct pnv_ioda_pe *pe,
+-					 struct iommu_table *tbl,
+-					 __be64 *startp, __be64 *endp, bool rm)
++static void pnv_pci_ioda2_tce_invalidate(struct iommu_table *tbl,
++		unsigned long index, unsigned long npages, bool rm)
+ {
++	struct pnv_ioda_pe *pe = tbl->data;
+ 	unsigned long start, end, inc;
+ 	__be64 __iomem *invalidate = rm ?
+ 		(__be64 __iomem *)pe->tce_inval_reg_phys :
+@@ -1747,10 +1771,8 @@ static void pnv_pci_ioda2_tce_invalidate(struct pnv_ioda_pe *pe,
+ 	end = start;
+ 
+ 	/* Figure out the start, end and step */
+-	inc = tbl->it_offset + (((u64)startp - tbl->it_base) / sizeof(u64));
+-	start |= (inc << shift);
+-	inc = tbl->it_offset + (((u64)endp - tbl->it_base) / sizeof(u64));
+-	end |= (inc << shift);
++	start |= (index << shift);
++	end |= ((index + npages - 1) << shift);
+ 	inc = (0x1ull << shift);
+ 	mb();
+ 
+@@ -1763,21 +1785,32 @@ static void pnv_pci_ioda2_tce_invalidate(struct pnv_ioda_pe *pe,
  	}
+ }
  
-@@ -700,10 +700,10 @@ static void pci_dma_dev_setup_pSeries(struct pci_dev *dev)
- 	while (dn && PCI_DN(dn) && PCI_DN(dn)->iommu_table == NULL)
- 		dn = dn->parent;
+-void pnv_pci_ioda_tce_invalidate(struct iommu_table *tbl,
+-				 __be64 *startp, __be64 *endp, bool rm)
++static int pnv_ioda2_tce_build(struct iommu_table *tbl, long index,
++		long npages, unsigned long uaddr,
++		enum dma_data_direction direction,
++		struct dma_attrs *attrs)
+ {
+-	struct pnv_ioda_pe *pe = tbl->data;
+-	struct pnv_phb *phb = pe->phb;
++	long ret = pnv_tce_build(tbl, index, npages, uaddr, direction,
++			attrs);
  
--	if (dn && PCI_DN(dn))
--		set_iommu_table_base_and_group(&dev->dev,
--					       PCI_DN(dn)->iommu_table);
+-	if (phb->type == PNV_PHB_IODA1)
+-		pnv_pci_ioda1_tce_invalidate(pe, tbl, startp, endp, rm);
 -	else
-+	if (dn && PCI_DN(dn)) {
-+		set_iommu_table_base(&dev->dev, PCI_DN(dn)->iommu_table);
-+		iommu_add_device(&dev->dev);
-+	} else
- 		printk(KERN_WARNING "iommu: Device %s has no iommu table\n",
- 		       pci_name(dev));
+-		pnv_pci_ioda2_tce_invalidate(pe, tbl, startp, endp, rm);
++	if (!ret && (tbl->it_type & TCE_PCI_SWINV_CREATE))
++		pnv_pci_ioda2_tce_invalidate(tbl, index, npages, false);
++
++	return ret;
++}
++
++static void pnv_ioda2_tce_free(struct iommu_table *tbl, long index,
++		long npages)
++{
++	pnv_tce_free(tbl, index, npages);
++
++	if (tbl->it_type & TCE_PCI_SWINV_FREE)
++		pnv_pci_ioda2_tce_invalidate(tbl, index, npages, false);
  }
-@@ -1115,7 +1115,8 @@ static void pci_dma_dev_setup_pSeriesLP(struct pci_dev *dev)
- 		pr_debug("  found DMA window, table: %p\n", pci->iommu_table);
- 	}
  
--	set_iommu_table_base_and_group(&dev->dev, pci->iommu_table);
-+	set_iommu_table_base(&dev->dev, pci->iommu_table);
-+	iommu_add_device(&dev->dev);
+ static struct iommu_table_ops pnv_ioda2_iommu_ops = {
+-	.set = pnv_tce_build,
+-	.clear = pnv_tce_free,
++	.set = pnv_ioda2_tce_build,
++	.clear = pnv_ioda2_tce_free,
+ 	.get = pnv_tce_get,
+ };
+ 
+diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
+index 4c3bbb1..84b4ea4 100644
+--- a/arch/powerpc/platforms/powernv/pci.c
++++ b/arch/powerpc/platforms/powernv/pci.c
+@@ -577,37 +577,28 @@ int pnv_tce_build(struct iommu_table *tbl, long index, long npages,
+ 		struct dma_attrs *attrs)
+ {
+ 	u64 proto_tce = iommu_direction_to_tce_perm(direction);
+-	__be64 *tcep, *tces;
++	__be64 *tcep;
+ 	u64 rpn;
+ 
+-	tces = tcep = ((__be64 *)tbl->it_base) + index - tbl->it_offset;
++	tcep = ((__be64 *)tbl->it_base) + index - tbl->it_offset;
+ 	rpn = __pa(uaddr) >> tbl->it_page_shift;
+ 
+ 	while (npages--)
+ 		*(tcep++) = cpu_to_be64(proto_tce |
+ 				(rpn++ << tbl->it_page_shift));
+ 
+-	/* Some implementations won't cache invalid TCEs and thus may not
+-	 * need that flush. We'll probably turn it_type into a bit mask
+-	 * of flags if that becomes the case
+-	 */
+-	if (tbl->it_type & TCE_PCI_SWINV_CREATE)
+-		pnv_pci_ioda_tce_invalidate(tbl, tces, tcep - 1, false);
+ 
+ 	return 0;
  }
  
- static int dma_set_mask_pSeriesLP(struct device *dev, u64 dma_mask)
+ void pnv_tce_free(struct iommu_table *tbl, long index, long npages)
+ {
+-	__be64 *tcep, *tces;
++	__be64 *tcep;
+ 
+-	tces = tcep = ((__be64 *)tbl->it_base) + index - tbl->it_offset;
++	tcep = ((__be64 *)tbl->it_base) + index - tbl->it_offset;
+ 
+ 	while (npages--)
+ 		*(tcep++) = cpu_to_be64(0);
+-
+-	if (tbl->it_type & TCE_PCI_SWINV_FREE)
+-		pnv_pci_ioda_tce_invalidate(tbl, tces, tcep - 1, false);
+ }
+ 
+ unsigned long pnv_tce_get(struct iommu_table *tbl, long index)
 -- 
 2.4.0.rc3.8.gfb3e7d5
