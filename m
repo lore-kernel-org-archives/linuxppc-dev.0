@@ -1,18 +1,18 @@
 Return-Path: <baolin.wang@linaro.org>
-Received: from mail-pa0-f54.google.com (mail-pa0-f54.google.com
- [209.85.220.54])
+Received: from mail-pd0-f170.google.com (mail-pd0-f170.google.com
+ [209.85.192.170])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 619F91A0047
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2015 21:06:42 +1000 (AEST)
-Received: by pacwv17 with SMTP id wv17so107509848pac.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2015 04:06:40 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 00A3D1A0047
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2015 21:08:53 +1000 (AEST)
+Received: by pdbqd1 with SMTP id qd1so143880135pdb.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2015 04:08:50 -0700 (PDT)
 From: Baolin Wang <baolin.wang@linaro.org>
 To: tglx@linutronix.de
 Subject: [PATCH v3 00/22] Convert the posix_clock_operations and k_clock
  structure to ready for 2038
-Date: Mon, 11 May 2015 19:06:25 +0800
-Message-Id: <1431342385-29319-1-git-send-email-baolin.wang@linaro.org>
+Date: Mon, 11 May 2015 19:08:38 +0800
+Message-Id: <1431342518-29362-1-git-send-email-baolin.wang@linaro.org>
 Cc: pang.xunlei@linaro.org, peterz@infradead.org, heiko.carstens@de.ibm.com,
  paulus@samba.org, cl@linux.com, heenasirwani@gmail.com,
  linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, y2038@lists.linaro.org,
@@ -44,7 +44,6 @@ hrtimer_get_res64(), cputime_to_timespec64() and timespec64_to_cputime().
 Changes since v2:
      	-Split the syscall conversion patch into small some patches.
 
-*** BLURB HERE ***
 
 Baolin Wang (22):
   linux/time64.h:Introduce the 'struct itimerspec64' for 64bit
