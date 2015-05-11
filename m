@@ -1,23 +1,28 @@
-Return-Path: <zidan.wang@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0143.outbound.protection.outlook.com [207.46.100.143])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 042F31A0035
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2015 21:55:15 +1000 (AEST)
-From: Zidan Wang <zidan.wang@freescale.com>
-To: <nicoleotsuka@gmail.com>
-Subject: [PATCH 1/3] ASoC: fsl_sai: add sai master mode support
-Date: Mon, 11 May 2015 18:24:41 +0800
-Message-ID: <1431339894-4248-1-git-send-email-zidan.wang@freescale.com>
-In-Reply-To: <cover.1431337606.git.zidan.wang@freescale.com>
-References: <cover.1431337606.git.zidan.wang@freescale.com>
+Return-Path: <emunson@akamai.com>
+Received: from prod-mail-xrelay02.akamai.com (prod-mail-xrelay02.akamai.com
+ [72.246.2.14])
+ by lists.ozlabs.org (Postfix) with ESMTP id 83E351A0010
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2015 00:36:20 +1000 (AEST)
+Date: Mon, 11 May 2015 10:36:18 -0400
+From: Eric B Munson <emunson@akamai.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 0/3] Allow user to request memory to be locked on page
+ fault
+Message-ID: <20150511143618.GA30570@akamai.com>
+References: <1431113626-19153-1-git-send-email-emunson@akamai.com>
+ <20150508124203.6679b1d35ad9555425003929@linux-foundation.org>
+ <20150508200610.GB29933@akamai.com>
+ <20150508131523.f970d13a213bca63bd6f2619@linux-foundation.org>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: alsa-devel@alsa-project.org, timur@tabi.org,
- Zidan Wang <zidan.wang@freescale.com>, Xiubo.Lee@gmail.com, tiwai@suse.de,
- linux-kernel@vger.kernel.org, lgirdwood@gmail.com, perex@perex.cz,
- broonie@kernel.org, linuxppc-dev@lists.ozlabs.org
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="6TrnltStXW4iwmi0"
+In-Reply-To: <20150508131523.f970d13a213bca63bd6f2619@linux-foundation.org>
+Cc: linux-arch@vger.kernel.org, linux-mips@linux-mips.org,
+ linux-parisc@vger.kernel.org, linux-xtensa@linux-xtensa.org,
+ linux-api@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Shuah Khan <shuahkh@osg.samsung.com>, linux-mm@kvack.org,
+ linux-alpha@vger.kernel.org, sparclinux@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,240 +32,99 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When sai works on master mode, set its bit clock and frame clock.
 
-SAI has 4 MCLK source, bus clock, MCLK1, MCLK2 and MCLK3. fsl_sai_set_bclk
-will select proper MCLK source, then calculate and set the bit clock divider.
+--6TrnltStXW4iwmi0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-After fsl_sai_set_bclk, enable the selected mclk in hw_params(), and add
-hw_free() to disable the mclk.
+On Fri, 08 May 2015, Andrew Morton wrote:
 
-Signed-off-by: Zidan Wang <zidan.wang@freescale.com>
----
- sound/soc/fsl/fsl_sai.c | 117 ++++++++++++++++++++++++++++++++++++++++++++++--
- sound/soc/fsl/fsl_sai.h |   9 +++-
- 2 files changed, 121 insertions(+), 5 deletions(-)
+> On Fri, 8 May 2015 16:06:10 -0400 Eric B Munson <emunson@akamai.com> wrot=
+e:
+>=20
+> > On Fri, 08 May 2015, Andrew Morton wrote:
+> >=20
+> > > On Fri,  8 May 2015 15:33:43 -0400 Eric B Munson <emunson@akamai.com>=
+ wrote:
+> > >=20
+> > > > mlock() allows a user to control page out of program memory, but th=
+is
+> > > > comes at the cost of faulting in the entire mapping when it is
+> > > > allocated.  For large mappings where the entire area is not necessa=
+ry
+> > > > this is not ideal.
+> > > >=20
+> > > > This series introduces new flags for mmap() and mlockall() that all=
+ow a
+> > > > user to specify that the covered are should not be paged out, but o=
+nly
+> > > > after the memory has been used the first time.
+> > >=20
+> > > Please tell us much much more about the value of these changes: the u=
+se
+> > > cases, the behavioural improvements and performance results which the
+> > > patchset brings to those use cases, etc.
+> > >=20
+> >=20
+> > The primary use case is for mmaping large files read only.  The process
+> > knows that some of the data is necessary, but it is unlikely that the
+> > entire file will be needed.  The developer only wants to pay the cost to
+> > read the data in once.  Unfortunately developer must choose between
+> > allowing the kernel to page in the memory as needed and guaranteeing
+> > that the data will only be read from disk once.  The first option runs
+> > the risk of having the memory reclaimed if the system is under memory
+> > pressure, the second forces the memory usage and startup delay when
+> > faulting in the entire file.
+>=20
+> Why can't the application mmap only those parts of the file which it
+> wants and mlock those?
 
-diff --git a/sound/soc/fsl/fsl_sai.c b/sound/soc/fsl/fsl_sai.c
-index ee2671b..1ccc10d1 100644
---- a/sound/soc/fsl/fsl_sai.c
-+++ b/sound/soc/fsl/fsl_sai.c
-@@ -1,7 +1,7 @@
- /*
-  * Freescale ALSA SoC Digital Audio Interface (SAI) driver.
-  *
-- * Copyright 2012-2013 Freescale Semiconductor, Inc.
-+ * Copyright 2012-2015 Freescale Semiconductor, Inc.
-  *
-  * This program is free software, you can redistribute it and/or modify it
-  * under the terms of the GNU General Public License as published by the
-@@ -251,12 +251,14 @@ static int fsl_sai_set_dai_fmt_tr(struct snd_soc_dai *cpu_dai,
- 		val_cr4 |= FSL_SAI_CR4_FSD_MSTR;
- 		break;
- 	case SND_SOC_DAIFMT_CBM_CFM:
-+		sai->is_slave_mode = true;
- 		break;
- 	case SND_SOC_DAIFMT_CBS_CFM:
- 		val_cr2 |= FSL_SAI_CR2_BCD_MSTR;
- 		break;
- 	case SND_SOC_DAIFMT_CBM_CFS:
- 		val_cr4 |= FSL_SAI_CR4_FSD_MSTR;
-+		sai->is_slave_mode = true;
- 		break;
- 	default:
- 		return -EINVAL;
-@@ -288,6 +290,79 @@ static int fsl_sai_set_dai_fmt(struct snd_soc_dai *cpu_dai, unsigned int fmt)
- 	return ret;
- }
- 
-+static int fsl_sai_set_bclk(struct snd_soc_dai *dai, bool tx, u32 freq)
-+{
-+	struct fsl_sai *sai = snd_soc_dai_get_drvdata(dai);
-+	unsigned long clk_rate;
-+	u32 savediv = 0, ratio, savesub = freq;
-+	u32 id;
-+	int ret = 0;
-+
-+	/* Don't apply to slave mode */
-+	if (sai->is_slave_mode)
-+		return 0;
-+
-+	for (id = 0; id < FSL_SAI_MCLK_MAX; id++) {
-+		clk_rate = clk_get_rate(sai->mclk_clk[id]);
-+		if (!clk_rate)
-+			continue;
-+
-+		ratio = clk_rate / freq;
-+
-+		ret = clk_rate - ratio * freq;
-+
-+		/*
-+		 * Drop the source that can not be
-+		 * divided into the required rate.
-+		 */
-+		if (ret != 0 && clk_rate / ret < 1000)
-+			continue;
-+
-+		dev_dbg(dai->dev,
-+			"ratio %d for freq %dHz based on clock %ldHz\n",
-+			ratio, freq, clk_rate);
-+
-+		if (ratio % 2 == 0 && ratio >= 2 && ratio <= 512)
-+			ratio /= 2;
-+		else
-+			continue;
-+
-+		if (ret < savesub) {
-+			savediv = ratio;
-+			sai->mclk_id[tx] = id;
-+			savesub = ret;
-+		}
-+
-+		if (ret == 0)
-+			break;
-+	}
-+
-+	if (savediv == 0) {
-+		dev_err(dai->dev, "failed to derive required %cx rate: %d\n",
-+				tx ? 'T' : 'R', freq);
-+		return -EINVAL;
-+	}
-+
-+	if ((tx && sai->synchronous[TX]) || (!tx && !sai->synchronous[RX])) {
-+		regmap_update_bits(sai->regmap, FSL_SAI_RCR2,
-+				   FSL_SAI_CR2_MSEL_MASK,
-+				   FSL_SAI_CR2_MSEL(sai->mclk_id[tx]));
-+		regmap_update_bits(sai->regmap, FSL_SAI_RCR2,
-+				   FSL_SAI_CR2_DIV_MASK, savediv - 1);
-+	} else {
-+		regmap_update_bits(sai->regmap, FSL_SAI_TCR2,
-+				   FSL_SAI_CR2_MSEL_MASK,
-+				   FSL_SAI_CR2_MSEL(sai->mclk_id[tx]));
-+		regmap_update_bits(sai->regmap, FSL_SAI_TCR2,
-+				   FSL_SAI_CR2_DIV_MASK, savediv - 1);
-+	}
-+
-+	dev_dbg(dai->dev, "best fit: clock id=%d, div=%d, deviation =%d\n",
-+			sai->mclk_id[tx], savediv, savesub);
-+
-+	return 0;
-+}
-+
- static int fsl_sai_hw_params(struct snd_pcm_substream *substream,
- 		struct snd_pcm_hw_params *params,
- 		struct snd_soc_dai *cpu_dai)
-@@ -297,6 +372,24 @@ static int fsl_sai_hw_params(struct snd_pcm_substream *substream,
- 	unsigned int channels = params_channels(params);
- 	u32 word_width = snd_pcm_format_width(params_format(params));
- 	u32 val_cr4 = 0, val_cr5 = 0;
-+	int ret;
-+
-+	if (!sai->is_slave_mode) {
-+		ret = fsl_sai_set_bclk(cpu_dai, tx,
-+			2 * word_width * params_rate(params));
-+		if (ret)
-+			return ret;
-+
-+		/* Do not enable the clock if it is already enabled */
-+		if (!(sai->mclk_streams & BIT(substream->stream))) {
-+			ret = clk_prepare_enable(sai->mclk_clk[sai->mclk_id[tx]]);
-+			if (ret)
-+				return ret;
-+
-+			sai->mclk_streams |= BIT(substream->stream);
-+		}
-+
-+	}
- 
- 	if (!sai->is_dsp_mode)
- 		val_cr4 |= FSL_SAI_CR4_SYWD(word_width);
-@@ -322,6 +415,22 @@ static int fsl_sai_hw_params(struct snd_pcm_substream *substream,
- 	return 0;
- }
- 
-+static int fsl_sai_hw_free(struct snd_pcm_substream *substream,
-+		struct snd_soc_dai *cpu_dai)
-+{
-+	struct fsl_sai *sai = snd_soc_dai_get_drvdata(cpu_dai);
-+	bool tx = substream->stream == SNDRV_PCM_STREAM_PLAYBACK;
-+
-+	if (!sai->is_slave_mode &&
-+			sai->mclk_streams & BIT(substream->stream)) {
-+		clk_disable_unprepare(sai->mclk_clk[sai->mclk_id[tx]]);
-+		sai->mclk_streams &= ~BIT(substream->stream);
-+	}
-+
-+	return 0;
-+}
-+
-+
- static int fsl_sai_trigger(struct snd_pcm_substream *substream, int cmd,
- 		struct snd_soc_dai *cpu_dai)
- {
-@@ -428,6 +537,7 @@ static const struct snd_soc_dai_ops fsl_sai_pcm_dai_ops = {
- 	.set_sysclk	= fsl_sai_set_dai_sysclk,
- 	.set_fmt	= fsl_sai_set_dai_fmt,
- 	.hw_params	= fsl_sai_hw_params,
-+	.hw_free	= fsl_sai_hw_free,
- 	.trigger	= fsl_sai_trigger,
- 	.startup	= fsl_sai_startup,
- 	.shutdown	= fsl_sai_shutdown,
-@@ -600,8 +710,9 @@ static int fsl_sai_probe(struct platform_device *pdev)
- 		sai->bus_clk = NULL;
- 	}
- 
--	for (i = 0; i < FSL_SAI_MCLK_MAX; i++) {
--		sprintf(tmp, "mclk%d", i + 1);
-+	sai->mclk_clk[0] = sai->bus_clk;
-+	for (i = 1; i < FSL_SAI_MCLK_MAX; i++) {
-+		sprintf(tmp, "mclk%d", i);
- 		sai->mclk_clk[i] = devm_clk_get(&pdev->dev, tmp);
- 		if (IS_ERR(sai->mclk_clk[i])) {
- 			dev_err(&pdev->dev, "failed to get mclk%d clock: %ld\n",
-diff --git a/sound/soc/fsl/fsl_sai.h b/sound/soc/fsl/fsl_sai.h
-index 3466720..0662809 100644
---- a/sound/soc/fsl/fsl_sai.h
-+++ b/sound/soc/fsl/fsl_sai.h
-@@ -72,13 +72,15 @@
- 
- /* SAI Transmit and Recieve Configuration 2 Register */
- #define FSL_SAI_CR2_SYNC	BIT(30)
--#define FSL_SAI_CR2_MSEL_MASK	(0xff << 26)
-+#define FSL_SAI_CR2_MSEL_MASK	(0x3 << 26)
- #define FSL_SAI_CR2_MSEL_BUS	0
- #define FSL_SAI_CR2_MSEL_MCLK1	BIT(26)
- #define FSL_SAI_CR2_MSEL_MCLK2	BIT(27)
- #define FSL_SAI_CR2_MSEL_MCLK3	(BIT(26) | BIT(27))
-+#define FSL_SAI_CR2_MSEL(ID)	((ID) << 26)
- #define FSL_SAI_CR2_BCP		BIT(25)
- #define FSL_SAI_CR2_BCD_MSTR	BIT(24)
-+#define FSL_SAI_CR2_DIV_MASK	0xff
- 
- /* SAI Transmit and Recieve Configuration 3 Register */
- #define FSL_SAI_CR3_TRCE	BIT(16)
-@@ -120,7 +122,7 @@
- #define FSL_SAI_CLK_MAST2	2
- #define FSL_SAI_CLK_MAST3	3
- 
--#define FSL_SAI_MCLK_MAX	3
-+#define FSL_SAI_MCLK_MAX	4
- 
- /* SAI data transfer numbers per DMA request */
- #define FSL_SAI_MAXBURST_TX 6
-@@ -132,11 +134,14 @@ struct fsl_sai {
- 	struct clk *bus_clk;
- 	struct clk *mclk_clk[FSL_SAI_MCLK_MAX];
- 
-+	bool is_slave_mode;
- 	bool is_lsb_first;
- 	bool is_dsp_mode;
- 	bool sai_on_imx;
- 	bool synchronous[2];
- 
-+	unsigned int mclk_id[2];
-+	unsigned int mclk_streams;
- 	struct snd_dmaengine_dai_dma_data dma_params_rx;
- 	struct snd_dmaengine_dai_dma_data dma_params_tx;
- };
--- 
-1.9.1
+There are a number of problems with this approach.  The first is it
+presumes the program will know what portions are needed a head of time.
+In many cases this is simply not true.  The second problem is the number
+of syscalls required.  With my patches, a single mmap() or mlockall()
+call is needed to setup the required locking.  Without it, a separate
+mmap call must be made for each piece of data that is needed.  This also
+opens up problems for data that is arranged assuming it is contiguous in
+memory.  With the single mmap call, the user gets a contiguous VMA
+without having to know about it.  mmap() with MAP_FIXED could address
+the problem, but this introduces a new failure mode of your map
+colliding with another that was placed by the kernel.
+
+Another use case for the LOCKONFAULT flag is the security use of
+mlock().  If an application will be using data that cannot be written
+to swap, but the exact size is unknown until run time (all we have a
+build time is the maximum size the buffer can be).  The LOCKONFAULT flag
+allows the developer to create the buffer and guarantee that the
+contents are never written to swap without ever consuming more memory
+than is actually needed.
+
+>=20
+> > I am working on getting startup times with and without this change for
+> > an application, I will post them as soon as I have them.
+>=20
+
+--6TrnltStXW4iwmi0
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJVUL5iAAoJELbVsDOpoOa9+rIP/AtdiaAVRSAXFkS8FoN053Gp
+X9V3dAR/tJhrcsK0YFQcYBdG/e2doGqbJq6ni9iHdiABQ/dWmC6LZIRugSGltzGw
+WN3WSPpzLAHLS6TbH5KPydvrbne32pCI02McxTCSJ+IKARHZvUz3JWaq0z1/Tuqa
+U6pKp0qOo+1CD/YYgew2vyVWTZozPG379QhIkolLAtd4/FnL1DL8tW9gwgP6/pSF
+lfKNZNc2RFTRBnONckDDctDVbV8MZJCzPbPk4lBvhqc8VS11GWPylocZFB76C/w4
+Jcj5+JRUXgqGuIb+hwnQcnv/jAn2yjXW//6vB8qG0r1oXfCF7QwAVQegbjV7VAyT
+iQj3785JaeFIWUy8WLIk+BqP8tTzB/hphDTiV4dqTeHDSZGYw1ioFbzXcqkrapdm
+Ycqq4oTBxl7OkqDW5UQvvAWv4q9YP/E1KJK7O/HccybRcofVNGyO4hH+lgeFazMw
+5Id9Ptd/+qLxHP7jX0G53facKx5M8xtUT1DfsHi/nmCLD/uFdFOueaHKzQiVVGcp
+C8SgvCWcBQrHtgcn/JOyKH211sKOszOHFxg3TkglDl6s3th5zd+SAjYGRjKYizPe
+FoZ1FWhjyvsuybV8KFs5LRZ6et3kD06bCZrGS8JMrNo6R4BA4z7o88EVUxkSXx+z
+s7IIi8UpQrCbKJra0ucm
+=R9vZ
+-----END PGP SIGNATURE-----
+
+--6TrnltStXW4iwmi0--
