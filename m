@@ -1,28 +1,30 @@
-Return-Path: <emunson@akamai.com>
-Received: from prod-mail-xrelay02.akamai.com (prod-mail-xrelay02.akamai.com
- [72.246.2.14])
- by lists.ozlabs.org (Postfix) with ESMTP id 83E351A0010
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2015 00:36:20 +1000 (AEST)
-Date: Mon, 11 May 2015 10:36:18 -0400
-From: Eric B Munson <emunson@akamai.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 0/3] Allow user to request memory to be locked on page
- fault
-Message-ID: <20150511143618.GA30570@akamai.com>
-References: <1431113626-19153-1-git-send-email-emunson@akamai.com>
- <20150508124203.6679b1d35ad9555425003929@linux-foundation.org>
- <20150508200610.GB29933@akamai.com>
- <20150508131523.f970d13a213bca63bd6f2619@linux-foundation.org>
+Return-Path: <sudeep.holla@arm.com>
+Received: from foss.arm.com (foss.arm.com [217.140.101.70])
+ by lists.ozlabs.org (Postfix) with ESMTP id 9409C1A0010
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2015 01:13:43 +1000 (AEST)
+Message-ID: <5550C721.2050906@arm.com>
+Date: Mon, 11 May 2015 16:13:37 +0100
+From: Sudeep Holla <sudeep.holla@arm.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="6TrnltStXW4iwmi0"
-In-Reply-To: <20150508131523.f970d13a213bca63bd6f2619@linux-foundation.org>
-Cc: linux-arch@vger.kernel.org, linux-mips@linux-mips.org,
- linux-parisc@vger.kernel.org, linux-xtensa@linux-xtensa.org,
- linux-api@vger.kernel.org, linux-kernel@vger.kernel.org,
- Shuah Khan <shuahkh@osg.samsung.com>, linux-mm@kvack.org,
- linux-alpha@vger.kernel.org, sparclinux@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>,
+ Preeti U Murthy <preeti@linux.vnet.ibm.com>,
+ "peterz@infradead.org" <peterz@infradead.org>
+Subject: Re: [PATCH 0/3] cpuidle: updates related to tick_broadcast_enter()
+ failures
+References: <20150508073418.28491.4150.stgit@preeti.in.ibm.com>
+ <10239011.l6QLHlKIVm@vostro.rjw.lan> <3161640.llJtBoKCBr@vostro.rjw.lan>
+ <8965830.CMQzZzsqm0@vostro.rjw.lan>
+In-Reply-To: <8965830.CMQzZzsqm0@vostro.rjw.lan>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Cc: "rlippert@google.com" <rlippert@google.com>,
+ "daniel.lezcano@linaro.org" <daniel.lezcano@linaro.org>,
+ "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+ "linus.walleij@linaro.org" <linus.walleij@linaro.org>,
+ "rafael.j.wysocki@intel.com" <rafael.j.wysocki@intel.com>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "mingo@redhat.com" <mingo@redhat.com>, Sudeep Holla <sudeep.holla@arm.com>,
+ "tglx@linutronix.de" <tglx@linutronix.de>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,98 +35,54 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---6TrnltStXW4iwmi0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-On Fri, 08 May 2015, Andrew Morton wrote:
+On 10/05/15 00:15, Rafael J. Wysocki wrote:
+> On Saturday, May 09, 2015 10:33:05 PM Rafael J. Wysocki wrote:
+>> On Saturday, May 09, 2015 10:11:41 PM Rafael J. Wysocki wrote:
+>>> On Saturday, May 09, 2015 11:19:16 AM Preeti U Murthy wrote:
+>>>> Hi Rafael,
+>>>>
+>>>> On 05/08/2015 07:48 PM, Rafael J. Wysocki wrote:
+>>>
+>>> [cut]
+>>>
+>>>>>>
+>>>>>> +	/* Take note of the planned idle state. */
+>>>>>> +	idle_set_state(smp_processor_id(), target_state);
+>>>>>
+>>>>> And I wouldn't do this either.
+>>>>>
+>>>>> The behavior here is pretty much as though the driver demoted the state chosen
+>>>>> by the governor and we don't call idle_set_state() again in those cases.
+>>>>
+>>>> Why is this wrong?
+>>>
+>>> It is not "wrong", but incomplete, because demotions done by the cpuidle driver
+>>> should also be taken into account in the same way.
+>>>
+>>> But I'm seeing that the recent patch of mine that made cpuidle_enter_state()
+>>> call default_idle_call() was a mistake, because it might confuse find_idlest_cpu()
+>>> significantly as to what state the CPU is in.  I'll drop that one for now.
+>>
+>> OK, done.
+>>
+>> So after I've dropped it I think we need to do three things:
+>> (1) Move the idle_set_state() calls to cpuidle_enter_state().
+>> (2) Make cpuidle_enter_state() call default_idle_call() again, but this time
+>>      do that *before* it has called idle_set_state() for target_state.
+>> (3) Introduce demotion as per my last patch.
+>>
+>> Let me cut patches for that.
+>
+> Done as per the above and the patches follow in replies to this messge.
+>
+> All on top of the current linux-next branch of the linux-pm.git tree.
+>
 
-> On Fri, 8 May 2015 16:06:10 -0400 Eric B Munson <emunson@akamai.com> wrot=
-e:
->=20
-> > On Fri, 08 May 2015, Andrew Morton wrote:
-> >=20
-> > > On Fri,  8 May 2015 15:33:43 -0400 Eric B Munson <emunson@akamai.com>=
- wrote:
-> > >=20
-> > > > mlock() allows a user to control page out of program memory, but th=
-is
-> > > > comes at the cost of faulting in the entire mapping when it is
-> > > > allocated.  For large mappings where the entire area is not necessa=
-ry
-> > > > this is not ideal.
-> > > >=20
-> > > > This series introduces new flags for mmap() and mlockall() that all=
-ow a
-> > > > user to specify that the covered are should not be paged out, but o=
-nly
-> > > > after the memory has been used the first time.
-> > >=20
-> > > Please tell us much much more about the value of these changes: the u=
-se
-> > > cases, the behavioural improvements and performance results which the
-> > > patchset brings to those use cases, etc.
-> > >=20
-> >=20
-> > The primary use case is for mmaping large files read only.  The process
-> > knows that some of the data is necessary, but it is unlikely that the
-> > entire file will be needed.  The developer only wants to pay the cost to
-> > read the data in once.  Unfortunately developer must choose between
-> > allowing the kernel to page in the memory as needed and guaranteeing
-> > that the data will only be read from disk once.  The first option runs
-> > the risk of having the memory reclaimed if the system is under memory
-> > pressure, the second forces the memory usage and startup delay when
-> > faulting in the entire file.
->=20
-> Why can't the application mmap only those parts of the file which it
-> wants and mlock those?
+Tested on ARM Vexpress platforms with one of the CPU in broadcast mode
+and also with broadcast timer. So, you can add:
 
-There are a number of problems with this approach.  The first is it
-presumes the program will know what portions are needed a head of time.
-In many cases this is simply not true.  The second problem is the number
-of syscalls required.  With my patches, a single mmap() or mlockall()
-call is needed to setup the required locking.  Without it, a separate
-mmap call must be made for each piece of data that is needed.  This also
-opens up problems for data that is arranged assuming it is contiguous in
-memory.  With the single mmap call, the user gets a contiguous VMA
-without having to know about it.  mmap() with MAP_FIXED could address
-the problem, but this introduces a new failure mode of your map
-colliding with another that was placed by the kernel.
+Tested-by: Sudeep Holla <sudeep.holla@arm.com>
 
-Another use case for the LOCKONFAULT flag is the security use of
-mlock().  If an application will be using data that cannot be written
-to swap, but the exact size is unknown until run time (all we have a
-build time is the maximum size the buffer can be).  The LOCKONFAULT flag
-allows the developer to create the buffer and guarantee that the
-contents are never written to swap without ever consuming more memory
-than is actually needed.
-
->=20
-> > I am working on getting startup times with and without this change for
-> > an application, I will post them as soon as I have them.
->=20
-
---6TrnltStXW4iwmi0
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJVUL5iAAoJELbVsDOpoOa9+rIP/AtdiaAVRSAXFkS8FoN053Gp
-X9V3dAR/tJhrcsK0YFQcYBdG/e2doGqbJq6ni9iHdiABQ/dWmC6LZIRugSGltzGw
-WN3WSPpzLAHLS6TbH5KPydvrbne32pCI02McxTCSJ+IKARHZvUz3JWaq0z1/Tuqa
-U6pKp0qOo+1CD/YYgew2vyVWTZozPG379QhIkolLAtd4/FnL1DL8tW9gwgP6/pSF
-lfKNZNc2RFTRBnONckDDctDVbV8MZJCzPbPk4lBvhqc8VS11GWPylocZFB76C/w4
-Jcj5+JRUXgqGuIb+hwnQcnv/jAn2yjXW//6vB8qG0r1oXfCF7QwAVQegbjV7VAyT
-iQj3785JaeFIWUy8WLIk+BqP8tTzB/hphDTiV4dqTeHDSZGYw1ioFbzXcqkrapdm
-Ycqq4oTBxl7OkqDW5UQvvAWv4q9YP/E1KJK7O/HccybRcofVNGyO4hH+lgeFazMw
-5Id9Ptd/+qLxHP7jX0G53facKx5M8xtUT1DfsHi/nmCLD/uFdFOueaHKzQiVVGcp
-C8SgvCWcBQrHtgcn/JOyKH211sKOszOHFxg3TkglDl6s3th5zd+SAjYGRjKYizPe
-FoZ1FWhjyvsuybV8KFs5LRZ6et3kD06bCZrGS8JMrNo6R4BA4z7o88EVUxkSXx+z
-s7IIi8UpQrCbKJra0ucm
-=R9vZ
------END PGP SIGNATURE-----
-
---6TrnltStXW4iwmi0--
+Regards,
+Sudeep
