@@ -1,30 +1,26 @@
-Return-Path: <daniel.lezcano@linaro.org>
-Received: from mail-wg0-f43.google.com (mail-wg0-f43.google.com [74.125.82.43])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BE64B1A0CA4
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2015 03:40:49 +1000 (AEST)
-Received: by wgiu9 with SMTP id u9so135882486wgi.3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2015 10:40:45 -0700 (PDT)
-Message-ID: <5550E999.8080005@linaro.org>
-Date: Mon, 11 May 2015 19:40:41 +0200
-From: Daniel Lezcano <daniel.lezcano@linaro.org>
+Return-Path: <emunson@akamai.com>
+Received: from prod-mail-xrelay07.akamai.com (prod-mail-xrelay07.akamai.com
+ [72.246.2.115])
+ by lists.ozlabs.org (Postfix) with ESMTP id 351F81A1036
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2015 04:06:32 +1000 (AEST)
+Date: Mon, 11 May 2015 14:06:31 -0400
+From: Eric B Munson <emunson@akamai.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH 0/3] Allow user to request memory to be locked on page
+ fault
+Message-ID: <20150511180631.GA1227@akamai.com>
+References: <1431113626-19153-1-git-send-email-emunson@akamai.com>
+ <20150508124203.6679b1d35ad9555425003929@linux-foundation.org>
 MIME-Version: 1.0
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>,
- Preeti U Murthy <preeti@linux.vnet.ibm.com>, peterz@infradead.org
-Subject: Re: [PATCH 0/3] cpuidle: updates related to tick_broadcast_enter()
- failures
-References: <20150508073418.28491.4150.stgit@preeti.in.ibm.com>
- <10239011.l6QLHlKIVm@vostro.rjw.lan> <3161640.llJtBoKCBr@vostro.rjw.lan>
- <8965830.CMQzZzsqm0@vostro.rjw.lan>
-In-Reply-To: <8965830.CMQzZzsqm0@vostro.rjw.lan>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Cc: rlippert@google.com, Ulf Hansson <ulf.hansson@linaro.org>,
- Kevin Hilman <khilman@linaro.org>, linux-pm@vger.kernel.org,
- linus.walleij@linaro.org, rafael.j.wysocki@intel.com,
- linux-kernel@vger.kernel.org, mingo@redhat.com, sudeep.holla@arm.com,
- tglx@linutronix.de, linuxppc-dev@lists.ozlabs.org,
- Lina Iyer <lina.iyer@linaro.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="+QahgC5+KEYLbs62"
+In-Reply-To: <20150508124203.6679b1d35ad9555425003929@linux-foundation.org>
+Cc: linux-arch@vger.kernel.org, linux-mips@linux-mips.org,
+ linux-parisc@vger.kernel.org, linux-xtensa@linux-xtensa.org,
+ linux-api@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Shuah Khan <shuahkh@osg.samsung.com>, linux-mm@kvack.org,
+ linux-alpha@vger.kernel.org, sparclinux@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,72 +30,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/10/2015 01:15 AM, Rafael J. Wysocki wrote:
-> On Saturday, May 09, 2015 10:33:05 PM Rafael J. Wysocki wrote:
->> On Saturday, May 09, 2015 10:11:41 PM Rafael J. Wysocki wrote:
->>> On Saturday, May 09, 2015 11:19:16 AM Preeti U Murthy wrote:
->>>> Hi Rafael,
->>>>
->>>> On 05/08/2015 07:48 PM, Rafael J. Wysocki wrote:
->>>
->>> [cut]
->>>
->>>>>>
->>>>>> +	/* Take note of the planned idle state. */
->>>>>> +	idle_set_state(smp_processor_id(), target_state);
->>>>>
->>>>> And I wouldn't do this either.
->>>>>
->>>>> The behavior here is pretty much as though the driver demoted the state chosen
->>>>> by the governor and we don't call idle_set_state() again in those cases.
->>>>
->>>> Why is this wrong?
->>>
->>> It is not "wrong", but incomplete, because demotions done by the cpuidle driver
->>> should also be taken into account in the same way.
->>>
->>> But I'm seeing that the recent patch of mine that made cpuidle_enter_state()
->>> call default_idle_call() was a mistake, because it might confuse find_idlest_cpu()
->>> significantly as to what state the CPU is in.  I'll drop that one for now.
->>
->> OK, done.
->>
->> So after I've dropped it I think we need to do three things:
->> (1) Move the idle_set_state() calls to cpuidle_enter_state().
->> (2) Make cpuidle_enter_state() call default_idle_call() again, but this time
->>      do that *before* it has called idle_set_state() for target_state.
->> (3) Introduce demotion as per my last patch.
->>
->> Let me cut patches for that.
->
-> Done as per the above and the patches follow in replies to this messge.
->
-> All on top of the current linux-next branch of the linux-pm.git tree.
 
-IMO the resulting code is more and more confusing.
+--+QahgC5+KEYLbs62
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Except I miss something, the tick_broadcast_enter can fail only if the 
-local timer of the current cpu is used as a broadcast timer (which is 
-the case today for PPC only).
+On Fri, 08 May 2015, Andrew Morton wrote:
 
-The correct fix would be to tie this local timer with the cpu power 
-domain and disable the idle state powering down this domain like it was 
-done for the renesas cpuidle driver.
+> On Fri,  8 May 2015 15:33:43 -0400 Eric B Munson <emunson@akamai.com> wro=
+te:
+>=20
+> > mlock() allows a user to control page out of program memory, but this
+> > comes at the cost of faulting in the entire mapping when it is
+> > allocated.  For large mappings where the entire area is not necessary
+> > this is not ideal.
+> >=20
+> > This series introduces new flags for mmap() and mlockall() that allow a
+> > user to specify that the covered are should not be paged out, but only
+> > after the memory has been used the first time.
+>=20
+> Please tell us much much more about the value of these changes: the use
+> cases, the behavioural improvements and performance results which the
+> patchset brings to those use cases, etc.
+>=20
 
-IOW, the cpu power domain is in use (because of its local timer), so we 
-shouldn't shut it down.
+To illustrate the proposed use case I wrote a quick program that mmaps
+a 5GB file which is filled with random data and accesses 150,000 pages
+=66rom that mapping.  Setup and processing were timed separately to
+illustrate the differences between the three tested approaches.  the
+setup portion is simply the call to mmap, the processing is the
+accessing of the various locations in  that mapping.  The following
+values are in milliseconds and are the averages of 20 runs each with a
+call to echo 3 > /proc/sys/vm/drop_caches between each run.
 
-No ?
+The first mapping was made with MAP_PRIVATE | MAP_LOCKED as a baseline:
+Startup average:    9476.506
+Processing average: 3.573
 
-I am aware this is not easily fixable because the genpd framework is 
-incomplete and has some restrictions but I believe it is worth to have a 
-discussion. Add Kevin and Ulf in Cc.
+The second mapping was simply MAP_PRIVATE but each page was passed to
+mlock() before being read:
+Startup average:    0.051
+Processing average: 721.859
 
-   -- Daniel
+The final mapping was MAP_PRIVATE | MAP_LOCKONFAULT:
+Startup average:    0.084
+Processing average: 42.125
 
--- 
-  <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
 
-Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
-<http://twitter.com/#!/linaroorg> Twitter |
-<http://www.linaro.org/linaro-blog/> Blog
+
+--+QahgC5+KEYLbs62
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJVUO+mAAoJELbVsDOpoOa9NTQP/2wouTuGwUNtVMFtzfwXaw9K
+VqgrTohALyWDKXY4YiEVXyru5Mi7BJvzwBzjXo2eNFNBHj5DwILwKk/9ONw1l7kC
+KCAMPqxGumpbM0dYJwaDYmYCsSmfTuFfv4G/Y/p7q43+mtfr6fCKAu+iIKvZpjve
+T374ZgnngXdn43b4lC7Abk4SakIEz7bj2gzX7B6WTRJ5/WZUDe/WkA4k+9bO58yQ
+M2GKbVNdCbFS2yL8awktB+NCUw5wmUreswog6c9E1h7HHTI0u0TzXa3E+NYZ4DGu
+rmsFzaojbtuNHvvuDIDLeBw1Dc6BlwdWTk+OgAUnseXrbTB+L7KKZS4on56W+zIi
+AIDTZ1oEvYsUZg06tPmKhLAgLA+FvpcsNYYjRwGlHEwjcwLL2LjF1gAMGZk1n8UP
+uTuhOR/Q0WtRRQks706KG47OkVs0glntwFRwpZ0/a5iACKMhQhIL6LJjDmR5jSFI
+cA70pVY49xmBKQ/vY2gMrKwGuHA00kvLaVVwUqga9AUgD0zisklvSPfzs3ihxkLL
+b61PtZJJ4rggU6HgH/aNVaKIsGiy8SnGZPgnkinlB0QQFrbrfmgk7/imIHT09pDQ
+K0o/U3KOitLxnvS1mSk6l4rCxYQ5037KrlGU15pqp5WIOuAiad6dpoUN4iLN/nuk
+RMNxTjQZKYW0XS2oLyRI
+=2v7D
+-----END PGP SIGNATURE-----
+
+--+QahgC5+KEYLbs62--
