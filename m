@@ -1,31 +1,31 @@
 Return-Path: <aik@ozlabs.ru>
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 38F641A021F
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6EFFF1A0127
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2015 01:40:51 +1000 (AEST)
 Received: from /spool/local
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aik@ozlabs.ru>;
- Tue, 12 May 2015 01:40:50 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 142653578066
+ Tue, 12 May 2015 01:40:51 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id B5DC72BB0067
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2015 01:40:47 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t4BFedpp43385070
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t4BFedmr21102664
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2015 01:40:47 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t4BFeErI002079
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2015 01:40:14 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t4BFeEGk028969
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2015 01:40:15 +1000
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH kernel v10 29/34] powerpc/powernv/ioda2: Use new helpers to do
- proper cleanup on PE release
-Date: Tue, 12 May 2015 01:39:18 +1000
-Message-Id: <1431358763-24371-30-git-send-email-aik@ozlabs.ru>
+Subject: [PATCH kernel v10 07/34] vfio: powerpc/spapr: Check that IOMMU page
+ is fully contained by system page
+Date: Tue, 12 May 2015 01:38:56 +1000
+Message-Id: <1431358763-24371-8-git-send-email-aik@ozlabs.ru>
 In-Reply-To: <1431358763-24371-1-git-send-email-aik@ozlabs.ru>
 References: <1431358763-24371-1-git-send-email-aik@ozlabs.ru>
 Cc: Wei Yang <weiyang@linux.vnet.ibm.com>, Alexey Kardashevskiy <aik@ozlabs.ru>,
@@ -41,61 +41,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The existing code programmed TVT#0 with some address and then
-immediately released that memory.
+This checks that the TCE table page size is not bigger that the size of
+a page we just pinned and going to put its physical address to the table.
 
-This makes use of pnv_pci_ioda2_unset_window() and
-pnv_pci_ioda2_set_bypass() which do correct resource release and
-TVT update.
+Otherwise the hardware gets unwanted access to physical memory between
+the end of the actual page and the end of the aligned up TCE page.
+
+Since compound_order() and compound_head() work correctly on non-huge
+pages, there is no need for additional check whether the page is huge.
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+[aw: for the vfio related changes]
+Acked-by: Alex Williamson <alex.williamson@redhat.com>
+Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 ---
- arch/powerpc/platforms/powernv/pci-ioda.c | 24 ++++++------------------
- 1 file changed, 6 insertions(+), 18 deletions(-)
+Changes:
+v8: changed subject
 
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index c1d1aef..14d4f34 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -1287,33 +1287,21 @@ m64_failed:
- 	return -EBUSY;
- }
+v6:
+* the helper is simplified to one line
+
+v4:
+* s/tce_check_page_size/tce_page_is_contained/
+---
+ drivers/vfio/vfio_iommu_spapr_tce.c | 16 ++++++++++++++++
+ 1 file changed, 16 insertions(+)
+
+diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
+index b95fa2b..735b308 100644
+--- a/drivers/vfio/vfio_iommu_spapr_tce.c
++++ b/drivers/vfio/vfio_iommu_spapr_tce.c
+@@ -47,6 +47,16 @@ struct tce_container {
+ 	bool enabled;
+ };
  
-+static long pnv_pci_ioda2_unset_window(struct iommu_table_group *table_group,
-+		int num);
-+static void pnv_pci_ioda2_set_bypass(struct pnv_ioda_pe *pe, bool enable);
++static bool tce_page_is_contained(struct page *page, unsigned page_shift)
++{
++	/*
++	 * Check that the TCE table granularity is not bigger than the size of
++	 * a page we just found. Otherwise the hardware can get access to
++	 * a bigger memory chunk that it should.
++	 */
++	return (PAGE_SHIFT + compound_order(compound_head(page))) >= page_shift;
++}
 +
- static void pnv_pci_ioda2_release_dma_pe(struct pci_dev *dev, struct pnv_ioda_pe *pe)
+ static int tce_iommu_enable(struct tce_container *container)
  {
--	struct pci_bus        *bus;
--	struct pci_controller *hose;
--	struct pnv_phb        *phb;
- 	struct iommu_table    *tbl;
--	unsigned long         addr;
- 	int64_t               rc;
+ 	int ret = 0;
+@@ -189,6 +199,12 @@ static long tce_iommu_build(struct tce_container *container,
+ 			ret = -EFAULT;
+ 			break;
+ 		}
++
++		if (!tce_page_is_contained(page, tbl->it_page_shift)) {
++			ret = -EPERM;
++			break;
++		}
++
+ 		hva = (unsigned long) page_address(page) + offset;
  
--	bus = dev->bus;
--	hose = pci_bus_to_host(bus);
--	phb = hose->private_data;
- 	tbl = pe->table_group.tables[0];
--	addr = tbl->it_base;
--
--	opal_pci_map_pe_dma_window(phb->opal_id, pe->pe_number,
--				   pe->pe_number << 1, 1, __pa(addr),
--				   0, 0x1000);
--
--	rc = opal_pci_map_pe_dma_window_real(pe->phb->opal_id,
--				        pe->pe_number,
--				        (pe->pe_number << 1) + 1,
--				        pe->tce_bypass_base,
--				        0);
-+	rc = pnv_pci_ioda2_unset_window(&pe->table_group, 0);
- 	if (rc)
- 		pe_warn(pe, "OPAL error %ld release DMA window\n", rc);
- 
-+	pnv_pci_ioda2_set_bypass(pe, false);
- 	pnv_pci_unlink_table_and_group(tbl, &pe->table_group);
- 	if (pe->table_group.group) {
- 		iommu_group_put(pe->table_group.group);
+ 		ret = iommu_tce_build(tbl, entry + i, hva, direction);
 -- 
 2.4.0.rc3.8.gfb3e7d5
