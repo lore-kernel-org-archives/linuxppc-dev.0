@@ -1,24 +1,40 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bbn0107.outbound.protection.outlook.com [157.56.111.107])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <stewart@linux.vnet.ibm.com>
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1ACDC1A0010
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2015 08:14:51 +1000 (AEST)
-Message-ID: <1431382467.16357.476.camel@freescale.com>
-Subject: Re: [PATCH v3 3/3] kvm/powerpc: Export HCALL reason codes
-From: Scott Wood <scottwood@freescale.com>
-To: Hemant Kumar <hemant@linux.vnet.ibm.com>
-Date: Mon, 11 May 2015 17:14:27 -0500
-In-Reply-To: <1431046385-5772-3-git-send-email-hemant@linux.vnet.ibm.com>
-References: <1431046385-5772-1-git-send-email-hemant@linux.vnet.ibm.com>
- <1431046385-5772-3-git-send-email-hemant@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id E69ED1A0010
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2015 08:31:35 +1000 (AEST)
+Received: from /spool/local
+ by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <stewart@linux.vnet.ibm.com>;
+ Mon, 11 May 2015 16:31:33 -0600
+Received: from b03cxnp08026.gho.boulder.ibm.com
+ (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 1316B19D8041
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2015 16:22:36 -0600 (MDT)
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+ by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t4BMVOZk50069552
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2015 15:31:24 -0700
+Received: from d03av03.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av03.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t4BMVWk9022933
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2015 16:31:32 -0600
+From: Stewart Smith <stewart@linux.vnet.ibm.com>
+To: trigg <mr.triggtrigg@gmail.com>,
+ Vipin K Parashar <vipin@linux.vnet.ibm.com>
+Subject: Re: [PATCH v2 1/2] powerpc/powernv: Add poweroff (EPOW,
+ DPO) events support for PowerNV platform
+In-Reply-To: <CAPfuKj+CpLN7QdRJ+VFTz1_p5QL9fkJ+FOa0tKQ2-YEOoXR+4g@mail.gmail.com>
+References: <1430991020-7556-1-git-send-email-vipin@linux.vnet.ibm.com>
+ <1430991020-7556-2-git-send-email-vipin@linux.vnet.ibm.com>
+ <CAPfuKj+CpLN7QdRJ+VFTz1_p5QL9fkJ+FOa0tKQ2-YEOoXR+4g@mail.gmail.com>
+Date: Tue, 12 May 2015 08:31:29 +1000
+Message-ID: <m3zj5arbjy.fsf@oc8180480414.ibm.com>
 MIME-Version: 1.0
-Cc: maddy@linux.vnet.ibm.com, srikar@linux.vnet.ibm.com, peterz@infradead.org,
- agraf@suse.de, kvm-ppc@vger.kernel.org, linux-kernel@vger.kernel.org,
- mingo@redhat.com, paulus@samba.org, acme@kernel.org,
- warrier@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@lists.ozlabs.org, joel@jms.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,44 +44,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2015-05-08 at 06:23 +0530, Hemant Kumar wrote:
-> For perf to analyze the KVM events like hcalls, we need the
-> hypervisor calls and their codes to be exported through uapi.
-> 
-> This patch moves most of the pSeries hcall codes from
-> arch/powerpc/include/asm/hvcall.h to
-> arch/powerpc/include/uapi/asm/hcall_codes.h.
-> It also moves the mapping <hcall_code-to-hcall_reason> from
-> arch/powerpc/kvm/trace_hv.h to
-> arch/powerpc/include/uapi/asm/trace_hcall.h.
-> 
-> Signed-off-by: Hemant Kumar <hemant@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/include/asm/hvcall.h           | 120 +--------------------------
->  arch/powerpc/include/uapi/asm/hcall_codes.h | 123 ++++++++++++++++++++++++++++
->  arch/powerpc/include/uapi/asm/trace_hcall.h | 122 +++++++++++++++++++++++++++
->  arch/powerpc/kvm/trace_hv.h                 | 117 +-------------------------
+trigg <mr.triggtrigg@gmail.com> writes:
+>> --- a/arch/powerpc/include/asm/opal-api.h
+>> +++ b/arch/powerpc/include/asm/opal-api.h
+>> @@ -730,6 +730,36 @@ struct opal_i2c_request {
+>>         __be64 buffer_ra;               /* Buffer real address */
+>>  };
+>>
+>> +/*
+>> + * EPOW status sharing (OPAL and the host)
+>> + *
+>> + * The host will pass on OPAL, a buffer of length OPAL_EPOW_MAX_CLASSES
+>> + * to fetch system wide EPOW status. Each element in the returned buffer
+>> + * will contain bitwise EPOW status for each EPOW sub class.
+>> + */
+>> +
+>> +/* EPOW types */
+>> +enum OpalEpow {
+>> +       OPAL_EPOW_POWER         = 0,    /* Power EPOW */
+>> +       OPAL_EPOW_TEMP          = 1,    /* Temperature EPOW */
+>> +       OPAL_EPOW_COOLING       = 2,    /* Cooling EPOW */
+>> +       OPAL_MAX_EPOW_CLASSES   = 3,    /* Max EPOW categories */
+>> +};
+> Dont explicitly assign sequential numbers in an enum. Its taken care
+> of by the compiler.
 
-When moving to uapi please add proper namespacing to indicate that this
-is pseries specific.
-
-> diff --git a/arch/powerpc/include/uapi/asm/trace_hcall.h b/arch/powerpc/include/uapi/asm/trace_hcall.h
-> new file mode 100644
-> index 0000000..00eac01
-> --- /dev/null
-> +++ b/arch/powerpc/include/uapi/asm/trace_hcall.h
-> @@ -0,0 +1,122 @@
-> +#ifndef _KVM_TRACE_HCALL_MAP_H
-> +#define _KVM_TRACE_HCALL_MAP_H
-> +
-> +#include "hcall_codes.h"
-> +
-> +#define kvm_trace_symbol_hcall\
-> +	{H_REMOVE,"H_REMOVE"},					\
-> +	{H_ENTER,"H_ENTER"},					\
-> +	{H_READ,"H_READ"},					\
-> +	{H_CLEAR_MOD,"H_CLEAR_MOD"},				\
-
-This is a rather odd way of exposing an array to userspace...
-
--Scott
+This header is shared with firmware, and the exact values of each item
+does matter as it's ABI. The explicit numbers means that people think
+twice before inserting a new value in the middle and subtley breaking
+firmware ABI.
