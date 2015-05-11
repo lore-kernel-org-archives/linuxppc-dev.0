@@ -1,38 +1,21 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9781F1A0010
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2015 13:04:21 +1000 (AEST)
-Received: from /spool/local
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Mon, 11 May 2015 13:04:20 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 85FFF2BB0040
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2015 13:04:17 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t4B349Fk23265312
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2015 13:04:17 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t4B33jUG014166
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2015 13:03:45 +1000
-Date: Mon, 11 May 2015 13:03:19 +1000
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: Wei Yang <weiyang@linux.vnet.ibm.com>
-Subject: Re: [PATCH V3 7/9] powerpc/powernv: Support EEH reset for VFs
-Message-ID: <20150511030319.GA12216@gwshan>
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <1430723258-21299-1-git-send-email-weiyang@linux.vnet.ibm.com>
- <1430723258-21299-8-git-send-email-weiyang@linux.vnet.ibm.com>
+Return-Path: <alistair@popple.id.au>
+Received: from ipmail06.adl6.internode.on.net (ipmail06.adl6.internode.on.net
+ [150.101.137.145])
+ by lists.ozlabs.org (Postfix) with ESMTP id C5AE61A0010
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2015 12:07:56 +1000 (AEST)
+From: Alistair Popple <alistair@popple.id.au>
+To: minyard@acm.org
+Subject: Re: [PATCH v3 2/8] ipmi/powernv: Convert to irq event interface
+Date: Mon, 11 May 2015 12:07:54 +1000
+Message-ID: <1756932.94IyepIzdi@mexican>
+In-Reply-To: <554BA42F.6070001@acm.org>
+References: <1430968578-23527-1-git-send-email-alistair@popple.id.au>
+ <1430968578-23527-2-git-send-email-alistair@popple.id.au>
+ <554BA42F.6070001@acm.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1430723258-21299-8-git-send-email-weiyang@linux.vnet.ibm.com>
-Cc: bhelgaas@google.com, linux-pci@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, gwshan@linux.vnet.ibm.com
+Content-Type: multipart/alternative; boundary="nextPart1605686.lyWlFJj8Fz"
+Cc: openipmi-developer@lists.sourceforge.net, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,211 +25,286 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, May 04, 2015 at 03:07:36PM +0800, Wei Yang wrote:
->Before VF PE introduced, there isn't a method to reset an individual pci
-             ^                                                        ^^^
-             is                                                       PCI
+This is a multi-part message in MIME format.
 
->function. And since FW is not aware of the VF, the VF's reset should be
-                     ^^
-                    skiboot firmware
+--nextPart1605686.lyWlFJj8Fz
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="us-ascii"
 
->done in kernel.
->
->This patch introduce a pnv_eeh_vf_pe_reset() to do the flr or af_flr to a
-            ^^^^^^^^^  ^                                ^^^    ^^^^^^
-            introduces function                         FLR    AF FLR
->VF.
->
->Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
->---
-> arch/powerpc/include/asm/eeh.h               |    1 +
-> arch/powerpc/platforms/powernv/eeh-powernv.c |  111 +++++++++++++++++++++++++-
-> 2 files changed, 111 insertions(+), 1 deletion(-)
->
->diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
->index 2067de4..78c8bec 100644
->--- a/arch/powerpc/include/asm/eeh.h
->+++ b/arch/powerpc/include/asm/eeh.h
->@@ -135,6 +135,7 @@ struct eeh_dev {
-> 	int pcix_cap;			/* Saved PCIx capability	*/
-> 	int pcie_cap;			/* Saved PCIe capability	*/
-> 	int aer_cap;			/* Saved AER capability		*/
->+	int af_cap;			/* Saved AF capability		*/
-> 	struct eeh_pe *pe;		/* Associated PE		*/
-> 	struct list_head list;		/* Form link list in the PE	*/
-> 	struct pci_controller *phb;	/* Associated PHB		*/
->diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
->index 5447481..1ad322f 100644
->--- a/arch/powerpc/platforms/powernv/eeh-powernv.c
->+++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
->@@ -402,6 +402,7 @@ static void *pnv_eeh_probe(struct pci_dn *pdn, void *data)
-> 	edev->pcix_cap = pnv_eeh_find_cap(pdn, PCI_CAP_ID_PCIX);
-> 	edev->pcie_cap = pnv_eeh_find_cap(pdn, PCI_CAP_ID_EXP);
-> 	edev->aer_cap  = pnv_eeh_find_ecap(pdn, PCI_EXT_CAP_ID_ERR);
->+	edev->af_cap   = pnv_eeh_find_cap(pdn, PCI_CAP_ID_AF);
-> 	if ((edev->class_code >> 8) == PCI_CLASS_BRIDGE_PCI) {
-> 		edev->mode |= EEH_DEV_BRIDGE;
-> 		if (edev->pcie_cap) {
->@@ -891,6 +892,105 @@ static int pnv_eeh_bridge_reset(struct pci_dev *dev, int option)
-> 	return 0;
-> }
->
->+static int pnv_pci_wait_for_pending(struct pci_dn *pdn, int pos, u16 mask)
->+{
->+	int i;
->+
->+	/* Wait for Transaction Pending bit clean */
->+	for (i = 0; i < 4; i++) {
->+		u32 status;
->+		if (i)
->+			msleep((1 << (i - 1)) * 100);
->+
->+		eeh_ops->read_config(pdn, pos, 2, &status);
->+		if (!(status & mask))
->+			return 1;
->+	}
->+
->+	return 0;
->+}
->+
->+static int pnv_eeh_do_flr(struct pci_dn *pdn)
->+{
->+	u32 cap;
->+	struct eeh_dev *edev = pdn_to_eeh_dev(pdn);
->+
->+	eeh_ops->read_config(pdn, edev->pcie_cap + PCI_EXP_DEVCAP, 4, &cap);
->+	if (!(cap & PCI_EXP_DEVCAP_FLR))
->+		return -ENOTTY;
->+
->+	if (!pnv_pci_wait_for_pending(pdn, edev->pcie_cap + PCI_EXP_DEVSTA, PCI_EXP_DEVSTA_TRPND))
->+		pr_err("%04x:%02x:%02x:%01x timed out waiting for pending transaction; performing function level reset anyway\n",
->+			edev->phb->global_number, pdn->busno,
->+			PCI_SLOT(pdn->devfn), PCI_FUNC(pdn->devfn));
->+
+Hi,
 
-It's breaking the limitation that each line has 80 columns to maximal degree.
+On Thu, 7 May 2015 12:43:11 Corey Minyard wrote:
+> 
+> The only thing I would suggest is passing the irq level
+> (IRQ_TYPE_LEVEL_HIGH) as
+> part of the openfirmware data instead of hard-coding it.
 
->+	eeh_ops->read_config(pdn, edev->pcie_cap + PCI_EXP_DEVCTL, 4, &cap);
->+	cap |= PCI_EXP_DEVCTL_BCR_FLR;
->+	eeh_ops->write_config(pdn, edev->pcie_cap + PCI_EXP_DEVCTL, 4, cap);
->+	msleep(100);
->+	return 0;
->+}
->+
->+static int pnv_eeh_do_af_flr(struct pci_dn *pdn)
->+{
->+	u32 cap;
->+	struct eeh_dev *edev = pdn_to_eeh_dev(pdn);
->+
->+	if (!edev->af_cap)
->+		return -ENOTTY;
->+
->+	eeh_ops->read_config(pdn, edev->af_cap + PCI_AF_CAP, 1, &cap);
->+	if (!(cap & PCI_AF_CAP_TP) || !(cap & PCI_AF_CAP_FLR))
->+		return -ENOTTY;
+I intend to do that in future once our firmware is updated to pass this information (via 
+the device-tree). However systems with older firmware won't pass this information, 
+hence we hard code it for the existing events.
 
-Why not cache af_cap is it really support reset during probe time? With
-that, you don't have the check.
+- Alistair
 
->+
->+	/*
->+	 * Wait for Transaction Pending bit to clear.  A word-aligned test
->+	 * is used, so we use the conrol offset rather than status and shift
->+	 * the test bit to match.
->+	 */
->+	if (!pnv_pci_wait_for_pending(pdn, edev->af_cap + PCI_AF_CTRL,
->+				 PCI_AF_STATUS_TP << 8))
->+		pr_err("%04x:%02x:%02x:%01x timed out waiting for pending transaction; performing AF function level reset anyway\n",
->+			edev->phb->global_number, pdn->busno,
->+			PCI_SLOT(pdn->devfn), PCI_FUNC(pdn->devfn));
->+
+> 
+> Acked-by: Corey Minyard <cminyard@mvista.com>
+> 
+> >  drivers/char/ipmi/ipmi_powernv.c | 39
+> >  ++++++++++++++++++++++----------------- 1 file changed, 22
+> >  insertions(+), 17 deletions(-)
+> > 
+> > diff --git a/drivers/char/ipmi/ipmi_powernv.c
+> > b/drivers/char/ipmi/ipmi_powernv.c index 8753b0f..9b409c0 100644
+> > --- a/drivers/char/ipmi/ipmi_powernv.c
+> > +++ b/drivers/char/ipmi/ipmi_powernv.c
+> > @@ -15,6 +15,8 @@
+> > 
+> >  #include <linux/list.h>
+> >  #include <linux/module.h>
+> >  #include <linux/of.h>
+> > 
+> > +#include <linux/of_irq.h>
+> > +#include <linux/interrupt.h>
+> > 
+> >  #include <asm/opal.h>
+> > 
+> > @@ -23,8 +25,7 @@ struct ipmi_smi_powernv {
+> > 
+> >  	u64			interface_id;
+> >  	struct ipmi_device_id	ipmi_id;
+> >  	ipmi_smi_t		intf;
+> > 
+> > -	u64			event;
+> > -	struct notifier_block	event_nb;
+> > +	unsigned int		irq;
+> > 
+> >  	/**
+> >  	
+> >  	 * We assume that there can only be one outstanding request, so
+> > 
+> > @@ -197,15 +198,12 @@ static struct ipmi_smi_handlers
+> > ipmi_powernv_smi_handlers = {> 
+> >  	.poll			= ipmi_powernv_poll,
+> >  
+> >  };
+> > 
+> > -static int ipmi_opal_event(struct notifier_block *nb,
+> > -			  unsigned long events, void *change)
+> > +static irqreturn_t ipmi_opal_event(int irq, void *data)
+> > 
+> >  {
+> > 
+> > -	struct ipmi_smi_powernv *smi = container_of(nb,
+> > -					struct 
+ipmi_smi_powernv, event_nb);
+> > +	struct ipmi_smi_powernv *smi = data;
+> > 
+> > -	if (events & smi->event)
+> > -		ipmi_powernv_recv(smi);
+> > -	return 0;
+> > +	ipmi_powernv_recv(smi);
+> > +	return IRQ_HANDLED;
+> > 
+> >  }
+> >  
+> >  static int ipmi_powernv_probe(struct platform_device *pdev)
+> > 
+> > @@ -240,13 +238,16 @@ static int ipmi_powernv_probe(struct platform_device
+> > *pdev)> 
+> >  		goto err_free;
+> >  	
+> >  	}
+> > 
+> > -	ipmi->event = 1ull << prop;
+> > -	ipmi->event_nb.notifier_call = ipmi_opal_event;
+> > +	ipmi->irq = irq_of_parse_and_map(dev->of_node, 0);
+> > +	if (!ipmi->irq) {
+> > +		dev_info(dev, "Unable to map irq from device tree\n");
+> > +		ipmi->irq = opal_event_request(prop);
+> > +	}
+> > 
+> > -	rc = opal_notifier_register(&ipmi->event_nb);
+> > -	if (rc) {
+> > -		dev_warn(dev, "OPAL notifier registration failed 
+(%d)\n", rc);
+> > -		goto err_free;
+> > +	if (request_irq(ipmi->irq, ipmi_opal_event, IRQ_TYPE_LEVEL_HIGH,
+> > +				"opal-ipmi", ipmi)) {
+> > +		dev_warn(dev, "Unable to request irq\n");
+> > +		goto err_dispose;
+> > 
+> >  	}
+> >  	
+> >  	ipmi->opal_msg = devm_kmalloc(dev,
+> > 
+> > @@ -271,7 +272,9 @@ static int ipmi_powernv_probe(struct platform_device
+> > *pdev)> 
+> >  err_free_msg:
+> >  	devm_kfree(dev, ipmi->opal_msg);
+> >  
+> >  err_unregister:
+> > -	opal_notifier_unregister(&ipmi->event_nb);
+> > +	free_irq(ipmi->irq, ipmi);
+> > +err_dispose:
+> > +	irq_dispose_mapping(ipmi->irq);
+> > 
+> >  err_free:
+> >  	devm_kfree(dev, ipmi);
+> >  	return rc;
+> > 
+> > @@ -282,7 +285,9 @@ static int ipmi_powernv_remove(struct platform_device
+> > *pdev)> 
+> >  	struct ipmi_smi_powernv *smi = dev_get_drvdata(&pdev->dev);
+> >  	
+> >  	ipmi_unregister_smi(smi->intf);
+> > 
+> > -	opal_notifier_unregister(&smi->event_nb);
+> > +	free_irq(smi->irq, smi);
+> > +	irq_dispose_mapping(smi->irq);
+> > +
+> > 
+> >  	return 0;
+> >  
+> >  }
+--nextPart1605686.lyWlFJj8Fz
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/html; charset="us-ascii"
 
-It's breaking the limitation that each line has 80 columns.
-
->+	eeh_ops->write_config(pdn, edev->af_cap + PCI_AF_CTRL, 1, PCI_AF_CTRL_FLR);
->+	msleep(100);
->+	return 0;
->+}
->+
-
-Can you merge the above two functions to one (pnv_eeh_do_vf_reset())? 
-
->+static int pnv_eeh_reset_vf(struct pci_dn *pdn)
->+{
->+	int rc;
->+
->+	might_sleep();
->+
->+	rc = pnv_eeh_do_flr(pdn);
->+	if (rc != -ENOTTY)
->+		goto done;
->+
->+	rc = pnv_eeh_do_af_flr(pdn);
->+	if (rc != -ENOTTY)
->+		goto done;
->+
->+done:
->+	return rc;
->+}
->+
->+static int pnv_eeh_vf_pe_reset(struct eeh_pe *pe, int option)
->+{
->+	struct eeh_dev *edev, *tmp;
->+	struct pci_dn *pdn;
->+	int ret = 0;
->+
-
-Why you ignore "option" here? In that case, the PE will be resetted
-for twice at asserting/deasserting time.
-
->+	eeh_pe_for_each_dev(pe, edev, tmp) {
->+		pdn = eeh_dev_to_pdn(edev);
->+		ret |= pnv_eeh_reset_vf(pdn);
-
-When hitting error from reset on one VF, you don't need proceed, no?
-
->+	}
->+
->+	return ret;
->+}
->+
-> void pnv_pci_reset_secondary_bus(struct pci_dev *dev)
-> {
-> 	struct pci_controller *hose;
->@@ -966,7 +1066,9 @@ static int pnv_eeh_reset(struct eeh_pe *pe, int option)
-> 		}
->
-> 		bus = eeh_pe_bus_get(pe);
->-		if (pci_is_root_bus(bus) ||
->+		if (pe->type & EEH_PE_VF)
->+			ret = pnv_eeh_vf_pe_reset(pe, option);
->+		else if (pci_is_root_bus(bus) ||
-> 			pci_is_root_bus(bus->parent))
-> 			ret = pnv_eeh_root_reset(hose, option);
-> 		else
->@@ -1106,6 +1208,13 @@ static inline bool pnv_eeh_cfg_blocked(struct pci_dn *pdn)
-> 	if (!edev || !edev->pe)
-> 		return false;
->
->+	/*
->+	 * For VF's reset operation, we need to rely on the kernel to
->+	 * do those pci read/write, since FW isn't aware of VFs.
-              ^^^^^^^^^^^^^^^^^^^^
-
-              PCI config operations since firmware isn't aware of VFs.
-
->+	 */
->+	if ((edev->mode & EEH_DEV_VF) && (edev->pe->state & EEH_PE_RESET))
->+		return true;
->+
-
-Hrm, did you test the code? The PCI config is blocked when issuing reset
-to VF PE. "false" should be returned here, isn't it?
-
-> 	if (edev->pe->state & EEH_PE_CFG_BLOCKED)
-> 		return true;
->
-
-Thanks,
-Gavin
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN" "http://www.w3.org/TR/REC-html40/strict.dtd">
+<html><head><meta name="qrichtext" content="1" /><style type="text/css">
+p, li { white-space: pre-wrap; }
+</style></head><body style=" font-family:'Monospace'; font-size:9pt; font-weight:400; font-style:normal;">
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">Hi,</p>
+<p style="-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; ">&nbsp;</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">On Thu, 7 May 2015 12:43:11 Corey Minyard wrote:</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; </p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; The only thing I would suggest is passing the irq level</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; (IRQ_TYPE_LEVEL_HIGH) as</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; part of the openfirmware data instead of hard-coding it.</p>
+<p style="-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; ">&nbsp;</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">I intend to do that in future once our firmware is updated to pass this information (via the device-tree). However systems with older firmware won't pass this information, hence we hard code it for the existing events.</p>
+<p style="-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; ">&nbsp;</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">- Alistair</p>
+<p style="-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; ">&nbsp;</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; </p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; Acked-by: Corey Minyard &lt;cminyard@mvista.com&gt;</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; </p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt;  drivers/char/ipmi/ipmi_powernv.c | 39</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt;  ++++++++++++++++++++++----------------- 1 file changed, 22</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt;  insertions(+), 17 deletions(-)</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt; </p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt; diff --git a/drivers/char/ipmi/ipmi_powernv.c</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt; b/drivers/char/ipmi/ipmi_powernv.c index 8753b0f..9b409c0 100644</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt; --- a/drivers/char/ipmi/ipmi_powernv.c</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt; +++ b/drivers/char/ipmi/ipmi_powernv.c</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt; @@ -15,6 +15,8 @@</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt; </p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt;  #include &lt;linux/list.h&gt;</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt;  #include &lt;linux/module.h&gt;</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt;  #include &lt;linux/of.h&gt;</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt; </p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt; +#include &lt;linux/of_irq.h&gt;</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt; +#include &lt;linux/interrupt.h&gt;</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt; </p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt;  #include &lt;asm/opal.h&gt;</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt; </p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt; @@ -23,8 +25,7 @@ struct ipmi_smi_powernv {</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt; </p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt;  	u64			interface_id;</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt;  	struct ipmi_device_id	ipmi_id;</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt;  	ipmi_smi_t		intf;</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt; </p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt; -	u64			event;</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt; -	struct notifier_block	event_nb;</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt; +	unsigned int		irq;</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt; </p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt;  	/**</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt;  	</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt;  	 * We assume that there can only be one outstanding request, so</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt; </p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt; @@ -197,15 +198,12 @@ static struct ipmi_smi_handlers</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt; ipmi_powernv_smi_handlers = {&gt; </p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt;  	.poll			= ipmi_powernv_poll,</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt;  </p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt;  };</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt; </p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt; -static int ipmi_opal_event(struct notifier_block *nb,</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt; -			  unsigned long events, void *change)</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt; +static irqreturn_t ipmi_opal_event(int irq, void *data)</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt; </p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt;  {</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt; </p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt; -	struct ipmi_smi_powernv *smi = container_of(nb,</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt; -					struct ipmi_smi_powernv, event_nb);</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt; +	struct ipmi_smi_powernv *smi = data;</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt; </p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt; -	if (events &amp; smi-&gt;event)</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt; -		ipmi_powernv_recv(smi);</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt; -	return 0;</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt; +	ipmi_powernv_recv(smi);</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt; +	return IRQ_HANDLED;</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt; </p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt;  }</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt;  </p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt;  static int ipmi_powernv_probe(struct platform_device *pdev)</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt; </p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt; @@ -240,13 +238,16 @@ static int ipmi_powernv_probe(struct platform_device</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt; *pdev)&gt; </p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt;  		goto err_free;</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt;  	</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt;  	}</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt; </p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt; -	ipmi-&gt;event = 1ull &lt;&lt; prop;</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt; -	ipmi-&gt;event_nb.notifier_call = ipmi_opal_event;</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt; +	ipmi-&gt;irq = irq_of_parse_and_map(dev-&gt;of_node, 0);</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt; +	if (!ipmi-&gt;irq) {</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt; +		dev_info(dev, &quot;Unable to map irq from device tree\n&quot;);</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt; +		ipmi-&gt;irq = opal_event_request(prop);</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt; +	}</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt; </p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt; -	rc = opal_notifier_register(&amp;ipmi-&gt;event_nb);</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt; -	if (rc) {</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt; -		dev_warn(dev, &quot;OPAL notifier registration failed (%d)\n&quot;, rc);</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt; -		goto err_free;</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt; +	if (request_irq(ipmi-&gt;irq, ipmi_opal_event, IRQ_TYPE_LEVEL_HIGH,</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt; +				&quot;opal-ipmi&quot;, ipmi)) {</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt; +		dev_warn(dev, &quot;Unable to request irq\n&quot;);</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt; +		goto err_dispose;</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt; </p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt;  	}</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt;  	</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt;  	ipmi-&gt;opal_msg = devm_kmalloc(dev,</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt; </p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt; @@ -271,7 +272,9 @@ static int ipmi_powernv_probe(struct platform_device</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt; *pdev)&gt; </p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt;  err_free_msg:</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt;  	devm_kfree(dev, ipmi-&gt;opal_msg);</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt;  </p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt;  err_unregister:</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt; -	opal_notifier_unregister(&amp;ipmi-&gt;event_nb);</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt; +	free_irq(ipmi-&gt;irq, ipmi);</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt; +err_dispose:</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt; +	irq_dispose_mapping(ipmi-&gt;irq);</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt; </p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt;  err_free:</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt;  	devm_kfree(dev, ipmi);</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt;  	return rc;</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt; </p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt; @@ -282,7 +285,9 @@ static int ipmi_powernv_remove(struct platform_device</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt; *pdev)&gt; </p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt;  	struct ipmi_smi_powernv *smi = dev_get_drvdata(&amp;pdev-&gt;dev);</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt;  	</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt;  	ipmi_unregister_smi(smi-&gt;intf);</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt; </p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt; -	opal_notifier_unregister(&amp;smi-&gt;event_nb);</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt; +	free_irq(smi-&gt;irq, smi);</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt; +	irq_dispose_mapping(smi-&gt;irq);</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt; +</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt; </p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt;  	return 0;</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt;  </p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt;  }</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt; </p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt; --</p>
+<p style=" margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; -qt-user-state:0;">&gt; &gt; 1.8.3.2</p>
+<p style="-qt-paragraph-type:empty; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px; ">&nbsp;</p></body></html>
+--nextPart1605686.lyWlFJj8Fz--
