@@ -1,23 +1,37 @@
-Return-Path: <baolin.wang@linaro.org>
-Received: from mail-pd0-f170.google.com (mail-pd0-f170.google.com
- [209.85.192.170])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <ldufour@linux.vnet.ibm.com>
+Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8F0EA1A0035
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2015 21:28:38 +1000 (AEST)
-Received: by pdbqd1 with SMTP id qd1so144219043pdb.2
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2015 04:28:36 -0700 (PDT)
-From: Baolin Wang <baolin.wang@linaro.org>
-To: arnd@arndb.de
-Subject: [PATCH v3 20/22] cputime:Introduce the
- cputime_to_timespec64/timespec64_to_cputime function
-Date: Mon, 11 May 2015 19:28:25 +0800
-Message-Id: <1431343705-30158-1-git-send-email-baolin.wang@linaro.org>
-Cc: linux-arch@vger.kernel.org, linux-s390@vger.kernel.org, riel@redhat.com,
- baolin.wang@linaro.org, y2038@lists.linaro.org, heiko.carstens@de.ibm.com,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, tj@kernel.org,
- paulus@samba.org, schwidefsky@de.ibm.com, linux390@de.ibm.com, cl@linux.com,
- fweisbec@gmail.com, rth@twiddle.net
+ by lists.ozlabs.org (Postfix) with ESMTPS id 08A5A1A0010
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2015 21:53:48 +1000 (AEST)
+Received: from /spool/local
+ by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
+ Mon, 11 May 2015 12:53:45 +0100
+Received: from b06cxnps3074.portsmouth.uk.ibm.com
+ (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
+ by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id 0EF692190056
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2015 12:53:24 +0100 (BST)
+Received: from d06av06.portsmouth.uk.ibm.com (d06av06.portsmouth.uk.ibm.com
+ [9.149.37.217])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t4BBrgKO6095202
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2015 11:53:42 GMT
+Received: from d06av06.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av06.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t4B6lfVO004762
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2015 02:47:41 -0400
+Message-ID: <55509844.7010304@linux.vnet.ibm.com>
+Date: Mon, 11 May 2015 13:53:40 +0200
+From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: powerpc: Enabling sys_kcmp for CRIU
+References: <20150511103115.DFE85140187@ozlabs.org>
+In-Reply-To: <20150511103115.DFE85140187@ozlabs.org>
+Content-Type: text/plain; charset=windows-1252
+Cc: paulus@samba.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,137 +41,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch introduces some functions for converting cputime to timespec64 and back,
-that repalce the timespec type with timespec64 type, as well as for arch/s390 and
-arch/powerpc architecture.
+On 11/05/2015 12:31, Michael Ellerman wrote:
+> On Tue, 2015-05-05 at 15:30:21 UTC, Laurent Dufour wrote:
+>> The commit 8170a83f15ee ("powerpc: Wireup the kcmp syscall to sys_ni") has
+>> disabled the kcmp syscall for powerpc.  This has been done due to the use
+>> of unsigned long parameters which may require a dedicated wrapper to handle
+>> 32bit process on top of 64bit kernel.  However in the kcmp() case, the 2
+>> unsigned long parameters are currently only used to carry file descriptors
+>> from user space to the kernel.  Since such a parameter is passed through
+>> register, and file descriptor doesn't need to get extended, there is,
+>> today, no need for a wrapper.
+>>
+>> In the case there will be a need to pass address in or out of this system
+>> call, then a wrapper could be required, it will then be to care of it.
+>>
+>> As today this is not the case, it is safe to enable kcmp() on powerpc.
+> 
+> That's mostly convincing. Though I see that s390 does have a compat wrapper,
+> i386 doesn't. So who knows what that means.
+> 
+> But, there's a selftest in tools/testing/selftests/kcmp. So can you run that as
+> 32-bit and confirm it works? Then I'd be 100% convinced :)
 
-And these new methods will replace the old cputime_to_timespec/timespec_to_cputime
-function to ready for 2038 issue. The cputime_to_timespec/timespec_to_cputime functions
-are moved to include/linux/cputime.h file for removing conveniently.
+Hi Michael,
 
-Signed-off-by: Baolin Wang <baolin.wang@linaro.org>
----
- arch/powerpc/include/asm/cputime.h    |    6 +++---
- arch/s390/include/asm/cputime.h       |    8 ++++----
- include/asm-generic/cputime_jiffies.h |   10 +++++-----
- include/asm-generic/cputime_nsecs.h   |    4 ++--
- include/linux/cputime.h               |   15 +++++++++++++++
- 5 files changed, 29 insertions(+), 14 deletions(-)
+I was myself a bit confused about this system call, so to be sure before
+sending the patch I ran the selftest/kcmp series on 64bit, 32bit, and
+also build it in 32bit and run it on top of a 64bit kernel without any
+trouble...
 
-diff --git a/arch/powerpc/include/asm/cputime.h b/arch/powerpc/include/asm/cputime.h
-index e245255..5dda5c0 100644
---- a/arch/powerpc/include/asm/cputime.h
-+++ b/arch/powerpc/include/asm/cputime.h
-@@ -154,9 +154,9 @@ static inline cputime_t secs_to_cputime(const unsigned long sec)
- }
- 
- /*
-- * Convert cputime <-> timespec
-+ * Convert cputime <-> timespec64
-  */
--static inline void cputime_to_timespec(const cputime_t ct, struct timespec *p)
-+static inline void cputime_to_timespec64(const cputime_t ct, struct timespec64 *p)
- {
- 	u64 x = (__force u64) ct;
- 	unsigned int frac;
-@@ -168,7 +168,7 @@ static inline void cputime_to_timespec(const cputime_t ct, struct timespec *p)
- 	p->tv_nsec = x;
- }
- 
--static inline cputime_t timespec_to_cputime(const struct timespec *p)
-+static inline cputime_t timespec64_to_cputime(const struct timespec64 *p)
- {
- 	u64 ct;
- 
-diff --git a/arch/s390/include/asm/cputime.h b/arch/s390/include/asm/cputime.h
-index b91e960..1266697 100644
---- a/arch/s390/include/asm/cputime.h
-+++ b/arch/s390/include/asm/cputime.h
-@@ -89,16 +89,16 @@ static inline cputime_t secs_to_cputime(const unsigned int s)
- }
- 
- /*
-- * Convert cputime to timespec and back.
-+ * Convert cputime to timespec64 and back.
-  */
--static inline cputime_t timespec_to_cputime(const struct timespec *value)
-+static inline cputime_t timespec64_to_cputime(const struct timespec64 *value)
- {
- 	unsigned long long ret = value->tv_sec * CPUTIME_PER_SEC;
- 	return (__force cputime_t)(ret + __div(value->tv_nsec * CPUTIME_PER_USEC, NSEC_PER_USEC));
- }
- 
--static inline void cputime_to_timespec(const cputime_t cputime,
--				       struct timespec *value)
-+static inline void cputime_to_timespec64(const cputime_t cputime,
-+				       struct timespec64 *value)
- {
- 	unsigned long long __cputime = (__force unsigned long long) cputime;
- #ifndef CONFIG_64BIT
-diff --git a/include/asm-generic/cputime_jiffies.h b/include/asm-generic/cputime_jiffies.h
-index fe386fc..54e034c 100644
---- a/include/asm-generic/cputime_jiffies.h
-+++ b/include/asm-generic/cputime_jiffies.h
-@@ -44,12 +44,12 @@ typedef u64 __nocast cputime64_t;
- #define secs_to_cputime(sec)		jiffies_to_cputime((sec) * HZ)
- 
- /*
-- * Convert cputime to timespec and back.
-+ * Convert cputime to timespec64 and back.
-  */
--#define timespec_to_cputime(__val)	\
--	jiffies_to_cputime(timespec_to_jiffies(__val))
--#define cputime_to_timespec(__ct,__val)	\
--	jiffies_to_timespec(cputime_to_jiffies(__ct),__val)
-+#define timespec64_to_cputime(__val)	\
-+	jiffies_to_cputime(timespec64_to_jiffies(__val))
-+#define cputime_to_timespec64(__ct,__val)	\
-+	jiffies_to_timespec64(cputime_to_jiffies(__ct),__val)
- 
- /*
-  * Convert cputime to timeval and back.
-diff --git a/include/asm-generic/cputime_nsecs.h b/include/asm-generic/cputime_nsecs.h
-index 0419485..65c875b 100644
---- a/include/asm-generic/cputime_nsecs.h
-+++ b/include/asm-generic/cputime_nsecs.h
-@@ -73,12 +73,12 @@ typedef u64 __nocast cputime64_t;
- /*
-  * Convert cputime <-> timespec (nsec)
-  */
--static inline cputime_t timespec_to_cputime(const struct timespec *val)
-+static inline cputime_t timespec64_to_cputime(const struct timespec64 *val)
- {
- 	u64 ret = val->tv_sec * NSEC_PER_SEC + val->tv_nsec;
- 	return (__force cputime_t) ret;
- }
--static inline void cputime_to_timespec(const cputime_t ct, struct timespec *val)
-+static inline void cputime_to_timespec64(const cputime_t ct, struct timespec64 *val)
- {
- 	u32 rem;
- 
-diff --git a/include/linux/cputime.h b/include/linux/cputime.h
-index f2eb2ee..f01896f 100644
---- a/include/linux/cputime.h
-+++ b/include/linux/cputime.h
-@@ -13,4 +13,19 @@
- 	usecs_to_cputime((__nsecs) / NSEC_PER_USEC)
- #endif
- 
-+static inline cputime_t timespec_to_cputime(const struct timespec *ts)
-+{
-+	struct timespec64 ts64 = timespec_to_timespec64(*ts);
-+	return timespec64_to_cputime(&ts64);
-+}
-+
-+static inline void cputime_to_timespec(const cputime_t cputime,
-+					struct timespec *value)
-+{
-+	struct timespec64 *ts64;
-+
-+	*ts64 = timespec_to_timespec64(*value);
-+	cputime_to_timespec64(cputime, ts64);
-+}
-+
- #endif /* __LINUX_CPUTIME_H */
--- 
-1.7.9.5
+Cheers,
+Laurent.
