@@ -1,39 +1,42 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+Return-Path: <preeti@linux.vnet.ibm.com>
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id F01941A0010
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2015 14:56:14 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8B6171A0035
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2015 15:21:14 +1000 (AEST)
 Received: from /spool/local
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e36.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Mon, 11 May 2015 14:56:13 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 58C773578056
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2015 14:56:11 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t4B4u2w524510522
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2015 14:56:11 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t4B4tcjW029382
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2015 14:55:38 +1000
-Date: Mon, 11 May 2015 14:55:13 +1000
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Subject: Re: [PATCH v4 06/21] powerpc/powernv: Create PEs dynamically
-Message-ID: <20150511045513.GA28073@gwshan>
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <1430460188-31343-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1430460188-31343-7-git-send-email-gwshan@linux.vnet.ibm.com>
- <554DF2D4.6090605@ozlabs.ru>
+ for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
+ Sun, 10 May 2015 23:21:11 -0600
+Received: from b03cxnp08028.gho.boulder.ibm.com
+ (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id E57A919D8040
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 May 2015 23:12:11 -0600 (MDT)
+Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
+ by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with
+ ESMTP id t4B5Ki4p36634862
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 May 2015 22:20:44 -0700
+Received: from d03av05.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t4B5L7MO008747
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 May 2015 23:21:08 -0600
+Message-ID: <55503C3E.6020804@linux.vnet.ibm.com>
+Date: Mon, 11 May 2015 10:51:02 +0530
+From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <554DF2D4.6090605@ozlabs.ru>
-Cc: bhelgaas@google.com, linux-pci@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>, peterz@infradead.org
+Subject: Re: [PATCH 0/3] cpuidle: updates related to tick_broadcast_enter()
+ failures
+References: <20150508073418.28491.4150.stgit@preeti.in.ibm.com>
+ <10239011.l6QLHlKIVm@vostro.rjw.lan> <3161640.llJtBoKCBr@vostro.rjw.lan>
+ <8965830.CMQzZzsqm0@vostro.rjw.lan>
+In-Reply-To: <8965830.CMQzZzsqm0@vostro.rjw.lan>
+Content-Type: text/plain; charset=UTF-8
+Cc: rlippert@google.com, daniel.lezcano@linaro.org, linux-pm@vger.kernel.org,
+ linus.walleij@linaro.org, rafael.j.wysocki@intel.com,
+ linux-kernel@vger.kernel.org, mingo@redhat.com, sudeep.holla@arm.com,
+ tglx@linutronix.de, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,58 +46,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, May 09, 2015 at 09:43:16PM +1000, Alexey Kardashevskiy wrote:
->On 05/01/2015 04:02 PM, Gavin Shan wrote:
->>Currently, the PEs and their associated resources are assigned
->>in ppc_md.pcibios_fixup(). The function is called for once after
->>PCI probing and resources assignment are finished. Obviously, it's
->>not hotplug friendly. The patch creates PEs dynamically by
->>ppc_md.pcibios_setup_bridge(), which is called on the event during
->>system bootup and PCI hotplug: updating PCI bridge's windows after
->>resource assignment/reassignment are finished. For partial hotplug
->>case, where not all PCI devices belonging to the PE are unplugged
->>and plugged again, we just need unbinding/binding the affected
->>PCI devices with the corresponding PE without creating new one.
->
->
->Some PEs are already created dynamically (SRIOV). I'd suggest to make subject
->more specific.
->
-
-Sure, will do.
-
->>Besides, it might require addtional resources (e.g. M32) to the
->>windows of the PCI bridge when unplugging current adapter, and
->>insert a different adapter if there is one PCI slot, which is
->>assumed behind root port, or the downstream bridge of the PCIE
->>switch behind root port. The parent bridge of the newly plugged
->>adapter would reject the request to add more resources, leading
->>to hotplug failure. For the issue, the patch extends the windows
->>of root port, or the upstream port of the PCIe switch behind root
->>port to PHB's windows when ppc_md.pcibios_setup_bridge() is called.
+On 05/10/2015 04:45 AM, Rafael J. Wysocki wrote:
+> On Saturday, May 09, 2015 10:33:05 PM Rafael J. Wysocki wrote:
+>> On Saturday, May 09, 2015 10:11:41 PM Rafael J. Wysocki wrote:
+>>> On Saturday, May 09, 2015 11:19:16 AM Preeti U Murthy wrote:
+>>>> Hi Rafael,
+>>>>
+>>>> On 05/08/2015 07:48 PM, Rafael J. Wysocki wrote:
+>>>
+>>> [cut]
+>>>
+>>>>>>  
+>>>>>> +	/* Take note of the planned idle state. */
+>>>>>> +	idle_set_state(smp_processor_id(), target_state);
+>>>>>
+>>>>> And I wouldn't do this either.
+>>>>>
+>>>>> The behavior here is pretty much as though the driver demoted the state chosen
+>>>>> by the governor and we don't call idle_set_state() again in those cases.
+>>>>
+>>>> Why is this wrong?
+>>>
+>>> It is not "wrong", but incomplete, because demotions done by the cpuidle driver
+>>> should also be taken into account in the same way.
+>>>
+>>> But I'm seeing that the recent patch of mine that made cpuidle_enter_state()
+>>> call default_idle_call() was a mistake, because it might confuse find_idlest_cpu()
+>>> significantly as to what state the CPU is in.  I'll drop that one for now.
 >>
->>There is no upstream bridge for root bus, so we have to reserve
->>PE#, which is next to the reserved PE# in advance and fixing the
->>PE for root bus in ppc_md.pcibios_setup_bridge().
+>> OK, done.
 >>
->>The patch also changes the rule assigning PE#: PE# reserved for
->>prefetchable 64-bits memory resource and SRIOV VFs starts from
->>zero while PE# for dynamic allocations starts from ioda.total_pe
->>reversely. It's because PE# for prefetchable 64-bits memory resource,
->>which is ually allocated begining with the PHB's aperatus and PE#
->
->s/aperatus/apertures/?
->
+>> So after I've dropped it I think we need to do three things:
+>> (1) Move the idle_set_state() calls to cpuidle_enter_state().
+>> (2) Make cpuidle_enter_state() call default_idle_call() again, but this time
+>>     do that *before* it has called idle_set_state() for target_state.
+>> (3) Introduce demotion as per my last patch.
+>>
+>> Let me cut patches for that.
+> 
+> Done as per the above and the patches follow in replies to this messge.
+> 
+> All on top of the current linux-next branch of the linux-pm.git tree.
 
-I need look into Chinese-English dictionary to confirm :-)
+The patches look good. Based and tested these patches on top of
+linux-pm/linux-next (They are not yet in the branch as far as I can see.)
 
->May be it is just me but it looks like the patch moves existing bits and also
->adds this dynamic PE creation, cannot it be separated somehow into smaller
->patches as it is really hard to track all the changes you are making here?
->
-
-It's good suggestion as I said in previous replies. Yeah, I'll see
-if I can split it up to help review and bisecting.
-
-Thanks,
-Gavin
+All patches in this series
+Reviewed and Tested-by: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+> 
+> 
