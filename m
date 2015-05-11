@@ -1,16 +1,24 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <zidan.wang@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bon0141.outbound.protection.outlook.com [157.56.111.141])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 03E9D1A0010
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2015 20:31:16 +1000 (AEST)
-In-Reply-To: <1430839821-9259-1-git-send-email-ldufour@linux.vnet.ibm.com>
-To: Laurent Dufour <ldufour@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-From: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: powerpc: Enabling sys_kcmp for CRIU
-Message-Id: <20150511103115.DFE85140187@ozlabs.org>
-Date: Mon, 11 May 2015 20:31:15 +1000 (AEST)
-Cc: paulus@samba.org, linux-kernel@vger.kernel.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3DEDA1A0010
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2015 20:38:23 +1000 (AEST)
+From: Zidan Wang <zidan.wang@freescale.com>
+To: <nicoleotsuka@gmail.com>
+Subject: [PATCH 3/3] ASoC: fsl_sai: add 12kHz, 24kHz,
+ 176.4kHz and 192kHz sample rate support
+Date: Mon, 11 May 2015 18:24:43 +0800
+Message-ID: <1431339894-4248-3-git-send-email-zidan.wang@freescale.com>
+In-Reply-To: <cover.1431337606.git.zidan.wang@freescale.com>
+References: <cover.1431337606.git.zidan.wang@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
+Cc: alsa-devel@alsa-project.org, timur@tabi.org,
+ Zidan Wang <zidan.wang@freescale.com>, Xiubo.Lee@gmail.com, tiwai@suse.de,
+ linux-kernel@vger.kernel.org, lgirdwood@gmail.com, perex@perex.cz,
+ broonie@kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,25 +28,69 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-05-05 at 15:30:21 UTC, Laurent Dufour wrote:
-> The commit 8170a83f15ee ("powerpc: Wireup the kcmp syscall to sys_ni") has
-> disabled the kcmp syscall for powerpc.  This has been done due to the use
-> of unsigned long parameters which may require a dedicated wrapper to handle
-> 32bit process on top of 64bit kernel.  However in the kcmp() case, the 2
-> unsigned long parameters are currently only used to carry file descriptors
-> from user space to the kernel.  Since such a parameter is passed through
-> register, and file descriptor doesn't need to get extended, there is,
-> today, no need for a wrapper.
-> 
-> In the case there will be a need to pass address in or out of this system
-> call, then a wrapper could be required, it will then be to care of it.
-> 
-> As today this is not the case, it is safe to enable kcmp() on powerpc.
+Normally we don't support 12kHz, 24kHz in audio driver, alsa didn't
+have formal definition of 12kHz, 24kHz, but alsa supply a way to
+support these sample rates. And add 176.4kHz and 192kHz support.
 
-That's mostly convincing. Though I see that s390 does have a compat wrapper,
-i386 doesn't. So who knows what that means.
+Signed-off-by: Zidan Wang <zidan.wang@freescale.com>
+---
+ sound/soc/fsl/fsl_sai.c | 24 +++++++++++++++++++++---
+ 1 file changed, 21 insertions(+), 3 deletions(-)
 
-But, there's a selftest in tools/testing/selftests/kcmp. So can you run that as
-32-bit and confirm it works? Then I'd be 100% convinced :)
-
-cheers
+diff --git a/sound/soc/fsl/fsl_sai.c b/sound/soc/fsl/fsl_sai.c
+index 88f5861..7efcac4 100644
+--- a/sound/soc/fsl/fsl_sai.c
++++ b/sound/soc/fsl/fsl_sai.c
+@@ -27,6 +27,17 @@
+ #define FSL_SAI_FLAGS (FSL_SAI_CSR_SEIE |\
+ 		       FSL_SAI_CSR_FEIE)
+ 
++static u32 fsl_sai_rates[] = {
++	8000, 11025, 12000, 16000, 22050,
++	24000, 32000, 44100, 48000, 64000,
++	88200, 96000, 176400, 192000
++};
++
++static struct snd_pcm_hw_constraint_list fsl_sai_rate_constraints = {
++	.count = ARRAY_SIZE(fsl_sai_rates),
++	.list = fsl_sai_rates,
++};
++
+ static irqreturn_t fsl_sai_isr(int irq, void *devid)
+ {
+ 	struct fsl_sai *sai = (struct fsl_sai *)devid;
+@@ -531,7 +542,10 @@ static int fsl_sai_startup(struct snd_pcm_substream *substream,
+ 	regmap_update_bits(sai->regmap, FSL_SAI_xCR3(tx), FSL_SAI_CR3_TRCE,
+ 			   FSL_SAI_CR3_TRCE);
+ 
+-	return 0;
++	ret = snd_pcm_hw_constraint_list(substream->runtime, 0,
++			SNDRV_PCM_HW_PARAM_RATE, &fsl_sai_rate_constraints);
++
++	return ret;
+ }
+ 
+ static void fsl_sai_shutdown(struct snd_pcm_substream *substream,
+@@ -586,14 +600,18 @@ static struct snd_soc_dai_driver fsl_sai_dai = {
+ 		.stream_name = "CPU-Playback",
+ 		.channels_min = 1,
+ 		.channels_max = 2,
+-		.rates = SNDRV_PCM_RATE_8000_96000,
++		.rate_min = 8000,
++		.rate_max = 192000,
++		.rates = SNDRV_PCM_RATE_KNOT,
+ 		.formats = FSL_SAI_FORMATS,
+ 	},
+ 	.capture = {
+ 		.stream_name = "CPU-Capture",
+ 		.channels_min = 1,
+ 		.channels_max = 2,
+-		.rates = SNDRV_PCM_RATE_8000_96000,
++		.rate_min = 8000,
++		.rate_max = 192000,
++		.rates = SNDRV_PCM_RATE_KNOT,
+ 		.formats = FSL_SAI_FORMATS,
+ 	},
+ 	.ops = &fsl_sai_pcm_dai_ops,
+-- 
+1.9.1
