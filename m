@@ -1,39 +1,38 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+Return-Path: <vipin@linux.vnet.ibm.com>
+Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 785EE1A0010
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2015 18:57:11 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5C3571A0035
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2015 19:05:01 +1000 (AEST)
 Received: from /spool/local
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Mon, 11 May 2015 18:57:10 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id E7FDE357804F
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2015 18:57:06 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t4B8uwL143909226
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2015 18:57:06 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t4B8uX0Y015059
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2015 18:56:34 +1000
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: "Kirill A. Shutemov" <kirill@shutemov.name>
-Subject: Re: [PATCH V3] mm/thp: Split out pmd collpase flush into a separate
- functions
-In-Reply-To: <20150511080521.GB10974@node.dhcp.inet.fi>
-References: <1431326370-24247-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <20150511080521.GB10974@node.dhcp.inet.fi>
-Date: Mon, 11 May 2015 14:26:06 +0530
-Message-ID: <87r3qn4hnd.fsf@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <vipin@linux.vnet.ibm.com>;
+ Mon, 11 May 2015 14:34:58 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 34B453940061
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2015 14:34:55 +0530 (IST)
+Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
+ by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t4B922Ft38404178
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2015 14:34:54 +0530
+Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
+ by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t4B8Otsl009327
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2015 13:54:56 +0530
+Message-ID: <55506FEB.3010701@linux.vnet.ibm.com>
+Date: Mon, 11 May 2015 14:31:31 +0530
+From: Vipin K Parashar <vipin@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: aarcange@redhat.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- paulus@samba.org, akpm@linux-foundation.org, linuxppc-dev@lists.ozlabs.org,
- kirill.shutemov@linux.intel.com
+To: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH v2 1/2] powerpc/powernv: Add poweroff (EPOW, DPO) events
+ support for PowerNV platform
+References: <1430991020-7556-1-git-send-email-vipin@linux.vnet.ibm.com>
+ <1430991020-7556-2-git-send-email-vipin@linux.vnet.ibm.com>
+ <1431326992.31935.1.camel@ellerman.id.au>
+In-Reply-To: <1431326992.31935.1.camel@ellerman.id.au>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Cc: stewart@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org, joel@jms.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,215 +42,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-"Kirill A. Shutemov" <kirill@shutemov.name> writes:
 
-> On Mon, May 11, 2015 at 12:09:30PM +0530, Aneesh Kumar K.V wrote:
->> Architectures like ppc64 [1] need to do special things while clearing
->> pmd before a collapse. For them this operation is largely different
->> from a normal hugepage pte clear. Hence add a separate function
->> to clear pmd before collapse. After this patch pmdp_* functions
->> operate only on hugepage pte, and not on regular pmd_t values
->> pointing to page table.
->> 
->> [1] ppc64 needs to invalidate all the normal page pte mappings we
->> already have inserted in the hardware hash page table. But before
->> doing that we need to make sure there are no parallel hash page
->> table insert going on. So we need to do a kick_all_cpus_sync()
->> before flushing the older hash table entries. By moving this to
->> a separate function we capture these details and mention how it
->> is different from a hugepage pte clear.
->> 
->> This patch is a cleanup and only does code movement for clarity.
->> There should not be any change in functionality.
->> 
->> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
->> ---
->> Changes from V2:
->> * Update commit message
->> * Address review feedback
->> 
->>  arch/powerpc/include/asm/pgtable-ppc64.h |  4 ++
->>  arch/powerpc/mm/pgtable_64.c             | 76 +++++++++++++++++---------------
->>  include/asm-generic/pgtable.h            | 19 ++++++++
->>  mm/huge_memory.c                         |  2 +-
->>  4 files changed, 65 insertions(+), 36 deletions(-)
->> 
->> diff --git a/arch/powerpc/include/asm/pgtable-ppc64.h b/arch/powerpc/include/asm/pgtable-ppc64.h
->> index 43e6ad424c7f..f5b98b2a45f0 100644
->> --- a/arch/powerpc/include/asm/pgtable-ppc64.h
->> +++ b/arch/powerpc/include/asm/pgtable-ppc64.h
->> @@ -576,6 +576,10 @@ static inline void pmdp_set_wrprotect(struct mm_struct *mm, unsigned long addr,
->>  extern void pmdp_splitting_flush(struct vm_area_struct *vma,
->>  				 unsigned long address, pmd_t *pmdp);
->>  
->> +#define pmd_collapse_flush pmd_collapse_flush
->> +extern pmd_t pmd_collapse_flush(struct vm_area_struct *vma,
->> +				unsigned long address, pmd_t *pmdp);
->> +
->>  #define __HAVE_ARCH_PGTABLE_DEPOSIT
->>  extern void pgtable_trans_huge_deposit(struct mm_struct *mm, pmd_t *pmdp,
->>  				       pgtable_t pgtable);
->> diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
->> index 59daa5eeec25..b651179ac4da 100644
->> --- a/arch/powerpc/mm/pgtable_64.c
->> +++ b/arch/powerpc/mm/pgtable_64.c
->> @@ -560,41 +560,47 @@ pmd_t pmdp_clear_flush(struct vm_area_struct *vma, unsigned long address,
->>  	pmd_t pmd;
->>  
->>  	VM_BUG_ON(address & ~HPAGE_PMD_MASK);
->> -	if (pmd_trans_huge(*pmdp)) {
->> -		pmd = pmdp_get_and_clear(vma->vm_mm, address, pmdp);
->> -	} else {
->> -		/*
->> -		 * khugepaged calls this for normal pmd
->> -		 */
->> -		pmd = *pmdp;
->> -		pmd_clear(pmdp);
->> -		/*
->> -		 * Wait for all pending hash_page to finish. This is needed
->> -		 * in case of subpage collapse. When we collapse normal pages
->> -		 * to hugepage, we first clear the pmd, then invalidate all
->> -		 * the PTE entries. The assumption here is that any low level
->> -		 * page fault will see a none pmd and take the slow path that
->> -		 * will wait on mmap_sem. But we could very well be in a
->> -		 * hash_page with local ptep pointer value. Such a hash page
->> -		 * can result in adding new HPTE entries for normal subpages.
->> -		 * That means we could be modifying the page content as we
->> -		 * copy them to a huge page. So wait for parallel hash_page
->> -		 * to finish before invalidating HPTE entries. We can do this
->> -		 * by sending an IPI to all the cpus and executing a dummy
->> -		 * function there.
->> -		 */
->> -		kick_all_cpus_sync();
->> -		/*
->> -		 * Now invalidate the hpte entries in the range
->> -		 * covered by pmd. This make sure we take a
->> -		 * fault and will find the pmd as none, which will
->> -		 * result in a major fault which takes mmap_sem and
->> -		 * hence wait for collapse to complete. Without this
->> -		 * the __collapse_huge_page_copy can result in copying
->> -		 * the old content.
->> -		 */
->> -		flush_tlb_pmd_range(vma->vm_mm, &pmd, address);
->> -	}
->> +	VM_BUG_ON(!pmd_trans_huge(*pmdp));
->> +	pmd = pmdp_get_and_clear(vma->vm_mm, address, pmdp);
->> +	return pmd;
+On 05/11/2015 12:19 PM, Michael Ellerman wrote:
+> On Thu, 2015-05-07 at 15:00 +0530, Vipin K Parashar wrote:
+>> This patch adds support for FSP EPOW (Early Power Off Warning) and
+>> DPO (Delayed Power Off) events support for PowerNV platform.  EPOW events
+>> are generated by SPCN/FSP due to various critical system conditions that
+>> need system shutdown.  Few examples of these conditions are high ambient
+>> temperature or system running on UPS power with low UPS battery. DPO event
+>> is generated in response to admin initiated system shutdown request.
+>> 	This patch enables host kernel on PowerNV platform to handle OPAL
+>> notifications for these events and initiate system poweroff. Since EPOW
+>> notifications are sent in advance of impending shutdown event and thus
+>> this patch also adds functionality to wait for EPOW condition to return to
+>> normal. Host allows MAX_POWEROFF_SYS_TIME (600 seconds) as system
+>> poweroff time (time for host + guests shutdown) and waits for remaining
+>> time for EPOW condition to return to normal. If EPOW condition doesn't
+>> return to normal in calculated time it proceeds with graceful system
+>> shutdown. For EPOW events with smaller timeouts values than
+>> MAX_POWEROFF_SYS_TIME it proceeds with system shutdown without any wait
+>> for EPOW condition to return to normal.
 >
-> Looks like with this cange you don't need Power-specific
-> pmdp_clear_flush() -- generic one would work for you.
-
-That is correct. Will update the series and do that as a follow up patch ?
-
+> Can I suggest an alternative design:
+>   - when we recieve a DPO event call orderly_poweroff()
+>   - when we recieve an EPOW event call orderly_poweroff()
 >
-> It seems you want change semantics of pmdp_clear_flush(): it should be
-> called only for huge pmds. I'm fine with that. But we need at least
-> document that. And probably rename the helper to reflect semantics:
-> pmdp_huge_clear_flush()?
+> Thoughts?
+
+Current design is calling orderly_poweroff immediately upon DPO event
+as there is not need to wait for user initiated shutdowns.
+     EPOW is sent in anticipation of a poweroff needed ahead of time. A 
+typical example
+is EPOW due to system on UPS power with 15 mins timeout. There could be case
+when power is restored back within timeout and a poweroff is not needed. 
+In such case
+HW sends EPOW reset informing that EPOW condition has returned to normal.
+     Another example is EPOW due to high ambient temp with 15 mins timeout.
+Here too if temp goes down to manageable limits within timeout window, 
+HW sends EPOW reset
+to avoid shutdown.
+     So to handle such cases current design implements wait for
+HW Timeout - MAX_POWEROFF_SYS_TIME seconds before poweroff. If EPOW 
+condition
+returns to normal within this time poweroff is cancelled. So immediate 
+poweroff is avoided
+here to handle cases when EPOW condition returns to  normal.
+     For EPOW cases (like system on UPS power with UPS battery low or 
+Ambient temp
+critically high) which have timeouts lower than MAX_POWEROFF_SYS 
+seconds, it calls immediate
+orderly_poweroff.
+      In concise design implements immediate orderly_poweroff for DPO as 
+well as EPOW cases when
+timeout is less than  MAX_POWEROFF_SYS_TIME while for EPOW cases with 
+MAX_POWEROFF_SYS_TIME
+timeout it implements a wait for EPOW to return the normal.
+
+Suggestions/thoughts ?
+
+--Vipin
+> cheers
 >
-
-So you are suggesting to callout _huge_ in the APIs. Will fix. Also will
-do a cleanup to update other functions ?
-
-> And we need  VM_BUG_ON(!pmd_trans_huge(*pmdp)) in generic helper too.
 >
-> What about pmdp_clear_flush_young()? Should we change it the same way?
->
-
-ok
-
->> +}
->> +
->> +pmd_t pmd_collapse_flush(struct vm_area_struct *vma, unsigned long address,
->> +			 pmd_t *pmdp)
->> +{
->> +	pmd_t pmd;
->> +
->> +	VM_BUG_ON(address & ~HPAGE_PMD_MASK);
->> +	VM_BUG_ON(pmd_trans_huge(*pmdp));
->> +
->> +	pmd = *pmdp;
->> +	pmd_clear(pmdp);
->> +	/*
->> +	 * Wait for all pending hash_page to finish. This is needed
->> +	 * in case of subpage collapse. When we collapse normal pages
->> +	 * to hugepage, we first clear the pmd, then invalidate all
->> +	 * the PTE entries. The assumption here is that any low level
->> +	 * page fault will see a none pmd and take the slow path that
->> +	 * will wait on mmap_sem. But we could very well be in a
->> +	 * hash_page with local ptep pointer value. Such a hash page
->> +	 * can result in adding new HPTE entries for normal subpages.
->> +	 * That means we could be modifying the page content as we
->> +	 * copy them to a huge page. So wait for parallel hash_page
->> +	 * to finish before invalidating HPTE entries. We can do this
->> +	 * by sending an IPI to all the cpus and executing a dummy
->> +	 * function there.
->> +	 */
->> +	kick_all_cpus_sync();
->> +	/*
->> +	 * Now invalidate the hpte entries in the range
->> +	 * covered by pmd. This make sure we take a
->> +	 * fault and will find the pmd as none, which will
->> +	 * result in a major fault which takes mmap_sem and
->> +	 * hence wait for collapse to complete. Without this
->> +	 * the __collapse_huge_page_copy can result in copying
->> +	 * the old content.
->> +	 */
->> +	flush_tlb_pmd_range(vma->vm_mm, &pmd, address);
->>  	return pmd;
->>  }
->>  
->> diff --git a/include/asm-generic/pgtable.h b/include/asm-generic/pgtable.h
->> index 39f1d6a2b04d..edc90a2261f7 100644
->> --- a/include/asm-generic/pgtable.h
->> +++ b/include/asm-generic/pgtable.h
->> @@ -189,6 +189,25 @@ extern void pmdp_splitting_flush(struct vm_area_struct *vma,
->>  				 unsigned long address, pmd_t *pmdp);
->>  #endif
->>  
->> +#ifndef pmd_collapse_flush
->> +#ifdef CONFIG_TRANSPARENT_HUGEPAGE
->> +static inline pmd_t pmd_collapse_flush(struct vm_area_struct *vma,
->> +				       unsigned long address,
->> +				       pmd_t *pmdp)
->> +{
->> +	return pmdp_clear_flush(vma, address, pmdp);
->> +}
->> +#else
->> +static inline pmd_t pmd_collapse_flush(struct vm_area_struct *vma,
->> +				       unsigned long address,
->> +				       pmd_t *pmdp)
->> +{
->> +	BUILD_BUG();
->> +	return __pmd(0);
->> +}
->> +#endif /* CONFIG_TRANSPARENT_HUGEPAGE */
->> +#endif
->> +
->>  #ifndef __HAVE_ARCH_PGTABLE_DEPOSIT
->>  extern void pgtable_trans_huge_deposit(struct mm_struct *mm, pmd_t *pmdp,
->>  				       pgtable_t pgtable);
->> diff --git a/mm/huge_memory.c b/mm/huge_memory.c
->> index 078832cf3636..009a5de619fd 100644
->> --- a/mm/huge_memory.c
->> +++ b/mm/huge_memory.c
->> @@ -2499,7 +2499,7 @@ static void collapse_huge_page(struct mm_struct *mm,
->>  	 * huge and small TLB entries for the same virtual address
->>  	 * to avoid the risk of CPU bugs in that area.
->>  	 */
->> -	_pmd = pmdp_clear_flush(vma, address, pmd);
->> +	_pmd = pmd_collapse_flush(vma, address, pmd);
->
-> Let's name it pmdp_collapse_flush().
-> We are not hugely consistent on pmd vs. pmdp, but we have
-> pmdp_splittitng_flush() counterpart.
->
-
-ok 
-
-
->>  	spin_unlock(pmd_ptl);
->>  	mmu_notifier_invalidate_range_end(mm, mmun_start, mmun_end);
->>  
-
--aneesh
