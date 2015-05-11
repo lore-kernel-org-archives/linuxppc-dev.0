@@ -1,30 +1,23 @@
-Return-Path: <emunson@akamai.com>
-Received: from prod-mail-xrelay07.akamai.com (prod-mail-xrelay07.akamai.com
- [72.246.2.115])
- by lists.ozlabs.org (Postfix) with ESMTP id CB0C81A0048
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2015 07:05:35 +1000 (AEST)
-Date: Mon, 11 May 2015 17:05:33 -0400
-From: Eric B Munson <emunson@akamai.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 0/3] Allow user to request memory to be locked on page
- fault
-Message-ID: <20150511210533.GB1227@akamai.com>
-References: <1431113626-19153-1-git-send-email-emunson@akamai.com>
- <20150508124203.6679b1d35ad9555425003929@linux-foundation.org>
- <20150508200610.GB29933@akamai.com>
- <20150508131523.f970d13a213bca63bd6f2619@linux-foundation.org>
- <20150511143618.GA30570@akamai.com>
- <20150511121204.2af73429ad3c29b6d67f1345@linux-foundation.org>
+Return-Path: <scottwood@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0142.outbound.protection.outlook.com [207.46.100.142])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id C92191A0010
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2015 08:08:54 +1000 (AEST)
+Message-ID: <1431382120.16357.471.camel@freescale.com>
+Subject: Re: [PATCH v3 1/2] perf/kvm: Port perf kvm to powerpc
+From: Scott Wood <scottwood@freescale.com>
+To: Hemant Kumar <hemant@linux.vnet.ibm.com>
+Date: Mon, 11 May 2015 17:08:40 -0500
+In-Reply-To: <1431047266-6206-1-git-send-email-hemant@linux.vnet.ibm.com>
+References: <1431047266-6206-1-git-send-email-hemant@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="TRYliJ5NKNqkz5bu"
-In-Reply-To: <20150511121204.2af73429ad3c29b6d67f1345@linux-foundation.org>
-Cc: linux-arch@vger.kernel.org, linux-mips@linux-mips.org,
- linux-parisc@vger.kernel.org, linux-xtensa@linux-xtensa.org,
- linux-api@vger.kernel.org, linux-kernel@vger.kernel.org,
- Shuah Khan <shuahkh@osg.samsung.com>, linux-mm@kvack.org,
- linux-alpha@vger.kernel.org, sparclinux@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
+Cc: maddy@linux.vnet.ibm.com, srikar@linux.vnet.ibm.com, peterz@infradead.org,
+ agraf@suse.de, kvm-ppc@vger.kernel.org, linux-kernel@vger.kernel.org,
+ mingo@redhat.com, paulus@samba.org, acme@kernel.org,
+ warrier@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,76 +27,110 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Fri, 2015-05-08 at 06:37 +0530, Hemant Kumar wrote:
+> From: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+> 
+> perf kvm can be used to analyze guest exit reasons. This support already
+> exists in x86. Hence, porting it to powerpc.
+> 
+>  - To trace KVM events :
+>   perf kvm stat record
+>   If many guests are running, we can track for a specific guest by using
+>   --pid as in : perf kvm stat record --pid <pid>
+> 
+>  - To see the results :
+>   perf kvm stat report
+> 
+> The result shows the number of exits (from the guest context to
+> host/hypervisor context) grouped by their respective exit reasons with
+> their frequency.
+> 
+> This patch makes use of the guest exit reasons available in
+> "trace_book3s.h". It records on two already available tracepoints :
+> "kvm_hv:kvm_guest_exit" and "kvm_hv:kvm_guest_enter".
+> 
+> Note : This patch has a dependency on the patch "kvm/powerpc: Export
+> kvm exit reasons" which exports the KVM exit reasons through the uapi.
+> 
+> Here is a sample o/p:
+>  # pgrep qemu
+> 19378
+> 60515
+> 
+> 2 Guests are running on the host.
+> 
+>  # perf kvm stat record -a
+> ^C[ perf record: Woken up 1 times to write data ]
+> [ perf record: Captured and wrote 4.153 MB perf.data.guest (39624 samples) ]
+> 
+>  # perf kvm stat report -p 60515
+> Analyze events for pid(s) 60515, all VCPUs:
+> 
+>        VM-EXIT    Samples  Samples%     Time%    Min Time         Max        Time         Avg time
+> 
+> H_DATA_STORAGE       5006    35.30%     0.13%      1.94us     49.46us     12.37us ( +-   0.52% )
+> HV_DECREMENTER       4457    31.43%     0.02%      0.72us     16.14us      1.91us ( +-   0.96% )
+>        SYSCALL       2690    18.97%     0.10%      2.84us    528.24us     18.29us ( +-   3.75% )
+> RETURN_TO_HOST       1789    12.61%    99.76%      1.58us 672791.91us  27470.23us ( +-   3.00% )
+>       EXTERNAL        240     1.69%     0.00%        0.69us     10.67us      1.33us ( +-   5.34% )
+> 
+> Total Samples:14182, Total events handled time:49264158.30us.
+> 
+> Signed-off-by: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+> Signed-off-by: Hemant Kumar <hemant@linux.vnet.ibm.com>
+> ---
+> Patch has a dependency on : https://patchwork.ozlabs.org/patch/469839/
+> which exports the exit reasons to perf through uapi.
+> 
+> Changes:
+> - Original series split into two patchsets now : perf and powerpc
+>   side changes.
+> 
+>  arch/powerpc/include/uapi/asm/kvm_perf.h | 15 +++++++++++++++
+>  tools/perf/arch/powerpc/Makefile         |  1 +
+>  tools/perf/arch/powerpc/util/Build       |  1 +
+>  tools/perf/arch/powerpc/util/kvm-stat.c  | 33 ++++++++++++++++++++++++++++++++
+>  4 files changed, 50 insertions(+)
+>  create mode 100644 arch/powerpc/include/uapi/asm/kvm_perf.h
+>  create mode 100644 tools/perf/arch/powerpc/util/kvm-stat.c
+> 
+> diff --git a/arch/powerpc/include/uapi/asm/kvm_perf.h b/arch/powerpc/include/uapi/asm/kvm_perf.h
+> new file mode 100644
+> index 0000000..30fa670
+> --- /dev/null
+> +++ b/arch/powerpc/include/uapi/asm/kvm_perf.h
+> @@ -0,0 +1,15 @@
+> +#ifndef _ASM_POWERPC_KVM_PERF_H
+> +#define _ASM_POWERPC_KVM_PERF_H
+> +
+> +#include <asm/trace_book3s.h>
+> +#include <asm/kvm.h>
+> +
+> +#define DECODE_STR_LEN 20
+> +
+> +#define VCPU_ID "vcpu_id"
+> +
+> +#define KVM_ENTRY_TRACE "kvm_hv:kvm_guest_enter"
+> +#define KVM_EXIT_TRACE "kvm_hv:kvm_guest_exit"
+> +#define KVM_EXIT_REASON "trap"
+> +
+> +#endif /* _ASM_POWERPC_KVM_PERF_H */
 
---TRYliJ5NKNqkz5bu
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Please make sure that anything book3s-specific is named that way.
 
-On Mon, 11 May 2015, Andrew Morton wrote:
+And shouldn't this be part of the arch/powerpc-side patchset?
 
-> On Mon, 11 May 2015 10:36:18 -0400 Eric B Munson <emunson@akamai.com> wro=
-te:
->=20
-> > On Fri, 08 May 2015, Andrew Morton wrote:
-> > ...
-> >
-> > >=20
-> > > Why can't the application mmap only those parts of the file which it
-> > > wants and mlock those?
-> >=20
-> > There are a number of problems with this approach.  The first is it
-> > presumes the program will know what portions are needed a head of time.
-> > In many cases this is simply not true.  The second problem is the number
-> > of syscalls required.  With my patches, a single mmap() or mlockall()
-> > call is needed to setup the required locking.  Without it, a separate
-> > mmap call must be made for each piece of data that is needed.  This also
-> > opens up problems for data that is arranged assuming it is contiguous in
-> > memory.  With the single mmap call, the user gets a contiguous VMA
-> > without having to know about it.  mmap() with MAP_FIXED could address
-> > the problem, but this introduces a new failure mode of your map
-> > colliding with another that was placed by the kernel.
-> >=20
-> > Another use case for the LOCKONFAULT flag is the security use of
-> > mlock().  If an application will be using data that cannot be written
-> > to swap, but the exact size is unknown until run time (all we have a
-> > build time is the maximum size the buffer can be).  The LOCKONFAULT flag
-> > allows the developer to create the buffer and guarantee that the
-> > contents are never written to swap without ever consuming more memory
-> > than is actually needed.
->=20
-> What application(s) or class of applications are we talking about here?
->=20
-> IOW, how generally applicable is this?  It sounds rather specialized.
->=20
+> diff --git a/tools/perf/arch/powerpc/Makefile b/tools/perf/arch/powerpc/Makefile
+> index 7fbca17..21322e0 100644
+> --- a/tools/perf/arch/powerpc/Makefile
+> +++ b/tools/perf/arch/powerpc/Makefile
+> @@ -1,3 +1,4 @@
+>  ifndef NO_DWARF
+>  PERF_HAVE_DWARF_REGS := 1
+>  endif
+> +HAVE_KVM_STAT_SUPPORT := 1
 
-For the example of a large file, this is the usage pattern for a large
-statical language model (probably applies to other statical or graphical
-models as well).  For the security example, any application transacting
-in data that cannot be swapped out (credit card data, medical records,
-etc).
+Does this stuff fail gracefully if used on a PPC target that doesn't
+support this?
 
-
---TRYliJ5NKNqkz5bu
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJVURmdAAoJELbVsDOpoOa9a0MP/2y5c7mdKE8qXiCYEBHY1vPr
-mMYr1mBF5plc21zbajP8EsFs+Ld/CdtHlmeYYS8WajfsgNYeC8/0agAzYVfJFsFP
-/wCPq8eC9v1kO+bl76ysR3eHpQ1vNFPwFlRfIJmKmoeA/0QJZESjuZKXbLyWCIbh
-fUft9fDVrTiKmIIPA+xU/LQBTJJG3JxM31EW0npZ5czeW82djBf1U4rqJuOJ/DFr
-yRFC6Ja9JRcamqDDlwnh2sI1GAT0xzWAr2dVYFEWLuin+zUAST0ByOvirtVW+Te3
-Tkd+VZ5D913uj32bJnSPFBR+XkKpXkmG2oH/bskpHi2f0IJOHq8Rwae5ONlsR3HG
-9ehYZk5j6XMi8p4zc77Gz4RrzOpzJWnQCtiwP0tRsCWwYDUzUtkt89I/jEp7ng/U
-vsV4QocVqk8cbmAj4kJ6lK1CSstR4vi1/kjdvnMiu0iHTMc7k/ZIguZaz4nmzq0j
-WDYnr87YYuOK5rPRR1U0zFHzsdC6rdcx9o5LQaEM7JUBm5Jg1aaC0ZPgs4kbzBtv
-iSPfAOjCtCetUfLF5rH+qEy06emMTxOTGXuEk1ozb+q/zm0C5cE6DrSOUabBfg8V
-QGAlOxZUcFQIBKgYNbhblA+edUvEL9aglNMl+91CDzk6CkNp35K2UnEk1LM4Bqqn
-mYcyYlFfiVQqWLOBBiX5
-=Su4z
------END PGP SIGNATURE-----
-
---TRYliJ5NKNqkz5bu--
+-Scott
