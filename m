@@ -1,39 +1,29 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pa0-f48.google.com (mail-pa0-f48.google.com
+ [209.85.220.48])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DBBB01A029F
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2015 12:00:07 +1000 (AEST)
-Received: from /spool/local
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Mon, 11 May 2015 12:00:05 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id A03FA357804C
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2015 12:00:02 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t4B1xrwP31064092
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2015 12:00:02 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t4B1xTAP016056
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2015 11:59:29 +1000
-Date: Mon, 11 May 2015 11:59:04 +1000
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: Bjorn Helgaas <bhelgaas@google.com>
-Subject: Re: [PATCH v4 01/21] pci: Add pcibios_setup_bridge()
-Message-ID: <20150511015904.GB3694@gwshan>
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <1430460188-31343-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1430460188-31343-2-git-send-email-gwshan@linux.vnet.ibm.com>
- <20150507221224.GN24643@google.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 10AC51A0010
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2015 12:11:25 +1000 (AEST)
+Received: by pacyx8 with SMTP id yx8so97615151pac.1
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 May 2015 19:11:23 -0700 (PDT)
+Message-ID: <55500FC3.1040007@ozlabs.ru>
+Date: Mon, 11 May 2015 12:11:15 +1000
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150507221224.GN24643@google.com>
-Cc: linux-pci@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: [PATCH kernel v9 26/32] powerpc/iommu: Add userspace view of
+ TCE table
+References: <1429964096-11524-1-git-send-email-aik@ozlabs.ru>
+ <1429964096-11524-27-git-send-email-aik@ozlabs.ru>
+ <20150429063113.GW32589@voom.redhat.com> <5542FA8D.2060400@ozlabs.ru>
+ <20150501042319.GM24886@voom.redhat.com> <5543276D.1090708@ozlabs.ru>
+ <20150505120252.GM14090@voom.redhat.com>
+In-Reply-To: <20150505120252.GM14090@voom.redhat.com>
+Content-Type: text/plain; charset=koi8-r; format=flowed
+Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,74 +33,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, May 07, 2015 at 05:12:24PM -0500, Bjorn Helgaas wrote:
->Hi Gavin,
+On 05/05/2015 10:02 PM, David Gibson wrote:
+> On Fri, May 01, 2015 at 05:12:45PM +1000, Alexey Kardashevskiy wrote:
+>> On 05/01/2015 02:23 PM, David Gibson wrote:
+>>> On Fri, May 01, 2015 at 02:01:17PM +1000, Alexey Kardashevskiy wrote:
+>>>> On 04/29/2015 04:31 PM, David Gibson wrote:
+>>>>> On Sat, Apr 25, 2015 at 10:14:50PM +1000, Alexey Kardashevskiy wrote:
+>>>>>> In order to support memory pre-registration, we need a way to track
+>>>>>> the use of every registered memory region and only allow unregistration
+>>>>>> if a region is not in use anymore. So we need a way to tell from what
+>>>>>> region the just cleared TCE was from.
+>>>>>>
+>>>>>> This adds a userspace view of the TCE table into iommu_table struct.
+>>>>>> It contains userspace address, one per TCE entry. The table is only
+>>>>>> allocated when the ownership over an IOMMU group is taken which means
+>>>>>> it is only used from outside of the powernv code (such as VFIO).
+>>>>>>
+>>>>>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+>>>>>> ---
+>>>>>> Changes:
+>>>>>> v9:
+>>>>>> * fixed code flow in error cases added in v8
+>>>>>>
+>>>>>> v8:
+>>>>>> * added ENOMEM on failed vzalloc()
+>>>>>> ---
+>>>>>>   arch/powerpc/include/asm/iommu.h          |  6 ++++++
+>>>>>>   arch/powerpc/kernel/iommu.c               | 18 ++++++++++++++++++
+>>>>>>   arch/powerpc/platforms/powernv/pci-ioda.c | 22 ++++++++++++++++++++--
+>>>>>>   3 files changed, 44 insertions(+), 2 deletions(-)
+>>>>>>
+>>>>>> diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
+>>>>>> index 7694546..1472de3 100644
+>>>>>> --- a/arch/powerpc/include/asm/iommu.h
+>>>>>> +++ b/arch/powerpc/include/asm/iommu.h
+>>>>>> @@ -111,9 +111,15 @@ struct iommu_table {
+>>>>>>   	unsigned long *it_map;       /* A simple allocation bitmap for now */
+>>>>>>   	unsigned long  it_page_shift;/* table iommu page size */
+>>>>>>   	struct iommu_table_group *it_table_group;
+>>>>>> +	unsigned long *it_userspace; /* userspace view of the table */
+>>>>>
+>>>>> A single unsigned long doesn't seem like enough.
+>>>>
+>>>> Why single? This is an array.
+>>>
+>>> As in single per page.
+>>
+>>
+>> Sorry, I am not following you here.
+>> It is per IOMMU page. MAP/UNMAP work with IOMMU pages which are fully backed
+>> with either system page or a huge page.
+>>
+>>
+>>>
+>>>>> How do you know
+>>>>> which process's address space this address refers to?
+>>>>
+>>>> It is a current task. Multiple userspaces cannot use the same container/tables.
+>>>
+>>> Where is that enforced?
+>>
+>>
+>> It is accessed from VFIO DMA map/unmap which are ioctls() to a container's
+>> fd which is per a process.
 >
->[Please run "git log --oneline drivers/pci/setup-bus.c" and observe the
->capitalization convention.]
->
+> Usually, but what enforces that.  If you open a container fd, then
+> fork(), and attempt to map from both parent and child, what happens?
 
-Bjorn, thanks for review. Yeah, it should be something like
-"PCI: xxxx" for the subject. I'll fix it up in next revision.
 
->On Fri, May 01, 2015 at 04:02:48PM +1000, Gavin Shan wrote:
->> Currently, PowerPC PowerNV platform utilizes ppc_md.pcibios_fixup(),
->> which is called for once after PCI probing and resource assignment
->> are completed, to allocate platform required resources for PCI devices:
->> PE#, IO and MMIO mapping, DMA address translation (TCE) table etc.
->> Obviously, it's not hotplug friendly.
->> 
->> The patch adds weak function pcibios_setup_bridge(), which is called
->> by pci_setup_bridge(). PowerPC PowerNV platform will reuse the function
->> to assign above platform required resources to newly added PCI devices,
->> in order to support PCI hotplug on PowerPC PowerNV platform.
->> 
->> Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
->> ---
->>  drivers/pci/setup-bus.c | 12 +++++++++---
->>  include/linux/pci.h     |  1 +
->>  2 files changed, 10 insertions(+), 3 deletions(-)
->> 
->> diff --git a/drivers/pci/setup-bus.c b/drivers/pci/setup-bus.c
->> index 4fd0cac..a7d0c3c 100644
->> --- a/drivers/pci/setup-bus.c
->> +++ b/drivers/pci/setup-bus.c
->> @@ -674,7 +674,8 @@ static void pci_setup_bridge_mmio_pref(struct pci_dev *bridge)
->>  	pci_write_config_dword(bridge, PCI_PREF_LIMIT_UPPER32, lu);
->>  }
->>  
->> -static void __pci_setup_bridge(struct pci_bus *bus, unsigned long type)
->> +
->> +void pci_setup_bridge_resources(struct pci_bus *bus, unsigned long type)
->>  {
->>  	struct pci_dev *bridge = bus->self;
->>  
->> @@ -693,12 +694,17 @@ static void __pci_setup_bridge(struct pci_bus *bus, unsigned long type)
->>  	pci_write_config_word(bridge, PCI_BRIDGE_CONTROL, bus->bridge_ctl);
->>  }
->>  
->> +void __weak pcibios_setup_bridge(struct pci_bus *bus, unsigned long type)
->> +{
->> +	pci_setup_bridge_resources(bus, type);
->> +}
->
->I'm not opposed to adding a pcibios_setup_bridge(), but I would rather do
->the architected updates in the generic PCI core code instead of down in the
->pcibios code.  In other words, I would rather have this:
->
->  void pci_setup_bridge(struct pci_bus *bus)
->  {
->    pcibios_setup_bridge(bus, type);
->    pci_setup_bridge_resources(bus, type);
->  }
->
->That way the default pcibios hook is empty, showing that by default there's
->no arch-specific code in this path, and we only have to look at the generic
->core code to verify that we actually do program the bridge windows.
->
+vfio_group_fops::open() checks if the group is already opened, and I want 
+to believe open() is called from fork() for new fd so no mapping can happen 
+later.
 
-Ok. I'll change the code accordingly in next revision. Thanks for the
-suggestion.
 
-Thanks,
-Gavin
+-- 
+Alexey
