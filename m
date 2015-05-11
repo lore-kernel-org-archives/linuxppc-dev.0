@@ -1,37 +1,23 @@
-Return-Path: <ldufour@linux.vnet.ibm.com>
-Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <zidan.wang@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0143.outbound.protection.outlook.com [207.46.100.143])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 08A5A1A0010
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2015 21:53:48 +1000 (AEST)
-Received: from /spool/local
- by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <ldufour@linux.vnet.ibm.com>;
- Mon, 11 May 2015 12:53:45 +0100
-Received: from b06cxnps3074.portsmouth.uk.ibm.com
- (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
- by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id 0EF692190056
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2015 12:53:24 +0100 (BST)
-Received: from d06av06.portsmouth.uk.ibm.com (d06av06.portsmouth.uk.ibm.com
- [9.149.37.217])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t4BBrgKO6095202
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2015 11:53:42 GMT
-Received: from d06av06.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av06.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t4B6lfVO004762
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2015 02:47:41 -0400
-Message-ID: <55509844.7010304@linux.vnet.ibm.com>
-Date: Mon, 11 May 2015 13:53:40 +0200
-From: Laurent Dufour <ldufour@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 042F31A0035
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2015 21:55:15 +1000 (AEST)
+From: Zidan Wang <zidan.wang@freescale.com>
+To: <nicoleotsuka@gmail.com>
+Subject: [PATCH 1/3] ASoC: fsl_sai: add sai master mode support
+Date: Mon, 11 May 2015 18:24:41 +0800
+Message-ID: <1431339894-4248-1-git-send-email-zidan.wang@freescale.com>
+In-Reply-To: <cover.1431337606.git.zidan.wang@freescale.com>
+References: <cover.1431337606.git.zidan.wang@freescale.com>
 MIME-Version: 1.0
-To: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: powerpc: Enabling sys_kcmp for CRIU
-References: <20150511103115.DFE85140187@ozlabs.org>
-In-Reply-To: <20150511103115.DFE85140187@ozlabs.org>
-Content-Type: text/plain; charset=windows-1252
-Cc: paulus@samba.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain
+Cc: alsa-devel@alsa-project.org, timur@tabi.org,
+ Zidan Wang <zidan.wang@freescale.com>, Xiubo.Lee@gmail.com, tiwai@suse.de,
+ linux-kernel@vger.kernel.org, lgirdwood@gmail.com, perex@perex.cz,
+ broonie@kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,34 +27,240 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 11/05/2015 12:31, Michael Ellerman wrote:
-> On Tue, 2015-05-05 at 15:30:21 UTC, Laurent Dufour wrote:
->> The commit 8170a83f15ee ("powerpc: Wireup the kcmp syscall to sys_ni") has
->> disabled the kcmp syscall for powerpc.  This has been done due to the use
->> of unsigned long parameters which may require a dedicated wrapper to handle
->> 32bit process on top of 64bit kernel.  However in the kcmp() case, the 2
->> unsigned long parameters are currently only used to carry file descriptors
->> from user space to the kernel.  Since such a parameter is passed through
->> register, and file descriptor doesn't need to get extended, there is,
->> today, no need for a wrapper.
->>
->> In the case there will be a need to pass address in or out of this system
->> call, then a wrapper could be required, it will then be to care of it.
->>
->> As today this is not the case, it is safe to enable kcmp() on powerpc.
-> 
-> That's mostly convincing. Though I see that s390 does have a compat wrapper,
-> i386 doesn't. So who knows what that means.
-> 
-> But, there's a selftest in tools/testing/selftests/kcmp. So can you run that as
-> 32-bit and confirm it works? Then I'd be 100% convinced :)
+When sai works on master mode, set its bit clock and frame clock.
 
-Hi Michael,
+SAI has 4 MCLK source, bus clock, MCLK1, MCLK2 and MCLK3. fsl_sai_set_bclk
+will select proper MCLK source, then calculate and set the bit clock divider.
 
-I was myself a bit confused about this system call, so to be sure before
-sending the patch I ran the selftest/kcmp series on 64bit, 32bit, and
-also build it in 32bit and run it on top of a 64bit kernel without any
-trouble...
+After fsl_sai_set_bclk, enable the selected mclk in hw_params(), and add
+hw_free() to disable the mclk.
 
-Cheers,
-Laurent.
+Signed-off-by: Zidan Wang <zidan.wang@freescale.com>
+---
+ sound/soc/fsl/fsl_sai.c | 117 ++++++++++++++++++++++++++++++++++++++++++++++--
+ sound/soc/fsl/fsl_sai.h |   9 +++-
+ 2 files changed, 121 insertions(+), 5 deletions(-)
+
+diff --git a/sound/soc/fsl/fsl_sai.c b/sound/soc/fsl/fsl_sai.c
+index ee2671b..1ccc10d1 100644
+--- a/sound/soc/fsl/fsl_sai.c
++++ b/sound/soc/fsl/fsl_sai.c
+@@ -1,7 +1,7 @@
+ /*
+  * Freescale ALSA SoC Digital Audio Interface (SAI) driver.
+  *
+- * Copyright 2012-2013 Freescale Semiconductor, Inc.
++ * Copyright 2012-2015 Freescale Semiconductor, Inc.
+  *
+  * This program is free software, you can redistribute it and/or modify it
+  * under the terms of the GNU General Public License as published by the
+@@ -251,12 +251,14 @@ static int fsl_sai_set_dai_fmt_tr(struct snd_soc_dai *cpu_dai,
+ 		val_cr4 |= FSL_SAI_CR4_FSD_MSTR;
+ 		break;
+ 	case SND_SOC_DAIFMT_CBM_CFM:
++		sai->is_slave_mode = true;
+ 		break;
+ 	case SND_SOC_DAIFMT_CBS_CFM:
+ 		val_cr2 |= FSL_SAI_CR2_BCD_MSTR;
+ 		break;
+ 	case SND_SOC_DAIFMT_CBM_CFS:
+ 		val_cr4 |= FSL_SAI_CR4_FSD_MSTR;
++		sai->is_slave_mode = true;
+ 		break;
+ 	default:
+ 		return -EINVAL;
+@@ -288,6 +290,79 @@ static int fsl_sai_set_dai_fmt(struct snd_soc_dai *cpu_dai, unsigned int fmt)
+ 	return ret;
+ }
+ 
++static int fsl_sai_set_bclk(struct snd_soc_dai *dai, bool tx, u32 freq)
++{
++	struct fsl_sai *sai = snd_soc_dai_get_drvdata(dai);
++	unsigned long clk_rate;
++	u32 savediv = 0, ratio, savesub = freq;
++	u32 id;
++	int ret = 0;
++
++	/* Don't apply to slave mode */
++	if (sai->is_slave_mode)
++		return 0;
++
++	for (id = 0; id < FSL_SAI_MCLK_MAX; id++) {
++		clk_rate = clk_get_rate(sai->mclk_clk[id]);
++		if (!clk_rate)
++			continue;
++
++		ratio = clk_rate / freq;
++
++		ret = clk_rate - ratio * freq;
++
++		/*
++		 * Drop the source that can not be
++		 * divided into the required rate.
++		 */
++		if (ret != 0 && clk_rate / ret < 1000)
++			continue;
++
++		dev_dbg(dai->dev,
++			"ratio %d for freq %dHz based on clock %ldHz\n",
++			ratio, freq, clk_rate);
++
++		if (ratio % 2 == 0 && ratio >= 2 && ratio <= 512)
++			ratio /= 2;
++		else
++			continue;
++
++		if (ret < savesub) {
++			savediv = ratio;
++			sai->mclk_id[tx] = id;
++			savesub = ret;
++		}
++
++		if (ret == 0)
++			break;
++	}
++
++	if (savediv == 0) {
++		dev_err(dai->dev, "failed to derive required %cx rate: %d\n",
++				tx ? 'T' : 'R', freq);
++		return -EINVAL;
++	}
++
++	if ((tx && sai->synchronous[TX]) || (!tx && !sai->synchronous[RX])) {
++		regmap_update_bits(sai->regmap, FSL_SAI_RCR2,
++				   FSL_SAI_CR2_MSEL_MASK,
++				   FSL_SAI_CR2_MSEL(sai->mclk_id[tx]));
++		regmap_update_bits(sai->regmap, FSL_SAI_RCR2,
++				   FSL_SAI_CR2_DIV_MASK, savediv - 1);
++	} else {
++		regmap_update_bits(sai->regmap, FSL_SAI_TCR2,
++				   FSL_SAI_CR2_MSEL_MASK,
++				   FSL_SAI_CR2_MSEL(sai->mclk_id[tx]));
++		regmap_update_bits(sai->regmap, FSL_SAI_TCR2,
++				   FSL_SAI_CR2_DIV_MASK, savediv - 1);
++	}
++
++	dev_dbg(dai->dev, "best fit: clock id=%d, div=%d, deviation =%d\n",
++			sai->mclk_id[tx], savediv, savesub);
++
++	return 0;
++}
++
+ static int fsl_sai_hw_params(struct snd_pcm_substream *substream,
+ 		struct snd_pcm_hw_params *params,
+ 		struct snd_soc_dai *cpu_dai)
+@@ -297,6 +372,24 @@ static int fsl_sai_hw_params(struct snd_pcm_substream *substream,
+ 	unsigned int channels = params_channels(params);
+ 	u32 word_width = snd_pcm_format_width(params_format(params));
+ 	u32 val_cr4 = 0, val_cr5 = 0;
++	int ret;
++
++	if (!sai->is_slave_mode) {
++		ret = fsl_sai_set_bclk(cpu_dai, tx,
++			2 * word_width * params_rate(params));
++		if (ret)
++			return ret;
++
++		/* Do not enable the clock if it is already enabled */
++		if (!(sai->mclk_streams & BIT(substream->stream))) {
++			ret = clk_prepare_enable(sai->mclk_clk[sai->mclk_id[tx]]);
++			if (ret)
++				return ret;
++
++			sai->mclk_streams |= BIT(substream->stream);
++		}
++
++	}
+ 
+ 	if (!sai->is_dsp_mode)
+ 		val_cr4 |= FSL_SAI_CR4_SYWD(word_width);
+@@ -322,6 +415,22 @@ static int fsl_sai_hw_params(struct snd_pcm_substream *substream,
+ 	return 0;
+ }
+ 
++static int fsl_sai_hw_free(struct snd_pcm_substream *substream,
++		struct snd_soc_dai *cpu_dai)
++{
++	struct fsl_sai *sai = snd_soc_dai_get_drvdata(cpu_dai);
++	bool tx = substream->stream == SNDRV_PCM_STREAM_PLAYBACK;
++
++	if (!sai->is_slave_mode &&
++			sai->mclk_streams & BIT(substream->stream)) {
++		clk_disable_unprepare(sai->mclk_clk[sai->mclk_id[tx]]);
++		sai->mclk_streams &= ~BIT(substream->stream);
++	}
++
++	return 0;
++}
++
++
+ static int fsl_sai_trigger(struct snd_pcm_substream *substream, int cmd,
+ 		struct snd_soc_dai *cpu_dai)
+ {
+@@ -428,6 +537,7 @@ static const struct snd_soc_dai_ops fsl_sai_pcm_dai_ops = {
+ 	.set_sysclk	= fsl_sai_set_dai_sysclk,
+ 	.set_fmt	= fsl_sai_set_dai_fmt,
+ 	.hw_params	= fsl_sai_hw_params,
++	.hw_free	= fsl_sai_hw_free,
+ 	.trigger	= fsl_sai_trigger,
+ 	.startup	= fsl_sai_startup,
+ 	.shutdown	= fsl_sai_shutdown,
+@@ -600,8 +710,9 @@ static int fsl_sai_probe(struct platform_device *pdev)
+ 		sai->bus_clk = NULL;
+ 	}
+ 
+-	for (i = 0; i < FSL_SAI_MCLK_MAX; i++) {
+-		sprintf(tmp, "mclk%d", i + 1);
++	sai->mclk_clk[0] = sai->bus_clk;
++	for (i = 1; i < FSL_SAI_MCLK_MAX; i++) {
++		sprintf(tmp, "mclk%d", i);
+ 		sai->mclk_clk[i] = devm_clk_get(&pdev->dev, tmp);
+ 		if (IS_ERR(sai->mclk_clk[i])) {
+ 			dev_err(&pdev->dev, "failed to get mclk%d clock: %ld\n",
+diff --git a/sound/soc/fsl/fsl_sai.h b/sound/soc/fsl/fsl_sai.h
+index 3466720..0662809 100644
+--- a/sound/soc/fsl/fsl_sai.h
++++ b/sound/soc/fsl/fsl_sai.h
+@@ -72,13 +72,15 @@
+ 
+ /* SAI Transmit and Recieve Configuration 2 Register */
+ #define FSL_SAI_CR2_SYNC	BIT(30)
+-#define FSL_SAI_CR2_MSEL_MASK	(0xff << 26)
++#define FSL_SAI_CR2_MSEL_MASK	(0x3 << 26)
+ #define FSL_SAI_CR2_MSEL_BUS	0
+ #define FSL_SAI_CR2_MSEL_MCLK1	BIT(26)
+ #define FSL_SAI_CR2_MSEL_MCLK2	BIT(27)
+ #define FSL_SAI_CR2_MSEL_MCLK3	(BIT(26) | BIT(27))
++#define FSL_SAI_CR2_MSEL(ID)	((ID) << 26)
+ #define FSL_SAI_CR2_BCP		BIT(25)
+ #define FSL_SAI_CR2_BCD_MSTR	BIT(24)
++#define FSL_SAI_CR2_DIV_MASK	0xff
+ 
+ /* SAI Transmit and Recieve Configuration 3 Register */
+ #define FSL_SAI_CR3_TRCE	BIT(16)
+@@ -120,7 +122,7 @@
+ #define FSL_SAI_CLK_MAST2	2
+ #define FSL_SAI_CLK_MAST3	3
+ 
+-#define FSL_SAI_MCLK_MAX	3
++#define FSL_SAI_MCLK_MAX	4
+ 
+ /* SAI data transfer numbers per DMA request */
+ #define FSL_SAI_MAXBURST_TX 6
+@@ -132,11 +134,14 @@ struct fsl_sai {
+ 	struct clk *bus_clk;
+ 	struct clk *mclk_clk[FSL_SAI_MCLK_MAX];
+ 
++	bool is_slave_mode;
+ 	bool is_lsb_first;
+ 	bool is_dsp_mode;
+ 	bool sai_on_imx;
+ 	bool synchronous[2];
+ 
++	unsigned int mclk_id[2];
++	unsigned int mclk_streams;
+ 	struct snd_dmaengine_dai_dma_data dma_params_rx;
+ 	struct snd_dmaengine_dai_dma_data dma_params_tx;
+ };
+-- 
+1.9.1
