@@ -1,25 +1,25 @@
 Return-Path: <aik@ozlabs.ru>
-Received: from mail-pd0-f177.google.com (mail-pd0-f177.google.com
- [209.85.192.177])
+Received: from mail-pa0-f50.google.com (mail-pa0-f50.google.com
+ [209.85.220.50])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7B2781A0035
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2015 12:24:47 +1000 (AEST)
-Received: by pdbqa5 with SMTP id qa5so132383691pdb.1
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 May 2015 19:24:46 -0700 (PDT)
-Message-ID: <555012E7.4020106@ozlabs.ru>
-Date: Mon, 11 May 2015 12:24:39 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id EB5471A0035
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2015 12:26:26 +1000 (AEST)
+Received: by pabsx10 with SMTP id sx10so97908601pab.3
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 May 2015 19:26:24 -0700 (PDT)
+Message-ID: <5550134A.3000208@ozlabs.ru>
+Date: Mon, 11 May 2015 12:26:18 +1000
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 MIME-Version: 1.0
 To: David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: [PATCH kernel v9 27/32] powerpc/iommu/ioda2: Add get_table_size()
- to calculate the size of future table
+Subject: Re: [PATCH kernel v9 31/32] vfio: powerpc/spapr: Support multiple
+ groups in one container if possible
 References: <1429964096-11524-1-git-send-email-aik@ozlabs.ru>
- <1429964096-11524-28-git-send-email-aik@ozlabs.ru>
- <20150429064029.GX32589@voom.redhat.com> <5542FCD2.9000601@ozlabs.ru>
- <20150501051247.GP24886@voom.redhat.com> <554322D4.7070508@ozlabs.ru>
- <20150505115813.GL14090@voom.redhat.com>
-In-Reply-To: <20150505115813.GL14090@voom.redhat.com>
+ <1429964096-11524-32-git-send-email-aik@ozlabs.ru>
+ <20150430072221.GD24886@voom.redhat.com> <5541F6D5.9040809@ozlabs.ru>
+ <20150501043354.GN24886@voom.redhat.com> <554317A4.3090300@ozlabs.ru>
+ <20150505115025.GJ14090@voom.redhat.com>
+In-Reply-To: <20150505115025.GJ14090@voom.redhat.com>
 Content-Type: text/plain; charset=koi8-r; format=flowed
 Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
  Alex Williamson <alex.williamson@redhat.com>,
@@ -33,190 +33,99 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/05/2015 09:58 PM, David Gibson wrote:
-> On Fri, May 01, 2015 at 04:53:08PM +1000, Alexey Kardashevskiy wrote:
->> On 05/01/2015 03:12 PM, David Gibson wrote:
->>> On Fri, May 01, 2015 at 02:10:58PM +1000, Alexey Kardashevskiy wrote:
->>>> On 04/29/2015 04:40 PM, David Gibson wrote:
->>>>> On Sat, Apr 25, 2015 at 10:14:51PM +1000, Alexey Kardashevskiy wrote:
->>>>>> This adds a way for the IOMMU user to know how much a new table will
->>>>>> use so it can be accounted in the locked_vm limit before allocation
->>>>>> happens.
->>>>>>
->>>>>> This stores the allocated table size in pnv_pci_create_table()
->>>>>> so the locked_vm counter can be updated correctly when a table is
->>>>>> being disposed.
->>>>>>
->>>>>> This defines an iommu_table_group_ops callback to let VFIO know
->>>>>> how much memory will be locked if a table is created.
+On 05/05/2015 09:50 PM, David Gibson wrote:
+> On Fri, May 01, 2015 at 04:05:24PM +1000, Alexey Kardashevskiy wrote:
+>> On 05/01/2015 02:33 PM, David Gibson wrote:
+>>> On Thu, Apr 30, 2015 at 07:33:09PM +1000, Alexey Kardashevskiy wrote:
+>>>> On 04/30/2015 05:22 PM, David Gibson wrote:
+>>>>> On Sat, Apr 25, 2015 at 10:14:55PM +1000, Alexey Kardashevskiy wrote:
+>>>>>> At the moment only one group per container is supported.
+>>>>>> POWER8 CPUs have more flexible design and allows naving 2 TCE tables per
+>>>>>> IOMMU group so we can relax this limitation and support multiple groups
+>>>>>> per container.
+>>>>>
+>>>>> It's not obvious why allowing multiple TCE tables per PE has any
+>>>>> pearing on allowing multiple groups per container.
+>>>>
+>>>>
+>>>> This patchset is a global TCE tables rework (patches 1..30, roughly) with 2
+>>>> outcomes:
+>>>> 1. reusing the same IOMMU table for multiple groups - patch 31;
+>>>> 2. allowing dynamic create/remove of IOMMU tables - patch 32.
+>>>>
+>>>> I can remove this one from the patchset and post it separately later but
+>>>> since 1..30 aim to support both 1) and 2), I'd think I better keep them all
+>>>> together (might explain some of changes I do in 1..30).
+>>>
+>>> The combined patchset is fine.  My comment is because your commit
+>>> message says that multiple groups are possible *because* 2 TCE tables
+>>> per group are allowed, and it's not at all clear why one follows from
+>>> the other.
+>>
+>>
+>> Ah. That's wrong indeed, I'll fix it.
+>>
+>>
+>>>>>> This adds TCE table descriptors to a container and uses iommu_table_group_ops
+>>>>>> to create/set DMA windows on IOMMU groups so the same TCE tables will be
+>>>>>> shared between several IOMMU groups.
 >>>>>>
 >>>>>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+>>>>>> [aw: for the vfio related changes]
+>>>>>> Acked-by: Alex Williamson <alex.williamson@redhat.com>
 >>>>>> ---
 >>>>>> Changes:
->>>>>> v9:
->>>>>> * reimplemented the whole patch
+>>>>>> v7:
+>>>>>> * updated doc
 >>>>>> ---
->>>>>>   arch/powerpc/include/asm/iommu.h          |  5 +++++
->>>>>>   arch/powerpc/platforms/powernv/pci-ioda.c | 14 ++++++++++++
->>>>>>   arch/powerpc/platforms/powernv/pci.c      | 36 +++++++++++++++++++++++++++++++
->>>>>>   arch/powerpc/platforms/powernv/pci.h      |  2 ++
->>>>>>   4 files changed, 57 insertions(+)
+>>>>>>   Documentation/vfio.txt              |   8 +-
+>>>>>>   drivers/vfio/vfio_iommu_spapr_tce.c | 268 ++++++++++++++++++++++++++----------
+>>>>>>   2 files changed, 199 insertions(+), 77 deletions(-)
 >>>>>>
->>>>>> diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
->>>>>> index 1472de3..9844c106 100644
->>>>>> --- a/arch/powerpc/include/asm/iommu.h
->>>>>> +++ b/arch/powerpc/include/asm/iommu.h
->>>>>> @@ -99,6 +99,7 @@ struct iommu_table {
->>>>>>   	unsigned long  it_size;      /* Size of iommu table in entries */
->>>>>>   	unsigned long  it_indirect_levels;
->>>>>>   	unsigned long  it_level_size;
->>>>>> +	unsigned long  it_allocated_size;
->>>>>>   	unsigned long  it_offset;    /* Offset into global table */
->>>>>>   	unsigned long  it_base;      /* mapped address of tce table */
->>>>>>   	unsigned long  it_index;     /* which iommu table this is */
->>>>>> @@ -155,6 +156,10 @@ extern struct iommu_table *iommu_init_table(struct iommu_table * tbl,
->>>>>>   struct iommu_table_group;
+>>>>>> diff --git a/Documentation/vfio.txt b/Documentation/vfio.txt
+>>>>>> index 94328c8..7dcf2b5 100644
+>>>>>> --- a/Documentation/vfio.txt
+>>>>>> +++ b/Documentation/vfio.txt
+>>>>>> @@ -289,10 +289,12 @@ PPC64 sPAPR implementation note
 >>>>>>
->>>>>>   struct iommu_table_group_ops {
->>>>>> +	unsigned long (*get_table_size)(
->>>>>> +			__u32 page_shift,
->>>>>> +			__u64 window_size,
->>>>>> +			__u32 levels);
->>>>>>   	long (*create_table)(struct iommu_table_group *table_group,
->>>>>>   			int num,
->>>>>>   			__u32 page_shift,
->>>>>> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
->>>>>> index e0be556..7f548b4 100644
->>>>>> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
->>>>>> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
->>>>>> @@ -2062,6 +2062,18 @@ static void pnv_pci_ioda2_setup_bypass_pe(struct pnv_phb *phb,
->>>>>>   }
+>>>>>>   This implementation has some specifics:
 >>>>>>
->>>>>>   #ifdef CONFIG_IOMMU_API
->>>>>> +static unsigned long pnv_pci_ioda2_get_table_size(__u32 page_shift,
->>>>>> +		__u64 window_size, __u32 levels)
->>>>>> +{
->>>>>> +	unsigned long ret = pnv_get_table_size(page_shift, window_size, levels);
->>>>>> +
->>>>>> +	if (!ret)
->>>>>> +		return ret;
->>>>>> +
->>>>>> +	/* Add size of it_userspace */
->>>>>> +	return ret + (window_size >> page_shift) * sizeof(unsigned long);
+>>>>>> -1) Only one IOMMU group per container is supported as an IOMMU group
+>>>>>> -represents the minimal entity which isolation can be guaranteed for and
+>>>>>> -groups are allocated statically, one per a Partitionable Endpoint (PE)
+>>>>>> +1) On older systems (POWER7 with P5IOC2/IODA1) only one IOMMU group per
+>>>>>> +container is supported as an IOMMU table is allocated at the boot time,
+>>>>>> +one table per a IOMMU group which is a Partitionable Endpoint (PE)
+>>>>>>   (PE is often a PCI domain but not always).
 >>>>>
->>>>> This doesn't make much sense.  The userspace view can't possibly be a
->>>>> property of the specific low-level IOMMU model.
+>>>>> I thought the more fundamental problem was that different PEs tended
+>>>>> to use disjoint bus address ranges, so even by duplicating put_tce
+>>>>> across PEs you couldn't have a common address space.
 >>>>
 >>>>
->>>> This it_userspace thing is all about memory preregistration.
+>>>> Sorry, I am not following you here.
 >>>>
->>>> I need some way to track how many actual mappings the
->>>> mm_iommu_table_group_mem_t has in order to decide whether to allow
->>>> unregistering or not.
->>>>
->>>> When I clear TCE, I can read the old value which is host physical address
->>>> which I cannot use to find the preregistered region and adjust the mappings
->>>> counter; I can only use userspace addresses for this (not even guest
->>>> physical addresses as it is VFIO and probably no KVM).
->>>>
->>>> So I have to keep userspace addresses somewhere, one per IOMMU page, and the
->>>> iommu_table seems a natural place for this.
+>>>> By duplicating put_tce, I can have multiple IOMMU groups on the same virtual
+>>>> PHB in QEMU, "[PATCH qemu v7 04/14] spapr_pci_vfio: Enable multiple groups
+>>>> per container" does this, the address ranges will the same.
 >>>
->>> Well.. sort of.  But as noted elsewhere this pulls VFIO specific
->>> constraints into a platform code structure.  And whether you get this
->>> table depends on the platform IOMMU type rather than on what VFIO
->>> wants to do with it, which doesn't make sense.
->>>
->>> What might make more sense is an opaque pointer io iommu_table for use
->>> by the table "owner" (in the take_ownership sense).  The pointer would
->>> be stored in iommu_table, but VFIO is responsible for populating and
->>> managing its contents.
->>>
->>> Or you could just put the userspace mappings in the container.
->>> Although you might want a different data structure in that case.
+>>> Oh, ok.  For some reason I thought that (at least on the older
+>>> machines) the different PEs used different and not easily changeable
+>>> DMA windows in bus addresses space.
 >>
->> Nope. I need this table in in-kernel acceleration to update the mappings
->> counter per mm_iommu_table_group_mem_t. In KVM's real mode handlers, I only
->> have IOMMU tables, not containers or groups. QEMU creates a guest view of
->> the table (KVM_CREATE_SPAPR_TCE) specifying a LIOBN, and then attaches TCE
->> tables to it via set of ioctls (one per IOMMU group) to VFIO KVM device.
 >>
->> So if I call it it_opaque (instead of it_userspace), I will still need a
->> common place (visible to VFIO and PowerKVM) for this to put:
->> #define IOMMU_TABLE_USERSPACE_ENTRY(tbl, entry)
+>> They do use different tables (which VFIO does not get to remove/create and
+>> uses these old helpers - iommu_take/release_ownership), correct. But all
+>> these windows are mapped at zero on a PE's PCI bus and nothing prevents me
+>> from updating all these tables with the same TCE values when handling
+>> H_PUT_TCE. Yes it is slow but it works (bit more details below).
 >
-> I think it should be in a VFIO header.  If I'm understanding right
-> this part of the PowerKVM code is explicitly VFIO aware - that's kind
-> of the point.
-
-Well. 2 points against it are:
-
-1. arch/powerpc/kvm/book3s_64_vio_hv.c and arch/powerpc/kvm/book3s_64_vio.c 
-are not including any of vfio headers now (all required liobn<->iommu 
-hooking bits are in virt/kvm/vfio.c), and I kind of like it.
-
-2. for me it seems like a good idea to keep an accessor close to what it 
-provides the access to. Since I cannot move it_userspace somewhere else, I 
-should not move IOMMU_TABLE_USERSPACE_ENTRY() either.
+> Um.. I'm pretty sure that contradicts what Ben was saying on the
+> thread.
 
 
+True, it does contradict, I do not know why he said what he said :)
 
->> So far this place was arch/powerpc/include/asm/iommu.h and the iommu_table
->> struct.
->>
->>
->>> The other thing to bear in mind is that registered regions are likely
->>> to be large contiguous blocks in user addresses, though obviously not
->>> contiguous in physical addr.  So you might be able to compaticfy this
->>> information by storing it as a list of variable length blocks in
->>> userspace address space, rather than a per-page address..
->>
->> It is 8 bytes per system page - 8/65536 = 0.00012 (or 26MB for 200GB guest)
->> - very little overhead.
->>
->>
->>> But.. isn't there a bigger problem here.  As Paulus was pointing out,
->>> there's nothing guaranteeing the page tables continue to contain the
->>> same page as was there at gup() time.
->>
->> This can happen if the userspace remaps memory which it registered/mapped
->> for DMA via VFIO, no? If so, then the userspace just should not do this, it
->> is DMA, it cannot be moved like this. What am I missing here?
->>
->>
->>> What's going to happen if you REGISTER a memory region, then mremap()
->>> over it?
->>
->> The registered pages will remain pinned and PUT_TCE will use that region for
->> translation (and this will fail as the userspace addresses changed).
->>
->> I do not see how it is different from the situation when the userspace
->> mapped a page and mremap()ed it while it is DMA-mapped.
->
-> True, it's basically the same.  Hrm, so what guarantees a dma_map,
-> mremap() dma_unmap will unreference the correct pages.
-
-The original page will remain pinned, wrong one will be unpinned, access to 
-it will produce EEH, the process exit will do cleanup. What is the problem 
-here? Inability for the userspace to dma_map() and then remap()? I do not 
-think x86 (or anything else) can and should cope with this well, it is DMA, 
-you just cannot do certain things when you work with DMA...
-
-
-
->>> Then attempt to PUT_TCE a page in the region? Or what if you
->>> mremap() it to someplace else then try to PUT_TCE a page there?
->>
->> This will fail - a new userspace address has to be preregistered.
->>
->>> Or REGISTER it again in its new location?
->>
->> It will be pinned twice + some memory overhead to store the same host
->> physical address(es) twice.
->>
->>
->>
->
 
 
 -- 
