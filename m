@@ -1,29 +1,38 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pa0-f50.google.com (mail-pa0-f50.google.com
- [209.85.220.50])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id EB5471A0035
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2015 12:26:26 +1000 (AEST)
-Received: by pabsx10 with SMTP id sx10so97908601pab.3
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 May 2015 19:26:24 -0700 (PDT)
-Message-ID: <5550134A.3000208@ozlabs.ru>
-Date: Mon, 11 May 2015 12:26:18 +1000
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0F0421A0010
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2015 12:38:09 +1000 (AEST)
+Received: from /spool/local
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Mon, 11 May 2015 12:38:07 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 3FD98357804C
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2015 12:38:05 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t4B2buRm26869884
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2015 12:38:05 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t4B2bWm5004373
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2015 12:37:32 +1000
+Date: Mon, 11 May 2015 12:37:07 +1000
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: Wei Yang <weiyang@linux.vnet.ibm.com>
+Subject: Re: [PATCH V3 5/9] powerpc/eeh: create EEH_PE_VF for VF PE
+Message-ID: <20150511023707.GA8816@gwshan>
+Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+References: <1430723258-21299-1-git-send-email-weiyang@linux.vnet.ibm.com>
+ <1430723258-21299-6-git-send-email-weiyang@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: [PATCH kernel v9 31/32] vfio: powerpc/spapr: Support multiple
- groups in one container if possible
-References: <1429964096-11524-1-git-send-email-aik@ozlabs.ru>
- <1429964096-11524-32-git-send-email-aik@ozlabs.ru>
- <20150430072221.GD24886@voom.redhat.com> <5541F6D5.9040809@ozlabs.ru>
- <20150501043354.GN24886@voom.redhat.com> <554317A4.3090300@ozlabs.ru>
- <20150505115025.GJ14090@voom.redhat.com>
-In-Reply-To: <20150505115025.GJ14090@voom.redhat.com>
-Content-Type: text/plain; charset=koi8-r; format=flowed
-Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
- Alex Williamson <alex.williamson@redhat.com>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1430723258-21299-6-git-send-email-weiyang@linux.vnet.ibm.com>
+Cc: bhelgaas@google.com, linux-pci@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, gwshan@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,100 +42,128 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/05/2015 09:50 PM, David Gibson wrote:
-> On Fri, May 01, 2015 at 04:05:24PM +1000, Alexey Kardashevskiy wrote:
->> On 05/01/2015 02:33 PM, David Gibson wrote:
->>> On Thu, Apr 30, 2015 at 07:33:09PM +1000, Alexey Kardashevskiy wrote:
->>>> On 04/30/2015 05:22 PM, David Gibson wrote:
->>>>> On Sat, Apr 25, 2015 at 10:14:55PM +1000, Alexey Kardashevskiy wrote:
->>>>>> At the moment only one group per container is supported.
->>>>>> POWER8 CPUs have more flexible design and allows naving 2 TCE tables per
->>>>>> IOMMU group so we can relax this limitation and support multiple groups
->>>>>> per container.
->>>>>
->>>>> It's not obvious why allowing multiple TCE tables per PE has any
->>>>> pearing on allowing multiple groups per container.
->>>>
->>>>
->>>> This patchset is a global TCE tables rework (patches 1..30, roughly) with 2
->>>> outcomes:
->>>> 1. reusing the same IOMMU table for multiple groups - patch 31;
->>>> 2. allowing dynamic create/remove of IOMMU tables - patch 32.
->>>>
->>>> I can remove this one from the patchset and post it separately later but
->>>> since 1..30 aim to support both 1) and 2), I'd think I better keep them all
->>>> together (might explain some of changes I do in 1..30).
->>>
->>> The combined patchset is fine.  My comment is because your commit
->>> message says that multiple groups are possible *because* 2 TCE tables
->>> per group are allowed, and it's not at all clear why one follows from
->>> the other.
->>
->>
->> Ah. That's wrong indeed, I'll fix it.
->>
->>
->>>>>> This adds TCE table descriptors to a container and uses iommu_table_group_ops
->>>>>> to create/set DMA windows on IOMMU groups so the same TCE tables will be
->>>>>> shared between several IOMMU groups.
->>>>>>
->>>>>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
->>>>>> [aw: for the vfio related changes]
->>>>>> Acked-by: Alex Williamson <alex.williamson@redhat.com>
->>>>>> ---
->>>>>> Changes:
->>>>>> v7:
->>>>>> * updated doc
->>>>>> ---
->>>>>>   Documentation/vfio.txt              |   8 +-
->>>>>>   drivers/vfio/vfio_iommu_spapr_tce.c | 268 ++++++++++++++++++++++++++----------
->>>>>>   2 files changed, 199 insertions(+), 77 deletions(-)
->>>>>>
->>>>>> diff --git a/Documentation/vfio.txt b/Documentation/vfio.txt
->>>>>> index 94328c8..7dcf2b5 100644
->>>>>> --- a/Documentation/vfio.txt
->>>>>> +++ b/Documentation/vfio.txt
->>>>>> @@ -289,10 +289,12 @@ PPC64 sPAPR implementation note
->>>>>>
->>>>>>   This implementation has some specifics:
->>>>>>
->>>>>> -1) Only one IOMMU group per container is supported as an IOMMU group
->>>>>> -represents the minimal entity which isolation can be guaranteed for and
->>>>>> -groups are allocated statically, one per a Partitionable Endpoint (PE)
->>>>>> +1) On older systems (POWER7 with P5IOC2/IODA1) only one IOMMU group per
->>>>>> +container is supported as an IOMMU table is allocated at the boot time,
->>>>>> +one table per a IOMMU group which is a Partitionable Endpoint (PE)
->>>>>>   (PE is often a PCI domain but not always).
->>>>>
->>>>> I thought the more fundamental problem was that different PEs tended
->>>>> to use disjoint bus address ranges, so even by duplicating put_tce
->>>>> across PEs you couldn't have a common address space.
->>>>
->>>>
->>>> Sorry, I am not following you here.
->>>>
->>>> By duplicating put_tce, I can have multiple IOMMU groups on the same virtual
->>>> PHB in QEMU, "[PATCH qemu v7 04/14] spapr_pci_vfio: Enable multiple groups
->>>> per container" does this, the address ranges will the same.
->>>
->>> Oh, ok.  For some reason I thought that (at least on the older
->>> machines) the different PEs used different and not easily changeable
->>> DMA windows in bus addresses space.
->>
->>
->> They do use different tables (which VFIO does not get to remove/create and
->> uses these old helpers - iommu_take/release_ownership), correct. But all
->> these windows are mapped at zero on a PE's PCI bus and nothing prevents me
->> from updating all these tables with the same TCE values when handling
->> H_PUT_TCE. Yes it is slow but it works (bit more details below).
+On Mon, May 04, 2015 at 03:07:34PM +0800, Wei Yang wrote:
+
+Please reorder PATCH[6] with this one because the EEH device is expected
+to be created before EEH PE.
+
+>On powernv platform, VF PE is a special PE which is different from the Bus
+>PE.  On the EEH side, it needs a corresponding concept to handle the VF PE
+>properly. For example, we need to create VF PE when VF's pci_dev is
+>initialized in kernel. And add a flag to mark it is a VF PF.
+                                                       ^^^^^
 >
-> Um.. I'm pretty sure that contradicts what Ben was saying on the
-> thread.
 
+>From above commit log, my understanding is that you're adding a flag to
+identify VF PE, which is handled differently from bus PE. You missed the
+details on the difference between them and the speical treament to VF PE.
+Could you help add those information in the commit log to make it looks
+complete?
 
-True, it does contradict, I do not know why he said what he said :)
+>This patch introduces the EEH_PE_VF type for VF PE and creates it for a VF.
+>At the mean time, it creates the sysfs and address cache for VF PE.
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+                   it creates the sysfs and address cache for VF PE at PCI
+device final fixup time.
 
+>
+>Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
+>---
+> arch/powerpc/include/asm/eeh.h               |    1 +
+> arch/powerpc/kernel/eeh_pe.c                 |   12 ++++++++++--
+> arch/powerpc/platforms/powernv/eeh-powernv.c |   12 ++++++++++++
+> 3 files changed, 23 insertions(+), 2 deletions(-)
+>
+>diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
+>index a52db28..56e8cd9 100644
+>--- a/arch/powerpc/include/asm/eeh.h
+>+++ b/arch/powerpc/include/asm/eeh.h
+>@@ -70,6 +70,7 @@ struct pci_dn;
+> #define EEH_PE_PHB	(1 << 1)	/* PHB PE    */
+> #define EEH_PE_DEVICE 	(1 << 2)	/* Device PE */
+> #define EEH_PE_BUS	(1 << 3)	/* Bus PE    */
+>+#define EEH_PE_VF	(1 << 4)	/* VF PE     */
+>
+> #define EEH_PE_ISOLATED		(1 << 0)	/* Isolated PE		*/
+> #define EEH_PE_RECOVERING	(1 << 1)	/* Recovering PE	*/
+>diff --git a/arch/powerpc/kernel/eeh_pe.c b/arch/powerpc/kernel/eeh_pe.c
+>index 35f0b62..edfe63a 100644
+>--- a/arch/powerpc/kernel/eeh_pe.c
+>+++ b/arch/powerpc/kernel/eeh_pe.c
+>@@ -299,7 +299,12 @@ static struct eeh_pe *eeh_pe_get_parent(struct eeh_dev *edev)
+> 	 * EEH device already having associated PE, but
+> 	 * the direct parent EEH device doesn't have yet.
+> 	 */
+>-	pdn = pdn ? pdn->parent : NULL;
+>+#ifdef CONFIG_PCI_IOV
+>+	if (edev->mode & EEH_DEV_VF)
+>+		pdn = pci_get_pdn(edev->physfn);
+>+	else
+>+#endif
+>+		pdn = pdn ? pdn->parent : NULL;
 
--- 
-Alexey
+[A]
+
+> 	while (pdn) {
+> 		/* We're poking out of PCI territory */
+> 		parent = pdn_to_eeh_dev(pdn);
+>@@ -382,7 +387,10 @@ int eeh_add_to_parent_pe(struct eeh_dev *edev)
+> 	}
+>
+> 	/* Create a new EEH PE */
+>-	pe = eeh_pe_alloc(edev->phb, EEH_PE_DEVICE);
+>+	if (edev->mode & EEH_DEV_VF)
+>+		pe = eeh_pe_alloc(edev->phb, EEH_PE_VF);
+>+	else
+>+		pe = eeh_pe_alloc(edev->phb, EEH_PE_DEVICE);
+
+You don't have CONFIG_PCI_IOV here to protect the code, but you had
+that at [A]. In order to keep the code look consistent, you either
+add it or remove it for all places. I prefer to remove it, which
+we don't need CONFIG_PCI_IOV.
+ 
+> 	if (!pe) {
+> 		pr_err("%s: out of memory!\n", __func__);
+> 		return -ENOMEM;
+>diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
+>index 622f08c..5447481 100644
+>--- a/arch/powerpc/platforms/powernv/eeh-powernv.c
+>+++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
+>@@ -1540,3 +1540,15 @@ static int __init eeh_powernv_init(void)
+> 	return ret;
+> }
+> machine_early_initcall(powernv, eeh_powernv_init);
+>+
+>+#ifdef CONFIG_PCI_IOV
+>+static void pnv_pci_fixup_vf_eeh(struct pci_dev *pdev)
+>+{
+
+Please rename it to pnv_eeh_vf_final_fixup(). Names of all functions
+in this file expect prefix "pnv_eeh_". With "_final_", it's clearly
+to tell it's called on PCI device final fixup time.
+
+>+	/* sysfs files should only be added after devices are added */
+
+It's nice to explain why here: sysfs for the PCI device isn't populated
+and the MMIO resource isn't finalized for the PCI device yet.
+
+>+	if (pdev->is_virtfn) {
+>+		eeh_add_device_late(pdev);
+>+		eeh_sysfs_add_device(pdev);
+>+	}
+>+}
+
+The nested ifdef can be avoided as:
+
+	if (!pdev->is_virtfn)
+		return;
+
+	eeh_add_device_late(pdev);
+	eeh_sysfs_add_device(pdev);
+
+>+DECLARE_PCI_FIXUP_FINAL(PCI_ANY_ID, PCI_ANY_ID, pnv_pci_fixup_vf_eeh);
+>+#endif /* CONFIG_PCI_IOV */
+
+Thanks,
+Gavin
