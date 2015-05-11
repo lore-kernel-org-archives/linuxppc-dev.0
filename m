@@ -1,29 +1,38 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pa0-f48.google.com (mail-pa0-f48.google.com
- [209.85.220.48])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 10AC51A0010
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2015 12:11:25 +1000 (AEST)
-Received: by pacyx8 with SMTP id yx8so97615151pac.1
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 10 May 2015 19:11:23 -0700 (PDT)
-Message-ID: <55500FC3.1040007@ozlabs.ru>
-Date: Mon, 11 May 2015 12:11:15 +1000
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6BB931A0035
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2015 12:19:32 +1000 (AEST)
+Received: from /spool/local
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Mon, 11 May 2015 12:19:30 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 31B0E2CE804E
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2015 12:19:28 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t4B2JJVx30736452
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2015 12:19:28 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t4B2ItpO004966
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2015 12:18:55 +1000
+Date: Mon, 11 May 2015 12:13:31 +1000
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: Wei Yang <weiyang@linux.vnet.ibm.com>
+Subject: Re: [PATCH V3 1/9] pci/iov: rename and export virtfn_add/virtfn_remove
+Message-ID: <20150511021331.GC3694@gwshan>
+Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+References: <1430723258-21299-1-git-send-email-weiyang@linux.vnet.ibm.com>
+ <1430723258-21299-2-git-send-email-weiyang@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: [PATCH kernel v9 26/32] powerpc/iommu: Add userspace view of
- TCE table
-References: <1429964096-11524-1-git-send-email-aik@ozlabs.ru>
- <1429964096-11524-27-git-send-email-aik@ozlabs.ru>
- <20150429063113.GW32589@voom.redhat.com> <5542FA8D.2060400@ozlabs.ru>
- <20150501042319.GM24886@voom.redhat.com> <5543276D.1090708@ozlabs.ru>
- <20150505120252.GM14090@voom.redhat.com>
-In-Reply-To: <20150505120252.GM14090@voom.redhat.com>
-Content-Type: text/plain; charset=koi8-r; format=flowed
-Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
- Alex Williamson <alex.williamson@redhat.com>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1430723258-21299-2-git-send-email-weiyang@linux.vnet.ibm.com>
+Cc: bhelgaas@google.com, linux-pci@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, gwshan@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,78 +42,103 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/05/2015 10:02 PM, David Gibson wrote:
-> On Fri, May 01, 2015 at 05:12:45PM +1000, Alexey Kardashevskiy wrote:
->> On 05/01/2015 02:23 PM, David Gibson wrote:
->>> On Fri, May 01, 2015 at 02:01:17PM +1000, Alexey Kardashevskiy wrote:
->>>> On 04/29/2015 04:31 PM, David Gibson wrote:
->>>>> On Sat, Apr 25, 2015 at 10:14:50PM +1000, Alexey Kardashevskiy wrote:
->>>>>> In order to support memory pre-registration, we need a way to track
->>>>>> the use of every registered memory region and only allow unregistration
->>>>>> if a region is not in use anymore. So we need a way to tell from what
->>>>>> region the just cleared TCE was from.
->>>>>>
->>>>>> This adds a userspace view of the TCE table into iommu_table struct.
->>>>>> It contains userspace address, one per TCE entry. The table is only
->>>>>> allocated when the ownership over an IOMMU group is taken which means
->>>>>> it is only used from outside of the powernv code (such as VFIO).
->>>>>>
->>>>>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
->>>>>> ---
->>>>>> Changes:
->>>>>> v9:
->>>>>> * fixed code flow in error cases added in v8
->>>>>>
->>>>>> v8:
->>>>>> * added ENOMEM on failed vzalloc()
->>>>>> ---
->>>>>>   arch/powerpc/include/asm/iommu.h          |  6 ++++++
->>>>>>   arch/powerpc/kernel/iommu.c               | 18 ++++++++++++++++++
->>>>>>   arch/powerpc/platforms/powernv/pci-ioda.c | 22 ++++++++++++++++++++--
->>>>>>   3 files changed, 44 insertions(+), 2 deletions(-)
->>>>>>
->>>>>> diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
->>>>>> index 7694546..1472de3 100644
->>>>>> --- a/arch/powerpc/include/asm/iommu.h
->>>>>> +++ b/arch/powerpc/include/asm/iommu.h
->>>>>> @@ -111,9 +111,15 @@ struct iommu_table {
->>>>>>   	unsigned long *it_map;       /* A simple allocation bitmap for now */
->>>>>>   	unsigned long  it_page_shift;/* table iommu page size */
->>>>>>   	struct iommu_table_group *it_table_group;
->>>>>> +	unsigned long *it_userspace; /* userspace view of the table */
->>>>>
->>>>> A single unsigned long doesn't seem like enough.
->>>>
->>>> Why single? This is an array.
->>>
->>> As in single per page.
->>
->>
->> Sorry, I am not following you here.
->> It is per IOMMU page. MAP/UNMAP work with IOMMU pages which are fully backed
->> with either system page or a huge page.
->>
->>
->>>
->>>>> How do you know
->>>>> which process's address space this address refers to?
->>>>
->>>> It is a current task. Multiple userspaces cannot use the same container/tables.
->>>
->>> Where is that enforced?
->>
->>
->> It is accessed from VFIO DMA map/unmap which are ioctls() to a container's
->> fd which is per a process.
+On Mon, May 04, 2015 at 03:07:30PM +0800, Wei Yang wrote:
+>During the EEH procedure, when a device's driver is not EEH aware or no
+            ^^^^^^^^^^^^^
+            EEH recovery,
+
+>driver is binded with a device, EEH core would do hotplug on this devices.
+           ^^^^^^                                             ^^^^^^^^^^^^
+
+>While it isn't feasible for a VF with usual hotplug procedure. During
+>removal of a VF, virt_bus should be removed if necessary. During the
+>re-creation, the pci_scan_slot() doesn't work on a VF.
 >
-> Usually, but what enforces that.  If you open a container fd, then
-> fork(), and attempt to map from both parent and child, what happens?
 
+Is "virt_bus" related to those functions you try to export? Even so,
+you can simply have "virt_bus" in the commit log, please have "
+virtual bus" or the formal things like that.
 
-vfio_group_fops::open() checks if the group is already opened, and I want 
-to believe open() is called from fork() for new fd so no mapping can happen 
-later.
+>This patch exports two functions to handle the hotplug case for VF
+>properly. They will be invoked when the EEH core do the hotplug case for
+                                                 ^^^^
 
+>VFs.
 
--- 
-Alexey
+Couple of typos as above.
+
+Thanks,
+Gavin
+
+>
+>Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
+>---
+> drivers/pci/iov.c   |   10 +++++-----
+> include/linux/pci.h |    2 ++
+> 2 files changed, 7 insertions(+), 5 deletions(-)
+>
+>diff --git a/drivers/pci/iov.c b/drivers/pci/iov.c
+>index ee0ebff..cc941dd 100644
+>--- a/drivers/pci/iov.c
+>+++ b/drivers/pci/iov.c
+>@@ -108,7 +108,7 @@ resource_size_t pci_iov_resource_size(struct pci_dev *dev, int resno)
+> 	return dev->sriov->barsz[resno - PCI_IOV_RESOURCES];
+> }
+>
+>-static int virtfn_add(struct pci_dev *dev, int id, int reset)
+>+int pci_iov_virtfn_add(struct pci_dev *dev, int id, int reset)
+> {
+> 	int i;
+> 	int rc = -ENOMEM;
+>@@ -183,7 +183,7 @@ failed:
+> 	return rc;
+> }
+>
+>-static void virtfn_remove(struct pci_dev *dev, int id, int reset)
+>+void pci_iov_virtfn_remove(struct pci_dev *dev, int id, int reset)
+> {
+> 	char buf[VIRTFN_ID_LEN];
+> 	struct pci_dev *virtfn;
+>@@ -320,7 +320,7 @@ static int sriov_enable(struct pci_dev *dev, int nr_virtfn)
+> 	}
+>
+> 	for (i = 0; i < initial; i++) {
+>-		rc = virtfn_add(dev, i, 0);
+>+		rc = pci_iov_virtfn_add(dev, i, 0);
+> 		if (rc)
+> 			goto failed;
+> 	}
+>@@ -332,7 +332,7 @@ static int sriov_enable(struct pci_dev *dev, int nr_virtfn)
+>
+> failed:
+> 	for (j = 0; j < i; j++)
+>-		virtfn_remove(dev, j, 0);
+>+		pci_iov_virtfn_remove(dev, j, 0);
+>
+> 	iov->ctrl &= ~(PCI_SRIOV_CTRL_VFE | PCI_SRIOV_CTRL_MSE);
+> 	pci_cfg_access_lock(dev);
+>@@ -361,7 +361,7 @@ static void sriov_disable(struct pci_dev *dev)
+> 		return;
+>
+> 	for (i = 0; i < iov->num_VFs; i++)
+>-		virtfn_remove(dev, i, 0);
+>+		pci_iov_virtfn_remove(dev, i, 0);
+>
+> 	pcibios_sriov_disable(dev);
+>
+>diff --git a/include/linux/pci.h b/include/linux/pci.h
+>index 353db8d..94bacfa 100644
+>--- a/include/linux/pci.h
+>+++ b/include/linux/pci.h
+>@@ -1679,6 +1679,8 @@ int pci_iov_virtfn_devfn(struct pci_dev *dev, int id);
+>
+> int pci_enable_sriov(struct pci_dev *dev, int nr_virtfn);
+> void pci_disable_sriov(struct pci_dev *dev);
+>+int pci_iov_virtfn_add(struct pci_dev *dev, int id, int reset);
+>+void pci_iov_virtfn_remove(struct pci_dev *dev, int id, int reset);
+> int pci_num_vf(struct pci_dev *dev);
+> int pci_vfs_assigned(struct pci_dev *dev);
+> int pci_sriov_set_totalvfs(struct pci_dev *dev, u16 numvfs);
+>-- 
+>1.7.9.5
+>
