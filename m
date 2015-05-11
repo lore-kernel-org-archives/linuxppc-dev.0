@@ -1,18 +1,16 @@
 Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4EC421A0010
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2015 20:26:16 +1000 (AEST)
-In-Reply-To: <1430363091-27722-1-git-send-email-sukadev@linux.vnet.ibm.com>
-To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
- Paul Mackerras <paulus@samba.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 03E9D1A0010
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2015 20:31:16 +1000 (AEST)
+In-Reply-To: <1430839821-9259-1-git-send-email-ldufour@linux.vnet.ibm.com>
+To: Laurent Dufour <ldufour@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
 From: Michael Ellerman <mpe@ellerman.id.au>
-Subject: Re: [1/1] powerpc/hv-24x7: Check support before registering PMU
-Message-Id: <20150511102616.2004E140187@ozlabs.org>
-Date: Mon, 11 May 2015 20:26:15 +1000 (AEST)
-Cc: gusld@br.ibm.com, dev@codyps.com, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+Subject: Re: powerpc: Enabling sys_kcmp for CRIU
+Message-Id: <20150511103115.DFE85140187@ozlabs.org>
+Date: Mon, 11 May 2015 20:31:15 +1000 (AEST)
+Cc: paulus@samba.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,51 +20,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2015-30-04 at 03:04:51 UTC, Sukadev Bhattiprolu wrote:
-> We currently try to register the 24x7 PMU unconditionally. Not all
-> Power systems support 24x7 counters (eg: Power7). On these systems
-> we get a backtrace during boot when trying to register the 24x7 PMU.
+On Tue, 2015-05-05 at 15:30:21 UTC, Laurent Dufour wrote:
+> The commit 8170a83f15ee ("powerpc: Wireup the kcmp syscall to sys_ni") has
+> disabled the kcmp syscall for powerpc.  This has been done due to the use
+> of unsigned long parameters which may require a dedicated wrapper to handle
+> 32bit process on top of 64bit kernel.  However in the kcmp() case, the 2
+> unsigned long parameters are currently only used to carry file descriptors
+> from user space to the kernel.  Since such a parameter is passed through
+> register, and file descriptor doesn't need to get extended, there is,
+> today, no need for a wrapper.
 > 
-> Check if the hypervisor supports 24x7 counters before attempting to
-> register the 24x7 PMU.
+> In the case there will be a need to pass address in or out of this system
+> call, then a wrapper could be required, it will then be to care of it.
+> 
+> As today this is not the case, it is safe to enable kcmp() on powerpc.
 
-The concept is good, but ..
+That's mostly convincing. Though I see that s390 does have a compat wrapper,
+i386 doesn't. So who knows what that means.
 
-> diff --git a/arch/powerpc/perf/hv-24x7.c b/arch/powerpc/perf/hv-24x7.c
-> index ec2eb20..19a59a3 100644
-> --- a/arch/powerpc/perf/hv-24x7.c
-> +++ b/arch/powerpc/perf/hv-24x7.c
-> @@ -1268,12 +1268,44 @@ static struct pmu h_24x7_pmu = {
->  	.read        = h_24x7_event_read,
->  };
->  
-> +/*
-> + * Return 1 if we can access the 24x7 counter catalog from the hypervisor.
-> + * Return 0 otherwise.
-> + */
-> +static int hv_has_24x7(void)
-
-bool please
-
-> +{
-> +	int page_size = 4096;
-> +	unsigned long hret;
-> +	void *page;
-> +	struct hv_24x7_catalog_page_0 *page_0;
-> +
-> +	page_0 = kmalloc(page_size*2, GFP_KERNEL);
-> +	if (!page_0)
-> +		return 0;
-> +
-> +	/* buffer for catalog needs to be 4K-aligned */
-> +	page = (void *)((long)page_0 & (~page_size-1)) + page_size;
-> +	hret = h_get_24x7_catalog_page(page, 0, 0);
-> +	kfree(page_0);
-
-
-It shouldn't need to be this complicated.
-
-You should just be able to do the hcall with bogus args and if you get
-H_FUNCTION then 24x7 is not supported.
+But, there's a selftest in tools/testing/selftests/kcmp. So can you run that as
+32-bit and confirm it works? Then I'd be 100% convinced :)
 
 cheers
