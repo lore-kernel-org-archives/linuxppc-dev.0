@@ -1,37 +1,24 @@
-Return-Path: <benh@au1.ibm.com>
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <roy.pledge@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bbn0101.outbound.protection.outlook.com [157.56.111.101])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 49AB21A0007
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 06:40:52 +1000 (AEST)
-Received: from /spool/local
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <benh@au1.ibm.com>;
- Wed, 13 May 2015 06:40:51 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id C17C83578048
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 06:40:45 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t4CKebpu31064174
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 06:40:45 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t4CKeDcH012425
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 06:40:13 +1000
-Message-ID: <1431463180.20218.57.camel@au1.ibm.com>
-Subject: Re: G5 Xserve rackmeter broken?
-From: Benjamin Herrenschmidt <benh@au1.ibm.com>
-To: Aaro Koskinen <aaro.koskinen@iki.fi>
-Date: Wed, 13 May 2015 06:39:40 +1000
-In-Reply-To: <20150512175555.GB609@fuloong-minipc.musicnaut.iki.fi>
-References: <20150510183259.GA13777@aspire-one.musicnaut.iki.fi>
- <1431296015.13039.12.camel@kernel.crashing.org>
- <20150512175555.GB609@fuloong-minipc.musicnaut.iki.fi>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 512DC1A0007
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 07:19:32 +1000 (AEST)
+From: Roy Pledge <roy.pledge@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: RE: [PATCH 1/2] powerpc/qman: Change fsl,qman-channel-id to cell-index
+Date: Tue, 12 May 2015 21:19:24 +0000
+Message-ID: <BN3PR0301MB1267E5A61E7E5BC2789F9E898CDA0@BN3PR0301MB1267.namprd03.prod.outlook.com>
+References: <1429311187-19062-1-git-send-email-scottwood@freescale.com>
+ <BN3PR0301MB126796C0EC18EEBB26702C588CD10@BN3PR0301MB1267.namprd03.prod.outlook.com>
+ <1430858734.16357.256.camel@freescale.com>
+In-Reply-To: <1430858734.16357.256.camel@freescale.com>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ Madalin-Cristian Bucur <madalin.bucur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,12 +28,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-05-12 at 20:55 +0300, Aaro Koskinen wrote:
-> I'm running with HZ=100 so the values are still probably within
-> jiffy resolution, so perhaps the calculation should first do
-> idle = min(idle, total)?
-
-Does it gives you a reasonable output if you do that ?
-
-Cheers,
-Ben.
+PiA+DQo+ID4gSSBkb24ndCBiZWxpZXZlIHRoaXMgaXMgY29ycmVjdCAtIGxldCBtZSBleHBsYWlu
+IHRoZSByYXRpb25hbCB3aHkgd2UgaGFkIHR3bw0KPiBwcm9wZXJ0aWVzIGluIHRoZSBRTWFuIHBv
+cnRhbCB0byBiZWdpbiB3aXRoLg0KPiA+DQo+ID4gVGhlIHR3byBwcm9wZXJ0aWVzIGluIHF1ZXN0
+aW9uIGFyZSBjZWxsLWluZGV4IGFuZCBmc2wscW1hbi1jaGFubmVsLWlkLg0KPiA+DQo+ID4gVGhl
+IGNlbGwtaW5kZXggcHJvcGVydHkgaXMgdXNlZCBpbiB1LWJvb3QgYXMgYW4gaW5kZXggZm9yIHRo
+ZSBzb2Z0d2FyZSBwb3J0YWwNCj4gSUQgd2hlbiBhZGRpbmcgdGhlIGZzbCxsaW9kbiBmcm9tIHRo
+ZSBVLWJvb3QgdGFibGUgaW50byB0aGUgZGV2aWNlIHRyZWUuDQo+IA0KPiBUaGUgZGV2aWNlIHRy
+ZWUgaXMgbm90IHN1cHBvc2VkIHRvIGNvbnRhaW4gYXJiaXRyYXJ5IHNvZnR3YXJlIGlkZW50aWZp
+ZXJzLg0KDQpJIGFncmVlIC0gdGhpcyBpcyB3aHkgdGhlIG9yaWdpbmFsIGRldmljZSB0cmVlIGJp
+bmRpbmdzIHJlbW92ZWQgY2VsbC1pbmRleCBhcyBpdCBjYW4gYmUgY2FsY3VsYXRlZC4NClVuZm9y
+dHVuYXRlbHkgdS1ib290IHJlbGllZCBvbiB0aGlzIHZhbHVlIGJlaW5nIHByZXNlbnQgc28gdG8g
+YmUgYmFja3dhcmQgY29tcGF0aWJsZSB3ZSBkb24ndCBoYXZlIGEgd2F5IHRvIHJlbW92ZSBpdC4g
+IEknbSBub3Qgc3VyZSBvbiB3aGF0IHRoZSBwcm9jZWR1cmUgaXMgdG8gY2hhbmdlIHRoaW5ncyB1
+LWJvb3QgcmVsaWVzIG9uLCBJIHBlcnNvbmFsIGhhdmUgYWx3YXlzIGJlZW4gdmVyeSB1bmNvbWZv
+cnRhYmxlIHdpdGggdGhlIGNvdXBsaW5nIGJldHdlZW4gdS1ib290IGFuZCBMaW51eCBmb3IgdGhp
+bmdzIGxpa2UgdGhpcy4gDQoNCj4gDQo+ID4gVGhlICBmc2wscW1hbi1jaGFubmVsLWlkIHByb3Bl
+cnR5IGlzIHVzZWQgaW4gTGludXggYW5kIGNvcnJlc3BvbmRzIHRvDQo+ID4gYSBoYXJkd2FyZSB2
+YWx1ZSB0aGF0IGluZGljYXRlcyB3aGljaCBjaGFubmVsIGlzIGRlZGljYXRlZCB0byB0aGUNCj4g
+PiBzb2Z0d2FyZSBwb3J0YWwuDQo+ID4NCj4gPiBXaGlsZSBJJ20gbm90IGF3YXJlIG9mIGEgY3Vy
+cmVudCBTb0Mgd2hlcmUgdGhlIGNoYW5uZWwgSUQgZm9yIGENCj4gPiBzb2Z0d2FyZSBwb3J0YWwg
+ZG9lcyBub3QgbWF0Y2ggdGhlIGluZGV4IChpLmUuIFNXUCAwIHVzZXMgY2hhbm5lbCAwLA0KPiA+
+IGV0Yy4pDQo+IA0KPiBUaHVzIHRoZXJlJ3Mgbm8gYmFja3dhcmQgY29tcGF0aWJpbGl0eSBpc3N1
+ZSB3aXRoIHJlZGVmaW5pbmcgY2VsbC1pbmRleCB0bw0KPiBtZWFuIHRoZSBjaGFubmVsIElELg0K
+DQpDaGFubmVsIElEcyBkbyBjaGFuZ2UgYW5kIGFyZSBkZWZpbmVkIHdoZW4gdGhlIFNvQyBpcyBj
+cmVhdGVkIChsb29rIGF0IGNoZWNrcyBmb3IgUU1hbiB2ZXJzaW9ucyBhbmQgYWRqdXN0bWVudHMg
+Zm9yIFBvb2wgQ2hhbm5lbCBJRHMgaW4gdGhlIGRyaXZlcikuICBJZiB0aGUgY2hhbm5lbCBJRCBm
+b3IgcG9ydGFsIDAgZXZlciBiZWNvbWVzIG5vbiB6ZXJvIHdlIGp1c3QgZW5kIHVwIGhhdmluZyB0
+byBtYWtlIGEgbWVzcyBpbiB0aGUgY29kZSBvciByZWludHJvZHVjZSB0aGlzIGZpZWxkLg0KDQo+
+IA0KPiA+IGl0IGlzIHBvc3NpYmxlIHRoYXQgZnV0dXJlIFNvQ3MgY291bGQgc3RyYXkgZnJvbSB0
+aGlzIG1vZGVsLCB0aGVyZSBpcw0KPiA+IG5vIHJlYXNvbiBmb3IgcG9ydGFsIGluZGV4IHRvIGVx
+dWFsIGNoYW5uZWwgSUQgYXQgYWxsIHRpbWVzLg0KPiANCj4gSG93IGNhbiBmdXR1cmUgU29DcyBk
+aWN0YXRlIGhvdyB3ZSBhc3NpZ24gYSBzb2Z0d2FyZS1kZWZpbmVkIGlkZW50aWZpZXI/DQo+IElm
+IHNvZnR3YXJlIHdhbnRzIGl0IHRvIGJlIHRoZSBzYW1lIGFzIHRoZSBjaGFubmVsIGlkLCB0aGVu
+IGl0IHdpbGwgYmUuDQo+IA0KPiBJZiB0aGVyZSBpcyBzb21lIGFzcGVjdCBvZiB0aGUgaGFyZHdh
+cmUgaXRzZWxmIChub3QgdGhlIGRvY3VtZW50YXRpb24pIHRoYXQNCj4gY2VsbC1pbmRleCBjdXJy
+ZW50bHkgY29ycmVzcG9uZHMgdG8sIG90aGVyIHRoYW4gdGhlIGNoYW5uZWwgaWQsIHBsZWFzZSBt
+YWtlDQo+IHRoYXQgY2xlYXIuDQoNCkNoYW5uZWwgSUQgaXMgZGVmaW5lZCBpbiB0aGUgU29DIFJU
+TCAtIGl0IGlzIG5vdCBjb250cm9sbGVkIGJ5IHNvZnR3YXJlIGFuZCBpdCBpcyBub3QgYSBzb2Z0
+d2FyZSBhc3NpZ25lZCBpZGVudGlmaWVyLiAgSXQgaXMgbm90IHBvc3NpYmxlIGZvciBTVyB0byBz
+ZXQgdGhlc2UgdmFsdWVzLg0KDQpSb3kNCg==
