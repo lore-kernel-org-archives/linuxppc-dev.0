@@ -1,35 +1,39 @@
-Return-Path: <baolin.wang@linaro.org>
-Received: from mail-yh0-f44.google.com (mail-yh0-f44.google.com
- [209.85.213.44])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <hemant@linux.vnet.ibm.com>
+Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id F38091A0008
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 00:16:09 +1000 (AEST)
-Received: by yhom41 with SMTP id m41so2420302yho.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2015 07:16:07 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8837D1A0008
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 02:06:57 +1000 (AEST)
+Received: from /spool/local
+ by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <hemant@linux.vnet.ibm.com>;
+ Tue, 12 May 2015 21:36:53 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 8889F125804B
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2015 21:39:01 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t4CG6Pk765863740
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2015 21:36:49 +0530
+Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t4CG4saA032360
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2015 21:34:55 +0530
+Message-ID: <555224A4.5050502@linux.vnet.ibm.com>
+Date: Tue, 12 May 2015 21:34:52 +0530
+From: Hemant Kumar <hemant@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <2293496.0Ycckx2zYU@wuerfel>
-References: <1431342518-29362-1-git-send-email-baolin.wang@linaro.org>
- <2293496.0Ycckx2zYU@wuerfel>
-Date: Tue, 12 May 2015 22:16:07 +0800
-Message-ID: <CAMz4kuLeoPsV_HHv+6Rjr-3pQbC+scFEZSz=OJ+2rUxD6uhLkA@mail.gmail.com>
-Subject: Re: [PATCH v3 00/22] Convert the posix_clock_operations and k_clock
- structure to ready for 2038
-From: Baolin Wang <baolin.wang@linaro.org>
-To: Arnd Bergmann <arnd@arndb.de>
-Content-Type: multipart/alternative; boundary=001a11397a0cb606ab0515e3221e
-Cc: Xunlei Pang <pang.xunlei@linaro.org>, peterz@infradead.org,
- =?UTF-8?B?RnLDqWTDqXJpYyBXZWlzYmVja2Vy?= <fweisbec@gmail.com>,
- heiko.carstens@de.ibm.com, paulus@samba.org, cl@linux.com,
- Heena Sirwani <heenasirwani@gmail.com>, linux-arch@vger.kernel.org,
- linux-s390@vger.kernel.org, y2038 Mailman List <y2038@lists.linaro.org>,
- rafael.j.wysocki@intel.com, Andrew Hunter <ahh@google.com>,
- Paul Turner <pjt@google.com>, riel@redhat.com,
- Richard Cochran <richardcochran@gmail.com>, tj@kernel.org,
- John Stultz <john.stultz@linaro.org>, Thomas Gleixner <tglx@linutronix.de>,
- rth@twiddle.net, gregkh@linuxfoundation.org, linux-kernel@vger.kernel.org,
- netdev@vger.kernel.org, schwidefsky@de.ibm.com, linux390@de.ibm.com,
- linuxppc-dev@lists.ozlabs.org
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH v3 1/2] perf/kvm: Port perf kvm to powerpc
+References: <1431047266-6206-1-git-send-email-hemant@linux.vnet.ibm.com>
+ <1431382120.16357.471.camel@freescale.com>
+In-Reply-To: <1431382120.16357.471.camel@freescale.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: maddy@linux.vnet.ibm.com, srikar@linux.vnet.ibm.com, peterz@infradead.org,
+ linux-kernel@vger.kernel.org, kvm-ppc@vger.kernel.org, agraf@suse.de,
+ mingo@redhat.com, paulus@samba.org, acme@kernel.org,
+ warrier@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,154 +43,127 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---001a11397a0cb606ab0515e3221e
-Content-Type: text/plain; charset=UTF-8
+Hi Scott,
 
-On 12 May 2015 at 17:39, Arnd Bergmann <arnd@arndb.de> wrote:
+On 05/12/2015 03:38 AM, Scott Wood wrote:
+> On Fri, 2015-05-08 at 06:37 +0530, Hemant Kumar wrote:
+>> From: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+>>
+>> perf kvm can be used to analyze guest exit reasons. This support already
+>> exists in x86. Hence, porting it to powerpc.
+>>
+>>   - To trace KVM events :
+>>    perf kvm stat record
+>>    If many guests are running, we can track for a specific guest by using
+>>    --pid as in : perf kvm stat record --pid <pid>
+>>
+>>   - To see the results :
+>>    perf kvm stat report
+>>
+>> The result shows the number of exits (from the guest context to
+>> host/hypervisor context) grouped by their respective exit reasons with
+>> their frequency.
+>>
+>> This patch makes use of the guest exit reasons available in
+>> "trace_book3s.h". It records on two already available tracepoints :
+>> "kvm_hv:kvm_guest_exit" and "kvm_hv:kvm_guest_enter".
+>>
+>> Note : This patch has a dependency on the patch "kvm/powerpc: Export
+>> kvm exit reasons" which exports the KVM exit reasons through the uapi.
+>>
+>> Here is a sample o/p:
+>>   # pgrep qemu
+>> 19378
+>> 60515
+>>
+>> 2 Guests are running on the host.
+>>
+>>   # perf kvm stat record -a
+>> ^C[ perf record: Woken up 1 times to write data ]
+>> [ perf record: Captured and wrote 4.153 MB perf.data.guest (39624 samples) ]
+>>
+>>   # perf kvm stat report -p 60515
+>> Analyze events for pid(s) 60515, all VCPUs:
+>>
+>>         VM-EXIT    Samples  Samples%     Time%    Min Time         Max        Time         Avg time
+>>
+>> H_DATA_STORAGE       5006    35.30%     0.13%      1.94us     49.46us     12.37us ( +-   0.52% )
+>> HV_DECREMENTER       4457    31.43%     0.02%      0.72us     16.14us      1.91us ( +-   0.96% )
+>>         SYSCALL       2690    18.97%     0.10%      2.84us    528.24us     18.29us ( +-   3.75% )
+>> RETURN_TO_HOST       1789    12.61%    99.76%      1.58us 672791.91us  27470.23us ( +-   3.00% )
+>>        EXTERNAL        240     1.69%     0.00%        0.69us     10.67us      1.33us ( +-   5.34% )
+>>
+>> Total Samples:14182, Total events handled time:49264158.30us.
+>>
+>> Signed-off-by: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+>> Signed-off-by: Hemant Kumar <hemant@linux.vnet.ibm.com>
+>> ---
+>> Patch has a dependency on : https://patchwork.ozlabs.org/patch/469839/
+>> which exports the exit reasons to perf through uapi.
+>>
+>> Changes:
+>> - Original series split into two patchsets now : perf and powerpc
+>>    side changes.
+>>
+>>   arch/powerpc/include/uapi/asm/kvm_perf.h | 15 +++++++++++++++
+>>   tools/perf/arch/powerpc/Makefile         |  1 +
+>>   tools/perf/arch/powerpc/util/Build       |  1 +
+>>   tools/perf/arch/powerpc/util/kvm-stat.c  | 33 ++++++++++++++++++++++++++++++++
+>>   4 files changed, 50 insertions(+)
+>>   create mode 100644 arch/powerpc/include/uapi/asm/kvm_perf.h
+>>   create mode 100644 tools/perf/arch/powerpc/util/kvm-stat.c
+>>
+>> diff --git a/arch/powerpc/include/uapi/asm/kvm_perf.h b/arch/powerpc/include/uapi/asm/kvm_perf.h
+>> new file mode 100644
+>> index 0000000..30fa670
+>> --- /dev/null
+>> +++ b/arch/powerpc/include/uapi/asm/kvm_perf.h
+>> @@ -0,0 +1,15 @@
+>> +#ifndef _ASM_POWERPC_KVM_PERF_H
+>> +#define _ASM_POWERPC_KVM_PERF_H
+>> +
+>> +#include <asm/trace_book3s.h>
+>> +#include <asm/kvm.h>
+>> +
+>> +#define DECODE_STR_LEN 20
+>> +
+>> +#define VCPU_ID "vcpu_id"
+>> +
+>> +#define KVM_ENTRY_TRACE "kvm_hv:kvm_guest_enter"
+>> +#define KVM_EXIT_TRACE "kvm_hv:kvm_guest_exit"
+>> +#define KVM_EXIT_REASON "trap"
+>> +
+>> +#endif /* _ASM_POWERPC_KVM_PERF_H */
+> Please make sure that anything book3s-specific is named that way.
 
-> On Monday 11 May 2015 19:08:38 Baolin Wang wrote:
-> > This patch series changes the 32-bit time type (timespec/itimerspec) to
-> the 64-bit one
-> > (timespec64/itimerspec64), since 32-bit time types will break in the
-> year 2038.
-> >
-> > This patch series introduces new methods with timespec64/itimerspec64
-> type,
-> > and removes the old ones with timespec/itimerspec type for
-> posix_clock_operations
-> > and k_clock structure.
-> >
-> > Also introduces some new functions with timespec64/itimerspec64 type,
-> like current_kernel_time64(),
-> > hrtimer_get_res64(), cputime_to_timespec64() and timespec64_to_cputime().
-> >
-> > Changes since v2:
-> >       -Split the syscall conversion patch into small some patches.
-> >
-> >
-> > Baolin Wang (22):
-> >   linux/time64.h:Introduce the 'struct itimerspec64' for 64bit
-> >   timekeeping:Introduce the current_kernel_time64() function with
-> >     timespec64 type
-> >   time/hrtimer:Introduce hrtimer_get_res64() with timespec64 type for
-> >     getting the timer resolution
-> >   posix-timers:Split out the guts of the syscall and change the
-> >     implementation for timer_gettime
-> >   posix-timers:Convert to the 64bit methods for the timer_gettime
-> >     syscall function
->
-> I have two more very general comments about the series:
->
-> a) something has gone wrong with your submission in v2 and v3 but was
->    working earlier: normally all emails should be sent by git-send-email
->    as replies to the [patch 00/22] mail. This is the default, and it
->    is enabled by the '--thread --no-chain-reply' options. Please try
->    to get this to work again.
->
-> b) it would be better to have a little shorter subject lines, to avoid
->    line-wrapping in the list above. Here are some examples what you could
->    use to replace the lines above:
->
->    timekeeping: introduce struct itimerspec64
->    timekeeping: introduce current_kernel_time64()
->    hrtimer: introduce hrtimer_get_res64()
->    posix-timers: split up sys_timer_gettime()
->    posix-timers: convert timer_gettime() to timespec64
->
->    In general, try to come up with the shortest description that
->    uniquely describes what your patch does, and move any details into
->    the longer patch description.
->
->         Arnd
->
+Are you suggesting to name it to something like _ASM_POWERPC_BOOK3S_PERF_H ?
 
-OK, i'll fix these in next patch series.Thanks for your comments.
+> And shouldn't this be part of the arch/powerpc-side patchset?
 
+It should. Thanks, will move this to arch/powerpc side patchset.
+
+>> diff --git a/tools/perf/arch/powerpc/Makefile b/tools/perf/arch/powerpc/Makefile
+>> index 7fbca17..21322e0 100644
+>> --- a/tools/perf/arch/powerpc/Makefile
+>> +++ b/tools/perf/arch/powerpc/Makefile
+>> @@ -1,3 +1,4 @@
+>>   ifndef NO_DWARF
+>>   PERF_HAVE_DWARF_REGS := 1
+>>   endif
+>> +HAVE_KVM_STAT_SUPPORT := 1
+> Does this stuff fail gracefully if used on a PPC target that doesn't
+> support this?
+
+Yes, it does.
+
+> -Scott
+>
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
 
 -- 
-Baolin.wang
-Best Regards
-
---001a11397a0cb606ab0515e3221e
-Content-Type: text/html; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-
-<div dir=3D"ltr"><br><div class=3D"gmail_extra"><br><div class=3D"gmail_quo=
-te">On 12 May 2015 at 17:39, Arnd Bergmann <span dir=3D"ltr">&lt;<a href=3D=
-"mailto:arnd@arndb.de" target=3D"_blank">arnd@arndb.de</a>&gt;</span> wrote=
-:<br><blockquote class=3D"gmail_quote" style=3D"margin:0 0 0 .8ex;border-le=
-ft:1px #ccc solid;padding-left:1ex"><span class=3D"">On Monday 11 May 2015 =
-19:08:38 Baolin Wang wrote:<br>
-&gt; This patch series changes the 32-bit time type (timespec/itimerspec) t=
-o the 64-bit one<br>
-&gt; (timespec64/itimerspec64), since 32-bit time types will break in the y=
-ear 2038.<br>
-&gt;<br>
-&gt; This patch series introduces new methods with timespec64/itimerspec64 =
-type,<br>
-&gt; and removes the old ones with timespec/itimerspec type for posix_clock=
-_operations<br>
-&gt; and k_clock structure.<br>
-&gt;<br>
-&gt; Also introduces some new functions with timespec64/itimerspec64 type, =
-like current_kernel_time64(),<br>
-&gt; hrtimer_get_res64(), cputime_to_timespec64() and timespec64_to_cputime=
-().<br>
-&gt;<br>
-&gt; Changes since v2:<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0-Split the syscall conversion patch into sma=
-ll some patches.<br>
-&gt;<br>
-&gt;<br>
-&gt; Baolin Wang (22):<br>
-&gt;=C2=A0 =C2=A0linux/time64.h:Introduce the &#39;struct itimerspec64&#39;=
- for 64bit<br>
-&gt;=C2=A0 =C2=A0timekeeping:Introduce the current_kernel_time64() function=
- with<br>
-&gt;=C2=A0 =C2=A0 =C2=A0timespec64 type<br>
-&gt;=C2=A0 =C2=A0time/hrtimer:Introduce hrtimer_get_res64() with timespec64=
- type for<br>
-&gt;=C2=A0 =C2=A0 =C2=A0getting the timer resolution<br>
-&gt;=C2=A0 =C2=A0posix-timers:Split out the guts of the syscall and change =
-the<br>
-&gt;=C2=A0 =C2=A0 =C2=A0implementation for timer_gettime<br>
-&gt;=C2=A0 =C2=A0posix-timers:Convert to the 64bit methods for the timer_ge=
-ttime<br>
-&gt;=C2=A0 =C2=A0 =C2=A0syscall function<br>
-<br>
-</span>I have two more very general comments about the series:<br>
-<br>
-a) something has gone wrong with your submission in v2 and v3 but was<br>
-=C2=A0 =C2=A0working earlier: normally all emails should be sent by git-sen=
-d-email<br>
-=C2=A0 =C2=A0as replies to the [patch 00/22] mail. This is the default, and=
- it<br>
-=C2=A0 =C2=A0is enabled by the &#39;--thread --no-chain-reply&#39; options.=
- Please try<br>
-=C2=A0 =C2=A0to get this to work again.<br>
-<br>
-b) it would be better to have a little shorter subject lines, to avoid<br>
-=C2=A0 =C2=A0line-wrapping in the list above. Here are some examples what y=
-ou could<br>
-=C2=A0 =C2=A0use to replace the lines above:<br>
-<br>
-=C2=A0 =C2=A0timekeeping: introduce struct itimerspec64<br>
-=C2=A0 =C2=A0timekeeping: introduce current_kernel_time64()<br>
-=C2=A0 =C2=A0hrtimer: introduce hrtimer_get_res64()<br>
-=C2=A0 =C2=A0posix-timers: split up sys_timer_gettime()<br>
-=C2=A0 =C2=A0posix-timers: convert timer_gettime() to timespec64<br>
-<br>
-=C2=A0 =C2=A0In general, try to come up with the shortest description that<=
-br>
-=C2=A0 =C2=A0uniquely describes what your patch does, and move any details =
-into<br>
-=C2=A0 =C2=A0the longer patch description.<br>
-<span class=3D"HOEnZb"><font color=3D"#888888"><br>
-=C2=A0 =C2=A0 =C2=A0 =C2=A0 Arnd<br>
-</font></span></blockquote></div><div class=3D"gmail_extra"><br></div>OK, i=
-&#39;ll fix these in next patch series.Thanks for your comments.<br><br cle=
-ar=3D"all"><div><br></div>-- <br><div class=3D"gmail_signature"><div dir=3D=
-"ltr"><div>Baolin.wang<br></div>Best Regards<br></div></div>
-</div></div>
-
---001a11397a0cb606ab0515e3221e--
+Thanks,
+Hemant Kumar
