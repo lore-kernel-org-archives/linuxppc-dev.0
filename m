@@ -1,25 +1,39 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0120.outbound.protection.outlook.com [65.55.169.120])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AC4EC1A0007
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 08:46:18 +1000 (AEST)
-Message-ID: <1431470762.16357.511.camel@freescale.com>
-Subject: Re: [PATCH 1/2] powerpc/qman: Change fsl,qman-channel-id to cell-index
-From: Scott Wood <scottwood@freescale.com>
-To: Pledge Roy-R01356 <roy.pledge@freescale.com>
-Date: Tue, 12 May 2015 17:46:02 -0500
-In-Reply-To: <BN3PR0301MB1267E5A61E7E5BC2789F9E898CDA0@BN3PR0301MB1267.namprd03.prod.outlook.com>
-References: <1429311187-19062-1-git-send-email-scottwood@freescale.com>
- <BN3PR0301MB126796C0EC18EEBB26702C588CD10@BN3PR0301MB1267.namprd03.prod.outlook.com>
- <1430858734.16357.256.camel@freescale.com>
- <BN3PR0301MB1267E5A61E7E5BC2789F9E898CDA0@BN3PR0301MB1267.namprd03.prod.outlook.com>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 17DDC1A0007
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 09:10:05 +1000 (AEST)
+Received: from /spool/local
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Wed, 13 May 2015 09:10:03 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id D89F02CE804E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 09:10:01 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t4CN9rwm30015678
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 09:10:01 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t4CN9Sdq008231
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 09:09:29 +1000
+Date: Wed, 13 May 2015 09:09:04 +1000
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: Wei Yang <weiyang@linux.vnet.ibm.com>
+Subject: Re: [PATCH V3 6/9] powerpc/powernv: create/release eeh_dev for VF
+Message-ID: <20150512230904.GA6321@gwshan>
+Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+References: <1430723258-21299-1-git-send-email-weiyang@linux.vnet.ibm.com>
+ <1430723258-21299-7-git-send-email-weiyang@linux.vnet.ibm.com>
+ <20150511024856.GB8816@gwshan> <20150512080643.GC16788@richard>
 MIME-Version: 1.0
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Bucur
- Madalin-Cristian-B32716 <madalin.bucur@freescale.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20150512080643.GC16788@richard>
+Cc: bhelgaas@google.com, linux-pci@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, Gavin Shan <gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,89 +43,65 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-05-12 at 16:19 -0500, Pledge Roy-R01356 wrote:
-> > >
-> > > I don't believe this is correct - let me explain the rational why we =
-had two
-> > properties in the QMan portal to begin with.
-> > >
-> > > The two properties in question are cell-index and fsl,qman-channel-id=
-.
-> > >
-> > > The cell-index property is used in u-boot as an index for the softwar=
-e portal
-> > ID when adding the fsl,liodn from the U-boot table into the device tree=
-.
-> >=20
-> > The device tree is not supposed to contain arbitrary software identifie=
-rs.
->=20
-> I agree - this is why the original device tree bindings removed
-> cell-index as it can be calculated.=0D Unfortunately u-boot relied on
-> this value being present so to be backward compatible we don't have a
-> way to remove it.  I'm not sure on what the procedure is to change
-> things u-boot relies on,=20
+On Tue, May 12, 2015 at 04:06:43PM +0800, Wei Yang wrote:
+>On Mon, May 11, 2015 at 12:48:56PM +1000, Gavin Shan wrote:
+>>On Mon, May 04, 2015 at 03:07:35PM +0800, Wei Yang wrote:
+>>
+>>Please order this patch and PATCH[5] because EEH device is expected to
+>>be created before EEH PE.
+>>
+>>>EEH on powerpc platform needs eeh_dev structure to track the pci device
+>>                                                              ^^^
+>>							      PCI
+>>
+>>>status. Since VFs are created/released dynamically, VF's eeh_dev is also
+>>>dynamically created/released in system.
+>>>
+>>>This patch creates/removes eeh_dev when pci_dn is created/removed for VFs,
+>>>and marks it with EEH_DEV_VF type.
+>>>
+>>>Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
+>>>---
+>>> arch/powerpc/include/asm/eeh.h |    7 +++++++
+>>> arch/powerpc/kernel/eeh.c      |    4 ++++
+>>> arch/powerpc/kernel/eeh_dev.c  |   20 ++++++++++++++++++++
+>>> arch/powerpc/kernel/pci_dn.c   |    7 +++++++
+>>> 4 files changed, 38 insertions(+)
+>>>
+>>>diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
+>>>index 56e8cd9..2067de4 100644
+>>>--- a/arch/powerpc/include/asm/eeh.h
+>>>+++ b/arch/powerpc/include/asm/eeh.h
+>>>@@ -124,6 +124,7 @@ static inline bool eeh_pe_passed(struct eeh_pe *pe)
+>>> #define EEH_DEV_NO_HANDLER	(1 << 8)	/* No error handler	*/
+>>> #define EEH_DEV_SYSFS		(1 << 9)	/* Sysfs created	*/
+>>> #define EEH_DEV_REMOVED		(1 << 10)	/* Removed permanently	*/
+>>>+#define EEH_DEV_VF		(1 << 11)	/* VF port		*/
+>>>
+>>
+>>Why you need this flag? I guess "edev->physfn" can be used to distinguish
+>>it's a normal or VF eeh_dev.
+>>
+>
+>Just like we have EEH_DEV_BRIDGE and EEH_DEV_DS_PORT, I use the flag
+>EEH_DEV_VF to mark it a VF eeh_dev.
+>
+>
 
-Generally the procedure is that we don't change it.  It wouldn't be so
-bad if using an old U-Boot just meant that datapath doesn't work with
-upstream kernels (since that doesn't work now), but a dts that makes
-existing U-Boot crash is another matter.
+They're not equal from my point of review. When the VF edev is created
+from VF's pdn, edev->physfn is determined. Furthermore, edev->physfn
+is only meaningful to VF's edev. It's why I think you needn't introduce
+another one flag (EEH_DEV_VF), which is just duplicated to (edev->physfn).
+So I think you can use following condition to check if one edev is created
+from VF's pdn or others:
 
-> I personal have always been very uncomfortable with the coupling
-> between u-boot and Linux for things like this.=20
+	if (edev->physfn)
+		/* VF's edev */
+	else
+		/* All other cases */
 
-Same here.  I've said for a while that I thought the dtses should live
-in the U-Boot tree due to such coupling (the dtb/kernel interface has
-well-defined binding documents; the dts/U-Boot interface doesn't), but
-nobody else seemed interested.  It would also be good to minimize new
-U-Boot fixups in favor of having the kernel do it, even if it results
-in unpleasant code duplication.
+In order to use the above condition, edev->phyfn is initialized to dereference
+the VF's physical function when it's created from VF's pdn in arch/powerpc/kernel/pdn.c.
 
-
-> >=20
-> > > The  fsl,qman-channel-id property is used in Linux and corresponds to
-> > > a hardware value that indicates which channel is dedicated to the
-> > > software portal.
-> > >
-> > > While I'm not aware of a current SoC where the channel ID for a
-> > > software portal does not match the index (i.e. SWP 0 uses channel 0,
-> > > etc.)
-> >=20
-> > Thus there's no backward compatibility issue with redefining cell-index=
- to
-> > mean the channel ID.
->=20
-> Channel IDs do change and are defined when the SoC is created
-
-But for SoCs that already exist, they won't change, right?  We don't
-need to care about what existing U-Boot does on new SoCs, since U-Boot
-would need to be changed to support the new SoC at all.
-
->  (look at checks for QMan versions and adjustments for Pool Channel IDs
-> in the driver).  If the channel ID for portal 0 ever becomes non zero
-> we just end up having to make a mess in the code or reintroduce this
-> field.
-
-What defines that portal as "portal 0"?
-
-> > > it is possible that future SoCs could stray from this model, there is
-> > > no reason for portal index to equal channel ID at all times.
-> >=20
-> > How can future SoCs dictate how we assign a software-defined identifier=
-?
-> > If software wants it to be the same as the channel id, then it will be.
-> >=20
-> > If there is some aspect of the hardware itself (not the documentation) =
-that
-> > cell-index currently corresponds to, other than the channel id, please =
-make
-> > that clear.
->=20
-> Channel ID is defined in the SoC RTL - it is not controlled by software
-> and it is not a software assigned identifier.  It is not possible for
-> SW to set these values.
-
-I said "other than the channel id".  In particular, I was asking about
-the concept of "portal index".
-
--Scott
+Thanks,
+Gavin
