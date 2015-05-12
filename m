@@ -1,40 +1,41 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+Return-Path: <brking@linux.vnet.ibm.com>
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6B2A41A0007
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 09:17:38 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 683691A0008
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 09:24:50 +1000 (AEST)
 Received: from /spool/local
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Wed, 13 May 2015 09:17:36 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 04A432CE8052
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 09:17:35 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t4CNHQrd42598442
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 09:17:34 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t4CNH20R021615
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 09:17:02 +1000
-Date: Wed, 13 May 2015 09:16:37 +1000
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: Wei Yang <weiyang@linux.vnet.ibm.com>
-Subject: Re: [PATCH V3 8/9] powerpc/powernv: Support PCI config restore for VFs
-Message-ID: <20150512231637.GA8004@gwshan>
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <1430723258-21299-1-git-send-email-weiyang@linux.vnet.ibm.com>
- <1430723258-21299-9-git-send-email-weiyang@linux.vnet.ibm.com>
- <20150511042238.GA19629@gwshan> <20150512013134.GA5814@richard>
- <20150512063403.GA21256@gwshan> <20150512081645.GD16788@richard>
+ for <linuxppc-dev@lists.ozlabs.org> from <brking@linux.vnet.ibm.com>;
+ Tue, 12 May 2015 17:24:48 -0600
+Received: from b03cxnp08027.gho.boulder.ibm.com
+ (b03cxnp08027.gho.boulder.ibm.com [9.17.130.19])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 1FD521FF0023
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2015 17:15:57 -0600 (MDT)
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+ by b03cxnp08027.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t4CNOk2f25690330
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2015 16:24:46 -0700
+Received: from d03av03.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av03.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t4CNOkco019557
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2015 17:24:46 -0600
+Message-ID: <55528BBB.3000809@linux.vnet.ibm.com>
+Date: Tue, 12 May 2015 18:24:43 -0500
+From: Brian King <brking@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150512081645.GD16788@richard>
-Cc: bhelgaas@google.com, linux-pci@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCH] mpt2sas: Fall back to 64 bit coherent mask if 64 bit DMA
+ / 32 bit coherent mask not supported
+References: <555279A8.6060906@linux.vnet.ibm.com>
+ <1431468627.20218.64.camel@kernel.crashing.org>
+In-Reply-To: <1431468627.20218.64.camel@kernel.crashing.org>
+Content-Type: text/plain; charset=utf-8
+Cc: Daniel Kreling <kreling@linux.vnet.ibm.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ linux-scsi <linux-scsi@vger.kernel.org>,
+ Sreekanth Reddy <sreekanth.reddy@avagotech.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,91 +45,86 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, May 12, 2015 at 04:16:45PM +0800, Wei Yang wrote:
->On Tue, May 12, 2015 at 04:34:03PM +1000, Gavin Shan wrote:
->>>
->>>>>+	/* Disable Completion Timeout */
->>>>>+	if (pcie_cap) {
->>>>>+		pnv_pci_cfg_read(pdn, pcie_cap + PCI_EXP_DEVCAP2, 4, &cap2);
->>>>>+		if (cap2 & 0x10) {
->>>>>+			pnv_pci_cfg_read(pdn, pcie_cap + PCI_EXP_DEVCTL2, 4, &cap2);
->>>>>+			cap2 |= 0x10;
->>>>>+			pnv_pci_cfg_write(pdn, pcie_cap + PCI_EXP_DEVCTL2, 4, cap2);
->>>>>+		}
->>>>>+	}
->>>>>+
->>>>>+	/* Enable SERR and parity checking */
->>>>>+	pnv_pci_cfg_read(pdn, PCI_COMMAND, 2, &cmd);
->>>>>+	cmd |= (PCI_COMMAND_PARITY | PCI_COMMAND_SERR);
->>>>>+	pnv_pci_cfg_write(pdn, PCI_COMMAND, 2, cmd);
->>>>>+
->>>>>+	/* Enable report various errors */
->>>>>+	if (pcie_cap) {
->>>>>+		pnv_pci_cfg_read(pdn, pcie_cap + PCI_EXP_DEVCTL, 2, &devctl);
->>>>>+		devctl &= ~PCI_EXP_DEVCTL_CERE;
->>>>>+		devctl |= (PCI_EXP_DEVCTL_NFERE |
->>>>>+			   PCI_EXP_DEVCTL_FERE |
->>>>>+			   PCI_EXP_DEVCTL_URRE);
->>>>>+		pnv_pci_cfg_write(pdn, pcie_cap + PCI_EXP_DEVCTL, 2, devctl);
->>>>>+	}
->>>>>+
->>>>>+	/* Enable ECRC generation and check */
->>>>>+	if (pcie_cap) {
->>>>>+		aer_cap = pnv_eeh_find_ecap(pdn, PCI_EXT_CAP_ID_ERR);
->>>>>+		pnv_pci_cfg_read(pdn, aer_cap + PCI_ERR_CAP, 4, &aer_capctl);
->>>>>+		aer_capctl |= (PCI_ERR_CAP_ECRC_GENE | PCI_ERR_CAP_ECRC_CHKE);
->>>>>+		pnv_pci_cfg_write(pdn, aer_cap + PCI_ERR_CAP, 4, aer_capctl);
->>>>>+	}
->>>>>+
->>>>>+	return 0;
->>>>>+}
->>>>>+#endif /* CONFIG_PCI_IOV */
->>>>>+
->>>>
->>>>The code is copied over from skiboot firmware. I still dislike the fact that
->>>>we have to maintain two sets of similar functions in skiboot/kernel. I still
->>>>believe the way I suggested can help: the firmware exports the error routing
->>>>rules and kernel has support it based on the rules. With it, the skiboot is
->>>>the source of the information to avoid mismatching between kernel/firmware.
->>>
->>>Yes, it looks we have duplicate code in kernel and skiboot.
->>>
->>>As you suggest, if we export some bit map from device node, we still have the
->>>real logic in kernel, until we remove that part in skiboot.
->>>
->>>By removing that part in skiboot, we may have some compatibility problem. For
->>>example, an old kernel may not run on the new version of skiboot.
->>>
+On 05/12/2015 05:10 PM, Benjamin Herrenschmidt wrote:
+> On Tue, 2015-05-12 at 17:07 -0500, Brian King wrote:
+>> The mpt2sas driver was changed late last year in that it now requests a 64 bit DMA
+>> mask, then requests a 32 bit coherent DMA mask, then later requests a 64 bit coherent
+>> DMA mask. This was 5fb1bf8aaa832e1e9ca3198de7bbecb8eff7db9c. This breaks 64 bit DMA
+>> support for mpt2sas on Power and we always fall back to using 32 bit DMA. Looking
+>> at the commit log, it looks like this was an intentional change.
 >>
->>It's fine to keep two set code which bear with same rule, which is exported
->>from skiboot. In that case, the rule is the only thing we have to care. We
->>don't need care the code any more to avoid mismatch between kernel/firmware.
+>> Ben - you had a patch set you had posted to the list back in Feb of this year, but it
+>> doesn't look like it got merged. 
+> 
+> Right, it was broken, we can't do that unfortunately. It's a hard
+> problem to fix.
+> 
+>> https://lists.ozlabs.org/pipermail/linuxppc-dev/2015-February/125087.html
 >>
->
->Ok, duplication is reasonable, then the major point for this is we need to
->have a clear rule for restoring configuration for a device.
->
+>> This would fix the issue I'm seeing on mpt2sas. Do you plan to dust that patch set
+>> off and upstream it? Were there issues with it that still need to be resolved?
+> 
+> No that patch doesn't actually work.
+> 
+> What we need is essentially a new set of DMA ops that can route an
+> individual map request via the iommu or the bypass window depending on
+> what mask applies.
 
-Well, I have to explain a bit more if I didn't make myself clear enough, then
-you change the code in another way, which will waste your time.
+Ok. For the interim, then, Sreekanth, would you consider a patch such as the one
+below to allow mpt2sas to support 64 bit DMA on architectures that don't support
+a 32 bit coherent mask and a 64 bit dma mask at the same time? Only compile tested
+at this point. Will run it on a Power machine shortly to confirm it doesn't
+break anything...
 
-- From skiboot, each PHB's device node maintains the rules, which *could* be
-  described as the data structures I have given in previous replies if you
-  can't figure out better data structures.
-- Skiboot will reinitialize those devices for the following 3 cases: PCI
-  enumeration, PCI config space restore requested from EEH, after PCI hotplug/reset.
-  Obviously, the code needs changes to utilize the rules in PHB's device node.
-- Kernel will do similiar thing as skiboot will do: Reinitialize VFs according
-  to the rules in PHB's device node.
 
-Yes, we have duplicated code, not rules. Hopefully, I make myself clear enough.
+-- 
+Brian King
+Power Linux I/O
+IBM Linux Technology Center
 
->Than I suggest we could have another patch set to handle this. Define the rule
->clearly and restore the configuration in kernel when skiboot firmware export
->such rules.
->
 
-Sure.
+8<-------
 
-Thanks,
-Gavin
+
+Commit 5fb1bf8aaa832e1e9ca3198de7bbecb8eff7db9c broke 64 bit DMA for mpt2sas on Power.
+That commit changed the sequence for setting up the DMA and coherent DMA masks so
+that during initialization the driver requests a 64 bit DMA mask and a 32 bit consistent
+DMA mask, then later requests a 64 bit consistent DMA mask. The Power architecture does
+not currently support this, which results in always falling back to a 32 bit DMA window,
+which has a negative impact on performance. Tweak this algorithm slightly so that
+if requesting a 32 bit consistent mask fails after we've successfully set a 64 bit
+DMA mask, just try to get a 64 bit consistent mask. This should preserve existing
+behavior on platforms that support mixed mask setting and restore previous functionality
+to those that do not.
+
+Signed-off-by: Brian King <brking@linux.vnet.ibm.com>
+---
+
+ drivers/scsi/mpt2sas/mpt2sas_base.c |   14 ++++++++------
+ 1 file changed, 8 insertions(+), 6 deletions(-)
+
+diff -puN drivers/scsi/mpt2sas/mpt2sas_base.c~mpt2sas_dma_mask drivers/scsi/mpt2sas/mpt2sas_base.c
+--- linux/drivers/scsi/mpt2sas/mpt2sas_base.c~mpt2sas_dma_mask	2015-05-12 16:09:58.228687852 -0500
++++ linux-bjking1/drivers/scsi/mpt2sas/mpt2sas_base.c	2015-05-12 17:38:31.588060903 -0500
+@@ -1200,12 +1200,14 @@ _base_config_dma_addressing(struct MPT2S
+ 		const uint64_t required_mask =
+ 		    dma_get_required_mask(&pdev->dev);
+ 		if ((required_mask > DMA_BIT_MASK(32)) &&
+-		    !pci_set_dma_mask(pdev, DMA_BIT_MASK(64)) &&
+-		    !pci_set_consistent_dma_mask(pdev, consistent_dma_mask)) {
+-			ioc->base_add_sg_single = &_base_add_sg_single_64;
+-			ioc->sge_size = sizeof(Mpi2SGESimple64_t);
+-			ioc->dma_mask = 64;
+-			goto out;
++		    !pci_set_dma_mask(pdev, DMA_BIT_MASK(64))) {
++			if (!pci_set_consistent_dma_mask(pdev, consistent_dma_mask) ||
++			    !pci_set_consistent_dma_mask(pdev, DMA_BIT_MASK(64))) {
++				ioc->base_add_sg_single = &_base_add_sg_single_64;
++				ioc->sge_size = sizeof(Mpi2SGESimple64_t);
++				ioc->dma_mask = 64;
++				goto out;
++			}
+ 		}
+ 	}
+ 
+_
