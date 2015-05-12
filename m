@@ -1,29 +1,18 @@
-Return-Path: <mr.triggtrigg@gmail.com>
-Received: from mail-pd0-x229.google.com (mail-pd0-x229.google.com
- [IPv6:2607:f8b0:400e:c02::229])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id EF07D1A0008
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 03:09:16 +1000 (AEST)
-Received: by pdea3 with SMTP id a3so19938263pde.3
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2015 10:09:14 -0700 (PDT)
-Content-Type: text/plain;
-	charset=us-ascii
-Mime-Version: 1.0 (1.0)
-Subject: Re: [PATCH v2 1/2] powerpc/powernv: Add poweroff (EPOW,
- DPO) events support for PowerNV platform
-From: Triggering <mr.triggtrigg@gmail.com>
-In-Reply-To: <CAPfuKjKtSHB3Q03vGD9XDnk2yFV31mC8wdJGr3q8XYZfvSx3LA@mail.gmail.com>
-Date: Tue, 12 May 2015 22:39:06 +0530
-Message-Id: <F9E178BE-B0C1-4CCC-B9BF-F6C4D882EA80@gmail.com>
-References: <1430991020-7556-1-git-send-email-vipin@linux.vnet.ibm.com>
- <1430991020-7556-2-git-send-email-vipin@linux.vnet.ibm.com>
- <CAPfuKj+CpLN7QdRJ+VFTz1_p5QL9fkJ+FOa0tKQ2-YEOoXR+4g@mail.gmail.com>
- <m3zj5arbjy.fsf@oc8180480414.ibm.com>
- <CAPfuKjKtSHB3Q03vGD9XDnk2yFV31mC8wdJGr3q8XYZfvSx3LA@mail.gmail.com>
-To: Stewart Smith <stewart@linux.vnet.ibm.com>
-Cc: Vipin K Parashar <vipin@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- joel@jms.id.au
+Return-Path: <aaro.koskinen@iki.fi>
+Received: from filtteri5.pp.htv.fi (filtteri5.pp.htv.fi [213.243.153.188])
+ by lists.ozlabs.org (Postfix) with ESMTP id 520361A0008
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 03:56:05 +1000 (AEST)
+Date: Tue, 12 May 2015 20:55:55 +0300
+From: Aaro Koskinen <aaro.koskinen@iki.fi>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: G5 Xserve rackmeter broken?
+Message-ID: <20150512175555.GB609@fuloong-minipc.musicnaut.iki.fi>
+References: <20150510183259.GA13777@aspire-one.musicnaut.iki.fi>
+ <1431296015.13039.12.camel@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1431296015.13039.12.camel@kernel.crashing.org>
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,55 +22,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Accidentally hit the reply button instead of reply all. Re sending.
+Hi,
 
-> On 12-May-2015, at 11:55, trigg <mr.triggtrigg@gmail.com> wrote:
->=20
-> Hi Stewart,
->=20
-> On Tue, May 12, 2015 at 4:01 AM, Stewart Smith
-> <stewart@linux.vnet.ibm.com> wrote:
->> trigg <mr.triggtrigg@gmail.com> writes:
->>>> --- a/arch/powerpc/include/asm/opal-api.h
->>>> +++ b/arch/powerpc/include/asm/opal-api.h
->>>> @@ -730,6 +730,36 @@ struct opal_i2c_request {
->>>>        __be64 buffer_ra;               /* Buffer real address */
->>>> };
->>>>=20
->>>> +/*
->>>> + * EPOW status sharing (OPAL and the host)
->>>> + *
->>>> + * The host will pass on OPAL, a buffer of length OPAL_EPOW_MAX_CLASSE=
-S
->>>> + * to fetch system wide EPOW status. Each element in the returned buff=
-er
->>>> + * will contain bitwise EPOW status for each EPOW sub class.
->>>> + */
->>>> +
->>>> +/* EPOW types */
->>>> +enum OpalEpow {
->>>> +       OPAL_EPOW_POWER         =3D 0,    /* Power EPOW */
->>>> +       OPAL_EPOW_TEMP          =3D 1,    /* Temperature EPOW */
->>>> +       OPAL_EPOW_COOLING       =3D 2,    /* Cooling EPOW */
->>>> +       OPAL_MAX_EPOW_CLASSES   =3D 3,    /* Max EPOW categories */
->>>> +};
->>> Dont explicitly assign sequential numbers in an enum. Its taken care
->>> of by the compiler.
->>=20
->> This header is shared with firmware, and the exact values of each item
->> does matter as it's ABI.
->=20
-> This enum has no semantic difference with a series of #defines. So you
-> are better
-> off using #defines for this. Using enums with explicitly defined
-> values beats the whole
-> purpose of using them.
->=20
->> The explicit numbers means that people think
->> twice before inserting a new value in the middle and subtley breaking
->> firmware ABI.
->=20
-> I disagree. It wont prevent (even worsen) errors like two
-> enum-constants being explicitly defined to same values.
-> With implicit numbering you can atleast be sure that each
-> enum-constant will be unique.
+On Mon, May 11, 2015 at 08:13:35AM +1000, Benjamin Herrenschmidt wrote:
+> On Sun, 2015-05-10 at 21:32 +0300, Aaro Koskinen wrote:
+> > Hi,
+> > 
+> > With 4.1-rc2 the rackmeter driver for G5 Xserve is giving bogus
+> > led patterns. So far I have seen at least the following:
+> > 
+> > a) With static load the leds seems to be sane and report CPU
+> > usage properly, but after few minutes they go completely OFF,
+> > even if the CPU load remains high.
+> > 
+> > b) On a completely idle system, leds alter between all OFF and all ON
+> > roughly once a second.
+> > 
+> > Unfortunately I cannot say which was the last kernel where this worked
+> > properly... These servers were away from normal use for a while due
+> > to PSU issues.
+> 
+> And mine is dead due to ... PSU issue :-(
+
+I had 4 dead servers, of which I have now managed get 2 again back
+running by recapping the PSU.
+
+> It could be that what we use to get the "idle time" isn't correct
+> anymore...
+
+It seems sometimes the idle ticks exceed total ticks and mess up
+load calculation. This will explain the b) case behaviour at least.
+I added the following debug patch:
+
+@@ -234,6 +234,10 @@ static void rackmeter_do_timer(struct work_struct *work)
+         */
+        load = (9 * (total_ticks - idle_ticks)) / total_ticks;
+
++       if (load > 10)
++               pr_err("load: %d total: %u idle: %u\n", load,
++                       total_ticks, idle_ticks);
++
+        offset = cpu << 3;
+        cumm = 0;
+        for (i = 0; i < 8; i++) {
+
+Which shows:
+
+[  795.832701] load: 515 total: 8333333 idle: 8333661
+[  796.792767] load: 515 total: 8333333 idle: 8333551
+[  796.832770] load: 515 total: 8333333 idle: 8333656
+[  797.292799] load: 515 total: 8333334 idle: 8333532
+[  798.082856] load: 515 total: 8333334 idle: 8333591
+[  798.792903] load: 515 total: 8333333 idle: 8333424
+[  798.832909] load: 515 total: 8333333 idle: 8333571
+[  799.292937] load: 515 total: 8333334 idle: 8333459
+[  799.832973] load: 515 total: 8333333 idle: 8333551
+[  800.793038] load: 515 total: 8333333 idle: 8333414
+[  800.833045] load: 515 total: 8333333 idle: 8333583
+[  801.293071] load: 515 total: 8333334 idle: 8333455
+[  801.833107] load: 515 total: 8333333 idle: 8333564
+
+I'm running with HZ=100 so the values are still probably within
+jiffy resolution, so perhaps the calculation should first do
+idle = min(idle, total)?
+
+A.
