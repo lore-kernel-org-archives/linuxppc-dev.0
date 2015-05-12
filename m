@@ -1,29 +1,35 @@
-Return-Path: <stripathi@apm.com>
-Received: from mail-wg0-f45.google.com (exprod5og117.obsmtp.com [64.18.0.149])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 941EA1A0035
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2015 15:33:49 +1000 (AEST)
-Received: by wgin8 with SMTP id n8so152067728wgi.0
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2015 22:33:46 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id C72BC1A0048
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2015 16:02:06 +1000 (AEST)
+Received: from /spool/local
+ by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Tue, 12 May 2015 11:32:03 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id E8AB53940053
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2015 11:31:57 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t4C61vxx655742
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2015 11:31:57 +0530
+Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t4C61ua6023766
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2015 11:31:56 +0530
+Message-ID: <55519753.4020807@linux.vnet.ibm.com>
+Date: Tue, 12 May 2015 11:31:55 +0530
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 MIME-Version: 1.0
-In-Reply-To: <1431333531-30491-2-git-send-email-stripathi@apm.com>
-References: <1431333531-30491-1-git-send-email-stripathi@apm.com>
- <1431333531-30491-2-git-send-email-stripathi@apm.com>
-Date: Tue, 12 May 2015 11:03:46 +0530
-Message-ID: <CAOHikRAeOH5Pt4WZFk1C29dUytO7H0ox_dgq578oW19ue8Eb8Q@mail.gmail.com>
-Subject: Re: [PATCH RESEND v6 1/2] arm64: dts: Add the arasan sdhci nodes in
- apm-storm.dtsi
-From: Suman Tripathi <stripathi@apm.com>
-To: Chris Ball <chris@printf.net>, Anton Vorontsov <anton@enomsg.org>,
- Arnd Bergmann <arnd@arndb.de>, Michal Simek <michal.simek@xilinx.com>
+To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH V3 00/13] POWER DSCR fixes, improvements, docs and tests
+References: <1428654612-23539-1-git-send-email-khandual@linux.vnet.ibm.com>
+In-Reply-To: <1428654612-23539-1-git-send-email-khandual@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=UTF-8
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- Mark Langsdorf <mlangsdo@redhat.com>, Suman Tripathi <stripathi@apm.com>,
- Jon Masters <jcm@redhat.com>, linux-mmc <linux-mmc@vger.kernel.org>,
- patches <patches@apm.com>, Don Dutile <ddutile@redhat.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
+Cc: mikey@neuling.org, shuahkh@osg.samsung.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,99 +39,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi ,
+On 04/10/2015 01:59 PM, Anshuman Khandual wrote:
+> 	This patch series has patches for POWER DSCR fixes, improvements,
+> in code documentaion, kernel support user documentation and selftest based
+> test cases. It has got five test cases which are derived from Anton's DSCR
+> test bucket which can be listed as follows.
+> 
+> (1) http://ozlabs.org/~anton/junkcode/dscr_default_test.c
+> (2) http://ozlabs.org/~anton/junkcode/dscr_explicit_test.c
+> (3) http://ozlabs.org/~anton/junkcode/dscr_inherit_exec_test.c
+> (4) http://ozlabs.org/~anton/junkcode/dscr_inherit_test.c
+> (5) http://ozlabs.org/~anton/junkcode/user_dscr_test.c
+> 
+> So the derivied test cases have Anton's copyright along with mine but the
+> commit message as of now has only my signed-off-by statement. As Anton
+> mentioned before he would put his signed-off-by after reviewing these
+> modified test cases.
+> 
+> NOTE1: Anton's original inherit exec test expected the child to have system
+> default DSCR value instead of the inherited DSCR value from it's parent.
+> But looks like thats not the case when we execute the test, it always
+> inherits it's parent's DSCR value over the exec call as well. So I have
+> changed the test program assuming its correct to have the inherited DSCR
+> value in the fork/execed child program. Please let me know if thats not
+> correct and I am missing something there.
+> 
+> Changes in V3:
+> -------------
+> - Minor changes to last couple of sysfs test cases
+> - Added .gitignore file for the new test directory
 
-On Mon, May 11, 2015 at 2:08 PM, Suman Tripathi <stripathi@apm.com> wrote:
-> This patch adds the arasan sdhci nodes to reuse the of-arasan
-> driver for APM X-Gene SoC.
->
-> Signed-off-by: Suman Tripathi <stripathi@apm.com>
-> ---
->  arch/arm64/boot/dts/apm/apm-mustang.dts |  4 +++
->  arch/arm64/boot/dts/apm/apm-storm.dtsi  | 43 +++++++++++++++++++++++++++++++++
->  2 files changed, 47 insertions(+)
->
-> diff --git a/arch/arm64/boot/dts/apm/apm-mustang.dts b/arch/arm64/boot/dts/apm/apm-mustang.dts
-> index 83578e7..7ccd517 100644
-> --- a/arch/arm64/boot/dts/apm/apm-mustang.dts
-> +++ b/arch/arm64/boot/dts/apm/apm-mustang.dts
-> @@ -52,3 +52,7 @@
->  &xgenet {
->         status = "ok";
->  };
-> +
-> +&sdhci0 {
-> +       status = "ok";
-> +};
-> diff --git a/arch/arm64/boot/dts/apm/apm-storm.dtsi b/arch/arm64/boot/dts/apm/apm-storm.dtsi
-> index c8d3e0e..b5d2698 100644
-> --- a/arch/arm64/boot/dts/apm/apm-storm.dtsi
-> +++ b/arch/arm64/boot/dts/apm/apm-storm.dtsi
-> @@ -145,6 +145,40 @@
->                                 clock-output-names = "socplldiv2";
->                         };
->
-> +                       ahbclk: ahbclk@1f2ac000 {
-> +                               compatible = "apm,xgene-device-clock";
-> +                               #clock-cells = <1>;
-> +                               clocks = <&socplldiv2 0>;
-> +                               reg = <0x0 0x1f2ac000 0x0 0x1000
-> +                                       0x0 0x17000000 0x0 0x2000>;
-> +                               reg-names = "csr-reg", "div-reg";
-> +                               csr-offset = <0x0>;
-> +                               csr-mask = <0x1>;
-> +                               enable-offset = <0x8>;
-> +                               enable-mask = <0x1>;
-> +                               divider-offset = <0x164>;
-> +                               divider-width = <0x5>;
-> +                               divider-shift = <0x0>;
-> +                               clock-output-names = "ahbclk";
-> +                       };
-> +
-> +                       sdioclk: sdioclk@1f2ac000 {
-> +                               compatible = "apm,xgene-device-clock";
-> +                               #clock-cells = <1>;
-> +                               clocks = <&socplldiv2 0>;
-> +                               reg = <0x0 0x1f2ac000 0x0 0x1000
-> +                                       0x0 0x17000000 0x0 0x2000>;
-> +                               reg-names = "csr-reg", "div-reg";
-> +                               csr-offset = <0x0>;
-> +                               csr-mask = <0x2>;
-> +                               enable-offset = <0x8>;
-> +                               enable-mask = <0x2>;
-> +                               divider-offset = <0x178>;
-> +                               divider-width = <0x8>;
-> +                               divider-shift = <0x0>;
-> +                               clock-output-names = "sdioclk";
-> +                       };
-> +
->                         qmlclk: qmlclk {
->                                 compatible = "apm,xgene-device-clock";
->                                 #clock-cells = <1>;
-> @@ -533,6 +567,15 @@
->                         interrupts = <0x0 0x4f 0x4>;
->                 };
->
-> +               sdhci0: sdhci@1c000000 {
-> +                       compatible = "arasan,sdhci-4.9a";
-> +                       reg = <0x0 0x1c000000 0x0 0x100>;
-> +                       interrupts = <0x0 0x49 0x4>;
-> +                       dma-coherent;
-> +                       clock-names = "clk_xin", "clk_ahb";
-> +                       clocks = <&sdioclk 0>, <&ahbclk 0>;
-> +               };
-> +
->                 phy1: phy@1f21a000 {
->                         compatible = "apm,xgene-phy";
->                         reg = <0x0 0x1f21a000 0x0 0x100>;
-> --
-> 1.8.2.1
->
+Hey Michael/Ben/Mikey,
 
-Can anyone from dt community review this patch ? I have changed the dts node
-names from sdhc to sdhci as per Arnd, Michael comments .
-
--- 
-Thanks,
-with regards,
-Suman Tripathi
+Do you have any thoughts or updates on this patch series. Its already
+been a month for this latest version to be on the list.
