@@ -2,36 +2,36 @@ Return-Path: <gwshan@linux.vnet.ibm.com>
 Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4263C1A0130
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2015 16:29:26 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6F7E81A0130
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2015 16:35:05 +1000 (AEST)
 Received: from /spool/local
  by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Tue, 12 May 2015 16:29:24 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 21D392CE8040
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2015 16:29:22 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t4C6TDqP32768088
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2015 16:29:22 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t4C6SnOj011233
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2015 16:28:49 +1000
-Date: Tue, 12 May 2015 16:28:23 +1000
+ Tue, 12 May 2015 16:35:04 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id D47C22CE8050
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2015 16:35:01 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t4C6YrIn27983920
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2015 16:35:01 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t4C6YSL8030447
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2015 16:34:28 +1000
+Date: Tue, 12 May 2015 16:34:03 +1000
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: Wei Yang <weiyang@linux.vnet.ibm.com>
-Subject: Re: [PATCH V3 5/9] powerpc/eeh: create EEH_PE_VF for VF PE
-Message-ID: <20150512062823.GB18734@gwshan>
+Subject: Re: [PATCH V3 8/9] powerpc/powernv: Support PCI config restore for VFs
+Message-ID: <20150512063403.GA21256@gwshan>
 Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
 References: <1430723258-21299-1-git-send-email-weiyang@linux.vnet.ibm.com>
- <1430723258-21299-6-git-send-email-weiyang@linux.vnet.ibm.com>
- <20150511023707.GA8816@gwshan> <20150511062549.GB1632@richard>
+ <1430723258-21299-9-git-send-email-weiyang@linux.vnet.ibm.com>
+ <20150511042238.GA19629@gwshan> <20150512013134.GA5814@richard>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150511062549.GB1632@richard>
+In-Reply-To: <20150512013134.GA5814@richard>
 Cc: bhelgaas@google.com, linux-pci@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, Gavin Shan <gwshan@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -43,178 +43,216 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, May 11, 2015 at 02:25:49PM +0800, Wei Yang wrote:
->On Mon, May 11, 2015 at 12:37:07PM +1000, Gavin Shan wrote:
->>On Mon, May 04, 2015 at 03:07:34PM +0800, Wei Yang wrote:
->>
->>Please reorder PATCH[6] with this one because the EEH device is expected
->>to be created before EEH PE.
->
->That's a good idea.
->
->>
->>>On powernv platform, VF PE is a special PE which is different from the Bus
->>>PE.  On the EEH side, it needs a corresponding concept to handle the VF PE
->>>properly. For example, we need to create VF PE when VF's pci_dev is
->>>initialized in kernel. And add a flag to mark it is a VF PF.
->>                                                       ^^^^^
+On Tue, May 12, 2015 at 09:31:34AM +0800, Wei Yang wrote:
+>On Mon, May 11, 2015 at 02:22:38PM +1000, Gavin Shan wrote:
+>>On Mon, May 04, 2015 at 03:07:37PM +0800, Wei Yang wrote:
+>>>Since FW is not aware of VFs, the restore action for VF should be done in
+>>       ^^
+>>       skiboot firmware
+>>>kernel.
+>>>
+>>>This patch introduces pnv_eeh_vf_restore_config() for VF.
 >>>
 >>
->>>From above commit log, my understanding is that you're adding a flag to
->>identify VF PE, which is handled differently from bus PE. You missed the
->>details on the difference between them and the speical treament to VF PE.
->>Could you help add those information in the commit log to make it looks
->>complete?
+>>Would it be better?
 >>
->
->This patch just introduce the VF PE. For those differences, we have another
->patch "handle VF PE properly" to cover. In the log of that patch, I listed
->those differences. Do you think this is fine?
->
-
-It's fine to me.
-
->>>This patch introduces the EEH_PE_VF type for VF PE and creates it for a VF.
->>>At the mean time, it creates the sysfs and address cache for VF PE.
->>                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
->>
->>                   it creates the sysfs and address cache for VF PE at PCI
->>device final fixup time.
->>
->>>
->>>Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
->>>---
->>> arch/powerpc/include/asm/eeh.h               |    1 +
->>> arch/powerpc/kernel/eeh_pe.c                 |   12 ++++++++++--
->>> arch/powerpc/platforms/powernv/eeh-powernv.c |   12 ++++++++++++
->>> 3 files changed, 23 insertions(+), 2 deletions(-)
->>>
->>>diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
->>>index a52db28..56e8cd9 100644
->>>--- a/arch/powerpc/include/asm/eeh.h
->>>+++ b/arch/powerpc/include/asm/eeh.h
->>>@@ -70,6 +70,7 @@ struct pci_dn;
->>> #define EEH_PE_PHB	(1 << 1)	/* PHB PE    */
->>> #define EEH_PE_DEVICE 	(1 << 2)	/* Device PE */
->>> #define EEH_PE_BUS	(1 << 3)	/* Bus PE    */
->>>+#define EEH_PE_VF	(1 << 4)	/* VF PE     */
->>>
->>> #define EEH_PE_ISOLATED		(1 << 0)	/* Isolated PE		*/
->>> #define EEH_PE_RECOVERING	(1 << 1)	/* Recovering PE	*/
->>>diff --git a/arch/powerpc/kernel/eeh_pe.c b/arch/powerpc/kernel/eeh_pe.c
->>>index 35f0b62..edfe63a 100644
->>>--- a/arch/powerpc/kernel/eeh_pe.c
->>>+++ b/arch/powerpc/kernel/eeh_pe.c
->>>@@ -299,7 +299,12 @@ static struct eeh_pe *eeh_pe_get_parent(struct eeh_dev *edev)
->>> 	 * EEH device already having associated PE, but
->>> 	 * the direct parent EEH device doesn't have yet.
->>> 	 */
->>>-	pdn = pdn ? pdn->parent : NULL;
->>>+#ifdef CONFIG_PCI_IOV
->>>+	if (edev->mode & EEH_DEV_VF)
->>>+		pdn = pci_get_pdn(edev->physfn);
->>>+	else
->>>+#endif
->>>+		pdn = pdn ? pdn->parent : NULL;
->>
->>[A]
->>
->>> 	while (pdn) {
->>> 		/* We're poking out of PCI territory */
->>> 		parent = pdn_to_eeh_dev(pdn);
->>>@@ -382,7 +387,10 @@ int eeh_add_to_parent_pe(struct eeh_dev *edev)
->>> 	}
->>>
->>> 	/* Create a new EEH PE */
->>>-	pe = eeh_pe_alloc(edev->phb, EEH_PE_DEVICE);
->>>+	if (edev->mode & EEH_DEV_VF)
->>>+		pe = eeh_pe_alloc(edev->phb, EEH_PE_VF);
->>>+	else
->>>+		pe = eeh_pe_alloc(edev->phb, EEH_PE_DEVICE);
->>
->>You don't have CONFIG_PCI_IOV here to protect the code, but you had
->>that at [A]. In order to keep the code look consistent, you either
->>add it or remove it for all places. I prefer to remove it, which
->>we don't need CONFIG_PCI_IOV.
->>
->
->Ok, that's fine to remove it.
->
->BTW, if remove the CONFIG_PCI_IOV, we need to remove it around the physfn in
->eeh_dev definition. That's fine?
->
-
-It's fine to me.
-
->>> 	if (!pe) {
->>> 		pr_err("%s: out of memory!\n", __func__);
->>> 		return -ENOMEM;
->>>diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
->>>index 622f08c..5447481 100644
->>>--- a/arch/powerpc/platforms/powernv/eeh-powernv.c
->>>+++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
->>>@@ -1540,3 +1540,15 @@ static int __init eeh_powernv_init(void)
->>> 	return ret;
->>> }
->>> machine_early_initcall(powernv, eeh_powernv_init);
->>>+
->>>+#ifdef CONFIG_PCI_IOV
->>>+static void pnv_pci_fixup_vf_eeh(struct pci_dev *pdev)
->>>+{
->>
->>Please rename it to pnv_eeh_vf_final_fixup(). Names of all functions
->>in this file expect prefix "pnv_eeh_". With "_final_", it's clearly
->>to tell it's called on PCI device final fixup time.
->>
->
->ok
->
->>>+	/* sysfs files should only be added after devices are added */
->>
->>It's nice to explain why here: sysfs for the PCI device isn't populated
->>and the MMIO resource isn't finalized for the PCI device yet.
->>
->
->Don't get your point.
->
->sysfs of the PCI device is populated at this point.
->
-
-You have two operations here: (A) add the PCI device to EEH address cache;
-(B) add EEH related sysfs entries. (A) requires that the resources (MMIO
-on PHB3) of the VF is finalized. (B) requires VF's sysfs entries have been
-populated. So you need two conditions here to make sure (A) and (B) work
-correctly: sysfs files are created and MMIO resources are populated. I was
-saying your comments is a bit confusing. Could you have something like this:
-
-       /*
-        * The following operations will fail if VF's sysfs files aren't
-        * created or its resources aren't finalized.
-        */ 
-
-Also, the PCI device's sysfs files aren't created at this point (final
-fixup time). Note that, PCI final fixup is invoked separately from PCI
-enumeration by fs_initcall_sync().
-
->>>+	if (pdev->is_virtfn) {
->>>+		eeh_add_device_late(pdev);
->>>+		eeh_sysfs_add_device(pdev);
->>>+	}
->>>+}
->>
->>The nested ifdef can be avoided as:
->>
->>	if (!pdev->is_virtfn)
->>		return;
->>
->>	eeh_add_device_late(pdev);
->>	eeh_sysfs_add_device(pdev);
+>>The patch introduces function pnv_eeh_vf_restore_config() to restore PCI
+>>config space for VFs after reset.
 >>
 >
 >Ok.
 >
->>>+DECLARE_PCI_FIXUP_FINAL(PCI_ANY_ID, PCI_ANY_ID, pnv_pci_fixup_vf_eeh);
+>>Also, the function name would be better with pnv_eeh_restore_vf_config()?
+>
+>Ok.
+>
+>>
+>>>Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
+>>>---
+>>> arch/powerpc/include/asm/pci-bridge.h        |    1 +
+>>> arch/powerpc/platforms/powernv/eeh-powernv.c |   77 +++++++++++++++++++++++++-
+>>> 2 files changed, 77 insertions(+), 1 deletion(-)
+>>>
+>>>diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
+>>>index 9582aa2..de55ef6 100644
+>>>--- a/arch/powerpc/include/asm/pci-bridge.h
+>>>+++ b/arch/powerpc/include/asm/pci-bridge.h
+>>>@@ -205,6 +205,7 @@ struct pci_dn {
+>>> 	int     m64_per_iov;
+>>> #define IODA_INVALID_M64        (-1)
+>>> 	int     m64_wins[PCI_SRIOV_NUM_BARS][M64_PER_IOV];
+>>>+	int	mps;
+>>> #endif /* CONFIG_PCI_IOV */
+>>> #endif
+>>> 	struct list_head child_list;
+>>>diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
+>>>index 1ad322f..6ba6d87 100644
+>>>--- a/arch/powerpc/platforms/powernv/eeh-powernv.c
+>>>+++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
+>>>@@ -1589,6 +1589,59 @@ static int pnv_eeh_next_error(struct eeh_pe **pe)
+>>> 	return ret;
+>>> }
+>>>
+>>>+#ifdef CONFIG_PCI_IOV
+>>>+static int pnv_eeh_vf_restore_config(struct pci_dn *pdn)
+>>>+{
+>>>+	int pcie_cap, aer_cap, old_mps;
+>>>+	u32 devctl, cmd, cap2, aer_capctl;
+>>>+
+>>>+	/* Restore MPS */
+>>>+	pcie_cap = pnv_eeh_find_cap(pdn, PCI_CAP_ID_EXP);
+>>>+	if (pcie_cap) {
+>>>+		old_mps = (ffs(pdn->mps) - 8) << 5;
+>>>+		pnv_pci_cfg_read(pdn, pcie_cap + PCI_EXP_DEVCTL, 2, &devctl);
+>>>+		devctl &= ~PCI_EXP_DEVCTL_PAYLOAD;
+>>>+		devctl |= old_mps;
+>>>+		pnv_pci_cfg_write(pdn, pcie_cap + PCI_EXP_DEVCTL, 2, devctl);
+>>>+	}
+>>>+
+>>
+>>hrm, You can't use pnv_pci_cfg_{read,write} here. Instead, you should use
+>>eeh_ops->{read,write}_config. By design, the PCI config accessors have been
+>>classified to 2 classes: one is used for pci_config_{read,write}_* and another
+>>one is eeh_ops->{read,write}. From EEH perspective, the former isn't controlled
+>>strictly, but the later one is under control completely. "Not controlled" here
+>>means the kernel can't determine when the PCI config is accessed, e.g. PCI
+>>config accesses from user land.
+>>
+>
+>Reasonable, will change it.
+>
+>>>+	/* Disable Completion Timeout */
+>>>+	if (pcie_cap) {
+>>>+		pnv_pci_cfg_read(pdn, pcie_cap + PCI_EXP_DEVCAP2, 4, &cap2);
+>>>+		if (cap2 & 0x10) {
+>>>+			pnv_pci_cfg_read(pdn, pcie_cap + PCI_EXP_DEVCTL2, 4, &cap2);
+>>>+			cap2 |= 0x10;
+>>>+			pnv_pci_cfg_write(pdn, pcie_cap + PCI_EXP_DEVCTL2, 4, cap2);
+>>>+		}
+>>>+	}
+>>>+
+>>>+	/* Enable SERR and parity checking */
+>>>+	pnv_pci_cfg_read(pdn, PCI_COMMAND, 2, &cmd);
+>>>+	cmd |= (PCI_COMMAND_PARITY | PCI_COMMAND_SERR);
+>>>+	pnv_pci_cfg_write(pdn, PCI_COMMAND, 2, cmd);
+>>>+
+>>>+	/* Enable report various errors */
+>>>+	if (pcie_cap) {
+>>>+		pnv_pci_cfg_read(pdn, pcie_cap + PCI_EXP_DEVCTL, 2, &devctl);
+>>>+		devctl &= ~PCI_EXP_DEVCTL_CERE;
+>>>+		devctl |= (PCI_EXP_DEVCTL_NFERE |
+>>>+			   PCI_EXP_DEVCTL_FERE |
+>>>+			   PCI_EXP_DEVCTL_URRE);
+>>>+		pnv_pci_cfg_write(pdn, pcie_cap + PCI_EXP_DEVCTL, 2, devctl);
+>>>+	}
+>>>+
+>>>+	/* Enable ECRC generation and check */
+>>>+	if (pcie_cap) {
+>>>+		aer_cap = pnv_eeh_find_ecap(pdn, PCI_EXT_CAP_ID_ERR);
+>>>+		pnv_pci_cfg_read(pdn, aer_cap + PCI_ERR_CAP, 4, &aer_capctl);
+>>>+		aer_capctl |= (PCI_ERR_CAP_ECRC_GENE | PCI_ERR_CAP_ECRC_CHKE);
+>>>+		pnv_pci_cfg_write(pdn, aer_cap + PCI_ERR_CAP, 4, aer_capctl);
+>>>+	}
+>>>+
+>>>+	return 0;
+>>>+}
 >>>+#endif /* CONFIG_PCI_IOV */
+>>>+
+>>
+>>The code is copied over from skiboot firmware. I still dislike the fact that
+>>we have to maintain two sets of similar functions in skiboot/kernel. I still
+>>believe the way I suggested can help: the firmware exports the error routing
+>>rules and kernel has support it based on the rules. With it, the skiboot is
+>>the source of the information to avoid mismatching between kernel/firmware.
+>
+>Yes, it looks we have duplicate code in kernel and skiboot.
+>
+>As you suggest, if we export some bit map from device node, we still have the
+>real logic in kernel, until we remove that part in skiboot.
+>
+>By removing that part in skiboot, we may have some compatibility problem. For
+>example, an old kernel may not run on the new version of skiboot.
+>
+
+It's fine to keep two set code which bear with same rule, which is exported
+from skiboot. In that case, the rule is the only thing we have to care. We
+don't need care the code any more to avoid mismatch between kernel/firmware.
+
+>>
+>>> static int pnv_eeh_restore_config(struct pci_dn *pdn)
+>>> {
+>>> 	struct eeh_dev *edev = pdn_to_eeh_dev(pdn);
+>>>@@ -1599,7 +1652,13 @@ static int pnv_eeh_restore_config(struct pci_dn *pdn)
+>>> 		return -EEXIST;
+>>>
+>>> 	phb = edev->phb->private_data;
+>>>-	ret = opal_pci_reinit(phb->opal_id,
+>>>+#ifdef CONFIG_PCI_IOV
+>>>+	/* FW is not VF aware, we rely on OS to restore it */
+>>>+	if (edev->mode & EEH_DEV_VF)
+>>>+		ret = pnv_eeh_vf_restore_config(pdn);
+>>>+	else
+>>>+#endif
+>>
+>>You don't even have to have CONFIG_PCI_IOV since it won't save much
+>>.text space.
+>>
+>
+>ok
+>
+>>>+		ret = opal_pci_reinit(phb->opal_id,
+>>> 			      OPAL_REINIT_PCI_DEV, edev->config_addr);
+>>> 	if (ret) {
+>>> 		pr_warn("%s: Can't reinit PCI dev 0x%x (%lld)\n",
+>>>@@ -1660,4 +1719,20 @@ static void pnv_pci_fixup_vf_eeh(struct pci_dev *pdev)
+>>> 	}
+>>> }
+>>> DECLARE_PCI_FIXUP_FINAL(PCI_ANY_ID, PCI_ANY_ID, pnv_pci_fixup_vf_eeh);
+>>>+
+>>>+static void pnv_pci_fixup_vf_caps(struct pci_dev *pdev)
+>>>+{
+>>
+>>As I said before, this function shouldn't be part of this file because:
+>>
+>>- When CONFIG_EEH=n, this file won't be complied/included.
+>>- This function isn't part of EEH naturally.
+>>
+>
+>Moved to arch/powerpc/platform/powernv/pci.c
+>
+>>Also, pnv_pci_vf_header_fixup() would be better name in case you need
+>>apply more fixups for VFs in the function.
+>>
+>
+>Ok.
+>
+>>>+	struct pci_dn *pdn = pci_get_pdn(pdev);
+>>>+	int parent_mps;
+>>>+
+>>>+	if (!pdev->is_virtfn)
+>>>+		return;
+>>>+
+>>>+	/* Synchronize MPS for VF and PF */
+>>>+	parent_mps = pcie_get_mps(pdev->physfn);
+>>>+	if ((128 << pdev->pcie_mpss) >= parent_mps)
+>>>+		pcie_set_mps(pdev, parent_mps);
+>>
+>>Hrm, Again, do we have possibility: (128 << pdev->pcie_mpss) < parent_mps ?
+>>And why we bother if MPS of PF/VF are equal?
+>>
+>
+>pcie_mpss is the MPS supported, not the MPS itself.
+>
+>This line means if the pci_dev support the parents mps, apply it.
+>Otherwise, just cache the mps.
+>
+
+Ok. It then looks good to me.
+
+>>>+	pdn->mps = pcie_get_mps(pdev);
+>>>+}
+>>>+DECLARE_PCI_FIXUP_HEADER(PCI_ANY_ID, PCI_ANY_ID, pnv_pci_fixup_vf_caps);
+>>> #endif /* CONFIG_PCI_IOV */
 
 Thanks,
 Gavin
