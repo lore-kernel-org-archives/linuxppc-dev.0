@@ -1,39 +1,21 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <zidan.wang@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1on0131.outbound.protection.outlook.com [157.56.110.131])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6F7E81A0130
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2015 16:35:05 +1000 (AEST)
-Received: from /spool/local
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Tue, 12 May 2015 16:35:04 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id D47C22CE8050
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2015 16:35:01 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t4C6YrIn27983920
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2015 16:35:01 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t4C6YSL8030447
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2015 16:34:28 +1000
-Date: Tue, 12 May 2015 16:34:03 +1000
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: Wei Yang <weiyang@linux.vnet.ibm.com>
-Subject: Re: [PATCH V3 8/9] powerpc/powernv: Support PCI config restore for VFs
-Message-ID: <20150512063403.GA21256@gwshan>
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <1430723258-21299-1-git-send-email-weiyang@linux.vnet.ibm.com>
- <1430723258-21299-9-git-send-email-weiyang@linux.vnet.ibm.com>
- <20150511042238.GA19629@gwshan> <20150512013134.GA5814@richard>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9D0F11A0145
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2015 17:06:12 +1000 (AEST)
+From: Zidan Wang <zidan.wang@freescale.com>
+To: <nicoleotsuka@gmail.com>
+Subject: [alsa-devel][PATCH 1/3] ASoC: fsl_sai: add sai master mode support
+Date: Tue, 12 May 2015 15:07:39 +0800
+Message-ID: <a60e5babb208b08fb4cd8188573606eb745cc1c4.1431414110.git.zidan.wang@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150512013134.GA5814@richard>
-Cc: bhelgaas@google.com, linux-pci@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, Gavin Shan <gwshan@linux.vnet.ibm.com>
+Content-Type: text/plain
+Cc: alsa-devel@alsa-project.org, timur@tabi.org,
+ Zidan Wang <zidan.wang@freescale.com>, Xiubo.Lee@gmail.com, tiwai@suse.de,
+ linux-kernel@vger.kernel.org, lgirdwood@gmail.com, perex@perex.cz,
+ broonie@kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,216 +25,240 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, May 12, 2015 at 09:31:34AM +0800, Wei Yang wrote:
->On Mon, May 11, 2015 at 02:22:38PM +1000, Gavin Shan wrote:
->>On Mon, May 04, 2015 at 03:07:37PM +0800, Wei Yang wrote:
->>>Since FW is not aware of VFs, the restore action for VF should be done in
->>       ^^
->>       skiboot firmware
->>>kernel.
->>>
->>>This patch introduces pnv_eeh_vf_restore_config() for VF.
->>>
->>
->>Would it be better?
->>
->>The patch introduces function pnv_eeh_vf_restore_config() to restore PCI
->>config space for VFs after reset.
->>
->
->Ok.
->
->>Also, the function name would be better with pnv_eeh_restore_vf_config()?
->
->Ok.
->
->>
->>>Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
->>>---
->>> arch/powerpc/include/asm/pci-bridge.h        |    1 +
->>> arch/powerpc/platforms/powernv/eeh-powernv.c |   77 +++++++++++++++++++++++++-
->>> 2 files changed, 77 insertions(+), 1 deletion(-)
->>>
->>>diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
->>>index 9582aa2..de55ef6 100644
->>>--- a/arch/powerpc/include/asm/pci-bridge.h
->>>+++ b/arch/powerpc/include/asm/pci-bridge.h
->>>@@ -205,6 +205,7 @@ struct pci_dn {
->>> 	int     m64_per_iov;
->>> #define IODA_INVALID_M64        (-1)
->>> 	int     m64_wins[PCI_SRIOV_NUM_BARS][M64_PER_IOV];
->>>+	int	mps;
->>> #endif /* CONFIG_PCI_IOV */
->>> #endif
->>> 	struct list_head child_list;
->>>diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
->>>index 1ad322f..6ba6d87 100644
->>>--- a/arch/powerpc/platforms/powernv/eeh-powernv.c
->>>+++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
->>>@@ -1589,6 +1589,59 @@ static int pnv_eeh_next_error(struct eeh_pe **pe)
->>> 	return ret;
->>> }
->>>
->>>+#ifdef CONFIG_PCI_IOV
->>>+static int pnv_eeh_vf_restore_config(struct pci_dn *pdn)
->>>+{
->>>+	int pcie_cap, aer_cap, old_mps;
->>>+	u32 devctl, cmd, cap2, aer_capctl;
->>>+
->>>+	/* Restore MPS */
->>>+	pcie_cap = pnv_eeh_find_cap(pdn, PCI_CAP_ID_EXP);
->>>+	if (pcie_cap) {
->>>+		old_mps = (ffs(pdn->mps) - 8) << 5;
->>>+		pnv_pci_cfg_read(pdn, pcie_cap + PCI_EXP_DEVCTL, 2, &devctl);
->>>+		devctl &= ~PCI_EXP_DEVCTL_PAYLOAD;
->>>+		devctl |= old_mps;
->>>+		pnv_pci_cfg_write(pdn, pcie_cap + PCI_EXP_DEVCTL, 2, devctl);
->>>+	}
->>>+
->>
->>hrm, You can't use pnv_pci_cfg_{read,write} here. Instead, you should use
->>eeh_ops->{read,write}_config. By design, the PCI config accessors have been
->>classified to 2 classes: one is used for pci_config_{read,write}_* and another
->>one is eeh_ops->{read,write}. From EEH perspective, the former isn't controlled
->>strictly, but the later one is under control completely. "Not controlled" here
->>means the kernel can't determine when the PCI config is accessed, e.g. PCI
->>config accesses from user land.
->>
->
->Reasonable, will change it.
->
->>>+	/* Disable Completion Timeout */
->>>+	if (pcie_cap) {
->>>+		pnv_pci_cfg_read(pdn, pcie_cap + PCI_EXP_DEVCAP2, 4, &cap2);
->>>+		if (cap2 & 0x10) {
->>>+			pnv_pci_cfg_read(pdn, pcie_cap + PCI_EXP_DEVCTL2, 4, &cap2);
->>>+			cap2 |= 0x10;
->>>+			pnv_pci_cfg_write(pdn, pcie_cap + PCI_EXP_DEVCTL2, 4, cap2);
->>>+		}
->>>+	}
->>>+
->>>+	/* Enable SERR and parity checking */
->>>+	pnv_pci_cfg_read(pdn, PCI_COMMAND, 2, &cmd);
->>>+	cmd |= (PCI_COMMAND_PARITY | PCI_COMMAND_SERR);
->>>+	pnv_pci_cfg_write(pdn, PCI_COMMAND, 2, cmd);
->>>+
->>>+	/* Enable report various errors */
->>>+	if (pcie_cap) {
->>>+		pnv_pci_cfg_read(pdn, pcie_cap + PCI_EXP_DEVCTL, 2, &devctl);
->>>+		devctl &= ~PCI_EXP_DEVCTL_CERE;
->>>+		devctl |= (PCI_EXP_DEVCTL_NFERE |
->>>+			   PCI_EXP_DEVCTL_FERE |
->>>+			   PCI_EXP_DEVCTL_URRE);
->>>+		pnv_pci_cfg_write(pdn, pcie_cap + PCI_EXP_DEVCTL, 2, devctl);
->>>+	}
->>>+
->>>+	/* Enable ECRC generation and check */
->>>+	if (pcie_cap) {
->>>+		aer_cap = pnv_eeh_find_ecap(pdn, PCI_EXT_CAP_ID_ERR);
->>>+		pnv_pci_cfg_read(pdn, aer_cap + PCI_ERR_CAP, 4, &aer_capctl);
->>>+		aer_capctl |= (PCI_ERR_CAP_ECRC_GENE | PCI_ERR_CAP_ECRC_CHKE);
->>>+		pnv_pci_cfg_write(pdn, aer_cap + PCI_ERR_CAP, 4, aer_capctl);
->>>+	}
->>>+
->>>+	return 0;
->>>+}
->>>+#endif /* CONFIG_PCI_IOV */
->>>+
->>
->>The code is copied over from skiboot firmware. I still dislike the fact that
->>we have to maintain two sets of similar functions in skiboot/kernel. I still
->>believe the way I suggested can help: the firmware exports the error routing
->>rules and kernel has support it based on the rules. With it, the skiboot is
->>the source of the information to avoid mismatching between kernel/firmware.
->
->Yes, it looks we have duplicate code in kernel and skiboot.
->
->As you suggest, if we export some bit map from device node, we still have the
->real logic in kernel, until we remove that part in skiboot.
->
->By removing that part in skiboot, we may have some compatibility problem. For
->example, an old kernel may not run on the new version of skiboot.
->
+When sai works on master mode, set its bit clock and frame clock.
 
-It's fine to keep two set code which bear with same rule, which is exported
-from skiboot. In that case, the rule is the only thing we have to care. We
-don't need care the code any more to avoid mismatch between kernel/firmware.
+SAI has 4 MCLK source, bus clock, MCLK1, MCLK2 and MCLK3. fsl_sai_set_bclk
+will select proper MCLK source, then calculate and set the bit clock divider.
 
->>
->>> static int pnv_eeh_restore_config(struct pci_dn *pdn)
->>> {
->>> 	struct eeh_dev *edev = pdn_to_eeh_dev(pdn);
->>>@@ -1599,7 +1652,13 @@ static int pnv_eeh_restore_config(struct pci_dn *pdn)
->>> 		return -EEXIST;
->>>
->>> 	phb = edev->phb->private_data;
->>>-	ret = opal_pci_reinit(phb->opal_id,
->>>+#ifdef CONFIG_PCI_IOV
->>>+	/* FW is not VF aware, we rely on OS to restore it */
->>>+	if (edev->mode & EEH_DEV_VF)
->>>+		ret = pnv_eeh_vf_restore_config(pdn);
->>>+	else
->>>+#endif
->>
->>You don't even have to have CONFIG_PCI_IOV since it won't save much
->>.text space.
->>
->
->ok
->
->>>+		ret = opal_pci_reinit(phb->opal_id,
->>> 			      OPAL_REINIT_PCI_DEV, edev->config_addr);
->>> 	if (ret) {
->>> 		pr_warn("%s: Can't reinit PCI dev 0x%x (%lld)\n",
->>>@@ -1660,4 +1719,20 @@ static void pnv_pci_fixup_vf_eeh(struct pci_dev *pdev)
->>> 	}
->>> }
->>> DECLARE_PCI_FIXUP_FINAL(PCI_ANY_ID, PCI_ANY_ID, pnv_pci_fixup_vf_eeh);
->>>+
->>>+static void pnv_pci_fixup_vf_caps(struct pci_dev *pdev)
->>>+{
->>
->>As I said before, this function shouldn't be part of this file because:
->>
->>- When CONFIG_EEH=n, this file won't be complied/included.
->>- This function isn't part of EEH naturally.
->>
->
->Moved to arch/powerpc/platform/powernv/pci.c
->
->>Also, pnv_pci_vf_header_fixup() would be better name in case you need
->>apply more fixups for VFs in the function.
->>
->
->Ok.
->
->>>+	struct pci_dn *pdn = pci_get_pdn(pdev);
->>>+	int parent_mps;
->>>+
->>>+	if (!pdev->is_virtfn)
->>>+		return;
->>>+
->>>+	/* Synchronize MPS for VF and PF */
->>>+	parent_mps = pcie_get_mps(pdev->physfn);
->>>+	if ((128 << pdev->pcie_mpss) >= parent_mps)
->>>+		pcie_set_mps(pdev, parent_mps);
->>
->>Hrm, Again, do we have possibility: (128 << pdev->pcie_mpss) < parent_mps ?
->>And why we bother if MPS of PF/VF are equal?
->>
->
->pcie_mpss is the MPS supported, not the MPS itself.
->
->This line means if the pci_dev support the parents mps, apply it.
->Otherwise, just cache the mps.
->
+After fsl_sai_set_bclk, enable the selected mclk in hw_params(), and add
+hw_free() to disable the mclk.
 
-Ok. It then looks good to me.
+Signed-off-by: Zidan Wang <zidan.wang@freescale.com>
+---
+ sound/soc/fsl/fsl_sai.c | 117 ++++++++++++++++++++++++++++++++++++++++++++++--
+ sound/soc/fsl/fsl_sai.h |   9 +++-
+ 2 files changed, 121 insertions(+), 5 deletions(-)
 
->>>+	pdn->mps = pcie_get_mps(pdev);
->>>+}
->>>+DECLARE_PCI_FIXUP_HEADER(PCI_ANY_ID, PCI_ANY_ID, pnv_pci_fixup_vf_caps);
->>> #endif /* CONFIG_PCI_IOV */
-
-Thanks,
-Gavin
+diff --git a/sound/soc/fsl/fsl_sai.c b/sound/soc/fsl/fsl_sai.c
+index ee2671b..1ccc10d1 100644
+--- a/sound/soc/fsl/fsl_sai.c
++++ b/sound/soc/fsl/fsl_sai.c
+@@ -1,7 +1,7 @@
+ /*
+  * Freescale ALSA SoC Digital Audio Interface (SAI) driver.
+  *
+- * Copyright 2012-2013 Freescale Semiconductor, Inc.
++ * Copyright 2012-2015 Freescale Semiconductor, Inc.
+  *
+  * This program is free software, you can redistribute it and/or modify it
+  * under the terms of the GNU General Public License as published by the
+@@ -251,12 +251,14 @@ static int fsl_sai_set_dai_fmt_tr(struct snd_soc_dai *cpu_dai,
+ 		val_cr4 |= FSL_SAI_CR4_FSD_MSTR;
+ 		break;
+ 	case SND_SOC_DAIFMT_CBM_CFM:
++		sai->is_slave_mode = true;
+ 		break;
+ 	case SND_SOC_DAIFMT_CBS_CFM:
+ 		val_cr2 |= FSL_SAI_CR2_BCD_MSTR;
+ 		break;
+ 	case SND_SOC_DAIFMT_CBM_CFS:
+ 		val_cr4 |= FSL_SAI_CR4_FSD_MSTR;
++		sai->is_slave_mode = true;
+ 		break;
+ 	default:
+ 		return -EINVAL;
+@@ -288,6 +290,79 @@ static int fsl_sai_set_dai_fmt(struct snd_soc_dai *cpu_dai, unsigned int fmt)
+ 	return ret;
+ }
+ 
++static int fsl_sai_set_bclk(struct snd_soc_dai *dai, bool tx, u32 freq)
++{
++	struct fsl_sai *sai = snd_soc_dai_get_drvdata(dai);
++	unsigned long clk_rate;
++	u32 savediv = 0, ratio, savesub = freq;
++	u32 id;
++	int ret = 0;
++
++	/* Don't apply to slave mode */
++	if (sai->is_slave_mode)
++		return 0;
++
++	for (id = 0; id < FSL_SAI_MCLK_MAX; id++) {
++		clk_rate = clk_get_rate(sai->mclk_clk[id]);
++		if (!clk_rate)
++			continue;
++
++		ratio = clk_rate / freq;
++
++		ret = clk_rate - ratio * freq;
++
++		/*
++		 * Drop the source that can not be
++		 * divided into the required rate.
++		 */
++		if (ret != 0 && clk_rate / ret < 1000)
++			continue;
++
++		dev_dbg(dai->dev,
++			"ratio %d for freq %dHz based on clock %ldHz\n",
++			ratio, freq, clk_rate);
++
++		if (ratio % 2 == 0 && ratio >= 2 && ratio <= 512)
++			ratio /= 2;
++		else
++			continue;
++
++		if (ret < savesub) {
++			savediv = ratio;
++			sai->mclk_id[tx] = id;
++			savesub = ret;
++		}
++
++		if (ret == 0)
++			break;
++	}
++
++	if (savediv == 0) {
++		dev_err(dai->dev, "failed to derive required %cx rate: %d\n",
++				tx ? 'T' : 'R', freq);
++		return -EINVAL;
++	}
++
++	if ((tx && sai->synchronous[TX]) || (!tx && !sai->synchronous[RX])) {
++		regmap_update_bits(sai->regmap, FSL_SAI_RCR2,
++				   FSL_SAI_CR2_MSEL_MASK,
++				   FSL_SAI_CR2_MSEL(sai->mclk_id[tx]));
++		regmap_update_bits(sai->regmap, FSL_SAI_RCR2,
++				   FSL_SAI_CR2_DIV_MASK, savediv - 1);
++	} else {
++		regmap_update_bits(sai->regmap, FSL_SAI_TCR2,
++				   FSL_SAI_CR2_MSEL_MASK,
++				   FSL_SAI_CR2_MSEL(sai->mclk_id[tx]));
++		regmap_update_bits(sai->regmap, FSL_SAI_TCR2,
++				   FSL_SAI_CR2_DIV_MASK, savediv - 1);
++	}
++
++	dev_dbg(dai->dev, "best fit: clock id=%d, div=%d, deviation =%d\n",
++			sai->mclk_id[tx], savediv, savesub);
++
++	return 0;
++}
++
+ static int fsl_sai_hw_params(struct snd_pcm_substream *substream,
+ 		struct snd_pcm_hw_params *params,
+ 		struct snd_soc_dai *cpu_dai)
+@@ -297,6 +372,24 @@ static int fsl_sai_hw_params(struct snd_pcm_substream *substream,
+ 	unsigned int channels = params_channels(params);
+ 	u32 word_width = snd_pcm_format_width(params_format(params));
+ 	u32 val_cr4 = 0, val_cr5 = 0;
++	int ret;
++
++	if (!sai->is_slave_mode) {
++		ret = fsl_sai_set_bclk(cpu_dai, tx,
++			2 * word_width * params_rate(params));
++		if (ret)
++			return ret;
++
++		/* Do not enable the clock if it is already enabled */
++		if (!(sai->mclk_streams & BIT(substream->stream))) {
++			ret = clk_prepare_enable(sai->mclk_clk[sai->mclk_id[tx]]);
++			if (ret)
++				return ret;
++
++			sai->mclk_streams |= BIT(substream->stream);
++		}
++
++	}
+ 
+ 	if (!sai->is_dsp_mode)
+ 		val_cr4 |= FSL_SAI_CR4_SYWD(word_width);
+@@ -322,6 +415,22 @@ static int fsl_sai_hw_params(struct snd_pcm_substream *substream,
+ 	return 0;
+ }
+ 
++static int fsl_sai_hw_free(struct snd_pcm_substream *substream,
++		struct snd_soc_dai *cpu_dai)
++{
++	struct fsl_sai *sai = snd_soc_dai_get_drvdata(cpu_dai);
++	bool tx = substream->stream == SNDRV_PCM_STREAM_PLAYBACK;
++
++	if (!sai->is_slave_mode &&
++			sai->mclk_streams & BIT(substream->stream)) {
++		clk_disable_unprepare(sai->mclk_clk[sai->mclk_id[tx]]);
++		sai->mclk_streams &= ~BIT(substream->stream);
++	}
++
++	return 0;
++}
++
++
+ static int fsl_sai_trigger(struct snd_pcm_substream *substream, int cmd,
+ 		struct snd_soc_dai *cpu_dai)
+ {
+@@ -428,6 +537,7 @@ static const struct snd_soc_dai_ops fsl_sai_pcm_dai_ops = {
+ 	.set_sysclk	= fsl_sai_set_dai_sysclk,
+ 	.set_fmt	= fsl_sai_set_dai_fmt,
+ 	.hw_params	= fsl_sai_hw_params,
++	.hw_free	= fsl_sai_hw_free,
+ 	.trigger	= fsl_sai_trigger,
+ 	.startup	= fsl_sai_startup,
+ 	.shutdown	= fsl_sai_shutdown,
+@@ -600,8 +710,9 @@ static int fsl_sai_probe(struct platform_device *pdev)
+ 		sai->bus_clk = NULL;
+ 	}
+ 
+-	for (i = 0; i < FSL_SAI_MCLK_MAX; i++) {
+-		sprintf(tmp, "mclk%d", i + 1);
++	sai->mclk_clk[0] = sai->bus_clk;
++	for (i = 1; i < FSL_SAI_MCLK_MAX; i++) {
++		sprintf(tmp, "mclk%d", i);
+ 		sai->mclk_clk[i] = devm_clk_get(&pdev->dev, tmp);
+ 		if (IS_ERR(sai->mclk_clk[i])) {
+ 			dev_err(&pdev->dev, "failed to get mclk%d clock: %ld\n",
+diff --git a/sound/soc/fsl/fsl_sai.h b/sound/soc/fsl/fsl_sai.h
+index 3466720..0662809 100644
+--- a/sound/soc/fsl/fsl_sai.h
++++ b/sound/soc/fsl/fsl_sai.h
+@@ -72,13 +72,15 @@
+ 
+ /* SAI Transmit and Recieve Configuration 2 Register */
+ #define FSL_SAI_CR2_SYNC	BIT(30)
+-#define FSL_SAI_CR2_MSEL_MASK	(0xff << 26)
++#define FSL_SAI_CR2_MSEL_MASK	(0x3 << 26)
+ #define FSL_SAI_CR2_MSEL_BUS	0
+ #define FSL_SAI_CR2_MSEL_MCLK1	BIT(26)
+ #define FSL_SAI_CR2_MSEL_MCLK2	BIT(27)
+ #define FSL_SAI_CR2_MSEL_MCLK3	(BIT(26) | BIT(27))
++#define FSL_SAI_CR2_MSEL(ID)	((ID) << 26)
+ #define FSL_SAI_CR2_BCP		BIT(25)
+ #define FSL_SAI_CR2_BCD_MSTR	BIT(24)
++#define FSL_SAI_CR2_DIV_MASK	0xff
+ 
+ /* SAI Transmit and Recieve Configuration 3 Register */
+ #define FSL_SAI_CR3_TRCE	BIT(16)
+@@ -120,7 +122,7 @@
+ #define FSL_SAI_CLK_MAST2	2
+ #define FSL_SAI_CLK_MAST3	3
+ 
+-#define FSL_SAI_MCLK_MAX	3
++#define FSL_SAI_MCLK_MAX	4
+ 
+ /* SAI data transfer numbers per DMA request */
+ #define FSL_SAI_MAXBURST_TX 6
+@@ -132,11 +134,14 @@ struct fsl_sai {
+ 	struct clk *bus_clk;
+ 	struct clk *mclk_clk[FSL_SAI_MCLK_MAX];
+ 
++	bool is_slave_mode;
+ 	bool is_lsb_first;
+ 	bool is_dsp_mode;
+ 	bool sai_on_imx;
+ 	bool synchronous[2];
+ 
++	unsigned int mclk_id[2];
++	unsigned int mclk_streams;
+ 	struct snd_dmaengine_dai_dma_data dma_params_rx;
+ 	struct snd_dmaengine_dai_dma_data dma_params_tx;
+ };
+-- 
+1.9.1
