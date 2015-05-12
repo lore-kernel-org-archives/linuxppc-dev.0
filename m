@@ -1,25 +1,37 @@
-Return-Path: <broonie@sirena.org.uk>
-Received: from mezzanine.sirena.org.uk (mezzanine.sirena.org.uk
- [IPv6:2400:8900::f03c:91ff:fedb:4f4])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <benh@au1.ibm.com>
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4C3E61A0AD2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 04:45:10 +1000 (AEST)
-Date: Tue, 12 May 2015 19:44:54 +0100
-From: Mark Brown <broonie@kernel.org>
-To: Zidan Wang <zidan.wang@freescale.com>
-Message-ID: <20150512184454.GR3066@sirena.org.uk>
-References: <cover.1431337606.git.zidan.wang@freescale.com>
- <1431339894-4248-3-git-send-email-zidan.wang@freescale.com>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="tV/+6PImfyFtriLg"
-In-Reply-To: <1431339894-4248-3-git-send-email-zidan.wang@freescale.com>
-Subject: Re: [PATCH 3/3] ASoC: fsl_sai: add 12kHz, 24kHz, 176.4kHz and 192kHz
- sample rate support
-Cc: alsa-devel@alsa-project.org, timur@tabi.org, Xiubo.Lee@gmail.com,
- tiwai@suse.de, linux-kernel@vger.kernel.org, lgirdwood@gmail.com,
- perex@perex.cz, nicoleotsuka@gmail.com, linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 49AB21A0007
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 06:40:52 +1000 (AEST)
+Received: from /spool/local
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <benh@au1.ibm.com>;
+ Wed, 13 May 2015 06:40:51 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id C17C83578048
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 06:40:45 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t4CKebpu31064174
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 06:40:45 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t4CKeDcH012425
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 06:40:13 +1000
+Message-ID: <1431463180.20218.57.camel@au1.ibm.com>
+Subject: Re: G5 Xserve rackmeter broken?
+From: Benjamin Herrenschmidt <benh@au1.ibm.com>
+To: Aaro Koskinen <aaro.koskinen@iki.fi>
+Date: Wed, 13 May 2015 06:39:40 +1000
+In-Reply-To: <20150512175555.GB609@fuloong-minipc.musicnaut.iki.fi>
+References: <20150510183259.GA13777@aspire-one.musicnaut.iki.fi>
+ <1431296015.13039.12.camel@kernel.crashing.org>
+ <20150512175555.GB609@fuloong-minipc.musicnaut.iki.fi>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,32 +41,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Tue, 2015-05-12 at 20:55 +0300, Aaro Koskinen wrote:
+> I'm running with HZ=100 so the values are still probably within
+> jiffy resolution, so perhaps the calculation should first do
+> idle = min(idle, total)?
 
---tV/+6PImfyFtriLg
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Does it gives you a reasonable output if you do that ?
 
-On Mon, May 11, 2015 at 06:24:43PM +0800, Zidan Wang wrote:
-> Normally we don't support 12kHz, 24kHz in audio driver, alsa didn't
-> have formal definition of 12kHz, 24kHz, but alsa supply a way to
-> support these sample rates. And add 176.4kHz and 192kHz support.
-
-Applied, thanks.
-
---tV/+6PImfyFtriLg
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBCAAGBQJVUkolAAoJECTWi3JdVIfQEgEH/1k7Q6FdaGYIhhfle/Mn/lB/
-vEBMvzmoUp+gfa139n8gu8nXHZQOwrNIhYRz3rlCPC3I8CpNrsyBX0JqC2e8AOe2
-PTL4ftqUV+1NSwa0nqCvKIYCtqvKkVlr/W6CphK49vJW7WhLHkt4t3Z2t/NYHa9X
-0cyYi4aUeVcg53dTBCVI/dqHEpeNZmyGiBmfC8zhQZQVKv31zTe7tUmTHxCUH8OB
-VLSPloQ1s5QzHt52ESzG+wO2JVX8fD/H5nBgMRlBEHvdcCv+J+hyrS9iqyk46Qn9
-RP4daaMIefyqkkjk1bwzcQ3ZIrJGT4LG8uuS9hznBPtvM5sXUDkx4V4pQp1cjRU=
-=VWUE
------END PGP SIGNATURE-----
-
---tV/+6PImfyFtriLg--
+Cheers,
+Ben.
