@@ -1,24 +1,30 @@
-Return-Path: <hongtao.jia@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0108.outbound.protection.outlook.com [65.55.169.108])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <daniel.lezcano@linaro.org>
+Received: from mail-wi0-f177.google.com (mail-wi0-f177.google.com
+ [209.85.212.177])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2ECDD1A0035
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2015 18:31:47 +1000 (AEST)
-From: Hongtao Jia <hongtao.jia@freescale.com>
-To: Eduardo Valentin <edubezval@gmail.com>
-Subject: RE: [PATCH] QorIQ/TMU: add thermal management support based on TMU
-Date: Tue, 12 May 2015 08:17:21 +0000
-Message-ID: <BY2PR03MB157CC7A02D0010EB746709FE1DA0@BY2PR03MB157.namprd03.prod.outlook.com>
-References: <1428045087-15557-1-git-send-email-hongtao.jia@freescale.com>
- <20150512014859.GG4810@localhost.localdomain>
-In-Reply-To: <20150512014859.GG4810@localhost.localdomain>
-Content-Type: text/plain; charset="us-ascii"
+ by lists.ozlabs.org (Postfix) with ESMTPS id BBA991A0008
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2015 18:41:41 +1000 (AEST)
+Received: by widdi4 with SMTP id di4so141823696wid.0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2015 01:41:38 -0700 (PDT)
+Message-ID: <5551BCBF.2000806@linaro.org>
+Date: Tue, 12 May 2015 10:41:35 +0200
+From: Daniel Lezcano <daniel.lezcano@linaro.org>
 MIME-Version: 1.0
-Cc: Scott Wood <scottwood@freescale.com>,
- "rui.zhang@intel.com" <rui.zhang@intel.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 0/3] cpuidle: updates related to tick_broadcast_enter()
+ failures
+References: <20150508073418.28491.4150.stgit@preeti.in.ibm.com>
+ <8965830.CMQzZzsqm0@vostro.rjw.lan> <5550E999.8080005@linaro.org>
+ <2602092.6h7ufczYGd@vostro.rjw.lan>
+In-Reply-To: <2602092.6h7ufczYGd@vostro.rjw.lan>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Cc: rlippert@google.com, Ulf Hansson <ulf.hansson@linaro.org>,
+ Kevin Hilman <khilman@linaro.org>, linux-pm@vger.kernel.org,
+ peterz@infradead.org, linus.walleij@linaro.org, rafael.j.wysocki@intel.com,
+ linux-kernel@vger.kernel.org, mingo@redhat.com, sudeep.holla@arm.com,
+ Preeti U Murthy <preeti@linux.vnet.ibm.com>, tglx@linutronix.de,
+ linuxppc-dev@lists.ozlabs.org, Lina Iyer <lina.iyer@linaro.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,600 +34,118 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Eduardo,
+On 05/12/2015 01:31 AM, Rafael J. Wysocki wrote:
+> On Monday, May 11, 2015 07:40:41 PM Daniel Lezcano wrote:
+>> On 05/10/2015 01:15 AM, Rafael J. Wysocki wrote:
+>>> On Saturday, May 09, 2015 10:33:05 PM Rafael J. Wysocki wrote:
+>>>> On Saturday, May 09, 2015 10:11:41 PM Rafael J. Wysocki wrote:
+>>>>> On Saturday, May 09, 2015 11:19:16 AM Preeti U Murthy wrote:
+>>>>>> Hi Rafael,
+>>>>>>
+>>>>>> On 05/08/2015 07:48 PM, Rafael J. Wysocki wrote:
+>>>>>
+>>>>> [cut]
+>>>>>
+>>>>>>>>
+>>>>>>>> +	/* Take note of the planned idle state. */
+>>>>>>>> +	idle_set_state(smp_processor_id(), target_state);
+>>>>>>>
+>>>>>>> And I wouldn't do this either.
+>>>>>>>
+>>>>>>> The behavior here is pretty much as though the driver demoted the state chosen
+>>>>>>> by the governor and we don't call idle_set_state() again in those cases.
+>>>>>>
+>>>>>> Why is this wrong?
+>>>>>
+>>>>> It is not "wrong", but incomplete, because demotions done by the cpuidle driver
+>>>>> should also be taken into account in the same way.
+>>>>>
+>>>>> But I'm seeing that the recent patch of mine that made cpuidle_enter_state()
+>>>>> call default_idle_call() was a mistake, because it might confuse find_idlest_cpu()
+>>>>> significantly as to what state the CPU is in.  I'll drop that one for now.
+>>>>
+>>>> OK, done.
+>>>>
+>>>> So after I've dropped it I think we need to do three things:
+>>>> (1) Move the idle_set_state() calls to cpuidle_enter_state().
+>>>> (2) Make cpuidle_enter_state() call default_idle_call() again, but this time
+>>>>       do that *before* it has called idle_set_state() for target_state.
+>>>> (3) Introduce demotion as per my last patch.
+>>>>
+>>>> Let me cut patches for that.
+>>>
+>>> Done as per the above and the patches follow in replies to this messge.
+>>>
+>>> All on top of the current linux-next branch of the linux-pm.git tree.
+>>
+>> IMO the resulting code is more and more confusing.
+>
+> Why is it confusing?
+>
+> What part of it is confusing?
+>
+> Patches [1-2/3] simply replace https://patchwork.kernel.org/patch/6326761/
+> and I'm not sure why that would be confusing.
+>
+> Patch [3/3] simply causes cpuidle_enter_state() to pick up a more suitable
+> state if tick_broadcast_enter() fails instead of returning an error code
+> in that case.  What exactly is confusing in that?
+>
+>> Except I miss something, the tick_broadcast_enter can fail only if the
+>> local timer of the current cpu is used as a broadcast timer (which is
+>> the case today for PPC only).
+>
+> well, why does this matter?
+>
+>> The correct fix would be to tie this local timer with the cpu power
+>> domain and disable the idle state powering down this domain like it was
+>> done for the renesas cpuidle driver.
+>>
+>> IOW, the cpu power domain is in use (because of its local timer), so we
+>> shouldn't shut it down.
+>>
+>> No ?
+>
+> Sorry, I'm not sure what you're talking about.
+>
+> The problem at hand is that tick_broadcast_enter() can fail and we need to
+> handle that.  If we can prevent it from ever failing, that would be awesome,
+> but quite honestly I don't see how to do that ATM.
 
-Thanks for your comments.
-See my answers inline.
+Ok, sorry. Let me clarify.
 
----
-Best Regards,
-Hongtao
+You did a mechanism two years ago with pm_genpd_attach_cpuidle and 
+power_on/off. That disables a cpuidle state when a power domain is in use.
 
+The idea I was proposing is to reuse this approach.
 
-> -----Original Message-----
-> From: Eduardo Valentin [mailto:edubezval@gmail.com]
-> Sent: Tuesday, May 12, 2015 9:49 AM
-> To: Jia Hongtao-B38951
-> Cc: rui.zhang@intel.com; linux-pm@vger.kernel.org; linuxppc-
-> dev@lists.ozlabs.org; Wood Scott-B07421
-> Subject: Re: [PATCH] QorIQ/TMU: add thermal management support based on
-> TMU
->=20
-> Jia Hongtao,
->=20
-> Thanks for sharing your driver. Sorry for the late answer. Please find
-> couple of comments as follows.
->=20
-> On Fri, Apr 03, 2015 at 03:11:27PM +0800, Jia Hongtao wrote:
-> > It supports one critical trip point and one passive trip point.
-> > The cpufreq is used as the cooling device to throttle CPUs when the
-> > passive trip is crossed.
-> >
-> > Signed-off-by: Jia Hongtao <hongtao.jia@freescale.com>
-> > ---
-> >  drivers/thermal/Kconfig         |  11 ++
-> >  drivers/thermal/Makefile        |   1 +
-> >  drivers/thermal/qoriq_thermal.c | 405
-> > ++++++++++++++++++++++++++++++++++++++++
-> >  3 files changed, 417 insertions(+)
-> >  create mode 100644 drivers/thermal/qoriq_thermal.c
-> >
-> > diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig index
-> > af40db0..c0a8bd1 100644
-> > --- a/drivers/thermal/Kconfig
-> > +++ b/drivers/thermal/Kconfig
-> > @@ -147,6 +147,17 @@ config IMX_THERMAL
-> >  	  cpufreq is used as the cooling device to throttle CPUs when the
-> >  	  passive trip is crossed.
-> >
-> > +config QORIQ_THERMAL
-> > +	tristate "Freescale QorIQ Thermal Monitoring Unit"
-> > +	depends on CPU_THERMAL
-> > +	depends on OF
-> > +	default n
-> > +	help
-> > +	  Enable thermal management based on Freescale QorIQ Thermal
-> Monitoring
-> > +	  Unit (TMU). It supports one critical trip point and one passive
-> trip
-> > +	  point. The cpufreq is used as the cooling device to throttle CPUs
-> when
-> > +	  the passive trip is crossed.
->=20
-> dummy question, what is the level of overlap between QorIQ and IMX
-> thermal drivers?
+The logic is:
 
-Actually they both have two trip points.
-Besides, they have no others in common per my understanding.
+"The local timer is in use, this idle state power downs this timer, then 
+disable it".
 
->=20
-> > +
-> >  config SPEAR_THERMAL
-> >  	bool "SPEAr thermal sensor driver"
-> >  	depends on PLAT_SPEAR
-> > diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile index
-> > fa0dc48..7de4847 100644
-> > --- a/drivers/thermal/Makefile
-> > +++ b/drivers/thermal/Makefile
-> > @@ -31,6 +31,7 @@ obj-$(CONFIG_DOVE_THERMAL)  	+=3D dove_thermal.o
-> >  obj-$(CONFIG_DB8500_THERMAL)	+=3D db8500_thermal.o
-> >  obj-$(CONFIG_ARMADA_THERMAL)	+=3D armada_thermal.o
-> >  obj-$(CONFIG_IMX_THERMAL)	+=3D imx_thermal.o
-> > +obj-$(CONFIG_QORIQ_THERMAL)	+=3D qoriq_thermal.o
-> >  obj-$(CONFIG_DB8500_CPUFREQ_COOLING)	+=3D db8500_cpufreq_cooling.o
-> >  obj-$(CONFIG_INTEL_POWERCLAMP)	+=3D intel_powerclamp.o
-> >  obj-$(CONFIG_X86_PKG_TEMP_THERMAL)	+=3D x86_pkg_temp_thermal.o
-> > diff --git a/drivers/thermal/qoriq_thermal.c
-> > b/drivers/thermal/qoriq_thermal.c new file mode 100644 index
-> > 0000000..f5d3a2c
-> > --- /dev/null
-> > +++ b/drivers/thermal/qoriq_thermal.c
-> > @@ -0,0 +1,405 @@
-> > +/*
-> > + * Copyright 2015 Freescale Semiconductor, Inc.
-> > + *
-> > + * This program is free software; you can redistribute it and/or
-> > +modify it
-> > + * under the terms and conditions of the GNU General Public License,
-> > + * version 2, as published by the Free Software Foundation.
-> > + *
-> > + * This program is distributed in the hope it will be useful, but
-> > +WITHOUT
-> > + * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
-> > +or
-> > + * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
-> > +License for
-> > + * more details.
-> > + *
-> > + */
-> > +
-> > +/*
-> > + * Based on Freescale QorIQ Thermal Monitoring Unit (TMU)  */
-> > +#include <linux/cpufreq.h> #include <linux/cpu_cooling.h> #include
-> > +<linux/module.h> #include <linux/platform_device.h> #include
-> > +<linux/err.h> #include <linux/io.h> #include <linux/of.h> #include
-> > +<linux/thermal.h>
-> > +
-> > +#define SITES_MAX		16
-> > +
-> > +#define TMU_TEMP_PASSIVE	85000
-> > +#define TMU_TEMP_CRITICAL	95000
-> > +
-> > +#define TMU_PASSIVE_DELAY	1000	/* Milliseconds */
-> > +#define TMU_POLLING_DELAY	5000
-> > +
-> > +/* The driver supports 1 passive trip point and 1 critical trip point
-> > +*/ enum tmu_thermal_trip {
-> > +	TMU_TRIP_PASSIVE,
-> > +	TMU_TRIP_CRITICAL,
-> > +	TMU_TRIP_NUM,
-> > +};
-> > +
->=20
-> the above symbol is not used in this driver.
+So it is when the broadcast timer is 'bound_on' a cpu, we disable the 
+idle states. That could be done via a loop looking for the TIMER_STOP 
+flag or via the power domain.
 
-TMU_TRIP_CRITICAL is not used but it is defined to make this symbol list cl=
-ear.
+Hence the cpuidle_select will never return a state which powers downs 
+the local cpu (because they are disabled) and tick_broadcast_enter can't 
+fail because it is never called.
 
->=20
-> > +/*
-> > + * QorIQ TMU Registers
-> > + */
-> > +struct qoriq_tmu_site_regs {
-> > +	__be32 tritsr;		/* Immediate Temperature Site Register */
-> > +	__be32 tratsr;		/* Average Temperature Site Register */
-> > +	u8 res0[0x8];
-> > +} __packed;
-> > +
-> > +struct qoriq_tmu_regs {
-> > +	__be32 tmr;		/* Mode Register */
-> > +#define TMR_DISABLE	0x0
-> > +#define TMR_ME		0x80000000
-> > +#define TMR_ALPF	0x0c000000
-> > +#define TMR_MSITE	0x00008000
-> > +#define TMR_ALL		(TMR_ME | TMR_ALPF | TMR_MSITE)
-> > +	__be32 tsr;		/* Status Register */
-> > +	__be32 tmtmir;		/* Temperature measurement interval
-> Register */
-> > +#define TMTMIR_DEFAULT	0x00000007
-> > +	u8 res0[0x14];
-> > +	__be32 tier;		/* Interrupt Enable Register */
-> > +#define TIER_DISABLE	0x0
-> > +	__be32 tidr;		/* Interrupt Detect Register */
-> > +	__be32 tiscr;		/* Interrupt Site Capture Register */
-> > +	__be32 ticscr;		/* Interrupt Critical Site Capture Register
-> */
-> > +	u8 res1[0x10];
-> > +	__be32 tmhtcrh;		/* High Temperature Capture Register */
-> > +	__be32 tmhtcrl;		/* Low Temperature Capture Register */
-> > +	u8 res2[0x8];
-> > +	__be32 tmhtitr;		/* High Temperature Immediate Threshold */
-> > +	__be32 tmhtatr;		/* High Temperature Average Threshold */
-> > +	__be32 tmhtactr;	/* High Temperature Average Crit Threshold */
-> > +	u8 res3[0x24];
-> > +	__be32 ttcfgr;		/* Temperature Configuration Register */
-> > +	__be32 tscfgr;		/* Sensor Configuration Register */
-> > +	u8 res4[0x78];
-> > +	struct qoriq_tmu_site_regs site[SITES_MAX];
-> > +	u8 res5[0x9f8];
-> > +	__be32 ipbrr0;		/* IP Block Revision Register 0 */
-> > +	__be32 ipbrr1;		/* IP Block Revision Register 1 */
-> > +	u8 res6[0x310];
-> > +	__be32 ttr0cr;		/* Temperature Range 0 Control Register */
-> > +	__be32 ttr1cr;		/* Temperature Range 1 Control Register */
-> > +	__be32 ttr2cr;		/* Temperature Range 2 Control Register */
-> > +	__be32 ttr3cr;		/* Temperature Range 3 Control Register */
-> > +};
-> > +
-> > +/*
-> > + * Thermal zone data
-> > + */
-> > +struct qoriq_tmu_data {
-> > +	struct thermal_zone_device *tz;
-> > +	struct thermal_cooling_device *cdev;
-> > +	enum thermal_device_mode mode;
-> > +	unsigned long temp_passive;
-> > +	unsigned long temp_critical;
-> > +	struct qoriq_tmu_regs __iomem *regs; };
-> > +
-> > +static int tmu_get_mode(struct thermal_zone_device *tz,
-> > +			enum thermal_device_mode *mode)
-> > +{
-> > +	struct qoriq_tmu_data *data =3D tz->devdata;
-> > +
-> > +	*mode =3D data->mode;
-> > +
-> > +	return 0;
-> > +}
-> > +
-> > +static int tmu_set_mode(struct thermal_zone_device *tz,
-> > +			enum thermal_device_mode mode)
-> > +{
-> > +	struct qoriq_tmu_data *data =3D tz->devdata;
-> > +
-> > +	if (mode =3D=3D THERMAL_DEVICE_ENABLED) {
-> > +		tz->polling_delay =3D TMU_POLLING_DELAY;
-> > +		tz->passive_delay =3D TMU_PASSIVE_DELAY;
-> > +		thermal_zone_device_update(tz);
-> > +	} else {
-> > +		tz->polling_delay =3D 0;
-> > +		tz->passive_delay =3D 0;
-> > +	}
-> > +
-> > +	data->mode =3D mode;
-> > +
-> > +	return 0;
-> > +}
-> > +
-> > +static int tmu_get_temp(struct thermal_zone_device *tz, unsigned long
-> > +*temp) {
-> > +	u8 val;
-> > +	struct qoriq_tmu_data *data =3D tz->devdata;
-> > +
-> > +	val =3D ioread32be(&data->regs->site[0].tritsr);
-> > +	*temp =3D (unsigned long)val * 1000;
-> > +
-> > +	return 0;
-> > +}
-> > +
-> > +static int tmu_get_trip_type(struct thermal_zone_device *tz, int trip,
-> > +			     enum thermal_trip_type *type) {
-> > +	*type =3D (trip =3D=3D TMU_TRIP_PASSIVE) ? THERMAL_TRIP_PASSIVE :
-> > +					     THERMAL_TRIP_CRITICAL;
-> > +	return 0;
-> > +}
-> > +
-> > +static int tmu_get_trip_temp(struct thermal_zone_device *tz, int trip,
-> > +			     unsigned long *temp)
-> > +{
-> > +	struct qoriq_tmu_data *data =3D tz->devdata;
-> > +
-> > +	*temp =3D (trip =3D=3D TMU_TRIP_PASSIVE) ? data->temp_passive :
-> > +					     data->temp_critical;
-> > +	return 0;
-> > +}
-> > +
-> > +static int tmu_get_crit_temp(struct thermal_zone_device *tz,
-> > +			     unsigned long *temp)
-> > +{
-> > +	struct qoriq_tmu_data *data =3D tz->devdata;
-> > +
-> > +	*temp =3D data->temp_critical;
->=20
-> nip: add an empty line, to follow your pattern.
+Does it make more sense ?
 
-Sorry and thanks for the correction.
-
->=20
-> > +	return 0;
-> > +}
-> > +
-> > +static int tmu_get_trend(struct thermal_zone_device *thermal,
-> > +			int trip, enum thermal_trend *trend) {
-> > +	int ret;
-> > +	unsigned long trip_temp;
-> > +
-> > +	ret =3D tmu_get_trip_temp(thermal, trip, &trip_temp);
-> > +	if (ret < 0)
-> > +		return ret;
-> > +
-> > +	if (thermal->temperature >=3D trip_temp)
-> > +		*trend =3D THERMAL_TREND_RAISE_FULL;
-> > +	else
-> > +		*trend =3D THERMAL_TREND_DROP_FULL;
-> > +
->=20
->=20
-> Did I miss something here
-> or that is not really trending, is it?
->=20
-> Trending is supposed to be
-> delta(temperature)/delta(time).
->=20
-
-That's right, trending is what you said.
-
-Here is what and why I provide this trend ops like this:
-It provides a simple strategy of thermal management.
-(Not care about trending, care about current temperature.)
-- When the temperature is higher than the first trip point we'd like to
-  reduce the cpufreq to minimum immediately and hold it steady.
-
-Using "step_wise" may cause the following issue:
-- If the sensor report the temperature up and down repeatedly like
-  "90C -> 89C -> 90C -> 89C -> 90C -> ..." cpufreq will be changed
-  unnecessarily.
-
-Actually my trend ops took reference from samsumg's thermal driver back to =
-3.12 kernel.
-It disappeared now.
-
-Maybe I will use the "step_wise". But discussions are needed before moving =
-forward.
+>> I am aware this is not easily fixable because the genpd framework is
+>> incomplete and has some restrictions but I believe it is worth to have a
+>> discussion. Add Kevin and Ulf in Cc.
+>
+> So I'm going to queue up these patches for 4.2 and we can have a discussion
+> just fine regardless.
 
 
->=20
->=20
-> > +	return 0;
-> > +}
-> > +
-> > +static int tmu_bind(struct thermal_zone_device *tz,
-> > +		    struct thermal_cooling_device *cdev)
-> > +{
-> > +	int ret;
-> > +
-> > +	ret =3D thermal_zone_bind_cooling_device(tz, TMU_TRIP_PASSIVE, cdev,
-> > +					       THERMAL_NO_LIMIT,
-> > +					       THERMAL_NO_LIMIT);
-> > +	if (ret) {
-> > +		dev_err(&tz->device,
-> > +			"Binding zone %s with cdev %s failed:%d\n",
-> > +			tz->type, cdev->type, ret);
-> > +		return ret;
-> > +	}
->=20
->=20
-> > +
-> > +	return 0;
->=20
-> I think it is fine if you just return ret;
 
-Right, will change.
+-- 
+  <http://www.linaro.org/> Linaro.org │ Open source software for ARM SoCs
 
->=20
-> > +}
-> > +
-> > +static int tmu_unbind(struct thermal_zone_device *tz,
-> > +		      struct thermal_cooling_device *cdev)
-> > +{
-> > +	int ret;
-> > +
-> > +	ret =3D thermal_zone_unbind_cooling_device(tz, TMU_TRIP_PASSIVE,
-> cdev);
-> > +	if (ret) {
-> > +		dev_err(&tz->device,
-> > +			"Unbinding zone %s with cdev %s failed:%d\n",
-> > +			tz->type, cdev->type, ret);
-> > +		return ret;
-> > +	}
->=20
-> ditto.
->=20
-> > +
-> > +	return 0;
-> > +}
-> > +
-> > +static void qoriq_tmu_calibration(struct platform_device *pdev)
-> > +{
-> > +	int i, val, len;
-> > +	const __be32 *calibration;
-> > +	struct device_node *node =3D pdev->dev.of_node;
-> > +	struct qoriq_tmu_data *data =3D dev_get_drvdata(&pdev->dev);
-> > +
-> > +	/* Disable monitoring before calibration */
-> > +	iowrite32be(TMR_DISABLE, &data->regs->tmr);
-> > +
-> > +	calibration =3D of_get_property(node, "calibration", &len);
-> > +	if (calibration =3D=3D NULL) {
-> > +		pr_err("TMU: Failed to get calibration data.\n");
->=20
-> use dev_err when possible.
-
-Right, will change.
-
->=20
-> > +		return;
-> > +	}
-> > +
-> > +	for (i =3D 0; i < len; i +=3D 8, calibration +=3D 2) {
-> > +		val =3D (int)of_read_number(calibration, 1);
-> > +		iowrite32be(val, &data->regs->ttcfgr);
-> > +		val =3D (int)of_read_number(calibration + 1, 1);
-> > +		iowrite32be(val, &data->regs->tscfgr);
->=20
-> are the above properties your offset and slope extrapolation constants?
-
-The offset is constant, but the total number of properties pairs is not.
-
->=20
-> If yes, please use the coefficients DT property. Please, check the of
-> thermal code.
->=20
-> > +	}
-> > +}
-> > +
-> > +static void qoriq_tmu_init_device(struct qoriq_tmu_data *data)
-> > +{
-> > +	/* Disable interrupt, using polling instead */
-> > +	iowrite32be(TIER_DISABLE, &data->regs->tier);
-> > +
-> > +	/* Set update_interval */
-> > +	iowrite32be(TMTMIR_DEFAULT, &data->regs->tmtmir);
-> > +
-> > +	/* Enable monitoring */
-> > +	iowrite32be(TMR_ALL, &data->regs->tmr);
-> > +}
-> > +
-> > +static struct thermal_zone_device_ops tmu_tz_ops =3D {
-> > +	.bind =3D tmu_bind,
-> > +	.unbind =3D tmu_unbind,
-> > +	.get_temp =3D tmu_get_temp,
-> > +	.get_trend =3D tmu_get_trend,
-> > +	.get_mode =3D tmu_get_mode,
-> > +	.set_mode =3D tmu_set_mode,
-> > +	.get_trip_type =3D tmu_get_trip_type,
-> > +	.get_trip_temp =3D tmu_get_trip_temp,
-> > +	.get_crit_temp =3D tmu_get_crit_temp,
-> > +};
-> > +
-> > +static int qoriq_tmu_probe(struct platform_device *pdev)
-> > +{
-> > +	int ret;
-> > +	struct cpumask clip_cpus;
-> > +	struct qoriq_tmu_data *data;
-> > +
-> > +	if (!cpufreq_get_current_driver()) {
-> > +		dev_dbg(&pdev->dev, "No cpufreq driver yet\n");
-> > +		return -EPROBE_DEFER;
-> > +	}
-> > +
-> > +	if (!pdev->dev.of_node) {
-> > +		dev_err(&pdev->dev, "Device OF-Node is NULL");
-> > +		return -EFAULT;
-> > +	}
-> > +
-> > +	data =3D devm_kzalloc(&pdev->dev, sizeof(struct qoriq_tmu_data),
-> > +			    GFP_KERNEL);
-> > +	if (!data)
-> > +		return -ENOMEM;
-> > +
-> > +	dev_set_drvdata(&pdev->dev, data);
-> > +	data->regs =3D of_iomap(pdev->dev.of_node, 0);
-> > +
-> > +	if (!data->regs) {
-> > +		dev_err(&pdev->dev, "Failed to get memory region\n");
-> > +		ret =3D -ENODEV;
-> > +		goto err_iomap;
-> > +	}
-> > +
-> > +	qoriq_tmu_calibration(pdev);	/* TMU calibration */
-> > +
-> > +	qoriq_tmu_init_device(data);	/* TMU initialization */
-> > +
-> > +	cpumask_setall(&clip_cpus);
-> > +	data->cdev =3D cpufreq_cooling_register(&clip_cpus);
->=20
-> Given that this is a DT based device driver, have you considered using
-> OF thermal APIs?
-
-This driver was developed based on kernel 3.12 back then. If I'd like to
-use OF thermal APIs is there an reference driver available?
-
->=20
-> > +	if (IS_ERR(data->cdev)) {
-> > +		ret =3D PTR_ERR(data->cdev);
-> > +		dev_err(&data->cdev->device,
-> > +			"Failed to register cpufreq cooling device: %d\n", ret);
-> > +		goto err_cooling;
-> > +	}
-> > +
-> > +	data->temp_passive =3D TMU_TEMP_PASSIVE;
-> > +	data->temp_critical =3D TMU_TEMP_CRITICAL;
-> > +	data->tz =3D thermal_zone_device_register("tmu_thermal_zone",
-> > +						TMU_TRIP_NUM,
-> > +						0, data,
-> > +						&tmu_tz_ops, NULL,
-> > +						TMU_PASSIVE_DELAY,
-> > +						TMU_POLLING_DELAY);
-> > +
-> > +	if (IS_ERR(data->tz)) {
-> > +		ret =3D PTR_ERR(data->tz);
-> > +		dev_err(&pdev->dev,
-> > +			"Failed to register thermal zone device %d\n", ret);
-> > +		goto err_thermal;
-> > +	}
-> > +
-> > +	data->mode =3D THERMAL_DEVICE_ENABLED;
->=20
->=20
-> Don't you need to get a clock and enable it before handling this sensor?
-
-I did it in qoriq_tmu_init_device() already if you mean it.
-
->=20
-> > +
-> > +	return 0;
-> > +
-> > +err_thermal:
-> > +	cpufreq_cooling_unregister(data->cdev);
-> > +
-> > +err_cooling:
-> > +	iounmap(data->regs);
-> > +
-> > +err_iomap:
-> > +	dev_set_drvdata(&pdev->dev, NULL);
-> > +	devm_kfree(&pdev->dev, data);
-> > +
-> > +	return ret;
-> > +}
-> > +
-> > +static int qoriq_tmu_remove(struct platform_device *pdev)
-> > +{
-> > +	struct qoriq_tmu_data *data =3D dev_get_drvdata(&pdev->dev);
-> > +
-> > +	/* Disable monitoring */
-> > +	iowrite32be(TMR_DISABLE, &data->regs->tmr);
-> > +
-> > +	thermal_zone_device_unregister(data->tz);
-> > +	cpufreq_cooling_unregister(data->cdev);
-> > +	iounmap(data->regs);
-> > +
-> > +	dev_set_drvdata(&pdev->dev, NULL);
-> > +	devm_kfree(&pdev->dev, data);
-> > +
-> > +	return 0;
-> > +}
-> > +
-> > +#ifdef CONFIG_PM_SLEEP
-> > +static int qoriq_tmu_suspend(struct device *dev)
-> > +{
-> > +	struct qoriq_tmu_data *data =3D dev_get_drvdata(dev);
-> > +
-> > +	/* Disable monitoring */
-> > +	iowrite32be(TMR_DISABLE, &data->regs->tmr);
-> > +
-> > +	return 0;
-> > +}
-> > +
-> > +static int qoriq_tmu_resume(struct device *dev)
-> > +{
-> > +	struct qoriq_tmu_data *data =3D dev_get_drvdata(dev);
-> > +
-> > +	/* Enable monitoring */
-> > +	iowrite32be(TMR_ALL, &data->regs->tmr);
-> > +
-> > +	return 0;
-> > +}
-> > +#endif
-> > +
-> > +static SIMPLE_DEV_PM_OPS(qoriq_tmu_pm_ops,
-> > +			 qoriq_tmu_suspend, qoriq_tmu_resume);
-> > +
-> > +static const struct of_device_id qoriq_tmu_match[] =3D {
-> > +	{ .compatible =3D "fsl,qoriq-tmu", },
-> > +	{},
-> > +};
->=20
->=20
-> You need to add a binding file describing your chip, and how
-> to deploy its DT nodes under:
->  Documentation/devicetree/bindings/thermal/
-
-Already did in another patch:
-http://patchwork.ozlabs.org/patch/461412/
-
->=20
->=20
-> > +
-> > +static struct platform_driver qoriq_tmu =3D {
-> > +	.driver	=3D {
-> > +		.owner		=3D THIS_MODULE,
-> > +		.name		=3D "qoriq_thermal",
-> > +		.pm =3D &qoriq_tmu_pm_ops,
-> > +		.of_match_table	=3D qoriq_tmu_match,
-> > +	},
-> > +	.probe	=3D qoriq_tmu_probe,
-> > +	.remove	=3D qoriq_tmu_remove,
-> > +};
-> > +module_platform_driver(qoriq_tmu);
-> > +
-> > +MODULE_AUTHOR("Jia Hongtao <hongtao.jia@freescale.com>");
-> > +MODULE_DESCRIPTION("Freescale QorIQ Thermal Monitoring Unit driver");
-> > +MODULE_LICENSE("GPL v2");
-> > --
-> > 2.1.0.27.g96db324
-> >
-> > --
-> > To unsubscribe from this list: send the line "unsubscribe linux-pm" in
-> > the body of a message to majordomo@vger.kernel.org
-> > More majordomo info at  http://vger.kernel.org/majordomo-info.html
+Follow Linaro:  <http://www.facebook.com/pages/Linaro> Facebook |
+<http://twitter.com/#!/linaroorg> Twitter |
+<http://www.linaro.org/linaro-blog/> Blog
