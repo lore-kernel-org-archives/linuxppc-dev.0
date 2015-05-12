@@ -1,20 +1,20 @@
 Return-Path: <Lijun.Pan@freescale.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2F1021A0008
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2015 14:34:56 +1000 (AEST)
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0102.outbound.protection.outlook.com [65.55.169.102])
+ by lists.ozlabs.org (Postfix) with ESMTPS id F342E1A0008
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2015 15:14:26 +1000 (AEST)
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1on0135.outbound.protection.outlook.com [157.56.110.135])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 9715B140D23
- for <linuxppc-dev@ozlabs.org>; Tue, 12 May 2015 14:34:53 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTPS id 8F09A140077
+ for <linuxppc-dev@ozlabs.org>; Tue, 12 May 2015 15:14:25 +1000 (AEST)
 From: Lijun Pan <Lijun.Pan@freescale.com>
 To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH] powerpc/defconfig: new way of writing defconfig
-Date: Mon, 11 May 2015 23:32:17 -0500
-Message-ID: <1431405137-25382-1-git-send-email-Lijun.Pan@freescale.com>
+Subject: [PATCH v3] powerpc/defconfig: new way of writing defconfig
+Date: Mon, 11 May 2015 23:39:22 -0500
+Message-ID: <1431405562-25449-1-git-send-email-Lijun.Pan@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
 Cc: Lijun Pan <Lijun.Pan@freescale.com>
