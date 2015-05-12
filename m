@@ -1,24 +1,40 @@
-Return-Path: <roy.pledge@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bbn0101.outbound.protection.outlook.com [157.56.111.101])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <paulmck@linux.vnet.ibm.com>
+Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 512DC1A0007
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 07:19:32 +1000 (AEST)
-From: Roy Pledge <roy.pledge@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: RE: [PATCH 1/2] powerpc/qman: Change fsl,qman-channel-id to cell-index
-Date: Tue, 12 May 2015 21:19:24 +0000
-Message-ID: <BN3PR0301MB1267E5A61E7E5BC2789F9E898CDA0@BN3PR0301MB1267.namprd03.prod.outlook.com>
-References: <1429311187-19062-1-git-send-email-scottwood@freescale.com>
- <BN3PR0301MB126796C0EC18EEBB26702C588CD10@BN3PR0301MB1267.namprd03.prod.outlook.com>
- <1430858734.16357.256.camel@freescale.com>
-In-Reply-To: <1430858734.16357.256.camel@freescale.com>
-Content-Type: text/plain; charset="utf-8"
-MIME-Version: 1.0
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- Madalin-Cristian Bucur <madalin.bucur@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 788981A0007
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 07:46:01 +1000 (AEST)
+Received: from /spool/local
+ by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
+ Tue, 12 May 2015 15:45:58 -0600
+Received: from b03cxnp08028.gho.boulder.ibm.com
+ (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id D0D9E1FF0050
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2015 15:37:05 -0600 (MDT)
+Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
+ by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with
+ ESMTP id t4CLjUxo41746456
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2015 14:45:30 -0700
+Received: from d03av05.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t4CLjpob001764
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2015 15:45:55 -0600
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Subject: [PATCH tip/core/rcu 09/15] powerpc: Fix smp_mb__before_spinlock()
+Date: Tue, 12 May 2015 14:38:15 -0700
+Message-Id: <1431466701-653-9-git-send-email-paulmck@linux.vnet.ibm.com>
+In-Reply-To: <1431466701-653-1-git-send-email-paulmck@linux.vnet.ibm.com>
+References: <20150512213756.GA32729@linux.vnet.ibm.com>
+ <1431466701-653-1-git-send-email-paulmck@linux.vnet.ibm.com>
+Cc: tglx@linutronix.de, laijs@cn.fujitsu.com, bobby.prani@gmail.com,
+ peterz@infradead.org, fweisbec@gmail.com, dvhart@linux.intel.com,
+ josh@joshtriplett.org, rostedt@goodmis.org, oleg@redhat.com,
+ dhowells@redhat.com, edumazet@google.com, mathieu.desnoyers@efficios.com,
+ akpm@linux-foundation.org, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org, mingo@kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,43 +44,30 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-PiA+DQo+ID4gSSBkb24ndCBiZWxpZXZlIHRoaXMgaXMgY29ycmVjdCAtIGxldCBtZSBleHBsYWlu
-IHRoZSByYXRpb25hbCB3aHkgd2UgaGFkIHR3bw0KPiBwcm9wZXJ0aWVzIGluIHRoZSBRTWFuIHBv
-cnRhbCB0byBiZWdpbiB3aXRoLg0KPiA+DQo+ID4gVGhlIHR3byBwcm9wZXJ0aWVzIGluIHF1ZXN0
-aW9uIGFyZSBjZWxsLWluZGV4IGFuZCBmc2wscW1hbi1jaGFubmVsLWlkLg0KPiA+DQo+ID4gVGhl
-IGNlbGwtaW5kZXggcHJvcGVydHkgaXMgdXNlZCBpbiB1LWJvb3QgYXMgYW4gaW5kZXggZm9yIHRo
-ZSBzb2Z0d2FyZSBwb3J0YWwNCj4gSUQgd2hlbiBhZGRpbmcgdGhlIGZzbCxsaW9kbiBmcm9tIHRo
-ZSBVLWJvb3QgdGFibGUgaW50byB0aGUgZGV2aWNlIHRyZWUuDQo+IA0KPiBUaGUgZGV2aWNlIHRy
-ZWUgaXMgbm90IHN1cHBvc2VkIHRvIGNvbnRhaW4gYXJiaXRyYXJ5IHNvZnR3YXJlIGlkZW50aWZp
-ZXJzLg0KDQpJIGFncmVlIC0gdGhpcyBpcyB3aHkgdGhlIG9yaWdpbmFsIGRldmljZSB0cmVlIGJp
-bmRpbmdzIHJlbW92ZWQgY2VsbC1pbmRleCBhcyBpdCBjYW4gYmUgY2FsY3VsYXRlZC4NClVuZm9y
-dHVuYXRlbHkgdS1ib290IHJlbGllZCBvbiB0aGlzIHZhbHVlIGJlaW5nIHByZXNlbnQgc28gdG8g
-YmUgYmFja3dhcmQgY29tcGF0aWJsZSB3ZSBkb24ndCBoYXZlIGEgd2F5IHRvIHJlbW92ZSBpdC4g
-IEknbSBub3Qgc3VyZSBvbiB3aGF0IHRoZSBwcm9jZWR1cmUgaXMgdG8gY2hhbmdlIHRoaW5ncyB1
-LWJvb3QgcmVsaWVzIG9uLCBJIHBlcnNvbmFsIGhhdmUgYWx3YXlzIGJlZW4gdmVyeSB1bmNvbWZv
-cnRhYmxlIHdpdGggdGhlIGNvdXBsaW5nIGJldHdlZW4gdS1ib290IGFuZCBMaW51eCBmb3IgdGhp
-bmdzIGxpa2UgdGhpcy4gDQoNCj4gDQo+ID4gVGhlICBmc2wscW1hbi1jaGFubmVsLWlkIHByb3Bl
-cnR5IGlzIHVzZWQgaW4gTGludXggYW5kIGNvcnJlc3BvbmRzIHRvDQo+ID4gYSBoYXJkd2FyZSB2
-YWx1ZSB0aGF0IGluZGljYXRlcyB3aGljaCBjaGFubmVsIGlzIGRlZGljYXRlZCB0byB0aGUNCj4g
-PiBzb2Z0d2FyZSBwb3J0YWwuDQo+ID4NCj4gPiBXaGlsZSBJJ20gbm90IGF3YXJlIG9mIGEgY3Vy
-cmVudCBTb0Mgd2hlcmUgdGhlIGNoYW5uZWwgSUQgZm9yIGENCj4gPiBzb2Z0d2FyZSBwb3J0YWwg
-ZG9lcyBub3QgbWF0Y2ggdGhlIGluZGV4IChpLmUuIFNXUCAwIHVzZXMgY2hhbm5lbCAwLA0KPiA+
-IGV0Yy4pDQo+IA0KPiBUaHVzIHRoZXJlJ3Mgbm8gYmFja3dhcmQgY29tcGF0aWJpbGl0eSBpc3N1
-ZSB3aXRoIHJlZGVmaW5pbmcgY2VsbC1pbmRleCB0bw0KPiBtZWFuIHRoZSBjaGFubmVsIElELg0K
-DQpDaGFubmVsIElEcyBkbyBjaGFuZ2UgYW5kIGFyZSBkZWZpbmVkIHdoZW4gdGhlIFNvQyBpcyBj
-cmVhdGVkIChsb29rIGF0IGNoZWNrcyBmb3IgUU1hbiB2ZXJzaW9ucyBhbmQgYWRqdXN0bWVudHMg
-Zm9yIFBvb2wgQ2hhbm5lbCBJRHMgaW4gdGhlIGRyaXZlcikuICBJZiB0aGUgY2hhbm5lbCBJRCBm
-b3IgcG9ydGFsIDAgZXZlciBiZWNvbWVzIG5vbiB6ZXJvIHdlIGp1c3QgZW5kIHVwIGhhdmluZyB0
-byBtYWtlIGEgbWVzcyBpbiB0aGUgY29kZSBvciByZWludHJvZHVjZSB0aGlzIGZpZWxkLg0KDQo+
-IA0KPiA+IGl0IGlzIHBvc3NpYmxlIHRoYXQgZnV0dXJlIFNvQ3MgY291bGQgc3RyYXkgZnJvbSB0
-aGlzIG1vZGVsLCB0aGVyZSBpcw0KPiA+IG5vIHJlYXNvbiBmb3IgcG9ydGFsIGluZGV4IHRvIGVx
-dWFsIGNoYW5uZWwgSUQgYXQgYWxsIHRpbWVzLg0KPiANCj4gSG93IGNhbiBmdXR1cmUgU29DcyBk
-aWN0YXRlIGhvdyB3ZSBhc3NpZ24gYSBzb2Z0d2FyZS1kZWZpbmVkIGlkZW50aWZpZXI/DQo+IElm
-IHNvZnR3YXJlIHdhbnRzIGl0IHRvIGJlIHRoZSBzYW1lIGFzIHRoZSBjaGFubmVsIGlkLCB0aGVu
-IGl0IHdpbGwgYmUuDQo+IA0KPiBJZiB0aGVyZSBpcyBzb21lIGFzcGVjdCBvZiB0aGUgaGFyZHdh
-cmUgaXRzZWxmIChub3QgdGhlIGRvY3VtZW50YXRpb24pIHRoYXQNCj4gY2VsbC1pbmRleCBjdXJy
-ZW50bHkgY29ycmVzcG9uZHMgdG8sIG90aGVyIHRoYW4gdGhlIGNoYW5uZWwgaWQsIHBsZWFzZSBt
-YWtlDQo+IHRoYXQgY2xlYXIuDQoNCkNoYW5uZWwgSUQgaXMgZGVmaW5lZCBpbiB0aGUgU29DIFJU
-TCAtIGl0IGlzIG5vdCBjb250cm9sbGVkIGJ5IHNvZnR3YXJlIGFuZCBpdCBpcyBub3QgYSBzb2Z0
-d2FyZSBhc3NpZ25lZCBpZGVudGlmaWVyLiAgSXQgaXMgbm90IHBvc3NpYmxlIGZvciBTVyB0byBz
-ZXQgdGhlc2UgdmFsdWVzLg0KDQpSb3kNCg==
+From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+
+Currently, smp_mb__before_spinlock() is defined to be smp_wmb()
+in core code, but this is not sufficient on PowerPC.  This patch
+therefore supplies an override for the generic definition to
+strengthen smp_mb__before_spinlock() to smp_mb(), as is needed
+on PowerPC.
+
+Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
+Cc: <linuxppc-dev@lists.ozlabs.org>
+---
+ arch/powerpc/include/asm/barrier.h | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/arch/powerpc/include/asm/barrier.h b/arch/powerpc/include/asm/barrier.h
+index a3bf5be111ff..1124f59b8df4 100644
+--- a/arch/powerpc/include/asm/barrier.h
++++ b/arch/powerpc/include/asm/barrier.h
+@@ -89,5 +89,6 @@ do {									\
+ 
+ #define smp_mb__before_atomic()     smp_mb()
+ #define smp_mb__after_atomic()      smp_mb()
++#define smp_mb__before_spinlock()   smp_mb()
+ 
+ #endif /* _ASM_POWERPC_BARRIER_H */
+-- 
+1.8.1.5
