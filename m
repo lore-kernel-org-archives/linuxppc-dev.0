@@ -1,31 +1,28 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <arnd@arndb.de>
+Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.187])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 994B71A0145
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2015 17:14:42 +1000 (AEST)
-Received: from /spool/local
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Tue, 12 May 2015 17:14:40 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 149632BB004D
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2015 17:14:38 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t4C7ETxC27131926
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2015 17:14:38 +1000
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t4C7E5jG004934
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2015 17:14:05 +1000
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 05E4A1A012D
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2015 17:29:00 +1000 (AEST)
+From: Arnd Bergmann <arnd@arndb.de>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc/eeh: Fix wrong printed PE number
-Date: Tue, 12 May 2015 17:05:22 +1000
-Message-Id: <1431414322-28995-1-git-send-email-gwshan@linux.vnet.ibm.com>
-Cc: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Subject: Re: [PATCH RESEND v6 1/2] arm64: dts: Add the arasan sdhci nodes in
+ apm-storm.dtsi
+Date: Tue, 12 May 2015 09:28:10 +0200
+Message-ID: <5446694.nHWK6QO1on@wuerfel>
+In-Reply-To: <CAOHikRAeOH5Pt4WZFk1C29dUytO7H0ox_dgq578oW19ue8Eb8Q@mail.gmail.com>
+References: <1431333531-30491-1-git-send-email-stripathi@apm.com>
+ <1431333531-30491-2-git-send-email-stripathi@apm.com>
+ <CAOHikRAeOH5Pt4WZFk1C29dUytO7H0ox_dgq578oW19ue8Eb8Q@mail.gmail.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset="us-ascii"
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ Mark Langsdorf <mlangsdo@redhat.com>, Suman Tripathi <stripathi@apm.com>,
+ Jon Masters <jcm@redhat.com>, Anton Vorontsov <anton@enomsg.org>,
+ linux-mmc <linux-mmc@vger.kernel.org>, Chris Ball <chris@printf.net>,
+ Michal Simek <michal.simek@xilinx.com>, patches <patches@apm.com>,
+ Don Dutile <ddutile@redhat.com>,
+ linux-arm-kernel <linux-arm-kernel@lists.infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,29 +32,38 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On LE kernel, the non-existing PE number in BE format derived from
-skiboot firmware isn't converted to LE format properly as following
-kernel log indicates:
+On Tuesday 12 May 2015 11:03:46 Suman Tripathi wrote:
+> > @@ -533,6 +567,15 @@
+> >                         interrupts = <0x0 0x4f 0x4>;
+> >                 };
+> >
+> > +               sdhci0: sdhci@1c000000 {
+> > +                       compatible = "arasan,sdhci-4.9a";
+> > +                       reg = <0x0 0x1c000000 0x0 0x100>;
+> > +                       interrupts = <0x0 0x49 0x4>;
+> > +                       dma-coherent;
+> > +                       clock-names = "clk_xin", "clk_ahb";
+> > +                       clocks = <&sdioclk 0>, <&ahbclk 0>;
+> > +               };
+> > +
+> >                 phy1: phy@1f21a000 {
+> >                         compatible = "apm,xgene-phy";
+> >                         reg = <0x0 0x1f21a000 0x0 0x100>;
+> > --
+> > 1.8.2.1
+> >
+> 
+> Can anyone from dt community review this patch ? I have changed the dts node
+> names from sdhc to sdhci as per Arnd, Michael comments .
 
-   EEH: Clear non-existing PHB#4-PE#200000000000000
+I was actually asking for it to be named 'mmc', not 'sdhci', because the
+name is supposed to indicate the purpose of the device, not the
+implementation. I realize that we are inconsistent here, just as with
+'uart' vs 'serial', and that ePAPR does not define what to do.
 
-Signed-off-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
----
- arch/powerpc/platforms/powernv/eeh-powernv.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+We should probably add something to Documentation/devicetree/bindings/mmc/mmc.txt
+about this topic and change all the dts files accordingly (unless there
+is a risk for regressions). At the moment, the mmc.txt file also includes
+an example with 'sdhci', not 'mmc'.
 
-diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
-index ce738ab..9e001e1 100644
---- a/arch/powerpc/platforms/powernv/eeh-powernv.c
-+++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
-@@ -1396,7 +1396,7 @@ static int pnv_eeh_next_error(struct eeh_pe **pe)
- 				be64_to_cpu(frozen_pe_no), pe)) {
- 				/* Try best to clear it */
- 				pr_info("EEH: Clear non-existing PHB#%x-PE#%llx\n",
--					hose->global_number, frozen_pe_no);
-+					hose->global_number, be64_to_cpu(frozen_pe_no));
- 				pr_info("EEH: PHB location: %s\n",
- 					eeh_pe_loc_get(phb_pe));
- 				opal_pci_eeh_freeze_clear(phb->opal_id,
--- 
-2.1.0
+	Arnd
