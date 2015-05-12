@@ -1,38 +1,38 @@
 Return-Path: <weiyang@linux.vnet.ibm.com>
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AD6841A0392
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2015 17:30:10 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id F1E171A0008
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2015 17:53:54 +1000 (AEST)
 Received: from /spool/local
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
- Tue, 12 May 2015 17:30:09 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 2DC8E2BB0040
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2015 17:30:08 +1000 (EST)
+ Tue, 12 May 2015 17:53:53 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 7B4E82BB0040
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2015 17:53:49 +1000 (EST)
 Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t4C7Txim8781972
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2015 17:30:08 +1000
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t4C7regD31981624
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2015 17:53:49 +1000
 Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
  by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t4C7TZRn032671
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2015 17:29:35 +1000
-Date: Tue, 12 May 2015 15:29:17 +0800
+ t4C7rGHk009381
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2015 17:53:16 +1000
+Date: Tue, 12 May 2015 15:52:58 +0800
 From: Wei Yang <weiyang@linux.vnet.ibm.com>
 To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: Re: [PATCH V3 2/9] powerpc/pci_dn: cache vf_index in pci_dn
-Message-ID: <20150512072917.GA16788@richard>
+Subject: Re: [PATCH V3 5/9] powerpc/eeh: create EEH_PE_VF for VF PE
+Message-ID: <20150512075258.GB16788@richard>
 Reply-To: Wei Yang <weiyang@linux.vnet.ibm.com>
 References: <1430723258-21299-1-git-send-email-weiyang@linux.vnet.ibm.com>
- <1430723258-21299-3-git-send-email-weiyang@linux.vnet.ibm.com>
- <20150511022104.GA7459@gwshan> <20150511055412.GA1632@richard>
- <20150512061558.GA18734@gwshan>
+ <1430723258-21299-6-git-send-email-weiyang@linux.vnet.ibm.com>
+ <20150511023707.GA8816@gwshan> <20150511062549.GB1632@richard>
+ <20150512062823.GB18734@gwshan>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150512061558.GA18734@gwshan>
+In-Reply-To: <20150512062823.GB18734@gwshan>
 Cc: bhelgaas@google.com, linux-pci@vger.kernel.org,
  Wei Yang <weiyang@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -44,110 +44,155 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, May 12, 2015 at 04:15:58PM +1000, Gavin Shan wrote:
->On Mon, May 11, 2015 at 01:54:12PM +0800, Wei Yang wrote:
->>On Mon, May 11, 2015 at 12:21:04PM +1000, Gavin Shan wrote:
->>>On Mon, May 04, 2015 at 03:07:31PM +0800, Wei Yang wrote:
->>>>This patch caches the index of a VF in its PF in pci_dn.
+On Tue, May 12, 2015 at 04:28:23PM +1000, Gavin Shan wrote:
+>On Mon, May 11, 2015 at 02:25:49PM +0800, Wei Yang wrote:
+>>On Mon, May 11, 2015 at 12:37:07PM +1000, Gavin Shan wrote:
+>>>On Mon, May 04, 2015 at 03:07:34PM +0800, Wei Yang wrote:
+>>>
+>>>Please reorder PATCH[6] with this one because the EEH device is expected
+>>>to be created before EEH PE.
+>>
+>>That's a good idea.
+>>
+>>>
+>>>>On powernv platform, VF PE is a special PE which is different from the Bus
+>>>>PE.  On the EEH side, it needs a corresponding concept to handle the VF PE
+>>>>properly. For example, we need to create VF PE when VF's pci_dev is
+>>>>initialized in kernel. And add a flag to mark it is a VF PF.
+>>>                                                       ^^^^^
 >>>>
 >>>
->>>At least you can mention the purpose of vf_index to make the commit log
->>>complete. The following message looks better?
->>>
->>>The patch caches the VF index in pci_dn, which can be used to calculate
->>>VF's bus, device and function number. Those information helps to locate
->>>the VF's PCI device instance when doing hotplug during EEH recovery if
->>>necessary.
+>>>>From above commit log, my understanding is that you're adding a flag to
+>>>identify VF PE, which is handled differently from bus PE. You missed the
+>>>details on the difference between them and the speical treament to VF PE.
+>>>Could you help add those information in the commit log to make it looks
+>>>complete?
 >>>
 >>
->>Thanks, looks better. I added it in the log.
+>>This patch just introduce the VF PE. For those differences, we have another
+>>patch "handle VF PE properly" to cover. In the log of that patch, I listed
+>>those differences. Do you think this is fine?
 >>
+>
+>It's fine to me.
+>
+>>>>This patch introduces the EEH_PE_VF type for VF PE and creates it for a VF.
+>>>>At the mean time, it creates the sysfs and address cache for VF PE.
+>>>                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+>>>
+>>>                   it creates the sysfs and address cache for VF PE at PCI
+>>>device final fixup time.
+>>>
+>>>>
 >>>>Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
 >>>>---
->>>> arch/powerpc/include/asm/pci-bridge.h |    1 +
->>>> arch/powerpc/kernel/pci_dn.c          |    5 +++--
->>>> 2 files changed, 4 insertions(+), 2 deletions(-)
+>>>> arch/powerpc/include/asm/eeh.h               |    1 +
+>>>> arch/powerpc/kernel/eeh_pe.c                 |   12 ++++++++++--
+>>>> arch/powerpc/platforms/powernv/eeh-powernv.c |   12 ++++++++++++
+>>>> 3 files changed, 23 insertions(+), 2 deletions(-)
 >>>>
->>>>diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
->>>>index 1811c44..9582aa2 100644
->>>>--- a/arch/powerpc/include/asm/pci-bridge.h
->>>>+++ b/arch/powerpc/include/asm/pci-bridge.h
->>>>@@ -199,6 +199,7 @@ struct pci_dn {
->>>> #ifdef CONFIG_PCI_IOV
->>>> 	u16     vfs_expanded;		/* number of VFs IOV BAR expanded */
->>>> 	u16     num_vfs;		/* number of VFs enabled*/
->>>>+	int     vf_index;		/* Index to PF for VF dev */
->>>                                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^
->>>
->>>					/* VF index in the PF */
->>
->>Ok, changed in the code.
->>
->>>
->>>And I believe it can be "unsigned int", or u16. We should have
->>>non-negative vf_index, no?
->>
->>Take a look in the virtfn_add(), the index in drivers/pci/iov.c is int. So I
->>copy that.
->>
->>>
->>>> 	int     offset;			/* PE# for the first VF PE */
->>>> #define M64_PER_IOV 4
->>>> 	int     m64_per_iov;
->>>>diff --git a/arch/powerpc/kernel/pci_dn.c b/arch/powerpc/kernel/pci_dn.c
->>>>index b3b4df9..bf0fb873 100644
->>>>--- a/arch/powerpc/kernel/pci_dn.c
->>>>+++ b/arch/powerpc/kernel/pci_dn.c
->>>>@@ -138,7 +138,7 @@ struct pci_dn *pci_get_pdn(struct pci_dev *pdev)
+>>>>diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
+>>>>index a52db28..56e8cd9 100644
+>>>>--- a/arch/powerpc/include/asm/eeh.h
+>>>>+++ b/arch/powerpc/include/asm/eeh.h
+>>>>@@ -70,6 +70,7 @@ struct pci_dn;
+>>>> #define EEH_PE_PHB	(1 << 1)	/* PHB PE    */
+>>>> #define EEH_PE_DEVICE 	(1 << 2)	/* Device PE */
+>>>> #define EEH_PE_BUS	(1 << 3)	/* Bus PE    */
+>>>>+#define EEH_PE_VF	(1 << 4)	/* VF PE     */
 >>>>
->>>> #ifdef CONFIG_PCI_IOV
->>>> static struct pci_dn *add_one_dev_pci_data(struct pci_dn *parent,
->>>>-					   struct pci_dev *pdev,
->>>>+					   struct pci_dev *pdev, int vf_index,
+>>>> #define EEH_PE_ISOLATED		(1 << 0)	/* Isolated PE		*/
+>>>> #define EEH_PE_RECOVERING	(1 << 1)	/* Recovering PE	*/
+>>>>diff --git a/arch/powerpc/kernel/eeh_pe.c b/arch/powerpc/kernel/eeh_pe.c
+>>>>index 35f0b62..edfe63a 100644
+>>>>--- a/arch/powerpc/kernel/eeh_pe.c
+>>>>+++ b/arch/powerpc/kernel/eeh_pe.c
+>>>>@@ -299,7 +299,12 @@ static struct eeh_pe *eeh_pe_get_parent(struct eeh_dev *edev)
+>>>> 	 * EEH device already having associated PE, but
+>>>> 	 * the direct parent EEH device doesn't have yet.
+>>>> 	 */
+>>>>-	pdn = pdn ? pdn->parent : NULL;
+>>>>+#ifdef CONFIG_PCI_IOV
+>>>>+	if (edev->mode & EEH_DEV_VF)
+>>>>+		pdn = pci_get_pdn(edev->physfn);
+>>>>+	else
+>>>>+#endif
+>>>>+		pdn = pdn ? pdn->parent : NULL;
 >>>
->>>					   struct pci_dev *pdev,
->>>					   int vf_index;
+>>>[A]
+>>>
+>>>> 	while (pdn) {
+>>>> 		/* We're poking out of PCI territory */
+>>>> 		parent = pdn_to_eeh_dev(pdn);
+>>>>@@ -382,7 +387,10 @@ int eeh_add_to_parent_pe(struct eeh_dev *edev)
+>>>> 	}
+>>>>
+>>>> 	/* Create a new EEH PE */
+>>>>-	pe = eeh_pe_alloc(edev->phb, EEH_PE_DEVICE);
+>>>>+	if (edev->mode & EEH_DEV_VF)
+>>>>+		pe = eeh_pe_alloc(edev->phb, EEH_PE_VF);
+>>>>+	else
+>>>>+		pe = eeh_pe_alloc(edev->phb, EEH_PE_DEVICE);
+>>>
+>>>You don't have CONFIG_PCI_IOV here to protect the code, but you had
+>>>that at [A]. In order to keep the code look consistent, you either
+>>>add it or remove it for all places. I prefer to remove it, which
+>>>we don't need CONFIG_PCI_IOV.
+>>>
 >>
->>Some reason for this comment?
+>>Ok, that's fine to remove it.
 >>
->>That does not exceed 80 characters.
+>>BTW, if remove the CONFIG_PCI_IOV, we need to remove it around the physfn in
+>>eeh_dev definition. That's fine?
 >>
 >
->No, it doesn't exceed 80 characters as you said. You take one of the following
->formats, not the one you're using:
+>It's fine to me.
 >
->add_one_dev_pci_data(foo1, foo2,          add_one_dev_pci_data(foo1,
->                     foo3, foo4,                               foo2,
->                     foo5, foo6);                                :
->                                                               foo6);
+>>>> 	if (!pe) {
+>>>> 		pr_err("%s: out of memory!\n", __func__);
+>>>> 		return -ENOMEM;
+>>>>diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
+>>>>index 622f08c..5447481 100644
+>>>>--- a/arch/powerpc/platforms/powernv/eeh-powernv.c
+>>>>+++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
+>>>>@@ -1540,3 +1540,15 @@ static int __init eeh_powernv_init(void)
+>>>> 	return ret;
+>>>> }
+>>>> machine_early_initcall(powernv, eeh_powernv_init);
+>>>>+
+>>>>+#ifdef CONFIG_PCI_IOV
+>>>>+static void pnv_pci_fixup_vf_eeh(struct pci_dev *pdev)
+>>>>+{
+>>>
+>>>Please rename it to pnv_eeh_vf_final_fixup(). Names of all functions
+>>>in this file expect prefix "pnv_eeh_". With "_final_", it's clearly
+>>>to tell it's called on PCI device final fixup time.
+>>>
+>>
+>>ok
+>>
+>>>>+	/* sysfs files should only be added after devices are added */
+>>>
+>>>It's nice to explain why here: sysfs for the PCI device isn't populated
+>>>and the MMIO resource isn't finalized for the PCI device yet.
+>>>
+>>
+>>Don't get your point.
+>>
+>>sysfs of the PCI device is populated at this point.
+>>
+>
+>You have two operations here: (A) add the PCI device to EEH address cache;
+>(B) add EEH related sysfs entries. (A) requires that the resources (MMIO
+>on PHB3) of the VF is finalized. (B) requires VF's sysfs entries have been
+>populated. So you need two conditions here to make sure (A) and (B) work
+>correctly: sysfs files are created and MMIO resources are populated. I was
+>saying your comments is a bit confusing. Could you have something like this:
+>
+>       /*
+>        * The following operations will fail if VF's sysfs files aren't
+>        * created or its resources aren't finalized.
+>        */ 
 >
 
-Thanks
-
->>>> 					   int busno, int devfn)
->>>> {
->>>> 	struct pci_dn *pdn;
->>>>@@ -157,6 +157,7 @@ static struct pci_dn *add_one_dev_pci_data(struct pci_dn *parent,
->>>> 	pdn->parent = parent;
->>>> 	pdn->busno = busno;
->>>> 	pdn->devfn = devfn;
->>>>+	pdn->vf_index = vf_index;
->>>> #ifdef CONFIG_PPC_POWERNV
->>>> 	pdn->pe_number = IODA_INVALID_PE;
->>>> #endif
->>>>@@ -196,7 +197,7 @@ struct pci_dn *add_dev_pci_data(struct pci_dev *pdev)
->>>> 		return NULL;
->>>>
->>>> 	for (i = 0; i < pci_sriov_get_totalvfs(pdev); i++) {
->>>>-		pdn = add_one_dev_pci_data(parent, NULL,
->>>>+		pdn = add_one_dev_pci_data(parent, NULL, i,
->>>> 					   pci_iov_virtfn_bus(pdev, i),
->>>> 					   pci_iov_virtfn_devfn(pdev, i));
->>>> 		if (!pdn) {
->
->Thanks,
->Gavin
-
--- 
-Richard Yang
-Help you, Help me
+Will change the comment with this.
