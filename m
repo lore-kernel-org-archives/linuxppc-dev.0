@@ -1,40 +1,36 @@
-Return-Path: <paulmck@linux.vnet.ibm.com>
-Received: from e37.co.us.ibm.com (e37.co.us.ibm.com [32.97.110.158])
+Return-Path: <brking@linux.vnet.ibm.com>
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 788981A0007
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 07:46:01 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id EB7D41A0007
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 08:07:42 +1000 (AEST)
 Received: from /spool/local
- by e37.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <paulmck@linux.vnet.ibm.com>;
- Tue, 12 May 2015 15:45:58 -0600
-Received: from b03cxnp08028.gho.boulder.ibm.com
- (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id D0D9E1FF0050
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2015 15:37:05 -0600 (MDT)
-Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
- by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with
- ESMTP id t4CLjUxo41746456
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2015 14:45:30 -0700
-Received: from d03av05.boulder.ibm.com (localhost [127.0.0.1])
- by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t4CLjpob001764
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2015 15:45:55 -0600
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org
-Subject: [PATCH tip/core/rcu 09/15] powerpc: Fix smp_mb__before_spinlock()
-Date: Tue, 12 May 2015 14:38:15 -0700
-Message-Id: <1431466701-653-9-git-send-email-paulmck@linux.vnet.ibm.com>
-In-Reply-To: <1431466701-653-1-git-send-email-paulmck@linux.vnet.ibm.com>
-References: <20150512213756.GA32729@linux.vnet.ibm.com>
- <1431466701-653-1-git-send-email-paulmck@linux.vnet.ibm.com>
-Cc: tglx@linutronix.de, laijs@cn.fujitsu.com, bobby.prani@gmail.com,
- peterz@infradead.org, fweisbec@gmail.com, dvhart@linux.intel.com,
- josh@joshtriplett.org, rostedt@goodmis.org, oleg@redhat.com,
- dhowells@redhat.com, edumazet@google.com, mathieu.desnoyers@efficios.com,
- akpm@linux-foundation.org, "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, mingo@kernel.org
+ for <linuxppc-dev@lists.ozlabs.org> from <brking@linux.vnet.ibm.com>;
+ Tue, 12 May 2015 16:07:40 -0600
+Received: from b03cxnp07028.gho.boulder.ibm.com
+ (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 0A9B81FF001E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2015 15:58:49 -0600 (MDT)
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+ by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t4CM5Xuo23855292
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2015 15:05:33 -0700
+Received: from d03av03.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av03.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t4CM7cqm001526
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2015 16:07:38 -0600
+Message-ID: <555279A8.6060906@linux.vnet.ibm.com>
+Date: Tue, 12 May 2015 17:07:36 -0500
+From: Brian King <brking@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: Sreekanth Reddy <sreekanth.reddy@avagotech.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: mpt2sas DMA mask
+Content-Type: text/plain; charset=utf-8
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ linux-scsi <linux-scsi@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,30 +40,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
+The mpt2sas driver was changed late last year in that it now requests a 64 bit DMA
+mask, then requests a 32 bit coherent DMA mask, then later requests a 64 bit coherent
+DMA mask. This was 5fb1bf8aaa832e1e9ca3198de7bbecb8eff7db9c. This breaks 64 bit DMA
+support for mpt2sas on Power and we always fall back to using 32 bit DMA. Looking
+at the commit log, it looks like this was an intentional change.
 
-Currently, smp_mb__before_spinlock() is defined to be smp_wmb()
-in core code, but this is not sufficient on PowerPC.  This patch
-therefore supplies an override for the generic definition to
-strengthen smp_mb__before_spinlock() to smp_mb(), as is needed
-on PowerPC.
+Ben - you had a patch set you had posted to the list back in Feb of this year, but it
+doesn't look like it got merged. 
 
-Signed-off-by: Paul E. McKenney <paulmck@linux.vnet.ibm.com>
-Cc: <linuxppc-dev@lists.ozlabs.org>
----
- arch/powerpc/include/asm/barrier.h | 1 +
- 1 file changed, 1 insertion(+)
+https://lists.ozlabs.org/pipermail/linuxppc-dev/2015-February/125087.html
 
-diff --git a/arch/powerpc/include/asm/barrier.h b/arch/powerpc/include/asm/barrier.h
-index a3bf5be111ff..1124f59b8df4 100644
---- a/arch/powerpc/include/asm/barrier.h
-+++ b/arch/powerpc/include/asm/barrier.h
-@@ -89,5 +89,6 @@ do {									\
- 
- #define smp_mb__before_atomic()     smp_mb()
- #define smp_mb__after_atomic()      smp_mb()
-+#define smp_mb__before_spinlock()   smp_mb()
- 
- #endif /* _ASM_POWERPC_BARRIER_H */
+This would fix the issue I'm seeing on mpt2sas. Do you plan to dust that patch set
+off and upstream it? Were there issues with it that still need to be resolved?
+
+Thanks,
+
+Brian
+
 -- 
-1.8.1.5
+Brian King
+Power Linux I/O
+IBM Linux Technology Center
