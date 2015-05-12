@@ -1,30 +1,24 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
- [140.211.169.12])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <edubezval@gmail.com>
+Received: from mail-pa0-x232.google.com (mail-pa0-x232.google.com
+ [IPv6:2607:f8b0:400e:c03::232])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7A88B1A012A
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2015 05:12:07 +1000 (AEST)
-Date: Mon, 11 May 2015 12:12:04 -0700
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Eric B Munson <emunson@akamai.com>
-Subject: Re: [PATCH 0/3] Allow user to request memory to be locked on page
- fault
-Message-Id: <20150511121204.2af73429ad3c29b6d67f1345@linux-foundation.org>
-In-Reply-To: <20150511143618.GA30570@akamai.com>
-References: <1431113626-19153-1-git-send-email-emunson@akamai.com>
- <20150508124203.6679b1d35ad9555425003929@linux-foundation.org>
- <20150508200610.GB29933@akamai.com>
- <20150508131523.f970d13a213bca63bd6f2619@linux-foundation.org>
- <20150511143618.GA30570@akamai.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linux-arch@vger.kernel.org, linux-mips@linux-mips.org,
- linux-parisc@vger.kernel.org, linux-xtensa@linux-xtensa.org,
- linux-api@vger.kernel.org, linux-kernel@vger.kernel.org,
- Shuah Khan <shuahkh@osg.samsung.com>, linux-mm@kvack.org,
- linux-alpha@vger.kernel.org, sparclinux@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 203221A023A
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2015 04:49:03 +1000 (AEST)
+Received: by pabsx10 with SMTP id sx10so116578331pab.3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 May 2015 11:49:01 -0700 (PDT)
+Date: Mon, 11 May 2015 18:49:00 -0700
+From: Eduardo Valentin <edubezval@gmail.com>
+To: Jia Hongtao <hongtao.jia@freescale.com>
+Subject: Re: [PATCH] QorIQ/TMU: add thermal management support based on TMU
+Message-ID: <20150512014859.GG4810@localhost.localdomain>
+References: <1428045087-15557-1-git-send-email-hongtao.jia@freescale.com>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="Wtrm9ATX0sn6fFKv"
+In-Reply-To: <1428045087-15557-1-git-send-email-hongtao.jia@freescale.com>
+Cc: scottwood@freescale.com, rui.zhang@intel.com, linuxppc-dev@lists.ozlabs.org,
+ linux-pm@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,35 +28,554 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 11 May 2015 10:36:18 -0400 Eric B Munson <emunson@akamai.com> wrote:
 
-> On Fri, 08 May 2015, Andrew Morton wrote:
-> ...
->
-> > 
-> > Why can't the application mmap only those parts of the file which it
-> > wants and mlock those?
-> 
-> There are a number of problems with this approach.  The first is it
-> presumes the program will know what portions are needed a head of time.
-> In many cases this is simply not true.  The second problem is the number
-> of syscalls required.  With my patches, a single mmap() or mlockall()
-> call is needed to setup the required locking.  Without it, a separate
-> mmap call must be made for each piece of data that is needed.  This also
-> opens up problems for data that is arranged assuming it is contiguous in
-> memory.  With the single mmap call, the user gets a contiguous VMA
-> without having to know about it.  mmap() with MAP_FIXED could address
-> the problem, but this introduces a new failure mode of your map
-> colliding with another that was placed by the kernel.
-> 
-> Another use case for the LOCKONFAULT flag is the security use of
-> mlock().  If an application will be using data that cannot be written
-> to swap, but the exact size is unknown until run time (all we have a
-> build time is the maximum size the buffer can be).  The LOCKONFAULT flag
-> allows the developer to create the buffer and guarantee that the
-> contents are never written to swap without ever consuming more memory
-> than is actually needed.
+--Wtrm9ATX0sn6fFKv
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-What application(s) or class of applications are we talking about here?
+Jia Hongtao,
 
-IOW, how generally applicable is this?  It sounds rather specialized.
+Thanks for sharing your driver. Sorry for the late answer. Please find
+couple of comments as follows.
+
+On Fri, Apr 03, 2015 at 03:11:27PM +0800, Jia Hongtao wrote:
+> It supports one critical trip point and one passive trip point.
+> The cpufreq is used as the cooling device to throttle CPUs when
+> the passive trip is crossed.
+>=20
+> Signed-off-by: Jia Hongtao <hongtao.jia@freescale.com>
+> ---
+>  drivers/thermal/Kconfig         |  11 ++
+>  drivers/thermal/Makefile        |   1 +
+>  drivers/thermal/qoriq_thermal.c | 405 ++++++++++++++++++++++++++++++++++=
+++++++
+>  3 files changed, 417 insertions(+)
+>  create mode 100644 drivers/thermal/qoriq_thermal.c
+>=20
+> diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+> index af40db0..c0a8bd1 100644
+> --- a/drivers/thermal/Kconfig
+> +++ b/drivers/thermal/Kconfig
+> @@ -147,6 +147,17 @@ config IMX_THERMAL
+>  	  cpufreq is used as the cooling device to throttle CPUs when the
+>  	  passive trip is crossed.
+> =20
+> +config QORIQ_THERMAL
+> +	tristate "Freescale QorIQ Thermal Monitoring Unit"
+> +	depends on CPU_THERMAL
+> +	depends on OF
+> +	default n
+> +	help
+> +	  Enable thermal management based on Freescale QorIQ Thermal Monitoring
+> +	  Unit (TMU). It supports one critical trip point and one passive trip
+> +	  point. The cpufreq is used as the cooling device to throttle CPUs when
+> +	  the passive trip is crossed.
+
+dummy question, what is the level of overlap between QorIQ and IMX
+thermal drivers?
+
+> +
+>  config SPEAR_THERMAL
+>  	bool "SPEAr thermal sensor driver"
+>  	depends on PLAT_SPEAR
+> diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
+> index fa0dc48..7de4847 100644
+> --- a/drivers/thermal/Makefile
+> +++ b/drivers/thermal/Makefile
+> @@ -31,6 +31,7 @@ obj-$(CONFIG_DOVE_THERMAL)  	+=3D dove_thermal.o
+>  obj-$(CONFIG_DB8500_THERMAL)	+=3D db8500_thermal.o
+>  obj-$(CONFIG_ARMADA_THERMAL)	+=3D armada_thermal.o
+>  obj-$(CONFIG_IMX_THERMAL)	+=3D imx_thermal.o
+> +obj-$(CONFIG_QORIQ_THERMAL)	+=3D qoriq_thermal.o
+>  obj-$(CONFIG_DB8500_CPUFREQ_COOLING)	+=3D db8500_cpufreq_cooling.o
+>  obj-$(CONFIG_INTEL_POWERCLAMP)	+=3D intel_powerclamp.o
+>  obj-$(CONFIG_X86_PKG_TEMP_THERMAL)	+=3D x86_pkg_temp_thermal.o
+> diff --git a/drivers/thermal/qoriq_thermal.c b/drivers/thermal/qoriq_ther=
+mal.c
+> new file mode 100644
+> index 0000000..f5d3a2c
+> --- /dev/null
+> +++ b/drivers/thermal/qoriq_thermal.c
+> @@ -0,0 +1,405 @@
+> +/*
+> + * Copyright 2015 Freescale Semiconductor, Inc.
+> + *
+> + * This program is free software; you can redistribute it and/or modify =
+it
+> + * under the terms and conditions of the GNU General Public License,
+> + * version 2, as published by the Free Software Foundation.
+> + *
+> + * This program is distributed in the hope it will be useful, but WITHOUT
+> + * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+> + * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License=
+ for
+> + * more details.
+> + *
+> + */
+> +
+> +/*
+> + * Based on Freescale QorIQ Thermal Monitoring Unit (TMU)
+> + */
+> +#include <linux/cpufreq.h>
+> +#include <linux/cpu_cooling.h>
+> +#include <linux/module.h>
+> +#include <linux/platform_device.h>
+> +#include <linux/err.h>
+> +#include <linux/io.h>
+> +#include <linux/of.h>
+> +#include <linux/thermal.h>
+> +
+> +#define SITES_MAX		16
+> +
+> +#define TMU_TEMP_PASSIVE	85000
+> +#define TMU_TEMP_CRITICAL	95000
+> +
+> +#define TMU_PASSIVE_DELAY	1000	/* Milliseconds */
+> +#define TMU_POLLING_DELAY	5000
+> +
+> +/* The driver supports 1 passive trip point and 1 critical trip point */
+> +enum tmu_thermal_trip {
+> +	TMU_TRIP_PASSIVE,
+> +	TMU_TRIP_CRITICAL,
+> +	TMU_TRIP_NUM,
+> +};
+> +
+
+the above symbol is not used in this driver.
+
+> +/*
+> + * QorIQ TMU Registers
+> + */
+> +struct qoriq_tmu_site_regs {
+> +	__be32 tritsr;		/* Immediate Temperature Site Register */
+> +	__be32 tratsr;		/* Average Temperature Site Register */
+> +	u8 res0[0x8];
+> +} __packed;
+> +
+> +struct qoriq_tmu_regs {
+> +	__be32 tmr;		/* Mode Register */
+> +#define TMR_DISABLE	0x0
+> +#define TMR_ME		0x80000000
+> +#define TMR_ALPF	0x0c000000
+> +#define TMR_MSITE	0x00008000
+> +#define TMR_ALL		(TMR_ME | TMR_ALPF | TMR_MSITE)
+> +	__be32 tsr;		/* Status Register */
+> +	__be32 tmtmir;		/* Temperature measurement interval Register */
+> +#define TMTMIR_DEFAULT	0x00000007
+> +	u8 res0[0x14];
+> +	__be32 tier;		/* Interrupt Enable Register */
+> +#define TIER_DISABLE	0x0
+> +	__be32 tidr;		/* Interrupt Detect Register */
+> +	__be32 tiscr;		/* Interrupt Site Capture Register */
+> +	__be32 ticscr;		/* Interrupt Critical Site Capture Register */
+> +	u8 res1[0x10];
+> +	__be32 tmhtcrh;		/* High Temperature Capture Register */
+> +	__be32 tmhtcrl;		/* Low Temperature Capture Register */
+> +	u8 res2[0x8];
+> +	__be32 tmhtitr;		/* High Temperature Immediate Threshold */
+> +	__be32 tmhtatr;		/* High Temperature Average Threshold */
+> +	__be32 tmhtactr;	/* High Temperature Average Crit Threshold */
+> +	u8 res3[0x24];
+> +	__be32 ttcfgr;		/* Temperature Configuration Register */
+> +	__be32 tscfgr;		/* Sensor Configuration Register */
+> +	u8 res4[0x78];
+> +	struct qoriq_tmu_site_regs site[SITES_MAX];
+> +	u8 res5[0x9f8];
+> +	__be32 ipbrr0;		/* IP Block Revision Register 0 */
+> +	__be32 ipbrr1;		/* IP Block Revision Register 1 */
+> +	u8 res6[0x310];
+> +	__be32 ttr0cr;		/* Temperature Range 0 Control Register */
+> +	__be32 ttr1cr;		/* Temperature Range 1 Control Register */
+> +	__be32 ttr2cr;		/* Temperature Range 2 Control Register */
+> +	__be32 ttr3cr;		/* Temperature Range 3 Control Register */
+> +};
+> +
+> +/*
+> + * Thermal zone data
+> + */
+> +struct qoriq_tmu_data {
+> +	struct thermal_zone_device *tz;
+> +	struct thermal_cooling_device *cdev;
+> +	enum thermal_device_mode mode;
+> +	unsigned long temp_passive;
+> +	unsigned long temp_critical;
+> +	struct qoriq_tmu_regs __iomem *regs;
+> +};
+> +
+> +static int tmu_get_mode(struct thermal_zone_device *tz,
+> +			enum thermal_device_mode *mode)
+> +{
+> +	struct qoriq_tmu_data *data =3D tz->devdata;
+> +
+> +	*mode =3D data->mode;
+> +
+> +	return 0;
+> +}
+> +
+> +static int tmu_set_mode(struct thermal_zone_device *tz,
+> +			enum thermal_device_mode mode)
+> +{
+> +	struct qoriq_tmu_data *data =3D tz->devdata;
+> +
+> +	if (mode =3D=3D THERMAL_DEVICE_ENABLED) {
+> +		tz->polling_delay =3D TMU_POLLING_DELAY;
+> +		tz->passive_delay =3D TMU_PASSIVE_DELAY;
+> +		thermal_zone_device_update(tz);
+> +	} else {
+> +		tz->polling_delay =3D 0;
+> +		tz->passive_delay =3D 0;
+> +	}
+> +
+> +	data->mode =3D mode;
+> +
+> +	return 0;
+> +}
+> +
+> +static int tmu_get_temp(struct thermal_zone_device *tz, unsigned long *t=
+emp)
+> +{
+> +	u8 val;
+> +	struct qoriq_tmu_data *data =3D tz->devdata;
+> +
+> +	val =3D ioread32be(&data->regs->site[0].tritsr);
+> +	*temp =3D (unsigned long)val * 1000;
+> +
+> +	return 0;
+> +}
+> +
+> +static int tmu_get_trip_type(struct thermal_zone_device *tz, int trip,
+> +			     enum thermal_trip_type *type)
+> +{
+> +	*type =3D (trip =3D=3D TMU_TRIP_PASSIVE) ? THERMAL_TRIP_PASSIVE :
+> +					     THERMAL_TRIP_CRITICAL;
+> +	return 0;
+> +}
+> +
+> +static int tmu_get_trip_temp(struct thermal_zone_device *tz, int trip,
+> +			     unsigned long *temp)
+> +{
+> +	struct qoriq_tmu_data *data =3D tz->devdata;
+> +
+> +	*temp =3D (trip =3D=3D TMU_TRIP_PASSIVE) ? data->temp_passive :
+> +					     data->temp_critical;
+> +	return 0;
+> +}
+> +
+> +static int tmu_get_crit_temp(struct thermal_zone_device *tz,
+> +			     unsigned long *temp)
+> +{
+> +	struct qoriq_tmu_data *data =3D tz->devdata;
+> +
+> +	*temp =3D data->temp_critical;
+
+nip: add an empty line, to follow your pattern.
+
+> +	return 0;
+> +}
+> +
+> +static int tmu_get_trend(struct thermal_zone_device *thermal,
+> +			int trip, enum thermal_trend *trend)
+> +{
+> +	int ret;
+> +	unsigned long trip_temp;
+> +
+> +	ret =3D tmu_get_trip_temp(thermal, trip, &trip_temp);
+> +	if (ret < 0)
+> +		return ret;
+> +
+> +	if (thermal->temperature >=3D trip_temp)
+> +		*trend =3D THERMAL_TREND_RAISE_FULL;
+> +	else
+> +		*trend =3D THERMAL_TREND_DROP_FULL;
+> +
+
+
+Did I miss something here
+or that is not really trending, is it?=20
+
+Trending is supposed to be=20
+delta(temperature)/delta(time).
+
+
+
+> +	return 0;
+> +}
+> +
+> +static int tmu_bind(struct thermal_zone_device *tz,
+> +		    struct thermal_cooling_device *cdev)
+> +{
+> +	int ret;
+> +
+> +	ret =3D thermal_zone_bind_cooling_device(tz, TMU_TRIP_PASSIVE, cdev,
+> +					       THERMAL_NO_LIMIT,
+> +					       THERMAL_NO_LIMIT);
+> +	if (ret) {
+> +		dev_err(&tz->device,
+> +			"Binding zone %s with cdev %s failed:%d\n",
+> +			tz->type, cdev->type, ret);
+> +		return ret;
+> +	}
+
+
+> +
+> +	return 0;
+
+I think it is fine if you just return ret;
+
+> +}
+> +
+> +static int tmu_unbind(struct thermal_zone_device *tz,
+> +		      struct thermal_cooling_device *cdev)
+> +{
+> +	int ret;
+> +
+> +	ret =3D thermal_zone_unbind_cooling_device(tz, TMU_TRIP_PASSIVE, cdev);
+> +	if (ret) {
+> +		dev_err(&tz->device,
+> +			"Unbinding zone %s with cdev %s failed:%d\n",
+> +			tz->type, cdev->type, ret);
+> +		return ret;
+> +	}
+
+ditto.
+
+> +
+> +	return 0;
+> +}
+> +
+> +static void qoriq_tmu_calibration(struct platform_device *pdev)
+> +{
+> +	int i, val, len;
+> +	const __be32 *calibration;
+> +	struct device_node *node =3D pdev->dev.of_node;
+> +	struct qoriq_tmu_data *data =3D dev_get_drvdata(&pdev->dev);
+> +
+> +	/* Disable monitoring before calibration */
+> +	iowrite32be(TMR_DISABLE, &data->regs->tmr);
+> +
+> +	calibration =3D of_get_property(node, "calibration", &len);
+> +	if (calibration =3D=3D NULL) {
+> +		pr_err("TMU: Failed to get calibration data.\n");
+
+use dev_err when possible.
+
+> +		return;
+> +	}
+> +
+> +	for (i =3D 0; i < len; i +=3D 8, calibration +=3D 2) {
+> +		val =3D (int)of_read_number(calibration, 1);
+> +		iowrite32be(val, &data->regs->ttcfgr);
+> +		val =3D (int)of_read_number(calibration + 1, 1);
+> +		iowrite32be(val, &data->regs->tscfgr);
+
+are the above properties your offset and slope extrapolation constants?
+
+If yes, please use the coefficients DT property. Please, check the of
+thermal code.
+
+> +	}
+> +}
+> +
+> +static void qoriq_tmu_init_device(struct qoriq_tmu_data *data)
+> +{
+> +	/* Disable interrupt, using polling instead */
+> +	iowrite32be(TIER_DISABLE, &data->regs->tier);
+> +
+> +	/* Set update_interval */
+> +	iowrite32be(TMTMIR_DEFAULT, &data->regs->tmtmir);
+> +
+> +	/* Enable monitoring */
+> +	iowrite32be(TMR_ALL, &data->regs->tmr);
+> +}
+> +
+> +static struct thermal_zone_device_ops tmu_tz_ops =3D {
+> +	.bind =3D tmu_bind,
+> +	.unbind =3D tmu_unbind,
+> +	.get_temp =3D tmu_get_temp,
+> +	.get_trend =3D tmu_get_trend,
+> +	.get_mode =3D tmu_get_mode,
+> +	.set_mode =3D tmu_set_mode,
+> +	.get_trip_type =3D tmu_get_trip_type,
+> +	.get_trip_temp =3D tmu_get_trip_temp,
+> +	.get_crit_temp =3D tmu_get_crit_temp,
+> +};
+> +
+> +static int qoriq_tmu_probe(struct platform_device *pdev)
+> +{
+> +	int ret;
+> +	struct cpumask clip_cpus;
+> +	struct qoriq_tmu_data *data;
+> +
+> +	if (!cpufreq_get_current_driver()) {
+> +		dev_dbg(&pdev->dev, "No cpufreq driver yet\n");
+> +		return -EPROBE_DEFER;
+> +	}
+> +
+> +	if (!pdev->dev.of_node) {
+> +		dev_err(&pdev->dev, "Device OF-Node is NULL");
+> +		return -EFAULT;
+> +	}
+> +
+> +	data =3D devm_kzalloc(&pdev->dev, sizeof(struct qoriq_tmu_data),
+> +			    GFP_KERNEL);
+> +	if (!data)
+> +		return -ENOMEM;
+> +
+> +	dev_set_drvdata(&pdev->dev, data);
+> +	data->regs =3D of_iomap(pdev->dev.of_node, 0);
+> +
+> +	if (!data->regs) {
+> +		dev_err(&pdev->dev, "Failed to get memory region\n");
+> +		ret =3D -ENODEV;
+> +		goto err_iomap;
+> +	}
+> +
+> +	qoriq_tmu_calibration(pdev);	/* TMU calibration */
+> +
+> +	qoriq_tmu_init_device(data);	/* TMU initialization */
+> +
+> +	cpumask_setall(&clip_cpus);
+> +	data->cdev =3D cpufreq_cooling_register(&clip_cpus);
+
+Given that this is a DT based device driver, have you considered using
+OF thermal APIs?
+
+> +	if (IS_ERR(data->cdev)) {
+> +		ret =3D PTR_ERR(data->cdev);
+> +		dev_err(&data->cdev->device,
+> +			"Failed to register cpufreq cooling device: %d\n", ret);
+> +		goto err_cooling;
+> +	}
+> +
+> +	data->temp_passive =3D TMU_TEMP_PASSIVE;
+> +	data->temp_critical =3D TMU_TEMP_CRITICAL;
+> +	data->tz =3D thermal_zone_device_register("tmu_thermal_zone",
+> +						TMU_TRIP_NUM,
+> +						0, data,
+> +						&tmu_tz_ops, NULL,
+> +						TMU_PASSIVE_DELAY,
+> +						TMU_POLLING_DELAY);
+> +
+> +	if (IS_ERR(data->tz)) {
+> +		ret =3D PTR_ERR(data->tz);
+> +		dev_err(&pdev->dev,
+> +			"Failed to register thermal zone device %d\n", ret);
+> +		goto err_thermal;
+> +	}
+> +
+> +	data->mode =3D THERMAL_DEVICE_ENABLED;
+
+
+Don't you need to get a clock and enable it before handling this sensor?
+
+> +
+> +	return 0;
+> +
+> +err_thermal:
+> +	cpufreq_cooling_unregister(data->cdev);
+> +
+> +err_cooling:
+> +	iounmap(data->regs);
+> +
+> +err_iomap:
+> +	dev_set_drvdata(&pdev->dev, NULL);
+> +	devm_kfree(&pdev->dev, data);
+> +
+> +	return ret;
+> +}
+> +
+> +static int qoriq_tmu_remove(struct platform_device *pdev)
+> +{
+> +	struct qoriq_tmu_data *data =3D dev_get_drvdata(&pdev->dev);
+> +
+> +	/* Disable monitoring */
+> +	iowrite32be(TMR_DISABLE, &data->regs->tmr);
+> +
+> +	thermal_zone_device_unregister(data->tz);
+> +	cpufreq_cooling_unregister(data->cdev);
+> +	iounmap(data->regs);
+> +
+> +	dev_set_drvdata(&pdev->dev, NULL);
+> +	devm_kfree(&pdev->dev, data);
+> +
+> +	return 0;
+> +}
+> +
+> +#ifdef CONFIG_PM_SLEEP
+> +static int qoriq_tmu_suspend(struct device *dev)
+> +{
+> +	struct qoriq_tmu_data *data =3D dev_get_drvdata(dev);
+> +
+> +	/* Disable monitoring */
+> +	iowrite32be(TMR_DISABLE, &data->regs->tmr);
+> +
+> +	return 0;
+> +}
+> +
+> +static int qoriq_tmu_resume(struct device *dev)
+> +{
+> +	struct qoriq_tmu_data *data =3D dev_get_drvdata(dev);
+> +
+> +	/* Enable monitoring */
+> +	iowrite32be(TMR_ALL, &data->regs->tmr);
+> +
+> +	return 0;
+> +}
+> +#endif
+> +
+> +static SIMPLE_DEV_PM_OPS(qoriq_tmu_pm_ops,
+> +			 qoriq_tmu_suspend, qoriq_tmu_resume);
+> +
+> +static const struct of_device_id qoriq_tmu_match[] =3D {
+> +	{ .compatible =3D "fsl,qoriq-tmu", },
+> +	{},
+> +};
+
+
+You need to add a binding file describing your chip, and how
+to deploy its DT nodes under:
+ Documentation/devicetree/bindings/thermal/
+
+
+> +
+> +static struct platform_driver qoriq_tmu =3D {
+> +	.driver	=3D {
+> +		.owner		=3D THIS_MODULE,
+> +		.name		=3D "qoriq_thermal",
+> +		.pm =3D &qoriq_tmu_pm_ops,
+> +		.of_match_table	=3D qoriq_tmu_match,
+> +	},
+> +	.probe	=3D qoriq_tmu_probe,
+> +	.remove	=3D qoriq_tmu_remove,
+> +};
+> +module_platform_driver(qoriq_tmu);
+> +
+> +MODULE_AUTHOR("Jia Hongtao <hongtao.jia@freescale.com>");
+> +MODULE_DESCRIPTION("Freescale QorIQ Thermal Monitoring Unit driver");
+> +MODULE_LICENSE("GPL v2");
+> --=20
+> 2.1.0.27.g96db324
+>=20
+> --
+> To unsubscribe from this list: send the line "unsubscribe linux-pm" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+
+--Wtrm9ATX0sn6fFKv
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.12 (GNU/Linux)
+
+iQEcBAEBAgAGBQJVUVviAAoJEMLUO4d9pOJWVSAH/3Qyonrx78iLIyYvfQeTeEZi
+SdGjYIORfvBuhciilEsriczZrDtcowJgTa2ntuzYrgBPc40Ru04j9ln+m1m1Uyur
+YRjREDhjxZLvnOWRMEWLolvXCw81H+JSsN3xoGFVK3xmmpqADrRhEpkAD8vIP037
+PBDAD+ytdZK4QE3mNyQSkfDNH7OojEhFI/OIX+aoByRVTKgb2t5dGJ+zQ9mQ7fqc
+w4XFoHM3DpFbX2Cu7T/4FWpRP6jVvmCU4FhqpFYgGSfKb6ZuTcfK6SwDuUQmDcKN
+JqMY0mmAy6zX/81o+pzQZeIez7xE1tkLjU19Z/jNUMlW0zVUqcWbRuL2wxEGuVw=
+=wYc6
+-----END PGP SIGNATURE-----
+
+--Wtrm9ATX0sn6fFKv--
