@@ -1,24 +1,26 @@
-Return-Path: <alex.williamson@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <sreekanth.reddy@avagotech.com>
+Received: from mail-wi0-f175.google.com (mail-wi0-f175.google.com
+ [209.85.212.175])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D17531A001D
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2015 07:31:10 +1000 (AEST)
-Message-ID: <1431552654.3625.80.camel@redhat.com>
-Subject: Re: [PATCH kernel v10 28/34] vfio: powerpc/spapr:
- powerpc/powernv/ioda: Define and implement DMA windows API
-From: Alex Williamson <alex.williamson@redhat.com>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Date: Wed, 13 May 2015 15:30:54 -0600
-In-Reply-To: <1431358763-24371-29-git-send-email-aik@ozlabs.ru>
-References: <1431358763-24371-1-git-send-email-aik@ozlabs.ru>
- <1431358763-24371-29-git-send-email-aik@ozlabs.ru>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Wei Yang <weiyang@linux.vnet.ibm.com>,
- Gavin Shan <gwshan@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- David Gibson <david@gibson.dropbear.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 22ACE1A01C8
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2015 02:44:17 +1000 (AEST)
+Received: by wicnf17 with SMTP id nf17so63370158wic.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 09:44:15 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <55535BDF.6020502@linux.vnet.ibm.com>
+References: <555279A8.6060906@linux.vnet.ibm.com> <2214146.EzgWBA6g23@wuerfel>
+ <5553505D.50102@linux.vnet.ibm.com> <10045033.4fV0qQU90u@wuerfel>
+ <55535BDF.6020502@linux.vnet.ibm.com>
+Date: Wed, 13 May 2015 22:14:14 +0530
+Message-ID: <CAK=zhgoXx4HJfpTuNAP0tAPnsU8BLmM7X3qGsFCzJfHOx55YCQ@mail.gmail.com>
+Subject: Re: [PATCH] mpt2sas: Fall back to 64 bit coherent mask if 64 bit DMA
+ / 32 bit coherent mask not supported
+From: Sreekanth Reddy <sreekanth.reddy@avagotech.com>
+To: Brian King <brking@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: Daniel Kreling <kreling@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-scsi <linux-scsi@vger.kernel.org>, Arnd Bergmann <arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,368 +30,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-05-12 at 01:39 +1000, Alexey Kardashevskiy wrote:
-> This extends iommu_table_group_ops by a set of callbacks to support
-> dynamic DMA windows management.
-> 
-> create_table() creates a TCE table with specific parameters.
-> it receives iommu_table_group to know nodeid in order to allocate
-> TCE table memory closer to the PHB. The exact format of allocated
-> multi-level table might be also specific to the PHB model (not
-> the case now though).
-> This callback calculated the DMA window offset on a PCI bus from @num
-> and stores it in a just created table.
-> 
-> set_window() sets the window at specified TVT index + @num on PHB.
-> 
-> unset_window() unsets the window from specified TVT.
-> 
-> This adds a free() callback to iommu_table_ops to free the memory
-> (potentially a tree of tables) allocated for the TCE table.
-> 
-> create_table() and free() are supposed to be called once per
-> VFIO container and set_window()/unset_window() are supposed to be
-> called for every group in a container.
-> 
-> This adds IOMMU capabilities to iommu_table_group such as default
-> 32bit window parameters and others. This makes use of new values in
-> vfio_iommu_spapr_tce. IODA1/P5IOC2 do not support DDW so they do not
-> advertise pagemasks to the userspace.
-> 
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> ---
-> Changes:
-> v10:
-> * squashed "vfio: powerpc/spapr: Use 32bit DMA window properties from table_group"
-> into this
-> * shortened the subject
-> 
-> v9:
-> * new in the series - to make the next patch simpler
-> ---
->  arch/powerpc/include/asm/iommu.h            | 19 ++++++
->  arch/powerpc/platforms/powernv/pci-ioda.c   | 96 ++++++++++++++++++++++++++---
->  arch/powerpc/platforms/powernv/pci-p5ioc2.c |  7 ++-
->  drivers/vfio/vfio_iommu_spapr_tce.c         | 19 +++---
->  4 files changed, 124 insertions(+), 17 deletions(-)
+Hi Brain,
 
-For vfio:
+We had a restriction from the firmware that the upper 32 bits of the
+RDPQ pool entries must be same. So to limit this restriction we
+initially set the consistent DMA mask to 32 and then after allocating
+the RDPQ pools we changed the consistent DMA mask to 64 before
+allocating remaining pools.
 
-Acked-by: Alex Williamson <alex.williamson@redhat.com>
+Regards,
+Sreekanth
 
-> 
-> diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
-> index a902159..2c41115 100644
-> --- a/arch/powerpc/include/asm/iommu.h
-> +++ b/arch/powerpc/include/asm/iommu.h
-> @@ -70,6 +70,7 @@ struct iommu_table_ops {
->  	/* get() returns a physical address */
->  	unsigned long (*get)(struct iommu_table *tbl, long index);
->  	void (*flush)(struct iommu_table *tbl);
-> +	void (*free)(struct iommu_table *tbl);
->  };
->  
->  /* These are used by VIO */
-> @@ -150,6 +151,17 @@ extern struct iommu_table *iommu_init_table(struct iommu_table * tbl,
->  struct iommu_table_group;
->  
->  struct iommu_table_group_ops {
-> +	long (*create_table)(struct iommu_table_group *table_group,
-> +			int num,
-> +			__u32 page_shift,
-> +			__u64 window_size,
-> +			__u32 levels,
-> +			struct iommu_table **ptbl);
-> +	long (*set_window)(struct iommu_table_group *table_group,
-> +			int num,
-> +			struct iommu_table *tblnew);
-> +	long (*unset_window)(struct iommu_table_group *table_group,
-> +			int num);
->  	/* Switch ownership from platform code to external user (e.g. VFIO) */
->  	void (*take_ownership)(struct iommu_table_group *table_group);
->  	/* Switch ownership from external user (e.g. VFIO) back to core */
-> @@ -163,6 +175,13 @@ struct iommu_table_group_link {
->  };
->  
->  struct iommu_table_group {
-> +	/* IOMMU properties */
-> +	__u32 tce32_start;
-> +	__u32 tce32_size;
-> +	__u64 pgsizes; /* Bitmap of supported page sizes */
-> +	__u32 max_dynamic_windows_supported;
-> +	__u32 max_levels;
-> +
->  	struct iommu_group *group;
->  	struct iommu_table *tables[IOMMU_TABLE_GROUP_MAX_TABLES];
->  	struct iommu_table_group_ops *ops;
-> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-> index d2a1dcd..c1d1aef 100644
-> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
-> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-> @@ -25,6 +25,7 @@
->  #include <linux/memblock.h>
->  #include <linux/iommu.h>
->  #include <linux/rculist.h>
-> +#include <linux/sizes.h>
->  
->  #include <asm/sections.h>
->  #include <asm/io.h>
-> @@ -1867,6 +1868,12 @@ static void pnv_ioda2_tce_free(struct iommu_table *tbl, long index,
->  		pnv_pci_ioda2_tce_invalidate(tbl, index, npages, false);
->  }
->  
-> +static void pnv_ioda2_table_free(struct iommu_table *tbl)
-> +{
-> +	pnv_pci_ioda2_table_free_pages(tbl);
-> +	iommu_free_table(tbl, "pnv");
-> +}
-> +
->  static struct iommu_table_ops pnv_ioda2_iommu_ops = {
->  	.set = pnv_ioda2_tce_build,
->  #ifdef CONFIG_IOMMU_API
-> @@ -1874,6 +1881,7 @@ static struct iommu_table_ops pnv_ioda2_iommu_ops = {
->  #endif
->  	.clear = pnv_ioda2_tce_free,
->  	.get = pnv_tce_get,
-> +	.free = pnv_ioda2_table_free,
->  };
->  
->  static void pnv_pci_ioda_setup_opal_tce_kill(struct pnv_phb *phb,
-> @@ -1960,6 +1968,8 @@ static void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
->  				 TCE_PCI_SWINV_PAIR);
->  
->  	tbl->it_ops = &pnv_ioda1_iommu_ops;
-> +	pe->table_group.tce32_start = tbl->it_offset << tbl->it_page_shift;
-> +	pe->table_group.tce32_size = tbl->it_size << tbl->it_page_shift;
->  	iommu_init_table(tbl, phb->hose->node);
->  
->  	if (pe->flags & PNV_IODA_PE_DEV) {
-> @@ -1998,7 +2008,7 @@ static long pnv_pci_ioda2_set_window(struct iommu_table_group *table_group,
->  	const __u64 start_addr = tbl->it_offset << tbl->it_page_shift;
->  	const __u64 win_size = tbl->it_size << tbl->it_page_shift;
->  
-> -	pe_info(pe, "Setting up window %llx..%llx pg=%x\n",
-> +	pe_info(pe, "Setting up window#%d %llx..%llx pg=%x\n", num,
->  			start_addr, start_addr + win_size - 1,
->  			1UL << tbl->it_page_shift);
->  
-> @@ -2008,7 +2018,7 @@ static long pnv_pci_ioda2_set_window(struct iommu_table_group *table_group,
->  	 */
->  	rc = opal_pci_map_pe_dma_window(phb->opal_id,
->  			pe->pe_number,
-> -			pe->pe_number << 1,
-> +			(pe->pe_number << 1) + num,
->  			tbl->it_indirect_levels + 1,
->  			__pa(tbl->it_base),
->  			size << 3,
-> @@ -2054,6 +2064,66 @@ static void pnv_pci_ioda2_set_bypass(struct pnv_ioda_pe *pe, bool enable)
->  }
->  
->  #ifdef CONFIG_IOMMU_API
-> +static long pnv_pci_ioda2_table_alloc_pages(int nid, __u64 bus_offset,
-> +		__u32 page_shift, __u64 window_size, __u32 levels,
-> +		struct iommu_table *tbl);
-> +
-> +static long pnv_pci_ioda2_create_table(struct iommu_table_group *table_group,
-> +		int num, __u32 page_shift, __u64 window_size, __u32 levels,
-> +		struct iommu_table **ptbl)
-> +{
-> +	struct pnv_ioda_pe *pe = container_of(table_group, struct pnv_ioda_pe,
-> +			table_group);
-> +	int nid = pe->phb->hose->node;
-> +	__u64 bus_offset = num ? pe->tce_bypass_base : table_group->tce32_start;
-> +	long ret;
-> +	struct iommu_table *tbl;
-> +
-> +	tbl = pnv_pci_table_alloc(nid);
-> +	if (!tbl)
-> +		return -ENOMEM;
-> +
-> +	ret = pnv_pci_ioda2_table_alloc_pages(nid,
-> +			bus_offset, page_shift, window_size,
-> +			levels, tbl);
-> +	if (ret) {
-> +		iommu_free_table(tbl, "pnv");
-> +		return ret;
-> +	}
-> +
-> +	tbl->it_ops = &pnv_ioda2_iommu_ops;
-> +	if (pe->tce_inval_reg)
-> +		tbl->it_type |= (TCE_PCI_SWINV_CREATE | TCE_PCI_SWINV_FREE);
-> +
-> +	*ptbl = tbl;
-> +
-> +	return 0;
-> +}
-> +
-> +static long pnv_pci_ioda2_unset_window(struct iommu_table_group *table_group,
-> +		int num)
-> +{
-> +	struct pnv_ioda_pe *pe = container_of(table_group, struct pnv_ioda_pe,
-> +			table_group);
-> +	struct pnv_phb *phb = pe->phb;
-> +	long ret;
-> +
-> +	pe_info(pe, "Removing DMA window #%d\n", num);
-> +
-> +	ret = opal_pci_map_pe_dma_window(phb->opal_id, pe->pe_number,
-> +			(pe->pe_number << 1) + num,
-> +			0/* levels */, 0/* table address */,
-> +			0/* table size */, 0/* page size */);
-> +	if (ret)
-> +		pe_warn(pe, "Unmapping failed, ret = %ld\n", ret);
-> +	else
-> +		pnv_pci_ioda2_tvt_invalidate(pe);
-> +
-> +	pnv_pci_unlink_table_and_group(table_group->tables[num], table_group);
-> +
-> +	return ret;
-> +}
-> +
->  static void pnv_ioda2_take_ownership(struct iommu_table_group *table_group)
->  {
->  	struct pnv_ioda_pe *pe = container_of(table_group, struct pnv_ioda_pe,
-> @@ -2073,6 +2143,9 @@ static void pnv_ioda2_release_ownership(struct iommu_table_group *table_group)
->  }
->  
->  static struct iommu_table_group_ops pnv_pci_ioda2_ops = {
-> +	.create_table = pnv_pci_ioda2_create_table,
-> +	.set_window = pnv_pci_ioda2_set_window,
-> +	.unset_window = pnv_pci_ioda2_unset_window,
->  	.take_ownership = pnv_ioda2_take_ownership,
->  	.release_ownership = pnv_ioda2_release_ownership,
->  };
-> @@ -2207,7 +2280,7 @@ static void pnv_pci_ioda2_table_free_pages(struct iommu_table *tbl)
->  static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
->  				       struct pnv_ioda_pe *pe)
->  {
-> -	struct iommu_table *tbl;
-> +	struct iommu_table *tbl = NULL;
->  	int64_t rc;
->  
->  	/* We shouldn't already have a 32-bit DMA associated */
-> @@ -2217,10 +2290,8 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
->  	/* TVE #1 is selected by PCI address bit 59 */
->  	pe->tce_bypass_base = 1ull << 59;
->  
-> -	tbl = pnv_pci_table_alloc(phb->hose->node);
->  	iommu_register_group(&pe->table_group, phb->hose->global_number,
->  			pe->pe_number);
-> -	pnv_pci_link_table_and_group(phb->hose->node, 0, tbl, &pe->table_group);
->  
->  	pnv_pci_ioda_setup_opal_tce_kill(phb, pe);
->  
-> @@ -2230,13 +2301,22 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
->  		phb->ioda.m32_pci_base);
->  
->  	/* Setup linux iommu table */
-> -	rc = pnv_pci_ioda2_table_alloc_pages(pe->phb->hose->node,
-> -			0, IOMMU_PAGE_SHIFT_4K, phb->ioda.m32_pci_base,
-> -			POWERNV_IOMMU_DEFAULT_LEVELS, tbl);
-> +	pe->table_group.tce32_start = 0;
-> +	pe->table_group.tce32_size = phb->ioda.m32_pci_base;
-> +	pe->table_group.max_dynamic_windows_supported =
-> +			IOMMU_TABLE_GROUP_MAX_TABLES;
-> +	pe->table_group.max_levels = POWERNV_IOMMU_MAX_LEVELS;
-> +	pe->table_group.pgsizes = SZ_4K | SZ_64K | SZ_16M;
-> +
-> +	rc = pnv_pci_ioda2_create_table(&pe->table_group, 0,
-> +			IOMMU_PAGE_SHIFT_4K,
-> +			pe->table_group.tce32_size,
-> +			POWERNV_IOMMU_DEFAULT_LEVELS, &tbl);
->  	if (rc) {
->  		pe_err(pe, "Failed to create 32-bit TCE table, err %ld", rc);
->  		goto fail;
->  	}
-> +	pnv_pci_link_table_and_group(phb->hose->node, 0, tbl, &pe->table_group);
->  
->  	tbl->it_ops = &pnv_ioda2_iommu_ops;
->  	iommu_init_table(tbl, phb->hose->node);
-> diff --git a/arch/powerpc/platforms/powernv/pci-p5ioc2.c b/arch/powerpc/platforms/powernv/pci-p5ioc2.c
-> index 94c880c..a295660 100644
-> --- a/arch/powerpc/platforms/powernv/pci-p5ioc2.c
-> +++ b/arch/powerpc/platforms/powernv/pci-p5ioc2.c
-> @@ -119,6 +119,8 @@ static void __init pnv_pci_init_p5ioc2_phb(struct device_node *np, u64 hub_id,
->  	u64 phb_id;
->  	int64_t rc;
->  	static int primary = 1;
-> +	struct iommu_table_group *table_group;
-> +	struct iommu_table *tbl;
->  
->  	pr_info(" Initializing p5ioc2 PHB %s\n", np->full_name);
->  
-> @@ -193,7 +195,10 @@ static void __init pnv_pci_init_p5ioc2_phb(struct device_node *np, u64 hub_id,
->  	 * hotplug or SRIOV on P5IOC2 and therefore iommu_free_table()
->  	 * should not be called for phb->p5ioc2.table_group.tables[0] ever.
->  	 */
-> -	phb->p5ioc2.table_group.tables[0] = &phb->p5ioc2.iommu_table;
-> +	tbl = phb->p5ioc2.table_group.tables[0] = &phb->p5ioc2.iommu_table;
-> +	table_group = &phb->p5ioc2.table_group;
-> +	table_group->tce32_start = tbl->it_offset << tbl->it_page_shift;
-> +	table_group->tce32_size = tbl->it_size << tbl->it_page_shift;
->  }
->  
->  void __init pnv_pci_init_p5ioc2_hub(struct device_node *np)
-> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
-> index 0724ec8..bc4956d 100644
-> --- a/drivers/vfio/vfio_iommu_spapr_tce.c
-> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
-> @@ -135,7 +135,6 @@ static int tce_iommu_enable(struct tce_container *container)
->  {
->  	int ret = 0;
->  	unsigned long locked;
-> -	struct iommu_table *tbl;
->  	struct iommu_table_group *table_group;
->  
->  	if (!container->grp)
-> @@ -171,13 +170,19 @@ static int tce_iommu_enable(struct tce_container *container)
->  	 * this is that we cannot tell here the amount of RAM used by the guest
->  	 * as this information is only available from KVM and VFIO is
->  	 * KVM agnostic.
-> +	 *
-> +	 * So we do not allow enabling a container without a group attached
-> +	 * as there is no way to know how much we should increment
-> +	 * the locked_vm counter.
->  	 */
->  	table_group = iommu_group_get_iommudata(container->grp);
->  	if (!table_group)
->  		return -ENODEV;
->  
-> -	tbl = table_group->tables[0];
-> -	locked = (tbl->it_size << tbl->it_page_shift) >> PAGE_SHIFT;
-> +	if (!table_group->tce32_size)
-> +		return -EPERM;
-> +
-> +	locked = table_group->tce32_size >> PAGE_SHIFT;
->  	ret = try_increment_locked_vm(locked);
->  	if (ret)
->  		return ret;
-> @@ -350,7 +355,6 @@ static long tce_iommu_ioctl(void *iommu_data,
->  
->  	case VFIO_IOMMU_SPAPR_TCE_GET_INFO: {
->  		struct vfio_iommu_spapr_tce_info info;
-> -		struct iommu_table *tbl;
->  		struct iommu_table_group *table_group;
->  
->  		if (WARN_ON(!container->grp))
-> @@ -358,8 +362,7 @@ static long tce_iommu_ioctl(void *iommu_data,
->  
->  		table_group = iommu_group_get_iommudata(container->grp);
->  
-> -		tbl = table_group->tables[0];
-> -		if (WARN_ON_ONCE(!tbl))
-> +		if (!table_group)
->  			return -ENXIO;
->  
->  		minsz = offsetofend(struct vfio_iommu_spapr_tce_info,
-> @@ -371,8 +374,8 @@ static long tce_iommu_ioctl(void *iommu_data,
->  		if (info.argsz < minsz)
->  			return -EINVAL;
->  
-> -		info.dma32_window_start = tbl->it_offset << tbl->it_page_shift;
-> -		info.dma32_window_size = tbl->it_size << tbl->it_page_shift;
-> +		info.dma32_window_start = table_group->tce32_start;
-> +		info.dma32_window_size = table_group->tce32_size;
->  		info.flags = 0;
->  
->  		if (copy_to_user((void __user *)arg, &info, minsz))
+On Wed, May 13, 2015 at 7:42 PM, Brian King <brking@linux.vnet.ibm.com> wrote:
+> On 05/13/2015 08:31 AM, Arnd Bergmann wrote:
+>> On Wednesday 13 May 2015 08:23:41 Brian King wrote:
+>>> On 05/13/2015 03:10 AM, Arnd Bergmann wrote:
+>>>> On Tuesday 12 May 2015 18:24:43 Brian King wrote:
+>>>>>
+>>>>> Commit 5fb1bf8aaa832e1e9ca3198de7bbecb8eff7db9c broke 64 bit DMA for mpt2sas on Power.
+>>>>> That commit changed the sequence for setting up the DMA and coherent DMA masks so
+>>>>> that during initialization the driver requests a 64 bit DMA mask and a 32 bit consistent
+>>>>> DMA mask, then later requests a 64 bit consistent DMA mask. The Power architecture does
+>>>>> not currently support this, which results in always falling back to a 32 bit DMA window,
+>>>>> which has a negative impact on performance. Tweak this algorithm slightly so that
+>>>>> if requesting a 32 bit consistent mask fails after we've successfully set a 64 bit
+>>>>> DMA mask, just try to get a 64 bit consistent mask. This should preserve existing
+>>>>> behavior on platforms that support mixed mask setting and restore previous functionality
+>>>>> to those that do not.
+>>>>>
+>>>>> Signed-off-by: Brian King <brking@linux.vnet.ibm.com>
+>>>>
+>>>> I believe the way the API is designed, it should guarantee that after dma_set_mask()
+>>>> succeeds for a device, dma_set_coherent_mask() with the same mask will also succeed.
+>>>>
+>>>> Could you just call dma_set_mask_and_coherent() here to avoid that complex logic?
+>>>
+>>> I don't think that would work. The mpt2sas driver wants to set the dma mask to 64bits
+>>> but set the coherent mask to 32 bits, then my change is to set the coherent mask to
+>>> 64bits if setting it to 32bit fails. I'm not seeing how using dma_set_mask_and_coherent
+>>> would simplify anything here.
+>>
+>> My question was more about why the driver would ask for a 32-bit coherent
+>> mask to start with. Is this a limitation in the mpt2sas device that can
+>> only have descriptors at low addresses, or is it trying to work around some
+>> bug in a particular host system?
+>
+> I'll need help from Sreekanth in answering that. All that is in the git commit log is:
+>
+>     2. Initially set the consistent DMA mask to 32 bit and then change it to 64 bit mask
+>     after allocating RDPQ pools by calling the function _base_change_consistent_dma_mask.
+>     This is to ensure that all the upper 32 bits of RDPQ entries's base address to be same.
+>
+> So, I'm not sure my patch won't break something with mpt2sas... This commit also changed
+> how the RDPO pools are allocated, so its possible this won't work. However, I did load
+> it on Power box and I'm not seeing any major problems so far. I am seeing the following message
+> get logged on a regular basis, not sure if its related to this change or not:
+>
+> mpt2sas3: log_info(0x31120303): originator(IOP), code(0x03), sub_code(0x3112)
+>
+> -Brian
+>
+>
+> --
+> Brian King
+> Power Linux I/O
+> IBM Linux Technology Center
+>
+>
