@@ -1,23 +1,27 @@
-Return-Path: <arnd@arndb.de>
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.17.13])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <mhocko@suse.cz>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 898A91A025F
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 23:31:27 +1000 (AEST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: Brian King <brking@linux.vnet.ibm.com>
-Subject: Re: [PATCH] mpt2sas: Fall back to 64 bit coherent mask if 64 bit DMA
- / 32 bit coherent mask not supported
-Date: Wed, 13 May 2015 15:31:09 +0200
-Message-ID: <10045033.4fV0qQU90u@wuerfel>
-In-Reply-To: <5553505D.50102@linux.vnet.ibm.com>
-References: <555279A8.6060906@linux.vnet.ibm.com> <2214146.EzgWBA6g23@wuerfel>
- <5553505D.50102@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 863DF1A0260
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 23:58:12 +1000 (AEST)
+Date: Wed, 13 May 2015 15:58:05 +0200
+From: Michal Hocko <mhocko@suse.cz>
+To: Eric B Munson <emunson@akamai.com>
+Subject: Re: [PATCH 0/3] Allow user to request memory to be locked on page
+ fault
+Message-ID: <20150513135805.GA17708@dhcp22.suse.cz>
+References: <1431113626-19153-1-git-send-email-emunson@akamai.com>
+ <20150508124203.6679b1d35ad9555425003929@linux-foundation.org>
+ <20150508200610.GB29933@akamai.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Cc: Daniel Kreling <kreling@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- linux-scsi <linux-scsi@vger.kernel.org>,
- Sreekanth Reddy <sreekanth.reddy@avagotech.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20150508200610.GB29933@akamai.com>
+Cc: linux-arch@vger.kernel.org, linux-mips@linux-mips.org,
+ linux-parisc@vger.kernel.org, linux-xtensa@linux-xtensa.org,
+ linux-api@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Shuah Khan <shuahkh@osg.samsung.com>, linux-mm@kvack.org,
+ linux-alpha@vger.kernel.org, sparclinux@vger.kernel.org,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,36 +31,41 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wednesday 13 May 2015 08:23:41 Brian King wrote:
-> On 05/13/2015 03:10 AM, Arnd Bergmann wrote:
-> > On Tuesday 12 May 2015 18:24:43 Brian King wrote:
-> >>
-> >> Commit 5fb1bf8aaa832e1e9ca3198de7bbecb8eff7db9c broke 64 bit DMA for mpt2sas on Power.
-> >> That commit changed the sequence for setting up the DMA and coherent DMA masks so
-> >> that during initialization the driver requests a 64 bit DMA mask and a 32 bit consistent
-> >> DMA mask, then later requests a 64 bit consistent DMA mask. The Power architecture does
-> >> not currently support this, which results in always falling back to a 32 bit DMA window,
-> >> which has a negative impact on performance. Tweak this algorithm slightly so that
-> >> if requesting a 32 bit consistent mask fails after we've successfully set a 64 bit
-> >> DMA mask, just try to get a 64 bit consistent mask. This should preserve existing
-> >> behavior on platforms that support mixed mask setting and restore previous functionality
-> >> to those that do not.
-> >>
-> >> Signed-off-by: Brian King <brking@linux.vnet.ibm.com>
-> > 
-> > I believe the way the API is designed, it should guarantee that after dma_set_mask()
-> > succeeds for a device, dma_set_coherent_mask() with the same mask will also succeed.
-> > 
-> > Could you just call dma_set_mask_and_coherent() here to avoid that complex logic?
+On Fri 08-05-15 16:06:10, Eric B Munson wrote:
+> On Fri, 08 May 2015, Andrew Morton wrote:
 > 
-> I don't think that would work. The mpt2sas driver wants to set the dma mask to 64bits
-> but set the coherent mask to 32 bits, then my change is to set the coherent mask to
-> 64bits if setting it to 32bit fails. I'm not seeing how using dma_set_mask_and_coherent
-> would simplify anything here.
+> > On Fri,  8 May 2015 15:33:43 -0400 Eric B Munson <emunson@akamai.com> wrote:
+> > 
+> > > mlock() allows a user to control page out of program memory, but this
+> > > comes at the cost of faulting in the entire mapping when it is
+> > > allocated.  For large mappings where the entire area is not necessary
+> > > this is not ideal.
+> > > 
+> > > This series introduces new flags for mmap() and mlockall() that allow a
+> > > user to specify that the covered are should not be paged out, but only
+> > > after the memory has been used the first time.
+> > 
+> > Please tell us much much more about the value of these changes: the use
+> > cases, the behavioural improvements and performance results which the
+> > patchset brings to those use cases, etc.
+> > 
+> 
+> The primary use case is for mmaping large files read only.  The process
+> knows that some of the data is necessary, but it is unlikely that the
+> entire file will be needed.  The developer only wants to pay the cost to
+> read the data in once.  Unfortunately developer must choose between
+> allowing the kernel to page in the memory as needed and guaranteeing
+> that the data will only be read from disk once.  The first option runs
+> the risk of having the memory reclaimed if the system is under memory
+> pressure, the second forces the memory usage and startup delay when
+> faulting in the entire file.
 
-My question was more about why the driver would ask for a 32-bit coherent
-mask to start with. Is this a limitation in the mpt2sas device that can
-only have descriptors at low addresses, or is it trying to work around some
-bug in a particular host system?
-
-	Arnd
+Is there any reason you cannot do this from the userspace? Start by
+mmap(PROT_NONE) and do mmap(MAP_FIXED|MAP_LOCKED|MAP_READ|other_flags_you_need)
+from the SIGSEGV handler?
+You can generate a lot of vmas that way but you can mitigate that to a
+certain level by mapping larger than PAGE_SIZE chunks in the fault
+handler. Would that work in your usecase?
+-- 
+Michal Hocko
+SUSE Labs
