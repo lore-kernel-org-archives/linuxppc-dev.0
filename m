@@ -1,25 +1,24 @@
-Return-Path: <arnd@arndb.de>
-Received: from mout.kundenserver.de (mout.kundenserver.de [212.227.126.187])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <broonie@sirena.org.uk>
+Received: from mezzanine.sirena.org.uk (mezzanine.sirena.org.uk
+ [IPv6:2400:8900::f03c:91ff:fedb:4f4])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 104A61A0034
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 22:03:59 +1000 (AEST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] mpt2sas: Fall back to 64 bit coherent mask if 64 bit DMA
- / 32 bit coherent mask not supported
-Date: Wed, 13 May 2015 10:10:50 +0200
-Message-ID: <2214146.EzgWBA6g23@wuerfel>
-In-Reply-To: <55528BBB.3000809@linux.vnet.ibm.com>
-References: <555279A8.6060906@linux.vnet.ibm.com>
- <1431468627.20218.64.camel@kernel.crashing.org>
- <55528BBB.3000809@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 419DF1A01DA
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 22:16:24 +1000 (AEST)
+Date: Wed, 13 May 2015 12:43:21 +0100
+From: Mark Brown <broonie@kernel.org>
+To: Zidan Wang <zidan.wang@freescale.com>
+Message-ID: <20150513114321.GK3066@sirena.org.uk>
+References: <e6293a2408ccd8390fa2999df2af26b6de20f933.1431500729.git.zidan.wang@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-Cc: Brian King <brking@linux.vnet.ibm.com>,
- Daniel Kreling <kreling@linux.vnet.ibm.com>,
- linux-scsi <linux-scsi@vger.kernel.org>,
- Sreekanth Reddy <sreekanth.reddy@avagotech.com>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature"; boundary="ljn2+zwPkKedfiv/"
+In-Reply-To: <e6293a2408ccd8390fa2999df2af26b6de20f933.1431500729.git.zidan.wang@freescale.com>
+Subject: Re: [alsa-devel][PATCH v2 1/3] ASoC: fsl_sai: add sai master mode
+ support
+Cc: alsa-devel@alsa-project.org, timur@tabi.org, Xiubo.Lee@gmail.com,
+ tiwai@suse.de, linux-kernel@vger.kernel.org, lgirdwood@gmail.com,
+ perex@perex.cz, nicoleotsuka@gmail.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,24 +28,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tuesday 12 May 2015 18:24:43 Brian King wrote:
-> 
-> Commit 5fb1bf8aaa832e1e9ca3198de7bbecb8eff7db9c broke 64 bit DMA for mpt2sas on Power.
-> That commit changed the sequence for setting up the DMA and coherent DMA masks so
-> that during initialization the driver requests a 64 bit DMA mask and a 32 bit consistent
-> DMA mask, then later requests a 64 bit consistent DMA mask. The Power architecture does
-> not currently support this, which results in always falling back to a 32 bit DMA window,
-> which has a negative impact on performance. Tweak this algorithm slightly so that
-> if requesting a 32 bit consistent mask fails after we've successfully set a 64 bit
-> DMA mask, just try to get a 64 bit consistent mask. This should preserve existing
-> behavior on platforms that support mixed mask setting and restore previous functionality
-> to those that do not.
-> 
-> Signed-off-by: Brian King <brking@linux.vnet.ibm.com>
 
-I believe the way the API is designed, it should guarantee that after dma_set_mask()
-succeeds for a device, dma_set_coherent_mask() with the same mask will also succeed.
+--ljn2+zwPkKedfiv/
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Could you just call dma_set_mask_and_coherent() here to avoid that complex logic?
+On Wed, May 13, 2015 at 03:12:59PM +0800, Zidan Wang wrote:
+> When sai works on master mode, set its bit clock and frame clock.
+>=20
+> SAI has 4 MCLK source, bus clock, MCLK1, MCLK2 and MCLK3. fsl_sai_set_bclk
+> will select proper MCLK source, then calculate and set the bit clock divi=
+der.
 
-	Arnd
+This looks like a patch I've already applied?  If there are any changes
+needed please send incremental fixes.
+
+--ljn2+zwPkKedfiv/
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2
+
+iQEcBAEBCAAGBQJVUzjYAAoJECTWi3JdVIfQO+oH/i54BuaZgM2RreWpI3PTmABP
+b9YBqj/V1AZIgEXjJltESwjIAK8VQhoV7+X+UzuIAQomLr1b3PWDQlwbutNTWtCC
+JYM596ewKG8clk4W2C0UjfnT3lMBwuRRuGsOJ/yzilOZZYov2Gx+qEK6TdNLbn1L
+BTVt29gGbGN6avYB5J3D6bCsz8gVAZpYPBbw9Q7Mux8IjzAGPjdIWxcQu4omE4hF
+KF45V397gqe0AwHmVsqkKCANYsbRgwk6mGR6yrDjaSIqvg4FSv8aEV1rotvEGFCF
+AGZB8SOszZza1Al4ThMxwhIZw9DfHf1H8xOXlL2dHGOM0lfAsyEULwebFjtkUTk=
+=BZ2a
+-----END PGP SIGNATURE-----
+
+--ljn2+zwPkKedfiv/--
