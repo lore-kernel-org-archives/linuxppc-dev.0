@@ -1,42 +1,21 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <zidan.wang@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0103.outbound.protection.outlook.com [65.55.169.103])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5715D1A0709
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 16:33:46 +1000 (AEST)
-Received: from /spool/local
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Wed, 13 May 2015 16:33:44 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 3DD533578052
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 16:33:42 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t4D6XX7H20250874
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 16:33:42 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t4D6X9vh020412
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 16:33:09 +1000
-Date: Wed, 13 May 2015 16:32:42 +1000
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Subject: Re: [PATCH kernel v10 11/34] vfio: powerpc/spapr: Moving
- pinning/unpinning to helpers
-Message-ID: <20150513063242.GA9547@gwshan>
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <1431358763-24371-1-git-send-email-aik@ozlabs.ru>
- <1431358763-24371-12-git-send-email-aik@ozlabs.ru>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 420781A001B
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 17:11:42 +1000 (AEST)
+From: Zidan Wang <zidan.wang@freescale.com>
+To: <nicoleotsuka@gmail.com>
+Subject: [alsa-devel][PATCH v2 1/3] ASoC: fsl_sai: add sai master mode support
+Date: Wed, 13 May 2015 15:12:59 +0800
+Message-ID: <e6293a2408ccd8390fa2999df2af26b6de20f933.1431500729.git.zidan.wang@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1431358763-24371-12-git-send-email-aik@ozlabs.ru>
-Cc: Wei Yang <weiyang@linux.vnet.ibm.com>,
- Gavin Shan <gwshan@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
- Alex Williamson <alex.williamson@redhat.com>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- David Gibson <david@gibson.dropbear.id.au>
+Content-Type: text/plain
+Cc: alsa-devel@alsa-project.org, timur@tabi.org,
+ Zidan Wang <zidan.wang@freescale.com>, Xiubo.Lee@gmail.com, tiwai@suse.de,
+ linux-kernel@vger.kernel.org, lgirdwood@gmail.com, perex@perex.cz,
+ broonie@kernel.org, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -46,170 +25,241 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, May 12, 2015 at 01:39:00AM +1000, Alexey Kardashevskiy wrote:
->This is a pretty mechanical patch to make next patches simpler.
->
->New tce_iommu_unuse_page() helper does put_page() now but it might skip
->that after the memory registering patch applied.
->
->As we are here, this removes unnecessary checks for a value returned
->by pfn_to_page() as it cannot possibly return NULL.
->
->This moves tce_iommu_disable() later to let tce_iommu_clear() know if
->the container has been enabled because if it has not been, then
->put_page() must not be called on TCEs from the TCE table. This situation
->is not yet possible but it will after KVM acceleration patchset is
->applied.
->
->This changes code to work with physical addresses rather than linear
->mapping addresses for better code readability. Following patches will
->add an xchg() callback for an IOMMU table which will accept/return
->physical addresses (unlike current tce_build()) which will eliminate
->redundant conversions.
->
->Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
->[aw: for the vfio related changes]
->Acked-by: Alex Williamson <alex.williamson@redhat.com>
->Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
+When sai works on master mode, set its bit clock and frame clock.
 
-Reviewed-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+SAI has 4 MCLK source, bus clock, MCLK1, MCLK2 and MCLK3. fsl_sai_set_bclk
+will select proper MCLK source, then calculate and set the bit clock divider.
 
->---
->Changes:
->v9:
->* changed helpers to work with physical addresses rather than linear
->(for simplicity - later ::xchg() will receive physical and avoid
->additional convertions)
->
->v6:
->* tce_get_hva() returns hva via a pointer
->---
-> drivers/vfio/vfio_iommu_spapr_tce.c | 61 +++++++++++++++++++++++++------------
-> 1 file changed, 41 insertions(+), 20 deletions(-)
->
->diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
->index e21479c..115d5e6 100644
->--- a/drivers/vfio/vfio_iommu_spapr_tce.c
->+++ b/drivers/vfio/vfio_iommu_spapr_tce.c
->@@ -191,69 +191,90 @@ static void tce_iommu_release(void *iommu_data)
-> 	struct tce_container *container = iommu_data;
->
-> 	WARN_ON(container->tbl && !container->tbl->it_group);
->-	tce_iommu_disable(container);
->
-> 	if (container->tbl && container->tbl->it_group)
-> 		tce_iommu_detach_group(iommu_data, container->tbl->it_group);
->
->+	tce_iommu_disable(container);
-> 	mutex_destroy(&container->lock);
->
-> 	kfree(container);
-> }
->
->+static void tce_iommu_unuse_page(struct tce_container *container,
->+		unsigned long oldtce)
->+{
->+	struct page *page;
->+
->+	if (!(oldtce & (TCE_PCI_READ | TCE_PCI_WRITE)))
->+		return;
->+
+After fsl_sai_set_bclk, enable the selected mclk in hw_params(), and add
+hw_free() to disable the mclk.
 
-It might be worthy to have a global helper function in iommu.h to check
-if the given TCE entry is empty or not, for better readability. I would
-think the helper function is used here and there :-)
+Signed-off-by: Zidan Wang <zidan.wang@freescale.com>
+Signed-off-by: Mark Brown <broonie@kernel.org>
+---
+ sound/soc/fsl/fsl_sai.c | 117 ++++++++++++++++++++++++++++++++++++++++++++++--
+ sound/soc/fsl/fsl_sai.h |   9 +++-
+ 2 files changed, 121 insertions(+), 5 deletions(-)
 
-Thanks,
-Gavin
-
->+	page = pfn_to_page(oldtce >> PAGE_SHIFT);
->+
->+	if (oldtce & TCE_PCI_WRITE)
->+		SetPageDirty(page);
->+
->+	put_page(page);
->+}
->+
-> static int tce_iommu_clear(struct tce_container *container,
-> 		struct iommu_table *tbl,
-> 		unsigned long entry, unsigned long pages)
-> {
-> 	unsigned long oldtce;
->-	struct page *page;
->
-> 	for ( ; pages; --pages, ++entry) {
-> 		oldtce = iommu_clear_tce(tbl, entry);
-> 		if (!oldtce)
-> 			continue;
->
->-		page = pfn_to_page(oldtce >> PAGE_SHIFT);
->-		WARN_ON(!page);
->-		if (page) {
->-			if (oldtce & TCE_PCI_WRITE)
->-				SetPageDirty(page);
->-			put_page(page);
->-		}
->+		tce_iommu_unuse_page(container, oldtce);
-> 	}
->
-> 	return 0;
-> }
->
->+static int tce_iommu_use_page(unsigned long tce, unsigned long *hpa)
->+{
->+	struct page *page = NULL;
->+	enum dma_data_direction direction = iommu_tce_direction(tce);
->+
->+	if (get_user_pages_fast(tce & PAGE_MASK, 1,
->+			direction != DMA_TO_DEVICE, &page) != 1)
->+		return -EFAULT;
->+
->+	*hpa = __pa((unsigned long) page_address(page));
->+
->+	return 0;
->+}
->+
-> static long tce_iommu_build(struct tce_container *container,
-> 		struct iommu_table *tbl,
-> 		unsigned long entry, unsigned long tce, unsigned long pages)
-> {
-> 	long i, ret = 0;
->-	struct page *page = NULL;
->-	unsigned long hva;
->+	struct page *page;
->+	unsigned long hpa;
-> 	enum dma_data_direction direction = iommu_tce_direction(tce);
->
-> 	for (i = 0; i < pages; ++i) {
-> 		unsigned long offset = tce & IOMMU_PAGE_MASK(tbl) & ~PAGE_MASK;
->
->-		ret = get_user_pages_fast(tce & PAGE_MASK, 1,
->-				direction != DMA_TO_DEVICE, &page);
->-		if (unlikely(ret != 1)) {
->-			ret = -EFAULT;
->+		ret = tce_iommu_use_page(tce, &hpa);
->+		if (ret)
-> 			break;
->-		}
->
->+		page = pfn_to_page(hpa >> PAGE_SHIFT);
-> 		if (!tce_page_is_contained(page, tbl->it_page_shift)) {
-> 			ret = -EPERM;
-> 			break;
-> 		}
->
->-		hva = (unsigned long) page_address(page) + offset;
->-
->-		ret = iommu_tce_build(tbl, entry + i, hva, direction);
->+		hpa |= offset;
->+		ret = iommu_tce_build(tbl, entry + i, (unsigned long) __va(hpa),
->+				direction);
-> 		if (ret) {
->-			put_page(page);
->+			tce_iommu_unuse_page(container, hpa);
-> 			pr_err("iommu_tce: %s failed ioba=%lx, tce=%lx, ret=%ld\n",
-> 					__func__, entry << tbl->it_page_shift,
-> 					tce, ret);
->-- 
->2.4.0.rc3.8.gfb3e7d5
->
+diff --git a/sound/soc/fsl/fsl_sai.c b/sound/soc/fsl/fsl_sai.c
+index ee2671b..1ccc10d1 100644
+--- a/sound/soc/fsl/fsl_sai.c
++++ b/sound/soc/fsl/fsl_sai.c
+@@ -1,7 +1,7 @@
+ /*
+  * Freescale ALSA SoC Digital Audio Interface (SAI) driver.
+  *
+- * Copyright 2012-2013 Freescale Semiconductor, Inc.
++ * Copyright 2012-2015 Freescale Semiconductor, Inc.
+  *
+  * This program is free software, you can redistribute it and/or modify it
+  * under the terms of the GNU General Public License as published by the
+@@ -251,12 +251,14 @@ static int fsl_sai_set_dai_fmt_tr(struct snd_soc_dai *cpu_dai,
+ 		val_cr4 |= FSL_SAI_CR4_FSD_MSTR;
+ 		break;
+ 	case SND_SOC_DAIFMT_CBM_CFM:
++		sai->is_slave_mode = true;
+ 		break;
+ 	case SND_SOC_DAIFMT_CBS_CFM:
+ 		val_cr2 |= FSL_SAI_CR2_BCD_MSTR;
+ 		break;
+ 	case SND_SOC_DAIFMT_CBM_CFS:
+ 		val_cr4 |= FSL_SAI_CR4_FSD_MSTR;
++		sai->is_slave_mode = true;
+ 		break;
+ 	default:
+ 		return -EINVAL;
+@@ -288,6 +290,79 @@ static int fsl_sai_set_dai_fmt(struct snd_soc_dai *cpu_dai, unsigned int fmt)
+ 	return ret;
+ }
+ 
++static int fsl_sai_set_bclk(struct snd_soc_dai *dai, bool tx, u32 freq)
++{
++	struct fsl_sai *sai = snd_soc_dai_get_drvdata(dai);
++	unsigned long clk_rate;
++	u32 savediv = 0, ratio, savesub = freq;
++	u32 id;
++	int ret = 0;
++
++	/* Don't apply to slave mode */
++	if (sai->is_slave_mode)
++		return 0;
++
++	for (id = 0; id < FSL_SAI_MCLK_MAX; id++) {
++		clk_rate = clk_get_rate(sai->mclk_clk[id]);
++		if (!clk_rate)
++			continue;
++
++		ratio = clk_rate / freq;
++
++		ret = clk_rate - ratio * freq;
++
++		/*
++		 * Drop the source that can not be
++		 * divided into the required rate.
++		 */
++		if (ret != 0 && clk_rate / ret < 1000)
++			continue;
++
++		dev_dbg(dai->dev,
++			"ratio %d for freq %dHz based on clock %ldHz\n",
++			ratio, freq, clk_rate);
++
++		if (ratio % 2 == 0 && ratio >= 2 && ratio <= 512)
++			ratio /= 2;
++		else
++			continue;
++
++		if (ret < savesub) {
++			savediv = ratio;
++			sai->mclk_id[tx] = id;
++			savesub = ret;
++		}
++
++		if (ret == 0)
++			break;
++	}
++
++	if (savediv == 0) {
++		dev_err(dai->dev, "failed to derive required %cx rate: %d\n",
++				tx ? 'T' : 'R', freq);
++		return -EINVAL;
++	}
++
++	if ((tx && sai->synchronous[TX]) || (!tx && !sai->synchronous[RX])) {
++		regmap_update_bits(sai->regmap, FSL_SAI_RCR2,
++				   FSL_SAI_CR2_MSEL_MASK,
++				   FSL_SAI_CR2_MSEL(sai->mclk_id[tx]));
++		regmap_update_bits(sai->regmap, FSL_SAI_RCR2,
++				   FSL_SAI_CR2_DIV_MASK, savediv - 1);
++	} else {
++		regmap_update_bits(sai->regmap, FSL_SAI_TCR2,
++				   FSL_SAI_CR2_MSEL_MASK,
++				   FSL_SAI_CR2_MSEL(sai->mclk_id[tx]));
++		regmap_update_bits(sai->regmap, FSL_SAI_TCR2,
++				   FSL_SAI_CR2_DIV_MASK, savediv - 1);
++	}
++
++	dev_dbg(dai->dev, "best fit: clock id=%d, div=%d, deviation =%d\n",
++			sai->mclk_id[tx], savediv, savesub);
++
++	return 0;
++}
++
+ static int fsl_sai_hw_params(struct snd_pcm_substream *substream,
+ 		struct snd_pcm_hw_params *params,
+ 		struct snd_soc_dai *cpu_dai)
+@@ -297,6 +372,24 @@ static int fsl_sai_hw_params(struct snd_pcm_substream *substream,
+ 	unsigned int channels = params_channels(params);
+ 	u32 word_width = snd_pcm_format_width(params_format(params));
+ 	u32 val_cr4 = 0, val_cr5 = 0;
++	int ret;
++
++	if (!sai->is_slave_mode) {
++		ret = fsl_sai_set_bclk(cpu_dai, tx,
++			2 * word_width * params_rate(params));
++		if (ret)
++			return ret;
++
++		/* Do not enable the clock if it is already enabled */
++		if (!(sai->mclk_streams & BIT(substream->stream))) {
++			ret = clk_prepare_enable(sai->mclk_clk[sai->mclk_id[tx]]);
++			if (ret)
++				return ret;
++
++			sai->mclk_streams |= BIT(substream->stream);
++		}
++
++	}
+ 
+ 	if (!sai->is_dsp_mode)
+ 		val_cr4 |= FSL_SAI_CR4_SYWD(word_width);
+@@ -322,6 +415,22 @@ static int fsl_sai_hw_params(struct snd_pcm_substream *substream,
+ 	return 0;
+ }
+ 
++static int fsl_sai_hw_free(struct snd_pcm_substream *substream,
++		struct snd_soc_dai *cpu_dai)
++{
++	struct fsl_sai *sai = snd_soc_dai_get_drvdata(cpu_dai);
++	bool tx = substream->stream == SNDRV_PCM_STREAM_PLAYBACK;
++
++	if (!sai->is_slave_mode &&
++			sai->mclk_streams & BIT(substream->stream)) {
++		clk_disable_unprepare(sai->mclk_clk[sai->mclk_id[tx]]);
++		sai->mclk_streams &= ~BIT(substream->stream);
++	}
++
++	return 0;
++}
++
++
+ static int fsl_sai_trigger(struct snd_pcm_substream *substream, int cmd,
+ 		struct snd_soc_dai *cpu_dai)
+ {
+@@ -428,6 +537,7 @@ static const struct snd_soc_dai_ops fsl_sai_pcm_dai_ops = {
+ 	.set_sysclk	= fsl_sai_set_dai_sysclk,
+ 	.set_fmt	= fsl_sai_set_dai_fmt,
+ 	.hw_params	= fsl_sai_hw_params,
++	.hw_free	= fsl_sai_hw_free,
+ 	.trigger	= fsl_sai_trigger,
+ 	.startup	= fsl_sai_startup,
+ 	.shutdown	= fsl_sai_shutdown,
+@@ -600,8 +710,9 @@ static int fsl_sai_probe(struct platform_device *pdev)
+ 		sai->bus_clk = NULL;
+ 	}
+ 
+-	for (i = 0; i < FSL_SAI_MCLK_MAX; i++) {
+-		sprintf(tmp, "mclk%d", i + 1);
++	sai->mclk_clk[0] = sai->bus_clk;
++	for (i = 1; i < FSL_SAI_MCLK_MAX; i++) {
++		sprintf(tmp, "mclk%d", i);
+ 		sai->mclk_clk[i] = devm_clk_get(&pdev->dev, tmp);
+ 		if (IS_ERR(sai->mclk_clk[i])) {
+ 			dev_err(&pdev->dev, "failed to get mclk%d clock: %ld\n",
+diff --git a/sound/soc/fsl/fsl_sai.h b/sound/soc/fsl/fsl_sai.h
+index 3466720..0662809 100644
+--- a/sound/soc/fsl/fsl_sai.h
++++ b/sound/soc/fsl/fsl_sai.h
+@@ -72,13 +72,15 @@
+ 
+ /* SAI Transmit and Recieve Configuration 2 Register */
+ #define FSL_SAI_CR2_SYNC	BIT(30)
+-#define FSL_SAI_CR2_MSEL_MASK	(0xff << 26)
++#define FSL_SAI_CR2_MSEL_MASK	(0x3 << 26)
+ #define FSL_SAI_CR2_MSEL_BUS	0
+ #define FSL_SAI_CR2_MSEL_MCLK1	BIT(26)
+ #define FSL_SAI_CR2_MSEL_MCLK2	BIT(27)
+ #define FSL_SAI_CR2_MSEL_MCLK3	(BIT(26) | BIT(27))
++#define FSL_SAI_CR2_MSEL(ID)	((ID) << 26)
+ #define FSL_SAI_CR2_BCP		BIT(25)
+ #define FSL_SAI_CR2_BCD_MSTR	BIT(24)
++#define FSL_SAI_CR2_DIV_MASK	0xff
+ 
+ /* SAI Transmit and Recieve Configuration 3 Register */
+ #define FSL_SAI_CR3_TRCE	BIT(16)
+@@ -120,7 +122,7 @@
+ #define FSL_SAI_CLK_MAST2	2
+ #define FSL_SAI_CLK_MAST3	3
+ 
+-#define FSL_SAI_MCLK_MAX	3
++#define FSL_SAI_MCLK_MAX	4
+ 
+ /* SAI data transfer numbers per DMA request */
+ #define FSL_SAI_MAXBURST_TX 6
+@@ -132,11 +134,14 @@ struct fsl_sai {
+ 	struct clk *bus_clk;
+ 	struct clk *mclk_clk[FSL_SAI_MCLK_MAX];
+ 
++	bool is_slave_mode;
+ 	bool is_lsb_first;
+ 	bool is_dsp_mode;
+ 	bool sai_on_imx;
+ 	bool synchronous[2];
+ 
++	unsigned int mclk_id[2];
++	unsigned int mclk_streams;
+ 	struct snd_dmaengine_dai_dma_data dma_params_rx;
+ 	struct snd_dmaengine_dai_dma_data dma_params_tx;
+ };
+-- 
+1.9.1
