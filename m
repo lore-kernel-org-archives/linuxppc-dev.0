@@ -1,38 +1,26 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <hongtao.jia@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0113.outbound.protection.outlook.com [207.46.100.113])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A70301A0007
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 11:17:31 +1000 (AEST)
-Received: from /spool/local
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Wed, 13 May 2015 11:17:30 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 2356D2BB004D
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 11:17:28 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t4D1HJn219529772
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 11:17:27 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t4D1Gtli031503
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 11:16:55 +1000
-Date: Wed, 13 May 2015 11:16:30 +1000
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: Wei Yang <weiyang@linux.vnet.ibm.com>
-Subject: Re: [PATCH V3 9/9] powerpc/eeh: handle VF PE properly
-Message-ID: <20150513011630.GA8973@gwshan>
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <1430723258-21299-1-git-send-email-weiyang@linux.vnet.ibm.com>
- <1430723258-21299-10-git-send-email-weiyang@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id F2DD01A001B
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 13:08:06 +1000 (AEST)
+From: Hongtao Jia <hongtao.jia@freescale.com>
+To: Eduardo Valentin <edubezval@gmail.com>
+Subject: RE: [PATCH] QorIQ/TMU: add thermal management support based on TMU
+Date: Wed, 13 May 2015 03:07:59 +0000
+Message-ID: <BLUPR03MB14934C15123151F76F9F81DE1D90@BLUPR03MB149.namprd03.prod.outlook.com>
+References: <1428045087-15557-1-git-send-email-hongtao.jia@freescale.com>
+ <20150512014859.GG4810@localhost.localdomain>
+ <BY2PR03MB157CC7A02D0010EB746709FE1DA0@BY2PR03MB157.namprd03.prod.outlook.com>
+ <20150512232512.GA5064@localhost.localdomain>
+In-Reply-To: <20150512232512.GA5064@localhost.localdomain>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1430723258-21299-10-git-send-email-weiyang@linux.vnet.ibm.com>
-Cc: bhelgaas@google.com, linux-pci@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, gwshan@linux.vnet.ibm.com
+Cc: Scott Wood <scottwood@freescale.com>,
+ "rui.zhang@intel.com" <rui.zhang@intel.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,353 +30,666 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, May 04, 2015 at 03:07:38PM +0800, Wei Yang wrote:
->Compared with Bus PE, VF PE just has one single pci function. This
-                                                 ^^^
->introduces the difference of error handling on a VF PE.
->
+Thanks for the comments.
+Answered inline.
 
-Lets have simple example to make the discussion easy: Suppose that one
-particular PF has only one IOV BAR and we're going to enable 8 VFs. Also
-the VF BAR size exceeds 64MB. For this case, we're going to have 2 VF
-groups, which have 4 VFs. First of all, there are 8 PE numbers consumed
-in total and lets say they're PE#(x) ... PE#(x+7).
 
-For above case, the M64 runs in "single" mode. In other word, we just
-need two M64 BARs here and they're owned by PE#x and PE#(x+1) separately.
-Equally speaking, the relationship between PE# and VF index becomes as
-below from MMIO's view: PE#x (VF#0/1/2/3), PE#x(VF#4/5/6/7). However,
-this mapping isn't updated to PELTM. On the other hand, each VF has
-separate PE# number as we update to PELTM. Lastly, we have to chain
-PE#x/+1/+2/+3 and PE#x+4/5/6/7 because the VF group is sharing M64
-resources. Hopefully, I didn't miss anything.
+> -----Original Message-----
+> From: Eduardo Valentin [mailto:edubezval@gmail.com]
+> Sent: Wednesday, May 13, 2015 7:25 AM
+> To: Jia Hongtao-B38951
+> Cc: rui.zhang@intel.com; linux-pm@vger.kernel.org; linuxppc-
+> dev@lists.ozlabs.org; Wood Scott-B07421
+> Subject: Re: [PATCH] QorIQ/TMU: add thermal management support based on
+> TMU
+>=20
+> On Tue, May 12, 2015 at 08:17:21AM +0000, Hongtao Jia wrote:
+> > Eduardo,
+> >
+> > Thanks for your comments.
+> > See my answers inline.
+> >
+> > ---
+> > Best Regards,
+> > Hongtao
+> >
+> >
+> > > -----Original Message-----
+> > > From: Eduardo Valentin [mailto:edubezval@gmail.com]
+> > > Sent: Tuesday, May 12, 2015 9:49 AM
+> > > To: Jia Hongtao-B38951
+> > > Cc: rui.zhang@intel.com; linux-pm@vger.kernel.org; linuxppc-
+> > > dev@lists.ozlabs.org; Wood Scott-B07421
+> > > Subject: Re: [PATCH] QorIQ/TMU: add thermal management support based
+> > > on TMU
+> > >
+> > > Jia Hongtao,
+> > >
+> > > Thanks for sharing your driver. Sorry for the late answer. Please
+> > > find couple of comments as follows.
+> > >
+> > > On Fri, Apr 03, 2015 at 03:11:27PM +0800, Jia Hongtao wrote:
+> > > > It supports one critical trip point and one passive trip point.
+> > > > The cpufreq is used as the cooling device to throttle CPUs when
+> > > > the passive trip is crossed.
+> > > >
+> > > > Signed-off-by: Jia Hongtao <hongtao.jia@freescale.com>
+> > > > ---
+> > > >  drivers/thermal/Kconfig         |  11 ++
+> > > >  drivers/thermal/Makefile        |   1 +
+> > > >  drivers/thermal/qoriq_thermal.c | 405
+> > > > ++++++++++++++++++++++++++++++++++++++++
+> > > >  3 files changed, 417 insertions(+)  create mode 100644
+> > > > drivers/thermal/qoriq_thermal.c
+> > > >
+> > > > diff --git a/drivers/thermal/Kconfig b/drivers/thermal/Kconfig
+> > > > index
+> > > > af40db0..c0a8bd1 100644
+> > > > --- a/drivers/thermal/Kconfig
+> > > > +++ b/drivers/thermal/Kconfig
+> > > > @@ -147,6 +147,17 @@ config IMX_THERMAL
+> > > >  	  cpufreq is used as the cooling device to throttle CPUs when
+> the
+> > > >  	  passive trip is crossed.
+> > > >
+> > > > +config QORIQ_THERMAL
+> > > > +	tristate "Freescale QorIQ Thermal Monitoring Unit"
+> > > > +	depends on CPU_THERMAL
+> > > > +	depends on OF
+> > > > +	default n
+> > > > +	help
+> > > > +	  Enable thermal management based on Freescale QorIQ Thermal
+> > > Monitoring
+> > > > +	  Unit (TMU). It supports one critical trip point and one
+> > > > +passive
+> > > trip
+> > > > +	  point. The cpufreq is used as the cooling device to
+> throttle
+> > > > +CPUs
+> > > when
+> > > > +	  the passive trip is crossed.
+> > >
+> > > dummy question, what is the level of overlap between QorIQ and IMX
+> > > thermal drivers?
+> >
+> > Actually they both have two trip points.
+> > Besides, they have no others in common per my understanding.
+> >
+> > >
+> > > > +
+> > > >  config SPEAR_THERMAL
+> > > >  	bool "SPEAr thermal sensor driver"
+> > > >  	depends on PLAT_SPEAR
+> > > > diff --git a/drivers/thermal/Makefile b/drivers/thermal/Makefile
+> > > > index
+> > > > fa0dc48..7de4847 100644
+> > > > --- a/drivers/thermal/Makefile
+> > > > +++ b/drivers/thermal/Makefile
+> > > > @@ -31,6 +31,7 @@ obj-$(CONFIG_DOVE_THERMAL)  	+=3D dove_thermal.o
+> > > >  obj-$(CONFIG_DB8500_THERMAL)	+=3D db8500_thermal.o
+> > > >  obj-$(CONFIG_ARMADA_THERMAL)	+=3D armada_thermal.o
+> > > >  obj-$(CONFIG_IMX_THERMAL)	+=3D imx_thermal.o
+> > > > +obj-$(CONFIG_QORIQ_THERMAL)	+=3D qoriq_thermal.o
+> > > >  obj-$(CONFIG_DB8500_CPUFREQ_COOLING)	+=3D
+> db8500_cpufreq_cooling.o
+> > > >  obj-$(CONFIG_INTEL_POWERCLAMP)	+=3D intel_powerclamp.o
+> > > >  obj-$(CONFIG_X86_PKG_TEMP_THERMAL)	+=3D x86_pkg_temp_thermal.o
+> > > > diff --git a/drivers/thermal/qoriq_thermal.c
+> > > > b/drivers/thermal/qoriq_thermal.c new file mode 100644 index
+> > > > 0000000..f5d3a2c
+> > > > --- /dev/null
+> > > > +++ b/drivers/thermal/qoriq_thermal.c
+> > > > @@ -0,0 +1,405 @@
+> > > > +/*
+> > > > + * Copyright 2015 Freescale Semiconductor, Inc.
+> > > > + *
+> > > > + * This program is free software; you can redistribute it and/or
+> > > > +modify it
+> > > > + * under the terms and conditions of the GNU General Public
+> > > > +License,
+> > > > + * version 2, as published by the Free Software Foundation.
+> > > > + *
+> > > > + * This program is distributed in the hope it will be useful, but
+> > > > +WITHOUT
+> > > > + * ANY WARRANTY; without even the implied warranty of
+> > > > +MERCHANTABILITY or
+> > > > + * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+> > > > +License for
+> > > > + * more details.
+> > > > + *
+> > > > + */
+> > > > +
+> > > > +/*
+> > > > + * Based on Freescale QorIQ Thermal Monitoring Unit (TMU)  */
+> > > > +#include <linux/cpufreq.h> #include <linux/cpu_cooling.h>
+> > > > +#include <linux/module.h> #include <linux/platform_device.h>
+> > > > +#include <linux/err.h> #include <linux/io.h> #include
+> > > > +<linux/of.h> #include <linux/thermal.h>
+> > > > +
+> > > > +#define SITES_MAX		16
+> > > > +
+> > > > +#define TMU_TEMP_PASSIVE	85000
+> > > > +#define TMU_TEMP_CRITICAL	95000
+> > > > +
+> > > > +#define TMU_PASSIVE_DELAY	1000	/* Milliseconds */
+> > > > +#define TMU_POLLING_DELAY	5000
+> > > > +
+> > > > +/* The driver supports 1 passive trip point and 1 critical trip
+> > > > +point */ enum tmu_thermal_trip {
+> > > > +	TMU_TRIP_PASSIVE,
+> > > > +	TMU_TRIP_CRITICAL,
+> > > > +	TMU_TRIP_NUM,
+> > > > +};
+> > > > +
+> > >
+> > > the above symbol is not used in this driver.
+> >
+> > TMU_TRIP_CRITICAL is not used but it is defined to make this symbol
+> list clear.
+> >
+> > >
+> > > > +/*
+> > > > + * QorIQ TMU Registers
+> > > > + */
+> > > > +struct qoriq_tmu_site_regs {
+> > > > +	__be32 tritsr;		/* Immediate Temperature Site
+> Register */
+> > > > +	__be32 tratsr;		/* Average Temperature Site Register
+> */
+> > > > +	u8 res0[0x8];
+> > > > +} __packed;
+> > > > +
+> > > > +struct qoriq_tmu_regs {
+> > > > +	__be32 tmr;		/* Mode Register */
+> > > > +#define TMR_DISABLE	0x0
+> > > > +#define TMR_ME		0x80000000
+> > > > +#define TMR_ALPF	0x0c000000
+> > > > +#define TMR_MSITE	0x00008000
+> > > > +#define TMR_ALL		(TMR_ME | TMR_ALPF | TMR_MSITE)
+> > > > +	__be32 tsr;		/* Status Register */
+> > > > +	__be32 tmtmir;		/* Temperature measurement interval
+> > > Register */
+> > > > +#define TMTMIR_DEFAULT	0x00000007
+> > > > +	u8 res0[0x14];
+> > > > +	__be32 tier;		/* Interrupt Enable Register */
+> > > > +#define TIER_DISABLE	0x0
+> > > > +	__be32 tidr;		/* Interrupt Detect Register */
+> > > > +	__be32 tiscr;		/* Interrupt Site Capture Register */
+> > > > +	__be32 ticscr;		/* Interrupt Critical Site Capture
+> Register
+> > > */
+> > > > +	u8 res1[0x10];
+> > > > +	__be32 tmhtcrh;		/* High Temperature Capture Register
+> */
+> > > > +	__be32 tmhtcrl;		/* Low Temperature Capture Register
+> */
+> > > > +	u8 res2[0x8];
+> > > > +	__be32 tmhtitr;		/* High Temperature Immediate
+> Threshold */
+> > > > +	__be32 tmhtatr;		/* High Temperature Average Threshold
+> */
+> > > > +	__be32 tmhtactr;	/* High Temperature Average Crit Threshold
+> */
+> > > > +	u8 res3[0x24];
+> > > > +	__be32 ttcfgr;		/* Temperature Configuration Register
+> */
+> > > > +	__be32 tscfgr;		/* Sensor Configuration Register */
+> > > > +	u8 res4[0x78];
+> > > > +	struct qoriq_tmu_site_regs site[SITES_MAX];
+> > > > +	u8 res5[0x9f8];
+> > > > +	__be32 ipbrr0;		/* IP Block Revision Register 0 */
+> > > > +	__be32 ipbrr1;		/* IP Block Revision Register 1 */
+> > > > +	u8 res6[0x310];
+> > > > +	__be32 ttr0cr;		/* Temperature Range 0 Control
+> Register */
+> > > > +	__be32 ttr1cr;		/* Temperature Range 1 Control
+> Register */
+> > > > +	__be32 ttr2cr;		/* Temperature Range 2 Control
+> Register */
+> > > > +	__be32 ttr3cr;		/* Temperature Range 3 Control
+> Register */
+> > > > +};
+> > > > +
+> > > > +/*
+> > > > + * Thermal zone data
+> > > > + */
+> > > > +struct qoriq_tmu_data {
+> > > > +	struct thermal_zone_device *tz;
+> > > > +	struct thermal_cooling_device *cdev;
+> > > > +	enum thermal_device_mode mode;
+> > > > +	unsigned long temp_passive;
+> > > > +	unsigned long temp_critical;
+> > > > +	struct qoriq_tmu_regs __iomem *regs; };
+> > > > +
+> > > > +static int tmu_get_mode(struct thermal_zone_device *tz,
+> > > > +			enum thermal_device_mode *mode) {
+> > > > +	struct qoriq_tmu_data *data =3D tz->devdata;
+> > > > +
+> > > > +	*mode =3D data->mode;
+> > > > +
+> > > > +	return 0;
+> > > > +}
+> > > > +
+> > > > +static int tmu_set_mode(struct thermal_zone_device *tz,
+> > > > +			enum thermal_device_mode mode) {
+> > > > +	struct qoriq_tmu_data *data =3D tz->devdata;
+> > > > +
+> > > > +	if (mode =3D=3D THERMAL_DEVICE_ENABLED) {
+> > > > +		tz->polling_delay =3D TMU_POLLING_DELAY;
+> > > > +		tz->passive_delay =3D TMU_PASSIVE_DELAY;
+> > > > +		thermal_zone_device_update(tz);
+> > > > +	} else {
+> > > > +		tz->polling_delay =3D 0;
+> > > > +		tz->passive_delay =3D 0;
+> > > > +	}
+> > > > +
+> > > > +	data->mode =3D mode;
+> > > > +
+> > > > +	return 0;
+> > > > +}
+> > > > +
+> > > > +static int tmu_get_temp(struct thermal_zone_device *tz, unsigned
+> > > > +long
+> > > > +*temp) {
+> > > > +	u8 val;
+> > > > +	struct qoriq_tmu_data *data =3D tz->devdata;
+> > > > +
+> > > > +	val =3D ioread32be(&data->regs->site[0].tritsr);
+> > > > +	*temp =3D (unsigned long)val * 1000;
+> > > > +
+> > > > +	return 0;
+> > > > +}
+> > > > +
+> > > > +static int tmu_get_trip_type(struct thermal_zone_device *tz, int
+> trip,
+> > > > +			     enum thermal_trip_type *type) {
+> > > > +	*type =3D (trip =3D=3D TMU_TRIP_PASSIVE) ? THERMAL_TRIP_PASSIVE :
+> > > > +					     THERMAL_TRIP_CRITICAL;
+> > > > +	return 0;
+> > > > +}
+> > > > +
+> > > > +static int tmu_get_trip_temp(struct thermal_zone_device *tz, int
+> trip,
+> > > > +			     unsigned long *temp)
+> > > > +{
+> > > > +	struct qoriq_tmu_data *data =3D tz->devdata;
+> > > > +
+> > > > +	*temp =3D (trip =3D=3D TMU_TRIP_PASSIVE) ? data->temp_passive :
+> > > > +					     data->temp_critical;
+> > > > +	return 0;
+> > > > +}
+> > > > +
+> > > > +static int tmu_get_crit_temp(struct thermal_zone_device *tz,
+> > > > +			     unsigned long *temp)
+> > > > +{
+> > > > +	struct qoriq_tmu_data *data =3D tz->devdata;
+> > > > +
+> > > > +	*temp =3D data->temp_critical;
+> > >
+> > > nip: add an empty line, to follow your pattern.
+> >
+> > Sorry and thanks for the correction.
+> >
+> > >
+> > > > +	return 0;
+> > > > +}
+> > > > +
+> > > > +static int tmu_get_trend(struct thermal_zone_device *thermal,
+> > > > +			int trip, enum thermal_trend *trend) {
+> > > > +	int ret;
+> > > > +	unsigned long trip_temp;
+> > > > +
+> > > > +	ret =3D tmu_get_trip_temp(thermal, trip, &trip_temp);
+> > > > +	if (ret < 0)
+> > > > +		return ret;
+> > > > +
+> > > > +	if (thermal->temperature >=3D trip_temp)
+> > > > +		*trend =3D THERMAL_TREND_RAISE_FULL;
+> > > > +	else
+> > > > +		*trend =3D THERMAL_TREND_DROP_FULL;
+> > > > +
+> > >
+> > >
+> > > Did I miss something here
+> > > or that is not really trending, is it?
+> > >
+> > > Trending is supposed to be
+> > > delta(temperature)/delta(time).
+> > >
+> >
+> > That's right, trending is what you said.
+> >
+> > Here is what and why I provide this trend ops like this:
+> > It provides a simple strategy of thermal management.
+> > (Not care about trending, care about current temperature.)
+> > - When the temperature is higher than the first trip point we'd like to
+> >   reduce the cpufreq to minimum immediately and hold it steady.
+> >
+> > Using "step_wise" may cause the following issue:
+> > - If the sensor report the temperature up and down repeatedly like
+> >   "90C -> 89C -> 90C -> 89C -> 90C -> ..." cpufreq will be changed
+> >   unnecessarily.
+> >
+> > Actually my trend ops took reference from samsumg's thermal driver back
+> to 3.12 kernel.
+> > It disappeared now.
+> >
+> > Maybe I will use the "step_wise". But discussions are needed before
+> moving forward.
+> >
+> >
+> > >
+> > >
+> > > > +	return 0;
+> > > > +}
+> > > > +
+> > > > +static int tmu_bind(struct thermal_zone_device *tz,
+> > > > +		    struct thermal_cooling_device *cdev) {
+> > > > +	int ret;
+> > > > +
+> > > > +	ret =3D thermal_zone_bind_cooling_device(tz, TMU_TRIP_PASSIVE,
+> cdev,
+> > > > +					       THERMAL_NO_LIMIT,
+> > > > +					       THERMAL_NO_LIMIT);
+> > > > +	if (ret) {
+> > > > +		dev_err(&tz->device,
+> > > > +			"Binding zone %s with cdev %s failed:%d\n",
+> > > > +			tz->type, cdev->type, ret);
+> > > > +		return ret;
+> > > > +	}
+> > >
+> > >
+> > > > +
+> > > > +	return 0;
+> > >
+> > > I think it is fine if you just return ret;
+> >
+> > Right, will change.
+> >
+> > >
+> > > > +}
+> > > > +
+> > > > +static int tmu_unbind(struct thermal_zone_device *tz,
+> > > > +		      struct thermal_cooling_device *cdev) {
+> > > > +	int ret;
+> > > > +
+> > > > +	ret =3D thermal_zone_unbind_cooling_device(tz, TMU_TRIP_PASSIVE,
+> > > cdev);
+> > > > +	if (ret) {
+> > > > +		dev_err(&tz->device,
+> > > > +			"Unbinding zone %s with cdev %s failed:%d\n",
+> > > > +			tz->type, cdev->type, ret);
+> > > > +		return ret;
+> > > > +	}
+> > >
+> > > ditto.
+> > >
+> > > > +
+> > > > +	return 0;
+> > > > +}
+> > > > +
+> > > > +static void qoriq_tmu_calibration(struct platform_device *pdev) {
+> > > > +	int i, val, len;
+> > > > +	const __be32 *calibration;
+> > > > +	struct device_node *node =3D pdev->dev.of_node;
+> > > > +	struct qoriq_tmu_data *data =3D dev_get_drvdata(&pdev->dev);
+> > > > +
+> > > > +	/* Disable monitoring before calibration */
+> > > > +	iowrite32be(TMR_DISABLE, &data->regs->tmr);
+> > > > +
+> > > > +	calibration =3D of_get_property(node, "calibration", &len);
+> > > > +	if (calibration =3D=3D NULL) {
+> > > > +		pr_err("TMU: Failed to get calibration data.\n");
+> > >
+> > > use dev_err when possible.
+> >
+> > Right, will change.
+> >
+> > >
+> > > > +		return;
+> > > > +	}
+> > > > +
+> > > > +	for (i =3D 0; i < len; i +=3D 8, calibration +=3D 2) {
+> > > > +		val =3D (int)of_read_number(calibration, 1);
+> > > > +		iowrite32be(val, &data->regs->ttcfgr);
+> > > > +		val =3D (int)of_read_number(calibration + 1, 1);
+> > > > +		iowrite32be(val, &data->regs->tscfgr);
+> > >
+> > > are the above properties your offset and slope extrapolation
+> constants?
+> >
+> > The offset is constant, but the total number of properties pairs is not=
+.
+>=20
+> OK. I understand. After having a look in your DT code, I realized that
+> what your name calibration data, it is actually a ADC conversion table.
+>=20
+>=20
+> In this case, you need to mark the property with the prefix "fsl,"
+> because it is specific to freescale.
 
-If above description is complete, I think you need expose VF (PE) group
-to EEH. Potentially, I guess you need improve it later for VFIO so that
-it can pass VF (PE) group to *same* guest. Generally speaking, the VF (PE)
-group should be visible to EEH as single PE, which is similar to what I
-did for "huge BAR" support where we have master/slave PE. The master PE
-is exposed to EEH while the slave PEs are invisible from EEH. However,
-the situation for VF (PE) group is different, but not too much: the
-slave PEs (PE#x+1/2/3, PE#x+5/6/7 in this case) do contain PCI device.
-So think you can something as below if you can't figure out better
-solution:
+Right, Thanks.
 
-- When the PE group is finalized in pcibios_fixup_sriov_enable(), you
-  mark the master/slave PE accordingly, and put the slave PE to the
-  master PE's slave list.
-- When doing EEH probe on VF's edev, detach it to EEH with master PE#.
+>=20
+> BTW, I see that IMX has same property. However, I am a bit in doubt if
+> this property is part of DT. Does it change from chip to chip?
 
-With above mechanism, each VF PE can potentially have multiple EEH devices,
-not one single PCI function as you said in the commit log, which needs to
-be changed accordingly.
+It does vary from chip to chip.
 
->For example in the hotplug case, EEH needs to remove and re-create the VF
->properly. In the case when PF's error_detected() disable SRIOV, this patch
->introduces a flag to mark the eeh_dev of a VF to avoid the slot_reset() and
->resume(). Since the FW is not ware of the VF, this patch handles the VF
->restore/reset in kernel directly.
->
->This patch is to handle the VF PE properly in these cases.
->
->Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
->---
-> arch/powerpc/include/asm/eeh.h   |    1 +
-> arch/powerpc/kernel/eeh.c        |    1 +
-> arch/powerpc/kernel/eeh_driver.c |  108 ++++++++++++++++++++++++++++++--------
-> arch/powerpc/kernel/eeh_pe.c     |    3 +-
-> 4 files changed, 90 insertions(+), 23 deletions(-)
->
->diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
->index 78c8bec..43e8a24 100644
->--- a/arch/powerpc/include/asm/eeh.h
->+++ b/arch/powerpc/include/asm/eeh.h
->@@ -141,6 +141,7 @@ struct eeh_dev {
-> 	struct pci_controller *phb;	/* Associated PHB		*/
-> 	struct pci_dn *pdn;		/* Associated PCI device node	*/
-> 	struct pci_dev *pdev;		/* Associated PCI device	*/
->+	int    in_error;		/* Error flag for eeh_dev	*/
+>=20
+> >
+> > >
+> > > If yes, please use the coefficients DT property. Please, check the
+> > > of thermal code.
+> > >
+> > > > +	}
+> > > > +}
+> > > > +
+> > > > +static void qoriq_tmu_init_device(struct qoriq_tmu_data *data) {
+> > > > +	/* Disable interrupt, using polling instead */
+> > > > +	iowrite32be(TIER_DISABLE, &data->regs->tier);
+> > > > +
+> > > > +	/* Set update_interval */
+> > > > +	iowrite32be(TMTMIR_DEFAULT, &data->regs->tmtmir);
+> > > > +
+> > > > +	/* Enable monitoring */
+> > > > +	iowrite32be(TMR_ALL, &data->regs->tmr); }
+> > > > +
+> > > > +static struct thermal_zone_device_ops tmu_tz_ops =3D {
+> > > > +	.bind =3D tmu_bind,
+> > > > +	.unbind =3D tmu_unbind,
+> > > > +	.get_temp =3D tmu_get_temp,
+> > > > +	.get_trend =3D tmu_get_trend,
+> > > > +	.get_mode =3D tmu_get_mode,
+> > > > +	.set_mode =3D tmu_set_mode,
+> > > > +	.get_trip_type =3D tmu_get_trip_type,
+> > > > +	.get_trip_temp =3D tmu_get_trip_temp,
+> > > > +	.get_crit_temp =3D tmu_get_crit_temp, };
+> > > > +
+> > > > +static int qoriq_tmu_probe(struct platform_device *pdev) {
+> > > > +	int ret;
+> > > > +	struct cpumask clip_cpus;
+> > > > +	struct qoriq_tmu_data *data;
+> > > > +
+> > > > +	if (!cpufreq_get_current_driver()) {
+> > > > +		dev_dbg(&pdev->dev, "No cpufreq driver yet\n");
+> > > > +		return -EPROBE_DEFER;
+> > > > +	}
+> > > > +
+> > > > +	if (!pdev->dev.of_node) {
+> > > > +		dev_err(&pdev->dev, "Device OF-Node is NULL");
+> > > > +		return -EFAULT;
+> > > > +	}
+> > > > +
+> > > > +	data =3D devm_kzalloc(&pdev->dev, sizeof(struct qoriq_tmu_data),
+> > > > +			    GFP_KERNEL);
+> > > > +	if (!data)
+> > > > +		return -ENOMEM;
+> > > > +
+> > > > +	dev_set_drvdata(&pdev->dev, data);
+> > > > +	data->regs =3D of_iomap(pdev->dev.of_node, 0);
+> > > > +
+> > > > +	if (!data->regs) {
+> > > > +		dev_err(&pdev->dev, "Failed to get memory region\n");
+> > > > +		ret =3D -ENODEV;
+> > > > +		goto err_iomap;
+> > > > +	}
+> > > > +
+> > > > +	qoriq_tmu_calibration(pdev);	/* TMU calibration */
+> > > > +
+> > > > +	qoriq_tmu_init_device(data);	/* TMU initialization */
+> > > > +
+> > > > +	cpumask_setall(&clip_cpus);
+> > > > +	data->cdev =3D cpufreq_cooling_register(&clip_cpus);
+> > >
+> > > Given that this is a DT based device driver, have you considered
+> > > using OF thermal APIs?
+> >
+> > This driver was developed based on kernel 3.12 back then. If I'd like
+> > to use OF thermal APIs is there an reference driver available?
+>=20
+> Just check the latest linus kernel tree:  drivers/thermal/of-thermal.c
+>=20
+> >
+> > >
+> > > > +	if (IS_ERR(data->cdev)) {
+> > > > +		ret =3D PTR_ERR(data->cdev);
+> > > > +		dev_err(&data->cdev->device,
+> > > > +			"Failed to register cpufreq cooling device: %d\n",
+> ret);
+> > > > +		goto err_cooling;
+> > > > +	}
+> > > > +
+> > > > +	data->temp_passive =3D TMU_TEMP_PASSIVE;
+> > > > +	data->temp_critical =3D TMU_TEMP_CRITICAL;
+> > > > +	data->tz =3D thermal_zone_device_register("tmu_thermal_zone",
+> > > > +						TMU_TRIP_NUM,
+> > > > +						0, data,
+> > > > +						&tmu_tz_ops, NULL,
+> > > > +						TMU_PASSIVE_DELAY,
+> > > > +						TMU_POLLING_DELAY);
+> > > > +
+> > > > +	if (IS_ERR(data->tz)) {
+> > > > +		ret =3D PTR_ERR(data->tz);
+> > > > +		dev_err(&pdev->dev,
+> > > > +			"Failed to register thermal zone device %d\n",
+> ret);
+> > > > +		goto err_thermal;
+> > > > +	}
+> > > > +
+> > > > +	data->mode =3D THERMAL_DEVICE_ENABLED;
+> > >
+> > >
+> > > Don't you need to get a clock and enable it before handling this
+> sensor?
+> >
+> > I did it in qoriq_tmu_init_device() already if you mean it.
+>=20
+> No, I meant the fact that you do not do clk_get clk_put anywhere.
 
-Begining from "v2" (maybe I'm wrong about the revision), I suggested to
-remove "in_error" because we already had similar flag EEH_DEV_NO_HANDLER.
-I don't think it's different to merge them and I already told how to do
-that. If you still find it's difficult to do it, I'm fine to keep it and
-I'll fix it up later by myself.
+I thought it's not needed. But as you mentioned I did some investigation.
+I looked up the code and find the following sentence in the comments:
+"Drivers must assume that the clock source is not enabled."
 
-> #ifdef CONFIG_PCI_IOV
-> 	struct pci_dev *physfn;		/* Associated PF PORT		*/
-> #endif /* CONFIG_PCI_IOV */
->diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
->index 221e280..077c3d1 100644
->--- a/arch/powerpc/kernel/eeh.c
->+++ b/arch/powerpc/kernel/eeh.c
->@@ -1226,6 +1226,7 @@ void eeh_remove_device(struct pci_dev *dev)
-> 	 * from the parent PE during the BAR resotre.
-> 	 */
-> 	edev->pdev = NULL;
->+	edev->in_error = 0;
-> 	dev->dev.archdata.edev = NULL;
-> 	if (!(edev->pe->state & EEH_PE_KEEP))
-> 		eeh_rmv_from_parent_pe(edev);
->diff --git a/arch/powerpc/kernel/eeh_driver.c b/arch/powerpc/kernel/eeh_driver.c
->index 89eb4bc..6e42cad 100644
->--- a/arch/powerpc/kernel/eeh_driver.c
->+++ b/arch/powerpc/kernel/eeh_driver.c
->@@ -211,6 +211,7 @@ static void *eeh_report_error(void *data, void *userdata)
-> 	if (rc == PCI_ERS_RESULT_NEED_RESET) *res = rc;
-> 	if (*res == PCI_ERS_RESULT_NONE) *res = rc;
->
->+	edev->in_error = 1;
-> 	eeh_pcid_put(dev);
-> 	return NULL;
-> }
->@@ -282,7 +283,8 @@ static void *eeh_report_reset(void *data, void *userdata)
->
-> 	if (!driver->err_handler ||
-> 	    !driver->err_handler->slot_reset ||
->-	    (edev->mode & EEH_DEV_NO_HANDLER)) {
->+	    (edev->mode & EEH_DEV_NO_HANDLER) ||
->+	    (!edev->in_error)) {
-> 		eeh_pcid_put(dev);
-> 		return NULL;
-> 	}
->@@ -339,14 +341,16 @@ static void *eeh_report_resume(void *data, void *userdata)
->
-> 	if (!driver->err_handler ||
-> 	    !driver->err_handler->resume ||
->-	    (edev->mode & EEH_DEV_NO_HANDLER)) {
->+	    (edev->mode & EEH_DEV_NO_HANDLER) ||
->+	    (!edev->in_error)) {
-> 		edev->mode &= ~EEH_DEV_NO_HANDLER;
->-		eeh_pcid_put(dev);
->-		return NULL;
->+		goto out;
-> 	}
->
-> 	driver->err_handler->resume(dev);
->
->+out:
->+	edev->in_error = 0;
-> 	eeh_pcid_put(dev);
-> 	return NULL;
-> }
->@@ -386,12 +390,42 @@ static void *eeh_report_failure(void *data, void *userdata)
-> 	return NULL;
-> }
->
->+#ifdef CONFIG_PCI_IOV
->+static void *eeh_add_virt_device(void *data, void *userdata)
->+{
->+	struct pci_driver *driver;
->+	struct eeh_dev *edev = (struct eeh_dev *)data;
->+	struct pci_dev *dev = eeh_dev_to_pci_dev(edev);
->+	struct pci_dn *pdn = eeh_dev_to_pdn(edev);
->+
->+	if (!(edev->mode & EEH_DEV_VF)) {
->+		pr_warn("EEH: eeh_dev(%04x:%02x:%02x:%01x) is not a VF\n",
->+			edev->phb->global_number, pdn->busno,
->+			PCI_SLOT(pdn->devfn), PCI_FUNC(pdn->devfn));
->+		return NULL;
->+	}
+In my understanding clk_get() is for checking if the clk is ready. Right?
+I will add this check if my understanding is right.
 
-Please don't use logs starting with "EEH:" arbitrarily. It's assumed
-for principle EEH logs. This one isn't a major one and print the function
-name helps for debugging:
-
-	if (!edev->physfn) {
-		pr_warn("%s: EEH dev %04x:%02x:%02x:%01x not for VF\n",
-			edev->phb->global_number, pdn->busno,
-			PCI_SLOT(pdn->devfn), PCI_FUNC(pdn->devfn));
-		return NULL;
-	}
-
->+
->+	driver = eeh_pcid_get(dev);
->+	if (driver) {
->+		eeh_pcid_put(dev);
->+		if (driver->err_handler)
->+			return NULL;
->+	}
-
-dev and driver are NULL for those VFs that have been unplugged. For those
-VFs weren't unplugged, driver and err_handler should be valid. The code
-looks correct. However, for consistence, please use EEH_DEV_DISCONNECTED
-that has been marked to those EEH devices which were unplugged. Do you
-think it would be better?
-
-	if (!(dev->flags & EEH_DEV_DISCONNECTED))
-		return NULL;
-
->+
->+	pci_iov_virtfn_add(edev->physfn, pdn->vf_index, 0);
->+	return NULL;
->+}
-
->+#endif /* CONFIG_PCI_IOV */
->+
-> static void *eeh_rmv_device(void *data, void *userdata)
-> {
-> 	struct pci_driver *driver;
-> 	struct eeh_dev *edev = (struct eeh_dev *)data;
-> 	struct pci_dev *dev = eeh_dev_to_pci_dev(edev);
-> 	int *removed = (int *)userdata;
->+#ifdef CONFIG_PCI_IOV
->+	struct pci_dn *pdn = eeh_dev_to_pdn(edev);
->+#endif
-
-You don't have to have CONFIG_PCI_IOV here. I guess you probably remove
-all CONFIG_PCI_IOV checks because the flag or conditions introduced
-to edev/PE can tell they're VF sensitive or not.
-
->
-> 	/*
-> 	 * Actually, we should remove the PCI bridges as well.
->@@ -416,7 +450,7 @@ static void *eeh_rmv_device(void *data, void *userdata)
-> 	driver = eeh_pcid_get(dev);
-> 	if (driver) {
-> 		eeh_pcid_put(dev);
->-		if (driver->err_handler)
->+		if (removed && driver->err_handler)
-> 			return NULL;
-> 	}
->
->@@ -425,11 +459,21 @@ static void *eeh_rmv_device(void *data, void *userdata)
-> 		 pci_name(dev));
-> 	edev->bus = dev->bus;
-> 	edev->mode |= EEH_DEV_DISCONNECTED;
->-	(*removed)++;
->-
->-	pci_lock_rescan_remove();
->-	pci_stop_and_remove_bus_device(dev);
->-	pci_unlock_rescan_remove();
->+	if (removed)
->+		(*removed)++;
->+
->+#ifdef CONFIG_PCI_IOV
->+	if (edev->mode & EEH_DEV_VF) {
->+		pci_iov_virtfn_remove(edev->physfn, pdn->vf_index, 0);
->+		edev->pdev = NULL;
->+		pdn->pe_number = IODA_INVALID_PE;
-
-Setting the PE number to invalid one seems not correct because the PE
-is still consumed by the VF's RID.
-
->+	} else
->+#endif
-
-You can remove this CONFIG_PCI_IOV here since you already had EEH_DEV_VF
-or "edev->physfn" as I said previously.
-
->+	{
->+		pci_lock_rescan_remove();
->+		pci_stop_and_remove_bus_device(dev);
->+		pci_unlock_rescan_remove();
->+	}
->
-> 	return NULL;
-> }
->@@ -548,6 +592,7 @@ static int eeh_reset_device(struct eeh_pe *pe, struct pci_bus *bus)
-> 	struct pci_bus *frozen_bus = eeh_pe_bus_get(pe);
-> 	struct timeval tstamp;
-> 	int cnt, rc, removed = 0;
->+	struct eeh_dev *edev;
->
-> 	/* pcibios will clear the counter; save the value */
-> 	cnt = pe->freeze_count;
->@@ -561,12 +606,15 @@ static int eeh_reset_device(struct eeh_pe *pe, struct pci_bus *bus)
-> 	 */
-> 	eeh_pe_state_mark(pe, EEH_PE_KEEP);
-> 	if (bus) {
->-		pci_lock_rescan_remove();
->-		pcibios_remove_pci_devices(bus);
->-		pci_unlock_rescan_remove();
->-	} else if (frozen_bus) {
->+		if (pe->type & EEH_PE_VF)
->+			eeh_pe_dev_traverse(pe, eeh_rmv_device, NULL);
->+		else {
->+			pci_lock_rescan_remove();
->+			pcibios_remove_pci_devices(bus);
->+			pci_unlock_rescan_remove();
->+		}
->+	} else if (frozen_bus)
-> 		eeh_pe_dev_traverse(pe, eeh_rmv_device, &removed);
->-	}
->
-> 	/*
-> 	 * Reset the pci controller. (Asserts RST#; resets config space).
->@@ -607,14 +655,26 @@ static int eeh_reset_device(struct eeh_pe *pe, struct pci_bus *bus)
-> 		 * PE. We should disconnect it so the binding can be
-> 		 * rebuilt when adding PCI devices.
-> 		 */
->+		edev = list_first_entry(&pe->edevs, struct eeh_dev, list);
-
-As above, VF PE can have multiple EEH devices.
-
-> 		eeh_pe_traverse(pe, eeh_pe_detach_dev, NULL);
->-		pcibios_add_pci_devices(bus);
->+#ifdef CONFIG_PCI_IOV
->+		if (pe->type & EEH_PE_VF)
->+			eeh_add_virt_device(edev, NULL);
->+		else
->+#endif
->+			pcibios_add_pci_devices(bus);
-> 	} else if (frozen_bus && removed) {
-> 		pr_info("EEH: Sleep 5s ahead of partial hotplug\n");
-> 		ssleep(5);
->
->+		edev = list_first_entry(&pe->edevs, struct eeh_dev, list);
-> 		eeh_pe_traverse(pe, eeh_pe_detach_dev, NULL);
->-		pcibios_add_pci_devices(frozen_bus);
->+#ifdef CONFIG_PCI_IOV
->+		if (pe->type & EEH_PE_VF)
->+			eeh_add_virt_device(edev, NULL);
->+		else
->+#endif
->+			pcibios_add_pci_devices(frozen_bus);
-> 	}
-> 	eeh_pe_state_clear(pe, EEH_PE_KEEP);
->
->@@ -792,11 +852,15 @@ perm_error:
-> 	 * the their PCI config any more.
-> 	 */
-> 	if (frozen_bus) {
->-		eeh_pe_dev_mode_mark(pe, EEH_DEV_REMOVED);
->-
->-		pci_lock_rescan_remove();
->-		pcibios_remove_pci_devices(frozen_bus);
->-		pci_unlock_rescan_remove();
->+		if (pe->type & EEH_PE_VF) {
->+			eeh_pe_dev_traverse(pe, eeh_rmv_device, NULL);
->+			eeh_pe_dev_mode_mark(pe, EEH_DEV_REMOVED);
->+		} else {
->+			eeh_pe_dev_mode_mark(pe, EEH_DEV_REMOVED);
->+			pci_lock_rescan_remove();
->+			pcibios_remove_pci_devices(frozen_bus);
->+			pci_unlock_rescan_remove();
->+		}
-> 	}
-> }
->
->diff --git a/arch/powerpc/kernel/eeh_pe.c b/arch/powerpc/kernel/eeh_pe.c
->index edfe63a..3b8b32f 100644
->--- a/arch/powerpc/kernel/eeh_pe.c
->+++ b/arch/powerpc/kernel/eeh_pe.c
->@@ -916,7 +916,8 @@ struct pci_bus *eeh_pe_bus_get(struct eeh_pe *pe)
-> 	if (pe->type & EEH_PE_PHB) {
-> 		bus = pe->phb->bus;
-> 	} else if (pe->type & EEH_PE_BUS ||
->-		   pe->type & EEH_PE_DEVICE) {
->+		   pe->type & EEH_PE_DEVICE ||
->+		   pe->type & EEH_PE_VF) {
-
-I still have the concern: VF PE isn't supposed to have PE primary bus as the
-PE contains single or multiple (virtual) functions. So you can't simply
-return the "shared" bus to caller to apply hotplug on it or for other
-purpose.
-
-> 		if (pe->bus) {
-> 			bus = pe->bus;
-> 			goto out;
-
-Thanks,
-Gavin
+>=20
+> >
+> > >
+> > > > +
+> > > > +	return 0;
+> > > > +
+> > > > +err_thermal:
+> > > > +	cpufreq_cooling_unregister(data->cdev);
+> > > > +
+> > > > +err_cooling:
+> > > > +	iounmap(data->regs);
+> > > > +
+> > > > +err_iomap:
+> > > > +	dev_set_drvdata(&pdev->dev, NULL);
+> > > > +	devm_kfree(&pdev->dev, data);
+> > > > +
+> > > > +	return ret;
+> > > > +}
+> > > > +
+> > > > +static int qoriq_tmu_remove(struct platform_device *pdev) {
+> > > > +	struct qoriq_tmu_data *data =3D dev_get_drvdata(&pdev->dev);
+> > > > +
+> > > > +	/* Disable monitoring */
+> > > > +	iowrite32be(TMR_DISABLE, &data->regs->tmr);
+> > > > +
+> > > > +	thermal_zone_device_unregister(data->tz);
+> > > > +	cpufreq_cooling_unregister(data->cdev);
+> > > > +	iounmap(data->regs);
+> > > > +
+> > > > +	dev_set_drvdata(&pdev->dev, NULL);
+> > > > +	devm_kfree(&pdev->dev, data);
+> > > > +
+> > > > +	return 0;
+> > > > +}
+> > > > +
+> > > > +#ifdef CONFIG_PM_SLEEP
+> > > > +static int qoriq_tmu_suspend(struct device *dev) {
+> > > > +	struct qoriq_tmu_data *data =3D dev_get_drvdata(dev);
+> > > > +
+> > > > +	/* Disable monitoring */
+> > > > +	iowrite32be(TMR_DISABLE, &data->regs->tmr);
+> > > > +
+> > > > +	return 0;
+> > > > +}
+> > > > +
+> > > > +static int qoriq_tmu_resume(struct device *dev) {
+> > > > +	struct qoriq_tmu_data *data =3D dev_get_drvdata(dev);
+> > > > +
+> > > > +	/* Enable monitoring */
+> > > > +	iowrite32be(TMR_ALL, &data->regs->tmr);
+> > > > +
+> > > > +	return 0;
+> > > > +}
+> > > > +#endif
+> > > > +
+> > > > +static SIMPLE_DEV_PM_OPS(qoriq_tmu_pm_ops,
+> > > > +			 qoriq_tmu_suspend, qoriq_tmu_resume);
+> > > > +
+> > > > +static const struct of_device_id qoriq_tmu_match[] =3D {
+> > > > +	{ .compatible =3D "fsl,qoriq-tmu", },
+> > > > +	{},
+> > > > +};
+> > >
+> > >
+> > > You need to add a binding file describing your chip, and how to
+> > > deploy its DT nodes under:
+> > >  Documentation/devicetree/bindings/thermal/
+> >
+> > Already did in another patch:
+> > http://patchwork.ozlabs.org/patch/461412/
+>=20
+> OK. I missed that one. I will have a look.
+>=20
+> >
+> > >
+> > >
+> > > > +
+> > > > +static struct platform_driver qoriq_tmu =3D {
+> > > > +	.driver	=3D {
+> > > > +		.owner		=3D THIS_MODULE,
+> > > > +		.name		=3D "qoriq_thermal",
+> > > > +		.pm =3D &qoriq_tmu_pm_ops,
+> > > > +		.of_match_table	=3D qoriq_tmu_match,
+> > > > +	},
+> > > > +	.probe	=3D qoriq_tmu_probe,
+> > > > +	.remove	=3D qoriq_tmu_remove,
+> > > > +};
+> > > > +module_platform_driver(qoriq_tmu);
+> > > > +
+> > > > +MODULE_AUTHOR("Jia Hongtao <hongtao.jia@freescale.com>");
+> > > > +MODULE_DESCRIPTION("Freescale QorIQ Thermal Monitoring Unit
+> > > > +driver"); MODULE_LICENSE("GPL v2");
+> > > > --
+> > > > 2.1.0.27.g96db324
+> > > >
+> > > > --
+> > > > To unsubscribe from this list: send the line "unsubscribe
+> > > > linux-pm" in the body of a message to majordomo@vger.kernel.org
+> > > > More majordomo info at  http://vger.kernel.org/majordomo-info.html
