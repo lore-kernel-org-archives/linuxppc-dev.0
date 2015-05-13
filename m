@@ -1,36 +1,37 @@
 Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C9CCA1A001B
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 16:13:08 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9A5121A001B
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 16:19:55 +1000 (AEST)
 Received: from /spool/local
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Wed, 13 May 2015 16:13:08 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 8619A357804F
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 16:13:05 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t4D6Cvgu43843806
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 16:13:05 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t4D6CW4J004407
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 16:12:33 +1000
-Date: Wed, 13 May 2015 16:12:07 +1000
+ Wed, 13 May 2015 16:19:54 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 7123F2BB004D
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 16:19:51 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t4D6JhH241615470
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 16:19:51 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t4D6JIOM028593
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 16:19:19 +1000
+Date: Wed, 13 May 2015 16:18:53 +1000
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Subject: Re: [PATCH kernel v10 08/34] vfio: powerpc/spapr: Use it_page_size
-Message-ID: <20150513061207.GB6283@gwshan>
+Subject: Re: [PATCH kernel v10 09/34] vfio: powerpc/spapr: Move locked_vm
+ accounting to helpers
+Message-ID: <20150513061853.GA7539@gwshan>
 Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
 References: <1431358763-24371-1-git-send-email-aik@ozlabs.ru>
- <1431358763-24371-9-git-send-email-aik@ozlabs.ru>
+ <1431358763-24371-10-git-send-email-aik@ozlabs.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1431358763-24371-9-git-send-email-aik@ozlabs.ru>
+In-Reply-To: <1431358763-24371-10-git-send-email-aik@ozlabs.ru>
 Cc: Wei Yang <weiyang@linux.vnet.ibm.com>,
  Gavin Shan <gwshan@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
  Alex Williamson <alex.williamson@redhat.com>,
@@ -45,114 +46,171 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, May 12, 2015 at 01:38:57AM +1000, Alexey Kardashevskiy wrote:
->This makes use of the it_page_size from the iommu_table struct
->as page size can differ.
+On Tue, May 12, 2015 at 01:38:58AM +1000, Alexey Kardashevskiy wrote:
+>There moves locked pages accounting to helpers.
+>Later they will be reused for Dynamic DMA windows (DDW).
 >
->This replaces missing IOMMU_PAGE_SHIFT macro in commented debug code
->as recently introduced IOMMU_PAGE_XXX macros do not include
->IOMMU_PAGE_SHIFT.
+>This reworks debug messages to show the current value and the limit.
+>
+>This stores the locked pages number in the container so when unlocking
+>the iommu table pointer won't be needed. This does not have an effect
+>now but it will with the multiple tables per container as then we will
+>allow attaching/detaching groups on fly and we may end up having
+>a container with no group attached but with the counter incremented.
+>
+>While we are here, update the comment explaining why RLIMIT_MEMLOCK
+>might be required to be bigger than the guest RAM. This also prints
+>pid of the current process in pr_warn/pr_debug.
 >
 >Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
->Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 >[aw: for the vfio related changes]
 >Acked-by: Alex Williamson <alex.williamson@redhat.com>
+>Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 
 Reviewed-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+
+>---
+>Changes:
+>v4:
+>* new helpers do nothing if @npages == 0
+>* tce_iommu_disable() now can decrement the counter if the group was
+>detached (not possible now but will be in the future)
+>---
+> drivers/vfio/vfio_iommu_spapr_tce.c | 82 ++++++++++++++++++++++++++++---------
+> 1 file changed, 63 insertions(+), 19 deletions(-)
+>
+>diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
+>index 64300cc..40583f9 100644
+>--- a/drivers/vfio/vfio_iommu_spapr_tce.c
+>+++ b/drivers/vfio/vfio_iommu_spapr_tce.c
+>@@ -29,6 +29,51 @@
+> static void tce_iommu_detach_group(void *iommu_data,
+> 		struct iommu_group *iommu_group);
+>
+>+static long try_increment_locked_vm(long npages)
+>+{
+>+	long ret = 0, locked, lock_limit;
+>+
+>+	if (!current || !current->mm)
+>+		return -ESRCH; /* process exited */
+>+
+>+	if (!npages)
+>+		return 0;
+>+
+>+	down_write(&current->mm->mmap_sem);
+>+	locked = current->mm->locked_vm + npages;
+>+	lock_limit = rlimit(RLIMIT_MEMLOCK) >> PAGE_SHIFT;
+>+	if (locked > lock_limit && !capable(CAP_IPC_LOCK))
+>+		ret = -ENOMEM;
+>+	else
+>+		current->mm->locked_vm += npages;
+>+
+>+	pr_debug("[%d] RLIMIT_MEMLOCK +%ld %ld/%ld%s\n", current->pid,
+>+			npages << PAGE_SHIFT,
+>+			current->mm->locked_vm << PAGE_SHIFT,
+>+			rlimit(RLIMIT_MEMLOCK),
+>+			ret ? " - exceeded" : "");
+>+
+
+I'm not sure if current->pid + current->comm can give a bit more
+readability or not.
 
 Thanks,
 Gavin
 
->---
-> drivers/vfio/vfio_iommu_spapr_tce.c | 26 +++++++++++++-------------
-> 1 file changed, 13 insertions(+), 13 deletions(-)
+>+	up_write(&current->mm->mmap_sem);
+>+
+>+	return ret;
+>+}
+>+
+>+static void decrement_locked_vm(long npages)
+>+{
+>+	if (!current || !current->mm || !npages)
+>+		return; /* process exited */
+>+
+>+	down_write(&current->mm->mmap_sem);
+>+	if (npages > current->mm->locked_vm)
+>+		npages = current->mm->locked_vm;
+>+	current->mm->locked_vm -= npages;
+>+	pr_debug("[%d] RLIMIT_MEMLOCK -%ld %ld/%ld\n", current->pid,
+>+			npages << PAGE_SHIFT,
+>+			current->mm->locked_vm << PAGE_SHIFT,
+>+			rlimit(RLIMIT_MEMLOCK));
+>+	up_write(&current->mm->mmap_sem);
+>+}
+>+
+> /*
+>  * VFIO IOMMU fd for SPAPR_TCE IOMMU implementation
+>  *
+>@@ -45,6 +90,7 @@ struct tce_container {
+> 	struct mutex lock;
+> 	struct iommu_table *tbl;
+> 	bool enabled;
+>+	unsigned long locked_pages;
+> };
 >
->diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
->index 735b308..64300cc 100644
->--- a/drivers/vfio/vfio_iommu_spapr_tce.c
->+++ b/drivers/vfio/vfio_iommu_spapr_tce.c
->@@ -91,7 +91,7 @@ static int tce_iommu_enable(struct tce_container *container)
+> static bool tce_page_is_contained(struct page *page, unsigned page_shift)
+>@@ -60,7 +106,7 @@ static bool tce_page_is_contained(struct page *page, unsigned page_shift)
+> static int tce_iommu_enable(struct tce_container *container)
+> {
+> 	int ret = 0;
+>-	unsigned long locked, lock_limit, npages;
+>+	unsigned long locked;
+> 	struct iommu_table *tbl = container->tbl;
+>
+> 	if (!container->tbl)
+>@@ -89,21 +135,22 @@ static int tce_iommu_enable(struct tce_container *container)
+> 	 * Also we don't have a nice way to fail on H_PUT_TCE due to ulimits,
+> 	 * that would effectively kill the guest at random points, much better
 > 	 * enforcing the limit based on the max that the guest can map.
+>+	 *
+>+	 * Unfortunately at the moment it counts whole tables, no matter how
+>+	 * much memory the guest has. I.e. for 4GB guest and 4 IOMMU groups
+>+	 * each with 2GB DMA window, 8GB will be counted here. The reason for
+>+	 * this is that we cannot tell here the amount of RAM used by the guest
+>+	 * as this information is only available from KVM and VFIO is
+>+	 * KVM agnostic.
 > 	 */
-> 	down_write(&current->mm->mmap_sem);
->-	npages = (tbl->it_size << IOMMU_PAGE_SHIFT_4K) >> PAGE_SHIFT;
->+	npages = (tbl->it_size << tbl->it_page_shift) >> PAGE_SHIFT;
-> 	locked = current->mm->locked_vm + npages;
-> 	lock_limit = rlimit(RLIMIT_MEMLOCK) >> PAGE_SHIFT;
-> 	if (locked > lock_limit && !capable(CAP_IPC_LOCK)) {
->@@ -120,7 +120,7 @@ static void tce_iommu_disable(struct tce_container *container)
+>-	down_write(&current->mm->mmap_sem);
+>-	npages = (tbl->it_size << tbl->it_page_shift) >> PAGE_SHIFT;
+>-	locked = current->mm->locked_vm + npages;
+>-	lock_limit = rlimit(RLIMIT_MEMLOCK) >> PAGE_SHIFT;
+>-	if (locked > lock_limit && !capable(CAP_IPC_LOCK)) {
+>-		pr_warn("RLIMIT_MEMLOCK (%ld) exceeded\n",
+>-				rlimit(RLIMIT_MEMLOCK));
+>-		ret = -ENOMEM;
+>-	} else {
+>+	locked = (tbl->it_size << tbl->it_page_shift) >> PAGE_SHIFT;
+>+	ret = try_increment_locked_vm(locked);
+>+	if (ret)
+>+		return ret;
 >
-> 	down_write(&current->mm->mmap_sem);
-> 	current->mm->locked_vm -= (container->tbl->it_size <<
->-			IOMMU_PAGE_SHIFT_4K) >> PAGE_SHIFT;
->+			container->tbl->it_page_shift) >> PAGE_SHIFT;
-> 	up_write(&current->mm->mmap_sem);
+>-		current->mm->locked_vm += npages;
+>-		container->enabled = true;
+>-	}
+>-	up_write(&current->mm->mmap_sem);
+>+	container->locked_pages = locked;
+>+
+>+	container->enabled = true;
+>
+> 	return ret;
+> }
+>@@ -115,13 +162,10 @@ static void tce_iommu_disable(struct tce_container *container)
+>
+> 	container->enabled = false;
+>
+>-	if (!container->tbl || !current->mm)
+>+	if (!current->mm)
+> 		return;
+>
+>-	down_write(&current->mm->mmap_sem);
+>-	current->mm->locked_vm -= (container->tbl->it_size <<
+>-			container->tbl->it_page_shift) >> PAGE_SHIFT;
+>-	up_write(&current->mm->mmap_sem);
+>+	decrement_locked_vm(container->locked_pages);
 > }
 >
->@@ -215,7 +215,7 @@ static long tce_iommu_build(struct tce_container *container,
-> 					tce, ret);
-> 			break;
-> 		}
->-		tce += IOMMU_PAGE_SIZE_4K;
->+		tce += IOMMU_PAGE_SIZE(tbl);
-> 	}
->
-> 	if (ret)
->@@ -260,8 +260,8 @@ static long tce_iommu_ioctl(void *iommu_data,
-> 		if (info.argsz < minsz)
-> 			return -EINVAL;
->
->-		info.dma32_window_start = tbl->it_offset << IOMMU_PAGE_SHIFT_4K;
->-		info.dma32_window_size = tbl->it_size << IOMMU_PAGE_SHIFT_4K;
->+		info.dma32_window_start = tbl->it_offset << tbl->it_page_shift;
->+		info.dma32_window_size = tbl->it_size << tbl->it_page_shift;
-> 		info.flags = 0;
->
-> 		if (copy_to_user((void __user *)arg, &info, minsz))
->@@ -291,8 +291,8 @@ static long tce_iommu_ioctl(void *iommu_data,
-> 				VFIO_DMA_MAP_FLAG_WRITE))
-> 			return -EINVAL;
->
->-		if ((param.size & ~IOMMU_PAGE_MASK_4K) ||
->-				(param.vaddr & ~IOMMU_PAGE_MASK_4K))
->+		if ((param.size & ~IOMMU_PAGE_MASK(tbl)) ||
->+				(param.vaddr & ~IOMMU_PAGE_MASK(tbl)))
-> 			return -EINVAL;
->
-> 		/* iova is checked by the IOMMU API */
->@@ -307,8 +307,8 @@ static long tce_iommu_ioctl(void *iommu_data,
-> 			return ret;
->
-> 		ret = tce_iommu_build(container, tbl,
->-				param.iova >> IOMMU_PAGE_SHIFT_4K,
->-				tce, param.size >> IOMMU_PAGE_SHIFT_4K);
->+				param.iova >> tbl->it_page_shift,
->+				tce, param.size >> tbl->it_page_shift);
->
-> 		iommu_flush_tce(tbl);
->
->@@ -334,17 +334,17 @@ static long tce_iommu_ioctl(void *iommu_data,
-> 		if (param.flags)
-> 			return -EINVAL;
->
->-		if (param.size & ~IOMMU_PAGE_MASK_4K)
->+		if (param.size & ~IOMMU_PAGE_MASK(tbl))
-> 			return -EINVAL;
->
-> 		ret = iommu_tce_clear_param_check(tbl, param.iova, 0,
->-				param.size >> IOMMU_PAGE_SHIFT_4K);
->+				param.size >> tbl->it_page_shift);
-> 		if (ret)
-> 			return ret;
->
-> 		ret = tce_iommu_clear(container, tbl,
->-				param.iova >> IOMMU_PAGE_SHIFT_4K,
->-				param.size >> IOMMU_PAGE_SHIFT_4K);
->+				param.iova >> tbl->it_page_shift,
->+				param.size >> tbl->it_page_shift);
-> 		iommu_flush_tce(tbl);
->
-> 		return ret;
+> static void *tce_iommu_open(unsigned long arg)
 >-- 
 >2.4.0.rc3.8.gfb3e7d5
 >
