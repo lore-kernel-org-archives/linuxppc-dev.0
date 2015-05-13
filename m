@@ -1,36 +1,37 @@
 Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A041A1A0021
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 15:28:50 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1FDDD1A001B
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 15:34:41 +1000 (AEST)
 Received: from /spool/local
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Wed, 13 May 2015 15:28:47 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 8AB6A2CE8052
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 15:28:44 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t4D5Saph19464418
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 15:28:44 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t4D5SBBX026273
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 15:28:11 +1000
-Date: Wed, 13 May 2015 15:27:46 +1000
+ Wed, 13 May 2015 15:34:40 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id C64D62BB0051
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 15:34:35 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t4D5YRW141812190
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 15:34:35 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t4D5Y2gK019409
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 15:34:02 +1000
+Date: Wed, 13 May 2015 15:33:37 +1000
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Subject: Re: [PATCH kernel v10 04/34] powerpc/iommu: Put IOMMU group explicitly
-Message-ID: <20150513052746.GA32607@gwshan>
+Subject: Re: [PATCH kernel v10 05/34] powerpc/iommu: Always release
+ iommu_table in iommu_free_table()
+Message-ID: <20150513053337.GA479@gwshan>
 Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
 References: <1431358763-24371-1-git-send-email-aik@ozlabs.ru>
- <1431358763-24371-5-git-send-email-aik@ozlabs.ru>
+ <1431358763-24371-6-git-send-email-aik@ozlabs.ru>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1431358763-24371-5-git-send-email-aik@ozlabs.ru>
+In-Reply-To: <1431358763-24371-6-git-send-email-aik@ozlabs.ru>
 Cc: Wei Yang <weiyang@linux.vnet.ibm.com>,
  Gavin Shan <gwshan@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
  Alex Williamson <alex.williamson@redhat.com>,
@@ -45,113 +46,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, May 12, 2015 at 01:38:53AM +1000, Alexey Kardashevskiy wrote:
->So far an iommu_table lifetime was the same as PE. Dynamic DMA windows
->will change this and iommu_free_table() will not always require
->the group to be released.
+On Tue, May 12, 2015 at 01:38:54AM +1000, Alexey Kardashevskiy wrote:
+>At the moment iommu_free_table() only releases memory if
+>the table was initialized for the platform code use, i.e. it had
+>it_map initialized (which purpose is to track DMA memory space use).
 >
->This moves iommu_group_put() out of iommu_free_table().
->
->This adds a iommu_pseries_free_table() helper which does
->iommu_group_put() and iommu_free_table(). Later it will be
->changed to receive a table_group and we will have to change less
->lines then.
->
->This should cause no behavioural change.
+>With dynamic DMA windows, we will need to be able to release
+>iommu_table even if it was used for VFIO in which case it_map is NULL
+>so does the patch.
 >
 >Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 
 Reviewed-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 
+>---
+> arch/powerpc/kernel/iommu.c | 3 +--
+> 1 file changed, 1 insertion(+), 2 deletions(-)
+>
+>diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
+>index 3d47eb3..2c02d4c 100644
+>--- a/arch/powerpc/kernel/iommu.c
+>+++ b/arch/powerpc/kernel/iommu.c
+>@@ -714,8 +714,7 @@ void iommu_free_table(struct iommu_table *tbl, const char *node_name)
+> 	unsigned int order;
+>
+> 	if (!tbl || !tbl->it_map) {
+>-		printk(KERN_ERR "%s: expected TCE map for %s\n", __func__,
+>-				node_name);
+>+		kfree(tbl);
+
+I'm not sure if the "tbl" needs to be checked against NULL as kfree() already
+has the check. But it looks a bit strange to free NULL "tbl" from the code
+itself.
+
 Thanks,
 Gavin
 
->---
-> arch/powerpc/kernel/iommu.c               |  7 -------
-> arch/powerpc/platforms/powernv/pci-ioda.c |  5 +++++
-> arch/powerpc/platforms/pseries/iommu.c    | 14 +++++++++++++-
-> 3 files changed, 18 insertions(+), 8 deletions(-)
+> 		return;
+> 	}
 >
->diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
->index b054f33..3d47eb3 100644
->--- a/arch/powerpc/kernel/iommu.c
->+++ b/arch/powerpc/kernel/iommu.c
->@@ -726,13 +726,6 @@ void iommu_free_table(struct iommu_table *tbl, const char *node_name)
-> 	if (tbl->it_offset == 0)
-> 		clear_bit(0, tbl->it_map);
->
->-#ifdef CONFIG_IOMMU_API
->-	if (tbl->it_group) {
->-		iommu_group_put(tbl->it_group);
->-		BUG_ON(tbl->it_group);
->-	}
->-#endif
->-
-> 	/* verify that table contains no entries */
-> 	if (!bitmap_empty(tbl->it_map, tbl->it_size))
-> 		pr_warn("%s: Unexpected TCEs for %s\n", __func__, node_name);
->diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
->index 8ca7abd..8c3c4bf 100644
->--- a/arch/powerpc/platforms/powernv/pci-ioda.c
->+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
->@@ -23,6 +23,7 @@
-> #include <linux/io.h>
-> #include <linux/msi.h>
-> #include <linux/memblock.h>
->+#include <linux/iommu.h>
->
-> #include <asm/sections.h>
-> #include <asm/io.h>
->@@ -1310,6 +1311,10 @@ static void pnv_pci_ioda2_release_dma_pe(struct pci_dev *dev, struct pnv_ioda_pe
-> 	if (rc)
-> 		pe_warn(pe, "OPAL error %ld release DMA window\n", rc);
->
->+	if (tbl->it_group) {
->+		iommu_group_put(tbl->it_group);
->+		BUG_ON(tbl->it_group);
->+	}
-> 	iommu_free_table(tbl, of_node_full_name(dev->dev.of_node));
-> 	free_pages(addr, get_order(TCE32_TABLE_SIZE));
-> 	pe->tce32_table = NULL;
->diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
->index 05ab06d..89f557b 100644
->--- a/arch/powerpc/platforms/pseries/iommu.c
->+++ b/arch/powerpc/platforms/pseries/iommu.c
->@@ -36,6 +36,7 @@
-> #include <linux/crash_dump.h>
-> #include <linux/memory.h>
-> #include <linux/of.h>
->+#include <linux/iommu.h>
-> #include <asm/io.h>
-> #include <asm/prom.h>
-> #include <asm/rtas.h>
->@@ -51,6 +52,16 @@
->
-> #include "pseries.h"
->
->+static void iommu_pseries_free_table(struct iommu_table *tbl,
->+		const char *node_name)
->+{
->+	if (tbl->it_group) {
->+		iommu_group_put(tbl->it_group);
->+		BUG_ON(tbl->it_group);
->+	}
->+	iommu_free_table(tbl, node_name);
->+}
->+
-> static void tce_invalidate_pSeries_sw(struct iommu_table *tbl,
-> 				      __be64 *startp, __be64 *endp)
-> {
->@@ -1271,7 +1282,8 @@ static int iommu_reconfig_notifier(struct notifier_block *nb, unsigned long acti
-> 		 */
-> 		remove_ddw(np, false);
-> 		if (pci && pci->iommu_table)
->-			iommu_free_table(pci->iommu_table, np->full_name);
->+			iommu_pseries_free_table(pci->iommu_table,
->+					np->full_name);
->
-> 		spin_lock(&direct_window_list_lock);
-> 		list_for_each_entry(window, &direct_window_list, list) {
 >-- 
 >2.4.0.rc3.8.gfb3e7d5
 >
