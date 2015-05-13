@@ -1,25 +1,39 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pd0-f177.google.com (mail-pd0-f177.google.com
- [209.85.192.177])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BF73F1A001B
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 16:32:49 +1000 (AEST)
-Received: by pdbqa5 with SMTP id qa5so41421904pdb.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 May 2015 23:32:48 -0700 (PDT)
-Message-ID: <5552F00A.5080004@ozlabs.ru>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5715D1A0709
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 16:33:46 +1000 (AEST)
+Received: from /spool/local
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Wed, 13 May 2015 16:33:44 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 3DD533578052
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 16:33:42 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t4D6XX7H20250874
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 16:33:42 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t4D6X9vh020412
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 16:33:09 +1000
 Date: Wed, 13 May 2015 16:32:42 +1000
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-MIME-Version: 1.0
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: Re: [PATCH kernel v10 06/34] vfio: powerpc/spapr: Move page pinning
- from arch code to VFIO IOMMU driver
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Subject: Re: [PATCH kernel v10 11/34] vfio: powerpc/spapr: Moving
+ pinning/unpinning to helpers
+Message-ID: <20150513063242.GA9547@gwshan>
+Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
 References: <1431358763-24371-1-git-send-email-aik@ozlabs.ru>
- <1431358763-24371-7-git-send-email-aik@ozlabs.ru>
- <20150513055809.GA3622@gwshan>
-In-Reply-To: <20150513055809.GA3622@gwshan>
-Content-Type: text/plain; charset=koi8-r; format=flowed
-Cc: Wei Yang <weiyang@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+ <1431358763-24371-12-git-send-email-aik@ozlabs.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1431358763-24371-12-git-send-email-aik@ozlabs.ru>
+Cc: Wei Yang <weiyang@linux.vnet.ibm.com>,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
  Alex Williamson <alex.williamson@redhat.com>,
  Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
  David Gibson <david@gibson.dropbear.id.au>
@@ -32,174 +46,170 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/13/2015 03:58 PM, Gavin Shan wrote:
-> On Tue, May 12, 2015 at 01:38:55AM +1000, Alexey Kardashevskiy wrote:
->> This moves page pinning (get_user_pages_fast()/put_page()) code out of
->> the platform IOMMU code and puts it to VFIO IOMMU driver where it belongs
->> to as the platform code does not deal with page pinning.
->>
->> This makes iommu_take_ownership()/iommu_release_ownership() deal with
->> the IOMMU table bitmap only.
->>
->> This removes page unpinning from iommu_take_ownership() as the actual
->> TCE table might contain garbage and doing put_page() on it is undefined
->> behaviour.
->>
->> Besides the last part, the rest of the patch is mechanical.
->>
->> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
->> [aw: for the vfio related changes]
->> Acked-by: Alex Williamson <alex.williamson@redhat.com>
->> Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
+On Tue, May 12, 2015 at 01:39:00AM +1000, Alexey Kardashevskiy wrote:
+>This is a pretty mechanical patch to make next patches simpler.
 >
-> Reviewed-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+>New tce_iommu_unuse_page() helper does put_page() now but it might skip
+>that after the memory registering patch applied.
 >
->> ---
->> Changes:
->> v9:
->> * added missing tce_iommu_clear call after iommu_release_ownership()
->> * brought @offset (a local variable) back to make patch even more
->> mechanical
->>
->> v4:
->> * s/iommu_tce_build(tbl, entry + 1/iommu_tce_build(tbl, entry + i/
->> ---
->> arch/powerpc/include/asm/iommu.h    |  4 --
->> arch/powerpc/kernel/iommu.c         | 55 -------------------------
->> drivers/vfio/vfio_iommu_spapr_tce.c | 80 +++++++++++++++++++++++++++++++------
->> 3 files changed, 67 insertions(+), 72 deletions(-)
->>
->> diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
->> index 8353c86..e94a5e3 100644
->> --- a/arch/powerpc/include/asm/iommu.h
->> +++ b/arch/powerpc/include/asm/iommu.h
->> @@ -194,10 +194,6 @@ extern int iommu_tce_build(struct iommu_table *tbl, unsigned long entry,
->> 		unsigned long hwaddr, enum dma_data_direction direction);
->> extern unsigned long iommu_clear_tce(struct iommu_table *tbl,
->> 		unsigned long entry);
->> -extern int iommu_clear_tces_and_put_pages(struct iommu_table *tbl,
->> -		unsigned long entry, unsigned long pages);
->> -extern int iommu_put_tce_user_mode(struct iommu_table *tbl,
->> -		unsigned long entry, unsigned long tce);
->>
->> extern void iommu_flush_tce(struct iommu_table *tbl);
->> extern int iommu_take_ownership(struct iommu_table *tbl);
->> diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
->> index 2c02d4c..8673c94 100644
->> --- a/arch/powerpc/kernel/iommu.c
->> +++ b/arch/powerpc/kernel/iommu.c
->> @@ -983,30 +983,6 @@ unsigned long iommu_clear_tce(struct iommu_table *tbl, unsigned long entry)
->> }
->> EXPORT_SYMBOL_GPL(iommu_clear_tce);
->>
->> -int iommu_clear_tces_and_put_pages(struct iommu_table *tbl,
->> -		unsigned long entry, unsigned long pages)
->> -{
->> -	unsigned long oldtce;
->> -	struct page *page;
->> -
->> -	for ( ; pages; --pages, ++entry) {
->> -		oldtce = iommu_clear_tce(tbl, entry);
->> -		if (!oldtce)
->> -			continue;
->> -
->> -		page = pfn_to_page(oldtce >> PAGE_SHIFT);
->> -		WARN_ON(!page);
->> -		if (page) {
->> -			if (oldtce & TCE_PCI_WRITE)
->> -				SetPageDirty(page);
->> -			put_page(page);
->> -		}
->> -	}
->> -
->> -	return 0;
->> -}
->> -EXPORT_SYMBOL_GPL(iommu_clear_tces_and_put_pages);
->> -
->> /*
->>   * hwaddr is a kernel virtual address here (0xc... bazillion),
->>   * tce_build converts it to a physical address.
->> @@ -1036,35 +1012,6 @@ int iommu_tce_build(struct iommu_table *tbl, unsigned long entry,
->> }
->> EXPORT_SYMBOL_GPL(iommu_tce_build);
->>
->> -int iommu_put_tce_user_mode(struct iommu_table *tbl, unsigned long entry,
->> -		unsigned long tce)
->> -{
->> -	int ret;
->> -	struct page *page = NULL;
->> -	unsigned long hwaddr, offset = tce & IOMMU_PAGE_MASK(tbl) & ~PAGE_MASK;
->> -	enum dma_data_direction direction = iommu_tce_direction(tce);
->> -
->> -	ret = get_user_pages_fast(tce & PAGE_MASK, 1,
->> -			direction != DMA_TO_DEVICE, &page);
->> -	if (unlikely(ret != 1)) {
->> -		/* pr_err("iommu_tce: get_user_pages_fast failed tce=%lx ioba=%lx ret=%d\n",
->> -				tce, entry << tbl->it_page_shift, ret); */
->> -		return -EFAULT;
->> -	}
->> -	hwaddr = (unsigned long) page_address(page) + offset;
->> -
->> -	ret = iommu_tce_build(tbl, entry, hwaddr, direction);
->> -	if (ret)
->> -		put_page(page);
->> -
->> -	if (ret < 0)
->> -		pr_err("iommu_tce: %s failed ioba=%lx, tce=%lx, ret=%d\n",
->> -			__func__, entry << tbl->it_page_shift, tce, ret);
->> -
->> -	return ret;
->> -}
->> -EXPORT_SYMBOL_GPL(iommu_put_tce_user_mode);
->> -
->> int iommu_take_ownership(struct iommu_table *tbl)
->> {
->> 	unsigned long sz = (tbl->it_size + 7) >> 3;
->> @@ -1078,7 +1025,6 @@ int iommu_take_ownership(struct iommu_table *tbl)
->> 	}
->>
->> 	memset(tbl->it_map, 0xff, sz);
->> -	iommu_clear_tces_and_put_pages(tbl, tbl->it_offset, tbl->it_size);
->>
->> 	/*
->> 	 * Disable iommu bypass, otherwise the user can DMA to all of
->> @@ -1096,7 +1042,6 @@ void iommu_release_ownership(struct iommu_table *tbl)
->> {
->> 	unsigned long sz = (tbl->it_size + 7) >> 3;
->>
->> -	iommu_clear_tces_and_put_pages(tbl, tbl->it_offset, tbl->it_size);
->> 	memset(tbl->it_map, 0, sz);
->>
->> 	/* Restore bit#0 set by iommu_init_table() */
->> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
->> index 730b4ef..b95fa2b 100644
->> --- a/drivers/vfio/vfio_iommu_spapr_tce.c
->> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
->> @@ -147,6 +147,67 @@ static void tce_iommu_release(void *iommu_data)
->> 	kfree(container);
->> }
->>
->> +static int tce_iommu_clear(struct tce_container *container,
->> +		struct iommu_table *tbl,
->> +		unsigned long entry, unsigned long pages)
->> +{
->> +	unsigned long oldtce;
->> +	struct page *page;
->> +
->> +	for ( ; pages; --pages, ++entry) {
->> +		oldtce = iommu_clear_tce(tbl, entry);
+>As we are here, this removes unnecessary checks for a value returned
+>by pfn_to_page() as it cannot possibly return NULL.
 >
-> It might be nice to rename iommu_clear_tce() to iommu_tce_free() with another
-> separate patch for two reasons as I can see: iommu_tce_{build, free} is one
-> pair of functions doing opposite things. iommu_tce_free() is implemented based
-> on ppc_md.tce_free() as iommu_tce_build() depends on ppc_md.tce_build().
+>This moves tce_iommu_disable() later to let tce_iommu_clear() know if
+>the container has been enabled because if it has not been, then
+>put_page() must not be called on TCEs from the TCE table. This situation
+>is not yet possible but it will after KVM acceleration patchset is
+>applied.
+>
+>This changes code to work with physical addresses rather than linear
+>mapping addresses for better code readability. Following patches will
+>add an xchg() callback for an IOMMU table which will accept/return
+>physical addresses (unlike current tce_build()) which will eliminate
+>redundant conversions.
+>
+>Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+>[aw: for the vfio related changes]
+>Acked-by: Alex Williamson <alex.williamson@redhat.com>
+>Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 
+Reviewed-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 
-Later in this patchset (in "[PATCH kernel v10 23/34] powerpc/iommu/powernv: 
-Release replaced TCE") I am removing iommu_clear_tce() and 
-iommu_tce_build() (there will be iommu_tce_xchg() only) so no point in 
-renaming those.
+>---
+>Changes:
+>v9:
+>* changed helpers to work with physical addresses rather than linear
+>(for simplicity - later ::xchg() will receive physical and avoid
+>additional convertions)
+>
+>v6:
+>* tce_get_hva() returns hva via a pointer
+>---
+> drivers/vfio/vfio_iommu_spapr_tce.c | 61 +++++++++++++++++++++++++------------
+> 1 file changed, 41 insertions(+), 20 deletions(-)
+>
+>diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
+>index e21479c..115d5e6 100644
+>--- a/drivers/vfio/vfio_iommu_spapr_tce.c
+>+++ b/drivers/vfio/vfio_iommu_spapr_tce.c
+>@@ -191,69 +191,90 @@ static void tce_iommu_release(void *iommu_data)
+> 	struct tce_container *container = iommu_data;
+>
+> 	WARN_ON(container->tbl && !container->tbl->it_group);
+>-	tce_iommu_disable(container);
+>
+> 	if (container->tbl && container->tbl->it_group)
+> 		tce_iommu_detach_group(iommu_data, container->tbl->it_group);
+>
+>+	tce_iommu_disable(container);
+> 	mutex_destroy(&container->lock);
+>
+> 	kfree(container);
+> }
+>
+>+static void tce_iommu_unuse_page(struct tce_container *container,
+>+		unsigned long oldtce)
+>+{
+>+	struct page *page;
+>+
+>+	if (!(oldtce & (TCE_PCI_READ | TCE_PCI_WRITE)))
+>+		return;
+>+
 
+It might be worthy to have a global helper function in iommu.h to check
+if the given TCE entry is empty or not, for better readability. I would
+think the helper function is used here and there :-)
 
--- 
-Alexey
+Thanks,
+Gavin
+
+>+	page = pfn_to_page(oldtce >> PAGE_SHIFT);
+>+
+>+	if (oldtce & TCE_PCI_WRITE)
+>+		SetPageDirty(page);
+>+
+>+	put_page(page);
+>+}
+>+
+> static int tce_iommu_clear(struct tce_container *container,
+> 		struct iommu_table *tbl,
+> 		unsigned long entry, unsigned long pages)
+> {
+> 	unsigned long oldtce;
+>-	struct page *page;
+>
+> 	for ( ; pages; --pages, ++entry) {
+> 		oldtce = iommu_clear_tce(tbl, entry);
+> 		if (!oldtce)
+> 			continue;
+>
+>-		page = pfn_to_page(oldtce >> PAGE_SHIFT);
+>-		WARN_ON(!page);
+>-		if (page) {
+>-			if (oldtce & TCE_PCI_WRITE)
+>-				SetPageDirty(page);
+>-			put_page(page);
+>-		}
+>+		tce_iommu_unuse_page(container, oldtce);
+> 	}
+>
+> 	return 0;
+> }
+>
+>+static int tce_iommu_use_page(unsigned long tce, unsigned long *hpa)
+>+{
+>+	struct page *page = NULL;
+>+	enum dma_data_direction direction = iommu_tce_direction(tce);
+>+
+>+	if (get_user_pages_fast(tce & PAGE_MASK, 1,
+>+			direction != DMA_TO_DEVICE, &page) != 1)
+>+		return -EFAULT;
+>+
+>+	*hpa = __pa((unsigned long) page_address(page));
+>+
+>+	return 0;
+>+}
+>+
+> static long tce_iommu_build(struct tce_container *container,
+> 		struct iommu_table *tbl,
+> 		unsigned long entry, unsigned long tce, unsigned long pages)
+> {
+> 	long i, ret = 0;
+>-	struct page *page = NULL;
+>-	unsigned long hva;
+>+	struct page *page;
+>+	unsigned long hpa;
+> 	enum dma_data_direction direction = iommu_tce_direction(tce);
+>
+> 	for (i = 0; i < pages; ++i) {
+> 		unsigned long offset = tce & IOMMU_PAGE_MASK(tbl) & ~PAGE_MASK;
+>
+>-		ret = get_user_pages_fast(tce & PAGE_MASK, 1,
+>-				direction != DMA_TO_DEVICE, &page);
+>-		if (unlikely(ret != 1)) {
+>-			ret = -EFAULT;
+>+		ret = tce_iommu_use_page(tce, &hpa);
+>+		if (ret)
+> 			break;
+>-		}
+>
+>+		page = pfn_to_page(hpa >> PAGE_SHIFT);
+> 		if (!tce_page_is_contained(page, tbl->it_page_shift)) {
+> 			ret = -EPERM;
+> 			break;
+> 		}
+>
+>-		hva = (unsigned long) page_address(page) + offset;
+>-
+>-		ret = iommu_tce_build(tbl, entry + i, hva, direction);
+>+		hpa |= offset;
+>+		ret = iommu_tce_build(tbl, entry + i, (unsigned long) __va(hpa),
+>+				direction);
+> 		if (ret) {
+>-			put_page(page);
+>+			tce_iommu_unuse_page(container, hpa);
+> 			pr_err("iommu_tce: %s failed ioba=%lx, tce=%lx, ret=%ld\n",
+> 					__func__, entry << tbl->it_page_shift,
+> 					tce, ret);
+>-- 
+>2.4.0.rc3.8.gfb3e7d5
+>
