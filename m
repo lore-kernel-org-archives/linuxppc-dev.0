@@ -1,23 +1,20 @@
 Return-Path: <scottwood@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0130.outbound.protection.outlook.com [207.46.100.130])
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0109.outbound.protection.outlook.com [65.55.169.109])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 674E91A027B
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2015 02:34:12 +1000 (AEST)
-Message-ID: <1431534837.3868.42.camel@freescale.com>
-Subject: Re: [PATCH] powerpc/mpic: Remove WHOAMI readback after EOI
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8F2B21A01DA
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2015 02:37:22 +1000 (AEST)
+Message-ID: <1431535027.3868.44.camel@freescale.com>
+Subject: Re: [PATCH 2/2] mmc: sdhci-pltfm: enable interrupt mode to detect card
 From: Scott Wood <scottwood@freescale.com>
-To: Purcareata Bogdan <b43198@freescale.com>
-Date: Wed, 13 May 2015 11:33:57 -0500
-In-Reply-To: <55534225.1050305@freescale.com>
-References: <1427193823-14597-1-git-send-email-bogdan.purcareata@freescale.com>
- <55534225.1050305@freescale.com>
+To: Yangbo Lu <yangbo.lu@freescale.com>
+Date: Wed, 13 May 2015 11:37:07 -0500
+In-Reply-To: <1431505246-40102-1-git-send-email-yangbo.lu@freescale.com>
+References: <1431505246-40102-1-git-send-email-yangbo.lu@freescale.com>
 Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Cc: linuxppc-dev@lists.ozlabs.org,
- Bogdan Purcareata <bogdan.purcareata@freescale.com>,
- linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,29 +24,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2015-05-13 at 15:23 +0300, Purcareata Bogdan wrote:
-> Ping?
+On Wed, 2015-05-13 at 16:20 +0800, Yangbo Lu wrote:
+> Enable interrupt mode to detect card instead of polling mode
+> for P1020/P4080/P5020/P5040/T1040 by removing the quirk
+> SDHCI_QUIRK_BROKEN_CARD_DETECTION. This could improve data
+> transferring performance and avoid the call trace caused by
+> polling card status sometime.
 > 
-> On 24.03.2015 12:43, Bogdan Purcareata wrote:
-> > After previous discussions regarding the subject [1][2], there's no clear
-> > explanation or reason why the call was needed in the first place. The sensible
-> > argument is some sort of synchronization between the CPU and the MPIC, which
-> > hasn't been pointed out precisely and is no longer required (at least on BookE
-> > platforms).
-> >
-> > The benefit of this change is saving a MMIO trap per interrupt when running in a
-> > KVM guest.
-> >
-> > [1] https://patchwork.ozlabs.org/patch/429098/
-> > [2] https://patchwork.ozlabs.org/patch/433557/
-> >
-> > Signed-off-by: Bogdan Purcareata <bogdan.purcareata@freescale.com>
-> > ---
-> >   arch/powerpc/sysdev/mpic.c | 1 -
-> >   1 file changed, 1 deletion(-)
+> Signed-off-by: Yangbo Lu <yangbo.lu@freescale.com>
+> ---
+>  drivers/mmc/host/sdhci-pltfm.c | 7 +++++++
+>  1 file changed, 7 insertions(+)
+> 
+> diff --git a/drivers/mmc/host/sdhci-pltfm.c b/drivers/mmc/host/sdhci-pltfm.c
+> index c5b01d6..62f4049 100644
+> --- a/drivers/mmc/host/sdhci-pltfm.c
+> +++ b/drivers/mmc/host/sdhci-pltfm.c
+> @@ -102,6 +102,13 @@ void sdhci_get_of_property(struct platform_device *pdev)
+>  		    of_device_is_compatible(np, "fsl,mpc8536-esdhc"))
+>  			host->quirks |= SDHCI_QUIRK_BROKEN_TIMEOUT_VAL;
+>  
+> +		if (of_device_is_compatible(np, "fsl,p5040-esdhc") ||
+> +			of_device_is_compatible(np, "fsl,p5020-esdhc") ||
+> +			of_device_is_compatible(np, "fsl,p4080-esdhc") ||
+> +			of_device_is_compatible(np, "fsl,p1020-esdhc") ||
+> +			of_device_is_compatible(np, "fsl,t1040-esdhc"))
+> +			host->quirks &= ~SDHCI_QUIRK_BROKEN_CARD_DETECTION;
 
-Don't top-post.
+Please don't line up continuation lines with the if-body.  All of the
+"of_device_is_compatibles" should start in the same column.
 
-This is commit 56302c53d3dc477b8360954fc92c1dfc4fc0ec54 in Linus's tree.
+Given that you need to modify the device tree for this, why not just use
+SVR?
 
 -Scott
