@@ -1,27 +1,25 @@
-Return-Path: <emunson@akamai.com>
-Received: from prod-mail-xrelay02.akamai.com (prod-mail-xrelay02.akamai.com
- [72.246.2.14])
- by lists.ozlabs.org (Postfix) with ESMTP id 421491A027C
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2015 01:00:38 +1000 (AEST)
-Date: Wed, 13 May 2015 11:00:36 -0400
-From: Eric B Munson <emunson@akamai.com>
-To: Michal Hocko <mhocko@suse.cz>
-Subject: Re: [PATCH 0/3] Allow user to request memory to be locked on page
- fault
-Message-ID: <20150513150036.GG1227@akamai.com>
-References: <1431113626-19153-1-git-send-email-emunson@akamai.com>
- <20150508124203.6679b1d35ad9555425003929@linux-foundation.org>
- <20150511180631.GA1227@akamai.com>
+Return-Path: <thuth@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4E85D1A047E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2015 01:00:57 +1000 (AEST)
+Date: Wed, 13 May 2015 17:00:48 +0200
+From: Thomas Huth <thuth@redhat.com>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Subject: Re: [PATCH kernel v10 23/34] powerpc/iommu/powernv: Release
+ replaced TCE
+Message-ID: <20150513170048.2c6115c6@thh440s>
+In-Reply-To: <1431358763-24371-24-git-send-email-aik@ozlabs.ru>
+References: <1431358763-24371-1-git-send-email-aik@ozlabs.ru>
+ <1431358763-24371-24-git-send-email-aik@ozlabs.ru>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="df+09Je9rNq3P+GE"
-In-Reply-To: <20150511180631.GA1227@akamai.com>
-Cc: linux-arch@vger.kernel.org, linux-mips@linux-mips.org,
- linux-parisc@vger.kernel.org, linux-xtensa@linux-xtensa.org,
- linux-api@vger.kernel.org, linux-kernel@vger.kernel.org,
- Shuah Khan <shuahkh@osg.samsung.com>, linux-mm@kvack.org,
- linux-alpha@vger.kernel.org, sparclinux@vger.kernel.org,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=US-ASCII
+Cc: Wei Yang <weiyang@linux.vnet.ibm.com>,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,85 +29,159 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Tue, 12 May 2015 01:39:12 +1000
+Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
 
---df+09Je9rNq3P+GE
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> At the moment writing new TCE value to the IOMMU table fails with EBUSY
+> if there is a valid entry already. However PAPR specification allows
+> the guest to write new TCE value without clearing it first.
+> 
+> Another problem this patch is addressing is the use of pool locks for
+> external IOMMU users such as VFIO. The pool locks are to protect
+> DMA page allocator rather than entries and since the host kernel does
+> not control what pages are in use, there is no point in pool locks and
+> exchange()+put_page(oldtce) is sufficient to avoid possible races.
+> 
+> This adds an exchange() callback to iommu_table_ops which does the same
+> thing as set() plus it returns replaced TCE and DMA direction so
+> the caller can release the pages afterwards. The exchange() receives
+> a physical address unlike set() which receives linear mapping address;
+> and returns a physical address as the clear() does.
+> 
+> This implements exchange() for P5IOC2/IODA/IODA2. This adds a requirement
+> for a platform to have exchange() implemented in order to support VFIO.
+> 
+> This replaces iommu_tce_build() and iommu_clear_tce() with
+> a single iommu_tce_xchg().
+> 
+> This makes sure that TCE permission bits are not set in TCE passed to
+> IOMMU API as those are to be calculated by platform code from
+> DMA direction.
+> 
+> This moves SetPageDirty() to the IOMMU code to make it work for both
+> VFIO ioctl interface in in-kernel TCE acceleration (when it becomes
+> available later).
+> 
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> [aw: for the vfio related changes]
+> Acked-by: Alex Williamson <alex.williamson@redhat.com>
+[...]
+> diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
+> index 6275164..1287d49 100644
+> --- a/arch/powerpc/kernel/iommu.c
+> +++ b/arch/powerpc/kernel/iommu.c
+> @@ -962,10 +962,7 @@ EXPORT_SYMBOL_GPL(iommu_tce_clear_param_check);
+>  int iommu_tce_put_param_check(struct iommu_table *tbl,
+>  		unsigned long ioba, unsigned long tce)
+>  {
+> -	if (!(tce & (TCE_PCI_WRITE | TCE_PCI_READ)))
+> -		return -EINVAL;
+> -
+> -	if (tce & ~(IOMMU_PAGE_MASK(tbl) | TCE_PCI_WRITE | TCE_PCI_READ))
+> +	if (tce & ~IOMMU_PAGE_MASK(tbl))
+>  		return -EINVAL;
+>  
+>  	if (ioba & ~IOMMU_PAGE_MASK(tbl))
+> @@ -982,44 +979,16 @@ int iommu_tce_put_param_check(struct iommu_table *tbl,
+>  }
+>  EXPORT_SYMBOL_GPL(iommu_tce_put_param_check);
+>  
+> -unsigned long iommu_clear_tce(struct iommu_table *tbl, unsigned long entry)
+> +long iommu_tce_xchg(struct iommu_table *tbl, unsigned long entry,
+> +		unsigned long *hpa, enum dma_data_direction *direction)
+>  {
+> -	unsigned long oldtce;
+> -	struct iommu_pool *pool = get_pool(tbl, entry);
+> +	long ret;
+>  
+> -	spin_lock(&(pool->lock));
+> +	ret = tbl->it_ops->exchange(tbl, entry, hpa, direction);
+>  
+> -	oldtce = tbl->it_ops->get(tbl, entry);
+> -	if (oldtce & (TCE_PCI_WRITE | TCE_PCI_READ))
+> -		tbl->it_ops->clear(tbl, entry, 1);
+> -	else
+> -		oldtce = 0;
+> -
+> -	spin_unlock(&(pool->lock));
+> -
+> -	return oldtce;
+> -}
+> -EXPORT_SYMBOL_GPL(iommu_clear_tce);
+> -
+> -/*
+> - * hwaddr is a kernel virtual address here (0xc... bazillion),
+> - * tce_build converts it to a physical address.
+> - */
+> -int iommu_tce_build(struct iommu_table *tbl, unsigned long entry,
+> -		unsigned long hwaddr, enum dma_data_direction direction)
+> -{
+> -	int ret = -EBUSY;
+> -	unsigned long oldtce;
+> -	struct iommu_pool *pool = get_pool(tbl, entry);
+> -
+> -	spin_lock(&(pool->lock));
+> -
+> -	oldtce = tbl->it_ops->get(tbl, entry);
+> -	/* Add new entry if it is not busy */
+> -	if (!(oldtce & (TCE_PCI_WRITE | TCE_PCI_READ)))
+> -		ret = tbl->it_ops->set(tbl, entry, 1, hwaddr, direction, NULL);
+> -
+> -	spin_unlock(&(pool->lock));
+> +	if (!ret && ((*direction == DMA_FROM_DEVICE) ||
+> +			(*direction == DMA_BIDIRECTIONAL)))
 
-On Mon, 11 May 2015, Eric B Munson wrote:
+You could drop some of the parentheses:
 
-> On Fri, 08 May 2015, Andrew Morton wrote:
->=20
-> > On Fri,  8 May 2015 15:33:43 -0400 Eric B Munson <emunson@akamai.com> w=
-rote:
-> >=20
-> > > mlock() allows a user to control page out of program memory, but this
-> > > comes at the cost of faulting in the entire mapping when it is
-> > > allocated.  For large mappings where the entire area is not necessary
-> > > this is not ideal.
-> > >=20
-> > > This series introduces new flags for mmap() and mlockall() that allow=
- a
-> > > user to specify that the covered are should not be paged out, but only
-> > > after the memory has been used the first time.
-> >=20
-> > Please tell us much much more about the value of these changes: the use
-> > cases, the behavioural improvements and performance results which the
-> > patchset brings to those use cases, etc.
-> >=20
->=20
-> To illustrate the proposed use case I wrote a quick program that mmaps
-> a 5GB file which is filled with random data and accesses 150,000 pages
-> from that mapping.  Setup and processing were timed separately to
-> illustrate the differences between the three tested approaches.  the
-> setup portion is simply the call to mmap, the processing is the
-> accessing of the various locations in  that mapping.  The following
-> values are in milliseconds and are the averages of 20 runs each with a
-> call to echo 3 > /proc/sys/vm/drop_caches between each run.
->=20
-> The first mapping was made with MAP_PRIVATE | MAP_LOCKED as a baseline:
-> Startup average:    9476.506
-> Processing average: 3.573
->=20
-> The second mapping was simply MAP_PRIVATE but each page was passed to
-> mlock() before being read:
-> Startup average:    0.051
-> Processing average: 721.859
->=20
-> The final mapping was MAP_PRIVATE | MAP_LOCKONFAULT:
-> Startup average:    0.084
-> Processing average: 42.125
->=20
+	if (!ret && (*direction == DMA_FROM_DEVICE ||
+			*direction == DMA_BIDIRECTIONAL))
 
-Michal's suggestion of changing protections and locking in a signal
-handler was better than the locking as needed, but still significantly
-more work required than the LOCKONFAULT case.
+> +		SetPageDirty(pfn_to_page(*hpa >> PAGE_SHIFT));
+>  
+>  	/* if (unlikely(ret))
+>  		pr_err("iommu_tce: %s failed on hwaddr=%lx ioba=%lx kva=%lx ret=%d\n",
+[...]
+> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
+> index 2ead291..0724ec8 100644
+> --- a/drivers/vfio/vfio_iommu_spapr_tce.c
+> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
+> @@ -236,18 +236,11 @@ static void tce_iommu_release(void *iommu_data)
+[...]
+> @@ -405,19 +410,26 @@ static long tce_iommu_ioctl(void *iommu_data,
+>  			return -EINVAL;
+>  
+>  		/* iova is checked by the IOMMU API */
+> -		tce = param.vaddr;
+>  		if (param.flags & VFIO_DMA_MAP_FLAG_READ)
+> -			tce |= TCE_PCI_READ;
+> -		if (param.flags & VFIO_DMA_MAP_FLAG_WRITE)
+> -			tce |= TCE_PCI_WRITE;
+> +			if (param.flags & VFIO_DMA_MAP_FLAG_WRITE)
+> +				direction = DMA_BIDIRECTIONAL;
+> +			else
+> +				direction = DMA_TO_DEVICE;
+> +		else
+> +			if (param.flags & VFIO_DMA_MAP_FLAG_WRITE)
+> +				direction = DMA_FROM_DEVICE;
+> +			else
+> +				return -EINVAL;
 
-Startup average:    0.047
-Processing average: 86.431
+IMHO some curly braces for the outer if-statement would be really fine
+here.
 
+> -		ret = iommu_tce_put_param_check(tbl, param.iova, tce);
+> +		ret = iommu_tce_put_param_check(tbl, param.iova, param.vaddr);
+>  		if (ret)
+>  			return ret;
+>  
+>  		ret = tce_iommu_build(container, tbl,
+>  				param.iova >> tbl->it_page_shift,
+> -				tce, param.size >> tbl->it_page_shift);
+> +				param.vaddr,
+> +				param.size >> tbl->it_page_shift,
+> +				direction);
+>  
+>  		iommu_flush_tce(tbl);
+>  
 
---df+09Je9rNq3P+GE
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJVU2cUAAoJELbVsDOpoOa9baQQANJIi9hDC0B5PmZg1n740+8X
-5w7lzvAiDqRYi4/xYMjtx55l9M/YpTlnEuCPHUjEUvQvpxALWGSTYmcJ6cNx47Gh
-/BHWrTr4oedPg23icayje+QC/DKF10OT/qBx/ep/+J4nEEZnbBQmk5Ce2EbjVCDm
-4Xs3RjSeD9cWAOoHTsN2oqerZSM+DlqGU0Q2mWu10VM6usItc1oWk6U/gpD/26tE
-lfMslp8jsECGvLmd4Zkj44HifD36pI0InaSKeBLrUCAe8W6qvhCuIaKRdOn00lgZ
-CcUfQsK0c/7aYOZDm5CM4EUm+F8ee0mJV19qDMOm5rU9IrFZ4zj6rzRUHQ5OHcFH
-mLxWm6wtqxYSapbWkYhiMei6lzDeMi0aL9BHKnzktgABBO1rwgNwPTlmwIWZcyPz
-GWtxOw2oQZ6NqfGp9p3s677z2yicYQEJtEsvGrj5RVCUiXOwcRbQ0qNn8hF/6DrV
-Xpk/cL6Zr9g8Klh/tLSN1CTXkcvGU6Poc83MLqf7DWmoKB86izb6MLoV4l5ckfyQ
-s3nDQ6IJHOM3LaHIxeHj3FjHABx/lzwN22sKeRhsDduqiYUq3Y0i2J39ujXbZeUl
-VlZ37T447uyO+nDgvg27P4MVsQlYYqt/vMmZ/a1NJdDXkzQU5RYpEmIeX/Z1Rifz
-2Mean0e41gkDsd0BkxJb
-=mszX
------END PGP SIGNATURE-----
-
---df+09Je9rNq3P+GE--
+ Thomas
