@@ -1,25 +1,17 @@
-Return-Path: <thuth@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+Return-Path: <duwe@lst.de>
+Received: from newverein.lst.de (verein.lst.de [213.95.11.211])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4E85D1A047E
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2015 01:00:57 +1000 (AEST)
-Date: Wed, 13 May 2015 17:00:48 +0200
-From: Thomas Huth <thuth@redhat.com>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Subject: Re: [PATCH kernel v10 23/34] powerpc/iommu/powernv: Release
- replaced TCE
-Message-ID: <20150513170048.2c6115c6@thh440s>
-In-Reply-To: <1431358763-24371-24-git-send-email-aik@ozlabs.ru>
-References: <1431358763-24371-1-git-send-email-aik@ozlabs.ru>
- <1431358763-24371-24-git-send-email-aik@ozlabs.ru>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6E0881A0281
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2015 02:16:55 +1000 (AEST)
+Date: Wed, 13 May 2015 18:11:00 +0200
+From: Torsten Duwe <duwe@lst.de>
+To: ppc-dev <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH] ppc64 ftrace: mark data_access callees "notrace" (pt.1)
+Message-ID: <20150513161100.GA1619@lst.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Wei Yang <weiyang@linux.vnet.ibm.com>,
- Gavin Shan <gwshan@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
- Alex Williamson <alex.williamson@redhat.com>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- David Gibson <david@gibson.dropbear.id.au>
+Content-Type: text/plain; charset=us-ascii
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,159 +21,230 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 12 May 2015 01:39:12 +1000
-Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
+In order to avoid an endless recursion, functions that may get
+called from the data access handler must not call into tracing
+functions, which may cause data access faults ;-)
 
-> At the moment writing new TCE value to the IOMMU table fails with EBUSY
-> if there is a valid entry already. However PAPR specification allows
-> the guest to write new TCE value without clearing it first.
-> 
-> Another problem this patch is addressing is the use of pool locks for
-> external IOMMU users such as VFIO. The pool locks are to protect
-> DMA page allocator rather than entries and since the host kernel does
-> not control what pages are in use, there is no point in pool locks and
-> exchange()+put_page(oldtce) is sufficient to avoid possible races.
-> 
-> This adds an exchange() callback to iommu_table_ops which does the same
-> thing as set() plus it returns replaced TCE and DMA direction so
-> the caller can release the pages afterwards. The exchange() receives
-> a physical address unlike set() which receives linear mapping address;
-> and returns a physical address as the clear() does.
-> 
-> This implements exchange() for P5IOC2/IODA/IODA2. This adds a requirement
-> for a platform to have exchange() implemented in order to support VFIO.
-> 
-> This replaces iommu_tce_build() and iommu_clear_tce() with
-> a single iommu_tce_xchg().
-> 
-> This makes sure that TCE permission bits are not set in TCE passed to
-> IOMMU API as those are to be calculated by platform code from
-> DMA direction.
-> 
-> This moves SetPageDirty() to the IOMMU code to make it work for both
-> VFIO ioctl interface in in-kernel TCE acceleration (when it becomes
-> available later).
-> 
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> [aw: for the vfio related changes]
-> Acked-by: Alex Williamson <alex.williamson@redhat.com>
-[...]
-> diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
-> index 6275164..1287d49 100644
-> --- a/arch/powerpc/kernel/iommu.c
-> +++ b/arch/powerpc/kernel/iommu.c
-> @@ -962,10 +962,7 @@ EXPORT_SYMBOL_GPL(iommu_tce_clear_param_check);
->  int iommu_tce_put_param_check(struct iommu_table *tbl,
->  		unsigned long ioba, unsigned long tce)
->  {
-> -	if (!(tce & (TCE_PCI_WRITE | TCE_PCI_READ)))
-> -		return -EINVAL;
-> -
-> -	if (tce & ~(IOMMU_PAGE_MASK(tbl) | TCE_PCI_WRITE | TCE_PCI_READ))
-> +	if (tce & ~IOMMU_PAGE_MASK(tbl))
->  		return -EINVAL;
->  
->  	if (ioba & ~IOMMU_PAGE_MASK(tbl))
-> @@ -982,44 +979,16 @@ int iommu_tce_put_param_check(struct iommu_table *tbl,
->  }
->  EXPORT_SYMBOL_GPL(iommu_tce_put_param_check);
->  
-> -unsigned long iommu_clear_tce(struct iommu_table *tbl, unsigned long entry)
-> +long iommu_tce_xchg(struct iommu_table *tbl, unsigned long entry,
-> +		unsigned long *hpa, enum dma_data_direction *direction)
->  {
-> -	unsigned long oldtce;
-> -	struct iommu_pool *pool = get_pool(tbl, entry);
-> +	long ret;
->  
-> -	spin_lock(&(pool->lock));
-> +	ret = tbl->it_ops->exchange(tbl, entry, hpa, direction);
->  
-> -	oldtce = tbl->it_ops->get(tbl, entry);
-> -	if (oldtce & (TCE_PCI_WRITE | TCE_PCI_READ))
-> -		tbl->it_ops->clear(tbl, entry, 1);
-> -	else
-> -		oldtce = 0;
-> -
-> -	spin_unlock(&(pool->lock));
-> -
-> -	return oldtce;
-> -}
-> -EXPORT_SYMBOL_GPL(iommu_clear_tce);
-> -
-> -/*
-> - * hwaddr is a kernel virtual address here (0xc... bazillion),
-> - * tce_build converts it to a physical address.
-> - */
-> -int iommu_tce_build(struct iommu_table *tbl, unsigned long entry,
-> -		unsigned long hwaddr, enum dma_data_direction direction)
-> -{
-> -	int ret = -EBUSY;
-> -	unsigned long oldtce;
-> -	struct iommu_pool *pool = get_pool(tbl, entry);
-> -
-> -	spin_lock(&(pool->lock));
-> -
-> -	oldtce = tbl->it_ops->get(tbl, entry);
-> -	/* Add new entry if it is not busy */
-> -	if (!(oldtce & (TCE_PCI_WRITE | TCE_PCI_READ)))
-> -		ret = tbl->it_ops->set(tbl, entry, 1, hwaddr, direction, NULL);
-> -
-> -	spin_unlock(&(pool->lock));
-> +	if (!ret && ((*direction == DMA_FROM_DEVICE) ||
-> +			(*direction == DMA_BIDIRECTIONAL)))
+Advancing from my previous approach that lavishly compiled whole
+subdirs without the profiling switches, this is more fine-grained
+(but probably yet incomplete). This patch is necessary albeit not
+sufficient for FTRACE_WITH_REGS on ppc64.
 
-You could drop some of the parentheses:
+Patch is against 3.17; fuzz+force should do no harm.
 
-	if (!ret && (*direction == DMA_FROM_DEVICE ||
-			*direction == DMA_BIDIRECTIONAL))
+Signed-off-by: Torsten Duwe <duwe@suse.de>
 
-> +		SetPageDirty(pfn_to_page(*hpa >> PAGE_SHIFT));
->  
->  	/* if (unlikely(ret))
->  		pr_err("iommu_tce: %s failed on hwaddr=%lx ioba=%lx kva=%lx ret=%d\n",
-[...]
-> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
-> index 2ead291..0724ec8 100644
-> --- a/drivers/vfio/vfio_iommu_spapr_tce.c
-> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
-> @@ -236,18 +236,11 @@ static void tce_iommu_release(void *iommu_data)
-[...]
-> @@ -405,19 +410,26 @@ static long tce_iommu_ioctl(void *iommu_data,
->  			return -EINVAL;
->  
->  		/* iova is checked by the IOMMU API */
-> -		tce = param.vaddr;
->  		if (param.flags & VFIO_DMA_MAP_FLAG_READ)
-> -			tce |= TCE_PCI_READ;
-> -		if (param.flags & VFIO_DMA_MAP_FLAG_WRITE)
-> -			tce |= TCE_PCI_WRITE;
-> +			if (param.flags & VFIO_DMA_MAP_FLAG_WRITE)
-> +				direction = DMA_BIDIRECTIONAL;
-> +			else
-> +				direction = DMA_TO_DEVICE;
-> +		else
-> +			if (param.flags & VFIO_DMA_MAP_FLAG_WRITE)
-> +				direction = DMA_FROM_DEVICE;
-> +			else
-> +				return -EINVAL;
-
-IMHO some curly braces for the outer if-statement would be really fine
-here.
-
-> -		ret = iommu_tce_put_param_check(tbl, param.iova, tce);
-> +		ret = iommu_tce_put_param_check(tbl, param.iova, param.vaddr);
->  		if (ret)
->  			return ret;
->  
->  		ret = tce_iommu_build(container, tbl,
->  				param.iova >> tbl->it_page_shift,
-> -				tce, param.size >> tbl->it_page_shift);
-> +				param.vaddr,
-> +				param.size >> tbl->it_page_shift,
-> +				direction);
->  
->  		iommu_flush_tce(tbl);
->  
-
- Thomas
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index bf44ae9..29ed85f 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -717,7 +717,7 @@ static inline void __switch_to_tm(struct task_struct *prev)
+  * don't know which of the checkpointed state and the transactional
+  * state to use.
+  */
+-void restore_tm_state(struct pt_regs *regs)
++notrace void restore_tm_state(struct pt_regs *regs)
+ {
+ 	unsigned long msr_diff;
+ 
+diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
+index daee7f4..a8e5b8c 100644
+--- a/arch/powerpc/mm/hash_utils_64.c
++++ b/arch/powerpc/mm/hash_utils_64.c
+@@ -846,7 +846,7 @@ void early_init_mmu_secondary(void)
+ /*
+  * Called by asm hashtable.S for doing lazy icache flush
+  */
+-unsigned int hash_page_do_lazy_icache(unsigned int pp, pte_t pte, int trap)
++notrace unsigned int hash_page_do_lazy_icache(unsigned int pp, pte_t pte, int trap)
+ {
+ 	struct page *page;
+ 
+@@ -867,7 +867,7 @@ unsigned int hash_page_do_lazy_icache(unsigned int pp, pte_t pte, int trap)
+ }
+ 
+ #ifdef CONFIG_PPC_MM_SLICES
+-unsigned int get_paca_psize(unsigned long addr)
++notrace unsigned int get_paca_psize(unsigned long addr)
+ {
+ 	u64 lpsizes;
+ 	unsigned char *hpsizes;
+@@ -896,7 +896,7 @@ unsigned int get_paca_psize(unsigned long addr)
+  * For now this makes the whole process use 4k pages.
+  */
+ #ifdef CONFIG_PPC_64K_PAGES
+-void demote_segment_4k(struct mm_struct *mm, unsigned long addr)
++notrace void demote_segment_4k(struct mm_struct *mm, unsigned long addr)
+ {
+ 	if (get_slice_psize(mm, addr) == MMU_PAGE_4K)
+ 		return;
+@@ -919,7 +919,7 @@ void demote_segment_4k(struct mm_struct *mm, unsigned long addr)
+  * Result is 0: full permissions, _PAGE_RW: read-only,
+  * _PAGE_USER or _PAGE_USER|_PAGE_RW: no access.
+  */
+-static int subpage_protection(struct mm_struct *mm, unsigned long ea)
++static notrace int subpage_protection(struct mm_struct *mm, unsigned long ea)
+ {
+ 	struct subpage_prot_table *spt = &mm->context.spt;
+ 	u32 spp = 0;
+@@ -967,7 +967,7 @@ void hash_failure_debug(unsigned long ea, unsigned long access,
+ 		trap, vsid, ssize, psize, lpsize, pte);
+ }
+ 
+-static void check_paca_psize(unsigned long ea, struct mm_struct *mm,
++static notrace void check_paca_psize(unsigned long ea, struct mm_struct *mm,
+ 			     int psize, bool user_region)
+ {
+ 	if (user_region) {
+@@ -989,7 +989,7 @@ static void check_paca_psize(unsigned long ea, struct mm_struct *mm,
+  * -1 - critical hash insertion error
+  * -2 - access not permitted by subpage protection mechanism
+  */
+-int hash_page(unsigned long ea, unsigned long access, unsigned long trap)
++notrace int hash_page(unsigned long ea, unsigned long access, unsigned long trap)
+ {
+ 	enum ctx_state prev_state = exception_enter();
+ 	pgd_t *pgdir;
+@@ -1269,7 +1269,7 @@ out_exit:
+ /* WARNING: This is called from hash_low_64.S, if you change this prototype,
+  *          do not forget to update the assembly call site !
+  */
+-void flush_hash_page(unsigned long vpn, real_pte_t pte, int psize, int ssize,
++notrace void flush_hash_page(unsigned long vpn, real_pte_t pte, int psize, int ssize,
+ 		     int local)
+ {
+ 	unsigned long hash, index, shift, hidx, slot;
+@@ -1343,7 +1343,7 @@ void low_hash_fault(struct pt_regs *regs, unsigned long address, int rc)
+ 	exception_exit(prev_state);
+ }
+ 
+-long hpte_insert_repeating(unsigned long hash, unsigned long vpn,
++notrace long hpte_insert_repeating(unsigned long hash, unsigned long vpn,
+ 			   unsigned long pa, unsigned long rflags,
+ 			   unsigned long vflags, int psize, int ssize)
+ {
+diff --git a/arch/powerpc/mm/hugetlbpage-hash64.c b/arch/powerpc/mm/hugetlbpage-hash64.c
+index a5bcf93..ea911b2 100644
+--- a/arch/powerpc/mm/hugetlbpage-hash64.c
++++ b/arch/powerpc/mm/hugetlbpage-hash64.c
+@@ -18,7 +18,7 @@ extern long hpte_insert_repeating(unsigned long hash, unsigned long vpn,
+ 				  unsigned long pa, unsigned long rlags,
+ 				  unsigned long vflags, int psize, int ssize);
+ 
+-int __hash_page_huge(unsigned long ea, unsigned long access, unsigned long vsid,
++notrace int __hash_page_huge(unsigned long ea, unsigned long access, unsigned long vsid,
+ 		     pte_t *ptep, unsigned long trap, int local, int ssize,
+ 		     unsigned int shift, unsigned int mmu_psize)
+ {
+diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
+index 7e70ae9..4fe2338 100644
+--- a/arch/powerpc/mm/hugetlbpage.c
++++ b/arch/powerpc/mm/hugetlbpage.c
+@@ -905,7 +905,7 @@ static int __init hugetlbpage_init(void)
+ #endif
+ module_init(hugetlbpage_init);
+ 
+-void flush_dcache_icache_hugepage(struct page *page)
++notrace void flush_dcache_icache_hugepage(struct page *page)
+ {
+ 	int i;
+ 	void *start;
+@@ -936,7 +936,7 @@ void flush_dcache_icache_hugepage(struct page *page)
+  * we can follow the address down to the the page and take a ref on it.
+  */
+ 
+-pte_t *find_linux_pte_or_hugepte(pgd_t *pgdir, unsigned long ea, unsigned *shift)
++notrace pte_t *find_linux_pte_or_hugepte(pgd_t *pgdir, unsigned long ea, unsigned *shift)
+ {
+ 	pgd_t pgd, *pgdp;
+ 	pud_t pud, *pudp;
+diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+index e0f7a18..05f66b1 100644
+--- a/arch/powerpc/mm/mem.c
++++ b/arch/powerpc/mm/mem.c
+@@ -400,7 +400,7 @@ void flush_dcache_page(struct page *page)
+ }
+ EXPORT_SYMBOL(flush_dcache_page);
+ 
+-void flush_dcache_icache_page(struct page *page)
++notrace void flush_dcache_icache_page(struct page *page)
+ {
+ #ifdef CONFIG_HUGETLB_PAGE
+ 	if (PageCompound(page)) {
+diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
+index c8d709a..72bd991 100644
+--- a/arch/powerpc/mm/pgtable_64.c
++++ b/arch/powerpc/mm/pgtable_64.c
+@@ -444,7 +444,7 @@ static void page_table_free_rcu(void *table)
+ 	}
+ }
+ 
+-void pgtable_free_tlb(struct mmu_gather *tlb, void *table, int shift)
++notrace void pgtable_free_tlb(struct mmu_gather *tlb, void *table, int shift)
+ {
+ 	unsigned long pgf = (unsigned long)table;
+ 
+diff --git a/arch/powerpc/mm/slb.c b/arch/powerpc/mm/slb.c
+index 0399a67..5ccc3c8 100644
+--- a/arch/powerpc/mm/slb.c
++++ b/arch/powerpc/mm/slb.c
+@@ -94,7 +94,7 @@ static inline void create_shadowed_slbe(unsigned long ea, int ssize,
+ 		     : "memory" );
+ }
+ 
+-static void __slb_flush_and_rebolt(void)
++static notrace void __slb_flush_and_rebolt(void)
+ {
+ 	/* If you change this make sure you change SLB_NUM_BOLTED
+ 	 * and PR KVM appropriately too. */
+@@ -134,7 +134,7 @@ static void __slb_flush_and_rebolt(void)
+ 		     : "memory");
+ }
+ 
+-void slb_flush_and_rebolt(void)
++notrace void slb_flush_and_rebolt(void)
+ {
+ 
+ 	WARN_ON(!irqs_disabled());
+@@ -149,7 +149,7 @@ void slb_flush_and_rebolt(void)
+ 	get_paca()->slb_cache_ptr = 0;
+ }
+ 
+-void slb_vmalloc_update(void)
++notrace void slb_vmalloc_update(void)
+ {
+ 	unsigned long vflags;
+ 
+diff --git a/arch/powerpc/mm/slice.c b/arch/powerpc/mm/slice.c
+index b0c75cc..c1efc4c 100644
+--- a/arch/powerpc/mm/slice.c
++++ b/arch/powerpc/mm/slice.c
+@@ -74,8 +74,8 @@ static void slice_print_mask(const char *label, struct slice_mask mask) {}
+ 
+ #endif
+ 
+-static struct slice_mask slice_range_to_mask(unsigned long start,
+-					     unsigned long len)
++static notrace struct slice_mask slice_range_to_mask(unsigned long start,
++						     unsigned long len)
+ {
+ 	unsigned long end = start + len - 1;
+ 	struct slice_mask ret = { 0, 0 };
+@@ -564,7 +564,7 @@ unsigned long arch_get_unmapped_area_topdown(struct file *filp,
+ 				       current->mm->context.user_psize, 1);
+ }
+ 
+-unsigned int get_slice_psize(struct mm_struct *mm, unsigned long addr)
++notrace unsigned int get_slice_psize(struct mm_struct *mm, unsigned long addr)
+ {
+ 	unsigned char *hpsizes;
+ 	int index, mask_index;
+@@ -676,7 +676,7 @@ void slice_set_psize(struct mm_struct *mm, unsigned long address,
+ #endif
+ }
+ 
+-void slice_set_range_psize(struct mm_struct *mm, unsigned long start,
++notrace void slice_set_range_psize(struct mm_struct *mm, unsigned long start,
+ 			   unsigned long len, unsigned int psize)
+ {
+ 	struct slice_mask mask = slice_range_to_mask(start, len);
