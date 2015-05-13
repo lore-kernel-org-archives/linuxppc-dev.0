@@ -1,22 +1,26 @@
-Return-Path: <B43198@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0132.outbound.protection.outlook.com [157.56.111.132])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <thuth@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 71B031A01DA
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 22:23:29 +1000 (AEST)
-Message-ID: <55534225.1050305@freescale.com>
-Date: Wed, 13 May 2015 15:23:01 +0300
-From: Purcareata Bogdan <b43198@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 278331A0205
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 22:51:50 +1000 (AEST)
+Date: Wed, 13 May 2015 14:51:36 +0200
+From: Thomas Huth <thuth@redhat.com>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Subject: Re: [PATCH kernel v10 05/34] powerpc/iommu: Always release
+ iommu_table in iommu_free_table()
+Message-ID: <20150513145136.1a85f536@thh440s>
+In-Reply-To: <5552EF78.6020301@ozlabs.ru>
+References: <1431358763-24371-1-git-send-email-aik@ozlabs.ru>
+ <1431358763-24371-6-git-send-email-aik@ozlabs.ru>
+ <20150513053337.GA479@gwshan> <5552EF78.6020301@ozlabs.ru>
 MIME-Version: 1.0
-To: Bogdan Purcareata <bogdan.purcareata@freescale.com>,
- <linuxppc-dev@lists.ozlabs.org>, <scottwood@freescale.com>,
- <segher@kernel.crashing.org>, <benh@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc/mpic: Remove WHOAMI readback after EOI
-References: <1427193823-14597-1-git-send-email-bogdan.purcareata@freescale.com>
-In-Reply-To: <1427193823-14597-1-git-send-email-bogdan.purcareata@freescale.com>
-Content-Type: text/plain; charset="windows-1252"; format=flowed
-Cc: linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=US-ASCII
+Cc: Wei Yang <weiyang@linux.vnet.ibm.com>,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,36 +30,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Ping?
+On Wed, 13 May 2015 16:30:16 +1000
+Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
 
-On 24.03.2015 12:43, Bogdan Purcareata wrote:
-> After previous discussions regarding the subject [1][2], there's no clear
-> explanation or reason why the call was needed in the first place. The sensible
-> argument is some sort of synchronization between the CPU and the MPIC, which
-> hasn't been pointed out precisely and is no longer required (at least on BookE
-> platforms).
->
-> The benefit of this change is saving a MMIO trap per interrupt when running in a
-> KVM guest.
->
-> [1] https://patchwork.ozlabs.org/patch/429098/
-> [2] https://patchwork.ozlabs.org/patch/433557/
->
-> Signed-off-by: Bogdan Purcareata <bogdan.purcareata@freescale.com>
-> ---
->   arch/powerpc/sysdev/mpic.c | 1 -
->   1 file changed, 1 deletion(-)
->
-> diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
-> index bbfbbf2..045e72a9 100644
-> --- a/arch/powerpc/sysdev/mpic.c
-> +++ b/arch/powerpc/sysdev/mpic.c
-> @@ -655,7 +655,6 @@ static inline struct mpic * mpic_from_irq_data(struct irq_data *d)
->   static inline void mpic_eoi(struct mpic *mpic)
->   {
->   	mpic_cpu_write(MPIC_INFO(CPU_EOI), 0);
-> -	(void)mpic_cpu_read(MPIC_INFO(CPU_WHOAMI));
->   }
->
->   /*
->
+> On 05/13/2015 03:33 PM, Gavin Shan wrote:
+> > On Tue, May 12, 2015 at 01:38:54AM +1000, Alexey Kardashevskiy wrote:
+> >> At the moment iommu_free_table() only releases memory if
+> >> the table was initialized for the platform code use, i.e. it had
+> >> it_map initialized (which purpose is to track DMA memory space use).
+> >>
+> >> With dynamic DMA windows, we will need to be able to release
+> >> iommu_table even if it was used for VFIO in which case it_map is NULL
+> >> so does the patch.
+> >>
+> >> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> >
+> > Reviewed-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+> >
+> >> ---
+> >> arch/powerpc/kernel/iommu.c | 3 +--
+> >> 1 file changed, 1 insertion(+), 2 deletions(-)
+> >>
+> >> diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
+> >> index 3d47eb3..2c02d4c 100644
+> >> --- a/arch/powerpc/kernel/iommu.c
+> >> +++ b/arch/powerpc/kernel/iommu.c
+> >> @@ -714,8 +714,7 @@ void iommu_free_table(struct iommu_table *tbl, const char *node_name)
+> >> 	unsigned int order;
+> >>
+> >> 	if (!tbl || !tbl->it_map) {
+> >> -		printk(KERN_ERR "%s: expected TCE map for %s\n", __func__,
+> >> -				node_name);
+> >> +		kfree(tbl);
+> >
+> > I'm not sure if the "tbl" needs to be checked against NULL as kfree() already
+> > has the check. But it looks a bit strange to free NULL "tbl" from the code
+> > itself.
+> 
+> Yeah, looks a bit weird, agree, I'll change but in general kfree/vfree/... 
+> - they all check the passed pointer for NULL.
+
+But if tbl is NULL, the tbl->it_map check will fail, won't it? So in
+this case, I think you have to keep it.
+
+ Thomas
