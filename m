@@ -1,26 +1,41 @@
-Return-Path: <thuth@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <brking@linux.vnet.ibm.com>
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 278331A0205
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 22:51:50 +1000 (AEST)
-Date: Wed, 13 May 2015 14:51:36 +0200
-From: Thomas Huth <thuth@redhat.com>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Subject: Re: [PATCH kernel v10 05/34] powerpc/iommu: Always release
- iommu_table in iommu_free_table()
-Message-ID: <20150513145136.1a85f536@thh440s>
-In-Reply-To: <5552EF78.6020301@ozlabs.ru>
-References: <1431358763-24371-1-git-send-email-aik@ozlabs.ru>
- <1431358763-24371-6-git-send-email-aik@ozlabs.ru>
- <20150513053337.GA479@gwshan> <5552EF78.6020301@ozlabs.ru>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6D2571A0214
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 23:23:51 +1000 (AEST)
+Received: from /spool/local
+ by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <brking@linux.vnet.ibm.com>;
+ Wed, 13 May 2015 07:23:47 -0600
+Received: from b01cxnp22035.gho.pok.ibm.com (b01cxnp22035.gho.pok.ibm.com
+ [9.57.198.25])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id 5B0AB38C8046
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 09:23:45 -0400 (EDT)
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+ by b01cxnp22035.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t4DDNjFS61472818
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 13:23:45 GMT
+Received: from d01av03.pok.ibm.com (localhost [127.0.0.1])
+ by d01av03.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t4DDNh0p028297
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 09:23:44 -0400
+Message-ID: <5553505D.50102@linux.vnet.ibm.com>
+Date: Wed, 13 May 2015 08:23:41 -0500
+From: Brian King <brking@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Wei Yang <weiyang@linux.vnet.ibm.com>,
- Gavin Shan <gwshan@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
- Alex Williamson <alex.williamson@redhat.com>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- David Gibson <david@gibson.dropbear.id.au>
+To: Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] mpt2sas: Fall back to 64 bit coherent mask if 64 bit
+ DMA / 32 bit coherent mask not supported
+References: <555279A8.6060906@linux.vnet.ibm.com>
+ <1431468627.20218.64.camel@kernel.crashing.org>
+ <55528BBB.3000809@linux.vnet.ibm.com> <2214146.EzgWBA6g23@wuerfel>
+In-Reply-To: <2214146.EzgWBA6g23@wuerfel>
+Content-Type: text/plain; charset=windows-1252
+Cc: Daniel Kreling <kreling@linux.vnet.ibm.com>,
+ linux-scsi <linux-scsi@vger.kernel.org>,
+ Sreekanth Reddy <sreekanth.reddy@avagotech.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,47 +45,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 13 May 2015 16:30:16 +1000
-Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
-
-> On 05/13/2015 03:33 PM, Gavin Shan wrote:
-> > On Tue, May 12, 2015 at 01:38:54AM +1000, Alexey Kardashevskiy wrote:
-> >> At the moment iommu_free_table() only releases memory if
-> >> the table was initialized for the platform code use, i.e. it had
-> >> it_map initialized (which purpose is to track DMA memory space use).
-> >>
-> >> With dynamic DMA windows, we will need to be able to release
-> >> iommu_table even if it was used for VFIO in which case it_map is NULL
-> >> so does the patch.
-> >>
-> >> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> >
-> > Reviewed-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
-> >
-> >> ---
-> >> arch/powerpc/kernel/iommu.c | 3 +--
-> >> 1 file changed, 1 insertion(+), 2 deletions(-)
-> >>
-> >> diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
-> >> index 3d47eb3..2c02d4c 100644
-> >> --- a/arch/powerpc/kernel/iommu.c
-> >> +++ b/arch/powerpc/kernel/iommu.c
-> >> @@ -714,8 +714,7 @@ void iommu_free_table(struct iommu_table *tbl, const char *node_name)
-> >> 	unsigned int order;
-> >>
-> >> 	if (!tbl || !tbl->it_map) {
-> >> -		printk(KERN_ERR "%s: expected TCE map for %s\n", __func__,
-> >> -				node_name);
-> >> +		kfree(tbl);
-> >
-> > I'm not sure if the "tbl" needs to be checked against NULL as kfree() already
-> > has the check. But it looks a bit strange to free NULL "tbl" from the code
-> > itself.
+On 05/13/2015 03:10 AM, Arnd Bergmann wrote:
+> On Tuesday 12 May 2015 18:24:43 Brian King wrote:
+>>
+>> Commit 5fb1bf8aaa832e1e9ca3198de7bbecb8eff7db9c broke 64 bit DMA for mpt2sas on Power.
+>> That commit changed the sequence for setting up the DMA and coherent DMA masks so
+>> that during initialization the driver requests a 64 bit DMA mask and a 32 bit consistent
+>> DMA mask, then later requests a 64 bit consistent DMA mask. The Power architecture does
+>> not currently support this, which results in always falling back to a 32 bit DMA window,
+>> which has a negative impact on performance. Tweak this algorithm slightly so that
+>> if requesting a 32 bit consistent mask fails after we've successfully set a 64 bit
+>> DMA mask, just try to get a 64 bit consistent mask. This should preserve existing
+>> behavior on platforms that support mixed mask setting and restore previous functionality
+>> to those that do not.
+>>
+>> Signed-off-by: Brian King <brking@linux.vnet.ibm.com>
 > 
-> Yeah, looks a bit weird, agree, I'll change but in general kfree/vfree/... 
-> - they all check the passed pointer for NULL.
+> I believe the way the API is designed, it should guarantee that after dma_set_mask()
+> succeeds for a device, dma_set_coherent_mask() with the same mask will also succeed.
+> 
+> Could you just call dma_set_mask_and_coherent() here to avoid that complex logic?
 
-But if tbl is NULL, the tbl->it_map check will fail, won't it? So in
-this case, I think you have to keep it.
+I don't think that would work. The mpt2sas driver wants to set the dma mask to 64bits
+but set the coherent mask to 32 bits, then my change is to set the coherent mask to
+64bits if setting it to 32bit fails. I'm not seeing how using dma_set_mask_and_coherent
+would simplify anything here.
 
- Thomas
+Thanks,
+
+Brian
+
+-- 
+Brian King
+Power Linux I/O
+IBM Linux Technology Center
