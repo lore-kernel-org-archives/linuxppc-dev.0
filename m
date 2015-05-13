@@ -1,24 +1,22 @@
-Return-Path: <broonie@sirena.org.uk>
-Received: from mezzanine.sirena.org.uk (mezzanine.sirena.org.uk
- [IPv6:2400:8900::f03c:91ff:fedb:4f4])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <B43198@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bon0132.outbound.protection.outlook.com [157.56.111.132])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 419DF1A01DA
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 22:16:24 +1000 (AEST)
-Date: Wed, 13 May 2015 12:43:21 +0100
-From: Mark Brown <broonie@kernel.org>
-To: Zidan Wang <zidan.wang@freescale.com>
-Message-ID: <20150513114321.GK3066@sirena.org.uk>
-References: <e6293a2408ccd8390fa2999df2af26b6de20f933.1431500729.git.zidan.wang@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 71B031A01DA
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 22:23:29 +1000 (AEST)
+Message-ID: <55534225.1050305@freescale.com>
+Date: Wed, 13 May 2015 15:23:01 +0300
+From: Purcareata Bogdan <b43198@freescale.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha256;
- protocol="application/pgp-signature"; boundary="ljn2+zwPkKedfiv/"
-In-Reply-To: <e6293a2408ccd8390fa2999df2af26b6de20f933.1431500729.git.zidan.wang@freescale.com>
-Subject: Re: [alsa-devel][PATCH v2 1/3] ASoC: fsl_sai: add sai master mode
- support
-Cc: alsa-devel@alsa-project.org, timur@tabi.org, Xiubo.Lee@gmail.com,
- tiwai@suse.de, linux-kernel@vger.kernel.org, lgirdwood@gmail.com,
- perex@perex.cz, nicoleotsuka@gmail.com, linuxppc-dev@lists.ozlabs.org
+To: Bogdan Purcareata <bogdan.purcareata@freescale.com>,
+ <linuxppc-dev@lists.ozlabs.org>, <scottwood@freescale.com>,
+ <segher@kernel.crashing.org>, <benh@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc/mpic: Remove WHOAMI readback after EOI
+References: <1427193823-14597-1-git-send-email-bogdan.purcareata@freescale.com>
+In-Reply-To: <1427193823-14597-1-git-send-email-bogdan.purcareata@freescale.com>
+Content-Type: text/plain; charset="windows-1252"; format=flowed
+Cc: linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,36 +26,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Ping?
 
---ljn2+zwPkKedfiv/
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Wed, May 13, 2015 at 03:12:59PM +0800, Zidan Wang wrote:
-> When sai works on master mode, set its bit clock and frame clock.
->=20
-> SAI has 4 MCLK source, bus clock, MCLK1, MCLK2 and MCLK3. fsl_sai_set_bclk
-> will select proper MCLK source, then calculate and set the bit clock divi=
-der.
-
-This looks like a patch I've already applied?  If there are any changes
-needed please send incremental fixes.
-
---ljn2+zwPkKedfiv/
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v2
-
-iQEcBAEBCAAGBQJVUzjYAAoJECTWi3JdVIfQO+oH/i54BuaZgM2RreWpI3PTmABP
-b9YBqj/V1AZIgEXjJltESwjIAK8VQhoV7+X+UzuIAQomLr1b3PWDQlwbutNTWtCC
-JYM596ewKG8clk4W2C0UjfnT3lMBwuRRuGsOJ/yzilOZZYov2Gx+qEK6TdNLbn1L
-BTVt29gGbGN6avYB5J3D6bCsz8gVAZpYPBbw9Q7Mux8IjzAGPjdIWxcQu4omE4hF
-KF45V397gqe0AwHmVsqkKCANYsbRgwk6mGR6yrDjaSIqvg4FSv8aEV1rotvEGFCF
-AGZB8SOszZza1Al4ThMxwhIZw9DfHf1H8xOXlL2dHGOM0lfAsyEULwebFjtkUTk=
-=BZ2a
------END PGP SIGNATURE-----
-
---ljn2+zwPkKedfiv/--
+On 24.03.2015 12:43, Bogdan Purcareata wrote:
+> After previous discussions regarding the subject [1][2], there's no clear
+> explanation or reason why the call was needed in the first place. The sensible
+> argument is some sort of synchronization between the CPU and the MPIC, which
+> hasn't been pointed out precisely and is no longer required (at least on BookE
+> platforms).
+>
+> The benefit of this change is saving a MMIO trap per interrupt when running in a
+> KVM guest.
+>
+> [1] https://patchwork.ozlabs.org/patch/429098/
+> [2] https://patchwork.ozlabs.org/patch/433557/
+>
+> Signed-off-by: Bogdan Purcareata <bogdan.purcareata@freescale.com>
+> ---
+>   arch/powerpc/sysdev/mpic.c | 1 -
+>   1 file changed, 1 deletion(-)
+>
+> diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
+> index bbfbbf2..045e72a9 100644
+> --- a/arch/powerpc/sysdev/mpic.c
+> +++ b/arch/powerpc/sysdev/mpic.c
+> @@ -655,7 +655,6 @@ static inline struct mpic * mpic_from_irq_data(struct irq_data *d)
+>   static inline void mpic_eoi(struct mpic *mpic)
+>   {
+>   	mpic_cpu_write(MPIC_INFO(CPU_EOI), 0);
+> -	(void)mpic_cpu_read(MPIC_INFO(CPU_WHOAMI));
+>   }
+>
+>   /*
+>
