@@ -1,40 +1,28 @@
-Return-Path: <brking@linux.vnet.ibm.com>
-Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 320BA1A026E
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2015 00:12:55 +1000 (AEST)
-Received: from /spool/local
- by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <brking@linux.vnet.ibm.com>;
- Wed, 13 May 2015 10:12:53 -0400
-Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
- [9.57.198.29])
- by d01dlp03.pok.ibm.com (Postfix) with ESMTP id 41680C90045
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 10:03:58 -0400 (EDT)
-Received: from d01av05.pok.ibm.com (d01av05.pok.ibm.com [9.56.224.195])
- by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t4DECoRp64094284
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 14:12:50 GMT
-Received: from d01av05.pok.ibm.com (localhost [127.0.0.1])
- by d01av05.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t4DECngO031783
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 10:12:50 -0400
-Message-ID: <55535BDF.6020502@linux.vnet.ibm.com>
-Date: Wed, 13 May 2015 09:12:47 -0500
-From: Brian King <brking@linux.vnet.ibm.com>
+Return-Path: <emunson@akamai.com>
+Received: from prod-mail-xrelay02.akamai.com (prod-mail-xrelay02.akamai.com
+ [72.246.2.14])
+ by lists.ozlabs.org (Postfix) with ESMTP id 4B4831A0270
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2015 00:14:44 +1000 (AEST)
+Date: Wed, 13 May 2015 10:14:42 -0400
+From: Eric B Munson <emunson@akamai.com>
+To: Michal Hocko <mhocko@suse.cz>
+Subject: Re: [PATCH 0/3] Allow user to request memory to be locked on page
+ fault
+Message-ID: <20150513141442.GC1227@akamai.com>
+References: <1431113626-19153-1-git-send-email-emunson@akamai.com>
+ <20150508124203.6679b1d35ad9555425003929@linux-foundation.org>
+ <20150508200610.GB29933@akamai.com>
+ <20150513135805.GA17708@dhcp22.suse.cz>
 MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH] mpt2sas: Fall back to 64 bit coherent mask if 64 bit
- DMA / 32 bit coherent mask not supported
-References: <555279A8.6060906@linux.vnet.ibm.com> <2214146.EzgWBA6g23@wuerfel>
- <5553505D.50102@linux.vnet.ibm.com> <10045033.4fV0qQU90u@wuerfel>
-In-Reply-To: <10045033.4fV0qQU90u@wuerfel>
-Content-Type: text/plain; charset=windows-1252
-Cc: Daniel Kreling <kreling@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- linux-scsi <linux-scsi@vger.kernel.org>,
- Sreekanth Reddy <sreekanth.reddy@avagotech.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="LwW0XdcUbUexiWVK"
+In-Reply-To: <20150513135805.GA17708@dhcp22.suse.cz>
+Cc: linux-arch@vger.kernel.org, linux-mips@linux-mips.org,
+ linux-parisc@vger.kernel.org, linux-xtensa@linux-xtensa.org,
+ linux-api@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Shuah Khan <shuahkh@osg.samsung.com>, linux-mm@kvack.org,
+ linux-alpha@vger.kernel.org, sparclinux@vger.kernel.org,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,56 +32,93 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/13/2015 08:31 AM, Arnd Bergmann wrote:
-> On Wednesday 13 May 2015 08:23:41 Brian King wrote:
->> On 05/13/2015 03:10 AM, Arnd Bergmann wrote:
->>> On Tuesday 12 May 2015 18:24:43 Brian King wrote:
->>>>
->>>> Commit 5fb1bf8aaa832e1e9ca3198de7bbecb8eff7db9c broke 64 bit DMA for mpt2sas on Power.
->>>> That commit changed the sequence for setting up the DMA and coherent DMA masks so
->>>> that during initialization the driver requests a 64 bit DMA mask and a 32 bit consistent
->>>> DMA mask, then later requests a 64 bit consistent DMA mask. The Power architecture does
->>>> not currently support this, which results in always falling back to a 32 bit DMA window,
->>>> which has a negative impact on performance. Tweak this algorithm slightly so that
->>>> if requesting a 32 bit consistent mask fails after we've successfully set a 64 bit
->>>> DMA mask, just try to get a 64 bit consistent mask. This should preserve existing
->>>> behavior on platforms that support mixed mask setting and restore previous functionality
->>>> to those that do not.
->>>>
->>>> Signed-off-by: Brian King <brking@linux.vnet.ibm.com>
->>>
->>> I believe the way the API is designed, it should guarantee that after dma_set_mask()
->>> succeeds for a device, dma_set_coherent_mask() with the same mask will also succeed.
->>>
->>> Could you just call dma_set_mask_and_coherent() here to avoid that complex logic?
->>
->> I don't think that would work. The mpt2sas driver wants to set the dma mask to 64bits
->> but set the coherent mask to 32 bits, then my change is to set the coherent mask to
->> 64bits if setting it to 32bit fails. I'm not seeing how using dma_set_mask_and_coherent
->> would simplify anything here.
-> 
-> My question was more about why the driver would ask for a 32-bit coherent
-> mask to start with. Is this a limitation in the mpt2sas device that can
-> only have descriptors at low addresses, or is it trying to work around some
-> bug in a particular host system?
 
-I'll need help from Sreekanth in answering that. All that is in the git commit log is:
+--LwW0XdcUbUexiWVK
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-    2. Initially set the consistent DMA mask to 32 bit and then change it to 64 bit mask
-    after allocating RDPQ pools by calling the function _base_change_consistent_dma_mask.
-    This is to ensure that all the upper 32 bits of RDPQ entries's base address to be same.
+On Wed, 13 May 2015, Michal Hocko wrote:
 
-So, I'm not sure my patch won't break something with mpt2sas... This commit also changed
-how the RDPO pools are allocated, so its possible this won't work. However, I did load
-it on Power box and I'm not seeing any major problems so far. I am seeing the following message
-get logged on a regular basis, not sure if its related to this change or not:
+> On Fri 08-05-15 16:06:10, Eric B Munson wrote:
+> > On Fri, 08 May 2015, Andrew Morton wrote:
+> >=20
+> > > On Fri,  8 May 2015 15:33:43 -0400 Eric B Munson <emunson@akamai.com>=
+ wrote:
+> > >=20
+> > > > mlock() allows a user to control page out of program memory, but th=
+is
+> > > > comes at the cost of faulting in the entire mapping when it is
+> > > > allocated.  For large mappings where the entire area is not necessa=
+ry
+> > > > this is not ideal.
+> > > >=20
+> > > > This series introduces new flags for mmap() and mlockall() that all=
+ow a
+> > > > user to specify that the covered are should not be paged out, but o=
+nly
+> > > > after the memory has been used the first time.
+> > >=20
+> > > Please tell us much much more about the value of these changes: the u=
+se
+> > > cases, the behavioural improvements and performance results which the
+> > > patchset brings to those use cases, etc.
+> > >=20
+> >=20
+> > The primary use case is for mmaping large files read only.  The process
+> > knows that some of the data is necessary, but it is unlikely that the
+> > entire file will be needed.  The developer only wants to pay the cost to
+> > read the data in once.  Unfortunately developer must choose between
+> > allowing the kernel to page in the memory as needed and guaranteeing
+> > that the data will only be read from disk once.  The first option runs
+> > the risk of having the memory reclaimed if the system is under memory
+> > pressure, the second forces the memory usage and startup delay when
+> > faulting in the entire file.
+>=20
+> Is there any reason you cannot do this from the userspace? Start by
+> mmap(PROT_NONE) and do mmap(MAP_FIXED|MAP_LOCKED|MAP_READ|other_flags_you=
+_need)
+> from the SIGSEGV handler?
+> You can generate a lot of vmas that way but you can mitigate that to a
+> certain level by mapping larger than PAGE_SIZE chunks in the fault
+> handler. Would that work in your usecase?
 
-mpt2sas3: log_info(0x31120303): originator(IOP), code(0x03), sub_code(0x3112)
+This might work for the use cases I have laid out (I am not sure about
+the anonymous mmap one, but I will try it).  I am concerned about how
+much memory management policy these suggestions push into userspace.
+I am also concerned about the number of system calls required to do the
+same thing.  This will require a new call to mmap() for every new page
+accessed in the file (or for every file_size/map_size in the multiple
+page chunk).  The simple case of calling mlock() on the every time the
+file was accessed was significantly slower than the LOCKONFAULT flag.
+Your suggestion will be better in that it avoids the extra mlock call
+for pages already locked, but there still significantly more system
+calls.  I will add this to the program I have been using to measure
+executuion times and see how it compares to the other options.
 
--Brian
+Eric
 
 
--- 
-Brian King
-Power Linux I/O
-IBM Linux Technology Center
+--LwW0XdcUbUexiWVK
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJVU1xSAAoJELbVsDOpoOa9ST0QALjeZMUC+/sOsLGgTFLfO0x9
+u6Bh2+sOR/Uba5bSaP4rYLlsfWGTD++9R3fV2yZJ9gQKGZaDm7fZOZXbaoQhjZLL
+/XwF6jnPyknimsgIMrqRf6j9RJQvJjl3ruRheA0W690BAPkBV6R40Bu6UW0X/7vx
+wMWR+3cLg5uJ80N1xxNVh2KkBezWtRKjfAueqMdIPcrXBz80xN8dnA0fdkN2Wpnp
+4CwbcYSg87W2/v0sdyiBrgIKca73Ic1/o7mv6O5isxViwd983SzKr1qn+FXAPTJc
+R66It0tG7mmZ/kIDVrCOXZY0Fme6WiK0wiImxXNZifjDkDo5Pko1Ng+MjJehyYhL
+Z/S4xy6jcQD++Ih2B95iAilK/8ZzP9mja8Wo6dhN+l/AlQdvSINULfXgi+9BnngY
+zMMUXGOEwIGAkxHWqh8iGTb7gjy7iPWTqqb06soQFq2Ol8uzFQpwEnKV1pCZG3PO
++Wp7oqGZraI5ckiw6M4+6auXWjOgcU2Uvf+82vCRbC1/8VHHEnN088fr9+f9wSBP
+TG2JO08lQTGIF1VvwYqfEsnWRvez+CQwr+sVIs1VXqvDiS694RZlT2FHLK/6USoF
+vn8WmBMJDissA3A0jgn9zIaTq393K27pFuc96zAsI4LYMLEZguYlkPT148GRJoXO
+bjOom+hb4Q4khMm9zqtk
+=Hfxi
+-----END PGP SIGNATURE-----
+
+--LwW0XdcUbUexiWVK--
