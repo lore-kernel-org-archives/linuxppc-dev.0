@@ -1,19 +1,34 @@
-Return-Path: <yangbo.lu@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0112.outbound.protection.outlook.com [157.56.111.112])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A05A91A06A3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2015 16:44:40 +1000 (AEST)
-From: Yangbo Lu <yangbo.lu@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
- <scottwood@freescale.com>
-Subject: [PATCH v2, 2/2] mmc: sdhci-pltfm: enable interrupt mode to detect card
-Date: Thu, 14 May 2015 14:40:48 +0800
-Message-ID: <1431585648-35130-1-git-send-email-yangbo.lu@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Yangbo Lu <yangbo.lu@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id BF2E71A116B
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2015 16:46:57 +1000 (AEST)
+Message-ID: <1431585994.4160.32.camel@kernel.crashing.org>
+Subject: Re: [PATCH v4 19/21] drivers/of: Support adding sub-tree
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Pantelis Antoniou <panto@antoniou-consulting.com>
+Date: Thu, 14 May 2015 16:46:34 +1000
+In-Reply-To: <53EAE361-0015-4702-97C6-9F67B87963C2@antoniou-consulting.com>
+References: <1430460188-31343-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <1430460188-31343-20-git-send-email-gwshan@linux.vnet.ibm.com>
+ <CAL_JsqKEUevxSe0Q=pGdsWOiT+TW9iAnCsAWuuqOYj3ZPOG7dg@mail.gmail.com>
+ <1430493730.7979.58.camel@kernel.crashing.org>
+ <CAL_JsqLrBSB4y_0j+i=kXbDA08HO23JuYjJGHR9nhsPnMC_Zyg@mail.gmail.com>
+ <1430521038.7979.70.camel@kernel.crashing.org>
+ <A6DF99C6-7059-4670-86D0-6926861F0164@antoniou-consulting.com>
+ <1430774063.7979.139.camel@kernel.crashing.org>
+ <1431560124.20218.91.camel@kernel.crashing.org>
+ <CAL_JsqKqTa5eg3eOqx3bkeNdO_920WwDiRbQaxwWLEWpCypFmA@mail.gmail.com>
+ <1431564871.4160.8.camel@kernel.crashing.org>
+ <53EAE361-0015-4702-97C6-9F67B87963C2@antoniou-consulting.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>, Grant Likely <grant.likely@linaro.org>,
+ Rob Herring <robherring2@gmail.com>, Bjorn Helgaas <bhelgaas@google.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,37 +38,121 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Enable interrupt mode to detect card instead of polling mode
-for P1020/P4080/P5020/P5040/T1040 by removing the quirk
-SDHCI_QUIRK_BROKEN_CARD_DETECTION. This could improve data
-transferring performance and avoid the call trace caused by
-polling card status sometime.
+On Thu, 2015-05-14 at 09:23 +0300, Pantelis Antoniou wrote:
 
-Signed-off-by: Yangbo Lu <yangbo.lu@freescale.com>
-----
-Changes for v2:
-	- Aligned all "of_device_is_compatibles" in same column
----
- drivers/mmc/host/sdhci-pltfm.c | 7 +++++++
- 1 file changed, 7 insertions(+)
+> > A few things that I don't find in the overlay code (but maybe I haven't
+> > looked at it hard enough):
+> > 
+> > - Can it remove nodes/properties ?
+> > 
+> 
+> Yes.
 
-diff --git a/drivers/mmc/host/sdhci-pltfm.c b/drivers/mmc/host/sdhci-pltfm.c
-index c5b01d6..97128f3 100644
---- a/drivers/mmc/host/sdhci-pltfm.c
-+++ b/drivers/mmc/host/sdhci-pltfm.c
-@@ -102,6 +102,13 @@ void sdhci_get_of_property(struct platform_device *pdev)
- 		    of_device_is_compatible(np, "fsl,mpc8536-esdhc"))
- 			host->quirks |= SDHCI_QUIRK_BROKEN_TIMEOUT_VAL;
- 
-+		if (of_device_is_compatible(np, "fsl,p5040-esdhc") ||
-+		    of_device_is_compatible(np, "fsl,p5020-esdhc") ||
-+		    of_device_is_compatible(np, "fsl,p4080-esdhc") ||
-+		    of_device_is_compatible(np, "fsl,p1020-esdhc") ||
-+		    of_device_is_compatible(np, "fsl,t1040-esdhc"))
-+			host->quirks &= ~SDHCI_QUIRK_BROKEN_CARD_DETECTION;
-+
- 		clk = of_get_property(np, "clock-frequency", &size);
- 		if (clk && size == sizeof(*clk) && *clk)
- 			pltfm_host->clock = be32_to_cpup(clk);
--- 
-2.1.0.27.g96db324
+Ok, I've missed that when looking at the overlay code then, I'll have to
+give it a closer look.
+
+> > - Can it "commit" a changeset so it's permanently part of the main DT ?
+> > We will never have a concept of "revertable" changesets, if we need a
+> > subsequent update, we will get a new overlay from FW that will remove
+> > what needs to be removed and add what needs to be added.
+> > 
+> 
+> The overlay when applied is a part of the kernel DT tree.
+> It is trivial to add a mechanism that simply commits everything and
+> tosses away the revert information.
+> 
+> Note that in that case you have to make provisions for the unflatten
+> blob to not be freed or for the device tree nodes/properties to be
+> dynamically allocated.
+
+I think it makes sense to do the dynamic thing anyway...
+
+> > IE, our current mechanism without overlay is fairly simple:
+> > 
+> >  - On PCI unplug, we remove all nodes below the slot (from linux),
+> > the FW does the equivalent internally.
+> > 
+> 
+> If you use an overlay, you just revert it and everything would
+> be as it was before, without anything hanging below the slot node.
+
+Except that doesn't work for the boot time content which we get
+from the firmware as part of the initial FDT (and we can't change that
+without breaking backward compatibility).
+
+> Note that the ‘remove all nodes below the slot’ does not work for my case.
+> 
+> That is because there are devices being instantiated under the slot
+> (i2c busses, i2c devices, FPGAs etc) that need to be removed from the
+> system.
+
+Right while in my case, there isn't, it's just the standard OF PCI
+representation generated by FW, the main thing is that it might have
+some enriched properties for some known cable cards of external drawers
+that are good to have.
+
+> >  - On PCI re-plug, the FW internally builds new nodes and sends a
+> > new subtree as an FDT that we can expand/attach.
+> > 
+> 
+> You can easily send a DT blob containing an overlay from firmware.
+
+Sending one is easy. Building it is not :-)
+
+> It can be even easy, since you might not have to recreate the full blob
+> each time, but instead using flat device tree methods to populate the
+> few properties that change each time.
+
+No, we basically have our internal tree in the firmware in a format
+similar to Linux, ie, a pointer based tree. We can "flatten" it of
+course, but generating an overlay is trickier. We can, it's just more
+work and we are running out of time (I basically have to cut that FW in
+the next few days, then we'll be stuck with whatever interfaces we
+created, I have a big of time to fix bugs after that but that's about
+it).
+
+> > Now we could consider that subtree as a changeset that can be undone,
+> > but that wouldn't work for boot time. And subsequent updates wouldn't
+> > have that concept of "undoing" anyway.
+> > 
+> 
+> I have posted another patch that does boot-time DT quirk which are
+> non-revertable.
+> 
+> https://lkml.org/lkml/2015/2/18/258
+
+Not sure how that applies in my case ... I can't change the
+representation of the PCI subtree, this is standard OFW representation,
+I can't change the FW to make it an overlay-like thing at boot time,
+that would break existing kernels.
+
+> > IE. conceptually, what overlays do today is quite rooted around the idea
+> > of having a fixed "base" DT and some pre-compiled DTB overlays that
+> > get added/removed. The design completely ignore the idea of a FW that
+> > maintains a "live" tree which we want to keep in sync, which is what we
+> > want to do here, or what we could do with a "live" open firmware
+> > implementation.
+> > 
+> > Now we might be able to reconcile them, but it feels to me that the
+> > overlay/changeset stuff is too rooted in the first concept…
+> > 
+> 
+> The first DT overlays use case (beaglebone capes) is what got the concept
+> started.
+> 
+> Right now is a generic mechanism to apply modifications to the kernel
+> live tree, with the possibility to revert them.
+
+Yes but as I said it's not really thought in term of keeping the kernel
+tree in sync with an external dynamically generated tree. Maybe we can
+fix it, but it's more complex...
+
+Ben.
+
+> > Ben.
+> > 
+> > 
+> 
+> Regards
+> 
+> — Pantelis
