@@ -1,25 +1,23 @@
-Return-Path: <hmyneni@gmail.com>
-Received: from mail-la0-x22b.google.com (mail-la0-x22b.google.com
- [IPv6:2a00:1450:4010:c03::22b])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <bigeasy@linutronix.de>
+Received: from Galois.linutronix.de (Galois.linutronix.de
+ [IPv6:2001:470:1f0b:db:abcd:42:0:1])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C55801A0015
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 01:48:55 +1000 (AEST)
-Received: by laat2 with SMTP id t2so73751838laa.1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2015 08:48:49 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 07AF61A0015
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 01:54:18 +1000 (AEST)
+Date: Thu, 14 May 2015 17:36:39 +0200
+From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+To: Bogdan Purcareata <bogdan.purcareata@freescale.com>,
+ scottwood@freescale.com
+Subject: Re: [PATCH v2 0/2] powerpc/kvm: Enable running guests on RT Linux
+Message-ID: <20150514153639.GA13442@linutronix.de>
+References: <1429890793-19487-1-git-send-email-bogdan.purcareata@freescale.com>
 MIME-Version: 1.0
-In-Reply-To: <20150514093304.GS2462@suse.de>
-References: <CACgMoiK61mKYFpfhhK51uvkvFHK3k+Dz4peMnbeW7-npDu4XBQ@mail.gmail.com>
- <20150514093304.GS2462@suse.de>
-Date: Thu, 14 May 2015 08:48:48 -0700
-Message-ID: <CACgMoiKzcDFTd7_howiH1KK2L-ky2S4x99-FTGS9pgO9Bqi0xg@mail.gmail.com>
-Subject: Re: mm: BUG_ON with NUMA_BALANCING (kernel BUG at
- include/linux/swapops.h:131!)
-From: Haren Myneni <hmyneni@gmail.com>
-To: Mel Gorman <mgorman@suse.de>
-Content-Type: text/plain; charset=UTF-8
-Cc: srikar@linux.vnet.ibm.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- aneesh.kumar@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <1429890793-19487-1-git-send-email-bogdan.purcareata@freescale.com>
+Cc: b10716@freescale.com, linux-rt-users@vger.kernel.org, agraf@suse.de,
+ linux-kernel@vger.kernel.org, mihai.caraman@freescale.com, pbonzini@redhat.com,
+ tglx@linutronix.de, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,80 +27,12 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 5/14/15, Mel Gorman <mgorman@suse.de> wrote:
-> On Wed, May 13, 2015 at 01:17:54AM -0700, Haren Myneni wrote:
->> Hi,
->>
->>  I am getting BUG_ON in migration_entry_to_page() with 4.1.0-rc2
->> kernel on powerpc system which has 512 CPUs (64 cores - 16 nodes) and
->> 1.6 TB memory. We can easily recreate this issue with kernel compile
->> (make -j500). But I could not reproduce with numa_balancing=disable.
->>
->
-> Is this patched in any way? I ask because line 134 on 4.1.0-rc2 does not
-> match up with a BUG_ON. It's close to a PageLocked check but I want to
-> be sure there are no other modifications.
+* Bogdan Purcareata | 2015-04-24 15:53:11 [+0000]:
 
-Mel, Thanks for your help. I added some printks and dump_page() to get
-the page struct and swp_entry information.
+>0001: converts the openpic spinlock to a raw spinlock, in order to circumvent
+>0002: disables in-kernel MPIC emulation for guest running on RT, in order to
 
->
-> Otherwise, when was the last time this worked? Was 4.0 ok? As it can be
-> easily reproduced, can the problem be bisected please?
+Scott, I'm asking here for your explicit Acked-by on those two patches.
+That you want it *that* way. We have now a nice explanation in #1 :)
 
-I did not try previous versions other than RHEL kernel (3.10.*). I
-will try with previous versions.
-
-In the failure case, also noticed pte and address values are matched
-in try_to_unmap_one() and remove_migration_pte(), but entry
-(swp_entry_t) value is different. So looks like page strut address in
-migration_entry_to_page() is not valid.
-
-try_to_unmap_one()
-{
-
-...
-        } else if (IS_ENABLED(CONFIG_MIGRATION)) {
-                        /*
-                         * Store the pfn of the page in a special migration
-                         * pte. do_swap_page() will wait until the migration
-                         * pte is removed and then restart fault handling.
-                         */
-                        BUG_ON(!(flags & TTU_MIGRATION));
-                        entry = make_migration_entry(page, pte_write(pteval));
-                }
-                swp_pte = swp_entry_to_pte(entry);
-                if (pte_soft_dirty(pteval))
-                        swp_pte = pte_swp_mksoft_dirty(swp_pte);
-                set_pte_at(mm, address, pte, swp_pte);
-
-                /*pte=0xb16b8d0f80000000 address=0x100008150000
-                page=0xf000000513f3e1e0  entry=0x3e0000000ec5ae34 */
-...
-}
-
- remove_migration_pte()
-{
-...
-        /* address=0x100008150000 pte=0xb16b8d0f80000000
-        *old=0xf000000513f3e1e0 */
-        if (!is_migration_entry(entry) ||
-        migration_entry_to_page(entry) != old)
-        goto unlock;
-...
-}
-
- migration_entry_to_page()  {
-        pte=0xb16b8d0f80000000  entry=0x3e00000002c5ae34
-        page=0xf0000000f3f3e1e0
-}
-
-
-Thanks
-Haren
-
->
-> --
-> Mel Gorman
-> SUSE Labs
->
+Sebastian
