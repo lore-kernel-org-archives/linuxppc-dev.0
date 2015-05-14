@@ -1,28 +1,44 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pd0-f172.google.com (mail-pd0-f172.google.com
- [209.85.192.172])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <preeti@linux.vnet.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 052011A03CA
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2015 13:54:06 +1000 (AEST)
-Received: by pdea3 with SMTP id a3so71602178pde.3
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 20:54:04 -0700 (PDT)
-Message-ID: <55541C55.4060807@ozlabs.ru>
-Date: Thu, 14 May 2015 13:53:57 +1000
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
+ by lists.ozlabs.org (Postfix) with ESMTPS id AEF991A03CA
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2015 13:59:27 +1000 (AEST)
+Received: from /spool/local
+ by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
+ Wed, 13 May 2015 21:59:25 -0600
+Received: from b03cxnp08025.gho.boulder.ibm.com
+ (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
+ by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 2B7E01FF0049
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 21:50:34 -0600 (MDT)
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+ by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t4E3wu3v34668766
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 20:58:56 -0700
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av04.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t4E3xM5d000430
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 21:59:23 -0600
+Message-ID: <55541D95.4020107@linux.vnet.ibm.com>
+Date: Thu, 14 May 2015 09:29:17 +0530
+From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Thomas Huth <thuth@redhat.com>
-Subject: Re: [PATCH kernel v10 23/34] powerpc/iommu/powernv: Release replaced
- TCE
-References: <1431358763-24371-1-git-send-email-aik@ozlabs.ru>	<1431358763-24371-24-git-send-email-aik@ozlabs.ru>
- <20150513170048.2c6115c6@thh440s>
-In-Reply-To: <20150513170048.2c6115c6@thh440s>
-Content-Type: text/plain; charset=koi8-r; format=flowed
-Cc: Wei Yang <weiyang@linux.vnet.ibm.com>,
- Gavin Shan <gwshan@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
- Alex Williamson <alex.williamson@redhat.com>,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- David Gibson <david@gibson.dropbear.id.au>
+To: Kevin Hilman <khilman@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Subject: Re: [PATCH 0/3] cpuidle: updates related to tick_broadcast_enter()
+ failures
+References: <20150508073418.28491.4150.stgit@preeti.in.ibm.com>
+ <2602092.6h7ufczYGd@vostro.rjw.lan> <5551BCBF.2000806@linaro.org>
+ <2919083.VPTOth98op@vostro.rjw.lan> <7h7fsc2idw.fsf@deeprootsystems.com>
+In-Reply-To: <7h7fsc2idw.fsf@deeprootsystems.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: rlippert@google.com, Ulf Hansson <ulf.hansson@linaro.org>,
+ Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org,
+ peterz@infradead.org, linus.walleij@linaro.org, rafael.j.wysocki@intel.com,
+ linux-kernel@vger.kernel.org, mingo@redhat.com, sudeep.holla@arm.com,
+ tglx@linutronix.de, linuxppc-dev@lists.ozlabs.org,
+ Lina Iyer <lina.iyer@linaro.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,175 +48,101 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/14/2015 01:00 AM, Thomas Huth wrote:
-> On Tue, 12 May 2015 01:39:12 +1000
-> Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
->
->> At the moment writing new TCE value to the IOMMU table fails with EBUSY
->> if there is a valid entry already. However PAPR specification allows
->> the guest to write new TCE value without clearing it first.
->>
->> Another problem this patch is addressing is the use of pool locks for
->> external IOMMU users such as VFIO. The pool locks are to protect
->> DMA page allocator rather than entries and since the host kernel does
->> not control what pages are in use, there is no point in pool locks and
->> exchange()+put_page(oldtce) is sufficient to avoid possible races.
->>
->> This adds an exchange() callback to iommu_table_ops which does the same
->> thing as set() plus it returns replaced TCE and DMA direction so
->> the caller can release the pages afterwards. The exchange() receives
->> a physical address unlike set() which receives linear mapping address;
->> and returns a physical address as the clear() does.
->>
->> This implements exchange() for P5IOC2/IODA/IODA2. This adds a requirement
->> for a platform to have exchange() implemented in order to support VFIO.
->>
->> This replaces iommu_tce_build() and iommu_clear_tce() with
->> a single iommu_tce_xchg().
->>
->> This makes sure that TCE permission bits are not set in TCE passed to
->> IOMMU API as those are to be calculated by platform code from
->> DMA direction.
->>
->> This moves SetPageDirty() to the IOMMU code to make it work for both
->> VFIO ioctl interface in in-kernel TCE acceleration (when it becomes
->> available later).
->>
->> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
->> [aw: for the vfio related changes]
->> Acked-by: Alex Williamson <alex.williamson@redhat.com>
+On 05/14/2015 04:29 AM, Kevin Hilman wrote:
+> "Rafael J. Wysocki" <rjw@rjwysocki.net> writes:
+> 
 > [...]
->> diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
->> index 6275164..1287d49 100644
->> --- a/arch/powerpc/kernel/iommu.c
->> +++ b/arch/powerpc/kernel/iommu.c
->> @@ -962,10 +962,7 @@ EXPORT_SYMBOL_GPL(iommu_tce_clear_param_check);
->>   int iommu_tce_put_param_check(struct iommu_table *tbl,
->>   		unsigned long ioba, unsigned long tce)
->>   {
->> -	if (!(tce & (TCE_PCI_WRITE | TCE_PCI_READ)))
->> -		return -EINVAL;
->> -
->> -	if (tce & ~(IOMMU_PAGE_MASK(tbl) | TCE_PCI_WRITE | TCE_PCI_READ))
->> +	if (tce & ~IOMMU_PAGE_MASK(tbl))
->>   		return -EINVAL;
+> 
+>> Second, quite honestly, I don't see a connection to genpd here.
+> 
+> The connection with genpd is because the *reason* the timer was
+> shutdown/stopped is because it shares power with the CPU, which is why
+> the timer stops when the CPU hits ceratin low power states.  IOW, it's
+> in the same power domain as the CPU.
+> 
+>> What you seem to be saying is "maybe we can eliminate the need to check the
+>> return value of tick_broadcast_enter() in the idle loop if we proactively
+>> disable the TIMER_STOP idle states of a CPU when we start to use that CPU's
+>> timer as a broadcast one".
 >>
->>   	if (ioba & ~IOMMU_PAGE_MASK(tbl))
->> @@ -982,44 +979,16 @@ int iommu_tce_put_param_check(struct iommu_table *tbl,
->>   }
->>   EXPORT_SYMBOL_GPL(iommu_tce_put_param_check);
->>
->> -unsigned long iommu_clear_tce(struct iommu_table *tbl, unsigned long entry)
->> +long iommu_tce_xchg(struct iommu_table *tbl, unsigned long entry,
->> +		unsigned long *hpa, enum dma_data_direction *direction)
->>   {
->> -	unsigned long oldtce;
->> -	struct iommu_pool *pool = get_pool(tbl, entry);
->> +	long ret;
->>
->> -	spin_lock(&(pool->lock));
->> +	ret = tbl->it_ops->exchange(tbl, entry, hpa, direction);
->>
->> -	oldtce = tbl->it_ops->get(tbl, entry);
->> -	if (oldtce & (TCE_PCI_WRITE | TCE_PCI_READ))
->> -		tbl->it_ops->clear(tbl, entry, 1);
->> -	else
->> -		oldtce = 0;
->> -
->> -	spin_unlock(&(pool->lock));
->> -
->> -	return oldtce;
->> -}
->> -EXPORT_SYMBOL_GPL(iommu_clear_tce);
->> -
->> -/*
->> - * hwaddr is a kernel virtual address here (0xc... bazillion),
->> - * tce_build converts it to a physical address.
->> - */
->> -int iommu_tce_build(struct iommu_table *tbl, unsigned long entry,
->> -		unsigned long hwaddr, enum dma_data_direction direction)
->> -{
->> -	int ret = -EBUSY;
->> -	unsigned long oldtce;
->> -	struct iommu_pool *pool = get_pool(tbl, entry);
->> -
->> -	spin_lock(&(pool->lock));
->> -
->> -	oldtce = tbl->it_ops->get(tbl, entry);
->> -	/* Add new entry if it is not busy */
->> -	if (!(oldtce & (TCE_PCI_WRITE | TCE_PCI_READ)))
->> -		ret = tbl->it_ops->set(tbl, entry, 1, hwaddr, direction, NULL);
->> -
->> -	spin_unlock(&(pool->lock));
->> +	if (!ret && ((*direction == DMA_FROM_DEVICE) ||
->> +			(*direction == DMA_BIDIRECTIONAL)))
->
-> You could drop some of the parentheses:
->
-> 	if (!ret && (*direction == DMA_FROM_DEVICE ||
-> 			*direction == DMA_BIDIRECTIONAL))
+>> So this seems to be about the timekeeping rather than power domains, because
+>> that's where the broadcast thing is done.  So the code setting up the CPU's
+>> timer for broadcast would pretty much need to pause cpuidle, go through the
+>> CPU's idle states and disable the TIMER_STOP ones.  And do the reverse when the
+>> timer is not going the be used for broadcast any more.  
+> 
+> Or..., modify the timer subystem to use runtime PM on the timer devices,
+> create a genpd that includes the timer device, and use
+> pm_genpd_attach_cpuidle() to attach that genpd so that whenever that
+> timer is runtime PM active, the deeper C-states cannot be hit.
 
-I really (really) like braces. Is there any kernel code design rule against it?
+I think you are missing a point here. If such a solution were possible,
+the tick broadcast framework would not have been designed to support
+deep cpu idle states. One reason we cannot go this way of course, is not
+all archs may support genpd as was pointed out. But the second reason
+IMO is that a timer is runtime PM active as long as there is some
+deferred work, either in the near or far future.
 
+The point behind the broadcast framework is let these CPUs go to deeper
+idle states when the timers are in the "far" future. We can potentially
+save power by doing so and don't need to keep the entire power domain
+active just because the timer is supposed to fire 5 minutes from now,
+which is precisely what happens if we go the genpd way.
 
->
->> +		SetPageDirty(pfn_to_page(*hpa >> PAGE_SHIFT));
->>
->>   	/* if (unlikely(ret))
->>   		pr_err("iommu_tce: %s failed on hwaddr=%lx ioba=%lx kva=%lx ret=%d\n",
-> [...]
->> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
->> index 2ead291..0724ec8 100644
->> --- a/drivers/vfio/vfio_iommu_spapr_tce.c
->> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
->> @@ -236,18 +236,11 @@ static void tce_iommu_release(void *iommu_data)
-> [...]
->> @@ -405,19 +410,26 @@ static long tce_iommu_ioctl(void *iommu_data,
->>   			return -EINVAL;
->>
->>   		/* iova is checked by the IOMMU API */
->> -		tce = param.vaddr;
->>   		if (param.flags & VFIO_DMA_MAP_FLAG_READ)
->> -			tce |= TCE_PCI_READ;
->> -		if (param.flags & VFIO_DMA_MAP_FLAG_WRITE)
->> -			tce |= TCE_PCI_WRITE;
->> +			if (param.flags & VFIO_DMA_MAP_FLAG_WRITE)
->> +				direction = DMA_BIDIRECTIONAL;
->> +			else
->> +				direction = DMA_TO_DEVICE;
->> +		else
->> +			if (param.flags & VFIO_DMA_MAP_FLAG_WRITE)
->> +				direction = DMA_FROM_DEVICE;
->> +			else
->> +				return -EINVAL;
->
-> IMHO some curly braces for the outer if-statement would be really fine
-> here.
+Hence I don't think we can trivially club timers with genpd unless we
+have a way to power the timer PM domain down, depending on when it is
+supposed to fire, in which case we will merely be replicating the
+cpuidle governor code.
 
-I believe checkpatch.pl won't like it. There is a check against single 
-lines having braces after "if" statements.
+Regards
+Preeti U Murthy
 
-
-
->
->> -		ret = iommu_tce_put_param_check(tbl, param.iova, tce);
->> +		ret = iommu_tce_put_param_check(tbl, param.iova, param.vaddr);
->>   		if (ret)
->>   			return ret;
->>
->>   		ret = tce_iommu_build(container, tbl,
->>   				param.iova >> tbl->it_page_shift,
->> -				tce, param.size >> tbl->it_page_shift);
->> +				param.vaddr,
->> +				param.size >> tbl->it_page_shift,
->> +				direction);
->>
->>   		iommu_flush_tce(tbl);
->>
->
->   Thomas
->
-
-
--- 
-Alexey
+> 
+>> So question is whether or not this is actually really more
+>> straightforward than checking the return value of
+>> tick_broadcast_enter() in the idle loop after all.
+> 
+> Unfortunetly this problem doesn't only affect timers.
+> 
+> Daniel's broader point is that $SUBJECT series only handles this for the
+> timer, but there's actually a more general problem to solve for *any*
+> device that shares a power domain with a CPU (e.g. CPU-local
+> timers, interrupt controllers, performance monitoring units, floating
+> point units, etc. etc.)
+> 
+> If we keep adding checks to the idle loop for all those devices, we're
+> heading for a mess.  (In fact, this is exactly what CPUidle drivers in
+> lots of vendor trees are doing, and it is indeed quite messy, and very
+> vendor specific.)
+> 
+> Also, solving this more general problem was the primary motivation for
+> adding the gnpd _attach_cpuidle() feature in the first place, so why not
+> use that?
+> 
+> Longer term, IMO, these dependencies between CPUs and all these "extras"
+> logic that share a power domain should be modeled by a genpd.  If all
+> those devices are using runtime PM, including the CPUs, and they are
+> grouped into a genpd, then we we can very easily know at the genpd level
+> whether or not the CPU could be powered down, and to what level.  This
+> longer-term solution is what I want to discuss at LPC this year in my
+> "Unifiy idle management of CPUs and IO devices" topic[1].  ( Also FYI,
+> using a genpd to model a CPU and connected logic is part of the
+> motivation behind the recent proposals to add support for multiple
+> states to genpd by Axel Haslam. )
+> 
+> Anyways I digress...
+> 
+> In the short term, while your patches look fine to me, the objection I
+> have is that it's only a band-aid fix that handles timers, but none of
+> the other "extras" that might share a power rail with the CPU.  So,
+> until we have the long-term stuff sorted out, the better
+> short-term solution IMO is the _attach_cpuidle() one above.
+> 
+> Kevin
+> 
+> [1] http://wiki.linuxplumbersconf.org/2015:energy-aware_scheduling
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
+> 
