@@ -1,31 +1,41 @@
-Return-Path: <khilman@deeprootsystems.com>
-Received: from mail-pa0-f42.google.com (mail-pa0-f42.google.com
- [209.85.220.42])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <khilman@kernel.org>
+Received: from mail.kernel.org (mail.kernel.org [198.145.29.136])
+ by lists.ozlabs.org (Postfix) with ESMTP id C68441A001B
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2015 10:13:33 +1000 (AEST)
+Received: from mail.kernel.org (localhost [127.0.0.1])
+ by mail.kernel.org (Postfix) with ESMTP id E018F20452
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2015 00:13:30 +0000 (UTC)
+Received: from mail-wi0-f174.google.com (mail-wi0-f174.google.com
+ [209.85.212.174])
+ (using TLSv1.2 with cipher AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9F9651A03A4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2015 09:00:00 +1000 (AEST)
-Received: by pabtp1 with SMTP id tp1so64346698pab.2
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 15:59:58 -0700 (PDT)
-From: Kevin Hilman <khilman@kernel.org>
-To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+ by mail.kernel.org (Postfix) with ESMTPSA id 1B412203F3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2015 00:13:29 +0000 (UTC)
+Received: by wicnf17 with SMTP id nf17so75042921wic.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 17:13:27 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <1842725.60y5FMGEPh@vostro.rjw.lan>
+References: <20150508073418.28491.4150.stgit@preeti.in.ibm.com>
+ <2919083.VPTOth98op@vostro.rjw.lan>
+ <7h7fsc2idw.fsf@deeprootsystems.com>
+ <1842725.60y5FMGEPh@vostro.rjw.lan>
+Date: Wed, 13 May 2015 17:13:27 -0700
+Message-ID: <CAMAWPa_69wXtOAKkerLcXN3AcCMC7oBCH_K3MQ-A7A8nmXQzfQ@mail.gmail.com>
 Subject: Re: [PATCH 0/3] cpuidle: updates related to tick_broadcast_enter()
  failures
-References: <20150508073418.28491.4150.stgit@preeti.in.ibm.com>
- <2602092.6h7ufczYGd@vostro.rjw.lan> <5551BCBF.2000806@linaro.org>
- <2919083.VPTOth98op@vostro.rjw.lan>
-Date: Wed, 13 May 2015 15:59:55 -0700
-In-Reply-To: <2919083.VPTOth98op@vostro.rjw.lan> (Rafael J. Wysocki's message
- of "Tue, 12 May 2015 15:23:25 +0200")
-Message-ID: <7h7fsc2idw.fsf@deeprootsystems.com>
-MIME-Version: 1.0
-Content-Type: text/plain
+From: Kevin Hilman <khilman@kernel.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Content-Type: text/plain; charset=UTF-8
 Cc: rlippert@google.com, Ulf Hansson <ulf.hansson@linaro.org>,
- rafael.j.wysocki@intel.com, linux-pm@vger.kernel.org, peterz@infradead.org,
- linus.walleij@linaro.org, Daniel Lezcano <daniel.lezcano@linaro.org>,
- linux-kernel@vger.kernel.org, mingo@redhat.com, sudeep.holla@arm.com,
- Preeti U Murthy <preeti@linux.vnet.ibm.com>, tglx@linutronix.de,
- linuxppc-dev@lists.ozlabs.org, Lina Iyer <lina.iyer@linaro.org>
+ "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
+ Kevin Hilman <khilman@kernel.org>, Peter Zijlstra <peterz@infradead.org>,
+ "linux-pm@vger.kernel.org" <linux-pm@vger.kernel.org>,
+ Daniel Lezcano <daniel.lezcano@linaro.org>,
+ lkml <linux-kernel@vger.kernel.org>, Ingo Molnar <mingo@redhat.com>,
+ Sudeep Holla <sudeep.holla@arm.com>,
+ Preeti U Murthy <preeti@linux.vnet.ibm.com>,
+ Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
+ Linus Walleij <linus.walleij@linaro.org>, Lina Iyer <lina.iyer@linaro.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -35,73 +45,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-"Rafael J. Wysocki" <rjw@rjwysocki.net> writes:
-
-[...]
-
-> Second, quite honestly, I don't see a connection to genpd here.
-
-The connection with genpd is because the *reason* the timer was
-shutdown/stopped is because it shares power with the CPU, which is why
-the timer stops when the CPU hits ceratin low power states.  IOW, it's
-in the same power domain as the CPU.
-
-> What you seem to be saying is "maybe we can eliminate the need to check the
-> return value of tick_broadcast_enter() in the idle loop if we proactively
-> disable the TIMER_STOP idle states of a CPU when we start to use that CPU's
-> timer as a broadcast one".
+On Wed, May 13, 2015 at 5:16 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Wednesday, May 13, 2015 03:59:55 PM Kevin Hilman wrote:
+>> "Rafael J. Wysocki" <rjw@rjwysocki.net> writes:
+>>
+>> [...]
+>>
+>> > Second, quite honestly, I don't see a connection to genpd here.
+>>
+>> The connection with genpd is because the *reason* the timer was
+>> shutdown/stopped is because it shares power with the CPU, which is why
+>> the timer stops when the CPU hits ceratin low power states.  IOW, it's
+>> in the same power domain as the CPU.
 >
-> So this seems to be about the timekeeping rather than power domains, because
-> that's where the broadcast thing is done.  So the code setting up the CPU's
-> timer for broadcast would pretty much need to pause cpuidle, go through the
-> CPU's idle states and disable the TIMER_STOP ones.  And do the reverse when the
-> timer is not going the be used for broadcast any more.  
+> Well, what if you don't have genpd on that system?  Is the problem at hand not
+> relevant then magically?
 
-Or..., modify the timer subystem to use runtime PM on the timer devices,
-create a genpd that includes the timer device, and use
-pm_genpd_attach_cpuidle() to attach that genpd so that whenever that
-timer is runtime PM active, the deeper C-states cannot be hit.
+Well, if you're not using genpd to model hardware power domain
+dependencies, then yes you'll definitely need a different solution.
 
-> So question is whether or not this is actually really more
-> straightforward than checking the return value of
-> tick_broadcast_enter() in the idle loop after all.
+And, as we discussed on IRC.  If you only care about timers, and genpd
+is not in use, then $SUBJECT series is a fine approach, and I have no
+objections.  But for SoCs where there are several other things that
+share power with CPU, we need a more generic, genpd based solution,
+which it seems we're in agreement on.  And since the two approaches
+are not mutually exclusive, then I have real objections to applying
+this series.
 
-Unfortunetly this problem doesn't only affect timers.
-
-Daniel's broader point is that $SUBJECT series only handles this for the
-timer, but there's actually a more general problem to solve for *any*
-device that shares a power domain with a CPU (e.g. CPU-local
-timers, interrupt controllers, performance monitoring units, floating
-point units, etc. etc.)
-
-If we keep adding checks to the idle loop for all those devices, we're
-heading for a mess.  (In fact, this is exactly what CPUidle drivers in
-lots of vendor trees are doing, and it is indeed quite messy, and very
-vendor specific.)
-
-Also, solving this more general problem was the primary motivation for
-adding the gnpd _attach_cpuidle() feature in the first place, so why not
-use that?
-
-Longer term, IMO, these dependencies between CPUs and all these "extras"
-logic that share a power domain should be modeled by a genpd.  If all
-those devices are using runtime PM, including the CPUs, and they are
-grouped into a genpd, then we we can very easily know at the genpd level
-whether or not the CPU could be powered down, and to what level.  This
-longer-term solution is what I want to discuss at LPC this year in my
-"Unifiy idle management of CPUs and IO devices" topic[1].  ( Also FYI,
-using a genpd to model a CPU and connected logic is part of the
-motivation behind the recent proposals to add support for multiple
-states to genpd by Axel Haslam. )
-
-Anyways I digress...
-
-In the short term, while your patches look fine to me, the objection I
-have is that it's only a band-aid fix that handles timers, but none of
-the other "extras" that might share a power rail with the CPU.  So,
-until we have the long-term stuff sorted out, the better
-short-term solution IMO is the _attach_cpuidle() one above.
+Acked-by: Kevin Hilman <khilman@linaro.org>
 
 Kevin
-
-[1] http://wiki.linuxplumbersconf.org/2015:energy-aware_scheduling
