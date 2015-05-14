@@ -1,34 +1,30 @@
-Return-Path: <panto@antoniou-consulting.com>
-Received: from li42-95.members.linode.com (li42-95.members.linode.com
- [209.123.162.95])
- (using TLSv1 with cipher ADH-AES256-SHA (256/256 bits))
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pa0-f48.google.com (mail-pa0-f48.google.com
+ [209.85.220.48])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 87CBE1A0017
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2015 16:23:47 +1000 (AEST)
-Subject: Re: [PATCH v4 19/21] drivers/of: Support adding sub-tree
-Mime-Version: 1.0 (Mac OS X Mail 8.2 \(2098\))
-Content-Type: text/plain; charset=utf-8
-From: Pantelis Antoniou <panto@antoniou-consulting.com>
-In-Reply-To: <1431564871.4160.8.camel@kernel.crashing.org>
-Date: Thu, 14 May 2015 09:23:39 +0300
-Message-Id: <53EAE361-0015-4702-97C6-9F67B87963C2@antoniou-consulting.com>
-References: <1430460188-31343-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1430460188-31343-20-git-send-email-gwshan@linux.vnet.ibm.com>
- <CAL_JsqKEUevxSe0Q=pGdsWOiT+TW9iAnCsAWuuqOYj3ZPOG7dg@mail.gmail.com>
- <1430493730.7979.58.camel@kernel.crashing.org>
- <CAL_JsqLrBSB4y_0j+i=kXbDA08HO23JuYjJGHR9nhsPnMC_Zyg@mail.gmail.com>
- <1430521038.7979.70.camel@kernel.crashing.org>
- <A6DF99C6-7059-4670-86D0-6926861F0164@antoniou-consulting.com>
- <1430774063.7979.139.camel@kernel.crashing.org>
- <1431560124.20218.91.camel@kernel.crashing.org>
- <CAL_JsqKqTa5eg3eOqx3bkeNdO_920WwDiRbQaxwWLEWpCypFmA@mail.gmail.com>
- <1431564871.4160.8.camel@kernel.crashing.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- Gavin Shan <gwshan@linux.vnet.ibm.com>, Grant Likely <grant.likely@linaro.org>,
- Rob Herring <robherring2@gmail.com>, Bjorn Helgaas <bhelgaas@google.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id D566B1A03B4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2015 16:29:54 +1000 (AEST)
+Received: by pabsx10 with SMTP id sx10so74564061pab.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 23:29:52 -0700 (PDT)
+Message-ID: <555440D8.3060405@ozlabs.ru>
+Date: Thu, 14 May 2015 16:29:44 +1000
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+MIME-Version: 1.0
+To: Alex Williamson <alex.williamson@redhat.com>
+Subject: Re: [PATCH kernel v10 05/34] powerpc/iommu: Always release iommu_table
+ in iommu_free_table()
+References: <1431358763-24371-1-git-send-email-aik@ozlabs.ru>	
+ <1431358763-24371-6-git-send-email-aik@ozlabs.ru>	
+ <20150513053337.GA479@gwshan> <5552EF78.6020301@ozlabs.ru>	
+ <20150513145136.1a85f536@thh440s> <20150513232745.GA8158@gwshan>	
+ <555409B8.3060904@ozlabs.ru> <1431571984.3625.91.camel@redhat.com>
+In-Reply-To: <1431571984.3625.91.camel@redhat.com>
+Content-Type: text/plain; charset=koi8-r; format=flowed
+Cc: Thomas Huth <thuth@redhat.com>, Gavin Shan <gwshan@linux.vnet.ibm.com>,
+ linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ linuxppc-dev@lists.ozlabs.org, Wei Yang <weiyang@linux.vnet.ibm.com>,
+ David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,151 +34,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Ben,
+On 05/14/2015 12:53 PM, Alex Williamson wrote:
+> On Thu, 2015-05-14 at 12:34 +1000, Alexey Kardashevskiy wrote:
+>> On 05/14/2015 09:27 AM, Gavin Shan wrote:
+>>> On Wed, May 13, 2015 at 02:51:36PM +0200, Thomas Huth wrote:
+>>>> On Wed, 13 May 2015 16:30:16 +1000
+>>>> Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
+>>>>
+>>>>> On 05/13/2015 03:33 PM, Gavin Shan wrote:
+>>>>>> On Tue, May 12, 2015 at 01:38:54AM +1000, Alexey Kardashevskiy wrote:
+>>>>>>> At the moment iommu_free_table() only releases memory if
+>>>>>>> the table was initialized for the platform code use, i.e. it had
+>>>>>>> it_map initialized (which purpose is to track DMA memory space use).
+>>>>>>>
+>>>>>>> With dynamic DMA windows, we will need to be able to release
+>>>>>>> iommu_table even if it was used for VFIO in which case it_map is NULL
+>>>>>>> so does the patch.
+>>>>>>>
+>>>>>>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+>>>>>>
+>>>>>> Reviewed-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+>>>>>>
+>>>>>>> ---
+>>>>>>> arch/powerpc/kernel/iommu.c | 3 +--
+>>>>>>> 1 file changed, 1 insertion(+), 2 deletions(-)
+>>>>>>>
+>>>>>>> diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
+>>>>>>> index 3d47eb3..2c02d4c 100644
+>>>>>>> --- a/arch/powerpc/kernel/iommu.c
+>>>>>>> +++ b/arch/powerpc/kernel/iommu.c
+>>>>>>> @@ -714,8 +714,7 @@ void iommu_free_table(struct iommu_table *tbl, const char *node_name)
+>>>>>>> 	unsigned int order;
+>>>>>>>
+>>>>>>> 	if (!tbl || !tbl->it_map) {
+>>>>>>> -		printk(KERN_ERR "%s: expected TCE map for %s\n", __func__,
+>>>>>>> -				node_name);
+>>>>>>> +		kfree(tbl);
+>>>>>>
+>>>>>> I'm not sure if the "tbl" needs to be checked against NULL as kfree() already
+>>>>>> has the check. But it looks a bit strange to free NULL "tbl" from the code
+>>>>>> itself.
+>>>>>
+>>>>> Yeah, looks a bit weird, agree, I'll change but in general kfree/vfree/...
+>>>>> - they all check the passed pointer for NULL.
+>>>>
+>>>> But if tbl is NULL, the tbl->it_map check will fail, won't it? So in
+>>>> this case, I think you have to keep it.
+>>>>
+>>>
+>>> If I understood your question correctly, "tbl->it_map" won't be checked
+>>> when "tbl" is NULL because the connection ("||") for the two conditions.
+>>> The code can be changed to something like below if Alexey want:
+>>>
+>>> 	if (!tbl)
+>>> 		return;
+>>> 	if (!tbl->itmap)
+>>> 		kfree(tbl);
+>>
+>> To be precise ;)
+>>
+>> if (!tbl->itmap) {
+>> 	kfree(tbl);
+>> 	return;
+>> }
+>
+> I hope that's not your solution, it clearly segfaults with a null
+> pointer de-ref if !tbl, which is apparently a concern down this path.
 
-Sorry for taking this long to respond, but I am working on the same =
-problem right
-now. I thought I might have something to show, but not yet :)
-
-My PCI overlay case is different. In my case there is no firmware and =
-there
-is the blob is provided as an overlay.
-
-The idea is that for a given PCI bus, when a PCI device with a matching
-device id, vendor id is probed a matching overlay should be applied.
-
-The trickiness lies in the way that the way that the target is different
-each time and how to handle generational issues (i.e. what happens if =
-the pci device
-is removed before the application of the overlay occurs, what happens =
-when multiple
-applications should happen in parallel, etc.)
+I meant the second "if" needs fixing. I need the first one - "if (!tbl)" - 
+anyway. What did I miss?
 
 
-> On May 14, 2015, at 03:54 , Benjamin Herrenschmidt =
-<benh@kernel.crashing.org> wrote:
->=20
-> On Wed, 2015-05-13 at 19:18 -0500, Rob Herring wrote:
->=20
->> I haven't decided really.
->>=20
->> The main thing with the current patch is I don't really like the =
-added
->> complexity to unflatten_dt_node. It is already a fairly complex
->> function. Perhaps removing of "hybrid" as discussed will help?
->=20
-> I agree, we should be able to make that much simpler, I was planning =
-on
-> sorting that out with Gavin.
->=20
 
-I think using overlays should cover your case without any issues.
-I don=E2=80=99t like messing with the unflatten method TBH.
 
->> If there are things we can do to make overlays easier to use in your
->> use case, I'd like to hear ideas. I don't really buy that being more
->> complex than needed is an obstacle. That is very often the case to
->> have common, scale-able solutions. I want to see a simple case be
->> simple to support.
->=20
-> Well, it's a LOT more complex from the FW perspective for a bunch of
-> features we don't really need, in a way because the DT update in our
-> case is just purely informational to avoid keeping wrong/outdated DT
-> bits, it has little functional impact (it might have a bit for =
-interrupt
-> routing through bridges though).
->=20
-> However, I am also pursuing an approach on FW side using a generation
-> count in our nodes and properties which we could use to generate
-> arbitrary overlays if we know what generation linux has.
->=20
-> There might actual be a usage scenario for a generic way for our
-> firwmare to convey DT updates to Linux for other reasons.
->=20
-> A few things that I don't find in the overlay code (but maybe I =
-haven't
-> looked at it hard enough):
->=20
-> - Can it remove nodes/properties ?
->=20
-
-Yes.
-
-> - Can it "commit" a changeset so it's permanently part of the main DT =
-?
-> We will never have a concept of "revertable" changesets, if we need a
-> subsequent update, we will get a new overlay from FW that will remove
-> what needs to be removed and add what needs to be added.
->=20
-
-The overlay when applied is a part of the kernel DT tree.
-It is trivial to add a mechanism that simply commits everything and
-tosses away the revert information.
-
-Note that in that case you have to make provisions for the unflatten
-blob to not be freed or for the device tree nodes/properties to be
-dynamically allocated.
-
-> IE, our current mechanism without overlay is fairly simple:
->=20
->  - On PCI unplug, we remove all nodes below the slot (from linux),
-> the FW does the equivalent internally.
->=20
-
-If you use an overlay, you just revert it and everything would
-be as it was before, without anything hanging below the slot node.
-
-Note that the =E2=80=98remove all nodes below the slot=E2=80=99 does not =
-work for my case.
-
-That is because there are devices being instantiated under the slot
-(i2c busses, i2c devices, FPGAs etc) that need to be removed from the
-system.
-
->  - On PCI re-plug, the FW internally builds new nodes and sends a
-> new subtree as an FDT that we can expand/attach.
->=20
-
-You can easily send a DT blob containing an overlay from firmware.
-
-It can be even easy, since you might not have to recreate the full blob
-each time, but instead using flat device tree methods to populate the
-few properties that change each time.
-
-> Now we could consider that subtree as a changeset that can be undone,
-> but that wouldn't work for boot time. And subsequent updates wouldn't
-> have that concept of "undoing" anyway.
->=20
-
-I have posted another patch that does boot-time DT quirk which are
-non-revertable.
-
-https://lkml.org/lkml/2015/2/18/258
-
-> IE. conceptually, what overlays do today is quite rooted around the =
-idea
-> of having a fixed "base" DT and some pre-compiled DTB overlays that
-> get added/removed. The design completely ignore the idea of a FW that
-> maintains a "live" tree which we want to keep in sync, which is what =
-we
-> want to do here, or what we could do with a "live" open firmware
-> implementation.
->=20
-> Now we might be able to reconcile them, but it feels to me that the
-> overlay/changeset stuff is too rooted in the first concept=E2=80=A6
->=20
-
-The first DT overlays use case (beaglebone capes) is what got the =
-concept
-started.
-
-Right now is a generic mechanism to apply modifications to the kernel
-live tree, with the possibility to revert them.
-
-> Ben.
->=20
->=20
-
-Regards
-
-=E2=80=94 Pantelis
+-- 
+Alexey
