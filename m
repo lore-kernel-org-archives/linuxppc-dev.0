@@ -1,40 +1,28 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mhocko@suse.cz>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 677B31A03A4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2015 17:47:50 +1000 (AEST)
-Message-ID: <1431589652.4160.49.camel@kernel.crashing.org>
-Subject: Re: [PATCH v4 19/21] drivers/of: Support adding sub-tree
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Pantelis Antoniou <panto@antoniou-consulting.com>
-Date: Thu, 14 May 2015 17:47:32 +1000
-In-Reply-To: <D7FC0542-DD1A-428F-8E75-81620C6D83DC@antoniou-consulting.com>
-References: <1430460188-31343-1-git-send-email-gwshan@linux.vnet.ibm.com>
- <1430460188-31343-20-git-send-email-gwshan@linux.vnet.ibm.com>
- <CAL_JsqKEUevxSe0Q=pGdsWOiT+TW9iAnCsAWuuqOYj3ZPOG7dg@mail.gmail.com>
- <1430493730.7979.58.camel@kernel.crashing.org>
- <CAL_JsqLrBSB4y_0j+i=kXbDA08HO23JuYjJGHR9nhsPnMC_Zyg@mail.gmail.com>
- <1430521038.7979.70.camel@kernel.crashing.org>
- <A6DF99C6-7059-4670-86D0-6926861F0164@antoniou-consulting.com>
- <1430774063.7979.139.camel@kernel.crashing.org>
- <1431560124.20218.91.camel@kernel.crashing.org>
- <CAL_JsqKqTa5eg3eOqx3bkeNdO_920WwDiRbQaxwWLEWpCypFmA@mail.gmail.com>
- <1431564871.4160.8.camel@kernel.crashing.org>
- <53EAE361-0015-4702-97C6-9F67B87963C2@antoniou-consulting.com>
- <1431585994.4160.32.camel@kernel.crashing.org>
- <3988EABE-3DE9-4E1C-9778-22E35138E359@antoniou-consulting.com>
- <1431587657.4160.37.camel@kernel.crashing.org>
- <75F026CA-5AC1-4106-B2F0-AB0D006DEF5A@antoniou-consulting.com>
- <1431588358.4160.42.camel@kernel.crashing.org>
- <D7FC0542-DD1A-428F-8E75-81620C6D83DC@antoniou-consulting.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
- Gavin Shan <gwshan@linux.vnet.ibm.com>, Grant Likely <grant.likely@linaro.org>,
- Rob Herring <robherring2@gmail.com>, Bjorn Helgaas <bhelgaas@google.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id B8AD41A03A4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2015 18:08:17 +1000 (AEST)
+Date: Thu, 14 May 2015 10:08:12 +0200
+From: Michal Hocko <mhocko@suse.cz>
+To: Eric B Munson <emunson@akamai.com>
+Subject: Re: [PATCH 0/3] Allow user to request memory to be locked on page
+ fault
+Message-ID: <20150514080812.GC6433@dhcp22.suse.cz>
+References: <1431113626-19153-1-git-send-email-emunson@akamai.com>
+ <20150508124203.6679b1d35ad9555425003929@linux-foundation.org>
+ <20150511180631.GA1227@akamai.com>
+ <20150513150036.GG1227@akamai.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20150513150036.GG1227@akamai.com>
+Cc: linux-arch@vger.kernel.org, linux-mips@linux-mips.org,
+ linux-parisc@vger.kernel.org, linux-xtensa@linux-xtensa.org,
+ linux-api@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Shuah Khan <shuahkh@osg.samsung.com>, linux-mm@kvack.org,
+ linux-alpha@vger.kernel.org, sparclinux@vger.kernel.org,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,49 +32,62 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2015-05-14 at 10:34 +0300, Pantelis Antoniou wrote:
-
-> >> What you describe is inserting a bunch of properties and nodes under
-> >> a slot’s device node. Reverting the overlay removes them all just fine.
+On Wed 13-05-15 11:00:36, Eric B Munson wrote:
+> On Mon, 11 May 2015, Eric B Munson wrote:
+> 
+> > On Fri, 08 May 2015, Andrew Morton wrote:
 > > 
-> > Except that still doesn't work for boot time :-)
+> > > On Fri,  8 May 2015 15:33:43 -0400 Eric B Munson <emunson@akamai.com> wrote:
+> > > 
+> > > > mlock() allows a user to control page out of program memory, but this
+> > > > comes at the cost of faulting in the entire mapping when it is
+> > > > allocated.  For large mappings where the entire area is not necessary
+> > > > this is not ideal.
+> > > > 
+> > > > This series introduces new flags for mmap() and mlockall() that allow a
+> > > > user to specify that the covered are should not be paged out, but only
+> > > > after the memory has been used the first time.
+> > > 
+> > > Please tell us much much more about the value of these changes: the use
+> > > cases, the behavioural improvements and performance results which the
+> > > patchset brings to those use cases, etc.
+> > > 
 > > 
-> > So I would have to do a special case on unplug:
+> > To illustrate the proposed use case I wrote a quick program that mmaps
+> > a 5GB file which is filled with random data and accesses 150,000 pages
+> > from that mapping.  Setup and processing were timed separately to
+> > illustrate the differences between the three tested approaches.  the
+> > setup portion is simply the call to mmap, the processing is the
+> > accessing of the various locations in  that mapping.  The following
+> > values are in milliseconds and are the averages of 20 runs each with a
+> > call to echo 3 > /proc/sys/vm/drop_caches between each run.
 > > 
-> > 	if (slot->dt_is_overlay) /* set to false at boot */
-> > 		remove_subtree_myself();
-> > 	else
-> > 		undo_overlay(slot->overlay);
+> > The first mapping was made with MAP_PRIVATE | MAP_LOCKED as a baseline:
+> > Startup average:    9476.506
+> > Processing average: 3.573
+> > 
+> > The second mapping was simply MAP_PRIVATE but each page was passed to
+> > mlock() before being read:
+> > Startup average:    0.051
+> > Processing average: 721.859
+> > 
+> > The final mapping was MAP_PRIVATE | MAP_LOCKONFAULT:
+> > Startup average:    0.084
+> > Processing average: 42.125
 > > 
 > 
-> OK, in that case you do require removal. But in any case it’s the ‘negative’
-> of an already applied one, either at boot time or not.
-
-Sort-of, unless we have a way in the overlay to simply specify node
-removal statements so we don't have to explicitly remove all properties
-(or even all children).
-
-> Modifying the overlay code to apply a ‘negative’ property should do the trick.
+> Michal's suggestion of changing protections and locking in a signal
+> handler was better than the locking as needed, but still significantly
+> more work required than the LOCKONFAULT case.
 > 
-> Is that correct?
+> Startup average:    0.047
+> Processing average: 86.431
 
-I would do negatives node and let Linux imply the properties (or even
-children).
+Have you played with batching? Has it helped? Anyway it is to be
+expected that the overhead will be higher than a single mmap call. The
+question is whether you can live with it because adding a new semantic
+to mlock sounds trickier and MAP_LOCKED is tricky enough already...
 
-But yes, that would probably do.
-
- .../...
-
-> I will probably need that generation count myself for my PCI use case.
-> 
-> > However that requires supporting removal of nodes/properties. So I'm
-> > tempted to keep that feature on the back burner and go with an ad-hoc
-> > interface for PCI for now.
-> > 
-> 
-> I see. Bonne chance :)
-
-Merci :)
-
-Cheers,
-Ben.
+-- 
+Michal Hocko
+SUSE Labs
