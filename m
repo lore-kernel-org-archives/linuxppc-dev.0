@@ -1,39 +1,25 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pa0-f47.google.com (mail-pa0-f47.google.com
+ [209.85.220.47])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id F35CB1A03D6
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2015 12:35:03 +1000 (AEST)
-Received: from /spool/local
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Thu, 14 May 2015 12:35:03 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id B9E902CE8050
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2015 12:34:58 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t4E2YoMb15728784
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2015 12:34:58 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t4E2YPIT006041
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2015 12:34:25 +1000
-Date: Thu, 14 May 2015 12:34:00 +1000
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Subject: Re: [PATCH kernel v10 22/34] powerpc/powernv: Implement accessor to
- TCE entry
-Message-ID: <20150514023400.GA3068@gwshan>
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <1431358763-24371-1-git-send-email-aik@ozlabs.ru>
- <1431358763-24371-23-git-send-email-aik@ozlabs.ru>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 020661A0017
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2015 12:52:02 +1000 (AEST)
+Received: by pacwv17 with SMTP id wv17so69417788pac.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 19:52:00 -0700 (PDT)
+Message-ID: <55540DC9.6040901@ozlabs.ru>
+Date: Thu, 14 May 2015 12:51:53 +1000
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1431358763-24371-23-git-send-email-aik@ozlabs.ru>
-Cc: Wei Yang <weiyang@linux.vnet.ibm.com>,
- Gavin Shan <gwshan@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Subject: Re: [PATCH kernel v10 13/34] powerpc/powernv: Do not set "read" flag
+ if direction==DMA_NONE
+References: <1431358763-24371-1-git-send-email-aik@ozlabs.ru>
+ <1431358763-24371-14-git-send-email-aik@ozlabs.ru>
+ <20150514000048.GA13216@gwshan>
+In-Reply-To: <20150514000048.GA13216@gwshan>
+Content-Type: text/plain; charset=koi8-r; format=flowed
+Cc: Wei Yang <weiyang@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
  Alex Williamson <alex.williamson@redhat.com>,
  Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
  David Gibson <david@gibson.dropbear.id.au>
@@ -46,97 +32,134 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, May 12, 2015 at 01:39:11AM +1000, Alexey Kardashevskiy wrote:
->This replaces direct accesses to TCE table with a helper which
->returns an TCE entry address. This does not make difference now but will
->when multi-level TCE tables get introduces.
+On 05/14/2015 10:00 AM, Gavin Shan wrote:
+> On Tue, May 12, 2015 at 01:39:02AM +1000, Alexey Kardashevskiy wrote:
+>> Normally a bitmap from the iommu_table is used to track what TCE entry
+>> is in use. Since we are going to use iommu_table without its locks and
+>> do xchg() instead, it becomes essential not to put bits which are not
+>> implied in the direction flag as the old TCE value (more precisely -
+>> the permission bits) will be used to decide whether to put the page or not.
+>>
+>> This adds iommu_direction_to_tce_perm() (its counterpart is there already)
+>> and uses it for powernv's pnv_tce_build().
+>>
+>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+>> Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 >
->No change in behavior is expected.
+> Reviewed-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 >
->Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
->Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
+>> ---
+>> Changes:
+>> v9:
+>> * added comment why we must put only valid permission bits
+>> ---
+>> arch/powerpc/include/asm/iommu.h     |  1 +
+>> arch/powerpc/kernel/iommu.c          | 15 +++++++++++++++
+>> arch/powerpc/platforms/powernv/pci.c |  7 +------
+>> 3 files changed, 17 insertions(+), 6 deletions(-)
+>>
+>> diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
+>> index e94a5e3..d91bd69 100644
+>> --- a/arch/powerpc/include/asm/iommu.h
+>> +++ b/arch/powerpc/include/asm/iommu.h
+>> @@ -200,6 +200,7 @@ extern int iommu_take_ownership(struct iommu_table *tbl);
+>> extern void iommu_release_ownership(struct iommu_table *tbl);
+>>
+>> extern enum dma_data_direction iommu_tce_direction(unsigned long tce);
+>> +extern unsigned long iommu_direction_to_tce_perm(enum dma_data_direction dir);
+>>
+>> #endif /* __KERNEL__ */
+>> #endif /* _ASM_IOMMU_H */
+>> diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
+>> index 8673c94..31319f8 100644
+>> --- a/arch/powerpc/kernel/iommu.c
+>> +++ b/arch/powerpc/kernel/iommu.c
+>> @@ -863,6 +863,21 @@ void iommu_free_coherent(struct iommu_table *tbl, size_t size,
+>> 	}
+>> }
+>>
+>> +unsigned long iommu_direction_to_tce_perm(enum dma_data_direction dir)
+>> +{
+>> +	switch (dir) {
+>> +	case DMA_BIDIRECTIONAL:
+>> +		return TCE_PCI_READ | TCE_PCI_WRITE;
+>> +	case DMA_FROM_DEVICE:
+>> +		return TCE_PCI_WRITE;
+>> +	case DMA_TO_DEVICE:
+>> +		return TCE_PCI_READ;
+>> +	default:
+>> +		return 0;
+>
+> It might be nice to have a WARN_ON() or log for the default case. If the TCE
+> entry is going to be updated without permission bits by ppc_md.tce_build().
 
-Reviewed-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+If this is happening in pnv_tce_build() (which is for the host DMA only) - 
+it is quite late to trace anything, we are totally screwed by then.
 
-Thanks,
-Gavin
+If you are talking about VFIO (pnv_tce_xchg()), we calculate 
+enum_dma_data_direction from the VFIO permission bits so wrong value won't 
+be passed here at all.
 
->---
->Changes:
->v9:
->* new patch in the series to separate this mechanical change from
->functional changes; this is not right before
->"powerpc/powernv: Implement multilevel TCE tables" but here in order
->to let the next patch - "powerpc/iommu/powernv: Release replaced TCE" -
->use pnv_tce() and avoid changing the same code twice
->---
-> arch/powerpc/platforms/powernv/pci.c | 34 +++++++++++++++++++++-------------
-> 1 file changed, 21 insertions(+), 13 deletions(-)
+
+> The DMA operation covered by this TCE entry will cause EEH error. More
+> logs would be helpful to locate the root cause of the EEH error :-)
 >
->diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
->index ed7de7b..cc82f05 100644
->--- a/arch/powerpc/platforms/powernv/pci.c
->+++ b/arch/powerpc/platforms/powernv/pci.c
->@@ -572,38 +572,46 @@ struct pci_ops pnv_pci_ops = {
-> 	.write = pnv_pci_write_config,
-> };
+>> +	}
+>> +}
+>> +EXPORT_SYMBOL_GPL(iommu_direction_to_tce_perm);
+>> +
 >
->+static __be64 *pnv_tce(struct iommu_table *tbl, long idx)
->+{
->+	__be64 *tmp = ((__be64 *)tbl->it_base);
->+
->+	return tmp + idx;
->+}
->+
-> int pnv_tce_build(struct iommu_table *tbl, long index, long npages,
-> 		unsigned long uaddr, enum dma_data_direction direction,
-> 		struct dma_attrs *attrs)
-> {
-> 	u64 proto_tce = iommu_direction_to_tce_perm(direction);
->-	__be64 *tcep;
->-	u64 rpn;
->+	u64 rpn = __pa(uaddr) >> tbl->it_page_shift;
->+	long i;
+> The function converts generic permission flags to PCI specific flags as
+> the names (TCE_PCI_{READ,WRITE}) indicates. I'm not sure if it's reasonable
+> to have function name iommu_direction_to_pci_tce_perm(). Platform devices
+> who have DMA capability might have different flags other than TCE_PCI_{READ,WRITE}
+> and possibly use iommu.c to manage platform specific TCE table. We might
+> not have the use case for now, so I'm not sure it makes sense to have a
+> more specific function name.
+
+"tce" is for SPAPR TCE protocol so the function does pretty certain thing.
+
+It might not be the best place for this function (powernv/pci.c seems to be 
+better) but I use this function from POWERNV and KVM and I have either 
+duplicate these helpers in POWERNV and KVM or put in some common place and 
+where it is now is this place.
+
+And its counterpart - iommu_tce_direction - is there already. We may move 
+these somewhere else later if we want.
+
+
+> Thanks,
+> Gavin
 >
->-	tcep = ((__be64 *)tbl->it_base) + index - tbl->it_offset;
->-	rpn = __pa(uaddr) >> tbl->it_page_shift;
->-
->-	while (npages--)
->-		*(tcep++) = cpu_to_be64(proto_tce |
->-				(rpn++ << tbl->it_page_shift));
->+	for (i = 0; i < npages; i++) {
->+		unsigned long newtce = proto_tce |
->+			((rpn + i) << tbl->it_page_shift);
->+		unsigned long idx = index - tbl->it_offset + i;
+>> #ifdef CONFIG_IOMMU_API
+>> /*
+>>   * SPAPR TCE API
+>> diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
+>> index bca2aeb..b7ea245 100644
+>> --- a/arch/powerpc/platforms/powernv/pci.c
+>> +++ b/arch/powerpc/platforms/powernv/pci.c
+>> @@ -576,15 +576,10 @@ static int pnv_tce_build(struct iommu_table *tbl, long index, long npages,
+>> 			 unsigned long uaddr, enum dma_data_direction direction,
+>> 			 struct dma_attrs *attrs, bool rm)
+>> {
+>> -	u64 proto_tce;
+>> +	u64 proto_tce = iommu_direction_to_tce_perm(direction);
+>> 	__be64 *tcep, *tces;
+>> 	u64 rpn;
+>>
+>> -	proto_tce = TCE_PCI_READ; // Read allowed
+>> -
+>> -	if (direction != DMA_TO_DEVICE)
+>> -		proto_tce |= TCE_PCI_WRITE;
+>> -
+>> 	tces = tcep = ((__be64 *)tbl->it_base) + index - tbl->it_offset;
+>> 	rpn = __pa(uaddr) >> tbl->it_page_shift;
+>>
+>> --
+>> 2.4.0.rc3.8.gfb3e7d5
+>>
 >
->+		*(pnv_tce(tbl, idx)) = cpu_to_be64(newtce);
->+	}
->
-> 	return 0;
-> }
->
-> void pnv_tce_free(struct iommu_table *tbl, long index, long npages)
-> {
->-	__be64 *tcep;
->+	long i;
->
->-	tcep = ((__be64 *)tbl->it_base) + index - tbl->it_offset;
->+	for (i = 0; i < npages; i++) {
->+		unsigned long idx = index - tbl->it_offset + i;
->
->-	while (npages--)
->-		*(tcep++) = cpu_to_be64(0);
->+		*(pnv_tce(tbl, idx)) = cpu_to_be64(0);
->+	}
-> }
->
-> unsigned long pnv_tce_get(struct iommu_table *tbl, long index)
-> {
->-	return ((u64 *)tbl->it_base)[index - tbl->it_offset];
->+	return *(pnv_tce(tbl, index - tbl->it_offset));
-> }
->
-> struct iommu_table *pnv_pci_table_alloc(int nid)
->-- 
->2.4.0.rc3.8.gfb3e7d5
->
+
+
+-- 
+Alexey
