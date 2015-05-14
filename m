@@ -1,15 +1,15 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BF2E71A116B
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2015 16:46:57 +1000 (AEST)
-Message-ID: <1431585994.4160.32.camel@kernel.crashing.org>
+Return-Path: <panto@antoniou-consulting.com>
+Received: from li42-95.members.linode.com (li42-95.members.linode.com
+ [209.123.162.95])
+ by lists.ozlabs.org (Postfix) with ESMTP id EC7F51A0017
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2015 17:04:44 +1000 (AEST)
 Subject: Re: [PATCH v4 19/21] drivers/of: Support adding sub-tree
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Pantelis Antoniou <panto@antoniou-consulting.com>
-Date: Thu, 14 May 2015 16:46:34 +1000
-In-Reply-To: <53EAE361-0015-4702-97C6-9F67B87963C2@antoniou-consulting.com>
+Mime-Version: 1.0 (Mac OS X Mail 8.2 \(2098\))
+Content-Type: text/plain; charset=utf-8
+From: Pantelis Antoniou <panto@antoniou-consulting.com>
+In-Reply-To: <1431585994.4160.32.camel@kernel.crashing.org>
+Date: Thu, 14 May 2015 10:04:37 +0300
+Message-Id: <3988EABE-3DE9-4E1C-9778-22E35138E359@antoniou-consulting.com>
 References: <1430460188-31343-1-git-send-email-gwshan@linux.vnet.ibm.com>
  <1430460188-31343-20-git-send-email-gwshan@linux.vnet.ibm.com>
  <CAL_JsqKEUevxSe0Q=pGdsWOiT+TW9iAnCsAWuuqOYj3ZPOG7dg@mail.gmail.com>
@@ -22,8 +22,8 @@ References: <1430460188-31343-1-git-send-email-gwshan@linux.vnet.ibm.com>
  <CAL_JsqKqTa5eg3eOqx3bkeNdO_920WwDiRbQaxwWLEWpCypFmA@mail.gmail.com>
  <1431564871.4160.8.camel@kernel.crashing.org>
  <53EAE361-0015-4702-97C6-9F67B87963C2@antoniou-consulting.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ <1431585994.4160.32.camel@kernel.crashing.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
  "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
  Gavin Shan <gwshan@linux.vnet.ibm.com>, Grant Likely <grant.likely@linaro.org>,
@@ -38,121 +38,219 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2015-05-14 at 09:23 +0300, Pantelis Antoniou wrote:
+Hi Ben,
 
-> > A few things that I don't find in the overlay code (but maybe I haven't
-> > looked at it hard enough):
-> > 
-> > - Can it remove nodes/properties ?
-> > 
-> 
-> Yes.
+> On May 14, 2015, at 09:46 , Benjamin Herrenschmidt =
+<benh@kernel.crashing.org> wrote:
+>=20
+> On Thu, 2015-05-14 at 09:23 +0300, Pantelis Antoniou wrote:
+>=20
+>>> A few things that I don't find in the overlay code (but maybe I =
+haven't
+>>> looked at it hard enough):
+>>>=20
+>>> - Can it remove nodes/properties ?
+>>>=20
+>>=20
+>> Yes.
+>=20
+> Ok, I've missed that when looking at the overlay code then, I'll have =
+to
+> give it a closer look.
+>=20
 
-Ok, I've missed that when looking at the overlay code then, I'll have to
-give it a closer look.
+Ok, let me be more specific. It used to be able to do it ;)
+The problem was the format used (a =E2=80=98-=E2=80=98 prefix to the =
+name).
 
-> > - Can it "commit" a changeset so it's permanently part of the main DT ?
-> > We will never have a concept of "revertable" changesets, if we need a
-> > subsequent update, we will get a new overlay from FW that will remove
-> > what needs to be removed and add what needs to be added.
-> > 
-> 
-> The overlay when applied is a part of the kernel DT tree.
-> It is trivial to add a mechanism that simply commits everything and
-> tosses away the revert information.
-> 
-> Note that in that case you have to make provisions for the unflatten
-> blob to not be freed or for the device tree nodes/properties to be
-> dynamically allocated.
+Since I didn=E2=80=99t have clear use for it, I was asked to drop it by =
+Grant.
 
-I think it makes sense to do the dynamic thing anyway...
+The removal capability is of-course there for the revert case.
 
-> > IE, our current mechanism without overlay is fairly simple:
-> > 
-> >  - On PCI unplug, we remove all nodes below the slot (from linux),
-> > the FW does the equivalent internally.
-> > 
-> 
-> If you use an overlay, you just revert it and everything would
-> be as it was before, without anything hanging below the slot node.
+>>> - Can it "commit" a changeset so it's permanently part of the main =
+DT ?
+>>> We will never have a concept of "revertable" changesets, if we need =
+a
+>>> subsequent update, we will get a new overlay from FW that will =
+remove
+>>> what needs to be removed and add what needs to be added.
+>>>=20
+>>=20
+>> The overlay when applied is a part of the kernel DT tree.
+>> It is trivial to add a mechanism that simply commits everything and
+>> tosses away the revert information.
+>>=20
+>> Note that in that case you have to make provisions for the unflatten
+>> blob to not be freed or for the device tree nodes/properties to be
+>> dynamically allocated.
+>=20
+> I think it makes sense to do the dynamic thing anyway...
+>=20
+>>> IE, our current mechanism without overlay is fairly simple:
+>>>=20
+>>> - On PCI unplug, we remove all nodes below the slot (from linux),
+>>> the FW does the equivalent internally.
+>>>=20
+>>=20
+>> If you use an overlay, you just revert it and everything would
+>> be as it was before, without anything hanging below the slot node.
+>=20
+> Except that doesn't work for the boot time content which we get
+> from the firmware as part of the initial FDT (and we can't change that
+> without breaking backward compatibility).
+>=20
 
-Except that doesn't work for the boot time content which we get
-from the firmware as part of the initial FDT (and we can't change that
-without breaking backward compatibility).
+OK
 
-> Note that the ‘remove all nodes below the slot’ does not work for my case.
-> 
-> That is because there are devices being instantiated under the slot
-> (i2c busses, i2c devices, FPGAs etc) that need to be removed from the
-> system.
+>> Note that the =E2=80=98remove all nodes below the slot=E2=80=99 does =
+not work for my case.
+>>=20
+>> That is because there are devices being instantiated under the slot
+>> (i2c busses, i2c devices, FPGAs etc) that need to be removed from the
+>> system.
+>=20
+> Right while in my case, there isn't, it's just the standard OF PCI
+> representation generated by FW, the main thing is that it might have
+> some enriched properties for some known cable cards of external =
+drawers
+> that are good to have.
+>=20
 
-Right while in my case, there isn't, it's just the standard OF PCI
-representation generated by FW, the main thing is that it might have
-some enriched properties for some known cable cards of external drawers
-that are good to have.
+I see.
 
-> >  - On PCI re-plug, the FW internally builds new nodes and sends a
-> > new subtree as an FDT that we can expand/attach.
-> > 
-> 
-> You can easily send a DT blob containing an overlay from firmware.
+>>> - On PCI re-plug, the FW internally builds new nodes and sends a
+>>> new subtree as an FDT that we can expand/attach.
+>>>=20
+>>=20
+>> You can easily send a DT blob containing an overlay from firmware.
+>=20
+> Sending one is easy. Building it is not :-)
+>=20
 
-Sending one is easy. Building it is not :-)
+Heh, true ;)
 
-> It can be even easy, since you might not have to recreate the full blob
-> each time, but instead using flat device tree methods to populate the
-> few properties that change each time.
+>> It can be even easy, since you might not have to recreate the full =
+blob
+>> each time, but instead using flat device tree methods to populate the
+>> few properties that change each time.
+>=20
+> No, we basically have our internal tree in the firmware in a format
+> similar to Linux, ie, a pointer based tree. We can "flatten" it of
+> course, but generating an overlay is trickier. We can, it's just more
+> work and we are running out of time (I basically have to cut that FW =
+in
+> the next few days, then we'll be stuck with whatever interfaces we
+> created, I have a big of time to fix bugs after that but that's about
+> it).
+>=20
 
-No, we basically have our internal tree in the firmware in a format
-similar to Linux, ie, a pointer based tree. We can "flatten" it of
-course, but generating an overlay is trickier. We can, it's just more
-work and we are running out of time (I basically have to cut that FW in
-the next few days, then we'll be stuck with whatever interfaces we
-created, I have a big of time to fix bugs after that but that's about
-it).
+Hmm, since you just want to transmit a whole subtree things are a bit
+simpler.
 
-> > Now we could consider that subtree as a changeset that can be undone,
-> > but that wouldn't work for boot time. And subsequent updates wouldn't
-> > have that concept of "undoing" anyway.
-> > 
-> 
-> I have posted another patch that does boot-time DT quirk which are
-> non-revertable.
-> 
-> https://lkml.org/lkml/2015/2/18/258
+You don=E2=80=99t need any of the fixups, and your target node is known.
 
-Not sure how that applies in my case ... I can't change the
-representation of the PCI subtree, this is standard OFW representation,
-I can't change the FW to make it an overlay-like thing at boot time,
-that would break existing kernels.
+So your overlay is simply:
 
-> > IE. conceptually, what overlays do today is quite rooted around the idea
-> > of having a fixed "base" DT and some pre-compiled DTB overlays that
-> > get added/removed. The design completely ignore the idea of a FW that
-> > maintains a "live" tree which we want to keep in sync, which is what we
-> > want to do here, or what we could do with a "live" open firmware
-> > implementation.
-> > 
-> > Now we might be able to reconcile them, but it feels to me that the
-> > overlay/changeset stuff is too rooted in the first concept…
-> > 
-> 
-> The first DT overlays use case (beaglebone capes) is what got the concept
-> started.
-> 
-> Right now is a generic mechanism to apply modifications to the kernel
-> live tree, with the possibility to revert them.
+/ {
+	fragment@0 {
+		target-path =3D =E2=80=9C/foo=E2=80=9D;
+		__overlay__ {
+			/* contents of the slot */
+		};
+	};=20
+};
 
-Yes but as I said it's not really thought in term of keeping the kernel
-tree in sync with an external dynamically generated tree. Maybe we can
-fix it, but it's more complex...
+I think it=E2=80=99s possible to just bit-mangle a blob (in pseudo =
+code).
 
-Ben.
+	const u8 template_overlay_blob[] =3D { <compiled blob of the =
+above> };
 
-> > Ben.
-> > 
-> > 
-> 
-> Regards
-> 
-> — Pantelis
+	flatten_slot(slot_blob);
+
+	overlay_blob =3D allocate_new_blob(template_overlay_blob, =
+slot_blob);
+
+	overlay_node =3D find_node(overlay_blob, =
+=E2=80=9C/fragment@0/__overlay__);
+	target_prop =3D find_prop(overlay_blob, =
+=E2=80=9C/fragment@0/target-path=E2=80=9D);
+
+	inject_slot_blob(overlay_blob, overlay_node, slot_blob);
+	modify_slot_target(overlay_blob, target_prop, slot_target);
+=09
+I don=E2=80=99t think you need to re-flatten anything, shuffling bits =
+around with
+memmove should work.
+
+>>> Now we could consider that subtree as a changeset that can be =
+undone,
+>>> but that wouldn't work for boot time. And subsequent updates =
+wouldn't
+>>> have that concept of "undoing" anyway.
+>>>=20
+>>=20
+>> I have posted another patch that does boot-time DT quirk which are
+>> non-revertable.
+>>=20
+>> https://lkml.org/lkml/2015/2/18/258
+>=20
+> Not sure how that applies in my case ... I can't change the
+> representation of the PCI subtree, this is standard OFW =
+representation,
+> I can't change the FW to make it an overlay-like thing at boot time,
+> that would break existing kernels.
+>=20
+
+The idea is to append the =E2=80=98quirk=E2=80=99 to the already booting =
+device tree blob.
+
+Another idea floating around was to simple concatenate the booting blob =
+with
+any overlay blobs you want applied at boot time.
+
+>>> IE. conceptually, what overlays do today is quite rooted around the =
+idea
+>>> of having a fixed "base" DT and some pre-compiled DTB overlays that
+>>> get added/removed. The design completely ignore the idea of a FW =
+that
+>>> maintains a "live" tree which we want to keep in sync, which is what =
+we
+>>> want to do here, or what we could do with a "live" open firmware
+>>> implementation.
+>>>=20
+>>> Now we might be able to reconcile them, but it feels to me that the
+>>> overlay/changeset stuff is too rooted in the first concept=E2=80=A6
+>>>=20
+>>=20
+>> The first DT overlays use case (beaglebone capes) is what got the =
+concept
+>> started.
+>>=20
+>> Right now is a generic mechanism to apply modifications to the kernel
+>> live tree, with the possibility to revert them.
+>=20
+> Yes but as I said it's not really thought in term of keeping the =
+kernel
+> tree in sync with an external dynamically generated tree. Maybe we can
+> fix it, but it's more complex=E2=80=A6
+>=20
+
+Yes it is, unfortunately.
+
+> Ben.
+>=20
+>>> Ben.
+>>>=20
+>>>=20
+>>=20
+>> Regards
+>>=20
+>> =E2=80=94 Pantelis
+>=20
+>=20
+
+Regards
+
+=E2=80=94 Pantelis
