@@ -1,26 +1,27 @@
-Return-Path: <alex.williamson@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pa0-f48.google.com (mail-pa0-f48.google.com
+ [209.85.220.48])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A14761A0BBF
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2015 12:53:10 +1000 (AEST)
-Message-ID: <1431571984.3625.91.camel@redhat.com>
-Subject: Re: [PATCH kernel v10 05/34] powerpc/iommu: Always release
- iommu_table in iommu_free_table()
-From: Alex Williamson <alex.williamson@redhat.com>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Date: Wed, 13 May 2015 20:53:04 -0600
-In-Reply-To: <555409B8.3060904@ozlabs.ru>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9252F1A03C3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2015 13:08:01 +1000 (AEST)
+Received: by pacyx8 with SMTP id yx8so69676861pac.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 20:08:00 -0700 (PDT)
+Message-ID: <55541188.1030201@ozlabs.ru>
+Date: Thu, 14 May 2015 13:07:52 +1000
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+MIME-Version: 1.0
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Subject: Re: [PATCH kernel v10 14/34] powerpc/iommu: Move tce_xxx callbacks
+ from ppc_md to iommu_table
 References: <1431358763-24371-1-git-send-email-aik@ozlabs.ru>
- <1431358763-24371-6-git-send-email-aik@ozlabs.ru>
- <20150513053337.GA479@gwshan> <5552EF78.6020301@ozlabs.ru>
- <20150513145136.1a85f536@thh440s> <20150513232745.GA8158@gwshan>
- <555409B8.3060904@ozlabs.ru>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: Thomas Huth <thuth@redhat.com>, Gavin Shan <gwshan@linux.vnet.ibm.com>,
- linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- linuxppc-dev@lists.ozlabs.org, Wei Yang <weiyang@linux.vnet.ibm.com>,
+ <1431358763-24371-15-git-send-email-aik@ozlabs.ru>
+ <20150514002321.GA16128@gwshan>
+In-Reply-To: <20150514002321.GA16128@gwshan>
+Content-Type: text/plain; charset=koi8-r; format=flowed
+Cc: Wei Yang <weiyang@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
  David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -31,68 +32,126 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2015-05-14 at 12:34 +1000, Alexey Kardashevskiy wrote:
-> On 05/14/2015 09:27 AM, Gavin Shan wrote:
-> > On Wed, May 13, 2015 at 02:51:36PM +0200, Thomas Huth wrote:
-> >> On Wed, 13 May 2015 16:30:16 +1000
-> >> Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
-> >>
-> >>> On 05/13/2015 03:33 PM, Gavin Shan wrote:
-> >>>> On Tue, May 12, 2015 at 01:38:54AM +1000, Alexey Kardashevskiy wrote:
-> >>>>> At the moment iommu_free_table() only releases memory if
-> >>>>> the table was initialized for the platform code use, i.e. it had
-> >>>>> it_map initialized (which purpose is to track DMA memory space use).
-> >>>>>
-> >>>>> With dynamic DMA windows, we will need to be able to release
-> >>>>> iommu_table even if it was used for VFIO in which case it_map is NULL
-> >>>>> so does the patch.
-> >>>>>
-> >>>>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> >>>>
-> >>>> Reviewed-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
-> >>>>
-> >>>>> ---
-> >>>>> arch/powerpc/kernel/iommu.c | 3 +--
-> >>>>> 1 file changed, 1 insertion(+), 2 deletions(-)
-> >>>>>
-> >>>>> diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
-> >>>>> index 3d47eb3..2c02d4c 100644
-> >>>>> --- a/arch/powerpc/kernel/iommu.c
-> >>>>> +++ b/arch/powerpc/kernel/iommu.c
-> >>>>> @@ -714,8 +714,7 @@ void iommu_free_table(struct iommu_table *tbl, const char *node_name)
-> >>>>> 	unsigned int order;
-> >>>>>
-> >>>>> 	if (!tbl || !tbl->it_map) {
-> >>>>> -		printk(KERN_ERR "%s: expected TCE map for %s\n", __func__,
-> >>>>> -				node_name);
-> >>>>> +		kfree(tbl);
-> >>>>
-> >>>> I'm not sure if the "tbl" needs to be checked against NULL as kfree() already
-> >>>> has the check. But it looks a bit strange to free NULL "tbl" from the code
-> >>>> itself.
-> >>>
-> >>> Yeah, looks a bit weird, agree, I'll change but in general kfree/vfree/...
-> >>> - they all check the passed pointer for NULL.
-> >>
-> >> But if tbl is NULL, the tbl->it_map check will fail, won't it? So in
-> >> this case, I think you have to keep it.
-> >>
-> >
-> > If I understood your question correctly, "tbl->it_map" won't be checked
-> > when "tbl" is NULL because the connection ("||") for the two conditions.
-> > The code can be changed to something like below if Alexey want:
-> >
-> > 	if (!tbl)
-> > 		return;
-> > 	if (!tbl->itmap)
-> > 		kfree(tbl);
-> 
-> To be precise ;)
-> 
-> if (!tbl->itmap) {
-> 	kfree(tbl);
-> 	return;
-> }
+On 05/14/2015 10:23 AM, Gavin Shan wrote:
+> On Tue, May 12, 2015 at 01:39:03AM +1000, Alexey Kardashevskiy wrote:
+>> This adds a iommu_table_ops struct and puts pointer to it into
+>> the iommu_table struct. This moves tce_build/tce_free/tce_get/tce_flush
+>> callbacks from ppc_md to the new struct where they really belong to.
+>>
+>> This adds the requirement for @it_ops to be initialized before calling
+>> iommu_init_table() to make sure that we do not leave any IOMMU table
+>> with iommu_table_ops uninitialized. This is not a parameter of
+>> iommu_init_table() though as there will be cases when iommu_init_table()
+>> will not be called on TCE tables, for example - VFIO.
+>>
+>> This does s/tce_build/set/, s/tce_free/clear/ and removes "tce_"
+>> redundand prefixes.
+>>
+>
+> s/redundand/redundant  I might be wrong because of my bad English.
 
-I hope that's not your solution, it clearly segfaults with a null
-pointer de-ref if !tbl, which is apparently a concern down this path.
+No, you're right ;)
+
+>
+>> This removes tce_xxx_rm handlers from ppc_md but does not add
+>> them to iommu_table_ops as this will be done later if we decide to
+>> support TCE hypercalls in real mode. This removes _vm callbacks as
+>> only virtual mode is supported by now so this also removes @rm parameter.
+>>
+>> For pSeries, this always uses tce_buildmulti_pSeriesLP/
+>> tce_buildmulti_pSeriesLP. This changes multi callback to fall back to
+>> tce_build_pSeriesLP/tce_free_pSeriesLP if FW_FEATURE_MULTITCE is not
+>> present. The reason for this is we still have to support "multitce=off"
+>> boot parameter in disable_multitce() and we do not want to walk through
+>> all IOMMU tables in the system and replace "multi" callbacks with single
+>> ones.
+>>
+>> For powernv, this defines _ops per PHB type which are P5IOC2/IODA1/IODA2.
+>> This makes the callbacks for them public. Later patches will extend
+>> callbacks for IODA1/2.
+>>
+>> No change in behaviour is expected.
+>>
+>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+>> Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
+>
+> Reviewed-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+>
+>> ---
+>> Changes:
+>> v9:
+>> * pnv_tce_build/pnv_tce_free/pnv_tce_get have been made public and lost
+>> "rm" parameters to make following patches simpler (realmode is not
+>> supported here anyway)
+>> * got rid of _vm versions of callbacks
+>> ---
+>> arch/powerpc/include/asm/iommu.h            | 17 +++++++++++
+>> arch/powerpc/include/asm/machdep.h          | 25 ---------------
+>> arch/powerpc/kernel/iommu.c                 | 46 ++++++++++++++--------------
+>> arch/powerpc/kernel/vio.c                   |  5 +++
+>> arch/powerpc/platforms/cell/iommu.c         |  8 +++--
+>> arch/powerpc/platforms/pasemi/iommu.c       |  7 +++--
+>> arch/powerpc/platforms/powernv/pci-ioda.c   | 14 +++++++++
+>> arch/powerpc/platforms/powernv/pci-p5ioc2.c |  7 +++++
+>> arch/powerpc/platforms/powernv/pci.c        | 47 +++++------------------------
+>> arch/powerpc/platforms/powernv/pci.h        |  5 +++
+>> arch/powerpc/platforms/pseries/iommu.c      | 34 ++++++++++++---------
+>> arch/powerpc/sysdev/dart_iommu.c            | 12 +++++---
+>> 12 files changed, 116 insertions(+), 111 deletions(-)
+>>
+>> diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
+>> index d91bd69..e2a45c3 100644
+>> --- a/arch/powerpc/include/asm/iommu.h
+>> +++ b/arch/powerpc/include/asm/iommu.h
+>> @@ -44,6 +44,22 @@
+>> extern int iommu_is_off;
+>> extern int iommu_force_on;
+>>
+>> +struct iommu_table_ops {
+>> +	int (*set)(struct iommu_table *tbl,
+>> +			long index, long npages,
+>> +			unsigned long uaddr,
+>> +			enum dma_data_direction direction,
+>> +			struct dma_attrs *attrs);
+>> +	void (*clear)(struct iommu_table *tbl,
+>> +			long index, long npages);
+>> +	unsigned long (*get)(struct iommu_table *tbl, long index);
+>> +	void (*flush)(struct iommu_table *tbl);
+>
+> Currently, there isn't flush backend on PowerNV platform. I'm not sure
+> if we have to implement it for PowerNV if we really need it. Maybe you
+> will have it to support DDW in subsequent patches which I didn't look
+> into it, but I will :-)
+
+
+I am not adding new callbacks here, I am moving them. DART uses flush() so 
+it has to be here.
+
+
+>
+>> +};
+>> +
+>> +/* These are used by VIO */
+>> +extern struct iommu_table_ops iommu_table_lpar_multi_ops;
+>> +extern struct iommu_table_ops iommu_table_pseries_ops;
+>> +
+>
+> It might be reasonable to add "struct iommu_table_ops *ops" to function
+> vio_register_device_node() where the specified "ops" can be hooked to
+> the newly created IOMMU table. In that way, the platform (pSeries) specific
+> IOMMU table operations doesn't have to be exposed to PowerPC subsystem.
+
+I am not exposing anything new here - I am just replacing references to 
+ppc_md with references to iommu_table_ops.
+
+vio_register_device_node() is called from VIO code. So I'll have to have a 
+copy of iommu_table_pseries_ops and iommu_table_lpar_multi_ops in VIO code. 
+If I do this, I'll have to export 
+tce_build_pSeries()/tce_free_pSeries()/tce_get_pseries() to initialize 
+those structs. Either way I need to expose some symbols and do deeper 
+rework but not in this patchset.
+
+
+
+-- 
+Alexey
