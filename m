@@ -1,27 +1,39 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pd0-f174.google.com (mail-pd0-f174.google.com
- [209.85.192.174])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 92FA61A0015
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2015 12:34:43 +1000 (AEST)
-Received: by pdbqa5 with SMTP id qa5so69822889pdb.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 19:34:41 -0700 (PDT)
-Message-ID: <555409B8.3060904@ozlabs.ru>
-Date: Thu, 14 May 2015 12:34:32 +1000
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-MIME-Version: 1.0
-To: Gavin Shan <gwshan@linux.vnet.ibm.com>,
- Thomas Huth <thuth@redhat.com>
-Subject: Re: [PATCH kernel v10 05/34] powerpc/iommu: Always release iommu_table
- in iommu_free_table()
+ by lists.ozlabs.org (Postfix) with ESMTPS id F35CB1A03D6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2015 12:35:03 +1000 (AEST)
+Received: from /spool/local
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Thu, 14 May 2015 12:35:03 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id B9E902CE8050
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2015 12:34:58 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t4E2YoMb15728784
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2015 12:34:58 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t4E2YPIT006041
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2015 12:34:25 +1000
+Date: Thu, 14 May 2015 12:34:00 +1000
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Subject: Re: [PATCH kernel v10 22/34] powerpc/powernv: Implement accessor to
+ TCE entry
+Message-ID: <20150514023400.GA3068@gwshan>
+Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
 References: <1431358763-24371-1-git-send-email-aik@ozlabs.ru>
- <1431358763-24371-6-git-send-email-aik@ozlabs.ru>
- <20150513053337.GA479@gwshan> <5552EF78.6020301@ozlabs.ru>
- <20150513145136.1a85f536@thh440s> <20150513232745.GA8158@gwshan>
-In-Reply-To: <20150513232745.GA8158@gwshan>
-Content-Type: text/plain; charset=koi8-r; format=flowed
-Cc: Wei Yang <weiyang@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+ <1431358763-24371-23-git-send-email-aik@ozlabs.ru>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1431358763-24371-23-git-send-email-aik@ozlabs.ru>
+Cc: Wei Yang <weiyang@linux.vnet.ibm.com>,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
  Alex Williamson <alex.williamson@redhat.com>,
  Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
  David Gibson <david@gibson.dropbear.id.au>
@@ -34,73 +46,97 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/14/2015 09:27 AM, Gavin Shan wrote:
-> On Wed, May 13, 2015 at 02:51:36PM +0200, Thomas Huth wrote:
->> On Wed, 13 May 2015 16:30:16 +1000
->> Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
->>
->>> On 05/13/2015 03:33 PM, Gavin Shan wrote:
->>>> On Tue, May 12, 2015 at 01:38:54AM +1000, Alexey Kardashevskiy wrote:
->>>>> At the moment iommu_free_table() only releases memory if
->>>>> the table was initialized for the platform code use, i.e. it had
->>>>> it_map initialized (which purpose is to track DMA memory space use).
->>>>>
->>>>> With dynamic DMA windows, we will need to be able to release
->>>>> iommu_table even if it was used for VFIO in which case it_map is NULL
->>>>> so does the patch.
->>>>>
->>>>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
->>>>
->>>> Reviewed-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
->>>>
->>>>> ---
->>>>> arch/powerpc/kernel/iommu.c | 3 +--
->>>>> 1 file changed, 1 insertion(+), 2 deletions(-)
->>>>>
->>>>> diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
->>>>> index 3d47eb3..2c02d4c 100644
->>>>> --- a/arch/powerpc/kernel/iommu.c
->>>>> +++ b/arch/powerpc/kernel/iommu.c
->>>>> @@ -714,8 +714,7 @@ void iommu_free_table(struct iommu_table *tbl, const char *node_name)
->>>>> 	unsigned int order;
->>>>>
->>>>> 	if (!tbl || !tbl->it_map) {
->>>>> -		printk(KERN_ERR "%s: expected TCE map for %s\n", __func__,
->>>>> -				node_name);
->>>>> +		kfree(tbl);
->>>>
->>>> I'm not sure if the "tbl" needs to be checked against NULL as kfree() already
->>>> has the check. But it looks a bit strange to free NULL "tbl" from the code
->>>> itself.
->>>
->>> Yeah, looks a bit weird, agree, I'll change but in general kfree/vfree/...
->>> - they all check the passed pointer for NULL.
->>
->> But if tbl is NULL, the tbl->it_map check will fail, won't it? So in
->> this case, I think you have to keep it.
->>
+On Tue, May 12, 2015 at 01:39:11AM +1000, Alexey Kardashevskiy wrote:
+>This replaces direct accesses to TCE table with a helper which
+>returns an TCE entry address. This does not make difference now but will
+>when multi-level TCE tables get introduces.
 >
-> If I understood your question correctly, "tbl->it_map" won't be checked
-> when "tbl" is NULL because the connection ("||") for the two conditions.
-> The code can be changed to something like below if Alexey want:
+>No change in behavior is expected.
 >
-> 	if (!tbl)
-> 		return;
-> 	if (!tbl->itmap)
-> 		kfree(tbl);
+>Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+>Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 
-To be precise ;)
+Reviewed-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 
-if (!tbl->itmap) {
-	kfree(tbl);
-	return;
-}
+Thanks,
+Gavin
 
+>---
+>Changes:
+>v9:
+>* new patch in the series to separate this mechanical change from
+>functional changes; this is not right before
+>"powerpc/powernv: Implement multilevel TCE tables" but here in order
+>to let the next patch - "powerpc/iommu/powernv: Release replaced TCE" -
+>use pnv_tce() and avoid changing the same code twice
+>---
+> arch/powerpc/platforms/powernv/pci.c | 34 +++++++++++++++++++++-------------
+> 1 file changed, 21 insertions(+), 13 deletions(-)
 >
-> Thanks,
-> Gavin
+>diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
+>index ed7de7b..cc82f05 100644
+>--- a/arch/powerpc/platforms/powernv/pci.c
+>+++ b/arch/powerpc/platforms/powernv/pci.c
+>@@ -572,38 +572,46 @@ struct pci_ops pnv_pci_ops = {
+> 	.write = pnv_pci_write_config,
+> };
 >
-
-
--- 
-Alexey
+>+static __be64 *pnv_tce(struct iommu_table *tbl, long idx)
+>+{
+>+	__be64 *tmp = ((__be64 *)tbl->it_base);
+>+
+>+	return tmp + idx;
+>+}
+>+
+> int pnv_tce_build(struct iommu_table *tbl, long index, long npages,
+> 		unsigned long uaddr, enum dma_data_direction direction,
+> 		struct dma_attrs *attrs)
+> {
+> 	u64 proto_tce = iommu_direction_to_tce_perm(direction);
+>-	__be64 *tcep;
+>-	u64 rpn;
+>+	u64 rpn = __pa(uaddr) >> tbl->it_page_shift;
+>+	long i;
+>
+>-	tcep = ((__be64 *)tbl->it_base) + index - tbl->it_offset;
+>-	rpn = __pa(uaddr) >> tbl->it_page_shift;
+>-
+>-	while (npages--)
+>-		*(tcep++) = cpu_to_be64(proto_tce |
+>-				(rpn++ << tbl->it_page_shift));
+>+	for (i = 0; i < npages; i++) {
+>+		unsigned long newtce = proto_tce |
+>+			((rpn + i) << tbl->it_page_shift);
+>+		unsigned long idx = index - tbl->it_offset + i;
+>
+>+		*(pnv_tce(tbl, idx)) = cpu_to_be64(newtce);
+>+	}
+>
+> 	return 0;
+> }
+>
+> void pnv_tce_free(struct iommu_table *tbl, long index, long npages)
+> {
+>-	__be64 *tcep;
+>+	long i;
+>
+>-	tcep = ((__be64 *)tbl->it_base) + index - tbl->it_offset;
+>+	for (i = 0; i < npages; i++) {
+>+		unsigned long idx = index - tbl->it_offset + i;
+>
+>-	while (npages--)
+>-		*(tcep++) = cpu_to_be64(0);
+>+		*(pnv_tce(tbl, idx)) = cpu_to_be64(0);
+>+	}
+> }
+>
+> unsigned long pnv_tce_get(struct iommu_table *tbl, long index)
+> {
+>-	return ((u64 *)tbl->it_base)[index - tbl->it_offset];
+>+	return *(pnv_tce(tbl, index - tbl->it_offset));
+> }
+>
+> struct iommu_table *pnv_pci_table_alloc(int nid)
+>-- 
+>2.4.0.rc3.8.gfb3e7d5
+>
