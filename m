@@ -2,14 +2,14 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
  (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 081711A0017
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2015 17:26:16 +1000 (AEST)
-Message-ID: <1431588358.4160.42.camel@kernel.crashing.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id A9F591A0017
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2015 17:29:20 +1000 (AEST)
+Message-ID: <1431588544.4160.43.camel@kernel.crashing.org>
 Subject: Re: [PATCH v4 19/21] drivers/of: Support adding sub-tree
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Pantelis Antoniou <panto@antoniou-consulting.com>
-Date: Thu, 14 May 2015 17:25:58 +1000
-In-Reply-To: <75F026CA-5AC1-4106-B2F0-AB0D006DEF5A@antoniou-consulting.com>
+Date: Thu, 14 May 2015 17:29:04 +1000
+In-Reply-To: <1431588358.4160.42.camel@kernel.crashing.org>
 References: <1430460188-31343-1-git-send-email-gwshan@linux.vnet.ibm.com>
  <1430460188-31343-20-git-send-email-gwshan@linux.vnet.ibm.com>
  <CAL_JsqKEUevxSe0Q=pGdsWOiT+TW9iAnCsAWuuqOYj3ZPOG7dg@mail.gmail.com>
@@ -26,6 +26,7 @@ References: <1430460188-31343-1-git-send-email-gwshan@linux.vnet.ibm.com>
  <3988EABE-3DE9-4E1C-9778-22E35138E359@antoniou-consulting.com>
  <1431587657.4160.37.camel@kernel.crashing.org>
  <75F026CA-5AC1-4106-B2F0-AB0D006DEF5A@antoniou-consulting.com>
+ <1431588358.4160.42.camel@kernel.crashing.org>
 Content-Type: text/plain; charset="UTF-8"
 Mime-Version: 1.0
 Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
@@ -42,74 +43,14 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2015-05-14 at 10:19 +0300, Pantelis Antoniou wrote:
 
+> So I would have to do a special case on unplug:
 > 
-> You don’t want to know how sausages are made, but they are delicious :)
+> 	if (slot->dt_is_overlay) /* set to false at boot */
+> 		remove_subtree_myself();
+> 	else
+> 		undo_overlay(slot->overlay);
 
- ... most of the time :)
+Of course I just inverted the polarity of the if () in the example :-)
 
-> > But yeah generating the overlay doesn't necessarily scare me, I can
-> > generate a temp tree that is the overlay in which I "copy" the subtree
-> > (or in my internal ptr-based representation I could have a concept of
-> > alias which I follow while flattening).
-> > 
-> > That leaves me with these problems:
-> > 
-> > - No support for removing of nodes, so that needs to be added back to
-> > the format and to Linux unless I continue removing by hand in the PCI
-> > hotplug code itself
-> > 
-> 
-> What kind of nodes/properties you need to remove at _application_ time?
-
-Well, if we stick to removing by hand in Linux for the unplug case, then
-none.
-
-> What you describe is inserting a bunch of properties and nodes under
-> a slot’s device node. Reverting the overlay removes them all just fine.
-
-Except that still doesn't work for boot time :-)
-
-So I would have to do a special case on unplug:
-
-	if (slot->dt_is_overlay) /* set to false at boot */
-		remove_subtree_myself();
-	else
-		undo_overlay(slot->overlay);
-
-> > - No support for "committing" the overlay which needs to be added as
-> > well.
-> > 
-> 
-> That’s the easiest part.
-
-Yeah, I will need to get my head around the code a bit more but it
-doesn't seem too scary.
-
-> I see. Well, how about this?
-> 
-> Who said you have to do the whole blob dance in the firmware?
-> 
-> You can just as easily pass the blob as it is to the linux kernel and
-> the kernel there can convert it to an overlay and apply it.
-
-That's not that pretty but we can do that too which solve the problem of
-fixing the FW interface.
-
-There is however an argument to be made in having the FW be able to
-generate arbitrary overlays. If we ever want to pass more "property"
-updates or node updates to Linux at runtime.
-
-A few cases have crept up on the radar, like updating the pstate tables
-or VPD informations ...
-
-If we go down that path, then I would implement a concept of generation
-count in the firmware, so I can generate an overlay that include all the
-changes since the last "generation" given to Linux.
-
-However that requires supporting removal of nodes/properties. So I'm
-tempted to keep that feature on the back burner and go with an ad-hoc
-interface for PCI for now.
-
-Ben.
+But you get the idea...
