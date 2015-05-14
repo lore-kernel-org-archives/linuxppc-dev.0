@@ -1,24 +1,27 @@
-Return-Path: <julien.grall@citrix.com>
-Received: from SMTP02.CITRIX.COM (smtp02.citrix.com [66.165.176.63])
- (using TLSv1 with cipher RC4-SHA (128/128 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A61781A0015
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 03:29:20 +1000 (AEST)
-From: Julien Grall <julien.grall@citrix.com>
-To: <xen-devel@lists.xenproject.org>
-Subject: [RFC 14/23] tty/hvc: xen: Use xen page definition
-Date: Thu, 14 May 2015 18:00:54 +0100
-Message-ID: <1431622863-28575-15-git-send-email-julien.grall@citrix.com>
-In-Reply-To: <1431622863-28575-1-git-send-email-julien.grall@citrix.com>
-References: <1431622863-28575-1-git-send-email-julien.grall@citrix.com>
-MIME-Version: 1.0
-Content-Type: text/plain
-Cc: ian.campbell@citrix.com, stefano.stabellini@eu.citrix.com,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linuxppc-dev@lists.ozlabs.org,
- tim@xen.org, linux-kernel@vger.kernel.org,
- Julien Grall <julien.grall@citrix.com>, David Vrabel <david.vrabel@citrix.com>,
- Boris Ostrovsky <boris.ostrovsky@oracle.com>, Jiri Slaby <jslaby@suse.cz>,
- linux-arm-kernel@lists.infradead.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id C6BF31A042E
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 07:58:27 +1000 (AEST)
+Message-ID: <1431640683.4160.69.camel@kernel.crashing.org>
+Subject: [RFC/PATCH v2] powerpc/iommu: Support "hybrid" iommu/direct DMA ops
+ for coherent_mask < dma_mask
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Brian King <brking@linux.vnet.ibm.com>
+Date: Fri, 15 May 2015 07:58:03 +1000
+In-Reply-To: <5553C428.5090806@linux.vnet.ibm.com>
+References: <555279A8.6060906@linux.vnet.ibm.com>
+ <2214146.EzgWBA6g23@wuerfel> <5553505D.50102@linux.vnet.ibm.com>
+ <10045033.4fV0qQU90u@wuerfel> <55535BDF.6020502@linux.vnet.ibm.com>
+ <CAK=zhgoXx4HJfpTuNAP0tAPnsU8BLmM7X3qGsFCzJfHOx55YCQ@mail.gmail.com>
+ <1431550613.20218.88.camel@kernel.crashing.org>
+ <5553C428.5090806@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
+Cc: Daniel Kreling <kreling@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-scsi <linux-scsi@vger.kernel.org>, Arnd Bergmann <arnd@arndb.de>,
+ Sreekanth Reddy <sreekanth.reddy@avagotech.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,49 +31,430 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The console ring is always based on the page granularity of Xen.
+This patch adds the ability to the DMA direct ops to fallback to the IOMMU
+ops for coherent alloc/free if the coherent mask of the device isn't
+suitable for accessing the direct DMA space and the device also happens
+to have an active IOMMU table.
 
-Signed-off-by: Julien Grall <julien.grall@citrix.com>
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Jiri Slaby <jslaby@suse.cz>
-Cc: David Vrabel <david.vrabel@citrix.com>
-Cc: Stefano Stabellini <stefano.stabellini@eu.citrix.com>
-Cc: Boris Ostrovsky <boris.ostrovsky@oracle.com>
-Cc: linuxppc-dev@lists.ozlabs.org
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
- drivers/tty/hvc/hvc_xen.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/tty/hvc/hvc_xen.c b/drivers/tty/hvc/hvc_xen.c
-index 5bab1c6..a68d115 100644
---- a/drivers/tty/hvc/hvc_xen.c
-+++ b/drivers/tty/hvc/hvc_xen.c
-@@ -230,7 +230,7 @@ static int xen_hvm_console_init(void)
- 	if (r < 0 || v == 0)
- 		goto err;
- 	mfn = v;
--	info->intf = xen_remap(mfn << PAGE_SHIFT, PAGE_SIZE);
-+	info->intf = xen_remap(mfn << XEN_PAGE_SHIFT, XEN_PAGE_SIZE);
- 	if (info->intf == NULL)
- 		goto err;
- 	info->vtermno = HVC_COOKIE;
-@@ -392,7 +392,7 @@ static int xencons_connect_backend(struct xenbus_device *dev,
- 	if (xen_pv_domain())
- 		mfn = virt_to_mfn(info->intf);
- 	else
--		mfn = __pa(info->intf) >> PAGE_SHIFT;
-+		mfn = __pa(info->intf) >> XEN_PAGE_SHIFT;
- 	ret = gnttab_alloc_grant_references(1, &gref_head);
- 	if (ret < 0)
- 		return ret;
-@@ -476,7 +476,7 @@ static int xencons_resume(struct xenbus_device *dev)
- 	struct xencons_info *info = dev_get_drvdata(&dev->dev);
+v2: Implement a custom dma_set_coherent_mask() to work around the fact
+that dma_supported() will fail otherwise.
+
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 22b0940..cd46474 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -82,6 +82,9 @@ config GENERIC_HWEIGHT
+ 	bool
+ 	default y
  
- 	xencons_disconnect_backend(info);
--	memset(info->intf, 0, PAGE_SIZE);
-+	memset(info->intf, 0, XEN_PAGE_SIZE);
- 	return xencons_connect_backend(dev, info);
++config ARCH_HAS_DMA_SET_COHERENT_MASK
++        bool
++
+ config PPC
+ 	bool
+ 	default y
+@@ -152,6 +155,7 @@ config PPC
+ 	select DCACHE_WORD_ACCESS if PPC64 && CPU_LITTLE_ENDIAN
+ 	select NO_BOOTMEM
+ 	select HAVE_GENERIC_RCU_GUP
++	select ARCH_HAS_DMA_SET_COHERENT_MASK
+ 
+ config GENERIC_CSUM
+ 	def_bool CPU_LITTLE_ENDIAN
+diff --git a/arch/powerpc/include/asm/device.h b/arch/powerpc/include/asm/device.h
+index 9f1371b..9ce2199 100644
+--- a/arch/powerpc/include/asm/device.h
++++ b/arch/powerpc/include/asm/device.h
+@@ -10,6 +10,7 @@ struct dma_map_ops;
+ struct device_node;
+ #ifdef CONFIG_PPC64
+ struct pci_dn;
++struct iommu_table;
+ #endif
+ 
+ /*
+@@ -23,13 +24,15 @@ struct dev_archdata {
+ 	struct dma_map_ops	*dma_ops;
+ 
+ 	/*
+-	 * When an iommu is in use, dma_data is used as a ptr to the base of the
+-	 * iommu_table.  Otherwise, it is a simple numerical offset.
++	 * These two used to be a union. However, with the hybrid ops we need
++	 * both so here we store both a DMA offset for direct mappings and
++	 * an iommu_table for remapped DMA.
+ 	 */
+-	union {
+-		dma_addr_t	dma_offset;
+-		void		*iommu_table_base;
+-	} dma_data;
++	dma_addr_t		dma_offset;
++
++#ifdef CONFIG_PPC64
++	struct iommu_table	*iommu_table_base;
++#endif
+ 
+ #ifdef CONFIG_IOMMU_API
+ 	void			*iommu_domain;
+diff --git a/arch/powerpc/include/asm/dma-mapping.h b/arch/powerpc/include/asm/dma-mapping.h
+index 894d538..2e12366 100644
+--- a/arch/powerpc/include/asm/dma-mapping.h
++++ b/arch/powerpc/include/asm/dma-mapping.h
+@@ -21,12 +21,12 @@
+ #define DMA_ERROR_CODE		(~(dma_addr_t)0x0)
+ 
+ /* Some dma direct funcs must be visible for use in other dma_ops */
+-extern void *dma_direct_alloc_coherent(struct device *dev, size_t size,
+-				       dma_addr_t *dma_handle, gfp_t flag,
++extern void *__dma_direct_alloc_coherent(struct device *dev, size_t size,
++					 dma_addr_t *dma_handle, gfp_t flag,
++					 struct dma_attrs *attrs);
++extern void __dma_direct_free_coherent(struct device *dev, size_t size,
++				       void *vaddr, dma_addr_t dma_handle,
+ 				       struct dma_attrs *attrs);
+-extern void dma_direct_free_coherent(struct device *dev, size_t size,
+-				     void *vaddr, dma_addr_t dma_handle,
+-				     struct dma_attrs *attrs);
+ extern int dma_direct_mmap_coherent(struct device *dev,
+ 				    struct vm_area_struct *vma,
+ 				    void *cpu_addr, dma_addr_t handle,
+@@ -106,7 +106,7 @@ static inline void set_dma_ops(struct device *dev, struct dma_map_ops *ops)
+ static inline dma_addr_t get_dma_offset(struct device *dev)
+ {
+ 	if (dev)
+-		return dev->archdata.dma_data.dma_offset;
++		return dev->archdata.dma_offset;
+ 
+ 	return PCI_DRAM_OFFSET;
+ }
+@@ -114,7 +114,7 @@ static inline dma_addr_t get_dma_offset(struct device *dev)
+ static inline void set_dma_offset(struct device *dev, dma_addr_t off)
+ {
+ 	if (dev)
+-		dev->archdata.dma_data.dma_offset = off;
++		dev->archdata.dma_offset = off;
  }
  
--- 
-2.1.4
+ /* this will be removed soon */
+diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
+index e2abbe8..e67e678 100644
+--- a/arch/powerpc/include/asm/iommu.h
++++ b/arch/powerpc/include/asm/iommu.h
+@@ -2,17 +2,17 @@
+  * Copyright (C) 2001 Mike Corrigan & Dave Engebretsen, IBM Corporation
+  * Rewrite, cleanup:
+  * Copyright (C) 2004 Olof Johansson <olof@lixom.net>, IBM Corporation
+- * 
++ *
+  * This program is free software; you can redistribute it and/or modify
+  * it under the terms of the GNU General Public License as published by
+  * the Free Software Foundation; either version 2 of the License, or
+  * (at your option) any later version.
+- * 
++ *
+  * This program is distributed in the hope that it will be useful,
+  * but WITHOUT ANY WARRANTY; without even the implied warranty of
+  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+  * GNU General Public License for more details.
+- * 
++ *
+  * You should have received a copy of the GNU General Public License
+  * along with this program; if not, write to the Free Software
+  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
+@@ -93,16 +93,21 @@ int get_iommu_order(unsigned long size, struct iommu_table *tbl)
+ 
+ struct scatterlist;
+ 
+-static inline void set_iommu_table_base(struct device *dev, void *base)
++#ifdef CONFIG_PPC64
++
++static inline void set_iommu_table_base(struct device *dev,
++					struct iommu_table *base)
+ {
+-	dev->archdata.dma_data.iommu_table_base = base;
++	dev->archdata.iommu_table_base = base;
+ }
+ 
+ static inline void *get_iommu_table_base(struct device *dev)
+ {
+-	return dev->archdata.dma_data.iommu_table_base;
++	return dev->archdata.iommu_table_base;
+ }
+ 
++extern int dma_iommu_dma_supported(struct device *dev, u64 mask);
++
+ /* Frees table for an individual device node */
+ extern void iommu_free_table(struct iommu_table *tbl, const char *node_name);
+ 
+@@ -146,6 +151,20 @@ static inline void set_iommu_table_base_and_group(struct device *dev,
+ 	iommu_add_device(dev);
+ }
+ 
++#else
++
++static inline void *get_iommu_table_base(struct device *dev)
++{
++	return NULL;
++}
++
++static inline int dma_iommu_dma_supported(struct device *dev, u64 mask)
++{
++	return 0;
++}
++
++#endif /* CONFIG_PPC64 */
++
+ extern int ppc_iommu_map_sg(struct device *dev, struct iommu_table *tbl,
+ 			    struct scatterlist *sglist, int nelems,
+ 			    unsigned long mask,
+diff --git a/arch/powerpc/kernel/dma-iommu.c b/arch/powerpc/kernel/dma-iommu.c
+index 4c68bfe..41a7d9d 100644
+--- a/arch/powerpc/kernel/dma-iommu.c
++++ b/arch/powerpc/kernel/dma-iommu.c
+@@ -73,7 +73,7 @@ static void dma_iommu_unmap_sg(struct device *dev, struct scatterlist *sglist,
+ }
+ 
+ /* We support DMA to/from any memory page via the iommu */
+-static int dma_iommu_dma_supported(struct device *dev, u64 mask)
++int dma_iommu_dma_supported(struct device *dev, u64 mask)
+ {
+ 	struct iommu_table *tbl = get_iommu_table_base(dev);
+ 
+diff --git a/arch/powerpc/kernel/dma-swiotlb.c b/arch/powerpc/kernel/dma-swiotlb.c
+index 7359797..81b81cd 100644
+--- a/arch/powerpc/kernel/dma-swiotlb.c
++++ b/arch/powerpc/kernel/dma-swiotlb.c
+@@ -47,8 +47,8 @@ static u64 swiotlb_powerpc_get_required(struct device *dev)
+  * for everything else.
+  */
+ struct dma_map_ops swiotlb_dma_ops = {
+-	.alloc = dma_direct_alloc_coherent,
+-	.free = dma_direct_free_coherent,
++	.alloc = __dma_direct_alloc_coherent,
++	.free = __dma_direct_free_coherent,
+ 	.mmap = dma_direct_mmap_coherent,
+ 	.map_sg = swiotlb_map_sg_attrs,
+ 	.unmap_sg = swiotlb_unmap_sg_attrs,
+diff --git a/arch/powerpc/kernel/dma.c b/arch/powerpc/kernel/dma.c
+index 484b2d4..19941d5 100644
+--- a/arch/powerpc/kernel/dma.c
++++ b/arch/powerpc/kernel/dma.c
+@@ -16,6 +16,7 @@
+ #include <asm/bug.h>
+ #include <asm/machdep.h>
+ #include <asm/swiotlb.h>
++#include <asm/iommu.h>
+ 
+ /*
+  * Generic direct DMA implementation
+@@ -39,9 +40,31 @@ static u64 __maybe_unused get_pfn_limit(struct device *dev)
+ 	return pfn;
+ }
+ 
+-void *dma_direct_alloc_coherent(struct device *dev, size_t size,
+-				dma_addr_t *dma_handle, gfp_t flag,
+-				struct dma_attrs *attrs)
++static int dma_direct_dma_supported(struct device *dev, u64 mask)
++{
++#ifdef CONFIG_PPC64
++	u64 limit = get_dma_offset(dev) + (memblock_end_of_DRAM() - 1);
++
++	/* Limit fits in the mask, we are good */
++	if (mask >= limit)
++		return 1;
++
++#ifdef CONFIG_FSL_SOC
++	/* Freescale gets another chance via ZONE_DMA/ZONE_DMA32, however
++	 * that will have to be refined if/when they support iommus
++	 */
++	return 1;
++#endif
++	/* Sorry ... */
++	return 0;
++#else
++	return 1;
++#endif
++}
++
++void *__dma_direct_alloc_coherent(struct device *dev, size_t size,
++				  dma_addr_t *dma_handle, gfp_t flag,
++				  struct dma_attrs *attrs)
+ {
+ 	void *ret;
+ #ifdef CONFIG_NOT_COHERENT_CACHE
+@@ -96,9 +119,9 @@ void *dma_direct_alloc_coherent(struct device *dev, size_t size,
+ #endif
+ }
+ 
+-void dma_direct_free_coherent(struct device *dev, size_t size,
+-			      void *vaddr, dma_addr_t dma_handle,
+-			      struct dma_attrs *attrs)
++void __dma_direct_free_coherent(struct device *dev, size_t size,
++				void *vaddr, dma_addr_t dma_handle,
++				struct dma_attrs *attrs)
+ {
+ #ifdef CONFIG_NOT_COHERENT_CACHE
+ 	__dma_free_coherent(size, vaddr);
+@@ -107,6 +130,51 @@ void dma_direct_free_coherent(struct device *dev, size_t size,
+ #endif
+ }
+ 
++static void *dma_direct_alloc_coherent(struct device *dev, size_t size,
++				       dma_addr_t *dma_handle, gfp_t flag,
++				       struct dma_attrs *attrs)
++{
++	struct iommu_table *iommu;
++
++	/* The coherent mask may be smaller than the real mask, check if
++	 * we can really use the direct ops
++	 */
++	if (dma_direct_dma_supported(dev, dev->coherent_dma_mask))
++		return __dma_direct_alloc_coherent(dev, size, dma_handle,
++						   flag, attrs);
++
++	/* Ok we can't ... do we have an iommu ? If not, fail */
++	iommu = get_iommu_table_base(dev);
++	if (!iommu)
++		return NULL;
++
++	/* Try to use the iommu */
++	return iommu_alloc_coherent(dev, iommu, size, dma_handle,
++				    dev->coherent_dma_mask, flag,
++				    dev_to_node(dev));
++}
++
++static void dma_direct_free_coherent(struct device *dev, size_t size,
++				     void *vaddr, dma_addr_t dma_handle,
++				     struct dma_attrs *attrs)
++{
++	struct iommu_table *iommu;
++
++	/* See comments in dma_direct_alloc_coherent() */
++	if (dma_direct_dma_supported(dev, dev->coherent_dma_mask))
++		return __dma_direct_free_coherent(dev, size, vaddr, dma_handle,
++						  attrs);
++	/* Maybe we used an iommu ... */
++	iommu = get_iommu_table_base(dev);
++
++	/* If we hit that we should have never allocated in the first
++	 * place so how come we are freeing ?
++	 */
++	if (WARN_ON(!iommu))
++		return;
++	iommu_free_coherent(iommu, size, vaddr, dma_handle);
++}
++
+ int dma_direct_mmap_coherent(struct device *dev, struct vm_area_struct *vma,
+ 			     void *cpu_addr, dma_addr_t handle, size_t size,
+ 			     struct dma_attrs *attrs)
+@@ -147,18 +215,6 @@ static void dma_direct_unmap_sg(struct device *dev, struct scatterlist *sg,
+ {
+ }
+ 
+-static int dma_direct_dma_supported(struct device *dev, u64 mask)
+-{
+-#ifdef CONFIG_PPC64
+-	/* Could be improved so platforms can set the limit in case
+-	 * they have limited DMA windows
+-	 */
+-	return mask >= get_dma_offset(dev) + (memblock_end_of_DRAM() - 1);
+-#else
+-	return 1;
+-#endif
+-}
+-
+ static u64 dma_direct_get_required_mask(struct device *dev)
+ {
+ 	u64 end, mask;
+@@ -230,6 +286,24 @@ struct dma_map_ops dma_direct_ops = {
+ };
+ EXPORT_SYMBOL(dma_direct_ops);
+ 
++int dma_set_coherent_mask(struct device *dev, u64 mask)
++{
++	if (!dma_supported(dev, mask)) {
++		/*
++		 * We need to special case the direct DMA ops which can
++		 * support a fallback for coherent allocations. There
++		 * is no dma_op->set_coherent_mask() so we have to do
++		 * things the hard way:
++		 */
++		if (get_dma_ops(dev) != &dma_direct_ops ||
++		    get_iommu_table_base(dev) == NULL ||
++		    !dma_iommu_dma_supported(dev, mask))
++			return -EIO;
++	}
++	dev->coherent_dma_mask = mask;
++	return 0;
++}
++
+ #define PREALLOC_DMA_DEBUG_ENTRIES (1 << 16)
+ 
+ int __dma_set_mask(struct device *dev, u64 dma_mask)
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index 5ac7c60..fcff6fa 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -1625,7 +1625,6 @@ static int pnv_pci_ioda_dma_set_mask(struct pnv_phb *phb,
+ 	} else {
+ 		dev_info(&pdev->dev, "Using 32-bit DMA via iommu\n");
+ 		set_dma_ops(&pdev->dev, &dma_iommu_ops);
+-		set_iommu_table_base(&pdev->dev, pe->tce32_table);
+ 	}
+ 	*pdev->dev.dma_mask = dma_mask;
+ 	return 0;
+diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
+index 7803a19..0acab86 100644
+--- a/arch/powerpc/platforms/pseries/iommu.c
++++ b/arch/powerpc/platforms/pseries/iommu.c
+@@ -1161,11 +1161,10 @@ static int dma_set_mask_pSeriesLP(struct device *dev, u64 dma_mask)
+ 		}
+ 	}
+ 
+-	/* fall back on iommu ops, restore table pointer with ops */
++	/* fall back on iommu ops */
+ 	if (!ddw_enabled && get_dma_ops(dev) != &dma_iommu_ops) {
+ 		dev_info(dev, "Restoring 32-bit DMA via iommu\n");
+ 		set_dma_ops(dev, &dma_iommu_ops);
+-		pci_dma_dev_setup_pSeriesLP(pdev);
+ 	}
+ 
+ check_mask:
+diff --git a/arch/powerpc/sysdev/dart_iommu.c b/arch/powerpc/sysdev/dart_iommu.c
+index 9e5353f..6cf033d 100644
+--- a/arch/powerpc/sysdev/dart_iommu.c
++++ b/arch/powerpc/sysdev/dart_iommu.c
+@@ -306,20 +306,11 @@ static void iommu_table_dart_setup(void)
+ 	set_bit(iommu_table_dart.it_size - 1, iommu_table_dart.it_map);
+ }
+ 
+-static void dma_dev_setup_dart(struct device *dev)
+-{
+-	/* We only have one iommu table on the mac for now, which makes
+-	 * things simple. Setup all PCI devices to point to this table
+-	 */
+-	if (get_dma_ops(dev) == &dma_direct_ops)
+-		set_dma_offset(dev, DART_U4_BYPASS_BASE);
+-	else
+-		set_iommu_table_base(dev, &iommu_table_dart);
+-}
+-
+ static void pci_dma_dev_setup_dart(struct pci_dev *dev)
+ {
+-	dma_dev_setup_dart(&dev->dev);
++	if (dart_is_u4)
++		set_dma_offset(&dev->dev, DART_U4_BYPASS_BASE);
++	set_iommu_table_base(&dev->dev, &iommu_table_dart);
+ }
+ 
+ static void pci_dma_bus_setup_dart(struct pci_bus *bus)
+@@ -363,7 +354,6 @@ static int dart_dma_set_mask(struct device *dev, u64 dma_mask)
+ 		dev_info(dev, "Using 32-bit DMA via iommu\n");
+ 		set_dma_ops(dev, &dma_iommu_ops);
+ 	}
+-	dma_dev_setup_dart(dev);
+ 
+ 	*dev->dma_mask = dma_mask;
+ 	return 0;
