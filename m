@@ -1,29 +1,27 @@
-Return-Path: <emunson@akamai.com>
-Received: from prod-mail-xrelay02.akamai.com (prod-mail-xrelay02.akamai.com
- [72.246.2.14])
- by lists.ozlabs.org (Postfix) with ESMTP id B5C6E1A0015
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2015 23:58:37 +1000 (AEST)
-Date: Thu, 14 May 2015 09:58:35 -0400
-From: Eric B Munson <emunson@akamai.com>
-To: Michal Hocko <mhocko@suse.cz>
-Subject: Re: [PATCH 0/3] Allow user to request memory to be locked on page
- fault
-Message-ID: <20150514135835.GH1227@akamai.com>
-References: <1431113626-19153-1-git-send-email-emunson@akamai.com>
- <20150508124203.6679b1d35ad9555425003929@linux-foundation.org>
- <20150511180631.GA1227@akamai.com>
- <20150513150036.GG1227@akamai.com>
- <20150514080812.GC6433@dhcp22.suse.cz>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="fd5uyaI9j6xoeUBo"
-In-Reply-To: <20150514080812.GC6433@dhcp22.suse.cz>
-Cc: linux-arch@vger.kernel.org, linux-mips@linux-mips.org,
- linux-parisc@vger.kernel.org, linux-xtensa@linux-xtensa.org,
- linux-api@vger.kernel.org, linux-kernel@vger.kernel.org,
- Shuah Khan <shuahkh@osg.samsung.com>, linux-mm@kvack.org,
- linux-alpha@vger.kernel.org, sparclinux@vger.kernel.org,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
+Return-Path: <mr.triggtrigg@gmail.com>
+Received: from mail-pd0-x244.google.com (mail-pd0-x244.google.com
+ [IPv6:2607:f8b0:400e:c02::244])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 54E831A0015
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 01:21:07 +1000 (AEST)
+Received: by pdjg10 with SMTP id g10so11954077pdj.2
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2015 08:21:05 -0700 (PDT)
+Content-Type: text/plain;
+	charset=us-ascii
+Mime-Version: 1.0 (1.0)
+Subject: Re: [PATCH v3] powerpc/powernv: Add poweroff (EPOW,
+ DPO) events support for PowerNV platform
+From: trigg <mr.triggtrigg@gmail.com>
+In-Reply-To: <1431600419-6544-2-git-send-email-vipin@linux.vnet.ibm.com>
+Date: Thu, 14 May 2015 20:51:00 +0530
+Message-Id: <3BA04CFA-6498-4154-B784-5C22E4B9F747@gmail.com>
+References: <1431600419-6544-1-git-send-email-vipin@linux.vnet.ibm.com>
+ <1431600419-6544-2-git-send-email-vipin@linux.vnet.ibm.com>
+To: Vipin K Parashar <vipin@linux.vnet.ibm.com>
+Cc: "stewart@linux.vnet.ibm.com" <stewart@linux.vnet.ibm.com>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "joel@jms.id.au" <joel@jms.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,115 +32,369 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---fd5uyaI9j6xoeUBo
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-On Thu, 14 May 2015, Michal Hocko wrote:
-
-> On Wed 13-05-15 11:00:36, Eric B Munson wrote:
-> > On Mon, 11 May 2015, Eric B Munson wrote:
-> >=20
-> > > On Fri, 08 May 2015, Andrew Morton wrote:
-> > >=20
-> > > > On Fri,  8 May 2015 15:33:43 -0400 Eric B Munson <emunson@akamai.co=
-m> wrote:
-> > > >=20
-> > > > > mlock() allows a user to control page out of program memory, but =
-this
-> > > > > comes at the cost of faulting in the entire mapping when it is
-> > > > > allocated.  For large mappings where the entire area is not neces=
-sary
-> > > > > this is not ideal.
-> > > > >=20
-> > > > > This series introduces new flags for mmap() and mlockall() that a=
-llow a
-> > > > > user to specify that the covered are should not be paged out, but=
- only
-> > > > > after the memory has been used the first time.
-> > > >=20
-> > > > Please tell us much much more about the value of these changes: the=
- use
-> > > > cases, the behavioural improvements and performance results which t=
-he
-> > > > patchset brings to those use cases, etc.
-> > > >=20
-> > >=20
-> > > To illustrate the proposed use case I wrote a quick program that mmaps
-> > > a 5GB file which is filled with random data and accesses 150,000 pages
-> > > from that mapping.  Setup and processing were timed separately to
-> > > illustrate the differences between the three tested approaches.  the
-> > > setup portion is simply the call to mmap, the processing is the
-> > > accessing of the various locations in  that mapping.  The following
-> > > values are in milliseconds and are the averages of 20 runs each with a
-> > > call to echo 3 > /proc/sys/vm/drop_caches between each run.
-> > >=20
-> > > The first mapping was made with MAP_PRIVATE | MAP_LOCKED as a baselin=
+> On 14-May-2015, at 16:16, Vipin K Parashar <vipin@linux.vnet.ibm.com> wrot=
 e:
-> > > Startup average:    9476.506
-> > > Processing average: 3.573
-> > >=20
-> > > The second mapping was simply MAP_PRIVATE but each page was passed to
-> > > mlock() before being read:
-> > > Startup average:    0.051
-> > > Processing average: 721.859
-> > >=20
-> > > The final mapping was MAP_PRIVATE | MAP_LOCKONFAULT:
-> > > Startup average:    0.084
-> > > Processing average: 42.125
-> > >=20
-> >=20
-> > Michal's suggestion of changing protections and locking in a signal
-> > handler was better than the locking as needed, but still significantly
-> > more work required than the LOCKONFAULT case.
-> >=20
-> > Startup average:    0.047
-> > Processing average: 86.431
 >=20
-> Have you played with batching? Has it helped? Anyway it is to be
-> expected that the overhead will be higher than a single mmap call. The
-> question is whether you can live with it because adding a new semantic
-> to mlock sounds trickier and MAP_LOCKED is tricky enough already...
+> This patch adds support for FSP EPOW (Early Power Off Warning) and
+> DPO (Delayed Power Off) events support for PowerNV platform. EPOW events
+> are generated by SPCN/FSP due to various critical system conditions that
+> need system shutdown. Few examples of these conditions are high ambient
+> temperature or system running on UPS power with low UPS battery. DPO event=
+
+> is generated in response to admin initiated system shutdown request.
+>    Upon receipt of EPOW and DPO events host kernel invokes orderly_powerof=
+f
+> for performing graceful system shutdown. System admin can also add systemd=
+
+> service shutdown scripts to perform any specific actions like graceful gue=
+st
+> shutdown upon system poweroff. libvirt-guests is systemd service available=
+ on
+> recent distros for management of guests at system start/shutdown time.
 >=20
+> Signed-off-by: Vipin K Parashar <vipin@linux.vnet.ibm.com>
+> ---
+> arch/powerpc/include/asm/opal-api.h            |  44 +++++++
+> arch/powerpc/include/asm/opal.h                |   3 +-
+> arch/powerpc/platforms/powernv/opal-power.c    | 167 +++++++++++++++++++++=
++---
+> arch/powerpc/platforms/powernv/opal-wrappers.S |   1 +
+> 4 files changed, 197 insertions(+), 18 deletions(-)
+>=20
+> diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/as=
+m/opal-api.h
+> index 0321a90..90fa364 100644
+> --- a/arch/powerpc/include/asm/opal-api.h
+> +++ b/arch/powerpc/include/asm/opal-api.h
+> @@ -355,6 +355,10 @@ enum opal_msg_type {
+>    OPAL_MSG_TYPE_MAX,
+> };
+>=20
+> +/* OPAL_MSG_SHUTDOWN parameter values */
+> +#define    SOFT_OFF    0x00
+> +#define    SOFT_REBOOT    0x01
+> +
+> struct opal_msg {
+>    __be32 msg_type;
+>    __be32 reserved;
+> @@ -730,6 +734,46 @@ struct opal_i2c_request {
+>    __be64 buffer_ra;        /* Buffer real address */
+> };
+>=20
+> +/*
+> + * EPOW status sharing (OPAL and the host)
+> + *
+> + * The host will pass on OPAL, a buffer of length OPAL_SYSEPOW_MAX
+> + * with individual elements being 16 bits wide to fetch the system
+> + * wide EPOW status. Each element in the buffer will contain the
+> + * EPOW status in it's bit representation for a particular EPOW sub
+> + * class as defiend here. So multiple detailed EPOW status bits
+> + * specific for any sub class can be represented in a single buffer
+> + * element as it's bit representation.
+> + */
+> +
+> +/* System EPOW type */
+> +enum OpalSysEpow {
+> +    OPAL_SYSEPOW_POWER    =3D 0,    /* Power EPOW */
+> +    OPAL_SYSEPOW_TEMP    =3D 1,    /* Temperature EPOW */
+> +    OPAL_SYSEPOW_COOLING    =3D 2,    /* Cooling EPOW */
+> +    OPAL_SYSEPOW_MAX    =3D 3,    /* Max EPOW categories */
+> +};
+> +
+> +/* Power EPOW */
+> +enum OpalSysPower {
+> +    OPAL_SYSPOWER_UPS    =3D 0x0001, /* System on UPS power */
+> +    OPAL_SYSPOWER_CHNG    =3D 0x0002, /* System power config change */
+> +    OPAL_SYSPOWER_FAIL    =3D 0x0004, /* System impending power failure *=
+/
+> +    OPAL_SYSPOWER_INCL    =3D 0x0008, /* System incomplete power */
+> +};
+> +
+> +/* Temperature EPOW */
+> +enum OpalSysTemp {
+> +    OPAL_SYSTEMP_AMB    =3D 0x0001, /* System over ambient temperature */=
 
-The test code I have been using is a pathalogical test case that only
-touches pages once and they are fairly far apart.
-
-On the face batching sounds like a good idea, but I have a couple of
-questions.  In order to batch fault in pages the seg fault handler needs
-to know about the mapping in question.  Specifically it needs to know
-where it ends so that it doesn't try and mprotect()/mlock() past the
-end.  So now the program has to start tracking its maps in some globally
-accessible structure and this sounds more like implementing memory
-management in userspace.  How could this batching be implemented without
-requiring the signal handler to know about mapping that is being
-accessed?  Also, how much memory management policy is it reasonable to
-expect user space to implement in these cases?
-
-Eric
-
-
---fd5uyaI9j6xoeUBo
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJVVKoLAAoJELbVsDOpoOa90wkQANW2KnooZXzzNUTsJw2B/QTN
-YVIypMnzYWbm6PiOrXWmLEYy2WkkhZRFsFfrtj0qXNqj1JHI2l+ziyx0SEAeK6LZ
-aN2/wL8E/uogVP0E8ti06hnkYdmq0AvwHujH3txHVK49wYl/q/X39tf2VxJBA1Ei
-At3JVQ12OymEmzpsnttij1X6uTQQwzaXV/mgeNAk9TYxvj6IWmvkqhrvxBQQpfec
-7yllbH2CWoWRxuhf+mc3R+LX2Vqz14nV0aWSDhIOSO+K+n5LVqBNrLKhKipnqPxQ
-AID/yjBbZuXz/5RP+WddtFk1DwU25f9GyGzXhiq6tiLnayqmaL1vV61E1wkcsspA
-CuS8+jmPcUJvNaiHP9126qTzTVybsz8vtJaZkNSM8Vp2RMrtQvODHuQYBBTClrqd
-35PF/frytzOeEuqpP/Z0kwW/XnNGvcSC2wqM2Gmirn0QK7GsoEHqWRpvuFEcau1j
-/beVWrq6anUmD5PB3RgWb58XP6Q5iQOFbNI8mHHnqZQg2RIMjujJ+f1pXt3bwVJ3
-oZFLALVs9xvy5rDYyFnSVRs4iVEhn2tGdi/mW/oypHyfDsLHX+FhzSuvYCfocGq6
-2jHlCcmQ1osDn8SXNf9bZpp0U0J18YRxV3fj2MHb8MDp9f7aaSr7oIrrZ2A/Zr6G
-0b6iQjK20eFmcy4ranev
-=Fok5
------END PGP SIGNATURE-----
-
---fd5uyaI9j6xoeUBo--
+> +    OPAL_SYSTEMP_INT    =3D 0x0002, /* System over internal temperature *=
+/
+> +    OPAL_SYSTEMP_HMD    =3D 0x0004, /* System over ambient humidity */
+> +};
+> +
+> +/* Cooling EPOW */
+> +enum OpalSysCooling {
+> +    OPAL_SYSCOOL_INSF    =3D 0x0001, /* System insufficient cooling */
+> +};
+> +
+> #endif /* __ASSEMBLY__ */
+>=20
+> #endif /* __OPAL_API_H */
+> diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/op=
+al.h
+> index 042af1a..d30766f 100644
+> --- a/arch/powerpc/include/asm/opal.h
+> +++ b/arch/powerpc/include/asm/opal.h
+> @@ -141,7 +141,8 @@ int64_t opal_pci_fence_phb(uint64_t phb_id);
+> int64_t opal_pci_reinit(uint64_t phb_id, uint64_t reinit_scope, uint64_t d=
+ata);
+> int64_t opal_pci_mask_pe_error(uint64_t phb_id, uint16_t pe_number, uint8_=
+t error_type, uint8_t mask_action);
+> int64_t opal_set_slot_led_status(uint64_t phb_id, uint64_t slot_id, uint8_=
+t led_type, uint8_t led_action);
+> -int64_t opal_get_epow_status(__be64 *status);
+> +int64_t opal_get_epow_status(uint16_t *status, uint16_t *length);
+> +int64_t opal_get_dpo_status(int64_t *dpo_timeout);
+> int64_t opal_set_system_attention_led(uint8_t led_action);
+> int64_t opal_pci_next_error(uint64_t phb_id, __be64 *first_frozen_pe,
+>                __be16 *pci_error_type, __be16 *severity);
+> diff --git a/arch/powerpc/platforms/powernv/opal-power.c b/arch/powerpc/pl=
+atforms/powernv/opal-power.c
+> index ac46c2c..0a1e07b 100644
+> --- a/arch/powerpc/platforms/powernv/opal-power.c
+> +++ b/arch/powerpc/platforms/powernv/opal-power.c
+> @@ -1,5 +1,5 @@
+> /*
+> - * PowerNV OPAL power control for graceful shutdown handling
+> + * PowerNV support for OPAL power-control, poweroff events
+>  *
+>  * Copyright 2015 IBM Corp.
+>  *
+> @@ -9,40 +9,137 @@
+>  * 2 of the License, or (at your option) any later version.
+>  */
+>=20
+> +#define pr_fmt(fmt)    "OPAL-POWER: "    fmt
+> +
+> #include <linux/kernel.h>
+> +#include <linux/spinlock.h>
+> +#include <linux/timer.h>
+> #include <linux/reboot.h>
+> -#include <linux/notifier.h>
+> -
+> +#include <linux/of.h>
+> #include <asm/opal.h>
+> #include <asm/machdep.h>
+>=20
+> -#define SOFT_OFF 0x00
+> -#define SOFT_REBOOT 0x01
+> +/* System EPOW, DPO support variable */
+> +static bool epow_dpo_supported;
+Make this local to init function.
+> +
+> +/* System EPOW status */
+> +static u16 epow_status[OPAL_SYSEPOW_MAX];
+> +static u16 num_epow_classes;
+> +
+> +/* Get DPO status */
+> +static bool get_dpo_status(void)
+> +{
+> +    int rc;
+> +    __be64 opal_dpo_timeout;
+> +
+> +    rc =3D opal_get_dpo_status(&opal_dpo_timeout);
+> +    if (rc =3D=3D OPAL_WRONG_STATE)
+> +        return false;
+> +
+> +    return true;
+> +}
+> +
+> +/* Get EPOW status */
+> +static bool get_epow_status(void)
+> +{
+> +    int i;
+> +
+> +    __be16 opal_epow_status[OPAL_SYSEPOW_MAX] =3D {0};
+> +    __be16 epow_classes;
+> +
+> +    /* Send kernel EPOW classes supported info to OPAL */
+> +    epow_classes =3D cpu_to_be16(OPAL_SYSEPOW_MAX);
+> +
+> +    /* Get EPOW events information from OPAL */
+> +    opal_get_epow_status(opal_epow_status, &epow_classes);
+>=20
+> +    /* Copy EPOW status obtained from OPAL */
+> +    memset(epow_status, 0, sizeof(epow_status));
+> +    num_epow_classes =3D be16_to_cpu(epow_classes);
+> +    for (i =3D 0; i < num_epow_classes; i++) {
+> +        epow_status[i] =3D be16_to_cpu(opal_epow_status[i]);
+> +        if (epow_status[i])
+> +            return true;
+Bug? You may want to set a flag here instead of returning.
+> +    }
+> +
+> +    return false;
+> +}
+> +
+> +/* Process existing EPOW, DPO events */
+> +static void process_existing_poweroff_events(void)
+> +{
+> +
+> +    /* Check for any existing DPO, EPOW event */
+> +    if (epow_dpo_supported) {
+> +
+Instead of checking for dpo support here just call this function
+=46rom init only when dpo is supported.
+> +        /* Check for DPO event first */
+> +        if (get_dpo_status()) {
+get_dpo_status function is very small and its functionality
+ can be incorporated here itself.
+> +            pr_info("Existing DPO event detected. "
+> +                "Powering off system\n");
+> +            orderly_poweroff(true);
+> +            return;
+> +        }
+> +
+> +        /* EPOW event check */
+> +        if (get_epow_status()) {
+> +            pr_info("Existing EPOW event detected. "
+> +                "Powering off system");
+> +            orderly_poweroff(true);
+> +            return;
+> +        }
+> +    }
+> +}
+> +
+> +/* OPAL EPOW, DPO event notifier */
+> +static int opal_epow_dpo_event(struct notifier_block *nb,
+> +                unsigned long msg_type, void *msg)
+> +{
+> +    switch (msg_type) {
+> +    case OPAL_MSG_EPOW:
+> +        pr_info("EPOW msg received. Powering off system\n");
+> +        orderly_poweroff(true);
+> +        break;
+> +
+> +    case OPAL_MSG_DPO:
+> +        pr_info("DPO msg received. Powering off system\n");
+> +        orderly_poweroff(true);
+Missing a 'break' here. Also better if you have some warning
+or BUG() for default case.
+> +    }
+> +
+> +    return 0;
+> +}
+> +
+> +/* OPAL power-control events notifier */
+> static int opal_power_control_event(struct notifier_block *nb,
+> -                    unsigned long msg_type, void *msg)
+> +                unsigned long msg_type, void *msg)
+> {
+> -    struct opal_msg *power_msg =3D msg;
+>    uint64_t type;
+> +    struct opal_msg *power_msg =3D msg;
+>=20
+>    type =3D be64_to_cpu(power_msg->params[0]);
+> -
+>    switch (type) {
+>    case SOFT_REBOOT:
+> -        pr_info("OPAL: reboot requested\n");
+> +        pr_info("Reboot requested\n");
+>        orderly_reboot();
+>        break;
+>    case SOFT_OFF:
+> -        pr_info("OPAL: poweroff requested\n");
+> +        pr_info("Poweroff requested\n");
+>        orderly_poweroff(true);
+>        break;
+>    default:
+> -        pr_err("OPAL: power control type unexpected %016llx\n", type);
+> +        pr_err("Unknown event %llu\n", type);
+>    }
+>=20
+>    return 0;
+> }
+>=20
+> +/* OPAL EPOW, DPO event notifier block */
+> +static struct notifier_block opal_epow_dpo_nb =3D {
+> +    .notifier_call  =3D opal_epow_dpo_event,
+> +    .next           =3D NULL,
+> +    .priority       =3D 0,
+> +};
+> +
+> +/* OPAL power-control event notifier block */
+> static struct notifier_block opal_power_control_nb =3D {
+>    .notifier_call    =3D opal_power_control_event,
+>    .next        =3D NULL,
+> @@ -52,15 +149,51 @@ static struct notifier_block opal_power_control_nb =3D=
+ {
+> static int __init opal_power_control_init(void)
+> {
+>    int ret;
+> +    struct device_node *node_epow;
+>=20
+> -    ret =3D opal_message_notifier_register(OPAL_MSG_SHUTDOWN,
+> -                         &opal_power_control_nb);
+> -    if (ret) {
+> -        pr_err("%s: Can't register OPAL event notifier (%d)\n",
+> -                __func__, ret);
+> -        return ret;
+> +    /*
+> +    * Determine EPOW, DPO support in hardware.
+> +    */
+Single line comment using multi line syntax.
+> +    node_epow =3D of_find_node_by_path("/ibm,opal/epow");
+> +    if (node_epow) {
+> +        if (of_device_is_compatible(node_epow, "ibm,opal-v3-epow")) {
+> +            epow_dpo_supported =3D true;
+> +            pr_info("OPAL EPOW, DPO support detected.\n");
+> +        }
+> +        of_node_put(node_epow);
+> +    }
+> +
+> +    /* Prepare to handle EPOW, DPO events */
+> +    if (epow_dpo_supported) {
+> +
+> +        /* Register EPOW event notifier */
+> +        ret =3D opal_message_notifier_register(OPAL_MSG_EPOW,
+> +                &opal_epow_dpo_nb);
+> +        if (ret)
+> +            pr_err("EPOW event notifier registration failed, "
+> +                    "ret =3D %d\n", ret);
+> +
+This is a bug. You can't use same struct notifierblock to register to
+two different chains.
+> +        /* Register DPO event notifier */
+> +        ret =3D opal_message_notifier_register(OPAL_MSG_DPO,
+> +                &opal_epow_dpo_nb);
+> +        if (ret)
+> +            pr_err("DPO event notifier registration failed, "
+> +                    "ret =3D %d\n", ret);
+>    }
+>=20
+> +    /* Register OPAL power-control events notifier */
+> +    ret =3D opal_message_notifier_register(OPAL_MSG_SHUTDOWN,
+> +                &opal_power_control_nb);
+> +    if (ret)
+> +        pr_err("Power-control events notifier registration "
+> +                "failed, ret =3D %d\n", ret);
+> +
+> +    /* Check for any existing EPOW or DPO events. */
+> +    process_existing_poweroff_events();
+> +
+> +    pr_info("Power-control, poweroff events support initialized\n");
+> +
+>    return 0;
+> }
+> +
+> machine_subsys_initcall(powernv, opal_power_control_init);
+> diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc=
+/platforms/powernv/opal-wrappers.S
+> index a7ade94..5d3c8e3 100644
+> --- a/arch/powerpc/platforms/powernv/opal-wrappers.S
+> +++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
+> @@ -249,6 +249,7 @@ OPAL_CALL(opal_pci_reinit,            OPAL_PCI_REINIT)=
+;
+> OPAL_CALL(opal_pci_mask_pe_error,        OPAL_PCI_MASK_PE_ERROR);
+> OPAL_CALL(opal_set_slot_led_status,        OPAL_SET_SLOT_LED_STATUS);
+> OPAL_CALL(opal_get_epow_status,            OPAL_GET_EPOW_STATUS);
+> +OPAL_CALL(opal_get_dpo_status,            OPAL_GET_DPO_STATUS);
+> OPAL_CALL(opal_set_system_attention_led,    OPAL_SET_SYSTEM_ATTENTION_LED)=
+;
+> OPAL_CALL(opal_pci_next_error,            OPAL_PCI_NEXT_ERROR);
+> OPAL_CALL(opal_pci_poll,            OPAL_PCI_POLL);
+> --=20
+> 1.9.3
+>=20
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@lists.ozlabs.org
+> https://lists.ozlabs.org/listinfo/linuxppc-dev
