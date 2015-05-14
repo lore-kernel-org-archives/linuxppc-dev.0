@@ -1,23 +1,23 @@
 Return-Path: <aik@ozlabs.ru>
-Received: from mail-pa0-f53.google.com (mail-pa0-f53.google.com
- [209.85.220.53])
+Received: from mail-pd0-f171.google.com (mail-pd0-f171.google.com
+ [209.85.192.171])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6FF0A1A03C6
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2015 13:19:48 +1000 (AEST)
-Received: by pacyx8 with SMTP id yx8so69956193pac.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 20:19:46 -0700 (PDT)
-Message-ID: <5554144A.50701@ozlabs.ru>
-Date: Thu, 14 May 2015 13:19:38 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id EC9C01A0017
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2015 13:31:46 +1000 (AEST)
+Received: by pdea3 with SMTP id a3so71083797pde.3
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 20:31:45 -0700 (PDT)
+Message-ID: <55541718.70304@ozlabs.ru>
+Date: Thu, 14 May 2015 13:31:36 +1000
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 MIME-Version: 1.0
 To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: Re: [PATCH kernel v10 15/34] powerpc/powernv/ioda/ioda2: Rework TCE
- invalidation in tce_build()/tce_free()
+Subject: Re: [PATCH kernel v10 16/34] powerpc/spapr: vfio: Replace iommu_table
+ with iommu_table_group
 References: <1431358763-24371-1-git-send-email-aik@ozlabs.ru>
- <1431358763-24371-16-git-send-email-aik@ozlabs.ru>
- <20150514004824.GA18437@gwshan>
-In-Reply-To: <20150514004824.GA18437@gwshan>
+ <1431358763-24371-17-git-send-email-aik@ozlabs.ru>
+ <20150514012105.GA22701@gwshan>
+In-Reply-To: <20150514012105.GA22701@gwshan>
 Content-Type: text/plain; charset=koi8-r; format=flowed
 Cc: Wei Yang <weiyang@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
  Alex Williamson <alex.williamson@redhat.com>,
@@ -32,262 +32,521 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/14/2015 10:48 AM, Gavin Shan wrote:
-> On Tue, May 12, 2015 at 01:39:04AM +1000, Alexey Kardashevskiy wrote:
->> The pnv_pci_ioda_tce_invalidate() helper invalidates TCE cache. It is
->> supposed to be called on IODA1/2 and not called on p5ioc2. It receives
->> start and end host addresses of TCE table.
+On 05/14/2015 11:21 AM, Gavin Shan wrote:
+> On Tue, May 12, 2015 at 01:39:05AM +1000, Alexey Kardashevskiy wrote:
+>> Modern IBM POWERPC systems support multiple (currently two) TCE tables
+>> per IOMMU group (a.k.a. PE). This adds a iommu_table_group container
+>> for TCE tables. Right now just one table is supported.
 >>
->> IODA2 actually needs PCI addresses to invalidate the cache. Those
->> can be calculated from host addresses but since we are going
->> to implement multi-level TCE tables, calculating PCI address from
->> a host address might get either tricky or ugly as TCE table remains flat
->> on PCI bus but not in RAM.
+>> This defines iommu_table_group struct which stores pointers to
+>> iommu_group and iommu_table(s). This replaces iommu_table with
+>> iommu_table_group where iommu_table was used to identify a group:
+>> - iommu_register_group();
+>> - iommudata of generic iommu_group;
 >>
->> This moves pnv_pci_ioda_tce_invalidate() from generic pnv_tce_build/
->> pnt_tce_free and defines IODA1/2-specific callbacks which call generic
->> ones and do PHB-model-specific TCE cache invalidation. P5IOC2 keeps
->> using generic callbacks as before.
+>> This removes @data from iommu_table as it_table_group provides
+>> same access to pnv_ioda_pe.
 >>
->> This changes pnv_pci_ioda2_tce_invalidate() to receives TCE index and
->> number of pages which are PCI addresses shifted by IOMMU page shift.
+>> For IODA, instead of embedding iommu_table, the new iommu_table_group
+>> keeps pointers to those. The iommu_table structs are allocated
+>> dynamically.
 >>
->> No change in behaviour is expected.
+>> For P5IOC2, both iommu_table_group and iommu_table are embedded into
+>> PE struct. As there is no EEH and SRIOV support for P5IOC2,
+>> iommu_free_table() should not be called on iommu_table struct pointers
+>> so we can keep it embedded in pnv_phb::p5ioc2.
+>>
+>> For pSeries, this replaces multiple calls of kzalloc_node() with a new
+>> iommu_pseries_alloc_group() helper and stores the table group struct
+>> pointer into the pci_dn struct. For release, a iommu_table_free_group()
+>> helper is added.
+>>
+>> This moves iommu_table struct allocation from SR-IOV code to
+>> the generic DMA initialization code in pnv_pci_ioda_setup_dma_pe and
+>> pnv_pci_ioda2_setup_dma_pe as this is where DMA is actually initialized.
+>> This change is here because those lines had to be changed anyway.
+>>
+>> This should cause no behavioural change.
 >>
 >> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
->> Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 >
 > Reviewed-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 >
 >> ---
 >> Changes:
 >> v10:
->> * moved before "Switch from iommu_table to new iommu_table_group" as it adds
->> list of groups to iommu_table and tce invalidation depends on it
->>
->> v9:
->> * removed confusing comment from commit log about unintentional calling of
->> pnv_pci_ioda_tce_invalidate()
->> * moved mechanical changes away to "powerpc/iommu: Move tce_xxx callbacks from ppc_md to iommu_table"
->> * fixed bug with broken invalidation in pnv_pci_ioda2_tce_invalidate -
->> @index includes @tbl->it_offset but old code added it anyway which later broke
->> DDW
+>> * new to the series, separated from
+>> "powerpc/spapr: vfio: Switch from iommu_table to new iommu_table_group"
+>> * iommu_table is not embedded into iommu_table_group but allocated
+>> dynamically in most cases
+>> * iommu_table allocation is moved to a single place for IODA2's
+>> pnv_pci_ioda_setup_dma_pe where it belongs to
+>> * added list of groups into iommu_table; most of the code just looks at
+>> the first item to keep the patch simpler
 >> ---
->> arch/powerpc/platforms/powernv/pci-ioda.c | 81 ++++++++++++++++++++++---------
->> arch/powerpc/platforms/powernv/pci.c      | 17 ++-----
->> 2 files changed, 61 insertions(+), 37 deletions(-)
+>> arch/powerpc/include/asm/iommu.h            |  17 +++--
+>> arch/powerpc/include/asm/pci-bridge.h       |   2 +-
+>> arch/powerpc/kernel/iommu.c                 |  17 ++---
+>> arch/powerpc/platforms/powernv/pci-ioda.c   |  55 +++++++-------
+>> arch/powerpc/platforms/powernv/pci-p5ioc2.c |  18 +++--
+>> arch/powerpc/platforms/powernv/pci.h        |   3 +-
+>> arch/powerpc/platforms/pseries/iommu.c      | 107 +++++++++++++++++++---------
+>> drivers/vfio/vfio_iommu_spapr_tce.c         |  23 +++---
+>> 8 files changed, 152 insertions(+), 90 deletions(-)
 >>
->> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
->> index 2924abe..1b43e25 100644
->> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
->> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
->> @@ -1678,18 +1678,19 @@ static void pnv_ioda_setup_bus_dma(struct pnv_ioda_pe *pe,
->> 	}
+>> diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
+>> index e2a45c3..61bde1a 100644
+>> --- a/arch/powerpc/include/asm/iommu.h
+>> +++ b/arch/powerpc/include/asm/iommu.h
+>> @@ -92,13 +92,10 @@ struct iommu_table {
+>> 	unsigned long *it_map;       /* A simple allocation bitmap for now */
+>> 	unsigned long  it_page_shift;/* table iommu page size */
+>> #ifdef CONFIG_IOMMU_API
+>> -	struct iommu_group *it_group;
+>> +	struct iommu_table_group *it_table_group;
+>> #endif
+>> 	struct iommu_table_ops *it_ops;
+>> 	void (*set_bypass)(struct iommu_table *tbl, bool enable);
+>> -#ifdef CONFIG_PPC_POWERNV
+>> -	void           *data;
+>> -#endif
+>> };
+>>
+>> /* Pure 2^n version of get_order */
+>> @@ -130,13 +127,21 @@ extern void iommu_free_table(struct iommu_table *tbl, const char *node_name);
+>> extern struct iommu_table *iommu_init_table(struct iommu_table * tbl,
+>> 					    int nid);
+>> #ifdef CONFIG_IOMMU_API
+>> -extern void iommu_register_group(struct iommu_table *tbl,
+>> +
+>> +#define IOMMU_TABLE_GROUP_MAX_TABLES	1
+>> +
+>> +struct iommu_table_group {
+>> +	struct iommu_group *group;
+>> +	struct iommu_table *tables[IOMMU_TABLE_GROUP_MAX_TABLES];
+>> +};
+>> +
+>> +extern void iommu_register_group(struct iommu_table_group *table_group,
+>> 				 int pci_domain_number, unsigned long pe_num);
+>> extern int iommu_add_device(struct device *dev);
+>> extern void iommu_del_device(struct device *dev);
+>> extern int __init tce_iommu_bus_notifier_init(void);
+>> #else
+>> -static inline void iommu_register_group(struct iommu_table *tbl,
+>> +static inline void iommu_register_group(struct iommu_table_group *table_group,
+>> 					int pci_domain_number,
+>> 					unsigned long pe_num)
+>> {
+>> diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
+>> index 1811c44..e2d7479 100644
+>> --- a/arch/powerpc/include/asm/pci-bridge.h
+>> +++ b/arch/powerpc/include/asm/pci-bridge.h
+>> @@ -185,7 +185,7 @@ struct pci_dn {
+>>
+>> 	struct  pci_dn *parent;
+>> 	struct  pci_controller *phb;	/* for pci devices */
+>> -	struct	iommu_table *iommu_table;	/* for phb's or bridges */
+>> +	struct	iommu_table_group *table_group;	/* for phb's or bridges */
+>> 	struct	device_node *node;	/* back-pointer to the device_node */
+>>
+>> 	int	pci_ext_config_space;	/* for pci devices */
+>> diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
+>> index 16be6aa..79e8b43 100644
+>> --- a/arch/powerpc/kernel/iommu.c
+>> +++ b/arch/powerpc/kernel/iommu.c
+>> @@ -886,11 +886,12 @@ EXPORT_SYMBOL_GPL(iommu_direction_to_tce_perm);
+>>   */
+>> static void group_release(void *iommu_data)
+>> {
+>> -	struct iommu_table *tbl = iommu_data;
+>> -	tbl->it_group = NULL;
+>> +	struct iommu_table_group *table_group = iommu_data;
+>> +
+>> +	table_group->group = NULL;
 >> }
 >>
->> -static void pnv_pci_ioda1_tce_invalidate(struct pnv_ioda_pe *pe,
->> -					 struct iommu_table *tbl,
->> -					 __be64 *startp, __be64 *endp, bool rm)
->> +static void pnv_pci_ioda1_tce_invalidate(struct iommu_table *tbl,
->> +		unsigned long index, unsigned long npages, bool rm)
+>> -void iommu_register_group(struct iommu_table *tbl,
+>> +void iommu_register_group(struct iommu_table_group *table_group,
+>> 		int pci_domain_number, unsigned long pe_num)
 >> {
->> +	struct pnv_ioda_pe *pe = tbl->data;
+>> 	struct iommu_group *grp;
+>> @@ -902,8 +903,8 @@ void iommu_register_group(struct iommu_table *tbl,
+>> 				PTR_ERR(grp));
+>> 		return;
+>> 	}
+>> -	tbl->it_group = grp;
+>> -	iommu_group_set_iommudata(grp, tbl, group_release);
+>> +	table_group->group = grp;
+>> +	iommu_group_set_iommudata(grp, table_group, group_release);
+>> 	name = kasprintf(GFP_KERNEL, "domain%d-pe%lx",
+>> 			pci_domain_number, pe_num);
+>> 	if (!name)
+>> @@ -1091,7 +1092,7 @@ int iommu_add_device(struct device *dev)
+>> 	}
+>>
+>> 	tbl = get_iommu_table_base(dev);
+>> -	if (!tbl || !tbl->it_group) {
+>> +	if (!tbl || !tbl->it_table_group || !tbl->it_table_group->group) {
+>> 		pr_debug("%s: Skipping device %s with no tbl\n",
+>> 			 __func__, dev_name(dev));
+>> 		return 0;
+>> @@ -1099,7 +1100,7 @@ int iommu_add_device(struct device *dev)
+>>
+>> 	pr_debug("%s: Adding %s to iommu group %d\n",
+>> 		 __func__, dev_name(dev),
+>> -		 iommu_group_id(tbl->it_group));
+>> +		 iommu_group_id(tbl->it_table_group->group));
+>>
+>> 	if (PAGE_SIZE < IOMMU_PAGE_SIZE(tbl)) {
+>> 		pr_err("%s: Invalid IOMMU page size %lx (%lx) on %s\n",
+>> @@ -1108,7 +1109,7 @@ int iommu_add_device(struct device *dev)
+>> 		return -EINVAL;
+>> 	}
+>>
+>> -	return iommu_group_add_device(tbl->it_group, dev);
+>> +	return iommu_group_add_device(tbl->it_table_group->group, dev);
+>> }
+>> EXPORT_SYMBOL_GPL(iommu_add_device);
+>>
+>> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+>> index 1b43e25..02ed448 100644
+>> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+>> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+>> @@ -1087,10 +1087,6 @@ static void pnv_ioda_setup_bus_PE(struct pci_bus *bus, int all)
+>> 		return;
+>> 	}
+>>
+>> -	pe->tce32_table = kzalloc_node(sizeof(struct iommu_table),
+>> -			GFP_KERNEL, hose->node);
+>> -	pe->tce32_table->data = pe;
+>> -
+>> 	/* Associate it with all child devices */
+>> 	pnv_ioda_setup_same_PE(bus, pe);
+>>
+>> @@ -1292,11 +1288,12 @@ static void pnv_pci_ioda2_release_dma_pe(struct pci_dev *dev, struct pnv_ioda_pe
+>> 	struct iommu_table    *tbl;
+>> 	unsigned long         addr;
+>> 	int64_t               rc;
+>> +	struct iommu_table_group *table_group;
+>>
+>> 	bus = dev->bus;
+>> 	hose = pci_bus_to_host(bus);
+>> 	phb = hose->private_data;
+>> -	tbl = pe->tce32_table;
+>> +	tbl = pe->table_group.tables[0];
+>> 	addr = tbl->it_base;
+>>
+>> 	opal_pci_map_pe_dma_window(phb->opal_id, pe->pe_number,
+>> @@ -1311,13 +1308,14 @@ static void pnv_pci_ioda2_release_dma_pe(struct pci_dev *dev, struct pnv_ioda_pe
+>> 	if (rc)
+>> 		pe_warn(pe, "OPAL error %ld release DMA window\n", rc);
+>>
+>> -	if (tbl->it_group) {
+>> -		iommu_group_put(tbl->it_group);
+>> -		BUG_ON(tbl->it_group);
+>> +	table_group = tbl->it_table_group;
+>> +	if (table_group->group) {
+>> +		iommu_group_put(table_group->group);
+>> +		BUG_ON(table_group->group);
+>> 	}
+>> 	iommu_free_table(tbl, of_node_full_name(dev->dev.of_node));
+>> 	free_pages(addr, get_order(TCE32_TABLE_SIZE));
+>> -	pe->tce32_table = NULL;
+>> +	pe->table_group.tables[0] = NULL;
+>> }
+>>
+>> static void pnv_ioda_release_vf_PE(struct pci_dev *pdev, u16 num_vfs)
+>> @@ -1465,10 +1463,6 @@ static void pnv_ioda_setup_vf_PE(struct pci_dev *pdev, u16 num_vfs)
+>> 			continue;
+>> 		}
+>>
+>> -		pe->tce32_table = kzalloc_node(sizeof(struct iommu_table),
+>> -				GFP_KERNEL, hose->node);
+>> -		pe->tce32_table->data = pe;
+>> -
+>> 		/* Put PE to the list */
+>> 		mutex_lock(&phb->ioda.pe_list_mutex);
+>> 		list_add_tail(&pe->list, &phb->ioda.pe_list);
+>> @@ -1603,7 +1597,7 @@ static void pnv_pci_ioda_dma_dev_setup(struct pnv_phb *phb, struct pci_dev *pdev
+>>
+>> 	pe = &phb->ioda.pe_array[pdn->pe_number];
+>> 	WARN_ON(get_dma_ops(&pdev->dev) != &dma_iommu_ops);
+>> -	set_iommu_table_base(&pdev->dev, pe->tce32_table);
+>> +	set_iommu_table_base(&pdev->dev, pe->table_group.tables[0]);
+>> 	/*
+>> 	 * Note: iommu_add_device() will fail here as
+>> 	 * for physical PE: the device is already added by now;
+>> @@ -1636,7 +1630,7 @@ static int pnv_pci_ioda_dma_set_mask(struct pnv_phb *phb,
+>> 	} else {
+>> 		dev_info(&pdev->dev, "Using 32-bit DMA via iommu\n");
+>> 		set_dma_ops(&pdev->dev, &dma_iommu_ops);
+>> -		set_iommu_table_base(&pdev->dev, pe->tce32_table);
+>> +		set_iommu_table_base(&pdev->dev, pe->table_group.tables[0]);
+>> 	}
+>> 	*pdev->dev.dma_mask = dma_mask;
+>> 	return 0;
+>> @@ -1670,7 +1664,7 @@ static void pnv_ioda_setup_bus_dma(struct pnv_ioda_pe *pe,
+>> 	struct pci_dev *dev;
+>>
+>> 	list_for_each_entry(dev, &bus->devices, bus_list) {
+>> -		set_iommu_table_base(&dev->dev, pe->tce32_table);
+>> +		set_iommu_table_base(&dev->dev, pe->table_group.tables[0]);
+>> 		iommu_add_device(&dev->dev);
+>>
+>> 		if (dev->subordinate)
+>> @@ -1681,7 +1675,8 @@ static void pnv_ioda_setup_bus_dma(struct pnv_ioda_pe *pe,
+>> static void pnv_pci_ioda1_tce_invalidate(struct iommu_table *tbl,
+>> 		unsigned long index, unsigned long npages, bool rm)
+>> {
+>> -	struct pnv_ioda_pe *pe = tbl->data;
+>> +	struct pnv_ioda_pe *pe = container_of(tbl->it_table_group,
+>> +			struct pnv_ioda_pe, table_group);
 >> 	__be64 __iomem *invalidate = rm ?
 >> 		(__be64 __iomem *)pe->tce_inval_reg_phys :
 >> 		(__be64 __iomem *)tbl->it_index;
->> 	unsigned long start, end, inc;
->> 	const unsigned shift = tbl->it_page_shift;
->>
->> -	start = __pa(startp);
->> -	end = __pa(endp);
->> +	start = __pa(((__be64 *)tbl->it_base) + index - tbl->it_offset);
->> +	end = __pa(((__be64 *)tbl->it_base) + index - tbl->it_offset +
->> +			npages - 1);
->
-> Platform is the only one knowing the TCE table layout and iommu_table_ops->get()
-> helps to retrieve TCE entry for the given index. If iommu_table_ops->get() had
-> returned the address of the TCE entry, not the content. Here, iommu_table_ops->get()
-> can be reused and we hide the platform specific TCE table layout in iommu_table_ops->get()
-> backend. However, it's not a big deal and it probably introduces more changes
-> than expected. You judge it's worthy to do it or improve it later :-)
-
-
-This will require a separate patch to convert tce_get() from returning 
-value to returning address. I could do that, yes. Furthermore there is even 
-pnv_tce() helper added later in this patchset which can be used for this in 
-this patch (if I moved that patch earlier). But this would be a bigger 
-change which is not very much related to what the patch does - 
-cut-n-pasting invalidate() bits. May be later. The patchset is way too big 
-already :(
-
-
->>
->> 	/* BML uses this case for p6/p7/galaxy2: Shift addr and put in node */
->> 	if (tbl->it_busno) {
->> @@ -1725,16 +1726,39 @@ static void pnv_pci_ioda1_tce_invalidate(struct pnv_ioda_pe *pe,
->> 	 */
->> }
->>
->> +static int pnv_ioda1_tce_build(struct iommu_table *tbl, long index,
->> +		long npages, unsigned long uaddr,
->> +		enum dma_data_direction direction,
->> +		struct dma_attrs *attrs)
->> +{
->> +	long ret = pnv_tce_build(tbl, index, npages, uaddr, direction,
->> +			attrs);
->
-> The return value from pnv_tce_build() is "int" :-)
-
-Oops.
-
-
->> +
->> +	if (!ret && (tbl->it_type & TCE_PCI_SWINV_CREATE))
->> +		pnv_pci_ioda1_tce_invalidate(tbl, index, npages, false);
->> +
->> +	return ret;
->> +}
->> +
->> +static void pnv_ioda1_tce_free(struct iommu_table *tbl, long index,
->> +		long npages)
->> +{
->> +	pnv_tce_free(tbl, index, npages);
->> +
->> +	if (tbl->it_type & TCE_PCI_SWINV_FREE)
->> +		pnv_pci_ioda1_tce_invalidate(tbl, index, npages, false);
->> +}
->> +
->> static struct iommu_table_ops pnv_ioda1_iommu_ops = {
->> -	.set = pnv_tce_build,
->> -	.clear = pnv_tce_free,
->> +	.set = pnv_ioda1_tce_build,
->> +	.clear = pnv_ioda1_tce_free,
->> 	.get = pnv_tce_get,
->> };
->>
->> -static void pnv_pci_ioda2_tce_invalidate(struct pnv_ioda_pe *pe,
->> -					 struct iommu_table *tbl,
->> -					 __be64 *startp, __be64 *endp, bool rm)
->> +static void pnv_pci_ioda2_tce_invalidate(struct iommu_table *tbl,
->> +		unsigned long index, unsigned long npages, bool rm)
+>> @@ -1758,7 +1753,8 @@ static struct iommu_table_ops pnv_ioda1_iommu_ops = {
+>> static void pnv_pci_ioda2_tce_invalidate(struct iommu_table *tbl,
+>> 		unsigned long index, unsigned long npages, bool rm)
 >> {
->> +	struct pnv_ioda_pe *pe = tbl->data;
+>> -	struct pnv_ioda_pe *pe = tbl->data;
+>> +	struct pnv_ioda_pe *pe = container_of(tbl->it_table_group,
+>> +			struct pnv_ioda_pe, table_group);
 >> 	unsigned long start, end, inc;
 >> 	__be64 __iomem *invalidate = rm ?
 >> 		(__be64 __iomem *)pe->tce_inval_reg_phys :
->> @@ -1747,10 +1771,8 @@ static void pnv_pci_ioda2_tce_invalidate(struct pnv_ioda_pe *pe,
->> 	end = start;
+>> @@ -1834,8 +1830,12 @@ static void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
+>> 	if (WARN_ON(pe->tce32_seg >= 0))
+>> 		return;
 >>
->> 	/* Figure out the start, end and step */
->> -	inc = tbl->it_offset + (((u64)startp - tbl->it_base) / sizeof(u64));
->> -	start |= (inc << shift);
->> -	inc = tbl->it_offset + (((u64)endp - tbl->it_base) / sizeof(u64));
->> -	end |= (inc << shift);
->> +	start |= (index << shift);
->> +	end |= ((index + npages - 1) << shift);
->> 	inc = (0x1ull << shift);
->> 	mb();
+>> -	tbl = pe->tce32_table;
+>> -	iommu_register_group(tbl, phb->hose->global_number, pe->pe_number);
+>> +	tbl = kzalloc_node(sizeof(struct iommu_table), GFP_KERNEL,
+>> +			phb->hose->node);
+>> +	tbl->it_table_group = &pe->table_group;
+>> +	pe->table_group.tables[0] = tbl;
+>> +	iommu_register_group(&pe->table_group, phb->hose->global_number,
+>> +			pe->pe_number);
 >>
->> @@ -1763,21 +1785,32 @@ static void pnv_pci_ioda2_tce_invalidate(struct pnv_ioda_pe *pe,
->> 	}
->> }
+>> 	/* Grab a 32-bit TCE table */
+>> 	pe->tce32_seg = base;
+>> @@ -1914,7 +1914,8 @@ static void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
 >>
->> -void pnv_pci_ioda_tce_invalidate(struct iommu_table *tbl,
->> -				 __be64 *startp, __be64 *endp, bool rm)
->> +static int pnv_ioda2_tce_build(struct iommu_table *tbl, long index,
->> +		long npages, unsigned long uaddr,
->> +		enum dma_data_direction direction,
->> +		struct dma_attrs *attrs)
+>> static void pnv_pci_ioda2_set_bypass(struct iommu_table *tbl, bool enable)
 >> {
 >> -	struct pnv_ioda_pe *pe = tbl->data;
->> -	struct pnv_phb *phb = pe->phb;
->> +	long ret = pnv_tce_build(tbl, index, npages, uaddr, direction,
->> +			attrs);
->
-> s/long/int
-
-
-I better make them all long.
-
->
+>> +	struct pnv_ioda_pe *pe = container_of(tbl->it_table_group,
+>> +			struct pnv_ioda_pe, table_group);
+>> 	uint16_t window_id = (pe->pe_number << 1 ) + 1;
+>> 	int64_t rc;
 >>
->> -	if (phb->type == PNV_PHB_IODA1)
->> -		pnv_pci_ioda1_tce_invalidate(pe, tbl, startp, endp, rm);
->> -	else
->> -		pnv_pci_ioda2_tce_invalidate(pe, tbl, startp, endp, rm);
->> +	if (!ret && (tbl->it_type & TCE_PCI_SWINV_CREATE))
->> +		pnv_pci_ioda2_tce_invalidate(tbl, index, npages, false);
+>> @@ -1948,10 +1949,10 @@ static void pnv_pci_ioda2_setup_bypass_pe(struct pnv_phb *phb,
+>> 	pe->tce_bypass_base = 1ull << 59;
+>>
+>> 	/* Install set_bypass callback for VFIO */
+>> -	pe->tce32_table->set_bypass = pnv_pci_ioda2_set_bypass;
+>> +	pe->table_group.tables[0]->set_bypass = pnv_pci_ioda2_set_bypass;
+>
+> It could be simplied as:
+>
+> 	tbl->set_bypass = pnv_pci_ioda2_set_bypass;
+
+No, this is worse in this case. The whole idea of the patch to be 
+mechanical as much as we can. That means:
+s/tce32_table/table_group.tables[0]/
+If I do what you suggest, the reviewers will have to look further if "tbl" 
+has been initialized properly, etc.
+
+And later in this patchset I am getting rid of 
+pnv_pci_ioda2_setup_bypass_pe so there is no point to try making it look 
+nice :)
+
+>>
+>> 	/* Enable bypass by default */
+>> -	pnv_pci_ioda2_set_bypass(pe->tce32_table, true);
+>> +	pnv_pci_ioda2_set_bypass(pe->table_group.tables[0], true);
+>
+> Similar to above:
+>
+> 	tbl->set_bypass(tbl, true);
+>
+>> }
+>>
+>> static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
+>> @@ -1968,8 +1969,12 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
+>> 	if (WARN_ON(pe->tce32_seg >= 0))
+>> 		return;
+>>
+>> -	tbl = pe->tce32_table;
+>> -	iommu_register_group(tbl, phb->hose->global_number, pe->pe_number);
+>> +	tbl = kzalloc_node(sizeof(struct iommu_table), GFP_KERNEL,
+>> +			phb->hose->node);
+>> +	tbl->it_table_group = &pe->table_group;
+>> +	pe->table_group.tables[0] = tbl;
+>> +	iommu_register_group(&pe->table_group, phb->hose->global_number,
+>> +			pe->pe_number);
+>>
+>> 	/* The PE will reserve all possible 32-bits space */
+>> 	pe->tce32_seg = 0;
+>> diff --git a/arch/powerpc/platforms/powernv/pci-p5ioc2.c b/arch/powerpc/platforms/powernv/pci-p5ioc2.c
+>> index 2722c1a..4ea9def 100644
+>> --- a/arch/powerpc/platforms/powernv/pci-p5ioc2.c
+>> +++ b/arch/powerpc/platforms/powernv/pci-p5ioc2.c
+>> @@ -92,14 +92,16 @@ static struct iommu_table_ops pnv_p5ioc2_iommu_ops = {
+>> static void pnv_pci_p5ioc2_dma_dev_setup(struct pnv_phb *phb,
+>> 					 struct pci_dev *pdev)
+>> {
+>> -	if (phb->p5ioc2.iommu_table.it_map == NULL) {
+>> -		phb->p5ioc2.iommu_table.it_ops = &pnv_p5ioc2_iommu_ops;
+>> -		iommu_init_table(&phb->p5ioc2.iommu_table, phb->hose->node);
+>> -		iommu_register_group(&phb->p5ioc2.iommu_table,
+>> +	struct iommu_table *tbl = phb->p5ioc2.table_group.tables[0];
 >> +
->> +	return ret;
+>> +	if (!tbl->it_map) {
+>> +		tbl->it_ops = &pnv_p5ioc2_iommu_ops;
+>> +		iommu_init_table(tbl, phb->hose->node);
+>> +		iommu_register_group(&phb->p5ioc2.table_group,
+>> 				pci_domain_nr(phb->hose->bus), phb->opal_id);
+>> 	}
+>>
+>> -	set_iommu_table_base(&pdev->dev, &phb->p5ioc2.iommu_table);
+>> +	set_iommu_table_base(&pdev->dev, tbl);
+>> 	iommu_add_device(&pdev->dev);
+>> }
+>>
+>> @@ -180,6 +182,12 @@ static void __init pnv_pci_init_p5ioc2_phb(struct device_node *np, u64 hub_id,
+>> 	pnv_pci_setup_iommu_table(&phb->p5ioc2.iommu_table,
+>> 				  tce_mem, tce_size, 0,
+>> 				  IOMMU_PAGE_SHIFT_4K);
+>> +	/*
+>> +	 * We do not allocate iommu_table as we do not support
+>> +	 * hotplug or SRIOV on P5IOC2 and therefore iommu_free_table()
+>> +	 * should not be called for phb->p5ioc2.table_group.tables[0] ever.
+>> +	 */
+>> +	phb->p5ioc2.table_group.tables[0] = &phb->p5ioc2.iommu_table;
+>> }
+>>
+>> void __init pnv_pci_init_p5ioc2_hub(struct device_node *np)
+>> diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
+>> index ec26afd..720cc99 100644
+>> --- a/arch/powerpc/platforms/powernv/pci.h
+>> +++ b/arch/powerpc/platforms/powernv/pci.h
+>> @@ -57,7 +57,7 @@ struct pnv_ioda_pe {
+>> 	/* "Base" iommu table, ie, 4K TCEs, 32-bit DMA */
+>> 	int			tce32_seg;
+>> 	int			tce32_segcount;
+>> -	struct iommu_table	*tce32_table;
+>> +	struct iommu_table_group table_group;
+>> 	phys_addr_t		tce_inval_reg_phys;
+>>
+>> 	/* 64-bit TCE bypass region */
+>> @@ -123,6 +123,7 @@ struct pnv_phb {
+>> 	union {
+>> 		struct {
+>> 			struct iommu_table iommu_table;
+>> +			struct iommu_table_group table_group;
+>> 		} p5ioc2;
+>>
+>> 		struct {
+>> diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
+>> index 4f2ab90..ad5ac6d 100644
+>> --- a/arch/powerpc/platforms/pseries/iommu.c
+>> +++ b/arch/powerpc/platforms/pseries/iommu.c
+>> @@ -52,14 +52,49 @@
+>>
+>> #include "pseries.h"
+>>
+>> -static void iommu_pseries_free_table(struct iommu_table *tbl,
+>> +static struct iommu_table_group *iommu_pseries_alloc_group(int node)
+>
+> Since it's a static function, the name could be simplied to
+> iommu_group_alloc(), or alloc_iommu_group(). But it might
+> not the style you like :-)
+
+Giving it the name like this I am telling people not to try reusing it for 
+anything else + easier to grep.
+
+
+>
+>> +{
+>> +	struct iommu_table_group *table_group = NULL;
+>> +	struct iommu_table *tbl = NULL;
+>> +
+>> +	table_group = kzalloc_node(sizeof(struct iommu_table_group), GFP_KERNEL,
+>> +			   node);
+>> +	if (!table_group)
+>> +		goto fail_exit;
+>> +
+>> +	tbl = kzalloc_node(sizeof(struct iommu_table), GFP_KERNEL, node);
+>> +	if (!tbl)
+>> +		goto fail_exit;
+>> +
+>> +	tbl->it_table_group = table_group;
+>> +	table_group->tables[0] = tbl;
+>> +
+>> +	return table_group;
+>> +
+>> +fail_exit:
+>> +	kfree(table_group);
+>> +	kfree(tbl);
+>> +
+>> +	return NULL;
 >> +}
 >> +
->> +static void pnv_ioda2_tce_free(struct iommu_table *tbl, long index,
->> +		long npages)
->> +{
->> +	pnv_tce_free(tbl, index, npages);
->> +
->> +	if (tbl->it_type & TCE_PCI_SWINV_FREE)
->> +		pnv_pci_ioda2_tce_invalidate(tbl, index, npages, false);
->> }
->>
->> static struct iommu_table_ops pnv_ioda2_iommu_ops = {
->> -	.set = pnv_tce_build,
->> -	.clear = pnv_tce_free,
->> +	.set = pnv_ioda2_tce_build,
->> +	.clear = pnv_ioda2_tce_free,
->> 	.get = pnv_tce_get,
->> };
->>
->> diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
->> index 4c3bbb1..84b4ea4 100644
->> --- a/arch/powerpc/platforms/powernv/pci.c
->> +++ b/arch/powerpc/platforms/powernv/pci.c
->> @@ -577,37 +577,28 @@ int pnv_tce_build(struct iommu_table *tbl, long index, long npages,
->> 		struct dma_attrs *attrs)
->> {
->> 	u64 proto_tce = iommu_direction_to_tce_perm(direction);
->> -	__be64 *tcep, *tces;
->> +	__be64 *tcep;
->> 	u64 rpn;
->>
->> -	tces = tcep = ((__be64 *)tbl->it_base) + index - tbl->it_offset;
->> +	tcep = ((__be64 *)tbl->it_base) + index - tbl->it_offset;
->> 	rpn = __pa(uaddr) >> tbl->it_page_shift;
->>
->> 	while (npages--)
->> 		*(tcep++) = cpu_to_be64(proto_tce |
->> 				(rpn++ << tbl->it_page_shift));
->>
->> -	/* Some implementations won't cache invalid TCEs and thus may not
->> -	 * need that flush. We'll probably turn it_type into a bit mask
->> -	 * of flags if that becomes the case
->> -	 */
->> -	if (tbl->it_type & TCE_PCI_SWINV_CREATE)
->> -		pnv_pci_ioda_tce_invalidate(tbl, tces, tcep - 1, false);
->>
->> 	return 0;
->> }
->>
->> void pnv_tce_free(struct iommu_table *tbl, long index, long npages)
->> {
->> -	__be64 *tcep, *tces;
->> +	__be64 *tcep;
->>
->> -	tces = tcep = ((__be64 *)tbl->it_base) + index - tbl->it_offset;
->> +	tcep = ((__be64 *)tbl->it_base) + index - tbl->it_offset;
->>
->> 	while (npages--)
->> 		*(tcep++) = cpu_to_be64(0);
->> -
->> -	if (tbl->it_type & TCE_PCI_SWINV_FREE)
->> -		pnv_pci_ioda_tce_invalidate(tbl, tces, tcep - 1, false);
->> }
->>
->> unsigned long pnv_tce_get(struct iommu_table *tbl, long index)
->> --
->> 2.4.0.rc3.8.gfb3e7d5
->>
+>> +static void iommu_pseries_free_group(struct iommu_table_group *table_group,
+>> 		const char *node_name)
 >
+> Same suggestion as above.
+>
+>> {
+>> -	if (tbl->it_group) {
+>> -		iommu_group_put(tbl->it_group);
+>> -		BUG_ON(tbl->it_group);
+>> +	struct iommu_table *tbl;
+>> +
+>> +	if (!table_group)
+>> +		return;
+>> +
+>> +	if (table_group->group) {
+>> +		iommu_group_put(table_group->group);
+>> +		BUG_ON(table_group->group);
+>> 	}
+>> +
+>> +	tbl = table_group->tables[0];
+>> 	iommu_free_table(tbl, node_name);
+>
+> It might worthy to have one check:
+>
+> 	if (table_group->tables[0])
+> 		iommu_free_table(table_group->tables[0], node_name);
+
+
+BUG_ON() - may be. (table_group->tables[0] == NULL) cannot happen normally 
+(no memory corruption, etc) as iommu_pseries_alloc_group() allocated both 
+table_group and table or nothing.
+
+
+>
+>> +
+>> +	kfree(table_group);
+>> }
+>>
+>> static void tce_invalidate_pSeries_sw(struct iommu_table *tbl,
+>> @@ -629,13 +664,13 @@ static void pci_dma_bus_setup_pSeries(struct pci_bus *bus)
+>> 	pci->phb->dma_window_size = 0x8000000ul;
+>> 	pci->phb->dma_window_base_cur = 0x8000000ul;
+>>
+>> -	tbl = kzalloc_node(sizeof(struct iommu_table), GFP_KERNEL,
+>> -			   pci->phb->node);
+>> +	pci->table_group = iommu_pseries_alloc_group(pci->phb->node);
+>> +	tbl = pci->table_group->tables[0];
+>
+> The orginal code isn't checking "!pci->table_group". If this function is
+> called only at bootup time, it would be nice to see kernel crash. Otherwise,
+> I guess it's still worthy to have the check :-)
+
+
+kzalloc_node() is supposed to print something when fails.
+
 
 
 -- 
