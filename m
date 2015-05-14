@@ -1,30 +1,24 @@
-Return-Path: <john.stultz@linaro.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 10C981A001B
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2015 09:40:38 +1000 (AEST)
-Received: from mail-ig0-f175.google.com (mail-ig0-f175.google.com
- [209.85.213.175])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 91039140283
- for <linuxppc-dev@ozlabs.org>; Thu, 14 May 2015 09:40:37 +1000 (AEST)
-Received: by igbyr2 with SMTP id yr2so153400793igb.0
- for <linuxppc-dev@ozlabs.org>; Wed, 13 May 2015 16:40:35 -0700 (PDT)
+Return-Path: <rjw@rjwysocki.net>
+Received: from v094114.home.net.pl (v094114.home.net.pl [79.96.170.134])
+ by lists.ozlabs.org (Postfix) with SMTP id CB3861A001B
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2015 09:51:03 +1000 (AEST)
+From: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+To: Kevin Hilman <khilman@kernel.org>
+Subject: Re: [PATCH 0/3] cpuidle: updates related to tick_broadcast_enter()
+ failures
+Date: Thu, 14 May 2015 02:16:11 +0200
+Message-ID: <1842725.60y5FMGEPh@vostro.rjw.lan>
+In-Reply-To: <7h7fsc2idw.fsf@deeprootsystems.com>
+References: <20150508073418.28491.4150.stgit@preeti.in.ibm.com>
+ <2919083.VPTOth98op@vostro.rjw.lan> <7h7fsc2idw.fsf@deeprootsystems.com>
 MIME-Version: 1.0
-In-Reply-To: <554708E0.1010600@linux.vnet.ibm.com>
-References: <20150428084520.3314.62668.stgit@preeti.in.ibm.com>
- <554708E0.1010600@linux.vnet.ibm.com>
-Date: Wed, 13 May 2015 16:40:35 -0700
-Message-ID: <CALAqxLV6CpWKV_iTP3zNWn=gRGBOjOoejkBvDRFs+ezhPAQspg@mail.gmail.com>
-Subject: Re: [PATCH] tick-broadcast: Fix the printing of broadcast masks
-From: John Stultz <john.stultz@linaro.org>
-To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: Peter Zijlstra <peterz@infradead.org>, linuxppc-dev@ozlabs.org,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@kernel.org>,
- lkml <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset="utf-8"
+Cc: rlippert@google.com, Ulf Hansson <ulf.hansson@linaro.org>,
+ rafael.j.wysocki@intel.com, linux-pm@vger.kernel.org, peterz@infradead.org,
+ linus.walleij@linaro.org, Daniel Lezcano <daniel.lezcano@linaro.org>,
+ linux-kernel@vger.kernel.org, mingo@redhat.com, sudeep.holla@arm.com,
+ Preeti U Murthy <preeti@linux.vnet.ibm.com>, tglx@linutronix.de,
+ linuxppc-dev@lists.ozlabs.org, Lina Iyer <lina.iyer@linaro.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -34,14 +28,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, May 3, 2015 at 10:51 PM, Preeti U Murthy
-<preeti@linux.vnet.ibm.com> wrote:
-> Ping.
->
-> Any comments on this patch ?
->
+On Wednesday, May 13, 2015 03:59:55 PM Kevin Hilman wrote:
+> "Rafael J. Wysocki" <rjw@rjwysocki.net> writes:
+> 
+> [...]
+> 
+> > Second, quite honestly, I don't see a connection to genpd here.
+> 
+> The connection with genpd is because the *reason* the timer was
+> shutdown/stopped is because it shares power with the CPU, which is why
+> the timer stops when the CPU hits ceratin low power states.  IOW, it's
+> in the same power domain as the CPU.
 
-Got this queued for testing, and hopefully 4.2
+Well, what if you don't have genpd on that system?  Is the problem at hand not
+relevant then magically?
 
-thanks
--john
+Rafael
