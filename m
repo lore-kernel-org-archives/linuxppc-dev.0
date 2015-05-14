@@ -1,39 +1,29 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 843951A0015
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2015 22:31:18 +1000 (AEST)
-Received: from /spool/local
- by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Thu, 14 May 2015 18:01:16 +0530
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id E2FB0E005B
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2015 18:04:11 +0530 (IST)
-Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t4ECV2cl38076434
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2015 18:01:03 +0530
-Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
- by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t4ECUrTn005490
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2015 18:00:53 +0530
-Date: Thu, 14 May 2015 22:30:49 +1000
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: Wei Yang <weiyang@linux.vnet.ibm.com>
-Subject: Re: [PATCH V3 9/9] powerpc/eeh: handle VF PE properly
-Message-ID: <20150514123048.GB12847@gwshan>
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <1430723258-21299-1-git-send-email-weiyang@linux.vnet.ibm.com>
- <1430723258-21299-10-git-send-email-weiyang@linux.vnet.ibm.com>
- <20150513011630.GA8973@gwshan> <20150514100250.GB12847@richard>
+Return-Path: <emunson@akamai.com>
+Received: from prod-mail-xrelay02.akamai.com (prod-mail-xrelay02.akamai.com
+ [72.246.2.14])
+ by lists.ozlabs.org (Postfix) with ESMTP id B5C6E1A0015
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2015 23:58:37 +1000 (AEST)
+Date: Thu, 14 May 2015 09:58:35 -0400
+From: Eric B Munson <emunson@akamai.com>
+To: Michal Hocko <mhocko@suse.cz>
+Subject: Re: [PATCH 0/3] Allow user to request memory to be locked on page
+ fault
+Message-ID: <20150514135835.GH1227@akamai.com>
+References: <1431113626-19153-1-git-send-email-emunson@akamai.com>
+ <20150508124203.6679b1d35ad9555425003929@linux-foundation.org>
+ <20150511180631.GA1227@akamai.com>
+ <20150513150036.GG1227@akamai.com>
+ <20150514080812.GC6433@dhcp22.suse.cz>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150514100250.GB12847@richard>
-Cc: bhelgaas@google.com, linux-pci@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, Gavin Shan <gwshan@linux.vnet.ibm.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="fd5uyaI9j6xoeUBo"
+In-Reply-To: <20150514080812.GC6433@dhcp22.suse.cz>
+Cc: linux-arch@vger.kernel.org, linux-mips@linux-mips.org,
+ linux-parisc@vger.kernel.org, linux-xtensa@linux-xtensa.org,
+ linux-api@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Shuah Khan <shuahkh@osg.samsung.com>, linux-mm@kvack.org,
+ linux-alpha@vger.kernel.org, sparclinux@vger.kernel.org,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,62 +33,116 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, May 14, 2015 at 06:02:50PM +0800, Wei Yang wrote:
->On Wed, May 13, 2015 at 11:16:30AM +1000, Gavin Shan wrote:
->>> 	 * Actually, we should remove the PCI bridges as well.
->>>@@ -416,7 +450,7 @@ static void *eeh_rmv_device(void *data, void *userdata)
->>> 	driver = eeh_pcid_get(dev);
->>> 	if (driver) {
->>> 		eeh_pcid_put(dev);
->>>-		if (driver->err_handler)
->>>+		if (removed && driver->err_handler)
->>> 			return NULL;
->>> 	}
->>>
->>>@@ -425,11 +459,21 @@ static void *eeh_rmv_device(void *data, void *userdata)
->>> 		 pci_name(dev));
->>> 	edev->bus = dev->bus;
->>> 	edev->mode |= EEH_DEV_DISCONNECTED;
->>>-	(*removed)++;
->>>-
->>>-	pci_lock_rescan_remove();
->>>-	pci_stop_and_remove_bus_device(dev);
->>>-	pci_unlock_rescan_remove();
->>>+	if (removed)
->>>+		(*removed)++;
->>>+
->>>+#ifdef CONFIG_PCI_IOV
->>>+	if (edev->mode & EEH_DEV_VF) {
->>>+		pci_iov_virtfn_remove(edev->physfn, pdn->vf_index, 0);
->>>+		edev->pdev = NULL;
->>>+		pdn->pe_number = IODA_INVALID_PE;
->>
->>Setting the PE number to invalid one seems not correct because the PE
->>is still consumed by the VF's RID.
->>
->
->In commit 781a868f3136, we introduce the check of pdn->pe_number in
->pnv_pci_dma_dev_setup(). Since VFs are create/released dynamically, we need to
->delay the bind between PE and the device. Then to avoid rebind it, we check
->the pdn->pe_number. The WARN_ON() is what you suggested.
->
->So if don't clear the pe_number here, we break that rule.
->
 
-Ok. You choose one of the following two options:
+--fd5uyaI9j6xoeUBo
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-- Remove WARN_ON() in pnv_pci_dma_dev_setup(). Actually, I don't think
-  it's quite correct to update PE# to VF's pdn at this function. Instead,
-  it would have been done at the SRIOV enablement backend. But it's not
-  related to this patchset. You may improve it later.
-- Keep the code you had: set the PE# to invalid one, and put some comments
-  here as below.
+On Thu, 14 May 2015, Michal Hocko wrote:
 
-  /*
-   * We have to set the VF PE number to invalid one, which is required
-   * to plug the VF successfully.
-   */
+> On Wed 13-05-15 11:00:36, Eric B Munson wrote:
+> > On Mon, 11 May 2015, Eric B Munson wrote:
+> >=20
+> > > On Fri, 08 May 2015, Andrew Morton wrote:
+> > >=20
+> > > > On Fri,  8 May 2015 15:33:43 -0400 Eric B Munson <emunson@akamai.co=
+m> wrote:
+> > > >=20
+> > > > > mlock() allows a user to control page out of program memory, but =
+this
+> > > > > comes at the cost of faulting in the entire mapping when it is
+> > > > > allocated.  For large mappings where the entire area is not neces=
+sary
+> > > > > this is not ideal.
+> > > > >=20
+> > > > > This series introduces new flags for mmap() and mlockall() that a=
+llow a
+> > > > > user to specify that the covered are should not be paged out, but=
+ only
+> > > > > after the memory has been used the first time.
+> > > >=20
+> > > > Please tell us much much more about the value of these changes: the=
+ use
+> > > > cases, the behavioural improvements and performance results which t=
+he
+> > > > patchset brings to those use cases, etc.
+> > > >=20
+> > >=20
+> > > To illustrate the proposed use case I wrote a quick program that mmaps
+> > > a 5GB file which is filled with random data and accesses 150,000 pages
+> > > from that mapping.  Setup and processing were timed separately to
+> > > illustrate the differences between the three tested approaches.  the
+> > > setup portion is simply the call to mmap, the processing is the
+> > > accessing of the various locations in  that mapping.  The following
+> > > values are in milliseconds and are the averages of 20 runs each with a
+> > > call to echo 3 > /proc/sys/vm/drop_caches between each run.
+> > >=20
+> > > The first mapping was made with MAP_PRIVATE | MAP_LOCKED as a baselin=
+e:
+> > > Startup average:    9476.506
+> > > Processing average: 3.573
+> > >=20
+> > > The second mapping was simply MAP_PRIVATE but each page was passed to
+> > > mlock() before being read:
+> > > Startup average:    0.051
+> > > Processing average: 721.859
+> > >=20
+> > > The final mapping was MAP_PRIVATE | MAP_LOCKONFAULT:
+> > > Startup average:    0.084
+> > > Processing average: 42.125
+> > >=20
+> >=20
+> > Michal's suggestion of changing protections and locking in a signal
+> > handler was better than the locking as needed, but still significantly
+> > more work required than the LOCKONFAULT case.
+> >=20
+> > Startup average:    0.047
+> > Processing average: 86.431
+>=20
+> Have you played with batching? Has it helped? Anyway it is to be
+> expected that the overhead will be higher than a single mmap call. The
+> question is whether you can live with it because adding a new semantic
+> to mlock sounds trickier and MAP_LOCKED is tricky enough already...
+>=20
 
-Thanks,
-Gavin
- 
+The test code I have been using is a pathalogical test case that only
+touches pages once and they are fairly far apart.
+
+On the face batching sounds like a good idea, but I have a couple of
+questions.  In order to batch fault in pages the seg fault handler needs
+to know about the mapping in question.  Specifically it needs to know
+where it ends so that it doesn't try and mprotect()/mlock() past the
+end.  So now the program has to start tracking its maps in some globally
+accessible structure and this sounds more like implementing memory
+management in userspace.  How could this batching be implemented without
+requiring the signal handler to know about mapping that is being
+accessed?  Also, how much memory management policy is it reasonable to
+expect user space to implement in these cases?
+
+Eric
+
+
+--fd5uyaI9j6xoeUBo
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJVVKoLAAoJELbVsDOpoOa90wkQANW2KnooZXzzNUTsJw2B/QTN
+YVIypMnzYWbm6PiOrXWmLEYy2WkkhZRFsFfrtj0qXNqj1JHI2l+ziyx0SEAeK6LZ
+aN2/wL8E/uogVP0E8ti06hnkYdmq0AvwHujH3txHVK49wYl/q/X39tf2VxJBA1Ei
+At3JVQ12OymEmzpsnttij1X6uTQQwzaXV/mgeNAk9TYxvj6IWmvkqhrvxBQQpfec
+7yllbH2CWoWRxuhf+mc3R+LX2Vqz14nV0aWSDhIOSO+K+n5LVqBNrLKhKipnqPxQ
+AID/yjBbZuXz/5RP+WddtFk1DwU25f9GyGzXhiq6tiLnayqmaL1vV61E1wkcsspA
+CuS8+jmPcUJvNaiHP9126qTzTVybsz8vtJaZkNSM8Vp2RMrtQvODHuQYBBTClrqd
+35PF/frytzOeEuqpP/Z0kwW/XnNGvcSC2wqM2Gmirn0QK7GsoEHqWRpvuFEcau1j
+/beVWrq6anUmD5PB3RgWb58XP6Q5iQOFbNI8mHHnqZQg2RIMjujJ+f1pXt3bwVJ3
+oZFLALVs9xvy5rDYyFnSVRs4iVEhn2tGdi/mW/oypHyfDsLHX+FhzSuvYCfocGq6
+2jHlCcmQ1osDn8SXNf9bZpp0U0J18YRxV3fj2MHb8MDp9f7aaSr7oIrrZ2A/Zr6G
+0b6iQjK20eFmcy4ranev
+=Fok5
+-----END PGP SIGNATURE-----
+
+--fd5uyaI9j6xoeUBo--
