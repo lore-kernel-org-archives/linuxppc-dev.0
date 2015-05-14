@@ -1,39 +1,25 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pd0-f172.google.com (mail-pd0-f172.google.com
+ [209.85.192.172])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C3A111A03B4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2015 13:37:58 +1000 (AEST)
-Received: from /spool/local
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Thu, 14 May 2015 13:37:57 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 92C382CE804E
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2015 13:37:53 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t4E3bjqp44957916
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2015 13:37:53 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t4E3bKPr030839
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2015 13:37:21 +1000
-Date: Thu, 14 May 2015 13:36:55 +1000
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Subject: Re: [PATCH kernel v10 19/34] powerpc/iommu: Fix IOMMU ownership
- control functions
-Message-ID: <20150514033655.GA13032@gwshan>
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <1431358763-24371-1-git-send-email-aik@ozlabs.ru>
- <1431358763-24371-20-git-send-email-aik@ozlabs.ru>
+ by lists.ozlabs.org (Postfix) with ESMTPS id C87281A03B4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2015 13:39:49 +1000 (AEST)
+Received: by pdbnk13 with SMTP id nk13so71420291pdb.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 20:39:48 -0700 (PDT)
+Message-ID: <555418FC.1070906@ozlabs.ru>
+Date: Thu, 14 May 2015 13:39:40 +1000
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1431358763-24371-20-git-send-email-aik@ozlabs.ru>
-Cc: Wei Yang <weiyang@linux.vnet.ibm.com>,
- Gavin Shan <gwshan@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Subject: Re: [PATCH kernel v10 20/34] powerpc/powernv/ioda2: Move TCE kill
+ register address to PE
+References: <1431358763-24371-1-git-send-email-aik@ozlabs.ru>
+ <1431358763-24371-21-git-send-email-aik@ozlabs.ru>
+ <20150514021047.GA31156@gwshan>
+In-Reply-To: <20150514021047.GA31156@gwshan>
+Content-Type: text/plain; charset=koi8-r; format=flowed
+Cc: Wei Yang <weiyang@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
  Alex Williamson <alex.williamson@redhat.com>,
  Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
  David Gibson <david@gibson.dropbear.id.au>
@@ -46,110 +32,102 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, May 12, 2015 at 01:39:08AM +1000, Alexey Kardashevskiy wrote:
->This adds missing locks in iommu_take_ownership()/
->iommu_release_ownership().
+On 05/14/2015 12:10 PM, Gavin Shan wrote:
+> On Tue, May 12, 2015 at 01:39:09AM +1000, Alexey Kardashevskiy wrote:
+>> At the moment the DMA setup code looks for the "ibm,opal-tce-kill" property
+>> which contains the TCE kill register address. Writes to this register
+>> invalidates TCE cache on IODA/IODA2 hub.
+>>
+>> This moves the register address from iommu_table to pnv_ioda_pe as:
+>> 1) When we get 2 tables per PE, this register will be used for both tables;
+>> 2) When we get TCE tables sharing, we will need to invalidate every
+>> IOMMU group (i.e. PE) which is using this table and each PE has
+>> its own invalidate register.
+>>
 >
->This marks all pages busy in iommu_table::it_map in order to catch
->errors if there is an attempt to use this table while ownership over it
->is taken.
->
->This only clears TCE content if there is no page marked busy in it_map.
->Clearing must be done outside of the table locks as iommu_clear_tce()
->called from iommu_clear_tces_and_put_pages() does this.
->
->In order to use bitmap_empty(), the existing code clears bit#0 which
->is set even in an empty table if it is bus-mapped at 0 as
->iommu_init_table() reserves page#0 to prevent buggy drivers
->from crashing when allocated page is bus-mapped at zero
->(which is correct). This restores the bit in the case of failure
->to bring the it_map to the state it was in when we called
->iommu_take_ownership().
->
->Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
->Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
+> Actually, it's the virtual address of IO remapped PHB hardware register.
+> So it would be a property of PHB (struct pnv_phb). As the PE is connecting
+> with IOMMU table group. The virtual address can be retrieved by the path:
+> iommu_table -> iommu_table_group -> pnv_ioda_pe -> pnv_phb. However, I
+> don't insist and you have the best judge on it :-)
 
-Reviewed-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Are you suggesting moving pe->tce_inval_reg from pnv_ioda_pe to pnv_phb?
 
-Thanks,
-Gavin
+>
+>> This moves the property reading/remapping code to a helper to reduce
+>> code duplication. Although this change is not required for IODA1, this
+>> changes it as well to reduce code duplication.
+>>
+>> This adds a new pnv_pci_ioda2_tvt_invalidate() helper which invalidates
+>> the entire table. It should be called after every call to
+>> opal_pci_map_pe_dma_window(). It was not required before because
+>> there is just a single TCE table and 64bit DMA is handled via bypass
+>> window (which has no table so no chache is used) but this is going
+>> to change with Dynamic DMA windows (DDW).
+>>
+>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+>
+> Reviewed-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+>
+> Thanks,
+> Gavin
+>
+>> ---
+>> Changes:
+>> v10:
+>> * fixed error from checkpatch.pl
+>> * removed comment at "ibm,opal-tce-kill" parsing as irrelevant
+>> * s/addr/val/ in pnv_pci_ioda2_tvt_invalidate() as it was not a kernel address
+>>
+>> v9:
+>> * new in the series
+>> ---
+>> arch/powerpc/platforms/powernv/pci-ioda.c | 64 ++++++++++++++++++-------------
+>> arch/powerpc/platforms/powernv/pci.h      |  1 +
+>> 2 files changed, 39 insertions(+), 26 deletions(-)
+>>
+>> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+>> index 35ab19c8..f972e40 100644
+>> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+>> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+>> @@ -1680,7 +1680,7 @@ static void pnv_pci_ioda1_tce_invalidate(struct iommu_table *tbl,
+>> 			struct pnv_ioda_pe, table_group);
+>> 	__be64 __iomem *invalidate = rm ?
+>> 		(__be64 __iomem *)pe->tce_inval_reg_phys :
+>> -		(__be64 __iomem *)tbl->it_index;
+>> +		pe->tce_inval_reg;
+>> 	unsigned long start, end, inc;
+>> 	const unsigned shift = tbl->it_page_shift;
+>>
+>> @@ -1751,6 +1751,18 @@ static struct iommu_table_ops pnv_ioda1_iommu_ops = {
+>> 	.get = pnv_tce_get,
+>> };
+>>
+>> +static inline void pnv_pci_ioda2_tvt_invalidate(struct pnv_ioda_pe *pe)
+>> +{
+>> +	/* 01xb - invalidate TCEs that match the specified PE# */
+>> +	unsigned long val = (0x4ull << 60) | (pe->pe_number & 0xFF);
+>> +
+>> +	if (!pe->tce_inval_reg)
+>> +		return;
+>> +
+>> +	mb(); /* Ensure above stores are visible */
+>> +	__raw_writeq(cpu_to_be64(val), pe->tce_inval_reg);
+>> +}
+>> +
+>
+> The function name sounds it's to invalidate TVE cache. Actually, it's invalidting
+> TCE cache. So I guess the function name pnv_pci_ioda2_tce_invalidate() would be
+> more accurate.
 
->---
->Changes:
->v9:
->* iommu_table_take_ownership() did not return @ret (and ignored EBUSY),
->now it does return correct error.
->* updated commit log about setting bit#0 in the case of failure
->
->v5:
->* do not store bit#0 value, it has to be set for zero-based table
->anyway
->* removed test_and_clear_bit
->---
-> arch/powerpc/kernel/iommu.c | 30 +++++++++++++++++++++++++-----
-> 1 file changed, 25 insertions(+), 5 deletions(-)
->
->diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
->index 7e54714..6275164 100644
->--- a/arch/powerpc/kernel/iommu.c
->+++ b/arch/powerpc/kernel/iommu.c
->@@ -1032,31 +1032,51 @@ EXPORT_SYMBOL_GPL(iommu_tce_build);
->
-> int iommu_take_ownership(struct iommu_table *tbl)
-> {
->-	unsigned long sz = (tbl->it_size + 7) >> 3;
->+	unsigned long flags, i, sz = (tbl->it_size + 7) >> 3;
->+	int ret = 0;
->+
->+	spin_lock_irqsave(&tbl->large_pool.lock, flags);
->+	for (i = 0; i < tbl->nr_pools; i++)
->+		spin_lock(&tbl->pools[i].lock);
->
-> 	if (tbl->it_offset == 0)
-> 		clear_bit(0, tbl->it_map);
->
-> 	if (!bitmap_empty(tbl->it_map, tbl->it_size)) {
-> 		pr_err("iommu_tce: it_map is not empty");
->-		return -EBUSY;
->+		ret = -EBUSY;
->+		/* Restore bit#0 set by iommu_init_table() */
->+		if (tbl->it_offset == 0)
->+			set_bit(0, tbl->it_map);
->+	} else {
->+		memset(tbl->it_map, 0xff, sz);
-> 	}
->
->-	memset(tbl->it_map, 0xff, sz);
->+	for (i = 0; i < tbl->nr_pools; i++)
->+		spin_unlock(&tbl->pools[i].lock);
->+	spin_unlock_irqrestore(&tbl->large_pool.lock, flags);
->
->-	return 0;
->+	return ret;
-> }
-> EXPORT_SYMBOL_GPL(iommu_take_ownership);
->
-> void iommu_release_ownership(struct iommu_table *tbl)
-> {
->-	unsigned long sz = (tbl->it_size + 7) >> 3;
->+	unsigned long flags, i, sz = (tbl->it_size + 7) >> 3;
->+
->+	spin_lock_irqsave(&tbl->large_pool.lock, flags);
->+	for (i = 0; i < tbl->nr_pools; i++)
->+		spin_lock(&tbl->pools[i].lock);
->
-> 	memset(tbl->it_map, 0, sz);
->
-> 	/* Restore bit#0 set by iommu_init_table() */
-> 	if (tbl->it_offset == 0)
-> 		set_bit(0, tbl->it_map);
->+
->+	for (i = 0; i < tbl->nr_pools; i++)
->+		spin_unlock(&tbl->pools[i].lock);
->+	spin_unlock_irqrestore(&tbl->large_pool.lock, flags);
-> }
-> EXPORT_SYMBOL_GPL(iommu_release_ownership);
->
->-- 
->2.4.0.rc3.8.gfb3e7d5
->
+TVT vs. TVE distinction is not clear for me, sorry :)
+
+There is a function with exactly the same name as you proposed, below in 
+this mail, it invalidates cache.
+May be s/pnv_pci_ioda2_tvt_invalidate/pnv_pci_ioda2_invalidate_entire_cache/ ?
+
+
+
+
+-- 
+Alexey
