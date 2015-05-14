@@ -1,20 +1,21 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id 62AC81A0017
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2015 18:50:13 +1000 (AEST)
-Message-ID: <555461BF.5020105@c-s.fr>
-Date: Thu, 14 May 2015 10:50:07 +0200
-From: christophe leroy <christophe.leroy@c-s.fr>
+Return-Path: <mgorman@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 072331A0017
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2015 19:33:10 +1000 (AEST)
+Date: Thu, 14 May 2015 10:33:04 +0100
+From: Mel Gorman <mgorman@suse.de>
+To: Haren Myneni <hmyneni@gmail.com>
+Subject: Re: mm: BUG_ON with NUMA_BALANCING (kernel BUG at
+ include/linux/swapops.h:131!)
+Message-ID: <20150514093304.GS2462@suse.de>
+References: <CACgMoiK61mKYFpfhhK51uvkvFHK3k+Dz4peMnbeW7-npDu4XBQ@mail.gmail.com>
 MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 3/4] powerpc32: memset(0): use cacheable_memzero
-References: <cover.1431436210.git.christophe.leroy@c-s.fr>	
- <9010ef9da0b2730af564a138b8d316d48eaf6d43.1431436210.git.christophe.leroy@c-s.fr>
- <1431564909.3868.162.camel@freescale.com>
-In-Reply-To: <1431564909.3868.162.camel@freescale.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Cc: Kyle Moffett <kyle@moffetthome.net>, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
+Content-Type: text/plain; charset=iso-8859-15
+In-Reply-To: <CACgMoiK61mKYFpfhhK51uvkvFHK3k+Dz4peMnbeW7-npDu4XBQ@mail.gmail.com>
+Cc: srikar@linux.vnet.ibm.com, linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ aneesh.kumar@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,88 +25,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Wed, May 13, 2015 at 01:17:54AM -0700, Haren Myneni wrote:
+> Hi,
+> 
+>  I am getting BUG_ON in migration_entry_to_page() with 4.1.0-rc2
+> kernel on powerpc system which has 512 CPUs (64 cores - 16 nodes) and
+> 1.6 TB memory. We can easily recreate this issue with kernel compile
+> (make -j500). But I could not reproduce with numa_balancing=disable.
+> 
 
+Is this patched in any way? I ask because line 134 on 4.1.0-rc2 does not
+match up with a BUG_ON. It's close to a PageLocked check but I want to
+be sure there are no other modifications.
 
-Le 14/05/2015 02:55, Scott Wood a écrit :
-> On Tue, 2015-05-12 at 15:32 +0200, Christophe Leroy wrote:
->> cacheable_memzero uses dcbz instruction and is more efficient than
->> memset(0) when the destination is in RAM
->>
->> This patch renames memset as generic_memset, and defines memset
->> as a prolog to cacheable_memzero. This prolog checks if the byte
->> to set is 0 and if the buffer is in RAM. If not, it falls back to
->> generic_memcpy()
->>
->> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
->> ---
->>   arch/powerpc/lib/copy_32.S | 15 ++++++++++++++-
->>   1 file changed, 14 insertions(+), 1 deletion(-)
->>
->> diff --git a/arch/powerpc/lib/copy_32.S b/arch/powerpc/lib/copy_32.S
->> index cbca76c..d8a9a86 100644
->> --- a/arch/powerpc/lib/copy_32.S
->> +++ b/arch/powerpc/lib/copy_32.S
->> @@ -12,6 +12,7 @@
->>   #include <asm/cache.h>
->>   #include <asm/errno.h>
->>   #include <asm/ppc_asm.h>
->> +#include <asm/page.h>
->>   
->>   #define COPY_16_BYTES		\
->>   	lwz	r7,4(r4);	\
->> @@ -74,6 +75,18 @@ CACHELINE_MASK = (L1_CACHE_BYTES-1)
->>    * to set them to zero.  This requires that the destination
->>    * area is cacheable.  -- paulus
->>    */
->> +_GLOBAL(memset)
->> +	cmplwi	r4,0
->> +	bne-	generic_memset
->> +	cmplwi	r5,L1_CACHE_BYTES
->> +	blt-	generic_memset
->> +	lis	r8,max_pfn@ha
->> +	lwz	r8,max_pfn@l(r8)
->> +	tophys	(r9,r3)
->> +	srwi	r9,r9,PAGE_SHIFT
->> +	cmplw	r9,r8
->> +	bge-	generic_memset
->> +	mr	r4,r5
-> max_pfn includes highmem, and tophys only works on normal kernel
-> addresses.
-Is there any other simple way to determine whether an address is in RAM 
-or not ?
+Otherwise, when was the last time this worked? Was 4.0 ok? As it can be
+easily reproduced, can the problem be bisected please?
 
-I did that because of the below function from mm/mem.c
-
-|int  page_is_ram(unsigned long  pfn)
-{
-#ifndef CONFIG_PPC64	/* XXX for now */
-	return  pfn<  max_pfn;
-#else
-	unsigned long  paddr= (pfn<<  PAGE_SHIFT);
-	struct  memblock_region*reg;
-
-	for_each_memblock(memory,  reg)
-		if  (paddr>=  reg->base&&  paddr< (reg->base+  reg->size))
-			return  1;
-	return  0;
-#endif
-}
-|
-
-
-
->
-> If we were to point memset_io, memcpy_toio, etc. at noncacheable
-> versions, are there any other callers left that can reasonably point at
-> uncacheable memory?
-Do you mean we could just consider that memcpy() and memset() are called 
-only with destination on RAM and thus we could avoid the check ?
-copy_tofrom_user() already does this assumption (allthought a user app 
-could possibly provide a buffer located in an ALSA mapped IO area)
-
-Christophe
-
-
----
-L'absence de virus dans ce courrier électronique a été vérifiée par le logiciel antivirus Avast.
-http://www.avast.com
+-- 
+Mel Gorman
+SUSE Labs
