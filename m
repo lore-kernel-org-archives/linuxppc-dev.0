@@ -1,23 +1,23 @@
 Return-Path: <aik@ozlabs.ru>
-Received: from mail-pa0-f48.google.com (mail-pa0-f48.google.com
- [209.85.220.48])
+Received: from mail-pa0-f53.google.com (mail-pa0-f53.google.com
+ [209.85.220.53])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9252F1A03C3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2015 13:08:01 +1000 (AEST)
-Received: by pacyx8 with SMTP id yx8so69676861pac.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 20:08:00 -0700 (PDT)
-Message-ID: <55541188.1030201@ozlabs.ru>
-Date: Thu, 14 May 2015 13:07:52 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6FF0A1A03C6
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2015 13:19:48 +1000 (AEST)
+Received: by pacyx8 with SMTP id yx8so69956193pac.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 20:19:46 -0700 (PDT)
+Message-ID: <5554144A.50701@ozlabs.ru>
+Date: Thu, 14 May 2015 13:19:38 +1000
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 MIME-Version: 1.0
 To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: Re: [PATCH kernel v10 14/34] powerpc/iommu: Move tce_xxx callbacks
- from ppc_md to iommu_table
+Subject: Re: [PATCH kernel v10 15/34] powerpc/powernv/ioda/ioda2: Rework TCE
+ invalidation in tce_build()/tce_free()
 References: <1431358763-24371-1-git-send-email-aik@ozlabs.ru>
- <1431358763-24371-15-git-send-email-aik@ozlabs.ru>
- <20150514002321.GA16128@gwshan>
-In-Reply-To: <20150514002321.GA16128@gwshan>
+ <1431358763-24371-16-git-send-email-aik@ozlabs.ru>
+ <20150514004824.GA18437@gwshan>
+In-Reply-To: <20150514004824.GA18437@gwshan>
 Content-Type: text/plain; charset=koi8-r; format=flowed
 Cc: Wei Yang <weiyang@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
  Alex Williamson <alex.williamson@redhat.com>,
@@ -32,43 +32,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/14/2015 10:23 AM, Gavin Shan wrote:
-> On Tue, May 12, 2015 at 01:39:03AM +1000, Alexey Kardashevskiy wrote:
->> This adds a iommu_table_ops struct and puts pointer to it into
->> the iommu_table struct. This moves tce_build/tce_free/tce_get/tce_flush
->> callbacks from ppc_md to the new struct where they really belong to.
+On 05/14/2015 10:48 AM, Gavin Shan wrote:
+> On Tue, May 12, 2015 at 01:39:04AM +1000, Alexey Kardashevskiy wrote:
+>> The pnv_pci_ioda_tce_invalidate() helper invalidates TCE cache. It is
+>> supposed to be called on IODA1/2 and not called on p5ioc2. It receives
+>> start and end host addresses of TCE table.
 >>
->> This adds the requirement for @it_ops to be initialized before calling
->> iommu_init_table() to make sure that we do not leave any IOMMU table
->> with iommu_table_ops uninitialized. This is not a parameter of
->> iommu_init_table() though as there will be cases when iommu_init_table()
->> will not be called on TCE tables, for example - VFIO.
+>> IODA2 actually needs PCI addresses to invalidate the cache. Those
+>> can be calculated from host addresses but since we are going
+>> to implement multi-level TCE tables, calculating PCI address from
+>> a host address might get either tricky or ugly as TCE table remains flat
+>> on PCI bus but not in RAM.
 >>
->> This does s/tce_build/set/, s/tce_free/clear/ and removes "tce_"
->> redundand prefixes.
+>> This moves pnv_pci_ioda_tce_invalidate() from generic pnv_tce_build/
+>> pnt_tce_free and defines IODA1/2-specific callbacks which call generic
+>> ones and do PHB-model-specific TCE cache invalidation. P5IOC2 keeps
+>> using generic callbacks as before.
 >>
->
-> s/redundand/redundant  I might be wrong because of my bad English.
-
-No, you're right ;)
-
->
->> This removes tce_xxx_rm handlers from ppc_md but does not add
->> them to iommu_table_ops as this will be done later if we decide to
->> support TCE hypercalls in real mode. This removes _vm callbacks as
->> only virtual mode is supported by now so this also removes @rm parameter.
->>
->> For pSeries, this always uses tce_buildmulti_pSeriesLP/
->> tce_buildmulti_pSeriesLP. This changes multi callback to fall back to
->> tce_build_pSeriesLP/tce_free_pSeriesLP if FW_FEATURE_MULTITCE is not
->> present. The reason for this is we still have to support "multitce=off"
->> boot parameter in disable_multitce() and we do not want to walk through
->> all IOMMU tables in the system and replace "multi" callbacks with single
->> ones.
->>
->> For powernv, this defines _ops per PHB type which are P5IOC2/IODA1/IODA2.
->> This makes the callbacks for them public. Later patches will extend
->> callbacks for IODA1/2.
+>> This changes pnv_pci_ioda2_tce_invalidate() to receives TCE index and
+>> number of pages which are PCI addresses shifted by IOMMU page shift.
 >>
 >> No change in behaviour is expected.
 >>
@@ -79,78 +61,233 @@ No, you're right ;)
 >
 >> ---
 >> Changes:
+>> v10:
+>> * moved before "Switch from iommu_table to new iommu_table_group" as it adds
+>> list of groups to iommu_table and tce invalidation depends on it
+>>
 >> v9:
->> * pnv_tce_build/pnv_tce_free/pnv_tce_get have been made public and lost
->> "rm" parameters to make following patches simpler (realmode is not
->> supported here anyway)
->> * got rid of _vm versions of callbacks
+>> * removed confusing comment from commit log about unintentional calling of
+>> pnv_pci_ioda_tce_invalidate()
+>> * moved mechanical changes away to "powerpc/iommu: Move tce_xxx callbacks from ppc_md to iommu_table"
+>> * fixed bug with broken invalidation in pnv_pci_ioda2_tce_invalidate -
+>> @index includes @tbl->it_offset but old code added it anyway which later broke
+>> DDW
 >> ---
->> arch/powerpc/include/asm/iommu.h            | 17 +++++++++++
->> arch/powerpc/include/asm/machdep.h          | 25 ---------------
->> arch/powerpc/kernel/iommu.c                 | 46 ++++++++++++++--------------
->> arch/powerpc/kernel/vio.c                   |  5 +++
->> arch/powerpc/platforms/cell/iommu.c         |  8 +++--
->> arch/powerpc/platforms/pasemi/iommu.c       |  7 +++--
->> arch/powerpc/platforms/powernv/pci-ioda.c   | 14 +++++++++
->> arch/powerpc/platforms/powernv/pci-p5ioc2.c |  7 +++++
->> arch/powerpc/platforms/powernv/pci.c        | 47 +++++------------------------
->> arch/powerpc/platforms/powernv/pci.h        |  5 +++
->> arch/powerpc/platforms/pseries/iommu.c      | 34 ++++++++++++---------
->> arch/powerpc/sysdev/dart_iommu.c            | 12 +++++---
->> 12 files changed, 116 insertions(+), 111 deletions(-)
+>> arch/powerpc/platforms/powernv/pci-ioda.c | 81 ++++++++++++++++++++++---------
+>> arch/powerpc/platforms/powernv/pci.c      | 17 ++-----
+>> 2 files changed, 61 insertions(+), 37 deletions(-)
 >>
->> diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
->> index d91bd69..e2a45c3 100644
->> --- a/arch/powerpc/include/asm/iommu.h
->> +++ b/arch/powerpc/include/asm/iommu.h
->> @@ -44,6 +44,22 @@
->> extern int iommu_is_off;
->> extern int iommu_force_on;
+>> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+>> index 2924abe..1b43e25 100644
+>> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+>> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+>> @@ -1678,18 +1678,19 @@ static void pnv_ioda_setup_bus_dma(struct pnv_ioda_pe *pe,
+>> 	}
+>> }
 >>
->> +struct iommu_table_ops {
->> +	int (*set)(struct iommu_table *tbl,
->> +			long index, long npages,
->> +			unsigned long uaddr,
->> +			enum dma_data_direction direction,
->> +			struct dma_attrs *attrs);
->> +	void (*clear)(struct iommu_table *tbl,
->> +			long index, long npages);
->> +	unsigned long (*get)(struct iommu_table *tbl, long index);
->> +	void (*flush)(struct iommu_table *tbl);
+>> -static void pnv_pci_ioda1_tce_invalidate(struct pnv_ioda_pe *pe,
+>> -					 struct iommu_table *tbl,
+>> -					 __be64 *startp, __be64 *endp, bool rm)
+>> +static void pnv_pci_ioda1_tce_invalidate(struct iommu_table *tbl,
+>> +		unsigned long index, unsigned long npages, bool rm)
+>> {
+>> +	struct pnv_ioda_pe *pe = tbl->data;
+>> 	__be64 __iomem *invalidate = rm ?
+>> 		(__be64 __iomem *)pe->tce_inval_reg_phys :
+>> 		(__be64 __iomem *)tbl->it_index;
+>> 	unsigned long start, end, inc;
+>> 	const unsigned shift = tbl->it_page_shift;
+>>
+>> -	start = __pa(startp);
+>> -	end = __pa(endp);
+>> +	start = __pa(((__be64 *)tbl->it_base) + index - tbl->it_offset);
+>> +	end = __pa(((__be64 *)tbl->it_base) + index - tbl->it_offset +
+>> +			npages - 1);
 >
-> Currently, there isn't flush backend on PowerNV platform. I'm not sure
-> if we have to implement it for PowerNV if we really need it. Maybe you
-> will have it to support DDW in subsequent patches which I didn't look
-> into it, but I will :-)
+> Platform is the only one knowing the TCE table layout and iommu_table_ops->get()
+> helps to retrieve TCE entry for the given index. If iommu_table_ops->get() had
+> returned the address of the TCE entry, not the content. Here, iommu_table_ops->get()
+> can be reused and we hide the platform specific TCE table layout in iommu_table_ops->get()
+> backend. However, it's not a big deal and it probably introduces more changes
+> than expected. You judge it's worthy to do it or improve it later :-)
 
 
-I am not adding new callbacks here, I am moving them. DART uses flush() so 
-it has to be here.
+This will require a separate patch to convert tce_get() from returning 
+value to returning address. I could do that, yes. Furthermore there is even 
+pnv_tce() helper added later in this patchset which can be used for this in 
+this patch (if I moved that patch earlier). But this would be a bigger 
+change which is not very much related to what the patch does - 
+cut-n-pasting invalidate() bits. May be later. The patchset is way too big 
+already :(
 
 
+>>
+>> 	/* BML uses this case for p6/p7/galaxy2: Shift addr and put in node */
+>> 	if (tbl->it_busno) {
+>> @@ -1725,16 +1726,39 @@ static void pnv_pci_ioda1_tce_invalidate(struct pnv_ioda_pe *pe,
+>> 	 */
+>> }
+>>
+>> +static int pnv_ioda1_tce_build(struct iommu_table *tbl, long index,
+>> +		long npages, unsigned long uaddr,
+>> +		enum dma_data_direction direction,
+>> +		struct dma_attrs *attrs)
+>> +{
+>> +	long ret = pnv_tce_build(tbl, index, npages, uaddr, direction,
+>> +			attrs);
 >
->> +};
+> The return value from pnv_tce_build() is "int" :-)
+
+Oops.
+
+
 >> +
->> +/* These are used by VIO */
->> +extern struct iommu_table_ops iommu_table_lpar_multi_ops;
->> +extern struct iommu_table_ops iommu_table_pseries_ops;
+>> +	if (!ret && (tbl->it_type & TCE_PCI_SWINV_CREATE))
+>> +		pnv_pci_ioda1_tce_invalidate(tbl, index, npages, false);
 >> +
+>> +	return ret;
+>> +}
+>> +
+>> +static void pnv_ioda1_tce_free(struct iommu_table *tbl, long index,
+>> +		long npages)
+>> +{
+>> +	pnv_tce_free(tbl, index, npages);
+>> +
+>> +	if (tbl->it_type & TCE_PCI_SWINV_FREE)
+>> +		pnv_pci_ioda1_tce_invalidate(tbl, index, npages, false);
+>> +}
+>> +
+>> static struct iommu_table_ops pnv_ioda1_iommu_ops = {
+>> -	.set = pnv_tce_build,
+>> -	.clear = pnv_tce_free,
+>> +	.set = pnv_ioda1_tce_build,
+>> +	.clear = pnv_ioda1_tce_free,
+>> 	.get = pnv_tce_get,
+>> };
+>>
+>> -static void pnv_pci_ioda2_tce_invalidate(struct pnv_ioda_pe *pe,
+>> -					 struct iommu_table *tbl,
+>> -					 __be64 *startp, __be64 *endp, bool rm)
+>> +static void pnv_pci_ioda2_tce_invalidate(struct iommu_table *tbl,
+>> +		unsigned long index, unsigned long npages, bool rm)
+>> {
+>> +	struct pnv_ioda_pe *pe = tbl->data;
+>> 	unsigned long start, end, inc;
+>> 	__be64 __iomem *invalidate = rm ?
+>> 		(__be64 __iomem *)pe->tce_inval_reg_phys :
+>> @@ -1747,10 +1771,8 @@ static void pnv_pci_ioda2_tce_invalidate(struct pnv_ioda_pe *pe,
+>> 	end = start;
+>>
+>> 	/* Figure out the start, end and step */
+>> -	inc = tbl->it_offset + (((u64)startp - tbl->it_base) / sizeof(u64));
+>> -	start |= (inc << shift);
+>> -	inc = tbl->it_offset + (((u64)endp - tbl->it_base) / sizeof(u64));
+>> -	end |= (inc << shift);
+>> +	start |= (index << shift);
+>> +	end |= ((index + npages - 1) << shift);
+>> 	inc = (0x1ull << shift);
+>> 	mb();
+>>
+>> @@ -1763,21 +1785,32 @@ static void pnv_pci_ioda2_tce_invalidate(struct pnv_ioda_pe *pe,
+>> 	}
+>> }
+>>
+>> -void pnv_pci_ioda_tce_invalidate(struct iommu_table *tbl,
+>> -				 __be64 *startp, __be64 *endp, bool rm)
+>> +static int pnv_ioda2_tce_build(struct iommu_table *tbl, long index,
+>> +		long npages, unsigned long uaddr,
+>> +		enum dma_data_direction direction,
+>> +		struct dma_attrs *attrs)
+>> {
+>> -	struct pnv_ioda_pe *pe = tbl->data;
+>> -	struct pnv_phb *phb = pe->phb;
+>> +	long ret = pnv_tce_build(tbl, index, npages, uaddr, direction,
+>> +			attrs);
 >
-> It might be reasonable to add "struct iommu_table_ops *ops" to function
-> vio_register_device_node() where the specified "ops" can be hooked to
-> the newly created IOMMU table. In that way, the platform (pSeries) specific
-> IOMMU table operations doesn't have to be exposed to PowerPC subsystem.
+> s/long/int
 
-I am not exposing anything new here - I am just replacing references to 
-ppc_md with references to iommu_table_ops.
 
-vio_register_device_node() is called from VIO code. So I'll have to have a 
-copy of iommu_table_pseries_ops and iommu_table_lpar_multi_ops in VIO code. 
-If I do this, I'll have to export 
-tce_build_pSeries()/tce_free_pSeries()/tce_get_pseries() to initialize 
-those structs. Either way I need to expose some symbols and do deeper 
-rework but not in this patchset.
+I better make them all long.
 
+>
+>>
+>> -	if (phb->type == PNV_PHB_IODA1)
+>> -		pnv_pci_ioda1_tce_invalidate(pe, tbl, startp, endp, rm);
+>> -	else
+>> -		pnv_pci_ioda2_tce_invalidate(pe, tbl, startp, endp, rm);
+>> +	if (!ret && (tbl->it_type & TCE_PCI_SWINV_CREATE))
+>> +		pnv_pci_ioda2_tce_invalidate(tbl, index, npages, false);
+>> +
+>> +	return ret;
+>> +}
+>> +
+>> +static void pnv_ioda2_tce_free(struct iommu_table *tbl, long index,
+>> +		long npages)
+>> +{
+>> +	pnv_tce_free(tbl, index, npages);
+>> +
+>> +	if (tbl->it_type & TCE_PCI_SWINV_FREE)
+>> +		pnv_pci_ioda2_tce_invalidate(tbl, index, npages, false);
+>> }
+>>
+>> static struct iommu_table_ops pnv_ioda2_iommu_ops = {
+>> -	.set = pnv_tce_build,
+>> -	.clear = pnv_tce_free,
+>> +	.set = pnv_ioda2_tce_build,
+>> +	.clear = pnv_ioda2_tce_free,
+>> 	.get = pnv_tce_get,
+>> };
+>>
+>> diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
+>> index 4c3bbb1..84b4ea4 100644
+>> --- a/arch/powerpc/platforms/powernv/pci.c
+>> +++ b/arch/powerpc/platforms/powernv/pci.c
+>> @@ -577,37 +577,28 @@ int pnv_tce_build(struct iommu_table *tbl, long index, long npages,
+>> 		struct dma_attrs *attrs)
+>> {
+>> 	u64 proto_tce = iommu_direction_to_tce_perm(direction);
+>> -	__be64 *tcep, *tces;
+>> +	__be64 *tcep;
+>> 	u64 rpn;
+>>
+>> -	tces = tcep = ((__be64 *)tbl->it_base) + index - tbl->it_offset;
+>> +	tcep = ((__be64 *)tbl->it_base) + index - tbl->it_offset;
+>> 	rpn = __pa(uaddr) >> tbl->it_page_shift;
+>>
+>> 	while (npages--)
+>> 		*(tcep++) = cpu_to_be64(proto_tce |
+>> 				(rpn++ << tbl->it_page_shift));
+>>
+>> -	/* Some implementations won't cache invalid TCEs and thus may not
+>> -	 * need that flush. We'll probably turn it_type into a bit mask
+>> -	 * of flags if that becomes the case
+>> -	 */
+>> -	if (tbl->it_type & TCE_PCI_SWINV_CREATE)
+>> -		pnv_pci_ioda_tce_invalidate(tbl, tces, tcep - 1, false);
+>>
+>> 	return 0;
+>> }
+>>
+>> void pnv_tce_free(struct iommu_table *tbl, long index, long npages)
+>> {
+>> -	__be64 *tcep, *tces;
+>> +	__be64 *tcep;
+>>
+>> -	tces = tcep = ((__be64 *)tbl->it_base) + index - tbl->it_offset;
+>> +	tcep = ((__be64 *)tbl->it_base) + index - tbl->it_offset;
+>>
+>> 	while (npages--)
+>> 		*(tcep++) = cpu_to_be64(0);
+>> -
+>> -	if (tbl->it_type & TCE_PCI_SWINV_FREE)
+>> -		pnv_pci_ioda_tce_invalidate(tbl, tces, tcep - 1, false);
+>> }
+>>
+>> unsigned long pnv_tce_get(struct iommu_table *tbl, long index)
+>> --
+>> 2.4.0.rc3.8.gfb3e7d5
+>>
+>
 
 
 -- 
