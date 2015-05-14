@@ -1,22 +1,19 @@
 Return-Path: <yangbo.lu@freescale.com>
 Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0130.outbound.protection.outlook.com [157.56.110.130])
+ (mail-bn1bon0112.outbound.protection.outlook.com [157.56.111.112])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 187FB1A0410
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2015 16:44:30 +1000 (AEST)
-From: Lu Y.B. <yangbo.lu@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: RE: [PATCH 2/2] mmc: sdhci-pltfm: enable interrupt mode to detect card
-Date: Thu, 14 May 2015 06:29:25 +0000
-Message-ID: <BY1PR0301MB1192B4134746A153763312A9F2D80@BY1PR0301MB1192.namprd03.prod.outlook.com>
-References: <1431505246-40102-1-git-send-email-yangbo.lu@freescale.com>
- <1431535027.3868.44.camel@freescale.com>
-In-Reply-To: <1431535027.3868.44.camel@freescale.com>
-Content-Type: text/plain; charset="utf-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id A05A91A06A3
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2015 16:44:40 +1000 (AEST)
+From: Yangbo Lu <yangbo.lu@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
+ <scottwood@freescale.com>
+Subject: [PATCH v2, 2/2] mmc: sdhci-pltfm: enable interrupt mode to detect card
+Date: Thu, 14 May 2015 14:40:48 +0800
+Message-ID: <1431585648-35130-1-git-send-email-yangbo.lu@freescale.com>
 MIME-Version: 1.0
-Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Content-Type: text/plain
+Cc: Yangbo Lu <yangbo.lu@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,37 +23,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
-MjENCj4gU2VudDogVGh1cnNkYXksIE1heSAxNCwgMjAxNSAxMjozNyBBTQ0KPiBUbzogTHUgWWFu
-Z2JvLUI0NzA5Mw0KPiBDYzogbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IGxpbnV4LWtl
-cm5lbEB2Z2VyLmtlcm5lbC5vcmcNCj4gU3ViamVjdDogUmU6IFtQQVRDSCAyLzJdIG1tYzogc2Ro
-Y2ktcGx0Zm06IGVuYWJsZSBpbnRlcnJ1cHQgbW9kZSB0bw0KPiBkZXRlY3QgY2FyZA0KPiANCj4g
-T24gV2VkLCAyMDE1LTA1LTEzIGF0IDE2OjIwICswODAwLCBZYW5nYm8gTHUgd3JvdGU6DQo+ID4g
-RW5hYmxlIGludGVycnVwdCBtb2RlIHRvIGRldGVjdCBjYXJkIGluc3RlYWQgb2YgcG9sbGluZyBt
-b2RlIGZvcg0KPiA+IFAxMDIwL1A0MDgwL1A1MDIwL1A1MDQwL1QxMDQwIGJ5IHJlbW92aW5nIHRo
-ZSBxdWlyaw0KPiA+IFNESENJX1FVSVJLX0JST0tFTl9DQVJEX0RFVEVDVElPTi4gVGhpcyBjb3Vs
-ZCBpbXByb3ZlIGRhdGENCj4gPiB0cmFuc2ZlcnJpbmcgcGVyZm9ybWFuY2UgYW5kIGF2b2lkIHRo
-ZSBjYWxsIHRyYWNlIGNhdXNlZCBieSBwb2xsaW5nDQo+ID4gY2FyZCBzdGF0dXMgc29tZXRpbWUu
-DQo+ID4NCj4gPiBTaWduZWQtb2ZmLWJ5OiBZYW5nYm8gTHUgPHlhbmdiby5sdUBmcmVlc2NhbGUu
-Y29tPg0KPiA+IC0tLQ0KPiA+ICBkcml2ZXJzL21tYy9ob3N0L3NkaGNpLXBsdGZtLmMgfCA3ICsr
-KysrKysNCj4gPiAgMSBmaWxlIGNoYW5nZWQsIDcgaW5zZXJ0aW9ucygrKQ0KPiA+DQo+ID4gZGlm
-ZiAtLWdpdCBhL2RyaXZlcnMvbW1jL2hvc3Qvc2RoY2ktcGx0Zm0uYw0KPiA+IGIvZHJpdmVycy9t
-bWMvaG9zdC9zZGhjaS1wbHRmbS5jIGluZGV4IGM1YjAxZDYuLjYyZjQwNDkgMTAwNjQ0DQo+ID4g
-LS0tIGEvZHJpdmVycy9tbWMvaG9zdC9zZGhjaS1wbHRmbS5jDQo+ID4gKysrIGIvZHJpdmVycy9t
-bWMvaG9zdC9zZGhjaS1wbHRmbS5jDQo+ID4gQEAgLTEwMiw2ICsxMDIsMTMgQEAgdm9pZCBzZGhj
-aV9nZXRfb2ZfcHJvcGVydHkoc3RydWN0IHBsYXRmb3JtX2RldmljZQ0KPiAqcGRldikNCj4gPiAg
-CQkgICAgb2ZfZGV2aWNlX2lzX2NvbXBhdGlibGUobnAsICJmc2wsbXBjODUzNi1lc2RoYyIpKQ0K
-PiA+ICAJCQlob3N0LT5xdWlya3MgfD0gU0RIQ0lfUVVJUktfQlJPS0VOX1RJTUVPVVRfVkFMOw0K
-PiA+DQo+ID4gKwkJaWYgKG9mX2RldmljZV9pc19jb21wYXRpYmxlKG5wLCAiZnNsLHA1MDQwLWVz
-ZGhjIikgfHwNCj4gPiArCQkJb2ZfZGV2aWNlX2lzX2NvbXBhdGlibGUobnAsICJmc2wscDUwMjAt
-ZXNkaGMiKSB8fA0KPiA+ICsJCQlvZl9kZXZpY2VfaXNfY29tcGF0aWJsZShucCwgImZzbCxwNDA4
-MC1lc2RoYyIpIHx8DQo+ID4gKwkJCW9mX2RldmljZV9pc19jb21wYXRpYmxlKG5wLCAiZnNsLHAx
-MDIwLWVzZGhjIikgfHwNCj4gPiArCQkJb2ZfZGV2aWNlX2lzX2NvbXBhdGlibGUobnAsICJmc2ws
-dDEwNDAtZXNkaGMiKSkNCj4gPiArCQkJaG9zdC0+cXVpcmtzICY9IH5TREhDSV9RVUlSS19CUk9L
-RU5fQ0FSRF9ERVRFQ1RJT047DQo+IA0KPiBQbGVhc2UgZG9uJ3QgbGluZSB1cCBjb250aW51YXRp
-b24gbGluZXMgd2l0aCB0aGUgaWYtYm9keS4gIEFsbCBvZiB0aGUNCj4gIm9mX2RldmljZV9pc19j
-b21wYXRpYmxlcyIgc2hvdWxkIHN0YXJ0IGluIHRoZSBzYW1lIGNvbHVtbi4NCk9rLCB0aGFua3Mu
-DQo+IA0KPiBHaXZlbiB0aGF0IHlvdSBuZWVkIHRvIG1vZGlmeSB0aGUgZGV2aWNlIHRyZWUgZm9y
-IHRoaXMsIHdoeSBub3QganVzdCB1c2UNCj4gU1ZSPw0KVGhlIGRyaXZlcnMvbW1jL2hvc3Qvc2Ro
-Y2ktcGx0Zm0uYyBpcyBub3Qgb25seSB1c2VkIGJ5IGZyZWVzY2FsZSBwbGF0Zm9ybS4gU28gd2Ug
-Y291bGRu4oCZdCB0byB1c2UgU1ZSIGhlcmUuDQpUaGFua3MuIA0K
+Enable interrupt mode to detect card instead of polling mode
+for P1020/P4080/P5020/P5040/T1040 by removing the quirk
+SDHCI_QUIRK_BROKEN_CARD_DETECTION. This could improve data
+transferring performance and avoid the call trace caused by
+polling card status sometime.
+
+Signed-off-by: Yangbo Lu <yangbo.lu@freescale.com>
+----
+Changes for v2:
+	- Aligned all "of_device_is_compatibles" in same column
+---
+ drivers/mmc/host/sdhci-pltfm.c | 7 +++++++
+ 1 file changed, 7 insertions(+)
+
+diff --git a/drivers/mmc/host/sdhci-pltfm.c b/drivers/mmc/host/sdhci-pltfm.c
+index c5b01d6..97128f3 100644
+--- a/drivers/mmc/host/sdhci-pltfm.c
++++ b/drivers/mmc/host/sdhci-pltfm.c
+@@ -102,6 +102,13 @@ void sdhci_get_of_property(struct platform_device *pdev)
+ 		    of_device_is_compatible(np, "fsl,mpc8536-esdhc"))
+ 			host->quirks |= SDHCI_QUIRK_BROKEN_TIMEOUT_VAL;
+ 
++		if (of_device_is_compatible(np, "fsl,p5040-esdhc") ||
++		    of_device_is_compatible(np, "fsl,p5020-esdhc") ||
++		    of_device_is_compatible(np, "fsl,p4080-esdhc") ||
++		    of_device_is_compatible(np, "fsl,p1020-esdhc") ||
++		    of_device_is_compatible(np, "fsl,t1040-esdhc"))
++			host->quirks &= ~SDHCI_QUIRK_BROKEN_CARD_DETECTION;
++
+ 		clk = of_get_property(np, "clock-frequency", &size);
+ 		if (clk && size == sizeof(*clk) && *clk)
+ 			pltfm_host->clock = be32_to_cpup(clk);
+-- 
+2.1.0.27.g96db324
