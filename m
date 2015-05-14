@@ -1,44 +1,42 @@
-Return-Path: <preeti@linux.vnet.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+Return-Path: <gwshan@linux.vnet.ibm.com>
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AEF991A03CA
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2015 13:59:27 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id A24DD1A03D7
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2015 14:15:09 +1000 (AEST)
 Received: from /spool/local
- by e35.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
- Wed, 13 May 2015 21:59:25 -0600
-Received: from b03cxnp08025.gho.boulder.ibm.com
- (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 2B7E01FF0049
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 21:50:34 -0600 (MDT)
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
- by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t4E3wu3v34668766
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 20:58:56 -0700
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
- by d03av04.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t4E3xM5d000430
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 21:59:23 -0600
-Message-ID: <55541D95.4020107@linux.vnet.ibm.com>
-Date: Thu, 14 May 2015 09:29:17 +0530
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
+ Thu, 14 May 2015 14:15:08 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 7024B2CE804E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2015 14:15:04 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t4E4EttJ27263030
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2015 14:15:04 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t4E4EV0v030610
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2015 14:14:31 +1000
+Date: Thu, 14 May 2015 14:14:06 +1000
+From: Gavin Shan <gwshan@linux.vnet.ibm.com>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Subject: Re: [PATCH kernel v10 24/34] powerpc/powernv/ioda2: Rework
+ iommu_table creation
+Message-ID: <20150514041405.GA18464@gwshan>
+Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
+References: <1431358763-24371-1-git-send-email-aik@ozlabs.ru>
+ <1431358763-24371-25-git-send-email-aik@ozlabs.ru>
 MIME-Version: 1.0
-To: Kevin Hilman <khilman@kernel.org>, "Rafael J. Wysocki" <rjw@rjwysocki.net>
-Subject: Re: [PATCH 0/3] cpuidle: updates related to tick_broadcast_enter()
- failures
-References: <20150508073418.28491.4150.stgit@preeti.in.ibm.com>
- <2602092.6h7ufczYGd@vostro.rjw.lan> <5551BCBF.2000806@linaro.org>
- <2919083.VPTOth98op@vostro.rjw.lan> <7h7fsc2idw.fsf@deeprootsystems.com>
-In-Reply-To: <7h7fsc2idw.fsf@deeprootsystems.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: rlippert@google.com, Ulf Hansson <ulf.hansson@linaro.org>,
- Daniel Lezcano <daniel.lezcano@linaro.org>, linux-pm@vger.kernel.org,
- peterz@infradead.org, linus.walleij@linaro.org, rafael.j.wysocki@intel.com,
- linux-kernel@vger.kernel.org, mingo@redhat.com, sudeep.holla@arm.com,
- tglx@linutronix.de, linuxppc-dev@lists.ozlabs.org,
- Lina Iyer <lina.iyer@linaro.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1431358763-24371-25-git-send-email-aik@ozlabs.ru>
+Cc: Wei Yang <weiyang@linux.vnet.ibm.com>,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -48,101 +46,80 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/14/2015 04:29 AM, Kevin Hilman wrote:
-> "Rafael J. Wysocki" <rjw@rjwysocki.net> writes:
-> 
-> [...]
-> 
->> Second, quite honestly, I don't see a connection to genpd here.
-> 
-> The connection with genpd is because the *reason* the timer was
-> shutdown/stopped is because it shares power with the CPU, which is why
-> the timer stops when the CPU hits ceratin low power states.  IOW, it's
-> in the same power domain as the CPU.
-> 
->> What you seem to be saying is "maybe we can eliminate the need to check the
->> return value of tick_broadcast_enter() in the idle loop if we proactively
->> disable the TIMER_STOP idle states of a CPU when we start to use that CPU's
->> timer as a broadcast one".
->>
->> So this seems to be about the timekeeping rather than power domains, because
->> that's where the broadcast thing is done.  So the code setting up the CPU's
->> timer for broadcast would pretty much need to pause cpuidle, go through the
->> CPU's idle states and disable the TIMER_STOP ones.  And do the reverse when the
->> timer is not going the be used for broadcast any more.  
-> 
-> Or..., modify the timer subystem to use runtime PM on the timer devices,
-> create a genpd that includes the timer device, and use
-> pm_genpd_attach_cpuidle() to attach that genpd so that whenever that
-> timer is runtime PM active, the deeper C-states cannot be hit.
+On Tue, May 12, 2015 at 01:39:13AM +1000, Alexey Kardashevskiy wrote:
+>This moves iommu_table creation to the beginning to make following changes
+>easier to review. This starts using table parameters from the iommu_table
+>struct.
+>
+>This should cause no behavioural change.
+>
+>Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+>Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 
-I think you are missing a point here. If such a solution were possible,
-the tick broadcast framework would not have been designed to support
-deep cpu idle states. One reason we cannot go this way of course, is not
-all archs may support genpd as was pointed out. But the second reason
-IMO is that a timer is runtime PM active as long as there is some
-deferred work, either in the near or far future.
+Reviewed-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 
-The point behind the broadcast framework is let these CPUs go to deeper
-idle states when the timers are in the "far" future. We can potentially
-save power by doing so and don't need to keep the entire power domain
-active just because the timer is supposed to fire 5 minutes from now,
-which is precisely what happens if we go the genpd way.
+Thanks,
+Gavin
 
-Hence I don't think we can trivially club timers with genpd unless we
-have a way to power the timer PM domain down, depending on when it is
-supposed to fire, in which case we will merely be replicating the
-cpuidle governor code.
-
-Regards
-Preeti U Murthy
-
-> 
->> So question is whether or not this is actually really more
->> straightforward than checking the return value of
->> tick_broadcast_enter() in the idle loop after all.
-> 
-> Unfortunetly this problem doesn't only affect timers.
-> 
-> Daniel's broader point is that $SUBJECT series only handles this for the
-> timer, but there's actually a more general problem to solve for *any*
-> device that shares a power domain with a CPU (e.g. CPU-local
-> timers, interrupt controllers, performance monitoring units, floating
-> point units, etc. etc.)
-> 
-> If we keep adding checks to the idle loop for all those devices, we're
-> heading for a mess.  (In fact, this is exactly what CPUidle drivers in
-> lots of vendor trees are doing, and it is indeed quite messy, and very
-> vendor specific.)
-> 
-> Also, solving this more general problem was the primary motivation for
-> adding the gnpd _attach_cpuidle() feature in the first place, so why not
-> use that?
-> 
-> Longer term, IMO, these dependencies between CPUs and all these "extras"
-> logic that share a power domain should be modeled by a genpd.  If all
-> those devices are using runtime PM, including the CPUs, and they are
-> grouped into a genpd, then we we can very easily know at the genpd level
-> whether or not the CPU could be powered down, and to what level.  This
-> longer-term solution is what I want to discuss at LPC this year in my
-> "Unifiy idle management of CPUs and IO devices" topic[1].  ( Also FYI,
-> using a genpd to model a CPU and connected logic is part of the
-> motivation behind the recent proposals to add support for multiple
-> states to genpd by Axel Haslam. )
-> 
-> Anyways I digress...
-> 
-> In the short term, while your patches look fine to me, the objection I
-> have is that it's only a band-aid fix that handles timers, but none of
-> the other "extras" that might share a power rail with the CPU.  So,
-> until we have the long-term stuff sorted out, the better
-> short-term solution IMO is the _attach_cpuidle() one above.
-> 
-> Kevin
-> 
-> [1] http://wiki.linuxplumbersconf.org/2015:energy-aware_scheduling
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
-> 
+>---
+>Changes:
+>v9:
+>* updated commit log and did minor cleanup
+>---
+> arch/powerpc/platforms/powernv/pci-ioda.c | 24 ++++++++++++------------
+> 1 file changed, 12 insertions(+), 12 deletions(-)
+>
+>diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+>index e3c784d..9b80b74 100644
+>--- a/arch/powerpc/platforms/powernv/pci-ioda.c
+>+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+>@@ -2074,13 +2074,23 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
+> 	addr = page_address(tce_mem);
+> 	memset(addr, 0, tce_table_size);
+>
+>+	/* Setup linux iommu table */
+>+	pnv_pci_setup_iommu_table(tbl, addr, tce_table_size, 0,
+>+			IOMMU_PAGE_SHIFT_4K);
+>+
+>+	tbl->it_ops = &pnv_ioda2_iommu_ops;
+>+	iommu_init_table(tbl, phb->hose->node);
+>+#ifdef CONFIG_IOMMU_API
+>+	pe->table_group.ops = &pnv_pci_ioda2_ops;
+>+#endif
+>+
+> 	/*
+> 	 * Map TCE table through TVT. The TVE index is the PE number
+> 	 * shifted by 1 bit for 32-bits DMA space.
+> 	 */
+> 	rc = opal_pci_map_pe_dma_window(phb->opal_id, pe->pe_number,
+>-					pe->pe_number << 1, 1, __pa(addr),
+>-					tce_table_size, 0x1000);
+>+			pe->pe_number << 1, 1, __pa(tbl->it_base),
+>+			tbl->it_size << 3, 1ULL << tbl->it_page_shift);
+> 	if (rc) {
+> 		pe_err(pe, "Failed to configure 32-bit TCE table,"
+> 		       " err %ld\n", rc);
+>@@ -2089,20 +2099,10 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
+>
+> 	pnv_pci_ioda2_tvt_invalidate(pe);
+>
+>-	/* Setup linux iommu table */
+>-	pnv_pci_setup_iommu_table(tbl, addr, tce_table_size, 0,
+>-			IOMMU_PAGE_SHIFT_4K);
+>-
+> 	/* OPAL variant of PHB3 invalidated TCEs */
+> 	if (pe->tce_inval_reg)
+> 		tbl->it_type |= (TCE_PCI_SWINV_CREATE | TCE_PCI_SWINV_FREE);
+>
+>-	tbl->it_ops = &pnv_ioda2_iommu_ops;
+>-	iommu_init_table(tbl, phb->hose->node);
+>-#ifdef CONFIG_IOMMU_API
+>-	pe->table_group.ops = &pnv_pci_ioda2_ops;
+>-#endif
+>-
+> 	if (pe->flags & PNV_IODA_PE_DEV) {
+> 		/*
+> 		 * Setting table base here only for carrying iommu_group
+>-- 
+>2.4.0.rc3.8.gfb3e7d5
+>
