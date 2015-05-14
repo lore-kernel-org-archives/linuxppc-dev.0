@@ -1,23 +1,23 @@
 Return-Path: <aik@ozlabs.ru>
-Received: from mail-pd0-f172.google.com (mail-pd0-f172.google.com
- [209.85.192.172])
+Received: from mail-pa0-f49.google.com (mail-pa0-f49.google.com
+ [209.85.220.49])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C87281A03B4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2015 13:39:49 +1000 (AEST)
-Received: by pdbnk13 with SMTP id nk13so71420291pdb.0
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 20:39:48 -0700 (PDT)
-Message-ID: <555418FC.1070906@ozlabs.ru>
-Date: Thu, 14 May 2015 13:39:40 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id D17D31A03CA
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2015 13:50:14 +1000 (AEST)
+Received: by pacwv17 with SMTP id wv17so70779885pac.0
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 20:50:12 -0700 (PDT)
+Message-ID: <55541B6C.1000903@ozlabs.ru>
+Date: Thu, 14 May 2015 13:50:04 +1000
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 MIME-Version: 1.0
 To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-Subject: Re: [PATCH kernel v10 20/34] powerpc/powernv/ioda2: Move TCE kill
- register address to PE
+Subject: Re: [PATCH kernel v10 21/34] powerpc/powernv/ioda2: Add TCE
+ invalidation for all attached groups
 References: <1431358763-24371-1-git-send-email-aik@ozlabs.ru>
- <1431358763-24371-21-git-send-email-aik@ozlabs.ru>
- <20150514021047.GA31156@gwshan>
-In-Reply-To: <20150514021047.GA31156@gwshan>
+ <1431358763-24371-22-git-send-email-aik@ozlabs.ru>
+ <20150514022219.GA32474@gwshan>
+In-Reply-To: <20150514022219.GA32474@gwshan>
 Content-Type: text/plain; charset=koi8-r; format=flowed
 Cc: Wei Yang <weiyang@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
  Alex Williamson <alex.williamson@redhat.com>,
@@ -32,101 +32,111 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/14/2015 12:10 PM, Gavin Shan wrote:
-> On Tue, May 12, 2015 at 01:39:09AM +1000, Alexey Kardashevskiy wrote:
->> At the moment the DMA setup code looks for the "ibm,opal-tce-kill" property
->> which contains the TCE kill register address. Writes to this register
->> invalidates TCE cache on IODA/IODA2 hub.
+On 05/14/2015 12:22 PM, Gavin Shan wrote:
+> On Tue, May 12, 2015 at 01:39:10AM +1000, Alexey Kardashevskiy wrote:
+>> The iommu_table struct keeps a list of IOMMU groups it is used for.
+>> At the moment there is just a single group attached but further
+>> patches will add TCE table sharing. When sharing is enabled, TCE cache
+>> in each PE needs to be invalidated so does the patch.
 >>
->> This moves the register address from iommu_table to pnv_ioda_pe as:
->> 1) When we get 2 tables per PE, this register will be used for both tables;
->> 2) When we get TCE tables sharing, we will need to invalidate every
->> IOMMU group (i.e. PE) which is using this table and each PE has
->> its own invalidate register.
->>
->
-> Actually, it's the virtual address of IO remapped PHB hardware register.
-> So it would be a property of PHB (struct pnv_phb). As the PE is connecting
-> with IOMMU table group. The virtual address can be retrieved by the path:
-> iommu_table -> iommu_table_group -> pnv_ioda_pe -> pnv_phb. However, I
-> don't insist and you have the best judge on it :-)
-
-Are you suggesting moving pe->tce_inval_reg from pnv_ioda_pe to pnv_phb?
-
->
->> This moves the property reading/remapping code to a helper to reduce
->> code duplication. Although this change is not required for IODA1, this
->> changes it as well to reduce code duplication.
->>
->> This adds a new pnv_pci_ioda2_tvt_invalidate() helper which invalidates
->> the entire table. It should be called after every call to
->> opal_pci_map_pe_dma_window(). It was not required before because
->> there is just a single TCE table and 64bit DMA is handled via bypass
->> window (which has no table so no chache is used) but this is going
->> to change with Dynamic DMA windows (DDW).
+>> This does not change pnv_pci_ioda1_tce_invalidate() as there is no plan
+>> to enable TCE table sharing on PHBs older than IODA2.
 >>
 >> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
->
-> Reviewed-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
->
-> Thanks,
-> Gavin
->
 >> ---
 >> Changes:
 >> v10:
->> * fixed error from checkpatch.pl
->> * removed comment at "ibm,opal-tce-kill" parsing as irrelevant
->> * s/addr/val/ in pnv_pci_ioda2_tvt_invalidate() as it was not a kernel address
->>
->> v9:
->> * new in the series
+>> * new to the series
 >> ---
->> arch/powerpc/platforms/powernv/pci-ioda.c | 64 ++++++++++++++++++-------------
->> arch/powerpc/platforms/powernv/pci.h      |  1 +
->> 2 files changed, 39 insertions(+), 26 deletions(-)
+>> arch/powerpc/platforms/powernv/pci-ioda.c | 35 ++++++++++++++++++++-----------
+>> 1 file changed, 23 insertions(+), 12 deletions(-)
 >>
 >> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
->> index 35ab19c8..f972e40 100644
+>> index f972e40..8e4987d 100644
 >> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
 >> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
->> @@ -1680,7 +1680,7 @@ static void pnv_pci_ioda1_tce_invalidate(struct iommu_table *tbl,
->> 			struct pnv_ioda_pe, table_group);
->> 	__be64 __iomem *invalidate = rm ?
->> 		(__be64 __iomem *)pe->tce_inval_reg_phys :
->> -		(__be64 __iomem *)tbl->it_index;
->> +		pe->tce_inval_reg;
+>> @@ -24,6 +24,7 @@
+>> #include <linux/msi.h>
+>> #include <linux/memblock.h>
+>> #include <linux/iommu.h>
+>> +#include <linux/rculist.h>
+>>
+>> #include <asm/sections.h>
+>> #include <asm/io.h>
+>> @@ -1763,23 +1764,15 @@ static inline void pnv_pci_ioda2_tvt_invalidate(struct pnv_ioda_pe *pe)
+>> 	__raw_writeq(cpu_to_be64(val), pe->tce_inval_reg);
+>> }
+>>
+>> -static void pnv_pci_ioda2_tce_invalidate(struct iommu_table *tbl,
+>> -		unsigned long index, unsigned long npages, bool rm)
+>> +static void pnv_pci_ioda2_tce_do_invalidate(unsigned pe_number, bool rm,
+>> +		__be64 __iomem *invalidate, unsigned shift,
+>> +		unsigned long index, unsigned long npages)
+>> {
+>> -	struct iommu_table_group_link *tgl = list_first_entry_or_null(
+>> -			&tbl->it_group_list, struct iommu_table_group_link,
+>> -			next);
+>> -	struct pnv_ioda_pe *pe = container_of(tgl->table_group,
+>> -			struct pnv_ioda_pe, table_group);
 >> 	unsigned long start, end, inc;
->> 	const unsigned shift = tbl->it_page_shift;
+>> -	__be64 __iomem *invalidate = rm ?
+>> -		(__be64 __iomem *)pe->tce_inval_reg_phys :
+>> -		pe->tce_inval_reg;
+>> -	const unsigned shift = tbl->it_page_shift;
 >>
->> @@ -1751,6 +1751,18 @@ static struct iommu_table_ops pnv_ioda1_iommu_ops = {
->> 	.get = pnv_tce_get,
->> };
+>> 	/* We'll invalidate DMA address in PE scope */
+>> 	start = 0x2ull << 60;
+>> -	start |= (pe->pe_number & 0xFF);
+>> +	start |= (pe_number & 0xFF);
+>> 	end = start;
 >>
->> +static inline void pnv_pci_ioda2_tvt_invalidate(struct pnv_ioda_pe *pe)
+>> 	/* Figure out the start, end and step */
+>> @@ -1797,6 +1790,24 @@ static void pnv_pci_ioda2_tce_invalidate(struct iommu_table *tbl,
+>> 	}
+>> }
+>>
+>> +static void pnv_pci_ioda2_tce_invalidate(struct iommu_table *tbl,
+>> +		unsigned long index, unsigned long npages, bool rm)
 >> +{
->> +	/* 01xb - invalidate TCEs that match the specified PE# */
->> +	unsigned long val = (0x4ull << 60) | (pe->pe_number & 0xFF);
+>> +	struct iommu_table_group_link *tgl;
 >> +
->> +	if (!pe->tce_inval_reg)
->> +		return;
+>> +	list_for_each_entry_rcu(tgl, &tbl->it_group_list, next) {
+>> +		struct pnv_ioda_pe *pe = container_of(tgl->table_group,
+>> +				struct pnv_ioda_pe, table_group);
+>> +		__be64 __iomem *invalidate = rm ?
+>> +			(__be64 __iomem *)pe->tce_inval_reg_phys :
+>> +			pe->tce_inval_reg;
 >> +
->> +	mb(); /* Ensure above stores are visible */
->> +	__raw_writeq(cpu_to_be64(val), pe->tce_inval_reg);
+>> +		pnv_pci_ioda2_tce_do_invalidate(pe->pe_number, rm,
+>> +			invalidate, tbl->it_page_shift,
+>> +			index, npages);
+>> +	}
 >> +}
 >> +
 >
-> The function name sounds it's to invalidate TVE cache. Actually, it's invalidting
-> TCE cache. So I guess the function name pnv_pci_ioda2_tce_invalidate() would be
-> more accurate.
+> I don't understand this well and need a teaching session: One IOMMU
+> table can be connected with multiple IOMMU table groups, each of them
+> can be regarded as being equal to one PE. It means one IOMMU table
+> can be shared by two PEs. There must be something I missed.
 
-TVT vs. TVE distinction is not clear for me, sorry :)
-
-There is a function with exactly the same name as you proposed, below in 
-this mail, it invalidates cache.
-May be s/pnv_pci_ioda2_tvt_invalidate/pnv_pci_ioda2_invalidate_entire_cache/ ?
+No, this is correct.
 
 
+> Could you give a teaching session with an example about the IOMMU
+> table sharing? :-)
+
+If you do not share tables and you have multiple IOMMU groups passed to 
+QEMU, and all actual devices are capable of 64bit DMA, and you have 
+multiple PHBs in QEMU (each backed with a 64bit TCE table which is updated 
+once at the boot time and never changes) - all these tables will have 
+exactly the same content.
+
+Another thing is if you do not want to have multiple PHBs in QEMU, and you 
+do not have tables sharing, every H_PUT_TCE request would have to update 
+each group's TCE table, not just one. Not very fast approach.
+
+So it seems a useful thing. If you do not want sharing, just add another 
+virtual PHB and put vfio-pci devices onto it.
 
 
 -- 
