@@ -1,39 +1,27 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <aik@ozlabs.ru>
+Received: from mail-pd0-f174.google.com (mail-pd0-f174.google.com
+ [209.85.192.174])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C9A651A0015
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2015 12:23:21 +1000 (AEST)
-Received: from /spool/local
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Thu, 14 May 2015 12:23:20 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id F09542BB0047
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2015 12:23:17 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t4E2N93x32112676
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2015 12:23:17 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t4E2MimS023850
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2015 12:22:45 +1000
-Date: Thu, 14 May 2015 12:22:19 +1000
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Subject: Re: [PATCH kernel v10 21/34] powerpc/powernv/ioda2: Add TCE
- invalidation for all attached groups
-Message-ID: <20150514022219.GA32474@gwshan>
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <1431358763-24371-1-git-send-email-aik@ozlabs.ru>
- <1431358763-24371-22-git-send-email-aik@ozlabs.ru>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 92FA61A0015
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2015 12:34:43 +1000 (AEST)
+Received: by pdbqa5 with SMTP id qa5so69822889pdb.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 19:34:41 -0700 (PDT)
+Message-ID: <555409B8.3060904@ozlabs.ru>
+Date: Thu, 14 May 2015 12:34:32 +1000
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1431358763-24371-22-git-send-email-aik@ozlabs.ru>
-Cc: Wei Yang <weiyang@linux.vnet.ibm.com>,
- Gavin Shan <gwshan@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+To: Gavin Shan <gwshan@linux.vnet.ibm.com>,
+ Thomas Huth <thuth@redhat.com>
+Subject: Re: [PATCH kernel v10 05/34] powerpc/iommu: Always release iommu_table
+ in iommu_free_table()
+References: <1431358763-24371-1-git-send-email-aik@ozlabs.ru>
+ <1431358763-24371-6-git-send-email-aik@ozlabs.ru>
+ <20150513053337.GA479@gwshan> <5552EF78.6020301@ozlabs.ru>
+ <20150513145136.1a85f536@thh440s> <20150513232745.GA8158@gwshan>
+In-Reply-To: <20150513232745.GA8158@gwshan>
+Content-Type: text/plain; charset=koi8-r; format=flowed
+Cc: Wei Yang <weiyang@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
  Alex Williamson <alex.williamson@redhat.com>,
  Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
  David Gibson <david@gibson.dropbear.id.au>
@@ -46,101 +34,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, May 12, 2015 at 01:39:10AM +1000, Alexey Kardashevskiy wrote:
->The iommu_table struct keeps a list of IOMMU groups it is used for.
->At the moment there is just a single group attached but further
->patches will add TCE table sharing. When sharing is enabled, TCE cache
->in each PE needs to be invalidated so does the patch.
+On 05/14/2015 09:27 AM, Gavin Shan wrote:
+> On Wed, May 13, 2015 at 02:51:36PM +0200, Thomas Huth wrote:
+>> On Wed, 13 May 2015 16:30:16 +1000
+>> Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
+>>
+>>> On 05/13/2015 03:33 PM, Gavin Shan wrote:
+>>>> On Tue, May 12, 2015 at 01:38:54AM +1000, Alexey Kardashevskiy wrote:
+>>>>> At the moment iommu_free_table() only releases memory if
+>>>>> the table was initialized for the platform code use, i.e. it had
+>>>>> it_map initialized (which purpose is to track DMA memory space use).
+>>>>>
+>>>>> With dynamic DMA windows, we will need to be able to release
+>>>>> iommu_table even if it was used for VFIO in which case it_map is NULL
+>>>>> so does the patch.
+>>>>>
+>>>>> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+>>>>
+>>>> Reviewed-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+>>>>
+>>>>> ---
+>>>>> arch/powerpc/kernel/iommu.c | 3 +--
+>>>>> 1 file changed, 1 insertion(+), 2 deletions(-)
+>>>>>
+>>>>> diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
+>>>>> index 3d47eb3..2c02d4c 100644
+>>>>> --- a/arch/powerpc/kernel/iommu.c
+>>>>> +++ b/arch/powerpc/kernel/iommu.c
+>>>>> @@ -714,8 +714,7 @@ void iommu_free_table(struct iommu_table *tbl, const char *node_name)
+>>>>> 	unsigned int order;
+>>>>>
+>>>>> 	if (!tbl || !tbl->it_map) {
+>>>>> -		printk(KERN_ERR "%s: expected TCE map for %s\n", __func__,
+>>>>> -				node_name);
+>>>>> +		kfree(tbl);
+>>>>
+>>>> I'm not sure if the "tbl" needs to be checked against NULL as kfree() already
+>>>> has the check. But it looks a bit strange to free NULL "tbl" from the code
+>>>> itself.
+>>>
+>>> Yeah, looks a bit weird, agree, I'll change but in general kfree/vfree/...
+>>> - they all check the passed pointer for NULL.
+>>
+>> But if tbl is NULL, the tbl->it_map check will fail, won't it? So in
+>> this case, I think you have to keep it.
+>>
 >
->This does not change pnv_pci_ioda1_tce_invalidate() as there is no plan
->to enable TCE table sharing on PHBs older than IODA2.
+> If I understood your question correctly, "tbl->it_map" won't be checked
+> when "tbl" is NULL because the connection ("||") for the two conditions.
+> The code can be changed to something like below if Alexey want:
 >
->Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
->---
->Changes:
->v10:
->* new to the series
->---
-> arch/powerpc/platforms/powernv/pci-ioda.c | 35 ++++++++++++++++++++-----------
-> 1 file changed, 23 insertions(+), 12 deletions(-)
->
->diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
->index f972e40..8e4987d 100644
->--- a/arch/powerpc/platforms/powernv/pci-ioda.c
->+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
->@@ -24,6 +24,7 @@
-> #include <linux/msi.h>
-> #include <linux/memblock.h>
-> #include <linux/iommu.h>
->+#include <linux/rculist.h>
->
-> #include <asm/sections.h>
-> #include <asm/io.h>
->@@ -1763,23 +1764,15 @@ static inline void pnv_pci_ioda2_tvt_invalidate(struct pnv_ioda_pe *pe)
-> 	__raw_writeq(cpu_to_be64(val), pe->tce_inval_reg);
-> }
->
->-static void pnv_pci_ioda2_tce_invalidate(struct iommu_table *tbl,
->-		unsigned long index, unsigned long npages, bool rm)
->+static void pnv_pci_ioda2_tce_do_invalidate(unsigned pe_number, bool rm,
->+		__be64 __iomem *invalidate, unsigned shift,
->+		unsigned long index, unsigned long npages)
-> {
->-	struct iommu_table_group_link *tgl = list_first_entry_or_null(
->-			&tbl->it_group_list, struct iommu_table_group_link,
->-			next);
->-	struct pnv_ioda_pe *pe = container_of(tgl->table_group,
->-			struct pnv_ioda_pe, table_group);
-> 	unsigned long start, end, inc;
->-	__be64 __iomem *invalidate = rm ?
->-		(__be64 __iomem *)pe->tce_inval_reg_phys :
->-		pe->tce_inval_reg;
->-	const unsigned shift = tbl->it_page_shift;
->
-> 	/* We'll invalidate DMA address in PE scope */
-> 	start = 0x2ull << 60;
->-	start |= (pe->pe_number & 0xFF);
->+	start |= (pe_number & 0xFF);
-> 	end = start;
->
-> 	/* Figure out the start, end and step */
->@@ -1797,6 +1790,24 @@ static void pnv_pci_ioda2_tce_invalidate(struct iommu_table *tbl,
-> 	}
-> }
->
->+static void pnv_pci_ioda2_tce_invalidate(struct iommu_table *tbl,
->+		unsigned long index, unsigned long npages, bool rm)
->+{
->+	struct iommu_table_group_link *tgl;
->+
->+	list_for_each_entry_rcu(tgl, &tbl->it_group_list, next) {
->+		struct pnv_ioda_pe *pe = container_of(tgl->table_group,
->+				struct pnv_ioda_pe, table_group);
->+		__be64 __iomem *invalidate = rm ?
->+			(__be64 __iomem *)pe->tce_inval_reg_phys :
->+			pe->tce_inval_reg;
->+
->+		pnv_pci_ioda2_tce_do_invalidate(pe->pe_number, rm,
->+			invalidate, tbl->it_page_shift,
->+			index, npages);
->+	}
->+}
->+
+> 	if (!tbl)
+> 		return;
+> 	if (!tbl->itmap)
+> 		kfree(tbl);
 
-I don't understand this well and need a teaching session: One IOMMU
-table can be connected with multiple IOMMU table groups, each of them
-can be regarded as being equal to one PE. It means one IOMMU table
-can be shared by two PEs. There must be something I missed.
+To be precise ;)
 
-Could you give a teaching session with an example about the IOMMU
-table sharing? :-)
+if (!tbl->itmap) {
+	kfree(tbl);
+	return;
+}
 
-Thanks,
-Gavin
-
-> static int pnv_ioda2_tce_build(struct iommu_table *tbl, long index,
-> 		long npages, unsigned long uaddr,
-> 		enum dma_data_direction direction,
->-- 
->2.4.0.rc3.8.gfb3e7d5
 >
+> Thanks,
+> Gavin
+>
+
+
+-- 
+Alexey
