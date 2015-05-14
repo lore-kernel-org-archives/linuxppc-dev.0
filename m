@@ -1,15 +1,15 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A9F591A0017
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2015 17:29:20 +1000 (AEST)
-Message-ID: <1431588544.4160.43.camel@kernel.crashing.org>
+Return-Path: <panto@antoniou-consulting.com>
+Received: from li42-95.members.linode.com (li42-95.members.linode.com
+ [209.123.162.95])
+ by lists.ozlabs.org (Postfix) with ESMTP id BFC501A03A4
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2015 17:34:32 +1000 (AEST)
 Subject: Re: [PATCH v4 19/21] drivers/of: Support adding sub-tree
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Pantelis Antoniou <panto@antoniou-consulting.com>
-Date: Thu, 14 May 2015 17:29:04 +1000
+Mime-Version: 1.0 (Mac OS X Mail 8.2 \(2098\))
+Content-Type: text/plain; charset=utf-8
+From: Pantelis Antoniou <panto@antoniou-consulting.com>
 In-Reply-To: <1431588358.4160.42.camel@kernel.crashing.org>
+Date: Thu, 14 May 2015 10:34:26 +0300
+Message-Id: <D7FC0542-DD1A-428F-8E75-81620C6D83DC@antoniou-consulting.com>
 References: <1430460188-31343-1-git-send-email-gwshan@linux.vnet.ibm.com>
  <1430460188-31343-20-git-send-email-gwshan@linux.vnet.ibm.com>
  <CAL_JsqKEUevxSe0Q=pGdsWOiT+TW9iAnCsAWuuqOYj3ZPOG7dg@mail.gmail.com>
@@ -27,8 +27,7 @@ References: <1430460188-31343-1-git-send-email-gwshan@linux.vnet.ibm.com>
  <1431587657.4160.37.camel@kernel.crashing.org>
  <75F026CA-5AC1-4106-B2F0-AB0D006DEF5A@antoniou-consulting.com>
  <1431588358.4160.42.camel@kernel.crashing.org>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
  "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
  Gavin Shan <gwshan@linux.vnet.ibm.com>, Grant Likely <grant.likely@linaro.org>,
@@ -43,14 +42,116 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Hi Ben,
 
+> On May 14, 2015, at 10:25 , Benjamin Herrenschmidt =
+<benh@kernel.crashing.org> wrote:
+>=20
+> On Thu, 2015-05-14 at 10:19 +0300, Pantelis Antoniou wrote:
+>=20
+>>=20
+>> You don=E2=80=99t want to know how sausages are made, but they are =
+delicious :)
+>=20
+> ... most of the time :)
+>=20
+>>> But yeah generating the overlay doesn't necessarily scare me, I can
+>>> generate a temp tree that is the overlay in which I "copy" the =
+subtree
+>>> (or in my internal ptr-based representation I could have a concept =
+of
+>>> alias which I follow while flattening).
+>>>=20
+>>> That leaves me with these problems:
+>>>=20
+>>> - No support for removing of nodes, so that needs to be added back =
+to
+>>> the format and to Linux unless I continue removing by hand in the =
+PCI
+>>> hotplug code itself
+>>>=20
+>>=20
+>> What kind of nodes/properties you need to remove at _application_ =
+time?
+>=20
+> Well, if we stick to removing by hand in Linux for the unplug case, =
+then
+> none.
+>=20
+
+OK
+
+>> What you describe is inserting a bunch of properties and nodes under
+>> a slot=E2=80=99s device node. Reverting the overlay removes them all =
+just fine.
+>=20
+> Except that still doesn't work for boot time :-)
+>=20
 > So I would have to do a special case on unplug:
-> 
+>=20
 > 	if (slot->dt_is_overlay) /* set to false at boot */
 > 		remove_subtree_myself();
 > 	else
 > 		undo_overlay(slot->overlay);
+>=20
 
-Of course I just inverted the polarity of the if () in the example :-)
+OK, in that case you do require removal. But in any case it=E2=80=99s =
+the =E2=80=98negative=E2=80=99
+of an already applied one, either at boot time or not.
 
-But you get the idea...
+Modifying the overlay code to apply a =E2=80=98negative=E2=80=99 =
+property should do the trick.
+
+Is that correct?
+
+>>> - No support for "committing" the overlay which needs to be added as
+>>> well.
+>>>=20
+>>=20
+>> That=E2=80=99s the easiest part.
+>=20
+> Yeah, I will need to get my head around the code a bit more but it
+> doesn't seem too scary.
+>=20
+>> I see. Well, how about this?
+>>=20
+>> Who said you have to do the whole blob dance in the firmware?
+>>=20
+>> You can just as easily pass the blob as it is to the linux kernel and
+>> the kernel there can convert it to an overlay and apply it.
+>=20
+> That's not that pretty but we can do that too which solve the problem =
+of
+> fixing the FW interface.
+>=20
+> There is however an argument to be made in having the FW be able to
+> generate arbitrary overlays. If we ever want to pass more "property"
+> updates or node updates to Linux at runtime.
+>=20
+> A few cases have crept up on the radar, like updating the pstate =
+tables
+> or VPD informations ...
+>=20
+> If we go down that path, then I would implement a concept of =
+generation
+> count in the firmware, so I can generate an overlay that include all =
+the
+> changes since the last "generation" given to Linux.
+>=20
+
+I will probably need that generation count myself for my PCI use case.
+
+> However that requires supporting removal of nodes/properties. So I'm
+> tempted to keep that feature on the back burner and go with an ad-hoc
+> interface for PCI for now.
+>=20
+
+I see. Bonne chance :)
+
+> Ben.
+>=20
+>=20
+
+Regards
+
+=E2=80=94 Pantelis
