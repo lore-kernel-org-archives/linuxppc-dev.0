@@ -1,28 +1,20 @@
-Return-Path: <mhocko@suse.cz>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- (using TLSv1 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B8AD41A03A4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2015 18:08:17 +1000 (AEST)
-Date: Thu, 14 May 2015 10:08:12 +0200
-From: Michal Hocko <mhocko@suse.cz>
-To: Eric B Munson <emunson@akamai.com>
-Subject: Re: [PATCH 0/3] Allow user to request memory to be locked on page
- fault
-Message-ID: <20150514080812.GC6433@dhcp22.suse.cz>
-References: <1431113626-19153-1-git-send-email-emunson@akamai.com>
- <20150508124203.6679b1d35ad9555425003929@linux-foundation.org>
- <20150511180631.GA1227@akamai.com>
- <20150513150036.GG1227@akamai.com>
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ by lists.ozlabs.org (Postfix) with ESMTP id 62AC81A0017
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2015 18:50:13 +1000 (AEST)
+Message-ID: <555461BF.5020105@c-s.fr>
+Date: Thu, 14 May 2015 10:50:07 +0200
+From: christophe leroy <christophe.leroy@c-s.fr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150513150036.GG1227@akamai.com>
-Cc: linux-arch@vger.kernel.org, linux-mips@linux-mips.org,
- linux-parisc@vger.kernel.org, linux-xtensa@linux-xtensa.org,
- linux-api@vger.kernel.org, linux-kernel@vger.kernel.org,
- Shuah Khan <shuahkh@osg.samsung.com>, linux-mm@kvack.org,
- linux-alpha@vger.kernel.org, sparclinux@vger.kernel.org,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 3/4] powerpc32: memset(0): use cacheable_memzero
+References: <cover.1431436210.git.christophe.leroy@c-s.fr>	
+ <9010ef9da0b2730af564a138b8d316d48eaf6d43.1431436210.git.christophe.leroy@c-s.fr>
+ <1431564909.3868.162.camel@freescale.com>
+In-Reply-To: <1431564909.3868.162.camel@freescale.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Cc: Kyle Moffett <kyle@moffetthome.net>, linux-kernel@vger.kernel.org,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,62 +24,88 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed 13-05-15 11:00:36, Eric B Munson wrote:
-> On Mon, 11 May 2015, Eric B Munson wrote:
-> 
-> > On Fri, 08 May 2015, Andrew Morton wrote:
-> > 
-> > > On Fri,  8 May 2015 15:33:43 -0400 Eric B Munson <emunson@akamai.com> wrote:
-> > > 
-> > > > mlock() allows a user to control page out of program memory, but this
-> > > > comes at the cost of faulting in the entire mapping when it is
-> > > > allocated.  For large mappings where the entire area is not necessary
-> > > > this is not ideal.
-> > > > 
-> > > > This series introduces new flags for mmap() and mlockall() that allow a
-> > > > user to specify that the covered are should not be paged out, but only
-> > > > after the memory has been used the first time.
-> > > 
-> > > Please tell us much much more about the value of these changes: the use
-> > > cases, the behavioural improvements and performance results which the
-> > > patchset brings to those use cases, etc.
-> > > 
-> > 
-> > To illustrate the proposed use case I wrote a quick program that mmaps
-> > a 5GB file which is filled with random data and accesses 150,000 pages
-> > from that mapping.  Setup and processing were timed separately to
-> > illustrate the differences between the three tested approaches.  the
-> > setup portion is simply the call to mmap, the processing is the
-> > accessing of the various locations in  that mapping.  The following
-> > values are in milliseconds and are the averages of 20 runs each with a
-> > call to echo 3 > /proc/sys/vm/drop_caches between each run.
-> > 
-> > The first mapping was made with MAP_PRIVATE | MAP_LOCKED as a baseline:
-> > Startup average:    9476.506
-> > Processing average: 3.573
-> > 
-> > The second mapping was simply MAP_PRIVATE but each page was passed to
-> > mlock() before being read:
-> > Startup average:    0.051
-> > Processing average: 721.859
-> > 
-> > The final mapping was MAP_PRIVATE | MAP_LOCKONFAULT:
-> > Startup average:    0.084
-> > Processing average: 42.125
-> > 
-> 
-> Michal's suggestion of changing protections and locking in a signal
-> handler was better than the locking as needed, but still significantly
-> more work required than the LOCKONFAULT case.
-> 
-> Startup average:    0.047
-> Processing average: 86.431
 
-Have you played with batching? Has it helped? Anyway it is to be
-expected that the overhead will be higher than a single mmap call. The
-question is whether you can live with it because adding a new semantic
-to mlock sounds trickier and MAP_LOCKED is tricky enough already...
 
--- 
-Michal Hocko
-SUSE Labs
+Le 14/05/2015 02:55, Scott Wood a écrit :
+> On Tue, 2015-05-12 at 15:32 +0200, Christophe Leroy wrote:
+>> cacheable_memzero uses dcbz instruction and is more efficient than
+>> memset(0) when the destination is in RAM
+>>
+>> This patch renames memset as generic_memset, and defines memset
+>> as a prolog to cacheable_memzero. This prolog checks if the byte
+>> to set is 0 and if the buffer is in RAM. If not, it falls back to
+>> generic_memcpy()
+>>
+>> Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+>> ---
+>>   arch/powerpc/lib/copy_32.S | 15 ++++++++++++++-
+>>   1 file changed, 14 insertions(+), 1 deletion(-)
+>>
+>> diff --git a/arch/powerpc/lib/copy_32.S b/arch/powerpc/lib/copy_32.S
+>> index cbca76c..d8a9a86 100644
+>> --- a/arch/powerpc/lib/copy_32.S
+>> +++ b/arch/powerpc/lib/copy_32.S
+>> @@ -12,6 +12,7 @@
+>>   #include <asm/cache.h>
+>>   #include <asm/errno.h>
+>>   #include <asm/ppc_asm.h>
+>> +#include <asm/page.h>
+>>   
+>>   #define COPY_16_BYTES		\
+>>   	lwz	r7,4(r4);	\
+>> @@ -74,6 +75,18 @@ CACHELINE_MASK = (L1_CACHE_BYTES-1)
+>>    * to set them to zero.  This requires that the destination
+>>    * area is cacheable.  -- paulus
+>>    */
+>> +_GLOBAL(memset)
+>> +	cmplwi	r4,0
+>> +	bne-	generic_memset
+>> +	cmplwi	r5,L1_CACHE_BYTES
+>> +	blt-	generic_memset
+>> +	lis	r8,max_pfn@ha
+>> +	lwz	r8,max_pfn@l(r8)
+>> +	tophys	(r9,r3)
+>> +	srwi	r9,r9,PAGE_SHIFT
+>> +	cmplw	r9,r8
+>> +	bge-	generic_memset
+>> +	mr	r4,r5
+> max_pfn includes highmem, and tophys only works on normal kernel
+> addresses.
+Is there any other simple way to determine whether an address is in RAM 
+or not ?
+
+I did that because of the below function from mm/mem.c
+
+|int  page_is_ram(unsigned long  pfn)
+{
+#ifndef CONFIG_PPC64	/* XXX for now */
+	return  pfn<  max_pfn;
+#else
+	unsigned long  paddr= (pfn<<  PAGE_SHIFT);
+	struct  memblock_region*reg;
+
+	for_each_memblock(memory,  reg)
+		if  (paddr>=  reg->base&&  paddr< (reg->base+  reg->size))
+			return  1;
+	return  0;
+#endif
+}
+|
+
+
+
+>
+> If we were to point memset_io, memcpy_toio, etc. at noncacheable
+> versions, are there any other callers left that can reasonably point at
+> uncacheable memory?
+Do you mean we could just consider that memcpy() and memset() are called 
+only with destination on RAM and thus we could avoid the check ?
+copy_tofrom_user() already does this assumption (allthought a user app 
+could possibly provide a buffer located in an ALSA mapped IO area)
+
+Christophe
+
+
+---
+L'absence de virus dans ce courrier électronique a été vérifiée par le logiciel antivirus Avast.
+http://www.avast.com
