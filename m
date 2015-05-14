@@ -1,28 +1,34 @@
-Return-Path: <aik@ozlabs.ru>
-Received: from mail-pd0-f180.google.com (mail-pd0-f180.google.com
- [209.85.192.180])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <panto@antoniou-consulting.com>
+Received: from li42-95.members.linode.com (li42-95.members.linode.com
+ [209.123.162.95])
+ (using TLSv1 with cipher ADH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AD43E1A0017
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2015 16:09:09 +1000 (AEST)
-Received: by pdbqa5 with SMTP id qa5so75046949pdb.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 May 2015 23:09:07 -0700 (PDT)
-Message-ID: <55543BFA.9030606@ozlabs.ru>
-Date: Thu, 14 May 2015 16:08:58 +1000
-From: Alexey Kardashevskiy <aik@ozlabs.ru>
-MIME-Version: 1.0
-To: Alex Williamson <alex.williamson@redhat.com>
-Subject: Re: [PATCH kernel v10 33/34] vfio: powerpc/spapr: Register memory
- and define IOMMU v2
-References: <1431358763-24371-1-git-send-email-aik@ozlabs.ru>	
- <1431358763-24371-34-git-send-email-aik@ozlabs.ru>
- <1431552637.3625.78.camel@redhat.com>
-In-Reply-To: <1431552637.3625.78.camel@redhat.com>
-Content-Type: text/plain; charset=koi8-r; format=flowed
-Cc: Wei Yang <weiyang@linux.vnet.ibm.com>,
- Gavin Shan <gwshan@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
- Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
- David Gibson <david@gibson.dropbear.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 87CBE1A0017
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2015 16:23:47 +1000 (AEST)
+Subject: Re: [PATCH v4 19/21] drivers/of: Support adding sub-tree
+Mime-Version: 1.0 (Mac OS X Mail 8.2 \(2098\))
+Content-Type: text/plain; charset=utf-8
+From: Pantelis Antoniou <panto@antoniou-consulting.com>
+In-Reply-To: <1431564871.4160.8.camel@kernel.crashing.org>
+Date: Thu, 14 May 2015 09:23:39 +0300
+Message-Id: <53EAE361-0015-4702-97C6-9F67B87963C2@antoniou-consulting.com>
+References: <1430460188-31343-1-git-send-email-gwshan@linux.vnet.ibm.com>
+ <1430460188-31343-20-git-send-email-gwshan@linux.vnet.ibm.com>
+ <CAL_JsqKEUevxSe0Q=pGdsWOiT+TW9iAnCsAWuuqOYj3ZPOG7dg@mail.gmail.com>
+ <1430493730.7979.58.camel@kernel.crashing.org>
+ <CAL_JsqLrBSB4y_0j+i=kXbDA08HO23JuYjJGHR9nhsPnMC_Zyg@mail.gmail.com>
+ <1430521038.7979.70.camel@kernel.crashing.org>
+ <A6DF99C6-7059-4670-86D0-6926861F0164@antoniou-consulting.com>
+ <1430774063.7979.139.camel@kernel.crashing.org>
+ <1431560124.20218.91.camel@kernel.crashing.org>
+ <CAL_JsqKqTa5eg3eOqx3bkeNdO_920WwDiRbQaxwWLEWpCypFmA@mail.gmail.com>
+ <1431564871.4160.8.camel@kernel.crashing.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>, Grant Likely <grant.likely@linaro.org>,
+ Rob Herring <robherring2@gmail.com>, Bjorn Helgaas <bhelgaas@google.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,298 +38,151 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/14/2015 07:30 AM, Alex Williamson wrote:
-> On Tue, 2015-05-12 at 01:39 +1000, Alexey Kardashevskiy wrote:
->> The existing implementation accounts the whole DMA window in
->> the locked_vm counter. This is going to be worse with multiple
->> containers and huge DMA windows. Also, real-time accounting would requite
->> additional tracking of accounted pages due to the page size difference -
->> IOMMU uses 4K pages and system uses 4K or 64K pages.
->>
->> Another issue is that actual pages pinning/unpinning happens on every
->> DMA map/unmap request. This does not affect the performance much now as
->> we spend way too much time now on switching context between
->> guest/userspace/host but this will start to matter when we add in-kernel
->> DMA map/unmap acceleration.
->>
->> This introduces a new IOMMU type for SPAPR - VFIO_SPAPR_TCE_v2_IOMMU.
->> New IOMMU deprecates VFIO_IOMMU_ENABLE/VFIO_IOMMU_DISABLE and introduces
->> 2 new ioctls to register/unregister DMA memory -
->> VFIO_IOMMU_SPAPR_REGISTER_MEMORY and VFIO_IOMMU_SPAPR_UNREGISTER_MEMORY -
->> which receive user space address and size of a memory region which
->> needs to be pinned/unpinned and counted in locked_vm.
->> New IOMMU splits physical pages pinning and TCE table update
->> into 2 different operations. It requires:
->> 1) guest pages to be registered first
->> 2) consequent map/unmap requests to work only with pre-registered memory.
->> For the default single window case this means that the entire guest
->> (instead of 2GB) needs to be pinned before using VFIO.
->> When a huge DMA window is added, no additional pinning will be
->> required, otherwise it would be guest RAM + 2GB.
->>
->> The new memory registration ioctls are not supported by
->> VFIO_SPAPR_TCE_IOMMU. Dynamic DMA window and in-kernel acceleration
->> will require memory to be preregistered in order to work.
->>
->> The accounting is done per the user process.
->>
->> This advertises v2 SPAPR TCE IOMMU and restricts what the userspace
->> can do with v1 or v2 IOMMUs.
->>
->> In order to support memory pre-registration, we need a way to track
->> the use of every registered memory region and only allow unregistration
->> if a region is not in use anymore. So we need a way to tell from what
->> region the just cleared TCE was from.
->>
->> This adds a userspace view of the TCE table into iommu_table struct.
->> It contains userspace address, one per TCE entry. The table is only
->> allocated when the ownership over an IOMMU group is taken which means
->> it is only used from outside of the powernv code (such as VFIO).
->>
->> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
->> [aw: for the vfio related changes]
->> Acked-by: Alex Williamson <alex.williamson@redhat.com>
->> ---
->>
->> Alex, should I remove your "acked-by" in the cases like this and
->> get another one?
->
->
-> Generally if it's more than a trivial change, you'll want fresh acks.
->
->> ---
->> Changes:
->> v10:
->> * moved it_userspace allocation to vfio_iommu_spapr_tce as it VFIO
->> specific thing
->> * squashed "powerpc/iommu: Add userspace view of TCE table" into this as
->> it is
->> a part of IOMMU v2
->> * s/tce_iommu_use_page_v2/tce_iommu_prereg_ua_to_hpa/
->> * fixed some function names to have "tce_iommu_" in the beginning rather
->> just "tce_"
->> * as mm_iommu_mapped_inc() can now fail, check for the return code
->>
->> v9:
->> * s/tce_get_hva_cached/tce_iommu_use_page_v2/
->>
->> v7:
->> * now memory is registered per mm (i.e. process)
->> * moved memory registration code to powerpc/mmu
->> * merged "vfio: powerpc/spapr: Define v2 IOMMU" into this
->> * limited new ioctls to v2 IOMMU
->> * updated doc
->> * unsupported ioclts return -ENOTTY instead of -EPERM
->>
->> v6:
->> * tce_get_hva_cached() returns hva via a pointer
->>
->> v4:
->> * updated docs
->> * s/kzmalloc/vzalloc/
->> * in tce_pin_pages()/tce_unpin_pages() removed @vaddr, @size and
->> replaced offset with index
->> * renamed vfio_iommu_type_register_memory to vfio_iommu_spapr_register_memory
->> and removed duplicating vfio_iommu_spapr_register_memory
->> ---
->>   Documentation/vfio.txt              |  31 ++-
->>   arch/powerpc/include/asm/iommu.h    |   6 +
->>   drivers/vfio/vfio_iommu_spapr_tce.c | 516 ++++++++++++++++++++++++++++++------
->>   include/uapi/linux/vfio.h           |  27 ++
->>   4 files changed, 494 insertions(+), 86 deletions(-)
->>
->> diff --git a/Documentation/vfio.txt b/Documentation/vfio.txt
->> index 96978ec..7dcf2b5 100644
->> --- a/Documentation/vfio.txt
->> +++ b/Documentation/vfio.txt
->> @@ -289,10 +289,12 @@ PPC64 sPAPR implementation note
->>
->>   This implementation has some specifics:
->>
->> -1) Only one IOMMU group per container is supported as an IOMMU group
->> -represents the minimal entity which isolation can be guaranteed for and
->> -groups are allocated statically, one per a Partitionable Endpoint (PE)
->> +1) On older systems (POWER7 with P5IOC2/IODA1) only one IOMMU group per
->> +container is supported as an IOMMU table is allocated at the boot time,
->> +one table per a IOMMU group which is a Partitionable Endpoint (PE)
->>   (PE is often a PCI domain but not always).
->> +Newer systems (POWER8 with IODA2) have improved hardware design which allows
->> +to remove this limitation and have multiple IOMMU groups per a VFIO container.
->>
->>   2) The hardware supports so called DMA windows - the PCI address range
->>   within which DMA transfer is allowed, any attempt to access address space
->> @@ -427,6 +429,29 @@ The code flow from the example above should be slightly changed:
->>
->>   	....
->>
->> +5) There is v2 of SPAPR TCE IOMMU. It deprecates VFIO_IOMMU_ENABLE/
->> +VFIO_IOMMU_DISABLE and implements 2 new ioctls:
->> +VFIO_IOMMU_SPAPR_REGISTER_MEMORY and VFIO_IOMMU_SPAPR_UNREGISTER_MEMORY
->> +(which are unsupported in v1 IOMMU).
->> +
->> +PPC64 paravirtualized guests generate a lot of map/unmap requests,
->> +and the handling of those includes pinning/unpinning pages and updating
->> +mm::locked_vm counter to make sure we do not exceed the rlimit.
->> +The v2 IOMMU splits accounting and pinning into separate operations:
->> +
->> +- VFIO_IOMMU_SPAPR_REGISTER_MEMORY/VFIO_IOMMU_SPAPR_UNREGISTER_MEMORY ioctls
->> +receive a user space address and size of the block to be pinned.
->> +Bisecting is not supported and VFIO_IOMMU_UNREGISTER_MEMORY is expected to
->> +be called with the exact address and size used for registering
->> +the memory block. The userspace is not expected to call these often.
->> +The ranges are stored in a linked list in a VFIO container.
->> +
->> +- VFIO_IOMMU_MAP_DMA/VFIO_IOMMU_UNMAP_DMA ioctls only update the actual
->> +IOMMU table and do not do pinning; instead these check that the userspace
->> +address is from pre-registered range.
->> +
->> +This separation helps in optimizing DMA for guests.
->> +
->>   -------------------------------------------------------------------------------
->>
->>   [1] VFIO was originally an acronym for "Virtual Function I/O" in its
->> diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
->> index c8bad21..763c041 100644
->> --- a/arch/powerpc/include/asm/iommu.h
->> +++ b/arch/powerpc/include/asm/iommu.h
->> @@ -113,10 +113,16 @@ struct iommu_table {
->>   	unsigned long  it_page_shift;/* table iommu page size */
->>   #ifdef CONFIG_IOMMU_API
->>   	struct list_head it_group_list;/* List of iommu_table_group_link */
->> +	unsigned long *it_userspace; /* userspace view of the table */
->>   #endif
->>   	struct iommu_table_ops *it_ops;
->>   };
->>
->> +#define IOMMU_TABLE_USERSPACE_ENTRY(tbl, entry) \
->> +		((tbl)->it_userspace ? \
->> +			&((tbl)->it_userspace[(entry) - (tbl)->it_offset]) : \
->> +			NULL)
->> +
->>   /* Pure 2^n version of get_order */
->>   static inline __attribute_const__
->>   int get_iommu_order(unsigned long size, struct iommu_table *tbl)
->> diff --git a/drivers/vfio/vfio_iommu_spapr_tce.c b/drivers/vfio/vfio_iommu_spapr_tce.c
->> index 8943b29..e7e8db3 100644
->> --- a/drivers/vfio/vfio_iommu_spapr_tce.c
->> +++ b/drivers/vfio/vfio_iommu_spapr_tce.c
->> @@ -19,8 +19,10 @@
->>   #include <linux/uaccess.h>
->>   #include <linux/err.h>
->>   #include <linux/vfio.h>
->> +#include <linux/vmalloc.h>
->>   #include <asm/iommu.h>
->>   #include <asm/tce.h>
->> +#include <asm/mmu_context.h>
->>
->>   #define DRIVER_VERSION  "0.1"
->>   #define DRIVER_AUTHOR   "aik@ozlabs.ru"
->> @@ -81,6 +83,11 @@ static void decrement_locked_vm(long npages)
->>    * into DMA'ble space using the IOMMU
->>    */
->>
->> +struct tce_iommu_group {
->> +	struct list_head next;
->> +	struct iommu_group *grp;
->> +};
->> +
->>   /*
->>    * The container descriptor supports only a single group per container.
->>    * Required by the API as the container is not supplied with the IOMMU group
->> @@ -88,11 +95,98 @@ static void decrement_locked_vm(long npages)
->>    */
->>   struct tce_container {
->>   	struct mutex lock;
->> -	struct iommu_group *grp;
->>   	bool enabled;
->>   	unsigned long locked_pages;
->> +	bool v2;
->> +	struct iommu_table *tables[IOMMU_TABLE_GROUP_MAX_TABLES];
->> +	struct list_head group_list;
->
-> You're wasting space by not packing your bools next to each other.
+Hi Ben,
 
-I'll fix it :)
+Sorry for taking this long to respond, but I am working on the same =
+problem right
+now. I thought I might have something to show, but not yet :)
+
+My PCI overlay case is different. In my case there is no firmware and =
+there
+is the blob is provided as an overlay.
+
+The idea is that for a given PCI bus, when a PCI device with a matching
+device id, vendor id is probed a matching overlay should be applied.
+
+The trickiness lies in the way that the way that the target is different
+each time and how to handle generational issues (i.e. what happens if =
+the pci device
+is removed before the application of the overlay occurs, what happens =
+when multiple
+applications should happen in parallel, etc.)
 
 
->>   };
->>
->> +static long tce_iommu_unregister_pages(struct tce_container *container,
->> +		__u64 vaddr, __u64 size)
->> +{
->> +	long ret;
->> +	struct mm_iommu_table_group_mem_t *mem;
->> +
->> +	if ((vaddr & ~PAGE_MASK) || (size & ~PAGE_MASK))
->> +		return -EINVAL;
->> +
->> +	mem = mm_iommu_get(vaddr, size >> PAGE_SHIFT);
->> +	if (!mem)
->> +		return -EINVAL;
->> +
->> +	ret = mm_iommu_put(mem); /* undo kref_get() from mm_iommu_get() */
->> +	if (!ret)
->> +		ret = mm_iommu_put(mem);
->
-> Should \put\ really be able to fail?
+> On May 14, 2015, at 03:54 , Benjamin Herrenschmidt =
+<benh@kernel.crashing.org> wrote:
+>=20
+> On Wed, 2015-05-13 at 19:18 -0500, Rob Herring wrote:
+>=20
+>> I haven't decided really.
+>>=20
+>> The main thing with the current patch is I don't really like the =
+added
+>> complexity to unflatten_dt_node. It is already a fairly complex
+>> function. Perhaps removing of "hybrid" as discussed will help?
+>=20
+> I agree, we should be able to make that much simpler, I was planning =
+on
+> sorting that out with Gavin.
+>=20
 
-tce_iommu_unregister_pages() is called from ioctl so yes, the userspace 
-deserves to know that the memory will remain pinned.
+I think using overlays should cover your case without any issues.
+I don=E2=80=99t like messing with the unflatten method TBH.
 
-> I think you really need to examine
-> your reference model, mm_iommu_put() looks pretty suspicious.  If
-> there's an implicit reference by being mapped, it should be handled that
-> way, not via an atomic that gets decremented then corrected.
+>> If there are things we can do to make overlays easier to use in your
+>> use case, I'd like to hear ideas. I don't really buy that being more
+>> complex than needed is an obstacle. That is very often the case to
+>> have common, scale-able solutions. I want to see a simple case be
+>> simple to support.
+>=20
+> Well, it's a LOT more complex from the FW perspective for a bunch of
+> features we don't really need, in a way because the DT update in our
+> case is just purely informational to avoid keeping wrong/outdated DT
+> bits, it has little functional impact (it might have a bit for =
+interrupt
+> routing through bridges though).
+>=20
+> However, I am also pursuing an approach on FW side using a generation
+> count in our nodes and properties which we could use to generate
+> arbitrary overlays if we know what generation linux has.
+>=20
+> There might actual be a usage scenario for a generic way for our
+> firwmare to convey DT updates to Linux for other reasons.
+>=20
+> A few things that I don't find in the overlay code (but maybe I =
+haven't
+> looked at it hard enough):
+>=20
+> - Can it remove nodes/properties ?
+>=20
 
-One implicit reference (*) in @mapped (from atomic_set(&mem->mapped, 1)) is 
-only to protect against the race between checking for active mappings and 
-putting the reference a registered memory descriptor.
+Yes.
 
-If tce_iommu_unregister_pages() is called when @mapped > 1, then EBUSY is 
-returned.
+> - Can it "commit" a changeset so it's permanently part of the main DT =
+?
+> We will never have a concept of "revertable" changesets, if we need a
+> subsequent update, we will get a new overlay from FW that will remove
+> what needs to be removed and add what needs to be added.
+>=20
 
-If tce_iommu_unregister_pages() is called when @mapped == 1 or 0, then 
-there is no active mapping, @mapped becomes zero (if it is not already) and 
-we can safely put the descriptor. All consequent mm_iommu_mapped_inc() 
-calls will fail to increment @mapped and return error.
+The overlay when applied is a part of the kernel DT tree.
+It is trivial to add a mechanism that simply commits everything and
+tosses away the revert information.
 
-After looking there more, there are 2 bugs though:
+Note that in that case you have to make provisions for the unflatten
+blob to not be freed or for the device tree nodes/properties to be
+dynamically allocated.
 
---- a/arch/powerpc/mm/mmu_context_hash64_iommu.c
-+++ b/arch/powerpc/mm/mmu_context_hash64_iommu.c
-@@ -178,9 +178,9 @@ EXPORT_SYMBOL_GPL(mm_iommu_get);
+> IE, our current mechanism without overlay is fairly simple:
+>=20
+>  - On PCI unplug, we remove all nodes below the slot (from linux),
+> the FW does the equivalent internally.
+>=20
 
-  long mm_iommu_put(struct mm_iommu_table_group_mem_t *mem)
-  {
--       if (1 != atomic_dec_if_positive(&mem->mapped)) {
-+       if (atomic_dec_if_positive(&mem->mapped) > 1) {
-                 /* There are mappings, exit */
--               atomic_inc(&mem->mapped);
-+               atomic_inc_not_zero(&mem->mapped);
-                 return -EBUSY;
-         }
+If you use an overlay, you just revert it and everything would
+be as it was before, without anything hanging below the slot node.
 
-s/1!=/1</ is to allow putting second/third/... reference of mem->kref and 
-atomic_inc_not_zero() is to not elevate the counter if another thread 
-managed to release the very last mapping and  decrement my implicit 
-reference (*).
+Note that the =E2=80=98remove all nodes below the slot=E2=80=99 does not =
+work for my case.
 
-Am I still missing something here?
+That is because there are devices being instantiated under the slot
+(i2c busses, i2c devices, FPGAs etc) that need to be removed from the
+system.
 
-> That's not only not atomic, but causes lots of fallout with references that don't
-> get released.
-> Notice how you don't even check the return value at the
-> call location of this function?
+>  - On PCI re-plug, the FW internally builds new nodes and sends a
+> new subtree as an FDT that we can expand/attach.
+>=20
 
-Ouch. This is a bug. @ret needs to be returned to the userspace.
+You can easily send a DT blob containing an overlay from firmware.
 
-> How many references does that
-> potentially leave and where do the get resolved?
+It can be even easy, since you might not have to recreate the full blob
+each time, but instead using flat device tree methods to populate the
+few properties that change each time.
 
-Every successful "register" should be coupled with successful "unregister" 
-(if it failed - just repeat). If this did not happen, memory remains pinned 
-till the process exit, and then it is unpinned unconditionally.
+> Now we could consider that subtree as a changeset that can be undone,
+> but that wouldn't work for boot time. And subsequent updates wouldn't
+> have that concept of "undoing" anyway.
+>=20
 
+I have posted another patch that does boot-time DT quirk which are
+non-revertable.
 
--- 
-Alexey
+https://lkml.org/lkml/2015/2/18/258
+
+> IE. conceptually, what overlays do today is quite rooted around the =
+idea
+> of having a fixed "base" DT and some pre-compiled DTB overlays that
+> get added/removed. The design completely ignore the idea of a FW that
+> maintains a "live" tree which we want to keep in sync, which is what =
+we
+> want to do here, or what we could do with a "live" open firmware
+> implementation.
+>=20
+> Now we might be able to reconcile them, but it feels to me that the
+> overlay/changeset stuff is too rooted in the first concept=E2=80=A6
+>=20
+
+The first DT overlays use case (beaglebone capes) is what got the =
+concept
+started.
+
+Right now is a generic mechanism to apply modifications to the kernel
+live tree, with the possibility to revert them.
+
+> Ben.
+>=20
+>=20
+
+Regards
+
+=E2=80=94 Pantelis
