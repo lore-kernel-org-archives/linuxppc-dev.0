@@ -1,19 +1,22 @@
 Return-Path: <yangbo.lu@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0119.outbound.protection.outlook.com [207.46.100.119])
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1on0130.outbound.protection.outlook.com [157.56.110.130])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4E1D21A03A4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2015 16:44:20 +1000 (AEST)
-From: Yangbo Lu <yangbo.lu@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
- <scottwood@freescale.com>
-Subject: [PATCH v2, 1/2] powerpc/dts: add eSDHC compatible list
-Date: Thu, 14 May 2015 14:40:30 +0800
-Message-ID: <1431585630-35078-1-git-send-email-yangbo.lu@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 187FB1A0410
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 May 2015 16:44:30 +1000 (AEST)
+From: Lu Y.B. <yangbo.lu@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: RE: [PATCH 2/2] mmc: sdhci-pltfm: enable interrupt mode to detect card
+Date: Thu, 14 May 2015 06:29:25 +0000
+Message-ID: <BY1PR0301MB1192B4134746A153763312A9F2D80@BY1PR0301MB1192.namprd03.prod.outlook.com>
+References: <1431505246-40102-1-git-send-email-yangbo.lu@freescale.com>
+ <1431535027.3868.44.camel@freescale.com>
+In-Reply-To: <1431535027.3868.44.camel@freescale.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: Yangbo Lu <yangbo.lu@freescale.com>
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,76 +26,37 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add eSDHC compatible list for P2041/P3041/P4080/P5020/P5040.
-
-Signed-off-by: Yangbo Lu <yangbo.lu@freescale.com>
----
- arch/powerpc/boot/dts/fsl/p2041si-post.dtsi | 1 +
- arch/powerpc/boot/dts/fsl/p3041si-post.dtsi | 1 +
- arch/powerpc/boot/dts/fsl/p4080si-post.dtsi | 1 +
- arch/powerpc/boot/dts/fsl/p5020si-post.dtsi | 1 +
- arch/powerpc/boot/dts/fsl/p5040si-post.dtsi | 1 +
- 5 files changed, 5 insertions(+)
-
-diff --git a/arch/powerpc/boot/dts/fsl/p2041si-post.dtsi b/arch/powerpc/boot/dts/fsl/p2041si-post.dtsi
-index efd74db..67ea0e9 100644
---- a/arch/powerpc/boot/dts/fsl/p2041si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/p2041si-post.dtsi
-@@ -363,6 +363,7 @@
- 
- /include/ "qoriq-esdhc-0.dtsi"
- 	sdhc@114000 {
-+		compatible = "fsl,p2041-esdhc", "fsl,esdhc";
- 		fsl,iommu-parent = <&pamu1>;
- 		fsl,liodn-reg = <&guts 0x530>; /* eSDHCLIODNR */
- 		sdhci,auto-cmd12;
-diff --git a/arch/powerpc/boot/dts/fsl/p3041si-post.dtsi b/arch/powerpc/boot/dts/fsl/p3041si-post.dtsi
-index d7425ef..b6d92c5 100644
---- a/arch/powerpc/boot/dts/fsl/p3041si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/p3041si-post.dtsi
-@@ -390,6 +390,7 @@
- 
- /include/ "qoriq-esdhc-0.dtsi"
- 	sdhc@114000 {
-+		compatible = "fsl,p3041-esdhc", "fsl,esdhc";
- 		fsl,iommu-parent = <&pamu1>;
- 		fsl,liodn-reg = <&guts 0x530>; /* eSDHCLIODNR */
- 		sdhci,auto-cmd12;
-diff --git a/arch/powerpc/boot/dts/fsl/p4080si-post.dtsi b/arch/powerpc/boot/dts/fsl/p4080si-post.dtsi
-index 7005a4a..bf3dad3 100644
---- a/arch/powerpc/boot/dts/fsl/p4080si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/p4080si-post.dtsi
-@@ -462,6 +462,7 @@
- 
- /include/ "qoriq-esdhc-0.dtsi"
- 	sdhc@114000 {
-+		compatible = "fsl,p4080-esdhc", "fsl,esdhc";
- 		fsl,iommu-parent = <&pamu1>;
- 		fsl,liodn-reg = <&guts 0x530>; /* eSDHCLIODNR */
- 		voltage-ranges = <3300 3300>;
-diff --git a/arch/powerpc/boot/dts/fsl/p5020si-post.dtsi b/arch/powerpc/boot/dts/fsl/p5020si-post.dtsi
-index 5583421..dbc2c8b 100644
---- a/arch/powerpc/boot/dts/fsl/p5020si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/p5020si-post.dtsi
-@@ -377,6 +377,7 @@
- 
- /include/ "qoriq-esdhc-0.dtsi"
- 	sdhc@114000 {
-+		compatible = "fsl,p5020-esdhc", "fsl,esdhc";
- 		fsl,iommu-parent = <&pamu1>;
- 		fsl,liodn-reg = <&guts 0x530>; /* eSDHCLIODNR */
- 		sdhci,auto-cmd12;
-diff --git a/arch/powerpc/boot/dts/fsl/p5040si-post.dtsi b/arch/powerpc/boot/dts/fsl/p5040si-post.dtsi
-index 6e4cd6c..207d02f 100644
---- a/arch/powerpc/boot/dts/fsl/p5040si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/p5040si-post.dtsi
-@@ -355,6 +355,7 @@
- 
- /include/ "qoriq-esdhc-0.dtsi"
- 	sdhc@114000 {
-+		compatible = "fsl,p5040-esdhc", "fsl,esdhc";
- 		fsl,iommu-parent = <&pamu2>;
- 		fsl,liodn-reg = <&guts 0x530>; /* eSDHCLIODNR */
- 		sdhci,auto-cmd12;
--- 
-2.1.0.27.g96db324
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
+MjENCj4gU2VudDogVGh1cnNkYXksIE1heSAxNCwgMjAxNSAxMjozNyBBTQ0KPiBUbzogTHUgWWFu
+Z2JvLUI0NzA5Mw0KPiBDYzogbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IGxpbnV4LWtl
+cm5lbEB2Z2VyLmtlcm5lbC5vcmcNCj4gU3ViamVjdDogUmU6IFtQQVRDSCAyLzJdIG1tYzogc2Ro
+Y2ktcGx0Zm06IGVuYWJsZSBpbnRlcnJ1cHQgbW9kZSB0bw0KPiBkZXRlY3QgY2FyZA0KPiANCj4g
+T24gV2VkLCAyMDE1LTA1LTEzIGF0IDE2OjIwICswODAwLCBZYW5nYm8gTHUgd3JvdGU6DQo+ID4g
+RW5hYmxlIGludGVycnVwdCBtb2RlIHRvIGRldGVjdCBjYXJkIGluc3RlYWQgb2YgcG9sbGluZyBt
+b2RlIGZvcg0KPiA+IFAxMDIwL1A0MDgwL1A1MDIwL1A1MDQwL1QxMDQwIGJ5IHJlbW92aW5nIHRo
+ZSBxdWlyaw0KPiA+IFNESENJX1FVSVJLX0JST0tFTl9DQVJEX0RFVEVDVElPTi4gVGhpcyBjb3Vs
+ZCBpbXByb3ZlIGRhdGENCj4gPiB0cmFuc2ZlcnJpbmcgcGVyZm9ybWFuY2UgYW5kIGF2b2lkIHRo
+ZSBjYWxsIHRyYWNlIGNhdXNlZCBieSBwb2xsaW5nDQo+ID4gY2FyZCBzdGF0dXMgc29tZXRpbWUu
+DQo+ID4NCj4gPiBTaWduZWQtb2ZmLWJ5OiBZYW5nYm8gTHUgPHlhbmdiby5sdUBmcmVlc2NhbGUu
+Y29tPg0KPiA+IC0tLQ0KPiA+ICBkcml2ZXJzL21tYy9ob3N0L3NkaGNpLXBsdGZtLmMgfCA3ICsr
+KysrKysNCj4gPiAgMSBmaWxlIGNoYW5nZWQsIDcgaW5zZXJ0aW9ucygrKQ0KPiA+DQo+ID4gZGlm
+ZiAtLWdpdCBhL2RyaXZlcnMvbW1jL2hvc3Qvc2RoY2ktcGx0Zm0uYw0KPiA+IGIvZHJpdmVycy9t
+bWMvaG9zdC9zZGhjaS1wbHRmbS5jIGluZGV4IGM1YjAxZDYuLjYyZjQwNDkgMTAwNjQ0DQo+ID4g
+LS0tIGEvZHJpdmVycy9tbWMvaG9zdC9zZGhjaS1wbHRmbS5jDQo+ID4gKysrIGIvZHJpdmVycy9t
+bWMvaG9zdC9zZGhjaS1wbHRmbS5jDQo+ID4gQEAgLTEwMiw2ICsxMDIsMTMgQEAgdm9pZCBzZGhj
+aV9nZXRfb2ZfcHJvcGVydHkoc3RydWN0IHBsYXRmb3JtX2RldmljZQ0KPiAqcGRldikNCj4gPiAg
+CQkgICAgb2ZfZGV2aWNlX2lzX2NvbXBhdGlibGUobnAsICJmc2wsbXBjODUzNi1lc2RoYyIpKQ0K
+PiA+ICAJCQlob3N0LT5xdWlya3MgfD0gU0RIQ0lfUVVJUktfQlJPS0VOX1RJTUVPVVRfVkFMOw0K
+PiA+DQo+ID4gKwkJaWYgKG9mX2RldmljZV9pc19jb21wYXRpYmxlKG5wLCAiZnNsLHA1MDQwLWVz
+ZGhjIikgfHwNCj4gPiArCQkJb2ZfZGV2aWNlX2lzX2NvbXBhdGlibGUobnAsICJmc2wscDUwMjAt
+ZXNkaGMiKSB8fA0KPiA+ICsJCQlvZl9kZXZpY2VfaXNfY29tcGF0aWJsZShucCwgImZzbCxwNDA4
+MC1lc2RoYyIpIHx8DQo+ID4gKwkJCW9mX2RldmljZV9pc19jb21wYXRpYmxlKG5wLCAiZnNsLHAx
+MDIwLWVzZGhjIikgfHwNCj4gPiArCQkJb2ZfZGV2aWNlX2lzX2NvbXBhdGlibGUobnAsICJmc2ws
+dDEwNDAtZXNkaGMiKSkNCj4gPiArCQkJaG9zdC0+cXVpcmtzICY9IH5TREhDSV9RVUlSS19CUk9L
+RU5fQ0FSRF9ERVRFQ1RJT047DQo+IA0KPiBQbGVhc2UgZG9uJ3QgbGluZSB1cCBjb250aW51YXRp
+b24gbGluZXMgd2l0aCB0aGUgaWYtYm9keS4gIEFsbCBvZiB0aGUNCj4gIm9mX2RldmljZV9pc19j
+b21wYXRpYmxlcyIgc2hvdWxkIHN0YXJ0IGluIHRoZSBzYW1lIGNvbHVtbi4NCk9rLCB0aGFua3Mu
+DQo+IA0KPiBHaXZlbiB0aGF0IHlvdSBuZWVkIHRvIG1vZGlmeSB0aGUgZGV2aWNlIHRyZWUgZm9y
+IHRoaXMsIHdoeSBub3QganVzdCB1c2UNCj4gU1ZSPw0KVGhlIGRyaXZlcnMvbW1jL2hvc3Qvc2Ro
+Y2ktcGx0Zm0uYyBpcyBub3Qgb25seSB1c2VkIGJ5IGZyZWVzY2FsZSBwbGF0Zm9ybS4gU28gd2Ug
+Y291bGRu4oCZdCB0byB1c2UgU1ZSIGhlcmUuDQpUaGFua3MuIA0K
