@@ -1,29 +1,38 @@
-Return-Path: <emunson@akamai.com>
-Received: from prod-mail-xrelay02.akamai.com (prod-mail-xrelay02.akamai.com
- [72.246.2.14])
- by lists.ozlabs.org (Postfix) with ESMTP id 1A9141A042B
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 May 2015 01:35:52 +1000 (AEST)
-Date: Fri, 15 May 2015 11:35:50 -0400
-From: Eric B Munson <emunson@akamai.com>
-To: Michal Hocko <mhocko@suse.cz>
-Subject: Re: [PATCH 0/3] Allow user to request memory to be locked on page
- fault
-Message-ID: <20150515153550.GA2454@akamai.com>
-References: <1431113626-19153-1-git-send-email-emunson@akamai.com>
- <20150508124203.6679b1d35ad9555425003929@linux-foundation.org>
- <20150511180631.GA1227@akamai.com>
- <20150513150036.GG1227@akamai.com>
- <20150514080812.GC6433@dhcp22.suse.cz>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="UugvWAfsgieZRqgk"
-In-Reply-To: <20150514080812.GC6433@dhcp22.suse.cz>
-Cc: linux-arch@vger.kernel.org, linux-mips@linux-mips.org,
- linux-parisc@vger.kernel.org, linux-xtensa@linux-xtensa.org,
- linux-api@vger.kernel.org, linux-kernel@vger.kernel.org,
- Shuah Khan <shuahkh@osg.samsung.com>, linux-mm@kvack.org,
- linux-alpha@vger.kernel.org, sparclinux@vger.kernel.org,
- Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id BA7E31A042B
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 May 2015 01:42:48 +1000 (AEST)
+Received: from /spool/local
+ by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Fri, 15 May 2015 21:12:45 +0530
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id E28B4125805E
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 21:14:56 +0530 (IST)
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay01.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t4FFghio47644826
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 21:12:43 +0530
+Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t4FFggM0019029
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 21:12:43 +0530
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: akpm@linux-foundation.org, benh@kernel.crashing.org, paulus@samba.org,
+ mpe@ellerman.id.au, kirill.shutemov@linux.intel.com,
+ aarcange@redhat.com, schwidefsky@de.ibm.com
+Subject: [PATCH V5 1/3] mm/thp: Split out pmd collpase flush into a separate
+ functions
+Date: Fri, 15 May 2015 21:12:28 +0530
+Message-Id: <1431704550-19937-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+In-Reply-To: <1431704550-19937-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+References: <1431704550-19937-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -33,145 +42,180 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Architectures like ppc64 [1] need to do special things while clearing
+pmd before a collapse. For them this operation is largely different
+from a normal hugepage pte clear. Hence add a separate function
+to clear pmd before collapse. After this patch pmdp_* functions
+operate only on hugepage pte, and not on regular pmd_t values
+pointing to page table.
 
---UugvWAfsgieZRqgk
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+[1] ppc64 needs to invalidate all the normal page pte mappings we
+already have inserted in the hardware hash page table. But before
+doing that we need to make sure there are no parallel hash page
+table insert going on. So we need to do a kick_all_cpus_sync()
+before flushing the older hash table entries. By moving this to
+a separate function we capture these details and mention how it
+is different from a hugepage pte clear.
 
-On Thu, 14 May 2015, Michal Hocko wrote:
+This patch is a cleanup and only does code movement for clarity.
+There should not be any change in functionality.
 
-> On Wed 13-05-15 11:00:36, Eric B Munson wrote:
-> > On Mon, 11 May 2015, Eric B Munson wrote:
-> >=20
-> > > On Fri, 08 May 2015, Andrew Morton wrote:
-> > >=20
-> > > > On Fri,  8 May 2015 15:33:43 -0400 Eric B Munson <emunson@akamai.co=
-m> wrote:
-> > > >=20
-> > > > > mlock() allows a user to control page out of program memory, but =
-this
-> > > > > comes at the cost of faulting in the entire mapping when it is
-> > > > > allocated.  For large mappings where the entire area is not neces=
-sary
-> > > > > this is not ideal.
-> > > > >=20
-> > > > > This series introduces new flags for mmap() and mlockall() that a=
-llow a
-> > > > > user to specify that the covered are should not be paged out, but=
- only
-> > > > > after the memory has been used the first time.
-> > > >=20
-> > > > Please tell us much much more about the value of these changes: the=
- use
-> > > > cases, the behavioural improvements and performance results which t=
-he
-> > > > patchset brings to those use cases, etc.
-> > > >=20
-> > >=20
-> > > To illustrate the proposed use case I wrote a quick program that mmaps
-> > > a 5GB file which is filled with random data and accesses 150,000 pages
-> > > from that mapping.  Setup and processing were timed separately to
-> > > illustrate the differences between the three tested approaches.  the
-> > > setup portion is simply the call to mmap, the processing is the
-> > > accessing of the various locations in  that mapping.  The following
-> > > values are in milliseconds and are the averages of 20 runs each with a
-> > > call to echo 3 > /proc/sys/vm/drop_caches between each run.
-> > >=20
-> > > The first mapping was made with MAP_PRIVATE | MAP_LOCKED as a baselin=
-e:
-> > > Startup average:    9476.506
-> > > Processing average: 3.573
-> > >=20
-> > > The second mapping was simply MAP_PRIVATE but each page was passed to
-> > > mlock() before being read:
-> > > Startup average:    0.051
-> > > Processing average: 721.859
-> > >=20
-> > > The final mapping was MAP_PRIVATE | MAP_LOCKONFAULT:
-> > > Startup average:    0.084
-> > > Processing average: 42.125
-> > >=20
-> >=20
-> > Michal's suggestion of changing protections and locking in a signal
-> > handler was better than the locking as needed, but still significantly
-> > more work required than the LOCKONFAULT case.
-> >=20
-> > Startup average:    0.047
-> > Processing average: 86.431
->=20
-> Have you played with batching? Has it helped? Anyway it is to be
-> expected that the overhead will be higher than a single mmap call. The
-> question is whether you can live with it because adding a new semantic
-> to mlock sounds trickier and MAP_LOCKED is tricky enough already...
->=20
+Acked-by: Kirill A. Shutemov <kirill.shutemov@linux.intel.com>
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+---
+ arch/powerpc/include/asm/pgtable-ppc64.h |  4 ++
+ arch/powerpc/mm/pgtable_64.c             | 76 +++++++++++++++++---------------
+ include/asm-generic/pgtable.h            | 22 +++++++++
+ mm/huge_memory.c                         |  2 +-
+ 4 files changed, 68 insertions(+), 36 deletions(-)
 
-I reworked the experiment to better cover the batching solution.  The
-same 5GB data file is used, however instead of 150,000 accesses at
-regular intervals, the test program now does 15,000,000 accesses to
-random pages in the mapping.  The rest of the setup remains the same.
-
-mmap with MAP_LOCKED:
-Setup avg:      11821.193
-Processing avg: 3404.286
-
-mmap with mlock() before each access:
-Setup avg:      0.054
-Processing avg: 34263.201
-
-mmap with PROT_NONE and signal handler and batch size of 1 page:
-With the default value in max_map_count, this gets ENOMEM as I attempt
-to change the permissions, after upping the sysctl significantly I get:
-Setup avg:      0.050
-Processing avg: 67690.625
-
-mmap with PROT_NONE and signal handler and batch size of 8 pages:
-Setup avg:      0.098
-Processing avg: 37344.197
-
-mmap with PROT_NONE and signal handler and batch size of 16 pages:
-Setup avg:      0.0548
-Processing avg: 29295.669
-
-mmap with MAP_LOCKONFAULT:
-Setup avg:      0.073
-Processing avg: 18392.136
-
-The signal handler in the batch cases faulted in memory in two steps to
-avoid having to know the start and end of the faulting mapping.  The
-first step covers the page that caused the fault as we know that it will
-be possible to lock.  The second step speculatively tries to mlock and
-mprotect the batch size - 1 pages that follow.  There may be a clever
-way to avoid this without having the program track each mapping to be
-covered by this handeler in a globally accessible structure, but I could
-not find it.
-
-These results show that if the developer knows that a majority of the
-mapping will be used, it is better to try and fault it in at once,
-otherwise MAP_LOCKONFAULT is significantly faster.
-
-Eric
-
---UugvWAfsgieZRqgk
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJVVhJWAAoJELbVsDOpoOa9WYAP/3ov0vZPI/nakqAuXYzn2jqU
-1Dv9ox2VB8OOYQ7rwRVnpS+yJ7uxXSHHiKZLwBOiCI6nRCAlPmropUW8M+2UsdLV
-i/hvNzA4IuazdL2LqZ/w8pLD9wLtbP+9EqFP5ELbmNxmZyakXctGtxpsa+YUXoZM
-viRheOLn9A6qkZvGqDo6A9jMckXRuvd2x7dG4M/qjSPTVGBq573/qFmcOzNqHRZ9
-PQptov2DdetLXYLBIMoU9kb/cK9EHja8fL/vOyB53DScGcMBLNCcjFJIaPz33wy0
-Jdm4/rJIW5SYF3D4V1UvcJY54MdumOiKkidGIPYsqOApyTiUmc6PK/fZxWz2/P6b
-ab4AOBOHNYrURr45nDbgI0/exrvezuOlqnH4xvZTkZKuprx/pMaWFsv07oECfBpm
-iQk7AcTzoF6j8k+UAl8so+VbZ9m5/FSvR+TAMkNb1mtACVL7Y3gAMcuQG7rap3fN
-lJoe72b4MRpXfBaD/sdW1Q9Zi9SelcEzrV8jPZiEbRHyIQC0UkYRrL6wCM+lClV0
-xj8A/y3LD9Kq+k4S0s7oSc65n1EEejx3SumZ3JoWxno1aNT2RI5c7sclxmaviGr0
-Ro2Gbb0HwrlH2yXwGKkC8jEayG7NzDCZVlXHJ6j6SSGABaLD5DWbaDgzIhT8lGtL
-xI28uUdrt/3kVWpHEZr3
-=ycZg
------END PGP SIGNATURE-----
-
---UugvWAfsgieZRqgk--
+diff --git a/arch/powerpc/include/asm/pgtable-ppc64.h b/arch/powerpc/include/asm/pgtable-ppc64.h
+index 43e6ad424c7f..129c67ebc81a 100644
+--- a/arch/powerpc/include/asm/pgtable-ppc64.h
++++ b/arch/powerpc/include/asm/pgtable-ppc64.h
+@@ -576,6 +576,10 @@ static inline void pmdp_set_wrprotect(struct mm_struct *mm, unsigned long addr,
+ extern void pmdp_splitting_flush(struct vm_area_struct *vma,
+ 				 unsigned long address, pmd_t *pmdp);
+ 
++extern pmd_t pmdp_collapse_flush(struct vm_area_struct *vma,
++				 unsigned long address, pmd_t *pmdp);
++#define pmdp_collapse_flush pmdp_collapse_flush
++
+ #define __HAVE_ARCH_PGTABLE_DEPOSIT
+ extern void pgtable_trans_huge_deposit(struct mm_struct *mm, pmd_t *pmdp,
+ 				       pgtable_t pgtable);
+diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
+index 59daa5eeec25..9171c1a37290 100644
+--- a/arch/powerpc/mm/pgtable_64.c
++++ b/arch/powerpc/mm/pgtable_64.c
+@@ -560,41 +560,47 @@ pmd_t pmdp_clear_flush(struct vm_area_struct *vma, unsigned long address,
+ 	pmd_t pmd;
+ 
+ 	VM_BUG_ON(address & ~HPAGE_PMD_MASK);
+-	if (pmd_trans_huge(*pmdp)) {
+-		pmd = pmdp_get_and_clear(vma->vm_mm, address, pmdp);
+-	} else {
+-		/*
+-		 * khugepaged calls this for normal pmd
+-		 */
+-		pmd = *pmdp;
+-		pmd_clear(pmdp);
+-		/*
+-		 * Wait for all pending hash_page to finish. This is needed
+-		 * in case of subpage collapse. When we collapse normal pages
+-		 * to hugepage, we first clear the pmd, then invalidate all
+-		 * the PTE entries. The assumption here is that any low level
+-		 * page fault will see a none pmd and take the slow path that
+-		 * will wait on mmap_sem. But we could very well be in a
+-		 * hash_page with local ptep pointer value. Such a hash page
+-		 * can result in adding new HPTE entries for normal subpages.
+-		 * That means we could be modifying the page content as we
+-		 * copy them to a huge page. So wait for parallel hash_page
+-		 * to finish before invalidating HPTE entries. We can do this
+-		 * by sending an IPI to all the cpus and executing a dummy
+-		 * function there.
+-		 */
+-		kick_all_cpus_sync();
+-		/*
+-		 * Now invalidate the hpte entries in the range
+-		 * covered by pmd. This make sure we take a
+-		 * fault and will find the pmd as none, which will
+-		 * result in a major fault which takes mmap_sem and
+-		 * hence wait for collapse to complete. Without this
+-		 * the __collapse_huge_page_copy can result in copying
+-		 * the old content.
+-		 */
+-		flush_tlb_pmd_range(vma->vm_mm, &pmd, address);
+-	}
++	VM_BUG_ON(!pmd_trans_huge(*pmdp));
++	pmd = pmdp_get_and_clear(vma->vm_mm, address, pmdp);
++	return pmd;
++}
++
++pmd_t pmdp_collapse_flush(struct vm_area_struct *vma, unsigned long address,
++			  pmd_t *pmdp)
++{
++	pmd_t pmd;
++
++	VM_BUG_ON(address & ~HPAGE_PMD_MASK);
++	VM_BUG_ON(pmd_trans_huge(*pmdp));
++
++	pmd = *pmdp;
++	pmd_clear(pmdp);
++	/*
++	 * Wait for all pending hash_page to finish. This is needed
++	 * in case of subpage collapse. When we collapse normal pages
++	 * to hugepage, we first clear the pmd, then invalidate all
++	 * the PTE entries. The assumption here is that any low level
++	 * page fault will see a none pmd and take the slow path that
++	 * will wait on mmap_sem. But we could very well be in a
++	 * hash_page with local ptep pointer value. Such a hash page
++	 * can result in adding new HPTE entries for normal subpages.
++	 * That means we could be modifying the page content as we
++	 * copy them to a huge page. So wait for parallel hash_page
++	 * to finish before invalidating HPTE entries. We can do this
++	 * by sending an IPI to all the cpus and executing a dummy
++	 * function there.
++	 */
++	kick_all_cpus_sync();
++	/*
++	 * Now invalidate the hpte entries in the range
++	 * covered by pmd. This make sure we take a
++	 * fault and will find the pmd as none, which will
++	 * result in a major fault which takes mmap_sem and
++	 * hence wait for collapse to complete. Without this
++	 * the __collapse_huge_page_copy can result in copying
++	 * the old content.
++	 */
++	flush_tlb_pmd_range(vma->vm_mm, &pmd, address);
+ 	return pmd;
+ }
+ 
+diff --git a/include/asm-generic/pgtable.h b/include/asm-generic/pgtable.h
+index 39f1d6a2b04d..acdcaac77d93 100644
+--- a/include/asm-generic/pgtable.h
++++ b/include/asm-generic/pgtable.h
+@@ -189,6 +189,28 @@ extern void pmdp_splitting_flush(struct vm_area_struct *vma,
+ 				 unsigned long address, pmd_t *pmdp);
+ #endif
+ 
++#ifndef pmdp_collapse_flush
++#define pmdp_collapse_flush pmdp_collapse_flush
++#ifdef CONFIG_TRANSPARENT_HUGEPAGE
++static inline pmd_t pmdp_collapse_flush(struct vm_area_struct *vma,
++					unsigned long address,
++					pmd_t *pmdp)
++{
++	return pmdp_clear_flush(vma, address, pmdp);
++}
++#define pmdp_collapse_flush pmdp_collapse_flush
++#else
++static inline pmd_t pmdp_collapse_flush(struct vm_area_struct *vma,
++					unsigned long address,
++					pmd_t *pmdp)
++{
++	BUILD_BUG();
++	return *pmdp;
++}
++#define pmdp_collapse_flush pmdp_collapse_flush
++#endif /* CONFIG_TRANSPARENT_HUGEPAGE */
++#endif
++
+ #ifndef __HAVE_ARCH_PGTABLE_DEPOSIT
+ extern void pgtable_trans_huge_deposit(struct mm_struct *mm, pmd_t *pmdp,
+ 				       pgtable_t pgtable);
+diff --git a/mm/huge_memory.c b/mm/huge_memory.c
+index 078832cf3636..88f695a4e38b 100644
+--- a/mm/huge_memory.c
++++ b/mm/huge_memory.c
+@@ -2499,7 +2499,7 @@ static void collapse_huge_page(struct mm_struct *mm,
+ 	 * huge and small TLB entries for the same virtual address
+ 	 * to avoid the risk of CPU bugs in that area.
+ 	 */
+-	_pmd = pmdp_clear_flush(vma, address, pmd);
++	_pmd = pmdp_collapse_flush(vma, address, pmd);
+ 	spin_unlock(pmd_ptl);
+ 	mmu_notifier_invalidate_range_end(mm, mmun_start, mmun_end);
+ 
+-- 
+2.1.4
