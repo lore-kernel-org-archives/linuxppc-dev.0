@@ -1,34 +1,44 @@
-Return-Path: <weiyang@linux.vnet.ibm.com>
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <alex.bennee@linaro.org>
+Received: from socrates.bennee.com
+ (static.88-198-71-155.clients.your-server.de [88.198.71.155])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4799B1A18F4
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 23:41:49 +1000 (AEST)
-Received: from /spool/local
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
- Fri, 15 May 2015 23:41:49 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 92E9F357804C
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 23:41:45 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t4FDfbH418546732
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 23:41:45 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t4FDfC1X013153
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 23:41:13 +1000
-From: Wei Yang <weiyang@linux.vnet.ibm.com>
-To: gwshan@linux.vnet.ibm.com, bhelgaas@google.com
-Subject: [PATCH V5 10/10] powerpc/powernv: compound PE for VFs
-Date: Fri, 15 May 2015 21:37:04 +0800
-Message-Id: <1431697024-5710-11-git-send-email-weiyang@linux.vnet.ibm.com>
-In-Reply-To: <1431697024-5710-1-git-send-email-weiyang@linux.vnet.ibm.com>
-References: <1431697024-5710-1-git-send-email-weiyang@linux.vnet.ibm.com>
-Cc: linux-pci@vger.kernel.org, Wei Yang <weiyang@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
+ by lists.ozlabs.org (Postfix) with ESMTPS id 86E911A0A84
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 May 2015 00:27:33 +1000 (AEST)
+From: =?UTF-8?q?Alex=20Benn=C3=A9e?= <alex.bennee@linaro.org>
+To: kvm@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ kvmarm@lists.cs.columbia.edu, christoffer.dall@linaro.org,
+ marc.zyngier@arm.com, peter.maydell@linaro.org, agraf@suse.de,
+ drjones@redhat.com, pbonzini@redhat.com, zhichao.huang@linaro.org
+Subject: [PATCH v4 02/12] KVM: define common KVM_GUESTDBG_USE_SW/HW_BP bits
+Date: Fri, 15 May 2015 15:27:05 +0100
+Message-Id: <1431700035-23479-3-git-send-email-alex.bennee@linaro.org>
+In-Reply-To: <1431700035-23479-1-git-send-email-alex.bennee@linaro.org>
+References: <1431700035-23479-1-git-send-email-alex.bennee@linaro.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Cc: Tony Krowiak <akrowiak@linux.vnet.ibm.com>,
+ Alexey Kardashevskiy <aik@ozlabs.ru>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Bharat Bhushan <Bharat.Bhushan@freescale.com>,
+ Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
+ "open list:S390" <linux-s390@vger.kernel.org>,
+ Michael Mueller <mimu@linux.vnet.ibm.com>,
+ Nadav Amit <namit@cs.technion.ac.il>,
+ "maintainer:X86 ARCHITECTURE..." <x86@kernel.org>,
+ Christian Borntraeger <borntraeger@de.ibm.com>, Ingo Molnar <mingo@redhat.com>,
+ "Jason J. Herne" <jjherne@linux.vnet.ibm.com>, jan.kiszka@siemens.com,
+ Mihai Caraman <mihai.caraman@freescale.com>, bp@suse.de,
+ Gleb Natapov <gleb@kernel.org>, r65777@freescale.com,
+ Cornelia Huck <cornelia.huck@de.ibm.com>, Thomas Gleixner <tglx@linutronix.de>,
+ =?UTF-8?q?Alex=20Benn=C3=A9e?= <alex.bennee@linaro.org>,
+ Eric Farman <farman@linux.vnet.ibm.com>,
+ "open list:ABI/API" <linux-api@vger.kernel.org>,
+ open list <linux-kernel@vger.kernel.org>,
+ Dominik Dingel <dingel@linux.vnet.ibm.com>, dahi@linux.vnet.ibm.com,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ "supporter:S390" <linux390@de.ibm.com>,
+ "open list:LINUX FOR POWERPC..." <linuxppc-dev@lists.ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,150 +48,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When VF BAR size is larger than 64MB, we group VFs in terms of M64 BAR,
-which means those VFs in a group should form a compound PE.
+Currently x86, powerpc and soon arm64 use the same two architecture
+specific bits for guest debug support for software and hardware
+breakpoints. This makes the shared values explicit.
 
-This patch links those VF PEs into compound PE in this case.
+Signed-off-by: Alex Bennée <alex.bennee@linaro.org>
+Reviewed-by: Andrew Jones <drjones@redhat.com>
 
-Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
----
- arch/powerpc/platforms/powernv/pci-ioda.c |   50 ++++++++++++++++++++++++++---
- arch/powerpc/platforms/powernv/pci.c      |   17 ++++++++--
- 2 files changed, 60 insertions(+), 7 deletions(-)
+-
+v4
+  - claim more bits for the common functionality
+v5
+  - don't use __ mechanism to move values common
 
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index 920c252..23fe8aa 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -1345,6 +1345,7 @@ static void pnv_ioda_release_vf_PE(struct pci_dev *pdev, u16 num_vfs)
- 				vf_index < (vf_group + 1) * vf_per_group &&
- 				vf_index < num_vfs;
- 				vf_index++)
-+
- 				for (vf_index1 = vf_group * vf_per_group;
- 					vf_index1 < (vf_group + 1) * vf_per_group &&
- 					vf_index1 < num_vfs;
-@@ -1363,9 +1364,20 @@ static void pnv_ioda_release_vf_PE(struct pci_dev *pdev, u16 num_vfs)
- 	}
+diff --git a/arch/powerpc/include/uapi/asm/kvm.h b/arch/powerpc/include/uapi/asm/kvm.h
+index ab4d473..6ea24a5 100644
+--- a/arch/powerpc/include/uapi/asm/kvm.h
++++ b/arch/powerpc/include/uapi/asm/kvm.h
+@@ -307,11 +307,9 @@ struct kvm_guest_debug_arch {
+ /* Debug related defines */
+ /*
+  * kvm_guest_debug->control is a 32 bit field. The lower 16 bits are generic
+- * and upper 16 bits are architecture specific. Architecture specific defines
++ * and upper 14 bits are architecture specific. Architecture specific defines
+  * that ioctl is for setting hardware breakpoint or software breakpoint.
+  */
+-#define KVM_GUESTDBG_USE_SW_BP		0x00010000
+-#define KVM_GUESTDBG_USE_HW_BP		0x00020000
  
- 	list_for_each_entry_safe(pe, pe_n, &phb->ioda.pe_list, list) {
-+		struct pnv_ioda_pe *s, *sn;
- 		if (pe->parent_dev != pdev)
- 			continue;
+ /* definition of registers in kvm_run */
+ struct kvm_sync_regs {
+diff --git a/arch/s390/include/uapi/asm/kvm.h b/arch/s390/include/uapi/asm/kvm.h
+index ef1a5fc..aca4f86 100644
+--- a/arch/s390/include/uapi/asm/kvm.h
++++ b/arch/s390/include/uapi/asm/kvm.h
+@@ -114,8 +114,6 @@ struct kvm_fpu {
+ 	__u64 fprs[16];
+ };
  
-+		if ((pe->flags & PNV_IODA_PE_MASTER) &&
-+		    (pe->flags & PNV_IODA_PE_VF)) {
-+			list_for_each_entry_safe(s, sn, &pe->slaves, list) {
-+				pnv_pci_ioda2_release_dma_pe(pdev, s);
-+				list_del(&s->list);
-+				pnv_ioda_deconfigure_pe(phb, s);
-+				pnv_ioda_free_pe(phb, s->pe_number);
-+			}
-+		}
-+
- 		pnv_pci_ioda2_release_dma_pe(pdev, pe);
+-#define KVM_GUESTDBG_USE_HW_BP		0x00010000
+-
+ #define KVM_HW_BP			1
+ #define KVM_HW_WP_WRITE			2
+ #define KVM_SINGLESTEP			4
+diff --git a/arch/x86/include/uapi/asm/kvm.h b/arch/x86/include/uapi/asm/kvm.h
+index d7dcef5..ca51d4c 100644
+--- a/arch/x86/include/uapi/asm/kvm.h
++++ b/arch/x86/include/uapi/asm/kvm.h
+@@ -250,8 +250,6 @@ struct kvm_debug_exit_arch {
+ 	__u64 dr7;
+ };
  
- 		/* Remove from list */
-@@ -1418,7 +1430,7 @@ static void pnv_ioda_setup_vf_PE(struct pci_dev *pdev, u16 num_vfs)
- 	struct pci_bus        *bus;
- 	struct pci_controller *hose;
- 	struct pnv_phb        *phb;
--	struct pnv_ioda_pe    *pe;
-+	struct pnv_ioda_pe    *pe, *master_pe;
- 	int                    pe_num;
- 	u16                    vf_index;
- 	struct pci_dn         *pdn;
-@@ -1464,10 +1476,16 @@ static void pnv_ioda_setup_vf_PE(struct pci_dev *pdev, u16 num_vfs)
- 				GFP_KERNEL, hose->node);
- 		pe->tce32_table->data = pe;
+-#define KVM_GUESTDBG_USE_SW_BP		0x00010000
+-#define KVM_GUESTDBG_USE_HW_BP		0x00020000
+ #define KVM_GUESTDBG_INJECT_DB		0x00040000
+ #define KVM_GUESTDBG_INJECT_BP		0x00080000
  
--		/* Put PE to the list */
--		mutex_lock(&phb->ioda.pe_list_mutex);
--		list_add_tail(&pe->list, &phb->ioda.pe_list);
--		mutex_unlock(&phb->ioda.pe_list_mutex);
-+		/*
-+		 * Put PE to the list,
-+		 * or postpone this if we have Compound PE
-+		 */
-+		if ((pdn->m64_per_iov != M64_PER_IOV) ||
-+		    (num_vfs <= M64_PER_IOV)) {
-+			mutex_lock(&phb->ioda.pe_list_mutex);
-+			list_add_tail(&pe->list, &phb->ioda.pe_list);
-+			mutex_unlock(&phb->ioda.pe_list_mutex);
-+		}
+diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
+index 70ac641..7c5dd11 100644
+--- a/include/uapi/linux/kvm.h
++++ b/include/uapi/linux/kvm.h
+@@ -570,8 +570,10 @@ struct kvm_s390_irq_state {
  
- 		pnv_pci_ioda2_setup_dma_pe(phb, pe);
- 	}
-@@ -1480,10 +1498,32 @@ static void pnv_ioda_setup_vf_PE(struct pci_dev *pdev, u16 num_vfs)
- 		vf_per_group = roundup_pow_of_two(num_vfs) / pdn->m64_per_iov;
+ /* for KVM_SET_GUEST_DEBUG */
  
- 		for (vf_group = 0; vf_group < M64_PER_IOV; vf_group++) {
-+			master_pe = NULL;
-+
- 			for (vf_index = vf_group * vf_per_group;
- 			     vf_index < (vf_group + 1) * vf_per_group &&
- 			     vf_index < num_vfs;
- 			     vf_index++) {
-+
-+				/*
-+				 * Figure out the master PE and put all slave
-+				 * PEs to master PE's list.
-+				 */
-+				pe = &phb->ioda.pe_array[pdn->offset + vf_index];
-+				if (!master_pe) {
-+					pe->flags |= PNV_IODA_PE_MASTER;
-+					INIT_LIST_HEAD(&pe->slaves);
-+					master_pe = pe;
-+					mutex_lock(&phb->ioda.pe_list_mutex);
-+					list_add_tail(&pe->list, &phb->ioda.pe_list);
-+					mutex_unlock(&phb->ioda.pe_list_mutex);
-+				} else {
-+					pe->flags |= PNV_IODA_PE_SLAVE;
-+					pe->master = master_pe;
-+					list_add_tail(&pe->list,
-+						&master_pe->slaves);
-+				}
-+
- 				for (vf_index1 = vf_group * vf_per_group;
- 				     vf_index1 < (vf_group + 1) * vf_per_group &&
- 				     vf_index1 < num_vfs;
-diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
-index 31d0258..073caec 100644
---- a/arch/powerpc/platforms/powernv/pci.c
-+++ b/arch/powerpc/platforms/powernv/pci.c
-@@ -667,7 +667,7 @@ static void pnv_pci_dma_dev_setup(struct pci_dev *pdev)
- 	struct pci_controller *hose = pci_bus_to_host(pdev->bus);
- 	struct pnv_phb *phb = hose->private_data;
- #ifdef CONFIG_PCI_IOV
--	struct pnv_ioda_pe *pe;
-+	struct pnv_ioda_pe *pe, *slave;
- 	struct pci_dn *pdn;
+-#define KVM_GUESTDBG_ENABLE		0x00000001
+-#define KVM_GUESTDBG_SINGLESTEP		0x00000002
++#define KVM_GUESTDBG_ENABLE		(1 << 0)
++#define KVM_GUESTDBG_SINGLESTEP	(1 << 1)
++#define KVM_GUESTDBG_USE_SW_BP		(1 << 16)
++#define KVM_GUESTDBG_USE_HW_BP		(1 << 17)
  
- 	/* Fix the VF pdn PE number */
-@@ -679,10 +679,23 @@ static void pnv_pci_dma_dev_setup(struct pci_dev *pdev)
- 			    (pdev->devfn & 0xff))) {
- 				pdn->pe_number = pe->pe_number;
- 				pe->pdev = pdev;
--				break;
-+				goto found;
-+			}
-+
-+			if ((pe->flags & PNV_IODA_PE_MASTER) &&
-+			    (pe->flags & PNV_IODA_PE_VF)) {
-+				list_for_each_entry(slave, &pe->slaves, list) {
-+					if (slave->rid == ((pdev->bus->number << 8)
-+					   | (pdev->devfn & 0xff))) {
-+						pdn->pe_number = slave->pe_number;
-+						slave->pdev = pdev;
-+						goto found;
-+					}
-+				}
- 			}
- 		}
- 	}
-+found:
- #endif /* CONFIG_PCI_IOV */
- 
- 	if (phb && phb->dma_dev_setup)
+ struct kvm_guest_debug {
+ 	__u32 control;
 -- 
-1.7.9.5
+2.3.5
