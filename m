@@ -1,31 +1,30 @@
 Return-Path: <weiyang@linux.vnet.ibm.com>
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0C91C1A1BDE
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 15:54:07 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0514A1A1D1C
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 15:54:52 +1000 (AEST)
 Received: from /spool/local
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
- Fri, 15 May 2015 15:54:06 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id AC7312CE804E
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 15:54:05 +1000 (EST)
+ Fri, 15 May 2015 15:54:51 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id B9D572CE804E
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 15:54:48 +1000 (EST)
 Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t4F5rvYk27328736
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 15:54:05 +1000
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t4F5se3P45416636
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 15:54:48 +1000
 Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
  by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t4F5rX6u006344
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 15:53:33 +1000
+ t4F5sFf0007306
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 15:54:16 +1000
 From: Wei Yang <weiyang@linux.vnet.ibm.com>
 To: gwshan@linux.vnet.ibm.com, bhelgaas@google.com
-Subject: [PATCH V4 10/11] powerpc/powernv: use "compound" as the child's
- list_head for compound PE
-Date: Fri, 15 May 2015 13:46:25 +0800
-Message-Id: <1431668786-30371-11-git-send-email-weiyang@linux.vnet.ibm.com>
+Subject: [PATCH V4 11/11] powerpc/powernv: compound PE for VFs
+Date: Fri, 15 May 2015 13:46:26 +0800
+Message-Id: <1431668786-30371-12-git-send-email-weiyang@linux.vnet.ibm.com>
 In-Reply-To: <1431668786-30371-1-git-send-email-weiyang@linux.vnet.ibm.com>
 References: <1431668786-30371-1-git-send-email-weiyang@linux.vnet.ibm.com>
 Cc: linux-pci@vger.kernel.org, Wei Yang <weiyang@linux.vnet.ibm.com>,
@@ -39,71 +38,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Commit 262af557dd75(powerpc/powernv: Enable M64 aperatus for PHB3)
-introduces the concept of compound PE, and they are linked together to
-master PE's slaves lish_head with the list field. While this field is
-usually used to linked to the phb->ioda.pe_list to represents the PE is
-used.
+When VF BAR size is larger than 64MB, we group VFs in terms of M64 BAR,
+which means those VFs in a group should form a compound PE.
 
-This patch introduces a field "compound" to link those compound PEs.
+This patch links those VF PEs into compound PE in this case.
 
 Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
 ---
- arch/powerpc/platforms/powernv/pci-ioda.c |    8 ++++----
- arch/powerpc/platforms/powernv/pci.h      |    1 +
- 2 files changed, 5 insertions(+), 4 deletions(-)
+ arch/powerpc/platforms/powernv/pci-ioda.c |   27 ++++++++++++++++++++++++++-
+ 1 file changed, 26 insertions(+), 1 deletion(-)
 
 diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index 920c252..843457b 100644
+index 843457b..157305f 100644
 --- a/arch/powerpc/platforms/powernv/pci-ioda.c
 +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -344,7 +344,7 @@ done:
- 		} else {
- 			pe->flags |= PNV_IODA_PE_SLAVE;
- 			pe->master = master_pe;
--			list_add_tail(&pe->list, &master_pe->slaves);
-+			list_add_tail(&pe->compound, &master_pe->slaves);
- 		}
+@@ -1345,6 +1345,7 @@ static void pnv_ioda_release_vf_PE(struct pci_dev *pdev, u16 num_vfs)
+ 				vf_index < (vf_group + 1) * vf_per_group &&
+ 				vf_index < num_vfs;
+ 				vf_index++)
++
+ 				for (vf_index1 = vf_group * vf_per_group;
+ 					vf_index1 < (vf_group + 1) * vf_per_group &&
+ 					vf_index1 < num_vfs;
+@@ -1360,6 +1361,11 @@ static void pnv_ioda_release_vf_PE(struct pci_dev *pdev, u16 num_vfs)
+ 						__func__,
+ 						pdn->offset + vf_index1, rc);
+ 				}
++
++				/* Remove a Slave PE from Master PE */
++				pe = &phb->ioda.pe_array[pdn->offset + vf_index];
++				if (pe->flags & PNV_IODA_PE_SLAVE)
++					list_del(&pe->compound);
  	}
  
-@@ -428,7 +428,7 @@ static void pnv_ioda_freeze_pe(struct pnv_phb *phb, int pe_no)
- 	if (!(pe->flags & PNV_IODA_PE_MASTER))
- 		return;
+ 	list_for_each_entry_safe(pe, pe_n, &phb->ioda.pe_list, list) {
+@@ -1418,7 +1424,7 @@ static void pnv_ioda_setup_vf_PE(struct pci_dev *pdev, u16 num_vfs)
+ 	struct pci_bus        *bus;
+ 	struct pci_controller *hose;
+ 	struct pnv_phb        *phb;
+-	struct pnv_ioda_pe    *pe;
++	struct pnv_ioda_pe    *pe, *master_pe;
+ 	int                    pe_num;
+ 	u16                    vf_index;
+ 	struct pci_dn         *pdn;
+@@ -1480,10 +1486,29 @@ static void pnv_ioda_setup_vf_PE(struct pci_dev *pdev, u16 num_vfs)
+ 		vf_per_group = roundup_pow_of_two(num_vfs) / pdn->m64_per_iov;
  
--	list_for_each_entry(slave, &pe->slaves, list) {
-+	list_for_each_entry(slave, &pe->slaves, compound) {
- 		rc = opal_pci_eeh_freeze_set(phb->opal_id,
- 					     slave->pe_number,
- 					     OPAL_EEH_ACTION_SET_FREEZE_ALL);
-@@ -464,7 +464,7 @@ static int pnv_ioda_unfreeze_pe(struct pnv_phb *phb, int pe_no, int opt)
- 		return 0;
- 
- 	/* Clear frozen state for slave PEs */
--	list_for_each_entry(slave, &pe->slaves, list) {
-+	list_for_each_entry(slave, &pe->slaves, compound) {
- 		rc = opal_pci_eeh_freeze_clear(phb->opal_id,
- 					     slave->pe_number,
- 					     opt);
-@@ -516,7 +516,7 @@ static int pnv_ioda_get_pe_state(struct pnv_phb *phb, int pe_no)
- 	if (!(pe->flags & PNV_IODA_PE_MASTER))
- 		return state;
- 
--	list_for_each_entry(slave, &pe->slaves, list) {
-+	list_for_each_entry(slave, &pe->slaves, compound) {
- 		rc = opal_pci_eeh_freeze_status(phb->opal_id,
- 						slave->pe_number,
- 						&fstate,
-diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
-index 070ee88..540ab1e 100644
---- a/arch/powerpc/platforms/powernv/pci.h
-+++ b/arch/powerpc/platforms/powernv/pci.h
-@@ -73,6 +73,7 @@ struct pnv_ioda_pe {
- 	/* PEs in compound case */
- 	struct pnv_ioda_pe	*master;
- 	struct list_head	slaves;
-+	struct list_head	compound;
- 
- 	/* Link in list of PE#s */
- 	struct list_head	dma_link;
+ 		for (vf_group = 0; vf_group < M64_PER_IOV; vf_group++) {
++			master_pe = NULL;
++
+ 			for (vf_index = vf_group * vf_per_group;
+ 			     vf_index < (vf_group + 1) * vf_per_group &&
+ 			     vf_index < num_vfs;
+ 			     vf_index++) {
++
++				/*
++				 * Figure out the master PE and put all slave
++				 * PEs to master PE's list.
++				 */
++				pe = &phb->ioda.pe_array[pdn->offset + vf_index];
++				if (!master_pe) {
++					pe->flags |= PNV_IODA_PE_MASTER;
++					INIT_LIST_HEAD(&pe->slaves);
++					master_pe = pe;
++				} else {
++					pe->flags |= PNV_IODA_PE_SLAVE;
++					pe->master = master_pe;
++					list_add_tail(&pe->compound,
++						&master_pe->slaves);
++				}
++
+ 				for (vf_index1 = vf_group * vf_per_group;
+ 				     vf_index1 < (vf_group + 1) * vf_per_group &&
+ 				     vf_index1 < num_vfs;
 -- 
 1.7.9.5
