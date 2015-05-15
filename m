@@ -1,63 +1,21 @@
-Return-Path: <dahi@linux.vnet.ibm.com>
-Received: from e06smtp14.uk.ibm.com (e06smtp14.uk.ibm.com [195.75.94.110])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 052901A0008
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 May 2015 03:33:28 +1000 (AEST)
-Received: from /spool/local
- by e06smtp14.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <dahi@linux.vnet.ibm.com>;
- Fri, 15 May 2015 18:33:24 +0100
-Received: from b06cxnps4074.portsmouth.uk.ibm.com
- (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
- by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id AA6A92190046
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 18:33:02 +0100 (BST)
-Received: from d06av05.portsmouth.uk.ibm.com (d06av05.portsmouth.uk.ibm.com
- [9.149.37.229])
- by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t4FHXLCH9175358
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 17:33:21 GMT
-Received: from d06av05.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av05.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t4FHXJff001993
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 11:33:21 -0600
-Date: Fri, 15 May 2015 19:33:15 +0200
-From: David Hildenbrand <dahi@linux.vnet.ibm.com>
-To: Christian Borntraeger <borntraeger@de.ibm.com>
-Subject: Re: [PATCH v4 02/12] KVM: define common KVM_GUESTDBG_USE_SW/HW_BP bits
-Message-ID: <20150515193315.6d3e82d2@thinkpad-w530>
-In-Reply-To: <555613F2.9060204@de.ibm.com>
-References: <1431700035-23479-1-git-send-email-alex.bennee@linaro.org>
- <1431700035-23479-3-git-send-email-alex.bennee@linaro.org>
- <555613F2.9060204@de.ibm.com>
+Return-Path: <christophe.leroy@c-s.fr>
+Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+ by lists.ozlabs.org (Postfix) with ESMTP id 116131A03C6
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 May 2015 03:58:35 +1000 (AEST)
+Message-ID: <555633C3.9000308@c-s.fr>
+Date: Fri, 15 May 2015 19:58:27 +0200
+From: christophe leroy <christophe.leroy@c-s.fr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Cc: peter.maydell@linaro.org, Tony Krowiak <akrowiak@linux.vnet.ibm.com>,
- kvm@vger.kernel.org, Alexey Kardashevskiy <aik@ozlabs.ru>,
- Heiko Carstens <heiko.carstens@de.ibm.com>,
- Bharat Bhushan <Bharat.Bhushan@freescale.com>,
- Paul Mackerras <paulus@samba.org>, "H. Peter
- Anvin" <hpa@zytor.com>, kvmarm@lists.cs.columbia.edu,
- "open list: S390" <linux-s390@vger.kernel.org>,
- Michael Mueller <mimu@linux.vnet.ibm.com>,
- Nadav Amit <namit@cs.technion.ac.il>,
- "maintainer:X86 ARCHITECTURE..." <x86@kernel.org>, agraf@suse.de,
- Gleb Natapov <gleb@kernel.org>, Ingo Molnar <mingo@redhat.com>,
- zhichao.huang@linaro.org, jan.kiszka@siemens.com,
- Mihai Caraman <mihai.caraman@freescale.com>, bp@suse.de, drjones@redhat.com,
- "Jason J. Herne" <jjherne@linux.vnet.ibm.com>, marc.zyngier@arm.com,
- r65777@freescale.com, pbonzini@redhat.com,
- Cornelia Huck <cornelia.huck@de.ibm.com>, Thomas Gleixner <tglx@linutronix.de>,
- Alex =?UTF-8?B?QmVubsOpZQ==?= <alex.bennee@linaro.org>,
- linux-arm-kernel@lists.infradead.org, Eric Farman <farman@linux.vnet.ibm.com>,
- "open list: ABI/API" <linux-api@vger.kernel.org>,
- open list <linux-kernel@vger.kernel.org>,
- Dominik Dingel <dingel@linux.vnet.ibm.com>,
- Martin Schwidefsky <schwidefsky@de.ibm.com>,
- "supporter:S390" <linux390@de.ibm.com>,
- "open list:LINUX FOR POWERPC..." <linuxppc-dev@lists.ozlabs.org>,
- christoffer.dall@linaro.org
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 1/4] Partially revert "powerpc: Remove duplicate
+ cacheable_memcpy/memzero functions"
+References: <cover.1431436210.git.christophe.leroy@c-s.fr>	
+ <b87a9787efc35a8bd6cd7f73185e9959b84ff84a.1431436210.git.christophe.leroy@c-s.fr>
+ <1431564565.3868.157.camel@freescale.com>
+In-Reply-To: <1431564565.3868.157.camel@freescale.com>
+Content-Type: text/plain; charset=utf-8; format=flowed
+Cc: linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+ Kyle Moffett <Kyle.D.Moffett@boeing.com>, linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -67,46 +25,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> Am 15.05.2015 um 16:27 schrieb Alex Benn=C3=A9e:
-> > +++ b/arch/s390/include/uapi/asm/kvm.h
-> > @@ -114,8 +114,6 @@ struct kvm_fpu {
-> >  	__u64 fprs[16];
-> >  };
-> >=20
-> > -#define KVM_GUESTDBG_USE_HW_BP		0x00010000
-> [...]
-> > +++ b/include/uapi/linux/kvm.h
-> [...]
-> > +#define KVM_GUESTDBG_USE_SW_BP		(1 << 16)
-> > +#define KVM_GUESTDBG_USE_HW_BP		(1 << 17)
->=20
-> This is an ABI break for s390, no?
->=20
-> David, do you remember why we do not use KVM_GUESTDBG_USE_SW_BP?
->=20
 
-We never had to tell the kernel about software breakpoints as this is all
-handled via 4 byte DIAG instructions until now. We don't have to turn this
-mechanism on. QEMU can directly insert the desired DIAG instructions and ge=
-ts
-notified when they are about to get executed.
+Le 14/05/2015 02:49, Scott Wood a écrit :
+> On Tue, 2015-05-12 at 15:32 +0200, Christophe Leroy wrote:
+>> This partially reverts
+>> commit 'powerpc: Remove duplicate cacheable_memcpy/memzero functions
+>> ("f909a35bdfb7cb350d078a2cf888162eeb20381c")'
+> I don't have that SHA.  Do you mean
+> b05ae4ee602b7dc90771408ccf0972e1b3801a35?
+Right, took it from the wrong tree sorry.
+>
+>> Functions cacheable_memcpy/memzero are more efficient than
+>> memcpy/memset as they use the dcbz instruction which avoids refill
+>> of the cacheline with the data that we will overwrite.
+> I don't see anything in this patchset that addresses the "NOTE: The old
+> routines are just flat buggy on kernels that support hardware with
+> different cacheline sizes" comment.
+I believe the NOTE means that if a kernel is compiled for several CPUs 
+having different cache line size,
+then it will not work. But it is also the case of other functions using 
+dcbz instruction, like copy_page() clear_page() copy_tofrom_user().
 
-(But we still have 2 byte breakpoint support todo - still tbd how exactly t=
-his
-will be realized - could be turned on via such a mechanism)
+And indeed, this seems only possible in three cases:
+1/ With CONFIG_44x as 47x has different size than 44x and 46x. However 
+it is explicitly stated in arch/powerpc/platforms/44x/Kconfig : "config 
+PPC_47x This option enables support for the 47x family of processors and 
+is not currently compatible with other 44x or 46x varients"
+2/ With CONFIG_PPC_85xx, as PPC_E500MC has different size than other 
+E500. However it is explicitly stated in 
+arch/powerpc/platforms/Kconfig.cputype : "config PPC_E500MC This must be 
+enabled for running on e500mc (and derivatives such as e5500/e6500), and 
+must be disabled for running on e500v1 or e500v2."
+3/ With CONFIG_403GCX as 403GCX has different size than other 40x. 
+However it seems to be no way to select CONFIG_403GCX from 
+arch/powerpc/platforms/40x/Kconfig
 
-The problem is, that these bits are arch specific, now Alex wants to unify
-them for all archs.
+Christophe
 
-So yes, this is an ABI break for us and breaks hardware breakpoints.(I think
-the first version of this patch didn't contain this ABI break when I had a =
-look)
-
-I wonder if it wouldn't make more sense to
-
-- introduce new bits in the arch-unspecific section
-- rework the existing implementers to accept both bits
-
-Or to simply leave stuff as it is and handle it via arch specific bits.
-
-David
+---
+L'absence de virus dans ce courrier électronique a été vérifiée par le logiciel antivirus Avast.
+http://www.avast.com
