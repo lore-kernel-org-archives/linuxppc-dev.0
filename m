@@ -1,39 +1,26 @@
-Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <thuth@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DB14F1A0BBD
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 17:38:11 +1000 (AEST)
-Received: from /spool/local
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Fri, 15 May 2015 17:38:11 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id CA59D2BB004D
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 17:38:08 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t4F7c0NZ29032596
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 17:38:08 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t4F7bZe7002922
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 17:37:36 +1000
-Date: Fri, 15 May 2015 17:37:10 +1000
-From: Gavin Shan <gwshan@linux.vnet.ibm.com>
-To: Wei Yang <weiyang@linux.vnet.ibm.com>
-Subject: Re: [PATCH V4 10/11] powerpc/powernv: use "compound" as the child's
- list_head for compound PE
-Message-ID: <20150515073710.GB7980@gwshan>
-Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
-References: <1431668786-30371-1-git-send-email-weiyang@linux.vnet.ibm.com>
- <1431668786-30371-11-git-send-email-weiyang@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id B6F741A0015
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 18:09:57 +1000 (AEST)
+Date: Fri, 15 May 2015 10:09:49 +0200
+From: Thomas Huth <thuth@redhat.com>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Subject: Re: [PATCH kernel v10 23/34] powerpc/iommu/powernv: Release
+ replaced TCE
+Message-ID: <20150515100949.0433bfbf@thh440s>
+In-Reply-To: <55541C55.4060807@ozlabs.ru>
+References: <1431358763-24371-1-git-send-email-aik@ozlabs.ru>
+ <1431358763-24371-24-git-send-email-aik@ozlabs.ru>
+ <20150513170048.2c6115c6@thh440s> <55541C55.4060807@ozlabs.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1431668786-30371-11-git-send-email-weiyang@linux.vnet.ibm.com>
-Cc: bhelgaas@google.com, linux-pci@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, gwshan@linux.vnet.ibm.com
+Content-Type: text/plain; charset=US-ASCII
+Cc: Wei Yang <weiyang@linux.vnet.ibm.com>,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>, linux-kernel@vger.kernel.org,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -43,96 +30,89 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, May 15, 2015 at 01:46:25PM +0800, Wei Yang wrote:
->Commit 262af557dd75(powerpc/powernv: Enable M64 aperatus for PHB3)
->introduces the concept of compound PE, and they are linked together to
->master PE's slaves lish_head with the list field. While this field is
->usually used to linked to the phb->ioda.pe_list to represents the PE is
->used.
->
->This patch introduces a field "compound" to link those compound PEs.
->
+On Thu, 14 May 2015 13:53:57 +1000
+Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
 
-I don't think we needn't it with:
+> On 05/14/2015 01:00 AM, Thomas Huth wrote:
+> > On Tue, 12 May 2015 01:39:12 +1000
+> > Alexey Kardashevskiy <aik@ozlabs.ru> wrote:
+...
+> >> -/*
+> >> - * hwaddr is a kernel virtual address here (0xc... bazillion),
+> >> - * tce_build converts it to a physical address.
+> >> - */
+> >> -int iommu_tce_build(struct iommu_table *tbl, unsigned long entry,
+> >> -		unsigned long hwaddr, enum dma_data_direction direction)
+> >> -{
+> >> -	int ret = -EBUSY;
+> >> -	unsigned long oldtce;
+> >> -	struct iommu_pool *pool = get_pool(tbl, entry);
+> >> -
+> >> -	spin_lock(&(pool->lock));
+> >> -
+> >> -	oldtce = tbl->it_ops->get(tbl, entry);
+> >> -	/* Add new entry if it is not busy */
+> >> -	if (!(oldtce & (TCE_PCI_WRITE | TCE_PCI_READ)))
+> >> -		ret = tbl->it_ops->set(tbl, entry, 1, hwaddr, direction, NULL);
+> >> -
+> >> -	spin_unlock(&(pool->lock));
+> >> +	if (!ret && ((*direction == DMA_FROM_DEVICE) ||
+> >> +			(*direction == DMA_BIDIRECTIONAL)))
+> >
+> > You could drop some of the parentheses:
+> >
+> > 	if (!ret && (*direction == DMA_FROM_DEVICE ||
+> > 			*direction == DMA_BIDIRECTIONAL))
+> 
+> I really (really) like braces. Is there any kernel code design rule against it?
 
-- VF PEs are classified to master and slave PEs.
-- Master PEs is linked to phb->list;
-- Slave PEs is linked to master->slaves;
-- When iterating all PEs, you have to check PE's flag to cover all
-  (master & slave) VF PEs:
+I don't think so ... but for me it's rather the other way round: If I
+see too many braces, I always wonder whether there is a reason for it in
+the sense that I did not understand the statement right at the first
+glance. Additionally, this is something that Pascal programmers like to
+do, so IMHO this just looks ugly in C.
 
-  for_each_pe_in_phb_list {
-         /* Things we're doing */
-         if (pe_is_not_vf_pe ||
-             pe_is_not_master_pe)
-             continue;
+> >> @@ -405,19 +410,26 @@ static long tce_iommu_ioctl(void *iommu_data,
+> >>   			return -EINVAL;
+> >>
+> >>   		/* iova is checked by the IOMMU API */
+> >> -		tce = param.vaddr;
+> >>   		if (param.flags & VFIO_DMA_MAP_FLAG_READ)
+> >> -			tce |= TCE_PCI_READ;
+> >> -		if (param.flags & VFIO_DMA_MAP_FLAG_WRITE)
+> >> -			tce |= TCE_PCI_WRITE;
+> >> +			if (param.flags & VFIO_DMA_MAP_FLAG_WRITE)
+> >> +				direction = DMA_BIDIRECTIONAL;
+> >> +			else
+> >> +				direction = DMA_TO_DEVICE;
+> >> +		else
+> >> +			if (param.flags & VFIO_DMA_MAP_FLAG_WRITE)
+> >> +				direction = DMA_FROM_DEVICE;
+> >> +			else
+> >> +				return -EINVAL;
+> >
+> > IMHO some curly braces for the outer if-statement would be really fine
+> > here.
+> 
+> I believe checkpatch.pl won't like it. There is a check against single 
+> lines having braces after "if" statements.
 
-         for_each_pe_in_master_vf_pe_list {
-               /* slave VF PEs */
-         }
-  }
+If you write your code like this (I was only talking about the outer
+braces!):
 
-Thanks,
-Gavin
+	if (param.flags & VFIO_DMA_MAP_FLAG_READ) {
+		if (param.flags & VFIO_DMA_MAP_FLAG_WRITE)
+			direction = DMA_BIDIRECTIONAL;
+		else
+			direction = DMA_TO_DEVICE;
+	} else {
+		if (param.flags & VFIO_DMA_MAP_FLAG_WRITE)
+			direction = DMA_FROM_DEVICE;
+		else
+			return -EINVAL;
+	}
 
->Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
->---
-> arch/powerpc/platforms/powernv/pci-ioda.c |    8 ++++----
-> arch/powerpc/platforms/powernv/pci.h      |    1 +
-> 2 files changed, 5 insertions(+), 4 deletions(-)
->
->diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
->index 920c252..843457b 100644
->--- a/arch/powerpc/platforms/powernv/pci-ioda.c
->+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
->@@ -344,7 +344,7 @@ done:
-> 		} else {
-> 			pe->flags |= PNV_IODA_PE_SLAVE;
-> 			pe->master = master_pe;
->-			list_add_tail(&pe->list, &master_pe->slaves);
->+			list_add_tail(&pe->compound, &master_pe->slaves);
-> 		}
-> 	}
->
->@@ -428,7 +428,7 @@ static void pnv_ioda_freeze_pe(struct pnv_phb *phb, int pe_no)
-> 	if (!(pe->flags & PNV_IODA_PE_MASTER))
-> 		return;
->
->-	list_for_each_entry(slave, &pe->slaves, list) {
->+	list_for_each_entry(slave, &pe->slaves, compound) {
-> 		rc = opal_pci_eeh_freeze_set(phb->opal_id,
-> 					     slave->pe_number,
-> 					     OPAL_EEH_ACTION_SET_FREEZE_ALL);
->@@ -464,7 +464,7 @@ static int pnv_ioda_unfreeze_pe(struct pnv_phb *phb, int pe_no, int opt)
-> 		return 0;
->
-> 	/* Clear frozen state for slave PEs */
->-	list_for_each_entry(slave, &pe->slaves, list) {
->+	list_for_each_entry(slave, &pe->slaves, compound) {
-> 		rc = opal_pci_eeh_freeze_clear(phb->opal_id,
-> 					     slave->pe_number,
-> 					     opt);
->@@ -516,7 +516,7 @@ static int pnv_ioda_get_pe_state(struct pnv_phb *phb, int pe_no)
-> 	if (!(pe->flags & PNV_IODA_PE_MASTER))
-> 		return state;
->
->-	list_for_each_entry(slave, &pe->slaves, list) {
->+	list_for_each_entry(slave, &pe->slaves, compound) {
-> 		rc = opal_pci_eeh_freeze_status(phb->opal_id,
-> 						slave->pe_number,
-> 						&fstate,
->diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
->index 070ee88..540ab1e 100644
->--- a/arch/powerpc/platforms/powernv/pci.h
->+++ b/arch/powerpc/platforms/powernv/pci.h
->@@ -73,6 +73,7 @@ struct pnv_ioda_pe {
-> 	/* PEs in compound case */
-> 	struct pnv_ioda_pe	*master;
-> 	struct list_head	slaves;
->+	struct list_head	compound;
->
-> 	/* Link in list of PE#s */
-> 	struct list_head	dma_link;
->-- 
->1.7.9.5
->
+... then checkpatch should not complain, as far as I know - in this
+case, the braces include three lines, don't they?
+
+ Thomas
