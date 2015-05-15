@@ -1,32 +1,30 @@
 Return-Path: <apopple@au1.ibm.com>
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1ED731A048B
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2A7FA1A048D
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 14:07:50 +1000 (AEST)
 Received: from /spool/local
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <apopple@au1.ibm.com>;
- Fri, 15 May 2015 14:07:49 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 590322BB005A
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 14:07:46 +1000 (EST)
+ Fri, 15 May 2015 14:07:48 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id 67CD22CE8040
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 14:07:45 +1000 (EST)
 Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t4F47baC20250734
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 14:07:46 +1000
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t4F47b6n19005518
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 14:07:45 +1000
 Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
  by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t4F47DiO025246
+ t4F47Cjn025230
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 14:07:13 +1000
 From: Alistair Popple <alistair@popple.id.au>
 To: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
-Subject: [PATCH v4 3/9] ipmi/powernv: Convert to irq event interface
-Date: Fri, 15 May 2015 14:06:38 +1000
-Message-Id: <1431662804-16851-4-git-send-email-alistair@popple.id.au>
-In-Reply-To: <1431662804-16851-1-git-send-email-alistair@popple.id.au>
-References: <1431662804-16851-1-git-send-email-alistair@popple.id.au>
+Subject: [PATCH v4 0/9] Convert OPAL notifier events to an irqchip
+Date: Fri, 15 May 2015 14:06:35 +1000
+Message-Id: <1431662804-16851-1-git-send-email-alistair@popple.id.au>
 Cc: Alistair Popple <alistair@popple.id.au>,
  openipmi-developer@lists.sourceforge.net, linux-kernel@vger.kernel.org,
  Corey Minyard <minyard@acm.org>
@@ -39,103 +37,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Convert the opal ipmi driver to use the new irq interface for events.
+Whenever an interrupt is received for opal the linux kernel gets a
+bitfield indicating certain events that have occurred and need handling
+by the various device drivers. Currently this is handled using a
+notifier interface where we call every device driver that has
+registered to receive opal events.
 
-Signed-off-by: Alistair Popple <alistair@popple.id.au>
-Acked-by: Corey Minyard <cminyard@mvista.com>
-Cc: Corey Minyard <minyard@acm.org>
-Cc: openipmi-developer@lists.sourceforge.net
----
- drivers/char/ipmi/ipmi_powernv.c | 39 ++++++++++++++++++++++-----------------
- 1 file changed, 22 insertions(+), 17 deletions(-)
+This approach has several drawbacks. For example each driver has to do
+its own checking to see if the event is relevant as well as event
+masking. There is also no easy method of recording the number of times
+we receive particular events.
 
-diff --git a/drivers/char/ipmi/ipmi_powernv.c b/drivers/char/ipmi/ipmi_powernv.c
-index 8753b0f..9b409c0 100644
---- a/drivers/char/ipmi/ipmi_powernv.c
-+++ b/drivers/char/ipmi/ipmi_powernv.c
-@@ -15,6 +15,8 @@
- #include <linux/list.h>
- #include <linux/module.h>
- #include <linux/of.h>
-+#include <linux/of_irq.h>
-+#include <linux/interrupt.h>
- 
- #include <asm/opal.h>
- 
-@@ -23,8 +25,7 @@ struct ipmi_smi_powernv {
- 	u64			interface_id;
- 	struct ipmi_device_id	ipmi_id;
- 	ipmi_smi_t		intf;
--	u64			event;
--	struct notifier_block	event_nb;
-+	unsigned int		irq;
- 
- 	/**
- 	 * We assume that there can only be one outstanding request, so
-@@ -197,15 +198,12 @@ static struct ipmi_smi_handlers ipmi_powernv_smi_handlers = {
- 	.poll			= ipmi_powernv_poll,
- };
- 
--static int ipmi_opal_event(struct notifier_block *nb,
--			  unsigned long events, void *change)
-+static irqreturn_t ipmi_opal_event(int irq, void *data)
- {
--	struct ipmi_smi_powernv *smi = container_of(nb,
--					struct ipmi_smi_powernv, event_nb);
-+	struct ipmi_smi_powernv *smi = data;
- 
--	if (events & smi->event)
--		ipmi_powernv_recv(smi);
--	return 0;
-+	ipmi_powernv_recv(smi);
-+	return IRQ_HANDLED;
- }
- 
- static int ipmi_powernv_probe(struct platform_device *pdev)
-@@ -240,13 +238,16 @@ static int ipmi_powernv_probe(struct platform_device *pdev)
- 		goto err_free;
- 	}
- 
--	ipmi->event = 1ull << prop;
--	ipmi->event_nb.notifier_call = ipmi_opal_event;
-+	ipmi->irq = irq_of_parse_and_map(dev->of_node, 0);
-+	if (!ipmi->irq) {
-+		dev_info(dev, "Unable to map irq from device tree\n");
-+		ipmi->irq = opal_event_request(prop);
-+	}
- 
--	rc = opal_notifier_register(&ipmi->event_nb);
--	if (rc) {
--		dev_warn(dev, "OPAL notifier registration failed (%d)\n", rc);
--		goto err_free;
-+	if (request_irq(ipmi->irq, ipmi_opal_event, IRQ_TYPE_LEVEL_HIGH,
-+				"opal-ipmi", ipmi)) {
-+		dev_warn(dev, "Unable to request irq\n");
-+		goto err_dispose;
- 	}
- 
- 	ipmi->opal_msg = devm_kmalloc(dev,
-@@ -271,7 +272,9 @@ static int ipmi_powernv_probe(struct platform_device *pdev)
- err_free_msg:
- 	devm_kfree(dev, ipmi->opal_msg);
- err_unregister:
--	opal_notifier_unregister(&ipmi->event_nb);
-+	free_irq(ipmi->irq, ipmi);
-+err_dispose:
-+	irq_dispose_mapping(ipmi->irq);
- err_free:
- 	devm_kfree(dev, ipmi);
- 	return rc;
-@@ -282,7 +285,9 @@ static int ipmi_powernv_remove(struct platform_device *pdev)
- 	struct ipmi_smi_powernv *smi = dev_get_drvdata(&pdev->dev);
- 
- 	ipmi_unregister_smi(smi->intf);
--	opal_notifier_unregister(&smi->event_nb);
-+	free_irq(smi->irq, smi);
-+	irq_dispose_mapping(smi->irq);
-+
- 	return 0;
- }
- 
--- 
+This series solves these issues by exposing opal events via the
+standard interrupt APIs by adding a new interrupt chip and
+domain. Drivers can then register for the appropriate events using
+standard kernel calls such as irq_of_parse_and_map().
+
+Patches 2-8 of this series are the same as for v3.
+
+Changes from v3:
+ - Changed initialisation sequence to solve the following errors on
+   some machines:
+
+   irq: XICS didn't like hwirq-0xb to VIRQ17 mapping (rc=-22)
+   opal: opal_message_init: Can't register OPAL event irq (0)
+
+ - Added a poller to the OPAL heartbeat to support machines where OPAL
+   can't generate an interrupt for the host (eg. mambo)
+
+Changes from v2:
+ - Addressed comments by Neelesh Gupta
+ - Fixed soft-lockup bug reported by Neelesh in the opal-dump driver
+ - Rebased on v4.1-rc1
+
+Alistair Popple (9):
+  powerpc/powernv: Reorder OPAL subsystem initialisation
+  powerpc/powernv: Add a virtual irqchip for opal events
+  ipmi/powernv: Convert to irq event interface
+  hvc: Convert to using interrupts instead of opal events
+  powernv/eeh: Update the EEH code to use the opal irq domain
+  powernv/opal: Convert opal message events to opal irq domain
+  powernv/elog: Convert elog to opal irq domain
+  powernv/opal-dump: Convert to irq domain
+  opal: Remove events notifier
+
+ arch/powerpc/include/asm/opal.h                    |   6 +
+ arch/powerpc/platforms/powernv/Makefile            |   2 +-
+ arch/powerpc/platforms/powernv/eeh-powernv.c       |  58 ++---
+ arch/powerpc/platforms/powernv/opal-async.c        |   3 +-
+ arch/powerpc/platforms/powernv/opal-dump.c         |  56 ++---
+ arch/powerpc/platforms/powernv/opal-elog.c         |  32 +--
+ arch/powerpc/platforms/powernv/opal-hmi.c          |   3 +-
+ arch/powerpc/platforms/powernv/opal-irqchip.c      | 249 +++++++++++++++++++++
+ .../powerpc/platforms/powernv/opal-memory-errors.c |   2 +-
+ arch/powerpc/platforms/powernv/opal-sensor.c       |   3 +-
+ arch/powerpc/platforms/powernv/opal.c              | 196 +++-------------
+ arch/powerpc/platforms/powernv/powernv.h           |   3 +
+ arch/powerpc/platforms/powernv/setup.c             |   2 +-
+ drivers/char/ipmi/ipmi_powernv.c                   |  39 ++--
+ drivers/tty/hvc/hvc_opal.c                         |  33 +--
+ 15 files changed, 396 insertions(+), 291 deletions(-)
+ create mode 100644 arch/powerpc/platforms/powernv/opal-irqchip.c
+
+--
 1.8.3.2
