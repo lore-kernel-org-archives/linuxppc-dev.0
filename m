@@ -1,30 +1,30 @@
 Return-Path: <weiyang@linux.vnet.ibm.com>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7532C1A0AD2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 23:38:56 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 57D271A0BE9
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 23:39:17 +1000 (AEST)
 Received: from /spool/local
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
- Fri, 15 May 2015 23:38:54 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 37526357804C
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 23:38:53 +1000 (EST)
+ Fri, 15 May 2015 23:39:16 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 4587D3578048
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 23:39:14 +1000 (EST)
 Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t4FDcisj37683320
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 23:38:53 +1000
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t4FDd5sT50462820
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 23:39:13 +1000
 Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
  by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t4FDcK7U010609
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 23:38:20 +1000
+ t4FDcfZ0010857
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 23:38:41 +1000
 From: Wei Yang <weiyang@linux.vnet.ibm.com>
 To: gwshan@linux.vnet.ibm.com, bhelgaas@google.com
-Subject: [PATCH V5 02/10] powerpc/pci_dn: cache vf_index in pci_dn
-Date: Fri, 15 May 2015 21:36:56 +0800
-Message-Id: <1431697024-5710-3-git-send-email-weiyang@linux.vnet.ibm.com>
+Subject: [PATCH V5 03/10] powerpc/pci: remove PCI devices in reverse order
+Date: Fri, 15 May 2015 21:36:57 +0800
+Message-Id: <1431697024-5710-4-git-send-email-weiyang@linux.vnet.ibm.com>
 In-Reply-To: <1431697024-5710-1-git-send-email-weiyang@linux.vnet.ibm.com>
 References: <1431697024-5710-1-git-send-email-weiyang@linux.vnet.ibm.com>
 Cc: linux-pci@vger.kernel.org, Wei Yang <weiyang@linux.vnet.ibm.com>,
@@ -38,58 +38,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The patch caches the VF index in pci_dn, which can be used to calculate
-VF's bus, device and function number. Those information helps to locate
-the VF's PCI device instance when doing hotplug during EEH recovery if
-necessary.
+As commit ac205b7b ("PCI: make sriov work with hotplug remove") indicates,
+when removing PCI devices on a bus which has VFs, we need to remove them
+in the reverse order.
+
+This patch applies this pattern to the hotplug removal code for the powerpc
+arch.
 
 Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
 Acked-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/pci-bridge.h |    1 +
- arch/powerpc/kernel/pci_dn.c          |    4 +++-
- 2 files changed, 4 insertions(+), 1 deletion(-)
+ arch/powerpc/kernel/pci-hotplug.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
-index 1811c44..d78afe4 100644
---- a/arch/powerpc/include/asm/pci-bridge.h
-+++ b/arch/powerpc/include/asm/pci-bridge.h
-@@ -199,6 +199,7 @@ struct pci_dn {
- #ifdef CONFIG_PCI_IOV
- 	u16     vfs_expanded;		/* number of VFs IOV BAR expanded */
- 	u16     num_vfs;		/* number of VFs enabled*/
-+	int     vf_index;		/* VF index in the PF */
- 	int     offset;			/* PE# for the first VF PE */
- #define M64_PER_IOV 4
- 	int     m64_per_iov;
-diff --git a/arch/powerpc/kernel/pci_dn.c b/arch/powerpc/kernel/pci_dn.c
-index b3b4df9..f771130 100644
---- a/arch/powerpc/kernel/pci_dn.c
-+++ b/arch/powerpc/kernel/pci_dn.c
-@@ -139,6 +139,7 @@ struct pci_dn *pci_get_pdn(struct pci_dev *pdev)
- #ifdef CONFIG_PCI_IOV
- static struct pci_dn *add_one_dev_pci_data(struct pci_dn *parent,
- 					   struct pci_dev *pdev,
-+					   int vf_index,
- 					   int busno, int devfn)
- {
- 	struct pci_dn *pdn;
-@@ -157,6 +158,7 @@ static struct pci_dn *add_one_dev_pci_data(struct pci_dn *parent,
- 	pdn->parent = parent;
- 	pdn->busno = busno;
- 	pdn->devfn = devfn;
-+	pdn->vf_index = vf_index;
- #ifdef CONFIG_PPC_POWERNV
- 	pdn->pe_number = IODA_INVALID_PE;
- #endif
-@@ -196,7 +198,7 @@ struct pci_dn *add_dev_pci_data(struct pci_dev *pdev)
- 		return NULL;
+diff --git a/arch/powerpc/kernel/pci-hotplug.c b/arch/powerpc/kernel/pci-hotplug.c
+index 7ed85a6..98f84ed 100644
+--- a/arch/powerpc/kernel/pci-hotplug.c
++++ b/arch/powerpc/kernel/pci-hotplug.c
+@@ -50,7 +50,7 @@ void pcibios_remove_pci_devices(struct pci_bus *bus)
  
- 	for (i = 0; i < pci_sriov_get_totalvfs(pdev); i++) {
--		pdn = add_one_dev_pci_data(parent, NULL,
-+		pdn = add_one_dev_pci_data(parent, NULL, i,
- 					   pci_iov_virtfn_bus(pdev, i),
- 					   pci_iov_virtfn_devfn(pdev, i));
- 		if (!pdn) {
+ 	pr_debug("PCI: Removing devices on bus %04x:%02x\n",
+ 		 pci_domain_nr(bus),  bus->number);
+-	list_for_each_entry_safe(dev, tmp, &bus->devices, bus_list) {
++	list_for_each_entry_safe_reverse(dev, tmp, &bus->devices, bus_list) {
+ 		pr_debug("   Removing %s...\n", pci_name(dev));
+ 		pci_stop_and_remove_bus_device(dev);
+ 	}
 -- 
 1.7.9.5
