@@ -1,31 +1,30 @@
 Return-Path: <apopple@au1.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BE8A01A0612
+ by lists.ozlabs.org (Postfix) with ESMTPS id BEE2F1A065D
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 14:08:13 +1000 (AEST)
 Received: from /spool/local
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <apopple@au1.ibm.com>;
- Fri, 15 May 2015 14:08:12 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 3D9783578055
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 14:08:10 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t4F482db11534518
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 14:08:10 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t4F47bSE025860
+ Fri, 15 May 2015 14:08:13 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id E95E53578052
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 14:08:09 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t4F481NV26411050
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 14:08:09 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t4F47bbW003494
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 14:07:37 +1000
 From: Alistair Popple <alistair@popple.id.au>
 To: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
-Subject: [PATCH v4 6/9] powernv/opal: Convert opal message events to opal irq
- domain
-Date: Fri, 15 May 2015 14:06:41 +1000
-Message-Id: <1431662804-16851-7-git-send-email-alistair@popple.id.au>
+Subject: [PATCH v4 7/9] powernv/elog: Convert elog to opal irq domain
+Date: Fri, 15 May 2015 14:06:42 +1000
+Message-Id: <1431662804-16851-8-git-send-email-alistair@popple.id.au>
 In-Reply-To: <1431662804-16851-1-git-send-email-alistair@popple.id.au>
 References: <1431662804-16851-1-git-send-email-alistair@popple.id.au>
 Cc: Alistair Popple <alistair@popple.id.au>, linux-kernel@vger.kernel.org
@@ -38,66 +37,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch converts the opal message event to use the new opal irq
-domain.
+This patch converts the elog code to use the opal irq domain instead
+of notifier events.
 
 Signed-off-by: Alistair Popple <alistair@popple.id.au>
 ---
- arch/powerpc/platforms/powernv/opal.c | 29 +++++++++++++++--------------
- 1 file changed, 15 insertions(+), 14 deletions(-)
+ arch/powerpc/platforms/powernv/opal-elog.c | 32 +++++++++++++++---------------
+ 1 file changed, 16 insertions(+), 16 deletions(-)
 
-diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
-index 3baca71..cd5718b 100644
---- a/arch/powerpc/platforms/powernv/opal.c
-+++ b/arch/powerpc/platforms/powernv/opal.c
-@@ -362,33 +362,34 @@ static void opal_handle_message(void)
- 	opal_message_do_notify(type, (void *)&msg);
- }
+diff --git a/arch/powerpc/platforms/powernv/opal-elog.c b/arch/powerpc/platforms/powernv/opal-elog.c
+index 38ce757..4949ef0 100644
+--- a/arch/powerpc/platforms/powernv/opal-elog.c
++++ b/arch/powerpc/platforms/powernv/opal-elog.c
+@@ -10,6 +10,7 @@
+  */
+ #include <linux/kernel.h>
+ #include <linux/init.h>
++#include <linux/interrupt.h>
+ #include <linux/of.h>
+ #include <linux/slab.h>
+ #include <linux/sysfs.h>
+@@ -276,24 +277,15 @@ static void elog_work_fn(struct work_struct *work)
  
--static int opal_message_notify(struct notifier_block *nb,
--			  unsigned long events, void *change)
-+static irqreturn_t opal_message_notify(int irq, void *data)
+ static DECLARE_WORK(elog_work, elog_work_fn);
+ 
+-static int elog_event(struct notifier_block *nb,
+-				unsigned long events, void *change)
++static irqreturn_t elog_event(int irq, void *data)
  {
--	if (events & OPAL_EVENT_MSG_PENDING)
--		opal_handle_message();
+-	/* check for error log event */
+-	if (events & OPAL_EVENT_ERROR_LOG_AVAIL)
+-		schedule_work(&elog_work);
 -	return 0;
-+	opal_handle_message();
++	schedule_work(&elog_work);
 +	return IRQ_HANDLED;
  }
  
--static struct notifier_block opal_message_nb = {
--	.notifier_call	= opal_message_notify,
--	.next		= NULL,
--	.priority	= 0,
+-static struct notifier_block elog_nb = {
+-	.notifier_call  = elog_event,
+-	.next           = NULL,
+-	.priority       = 0
 -};
 -
- static int __init opal_message_init(void)
+ int __init opal_elog_init(void)
  {
--	int ret, i;
-+	int ret, i, irq;
+-	int rc = 0;
++	int rc = 0, irq;
  
- 	for (i = 0; i < OPAL_MSG_TYPE_MAX; i++)
- 		ATOMIC_INIT_NOTIFIER_HEAD(&opal_msg_notifier_head[i]);
+ 	/* ELOG not supported by firmware */
+ 	if (!opal_check_token(OPAL_ELOG_READ))
+@@ -305,10 +297,18 @@ int __init opal_elog_init(void)
+ 		return -1;
+ 	}
  
--	ret = opal_notifier_register(&opal_message_nb);
-+	irq = opal_event_request(ilog2(OPAL_EVENT_MSG_PENDING));
+-	rc = opal_notifier_register(&elog_nb);
++	irq = opal_event_request(ilog2(OPAL_EVENT_ERROR_LOG_AVAIL));
 +	if (!irq) {
 +		pr_err("%s: Can't register OPAL event irq (%d)\n",
 +		       __func__, irq);
 +		return irq;
 +	}
 +
-+	ret = request_irq(irq, opal_message_notify,
-+			IRQ_TYPE_LEVEL_HIGH, "opal-msg", NULL);
- 	if (ret) {
++	rc = request_irq(irq, elog_event,
++			IRQ_TYPE_LEVEL_HIGH, "opal-elog", NULL);
+ 	if (rc) {
 -		pr_err("%s: Can't register OPAL event notifier (%d)\n",
+-		__func__, rc);
 +		pr_err("%s: Can't request OPAL event irq (%d)\n",
- 		       __func__, ret);
- 		return ret;
++		       __func__, rc);
+ 		return rc;
  	}
-+
- 	return 0;
- }
  
 -- 
 1.8.3.2
