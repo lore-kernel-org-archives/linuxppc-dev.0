@@ -2,32 +2,34 @@ Return-Path: <apopple@au1.ibm.com>
 Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1CA771A0484
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1ED731A048B
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 14:07:50 +1000 (AEST)
 Received: from /spool/local
  by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <apopple@au1.ibm.com>;
- Fri, 15 May 2015 14:07:48 +1000
-Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 540503578048
+ Fri, 15 May 2015 14:07:49 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 590322BB005A
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 14:07:46 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t4F47cMS46071946
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t4F47baC20250734
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 14:07:46 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t4F47DsK022009
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t4F47DiO025246
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 14:07:13 +1000
 From: Alistair Popple <alistair@popple.id.au>
 To: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
-Subject: [PATCH v4 4/9] hvc: Convert to using interrupts instead of opal events
-Date: Fri, 15 May 2015 14:06:39 +1000
-Message-Id: <1431662804-16851-5-git-send-email-alistair@popple.id.au>
+Subject: [PATCH v4 3/9] ipmi/powernv: Convert to irq event interface
+Date: Fri, 15 May 2015 14:06:38 +1000
+Message-Id: <1431662804-16851-4-git-send-email-alistair@popple.id.au>
 In-Reply-To: <1431662804-16851-1-git-send-email-alistair@popple.id.au>
 References: <1431662804-16851-1-git-send-email-alistair@popple.id.au>
-Cc: Alistair Popple <alistair@popple.id.au>, linux-kernel@vger.kernel.org
+Cc: Alistair Popple <alistair@popple.id.au>,
+ openipmi-developer@lists.sourceforge.net, linux-kernel@vger.kernel.org,
+ Corey Minyard <minyard@acm.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,90 +39,101 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Convert the opal hvc driver to use the new irqchip to register for
-opal events. As older firmware versions may not have device tree
-bindings for the interrupt parent we just use a hardcoded hwirq based
-on the event number.
+Convert the opal ipmi driver to use the new irq interface for events.
 
 Signed-off-by: Alistair Popple <alistair@popple.id.au>
+Acked-by: Corey Minyard <cminyard@mvista.com>
+Cc: Corey Minyard <minyard@acm.org>
+Cc: openipmi-developer@lists.sourceforge.net
 ---
- drivers/tty/hvc/hvc_opal.c | 33 ++++++++++-----------------------
- 1 file changed, 10 insertions(+), 23 deletions(-)
+ drivers/char/ipmi/ipmi_powernv.c | 39 ++++++++++++++++++++++-----------------
+ 1 file changed, 22 insertions(+), 17 deletions(-)
 
-diff --git a/drivers/tty/hvc/hvc_opal.c b/drivers/tty/hvc/hvc_opal.c
-index 543b234..47b54c6 100644
---- a/drivers/tty/hvc/hvc_opal.c
-+++ b/drivers/tty/hvc/hvc_opal.c
-@@ -29,6 +29,7 @@
+diff --git a/drivers/char/ipmi/ipmi_powernv.c b/drivers/char/ipmi/ipmi_powernv.c
+index 8753b0f..9b409c0 100644
+--- a/drivers/char/ipmi/ipmi_powernv.c
++++ b/drivers/char/ipmi/ipmi_powernv.c
+@@ -15,6 +15,8 @@
+ #include <linux/list.h>
+ #include <linux/module.h>
  #include <linux/of.h>
- #include <linux/of_platform.h>
- #include <linux/export.h>
++#include <linux/of_irq.h>
 +#include <linux/interrupt.h>
  
- #include <asm/hvconsole.h>
- #include <asm/prom.h>
-@@ -61,7 +62,6 @@ static struct hvc_opal_priv *hvc_opal_privs[MAX_NR_HVC_CONSOLES];
- /* For early boot console */
- static struct hvc_opal_priv hvc_opal_boot_priv;
- static u32 hvc_opal_boot_termno;
--static bool hvc_opal_event_registered;
+ #include <asm/opal.h>
  
- static const struct hv_ops hvc_opal_raw_ops = {
- 	.get_chars = opal_get_chars,
-@@ -162,28 +162,15 @@ static const struct hv_ops hvc_opal_hvsi_ops = {
- 	.tiocmset = hvc_opal_hvsi_tiocmset,
+@@ -23,8 +25,7 @@ struct ipmi_smi_powernv {
+ 	u64			interface_id;
+ 	struct ipmi_device_id	ipmi_id;
+ 	ipmi_smi_t		intf;
+-	u64			event;
+-	struct notifier_block	event_nb;
++	unsigned int		irq;
+ 
+ 	/**
+ 	 * We assume that there can only be one outstanding request, so
+@@ -197,15 +198,12 @@ static struct ipmi_smi_handlers ipmi_powernv_smi_handlers = {
+ 	.poll			= ipmi_powernv_poll,
  };
  
--static int hvc_opal_console_event(struct notifier_block *nb,
--				  unsigned long events, void *change)
--{
--	if (events & OPAL_EVENT_CONSOLE_INPUT)
--		hvc_kick();
--	return 0;
--}
--
--static struct notifier_block hvc_opal_console_nb = {
--	.notifier_call	= hvc_opal_console_event,
--};
--
- static int hvc_opal_probe(struct platform_device *dev)
+-static int ipmi_opal_event(struct notifier_block *nb,
+-			  unsigned long events, void *change)
++static irqreturn_t ipmi_opal_event(int irq, void *data)
  {
- 	const struct hv_ops *ops;
- 	struct hvc_struct *hp;
- 	struct hvc_opal_priv *pv;
- 	hv_protocol_t proto;
--	unsigned int termno, boot = 0;
-+	unsigned int termno, irq, boot = 0;
- 	const __be32 *reg;
+-	struct ipmi_smi_powernv *smi = container_of(nb,
+-					struct ipmi_smi_powernv, event_nb);
++	struct ipmi_smi_powernv *smi = data;
  
--
- 	if (of_device_is_compatible(dev->dev.of_node, "ibm,opal-console-raw")) {
- 		proto = HV_PROTOCOL_RAW;
- 		ops = &hvc_opal_raw_ops;
-@@ -227,18 +214,18 @@ static int hvc_opal_probe(struct platform_device *dev)
- 		dev->dev.of_node->full_name,
- 		boot ? " (boot console)" : "");
+-	if (events & smi->event)
+-		ipmi_powernv_recv(smi);
+-	return 0;
++	ipmi_powernv_recv(smi);
++	return IRQ_HANDLED;
+ }
  
--	/* We don't do IRQ ... */
--	hp = hvc_alloc(termno, 0, ops, MAX_VIO_PUT_CHARS);
-+	irq = opal_event_request(ilog2(OPAL_EVENT_CONSOLE_INPUT));
-+	if (!irq) {
-+		pr_err("hvc_opal: Unable to map interrupt for device %s\n",
-+			dev->dev.of_node->full_name);
-+		return irq;
+ static int ipmi_powernv_probe(struct platform_device *pdev)
+@@ -240,13 +238,16 @@ static int ipmi_powernv_probe(struct platform_device *pdev)
+ 		goto err_free;
+ 	}
+ 
+-	ipmi->event = 1ull << prop;
+-	ipmi->event_nb.notifier_call = ipmi_opal_event;
++	ipmi->irq = irq_of_parse_and_map(dev->of_node, 0);
++	if (!ipmi->irq) {
++		dev_info(dev, "Unable to map irq from device tree\n");
++		ipmi->irq = opal_event_request(prop);
 +	}
-+
-+	hp = hvc_alloc(termno, irq, ops, MAX_VIO_PUT_CHARS);
- 	if (IS_ERR(hp))
- 		return PTR_ERR(hp);
- 	dev_set_drvdata(&dev->dev, hp);
  
--	/* ...  but we use OPAL event to kick the console */
--	if (!hvc_opal_event_registered) {
--		opal_notifier_register(&hvc_opal_console_nb);
--		hvc_opal_event_registered = true;
--	}
--
+-	rc = opal_notifier_register(&ipmi->event_nb);
+-	if (rc) {
+-		dev_warn(dev, "OPAL notifier registration failed (%d)\n", rc);
+-		goto err_free;
++	if (request_irq(ipmi->irq, ipmi_opal_event, IRQ_TYPE_LEVEL_HIGH,
++				"opal-ipmi", ipmi)) {
++		dev_warn(dev, "Unable to request irq\n");
++		goto err_dispose;
+ 	}
+ 
+ 	ipmi->opal_msg = devm_kmalloc(dev,
+@@ -271,7 +272,9 @@ static int ipmi_powernv_probe(struct platform_device *pdev)
+ err_free_msg:
+ 	devm_kfree(dev, ipmi->opal_msg);
+ err_unregister:
+-	opal_notifier_unregister(&ipmi->event_nb);
++	free_irq(ipmi->irq, ipmi);
++err_dispose:
++	irq_dispose_mapping(ipmi->irq);
+ err_free:
+ 	devm_kfree(dev, ipmi);
+ 	return rc;
+@@ -282,7 +285,9 @@ static int ipmi_powernv_remove(struct platform_device *pdev)
+ 	struct ipmi_smi_powernv *smi = dev_get_drvdata(&pdev->dev);
+ 
+ 	ipmi_unregister_smi(smi->intf);
+-	opal_notifier_unregister(&smi->event_nb);
++	free_irq(smi->irq, smi);
++	irq_dispose_mapping(smi->irq);
++
  	return 0;
  }
  
