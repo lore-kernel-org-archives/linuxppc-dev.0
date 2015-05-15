@@ -1,31 +1,30 @@
 Return-Path: <apopple@au1.ibm.com>
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0F04D1A08B2
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 14:08:12 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id BF10A1A0780
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 14:08:13 +1000 (AEST)
 Received: from /spool/local
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <apopple@au1.ibm.com>;
- Fri, 15 May 2015 14:08:11 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id DF7D02CE804E
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 14:08:09 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t4F481dT31391976
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 14:08:09 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t4F47bS9025850
+ Fri, 15 May 2015 14:08:13 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 435342BB0040
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 14:08:10 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t4F482MK29229150
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 14:08:10 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t4F47bkw025347
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 14:07:37 +1000
 From: Alistair Popple <alistair@popple.id.au>
 To: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
-Subject: [PATCH v4 5/9] powernv/eeh: Update the EEH code to use the opal irq
- domain
-Date: Fri, 15 May 2015 14:06:40 +1000
-Message-Id: <1431662804-16851-6-git-send-email-alistair@popple.id.au>
+Subject: [PATCH v4 9/9] opal: Remove events notifier
+Date: Fri, 15 May 2015 14:06:44 +1000
+Message-Id: <1431662804-16851-10-git-send-email-alistair@popple.id.au>
 In-Reply-To: <1431662804-16851-1-git-send-email-alistair@popple.id.au>
 References: <1431662804-16851-1-git-send-email-alistair@popple.id.au>
 Cc: Alistair Popple <alistair@popple.id.au>, linux-kernel@vger.kernel.org
@@ -38,136 +37,190 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The eeh code currently uses the old notifier method to get eeh events
-from OPAL. It also contains some logic to filter opal events which has
-been moved into the virtual irqchip. This patch converts the eeh code
-to the new event interface which simplifies event handling.
+All users of the old opal events notifier have been converted over to
+the irq domain so remove the event notifier functions.
 
 Signed-off-by: Alistair Popple <alistair@popple.id.au>
 ---
- arch/powerpc/platforms/powernv/eeh-powernv.c | 58 +++++++++++++++-------------
- 1 file changed, 31 insertions(+), 27 deletions(-)
+ arch/powerpc/platforms/powernv/opal-irqchip.c | 16 ++---
+ arch/powerpc/platforms/powernv/opal.c         | 84 +--------------------------
+ arch/powerpc/platforms/powernv/powernv.h      |  1 -
+ arch/powerpc/platforms/powernv/setup.c        |  2 +-
+ 4 files changed, 8 insertions(+), 95 deletions(-)
 
-diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
-index ce738ab..ca825ec 100644
---- a/arch/powerpc/platforms/powernv/eeh-powernv.c
-+++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
-@@ -16,6 +16,7 @@
- #include <linux/delay.h>
- #include <linux/export.h>
- #include <linux/init.h>
-+#include <linux/interrupt.h>
- #include <linux/list.h>
- #include <linux/msi.h>
- #include <linux/of.h>
-@@ -40,6 +41,7 @@
- #include "pci.h"
- 
- static bool pnv_eeh_nb_init = false;
-+static int eeh_event_irq = -EINVAL;
- 
- /**
-  * pnv_eeh_init - EEH platform dependent initialization
-@@ -88,34 +90,22 @@ static int pnv_eeh_init(void)
- 	return 0;
- }
- 
--static int pnv_eeh_event(struct notifier_block *nb,
--			 unsigned long events, void *change)
-+static irqreturn_t pnv_eeh_event(int irq, void *data)
+diff --git a/arch/powerpc/platforms/powernv/opal-irqchip.c b/arch/powerpc/platforms/powernv/opal-irqchip.c
+index bd5125d..841135f 100644
+--- a/arch/powerpc/platforms/powernv/opal-irqchip.c
++++ b/arch/powerpc/platforms/powernv/opal-irqchip.c
+@@ -100,7 +100,6 @@ void opal_handle_events(uint64_t events)
  {
--	uint64_t changed_evts = (uint64_t)change;
--
- 	/*
--	 * We simply send special EEH event if EEH has
--	 * been enabled, or clear pending events in
--	 * case that we enable EEH soon
-+	 * We simply send a special EEH event if EEH has been
-+	 * enabled. We don't care about EEH events until we've
-+	 * finished processing the outstanding ones. Event processing
-+	 * gets unmasked in next_error() if EEH is enabled.
- 	 */
--	if (!(changed_evts & OPAL_EVENT_PCI_ERROR) ||
--	    !(events & OPAL_EVENT_PCI_ERROR))
--		return 0;
-+	disable_irq_nosync(irq);
+ 	int virq, hwirq = 0;
+ 	u64 mask = opal_event_irqchip.mask;
+-	u64 notifier_mask = 0;
  
- 	if (eeh_enabled())
- 		eeh_send_failure_event(NULL);
--	else
--		opal_notifier_update_evt(OPAL_EVENT_PCI_ERROR, 0x0ul);
+ 	if (!in_irq() && (events & mask)) {
+ 		last_outstanding_events = events;
+@@ -108,19 +107,16 @@ void opal_handle_events(uint64_t events)
+ 		return;
+ 	}
  
--	return 0;
-+	return IRQ_HANDLED;
- }
- 
--static struct notifier_block pnv_eeh_nb = {
--	.notifier_call	= pnv_eeh_event,
--	.next		= NULL,
--	.priority	= 0
--};
--
- #ifdef CONFIG_DEBUG_FS
- static ssize_t pnv_eeh_ei_write(struct file *filp,
- 				const char __user *user_buf,
-@@ -237,16 +227,28 @@ static int pnv_eeh_post_init(void)
- 
- 	/* Register OPAL event notifier */
- 	if (!pnv_eeh_nb_init) {
--		ret = opal_notifier_register(&pnv_eeh_nb);
--		if (ret) {
--			pr_warn("%s: Can't register OPAL event notifier (%d)\n",
--				__func__, ret);
-+		eeh_event_irq = opal_event_request(ilog2(OPAL_EVENT_PCI_ERROR));
-+		if (eeh_event_irq < 0) {
-+			pr_err("%s: Can't register OPAL event interrupt (%d)\n",
-+			       __func__, eeh_event_irq);
-+			return eeh_event_irq;
+-	while (events) {
++	while (events & mask) {
+ 		hwirq = fls64(events) - 1;
+-		virq = irq_find_mapping(opal_event_irqchip.domain,
+-					hwirq);
+-		if (virq) {
+-			if (BIT_ULL(hwirq) & mask)
++		if (BIT_ULL(hwirq) & mask) {
++			virq = irq_find_mapping(opal_event_irqchip.domain,
++						hwirq);
++			if (virq)
+ 				generic_handle_irq(virq);
+-		} else
+-			notifier_mask |= BIT_ULL(hwirq);
 +		}
-+
-+		ret = request_irq(eeh_event_irq, pnv_eeh_event,
-+				IRQ_TYPE_LEVEL_HIGH, "opal-eeh", NULL);
-+		if (ret < 0) {
-+			irq_dispose_mapping(eeh_event_irq);
-+			pr_err("%s: Can't request OPAL event interrupt (%d)\n",
-+			       __func__, eeh_event_irq);
- 			return ret;
- 		}
- 
- 		pnv_eeh_nb_init = true;
+ 		events &= ~BIT_ULL(hwirq);
  	}
- 
-+	if (!eeh_enabled())
-+		disable_irq(eeh_event_irq);
-+
- 	list_for_each_entry(hose, &hose_list, list_node) {
- 		phb = hose->private_data;
- 
-@@ -1303,12 +1305,10 @@ static int pnv_eeh_next_error(struct eeh_pe **pe)
- 	int state, ret = EEH_NEXT_ERR_NONE;
- 
- 	/*
--	 * While running here, it's safe to purge the event queue.
--	 * And we should keep the cached OPAL notifier event sychronized
--	 * between the kernel and firmware.
-+	 * While running here, it's safe to purge the event queue. The
-+	 * event should still be masked.
- 	 */
- 	eeh_remove_event(NULL, false);
--	opal_notifier_update_evt(OPAL_EVENT_PCI_ERROR, 0x0ul);
- 
- 	list_for_each_entry(hose, &hose_list, list_node) {
- 		/*
-@@ -1477,6 +1477,10 @@ static int pnv_eeh_next_error(struct eeh_pe **pe)
- 			break;
- 	}
- 
-+	/* Unmask the event */
-+	if (eeh_enabled())
-+		enable_irq(eeh_event_irq);
-+
- 	return ret;
+-
+-	opal_do_notifier(notifier_mask);
  }
  
+ static irqreturn_t opal_interrupt(int irq, void *data)
+diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
+index cd5718b..8403307 100644
+--- a/arch/powerpc/platforms/powernv/opal.c
++++ b/arch/powerpc/platforms/powernv/opal.c
+@@ -53,11 +53,7 @@ static int mc_recoverable_range_len;
+ 
+ struct device_node *opal_node;
+ static DEFINE_SPINLOCK(opal_write_lock);
+-static ATOMIC_NOTIFIER_HEAD(opal_notifier_head);
+ static struct atomic_notifier_head opal_msg_notifier_head[OPAL_MSG_TYPE_MAX];
+-static DEFINE_SPINLOCK(opal_notifier_lock);
+-static uint64_t last_notified_mask = 0x0ul;
+-static atomic_t opal_notifier_hold = ATOMIC_INIT(0);
+ static uint32_t opal_heartbeat;
+ 
+ static void opal_reinit_cores(void)
+@@ -223,82 +219,6 @@ static int __init opal_register_exception_handlers(void)
+ }
+ machine_early_initcall(powernv, opal_register_exception_handlers);
+ 
+-int opal_notifier_register(struct notifier_block *nb)
+-{
+-	if (!nb) {
+-		pr_warning("%s: Invalid argument (%p)\n",
+-			   __func__, nb);
+-		return -EINVAL;
+-	}
+-
+-	atomic_notifier_chain_register(&opal_notifier_head, nb);
+-	return 0;
+-}
+-EXPORT_SYMBOL_GPL(opal_notifier_register);
+-
+-int opal_notifier_unregister(struct notifier_block *nb)
+-{
+-	if (!nb) {
+-		pr_warning("%s: Invalid argument (%p)\n",
+-			   __func__, nb);
+-		return -EINVAL;
+-	}
+-
+-	atomic_notifier_chain_unregister(&opal_notifier_head, nb);
+-	return 0;
+-}
+-EXPORT_SYMBOL_GPL(opal_notifier_unregister);
+-
+-void opal_do_notifier(uint64_t events)
+-{
+-	unsigned long flags;
+-	uint64_t changed_mask;
+-
+-	if (atomic_read(&opal_notifier_hold))
+-		return;
+-
+-	spin_lock_irqsave(&opal_notifier_lock, flags);
+-	changed_mask = last_notified_mask ^ events;
+-	last_notified_mask = events;
+-	spin_unlock_irqrestore(&opal_notifier_lock, flags);
+-
+-	/*
+-	 * We feed with the event bits and changed bits for
+-	 * enough information to the callback.
+-	 */
+-	atomic_notifier_call_chain(&opal_notifier_head,
+-				   events, (void *)changed_mask);
+-}
+-
+-void opal_notifier_update_evt(uint64_t evt_mask,
+-			      uint64_t evt_val)
+-{
+-	unsigned long flags;
+-
+-	spin_lock_irqsave(&opal_notifier_lock, flags);
+-	last_notified_mask &= ~evt_mask;
+-	last_notified_mask |= evt_val;
+-	spin_unlock_irqrestore(&opal_notifier_lock, flags);
+-}
+-
+-void opal_notifier_enable(void)
+-{
+-	int64_t rc;
+-	__be64 evt = 0;
+-
+-	atomic_set(&opal_notifier_hold, 0);
+-
+-	/* Process pending events */
+-	rc = opal_poll_events(&evt);
+-	if (rc == OPAL_SUCCESS && evt)
+-		opal_do_notifier(be64_to_cpu(evt));
+-}
+-
+-void opal_notifier_disable(void)
+-{
+-	atomic_set(&opal_notifier_hold, 1);
+-}
+-
+ /*
+  * Opal message notifier based on message type. Allow subscribers to get
+  * notified for specific messgae type.
+@@ -570,10 +490,8 @@ int opal_handle_hmi_exception(struct pt_regs *regs)
+ 
+ 	local_paca->hmi_event_available = 0;
+ 	rc = opal_poll_events(&evt);
+-	if (rc == OPAL_SUCCESS && evt) {
+-		opal_do_notifier(be64_to_cpu(evt));
++	if (rc == OPAL_SUCCESS && evt)
+ 		opal_handle_events(be64_to_cpu(evt));
+-	}
+ 
+ 	return 1;
+ }
+diff --git a/arch/powerpc/platforms/powernv/powernv.h b/arch/powerpc/platforms/powernv/powernv.h
+index 221d4c8..f907f0a 100644
+--- a/arch/powerpc/platforms/powernv/powernv.h
++++ b/arch/powerpc/platforms/powernv/powernv.h
+@@ -35,7 +35,6 @@ extern u32 pnv_get_supported_cpuidle_states(void);
+ 
+ extern void pnv_lpc_init(void);
+ 
+-extern void opal_do_notifier(uint64_t events);
+ extern void opal_handle_events(uint64_t events);
+ extern void opal_event_shutdown(void);
+ 
+diff --git a/arch/powerpc/platforms/powernv/setup.c b/arch/powerpc/platforms/powernv/setup.c
+index 16fdcb2..399f1d7 100644
+--- a/arch/powerpc/platforms/powernv/setup.c
++++ b/arch/powerpc/platforms/powernv/setup.c
+@@ -111,7 +111,7 @@ static void pnv_prepare_going_down(void)
+ 	 * Disable all notifiers from OPAL, we can't
+ 	 * service interrupts anymore anyway
+ 	 */
+-	opal_notifier_disable();
++	opal_event_shutdown();
+ 
+ 	/* Soft disable interrupts */
+ 	local_irq_disable();
 -- 
 1.8.3.2
