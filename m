@@ -1,40 +1,57 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
+Return-Path: <borntraeger@de.ibm.com>
+Received: from e06smtp15.uk.ibm.com (e06smtp15.uk.ibm.com [195.75.94.111])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E0BD71A042B
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 May 2015 01:54:49 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 621801A042B
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 May 2015 01:58:52 +1000 (AEST)
 Received: from /spool/local
- by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp15.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Fri, 15 May 2015 21:24:47 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 7DDAAE0057
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 21:27:46 +0530 (IST)
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t4FFsjcX53084378
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 21:24:46 +0530
-Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
- by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t4FFshnF017655
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 21:24:45 +0530
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: akpm@linux-foundation.org, benh@kernel.crashing.org, paulus@samba.org,
- mpe@ellerman.id.au, kirill.shutemov@linux.intel.com,
- aarcange@redhat.com, schwidefsky@de.ibm.com
-Subject: Re: [PATCH V5 1/3] mm/thp: Split out pmd collpase flush into a
- separate functions
-In-Reply-To: <1431704550-19937-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-References: <1431704550-19937-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
- <1431704550-19937-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-Date: Fri, 15 May 2015 21:24:43 +0530
-Message-ID: <871tihn8e4.fsf@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <borntraeger@de.ibm.com>;
+ Fri, 15 May 2015 16:58:48 +0100
+Received: from b06cxnps3074.portsmouth.uk.ibm.com
+ (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
+ by d06dlp01.portsmouth.uk.ibm.com (Postfix) with ESMTP id 9C3D717D805A
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 16:59:35 +0100 (BST)
+Received: from d06av04.portsmouth.uk.ibm.com (d06av04.portsmouth.uk.ibm.com
+ [9.149.37.216])
+ by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t4FFwkIA10093002
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 15:58:46 GMT
+Received: from d06av04.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av04.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t4FFweC5021317
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 09:58:45 -0600
+Message-ID: <555617AE.9030508@de.ibm.com>
+Date: Fri, 15 May 2015 17:58:38 +0200
+From: Christian Borntraeger <borntraeger@de.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain
-Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
+To: =?UTF-8?B?QWxleCBCZW5uw6ll?= <alex.bennee@linaro.org>, kvm@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, kvmarm@lists.cs.columbia.edu,
+ christoffer.dall@linaro.org, marc.zyngier@arm.com,
+ peter.maydell@linaro.org, agraf@suse.de, drjones@redhat.com,
+ pbonzini@redhat.com, zhichao.huang@linaro.org
+Subject: Re: [PATCH v4 02/12] KVM: define common KVM_GUESTDBG_USE_SW/HW_BP bits
+References: <1431700035-23479-1-git-send-email-alex.bennee@linaro.org>
+ <1431700035-23479-3-git-send-email-alex.bennee@linaro.org>
+In-Reply-To: <1431700035-23479-3-git-send-email-alex.bennee@linaro.org>
+Content-Type: text/plain; charset=utf-8
+Cc: Tony Krowiak <akrowiak@linux.vnet.ibm.com>,
+ Alexey Kardashevskiy <aik@ozlabs.ru>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ Bharat Bhushan <Bharat.Bhushan@freescale.com>,
+ Paul Mackerras <paulus@samba.org>, "H. Peter Anvin" <hpa@zytor.com>,
+ linux-s390@vger.kernel.org, Michael Mueller <mimu@linux.vnet.ibm.com>,
+ Nadav Amit <namit@cs.technion.ac.il>, x86@kernel.org,
+ Ingo Molnar <mingo@redhat.com>, "Jason J. Herne" <jjherne@linux.vnet.ibm.com>,
+ jan.kiszka@siemens.com, Mihai Caraman <mihai.caraman@freescale.com>,
+ bp@suse.de, Gleb Natapov <gleb@kernel.org>, r65777@freescale.com,
+ Cornelia Huck <cornelia.huck@de.ibm.com>, Thomas Gleixner <tglx@linutronix.de>,
+ Eric Farman <farman@linux.vnet.ibm.com>, linux-api@vger.kernel.org,
+ open list <linux-kernel@vger.kernel.org>,
+ Dominik Dingel <dingel@linux.vnet.ibm.com>, dahi@linux.vnet.ibm.com,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>, linux390@de.ibm.com,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,54 +61,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-
- diff --git a/include/asm-generic/pgtable.h b/include/asm-generic/pgtable.h
-> index 39f1d6a2b04d..acdcaac77d93 100644
-> --- a/include/asm-generic/pgtable.h
-> +++ b/include/asm-generic/pgtable.h
-> @@ -189,6 +189,28 @@ extern void pmdp_splitting_flush(struct vm_area_struct *vma,
->  				 unsigned long address, pmd_t *pmdp);
->  #endif
->
-> +#ifndef pmdp_collapse_flush
-> +#define pmdp_collapse_flush pmdp_collapse_flush
-> +#ifdef CONFIG_TRANSPARENT_HUGEPAGE
-> +static inline pmd_t pmdp_collapse_flush(struct vm_area_struct *vma,
-> +					unsigned long address,
-> +					pmd_t *pmdp)
+Am 15.05.2015 um 16:27 schrieb Alex Bennée:
+> index ef1a5fc..aca4f86 100644
+> --- a/arch/s390/include/uapi/asm/kvm.h
+> +++ b/arch/s390/include/uapi/asm/kvm.h
+> @@ -114,8 +114,6 @@ struct kvm_fpu {
+>  	__u64 fprs[16];
+>  };
+> 
+> -#define KVM_GUESTDBG_USE_HW_BP		0x00010000
+> -
 
 
-extra pmdp_collapse_flush #define here
+> diff --git a/include/uapi/linux/kvm.h b/include/uapi/linux/kvm.h
+> index 70ac641..7c5dd11 100644
+> --- a/include/uapi/linux/kvm.h
+> +++ b/include/uapi/linux/kvm.h
+[...]
+> +#define KVM_GUESTDBG_USE_SW_BP		(1 << 16)
+> +#define KVM_GUESTDBG_USE_HW_BP		(1 << 17)
 
-> +{
-> +	return pmdp_clear_flush(vma, address, pmdp);
-> +}
-> +#define pmdp_collapse_flush pmdp_collapse_flush
-> +#else
-> +static inline pmd_t pmdp_collapse_flush(struct vm_area_struct *vma,
-> +					unsigned long address,
-> +					pmd_t *pmdp)
-> +{
-> +	BUILD_BUG();
-> +	return *pmdp;
-> +}
-> +#define pmdp_collapse_flush pmdp_collapse_flush
-> +#endif /* CONFIG_TRANSPARENT_HUGEPAGE */
-> +#endif
-> +
->  #ifndef __HAVE_ARCH_PGTABLE_DEPOSIT
->  extern void pgtable_trans_huge_deposit(struct mm_struct *mm, pmd_t *pmdp,
->  				       pgtable_t pgtable);
+This is a abi break for s390, no?
 
-diff --git a/include/asm-generic/pgtable.h b/include/asm-generic/pgtable.h
-index acdcaac77d93..2c3ca89e9aee 100644
---- a/include/asm-generic/pgtable.h
-+++ b/include/asm-generic/pgtable.h
-@@ -190,7 +190,6 @@ extern void pmdp_splitting_flush(struct vm_area_struct *vma,
- #endif
- 
- #ifndef pmdp_collapse_flush
--#define pmdp_collapse_flush pmdp_collapse_flush
- #ifdef CONFIG_TRANSPARENT_HUGEPAGE
- static inline pmd_t pmdp_collapse_flush(struct vm_area_struct *vma,
- 					unsigned long address,
+David do you remember why we did not use SW_BP?
