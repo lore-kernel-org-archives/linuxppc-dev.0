@@ -1,36 +1,36 @@
 Return-Path: <gwshan@linux.vnet.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A49731A2C15
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 15:58:11 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id A54081A04C1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 16:20:18 +1000 (AEST)
 Received: from /spool/local
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <gwshan@linux.vnet.ibm.com>;
- Fri, 15 May 2015 15:58:11 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 80C3C2CE8040
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 15:58:08 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t4F5w0C940763610
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 15:58:08 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t4F5vZ5p011691
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 15:57:36 +1000
-Date: Fri, 15 May 2015 15:57:10 +1000
+ Fri, 15 May 2015 16:20:16 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 05A02357804C
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 16:20:15 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t4F6K6Ti41287922
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 16:20:14 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t4F6Jg5s017318
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 16:19:42 +1000
+Date: Fri, 15 May 2015 16:19:16 +1000
 From: Gavin Shan <gwshan@linux.vnet.ibm.com>
 To: Wei Yang <weiyang@linux.vnet.ibm.com>
-Subject: Re: [PATCH V4 02/11] powerpc/pci_dn: cache vf_index in pci_dn
-Message-ID: <20150515055710.GB27029@gwshan>
+Subject: Re: [PATCH V4 05/11] powerpc/powernv: create/release eeh_dev for VF
+Message-ID: <20150515061916.GA29805@gwshan>
 Reply-To: Gavin Shan <gwshan@linux.vnet.ibm.com>
 References: <1431668786-30371-1-git-send-email-weiyang@linux.vnet.ibm.com>
- <1431668786-30371-3-git-send-email-weiyang@linux.vnet.ibm.com>
+ <1431668786-30371-6-git-send-email-weiyang@linux.vnet.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1431668786-30371-3-git-send-email-weiyang@linux.vnet.ibm.com>
+In-Reply-To: <1431668786-30371-6-git-send-email-weiyang@linux.vnet.ibm.com>
 Cc: bhelgaas@google.com, linux-pci@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, gwshan@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -42,66 +42,101 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, May 15, 2015 at 01:46:17PM +0800, Wei Yang wrote:
->The patch caches the VF index in pci_dn, which can be used to calculate
->VF's bus, device and function number. Those information helps to locate
->the VF's PCI device instance when doing hotplug during EEH recovery if
->necessary.
+On Fri, May 15, 2015 at 01:46:20PM +0800, Wei Yang wrote:
+>EEH on powerpc platform needs eeh_dev structure to track the PCI device
+>status. Since VFs are created/released dynamically, VF's eeh_dev is also
+>dynamically created/released in system.
+>
+>This patch creates/removes eeh_dev when pci_dn is created/removed for VFs,
+>and marks it with EEH_DEV_VF type.
 >
 >Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
 
 Acked-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 
+After removing the unnecessary line of code as below.
+
+>---
+> arch/powerpc/include/asm/eeh.h |    1 +
+> arch/powerpc/kernel/eeh.c      |    4 ++++
+> arch/powerpc/kernel/pci_dn.c   |   11 +++++++++++
+> 3 files changed, 16 insertions(+)
+>
+>diff --git a/arch/powerpc/include/asm/eeh.h b/arch/powerpc/include/asm/eeh.h
+>index a52db28..1b3614d 100644
+>--- a/arch/powerpc/include/asm/eeh.h
+>+++ b/arch/powerpc/include/asm/eeh.h
+>@@ -138,6 +138,7 @@ struct eeh_dev {
+> 	struct pci_controller *phb;	/* Associated PHB		*/
+> 	struct pci_dn *pdn;		/* Associated PCI device node	*/
+> 	struct pci_dev *pdev;		/* Associated PCI device	*/
+>+	struct pci_dev *physfn;		/* Associated PF PORT		*/
+> 	struct pci_bus *bus;		/* PCI bus for partial hotplug	*/
+> };
+>
+>diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
+>index 6c7ce1b..221e280 100644
+>--- a/arch/powerpc/kernel/eeh.c
+>+++ b/arch/powerpc/kernel/eeh.c
+>@@ -1135,6 +1135,10 @@ void eeh_add_device_late(struct pci_dev *dev)
+> 	}
+>
+> 	edev->pdev = dev;
+>+#ifdef CONFIG_PCI_IOV
+>+	if (dev->is_virtfn)
+>+		edev->physfn = dev->physfn;
+>+#endif
+> 	dev->dev.archdata.edev = edev;
+>
+> 	if (eeh_has_flag(EEH_PROBE_MODE_DEV))
+>diff --git a/arch/powerpc/kernel/pci_dn.c b/arch/powerpc/kernel/pci_dn.c
+>index f771130..94806a4 100644
+>--- a/arch/powerpc/kernel/pci_dn.c
+>+++ b/arch/powerpc/kernel/pci_dn.c
+>@@ -180,7 +180,9 @@ static struct pci_dn *add_one_dev_pci_data(struct pci_dn *parent,
+> struct pci_dn *add_dev_pci_data(struct pci_dev *pdev)
+> {
+> #ifdef CONFIG_PCI_IOV
+>+	struct pci_controller *hose = pci_bus_to_host(pdev->bus);
+> 	struct pci_dn *parent, *pdn;
+>+	struct eeh_dev *edev;
+> 	int i;
+>
+> 	/* Only support IOV for now */
+>@@ -206,6 +208,8 @@ struct pci_dn *add_dev_pci_data(struct pci_dev *pdev)
+> 				 __func__, i);
+> 			return NULL;
+> 		}
+>+		eeh_dev_init(pdn, hose);
+>+		edev = pdn_to_eeh_dev(pdn);
+
+Nothing is done to edev after getting it. So I think the last line of changes
+here isn't needed. Could you check and remove it if I'm correct?
+
 Thanks,
 Gavin
 
-
->---
-> arch/powerpc/include/asm/pci-bridge.h |    1 +
-> arch/powerpc/kernel/pci_dn.c          |    4 +++-
-> 2 files changed, 4 insertions(+), 1 deletion(-)
+> 	}
+> #endif /* CONFIG_PCI_IOV */
 >
->diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
->index 1811c44..d78afe4 100644
->--- a/arch/powerpc/include/asm/pci-bridge.h
->+++ b/arch/powerpc/include/asm/pci-bridge.h
->@@ -199,6 +199,7 @@ struct pci_dn {
-> #ifdef CONFIG_PCI_IOV
-> 	u16     vfs_expanded;		/* number of VFs IOV BAR expanded */
-> 	u16     num_vfs;		/* number of VFs enabled*/
->+	int     vf_index;		/* VF index in the PF */
-> 	int     offset;			/* PE# for the first VF PE */
-> #define M64_PER_IOV 4
-> 	int     m64_per_iov;
->diff --git a/arch/powerpc/kernel/pci_dn.c b/arch/powerpc/kernel/pci_dn.c
->index b3b4df9..f771130 100644
->--- a/arch/powerpc/kernel/pci_dn.c
->+++ b/arch/powerpc/kernel/pci_dn.c
->@@ -139,6 +139,7 @@ struct pci_dn *pci_get_pdn(struct pci_dev *pdev)
-> #ifdef CONFIG_PCI_IOV
-> static struct pci_dn *add_one_dev_pci_data(struct pci_dn *parent,
-> 					   struct pci_dev *pdev,
->+					   int vf_index,
-> 					   int busno, int devfn)
-> {
-> 	struct pci_dn *pdn;
->@@ -157,6 +158,7 @@ static struct pci_dn *add_one_dev_pci_data(struct pci_dn *parent,
-> 	pdn->parent = parent;
-> 	pdn->busno = busno;
-> 	pdn->devfn = devfn;
->+	pdn->vf_index = vf_index;
-> #ifdef CONFIG_PPC_POWERNV
-> 	pdn->pe_number = IODA_INVALID_PE;
-> #endif
->@@ -196,7 +198,7 @@ struct pci_dn *add_dev_pci_data(struct pci_dev *pdev)
-> 		return NULL;
->
+>@@ -254,10 +258,17 @@ void remove_dev_pci_data(struct pci_dev *pdev)
 > 	for (i = 0; i < pci_sriov_get_totalvfs(pdev); i++) {
->-		pdn = add_one_dev_pci_data(parent, NULL,
->+		pdn = add_one_dev_pci_data(parent, NULL, i,
-> 					   pci_iov_virtfn_bus(pdev, i),
-> 					   pci_iov_virtfn_devfn(pdev, i));
-> 		if (!pdn) {
+> 		list_for_each_entry_safe(pdn, tmp,
+> 			&parent->child_list, list) {
+>+			struct eeh_dev *edev;
+> 			if (pdn->busno != pci_iov_virtfn_bus(pdev, i) ||
+> 			    pdn->devfn != pci_iov_virtfn_devfn(pdev, i))
+> 				continue;
+>
+>+			edev = pdn_to_eeh_dev(pdn);
+>+			if (edev) {
+>+				pdn->edev = NULL;
+>+				kfree(edev);
+>+			}
+>+
+> 			if (!list_empty(&pdn->list))
+> 				list_del(&pdn->list);
+>
 >-- 
 >1.7.9.5
 >
