@@ -1,30 +1,33 @@
 Return-Path: <hemant@linux.vnet.ibm.com>
-Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
+Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E31BB1A1D13
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 14:15:13 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id E8E4C1A1D0B
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 14:15:17 +1000 (AEST)
 Received: from /spool/local
- by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <hemant@linux.vnet.ibm.com>;
- Fri, 15 May 2015 09:45:10 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 4BFC0E0057
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 09:48:06 +0530 (IST)
+ Fri, 15 May 2015 09:45:15 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 10B96125805D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 09:47:26 +0530 (IST)
 Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t4F4F61J5243146
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 09:45:06 +0530
+ by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t4F4FC7Q57344222
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 09:45:12 +0530
 Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
  by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t4F3a9Dx024946
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 09:06:10 +0530
+ t4F3aFdF025523
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 09:06:16 +0530
 From: Hemant Kumar <hemant@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org
-Subject: [RFC PATCH 0/1] perf/script: Ganged exits and VM topology
-Date: Fri, 15 May 2015 09:44:25 +0530
-Message-Id: <1431663266-13954-1-git-send-email-hemant@linux.vnet.ibm.com>
+Subject: [RFC PATCH 1/1] perf/script: Script to display the ganged exits count
+ on powerpc
+Date: Fri, 15 May 2015 09:44:26 +0530
+Message-Id: <1431663266-13954-2-git-send-email-hemant@linux.vnet.ibm.com>
+In-Reply-To: <1431663266-13954-1-git-send-email-hemant@linux.vnet.ibm.com>
+References: <1431663266-13954-1-git-send-email-hemant@linux.vnet.ibm.com>
 Cc: maddy@linux.vnet.ibm.com, srikar@linux.vnet.ibm.com, peterz@infradead.org,
  agraf@suse.de, kvm-ppc@vger.kernel.org,
  Hemant Kumar <hemant@linux.vnet.ibm.com>, mingo@redhat.com, paulus@samba.org,
@@ -38,127 +41,116 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-In powerpc, if a thread running inside a guest needs to exit to the
-host to serve interrupts like the external interrupt, or the hcall
-interrupts, etc., all the threads running in that specific vcore
-inside the guest exit to the host. These events are called as ganged
-exits.
+In powerpc, when a thread running in the guest context needs to exit to
+the hypervisor to serve interrupts like the external interrupt, or the
+hcall interrupt, etc, all the threads running in that specific vcore
+inside the guest exit. These events can be classified as gang exits
+which mean that they are forced exits. Only if the other vcpus cede,
+then it won't be counted as a ganged exit.
 
-Because of the ganged exits, the other threads (if any) doing useful
-work need to exit to the host. They can serve as a parameter to relate
-the performance of the VM with their topology.
+What this script does is, it post processes the perf.data file to look
+for two events : kvm_hv:kvmppc_run_core and kvm_hv:kvm_guest_exit. For a
+kvm_hv:kvmppc_run_core tracepoint event, it initializes :
 
-Here are a couple of examples to correlate this performance metric
-with the topology of a VM.
+- if its an 'Entry', it gets the tgid and for that tgid, it initializes
+  gang-exit count and cedes count.
+- if its an 'Exit', it gets the runnable thread count and subtracts it
+  from the no of cedes to see (if) how many runnable threads were in
+  that core and how many of them ceded. If the difference is more than
+  1 (its 1 because, we have to exclude the running thread itself), then
+  its a ganged exit.
 
-The following setup was used :
-Setup 1a :
-VM (with 4 vcpus and one core)
-ebizzy running on 2 vcpus.
-No other load on the other 2 vcpus.
-Resultant throughput for ebizzy in this case : 24373 records/sec
-Total gang exits : 1174
+For a kvm_hv:kvm_guest_exit event, it checks if the vcpu ceded. If it
+ceded, then increment the counter for cedes.
 
-Setup 1b:
-VM (with 4 vcpus and one core)
-ebizzy running on 2 vcpus.
-Spinloop (while 1) loop running on other 2 vcpus.
-Resultant throughput for ebizzy in this case : 20373 records/sec
-Total gang exits : 1676
+Usage :
+ # perf record -e kvm_hv:kvm_guest_exit -e kvm_hv:kvmppc_run_core -a sleep 10
+[ perf record: Woken up 96 times to write data ]
+[ perf record: Captured and wrote 26.198 MB perf.data (~1144590 samples)]
 
-Setup 1c:
-VM (with 4 vcpus and one core)
-ebizzy running on 2 vcpus.
-ping -f running on other 2 vcpus.
-Resultant throughput for ebizzy in this case : 7841 records/sec
-Total gang exits : 871073
+ # perf script -s gang-exits.py
+Ganged exits summary
 
-Due to an increase in number of the gang exits, performance of ebizzy
-dropped.
+Ganged exits for process 14000 :                        535
+Ganged exits for process 13988 :                      25314
+=======================================
 
-To verify the degradation in performance of ebizzy with the other
-workloads running on the same core, the same set of loads were run on
-the host machine too, with SMT on:
-In all the following setups, ebizzy was pinned to 2 cpus and for
-setups where some other load is running, the loads were pinned to
-the other cpus of the same core.
-
-Setup 2a:
-ebizzy alone.
-Resultant throughput for ebizzy in this case : 25099 records/sec
-
-Setup 2b:
-ebizzy and a spin loop (while 1) running on other cpus of the same
-core.
-Resultant throughput for ebizzy in this case : 22818 records/sec
-
-Setup 2c:
-ebizzy and ping -f (to a other machine in the same subnet).
-Resultant throughput for ebizzy in this case : 17982 records/sec
-
-We can see that the performance of ebizzy is dropping due to the
-some load running on the other threads of the same core.
-
-The "gang_exits" can serve as a parameter to define the topology of a
-VM so that the load running on the VM can give us a maximum
-throughput.
-
-Here is an example with "redis" benchmark :
-
-A VM running on 1 core and having two threads.
-Running redis benchmark on this VM gives this throughput:
-SET: 30048.08 requests per second
-GET: 31806.62 requests per second
-INCR: 247524.75 requests per second
-LPUSH: 30284.68 requests per second
-LPOP: 34036.76 requests per second
-SADD: 168634.06 requests per second
-SPOP: 261096.61 requests per second
-MSET (10 keys): 11107.41 requests per second
-
-For the entire run of redis :
-Total gang_exits = 1192893
-
-To see if we can reduce the number of gang_exits and increase the
-throughput of redis benchmark by trying out a different topology and
-system configuration, the cores were split into subcores. Each subcore
-now has 2 threads each (SMT 2 mode).
-
-So, the VM was started again with 2 subcores (with 1 thread each)
-in SMT 1 mode. Running redis now gives this throughput :
-SET: 36231.88 requests per second
-GET: 57438.25 requests per second
-INCR: 292397.66 requests per second
-LPUSH: 38343.56 requests per second
-LPOP: 53792.36 requests per second
-SADD: 267379.66 requests per second
-SPOP: 247524.75 requests per second
-MSET (10 keys): 9922.60 requests per second
-
-We see an increase in the performance of redis.
-Total gang exits for this case : 0 (because of SMT 1)
-
-The number of vcpus allocated to VM remained the same in both the
-cases.
-
-In the host, with the help of gang_exit numbers, we can change the
-configuration of the host and the topology of the VM to increase the
-throughput of the load (running on a VM).
-
-If there is a single active thread on that core, none of the exits
-should be counted in gang_exits.
-
-Do have a look at the patch and let me know your feedback.
-
-Thanks,
-
+Signed-off-by: Hemant Kumar <hemant@linux.vnet.ibm.com>
 ---
-Hemant Kumar (1):
-  perf/script: Python script to display the ganged exits count on powerpc
-
  tools/perf/scripts/python/gang_exits.py | 65 +++++++++++++++++++++++++++++++++
  1 file changed, 65 insertions(+)
  create mode 100644 tools/perf/scripts/python/gang_exits.py
 
+diff --git a/tools/perf/scripts/python/gang_exits.py b/tools/perf/scripts/python/gang_exits.py
+new file mode 100644
+index 0000000..011aa56
+--- /dev/null
++++ b/tools/perf/scripts/python/gang_exits.py
+@@ -0,0 +1,65 @@
++# gang-exits.py: Count the ganged exits of a VM
++#
++# In case of powerpc, When a thread running inside a guest needs to exit to
++# the hypervisor to serve interrupts like the external interrupt, or the hcall
++# interrupts, etc., all the threads running in that specific vcore
++# inside the guest exit to the host. These events are called as ganged exits.
++# These exits are forced. Only if the vcpus cede, then it/they won't be counted
++# as ganged exit(s).
++#
++# Usage :
++# So, if in powerpc, first we do :
++# perf record -e kvm_hv:kvm_guest_exit -e kvm_hv:kvmppc_run_core -aR sleep <nsecs>
++# Using the perf.data, we have to do :
++# perf script -s gang-exits
++
++import os
++import sys
++
++sys.path.append(os.environ['PERF_EXEC_PATH'] + \
++                '/scripts/python/Perf-Trace-Util/lib/Perf/Trace')
++
++from perf_trace_context import *
++from Core import *
++
++usage = "perf script -s gang_exits.py\n";
++
++stats = {}
++pid_tgid = {}
++
++def trace_begin():
++	print "Ganged exits summary"
++
++def trace_end():
++	print_ganged_exits()
++
++def kvm_hv__kvm_guest_exit(event_name, context, common_cpu,
++	common_secs, common_nsecs, common_pid, common_comm,
++	vcpu_id, reason, nip, msr, ceded):
++
++	if common_pid in pid_tgid:
++		if ceded:		# vcpu ceded ?
++			stats[pid_tgid[common_pid]]['nr_cedes'] += ceded
++
++def kvm_hv__kvmppc_run_core(event_name, context, common_cpu,
++	common_secs, common_nsecs, common_pid, common_comm,
++	n_runnable, runner_vcpu, where, tgid):
++
++	if (where):	# kvmppc_run_core: Exit
++		if tgid in stats:
++			forced = n_runnable - stats[tgid]['nr_cedes']
++			if (forced > 1):
++				stats[tgid]['gang-exits'] += 1
++	else: 		# kvmppc_run_core: Enter, init the counts
++		if tgid in stats:
++			stats[tgid]['nr_cedes'] = 0
++		else:
++			stats[tgid] = {'gang-exits': 0, 'nr_cedes': 0}
++		if common_pid not in pid_tgid:
++			pid_tgid[common_pid] = tgid
++
++def print_ganged_exits():
++	for i in stats.keys():
++		print "\nGanged exits for process %d : %20d" %(i, stats[i]['gang-exits'])
++
++	print "======================================="
 -- 
 1.9.3
