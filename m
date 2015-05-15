@@ -1,21 +1,45 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id 116131A03C6
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 May 2015 03:58:35 +1000 (AEST)
-Message-ID: <555633C3.9000308@c-s.fr>
-Date: Fri, 15 May 2015 19:58:27 +0200
-From: christophe leroy <christophe.leroy@c-s.fr>
+Return-Path: <brking@linux.vnet.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id EBF331A0008
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 16 May 2015 08:19:59 +1000 (AEST)
+Received: from /spool/local
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <brking@linux.vnet.ibm.com>;
+ Fri, 15 May 2015 16:19:57 -0600
+Received: from b03cxnp07028.gho.boulder.ibm.com
+ (b03cxnp07028.gho.boulder.ibm.com [9.17.130.15])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 730EC3E40044
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 16:19:54 -0600 (MDT)
+Received: from d03av05.boulder.ibm.com (d03av05.boulder.ibm.com [9.17.195.85])
+ by b03cxnp07028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with
+ ESMTP id t4FMHmC535389480
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 15:17:48 -0700
+Received: from d03av05.boulder.ibm.com (localhost [127.0.0.1])
+ by d03av05.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t4FMJrgR030421
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 16:19:54 -0600
+Message-ID: <55567108.7020601@linux.vnet.ibm.com>
+Date: Fri, 15 May 2015 17:19:52 -0500
+From: Brian King <brking@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 1/4] Partially revert "powerpc: Remove duplicate
- cacheable_memcpy/memzero functions"
-References: <cover.1431436210.git.christophe.leroy@c-s.fr>	
- <b87a9787efc35a8bd6cd7f73185e9959b84ff84a.1431436210.git.christophe.leroy@c-s.fr>
- <1431564565.3868.157.camel@freescale.com>
-In-Reply-To: <1431564565.3868.157.camel@freescale.com>
-Content-Type: text/plain; charset=utf-8; format=flowed
-Cc: linux-kernel@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
- Kyle Moffett <Kyle.D.Moffett@boeing.com>, linuxppc-dev@lists.ozlabs.org
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [RFC/PATCH v3] powerpc/iommu: Support "hybrid" iommu/direct DMA
+ ops for coherent_mask < dma_mask
+References: <555279A8.6060906@linux.vnet.ibm.com> <2214146.EzgWBA6g23@wuerfel>
+ <5553505D.50102@linux.vnet.ibm.com> <10045033.4fV0qQU90u@wuerfel>
+ <55535BDF.6020502@linux.vnet.ibm.com>
+ <CAK=zhgoXx4HJfpTuNAP0tAPnsU8BLmM7X3qGsFCzJfHOx55YCQ@mail.gmail.com>
+ <1431550613.20218.88.camel@kernel.crashing.org>
+ <5553C428.5090806@linux.vnet.ibm.com>
+ <1431641034.4160.71.camel@kernel.crashing.org>
+In-Reply-To: <1431641034.4160.71.camel@kernel.crashing.org>
+Content-Type: text/plain; charset=utf-8
+Cc: Daniel Kreling <kreling@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-scsi <linux-scsi@vger.kernel.org>, Arnd Bergmann <arnd@arndb.de>,
+ Sreekanth Reddy <sreekanth.reddy@avagotech.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,43 +49,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On 05/14/2015 05:03 PM, Benjamin Herrenschmidt wrote:
+> This patch adds the ability to the DMA direct ops to fallback to the IOMMU
+> ops for coherent alloc/free if the coherent mask of the device isn't
+> suitable for accessing the direct DMA space and the device also happens
+> to have an active IOMMU table.
+> 
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> ---
+> 
 
-Le 14/05/2015 02:49, Scott Wood a écrit :
-> On Tue, 2015-05-12 at 15:32 +0200, Christophe Leroy wrote:
->> This partially reverts
->> commit 'powerpc: Remove duplicate cacheable_memcpy/memzero functions
->> ("f909a35bdfb7cb350d078a2cf888162eeb20381c")'
-> I don't have that SHA.  Do you mean
-> b05ae4ee602b7dc90771408ccf0972e1b3801a35?
-Right, took it from the wrong tree sorry.
->
->> Functions cacheable_memcpy/memzero are more efficient than
->> memcpy/memset as they use the dcbz instruction which avoids refill
->> of the cacheline with the data that we will overwrite.
-> I don't see anything in this patchset that addresses the "NOTE: The old
-> routines are just flat buggy on kernels that support hardware with
-> different cacheline sizes" comment.
-I believe the NOTE means that if a kernel is compiled for several CPUs 
-having different cache line size,
-then it will not work. But it is also the case of other functions using 
-dcbz instruction, like copy_page() clear_page() copy_tofrom_user().
+Thanks. This one works fine for me with mpt2sas.
 
-And indeed, this seems only possible in three cases:
-1/ With CONFIG_44x as 47x has different size than 44x and 46x. However 
-it is explicitly stated in arch/powerpc/platforms/44x/Kconfig : "config 
-PPC_47x This option enables support for the 47x family of processors and 
-is not currently compatible with other 44x or 46x varients"
-2/ With CONFIG_PPC_85xx, as PPC_E500MC has different size than other 
-E500. However it is explicitly stated in 
-arch/powerpc/platforms/Kconfig.cputype : "config PPC_E500MC This must be 
-enabled for running on e500mc (and derivatives such as e5500/e6500), and 
-must be disabled for running on e500v1 or e500v2."
-3/ With CONFIG_403GCX as 403GCX has different size than other 40x. 
-However it seems to be no way to select CONFIG_403GCX from 
-arch/powerpc/platforms/40x/Kconfig
+Tested-by: Brian King <brking@linux.vnet.ibm.com>
 
-Christophe
+-Brian
 
----
-L'absence de virus dans ce courrier électronique a été vérifiée par le logiciel antivirus Avast.
-http://www.avast.com
+-- 
+Brian King
+Power Linux I/O
+IBM Linux Technology Center
