@@ -1,47 +1,32 @@
-Return-Path: <cyrilbur@gmail.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E70CF1A048D
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 15:48:33 +1000 (AEST)
-Received: from e23smtp01.au.ibm.com (e23smtp01.au.ibm.com [202.81.31.143])
+Return-Path: <weiyang@linux.vnet.ibm.com>
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id B13C6140283
- for <linuxppc-dev@ozlabs.org>; Fri, 15 May 2015 15:48:33 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 289731A0583
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 15:49:10 +1000 (AEST)
 Received: from /spool/local
- by e23smtp01.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <cyrilbur@gmail.com>;
- Fri, 15 May 2015 15:48:33 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id ACF712CE804E
- for <linuxppc-dev@ozlabs.org>; Fri, 15 May 2015 15:48:29 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t4F5mLZA49610958
- for <linuxppc-dev@ozlabs.org>; Fri, 15 May 2015 15:48:29 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t4F5lutG022632
- for <linuxppc-dev@ozlabs.org>; Fri, 15 May 2015 15:47:57 +1000
-Received: from ozlabs.au.ibm.com (ozlabs.au.ibm.com [9.192.253.14])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVin) with ESMTP id
- t4F5lu2E022090
- for <linuxppc-dev@ozlabs.org>; Fri, 15 May 2015 15:47:56 +1000
-Received: from cyril.ozlabs.ibm.com (unknown [9.192.254.114])
- (using TLSv1.2 with cipher AES128-SHA256 (128/128 bits))
- (No client certificate requested)
- by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 85720A0273
- for <linuxppc-dev@ozlabs.org>; Fri, 15 May 2015 15:47:32 +1000 (AEST)
-From: Cyril Bur <cyrilbur@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 2/2] powerpc: replace pseries_le_defconfig with a Makefile
- target using merge_config
-Date: Fri, 15 May 2015 15:47:10 +1000
-Message-Id: <1431668830-22734-2-git-send-email-cyrilbur@gmail.com>
-In-Reply-To: <1431668830-22734-1-git-send-email-cyrilbur@gmail.com>
-References: <1431668830-22734-1-git-send-email-cyrilbur@gmail.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
+ Fri, 15 May 2015 15:49:08 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id B912D3578052
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 15:49:05 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t4F5mvsD38338790
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 15:49:05 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t4F5mWOq000428
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 15:48:33 +1000
+From: Wei Yang <weiyang@linux.vnet.ibm.com>
+To: gwshan@linux.vnet.ibm.com, bhelgaas@google.com
+Subject: [PATCH V4 00/11] VF EEH on Power8
+Date: Fri, 15 May 2015 13:46:15 +0800
+Message-Id: <1431668786-30371-1-git-send-email-weiyang@linux.vnet.ibm.com>
+Cc: linux-pci@vger.kernel.org, Wei Yang <weiyang@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -51,369 +36,102 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Rather than continuing to maintain a copy of pseries_defconfig with enabled
-CONFIG_CPU_LITTLE_ENDIAN, use the generic merge_config script and use an
-le.config to enable little endian on top of pseries_defconfig without the need
-for a duplicated _defconfig file.
+This patchset enables EEH on SRIOV VFs. The general idea is to create proper
+VF edev and VF PE and handle them properly.
 
-This method will require less maintenance in the future and will ensure that
-both 'defconfigs' are always in sync.
+Different from the Bus PE, VF PE just contain one VF. This introduces the
+difference of EEH error handling on a VF PE. Generally, it has several
+differences.
 
-Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
----
- arch/powerpc/Makefile                     |   3 +
- arch/powerpc/configs/le.config            |   1 +
- arch/powerpc/configs/pseries_le_defconfig | 320 ------------------------------
- 3 files changed, 4 insertions(+), 320 deletions(-)
- create mode 100644 arch/powerpc/configs/le.config
- delete mode 100644 arch/powerpc/configs/pseries_le_defconfig
+First, the VF's removal and re-enumerate rely on its PF. VF has a tight
+relationship between its PF. This is not proper to enumerate a VF by usual
+scan procedure. That's why virtfn_add/virtfn_remove are exported in this patch
+set.
 
-diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-index 07a4808..e302c2c 100644
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -269,6 +269,9 @@ bootwrapper_install:
- %.dtb: scripts
- 	$(Q)$(MAKE) ARCH=ppc64 $(build)=$(boot) $(patsubst %,$(boot)/%,$@)
- 
-+pseries_le_defconfig: pseries_defconfig
-+	$(Q)$(MAKE) le.config
-+
- define archhelp
-   @echo '* zImage          - Build default images selected by kernel config'
-   @echo '  zImage.*        - Compressed kernel image (arch/$(ARCH)/boot/zImage.*)'
-diff --git a/arch/powerpc/configs/le.config b/arch/powerpc/configs/le.config
-new file mode 100644
-index 0000000..ee43fdb
---- /dev/null
-+++ b/arch/powerpc/configs/le.config
-@@ -0,0 +1 @@
-+CONFIG_CPU_LITTLE_ENDIAN=y
-diff --git a/arch/powerpc/configs/pseries_le_defconfig b/arch/powerpc/configs/pseries_le_defconfig
-deleted file mode 100644
-index 2497c7d..0000000
---- a/arch/powerpc/configs/pseries_le_defconfig
-+++ /dev/null
-@@ -1,320 +0,0 @@
--CONFIG_PPC64=y
--CONFIG_SMP=y
--CONFIG_NR_CPUS=2048
--CONFIG_CPU_LITTLE_ENDIAN=y
--CONFIG_SYSVIPC=y
--CONFIG_POSIX_MQUEUE=y
--CONFIG_FHANDLE=y
--CONFIG_AUDIT=y
--CONFIG_AUDITSYSCALL=y
--CONFIG_IRQ_DOMAIN_DEBUG=y
--CONFIG_NO_HZ=y
--CONFIG_HIGH_RES_TIMERS=y
--CONFIG_TASKSTATS=y
--CONFIG_TASK_DELAY_ACCT=y
--CONFIG_TASK_XACCT=y
--CONFIG_TASK_IO_ACCOUNTING=y
--CONFIG_IKCONFIG=y
--CONFIG_IKCONFIG_PROC=y
--CONFIG_NUMA_BALANCING=y
--CONFIG_NUMA_BALANCING_DEFAULT_ENABLED=y
--CONFIG_CGROUPS=y
--CONFIG_CGROUP_FREEZER=y
--CONFIG_CGROUP_DEVICE=y
--CONFIG_CPUSETS=y
--CONFIG_CGROUP_CPUACCT=y
--CONFIG_MEMCG=y
--CONFIG_MEMCG_SWAP=y
--CONFIG_CGROUP_PERF=y
--CONFIG_CGROUP_SCHED=y
--CONFIG_USER_NS=y
--CONFIG_BLK_DEV_INITRD=y
--# CONFIG_COMPAT_BRK is not set
--CONFIG_PROFILING=y
--CONFIG_OPROFILE=y
--CONFIG_KPROBES=y
--CONFIG_JUMP_LABEL=y
--CONFIG_MODULES=y
--CONFIG_MODULE_UNLOAD=y
--CONFIG_MODVERSIONS=y
--CONFIG_MODULE_SRCVERSION_ALL=y
--CONFIG_PARTITION_ADVANCED=y
--CONFIG_PPC_SPLPAR=y
--CONFIG_SCANLOG=m
--CONFIG_PPC_SMLPAR=y
--CONFIG_DTL=y
--# CONFIG_PPC_PMAC is not set
--CONFIG_RTAS_FLASH=m
--CONFIG_IBMEBUS=y
--CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND=y
--CONFIG_HZ_100=y
--CONFIG_BINFMT_MISC=m
--CONFIG_PPC_TRANSACTIONAL_MEM=y
--CONFIG_KEXEC=y
--CONFIG_IRQ_ALL_CPUS=y
--CONFIG_MEMORY_HOTPLUG=y
--CONFIG_MEMORY_HOTREMOVE=y
--CONFIG_KSM=y
--CONFIG_TRANSPARENT_HUGEPAGE=y
--CONFIG_PPC_64K_PAGES=y
--CONFIG_PPC_SUBPAGE_PROT=y
--CONFIG_SCHED_SMT=y
--CONFIG_HOTPLUG_PCI=y
--CONFIG_HOTPLUG_PCI_RPA=m
--CONFIG_HOTPLUG_PCI_RPA_DLPAR=m
--CONFIG_NET=y
--CONFIG_PACKET=y
--CONFIG_UNIX=y
--CONFIG_XFRM_USER=m
--CONFIG_NET_KEY=m
--CONFIG_INET=y
--CONFIG_IP_MULTICAST=y
--CONFIG_NET_IPIP=y
--CONFIG_SYN_COOKIES=y
--CONFIG_INET_AH=m
--CONFIG_INET_ESP=m
--CONFIG_INET_IPCOMP=m
--# CONFIG_IPV6 is not set
--CONFIG_NETFILTER=y
--# CONFIG_NETFILTER_ADVANCED is not set
--CONFIG_BRIDGE=m
--CONFIG_VLAN_8021Q=m
--CONFIG_UEVENT_HELPER_PATH="/sbin/hotplug"
--CONFIG_DEVTMPFS=y
--CONFIG_DEVTMPFS_MOUNT=y
--CONFIG_PARPORT=m
--CONFIG_PARPORT_PC=m
--CONFIG_BLK_DEV_FD=m
--CONFIG_BLK_DEV_LOOP=y
--CONFIG_BLK_DEV_NBD=m
--CONFIG_BLK_DEV_RAM=y
--CONFIG_BLK_DEV_RAM_SIZE=65536
--CONFIG_VIRTIO_BLK=m
--CONFIG_IDE=y
--CONFIG_BLK_DEV_IDECD=y
--CONFIG_BLK_DEV_GENERIC=y
--CONFIG_BLK_DEV_AMD74XX=y
--CONFIG_BLK_DEV_SD=y
--CONFIG_CHR_DEV_ST=y
--CONFIG_BLK_DEV_SR=y
--CONFIG_BLK_DEV_SR_VENDOR=y
--CONFIG_CHR_DEV_SG=y
--CONFIG_SCSI_CONSTANTS=y
--CONFIG_SCSI_FC_ATTRS=y
--CONFIG_SCSI_CXGB3_ISCSI=m
--CONFIG_SCSI_CXGB4_ISCSI=m
--CONFIG_SCSI_BNX2_ISCSI=m
--CONFIG_BE2ISCSI=m
--CONFIG_SCSI_MPT2SAS=m
--CONFIG_SCSI_IBMVSCSI=y
--CONFIG_SCSI_IBMVFC=m
--CONFIG_SCSI_SYM53C8XX_2=y
--CONFIG_SCSI_SYM53C8XX_DMA_ADDRESSING_MODE=0
--CONFIG_SCSI_IPR=y
--CONFIG_SCSI_QLA_FC=m
--CONFIG_SCSI_QLA_ISCSI=m
--CONFIG_SCSI_LPFC=m
--CONFIG_SCSI_VIRTIO=m
--CONFIG_SCSI_DH=m
--CONFIG_SCSI_DH_RDAC=m
--CONFIG_SCSI_DH_ALUA=m
--CONFIG_ATA=y
--CONFIG_SATA_AHCI=y
--# CONFIG_ATA_SFF is not set
--CONFIG_MD=y
--CONFIG_BLK_DEV_MD=y
--CONFIG_MD_LINEAR=y
--CONFIG_MD_RAID0=y
--CONFIG_MD_RAID1=y
--CONFIG_MD_RAID10=m
--CONFIG_MD_RAID456=m
--CONFIG_MD_MULTIPATH=m
--CONFIG_MD_FAULTY=m
--CONFIG_BLK_DEV_DM=y
--CONFIG_DM_CRYPT=m
--CONFIG_DM_SNAPSHOT=m
--CONFIG_DM_THIN_PROVISIONING=m
--CONFIG_DM_MIRROR=m
--CONFIG_DM_ZERO=m
--CONFIG_DM_MULTIPATH=m
--CONFIG_DM_MULTIPATH_QL=m
--CONFIG_DM_MULTIPATH_ST=m
--CONFIG_DM_UEVENT=y
--CONFIG_BONDING=m
--CONFIG_DUMMY=m
--CONFIG_MACVLAN=m
--CONFIG_MACVTAP=m
--CONFIG_VXLAN=m
--CONFIG_NETCONSOLE=y
--CONFIG_TUN=m
--CONFIG_VETH=m
--CONFIG_VIRTIO_NET=m
--CONFIG_VHOST_NET=m
--CONFIG_VORTEX=y
--CONFIG_ACENIC=m
--CONFIG_ACENIC_OMIT_TIGON_I=y
--CONFIG_PCNET32=y
--CONFIG_TIGON3=y
--CONFIG_CHELSIO_T1=m
--CONFIG_BE2NET=m
--CONFIG_S2IO=m
--CONFIG_IBMVETH=y
--CONFIG_EHEA=y
--CONFIG_E100=y
--CONFIG_E1000=y
--CONFIG_E1000E=y
--CONFIG_IXGB=m
--CONFIG_IXGBE=m
--CONFIG_MLX4_EN=m
--CONFIG_MYRI10GE=m
--CONFIG_QLGE=m
--CONFIG_NETXEN_NIC=m
--CONFIG_PPP=m
--CONFIG_PPP_BSDCOMP=m
--CONFIG_PPP_DEFLATE=m
--CONFIG_PPPOE=m
--CONFIG_PPP_ASYNC=m
--CONFIG_PPP_SYNC_TTY=m
--# CONFIG_INPUT_MOUSEDEV_PSAUX is not set
--CONFIG_INPUT_EVDEV=m
--CONFIG_INPUT_MISC=y
--CONFIG_INPUT_PCSPKR=m
--# CONFIG_SERIO_SERPORT is not set
--CONFIG_DEVPTS_MULTIPLE_INSTANCES=y
--CONFIG_SERIAL_8250=y
--CONFIG_SERIAL_8250_CONSOLE=y
--CONFIG_SERIAL_ICOM=m
--CONFIG_SERIAL_JSM=m
--CONFIG_HVC_CONSOLE=y
--CONFIG_HVC_RTAS=y
--CONFIG_HVCS=m
--CONFIG_VIRTIO_CONSOLE=m
--CONFIG_IBM_BSR=m
--CONFIG_GEN_RTC=y
--CONFIG_RAW_DRIVER=y
--CONFIG_MAX_RAW_DEVS=1024
--CONFIG_FB=y
--CONFIG_FIRMWARE_EDID=y
--CONFIG_FB_OF=y
--CONFIG_FB_MATROX=y
--CONFIG_FB_MATROX_MILLENIUM=y
--CONFIG_FB_MATROX_MYSTIQUE=y
--CONFIG_FB_MATROX_G=y
--CONFIG_FB_RADEON=y
--CONFIG_FB_IBM_GXT4500=y
--CONFIG_LCD_PLATFORM=m
--# CONFIG_VGA_CONSOLE is not set
--CONFIG_FRAMEBUFFER_CONSOLE=y
--CONFIG_LOGO=y
--CONFIG_HID_GYRATION=y
--CONFIG_HID_PANTHERLORD=y
--CONFIG_HID_PETALYNX=y
--CONFIG_HID_SAMSUNG=y
--CONFIG_HID_SUNPLUS=y
--CONFIG_USB_HIDDEV=y
--CONFIG_USB=y
--CONFIG_USB_MON=m
--CONFIG_USB_EHCI_HCD=y
--# CONFIG_USB_EHCI_HCD_PPC_OF is not set
--CONFIG_USB_OHCI_HCD=y
--CONFIG_USB_STORAGE=m
--CONFIG_INFINIBAND=m
--CONFIG_INFINIBAND_USER_MAD=m
--CONFIG_INFINIBAND_USER_ACCESS=m
--CONFIG_INFINIBAND_MTHCA=m
--CONFIG_INFINIBAND_EHCA=m
--CONFIG_INFINIBAND_CXGB3=m
--CONFIG_INFINIBAND_CXGB4=m
--CONFIG_MLX4_INFINIBAND=m
--CONFIG_INFINIBAND_IPOIB=m
--CONFIG_INFINIBAND_IPOIB_CM=y
--CONFIG_INFINIBAND_SRP=m
--CONFIG_INFINIBAND_ISER=m
--CONFIG_VIRTIO_PCI=m
--CONFIG_VIRTIO_BALLOON=m
--CONFIG_EXT2_FS=y
--CONFIG_EXT2_FS_XATTR=y
--CONFIG_EXT2_FS_POSIX_ACL=y
--CONFIG_EXT2_FS_SECURITY=y
--CONFIG_EXT2_FS_XIP=y
--CONFIG_EXT3_FS=y
--CONFIG_EXT3_FS_POSIX_ACL=y
--CONFIG_EXT3_FS_SECURITY=y
--CONFIG_EXT4_FS=y
--CONFIG_EXT4_FS_POSIX_ACL=y
--CONFIG_EXT4_FS_SECURITY=y
--CONFIG_REISERFS_FS=y
--CONFIG_REISERFS_FS_XATTR=y
--CONFIG_REISERFS_FS_POSIX_ACL=y
--CONFIG_REISERFS_FS_SECURITY=y
--CONFIG_JFS_FS=m
--CONFIG_JFS_POSIX_ACL=y
--CONFIG_JFS_SECURITY=y
--CONFIG_XFS_FS=m
--CONFIG_XFS_POSIX_ACL=y
--CONFIG_BTRFS_FS=m
--CONFIG_BTRFS_FS_POSIX_ACL=y
--CONFIG_NILFS2_FS=m
--CONFIG_AUTOFS4_FS=m
--CONFIG_FUSE_FS=m
--CONFIG_OVERLAY_FS=m
--CONFIG_ISO9660_FS=y
--CONFIG_UDF_FS=m
--CONFIG_MSDOS_FS=y
--CONFIG_VFAT_FS=y
--CONFIG_PROC_KCORE=y
--CONFIG_TMPFS=y
--CONFIG_TMPFS_POSIX_ACL=y
--CONFIG_HUGETLBFS=y
--CONFIG_CRAMFS=m
--CONFIG_SQUASHFS=m
--CONFIG_SQUASHFS_XATTR=y
--CONFIG_SQUASHFS_LZO=y
--CONFIG_SQUASHFS_XZ=y
--CONFIG_PSTORE=y
--CONFIG_NFS_FS=y
--CONFIG_NFS_V3_ACL=y
--CONFIG_NFS_V4=y
--CONFIG_NFSD=m
--CONFIG_NFSD_V3_ACL=y
--CONFIG_NFSD_V4=y
--CONFIG_CIFS=m
--CONFIG_CIFS_XATTR=y
--CONFIG_CIFS_POSIX=y
--CONFIG_NLS_DEFAULT="utf8"
--CONFIG_NLS_CODEPAGE_437=y
--CONFIG_NLS_ASCII=y
--CONFIG_NLS_ISO8859_1=y
--CONFIG_NLS_UTF8=y
--CONFIG_MAGIC_SYSRQ=y
--CONFIG_DEBUG_KERNEL=y
--CONFIG_DEBUG_STACK_USAGE=y
--CONFIG_DEBUG_STACKOVERFLOW=y
--CONFIG_LOCKUP_DETECTOR=y
--CONFIG_LATENCYTOP=y
--CONFIG_SCHED_TRACER=y
--CONFIG_BLK_DEV_IO_TRACE=y
--CONFIG_CODE_PATCHING_SELFTEST=y
--CONFIG_FTR_FIXUP_SELFTEST=y
--CONFIG_MSI_BITMAP_SELFTEST=y
--CONFIG_XMON=y
--CONFIG_XMON_DEFAULT=y
--CONFIG_CRYPTO_TEST=m
--CONFIG_CRYPTO_PCBC=m
--CONFIG_CRYPTO_HMAC=y
--CONFIG_CRYPTO_MICHAEL_MIC=m
--CONFIG_CRYPTO_TGR192=m
--CONFIG_CRYPTO_WP512=m
--CONFIG_CRYPTO_ANUBIS=m
--CONFIG_CRYPTO_BLOWFISH=m
--CONFIG_CRYPTO_CAST6=m
--CONFIG_CRYPTO_KHAZAD=m
--CONFIG_CRYPTO_SALSA20=m
--CONFIG_CRYPTO_SERPENT=m
--CONFIG_CRYPTO_TEA=m
--CONFIG_CRYPTO_TWOFISH=m
--CONFIG_CRYPTO_LZO=m
--# CONFIG_CRYPTO_ANSI_CPRNG is not set
--CONFIG_VIRTUALIZATION=y
--CONFIG_KVM_BOOK3S_64=m
--CONFIG_KVM_BOOK3S_64_HV=m
+Second, the reset/restore of a VF is done in kernel space. FW is not aware of
+the VF, this means the usual reset function done in FW will not work. One of
+the patch will imitate the reset/restore function in kernel space.
+
+Third, the VF may be removed during the PF's error_detected function. In this
+case, the original error_detected->slot_reset->resume sequence is not proper
+to those removed VFs, since they are re-created by PF in a fresh state. A flag
+in eeh_dev is introduce to mark the eeh_dev is in error state. By doing so, we
+track whether this device needs to be reset or not.
+
+This has been tested both on host and in guest on Power8 with latest kernel
+version.
+
+v4:
+   * refine the change logs, comment and code style
+   * change pnv_pci_fixup_vf_eeh() to pnv_eeh_vf_final_fixup() and remove the
+     CONFIG_PCI_IOV macro
+   * reorder patch 5/6 to make the logic more reasonable
+   * remove remove_dev_pci_data()
+   * remove the EEH_DEV_VF flag, use edev->physfn to identify a VF EEH DEV and
+     remove related CONFIG_PCI_IOV macro
+   * add the option for VF reset
+   * fix the pnv_eeh_cfg_blocked() logic
+   * replace pnv_pci_cfg_{read,write} with eeh_ops->{read,write}_config in
+     pnv_eeh_vf_restore_config()
+   * rename pnv_eeh_vf_restore_config() to pnv_eeh_restore_vf_config()
+   * rename pnv_pci_fixup_vf_caps() to pnv_pci_vf_header_fixup() and move it
+     to arch/powerpc/platforms/powernv/pci.c
+   * add a field compound in pnv_ioda_pe to link compound PEs
+   * handle compound PE for VF PEs
+v3:
+   * add back vf_index in pci_dn to track the VF's index
+   * rename ppdev in eeh_dev to physfn for consistency
+   * move edev->physfn assignment before dev->dev.archdata.edev is set
+   * move pnv_pci_fixup_vf_eeh() and pnv_pci_fixup_vf_caps() to eeh-powernv.c
+   * more clear and detail in commit log and comment in code
+   * merge eeh_rmv_virt_device() with eeh_rmv_device()
+   * move the cfg_blocked check logic from pnv_eeh_read/write_config() to
+     pnv_eeh_cfg_blocked()
+   * move the vf reset/restore logic into its own patch, two patches are
+     created.
+     powerpc/powernv: Support PCI config restore for VFs
+     powerpc/powernv: Support EEH reset for VFs
+   * simplify the vf reset logic
+v2:
+   * add prefix pci_iov_ to virtfn_add/virtfn_remove
+   * use EEH_DEV_VF as a flag for a VF's eeh_dev
+   * use eeh_dev instead of edev in change log
+   * remove vf_index in eeh_dev, calculate it from pdn->busno and devfn
+   * do eeh_add_device_late() and eeh_sysfs_add_device() both after pci_dev is
+     well initialized
+   * do FLR to reset a VF PE
+   * imitate the restore function in FW for VF
+   * remove the reverse order patch, since it is still under discussion
+
+Wei Yang (11):
+  pci/iov: rename and export virtfn_add/virtfn_remove
+  powerpc/pci_dn: cache vf_index in pci_dn
+  powerpc/pci: remove PCI devices in reverse order
+  powerpc/eeh: cache address range just for normal device
+  powerpc/powernv: create/release eeh_dev for VF
+  powerpc/eeh: create EEH_PE_VF for VF PE
+  powerpc/powernv: Support EEH reset for VFs
+  powerpc/powernv: Support PCI config restore for VFs
+  powerpc/eeh: handle VF PE properly
+  powerpc/powernv: use "compound" as the child's list_head for compound
+    PE
+  powerpc/powernv: compound PE for VFs
+
+ arch/powerpc/include/asm/eeh.h               |    4 +
+ arch/powerpc/include/asm/pci-bridge.h        |    2 +
+ arch/powerpc/kernel/eeh.c                    |    5 +
+ arch/powerpc/kernel/eeh_cache.c              |    2 +-
+ arch/powerpc/kernel/eeh_driver.c             |  103 +++++++++++---
+ arch/powerpc/kernel/eeh_pe.c                 |   13 +-
+ arch/powerpc/kernel/pci-hotplug.c            |    2 +-
+ arch/powerpc/kernel/pci_dn.c                 |   15 +-
+ arch/powerpc/platforms/powernv/eeh-powernv.c |  196 +++++++++++++++++++++++++-
+ arch/powerpc/platforms/powernv/pci-ioda.c    |   35 ++++-
+ arch/powerpc/platforms/powernv/pci.c         |   16 +++
+ arch/powerpc/platforms/powernv/pci.h         |    1 +
+ drivers/pci/iov.c                            |   10 +-
+ include/linux/pci.h                          |    2 +
+ 14 files changed, 366 insertions(+), 40 deletions(-)
+
 -- 
-1.9.1
+1.7.9.5
