@@ -1,20 +1,24 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <yangbo.lu@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0120.outbound.protection.outlook.com [65.55.169.120])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1C4B21A0477
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 11:34:48 +1000 (AEST)
-Message-ID: <1431653687.13498.1.camel@ellerman.id.au>
-Subject: Re: [PATCH] ppc64 ftrace: mark data_access callees "notrace" (pt.1)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Torsten Duwe <duwe@lst.de>
-Date: Fri, 15 May 2015 11:34:47 +1000
-In-Reply-To: <20150513161100.GA1619@lst.de>
-References: <20150513161100.GA1619@lst.de>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: ppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3DCFA1A0480
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 May 2015 12:31:50 +1000 (AEST)
+From: Lu Y.B. <yangbo.lu@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: RE: [PATCH 2/2] mmc: sdhci-pltfm: enable interrupt mode to detect card
+Date: Fri, 15 May 2015 02:31:43 +0000
+Message-ID: <BY1PR0301MB1192BB10CC1C48705A56C134F2C70@BY1PR0301MB1192.namprd03.prod.outlook.com>
+References: <1431505246-40102-1-git-send-email-yangbo.lu@freescale.com>
+ <1431535027.3868.44.camel@freescale.com>
+ <BY1PR0301MB1192B4134746A153763312A9F2D80@BY1PR0301MB1192.namprd03.prod.outlook.com>
+ <1431634919.3868.204.camel@freescale.com>
+In-Reply-To: <1431634919.3868.204.camel@freescale.com>
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,23 +28,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2015-05-13 at 18:11 +0200, Torsten Duwe wrote:
-> In order to avoid an endless recursion, functions that may get
-> called from the data access handler must not call into tracing
-> functions, which may cause data access faults ;-)
-> 
-> Advancing from my previous approach that lavishly compiled whole
-> subdirs without the profiling switches, this is more fine-grained
-> (but probably yet incomplete). This patch is necessary albeit not
-> sufficient for FTRACE_WITH_REGS on ppc64.
-
-There's got to be a better solution than this. The chance that you've correctly
-annotated every function is basically 0, and the chance that we correctly add
-it to every new or modififed function in the future is also 0.
-
-I don't mean that as a criticism of you, but rather the technique. For starters
-I don't see any annotations in 32-bit code, or in the BookE code etc.
-
-Can you give us more details on what goes wrong without these annotations?
-
-cheers
+DQoNCj4gLS0tLS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0
+MjENCj4gU2VudDogRnJpZGF5LCBNYXkgMTUsIDIwMTUgNDoyMiBBTQ0KPiBUbzogTHUgWWFuZ2Jv
+LUI0NzA5Mw0KPiBDYzogbGludXhwcGMtZGV2QGxpc3RzLm96bGFicy5vcmc7IGxpbnV4LWtlcm5l
+bEB2Z2VyLmtlcm5lbC5vcmcNCj4gU3ViamVjdDogUmU6IFtQQVRDSCAyLzJdIG1tYzogc2RoY2kt
+cGx0Zm06IGVuYWJsZSBpbnRlcnJ1cHQgbW9kZSB0bw0KPiBkZXRlY3QgY2FyZA0KPiANCj4gT24g
+VGh1LCAyMDE1LTA1LTE0IGF0IDAxOjI5IC0wNTAwLCBMdSBZYW5nYm8tQjQ3MDkzIHdyb3RlOg0K
+PiA+DQo+ID4NCj4gPiA+IC0tLS0tT3JpZ2luYWwgTWVzc2FnZS0tLS0tDQo+ID4gPiBGcm9tOiBX
+b29kIFNjb3R0LUIwNzQyMQ0KPiA+ID4gU2VudDogVGh1cnNkYXksIE1heSAxNCwgMjAxNSAxMjoz
+NyBBTQ0KPiA+ID4gVG86IEx1IFlhbmdiby1CNDcwOTMNCj4gPiA+IENjOiBsaW51eHBwYy1kZXZA
+bGlzdHMub3psYWJzLm9yZzsgbGludXgta2VybmVsQHZnZXIua2VybmVsLm9yZw0KPiA+ID4gU3Vi
+amVjdDogUmU6IFtQQVRDSCAyLzJdIG1tYzogc2RoY2ktcGx0Zm06IGVuYWJsZSBpbnRlcnJ1cHQg
+bW9kZSB0bw0KPiA+ID4gZGV0ZWN0IGNhcmQNCj4gPiA+DQo+ID4gPiBPbiBXZWQsIDIwMTUtMDUt
+MTMgYXQgMTY6MjAgKzA4MDAsIFlhbmdibyBMdSB3cm90ZToNCj4gPiA+ID4gRW5hYmxlIGludGVy
+cnVwdCBtb2RlIHRvIGRldGVjdCBjYXJkIGluc3RlYWQgb2YgcG9sbGluZyBtb2RlIGZvcg0KPiA+
+ID4gPiBQMTAyMC9QNDA4MC9QNTAyMC9QNTA0MC9UMTA0MCBieSByZW1vdmluZyB0aGUgcXVpcmsN
+Cj4gPiA+ID4gU0RIQ0lfUVVJUktfQlJPS0VOX0NBUkRfREVURUNUSU9OLiBUaGlzIGNvdWxkIGlt
+cHJvdmUgZGF0YQ0KPiA+ID4gPiB0cmFuc2ZlcnJpbmcgcGVyZm9ybWFuY2UgYW5kIGF2b2lkIHRo
+ZSBjYWxsIHRyYWNlIGNhdXNlZCBieQ0KPiA+ID4gPiBwb2xsaW5nIGNhcmQgc3RhdHVzIHNvbWV0
+aW1lLg0KPiA+ID4gPg0KPiA+ID4gPiBTaWduZWQtb2ZmLWJ5OiBZYW5nYm8gTHUgPHlhbmdiby5s
+dUBmcmVlc2NhbGUuY29tPg0KPiA+ID4gPiAtLS0NCj4gPiA+ID4gIGRyaXZlcnMvbW1jL2hvc3Qv
+c2RoY2ktcGx0Zm0uYyB8IDcgKysrKysrKw0KPiA+ID4gPiAgMSBmaWxlIGNoYW5nZWQsIDcgaW5z
+ZXJ0aW9ucygrKQ0KPiA+ID4gPg0KPiA+ID4gPiBkaWZmIC0tZ2l0IGEvZHJpdmVycy9tbWMvaG9z
+dC9zZGhjaS1wbHRmbS5jDQo+ID4gPiA+IGIvZHJpdmVycy9tbWMvaG9zdC9zZGhjaS1wbHRmbS5j
+IGluZGV4IGM1YjAxZDYuLjYyZjQwNDkgMTAwNjQ0DQo+ID4gPiA+IC0tLSBhL2RyaXZlcnMvbW1j
+L2hvc3Qvc2RoY2ktcGx0Zm0uYw0KPiA+ID4gPiArKysgYi9kcml2ZXJzL21tYy9ob3N0L3NkaGNp
+LXBsdGZtLmMNCj4gPiA+ID4gQEAgLTEwMiw2ICsxMDIsMTMgQEAgdm9pZCBzZGhjaV9nZXRfb2Zf
+cHJvcGVydHkoc3RydWN0DQo+ID4gPiA+IHBsYXRmb3JtX2RldmljZQ0KPiA+ID4gKnBkZXYpDQo+
+ID4gPiA+ICAJCSAgICBvZl9kZXZpY2VfaXNfY29tcGF0aWJsZShucCwgImZzbCxtcGM4NTM2LWVz
+ZGhjIikpDQo+ID4gPiA+ICAJCQlob3N0LT5xdWlya3MgfD0gU0RIQ0lfUVVJUktfQlJPS0VOX1RJ
+TUVPVVRfVkFMOw0KPiA+ID4gPg0KPiA+ID4gPiArCQlpZiAob2ZfZGV2aWNlX2lzX2NvbXBhdGli
+bGUobnAsICJmc2wscDUwNDAtZXNkaGMiKSB8fA0KPiA+ID4gPiArCQkJb2ZfZGV2aWNlX2lzX2Nv
+bXBhdGlibGUobnAsICJmc2wscDUwMjAtZXNkaGMiKSB8fA0KPiA+ID4gPiArCQkJb2ZfZGV2aWNl
+X2lzX2NvbXBhdGlibGUobnAsICJmc2wscDQwODAtZXNkaGMiKSB8fA0KPiA+ID4gPiArCQkJb2Zf
+ZGV2aWNlX2lzX2NvbXBhdGlibGUobnAsICJmc2wscDEwMjAtZXNkaGMiKSB8fA0KPiA+ID4gPiAr
+CQkJb2ZfZGV2aWNlX2lzX2NvbXBhdGlibGUobnAsICJmc2wsdDEwNDAtZXNkaGMiKSkNCj4gPiA+
+ID4gKwkJCWhvc3QtPnF1aXJrcyAmPQ0KPiB+U0RIQ0lfUVVJUktfQlJPS0VOX0NBUkRfREVURUNU
+SU9OOw0KPiA+ID4NCj4gPiA+IFBsZWFzZSBkb24ndCBsaW5lIHVwIGNvbnRpbnVhdGlvbiBsaW5l
+cyB3aXRoIHRoZSBpZi1ib2R5LiAgQWxsIG9mDQo+ID4gPiB0aGUgIm9mX2RldmljZV9pc19jb21w
+YXRpYmxlcyIgc2hvdWxkIHN0YXJ0IGluIHRoZSBzYW1lIGNvbHVtbi4NCj4gPiBPaywgdGhhbmtz
+Lg0KPiA+ID4NCj4gPiA+IEdpdmVuIHRoYXQgeW91IG5lZWQgdG8gbW9kaWZ5IHRoZSBkZXZpY2Ug
+dHJlZSBmb3IgdGhpcywgd2h5IG5vdCBqdXN0DQo+ID4gPiB1c2UgU1ZSPw0KPiA+IFRoZSBkcml2
+ZXJzL21tYy9ob3N0L3NkaGNpLXBsdGZtLmMgaXMgbm90IG9ubHkgdXNlZCBieSBmcmVlc2NhbGUN
+Cj4gcGxhdGZvcm0uIFNvIHdlIGNvdWxkbuKAmXQgdG8gdXNlIFNWUiBoZXJlLg0KPiA+IFRoYW5r
+cy4NCj4gDQo+IEknbSBzdXJlIHRoZXJlJ2QgYmUgd2F5cyBvZiByZWFycmFuZ2luZyBpdCB0byBt
+YWtlIGl0IHdvcmssIGJ1dCBPSy4NCj4gDQo+IFBsZWFzZSBzZW5kIHRoZXNlIHBhdGNoZXMgdG8g
+dGhlIE1NQyBsaXN0IGFuZCBtYWludGFpbmVyIChhbmQgQ0MgbWUpLiAgSQ0KPiBjYW4gQUNLIHRo
+ZSBmaXJzdCBvbmUgb3IgYXBwbHkgaXQgc2VwYXJhdGVseS4NCj4gDQpUaGFuayB5b3UgdmVyeSBt
+dWNoLg0KDQpCZXN0IHJlZ2FyZHMsDQpZYW5nYm8gTHUNCg0K
