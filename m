@@ -1,19 +1,21 @@
 Return-Path: <clabbe.montjoie@gmail.com>
-Received: from mail-wg0-x243.google.com (mail-wg0-x243.google.com
- [IPv6:2a00:1450:400c:c00::243])
+Received: from mail-wi0-x241.google.com (mail-wi0-x241.google.com
+ [IPv6:2a00:1450:400c:c05::241])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DA16D1A02BF
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 May 2015 20:54:26 +1000 (AEST)
-Received: by wggx12 with SMTP id x12so13296746wgg.1
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 May 2015 03:54:22 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id D8CEB1A02BF
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 May 2015 20:54:27 +1000 (AEST)
+Received: by wibbw19 with SMTP id bw19so6105104wib.2
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 May 2015 03:54:24 -0700 (PDT)
 From: LABBE Corentin <clabbe.montjoie@gmail.com>
 To: herbert@gondor.apana.org.au, davem@davemloft.net, ralf@linux-mips.org,
  benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
  aaro.koskinen@iki.fi
-Subject: [PATCH 1/6] crypto: md5: add MD5 initial vectors
-Date: Sun, 17 May 2015 12:54:12 +0200
-Message-Id: <1431860057-5232-1-git-send-email-clabbe.montjoie@gmail.com>
+Subject: [PATCH 2/6] crypto: md5: use md5 IV MD5_HX instead of their raw value
+Date: Sun, 17 May 2015 12:54:13 +0200
+Message-Id: <1431860057-5232-2-git-send-email-clabbe.montjoie@gmail.com>
+In-Reply-To: <1431860057-5232-1-git-send-email-clabbe.montjoie@gmail.com>
+References: <1431860057-5232-1-git-send-email-clabbe.montjoie@gmail.com>
 Cc: linux-mips@linux-mips.org, linux-kernel@vger.kernel.org,
  LABBE Corentin <clabbe.montjoie@gmail.com>, linux-crypto@vger.kernel.org,
  sparclinux@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
@@ -26,28 +28,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch simply adds the MD5 IV in the md5 header.
+Since MD5 IV are now available in crypto/md5.h, use them.
 
 Signed-off-by: LABBE Corentin <clabbe.montjoie@gmail.com>
 ---
- include/crypto/md5.h | 5 +++++
- 1 file changed, 5 insertions(+)
+ crypto/md5.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/include/crypto/md5.h b/include/crypto/md5.h
-index 65f299b..146af82 100644
---- a/include/crypto/md5.h
-+++ b/include/crypto/md5.h
-@@ -8,6 +8,11 @@
- #define MD5_BLOCK_WORDS		16
- #define MD5_HASH_WORDS		4
+diff --git a/crypto/md5.c b/crypto/md5.c
+index 36f5e5b..33d17e9 100644
+--- a/crypto/md5.c
++++ b/crypto/md5.c
+@@ -51,10 +51,10 @@ static int md5_init(struct shash_desc *desc)
+ {
+ 	struct md5_state *mctx = shash_desc_ctx(desc);
  
-+#define MD5_H0	0x67452301UL
-+#define MD5_H1	0xefcdab89UL
-+#define MD5_H2	0x98badcfeUL
-+#define MD5_H3	0x10325476UL
-+
- struct md5_state {
- 	u32 hash[MD5_HASH_WORDS];
- 	u32 block[MD5_BLOCK_WORDS];
+-	mctx->hash[0] = 0x67452301;
+-	mctx->hash[1] = 0xefcdab89;
+-	mctx->hash[2] = 0x98badcfe;
+-	mctx->hash[3] = 0x10325476;
++	mctx->hash[0] = MD5_H0;
++	mctx->hash[1] = MD5_H1;
++	mctx->hash[2] = MD5_H2;
++	mctx->hash[3] = MD5_H3;
+ 	mctx->byte_count = 0;
+ 
+ 	return 0;
 -- 
 2.3.6
