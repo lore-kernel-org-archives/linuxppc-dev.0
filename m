@@ -1,22 +1,18 @@
-Return-Path: <anton@samba.org>
+Return-Path: <michael@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id AC9F91A006F
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 May 2015 15:09:58 +1000 (AEST)
-Date: Mon, 18 May 2015 15:09:57 +1000
-From: Anton Blanchard <anton@samba.org>
-To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Subject: Re: [PATCH V3 09/13] selftests, powerpc: Add test for DSCR value
- inheritence across fork
-Message-ID: <20150518150957.4c228ac4@kryten>
-In-Reply-To: <1428654612-23539-10-git-send-email-khandual@linux.vnet.ibm.com>
-References: <1428654612-23539-1-git-send-email-khandual@linux.vnet.ibm.com>
- <1428654612-23539-10-git-send-email-khandual@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: mikey@neuling.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, shuahkh@osg.samsung.com
+ by lists.ozlabs.org (Postfix) with ESMTPS id 35CB51A006F
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 May 2015 16:40:27 +1000 (AEST)
+In-Reply-To: <1431921411.4160.134.camel@kernel.crashing.org>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ linuxppc-dev@lists.ozlabs.org
+From: Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: powerpc/iommu: Support "hybrid" iommu/direct DMA ops for
+ coherent_mask < dma_mask
+Message-Id: <20150518064027.27A97140D18@ozlabs.org>
+Date: Mon, 18 May 2015 16:40:27 +1000 (AEST)
+Cc: Brian King <brking@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,28 +22,17 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Anshuman,
+On Mon, 2015-18-05 at 03:56:51 UTC, Benjamin Herrenschmidt wrote:
+> This patch adds the ability to the DMA direct ops to fallback to the IOMMU
+> ops for coherent alloc/free if the coherent mask of the device isn't
+> suitable for accessing the direct DMA space and the device also happens
+> to have an active IOMMU table.
 
-Thanks for getting these testcases into the kernel.
+Can you do the removal of the union, the #ifdef PPC64 and the static inlines as
+a precursor patch, that would remove some of the noise in the diff.
 
-> This patch adds a test to verify that the changed DSCR value inside
-> any process would be inherited to it's child process across the fork
-> system call.
+And can you explain the changes to dart, pseries and powernv.
 
-One issue I do notice (a bug in my original test cases too), is that we
-don't restore the DSCR on exit. I'm not sure we need to go to the
-trouble of saving and restoring it, but we should at least get it back
-to 0 when done.
+There's also some whitespace changes in iommu.h that I assume you didn't want?
 
-Also a tiny nit, no need for a newline in perror():
-
-open() failed
-: Permission denied
-
-With those changes you can add:
-
-Signed-off-by: Anton Blanchard <anton@samba.org>
-
-to the patches based on my testcases.
-
-Anton
+cheers
