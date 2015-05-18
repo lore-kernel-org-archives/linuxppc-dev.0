@@ -1,31 +1,31 @@
 Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
+Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 153B41A05F5
+ by lists.ozlabs.org (Postfix) with ESMTPS id 26DBC1A05D6
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 May 2015 20:56:44 +1000 (AEST)
 Received: from /spool/local
- by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
  Mon, 18 May 2015 16:26:43 +0530
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id DE6293940061
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 May 2015 16:26:39 +0530 (IST)
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 887C8E008D
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 May 2015 16:29:42 +0530 (IST)
 Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t4IAuIoC37290104
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 May 2015 16:26:18 +0530
+ by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t4IAuIf430081116
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 May 2015 16:26:19 +0530
 Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
  by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t4IAFLIv026132
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 May 2015 15:45:21 +0530
+ t4IAFLZa026213
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 May 2015 15:45:22 +0530
 From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH V4 06/13] selftests,
- powerpc: Add test for system wide DSCR default
-Date: Mon, 18 May 2015 16:26:09 +0530
-Message-Id: <1431946576-1009-7-git-send-email-khandual@linux.vnet.ibm.com>
+Subject: [PATCH V4 11/13] selftests,
+ powerpc: Add test for all DSCR sysfs interfaces
+Date: Mon, 18 May 2015 16:26:14 +0530
+Message-Id: <1431946576-1009-12-git-send-email-khandual@linux.vnet.ibm.com>
 In-Reply-To: <1431946576-1009-1-git-send-email-khandual@linux.vnet.ibm.com>
 References: <1431946576-1009-1-git-send-email-khandual@linux.vnet.ibm.com>
 Cc: mikey@neuling.org, shuahkh@osg.samsung.com, anton@samba.org
@@ -38,201 +38,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch adds a test case for the system wide DSCR default
-value, which when changed through it's sysfs interface must
-be visible to all threads reading DSCR either through the
-privilege state SPR or the problem state SPR. The DSCR value
-change should be immediate as well.
+This test continuously updates the system wide DSCR default value
+in the sysfs interface and makes sure that the same is reflected
+across all the sysfs interfaces for each individual CPUs present
+on the system.
 
 Acked-by: Shuah Khan <shuahkh@osg.samsung.com>
 Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
- tools/testing/selftests/powerpc/Makefile           |   2 +-
- tools/testing/selftests/powerpc/dscr/Makefile      |  17 +++
- tools/testing/selftests/powerpc/dscr/dscr.h        | 120 +++++++++++++++++++
- .../selftests/powerpc/dscr/dscr_default_test.c     | 128 +++++++++++++++++++++
- 4 files changed, 266 insertions(+), 1 deletion(-)
- create mode 100644 tools/testing/selftests/powerpc/dscr/Makefile
- create mode 100644 tools/testing/selftests/powerpc/dscr/dscr.h
- create mode 100644 tools/testing/selftests/powerpc/dscr/dscr_default_test.c
+ tools/testing/selftests/powerpc/dscr/Makefile      |  3 +-
+ .../selftests/powerpc/dscr/dscr_sysfs_test.c       | 98 ++++++++++++++++++++++
+ 2 files changed, 100 insertions(+), 1 deletion(-)
+ create mode 100644 tools/testing/selftests/powerpc/dscr/dscr_sysfs_test.c
 
-diff --git a/tools/testing/selftests/powerpc/Makefile b/tools/testing/selftests/powerpc/Makefile
-index 5ad0423..03ca2e6 100644
---- a/tools/testing/selftests/powerpc/Makefile
-+++ b/tools/testing/selftests/powerpc/Makefile
-@@ -12,7 +12,7 @@ CFLAGS := -Wall -O2 -flto -Wall -Werror -DGIT_VERSION='"$(GIT_VERSION)"' -I$(CUR
- 
- export CFLAGS
- 
--SUB_DIRS = pmu copyloops mm tm primitives stringloops vphn switch_endian
-+SUB_DIRS = pmu copyloops mm tm primitives stringloops vphn switch_endian dscr
- 
- endif
- 
 diff --git a/tools/testing/selftests/powerpc/dscr/Makefile b/tools/testing/selftests/powerpc/dscr/Makefile
-new file mode 100644
-index 0000000..0aa90ab
---- /dev/null
+index 4e84309..fada526 100644
+--- a/tools/testing/selftests/powerpc/dscr/Makefile
 +++ b/tools/testing/selftests/powerpc/dscr/Makefile
-@@ -0,0 +1,17 @@
-+PROGS := dscr_default_test
-+
-+CFLAGS := $(CFLAGS) -lpthread
-+
-+all: $(PROGS)
-+
-+$(PROGS): ../harness.c
-+
-+run_tests: all
-+	@-for PROG in $(PROGS); do \
-+		./$$PROG; \
-+	done;
-+
-+clean:
-+	rm -f $(PROGS) *.o
-+
-+.PHONY: all run_tests clean
-diff --git a/tools/testing/selftests/powerpc/dscr/dscr.h b/tools/testing/selftests/powerpc/dscr/dscr.h
+@@ -1,5 +1,6 @@
+ PROGS := dscr_default_test dscr_explicit_test dscr_user_test	\
+-	 dscr_inherit_test dscr_inherit_exec_test
++	 dscr_inherit_test dscr_inherit_exec_test		\
++	 dscr_sysfs_test
+ 
+ CFLAGS := $(CFLAGS) -lpthread
+ 
+diff --git a/tools/testing/selftests/powerpc/dscr/dscr_sysfs_test.c b/tools/testing/selftests/powerpc/dscr/dscr_sysfs_test.c
 new file mode 100644
-index 0000000..b9e734d
+index 0000000..f7082ce
 --- /dev/null
-+++ b/tools/testing/selftests/powerpc/dscr/dscr.h
-@@ -0,0 +1,120 @@
++++ b/tools/testing/selftests/powerpc/dscr/dscr_sysfs_test.c
+@@ -0,0 +1,98 @@
 +/*
-+ * POWER Data Stream Control Register (DSCR)
++ * POWER Data Stream Control Register (DSCR) sysfs interface test
 + *
-+ * This header file contains helper functions and macros
-+ * required for all the DSCR related test cases.
++ * This test updates to system wide DSCR default through the sysfs interface
++ * and then verifies that all the CPU specific DSCR defaults are updated as
++ * well verified from their sysfs interfaces.
 + *
-+ * Copyright (C) 2012 Anton Blanchard <anton@au.ibm.com>, IBM
-+ * Copyright (C) 2015 Anshuman Khandual <khandual@linux.vnet.ibm.com>, IBM
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ */
-+#ifndef _SELFTESTS_POWERPC_DSCR_DSCR_H
-+#define _SELFTESTS_POWERPC_DSCR_DSCR_H
-+
-+#include <unistd.h>
-+#include <stdio.h>
-+#include <stdlib.h>
-+#include <string.h>
-+#include <fcntl.h>
-+#include <dirent.h>
-+#include <pthread.h>
-+#include <sched.h>
-+#include <sys/types.h>
-+#include <sys/stat.h>
-+#include <sys/wait.h>
-+
-+#include "utils.h"
-+
-+#define SPRN_DSCR	0x11	/* Privilege state SPR */
-+#define SPRN_DSCR_USR	0x03	/* Problem state SPR */
-+#define THREADS		100	/* Max threads */
-+#define COUNT		100	/* Max iterations */
-+#define DSCR_MAX	16	/* Max DSCR value */
-+#define LEN_MAX		100	/* Max name length */
-+
-+#define DSCR_DEFAULT	"/sys/devices/system/cpu/dscr_default"
-+#define CPU_PATH	"/sys/devices/system/cpu/"
-+
-+#define rmb()  asm volatile("lwsync":::"memory")
-+#define wmb()  asm volatile("lwsync":::"memory")
-+
-+#define ACCESS_ONCE(x) (*(volatile typeof(x) *)&(x))
-+
-+/* Prilvilege state DSCR access */
-+inline unsigned long get_dscr(void)
-+{
-+	unsigned long ret;
-+
-+	asm volatile("mfspr %0,%1" : "=r" (ret): "i" (SPRN_DSCR));
-+
-+	return ret;
-+}
-+
-+inline void set_dscr(unsigned long val)
-+{
-+	asm volatile("mtspr %1,%0" : : "r" (val), "i" (SPRN_DSCR));
-+}
-+
-+/* Problem state DSCR access */
-+inline unsigned long get_dscr_usr(void)
-+{
-+	unsigned long ret;
-+
-+	asm volatile("mfspr %0,%1" : "=r" (ret): "i" (SPRN_DSCR_USR));
-+
-+	return ret;
-+}
-+
-+inline void set_dscr_usr(unsigned long val)
-+{
-+	asm volatile("mtspr %1,%0" : : "r" (val), "i" (SPRN_DSCR_USR));
-+}
-+
-+/* Default DSCR access */
-+unsigned long get_default_dscr(void)
-+{
-+	int fd = -1;
-+	char buf[16];
-+	unsigned long val;
-+
-+	if (fd == -1) {
-+		fd = open(DSCR_DEFAULT, O_RDONLY);
-+		if (fd == -1) {
-+			perror("open() failed");
-+			exit(1);
-+		}
-+	}
-+	memset(buf, 0, sizeof(buf));
-+	lseek(fd, 0, SEEK_SET);
-+	read(fd, buf, sizeof(buf));
-+	sscanf(buf, "%lx", &val);
-+	close(fd);
-+	return val;
-+}
-+
-+void set_default_dscr(unsigned long val)
-+{
-+	int fd = -1;
-+	char buf[16];
-+
-+	if (fd == -1) {
-+		fd = open(DSCR_DEFAULT, O_RDWR);
-+		if (fd == -1) {
-+			perror("open() failed");
-+			exit(1);
-+		}
-+	}
-+	sprintf(buf, "%lx\n", val);
-+	write(fd, buf, strlen(buf));
-+	close(fd);
-+}
-+
-+double uniform_deviate(int seed)
-+{
-+	return seed * (1.0 / (RAND_MAX + 1.0));
-+}
-+#endif	/* _SELFTESTS_POWERPC_DSCR_DSCR_H */
-diff --git a/tools/testing/selftests/powerpc/dscr/dscr_default_test.c b/tools/testing/selftests/powerpc/dscr/dscr_default_test.c
-new file mode 100644
-index 0000000..849b1cde0
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/dscr/dscr_default_test.c
-@@ -0,0 +1,128 @@
-+/*
-+ * POWER Data Stream Control Register (DSCR) default test
-+ *
-+ * This test modifies the system wide default DSCR through
-+ * it's sysfs interface and then verifies that all threads
-+ * see the correct changed DSCR value immediately.
-+ *
-+ * Copyright (C) 2012 Anton Blanchard <anton@au.ibm.com>, IBM
 + * Copyright (C) 2015 Anshuman Khandual <khandual@linux.vnet.ibm.com>, IBM
 + *
 + * This program is free software; you can redistribute it and/or
@@ -242,104 +85,75 @@ index 0000000..849b1cde0
 + */
 +#include "dscr.h"
 +
-+static unsigned long dscr;		/* System DSCR default */
-+static unsigned long sequence;
-+static unsigned long result[THREADS];
-+
-+static void *do_test(void *in)
++static int check_cpu_dscr_default(char *file, unsigned long val)
 +{
-+	unsigned long thread = (unsigned long)in;
-+	unsigned long i;
++	char buf[10];
++	int fd, rc;
 +
-+	for (i = 0; i < COUNT; i++) {
-+		unsigned long d, cur_dscr, cur_dscr_usr;
-+		unsigned long s1, s2;
-+
-+		s1 = ACCESS_ONCE(sequence);
-+		if (s1 & 1)
-+			continue;
-+		rmb();
-+
-+		d = dscr;
-+		cur_dscr = get_dscr();
-+		cur_dscr_usr = get_dscr_usr();
-+
-+		rmb();
-+		s2 = sequence;
-+
-+		if (s1 != s2)
-+			continue;
-+
-+		if (cur_dscr != d) {
-+			fprintf(stderr, "thread %ld kernel DSCR should be %ld "
-+				"but is %ld\n", thread, d, cur_dscr);
-+			result[thread] = 1;
-+			pthread_exit(&result[thread]);
-+		}
-+
-+		if (cur_dscr_usr != d) {
-+			fprintf(stderr, "thread %ld user DSCR should be %ld "
-+				"but is %ld\n", thread, d, cur_dscr_usr);
-+			result[thread] = 1;
-+			pthread_exit(&result[thread]);
-+		}
++	fd = open(file, O_RDWR);
++	if (fd == -1) {
++		perror("open() failed");
++		return 1;
 +	}
-+	result[thread] = 0;
-+	pthread_exit(&result[thread]);
++
++	rc = read(fd, buf, sizeof(buf));
++	if (rc == -1) {
++		perror("read() failed");
++		return 1;
++	}
++	close(fd);
++
++	buf[rc] = '\0';
++	if (strtol(buf, NULL, 16) != val) {
++		printf("DSCR match failed: %ld (system) %ld (cpu)\n",
++					val, strtol(buf, NULL, 16));
++		return 1;
++	}
++	return 0;
 +}
 +
-+int dscr_default(void)
++static int check_all_cpu_dscr_defaults(unsigned long val)
 +{
-+	pthread_t threads[THREADS];
-+	unsigned long i, *status[THREADS];
++	DIR *sysfs;
++	struct dirent *dp;
++	char file[LEN_MAX];
++
++	sysfs = opendir(CPU_PATH);
++	if (!sysfs) {
++		perror("opendir() failed");
++		return 1;
++	}
++
++	while ((dp = readdir(sysfs))) {
++		if (!(dp->d_type & DT_DIR))
++			continue;
++		if (!strcmp(dp->d_name, "cpuidle"))
++			continue;
++		if (!strstr(dp->d_name, "cpu"))
++			continue;
++
++		sprintf(file, "%s%s/dscr", CPU_PATH, dp->d_name);
++		if (access(file, F_OK))
++			continue;
++
++		if (check_cpu_dscr_default(file, val))
++			return 1;
++	}
++	closedir(sysfs);
++	return 0;
++}
++
++int dscr_sysfs(void)
++{
 +	unsigned long orig_dscr_default;
++	int i, j;
 +
 +	orig_dscr_default = get_default_dscr();
-+
-+	/* Initial DSCR default */
-+	dscr = 1;
-+	set_default_dscr(dscr);
-+
-+	/* Spawn all testing threads */
-+	for (i = 0; i < THREADS; i++) {
-+		if (pthread_create(&threads[i], NULL, do_test, (void *)i)) {
-+			perror("pthread_create() failed");
-+			goto fail;
-+		}
-+	}
-+
-+	srand(getpid());
-+
-+	/* Keep changing the DSCR default */
 +	for (i = 0; i < COUNT; i++) {
-+		double ret = uniform_deviate(rand());
-+
-+		if (ret < 0.0001) {
-+			sequence++;
-+			wmb();
-+
-+			dscr++;
-+			if (dscr > DSCR_MAX)
-+				dscr = 0;
-+
-+			set_default_dscr(dscr);
-+
-+			wmb();
-+			sequence++;
-+		}
-+	}
-+
-+	/* Individual testing thread exit status */
-+	for (i = 0; i < THREADS; i++) {
-+		if (pthread_join(threads[i], (void **)&(status[i]))) {
-+			perror("pthread_join() failed");
-+			goto fail;
-+		}
-+
-+		if (*status[i]) {
-+			printf("%ldth thread failed to join with %ld status\n",
-+								i, *status[i]);
-+			goto fail;
++		for (j = 0; j < DSCR_MAX; j++) {
++			set_default_dscr(j);
++			if (check_all_cpu_dscr_defaults(j))
++				goto fail;
 +		}
 +	}
 +	set_default_dscr(orig_dscr_default);
@@ -351,7 +165,7 @@ index 0000000..849b1cde0
 +
 +int main(int argc, char *argv[])
 +{
-+	return test_harness(dscr_default, "dscr_default_test");
++	return test_harness(dscr_sysfs, "dscr_sysfs_test");
 +}
 -- 
 1.9.3
