@@ -2,30 +2,30 @@ Return-Path: <khandual@linux.vnet.ibm.com>
 Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BF4A91A05A3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 May 2015 20:56:30 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 90E661A05E7
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 May 2015 20:56:32 +1000 (AEST)
 Received: from /spool/local
  by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Mon, 18 May 2015 16:26:28 +0530
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 9FCB5125805D
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 May 2015 16:28:40 +0530 (IST)
+ Mon, 18 May 2015 16:26:30 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 3D3061258053
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 May 2015 16:28:41 +0530 (IST)
 Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t4IAuI2Q59375804
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 May 2015 16:26:19 +0530
+ by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t4IAuQH24260098
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 May 2015 16:26:26 +0530
 Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
  by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t4IAFLqv026175
+ t4IAFLuh026091
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 May 2015 15:45:21 +0530
 From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH V4 09/13] selftests,
- powerpc: Add test for DSCR value inheritence across fork
-Date: Mon, 18 May 2015 16:26:12 +0530
-Message-Id: <1431946576-1009-10-git-send-email-khandual@linux.vnet.ibm.com>
+Subject: [PATCH V4 01/13] powerpc: Fix handling of DSCR related facility
+ unavailable exception
+Date: Mon, 18 May 2015 16:26:04 +0530
+Message-Id: <1431946576-1009-2-git-send-email-khandual@linux.vnet.ibm.com>
 In-Reply-To: <1431946576-1009-1-git-send-email-khandual@linux.vnet.ibm.com>
 References: <1431946576-1009-1-git-send-email-khandual@linux.vnet.ibm.com>
 Cc: mikey@neuling.org, shuahkh@osg.samsung.com, anton@samba.org
@@ -38,131 +38,103 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch adds a test to verify that the changed DSCR value inside
-any process would be inherited to it's child process across the fork
-system call.
+Currently DSCR (Data Stream Control Register) can be accessed with
+mfspr or mtspr instructions inside a thread via two different SPR
+numbers. One being the user accessible problem state SPR number 0x03
+and the other being the privilege state SPR number 0x11. All access
+through the privilege state SPR number get emulated through illegal
+instruction exception. Any access through the problem state SPR number
+raises one facility unavailable exception which sets the thread based
+dscr_inherit bit and enables DSCR facility through FSCR register thus
+allowing direct access to DSCR without going through this exception in
+the future. We set the thread.dscr_inherit bit whether the access was
+with mfspr or mtspr instruction which is neither correct nor does it
+match the behaviour through the instruction emulation code path driven
+from privilege state SPR number. User currently observes two different
+kind of behaviour when accessing the DSCR through these two SPR numbers.
+This problem can be observed through these two test cases by replacing
+the privilege state SPR number with the problem state SPR number.
 
-Acked-by: Shuah Khan <shuahkh@osg.samsung.com>
+	(1) http://ozlabs.org/~anton/junkcode/dscr_default_test.c
+	(2) http://ozlabs.org/~anton/junkcode/dscr_explicit_test.c
+
+This patch fixes the problem by making sure that the behaviour visible
+to the user remains the same irrespective of which SPR number is being
+used. Inside facility unavailable exception, we check whether it was
+cuased by a mfspr or a mtspr isntrucction. In case of mfspr instruction,
+just emulate the instruction. In case of mtspr instruction, set the
+thread based dscr_inherit bit and also enable the facility through FSCR.
+All user SPR based mfspr instruction will be emulated till one user SPR
+based mtspr has been executed.
+
 Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
- tools/testing/selftests/powerpc/dscr/Makefile      |  3 +-
- .../selftests/powerpc/dscr/dscr_inherit_test.c     | 96 ++++++++++++++++++++++
- 2 files changed, 98 insertions(+), 1 deletion(-)
- create mode 100644 tools/testing/selftests/powerpc/dscr/dscr_inherit_test.c
+ arch/powerpc/kernel/traps.c | 45 ++++++++++++++++++++++++++++++++++++++++-----
+ 1 file changed, 40 insertions(+), 5 deletions(-)
 
-diff --git a/tools/testing/selftests/powerpc/dscr/Makefile b/tools/testing/selftests/powerpc/dscr/Makefile
-index ae865d8..81239e2 100644
---- a/tools/testing/selftests/powerpc/dscr/Makefile
-+++ b/tools/testing/selftests/powerpc/dscr/Makefile
-@@ -1,4 +1,5 @@
--PROGS := dscr_default_test dscr_explicit_test dscr_user_test
-+PROGS := dscr_default_test dscr_explicit_test dscr_user_test	\
-+	 dscr_inherit_test
+diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+index 19e4744..6530f1b 100644
+--- a/arch/powerpc/kernel/traps.c
++++ b/arch/powerpc/kernel/traps.c
+@@ -1377,6 +1377,7 @@ void facility_unavailable_exception(struct pt_regs *regs)
+ 	};
+ 	char *facility = "unknown";
+ 	u64 value;
++	u32 instword, rd;
+ 	u8 status;
+ 	bool hv;
  
- CFLAGS := $(CFLAGS) -lpthread
+@@ -1388,12 +1389,46 @@ void facility_unavailable_exception(struct pt_regs *regs)
  
-diff --git a/tools/testing/selftests/powerpc/dscr/dscr_inherit_test.c b/tools/testing/selftests/powerpc/dscr/dscr_inherit_test.c
-new file mode 100644
-index 0000000..9d0ca37
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/dscr/dscr_inherit_test.c
-@@ -0,0 +1,96 @@
-+/*
-+ * POWER Data Stream Control Register (DSCR) fork test
-+ *
-+ * This testcase modifies the DSCR using mtspr, forks and then
-+ * verifies that the child process has the correct changed DSCR
-+ * value using mfspr.
-+ *
-+ * When using the privilege state SPR, the instructions such as
-+ * mfspr or mtspr are priviledged and the kernel emulates them
-+ * for us. Instructions using problem state SPR can be exuecuted
-+ * directly without any emulation if the HW supports them. Else
-+ * they also get emulated by the kernel.
-+ *
-+ * Copyright (C) 2012 Anton Blanchard <anton@au.ibm.com>, IBM
-+ * Copyright (C) 2015 Anshuman Khandual <khandual@linux.vnet.ibm.com>, IBM
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ */
-+#include "dscr.h"
-+
-+int dscr_inherit(void)
-+{
-+	unsigned long i, dscr = 0;
-+	pid_t pid;
-+
-+	srand(getpid());
-+	set_dscr(dscr);
-+
-+	for (i = 0; i < COUNT; i++) {
-+		unsigned long cur_dscr, cur_dscr_usr;
-+
-+		dscr++;
-+		if (dscr > DSCR_MAX)
-+			dscr = 0;
-+
-+		if (i % 2 == 0)
-+			set_dscr_usr(dscr);
-+		else
-+			set_dscr(dscr);
-+
+ 	status = value >> 56;
+ 	if (status == FSCR_DSCR_LG) {
+-		/* User is acessing the DSCR.  Set the inherit bit and allow
+-		 * the user to set it directly in future by setting via the
+-		 * FSCR DSCR bit.  We always leave HFSCR DSCR set.
 +		/*
-+		 * XXX: Force a context switch out so that DSCR
-+		 * current value is copied into the thread struct
-+		 * which is required for the child to inherit the
-+		 * changed value.
-+		 */
-+		sleep(1);
-+
-+		pid = fork();
-+		if (pid == -1) {
-+			perror("fork() failed");
-+			exit(1);
-+		} else if (pid) {
-+			int status;
-+
-+			if (waitpid(pid, &status, 0) == -1) {
-+				perror("waitpid() failed");
-+				exit(1);
-+			}
-+
-+			if (!WIFEXITED(status)) {
-+				fprintf(stderr, "Child didn't exit cleanly\n");
-+				exit(1);
-+			}
-+
-+			if (WEXITSTATUS(status) != 0) {
-+				fprintf(stderr, "Child didn't exit cleanly\n");
-+				return 1;
-+			}
-+		} else {
-+			cur_dscr = get_dscr();
-+			if (cur_dscr != dscr) {
-+				fprintf(stderr, "Kernel DSCR should be %ld "
-+					"but is %ld\n", dscr, cur_dscr);
-+				exit(1);
-+			}
-+
-+			cur_dscr_usr = get_dscr_usr();
-+			if (cur_dscr_usr != dscr) {
-+				fprintf(stderr, "User DSCR should be %ld "
-+					"but is %ld\n", dscr, cur_dscr_usr);
-+				exit(1);
-+			}
-+			exit(0);
++		 * User is accessing the DSCR register using the problem
++		 * state only SPR number (0x03) either through a mfspr or
++		 * a mtspr instruction. If it is a write attempt through
++		 * a mtspr, then we set the inherit bit. This also allows
++		 * the user to write or read the register directly in the
++		 * future by setting via the FSCR DSCR bit. But in case it
++		 * is a read DSCR attempt through a mfspr instruction, we
++		 * just emulate the instruction instead. This code path will
++		 * always emulate all the mfspr instructions till the user
++		 * has attempted atleast one mtspr instruction. This way it
++		 * preserves the same behaviour when the user is accessing
++		 * the DSCR through privilege level only SPR number (0x11)
++		 * which is emulated through illegal instruction exception.
++		 * We always leave HFSCR DSCR set.
+ 		 */
+-		current->thread.dscr_inherit = 1;
+-		mtspr(SPRN_FSCR, value | FSCR_DSCR);
++		if (get_user(instword, (u32 __user *)(regs->nip))) {
++			pr_err("Failed to fetch the user instruction\n");
++			return;
 +		}
-+	}
-+	return 0;
-+}
 +
-+int main(int argc, char *argv[])
-+{
-+	return test_harness(dscr_inherit, "dscr_inherit_test");
-+}
++		/* Write into DSCR (mtspr 0x03, RS) */
++		if ((instword & PPC_INST_MTSPR_DSCR_USER_MASK)
++				== PPC_INST_MTSPR_DSCR_USER) {
++			rd = (instword >> 21) & 0x1f;
++			current->thread.dscr = regs->gpr[rd];
++			current->thread.dscr_inherit = 1;
++			mtspr(SPRN_FSCR, value | FSCR_DSCR);
++		}
++
++		/* Read from DSCR (mfspr RT, 0x03) */
++		if ((instword & PPC_INST_MFSPR_DSCR_USER_MASK)
++				== PPC_INST_MFSPR_DSCR_USER) {
++			if (emulate_instruction(regs)) {
++				pr_err("DSCR based mfspr emulation failed\n");
++				return;
++			}
++			regs->nip += 4;
++			emulate_single_step(regs);
++		}
+ 		return;
+ 	}
+ 
 -- 
 1.9.3
