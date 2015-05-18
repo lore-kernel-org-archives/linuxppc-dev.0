@@ -1,31 +1,30 @@
 Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
+Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 90E291A05E3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 May 2015 20:56:32 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id ED8641A05EF
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 May 2015 20:56:41 +1000 (AEST)
 Received: from /spool/local
- by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Mon, 18 May 2015 16:26:30 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 862B43940065
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 May 2015 16:26:26 +0530 (IST)
+ Mon, 18 May 2015 16:26:40 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 564E63940065
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 May 2015 16:26:36 +0530 (IST)
 Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
- by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t4IAuQgW50528300
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 May 2015 16:26:26 +0530
+ by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t4IAuInJ62980214
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 May 2015 16:26:18 +0530
 Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
  by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t4IAFMAr026226
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 May 2015 15:45:22 +0530
+ t4IAFLvH026161
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 May 2015 15:45:21 +0530
 From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH V4 12/13] selftests,
- powerpc: Add thread based stress test for DSCR sysfs interfaces
-Date: Mon, 18 May 2015 16:26:15 +0530
-Message-Id: <1431946576-1009-13-git-send-email-khandual@linux.vnet.ibm.com>
+Subject: [PATCH V4 08/13] selftests, powerpc: Add test for DSCR SPR numbers
+Date: Mon, 18 May 2015 16:26:11 +0530
+Message-Id: <1431946576-1009-9-git-send-email-khandual@linux.vnet.ibm.com>
 In-Reply-To: <1431946576-1009-1-git-send-email-khandual@linux.vnet.ibm.com>
 References: <1431946576-1009-1-git-send-email-khandual@linux.vnet.ibm.com>
 Cc: mikey@neuling.org, shuahkh@osg.samsung.com, anton@samba.org
@@ -38,45 +37,51 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch adds a test to update the system wide DSCR value repeatedly
-and then verifies that any thread on any given CPU on the system must
-be able to see the same DSCR value whether its is being read through
-the problem state based SPR or the privilege state based SPR.
+This patch adds a test which verifies that the DSCR privilege and
+problem state SPR read & write accesses while making sure that the
+results are always the same irrespective of which SPR number is
+being used.
 
 Acked-by: Shuah Khan <shuahkh@osg.samsung.com>
 Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
- tools/testing/selftests/powerpc/dscr/Makefile      |   2 +-
- .../powerpc/dscr/dscr_sysfs_thread_test.c          | 123 +++++++++++++++++++++
- 2 files changed, 124 insertions(+), 1 deletion(-)
- create mode 100644 tools/testing/selftests/powerpc/dscr/dscr_sysfs_thread_test.c
+ tools/testing/selftests/powerpc/dscr/Makefile      |  2 +-
+ .../selftests/powerpc/dscr/dscr_user_test.c        | 62 ++++++++++++++++++++++
+ 2 files changed, 63 insertions(+), 1 deletion(-)
+ create mode 100644 tools/testing/selftests/powerpc/dscr/dscr_user_test.c
 
 diff --git a/tools/testing/selftests/powerpc/dscr/Makefile b/tools/testing/selftests/powerpc/dscr/Makefile
-index fada526..834ef88 100644
+index aede453..ae865d8 100644
 --- a/tools/testing/selftests/powerpc/dscr/Makefile
 +++ b/tools/testing/selftests/powerpc/dscr/Makefile
-@@ -1,6 +1,6 @@
- PROGS := dscr_default_test dscr_explicit_test dscr_user_test	\
- 	 dscr_inherit_test dscr_inherit_exec_test		\
--	 dscr_sysfs_test
-+	 dscr_sysfs_test dscr_sysfs_thread_test
+@@ -1,4 +1,4 @@
+-PROGS := dscr_default_test dscr_explicit_test
++PROGS := dscr_default_test dscr_explicit_test dscr_user_test
  
  CFLAGS := $(CFLAGS) -lpthread
  
-diff --git a/tools/testing/selftests/powerpc/dscr/dscr_sysfs_thread_test.c b/tools/testing/selftests/powerpc/dscr/dscr_sysfs_thread_test.c
+diff --git a/tools/testing/selftests/powerpc/dscr/dscr_user_test.c b/tools/testing/selftests/powerpc/dscr/dscr_user_test.c
 new file mode 100644
-index 0000000..bf4a8a6
+index 0000000..c23c2f3
 --- /dev/null
-+++ b/tools/testing/selftests/powerpc/dscr/dscr_sysfs_thread_test.c
-@@ -0,0 +1,123 @@
++++ b/tools/testing/selftests/powerpc/dscr/dscr_user_test.c
+@@ -0,0 +1,62 @@
 +/*
-+ * POWER Data Stream Control Register (DSCR) sysfs thread test
++ * POWER Data Stream Control Register (DSCR) SPR test
 + *
-+ * This test updates the system wide DSCR default value through
-+ * sysfs interface which should then update all the CPU specific
-+ * DSCR default values which must also be then visible to threads
-+ * executing on individual CPUs on the system.
++ * This test modifies the DSCR value through both the SPR number
++ * based mtspr instruction and then makes sure that the same is
++ * reflected through mfspr instruction using either of the SPR
++ * numbers.
 + *
++ * When using the privilege state SPR, the instructions such as
++ * mfspr or mtspr are priviledged and the kernel emulates them
++ * for us. Instructions using problem state SPR can be exuecuted
++ * directly without any emulation if the HW supports them. Else
++ * they also get emulated by the kernel.
++ *
++ * Copyright (C) 2013 Anton Blanchard <anton@au.ibm.com>, IBM
 + * Copyright (C) 2015 Anshuman Khandual <khandual@linux.vnet.ibm.com>, IBM
 + *
 + * This program is free software; you can redistribute it and/or
@@ -84,113 +89,45 @@ index 0000000..bf4a8a6
 + * as published by the Free Software Foundation; either version
 + * 2 of the License, or (at your option) any later version.
 + */
-+#define _GNU_SOURCE
 +#include "dscr.h"
 +
-+static pthread_mutex_t lock;	/* Pthread lock */
-+static cpu_set_t cpuset;	/* Thread cpu set */
-+static int target;		/* Thread target cpu */
-+static unsigned long *result;	/* Thread exit status array */
-+
-+#define NR_ONLN sysconf(_SC_NPROCESSORS_ONLN)
-+
-+static void *test_thread_dscr(void *in)
++static int check_dscr(char *str)
 +{
 +	unsigned long cur_dscr, cur_dscr_usr;
-+	unsigned long val = (unsigned long)in;
-+
-+	pthread_mutex_lock(&lock);
-+	target++;
-+	if (target == NR_ONLN)
-+		target =  0;
-+	CPU_ZERO(&cpuset);
-+	CPU_SET(target, &cpuset);
-+
-+	if (sched_setaffinity(0, sizeof(cpuset), &cpuset)) {
-+		perror("sched_setaffinity() failed");
-+		pthread_mutex_unlock(&lock);
-+		result[target] = 1;
-+		pthread_exit(&result[target]);
-+	}
-+	pthread_mutex_unlock(&lock);
 +
 +	cur_dscr = get_dscr();
 +	cur_dscr_usr = get_dscr_usr();
-+
-+	if (val != cur_dscr) {
-+		printf("[cpu %d] Kernel DSCR should be %ld but is %ld\n",
-+					sched_getcpu(), val, cur_dscr);
-+		result[target] = 1;
-+		pthread_exit(&result[target]);
-+	}
-+
-+	if (val != cur_dscr_usr) {
-+		printf("[cpu %d] User DSCR should be %ld but is %ld\n",
-+					sched_getcpu(), val, cur_dscr_usr);
-+		result[target] = 1;
-+		pthread_exit(&result[target]);
-+	}
-+	result[target] = 0;
-+	pthread_exit(&result[target]);
-+}
-+
-+static int check_cpu_dscr_thread(unsigned long val)
-+{
-+	pthread_t threads[NR_ONLN];
-+	unsigned long *status[NR_ONLN];
-+	unsigned long i;
-+
-+	for (i = 0; i < NR_ONLN; i++) {
-+		if (pthread_create(&threads[i], NULL,
-+				test_thread_dscr, (void *)val)) {
-+			perror("pthread_create() failed");
-+			return 1;
-+		}
-+	}
-+
-+	for (i = 0; i < NR_ONLN; i++) {
-+		if (pthread_join(threads[i], (void **)&(status[i]))) {
-+			perror("pthread_join() failed");
-+			return 1;
-+		}
-+
-+		if (*status[i]) {
-+			printf(" %ldth thread join failed with %ld\n",
-+							i, *status[i]);
-+			return 1;
-+		}
++	if (cur_dscr != cur_dscr_usr) {
++		printf("%s set, kernel get %lx != user get %lx\n",
++					str, cur_dscr, cur_dscr_usr);
++		return 1;
 +	}
 +	return 0;
 +}
 +
-+int dscr_sysfs_thread(void)
++int dscr_user(void)
 +{
-+	unsigned long orig_dscr_default;
-+	int i, j;
++	int i;
 +
-+	result = malloc(sizeof(unsigned long) * NR_ONLN);
-+	pthread_mutex_init(&lock, NULL);
-+	target = 0;
-+	orig_dscr_default = get_default_dscr();
++	check_dscr("");
++
 +	for (i = 0; i < COUNT; i++) {
-+		for (j = 0; j < DSCR_MAX; j++) {
-+			set_default_dscr(j);
-+			if (check_cpu_dscr_thread(j))
-+				goto fail;
-+		}
++		set_dscr(i);
++		if (check_dscr("kernel"))
++			return 1;
 +	}
-+	free(result);
-+	set_default_dscr(orig_dscr_default);
++
++	for (i = 0; i < COUNT; i++) {
++		set_dscr_usr(i);
++		if (check_dscr("user"))
++			return 1;
++	}
 +	return 0;
-+fail:
-+	free(result);
-+	set_default_dscr(orig_dscr_default);
-+	return 1;
 +}
 +
 +int main(int argc, char *argv[])
 +{
-+	return test_harness(dscr_sysfs_thread, "dscr_sysfs_thread_test");
++	return test_harness(dscr_user, "dscr_user_test");
 +}
 -- 
 1.9.3
