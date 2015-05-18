@@ -1,22 +1,22 @@
-Return-Path: <herbert@gondor.apana.org.au>
-Received: from helcar.hengli.com.au (helcar.hengli.com.au [209.40.204.226])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <anton@samba.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0D3ED1A006F
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 May 2015 14:26:18 +1000 (AEST)
-Date: Mon, 18 May 2015 12:25:54 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: LABBE Corentin <clabbe.montjoie@gmail.com>
-Subject: Re: [PATCH 1/6] crypto: md5: add MD5 initial vectors
-Message-ID: <20150518042554.GB13238@gondor.apana.org.au>
-References: <1431860057-5232-1-git-send-email-clabbe.montjoie@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id AC9F91A006F
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 May 2015 15:09:58 +1000 (AEST)
+Date: Mon, 18 May 2015 15:09:57 +1000
+From: Anton Blanchard <anton@samba.org>
+To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Subject: Re: [PATCH V3 09/13] selftests, powerpc: Add test for DSCR value
+ inheritence across fork
+Message-ID: <20150518150957.4c228ac4@kryten>
+In-Reply-To: <1428654612-23539-10-git-send-email-khandual@linux.vnet.ibm.com>
+References: <1428654612-23539-1-git-send-email-khandual@linux.vnet.ibm.com>
+ <1428654612-23539-10-git-send-email-khandual@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1431860057-5232-1-git-send-email-clabbe.montjoie@gmail.com>
-Cc: linux-mips@linux-mips.org, aaro.koskinen@iki.fi,
- linux-kernel@vger.kernel.org, ralf@linux-mips.org, paulus@samba.org,
- linux-crypto@vger.kernel.org, sparclinux@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, davem@davemloft.net
+Content-Type: text/plain; charset=US-ASCII
+Cc: mikey@neuling.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, shuahkh@osg.samsung.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,13 +26,28 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, May 17, 2015 at 12:54:12PM +0200, LABBE Corentin wrote:
-> This patch simply adds the MD5 IV in the md5 header.
-> 
-> Signed-off-by: LABBE Corentin <clabbe.montjoie@gmail.com>
+Hi Anshuman,
 
-All applied.  Thanks!
--- 
-Email: Herbert Xu <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+Thanks for getting these testcases into the kernel.
+
+> This patch adds a test to verify that the changed DSCR value inside
+> any process would be inherited to it's child process across the fork
+> system call.
+
+One issue I do notice (a bug in my original test cases too), is that we
+don't restore the DSCR on exit. I'm not sure we need to go to the
+trouble of saving and restoring it, but we should at least get it back
+to 0 when done.
+
+Also a tiny nit, no need for a newline in perror():
+
+open() failed
+: Permission denied
+
+With those changes you can add:
+
+Signed-off-by: Anton Blanchard <anton@samba.org>
+
+to the patches based on my testcases.
+
+Anton
