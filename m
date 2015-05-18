@@ -1,33 +1,30 @@
 Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
+Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3574E1A0335
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6B3911A04EF
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 May 2015 20:56:26 +1000 (AEST)
 Received: from /spool/local
- by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Mon, 18 May 2015 16:26:24 +0530
+ Mon, 18 May 2015 16:26:23 +0530
 Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id D43411258061
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 May 2015 16:28:36 +0530 (IST)
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 1A057E0069
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 May 2015 16:29:25 +0530 (IST)
 Received: from d28av02.in.ibm.com (d28av02.in.ibm.com [9.184.220.64])
  by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t4IAuIAm26673304
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 May 2015 16:26:18 +0530
+ t4IAuHTa63045648
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 May 2015 16:26:17 +0530
 Received: from d28av02.in.ibm.com (localhost [127.0.0.1])
  by d28av02.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t4IAFLhI026127
+ t4IAFLSH026083
  for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 May 2015 15:45:21 +0530
 From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH V4 05/13] documentation,
- powerpc: Add documentation for DSCR support
-Date: Mon, 18 May 2015 16:26:08 +0530
-Message-Id: <1431946576-1009-6-git-send-email-khandual@linux.vnet.ibm.com>
-In-Reply-To: <1431946576-1009-1-git-send-email-khandual@linux.vnet.ibm.com>
-References: <1431946576-1009-1-git-send-email-khandual@linux.vnet.ibm.com>
+Subject: [PATCH V4 00/13] POWER DSCR fixes, improvements, docs and tests
+Date: Mon, 18 May 2015 16:26:03 +0530
+Message-Id: <1431946576-1009-1-git-send-email-khandual@linux.vnet.ibm.com>
 Cc: mikey@neuling.org, shuahkh@osg.samsung.com, anton@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -38,117 +35,94 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch adds a new documentation file explaining the DSCR
-support on powerpc platforms. This explains DSCR related data
-structure, code paths and also available user interfaces. Any
-further functional changes to the DSCR support in the kernel
-should definitely update the documentation here.
+	This patch series has patches for POWER DSCR fixes, improvements,
+in code documentaion, kernel support user documentation and selftest based
+test cases. It has got five test cases which are derived from Anton's DSCR
+test bucket which can be listed as follows.
 
-Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
----
- Documentation/powerpc/00-INDEX |  2 +
- Documentation/powerpc/dscr.txt | 83 ++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 85 insertions(+)
+(1) http://ozlabs.org/~anton/junkcode/dscr_default_test.c
+(2) http://ozlabs.org/~anton/junkcode/dscr_explicit_test.c
+(3) http://ozlabs.org/~anton/junkcode/dscr_inherit_exec_test.c
+(4) http://ozlabs.org/~anton/junkcode/dscr_inherit_test.c
+(5) http://ozlabs.org/~anton/junkcode/user_dscr_test.c
+
+NOTE1: Anton's original inherit exec test expected the child to have system
+default DSCR value instead of the inherited DSCR value from it's parent.
+But looks like thats not the case when we execute the test, it always
+inherits it's parent's DSCR value over the exec call as well. So I have
+changed the test program assuming its correct to have the inherited DSCR
+value in the fork/execed child program. Please let me know if thats not
+correct and I am missing something there.
+
+Changes in V4:
+- Restoring the system DSCR default value in test cases before exiting
+- Removed new-line from all the perror() calls
+- Some minor cosmetic changes to the test cases
+- Added Anton's SOB to the above mentioned five derived test cases
+
+Changes in V3:
+-------------
+- Minor changes to last couple of sysfs test cases
+- Added .gitignore file for the new test directory
+
+Changes in V2: (https://lkml.org/lkml/2015/1/13/148)
+-------------
+- Updated the thread struct DSCR value inside mtspr facility exception path
+- Modified the in code documentation to follow the kernel-doc format
+- Added seven selftest based DSCR related test cases under powerpc
+
+Original V1:
+------------
+- Posted here at https://patchwork.ozlabs.org/patch/418583/
+
+Anshuman Khandual (13):
+  powerpc: Fix handling of DSCR related facility unavailable exception
+  powerpc, process: Remove the unused extern dscr_default
+  powerpc, offset: Change PACA_DSCR to PACA_DSCR_DEFAULT
+  powerpc, dscr: Added some in-code documentation
+  documentation, powerpc: Add documentation for DSCR support
+  selftests, powerpc: Add test for system wide DSCR default
+  selftests, powerpc: Add test for explicitly changing DSCR value
+  selftests, powerpc: Add test for DSCR SPR numbers
+  selftests, powerpc: Add test for DSCR value inheritence across fork
+  selftests, powerpc: Add test for DSCR inheritence across fork & exec
+  selftests, powerpc: Add test for all DSCR sysfs interfaces
+  selftests, powerpc: Add thread based stress test for DSCR sysfs interfaces
+  selftests, powerpc: Add gitignore file for the new DSCR tests
+
+ Documentation/powerpc/00-INDEX                     |   2 +
+ Documentation/powerpc/dscr.txt                     |  83 +++++++++++++
+ arch/powerpc/include/asm/processor.h               |   9 ++
+ arch/powerpc/kernel/asm-offsets.c                  |   2 +-
+ arch/powerpc/kernel/entry_64.S                     |   2 +-
+ arch/powerpc/kernel/process.c                      |   1 -
+ arch/powerpc/kernel/sysfs.c                        |  38 ++++++
+ arch/powerpc/kernel/tm.S                           |   4 +-
+ arch/powerpc/kernel/traps.c                        |  45 +++++++-
+ arch/powerpc/kvm/book3s_hv_rmhandlers.S            |   2 +-
+ tools/testing/selftests/powerpc/Makefile           |   2 +-
+ tools/testing/selftests/powerpc/dscr/.gitignore    |   7 ++
+ tools/testing/selftests/powerpc/dscr/Makefile      |  19 +++
+ tools/testing/selftests/powerpc/dscr/dscr.h        | 120 +++++++++++++++++++
+ .../selftests/powerpc/dscr/dscr_default_test.c     | 128 +++++++++++++++++++++
+ .../selftests/powerpc/dscr/dscr_explicit_test.c    |  72 ++++++++++++
+ .../powerpc/dscr/dscr_inherit_exec_test.c          | 118 +++++++++++++++++++
+ .../selftests/powerpc/dscr/dscr_inherit_test.c     |  96 ++++++++++++++++
+ .../selftests/powerpc/dscr/dscr_sysfs_test.c       |  98 ++++++++++++++++
+ .../powerpc/dscr/dscr_sysfs_thread_test.c          | 123 ++++++++++++++++++++
+ .../selftests/powerpc/dscr/dscr_user_test.c        |  62 ++++++++++
+ 21 files changed, 1021 insertions(+), 12 deletions(-)
  create mode 100644 Documentation/powerpc/dscr.txt
+ create mode 100644 tools/testing/selftests/powerpc/dscr/.gitignore
+ create mode 100644 tools/testing/selftests/powerpc/dscr/Makefile
+ create mode 100644 tools/testing/selftests/powerpc/dscr/dscr.h
+ create mode 100644 tools/testing/selftests/powerpc/dscr/dscr_default_test.c
+ create mode 100644 tools/testing/selftests/powerpc/dscr/dscr_explicit_test.c
+ create mode 100644 tools/testing/selftests/powerpc/dscr/dscr_inherit_exec_test.c
+ create mode 100644 tools/testing/selftests/powerpc/dscr/dscr_inherit_test.c
+ create mode 100644 tools/testing/selftests/powerpc/dscr/dscr_sysfs_test.c
+ create mode 100644 tools/testing/selftests/powerpc/dscr/dscr_sysfs_thread_test.c
+ create mode 100644 tools/testing/selftests/powerpc/dscr/dscr_user_test.c
 
-diff --git a/Documentation/powerpc/00-INDEX b/Documentation/powerpc/00-INDEX
-index 6fd0e8b..9dc845c 100644
---- a/Documentation/powerpc/00-INDEX
-+++ b/Documentation/powerpc/00-INDEX
-@@ -30,3 +30,5 @@ ptrace.txt
- 	- Information on the ptrace interfaces for hardware debug registers.
- transactional_memory.txt
- 	- Overview of the Power8 transactional memory support.
-+dscr.txt
-+	- Overview DSCR (Data Stream Control Register) support.
-diff --git a/Documentation/powerpc/dscr.txt b/Documentation/powerpc/dscr.txt
-new file mode 100644
-index 0000000..1ff4400
---- /dev/null
-+++ b/Documentation/powerpc/dscr.txt
-@@ -0,0 +1,83 @@
-+			DSCR (Data Stream Control Register)
-+		================================================
-+
-+DSCR register in powerpc allows user to have some control of prefetch of data
-+stream in the processor. Please refer to the ISA documents or related manual
-+for more detailed information regarding how to use this DSCR to attain this
-+control of the pefetches . This document here provides an overview of kernel
-+support for DSCR, related kernel objects, it's functionalities and exported
-+user interface.
-+
-+(A) Data Structures:
-+
-+	(1) thread_struct:
-+		dscr		/* Thread DSCR value */
-+		dscr_inherit	/* Thread has changed default DSCR */
-+
-+	(2) PACA:
-+		dscr_default	/* per-CPU DSCR default value */
-+
-+	(3) sysfs.c:
-+		dscr_default	/* System DSCR default value */
-+
-+(B) Scheduler Changes:
-+
-+	Scheduler will write the per-CPU DSCR default which is stored in the
-+	CPU's PACA value into the register if the thread has dscr_inherit value
-+	cleared which means that it has not changed the default DSCR till now.
-+	If the dscr_inherit value is set which means that it has changed the
-+	default DSCR value, scheduler will write the changed value which will
-+	now be contained in thread struct's dscr into the register instead of
-+	the per-CPU default PACA based DSCR value.
-+
-+	NOTE: Please note here that the system wide global DSCR value never
-+	gets used directly in the scheduler process context switch at all.
-+
-+(C) SYSFS Interface:
-+
-+	Global DSCR default:		/sys/devices/system/cpu/dscr_default
-+	CPU specific DSCR default:	/sys/devices/system/cpu/cpuN/dscr
-+
-+	Changing the global DSCR default in the sysfs will change all the CPU
-+	specific DSCR defaults immediately in their PACA structures. Again if
-+	the current process has the dscr_inherit clear, it also writes the new
-+	value into every CPU's DSCR register right away and updates the current
-+	thread's DSCR value as well.
-+
-+	Changing the CPU specif DSCR default value in the sysfs does exactly
-+	the same thing as above but unlike the global one above, it just changes
-+	stuff for that particular CPU instead for all the CPUs on the system.
-+
-+(D) User Space Instructions:
-+
-+	The DSCR register can be accessed in the user space using any of these
-+	two SPR numbers available for that purpose.
-+
-+	(1) Problem state SPR:		0x03	(Un-privileged, POWER8 only)
-+	(2) Privileged state SPR:	0x11	(Privileged)
-+
-+	Accessing DSCR through privileged SPR number (0x11) from user space
-+	works, as it is emulated following an illegal instruction exception
-+	inside the kernel. Both mfspr and mtspr instructions are emulated.
-+
-+	Accessing DSCR through user level SPR (0x03) from user space will first
-+	create a facility unavailable exception. Inside this exception handler
-+	all mfspr isntruction based read attempts will get emulated and returned
-+	where as the first mtspr instruction based write attempts will enable
-+	the DSCR facility for the next time around (both for read and write) by
-+	setting DSCR facility in the FSCR register.
-+
-+(E) Specifics about 'dscr_inherit':
-+
-+	The thread struct element 'dscr_inherit' represents whether the thread
-+	in question has attempted and changed the DSCR itself using any of the
-+	following methods. This element signifies whether the thread wants to
-+	use the CPU default DSCR value or its own changed DSCR value in the
-+	kernel.
-+
-+		(1) mtspr instruction	(SPR number 0x03)
-+		(2) mtspr instruction	(SPR number 0x11)
-+		(3) ptrace interface	(Explicitly set user DSCR value)
-+
-+	Any child of the process created after this event in the process inherits
-+	this same behaviour as well.
 -- 
 1.9.3
