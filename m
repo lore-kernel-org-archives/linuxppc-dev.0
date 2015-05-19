@@ -1,36 +1,36 @@
 Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E51411A0766
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 May 2015 01:09:44 +1000 (AEST)
-Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1BE741A094B
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 May 2015 01:09:46 +1000 (AEST)
+Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 464D7140D4E
+ by ozlabs.org (Postfix) with ESMTPS id 1FC36140D4E
  for <linuxppc-dev@ozlabs.org>; Wed, 20 May 2015 01:09:44 +1000 (AEST)
 Received: from /spool/local
- by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Tue, 19 May 2015 20:39:42 +0530
+ Tue, 19 May 2015 20:39:43 +0530
 Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id BEB8E394005E
- for <linuxppc-dev@ozlabs.org>; Tue, 19 May 2015 20:39:40 +0530 (IST)
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 54EEB125805D
+ for <linuxppc-dev@ozlabs.org>; Tue, 19 May 2015 20:41:55 +0530 (IST)
 Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
  by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t4JF9d9q53608582
+ t4JF9cwB1769792
  for <linuxppc-dev@ozlabs.org>; Tue, 19 May 2015 20:39:39 +0530
 Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
  by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t4JF8PXu027726
- for <linuxppc-dev@ozlabs.org>; Tue, 19 May 2015 20:38:31 +0530
+ t4JF8Vwk028549
+ for <linuxppc-dev@ozlabs.org>; Tue, 19 May 2015 20:38:35 +0530
 From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: [PATCH V8 02/28] powerpc,
- process: Add the function flush_tmregs_to_thread
-Date: Tue, 19 May 2015 20:37:58 +0530
-Message-Id: <1432048104-4695-3-git-send-email-khandual@linux.vnet.ibm.com>
+Subject: [PATCH V8 16/28] selftests, powerpc: Add more SPR numbers,
+ TM & VMX instructions to 'reg.h'
+Date: Tue, 19 May 2015 20:38:12 +0530
+Message-Id: <1432048104-4695-17-git-send-email-khandual@linux.vnet.ibm.com>
 In-Reply-To: <1432048104-4695-1-git-send-email-khandual@linux.vnet.ibm.com>
 References: <1432048104-4695-1-git-send-email-khandual@linux.vnet.ibm.com>
 Cc: shuahkh@osg.samsung.com, mikey@neuling.org, james.hogan@imgtec.com,
@@ -49,66 +49,52 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch creates a function flush_tmregs_to_thread which
-will then be used by subsequent patches in this series. The
-function checks for self tracing ptrace interface attempts
-while in the TM context and logs appropriate warning message.
+This patch adds SPR number for TAR, PPR, DSCR special
+purpose registers. It also adds TM, VSX, VMX related
+instructions which will then be used by patches later
+in the series.
 
 Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/switch_to.h |  8 ++++++++
- arch/powerpc/kernel/process.c        | 20 ++++++++++++++++++++
- 2 files changed, 28 insertions(+)
+ tools/testing/selftests/powerpc/reg.h | 21 +++++++++++++++++++++
+ 1 file changed, 21 insertions(+)
 
-diff --git a/arch/powerpc/include/asm/switch_to.h b/arch/powerpc/include/asm/switch_to.h
-index 58abeda..23752a9 100644
---- a/arch/powerpc/include/asm/switch_to.h
-+++ b/arch/powerpc/include/asm/switch_to.h
-@@ -82,6 +82,14 @@ static inline void flush_spe_to_thread(struct task_struct *t)
- }
- #endif
+diff --git a/tools/testing/selftests/powerpc/reg.h b/tools/testing/selftests/powerpc/reg.h
+index 5921b0d..76f170d 100644
+--- a/tools/testing/selftests/powerpc/reg.h
++++ b/tools/testing/selftests/powerpc/reg.h
+@@ -18,6 +18,19 @@
  
-+#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-+extern void flush_tmregs_to_thread(struct task_struct *);
-+#else
-+static inline void flush_tmregs_to_thread(struct task_struct *t)
-+{
-+}
-+#endif
-+
- static inline void clear_task_ebb(struct task_struct *t)
- {
- #ifdef CONFIG_PPC_BOOK3S_64
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index febb50d..4e685042 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -745,6 +745,26 @@ void restore_tm_state(struct pt_regs *regs)
- #define __switch_to_tm(prev)
- #endif /* CONFIG_PPC_TRANSACTIONAL_MEM */
+ #define mb()		asm volatile("sync" : : : "memory");
  
-+#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-+void flush_tmregs_to_thread(struct task_struct *tsk)
-+{
-+	/*
-+	 * Process self tracing is not yet supported through
-+	 * ptrace interface. Ptrace generic code should have
-+	 * prevented this from happening in the first place.
-+	 * Warn once here with the message, if some how it
-+	 * is attempted.
-+	 */
-+	WARN_ONCE(tsk == current,
-+		"Not expecting ptrace on self: TM regs may be incorrect\n");
++/* Vector Instructions */
++#define VSX_XX1(xs, ra, rb)	(((xs) & 0x1f) << 21 | ((ra) << 16) |  \
++				 ((rb) << 11) | (((xs) >> 5)))
++#define STXVD2X(xs, ra, rb)	.long (0x7c000798 | VSX_XX1((xs), (ra), (rb)))
++#define LXVD2X(xs, ra, rb)	.long (0x7c000698 | VSX_XX1((xs), (ra), (rb)))
 +
-+	/*
-+	 * If task is not current, it should have been flushed
-+	 * already to it's thread_struct during __switch_to().
-+	 */
-+}
-+#endif
++/* TM instructions */
++#define TBEGIN		".long 0x7C00051D;"
++#define TABORT		".long 0x7C00071D;"
++#define TEND		".long 0x7C00055D;"
++#define TSUSPEND	".long 0x7C0005DD;"
++#define TRESUME		".long 0x7C2005DD;"
 +
- struct task_struct *__switch_to(struct task_struct *prev,
- 	struct task_struct *new)
- {
+ #define SPRN_MMCR2     769
+ #define SPRN_MMCRA     770
+ #define SPRN_MMCR0     779
+@@ -46,4 +59,12 @@
+ #define SPRN_SDAR      781
+ #define SPRN_SIER      768
+ 
++#define SPRN_DSCR      3	/* Data Stream Control Register */
++#define SPRN_TAR       815	/* Target Address Register */
++#define SPRN_PPR       896	/* Program Priority Register */
++
++#define SPRN_TFHAR	0x80	/* TM Failure Handle Register */
++#define SPRN_TFIAR	0x81	/* TM Failure Instruction Address Register */
++#define SPRN_TEXASR	0x82	/* TM Exception and Status Register */
++
+ #endif /* _SELFTESTS_POWERPC_REG_H */
 -- 
 2.1.0
