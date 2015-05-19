@@ -1,15 +1,15 @@
 Return-Path: <mikey@neuling.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D37F91A0688
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 May 2015 21:23:21 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 141831A0627
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 May 2015 21:23:23 +1000 (AEST)
 From: Michael Neuling <mikey@neuling.org>
 To: mpe@ellerman.id.au,
 	benh@kernel.crashing.org
-Subject: [PATCH 14/19] cxl: Split afu_register_irqs() function
-Date: Tue, 19 May 2015 21:22:31 +1000
-Message-Id: <1432034556-32400-15-git-send-email-mikey@neuling.org>
+Subject: [PATCH 15/19] cxl: Configure PSL for kernel contexts
+Date: Tue, 19 May 2015 21:22:32 +1000
+Message-Id: <1432034556-32400-16-git-send-email-mikey@neuling.org>
 In-Reply-To: <1432034556-32400-1-git-send-email-mikey@neuling.org>
 References: <1432034556-32400-1-git-send-email-mikey@neuling.org>
 Cc: mikey@neuling.org, "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>,
@@ -25,84 +25,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Split the afu_register_irqs() function so that different parts can
-be useful elsewhere.
+This updates AFU directed and dedicated modes for contexts attached to the
+kernel.
 
 Signed-off-by: Michael Neuling <mikey@neuling.org>
 ---
- drivers/misc/cxl/cxl.h |  1 +
- drivers/misc/cxl/irq.c | 31 ++++++++++++++++++++++++-------
- 2 files changed, 25 insertions(+), 7 deletions(-)
+ drivers/misc/cxl/native.c | 40 ++++++++++++++++++++++++++--------------
+ 1 file changed, 26 insertions(+), 14 deletions(-)
 
-diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
-index 15e1077..f9782a3 100644
---- a/drivers/misc/cxl/cxl.h
-+++ b/drivers/misc/cxl/cxl.h
-@@ -668,5 +668,6 @@ int cxl_psl_purge(struct cxl_afu *afu);
- void cxl_stop_trace(struct cxl *cxl);
- 
- extern struct pci_driver cxl_pci_driver;
-+int afu_allocate_irqs(struct cxl_context *ctx, u32 count);
- 
- #endif
-diff --git a/drivers/misc/cxl/irq.c b/drivers/misc/cxl/irq.c
-index c740c7b..212790b 100644
---- a/drivers/misc/cxl/irq.c
-+++ b/drivers/misc/cxl/irq.c
-@@ -416,9 +416,8 @@ void afu_irq_name_free(struct cxl_context *ctx)
- 	}
- }
- 
--int afu_register_irqs(struct cxl_context *ctx, u32 count)
-+int afu_allocate_irqs(struct cxl_context *ctx, u32 count)
+diff --git a/drivers/misc/cxl/native.c b/drivers/misc/cxl/native.c
+index f643bb1..55078f6 100644
+--- a/drivers/misc/cxl/native.c
++++ b/drivers/misc/cxl/native.c
+@@ -433,6 +433,7 @@ err:
+ static int attach_afu_directed(struct cxl_context *ctx, u64 wed, u64 amr)
  {
--	irq_hw_number_t hwirq;
- 	int rc, r, i, j = 1;
- 	struct cxl_irq_name *irq_name;
+ 	u64 sr;
++	u32 pid;
+ 	int r, result;
  
-@@ -458,6 +457,18 @@ int afu_register_irqs(struct cxl_context *ctx, u32 count)
- 			j++;
- 		}
- 	}
-+	return 0;
+ 	assign_psn_space(ctx);
+@@ -447,15 +448,19 @@ static int attach_afu_directed(struct cxl_context *ctx, u64 wed, u64 amr)
+ 		sr |= CXL_PSL_SR_An_MP;
+ 	if (mfspr(SPRN_LPCR) & LPCR_TC)
+ 		sr |= CXL_PSL_SR_An_TC;
+-	/* HV=0, PR=1, R=1 for userspace
+-	 * For kernel contexts: this would need to change
+-	 */
+-	sr |= CXL_PSL_SR_An_PR | CXL_PSL_SR_An_R;
+-	set_endian(sr);
+-	sr &= ~(CXL_PSL_SR_An_HV);
+-	if (!test_tsk_thread_flag(current, TIF_32BIT))
+-		sr |= CXL_PSL_SR_An_SF;
+-	ctx->elem->common.pid = cpu_to_be32(current->pid);
 +
-+out:
-+	afu_irq_name_free(ctx);
-+	return -ENOMEM;
-+}
-+
-+void afu_register_hwirqs(struct cxl_context *ctx)
-+{
-+	irq_hw_number_t hwirq;
-+	struct cxl_irq_name *irq_name;
-+	int r,i;
++	if (ctx->kernel) {
++		sr |= CXL_PSL_SR_An_R | (mfmsr() & MSR_SF) | CXL_PSL_SR_An_HV;
++		pid = 0;
++	} else {
++		sr |= CXL_PSL_SR_An_PR | CXL_PSL_SR_An_R;
++		set_endian(sr);
++		sr &= ~(CXL_PSL_SR_An_HV);
++		if (!test_tsk_thread_flag(current, TIF_32BIT))
++			sr |= CXL_PSL_SR_An_SF;
++		pid = current->pid;
++	}
++	ctx->elem->common.pid = cpu_to_be32(pid);
+ 	ctx->elem->common.tid = 0;
+ 	ctx->elem->sr = cpu_to_be64(sr);
  
- 	/* We've allocated all memory now, so let's do the irq allocations */
- 	irq_name = list_first_entry(&ctx->irq_names, struct cxl_irq_name, list);
-@@ -469,13 +480,19 @@ int afu_register_irqs(struct cxl_context *ctx, u32 count)
- 			irq_name = list_next_entry(irq_name, list);
- 		}
- 	}
-+}
- 
--	return 0;
-+int afu_register_irqs(struct cxl_context *ctx, u32 count)
-+{
-+	int rc;
- 
--out:
--	afu_irq_name_free(ctx);
--	return -ENOMEM;
--}
-+	rc = afu_allocate_irqs(ctx, count);
-+	if (rc)
-+		return rc;
-+
-+	afu_register_hwirqs(ctx);
-+	return 0;
-+ }
- 
- void afu_release_irqs(struct cxl_context *ctx, void *cookie)
+@@ -530,7 +535,7 @@ static int activate_dedicated_process(struct cxl_afu *afu)
+ static int attach_dedicated(struct cxl_context *ctx, u64 wed, u64 amr)
  {
+ 	struct cxl_afu *afu = ctx->afu;
+-	u64 sr;
++	u64 sr, pid;
+ 	int rc;
+ 
+ 	sr = 0;
+@@ -539,10 +544,17 @@ static int attach_dedicated(struct cxl_context *ctx, u64 wed, u64 amr)
+ 		sr |= CXL_PSL_SR_An_MP;
+ 	if (mfspr(SPRN_LPCR) & LPCR_TC)
+ 		sr |= CXL_PSL_SR_An_TC;
+-	sr |= CXL_PSL_SR_An_PR | CXL_PSL_SR_An_R;
+-	if (!test_tsk_thread_flag(current, TIF_32BIT))
+-		sr |= CXL_PSL_SR_An_SF;
+-	cxl_p2n_write(afu, CXL_PSL_PID_TID_An, (u64)current->pid << 32);
++
++	if (ctx->kernel) {
++		sr |= CXL_PSL_SR_An_R | (mfmsr() & MSR_SF) | CXL_PSL_SR_An_HV;
++		pid = 0;
++	} else { /* User space */
++		sr |= CXL_PSL_SR_An_PR | CXL_PSL_SR_An_R;
++		if (!test_tsk_thread_flag(current, TIF_32BIT))
++			sr |= CXL_PSL_SR_An_SF;
++		pid = (u64)current->pid << 32;
++	}
++	cxl_p2n_write(afu, CXL_PSL_PID_TID_An, pid);
+ 	cxl_p1n_write(afu, CXL_PSL_SR_An, sr);
+ 
+ 	if ((rc = cxl_write_sstp(afu, ctx->sstp0, ctx->sstp1)))
 -- 
 2.1.0
