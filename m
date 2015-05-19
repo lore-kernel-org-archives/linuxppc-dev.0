@@ -1,36 +1,36 @@
 Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4DAFB1A074E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 May 2015 01:09:02 +1000 (AEST)
-Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
+ by lists.ozlabs.org (Postfix) with ESMTPS id E51411A0766
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 May 2015 01:09:44 +1000 (AEST)
+Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 5F402140DCD
- for <linuxppc-dev@ozlabs.org>; Wed, 20 May 2015 01:09:01 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTPS id 464D7140D4E
+ for <linuxppc-dev@ozlabs.org>; Wed, 20 May 2015 01:09:44 +1000 (AEST)
 Received: from /spool/local
- by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Tue, 19 May 2015 20:38:59 +0530
-Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id D9E3D125805B
- for <linuxppc-dev@ozlabs.org>; Tue, 19 May 2015 20:41:11 +0530 (IST)
+ Tue, 19 May 2015 20:39:42 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id BEB8E394005E
+ for <linuxppc-dev@ozlabs.org>; Tue, 19 May 2015 20:39:40 +0530 (IST)
 Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t4JF8gxf000354
- for <linuxppc-dev@ozlabs.org>; Tue, 19 May 2015 20:38:44 +0530
+ by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t4JF9d9q53608582
+ for <linuxppc-dev@ozlabs.org>; Tue, 19 May 2015 20:39:39 +0530
 Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
  by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t4JF8UMh028284
- for <linuxppc-dev@ozlabs.org>; Tue, 19 May 2015 20:38:35 +0530
+ t4JF8PXu027726
+ for <linuxppc-dev@ozlabs.org>; Tue, 19 May 2015 20:38:31 +0530
 From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: [PATCH V8 12/28] powerpc, ptrace: Enable NT_PPC_TM_CTAR,
- NT_PPC_TM_CPPR, NT_PPC_TM_CDSCR
-Date: Tue, 19 May 2015 20:38:08 +0530
-Message-Id: <1432048104-4695-13-git-send-email-khandual@linux.vnet.ibm.com>
+Subject: [PATCH V8 02/28] powerpc,
+ process: Add the function flush_tmregs_to_thread
+Date: Tue, 19 May 2015 20:37:58 +0530
+Message-Id: <1432048104-4695-3-git-send-email-khandual@linux.vnet.ibm.com>
 In-Reply-To: <1432048104-4695-1-git-send-email-khandual@linux.vnet.ibm.com>
 References: <1432048104-4695-1-git-send-email-khandual@linux.vnet.ibm.com>
 Cc: shuahkh@osg.samsung.com, mikey@neuling.org, james.hogan@imgtec.com,
@@ -49,229 +49,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch enables support for all three TM checkpointed SPR
-states related ELF core note  NT_PPC_TM_CTAR, NT_PPC_TM_CPPR,
-NT_PPC_TM_CDSCR based ptrace requests through PTRACE_GETREGSET,
-PTRACE_SETREGSET calls. This is achieved through adding three
-new register sets REGSET_TM_CTAR, REGSET_TM_CPPR and
-REGSET_TM_CDSCR in powerpc corresponding to the ELF core note
-sections added. It implements the get, set and active functions
-for all these new register sets added.
+This patch creates a function flush_tmregs_to_thread which
+will then be used by subsequent patches in this series. The
+function checks for self tracing ptrace interface attempts
+while in the TM context and logs appropriate warning message.
 
 Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 ---
- arch/powerpc/kernel/ptrace.c | 178 +++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 178 insertions(+)
+ arch/powerpc/include/asm/switch_to.h |  8 ++++++++
+ arch/powerpc/kernel/process.c        | 20 ++++++++++++++++++++
+ 2 files changed, 28 insertions(+)
 
-diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
-index 228cdcf..774f5c20 100644
---- a/arch/powerpc/kernel/ptrace.c
-+++ b/arch/powerpc/kernel/ptrace.c
-@@ -1541,6 +1541,151 @@ static int tm_spr_set(struct task_struct *target,
- 				 2 * sizeof(u64), 3 * sizeof(u64));
- 	return ret;
+diff --git a/arch/powerpc/include/asm/switch_to.h b/arch/powerpc/include/asm/switch_to.h
+index 58abeda..23752a9 100644
+--- a/arch/powerpc/include/asm/switch_to.h
++++ b/arch/powerpc/include/asm/switch_to.h
+@@ -82,6 +82,14 @@ static inline void flush_spe_to_thread(struct task_struct *t)
  }
-+
-+static int tm_tar_active(struct task_struct *target,
-+			 const struct user_regset *regset)
-+{
-+	if (!cpu_has_feature(CPU_FTR_TM))
-+		return -ENODEV;
-+
-+	if (MSR_TM_ACTIVE(target->thread.regs->msr))
-+		return regset->n;
-+
-+	return 0;
-+}
-+
-+static int tm_tar_get(struct task_struct *target,
-+		      const struct user_regset *regset,
-+		      unsigned int pos, unsigned int count,
-+		      void *kbuf, void __user *ubuf)
-+{
-+	int ret;
-+
-+	if (!cpu_has_feature(CPU_FTR_TM))
-+		return -ENODEV;
-+
-+	if (!MSR_TM_ACTIVE(target->thread.regs->msr))
-+		return -ENODATA;
-+
-+	ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
-+				&target->thread.tm_tar, 0, sizeof(u64));
-+	return ret;
-+}
-+
-+static int tm_tar_set(struct task_struct *target,
-+		      const struct user_regset *regset,
-+		      unsigned int pos, unsigned int count,
-+		      const void *kbuf, const void __user *ubuf)
-+{
-+	int ret;
-+
-+	if (!cpu_has_feature(CPU_FTR_TM))
-+		return -ENODEV;
-+
-+	if (!MSR_TM_ACTIVE(target->thread.regs->msr))
-+		return -ENODATA;
-+
-+	ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf,
-+				&target->thread.tm_tar, 0, sizeof(u64));
-+	return ret;
-+}
-+
-+static int tm_ppr_active(struct task_struct *target,
-+			 const struct user_regset *regset)
-+{
-+	if (!cpu_has_feature(CPU_FTR_TM))
-+		return -ENODEV;
-+
-+	if (MSR_TM_ACTIVE(target->thread.regs->msr))
-+		return regset->n;
-+
-+	return 0;
-+}
-+
-+
-+static int tm_ppr_get(struct task_struct *target,
-+		      const struct user_regset *regset,
-+		      unsigned int pos, unsigned int count,
-+		      void *kbuf, void __user *ubuf)
-+{
-+	int ret;
-+
-+	if (!cpu_has_feature(CPU_FTR_TM))
-+		return -ENODEV;
-+
-+	if (!MSR_TM_ACTIVE(target->thread.regs->msr))
-+		return -ENODATA;
-+
-+	ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
-+				&target->thread.tm_ppr, 0, sizeof(u64));
-+	return ret;
-+}
-+
-+static int tm_ppr_set(struct task_struct *target,
-+		      const struct user_regset *regset,
-+		      unsigned int pos, unsigned int count,
-+		      const void *kbuf, const void __user *ubuf)
-+{
-+	int ret;
-+
-+	if (!cpu_has_feature(CPU_FTR_TM))
-+		return -ENODEV;
-+
-+	if (!MSR_TM_ACTIVE(target->thread.regs->msr))
-+		return -ENODATA;
-+
-+	ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf,
-+				&target->thread.tm_ppr, 0, sizeof(u64));
-+	return ret;
-+}
-+
-+static int tm_dscr_active(struct task_struct *target,
-+			 const struct user_regset *regset)
-+{
-+	if (!cpu_has_feature(CPU_FTR_TM))
-+		return -ENODEV;
-+
-+	if (MSR_TM_ACTIVE(target->thread.regs->msr))
-+		return regset->n;
-+
-+	return 0;
-+}
-+
-+static int tm_dscr_get(struct task_struct *target,
-+		      const struct user_regset *regset,
-+		      unsigned int pos, unsigned int count,
-+		      void *kbuf, void __user *ubuf)
-+{
-+	int ret;
-+
-+	if (!cpu_has_feature(CPU_FTR_TM))
-+		return -ENODEV;
-+
-+	if (!MSR_TM_ACTIVE(target->thread.regs->msr))
-+		return -ENODATA;
-+
-+	ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
-+				&target->thread.tm_dscr, 0, sizeof(u64));
-+	return ret;
-+}
-+
-+static int tm_dscr_set(struct task_struct *target,
-+		      const struct user_regset *regset,
-+		      unsigned int pos, unsigned int count,
-+		      const void *kbuf, const void __user *ubuf)
-+{
-+	int ret;
-+
-+	if (!cpu_has_feature(CPU_FTR_TM))
-+		return -ENODEV;
-+
-+	if (!MSR_TM_ACTIVE(target->thread.regs->msr))
-+		return -ENODATA;
-+
-+	ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf,
-+				&target->thread.tm_dscr, 0, sizeof(u64));
-+	return ret;
-+}
- #endif	/* CONFIG_PPC_TRANSACTIONAL_MEM */
- 
- /*
-@@ -1564,6 +1709,9 @@ enum powerpc_regset {
- 	REGSET_TM_CVMX,		/* TM checkpointed VMX registers */
- 	REGSET_TM_CVSX,		/* TM checkpointed VSX registers */
- 	REGSET_TM_SPR,		/* TM specific SPR registers */
-+	REGSET_TM_CTAR,		/* TM checkpointed TAR register */
-+	REGSET_TM_CPPR,		/* TM checkpointed PPR register */
-+	REGSET_TM_CDSCR,	/* TM checkpointed DSCR register */
  #endif
- };
  
-@@ -1625,6 +1773,21 @@ static const struct user_regset native_regsets[] = {
- 		.size = sizeof(u64), .align = sizeof(u64),
- 		.active = tm_spr_active, .get = tm_spr_get, .set = tm_spr_set
- 	},
-+	[REGSET_TM_CTAR] = {
-+		.core_note_type = NT_PPC_TM_CTAR, .n = 1,
-+		.size = sizeof(u64), .align = sizeof(u64),
-+		.active = tm_tar_active, .get = tm_tar_get, .set = tm_tar_set
-+	},
-+	[REGSET_TM_CPPR] = {
-+		.core_note_type = NT_PPC_TM_CPPR, .n = 1,
-+		.size = sizeof(u64), .align = sizeof(u64),
-+		.active = tm_ppr_active, .get = tm_ppr_get, .set = tm_ppr_set
-+	},
-+	[REGSET_TM_CDSCR] = {
-+		.core_note_type = NT_PPC_TM_CDSCR, .n = 1,
-+		.size = sizeof(u64), .align = sizeof(u64),
-+		.active = tm_dscr_active, .get = tm_dscr_get, .set = tm_dscr_set
-+	},
- #endif
- };
++#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
++extern void flush_tmregs_to_thread(struct task_struct *);
++#else
++static inline void flush_tmregs_to_thread(struct task_struct *t)
++{
++}
++#endif
++
+ static inline void clear_task_ebb(struct task_struct *t)
+ {
+ #ifdef CONFIG_PPC_BOOK3S_64
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index febb50d..4e685042 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -745,6 +745,26 @@ void restore_tm_state(struct pt_regs *regs)
+ #define __switch_to_tm(prev)
+ #endif /* CONFIG_PPC_TRANSACTIONAL_MEM */
  
-@@ -1877,6 +2040,21 @@ static const struct user_regset compat_regsets[] = {
- 		.size = sizeof(u64), .align = sizeof(u64),
- 		.active = tm_spr_active, .get = tm_spr_get, .set = tm_spr_set
- 	},
-+	[REGSET_TM_CTAR] = {
-+		.core_note_type = NT_PPC_TM_CTAR, .n = 1,
-+		.size = sizeof(u64), .align = sizeof(u64),
-+		.active = tm_tar_active, .get = tm_tar_get, .set = tm_tar_set
-+	},
-+	[REGSET_TM_CPPR] = {
-+		.core_note_type = NT_PPC_TM_CPPR, .n = 1,
-+		.size = sizeof(u64), .align = sizeof(u64),
-+		.active = tm_ppr_active, .get = tm_ppr_get, .set = tm_ppr_set
-+	},
-+	[REGSET_TM_CDSCR] = {
-+		.core_note_type = NT_PPC_TM_CDSCR, .n = 1,
-+		.size = sizeof(u64), .align = sizeof(u64),
-+		.active = tm_dscr_active, .get = tm_dscr_get, .set = tm_dscr_set
-+	},
- #endif
- };
- 
++#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
++void flush_tmregs_to_thread(struct task_struct *tsk)
++{
++	/*
++	 * Process self tracing is not yet supported through
++	 * ptrace interface. Ptrace generic code should have
++	 * prevented this from happening in the first place.
++	 * Warn once here with the message, if some how it
++	 * is attempted.
++	 */
++	WARN_ONCE(tsk == current,
++		"Not expecting ptrace on self: TM regs may be incorrect\n");
++
++	/*
++	 * If task is not current, it should have been flushed
++	 * already to it's thread_struct during __switch_to().
++	 */
++}
++#endif
++
+ struct task_struct *__switch_to(struct task_struct *prev,
+ 	struct task_struct *new)
+ {
 -- 
 2.1.0
