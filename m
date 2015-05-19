@@ -2,34 +2,37 @@ Return-Path: <khandual@linux.vnet.ibm.com>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BE75F1A05D8
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 May 2015 01:08:42 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7B6B51A0671
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 May 2015 01:08:46 +1000 (AEST)
 Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 0A93E140DBC
- for <linuxppc-dev@ozlabs.org>; Wed, 20 May 2015 01:08:41 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTPS id A8179140D58
+ for <linuxppc-dev@ozlabs.org>; Wed, 20 May 2015 01:08:45 +1000 (AEST)
 Received: from /spool/local
  by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Tue, 19 May 2015 20:38:40 +0530
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id F182D3940063
- for <linuxppc-dev@ozlabs.org>; Tue, 19 May 2015 20:38:35 +0530 (IST)
+ Tue, 19 May 2015 20:38:43 +0530
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 385083940048
+ for <linuxppc-dev@ozlabs.org>; Tue, 19 May 2015 20:38:42 +0530 (IST)
 Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t4JF8Sn128442748
- for <linuxppc-dev@ozlabs.org>; Tue, 19 May 2015 20:38:29 +0530
+ by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t4JF8cQg53805268
+ for <linuxppc-dev@ozlabs.org>; Tue, 19 May 2015 20:38:39 +0530
 Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
  by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t4JF8OYM027607
- for <linuxppc-dev@ozlabs.org>; Tue, 19 May 2015 20:38:28 +0530
+ t4JF8Yp4028984
+ for <linuxppc-dev@ozlabs.org>; Tue, 19 May 2015 20:38:36 +0530
 From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: [PATCH V8 00/28] Add new powerpc specific ELF core notes
-Date: Tue, 19 May 2015 20:37:56 +0530
-Message-Id: <1432048104-4695-1-git-send-email-khandual@linux.vnet.ibm.com>
+Subject: [PATCH V8 27/28] selftests,
+ powerpc: Add ptrace tests for TM SPR registers
+Date: Tue, 19 May 2015 20:38:23 +0530
+Message-Id: <1432048104-4695-28-git-send-email-khandual@linux.vnet.ibm.com>
+In-Reply-To: <1432048104-4695-1-git-send-email-khandual@linux.vnet.ibm.com>
+References: <1432048104-4695-1-git-send-email-khandual@linux.vnet.ibm.com>
 Cc: shuahkh@osg.samsung.com, mikey@neuling.org, james.hogan@imgtec.com,
  avagin@openvz.org, Paul.Clothier@imgtec.com, peterz@infradead.org,
  palves@redhat.com, nacc@linux.vnet.ibm.com, emachado@linux.vnet.ibm.com,
@@ -46,177 +49,244 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Anshuman Khandual <anshuman@localhost.localdomain>
+This patch adds ptrace interface test for TM SPR registers. This
+also adds ptrace interface based helper functions related to TM
+SPR registers access.
 
-	This patch series adds twelve new ELF core note sections which can
-be used with existing ptrace request PTRACE_GETREGSET-SETREGSET for accessing
-various transactional memory and other miscellaneous debug register sets on
-powerpc platform.
-
-Previous versions:
-==================
-RFC: https://lkml.org/lkml/2014/4/1/292
-V1:  https://lkml.org/lkml/2014/4/2/43
-V2:  https://lkml.org/lkml/2014/5/5/88
-V3:  https://lkml.org/lkml/2014/5/23/486
-V4:  https://lkml.org/lkml/2014/11/11/6
-V5:  https://lkml.org/lkml/2014/11/25/134
-V6:  https://lkml.org/lkml/2014/12/2/98
-V7:  https://lkml.org/lkml/2015/1/14/19
-
-Changes in V8:
---------------
-- Split the misc register set into individual ELF core notes
-- Implemented support for VSX register set (on and off TM)
-- Implemented support for EBB register set
-- Implemented review comments on previous versions
-- Some code re-arrangements, re-writes and documentation
-- Added comprehensive list of test cases into selftests
-
-Changes in V7:
---------------
-- Fixed a config directive in the MISC code
-- Merged the two gitignore patches into a single one
-
-Changes in V6:
---------------
-- Added two git ignore patches for powerpc selftests
-- Re-formatted all in-code function definitions in kernel-doc format
-
-Changes in V5:
---------------
-- Changed flush_tmregs_to_thread, so not to take into account self tracing
-- Dropped the 3rd patch in the series which had merged two functions
-- Fixed one build problem for the misc debug register patch
-- Accommodated almost all the review comments from Suka on the 6th patch
-- Minor changes to the self test program
-- Changed commit messages for some of the patches
-
-Changes in V4:
---------------
-- Added one test program into the powerpc selftest bucket in this regard
-- Split the 2nd patch in the previous series into four different patches
-- Accommodated most of the review comments on the previous patch series
-- Added a patch to merge functions __switch_to_tm and tm_reclaim_task
-
-Changes in V3:
---------------
-- Added two new error paths in every TM related get/set functions when regset
-  support is not present on the system (ENODEV) or when the process does not
-  have any transaction active (ENODATA) in the context
-- Installed the active hooks for all the newly added regset core note types
-
-Changes in V2:
---------------
-- Removed all the power specific ptrace requests corresponding to new NT_PPC_*
-  elf core note types. Now all the register sets can be accessed from ptrace
-  through PTRACE_GETREGSET/PTRACE_SETREGSET using the individual NT_PPC* core
-  note type instead
-- Fixed couple of attribute values for REGSET_TM_CGPR register set
-- Renamed flush_tmreg_to_thread as flush_tmregs_to_thread
-- Fixed 32 bit checkpointed GPR support
-- Changed commit messages accordingly
-
-Test Result
------------
-ptrace-ebb		PASS
-ptrace-gpr		PASS
-ptrace-tm-gpr		PASS
-ptrace-tm-spd-gpr	PASS
-ptrace-tar		FAIL
-ptrace-tm-tar		FAIL
-ptrace-tm-spd-tar	FAIL
-ptrace-vsx		PASS
-ptrace-tm-vsx		PASS
-ptrace-tm-spd-vsx	PASS
-ptrace-tm-spr		PASS
-
-NOTE: The above three test case failures are due to PPR context save/restore
-in various paths. Still continue to debug the issue.
-
-Anshuman Khandual (28):
-  elf: Add powerpc specific core note sections
-  powerpc, process: Add the function flush_tmregs_to_thread
-  powerpc, ptrace: Enable in transaction NT_PRFPREG ptrace requests
-  powerpc, ptrace: Enable in transaction NT_PPC_VMX ptrace requests
-  powerpc, ptrace: Enable in transaction NT_PPC_VSX ptrace requests
-  powerpc, ptrace: Adapt gpr32_get, gpr32_set functions for transaction
-  powerpc, ptrace: Enable support for NT_PPC_CGPR
-  powerpc, ptrace: Enable support for NT_PPC_CFPR
-  powerpc, ptrace: Enable support for NT_PPC_CVMX
-  powerpc, ptrace: Enable support for NT_PPC_CVSX
-  powerpc, ptrace: Enable support for TM SPR state
-  powerpc, ptrace: Enable NT_PPC_TM_CTAR, NT_PPC_TM_CPPR, NT_PPC_TM_CDSCR
-  powerpc, ptrace: Enable support for NT_PPPC_TAR, NT_PPC_PPR, NT_PPC_DSCR
-  powerpc, ptrace: Enable support for EBB registers
-  selftests, powerpc: Move 'reg.h' file outside of 'ebb' sub directory
-  selftests, powerpc: Add more SPR numbers, TM & VMX instructions to 'reg.h'
-  selftests, powerpc: Add ptrace tests for EBB
-  selftests, powerpc: Add ptrace tests for GPR/FPR registers
-  selftests, powerpc: Add ptrace tests for GPR/FPR registers in TM
-  selftests, powerpc: Add ptrace tests for GPR/FPR registers in suspended TM
-  selftests, powerpc: Add ptrace tests for TAR, PPR, DSCR registers
-  selftests, powerpc: Add ptrace tests for TAR, PPR, DSCR in TM
-  selftests, powerpc: Add ptrace tests for TAR, PPR, DSCR in suspended TM
-  selftests, powerpc: Add ptrace tests for VSX, VMX registers
-  selftests, powerpc: Add ptrace tests for VSX, VMX registers in TM
-  selftests, powerpc: Add ptrace tests for VSX, VMX registers in suspended TM
-  selftests, powerpc: Add ptrace tests for TM SPR registers
-  selftests, powerpc: Add .gitignore file for ptrace executables
-
- arch/powerpc/include/asm/switch_to.h               |    8 +
- arch/powerpc/include/uapi/asm/elf.h                |    5 +
- arch/powerpc/kernel/process.c                      |   20 +
- arch/powerpc/kernel/ptrace.c                       | 1737 ++++++++++++++++++--
- include/uapi/linux/elf.h                           |   12 +
- tools/testing/selftests/powerpc/Makefile           |    2 +-
- tools/testing/selftests/powerpc/pmu/ebb/ebb.c      |    2 +-
- tools/testing/selftests/powerpc/pmu/ebb/ebb.h      |    2 +-
- .../selftests/powerpc/pmu/ebb/ebb_handler.S        |    2 +-
- tools/testing/selftests/powerpc/pmu/ebb/reg.h      |   49 -
- .../selftests/powerpc/pmu/ebb/reg_access_test.c    |    2 +-
- tools/testing/selftests/powerpc/ptrace/.gitignore  |   11 +
- tools/testing/selftests/powerpc/ptrace/Makefile    |   12 +
- .../testing/selftests/powerpc/ptrace/ptrace-ebb.c  |  144 ++
- .../testing/selftests/powerpc/ptrace/ptrace-ebb.h  |   98 ++
- .../testing/selftests/powerpc/ptrace/ptrace-gpr.c  |  191 +++
- .../testing/selftests/powerpc/ptrace/ptrace-gpr.h  |   73 +
- .../testing/selftests/powerpc/ptrace/ptrace-tar.c  |  151 ++
- .../testing/selftests/powerpc/ptrace/ptrace-tar.h  |   50 +
- .../selftests/powerpc/ptrace/ptrace-tm-gpr.c       |  287 ++++
- .../selftests/powerpc/ptrace/ptrace-tm-spd-gpr.c   |  318 ++++
- .../selftests/powerpc/ptrace/ptrace-tm-spd-tar.c   |  184 +++
- .../selftests/powerpc/ptrace/ptrace-tm-spd-vsx.c   |  211 +++
- .../selftests/powerpc/ptrace/ptrace-tm-spr.c       |  156 ++
- .../selftests/powerpc/ptrace/ptrace-tm-tar.c       |  169 ++
- .../selftests/powerpc/ptrace/ptrace-tm-vsx.c       |  195 +++
- .../testing/selftests/powerpc/ptrace/ptrace-vsx.c  |  138 ++
- .../testing/selftests/powerpc/ptrace/ptrace-vsx.h  |   83 +
- tools/testing/selftests/powerpc/ptrace/ptrace.S    |  403 +++++
- tools/testing/selftests/powerpc/ptrace/ptrace.h    |  765 +++++++++
- tools/testing/selftests/powerpc/reg.h              |   70 +
- 31 files changed, 5372 insertions(+), 178 deletions(-)
- delete mode 100644 tools/testing/selftests/powerpc/pmu/ebb/reg.h
- create mode 100644 tools/testing/selftests/powerpc/ptrace/.gitignore
- create mode 100644 tools/testing/selftests/powerpc/ptrace/Makefile
- create mode 100644 tools/testing/selftests/powerpc/ptrace/ptrace-ebb.c
- create mode 100644 tools/testing/selftests/powerpc/ptrace/ptrace-ebb.h
- create mode 100644 tools/testing/selftests/powerpc/ptrace/ptrace-gpr.c
- create mode 100644 tools/testing/selftests/powerpc/ptrace/ptrace-gpr.h
- create mode 100644 tools/testing/selftests/powerpc/ptrace/ptrace-tar.c
- create mode 100644 tools/testing/selftests/powerpc/ptrace/ptrace-tar.h
- create mode 100644 tools/testing/selftests/powerpc/ptrace/ptrace-tm-gpr.c
- create mode 100644 tools/testing/selftests/powerpc/ptrace/ptrace-tm-spd-gpr.c
- create mode 100644 tools/testing/selftests/powerpc/ptrace/ptrace-tm-spd-tar.c
- create mode 100644 tools/testing/selftests/powerpc/ptrace/ptrace-tm-spd-vsx.c
+Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+---
+ tools/testing/selftests/powerpc/ptrace/Makefile    |   2 +-
+ .../selftests/powerpc/ptrace/ptrace-tm-spr.c       | 156 +++++++++++++++++++++
+ tools/testing/selftests/powerpc/ptrace/ptrace.h    |  35 +++++
+ 3 files changed, 192 insertions(+), 1 deletion(-)
  create mode 100644 tools/testing/selftests/powerpc/ptrace/ptrace-tm-spr.c
- create mode 100644 tools/testing/selftests/powerpc/ptrace/ptrace-tm-tar.c
- create mode 100644 tools/testing/selftests/powerpc/ptrace/ptrace-tm-vsx.c
- create mode 100644 tools/testing/selftests/powerpc/ptrace/ptrace-vsx.c
- create mode 100644 tools/testing/selftests/powerpc/ptrace/ptrace-vsx.h
- create mode 100644 tools/testing/selftests/powerpc/ptrace/ptrace.S
- create mode 100644 tools/testing/selftests/powerpc/ptrace/ptrace.h
- create mode 100644 tools/testing/selftests/powerpc/reg.h
 
+diff --git a/tools/testing/selftests/powerpc/ptrace/Makefile b/tools/testing/selftests/powerpc/ptrace/Makefile
+index ea57351..a46a0e5 100644
+--- a/tools/testing/selftests/powerpc/ptrace/Makefile
++++ b/tools/testing/selftests/powerpc/ptrace/Makefile
+@@ -1,6 +1,6 @@
+ TEST_PROGS := ptrace-ebb ptrace-gpr ptrace-tm-gpr ptrace-tm-spd-gpr \
+ ptrace-tar ptrace-tm-tar ptrace-tm-spd-tar ptrace-vsx ptrace-tm-vsx \
+-ptrace-tm-spd-vsx
++ptrace-tm-spd-vsx ptrace-tm-spr
+ 
+ 
+ all: $(TEST_PROGS)
+diff --git a/tools/testing/selftests/powerpc/ptrace/ptrace-tm-spr.c b/tools/testing/selftests/powerpc/ptrace/ptrace-tm-spr.c
+new file mode 100644
+index 0000000..36b9722
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/ptrace/ptrace-tm-spr.c
+@@ -0,0 +1,156 @@
++/*
++ * Ptrace test TM SPR registers
++ *
++ * Copyright 2015 Anshuman Khandual, IBM Corporation.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ */
++#include "ptrace.h"
++
++/* Tracee and tracer shared data */
++struct shared {
++	int flag;
++	struct tm_spr_regs regs;
++};
++unsigned long tfhar;
++
++int shm_id;
++volatile struct shared *cptr, *pptr;
++
++#define TM_SCHED	0xde0000018c000001
++#define TM_KVM_SCHED	0xe0000001ac000001
++
++int validate_tm_spr(struct tm_spr_regs *regs)
++{
++	if (regs->tm_tfhar != (tfhar - 32))
++		return TEST_FAIL;
++
++	if ((regs->tm_texasr != TM_SCHED) && (regs->tm_texasr != TM_KVM_SCHED))
++		return TEST_FAIL;
++
++	if ((regs->tm_texasr == TM_KVM_SCHED) && (regs->tm_tfiar != 0))
++		return TEST_FAIL;
++
++	return TEST_PASS;
++}
++
++void tm_spr(void)
++{
++	unsigned long result, texasr;
++	int ret;
++
++	cptr = (struct shared *)shmat(shm_id, NULL, 0);
++trans:
++	asm __volatile__(
++		"1: ;"
++		TBEGIN
++		"beq 2f;"
++
++		"b .;"
++
++		TEND
++		"li 0, 0;"
++		"ori %[res], 0, 0;"
++		"b 3f;"
++
++		"2: ;"
++		"mflr 31;"
++		"bl 4f;"	/* $ = TFHAR + 2 */
++		"4: ;"
++		"mflr %[tfhar];"
++		"mtlr 31;"
++
++		"li 0, 1;"
++		"ori %[res], 0, 0;"
++		"mfspr %[texasr], %[sprn_texasr];"
++
++		"3: ;"
++		: [tfhar] "=r" (tfhar), [res] "=r" (result), [texasr] "=r" (texasr)
++		: [sprn_texasr] "i"  (SPRN_TEXASR)
++		: "memory", "r0", "r1", "r2", "r3", "r4", "r8", "r9", "r10", "r11"
++		);
++
++	if (result) {
++		if (!cptr->flag)
++			goto trans;
++
++		ret = validate_tm_spr((struct tm_spr_regs *)&cptr->regs);
++		shmdt((void *)cptr);
++		if (ret)
++			exit(1);
++		exit(0);
++	}
++	shmdt((void *)cptr);
++	exit(1);
++}
++
++int trace_tm_spr(pid_t child)
++{
++	int ret;
++
++	sleep(1);
++	ret = start_trace(child);
++	if (ret)
++		return TEST_FAIL;
++
++	ret = show_tm_spr(child, (struct tm_spr_regs *)&pptr->regs);
++	if (ret)
++		return TEST_FAIL;
++
++	printf("TFHAR: %lx TEXASR: %lx TFIAR: %lx\n", pptr->regs.tm_tfhar,
++				pptr->regs.tm_texasr, pptr->regs.tm_tfiar);
++
++	ret = stop_trace(child);
++	if (ret)
++		return TEST_FAIL;
++
++	return TEST_PASS;
++}
++
++int ptrace_tm_spr(void)
++{
++	pid_t pid;
++	int ret, status;
++
++	shm_id = shmget(IPC_PRIVATE, sizeof(struct shared), 0777|IPC_CREAT);
++	pid = fork();
++	if (pid < 0) {
++		perror("fork() failed");
++		return TEST_FAIL;
++	}
++
++	if (pid == 0)
++		tm_spr();
++
++	if (pid) {
++		pptr = (struct shared *)shmat(shm_id, NULL, 0);
++		ret = trace_tm_spr(pid);
++		if (ret) {
++			kill(pid, SIGKILL);
++			return TEST_FAIL;
++		}
++
++		pptr->flag = 1;
++		shmdt((void *)pptr);
++		ret = wait(&status);
++		if (ret != pid) {
++			printf("Child's exit status not captured\n");
++			return TEST_FAIL;
++		}
++
++		if (WIFEXITED(status)) {
++			if(WEXITSTATUS(status))
++				return TEST_FAIL;
++		}
++		return TEST_PASS;
++	}
++	return TEST_PASS;
++}
++
++int main(int argc, char *argv[])
++{
++	return test_harness(ptrace_tm_spr, "ptrace_tm_spr");
++}
+diff --git a/tools/testing/selftests/powerpc/ptrace/ptrace.h b/tools/testing/selftests/powerpc/ptrace/ptrace.h
+index 86fef91..812261a 100644
+--- a/tools/testing/selftests/powerpc/ptrace/ptrace.h
++++ b/tools/testing/selftests/powerpc/ptrace/ptrace.h
+@@ -82,6 +82,11 @@ struct fpr_regs {
+ 	unsigned long fpscr;
+ };
+ 
++struct tm_spr_regs {
++	unsigned long tm_tfhar;
++	unsigned long tm_texasr;
++	unsigned long tm_tfiar;
++};
+ 
+ /* Basic ptrace operations */
+ int start_trace(pid_t child)
+@@ -662,6 +667,36 @@ int write_vsx_ckpt(pid_t child, unsigned long *vsx)
+ 	return TEST_PASS;
+ }
+ 
++/* TM SPR */
++int show_tm_spr(pid_t child, struct tm_spr_regs *out)
++{
++	struct tm_spr_regs *regs;
++	struct iovec iov;
++	int ret;
++
++	regs = (struct tm_spr_regs *) malloc(sizeof(struct tm_spr_regs));
++	if (!regs) {
++		perror("malloc() failed");
++		return TEST_FAIL;
++	}
++
++	iov.iov_base = (u64 *) regs;
++	iov.iov_len = sizeof(struct tm_spr_regs);
++
++	ret = ptrace(PTRACE_GETREGSET, child, NT_PPC_TM_SPR, &iov);
++	if (ret) {
++		perror("ptrace(PTRACE_GETREGSET) failed");
++		return TEST_FAIL;
++	}
++
++	if (out)
++		memcpy(out, regs, sizeof(struct tm_spr_regs));
++
++	return TEST_PASS;
++}
++
++
++
+ /* Analyse TEXASR after TM failure */
+ inline unsigned long get_tfiar(void)
+ {
 -- 
 2.1.0
