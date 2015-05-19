@@ -1,15 +1,15 @@
 Return-Path: <mikey@neuling.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C3E4F1A0709
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 May 2015 21:23:19 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id A88621A0612
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 May 2015 21:23:20 +1000 (AEST)
 From: Michael Neuling <mikey@neuling.org>
 To: mpe@ellerman.id.au,
 	benh@kernel.crashing.org
-Subject: [PATCH 12/19] cxl: Export some symbols
-Date: Tue, 19 May 2015 21:22:29 +1000
-Message-Id: <1432034556-32400-13-git-send-email-mikey@neuling.org>
+Subject: [PATCH 13/19] cxl: Only check pid for userspace contexts
+Date: Tue, 19 May 2015 21:22:30 +1000
+Message-Id: <1432034556-32400-14-git-send-email-mikey@neuling.org>
 In-Reply-To: <1432034556-32400-1-git-send-email-mikey@neuling.org>
 References: <1432034556-32400-1-git-send-email-mikey@neuling.org>
 Cc: mikey@neuling.org, "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>,
@@ -25,65 +25,73 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-These will soon be using elsewhere in the driver.
+We only need to check the pid attached to this context for userspace contexts.
+Kernel contexts can skip this check.
 
 Signed-off-by: Michael Neuling <mikey@neuling.org>
 ---
- drivers/misc/cxl/cxl.h    | 5 +++++
- drivers/misc/cxl/native.c | 4 ++--
- 2 files changed, 7 insertions(+), 2 deletions(-)
+ drivers/misc/cxl/fault.c | 34 +++++++++++++++++++---------------
+ 1 file changed, 19 insertions(+), 15 deletions(-)
 
-diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
-index 8180680..15e1077 100644
---- a/drivers/misc/cxl/cxl.h
-+++ b/drivers/misc/cxl/cxl.h
-@@ -632,6 +632,9 @@ int cxl_context_init(struct cxl_context *ctx, struct cxl_afu *afu, bool master,
- 		     struct address_space *mapping);
- void cxl_context_free(struct cxl_context *ctx);
- int cxl_context_iomap(struct cxl_context *ctx, struct vm_area_struct *vma);
-+unsigned int cxl_map_irq(struct cxl *adapter, irq_hw_number_t hwirq,
-+			 irq_handler_t handler, void *cookie, const char *name);
-+void cxl_unmap_irq(unsigned int virq, void *cookie);
- int __detach_context(struct cxl_context *ctx);
+diff --git a/drivers/misc/cxl/fault.c b/drivers/misc/cxl/fault.c
+index 5286b8b..25a5418 100644
+--- a/drivers/misc/cxl/fault.c
++++ b/drivers/misc/cxl/fault.c
+@@ -172,8 +172,8 @@ void cxl_handle_fault(struct work_struct *fault_work)
+ 		container_of(fault_work, struct cxl_context, fault_work);
+ 	u64 dsisr = ctx->dsisr;
+ 	u64 dar = ctx->dar;
+-	struct task_struct *task;
+-	struct mm_struct *mm;
++	struct task_struct *task = NULL;
++	struct mm_struct *mm = NULL;
  
- /* This matches the layout of the H_COLLECT_CA_INT_INFO retbuf */
-@@ -646,6 +649,7 @@ struct cxl_irq_info {
- 	u64 padding[3]; /* to match the expected retbuf size for plpar_hcall9 */
- };
+ 	if (cxl_p2n_read(ctx->afu, CXL_PSL_DSISR_An) != dsisr ||
+ 	    cxl_p2n_read(ctx->afu, CXL_PSL_DAR_An) != dar ||
+@@ -194,17 +194,19 @@ void cxl_handle_fault(struct work_struct *fault_work)
+ 	pr_devel("CXL BOTTOM HALF handling fault for afu pe: %i. "
+ 		"DSISR: %#llx DAR: %#llx\n", ctx->pe, dsisr, dar);
  
-+void assign_psn_space(struct cxl_context *ctx);
- int cxl_attach_process(struct cxl_context *ctx, bool kernel, u64 wed,
- 			    u64 amr);
- int cxl_detach_process(struct cxl_context *ctx);
-@@ -658,6 +662,7 @@ int cxl_afu_slbia(struct cxl_afu *afu);
- int cxl_tlb_slb_invalidate(struct cxl *adapter);
- int cxl_afu_disable(struct cxl_afu *afu);
- int __cxl_afu_reset(struct cxl_afu *afu);
-+int afu_check_and_enable(struct cxl_afu *afu);
- int cxl_psl_purge(struct cxl_afu *afu);
+-	if (!(task = get_pid_task(ctx->pid, PIDTYPE_PID))) {
+-		pr_devel("cxl_handle_fault unable to get task %i\n",
+-			 pid_nr(ctx->pid));
+-		cxl_ack_ae(ctx);
+-		return;
+-	}
+-	if (!(mm = get_task_mm(task))) {
+-		pr_devel("cxl_handle_fault unable to get mm %i\n",
+-			 pid_nr(ctx->pid));
+-		cxl_ack_ae(ctx);
+-		goto out;
++	if (!ctx->kernel) {
++		if (!(task = get_pid_task(ctx->pid, PIDTYPE_PID))) {
++			pr_devel("cxl_handle_fault unable to get task %i\n",
++				 pid_nr(ctx->pid));
++			cxl_ack_ae(ctx);
++			return;
++		}
++		if (!(mm = get_task_mm(task))) {
++			pr_devel("cxl_handle_fault unable to get mm %i\n",
++				 pid_nr(ctx->pid));
++			cxl_ack_ae(ctx);
++			goto out;
++		}
+ 	}
  
- void cxl_stop_trace(struct cxl *cxl);
-diff --git a/drivers/misc/cxl/native.c b/drivers/misc/cxl/native.c
-index f85b6ae..f643bb1 100644
---- a/drivers/misc/cxl/native.c
-+++ b/drivers/misc/cxl/native.c
-@@ -83,7 +83,7 @@ int __cxl_afu_reset(struct cxl_afu *afu)
- 			   false);
+ 	if (dsisr & CXL_PSL_DSISR_An_DS)
+@@ -214,9 +216,11 @@ void cxl_handle_fault(struct work_struct *fault_work)
+ 	else
+ 		WARN(1, "cxl_handle_fault has nothing to handle\n");
+ 
+-	mmput(mm);
++	if (mm)
++		mmput(mm);
+ out:
+-	put_task_struct(task);
++	if (task)
++		put_task_struct(task);
  }
  
--static int afu_check_and_enable(struct cxl_afu *afu)
-+int afu_check_and_enable(struct cxl_afu *afu)
- {
- 	if (afu->enabled)
- 		return 0;
-@@ -379,7 +379,7 @@ static int remove_process_element(struct cxl_context *ctx)
- }
- 
- 
--static void assign_psn_space(struct cxl_context *ctx)
-+void assign_psn_space(struct cxl_context *ctx)
- {
- 	if (!ctx->afu->pp_size || ctx->master) {
- 		ctx->psn_phys = ctx->afu->psn_phys;
+ static void cxl_prefault_one(struct cxl_context *ctx, u64 ea)
 -- 
 2.1.0
