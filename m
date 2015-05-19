@@ -1,35 +1,36 @@
 Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DA5321A0808
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 May 2015 01:09:48 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 102D21A0AE6
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 May 2015 01:09:57 +1000 (AEST)
 Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3B27E140B0E
- for <linuxppc-dev@ozlabs.org>; Wed, 20 May 2015 01:09:48 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTPS id 66C7A140B0E
+ for <linuxppc-dev@ozlabs.org>; Wed, 20 May 2015 01:09:56 +1000 (AEST)
 Received: from /spool/local
  by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Tue, 19 May 2015 20:39:46 +0530
+ Tue, 19 May 2015 20:39:54 +0530
 Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id AAC0E394005C
- for <linuxppc-dev@ozlabs.org>; Tue, 19 May 2015 20:39:42 +0530 (IST)
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 16E35394005E
+ for <linuxppc-dev@ozlabs.org>; Tue, 19 May 2015 20:39:53 +0530 (IST)
 Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
  by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t4JF9fRZ59703338
- for <linuxppc-dev@ozlabs.org>; Tue, 19 May 2015 20:39:41 +0530
+ t4JF9q9h33554480
+ for <linuxppc-dev@ozlabs.org>; Tue, 19 May 2015 20:39:52 +0530
 Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
  by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t4JF8QEC027896
- for <linuxppc-dev@ozlabs.org>; Tue, 19 May 2015 20:38:33 +0530
+ t4JF8XVs028863
+ for <linuxppc-dev@ozlabs.org>; Tue, 19 May 2015 20:38:36 +0530
 From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: [PATCH V8 07/28] powerpc, ptrace: Enable support for NT_PPC_CGPR
-Date: Tue, 19 May 2015 20:38:03 +0530
-Message-Id: <1432048104-4695-8-git-send-email-khandual@linux.vnet.ibm.com>
+Subject: [PATCH V8 24/28] selftests, powerpc: Add ptrace tests for VSX,
+ VMX registers
+Date: Tue, 19 May 2015 20:38:20 +0530
+Message-Id: <1432048104-4695-25-git-send-email-khandual@linux.vnet.ibm.com>
 In-Reply-To: <1432048104-4695-1-git-send-email-khandual@linux.vnet.ibm.com>
 References: <1432048104-4695-1-git-send-email-khandual@linux.vnet.ibm.com>
 Cc: shuahkh@osg.samsung.com, mikey@neuling.org, james.hogan@imgtec.com,
@@ -48,286 +49,666 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch enables support for TM checkpointed GPR register
-set ELF core note NT_PPC_CGPR based ptrace requests through
-PTRACE_GETREGSET, PTRACE_SETREGSET calls. This is achieved
-through adding a register set REGSET_CGPR in powerpc
-corresponding to the ELF core note section added. It
-implements the get, set and active functions for this new
-register set added.
+This patch adds ptrace interface test for VSX, VMX registers.
+This also adds ptrace interface based helper functions related
+to VSX, VMX registers access. This also adds some assembly
+helper functions related to VSX and VMX registers.
 
 Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 ---
- arch/powerpc/kernel/ptrace.c | 222 +++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 222 insertions(+)
+ tools/testing/selftests/powerpc/ptrace/Makefile    |   2 +-
+ .../testing/selftests/powerpc/ptrace/ptrace-vsx.c  | 138 +++++++++++
+ .../testing/selftests/powerpc/ptrace/ptrace-vsx.h  |  83 +++++++
+ tools/testing/selftests/powerpc/ptrace/ptrace.S    | 263 +++++++++++++++++++++
+ tools/testing/selftests/powerpc/ptrace/ptrace.h    | 119 ++++++++++
+ 5 files changed, 604 insertions(+), 1 deletion(-)
+ create mode 100644 tools/testing/selftests/powerpc/ptrace/ptrace-vsx.c
+ create mode 100644 tools/testing/selftests/powerpc/ptrace/ptrace-vsx.h
 
-diff --git a/arch/powerpc/kernel/ptrace.c b/arch/powerpc/kernel/ptrace.c
-index a8e4d19..28b788b 100644
---- a/arch/powerpc/kernel/ptrace.c
-+++ b/arch/powerpc/kernel/ptrace.c
-@@ -180,6 +180,26 @@ static int set_user_msr(struct task_struct *task, unsigned long msr)
- 	return 0;
- }
+diff --git a/tools/testing/selftests/powerpc/ptrace/Makefile b/tools/testing/selftests/powerpc/ptrace/Makefile
+index f058083..1c5437e 100644
+--- a/tools/testing/selftests/powerpc/ptrace/Makefile
++++ b/tools/testing/selftests/powerpc/ptrace/Makefile
+@@ -1,5 +1,5 @@
+ TEST_PROGS := ptrace-ebb ptrace-gpr ptrace-tm-gpr ptrace-tm-spd-gpr \
+-ptrace-tar ptrace-tm-tar ptrace-tm-spd-tar
++ptrace-tar ptrace-tm-tar ptrace-tm-spd-tar ptrace-vsx
  
-+#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-+static unsigned long get_user_ckpt_msr(struct task_struct *task)
-+{
-+	return task->thread.ckpt_regs.msr | task->thread.fpexc_mode;
-+}
-+
-+static int set_user_ckpt_msr(struct task_struct *task, unsigned long msr)
-+{
-+	task->thread.ckpt_regs.msr &= ~MSR_DEBUGCHANGE;
-+	task->thread.ckpt_regs.msr |= msr & MSR_DEBUGCHANGE;
-+	return 0;
-+}
-+
-+static int set_user_ckpt_trap(struct task_struct *task, unsigned long trap)
-+{
-+	task->thread.ckpt_regs.trap = trap & 0xfff0;
-+	return 0;
-+}
-+#endif
-+
- #ifdef CONFIG_PPC64
- static int get_user_dscr(struct task_struct *task, unsigned long *data)
- {
-@@ -846,6 +866,172 @@ static int evr_set(struct task_struct *target, const struct user_regset *regset,
- }
- #endif /* CONFIG_SPE */
+ all: $(TEST_PROGS)
  
-+#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-+/**
-+ * tm_cgpr_active - get active number of registers in CGPR
-+ * @target:	The target task.
-+ * @regset:	The user regset structure.
+diff --git a/tools/testing/selftests/powerpc/ptrace/ptrace-vsx.c b/tools/testing/selftests/powerpc/ptrace/ptrace-vsx.c
+new file mode 100644
+index 0000000..5d75be5
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/ptrace/ptrace-vsx.c
+@@ -0,0 +1,138 @@
++/*
++ * Ptrace test for VMX/VSX registers
 + *
-+ * This function checks for the active number of available
-+ * regisers in transaction checkpointed GPR category.
++ * Copyright 2015 Anshuman Khandual, IBM Corporation.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
 + */
-+static int tm_cgpr_active(struct task_struct *target,
-+			  const struct user_regset *regset)
-+{
-+	if (!cpu_has_feature(CPU_FTR_TM))
-+		return -ENODEV;
++#include "ptrace.h"
++#include "ptrace-vsx.h"
 +
-+	if (!MSR_TM_ACTIVE(target->thread.regs->msr))
-+		return 0;
++/* Tracer and Tracee Shared Data */
++int shm_id;
++volatile int *cptr, *pptr;
 +
-+	return regset->n;
-+}
++extern void loadvsx(void *p, int tmp);
++extern void storevsx(void *p, int tmp);
 +
-+/**
-+ * tm_cgpr_get - get CGPR registers
-+ * @target:	The target task.
-+ * @regset:	The user regset structure.
-+ * @pos:	The buffer position.
-+ * @count:	Number of bytes to copy.
-+ * @kbuf:	Kernel buffer to copy from.
-+ * @ubuf:	User buffer to copy into.
-+ *
-+ * This function gets transaction checkpointed GPR registers.
-+ *
-+ * When the transaction is active, 'ckpt_regs' holds all the checkpointed
-+ * GPR register values for the current transaction to fall back on if it
-+ * aborts in between. This function gets those checkpointed GPR registers.
-+ * The userspace interface buffer layout is as follows.
-+ *
-+ * struct data {
-+ *	struct pt_regs ckpt_regs;
-+ * };
-+ */
-+static int tm_cgpr_get(struct task_struct *target,
-+			const struct user_regset *regset,
-+			unsigned int pos, unsigned int count,
-+			void *kbuf, void __user *ubuf)
++unsigned long fp_load[VEC_MAX];
++unsigned long fp_load_new[VEC_MAX];
++unsigned long fp_store[VEC_MAX];
++
++void vsx(void)
 +{
 +	int ret;
 +
-+	if (!cpu_has_feature(CPU_FTR_TM))
-+		return -ENODEV;
++	cptr = (int *)shmat(shm_id, NULL, 0);
++	loadvsx(fp_load, 0);
 +
-+	if (!MSR_TM_ACTIVE(target->thread.regs->msr))
-+		return -ENODATA;
++	while(!cptr[0]);
++	shmdt((void *) cptr);
 +
-+	flush_fp_to_thread(target);
-+	flush_altivec_to_thread(target);
-+	flush_tmregs_to_thread(target);
++	storevsx(fp_store, 0);
++	ret = compare_vsx_vmx(fp_store, fp_load_new);
++	if (ret)
++		exit(1);
++	exit(0);
++}
 +
-+	ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
-+				  &target->thread.ckpt_regs,
-+				  0, offsetof(struct pt_regs, msr));
-+	if (!ret) {
-+		unsigned long msr = get_user_ckpt_msr(target);
++int trace_vsx(pid_t child)
++{
++	unsigned long vsx[VSX_MAX];
++	unsigned long vmx[VMX_MAX + 2][2];
++	int ret;
 +
-+		ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf, &msr,
-+					  offsetof(struct pt_regs, msr),
-+					  offsetof(struct pt_regs, msr) +
-+					  sizeof(msr));
++	sleep(1);
++	ret = start_trace(child);
++	if (ret)
++		return TEST_FAIL;
++
++	ret = show_vsx(child, vsx);
++	if (ret)
++		return TEST_FAIL;
++
++	ret = validate_vsx(vsx, fp_load);
++	if (ret)
++		return TEST_FAIL;
++
++	ret = show_vmx(child, vmx);
++	if (ret)
++		return TEST_FAIL;
++
++	ret = validate_vmx(vmx, fp_load);
++	if (ret)
++		return TEST_FAIL;
++
++	memset(vsx, 0, sizeof(vsx));
++	memset(vmx, 0, sizeof(vmx));
++	load_vsx_vmx(fp_load_new, vsx, vmx);
++
++	ret = write_vsx(child, vsx);
++	if (ret)
++		return TEST_FAIL;
++
++	ret = write_vmx(child, vmx);
++	if (ret)
++		return TEST_FAIL;
++
++	ret = stop_trace(child);
++	if (ret)
++		return TEST_FAIL;
++
++	return TEST_PASS;
++}
++
++int ptrace_vsx(void)
++{
++	pid_t pid;
++	int ret, status, i;
++
++	shm_id = shmget(IPC_PRIVATE, sizeof(int) * 1, 0777|IPC_CREAT);
++
++	for(i = 0; i < VEC_MAX; i++)
++		fp_load[i] = i + rand();
++
++	for(i = 0; i < VEC_MAX; i++)
++		fp_load_new[i] = i + 2 * rand();
++
++	pid = fork();
++	if (pid < 0) {
++		perror("fork() failed");
++		return TEST_FAIL;
 +	}
 +
-+	BUILD_BUG_ON(offsetof(struct pt_regs, orig_gpr3) !=
-+		     offsetof(struct pt_regs, msr) + sizeof(long));
++	if (pid == 0)
++		vsx();
 +
-+	if (!ret)
-+		ret = user_regset_copyout(&pos, &count, &kbuf, &ubuf,
-+					  &target->thread.ckpt_regs.orig_gpr3,
-+					  offsetof(struct pt_regs, orig_gpr3),
-+					  sizeof(struct pt_regs));
-+	if (!ret)
-+		ret = user_regset_copyout_zero(&pos, &count, &kbuf, &ubuf,
-+					       sizeof(struct pt_regs), -1);
++	if (pid) {
++		pptr = (int *)shmat(shm_id, NULL, 0);
++		ret = trace_vsx(pid);
++		if (ret) {
++			kill(pid, SIGTERM);
++			return TEST_FAIL;
++		}
 +
-+	return ret;
++		pptr[0] = 1;
++		shmdt((void *)pptr);
++
++		ret = wait(&status);
++		if (ret != pid) {
++			printf("Child's exit status not captured\n");
++			return TEST_FAIL;
++		}
++
++		if (WIFEXITED(status)) {
++			if(WEXITSTATUS(status))
++				return TEST_FAIL;
++		}
++	}
++	return TEST_PASS;
++}
++
++int main(int argc, char *argv[])
++{
++	return test_harness(ptrace_vsx, "ptrace_vsx");
++}
+diff --git a/tools/testing/selftests/powerpc/ptrace/ptrace-vsx.h b/tools/testing/selftests/powerpc/ptrace/ptrace-vsx.h
+new file mode 100644
+index 0000000..cae7e85
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/ptrace/ptrace-vsx.h
+@@ -0,0 +1,83 @@
++/*
++ * Copyright 2015 Anshuman Khandual, IBM Corporation.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ */
++#define VEC_MAX 128
++#define VSX_MAX 32
++#define VMX_MAX 32
++
++/*
++ * unsigned long vsx[32]
++ * unsigned long load[128]
++ */
++int validate_vsx(unsigned long *vsx, unsigned long *load)
++{
++	int i;
++
++	for (i = 0; i < VSX_MAX; i++) {
++		if (vsx[i] != load[2 * i + 1]) {
++			printf("vsx[%d]: %lx load[%d] %lx\n", i, vsx[i], 2 * i + 1, load[2 * i + 1]);
++			return TEST_FAIL;
++		}
++	}
++	return TEST_PASS;
 +}
 +
 +/*
-+ * tm_cgpr_set - set the CGPR registers
-+ * @target:	The target task.
-+ * @regset:	The user regset structure.
-+ * @pos:	The buffer position.
-+ * @count:	Number of bytes to copy.
-+ * @kbuf:	Kernel buffer to copy into.
-+ * @ubuf:	User buffer to copy from.
-+ *
-+ * This function sets in transaction checkpointed GPR registers.
-+ *
-+ * When the transaction is active, 'ckpt_regs' holds the checkpointed
-+ * GPR register values for the current transaction to fall back on if it
-+ * aborts in between. This function sets those checkpointed GPR registers.
-+ * The userspace interface buffer layout is as follows.
-+ *
-+ * struct data {
-+ *	struct pt_regs ckpt_regs;
-+ * };
++ * unsigned long vmx[32][2]
++ * unsigned long load[128]
 + */
-+static int tm_cgpr_set(struct task_struct *target,
-+			const struct user_regset *regset,
-+			unsigned int pos, unsigned int count,
-+			const void *kbuf, const void __user *ubuf)
++int validate_vmx(unsigned long vmx[][2], unsigned long *load)
 +{
-+	unsigned long reg;
-+	int ret;
++	int i;
 +
-+	if (!cpu_has_feature(CPU_FTR_TM))
-+		return -ENODEV;
-+
-+	if (!MSR_TM_ACTIVE(target->thread.regs->msr))
-+		return -ENODATA;
-+
-+	flush_fp_to_thread(target);
-+	flush_altivec_to_thread(target);
-+	flush_tmregs_to_thread(target);
-+
-+	ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf,
-+				 &target->thread.ckpt_regs,
-+				 0, PT_MSR * sizeof(reg));
-+
-+	if (!ret && count > 0) {
-+		ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf, &reg,
-+					 PT_MSR * sizeof(reg),
-+					 (PT_MSR + 1) * sizeof(reg));
-+		if (!ret)
-+			ret = set_user_ckpt_msr(target, reg);
++	for (i = 0; i < VMX_MAX; i++) {
++		if ((vmx[i][0] != load[64 + 2 * i]) || (vmx[i][1] != load[65 + 2 * i])) {
++			printf("vmx[%d][0]: %lx load[%d] %lx\n", i, vmx[i][0], 64 + 2 * i, load[64 + 2 * i]);
++			printf("vmx[%d][1]: %lx load[%d] %lx\n", i, vmx[i][1], 65 + 2 * i, load[65 + 2 * i]);
++			return TEST_FAIL;
++		}
 +	}
-+
-+	BUILD_BUG_ON(offsetof(struct pt_regs, orig_gpr3) !=
-+		     offsetof(struct pt_regs, msr) + sizeof(long));
-+
-+	if (!ret)
-+		ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf,
-+					 &target->thread.ckpt_regs.orig_gpr3,
-+					 PT_ORIG_R3 * sizeof(reg),
-+					 (PT_MAX_PUT_REG + 1) * sizeof(reg));
-+
-+	if (PT_MAX_PUT_REG + 1 < PT_TRAP && !ret)
-+		ret = user_regset_copyin_ignore(
-+			&pos, &count, &kbuf, &ubuf,
-+			(PT_MAX_PUT_REG + 1) * sizeof(reg),
-+			PT_TRAP * sizeof(reg));
-+
-+	if (!ret && count > 0) {
-+		ret = user_regset_copyin(&pos, &count, &kbuf, &ubuf, &reg,
-+					 PT_TRAP * sizeof(reg),
-+					 (PT_TRAP + 1) * sizeof(reg));
-+		if (!ret)
-+			ret = set_user_ckpt_trap(target, reg);
-+	}
-+
-+	if (!ret)
-+		ret = user_regset_copyin_ignore(
-+			&pos, &count, &kbuf, &ubuf,
-+			(PT_TRAP + 1) * sizeof(reg), -1);
-+
-+	return ret;
++	return TEST_PASS;
 +}
-+#endif
- 
- /*
-  * These are our native regset flavors.
-@@ -862,6 +1048,9 @@ enum powerpc_regset {
- #ifdef CONFIG_SPE
- 	REGSET_SPE,
- #endif
-+#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-+	REGSET_TM_CGPR,		/* TM checkpointed GPR registers */
-+#endif
- };
- 
- static const struct user_regset native_regsets[] = {
-@@ -896,6 +1085,13 @@ static const struct user_regset native_regsets[] = {
- 		.active = evr_active, .get = evr_get, .set = evr_set
- 	},
- #endif
-+#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-+	[REGSET_TM_CGPR] = {
-+		.core_note_type = NT_PPC_TM_CGPR, .n = ELF_NGREG,
-+		.size = sizeof(long), .align = sizeof(long),
-+		.active = tm_cgpr_active, .get = tm_cgpr_get, .set = tm_cgpr_set
-+	},
-+#endif
- };
- 
- static const struct user_regset_view user_ppc_native_view = {
-@@ -1058,6 +1254,24 @@ static int gpr32_set_common(struct task_struct *target,
- 					 (PT_TRAP + 1) * sizeof(reg), -1);
++
++/*
++ * unsigned long store[128]
++ * unsigned long load[128]
++ */
++int compare_vsx_vmx(unsigned long *store, unsigned long *load)
++{
++	int i;
++
++	for (i = 0; i < VSX_MAX; i++) {
++		if (store[1 + 2 * i] != load[1 + 2 * i]) {
++			printf("store[%d]: %lx load[%d] %lx\n", 1 + 2 * i, store[i], 1 + 2 * i, load[i]);
++			return TEST_FAIL;
++		}
++	}
++
++	for (i = 64; i < VEC_MAX; i++) {
++		if (store[i] != load[i]) {
++			printf("store[%d]: %lx load[%d] %lx\n", i, store[i], i, load[i]);
++			return TEST_FAIL;
++		}
++	}
++	return TEST_PASS;
++}
++
++void load_vsx_vmx(unsigned long *load, unsigned long *vsx, unsigned long vmx[][2])
++{
++	int i;
++
++	for (i = 0; i < VSX_MAX; i++)
++		vsx[i] = load[1 + 2 * i];
++
++	for (i = 0; i < VMX_MAX; i++) {
++		vmx[i][0] = load[64 + 2 * i];
++		vmx[i][1] = load[65 + 2 * i];
++	}
++}
+diff --git a/tools/testing/selftests/powerpc/ptrace/ptrace.S b/tools/testing/selftests/powerpc/ptrace/ptrace.S
+index 5e4b30f..cb96408 100644
+--- a/tools/testing/selftests/powerpc/ptrace/ptrace.S
++++ b/tools/testing/selftests/powerpc/ptrace/ptrace.S
+@@ -138,3 +138,266 @@ _GLOBAL(store_fpr)
+ 	stfs 30, 30*4(3)
+ 	stfs 31, 31*4(3)
+ 	blr
++
++/* VMX/VSX registers - unsigned long buf[128] */
++_GLOBAL(loadvsx)
++	lis	4, 0
++	LXVD2X	(0,(4),(3))
++	addi	4, 4, 16
++	LXVD2X	(1,(4),(3))
++	addi	4, 4, 16
++	LXVD2X	(2,(4),(3))
++	addi	4, 4, 16
++	LXVD2X	(3,(4),(3))
++	addi	4, 4, 16
++	LXVD2X	(4,(4),(3))
++	addi	4, 4, 16
++	LXVD2X	(5,(4),(3))
++	addi	4, 4, 16
++	LXVD2X	(6,(4),(3))
++	addi	4, 4, 16
++	LXVD2X	(7,(4),(3))
++	addi	4, 4, 16
++	LXVD2X	(8,(4),(3))
++	addi	4, 4, 16
++	LXVD2X	(9,(4),(3))
++	addi	4, 4, 16
++	LXVD2X	(10,(4),(3))
++	addi	4, 4, 16
++	LXVD2X	(11,(4),(3))
++	addi	4, 4, 16
++	LXVD2X	(12,(4),(3))
++	addi	4, 4, 16
++	LXVD2X	(13,(4),(3))
++	addi	4, 4, 16
++	LXVD2X	(14,(4),(3))
++	addi	4, 4, 16
++	LXVD2X	(15,(4),(3))
++	addi	4, 4, 16
++	LXVD2X	(16,(4),(3))
++	addi	4, 4, 16
++	LXVD2X	(17,(4),(3))
++	addi	4, 4, 16
++	LXVD2X	(18,(4),(3))
++	addi	4, 4, 16
++	LXVD2X	(19,(4),(3))
++	addi	4, 4, 16
++	LXVD2X	(20,(4),(3))
++	addi	4, 4, 16
++	LXVD2X	(21,(4),(3))
++	addi	4, 4, 16
++	LXVD2X	(22,(4),(3))
++	addi	4, 4, 16
++	LXVD2X	(23,(4),(3))
++	addi	4, 4, 16
++	LXVD2X	(24,(4),(3))
++	addi	4, 4, 16
++	LXVD2X	(25,(4),(3))
++	addi	4, 4, 16
++	LXVD2X	(26,(4),(3))
++	addi	4, 4, 16
++	LXVD2X	(27,(4),(3))
++	addi	4, 4, 16
++	LXVD2X	(28,(4),(3))
++	addi	4, 4, 16
++	LXVD2X	(29,(4),(3))
++	addi	4, 4, 16
++	LXVD2X	(30,(4),(3))
++	addi	4, 4, 16
++	LXVD2X	(31,(4),(3))
++	addi	4, 4, 16
++	LXVD2X	(32,(4),(3))
++	addi	4, 4, 16
++	LXVD2X	(33,(4),(3))
++	addi	4, 4, 16
++	LXVD2X	(34,(4),(3))
++	addi	4, 4, 16
++	LXVD2X	(35,(4),(3))
++	addi	4, 4, 16
++	LXVD2X	(36,(4),(3))
++	addi	4, 4, 16
++	LXVD2X	(37,(4),(3))
++	addi	4, 4, 16
++	LXVD2X	(38,(4),(3))
++	addi	4, 4, 16
++	LXVD2X	(39,(4),(3))
++	addi	4, 4, 16
++	LXVD2X	(40,(4),(3))
++	addi	4, 4, 16
++	LXVD2X	(41,(4),(3))
++	addi	4, 4, 16
++	LXVD2X	(42,(4),(3))
++	addi	4, 4, 16
++	LXVD2X	(43,(4),(3))
++	addi	4, 4, 16
++	LXVD2X	(44,(4),(3))
++	addi	4, 4, 16
++	LXVD2X	(45,(4),(3))
++	addi	4, 4, 16
++	LXVD2X	(46,(4),(3))
++	addi	4, 4, 16
++	LXVD2X	(47,(4),(3))
++	addi	4, 4, 16
++	LXVD2X	(48,(4),(3))
++	addi	4, 4, 16
++	LXVD2X	(49,(4),(3))
++	addi	4, 4, 16
++	LXVD2X	(50,(4),(3))
++	addi	4, 4, 16
++	LXVD2X	(51,(4),(3))
++	addi	4, 4, 16
++	LXVD2X	(52,(4),(3))
++	addi	4, 4, 16
++	LXVD2X	(53,(4),(3))
++	addi	4, 4, 16
++	LXVD2X	(54,(4),(3))
++	addi	4, 4, 16
++	LXVD2X	(55,(4),(3))
++	addi	4, 4, 16
++	LXVD2X	(56,(4),(3))
++	addi	4, 4, 16
++	LXVD2X	(57,(4),(3))
++	addi	4, 4, 16
++	LXVD2X	(58,(4),(3))
++	addi	4, 4, 16
++	LXVD2X	(59,(4),(3))
++	addi	4, 4, 16
++	LXVD2X	(60,(4),(3))
++	addi	4, 4, 16
++	LXVD2X	(61,(4),(3))
++	addi	4, 4, 16
++	LXVD2X	(62,(4),(3))
++	addi	4, 4, 16
++	LXVD2X	(63,(4),(3))
++	blr
++
++_GLOBAL(storevsx)
++	lis	4, 0
++	STXVD2X	(0,(4),(3))
++	addi	4, 4, 16
++	STXVD2X	(1,(4),(3))
++	addi	4, 4, 16
++	STXVD2X	(2,(4),(3))
++	addi	4, 4, 16
++	STXVD2X	(3,(4),(3))
++	addi	4, 4, 16
++	STXVD2X	(4,(4),(3))
++	addi	4, 4, 16
++	STXVD2X	(5,(4),(3))
++	addi	4, 4, 16
++	STXVD2X	(6,(4),(3))
++	addi	4, 4, 16
++	STXVD2X	(7,(4),(3))
++	addi	4, 4, 16
++	STXVD2X	(8,(4),(3))
++	addi	4, 4, 16
++	STXVD2X	(9,(4),(3))
++	addi	4, 4, 16
++	STXVD2X	(10,(4),(3))
++	addi	4, 4, 16
++	STXVD2X	(11,(4),(3))
++	addi	4, 4, 16
++	STXVD2X	(12,(4),(3))
++	addi	4, 4, 16
++	STXVD2X	(13,(4),(3))
++	addi	4, 4, 16
++	STXVD2X	(14,(4),(3))
++	addi	4, 4, 16
++	STXVD2X	(15,(4),(3))
++	addi	4, 4, 16
++	STXVD2X	(16,(4),(3))
++	addi	4, 4, 16
++	STXVD2X	(17,(4),(3))
++	addi	4, 4, 16
++	STXVD2X	(18,(4),(3))
++	addi	4, 4, 16
++	STXVD2X	(19,(4),(3))
++	addi	4, 4, 16
++	STXVD2X	(20,(4),(3))
++	addi	4, 4, 16
++	STXVD2X	(21,(4),(3))
++	addi	4, 4, 16
++	STXVD2X	(22,(4),(3))
++	addi	4, 4, 16
++	STXVD2X	(23,(4),(3))
++	addi	4, 4, 16
++	STXVD2X	(24,(4),(3))
++	addi	4, 4, 16
++	STXVD2X	(25,(4),(3))
++	addi	4, 4, 16
++	STXVD2X	(26,(4),(3))
++	addi	4, 4, 16
++	STXVD2X	(27,(4),(3))
++	addi	4, 4, 16
++	STXVD2X	(28,(4),(3))
++	addi	4, 4, 16
++	STXVD2X	(29,(4),(3))
++	addi	4, 4, 16
++	STXVD2X	(30,(4),(3))
++	addi	4, 4, 16
++	STXVD2X	(31,(4),(3))
++	addi	4, 4, 16
++	STXVD2X	(32,(4),(3))
++	addi	4, 4, 16
++	STXVD2X	(33,(4),(3))
++	addi	4, 4, 16
++	STXVD2X	(34,(4),(3))
++	addi	4, 4, 16
++	STXVD2X	(35,(4),(3))
++	addi	4, 4, 16
++	STXVD2X	(36,(4),(3))
++	addi	4, 4, 16
++	STXVD2X	(37,(4),(3))
++	addi	4, 4, 16
++	STXVD2X	(38,(4),(3))
++	addi	4, 4, 16
++	STXVD2X	(39,(4),(3))
++	addi	4, 4, 16
++	STXVD2X	(40,(4),(3))
++	addi	4, 4, 16
++	STXVD2X	(41,(4),(3))
++	addi	4, 4, 16
++	STXVD2X	(42,(4),(3))
++	addi	4, 4, 16
++	STXVD2X	(43,(4),(3))
++	addi	4, 4, 16
++	STXVD2X	(44,(4),(3))
++	addi	4, 4, 16
++	STXVD2X	(45,(4),(3))
++	addi	4, 4, 16
++	STXVD2X	(46,(4),(3))
++	addi	4, 4, 16
++	STXVD2X	(47,(4),(3))
++	addi	4, 4, 16
++	STXVD2X	(48,(4),(3))
++	addi	4, 4, 16
++	STXVD2X	(49,(4),(3))
++	addi	4, 4, 16
++	STXVD2X	(50,(4),(3))
++	addi	4, 4, 16
++	STXVD2X	(51,(4),(3))
++	addi	4, 4, 16
++	STXVD2X	(52,(4),(3))
++	addi	4, 4, 16
++	STXVD2X	(53,(4),(3))
++	addi	4, 4, 16
++	STXVD2X	(54,(4),(3))
++	addi	4, 4, 16
++	STXVD2X	(55,(4),(3))
++	addi	4, 4, 16
++	STXVD2X	(56,(4),(3))
++	addi	4, 4, 16
++	STXVD2X	(57,(4),(3))
++	addi	4, 4, 16
++	STXVD2X	(58,(4),(3))
++	addi	4, 4, 16
++	STXVD2X	(59,(4),(3))
++	addi	4, 4, 16
++	STXVD2X	(60,(4),(3))
++	addi	4, 4, 16
++	STXVD2X	(61,(4),(3))
++	addi	4, 4, 16
++	STXVD2X	(62,(4),(3))
++	addi	4, 4, 16
++	STXVD2X	(63,(4),(3))
++	blr
+diff --git a/tools/testing/selftests/powerpc/ptrace/ptrace.h b/tools/testing/selftests/powerpc/ptrace/ptrace.h
+index 92e20c7..86fef91 100644
+--- a/tools/testing/selftests/powerpc/ptrace/ptrace.h
++++ b/tools/testing/selftests/powerpc/ptrace/ptrace.h
+@@ -543,6 +543,125 @@ int write_ckpt_gpr(pid_t child, unsigned long val)
+ 	return TEST_PASS;
  }
  
-+#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-+static int tm_cgpr32_get(struct task_struct *target,
-+		     const struct user_regset *regset,
-+		     unsigned int pos, unsigned int count,
-+		     void *kbuf, void __user *ubuf)
++/* VMX */
++int show_vmx(pid_t child, unsigned long vmx[][2])
 +{
-+	return gpr32_get_common(target, regset, pos, count, kbuf, ubuf, 1);
++	int ret;
++
++	ret = ptrace(PTRACE_GETVRREGS, child, 0, vmx);
++	if (ret) {
++		perror("ptrace(PTRACE_GETVRREGS) failed");
++		return TEST_FAIL;
++	}
++	return TEST_PASS;
 +}
 +
-+static int tm_cgpr32_set(struct task_struct *target,
-+		     const struct user_regset *regset,
-+		     unsigned int pos, unsigned int count,
-+		     const void *kbuf, const void __user *ubuf)
++int show_vmx_ckpt(pid_t child, unsigned long vmx[][2])
 +{
-+	return gpr32_set_common(target, regset, pos, count, kbuf, ubuf, 1);
-+}
-+#endif /* CONFIG_PPC_TRANSACTIONAL_MEM */
++	unsigned long regs[34][2];
++	struct iovec iov;
++	int ret;
 +
- static int gpr32_get(struct task_struct *target,
- 		     const struct user_regset *regset,
- 		     unsigned int pos, unsigned int count,
-@@ -1102,6 +1316,14 @@ static const struct user_regset compat_regsets[] = {
- 		.active = evr_active, .get = evr_get, .set = evr_set
- 	},
- #endif
-+#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
-+	[REGSET_TM_CGPR] = {
-+		.core_note_type = NT_PPC_TM_CGPR, .n = ELF_NGREG,
-+		.size = sizeof(long), .align = sizeof(long),
-+		.active = tm_cgpr_active,
-+		.get = tm_cgpr32_get, .set = tm_cgpr32_set
-+	},
-+#endif
- };
- 
- static const struct user_regset_view user_ppc_compat_view = {
++	iov.iov_base = (u64 *) regs;
++	iov.iov_len = sizeof(regs);
++	ret = ptrace(PTRACE_GETREGSET, child, NT_PPC_TM_CVMX, &iov);
++	if (ret) {
++		perror("ptrace(PTRACE_GETREGSET, NT_PPC_TM_CVMX) failed");
++		return TEST_FAIL;
++	}
++	memcpy(vmx, regs, sizeof(regs));
++	return TEST_PASS;
++}
++
++
++int write_vmx(pid_t child, unsigned long vmx[][2])
++{
++	int ret;
++
++	ret = ptrace(PTRACE_SETVRREGS, child, 0, vmx);
++	if (ret) {
++		perror("ptrace(PTRACE_SETVRREGS) failed");
++		return TEST_FAIL;
++	}
++	return TEST_PASS;
++}
++
++int write_vmx_ckpt(pid_t child, unsigned long vmx[][2])
++{
++	unsigned long regs[34][2];
++	struct iovec iov;
++	int ret;
++
++	memcpy(regs, vmx, sizeof(regs));
++	iov.iov_base = (u64 *) regs;
++	iov.iov_len = sizeof(regs);
++	ret = ptrace(PTRACE_SETREGSET, child, NT_PPC_TM_CVMX, &iov);
++	if (ret) {
++		perror("ptrace(PTRACE_SETREGSET, NT_PPC_TM_CVMX) failed");
++		return TEST_FAIL;
++	}
++	return TEST_PASS;
++}
++
++/* VSX */
++int show_vsx(pid_t child, unsigned long *vsx)
++{
++	int ret;
++
++	ret = ptrace(PTRACE_GETVSRREGS, child, 0, vsx);
++	if (ret) {
++		perror("ptrace(PTRACE_GETVSRREGS) failed");
++		return TEST_FAIL;
++	}
++	return TEST_PASS;
++}
++
++int show_vsx_ckpt(pid_t child, unsigned long *vsx)
++{
++	unsigned long regs[32];
++	struct iovec iov;
++	int ret;
++
++	iov.iov_base = (u64 *) regs;
++	iov.iov_len = sizeof(regs);
++	ret = ptrace(PTRACE_GETREGSET, child, NT_PPC_TM_CVSX, &iov);
++	if (ret) {
++		perror("ptrace(PTRACE_GETREGSET, NT_PPC_TM_CVSX) failed");
++		return TEST_FAIL;
++	}
++	memcpy(vsx, regs, sizeof(regs));
++	return TEST_PASS;
++}
++
++int write_vsx(pid_t child, unsigned long *vsx)
++{
++	int ret;
++
++	ret = ptrace(PTRACE_SETVSRREGS, child, 0, vsx);
++	if (ret) {
++		perror("ptrace(PTRACE_SETVSRREGS) failed");
++		return TEST_FAIL;
++	}
++	return TEST_PASS;
++}
++
++int write_vsx_ckpt(pid_t child, unsigned long *vsx)
++{
++	unsigned long regs[32];
++	struct iovec iov;
++	int ret;
++
++	memcpy(regs, vsx, sizeof(regs));
++	iov.iov_base = (u64 *) regs;
++	iov.iov_len = sizeof(regs);
++	ret = ptrace(PTRACE_SETREGSET, child, NT_PPC_TM_CVSX, &iov);
++	if (ret) {
++		perror("ptrace(PTRACE_SETREGSET, NT_PPC_TM_CVSX) failed");
++		return TEST_FAIL;
++	}
++	return TEST_PASS;
++}
++
+ /* Analyse TEXASR after TM failure */
+ inline unsigned long get_tfiar(void)
+ {
 -- 
 2.1.0
