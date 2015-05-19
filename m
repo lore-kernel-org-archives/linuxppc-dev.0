@@ -1,36 +1,36 @@
 Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7B6B51A0671
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7C3F11A0688
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 May 2015 01:08:46 +1000 (AEST)
-Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
+Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id A8179140D58
+ by ozlabs.org (Postfix) with ESMTPS id AC49A140DD8
  for <linuxppc-dev@ozlabs.org>; Wed, 20 May 2015 01:08:45 +1000 (AEST)
 Received: from /spool/local
- by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
  Tue, 19 May 2015 20:38:43 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 385083940048
- for <linuxppc-dev@ozlabs.org>; Tue, 19 May 2015 20:38:42 +0530 (IST)
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 948C0125804B
+ for <linuxppc-dev@ozlabs.org>; Tue, 19 May 2015 20:40:56 +0530 (IST)
 Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
- by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t4JF8cQg53805268
- for <linuxppc-dev@ozlabs.org>; Tue, 19 May 2015 20:38:39 +0530
+ by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t4JF8aZS49152012
+ for <linuxppc-dev@ozlabs.org>; Tue, 19 May 2015 20:38:36 +0530
 Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
  by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t4JF8Yp4028984
- for <linuxppc-dev@ozlabs.org>; Tue, 19 May 2015 20:38:36 +0530
+ t4JF8Wvw028598
+ for <linuxppc-dev@ozlabs.org>; Tue, 19 May 2015 20:38:35 +0530
 From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: [PATCH V8 27/28] selftests,
- powerpc: Add ptrace tests for TM SPR registers
-Date: Tue, 19 May 2015 20:38:23 +0530
-Message-Id: <1432048104-4695-28-git-send-email-khandual@linux.vnet.ibm.com>
+Subject: [PATCH V8 18/28] selftests,
+ powerpc: Add ptrace tests for GPR/FPR registers
+Date: Tue, 19 May 2015 20:38:14 +0530
+Message-Id: <1432048104-4695-19-git-send-email-khandual@linux.vnet.ibm.com>
 In-Reply-To: <1432048104-4695-1-git-send-email-khandual@linux.vnet.ibm.com>
 References: <1432048104-4695-1-git-send-email-khandual@linux.vnet.ibm.com>
 Cc: shuahkh@osg.samsung.com, mikey@neuling.org, james.hogan@imgtec.com,
@@ -49,38 +49,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch adds ptrace interface test for TM SPR registers. This
-also adds ptrace interface based helper functions related to TM
-SPR registers access.
+This patch adds ptrace interface test for GPR/FPR registers.
+This adds ptrace interface based helper functions related to
+GPR/FPR access and some assembly helper functions related to
+GPR/FPR registers.
 
 Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 ---
- tools/testing/selftests/powerpc/ptrace/Makefile    |   2 +-
- .../selftests/powerpc/ptrace/ptrace-tm-spr.c       | 156 +++++++++++++++++++++
- tools/testing/selftests/powerpc/ptrace/ptrace.h    |  35 +++++
- 3 files changed, 192 insertions(+), 1 deletion(-)
- create mode 100644 tools/testing/selftests/powerpc/ptrace/ptrace-tm-spr.c
+ tools/testing/selftests/powerpc/ptrace/Makefile    |   5 +-
+ .../testing/selftests/powerpc/ptrace/ptrace-gpr.c  | 191 +++++++++++++++++++
+ .../testing/selftests/powerpc/ptrace/ptrace-gpr.h  |  73 ++++++++
+ tools/testing/selftests/powerpc/ptrace/ptrace.S    | 140 ++++++++++++++
+ tools/testing/selftests/powerpc/ptrace/ptrace.h    | 208 +++++++++++++++++++++
+ 5 files changed, 615 insertions(+), 2 deletions(-)
+ create mode 100644 tools/testing/selftests/powerpc/ptrace/ptrace-gpr.c
+ create mode 100644 tools/testing/selftests/powerpc/ptrace/ptrace-gpr.h
+ create mode 100644 tools/testing/selftests/powerpc/ptrace/ptrace.S
 
 diff --git a/tools/testing/selftests/powerpc/ptrace/Makefile b/tools/testing/selftests/powerpc/ptrace/Makefile
-index ea57351..a46a0e5 100644
+index 59386ba..dfeb36e 100644
 --- a/tools/testing/selftests/powerpc/ptrace/Makefile
 +++ b/tools/testing/selftests/powerpc/ptrace/Makefile
-@@ -1,6 +1,6 @@
- TEST_PROGS := ptrace-ebb ptrace-gpr ptrace-tm-gpr ptrace-tm-spd-gpr \
- ptrace-tar ptrace-tm-tar ptrace-tm-spd-tar ptrace-vsx ptrace-tm-vsx \
--ptrace-tm-spd-vsx
-+ptrace-tm-spd-vsx ptrace-tm-spr
- 
- 
+@@ -1,7 +1,8 @@
+-TEST_PROGS := ptrace-ebb
++TEST_PROGS := ptrace-ebb ptrace-gpr
++
  all: $(TEST_PROGS)
-diff --git a/tools/testing/selftests/powerpc/ptrace/ptrace-tm-spr.c b/tools/testing/selftests/powerpc/ptrace/ptrace-tm-spr.c
+ 
+-$(TEST_PROGS): ../harness.c
++$(TEST_PROGS): ../harness.c ptrace.S
+ ptrace-ebb: ../pmu/event.c ../pmu/lib.c ../pmu/ebb/ebb_handler.S ../pmu/ebb/busy_loop.S
+ clean:
+ 	rm -f $(TEST_PROGS) *.o
+diff --git a/tools/testing/selftests/powerpc/ptrace/ptrace-gpr.c b/tools/testing/selftests/powerpc/ptrace/ptrace-gpr.c
 new file mode 100644
-index 0000000..36b9722
+index 0000000..1ee644f
 --- /dev/null
-+++ b/tools/testing/selftests/powerpc/ptrace/ptrace-tm-spr.c
-@@ -0,0 +1,156 @@
++++ b/tools/testing/selftests/powerpc/ptrace/ptrace-gpr.c
+@@ -0,0 +1,191 @@
 +/*
-+ * Ptrace test TM SPR registers
++ * Ptrace test for GPR/FPR registers
 + *
 + * Copyright 2015 Anshuman Khandual, IBM Corporation.
 + *
@@ -90,86 +98,104 @@ index 0000000..36b9722
 + * 2 of the License, or (at your option) any later version.
 + */
 +#include "ptrace.h"
++#include "ptrace-gpr.h"
 +
-+/* Tracee and tracer shared data */
-+struct shared {
-+	int flag;
-+	struct tm_spr_regs regs;
-+};
-+unsigned long tfhar;
-+
++/* Tracer and Tracee Shared Data */
 +int shm_id;
-+volatile struct shared *cptr, *pptr;
++volatile int *cptr, *pptr;
 +
-+#define TM_SCHED	0xde0000018c000001
-+#define TM_KVM_SCHED	0xe0000001ac000001
++extern void store_gpr(unsigned long *addr);
++extern void store_fpr(float *addr);
 +
-+int validate_tm_spr(struct tm_spr_regs *regs)
++float a = FPR_1;
++float b = FPR_2;
++float c = FPR_3;
++
++void gpr(void)
 +{
-+	if (regs->tm_tfhar != (tfhar - 32))
-+		return TEST_FAIL;
++	unsigned long gpr_buf[18];
++	float fpr_buf[32];
 +
-+	if ((regs->tm_texasr != TM_SCHED) && (regs->tm_texasr != TM_KVM_SCHED))
-+		return TEST_FAIL;
++	cptr = (int *)shmat(shm_id, NULL, 0);
 +
-+	if ((regs->tm_texasr == TM_KVM_SCHED) && (regs->tm_tfiar != 0))
-+		return TEST_FAIL;
-+
-+	return TEST_PASS;
-+}
-+
-+void tm_spr(void)
-+{
-+	unsigned long result, texasr;
-+	int ret;
-+
-+	cptr = (struct shared *)shmat(shm_id, NULL, 0);
-+trans:
 +	asm __volatile__(
-+		"1: ;"
-+		TBEGIN
-+		"beq 2f;"
++		"li 14, %[gpr_1];"
++		"li 15, %[gpr_1];"
++		"li 16, %[gpr_1];"
++		"li 17, %[gpr_1];"
++		"li 18, %[gpr_1];"
++		"li 19, %[gpr_1];"
++		"li 20, %[gpr_1];"
++		"li 21, %[gpr_1];"
++		"li 22, %[gpr_1];"
++		"li 23, %[gpr_1];"
++		"li 24, %[gpr_1];"
++		"li 25, %[gpr_1];"
++		"li 26, %[gpr_1];"
++		"li 27, %[gpr_1];"
++		"li 28, %[gpr_1];"
++		"li 29, %[gpr_1];"
++		"li 30, %[gpr_1];"
++		"li 31, %[gpr_1];"
 +
-+		"b .;"
++		"lfs 0, 0(%[flt_1]);"
++		"lfs 1, 0(%[flt_1]);"
++		"lfs 2, 0(%[flt_1]);"
++		"lfs 3, 0(%[flt_1]);"
++		"lfs 4, 0(%[flt_1]);"
++		"lfs 5, 0(%[flt_1]);"
++		"lfs 6, 0(%[flt_1]);"
++		"lfs 7, 0(%[flt_1]);"
++		"lfs 8, 0(%[flt_1]);"
++		"lfs 9, 0(%[flt_1]);"
++		"lfs 10, 0(%[flt_1]);"
++		"lfs 11, 0(%[flt_1]);"
++		"lfs 12, 0(%[flt_1]);"
++		"lfs 13, 0(%[flt_1]);"
++		"lfs 14, 0(%[flt_1]);"
++		"lfs 15, 0(%[flt_1]);"
++		"lfs 16, 0(%[flt_1]);"
++		"lfs 17, 0(%[flt_1]);"
++		"lfs 18, 0(%[flt_1]);"
++		"lfs 19, 0(%[flt_1]);"
++		"lfs 20, 0(%[flt_1]);"
++		"lfs 21, 0(%[flt_1]);"
++		"lfs 22, 0(%[flt_1]);"
++		"lfs 23, 0(%[flt_1]);"
++		"lfs 24, 0(%[flt_1]);"
++		"lfs 25, 0(%[flt_1]);"
++		"lfs 26, 0(%[flt_1]);"
++		"lfs 27, 0(%[flt_1]);"
++		"lfs 28, 0(%[flt_1]);"
++		"lfs 29, 0(%[flt_1]);"
++		"lfs 30, 0(%[flt_1]);"
++		"lfs 31, 0(%[flt_1]);"
 +
-+		TEND
-+		"li 0, 0;"
-+		"ori %[res], 0, 0;"
-+		"b 3f;"
-+
-+		"2: ;"
-+		"mflr 31;"
-+		"bl 4f;"	/* $ = TFHAR + 2 */
-+		"4: ;"
-+		"mflr %[tfhar];"
-+		"mtlr 31;"
-+
-+		"li 0, 1;"
-+		"ori %[res], 0, 0;"
-+		"mfspr %[texasr], %[sprn_texasr];"
-+
-+		"3: ;"
-+		: [tfhar] "=r" (tfhar), [res] "=r" (result), [texasr] "=r" (texasr)
-+		: [sprn_texasr] "i"  (SPRN_TEXASR)
-+		: "memory", "r0", "r1", "r2", "r3", "r4", "r8", "r9", "r10", "r11"
++		:
++		:[gpr_1]"i"(GPR_1), [flt_1] "r" (&a)
++		: "memory", "r6", "r7", "r8", "r9", "r10",
++		"r11", "r12", "r13", "r14", "r15", "r16", "r17", "r18", "r19", "r20",
++		"r21", "r22", "r23", "r24", "r25", "r26", "r27", "r28", "r29", "r30", "r31"
 +		);
 +
-+	if (result) {
-+		if (!cptr->flag)
-+			goto trans;
++	while(!cptr[0]);
 +
-+		ret = validate_tm_spr((struct tm_spr_regs *)&cptr->regs);
-+		shmdt((void *)cptr);
-+		if (ret)
-+			exit(1);
-+		exit(0);
-+	}
-+	shmdt((void *)cptr);
-+	exit(1);
++	store_gpr(gpr_buf);
++	store_fpr(fpr_buf);
++
++	if (validate_gpr(gpr_buf, GPR_3))
++		exit(1);
++
++	if (validate_fpr_float(fpr_buf, c))
++		exit(1);
++
++	exit(0);
 +}
 +
-+int trace_tm_spr(pid_t child)
++int trace_gpr(pid_t child)
 +{
++	unsigned long gpr[18];
++	unsigned long fpr[32];
 +	int ret;
 +
 +	sleep(1);
@@ -177,12 +203,29 @@ index 0000000..36b9722
 +	if (ret)
 +		return TEST_FAIL;
 +
-+	ret = show_tm_spr(child, (struct tm_spr_regs *)&pptr->regs);
++	ret = show_gpr(child, gpr);
 +	if (ret)
 +		return TEST_FAIL;
 +
-+	printf("TFHAR: %lx TEXASR: %lx TFIAR: %lx\n", pptr->regs.tm_tfhar,
-+				pptr->regs.tm_texasr, pptr->regs.tm_tfiar);
++	ret = validate_gpr(gpr, GPR_1);
++	if (ret)
++		return TEST_FAIL;
++
++	ret = show_fpr(child, fpr);
++	if (ret)
++		return TEST_FAIL;
++
++	ret = validate_fpr(fpr, FPR_1_REP);
++	if (ret)
++		return TEST_FAIL;
++
++	ret = write_gpr(child, GPR_3);
++	if (ret)
++		return TEST_FAIL;
++
++	ret = write_fpr(child, FPR_3_REP);
++	if (ret)
++		return TEST_FAIL;
 +
 +	ret = stop_trace(child);
 +	if (ret)
@@ -191,31 +234,31 @@ index 0000000..36b9722
 +	return TEST_PASS;
 +}
 +
-+int ptrace_tm_spr(void)
++int ptrace_gpr(void)
 +{
 +	pid_t pid;
 +	int ret, status;
 +
-+	shm_id = shmget(IPC_PRIVATE, sizeof(struct shared), 0777|IPC_CREAT);
++	shm_id = shmget(IPC_PRIVATE, sizeof(int) * 1, 0777|IPC_CREAT);
 +	pid = fork();
 +	if (pid < 0) {
 +		perror("fork() failed");
 +		return TEST_FAIL;
 +	}
-+
 +	if (pid == 0)
-+		tm_spr();
++		gpr();
 +
 +	if (pid) {
-+		pptr = (struct shared *)shmat(shm_id, NULL, 0);
-+		ret = trace_tm_spr(pid);
++		pptr = (int *)shmat(shm_id, NULL, 0);
++		ret = trace_gpr(pid);
 +		if (ret) {
-+			kill(pid, SIGKILL);
++			kill(pid, SIGTERM);
 +			return TEST_FAIL;
 +		}
 +
-+		pptr->flag = 1;
++		pptr[0] = 1;
 +		shmdt((void *)pptr);
++
 +		ret = wait(&status);
 +		if (ret != pid) {
 +			printf("Child's exit status not captured\n");
@@ -233,57 +276,448 @@ index 0000000..36b9722
 +
 +int main(int argc, char *argv[])
 +{
-+	return test_harness(ptrace_tm_spr, "ptrace_tm_spr");
++	return test_harness(ptrace_gpr, "ptrace_gpr");
 +}
+diff --git a/tools/testing/selftests/powerpc/ptrace/ptrace-gpr.h b/tools/testing/selftests/powerpc/ptrace/ptrace-gpr.h
+new file mode 100644
+index 0000000..3ec4ea6
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/ptrace/ptrace-gpr.h
+@@ -0,0 +1,73 @@
++/*
++ * Copyright 2015 Anshuman Khandual, IBM Corporation.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ */
++#define GPR_1	1
++#define GPR_2	2
++#define GPR_3	3
++#define GPR_4	4
++
++#define FPR_1	0.001
++#define FPR_2	0.002
++#define FPR_3	0.003
++#define FPR_4	0.004
++
++#define FPR_1_REP 0x3f50624de0000000
++#define FPR_2_REP 0x3f60624de0000000
++#define FPR_3_REP 0x3f689374c0000000
++#define FPR_4_REP 0x3f70624de0000000
++
++/* Buffer must have 18 elements */
++int validate_gpr(unsigned long *gpr, unsigned long val)
++{
++	int i, found = 1;
++
++	for (i = 0; i < 18; i++) {
++		if (gpr[i] != val) {
++			printf("GPR[%d]: %lx Expected: %lx\n", i+14, gpr[i], val);
++			found = 0;
++		}
++	}
++
++	if (!found)
++		return TEST_FAIL;
++	return TEST_PASS;
++}
++
++/* Buffer must have 32 elements */
++int validate_fpr(unsigned long *fpr, unsigned long val)
++{
++	int i, found = 1;
++
++	for (i = 0; i < 32; i++) {
++		if (fpr[i] != val) {
++			printf("FPR[%d]: %lx Expected: %lx\n", i, fpr[i], val);
++			found = 0;
++		}
++	}
++
++	if (!found)
++		return TEST_FAIL;
++	return TEST_PASS;
++}
++
++/* Buffer must have 32 elements */
++int validate_fpr_float(float *fpr, float val)
++{
++	int i, found = 1;
++
++	for (i = 0; i < 32; i++) {
++		if (fpr[i] != val) {
++			printf("FPR[%d]: %f Expected: %f\n", i, fpr[i], val);
++			found = 0;
++		}
++	}
++
++	if (!found)
++		return TEST_FAIL;
++	return TEST_PASS;
++}
+diff --git a/tools/testing/selftests/powerpc/ptrace/ptrace.S b/tools/testing/selftests/powerpc/ptrace/ptrace.S
+new file mode 100644
+index 0000000..5e4b30f
+--- /dev/null
++++ b/tools/testing/selftests/powerpc/ptrace/ptrace.S
+@@ -0,0 +1,140 @@
++/*
++ * Ptrace interface test helper assembly functions
++ *
++ * Copyright 2015 Anshuman Khandual, IBM Corporation.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ */
++#include "../reg.h"
++
++#define GLUE(a,b) a##b
++#define _GLOBAL(name) \
++	.section ".text"; \
++	.align 2 ; \
++	.globl name; \
++	.globl GLUE(.,name); \
++	.section ".opd","aw"; \
++name: \
++	.quad GLUE(.,name); \
++	.quad .TOC.@tocbase; \
++	.quad 0; \
++	.previous; \
++	.type GLUE(.,name),@function; \
++GLUE(.,name):
++
++/* Non volatile GPR - unsigned long buf[18] */
++_GLOBAL(load_gpr)
++	ld	14, 0*8(3)
++	ld	15, 1*8(3)
++	ld	16, 2*8(3)
++	ld	17, 3*8(3)
++	ld	18, 4*8(3)
++	ld	19, 5*8(3)
++	ld	20, 6*8(3)
++	ld	21, 7*8(3)
++	ld	22, 8*8(3)
++	ld	23, 9*8(3)
++	ld	24, 10*8(3)
++	ld	25, 11*8(3)
++	ld	26, 12*8(3)
++	ld	27, 13*8(3)
++	ld	28, 14*8(3)
++	ld	29, 15*8(3)
++	ld	30, 16*8(3)
++	ld	31, 17*8(3)
++	blr
++
++_GLOBAL(store_gpr)
++	std	14, 0*8(3)
++	std	15, 1*8(3)
++	std	16, 2*8(3)
++	std	17, 3*8(3)
++	std	18, 4*8(3)
++	std	19, 5*8(3)
++	std	20, 6*8(3)
++	std	21, 7*8(3)
++	std	22, 8*8(3)
++	std	23, 9*8(3)
++	std	24, 10*8(3)
++	std	25, 11*8(3)
++	std	26, 12*8(3)
++	std	27, 13*8(3)
++	std	28, 14*8(3)
++	std	29, 15*8(3)
++	std	30, 16*8(3)
++	std	31, 17*8(3)
++	blr
++
++/* Single Precision Float - float buf[32] */
++_GLOBAL(load_fpr)
++	lfs 0, 0*4(3)
++	lfs 1, 1*4(3)
++	lfs 2, 2*4(3)
++	lfs 3, 3*4(3)
++	lfs 4, 4*4(3)
++	lfs 5, 5*4(3)
++	lfs 6, 6*4(3)
++	lfs 7, 7*4(3)
++	lfs 8, 8*4(3)
++	lfs 9, 9*4(3)
++	lfs 10, 10*4(3)
++	lfs 11, 11*4(3)
++	lfs 12, 12*4(3)
++	lfs 13, 13*4(3)
++	lfs 14, 14*4(3)
++	lfs 15, 15*4(3)
++	lfs 16, 16*4(3)
++	lfs 17, 17*4(3)
++	lfs 18, 18*4(3)
++	lfs 19, 19*4(3)
++	lfs 20, 20*4(3)
++	lfs 21, 21*4(3)
++	lfs 22, 22*4(3)
++	lfs 23, 23*4(3)
++	lfs 24, 24*4(3)
++	lfs 25, 25*4(3)
++	lfs 26, 26*4(3)
++	lfs 27, 27*4(3)
++	lfs 28, 28*4(3)
++	lfs 29, 29*4(3)
++	lfs 30, 30*4(3)
++	lfs 31, 31*4(3)
++	blr
++
++_GLOBAL(store_fpr)
++	stfs 0, 0*4(3)
++	stfs 1, 1*4(3)
++	stfs 2, 2*4(3)
++	stfs 3, 3*4(3)
++	stfs 4, 4*4(3)
++	stfs 5, 5*4(3)
++	stfs 6, 6*4(3)
++	stfs 7, 7*4(3)
++	stfs 8, 8*4(3)
++	stfs 9, 9*4(3)
++	stfs 10, 10*4(3)
++	stfs 11, 11*4(3)
++	stfs 12, 12*4(3)
++	stfs 13, 13*4(3)
++	stfs 14, 14*4(3)
++	stfs 15, 15*4(3)
++	stfs 16, 16*4(3)
++	stfs 17, 17*4(3)
++	stfs 18, 18*4(3)
++	stfs 19, 19*4(3)
++	stfs 20, 20*4(3)
++	stfs 21, 21*4(3)
++	stfs 22, 22*4(3)
++	stfs 23, 23*4(3)
++	stfs 24, 24*4(3)
++	stfs 25, 25*4(3)
++	stfs 26, 26*4(3)
++	stfs 27, 27*4(3)
++	stfs 28, 28*4(3)
++	stfs 29, 29*4(3)
++	stfs 30, 30*4(3)
++	stfs 31, 31*4(3)
++	blr
 diff --git a/tools/testing/selftests/powerpc/ptrace/ptrace.h b/tools/testing/selftests/powerpc/ptrace/ptrace.h
-index 86fef91..812261a 100644
+index 65553a6..0bce81a 100644
 --- a/tools/testing/selftests/powerpc/ptrace/ptrace.h
 +++ b/tools/testing/selftests/powerpc/ptrace/ptrace.h
-@@ -82,6 +82,11 @@ struct fpr_regs {
- 	unsigned long fpscr;
- };
- 
-+struct tm_spr_regs {
-+	unsigned long tm_tfhar;
-+	unsigned long tm_texasr;
-+	unsigned long tm_tfiar;
-+};
- 
- /* Basic ptrace operations */
- int start_trace(pid_t child)
-@@ -662,6 +667,36 @@ int write_vsx_ckpt(pid_t child, unsigned long *vsx)
- 	return TEST_PASS;
+@@ -156,6 +156,214 @@ fail:
+ 	return TEST_FAIL;
  }
  
-+/* TM SPR */
-+int show_tm_spr(pid_t child, struct tm_spr_regs *out)
++/* FPR */
++int show_fpr(pid_t child, unsigned long *fpr)
 +{
-+	struct tm_spr_regs *regs;
-+	struct iovec iov;
-+	int ret;
++	struct fpr_regs *regs;
++	int ret, i;
 +
-+	regs = (struct tm_spr_regs *) malloc(sizeof(struct tm_spr_regs));
++	regs = (struct fpr_regs *) malloc(sizeof(struct fpr_regs));
++	ret = ptrace(PTRACE_GETFPREGS, child, NULL, regs);
++	if (ret) {
++		perror("ptrace(PTRACE_GETREGSET) failed");
++		return TEST_FAIL;
++	}
++
++	if (fpr) {
++		for (i = 0; i < 32; i++)
++			fpr[i] = regs->fpr[i];
++	}
++	return TEST_PASS;
++}
++
++int write_fpr(pid_t child, unsigned long val)
++{
++	struct fpr_regs *regs;
++	int ret, i;
++
++	regs = (struct fpr_regs *) malloc(sizeof(struct fpr_regs));
++	ret = ptrace(PTRACE_GETFPREGS, child, NULL, regs);
++	if (ret) {
++		perror("ptrace(PTRACE_GETREGSET) failed");
++		return TEST_FAIL;
++	}
++
++	for (i = 0; i < 32; i++)
++		regs->fpr[i] = val;
++
++	ret = ptrace(PTRACE_SETFPREGS, child, NULL, regs);
++	if (ret) {
++		perror("ptrace(PTRACE_GETREGSET) failed");
++		return TEST_FAIL;
++	}
++	return TEST_PASS;
++}
++
++int show_ckpt_fpr(pid_t child, unsigned long *fpr)
++{
++	struct fpr_regs *regs;
++	struct iovec iov;
++	int ret, i;
++
++	regs = (struct fpr_regs *) malloc(sizeof(struct fpr_regs));
++	iov.iov_base = regs;
++	iov.iov_len = sizeof(struct fpr_regs);
++
++	ret = ptrace(PTRACE_GETREGSET, child, NT_PPC_TM_CFPR, &iov);
++	if (ret) {
++		perror("ptrace(PTRACE_GETREGSET) failed");
++		return TEST_FAIL;
++	}
++
++	if (fpr) {
++		for (i = 0; i < 32; i++)
++			fpr[i] = regs->fpr[i];
++	}
++
++	return TEST_PASS;
++}
++
++int write_ckpt_fpr(pid_t child, unsigned long val)
++{
++	struct fpr_regs *regs;
++	struct iovec iov;
++	int ret, i;
++
++	regs = (struct fpr_regs *) malloc(sizeof(struct fpr_regs));
++	iov.iov_base = regs;
++	iov.iov_len = sizeof(struct fpr_regs);
++
++	ret = ptrace(PTRACE_GETREGSET, child, NT_PPC_TM_CFPR, &iov);
++	if (ret) {
++		perror("ptrace(PTRACE_GETREGSET) failed");
++		return TEST_FAIL;
++	}
++
++	for (i = 0; i < 32; i++)
++		regs->fpr[i] = val;
++
++	ret = ptrace(PTRACE_SETREGSET, child, NT_PPC_TM_CFPR, &iov);
++	if (ret) {
++		perror("ptrace(PTRACE_GETREGSET) failed");
++		return TEST_FAIL;
++	}
++	return TEST_PASS;
++}
++
++/* GPR */
++int show_gpr(pid_t child, unsigned long *gpr)
++{
++	struct pt_regs *regs;
++	int ret, i;
++
++	regs = (struct pt_regs *) malloc(sizeof(struct pt_regs));
++	if (!regs) {
++		perror("malloc() failed");
++		return TEST_FAIL;
++	}
++
++	ret = ptrace(PTRACE_GETREGS, child, NULL, regs);
++	if (ret) {
++		perror("ptrace(PTRACE_GETREGSET) failed");
++		return TEST_FAIL;
++	}
++
++	if (gpr) {
++		for (i = 14; i < 32; i++)
++			gpr[i-14] = regs->gpr[i];
++	}
++
++	return TEST_PASS;
++}
++
++int write_gpr(pid_t child, unsigned long val)
++{
++	struct pt_regs *regs;
++	int i, ret;
++
++	regs = (struct pt_regs *) malloc(sizeof(struct pt_regs));
++	if (!regs) {
++		perror("malloc() failed");
++		return TEST_FAIL;
++	}
++
++	ret = ptrace(PTRACE_GETREGS, child, NULL, regs);
++	if (ret) {
++		perror("ptrace(PTRACE_GETREGSET) failed");
++		return TEST_FAIL;
++	}
++
++	for (i = 14; i < 32; i++)
++		regs->gpr[i] = val;
++
++	ret = ptrace(PTRACE_SETREGS, child, NULL, regs);
++	if (ret) {
++		perror("ptrace(PTRACE_GETREGSET) failed");
++		return TEST_FAIL;
++	}
++	return TEST_PASS;
++}
++
++int show_ckpt_gpr(pid_t child, unsigned long *gpr)
++{
++	struct pt_regs *regs;
++	struct iovec iov;
++	int ret, i;
++
++	regs = (struct pt_regs *) malloc(sizeof(struct pt_regs));
 +	if (!regs) {
 +		perror("malloc() failed");
 +		return TEST_FAIL;
 +	}
 +
 +	iov.iov_base = (u64 *) regs;
-+	iov.iov_len = sizeof(struct tm_spr_regs);
++	iov.iov_len = sizeof(struct pt_regs);
 +
-+	ret = ptrace(PTRACE_GETREGSET, child, NT_PPC_TM_SPR, &iov);
++	ret = ptrace(PTRACE_GETREGSET, child, NT_PPC_TM_CGPR, &iov);
 +	if (ret) {
 +		perror("ptrace(PTRACE_GETREGSET) failed");
 +		return TEST_FAIL;
 +	}
 +
-+	if (out)
-+		memcpy(out, regs, sizeof(struct tm_spr_regs));
++	if (gpr) {
++		for (i = 14; i < 32; i++)
++			gpr[i-14] = regs->gpr[i];
++	}
 +
 +	return TEST_PASS;
 +}
 +
++int write_ckpt_gpr(pid_t child, unsigned long val)
++{
++	struct pt_regs *regs;
++	struct iovec iov;
++	int ret, i;
 +
++	regs = (struct pt_regs *) malloc(sizeof(struct pt_regs));
++	if (!regs) {
++		perror("malloc() failed\n");
++		return TEST_FAIL;
++	}
++	iov.iov_base = (u64 *) regs;
++	iov.iov_len = sizeof(struct pt_regs);
++
++	ret = ptrace(PTRACE_GETREGSET, child, NT_PPC_TM_CGPR, &iov);
++	if (ret) {
++		perror("ptrace(PTRACE_GETREGSET) failed");
++		return TEST_FAIL;
++	}
++
++	for (i = 14; i < 32; i++)
++		regs->gpr[i] = val;
++
++	ret = ptrace(PTRACE_SETREGSET, child, NT_PPC_TM_CGPR, &iov);
++	if (ret) {
++		perror("ptrace(PTRACE_GETREGSET) failed");
++		return TEST_FAIL;
++	}
++	return TEST_PASS;
++}
 +
  /* Analyse TEXASR after TM failure */
  inline unsigned long get_tfiar(void)
