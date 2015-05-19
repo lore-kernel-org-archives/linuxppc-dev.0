@@ -1,21 +1,32 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0102.outbound.protection.outlook.com [207.46.100.102])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <weiyang@linux.vnet.ibm.com>
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4AB111A0140
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 May 2015 07:09:32 +1000 (AEST)
-Message-ID: <1431983358.27761.11.camel@freescale.com>
-Subject: Re: [PATCH] powerpc/fsl: Add FMan best effort port compatible
-From: Scott Wood <scottwood@freescale.com>
-To: <igal.liberman@freescale.com>
-Date: Mon, 18 May 2015 16:09:18 -0500
-In-Reply-To: <1431938519-11343-1-git-send-email-igal.liberman@freescale.com>
-References: <1431938519-11343-1-git-send-email-igal.liberman@freescale.com>
-Content-Type: text/plain; charset="UTF-8"
-MIME-Version: 1.0
-Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- madalin.bucur@freescale.com
+ by lists.ozlabs.org (Postfix) with ESMTPS id 022D11A0140
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 May 2015 11:36:07 +1000 (AEST)
+Received: from /spool/local
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
+ Tue, 19 May 2015 11:36:06 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp01.au.ibm.com (Postfix) with ESMTP id C381D2CE8055
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 May 2015 11:36:03 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t4J1ZtII19529906
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 May 2015 11:36:03 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t4J1ZV8a027740
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 May 2015 11:35:31 +1000
+From: Wei Yang <weiyang@linux.vnet.ibm.com>
+To: gwshan@linux.vnet.ibm.com, bhelgaas@google.com
+Subject: [PATCH V6 00/10] VF EEH on Power8
+Date: Tue, 19 May 2015 09:35:02 +0800
+Message-Id: <1431999312-10517-1-git-send-email-weiyang@linux.vnet.ibm.com>
+Cc: linux-pci@vger.kernel.org, Wei Yang <weiyang@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,40 +36,107 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2015-05-18 at 11:41 +0300, Igal.Liberman wrote:
-> From: Igal Liberman <igal.liberman@freescale.com>
-> 
-> This patch adds a compatible which represents FMan V3 best effort ports.
-> FMan best effort port is configured as 10G ports, however, it uses 1G
-> hardware.
-> 
-> Signed-off-by: Igal Liberman <igal.liberman@freescale.com>
-> ---
->  .../devicetree/bindings/powerpc/fsl/fman.txt       |    5 +++++
->  1 file changed, 5 insertions(+)
-> 
-> diff --git a/Documentation/devicetree/bindings/powerpc/fsl/fman.txt b/Documentation/devicetree/bindings/powerpc/fsl/fman.txt
-> index edda55f..c2e3ec3 100644
-> --- a/Documentation/devicetree/bindings/powerpc/fsl/fman.txt
-> +++ b/Documentation/devicetree/bindings/powerpc/fsl/fman.txt
-> @@ -166,6 +166,11 @@ PROPERTIES
->  			- "fsl,fman-v3-port-oh" for FManV3 OH ports
->  			- "fsl,fman-v3-port-rx" for FManV3 RX ports
->  			- "fsl,fman-v3-port-tx" for FManV3 TX ports
-> +		Optional compatible which can be used in addition to the
-> +		compatibles above is:
-> +			- "fsl,fman-v3-best-effort-port"
-> +		This compatible represents 10G best effort ports:
-> +			Port configured as 10G, using 1G hardware.
+This patchset enables EEH on SRIOV VFs. The general idea is to create proper
+VF edev and VF PE and handle them properly.
 
-What does this mean?  If it's using 1G hardware then it's a 1G port,
-right?  How can you configure a 1G port to be 10G?
+Different from the Bus PE, VF PE just contain one VF. This introduces the
+difference of EEH error handling on a VF PE. Generally, it has several
+differences.
 
-Why is this compatible in addition to others (note that this implies
-such ports are 100% backwards compatible with hardware that lacks the
-new compatible)?  You'd have the same compatible on rx and tx nodes (I'm
-assuming this isn't applicable to oh)?
+First, the VF's removal and re-enumerate rely on its PF. VF has a tight
+relationship between its PF. This is not proper to enumerate a VF by usual
+scan procedure. That's why virtfn_add/virtfn_remove are exported in this patch
+set.
 
-What are the implications of this that warrant adding a compatible?
+Second, the reset/restore of a VF is done in kernel space. FW is not aware of
+the VF, this means the usual reset function done in FW will not work. One of
+the patch will imitate the reset/restore function in kernel space.
 
--Scott
+Third, the VF may be removed during the PF's error_detected function. In this
+case, the original error_detected->slot_reset->resume sequence is not proper
+to those removed VFs, since they are re-created by PF in a fresh state. A flag
+in eeh_dev is introduce to mark the eeh_dev is in error state. By doing so, we
+track whether this device needs to be reset or not.
+
+This has been tested both on host and in guest on Power8 with latest kernel
+version.
+
+v6:
+   * code / commit log refactor by Gavin
+v5:
+   * remove the compound field, iterate on Master VF PE instead
+   * some code refine on PCI config restore and reset on VF
+     the wait time for assert and deassert
+     PCI device address format
+     check on edev->pcie_cap and edev->aer_cap before access them
+v4:
+   * refine the change logs, comment and code style
+   * change pnv_pci_fixup_vf_eeh() to pnv_eeh_vf_final_fixup() and remove the
+     CONFIG_PCI_IOV macro
+   * reorder patch 5/6 to make the logic more reasonable
+   * remove remove_dev_pci_data()
+   * remove the EEH_DEV_VF flag, use edev->physfn to identify a VF EEH DEV and
+     remove related CONFIG_PCI_IOV macro
+   * add the option for VF reset
+   * fix the pnv_eeh_cfg_blocked() logic
+   * replace pnv_pci_cfg_{read,write} with eeh_ops->{read,write}_config in
+     pnv_eeh_vf_restore_config()
+   * rename pnv_eeh_vf_restore_config() to pnv_eeh_restore_vf_config()
+   * rename pnv_pci_fixup_vf_caps() to pnv_pci_vf_header_fixup() and move it
+     to arch/powerpc/platforms/powernv/pci.c
+   * add a field compound in pnv_ioda_pe to link compound PEs
+   * handle compound PE for VF PEs
+v3:
+   * add back vf_index in pci_dn to track the VF's index
+   * rename ppdev in eeh_dev to physfn for consistency
+   * move edev->physfn assignment before dev->dev.archdata.edev is set
+   * move pnv_pci_fixup_vf_eeh() and pnv_pci_fixup_vf_caps() to eeh-powernv.c
+   * more clear and detail in commit log and comment in code
+   * merge eeh_rmv_virt_device() with eeh_rmv_device()
+   * move the cfg_blocked check logic from pnv_eeh_read/write_config() to
+     pnv_eeh_cfg_blocked()
+   * move the vf reset/restore logic into its own patch, two patches are
+     created.
+     powerpc/powernv: Support PCI config restore for VFs
+     powerpc/powernv: Support EEH reset for VFs
+   * simplify the vf reset logic
+v2:
+   * add prefix pci_iov_ to virtfn_add/virtfn_remove
+   * use EEH_DEV_VF as a flag for a VF's eeh_dev
+   * use eeh_dev instead of edev in change log
+   * remove vf_index in eeh_dev, calculate it from pdn->busno and devfn
+   * do eeh_add_device_late() and eeh_sysfs_add_device() both after pci_dev is
+     well initialized
+   * do FLR to reset a VF PE
+   * imitate the restore function in FW for VF
+   * remove the reverse order patch, since it is still under discussion
+
+Wei Yang (10):
+  PCI/IOV: Rename and export virtfn_add/virtfn_remove
+  powerpc/pci: Cache VF index in pci_dn
+  powerpc/pci: Remove VFs prior to PF
+  powerpc/eeh: Trace first 7 BARs in address cache
+  powerpc/powernv: EEH device for VF
+  powerpc/eeh: Create PE for VFs
+  powerpc/powernv: Support EEH reset for VF PE
+  powerpc/powernv: Support PCI config restore for VFs
+  powerpc/eeh: Support error recovery for VF PE
+  powerpc/powernv: compound PE for VFs
+
+ arch/powerpc/include/asm/eeh.h               |    4 +
+ arch/powerpc/include/asm/pci-bridge.h        |    2 +
+ arch/powerpc/kernel/eeh.c                    |    8 +
+ arch/powerpc/kernel/eeh_cache.c              |    2 +-
+ arch/powerpc/kernel/eeh_driver.c             |  100 +++++++++---
+ arch/powerpc/kernel/eeh_pe.c                 |   13 +-
+ arch/powerpc/kernel/pci-hotplug.c            |    2 +-
+ arch/powerpc/kernel/pci_dn.c                 |   16 +-
+ arch/powerpc/platforms/powernv/eeh-powernv.c |  221 +++++++++++++++++++++++++-
+ arch/powerpc/platforms/powernv/pci-ioda.c    |   46 +++++-
+ arch/powerpc/platforms/powernv/pci.c         |   35 +++-
+ drivers/pci/iov.c                            |   10 +-
+ include/linux/pci.h                          |    2 +
+ 13 files changed, 420 insertions(+), 41 deletions(-)
+
+-- 
+1.7.9.5
