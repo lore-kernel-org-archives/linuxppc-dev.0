@@ -1,15 +1,15 @@
 Return-Path: <mikey@neuling.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B246B1A065D
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 May 2015 21:23:16 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 180691A05FF
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 May 2015 21:23:18 +1000 (AEST)
 From: Michael Neuling <mikey@neuling.org>
 To: mpe@ellerman.id.au,
 	benh@kernel.crashing.org
-Subject: [PATCH 09/19] cxl: Add cookie parameter to afu_release_irqs()
-Date: Tue, 19 May 2015 21:22:26 +1000
-Message-Id: <1432034556-32400-10-git-send-email-mikey@neuling.org>
+Subject: [PATCH 10/19] cxl: Rework detach context functions
+Date: Tue, 19 May 2015 21:22:27 +1000
+Message-Id: <1432034556-32400-11-git-send-email-mikey@neuling.org>
 In-Reply-To: <1432034556-32400-1-git-send-email-mikey@neuling.org>
 References: <1432034556-32400-1-git-send-email-mikey@neuling.org>
 Cc: mikey@neuling.org, "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>,
@@ -25,81 +25,80 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Add cookie parameter to afu_release_irqs() so that we can pass in a different
-cookie than the context structure.  This will be useful for other kernel
-drivers that want to call this but get their own cookie back in the interrupt
-handler.
-
-Update all existing call sites.
+Rework __detach_context() and cxl_context_detach() so we can reuse them in the
+kernel API.
 
 Signed-off-by: Michael Neuling <mikey@neuling.org>
 ---
- drivers/misc/cxl/context.c | 2 +-
- drivers/misc/cxl/cxl.h     | 2 +-
- drivers/misc/cxl/file.c    | 2 +-
- drivers/misc/cxl/irq.c     | 4 ++--
- 4 files changed, 5 insertions(+), 5 deletions(-)
+ drivers/misc/cxl/context.c | 20 +++++++++++++-------
+ drivers/misc/cxl/cxl.h     |  1 +
+ 2 files changed, 14 insertions(+), 7 deletions(-)
 
 diff --git a/drivers/misc/cxl/context.c b/drivers/misc/cxl/context.c
-index 78ce990..36bb8e4 100644
+index 36bb8e4..7d857b7 100644
 --- a/drivers/misc/cxl/context.c
 +++ b/drivers/misc/cxl/context.c
-@@ -186,7 +186,7 @@ static void __detach_context(struct cxl_context *ctx)
- 		return;
+@@ -174,7 +174,7 @@ int cxl_context_iomap(struct cxl_context *ctx, struct vm_area_struct *vma)
+  * return until all outstanding interrupts for this context have completed. The
+  * hardware should no longer access *ctx after this has returned.
+  */
+-static void __detach_context(struct cxl_context *ctx)
++int __detach_context(struct cxl_context *ctx)
+ {
+ 	enum cxl_context_status status;
+ 
+@@ -183,12 +183,10 @@ static void __detach_context(struct cxl_context *ctx)
+ 	ctx->status = CLOSED;
+ 	mutex_unlock(&ctx->status_mutex);
+ 	if (status != STARTED)
+-		return;
++		return -EBUSY;
  
  	WARN_ON(cxl_detach_process(ctx));
--	afu_release_irqs(ctx);
-+	afu_release_irqs(ctx, ctx);
- 	flush_work(&ctx->fault_work); /* Only needed for dedicated process */
- 	wake_up_all(&ctx->wq);
+-	afu_release_irqs(ctx, ctx);
+-	flush_work(&ctx->fault_work); /* Only needed for dedicated process */
+-	wake_up_all(&ctx->wq);
++	return 0;
  }
+ 
+ /*
+@@ -199,7 +197,15 @@ static void __detach_context(struct cxl_context *ctx)
+  */
+ void cxl_context_detach(struct cxl_context *ctx)
+ {
+-	__detach_context(ctx);
++	int rc;
++
++	rc = __detach_context(ctx);
++	if (rc)
++		return;
++
++	afu_release_irqs(ctx, ctx);
++	flush_work(&ctx->fault_work); /* Only needed for dedicated process */
++	wake_up_all(&ctx->wq);
+ }
+ 
+ /*
+@@ -216,7 +222,7 @@ void cxl_context_detach_all(struct cxl_afu *afu)
+ 		 * Anything done in here needs to be setup before the IDR is
+ 		 * created and torn down after the IDR removed
+ 		 */
+-		__detach_context(ctx);
++		cxl_context_detach(ctx);
+ 
+ 		/*
+ 		 * We are force detaching - remove any active PSA mappings so
 diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
-index f0b6727..7c014b8 100644
+index 7c014b8..296a077 100644
 --- a/drivers/misc/cxl/cxl.h
 +++ b/drivers/misc/cxl/cxl.h
-@@ -609,7 +609,7 @@ void cxl_release_psl_err_irq(struct cxl *adapter);
- int cxl_register_serr_irq(struct cxl_afu *afu);
- void cxl_release_serr_irq(struct cxl_afu *afu);
- int afu_register_irqs(struct cxl_context *ctx, u32 count);
--void afu_release_irqs(struct cxl_context *ctx);
-+void afu_release_irqs(struct cxl_context *ctx, void *cookie);
- irqreturn_t cxl_slice_irq_err(int irq, void *data);
+@@ -632,6 +632,7 @@ int cxl_context_init(struct cxl_context *ctx, struct cxl_afu *afu, bool master,
+ 		     struct address_space *mapping);
+ void cxl_context_free(struct cxl_context *ctx);
+ int cxl_context_iomap(struct cxl_context *ctx, struct vm_area_struct *vma);
++int __detach_context(struct cxl_context *ctx);
  
- int cxl_debugfs_init(void);
-diff --git a/drivers/misc/cxl/file.c b/drivers/misc/cxl/file.c
-index 2364bca..5377c8b 100644
---- a/drivers/misc/cxl/file.c
-+++ b/drivers/misc/cxl/file.c
-@@ -191,7 +191,7 @@ static long afu_ioctl_start_work(struct cxl_context *ctx,
- 
- 	if ((rc = cxl_attach_process(ctx, false, work.work_element_descriptor,
- 				     amr))) {
--		afu_release_irqs(ctx);
-+		afu_release_irqs(ctx, ctx);
- 		goto out;
- 	}
- 
-diff --git a/drivers/misc/cxl/irq.c b/drivers/misc/cxl/irq.c
-index c8929c5..c740c7b 100644
---- a/drivers/misc/cxl/irq.c
-+++ b/drivers/misc/cxl/irq.c
-@@ -477,7 +477,7 @@ out:
- 	return -ENOMEM;
- }
- 
--void afu_release_irqs(struct cxl_context *ctx)
-+void afu_release_irqs(struct cxl_context *ctx, void *cookie)
- {
- 	irq_hw_number_t hwirq;
- 	unsigned int virq;
-@@ -488,7 +488,7 @@ void afu_release_irqs(struct cxl_context *ctx)
- 		for (i = 0; i < ctx->irqs.range[r]; hwirq++, i++) {
- 			virq = irq_find_mapping(NULL, hwirq);
- 			if (virq)
--				cxl_unmap_irq(virq, ctx);
-+				cxl_unmap_irq(virq, cookie);
- 		}
- 	}
- 
+ /* This matches the layout of the H_COLLECT_CA_INT_INFO retbuf */
+ struct cxl_irq_info {
 -- 
 2.1.0
