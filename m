@@ -1,15 +1,16 @@
 Return-Path: <christophe.leroy@c-s.fr>
 Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id 2C6511A0017
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 May 2015 20:07:53 +1000 (AEST)
-Message-Id: <cover.1432012060.git.christophe.leroy@c-s.fr>
+ by lists.ozlabs.org (Postfix) with ESMTP id 6811A1A0017
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 May 2015 20:07:54 +1000 (AEST)
+Message-Id: <eaf62204505e3bbed323ab432792ca4a16b3950a.1432012060.git.christophe.leroy@c-s.fr>
+In-Reply-To: <cover.1432012060.git.christophe.leroy@c-s.fr>
+References: <cover.1432012060.git.christophe.leroy@c-s.fr>
 From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v2 0/6] powerpc32: replace memcpy and memset by cacheable
- alternatives
+Subject: [PATCH v2 1/6] powerpc: use memset_io() to clear CPM Muram
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
  scottwood@freescale.com
-Date: Tue, 19 May 2015 12:07:44 +0200 (CEST)
+Date: Tue, 19 May 2015 12:07:46 +0200 (CEST)
 Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -20,24 +21,25 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patchset implements use of cacheable versions of memset and
-memcpy since when the destination is not cacheable, memset_io
-and memcpy_toio are used.
+CPM muram is not cached, so use memset_io() instead of memset()
 
-On MPC885, we observe a 7% rate increase on FTP transfer
+Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+---
+ arch/powerpc/sysdev/cpm_common.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Christophe Leroy (6):
-  powerpc: use memset_io() to clear CPM Muram
-  Partially revert "powerpc: Remove duplicate cacheable_memcpy/memzero
-    functions"
-  powerpc32: memset(0): use cacheable_memzero
-  powerpc32: Merge the new memset() with the old one
-  powerpc32: cacheable_memcpy becomes memcpy
-  powerpc32: Few optimisations in memcpy
-
- arch/powerpc/lib/copy_32.S       | 109 ++++++++++++++++++++++++++++++++++++++-
- arch/powerpc/sysdev/cpm_common.c |   2 +-
- 2 files changed, 109 insertions(+), 2 deletions(-)
-
+diff --git a/arch/powerpc/sysdev/cpm_common.c b/arch/powerpc/sysdev/cpm_common.c
+index 4f78695..e2ea519 100644
+--- a/arch/powerpc/sysdev/cpm_common.c
++++ b/arch/powerpc/sysdev/cpm_common.c
+@@ -147,7 +147,7 @@ unsigned long cpm_muram_alloc(unsigned long size, unsigned long align)
+ 	spin_lock_irqsave(&cpm_muram_lock, flags);
+ 	cpm_muram_info.alignment = align;
+ 	start = rh_alloc(&cpm_muram_info, size, "commproc");
+-	memset(cpm_muram_addr(start), 0, size);
++	memset_io(cpm_muram_addr(start), 0, size);
+ 	spin_unlock_irqrestore(&cpm_muram_lock, flags);
+ 
+ 	return start;
 -- 
 2.1.0
