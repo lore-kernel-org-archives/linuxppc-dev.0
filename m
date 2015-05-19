@@ -1,15 +1,15 @@
 Return-Path: <mikey@neuling.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 902B31A0611
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 May 2015 21:23:15 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id B246B1A065D
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 May 2015 21:23:16 +1000 (AEST)
 From: Michael Neuling <mikey@neuling.org>
 To: mpe@ellerman.id.au,
 	benh@kernel.crashing.org
-Subject: [PATCH 08/19] cxl: Dump debug info on the AFU configuration record
-Date: Tue, 19 May 2015 21:22:25 +1000
-Message-Id: <1432034556-32400-9-git-send-email-mikey@neuling.org>
+Subject: [PATCH 09/19] cxl: Add cookie parameter to afu_release_irqs()
+Date: Tue, 19 May 2015 21:22:26 +1000
+Message-Id: <1432034556-32400-10-git-send-email-mikey@neuling.org>
 In-Reply-To: <1432034556-32400-1-git-send-email-mikey@neuling.org>
 References: <1432034556-32400-1-git-send-email-mikey@neuling.org>
 Cc: mikey@neuling.org, "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>,
@@ -25,66 +25,81 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Now that we parse the AFU Configuration record, dump some info on it when in
-debug mode.
+Add cookie parameter to afu_release_irqs() so that we can pass in a different
+cookie than the context structure.  This will be useful for other kernel
+drivers that want to call this but get their own cookie back in the interrupt
+handler.
+
+Update all existing call sites.
 
 Signed-off-by: Michael Neuling <mikey@neuling.org>
 ---
- drivers/misc/cxl/pci.c | 12 +++++++++++-
- 1 file changed, 11 insertions(+), 1 deletion(-)
+ drivers/misc/cxl/context.c | 2 +-
+ drivers/misc/cxl/cxl.h     | 2 +-
+ drivers/misc/cxl/file.c    | 2 +-
+ drivers/misc/cxl/irq.c     | 4 ++--
+ 4 files changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
-index 1ac2ecf..9066a7a 100644
---- a/drivers/misc/cxl/pci.c
-+++ b/drivers/misc/cxl/pci.c
-@@ -90,6 +90,7 @@
- /* This works a little different than the p1/p2 register accesses to make it
-  * easier to pull out individual fields */
- #define AFUD_READ(afu, off)		in_be64(afu->afu_desc_mmio + off)
-+#define AFUD_READ_LE(afu, off)		in_le64(afu->afu_desc_mmio + off)
- #define EXTRACT_PPC_BIT(val, bit)	(!!(val & PPC_BIT(bit)))
- #define EXTRACT_PPC_BITS(val, bs, be)	((val & PPC_BITMASK(bs, be)) >> PPC_BITLSHIFT(be))
+diff --git a/drivers/misc/cxl/context.c b/drivers/misc/cxl/context.c
+index 78ce990..36bb8e4 100644
+--- a/drivers/misc/cxl/context.c
++++ b/drivers/misc/cxl/context.c
+@@ -186,7 +186,7 @@ static void __detach_context(struct cxl_context *ctx)
+ 		return;
  
-@@ -286,7 +287,8 @@ static void dump_cxl_config_space(struct pci_dev *dev)
- 
- static void dump_afu_descriptor(struct cxl_afu *afu)
- {
--	u64 val;
-+	u64 val, afu_cr_num, afu_cr_off, afu_cr_len;
-+	int i;
- 
- #define show_reg(name, what) \
- 	dev_info(&afu->dev, "afu desc: %30s: %#llx\n", name, what)
-@@ -296,6 +298,7 @@ static void dump_afu_descriptor(struct cxl_afu *afu)
- 	show_reg("num_of_processes", AFUD_NUM_PROCS(val));
- 	show_reg("num_of_afu_CRs", AFUD_NUM_CRS(val));
- 	show_reg("req_prog_mode", val & 0xffffULL);
-+	afu_cr_num = AFUD_NUM_CRS(val);
- 
- 	val = AFUD_READ(afu, 0x8);
- 	show_reg("Reserved", val);
-@@ -307,8 +310,10 @@ static void dump_afu_descriptor(struct cxl_afu *afu)
- 	val = AFUD_READ_CR(afu);
- 	show_reg("Reserved", (val >> (63-7)) & 0xff);
- 	show_reg("AFU_CR_len", AFUD_CR_LEN(val));
-+	afu_cr_len = AFUD_CR_LEN(val) * 256;
- 
- 	val = AFUD_READ_CR_OFF(afu);
-+	afu_cr_off = val;
- 	show_reg("AFU_CR_offset", val);
- 
- 	val = AFUD_READ_PPPSA(afu);
-@@ -325,6 +330,11 @@ static void dump_afu_descriptor(struct cxl_afu *afu)
- 	val = AFUD_READ_EB_OFF(afu);
- 	show_reg("AFU_EB_offset", val);
- 
-+	for (i = 0; i < afu_cr_num; i++) {
-+		val = AFUD_READ_LE(afu, afu_cr_off + i * afu_cr_len);
-+		show_reg("CR Vendor", val & 0xffff);
-+		show_reg("CR Device", (val >> 16) & 0xffff);
-+	}
- #undef show_reg
+ 	WARN_ON(cxl_detach_process(ctx));
+-	afu_release_irqs(ctx);
++	afu_release_irqs(ctx, ctx);
+ 	flush_work(&ctx->fault_work); /* Only needed for dedicated process */
+ 	wake_up_all(&ctx->wq);
  }
+diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
+index f0b6727..7c014b8 100644
+--- a/drivers/misc/cxl/cxl.h
++++ b/drivers/misc/cxl/cxl.h
+@@ -609,7 +609,7 @@ void cxl_release_psl_err_irq(struct cxl *adapter);
+ int cxl_register_serr_irq(struct cxl_afu *afu);
+ void cxl_release_serr_irq(struct cxl_afu *afu);
+ int afu_register_irqs(struct cxl_context *ctx, u32 count);
+-void afu_release_irqs(struct cxl_context *ctx);
++void afu_release_irqs(struct cxl_context *ctx, void *cookie);
+ irqreturn_t cxl_slice_irq_err(int irq, void *data);
+ 
+ int cxl_debugfs_init(void);
+diff --git a/drivers/misc/cxl/file.c b/drivers/misc/cxl/file.c
+index 2364bca..5377c8b 100644
+--- a/drivers/misc/cxl/file.c
++++ b/drivers/misc/cxl/file.c
+@@ -191,7 +191,7 @@ static long afu_ioctl_start_work(struct cxl_context *ctx,
+ 
+ 	if ((rc = cxl_attach_process(ctx, false, work.work_element_descriptor,
+ 				     amr))) {
+-		afu_release_irqs(ctx);
++		afu_release_irqs(ctx, ctx);
+ 		goto out;
+ 	}
+ 
+diff --git a/drivers/misc/cxl/irq.c b/drivers/misc/cxl/irq.c
+index c8929c5..c740c7b 100644
+--- a/drivers/misc/cxl/irq.c
++++ b/drivers/misc/cxl/irq.c
+@@ -477,7 +477,7 @@ out:
+ 	return -ENOMEM;
+ }
+ 
+-void afu_release_irqs(struct cxl_context *ctx)
++void afu_release_irqs(struct cxl_context *ctx, void *cookie)
+ {
+ 	irq_hw_number_t hwirq;
+ 	unsigned int virq;
+@@ -488,7 +488,7 @@ void afu_release_irqs(struct cxl_context *ctx)
+ 		for (i = 0; i < ctx->irqs.range[r]; hwirq++, i++) {
+ 			virq = irq_find_mapping(NULL, hwirq);
+ 			if (virq)
+-				cxl_unmap_irq(virq, ctx);
++				cxl_unmap_irq(virq, cookie);
+ 		}
+ 	}
  
 -- 
 2.1.0
