@@ -1,30 +1,30 @@
 Return-Path: <weiyang@linux.vnet.ibm.com>
-Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B0EB81A11B1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 May 2015 20:53:41 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7F9121A1748
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 May 2015 20:54:07 +1000 (AEST)
 Received: from /spool/local
- by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <weiyang@linux.vnet.ibm.com>;
- Tue, 19 May 2015 20:53:40 +1000
-Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
- by d23dlp01.au.ibm.com (Postfix) with ESMTP id 435F62CE804E
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 May 2015 20:53:38 +1000 (EST)
+ Tue, 19 May 2015 20:54:07 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 481043578048
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 May 2015 20:54:04 +1000 (EST)
 Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t4JArTMK5570796
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 May 2015 20:53:37 +1000
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t4JAruJA31522850
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 May 2015 20:54:04 +1000
 Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
  by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t4JAr5lA032557
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 May 2015 20:53:05 +1000
+ t4JArVmg000427
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 May 2015 20:53:31 +1000
 From: Wei Yang <weiyang@linux.vnet.ibm.com>
 To: gwshan@linux.vnet.ibm.com, bhelgaas@google.com
-Subject: [PATCH V7 03/10] powerpc/pci: Remove VFs prior to PF
-Date: Tue, 19 May 2015 18:50:05 +0800
-Message-Id: <1432032612-21701-4-git-send-email-weiyang@linux.vnet.ibm.com>
+Subject: [PATCH V7 04/10] powerpc/eeh: Trace first 7 BARs in address cache
+Date: Tue, 19 May 2015 18:50:06 +0800
+Message-Id: <1432032612-21701-5-git-send-email-weiyang@linux.vnet.ibm.com>
 In-Reply-To: <1432032612-21701-1-git-send-email-weiyang@linux.vnet.ibm.com>
 References: <1431999312-10517-1-git-send-email-weiyang@linux.vnet.ibm.com>
  <1432032612-21701-1-git-send-email-weiyang@linux.vnet.ibm.com>
@@ -39,32 +39,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-As commit ac205b7b ("PCI: make sriov work with hotplug remove") indicates,
-VFs, which might be hooked to same PCI bus as their PF should be removed
-before the PF. Otherwise, the PCI hot unplugging on the PCI bus would
-cause kernel crash.
+EEH address cache, which helps to locate the PCI device according to
+the given (physical) MMIO address, didn't cover PCI bridges. Also, it
+shouldn't return PF with address in PF's IOV BARs. Instead, the VFs
+should be returned.
 
-The patch applies the above pattern to PowerPC PCI hotplug path.
+The patch restricts the address cache to cover first 7 BARs for the
+above purposes.
 
 [gwshan: changelog]
 Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
 Acked-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 ---
- arch/powerpc/kernel/pci-hotplug.c |    2 +-
+ arch/powerpc/kernel/eeh_cache.c |    2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/kernel/pci-hotplug.c b/arch/powerpc/kernel/pci-hotplug.c
-index 7ed85a6..98f84ed 100644
---- a/arch/powerpc/kernel/pci-hotplug.c
-+++ b/arch/powerpc/kernel/pci-hotplug.c
-@@ -50,7 +50,7 @@ void pcibios_remove_pci_devices(struct pci_bus *bus)
- 
- 	pr_debug("PCI: Removing devices on bus %04x:%02x\n",
- 		 pci_domain_nr(bus),  bus->number);
--	list_for_each_entry_safe(dev, tmp, &bus->devices, bus_list) {
-+	list_for_each_entry_safe_reverse(dev, tmp, &bus->devices, bus_list) {
- 		pr_debug("   Removing %s...\n", pci_name(dev));
- 		pci_stop_and_remove_bus_device(dev);
+diff --git a/arch/powerpc/kernel/eeh_cache.c b/arch/powerpc/kernel/eeh_cache.c
+index eeabeab..f6c5f05 100644
+--- a/arch/powerpc/kernel/eeh_cache.c
++++ b/arch/powerpc/kernel/eeh_cache.c
+@@ -196,7 +196,7 @@ static void __eeh_addr_cache_insert_dev(struct pci_dev *dev)
  	}
+ 
+ 	/* Walk resources on this device, poke them into the tree */
+-	for (i = 0; i < DEVICE_COUNT_RESOURCE; i++) {
++	for (i = 0; i <= PCI_ROM_RESOURCE; i++) {
+ 		unsigned long start = pci_resource_start(dev,i);
+ 		unsigned long end = pci_resource_end(dev,i);
+ 		unsigned int flags = pci_resource_flags(dev,i);
 -- 
 1.7.9.5
