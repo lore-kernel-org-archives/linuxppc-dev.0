@@ -1,17 +1,34 @@
-Return-Path: <christophe.leroy@c-s.fr>
-Received: from mailhub1.si.c-s.fr (pegase1.c-s.fr [93.17.236.30])
- by lists.ozlabs.org (Postfix) with ESMTP id 245871A2ABB
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 May 2015 01:19:00 +1000 (AEST)
-Message-Id: <1d1362c8aa696e316d3ba97dce2342df6f6ee6cf.1432047904.git.christophe.leroy@c-s.fr>
-In-Reply-To: <cover.1432047904.git.christophe.leroy@c-s.fr>
-References: <cover.1432047904.git.christophe.leroy@c-s.fr>
-From: Christophe Leroy <christophe.leroy@c-s.fr>
-Subject: [PATCH v3 2/2] powerpc: add support for csum_add()
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- scottwood@freescale.com
-Date: Tue, 19 May 2015 17:18:57 +0200 (CEST)
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Return-Path: <shreyas@linux.vnet.ibm.com>
+Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id ECB101A0601
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 May 2015 05:00:34 +1000 (AEST)
+Received: from /spool/local
+ by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <shreyas@linux.vnet.ibm.com>;
+ Tue, 19 May 2015 15:00:31 -0400
+Received: from b01cxnp23034.gho.pok.ibm.com (b01cxnp23034.gho.pok.ibm.com
+ [9.57.198.29])
+ by d01dlp03.pok.ibm.com (Postfix) with ESMTP id B4501C90045
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 May 2015 14:51:36 -0400 (EDT)
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+ by b01cxnp23034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t4JJ0S5i60883014
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 May 2015 19:00:28 GMT
+Received: from d01av03.pok.ibm.com (localhost [127.0.0.1])
+ by d01av03.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t4JJ0R2p009015
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 May 2015 15:00:28 -0400
+From: "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>
+To: mpe@ellerman.id.au
+Subject: [PATCH] powerpc: Make doorbell check preemption safe
+Date: Wed, 20 May 2015 00:30:14 +0530
+Message-Id: <1432062014-9115-1-git-send-email-shreyas@linux.vnet.ibm.com>
+Cc: mikey@neuling.org, linux-kernel@vger.kernel.org, paulus@samba.org,
+ "Shreyas B. Prabhu" <shreyas@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,56 +38,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The C version of csum_add() as defined in include/net/checksum.h gives the
-following assembly in ppc32:
-       0:       7c 04 1a 14     add     r0,r4,r3
-       4:       7c 64 00 10     subfc   r3,r4,r0
-       8:       7c 63 19 10     subfe   r3,r3,r3
-       c:       7c 63 00 50     subf    r3,r3,r0
-and the following in ppc64:
-   0xc000000000001af8 <+0>:	add     r3,r3,r4
-   0xc000000000001afc <+4>:	cmplw   cr7,r3,r4
-   0xc000000000001b00 <+8>:	mfcr    r4
-   0xc000000000001b04 <+12>:	rlwinm  r4,r4,29,31,31
-   0xc000000000001b08 <+16>:	add     r3,r4,r3
-   0xc000000000001b0c <+20>:	clrldi  r3,r3,32
-   0xc000000000001b10 <+24>:	blr
+Doorbell can be used to cause ipi on cpus which are sibling threads on
+the same core. So icp_native_cause_ipi checks if the destination cpu
+is a sibling thread of the current cpu and uses doorbell in such cases.
 
-include/net/checksum.h also offers the possibility to define an arch specific
-function.
-This patch provides a specific csum_add() inline function.
+But while running with CONFIG_PREEMPT=y, since this section is
+preemtible, we can run into issues if after we check if the destination
+cpu is a sibling cpu, the task gets migrated from a sibling cpu to a
+cpu on another core.
 
-Signed-off-by: Christophe Leroy <christophe.leroy@c-s.fr>
+Fix this by using get_cpu()/ put_cpu()
+
+Signed-off-by: Shreyas B. Prabhu <shreyas@linux.vnet.ibm.com>
 ---
- arch/powerpc/include/asm/checksum.h | 16 ++++++++++++++++
- 1 file changed, 16 insertions(+)
+ arch/powerpc/sysdev/xics/icp-native.c | 14 +++++++++-----
+ 1 file changed, 9 insertions(+), 5 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/checksum.h b/arch/powerpc/include/asm/checksum.h
-index 5e43d2d..e8d9ef4 100644
---- a/arch/powerpc/include/asm/checksum.h
-+++ b/arch/powerpc/include/asm/checksum.h
-@@ -130,6 +130,22 @@ static inline __sum16 csum_tcpudp_magic(__be32 saddr, __be32 daddr,
- 	return csum_fold(csum_tcpudp_nofold(saddr, daddr, len, proto, sum));
+diff --git a/arch/powerpc/sysdev/xics/icp-native.c b/arch/powerpc/sysdev/xics/icp-native.c
+index 2fc4cf1..62fd478 100644
+--- a/arch/powerpc/sysdev/xics/icp-native.c
++++ b/arch/powerpc/sysdev/xics/icp-native.c
+@@ -147,12 +147,16 @@ static void icp_native_cause_ipi(int cpu, unsigned long data)
+ {
+ 	kvmppc_set_host_ipi(cpu, 1);
+ #ifdef CONFIG_PPC_DOORBELL
+-	if (cpu_has_feature(CPU_FTR_DBELL) &&
+-	    (cpumask_test_cpu(cpu, cpu_sibling_mask(smp_processor_id()))))
+-		doorbell_cause_ipi(cpu, data);
+-	else
++	if (cpu_has_feature(CPU_FTR_DBELL)) {
++		if (cpumask_test_cpu(cpu, cpu_sibling_mask(get_cpu()))) {
++			doorbell_cause_ipi(cpu, data);
++			put_cpu();
++			return;
++		}
++		put_cpu();
++	}
+ #endif
+-		icp_native_set_qirr(cpu, IPI_PRIORITY);
++	icp_native_set_qirr(cpu, IPI_PRIORITY);
  }
  
-+#define HAVE_ARCH_CSUM_ADD
-+static inline __wsum csum_add(__wsum csum, __wsum addend)
-+{
-+#ifdef __powerpc64__
-+	u64 res = (__force u64)csum;
-+
-+	res += (__force u64)addend;
-+	return (__force __wsum)((u32)res + (res >> 32));
-+#else
-+	asm("addc %0,%0,%1;"
-+	    "addze %0,%0;"
-+	    : "+r" (csum) : "r" (addend));
-+	return csum;
-+#endif
-+}
-+
- #endif
- #endif /* __KERNEL__ */
- #endif
+ /*
 -- 
-2.1.0
+1.9.3
