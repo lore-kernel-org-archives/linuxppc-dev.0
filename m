@@ -1,22 +1,34 @@
-Return-Path: <mikey@neuling.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <vaibhav@linux.vnet.ibm.com>
+Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7C59F1A060E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 May 2015 20:47:14 +1000 (AEST)
-Message-ID: <1432118834.27443.13.camel@neuling.org>
-Subject: Re: [RFC PATCH 2/3] powerpc/kernel: Prepare for seccomp-filter in
- the 64-bit syscall path
-From: Michael Neuling <mikey@neuling.org>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Date: Wed, 20 May 2015 20:47:14 +1000
-In-Reply-To: <1431678580-11160-2-git-send-email-mpe@ellerman.id.au>
-References: <1431678580-11160-1-git-send-email-mpe@ellerman.id.au>
- <1431678580-11160-2-git-send-email-mpe@ellerman.id.au>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, strosake@linux.vnet.ibm.com,
- bogdan.purcareata@freescale.com
+ by lists.ozlabs.org (Postfix) with ESMTPS id E82F11A060E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 May 2015 20:57:03 +1000 (AEST)
+Received: from /spool/local
+ by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <vaibhav@linux.vnet.ibm.com>;
+ Wed, 20 May 2015 16:27:00 +0530
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 687141258053
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 May 2015 16:29:14 +0530 (IST)
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay01.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t4KAul8142926332
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 May 2015 16:26:48 +0530
+Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t4KAG1d2016080
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 May 2015 15:46:02 +0530
+From: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v2] cxl: Export AFU error buffer via sysfs
+Date: Wed, 20 May 2015 16:26:42 +0530
+Message-Id: <1432119402-10774-1-git-send-email-vaibhav@linux.vnet.ibm.com>
+In-Reply-To: <1428910011-4242-1-git-send-email-vaibhav@linux.vnet.ibm.com>
+References: <1428910011-4242-1-git-send-email-vaibhav@linux.vnet.ibm.com>
+Cc: Michael Neuling <michael.neuling@au1.ibm.com>,
+ Ian Munsie <imunsie@au1.ibm.com>, Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,150 +38,218 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, 2015-05-15 at 18:29 +1000, Michael Ellerman wrote:
-> In order to support seccomp-filter we need to be able to cope with
-> seccomp potentially setting a return value for the syscall.
->=20
-> Currently this doesn't work, because we assume any failure from
-> do_syscall_trace_enter() should result in ENOSYS being returned to
-> userspace.
->=20
-> The complication is that we don't know if seccomp has set a return
-> value, in fact the failure may not even be caused by seccomp it may have
-> been from ptrace. So in some cases we should return ENOSYS, and in
-> others we should return whatever's in regs, but we don't know which at
-> this level.
->=20
-> The trick is to pre-fill regs->result with -ENOSYS, so that we return
-> that unless seccomp overwrites it with something else.
->=20
-> Note that it's negative ENOSYS, so that we still go via the
-> syscall_error path on the way out and set CR0[SO].
->=20
-> On the other hand in syscall_set_return_value() we set the return value
-> as it should be presented to userspace. That is mainly for consistency
-> with syscall_get_error().
->=20
-> Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
-> ---
->  arch/powerpc/include/asm/syscall.h | 13 +++++++++++++
->  arch/powerpc/kernel/entry_64.S     | 37 +++++++++++++++++++++++++++++++-=
------
->  2 files changed, 44 insertions(+), 6 deletions(-)
->=20
-> diff --git a/arch/powerpc/include/asm/syscall.h b/arch/powerpc/include/as=
-m/syscall.h
-> index ff21b7a2f0cc..3f61ef03a54a 100644
-> --- a/arch/powerpc/include/asm/syscall.h
-> +++ b/arch/powerpc/include/asm/syscall.h
-> @@ -50,6 +50,12 @@ static inline void syscall_set_return_value(struct tas=
-k_struct *task,
->  					    struct pt_regs *regs,
->  					    int error, long val)
->  {
-> +	/*
-> +	 * We are setting the return value _as presented to userspace_.
-> +	 * So we set CR0[SO] and also negate error, making it positive.
-> +	 * That means we will _not_ go through the syscall_error path on the
-> +	 * exit to userspace.
-> +	 */
->  	if (error) {
->  		regs->ccr |=3D 0x10000000L;
->  		regs->gpr[3] =3D -error;
-> @@ -57,6 +63,13 @@ static inline void syscall_set_return_value(struct tas=
-k_struct *task,
->  		regs->ccr &=3D ~0x10000000L;
->  		regs->gpr[3] =3D val;
->  	}
-> +
-> +	/*
-> +	 * Set regs->result to match r3. This mirrors the way a regular syscall
-> +	 * exit works. It also makes the return value juggling in
-> +	 * syscall_dotrace work.
-> +	 */
-> +	regs->result =3D regs->gpr[3];
->  }
-> =20
->  static inline void syscall_get_arguments(struct task_struct *task,
-> diff --git a/arch/powerpc/kernel/entry_64.S b/arch/powerpc/kernel/entry_6=
-4.S
-> index b55c393310f3..3c912d9047c4 100644
-> --- a/arch/powerpc/kernel/entry_64.S
-> +++ b/arch/powerpc/kernel/entry_64.S
-> @@ -143,8 +143,7 @@ END_FW_FTR_SECTION_IFSET(FW_FEATURE_SPLPAR)
->  	CURRENT_THREAD_INFO(r11, r1)
->  	ld	r10,TI_FLAGS(r11)
->  	andi.	r11,r10,_TIF_SYSCALL_DOTRACE
-> -	bne	syscall_dotrace
-> -.Lsyscall_dotrace_cont:
-> +	bne	syscall_dotrace /* does not return */
->  	cmpldi	0,r0,NR_syscalls
->  	bge-	syscall_enosys
-> =20
-> @@ -235,27 +234,53 @@ syscall_error:
->  =09
->  /* Traced system call support */
->  syscall_dotrace:
-> +	/* Save non-volatile GPRs so seccomp/ptrace etc. can see them */
->  	bl	save_nvgprs
-> =20
-> +	/*
-> +	 * Seccomp may set regs->result, but we don't know at this level, so
-> +	 * preload result with ENOSYS here. That way below in the path to
-> +	 * .Lsyscall_exit we can load regs->result and get either ENOSYS, or
-> +	 * the value set by seccomp.
-> +	 */
-> +	li	r3,-ENOSYS
-> +	std	r3,RESULT(r1)
-> +
->  	/* Get pt_regs into r3 */
->  	mr	r3, r9
->  	bl	do_syscall_trace_enter
-> +
->  	/*
-> -	 * Restore argument registers possibly just changed.
-> -	 * We use the return value of do_syscall_trace_enter
-> -	 * for the call number to look up in the table (r0).
-> +	 * We use the return value of do_syscall_trace_enter() as the syscall
-> +	 * number. If the syscall was rejected for any reason
-> +	 * do_syscall_trace_enter() returns -1 and the test below against
-> +	 * NR_syscalls will fail.
->  	 */
->  	mr	r0,r3
-> +
-> +	/* Restore argument registers just clobbered and/or possibly changed. *=
-/
->  	ld	r3,GPR3(r1)
->  	ld	r4,GPR4(r1)
->  	ld	r5,GPR5(r1)
->  	ld	r6,GPR6(r1)
->  	ld	r7,GPR7(r1)
->  	ld	r8,GPR8(r1)
-> +
-> +	/* Repopulate r9 and r10 for the system_call path */
->  	addi	r9,r1,STACK_FRAME_OVERHEAD
->  	CURRENT_THREAD_INFO(r10, r1)
->  	ld	r10,TI_FLAGS(r10)
-> -	b	.Lsyscall_dotrace_cont
-> +
-> +	/* Check the syscall number is valid */
-> +	cmpldi	0,r0,NR_syscalls
-> +	blt+	system_call
-> +
-> +	/*
-> +	 * Syscall number is bad, get the result, either ENOSYS from above or
-> +	 * something set by seccomp.
-> +	 */
-> +	ld	r3,RESULT(r1)
-> +	b	.Lsyscall_exit
->=20
+Export the "AFU Error Buffer" via sysfs attribute (afu_err_buf). AFU
+error buffer is used by the AFU to report application specific
+errors. The contents of this buffer are AFU specific and are intended to
+be interpreted by the application interacting with the afu.
 
-Minor nit... one thing that confused me is this last label below here
-"syscall_enosys".  You are talking about enosys a bunch above but if you
-perform the syscall, you don't actually use it as you exit via the
-branch just above.
+Testing:
+	- Build against pseries le/be configs.
+	- Run testing with a special version of memcpy afu on a 'be'
+	kernel.
 
-Should we rename it to syscall_enosys_early: or something else?
+Change-log:
+v1 -> v2
+	- Simplified cxl_afu_read_err_buffer to handle unaligned reads
+	by performing a short read.
 
->  syscall_enosys:
->  	li	r3,-ENOSYS
+Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+---
+ Documentation/ABI/testing/sysfs-class-cxl | 11 ++++++
+ drivers/misc/cxl/cxl.h                    |  7 ++++
+ drivers/misc/cxl/pci.c                    | 60 +++++++++++++++++++++++++++++++
+ drivers/misc/cxl/sysfs.c                  | 33 +++++++++++++++++
+ 4 files changed, 111 insertions(+)
+
+diff --git a/Documentation/ABI/testing/sysfs-class-cxl b/Documentation/ABI/testing/sysfs-class-cxl
+index d46bba8..45e9ce3 100644
+--- a/Documentation/ABI/testing/sysfs-class-cxl
++++ b/Documentation/ABI/testing/sysfs-class-cxl
+@@ -6,6 +6,17 @@ Example: The real path of the attribute /sys/class/cxl/afu0.0s/irqs_max is
+ 
+ Slave contexts (eg. /sys/class/cxl/afu0.0s):
+ 
++What:           /sys/class/cxl/<afu>/afu_err_buf
++Date:           September 2014
++Contact:        linuxppc-dev@lists.ozlabs.org
++Description:    read only
++                AFU Error Buffer contents. The contents of this file are
++		application specific and depends on the AFU being used.
++		Applications interacting with the AFU can use this attribute
++		to know about the current error condition and take appropriate
++		action like logging the event etc.
++
++
+ What:           /sys/class/cxl/<afu>/irqs_max
+ Date:           September 2014
+ Contact:        linuxppc-dev@lists.ozlabs.org
+diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
+index a1cee47..789f077 100644
+--- a/drivers/misc/cxl/cxl.h
++++ b/drivers/misc/cxl/cxl.h
+@@ -362,6 +362,10 @@ struct cxl_afu {
+ 	struct mutex spa_mutex;
+ 	spinlock_t afu_cntl_lock;
+ 
++	/* AFU error buffer fields and bin attribute for sysfs */
++	u64 eb_len, eb_offset;
++	struct bin_attribute attr_eb;
++
+ 	/*
+ 	 * Only the first part of the SPA is used for the process element
+ 	 * linked list. The only other part that software needs to worry about
+@@ -563,6 +567,9 @@ static inline void __iomem *_cxl_p2n_addr(struct cxl_afu *afu, cxl_p2n_reg_t reg
+ u16 cxl_afu_cr_read16(struct cxl_afu *afu, int cr, u64 off);
+ u8 cxl_afu_cr_read8(struct cxl_afu *afu, int cr, u64 off);
+ 
++ssize_t cxl_afu_read_err_buffer(struct cxl_afu *afu, char *buf,
++				loff_t off, size_t count);
++
+ 
+ struct cxl_calls {
+ 	void (*cxl_slbia)(struct mm_struct *mm);
+diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
+index 1ef0164..162a8fc 100644
+--- a/drivers/misc/cxl/pci.c
++++ b/drivers/misc/cxl/pci.c
+@@ -593,6 +593,22 @@ static int cxl_read_afu_descriptor(struct cxl_afu *afu)
+ 	afu->crs_len = AFUD_CR_LEN(val) * 256;
+ 	afu->crs_offset = AFUD_READ_CR_OFF(afu);
+ 
++
++	/* eb_len is in multiple of 4K */
++	afu->eb_len = AFUD_EB_LEN(AFUD_READ_EB(afu)) * 4096;
++	afu->eb_offset = AFUD_READ_EB_OFF(afu);
++
++	/* eb_off is 4K aligned so lower 12 bits are always zero */
++	if (EXTRACT_PPC_BITS(afu->eb_offset, 0, 11) != 0) {
++		dev_warn(&afu->dev,
++			 "Invalid AFU error buffer offset %Lx\n",
++			 afu->eb_offset);
++		dev_info(&afu->dev,
++			 "Ignoring AFU error buffer in the descriptor\n");
++		/* indicate that no afu buffer exists */
++		afu->eb_len = 0;
++	}
++
+ 	return 0;
+ }
+ 
+@@ -672,6 +688,50 @@ static int sanitise_afu_regs(struct cxl_afu *afu)
+ 	return 0;
+ }
+ 
++/*
++ * afu_eb_read:
++ * Called from sysfs and reads the afu error info buffer. The h/w only supports
++ * 4/8 bytes aligned access. So most of the code tries to get around this by
++ * reading full 8 bytes aligned chunks, copying it to a temp buffer and dropping
++ * unneeded bytes at the beginning & the end of the requested region.
++ */
++ssize_t cxl_afu_read_err_buffer(struct cxl_afu *afu, char *buf,
++				loff_t off, size_t count)
++{
++	u8 tbuff[8];
++	const void __iomem *ebuf = afu->afu_desc_mmio + afu->eb_offset;
++
++	count = min((size_t)(afu->eb_len - off), count);
++
++	if (unlikely(count <= 0)) {
++		/* handle case where no ebuf exists or offset out of bound */
++		count = 0;
++
++	} else if ((count >= 8) && IS_ALIGNED(off, 8)) {
++		/* read all the intermediate aligned words */
++
++		count = round_down(off + count, 8) - off;
++		_memcpy_fromio(buf,
++			       ebuf + off, count);
++
++	} else if (!IS_ALIGNED(off, 8)) {
++		/* handle unaligned access at the beginning */
++		_memcpy_fromio(tbuff, ebuf + round_down(off, 8), 8);
++
++		count = min((size_t)(ALIGN(off, 8) - off), count);
++		memcpy(buf, tbuff + (off & 0x7), count);
++
++	} else {
++		/* offset is aligned but count < 8 */
++		_memcpy_fromio(tbuff, ebuf + round_down(off + count, 8), 8);
++
++		count = (off + count) - round_down(off + count, 8);
++		memcpy(buf, tbuff, count);
++	}
++
++	return count;
++}
++
+ static int cxl_init_afu(struct cxl *adapter, int slice, struct pci_dev *dev)
+ {
+ 	struct cxl_afu *afu;
+diff --git a/drivers/misc/cxl/sysfs.c b/drivers/misc/cxl/sysfs.c
+index d0c38c7..4942d55 100644
+--- a/drivers/misc/cxl/sysfs.c
++++ b/drivers/misc/cxl/sysfs.c
+@@ -356,6 +356,16 @@ static ssize_t api_version_compatible_show(struct device *device,
+ 	return scnprintf(buf, PAGE_SIZE, "%i\n", CXL_API_VERSION_COMPATIBLE);
+ }
+ 
++static ssize_t afu_eb_read(struct file *filp, struct kobject *kobj,
++			       struct bin_attribute *bin_attr, char *buf,
++			       loff_t off, size_t count)
++{
++	struct cxl_afu *afu = to_cxl_afu(container_of(kobj,
++						      struct device, kobj));
++
++	return cxl_afu_read_err_buffer(afu, buf, off, count);
++}
++
+ static struct device_attribute afu_attrs[] = {
+ 	__ATTR_RO(mmio_size),
+ 	__ATTR_RO(irqs_min),
+@@ -534,6 +544,10 @@ void cxl_sysfs_afu_remove(struct cxl_afu *afu)
+ 	struct afu_config_record *cr, *tmp;
+ 	int i;
+ 
++	/* remove the err buffer bin attribute */
++	if (afu->eb_len)
++		device_remove_bin_file(&afu->dev, &afu->attr_eb);
++
+ 	for (i = 0; i < ARRAY_SIZE(afu_attrs); i++)
+ 		device_remove_file(&afu->dev, &afu_attrs[i]);
+ 
+@@ -555,6 +569,22 @@ int cxl_sysfs_afu_add(struct cxl_afu *afu)
+ 			goto err;
+ 	}
+ 
++	/* conditionally create the add the binary file for error info buffer */
++	if (afu->eb_len) {
++		afu->attr_eb.attr.name = "afu_err_buff";
++		afu->attr_eb.attr.mode = S_IRUGO;
++		afu->attr_eb.size = afu->eb_len;
++		afu->attr_eb.read = afu_eb_read;
++
++		rc = device_create_bin_file(&afu->dev, &afu->attr_eb);
++		if (rc) {
++			dev_err(&afu->dev,
++				"Unable to create eb attr for the afu. Err(%d)\n",
++				rc);
++			goto err;
++		}
++	}
++
+ 	for (i = 0; i < afu->crs_num; i++) {
+ 		cr = cxl_sysfs_afu_new_cr(afu, i);
+ 		if (IS_ERR(cr)) {
+@@ -570,6 +600,9 @@ err1:
+ 	cxl_sysfs_afu_remove(afu);
+ 	return rc;
+ err:
++	/* reset the eb_len as we havent created the bin attr */
++	afu->eb_len = 0;
++
+ 	for (i--; i >= 0; i--)
+ 		device_remove_file(&afu->dev, &afu_attrs[i]);
+ 	return rc;
+-- 
+2.2.1
