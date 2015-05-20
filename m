@@ -1,21 +1,34 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0128.outbound.protection.outlook.com [65.55.169.128])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <sukadev@linux.vnet.ibm.com>
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 24BC81A02AF
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 May 2015 08:35:23 +1000 (AEST)
-Message-ID: <1432161308.27761.116.camel@freescale.com>
-Subject: Re: [PATCH 1/1] KVM: PPC: Book3S: correct width in XER handling
-From: Scott Wood <scottwood@freescale.com>
-To: Sam Bobroff <sam.bobroff@au1.ibm.com>
-CC: <kvm-ppc@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
- <paulus@samba.org>, Mihai Caraman <mihai.caraman@freescale.com>
-Date: Wed, 20 May 2015 17:35:08 -0500
-In-Reply-To: <d0600fe7952351dfd176c97d416a6a351812a78b.1432099563.git.sam.bobroff@au1.ibm.com>
-References: <d0600fe7952351dfd176c97d416a6a351812a78b.1432099563.git.sam.bobroff@au1.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
+ by lists.ozlabs.org (Postfix) with ESMTPS id A05541A02AC
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 May 2015 09:34:47 +1000 (AEST)
+Received: from /spool/local
+ by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
+ Wed, 20 May 2015 17:34:45 -0600
+Received: from b03cxnp07029.gho.boulder.ibm.com
+ (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
+ by d03dlp02.boulder.ibm.com (Postfix) with ESMTP id 3E8C33E4003E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 May 2015 17:34:43 -0600 (MDT)
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+ by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t4KNYgoX53412008
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 May 2015 16:34:43 -0700
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+ by d03av04.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t4KNYgub019557
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 May 2015 17:34:42 -0600
+Date: Wed, 20 May 2015 16:34:16 -0700
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH 1/1] powerpc/perf/hv-24x7: Check support before registering
+Message-ID: <20150520233416.GA10270@us.ibm.com>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,106 +38,66 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 2015-05-20 at 15:26 +1000, Sam Bobroff wrote:
-> In 64 bit kernels, the Fixed Point Exception Register (XER) is a 64
-> bit field (e.g. in kvm_regs and kvm_vcpu_arch) and in most places it is
-> accessed as such.
-> 
-> This patch corrects places where it is accessed as a 32 bit field by a
-> 64 bit kernel.  In some cases this is via a 32 bit load or store
-> instruction which, depending on endianness, will cause either the
-> lower or upper 32 bits to be missed.  In another case it is cast as a
-> u32, causing the upper 32 bits to be cleared.
-> 
-> This patch corrects those places by extending the access methods to
-> 64 bits.
-> 
-> Signed-off-by: Sam Bobroff <sam.bobroff@au1.ibm.com>
-> ---
-> 
->  arch/powerpc/include/asm/kvm_book3s.h   |    4 ++--
->  arch/powerpc/kvm/book3s_hv_rmhandlers.S |    6 +++---
->  arch/powerpc/kvm/book3s_segment.S       |    4 ++--
->  3 files changed, 7 insertions(+), 7 deletions(-)
+>From 955102eacf035b19080dc659a15d9b8fbd8fae7f Mon Sep 17 00:00:00 2001
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Date: Tue, 28 Apr 2015 18:47:58 -0400
+Subject: [PATCH 1/1] powerpc/perf/hv-24x7: Check support before registering
+ PMU
 
-It's nominally a 64-bit register, but the upper 32 bits are reserved in
-ISA 2.06.  Do newer ISAs or certain implementations define things in the
-upper 32 bits, or is this just about the asm accesses being wrong on
-big-endian?
+We currently try to register the 24x7 PMU unconditionally. Not all
+Power systems support 24x7 counters (eg: Power7). On these systems
+we get a backtrace during boot when trying to register the 24x7 PMU.
 
-Also, I see the same issue in the booke code (CCing Mihai).
+Check if the hypervisor supports 24x7 counters before attempting to
+register the 24x7 PMU.
 
--Scott
+Reported-by: Gustavo Luiz Duarte <gusld@br.ibm.com>
+Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+---
 
-> diff --git a/arch/powerpc/include/asm/kvm_book3s.h b/arch/powerpc/include/asm/kvm_book3s.h
-> index b91e74a..05a875a 100644
-> --- a/arch/powerpc/include/asm/kvm_book3s.h
-> +++ b/arch/powerpc/include/asm/kvm_book3s.h
-> @@ -225,12 +225,12 @@ static inline u32 kvmppc_get_cr(struct kvm_vcpu *vcpu)
->  	return vcpu->arch.cr;
->  }
->  
-> -static inline void kvmppc_set_xer(struct kvm_vcpu *vcpu, u32 val)
-> +static inline void kvmppc_set_xer(struct kvm_vcpu *vcpu, ulong val)
->  {
->  	vcpu->arch.xer = val;
->  }
->  
-> -static inline u32 kvmppc_get_xer(struct kvm_vcpu *vcpu)
-> +static inline ulong kvmppc_get_xer(struct kvm_vcpu *vcpu)
->  {
->  	return vcpu->arch.xer;
->  }
-> diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-> index 4d70df2..d75be59 100644
-> --- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-> +++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-> @@ -870,7 +870,7 @@ END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_207S)
->  	blt	hdec_soon
->  
->  	ld	r6, VCPU_CTR(r4)
-> -	lwz	r7, VCPU_XER(r4)
-> +	ld	r7, VCPU_XER(r4)
->  
->  	mtctr	r6
->  	mtxer	r7
-> @@ -1103,7 +1103,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
->  	mfctr	r3
->  	mfxer	r4
->  	std	r3, VCPU_CTR(r9)
-> -	stw	r4, VCPU_XER(r9)
-> +	std	r4, VCPU_XER(r9)
->  
->  	/* If this is a page table miss then see if it's theirs or ours */
->  	cmpwi	r12, BOOK3S_INTERRUPT_H_DATA_STORAGE
-> @@ -1675,7 +1675,7 @@ kvmppc_hdsi:
->  	bl	kvmppc_msr_interrupt
->  fast_interrupt_c_return:
->  6:	ld	r7, VCPU_CTR(r9)
-> -	lwz	r8, VCPU_XER(r9)
-> +	ld	r8, VCPU_XER(r9)
->  	mtctr	r7
->  	mtxer	r8
->  	mr	r4, r9
-> diff --git a/arch/powerpc/kvm/book3s_segment.S b/arch/powerpc/kvm/book3s_segment.S
-> index acee37c..ca8f174 100644
-> --- a/arch/powerpc/kvm/book3s_segment.S
-> +++ b/arch/powerpc/kvm/book3s_segment.S
-> @@ -123,7 +123,7 @@ no_dcbz32_on:
->  	PPC_LL	r8, SVCPU_CTR(r3)
->  	PPC_LL	r9, SVCPU_LR(r3)
->  	lwz	r10, SVCPU_CR(r3)
-> -	lwz	r11, SVCPU_XER(r3)
-> +	PPC_LL	r11, SVCPU_XER(r3)
->  
->  	mtctr	r8
->  	mtlr	r9
-> @@ -237,7 +237,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_HVMODE)
->  	mfctr	r8
->  	mflr	r9
->  
-> -	stw	r5, SVCPU_XER(r13)
-> +	PPC_STL	r5, SVCPU_XER(r13)
->  	PPC_STL	r6, SVCPU_FAULT_DAR(r13)
->  	stw	r7, SVCPU_FAULT_DSISR(r13)
->  	PPC_STL	r8, SVCPU_CTR(r13)
+Changelog[v2]
+	- [Michael Ellerman] Simplify check with bogus parameters.
+---
+ arch/powerpc/perf/hv-24x7.c |   21 +++++++++++++++++++++
+ 1 file changed, 21 insertions(+)
+
+diff --git a/arch/powerpc/perf/hv-24x7.c b/arch/powerpc/perf/hv-24x7.c
+index ec2eb20..c04a332 100644
+--- a/arch/powerpc/perf/hv-24x7.c
++++ b/arch/powerpc/perf/hv-24x7.c
+@@ -1268,12 +1268,33 @@ static struct pmu h_24x7_pmu = {
+ 	.read        = h_24x7_event_read,
+ };
+ 
++/*
++ * Return 1 if we can access the 24x7 counter catalog from the hypervisor.
++ * Return 0 otherwise.
++ */
++static bool hv_has_24x7(void)
++{
++	unsigned long hret;
++
++	hret = h_get_24x7_catalog_page(0, 0, 0);
++
++	if (hret != H_FUNCTION)
++		pr_err("Error %ld reading catalog, disabling 24x7 PMU\n", hret);
++
++	return hret == 0;
++
++}
++
++
+ static int hv_24x7_init(void)
+ {
+ 	int r;
+ 	unsigned long hret;
+ 	struct hv_perf_caps caps;
+ 
++	if (!hv_has_24x7())
++		return -ENODEV;
++
+ 	if (!firmware_has_feature(FW_FEATURE_LPAR)) {
+ 		pr_debug("not a virtualized system, not enabling\n");
+ 		return -ENODEV;
+-- 
+1.7.9.5
