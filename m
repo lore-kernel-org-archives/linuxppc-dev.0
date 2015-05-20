@@ -1,28 +1,23 @@
 Return-Path: <jiang.liu@linux.intel.com>
-Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
- by lists.ozlabs.org (Postfix) with ESMTP id A76991A060E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 May 2015 19:43:03 +1000 (AEST)
 From: Jiang Liu <jiang.liu@linux.intel.com>
 To: Thomas Gleixner <tglx@linutronix.de>, Bjorn Helgaas <bhelgaas@google.com>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
  Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
  "Rafael J. Wysocki" <rjw@rjwysocki.net>,
  Randy Dunlap <rdunlap@infradead.org>, Yinghai Lu <yinghai@kernel.org>,
- Borislav Petkov <bp@alien8.de>, Tony Luck <tony.luck@intel.com>,
- Fenghua Yu <fenghua.yu@intel.com>, Paul Mackerras <paulus@samba.org>,
- Michael Ellerman <mpe@ellerman.id.au>, Chris Metcalf <cmetcalf@ezchip.com>,
- Jiang Liu <jiang.liu@linux.intel.com>,
- Rusty Russell <rusty@rustcorp.com.au>, Tejun Heo <tj@kernel.org>,
- Joe Perches <joe@perches.com>
-Subject: [Patch v2 12/14] genirq: Use helper function to access
- irq_data->msi_desc
-Date: Wed, 20 May 2015 17:40:43 +0800
-Message-Id: <1432114845-24304-13-git-send-email-jiang.liu@linux.intel.com>
-In-Reply-To: <1432114845-24304-1-git-send-email-jiang.liu@linux.intel.com>
-References: <1432114845-24304-1-git-send-email-jiang.liu@linux.intel.com>
-Cc: linux-ia64@vger.kernel.org, Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
- linux-pci@vger.kernel.org, x86@kernel.org, linux-kernel@vger.kernel.org,
- linux-acpi@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+ Borislav Petkov <bp@alien8.de>, Anatolij Gustschin <agust@denx.de>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Arnd Bergmann <arnd@arndb.de>
+Subject: [RFC v1 04/25] powerpc,
+ irq: Use irq_desc_get_xxx() to avoid redundant lookup of irq_desc
+Date: Wed, 20 May 2015 17:59:52 +0800
+Message-Id: <1432116013-25902-5-git-send-email-jiang.liu@linux.intel.com>
+In-Reply-To: <1432116013-25902-1-git-send-email-jiang.liu@linux.intel.com>
+References: <1432116013-25902-1-git-send-email-jiang.liu@linux.intel.com>
+Cc: cbe-oss-dev@lists.ozlabs.org, Tony Luck <tony.luck@intel.com>,
+ Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>, linux-pci@vger.kernel.org,
+ x86@kernel.org, linux-kernel@vger.kernel.org, linux-acpi@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, Jiang Liu <jiang.liu@linux.intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,96 +27,82 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Use irq_data access helper to access irq_data->msi_desc, so we could
-move msi_desc from struct irq_data into struct irq_common_data later.
+Use irq_desc_get_xxx() to avoid redundant lookup of irq_desc while we
+already have a pointer to corresponding irq_desc.
 
 Signed-off-by: Jiang Liu <jiang.liu@linux.intel.com>
 ---
- arch/ia64/kernel/msi_ia64.c         |    2 +-
- arch/ia64/sn/kernel/msi_sn.c        |    2 +-
- arch/powerpc/sysdev/xics/ics-opal.c |    2 +-
- arch/powerpc/sysdev/xics/ics-rtas.c |    2 +-
- arch/tile/kernel/pci_gx.c           |    2 +-
- drivers/pci/msi.c                   |    2 +-
- 6 files changed, 6 insertions(+), 6 deletions(-)
+ arch/powerpc/platforms/52xx/mpc52xx_gpt.c     |    2 +-
+ arch/powerpc/platforms/cell/axon_msi.c        |    2 +-
+ arch/powerpc/platforms/embedded6xx/hlwd-pic.c |    2 +-
+ arch/powerpc/sysdev/uic.c                     |    2 +-
+ arch/powerpc/sysdev/xics/xics-common.c        |    2 +-
+ 5 files changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/arch/ia64/kernel/msi_ia64.c b/arch/ia64/kernel/msi_ia64.c
-index 6c50d332b7d7..af4eaec0f7c3 100644
---- a/arch/ia64/kernel/msi_ia64.c
-+++ b/arch/ia64/kernel/msi_ia64.c
-@@ -23,7 +23,7 @@ static int ia64_set_msi_irq_affinity(struct irq_data *idata,
- 	if (irq_prepare_move(irq, cpu))
- 		return -1;
+diff --git a/arch/powerpc/platforms/52xx/mpc52xx_gpt.c b/arch/powerpc/platforms/52xx/mpc52xx_gpt.c
+index c949ca055712..63016621aff8 100644
+--- a/arch/powerpc/platforms/52xx/mpc52xx_gpt.c
++++ b/arch/powerpc/platforms/52xx/mpc52xx_gpt.c
+@@ -193,7 +193,7 @@ static struct irq_chip mpc52xx_gpt_irq_chip = {
  
--	__get_cached_msi_msg(idata->msi_desc, &msg);
-+	__get_cached_msi_msg(irq_data_get_msi_desc(idata), &msg);
- 
- 	addr = msg.address_lo;
- 	addr &= MSI_ADDR_DEST_ID_MASK;
-diff --git a/arch/ia64/sn/kernel/msi_sn.c b/arch/ia64/sn/kernel/msi_sn.c
-index 42b5a13af142..fb25065b22c6 100644
---- a/arch/ia64/sn/kernel/msi_sn.c
-+++ b/arch/ia64/sn/kernel/msi_sn.c
-@@ -175,7 +175,7 @@ static int sn_set_msi_irq_affinity(struct irq_data *data,
- 	 * Release XIO resources for the old MSI PCI address
- 	 */
- 
--	__get_cached_msi_msg(data->msi_desc, &msg);
-+	__get_cached_msi_msg(irq_data_get_msi_desc(data), &msg);
- 	sn_pdev = (struct pcidev_info *)sn_irq_info->irq_pciioinfo;
- 	pdev = sn_pdev->pdi_linux_pcidev;
- 	provider = SN_PCIDEV_BUSPROVIDER(pdev);
-diff --git a/arch/powerpc/sysdev/xics/ics-opal.c b/arch/powerpc/sysdev/xics/ics-opal.c
-index 3996393c254d..27c936c080a6 100644
---- a/arch/powerpc/sysdev/xics/ics-opal.c
-+++ b/arch/powerpc/sysdev/xics/ics-opal.c
-@@ -72,7 +72,7 @@ static unsigned int ics_opal_startup(struct irq_data *d)
- 	 * card, using the MSI mask bits. Firmware doesn't appear to unmask
- 	 * at that level, so we do it here by hand.
- 	 */
--	if (d->msi_desc)
-+	if (irq_data_get_msi_desc(d))
- 		pci_msi_unmask_irq(d);
- #endif
- 
-diff --git a/arch/powerpc/sysdev/xics/ics-rtas.c b/arch/powerpc/sysdev/xics/ics-rtas.c
-index e2665a9dfc0f..3854dd41558d 100644
---- a/arch/powerpc/sysdev/xics/ics-rtas.c
-+++ b/arch/powerpc/sysdev/xics/ics-rtas.c
-@@ -75,7 +75,7 @@ static unsigned int ics_rtas_startup(struct irq_data *d)
- 	 * card, using the MSI mask bits. Firmware doesn't appear to unmask
- 	 * at that level, so we do it here by hand.
- 	 */
--	if (d->msi_desc)
-+	if (irq_data_get_msi_desc(d))
- 		pci_msi_unmask_irq(d);
- #endif
- 	/* unmask it */
-diff --git a/arch/tile/kernel/pci_gx.c b/arch/tile/kernel/pci_gx.c
-index b1df847d0686..65b701b3b5ed 100644
---- a/arch/tile/kernel/pci_gx.c
-+++ b/arch/tile/kernel/pci_gx.c
-@@ -1442,7 +1442,7 @@ static struct pci_ops tile_cfg_ops = {
- /* MSI support starts here. */
- static unsigned int tilegx_msi_startup(struct irq_data *d)
+ void mpc52xx_gpt_irq_cascade(unsigned int virq, struct irq_desc *desc)
  {
--	if (d->msi_desc)
-+	if (irq_data_get_msi_desc(d))
- 		pci_msi_unmask_irq(d);
+-	struct mpc52xx_gpt_priv *gpt = irq_get_handler_data(virq);
++	struct mpc52xx_gpt_priv *gpt = irq_desc_get_handler_data(desc);
+ 	int sub_virq;
+ 	u32 status;
  
- 	return 0;
-diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
-index be6034cf5c21..c2f0da733d3a 100644
---- a/drivers/pci/msi.c
-+++ b/drivers/pci/msi.c
-@@ -1178,7 +1178,7 @@ EXPORT_SYMBOL(pci_enable_msix_range);
-  */
- void pci_msi_domain_write_msg(struct irq_data *irq_data, struct msi_msg *msg)
+diff --git a/arch/powerpc/platforms/cell/axon_msi.c b/arch/powerpc/platforms/cell/axon_msi.c
+index 623bd961465a..817d0e6747ea 100644
+--- a/arch/powerpc/platforms/cell/axon_msi.c
++++ b/arch/powerpc/platforms/cell/axon_msi.c
+@@ -95,7 +95,7 @@ static void msic_dcr_write(struct axon_msic *msic, unsigned int dcr_n, u32 val)
+ static void axon_msi_cascade(unsigned int irq, struct irq_desc *desc)
  {
--	struct msi_desc *desc = irq_data->msi_desc;
-+	struct msi_desc *desc = irq_data_get_msi_desc(irq_data);
+ 	struct irq_chip *chip = irq_desc_get_chip(desc);
+-	struct axon_msic *msic = irq_get_handler_data(irq);
++	struct axon_msic *msic = irq_desc_get_handler_data(desc);
+ 	u32 write_offset, msi;
+ 	int idx;
+ 	int retry = 0;
+diff --git a/arch/powerpc/platforms/embedded6xx/hlwd-pic.c b/arch/powerpc/platforms/embedded6xx/hlwd-pic.c
+index c269caee58f9..9dd154d6f89a 100644
+--- a/arch/powerpc/platforms/embedded6xx/hlwd-pic.c
++++ b/arch/powerpc/platforms/embedded6xx/hlwd-pic.c
+@@ -124,7 +124,7 @@ static void hlwd_pic_irq_cascade(unsigned int cascade_virq,
+ 				      struct irq_desc *desc)
+ {
+ 	struct irq_chip *chip = irq_desc_get_chip(desc);
+-	struct irq_domain *irq_domain = irq_get_handler_data(cascade_virq);
++	struct irq_domain *irq_domain = irq_desc_get_handler_data(desc);
+ 	unsigned int virq;
  
- 	/*
- 	 * For MSI-X desc->irq is always equal to irq_data->irq. For
+ 	raw_spin_lock(&desc->lock);
+diff --git a/arch/powerpc/sysdev/uic.c b/arch/powerpc/sysdev/uic.c
+index 7c37157d4c24..e763fe215cf5 100644
+--- a/arch/powerpc/sysdev/uic.c
++++ b/arch/powerpc/sysdev/uic.c
+@@ -198,7 +198,7 @@ void uic_irq_cascade(unsigned int virq, struct irq_desc *desc)
+ {
+ 	struct irq_chip *chip = irq_desc_get_chip(desc);
+ 	struct irq_data *idata = irq_desc_get_irq_data(desc);
+-	struct uic *uic = irq_get_handler_data(virq);
++	struct uic *uic = irq_desc_get_handler_data(desc);
+ 	u32 msr;
+ 	int src;
+ 	int subvirq;
+diff --git a/arch/powerpc/sysdev/xics/xics-common.c b/arch/powerpc/sysdev/xics/xics-common.c
+index 878a54036a25..76be7b00dd80 100644
+--- a/arch/powerpc/sysdev/xics/xics-common.c
++++ b/arch/powerpc/sysdev/xics/xics-common.c
+@@ -227,7 +227,7 @@ void xics_migrate_irqs_away(void)
+ 
+ 		/* Locate interrupt server */
+ 		server = -1;
+-		ics = irq_get_chip_data(virq);
++		ics = irq_desc_get_chip_data(desc);
+ 		if (ics)
+ 			server = ics->get_server(ics, irq);
+ 		if (server < 0) {
 -- 
 1.7.10.4
