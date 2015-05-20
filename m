@@ -1,20 +1,21 @@
-Return-Path: <mikey@neuling.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 021A41A02AC
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 May 2015 09:46:11 +1000 (AEST)
-Message-ID: <1432165570.27130.5.camel@neuling.org>
-Subject: Re: [PATCH v3] cxl: Export AFU error buffer via sysfs
-From: Michael Neuling <mikey@neuling.org>
-To: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Ian Munsie <imunsie@au1.ibm.com>, Michael
- Ellerman <michael@ellerman.id.au>
-Date: Thu, 21 May 2015 09:46:10 +1000
-In-Reply-To: <1432142313-7741-1-git-send-email-vaibhav@linux.vnet.ibm.com>
-References: <1432142313-7741-1-git-send-email-vaibhav@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+Return-Path: <ak@linux.intel.com>
+Received: from mga03.intel.com (mga03.intel.com [134.134.136.65])
+ by lists.ozlabs.org (Postfix) with ESMTP id 59FA71A02AC
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 May 2015 09:58:33 +1000 (AEST)
+Date: Wed, 20 May 2015 16:58:26 -0700
+From: Andi Kleen <ak@linux.intel.com>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Cc: mingo@redhat.com, Michael Ellerman <mpe@ellerman.id.au>,
+ Jiri Olsa <jolsa@redhat.com>, Arnaldo Carvalho de Melo <acme@kernel.org>,
+ Paul Mackerras <paulus@samba.org>, namhyung@kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/4] perf: Use pmu_events_map table to create event aliases
+Message-ID: <20150520235826.GB7484@tassilo.jf.intel.com>
+References: <1432080130-6678-1-git-send-email-sukadev@linux.vnet.ibm.com>
+ <1432080130-6678-4-git-send-email-sukadev@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1432080130-6678-4-git-send-email-sukadev@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,102 +25,34 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-+ */
-> +ssize_t cxl_afu_read_err_buffer(struct cxl_afu *afu, char *buf,
-> +				loff_t off, size_t count)
+> +/*
+> + * Return TRUE if the CPU identified by @vfm, @version, and @type
+> + * matches the current CPU.  vfm refers to [Vendor, Family, Model],
+> + *
+> + * Return FALSE otherwise.
+> + *
+> + * For Powerpc, we only compare @version to the processor PVR.
+> + */
+> +bool arch_pmu_events_match_cpu(const char *vfm __maybe_unused,
+> +				const char *version,
+> +				const char *type __maybe_unused)
 > +{
-> +	loff_t aligned_off;
-> +	size_t aligned_count;
-> +	const void __iomem *ebuf =3D afu->afu_desc_mmio + afu->eb_offset;
+> +	char *cpustr;
+> +	bool rc;
 > +
-> +	if (!afu->eb_len || count =3D=3D 0 || off < 0)
-
-if eb_len =3D=3D 0 we don't even create the sysfs file.  So is this check
-needed?
-
-> +		return 0;
-> +
-> +	/* calculate aligned read window */
-> +	count =3D min((size_t)(afu->eb_len - off), count);
-
-What if count ends up being negative because off > afu->eb_len??
-
-> +	aligned_off =3D round_down(off, 8);
-> +	aligned_count =3D round_up(off + count, 8) - aligned_off;
-
-I kinda preferred the start end variables, and length was just end -
-start.
-
-I though it was more readable. IMHO
-
-How about:
-
-	aligned_start =3D round_down(off, 8);
-	aligned_end =3D round_up(off + count, 8);
-	aligned_length =3D aligned_end - aligned_start;
-
-> +
-> +	/* fast path */
-> +	if ((aligned_off =3D=3D off) && (aligned_count =3D=3D count)) {
-> +		/* no need to use the bounce buffer */
-> +		_memcpy_fromio(buf, ebuf + off, count);
-
-I would drop this, as the other code path should work fine.
-Premature optimisation.....
-
-> +
-> +	} else {
-> +		/* use bounce buffer for copy */
-> +		void *tbuf =3D (void *)__get_free_page(GFP_TEMPORARY);
-> +
-> +		if (!tbuf)
-> +			return -ENOMEM;
-> +
-> +		/* max we can copy in one read is PAGE_SIZE */
-> +		aligned_count =3D min(aligned_count, PAGE_SIZE);
-> +		_memcpy_fromio(tbuf, ebuf + aligned_off, aligned_count);
-> +
-> +		count =3D min(count, aligned_count);
-
-This doesn't seem right.  count will equal PAGE_SIZE if it's too big but
-it has to be smaller by (off & 7) in this case.
-
-How about this?
-
-        #define MAX_COPY_SIZE PAGE_SIZE
-	...
-
-	void *bbuf;
-
-	/* Bounds check count with err buf length */
-	count =3D min((size_t)(afu->eb_len - off), count);
-	if ((off < 0) || (count < 0))
-		return 0;
-
-	/* Create aligned bounce buffer to copy into */
-	aligned_start =3D round_down(off, 8);
-	aligned_end =3D round_up(off + count, 8);
-	aligned_length =3D aligned_end - aligned_start;
-
-	if (aligned_length > MAX_COPY_SIZE) {
-		aligned_length =3D MAX_COPY_SIZE;
-		count =3D MAX_COPY_SIZE - (off & 0x7);
-        }
-
-	bbuf =3D (void *)__get_free_page(GFP_TEMPORARY);
- 	if (!bbuf)
-		return -ENOMEM;
-
-	/* Use _memcpy_fromio() so the reads are aligned */
-	_memcpy_fromio(bbuf, ebuf + aligned_start, aligned_length);
-	memcpy(buf, bbuf + (off & 0x7), count);
-
-	free_page(bbuf);
+> +	cpustr = get_cpu_str();
+> +	rc = !strcmp(version, cpustr);
 
 
-> +		memcpy(buf, tbuf + (off & 0x7), count);
-> +
-> +		free_page((unsigned long)tbuf);
-> +	}
-> +
-> +	return count;
+Surely against vfm not version
+I think your mapfile is wrong if that works?
+
+That's the Intel format:
+
+.vfm = "GenuineIntel-6-3E",
+        .version = "V16",
+        .type = "core",
+        .table = pme_IvyTown_core
+
+
+-Andi
