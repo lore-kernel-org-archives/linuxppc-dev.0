@@ -1,15 +1,17 @@
 Return-Path: <madalin.bucur@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1on0113.outbound.protection.outlook.com [157.56.110.113])
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0129.outbound.protection.outlook.com [65.55.169.129])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E21F81A060E
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 May 2015 22:27:03 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id ABEAE1A060E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 May 2015 22:30:59 +1000 (AEST)
 From: Madalin Bucur <madalin.bucur@freescale.com>
 To: <linuxppc-dev@lists.ozlabs.org>, <scottwood@freescale.com>
-Subject: [PATCH] powerpc/mpc85xx: Add DPAA Ethernet QMan support to the
-Date: Wed, 20 May 2015 15:25:45 +0300
-Message-ID: <1432124745-6049-1-git-send-email-madalin.bucur@freescale.com>
+Subject: [PATCH,
+ v2] powerpc/mpc85xx: Add DPAA Ethernet QMan support to the device
+ tree(s)
+Date: Wed, 20 May 2015 15:29:35 +0300
+Message-ID: <1432124975-6096-1-git-send-email-madalin.bucur@freescale.com>
 Reply-To: <madalin.bucur@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain
