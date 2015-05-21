@@ -1,32 +1,33 @@
 Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
+Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 85BDD1A0BC1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 May 2015 16:44:07 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6283E1A119E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 May 2015 16:45:27 +1000 (AEST)
 Received: from /spool/local
- by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Thu, 21 May 2015 12:14:05 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 5E296E0057
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 May 2015 12:17:06 +0530 (IST)
+ Thu, 21 May 2015 12:15:25 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 92B841258053
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 May 2015 12:17:39 +0530 (IST)
 Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t4L6hlQd47251678
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 May 2015 12:13:48 +0530
+ by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t4L6j3RY1179910
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 May 2015 12:15:22 +0530
 Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
  by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t4L62F9V008149
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 May 2015 11:32:16 +0530
+ t4L62AgT007619
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 May 2015 11:32:10 +0530
 From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 Cc: mikey@neuling.org, anton@samba.org, shuahkh@osg.samsung.com,
  mpe@ellerman.id.au
-Subject: [PATCH V5 08/13] selftests, powerpc: Add test for DSCR SPR numbers
-Date: Thu, 21 May 2015 12:13:08 +0530
-Message-Id: <1432190593-17253-9-git-send-email-khandual@linux.vnet.ibm.com>
+Subject: [PATCH V5 05/13] documentation,
+ powerpc: Add documentation for DSCR support
+Date: Thu, 21 May 2015 12:13:05 +0530
+Message-Id: <1432190593-17253-6-git-send-email-khandual@linux.vnet.ibm.com>
 In-Reply-To: <1432190593-17253-1-git-send-email-khandual@linux.vnet.ibm.com>
 References: <1432190593-17253-1-git-send-email-khandual@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -38,97 +39,117 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch adds a test which verifies that the DSCR privilege and
-problem state SPR read & write accesses while making sure that the
-results are always the same irrespective of which SPR number is
-being used.
+This patch adds a new documentation file explaining the DSCR
+support on powerpc platforms. This explains DSCR related data
+structure, code paths and also available user interfaces. Any
+further functional changes to the DSCR support in the kernel
+should definitely update the documentation here.
 
-Acked-by: Shuah Khan <shuahkh@osg.samsung.com>
 Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
- tools/testing/selftests/powerpc/dscr/Makefile      |  2 +-
- .../selftests/powerpc/dscr/dscr_user_test.c        | 62 ++++++++++++++++++++++
- 2 files changed, 63 insertions(+), 1 deletion(-)
- create mode 100644 tools/testing/selftests/powerpc/dscr/dscr_user_test.c
+ Documentation/powerpc/00-INDEX |  2 +
+ Documentation/powerpc/dscr.txt | 83 ++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 85 insertions(+)
+ create mode 100644 Documentation/powerpc/dscr.txt
 
-diff --git a/tools/testing/selftests/powerpc/dscr/Makefile b/tools/testing/selftests/powerpc/dscr/Makefile
-index aede453..ae865d8 100644
---- a/tools/testing/selftests/powerpc/dscr/Makefile
-+++ b/tools/testing/selftests/powerpc/dscr/Makefile
-@@ -1,4 +1,4 @@
--PROGS := dscr_default_test dscr_explicit_test
-+PROGS := dscr_default_test dscr_explicit_test dscr_user_test
- 
- CFLAGS := $(CFLAGS) -lpthread
- 
-diff --git a/tools/testing/selftests/powerpc/dscr/dscr_user_test.c b/tools/testing/selftests/powerpc/dscr/dscr_user_test.c
+diff --git a/Documentation/powerpc/00-INDEX b/Documentation/powerpc/00-INDEX
+index 6fd0e8b..9dc845c 100644
+--- a/Documentation/powerpc/00-INDEX
++++ b/Documentation/powerpc/00-INDEX
+@@ -30,3 +30,5 @@ ptrace.txt
+ 	- Information on the ptrace interfaces for hardware debug registers.
+ transactional_memory.txt
+ 	- Overview of the Power8 transactional memory support.
++dscr.txt
++	- Overview DSCR (Data Stream Control Register) support.
+diff --git a/Documentation/powerpc/dscr.txt b/Documentation/powerpc/dscr.txt
 new file mode 100644
-index 0000000..c23c2f3
+index 0000000..1ff4400
 --- /dev/null
-+++ b/tools/testing/selftests/powerpc/dscr/dscr_user_test.c
-@@ -0,0 +1,62 @@
-+/*
-+ * POWER Data Stream Control Register (DSCR) SPR test
-+ *
-+ * This test modifies the DSCR value through both the SPR number
-+ * based mtspr instruction and then makes sure that the same is
-+ * reflected through mfspr instruction using either of the SPR
-+ * numbers.
-+ *
-+ * When using the privilege state SPR, the instructions such as
-+ * mfspr or mtspr are priviledged and the kernel emulates them
-+ * for us. Instructions using problem state SPR can be exuecuted
-+ * directly without any emulation if the HW supports them. Else
-+ * they also get emulated by the kernel.
-+ *
-+ * Copyright (C) 2013 Anton Blanchard <anton@au.ibm.com>, IBM
-+ * Copyright (C) 2015 Anshuman Khandual <khandual@linux.vnet.ibm.com>, IBM
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ */
-+#include "dscr.h"
++++ b/Documentation/powerpc/dscr.txt
+@@ -0,0 +1,83 @@
++			DSCR (Data Stream Control Register)
++		================================================
 +
-+static int check_dscr(char *str)
-+{
-+	unsigned long cur_dscr, cur_dscr_usr;
++DSCR register in powerpc allows user to have some control of prefetch of data
++stream in the processor. Please refer to the ISA documents or related manual
++for more detailed information regarding how to use this DSCR to attain this
++control of the pefetches . This document here provides an overview of kernel
++support for DSCR, related kernel objects, it's functionalities and exported
++user interface.
 +
-+	cur_dscr = get_dscr();
-+	cur_dscr_usr = get_dscr_usr();
-+	if (cur_dscr != cur_dscr_usr) {
-+		printf("%s set, kernel get %lx != user get %lx\n",
-+					str, cur_dscr, cur_dscr_usr);
-+		return 1;
-+	}
-+	return 0;
-+}
++(A) Data Structures:
 +
-+int dscr_user(void)
-+{
-+	int i;
++	(1) thread_struct:
++		dscr		/* Thread DSCR value */
++		dscr_inherit	/* Thread has changed default DSCR */
 +
-+	check_dscr("");
++	(2) PACA:
++		dscr_default	/* per-CPU DSCR default value */
 +
-+	for (i = 0; i < COUNT; i++) {
-+		set_dscr(i);
-+		if (check_dscr("kernel"))
-+			return 1;
-+	}
++	(3) sysfs.c:
++		dscr_default	/* System DSCR default value */
 +
-+	for (i = 0; i < COUNT; i++) {
-+		set_dscr_usr(i);
-+		if (check_dscr("user"))
-+			return 1;
-+	}
-+	return 0;
-+}
++(B) Scheduler Changes:
 +
-+int main(int argc, char *argv[])
-+{
-+	return test_harness(dscr_user, "dscr_user_test");
-+}
++	Scheduler will write the per-CPU DSCR default which is stored in the
++	CPU's PACA value into the register if the thread has dscr_inherit value
++	cleared which means that it has not changed the default DSCR till now.
++	If the dscr_inherit value is set which means that it has changed the
++	default DSCR value, scheduler will write the changed value which will
++	now be contained in thread struct's dscr into the register instead of
++	the per-CPU default PACA based DSCR value.
++
++	NOTE: Please note here that the system wide global DSCR value never
++	gets used directly in the scheduler process context switch at all.
++
++(C) SYSFS Interface:
++
++	Global DSCR default:		/sys/devices/system/cpu/dscr_default
++	CPU specific DSCR default:	/sys/devices/system/cpu/cpuN/dscr
++
++	Changing the global DSCR default in the sysfs will change all the CPU
++	specific DSCR defaults immediately in their PACA structures. Again if
++	the current process has the dscr_inherit clear, it also writes the new
++	value into every CPU's DSCR register right away and updates the current
++	thread's DSCR value as well.
++
++	Changing the CPU specif DSCR default value in the sysfs does exactly
++	the same thing as above but unlike the global one above, it just changes
++	stuff for that particular CPU instead for all the CPUs on the system.
++
++(D) User Space Instructions:
++
++	The DSCR register can be accessed in the user space using any of these
++	two SPR numbers available for that purpose.
++
++	(1) Problem state SPR:		0x03	(Un-privileged, POWER8 only)
++	(2) Privileged state SPR:	0x11	(Privileged)
++
++	Accessing DSCR through privileged SPR number (0x11) from user space
++	works, as it is emulated following an illegal instruction exception
++	inside the kernel. Both mfspr and mtspr instructions are emulated.
++
++	Accessing DSCR through user level SPR (0x03) from user space will first
++	create a facility unavailable exception. Inside this exception handler
++	all mfspr isntruction based read attempts will get emulated and returned
++	where as the first mtspr instruction based write attempts will enable
++	the DSCR facility for the next time around (both for read and write) by
++	setting DSCR facility in the FSCR register.
++
++(E) Specifics about 'dscr_inherit':
++
++	The thread struct element 'dscr_inherit' represents whether the thread
++	in question has attempted and changed the DSCR itself using any of the
++	following methods. This element signifies whether the thread wants to
++	use the CPU default DSCR value or its own changed DSCR value in the
++	kernel.
++
++		(1) mtspr instruction	(SPR number 0x03)
++		(2) mtspr instruction	(SPR number 0x11)
++		(3) ptrace interface	(Explicitly set user DSCR value)
++
++	Any child of the process created after this event in the process inherits
++	this same behaviour as well.
 -- 
 2.1.0
