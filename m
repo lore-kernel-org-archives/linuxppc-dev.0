@@ -1,33 +1,32 @@
 Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
+Received: from e28smtp05.in.ibm.com (e28smtp05.in.ibm.com [122.248.162.5])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 126A31A0BCC
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 May 2015 16:43:46 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 352BB1A0C4E
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 May 2015 16:43:47 +1000 (AEST)
 Received: from /spool/local
- by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp05.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Thu, 21 May 2015 12:13:44 +0530
-Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 20EA9E0059
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 May 2015 12:16:48 +0530 (IST)
+ Thu, 21 May 2015 12:13:45 +0530
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 314C13940068
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 May 2015 12:13:42 +0530 (IST)
 Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay01.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t4L6haIX58785904
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 May 2015 12:13:37 +0530
+ by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t4L6hO4n65798330
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 May 2015 12:13:25 +0530
 Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
  by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t4L62Jtj008683
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 May 2015 11:32:19 +0530
+ t4L629hT007476
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 May 2015 11:32:09 +0530
 From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 Cc: mikey@neuling.org, anton@samba.org, shuahkh@osg.samsung.com,
  mpe@ellerman.id.au
-Subject: [PATCH V5 11/13] selftests,
- powerpc: Add test for all DSCR sysfs interfaces
-Date: Thu, 21 May 2015 12:13:11 +0530
-Message-Id: <1432190593-17253-12-git-send-email-khandual@linux.vnet.ibm.com>
+Subject: [PATCH V5 04/13] powerpc, dscr: Added some in-code documentation
+Date: Thu, 21 May 2015 12:13:04 +0530
+Message-Id: <1432190593-17253-5-git-send-email-khandual@linux.vnet.ibm.com>
 In-Reply-To: <1432190593-17253-1-git-send-email-khandual@linux.vnet.ibm.com>
 References: <1432190593-17253-1-git-send-email-khandual@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -39,134 +38,104 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This test continuously updates the system wide DSCR default value
-in the sysfs interface and makes sure that the same is reflected
-across all the sysfs interfaces for each individual CPUs present
-on the system.
+This patch adds some in-code documentation to the DSCR related
+code to make it more readable without having any functional
+change to it.
 
-Acked-by: Shuah Khan <shuahkh@osg.samsung.com>
 Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 ---
- tools/testing/selftests/powerpc/dscr/Makefile      |  3 +-
- .../selftests/powerpc/dscr/dscr_sysfs_test.c       | 98 ++++++++++++++++++++++
- 2 files changed, 100 insertions(+), 1 deletion(-)
- create mode 100644 tools/testing/selftests/powerpc/dscr/dscr_sysfs_test.c
+ arch/powerpc/include/asm/processor.h |  9 +++++++++
+ arch/powerpc/kernel/sysfs.c          | 38 ++++++++++++++++++++++++++++++++++++
+ 2 files changed, 47 insertions(+)
 
-diff --git a/tools/testing/selftests/powerpc/dscr/Makefile b/tools/testing/selftests/powerpc/dscr/Makefile
-index 4e84309..fada526 100644
---- a/tools/testing/selftests/powerpc/dscr/Makefile
-+++ b/tools/testing/selftests/powerpc/dscr/Makefile
-@@ -1,5 +1,6 @@
- PROGS := dscr_default_test dscr_explicit_test dscr_user_test	\
--	 dscr_inherit_test dscr_inherit_exec_test
-+	 dscr_inherit_test dscr_inherit_exec_test		\
-+	 dscr_sysfs_test
+diff --git a/arch/powerpc/include/asm/processor.h b/arch/powerpc/include/asm/processor.h
+index bf117d8..28ded5d 100644
+--- a/arch/powerpc/include/asm/processor.h
++++ b/arch/powerpc/include/asm/processor.h
+@@ -295,6 +295,15 @@ struct thread_struct {
+ #endif
+ #ifdef CONFIG_PPC64
+ 	unsigned long	dscr;
++	/*
++	 * This member element dscr_inherit indicates that the process
++	 * has explicitly attempted and changed the DSCR register value
++	 * for itself. Hence kernel wont use the default CPU DSCR value
++	 * contained in the PACA structure anymore during process context
++	 * switch. Once this variable is set, this behaviour will also be
++	 * inherited to all the children of this process from that point
++	 * onwards.
++	 */
+ 	int		dscr_inherit;
+ 	unsigned long	ppr;	/* used to save/restore SMT priority */
+ #endif
+diff --git a/arch/powerpc/kernel/sysfs.c b/arch/powerpc/kernel/sysfs.c
+index fa1fd8a..692873b 100644
+--- a/arch/powerpc/kernel/sysfs.c
++++ b/arch/powerpc/kernel/sysfs.c
+@@ -496,13 +496,34 @@ static DEVICE_ATTR(spurr, 0400, show_spurr, NULL);
+ static DEVICE_ATTR(purr, 0400, show_purr, store_purr);
+ static DEVICE_ATTR(pir, 0400, show_pir, NULL);
  
- CFLAGS := $(CFLAGS) -lpthread
- 
-diff --git a/tools/testing/selftests/powerpc/dscr/dscr_sysfs_test.c b/tools/testing/selftests/powerpc/dscr/dscr_sysfs_test.c
-new file mode 100644
-index 0000000..f7082ce
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/dscr/dscr_sysfs_test.c
-@@ -0,0 +1,98 @@
 +/*
-+ * POWER Data Stream Control Register (DSCR) sysfs interface test
-+ *
-+ * This test updates to system wide DSCR default through the sysfs interface
-+ * and then verifies that all the CPU specific DSCR defaults are updated as
-+ * well verified from their sysfs interfaces.
-+ *
-+ * Copyright (C) 2015 Anshuman Khandual <khandual@linux.vnet.ibm.com>, IBM
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
++ * This is the system wide DSCR register default value. Any
++ * change to this default value through the sysfs interface
++ * will update all per cpu DSCR default values across the
++ * system stored in their respective PACA structures.
 + */
-+#include "dscr.h"
+ static unsigned long dscr_default;
+ 
++/**
++ * read_dscr() - Fetch the cpu specific DSCR default
++ * @val:	Returned cpu specific DSCR default value
++ *
++ * This function returns the per cpu DSCR default value
++ * for any cpu which is contained in it's PACA structure.
++ */
+ static void read_dscr(void *val)
+ {
+ 	*(unsigned long *)val = get_paca()->dscr_default;
+ }
+ 
 +
-+static int check_cpu_dscr_default(char *file, unsigned long val)
-+{
-+	char buf[10];
-+	int fd, rc;
-+
-+	fd = open(file, O_RDWR);
-+	if (fd == -1) {
-+		perror("open() failed");
-+		return 1;
-+	}
-+
-+	rc = read(fd, buf, sizeof(buf));
-+	if (rc == -1) {
-+		perror("read() failed");
-+		return 1;
-+	}
-+	close(fd);
-+
-+	buf[rc] = '\0';
-+	if (strtol(buf, NULL, 16) != val) {
-+		printf("DSCR match failed: %ld (system) %ld (cpu)\n",
-+					val, strtol(buf, NULL, 16));
-+		return 1;
-+	}
-+	return 0;
-+}
-+
-+static int check_all_cpu_dscr_defaults(unsigned long val)
-+{
-+	DIR *sysfs;
-+	struct dirent *dp;
-+	char file[LEN_MAX];
-+
-+	sysfs = opendir(CPU_PATH);
-+	if (!sysfs) {
-+		perror("opendir() failed");
-+		return 1;
-+	}
-+
-+	while ((dp = readdir(sysfs))) {
-+		if (!(dp->d_type & DT_DIR))
-+			continue;
-+		if (!strcmp(dp->d_name, "cpuidle"))
-+			continue;
-+		if (!strstr(dp->d_name, "cpu"))
-+			continue;
-+
-+		sprintf(file, "%s%s/dscr", CPU_PATH, dp->d_name);
-+		if (access(file, F_OK))
-+			continue;
-+
-+		if (check_cpu_dscr_default(file, val))
-+			return 1;
-+	}
-+	closedir(sysfs);
-+	return 0;
-+}
-+
-+int dscr_sysfs(void)
-+{
-+	unsigned long orig_dscr_default;
-+	int i, j;
-+
-+	orig_dscr_default = get_default_dscr();
-+	for (i = 0; i < COUNT; i++) {
-+		for (j = 0; j < DSCR_MAX; j++) {
-+			set_default_dscr(j);
-+			if (check_all_cpu_dscr_defaults(j))
-+				goto fail;
-+		}
-+	}
-+	set_default_dscr(orig_dscr_default);
-+	return 0;
-+fail:
-+	set_default_dscr(orig_dscr_default);
-+	return 1;
-+}
-+
-+int main(int argc, char *argv[])
-+{
-+	return test_harness(dscr_sysfs, "dscr_sysfs_test");
-+}
++/**
++ * write_dscr() - Update the cpu specific DSCR default
++ * @val:	New cpu specific DSCR default value to update
++ *
++ * This function updates the per cpu DSCR default value
++ * for any cpu which is contained in it's PACA structure.
++ */
+ static void write_dscr(void *val)
+ {
+ 	get_paca()->dscr_default = *(unsigned long *)val;
+@@ -520,12 +541,29 @@ static void add_write_permission_dev_attr(struct device_attribute *attr)
+ 	attr->attr.mode |= 0200;
+ }
+ 
++/**
++ * show_dscr_default() - Fetch the system wide DSCR default
++ * @dev:	Device structure
++ * @attr:	Device attribute structure
++ * @buf:	Interface buffer
++ *
++ * This function returns the system wide DSCR default value.
++ */
+ static ssize_t show_dscr_default(struct device *dev,
+ 		struct device_attribute *attr, char *buf)
+ {
+ 	return sprintf(buf, "%lx\n", dscr_default);
+ }
+ 
++/**
++ * store_dscr_default() - Update the system wide DSCR default
++ * @dev:	Device structure
++ * @attr:	Device attribute structure
++ * @buf:	Interface buffer
++ * @count:	Size of the update
++ *
++ * This function updates the system wide DSCR default value.
++ */
+ static ssize_t __used store_dscr_default(struct device *dev,
+ 		struct device_attribute *attr, const char *buf,
+ 		size_t count)
 -- 
 2.1.0
