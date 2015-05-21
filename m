@@ -1,37 +1,23 @@
-Return-Path: <hemant@linux.vnet.ibm.com>
-Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <mikey@neuling.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DE3881A0ABE
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 May 2015 13:44:21 +1000 (AEST)
-Received: from /spool/local
- by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <hemant@linux.vnet.ibm.com>;
- Thu, 21 May 2015 13:44:20 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 689CB3578052
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 May 2015 13:44:18 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t4L3iAHK22544550
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 May 2015 13:44:18 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t4L3hj9c010325
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 May 2015 13:43:45 +1000
-From: Hemant Kumar <hemant@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: maddy@linux.vnet.ibm.com, srikar@linux.vnet.ibm.com,
- scottwood@freescale.com, mpe@ellerman.id.au, agraf@suse.de,
- kvm-ppc@vger.kernel.org, paulus@samba.org, warrier@linux.vnet.ibm.com,
- linuxppc-dev@lists.ozlabs.org, acme@kernel.org, mingo@redhat.com,
- peterz@infradead.org, Hemant Kumar <hemant@linux.vnet.ibm.com>
-Subject: [PATCH v4 3/3] kvm/powerpc: Export HCALL reason codes
-Date: Thu, 21 May 2015 09:13:01 +0530
-Message-Id: <1432179781-4739-3-git-send-email-hemant@linux.vnet.ibm.com>
-In-Reply-To: <1432179781-4739-1-git-send-email-hemant@linux.vnet.ibm.com>
-References: <1432179781-4739-1-git-send-email-hemant@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8954A1A00B5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 May 2015 13:48:29 +1000 (AEST)
+Message-ID: <1432180109.27130.16.camel@neuling.org>
+Subject: Re: [PATCH v3] cxl: Export AFU error buffer via sysfs
+From: Michael Neuling <mikey@neuling.org>
+To: trigg <mr.triggtrigg@gmail.com>
+Cc: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>, Michael Ellerman
+ <michael@ellerman.id.au>, "linuxppc-dev@lists.ozlabs.org"
+ <linuxppc-dev@lists.ozlabs.org>, Ian Munsie <imunsie@au1.ibm.com>
+Date: Thu, 21 May 2015 13:48:29 +1000
+In-Reply-To: <DFEFF502-9818-4AC2-ADDC-B5A16A047D71@gmail.com>
+References: <1432142313-7741-1-git-send-email-vaibhav@linux.vnet.ibm.com>
+ <1432165570.27130.5.camel@neuling.org>
+ <DFEFF502-9818-4AC2-ADDC-B5A16A047D71@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -41,574 +27,78 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-For perf to analyze the KVM events like hcalls, we need the
-hypervisor calls and their codes to be exported through uapi.
+On Thu, 2015-05-21 at 09:06 +0530, trigg wrote:
+>=20
+>=20
+> > On 21-May-2015, at 05:16, Michael Neuling <mikey@neuling.org> wrote:
+> >=20
+> > + */
+> > > +ssize_t cxl_afu_read_err_buffer(struct cxl_afu *afu, char *buf,
+> > > +                loff_t off, size_t count)
+> > > +{
+> > > +    loff_t aligned_off;
+> > > +    size_t aligned_count;
+> > > +    const void __iomem *ebuf =3D afu->afu_desc_mmio +
+> > > afu->eb_offset;
+> > > +
+> > > +    if (!afu->eb_len || count =3D=3D 0 || off < 0)
+> >=20
+> > if eb_len =3D=3D 0 we don't even create the sysfs file.  So is this
+> > check
+> > needed?
+> This function is non static so it can be potentially called from
+> kernel.
 
-This patch moves most of the pSeries hcall codes from
-arch/powerpc/include/asm/hvcall.h to
-arch/powerpc/include/uapi/asm/pseries_hcalls.h.
-It also moves the mapping <hcall_code-to-hcall_reason> from
-arch/powerpc/kvm/trace_hv.h to
-arch/powerpc/include/uapi/asm/trace_hcall_pseries.h.
+What?  You mean outside this file?
 
-Signed-off-by: Hemant Kumar <hemant@linux.vnet.ibm.com>
----
-Changes :
-- Made name space changes to indicate changes related to pseries
-  (Suggested by Scott Wood)
+> Condition check of "if (count =3D=3D 0 || off < 0 || (size_t)off
+> >=3D afu->eb_len) "
+> should work solving the problem below too.
 
- arch/powerpc/include/asm/hvcall.h                  | 120 +-------------------
- arch/powerpc/include/uapi/asm/kvm_perf_book3s.h    |   4 +
- arch/powerpc/include/uapi/asm/pseries_hcalls.h     | 123 +++++++++++++++++++++
- .../powerpc/include/uapi/asm/trace_hcall_pseries.h | 122 ++++++++++++++++++++
- arch/powerpc/kvm/trace_hv.h                        | 117 +-------------------
- 5 files changed, 252 insertions(+), 234 deletions(-)
- create mode 100644 arch/powerpc/include/uapi/asm/pseries_hcalls.h
- create mode 100644 arch/powerpc/include/uapi/asm/trace_hcall_pseries.h
+It makes no sense to call this outside of sysfs reading the error
+buffer.
 
-diff --git a/arch/powerpc/include/asm/hvcall.h b/arch/powerpc/include/asm/hvcall.h
-index 85bc8c0..6e38210 100644
---- a/arch/powerpc/include/asm/hvcall.h
-+++ b/arch/powerpc/include/asm/hvcall.h
-@@ -155,124 +155,8 @@
- /* Each control block has to be on a 4K boundary */
- #define H_CB_ALIGNMENT          4096
- 
--/* pSeries hypervisor opcodes */
--#define H_REMOVE		0x04
--#define H_ENTER			0x08
--#define H_READ			0x0c
--#define H_CLEAR_MOD		0x10
--#define H_CLEAR_REF		0x14
--#define H_PROTECT		0x18
--#define H_GET_TCE		0x1c
--#define H_PUT_TCE		0x20
--#define H_SET_SPRG0		0x24
--#define H_SET_DABR		0x28
--#define H_PAGE_INIT		0x2c
--#define H_SET_ASR		0x30
--#define H_ASR_ON		0x34
--#define H_ASR_OFF		0x38
--#define H_LOGICAL_CI_LOAD	0x3c
--#define H_LOGICAL_CI_STORE	0x40
--#define H_LOGICAL_CACHE_LOAD	0x44
--#define H_LOGICAL_CACHE_STORE	0x48
--#define H_LOGICAL_ICBI		0x4c
--#define H_LOGICAL_DCBF		0x50
--#define H_GET_TERM_CHAR		0x54
--#define H_PUT_TERM_CHAR		0x58
--#define H_REAL_TO_LOGICAL	0x5c
--#define H_HYPERVISOR_DATA	0x60
--#define H_EOI			0x64
--#define H_CPPR			0x68
--#define H_IPI			0x6c
--#define H_IPOLL			0x70
--#define H_XIRR			0x74
--#define H_PERFMON		0x7c
--#define H_MIGRATE_DMA		0x78
--#define H_REGISTER_VPA		0xDC
--#define H_CEDE			0xE0
--#define H_CONFER		0xE4
--#define H_PROD			0xE8
--#define H_GET_PPP		0xEC
--#define H_SET_PPP		0xF0
--#define H_PURR			0xF4
--#define H_PIC			0xF8
--#define H_REG_CRQ		0xFC
--#define H_FREE_CRQ		0x100
--#define H_VIO_SIGNAL		0x104
--#define H_SEND_CRQ		0x108
--#define H_COPY_RDMA		0x110
--#define H_REGISTER_LOGICAL_LAN	0x114
--#define H_FREE_LOGICAL_LAN	0x118
--#define H_ADD_LOGICAL_LAN_BUFFER 0x11C
--#define H_SEND_LOGICAL_LAN	0x120
--#define H_BULK_REMOVE		0x124
--#define H_MULTICAST_CTRL	0x130
--#define H_SET_XDABR		0x134
--#define H_STUFF_TCE		0x138
--#define H_PUT_TCE_INDIRECT	0x13C
--#define H_CHANGE_LOGICAL_LAN_MAC 0x14C
--#define H_VTERM_PARTNER_INFO	0x150
--#define H_REGISTER_VTERM	0x154
--#define H_FREE_VTERM		0x158
--#define H_RESET_EVENTS          0x15C
--#define H_ALLOC_RESOURCE        0x160
--#define H_FREE_RESOURCE         0x164
--#define H_MODIFY_QP             0x168
--#define H_QUERY_QP              0x16C
--#define H_REREGISTER_PMR        0x170
--#define H_REGISTER_SMR          0x174
--#define H_QUERY_MR              0x178
--#define H_QUERY_MW              0x17C
--#define H_QUERY_HCA             0x180
--#define H_QUERY_PORT            0x184
--#define H_MODIFY_PORT           0x188
--#define H_DEFINE_AQP1           0x18C
--#define H_GET_TRACE_BUFFER      0x190
--#define H_DEFINE_AQP0           0x194
--#define H_RESIZE_MR             0x198
--#define H_ATTACH_MCQP           0x19C
--#define H_DETACH_MCQP           0x1A0
--#define H_CREATE_RPT            0x1A4
--#define H_REMOVE_RPT            0x1A8
--#define H_REGISTER_RPAGES       0x1AC
--#define H_DISABLE_AND_GETC      0x1B0
--#define H_ERROR_DATA            0x1B4
--#define H_GET_HCA_INFO          0x1B8
--#define H_GET_PERF_COUNT        0x1BC
--#define H_MANAGE_TRACE          0x1C0
--#define H_FREE_LOGICAL_LAN_BUFFER 0x1D4
--#define H_QUERY_INT_STATE       0x1E4
--#define H_POLL_PENDING		0x1D8
--#define H_ILLAN_ATTRIBUTES	0x244
--#define H_MODIFY_HEA_QP		0x250
--#define H_QUERY_HEA_QP		0x254
--#define H_QUERY_HEA		0x258
--#define H_QUERY_HEA_PORT	0x25C
--#define H_MODIFY_HEA_PORT	0x260
--#define H_REG_BCMC		0x264
--#define H_DEREG_BCMC		0x268
--#define H_REGISTER_HEA_RPAGES	0x26C
--#define H_DISABLE_AND_GET_HEA	0x270
--#define H_GET_HEA_INFO		0x274
--#define H_ALLOC_HEA_RESOURCE	0x278
--#define H_ADD_CONN		0x284
--#define H_DEL_CONN		0x288
--#define H_JOIN			0x298
--#define H_VASI_STATE            0x2A4
--#define H_ENABLE_CRQ		0x2B0
--#define H_GET_EM_PARMS		0x2B8
--#define H_SET_MPP		0x2D0
--#define H_GET_MPP		0x2D4
--#define H_HOME_NODE_ASSOCIATIVITY 0x2EC
--#define H_BEST_ENERGY		0x2F4
--#define H_XIRR_X		0x2FC
--#define H_RANDOM		0x300
--#define H_COP			0x304
--#define H_GET_MPP_X		0x314
--#define H_SET_MODE		0x31C
--#define MAX_HCALL_OPCODE	H_SET_MODE
--
--/* Platform specific hcalls, used by KVM */
--#define H_RTAS			0xf000
-+/* Include pSeries hypervisor opcodes */
-+#include <uapi/asm/pseries_hcalls.h>
- 
- /* "Platform specific hcalls", provided by PHYP */
- #define H_GET_24X7_CATALOG_PAGE	0xF078
-diff --git a/arch/powerpc/include/uapi/asm/kvm_perf_book3s.h b/arch/powerpc/include/uapi/asm/kvm_perf_book3s.h
-index 735901f..8a27c81 100644
---- a/arch/powerpc/include/uapi/asm/kvm_perf_book3s.h
-+++ b/arch/powerpc/include/uapi/asm/kvm_perf_book3s.h
-@@ -3,6 +3,7 @@
- 
- #include <asm/trace_book3s.h>
- #include <asm/kvm.h>
-+#include <asm/trace_hcall_pseries.h>
- 
- #define DECODE_STR_LEN 20
- 
-@@ -11,5 +12,8 @@
- #define KVM_ENTRY_TRACE "kvm_hv:kvm_guest_enter"
- #define KVM_EXIT_TRACE "kvm_hv:kvm_guest_exit"
- #define KVM_EXIT_REASON "trap"
-+#define KVM_HCALL_ENTRY_TRACE "kvm_hv:kvm_hcall_enter"
-+#define KVM_HCALL_EXIT_TRACE "kvm_hv:kvm_hcall_exit"
-+#define KVM_HCALL_REASON "req"
- 
- #endif /* _ASM_POWERPC_KVM_PERF_BOOK3S_H */
-diff --git a/arch/powerpc/include/uapi/asm/pseries_hcalls.h b/arch/powerpc/include/uapi/asm/pseries_hcalls.h
-new file mode 100644
-index 0000000..59a3761
---- /dev/null
-+++ b/arch/powerpc/include/uapi/asm/pseries_hcalls.h
-@@ -0,0 +1,123 @@
-+#ifndef _ASM_POWERPC_HVCALL_CODES_H
-+#define _ASM_POWERPC_HVCALL_CODES_H
-+
-+/* pSeries hypervisor opcodes */
-+#define H_REMOVE		0x04
-+#define H_ENTER			0x08
-+#define H_READ			0x0c
-+#define H_CLEAR_MOD		0x10
-+#define H_CLEAR_REF		0x14
-+#define H_PROTECT		0x18
-+#define H_GET_TCE		0x1c
-+#define H_PUT_TCE		0x20
-+#define H_SET_SPRG0		0x24
-+#define H_SET_DABR		0x28
-+#define H_PAGE_INIT		0x2c
-+#define H_SET_ASR		0x30
-+#define H_ASR_ON		0x34
-+#define H_ASR_OFF		0x38
-+#define H_LOGICAL_CI_LOAD	0x3c
-+#define H_LOGICAL_CI_STORE	0x40
-+#define H_LOGICAL_CACHE_LOAD	0x44
-+#define H_LOGICAL_CACHE_STORE	0x48
-+#define H_LOGICAL_ICBI		0x4c
-+#define H_LOGICAL_DCBF		0x50
-+#define H_GET_TERM_CHAR		0x54
-+#define H_PUT_TERM_CHAR		0x58
-+#define H_REAL_TO_LOGICAL	0x5c
-+#define H_HYPERVISOR_DATA	0x60
-+#define H_EOI			0x64
-+#define H_CPPR			0x68
-+#define H_IPI			0x6c
-+#define H_IPOLL			0x70
-+#define H_XIRR			0x74
-+#define H_PERFMON		0x7c
-+#define H_MIGRATE_DMA		0x78
-+#define H_REGISTER_VPA		0xDC
-+#define H_CEDE			0xE0
-+#define H_CONFER		0xE4
-+#define H_PROD			0xE8
-+#define H_GET_PPP		0xEC
-+#define H_SET_PPP		0xF0
-+#define H_PURR			0xF4
-+#define H_PIC			0xF8
-+#define H_REG_CRQ		0xFC
-+#define H_FREE_CRQ		0x100
-+#define H_VIO_SIGNAL		0x104
-+#define H_SEND_CRQ		0x108
-+#define H_COPY_RDMA		0x110
-+#define H_REGISTER_LOGICAL_LAN	0x114
-+#define H_FREE_LOGICAL_LAN	0x118
-+#define H_ADD_LOGICAL_LAN_BUFFER 0x11C
-+#define H_SEND_LOGICAL_LAN	0x120
-+#define H_BULK_REMOVE		0x124
-+#define H_MULTICAST_CTRL	0x130
-+#define H_SET_XDABR		0x134
-+#define H_STUFF_TCE		0x138
-+#define H_PUT_TCE_INDIRECT	0x13C
-+#define H_CHANGE_LOGICAL_LAN_MAC 0x14C
-+#define H_VTERM_PARTNER_INFO	0x150
-+#define H_REGISTER_VTERM	0x154
-+#define H_FREE_VTERM		0x158
-+#define H_RESET_EVENTS          0x15C
-+#define H_ALLOC_RESOURCE        0x160
-+#define H_FREE_RESOURCE         0x164
-+#define H_MODIFY_QP             0x168
-+#define H_QUERY_QP              0x16C
-+#define H_REREGISTER_PMR        0x170
-+#define H_REGISTER_SMR          0x174
-+#define H_QUERY_MR              0x178
-+#define H_QUERY_MW              0x17C
-+#define H_QUERY_HCA             0x180
-+#define H_QUERY_PORT            0x184
-+#define H_MODIFY_PORT           0x188
-+#define H_DEFINE_AQP1           0x18C
-+#define H_GET_TRACE_BUFFER      0x190
-+#define H_DEFINE_AQP0           0x194
-+#define H_RESIZE_MR             0x198
-+#define H_ATTACH_MCQP           0x19C
-+#define H_DETACH_MCQP           0x1A0
-+#define H_CREATE_RPT            0x1A4
-+#define H_REMOVE_RPT            0x1A8
-+#define H_REGISTER_RPAGES       0x1AC
-+#define H_DISABLE_AND_GETC      0x1B0
-+#define H_ERROR_DATA            0x1B4
-+#define H_GET_HCA_INFO          0x1B8
-+#define H_GET_PERF_COUNT        0x1BC
-+#define H_MANAGE_TRACE          0x1C0
-+#define H_FREE_LOGICAL_LAN_BUFFER 0x1D4
-+#define H_QUERY_INT_STATE       0x1E4
-+#define H_POLL_PENDING		0x1D8
-+#define H_ILLAN_ATTRIBUTES	0x244
-+#define H_MODIFY_HEA_QP		0x250
-+#define H_QUERY_HEA_QP		0x254
-+#define H_QUERY_HEA		0x258
-+#define H_QUERY_HEA_PORT	0x25C
-+#define H_MODIFY_HEA_PORT	0x260
-+#define H_REG_BCMC		0x264
-+#define H_DEREG_BCMC		0x268
-+#define H_REGISTER_HEA_RPAGES	0x26C
-+#define H_DISABLE_AND_GET_HEA	0x270
-+#define H_GET_HEA_INFO		0x274
-+#define H_ALLOC_HEA_RESOURCE	0x278
-+#define H_ADD_CONN		0x284
-+#define H_DEL_CONN		0x288
-+#define H_JOIN			0x298
-+#define H_VASI_STATE            0x2A4
-+#define H_ENABLE_CRQ		0x2B0
-+#define H_GET_EM_PARMS		0x2B8
-+#define H_SET_MPP		0x2D0
-+#define H_GET_MPP		0x2D4
-+#define H_HOME_NODE_ASSOCIATIVITY 0x2EC
-+#define H_BEST_ENERGY		0x2F4
-+#define H_XIRR_X		0x2FC
-+#define H_RANDOM		0x300
-+#define H_COP			0x304
-+#define H_GET_MPP_X		0x314
-+#define H_SET_MODE		0x31C
-+#define MAX_HCALL_OPCODE	H_SET_MODE
-+
-+/* Platform specific hcalls, used by KVM */
-+#define H_RTAS			0xf000
-+
-+#endif
-diff --git a/arch/powerpc/include/uapi/asm/trace_hcall_pseries.h b/arch/powerpc/include/uapi/asm/trace_hcall_pseries.h
-new file mode 100644
-index 0000000..681efb8
---- /dev/null
-+++ b/arch/powerpc/include/uapi/asm/trace_hcall_pseries.h
-@@ -0,0 +1,122 @@
-+#ifndef _KVM_TRACE_HCALL_PSERIES_MAP_H
-+#define _KVM_TRACE_HCALL_PSERIES_MAP_H
-+
-+#include "pseries_hcalls.h"
-+
-+#define kvm_trace_symbol_hcall\
-+	{H_REMOVE,"H_REMOVE"},					\
-+	{H_ENTER,"H_ENTER"},					\
-+	{H_READ,"H_READ"},					\
-+	{H_CLEAR_MOD,"H_CLEAR_MOD"},				\
-+	{H_CLEAR_REF,"H_CLEAR_REF"},				\
-+	{H_PROTECT,"H_PROTECT"},				\
-+	{H_GET_TCE,"H_GET_TCE"},				\
-+	{H_PUT_TCE,"H_PUT_TCE"},				\
-+	{H_SET_SPRG0,"H_SET_SPRG0"},				\
-+	{H_SET_DABR,"H_SET_DABR"},				\
-+	{H_PAGE_INIT,"H_PAGE_INIT"},				\
-+	{H_SET_ASR,"H_SET_ASR"},				\
-+	{H_ASR_ON,"H_ASR_ON"},					\
-+	{H_ASR_OFF,"H_ASR_OFF"},				\
-+	{H_LOGICAL_CI_LOAD,"H_LOGICAL_CI_LOAD"},		\
-+	{H_LOGICAL_CI_STORE,"H_LOGICAL_CI_STORE"},		\
-+	{H_LOGICAL_CACHE_LOAD,"H_LOGICAL_CACHE_LOAD"},		\
-+	{H_LOGICAL_CACHE_STORE,"H_LOGICAL_CACHE_STORE"},	\
-+	{H_LOGICAL_ICBI,"H_LOGICAL_ICBI"},			\
-+	{H_LOGICAL_DCBF,"H_LOGICAL_DCBF"},			\
-+	{H_GET_TERM_CHAR,"H_GET_TERM_CHAR"},			\
-+	{H_PUT_TERM_CHAR,"H_PUT_TERM_CHAR"},			\
-+	{H_REAL_TO_LOGICAL,"H_REAL_TO_LOGICAL"},		\
-+	{H_HYPERVISOR_DATA,"H_HYPERVISOR_DATA"},		\
-+	{H_EOI,"H_EOI"},					\
-+	{H_CPPR,"H_CPPR"},					\
-+	{H_IPI,"H_IPI"},					\
-+	{H_IPOLL,"H_IPOLL"},					\
-+	{H_XIRR,"H_XIRR"},					\
-+	{H_PERFMON,"H_PERFMON"},				\
-+	{H_MIGRATE_DMA,"H_MIGRATE_DMA"},			\
-+	{H_REGISTER_VPA,"H_REGISTER_VPA"},			\
-+	{H_CEDE,"H_CEDE"},					\
-+	{H_CONFER,"H_CONFER"},					\
-+	{H_PROD,"H_PROD"},					\
-+	{H_GET_PPP,"H_GET_PPP"},				\
-+	{H_SET_PPP,"H_SET_PPP"},				\
-+	{H_PURR,"H_PURR"},					\
-+	{H_PIC,"H_PIC"},					\
-+	{H_REG_CRQ,"H_REG_CRQ"},				\
-+	{H_FREE_CRQ,"H_FREE_CRQ"},				\
-+	{H_VIO_SIGNAL,"H_VIO_SIGNAL"},				\
-+	{H_SEND_CRQ,"H_SEND_CRQ"},				\
-+	{H_COPY_RDMA,"H_COPY_RDMA"},				\
-+	{H_REGISTER_LOGICAL_LAN,"H_REGISTER_LOGICAL_LAN"},	\
-+	{H_FREE_LOGICAL_LAN,"H_FREE_LOGICAL_LAN"},		\
-+	{H_ADD_LOGICAL_LAN_BUFFER,"H_ADD_LOGICAL_LAN_BUFFER"},	\
-+	{H_SEND_LOGICAL_LAN,"H_SEND_LOGICAL_LAN"},		\
-+	{H_BULK_REMOVE,"H_BULK_REMOVE"},			\
-+	{H_MULTICAST_CTRL,"H_MULTICAST_CTRL"},			\
-+	{H_SET_XDABR,"H_SET_XDABR"},				\
-+	{H_STUFF_TCE,"H_STUFF_TCE"},				\
-+	{H_PUT_TCE_INDIRECT,"H_PUT_TCE_INDIRECT"},		\
-+	{H_CHANGE_LOGICAL_LAN_MAC,"H_CHANGE_LOGICAL_LAN_MAC"},	\
-+	{H_VTERM_PARTNER_INFO,"H_VTERM_PARTNER_INFO"},		\
-+	{H_REGISTER_VTERM,"H_REGISTER_VTERM"},			\
-+	{H_FREE_VTERM,"H_FREE_VTERM"},				\
-+	{H_RESET_EVENTS,"H_RESET_EVENTS"},			\
-+	{H_ALLOC_RESOURCE,"H_ALLOC_RESOURCE"},			\
-+	{H_FREE_RESOURCE,"H_FREE_RESOURCE"},			\
-+	{H_MODIFY_QP,"H_MODIFY_QP"},				\
-+	{H_QUERY_QP,"H_QUERY_QP"},				\
-+	{H_REREGISTER_PMR,"H_REREGISTER_PMR"},			\
-+	{H_REGISTER_SMR,"H_REGISTER_SMR"},			\
-+	{H_QUERY_MR,"H_QUERY_MR"},				\
-+	{H_QUERY_MW,"H_QUERY_MW"},				\
-+	{H_QUERY_HCA,"H_QUERY_HCA"},				\
-+	{H_QUERY_PORT,"H_QUERY_PORT"},				\
-+	{H_MODIFY_PORT,"H_MODIFY_PORT"},			\
-+	{H_DEFINE_AQP1,"H_DEFINE_AQP1"},			\
-+	{H_GET_TRACE_BUFFER,"H_GET_TRACE_BUFFER"},		\
-+	{H_DEFINE_AQP0,"H_DEFINE_AQP0"},			\
-+	{H_RESIZE_MR,"H_RESIZE_MR"},				\
-+	{H_ATTACH_MCQP,"H_ATTACH_MCQP"},			\
-+	{H_DETACH_MCQP,"H_DETACH_MCQP"},			\
-+	{H_CREATE_RPT,"H_CREATE_RPT"},				\
-+	{H_REMOVE_RPT,"H_REMOVE_RPT"},				\
-+	{H_REGISTER_RPAGES,"H_REGISTER_RPAGES"},		\
-+	{H_DISABLE_AND_GETC,"H_DISABLE_AND_GETC"},		\
-+	{H_ERROR_DATA,"H_ERROR_DATA"},				\
-+	{H_GET_HCA_INFO,"H_GET_HCA_INFO"},			\
-+	{H_GET_PERF_COUNT,"H_GET_PERF_COUNT"},			\
-+	{H_MANAGE_TRACE,"H_MANAGE_TRACE"},			\
-+	{H_FREE_LOGICAL_LAN_BUFFER,"H_FREE_LOGICAL_LAN_BUFFER"},\
-+	{H_QUERY_INT_STATE,"H_QUERY_INT_STATE"},		\
-+	{H_POLL_PENDING,"H_POLL_PENDING"},			\
-+	{H_ILLAN_ATTRIBUTES,"H_ILLAN_ATTRIBUTES"},		\
-+	{H_MODIFY_HEA_QP,"H_MODIFY_HEA_QP"},			\
-+	{H_QUERY_HEA_QP,"H_QUERY_HEA_QP"},			\
-+	{H_QUERY_HEA,"H_QUERY_HEA"},				\
-+	{H_QUERY_HEA_PORT,"H_QUERY_HEA_PORT"},			\
-+	{H_MODIFY_HEA_PORT,"H_MODIFY_HEA_PORT"},		\
-+	{H_REG_BCMC,"H_REG_BCMC"},				\
-+	{H_DEREG_BCMC,"H_DEREG_BCMC"},				\
-+	{H_REGISTER_HEA_RPAGES,"H_REGISTER_HEA_RPAGES"},	\
-+	{H_DISABLE_AND_GET_HEA,"H_DISABLE_AND_GET_HEA"},	\
-+	{H_GET_HEA_INFO,"H_GET_HEA_INFO"},			\
-+	{H_ALLOC_HEA_RESOURCE,"H_ALLOC_HEA_RESOURCE"},		\
-+	{H_ADD_CONN,"H_ADD_CONN"},				\
-+	{H_DEL_CONN,"H_DEL_CONN"},				\
-+	{H_JOIN,"H_JOIN"},					\
-+	{H_VASI_STATE,"H_VASI_STATE"},				\
-+	{H_ENABLE_CRQ,"H_ENABLE_CRQ"},				\
-+	{H_GET_EM_PARMS,"H_GET_EM_PARMS"},			\
-+	{H_SET_MPP,"H_SET_MPP"},				\
-+	{H_GET_MPP,"H_GET_MPP"},				\
-+	{H_HOME_NODE_ASSOCIATIVITY,"H_HOME_NODE_ASSOCIATIVITY"},\
-+	{H_BEST_ENERGY,"H_BEST_ENERGY"},			\
-+	{H_XIRR_X,"H_XIRR_X"},					\
-+	{H_RANDOM,"H_RANDOM"},					\
-+	{H_COP,"H_COP"},					\
-+	{H_GET_MPP_X,"H_GET_MPP_X"},				\
-+	{H_SET_MODE,"H_SET_MODE"},				\
-+	{H_RTAS,"H_RTAS"}
-+
-+#endif
-diff --git a/arch/powerpc/kvm/trace_hv.h b/arch/powerpc/kvm/trace_hv.h
-index 02d0a07..2b08dae 100644
---- a/arch/powerpc/kvm/trace_hv.h
-+++ b/arch/powerpc/kvm/trace_hv.h
-@@ -3,6 +3,7 @@
- 
- #include <linux/tracepoint.h>
- #include <uapi/asm/trace_book3s.h>
-+#include <uapi/asm/trace_hcall_pseries.h>
- #include <asm/hvcall.h>
- #include <asm/kvm_asm.h>
- 
-@@ -11,122 +12,6 @@
- #define TRACE_INCLUDE_PATH .
- #define TRACE_INCLUDE_FILE trace_hv
- 
--#define kvm_trace_symbol_hcall \
--	{H_REMOVE,			"H_REMOVE"}, \
--	{H_ENTER,			"H_ENTER"}, \
--	{H_READ,			"H_READ"}, \
--	{H_CLEAR_MOD,			"H_CLEAR_MOD"}, \
--	{H_CLEAR_REF,			"H_CLEAR_REF"}, \
--	{H_PROTECT,			"H_PROTECT"}, \
--	{H_GET_TCE,			"H_GET_TCE"}, \
--	{H_PUT_TCE,			"H_PUT_TCE"}, \
--	{H_SET_SPRG0,			"H_SET_SPRG0"}, \
--	{H_SET_DABR,			"H_SET_DABR"}, \
--	{H_PAGE_INIT,			"H_PAGE_INIT"}, \
--	{H_SET_ASR,			"H_SET_ASR"}, \
--	{H_ASR_ON,			"H_ASR_ON"}, \
--	{H_ASR_OFF,			"H_ASR_OFF"}, \
--	{H_LOGICAL_CI_LOAD,		"H_LOGICAL_CI_LOAD"}, \
--	{H_LOGICAL_CI_STORE,		"H_LOGICAL_CI_STORE"}, \
--	{H_LOGICAL_CACHE_LOAD,		"H_LOGICAL_CACHE_LOAD"}, \
--	{H_LOGICAL_CACHE_STORE,		"H_LOGICAL_CACHE_STORE"}, \
--	{H_LOGICAL_ICBI,		"H_LOGICAL_ICBI"}, \
--	{H_LOGICAL_DCBF,		"H_LOGICAL_DCBF"}, \
--	{H_GET_TERM_CHAR,		"H_GET_TERM_CHAR"}, \
--	{H_PUT_TERM_CHAR,		"H_PUT_TERM_CHAR"}, \
--	{H_REAL_TO_LOGICAL,		"H_REAL_TO_LOGICAL"}, \
--	{H_HYPERVISOR_DATA,		"H_HYPERVISOR_DATA"}, \
--	{H_EOI,				"H_EOI"}, \
--	{H_CPPR,			"H_CPPR"}, \
--	{H_IPI,				"H_IPI"}, \
--	{H_IPOLL,			"H_IPOLL"}, \
--	{H_XIRR,			"H_XIRR"}, \
--	{H_PERFMON,			"H_PERFMON"}, \
--	{H_MIGRATE_DMA,			"H_MIGRATE_DMA"}, \
--	{H_REGISTER_VPA,		"H_REGISTER_VPA"}, \
--	{H_CEDE,			"H_CEDE"}, \
--	{H_CONFER,			"H_CONFER"}, \
--	{H_PROD,			"H_PROD"}, \
--	{H_GET_PPP,			"H_GET_PPP"}, \
--	{H_SET_PPP,			"H_SET_PPP"}, \
--	{H_PURR,			"H_PURR"}, \
--	{H_PIC,				"H_PIC"}, \
--	{H_REG_CRQ,			"H_REG_CRQ"}, \
--	{H_FREE_CRQ,			"H_FREE_CRQ"}, \
--	{H_VIO_SIGNAL,			"H_VIO_SIGNAL"}, \
--	{H_SEND_CRQ,			"H_SEND_CRQ"}, \
--	{H_COPY_RDMA,			"H_COPY_RDMA"}, \
--	{H_REGISTER_LOGICAL_LAN,	"H_REGISTER_LOGICAL_LAN"}, \
--	{H_FREE_LOGICAL_LAN,		"H_FREE_LOGICAL_LAN"}, \
--	{H_ADD_LOGICAL_LAN_BUFFER,	"H_ADD_LOGICAL_LAN_BUFFER"}, \
--	{H_SEND_LOGICAL_LAN,		"H_SEND_LOGICAL_LAN"}, \
--	{H_BULK_REMOVE,			"H_BULK_REMOVE"}, \
--	{H_MULTICAST_CTRL,		"H_MULTICAST_CTRL"}, \
--	{H_SET_XDABR,			"H_SET_XDABR"}, \
--	{H_STUFF_TCE,			"H_STUFF_TCE"}, \
--	{H_PUT_TCE_INDIRECT,		"H_PUT_TCE_INDIRECT"}, \
--	{H_CHANGE_LOGICAL_LAN_MAC,	"H_CHANGE_LOGICAL_LAN_MAC"}, \
--	{H_VTERM_PARTNER_INFO,		"H_VTERM_PARTNER_INFO"}, \
--	{H_REGISTER_VTERM,		"H_REGISTER_VTERM"}, \
--	{H_FREE_VTERM,			"H_FREE_VTERM"}, \
--	{H_RESET_EVENTS,		"H_RESET_EVENTS"}, \
--	{H_ALLOC_RESOURCE,		"H_ALLOC_RESOURCE"}, \
--	{H_FREE_RESOURCE,		"H_FREE_RESOURCE"}, \
--	{H_MODIFY_QP,			"H_MODIFY_QP"}, \
--	{H_QUERY_QP,			"H_QUERY_QP"}, \
--	{H_REREGISTER_PMR,		"H_REREGISTER_PMR"}, \
--	{H_REGISTER_SMR,		"H_REGISTER_SMR"}, \
--	{H_QUERY_MR,			"H_QUERY_MR"}, \
--	{H_QUERY_MW,			"H_QUERY_MW"}, \
--	{H_QUERY_HCA,			"H_QUERY_HCA"}, \
--	{H_QUERY_PORT,			"H_QUERY_PORT"}, \
--	{H_MODIFY_PORT,			"H_MODIFY_PORT"}, \
--	{H_DEFINE_AQP1,			"H_DEFINE_AQP1"}, \
--	{H_GET_TRACE_BUFFER,		"H_GET_TRACE_BUFFER"}, \
--	{H_DEFINE_AQP0,			"H_DEFINE_AQP0"}, \
--	{H_RESIZE_MR,			"H_RESIZE_MR"}, \
--	{H_ATTACH_MCQP,			"H_ATTACH_MCQP"}, \
--	{H_DETACH_MCQP,			"H_DETACH_MCQP"}, \
--	{H_CREATE_RPT,			"H_CREATE_RPT"}, \
--	{H_REMOVE_RPT,			"H_REMOVE_RPT"}, \
--	{H_REGISTER_RPAGES,		"H_REGISTER_RPAGES"}, \
--	{H_DISABLE_AND_GETC,		"H_DISABLE_AND_GETC"}, \
--	{H_ERROR_DATA,			"H_ERROR_DATA"}, \
--	{H_GET_HCA_INFO,		"H_GET_HCA_INFO"}, \
--	{H_GET_PERF_COUNT,		"H_GET_PERF_COUNT"}, \
--	{H_MANAGE_TRACE,		"H_MANAGE_TRACE"}, \
--	{H_FREE_LOGICAL_LAN_BUFFER,	"H_FREE_LOGICAL_LAN_BUFFER"}, \
--	{H_QUERY_INT_STATE,		"H_QUERY_INT_STATE"}, \
--	{H_POLL_PENDING,		"H_POLL_PENDING"}, \
--	{H_ILLAN_ATTRIBUTES,		"H_ILLAN_ATTRIBUTES"}, \
--	{H_MODIFY_HEA_QP,		"H_MODIFY_HEA_QP"}, \
--	{H_QUERY_HEA_QP,		"H_QUERY_HEA_QP"}, \
--	{H_QUERY_HEA,			"H_QUERY_HEA"}, \
--	{H_QUERY_HEA_PORT,		"H_QUERY_HEA_PORT"}, \
--	{H_MODIFY_HEA_PORT,		"H_MODIFY_HEA_PORT"}, \
--	{H_REG_BCMC,			"H_REG_BCMC"}, \
--	{H_DEREG_BCMC,			"H_DEREG_BCMC"}, \
--	{H_REGISTER_HEA_RPAGES,		"H_REGISTER_HEA_RPAGES"}, \
--	{H_DISABLE_AND_GET_HEA,		"H_DISABLE_AND_GET_HEA"}, \
--	{H_GET_HEA_INFO,		"H_GET_HEA_INFO"}, \
--	{H_ALLOC_HEA_RESOURCE,		"H_ALLOC_HEA_RESOURCE"}, \
--	{H_ADD_CONN,			"H_ADD_CONN"}, \
--	{H_DEL_CONN,			"H_DEL_CONN"}, \
--	{H_JOIN,			"H_JOIN"}, \
--	{H_VASI_STATE,			"H_VASI_STATE"}, \
--	{H_ENABLE_CRQ,			"H_ENABLE_CRQ"}, \
--	{H_GET_EM_PARMS,		"H_GET_EM_PARMS"}, \
--	{H_SET_MPP,			"H_SET_MPP"}, \
--	{H_GET_MPP,			"H_GET_MPP"}, \
--	{H_HOME_NODE_ASSOCIATIVITY,	"H_HOME_NODE_ASSOCIATIVITY"}, \
--	{H_BEST_ENERGY,			"H_BEST_ENERGY"}, \
--	{H_XIRR_X,			"H_XIRR_X"}, \
--	{H_RANDOM,			"H_RANDOM"}, \
--	{H_COP,				"H_COP"}, \
--	{H_GET_MPP_X,			"H_GET_MPP_X"}, \
--	{H_SET_MODE,			"H_SET_MODE"}, \
--	{H_RTAS,			"H_RTAS"}
--
- #define kvm_trace_symbol_kvmret \
- 	{RESUME_GUEST,			"RESUME_GUEST"}, \
- 	{RESUME_GUEST_NV,		"RESUME_GUEST_NV"}, \
--- 
-1.9.3
+> > > +    aligned_off =3D round_down(off, 8);
+> > > +    aligned_count =3D round_up(off + count, 8) - aligned_off;
+> >=20
+> > I kinda preferred the start end variables, and length was just end -
+> > start.
+> >=20
+> > I though it was more readable. IMHO
+> >=20
+> > How about:
+> >=20
+> >   aligned_start =3D round_down(off, 8);
+> >   aligned_end =3D round_up(off + count, 8);
+> >   aligned_length =3D aligned_end - aligned_start;
+> Agreed on aligned_start and aligned_end but would not
+> need aligned_end in rest of the code.
+
+Aligned_end makes it more readable.
+
+> >=20
+> > > +
+> > > +    /* fast path */
+> > > +    if ((aligned_off =3D=3D off) && (aligned_count =3D=3D count)) {
+> > > +        /* no need to use the bounce buffer */
+> > > +        _memcpy_fromio(buf, ebuf + off, count);
+> >=20
+> > I would drop this, as the other code path should work fine.
+> > Premature optimisation.....
+> I am inclined to differ on this. Code below uses a bounce buffer
+> which needs more than double the amount of loads and stores.
+
+Cacheable vs non-cacheable is important here though.
+
+> If the caller wants to speed up things it can simply ask for aligned
+> read that won't have this overhead. This will be especially useful=20
+> In large reads.
+
+The overhead will mostly be in the non-cachable/MMIO load/stores rather
+than the cacheable load/stores, so there may be little performance
+difference  anyway.
+
+The only reason this could be useful is if you have a really really
+large error buffer.  Even then, why do you need to read it that quickly?
+
+Mikey
