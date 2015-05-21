@@ -1,20 +1,35 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <hemant@linux.vnet.ibm.com>
+Received: from e23smtp07.au.ibm.com (e23smtp07.au.ibm.com [202.81.31.140])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id C17A21A00B5
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 May 2015 13:53:50 +1000 (AEST)
-Message-ID: <1432180430.7260.4.camel@ellerman.id.au>
-Subject: Re: [PATCH V4 00/13] POWER DSCR fixes, improvements, docs and tests
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- mikey@neuling.org, shuahkh@osg.samsung.com, anton@samba.org
-Date: Thu, 21 May 2015 13:53:50 +1000
-In-Reply-To: <1431946576-1009-1-git-send-email-khandual@linux.vnet.ibm.com>
-References: <1431946576-1009-1-git-send-email-khandual@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id A2E1D1A00B5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 May 2015 13:56:09 +1000 (AEST)
+Received: from /spool/local
+ by e23smtp07.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <hemant@linux.vnet.ibm.com>;
+ Thu, 21 May 2015 13:56:09 +1000
+Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 610762BB0047
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 May 2015 13:56:06 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t4L3tvsd23265492
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 May 2015 13:56:06 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t4L3tXvg026369
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 May 2015 13:55:34 +1000
+From: Hemant Kumar <hemant@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: maddy@linux.vnet.ibm.com, srikar@linux.vnet.ibm.com,
+ scottwood@freescale.com, mpe@ellerman.id.au, agraf@suse.de,
+ kvm-ppc@vger.kernel.org, paulus@samba.org, warrier@linux.vnet.ibm.com,
+ linuxppc-dev@lists.ozlabs.org, acme@kernel.org, mingo@redhat.com,
+ peterz@infradead.org, Hemant Kumar <hemant@linux.vnet.ibm.com>
+Subject: [PATCH v4 1/2] perf/kvm: Port perf kvm to powerpc
+Date: Thu, 21 May 2015 09:25:07 +0530
+Message-Id: <1432180508-5060-1-git-send-email-hemant@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,44 +39,128 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2015-05-18 at 16:26 +0530, Anshuman Khandual wrote:
-> 	This patch series has patches for POWER DSCR fixes, improvements,
-> in code documentaion, kernel support user documentation and selftest based
-> test cases. It has got five test cases which are derived from Anton's DSCR
-> test bucket which can be listed as follows.
-> 
-> (1) http://ozlabs.org/~anton/junkcode/dscr_default_test.c
-> (2) http://ozlabs.org/~anton/junkcode/dscr_explicit_test.c
-> (3) http://ozlabs.org/~anton/junkcode/dscr_inherit_exec_test.c
-> (4) http://ozlabs.org/~anton/junkcode/dscr_inherit_test.c
-> (5) http://ozlabs.org/~anton/junkcode/user_dscr_test.c
-> 
-> NOTE1: Anton's original inherit exec test expected the child to have system
-> default DSCR value instead of the inherited DSCR value from it's parent.
-> But looks like thats not the case when we execute the test, it always
-> inherits it's parent's DSCR value over the exec call as well. So I have
-> changed the test program assuming its correct to have the inherited DSCR
-> value in the fork/execed child program. Please let me know if thats not
-> correct and I am missing something there.
+From: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
 
-The selftests still fail to build:
+perf kvm can be used to analyze guest exit reasons. This support already
+exists in x86. Hence, porting it to powerpc.
 
-  cc -Wall -O2 -flto -Wall -Werror -DGIT_VERSION='"v4.0-rc1-13631-gdfcba4b"' -I/home/buildbot/buildbot/slave/selftests-ppc64-gcc-ubuntu-be/build/tools/testing/selftests/powerpc  -lpthread    dscr_default_test.c ../harness.c   -o dscr_default_test
-  In file included from dscr_default_test.c:16:0:
-  dscr.h: In function ‘get_default_dscr’:
-  dscr.h:93:6: error: ignoring return value of ‘read’, declared with attribute warn_unused_result [-Werror=unused-result]
-    read(fd, buf, sizeof(buf));
-        ^
-  dscr.h: In function ‘set_default_dscr’:
-  dscr.h:112:7: error: ignoring return value of ‘write’, declared with attribute warn_unused_result [-Werror=unused-result]
-    write(fd, buf, strlen(buf));
-         ^
-  cc1: all warnings being treated as errors
-  make[1]: *** [dscr_default_test] Error 1
+ - To trace KVM events :
+  perf kvm stat record
+  If many guests are running, we can track for a specific guest by using
+  --pid as in : perf kvm stat record --pid <pid>
 
+ - To see the results :
+  perf kvm stat report
 
-I'm happy for you to call perror() and exit(1) if either fail.
+The result shows the number of exits (from the guest context to
+host/hypervisor context) grouped by their respective exit reasons with
+their frequency.
 
-Please fix and resend.
+This patch makes use of the guest exit reasons available in
+"trace_book3s.h". It records on two already available tracepoints :
+"kvm_hv:kvm_guest_exit" and "kvm_hv:kvm_guest_enter".
 
-cheers
+Note : This patch has a dependency on the patch "kvm/powerpc: Export
+kvm exit reasons" which exports the KVM exit reasons through the uapi.
+
+Here is a sample o/p:
+ # pgrep qemu
+19378
+60515
+
+2 Guests are running on the host.
+
+ # perf kvm stat record -a
+^C[ perf record: Woken up 1 times to write data ]
+[ perf record: Captured and wrote 4.153 MB perf.data.guest (39624 samples) ]
+
+ # perf kvm stat report -p 60515
+Analyze events for pid(s) 60515, all VCPUs:
+
+       VM-EXIT    Samples  Samples%     Time%    Min Time         Max        Time         Avg time
+
+H_DATA_STORAGE       5006    35.30%     0.13%      1.94us     49.46us     12.37us ( +-   0.52% )
+HV_DECREMENTER       4457    31.43%     0.02%      0.72us     16.14us      1.91us ( +-   0.96% )
+       SYSCALL       2690    18.97%     0.10%      2.84us    528.24us     18.29us ( +-   3.75% )
+RETURN_TO_HOST       1789    12.61%    99.76%      1.58us 672791.91us  27470.23us ( +-   3.00% )
+      EXTERNAL        240     1.69%     0.00%      0.69us     10.67us      1.33us ( +-   5.34% )
+
+Total Samples:14182, Total events handled time:49264158.30us.
+
+Signed-off-by: Srikar Dronamraju <srikar@linux.vnet.ibm.com>
+Signed-off-by: Hemant Kumar <hemant@linux.vnet.ibm.com>
+---
+Changes :
+- Moved the uapi related changes to arch/powerpc patchset.
+
+This patch has a dependency on :
+http://www.mail-archive.com/linuxppc-dev@lists.ozlabs.org/msg89485.html
+which exports the kvm exit reasons.
+
+ tools/perf/arch/powerpc/Makefile        |  1 +
+ tools/perf/arch/powerpc/util/Build      |  1 +
+ tools/perf/arch/powerpc/util/kvm-stat.c | 33 +++++++++++++++++++++++++++++++++
+ 3 files changed, 35 insertions(+)
+ create mode 100644 tools/perf/arch/powerpc/util/kvm-stat.c
+
+diff --git a/tools/perf/arch/powerpc/Makefile b/tools/perf/arch/powerpc/Makefile
+index 7fbca17..21322e0 100644
+--- a/tools/perf/arch/powerpc/Makefile
++++ b/tools/perf/arch/powerpc/Makefile
+@@ -1,3 +1,4 @@
+ ifndef NO_DWARF
+ PERF_HAVE_DWARF_REGS := 1
+ endif
++HAVE_KVM_STAT_SUPPORT := 1
+diff --git a/tools/perf/arch/powerpc/util/Build b/tools/perf/arch/powerpc/util/Build
+index 7b8b0d1..c8fe207 100644
+--- a/tools/perf/arch/powerpc/util/Build
++++ b/tools/perf/arch/powerpc/util/Build
+@@ -1,5 +1,6 @@
+ libperf-y += header.o
+ libperf-y += sym-handling.o
++libperf-y += kvm-stat.o
+ 
+ libperf-$(CONFIG_DWARF) += dwarf-regs.o
+ libperf-$(CONFIG_DWARF) += skip-callchain-idx.o
+diff --git a/tools/perf/arch/powerpc/util/kvm-stat.c b/tools/perf/arch/powerpc/util/kvm-stat.c
+new file mode 100644
+index 0000000..24e06bf
+--- /dev/null
++++ b/tools/perf/arch/powerpc/util/kvm-stat.c
+@@ -0,0 +1,33 @@
++#include "../../util/kvm-stat.h"
++#include <asm/kvm_perf_book3s.h>
++
++define_exit_reasons_table(hv_exit_reasons, kvm_trace_symbol_exit);
++
++static struct kvm_events_ops exit_events = {
++	.is_begin_event = exit_event_begin,
++	.is_end_event = exit_event_end,
++	.decode_key = exit_event_decode_key,
++	.name = "VM-EXIT"
++};
++
++const char *const kvm_events_tp[] = {
++	"kvm_hv:kvm_guest_exit",
++	"kvm_hv:kvm_guest_enter",
++	NULL,
++};
++
++struct kvm_reg_events_ops kvm_reg_events_ops[] = {
++	{ .name = "vmexit", .ops = &exit_events },
++	{ NULL, NULL },
++};
++
++const char * const kvm_skip_events[] = {
++	NULL,
++};
++
++int cpu_isa_init(struct perf_kvm_stat *kvm, const char *cpuid __maybe_unused)
++{
++	kvm->exit_reasons = hv_exit_reasons;
++	kvm->exit_reasons_isa = "HV";
++	return 0;
++}
+-- 
+1.9.3
