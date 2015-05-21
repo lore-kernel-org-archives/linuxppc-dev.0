@@ -1,35 +1,40 @@
-Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from e28smtp03.in.ibm.com (e28smtp03.in.ibm.com [122.248.162.3])
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 560471A0EC5
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 May 2015 16:45:39 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 568171A0B01
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 May 2015 17:02:54 +1000 (AEST)
 Received: from /spool/local
- by e28smtp03.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Thu, 21 May 2015 12:15:37 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp03.in.ibm.com (Postfix) with ESMTP id 21E7C1258061
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 May 2015 12:17:50 +0530 (IST)
-Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
- by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t4L6hhvg46530730
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 May 2015 12:15:33 +0530
-Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
- by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t4L62Hi2008464
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 May 2015 11:32:18 +0530
-From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Cc: mikey@neuling.org, anton@samba.org, shuahkh@osg.samsung.com,
- mpe@ellerman.id.au
-Subject: [PATCH V5 10/13] selftests,
- powerpc: Add test for DSCR inheritence across fork & exec
-Date: Thu, 21 May 2015 12:13:10 +0530
-Message-Id: <1432190593-17253-11-git-send-email-khandual@linux.vnet.ibm.com>
-In-Reply-To: <1432190593-17253-1-git-send-email-khandual@linux.vnet.ibm.com>
-References: <1432190593-17253-1-git-send-email-khandual@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Thu, 21 May 2015 17:02:39 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id C58FB3578053
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 May 2015 17:02:33 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t4L72OYb9306296
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 May 2015 17:02:33 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t4L7209G026318
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 May 2015 17:02:00 +1000
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ kirill.shutemov@linux.intel.com, aarcange@redhat.com,
+ schwidefsky@de.ibm.com, linux-mm@kvack.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH V5 2/3] powerpc/mm: Use generic version of pmdp_clear_flush
+In-Reply-To: <20150520124428.9bab9007d7d589ec4b615ee6@linux-foundation.org>
+References: <1431704550-19937-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1431704550-19937-3-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <20150520124428.9bab9007d7d589ec4b615ee6@linux-foundation.org>
+Date: Thu, 21 May 2015 12:31:31 +0530
+Message-ID: <87382q5s8k.fsf@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,153 +44,172 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch adds a test case to verify that the changed DSCR value
-inside any process would be inherited to it's child across the fork
-and exec system call.
+Andrew Morton <akpm@linux-foundation.org> writes:
 
-Acked-by: Shuah Khan <shuahkh@osg.samsung.com>
-Signed-off-by: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
- tools/testing/selftests/powerpc/dscr/Makefile      |   2 +-
- .../powerpc/dscr/dscr_inherit_exec_test.c          | 118 +++++++++++++++++++++
- 2 files changed, 119 insertions(+), 1 deletion(-)
- create mode 100644 tools/testing/selftests/powerpc/dscr/dscr_inherit_exec_test.c
+> On Fri, 15 May 2015 21:12:29 +0530 "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com> wrote:
+>
+>> Also move the pmd_trans_huge check to generic code.
+>> 
+>> ...
+>>
+>> --- a/include/asm-generic/pgtable.h
+>> +++ b/include/asm-generic/pgtable.h
+>> @@ -196,7 +196,12 @@ static inline pmd_t pmdp_collapse_flush(struct vm_area_struct *vma,
+>>  					unsigned long address,
+>>  					pmd_t *pmdp)
+>>  {
+>> -	return pmdp_clear_flush(vma, address, pmdp);
+>> +	pmd_t pmd;
+>> +	VM_BUG_ON(address & ~HPAGE_PMD_MASK);
+>> +	VM_BUG_ON(pmd_trans_huge(*pmdp));
+>> +	pmd = pmdp_get_and_clear(vma->vm_mm, address, pmdp);
+>> +	flush_tlb_range(vma, address, address + HPAGE_PMD_SIZE);
+>> +	return pmd;
+>>  }
+>
+> x86_64 allmodconfig:
+>
+> In file included from ./arch/x86/include/asm/pgtable.h:878,
+>                  from include/linux/mm.h:53,
+>                  from include/linux/suspend.h:8,
+>                  from arch/x86/kernel/asm-offsets.c:12:
+> include/asm-generic/pgtable.h: In function 'pmdp_collapse_flush':
+> include/asm-generic/pgtable.h:199: error: 'HPAGE_PMD_MASK' undeclared (first use in this function)
+> include/asm-generic/pgtable.h:199: error: (Each undeclared identifier is reported only once
+> include/asm-generic/pgtable.h:199: error: for each function it appears in.)
+> include/asm-generic/pgtable.h:202: error: implicit declaration of function 'flush_tlb_range'
+> include/asm-generic/pgtable.h:202: error: 'HPAGE_PMD_SIZE' undeclared (first use in this function)
+>
 
-diff --git a/tools/testing/selftests/powerpc/dscr/Makefile b/tools/testing/selftests/powerpc/dscr/Makefile
-index 81239e2..4e84309 100644
---- a/tools/testing/selftests/powerpc/dscr/Makefile
-+++ b/tools/testing/selftests/powerpc/dscr/Makefile
-@@ -1,5 +1,5 @@
- PROGS := dscr_default_test dscr_explicit_test dscr_user_test	\
--	 dscr_inherit_test
-+	 dscr_inherit_test dscr_inherit_exec_test
+Sorry for the build break. I was mostly focusing on the ppc64 build with
+different platforms and was hoping that will include all thp/enable
+disable configs. Unfortunately, we needed a config that is thp enabled and
+use generic pgtable.h. Will make sure that I test build and boot test on
+x86 before sending patch next time.
+
+
+>
+> Including linux/huge_mm.h doesn't work.  A suitable fix would be to
+> move this into a .c file.
+
+
+that helped.
+
+commit 3ef98ff8092789f7b58f3662297a80eff8d757ea
+Author: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+Date:   Mon May 11 15:53:21 2015 +0530
+
+    powerpc/mm: Use generic version of pmdp_clear_flush
+    
+    Also move the pmd_trans_huge check to generic code.
+    
+    Acked-by: Kirill A. Shutemov <kirill.shutemov@linux.intel.com>
+    Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+
+diff --git a/arch/powerpc/include/asm/pgtable-ppc64.h b/arch/powerpc/include/asm/pgtable-ppc64.h
+index 129c67ebc81a..55f06a381dd7 100644
+--- a/arch/powerpc/include/asm/pgtable-ppc64.h
++++ b/arch/powerpc/include/asm/pgtable-ppc64.h
+@@ -557,10 +557,6 @@ extern int pmdp_clear_flush_young(struct vm_area_struct *vma,
+ extern pmd_t pmdp_get_and_clear(struct mm_struct *mm,
+ 				unsigned long addr, pmd_t *pmdp);
  
- CFLAGS := $(CFLAGS) -lpthread
+-#define __HAVE_ARCH_PMDP_CLEAR_FLUSH
+-extern pmd_t pmdp_clear_flush(struct vm_area_struct *vma, unsigned long address,
+-			      pmd_t *pmdp);
+-
+ #define __HAVE_ARCH_PMDP_SET_WRPROTECT
+ static inline void pmdp_set_wrprotect(struct mm_struct *mm, unsigned long addr,
+ 				      pmd_t *pmdp)
+diff --git a/arch/powerpc/mm/pgtable_64.c b/arch/powerpc/mm/pgtable_64.c
+index 9171c1a37290..d37b9d1a1813 100644
+--- a/arch/powerpc/mm/pgtable_64.c
++++ b/arch/powerpc/mm/pgtable_64.c
+@@ -554,17 +554,6 @@ unsigned long pmd_hugepage_update(struct mm_struct *mm, unsigned long addr,
+ 	return old;
+ }
  
-diff --git a/tools/testing/selftests/powerpc/dscr/dscr_inherit_exec_test.c b/tools/testing/selftests/powerpc/dscr/dscr_inherit_exec_test.c
-new file mode 100644
-index 0000000..7283954
---- /dev/null
-+++ b/tools/testing/selftests/powerpc/dscr/dscr_inherit_exec_test.c
-@@ -0,0 +1,118 @@
-+/*
-+ * POWER Data Stream Control Register (DSCR) fork exec test
-+ *
-+ * This testcase modifies the DSCR using mtspr, forks & execs and
-+ * verifies that the child is using the changed DSCR using mfspr.
-+ *
-+ * When using the privilege state SPR, the instructions such as
-+ * mfspr or mtspr are priviledged and the kernel emulates them
-+ * for us. Instructions using problem state SPR can be exuecuted
-+ * directly without any emulation if the HW supports them. Else
-+ * they also get emulated by the kernel.
-+ *
-+ * Copyright (C) 2012 Anton Blanchard <anton@au.ibm.com>, IBM
-+ * Copyright (C) 2015 Anshuman Khandual <khandual@linux.vnet.ibm.com>, IBM
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ */
-+#include "dscr.h"
-+
-+static char prog[LEN_MAX];
-+
-+static void do_exec(unsigned long parent_dscr)
+-pmd_t pmdp_clear_flush(struct vm_area_struct *vma, unsigned long address,
+-		       pmd_t *pmdp)
+-{
+-	pmd_t pmd;
+-
+-	VM_BUG_ON(address & ~HPAGE_PMD_MASK);
+-	VM_BUG_ON(!pmd_trans_huge(*pmdp));
+-	pmd = pmdp_get_and_clear(vma->vm_mm, address, pmdp);
+-	return pmd;
+-}
+-
+ pmd_t pmdp_collapse_flush(struct vm_area_struct *vma, unsigned long address,
+ 			  pmd_t *pmdp)
+ {
+diff --git a/arch/s390/include/asm/pgtable.h b/arch/s390/include/asm/pgtable.h
+index fc642399b489..17627f73a032 100644
+--- a/arch/s390/include/asm/pgtable.h
++++ b/arch/s390/include/asm/pgtable.h
+@@ -1548,6 +1548,14 @@ static inline void pmdp_set_wrprotect(struct mm_struct *mm,
+ 	}
+ }
+ 
++static inline pmd_t pmdp_collapse_flush(struct vm_area_struct *vma,
++					unsigned long address,
++					pmd_t *pmdp)
 +{
-+	unsigned long cur_dscr, cur_dscr_usr;
-+
-+	cur_dscr = get_dscr();
-+	cur_dscr_usr = get_dscr_usr();
-+
-+	if (cur_dscr != parent_dscr) {
-+		fprintf(stderr, "Parent DSCR %ld was not inherited "
-+				"over exec (kernel value)\n", parent_dscr);
-+		exit(1);
-+	}
-+
-+	if (cur_dscr_usr != parent_dscr) {
-+		fprintf(stderr, "Parent DSCR %ld was not inherited "
-+				"over exec (user value)\n", parent_dscr);
-+		exit(1);
-+	}
-+	exit(0);
++	return pmdp_get_and_clear(vma->vm_mm, address, pmdp);
 +}
++#define pmdp_collapse_flush pmdp_collapse_flush
 +
-+int dscr_inherit_exec(void)
+ #define pfn_pmd(pfn, pgprot)	mk_pmd_phys(__pa((pfn) << PAGE_SHIFT), (pgprot))
+ #define mk_pmd(page, pgprot)	pfn_pmd(page_to_pfn(page), (pgprot))
+ 
+diff --git a/include/asm-generic/pgtable.h b/include/asm-generic/pgtable.h
+index 2c3ca89e9aee..3b5a89ab4103 100644
+--- a/include/asm-generic/pgtable.h
++++ b/include/asm-generic/pgtable.h
+@@ -191,13 +191,8 @@ extern void pmdp_splitting_flush(struct vm_area_struct *vma,
+ 
+ #ifndef pmdp_collapse_flush
+ #ifdef CONFIG_TRANSPARENT_HUGEPAGE
+-static inline pmd_t pmdp_collapse_flush(struct vm_area_struct *vma,
+-					unsigned long address,
+-					pmd_t *pmdp)
+-{
+-	return pmdp_clear_flush(vma, address, pmdp);
+-}
+-#define pmdp_collapse_flush pmdp_collapse_flush
++extern pmd_t pmdp_collapse_flush(struct vm_area_struct *vma,
++				 unsigned long address, pmd_t *pmdp);
+ #else
+ static inline pmd_t pmdp_collapse_flush(struct vm_area_struct *vma,
+ 					unsigned long address,
+diff --git a/mm/pgtable-generic.c b/mm/pgtable-generic.c
+index c25f94b33811..7f2314f9e16f 100644
+--- a/mm/pgtable-generic.c
++++ b/mm/pgtable-generic.c
+@@ -126,6 +126,7 @@ pmd_t pmdp_clear_flush(struct vm_area_struct *vma, unsigned long address,
+ {
+ 	pmd_t pmd;
+ 	VM_BUG_ON(address & ~HPAGE_PMD_MASK);
++	VM_BUG_ON(!pmd_trans_huge(*pmdp));
+ 	pmd = pmdp_get_and_clear(vma->vm_mm, address, pmdp);
+ 	flush_tlb_range(vma, address, address + HPAGE_PMD_SIZE);
+ 	return pmd;
+@@ -198,3 +199,18 @@ void pmdp_invalidate(struct vm_area_struct *vma, unsigned long address,
+ }
+ #endif /* CONFIG_TRANSPARENT_HUGEPAGE */
+ #endif
++
++#ifndef pmdp_collapse_flush
++#ifdef CONFIG_TRANSPARENT_HUGEPAGE
++pmd_t pmdp_collapse_flush(struct vm_area_struct *vma, unsigned long address,
++			  pmd_t *pmdp)
 +{
-+	unsigned long i, dscr = 0;
-+	pid_t pid;
-+
-+	for (i = 0; i < COUNT; i++) {
-+		dscr++;
-+		if (dscr > DSCR_MAX)
-+			dscr = 0;
-+
-+		if (dscr == get_default_dscr())
-+			continue;
-+
-+		if (i % 2 == 0)
-+			set_dscr_usr(dscr);
-+		else
-+			set_dscr(dscr);
-+
-+		/*
-+		 * XXX: Force a context switch out so that DSCR
-+		 * current value is copied into the thread struct
-+		 * which is required for the child to inherit the
-+		 * changed value.
-+		 */
-+		sleep(1);
-+
-+		pid = fork();
-+		if (pid == -1) {
-+			perror("fork() failed");
-+			exit(1);
-+		} else if (pid) {
-+			int status;
-+
-+			if (waitpid(pid, &status, 0) == -1) {
-+				perror("waitpid() failed");
-+				exit(1);
-+			}
-+
-+			if (!WIFEXITED(status)) {
-+				fprintf(stderr, "Child didn't exit cleanly\n");
-+				exit(1);
-+			}
-+
-+			if (WEXITSTATUS(status) != 0) {
-+				fprintf(stderr, "Child didn't exit cleanly\n");
-+				return 1;
-+			}
-+		} else {
-+			char dscr_str[16];
-+
-+			sprintf(dscr_str, "%ld", dscr);
-+			execlp(prog, prog, "exec", dscr_str, NULL);
-+			exit(1);
-+		}
-+	}
-+	return 0;
++	pmd_t pmd;
++	VM_BUG_ON(address & ~HPAGE_PMD_MASK);
++	VM_BUG_ON(pmd_trans_huge(*pmdp));
++	pmd = pmdp_get_and_clear(vma->vm_mm, address, pmdp);
++	flush_tlb_range(vma, address, address + HPAGE_PMD_SIZE);
++	return pmd;
 +}
-+
-+int main(int argc, char *argv[])
-+{
-+	if (argc == 3 && !strcmp(argv[1], "exec")) {
-+		unsigned long parent_dscr;
-+
-+		parent_dscr = atoi(argv[2]);
-+		do_exec(parent_dscr);
-+	} else if (argc != 1) {
-+		fprintf(stderr, "Usage: %s\n", argv[0]);
-+		exit(1);
-+	}
-+
-+	strncpy(prog, argv[0], strlen(argv[0]));
-+	return test_harness(dscr_inherit_exec, "dscr_inherit_exec_test");
-+}
--- 
-2.1.0
++#endif /* CONFIG_TRANSPARENT_HUGEPAGE */
++#endif
