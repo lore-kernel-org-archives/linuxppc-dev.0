@@ -1,18 +1,25 @@
-Return-Path: <geert@linux-m68k.org>
-Received: from wilson.telenet-ops.be (wilson.telenet-ops.be [195.130.132.42])
- by lists.ozlabs.org (Postfix) with ESMTP id 8E3E31A0AD5
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 May 2015 22:12:28 +1000 (AEST)
-Received: from andre.telenet-ops.be (andre.telenet-ops.be [195.130.132.53])
- by wilson.telenet-ops.be (Postfix) with ESMTP id 7597036962
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 May 2015 14:02:18 +0200 (CEST)
-From: Geert Uytterhoeven <geert+renesas@glider.be>
-To: Timur Tabi <timur@tabi.org>, Takashi Iwai <tiwai@suse.de>,
- Jiri Kosina <trivial@kernel.org>
-Cc: alsa-devel@alsa-project.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH trivial] ASoC: fsl_esai: Spelling s/specifially/specifically/
-Date: Thu, 21 May 2015 14:02:18 +0200
-Message-Id: <1432209738-20877-1-git-send-email-geert+renesas@glider.be>
+Return-Path: <ak@linux.intel.com>
+Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
+ by lists.ozlabs.org (Postfix) with ESMTP id 1A26C1A0B9E
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 May 2015 04:50:50 +1000 (AEST)
+Date: Thu, 21 May 2015 11:50:48 -0700
+From: Andi Kleen <ak@linux.intel.com>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Cc: mingo@redhat.com, Michael Ellerman <mpe@ellerman.id.au>,
+ Jiri Olsa <jolsa@redhat.com>, Arnaldo Carvalho de Melo <acme@kernel.org>,
+ Paul Mackerras <paulus@samba.org>, namhyung@kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/4] perf: Use pmu_events_map table to create event aliases
+Message-ID: <20150521185048.GF7484@tassilo.jf.intel.com>
+References: <1432080130-6678-1-git-send-email-sukadev@linux.vnet.ibm.com>
+ <1432080130-6678-4-git-send-email-sukadev@linux.vnet.ibm.com>
+ <20150520235826.GB7484@tassilo.jf.intel.com>
+ <20150521001935.GD11568@us.ibm.com>
+ <20150521025653.GC7484@tassilo.jf.intel.com>
+ <20150521050204.GA20360@us.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20150521050204.GA20360@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -22,23 +29,22 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
----
- sound/soc/fsl/fsl_esai.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+On Wed, May 20, 2015 at 10:02:04PM -0700, Sukadev Bhattiprolu wrote:
+> Andi Kleen [ak@linux.intel.com] wrote:
+> | If you need something else in vfm to identify the CPU 
+> | can't you just add it there? I wouldn't really call it vfm, it's
+> | really a "abstract cpu identifier per architecture". So if you
+> | need pvr just add it there.
+> 
+> Ok. I will change vfm to cpuid_str and include pvr in it.
 
-diff --git a/sound/soc/fsl/fsl_esai.c b/sound/soc/fsl/fsl_esai.c
-index 5c7597191e3ffc68..45eee131c47d43cd 100644
---- a/sound/soc/fsl/fsl_esai.c
-+++ b/sound/soc/fsl/fsl_esai.c
-@@ -517,7 +517,7 @@ static int fsl_esai_hw_params(struct snd_pcm_substream *substream,
- 	u32 bclk, mask, val;
- 	int ret;
- 
--	/* Override slot_width if being specifially set */
-+	/* Override slot_width if being specifically set */
- 	if (esai_priv->slot_width)
- 		slot_width = esai_priv->slot_width;
- 
+Thanks.
+
+With that change it would be also cleaner to provide a get_cpuid_str()
+function by the architecture code, and then strcmp in the matching
+code, instead of having architecture specific compare code.
+
+-Andi
+
 -- 
-1.9.1
+ak@linux.intel.com -- Speaking for myself only
