@@ -1,21 +1,23 @@
-Return-Path: <paulus@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5A14D1A00B5
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 May 2015 12:51:42 +1000 (AEST)
-Date: Thu, 21 May 2015 12:51:09 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Scott Wood <scottwood@freescale.com>
-Cc: Sam Bobroff <sam.bobroff@au1.ibm.com>, kvm-ppc@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, Mihai Caraman <mihai.caraman@freescale.com>
-Subject: Re: [PATCH 1/1] KVM: PPC: Book3S: correct width in XER handling
-Message-ID: <20150521025109.GA12975@drongo.ozlabs.ibm.com>
-References: <d0600fe7952351dfd176c97d416a6a351812a78b.1432099563.git.sam.bobroff@au1.ibm.com>
- <1432161308.27761.116.camel@freescale.com>
+Return-Path: <ak@linux.intel.com>
+Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
+ by lists.ozlabs.org (Postfix) with ESMTP id C7F881A00B5
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 May 2015 12:56:55 +1000 (AEST)
+Date: Wed, 20 May 2015 19:56:53 -0700
+From: Andi Kleen <ak@linux.intel.com>
+To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Cc: mingo@redhat.com, Michael Ellerman <mpe@ellerman.id.au>,
+ Jiri Olsa <jolsa@redhat.com>, Arnaldo Carvalho de Melo <acme@kernel.org>,
+ Paul Mackerras <paulus@samba.org>, namhyung@kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 3/4] perf: Use pmu_events_map table to create event aliases
+Message-ID: <20150521025653.GC7484@tassilo.jf.intel.com>
+References: <1432080130-6678-1-git-send-email-sukadev@linux.vnet.ibm.com>
+ <1432080130-6678-4-git-send-email-sukadev@linux.vnet.ibm.com>
+ <20150520235826.GB7484@tassilo.jf.intel.com>
+ <20150521001935.GD11568@us.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1432161308.27761.116.camel@freescale.com>
+In-Reply-To: <20150521001935.GD11568@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,13 +27,26 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, May 20, 2015 at 05:35:08PM -0500, Scott Wood wrote:
+> Obviously, that does not fit into the VFM field. We could either
+> add a new PVR field to the mapfile:
 > 
-> It's nominally a 64-bit register, but the upper 32 bits are reserved in
-> ISA 2.06.  Do newer ISAs or certain implementations define things in the
-> upper 32 bits, or is this just about the asm accesses being wrong on
-> big-endian?
+> 	[vfm, version, type, pvr]
+> 
+> or, as the patch currently does, let architectures intepret the
+> "version" field as they see fit?
+> 
+> IOW, leave it to architectures to keep arch_pmu_events_match_cpu()
+> consistent with _their_ mapfile?
 
-It's primarily about the asm accesses being wrong.
+version is the version number of the event file. This way 
+you can't signify the version number if you ever change something.
 
-Paul.
+If you need something else in vfm to identify the CPU 
+can't you just add it there? I wouldn't really call it vfm, it's
+really a "abstract cpu identifier per architecture". So if you
+need pvr just add it there.
+
+-Andi
+
+-- 
+ak@linux.intel.com -- Speaking for myself only
