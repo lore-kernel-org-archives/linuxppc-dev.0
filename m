@@ -1,17 +1,19 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <Pengbo.Li@freescale.com>
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0123.outbound.protection.outlook.com [207.46.100.123])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 31A691A0076
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 May 2015 12:45:55 +1000 (AEST)
-In-Reply-To: <1432195530-31382-1-git-send-email-vaibhav@linux.vnet.ibm.com>
-To: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-From: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Michael Neuling <mikey@neuling.org>, Ian Munsie <imunsie@au1.ibm.com>,
- Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
-Subject: Re: [v5] cxl: Export AFU error buffer via sysfs
-Message-Id: <20150522024555.1FD8614077A@ozlabs.org>
-Date: Fri, 22 May 2015 12:45:55 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 586471A0BE8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 May 2015 15:11:23 +1000 (AEST)
+From: Pengbo Li <Pengbo.Li@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <scottwood@freescale.com>
+CC: Xie Xiaobo <X.Xie@freescale.com>, Li Pengbo <Pengbo.Li@freescale.com>
+Subject: [PATCH v2] powerpc/85xx: p1025twr: add module conditional to fix
+ QE-uart issue
+Date: Fri, 22 May 2015 13:07:19 +0800
+Message-ID: <1432271239-37337-1-git-send-email-Pengbo.Li@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,48 +23,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2015-21-05 at 08:05:30 UTC, Vaibhav Jain wrote:
-> Export the "AFU Error Buffer" via sysfs attribute (afu_err_buf). AFU
-> error buffer is used by the AFU to report application specific
-> errors. The contents of this buffer are AFU specific and are intended to
-> be interpreted by the application interacting with the afu.
-> 
-> Testing:
-> 	- Build against pseries le/be configs.
-> 	- Run testing with a special version of memcpy afu on a 'be'
-> 	kernel.
-> 
-> Change-log:
-> v4 -> v5
-> 	- Improved documentation in cxl_afu_read_err_buffer function to
-> 	address why I am using '_memcpy_fromio' instead of
-> 	'memcpy_fromio'
+From: Xie Xiaobo <X.Xie@freescale.com>
 
-> +	/*
-> +	 * using '_memcpy_fromio' instead of 'memcpy_fromio' as on powerpc
-> +	 * arch its gauranteed to use 8/4 bytes aligned reads. This may
-> +	 * not be the case with other archs.
-> +	 */
+A ioport setting was needed when used the QE uart function on TWR-P1025.
+Added a conditional definition to avoid missing this setting when the
+QE-uart driver was bulit to a module.
 
-Please just use memcpy_fromio().
+Signed-off-by: Xie Xiaobo <X.Xie@freescale.com>
+Signed-off-by: Li Pengbo <Pengbo.Li@freescale.com>
+---
+ arch/powerpc/platforms/85xx/twr_p102x.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Via the definition at:
-
-  https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/arch/powerpc/include/asm/io-defs.h#n57
-
-You'll get the implementation at:
-
-  https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/arch/powerpc/include/asm/io.h#n584
-
-Which because there is no hook defined will use the implementation at:
-
-  https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/arch/powerpc/include/asm/io.h#n542
-
-Which will use:
-
-  https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/arch/powerpc/include/asm/eeh.h#n417
-
-
-Which calls _memcpy_fromio() and also checks for EEH errors.
-
-cheers
+diff --git a/arch/powerpc/platforms/85xx/twr_p102x.c b/arch/powerpc/platforms/85xx/twr_p102x.c
+index 1eadb6d..30e002f 100644
+--- a/arch/powerpc/platforms/85xx/twr_p102x.c
++++ b/arch/powerpc/platforms/85xx/twr_p102x.c
+@@ -79,7 +79,7 @@ static void __init twr_p1025_setup_arch(void)
+ 	mpc85xx_qe_init();
+ 	mpc85xx_qe_par_io_init();
+ 
+-#if defined(CONFIG_UCC_GETH) || defined(CONFIG_SERIAL_QE)
++#if IS_ENABLED(CONFIG_UCC_GETH) || IS_ENABLED(CONFIG_SERIAL_QE)
+ 	if (machine_is(twr_p1025)) {
+ 		struct ccsr_guts __iomem *guts;
+ 
+@@ -101,7 +101,7 @@ static void __init twr_p1025_setup_arch(void)
+ 					MPC85xx_PMUXCR_QE(12));
+ 			iounmap(guts);
+ 
+-#if defined(CONFIG_SERIAL_QE)
++#if IS_ENABLED(CONFIG_SERIAL_QE)
+ 			/* On P1025TWR board, the UCC7 acted as UART port.
+ 			 * However, The UCC7's CTS pin is low level in default,
+ 			 * it will impact the transmission in full duplex
+-- 
+2.1.0.27.g96db324
