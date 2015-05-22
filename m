@@ -1,35 +1,17 @@
-Return-Path: <stewart@linux.vnet.ibm.com>
-Received: from e19.ny.us.ibm.com (e19.ny.us.ibm.com [129.33.205.209])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E77E61A0076
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 May 2015 12:18:48 +1000 (AEST)
-Received: from /spool/local
- by e19.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <stewart@linux.vnet.ibm.com>;
- Thu, 21 May 2015 22:18:45 -0400
-Received: from b01cxnp22034.gho.pok.ibm.com (b01cxnp22034.gho.pok.ibm.com
- [9.57.198.24])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id C6CD46E803C
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 May 2015 22:10:30 -0400 (EDT)
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
- by b01cxnp22034.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t4M2Ig1958523696
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 May 2015 02:18:42 GMT
-Received: from d01av03.pok.ibm.com (localhost [127.0.0.1])
- by d01av03.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t4M2IgVR031385
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 May 2015 22:18:42 -0400
-From: Stewart Smith <stewart@linux.vnet.ibm.com>
-To: Jeremy Kerr <jk@ozlabs.org>, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH 3/3 v2] powerpc/powernv: Add opal-prd channel
-In-Reply-To: <1432092213.630344.947105758608.3.gpush@pablo>
-References: <1432092213.630344.947105758608.3.gpush@pablo>
-Date: Fri, 22 May 2015 12:18:40 +1000
-Message-ID: <m34mn5mk1r.fsf@oc8180480414.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+ by lists.ozlabs.org (Postfix) with ESMTPS id 31A691A0076
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 May 2015 12:45:55 +1000 (AEST)
+In-Reply-To: <1432195530-31382-1-git-send-email-vaibhav@linux.vnet.ibm.com>
+To: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
+From: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Michael Neuling <mikey@neuling.org>, Ian Munsie <imunsie@au1.ibm.com>,
+ Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+Subject: Re: [v5] cxl: Export AFU error buffer via sysfs
+Message-Id: <20150522024555.1FD8614077A@ozlabs.org>
+Date: Fri, 22 May 2015 12:45:55 +1000 (AEST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,17 +21,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Jeremy Kerr <jk@ozlabs.org> writes:
+On Thu, 2015-21-05 at 08:05:30 UTC, Vaibhav Jain wrote:
+> Export the "AFU Error Buffer" via sysfs attribute (afu_err_buf). AFU
+> error buffer is used by the AFU to report application specific
+> errors. The contents of this buffer are AFU specific and are intended to
+> be interpreted by the application interacting with the afu.
+> 
+> Testing:
+> 	- Build against pseries le/be configs.
+> 	- Run testing with a special version of memcpy afu on a 'be'
+> 	kernel.
+> 
+> Change-log:
+> v4 -> v5
+> 	- Improved documentation in cxl_afu_read_err_buffer function to
+> 	address why I am using '_memcpy_fromio' instead of
+> 	'memcpy_fromio'
 
-> This change adds a char device to access the "PRD" (processor runtime
-> diagnostics) channel to OPAL firmware.
->
-> Includes contributions from Vaidyanathan Srinivasan, Neelesh Gupta &
-> Vishal Kulkarni.
->
-> Signed-off-by: Neelesh Gupta <neelegup@linux.vnet.ibm.com>
-> Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
+> +	/*
+> +	 * using '_memcpy_fromio' instead of 'memcpy_fromio' as on powerpc
+> +	 * arch its gauranteed to use 8/4 bytes aligned reads. This may
+> +	 * not be the case with other archs.
+> +	 */
 
-Firmware bits are merged, available in current stable, skiboot-5.0.2
+Please just use memcpy_fromio().
 
-Acked-by: Stewart Smith <stewart@linux.vnet.ibm.com>
+Via the definition at:
+
+  https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/arch/powerpc/include/asm/io-defs.h#n57
+
+You'll get the implementation at:
+
+  https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/arch/powerpc/include/asm/io.h#n584
+
+Which because there is no hook defined will use the implementation at:
+
+  https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/arch/powerpc/include/asm/io.h#n542
+
+Which will use:
+
+  https://git.kernel.org/cgit/linux/kernel/git/torvalds/linux.git/tree/arch/powerpc/include/asm/eeh.h#n417
+
+
+Which calls _memcpy_fromio() and also checks for EEH errors.
+
+cheers
