@@ -1,19 +1,35 @@
-Return-Path: <Pengbo.Li@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0123.outbound.protection.outlook.com [207.46.100.123])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 586471A0BE8
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 May 2015 15:11:23 +1000 (AEST)
-From: Pengbo Li <Pengbo.Li@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>, <scottwood@freescale.com>
-CC: Xie Xiaobo <X.Xie@freescale.com>, Li Pengbo <Pengbo.Li@freescale.com>
-Subject: [PATCH v2] powerpc/85xx: p1025twr: add module conditional to fix
- QE-uart issue
-Date: Fri, 22 May 2015 13:07:19 +0800
-Message-ID: <1432271239-37337-1-git-send-email-Pengbo.Li@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 771D71A0BE8
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 May 2015 15:18:44 +1000 (AEST)
+Received: from /spool/local
+ by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Fri, 22 May 2015 15:18:42 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 4A3F2357804C
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 May 2015 15:18:38 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t4M5IUCp27263204
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 May 2015 15:18:38 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t4M5I4n2023216
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 May 2015 15:18:05 +1000
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: akpm@linux-foundation.org, benh@kernel.crashing.org, paulus@samba.org,
+ mpe@ellerman.id.au, kirill.shutemov@linux.intel.com,
+ aarcange@redhat.com, schwidefsky@de.ibm.com
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH V6 0/3] THP related code cleanup
+Date: Fri, 22 May 2015 10:47:29 +0530
+Message-Id: <1432271852-12949-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,39 +39,29 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Xie Xiaobo <X.Xie@freescale.com>
+Changes from v5:
+* Fix build failure on x86 with thp enabled.
+* Tested on x86_64, ppc64.
 
-A ioport setting was needed when used the QE uart function on TWR-P1025.
-Added a conditional definition to avoid missing this setting when the
-QE-uart driver was bulit to a module.
+Aneesh Kumar K.V (3):
+  mm/thp: Split out pmd collpase flush into a separate functions
+  powerpc/mm: Use generic version of pmdp_clear_flush
+  mm: Clarify that the function operates on hugepage pte
 
-Signed-off-by: Xie Xiaobo <X.Xie@freescale.com>
-Signed-off-by: Li Pengbo <Pengbo.Li@freescale.com>
----
- arch/powerpc/platforms/85xx/twr_p102x.c | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ arch/mips/include/asm/pgtable.h          |  8 ++--
+ arch/powerpc/include/asm/pgtable-ppc64.h | 14 +++---
+ arch/powerpc/mm/pgtable_64.c             | 73 +++++++++++++++-----------------
+ arch/s390/include/asm/pgtable.h          | 30 ++++++++-----
+ arch/sparc/include/asm/pgtable_64.h      |  8 ++--
+ arch/tile/include/asm/pgtable.h          |  8 ++--
+ arch/x86/include/asm/pgtable.h           |  4 +-
+ include/asm-generic/pgtable.h            | 34 +++++++++++----
+ include/linux/mmu_notifier.h             | 12 +++---
+ mm/huge_memory.c                         | 18 ++++----
+ mm/migrate.c                             |  2 +-
+ mm/pgtable-generic.c                     | 29 +++++++++++--
+ mm/rmap.c                                |  2 +-
+ 13 files changed, 141 insertions(+), 101 deletions(-)
 
-diff --git a/arch/powerpc/platforms/85xx/twr_p102x.c b/arch/powerpc/platforms/85xx/twr_p102x.c
-index 1eadb6d..30e002f 100644
---- a/arch/powerpc/platforms/85xx/twr_p102x.c
-+++ b/arch/powerpc/platforms/85xx/twr_p102x.c
-@@ -79,7 +79,7 @@ static void __init twr_p1025_setup_arch(void)
- 	mpc85xx_qe_init();
- 	mpc85xx_qe_par_io_init();
- 
--#if defined(CONFIG_UCC_GETH) || defined(CONFIG_SERIAL_QE)
-+#if IS_ENABLED(CONFIG_UCC_GETH) || IS_ENABLED(CONFIG_SERIAL_QE)
- 	if (machine_is(twr_p1025)) {
- 		struct ccsr_guts __iomem *guts;
- 
-@@ -101,7 +101,7 @@ static void __init twr_p1025_setup_arch(void)
- 					MPC85xx_PMUXCR_QE(12));
- 			iounmap(guts);
- 
--#if defined(CONFIG_SERIAL_QE)
-+#if IS_ENABLED(CONFIG_SERIAL_QE)
- 			/* On P1025TWR board, the UCC7 acted as UART port.
- 			 * However, The UCC7's CTS pin is low level in default,
- 			 * it will impact the transmission in full duplex
 -- 
-2.1.0.27.g96db324
+2.1.4
