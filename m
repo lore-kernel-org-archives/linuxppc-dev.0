@@ -1,25 +1,26 @@
-Return-Path: <segher@gate.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <herbszt@gmx.de>
+Received: from mout.gmx.net (mout.gmx.net [212.227.17.21])
+ (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 982271A0072
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 May 2015 08:08:10 +1000 (AEST)
-Date: Fri, 22 May 2015 16:39:56 -0500
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: Scott Wood <scottwood@freescale.com>
-Cc: David Laight <David.Laight@ACULAB.COM>,
- "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- Paul Mackerras <paulus@samba.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [PATCH v3 2/2] powerpc: add support for csum_add()
-Message-ID: <20150522213956.GC7305@gate.crashing.org>
-References: <cover.1432047904.git.christophe.leroy@c-s.fr>
- <1d1362c8aa696e316d3ba97dce2342df6f6ee6cf.1432047904.git.christophe.leroy@c-s.fr>
- <063D6719AE5E284EB5DD2968C1650D6D1CB3D471@AcuExch.aculab.com>
- <1432323162.27761.274.camel@freescale.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1432323162.27761.274.camel@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1C0721A0AA5
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 May 2015 19:33:03 +1000 (AEST)
+Date: Sat, 23 May 2015 11:31:48 +0200
+From: Sebastian Herbszt <herbszt@gmx.de>
+To: "James E . J . Bottomley" <JBottomley@odin.com>
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, james.smart@emulex.com,
+ linuxppc-dev@lists.ozlabs.org, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>,
+ linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org, Sebastian Herbszt
+ <herbszt@gmx.de>
+Subject: Re: [PATCH kernel] commit 4fbdf9cb ("lpfc: Fix for lun discovery
+ issue with saturn adapter.")
+Message-ID: <20150523113148.00002dfc@localhost>
+In-Reply-To: <20150522133334.000064c9@localhost>
+References: <1430209582-23925-1-git-send-email-aik@ozlabs.ru>
+ <5548E2C1.3070209@emulex.com> <20150505234659.00003ab7@localhost>
+ <555C0595.9060507@ozlabs.ru> <20150522133334.000064c9@localhost>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,25 +30,47 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, May 22, 2015 at 02:32:42PM -0500, Scott Wood wrote:
-> > I'd also have thought that the 64bit C version above would be generally 'good'.
+I wrote:
+> Alexey Kardashevskiy wrote:
+> > On 05/06/2015 07:46 AM, Sebastian Herbszt wrote:
+> > > James Smart wrote:
+> > >>
+> > >> Reviewed-By: James Smart <james.smart@emulex.com>
+> > >>
+> > >>
+> > >> Alexey, Sebastian,
+> > >>
+> > >> Yes - this section needs to be reverted.  This patch is good.
+> > >>
+> > >> -- james s
+> > >
+> > > Reviewed-by: Sebastian Herbszt <herbszt@gmx.de>
+> > 
+> > 
+> > Unfortunately, just this revert is not enough, it fixed one of my machines 
+> > but I have another machine with "Emulex Corporation Saturn-X: LightPulse 
+> > Fibre Channel Host Adapter (rev 03)" which does not boot - the booting 
+> > process stops at "[  OK  ] Reached target Basic System."
+> > 
+> > Any quick idea what else to revert between 4.0 and current upstream before 
+> > I dig further? Thanks!
 > 
-> It doesn't generate the addc/addze sequence.  At least with GCC 4.8.2,
-> it does something like:
+> Is the other machine also POWER7?
+> I tested the revert on x86 and it fixed my issue:
 > 
-> 	mr	tmp0, csum
-> 	li	tmp1, 0
-> 	li	tmp2, 0
-> 	addc	tmp3, addend, tmp0
-> 	adde	csum, tmp2, tmp1
-> 	add	csum, csum, tmp3
+> 4.1-rc4 (lpfc 10.5.0.0) - broken
+> 4.0 + lpfc 10.5.0.0 - broken
+> 4.1-rc4 (lpfc 10.5.0.0) + revert - ok
+> 4.0 + lpfc 10.5.0.0 + revert - ok
 
-Right.  Don't expect older compilers to do sane things here.
+James,
 
-All this begs a question...  If it is worth spending so much time
-micro-optimising this, why not pick the low-hanging fruit first?
-Having a 32-bit accumulator for ones' complement sums, on a 64-bit
-system, is not such a great idea.
+are you sending this revert to Linus any time soon?
 
+Support for SLI-3 adapters is broken on all platforms for more than
+a month now [1] and POWER7 doesn't seem to like it at all [2].
 
-Segher
+[1] http://marc.info/?l=linux-scsi&m=142938432414173
+[2] http://marc.info/?l=linux-scsi&m=143021737816241
+
+Sebastian
