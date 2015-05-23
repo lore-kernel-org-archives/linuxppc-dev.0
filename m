@@ -1,26 +1,26 @@
-Return-Path: <herbszt@gmx.de>
-Received: from mout.gmx.net (mout.gmx.net [212.227.17.21])
- (using TLSv1.2 with cipher DHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Return-Path: <matevz.langus@borea.si>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1C0721A0AA5
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 May 2015 19:33:03 +1000 (AEST)
-Date: Sat, 23 May 2015 11:31:48 +0200
-From: Sebastian Herbszt <herbszt@gmx.de>
-To: "James E . J . Bottomley" <JBottomley@odin.com>
-Cc: Alexey Kardashevskiy <aik@ozlabs.ru>, james.smart@emulex.com,
- linuxppc-dev@lists.ozlabs.org, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, Paul Mackerras <paulus@samba.org>,
- linux-scsi@vger.kernel.org, linux-kernel@vger.kernel.org, Sebastian Herbszt
- <herbszt@gmx.de>
-Subject: Re: [PATCH kernel] commit 4fbdf9cb ("lpfc: Fix for lun discovery
- issue with saturn adapter.")
-Message-ID: <20150523113148.00002dfc@localhost>
-In-Reply-To: <20150522133334.000064c9@localhost>
-References: <1430209582-23925-1-git-send-email-aik@ozlabs.ru>
- <5548E2C1.3070209@emulex.com> <20150505234659.00003ab7@localhost>
- <555C0595.9060507@ozlabs.ru> <20150522133334.000064c9@localhost>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 47C5C1A0AA5
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 May 2015 23:48:30 +1000 (AEST)
+Received: from mbob.nabble.com (mbob.nabble.com [162.253.133.15])
+ by ozlabs.org (Postfix) with ESMTP id 058C2140308
+ for <linuxppc-dev@ozlabs.org>; Sat, 23 May 2015 23:48:29 +1000 (AEST)
+Received: from mtom.nabble.com (unknown [162.253.133.81])
+ by mbob.nabble.com (Postfix) with ESMTP id 85B0BD6E362
+ for <linuxppc-dev@ozlabs.org>; Sat, 23 May 2015 06:41:47 -0700 (PDT)
+Date: Sat, 23 May 2015 06:22:36 -0700 (MST)
+From: matevy <matevz.langus@borea.si>
+To: linuxppc-dev@ozlabs.org
+Message-ID: <1432387356485-93953.post@n7.nabble.com>
+In-Reply-To: <20150422164321.GA28006@aepfle.de>
+References: <20150328125916.GA29649@aepfle.de>
+ <20150328135449.GA29661@aepfle.de> <20150330130918.GA25748@aepfle.de>
+ <20150422160046.GA15743@aepfle.de> <20150422164321.GA28006@aepfle.de>
+Subject: Re: nouveau regression on G5 Dual Core
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,47 +30,15 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-I wrote:
-> Alexey Kardashevskiy wrote:
-> > On 05/06/2015 07:46 AM, Sebastian Herbszt wrote:
-> > > James Smart wrote:
-> > >>
-> > >> Reviewed-By: James Smart <james.smart@emulex.com>
-> > >>
-> > >>
-> > >> Alexey, Sebastian,
-> > >>
-> > >> Yes - this section needs to be reverted.  This patch is good.
-> > >>
-> > >> -- james s
-> > >
-> > > Reviewed-by: Sebastian Herbszt <herbszt@gmx.de>
-> > 
-> > 
-> > Unfortunately, just this revert is not enough, it fixed one of my machines 
-> > but I have another machine with "Emulex Corporation Saturn-X: LightPulse 
-> > Fibre Channel Host Adapter (rev 03)" which does not boot - the booting 
-> > process stops at "[  OK  ] Reached target Basic System."
-> > 
-> > Any quick idea what else to revert between 4.0 and current upstream before 
-> > I dig further? Thanks!
-> 
-> Is the other machine also POWER7?
-> I tested the revert on x86 and it fixed my issue:
-> 
-> 4.1-rc4 (lpfc 10.5.0.0) - broken
-> 4.0 + lpfc 10.5.0.0 - broken
-> 4.1-rc4 (lpfc 10.5.0.0) + revert - ok
-> 4.0 + lpfc 10.5.0.0 + revert - ok
+Hi Olaf,
 
-James,
+I see the same problem on my PowerMac G5 Quad. Do you know is there a patch
+for this problem available?
 
-are you sending this revert to Linus any time soon?
+Matev
 
-Support for SLI-3 adapters is broken on all platforms for more than
-a month now [1] and POWER7 doesn't seem to like it at all [2].
 
-[1] http://marc.info/?l=linux-scsi&m=142938432414173
-[2] http://marc.info/?l=linux-scsi&m=143021737816241
 
-Sebastian
+--
+View this message in context: http://linuxppc.10917.n7.nabble.com/nouveau-regression-on-G5-Dual-Core-tp91483p93953.html
+Sent from the linuxppc-dev mailing list archive at Nabble.com.
