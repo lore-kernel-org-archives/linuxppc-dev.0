@@ -1,26 +1,18 @@
-Return-Path: <matevz.langus@borea.si>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <wsa@the-dreams.de>
+Received: from pokefinder.org (sauhun.de [89.238.76.85])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 47C5C1A0AA5
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 May 2015 23:48:30 +1000 (AEST)
-Received: from mbob.nabble.com (mbob.nabble.com [162.253.133.15])
- by ozlabs.org (Postfix) with ESMTP id 058C2140308
- for <linuxppc-dev@ozlabs.org>; Sat, 23 May 2015 23:48:29 +1000 (AEST)
-Received: from mtom.nabble.com (unknown [162.253.133.81])
- by mbob.nabble.com (Postfix) with ESMTP id 85B0BD6E362
- for <linuxppc-dev@ozlabs.org>; Sat, 23 May 2015 06:41:47 -0700 (PDT)
-Date: Sat, 23 May 2015 06:22:36 -0700 (MST)
-From: matevy <matevz.langus@borea.si>
-To: linuxppc-dev@ozlabs.org
-Message-ID: <1432387356485-93953.post@n7.nabble.com>
-In-Reply-To: <20150422164321.GA28006@aepfle.de>
-References: <20150328125916.GA29649@aepfle.de>
- <20150328135449.GA29661@aepfle.de> <20150330130918.GA25748@aepfle.de>
- <20150422160046.GA15743@aepfle.de> <20150422164321.GA28006@aepfle.de>
-Subject: Re: nouveau regression on G5 Dual Core
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+ by lists.ozlabs.org (Postfix) with ESMTPS id BAD7E1A0AA5
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 24 May 2015 02:15:32 +1000 (AEST)
+From: Wolfram Sang <wsa@the-dreams.de>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: linux-i2c@vger.kernel.org, alsa-devel@alsa-project.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Dan DeVoto <dand1972@yahoo.com>, Mark Elliott <txlitebeer@gmail.com>,
+ Wolfram Sang <wsa@the-dreams.de>
+Subject: [RFC] sound: ppc: keywest: check if DEQ was already instantiated
+Date: Sat, 23 May 2015 18:15:11 +0200
+Message-Id: <1432397711-3186-1-git-send-email-wsa@the-dreams.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,15 +22,68 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Olaf,
+Due to changes in i2c-powermac, for some Macs the DEQ is instantiated
+now in i2c-powermac while some need the instantiation here in the
+keywest sound driver. The proper fix is to convert this driver to AOA.
+Until then support both ways of instantiation. Before this patch, some
+Macs lost sound because the sound driver failed when instantiating the
+DEQ for the second time.
 
-I see the same problem on my PowerMac G5 Quad. Do you know is there a patch
-for this problem available?
+Signed-off-by: Wolfram Sang <wsa@the-dreams.de>
+---
 
-Matev
+Dan, Mark: I hope I found a generic but not too intrusive solution to the
+doubled instantiation problem. Can you please test this patch on top of this
+one "sound: ppc: keywest: drop using attach adapter" from last time? Check if
+you have sound and send the dmesg output, please. I hope it compiles even,
+couldn't test that this time.
 
+ sound/ppc/keywest.c | 13 ++++++++++++-
+ 1 file changed, 12 insertions(+), 1 deletion(-)
 
-
---
-View this message in context: http://linuxppc.10917.n7.nabble.com/nouveau-regression-on-G5-Dual-Core-tp91483p93953.html
-Sent from the linuxppc-dev mailing list archive at Nabble.com.
+diff --git a/sound/ppc/keywest.c b/sound/ppc/keywest.c
+index d7627bae08362e..6120a067494a44 100644
+--- a/sound/ppc/keywest.c
++++ b/sound/ppc/keywest.c
+@@ -31,10 +31,15 @@
+  */
+ static struct pmac_keywest *keywest_ctx;
+ 
++static bool keywest_probed;
+ 
+ static int keywest_probe(struct i2c_client *client,
+ 			 const struct i2c_device_id *id)
+ {
++	keywest_probed = true;
++	/* If instantiated via i2c-powermac, we still need to set the client */
++	if (!keywest_ctx->client)
++		keywest_ctx->client = client;
+ 	i2c_set_clientdata(client, keywest_ctx);
+ 	return 0;
+ }
+@@ -92,7 +97,8 @@ static int keywest_remove(struct i2c_client *client)
+ 
+ 
+ static const struct i2c_device_id keywest_i2c_id[] = {
+-	{ "keywest", 0 },
++	{ "MAC,tas3004", 0 },		/* instantiated by i2c-powermac */
++	{ "keywest", 0 },		/* instantiated by us if needed */
+ 	{ }
+ };
+ 
+@@ -149,8 +155,13 @@ int snd_pmac_keywest_init(struct pmac_keywest *i2c)
+ 		return err;
+ 	}
+ 
++	/* There was already a device from i2c-powermac. Great, let's return */
++	if (keywest_probed)
++		return 0;
++
+ 	/* We assume Macs have consecutive I2C bus numbers starting at 0 */
+ 	while (adap) {
++		/* Scan for devices to be bound to */
+ 		err = keywest_attach_adapter(adap);
+ 		if (!err)
+ 			return 0;
+-- 
+2.1.4
