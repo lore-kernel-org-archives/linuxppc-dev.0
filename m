@@ -1,33 +1,35 @@
-Return-Path: <cyrilbur@gmail.com>
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+Return-Path: <khandual@linux.vnet.ibm.com>
+Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A9AE71A065B
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 May 2015 14:46:40 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6031D1A065E
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 May 2015 18:38:51 +1000 (AEST)
 Received: from /spool/local
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <cyrilbur@gmail.com>;
- Mon, 25 May 2015 14:46:37 +1000
-Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 02D603578057
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 May 2015 14:46:35 +1000 (EST)
-Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
- by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t4P4kQlr20316264
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 May 2015 14:46:35 +1000
-Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
- by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t4P4k26d024128
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 May 2015 14:46:02 +1000
-From: Cyril Bur <cyrilbur@gmail.com>
-To: Herbert Xu <herbert@gondor.apana.org.au>
-Cc: Marcelo Henrique Cerri <mhcerri@linux.vnet.ibm.com>,
- Fionnuala Gunter <fin@linux.vnet.ibm.com>,
- linux-crypto@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] crypto: nx - tweak Makefile dependencies
-Date: Mon, 25 May 2015 14:45:16 +1000
-Message-Id: <1432529116-21279-1-git-send-email-cyrilbur@gmail.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Mon, 25 May 2015 14:08:48 +0530
+Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
+ by d28dlp02.in.ibm.com (Postfix) with ESMTP id 724FF3940049
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 May 2015 14:08:46 +0530 (IST)
+Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
+ by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t4P8cjXJ2425132
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 May 2015 14:08:45 +0530
+Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
+ by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t4P8cjbL016864
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 May 2015 14:08:45 +0530
+Message-ID: <5562DF94.2090804@linux.vnet.ibm.com>
+Date: Mon, 25 May 2015 14:08:44 +0530
+From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+CC: mikey@neuling.org, anton@samba.org, shuahkh@osg.samsung.com
+Subject: Re: [PATCH V5 00/13] POWER DSCR fixes, improvements, docs and tests
+References: <1432190593-17253-1-git-send-email-khandual@linux.vnet.ibm.com>
+In-Reply-To: <1432190593-17253-1-git-send-email-khandual@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,76 +39,32 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Selecting CRYPTO_DEV_NX causes a conditional include of nx/Kconfig but
-options within nx/Kconfig do not depend on it. The included options should
-depend on CRYPTO_DEV_NX since currently CRYPTO_DEV_NX cannot be built for
-little endian. While Kconfig appears to understand this convoluted
-dependency situation, it isn't explicitly stated.
+On 05/21/2015 12:13 PM, Anshuman Khandual wrote:
+> 	This patch series has patches for POWER DSCR fixes, improvements,
+> in code documentaion, kernel support user documentation and selftest based
+> test cases. It has got five test cases which are derived from Anton's DSCR
+> test bucket which can be listed as follows.
+> 
+> (1) http://ozlabs.org/~anton/junkcode/dscr_default_test.c
+> (2) http://ozlabs.org/~anton/junkcode/dscr_explicit_test.c
+> (3) http://ozlabs.org/~anton/junkcode/dscr_inherit_exec_test.c
+> (4) http://ozlabs.org/~anton/junkcode/dscr_inherit_test.c
+> (5) http://ozlabs.org/~anton/junkcode/user_dscr_test.c
+> 
+> NOTE1: Anton's original inherit exec test expected the child to have
+> system default DSCR value instead of the inherited DSCR value from
+> it's parent. But looks like thats not the case when we execute the
+> test, it always inherits it's parent's DSCR value over the exec call
+> as well. So I have changed the test program assuming its correct to
+> have the inherited DSCR value in the fork/execed child program.
+> Please let me know if thats not correct and I am missing something
+> there.
+> 
+> Changes in V5:
+> -------------
+> - Fixed build problem with get_default_dscr/set_default_dscr functions
+>   by checking on the return values of read & write system calls.
 
-This patch addresses the missing dependencies for CRYPTO_DEV_NX_ENCRYPT and
-CRYPTO_DEV_NX_COMPRESS which should depend on CRYPTO_DEV_NX. It also makes
-more sense to put all three options into the nx/Kconfig file and have the
-file included unconditionally.
+These patches are available for pull from this location mentioned below.
 
-CC: Marcelo Henrique Cerri <mhcerri@linux.vnet.ibm.com>
-CC: Fionnuala Gunter <fin@linux.vnet.ibm.com>
-CC: linux-crypto@vger.kernel.org
-CC: linuxppc-dev@lists.ozlabs.org
-Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
----
- drivers/crypto/Kconfig    | 11 +----------
- drivers/crypto/nx/Kconfig | 11 +++++++++--
- 2 files changed, 10 insertions(+), 12 deletions(-)
-
-diff --git a/drivers/crypto/Kconfig b/drivers/crypto/Kconfig
-index 033c0c8..cc96a7d 100644
---- a/drivers/crypto/Kconfig
-+++ b/drivers/crypto/Kconfig
-@@ -311,16 +311,7 @@ config CRYPTO_DEV_S5P
- 	  Select this to offload Samsung S5PV210 or S5PC110, Exynos from AES
- 	  algorithms execution.
- 
--config CRYPTO_DEV_NX
--	bool "Support for IBM Power7+ in-Nest cryptographic acceleration"
--	depends on PPC64 && IBMVIO && !CPU_LITTLE_ENDIAN
--	default n
--	help
--	  Support for Power7+ in-Nest cryptographic acceleration.
--
--if CRYPTO_DEV_NX
--	source "drivers/crypto/nx/Kconfig"
--endif
-+source "drivers/crypto/nx/Kconfig"
- 
- config CRYPTO_DEV_UX500
- 	tristate "Driver for ST-Ericsson UX500 crypto hardware acceleration"
-diff --git a/drivers/crypto/nx/Kconfig b/drivers/crypto/nx/Kconfig
-index f826166..0726f12 100644
---- a/drivers/crypto/nx/Kconfig
-+++ b/drivers/crypto/nx/Kconfig
-@@ -1,6 +1,13 @@
-+config CRYPTO_DEV_NX
-+	bool "Support for IBM Power7+ in-Nest cryptographic acceleration"
-+	depends on PPC64 && IBMVIO && !CPU_LITTLE_ENDIAN
-+	default n
-+	help
-+	  Support for Power7+ in-Nest cryptographic acceleration.
-+
- config CRYPTO_DEV_NX_ENCRYPT
- 	tristate "Encryption acceleration support"
--	depends on PPC64 && IBMVIO
-+	depends on CRYPTO_DEV_NX
- 	default y
- 	select CRYPTO_AES
- 	select CRYPTO_CBC
-@@ -18,7 +25,7 @@ config CRYPTO_DEV_NX_ENCRYPT
- 
- config CRYPTO_DEV_NX_COMPRESS
- 	tristate "Compression acceleration support"
--	depends on PPC64 && IBMVIO
-+	depends on CRYPTO_DEV_NX
- 	default y
- 	help
- 	  Support for Power7+ in-Nest compression acceleration. This
--- 
-1.9.1
+https://github.com/akhandual/linux.git dscr_v5
