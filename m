@@ -1,24 +1,33 @@
-Return-Path: <mikey@neuling.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <cyrilbur@gmail.com>
+Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E99281A02EA
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 May 2015 14:12:56 +1000 (AEST)
-Message-ID: <1432527176.29580.4.camel@neuling.org>
-Subject: Re: [PATCH 19/19] cxl: Add AFU virtual PHB and kernel API
-From: Michael Neuling <mikey@neuling.org>
-To: Ian Munsie <imunsie@au1.ibm.com>
-Cc: mpe <mpe@ellerman.id.au>, benh <benh@kernel.crashing.org>, "Matthew R.
- Ochs" <mrochs@linux.vnet.ibm.com>, linuxppc-dev <linuxppc-dev@ozlabs.org>,
- "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>, brking
- <brking@linux.vnet.ibm.com>, Daniel Axtens <dja@axtens.net>
-Date: Mon, 25 May 2015 14:12:56 +1000
-In-Reply-To: <1432193794-sup-4147@delenn.ozlabs.ibm.com>
-References: <1432034556-32400-1-git-send-email-mikey@neuling.org>
- <1432034556-32400-20-git-send-email-mikey@neuling.org>
- <1432193794-sup-4147@delenn.ozlabs.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id A9AE71A065B
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 May 2015 14:46:40 +1000 (AEST)
+Received: from /spool/local
+ by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <cyrilbur@gmail.com>;
+ Mon, 25 May 2015 14:46:37 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 02D603578057
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 May 2015 14:46:35 +1000 (EST)
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t4P4kQlr20316264
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 May 2015 14:46:35 +1000
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t4P4k26d024128
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 May 2015 14:46:02 +1000
+From: Cyril Bur <cyrilbur@gmail.com>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: Marcelo Henrique Cerri <mhcerri@linux.vnet.ibm.com>,
+ Fionnuala Gunter <fin@linux.vnet.ibm.com>,
+ linux-crypto@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] crypto: nx - tweak Makefile dependencies
+Date: Mon, 25 May 2015 14:45:16 +1000
+Message-Id: <1432529116-21279-1-git-send-email-cyrilbur@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -28,137 +37,76 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2015-05-21 at 18:58 +1000, Ian Munsie wrote:
-> Hi Mikey,
->=20
-> > +/* wrappers around afu_* file ops which are EXPORTED */
->=20
-> This is fine, though alternatively you could export the original
-> functions directly from file.c (feel free to rename them to your
-> versions if you do change it) - I don't really mind either way :)
+Selecting CRYPTO_DEV_NX causes a conditional include of nx/Kconfig but
+options within nx/Kconfig do not depend on it. The included options should
+depend on CRYPTO_DEV_NX since currently CRYPTO_DEV_NX cannot be built for
+little endian. While Kconfig appears to understand this convoluted
+dependency situation, it isn't explicitly stated.
 
-I'll probably just keep it so all the API functions are in one spot.
+This patch addresses the missing dependencies for CRYPTO_DEV_NX_ENCRYPT and
+CRYPTO_DEV_NX_COMPRESS which should depend on CRYPTO_DEV_NX. It also makes
+more sense to put all three options into the nx/Kconfig file and have the
+file included unconditionally.
 
-> > +static void cxl_pci_reset_secondary_bus(struct pci_dev *dev)
-> > +{
-> > +    /* Should we do an AFU reset here ? */
->=20
-> I'm still not sure what the best answer should be to this question... At
-> the moment it's working fine without an afu reset here, so we can delay
-> adding it until (and if) it becomes clear we need it?
+CC: Marcelo Henrique Cerri <mhcerri@linux.vnet.ibm.com>
+CC: Fionnuala Gunter <fin@linux.vnet.ibm.com>
+CC: linux-crypto@vger.kernel.org
+CC: linuxppc-dev@lists.ozlabs.org
+Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
+---
+ drivers/crypto/Kconfig    | 11 +----------
+ drivers/crypto/nx/Kconfig | 11 +++++++++--
+ 2 files changed, 10 insertions(+), 12 deletions(-)
 
-Yeah I think I'll leave it out
-
-> Could this be called while the afu is in use (need to be careful), or
-> should it only ever be called when the afu is inactive (afu reset should
-> be safe)?
-
-Yeah, I assume we'd need to give some EEH events to the attached driver
-so they could handle the AFU losing all that state/contexts.
-
-> > +/*
-> > + * Context lifetime overview:
-> > + *
-> > + * An AFU context may be inited and then started and stoppped multiple=
- times
-> > + * before it's released. ie.
-> > + *    - cxl_dev_context_init()
-> > + *      - cxl_start_context()
-> > + *      - cxl_stop_context()
-> > + *      - cxl_start_context()
-> > + *      - cxl_stop_context()
-> > + *     ...repeat...
-> > + *    - cxl_release_context()
-> > + * Once released, a context can't be started again.
->=20
-> Ok, we'll need to be a little careful here as this differs from the
-> userspace api (which cannot reuse a context and relies on the file
-> descriptor release() to stop the context).
->=20
-> Let's see...
-
-Yep. =20
-
->=20
-> > +int cxl_start_context(struct cxl_context *ctx, u64 wed,
-> > +		      struct task_struct *task)
-> > +{
-> > +	int rc =3D 0;
-> > +	bool kernel =3D true;
-> > +
-> > +	pr_devel("%s: pe: %i\n", __func__, ctx->pe);
-> > +
-> > +	mutex_lock(&ctx->status_mutex);
-> > +	if (ctx->status =3D=3D STARTED)
-> > +		goto out; /* already started */
-> > +	if (task) {
-> > +		ctx->pid =3D get_task_pid(task, PIDTYPE_PID);
-> > +		get_pid(ctx->pid);
->=20
-> OK, this pid is put in the release call (in reclaim_ctx, which is an rcu
-> callback from cxl_context_free), which means if we reuse a context we
-> will prevent the pid from ever being reused, reducing the total number
-> of runnable processes by one.
-
-As discussed offline, I've moved this around.
-
-> > +		kernel =3D false;
-> > +	}
-> > +
-> > +	cxl_ctx_get();
->=20
-> Likewise this is mirrored in the release call instead of the stop call,
-> so if we reuse a context we will then permanently mark cxl as being in
-> use, which will then permanently enable the slbia hook.
-
-Ditto.
-
->=20
-> > +	if ((rc =3D cxl_attach_process(ctx, kernel, wed , 0))) {
-> > +		put_pid(ctx->pid);
-> > +		cxl_ctx_put();
-> > +		goto out;
-> > +	}
-> > +
-> > +	ctx->status =3D STARTED;
-> > +	get_device(&ctx->afu->dev);
-> > +out:
-> > +	mutex_unlock(&ctx->status_mutex);
-> > +	return rc;
-> > +}
-> > +EXPORT_SYMBOL_GPL(cxl_start_context);
->=20
-> > +/* Stop a context.  Returns 0 on success, otherwise -Errno */
-> > +int cxl_stop_context(struct cxl_context *ctx)
-> > +{
-> > +	int rc;
-> > +
-> > +	rc =3D __detach_context(ctx);
-> > +	if (!rc)
-> > +		put_device(&ctx->afu->dev);
-> > +	return rc;
-> > +}
-> > +EXPORT_SYMBOL_GPL(cxl_stop_context);
->=20
-> > +int cxl_release_context(struct cxl_context *ctx)
-> > +{
-> > +	if (ctx->status !=3D CLOSED)
-> > +		return -EBUSY;
-> > +
-> > +	cxl_context_free(ctx);
-> > +
-> > +	cxl_ctx_put();
-> > +	return 0;
-> > +}
-> > +EXPORT_SYMBOL_GPL(cxl_release_context);
->=20
-> Otherwise it looks good :)
-
-Thanks,
-
-Mikey
-
->=20
-> Cheers,
-> -Ian
->=20
+diff --git a/drivers/crypto/Kconfig b/drivers/crypto/Kconfig
+index 033c0c8..cc96a7d 100644
+--- a/drivers/crypto/Kconfig
++++ b/drivers/crypto/Kconfig
+@@ -311,16 +311,7 @@ config CRYPTO_DEV_S5P
+ 	  Select this to offload Samsung S5PV210 or S5PC110, Exynos from AES
+ 	  algorithms execution.
+ 
+-config CRYPTO_DEV_NX
+-	bool "Support for IBM Power7+ in-Nest cryptographic acceleration"
+-	depends on PPC64 && IBMVIO && !CPU_LITTLE_ENDIAN
+-	default n
+-	help
+-	  Support for Power7+ in-Nest cryptographic acceleration.
+-
+-if CRYPTO_DEV_NX
+-	source "drivers/crypto/nx/Kconfig"
+-endif
++source "drivers/crypto/nx/Kconfig"
+ 
+ config CRYPTO_DEV_UX500
+ 	tristate "Driver for ST-Ericsson UX500 crypto hardware acceleration"
+diff --git a/drivers/crypto/nx/Kconfig b/drivers/crypto/nx/Kconfig
+index f826166..0726f12 100644
+--- a/drivers/crypto/nx/Kconfig
++++ b/drivers/crypto/nx/Kconfig
+@@ -1,6 +1,13 @@
++config CRYPTO_DEV_NX
++	bool "Support for IBM Power7+ in-Nest cryptographic acceleration"
++	depends on PPC64 && IBMVIO && !CPU_LITTLE_ENDIAN
++	default n
++	help
++	  Support for Power7+ in-Nest cryptographic acceleration.
++
+ config CRYPTO_DEV_NX_ENCRYPT
+ 	tristate "Encryption acceleration support"
+-	depends on PPC64 && IBMVIO
++	depends on CRYPTO_DEV_NX
+ 	default y
+ 	select CRYPTO_AES
+ 	select CRYPTO_CBC
+@@ -18,7 +25,7 @@ config CRYPTO_DEV_NX_ENCRYPT
+ 
+ config CRYPTO_DEV_NX_COMPRESS
+ 	tristate "Compression acceleration support"
+-	depends on PPC64 && IBMVIO
++	depends on CRYPTO_DEV_NX
+ 	default y
+ 	help
+ 	  Support for Power7+ in-Nest compression acceleration. This
+-- 
+1.9.1
