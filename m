@@ -1,34 +1,45 @@
 Return-Path: <khandual@linux.vnet.ibm.com>
-Received: from e28smtp09.in.ibm.com (e28smtp09.in.ibm.com [122.248.162.9])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 712F91A065E
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 May 2015 18:40:22 +1000 (AEST)
+Received: from e28smtp06.in.ibm.com (e28smtp06.in.ibm.com [122.248.162.6])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6031D1A065E
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 May 2015 18:38:51 +1000 (AEST)
+ by ozlabs.org (Postfix) with ESMTPS id BB0B71402B7
+ for <linuxppc-dev@ozlabs.org>; Mon, 25 May 2015 18:40:21 +1000 (AEST)
 Received: from /spool/local
- by e28smtp09.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp06.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <khandual@linux.vnet.ibm.com>;
- Mon, 25 May 2015 14:08:48 +0530
-Received: from d28relay02.in.ibm.com (d28relay02.in.ibm.com [9.184.220.59])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id 724FF3940049
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 May 2015 14:08:46 +0530 (IST)
+ for <linuxppc-dev@ozlabs.org> from <khandual@linux.vnet.ibm.com>;
+ Mon, 25 May 2015 14:10:19 +0530
+Received: from d28relay04.in.ibm.com (d28relay04.in.ibm.com [9.184.220.61])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 696D11258053
+ for <linuxppc-dev@ozlabs.org>; Mon, 25 May 2015 14:12:35 +0530 (IST)
 Received: from d28av01.in.ibm.com (d28av01.in.ibm.com [9.184.220.63])
- by d28relay02.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t4P8cjXJ2425132
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 May 2015 14:08:45 +0530
+ by d28relay04.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t4P8eFwP48758896
+ for <linuxppc-dev@ozlabs.org>; Mon, 25 May 2015 14:10:15 +0530
 Received: from d28av01.in.ibm.com (localhost [127.0.0.1])
  by d28av01.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t4P8cjbL016864
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 May 2015 14:08:45 +0530
-Message-ID: <5562DF94.2090804@linux.vnet.ibm.com>
-Date: Mon, 25 May 2015 14:08:44 +0530
+ t4P8eD85020964
+ for <linuxppc-dev@ozlabs.org>; Mon, 25 May 2015 14:10:15 +0530
+Message-ID: <5562DFEC.7090805@linux.vnet.ibm.com>
+Date: Mon, 25 May 2015 14:10:12 +0530
 From: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-CC: mikey@neuling.org, anton@samba.org, shuahkh@osg.samsung.com
-Subject: Re: [PATCH V5 00/13] POWER DSCR fixes, improvements, docs and tests
-References: <1432190593-17253-1-git-send-email-khandual@linux.vnet.ibm.com>
-In-Reply-To: <1432190593-17253-1-git-send-email-khandual@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+CC: shuahkh@osg.samsung.com, mikey@neuling.org, james.hogan@imgtec.com,
+ avagin@openvz.org, Paul.Clothier@imgtec.com, peterz@infradead.org,
+ palves@redhat.com, nacc@linux.vnet.ibm.com,
+ emachado@linux.vnet.ibm.com, oleg@redhat.com, davem@davemloft.net,
+ dhowells@redhat.com, Ulrich.Weigand@de.ibm.com, kirjanov@gmail.com,
+ davej@redhat.com, akpm@linux-foundation.org,
+ sukadev@linux.vnet.ibm.com, tglx@linutronix.de, sam.bobroff@au1.ibm.com
+Subject: Re: [PATCH V8 00/28] Add new powerpc specific ELF core notes
+References: <1432048104-4695-1-git-send-email-khandual@linux.vnet.ibm.com>
+In-Reply-To: <1432048104-4695-1-git-send-email-khandual@linux.vnet.ibm.com>
 Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -39,32 +50,35 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/21/2015 12:13 PM, Anshuman Khandual wrote:
-> 	This patch series has patches for POWER DSCR fixes, improvements,
-> in code documentaion, kernel support user documentation and selftest based
-> test cases. It has got five test cases which are derived from Anton's DSCR
-> test bucket which can be listed as follows.
+On 05/19/2015 08:37 PM, Anshuman Khandual wrote:
+> From: Anshuman Khandual <anshuman@localhost.localdomain>
 > 
-> (1) http://ozlabs.org/~anton/junkcode/dscr_default_test.c
-> (2) http://ozlabs.org/~anton/junkcode/dscr_explicit_test.c
-> (3) http://ozlabs.org/~anton/junkcode/dscr_inherit_exec_test.c
-> (4) http://ozlabs.org/~anton/junkcode/dscr_inherit_test.c
-> (5) http://ozlabs.org/~anton/junkcode/user_dscr_test.c
+> 	This patch series adds twelve new ELF core note sections which can
+> be used with existing ptrace request PTRACE_GETREGSET-SETREGSET for accessing
+> various transactional memory and other miscellaneous debug register sets on
+> powerpc platform.
 > 
-> NOTE1: Anton's original inherit exec test expected the child to have
-> system default DSCR value instead of the inherited DSCR value from
-> it's parent. But looks like thats not the case when we execute the
-> test, it always inherits it's parent's DSCR value over the exec call
-> as well. So I have changed the test program assuming its correct to
-> have the inherited DSCR value in the fork/execed child program.
-> Please let me know if thats not correct and I am missing something
-> there.
+> Previous versions:
+> ==================
+> RFC: https://lkml.org/lkml/2014/4/1/292
+> V1:  https://lkml.org/lkml/2014/4/2/43
+> V2:  https://lkml.org/lkml/2014/5/5/88
+> V3:  https://lkml.org/lkml/2014/5/23/486
+> V4:  https://lkml.org/lkml/2014/11/11/6
+> V5:  https://lkml.org/lkml/2014/11/25/134
+> V6:  https://lkml.org/lkml/2014/12/2/98
+> V7:  https://lkml.org/lkml/2015/1/14/19
 > 
-> Changes in V5:
-> -------------
-> - Fixed build problem with get_default_dscr/set_default_dscr functions
->   by checking on the return values of read & write system calls.
+> Changes in V8:
+> --------------
+> - Split the misc register set into individual ELF core notes
+> - Implemented support for VSX register set (on and off TM)
+> - Implemented support for EBB register set
+> - Implemented review comments on previous versions
+> - Some code re-arrangements, re-writes and documentation
+> - Added comprehensive list of test cases into selftests
+
 
 These patches are available for pull from this location mentioned below.
 
-https://github.com/akhandual/linux.git dscr_v5
+https://github.com/akhandual/linux.git ptrace_powerpc_v8
