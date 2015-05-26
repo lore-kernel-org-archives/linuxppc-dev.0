@@ -1,21 +1,30 @@
-Return-Path: <Laurentiu.Tudor@freescale.com>
-Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bbn0103.outbound.protection.outlook.com [157.56.111.103])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <stripathi@apm.com>
+Received: from mail-wi0-f180.google.com (exprod5og110.obsmtp.com [64.18.0.20])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A63821A0EB8
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 May 2015 21:24:59 +1000 (AEST)
-Message-ID: <556433D2.4010102@freescale.com>
-Date: Tue, 26 May 2015 11:50:26 +0300
-From: Laurentiu Tudor <b10716@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 344D21A10A5
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 May 2015 21:04:47 +1000 (AEST)
+Received: by wizk4 with SMTP id k4so73085201wiz.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 May 2015 04:04:43 -0700 (PDT)
 MIME-Version: 1.0
-To: Anton Blanchard <anton@samba.org>, <benh@kernel.crashing.org>,
- <paulus@samba.org>, <mpe@ellerman.id.au>
-CC: <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [PATCH] powerpc/perf: Fix book3s kernel to userspace backtraces
-References: <1432617024-11352-1-git-send-email-anton@samba.org>
-In-Reply-To: <1432617024-11352-1-git-send-email-anton@samba.org>
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <1432197817-22110-2-git-send-email-stripathi@apm.com>
+References: <1432197817-22110-1-git-send-email-stripathi@apm.com>
+ <1432197817-22110-2-git-send-email-stripathi@apm.com>
+Date: Tue, 26 May 2015 16:34:42 +0530
+Message-ID: <CAOHikRCtvC7Y0K+1Gx-Qax9xH=gsBTbqBOLzKtfQ-NXoZ6VDkA@mail.gmail.com>
+Subject: Re: [PATCH RESEND v7 1/2] arm64: dts: Add the arasan mmc nodes in
+ apm-storm.dtsi
+From: Suman Tripathi <stripathi@apm.com>
+To: Chris Ball <chris@printf.net>, Anton Vorontsov <anton@enomsg.org>,
+ Arnd Bergmann <arnd@arndb.de>, Michal Simek <michal.simek@xilinx.com>
+Cc: linux-mmc <linux-mmc@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+ Don Dutile <ddutile@redhat.com>,
+ Jon Masters <jcm@redhat.com>, Mark Langsdorf <mlangsdo@redhat.com>,
+ patches <patches@apm.com>, Suman Tripathi <stripathi@apm.com>
+Content-Type: multipart/alternative; boundary=047d7b66f445f3c5bd0516fa17ba
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,92 +34,214 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 05/26/2015 08:10 AM, Anton Blanchard wrote:
-> When we take a PMU exception or a software event we call
-> perf_read_regs(). This overloads regs->result with a boolean that
-> describes if we should use the sampled instruction address register
-> (SIAR) or the regs.
-> 
-> If the exception is in kernel, we start with the kernel regs and
-> backtrace through the kernel stack. At this point we switch to the
-> userspace regs and backtrace the user stack with perf_callchain_user().
-> 
-> Unfortunately these regs have not got the perf_read_regs() treatment,
-> so regs->result could be anything. If it is non zero,
-> perf_instruction_pointer() decides to use the SIAR, and we get issues
-> like this:
-> 
-> 0.11%  qemu-system-ppc  [kernel.kallsyms]        [k] _raw_spin_lock_irqsave
->        |
->        ---_raw_spin_lock_irqsave
->           |
->           |--52.35%-- 0
->           |          |
->           |          |--46.39%-- __hrtimer_start_range_ns
->           |          |          kvmppc_run_core
->           |          |          kvmppc_vcpu_run_hv
->           |          |          kvmppc_vcpu_run
->           |          |          kvm_arch_vcpu_ioctl_run
->           |          |          kvm_vcpu_ioctl
->           |          |          do_vfs_ioctl
->           |          |          sys_ioctl
->           |          |          system_call
->           |          |          |
->           |          |          |--67.08%-- _raw_spin_lock_irqsave <--- hi mum
->           |          |          |          |
->           |          |          |           --100.00%-- 0x7e714
->           |          |          |                     0x7e714
-> 
-> Notice the bogus _raw_spin_irqsave when we transition from kernel
-> (system_call) to userspace (0x7e714). We inserted what was in the SIAR.
-> 
-> Add a check in regs_use_siar() to check that the regs in question
-> are from a PMU exception. With this fix the backtrace makes sense:
-> 
->      0.47%  qemu-system-ppc  [kernel.vmlinux]         [k] _raw_spin_lock_irqsave
->             |
->             ---_raw_spin_lock_irqsave
->                |
->                |--53.83%-- 0
->                |          |
->                |          |--44.73%-- hrtimer_try_to_cancel
->                |          |          kvmppc_start_thread
->                |          |          kvmppc_run_core
->                |          |          kvmppc_vcpu_run_hv
->                |          |          kvmppc_vcpu_run
->                |          |          kvm_arch_vcpu_ioctl_run
->                |          |          kvm_vcpu_ioctl
->                |          |          do_vfs_ioctl
->                |          |          sys_ioctl
->                |          |          system_call
->                |          |          __ioctl
->                |          |          0x7e714
->                |          |          0x7e714
-> 
-> Signed-off-by: Anton Blanchard <anton@samba.org>
+--047d7b66f445f3c5bd0516fa17ba
+Content-Type: text/plain; charset=UTF-8
+
+Hi ,
+
+On Thu, May 21, 2015 at 2:13 PM, Suman Tripathi <stripathi@apm.com> wrote:
+
+> This patch adds the arasan mmc nodes to reuse the of-arasan
+> driver for APM X-Gene SoC.
+>
+> Signed-off-by: Suman Tripathi <stripathi@apm.com>
 > ---
->  arch/powerpc/perf/core-book3s.c | 5 ++++-
->  1 file changed, 4 insertions(+), 1 deletion(-)
-> 
-> diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
-> index 12b6384..42a3725 100644
-> --- a/arch/powerpc/perf/core-book3s.c
-> +++ b/arch/powerpc/perf/core-book3s.c
-> @@ -131,7 +131,10 @@ static void pmao_restore_workaround(bool ebb) { }
->  
->  static bool regs_use_siar(struct pt_regs *regs)
->  {
-> -	return !!regs->result;
-> +	if ((TRAP(regs) == 0xf00) && regs->result)
-> +		return true;
+> ---
+>  arch/arm64/boot/dts/apm/apm-mustang.dts |  4 +++
+>  arch/arm64/boot/dts/apm/apm-storm.dtsi  | 43
+> +++++++++++++++++++++++++++++++++
+>  2 files changed, 47 insertions(+)
+>
+> diff --git a/arch/arm64/boot/dts/apm/apm-mustang.dts
+> b/arch/arm64/boot/dts/apm/apm-mustang.dts
+> index 83578e7..7a3ea72 100644
+> --- a/arch/arm64/boot/dts/apm/apm-mustang.dts
+> +++ b/arch/arm64/boot/dts/apm/apm-mustang.dts
+> @@ -52,3 +52,7 @@
+>  &xgenet {
+>         status = "ok";
+>  };
 > +
-> +	return false;
+> +&mmc0 {
+> +       status = "ok";
+> +};
+> diff --git a/arch/arm64/boot/dts/apm/apm-storm.dtsi
+> b/arch/arm64/boot/dts/apm/apm-storm.dtsi
+> index c8d3e0e..8e03ecd 100644
+> --- a/arch/arm64/boot/dts/apm/apm-storm.dtsi
+> +++ b/arch/arm64/boot/dts/apm/apm-storm.dtsi
+> @@ -145,6 +145,40 @@
+>                                 clock-output-names = "socplldiv2";
+>                         };
+>
+> +                       ahbclk: ahbclk@1f2ac000 {
+> +                               compatible = "apm,xgene-device-clock";
+> +                               #clock-cells = <1>;
+> +                               clocks = <&socplldiv2 0>;
+> +                               reg = <0x0 0x1f2ac000 0x0 0x1000
+> +                                       0x0 0x17000000 0x0 0x2000>;
+> +                               reg-names = "csr-reg", "div-reg";
+> +                               csr-offset = <0x0>;
+> +                               csr-mask = <0x1>;
+> +                               enable-offset = <0x8>;
+> +                               enable-mask = <0x1>;
+> +                               divider-offset = <0x164>;
+> +                               divider-width = <0x5>;
+> +                               divider-shift = <0x0>;
+> +                               clock-output-names = "ahbclk";
+> +                       };
+> +
+> +                       sdioclk: sdioclk@1f2ac000 {
+> +                               compatible = "apm,xgene-device-clock";
+> +                               #clock-cells = <1>;
+> +                               clocks = <&socplldiv2 0>;
+> +                               reg = <0x0 0x1f2ac000 0x0 0x1000
+> +                                       0x0 0x17000000 0x0 0x2000>;
+> +                               reg-names = "csr-reg", "div-reg";
+> +                               csr-offset = <0x0>;
+> +                               csr-mask = <0x2>;
+> +                               enable-offset = <0x8>;
+> +                               enable-mask = <0x2>;
+> +                               divider-offset = <0x178>;
+> +                               divider-width = <0x8>;
+> +                               divider-shift = <0x0>;
+> +                               clock-output-names = "sdioclk";
+> +                       };
+> +
+>                         qmlclk: qmlclk {
+>                                 compatible = "apm,xgene-device-clock";
+>                                 #clock-cells = <1>;
+> @@ -533,6 +567,15 @@
+>                         interrupts = <0x0 0x4f 0x4>;
+>                 };
+>
+> +               mmc0: mmc@1c000000 {
+> +                       compatible = "arasan,sdhci-4.9a";
+> +                       reg = <0x0 0x1c000000 0x0 0x100>;
+> +                       interrupts = <0x0 0x49 0x4>;
+> +                       dma-coherent;
+> +                       clock-names = "clk_xin", "clk_ahb";
+> +                       clocks = <&sdioclk 0>, <&ahbclk 0>;
+> +               };
+> +
+>                 phy1: phy@1f21a000 {
+>                         compatible = "apm,xgene-phy";
+>                         reg = <0x0 0x1f21a000 0x0 0x100>;
+> --
+> 1.8.2.1
+>
+>
 
-Why not just
+Any comments on this patch ?? I changed the dts node name as per EPAR and
+Arnd comments.
+-- 
+Thanks,
+with regards,
+Suman Tripathi
 
-return (TRAP(regs) == 0xf00) && regs->result;
+--047d7b66f445f3c5bd0516fa17ba
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: base64
 
-?
-
----
-Best Regards, Laurentiu;
+PGRpdiBkaXI9Imx0ciI+SGkgLDxicj48ZGl2IGNsYXNzPSJnbWFpbF9leHRyYSI+PGJyPjxkaXYg
+Y2xhc3M9ImdtYWlsX3F1b3RlIj5PbiBUaHUsIE1heSAyMSwgMjAxNSBhdCAyOjEzIFBNLCBTdW1h
+biBUcmlwYXRoaSA8c3BhbiBkaXI9Imx0ciI+Jmx0OzxhIGhyZWY9Im1haWx0bzpzdHJpcGF0aGlA
+YXBtLmNvbSIgdGFyZ2V0PSJfYmxhbmsiPnN0cmlwYXRoaUBhcG0uY29tPC9hPiZndDs8L3NwYW4+
+IHdyb3RlOjxicj48YmxvY2txdW90ZSBjbGFzcz0iZ21haWxfcXVvdGUiIHN0eWxlPSJtYXJnaW46
+MCAwIDAgLjhleDtib3JkZXItbGVmdDoxcHggI2NjYyBzb2xpZDtwYWRkaW5nLWxlZnQ6MWV4Ij5U
+aGlzIHBhdGNoIGFkZHMgdGhlIGFyYXNhbiBtbWMgbm9kZXMgdG8gcmV1c2UgdGhlIG9mLWFyYXNh
+bjxicj4NCmRyaXZlciBmb3IgQVBNIFgtR2VuZSBTb0MuPGJyPg0KPGJyPg0KU2lnbmVkLW9mZi1i
+eTogU3VtYW4gVHJpcGF0aGkgJmx0OzxhIGhyZWY9Im1haWx0bzpzdHJpcGF0aGlAYXBtLmNvbSI+
+c3RyaXBhdGhpQGFwbS5jb208L2E+Jmd0Ozxicj4NCi0tLTxicj4NCi0tLTxicj4NCsKgYXJjaC9h
+cm02NC9ib290L2R0cy9hcG0vYXBtLW11c3RhbmcuZHRzIHzCoCA0ICsrKzxicj4NCsKgYXJjaC9h
+cm02NC9ib290L2R0cy9hcG0vYXBtLXN0b3JtLmR0c2nCoCB8IDQzICsrKysrKysrKysrKysrKysr
+KysrKysrKysrKysrKysrKzxicj4NCsKgMiBmaWxlcyBjaGFuZ2VkLCA0NyBpbnNlcnRpb25zKCsp
+PGJyPg0KPGJyPg0KZGlmZiAtLWdpdCBhL2FyY2gvYXJtNjQvYm9vdC9kdHMvYXBtL2FwbS1tdXN0
+YW5nLmR0cyBiL2FyY2gvYXJtNjQvYm9vdC9kdHMvYXBtL2FwbS1tdXN0YW5nLmR0czxicj4NCmlu
+ZGV4IDgzNTc4ZTcuLjdhM2VhNzIgMTAwNjQ0PGJyPg0KLS0tIGEvYXJjaC9hcm02NC9ib290L2R0
+cy9hcG0vYXBtLW11c3RhbmcuZHRzPGJyPg0KKysrIGIvYXJjaC9hcm02NC9ib290L2R0cy9hcG0v
+YXBtLW11c3RhbmcuZHRzPGJyPg0KQEAgLTUyLDMgKzUyLDcgQEA8YnI+DQrCoCZhbXA7eGdlbmV0
+IHs8YnI+DQrCoCDCoCDCoCDCoCBzdGF0dXMgPSAmcXVvdDtvayZxdW90Ozs8YnI+DQrCoH07PGJy
+Pg0KKzxicj4NCismYW1wO21tYzAgezxicj4NCivCoCDCoCDCoCDCoHN0YXR1cyA9ICZxdW90O29r
+JnF1b3Q7Ozxicj4NCit9Ozxicj4NCmRpZmYgLS1naXQgYS9hcmNoL2FybTY0L2Jvb3QvZHRzL2Fw
+bS9hcG0tc3Rvcm0uZHRzaSBiL2FyY2gvYXJtNjQvYm9vdC9kdHMvYXBtL2FwbS1zdG9ybS5kdHNp
+PGJyPg0KaW5kZXggYzhkM2UwZS4uOGUwM2VjZCAxMDA2NDQ8YnI+DQotLS0gYS9hcmNoL2FybTY0
+L2Jvb3QvZHRzL2FwbS9hcG0tc3Rvcm0uZHRzaTxicj4NCisrKyBiL2FyY2gvYXJtNjQvYm9vdC9k
+dHMvYXBtL2FwbS1zdG9ybS5kdHNpPGJyPg0KQEAgLTE0NSw2ICsxNDUsNDAgQEA8YnI+DQrCoCDC
+oCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCBjbG9jay1vdXRwdXQt
+bmFtZXMgPSAmcXVvdDtzb2NwbGxkaXYyJnF1b3Q7Ozxicj4NCsKgIMKgIMKgIMKgIMKgIMKgIMKg
+IMKgIMKgIMKgIMKgIMKgIH07PGJyPg0KPGJyPg0KK8KgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKg
+IMKgIMKgIMKgYWhiY2xrOiBhaGJjbGtAMWYyYWMwMDAgezxicj4NCivCoCDCoCDCoCDCoCDCoCDC
+oCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoGNvbXBhdGlibGUgPSAmcXVvdDthcG0seGdl
+bmUtZGV2aWNlLWNsb2NrJnF1b3Q7Ozxicj4NCivCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDC
+oCDCoCDCoCDCoCDCoCDCoCDCoCNjbG9jay1jZWxscyA9ICZsdDsxJmd0Ozs8YnI+DQorwqAgwqAg
+wqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqBjbG9ja3MgPSAmbHQ7JmFt
+cDtzb2NwbGxkaXYyIDAmZ3Q7Ozxicj4NCivCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDC
+oCDCoCDCoCDCoCDCoCDCoHJlZyA9ICZsdDsweDAgMHgxZjJhYzAwMCAweDAgMHgxMDAwPGJyPg0K
+K8KgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKg
+IMKgMHgwIDB4MTcwMDAwMDAgMHgwIDB4MjAwMCZndDs7PGJyPg0KK8KgIMKgIMKgIMKgIMKgIMKg
+IMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgcmVnLW5hbWVzID0gJnF1b3Q7Y3NyLXJlZyZx
+dW90OywgJnF1b3Q7ZGl2LXJlZyZxdW90Ozs8YnI+DQorwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAg
+wqAgwqAgwqAgwqAgwqAgwqAgwqAgwqBjc3Itb2Zmc2V0ID0gJmx0OzB4MCZndDs7PGJyPg0KK8Kg
+IMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgY3NyLW1hc2sgPSAm
+bHQ7MHgxJmd0Ozs8YnI+DQorwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAg
+wqAgwqAgwqBlbmFibGUtb2Zmc2V0ID0gJmx0OzB4OCZndDs7PGJyPg0KK8KgIMKgIMKgIMKgIMKg
+IMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgZW5hYmxlLW1hc2sgPSAmbHQ7MHgxJmd0
+Ozs8YnI+DQorwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqBk
+aXZpZGVyLW9mZnNldCA9ICZsdDsweDE2NCZndDs7PGJyPg0KK8KgIMKgIMKgIMKgIMKgIMKgIMKg
+IMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgZGl2aWRlci13aWR0aCA9ICZsdDsweDUmZ3Q7Ozxi
+cj4NCivCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoGRpdmlk
+ZXItc2hpZnQgPSAmbHQ7MHgwJmd0Ozs8YnI+DQorwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAg
+wqAgwqAgwqAgwqAgwqAgwqAgwqBjbG9jay1vdXRwdXQtbmFtZXMgPSAmcXVvdDthaGJjbGsmcXVv
+dDs7PGJyPg0KK8KgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgfTs8YnI+DQorPGJy
+Pg0KK8KgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgc2Rpb2Nsazogc2Rpb2Nsa0Ax
+ZjJhYzAwMCB7PGJyPg0KK8KgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKg
+IMKgIMKgY29tcGF0aWJsZSA9ICZxdW90O2FwbSx4Z2VuZS1kZXZpY2UtY2xvY2smcXVvdDs7PGJy
+Pg0KK8KgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgI2Nsb2Nr
+LWNlbGxzID0gJmx0OzEmZ3Q7Ozxicj4NCivCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDC
+oCDCoCDCoCDCoCDCoCDCoGNsb2NrcyA9ICZsdDsmYW1wO3NvY3BsbGRpdjIgMCZndDs7PGJyPg0K
+K8KgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgcmVnID0gJmx0
+OzB4MCAweDFmMmFjMDAwIDB4MCAweDEwMDA8YnI+DQorwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAg
+wqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAweDAgMHgxNzAwMDAwMCAweDAgMHgy
+MDAwJmd0Ozs8YnI+DQorwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAg
+wqAgwqByZWctbmFtZXMgPSAmcXVvdDtjc3ItcmVnJnF1b3Q7LCAmcXVvdDtkaXYtcmVnJnF1b3Q7
+Ozxicj4NCivCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoGNz
+ci1vZmZzZXQgPSAmbHQ7MHgwJmd0Ozs8YnI+DQorwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAg
+wqAgwqAgwqAgwqAgwqAgwqAgwqBjc3ItbWFzayA9ICZsdDsweDImZ3Q7Ozxicj4NCivCoCDCoCDC
+oCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoGVuYWJsZS1vZmZzZXQgPSAm
+bHQ7MHg4Jmd0Ozs8YnI+DQorwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAg
+wqAgwqAgwqBlbmFibGUtbWFzayA9ICZsdDsweDImZ3Q7Ozxicj4NCivCoCDCoCDCoCDCoCDCoCDC
+oCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoGRpdmlkZXItb2Zmc2V0ID0gJmx0OzB4MTc4
+Jmd0Ozs8YnI+DQorwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAg
+wqBkaXZpZGVyLXdpZHRoID0gJmx0OzB4OCZndDs7PGJyPg0KK8KgIMKgIMKgIMKgIMKgIMKgIMKg
+IMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgZGl2aWRlci1zaGlmdCA9ICZsdDsweDAmZ3Q7Ozxi
+cj4NCivCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoGNsb2Nr
+LW91dHB1dC1uYW1lcyA9ICZxdW90O3NkaW9jbGsmcXVvdDs7PGJyPg0KK8KgIMKgIMKgIMKgIMKg
+IMKgIMKgIMKgIMKgIMKgIMKgIMKgfTs8YnI+DQorPGJyPg0KwqAgwqAgwqAgwqAgwqAgwqAgwqAg
+wqAgwqAgwqAgwqAgwqAgcW1sY2xrOiBxbWxjbGsgezxicj4NCsKgIMKgIMKgIMKgIMKgIMKgIMKg
+IMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIGNvbXBhdGlibGUgPSAmcXVvdDthcG0seGdlbmUt
+ZGV2aWNlLWNsb2NrJnF1b3Q7Ozxicj4NCsKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKg
+IMKgIMKgIMKgIMKgIMKgICNjbG9jay1jZWxscyA9ICZsdDsxJmd0Ozs8YnI+DQpAQCAtNTMzLDYg
+KzU2NywxNSBAQDxicj4NCsKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIGludGVy
+cnVwdHMgPSAmbHQ7MHgwIDB4NGYgMHg0Jmd0Ozs8YnI+DQrCoCDCoCDCoCDCoCDCoCDCoCDCoCDC
+oCB9Ozxicj4NCjxicj4NCivCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoG1tYzA6IG1tY0AxYzAwMDAw
+MCB7PGJyPg0KK8KgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgY29tcGF0aWJsZSA9
+ICZxdW90O2FyYXNhbixzZGhjaS00LjlhJnF1b3Q7Ozxicj4NCivCoCDCoCDCoCDCoCDCoCDCoCDC
+oCDCoCDCoCDCoCDCoCDCoHJlZyA9ICZsdDsweDAgMHgxYzAwMDAwMCAweDAgMHgxMDAmZ3Q7Ozxi
+cj4NCivCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoGludGVycnVwdHMgPSAmbHQ7
+MHgwIDB4NDkgMHg0Jmd0Ozs8YnI+DQorwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAgwqAg
+wqBkbWEtY29oZXJlbnQ7PGJyPg0KK8KgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKg
+Y2xvY2stbmFtZXMgPSAmcXVvdDtjbGtfeGluJnF1b3Q7LCAmcXVvdDtjbGtfYWhiJnF1b3Q7Ozxi
+cj4NCivCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoGNsb2NrcyA9ICZsdDsmYW1w
+O3NkaW9jbGsgMCZndDssICZsdDsmYW1wO2FoYmNsayAwJmd0Ozs8YnI+DQorwqAgwqAgwqAgwqAg
+wqAgwqAgwqAgwqB9Ozxicj4NCis8YnI+DQrCoCDCoCDCoCDCoCDCoCDCoCDCoCDCoCBwaHkxOiBw
+aHlAMWYyMWEwMDAgezxicj4NCsKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIMKgIGNv
+bXBhdGlibGUgPSAmcXVvdDthcG0seGdlbmUtcGh5JnF1b3Q7Ozxicj4NCsKgIMKgIMKgIMKgIMKg
+IMKgIMKgIMKgIMKgIMKgIMKgIMKgIHJlZyA9ICZsdDsweDAgMHgxZjIxYTAwMCAweDAgMHgxMDAm
+Z3Q7Ozxicj4NCi0tPGJyPg0KMS44LjIuMTxicj4NCjxicj4NCjwvYmxvY2txdW90ZT48L2Rpdj48
+YnI+PGJyIGNsZWFyPSJhbGwiPjxkaXY+QW55IGNvbW1lbnRzIG9uIHRoaXMgcGF0Y2ggPz8gSSBj
+aGFuZ2VkIHRoZSBkdHMgbm9kZSBuYW1lIGFzIHBlciBFUEFSIGFuZCBBcm5kIGNvbW1lbnRzLjwv
+ZGl2Pi0tIDxicj48ZGl2IGNsYXNzPSJnbWFpbF9zaWduYXR1cmUiPjxkaXYgZGlyPSJsdHIiPjxk
+aXY+VGhhbmtzLDwvZGl2PjxkaXY+d2l0aCByZWdhcmRzLDwvZGl2PlN1bWFuIFRyaXBhdGhpPC9k
+aXY+PC9kaXY+DQo8L2Rpdj48L2Rpdj4NCg==
+--047d7b66f445f3c5bd0516fa17ba--
