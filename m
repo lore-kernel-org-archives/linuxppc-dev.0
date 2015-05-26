@@ -1,20 +1,21 @@
-Return-Path: <agraf@suse.de>
-Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
- (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
+Return-Path: <mikey@neuling.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 7542D1A1920
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 May 2015 10:23:53 +1000 (AEST)
-Message-ID: <5563BD15.1080301@suse.de>
-Date: Tue, 26 May 2015 02:23:49 +0200
-From: Alexander Graf <agraf@suse.de>
-MIME-Version: 1.0
-To: Sam Bobroff <sam.bobroff@au1.ibm.com>
-CC: kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, paulus@samba.org
-Subject: Re: [PATCH 1/1] KVM: PPC: Book3S: correct width in XER handling
-References: <d0600fe7952351dfd176c97d416a6a351812a78b.1432099563.git.sam.bobroff@au1.ibm.com>
- <55638F38.3040406@suse.de> <20150526001438.GA17851@ocelot.ozlabs.ibm.com>
-In-Reply-To: <20150526001438.GA17851@ocelot.ozlabs.ibm.com>
-Content-Type: text/plain; charset=windows-1252
+ by lists.ozlabs.org (Postfix) with ESMTPS id 279671A1914
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 May 2015 10:23:56 +1000 (AEST)
+From: Michael Neuling <mikey@neuling.org>
+To: mpe@ellerman.id.au,
+	benh@kernel.crashing.org
+Cc: imunsie@au.ibm.com, linuxppc-dev@ozlabs.org, mikey@neuling.org,
+ Daniel Axtens <dja@axtens.net>,
+ "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>,
+ "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>, brking@linux.vnet.ibm.com
+Subject: [PATCH v2 20/21] cxl: Export file ops for use by API
+Date: Tue, 26 May 2015 10:20:17 +1000
+Message-Id: <1432599618-26844-21-git-send-email-mikey@neuling.org>
+In-Reply-To: <1432599618-26844-1-git-send-email-mikey@neuling.org>
+References: <1432599618-26844-1-git-send-email-mikey@neuling.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,120 +25,131 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+The cxl kernel API will allow drivers other than cxl to export a file
+descriptor which has the same userspace API.  These file descriptors will be
+able to be used against libcxl.
 
+This exports those file ops for use by other drivers.
 
-On 26.05.15 02:14, Sam Bobroff wrote:
-> On Mon, May 25, 2015 at 11:08:08PM +0200, Alexander Graf wrote:
->>
->>
->> On 20.05.15 07:26, Sam Bobroff wrote:
->>> In 64 bit kernels, the Fixed Point Exception Register (XER) is a 64
->>> bit field (e.g. in kvm_regs and kvm_vcpu_arch) and in most places it is
->>> accessed as such.
->>>
->>> This patch corrects places where it is accessed as a 32 bit field by a
->>> 64 bit kernel.  In some cases this is via a 32 bit load or store
->>> instruction which, depending on endianness, will cause either the
->>> lower or upper 32 bits to be missed.  In another case it is cast as a
->>> u32, causing the upper 32 bits to be cleared.
->>>
->>> This patch corrects those places by extending the access methods to
->>> 64 bits.
->>>
->>> Signed-off-by: Sam Bobroff <sam.bobroff@au1.ibm.com>
->>> ---
->>>
->>>  arch/powerpc/include/asm/kvm_book3s.h   |    4 ++--
->>>  arch/powerpc/kvm/book3s_hv_rmhandlers.S |    6 +++---
->>>  arch/powerpc/kvm/book3s_segment.S       |    4 ++--
->>>  3 files changed, 7 insertions(+), 7 deletions(-)
->>>
->>> diff --git a/arch/powerpc/include/asm/kvm_book3s.h b/arch/powerpc/include/asm/kvm_book3s.h
->>> index b91e74a..05a875a 100644
->>> --- a/arch/powerpc/include/asm/kvm_book3s.h
->>> +++ b/arch/powerpc/include/asm/kvm_book3s.h
->>> @@ -225,12 +225,12 @@ static inline u32 kvmppc_get_cr(struct kvm_vcpu *vcpu)
->>>  	return vcpu->arch.cr;
->>>  }
->>>  
->>> -static inline void kvmppc_set_xer(struct kvm_vcpu *vcpu, u32 val)
->>> +static inline void kvmppc_set_xer(struct kvm_vcpu *vcpu, ulong val)
->>>  {
->>>  	vcpu->arch.xer = val;
->>>  }
->>>  
->>> -static inline u32 kvmppc_get_xer(struct kvm_vcpu *vcpu)
->>> +static inline ulong kvmppc_get_xer(struct kvm_vcpu *vcpu)
->>>  {
->>>  	return vcpu->arch.xer;
->>>  }
->>> diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
->>> index 4d70df2..d75be59 100644
->>> --- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
->>> +++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
->>> @@ -870,7 +870,7 @@ END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_207S)
->>>  	blt	hdec_soon
->>>  
->>>  	ld	r6, VCPU_CTR(r4)
->>> -	lwz	r7, VCPU_XER(r4)
->>> +	ld	r7, VCPU_XER(r4)
->>>  
->>>  	mtctr	r6
->>>  	mtxer	r7
->>> @@ -1103,7 +1103,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
->>>  	mfctr	r3
->>>  	mfxer	r4
->>>  	std	r3, VCPU_CTR(r9)
->>> -	stw	r4, VCPU_XER(r9)
->>> +	std	r4, VCPU_XER(r9)
->>>  
->>>  	/* If this is a page table miss then see if it's theirs or ours */
->>>  	cmpwi	r12, BOOK3S_INTERRUPT_H_DATA_STORAGE
->>> @@ -1675,7 +1675,7 @@ kvmppc_hdsi:
->>>  	bl	kvmppc_msr_interrupt
->>>  fast_interrupt_c_return:
->>>  6:	ld	r7, VCPU_CTR(r9)
->>> -	lwz	r8, VCPU_XER(r9)
->>> +	ld	r8, VCPU_XER(r9)
->>>  	mtctr	r7
->>>  	mtxer	r8
->>>  	mr	r4, r9
->>> diff --git a/arch/powerpc/kvm/book3s_segment.S b/arch/powerpc/kvm/book3s_segment.S
->>> index acee37c..ca8f174 100644
->>> --- a/arch/powerpc/kvm/book3s_segment.S
->>> +++ b/arch/powerpc/kvm/book3s_segment.S
->>> @@ -123,7 +123,7 @@ no_dcbz32_on:
->>>  	PPC_LL	r8, SVCPU_CTR(r3)
->>>  	PPC_LL	r9, SVCPU_LR(r3)
->>>  	lwz	r10, SVCPU_CR(r3)
->>> -	lwz	r11, SVCPU_XER(r3)
->>> +	PPC_LL	r11, SVCPU_XER(r3)
->>
->> struct kvmppc_book3s_shadow_vcpu {
->>         bool in_use;
->>         ulong gpr[14];
->>         u32 cr;
->>         u32 xer;
->> [...]
->>
->> so at least this change looks wrong. Please double-check all fields in
->> your patch again.
->>
->>
->> Alex
-> 
-> Thanks for the review and the catch!
-> 
-> The xer field in kvm_vcpu_arch is already ulong, so it looks like the one in
-> kvmppc_book3s_shadow_vcpu is the only other case. I'll fix that and repost.
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+Acked-by: Ian Munsie <imunsie@au1.ibm.com>
+---
+ drivers/misc/cxl/cxl.h  |  9 +++++++++
+ drivers/misc/cxl/file.c | 23 ++++++++++++++---------
+ 2 files changed, 23 insertions(+), 9 deletions(-)
 
-I guess given that the one in pt_regs is also ulong going ulong rather
-than u32 is the better choice, yes.
-
-While at it, could you please just do a grep -i xer across all kvm (.c
-and .h) files and just sanity check that we're staying in sync?
-
-
-Thanks!
-
-Alex
+diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
+index f3b071e..af67c4b 100644
+--- a/drivers/misc/cxl/cxl.h
++++ b/drivers/misc/cxl/cxl.h
+@@ -18,6 +18,7 @@
+ #include <linux/pid.h>
+ #include <linux/io.h>
+ #include <linux/pci.h>
++#include <linux/fs.h>
+ #include <asm/cputable.h>
+ #include <asm/mmu.h>
+ #include <asm/reg.h>
+@@ -670,4 +671,12 @@ void cxl_stop_trace(struct cxl *cxl);
+ extern struct pci_driver cxl_pci_driver;
+ int afu_allocate_irqs(struct cxl_context *ctx, u32 count);
+ 
++int afu_open(struct inode *inode, struct file *file);
++int afu_release(struct inode *inode, struct file *file);
++long afu_ioctl(struct file *file, unsigned int cmd, unsigned long arg);
++int afu_mmap(struct file *file, struct vm_area_struct *vm);
++unsigned int afu_poll(struct file *file, struct poll_table_struct *poll);
++ssize_t afu_read(struct file *file, char __user *buf, size_t count, loff_t *off);
++extern const struct file_operations afu_fops;
++
+ #endif
+diff --git a/drivers/misc/cxl/file.c b/drivers/misc/cxl/file.c
+index f7653fc..72fe168 100644
+--- a/drivers/misc/cxl/file.c
++++ b/drivers/misc/cxl/file.c
+@@ -96,7 +96,8 @@ err_put_adapter:
+ 	put_device(&adapter->dev);
+ 	return rc;
+ }
+-static int afu_open(struct inode *inode, struct file *file)
++
++int afu_open(struct inode *inode, struct file *file)
+ {
+ 	return __afu_open(inode, file, false);
+ }
+@@ -106,7 +107,7 @@ static int afu_master_open(struct inode *inode, struct file *file)
+ 	return __afu_open(inode, file, true);
+ }
+ 
+-static int afu_release(struct inode *inode, struct file *file)
++int afu_release(struct inode *inode, struct file *file)
+ {
+ 	struct cxl_context *ctx = file->private_data;
+ 
+@@ -211,7 +212,7 @@ static long afu_ioctl_process_element(struct cxl_context *ctx,
+ 	return 0;
+ }
+ 
+-static long afu_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
++long afu_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
+ {
+ 	struct cxl_context *ctx = file->private_data;
+ 
+@@ -228,13 +229,13 @@ static long afu_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
+ 	return -EINVAL;
+ }
+ 
+-static long afu_compat_ioctl(struct file *file, unsigned int cmd,
++long afu_compat_ioctl(struct file *file, unsigned int cmd,
+ 			     unsigned long arg)
+ {
+ 	return afu_ioctl(file, cmd, arg);
+ }
+ 
+-static int afu_mmap(struct file *file, struct vm_area_struct *vm)
++int afu_mmap(struct file *file, struct vm_area_struct *vm)
+ {
+ 	struct cxl_context *ctx = file->private_data;
+ 
+@@ -245,7 +246,7 @@ static int afu_mmap(struct file *file, struct vm_area_struct *vm)
+ 	return cxl_context_iomap(ctx, vm);
+ }
+ 
+-static unsigned int afu_poll(struct file *file, struct poll_table_struct *poll)
++unsigned int afu_poll(struct file *file, struct poll_table_struct *poll)
+ {
+ 	struct cxl_context *ctx = file->private_data;
+ 	int mask = 0;
+@@ -277,7 +278,7 @@ static inline int ctx_event_pending(struct cxl_context *ctx)
+ 	    ctx->pending_afu_err || (ctx->status == CLOSED));
+ }
+ 
+-static ssize_t afu_read(struct file *file, char __user *buf, size_t count,
++ssize_t afu_read(struct file *file, char __user *buf, size_t count,
+ 			loff_t *off)
+ {
+ 	struct cxl_context *ctx = file->private_data;
+@@ -358,7 +359,11 @@ out:
+ 	return rc;
+ }
+ 
+-static const struct file_operations afu_fops = {
++/* 
++ * Note: if this is updated, we need to update api.c to patch the new ones in
++ * too
++ */
++const struct file_operations afu_fops = {
+ 	.owner		= THIS_MODULE,
+ 	.open           = afu_open,
+ 	.poll		= afu_poll,
+@@ -369,7 +374,7 @@ static const struct file_operations afu_fops = {
+ 	.mmap           = afu_mmap,
+ };
+ 
+-static const struct file_operations afu_master_fops = {
++const struct file_operations afu_master_fops = {
+ 	.owner		= THIS_MODULE,
+ 	.open           = afu_master_open,
+ 	.poll		= afu_poll,
+-- 
+2.1.0
