@@ -1,19 +1,36 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <sam.bobroff@au1.ibm.com>
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 3DD4F1A0CB9
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 May 2015 09:37:21 +1000 (AEST)
-Message-ID: <1432683431.22987.19.camel@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc/perf: Fix book3s kernel to userspace backtraces
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Anton Blanchard <anton@samba.org>
-Cc: paulus@samba.org, mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org
-Date: Tue, 26 May 2015 18:37:11 -0500
-In-Reply-To: <1432617024-11352-1-git-send-email-anton@samba.org>
-References: <1432617024-11352-1-git-send-email-anton@samba.org>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id C5D551A0CBA
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 May 2015 09:56:18 +1000 (AEST)
+Received: from /spool/local
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <sam.bobroff@au1.ibm.com>;
+ Wed, 27 May 2015 09:56:17 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 793033578052
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 May 2015 09:56:13 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t4QNu5Qg49807576
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 May 2015 09:56:13 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t4QNtekc031696
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 May 2015 09:55:40 +1000
+Date: Wed, 27 May 2015 09:55:15 +1000
+From: Sam Bobroff <sam.bobroff@au1.ibm.com>
+To: Alexander Graf <agraf@suse.de>
+Cc: kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, paulus@samba.org
+Subject: Re: [PATCH v2 1/1] KVM: PPC: Book3S: correct width in XER handling
+Message-ID: <20150526235515.GA10597@ocelot.ozlabs.ibm.com>
+References: <5c54bdaf5fba44ea7ea56cc06c027a876c30a6f2.1432600039.git.sam.bobroff@au1.ibm.com>
+ <5564303C.7060204@suse.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <5564303C.7060204@suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,88 +40,128 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, 2015-05-26 at 15:10 +1000, Anton Blanchard wrote:
-> When we take a PMU exception or a software event we call
-> perf_read_regs(). This overloads regs->result with a boolean that
-> describes if we should use the sampled instruction address register
-> (SIAR) or the regs.
+On Tue, May 26, 2015 at 10:35:08AM +0200, Alexander Graf wrote:
 > 
-> If the exception is in kernel, we start with the kernel regs and
-> backtrace through the kernel stack. At this point we switch to the
-> userspace regs and backtrace the user stack with perf_callchain_user().
 > 
-> Unfortunately these regs have not got the perf_read_regs() treatment,
-> so regs->result could be anything. If it is non zero,
-> perf_instruction_pointer() decides to use the SIAR, and we get issues
-> like this:
+> On 26.05.15 02:27, Sam Bobroff wrote:
+> > In 64 bit kernels, the Fixed Point Exception Register (XER) is a 64
+> > bit field (e.g. in kvm_regs and kvm_vcpu_arch) and in most places it is
+> > accessed as such.
+> > 
+> > This patch corrects places where it is accessed as a 32 bit field by a
+> > 64 bit kernel.  In some cases this is via a 32 bit load or store
+> > instruction which, depending on endianness, will cause either the
+> > lower or upper 32 bits to be missed.  In another case it is cast as a
+> > u32, causing the upper 32 bits to be cleared.
+> > 
+> > This patch corrects those places by extending the access methods to
+> > 64 bits.
+> > 
+> > Signed-off-by: Sam Bobroff <sam.bobroff@au1.ibm.com>
+> > ---
+> > 
+> > v2:
+> > 
+> > Also extend kvmppc_book3s_shadow_vcpu.xer to 64 bit.
+> > 
+> >  arch/powerpc/include/asm/kvm_book3s.h     |    4 ++--
+> >  arch/powerpc/include/asm/kvm_book3s_asm.h |    2 +-
+> >  arch/powerpc/kvm/book3s_hv_rmhandlers.S   |    6 +++---
+> >  arch/powerpc/kvm/book3s_segment.S         |    4 ++--
+> >  4 files changed, 8 insertions(+), 8 deletions(-)
+> > 
+> > diff --git a/arch/powerpc/include/asm/kvm_book3s.h b/arch/powerpc/include/asm/kvm_book3s.h
+> > index b91e74a..05a875a 100644
+> > --- a/arch/powerpc/include/asm/kvm_book3s.h
+> > +++ b/arch/powerpc/include/asm/kvm_book3s.h
+> > @@ -225,12 +225,12 @@ static inline u32 kvmppc_get_cr(struct kvm_vcpu *vcpu)
+> >  	return vcpu->arch.cr;
+> >  }
+> >  
+> > -static inline void kvmppc_set_xer(struct kvm_vcpu *vcpu, u32 val)
+> > +static inline void kvmppc_set_xer(struct kvm_vcpu *vcpu, ulong val)
+> 
+> Now we have book3s and booke files with different prototypes on the same
+> inline function names. That's really ugly. Please keep them in sync ;).
 
-CC stable ?
+OK will do.
 
-> 0.11%  qemu-system-ppc  [kernel.kallsyms]        [k] _raw_spin_lock_irqsave
->        |
->        ---_raw_spin_lock_irqsave
->           |
->           |--52.35%-- 0
->           |          |
->           |          |--46.39%-- __hrtimer_start_range_ns
->           |          |          kvmppc_run_core
->           |          |          kvmppc_vcpu_run_hv
->           |          |          kvmppc_vcpu_run
->           |          |          kvm_arch_vcpu_ioctl_run
->           |          |          kvm_vcpu_ioctl
->           |          |          do_vfs_ioctl
->           |          |          sys_ioctl
->           |          |          system_call
->           |          |          |
->           |          |          |--67.08%-- _raw_spin_lock_irqsave <--- hi mum
->           |          |          |          |
->           |          |          |           --100.00%-- 0x7e714
->           |          |          |                     0x7e714
 > 
-> Notice the bogus _raw_spin_irqsave when we transition from kernel
-> (system_call) to userspace (0x7e714). We inserted what was in the SIAR.
+> Alex
 > 
-> Add a check in regs_use_siar() to check that the regs in question
-> are from a PMU exception. With this fix the backtrace makes sense:
-> 
->      0.47%  qemu-system-ppc  [kernel.vmlinux]         [k] _raw_spin_lock_irqsave
->             |
->             ---_raw_spin_lock_irqsave
->                |
->                |--53.83%-- 0
->                |          |
->                |          |--44.73%-- hrtimer_try_to_cancel
->                |          |          kvmppc_start_thread
->                |          |          kvmppc_run_core
->                |          |          kvmppc_vcpu_run_hv
->                |          |          kvmppc_vcpu_run
->                |          |          kvm_arch_vcpu_ioctl_run
->                |          |          kvm_vcpu_ioctl
->                |          |          do_vfs_ioctl
->                |          |          sys_ioctl
->                |          |          system_call
->                |          |          __ioctl
->                |          |          0x7e714
->                |          |          0x7e714
-> 
-> Signed-off-by: Anton Blanchard <anton@samba.org>
-> ---
->  arch/powerpc/perf/core-book3s.c | 5 ++++-
->  1 file changed, 4 insertions(+), 1 deletion(-)
-> 
-> diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
-> index 12b6384..42a3725 100644
-> --- a/arch/powerpc/perf/core-book3s.c
-> +++ b/arch/powerpc/perf/core-book3s.c
-> @@ -131,7 +131,10 @@ static void pmao_restore_workaround(bool ebb) { }
->  
->  static bool regs_use_siar(struct pt_regs *regs)
->  {
-> -	return !!regs->result;
-> +	if ((TRAP(regs) == 0xf00) && regs->result)
-> +		return true;
-> +
-> +	return false;
->  }
->  
->  /*
+> >  {
+> >  	vcpu->arch.xer = val;
+> >  }
+> >  
+> > -static inline u32 kvmppc_get_xer(struct kvm_vcpu *vcpu)
+> > +static inline ulong kvmppc_get_xer(struct kvm_vcpu *vcpu)
+> >  {
+> >  	return vcpu->arch.xer;
+> >  }
+> > diff --git a/arch/powerpc/include/asm/kvm_book3s_asm.h b/arch/powerpc/include/asm/kvm_book3s_asm.h
+> > index 5bdfb5d..c4ccd2d 100644
+> > --- a/arch/powerpc/include/asm/kvm_book3s_asm.h
+> > +++ b/arch/powerpc/include/asm/kvm_book3s_asm.h
+> > @@ -112,7 +112,7 @@ struct kvmppc_book3s_shadow_vcpu {
+> >  	bool in_use;
+> >  	ulong gpr[14];
+> >  	u32 cr;
+> > -	u32 xer;
+> > +	ulong xer;
+> >  	ulong ctr;
+> >  	ulong lr;
+> >  	ulong pc;
+> > diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+> > index 4d70df2..d75be59 100644
+> > --- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+> > +++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+> > @@ -870,7 +870,7 @@ END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_207S)
+> >  	blt	hdec_soon
+> >  
+> >  	ld	r6, VCPU_CTR(r4)
+> > -	lwz	r7, VCPU_XER(r4)
+> > +	ld	r7, VCPU_XER(r4)
+> >  
+> >  	mtctr	r6
+> >  	mtxer	r7
+> > @@ -1103,7 +1103,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
+> >  	mfctr	r3
+> >  	mfxer	r4
+> >  	std	r3, VCPU_CTR(r9)
+> > -	stw	r4, VCPU_XER(r9)
+> > +	std	r4, VCPU_XER(r9)
+> >  
+> >  	/* If this is a page table miss then see if it's theirs or ours */
+> >  	cmpwi	r12, BOOK3S_INTERRUPT_H_DATA_STORAGE
+> > @@ -1675,7 +1675,7 @@ kvmppc_hdsi:
+> >  	bl	kvmppc_msr_interrupt
+> >  fast_interrupt_c_return:
+> >  6:	ld	r7, VCPU_CTR(r9)
+> > -	lwz	r8, VCPU_XER(r9)
+> > +	ld	r8, VCPU_XER(r9)
+> >  	mtctr	r7
+> >  	mtxer	r8
+> >  	mr	r4, r9
+> > diff --git a/arch/powerpc/kvm/book3s_segment.S b/arch/powerpc/kvm/book3s_segment.S
+> > index acee37c..ca8f174 100644
+> > --- a/arch/powerpc/kvm/book3s_segment.S
+> > +++ b/arch/powerpc/kvm/book3s_segment.S
+> > @@ -123,7 +123,7 @@ no_dcbz32_on:
+> >  	PPC_LL	r8, SVCPU_CTR(r3)
+> >  	PPC_LL	r9, SVCPU_LR(r3)
+> >  	lwz	r10, SVCPU_CR(r3)
+> > -	lwz	r11, SVCPU_XER(r3)
+> > +	PPC_LL	r11, SVCPU_XER(r3)
+> >  
+> >  	mtctr	r8
+> >  	mtlr	r9
+> > @@ -237,7 +237,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_HVMODE)
+> >  	mfctr	r8
+> >  	mflr	r9
+> >  
+> > -	stw	r5, SVCPU_XER(r13)
+> > +	PPC_STL	r5, SVCPU_XER(r13)
+> >  	PPC_STL	r6, SVCPU_FAULT_DAR(r13)
+> >  	stw	r7, SVCPU_FAULT_DSISR(r13)
+> >  	PPC_STL	r8, SVCPU_CTR(r13)
+> > 
