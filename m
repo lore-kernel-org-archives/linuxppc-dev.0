@@ -1,9 +1,9 @@
 Return-Path: <mikey@neuling.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 97A121A0CAB
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 May 2015 10:20:35 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8F4911A0CD9
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 May 2015 10:20:45 +1000 (AEST)
 From: Michael Neuling <mikey@neuling.org>
 To: mpe@ellerman.id.au,
 	benh@kernel.crashing.org
@@ -11,9 +11,11 @@ Cc: imunsie@au.ibm.com, linuxppc-dev@ozlabs.org, mikey@neuling.org,
  Daniel Axtens <dja@axtens.net>,
  "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>,
  "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>, brking@linux.vnet.ibm.com
-Subject: [PATCH v2 00/21] cxl: Add AFU virtual PHB and in kernel API
-Date: Tue, 26 May 2015 10:19:57 +1000
-Message-Id: <1432599618-26844-1-git-send-email-mikey@neuling.org>
+Subject: [PATCH v2 01/21] powerpc/copro: Fix faulting kernel segments
+Date: Tue, 26 May 2015 10:19:58 +1000
+Message-Id: <1432599618-26844-2-git-send-email-mikey@neuling.org>
+In-Reply-To: <1432599618-26844-1-git-send-email-mikey@neuling.org>
+References: <1432599618-26844-1-git-send-email-mikey@neuling.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,22 +25,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch series adds the ability to present AFUs as PCI devices on a virtual
-PHB.
+This fixes calculating the key bits (KP and KS) in the SLB VSID for kernel
+mappings.
 
-It also adds an in kernel API (to the existing userspace API) so AFU drivers
-can be written as kernel drivers.
+I'm not CCing this to stable as there are no uses of this currently.
 
-This series is dependant on Daniel DMA set mask and MSI PCI controller ops
-patch series.
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+---
+ arch/powerpc/mm/copro_fault.c | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
 
-v2:
- - Address comments from Ian
-   o Rename some functions now they are global
-   o Rework context lifetime
-   o Merge and fix SR calculation
-   o Added ACKs from Ian
-   o correct from Ian on one patch
- - Fixed powernv pci shutdown hook
-
-Mikey
+diff --git a/arch/powerpc/mm/copro_fault.c b/arch/powerpc/mm/copro_fault.c
+index f031a47..7a71d7f 100644
+--- a/arch/powerpc/mm/copro_fault.c
++++ b/arch/powerpc/mm/copro_fault.c
+@@ -100,7 +100,7 @@ EXPORT_SYMBOL_GPL(copro_handle_mm_fault);
+ 
+ int copro_calculate_slb(struct mm_struct *mm, u64 ea, struct copro_slb *slb)
+ {
+-	u64 vsid;
++	u64 vsid, vsidkey;
+ 	int psize, ssize;
+ 
+ 	switch (REGION_ID(ea)) {
+@@ -109,6 +109,7 @@ int copro_calculate_slb(struct mm_struct *mm, u64 ea, struct copro_slb *slb)
+ 		psize = get_slice_psize(mm, ea);
+ 		ssize = user_segment_size(ea);
+ 		vsid = get_vsid(mm->context.id, ea, ssize);
++		vsidkey = SLB_VSID_USER;
+ 		break;
+ 	case VMALLOC_REGION_ID:
+ 		pr_devel("%s: 0x%llx -- VMALLOC_REGION_ID\n", __func__, ea);
+@@ -118,19 +119,21 @@ int copro_calculate_slb(struct mm_struct *mm, u64 ea, struct copro_slb *slb)
+ 			psize = mmu_io_psize;
+ 		ssize = mmu_kernel_ssize;
+ 		vsid = get_kernel_vsid(ea, mmu_kernel_ssize);
++		vsidkey = SLB_VSID_KERNEL;
+ 		break;
+ 	case KERNEL_REGION_ID:
+ 		pr_devel("%s: 0x%llx -- KERNEL_REGION_ID\n", __func__, ea);
+ 		psize = mmu_linear_psize;
+ 		ssize = mmu_kernel_ssize;
+ 		vsid = get_kernel_vsid(ea, mmu_kernel_ssize);
++		vsidkey = SLB_VSID_KERNEL;
+ 		break;
+ 	default:
+ 		pr_debug("%s: invalid region access at %016llx\n", __func__, ea);
+ 		return 1;
+ 	}
+ 
+-	vsid = (vsid << slb_vsid_shift(ssize)) | SLB_VSID_USER;
++	vsid = (vsid << slb_vsid_shift(ssize)) | vsidkey;
+ 
+ 	vsid |= mmu_psize_defs[psize].sllp |
+ 		((ssize == MMU_SEGSIZE_1T) ? SLB_VSID_B_1T : 0);
+-- 
+2.1.0
