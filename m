@@ -1,28 +1,30 @@
-Return-Path: <zidan.wang@freescale.com>
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0108.outbound.protection.outlook.com [65.55.169.108])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <stripathi@apm.com>
+Received: from mail-wg0-f46.google.com (exprod5og104.obsmtp.com [64.18.0.178])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id DFF0D1A0EAC
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 May 2015 21:03:53 +1000 (AEST)
-Date: Tue, 26 May 2015 19:02:48 +0800
-From: Zidan Wang <zidan.wang@freescale.com>
-To: Nicolin Chen <nicoleotsuka@gmail.com>
-CC: Fabio Estevam <festevam@gmail.com>, Mark Brown <broonie@kernel.org>, Fabio
- Estevam <fabio.estevam@freescale.com>, "alsa-devel@alsa-project.org"
- <alsa-devel@alsa-project.org>, linux-kernel <linux-kernel@vger.kernel.org>,
- Liam Girdwood <lgirdwood@gmail.com>, "linuxppc-dev@lists.ozlabs.org"
- <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [alsa-devel] [PATCH] ASoC: fsl_spdif: Don't try to round-up for
- clock divisor calculation
-Message-ID: <20150526110246.GA13725@shlinux2>
-References: <1432455161-4924-1-git-send-email-nicoleotsuka@gmail.com>
- <20150525115812.GG21391@sirena.org.uk> <20150525151127.GA8184@Asurada>
- <CAOMZO5B+GQdXZDfKV6Hz3wXmJCUcXBeWWQxR_jY0n28OnA_gJg@mail.gmail.com>
- <20150525152424.GA8164@Asurada>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 583E21A0EAC
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 May 2015 21:07:32 +1000 (AEST)
+Received: by wgez8 with SMTP id z8so93750263wge.0
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 May 2015 04:07:28 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <20150525152424.GA8164@Asurada>
+In-Reply-To: <1432197817-22110-3-git-send-email-stripathi@apm.com>
+References: <1432197817-22110-1-git-send-email-stripathi@apm.com>
+ <1432197817-22110-3-git-send-email-stripathi@apm.com>
+Date: Tue, 26 May 2015 16:37:22 +0530
+Message-ID: <CAOHikRC7p+wzgHXbEYkK56dJucahf6rk=x0sphQedtSKV0N0xQ@mail.gmail.com>
+Subject: Re: [PATCH RESEND v7 2/2] mmc: host: sdhci: Add support to disable
+ SDR104/SDR50/DDR50 based on capability register 0.
+From: Suman Tripathi <stripathi@apm.com>
+To: Chris Ball <chris@printf.net>, Anton Vorontsov <anton@enomsg.org>,
+ Arnd Bergmann <arnd@arndb.de>, Michal Simek <michal.simek@xilinx.com>
+Cc: linux-mmc <linux-mmc@vger.kernel.org>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+ Don Dutile <ddutile@redhat.com>,
+ Jon Masters <jcm@redhat.com>, Mark Langsdorf <mlangsdo@redhat.com>,
+ patches <patches@apm.com>, Suman Tripathi <stripathi@apm.com>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,31 +34,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, May 25, 2015 at 08:24:25AM -0700, Nicolin Chen wrote:
-> On Mon, May 25, 2015 at 12:13:45PM -0300, Fabio Estevam wrote:
-> > Hi Nicolin,
-> > 
-> > On Mon, May 25, 2015 at 12:11 PM, Nicolin Chen <nicoleotsuka@gmail.com> wrote:
-> > 
-> > > Hi Mark,
-> > >
-> > > Is that possible for you to provisionally revert this patch?
-> > > I wanted to wait for the test result from Fabio or Zidan in
-> > > the Cc list because I don't have a test environment for SPDIF
-> > > even though this change seems to make sense.
-> > 
-> > I currently don't have access to a SPDIF receiver to test it.
-> 
-> Okay, let's wait for Zidan then. We only need to test the
-> playback route of supporting sample rates.
-> 
-> Thanks
-> Nicolin
-I don't have the board which supported by community to test spdif out. So i used the imx7 board
-and test it with internal branch.
-I found that (txclk_df + 1) is better than txclk_df.
-I suspect the patch for clk_round_rate() is not in our branch. Could you please tell me which
-patch is for clk_round_rate? I want to cherry-pick it to our branch and test it.
+On Thu, May 21, 2015 at 2:13 PM, Suman Tripathi <stripathi@apm.com> wrote:
+> The sdhci framework disables SDR104/SDR50/DDR50 based on only quirk.
+> This patch adds the support to disable SDR104/SDR50/DDR50 based on
+> reading the capability register 0.
+>
+> Signed-off-by: Suman Tripathi <stripathi@apm.com>
+> ---
+> ---
+>  drivers/mmc/host/sdhci.c | 3 ++-
+>  1 file changed, 2 insertions(+), 1 deletion(-)
+>
+> diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
+> index 58c1770..a3d9b8a 100644
+> --- a/drivers/mmc/host/sdhci.c
+> +++ b/drivers/mmc/host/sdhci.c
+> @@ -3118,7 +3118,8 @@ int sdhci_add_host(struct sdhci_host *host)
+>                 }
+>         }
+>
+> -       if (host->quirks2 & SDHCI_QUIRK2_NO_1_8_V)
+> +       if (host->quirks2 & SDHCI_QUIRK2_NO_1_8_V ||
+> +           !(caps[0] & SDHCI_CAN_VDD_180))
+>                 caps[1] &= ~(SDHCI_SUPPORT_SDR104 | SDHCI_SUPPORT_SDR50 |
+>                        SDHCI_SUPPORT_DDR50);
+>
+> --
+> 1.8.2.1
+>
 
-Best Regards,
-Zidan Wang
+Any comments on this patch ?
+
+
+-- 
+Thanks,
+with regards,
+Suman Tripathi
