@@ -2,8 +2,8 @@ Return-Path: <mikey@neuling.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8F4911A0CD9
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 May 2015 10:20:45 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 96A9F1A0E80
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 May 2015 10:20:55 +1000 (AEST)
 From: Michael Neuling <mikey@neuling.org>
 To: mpe@ellerman.id.au,
 	benh@kernel.crashing.org
@@ -11,9 +11,9 @@ Cc: imunsie@au.ibm.com, linuxppc-dev@ozlabs.org, mikey@neuling.org,
  Daniel Axtens <dja@axtens.net>,
  "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>,
  "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>, brking@linux.vnet.ibm.com
-Subject: [PATCH v2 01/21] powerpc/copro: Fix faulting kernel segments
-Date: Tue, 26 May 2015 10:19:58 +1000
-Message-Id: <1432599618-26844-2-git-send-email-mikey@neuling.org>
+Subject: [PATCH v2 02/21] powerpc/pci: Export symbols for CXL
+Date: Tue, 26 May 2015 10:19:59 +1000
+Message-Id: <1432599618-26844-3-git-send-email-mikey@neuling.org>
 In-Reply-To: <1432599618-26844-1-git-send-email-mikey@neuling.org>
 References: <1432599618-26844-1-git-send-email-mikey@neuling.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,59 +25,44 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This fixes calculating the key bits (KP and KS) in the SLB VSID for kernel
-mappings.
+From: Daniel Axtens <dja@axtens.net>
 
-I'm not CCing this to stable as there are no uses of this currently.
+Export pcibios_claim_one_bus, pcibios_scan_phb and pcibios_alloc_controller.
 
-Signed-off-by: Michael Neuling <mikey@neuling.org>
+These will be used by the CXL driver.
+
+Signed-off-by: Daniel Axtens <dja@axtens.net>
 ---
- arch/powerpc/mm/copro_fault.c | 7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
+ arch/powerpc/kernel/pci-common.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/arch/powerpc/mm/copro_fault.c b/arch/powerpc/mm/copro_fault.c
-index f031a47..7a71d7f 100644
---- a/arch/powerpc/mm/copro_fault.c
-+++ b/arch/powerpc/mm/copro_fault.c
-@@ -100,7 +100,7 @@ EXPORT_SYMBOL_GPL(copro_handle_mm_fault);
+diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
+index 0d05406..2040cd2 100644
+--- a/arch/powerpc/kernel/pci-common.c
++++ b/arch/powerpc/kernel/pci-common.c
+@@ -89,6 +89,7 @@ struct pci_controller *pcibios_alloc_controller(struct device_node *dev)
+ #endif
+ 	return phb;
+ }
++EXPORT_SYMBOL_GPL(pcibios_alloc_controller);
  
- int copro_calculate_slb(struct mm_struct *mm, u64 ea, struct copro_slb *slb)
+ void pcibios_free_controller(struct pci_controller *phb)
  {
--	u64 vsid;
-+	u64 vsid, vsidkey;
- 	int psize, ssize;
+@@ -1447,6 +1448,7 @@ void pcibios_claim_one_bus(struct pci_bus *bus)
+ 	list_for_each_entry(child_bus, &bus->children, node)
+ 		pcibios_claim_one_bus(child_bus);
+ }
++EXPORT_SYMBOL_GPL(pcibios_claim_one_bus);
  
- 	switch (REGION_ID(ea)) {
-@@ -109,6 +109,7 @@ int copro_calculate_slb(struct mm_struct *mm, u64 ea, struct copro_slb *slb)
- 		psize = get_slice_psize(mm, ea);
- 		ssize = user_segment_size(ea);
- 		vsid = get_vsid(mm->context.id, ea, ssize);
-+		vsidkey = SLB_VSID_USER;
- 		break;
- 	case VMALLOC_REGION_ID:
- 		pr_devel("%s: 0x%llx -- VMALLOC_REGION_ID\n", __func__, ea);
-@@ -118,19 +119,21 @@ int copro_calculate_slb(struct mm_struct *mm, u64 ea, struct copro_slb *slb)
- 			psize = mmu_io_psize;
- 		ssize = mmu_kernel_ssize;
- 		vsid = get_kernel_vsid(ea, mmu_kernel_ssize);
-+		vsidkey = SLB_VSID_KERNEL;
- 		break;
- 	case KERNEL_REGION_ID:
- 		pr_devel("%s: 0x%llx -- KERNEL_REGION_ID\n", __func__, ea);
- 		psize = mmu_linear_psize;
- 		ssize = mmu_kernel_ssize;
- 		vsid = get_kernel_vsid(ea, mmu_kernel_ssize);
-+		vsidkey = SLB_VSID_KERNEL;
- 		break;
- 	default:
- 		pr_debug("%s: invalid region access at %016llx\n", __func__, ea);
- 		return 1;
+ 
+ /* pcibios_finish_adding_to_bus
+@@ -1680,6 +1682,7 @@ void pcibios_scan_phb(struct pci_controller *hose)
+ 			pcie_bus_configure_settings(child);
  	}
+ }
++EXPORT_SYMBOL_GPL(pcibios_scan_phb);
  
--	vsid = (vsid << slb_vsid_shift(ssize)) | SLB_VSID_USER;
-+	vsid = (vsid << slb_vsid_shift(ssize)) | vsidkey;
- 
- 	vsid |= mmu_psize_defs[psize].sllp |
- 		((ssize == MMU_SEGSIZE_1T) ? SLB_VSID_B_1T : 0);
+ static void fixup_hide_host_resource_fsl(struct pci_dev *dev)
+ {
 -- 
 2.1.0
