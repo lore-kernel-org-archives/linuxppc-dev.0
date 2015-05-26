@@ -2,8 +2,8 @@ Return-Path: <mikey@neuling.org>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E40F81A0E0B
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 May 2015 10:21:55 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id CC7501A1174
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 May 2015 10:22:05 +1000 (AEST)
 From: Michael Neuling <mikey@neuling.org>
 To: mpe@ellerman.id.au,
 	benh@kernel.crashing.org
@@ -11,9 +11,9 @@ Cc: imunsie@au.ibm.com, linuxppc-dev@ozlabs.org, mikey@neuling.org,
  Daniel Axtens <dja@axtens.net>,
  "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>,
  "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>, brking@linux.vnet.ibm.com
-Subject: [PATCH v2 08/21] cxl: Re-order card init to check the VSEC earlier
-Date: Tue, 26 May 2015 10:20:05 +1000
-Message-Id: <1432599618-26844-9-git-send-email-mikey@neuling.org>
+Subject: [PATCH v2 09/21] cxl: Dump debug info on the AFU configuration record
+Date: Tue, 26 May 2015 10:20:06 +1000
+Message-Id: <1432599618-26844-10-git-send-email-mikey@neuling.org>
 In-Reply-To: <1432599618-26844-1-git-send-email-mikey@neuling.org>
 References: <1432599618-26844-1-git-send-email-mikey@neuling.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,111 +25,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Ian Munsie <imunsie@au1.ibm.com>
+Now that we parse the AFU Configuration record, dump some info on it when in
+debug mode.
 
-When we expose AFUs as virtual PCI devices, they may look like the physical
-CAPI PCI card.  ie they may have the same vendor/device IDs.
-
-We want to avoid these AFUs binding to this driver and any init this driver may
-do.
-
-Re-order card init to check the VSEC earlier before assigning BARs or
-activating CXL.  Also change the dev used in early prints as the adapter struct
-may not be inited at this earlier stage.
-
-Signed-off-by: Ian Munsie <imunsie@au1.ibm.com>
 Signed-off-by: Michael Neuling <mikey@neuling.org>
+Acked-by: Ian Munsie <imunsie@au1.ibm.com>
 ---
- drivers/misc/cxl/pci.c | 30 +++++++++++++++---------------
- 1 file changed, 15 insertions(+), 15 deletions(-)
+ drivers/misc/cxl/pci.c | 12 +++++++++++-
+ 1 file changed, 11 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
-index a9c90d2..1ac2ecf 100644
+index 1ac2ecf..9066a7a 100644
 --- a/drivers/misc/cxl/pci.c
 +++ b/drivers/misc/cxl/pci.c
-@@ -884,13 +884,13 @@ static int cxl_read_vsec(struct cxl *adapter, struct pci_dev *dev)
- 	u16 vseclen;
+@@ -90,6 +90,7 @@
+ /* This works a little different than the p1/p2 register accesses to make it
+  * easier to pull out individual fields */
+ #define AFUD_READ(afu, off)		in_be64(afu->afu_desc_mmio + off)
++#define AFUD_READ_LE(afu, off)		in_le64(afu->afu_desc_mmio + off)
+ #define EXTRACT_PPC_BIT(val, bit)	(!!(val & PPC_BIT(bit)))
+ #define EXTRACT_PPC_BITS(val, bs, be)	((val & PPC_BITMASK(bs, be)) >> PPC_BITLSHIFT(be))
  
- 	if (!(vsec = find_cxl_vsec(dev))) {
--		dev_err(&adapter->dev, "ABORTING: CXL VSEC not found!\n");
-+		dev_err(&dev->dev, "ABORTING: CXL VSEC not found!\n");
- 		return -ENODEV;
- 	}
+@@ -286,7 +287,8 @@ static void dump_cxl_config_space(struct pci_dev *dev)
  
- 	CXL_READ_VSEC_LENGTH(dev, vsec, &vseclen);
- 	if (vseclen < CXL_VSEC_MIN_SIZE) {
--		pr_err("ABORTING: CXL VSEC too short\n");
-+		dev_err(&dev->dev, "ABORTING: CXL VSEC too short\n");
- 		return -EINVAL;
- 	}
+ static void dump_afu_descriptor(struct cxl_afu *afu)
+ {
+-	u64 val;
++	u64 val, afu_cr_num, afu_cr_off, afu_cr_len;
++	int i;
  
-@@ -927,24 +927,24 @@ static int cxl_vsec_looks_ok(struct cxl *adapter, struct pci_dev *dev)
- 		return -EBUSY;
+ #define show_reg(name, what) \
+ 	dev_info(&afu->dev, "afu desc: %30s: %#llx\n", name, what)
+@@ -296,6 +298,7 @@ static void dump_afu_descriptor(struct cxl_afu *afu)
+ 	show_reg("num_of_processes", AFUD_NUM_PROCS(val));
+ 	show_reg("num_of_afu_CRs", AFUD_NUM_CRS(val));
+ 	show_reg("req_prog_mode", val & 0xffffULL);
++	afu_cr_num = AFUD_NUM_CRS(val);
  
- 	if (adapter->vsec_status & CXL_UNSUPPORTED_FEATURES) {
--		dev_err(&adapter->dev, "ABORTING: CXL requires unsupported features\n");
-+		dev_err(&dev->dev, "ABORTING: CXL requires unsupported features\n");
- 		return -EINVAL;
- 	}
+ 	val = AFUD_READ(afu, 0x8);
+ 	show_reg("Reserved", val);
+@@ -307,8 +310,10 @@ static void dump_afu_descriptor(struct cxl_afu *afu)
+ 	val = AFUD_READ_CR(afu);
+ 	show_reg("Reserved", (val >> (63-7)) & 0xff);
+ 	show_reg("AFU_CR_len", AFUD_CR_LEN(val));
++	afu_cr_len = AFUD_CR_LEN(val) * 256;
  
- 	if (!adapter->slices) {
- 		/* Once we support dynamic reprogramming we can use the card if
- 		 * it supports loadable AFUs */
--		dev_err(&adapter->dev, "ABORTING: Device has no AFUs\n");
-+		dev_err(&dev->dev, "ABORTING: Device has no AFUs\n");
- 		return -EINVAL;
- 	}
+ 	val = AFUD_READ_CR_OFF(afu);
++	afu_cr_off = val;
+ 	show_reg("AFU_CR_offset", val);
  
- 	if (!adapter->afu_desc_off || !adapter->afu_desc_size) {
--		dev_err(&adapter->dev, "ABORTING: VSEC shows no AFU descriptors\n");
-+		dev_err(&dev->dev, "ABORTING: VSEC shows no AFU descriptors\n");
- 		return -EINVAL;
- 	}
+ 	val = AFUD_READ_PPPSA(afu);
+@@ -325,6 +330,11 @@ static void dump_afu_descriptor(struct cxl_afu *afu)
+ 	val = AFUD_READ_EB_OFF(afu);
+ 	show_reg("AFU_EB_offset", val);
  
- 	if (adapter->ps_size > p2_size(dev) - adapter->ps_off) {
--		dev_err(&adapter->dev, "ABORTING: Problem state size larger than "
-+		dev_err(&dev->dev, "ABORTING: Problem state size larger than "
- 				   "available in BAR2: 0x%llx > 0x%llx\n",
- 			 adapter->ps_size, p2_size(dev) - adapter->ps_off);
- 		return -EINVAL;
-@@ -993,6 +993,15 @@ static struct cxl *cxl_init_adapter(struct pci_dev *dev)
- 	if (!(adapter = cxl_alloc_adapter(dev)))
- 		return ERR_PTR(-ENOMEM);
++	for (i = 0; i < afu_cr_num; i++) {
++		val = AFUD_READ_LE(afu, afu_cr_off + i * afu_cr_len);
++		show_reg("CR Vendor", val & 0xffff);
++		show_reg("CR Device", (val >> 16) & 0xffff);
++	}
+ #undef show_reg
+ }
  
-+	if ((rc = cxl_read_vsec(adapter, dev)))
-+		goto err1;
-+
-+	if ((rc = cxl_vsec_looks_ok(adapter, dev)))
-+		goto err1;
-+
-+	if ((rc = setup_cxl_bars(dev)))
-+		goto err1;
-+
- 	if ((rc = switch_card_to_cxl(dev)))
- 		goto err1;
- 
-@@ -1002,12 +1011,6 @@ static struct cxl *cxl_init_adapter(struct pci_dev *dev)
- 	if ((rc = dev_set_name(&adapter->dev, "card%i", adapter->adapter_num)))
- 		goto err2;
- 
--	if ((rc = cxl_read_vsec(adapter, dev)))
--		goto err2;
--
--	if ((rc = cxl_vsec_looks_ok(adapter, dev)))
--		goto err2;
--
- 	if ((rc = cxl_update_image_control(adapter)))
- 		goto err2;
- 
-@@ -1092,9 +1095,6 @@ static int cxl_probe(struct pci_dev *dev, const struct pci_device_id *id)
- 	if (cxl_verbose)
- 		dump_cxl_config_space(dev);
- 
--	if ((rc = setup_cxl_bars(dev)))
--		return rc;
--
- 	if ((rc = pci_enable_device(dev))) {
- 		dev_err(&dev->dev, "pci_enable_device failed: %i\n", rc);
- 		return rc;
 -- 
 2.1.0
