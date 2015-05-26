@@ -1,21 +1,20 @@
-Return-Path: <mikey@neuling.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <agraf@suse.de>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 401011A190A
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 May 2015 10:23:46 +1000 (AEST)
-From: Michael Neuling <mikey@neuling.org>
-To: mpe@ellerman.id.au,
-	benh@kernel.crashing.org
-Cc: imunsie@au.ibm.com, linuxppc-dev@ozlabs.org, mikey@neuling.org,
- Daniel Axtens <dja@axtens.net>,
- "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>,
- "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>, brking@linux.vnet.ibm.com
-Subject: [PATCH v2 19/21] cxl: Move include file cxl.h -> cxl-base.h
-Date: Tue, 26 May 2015 10:20:16 +1000
-Message-Id: <1432599618-26844-20-git-send-email-mikey@neuling.org>
-In-Reply-To: <1432599618-26844-1-git-send-email-mikey@neuling.org>
-References: <1432599618-26844-1-git-send-email-mikey@neuling.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7542D1A1920
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 May 2015 10:23:53 +1000 (AEST)
+Message-ID: <5563BD15.1080301@suse.de>
+Date: Tue, 26 May 2015 02:23:49 +0200
+From: Alexander Graf <agraf@suse.de>
+MIME-Version: 1.0
+To: Sam Bobroff <sam.bobroff@au1.ibm.com>
+CC: kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, paulus@samba.org
+Subject: Re: [PATCH 1/1] KVM: PPC: Book3S: correct width in XER handling
+References: <d0600fe7952351dfd176c97d416a6a351812a78b.1432099563.git.sam.bobroff@au1.ibm.com>
+ <55638F38.3040406@suse.de> <20150526001438.GA17851@ocelot.ozlabs.ibm.com>
+In-Reply-To: <20150526001438.GA17851@ocelot.ozlabs.ibm.com>
+Content-Type: text/plain; charset=windows-1252
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,177 +24,120 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This moves the current include file from cxl.h -> cxl-base.h.  This current
-include file is used only to pass information between the base driver that
-needs to be built into the kernel and the cxl module.
 
-This is to make way for a new include/misc/cxl.h which will
-contain just the kernel API for other driver to use
 
-Signed-off-by: Michael Neuling <mikey@neuling.org>
-Acked-by: Ian Munsie <imunsie@au1.ibm.com>
----
- MAINTAINERS                               | 2 +-
- arch/powerpc/include/asm/pnv-pci.h        | 2 +-
- arch/powerpc/mm/copro_fault.c             | 2 +-
- arch/powerpc/mm/hash_native_64.c          | 2 +-
- arch/powerpc/platforms/powernv/pci-ioda.c | 2 +-
- drivers/misc/cxl/base.c                   | 2 +-
- drivers/misc/cxl/cxl.h                    | 2 +-
- drivers/misc/cxl/irq.c                    | 2 +-
- drivers/misc/cxl/main.c                   | 2 +-
- drivers/misc/cxl/native.c                 | 2 +-
- include/misc/{cxl.h => cxl-base.h}        | 4 ++--
- 11 files changed, 12 insertions(+), 12 deletions(-)
- rename include/misc/{cxl.h => cxl-base.h} (95%)
+On 26.05.15 02:14, Sam Bobroff wrote:
+> On Mon, May 25, 2015 at 11:08:08PM +0200, Alexander Graf wrote:
+>>
+>>
+>> On 20.05.15 07:26, Sam Bobroff wrote:
+>>> In 64 bit kernels, the Fixed Point Exception Register (XER) is a 64
+>>> bit field (e.g. in kvm_regs and kvm_vcpu_arch) and in most places it is
+>>> accessed as such.
+>>>
+>>> This patch corrects places where it is accessed as a 32 bit field by a
+>>> 64 bit kernel.  In some cases this is via a 32 bit load or store
+>>> instruction which, depending on endianness, will cause either the
+>>> lower or upper 32 bits to be missed.  In another case it is cast as a
+>>> u32, causing the upper 32 bits to be cleared.
+>>>
+>>> This patch corrects those places by extending the access methods to
+>>> 64 bits.
+>>>
+>>> Signed-off-by: Sam Bobroff <sam.bobroff@au1.ibm.com>
+>>> ---
+>>>
+>>>  arch/powerpc/include/asm/kvm_book3s.h   |    4 ++--
+>>>  arch/powerpc/kvm/book3s_hv_rmhandlers.S |    6 +++---
+>>>  arch/powerpc/kvm/book3s_segment.S       |    4 ++--
+>>>  3 files changed, 7 insertions(+), 7 deletions(-)
+>>>
+>>> diff --git a/arch/powerpc/include/asm/kvm_book3s.h b/arch/powerpc/include/asm/kvm_book3s.h
+>>> index b91e74a..05a875a 100644
+>>> --- a/arch/powerpc/include/asm/kvm_book3s.h
+>>> +++ b/arch/powerpc/include/asm/kvm_book3s.h
+>>> @@ -225,12 +225,12 @@ static inline u32 kvmppc_get_cr(struct kvm_vcpu *vcpu)
+>>>  	return vcpu->arch.cr;
+>>>  }
+>>>  
+>>> -static inline void kvmppc_set_xer(struct kvm_vcpu *vcpu, u32 val)
+>>> +static inline void kvmppc_set_xer(struct kvm_vcpu *vcpu, ulong val)
+>>>  {
+>>>  	vcpu->arch.xer = val;
+>>>  }
+>>>  
+>>> -static inline u32 kvmppc_get_xer(struct kvm_vcpu *vcpu)
+>>> +static inline ulong kvmppc_get_xer(struct kvm_vcpu *vcpu)
+>>>  {
+>>>  	return vcpu->arch.xer;
+>>>  }
+>>> diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+>>> index 4d70df2..d75be59 100644
+>>> --- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+>>> +++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
+>>> @@ -870,7 +870,7 @@ END_FTR_SECTION_IFCLR(CPU_FTR_ARCH_207S)
+>>>  	blt	hdec_soon
+>>>  
+>>>  	ld	r6, VCPU_CTR(r4)
+>>> -	lwz	r7, VCPU_XER(r4)
+>>> +	ld	r7, VCPU_XER(r4)
+>>>  
+>>>  	mtctr	r6
+>>>  	mtxer	r7
+>>> @@ -1103,7 +1103,7 @@ END_FTR_SECTION_IFSET(CPU_FTR_HAS_PPR)
+>>>  	mfctr	r3
+>>>  	mfxer	r4
+>>>  	std	r3, VCPU_CTR(r9)
+>>> -	stw	r4, VCPU_XER(r9)
+>>> +	std	r4, VCPU_XER(r9)
+>>>  
+>>>  	/* If this is a page table miss then see if it's theirs or ours */
+>>>  	cmpwi	r12, BOOK3S_INTERRUPT_H_DATA_STORAGE
+>>> @@ -1675,7 +1675,7 @@ kvmppc_hdsi:
+>>>  	bl	kvmppc_msr_interrupt
+>>>  fast_interrupt_c_return:
+>>>  6:	ld	r7, VCPU_CTR(r9)
+>>> -	lwz	r8, VCPU_XER(r9)
+>>> +	ld	r8, VCPU_XER(r9)
+>>>  	mtctr	r7
+>>>  	mtxer	r8
+>>>  	mr	r4, r9
+>>> diff --git a/arch/powerpc/kvm/book3s_segment.S b/arch/powerpc/kvm/book3s_segment.S
+>>> index acee37c..ca8f174 100644
+>>> --- a/arch/powerpc/kvm/book3s_segment.S
+>>> +++ b/arch/powerpc/kvm/book3s_segment.S
+>>> @@ -123,7 +123,7 @@ no_dcbz32_on:
+>>>  	PPC_LL	r8, SVCPU_CTR(r3)
+>>>  	PPC_LL	r9, SVCPU_LR(r3)
+>>>  	lwz	r10, SVCPU_CR(r3)
+>>> -	lwz	r11, SVCPU_XER(r3)
+>>> +	PPC_LL	r11, SVCPU_XER(r3)
+>>
+>> struct kvmppc_book3s_shadow_vcpu {
+>>         bool in_use;
+>>         ulong gpr[14];
+>>         u32 cr;
+>>         u32 xer;
+>> [...]
+>>
+>> so at least this change looks wrong. Please double-check all fields in
+>> your patch again.
+>>
+>>
+>> Alex
+> 
+> Thanks for the review and the catch!
+> 
+> The xer field in kvm_vcpu_arch is already ulong, so it looks like the one in
+> kvmppc_book3s_shadow_vcpu is the only other case. I'll fix that and repost.
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index f8e0afb..10f6001 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -2956,7 +2956,7 @@ M:	Michael Neuling <mikey@neuling.org>
- L:	linuxppc-dev@lists.ozlabs.org
- S:	Supported
- F:	drivers/misc/cxl/
--F:	include/misc/cxl.h
-+F:	include/misc/cxl*
- F:	include/uapi/misc/cxl.h
- F:	Documentation/powerpc/cxl.txt
- F:	Documentation/powerpc/cxl.txt
-diff --git a/arch/powerpc/include/asm/pnv-pci.h b/arch/powerpc/include/asm/pnv-pci.h
-index f9b4982..6f77f71 100644
---- a/arch/powerpc/include/asm/pnv-pci.h
-+++ b/arch/powerpc/include/asm/pnv-pci.h
-@@ -11,7 +11,7 @@
- #define _ASM_PNV_PCI_H
- 
- #include <linux/pci.h>
--#include <misc/cxl.h>
-+#include <misc/cxl-base.h>
- 
- int pnv_phb_to_cxl_mode(struct pci_dev *dev, uint64_t mode);
- int pnv_cxl_ioda_msi_setup(struct pci_dev *dev, unsigned int hwirq,
-diff --git a/arch/powerpc/mm/copro_fault.c b/arch/powerpc/mm/copro_fault.c
-index 7a71d7f..6527882 100644
---- a/arch/powerpc/mm/copro_fault.c
-+++ b/arch/powerpc/mm/copro_fault.c
-@@ -26,7 +26,7 @@
- #include <asm/reg.h>
- #include <asm/copro.h>
- #include <asm/spu.h>
--#include <misc/cxl.h>
-+#include <misc/cxl-base.h>
- 
- /*
-  * This ought to be kept in sync with the powerpc specific do_page_fault
-diff --git a/arch/powerpc/mm/hash_native_64.c b/arch/powerpc/mm/hash_native_64.c
-index 9c4880d..13befa35 100644
---- a/arch/powerpc/mm/hash_native_64.c
-+++ b/arch/powerpc/mm/hash_native_64.c
-@@ -29,7 +29,7 @@
- #include <asm/kexec.h>
- #include <asm/ppc-opcode.h>
- 
--#include <misc/cxl.h>
-+#include <misc/cxl-base.h>
- 
- #ifdef DEBUG_LOW
- #define DBG_LOW(fmt...) udbg_printf(fmt)
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index 2eaf6f7..d21ceba 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -39,7 +39,7 @@
- #include <asm/firmware.h>
- #include <asm/pnv-pci.h>
- 
--#include <misc/cxl.h>
-+#include <misc/cxl-base.h>
- 
- #include "powernv.h"
- #include "pci.h"
-diff --git a/drivers/misc/cxl/base.c b/drivers/misc/cxl/base.c
-index 0654ad8..a9f0dd3 100644
---- a/drivers/misc/cxl/base.c
-+++ b/drivers/misc/cxl/base.c
-@@ -10,7 +10,7 @@
- #include <linux/module.h>
- #include <linux/rcupdate.h>
- #include <asm/errno.h>
--#include <misc/cxl.h>
-+#include <misc/cxl-base.h>
- #include "cxl.h"
- 
- /* protected by rcu */
-diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
-index bbc7fd0..f3b071e 100644
---- a/drivers/misc/cxl/cxl.h
-+++ b/drivers/misc/cxl/cxl.h
-@@ -21,7 +21,7 @@
- #include <asm/cputable.h>
- #include <asm/mmu.h>
- #include <asm/reg.h>
--#include <misc/cxl.h>
-+#include <misc/cxl-base.h>
- 
- #include <uapi/misc/cxl.h>
- 
-diff --git a/drivers/misc/cxl/irq.c b/drivers/misc/cxl/irq.c
-index 212790b..680cd26 100644
---- a/drivers/misc/cxl/irq.c
-+++ b/drivers/misc/cxl/irq.c
-@@ -14,7 +14,7 @@
- #include <linux/slab.h>
- #include <linux/pid.h>
- #include <asm/cputable.h>
--#include <misc/cxl.h>
-+#include <misc/cxl-base.h>
- 
- #include "cxl.h"
- #include "trace.h"
-diff --git a/drivers/misc/cxl/main.c b/drivers/misc/cxl/main.c
-index de1b19a..403780e 100644
---- a/drivers/misc/cxl/main.c
-+++ b/drivers/misc/cxl/main.c
-@@ -20,7 +20,7 @@
- #include <linux/idr.h>
- #include <linux/pci.h>
- #include <asm/cputable.h>
--#include <misc/cxl.h>
-+#include <misc/cxl-base.h>
- 
- #include "cxl.h"
- #include "trace.h"
-diff --git a/drivers/misc/cxl/native.c b/drivers/misc/cxl/native.c
-index a4b40d7..10567f2 100644
---- a/drivers/misc/cxl/native.c
-+++ b/drivers/misc/cxl/native.c
-@@ -15,7 +15,7 @@
- #include <linux/mm.h>
- #include <linux/uaccess.h>
- #include <asm/synch.h>
--#include <misc/cxl.h>
-+#include <misc/cxl-base.h>
- 
- #include "cxl.h"
- #include "trace.h"
-diff --git a/include/misc/cxl.h b/include/misc/cxl-base.h
-similarity index 95%
-rename from include/misc/cxl.h
-rename to include/misc/cxl-base.h
-index 975cc78..5ae9625 100644
---- a/include/misc/cxl.h
-+++ b/include/misc/cxl-base.h
-@@ -7,8 +7,8 @@
-  * 2 of the License, or (at your option) any later version.
-  */
- 
--#ifndef _MISC_CXL_H
--#define _MISC_CXL_H
-+#ifndef _MISC_CXL_BASE_H
-+#define _MISC_CXL_BASE_H
- 
- #ifdef CONFIG_CXL_BASE
- 
--- 
-2.1.0
+I guess given that the one in pt_regs is also ulong going ulong rather
+than u32 is the better choice, yes.
+
+While at it, could you please just do a grep -i xer across all kvm (.c
+and .h) files and just sanity check that we're staying in sync?
+
+
+Thanks!
+
+Alex
