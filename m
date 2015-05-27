@@ -2,8 +2,8 @@ Return-Path: <mikey@neuling.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id F2BFE1A0D6C
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 May 2015 16:07:44 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 50F201A0D66
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 May 2015 16:07:46 +1000 (AEST)
 From: Michael Neuling <mikey@neuling.org>
 To: mpe@ellerman.id.au,
 	benh@kernel.crashing.org
@@ -11,9 +11,9 @@ Cc: imunsie@au.ibm.com, linuxppc-dev@ozlabs.org, mikey@neuling.org,
  Daniel Axtens <dja@axtens.net>,
  "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>,
  "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>, brking@linux.vnet.ibm.com
-Subject: [PATCH v3 14/24] cxl: Rework detach context functions
-Date: Wed, 27 May 2015 16:07:08 +1000
-Message-Id: <1432706838-20794-15-git-send-email-mikey@neuling.org>
+Subject: [PATCH v3 15/24] cxl: cxl_afu_reset() -> __cxl_afu_reset()
+Date: Wed, 27 May 2015 16:07:09 +1000
+Message-Id: <1432706838-20794-16-git-send-email-mikey@neuling.org>
 In-Reply-To: <1432706838-20794-1-git-send-email-mikey@neuling.org>
 References: <1432706838-20794-1-git-send-email-mikey@neuling.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,81 +25,105 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Rework __detach_context() and cxl_context_detach() so we can reuse them in the
-kernel API.
+Rename cxl_afu_reset() to __cxl_afu_reset() to we can reuse this function name
+in the API.
 
 Signed-off-by: Michael Neuling <mikey@neuling.org>
 Acked-by: Ian Munsie <imunsie@au1.ibm.com>
 ---
- drivers/misc/cxl/context.c | 20 +++++++++++++-------
- drivers/misc/cxl/cxl.h     |  1 +
- 2 files changed, 14 insertions(+), 7 deletions(-)
+ drivers/misc/cxl/cxl.h    | 2 +-
+ drivers/misc/cxl/native.c | 8 ++++----
+ drivers/misc/cxl/pci.c    | 4 ++--
+ drivers/misc/cxl/sysfs.c  | 2 +-
+ 4 files changed, 8 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/misc/cxl/context.c b/drivers/misc/cxl/context.c
-index 36bb8e4..7d857b7 100644
---- a/drivers/misc/cxl/context.c
-+++ b/drivers/misc/cxl/context.c
-@@ -174,7 +174,7 @@ int cxl_context_iomap(struct cxl_context *ctx, struct vm_area_struct *vma)
-  * return until all outstanding interrupts for this context have completed. The
-  * hardware should no longer access *ctx after this has returned.
-  */
--static void __detach_context(struct cxl_context *ctx)
-+int __detach_context(struct cxl_context *ctx)
- {
- 	enum cxl_context_status status;
- 
-@@ -183,12 +183,10 @@ static void __detach_context(struct cxl_context *ctx)
- 	ctx->status = CLOSED;
- 	mutex_unlock(&ctx->status_mutex);
- 	if (status != STARTED)
--		return;
-+		return -EBUSY;
- 
- 	WARN_ON(cxl_detach_process(ctx));
--	afu_release_irqs(ctx, ctx);
--	flush_work(&ctx->fault_work); /* Only needed for dedicated process */
--	wake_up_all(&ctx->wq);
-+	return 0;
- }
- 
- /*
-@@ -199,7 +197,15 @@ static void __detach_context(struct cxl_context *ctx)
-  */
- void cxl_context_detach(struct cxl_context *ctx)
- {
--	__detach_context(ctx);
-+	int rc;
-+
-+	rc = __detach_context(ctx);
-+	if (rc)
-+		return;
-+
-+	afu_release_irqs(ctx, ctx);
-+	flush_work(&ctx->fault_work); /* Only needed for dedicated process */
-+	wake_up_all(&ctx->wq);
- }
- 
- /*
-@@ -216,7 +222,7 @@ void cxl_context_detach_all(struct cxl_afu *afu)
- 		 * Anything done in here needs to be setup before the IDR is
- 		 * created and torn down after the IDR removed
- 		 */
--		__detach_context(ctx);
-+		cxl_context_detach(ctx);
- 
- 		/*
- 		 * We are force detaching - remove any active PSA mappings so
 diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
-index 7c014b8..296a077 100644
+index 296a077..8180680 100644
 --- a/drivers/misc/cxl/cxl.h
 +++ b/drivers/misc/cxl/cxl.h
-@@ -632,6 +632,7 @@ int cxl_context_init(struct cxl_context *ctx, struct cxl_afu *afu, bool master,
- 		     struct address_space *mapping);
- void cxl_context_free(struct cxl_context *ctx);
- int cxl_context_iomap(struct cxl_context *ctx, struct vm_area_struct *vma);
-+int __detach_context(struct cxl_context *ctx);
+@@ -657,7 +657,7 @@ int cxl_check_error(struct cxl_afu *afu);
+ int cxl_afu_slbia(struct cxl_afu *afu);
+ int cxl_tlb_slb_invalidate(struct cxl *adapter);
+ int cxl_afu_disable(struct cxl_afu *afu);
+-int cxl_afu_reset(struct cxl_afu *afu);
++int __cxl_afu_reset(struct cxl_afu *afu);
+ int cxl_psl_purge(struct cxl_afu *afu);
  
- /* This matches the layout of the H_COLLECT_CA_INT_INFO retbuf */
- struct cxl_irq_info {
+ void cxl_stop_trace(struct cxl *cxl);
+diff --git a/drivers/misc/cxl/native.c b/drivers/misc/cxl/native.c
+index 29185fc..f85b6ae 100644
+--- a/drivers/misc/cxl/native.c
++++ b/drivers/misc/cxl/native.c
+@@ -73,7 +73,7 @@ int cxl_afu_disable(struct cxl_afu *afu)
+ }
+ 
+ /* This will disable as well as reset */
+-int cxl_afu_reset(struct cxl_afu *afu)
++int __cxl_afu_reset(struct cxl_afu *afu)
+ {
+ 	pr_devel("AFU reset request\n");
+ 
+@@ -495,7 +495,7 @@ static int deactivate_afu_directed(struct cxl_afu *afu)
+ 	cxl_sysfs_afu_m_remove(afu);
+ 	cxl_chardev_afu_remove(afu);
+ 
+-	cxl_afu_reset(afu);
++	__cxl_afu_reset(afu);
+ 	cxl_afu_disable(afu);
+ 	cxl_psl_purge(afu);
+ 
+@@ -566,7 +566,7 @@ static int attach_dedicated(struct cxl_context *ctx, u64 wed, u64 amr)
+ 	/* master only context for dedicated */
+ 	assign_psn_space(ctx);
+ 
+-	if ((rc = cxl_afu_reset(afu)))
++	if ((rc = __cxl_afu_reset(afu)))
+ 		return rc;
+ 
+ 	cxl_p2n_write(afu, CXL_PSL_WED_An, wed);
+@@ -629,7 +629,7 @@ int cxl_attach_process(struct cxl_context *ctx, bool kernel, u64 wed, u64 amr)
+ 
+ static inline int detach_process_native_dedicated(struct cxl_context *ctx)
+ {
+-	cxl_afu_reset(ctx->afu);
++	__cxl_afu_reset(ctx->afu);
+ 	cxl_afu_disable(ctx->afu);
+ 	cxl_psl_purge(ctx->afu);
+ 	return 0;
+diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
+index f837d1b..3879bdf 100644
+--- a/drivers/misc/cxl/pci.c
++++ b/drivers/misc/cxl/pci.c
+@@ -641,7 +641,7 @@ static int sanitise_afu_regs(struct cxl_afu *afu)
+ 	reg = cxl_p2n_read(afu, CXL_AFU_Cntl_An);
+ 	if ((reg & CXL_AFU_Cntl_An_ES_MASK) != CXL_AFU_Cntl_An_ES_Disabled) {
+ 		dev_warn(&afu->dev, "WARNING: AFU was not disabled: %#.16llx\n", reg);
+-		if (cxl_afu_reset(afu))
++		if (__cxl_afu_reset(afu))
+ 			return -EIO;
+ 		if (cxl_afu_disable(afu))
+ 			return -EIO;
+@@ -701,7 +701,7 @@ static int cxl_init_afu(struct cxl *adapter, int slice, struct pci_dev *dev)
+ 		goto err2;
+ 
+ 	/* We need to reset the AFU before we can read the AFU descriptor */
+-	if ((rc = cxl_afu_reset(afu)))
++	if ((rc = __cxl_afu_reset(afu)))
+ 		goto err2;
+ 
+ 	if (cxl_verbose)
+diff --git a/drivers/misc/cxl/sysfs.c b/drivers/misc/cxl/sysfs.c
+index d0c38c7..2d6e104 100644
+--- a/drivers/misc/cxl/sysfs.c
++++ b/drivers/misc/cxl/sysfs.c
+@@ -185,7 +185,7 @@ static ssize_t reset_store_afu(struct device *device,
+ 		goto err;
+ 	}
+ 
+-	if ((rc = cxl_afu_reset(afu)))
++	if ((rc = __cxl_afu_reset(afu)))
+ 		goto err;
+ 
+ 	rc = count;
 -- 
 2.1.0
