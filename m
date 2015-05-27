@@ -1,9 +1,9 @@
 Return-Path: <mikey@neuling.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1D1BA1A0DD6
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 May 2015 16:07:48 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 0474D1A0D57
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 May 2015 16:07:49 +1000 (AEST)
 From: Michael Neuling <mikey@neuling.org>
 To: mpe@ellerman.id.au,
 	benh@kernel.crashing.org
@@ -11,9 +11,9 @@ Cc: imunsie@au.ibm.com, linuxppc-dev@ozlabs.org, mikey@neuling.org,
  Daniel Axtens <dja@axtens.net>,
  "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>,
  "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>, brking@linux.vnet.ibm.com
-Subject: [PATCH v3 17/24] cxl: Only check pid for userspace contexts
-Date: Wed, 27 May 2015 16:07:11 +1000
-Message-Id: <1432706838-20794-18-git-send-email-mikey@neuling.org>
+Subject: [PATCH v3 18/24] cxl: Split afu_register_irqs() function
+Date: Wed, 27 May 2015 16:07:12 +1000
+Message-Id: <1432706838-20794-19-git-send-email-mikey@neuling.org>
 In-Reply-To: <1432706838-20794-1-git-send-email-mikey@neuling.org>
 References: <1432706838-20794-1-git-send-email-mikey@neuling.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,74 +25,85 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We only need to check the pid attached to this context for userspace contexts.
-Kernel contexts can skip this check.
+Split the afu_register_irqs() function so that different parts can
+be useful elsewhere.
 
 Signed-off-by: Michael Neuling <mikey@neuling.org>
 Acked-by: Ian Munsie <imunsie@au1.ibm.com>
 ---
- drivers/misc/cxl/fault.c | 34 +++++++++++++++++++---------------
- 1 file changed, 19 insertions(+), 15 deletions(-)
+ drivers/misc/cxl/cxl.h |  1 +
+ drivers/misc/cxl/irq.c | 31 ++++++++++++++++++++++++-------
+ 2 files changed, 25 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/misc/cxl/fault.c b/drivers/misc/cxl/fault.c
-index 5286b8b..25a5418 100644
---- a/drivers/misc/cxl/fault.c
-+++ b/drivers/misc/cxl/fault.c
-@@ -172,8 +172,8 @@ void cxl_handle_fault(struct work_struct *fault_work)
- 		container_of(fault_work, struct cxl_context, fault_work);
- 	u64 dsisr = ctx->dsisr;
- 	u64 dar = ctx->dar;
--	struct task_struct *task;
--	struct mm_struct *mm;
-+	struct task_struct *task = NULL;
-+	struct mm_struct *mm = NULL;
+diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
+index 58a9b2b..bbc7fd0 100644
+--- a/drivers/misc/cxl/cxl.h
++++ b/drivers/misc/cxl/cxl.h
+@@ -668,5 +668,6 @@ int cxl_psl_purge(struct cxl_afu *afu);
+ void cxl_stop_trace(struct cxl *cxl);
  
- 	if (cxl_p2n_read(ctx->afu, CXL_PSL_DSISR_An) != dsisr ||
- 	    cxl_p2n_read(ctx->afu, CXL_PSL_DAR_An) != dar ||
-@@ -194,17 +194,19 @@ void cxl_handle_fault(struct work_struct *fault_work)
- 	pr_devel("CXL BOTTOM HALF handling fault for afu pe: %i. "
- 		"DSISR: %#llx DAR: %#llx\n", ctx->pe, dsisr, dar);
+ extern struct pci_driver cxl_pci_driver;
++int afu_allocate_irqs(struct cxl_context *ctx, u32 count);
  
--	if (!(task = get_pid_task(ctx->pid, PIDTYPE_PID))) {
--		pr_devel("cxl_handle_fault unable to get task %i\n",
--			 pid_nr(ctx->pid));
--		cxl_ack_ae(ctx);
--		return;
--	}
--	if (!(mm = get_task_mm(task))) {
--		pr_devel("cxl_handle_fault unable to get mm %i\n",
--			 pid_nr(ctx->pid));
--		cxl_ack_ae(ctx);
--		goto out;
-+	if (!ctx->kernel) {
-+		if (!(task = get_pid_task(ctx->pid, PIDTYPE_PID))) {
-+			pr_devel("cxl_handle_fault unable to get task %i\n",
-+				 pid_nr(ctx->pid));
-+			cxl_ack_ae(ctx);
-+			return;
-+		}
-+		if (!(mm = get_task_mm(task))) {
-+			pr_devel("cxl_handle_fault unable to get mm %i\n",
-+				 pid_nr(ctx->pid));
-+			cxl_ack_ae(ctx);
-+			goto out;
-+		}
+ #endif
+diff --git a/drivers/misc/cxl/irq.c b/drivers/misc/cxl/irq.c
+index c740c7b..212790b 100644
+--- a/drivers/misc/cxl/irq.c
++++ b/drivers/misc/cxl/irq.c
+@@ -416,9 +416,8 @@ void afu_irq_name_free(struct cxl_context *ctx)
  	}
- 
- 	if (dsisr & CXL_PSL_DSISR_An_DS)
-@@ -214,9 +216,11 @@ void cxl_handle_fault(struct work_struct *fault_work)
- 	else
- 		WARN(1, "cxl_handle_fault has nothing to handle\n");
- 
--	mmput(mm);
-+	if (mm)
-+		mmput(mm);
- out:
--	put_task_struct(task);
-+	if (task)
-+		put_task_struct(task);
  }
  
- static void cxl_prefault_one(struct cxl_context *ctx, u64 ea)
+-int afu_register_irqs(struct cxl_context *ctx, u32 count)
++int afu_allocate_irqs(struct cxl_context *ctx, u32 count)
+ {
+-	irq_hw_number_t hwirq;
+ 	int rc, r, i, j = 1;
+ 	struct cxl_irq_name *irq_name;
+ 
+@@ -458,6 +457,18 @@ int afu_register_irqs(struct cxl_context *ctx, u32 count)
+ 			j++;
+ 		}
+ 	}
++	return 0;
++
++out:
++	afu_irq_name_free(ctx);
++	return -ENOMEM;
++}
++
++void afu_register_hwirqs(struct cxl_context *ctx)
++{
++	irq_hw_number_t hwirq;
++	struct cxl_irq_name *irq_name;
++	int r,i;
+ 
+ 	/* We've allocated all memory now, so let's do the irq allocations */
+ 	irq_name = list_first_entry(&ctx->irq_names, struct cxl_irq_name, list);
+@@ -469,13 +480,19 @@ int afu_register_irqs(struct cxl_context *ctx, u32 count)
+ 			irq_name = list_next_entry(irq_name, list);
+ 		}
+ 	}
++}
+ 
+-	return 0;
++int afu_register_irqs(struct cxl_context *ctx, u32 count)
++{
++	int rc;
+ 
+-out:
+-	afu_irq_name_free(ctx);
+-	return -ENOMEM;
+-}
++	rc = afu_allocate_irqs(ctx, count);
++	if (rc)
++		return rc;
++
++	afu_register_hwirqs(ctx);
++	return 0;
++ }
+ 
+ void afu_release_irqs(struct cxl_context *ctx, void *cookie)
+ {
 -- 
 2.1.0
