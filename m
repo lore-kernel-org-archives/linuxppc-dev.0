@@ -1,26 +1,26 @@
 Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+Received: from e38.co.us.ibm.com (e38.co.us.ibm.com [32.97.110.159])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 349161A0DED
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 May 2015 07:24:07 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6EA9E1A0DED
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 May 2015 07:24:08 +1000 (AEST)
 Received: from /spool/local
- by e31.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e38.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Wed, 27 May 2015 15:24:04 -0600
-Received: from b03cxnp07029.gho.boulder.ibm.com
- (b03cxnp07029.gho.boulder.ibm.com [9.17.130.16])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 2B50F19D803F
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 May 2015 15:15:05 -0600 (MDT)
+ Wed, 27 May 2015 15:24:06 -0600
+Received: from b03cxnp08026.gho.boulder.ibm.com
+ (b03cxnp08026.gho.boulder.ibm.com [9.17.130.18])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 6789119D8026
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 May 2015 15:15:06 -0600 (MDT)
 Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
- by b03cxnp07029.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t4RLO2kD48758824
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 May 2015 14:24:02 -0700
+ by b03cxnp08026.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t4RLNogG49479776
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 May 2015 14:23:50 -0700
 Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
  by d03av04.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t4RLO118012010
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 May 2015 15:24:02 -0600
+ t4RLO3RJ012132
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 May 2015 15:24:03 -0600
 From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 To: mingo@redhat.com, ak@linux.intel.com,
  Michael Ellerman <mpe@ellerman.id.au>, Jiri Olsa <jolsa@redhat.com>,
@@ -28,9 +28,9 @@ To: mingo@redhat.com, ak@linux.intel.com,
  Paul Mackerras <paulus@samba.org>
 Cc: namhyung@kernel.org, linuxppc-dev@lists.ozlabs.org,
  <linux-kernel@vger.kernel.org>
-Subject: [PATCH 01/10] perf, tools: Add jsmn `jasmine' JSON parser
-Date: Wed, 27 May 2015 14:23:20 -0700
-Message-Id: <1432761809-4344-2-git-send-email-sukadev@linux.vnet.ibm.com>
+Subject: [PATCH 03/10] Use pmu_events_map table to create event aliases
+Date: Wed, 27 May 2015 14:23:22 -0700
+Message-Id: <1432761809-4344-4-git-send-email-sukadev@linux.vnet.ibm.com>
 In-Reply-To: <1432761809-4344-1-git-send-email-sukadev@linux.vnet.ibm.com>
 References: <1432761809-4344-1-git-send-email-sukadev@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -42,653 +42,221 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Andi Kleen <ak@linux.intel.com>
+At run time, (i.e when perf is starting up), locate the specific events
+table for the current CPU and create event aliases for each of the events.
 
-I need a JSON parser. This adds the simplest JSON
-parser I could find -- Serge Zaitsev's jsmn `jasmine' --
-to the perf library. I merely converted it to (mostly)
-Linux style and added support for non 0 terminated input.
+Use these aliases to parse user's specified perf event.
 
-The parser is quite straight forward and does not
-copy any data, just returns tokens with offsets
-into the input buffer. So it's relatively efficient
-and simple to use.
-
-The code is not fully checkpatch clean, but I didn't
-want to completely fork the upstream code.
-
-Original source: http://zserge.bitbucket.org/jsmn.html
-
-In addition I added a simple wrapper that mmaps a json
-file and provides some straight forward access functions.
-
-Used in follow-on patches to parse event files.
-
-Acked-by: Namhyung Kim <namhyung@kernel.org>
-Signed-off-by: Andi Kleen <ak@linux.intel.com>
 Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
----
 
-v2: Address review feedback.
-v3: Minor checkpatch fixes.
-v4 (by Sukadev Bhattiprolu)
-	- Rebase to 4.0 and fix minor conflicts in tools/perf/Makefile.perf
-	- Report error if specified events file is invalid.
-v5 (Sukadev Bhattiprolu)
-	- Move files to tools/perf/pmu-events/ since parsing of JSON file
-	now occurs when _building_ rather than running perf.
+Changelog[v2]
+	[Andi Kleen] Replace the pmu_events_map->vfm field with a simple
+		generic "cpuid" string and use that string to find the
+		matching mapfile entry.
 ---
- tools/perf/pmu-events/jsmn.c |  313 ++++++++++++++++++++++++++++++++++++++++++
- tools/perf/pmu-events/jsmn.h |   67 +++++++++
- tools/perf/pmu-events/json.c |  162 ++++++++++++++++++++++
- tools/perf/pmu-events/json.h |   36 +++++
- 4 files changed, 578 insertions(+)
- create mode 100644 tools/perf/pmu-events/jsmn.c
- create mode 100644 tools/perf/pmu-events/jsmn.h
- create mode 100644 tools/perf/pmu-events/json.c
- create mode 100644 tools/perf/pmu-events/json.h
+ tools/perf/arch/powerpc/util/header.c |   11 ++++
+ tools/perf/util/header.h              |    3 +-
+ tools/perf/util/pmu.c                 |  103 ++++++++++++++++++++++++++++-----
+ 3 files changed, 103 insertions(+), 14 deletions(-)
 
-diff --git a/tools/perf/pmu-events/jsmn.c b/tools/perf/pmu-events/jsmn.c
-new file mode 100644
-index 0000000..11d1fa1
---- /dev/null
-+++ b/tools/perf/pmu-events/jsmn.c
-@@ -0,0 +1,313 @@
-+/*
-+ * Copyright (c) 2010 Serge A. Zaitsev
-+ *
-+ * Permission is hereby granted, free of charge, to any person obtaining a copy
-+ * of this software and associated documentation files (the "Software"), to deal
-+ * in the Software without restriction, including without limitation the rights
-+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-+ * copies of the Software, and to permit persons to whom the Software is
-+ * furnished to do so, subject to the following conditions:
-+ *
-+ * The above copyright notice and this permission notice shall be included in
-+ * all copies or substantial portions of the Software.
-+ *
-+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-+ * THE SOFTWARE.
-+ *
-+ * Slightly modified by AK to not assume 0 terminated input.
-+ */
+diff --git a/tools/perf/arch/powerpc/util/header.c b/tools/perf/arch/powerpc/util/header.c
+index 6c1b8a7..65f9391 100644
+--- a/tools/perf/arch/powerpc/util/header.c
++++ b/tools/perf/arch/powerpc/util/header.c
+@@ -32,3 +32,14 @@ get_cpuid(char *buffer, size_t sz)
+ 	}
+ 	return -1;
+ }
 +
-+#include <stdlib.h>
-+#include "jsmn.h"
-+
-+/*
-+ * Allocates a fresh unused token from the token pool.
-+ */
-+static jsmntok_t *jsmn_alloc_token(jsmn_parser *parser,
-+				   jsmntok_t *tokens, size_t num_tokens)
++char *
++get_cpuid_str(void)
 +{
-+	jsmntok_t *tok;
++	char *bufp;
 +
-+	if ((unsigned)parser->toknext >= num_tokens)
-+		return NULL;
-+	tok = &tokens[parser->toknext++];
-+	tok->start = tok->end = -1;
-+	tok->size = 0;
-+	return tok;
++	if (asprintf(&bufp, "%.8lx", mfspr(SPRN_PVR)) < 0)
++		bufp = NULL;
++
++	return bufp;
 +}
+diff --git a/tools/perf/util/header.h b/tools/perf/util/header.h
+index 3bb90ac..86aee07 100644
+--- a/tools/perf/util/header.h
++++ b/tools/perf/util/header.h
+@@ -8,7 +8,6 @@
+ #include <linux/types.h>
+ #include "event.h"
+ 
+-
+ enum {
+ 	HEADER_RESERVED		= 0,	/* always cleared */
+ 	HEADER_FIRST_FEATURE	= 1,
+@@ -156,4 +155,6 @@ int write_padded(int fd, const void *bf, size_t count, size_t count_aligned);
+  */
+ int get_cpuid(char *buffer, size_t sz);
+ 
++char *get_cpuid_str(void);
 +
-+/*
-+ * Fills token type and boundaries.
-+ */
-+static void jsmn_fill_token(jsmntok_t *token, jsmntype_t type,
-+			    int start, int end)
-+{
-+	token->type = type;
-+	token->start = start;
-+	token->end = end;
-+	token->size = 0;
-+}
-+
-+/*
-+ * Fills next available token with JSON primitive.
-+ */
-+static jsmnerr_t jsmn_parse_primitive(jsmn_parser *parser, const char *js,
-+				      size_t len,
-+				      jsmntok_t *tokens, size_t num_tokens)
-+{
-+	jsmntok_t *token;
-+	int start;
-+
-+	start = parser->pos;
-+
-+	for (; parser->pos < len; parser->pos++) {
-+		switch (js[parser->pos]) {
-+#ifndef JSMN_STRICT
+ #endif /* __PERF_HEADER_H */
+diff --git a/tools/perf/util/pmu.c b/tools/perf/util/pmu.c
+index 4841167..6f652a1 100644
+--- a/tools/perf/util/pmu.c
++++ b/tools/perf/util/pmu.c
+@@ -10,7 +10,9 @@
+ #include "util.h"
+ #include "pmu.h"
+ #include "parse-events.h"
++#include "pmu-events/pmu-events.h"
+ #include "cpumap.h"
++#include "header.h"
+ 
+ struct perf_pmu_format {
+ 	char *name;
+@@ -198,17 +200,11 @@ static int perf_pmu__parse_snapshot(struct perf_pmu_alias *alias,
+ 	return 0;
+ }
+ 
+-static int perf_pmu__new_alias(struct list_head *list, char *dir, char *name, FILE *file)
++static int __perf_pmu__new_alias(struct list_head *list, char *name, char *dir, char *desc __maybe_unused, char *val)
+ {
+ 	struct perf_pmu_alias *alias;
+-	char buf[256];
+ 	int ret;
+ 
+-	ret = fread(buf, 1, sizeof(buf), file);
+-	if (ret == 0)
+-		return -EINVAL;
+-	buf[ret] = 0;
+-
+ 	alias = malloc(sizeof(*alias));
+ 	if (!alias)
+ 		return -ENOMEM;
+@@ -218,26 +214,47 @@ static int perf_pmu__new_alias(struct list_head *list, char *dir, char *name, FI
+ 	alias->unit[0] = '\0';
+ 	alias->per_pkg = false;
+ 
+-	ret = parse_events_terms(&alias->terms, buf);
++	ret = parse_events_terms(&alias->terms, val);
+ 	if (ret) {
++		pr_err("Cannot parse alias %s: %d\n", val, ret);
+ 		free(alias);
+ 		return ret;
+ 	}
+ 
+ 	alias->name = strdup(name);
++	if (dir) {
 +		/*
-+		 * In strict mode primitive must be followed by ","
-+		 * or "}" or "]"
++		 * load unit name and scale if available
 +		 */
-+		case ':':
-+#endif
-+		case '\t':
-+		case '\r':
-+		case '\n':
-+		case ' ':
-+		case ',':
-+		case ']':
-+		case '}':
-+			goto found;
-+		default:
-+			break;
-+		}
-+		if (js[parser->pos] < 32 || js[parser->pos] >= 127) {
-+			parser->pos = start;
-+			return JSMN_ERROR_INVAL;
-+		}
++		perf_pmu__parse_unit(alias, dir, name);
++		perf_pmu__parse_scale(alias, dir, name);
++		perf_pmu__parse_per_pkg(alias, dir, name);
++		perf_pmu__parse_snapshot(alias, dir, name);
 +	}
-+#ifdef JSMN_STRICT
-+	/*
-+	 * In strict mode primitive must be followed by a
-+	 * comma/object/array.
-+	 */
-+	parser->pos = start;
-+	return JSMN_ERROR_PART;
-+#endif
 +
-+found:
-+	token = jsmn_alloc_token(parser, tokens, num_tokens);
-+	if (token == NULL) {
-+		parser->pos = start;
-+		return JSMN_ERROR_NOMEM;
-+	}
-+	jsmn_fill_token(token, JSMN_PRIMITIVE, start, parser->pos);
-+	parser->pos--; /* parent sees closing brackets */
-+	return JSMN_SUCCESS;
-+}
-+
-+/*
-+ * Fills next token with JSON string.
-+ */
-+static jsmnerr_t jsmn_parse_string(jsmn_parser *parser, const char *js,
-+				   size_t len,
-+				   jsmntok_t *tokens, size_t num_tokens)
+ 	/*
+-	 * load unit name and scale if available
++	 * TODO: pickup description from Andi's patchset
+ 	 */
+-	perf_pmu__parse_unit(alias, dir, name);
+-	perf_pmu__parse_scale(alias, dir, name);
+-	perf_pmu__parse_per_pkg(alias, dir, name);
+-	perf_pmu__parse_snapshot(alias, dir, name);
++	//alias->desc = desc ? strdpu(desc) : NULL;
+ 
+ 	list_add_tail(&alias->list, list);
+ 
+ 	return 0;
+ }
+ 
++static int perf_pmu__new_alias(struct list_head *list, char *dir, char *name, FILE *file)
 +{
-+	jsmntok_t *token;
-+	int start = parser->pos;
++	char buf[256];
++	int ret;
 +
-+	/* Skip starting quote */
-+	parser->pos++;
++	ret = fread(buf, 1, sizeof(buf), file);
++	if (ret == 0)
++		return -EINVAL;
++	buf[ret] = 0;
 +
-+	for (; parser->pos < len; parser->pos++) {
-+		char c = js[parser->pos];
-+
-+		/* Quote: end of string */
-+		if (c == '\"') {
-+			token = jsmn_alloc_token(parser, tokens, num_tokens);
-+			if (token == NULL) {
-+				parser->pos = start;
-+				return JSMN_ERROR_NOMEM;
-+			}
-+			jsmn_fill_token(token, JSMN_STRING, start+1,
-+					parser->pos);
-+			return JSMN_SUCCESS;
-+		}
-+
-+		/* Backslash: Quoted symbol expected */
-+		if (c == '\\') {
-+			parser->pos++;
-+			switch (js[parser->pos]) {
-+				/* Allowed escaped symbols */
-+			case '\"':
-+			case '/':
-+			case '\\':
-+			case 'b':
-+			case 'f':
-+			case 'r':
-+			case 'n':
-+			case 't':
-+				break;
-+				/* Allows escaped symbol \uXXXX */
-+			case 'u':
-+				/* TODO */
-+				break;
-+				/* Unexpected symbol */
-+			default:
-+				parser->pos = start;
-+				return JSMN_ERROR_INVAL;
-+			}
-+		}
-+	}
-+	parser->pos = start;
-+	return JSMN_ERROR_PART;
++	return __perf_pmu__new_alias(list, name, dir, NULL, buf);
 +}
 +
+ static inline bool pmu_alias_info_file(char *name)
+ {
+ 	size_t len;
+@@ -435,6 +452,64 @@ perf_pmu__get_default_config(struct perf_pmu *pmu __maybe_unused)
+ 	return NULL;
+ }
+ 
 +/*
-+ * Parse JSON string and fill tokens.
-+ */
-+jsmnerr_t jsmn_parse(jsmn_parser *parser, const char *js, size_t len,
-+		     jsmntok_t *tokens, unsigned int num_tokens)
-+{
-+	jsmnerr_t r;
-+	int i;
-+	jsmntok_t *token;
-+
-+	for (; parser->pos < len; parser->pos++) {
-+		char c;
-+		jsmntype_t type;
-+
-+		c = js[parser->pos];
-+		switch (c) {
-+		case '{':
-+		case '[':
-+			token = jsmn_alloc_token(parser, tokens, num_tokens);
-+			if (token == NULL)
-+				return JSMN_ERROR_NOMEM;
-+			if (parser->toksuper != -1)
-+				tokens[parser->toksuper].size++;
-+			token->type = (c == '{' ? JSMN_OBJECT : JSMN_ARRAY);
-+			token->start = parser->pos;
-+			parser->toksuper = parser->toknext - 1;
-+			break;
-+		case '}':
-+		case ']':
-+			type = (c == '}' ? JSMN_OBJECT : JSMN_ARRAY);
-+			for (i = parser->toknext - 1; i >= 0; i--) {
-+				token = &tokens[i];
-+				if (token->start != -1 && token->end == -1) {
-+					if (token->type != type)
-+						return JSMN_ERROR_INVAL;
-+					parser->toksuper = -1;
-+					token->end = parser->pos + 1;
-+					break;
-+				}
-+			}
-+			/* Error if unmatched closing bracket */
-+			if (i == -1)
-+				return JSMN_ERROR_INVAL;
-+			for (; i >= 0; i--) {
-+				token = &tokens[i];
-+				if (token->start != -1 && token->end == -1) {
-+					parser->toksuper = i;
-+					break;
-+				}
-+			}
-+			break;
-+		case '\"':
-+			r = jsmn_parse_string(parser, js, len, tokens,
-+					      num_tokens);
-+			if (r < 0)
-+				return r;
-+			if (parser->toksuper != -1)
-+				tokens[parser->toksuper].size++;
-+			break;
-+		case '\t':
-+		case '\r':
-+		case '\n':
-+		case ':':
-+		case ',':
-+		case ' ':
-+			break;
-+#ifdef JSMN_STRICT
-+			/*
-+			 * In strict mode primitives are:
-+			 * numbers and booleans.
-+			 */
-+		case '-':
-+		case '0':
-+		case '1':
-+		case '2':
-+		case '3':
-+		case '4':
-+		case '5':
-+		case '6':
-+		case '7':
-+		case '8':
-+		case '9':
-+		case 't':
-+		case 'f':
-+		case 'n':
-+#else
-+			/*
-+			 * In non-strict mode every unquoted value
-+			 * is a primitive.
-+			 */
-+			/*FALL THROUGH */
-+		default:
-+#endif
-+			r = jsmn_parse_primitive(parser, js, len, tokens,
-+						 num_tokens);
-+			if (r < 0)
-+				return r;
-+			if (parser->toksuper != -1)
-+				tokens[parser->toksuper].size++;
-+			break;
-+
-+#ifdef JSMN_STRICT
-+			/* Unexpected char in strict mode */
-+		default:
-+			return JSMN_ERROR_INVAL;
-+#endif
-+		}
-+	}
-+
-+	for (i = parser->toknext - 1; i >= 0; i--) {
-+		/* Unmatched opened object or array */
-+		if (tokens[i].start != -1 && tokens[i].end == -1)
-+			return JSMN_ERROR_PART;
-+	}
-+
-+	return JSMN_SUCCESS;
-+}
-+
-+/*
-+ * Creates a new parser based over a given  buffer with an array of tokens
-+ * available.
-+ */
-+void jsmn_init(jsmn_parser *parser)
-+{
-+	parser->pos = 0;
-+	parser->toknext = 0;
-+	parser->toksuper = -1;
-+}
-+
-+const char *jsmn_strerror(jsmnerr_t err)
-+{
-+	switch (err) {
-+	case JSMN_ERROR_NOMEM:
-+		return "No enough tokens";
-+	case JSMN_ERROR_INVAL:
-+		return "Invalid character inside JSON string";
-+	case JSMN_ERROR_PART:
-+		return "The string is not a full JSON packet, more bytes expected";
-+	case JSMN_SUCCESS:
-+		return "Success";
-+	default:
-+		return "Unknown json error";
-+	}
-+}
-diff --git a/tools/perf/pmu-events/jsmn.h b/tools/perf/pmu-events/jsmn.h
-new file mode 100644
-index 0000000..d666b10
---- /dev/null
-+++ b/tools/perf/pmu-events/jsmn.h
-@@ -0,0 +1,67 @@
-+#ifndef __JSMN_H_
-+#define __JSMN_H_
-+
-+/*
-+ * JSON type identifier. Basic types are:
-+ *	o Object
-+ *	o Array
-+ *	o String
-+ *	o Other primitive: number, boolean (true/false) or null
-+ */
-+typedef enum {
-+	JSMN_PRIMITIVE = 0,
-+	JSMN_OBJECT = 1,
-+	JSMN_ARRAY = 2,
-+	JSMN_STRING = 3
-+} jsmntype_t;
-+
-+typedef enum {
-+	/* Not enough tokens were provided */
-+	JSMN_ERROR_NOMEM = -1,
-+	/* Invalid character inside JSON string */
-+	JSMN_ERROR_INVAL = -2,
-+	/* The string is not a full JSON packet, more bytes expected */
-+	JSMN_ERROR_PART = -3,
-+	/* Everything was fine */
-+	JSMN_SUCCESS = 0
-+} jsmnerr_t;
-+
-+/*
-+ * JSON token description.
-+ * @param		type	type (object, array, string etc.)
-+ * @param		start	start position in JSON data string
-+ * @param		end		end position in JSON data string
-+ */
-+typedef struct {
-+	jsmntype_t type;
-+	int start;
-+	int end;
-+	int size;
-+} jsmntok_t;
-+
-+/*
-+ * JSON parser. Contains an array of token blocks available. Also stores
-+ * the string being parsed now and current position in that string
-+ */
-+typedef struct {
-+	unsigned int pos; /* offset in the JSON string */
-+	int toknext; /* next token to allocate */
-+	int toksuper; /* superior token node, e.g parent object or array */
-+} jsmn_parser;
-+
-+/*
-+ * Create JSON parser over an array of tokens
-+ */
-+void jsmn_init(jsmn_parser *parser);
-+
-+/*
-+ * Run JSON parser. It parses a JSON data string into and array of tokens,
-+ * each describing a single JSON object.
-+ */
-+jsmnerr_t jsmn_parse(jsmn_parser *parser, const char *js,
-+		     size_t len,
-+		     jsmntok_t *tokens, unsigned int num_tokens);
-+
-+const char *jsmn_strerror(jsmnerr_t err);
-+
-+#endif /* __JSMN_H_ */
-diff --git a/tools/perf/pmu-events/json.c b/tools/perf/pmu-events/json.c
-new file mode 100644
-index 0000000..87f0c4b
---- /dev/null
-+++ b/tools/perf/pmu-events/json.c
-@@ -0,0 +1,162 @@
-+/* Parse JSON files using the JSMN parser. */
-+
-+/*
-+ * Copyright (c) 2014, Intel Corporation
-+ * All rights reserved.
++ * Return the CPU id as a raw string.
 + *
-+ * Redistribution and use in source and binary forms, with or without
-+ * modification, are permitted provided that the following conditions are met:
-+ *
-+ * 1. Redistributions of source code must retain the above copyright notice,
-+ * this list of conditions and the following disclaimer.
-+ *
-+ * 2. Redistributions in binary form must reproduce the above copyright
-+ * notice, this list of conditions and the following disclaimer in the
-+ * documentation and/or other materials provided with the distribution.
-+ *
-+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
-+ * FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
-+ * COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT,
-+ * INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
-+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-+ * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
-+ * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
-+ * STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
-+ * ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
-+ * OF THE POSSIBILITY OF SUCH DAMAGE.
-+*/
-+
-+#include <stdlib.h>
-+#include <string.h>
-+#include <sys/mman.h>
-+#include <sys/stat.h>
-+#include <sys/fcntl.h>
-+#include <stdio.h>
-+#include <errno.h>
-+#include <unistd.h>
-+#include "jsmn.h"
-+#include "json.h"
-+#include <linux/kernel.h>
-+
-+
-+static char *mapfile(const char *fn, size_t *size)
-+{
-+	unsigned ps = sysconf(_SC_PAGESIZE);
-+	struct stat st;
-+	char *map = NULL;
-+	int err;
-+	int fd = open(fn, O_RDONLY);
-+
-+	if (fd < 0 && verbose && fn) {
-+		pr_err("Error opening events file '%s': %s\n", fn,
-+				strerror(errno));
-+	}
-+
-+	if (fd < 0)
-+		return NULL;
-+	err = fstat(fd, &st);
-+	if (err < 0)
-+		goto out;
-+	*size = st.st_size;
-+	map = mmap(NULL,
-+		   (st.st_size + ps - 1) & ~(ps - 1),
-+		   PROT_READ|PROT_WRITE, MAP_PRIVATE, fd, 0);
-+	if (map == MAP_FAILED)
-+		map = NULL;
-+out:
-+	close(fd);
-+	return map;
-+}
-+
-+static void unmapfile(char *map, size_t size)
-+{
-+	unsigned ps = sysconf(_SC_PAGESIZE);
-+	munmap(map, roundup(size, ps));
-+}
-+
-+/*
-+ * Parse json file using jsmn. Return array of tokens,
-+ * and mapped file. Caller needs to free array.
++ * Each architecture should provide a more precise id string that
++ * can be use to match the architecture's "mapfile".
 + */
-+jsmntok_t *parse_json(const char *fn, char **map, size_t *size, int *len)
++char *__attribute__((weak))get_cpuid_str(void)
 +{
-+	jsmn_parser parser;
-+	jsmntok_t *tokens;
-+	jsmnerr_t res;
-+	unsigned sz;
-+
-+	*map = mapfile(fn, size);
-+	if (!*map)
-+		return NULL;
-+	/* Heuristic */
-+	sz = *size * 16;
-+	tokens = malloc(sz);
-+	if (!tokens)
-+		goto error;
-+	jsmn_init(&parser);
-+	res = jsmn_parse(&parser, *map, *size, tokens,
-+			 sz / sizeof(jsmntok_t));
-+	if (res != JSMN_SUCCESS) {
-+		pr_err("%s: json error %s\n", fn, jsmn_strerror(res));
-+		goto error_free;
-+	}
-+	if (len)
-+		*len = parser.toknext;
-+	return tokens;
-+error_free:
-+	free(tokens);
-+error:
-+	unmapfile(*map, *size);
 +	return NULL;
 +}
 +
-+void free_json(char *map, size_t size, jsmntok_t *tokens)
++/*
++ * From the pmu_events_map, find the table of PMU events that corresponds
++ * to the current running CPU. Then, add all PMU events from that table
++ * as aliases.
++ */
++static int pmu_add_cpu_aliases(void *data)
 +{
-+	free(tokens);
-+	unmapfile(map, size);
-+}
-+
-+static int countchar(char *map, char c, int end)
-+{
++	struct list_head *head = (struct list_head *)data;
 +	int i;
-+	int count = 0;
-+	for (i = 0; i < end; i++)
-+		if (map[i] == c)
-+			count++;
-+	return count;
++	struct pmu_events_map *map;
++	struct pmu_event *pe;
++	char *cpuid;
++
++	cpuid = get_cpuid_str();
++	if (!cpuid)
++		return 0;
++
++	i = 0;
++	while (1) {
++		map = &pmu_events_map[i++];
++		if (!map->table)
++			return 0;
++
++		if (!strcmp(map->cpuid, cpuid))
++			break;
++	}
++
++	/*
++	 * Found a matching PMU events table. Create aliases
++	 */
++	i = 0;
++	while (1) {
++		pe = &map->table[i++];
++		if (!pe->name)
++			break;
++
++		/* need type casts to override 'const' */
++		__perf_pmu__new_alias(head, (char *)pe->name, NULL,
++				(char *)pe->desc, (char *)pe->event);
++	}
++
++	free(cpuid);
++
++	return 0;
 +}
 +
-+/* Return line number of a jsmn token */
-+int json_line(char *map, jsmntok_t *t)
-+{
-+	return countchar(map, '\n', t->start) + 1;
-+}
 +
-+static const char * const jsmn_types[] = {
-+	[JSMN_PRIMITIVE] = "primitive",
-+	[JSMN_ARRAY] = "array",
-+	[JSMN_OBJECT] = "object",
-+	[JSMN_STRING] = "string"
-+};
-+
-+#define LOOKUP(a, i) ((i) < (sizeof(a)/sizeof(*(a))) ? ((a)[i]) : "?")
-+
-+/* Return type name of a jsmn token */
-+const char *json_name(jsmntok_t *t)
-+{
-+	return LOOKUP(jsmn_types, t->type);
-+}
-+
-+int json_len(jsmntok_t *t)
-+{
-+	return t->end - t->start;
-+}
-+
-+/* Is string t equal to s? */
-+int json_streq(char *map, jsmntok_t *t, const char *s)
-+{
-+	unsigned len = json_len(t);
-+	return len == strlen(s) && !strncasecmp(map + t->start, s, len);
-+}
-diff --git a/tools/perf/pmu-events/json.h b/tools/perf/pmu-events/json.h
-new file mode 100644
-index 0000000..6b8337e
---- /dev/null
-+++ b/tools/perf/pmu-events/json.h
-@@ -0,0 +1,36 @@
-+#ifndef JSON_H
-+#define JSON_H 1
-+
-+#include "jsmn.h"
-+
-+jsmntok_t *parse_json(const char *fn, char **map, size_t *size, int *len);
-+void free_json(char *map, size_t size, jsmntok_t *tokens);
-+int json_line(char *map, jsmntok_t *t);
-+const char *json_name(jsmntok_t *t);
-+int json_streq(char *map, jsmntok_t *t, const char *s);
-+int json_len(jsmntok_t *t);
-+
-+extern int verbose;
-+
-+typedef unsigned int bool;
-+
-+#ifndef true
-+#define	true 1
-+#endif
-+
-+extern int eprintf(int level, int var, const char *fmt, ...);
-+#define pr_fmt(fmt)	fmt
-+
-+#define pr_err(fmt, ...) \
-+	eprintf(0, verbose, pr_fmt(fmt), ##__VA_ARGS__)
-+
-+#ifndef roundup
-+#define roundup(x, y) (                                \
-+{                                                      \
-+        const typeof(y) __y = y;                       \
-+        (((x) + (__y - 1)) / __y) * __y;               \
-+}                                                      \
-+)
-+#endif
-+
-+#endif
+ static struct perf_pmu *pmu_lookup(const char *name)
+ {
+ 	struct perf_pmu *pmu;
+@@ -453,6 +528,8 @@ static struct perf_pmu *pmu_lookup(const char *name)
+ 	if (pmu_aliases(name, &aliases))
+ 		return NULL;
+ 
++	if (!strcmp(name, "cpu"))
++		(void)pmu_add_cpu_aliases(&aliases);
+ 	if (pmu_type(name, &type))
+ 		return NULL;
+ 
 -- 
 1.7.9.5
