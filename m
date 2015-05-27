@@ -1,8 +1,8 @@
 Return-Path: <mikey@neuling.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 335841A0D66
+ by lists.ozlabs.org (Postfix) with ESMTPS id F15D61A0D91
  for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 May 2015 16:07:42 +1000 (AEST)
 From: Michael Neuling <mikey@neuling.org>
 To: mpe@ellerman.id.au,
@@ -11,9 +11,9 @@ Cc: imunsie@au.ibm.com, linuxppc-dev@ozlabs.org, mikey@neuling.org,
  Daniel Axtens <dja@axtens.net>,
  "Matthew R. Ochs" <mrochs@linux.vnet.ibm.com>,
  "Manoj N. Kumar" <manoj@linux.vnet.ibm.com>, brking@linux.vnet.ibm.com
-Subject: [PATCH v3 11/24] cxl: Fix error path on probe
-Date: Wed, 27 May 2015 16:07:05 +1000
-Message-Id: <1432706838-20794-12-git-send-email-mikey@neuling.org>
+Subject: [PATCH v3 12/24] cxl: Dump debug info on the AFU configuration record
+Date: Wed, 27 May 2015 16:07:06 +1000
+Message-Id: <1432706838-20794-13-git-send-email-mikey@neuling.org>
 In-Reply-To: <1432706838-20794-1-git-send-email-mikey@neuling.org>
 References: <1432706838-20794-1-git-send-email-mikey@neuling.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -25,31 +25,67 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-When probing we call pci_enable_device() but don't call pci_disable_device() on
-fail. This causes refcounting issues in the PCI subsystem if a second driver
-tries to bind to the same device.
-
-This patch adds the pci_disable_device() to the probe error path. This error
-path is hit when this cxl driver tries to bind to AFUs (on the vPHB) rather
-than the physical device.
+Now that we parse the AFU Configuration record, dump some info on it when in
+debug mode.
 
 Signed-off-by: Michael Neuling <mikey@neuling.org>
 Acked-by: Ian Munsie <imunsie@au1.ibm.com>
 ---
- drivers/misc/cxl/pci.c | 1 +
- 1 file changed, 1 insertion(+)
+ drivers/misc/cxl/pci.c | 12 +++++++++++-
+ 1 file changed, 11 insertions(+), 1 deletion(-)
 
 diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
-index 3f0caa2..0d429b0 100644
+index 0d429b0..f837d1b 100644
 --- a/drivers/misc/cxl/pci.c
 +++ b/drivers/misc/cxl/pci.c
-@@ -1103,6 +1103,7 @@ static int cxl_probe(struct pci_dev *dev, const struct pci_device_id *id)
- 	adapter = cxl_init_adapter(dev);
- 	if (IS_ERR(adapter)) {
- 		dev_err(&dev->dev, "cxl_init_adapter failed: %li\n", PTR_ERR(adapter));
-+		pci_disable_device(dev);
- 		return PTR_ERR(adapter);
- 	}
+@@ -90,6 +90,7 @@
+ /* This works a little different than the p1/p2 register accesses to make it
+  * easier to pull out individual fields */
+ #define AFUD_READ(afu, off)		in_be64(afu->afu_desc_mmio + off)
++#define AFUD_READ_LE(afu, off)		in_le64(afu->afu_desc_mmio + off)
+ #define EXTRACT_PPC_BIT(val, bit)	(!!(val & PPC_BIT(bit)))
+ #define EXTRACT_PPC_BITS(val, bs, be)	((val & PPC_BITMASK(bs, be)) >> PPC_BITLSHIFT(be))
+ 
+@@ -286,7 +287,8 @@ static void dump_cxl_config_space(struct pci_dev *dev)
+ 
+ static void dump_afu_descriptor(struct cxl_afu *afu)
+ {
+-	u64 val;
++	u64 val, afu_cr_num, afu_cr_off, afu_cr_len;
++	int i;
+ 
+ #define show_reg(name, what) \
+ 	dev_info(&afu->dev, "afu desc: %30s: %#llx\n", name, what)
+@@ -296,6 +298,7 @@ static void dump_afu_descriptor(struct cxl_afu *afu)
+ 	show_reg("num_of_processes", AFUD_NUM_PROCS(val));
+ 	show_reg("num_of_afu_CRs", AFUD_NUM_CRS(val));
+ 	show_reg("req_prog_mode", val & 0xffffULL);
++	afu_cr_num = AFUD_NUM_CRS(val);
+ 
+ 	val = AFUD_READ(afu, 0x8);
+ 	show_reg("Reserved", val);
+@@ -307,8 +310,10 @@ static void dump_afu_descriptor(struct cxl_afu *afu)
+ 	val = AFUD_READ_CR(afu);
+ 	show_reg("Reserved", (val >> (63-7)) & 0xff);
+ 	show_reg("AFU_CR_len", AFUD_CR_LEN(val));
++	afu_cr_len = AFUD_CR_LEN(val) * 256;
+ 
+ 	val = AFUD_READ_CR_OFF(afu);
++	afu_cr_off = val;
+ 	show_reg("AFU_CR_offset", val);
+ 
+ 	val = AFUD_READ_PPPSA(afu);
+@@ -325,6 +330,11 @@ static void dump_afu_descriptor(struct cxl_afu *afu)
+ 	val = AFUD_READ_EB_OFF(afu);
+ 	show_reg("AFU_EB_offset", val);
+ 
++	for (i = 0; i < afu_cr_num; i++) {
++		val = AFUD_READ_LE(afu, afu_cr_off + i * afu_cr_len);
++		show_reg("CR Vendor", val & 0xffff);
++		show_reg("CR Device", (val >> 16) & 0xffff);
++	}
+ #undef show_reg
+ }
  
 -- 
 2.1.0
