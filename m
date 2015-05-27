@@ -1,24 +1,23 @@
 Return-Path: <namhyung@gmail.com>
-Received: from mail-oi0-x230.google.com (mail-oi0-x230.google.com
- [IPv6:2607:f8b0:4003:c06::230])
+Received: from mail-ob0-x22a.google.com (mail-ob0-x22a.google.com
+ [IPv6:2607:f8b0:4003:c01::22a])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 903C61A0DED
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 May 2015 00:59:27 +1000 (AEST)
-Received: by oifu123 with SMTP id u123so9464409oif.1
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 May 2015 07:59:25 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id A6ADE1A0DED
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 May 2015 01:01:53 +1000 (AEST)
+Received: by obew15 with SMTP id w15so9642562obe.1
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 May 2015 08:01:51 -0700 (PDT)
 MIME-Version: 1.0
 Sender: namhyung@gmail.com
-In-Reply-To: <20150527144007.GL7484@tassilo.jf.intel.com>
+In-Reply-To: <20150527144101.GM7484@tassilo.jf.intel.com>
 References: <1432080130-6678-1-git-send-email-sukadev@linux.vnet.ibm.com>
- <1432080130-6678-3-git-send-email-sukadev@linux.vnet.ibm.com>
- <20150527135402.GA29557@danjae.kornet>
- <20150527144007.GL7484@tassilo.jf.intel.com>
+ <1432080130-6678-5-git-send-email-sukadev@linux.vnet.ibm.com>
+ <20150527135928.GB29557@danjae.kornet>
+ <20150527144101.GM7484@tassilo.jf.intel.com>
 From: Namhyung Kim <namhyung@kernel.org>
-Date: Wed, 27 May 2015 23:59:04 +0900
-Message-ID: <CAM9d7cgSPbBgHL8qkmFEfbA3pNct4VPaxDwOcKZD3_5ZNL-oNQ@mail.gmail.com>
-Subject: Re: [PATCH 2/4] perf: jevents: Program to convert JSON file to C
- style file
+Date: Thu, 28 May 2015 00:01:31 +0900
+Message-ID: <CAM9d7cjxrH6vxoJ1Cui62BRHNgxK=NSH-LyQxfULpz6oVvsn+w@mail.gmail.com>
+Subject: Re: [PATCH 4/4] perf: Add power8 PMU events in JSON format
 To: Andi Kleen <ak@linux.intel.com>
 Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
  Ingo Molnar <mingo@redhat.com>,
@@ -36,26 +35,19 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Andi,
-
-On Wed, May 27, 2015 at 11:40 PM, Andi Kleen <ak@linux.intel.com> wrote:
->> So we build tables of all models in the architecture, and choose
->> matching one when compiling perf, right?  Can't we do that when
->> building the tables?  IOW, why don't we check the VFM and discard
->> non-matching tables?  Those non-matching tables are also needed?
+On Wed, May 27, 2015 at 11:41 PM, Andi Kleen <ak@linux.intel.com> wrote:
+>> > +  {
+>> > +    "EventCode": "0x2505e",
+>> > +    "EventName": "PM_BACK_BR_CMPL",
+>> > +    "BriefDescription": "Branch instruction completed with a target address less than current instruction address,",
+>> > +    "PublicDescription": "Branch instruction completed with a target address less than current instruction address.,"
+>>
+>> Can't we remove PublicDescription field if it's identical to
+>> BriefDescription?  It seems just wasting spaces..
 >
-> We build it for all cpus in an architecture, not all architectures.
-> So e.g. for an x86 binary power is not included, and vice versa.
+> It's not always identical. There are events where PublicDescription is much longer (several paragraphs)
 
-OK.
-
-> It always includes all CPUs for a given architecture, so it's possible
-> to use the perf binary on other systems than just the one it was
-> build on.
-
-So it selects one at run-time not build-time, good.  But I worry about
-the size of the intel tables.  How large are they?  Maybe we can make
-it dynamic-loadable if needed..
+I know.  What I said is make it optional so that we can drop if it's identical.
 
 Thanks,
 Namhyung
