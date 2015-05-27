@@ -1,40 +1,20 @@
-Return-Path: <gkurz@linux.vnet.ibm.com>
-Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <qiang.zhao@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0104.outbound.protection.outlook.com [65.55.169.104])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 39C761A1765
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 May 2015 19:25:03 +1000 (AEST)
-Received: from /spool/local
- by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <gkurz@linux.vnet.ibm.com>;
- Wed, 27 May 2015 10:25:00 +0100
-Received: from b06cxnps3074.portsmouth.uk.ibm.com
- (d06relay09.portsmouth.uk.ibm.com [9.149.109.194])
- by d06dlp01.portsmouth.uk.ibm.com (Postfix) with ESMTP id 7C24017D8042
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 May 2015 10:25:52 +0100 (BST)
-Received: from d06av12.portsmouth.uk.ibm.com (d06av12.portsmouth.uk.ibm.com
- [9.149.37.247])
- by b06cxnps3074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t4R9OvHe20774980
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 May 2015 09:24:57 GMT
-Received: from d06av12.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av12.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t4R9Ouxl015617
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 May 2015 03:24:56 -0600
-Date: Wed, 27 May 2015 11:24:48 +0200
-From: Greg Kurz <gkurz@linux.vnet.ibm.com>
-To: Thomas Huth <thuth@redhat.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Alexey Kardashevskiy <aik@ozlabs.ru>,
- Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>, David Gibson
- <david@gibson.dropbear.id.au>
-Subject: Re: [PATCH] fbuffer: improve toggle cursor performance
-Message-ID: <20150527112448.6a6c78fb@bahia.local>
-In-Reply-To: <20150527075934.1d3a49db@thh440s>
-References: <20150527001113.2506.23159.stgit@bahia.huguette.org>
- <20150527075934.1d3a49db@thh440s>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4BCA71A1778
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 May 2015 19:30:59 +1000 (AEST)
+From: Zhao Qiang <B45475@freescale.com>
+To: <linuxppc-dev@lists.ozlabs.org>, <B07421@freescale.com>
+CC: <R63061@freescale.com>, Zhao Qiang <B45475@freescale.com>
+Subject: [PATCH 2/2] rheap: move rheap.c from arch/powerpc/lib/ to lib/
+Date: Wed, 27 May 2015 17:12:00 +0800
+Message-ID: <1432717920-43563-2-git-send-email-B45475@freescale.com>
+In-Reply-To: <1432717920-43563-1-git-send-email-B45475@freescale.com>
+References: <1432717920-43563-1-git-send-email-B45475@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,70 +24,284 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Wed, 27 May 2015 07:59:34 +0200
-Thomas Huth <thuth@redhat.com> wrote:
+qe need to use the rheap, so move it to public directory.
 
-> On Wed, 27 May 2015 02:11:13 +0200
-> Greg Kurz <gkurz@linux.vnet.ibm.com> wrote:
-> 
-> > SLOF currently calls hv-logical-load and hv-logical-store for every pixel
-> > when enabling or disabling the cursor. This is suboptimal when writing one
-> > char at a time to the console since terminal-write always toggles the cursor.
-> > And this is precisely what grub is doing when the user wants to edit a menu
-> > entry... the result is an incredibly slow and barely usable interface.
-> > 
-> > The inner loop in fb8-toggle-cursor handles a contiguous region: it can be
-> > converted to hv-logical-memop. The result is 32 times less hcalls per char
-> > and a serious improvement in grub usability.
-> 
-> Good idea for an optimization!
-> 
+Signed-off-by: Zhao Qiang <B45475@freescale.com>
+---
+ arch/powerpc/Kconfig                                    | 3 ---
+ arch/powerpc/include/asm/fsl_85xx_cache_sram.h          | 2 +-
+ arch/powerpc/lib/Makefile                               | 2 --
+ arch/powerpc/platforms/44x/Kconfig                      | 2 +-
+ arch/powerpc/platforms/85xx/Kconfig                     | 2 +-
+ arch/powerpc/platforms/Kconfig                          | 2 +-
+ arch/powerpc/platforms/Kconfig.cputype                  | 2 +-
+ arch/powerpc/sysdev/cpm1.c                              | 2 +-
+ arch/powerpc/sysdev/cpm2.c                              | 2 +-
+ arch/powerpc/sysdev/cpm_common.c                        | 2 +-
+ arch/powerpc/sysdev/ppc4xx_ocm.c                        | 2 +-
+ drivers/dma/bestcomm/Kconfig                            | 2 +-
+ drivers/soc/fsl/qe/Kconfig                              | 2 +-
+ drivers/soc/fsl/qe/qe.c                                 | 2 +-
+ drivers/soc/fsl/qe/qe_common.c                          | 2 +-
+ include/linux/fsl/bestcomm/sram.h                       | 2 +-
+ {arch/powerpc/include/asm => include/linux/fsl}/rheap.h | 0
+ lib/Kconfig                                             | 3 +++
+ lib/Makefile                                            | 2 ++
+ {arch/powerpc/lib => lib}/rheap.c                       | 2 +-
+ 20 files changed, 20 insertions(+), 20 deletions(-)
+ rename {arch/powerpc/include/asm => include/linux/fsl}/rheap.h (100%)
+ rename {arch/powerpc/lib => lib}/rheap.c (99%)
 
-Heh no big deal... the hardest part was to find that the LOAD/STORE avalanche
-was coming from these rb@ and rb! words. SLOF is still a mysterious beast to
-me :)
-
-> > Signed-off-by: Greg Kurz <gkurz@linux.vnet.ibm.com>
-> > ---
-> >  slof/fs/fbuffer.fs |    4 ++--
-> >  1 file changed, 2 insertions(+), 2 deletions(-)
-> > 
-> > diff --git a/slof/fs/fbuffer.fs b/slof/fs/fbuffer.fs
-> > index 756f05a..46b59bf 100644
-> > --- a/slof/fs/fbuffer.fs
-> > +++ b/slof/fs/fbuffer.fs
-> > @@ -99,8 +99,8 @@ CREATE bitmap-buffer 400 4 * allot
-> >  : fb8-toggle-cursor ( -- )
-> >  	line# fb8-line2addr column# fb8-columns2bytes +
-> >  	char-height 0 ?DO
-> > -		char-width screen-depth * 0 ?DO dup dup rb@ -1 xor swap rb! 1+ LOOP
-> > -		screen-width screen-depth * + char-width screen-depth * -
-> > +		dup dup 0 char-width screen-depth * 1 hv-logical-memop drop
-> > +		screen-width screen-depth * +
-> >  	LOOP drop
-> >  ;
-> 
-> If you use hv-logical-memop in this file here, you definitely break
-> board-js2x, since this is bare metal and hv-logical-memop is not
-> defined there.
-> 
-
-Of course, this is common code... I'll remember for next time. :)
-
-> I think you should either move the new function to board-qemu and handle
-> it there like it is done for hcall-invert-screen already, or we could
-> think of introducing a helper function that is defined by each board
-> which does the xor operation on a memory region (that way we could
-> maybe also unify hcall-invert-screen and fb8-invert-screen again).
-> 
-
-I guess the first proposal is the obvious fix. From there, we can
-work out a patchset for the second proposal.
-
->  Thomas
-> 
-
-Cheers.
-
---
-Greg
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index d003409..c9b16bf 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -1069,7 +1069,4 @@ config KEYS_COMPAT
+ 
+ source "crypto/Kconfig"
+ 
+-config PPC_LIB_RHEAP
+-	bool
+-
+ source "arch/powerpc/kvm/Kconfig"
+diff --git a/arch/powerpc/include/asm/fsl_85xx_cache_sram.h b/arch/powerpc/include/asm/fsl_85xx_cache_sram.h
+index 2af2bdc..e57888a 100644
+--- a/arch/powerpc/include/asm/fsl_85xx_cache_sram.h
++++ b/arch/powerpc/include/asm/fsl_85xx_cache_sram.h
+@@ -26,7 +26,7 @@
+ #ifndef __ASM_POWERPC_FSL_85XX_CACHE_SRAM_H__
+ #define __ASM_POWERPC_FSL_85XX_CACHE_SRAM_H__
+ 
+-#include <asm/rheap.h>
++#include <linux/fsl/rheap.h>
+ #include <linux/spinlock.h>
+ 
+ /*
+diff --git a/arch/powerpc/lib/Makefile b/arch/powerpc/lib/Makefile
+index 59fa2de..c73dff8 100644
+--- a/arch/powerpc/lib/Makefile
++++ b/arch/powerpc/lib/Makefile
+@@ -32,8 +32,6 @@ obj-$(CONFIG_SMP)	+= locks.o
+ obj-$(CONFIG_ALTIVEC)	+= vmx-helper.o
+ endif
+ 
+-obj-$(CONFIG_PPC_LIB_RHEAP) += rheap.o
+-
+ obj-y			+= code-patching.o
+ obj-y			+= feature-fixups.o
+ obj-$(CONFIG_FTR_FIXUP_SELFTEST) += feature-fixups-test.o
+diff --git a/arch/powerpc/platforms/44x/Kconfig b/arch/powerpc/platforms/44x/Kconfig
+index 4d88f6a..c7994ff 100644
+--- a/arch/powerpc/platforms/44x/Kconfig
++++ b/arch/powerpc/platforms/44x/Kconfig
+@@ -282,7 +282,7 @@ config PPC4xx_GPIO
+ config PPC4xx_OCM
+ 	bool "PPC4xx On Chip Memory (OCM) support"
+ 	depends on 4xx
+-	select PPC_LIB_RHEAP
++	select LIB_RHEAP
+ 	help
+ 	  Enable OCM support for PowerPC 4xx platforms with on chip memory,
+ 	  OCM provides the fast place for memory access to improve performance.
+diff --git a/arch/powerpc/platforms/85xx/Kconfig b/arch/powerpc/platforms/85xx/Kconfig
+index f22635a..0a7cb9d 100644
+--- a/arch/powerpc/platforms/85xx/Kconfig
++++ b/arch/powerpc/platforms/85xx/Kconfig
+@@ -16,7 +16,7 @@ if PPC32
+ 
+ config FSL_85XX_CACHE_SRAM
+ 	bool
+-	select PPC_LIB_RHEAP
++	select LIB_RHEAP
+ 	help
+ 	  When selected, this option enables cache-sram support
+ 	  for memory allocation on P1/P2 QorIQ platforms.
+diff --git a/arch/powerpc/platforms/Kconfig b/arch/powerpc/platforms/Kconfig
+index ae8879c..25740c4 100644
+--- a/arch/powerpc/platforms/Kconfig
++++ b/arch/powerpc/platforms/Kconfig
+@@ -281,7 +281,7 @@ config CPM2
+ 	bool "Enable support for the CPM2 (Communications Processor Module)"
+ 	depends on (FSL_SOC_BOOKE && PPC32) || 8260
+ 	select CPM
+-	select PPC_LIB_RHEAP
++	select LIB_RHEAP
+ 	select PPC_PCI_CHOICE
+ 	select ARCH_REQUIRE_GPIOLIB
+ 	help
+diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
+index a41bd02..0bb8c58 100644
+--- a/arch/powerpc/platforms/Kconfig.cputype
++++ b/arch/powerpc/platforms/Kconfig.cputype
+@@ -33,7 +33,7 @@ config PPC_8xx
+ 	bool "Freescale 8xx"
+ 	select FSL_SOC
+ 	select 8xx
+-	select PPC_LIB_RHEAP
++	select LIB_RHEAP
+ 
+ config 40x
+ 	bool "AMCC 40x"
+diff --git a/arch/powerpc/sysdev/cpm1.c b/arch/powerpc/sysdev/cpm1.c
+index 5e6ff38..c6f5762 100644
+--- a/arch/powerpc/sysdev/cpm1.c
++++ b/arch/powerpc/sysdev/cpm1.c
+@@ -38,7 +38,7 @@
+ #include <asm/cpm1.h>
+ #include <asm/io.h>
+ #include <asm/tlbflush.h>
+-#include <asm/rheap.h>
++#include <linux/fsl/rheap.h>
+ #include <asm/prom.h>
+ #include <asm/cpm.h>
+ 
+diff --git a/arch/powerpc/sysdev/cpm2.c b/arch/powerpc/sysdev/cpm2.c
+index 8dc1e24..5a63d35 100644
+--- a/arch/powerpc/sysdev/cpm2.c
++++ b/arch/powerpc/sysdev/cpm2.c
+@@ -41,7 +41,7 @@
+ #include <asm/page.h>
+ #include <asm/pgtable.h>
+ #include <asm/cpm2.h>
+-#include <asm/rheap.h>
++#include <linux/fsl/rheap.h>
+ #include <asm/fs_pd.h>
+ 
+ #include <sysdev/fsl_soc.h>
+diff --git a/arch/powerpc/sysdev/cpm_common.c b/arch/powerpc/sysdev/cpm_common.c
+index 4f78695..3e06505 100644
+--- a/arch/powerpc/sysdev/cpm_common.c
++++ b/arch/powerpc/sysdev/cpm_common.c
+@@ -27,7 +27,7 @@
+ 
+ #include <asm/udbg.h>
+ #include <asm/io.h>
+-#include <asm/rheap.h>
++#include <linux/fsl/rheap.h>
+ #include <asm/cpm.h>
+ 
+ #include <mm/mmu_decl.h>
+diff --git a/arch/powerpc/sysdev/ppc4xx_ocm.c b/arch/powerpc/sysdev/ppc4xx_ocm.c
+index 85d9e37..cfe2e19 100644
+--- a/arch/powerpc/sysdev/ppc4xx_ocm.c
++++ b/arch/powerpc/sysdev/ppc4xx_ocm.c
+@@ -27,7 +27,7 @@
+ #include <linux/dma-mapping.h>
+ #include <linux/of.h>
+ #include <linux/of_address.h>
+-#include <asm/rheap.h>
++#include <linux/fsl/rheap.h>
+ #include <asm/ppc4xx_ocm.h>
+ #include <linux/slab.h>
+ #include <linux/debugfs.h>
+diff --git a/drivers/dma/bestcomm/Kconfig b/drivers/dma/bestcomm/Kconfig
+index 29e4270..9bb1bf8 100644
+--- a/drivers/dma/bestcomm/Kconfig
++++ b/drivers/dma/bestcomm/Kconfig
+@@ -6,7 +6,7 @@ config PPC_BESTCOMM
+ 	tristate "Bestcomm DMA engine support"
+ 	depends on PPC_MPC52xx
+ 	default n
+-	select PPC_LIB_RHEAP
++	select LIB_RHEAP
+ 	help
+ 	  BestComm is the name of the communication coprocessor found
+ 	  on the Freescale MPC5200 family of processor.  Its usage is
+diff --git a/drivers/soc/fsl/qe/Kconfig b/drivers/soc/fsl/qe/Kconfig
+index e6b8862..fe387ee 100644
+--- a/drivers/soc/fsl/qe/Kconfig
++++ b/drivers/soc/fsl/qe/Kconfig
+@@ -4,7 +4,7 @@
+ config QUICC_ENGINE
+ 	bool "Freescale QUICC Engine (QE) Support"
+ 	depends on FSL_SOC && PPC32
+-	select PPC_LIB_RHEAP
++	select LIB_RHEAP
+ 	select CRC32
+ 	help
+ 	  The QUICC Engine (QE) is a new generation of communications
+diff --git a/drivers/soc/fsl/qe/qe.c b/drivers/soc/fsl/qe/qe.c
+index 2c56958..151d9e7 100644
+--- a/drivers/soc/fsl/qe/qe.c
++++ b/drivers/soc/fsl/qe/qe.c
+@@ -33,7 +33,7 @@
+ #include <asm/page.h>
+ #include <asm/pgtable.h>
+ #include <asm/prom.h>
+-#include <asm/rheap.h>
++#include <linux/fsl/rheap.h>
+ #include <soc/fsl/immap_qe.h>
+ #include <soc/fsl/qe.h>
+ 
+diff --git a/drivers/soc/fsl/qe/qe_common.c b/drivers/soc/fsl/qe/qe_common.c
+index 382ee7c..7b495b6 100644
+--- a/drivers/soc/fsl/qe/qe_common.c
++++ b/drivers/soc/fsl/qe/qe_common.c
+@@ -26,7 +26,7 @@
+ #include <linux/slab.h>
+ 
+ #include <linux/io.h>
+-#include <asm/rheap.h>
++#include <linux/fsl/rheap.h>
+ #include <soc/fsl/qe.h>
+ 
+ static spinlock_t qe_muram_lock;
+diff --git a/include/linux/fsl/bestcomm/sram.h b/include/linux/fsl/bestcomm/sram.h
+index b6d6689..117eaa1 100644
+--- a/include/linux/fsl/bestcomm/sram.h
++++ b/include/linux/fsl/bestcomm/sram.h
+@@ -12,7 +12,7 @@
+ #ifndef __BESTCOMM_SRAM_H__
+ #define __BESTCOMM_SRAM_H__
+ 
+-#include <asm/rheap.h>
++#include <linux/fsl/rheap.h>
+ #include <asm/mmu.h>
+ #include <linux/spinlock.h>
+ 
+diff --git a/arch/powerpc/include/asm/rheap.h b/include/linux/fsl/rheap.h
+similarity index 100%
+rename from arch/powerpc/include/asm/rheap.h
+rename to include/linux/fsl/rheap.h
+diff --git a/lib/Kconfig b/lib/Kconfig
+index 334f772..f5d5e99 100644
+--- a/lib/Kconfig
++++ b/lib/Kconfig
+@@ -393,6 +393,9 @@ config CPU_RMAP
+ 	bool
+ 	depends on SMP
+ 
++config LIB_RHEAP
++	bool
++
+ config DQL
+ 	bool
+ 
+diff --git a/lib/Makefile b/lib/Makefile
+index ba967a1..dccdef1 100644
+--- a/lib/Makefile
++++ b/lib/Makefile
+@@ -193,3 +193,5 @@ quiet_cmd_build_OID_registry = GEN     $@
+ clean-files	+= oid_registry_data.c
+ 
+ obj-$(CONFIG_UCS2_STRING) += ucs2_string.o
++
++obj-$(CONFIG_LIB_RHEAP) += rheap.o
+diff --git a/arch/powerpc/lib/rheap.c b/lib/rheap.c
+similarity index 99%
+rename from arch/powerpc/lib/rheap.c
+rename to lib/rheap.c
+index a1060a8..af180fd 100644
+--- a/arch/powerpc/lib/rheap.c
++++ b/lib/rheap.c
+@@ -20,7 +20,7 @@
+ #include <linux/err.h>
+ #include <linux/slab.h>
+ 
+-#include <asm/rheap.h>
++#include <linux/fsl/rheap.h>
+ 
+ /*
+  * Fixup a list_head, needed when copying lists.  If the pointers fall
+-- 
+2.1.0.27.g96db324
