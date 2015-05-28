@@ -1,22 +1,23 @@
-Return-Path: <lambert.quentin@gmail.com>
-Received: from mail-wi0-x233.google.com (mail-wi0-x233.google.com
- [IPv6:2a00:1450:400c:c05::233])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <thuth@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6BDE51A11C4
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 May 2015 22:49:04 +1000 (AEST)
-Received: by wizo1 with SMTP id o1so60755784wiz.1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 May 2015 05:49:01 -0700 (PDT)
-From: Quentin Lambert <lambert.quentin@gmail.com>
-To: Johannes Berg <johannes@sipsolutions.net>,
- Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.de>,
- linuxppc-dev@lists.ozlabs.org, alsa-devel@alsa-project.org,
- linux-kernel@vger.kernel.org
-Cc: kernel-janitors@vger.kernel.org,
- Quentin Lambert <lambert.quentin@gmail.com>
-Subject: [PATCH] ALSA: aoa: convert bus code to use dev_groups
-Date: Thu, 28 May 2015 14:48:27 +0200
-Message-Id: <1432817307-28380-1-git-send-email-lambert.quentin@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 6D59C1A1949
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 May 2015 23:30:48 +1000 (AEST)
+Date: Thu, 28 May 2015 15:30:38 +0200
+From: Thomas Huth <thuth@redhat.com>
+To: Greg Kurz <gkurz@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Alexey Kardashevskiy <aik@ozlabs.ru>,
+ Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>, David Gibson
+ <david@gibson.dropbear.id.au>
+Subject: Re: [PATCH 1/3] fbuffer: simplify address computations in
+ fb8-toggle-cursor
+Message-ID: <20150528153038.0f885adf@thh440s>
+In-Reply-To: <20150528131314.5240.44784.stgit@bahia.lab.toulouse-stg.fr.ibm.com>
+References: <20150528131309.5240.71135.stgit@bahia.lab.toulouse-stg.fr.ibm.com>
+ <20150528131314.5240.44784.stgit@bahia.lab.toulouse-stg.fr.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,68 +27,33 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-You should use dev_groups instead of the dev_attrs field of struct
-bus_type. This converts the MDIO bus code to use the correct field.
+On Thu, 28 May 2015 15:13:14 +0200
+Greg Kurz <gkurz@linux.vnet.ibm.com> wrote:
 
-These modifications were made using Coccinelle.
+> The inner loop deals with a contiguous region. It could easily be replaced
+> by faster board specific functions like hv-logical-memop in board-qemu.
+> Since hv-logical-memop does not return an address, let's have the enclosing
+> loop compute the next line address by itself and drop the confusing
+> "char-width screen-depth * -" address adjustment.
+> 
+> Signed-off-by: Greg Kurz <gkurz@linux.vnet.ibm.com>
+> ---
+>  slof/fs/fbuffer.fs |    4 ++--
+>  1 file changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/slof/fs/fbuffer.fs b/slof/fs/fbuffer.fs
+> index 756f05a..faae6a9 100644
+> --- a/slof/fs/fbuffer.fs
+> +++ b/slof/fs/fbuffer.fs
+> @@ -99,8 +99,8 @@ CREATE bitmap-buffer 400 4 * allot
+>  : fb8-toggle-cursor ( -- )
+>  	line# fb8-line2addr column# fb8-columns2bytes +
+>  	char-height 0 ?DO
+> -		char-width screen-depth * 0 ?DO dup dup rb@ -1 xor swap rb! 1+ LOOP
+> -		screen-width screen-depth * + char-width screen-depth * -
+> +		dup char-width screen-depth * 0 ?DO dup dup rb@ -1 xor swap rb! 1+ LOOP drop
+> +		screen-width screen-depth * +
+>  	LOOP drop
+>  ;
 
-Signed-off-by: Quentin Lambert <lambert.quentin@gmail.com>
----
- sound/aoa/soundbus/core.c     |    3 ++-
- sound/aoa/soundbus/soundbus.h |    2 +-
- sound/aoa/soundbus/sysfs.c    |   13 ++++++++-----
- 3 files changed, 11 insertions(+), 7 deletions(-)
-
---- a/sound/aoa/soundbus/core.c
-+++ b/sound/aoa/soundbus/core.c
-@@ -150,6 +150,7 @@ static int soundbus_device_resume(struct
- 
- #endif /* CONFIG_PM */
- 
-+ATTRIBUTE_GROUPS(soundbus_dev);
- static struct bus_type soundbus_bus_type = {
- 	.name		= "aoa-soundbus",
- 	.probe		= soundbus_probe,
-@@ -160,7 +161,7 @@ static struct bus_type soundbus_bus_type
- 	.suspend	= soundbus_device_suspend,
- 	.resume		= soundbus_device_resume,
- #endif
--	.dev_attrs	= soundbus_dev_attrs,
-+	.dev_groups	= soundbus_dev_groups,
- };
- 
- int soundbus_add_one(struct soundbus_dev *dev)
---- a/sound/aoa/soundbus/soundbus.h
-+++ b/sound/aoa/soundbus/soundbus.h
-@@ -199,6 +199,6 @@ struct soundbus_driver {
- extern int soundbus_register_driver(struct soundbus_driver *drv);
- extern void soundbus_unregister_driver(struct soundbus_driver *drv);
- 
--extern struct device_attribute soundbus_dev_attrs[];
-+extern struct attribute *soundbus_dev_attrs[];
- 
- #endif /* __SOUNDBUS_H */
---- a/sound/aoa/soundbus/sysfs.c
-+++ b/sound/aoa/soundbus/sysfs.c
-@@ -30,13 +30,16 @@ static ssize_t modalias_show(struct devi
- 
- 	return length;
- }
-+static DEVICE_ATTR_RO(modalias);
- 
- soundbus_config_of_attr (name, "%s\n");
-+static DEVICE_ATTR_RO(name);
- soundbus_config_of_attr (type, "%s\n");
-+static DEVICE_ATTR_RO(type);
- 
--struct device_attribute soundbus_dev_attrs[] = {
--	__ATTR_RO(name),
--	__ATTR_RO(type),
--	__ATTR_RO(modalias),
--	__ATTR_NULL
-+struct attribute *soundbus_dev_attrs[] = {
-+	&dev_attr_name.attr,
-+	&dev_attr_type.attr,
-+	&dev_attr_modalias.attr,
-+	NULL,
- };
+Reviewed-by: Thomas Huth <thuth@redhat.com>
