@@ -1,23 +1,34 @@
-Return-Path: <ak@linux.intel.com>
-Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
- by lists.ozlabs.org (Postfix) with ESMTP id 98DC11A0018
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2015 04:07:08 +1000 (AEST)
-Date: Thu, 28 May 2015 11:07:05 -0700
-From: Andi Kleen <ak@linux.intel.com>
-To: Jiri Olsa <jolsa@redhat.com>
-Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>, mingo@redhat.com,
- Michael Ellerman <mpe@ellerman.id.au>,
- Arnaldo Carvalho de Melo <acme@kernel.org>,
- Paul Mackerras <paulus@samba.org>, namhyung@kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 09/10] perf, tools: Add a --no-desc flag to perf list
-Message-ID: <20150528180705.GQ7484@tassilo.jf.intel.com>
-References: <1432761809-4344-1-git-send-email-sukadev@linux.vnet.ibm.com>
- <1432761809-4344-10-git-send-email-sukadev@linux.vnet.ibm.com>
- <20150528123914.GJ12392@krava.redhat.com>
+Return-Path: <yhlu.kernel@gmail.com>
+Received: from mail-wi0-x22e.google.com (mail-wi0-x22e.google.com
+ [IPv6:2a00:1450:400c:c05::22e])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id B4E631A024B
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2015 08:08:32 +1000 (AEST)
+Received: by wicmx19 with SMTP id mx19so615473wic.0
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 May 2015 15:08:29 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150528123914.GJ12392@krava.redhat.com>
+Sender: yhlu.kernel@gmail.com
+In-Reply-To: <4269355.CI4MW738Od@vostro.rjw.lan>
+References: <20130725175242.6006.56007.stgit@bhelgaas-glaptop>
+ <CAE9FiQXq59tSBM0SQ4OToXydZrRC3yukALmWEb6K9xpCGbdUhg@mail.gmail.com>
+ <20150527193149.GD10210@google.com>
+ <4269355.CI4MW738Od@vostro.rjw.lan>
+Date: Thu, 28 May 2015 15:08:28 -0700
+Message-ID: <CAE9FiQWDsQxKK3m4_-dSXm8V3xNc4oOtg2UQi=aayeKhLutwQg@mail.gmail.com>
+Subject: Re: [PATCH 2/2] PCI: pciehp: Convert pciehp to be builtin only,
+ not modular
+From: Yinghai Lu <yinghai@kernel.org>
+To: "Rafael J. Wysocki" <rjw@rjwysocki.net>
+Cc: Bjorn Helgaas <bhelgaas@google.com>,
+ "linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+ Fenghua Yu <fenghua.yu@intel.com>, Tony Luck <tony.luck@intel.com>,
+ "linux-ia64@vger.kernel.org" <linux-ia64@vger.kernel.org>,
+ linux-sh@vger.kernel.org,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mundt <lethal@linux-sh.org>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -27,37 +38,9 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, May 28, 2015 at 02:39:14PM +0200, Jiri Olsa wrote:
-> On Wed, May 27, 2015 at 02:23:28PM -0700, Sukadev Bhattiprolu wrote:
-> > From: Andi Kleen <ak@linux.intel.com>
-> > 
-> > Add a --no-desc flag to perf list to not print the event descriptions
-> > that were earlier added for JSON events. This may be useful to
-> > get a less crowded listing.
-> > 
-> > It's still default to print descriptions as that is the more useful
-> > default for most users.
-> 
-> I might not be typical user, but the first thing I tried to
-> explore was 'perf list -v' ;-)
-> 
-> would it be better to have just the list with event names for:
->    $ perf list
-> 
-> and with descriptions for:
->    $ perf list -v
-> 
-> not sure we already discussed this..
+On Wed, May 27, 2015 at 6:30 PM, Rafael J. Wysocki <rjw@rjwysocki.net> wrote:
+> On Wednesday, May 27, 2015 02:31:49 PM Bjorn Helgaas wrote:
+> For debug you can always use pcie_ports=compat and that will disable
+> pciehp too.
 
-It was discussed last time. I think it's better to have descriptions
-by default. Far more user friendly.
-
-One thing we could in theory do with -v is to switch between Brief and Public
-Description (the later is often more verbose). Would need some changes
-to the alias code to have two descriptions though.
-
--Andi
-
-
--- 
-ak@linux.intel.com -- Speaking for myself only
+That will disable AER at the same time, right?.
