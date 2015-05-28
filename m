@@ -1,33 +1,34 @@
-Return-Path: <arenz@de.ibm.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BAAA81A119D
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 May 2015 19:13:40 +1000 (AEST)
-Received: from e06smtp16.uk.ibm.com (e06smtp16.uk.ibm.com [195.75.94.112])
+Return-Path: <maddy@linux.vnet.ibm.com>
+Received: from e28smtp07.in.ibm.com (e28smtp07.in.ibm.com [122.248.162.7])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id B401F14010F
- for <linuxppc-dev@ozlabs.org>; Thu, 28 May 2015 19:13:39 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 521DC1A119D
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 May 2015 19:29:45 +1000 (AEST)
 Received: from /spool/local
- by e06smtp16.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp07.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <arenz@de.ibm.com>;
- Thu, 28 May 2015 10:13:35 +0100
-In-Reply-To: <1430452886.11970.2.camel@ellerman.id.au>
-References: <1430450425-21260-1-git-send-email-mpe@ellerman.id.au>
- <5542F1C1.2070702@ozlabs.org> <1430452886.11970.2.camel@ellerman.id.au>
-Subject: Re: [Cbe-oss-dev] [PATCH] powerpc/cell: Drop cbe-oss-dev mailing list
- from MAINTAINERS
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Jeremy Kerr <jk@ozlabs.org>, Stephen Rothwell <sfr@canb.auug.org.au>,
- Arnd Bergmann <arnd@arndb.de>, jim@jtan.com, linuxppc-dev@ozlabs.org,
- cbe-oss-dev@ozlabs.org
-Message-ID: <OF30264AC8.5F4CE2C6-ONC1257E53.003227C3-C1257E53.0032AC77@de.ibm.com>
-From: Christoph Arenz <ARENZ@de.ibm.com>
-Date: Thu, 28 May 2015 11:13:29 +0200
-MIME-Version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
+ for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
+ Thu, 28 May 2015 14:59:42 +0530
+Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 65B15E0057
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 May 2015 15:02:51 +0530 (IST)
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t4S9TdxR2163154
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 May 2015 14:59:39 +0530
+Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t4S8iCJZ019020
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 May 2015 14:14:12 +0530
+From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
+ Ingo Molnar <mingo@kernel.org>, Jiri Olsa <jolsa@redhat.com>,
+ Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>
+Subject: [PATCH]perf/core: remove newline char in perf_event_sysfs_show
+Date: Thu, 28 May 2015 14:59:26 +0530
+Message-Id: <1432805366-15854-1-git-send-email-maddy@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,17 +38,31 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+When a event also carries a event.unit file, having newline char
+will make perf userspace tool to print the event name in
+the next line when dumping counter data.
 
-> You bet, or hell let's just have *another* party, the "cbe-oss-dead"
-party.
+Cc: Ingo Molnar <mingo@kernel.org>
+Cc: Jiri Olsa <jolsa@redhat.com>
+Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+---
+ kernel/events/core.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-> cheers
-
-Aah.. those were the days -- let's raise our glasses!
-Greetings to all who were involved in the project -- hope you are all d=
-oing
-well!
-
-Kind Regards / Mit freundlichen Gr=FC=DFen
-Christoph Arenz
-=
+diff --git a/kernel/events/core.c b/kernel/events/core.c
+index 1a3bf48..3b5a372 100644
+--- a/kernel/events/core.c
++++ b/kernel/events/core.c
+@@ -8982,7 +8982,7 @@ ssize_t perf_event_sysfs_show(struct device *dev, struct device_attribute *attr,
+ 		container_of(attr, struct perf_pmu_events_attr, attr);
+ 
+ 	if (pmu_attr->event_str)
+-		return sprintf(page, "%s\n", pmu_attr->event_str);
++		return sprintf(page, "%s", pmu_attr->event_str);
+ 
+ 	return 0;
+ }
+-- 
+1.9.1
