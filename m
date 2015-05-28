@@ -1,26 +1,55 @@
-Return-Path: <lambert.quentin@gmail.com>
-Received: from mail-wi0-x22f.google.com (mail-wi0-x22f.google.com
- [IPv6:2a00:1450:400c:c05::22f])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 98B991A1778
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2015 00:00:00 +1000 (AEST)
-Received: by wicmc15 with SMTP id mc15so124740872wic.1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 May 2015 06:59:57 -0700 (PDT)
-Message-ID: <55671F5D.6060807@gmail.com>
-Date: Thu, 28 May 2015 15:59:57 +0200
-From: Quentin Lambert <lambert.quentin@gmail.com>
+Return-Path: <ralf@linux-mips.org>
+Received: from cvs.linux-mips.org (eddie.linux-mips.org [148.251.95.138])
+ by lists.ozlabs.org (Postfix) with ESMTP id 873FA1A18A6
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2015 00:07:56 +1000 (AEST)
+Received: from localhost.localdomain ([127.0.0.1]:59076 "EHLO linux-mips.org"
+ rhost-flags-OK-OK-OK-FAIL) by eddie.linux-mips.org with ESMTP
+ id S27013049AbbE1N7nyQdHz (ORCPT
+ <rfc822;linuxppc-dev@lists.ozlabs.org>);
+ Thu, 28 May 2015 15:59:43 +0200
+Date: Thu, 28 May 2015 15:59:06 +0200
+From: Ralf Baechle <ralf@linux-mips.org>
+To: Dominik Dingel <dingel@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, Russell King <linux@arm.linux.org.uk>,
+ Catalin Marinas <catalin.marinas@arm.com>,
+ Will Deacon <will.deacon@arm.com>, Tony Luck <tony.luck@intel.com>,
+ Fenghua Yu <fenghua.yu@intel.com>, James Hogan <james.hogan@imgtec.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
+ Martin Schwidefsky <schwidefsky@de.ibm.com>,
+ Heiko Carstens <heiko.carstens@de.ibm.com>,
+ linux390@de.ibm.com, "David S. Miller" <davem@davemloft.net>,
+ Chris Metcalf <cmetcalf@ezchip.com>, Thomas Gleixner <tglx@linutronix.de>,
+ Ingo Molnar <mingo@redhat.com>,
+ "H. Peter Anvin" <hpa@zytor.com>, x86@kernel.org,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Zhang Zhen <zhenzhang.zhang@huawei.com>,
+ David Rientjes <rientjes@google.com>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>,
+ Nathan Lynch <nathan_lynch@mentor.com>,
+ Christian Borntraeger <borntraeger@de.ibm.com>,
+ Andy Lutomirski <luto@amacapital.net>,
+ Michael Holzheu <holzheu@linux.vnet.ibm.com>,
+ Hugh Dickins <hughd@google.com>,
+ Naoya Horiguchi <n-horiguchi@ah.jp.nec.com>,
+ Paolo Bonzini <pbonzini@redhat.com>,
+ "Jason J. Herne" <jjherne@linux.vnet.ibm.com>,
+ Davidlohr Bueso <dave@stgolabs.net>,
+ "Kirill A. Shutemov" <kirill.shutemov@linux.intel.com>,
+ Luiz Capitulino <lcapitulino@redhat.com>,
+ Mike Kravetz <mike.kravetz@oracle.com>,
+ linux-arm-kernel@lists.infradead.org, linux-ia64@vger.kernel.org,
+ linux-metag@vger.kernel.org, linux-mips@linux-mips.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ linux-sh@vger.kernel.org, sparclinux@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH 3/5] mm/hugetlb: remove arch_prepare/release_hugepage
+ from arch headers
+Message-ID: <20150528135905.GD1179@linux-mips.org>
+References: <1432813957-46874-1-git-send-email-dingel@linux.vnet.ibm.com>
+ <1432813957-46874-4-git-send-email-dingel@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Takashi Iwai <tiwai@suse.de>
-CC: Johannes Berg <johannes@sipsolutions.net>,
- Jaroslav Kysela <perex@perex.cz>,
- linuxppc-dev@lists.ozlabs.org, alsa-devel@alsa-project.org,
- linux-kernel@vger.kernel.org, kernel-janitors@vger.kernel.org
-Subject: Re: [PATCH] ALSA: aoa: convert bus code to use dev_groups
-References: <1432817307-28380-1-git-send-email-lambert.quentin@gmail.com>
- <s5hwpzs7qrz.wl-tiwai@suse.de>
-In-Reply-To: <s5hwpzs7qrz.wl-tiwai@suse.de>
-Content-Type: text/plain; charset=windows-1252; format=flowed
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1432813957-46874-4-git-send-email-dingel@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,22 +59,6 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Thu, May 28, 2015 at 01:52:35PM +0200, Dominik Dingel wrote:
 
-
-On 28/05/2015 15:52, Takashi Iwai wrote:
-> At Thu, 28 May 2015 14:48:27 +0200,
-> Quentin Lambert wrote:
->> You should use dev_groups instead of the dev_attrs field of struct
->> bus_type. This converts the MDIO bus code to use the correct field.
->>
->> These modifications were made using Coccinelle.
->>
->> Signed-off-by: Quentin Lambert <lambert.quentin@gmail.com>
-> What's wrong with dev_attrs?
-> (Not offending, I'm just curious where the preference for dev_groups
->   is referred...)
-
-This patch is based on commit 4192c74940e23da727eb02b7b4ee779dde2f670,
-its message indicates that dev_attrs is going away.
-
-Quentin
+Acked-by: Ralf Baechle <ralf@linux-mips.org>
