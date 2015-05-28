@@ -1,14 +1,14 @@
 Return-Path: <lambert.quentin@gmail.com>
-Received: from mail-wg0-x230.google.com (mail-wg0-x230.google.com
- [IPv6:2a00:1450:400c:c00::230])
+Received: from mail-wi0-x22f.google.com (mail-wi0-x22f.google.com
+ [IPv6:2a00:1450:400c:c05::22f])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A24221A15ED
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 May 2015 23:59:54 +1000 (AEST)
-Received: by wgbgq6 with SMTP id gq6so37346542wgb.3
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 May 2015 06:59:50 -0700 (PDT)
-Message-ID: <55671F56.6080402@gmail.com>
-Date: Thu, 28 May 2015 15:59:50 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 98B991A1778
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2015 00:00:00 +1000 (AEST)
+Received: by wicmc15 with SMTP id mc15so124740872wic.1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 May 2015 06:59:57 -0700 (PDT)
+Message-ID: <55671F5D.6060807@gmail.com>
+Date: Thu, 28 May 2015 15:59:57 +0200
 From: Quentin Lambert <lambert.quentin@gmail.com>
 MIME-Version: 1.0
 To: Takashi Iwai <tiwai@suse.de>
