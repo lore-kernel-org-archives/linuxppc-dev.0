@@ -2,9 +2,9 @@ Return-Path: <jolsa@redhat.com>
 Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 332C21A11B1
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 May 2015 22:06:41 +1000 (AEST)
-Date: Thu, 28 May 2015 14:06:33 +0200
+ by lists.ozlabs.org (Postfix) with ESMTPS id 482D01A11B1
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 May 2015 22:09:25 +1000 (AEST)
+Date: Thu, 28 May 2015 14:09:18 +0200
 From: Jiri Olsa <jolsa@redhat.com>
 To: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 Cc: mingo@redhat.com, ak@linux.intel.com,
@@ -14,11 +14,11 @@ Cc: mingo@redhat.com, ak@linux.intel.com,
  linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
 Subject: Re: [PATCH 02/10] jevents: Program to convert JSON file to C style
  file
-Message-ID: <20150528120633.GF12392@krava.redhat.com>
+Message-ID: <20150528120918.GG12392@krava.redhat.com>
 References: <1432761809-4344-1-git-send-email-sukadev@linux.vnet.ibm.com>
  <1432761809-4344-3-git-send-email-sukadev@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain; charset=us-ascii
 In-Reply-To: <1432761809-4344-3-git-send-email-sukadev@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -34,29 +34,40 @@ On Wed, May 27, 2015 at 02:23:21PM -0700, Sukadev Bhattiprolu wrote:
 SNIP
 
 >  
-> diff --git a/tools/perf/pmu-events/Build b/tools/perf/pmu-events/Build
-> new file mode 100644
-> index 0000000..7e0c85c
-> --- /dev/null
-> +++ b/tools/perf/pmu-events/Build
-> @@ -0,0 +1,10 @@
-> +jevents-y	+= json.o jsmn.o jevents.o
-> +pmu-events-y	+= pmu-events.o
-> +JSON		=  $(shell find pmu-events/arch/$(ARCH) -name '*.json')
+>  $(PERF_IN): $(OUTPUT)PERF-VERSION-FILE $(OUTPUT)common-cmds.h FORCE
+>  	$(Q)$(MAKE) $(build)=perf
+>  
+> -$(OUTPUT)perf: $(PERFLIBS) $(PERF_IN)
+> -	$(QUIET_LINK)$(CC) $(CFLAGS) $(LDFLAGS) $(PERF_IN) $(LIBS) -o $@
+> +$(JEVENTS_IN): FORCE
+> +	$(Q)$(MAKE) -f $(srctree)/tools/build/Makefile.build dir=pmu-events obj=jevents
+> +
+> +$(JEVENTS): $(JEVENTS_IN)
+> +	$(QUIET_LINK)$(CC) $(JEVENTS_IN) -o $@
+> +
+> +$(OUTPUT)perf: $(PERFLIBS) $(PERF_IN) $(PMU_EVENTS_IN)
+> +	$(QUIET_LINK)$(CC) $(CFLAGS) $(LDFLAGS) $(PERF_IN) $(PMU_EVENTS_IN) $(LIBS) -o $@
+> +
+> +$(PMU_EVENTS_IN): $(JEVENTS) FORCE
+> +	$(Q)$(MAKE) -f $(srctree)/tools/build/Makefile.build dir=pmu-events obj=pmu-events
 
-you might want to check if there's the directory first,
-or if there's a way to tell find to be quiet or ignore that
-
-find: ‘pmu-events/arch/x86’: No such file or directory
-  CC       pmu-events/json.o
-  CC       pmu-events/jsmn.o
-  CC       pmu-events/jevents.o
-  LD       pmu-events/jevents-in.o
-  LINK     pmu-events/jevents
-find: ‘pmu-events/arch/x86’: No such file or directory
-pmu-events/jevents: Error walking file tree pmu-events/arch/x86
-Creating empty pmu_events_map[] table
-  CC       pmu-events/pmu-events.o
-
+nit.. please move this above perf target, so it's grouped
+with the rest of the jevents stuff
 
 jirka
+
+>  
+>  $(GTK_IN): FORCE
+>  	$(Q)$(MAKE) $(build)=gtk
+> @@ -306,6 +321,8 @@ perf.spec $(SCRIPTS) \
+>  ifneq ($(OUTPUT),)
+>  %.o: $(OUTPUT)%.o
+>  	@echo "    # Redirected target $@ => $(OUTPUT)$@"
+> +pmu-events/%.o: $(OUTPUT)pmu-events/%.o
+> +	@echo "    # Redirected target $@ => $(OUTPUT)$@"
+>  util/%.o: $(OUTPUT)util/%.o
+>  	@echo "    # Redirected target $@ => $(OUTPUT)$@"
+>  bench/%.o: $(OUTPUT)bench/%.o
+
+
+SNIP
