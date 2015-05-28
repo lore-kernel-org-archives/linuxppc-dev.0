@@ -1,20 +1,23 @@
-Return-Path: <prvs=5836c538d=david.vrabel@citrix.com>
-Received: from SMTP02.CITRIX.COM (smtp02.citrix.com [66.165.176.63])
- (using TLSv1 with cipher RC4-SHA (128/128 bits))
+Return-Path: <peterz@infradead.org>
+Received: from casper.infradead.org (casper.infradead.org
+ [IPv6:2001:770:15f::2])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 82A7A1A0E48
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 May 2015 20:38:37 +1000 (AEST)
-Message-ID: <5566F026.1030606@citrix.com>
-Date: Thu, 28 May 2015 11:38:30 +0100
-From: David Vrabel <david.vrabel@citrix.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3C9DC1A119C
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 May 2015 21:32:26 +1000 (AEST)
+Date: Thu, 28 May 2015 13:32:14 +0200
+From: Peter Zijlstra <peterz@infradead.org>
+To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Ingo Molnar <mingo@kernel.org>, Jiri Olsa <jolsa@redhat.com>,
+ Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: [PATCH]perf/core: remove newline char in perf_event_sysfs_show
+Message-ID: <20150528113214.GF3644@twins.programming.kicks-ass.net>
+References: <1432805366-15854-1-git-send-email-maddy@linux.vnet.ibm.com>
 MIME-Version: 1.0
-To: Jan Beulich <JBeulich@suse.com>, <linuxppc-dev@lists.ozlabs.org>
-CC: Boris Ostrovsky <boris.ostrovsky@oracle.com>, Konrad Rzeszutek Wilk
- <konrad.wilk@oracle.com>, <linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH] hvc_xen: avoid uninitialized variable warning
-References: <5566EDC6020000780007E67F@mail.emea.novell.com>
-In-Reply-To: <5566EDC6020000780007E67F@mail.emea.novell.com>
-Content-Type: text/plain; charset="windows-1252"
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1432805366-15854-1-git-send-email-maddy@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,11 +27,10 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On 28/05/15 09:28, Jan Beulich wrote:
-> Older compilers don't recognize that "v" can't be used uninitialized;
-> other code using hvm_get_parameter() zeros the value too, so follow
-> suit here.
+On Thu, May 28, 2015 at 02:59:26PM +0530, Madhavan Srinivasan wrote:
+> When a event also carries a event.unit file, having newline char
+> will make perf userspace tool to print the event name in
+> the next line when dumping counter data.
 
-Applied to for-linus-4.2, thanks.
-
-David
+And changing the kernel will break the API (it includes a '\n' now) so
+fix the tool.
