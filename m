@@ -1,27 +1,27 @@
 Return-Path: <dingel@linux.vnet.ibm.com>
-Received: from e06smtp10.uk.ibm.com (e06smtp10.uk.ibm.com [195.75.94.106])
+Received: from e06smtp12.uk.ibm.com (e06smtp12.uk.ibm.com [195.75.94.108])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E890F1A17E6
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 May 2015 21:53:03 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id A24861A1800
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 May 2015 21:53:05 +1000 (AEST)
 Received: from /spool/local
- by e06smtp10.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e06smtp12.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <dingel@linux.vnet.ibm.com>;
- Thu, 28 May 2015 12:53:00 +0100
-Received: from b06cxnps4076.portsmouth.uk.ibm.com
- (d06relay13.portsmouth.uk.ibm.com [9.149.109.198])
- by d06dlp01.portsmouth.uk.ibm.com (Postfix) with ESMTP id A106C17D805F
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 May 2015 12:53:52 +0100 (BST)
-Received: from d06av12.portsmouth.uk.ibm.com (d06av12.portsmouth.uk.ibm.com
- [9.149.37.247])
- by b06cxnps4076.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t4SBquhh21954710
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 May 2015 11:52:57 GMT
-Received: from d06av12.portsmouth.uk.ibm.com (localhost [127.0.0.1])
- by d06av12.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t4SBqleF008642
- for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 May 2015 05:52:56 -0600
+ Thu, 28 May 2015 12:53:01 +0100
+Received: from b06cxnps3075.portsmouth.uk.ibm.com
+ (d06relay10.portsmouth.uk.ibm.com [9.149.109.195])
+ by d06dlp01.portsmouth.uk.ibm.com (Postfix) with ESMTP id 2555D17D8062
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 May 2015 12:53:55 +0100 (BST)
+Received: from d06av01.portsmouth.uk.ibm.com (d06av01.portsmouth.uk.ibm.com
+ [9.149.37.212])
+ by b06cxnps3075.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t4SBqxu014024930
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 May 2015 11:52:59 GMT
+Received: from d06av01.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av01.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t4SBqmYH011016
+ for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 May 2015 05:52:59 -0600
 From: Dominik Dingel <dingel@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org
 Cc: Russell King <linux@arm.linux.org.uk>,
@@ -58,12 +58,9 @@ Cc: Russell King <linux@arm.linux.org.uk>,
  linux-metag@vger.kernel.org, linux-mips@linux-mips.org,
  linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
  linux-sh@vger.kernel.org, sparclinux@vger.kernel.org, linux-mm@kvack.org
-Subject: [PATCH 2/5] mm/hugetlb: remove unused arch hook
- prepare/release_hugepage
-Date: Thu, 28 May 2015 13:52:34 +0200
-Message-Id: <1432813957-46874-3-git-send-email-dingel@linux.vnet.ibm.com>
-In-Reply-To: <1432813957-46874-1-git-send-email-dingel@linux.vnet.ibm.com>
-References: <1432813957-46874-1-git-send-email-dingel@linux.vnet.ibm.com>
+Subject: [PATCH 0/5] Remove s390 sw-emulated hugepages and cleanup 
+Date: Thu, 28 May 2015 13:52:32 +0200
+Message-Id: <1432813957-46874-1-git-send-email-dingel@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -73,49 +70,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-With s390 dropping support for emulated hugepages, the last user of
-arch_prepare_hugepage and arch_release_hugepage is gone.
+Hi everyone,
 
-Acked-by: Martin Schwidefsky <schwidefsky@de.ibm.com>
-Signed-off-by: Dominik Dingel <dingel@linux.vnet.ibm.com>
----
- mm/hugetlb.c | 10 ----------
- 1 file changed, 10 deletions(-)
+there is a potential bug with KVM and hugetlbfs if the hardware does not
+support hugepages (EDAT1).
+We fix this by making EDAT1 a hard requirement for hugepages and 
+therefore removing and simplifying code.
 
-diff --git a/mm/hugetlb.c b/mm/hugetlb.c
-index 290984b..a97958e 100644
---- a/mm/hugetlb.c
-+++ b/mm/hugetlb.c
-@@ -917,7 +917,6 @@ static void update_and_free_page(struct hstate *h, struct page *page)
- 		destroy_compound_gigantic_page(page, huge_page_order(h));
- 		free_gigantic_page(page, huge_page_order(h));
- 	} else {
--		arch_release_hugepage(page);
- 		__free_pages(page, huge_page_order(h));
- 	}
- }
-@@ -1102,10 +1101,6 @@ static struct page *alloc_fresh_huge_page_node(struct hstate *h, int nid)
- 						__GFP_REPEAT|__GFP_NOWARN,
- 		huge_page_order(h));
- 	if (page) {
--		if (arch_prepare_hugepage(page)) {
--			__free_pages(page, huge_page_order(h));
--			return NULL;
--		}
- 		prep_new_huge_page(h, page, nid);
- 	}
- 
-@@ -1257,11 +1252,6 @@ static struct page *alloc_buddy_huge_page(struct hstate *h, int nid)
- 			htlb_alloc_mask(h)|__GFP_COMP|__GFP_THISNODE|
- 			__GFP_REPEAT|__GFP_NOWARN, huge_page_order(h));
- 
--	if (page && arch_prepare_hugepage(page)) {
--		__free_pages(page, huge_page_order(h));
--		page = NULL;
--	}
--
- 	spin_lock(&hugetlb_lock);
- 	if (page) {
- 		INIT_LIST_HEAD(&page->lru);
+As s390, with the sw-emulated hugepages, was the only user of arch_prepare/release_hugepage
+I also removed theses calls from common and other architecture code.
+
+Thanks,
+    Dominik
+
+Dominik Dingel (5):
+  s390/mm: make hugepages_supported a boot time decision
+  mm/hugetlb: remove unused arch hook prepare/release_hugepage
+  mm/hugetlb: remove arch_prepare/release_hugepage from arch headers
+  s390/hugetlb: remove dead code for sw emulated huge pages
+  s390/mm: forward check for huge pmds to pmd_large()
+
+ arch/arm/include/asm/hugetlb.h     |  9 ------
+ arch/arm64/include/asm/hugetlb.h   |  9 ------
+ arch/ia64/include/asm/hugetlb.h    |  9 ------
+ arch/metag/include/asm/hugetlb.h   |  9 ------
+ arch/mips/include/asm/hugetlb.h    |  9 ------
+ arch/powerpc/include/asm/hugetlb.h |  9 ------
+ arch/s390/include/asm/hugetlb.h    |  3 --
+ arch/s390/include/asm/page.h       |  8 ++---
+ arch/s390/kernel/setup.c           |  2 ++
+ arch/s390/mm/hugetlbpage.c         | 65 +++-----------------------------------
+ arch/s390/mm/pgtable.c             |  2 ++
+ arch/sh/include/asm/hugetlb.h      |  9 ------
+ arch/sparc/include/asm/hugetlb.h   |  9 ------
+ arch/tile/include/asm/hugetlb.h    |  9 ------
+ arch/x86/include/asm/hugetlb.h     |  9 ------
+ mm/hugetlb.c                       | 10 ------
+ 16 files changed, 12 insertions(+), 168 deletions(-)
+
 -- 
 2.3.7
