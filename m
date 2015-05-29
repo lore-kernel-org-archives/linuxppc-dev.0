@@ -1,25 +1,24 @@
-Return-Path: <cyrilbur@gmail.com>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <hmyneni@gmail.com>
+Received: from mail-la0-x231.google.com (mail-la0-x231.google.com
+ [IPv6:2a00:1450:4010:c03::231])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A241B1A0551
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2015 17:34:53 +1000 (AEST)
-Received: from e23smtp08.au.ibm.com (e23smtp08.au.ibm.com [202.81.31.141])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 62F44140E33
- for <linuxppc-dev@ozlabs.org>; Fri, 29 May 2015 17:34:53 +1000 (AEST)
-Received: from /spool/local
- by e23smtp08.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@ozlabs.org> from <cyrilbur@gmail.com>;
- Fri, 29 May 2015 17:34:51 +1000
-From: Cyril Bur <cyrilbur@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Cc: Joel Stanley <joel@jms.id.au>, Jeremy Kerr <jk@ozlabs.org>
-Subject: [PATCH V3] drivers/mtd: add powernv flash MTD abstraction driver
-Date: Fri, 29 May 2015 17:33:17 +1000
-Message-Id: <1432884797-3056-1-git-send-email-cyrilbur@gmail.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 602011A05C6
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2015 18:09:58 +1000 (AEST)
+Received: by laat2 with SMTP id t2so49969547laa.1
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2015 01:09:53 -0700 (PDT)
+MIME-Version: 1.0
+In-Reply-To: <1432871692-707-3-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+References: <1432871692-707-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ <1432871692-707-3-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+Date: Fri, 29 May 2015 01:09:53 -0700
+Message-ID: <CACgMoi+DU_cso2Ovpen7ERWzE2qRKm_oDKRBgtx9CytcfnkD0w@mail.gmail.com>
+Subject: Re: [PATCH 3/3] powerpc/mm: Change the swap encoding in pte.
+From: Haren Myneni <hmyneni@gmail.com>
+To: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Cc: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ linuxppc-dev@lists.ozlabs.org, Mel Gorman <mgorman@suse.de>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,353 +28,96 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Powerpc powernv platforms allow access to certain system flash devices
-through a firmwarwe interface. This change adds an mtd driver for these
-flash devices.
+Tested this patch on 16TB system and fixed the BUG_ON issue mentioned
+here - https://lists.ozlabs.org/pipermail/linuxppc-dev/2015-May/128767.html
 
-Minor updates from Jeremy Kerr and Joel Stanley.
+I was able to reproduce this issue in all previous releases (tested
+from 3.14). So this patch should be also in stable tree.
 
-Signed-off-by: Cyril Bur <cyrilbur@gmail.com>
-Signed-off-by: Joel Stanley <joel@jms.id.au>
-Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
----
-V2: Address Brian Norris' review
-    Fix typos
-    Change from NAND flash type to NOR flash type
-    Correctness tweaks
-V3: Address Neelesh Gupta's review
-    Minor corrections
-    Release the opal token on error
-    Unregister mtd device on module remove
----
- drivers/mtd/devices/Kconfig         |   8 +
- drivers/mtd/devices/Makefile        |   1 +
- drivers/mtd/devices/powernv_flash.c | 286 ++++++++++++++++++++++++++++++++++++
- 3 files changed, 295 insertions(+)
- create mode 100644 drivers/mtd/devices/powernv_flash.c
+Acked-by: Haren Myneni <hbabu@us.ibm.com>
 
-diff --git a/drivers/mtd/devices/Kconfig b/drivers/mtd/devices/Kconfig
-index c49d0b1..f73c416 100644
---- a/drivers/mtd/devices/Kconfig
-+++ b/drivers/mtd/devices/Kconfig
-@@ -195,6 +195,14 @@ config MTD_BLOCK2MTD
- 	  Testing MTD users (eg JFFS2) on large media and media that might
- 	  be removed during a write (using the floppy drive).
- 
-+config MTD_POWERNV_FLASH
-+	tristate "powernv flash MTD driver"
-+	depends on PPC_POWERNV
-+	help
-+	  This provides an MTD device to access flash on powernv OPAL
-+	  platforms from Linux. This device abstracts away the
-+	  firmware interface for flash access.
-+
- comment "Disk-On-Chip Device Drivers"
- 
- config MTD_DOCG3
-diff --git a/drivers/mtd/devices/Makefile b/drivers/mtd/devices/Makefile
-index f0b0e61..7912d3a 100644
---- a/drivers/mtd/devices/Makefile
-+++ b/drivers/mtd/devices/Makefile
-@@ -16,6 +16,7 @@ obj-$(CONFIG_MTD_SPEAR_SMI)	+= spear_smi.o
- obj-$(CONFIG_MTD_SST25L)	+= sst25l.o
- obj-$(CONFIG_MTD_BCM47XXSFLASH)	+= bcm47xxsflash.o
- obj-$(CONFIG_MTD_ST_SPI_FSM)    += st_spi_fsm.o
-+obj-$(CONFIG_MTD_POWERNV_FLASH)	+= powernv_flash.o
- 
- 
- CFLAGS_docg3.o			+= -I$(src)
-diff --git a/drivers/mtd/devices/powernv_flash.c b/drivers/mtd/devices/powernv_flash.c
-new file mode 100644
-index 0000000..036d5b7
---- /dev/null
-+++ b/drivers/mtd/devices/powernv_flash.c
-@@ -0,0 +1,286 @@
-+/*
-+ * OPAL PNOR flash MTD abstraction
-+ *
-+ * IBM 2015
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ */
-+
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/errno.h>
-+#include <linux/of.h>
-+#include <linux/of_address.h>
-+#include <linux/platform_device.h>
-+#include <linux/string.h>
-+#include <linux/slab.h>
-+#include <linux/mtd/mtd.h>
-+#include <linux/mtd/partitions.h>
-+
-+#include <linux/debugfs.h>
-+#include <linux/seq_file.h>
-+
-+#include <asm/opal.h>
-+
-+
-+/*
-+ * This driver creates the a Linux MTD abstraction for platform PNOR flash
-+ * backed by OPAL calls
-+ */
-+
-+struct powernv_flash {
-+	struct mtd_info	mtd;
-+	u32 id;
-+};
-+
-+enum flash_op {
-+	FLASH_OP_READ,
-+	FLASH_OP_WRITE,
-+	FLASH_OP_ERASE,
-+};
-+
-+static int powernv_flash_async_op(struct mtd_info *mtd, enum flash_op op,
-+		loff_t offset, size_t len, size_t *retlen, u_char *buf)
-+{
-+	struct powernv_flash *info = (struct powernv_flash *)mtd->priv;
-+	struct device *dev = &mtd->dev;
-+	int token;
-+	struct opal_msg msg;
-+	int rc;
-+
-+	dev_dbg(dev, "%s(op=%d, offset=0x%llx, len=%zu)\n",
-+			__func__, op, offset, len);
-+
-+	token = opal_async_get_token_interruptible();
-+	if (token < 0) {
-+		if (token != -ERESTARTSYS)
-+			dev_err(dev, "Failed to get an async token\n");
-+
-+		return token;
-+	}
-+
-+	switch (op) {
-+	case FLASH_OP_READ:
-+		rc = opal_flash_read(info->id, offset, __pa(buf), len, token);
-+		break;
-+	case FLASH_OP_WRITE:
-+		rc = opal_flash_write(info->id, offset, __pa(buf), len, token);
-+		break;
-+	case FLASH_OP_ERASE:
-+		rc = opal_flash_erase(info->id, offset, len, token);
-+		break;
-+	default:
-+		BUG_ON(1);
-+	}
-+
-+	if (rc != OPAL_ASYNC_COMPLETION) {
-+		dev_err(dev, "opal_flash_async_op(op=%d) failed (rc %d)\n",
-+				op, rc);
-+		opal_async_release_token(token);
-+		return -EIO;
-+	}
-+
-+	rc = opal_async_wait_response(token, &msg);
-+	opal_async_release_token(token);
-+	if (rc) {
-+		dev_err(dev, "opal async wait failed (rc %d)\n", rc);
-+		return -EIO;
-+	}
-+
-+	rc = be64_to_cpu(msg.params[1]);
-+	if (rc == OPAL_SUCCESS) {
-+		rc = 0;
-+		if (retlen)
-+			*retlen = len;
-+	} else {
-+		rc = -EIO;
-+	}
-+
-+	return rc;
-+}
-+
-+/**
-+ * @mtd: the device
-+ * @from: the offset to read from
-+ * @len: the number of bytes to read
-+ * @retlen: the number of bytes actually read
-+ * @buf: the filled in buffer
-+ *
-+ * Returns 0 if read successful, or -ERRNO if an error occurred
-+ */
-+static int powernv_flash_read(struct mtd_info *mtd, loff_t from, size_t len,
-+	     size_t *retlen, u_char *buf)
-+{
-+	return powernv_flash_async_op(mtd, FLASH_OP_READ, from,
-+			len, retlen, buf);
-+}
-+
-+/**
-+ * @mtd: the device
-+ * @to: the offset to write to
-+ * @len: the number of bytes to write
-+ * @retlen: the number of bytes actually written
-+ * @buf: the buffer to get bytes from
-+ *
-+ * Returns 0 if write successful, -ERRNO if error occurred
-+ */
-+static int powernv_flash_write(struct mtd_info *mtd, loff_t to, size_t len,
-+		     size_t *retlen, const u_char *buf)
-+{
-+	return powernv_flash_async_op(mtd, FLASH_OP_WRITE, to,
-+			len, retlen, (u_char *)buf);
-+}
-+
-+/**
-+ * @mtd: the device
-+ * @erase: the erase info
-+ * Returns 0 if erase successful or -ERRNO if an error occurred
-+ */
-+static int powernv_flash_erase(struct mtd_info *mtd, struct erase_info *erase)
-+{
-+	int rc;
-+
-+	erase->state = MTD_ERASING;
-+
-+	/* todo: register our own notifier to do a true async implementation */
-+	rc =  powernv_flash_async_op(mtd, FLASH_OP_ERASE, erase->addr,
-+			erase->len, NULL, NULL);
-+
-+	if (rc) {
-+		erase->fail_addr = erase->addr;
-+		erase->state = MTD_ERASE_FAILED;
-+	} else {
-+		erase->state = MTD_ERASE_DONE;
-+	}
-+	mtd_erase_callback(erase);
-+	return 0;
-+}
-+
-+/**
-+ * powernv_flash_set_driver_info - Fill the mtd_info structure and docg3
-+ * structure @pdev: The platform device
-+ * @mtd: The structure to fill
-+ */
-+static int powernv_flash_set_driver_info(struct device *dev,
-+		struct mtd_info *mtd)
-+{
-+	u64 size;
-+	u32 erase_size;
-+	int rc;
-+
-+	rc = of_property_read_u32(dev->of_node, "ibm,flash-block-size",
-+			&erase_size);
-+	if (rc) {
-+		dev_err(dev, "couldn't get resource block size information\n");
-+		return rc;
-+	}
-+
-+	rc = of_property_read_u64(dev->of_node, "reg", &size);
-+	if (rc) {
-+		dev_err(dev, "couldn't get resource size information\n");
-+		return rc;
-+	}
-+
-+	/*
-+	 * Going to have to check what details I need to set and how to
-+	 * get them
-+	 */
-+	mtd->name = of_get_property(dev->of_node, "name", NULL);
-+	mtd->type = MTD_NORFLASH;
-+	mtd->flags = MTD_WRITEABLE;
-+	mtd->size = size;
-+	mtd->erasesize = erase_size;
-+	mtd->writebufsize = mtd->writesize = 1;
-+	mtd->owner = THIS_MODULE;
-+	mtd->_erase = powernv_flash_erase;
-+	mtd->_read = powernv_flash_read;
-+	mtd->_write = powernv_flash_write;
-+	mtd->dev.parent = dev;
-+	return 0;
-+}
-+
-+/**
-+ * powernv_flash_probe
-+ * @pdev: platform device
-+ *
-+ * Returns 0 on success, -ENOMEM, -ENXIO on error
-+ */
-+static int powernv_flash_probe(struct platform_device *pdev)
-+{
-+	struct device *dev = &pdev->dev;
-+	struct powernv_flash *data;
-+	int ret;
-+
-+	data = devm_kzalloc(dev, sizeof(*data), GFP_KERNEL);
-+	if (!data) {
-+		ret = -ENOMEM;
-+		goto out;
-+	}
-+	data->mtd.priv = data;
-+
-+	ret = of_property_read_u32(dev->of_node, "ibm,opal-id", &(data->id));
-+	if (ret) {
-+		dev_err(dev, "no device property 'ibm,opal-id'\n");
-+		goto out;
-+	}
-+
-+	ret = powernv_flash_set_driver_info(dev, &data->mtd);
-+	if (ret)
-+		goto out;
-+
-+	dev_set_drvdata(dev, data);
-+
-+	/*
-+	 * The current flash that skiboot exposes is one contiguous flash chip
-+	 * with an ffs partition at the start, it should prove easier for users
-+	 * to deal with partitions or not as they see fit
-+	 */
-+	ret = mtd_device_register(&data->mtd, NULL, 0);
-+
-+out:
-+	return ret;
-+}
-+
-+/**
-+ * op_release - Release the driver
-+ * @pdev: the platform device
-+ *
-+ * Returns 0
-+ */
-+static int powernv_flash_release(struct platform_device *pdev)
-+{
-+	struct powernv_flash *data = dev_get_drvdata(&(pdev->dev));
-+
-+	/* All resources should be freed automatically */
-+	return mtd_device_unregister(&(data->mtd));
-+}
-+
-+static const struct of_device_id powernv_flash_match[] = {
-+	{ .compatible = "ibm,opal-flash" },
-+	{}
-+};
-+
-+static struct platform_driver powernv_flash_driver = {
-+	.driver		= {
-+		.name		= "powernv_flash",
-+		.of_match_table	= powernv_flash_match,
-+	},
-+	.remove		= powernv_flash_release,
-+	.probe		= powernv_flash_probe,
-+};
-+
-+module_platform_driver(powernv_flash_driver);
-+
-+MODULE_DEVICE_TABLE(of, powernv_flash_match);
-+MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("Cyril Bur <cyril.bur@au1.ibm.com>");
-+MODULE_DESCRIPTION("MTD abstraction for OPAL flash");
--- 
-1.9.1
+On 5/28/15, Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com> wrote:
+> Current swap encoding in pte can't support large pfns
+> above 4TB. Change the swap encoding such that we put
+> the swap type in the PTE bits. Also add build checks
+> to make sure we don't overlap with HPTEFLAGS.
+>
+> Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+> ---
+>  arch/powerpc/include/asm/pgtable-ppc64.h | 26 +++++++++++++++++++++-----
+>  arch/powerpc/include/asm/pte-book3e.h    |  1 +
+>  arch/powerpc/include/asm/pte-hash64.h    |  1 +
+>  3 files changed, 23 insertions(+), 5 deletions(-)
+>
+> diff --git a/arch/powerpc/include/asm/pgtable-ppc64.h
+> b/arch/powerpc/include/asm/pgtable-ppc64.h
+> index 43e6ad424c7f..954ae1201e42 100644
+> --- a/arch/powerpc/include/asm/pgtable-ppc64.h
+> +++ b/arch/powerpc/include/asm/pgtable-ppc64.h
+> @@ -347,11 +347,27 @@ static inline void __ptep_set_access_flags(pte_t
+> *ptep, pte_t entry)
+>  	pr_err("%s:%d: bad pgd %08lx.\n", __FILE__, __LINE__, pgd_val(e))
+>
+>  /* Encode and de-code a swap entry */
+> -#define __swp_type(entry)	(((entry).val >> 1) & 0x3f)
+> -#define __swp_offset(entry)	((entry).val >> 8)
+> -#define __swp_entry(type, offset) ((swp_entry_t){((type)<<
+> 1)|((offset)<<8)})
+> -#define __pte_to_swp_entry(pte)	((swp_entry_t){pte_val(pte) >>
+> PTE_RPN_SHIFT})
+> -#define __swp_entry_to_pte(x)	((pte_t) { (x).val << PTE_RPN_SHIFT })
+> +#define MAX_SWAPFILES_CHECK() do { \
+> +	BUILD_BUG_ON(MAX_SWAPFILES_SHIFT > SWP_TYPE_BITS); \
+> +	/*							\
+> +	 * Don't have overlapping bits with _PAGE_HPTEFLAGS	\
+> +	 * We filter HPTEFLAGS on set_pte.			\
+> +	 */							\
+> +	BUILD_BUG_ON(_PAGE_HPTEFLAGS & (0x1f << _PAGE_BIT_SWAP_TYPE)); \
+> +	} while (0)
+> +/*
+> + * on pte we don't need handle RADIX_TREE_EXCEPTIONAL_SHIFT;
+> + */
+> +#define SWP_TYPE_BITS 5
+> +#define __swp_type(x)		(((x).val >> _PAGE_BIT_SWAP_TYPE) \
+> +				& ((1UL << SWP_TYPE_BITS) - 1))
+> +#define __swp_offset(x)		((x).val >> PTE_RPN_SHIFT)
+> +#define __swp_entry(type, offset)	((swp_entry_t) { \
+> +					((type) << _PAGE_BIT_SWAP_TYPE) \
+> +					| ((offset) << PTE_RPN_SHIFT) })
+> +
+> +#define __pte_to_swp_entry(pte)		((swp_entry_t) { pte_val((pte)) })
+> +#define __swp_entry_to_pte(x)		__pte((x).val)
+>
+>  void pgtable_cache_add(unsigned shift, void (*ctor)(void *));
+>  void pgtable_cache_init(void);
+> diff --git a/arch/powerpc/include/asm/pte-book3e.h
+> b/arch/powerpc/include/asm/pte-book3e.h
+> index 91a704952ca1..8d8473278d91 100644
+> --- a/arch/powerpc/include/asm/pte-book3e.h
+> +++ b/arch/powerpc/include/asm/pte-book3e.h
+> @@ -11,6 +11,7 @@
+>  /* Architected bits */
+>  #define _PAGE_PRESENT	0x000001 /* software: pte contains a translation */
+>  #define _PAGE_SW1	0x000002
+> +#define _PAGE_BIT_SWAP_TYPE	2
+>  #define _PAGE_BAP_SR	0x000004
+>  #define _PAGE_BAP_UR	0x000008
+>  #define _PAGE_BAP_SW	0x000010
+> diff --git a/arch/powerpc/include/asm/pte-hash64.h
+> b/arch/powerpc/include/asm/pte-hash64.h
+> index fc852f7e7b3a..ef612c160da7 100644
+> --- a/arch/powerpc/include/asm/pte-hash64.h
+> +++ b/arch/powerpc/include/asm/pte-hash64.h
+> @@ -16,6 +16,7 @@
+>   */
+>  #define _PAGE_PRESENT		0x0001 /* software: pte contains a translation */
+>  #define _PAGE_USER		0x0002 /* matches one of the PP bits */
+> +#define _PAGE_BIT_SWAP_TYPE	2
+>  #define _PAGE_EXEC		0x0004 /* No execute on POWER4 and newer (we invert)
+> */
+>  #define _PAGE_GUARDED		0x0008
+>  /* We can derive Memory coherence from _PAGE_NO_CACHE */
+> --
+> 2.1.4
+>
+>
