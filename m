@@ -1,34 +1,40 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+Return-Path: <aik@ozlabs.ru>
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0850F1A05C6
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2015 18:21:33 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id E7E581A065D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2015 18:46:01 +1000 (AEST)
 Received: from /spool/local
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Fri, 29 May 2015 18:21:31 +1000
+ for <linuxppc-dev@lists.ozlabs.org> from <aik@ozlabs.ru>;
+ Fri, 29 May 2015 18:46:00 +1000
 Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 6C94D357804F
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2015 18:21:28 +1000 (EST)
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id 5D856357804F
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2015 18:45:57 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
  by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t4T8LKG250135120
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2015 18:21:28 +1000
-Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
- by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t4T8Ktmn016837
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2015 18:20:56 +1000
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH V2] powerpc/mm: Limit the max memory we can support
-Date: Fri, 29 May 2015 13:50:18 +0530
-Message-Id: <1432887618-23666-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-In-Reply-To: <1432871692-707-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-References: <1432871692-707-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ t4T8jnuc28442842
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2015 18:45:57 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t4T8jOam004134
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2015 18:45:25 +1000
+From: Alexey Kardashevskiy <aik@ozlabs.ru>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ David Gibson <david@gibson.dropbear.id.au>,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>,
+ Paul Mackerras <paulus@samba.org>, kvm@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+Subject: [PATCH kernel v11 01/34] powerpc/eeh/ioda2: Use device::iommu_group
+ to check IOMMU group
+Date: Fri, 29 May 2015 18:44:25 +1000
+Message-Id: <1432889098-22924-2-git-send-email-aik@ozlabs.ru>
+In-Reply-To: <1432889098-22924-1-git-send-email-aik@ozlabs.ru>
+References: <1432889098-22924-1-git-send-email-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,88 +44,104 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We need to limit the max memory based on Linux page table format.
-Add checks to limit memory based on pte size. Also limit the memory
-based on MAX_PHSYSMEM_BITS.
+This relies on the fact that a PCI device always has an IOMMU table
+which may not be the case when we get dynamic DMA windows so
+let's use more reliable check for IOMMU group here.
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
+As we do not rely on the table presence here, remove the workaround
+from pnv_pci_ioda2_set_bypass(); also remove the @add_to_iommu_group
+parameter from pnv_ioda_setup_bus_dma().
+
+Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+Acked-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 ---
-Changes from V1:
-* Update commit message. 4K can handle 64TB
-* Also limit based on MAX_PHSYSMEM_BITS
+ arch/powerpc/kernel/eeh.c                 |  4 +---
+ arch/powerpc/platforms/powernv/pci-ioda.c | 27 +++++----------------------
+ 2 files changed, 6 insertions(+), 25 deletions(-)
 
- arch/powerpc/include/asm/mmu.h       |  8 ++++++++
- arch/powerpc/include/asm/sparsemem.h |  2 --
- arch/powerpc/kernel/prom.c           | 25 ++++++++++++++++++++++---
- 3 files changed, 30 insertions(+), 5 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/mmu.h b/arch/powerpc/include/asm/mmu.h
-index 3d5abfe6ba67..d44d49093c8d 100644
---- a/arch/powerpc/include/asm/mmu.h
-+++ b/arch/powerpc/include/asm/mmu.h
-@@ -200,6 +200,14 @@ static inline void assert_pte_locked(struct mm_struct *mm, unsigned long addr)
- #  include <asm/mmu-8xx.h>
- #endif
+diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
+index 9ee61d1..defd874 100644
+--- a/arch/powerpc/kernel/eeh.c
++++ b/arch/powerpc/kernel/eeh.c
+@@ -1412,13 +1412,11 @@ static int dev_has_iommu_table(struct device *dev, void *data)
+ {
+ 	struct pci_dev *pdev = to_pci_dev(dev);
+ 	struct pci_dev **ppdev = data;
+-	struct iommu_table *tbl;
  
-+#ifdef CONFIG_PHYS_64BIT
-+/*
-+ * Max supported memory on 64bit system is 64TB.
-+ */
-+#define MAX_PHYSMEM_BITS        46
-+#else
-+#define MAX_PHYSMEM_BITS        32
-+#endif
+ 	if (!dev)
+ 		return 0;
  
- #endif /* __KERNEL__ */
- #endif /* _ASM_POWERPC_MMU_H_ */
-diff --git a/arch/powerpc/include/asm/sparsemem.h b/arch/powerpc/include/asm/sparsemem.h
-index f6fc0ee813d7..fc3808378893 100644
---- a/arch/powerpc/include/asm/sparsemem.h
-+++ b/arch/powerpc/include/asm/sparsemem.h
-@@ -11,8 +11,6 @@
- #define SECTION_SIZE_BITS       24
+-	tbl = get_iommu_table_base(dev);
+-	if (tbl && tbl->it_group) {
++	if (dev->iommu_group) {
+ 		*ppdev = pdev;
+ 		return 1;
+ 	}
+diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
+index f8bc950..2f092bb 100644
+--- a/arch/powerpc/platforms/powernv/pci-ioda.c
++++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+@@ -1654,21 +1654,15 @@ static u64 pnv_pci_ioda_dma_get_required_mask(struct pnv_phb *phb,
+ }
  
- #define MAX_PHYSADDR_BITS       46
--#define MAX_PHYSMEM_BITS        46
+ static void pnv_ioda_setup_bus_dma(struct pnv_ioda_pe *pe,
+-				   struct pci_bus *bus,
+-				   bool add_to_iommu_group)
++				   struct pci_bus *bus)
+ {
+ 	struct pci_dev *dev;
+ 
+ 	list_for_each_entry(dev, &bus->devices, bus_list) {
+-		if (add_to_iommu_group)
+-			set_iommu_table_base_and_group(&dev->dev,
+-						       pe->tce32_table);
+-		else
+-			set_iommu_table_base(&dev->dev, pe->tce32_table);
++		set_iommu_table_base_and_group(&dev->dev, pe->tce32_table);
+ 
+ 		if (dev->subordinate)
+-			pnv_ioda_setup_bus_dma(pe, dev->subordinate,
+-					       add_to_iommu_group);
++			pnv_ioda_setup_bus_dma(pe, dev->subordinate);
+ 	}
+ }
+ 
+@@ -1845,7 +1839,7 @@ static void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
+ 	} else if (pe->flags & (PNV_IODA_PE_BUS | PNV_IODA_PE_BUS_ALL)) {
+ 		iommu_register_group(tbl, phb->hose->global_number,
+ 				     pe->pe_number);
+-		pnv_ioda_setup_bus_dma(pe, pe->pbus, true);
++		pnv_ioda_setup_bus_dma(pe, pe->pbus);
+ 	} else if (pe->flags & PNV_IODA_PE_VF) {
+ 		iommu_register_group(tbl, phb->hose->global_number,
+ 				     pe->pe_number);
+@@ -1882,17 +1876,6 @@ static void pnv_pci_ioda2_set_bypass(struct iommu_table *tbl, bool enable)
+ 						     window_id,
+ 						     pe->tce_bypass_base,
+ 						     0);
 -
- #endif /* CONFIG_SPARSEMEM */
- 
- #ifdef CONFIG_MEMORY_HOTPLUG
-diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-index 308c5e15676b..c09315b32ca7 100644
---- a/arch/powerpc/kernel/prom.c
-+++ b/arch/powerpc/kernel/prom.c
-@@ -698,9 +698,28 @@ void __init early_init_devtree(void *params)
- #endif
- 		reserve_crashkernel();
- 	early_reserve_mem();
--
--	/* Ensure that total memory size is page-aligned. */
--	limit = ALIGN(memory_limit ?: memblock_phys_mem_size(), PAGE_SIZE);
-+	/*
-+	 * if not specified limit the memory based on the pfn count that
-+	 * we can fit in pte_t. Also ensure that total memory size is
-+	 * page-aligned.
-+	 */
-+	if (!memory_limit) {
-+		int bit_count;
-+		phys_addr_t pte_mem_limit;
-+
-+		limit = memblock_phys_mem_size();
-+		if (limit >= (1ULL << MAX_PHYSMEM_BITS))
-+			limit = (1ULL << MAX_PHYSMEM_BITS) - 1;
-+
-+		BUILD_BUG_ON(sizeof(pte_basic_t) > 8);
-+		bit_count = (sizeof(pte_basic_t) * 8) - PTE_RPN_SHIFT + PAGE_SHIFT;
-+		pte_mem_limit = ~0ULL >> (64 - bit_count);
-+		if (limit > pte_mem_limit)
-+			limit = pte_mem_limit;
-+	} else
-+		limit = memory_limit;
-+
-+	limit = ALIGN(limit, PAGE_SIZE);
- 	memblock_enforce_memory_limit(limit);
- 
- 	memblock_allow_resize();
+-		/*
+-		 * EEH needs the mapping between IOMMU table and group
+-		 * of those VFIO/KVM pass-through devices. We can postpone
+-		 * resetting DMA ops until the DMA mask is configured in
+-		 * host side.
+-		 */
+-		if (pe->pdev)
+-			set_iommu_table_base(&pe->pdev->dev, tbl);
+-		else
+-			pnv_ioda_setup_bus_dma(pe, pe->pbus, false);
+ 	}
+ 	if (rc)
+ 		pe_err(pe, "OPAL error %lld configuring bypass window\n", rc);
+@@ -1984,7 +1967,7 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
+ 	} else if (pe->flags & (PNV_IODA_PE_BUS | PNV_IODA_PE_BUS_ALL)) {
+ 		iommu_register_group(tbl, phb->hose->global_number,
+ 				     pe->pe_number);
+-		pnv_ioda_setup_bus_dma(pe, pe->pbus, true);
++		pnv_ioda_setup_bus_dma(pe, pe->pbus);
+ 	} else if (pe->flags & PNV_IODA_PE_VF) {
+ 		iommu_register_group(tbl, phb->hose->global_number,
+ 				     pe->pe_number);
 -- 
-2.1.4
+2.4.0.rc3.8.gfb3e7d5
