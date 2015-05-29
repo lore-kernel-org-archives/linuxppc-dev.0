@@ -1,35 +1,34 @@
-Return-Path: <Paul.Gortmaker@windriver.com>
-Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
- (using TLSv1.1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
+Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 094D01A0551
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2015 13:31:23 +1000 (AEST)
-From: Paul Gortmaker <paul.gortmaker@windriver.com>
-To: <linux-kernel@vger.kernel.org>
-CC: Paul Gortmaker <paul.gortmaker@windriver.com>, Benjamin Herrenschmidt
- <benh@kernel.crashing.org>, Chris Zankel <chris@zankel.net>, David Howells
- <dhowells@redhat.com>, Fenghua Yu <fenghua.yu@intel.com>, Geoff Levand
- <geoff@infradead.org>, Helge Deller <deller@gmx.de>, "H. Peter Anvin"
- <hpa@zytor.com>, Ingo Molnar <mingo@redhat.com>, Ivan Kokshaysky
- <ink@jurassic.park.msu.ru>, "James E.J. Bottomley" <jejb@parisc-linux.org>,
- Jesper Nilsson <jesper.nilsson@axis.com>, Koichi Yasutake
- <yasutake.koichi@jp.panasonic.com>, Matt Turner <mattst88@gmail.com>, Max
- Filippov <jcmvbkbc@gmail.com>, Mikael Starvik <starvik@axis.com>, Mike
- Turquette <mturquette@linaro.org>, Paul Mackerras <paulus@samba.org>, Paul
- Mundt <lethal@linux-sh.org>, Richard Henderson <rth@twiddle.net>, Russell
- King <linux@arm.linux.org.uk>, Scott Wood <scottwood@freescale.com>, Thomas
- Gleixner <tglx@linutronix.de>, Thomas Meyer <thomas@m3y3r.de>, Tony Luck
- <tony.luck@intel.com>, <linux-alpha@vger.kernel.org>,
- <linux-am33-list@redhat.com>, <linux-arm-kernel@lists.infradead.org>,
- <linux-cris-kernel@axis.com>, <linux-ia64@vger.kernel.org>,
- <linux-parisc@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
- <linux-sh@vger.kernel.org>, <linux-xtensa@linux-xtensa.org>,
- <x86@kernel.org>
-Subject: [PATCH 00/15] Replace module_init with device_initcall in non modules
-Date: Thu, 28 May 2015 20:47:58 -0400
-Message-ID: <1432860493-23831-1-git-send-email-paul.gortmaker@windriver.com>
-MIME-Version: 1.0
-Content-Type: text/plain
+ by lists.ozlabs.org (Postfix) with ESMTPS id 75CD81A0551
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2015 13:55:57 +1000 (AEST)
+Received: from /spool/local
+ by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
+ Fri, 29 May 2015 13:55:55 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id D47DE2BB0040
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2015 13:55:53 +1000 (EST)
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t4T3tjcT50397248
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2015 13:55:53 +1000
+Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
+ by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t4T3tKe4020825
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2015 13:55:21 +1000
+From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
+Cc: linuxppc-dev@lists.ozlabs.org, hmyneni@gmail.com,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
+Subject: [PATCH 2/3] powerpc/mm: Limit the max memory we can support
+Date: Fri, 29 May 2015 09:24:51 +0530
+Message-Id: <1432871692-707-2-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+In-Reply-To: <1432871692-707-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+References: <1432871692-707-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -39,100 +38,48 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This series of commits converts non-modular code that is using
-the module_init() call to hook itself into the system to instead
-use device_initcall().
+We need to limit the max memory based on Linux page table format.
+For example, with 4K page size we can't support 64TB memory based
+on the existing pte format. Add checks to limit memory based
+on pte size.
 
-The conversion is a runtime no-op, since module_init actually
-becomes __initcall in the non-modular case, and that in turn gets
-mapped onto device_initcall.
-
-We fix this up now, so that we can relocate module_init from
-init.h into module.h in a future series.
-
-The files changed here are just limited to those that would
-otherwise have to add module.h to obviously non-modular code, since
-we don't want to do that.
-
-This work is factored out from what was a previously larger series[1] so
-that there is a common theme and lower patch count to ease review.
-
-Paul.
-
-[1] https://marc.info/?l=linux-kernel&m=139033951228828
-
+Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
 ---
+ arch/powerpc/kernel/prom.c | 22 +++++++++++++++++++---
+ 1 file changed, 19 insertions(+), 3 deletions(-)
 
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Chris Zankel <chris@zankel.net>
-Cc: David Howells <dhowells@redhat.com>
-Cc: Fenghua Yu <fenghua.yu@intel.com>
-Cc: Geoff Levand <geoff@infradead.org>
-Cc: Helge Deller <deller@gmx.de>
-Cc: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: Ivan Kokshaysky <ink@jurassic.park.msu.ru>
-Cc: "James E.J. Bottomley" <jejb@parisc-linux.org>
-Cc: Jesper Nilsson <jesper.nilsson@axis.com>
-Cc: Koichi Yasutake <yasutake.koichi@jp.panasonic.com>
-Cc: Matt Turner <mattst88@gmail.com>
-Cc: Max Filippov <jcmvbkbc@gmail.com>
-Cc: Mikael Starvik <starvik@axis.com>
-Cc: Mike Turquette <mturquette@linaro.org>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Paul Mundt <lethal@linux-sh.org>
-Cc: Richard Henderson <rth@twiddle.net>
-Cc: Russell King <linux@arm.linux.org.uk>
-Cc: Scott Wood <scottwood@freescale.com>
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Thomas Meyer <thomas@m3y3r.de>
-Cc: Tony Luck <tony.luck@intel.com>
-Cc: linux-alpha@vger.kernel.org
-Cc: linux-am33-list@redhat.com
-Cc: linux-arm-kernel@lists.infradead.org
-Cc: linux-cris-kernel@axis.com
-Cc: linux-ia64@vger.kernel.org
-Cc: linux-parisc@vger.kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: linux-sh@vger.kernel.org
-Cc: linux-xtensa@linux-xtensa.org
-Cc: x86@kernel.org
-
-Paul Gortmaker (15):
-  x86: don't use module_init in non-modular intel_mid_vrtc.c
-  x86: don't use module_init in non-modular devicetree.c code
-  powerpc: use device_initcall for registering rtc devices
-  powerpc: don't use module_init in non-modular 83xx suspend code
-  arm: don't use module_init in non-modular mach-vexpress/spc.c code
-  alpha: don't use module_init for non-modular core code
-  ia64: don't use module_init for non-modular core kernel/mca.c code
-  ia64: don't use module_init in non-modular sim/simscsi.c code
-  cris: don't use module_init for non-modular core intmem.c code
-  parisc: don't use module_init for non-modular core pdc_cons code
-  parisc64: don't use module_init for non-modular core perf code
-  mn10300: don't use module_init in non-modular flash.c code
-  sh: don't use module_init in non-modular psw.c code
-  xtensa: don't use module_init for non-modular core network.c code
-  drivers/clk: don't use module_init in clk-nomadik.c which is
-    non-modular
-
- arch/alpha/kernel/srmcons.c                  |  3 +--
- arch/arm/mach-vexpress/spc.c                 |  2 +-
- arch/cris/arch-v32/mm/intmem.c               |  3 +--
- arch/ia64/hp/sim/simscsi.c                   | 11 +----------
- arch/ia64/sn/kernel/mca.c                    |  3 +--
- arch/mn10300/unit-asb2303/flash.c            |  3 +--
- arch/parisc/kernel/pdc_cons.c                |  3 +--
- arch/parisc/kernel/perf.c                    |  3 +--
- arch/powerpc/kernel/time.c                   |  2 +-
- arch/powerpc/platforms/83xx/suspend.c        |  3 +--
- arch/powerpc/platforms/ps3/time.c            |  3 +--
- arch/sh/boards/mach-landisk/psw.c            |  2 +-
- arch/x86/kernel/devicetree.c                 |  2 +-
- arch/x86/platform/intel-mid/intel_mid_vrtc.c |  3 +--
- arch/xtensa/platforms/iss/network.c          |  4 +---
- drivers/clk/clk-nomadik.c                    |  3 +--
- 16 files changed, 16 insertions(+), 37 deletions(-)
-
+diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+index 308c5e15676b..a0108ddde01c 100644
+--- a/arch/powerpc/kernel/prom.c
++++ b/arch/powerpc/kernel/prom.c
+@@ -698,9 +698,25 @@ void __init early_init_devtree(void *params)
+ #endif
+ 		reserve_crashkernel();
+ 	early_reserve_mem();
+-
+-	/* Ensure that total memory size is page-aligned. */
+-	limit = ALIGN(memory_limit ?: memblock_phys_mem_size(), PAGE_SIZE);
++	/*
++	 * if not specified limit the memory based on the pfn count that
++	 * we can fit in pte_t. Also ensure that total memory size is
++	 * page-aligned.
++	 */
++	if (!memory_limit) {
++		int bit_count;
++		phys_addr_t pte_mem_limit;
++
++		BUILD_BUG_ON(sizeof(pte_basic_t) > 8);
++		bit_count = (sizeof(pte_basic_t) * 8) - PTE_RPN_SHIFT + PAGE_SHIFT;
++		pte_mem_limit = ~0ULL >> (64 - bit_count);
++		limit = memblock_phys_mem_size();
++		if (limit > pte_mem_limit)
++			limit = pte_mem_limit;
++	} else
++		limit = memory_limit;
++
++	limit = ALIGN(limit, PAGE_SIZE);
+ 	memblock_enforce_memory_limit(limit);
+ 
+ 	memblock_allow_resize();
 -- 
-2.2.1
+2.1.4
