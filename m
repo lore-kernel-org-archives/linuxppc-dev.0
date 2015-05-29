@@ -1,34 +1,17 @@
-Return-Path: <aneesh.kumar@linux.vnet.ibm.com>
-Received: from e23smtp06.au.ibm.com (e23smtp06.au.ibm.com [202.81.31.148])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <jk@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 8AA1D1A0600
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2015 13:57:13 +1000 (AEST)
-Received: from /spool/local
- by e23smtp06.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <aneesh.kumar@linux.vnet.ibm.com>;
- Fri, 29 May 2015 13:57:13 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 7A8C83578048
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2015 13:57:10 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t4T3tlAr39190644
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2015 13:55:55 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t4T3tM6d020913
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2015 13:55:23 +1000
-From: "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-To: benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org, hmyneni@gmail.com,
- "Aneesh Kumar K.V" <aneesh.kumar@linux.vnet.ibm.com>
-Subject: [PATCH 3/3] powerpc/mm: Change the swap encoding in pte.
-Date: Fri, 29 May 2015 09:24:52 +0530
-Message-Id: <1432871692-707-3-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-In-Reply-To: <1432871692-707-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
-References: <1432871692-707-1-git-send-email-aneesh.kumar@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5D2191A1912
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2015 13:58:13 +1000 (AEST)
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Subject: [PATCH 3/3 v3] powerpc/powernv: Add opal-prd channel
+Message-Id: <1432871759.306324.398125101148.1.gpush@pablo>
+In-Reply-To: <1432092213.630344.947105758608.3.gpush@pablo>
+To: linuxppc-dev@lists.ozlabs.org
+From: Jeremy Kerr <jk@ozlabs.org>
+Date: Fri, 29 May 2015 11:55:59 +0800
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,78 +21,672 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Current swap encoding in pte can't support large pfns
-above 4TB. Change the swap encoding such that we put
-the swap type in the PTE bits. Also add build checks
-to make sure we don't overlap with HPTEFLAGS.
+This change adds a char device to access the "PRD" (processor runtime
+diagnostics) channel to OPAL firmware.
 
-Signed-off-by: Aneesh Kumar K.V <aneesh.kumar@linux.vnet.ibm.com>
----
- arch/powerpc/include/asm/pgtable-ppc64.h | 26 +++++++++++++++++++++-----
- arch/powerpc/include/asm/pte-book3e.h    |  1 +
- arch/powerpc/include/asm/pte-hash64.h    |  1 +
- 3 files changed, 23 insertions(+), 5 deletions(-)
+Includes contributions from Vaidyanathan Srinivasan, Neelesh Gupta &
+Vishal Kulkarni.
 
-diff --git a/arch/powerpc/include/asm/pgtable-ppc64.h b/arch/powerpc/include/asm/pgtable-ppc64.h
-index 43e6ad424c7f..954ae1201e42 100644
---- a/arch/powerpc/include/asm/pgtable-ppc64.h
-+++ b/arch/powerpc/include/asm/pgtable-ppc64.h
-@@ -347,11 +347,27 @@ static inline void __ptep_set_access_flags(pte_t *ptep, pte_t entry)
- 	pr_err("%s:%d: bad pgd %08lx.\n", __FILE__, __LINE__, pgd_val(e))
- 
- /* Encode and de-code a swap entry */
--#define __swp_type(entry)	(((entry).val >> 1) & 0x3f)
--#define __swp_offset(entry)	((entry).val >> 8)
--#define __swp_entry(type, offset) ((swp_entry_t){((type)<< 1)|((offset)<<8)})
--#define __pte_to_swp_entry(pte)	((swp_entry_t){pte_val(pte) >> PTE_RPN_SHIFT})
--#define __swp_entry_to_pte(x)	((pte_t) { (x).val << PTE_RPN_SHIFT })
-+#define MAX_SWAPFILES_CHECK() do { \
-+	BUILD_BUG_ON(MAX_SWAPFILES_SHIFT > SWP_TYPE_BITS); \
-+	/*							\
-+	 * Don't have overlapping bits with _PAGE_HPTEFLAGS	\
-+	 * We filter HPTEFLAGS on set_pte.			\
-+	 */							\
-+	BUILD_BUG_ON(_PAGE_HPTEFLAGS & (0x1f << _PAGE_BIT_SWAP_TYPE)); \
-+	} while (0)
-+/*
-+ * on pte we don't need handle RADIX_TREE_EXCEPTIONAL_SHIFT;
-+ */
-+#define SWP_TYPE_BITS 5
-+#define __swp_type(x)		(((x).val >> _PAGE_BIT_SWAP_TYPE) \
-+				& ((1UL << SWP_TYPE_BITS) - 1))
-+#define __swp_offset(x)		((x).val >> PTE_RPN_SHIFT)
-+#define __swp_entry(type, offset)	((swp_entry_t) { \
-+					((type) << _PAGE_BIT_SWAP_TYPE) \
-+					| ((offset) << PTE_RPN_SHIFT) })
-+
-+#define __pte_to_swp_entry(pte)		((swp_entry_t) { pte_val((pte)) })
-+#define __swp_entry_to_pte(x)		__pte((x).val)
- 
- void pgtable_cache_add(unsigned shift, void (*ctor)(void *));
- void pgtable_cache_init(void);
-diff --git a/arch/powerpc/include/asm/pte-book3e.h b/arch/powerpc/include/asm/pte-book3e.h
-index 91a704952ca1..8d8473278d91 100644
---- a/arch/powerpc/include/asm/pte-book3e.h
-+++ b/arch/powerpc/include/asm/pte-book3e.h
-@@ -11,6 +11,7 @@
- /* Architected bits */
- #define _PAGE_PRESENT	0x000001 /* software: pte contains a translation */
- #define _PAGE_SW1	0x000002
-+#define _PAGE_BIT_SWAP_TYPE	2
- #define _PAGE_BAP_SR	0x000004
- #define _PAGE_BAP_UR	0x000008
- #define _PAGE_BAP_SW	0x000010
-diff --git a/arch/powerpc/include/asm/pte-hash64.h b/arch/powerpc/include/asm/pte-hash64.h
-index fc852f7e7b3a..ef612c160da7 100644
---- a/arch/powerpc/include/asm/pte-hash64.h
-+++ b/arch/powerpc/include/asm/pte-hash64.h
-@@ -16,6 +16,7 @@
-  */
- #define _PAGE_PRESENT		0x0001 /* software: pte contains a translation */
- #define _PAGE_USER		0x0002 /* matches one of the PP bits */
-+#define _PAGE_BIT_SWAP_TYPE	2
- #define _PAGE_EXEC		0x0004 /* No execute on POWER4 and newer (we invert) */
- #define _PAGE_GUARDED		0x0008
- /* We can derive Memory coherence from _PAGE_NO_CACHE */
+Signed-off-by: Neelesh Gupta <neelegup@linux.vnet.ibm.com>
+Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
+Acked-by: Stewart Smith <stewart@linux.vnet.ibm.com>
+
 -- 
-2.1.4
+
+v3:
+ - Add versioning description and reserved fields in opal_prd_info
+   for future expansion
+
+ - Fix node leak in opal_prd_range_is_valid
+
+ - Explain open() & probe() semantics
+
+ - Fix miscdev_register error path
+
+---
+ arch/powerpc/include/asm/opal-api.h            |   21 
+ arch/powerpc/include/asm/opal.h                |    1 
+ arch/powerpc/include/uapi/asm/opal-prd.h       |   58 ++
+ arch/powerpc/platforms/powernv/Kconfig         |    7 
+ arch/powerpc/platforms/powernv/Makefile        |    1 
+ arch/powerpc/platforms/powernv/opal-prd.c      |  451 +++++++++++++++++
+ arch/powerpc/platforms/powernv/opal-wrappers.S |    1 
+ arch/powerpc/platforms/powernv/opal.c          |    4 
+ 8 files changed, 542 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
+index 0321a90..2407f12 100644
+--- a/arch/powerpc/include/asm/opal-api.h
++++ b/arch/powerpc/include/asm/opal-api.h
+@@ -153,7 +153,8 @@
+ #define OPAL_FLASH_READ				110
+ #define OPAL_FLASH_WRITE			111
+ #define OPAL_FLASH_ERASE			112
+-#define OPAL_LAST				112
++#define OPAL_PRD_MSG				113
++#define OPAL_LAST				113
+ 
+ /* Device tree flags */
+ 
+@@ -352,6 +353,7 @@ enum opal_msg_type {
+ 	OPAL_MSG_SHUTDOWN,		/* params[0] = 1 reboot, 0 shutdown */
+ 	OPAL_MSG_HMI_EVT,
+ 	OPAL_MSG_DPO,
++	OPAL_MSG_PRD,
+ 	OPAL_MSG_TYPE_MAX,
+ };
+ 
+@@ -674,6 +676,23 @@ typedef struct oppanel_line {
+ 	__be64 line_len;
+ } oppanel_line_t;
+ 
++enum opal_prd_msg_type {
++	OPAL_PRD_MSG_TYPE_INIT = 0,	/* HBRT --> OPAL */
++	OPAL_PRD_MSG_TYPE_FINI,		/* HBRT/kernel --> OPAL */
++	OPAL_PRD_MSG_TYPE_ATTN,		/* HBRT <-- OPAL */
++	OPAL_PRD_MSG_TYPE_ATTN_ACK,	/* HBRT --> OPAL */
++	OPAL_PRD_MSG_TYPE_OCC_ERROR,	/* HBRT <-- OPAL */
++	OPAL_PRD_MSG_TYPE_OCC_RESET,	/* HBRT <-- OPAL */
++};
++
++struct opal_prd_msg_header {
++	uint8_t		type;
++	uint8_t		pad[1];
++	__be16		size;
++};
++
++struct opal_prd_msg;
++
+ /*
+  * SG entries
+  *
+diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
+index 042af1a..93704af 100644
+--- a/arch/powerpc/include/asm/opal.h
++++ b/arch/powerpc/include/asm/opal.h
+@@ -193,6 +193,7 @@ int64_t opal_ipmi_recv(uint64_t interface, struct opal_ipmi_msg *msg,
+ 		uint64_t *msg_len);
+ int64_t opal_i2c_request(uint64_t async_token, uint32_t bus_id,
+ 			 struct opal_i2c_request *oreq);
++int64_t opal_prd_msg(struct opal_prd_msg *msg);
+ 
+ int64_t opal_flash_read(uint64_t id, uint64_t offset, uint64_t buf,
+ 		uint64_t size, uint64_t token);
+diff --git a/arch/powerpc/include/uapi/asm/opal-prd.h b/arch/powerpc/include/uapi/asm/opal-prd.h
+new file mode 100644
+index 0000000..319ff4a
+--- /dev/null
++++ b/arch/powerpc/include/uapi/asm/opal-prd.h
+@@ -0,0 +1,58 @@
++/*
++ * OPAL Runtime Diagnostics interface driver
++ * Supported on POWERNV platform
++ *
++ * (C) Copyright IBM 2015
++ *
++ * Author: Vaidyanathan Srinivasan <svaidy at linux.vnet.ibm.com>
++ * Author: Jeremy Kerr <jk@ozlabs.org>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2, or (at your option)
++ * any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ */
++
++#ifndef _UAPI_ASM_POWERPC_OPAL_PRD_H_
++#define _UAPI_ASM_POWERPC_OPAL_PRD_H_
++
++#include <linux/types.h>
++
++/**
++ * The version of the kernel interface of the PRD system. This describes the
++ * interface available for the /dev/opal-prd device. The actual PRD message
++ * layout and content is private to the firmware <--> userspace interface, so
++ * is not covered by this versioning.
++ *
++ * Future interface versions are backwards-compatible; if a later kernel
++ * version is encountered, functionality provided in earlier versions
++ * will work.
++ */
++#define OPAL_PRD_KERNEL_VERSION		1
++
++#define OPAL_PRD_GET_INFO		_IOR('o', 0x01, struct opal_prd_info)
++#define OPAL_PRD_SCOM_READ		_IOR('o', 0x02, struct opal_prd_scom)
++#define OPAL_PRD_SCOM_WRITE		_IOW('o', 0x03, struct opal_prd_scom)
++
++#ifndef __ASSEMBLY__
++
++struct opal_prd_info {
++	__u64	version;
++	__u64	reserved[3];
++};
++
++struct opal_prd_scom {
++	__u64	chip;
++	__u64	addr;
++	__u64	data;
++	__s64	rc;
++};
++
++#endif /* __ASSEMBLY__ */
++
++#endif /* _UAPI_ASM_POWERPC_OPAL_PRD_H */
+diff --git a/arch/powerpc/platforms/powernv/Kconfig b/arch/powerpc/platforms/powernv/Kconfig
+index 4b044d8..604190c 100644
+--- a/arch/powerpc/platforms/powernv/Kconfig
++++ b/arch/powerpc/platforms/powernv/Kconfig
+@@ -19,3 +19,10 @@ config PPC_POWERNV
+ 	select CPU_FREQ_GOV_CONSERVATIVE
+ 	select PPC_DOORBELL
+ 	default y
++
++config OPAL_PRD
++	tristate 'OPAL PRD driver'
++	depends on PPC_POWERNV
++	help
++	  This enables the opal-prd driver, a facility to run processor
++	  recovery diagnostics on OpenPower machines
+diff --git a/arch/powerpc/platforms/powernv/Makefile b/arch/powerpc/platforms/powernv/Makefile
+index 33e44f3..eab1513 100644
+--- a/arch/powerpc/platforms/powernv/Makefile
++++ b/arch/powerpc/platforms/powernv/Makefile
+@@ -9,3 +9,4 @@ obj-$(CONFIG_EEH)	+= eeh-powernv.o
+ obj-$(CONFIG_PPC_SCOM)	+= opal-xscom.o
+ obj-$(CONFIG_MEMORY_FAILURE)	+= opal-memory-errors.o
+ obj-$(CONFIG_TRACEPOINTS)	+= opal-tracepoints.o
++obj-$(CONFIG_OPAL_PRD)	+= opal-prd.o
+diff --git a/arch/powerpc/platforms/powernv/opal-prd.c b/arch/powerpc/platforms/powernv/opal-prd.c
+new file mode 100644
+index 0000000..3004f4a
+--- /dev/null
++++ b/arch/powerpc/platforms/powernv/opal-prd.c
+@@ -0,0 +1,451 @@
++/*
++ * OPAL Runtime Diagnostics interface driver
++ * Supported on POWERNV platform
++ *
++ * (C) Copyright IBM 2015
++ *
++ * Author: Vishal Kulkarni <kvishal at in.ibm.com>
++ * Author: Vaidyanathan Srinivasan <svaidy at linux.vnet.ibm.com>
++ * Author: Jeremy Kerr <jk@ozlabs.org>
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2, or (at your option)
++ * any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ */
++
++#define pr_fmt(fmt) "opal-prd: " fmt
++
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/platform_device.h>
++#include <linux/miscdevice.h>
++#include <linux/fs.h>
++#include <linux/of.h>
++#include <linux/of_address.h>
++#include <linux/poll.h>
++#include <linux/mm.h>
++#include <linux/slab.h>
++#include <asm/opal-prd.h>
++#include <asm/opal.h>
++#include <asm/io.h>
++#include <asm/uaccess.h>
++
++
++struct opal_prd_msg_queue_item {
++	struct opal_prd_msg_header	msg;
++	struct list_head		list;
++};
++
++static struct device_node *prd_node;
++static LIST_HEAD(opal_prd_msg_queue);
++static DEFINE_SPINLOCK(opal_prd_msg_queue_lock);
++static DECLARE_WAIT_QUEUE_HEAD(opal_prd_msg_wait);
++static atomic_t prd_usage;
++
++static bool opal_prd_range_is_valid(uint64_t addr, uint64_t size)
++{
++	struct device_node *parent, *node;
++	bool found;
++
++	if (addr + size < addr)
++		return false;
++
++	parent = of_find_node_by_path("/reserved-memory");
++	if (!parent)
++		return false;
++
++	found = false;
++
++	for_each_child_of_node(parent, node) {
++		uint64_t range_addr, range_size, range_end;
++		const __be32 *addrp;
++		const char *label;
++
++		addrp = of_get_address(node, 0, &range_size, NULL);
++
++		range_addr = of_read_number(addrp, 2);
++		range_end = range_addr + range_size;
++
++		label = of_get_property(node, "ibm,prd-label", NULL);
++
++		/* PRD ranges need a label */
++		if (!label)
++			continue;
++
++		if (range_end <= range_addr)
++			continue;
++
++		if (addr >= range_addr && addr + size <= range_end) {
++			found = true;
++			of_node_put(node);
++			break;
++		}
++	}
++
++	of_node_put(parent);
++	return found;
++}
++
++static int opal_prd_open(struct inode *inode, struct file *file)
++{
++	/*
++	 * Prevent multiple (separate) processes from concurrent interactions
++	 * with the FW PRD channel
++	 */
++	if (atomic_xchg(&prd_usage, 1) == 1)
++		return -EBUSY;
++
++	return 0;
++}
++
++/*
++ * opal_prd_mmap - maps firmware-provided ranges into userspace
++ * @file: file structure for the device
++ * @vma: VMA to map the registers into
++ */
++
++static int opal_prd_mmap(struct file *file, struct vm_area_struct *vma)
++{
++	size_t addr, size;
++	int rc;
++
++	pr_devel("opal_prd_mmap(0x%016lx, 0x%016lx, 0x%lx, 0x%lx)\n",
++			vma->vm_start, vma->vm_end, vma->vm_pgoff,
++			vma->vm_flags);
++
++	addr = vma->vm_pgoff << PAGE_SHIFT;
++	size = vma->vm_end - vma->vm_start;
++
++	/* ensure we're mapping within one of the allowable ranges */
++	if (!opal_prd_range_is_valid(addr, size))
++		return -EINVAL;
++
++	vma->vm_page_prot = phys_mem_access_prot(file, vma->vm_pgoff,
++						 size, vma->vm_page_prot)
++				| _PAGE_SPECIAL;
++
++	rc = remap_pfn_range(vma, vma->vm_start, vma->vm_pgoff, size,
++			vma->vm_page_prot);
++
++	return rc;
++}
++
++static bool opal_msg_queue_empty(void)
++{
++	unsigned long flags;
++	bool ret;
++
++	spin_lock_irqsave(&opal_prd_msg_queue_lock, flags);
++	ret = list_empty(&opal_prd_msg_queue);
++	spin_unlock_irqrestore(&opal_prd_msg_queue_lock, flags);
++
++	return ret;
++}
++
++static unsigned int opal_prd_poll(struct file *file,
++		struct poll_table_struct *wait)
++{
++	poll_wait(file, &opal_prd_msg_wait, wait);
++
++	if (!opal_msg_queue_empty())
++		return POLLIN | POLLRDNORM;
++
++	return 0;
++}
++
++static ssize_t opal_prd_read(struct file *file, char __user *buf,
++		size_t count, loff_t *ppos)
++{
++	struct opal_prd_msg_queue_item *item;
++	unsigned long flags;
++	ssize_t size, err;
++	int rc;
++
++	/* we need at least a header's worth of data */
++	if (count < sizeof(item->msg))
++		return -EINVAL;
++
++	if (*ppos)
++		return -ESPIPE;
++
++	item = NULL;
++
++	for (;;) {
++
++		spin_lock_irqsave(&opal_prd_msg_queue_lock, flags);
++		if (!list_empty(&opal_prd_msg_queue)) {
++			item = list_first_entry(&opal_prd_msg_queue,
++					struct opal_prd_msg_queue_item, list);
++			list_del(&item->list);
++		}
++		spin_unlock_irqrestore(&opal_prd_msg_queue_lock, flags);
++
++		if (item)
++			break;
++
++		if (file->f_flags & O_NONBLOCK)
++			return -EAGAIN;
++
++		rc = wait_event_interruptible(opal_prd_msg_wait,
++				!opal_msg_queue_empty());
++		if (rc)
++			return -EINTR;
++	}
++
++	size = be16_to_cpu(item->msg.size);
++	if (size > count) {
++		err = -EINVAL;
++		goto err_requeue;
++	}
++
++	rc = copy_to_user(buf, &item->msg, size);
++	if (rc) {
++		err = -EFAULT;
++		goto err_requeue;
++	}
++
++	kfree(item);
++
++	return size;
++
++err_requeue:
++	/* eep! re-queue at the head of the list */
++	spin_lock_irqsave(&opal_prd_msg_queue_lock, flags);
++	list_add(&item->list, &opal_prd_msg_queue);
++	spin_unlock_irqrestore(&opal_prd_msg_queue_lock, flags);
++	return err;
++}
++
++static ssize_t opal_prd_write(struct file *file, const char __user *buf,
++		size_t count, loff_t *ppos)
++{
++	struct opal_prd_msg_header hdr;
++	ssize_t size;
++	void *msg;
++	int rc;
++
++	size = sizeof(hdr);
++
++	if (count < size)
++		return -EINVAL;
++
++	/* grab the header */
++	rc = copy_from_user(&hdr, buf, sizeof(hdr));
++	if (rc)
++		return -EFAULT;
++
++	size = be16_to_cpu(hdr.size);
++
++	msg = kmalloc(size, GFP_KERNEL);
++	if (!msg)
++		return -ENOMEM;
++
++	rc = copy_from_user(msg, buf, size);
++	if (rc) {
++		size = -EFAULT;
++		goto out_free;
++	}
++
++	rc = opal_prd_msg(msg);
++	if (rc) {
++		pr_warn("write: opal_prd_msg returned %d\n", rc);
++		size = -EIO;
++	}
++
++out_free:
++	kfree(msg);
++
++	return size;
++}
++
++static int opal_prd_release(struct inode *inode, struct file *file)
++{
++	struct opal_prd_msg_header msg;
++
++	msg.size = cpu_to_be16(sizeof(msg));
++	msg.type = OPAL_PRD_MSG_TYPE_FINI;
++
++	opal_prd_msg((struct opal_prd_msg *)&msg);
++
++	atomic_xchg(&prd_usage, 0);
++
++	return 0;
++}
++
++static long opal_prd_ioctl(struct file *file, unsigned int cmd,
++		unsigned long param)
++{
++	struct opal_prd_info info;
++	struct opal_prd_scom scom;
++	int rc = 0;
++
++	switch(cmd) {
++	case OPAL_PRD_GET_INFO:
++		memset(&info, 0, sizeof(info));
++		info.version = OPAL_PRD_KERNEL_VERSION;
++		rc = copy_to_user((void __user *)param, &info, sizeof(info));
++		if (rc)
++			return -EFAULT;
++		break;
++
++	case OPAL_PRD_SCOM_READ:
++		rc = copy_from_user(&scom, (void __user *)param, sizeof(scom));
++		if (rc)
++			return -EFAULT;
++
++		scom.rc = opal_xscom_read(scom.chip, scom.addr,
++				(__be64 *)&scom.data);
++		scom.data = be64_to_cpu(scom.data);
++		pr_devel("ioctl SCOM_READ: chip %llx addr %016llx "
++				"data %016llx rc %lld\n",
++				scom.chip, scom.addr, scom.data, scom.rc);
++
++		rc = copy_to_user((void __user *)param, &scom, sizeof(scom));
++		if (rc)
++			return -EFAULT;
++		break;
++
++	case OPAL_PRD_SCOM_WRITE:
++		rc = copy_from_user(&scom, (void __user *)param, sizeof(scom));
++		if (rc)
++			return -EFAULT;
++
++		scom.rc = opal_xscom_write(scom.chip, scom.addr, scom.data);
++		pr_devel("ioctl SCOM_WRITE: chip %llx addr %016llx "
++				"data %016llx rc %lld\n",
++				scom.chip, scom.addr, scom.data, scom.rc);
++
++		rc = copy_to_user((void __user *)param, &scom, sizeof(scom));
++		if (rc)
++			return -EFAULT;
++		break;
++
++	default:
++		rc = -EINVAL;
++	}
++
++	return rc;
++}
++
++struct file_operations opal_prd_fops = {
++	.open		= opal_prd_open,
++	.mmap		= opal_prd_mmap,
++	.poll		= opal_prd_poll,
++	.read		= opal_prd_read,
++	.write		= opal_prd_write,
++	.unlocked_ioctl	= opal_prd_ioctl,
++	.release	= opal_prd_release,
++	.owner		= THIS_MODULE,
++};
++
++static struct miscdevice opal_prd_dev = {
++        .minor		= MISC_DYNAMIC_MINOR,
++        .name		= "opal-prd",
++        .fops		= &opal_prd_fops,
++};
++
++/* opal interface */
++static int opal_prd_msg_notifier(struct notifier_block *nb,
++		unsigned long msg_type, void *_msg)
++{
++	struct opal_prd_msg_queue_item *item;
++	struct opal_prd_msg_header *hdr;
++	struct opal_msg *msg = _msg;
++	unsigned long flags;
++	int size;
++
++	if (msg_type != OPAL_MSG_PRD)
++		return 0;
++
++	/* Calculate total size of the item we need to store. The 'size' field
++	 * in the header includes the header itself. */
++	hdr = (void *)msg->params;
++	size = (sizeof(*item) - sizeof(item->msg)) + be16_to_cpu(hdr->size);
++
++	item = kzalloc(size, GFP_ATOMIC);
++	if (!item)
++		return -ENOMEM;
++
++	memcpy(&item->msg, msg->params, size);
++
++	spin_lock_irqsave(&opal_prd_msg_queue_lock, flags);
++	list_add_tail(&item->list, &opal_prd_msg_queue);
++	spin_unlock_irqrestore(&opal_prd_msg_queue_lock, flags);
++
++	wake_up_interruptible(&opal_prd_msg_wait);
++
++	return 0;
++}
++
++static struct notifier_block opal_prd_event_nb = {
++	.notifier_call	= opal_prd_msg_notifier,
++	.next		= NULL,
++	.priority	= 0,
++};
++
++static int opal_prd_probe(struct platform_device *pdev)
++{
++	int rc;
++
++	if (!pdev || !pdev->dev.of_node)
++		return -ENODEV;
++
++	/* We should only have one prd driver instance per machine; ensure
++	 * that we only get a valid probe on a single OF node.
++	 */
++	if (prd_node)
++		return -EBUSY;
++
++	prd_node = pdev->dev.of_node;
++
++	rc = opal_message_notifier_register(OPAL_MSG_PRD, &opal_prd_event_nb);
++	if (rc) {
++		pr_err("Couldn't register event notifier\n");
++		return rc;
++	}
++
++	rc = misc_register(&opal_prd_dev);
++	if (rc) {
++		pr_err("failed to register miscdev\n");
++		opal_message_notifier_unregister(OPAL_MSG_PRD,
++				&opal_prd_event_nb);
++		return rc;
++	}
++
++	return 0;
++}
++
++static int opal_prd_remove(struct platform_device *pdev)
++{
++	misc_deregister(&opal_prd_dev);
++	opal_message_notifier_unregister(OPAL_MSG_PRD, &opal_prd_event_nb);
++	return 0;
++}
++
++static const struct of_device_id opal_prd_match[] = {
++	{ .compatible = "ibm,opal-prd" },
++	{ },
++};
++
++static struct platform_driver opal_prd_driver = {
++	.driver = {
++		.name		= "opal-prd",
++		.owner		= THIS_MODULE,
++		.of_match_table	= opal_prd_match,
++	},
++	.probe	= opal_prd_probe,
++	.remove	= opal_prd_remove,
++};
++
++module_platform_driver(opal_prd_driver);
++
++MODULE_DEVICE_TABLE(of, opal_prd_match);
++MODULE_DESCRIPTION("PowerNV OPAL runtime diagnostic driver");
++MODULE_LICENSE("GPL");
++
+diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
+index a7ade94..77644fa 100644
+--- a/arch/powerpc/platforms/powernv/opal-wrappers.S
++++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
+@@ -295,3 +295,4 @@ OPAL_CALL(opal_i2c_request,			OPAL_I2C_REQUEST);
+ OPAL_CALL(opal_flash_read,			OPAL_FLASH_READ);
+ OPAL_CALL(opal_flash_write,			OPAL_FLASH_WRITE);
+ OPAL_CALL(opal_flash_erase,			OPAL_FLASH_ERASE);
++OPAL_CALL(opal_prd_msg,				OPAL_PRD_MSG);
+diff --git a/arch/powerpc/platforms/powernv/opal.c b/arch/powerpc/platforms/powernv/opal.c
+index b40624d..400fe45 100644
+--- a/arch/powerpc/platforms/powernv/opal.c
++++ b/arch/powerpc/platforms/powernv/opal.c
+@@ -829,9 +829,10 @@ static int __init opal_init(void)
+ 		opal_msglog_init();
+ 	}
+ 
+-	/* Initialize platform devices: IPMI backend & flash interface */
++	/* Initialize platform devices: IPMI backend, PRD & flash interface */
+ 	opal_pdev_init(opal_node, "ibm,opal-ipmi");
+ 	opal_pdev_init(opal_node, "ibm,opal-flash");
++	opal_pdev_init(opal_node, "ibm,opal-prd");
+ 
+ 	return 0;
+ }
+@@ -876,6 +877,7 @@ EXPORT_SYMBOL_GPL(opal_ipmi_recv);
+ EXPORT_SYMBOL_GPL(opal_flash_read);
+ EXPORT_SYMBOL_GPL(opal_flash_write);
+ EXPORT_SYMBOL_GPL(opal_flash_erase);
++EXPORT_SYMBOL_GPL(opal_prd_msg);
+ 
+ /* Convert a region of vmalloc memory to an opal sg list */
+ struct opal_sg_list *opal_vmalloc_to_sg_list(void *vmalloc_addr,
