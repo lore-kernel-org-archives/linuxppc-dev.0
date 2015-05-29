@@ -1,24 +1,24 @@
 Return-Path: <aik@ozlabs.ru>
-Received: from e23smtp09.au.ibm.com (e23smtp09.au.ibm.com [202.81.31.142])
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id CE3FC1A0C69
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2015 18:46:48 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 1E5801A0C69
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2015 18:46:50 +1000 (AEST)
 Received: from /spool/local
- by e23smtp09.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aik@ozlabs.ru>;
- Fri, 29 May 2015 18:46:48 +1000
-Received: from d23relay06.au.ibm.com (d23relay06.au.ibm.com [9.185.63.219])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id BE0C03578056
+ Fri, 29 May 2015 18:46:49 +1000
+Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id B1C5B2BB0040
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2015 18:46:45 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay06.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t4T8kbGn32112666
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t4T8kbM861604004
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2015 18:46:45 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t4T8kD1P028264
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t4T8kD4P005783
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2015 18:46:13 +1000
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
@@ -29,10 +29,10 @@ Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
  Gavin Shan <gwshan@linux.vnet.ibm.com>,
  Paul Mackerras <paulus@samba.org>, kvm@vger.kernel.org,
  linux-kernel@vger.kernel.org
-Subject: [PATCH kernel v11 26/34] powerpc/powernv/ioda2: Introduce
- pnv_pci_ioda2_set_window
-Date: Fri, 29 May 2015 18:44:50 +1000
-Message-Id: <1432889098-22924-27-git-send-email-aik@ozlabs.ru>
+Subject: [PATCH kernel v11 22/34] powerpc/powernv: Implement accessor to TCE
+ entry
+Date: Fri, 29 May 2015 18:44:46 +1000
+Message-Id: <1432889098-22924-23-git-send-email-aik@ozlabs.ru>
 In-Reply-To: <1432889098-22924-1-git-send-email-aik@ozlabs.ru>
 References: <1432889098-22924-1-git-send-email-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -44,103 +44,90 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This is a part of moving DMA window programming to an iommu_ops
-callback. pnv_pci_ioda2_set_window() takes an iommu_table_group as
-a first parameter (not pnv_ioda_pe) as it is going to be used as
-a callback for VFIO DDW code.
+This replaces direct accesses to TCE table with a helper which
+returns an TCE entry address. This does not make difference now but will
+when multi-level TCE tables get introduces.
 
-This adds pnv_pci_ioda2_tvt_invalidate() to invalidate TVT as it is
-a good thing to do. It does not have immediate effect now as the table
-is never recreated after reboot but it will in the following patches.
-
-This should cause no behavioural change.
+No change in behavior is expected.
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
 Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 Reviewed-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 ---
 Changes:
-v11:
-* replaced some 1<<it_page_shift with IOMMU_PAGE_SIZE() macro
-
 v9:
-* initialize pe->table_group.tables[0] at the very end when
-tbl is fully initialized
-* moved pnv_pci_ioda2_tvt_invalidate() from earlier patch
+* new patch in the series to separate this mechanical change from
+functional changes; this is not right before
+"powerpc/powernv: Implement multilevel TCE tables" but here in order
+to let the next patch - "powerpc/iommu/powernv: Release replaced TCE" -
+use pnv_tce() and avoid changing the same code twice
 ---
- arch/powerpc/platforms/powernv/pci-ioda.c | 47 +++++++++++++++++++++++++------
- 1 file changed, 38 insertions(+), 9 deletions(-)
+ arch/powerpc/platforms/powernv/pci.c | 34 +++++++++++++++++++++-------------
+ 1 file changed, 21 insertions(+), 13 deletions(-)
 
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index 3d29fe3..fda01c1 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -1968,6 +1968,43 @@ static void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
- 	}
- }
+diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
+index 4b4c583..b2a32d0 100644
+--- a/arch/powerpc/platforms/powernv/pci.c
++++ b/arch/powerpc/platforms/powernv/pci.c
+@@ -572,38 +572,46 @@ struct pci_ops pnv_pci_ops = {
+ 	.write = pnv_pci_write_config,
+ };
  
-+static long pnv_pci_ioda2_set_window(struct iommu_table_group *table_group,
-+		int num, struct iommu_table *tbl)
++static __be64 *pnv_tce(struct iommu_table *tbl, long idx)
 +{
-+	struct pnv_ioda_pe *pe = container_of(table_group, struct pnv_ioda_pe,
-+			table_group);
-+	struct pnv_phb *phb = pe->phb;
-+	int64_t rc;
-+	const __u64 start_addr = tbl->it_offset << tbl->it_page_shift;
-+	const __u64 win_size = tbl->it_size << tbl->it_page_shift;
++	__be64 *tmp = ((__be64 *)tbl->it_base);
 +
-+	pe_info(pe, "Setting up window %llx..%llx pg=%x\n",
-+			start_addr, start_addr + win_size - 1,
-+			IOMMU_PAGE_SIZE(tbl));
-+
-+	/*
-+	 * Map TCE table through TVT. The TVE index is the PE number
-+	 * shifted by 1 bit for 32-bits DMA space.
-+	 */
-+	rc = opal_pci_map_pe_dma_window(phb->opal_id,
-+			pe->pe_number,
-+			pe->pe_number << 1,
-+			1,
-+			__pa(tbl->it_base),
-+			tbl->it_size << 3,
-+			IOMMU_PAGE_SIZE(tbl));
-+	if (rc) {
-+		pe_err(pe, "Failed to configure TCE table, err %ld\n", rc);
-+		return rc;
-+	}
-+
-+	pnv_pci_link_table_and_group(phb->hose->node, num,
-+			tbl, &pe->table_group);
-+	pnv_pci_ioda2_tce_invalidate_entire(pe);
-+
-+	return 0;
++	return tmp + idx;
 +}
 +
- static void pnv_pci_ioda2_set_bypass(struct pnv_ioda_pe *pe, bool enable)
+ int pnv_tce_build(struct iommu_table *tbl, long index, long npages,
+ 		unsigned long uaddr, enum dma_data_direction direction,
+ 		struct dma_attrs *attrs)
  {
- 	uint16_t window_id = (pe->pe_number << 1 ) + 1;
-@@ -2123,21 +2160,13 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
- 	pe->table_group.ops = &pnv_pci_ioda2_ops;
- #endif
+ 	u64 proto_tce = iommu_direction_to_tce_perm(direction);
+-	__be64 *tcep;
+-	u64 rpn;
++	u64 rpn = __pa(uaddr) >> tbl->it_page_shift;
++	long i;
  
--	/*
--	 * Map TCE table through TVT. The TVE index is the PE number
--	 * shifted by 1 bit for 32-bits DMA space.
--	 */
--	rc = opal_pci_map_pe_dma_window(phb->opal_id, pe->pe_number,
--			pe->pe_number << 1, 1, __pa(tbl->it_base),
--			tbl->it_size << 3, 1ULL << tbl->it_page_shift);
-+	rc = pnv_pci_ioda2_set_window(&pe->table_group, 0, tbl);
- 	if (rc) {
- 		pe_err(pe, "Failed to configure 32-bit TCE table,"
- 		       " err %ld\n", rc);
- 		goto fail;
- 	}
- 
--	pnv_pci_ioda2_tce_invalidate_entire(pe);
+-	tcep = ((__be64 *)tbl->it_base) + index - tbl->it_offset;
+-	rpn = __pa(uaddr) >> tbl->it_page_shift;
 -
- 	/* OPAL variant of PHB3 invalidated TCEs */
- 	if (phb->ioda.tce_inval_reg)
- 		tbl->it_type |= (TCE_PCI_SWINV_CREATE | TCE_PCI_SWINV_FREE);
+-	while (npages--)
+-		*(tcep++) = cpu_to_be64(proto_tce |
+-				(rpn++ << tbl->it_page_shift));
++	for (i = 0; i < npages; i++) {
++		unsigned long newtce = proto_tce |
++			((rpn + i) << tbl->it_page_shift);
++		unsigned long idx = index - tbl->it_offset + i;
+ 
++		*(pnv_tce(tbl, idx)) = cpu_to_be64(newtce);
++	}
+ 
+ 	return 0;
+ }
+ 
+ void pnv_tce_free(struct iommu_table *tbl, long index, long npages)
+ {
+-	__be64 *tcep;
++	long i;
+ 
+-	tcep = ((__be64 *)tbl->it_base) + index - tbl->it_offset;
++	for (i = 0; i < npages; i++) {
++		unsigned long idx = index - tbl->it_offset + i;
+ 
+-	while (npages--)
+-		*(tcep++) = cpu_to_be64(0);
++		*(pnv_tce(tbl, idx)) = cpu_to_be64(0);
++	}
+ }
+ 
+ unsigned long pnv_tce_get(struct iommu_table *tbl, long index)
+ {
+-	return ((u64 *)tbl->it_base)[index - tbl->it_offset];
++	return *(pnv_tce(tbl, index - tbl->it_offset));
+ }
+ 
+ struct iommu_table *pnv_pci_table_alloc(int nid)
 -- 
 2.4.0.rc3.8.gfb3e7d5
