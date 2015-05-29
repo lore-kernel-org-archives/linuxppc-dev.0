@@ -1,34 +1,18 @@
-Return-Path: <shilpa.bhat@linux.vnet.ibm.com>
-Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <k0da@opensuse.org>
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
+ (using TLSv1 with cipher ADH-CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 6326C1A0551
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2015 22:32:28 +1000 (AEST)
-Received: from /spool/local
- by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <shilpa.bhat@linux.vnet.ibm.com>;
- Fri, 29 May 2015 18:02:24 +0530
-Received: from d28relay03.in.ibm.com (d28relay03.in.ibm.com [9.184.220.60])
- by d28dlp02.in.ibm.com (Postfix) with ESMTP id A825E394005E
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2015 18:02:23 +0530 (IST)
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay03.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t4TCWMWQ43253932
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2015 18:02:23 +0530
-Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
- by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t4TCWET6025132
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2015 18:02:14 +0530
-From: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 5090D1A0551
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2015 23:30:12 +1000 (AEST)
+Received: from relay2.suse.de (charybdis-ext.suse.de [195.135.220.254])
+ by mx2.suse.de (Postfix) with ESMTP id 36D71AC66
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2015 13:30:09 +0000 (UTC)
+From: Dinar valeev <k0da@opensuse.org>
 To: linuxppc-dev@lists.ozlabs.org
-Cc: anton@samba.org, rjw@rjwysocki.net, preeti@linux.vnet.ibm.com,
- Daniel Lezcano <daniel.lezcano@linaro.org>,
- linux-kernel@vger.kernel.org, linux-pm@vger.kernel.org,
- Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-Subject: [PATCH] cpuidle: powernv/pseries: Decrease the snooze residency
-Date: Fri, 29 May 2015 18:02:08 +0530
-Message-Id: <1432902728-31476-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+Cc: Dinar Valeev <dvaleev@suse.com>
+Subject: [PATCH] Fix function keys sequence on USB
+Date: Fri, 29 May 2015 15:30:01 +0200
+Message-Id: <1432906201-25009-1-git-send-email-k0da@opensuse.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,103 +22,144 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-The idle cpus which stay in snooze for a long period can degrade the
-perfomance of the sibling cpus. If the cpu stays in snooze for more
-than target residency of the next available idle state, then exit from
-snooze. This gives a chance to the cpuidle governor to re-evaluate the
-last idle state of the cpu to promote it to deeper idle states.
+From: Dinar Valeev <dvaleev@suse.com>
 
-Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
+Original issue is home and end keys are not functional in grub2.
+Later I've found other inconsistencies in f1-f12 keys.
+
+"Correct sequence" was crabbed by pressing key on cat running in
+xterm.
+
+Tested with Home, End, F2, Del and F10 keys in grub2
+
+Signed-off-by: Dinar Valeev <dvaleev@suse.com>
 ---
- drivers/cpuidle/cpuidle-powernv.c | 12 ++++++++++++
- drivers/cpuidle/cpuidle-pseries.c | 11 +++++++++++
- 2 files changed, 23 insertions(+)
+ lib/libusb/usb-hid.c | 40 +++++++++++++++++-----------------------
+ 1 file changed, 17 insertions(+), 23 deletions(-)
 
-diff --git a/drivers/cpuidle/cpuidle-powernv.c b/drivers/cpuidle/cpuidle-powernv.c
-index 5937207..1e3ef5e 100644
---- a/drivers/cpuidle/cpuidle-powernv.c
-+++ b/drivers/cpuidle/cpuidle-powernv.c
-@@ -29,18 +29,25 @@ struct cpuidle_driver powernv_idle_driver = {
+diff --git a/lib/libusb/usb-hid.c b/lib/libusb/usb-hid.c
+index f0cab8a..ccd5ba9 100644
+--- a/lib/libusb/usb-hid.c
++++ b/lib/libusb/usb-hid.c
+@@ -190,33 +190,29 @@ static void check_key_code(uint8_t *buf)
+ 				case 0x3a:	                        /* F1 */
+ 					write_key(0x1b);
+ 					write_key(0x5b);
+-					write_key(0x31);
+-					write_key(0x31);
+-					write_key(0x7e);
++					write_key(0x4f);
++					write_key(0x50);
+ 					break;
  
- static int max_idle_state;
- static struct cpuidle_state *cpuidle_state_table;
-+static u64 snooze_timeout;
-+static bool snooze_timeout_en;
+ 				case 0x3b:		                /* F2 */
+ 					write_key(0x1b);
+ 					write_key(0x5b);
+-					write_key(0x31);
+-					write_key(0x32);
+-					write_key(0x7e);
++					write_key(0x4f);
++					write_key(0x51);
+ 					break;
  
- static int snooze_loop(struct cpuidle_device *dev,
- 			struct cpuidle_driver *drv,
- 			int index)
- {
-+	u64 snooze_exit_time;
-+
- 	local_irq_enable();
- 	set_thread_flag(TIF_POLLING_NRFLAG);
+ 				case 0x3c:
+ 					write_key(0x1b);               /* F3 */
+ 					write_key(0x5b);
+-					write_key(0x31);
+-					write_key(0x33);
+-					write_key(0x7e);
++					write_key(0x4f);
++					write_key(0x52);
+ 					break;
  
-+	snooze_exit_time = get_tb() + snooze_timeout;
- 	ppc64_runlatch_off();
- 	while (!need_resched()) {
- 		HMT_low();
- 		HMT_very_low();
-+		if (snooze_timeout_en && get_tb() > snooze_exit_time)
-+			break;
- 	}
+ 				case 0x3d:
+ 					write_key(0x1b);		/* F4 */
+ 					write_key(0x5b);
+-					write_key(0x31);
+-					write_key(0x34);
+-					write_key(0x7e);
++					write_key(0x4f);
++					write_key(0x53);
+ 					break;
  
- 	HMT_medium();
-@@ -252,6 +259,11 @@ static int powernv_idle_probe(void)
- 		cpuidle_state_table = powernv_states;
- 		/* Device tree can indicate more idle states */
- 		max_idle_state = powernv_add_idle_states();
-+		if (max_idle_state > 1) {
-+			snooze_timeout_en = true;
-+			snooze_timeout = powernv_states[1].target_residency *
-+					 tb_ticks_per_usec;
-+		}
-  	} else
-  		return -ENODEV;
+ 				case 0x3e:
+@@ -254,7 +250,7 @@ static void check_key_code(uint8_t *buf)
+ 				case 0x42:
+ 					write_key(0x1b);		/* F9 */
+ 					write_key(0x5b);
+-					write_key(0x31);
++					write_key(0x32);
+ 					write_key(0x30);
+ 					write_key(0x7e);
+ 					break;
+@@ -262,7 +258,7 @@ static void check_key_code(uint8_t *buf)
+ 				case 0x43:
+ 					write_key(0x1b);	       /* F10 */
+ 					write_key(0x5b);
+-					write_key(0x31);
++					write_key(0x32);
+ 					write_key(0x31);
+ 					write_key(0x7e);
+ 					break;
+@@ -270,7 +266,7 @@ static void check_key_code(uint8_t *buf)
+ 				case 0x44:
+ 					write_key(0x1b);	       /* F11 */
+ 					write_key(0x5b);
+-					write_key(0x31);
++					write_key(0x32);
+ 					write_key(0x33);
+ 					write_key(0x7e);
+ 					break;
+@@ -278,7 +274,7 @@ static void check_key_code(uint8_t *buf)
+ 				case 0x45:
+ 					write_key(0x1b);	       /* F12 */
+ 					write_key(0x5b);
+-					write_key(0x31);
++					write_key(0x32);
+ 					write_key(0x34);
+ 					write_key(0x7e);
+ 					break;
+@@ -290,36 +286,34 @@ static void check_key_code(uint8_t *buf)
+ 				case 0x49:
+ 					write_key(0x1b);	       /* INS */
+ 					write_key(0x5b);
+-					write_key(0x31);
++					write_key(0x32);
+ 					write_key(0x7e);
+ 					break;
  
-diff --git a/drivers/cpuidle/cpuidle-pseries.c b/drivers/cpuidle/cpuidle-pseries.c
-index bb9e2b6..07135e0 100644
---- a/drivers/cpuidle/cpuidle-pseries.c
-+++ b/drivers/cpuidle/cpuidle-pseries.c
-@@ -27,6 +27,8 @@ struct cpuidle_driver pseries_idle_driver = {
+ 				case 0x4a:
+ 					write_key(0x1b);	      /* HOME */
+ 					write_key(0x5b);
+-					write_key(0x32);
+-					write_key(0x7e);
++					write_key(0x48);
+ 					break;
  
- static int max_idle_state;
- static struct cpuidle_state *cpuidle_state_table;
-+static u64 snooze_timeout;
-+static bool snooze_timeout_en;
+ 				case 0x4b:
+ 					write_key(0x1b);	      /* PgUp */
+ 					write_key(0x5b);
+-					write_key(0x33);
++					write_key(0x35);
+ 					write_key(0x7e);
+ 					break;
  
- static inline void idle_loop_prolog(unsigned long *in_purr)
- {
-@@ -58,14 +60,18 @@ static int snooze_loop(struct cpuidle_device *dev,
- 			int index)
- {
- 	unsigned long in_purr;
-+	u64 snooze_exit_time;
+ 				case 0x4c:
+ 					write_key(0x1b);	       /* DEL */
+ 					write_key(0x5b);
+-					write_key(0x34);
++					write_key(0x33);
+ 					write_key(0x7e);
+ 					break;
  
- 	idle_loop_prolog(&in_purr);
- 	local_irq_enable();
- 	set_thread_flag(TIF_POLLING_NRFLAG);
-+	snooze_exit_time = get_tb() + snooze_timeout;
+ 				case 0x4d:
+ 					write_key(0x1b);	       /* END */
+ 					write_key(0x5b);
+-					write_key(0x35);
+-					write_key(0x7e);
++					write_key(0x46);
+ 					break;
  
- 	while (!need_resched()) {
- 		HMT_low();
- 		HMT_very_low();
-+		if (snooze_timeout_en && get_tb() > snooze_exit_time)
-+			break;
- 	}
- 
- 	HMT_medium();
-@@ -244,6 +250,11 @@ static int pseries_idle_probe(void)
- 	} else
- 		return -ENODEV;
- 
-+	if (max_idle_state > 1) {
-+		snooze_timeout_en = true;
-+		snooze_timeout = cpuidle_state_table[1].target_residency *
-+				 tb_ticks_per_usec;
-+	}
- 	return 0;
- }
- 
+ 				case 0x4e:
 -- 
-1.9.3
+2.1.4
