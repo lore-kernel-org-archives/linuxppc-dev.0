@@ -1,24 +1,24 @@
 Return-Path: <aik@ozlabs.ru>
-Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+Received: from e23smtp04.au.ibm.com (e23smtp04.au.ibm.com [202.81.31.146])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id E7E581A065D
+ by lists.ozlabs.org (Postfix) with ESMTPS id E65C61A0600
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2015 18:46:01 +1000 (AEST)
 Received: from /spool/local
- by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp04.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <aik@ozlabs.ru>;
- Fri, 29 May 2015 18:46:00 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id 5D856357804F
+ Fri, 29 May 2015 18:45:59 +1000
+Received: from d23relay07.au.ibm.com (d23relay07.au.ibm.com [9.190.26.37])
+ by d23dlp03.au.ibm.com (Postfix) with ESMTP id A541F357804C
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2015 18:45:57 +1000 (EST)
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t4T8jnuc28442842
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.235.138])
+ by d23relay07.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t4T8jngH53936344
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2015 18:45:57 +1000
-Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
- by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t4T8jOam004134
+Received: from d23av02.au.ibm.com (localhost [127.0.0.1])
+ by d23av02.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t4T8jOC5026963
  for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2015 18:45:25 +1000
 From: Alexey Kardashevskiy <aik@ozlabs.ru>
 To: linuxppc-dev@lists.ozlabs.org
@@ -29,10 +29,10 @@ Cc: Alexey Kardashevskiy <aik@ozlabs.ru>,
  Gavin Shan <gwshan@linux.vnet.ibm.com>,
  Paul Mackerras <paulus@samba.org>, kvm@vger.kernel.org,
  linux-kernel@vger.kernel.org
-Subject: [PATCH kernel v11 01/34] powerpc/eeh/ioda2: Use device::iommu_group
- to check IOMMU group
-Date: Fri, 29 May 2015 18:44:25 +1000
-Message-Id: <1432889098-22924-2-git-send-email-aik@ozlabs.ru>
+Subject: [PATCH kernel v11 03/34] powerpc/powernv/ioda: Clean up IOMMU group
+ registration
+Date: Fri, 29 May 2015 18:44:27 +1000
+Message-Id: <1432889098-22924-4-git-send-email-aik@ozlabs.ru>
 In-Reply-To: <1432889098-22924-1-git-send-email-aik@ozlabs.ru>
 References: <1432889098-22924-1-git-send-email-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -44,104 +44,107 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This relies on the fact that a PCI device always has an IOMMU table
-which may not be the case when we get dynamic DMA windows so
-let's use more reliable check for IOMMU group here.
+The existing code has 3 calls to iommu_register_group() and
+all 3 branches actually cover all possible cases.
 
-As we do not rely on the table presence here, remove the workaround
-from pnv_pci_ioda2_set_bypass(); also remove the @add_to_iommu_group
-parameter from pnv_ioda_setup_bus_dma().
+This replaces 3 calls with one and moves the registration earlier;
+the latter will make more sense when we add TCE table sharing.
 
 Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-Acked-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+Reviewed-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 ---
- arch/powerpc/kernel/eeh.c                 |  4 +---
- arch/powerpc/platforms/powernv/pci-ioda.c | 27 +++++----------------------
- 2 files changed, 6 insertions(+), 25 deletions(-)
+ arch/powerpc/platforms/powernv/pci-ioda.c | 28 ++++++++--------------------
+ 1 file changed, 8 insertions(+), 20 deletions(-)
 
-diff --git a/arch/powerpc/kernel/eeh.c b/arch/powerpc/kernel/eeh.c
-index 9ee61d1..defd874 100644
---- a/arch/powerpc/kernel/eeh.c
-+++ b/arch/powerpc/kernel/eeh.c
-@@ -1412,13 +1412,11 @@ static int dev_has_iommu_table(struct device *dev, void *data)
- {
- 	struct pci_dev *pdev = to_pci_dev(dev);
- 	struct pci_dev **ppdev = data;
--	struct iommu_table *tbl;
- 
- 	if (!dev)
- 		return 0;
- 
--	tbl = get_iommu_table_base(dev);
--	if (tbl && tbl->it_group) {
-+	if (dev->iommu_group) {
- 		*ppdev = pdev;
- 		return 1;
- 	}
 diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index f8bc950..2f092bb 100644
+index 9a77f3c..8ca7abd 100644
 --- a/arch/powerpc/platforms/powernv/pci-ioda.c
 +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -1654,21 +1654,15 @@ static u64 pnv_pci_ioda_dma_get_required_mask(struct pnv_phb *phb,
- }
+@@ -1784,6 +1784,9 @@ static void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
+ 	if (WARN_ON(pe->tce32_seg >= 0))
+ 		return;
  
- static void pnv_ioda_setup_bus_dma(struct pnv_ioda_pe *pe,
--				   struct pci_bus *bus,
--				   bool add_to_iommu_group)
-+				   struct pci_bus *bus)
- {
- 	struct pci_dev *dev;
- 
- 	list_for_each_entry(dev, &bus->devices, bus_list) {
--		if (add_to_iommu_group)
--			set_iommu_table_base_and_group(&dev->dev,
--						       pe->tce32_table);
--		else
--			set_iommu_table_base(&dev->dev, pe->tce32_table);
-+		set_iommu_table_base_and_group(&dev->dev, pe->tce32_table);
- 
- 		if (dev->subordinate)
--			pnv_ioda_setup_bus_dma(pe, dev->subordinate,
--					       add_to_iommu_group);
-+			pnv_ioda_setup_bus_dma(pe, dev->subordinate);
++	tbl = pe->tce32_table;
++	iommu_register_group(tbl, phb->hose->global_number, pe->pe_number);
++
+ 	/* Grab a 32-bit TCE table */
+ 	pe->tce32_seg = base;
+ 	pe_info(pe, " Setting up 32-bit TCE table at %08x..%08x\n",
+@@ -1818,7 +1821,6 @@ static void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
  	}
- }
  
-@@ -1845,7 +1839,7 @@ static void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
- 	} else if (pe->flags & (PNV_IODA_PE_BUS | PNV_IODA_PE_BUS_ALL)) {
- 		iommu_register_group(tbl, phb->hose->global_number,
- 				     pe->pe_number);
--		pnv_ioda_setup_bus_dma(pe, pe->pbus, true);
-+		pnv_ioda_setup_bus_dma(pe, pe->pbus);
- 	} else if (pe->flags & PNV_IODA_PE_VF) {
- 		iommu_register_group(tbl, phb->hose->global_number,
- 				     pe->pe_number);
-@@ -1882,17 +1876,6 @@ static void pnv_pci_ioda2_set_bypass(struct iommu_table *tbl, bool enable)
- 						     window_id,
- 						     pe->tce_bypass_base,
- 						     0);
--
--		/*
--		 * EEH needs the mapping between IOMMU table and group
--		 * of those VFIO/KVM pass-through devices. We can postpone
--		 * resetting DMA ops until the DMA mask is configured in
--		 * host side.
--		 */
--		if (pe->pdev)
--			set_iommu_table_base(&pe->pdev->dev, tbl);
--		else
--			pnv_ioda_setup_bus_dma(pe, pe->pbus, false);
+ 	/* Setup linux iommu table */
+-	tbl = pe->tce32_table;
+ 	pnv_pci_setup_iommu_table(tbl, addr, TCE32_TABLE_SIZE * segs,
+ 				  base << 28, IOMMU_PAGE_SHIFT_4K);
+ 
+@@ -1840,8 +1842,6 @@ static void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
+ 	iommu_init_table(tbl, phb->hose->node);
+ 
+ 	if (pe->flags & PNV_IODA_PE_DEV) {
+-		iommu_register_group(tbl, phb->hose->global_number,
+-				     pe->pe_number);
+ 		/*
+ 		 * Setting table base here only for carrying iommu_group
+ 		 * further down to let iommu_add_device() do the job.
+@@ -1849,14 +1849,8 @@ static void pnv_pci_ioda_setup_dma_pe(struct pnv_phb *phb,
+ 		 */
+ 		set_iommu_table_base(&pe->pdev->dev, tbl);
+ 		iommu_add_device(&pe->pdev->dev);
+-	} else if (pe->flags & (PNV_IODA_PE_BUS | PNV_IODA_PE_BUS_ALL)) {
+-		iommu_register_group(tbl, phb->hose->global_number,
+-				     pe->pe_number);
++	} else if (pe->flags & (PNV_IODA_PE_BUS | PNV_IODA_PE_BUS_ALL))
+ 		pnv_ioda_setup_bus_dma(pe, pe->pbus);
+-	} else if (pe->flags & PNV_IODA_PE_VF) {
+-		iommu_register_group(tbl, phb->hose->global_number,
+-				     pe->pe_number);
+-	}
+ 
+ 	return;
+  fail:
+@@ -1923,6 +1917,9 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
+ 	if (WARN_ON(pe->tce32_seg >= 0))
+ 		return;
+ 
++	tbl = pe->tce32_table;
++	iommu_register_group(tbl, phb->hose->global_number, pe->pe_number);
++
+ 	/* The PE will reserve all possible 32-bits space */
+ 	pe->tce32_seg = 0;
+ 	end = (1 << ilog2(phb->ioda.m32_pci_base));
+@@ -1954,7 +1951,6 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
  	}
- 	if (rc)
- 		pe_err(pe, "OPAL error %lld configuring bypass window\n", rc);
-@@ -1984,7 +1967,7 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
- 	} else if (pe->flags & (PNV_IODA_PE_BUS | PNV_IODA_PE_BUS_ALL)) {
- 		iommu_register_group(tbl, phb->hose->global_number,
- 				     pe->pe_number);
--		pnv_ioda_setup_bus_dma(pe, pe->pbus, true);
-+		pnv_ioda_setup_bus_dma(pe, pe->pbus);
- 	} else if (pe->flags & PNV_IODA_PE_VF) {
- 		iommu_register_group(tbl, phb->hose->global_number,
- 				     pe->pe_number);
+ 
+ 	/* Setup linux iommu table */
+-	tbl = pe->tce32_table;
+ 	pnv_pci_setup_iommu_table(tbl, addr, tce_table_size, 0,
+ 			IOMMU_PAGE_SHIFT_4K);
+ 
+@@ -1974,8 +1970,6 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
+ 	iommu_init_table(tbl, phb->hose->node);
+ 
+ 	if (pe->flags & PNV_IODA_PE_DEV) {
+-		iommu_register_group(tbl, phb->hose->global_number,
+-				     pe->pe_number);
+ 		/*
+ 		 * Setting table base here only for carrying iommu_group
+ 		 * further down to let iommu_add_device() do the job.
+@@ -1983,14 +1977,8 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv_phb *phb,
+ 		 */
+ 		set_iommu_table_base(&pe->pdev->dev, tbl);
+ 		iommu_add_device(&pe->pdev->dev);
+-	} else if (pe->flags & (PNV_IODA_PE_BUS | PNV_IODA_PE_BUS_ALL)) {
+-		iommu_register_group(tbl, phb->hose->global_number,
+-				     pe->pe_number);
++	} else if (pe->flags & (PNV_IODA_PE_BUS | PNV_IODA_PE_BUS_ALL))
+ 		pnv_ioda_setup_bus_dma(pe, pe->pbus);
+-	} else if (pe->flags & PNV_IODA_PE_VF) {
+-		iommu_register_group(tbl, phb->hose->global_number,
+-				     pe->pe_number);
+-	}
+ 
+ 	/* Also create a bypass window */
+ 	if (!pnv_iommu_bypass_disabled)
 -- 
 2.4.0.rc3.8.gfb3e7d5
