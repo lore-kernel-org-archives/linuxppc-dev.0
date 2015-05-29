@@ -1,38 +1,20 @@
-Return-Path: <preeti@linux.vnet.ibm.com>
-Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 723121A0551
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2015 23:47:29 +1000 (AEST)
-Received: from /spool/local
- by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <preeti@linux.vnet.ibm.com>;
- Fri, 29 May 2015 07:47:26 -0600
-Received: from b01cxnp23033.gho.pok.ibm.com (b01cxnp23033.gho.pok.ibm.com
- [9.57.198.28])
- by d01dlp02.pok.ibm.com (Postfix) with ESMTP id 5AB386E8045
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2015 09:39:10 -0400 (EDT)
-Received: from d01av05.pok.ibm.com (d01av05.pok.ibm.com [9.56.224.195])
- by b01cxnp23033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t4TDlMu954329412
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2015 13:47:22 GMT
-Received: from d01av05.pok.ibm.com (localhost [127.0.0.1])
- by d01av05.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t4TDlMJl027908
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2015 09:47:22 -0400
-Message-ID: <55686DE5.6010001@linux.vnet.ibm.com>
-Date: Fri, 29 May 2015 19:17:17 +0530
-From: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
- linuxppc-dev@lists.ozlabs.org
-CC: linux-pm@vger.kernel.org, Daniel Lezcano <daniel.lezcano@linaro.org>,
- rjw@rjwysocki.net, linux-kernel@vger.kernel.org, anton@samba.org
-Subject: Re: [PATCH] cpuidle: powernv/pseries: Decrease the snooze residency
-References: <1432902728-31476-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-In-Reply-To: <1432902728-31476-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
-Content-Type: text/plain; charset=UTF-8
+Return-Path: <emunson@akamai.com>
+Received: from prod-mail-xrelay02.akamai.com (prod-mail-xrelay02.akamai.com
+ [72.246.2.14])
+ by lists.ozlabs.org (Postfix) with ESMTP id BDE621A0551
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 May 2015 00:13:43 +1000 (AEST)
+From: Eric B Munson <emunson@akamai.com>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Eric B Munson <emunson@akamai.com>, Shuah Khan <shuahkh@osg.samsung.com>,
+ Michal Hocko <mhocko@suse.cz>, linux-alpha@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-mips@linux-mips.org,
+ linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ sparclinux@vger.kernel.org, linux-xtensa@linux-xtensa.org,
+ linux-mm@kvack.org, linux-arch@vger.kernel.org, linux-api@vger.kernel.org
+Subject: [RESEND PATCH 0/3] Allow user to request memory to be locked on page
+ fault
+Date: Fri, 29 May 2015 10:13:25 -0400
+Message-Id: <1432908808-31150-1-git-send-email-emunson@akamai.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -42,72 +24,150 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Hi Shilpa,
+mlock() allows a user to control page out of program memory, but this
+comes at the cost of faulting in the entire mapping when it is
+allocated.  For large mappings where the entire area is not necessary
+this is not ideal.
 
-The subject does not convey the purpose of this patch clearly IMO.
-I would definitely suggest changing the subject to something like
-"Auto promotion of snooze to deeper idle state" or similar.
+This series introduces new flags for mmap() and mlockall() that allow a
+user to specify that the covered are should not be paged out, but only
+after the memory has been used the first time.
 
-On 05/29/2015 06:02 PM, Shilpasri G Bhat wrote:
-> The idle cpus which stay in snooze for a long period can degrade the
-> perfomance of the sibling cpus. If the cpu stays in snooze for more
-> than target residency of the next available idle state, then exit from
-> snooze. This gives a chance to the cpuidle governor to re-evaluate the
-> last idle state of the cpu to promote it to deeper idle states.
-> 
-> Signed-off-by: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>
-> ---
->  drivers/cpuidle/cpuidle-powernv.c | 12 ++++++++++++
->  drivers/cpuidle/cpuidle-pseries.c | 11 +++++++++++
->  2 files changed, 23 insertions(+)
-> 
-> diff --git a/drivers/cpuidle/cpuidle-pseries.c b/drivers/cpuidle/cpuidle-pseries.c
-> index bb9e2b6..07135e0 100644
-> --- a/drivers/cpuidle/cpuidle-pseries.c
-> +++ b/drivers/cpuidle/cpuidle-pseries.c
-> @@ -27,6 +27,8 @@ struct cpuidle_driver pseries_idle_driver = {
->  
->  static int max_idle_state;
->  static struct cpuidle_state *cpuidle_state_table;
-> +static u64 snooze_timeout;
-> +static bool snooze_timeout_en;
->  
->  static inline void idle_loop_prolog(unsigned long *in_purr)
->  {
-> @@ -58,14 +60,18 @@ static int snooze_loop(struct cpuidle_device *dev,
->  			int index)
->  {
->  	unsigned long in_purr;
-> +	u64 snooze_exit_time;
->  
->  	idle_loop_prolog(&in_purr);
->  	local_irq_enable();
->  	set_thread_flag(TIF_POLLING_NRFLAG);
-> +	snooze_exit_time = get_tb() + snooze_timeout;
->  
->  	while (!need_resched()) {
->  		HMT_low();
->  		HMT_very_low();
-> +		if (snooze_timeout_en && get_tb() > snooze_exit_time)
-> +			break;
->  	}
->  
->  	HMT_medium();
-> @@ -244,6 +250,11 @@ static int pseries_idle_probe(void)
->  	} else
->  		return -ENODEV;
->  
-> +	if (max_idle_state > 1) {
-> +		snooze_timeout_en = true;
-> +		snooze_timeout = cpuidle_state_table[1].target_residency *
-> +				 tb_ticks_per_usec;
-> +	}
+There are two main use cases that this set covers.  The first is the
+security focussed mlock case.  A buffer is needed that cannot be written
+to swap.  The maximum size is known, but on average the memory used is
+significantly less than this maximum.  With lock on fault, the buffer
+is guaranteed to never be paged out without consuming the maximum size
+every time such a buffer is created.
 
-Any idea why we don't have snooze defined on the shared lpar configuration ?
+The second use case is focussed on performance.  Portions of a large
+file are needed and we want to keep the used portions in memory once
+accessed.  This is the case for large graphical models where the path
+through the graph is not known until run time.  The entire graph is
+unlikely to be used in a given invocation, but once a node has been
+used it needs to stay resident for further processing.  Given these
+constraints we have a number of options.  We can potentially waste a
+large amount of memory by mlocking the entire region (this can also
+cause a significant stall at startup as the entire file is read in).
+We can mlock every page as we access them without tracking if the page
+is already resident but this introduces large overhead for each access.
+The third option is mapping the entire region with PROT_NONE and using
+a signal handler for SIGSEGV to mprotect(PROT_READ) and mlock() the
+needed page.  Doing this page at a time adds a significant performance
+penalty.  Batching can be used to mitigate this overhead, but in order
+to safely avoid trying to mprotect pages outside of the mapping, the
+boundaries of each mapping to be used in this way must be tracked and
+available to the signal handler.  This is precisely what the mm system
+in the kernel should already be doing.
 
-Regards
-Preeti U Murthy
->  	return 0;
->  }
->  
-> 
+To illustrate the benefit of this patch I wrote a test program that
+mmaps a 5 GB file filled with random data and then makes 15,000,000
+accesses to random addresses in that mapping.  The test program was run
+20 times for each setup.  Results are reported for two program portions,
+setup and execution.  The setup phase is calling mmap and optionally
+mlock on the entire region.  For most experiments this is trivial, but
+it highlights the cost of faulting in the entire region.  Results are
+averages across the 20 runs in milliseconds.
+
+mmap with MAP_LOCKED:
+Setup avg:      11821.193
+Processing avg: 3404.286
+
+mmap with mlock() before each access:
+Setup avg:      0.054
+Processing avg: 34263.201
+
+mmap with PROT_NONE and signal handler and batch size of 1 page:
+With the default value in max_map_count, this gets ENOMEM as I attempt
+to change the permissions, after upping the sysctl significantly I get:
+Setup avg:      0.050
+Processing avg: 67690.625
+
+mmap with PROT_NONE and signal handler and batch size of 8 pages:
+Setup avg:      0.098
+Processing avg: 37344.197
+
+mmap with PROT_NONE and signal handler and batch size of 16 pages:
+Setup avg:      0.0548
+Processing avg: 29295.669
+
+mmap with MAP_LOCKONFAULT:
+Setup avg:      0.073
+Processing avg: 18392.136
+
+The signal handler in the batch cases faulted in memory in two steps to
+avoid having to know the start and end of the faulting mapping.  The
+first step covers the page that caused the fault as we know that it will
+be possible to lock.  The second step speculatively tries to mlock and
+mprotect the batch size - 1 pages that follow.  There may be a clever
+way to avoid this without having the program track each mapping to be
+covered by this handeler in a globally accessible structure, but I could
+not find it.  It should be noted that with a large enough batch size
+this two step fault handler can still cause the program to crash if it
+reaches far beyond the end of the mapping.
+
+These results show that if the developer knows that a majority of the
+mapping will be used, it is better to try and fault it in at once,
+otherwise MAP_LOCKONFAULT is significantly faster.
+
+The performance cost of these patches are minimal on the two benchmarks
+I have tested (stream and kernbench).  The following are the average
+values across 20 runs of each benchmark after a warmup run whose
+results were discarded.
+
+Avg throughput in MB/s from stream using 1000000 element arrays
+Test     4.1-rc2      4.1-rc2+lock-on-fault
+Copy:    10,979.08    10,917.34
+Scale:   11,094.45    11,023.01
+Add:     12,487.29    12,388.65
+Triad:   12,505.77    12,418.78
+
+Kernbench optimal load
+                 4.1-rc2  4.1-rc2+lock-on-fault
+Elapsed Time     71.046   71.324
+User Time        62.117   62.352
+System Time      8.926    8.969
+Context Switches 14531.9  14542.5
+Sleeps           14935.9  14939
+
+Eric B Munson (3):
+  Add flag to request pages are locked after page fault
+  Add mlockall flag for locking pages on fault
+  Add tests for lock on fault
+
+ arch/alpha/include/uapi/asm/mman.h          |   2 +
+ arch/mips/include/uapi/asm/mman.h           |   2 +
+ arch/parisc/include/uapi/asm/mman.h         |   2 +
+ arch/powerpc/include/uapi/asm/mman.h        |   2 +
+ arch/sparc/include/uapi/asm/mman.h          |   2 +
+ arch/tile/include/uapi/asm/mman.h           |   2 +
+ arch/xtensa/include/uapi/asm/mman.h         |   2 +
+ include/linux/mm.h                          |   1 +
+ include/linux/mman.h                        |   3 +-
+ include/uapi/asm-generic/mman.h             |   2 +
+ mm/mlock.c                                  |  13 ++-
+ mm/mmap.c                                   |   4 +-
+ mm/swap.c                                   |   3 +-
+ tools/testing/selftests/vm/Makefile         |   8 +-
+ tools/testing/selftests/vm/lock-on-fault.c  | 145 ++++++++++++++++++++++++++++
+ tools/testing/selftests/vm/on-fault-limit.c |  47 +++++++++
+ tools/testing/selftests/vm/run_vmtests      |  23 +++++
+ 17 files changed, 254 insertions(+), 9 deletions(-)
+ create mode 100644 tools/testing/selftests/vm/lock-on-fault.c
+ create mode 100644 tools/testing/selftests/vm/on-fault-limit.c
+
+Cc: Shuah Khan <shuahkh@osg.samsung.com>
+Cc: Michal Hocko <mhocko@suse.cz>
+Cc: linux-alpha@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org
+Cc: linux-mips@linux-mips.org
+Cc: linux-parisc@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: sparclinux@vger.kernel.org
+Cc: linux-xtensa@linux-xtensa.org
+Cc: linux-mm@kvack.org
+Cc: linux-arch@vger.kernel.org
+Cc: linux-api@vger.kernel.org
+
+-- 
+1.9.1
