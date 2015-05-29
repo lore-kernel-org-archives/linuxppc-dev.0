@@ -1,26 +1,21 @@
 Return-Path: <scottwood@freescale.com>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1AC2B1A004D
- for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2015 11:01:35 +1000 (AEST)
-Received: from na01-bl2-obe.outbound.protection.outlook.com
- (mail-bl2on0119.outbound.protection.outlook.com [65.55.169.119])
+Received: from na01-by2-obe.outbound.protection.outlook.com
+ (mail-by2on0139.outbound.protection.outlook.com [207.46.100.139])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by ozlabs.org (Postfix) with ESMTPS id 3B21E14012C
- for <linuxppc-dev@ozlabs.org>; Fri, 29 May 2015 11:01:33 +1000 (AEST)
-Date: Thu, 28 May 2015 19:46:57 -0500
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3C0AE1A004D
+ for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 May 2015 11:07:08 +1000 (AEST)
+Date: Thu, 28 May 2015 20:06:56 -0500
 From: Scott Wood <scottwood@freescale.com>
-To: songwenbin <Wenbin.Song@freescale.com>
-CC: <linuxppc-dev@ozlabs.org>, <Mingkai.hu@freescale.com>, York Sun
- <yorksun@freescale.com>
-Subject: Re: [v2,1/2] powerpc/mpc8xxx: Change EDAC for FSL SoC
-Message-ID: <20150529004657.GA8866@home.buserror.net>
-References: <1430991698-29832-1-git-send-email-Wenbin.Song@freescale.com>
+To: Madalin Bucur <madalin.bucur@freescale.com>
+CC: <linuxppc-dev@lists.ozlabs.org>, <Igal.Liberman@freescale.com>,
+ <roy.pledge@freescale.com>
+Subject: Re: [2/4] powerpc/fsl-booke: Add T1023RDB FMan device tree
+Message-ID: <20150529010656.GA9447@home.buserror.net>
+References: <1432125700-7024-3-git-send-email-madalin.bucur@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="us-ascii"
-In-Reply-To: <1430991698-29832-1-git-send-email-Wenbin.Song@freescale.com>
+In-Reply-To: <1432125700-7024-3-git-send-email-madalin.bucur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,35 +25,45 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, May 07, 2015 at 05:41:37PM +0800, songwenbin wrote:
-> From: York Sun <yorksun@freescale.com>
-> 
-> Remove mpc83xx and mpc85xx as dependency.
-> 
-> Signed-off-by: York Sun <yorksun@freescale.com>
-> Signed-off-by: songwenbin <wenbin.song@freescale.com>
-> ---
->  drivers/edac/Kconfig | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
+On Wed, May 20, 2015 at 03:41:38PM +0300, Madalin Bucur wrote:
+> diff --git a/arch/powerpc/boot/dts/fsl/t1023si-post.dtsi b/arch/powerpc/boot/dts/fsl/t1023si-post.dtsi
+> index 48c1690..a6eb7ae 100644
+> --- a/arch/powerpc/boot/dts/fsl/t1023si-post.dtsi
+> +++ b/arch/powerpc/boot/dts/fsl/t1023si-post.dtsi
+> @@ -344,6 +344,14 @@
+>  		reg = <0xe0000 0xe00>;
+>  		fsl,has-rstcr;
+>  		fsl,liodn-bits = <12>;
+> +
+> +		fm0clk: fm0-clk-mux {
+> +			#clock-cells = <0>;
+> +			compatible = "fsl,fman-clk-mux";
+> +			clocks = <&pll0 1>;
+> +			clock-names = "pll0-div2";
+> +			clock-output-names = "fm0-clk";
+> +		};
+>  	};
 
-These patches need to be sent to the EDAC list and maintainer.
+NACK as previously discussed.
 
-> diff --git a/drivers/edac/Kconfig b/drivers/edac/Kconfig
-> index cb59619..ad07d4f 100644
-> --- a/drivers/edac/Kconfig
-> +++ b/drivers/edac/Kconfig
-> @@ -262,10 +262,10 @@ config EDAC_SBRIDGE
+> diff --git a/arch/powerpc/boot/dts/t1023rdb.dts b/arch/powerpc/boot/dts/t1023rdb.dts
+> index 571e070..146d30d 100644
+> --- a/arch/powerpc/boot/dts/t1023rdb.dts
+> +++ b/arch/powerpc/boot/dts/t1023rdb.dts
+> @@ -128,6 +128,46 @@
+>  		i2c@118100 {
+>  		};
 >  
->  config EDAC_MPC85XX
->  	tristate "Freescale MPC83xx / MPC85xx"
-> -	depends on EDAC_MM_EDAC && FSL_SOC && (PPC_83xx || PPC_85xx)
-> +	depends on EDAC_MM_EDAC && FSL_SOC
->  	help
->  	  Support for error detection and correction on the Freescale
-> -	  MPC8349, MPC8560, MPC8540, MPC8548
-> +	  MPC8349, MPC8560, MPC8540, MPC8548, T4240
+> +		fman@400000 {
+> +			fm1mac1: ethernet@e0000 {
+> +				phy-handle = <&sgmii_rtk_phy2>;
+> +				phy-connection-type = "sgmii";
+> +				sleep = <&rcpm 0x80000000>;
+> +			};
 
-Why T4240?  We're not really going to list every mpc85xx/QorIQ PPC chip
-here, are we?
+Get rid of this sleep stuff.  It's an unfinished thing that nothing uses
+but people have copied all over the place.  The binding for it only
+covers pmc nodes compatible with mpc8349, mpc8536, and mpc8548.  The
+right way to handle this is with a "clocks" property.
 
 -Scott
