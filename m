@@ -1,25 +1,40 @@
-Return-Path: <ak@linux.intel.com>
-Received: from mga01.intel.com (mga01.intel.com [192.55.52.88])
- by lists.ozlabs.org (Postfix) with ESMTP id 973781A04EB
- for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 May 2015 15:49:29 +1000 (AEST)
-Date: Fri, 29 May 2015 22:49:27 -0700
-From: Andi Kleen <ak@linux.intel.com>
-To: Jiri Olsa <jolsa@redhat.com>
-Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>, mingo@redhat.com,
- Michael Ellerman <mpe@ellerman.id.au>,
- Arnaldo Carvalho de Melo <acme@kernel.org>,
- Paul Mackerras <paulus@samba.org>, namhyung@kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 04/10] perf, tools: Handle header line in mapfile
-Message-ID: <20150530054927.GB1187@tassilo.jf.intel.com>
-References: <1432761809-4344-1-git-send-email-sukadev@linux.vnet.ibm.com>
- <1432761809-4344-5-git-send-email-sukadev@linux.vnet.ibm.com>
- <20150528124221.GK12392@krava.redhat.com>
- <20150529054506.GA3088@us.ibm.com>
- <20150529091140.GA20512@krava.redhat.com>
+Return-Path: <svaidy@linux.vnet.ibm.com>
+Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id BA3AD1A0770
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 May 2015 16:02:42 +1000 (AEST)
+Received: from /spool/local
+ by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <svaidy@linux.vnet.ibm.com>;
+ Sat, 30 May 2015 16:02:40 +1000
+Received: from d23relay08.au.ibm.com (d23relay08.au.ibm.com [9.185.71.33])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 8C7952BB004D
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 May 2015 16:02:36 +1000 (EST)
+Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.234.96])
+ by d23relay08.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t4U62RoI38862864
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 May 2015 16:02:35 +1000
+Received: from d23av01.au.ibm.com (localhost [127.0.0.1])
+ by d23av01.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t4U62340008737
+ for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 May 2015 16:02:04 +1000
+Date: Sat, 30 May 2015 11:31:41 +0530
+From: Vaidyanathan Srinivasan <svaidy@linux.vnet.ibm.com>
+To: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Cc: Shilpasri G Bhat <shilpa.bhat@linux.vnet.ibm.com>,
+ linuxppc-dev@lists.ozlabs.org,
+ Daniel Lezcano <daniel.lezcano@linaro.org>, rjw@rjwysocki.net,
+ linux-kernel@vger.kernel.org, anton@samba.org, linux-pm@vger.kernel.org
+Subject: Re: [PATCH] cpuidle: powernv/pseries: Decrease the snooze residency
+Message-ID: <20150530060141.GA19134@dirshya.in.ibm.com>
+Reply-To: svaidy@linux.vnet.ibm.com
+References: <1432902728-31476-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
+ <55686DE5.6010001@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150529091140.GA20512@krava.redhat.com>
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <55686DE5.6010001@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,31 +44,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, May 29, 2015 at 11:13:15AM +0200, Jiri Olsa wrote:
-> On Thu, May 28, 2015 at 10:45:06PM -0700, Sukadev Bhattiprolu wrote:
-> > Jiri Olsa [jolsa@redhat.com] wrote:
-> > | >  		if (line[0] == '#' || line[0] == '\n')
-> > | >  			continue;
-> > | > +		if (!strncmp(line, "Family", 6))
-> > | > +			continue;
-> > | 
-> > | I think we should fix mapfiles to put the 'Family' starting
-> > | line as a comment.. the way powerpc mapfile is done
-> > 
-> > You mean add something like this to the Intel mapfile:
-> > 
-> > 	# Power8 entries
-> > 	004d0100,1,power8.json,core
-> > 
-> > and drop this patch?
+* Preeti U Murthy <preeti@linux.vnet.ibm.com> [2015-05-29 19:17:17]:
+
+[snip]
+
+> > +	if (max_idle_state > 1) {
+> > +		snooze_timeout_en = true;
+> > +		snooze_timeout = cpuidle_state_table[1].target_residency *
+> > +				 tb_ticks_per_usec;
+> > +	}
 > 
-> right
+> Any idea why we don't have snooze defined on the shared lpar configuration ?
 
-But it's a CSV file. CSV files are supposed to have column headers.
-There are lots of tools that work better with them if they have headers.
-Please keep the header.
+In shared lpar case, spinning in guest context may potentially take
+away cycles from other lpars waiting to run on the same physical cpu.
 
--Andi
+So the policy in shared lpar case is to let PowerVM hypervisor know
+immediately that the guest cpu is idle which will allow the hypervisor
+to use the cycles for other tasks/lpars.
 
--- 
-ak@linux.intel.com -- Speaking for myself only
+--Vaidy
