@@ -1,15 +1,17 @@
 Return-Path: <fthain@telegraphics.com.au>
 Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
  [98.124.60.144])
- by lists.ozlabs.org (Postfix) with ESMTP id A64FE1A0CAB
+ by lists.ozlabs.org (Postfix) with ESMTP id BECB71A0CB3
  for <linuxppc-dev@lists.ozlabs.org>; Sun, 31 May 2015 11:17:02 +1000 (AEST)
-Message-Id: <20150531010134.619479588@telegraphics.com.au>
-Date: Sun, 31 May 2015 11:01:41 +1000
+Message-Id: <20150531010132.799505414@telegraphics.com.au>
+Date: Sun, 31 May 2015 11:01:34 +1000
 From: Finn Thain <fthain@telegraphics.com.au>
 To: <linux-kernel@vger.kernel.org>, <linux-m68k@vger.kernel.org>,
  <linuxppc-dev@lists.ozlabs.org>, Arnd Bergmann <arnd@arndb.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: [RFC 09/24] char/nvram: Implement NVRAM read/write methods
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ "James E.J. Bottomley" <JBottomley@odin.com>,
+ Michael Schmitz <schmitzmic@gmail.com>, linux-scsi@vger.kernel.org
+Subject: [RFC 02/24] scsi/atari_scsi: Dont select CONFIG_NVRAM
 References: <20150531010132.289674310@telegraphics.com.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -20,227 +22,104 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Refactor the RTC "CMOS" NVRAM functions so that they can be used as
-arch_nvram_ops methods. Checksumming logic is moved from the misc device
-operations to the nvram read/write operations.
+On powerpc, setting CONFIG_NVRAM=n builds a kernel with no NVRAM support.
+Setting CONFIG_NVRAM=m enables the /dev/nvram misc device module without
+enabling NVRAM support in drivers. Setting CONFIG_NVRAM=y enables the
+misc device (built-in) and also enables NVRAM support in drivers.
 
-This makes the misc device implementation more generic. This also
-preserves the locking semantics such that "read if checksum valid" and
-"write and update checksum" remain atomic operations.
+m68k shares the valkyriefb driver with powerpc, and since that driver uses
+NVRAM, it is affected by CONFIG_ATARI_SCSI, because of the use of
+"select NVRAM".
 
-PPC64 implements byte-range read/write methods which are similar to
-file_operations struct methods. Other platforms provide only
-byte-at-a-time functions. So the misc device prefers the former but
-will fall back on the latter.
+Adopt the powerpc convention on m68k to avoid surprises.
 
 Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
 
 ---
- drivers/char/nvram.c |  162 +++++++++++++++++++++++++++++++++++----------------
- 1 file changed, 114 insertions(+), 48 deletions(-)
 
-Index: linux/drivers/char/nvram.c
+This patch temporarily disables CONFIG_NVRAM on Atari, to prevent build
+failures when bisecting the rest of this patch series. It gets enabled
+again with the introduction of CONFIG_HAVE_ARCH_NVRAM_OPS, once the
+nvram_* global functions have been moved to an ops struct.
+
+The removal of "select NVRAM" may mean that some kernel configs (such
+as Debian/m68k) may need tweaking.
+
+---
+ drivers/char/Kconfig      |    5 +----
+ drivers/scsi/Kconfig      |    6 +++---
+ drivers/scsi/atari_scsi.c |    8 ++++----
+ 3 files changed, 8 insertions(+), 11 deletions(-)
+
+Index: linux/drivers/char/Kconfig
 ===================================================================
---- linux.orig/drivers/char/nvram.c	2015-05-31 11:01:08.000000000 +1000
-+++ linux/drivers/char/nvram.c	2015-05-31 11:01:09.000000000 +1000
-@@ -41,6 +41,7 @@
- #include <linux/init.h>
- #include <linux/proc_fs.h>
- #include <linux/seq_file.h>
-+#include <linux/slab.h>
- #include <linux/spinlock.h>
- #include <linux/io.h>
- #include <linux/uaccess.h>
-@@ -178,9 +179,48 @@ static ssize_t nvram_get_size(void)
- 	return NVRAM_BYTES;
- }
+--- linux.orig/drivers/char/Kconfig	2015-05-31 11:00:59.000000000 +1000
++++ linux/drivers/char/Kconfig	2015-05-31 11:01:00.000000000 +1000
+@@ -247,7 +247,7 @@ source "drivers/char/hw_random/Kconfig"
  
-+static ssize_t nvram_read(char *buf, size_t count, loff_t *ppos)
-+{
-+	char *p = buf;
-+	loff_t i;
-+
-+	spin_lock_irq(&rtc_lock);
-+	if (!__nvram_check_checksum()) {
-+		spin_unlock_irq(&rtc_lock);
-+		return -EIO;
-+	}
-+	for (i = *ppos; count > 0 && i < NVRAM_BYTES; --count, ++i, ++p)
-+		*p = __nvram_read_byte(i);
-+	spin_unlock_irq(&rtc_lock);
-+
-+	*ppos = i;
-+	return p - buf;
-+}
-+
-+static ssize_t nvram_write(char *buf, size_t count, loff_t *ppos)
-+{
-+	char *p = buf;
-+	loff_t i;
-+
-+	spin_lock_irq(&rtc_lock);
-+	if (!__nvram_check_checksum()) {
-+		spin_unlock_irq(&rtc_lock);
-+		return -EIO;
-+	}
-+	for (i = *ppos; count > 0 && i < NVRAM_BYTES; --count, ++i, ++p)
-+		__nvram_write_byte(*p, i);
-+	__nvram_set_checksum();
-+	spin_unlock_irq(&rtc_lock);
-+
-+	*ppos = i;
-+	return p - buf;
-+}
-+
- const struct nvram_ops arch_nvram_ops = {
- 	.read_byte      = nvram_read_byte,
- 	.write_byte     = nvram_write_byte,
-+	.read           = nvram_read,
-+	.write          = nvram_write,
- 	.get_size       = nvram_get_size,
- 	.set_checksum   = nvram_set_checksum,
- 	.initialize     = nvram_initialize,
-@@ -215,69 +255,95 @@ static loff_t nvram_misc_llseek(struct f
- static ssize_t nvram_misc_read(struct file *file, char __user *buf,
-                                size_t count, loff_t *ppos)
- {
--	unsigned char contents[NVRAM_BYTES];
--	unsigned i = *ppos;
--	unsigned char *tmp;
--
--	spin_lock_irq(&rtc_lock);
-+	loff_t i;
-+	char __user *p = buf;
+ config NVRAM
+ 	tristate "/dev/nvram support"
+-	depends on ATARI || X86 || (ARM && RTC_DRV_CMOS) || GENERIC_NVRAM
++	depends on X86 || (ARM && RTC_DRV_CMOS) || GENERIC_NVRAM
+ 	---help---
+ 	  If you say Y here and create a character special file /dev/nvram
+ 	  with major number 10 and minor number 144 using mknod ("man mknod"),
+@@ -265,9 +265,6 @@ config NVRAM
+ 	  should NEVER idly tamper with it. See Ralf Brown's interrupt list
+ 	  for a guide to the use of CMOS bytes by your BIOS.
  
--	if (!__nvram_check_checksum())
--		goto checksum_err;
+-	  On Atari machines, /dev/nvram is always configured and does not need
+-	  to be selected.
 -
--	for (tmp = contents; count-- > 0 && i < NVRAM_BYTES; ++i, ++tmp)
--		*tmp = __nvram_read_byte(i);
--
--	spin_unlock_irq(&rtc_lock);
--
--	if (copy_to_user(buf, contents, tmp - contents))
-+	if (!access_ok(VERIFY_WRITE, buf, count))
- 		return -EFAULT;
-+	if (*ppos >= nvram_size)
-+		return 0;
+ 	  To compile this driver as a module, choose M here: the
+ 	  module will be called nvram.
  
--	*ppos = i;
--
--	return tmp - contents;
-+	/* If the arch provided a byte range read op, use it. Otherwise
-+	 * fall back on the byte-at-a-time accessor.
-+	 */
-+	if (arch_nvram_ops.read != NULL) {
-+		char *tmp;
-+		ssize_t ret;
-+
-+		count = min_t(size_t, count, nvram_size - *ppos);
-+		count = min_t(size_t, count, PAGE_SIZE);
-+
-+		tmp = kmalloc(count, GFP_KERNEL);
-+		if (!tmp)
-+			return -ENOMEM;
-+
-+		ret = arch_nvram_ops.read(tmp, count, ppos);
-+		if (ret <= 0)
-+			goto out;
-+
-+		if (copy_to_user(buf, tmp, ret)) {
-+			*ppos -= ret;
-+			ret = -EFAULT;
-+		}
-+
-+out:
-+		kfree(tmp);
-+		return ret;
-+	}
+Index: linux/drivers/scsi/Kconfig
+===================================================================
+--- linux.orig/drivers/scsi/Kconfig	2015-05-31 11:00:59.000000000 +1000
++++ linux/drivers/scsi/Kconfig	2015-05-31 11:01:00.000000000 +1000
+@@ -1592,14 +1592,14 @@ config ATARI_SCSI
+ 	tristate "Atari native SCSI support"
+ 	depends on ATARI && SCSI
+ 	select SCSI_SPI_ATTRS
+-	select NVRAM
+ 	---help---
+ 	  If you have an Atari with built-in NCR5380 SCSI controller (TT,
+ 	  Falcon, ...) say Y to get it supported. Of course also, if you have
+ 	  a compatible SCSI controller (e.g. for Medusa).
  
--checksum_err:
--	spin_unlock_irq(&rtc_lock);
--	return -EIO;
-+	for (i = *ppos; count > 0 && i < nvram_size; ++i, ++p, --count)
-+		if (__put_user(arch_nvram_ops.read_byte(i), p))
-+			return -EFAULT;
-+	*ppos = i;
-+	return p - buf;
- }
+-	  To compile this driver as a module, choose M here: the
+-	  module will be called atari_scsi.
++	  To compile this driver as a module, choose M here: the module will
++	  be called atari_scsi. If you also enable NVRAM support, the SCSI
++	  host's ID is taken from the setting in TT RTC NVRAM.
  
- static ssize_t nvram_misc_write(struct file *file, const char __user *buf,
-                                 size_t count, loff_t *ppos)
- {
--	unsigned char contents[NVRAM_BYTES];
--	unsigned i = *ppos;
--	unsigned char *tmp;
--
--	if (i >= NVRAM_BYTES)
--		return 0;	/* Past EOF */
--
--	if (count > NVRAM_BYTES - i)
--		count = NVRAM_BYTES - i;
--	if (count > NVRAM_BYTES)
--		return -EFAULT;	/* Can't happen, but prove it to gcc */
-+	loff_t i;
-+	const char __user *p = buf;
+ 	  This driver supports both styles of NCR integration into the
+ 	  system: the TT style (separate DMA), and the Falcon style (via
+Index: linux/drivers/scsi/atari_scsi.c
+===================================================================
+--- linux.orig/drivers/scsi/atari_scsi.c	2015-05-31 11:00:59.000000000 +1000
++++ linux/drivers/scsi/atari_scsi.c	2015-05-31 11:01:00.000000000 +1000
+@@ -875,9 +875,10 @@ static int __init atari_scsi_probe(struc
+ 	if (ATARIHW_PRESENT(TT_SCSI) && setup_sg_tablesize >= 0)
+ 		atari_scsi_template.sg_tablesize = setup_sg_tablesize;
  
--	if (copy_from_user(contents, buf, count))
-+	if (!access_ok(VERIFY_READ, buf, count))
- 		return -EFAULT;
-+	if (*ppos >= nvram_size)
-+		return 0;
+-	if (setup_hostid >= 0) {
++	if (setup_hostid >= 0)
+ 		atari_scsi_template.this_id = setup_hostid & 7;
+-	} else {
++#ifdef CONFIG_NVRAM
++	else
+ 		/* Test if a host id is set in the NVRam */
+ 		if (ATARIHW_PRESENT(TT_CLK) && nvram_check_checksum()) {
+ 			unsigned char b = nvram_read_byte(14);
+@@ -888,8 +889,7 @@ static int __init atari_scsi_probe(struc
+ 			if (b & 0x80)
+ 				atari_scsi_template.this_id = b & 7;
+ 		}
+-	}
+-
++#endif
  
--	spin_lock_irq(&rtc_lock);
--
--	if (!__nvram_check_checksum())
--		goto checksum_err;
--
--	for (tmp = contents; count--; ++i, ++tmp)
--		__nvram_write_byte(*tmp, i);
--
--	__nvram_set_checksum();
-+	/* If the arch provided a byte range write op, use it. Otherwise
-+	 * fall back on the byte-at-a-time accessor.
-+	 */
-+	if (arch_nvram_ops.write != NULL) {
-+		char *tmp;
-+		ssize_t ret;
-+
-+		count = min_t(size_t, count, nvram_size - *ppos);
-+		count = min_t(size_t, count, PAGE_SIZE);
-+
-+		tmp = kmalloc(count, GFP_KERNEL);
-+		if (!tmp)
-+			return -ENOMEM;
-+
-+		if (copy_from_user(tmp, buf, count)) {
-+			ret = -EFAULT;
-+			goto out;
-+		}
-+
-+		ret = arch_nvram_ops.write(tmp, count, ppos);
-+
-+out:
-+		kfree(tmp);
-+		return ret;
-+	}
- 
--	spin_unlock_irq(&rtc_lock);
-+	for (i = *ppos; count > 0 && i < nvram_size; ++i, ++p, --count) {
-+		char c;
- 
-+		if (__get_user(c, p))
-+			return -EFAULT;
-+		arch_nvram_ops.write_byte(c, i);
-+	}
- 	*ppos = i;
--
--	return tmp - contents;
--
--checksum_err:
--	spin_unlock_irq(&rtc_lock);
--	return -EIO;
-+	return p - buf;
- }
- 
- static long nvram_misc_ioctl(struct file *file, unsigned int cmd,
+ #ifdef REAL_DMA
+ 	/* If running on a Falcon and if there's TT-Ram (i.e., more than one
