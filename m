@@ -1,40 +1,23 @@
-Return-Path: <benh@au1.ibm.com>
-Received: from e23smtp03.au.ibm.com (e23smtp03.au.ibm.com [202.81.31.145])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 500A01A3304
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 31 May 2015 11:40:51 +1000 (AEST)
-Received: from /spool/local
- by e23smtp03.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <benh@au1.ibm.com>;
- Sun, 31 May 2015 11:40:49 +1000
-Received: from d23relay10.au.ibm.com (d23relay10.au.ibm.com [9.190.26.77])
- by d23dlp03.au.ibm.com (Postfix) with ESMTP id E7C17357804F
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 31 May 2015 11:40:46 +1000 (EST)
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.234.97])
- by d23relay10.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t4V1dNQ6196960
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 31 May 2015 11:39:32 +1000
-Received: from d23av03.au.ibm.com (localhost [127.0.0.1])
- by d23av03.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t4V1cxNF014941
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 31 May 2015 11:38:59 +1000
-Message-ID: <1433036302.4526.15.camel@au1.ibm.com>
-Subject: Re: [PATCH] cpuidle: powernv/pseries: Decrease the snooze residency
-From: Benjamin Herrenschmidt <benh@au1.ibm.com>
-To: svaidy@linux.vnet.ibm.com
-Cc: Preeti U Murthy <preeti@linux.vnet.ibm.com>, linux-pm@vger.kernel.org,
- Daniel Lezcano <daniel.lezcano@linaro.org>, rjw@rjwysocki.net,
- linux-kernel@vger.kernel.org, anton@samba.org, Shilpasri G Bhat
- <shilpa.bhat@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Date: Sat, 30 May 2015 20:38:22 -0500
-In-Reply-To: <20150530060141.GA19134@dirshya.in.ibm.com>
-References: <1432902728-31476-1-git-send-email-shilpa.bhat@linux.vnet.ibm.com>
- <55686DE5.6010001@linux.vnet.ibm.com>
- <20150530060141.GA19134@dirshya.in.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+Return-Path: <fthain@telegraphics.com.au>
+Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
+ [98.124.60.144])
+ by lists.ozlabs.org (Postfix) with ESMTP id 915061A0C98
+ for <linuxppc-dev@lists.ozlabs.org>; Sun, 31 May 2015 16:16:05 +1000 (AEST)
+Date: Sun, 31 May 2015 16:15:12 +1000 (AEST)
+From: Finn Thain <fthain@telegraphics.com.au>
+To: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+cc: linux-kernel@vger.kernel.org, linux-m68k@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, Darren Hart <dvhart@infradead.org>,
+ ibm-acpi-devel@lists.sourceforge.net, platform-driver-x86@vger.kernel.org
+Subject: Re: [RFC 07/24] x86/thinkpad_acpi: Use arch_nvram_ops methods instead
+ of nvram_read_byte() and nvram_write_byte()
+In-Reply-To: <20150531041114.GA30431@khazad-dum.debian.net>
+Message-ID: <alpine.LNX.2.00.1505311605420.23528@nippy.intranet>
+References: <20150531010132.289674310@telegraphics.com.au>
+ <20150531010134.129479218@telegraphics.com.au>
+ <20150531041114.GA30431@khazad-dum.debian.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,20 +27,130 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sat, 2015-05-30 at 11:31 +0530, Vaidyanathan Srinivasan wrote:
-> In shared lpar case, spinning in guest context may potentially take
-> away cycles from other lpars waiting to run on the same physical cpu.
+
+On Sun, 31 May 2015, Henrique de Moraes Holschuh wrote:
+
+> On Sun, 31 May 2015, Finn Thain wrote:
+> > Make use of arch_nvram_ops in the thinkpad_acpi driver so that the 
+> > nvram_* function exports can be removed.
+> > 
+> > This patch series was tested on a ThinkPad T43.
 > 
-> So the policy in shared lpar case is to let PowerVM hypervisor know
-> immediately that the guest cpu is idle which will allow the hypervisor
-> to use the cycles for other tasks/lpars.
+> Can you describe how you did the testing?  A specific procedure is 
+> required to test the hotkey NVRAM polling codepaths (which will read 
+> several NVRAM bytes @10Hz by default) in a T43...
+> 
+> > Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
+> 
+> The patch looks correct, so I don't expect any problems.
+> 
+> Provided that your test procedure did enable hotkey NVRAM polling in the 
+> T43 and your hotkeys all still worked fine, you have my Acked-by.
 
-But that will have negative side effects under KVM no ?
+The procedure I used was this,
 
-Suresh mentioned something with his new directed interrupts code that we
-had many cases where the interrupts ended up arriving shortly after we
-exited to host for NAP'ing ...
+1. $ xev
+2. # rmmod thinkpad_acpi
+3. Press <Access IBM> key and confirm that xev does not report any
+   events.
+4. # modprobe thinkpad_acpi
+5. Press <Access IBM> key and confirm that xev now reports the key press 
+   events.
 
-Snooze might fix it...
+Is this sufficient?
 
-Ben.
+Regards,
+Finn
+
+> 
+> > ---
+> >  drivers/platform/x86/thinkpad_acpi.c |   20 ++++++++++----------
+> >  1 file changed, 10 insertions(+), 10 deletions(-)
+> > 
+> > Index: linux/drivers/platform/x86/thinkpad_acpi.c
+> > ===================================================================
+> > --- linux.orig/drivers/platform/x86/thinkpad_acpi.c	2015-05-31 11:00:59.000000000 +1000
+> > +++ linux/drivers/platform/x86/thinkpad_acpi.c	2015-05-31 11:01:07.000000000 +1000
+> > @@ -2311,30 +2311,30 @@ static void hotkey_read_nvram(struct tp_
+> >  	u8 d;
+> >  
+> >  	if (m & TP_NVRAM_HKEY_GROUP_HK2) {
+> > -		d = nvram_read_byte(TP_NVRAM_ADDR_HK2);
+> > +		d = arch_nvram_ops.read_byte(TP_NVRAM_ADDR_HK2);
+> >  		n->thinkpad_toggle = !!(d & TP_NVRAM_MASK_HKT_THINKPAD);
+> >  		n->zoom_toggle = !!(d & TP_NVRAM_MASK_HKT_ZOOM);
+> >  		n->display_toggle = !!(d & TP_NVRAM_MASK_HKT_DISPLAY);
+> >  		n->hibernate_toggle = !!(d & TP_NVRAM_MASK_HKT_HIBERNATE);
+> >  	}
+> >  	if (m & TP_ACPI_HKEY_THNKLGHT_MASK) {
+> > -		d = nvram_read_byte(TP_NVRAM_ADDR_THINKLIGHT);
+> > +		d = arch_nvram_ops.read_byte(TP_NVRAM_ADDR_THINKLIGHT);
+> >  		n->thinklight_toggle = !!(d & TP_NVRAM_MASK_THINKLIGHT);
+> >  	}
+> >  	if (m & TP_ACPI_HKEY_DISPXPAND_MASK) {
+> > -		d = nvram_read_byte(TP_NVRAM_ADDR_VIDEO);
+> > +		d = arch_nvram_ops.read_byte(TP_NVRAM_ADDR_VIDEO);
+> >  		n->displayexp_toggle =
+> >  				!!(d & TP_NVRAM_MASK_HKT_DISPEXPND);
+> >  	}
+> >  	if (m & TP_NVRAM_HKEY_GROUP_BRIGHTNESS) {
+> > -		d = nvram_read_byte(TP_NVRAM_ADDR_BRIGHTNESS);
+> > +		d = arch_nvram_ops.read_byte(TP_NVRAM_ADDR_BRIGHTNESS);
+> >  		n->brightness_level = (d & TP_NVRAM_MASK_LEVEL_BRIGHTNESS)
+> >  				>> TP_NVRAM_POS_LEVEL_BRIGHTNESS;
+> >  		n->brightness_toggle =
+> >  				!!(d & TP_NVRAM_MASK_HKT_BRIGHTNESS);
+> >  	}
+> >  	if (m & TP_NVRAM_HKEY_GROUP_VOLUME) {
+> > -		d = nvram_read_byte(TP_NVRAM_ADDR_MIXER);
+> > +		d = arch_nvram_ops.read_byte(TP_NVRAM_ADDR_MIXER);
+> >  		n->volume_level = (d & TP_NVRAM_MASK_LEVEL_VOLUME)
+> >  				>> TP_NVRAM_POS_LEVEL_VOLUME;
+> >  		n->mute = !!(d & TP_NVRAM_MASK_MUTE);
+> > @@ -6153,7 +6153,7 @@ static unsigned int tpacpi_brightness_nv
+> >  {
+> >  	u8 lnvram;
+> >  
+> > -	lnvram = (nvram_read_byte(TP_NVRAM_ADDR_BRIGHTNESS)
+> > +	lnvram = (arch_nvram_ops.read_byte(TP_NVRAM_ADDR_BRIGHTNESS)
+> >  		  & TP_NVRAM_MASK_LEVEL_BRIGHTNESS)
+> >  		  >> TP_NVRAM_POS_LEVEL_BRIGHTNESS;
+> >  	lnvram &= bright_maxlvl;
+> > @@ -6178,7 +6178,7 @@ static void tpacpi_brightness_checkpoint
+> >  	if (unlikely(!acpi_ec_read(TP_EC_BACKLIGHT, &lec)))
+> >  		goto unlock;
+> >  	lec &= TP_EC_BACKLIGHT_LVLMSK;
+> > -	b_nvram = nvram_read_byte(TP_NVRAM_ADDR_BRIGHTNESS);
+> > +	b_nvram = arch_nvram_ops.read_byte(TP_NVRAM_ADDR_BRIGHTNESS);
+> >  
+> >  	if (lec != ((b_nvram & TP_NVRAM_MASK_LEVEL_BRIGHTNESS)
+> >  			     >> TP_NVRAM_POS_LEVEL_BRIGHTNESS)) {
+> > @@ -6186,7 +6186,7 @@ static void tpacpi_brightness_checkpoint
+> >  		b_nvram &= ~(TP_NVRAM_MASK_LEVEL_BRIGHTNESS <<
+> >  				TP_NVRAM_POS_LEVEL_BRIGHTNESS);
+> >  		b_nvram |= lec;
+> > -		nvram_write_byte(b_nvram, TP_NVRAM_ADDR_BRIGHTNESS);
+> > +		arch_nvram_ops.write_byte(b_nvram, TP_NVRAM_ADDR_BRIGHTNESS);
+> >  		dbg_printk(TPACPI_DBG_BRGHT,
+> >  			   "updated NVRAM backlight level to %u (0x%02x)\n",
+> >  			   (unsigned int) lec, (unsigned int) b_nvram);
+> > @@ -6794,13 +6794,13 @@ static void tpacpi_volume_checkpoint_nvr
+> >  	if (unlikely(!acpi_ec_read(TP_EC_AUDIO, &lec)))
+> >  		goto unlock;
+> >  	lec &= ec_mask;
+> > -	b_nvram = nvram_read_byte(TP_NVRAM_ADDR_MIXER);
+> > +	b_nvram = arch_nvram_ops.read_byte(TP_NVRAM_ADDR_MIXER);
+> >  
+> >  	if (lec != (b_nvram & ec_mask)) {
+> >  		/* NVRAM needs update */
+> >  		b_nvram &= ~ec_mask;
+> >  		b_nvram |= lec;
+> > -		nvram_write_byte(b_nvram, TP_NVRAM_ADDR_MIXER);
+> > +		arch_nvram_ops.write_byte(b_nvram, TP_NVRAM_ADDR_MIXER);
+> >  		dbg_printk(TPACPI_DBG_MIXER,
+> >  			   "updated NVRAM mixer status to 0x%02x (0x%02x)\n",
+> >  			   (unsigned int) lec, (unsigned int) b_nvram);
+> > 
+> > 
+> 
+> 
