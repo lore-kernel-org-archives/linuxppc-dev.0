@@ -1,27 +1,31 @@
-Return-Path: <hmh@hmh.eng.br>
-Received: from out3-smtp.messagingengine.com (out3-smtp.messagingengine.com
- [66.111.4.27])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 2D2E41A0C98
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 31 May 2015 14:17:58 +1000 (AEST)
-Received: from compute1.internal (compute1.nyi.internal [10.202.2.41])
- by mailout.nyi.internal (Postfix) with ESMTP id 5E52520939
- for <linuxppc-dev@lists.ozlabs.org>; Sun, 31 May 2015 00:11:22 -0400 (EDT)
-Date: Sun, 31 May 2015 01:11:15 -0300
-From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
-To: Finn Thain <fthain@telegraphics.com.au>
-Cc: linux-kernel@vger.kernel.org, linux-m68k@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, Darren Hart <dvhart@infradead.org>,
- ibm-acpi-devel@lists.sourceforge.net, platform-driver-x86@vger.kernel.org
-Subject: Re: [RFC 07/24] x86/thinkpad_acpi: Use arch_nvram_ops methods
- instead of nvram_read_byte() and nvram_write_byte()
-Message-ID: <20150531041114.GA30431@khazad-dum.debian.net>
-References: <20150531010132.289674310@telegraphics.com.au>
- <20150531010134.129479218@telegraphics.com.au>
+Return-Path: <ak@linux.intel.com>
+Received: from mga09.intel.com (mga09.intel.com [134.134.136.24])
+ by lists.ozlabs.org (Postfix) with ESMTP id E0BEE1A044C
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Jun 2015 02:07:51 +1000 (AEST)
+Date: Sun, 31 May 2015 09:07:49 -0700
+From: Andi Kleen <ak@linux.intel.com>
+To: Ingo Molnar <mingo@kernel.org>
+Cc: Jiri Olsa <jolsa@redhat.com>, Namhyung Kim <namhyung@kernel.org>,
+ Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+ Ingo Molnar <mingo@redhat.com>, Michael Ellerman <mpe@ellerman.id.au>,
+ Arnaldo Carvalho de Melo <acme@kernel.org>,
+ Paul Mackerras <paulus@samba.org>, linuxppc-dev@lists.ozlabs.org,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 2/4] perf: jevents: Program to convert JSON file to C
+ style file
+Message-ID: <20150531160749.GF1187@tassilo.jf.intel.com>
+References: <1432080130-6678-1-git-send-email-sukadev@linux.vnet.ibm.com>
+ <1432080130-6678-3-git-send-email-sukadev@linux.vnet.ibm.com>
+ <20150527135402.GA29557@danjae.kornet>
+ <20150527144007.GL7484@tassilo.jf.intel.com>
+ <CAM9d7cgSPbBgHL8qkmFEfbA3pNct4VPaxDwOcKZD3_5ZNL-oNQ@mail.gmail.com>
+ <20150528115223.GD12392@krava.redhat.com>
+ <20150528120954.GA8478@gmail.com> <20150528130724.GA8987@gmail.com>
+ <20150528153911.GO7484@tassilo.jf.intel.com>
+ <20150529072750.GA23124@gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150531010134.129479218@telegraphics.com.au>
+In-Reply-To: <20150529072750.GA23124@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,115 +35,61 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 31 May 2015, Finn Thain wrote:
-> Make use of arch_nvram_ops in the thinkpad_acpi driver so that the
-> nvram_* function exports can be removed.
-> 
-> This patch series was tested on a ThinkPad T43.
 
-Can you describe how you did the testing?  A specific procedure is required
-to test the hotkey NVRAM polling codepaths (which will read several NVRAM
-bytes @10Hz by default) in a T43...
+Ok I did some scripting to add these topics you requested to the Intel JSON files,
+and changed perf list to group events by them. 
 
-> Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
+I'll redirect any questions on their value to you.  
+And I certainly hope this is the last of your "improvements" for now.
 
-The patch looks correct, so I don't expect any problems.
+The updated event lists are available in
 
-Provided that your test procedure did enable hotkey NVRAM polling in the T43
-and your hotkeys all still worked fine, you have my Acked-by.
+git://git.kernel.org/pub/scm/linux/kernel/git/ak/linux-misc perf/intel-json-files-3
 
-> ---
->  drivers/platform/x86/thinkpad_acpi.c |   20 ++++++++++----------
->  1 file changed, 10 insertions(+), 10 deletions(-)
-> 
-> Index: linux/drivers/platform/x86/thinkpad_acpi.c
-> ===================================================================
-> --- linux.orig/drivers/platform/x86/thinkpad_acpi.c	2015-05-31 11:00:59.000000000 +1000
-> +++ linux/drivers/platform/x86/thinkpad_acpi.c	2015-05-31 11:01:07.000000000 +1000
-> @@ -2311,30 +2311,30 @@ static void hotkey_read_nvram(struct tp_
->  	u8 d;
->  
->  	if (m & TP_NVRAM_HKEY_GROUP_HK2) {
-> -		d = nvram_read_byte(TP_NVRAM_ADDR_HK2);
-> +		d = arch_nvram_ops.read_byte(TP_NVRAM_ADDR_HK2);
->  		n->thinkpad_toggle = !!(d & TP_NVRAM_MASK_HKT_THINKPAD);
->  		n->zoom_toggle = !!(d & TP_NVRAM_MASK_HKT_ZOOM);
->  		n->display_toggle = !!(d & TP_NVRAM_MASK_HKT_DISPLAY);
->  		n->hibernate_toggle = !!(d & TP_NVRAM_MASK_HKT_HIBERNATE);
->  	}
->  	if (m & TP_ACPI_HKEY_THNKLGHT_MASK) {
-> -		d = nvram_read_byte(TP_NVRAM_ADDR_THINKLIGHT);
-> +		d = arch_nvram_ops.read_byte(TP_NVRAM_ADDR_THINKLIGHT);
->  		n->thinklight_toggle = !!(d & TP_NVRAM_MASK_THINKLIGHT);
->  	}
->  	if (m & TP_ACPI_HKEY_DISPXPAND_MASK) {
-> -		d = nvram_read_byte(TP_NVRAM_ADDR_VIDEO);
-> +		d = arch_nvram_ops.read_byte(TP_NVRAM_ADDR_VIDEO);
->  		n->displayexp_toggle =
->  				!!(d & TP_NVRAM_MASK_HKT_DISPEXPND);
->  	}
->  	if (m & TP_NVRAM_HKEY_GROUP_BRIGHTNESS) {
-> -		d = nvram_read_byte(TP_NVRAM_ADDR_BRIGHTNESS);
-> +		d = arch_nvram_ops.read_byte(TP_NVRAM_ADDR_BRIGHTNESS);
->  		n->brightness_level = (d & TP_NVRAM_MASK_LEVEL_BRIGHTNESS)
->  				>> TP_NVRAM_POS_LEVEL_BRIGHTNESS;
->  		n->brightness_toggle =
->  				!!(d & TP_NVRAM_MASK_HKT_BRIGHTNESS);
->  	}
->  	if (m & TP_NVRAM_HKEY_GROUP_VOLUME) {
-> -		d = nvram_read_byte(TP_NVRAM_ADDR_MIXER);
-> +		d = arch_nvram_ops.read_byte(TP_NVRAM_ADDR_MIXER);
->  		n->volume_level = (d & TP_NVRAM_MASK_LEVEL_VOLUME)
->  				>> TP_NVRAM_POS_LEVEL_VOLUME;
->  		n->mute = !!(d & TP_NVRAM_MASK_MUTE);
-> @@ -6153,7 +6153,7 @@ static unsigned int tpacpi_brightness_nv
->  {
->  	u8 lnvram;
->  
-> -	lnvram = (nvram_read_byte(TP_NVRAM_ADDR_BRIGHTNESS)
-> +	lnvram = (arch_nvram_ops.read_byte(TP_NVRAM_ADDR_BRIGHTNESS)
->  		  & TP_NVRAM_MASK_LEVEL_BRIGHTNESS)
->  		  >> TP_NVRAM_POS_LEVEL_BRIGHTNESS;
->  	lnvram &= bright_maxlvl;
-> @@ -6178,7 +6178,7 @@ static void tpacpi_brightness_checkpoint
->  	if (unlikely(!acpi_ec_read(TP_EC_BACKLIGHT, &lec)))
->  		goto unlock;
->  	lec &= TP_EC_BACKLIGHT_LVLMSK;
-> -	b_nvram = nvram_read_byte(TP_NVRAM_ADDR_BRIGHTNESS);
-> +	b_nvram = arch_nvram_ops.read_byte(TP_NVRAM_ADDR_BRIGHTNESS);
->  
->  	if (lec != ((b_nvram & TP_NVRAM_MASK_LEVEL_BRIGHTNESS)
->  			     >> TP_NVRAM_POS_LEVEL_BRIGHTNESS)) {
-> @@ -6186,7 +6186,7 @@ static void tpacpi_brightness_checkpoint
->  		b_nvram &= ~(TP_NVRAM_MASK_LEVEL_BRIGHTNESS <<
->  				TP_NVRAM_POS_LEVEL_BRIGHTNESS);
->  		b_nvram |= lec;
-> -		nvram_write_byte(b_nvram, TP_NVRAM_ADDR_BRIGHTNESS);
-> +		arch_nvram_ops.write_byte(b_nvram, TP_NVRAM_ADDR_BRIGHTNESS);
->  		dbg_printk(TPACPI_DBG_BRGHT,
->  			   "updated NVRAM backlight level to %u (0x%02x)\n",
->  			   (unsigned int) lec, (unsigned int) b_nvram);
-> @@ -6794,13 +6794,13 @@ static void tpacpi_volume_checkpoint_nvr
->  	if (unlikely(!acpi_ec_read(TP_EC_AUDIO, &lec)))
->  		goto unlock;
->  	lec &= ec_mask;
-> -	b_nvram = nvram_read_byte(TP_NVRAM_ADDR_MIXER);
-> +	b_nvram = arch_nvram_ops.read_byte(TP_NVRAM_ADDR_MIXER);
->  
->  	if (lec != (b_nvram & ec_mask)) {
->  		/* NVRAM needs update */
->  		b_nvram &= ~ec_mask;
->  		b_nvram |= lec;
-> -		nvram_write_byte(b_nvram, TP_NVRAM_ADDR_MIXER);
-> +		arch_nvram_ops.write_byte(b_nvram, TP_NVRAM_ADDR_MIXER);
->  		dbg_printk(TPACPI_DBG_MIXER,
->  			   "updated NVRAM mixer status to 0x%02x (0x%02x)\n",
->  			   (unsigned int) lec, (unsigned int) b_nvram);
-> 
-> 
+The updated patches are available in 
 
--- 
-  "One disk to rule them all, One disk to find them. One disk to bring
-  them all and in the darkness grind them. In the Land of Redmond
-  where the shadows lie." -- The Silicon Valley Tarot
-  Henrique Holschuh
+git://git.kernel.org/pub/scm/linux/kernel/git/ak/linux-misc perf/builtin-json-6
+
+Also posted separately.
+
+The output looks like this
+
+% perf list
+...
+Cache:
+  l1d.replacement                                   
+       [L1D data line replacements]
+  l1d_pend_miss.pending                             
+       [L1D miss oustandings duration in cycles]
+  l1d_pend_miss.pending_cycles                      
+       [Cycles with L1D load Misses outstanding]
+...
+Floating point:
+  fp_assist.any                                     
+       [Cycles with any input/output SSE or FP assist]
+  fp_assist.simd_input                              
+       [Number of SIMD FP assists due to input values]
+  fp_assist.simd_output                             
+       [Number of SIMD FP assists due to Output values]
+...
+Memory:
+  machine_clears.memory_ordering                    
+       [Counts the number of machine clears due to memory order conflicts]
+  mem_trans_retired.load_latency_gt_128             
+       [Loads with latency value being above 128 (Must be precise)]
+  mem_trans_retired.load_latency_gt_16              
+       [Loads with latency value being above 16 (Must be precise)]
+...
+Pipeline:
+  arith.fpu_div                                     
+       [Divide operations executed]
+  arith.fpu_div_active                              
+       [Cycles when divider is busy executing divide operations]
+  baclears.any                                      
+       [Counts the total number when the front end is resteered, mainly when the BPU cannot provide a correct
+        prediction and this is corrected by other branch handling mechanisms at the front end]
+
+
+-Andi
+
+P.S.: You may want to look up the definition of logical fallacy in wikipedia.
