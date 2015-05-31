@@ -1,19 +1,15 @@
 Return-Path: <fthain@telegraphics.com.au>
 Received: from kvm5.telegraphics.com.au (kvm5.telegraphics.com.au
  [98.124.60.144])
- by lists.ozlabs.org (Postfix) with ESMTP id B8B701A0CAC
+ by lists.ozlabs.org (Postfix) with ESMTP id A3C021A0CAA
  for <linuxppc-dev@lists.ozlabs.org>; Sun, 31 May 2015 11:17:01 +1000 (AEST)
-Message-Id: <20150531010136.089460931@telegraphics.com.au>
-Date: Sun, 31 May 2015 11:01:47 +1000
+Message-Id: <20150531010132.549451549@telegraphics.com.au>
+Date: Sun, 31 May 2015 11:01:33 +1000
 From: Finn Thain <fthain@telegraphics.com.au>
 To: <linux-kernel@vger.kernel.org>, <linux-m68k@vger.kernel.org>,
  <linuxppc-dev@lists.ozlabs.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Paul Mackerras <paulus@samba.org>, Michael Ellerman <mpe@ellerman.id.au>,
- Arnd Bergmann <arnd@arndb.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: [RFC 15/24] powerpc: Implement arch_nvram_ops.get_size() and remove
- old nvram_* exports
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [RFC 01/24] macintosh/nvram: Remove as unused
 References: <20150531010132.289674310@telegraphics.com.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -24,104 +20,144 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Implement arch_nvram_ops for PPC32 and make use of it in the generic_nvram
-misc device module so that the nvram_* function exports can be removed.
-
 Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
 
 ---
- arch/powerpc/include/asm/nvram.h |    3 ---
- arch/powerpc/kernel/setup_32.c   |   10 +++++++---
- drivers/char/generic_nvram.c     |   24 ++++++++++++------------
- 3 files changed, 19 insertions(+), 18 deletions(-)
+ drivers/macintosh/nvram.c |  130 ----------------------------------------------
+ 1 file changed, 130 deletions(-)
 
-Index: linux/arch/powerpc/include/asm/nvram.h
+Index: linux/drivers/macintosh/nvram.c
 ===================================================================
---- linux.orig/arch/powerpc/include/asm/nvram.h	2015-05-31 11:01:13.000000000 +1000
-+++ linux/arch/powerpc/include/asm/nvram.h	2015-05-31 11:01:16.000000000 +1000
-@@ -98,7 +98,4 @@ extern int nvram_write_os_partition(stru
- 				    unsigned int err_type,
- 				    unsigned int error_log_cnt);
- 
--/* Determine NVRAM size */
--extern ssize_t nvram_get_size(void);
+--- linux.orig/drivers/macintosh/nvram.c	2015-05-31 11:00:59.000000000 +1000
++++ /dev/null	1970-01-01 00:00:00.000000000 +0000
+@@ -1,130 +0,0 @@
+-/*
+- * /dev/nvram driver for Power Macintosh.
+- */
 -
- #endif /* _ASM_POWERPC_NVRAM_H */
-Index: linux/arch/powerpc/kernel/setup_32.c
-===================================================================
---- linux.orig/arch/powerpc/kernel/setup_32.c	2015-05-31 11:01:13.000000000 +1000
-+++ linux/arch/powerpc/kernel/setup_32.c	2015-05-31 11:01:16.000000000 +1000
-@@ -186,13 +186,12 @@ void nvram_write_byte(unsigned char val,
- }
- EXPORT_SYMBOL(nvram_write_byte);
- 
--ssize_t nvram_get_size(void)
-+static ssize_t ppc_nvram_get_size(void)
- {
- 	if (ppc_md.nvram_size)
- 		return ppc_md.nvram_size();
--	return -1;
-+	return -ENODEV;
- }
--EXPORT_SYMBOL(nvram_get_size);
- 
- void nvram_sync(void)
- {
-@@ -201,6 +200,11 @@ void nvram_sync(void)
- }
- EXPORT_SYMBOL(nvram_sync);
- 
-+const struct nvram_ops arch_nvram_ops = {
-+	.get_size       = ppc_nvram_get_size,
-+};
-+EXPORT_SYMBOL(arch_nvram_ops);
-+
- #endif /* CONFIG_NVRAM */
- 
- int __init ppc_init(void)
-Index: linux/drivers/char/generic_nvram.c
-===================================================================
---- linux.orig/drivers/char/generic_nvram.c	2015-05-31 11:01:13.000000000 +1000
-+++ linux/drivers/char/generic_nvram.c	2015-05-31 11:01:16.000000000 +1000
-@@ -28,8 +28,6 @@
- #include <asm/machdep.h>
- #endif
- 
+-#define NVRAM_VERSION "1.0"
+-
+-#include <linux/module.h>
+-
+-#include <linux/types.h>
+-#include <linux/errno.h>
+-#include <linux/fs.h>
+-#include <linux/miscdevice.h>
+-#include <linux/fcntl.h>
+-#include <linux/nvram.h>
+-#include <linux/init.h>
+-#include <asm/uaccess.h>
+-#include <asm/nvram.h>
+-
 -#define NVRAM_SIZE	8192
 -
- static DEFINE_MUTEX(nvram_mutex);
- static ssize_t nvram_len;
- 
-@@ -150,20 +148,22 @@ static struct miscdevice nvram_dev = {
- 
- int __init nvram_init(void)
- {
--	int ret = 0;
-+	int ret;
- 
--	printk(KERN_INFO "Generic non-volatile memory driver v%s\n",
+-static loff_t nvram_llseek(struct file *file, loff_t offset, int origin)
+-{
+-	switch (origin) {
+-	case 0:
+-		break;
+-	case 1:
+-		offset += file->f_pos;
+-		break;
+-	case 2:
+-		offset += NVRAM_SIZE;
+-		break;
+-	default:
+-		offset = -1;
+-	}
+-	if (offset < 0)
+-		return -EINVAL;
+-
+-	file->f_pos = offset;
+-	return file->f_pos;
+-}
+-
+-static ssize_t read_nvram(struct file *file, char __user *buf,
+-			  size_t count, loff_t *ppos)
+-{
+-	unsigned int i;
+-	char __user *p = buf;
+-
+-	if (!access_ok(VERIFY_WRITE, buf, count))
+-		return -EFAULT;
+-	if (*ppos >= NVRAM_SIZE)
+-		return 0;
+-	for (i = *ppos; count > 0 && i < NVRAM_SIZE; ++i, ++p, --count)
+-		if (__put_user(nvram_read_byte(i), p))
+-			return -EFAULT;
+-	*ppos = i;
+-	return p - buf;
+-}
+-
+-static ssize_t write_nvram(struct file *file, const char __user *buf,
+-			   size_t count, loff_t *ppos)
+-{
+-	unsigned int i;
+-	const char __user *p = buf;
+-	char c;
+-
+-	if (!access_ok(VERIFY_READ, buf, count))
+-		return -EFAULT;
+-	if (*ppos >= NVRAM_SIZE)
+-		return 0;
+-	for (i = *ppos; count > 0 && i < NVRAM_SIZE; ++i, ++p, --count) {
+-		if (__get_user(c, p))
+-			return -EFAULT;
+-		nvram_write_byte(c, i);
+-	}
+-	*ppos = i;
+-	return p - buf;
+-}
+-
+-static long nvram_ioctl(struct file *file, unsigned int cmd, unsigned long arg)
+-{
+-	switch(cmd) {
+-		case PMAC_NVRAM_GET_OFFSET:
+-		{
+-			int part, offset;
+-			if (copy_from_user(&part, (void __user*)arg, sizeof(part)) != 0)
+-				return -EFAULT;
+-			if (part < pmac_nvram_OF || part > pmac_nvram_NR)
+-				return -EINVAL;
+-			offset = pmac_get_partition(part);
+-			if (copy_to_user((void __user*)arg, &offset, sizeof(offset)) != 0)
+-				return -EFAULT;
+-			break;
+-		}
+-
+-		default:
+-			return -EINVAL;
+-	}
+-
+-	return 0;
+-}
+-
+-const struct file_operations nvram_fops = {
+-	.owner		= THIS_MODULE,
+-	.llseek		= nvram_llseek,
+-	.read		= read_nvram,
+-	.write		= write_nvram,
+-	.unlocked_ioctl	= nvram_ioctl,
+-};
+-
+-static struct miscdevice nvram_dev = {
+-	NVRAM_MINOR,
+-	"nvram",
+-	&nvram_fops
+-};
+-
+-int __init nvram_init(void)
+-{
+-	printk(KERN_INFO "Macintosh non-volatile memory driver v%s\n",
 -		NVRAM_VERSION);
--	ret = misc_register(&nvram_dev);
--	if (ret != 0)
--		goto out;
-+	if (arch_nvram_ops.get_size == NULL)
-+		return -ENODEV;
- 
--	nvram_len = nvram_get_size();
-+	nvram_len = arch_nvram_ops.get_size();
- 	if (nvram_len < 0)
--		nvram_len = NVRAM_SIZE;
-+		return nvram_len;
- 
--out:
--	return ret;
-+	ret = misc_register(&nvram_dev);
-+	if (ret)
-+		return ret;
-+
-+	pr_info("Generic non-volatile memory driver v%s\n", NVRAM_VERSION);
-+
-+	return 0;
- }
- 
- void __exit nvram_cleanup(void)
+-	return misc_register(&nvram_dev);
+-}
+-
+-void __exit nvram_cleanup(void)
+-{
+-        misc_deregister( &nvram_dev );
+-}
+-
+-module_init(nvram_init);
+-module_exit(nvram_cleanup);
+-MODULE_LICENSE("GPL");
