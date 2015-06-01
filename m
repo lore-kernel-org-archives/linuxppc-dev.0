@@ -1,20 +1,33 @@
-Return-Path: <mpe@ellerman.id.au>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <baolin.wang@linaro.org>
+Received: from mail-pa0-f53.google.com (mail-pa0-f53.google.com
+ [209.85.220.53])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 9E5301A0072
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Jun 2015 21:26:57 +1000 (AEST)
-Message-ID: <1433158011.1004.3.camel@ellerman.id.au>
-Subject: Re: [RFC PATCH] powerpc/pseries: Ratelimit EPOW event warnings
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Anshuman Khandual
- <khandual@linux.vnet.ibm.com>, Anton Blanchard <anton@samba.org>
-Date: Mon, 01 Jun 2015 21:26:51 +1000
-In-Reply-To: <1432787595-9946-1-git-send-email-kamalesh@linux.vnet.ibm.com>
-References: <1432787595-9946-1-git-send-email-kamalesh@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4720E1A0072
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Jun 2015 21:45:27 +1000 (AEST)
+Received: by padjw17 with SMTP id jw17so35357697pad.2
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 01 Jun 2015 04:45:25 -0700 (PDT)
+From: Baolin Wang <baolin.wang@linaro.org>
+To: tglx@linutronix.de
+Cc: arnd@arndb.de, john.stultz@linaro.org, heenasirwani@gmail.com,
+ pang.xunlei@linaro.org, peterz@infradead.org, rafael.j.wysocki@intel.com,
+ gregkh@linuxfoundation.org, richardcochran@gmail.com,
+ benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com, linux390@de.ibm.com,
+ rth@twiddle.net, riel@redhat.com, cl@linux.com, tj@kernel.org,
+ fweisbec@gmail.com, ahh@google.com, pjt@google.com,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
+ netdev@vger.kernel.org, serge.hallyn@canonical.com,
+ james.l.morris@oracle.com, serge@hallyn.com, pmoore@redhat.com,
+ tiwai@suse.de, jeffv@google.com, jlayton@primarydata.com,
+ keescook@chromium.org, sds@tycho.nsa.gov, mark.d.rustad@intel.com,
+ linux-security-module@vger.kernel.org, baolin.wang@linaro.org,
+ y2038@lists.linaro.org
+Subject: [PATCH v4 00/25] Convert the posix_clock_operations and k_clock
+ structure to ready for 2038
+Date: Mon,  1 Jun 2015 19:44:53 +0800
+Message-Id: <1433159093-4548-1-git-send-email-baolin.wang@linaro.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -24,60 +37,58 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2015-05-28 at 10:03 +0530, Kamalesh Babulal wrote:
-> We print the respective warning after parsing EPOW interrupts,
-> prompting user to take action depending upon the severity of the
-> event.
-> 
-> Some times same EPOW event warning, such as below could flood kernel
-> log, within very short duration. So Limit the message by using
-> ratelimit variant of pr_err.
-> 
-> May 25 03:46:34 alp kernel: Non critical power or cooling issue cleared
-> May 25 03:46:52 alp kernel: Non critical power or cooling issue cleared
-> May 25 03:53:48 alp kernel: Non critical power or cooling issue cleared
-> May 25 03:55:46 alp kernel: Non critical power or cooling issue cleared
-> May 25 03:56:34 alp kernel: Non critical power or cooling issue cleared
-> May 25 03:59:04 alp kernel: Non critical power or cooling issue cleared
-> May 25 04:02:01 alp kernel: Non critical power or cooling issue cleared
-> May 25 04:04:24 alp kernel: Non critical power or cooling issue cleared
-> May 25 04:07:18 alp kernel: Non critical power or cooling issue cleared
-> May 25 04:13:04 alp kernel: Non critical power or cooling issue cleared
-> May 25 04:22:04 alp kernel: Non critical power or cooling issue cleared
-> May 25 04:22:26 alp kernel: Non critical power or cooling issue cleared
-> May 25 04:22:36 alp kernel: Non critical power or cooling issue cleared
+This patch series changes the 32-bit time types (timespec/itimerspec) to
+the 64-bit types (timespec64/itimerspec64), since 32-bit time types will
+break in the year 2038.
 
-Looking at the time stamps those are actually all fairly far apart in time,
-aren't they? So do we actually see them within a short duration in practice?
+This patch series introduces new methods with timespec64/itimerspec64 type,
+and removes the old ones with timespec/itimerspec type for posix_clock_operations
+and k_clock structure.
 
-It does seem sensible to rate limit them though.
+Baolin Wang (25):
+  time:Introduce struct itimerspec64
+  timekeeping:Introduce the current_kernel_time64()
+  hrtimer:Introduce hrtimer_get_res64()
+  security: Introduce security_settime64()
+  time:Introduce the do_sys_settimeofday64()
+  posix-timers:Introduce {get,put}_timespec/{get,put}_itimerspec
+  posix-timers: Split up timer_gettime()/timer_settime()/clock_settime()/
+    clock_gettime()/clock_getres().
+  posix-timers: Convert timer_gettime()/timer_settime()/clock_settime()/
+    clock_gettime()/clock_getres() to timespec64/itimerspec64.
+  mmtimer:Convert to timespec64/itimerspec64
+  alarmtimer:Convert to timespec64/itimerspec64
+  posix-clock:Convert to timespec64/itimerspec64
+  time:Introduce timespec64_to_jiffies()/jiffies_to_timespec64()
+  cputime:Introduce cputime_to_timespec64()/timespec64_to_cputime()
+  posix-cpu-timers:Convert to timespec64/itimerspec64
+  k_clock:Remove timespec/itimerspec
 
-> diff --git a/arch/powerpc/platforms/pseries/ras.c b/arch/powerpc/platforms/pseries/ras.c
-> index 02e4a17..2556bc2 100644
-> --- a/arch/powerpc/platforms/pseries/ras.c
-> +++ b/arch/powerpc/platforms/pseries/ras.c
-> @@ -145,17 +145,17 @@ static void rtas_parse_epow_errlog(struct rtas_error_log *log)
->  
->  	switch (action_code) {
->  	case EPOW_RESET:
-> -		pr_err("Non critical power or cooling issue cleared");
-> +		pr_err_ratelimited("Non critical power or cooling issue cleared");
->  		break;
->  
->  	case EPOW_WARN_COOLING:
-> -		pr_err("Non critical cooling issue reported by firmware");
-> -		pr_err("Check RTAS error log for details");
-> +		pr_err_ratelimited("Non critical cooling issue reported by firmware");
-> +		pr_err_ratelimited("Check RTAS error log for details");
->  		break;
->  
->  	case EPOW_WARN_POWER:
-> -		pr_err("Non critical power issue reported by firmware");
-> -		pr_err("Check RTAS error log for details");
-> +		pr_err_ratelimited("Non critical power issue reported by firmware");
-> +		pr_err_ratelimited("Check RTAS error log for details");
->  		break;
+ arch/powerpc/include/asm/cputime.h    |    6 +-
+ arch/s390/include/asm/cputime.h       |    8 +-
+ drivers/char/mmtimer.c                |   36 +++--
+ drivers/ptp/ptp_clock.c               |   26 +---
+ include/asm-generic/cputime_jiffies.h |   10 +-
+ include/asm-generic/cputime_nsecs.h   |    4 +-
+ include/linux/cputime.h               |   16 ++
+ include/linux/hrtimer.h               |   16 +-
+ include/linux/jiffies.h               |   21 ++-
+ include/linux/posix-clock.h           |   10 +-
+ include/linux/posix-timers.h          |   18 +--
+ include/linux/security.h              |   25 +++-
+ include/linux/time64.h                |   35 +++++
+ include/linux/timekeeping.h           |   26 +++-
+ kernel/time/alarmtimer.c              |   43 +++---
+ kernel/time/hrtimer.c                 |   10 +-
+ kernel/time/posix-clock.c             |   20 +--
+ kernel/time/posix-cpu-timers.c        |   84 ++++++-----
+ kernel/time/posix-timers.c            |  259 +++++++++++++++++++++------------
+ kernel/time/time.c                    |   20 +--
+ kernel/time/timekeeping.c             |    6 +-
+ kernel/time/timekeeping.h             |    1 -
+ security/commoncap.c                  |    2 +-
+ security/security.c                   |    2 +-
+ 24 files changed, 437 insertions(+), 267 deletions(-)
 
-Those last two could be collapsed onto one line which would reduce the spam.
-
-cheers
+-- 
+1.7.9.5
