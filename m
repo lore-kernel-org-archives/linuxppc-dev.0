@@ -1,25 +1,17 @@
-Return-Path: <geert.uytterhoeven@gmail.com>
-Received: from mail-ob0-x230.google.com (mail-ob0-x230.google.com
- [IPv6:2607:f8b0:4003:c01::230])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <michael@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D8E481A016E
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Jun 2015 20:13:17 +1000 (AEST)
-Received: by obbea2 with SMTP id ea2so99514558obb.3
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 01 Jun 2015 03:13:14 -0700 (PDT)
-MIME-Version: 1.0
-Sender: geert.uytterhoeven@gmail.com
-In-Reply-To: <1433153392-18037-1-git-send-email-geert@linux-m68k.org>
-References: <1433153392-18037-1-git-send-email-geert@linux-m68k.org>
-Date: Mon, 1 Jun 2015 12:13:14 +0200
-Message-ID: <CAMuHMdW6MAj6bOMY_RRt9=OF2iM2Gy4bCXWCEWK7hM5ia1Rtvg@mail.gmail.com>
-Subject: Re: Build regressions/improvements in v4.1-rc6
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
-Cc: Prabhakar Lad <prabhakar.csengg@gmail.com>,
- Linux Media Mailing List <linux-media@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Content-Type: text/plain; charset=UTF-8
+ by lists.ozlabs.org (Postfix) with ESMTPS id 218131A0673
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Jun 2015 20:45:13 +1000 (AEST)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: <linuxppc-dev@ozlabs.org>
+Cc: Anton Blanchard <anton@samba.org>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Laurentiu.Tudor@freescale.com
+Subject: [PATCH v2] powerpc/perf: Fix book3s kernel to userspace backtraces
+Date: Mon,  1 Jun 2015 20:45:07 +1000
+Message-Id: <1433155507-7822-1-git-send-email-mpe@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,36 +21,102 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, Jun 1, 2015 at 12:09 PM, Geert Uytterhoeven
-<geert@linux-m68k.org> wrote:
-> JFYI, when comparing v4.1-rc6[1] to v4.1-rc5[3], the summaries are:
->   - build errors: +8/-52
+From: Anton Blanchard <anton@samba.org>
 
-  + /home/kisskb/slave/src/drivers/media/i2c/ov2659.c: error: 'struct
-v4l2_subdev_fh' has no member named 'pad':  => 1264:38
-  + /home/kisskb/slave/src/drivers/media/i2c/ov2659.c: error: implicit
-declaration of function 'v4l2_subdev_get_try_format'
-[-Werror=implicit-function-declaration]:  => 1054:3
+When we take a PMU exception or a software event we call
+perf_read_regs(). This overloads regs->result with a boolean that
+describes if we should use the sampled instruction address register
+(SIAR) or the regs.
 
-i386-randconfig
+If the exception is in kernel, we start with the kernel regs and
+backtrace through the kernel stack. At this point we switch to the
+userspace regs and backtrace the user stack with perf_callchain_user().
 
-  + error: aes.c: undefined reference to `.enable_kernel_altivec':  =>
-.text+0x48e894), .text+0x48e6e0), .text+0x48e960)
-  + error: aes_cbc.c: undefined reference to `.enable_kernel_altivec':
- => .text+0x48ea98), .text+0x48ebf4)
+Unfortunately these regs have not got the perf_read_regs() treatment,
+so regs->result could be anything. If it is non zero,
+perf_instruction_pointer() decides to use the SIAR, and we get issues
+like this:
 
-powerpc-randconfig
+0.11%  qemu-system-ppc  [kernel.kallsyms]        [k] _raw_spin_lock_irqsave
+       |
+       ---_raw_spin_lock_irqsave
+          |
+          |--52.35%-- 0
+          |          |
+          |          |--46.39%-- __hrtimer_start_range_ns
+          |          |          kvmppc_run_core
+          |          |          kvmppc_vcpu_run_hv
+          |          |          kvmppc_vcpu_run
+          |          |          kvm_arch_vcpu_ioctl_run
+          |          |          kvm_vcpu_ioctl
+          |          |          do_vfs_ioctl
+          |          |          sys_ioctl
+          |          |          system_call
+          |          |          |
+          |          |          |--67.08%-- _raw_spin_lock_irqsave <--- hi mum
+          |          |          |          |
+          |          |          |           --100.00%-- 0x7e714
+          |          |          |                     0x7e714
 
-> [1] http://kisskb.ellerman.id.au/kisskb/head/8943/ (254 out of 257 configs)
-> [3] http://kisskb.ellerman.id.au/kisskb/head/8914/ (254 out of 257 configs)
+Notice the bogus _raw_spin_irqsave when we transition from kernel
+(system_call) to userspace (0x7e714). We inserted what was in the SIAR.
 
-Gr{oetje,eeting}s,
+Add a check in regs_use_siar() to check that the regs in question
+are from a PMU exception. With this fix the backtrace makes sense:
 
-                        Geert
+     0.47%  qemu-system-ppc  [kernel.vmlinux]         [k] _raw_spin_lock_irqsave
+            |
+            ---_raw_spin_lock_irqsave
+               |
+               |--53.83%-- 0
+               |          |
+               |          |--44.73%-- hrtimer_try_to_cancel
+               |          |          kvmppc_start_thread
+               |          |          kvmppc_run_core
+               |          |          kvmppc_vcpu_run_hv
+               |          |          kvmppc_vcpu_run
+               |          |          kvm_arch_vcpu_ioctl_run
+               |          |          kvm_vcpu_ioctl
+               |          |          do_vfs_ioctl
+               |          |          sys_ioctl
+               |          |          system_call
+               |          |          __ioctl
+               |          |          0x7e714
+               |          |          0x7e714
 
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+Cc: stable@vger.kernel.org
+Signed-off-by: Anton Blanchard <anton@samba.org>
+Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
+---
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+v2: Return the result directly rather than if (x) return true.
+    Add a big comment.
+    Cc to stable.
+
+ arch/powerpc/perf/core-book3s.c | 11 ++++++++++-
+ 1 file changed, 10 insertions(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
+index 12b638425bb9..d90893b76e7c 100644
+--- a/arch/powerpc/perf/core-book3s.c
++++ b/arch/powerpc/perf/core-book3s.c
+@@ -131,7 +131,16 @@ static void pmao_restore_workaround(bool ebb) { }
+ 
+ static bool regs_use_siar(struct pt_regs *regs)
+ {
+-	return !!regs->result;
++	/*
++	 * When we take a performance monitor exception the regs are setup
++	 * using perf_read_regs() which overloads some fields, in particular
++	 * regs->result to tell us whether to use SIAR.
++	 *
++	 * However if the regs are from another exception, eg. a syscall, then
++	 * they have not been setup using perf_read_regs() and so regs->result
++	 * is something random.
++	 */
++	return ((TRAP(regs) == 0xf00) && regs->result);
+ }
+ 
+ /*
+-- 
+2.1.0
