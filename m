@@ -1,16 +1,20 @@
-Return-Path: <michael@ozlabs.org>
+Return-Path: <mpe@ellerman.id.au>
 Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 0BC5B1A0037
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Jun 2015 21:14:19 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 9E5301A0072
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Jun 2015 21:26:57 +1000 (AEST)
+Message-ID: <1433158011.1004.3.camel@ellerman.id.au>
+Subject: Re: [RFC PATCH] powerpc/pseries: Ratelimit EPOW event warnings
 From: Michael Ellerman <mpe@ellerman.id.au>
-To: <linuxppc-dev@ozlabs.org>
-Cc: geert@linux-m68k.org
-Subject: [PATCH] powerpc/mm: Fix build break with STRICT_MM_TYPECHECKS &&
- DEBUG_PAGEALLOC
-Date: Mon,  1 Jun 2015 21:14:16 +1000
-Message-Id: <1433157256-15774-1-git-send-email-mpe@ellerman.id.au>
+To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, Anshuman Khandual
+ <khandual@linux.vnet.ibm.com>, Anton Blanchard <anton@samba.org>
+Date: Mon, 01 Jun 2015 21:26:51 +1000
+In-Reply-To: <1432787595-9946-1-git-send-email-kamalesh@linux.vnet.ibm.com>
+References: <1432787595-9946-1-git-send-email-kamalesh@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -20,32 +24,60 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-If both STRICT_MM_TYPECHECKS and DEBUG_PAGEALLOC are enabled, the code
-in kernel_map_linear_page() is built, and so we fail with:
+On Thu, 2015-05-28 at 10:03 +0530, Kamalesh Babulal wrote:
+> We print the respective warning after parsing EPOW interrupts,
+> prompting user to take action depending upon the severity of the
+> event.
+> 
+> Some times same EPOW event warning, such as below could flood kernel
+> log, within very short duration. So Limit the message by using
+> ratelimit variant of pr_err.
+> 
+> May 25 03:46:34 alp kernel: Non critical power or cooling issue cleared
+> May 25 03:46:52 alp kernel: Non critical power or cooling issue cleared
+> May 25 03:53:48 alp kernel: Non critical power or cooling issue cleared
+> May 25 03:55:46 alp kernel: Non critical power or cooling issue cleared
+> May 25 03:56:34 alp kernel: Non critical power or cooling issue cleared
+> May 25 03:59:04 alp kernel: Non critical power or cooling issue cleared
+> May 25 04:02:01 alp kernel: Non critical power or cooling issue cleared
+> May 25 04:04:24 alp kernel: Non critical power or cooling issue cleared
+> May 25 04:07:18 alp kernel: Non critical power or cooling issue cleared
+> May 25 04:13:04 alp kernel: Non critical power or cooling issue cleared
+> May 25 04:22:04 alp kernel: Non critical power or cooling issue cleared
+> May 25 04:22:26 alp kernel: Non critical power or cooling issue cleared
+> May 25 04:22:36 alp kernel: Non critical power or cooling issue cleared
 
-  arch/powerpc/mm/hash_utils_64.c:1478:2:
-  error: incompatible type for argument 1 of 'htab_convert_pte_flags'
+Looking at the time stamps those are actually all fairly far apart in time,
+aren't they? So do we actually see them within a short duration in practice?
 
-Fix it by using pgprot_val().
+It does seem sensible to rate limit them though.
 
-Reported-by: Geert Uytterhoeven <geert@linux-m68k.org>
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- arch/powerpc/mm/hash_utils_64.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+> diff --git a/arch/powerpc/platforms/pseries/ras.c b/arch/powerpc/platforms/pseries/ras.c
+> index 02e4a17..2556bc2 100644
+> --- a/arch/powerpc/platforms/pseries/ras.c
+> +++ b/arch/powerpc/platforms/pseries/ras.c
+> @@ -145,17 +145,17 @@ static void rtas_parse_epow_errlog(struct rtas_error_log *log)
+>  
+>  	switch (action_code) {
+>  	case EPOW_RESET:
+> -		pr_err("Non critical power or cooling issue cleared");
+> +		pr_err_ratelimited("Non critical power or cooling issue cleared");
+>  		break;
+>  
+>  	case EPOW_WARN_COOLING:
+> -		pr_err("Non critical cooling issue reported by firmware");
+> -		pr_err("Check RTAS error log for details");
+> +		pr_err_ratelimited("Non critical cooling issue reported by firmware");
+> +		pr_err_ratelimited("Check RTAS error log for details");
+>  		break;
+>  
+>  	case EPOW_WARN_POWER:
+> -		pr_err("Non critical power issue reported by firmware");
+> -		pr_err("Check RTAS error log for details");
+> +		pr_err_ratelimited("Non critical power issue reported by firmware");
+> +		pr_err_ratelimited("Check RTAS error log for details");
+>  		break;
 
-diff --git a/arch/powerpc/mm/hash_utils_64.c b/arch/powerpc/mm/hash_utils_64.c
-index fda236f908eb..a04ca922f0db 100644
---- a/arch/powerpc/mm/hash_utils_64.c
-+++ b/arch/powerpc/mm/hash_utils_64.c
-@@ -1475,7 +1475,7 @@ static void kernel_map_linear_page(unsigned long vaddr, unsigned long lmi)
- 	unsigned long hash;
- 	unsigned long vsid = get_kernel_vsid(vaddr, mmu_kernel_ssize);
- 	unsigned long vpn = hpt_vpn(vaddr, vsid, mmu_kernel_ssize);
--	unsigned long mode = htab_convert_pte_flags(PAGE_KERNEL);
-+	unsigned long mode = htab_convert_pte_flags(pgprot_val(PAGE_KERNEL));
- 	long ret;
- 
- 	hash = hpt_hash(vpn, PAGE_SHIFT, mmu_kernel_ssize);
--- 
-2.1.0
+Those last two could be collapsed onto one line which would reduce the spam.
+
+cheers
