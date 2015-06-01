@@ -1,22 +1,27 @@
-Return-Path: <mikey@neuling.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <dgibson@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id B07DA1A016E
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Jun 2015 16:41:39 +1000 (AEST)
-Received: from localhost.localdomain (localhost [127.0.0.1])
- by ozlabs.org (Postfix) with ESMTP id 7BEB1140E3E
- for <linuxppc-dev@ozlabs.org>; Mon,  1 Jun 2015 16:41:39 +1000 (AEST)
-Message-ID: <1433140899.24546.14.camel@neuling.org>
-Subject: Re: [PATCH] cxl: Set up and enable PSL Timebase
-From: Michael Neuling <mikey@neuling.org>
-To: Philippe Bergheaud <felix@linux.vnet.ibm.com>
-Cc: imunsie@au1.ibm.com, linuxppc-dev@ozlabs.org, vaibhav@linux.vnet.ibm.com
-Date: Mon, 01 Jun 2015 16:41:39 +1000
-In-Reply-To: <1432818778-27819-1-git-send-email-felix@linux.vnet.ibm.com>
-References: <1432818778-27819-1-git-send-email-felix@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 352D91A0673
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Jun 2015 16:49:08 +1000 (AEST)
+Date: Mon, 1 Jun 2015 16:34:44 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>,
+ Paul Mackerras <paulus@samba.org>, kvm@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+Subject: Re: [PATCH kernel v11 18/34] vfio:
+ powerpc/spapr/iommu/powernv/ioda2: Rework IOMMU ownership control
+Message-ID: <20150601063444.GK22789@voom.redhat.com>
+References: <1432889098-22924-1-git-send-email-aik@ozlabs.ru>
+ <1432889098-22924-19-git-send-email-aik@ozlabs.ru>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="ibvzjYYg+QDzMCy1"
+In-Reply-To: <1432889098-22924-19-git-send-email-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -26,120 +31,75 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Thu, 2015-05-28 at 15:12 +0200, Philippe Bergheaud wrote:
-> This patch configures the PSL Timebase function and enables it,
-> after the CAPP has been initialized by OPAL. Failures are reported
-> and ignored.
 
-Needs an Signed-off-by. =20
+--ibvzjYYg+QDzMCy1
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Comments inline.
-
-> ---
->  drivers/misc/cxl/cxl.h |    5 +++++
->  drivers/misc/cxl/pci.c |   35 +++++++++++++++++++++++++++++++++++
->  2 files changed, 40 insertions(+), 0 deletions(-)
+On Fri, May 29, 2015 at 06:44:42PM +1000, Alexey Kardashevskiy wrote:
+> This adds tce_iommu_take_ownership() and tce_iommu_release_ownership
+> which call in a loop iommu_take_ownership()/iommu_release_ownership()
+> for every table on the group. As there is just one now, no change in
+> behaviour is expected.
 >=20
-> diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
-> index a1cee47..38a7cf9 100644
-> --- a/drivers/misc/cxl/cxl.h
-> +++ b/drivers/misc/cxl/cxl.h
-> @@ -82,8 +82,10 @@ static const cxl_p1_reg_t CXL_PSL_AFUSEL  =3D {0x00B0}=
-;
->  /* 0x00C0:7EFF Implementation dependent area */
->  static const cxl_p1_reg_t CXL_PSL_FIR1      =3D {0x0100};
->  static const cxl_p1_reg_t CXL_PSL_FIR2      =3D {0x0108};
-> +static const cxl_p1_reg_t CXL_PSL_Timebase  =3D {0x0110};
->  static const cxl_p1_reg_t CXL_PSL_VERSION   =3D {0x0118};
->  static const cxl_p1_reg_t CXL_PSL_RESLCKTO  =3D {0x0128};
-> +static const cxl_p1_reg_t CXL_PSL_TB_CTLSTAT =3D {0x0140};
->  static const cxl_p1_reg_t CXL_PSL_FIR_CNTL  =3D {0x0148};
->  static const cxl_p1_reg_t CXL_PSL_DSNDCTL   =3D {0x0150};
->  static const cxl_p1_reg_t CXL_PSL_SNWRALLOC =3D {0x0158};
-> @@ -151,6 +153,9 @@ static const cxl_p2n_reg_t CXL_PSL_WED_An     =3D {0x=
-0A0};
->  #define CXL_PSL_SPAP_Size_Shift 4
->  #define CXL_PSL_SPAP_V    0x0000000000000001ULL
-> =20
-> +/****** CXL_PSL_Control ************************************************=
-****/
-> +#define CXL_PSL_Control_tb 0x0000000000000001ULL
-> +
->  /****** CXL_PSL_DLCNTL *************************************************=
-****/
->  #define CXL_PSL_DLCNTL_D (0x1ull << (63-28))
->  #define CXL_PSL_DLCNTL_C (0x1ull << (63-29))
-> diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
-> index fc938de..afd89cc 100644
-> --- a/drivers/misc/cxl/pci.c
-> +++ b/drivers/misc/cxl/pci.c
-> @@ -360,6 +360,38 @@ static int init_implementation_adapter_regs(struct c=
-xl *adapter, struct pci_dev
->  	return 0;
->  }
-> =20
-> +#define TBSYNC_CNT(n) (((u64)n & 0x7) << (63-6))
-> +
-> +static int cxl_setup_psl_timebase(struct cxl *adapter, struct pci_dev *d=
-ev)
-> +{
-> +	u64 psl_tb;
-> +	int delta;
-> +	unsigned int retry =3D 0;
-> +
-> +	/*
-> +	 * Setup PSL Timebase Control and Status register
-> +	 * with the recommended Timebase Sync Count value
-> +	 */
-> +	cxl_p1_write(adapter, CXL_PSL_TB_CTLSTAT, TBSYNC_CNT(2)); =20
+> At the moment the iommu_table struct has a set_bypass() which enables/
+> disables DMA bypass on IODA2 PHB. This is exposed to POWERPC IOMMU code
+> which calls this callback when external IOMMU users such as VFIO are
+> about to get over a PHB.
+>=20
+> The set_bypass() callback is not really an iommu_table function but
+> IOMMU/PE function. This introduces a iommu_table_group_ops struct and
+> adds take_ownership()/release_ownership() callbacks to it which are
+> called when an external user takes/releases control over the IOMMU.
+>=20
+> This replaces set_bypass() with ownership callbacks as it is not
+> necessarily just bypass enabling, it can be something else/more
+> so let's give it more generic name.
+>=20
+> The callbacks is implemented for IODA2 only. Other platforms (P5IOC2,
+> IODA1) will use the old iommu_take_ownership/iommu_release_ownership API.
+> The following patches will replace iommu_take_ownership/
+> iommu_release_ownership calls in IODA2 with full IOMMU table release/
+> create.
+>=20
+> As we here and touching bypass control, this removes
+> pnv_pci_ioda2_setup_bypass_pe() as it does not do much
+> more compared to pnv_pci_ioda2_set_bypass. This moves tce_bypass_base
+> initialization to pnv_pci_ioda2_setup_dma_pe.
+>=20
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> [aw: for the vfio related changes]
+> Acked-by: Alex Williamson <alex.williamson@redhat.com>
+> Reviewed-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 
-2? =20
+Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 
-> +
-> +	/* Enable PSL Timebase */
-> +	cxl_p1_write(adapter, CXL_PSL_Control, CXL_PSL_Control_tb);
-> +	/* Wait until CORE TB and PSL TB difference <=3D 16usecs */
+--=20
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
 
-How many tries does this normally take? =20
+--ibvzjYYg+QDzMCy1
+Content-Type: application/pgp-signature
 
-Should we have a sleep in here to wait for it to sync rather than just
-coming back around right away?
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
 
-> +	do {
-> +		if (retry++ > 5) {
-> +			pr_err("PSL: Timebase sync: giving up!\n");
-> +			return 1;
+iQIcBAEBAgAGBQJVa/0EAAoJEGw4ysog2bOSHssQANMUI3xe6RZ8wE4lizI0z7lI
+YHGWYRMn482KxKfwD8riZhMFp3ngKawne/esvyUdIaPJJKbLcSMq3fVeQ4eseqK1
+e/0IBr3Njj5bSqKZpbNyCZvS6a1ZdtRgv00jcg/OL7Db0g0nYVnNmnA+Y+X+YDgc
+9OWMSb0ByDVhBptTFGxfevFzP3wLsn7nWaTy0MPr7Tjdo7DqcXH5To8l7ei82gzK
++2fWA3x2v348kl2Moc/MU/m9qC3P94zUeiVq5amFn+JAr9izpVv4LSVRNwp2l9O/
+efRq0hjMIna14ncSh6r0gETtv7eWkIT5bVkr99SvFj8yoF33ci//O6rUSQhAAPvw
+NWM8LSEMiIUrApA4D26wKgsORJHD46rrRsCAAFOWmsCA8nl8RWECbkphZ3kKa9pU
+aWJcxR5Tz11uUqiwY1e6Jnp2kD7bWiZ1dQPBmccPNt5gpogyY1sJCLOMcqko13Qo
+bzbQUWX+zuxhB++SDUbuG9IsxR1mT+ufeFBfXm/QMrqzzmbe9ACCPww9tSen8LxD
+ohszjWdMjQBTol59A9nXm/bQOEwPdcQvcyrebYMvsUpWqsvrmDo9o9D7Od2Xt24p
+LN9n//MyIj+CU7/n8IWJylc19X90Dswosmaj8oVLXdc/SvTzY0925iqFRZlDLuTE
+p6ZEqeTIcI7g25ABekwN
+=l2qa
+-----END PGP SIGNATURE-----
 
-Please use negative error codes here.  -EIO?
-
-> +		}
-> +		psl_tb =3D cxl_p1_read(adapter, CXL_PSL_Timebase);
-> +		delta =3D mftb() - psl_tb;
-> +		if (delta < 0)
-> +			delta =3D -delta;
-> +	} while (cputime_to_usecs(delta) > 16);
-> +
-> +	dev_info(&dev->dev, "PSL: Timebase synced\n");
-> +	return 0;
-> +}
-> +
->  static int init_implementation_afu_regs(struct cxl_afu *afu)
->  {
->  	/* read/write masks for this slice */
-> @@ -995,6 +1027,9 @@ static struct cxl *cxl_init_adapter(struct pci_dev *=
-dev)
->  	if ((rc =3D pnv_phb_to_cxl(dev, OPAL_PHB_CAPI_MODE_CAPI)))
->  		goto err3;
-> =20
-> +	/* Don't care if this one fails: */
-> +	cxl_setup_psl_timebase(adapter, dev);
-
-And check it here.
-
-Thanks,
-Mikey
-
-> +
->  	if ((rc =3D cxl_register_psl_err_irq(adapter)))
->  		goto err3;
-> =20
+--ibvzjYYg+QDzMCy1--
