@@ -1,10 +1,10 @@
 Return-Path: <dgibson@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 5875C1A0C2B
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Jun 2015 16:49:08 +1000 (AEST)
-Date: Mon, 1 Jun 2015 16:49:22 +1000
+ by lists.ozlabs.org (Postfix) with ESMTPS id D2EAB1A016E
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Jun 2015 17:04:31 +1000 (AEST)
+Date: Mon, 1 Jun 2015 17:04:49 +1000
 From: David Gibson <david@gibson.dropbear.id.au>
 To: Alexey Kardashevskiy <aik@ozlabs.ru>
 Cc: linuxppc-dev@lists.ozlabs.org,
@@ -13,15 +13,15 @@ Cc: linuxppc-dev@lists.ozlabs.org,
  Gavin Shan <gwshan@linux.vnet.ibm.com>,
  Paul Mackerras <paulus@samba.org>, kvm@vger.kernel.org,
  linux-kernel@vger.kernel.org
-Subject: Re: [PATCH kernel v11 21/34] powerpc/powernv/ioda2: Add TCE
- invalidation for all attached groups
-Message-ID: <20150601064922.GM22789@voom.redhat.com>
+Subject: Re: [PATCH kernel v11 23/34] powerpc/iommu/powernv: Release replaced
+ TCE
+Message-ID: <20150601070449.GN22789@voom.redhat.com>
 References: <1432889098-22924-1-git-send-email-aik@ozlabs.ru>
- <1432889098-22924-22-git-send-email-aik@ozlabs.ru>
+ <1432889098-22924-24-git-send-email-aik@ozlabs.ru>
 MIME-Version: 1.0
 Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="eWbcAUUbgrfSEG1c"
-In-Reply-To: <1432889098-22924-22-git-send-email-aik@ozlabs.ru>
+ protocol="application/pgp-signature"; boundary="Nj4mAaUCx+wbOcQD"
+In-Reply-To: <1432889098-22924-24-git-send-email-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,21 +32,45 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---eWbcAUUbgrfSEG1c
+--Nj4mAaUCx+wbOcQD
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, May 29, 2015 at 06:44:45PM +1000, Alexey Kardashevskiy wrote:
-> The iommu_table struct keeps a list of IOMMU groups it is used for.
-> At the moment there is just a single group attached but further
-> patches will add TCE table sharing. When sharing is enabled, TCE cache
-> in each PE needs to be invalidated so does the patch.
+On Fri, May 29, 2015 at 06:44:47PM +1000, Alexey Kardashevskiy wrote:
+> At the moment writing new TCE value to the IOMMU table fails with EBUSY
+> if there is a valid entry already. However PAPR specification allows
+> the guest to write new TCE value without clearing it first.
 >=20
-> This does not change pnv_pci_ioda1_tce_invalidate() as there is no plan
-> to enable TCE table sharing on PHBs older than IODA2.
+> Another problem this patch is addressing is the use of pool locks for
+> external IOMMU users such as VFIO. The pool locks are to protect
+> DMA page allocator rather than entries and since the host kernel does
+> not control what pages are in use, there is no point in pool locks and
+> exchange()+put_page(oldtce) is sufficient to avoid possible races.
+>=20
+> This adds an exchange() callback to iommu_table_ops which does the same
+> thing as set() plus it returns replaced TCE and DMA direction so
+> the caller can release the pages afterwards. The exchange() receives
+> a physical address unlike set() which receives linear mapping address;
+> and returns a physical address as the clear() does.
+>=20
+> This implements exchange() for P5IOC2/IODA/IODA2. This adds a requirement
+> for a platform to have exchange() implemented in order to support VFIO.
+>=20
+> This replaces iommu_tce_build() and iommu_clear_tce() with
+> a single iommu_tce_xchg().
+>=20
+> This makes sure that TCE permission bits are not set in TCE passed to
+> IOMMU API as those are to be calculated by platform code from
+> DMA direction.
+>=20
+> This moves SetPageDirty() to the IOMMU code to make it work for both
+> VFIO ioctl interface in in-kernel TCE acceleration (when it becomes
+> available later).
 >=20
 > Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> [aw: for the vfio related changes]
+> Acked-by: Alex Williamson <alex.williamson@redhat.com>
 
 Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 
@@ -56,25 +80,25 @@ david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
 				| _way_ _around_!
 http://www.ozlabs.org/~dgibson
 
---eWbcAUUbgrfSEG1c
+--Nj4mAaUCx+wbOcQD
 Content-Type: application/pgp-signature
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1
 
-iQIcBAEBAgAGBQJVbAByAAoJEGw4ysog2bOS3kUP/0c/tQfq5Fs2tc4dhPUR3TDH
-ddDAedAiyAA/osBnVmDOXO1QI5W5FlufCj7hN0r2+qo5WJ+hPIjKuci+1ptEScUB
-F6A1HErWcIFqFgVXU55xgurmWR7jjca4LOd2q0hARtrDcs7iRwyMfpQjqqkJXWms
-a+Gwb9tKTLIfvs56Zgzfb/p22/F9O47JBVZl5CZWw5P7GKJsJqJHZUifJaZT8cVd
-tnoc+RgI1KF0VfHM5z8Yu35PFKCyeRKQwMxl6SA2OgziXBwDLotvY3XXN6QLCh4y
-fDgUGZpyO2sFeHNyhEy4PvqtNONtr9s0Vm3eN9/xsF0ES88wF/VV0M4zFgy5+jto
-vKMvfXb6Gsw+pWCQaslAgcTcAEitkKHKftuxxqlvbJWvb51jnUgvZR0Bf56wc4OD
-ahVMFh7i1YWBSq534UjpS4947ZfvGgV+dj5S1lRuYv264EeoFdfa4amConRLP4xa
-nY/FmuxAB9cIO7tUXVMw7BlICUHwa/0V/A03IwK46hnkWMvGxfVzDwAhLn8/1ZtY
-lJ+2uBvvowFGhfw8RxODIHLPsl/Kma/qnCUJdDIKnR6krqBYYnvLhxM/XWDNagzy
-Vk3x+fQJK/m6dVwTW+fEkq3Iqd+rJBeTEH1CGU+XLmmtvAbH1yjINK90HmFJimTn
-98TcQAl4oujJQMjJYe/m
-=PZoZ
+iQIcBAEBAgAGBQJVbAQRAAoJEGw4ysog2bOSyakQAOGhQZsx6QpTVVU1tKBNa6u/
+kFF39uYlZJw1X1831dvLG6yWdFgdEfXfEXayNbdxkqeV0kCsbf5rqRzN49hoyS51
+4cehmzvob8kcJBhRSh+TTpAIKcLq3lB6HO+CViGFeweiKnTVA3BuRxpZ75QdGzlg
+OkcSCAZxemq1RVS4YedDtEtzRCjmqyEW7EDOlv6FHCOIGy4rv+CQGdU7GiS6A6g2
+YjQjmrwo06okpYFF3FXYBuJ3Ts9UudP3+DzDTinSiY/HaRiW6uEpWzDjbjcnOltV
+8sIfb/SjNHfW5Uj8nA0lMioeHzgnausxjK4RJOB/Dll59+z4I1KyaFKMwkVSWQNY
+DKLuX8ifhd0F+byDvXJQipgmgptdH2vMExoCqkiFwLIcK3s2a5s3ArBH5rfvaPdN
+d4D+Lt5FlKyC3O0VtnEZugjNhwwMfu+/O2wpmgtcNlB1VluSRvmsIlB18kJaGV5y
+N+uyFlouELFn4dpW8p5TQifv9l/LPpJsnM72VhK7LAXyUE3wcExh9oLh4ZQMsX3s
+inYD8k1pAQrOJThvOQsVNzqNvbX7j+7J64p5CiDwXOTKHTo7RndfAa3yLuK5V9Ra
+xpYZl9PbeDBXPwwCcoV4WlM4lkH5qKAqRZHMqU/OioXvVE/XUerf90Yk5Aa3szSK
+ccASEzchbx5ZKOxscUI1
+=yvXx
 -----END PGP SIGNATURE-----
 
---eWbcAUUbgrfSEG1c--
+--Nj4mAaUCx+wbOcQD--
