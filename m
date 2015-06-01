@@ -1,25 +1,26 @@
-Return-Path: <scottwood@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0104.outbound.protection.outlook.com [207.46.100.104])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <akpm@linux-foundation.org>
+Received: from mail.linuxfoundation.org (mail.linuxfoundation.org
+ [140.211.169.12])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id EA0C01A0047
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Jun 2015 08:07:05 +1000 (AEST)
-Message-ID: <1433196404.4089.187.camel@freescale.com>
-Subject: Re: [v4] QE: Move QE from arch/powerpc to drivers/soc
-From: Scott Wood <scottwood@freescale.com>
-To: Zhao Qiang-B45475 <qiang.zhao@freescale.com>
-CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, "Xie
- Xiaobo-R63061" <X.Xie@freescale.com>
-Date: Mon, 1 Jun 2015 17:06:44 -0500
-In-Reply-To: <SN1PR0301MB1550F0744C4F5B84D6B6DA9D9BB60@SN1PR0301MB1550.namprd03.prod.outlook.com>
-References: <1415763613-43674-1-git-send-email-B45475@freescale.com>
- <20150130052208.GA14431@home.buserror.net>
- <SN1PR0301MB1550F0744C4F5B84D6B6DA9D9BB60@SN1PR0301MB1550.namprd03.prod.outlook.com>
-Content-Type: text/plain; charset="UTF-8"
-MIME-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id EC7821A0047
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Jun 2015 08:27:50 +1000 (AEST)
+Date: Mon, 1 Jun 2015 15:27:46 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Eric B Munson <emunson@akamai.com>
+Cc: Shuah Khan <shuahkh@osg.samsung.com>, Michal Hocko <mhocko@suse.cz>,
+ linux-alpha@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-mips@linux-mips.org, linux-parisc@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, sparclinux@vger.kernel.org,
+ linux-xtensa@linux-xtensa.org, linux-mm@kvack.org,
+ linux-arch@vger.kernel.org, linux-api@vger.kernel.org
+Subject: Re: [RESEND PATCH 0/3] Allow user to request memory to be locked on
+ page fault
+Message-Id: <20150601152746.abbbbb9d479c0e2dbdec2aaf@linux-foundation.org>
+In-Reply-To: <1432908808-31150-1-git-send-email-emunson@akamai.com>
+References: <1432908808-31150-1-git-send-email-emunson@akamai.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,51 +30,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Sun, 2015-05-31 at 23:09 -0500, Zhao Qiang-B45475 wrote:
-> On Fri, Jan 30, 2015 at 1:22PM +0800, Wood Scott wrote:
-> 
-> > -----Original Message-----
-> > From: Wood Scott-B07421
-> > Sent: Friday, January 30, 2015 1:22 PM
-> > To: Zhao Qiang-B45475
-> > Cc: linux-kernel@vger.kernel.org; netdev@vger.kernel.org; linuxppc-
-> > dev@lists.ozlabs.org; Wood Scott-B07421; Xie Xiaobo-R63061
-> > Subject: Re: [v4] QE: Move QE from arch/powerpc to drivers/soc
-> > 
-> > On Wed, Nov 12, 2014 at 11:40:13AM +0800, Zhao Qiang wrote:
-> > > ls1 has qe and ls1 has arm cpu.
-> > > move qe from arch/powerpc to drivers/soc/fsl to adapt to powerpc 
-> > > and
-> > > arm
-> > > 
-> > > Signed-off-by: Zhao Qiang <B45475@freescale.com>
-> > > ---
-> > > Changes for v2:
-> > >   - move code to driver/soc
-> > > Changes for v3:
-> > >   - change drivers/soc/qe to drivers/soc/fsl-qe Changes for v4:
-> > >   - move drivers/soc/fsl-qe to drivers/soc/fsl/qe
-> > >   - move head files for qe from include/linux/fsl to 
-> > > include/soc/fsl
-> > >   - move qe_ic.c to drivers/irqchip/
-> > 
-> > Need MAINTAINERS update for drivers/soc/fsl/qe, as previously 
-> > discussed.
-> 
-> You mean, I need to finish the following work before move qe to 
-> public directory?
-> 
-> 1. gpio.c -> needs to be converted to GPIO framework and placed in 
-> drivers/gpio
-> 2. qe_ic* should probably move into drivers/irqchip
-> 3. qe_io.c should be converted over to pinmux and put in 
-> drivers/pinctrl
-> 4. Some of the clock could should be looked to be converted to use 
-> the clk framework
+On Fri, 29 May 2015 10:13:25 -0400 Eric B Munson <emunson@akamai.com> wrote:
 
-Those would be nice but at the very least:
-1. Don't introduce code into the toplevel /lib that duplicates 
-existing functionality, and
-2. Add a MAINTAINERS entry as described above
+> mlock() allows a user to control page out of program memory, but this
+> comes at the cost of faulting in the entire mapping when it is
+> allocated.  For large mappings where the entire area is not necessary
+> this is not ideal.
+> 
+> This series introduces new flags for mmap() and mlockall() that allow a
+> user to specify that the covered are should not be paged out, but only
+> after the memory has been used the first time.
 
--Scott
+I almost applied these, but the naming issue (below) stopped me.
+
+A few things...
+
+- The 0/n changelog should reveal how MAP_LOCKONFAULT interacts with
+  rlimit(RLIMIT_MEMLOCK).
+
+  I see the implementation is "as if the entire mapping will be
+  faulted in" (for mmap) and "as if it was MCL_FUTURE" (for mlockall)
+  which seems fine.  Please include changelog text explaining and
+  justifying these decisions.  This stuff will need to be in the
+  manpage updates as well.
+
+- I think I already asked "why not just use MCL_FUTURE" but I forget
+  the answer ;) In general it is a good idea to update changelogs in
+  response to reviewer questions, because other people will be
+  wondering the same things.  Or maybe I forgot to ask.  Either way,
+  please address this in the changelogs.
+
+- I can perhaps see the point in mmap(MAP_LOCKONFAULT) (other
+  mappings don't get lock-in-memory treatment), but what's the benefit
+  in mlockall(MCL_ON_FAULT) over MCL_FUTURE?  (Add to changelog also,
+  please).
+
+- Is there a manpage update?
+
+- Can we rename patch 1/3 from "add flag to ..." to "add mmap flag to
+  ...", to distinguish from 2/3 "add mlockall flag ..."?
+
+- The MAP_LOCKONFAULT versus MCL_ON_FAULT inconsistency is
+  irritating!  Can we get these consistent please: switch to either
+  MAP_LOCK_ON_FAULT or MCL_ONFAULT.
