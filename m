@@ -1,27 +1,22 @@
-Return-Path: <wsa@the-dreams.de>
-Received: from pokefinder.org (sauhun.de [89.238.76.85])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <Paul.Gortmaker@windriver.com>
+Received: from mail1.windriver.com (mail1.windriver.com [147.11.146.13])
+ (using TLSv1.1 with cipher ECDHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1477B1A0072
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Jun 2015 09:30:35 +1000 (AEST)
-Date: Mon, 1 Jun 2015 08:30:19 +0900
-From: Wolfram Sang <wsa@the-dreams.de>
-To: Takashi Iwai <tiwai@suse.de>
-Cc: Dan DeVoto <dand1972@yahoo.com>, linuxppc-dev@lists.ozlabs.org,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- alsa-devel@alsa-project.org, linux-i2c@vger.kernel.org,
- Mark Elliott <txlitebeer@gmail.com>
-Subject: Re: [alsa-devel] [RFC] sound: ppc: keywest: check if DEQ was already
- instantiated
-Message-ID: <20150531233018.GC17187@katana>
-References: <1432397711-3186-1-git-send-email-wsa@the-dreams.de>
- <1432631974.85649.YahooMailBasic@web141501.mail.bf1.yahoo.com>
- <s5htwuxb1h4.wl-tiwai@suse.de> <20150529105020.GB3168@katana>
- <s5hsiaf6489.wl-tiwai@suse.de> <20150529110559.GB4282@katana>
- <s5hoal3621l.wl-tiwai@suse.de>
+ by lists.ozlabs.org (Postfix) with ESMTPS id E57D21A024B
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Jun 2015 10:54:48 +1000 (AEST)
+From: Paul Gortmaker <paul.gortmaker@windriver.com>
+To: <linux-kernel@vger.kernel.org>
+CC: Paul Gortmaker <paul.gortmaker@windriver.com>, Benjamin Herrenschmidt
+ <benh@kernel.crashing.org>,
+ Paul Mackerras <paulus@samba.org>, <linuxppc-dev@lists.ozlabs.org>
+Subject: [PATCH 06/11] powerpc: don't use module_init for non-modular core
+ hugetlb code
+Date: Sun, 31 May 2015 20:54:07 -0400
+Message-ID: <1433120052-18281-7-git-send-email-paul.gortmaker@windriver.com>
+In-Reply-To: <1433120052-18281-1-git-send-email-paul.gortmaker@windriver.com>
+References: <1433120052-18281-1-git-send-email-paul.gortmaker@windriver.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <s5hoal3621l.wl-tiwai@suse.de>
+Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,17 +26,43 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, May 29, 2015 at 01:44:38PM +0200, Takashi Iwai wrote:
-> At Fri, 29 May 2015 20:06:09 +0900,
-> Wolfram Sang wrote:
-> > 
-> > > Do you think from which stable kernel version can this be applied?
-> > 
-> > The offending commit is 3a3dd0186f619b74e61e6f29dddcaf59af7d3cac
-> > ("i2c/powermac: Improve detection of devices from device-tree") which
-> > came in with v3.6 if I read correctly.
-> 
-> OK, thanks!
+The hugetlbpage.o is obj-y (always built in).  It will never
+be modular, so using module_init as an alias for __initcall is
+somewhat misleading.
 
-Just to make sure: Keep in mind that it depends on "sound: ppc: keywest:
-drop using attach adapter" which needs to go to stable, then, too.
+Fix this up now, so that we can relocate module_init from
+init.h into module.h in the future.  If we don't do this, we'd
+have to add module.h to obviously non-modular code, and that
+would be a worse thing.
+
+Note that direct use of __initcall is discouraged, vs. one
+of the priority categorized subgroups.  As __initcall gets
+mapped onto device_initcall, our use of arch_initcall (which
+makes sense for arch code) will thus change this registration
+from level 6-device to level 3-arch (i.e. slightly earlier).
+However no observable impact of that small difference has
+been observed during testing, or is expected.
+
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
+---
+ arch/powerpc/mm/hugetlbpage.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
+index 3385e3d0506e..f1e00ac9283c 100644
+--- a/arch/powerpc/mm/hugetlbpage.c
++++ b/arch/powerpc/mm/hugetlbpage.c
+@@ -933,7 +933,7 @@ static int __init hugetlbpage_init(void)
+ 	return 0;
+ }
+ #endif
+-module_init(hugetlbpage_init);
++arch_initcall(hugetlbpage_init);
+ 
+ void flush_dcache_icache_hugepage(struct page *page)
+ {
+-- 
+2.2.1
