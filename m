@@ -1,25 +1,43 @@
-Return-Path: <baolin.wang@linaro.org>
-Received: from mail-pd0-f178.google.com (mail-pd0-f178.google.com
- [209.85.192.178])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <felix@linux.vnet.ibm.com>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 17C4C1A0072
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Jun 2015 22:07:21 +1000 (AEST)
-Received: by pdbki1 with SMTP id ki1so106325264pdb.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 01 Jun 2015 05:07:19 -0700 (PDT)
-From: Baolin Wang <baolin.wang@linaro.org>
-To: benh@kernel.crashing.org
-Cc: arnd@arndb.de, paulus@samba.org, mpe@ellerman.id.au,
- schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com, linux390@de.ibm.com,
- rth@twiddle.net, riel@redhat.com, cl@linux.com, tj@kernel.org,
- fweisbec@gmail.com, linuxppc-dev@lists.ozlabs.org,
- linux-s390@vger.kernel.org, linux-arch@vger.kernel.org,
- linux-kernel@vger.kernel.org, baolin.wang@linaro.org,
- y2038@lists.linaro.org
-Subject: [PATCH v4 23/25] cputime:Introduce the
- cputime_to_timespec64/timespec64_to_cputime function
-Date: Mon,  1 Jun 2015 20:07:02 +0800
-Message-Id: <1433160422-5405-1-git-send-email-baolin.wang@linaro.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id A310F1A016E
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Jun 2015 23:54:26 +1000 (AEST)
+Received: from e06smtp13.uk.ibm.com (e06smtp13.uk.ibm.com [195.75.94.109])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by ozlabs.org (Postfix) with ESMTPS id 7D065140F90
+ for <linuxppc-dev@ozlabs.org>; Mon,  1 Jun 2015 23:54:25 +1000 (AEST)
+Received: from /spool/local
+ by e06smtp13.uk.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@ozlabs.org> from <felix@linux.vnet.ibm.com>;
+ Mon, 1 Jun 2015 14:54:22 +0100
+Received: from b06cxnps4074.portsmouth.uk.ibm.com
+ (d06relay11.portsmouth.uk.ibm.com [9.149.109.196])
+ by d06dlp02.portsmouth.uk.ibm.com (Postfix) with ESMTP id 2A7502190069
+ for <linuxppc-dev@ozlabs.org>; Mon,  1 Jun 2015 14:54:00 +0100 (BST)
+Received: from d06av10.portsmouth.uk.ibm.com (d06av10.portsmouth.uk.ibm.com
+ [9.149.37.251])
+ by b06cxnps4074.portsmouth.uk.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t51DsKAU23920808
+ for <linuxppc-dev@ozlabs.org>; Mon, 1 Jun 2015 13:54:20 GMT
+Received: from d06av10.portsmouth.uk.ibm.com (localhost [127.0.0.1])
+ by d06av10.portsmouth.uk.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t51DsJYg007454
+ for <linuxppc-dev@ozlabs.org>; Mon, 1 Jun 2015 07:54:19 -0600
+Message-ID: <556C64A6.2050905@linux.vnet.ibm.com>
+Date: Mon, 01 Jun 2015 15:56:54 +0200
+From: Philippe Bergheaud <felix@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: Michael Neuling <mikey@neuling.org>
+CC: imunsie@au1.ibm.com, linuxppc-dev@ozlabs.org, vaibhav@linux.vnet.ibm.com
+Subject: Re: [PATCH] cxl: Set up and enable PSL Timebase
+References: <1432818778-27819-1-git-send-email-felix@linux.vnet.ibm.com>
+ <1433140899.24546.14.camel@neuling.org>
+In-Reply-To: <1433140899.24546.14.camel@neuling.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,138 +47,27 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-This patch introduces some functions for converting cputime to timespec64
-and back, that repalce the timespec type with timespec64 type, as well as
-for arch/s390 and arch/powerpc architecture.
+Michael Neuling wrote:
+ > Please use negative error codes here.  -EIO?
+ > And check it here.
 
-And these new methods will replace the old cputime_to_timespec/timespec_to_cputime
-function to ready for 2038 issue. The cputime_to_timespec/timespec_to_cputime
-functions are moved to include/linux/cputime.h file for removing conveniently.
+Mikey,
 
-Signed-off-by: Baolin Wang <baolin.wang@linaro.org>
----
- arch/powerpc/include/asm/cputime.h    |    6 +++---
- arch/s390/include/asm/cputime.h       |    8 ++++----
- include/asm-generic/cputime_jiffies.h |   10 +++++-----
- include/asm-generic/cputime_nsecs.h   |    4 ++--
- include/linux/cputime.h               |   16 ++++++++++++++++
- 5 files changed, 30 insertions(+), 14 deletions(-)
+I am reluctant to fail the entire CAPI init after a PSL timebase sync failure.
+If we ignore the error, the CAPI device stays available (without timebase sync).
+If we honour the error, the CAPI device fails entirely.
 
-diff --git a/arch/powerpc/include/asm/cputime.h b/arch/powerpc/include/asm/cputime.h
-index e245255..5dda5c0 100644
---- a/arch/powerpc/include/asm/cputime.h
-+++ b/arch/powerpc/include/asm/cputime.h
-@@ -154,9 +154,9 @@ static inline cputime_t secs_to_cputime(const unsigned long sec)
- }
- 
- /*
-- * Convert cputime <-> timespec
-+ * Convert cputime <-> timespec64
-  */
--static inline void cputime_to_timespec(const cputime_t ct, struct timespec *p)
-+static inline void cputime_to_timespec64(const cputime_t ct, struct timespec64 *p)
- {
- 	u64 x = (__force u64) ct;
- 	unsigned int frac;
-@@ -168,7 +168,7 @@ static inline void cputime_to_timespec(const cputime_t ct, struct timespec *p)
- 	p->tv_nsec = x;
- }
- 
--static inline cputime_t timespec_to_cputime(const struct timespec *p)
-+static inline cputime_t timespec64_to_cputime(const struct timespec64 *p)
- {
- 	u64 ct;
- 
-diff --git a/arch/s390/include/asm/cputime.h b/arch/s390/include/asm/cputime.h
-index b91e960..1266697 100644
---- a/arch/s390/include/asm/cputime.h
-+++ b/arch/s390/include/asm/cputime.h
-@@ -89,16 +89,16 @@ static inline cputime_t secs_to_cputime(const unsigned int s)
- }
- 
- /*
-- * Convert cputime to timespec and back.
-+ * Convert cputime to timespec64 and back.
-  */
--static inline cputime_t timespec_to_cputime(const struct timespec *value)
-+static inline cputime_t timespec64_to_cputime(const struct timespec64 *value)
- {
- 	unsigned long long ret = value->tv_sec * CPUTIME_PER_SEC;
- 	return (__force cputime_t)(ret + __div(value->tv_nsec * CPUTIME_PER_USEC, NSEC_PER_USEC));
- }
- 
--static inline void cputime_to_timespec(const cputime_t cputime,
--				       struct timespec *value)
-+static inline void cputime_to_timespec64(const cputime_t cputime,
-+				       struct timespec64 *value)
- {
- 	unsigned long long __cputime = (__force unsigned long long) cputime;
- #ifndef CONFIG_64BIT
-diff --git a/include/asm-generic/cputime_jiffies.h b/include/asm-generic/cputime_jiffies.h
-index fe386fc..54e034c 100644
---- a/include/asm-generic/cputime_jiffies.h
-+++ b/include/asm-generic/cputime_jiffies.h
-@@ -44,12 +44,12 @@ typedef u64 __nocast cputime64_t;
- #define secs_to_cputime(sec)		jiffies_to_cputime((sec) * HZ)
- 
- /*
-- * Convert cputime to timespec and back.
-+ * Convert cputime to timespec64 and back.
-  */
--#define timespec_to_cputime(__val)	\
--	jiffies_to_cputime(timespec_to_jiffies(__val))
--#define cputime_to_timespec(__ct,__val)	\
--	jiffies_to_timespec(cputime_to_jiffies(__ct),__val)
-+#define timespec64_to_cputime(__val)	\
-+	jiffies_to_cputime(timespec64_to_jiffies(__val))
-+#define cputime_to_timespec64(__ct,__val)	\
-+	jiffies_to_timespec64(cputime_to_jiffies(__ct),__val)
- 
- /*
-  * Convert cputime to timeval and back.
-diff --git a/include/asm-generic/cputime_nsecs.h b/include/asm-generic/cputime_nsecs.h
-index 0419485..65c875b 100644
---- a/include/asm-generic/cputime_nsecs.h
-+++ b/include/asm-generic/cputime_nsecs.h
-@@ -73,12 +73,12 @@ typedef u64 __nocast cputime64_t;
- /*
-  * Convert cputime <-> timespec (nsec)
-  */
--static inline cputime_t timespec_to_cputime(const struct timespec *val)
-+static inline cputime_t timespec64_to_cputime(const struct timespec64 *val)
- {
- 	u64 ret = val->tv_sec * NSEC_PER_SEC + val->tv_nsec;
- 	return (__force cputime_t) ret;
- }
--static inline void cputime_to_timespec(const cputime_t ct, struct timespec *val)
-+static inline void cputime_to_timespec64(const cputime_t ct, struct timespec64 *val)
- {
- 	u32 rem;
- 
-diff --git a/include/linux/cputime.h b/include/linux/cputime.h
-index f2eb2ee..e4c88da 100644
---- a/include/linux/cputime.h
-+++ b/include/linux/cputime.h
-@@ -13,4 +13,20 @@
- 	usecs_to_cputime((__nsecs) / NSEC_PER_USEC)
- #endif
- 
-+static inline cputime_t timespec_to_cputime(const struct timespec *ts)
-+{
-+	struct timespec64 ts64 = timespec_to_timespec64(*ts);
-+
-+	return timespec64_to_cputime(&ts64);
-+}
-+
-+static inline void cputime_to_timespec(const cputime_t cputime,
-+					struct timespec *value)
-+{
-+	struct timespec64 ts64;
-+
-+	cputime_to_timespec64(cputime, &ts64);
-+	*value = timespec64_to_timespec(ts64);
-+}
-+
- #endif /* __LINUX_CPUTIME_H */
--- 
-1.7.9.5
+I know three reasons why PSL timebase sync can fail:
+1. h/w failure
+2. OPAL did not initialize the CAPP timebase (wrong OPAL version)
+3. the PCIe bus was not powered off/on between shutdown and reboot
+
+I think that it is premature to choose to fail the entire CAPI init in all cases.
+In particular, point 3. introduces a regression, as PCIe off/on was never a requirement for booting CAPI on P8.
+
+I have tried one workaround do far: forcing the 0 to 1 transition of the tb bit of the PSL register TB_CTLSTAT.
+In vain.
+
+What do you think?
+
+Philippe
