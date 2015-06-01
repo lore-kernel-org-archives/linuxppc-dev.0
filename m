@@ -1,33 +1,24 @@
-Return-Path: <stripathi@apm.com>
-Received: from mail-wi0-f175.google.com (exprod5og120.obsmtp.com [64.18.0.137])
- (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <mikey@neuling.org>
+Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 508091A0D0E
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Jun 2015 18:08:51 +1000 (AEST)
-Received: by wizo1 with SMTP id o1so94102465wiz.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 01 Jun 2015 01:08:47 -0700 (PDT)
-MIME-Version: 1.0
-In-Reply-To: <CAOHikRASDmy7PwFjqmX7JAjW52DYR+d3RkE3yd_45NN5sHK7Pg@mail.gmail.com>
-References: <1432197817-22110-1-git-send-email-stripathi@apm.com>
- <1432197817-22110-3-git-send-email-stripathi@apm.com>
- <CAPDyKFpxkNF9C8AOJ6+18CEcpZTKycPR0i5OuwPRr1Zc+VPJ5Q@mail.gmail.com>
- <CAOHikRASDmy7PwFjqmX7JAjW52DYR+d3RkE3yd_45NN5sHK7Pg@mail.gmail.com>
-Date: Mon, 1 Jun 2015 13:38:47 +0530
-Message-ID: <CAOHikRBB9Uyh4Z34_pFTdmA0A-vnV09zTi8iYEU+01XvmzSr_A@mail.gmail.com>
-Subject: Re: [PATCH RESEND v7 2/2] mmc: host: sdhci: Add support to disable
- SDR104/SDR50/DDR50 based on capability register 0.
-From: Suman Tripathi <stripathi@apm.com>
-To: aisheng.dong@freescale.com
-Cc: Chris Ball <chris@printf.net>, Anton Vorontsov <anton@enomsg.org>,
- Arnd Bergmann <arnd@arndb.de>,
- Michal Simek <michal.simek@xilinx.com>, linux-mmc <linux-mmc@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
- Don Dutile <ddutile@redhat.com>,
- Jon Masters <jcm@redhat.com>, Mark Langsdorf <mlangsdo@redhat.com>,
- patches <patches@apm.com>, Ulf Hansson <ulf.hansson@linaro.org>
-Content-Type: multipart/alternative; boundary=001a11c352a6daeefa0517705509
+ by lists.ozlabs.org (Postfix) with ESMTPS id AB8491A016E
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Jun 2015 19:08:08 +1000 (AEST)
+Received: from localhost.localdomain (localhost [127.0.0.1])
+ by ozlabs.org (Postfix) with ESMTP id 690D7140FDF
+ for <linuxppc-dev@ozlabs.org>; Mon,  1 Jun 2015 19:08:08 +1000 (AEST)
+Message-ID: <1433149688.24546.18.camel@neuling.org>
+Subject: Re: [PATCH] cxl: Set up and enable PSL Timebase
+From: Michael Neuling <mikey@neuling.org>
+To: Philippe Bergheaud <felix@linux.vnet.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, imunsie@au1.ibm.com, vaibhav@linux.vnet.ibm.com
+Date: Mon, 01 Jun 2015 19:08:08 +1000
+In-Reply-To: <556C0BCE.1080302@linux.vnet.ibm.com>
+References: <1432818778-27819-1-git-send-email-felix@linux.vnet.ibm.com>
+ <1433140899.24546.14.camel@neuling.org>
+ <556C0BCE.1080302@linux.vnet.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,144 +28,119 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
---001a11c352a6daeefa0517705509
-Content-Type: text/plain; charset=UTF-8
+On Mon, 2015-06-01 at 09:37 +0200, Philippe Bergheaud wrote:
+> Michael Neuling wrote:
+> > On Thu, 2015-05-28 at 15:12 +0200, Philippe Bergheaud wrote:
+> >=20
+> >>This patch configures the PSL Timebase function and enables it,
+> >>after the CAPP has been initialized by OPAL. Failures are reported
+> >>and ignored.
+> >=20
+> >=20
+> > Needs an Signed-off-by.
+> Yes.
+> > Comments inline.
+> >=20
+> >=20
+> >>---
+> >> drivers/misc/cxl/cxl.h |    5 +++++
+> >> drivers/misc/cxl/pci.c |   35 +++++++++++++++++++++++++++++++++++
+> >> 2 files changed, 40 insertions(+), 0 deletions(-)
+> >>
+> >>diff --git a/drivers/misc/cxl/cxl.h b/drivers/misc/cxl/cxl.h
+> >>index a1cee47..38a7cf9 100644
+> >>--- a/drivers/misc/cxl/cxl.h
+> >>+++ b/drivers/misc/cxl/cxl.h
+> >>@@ -82,8 +82,10 @@ static const cxl_p1_reg_t CXL_PSL_AFUSEL  =3D {0x00B=
+0};
+> >> /* 0x00C0:7EFF Implementation dependent area */
+> >> static const cxl_p1_reg_t CXL_PSL_FIR1      =3D {0x0100};
+> >> static const cxl_p1_reg_t CXL_PSL_FIR2      =3D {0x0108};
+> >>+static const cxl_p1_reg_t CXL_PSL_Timebase  =3D {0x0110};
+> >> static const cxl_p1_reg_t CXL_PSL_VERSION   =3D {0x0118};
+> >> static const cxl_p1_reg_t CXL_PSL_RESLCKTO  =3D {0x0128};
+> >>+static const cxl_p1_reg_t CXL_PSL_TB_CTLSTAT =3D {0x0140};
+> >> static const cxl_p1_reg_t CXL_PSL_FIR_CNTL  =3D {0x0148};
+> >> static const cxl_p1_reg_t CXL_PSL_DSNDCTL   =3D {0x0150};
+> >> static const cxl_p1_reg_t CXL_PSL_SNWRALLOC =3D {0x0158};
+> >>@@ -151,6 +153,9 @@ static const cxl_p2n_reg_t CXL_PSL_WED_An     =3D {=
+0x0A0};
+> >> #define CXL_PSL_SPAP_Size_Shift 4
+> >> #define CXL_PSL_SPAP_V    0x0000000000000001ULL
+> >>=20
+> >>+/****** CXL_PSL_Control **********************************************=
+******/
+> >>+#define CXL_PSL_Control_tb 0x0000000000000001ULL
+> >>+
+> >> /****** CXL_PSL_DLCNTL ***********************************************=
+******/
+> >> #define CXL_PSL_DLCNTL_D (0x1ull << (63-28))
+> >> #define CXL_PSL_DLCNTL_C (0x1ull << (63-29))
+> >>diff --git a/drivers/misc/cxl/pci.c b/drivers/misc/cxl/pci.c
+> >>index fc938de..afd89cc 100644
+> >>--- a/drivers/misc/cxl/pci.c
+> >>+++ b/drivers/misc/cxl/pci.c
+> >>@@ -360,6 +360,38 @@ static int init_implementation_adapter_regs(struct=
+ cxl *adapter, struct pci_dev
+> >> 	return 0;
+> >> }
+> >>=20
+> >>+#define TBSYNC_CNT(n) (((u64)n & 0x7) << (63-6))
+> >>+
+> >>+static int cxl_setup_psl_timebase(struct cxl *adapter, struct pci_dev =
+*dev)
+> >>+{
+> >>+	u64 psl_tb;
+> >>+	int delta;
+> >>+	unsigned int retry =3D 0;
+> >>+
+> >>+	/*
+> >>+	 * Setup PSL Timebase Control and Status register
+> >>+	 * with the recommended Timebase Sync Count value
+> >>+	 */
+> >>+	cxl_p1_write(adapter, CXL_PSL_TB_CTLSTAT, TBSYNC_CNT(2)); =20
+> >=20
+> >=20
+> > 2? =20
+> Quoting the PSL workbook description of the PSL_TB_CTLSTAT register:
+>=20
+> 4:6 tbsync_cnt
+> TimebaseSyncCount. Number of 250MHz cycles x 2048 before initiating anoth=
+er Timebase Recalibration sequence.
+> Processor chipTimebase facilities receive a tod_sync pulse every 16us or =
+4000 250 MHz cycles so '010' is the Recommended value.
+> 000 =3D never
+> 001 =3D 2048
+> 010 =3D 4096 (2 * 2048)
+> ...
+> 111 =3D 14336 (7 * 2048)
+>=20
+> Will make the TimebaseSyncCount unit explicit. Something like:
+>=20
+> #define _2048_250MHZ_CYCLES 1
+> cxl_p1_write(adapter, CXL_PSL_TB_CTLSTAT, TBSYNC_CNT(2 * _2048_250MHZ_CYC=
+LES));
 
-Hi Aisheng,
+Sounds good!
 
-On Wed, May 27, 2015 at 7:46 PM, Suman Tripathi <stripathi@apm.com> wrote:
+> >=20
+> >>+
+> >>+	/* Enable PSL Timebase */
+> >>+	cxl_p1_write(adapter, CXL_PSL_Control, CXL_PSL_Control_tb);
+> >>+	/* Wait until CORE TB and PSL TB difference <=3D 16usecs */
+> >=20
+> >=20
+> > How many tries does this normally take?
+> Two. The second attempt always succeds.
 
->
->
-> On Tue, May 26, 2015 at 6:06 PM, Ulf Hansson <ulf.hansson@linaro.org>
-> wrote:
->
->> On 21 May 2015 at 10:43, Suman Tripathi <stripathi@apm.com> wrote:
->> > The sdhci framework disables SDR104/SDR50/DDR50 based on only quirk.
->> > This patch adds the support to disable SDR104/SDR50/DDR50 based on
->> > reading the capability register 0.
->> >
->> > Signed-off-by: Suman Tripathi <stripathi@apm.com>
->> > ---
->> > ---
->> >  drivers/mmc/host/sdhci.c | 3 ++-
->> >  1 file changed, 2 insertions(+), 1 deletion(-)
->> >
->> > diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
->> > index 58c1770..a3d9b8a 100644
->> > --- a/drivers/mmc/host/sdhci.c
->> > +++ b/drivers/mmc/host/sdhci.c
->> > @@ -3118,7 +3118,8 @@ int sdhci_add_host(struct sdhci_host *host)
->> >                 }
->> >         }
->> >
->> > -       if (host->quirks2 & SDHCI_QUIRK2_NO_1_8_V)
->> > +       if (host->quirks2 & SDHCI_QUIRK2_NO_1_8_V ||
->> > +           !(caps[0] & SDHCI_CAN_VDD_180))
->> >                 caps[1] &= ~(SDHCI_SUPPORT_SDR104 | SDHCI_SUPPORT_SDR50
->> |
->> >                        SDHCI_SUPPORT_DDR50);
->> >
->> > --
->> > 1.8.2.1
->> >
->>
->> I have no problem with this patch, except that it would be nice to get
->> a few "tested by" to make sure it doesn't break UHS support for some
->> SoCs.
->>
->> Kind regards
->> Uffe
->>
->
-> Can anyone test this in some other SoC ? Appreciate your help ..
->
-> Can you test this patch  on imx SoC ?
+Ok
 
->
-> --
-> Thanks,
-> with regards,
-> Suman Tripathi
->
+> > Should we have a sleep in here to wait for it to sync rather than just
+> > coming back around right away?
+> Yes, will add msleep(1) at the beginning of the loop (as the first attemp=
+t always fails).
 
+Humm, ok.  Is there any documentation to say how long it's suppose to
+take? =20
 
-
--- 
-Thanks,
-with regards,
-Suman Tripathi
-
---001a11c352a6daeefa0517705509
-Content-Type: text/html; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-
-<div dir=3D"ltr">Hi Aisheng,<br><div class=3D"gmail_extra"><br><div class=
-=3D"gmail_quote">On Wed, May 27, 2015 at 7:46 PM, Suman Tripathi <span dir=
-=3D"ltr">&lt;<a href=3D"mailto:stripathi@apm.com" target=3D"_blank">stripat=
-hi@apm.com</a>&gt;</span> wrote:<br><blockquote class=3D"gmail_quote" style=
-=3D"margin:0 0 0 .8ex;border-left:1px #ccc solid;padding-left:1ex"><div dir=
-=3D"ltr"><br><div class=3D"gmail_extra"><div><div><br><div class=3D"gmail_q=
-uote">On Tue, May 26, 2015 at 6:06 PM, Ulf Hansson <span dir=3D"ltr">&lt;<a=
- href=3D"mailto:ulf.hansson@linaro.org" target=3D"_blank">ulf.hansson@linar=
-o.org</a>&gt;</span> wrote:<br><blockquote class=3D"gmail_quote" style=3D"m=
-argin:0 0 0 .8ex;border-left:1px #ccc solid;padding-left:1ex"><div><div>On =
-21 May 2015 at 10:43, Suman Tripathi &lt;<a href=3D"mailto:stripathi@apm.co=
-m" target=3D"_blank">stripathi@apm.com</a>&gt; wrote:<br>
-&gt; The sdhci framework disables SDR104/SDR50/DDR50 based on only quirk.<b=
-r>
-&gt; This patch adds the support to disable SDR104/SDR50/DDR50 based on<br>
-&gt; reading the capability register 0.<br>
-&gt;<br>
-&gt; Signed-off-by: Suman Tripathi &lt;<a href=3D"mailto:stripathi@apm.com"=
- target=3D"_blank">stripathi@apm.com</a>&gt;<br>
-&gt; ---<br>
-&gt; ---<br>
-&gt;=C2=A0 drivers/mmc/host/sdhci.c | 3 ++-<br>
-&gt;=C2=A0 1 file changed, 2 insertions(+), 1 deletion(-)<br>
-&gt;<br>
-&gt; diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c<br>
-&gt; index 58c1770..a3d9b8a 100644<br>
-&gt; --- a/drivers/mmc/host/sdhci.c<br>
-&gt; +++ b/drivers/mmc/host/sdhci.c<br>
-&gt; @@ -3118,7 +3118,8 @@ int sdhci_add_host(struct sdhci_host *host)<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0}<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0}<br>
-&gt;<br>
-&gt; -=C2=A0 =C2=A0 =C2=A0 =C2=A0if (host-&gt;quirks2 &amp; SDHCI_QUIRK2_NO=
-_1_8_V)<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0if (host-&gt;quirks2 &amp; SDHCI_QUIRK2_NO=
-_1_8_V ||<br>
-&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0!(caps[0] &amp; SDHCI_CAN_VD=
-D_180))<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0caps[1] &=
-amp;=3D ~(SDHCI_SUPPORT_SDR104 | SDHCI_SUPPORT_SDR50 |<br>
-&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
-=C2=A0 =C2=A0 SDHCI_SUPPORT_DDR50);<br>
-&gt;<br>
-&gt; --<br>
-&gt; 1.8.2.1<br>
-&gt;<br>
-<br>
-</div></div>I have no problem with this patch, except that it would be nice=
- to get<br>
-a few &quot;tested by&quot; to make sure it doesn&#39;t break UHS support f=
-or some<br>
-SoCs.<br>
-<br>
-Kind regards<br>
-Uffe<br>
-</blockquote></div><div class=3D"gmail_extra"><br></div></div></div>Can any=
-one test this in some other SoC ? Appreciate your help ..<span><br><br clea=
-r=3D"all"></span></div></div></blockquote><div>Can you test this patch =C2=
-=A0on imx SoC ? =C2=A0</div><blockquote class=3D"gmail_quote" style=3D"marg=
-in:0 0 0 .8ex;border-left:1px #ccc solid;padding-left:1ex"><div dir=3D"ltr"=
-><div class=3D"gmail_extra"><span><div><br></div>-- <br><div><div dir=3D"lt=
-r"><div>Thanks,</div><div>with regards,</div>Suman Tripathi</div></div>
-</span></div></div>
-</blockquote></div><br><br clear=3D"all"><div><br></div>-- <br><div><div di=
-r=3D"ltr"><div>Thanks,</div><div>with regards,</div>Suman Tripathi</div></d=
-iv>
-</div></div>
-
---001a11c352a6daeefa0517705509--
+Mikey
