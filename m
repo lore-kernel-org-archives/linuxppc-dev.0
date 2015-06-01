@@ -1,26 +1,27 @@
-Return-Path: <bhelgaas@google.com>
-Received: from mail-ig0-x233.google.com (mail-ig0-x233.google.com
- [IPv6:2607:f8b0:4001:c05::233])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <dgibson@ozlabs.org>
+Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 1D7661A0023
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Jun 2015 10:01:41 +1000 (AEST)
-Received: by igbhj9 with SMTP id hj9so74441775igb.1
- for <linuxppc-dev@lists.ozlabs.org>; Mon, 01 Jun 2015 17:01:39 -0700 (PDT)
-Date: Mon, 1 Jun 2015 19:01:36 -0500
-From: Bjorn Helgaas <bhelgaas@google.com>
-To: Wei Yang <weiyang@linux.vnet.ibm.com>
-Cc: gwshan@linux.vnet.ibm.com, linuxppc-dev@lists.ozlabs.org,
- linux-pci@vger.kernel.org
-Subject: Re: [PATCH V7 08/10] powerpc/powernv: Support PCI config restore for
- VFs
-Message-ID: <20150602000136.GH3631@google.com>
-References: <1431999312-10517-1-git-send-email-weiyang@linux.vnet.ibm.com>
- <1432032612-21701-1-git-send-email-weiyang@linux.vnet.ibm.com>
- <1432032612-21701-9-git-send-email-weiyang@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 64BBD1A0023
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Jun 2015 10:05:06 +1000 (AEST)
+Date: Tue, 2 Jun 2015 09:30:39 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>,
+ Paul Mackerras <paulus@samba.org>, kvm@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+Subject: Re: [PATCH kernel v11 26/34] powerpc/powernv/ioda2: Introduce
+ pnv_pci_ioda2_set_window
+Message-ID: <20150601233039.GP22789@voom.redhat.com>
+References: <1432889098-22924-1-git-send-email-aik@ozlabs.ru>
+ <1432889098-22924-27-git-send-email-aik@ozlabs.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1432032612-21701-9-git-send-email-weiyang@linux.vnet.ibm.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="tzZdJ4yHDV5r1Akt"
+In-Reply-To: <1432889098-22924-27-git-send-email-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,172 +31,145 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, May 19, 2015 at 06:50:10PM +0800, Wei Yang wrote:
-> After PE reset, OPAL API opal_pci_reinit() is called on all devices
-> contained in the PE to reinitialize them. However, VFs can't be seen
-> from skiboot firmware. We have to implement the functions, similar
-> those in skiboot firmware, to reinitialize VFs after reset on PE
-> for VFs.
-> 
-> [gwshan: changelog and code refactoring]
-> Signed-off-by: Wei Yang <weiyang@linux.vnet.ibm.com>
-> Acked-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
+
+--tzZdJ4yHDV5r1Akt
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Fri, May 29, 2015 at 06:44:50PM +1000, Alexey Kardashevskiy wrote:
+> This is a part of moving DMA window programming to an iommu_ops
+> callback. pnv_pci_ioda2_set_window() takes an iommu_table_group as
+> a first parameter (not pnv_ioda_pe) as it is going to be used as
+> a callback for VFIO DDW code.
+>=20
+> This adds pnv_pci_ioda2_tvt_invalidate() to invalidate TVT as it is
+
+I'm assuming that's what's now called pnv_pci_ioda2_invalidate_entire()?
+
+> a good thing to do. It does not have immediate effect now as the table
+> is never recreated after reboot but it will in the following patches.
+>=20
+> This should cause no behavioural change.
+>=20
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
+> Reviewed-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
 > ---
->  arch/powerpc/include/asm/pci-bridge.h        |    1 +
->  arch/powerpc/platforms/powernv/eeh-powernv.c |   70 +++++++++++++++++++++++++-
->  arch/powerpc/platforms/powernv/pci.c         |   18 +++++++
->  3 files changed, 88 insertions(+), 1 deletion(-)
-> 
-> diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
-> index c324882..ad60263 100644
-> --- a/arch/powerpc/include/asm/pci-bridge.h
-> +++ b/arch/powerpc/include/asm/pci-bridge.h
-> @@ -206,6 +206,7 @@ struct pci_dn {
->  #define IODA_INVALID_M64        (-1)
->  	int     m64_wins[PCI_SRIOV_NUM_BARS][M64_PER_IOV];
->  #endif /* CONFIG_PCI_IOV */
-> +	int	mps;
->  #endif
->  	struct list_head child_list;
->  	struct list_head list;
-> diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
-> index 7af3c1e..33deb78 100644
-> --- a/arch/powerpc/platforms/powernv/eeh-powernv.c
-> +++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
-> @@ -1612,6 +1612,67 @@ static int pnv_eeh_next_error(struct eeh_pe **pe)
->  	return ret;
+> Changes:
+> v11:
+> * replaced some 1<<it_page_shift with IOMMU_PAGE_SIZE() macro
+>=20
+> v9:
+> * initialize pe->table_group.tables[0] at the very end when
+> tbl is fully initialized
+> * moved pnv_pci_ioda2_tvt_invalidate() from earlier patch
+> ---
+>  arch/powerpc/platforms/powernv/pci-ioda.c | 47 +++++++++++++++++++++++++=
+------
+>  1 file changed, 38 insertions(+), 9 deletions(-)
+>=20
+> diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/pla=
+tforms/powernv/pci-ioda.c
+> index 3d29fe3..fda01c1 100644
+> --- a/arch/powerpc/platforms/powernv/pci-ioda.c
+> +++ b/arch/powerpc/platforms/powernv/pci-ioda.c
+> @@ -1968,6 +1968,43 @@ static void pnv_pci_ioda_setup_dma_pe(struct pnv_p=
+hb *phb,
+>  	}
 >  }
->  
-> +static int pnv_eeh_restore_vf_config(struct pci_dn *pdn)
+> =20
+> +static long pnv_pci_ioda2_set_window(struct iommu_table_group *table_gro=
+up,
+> +		int num, struct iommu_table *tbl)
 > +{
-> +	struct eeh_dev *edev = pdn_to_eeh_dev(pdn);
-> +	u32 devctl, cmd, cap2, aer_capctl;
-> +	int old_mps;
+> +	struct pnv_ioda_pe *pe =3D container_of(table_group, struct pnv_ioda_pe,
+> +			table_group);
+> +	struct pnv_phb *phb =3D pe->phb;
+> +	int64_t rc;
+> +	const __u64 start_addr =3D tbl->it_offset << tbl->it_page_shift;
+> +	const __u64 win_size =3D tbl->it_size << tbl->it_page_shift;
 > +
-> +	/* Restore MPS */
-> +	if (edev->pcie_cap) {
-> +		old_mps = (ffs(pdn->mps) - 8) << 5;
-> +		eeh_ops->read_config(pdn, edev->pcie_cap + PCI_EXP_DEVCTL,
-> +				     2, &devctl);
-> +		devctl &= ~PCI_EXP_DEVCTL_PAYLOAD;
-> +		devctl |= old_mps;
-> +		eeh_ops->write_config(pdn, edev->pcie_cap + PCI_EXP_DEVCTL,
-> +				      2, devctl);
+> +	pe_info(pe, "Setting up window %llx..%llx pg=3D%x\n",
+> +			start_addr, start_addr + win_size - 1,
+> +			IOMMU_PAGE_SIZE(tbl));
+> +
+> +	/*
+> +	 * Map TCE table through TVT. The TVE index is the PE number
+> +	 * shifted by 1 bit for 32-bits DMA space.
+> +	 */
+> +	rc =3D opal_pci_map_pe_dma_window(phb->opal_id,
+> +			pe->pe_number,
+> +			pe->pe_number << 1,
+> +			1,
+> +			__pa(tbl->it_base),
+> +			tbl->it_size << 3,
+> +			IOMMU_PAGE_SIZE(tbl));
+> +	if (rc) {
+> +		pe_err(pe, "Failed to configure TCE table, err %ld\n", rc);
+> +		return rc;
 > +	}
 > +
-> +	/* Disable Completion Timeout */
-> +	if (edev->pcie_cap) {
-> +		eeh_ops->read_config(pdn, edev->pcie_cap + PCI_EXP_DEVCAP2,
-> +				     4, &cap2);
-> +		if (cap2 & 0x10) {
-> +			eeh_ops->read_config(pdn,
-> +					edev->pcie_cap + PCI_EXP_DEVCTL2,
-> +					4, &cap2);
-> +			cap2 |= 0x10;
-> +			eeh_ops->write_config(pdn,
-> +					edev->pcie_cap + PCI_EXP_DEVCTL2,
-> +					4, cap2);
-> +		}
-> +	}
-> +
-> +	/* Enable SERR and parity checking */
-> +	eeh_ops->read_config(pdn, PCI_COMMAND, 2, &cmd);
-> +	cmd |= (PCI_COMMAND_PARITY | PCI_COMMAND_SERR);
-> +	eeh_ops->write_config(pdn, PCI_COMMAND, 2, cmd);
-> +
-> +	/* Enable report various errors */
-> +	if (edev->pcie_cap) {
-> +		eeh_ops->read_config(pdn, edev->pcie_cap + PCI_EXP_DEVCTL,
-> +				2, &devctl);
-> +		devctl &= ~PCI_EXP_DEVCTL_CERE;
-> +		devctl |= (PCI_EXP_DEVCTL_NFERE |
-> +			   PCI_EXP_DEVCTL_FERE |
-> +			   PCI_EXP_DEVCTL_URRE);
-> +		eeh_ops->write_config(pdn, edev->pcie_cap + PCI_EXP_DEVCTL,
-> +				2, devctl);
-> +	}
-> +
-> +	/* Enable ECRC generation and check */
-> +	if (edev->pcie_cap && edev->aer_cap) {
-> +		eeh_ops->read_config(pdn, edev->aer_cap + PCI_ERR_CAP,
-> +				4, &aer_capctl);
-> +		aer_capctl |= (PCI_ERR_CAP_ECRC_GENE | PCI_ERR_CAP_ECRC_CHKE);
-> +		eeh_ops->write_config(pdn, edev->aer_cap + PCI_ERR_CAP,
-> +				4, aer_capctl);
-> +	}
-
-Where is all this stuff set up the first time?  It'd be nice if we could
-use the same path that did it the first time.
-
-Are we setting up a PF or a VF here?  The function is called
-pnv_eeh_restore_vf_config(), but it's called when "edev->physfn", so it's a
-little confusing.
-
+> +	pnv_pci_link_table_and_group(phb->hose->node, num,
+> +			tbl, &pe->table_group);
+> +	pnv_pci_ioda2_tce_invalidate_entire(pe);
 > +
 > +	return 0;
 > +}
 > +
->  static int pnv_eeh_restore_config(struct pci_dn *pdn)
+>  static void pnv_pci_ioda2_set_bypass(struct pnv_ioda_pe *pe, bool enable)
 >  {
->  	struct eeh_dev *edev = pdn_to_eeh_dev(pdn);
-> @@ -1622,7 +1683,14 @@ static int pnv_eeh_restore_config(struct pci_dn *pdn)
->  		return -EEXIST;
->  
->  	phb = edev->phb->private_data;
-> -	ret = opal_pci_reinit(phb->opal_id,
-> +	/*
-> +	 * We have to restore the PCI config space after reset since the
-> +	 * firmware can't see SRIOV VFs.
-> +	 */
-> +	if (edev->physfn)
-> +		ret = pnv_eeh_restore_vf_config(pdn);
-> +	else
-> +		ret = opal_pci_reinit(phb->opal_id,
->  			      OPAL_REINIT_PCI_DEV, edev->config_addr);
->  	if (ret) {
->  		pr_warn("%s: Can't reinit PCI dev 0x%x (%lld)\n",
-> diff --git a/arch/powerpc/platforms/powernv/pci.c b/arch/powerpc/platforms/powernv/pci.c
-> index bca2aeb..10bc8c3 100644
-> --- a/arch/powerpc/platforms/powernv/pci.c
-> +++ b/arch/powerpc/platforms/powernv/pci.c
-> @@ -729,6 +729,24 @@ static void pnv_p7ioc_rc_quirk(struct pci_dev *dev)
->  }
->  DECLARE_PCI_FIXUP_EARLY(PCI_VENDOR_ID_IBM, 0x3b9, pnv_p7ioc_rc_quirk);
->  
-> +#ifdef CONFIG_PCI_IOV
-> +static void pnv_pci_fixup_vf_mps(struct pci_dev *pdev)
-> +{
-> +	struct pci_dn *pdn = pci_get_pdn(pdev);
-> +	int parent_mps;
-> +
-> +	if (!pdev->is_virtfn)
-> +		return;
-> +
-> +	/* Synchronize MPS for VF and PF */
-> +	parent_mps = pcie_get_mps(pdev->physfn);
-> +	if ((128 << pdev->pcie_mpss) >= parent_mps)
-> +		pcie_set_mps(pdev, parent_mps);
-> +	pdn->mps = pcie_get_mps(pdev);
-> +}
-> +DECLARE_PCI_FIXUP_HEADER(PCI_ANY_ID, PCI_ANY_ID, pnv_pci_fixup_vf_mps);
+>  	uint16_t window_id =3D (pe->pe_number << 1 ) + 1;
+> @@ -2123,21 +2160,13 @@ static void pnv_pci_ioda2_setup_dma_pe(struct pnv=
+_phb *phb,
+>  	pe->table_group.ops =3D &pnv_pci_ioda2_ops;
+>  #endif
+> =20
+> -	/*
+> -	 * Map TCE table through TVT. The TVE index is the PE number
+> -	 * shifted by 1 bit for 32-bits DMA space.
+> -	 */
+> -	rc =3D opal_pci_map_pe_dma_window(phb->opal_id, pe->pe_number,
+> -			pe->pe_number << 1, 1, __pa(tbl->it_base),
+> -			tbl->it_size << 3, 1ULL << tbl->it_page_shift);
+> +	rc =3D pnv_pci_ioda2_set_window(&pe->table_group, 0, tbl);
+>  	if (rc) {
+>  		pe_err(pe, "Failed to configure 32-bit TCE table,"
+>  		       " err %ld\n", rc);
+>  		goto fail;
+>  	}
+> =20
+> -	pnv_pci_ioda2_tce_invalidate_entire(pe);
+> -
+>  	/* OPAL variant of PHB3 invalidated TCEs */
+>  	if (phb->ioda.tce_inval_reg)
+>  		tbl->it_type |=3D (TCE_PCI_SWINV_CREATE | TCE_PCI_SWINV_FREE);
 
-Same comment as before -- I don't like this usage of fixups.  Would it work
-to do this in pcibios_add_device()?
+--=20
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
 
-I assume you need this to happen when you hot-remove and hot-add a VF
-during EEH recovery?  Where does this happen in the normal hotplug path,
-e.g., pciehp, and can you do it in a corresponding place for EEH hotplug?
+--tzZdJ4yHDV5r1Akt
+Content-Type: application/pgp-signature
 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
 
-> +#endif /* CONFIG_PCI_IOV */
-> +
->  void __init pnv_pci_init(void)
->  {
->  	struct device_node *np;
-> -- 
-> 1.7.9.5
-> 
-> --
-> To unsubscribe from this list: send the line "unsubscribe linux-pci" in
-> the body of a message to majordomo@vger.kernel.org
-> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+iQIcBAEBAgAGBQJVbOsfAAoJEGw4ysog2bOS24wP/0bbQbjK/AykOpe/e5EE3v9z
+t0T5cMAhFRBB4LErOJ+NjCJ0adlhP5L59K3yfvQR4r00L9HYlk3Q1lbmkKh4gyL3
+QU83rIhQMpn4WOHpeu48mwZJ7GEdsl8Af1vxDqbPQK0X5OzNFDNIwQdmcnwQXbRb
+YL7aDBxMv21AHJxFw5f+sJ3JVLBqPwhGlsEUOwpD4Q07Z6MLn7LQdLsrg4UVqKlk
+D8UIBGY2jPJg1e2KFY92+R65JusDDyY8ntc5nEqQpC74eb9UiZZmqoF6DYKz2uKI
+fXP7EmOtiCT9/0t+aXFqjC7X9U+5kwir5f7AEDhKdbgFu+LABYi5uDFOZKXYjxoc
+mvPjQ0iI0o1wOxOj6HObuCY2NnY6l2lA9f9oG7mZrcEK++qQneQnggBDz+3BmOID
+HDCku2/CxudqIOlwAqs6BsZIxQvfcRfhyNj2MIXnfem/QHbp4OdH+FRSUU0rhm1g
+MFq56PnEOlXo6hXbvpA+Jc95aglZSjBkeoB237PSMEX/vxkIdB5/+4n29dAgbbsP
+x7WnwQHtJpOEKOy0dcGN59KGHp+J22eMjI/fPVdmMLucrkFBy2vkNgkXlsitylOq
+lIzD7pN5FHuxhSlOqLC0B1THp1amN1tjQUN/vAxn/NHJMjE7YXRxAmMUtRoxbjT2
+H9U3T23luGGJc4I8Tl2e
+=9d74
+-----END PGP SIGNATURE-----
+
+--tzZdJ4yHDV5r1Akt--
