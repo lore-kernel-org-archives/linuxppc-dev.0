@@ -1,27 +1,27 @@
-Return-Path: <dgibson@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
- (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 816031A0CC7
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Jun 2015 17:42:58 +1000 (AEST)
-Date: Mon, 1 Jun 2015 17:29:22 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Cc: linuxppc-dev@lists.ozlabs.org,
- Alex Williamson <alex.williamson@redhat.com>,
+Return-Path: <jiang.liu@linux.intel.com>
+Received: from mga14.intel.com (mga14.intel.com [192.55.52.115])
+ by lists.ozlabs.org (Postfix) with ESMTP id 4FE451A0037
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Jun 2015 18:07:35 +1000 (AEST)
+From: Jiang Liu <jiang.liu@linux.intel.com>
+To: Thomas Gleixner <tglx@linutronix.de>, Bjorn Helgaas <bhelgaas@google.com>,
  Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Gavin Shan <gwshan@linux.vnet.ibm.com>,
- Paul Mackerras <paulus@samba.org>, kvm@vger.kernel.org,
- linux-kernel@vger.kernel.org
-Subject: Re: [PATCH kernel v11 25/34] powerpc/powernv/ioda2: Introduce
- helpers to allocate TCE pages
-Message-ID: <20150601072922.GO22789@voom.redhat.com>
-References: <1432889098-22924-1-git-send-email-aik@ozlabs.ru>
- <1432889098-22924-26-git-send-email-aik@ozlabs.ru>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="FhKpTYimqQF2+bfE"
-In-Reply-To: <1432889098-22924-26-git-send-email-aik@ozlabs.ru>
+ Ingo Molnar <mingo@redhat.com>, "H. Peter Anvin" <hpa@zytor.com>,
+ Randy Dunlap <rdunlap@infradead.org>, Yinghai Lu <yinghai@kernel.org>,
+ Borislav Petkov <bp@alien8.de>, Paul Mackerras <paulus@samba.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Anton Blanchard <anton@samba.org>,
+ Mahesh Salgaonkar <mahesh@linux.vnet.ibm.com>,
+ Christoph Lameter <cl@linux.com>, Tejun Heo <tj@kernel.org>
+Cc: Jiang Liu <jiang.liu@linux.intel.com>,
+ Konrad Rzeszutek Wilk <konrad.wilk@oracle.com>,
+ Tony Luck <tony.luck@intel.com>, x86@kernel.org,
+ linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
+ linux-acpi@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: [Patch v3 24/36] powerpc,
+ irq: Use access helper irq_data_get_affinity_mask()
+Date: Mon,  1 Jun 2015 16:05:33 +0800
+Message-Id: <1433145945-789-25-git-send-email-jiang.liu@linux.intel.com>
+In-Reply-To: <1433145945-789-1-git-send-email-jiang.liu@linux.intel.com>
+References: <1433145945-789-1-git-send-email-jiang.liu@linux.intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,54 +31,54 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+Use access helper irq_data_get_affinity_mask() to hide implementation
+details of struct irq_desc.
 
---FhKpTYimqQF2+bfE
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Jiang Liu <jiang.liu@linux.intel.com>
+---
+ arch/powerpc/kernel/irq.c           |    2 +-
+ arch/powerpc/sysdev/xics/ics-opal.c |    2 +-
+ arch/powerpc/sysdev/xics/ics-rtas.c |    2 +-
+ 3 files changed, 3 insertions(+), 3 deletions(-)
 
-On Fri, May 29, 2015 at 06:44:49PM +1000, Alexey Kardashevskiy wrote:
-> This is a part of moving TCE table allocation into an iommu_ops
-> callback to support multiple IOMMU groups per one VFIO container.
->=20
-> This moves the code which allocates the actual TCE tables to helpers:
-> pnv_pci_ioda2_table_alloc_pages() and pnv_pci_ioda2_table_free_pages().
-> These do not allocate/free the iommu_table struct.
->=20
-> This enforces window size to be a power of two.
->=20
-> This should cause no behavioural change.
->=20
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> Reviewed-by: Gavin Shan <gwshan@linux.vnet.ibm.com>
-
-Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
-
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
-
---FhKpTYimqQF2+bfE
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJVbAnSAAoJEGw4ysog2bOSLBYP+gLyV0Le2bSJNjttxeF+8aIk
-161l7uwPBO+j/efxrBnQlnFe39T2UVNx70PbY9v+lGFma+j+6b/x6cDVZovLUm4G
-CI+V9YLvQtDzCnysoiajFx/X9A16eic8TOfCpUDa0eFrSVJHjY04YY73hW6G+gmp
-Ga8b05EOuDLYq+sLlDGx4DiBaiqODrTKfmZOyK8k2WF5NN0sahLnDZXV6kQSznP4
-pAjSHwdB31EHZq1tOJJpzmUEeInpEWBJnNQy4Db2l96oZxyQdjh6+mBHV51tK259
-dffJbZidfTZNvPr+5JPLEjdr6mYlhV79yhKN6/nZP1rLWyNUsUK0VfHxtVeaEM0q
-RAA6AofIo8bpbrI5dxXiQKEo9XpuKJwP7+O2uUX2chTFULKzhshtyXY5iGylgi0N
-1IV0mlD/0Dsdd9GNNMnUTT3qi+YBPMMaipOa+HbzOOfFotY5mIuUN603AH6ARIWi
-BIZDK9fRj1Tcx//mQQ6NkBGpg9E4wtzktGF103OvitT0AuEoq/5LloHDFaZRpSv7
-xytApr5mYNvoPSrYfwCMQLtP+BQv/KIPqE5cEbVadHi0a/p2cH86h6qWGOmu4clm
-pDupE1Oz8+w4QPArquqlirhxJUZEi2Ty7w/bRgEP/K0nIi3XGNtp69MmnijoLNHZ
-ETbRUSueV3UtirKRa7m6
-=LT7K
------END PGP SIGNATURE-----
-
---FhKpTYimqQF2+bfE--
+diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
+index 45096033d37b..290559df1e8b 100644
+--- a/arch/powerpc/kernel/irq.c
++++ b/arch/powerpc/kernel/irq.c
+@@ -441,7 +441,7 @@ void migrate_irqs(void)
+ 
+ 		chip = irq_data_get_irq_chip(data);
+ 
+-		cpumask_and(mask, data->affinity, map);
++		cpumask_and(mask, irq_data_get_affinity_mask(data), map);
+ 		if (cpumask_any(mask) >= nr_cpu_ids) {
+ 			pr_warn("Breaking affinity for irq %i\n", irq);
+ 			cpumask_copy(mask, map);
+diff --git a/arch/powerpc/sysdev/xics/ics-opal.c b/arch/powerpc/sysdev/xics/ics-opal.c
+index 68c7e5cc98e0..3996393c254d 100644
+--- a/arch/powerpc/sysdev/xics/ics-opal.c
++++ b/arch/powerpc/sysdev/xics/ics-opal.c
+@@ -54,7 +54,7 @@ static void ics_opal_unmask_irq(struct irq_data *d)
+ 	if (hw_irq == XICS_IPI || hw_irq == XICS_IRQ_SPURIOUS)
+ 		return;
+ 
+-	server = xics_get_irq_server(d->irq, d->affinity, 0);
++	server = xics_get_irq_server(d->irq, irq_data_get_affinity_mask(d), 0);
+ 	server = ics_opal_mangle_server(server);
+ 
+ 	rc = opal_set_xive(hw_irq, server, DEFAULT_PRIORITY);
+diff --git a/arch/powerpc/sysdev/xics/ics-rtas.c b/arch/powerpc/sysdev/xics/ics-rtas.c
+index 0af97deb83f3..e2665a9dfc0f 100644
+--- a/arch/powerpc/sysdev/xics/ics-rtas.c
++++ b/arch/powerpc/sysdev/xics/ics-rtas.c
+@@ -47,7 +47,7 @@ static void ics_rtas_unmask_irq(struct irq_data *d)
+ 	if (hw_irq == XICS_IPI || hw_irq == XICS_IRQ_SPURIOUS)
+ 		return;
+ 
+-	server = xics_get_irq_server(d->irq, d->affinity, 0);
++	server = xics_get_irq_server(d->irq, irq_data_get_affinity_mask(d), 0);
+ 
+ 	call_status = rtas_call(ibm_set_xive, 3, 1, NULL, hw_irq, server,
+ 				DEFAULT_PRIORITY);
+-- 
+1.7.10.4
