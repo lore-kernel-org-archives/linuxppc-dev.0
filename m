@@ -1,21 +1,33 @@
-Return-Path: <Shengzhou.Liu@freescale.com>
-Received: from na01-by2-obe.outbound.protection.outlook.com
- (mail-by2on0115.outbound.protection.outlook.com [207.46.100.115])
- (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
+Return-Path: <stripathi@apm.com>
+Received: from mail-wi0-f175.google.com (exprod5og120.obsmtp.com [64.18.0.137])
+ (using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 74F721A004D
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Jun 2015 18:57:22 +1000 (AEST)
-From: Liu Shengzhou <Shengzhou.Liu@freescale.com>
-To: Scott Wood <scottwood@freescale.com>
-CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-Subject: RE: [2/4,v3] powerpc/fsl-booke: Add T1024 QDS board support
-Date: Mon, 1 Jun 2015 08:23:39 +0000
-Message-ID: <DM2PR03MB398E053EB9A4BE50EE67B7FF8B60@DM2PR03MB398.namprd03.prod.outlook.com>
-References: <1428566865-35732-2-git-send-email-Shengzhou.Liu@freescale.com>
- <20150529002436.GA4248@home.buserror.net>
-In-Reply-To: <20150529002436.GA4248@home.buserror.net>
-Content-Type: text/plain; charset="us-ascii"
+ by lists.ozlabs.org (Postfix) with ESMTPS id 508091A0D0E
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Jun 2015 18:08:51 +1000 (AEST)
+Received: by wizo1 with SMTP id o1so94102465wiz.1
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 01 Jun 2015 01:08:47 -0700 (PDT)
 MIME-Version: 1.0
+In-Reply-To: <CAOHikRASDmy7PwFjqmX7JAjW52DYR+d3RkE3yd_45NN5sHK7Pg@mail.gmail.com>
+References: <1432197817-22110-1-git-send-email-stripathi@apm.com>
+ <1432197817-22110-3-git-send-email-stripathi@apm.com>
+ <CAPDyKFpxkNF9C8AOJ6+18CEcpZTKycPR0i5OuwPRr1Zc+VPJ5Q@mail.gmail.com>
+ <CAOHikRASDmy7PwFjqmX7JAjW52DYR+d3RkE3yd_45NN5sHK7Pg@mail.gmail.com>
+Date: Mon, 1 Jun 2015 13:38:47 +0530
+Message-ID: <CAOHikRBB9Uyh4Z34_pFTdmA0A-vnV09zTi8iYEU+01XvmzSr_A@mail.gmail.com>
+Subject: Re: [PATCH RESEND v7 2/2] mmc: host: sdhci: Add support to disable
+ SDR104/SDR50/DDR50 based on capability register 0.
+From: Suman Tripathi <stripathi@apm.com>
+To: aisheng.dong@freescale.com
+Cc: Chris Ball <chris@printf.net>, Anton Vorontsov <anton@enomsg.org>,
+ Arnd Bergmann <arnd@arndb.de>,
+ Michal Simek <michal.simek@xilinx.com>, linux-mmc <linux-mmc@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
+ "linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+ Don Dutile <ddutile@redhat.com>,
+ Jon Masters <jcm@redhat.com>, Mark Langsdorf <mlangsdo@redhat.com>,
+ patches <patches@apm.com>, Ulf Hansson <ulf.hansson@linaro.org>
+Content-Type: multipart/alternative; boundary=001a11c352a6daeefa0517705509
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -25,22 +37,144 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-> Subject: Re: [2/4,v3] powerpc/fsl-booke: Add T1024 QDS board support
->=20
-> On Thu, Apr 09, 2015 at 04:07:43PM +0800, Shengzhou Liu wrote:
-> > +			flash@2 {
-> > +				#address-cells =3D <1>;
-> > +				#size-cells =3D <1>;
-> > +				compatible =3D "eon,en25s64";   /* 8MB */
-> > +				reg =3D <2>;
-> > +				spi-max-frequency =3D <10000000>;
-> > +			};
->=20
-> AFAICT the vendor is phyton, not eon.
+--001a11c352a6daeefa0517705509
+Content-Type: text/plain; charset=UTF-8
 
-How do you think the vendor is phyton?
-Per en25s64 data sheet, it's really EON (Eon Silicon Solution, Inc,  www.eo=
-nssi.com)
-I had sent a patch for EON http://patchwork.ozlabs.org/patch/367810/ last y=
-ear.
-There is no 'phyton' in binding document.=20
+Hi Aisheng,
+
+On Wed, May 27, 2015 at 7:46 PM, Suman Tripathi <stripathi@apm.com> wrote:
+
+>
+>
+> On Tue, May 26, 2015 at 6:06 PM, Ulf Hansson <ulf.hansson@linaro.org>
+> wrote:
+>
+>> On 21 May 2015 at 10:43, Suman Tripathi <stripathi@apm.com> wrote:
+>> > The sdhci framework disables SDR104/SDR50/DDR50 based on only quirk.
+>> > This patch adds the support to disable SDR104/SDR50/DDR50 based on
+>> > reading the capability register 0.
+>> >
+>> > Signed-off-by: Suman Tripathi <stripathi@apm.com>
+>> > ---
+>> > ---
+>> >  drivers/mmc/host/sdhci.c | 3 ++-
+>> >  1 file changed, 2 insertions(+), 1 deletion(-)
+>> >
+>> > diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c
+>> > index 58c1770..a3d9b8a 100644
+>> > --- a/drivers/mmc/host/sdhci.c
+>> > +++ b/drivers/mmc/host/sdhci.c
+>> > @@ -3118,7 +3118,8 @@ int sdhci_add_host(struct sdhci_host *host)
+>> >                 }
+>> >         }
+>> >
+>> > -       if (host->quirks2 & SDHCI_QUIRK2_NO_1_8_V)
+>> > +       if (host->quirks2 & SDHCI_QUIRK2_NO_1_8_V ||
+>> > +           !(caps[0] & SDHCI_CAN_VDD_180))
+>> >                 caps[1] &= ~(SDHCI_SUPPORT_SDR104 | SDHCI_SUPPORT_SDR50
+>> |
+>> >                        SDHCI_SUPPORT_DDR50);
+>> >
+>> > --
+>> > 1.8.2.1
+>> >
+>>
+>> I have no problem with this patch, except that it would be nice to get
+>> a few "tested by" to make sure it doesn't break UHS support for some
+>> SoCs.
+>>
+>> Kind regards
+>> Uffe
+>>
+>
+> Can anyone test this in some other SoC ? Appreciate your help ..
+>
+> Can you test this patch  on imx SoC ?
+
+>
+> --
+> Thanks,
+> with regards,
+> Suman Tripathi
+>
+
+
+
+-- 
+Thanks,
+with regards,
+Suman Tripathi
+
+--001a11c352a6daeefa0517705509
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
+
+<div dir=3D"ltr">Hi Aisheng,<br><div class=3D"gmail_extra"><br><div class=
+=3D"gmail_quote">On Wed, May 27, 2015 at 7:46 PM, Suman Tripathi <span dir=
+=3D"ltr">&lt;<a href=3D"mailto:stripathi@apm.com" target=3D"_blank">stripat=
+hi@apm.com</a>&gt;</span> wrote:<br><blockquote class=3D"gmail_quote" style=
+=3D"margin:0 0 0 .8ex;border-left:1px #ccc solid;padding-left:1ex"><div dir=
+=3D"ltr"><br><div class=3D"gmail_extra"><div><div><br><div class=3D"gmail_q=
+uote">On Tue, May 26, 2015 at 6:06 PM, Ulf Hansson <span dir=3D"ltr">&lt;<a=
+ href=3D"mailto:ulf.hansson@linaro.org" target=3D"_blank">ulf.hansson@linar=
+o.org</a>&gt;</span> wrote:<br><blockquote class=3D"gmail_quote" style=3D"m=
+argin:0 0 0 .8ex;border-left:1px #ccc solid;padding-left:1ex"><div><div>On =
+21 May 2015 at 10:43, Suman Tripathi &lt;<a href=3D"mailto:stripathi@apm.co=
+m" target=3D"_blank">stripathi@apm.com</a>&gt; wrote:<br>
+&gt; The sdhci framework disables SDR104/SDR50/DDR50 based on only quirk.<b=
+r>
+&gt; This patch adds the support to disable SDR104/SDR50/DDR50 based on<br>
+&gt; reading the capability register 0.<br>
+&gt;<br>
+&gt; Signed-off-by: Suman Tripathi &lt;<a href=3D"mailto:stripathi@apm.com"=
+ target=3D"_blank">stripathi@apm.com</a>&gt;<br>
+&gt; ---<br>
+&gt; ---<br>
+&gt;=C2=A0 drivers/mmc/host/sdhci.c | 3 ++-<br>
+&gt;=C2=A0 1 file changed, 2 insertions(+), 1 deletion(-)<br>
+&gt;<br>
+&gt; diff --git a/drivers/mmc/host/sdhci.c b/drivers/mmc/host/sdhci.c<br>
+&gt; index 58c1770..a3d9b8a 100644<br>
+&gt; --- a/drivers/mmc/host/sdhci.c<br>
+&gt; +++ b/drivers/mmc/host/sdhci.c<br>
+&gt; @@ -3118,7 +3118,8 @@ int sdhci_add_host(struct sdhci_host *host)<br>
+&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0}<br>
+&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0}<br>
+&gt;<br>
+&gt; -=C2=A0 =C2=A0 =C2=A0 =C2=A0if (host-&gt;quirks2 &amp; SDHCI_QUIRK2_NO=
+_1_8_V)<br>
+&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0if (host-&gt;quirks2 &amp; SDHCI_QUIRK2_NO=
+_1_8_V ||<br>
+&gt; +=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0!(caps[0] &amp; SDHCI_CAN_VD=
+D_180))<br>
+&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0caps[1] &=
+amp;=3D ~(SDHCI_SUPPORT_SDR104 | SDHCI_SUPPORT_SDR50 |<br>
+&gt;=C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =C2=A0 =
+=C2=A0 =C2=A0 SDHCI_SUPPORT_DDR50);<br>
+&gt;<br>
+&gt; --<br>
+&gt; 1.8.2.1<br>
+&gt;<br>
+<br>
+</div></div>I have no problem with this patch, except that it would be nice=
+ to get<br>
+a few &quot;tested by&quot; to make sure it doesn&#39;t break UHS support f=
+or some<br>
+SoCs.<br>
+<br>
+Kind regards<br>
+Uffe<br>
+</blockquote></div><div class=3D"gmail_extra"><br></div></div></div>Can any=
+one test this in some other SoC ? Appreciate your help ..<span><br><br clea=
+r=3D"all"></span></div></div></blockquote><div>Can you test this patch =C2=
+=A0on imx SoC ? =C2=A0</div><blockquote class=3D"gmail_quote" style=3D"marg=
+in:0 0 0 .8ex;border-left:1px #ccc solid;padding-left:1ex"><div dir=3D"ltr"=
+><div class=3D"gmail_extra"><span><div><br></div>-- <br><div><div dir=3D"lt=
+r"><div>Thanks,</div><div>with regards,</div>Suman Tripathi</div></div>
+</span></div></div>
+</blockquote></div><br><br clear=3D"all"><div><br></div>-- <br><div><div di=
+r=3D"ltr"><div>Thanks,</div><div>with regards,</div>Suman Tripathi</div></d=
+iv>
+</div></div>
+
+--001a11c352a6daeefa0517705509--
