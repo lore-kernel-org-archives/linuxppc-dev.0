@@ -1,27 +1,24 @@
-Return-Path: <dgibson@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <qiang.zhao@freescale.com>
+Received: from na01-bl2-obe.outbound.protection.outlook.com
+ (mail-bl2on0116.outbound.protection.outlook.com [65.55.169.116])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 039371A0673
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Jun 2015 14:17:54 +1000 (AEST)
-Date: Mon, 1 Jun 2015 14:03:04 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Cc: linuxppc-dev@lists.ozlabs.org,
- Alex Williamson <alex.williamson@redhat.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Gavin Shan <gwshan@linux.vnet.ibm.com>,
- Paul Mackerras <paulus@samba.org>, kvm@vger.kernel.org,
- linux-kernel@vger.kernel.org
-Subject: Re: [PATCH kernel v11 05/34] powerpc/iommu: Always release
- iommu_table in iommu_free_table()
-Message-ID: <20150601040304.GG22789@voom.redhat.com>
-References: <1432889098-22924-1-git-send-email-aik@ozlabs.ru>
- <1432889098-22924-6-git-send-email-aik@ozlabs.ru>
+ by lists.ozlabs.org (Postfix) with ESMTPS id C35761A0673
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Jun 2015 14:25:08 +1000 (AEST)
+From: Zhao Qiang <qiang.zhao@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+CC: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, Xiaobo Xie
+ <X.Xie@freescale.com>
+Subject: RE: [v4] QE: Move QE from arch/powerpc to drivers/soc
+Date: Mon, 1 Jun 2015 04:09:55 +0000
+Message-ID: <SN1PR0301MB1550F0744C4F5B84D6B6DA9D9BB60@SN1PR0301MB1550.namprd03.prod.outlook.com>
+References: <1415763613-43674-1-git-send-email-B45475@freescale.com>
+ <20150130052208.GA14431@home.buserror.net>
+In-Reply-To: <20150130052208.GA14431@home.buserror.net>
+Content-Type: text/plain; charset="us-ascii"
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="bGR76rFJjkSxVeRa"
-In-Reply-To: <1432889098-22924-6-git-send-email-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,50 +28,46 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Fri, Jan 30, 2015 at 1:22PM +0800, Wood Scott wrote:
 
---bGR76rFJjkSxVeRa
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Fri, May 29, 2015 at 06:44:29PM +1000, Alexey Kardashevskiy wrote:
-> At the moment iommu_free_table() only releases memory if
-> the table was initialized for the platform code use, i.e. it had
-> it_map initialized (which purpose is to track DMA memory space use).
+> -----Original Message-----
+> From: Wood Scott-B07421
+> Sent: Friday, January 30, 2015 1:22 PM
+> To: Zhao Qiang-B45475
+> Cc: linux-kernel@vger.kernel.org; netdev@vger.kernel.org; linuxppc-
+> dev@lists.ozlabs.org; Wood Scott-B07421; Xie Xiaobo-R63061
+> Subject: Re: [v4] QE: Move QE from arch/powerpc to drivers/soc
 >=20
-> With dynamic DMA windows, we will need to be able to release
-> iommu_table even if it was used for VFIO in which case it_map is NULL
-> so does the patch.
+> On Wed, Nov 12, 2014 at 11:40:13AM +0800, Zhao Qiang wrote:
+> > ls1 has qe and ls1 has arm cpu.
+> > move qe from arch/powerpc to drivers/soc/fsl to adapt to powerpc and
+> > arm
+> >
+> > Signed-off-by: Zhao Qiang <B45475@freescale.com>
+> > ---
+> > Changes for v2:
+> > 	- move code to driver/soc
+> > Changes for v3:
+> > 	- change drivers/soc/qe to drivers/soc/fsl-qe Changes for v4:
+> > 	- move drivers/soc/fsl-qe to drivers/soc/fsl/qe
+> > 	- move head files for qe from include/linux/fsl to include/soc/fsl
+> > 	- move qe_ic.c to drivers/irqchip/
 >=20
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> Need MAINTAINERS update for drivers/soc/fsl/qe, as previously discussed.
 
-Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
+You mean, I need to finish the following work before move qe to public dire=
+ctory?
 
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+1. gpio.c -> needs to be converted to GPIO framework and placed in drivers/=
+gpio
+2. qe_ic* should probably move into drivers/irqchip
+3. qe_io.c should be converted over to pinmux and put in drivers/pinctrl
+4. Some of the clock could should be looked to be converted to use the clk =
+framework
 
---bGR76rFJjkSxVeRa
-Content-Type: application/pgp-signature
+>=20
+> -Scott
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
 
-iQIcBAEBAgAGBQJVa9l4AAoJEGw4ysog2bOScNkP/1WkAIWDhmWonKLBdV5Ocls9
-c/p8Aha1gGFnmwmJ3Gn5nr9fG6QMxRarv8emo7DbXE8ScQ9M+Y+Riwhz/D0zufFi
-m4D+JsH7pfGhVosG8v994ZBLUSlvCRraMg+xtIqmCNuE/Jx/iQDa7aMV6Lw84LLY
-VVMKKB3NszULgkkFIi+gBRWjTl0JcMxhrfDjsrlRHQSZVJjCYjTcJvX1ha190Vfx
-QCCEMSRwu1d1PNg/jdIHyJgmVLT/K1oXXoHvb+AaDySDAh0P+Pvi2pCXbeTThMi8
-d+LU4muFEyj6YzsBX75Jflklb4VifurFKztdA+PVZBAWjqEAwBSagLVRGZEPcnwf
-Pn5f7VAOrLYNni7cew5iPOQvzlaMHHlAg9FTReIKFbu8dLyZud/nZpxtJQZaUpis
-nQYr3Hi3IqQ6a6FBdP7zPBS2xzMRZADC3W1SFnnhDL8QUpWdWKhs0CVqTk6EJrHb
-rD+asbIn6xmST7U4pSV/rl1v579lSGGm5NqIneILUl2qXzHvIhBUYR+R238VUhLB
-Y6/xyHKKpxwif1eT5gCtP/OhL3fi/nA2oSPCjmP7PUeNIs3hkvHaUlpD6/tpXH7Z
-5RFPXSMizcuiF5bs/0TWvb1I05+K3ee6cRP7TPHbxFNAx8e3CV24WtAhXz8IA3cO
-Y2h+j7UzRr1yaDME7BQj
-=xbc8
------END PGP SIGNATURE-----
-
---bGR76rFJjkSxVeRa--
+Best Regards
+Zhao Qiang
