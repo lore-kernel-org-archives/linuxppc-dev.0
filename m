@@ -1,17 +1,32 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <vaibhav@linux.vnet.ibm.com>
+Received: from e28smtp02.in.ibm.com (e28smtp02.in.ibm.com [122.248.162.2])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 218131A0673
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Jun 2015 20:45:13 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: <linuxppc-dev@ozlabs.org>
-Cc: Anton Blanchard <anton@samba.org>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Laurentiu.Tudor@freescale.com
-Subject: [PATCH v2] powerpc/perf: Fix book3s kernel to userspace backtraces
-Date: Mon,  1 Jun 2015 20:45:07 +1000
-Message-Id: <1433155507-7822-1-git-send-email-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 2CA3B1A0037
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Jun 2015 20:50:21 +1000 (AEST)
+Received: from /spool/local
+ by e28smtp02.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <vaibhav@linux.vnet.ibm.com>;
+ Mon, 1 Jun 2015 16:20:18 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id 68FE3125804F
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Jun 2015 16:22:38 +0530 (IST)
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t51AnvRo2228716
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 1 Jun 2015 16:20:13 +0530
+Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t51A1GQE021028
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 1 Jun 2015 15:31:17 +0530
+From: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Neelesh Gupta <neelegup@linux.vnet.ibm.com>,
+ Cyril Bur <cyrilbur@gmail.com>, Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+Subject: [PATCH v3] powerpc/configs: enable RTC class support
+Date: Mon,  1 Jun 2015 16:18:55 +0530
+Message-Id: <1433155735-23751-1-git-send-email-vaibhav@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -21,102 +36,39 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-From: Anton Blanchard <anton@samba.org>
+A working rtc kernel driver is needed so that hwclock can synchronize
+system clock to rtc during shutdown/boot. We already have a rtc platform
+driver for power arch located at drivers/rtc/rtc-opal.c However it
+depends on CONFIG_RTC_CLASS which is disabled by default. So this driver
+is not compiled with pseries defconfig as rtc class support is missing
+from the kernel.
 
-When we take a PMU exception or a software event we call
-perf_read_regs(). This overloads regs->result with a boolean that
-describes if we should use the sampled instruction address register
-(SIAR) or the regs.
+We fix this by enabling rtc class support in pseries defconfig so that
+this driver gets enabled and is compiled into the pseries kernel.
 
-If the exception is in kernel, we start with the kernel regs and
-backtrace through the kernel stack. At this point we switch to the
-userspace regs and backtrace the user stack with perf_callchain_user().
+Signed-off-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+Cc: Cyril Bur <cyrilbur@gmail.com>	
 
-Unfortunately these regs have not got the perf_read_regs() treatment,
-so regs->result could be anything. If it is non zero,
-perf_instruction_pointer() decides to use the SIAR, and we get issues
-like this:
-
-0.11%  qemu-system-ppc  [kernel.kallsyms]        [k] _raw_spin_lock_irqsave
-       |
-       ---_raw_spin_lock_irqsave
-          |
-          |--52.35%-- 0
-          |          |
-          |          |--46.39%-- __hrtimer_start_range_ns
-          |          |          kvmppc_run_core
-          |          |          kvmppc_vcpu_run_hv
-          |          |          kvmppc_vcpu_run
-          |          |          kvm_arch_vcpu_ioctl_run
-          |          |          kvm_vcpu_ioctl
-          |          |          do_vfs_ioctl
-          |          |          sys_ioctl
-          |          |          system_call
-          |          |          |
-          |          |          |--67.08%-- _raw_spin_lock_irqsave <--- hi mum
-          |          |          |          |
-          |          |          |           --100.00%-- 0x7e714
-          |          |          |                     0x7e714
-
-Notice the bogus _raw_spin_irqsave when we transition from kernel
-(system_call) to userspace (0x7e714). We inserted what was in the SIAR.
-
-Add a check in regs_use_siar() to check that the regs in question
-are from a PMU exception. With this fix the backtrace makes sense:
-
-     0.47%  qemu-system-ppc  [kernel.vmlinux]         [k] _raw_spin_lock_irqsave
-            |
-            ---_raw_spin_lock_irqsave
-               |
-               |--53.83%-- 0
-               |          |
-               |          |--44.73%-- hrtimer_try_to_cancel
-               |          |          kvmppc_start_thread
-               |          |          kvmppc_run_core
-               |          |          kvmppc_vcpu_run_hv
-               |          |          kvmppc_vcpu_run
-               |          |          kvm_arch_vcpu_ioctl_run
-               |          |          kvm_vcpu_ioctl
-               |          |          do_vfs_ioctl
-               |          |          sys_ioctl
-               |          |          system_call
-               |          |          __ioctl
-               |          |          0x7e714
-               |          |          0x7e714
-
-Cc: stable@vger.kernel.org
-Signed-off-by: Anton Blanchard <anton@samba.org>
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
 ---
+This patch depends on an earlier patchset by Cyril Bur to merge pseries
+'le' and 'be' defconfigs. The patchs are located at
+http://patchwork.ozlabs.org/patch/476346/
+http://patchwork.ozlabs.org/patch/476345/
 
-v2: Return the result directly rather than if (x) return true.
-    Add a big comment.
-    Cc to stable.
+ arch/powerpc/configs/pseries_defconfig | 1 +
+ 1 file changed, 1 insertion(+)
 
- arch/powerpc/perf/core-book3s.c | 11 ++++++++++-
- 1 file changed, 10 insertions(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
-index 12b638425bb9..d90893b76e7c 100644
---- a/arch/powerpc/perf/core-book3s.c
-+++ b/arch/powerpc/perf/core-book3s.c
-@@ -131,7 +131,16 @@ static void pmao_restore_workaround(bool ebb) { }
- 
- static bool regs_use_siar(struct pt_regs *regs)
- {
--	return !!regs->result;
-+	/*
-+	 * When we take a performance monitor exception the regs are setup
-+	 * using perf_read_regs() which overloads some fields, in particular
-+	 * regs->result to tell us whether to use SIAR.
-+	 *
-+	 * However if the regs are from another exception, eg. a syscall, then
-+	 * they have not been setup using perf_read_regs() and so regs->result
-+	 * is something random.
-+	 */
-+	return ((TRAP(regs) == 0xf00) && regs->result);
- }
- 
- /*
+diff --git a/arch/powerpc/configs/pseries_defconfig b/arch/powerpc/configs/pseries_defconfig
+index 4da8260..e55e7c8 100644
+--- a/arch/powerpc/configs/pseries_defconfig
++++ b/arch/powerpc/configs/pseries_defconfig
+@@ -189,6 +189,7 @@ CONFIG_HVC_RTAS=y
+ CONFIG_HVCS=m
+ CONFIG_VIRTIO_CONSOLE=m
+ CONFIG_IBM_BSR=m
++CONFIG_RTC_CLASS=y
+ CONFIG_GEN_RTC=y
+ CONFIG_RAW_DRIVER=y
+ CONFIG_MAX_RAW_DEVS=1024
 -- 
-2.1.0
+2.2.1
