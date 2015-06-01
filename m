@@ -1,28 +1,25 @@
-Return-Path: <jolsa@redhat.com>
-Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <geert.uytterhoeven@gmail.com>
+Received: from mail-ob0-x230.google.com (mail-ob0-x230.google.com
+ [IPv6:2607:f8b0:4003:c01::230])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 4ACBC1A016E
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Jun 2015 20:02:04 +1000 (AEST)
-Date: Mon, 1 Jun 2015 12:01:56 +0200
-From: Jiri Olsa <jolsa@redhat.com>
-To: Andi Kleen <ak@linux.intel.com>
-Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>, mingo@redhat.com,
- Michael Ellerman <mpe@ellerman.id.au>,
- Arnaldo Carvalho de Melo <acme@kernel.org>,
- Paul Mackerras <paulus@samba.org>, namhyung@kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH 04/10] perf, tools: Handle header line in mapfile
-Message-ID: <20150601100156.GB19893@krava.redhat.com>
-References: <1432761809-4344-1-git-send-email-sukadev@linux.vnet.ibm.com>
- <1432761809-4344-5-git-send-email-sukadev@linux.vnet.ibm.com>
- <20150528124221.GK12392@krava.redhat.com>
- <20150529054506.GA3088@us.ibm.com>
- <20150529091140.GA20512@krava.redhat.com>
- <20150530054927.GB1187@tassilo.jf.intel.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id D8E481A016E
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Jun 2015 20:13:17 +1000 (AEST)
+Received: by obbea2 with SMTP id ea2so99514558obb.3
+ for <linuxppc-dev@lists.ozlabs.org>; Mon, 01 Jun 2015 03:13:14 -0700 (PDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20150530054927.GB1187@tassilo.jf.intel.com>
+Sender: geert.uytterhoeven@gmail.com
+In-Reply-To: <1433153392-18037-1-git-send-email-geert@linux-m68k.org>
+References: <1433153392-18037-1-git-send-email-geert@linux-m68k.org>
+Date: Mon, 1 Jun 2015 12:13:14 +0200
+Message-ID: <CAMuHMdW6MAj6bOMY_RRt9=OF2iM2Gy4bCXWCEWK7hM5ia1Rtvg@mail.gmail.com>
+Subject: Re: Build regressions/improvements in v4.1-rc6
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+To: "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+Cc: Prabhakar Lad <prabhakar.csengg@gmail.com>,
+ Linux Media Mailing List <linux-media@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -32,40 +29,36 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Fri, May 29, 2015 at 10:49:27PM -0700, Andi Kleen wrote:
-> On Fri, May 29, 2015 at 11:13:15AM +0200, Jiri Olsa wrote:
-> > On Thu, May 28, 2015 at 10:45:06PM -0700, Sukadev Bhattiprolu wrote:
-> > > Jiri Olsa [jolsa@redhat.com] wrote:
-> > > | >  		if (line[0] == '#' || line[0] == '\n')
-> > > | >  			continue;
-> > > | > +		if (!strncmp(line, "Family", 6))
-> > > | > +			continue;
-> > > | 
-> > > | I think we should fix mapfiles to put the 'Family' starting
-> > > | line as a comment.. the way powerpc mapfile is done
-> > > 
-> > > You mean add something like this to the Intel mapfile:
-> > > 
-> > > 	# Power8 entries
-> > > 	004d0100,1,power8.json,core
-> > > 
-> > > and drop this patch?
-> > 
-> > right
-> 
-> But it's a CSV file. CSV files are supposed to have column headers.
-> There are lots of tools that work better with them if they have headers.
+On Mon, Jun 1, 2015 at 12:09 PM, Geert Uytterhoeven
+<geert@linux-m68k.org> wrote:
+> JFYI, when comparing v4.1-rc6[1] to v4.1-rc5[3], the summaries are:
+>   - build errors: +8/-52
 
-header could be behind '#'
+  + /home/kisskb/slave/src/drivers/media/i2c/ov2659.c: error: 'struct
+v4l2_subdev_fh' has no member named 'pad':  => 1264:38
+  + /home/kisskb/slave/src/drivers/media/i2c/ov2659.c: error: implicit
+declaration of function 'v4l2_subdev_get_try_format'
+[-Werror=implicit-function-declaration]:  => 1054:3
 
-> Please keep the header.
+i386-randconfig
 
-hum, do all arch start with 'Family' column? I guess not, so eventualy
-we will need to add first column of each arch in here? ending up with
-list of 'keywords' which we ignore
+  + error: aes.c: undefined reference to `.enable_kernel_altivec':  =>
+.text+0x48e894), .text+0x48e6e0), .text+0x48e960)
+  + error: aes_cbc.c: undefined reference to `.enable_kernel_altivec':
+ => .text+0x48ea98), .text+0x48ebf4)
 
-or let's just ignore first line?
+powerpc-randconfig
 
-I'd rather go with just one comment char and place the header behind it
+> [1] http://kisskb.ellerman.id.au/kisskb/head/8943/ (254 out of 257 configs)
+> [3] http://kisskb.ellerman.id.au/kisskb/head/8914/ (254 out of 257 configs)
 
-jirka
+Gr{oetje,eeting}s,
+
+                        Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
