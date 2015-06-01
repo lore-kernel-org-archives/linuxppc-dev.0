@@ -1,14 +1,28 @@
-Return-Path: <michael@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
+Return-Path: <jolsa@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [209.132.183.28])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A674D1A016E
- for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Jun 2015 19:44:20 +1000 (AEST)
-From: Michael Ellerman <mpe@ellerman.id.au>
-To: <linuxppc-dev@ozlabs.org>
-Subject: [PATCH] selftests/powerpc: Add install support to more powerpc tests
-Date: Mon,  1 Jun 2015 19:44:17 +1000
-Message-Id: <1433151857-23896-1-git-send-email-mpe@ellerman.id.au>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4ACBC1A016E
+ for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Jun 2015 20:02:04 +1000 (AEST)
+Date: Mon, 1 Jun 2015 12:01:56 +0200
+From: Jiri Olsa <jolsa@redhat.com>
+To: Andi Kleen <ak@linux.intel.com>
+Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>, mingo@redhat.com,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Arnaldo Carvalho de Melo <acme@kernel.org>,
+ Paul Mackerras <paulus@samba.org>, namhyung@kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 04/10] perf, tools: Handle header line in mapfile
+Message-ID: <20150601100156.GB19893@krava.redhat.com>
+References: <1432761809-4344-1-git-send-email-sukadev@linux.vnet.ibm.com>
+ <1432761809-4344-5-git-send-email-sukadev@linux.vnet.ibm.com>
+ <20150528124221.GK12392@krava.redhat.com>
+ <20150529054506.GA3088@us.ibm.com>
+ <20150529091140.GA20512@krava.redhat.com>
+ <20150530054927.GB1187@tassilo.jf.intel.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20150530054927.GB1187@tassilo.jf.intel.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -18,73 +32,40 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-These tests were merged in parallel to the install support, update them
-now to use it.
+On Fri, May 29, 2015 at 10:49:27PM -0700, Andi Kleen wrote:
+> On Fri, May 29, 2015 at 11:13:15AM +0200, Jiri Olsa wrote:
+> > On Thu, May 28, 2015 at 10:45:06PM -0700, Sukadev Bhattiprolu wrote:
+> > > Jiri Olsa [jolsa@redhat.com] wrote:
+> > > | >  		if (line[0] == '#' || line[0] == '\n')
+> > > | >  			continue;
+> > > | > +		if (!strncmp(line, "Family", 6))
+> > > | > +			continue;
+> > > | 
+> > > | I think we should fix mapfiles to put the 'Family' starting
+> > > | line as a comment.. the way powerpc mapfile is done
+> > > 
+> > > You mean add something like this to the Intel mapfile:
+> > > 
+> > > 	# Power8 entries
+> > > 	004d0100,1,power8.json,core
+> > > 
+> > > and drop this patch?
+> > 
+> > right
+> 
+> But it's a CSV file. CSV files are supposed to have column headers.
+> There are lots of tools that work better with them if they have headers.
 
-This also adds cross compile support for the VPHN test which was missing
-it.
+header could be behind '#'
 
-Signed-off-by: Michael Ellerman <mpe@ellerman.id.au>
----
- tools/testing/selftests/powerpc/switch_endian/Makefile | 14 ++++----------
- tools/testing/selftests/powerpc/vphn/Makefile          | 13 +++++--------
- 2 files changed, 9 insertions(+), 18 deletions(-)
+> Please keep the header.
 
-diff --git a/tools/testing/selftests/powerpc/switch_endian/Makefile b/tools/testing/selftests/powerpc/switch_endian/Makefile
-index 081473db22b7..e21d10674e54 100644
---- a/tools/testing/selftests/powerpc/switch_endian/Makefile
-+++ b/tools/testing/selftests/powerpc/switch_endian/Makefile
-@@ -1,9 +1,8 @@
--CC := $(CROSS_COMPILE)gcc
--PROGS := switch_endian_test
-+TEST_PROGS := switch_endian_test
- 
- ASFLAGS += -O2 -Wall -g -nostdlib -m64
- 
--all: $(PROGS)
-+all: $(TEST_PROGS)
- 
- switch_endian_test: check-reversed.S
- 
-@@ -13,12 +12,7 @@ check-reversed.o: check.o
- check-reversed.S: check-reversed.o
- 	hexdump -v -e '/1 ".byte 0x%02X\n"' $< > $@
- 
--run_tests: all
--	@-for PROG in $(PROGS); do \
--		./$$PROG; \
--	done;
-+include ../../lib.mk
- 
- clean:
--	rm -f $(PROGS) *.o check-reversed.S
--
--.PHONY: all run_tests clean
-+	rm -f $(TEST_PROGS) *.o check-reversed.S
-diff --git a/tools/testing/selftests/powerpc/vphn/Makefile b/tools/testing/selftests/powerpc/vphn/Makefile
-index e539f775fd8f..a485f2e286ae 100644
---- a/tools/testing/selftests/powerpc/vphn/Makefile
-+++ b/tools/testing/selftests/powerpc/vphn/Makefile
-@@ -1,15 +1,12 @@
--PROG := test-vphn
-+TEST_PROGS := test-vphn
- 
- CFLAGS += -m64
- 
--all: $(PROG)
-+all: $(TEST_PROGS)
- 
--$(PROG): ../harness.c
-+$(TEST_PROGS): ../harness.c
- 
--run_tests: all
--	./$(PROG)
-+include ../../lib.mk
- 
- clean:
--	rm -f $(PROG)
--
--.PHONY: all run_tests clean
-+	rm -f $(TEST_PROGS)
--- 
-2.1.0
+hum, do all arch start with 'Family' column? I guess not, so eventualy
+we will need to add first column of each arch in here? ending up with
+list of 'keywords' which we ignore
+
+or let's just ignore first line?
+
+I'd rather go with just one comment char and place the header behind it
+
+jirka
