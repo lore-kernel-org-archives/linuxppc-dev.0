@@ -1,25 +1,30 @@
-Return-Path: <dinarv@gmail.com>
-Received: from mail-wi0-x233.google.com (mail-wi0-x233.google.com
- [IPv6:2a00:1450:400c:c05::233])
- (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
+Return-Path: <hmh@hmh.eng.br>
+Received: from out5-smtp.messagingengine.com (out5-smtp.messagingengine.com
+ [66.111.4.29])
+ (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 633BA1A001E
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Jun 2015 20:06:24 +1000 (AEST)
-Received: by wiwd19 with SMTP id d19so13795337wiw.0
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 02 Jun 2015 03:06:20 -0700 (PDT)
+ by lists.ozlabs.org (Postfix) with ESMTPS id AE21B1A001E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Jun 2015 20:09:32 +1000 (AEST)
+Received: from compute1.internal (compute1.nyi.internal [10.202.2.41])
+ by mailout.nyi.internal (Postfix) with ESMTP id 9706420921
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Jun 2015 06:09:28 -0400 (EDT)
+Message-Id: <1433239768.902135.284523153.1200C3E3@webmail.messagingengine.com>
+From: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
+To: Finn Thain <fthain@telegraphics.com.au>
+Cc: linux-kernel@vger.kernel.org, linux-m68k@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, Darren Hart <dvhart@infradead.org>,
+ ibm-acpi-devel@lists.sourceforge.net, platform-driver-x86@vger.kernel.org
 MIME-Version: 1.0
-Sender: dinarv@gmail.com
-In-Reply-To: <87iob6jvau.fsf@linux.vnet.ibm.com>
-References: <1432906201-25009-1-git-send-email-k0da@opensuse.org>
- <87iob6jvau.fsf@linux.vnet.ibm.com>
-From: Dinar Valeev <k0da@opensuse.org>
-Date: Tue, 2 Jun 2015 12:05:58 +0200
-Message-ID: <CADqALGSZ4-SLEjjLcjC+diw7P0TgctjaqtRtXDOUOPxmvtqVqQ@mail.gmail.com>
-Subject: Re: [PATCH] Fix function keys sequence on USB
-To: Nikunj A Dadhania <nikunj@linux.vnet.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, Thomas Huth <thuth@redhat.com>,
- Dinar Valeev <dvaleev@suse.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain
+In-Reply-To: <20150531143422.GA12337@khazad-dum.debian.net>
+References: <20150531010132.289674310@telegraphics.com.au>
+ <20150531010134.129479218@telegraphics.com.au>
+ <20150531041114.GA30431@khazad-dum.debian.net>
+ <alpine.LNX.2.00.1505311605420.23528@nippy.intranet>
+ <20150531143422.GA12337@khazad-dum.debian.net>
+Subject: Re: [RFC 07/24] x86/thinkpad_acpi: Use arch_nvram_ops methods instead
+ of nvram_read_byte() and nvram_write_byte()
+Date: Tue, 02 Jun 2015 07:09:28 -0300
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,201 +34,59 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Tue, Jun 2, 2015 at 11:47 AM, Nikunj A Dadhania
-<nikunj@linux.vnet.ibm.com> wrote:
-> Dinar valeev <k0da@opensuse.org> writes:
->
->> From: Dinar Valeev <dvaleev@suse.com>
->>
->> Original issue is home and end keys are not functional in grub2.
->> Later I've found other inconsistencies in f1-f12 keys.
->>
->> "Correct sequence" was crabbed by pressing key on cat running in
->> xterm.
->>
->> Tested with Home, End, F2, Del and F10 keys in grub2
->>
->> Signed-off-by: Dinar Valeev <dvaleev@suse.com>
->> ---
->>  lib/libusb/usb-hid.c | 40 +++++++++++++++++-----------------------
->>  1 file changed, 17 insertions(+), 23 deletions(-)
->>
->> diff --git a/lib/libusb/usb-hid.c b/lib/libusb/usb-hid.c
->> index f0cab8a..ccd5ba9 100644
->> --- a/lib/libusb/usb-hid.c
->> +++ b/lib/libusb/usb-hid.c
->> @@ -190,33 +190,29 @@ static void check_key_code(uint8_t *buf)
->>                               case 0x3a:                              /* F1 */
->>                                       write_key(0x1b);
->>                                       write_key(0x5b);
->> -                                     write_key(0x31);
->> -                                     write_key(0x31);
->> -                                     write_key(0x7e);
->> +                                     write_key(0x4f);
->> +                                     write_key(0x50);
->>                                       break;
->>
->>                               case 0x3b:                              /* F2 */
->>                                       write_key(0x1b);
->>                                       write_key(0x5b);
->> -                                     write_key(0x31);
->> -                                     write_key(0x32);
->> -                                     write_key(0x7e);
->> +                                     write_key(0x4f);
->> +                                     write_key(0x51);
->>                                       break;
->
-> Tested fine.
->
->>
->>                               case 0x3c:
->>                                       write_key(0x1b);               /* F3 */
->>                                       write_key(0x5b);
->> -                                     write_key(0x31);
->> -                                     write_key(0x33);
->> -                                     write_key(0x7e);
->> +                                     write_key(0x4f);
->> +                                     write_key(0x52);
->>                                       break;
->>
->>                               case 0x3d:
->>                                       write_key(0x1b);                /* F4 */
->>                                       write_key(0x5b);
->> -                                     write_key(0x31);
->> -                                     write_key(0x34);
->> -                                     write_key(0x7e);
->> +                                     write_key(0x4f);
->> +                                     write_key(0x53);
->>                                       break;
->>
->>                               case 0x3e:
->> @@ -254,7 +250,7 @@ static void check_key_code(uint8_t *buf)
->>                               case 0x42:
->>                                       write_key(0x1b);                /* F9 */
->>                                       write_key(0x5b);
->> -                                     write_key(0x31);
->> +                                     write_key(0x32);
->>                                       write_key(0x30);
->>                                       write_key(0x7e);
->>                                       break;
->> @@ -262,7 +258,7 @@ static void check_key_code(uint8_t *buf)
->>                               case 0x43:
->>                                       write_key(0x1b);               /* F10 */
->>                                       write_key(0x5b);
->> -                                     write_key(0x31);
->> +                                     write_key(0x32);
->>                                       write_key(0x31);
->>                                       write_key(0x7e);
->>                                       break;
->
-> Does F10 work for you? doesn't work for me ?
-It does. But then menu entry is expanded to openSUSE, with Linux 4.0.1-1-default
-entering edit mode and pressing f10 finally boots it.
+Test results were sent to me privately, and they are correct, so...
 
-xterm sequence is ^[[21~
+Acked-by: Henrique de Moraes Holschuh <hmh@hmh.eng.br>
 
+On Sun, May 31, 2015, at 11:34, Henrique de Moraes Holschuh wrote:
+> On Sun, 31 May 2015, Finn Thain wrote:
+> > On Sun, 31 May 2015, Henrique de Moraes Holschuh wrote:
+> > > On Sun, 31 May 2015, Finn Thain wrote:
+> > > > Make use of arch_nvram_ops in the thinkpad_acpi driver so that the 
+> > > > nvram_* function exports can be removed.
+> > > > 
+> > > > This patch series was tested on a ThinkPad T43.
+> > > 
+> > > Can you describe how you did the testing?  A specific procedure is 
+> > > required to test the hotkey NVRAM polling codepaths (which will read 
+> > > several NVRAM bytes @10Hz by default) in a T43...
+> > > 
+> > > > Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
+> > > 
+> > > The patch looks correct, so I don't expect any problems.
+> > > 
+> > > Provided that your test procedure did enable hotkey NVRAM polling in the 
+> > > T43 and your hotkeys all still worked fine, you have my Acked-by.
+> > 
+> > The procedure I used was this,
+> > 
+> > 1. $ xev
+> > 2. # rmmod thinkpad_acpi
+> > 3. Press <Access IBM> key and confirm that xev does not report any
+> >    events.
+> > 4. # modprobe thinkpad_acpi
+> > 5. Press <Access IBM> key and confirm that xev now reports the key press 
+> >    events.
+> > 
+> > Is this sufficient?
+> 
+> No.  Please try:
+> 
+> modprobe thinkpad_acpi
+> echo 0xfb88c0 > /sys/devices/platform/thinkpad_acpi/hotkey_source_mask
+> 
+> test the hotkeys.  Please test several of them, as not all of them are
+> available through NVRAM polling... at least Fn+SPACE, Fn+F1..FN+F12
+> 
+> Please test the brightness keys. In the T43 we use "direct EC mode",
+> which
+> depends on the NVRAM to sync with the SMBIOS firmware.
+> 
+> to reset the driver to normal mode, it is enough to do this:
+> echo 0 > /sys/devices/platform/thinkpad_acpi/hotkey_source_mask
 
->
->> @@ -270,7 +266,7 @@ static void check_key_code(uint8_t *buf)
->>                               case 0x44:
->>                                       write_key(0x1b);               /* F11 */
->>                                       write_key(0x5b);
->> -                                     write_key(0x31);
->> +                                     write_key(0x32);
->>                                       write_key(0x33);
->>                                       write_key(0x7e);
->>                                       break;
->> @@ -278,7 +274,7 @@ static void check_key_code(uint8_t *buf)
->>                               case 0x45:
->>                                       write_key(0x1b);               /* F12 */
->>                                       write_key(0x5b);
->> -                                     write_key(0x31);
->> +                                     write_key(0x32);
->>                                       write_key(0x34);
->>                                       write_key(0x7e);
->>                                       break;
->> @@ -290,36 +286,34 @@ static void check_key_code(uint8_t *buf)
->>                               case 0x49:
->>                                       write_key(0x1b);               /* INS */
->>                                       write_key(0x5b);
->> -                                     write_key(0x31);
->> +                                     write_key(0x32);
->>                                       write_key(0x7e);
->>                                       break;
->>
->>                               case 0x4a:
->>                                       write_key(0x1b);              /* HOME */
->>                                       write_key(0x5b);
->> -                                     write_key(0x32);
->> -                                     write_key(0x7e);
->> +                                     write_key(0x48);
->
-> Looking at accept.fs - handle-ESC-5b ...
->
-> : handle-ESC-5b
->    key
->    dup 31 = IF \ HOME
->       key drop ( drops closing 7e ) handle-^A
->    ELSE
->       dup 33 = IF \ DEL
->          key drop handle-^D
->       ELSE
->          dup 34 = IF \ END
->             key drop handle-^E
->          ELSE
->             dup 1f and handle-CSI
->          THEN
->       THEN
->    THEN drop
-> ;
->
->
-> ... following change is sufficient:
-> -                                       write_key(0x32);
-> +                                       write_key(0x31);
->
-Home sequence for me is: ^[[H
->
->>                                       break;
->>
->>                               case 0x4b:
->>                                       write_key(0x1b);              /* PgUp */
->>                                       write_key(0x5b);
->> -                                     write_key(0x33);
->> +                                     write_key(0x35);
->>                                       write_key(0x7e);
->>                                       break;
->>
->>                               case 0x4c:
->>                                       write_key(0x1b);               /* DEL */
->>                                       write_key(0x5b);
->> -                                     write_key(0x34);
->> +                                     write_key(0x33);
->
-> Right.
->
->>                                       write_key(0x7e);
->>                                       break;
->>
->>                               case 0x4d:
->>                                       write_key(0x1b);               /* END */
->>                                       write_key(0x5b);
->> -                                     write_key(0x35);
->> -                                     write_key(0x7e);
->> +                                     write_key(0x46);
->
-> I tried using: 0x34, but somehow it does not work.
-^[[F works for me.
-
-All changes are tested in openSUSE's grub2 with -vga std. Note we
-don't have any special patches here..
-
-Tested with -vga none -nographic. Home, End works with patched SLOF
->
-> Regards
-> Nikunj
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@lists.ozlabs.org
-> https://lists.ozlabs.org/listinfo/linuxppc-dev
+-- 
+  "One disk to rule them all, One disk to find them. One disk to bring
+  them all and in the darkness grind them. In the Land of Redmond
+  where the shadows lie." -- The Silicon Valley Tarot
+  Henrique Holschuh
