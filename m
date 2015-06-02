@@ -1,19 +1,23 @@
 Return-Path: <qiang.zhao@freescale.com>
 Received: from na01-bn1-obe.outbound.protection.outlook.com
- (mail-bn1bon0134.outbound.protection.outlook.com [157.56.111.134])
+ (mail-bn1bn0101.outbound.protection.outlook.com [157.56.110.101])
  (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 34CDD1A0065
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Jun 2015 12:56:26 +1000 (AEST)
-From: Zhao Qiang <B45475@freescale.com>
-To: <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
- <netdev@vger.kernel.org>, <scottwood@freescale.com>
-CC: Zhao Qiang <B45475@freescale.com>
-Subject: [PATCH v5] QE: Move QE from arch/powerpc to drivers/soc
-Date: Tue, 2 Jun 2015 10:37:30 +0800
-Message-ID: <1433212650-29579-1-git-send-email-B45475@freescale.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 24D441A0065
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Jun 2015 13:25:35 +1000 (AEST)
+From: Zhao Qiang <qiang.zhao@freescale.com>
+To: Scott Wood <scottwood@freescale.com>
+CC: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ "netdev@vger.kernel.org" <netdev@vger.kernel.org>
+Subject: RE: [PATCH v5] QE: Move QE from arch/powerpc to drivers/soc
+Date: Tue, 2 Jun 2015 03:09:53 +0000
+Message-ID: <SN1PR0301MB1550FC059463446A422F37C09BB50@SN1PR0301MB1550.namprd03.prod.outlook.com>
+References: <1433212650-29579-1-git-send-email-B45475@freescale.com>
+ <1433213604.3415.8.camel@freescale.com>
+In-Reply-To: <1433213604.3415.8.camel@freescale.com>
+Content-Type: text/plain; charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -23,819 +27,128 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-ls1 has qe and ls1 has arm cpu.
-move qe from arch/powerpc to drivers/soc/fsl
-to adapt to powerpc and arm
-
-Signed-off-by: Zhao Qiang <B45475@freescale.com>
----
-Changes for v2:
-	- move code to driver/soc
-Changes for v3:
-	- change drivers/soc/qe to drivers/soc/fsl-qe
-Changes for v4:
-	- move drivers/soc/fsl-qe to drivers/soc/fsl/qe
-	- move head files for qe from include/linux/fsl to include/soc/fsl
-	- move qe_ic.c to drivers/irqchip/
-Changes for v5:
-	- update MAINTAINERS
-
- MAINTAINERS                                        |  5 +++--
- arch/powerpc/platforms/83xx/km83xx.c               |  4 ++--
- arch/powerpc/platforms/83xx/misc.c                 |  2 +-
- arch/powerpc/platforms/83xx/mpc832x_mds.c          |  4 ++--
- arch/powerpc/platforms/83xx/mpc832x_rdb.c          |  4 ++--
- arch/powerpc/platforms/83xx/mpc836x_mds.c          |  4 ++--
- arch/powerpc/platforms/83xx/mpc836x_rdk.c          |  4 ++--
- arch/powerpc/platforms/85xx/common.c               |  2 +-
- arch/powerpc/platforms/85xx/corenet_generic.c      |  2 +-
- arch/powerpc/platforms/85xx/mpc85xx_mds.c          |  4 ++--
- arch/powerpc/platforms/85xx/mpc85xx_rdb.c          |  4 ++--
- arch/powerpc/platforms/85xx/twr_p102x.c            |  4 ++--
- arch/powerpc/platforms/Kconfig                     | 19 ------------------
- arch/powerpc/sysdev/qe_lib/Kconfig                 | 23 ++++++----------------
- arch/powerpc/sysdev/qe_lib/Makefile                | 10 +++-------
- arch/powerpc/sysdev/qe_lib/gpio.c                  |  2 +-
- arch/powerpc/sysdev/qe_lib/qe_io.c                 |  2 +-
- arch/powerpc/sysdev/qe_lib/usb.c                   |  4 ++--
- drivers/irqchip/Makefile                           |  1 +
- .../sysdev/qe_lib => drivers/irqchip}/qe_ic.c      |  2 +-
- .../sysdev/qe_lib => drivers/irqchip}/qe_ic.h      |  2 +-
- drivers/net/ethernet/freescale/fsl_pq_mdio.c       |  2 +-
- drivers/net/ethernet/freescale/ucc_geth.c          |  8 ++++----
- drivers/net/ethernet/freescale/ucc_geth.h          |  8 ++++----
- drivers/soc/Kconfig                                |  2 ++
- drivers/soc/Makefile                               |  1 +
- drivers/soc/fsl/Makefile                           |  5 +++++
- .../sysdev/qe_lib => drivers/soc/fsl/qe}/Kconfig   | 16 +++++++++------
- drivers/soc/fsl/qe/Makefile                        |  8 ++++++++
- .../sysdev/qe_lib => drivers/soc/fsl/qe}/qe.c      |  4 ++--
- .../sysdev/qe_lib => drivers/soc/fsl/qe}/ucc.c     |  6 +++---
- .../qe_lib => drivers/soc/fsl/qe}/ucc_fast.c       |  8 ++++----
- .../qe_lib => drivers/soc/fsl/qe}/ucc_slow.c       |  8 ++++----
- drivers/spi/spi-fsl-cpm.c                          |  2 +-
- drivers/tty/serial/ucc_uart.c                      |  2 +-
- drivers/usb/gadget/fsl_qe_udc.c                    |  2 +-
- drivers/usb/host/fhci-hcd.c                        |  2 +-
- drivers/usb/host/fhci-hub.c                        |  2 +-
- drivers/usb/host/fhci-sched.c                      |  2 +-
- drivers/usb/host/fhci.h                            |  4 ++--
- .../include/asm => include/linux/fsl}/qe_ic.h      |  0
- .../include/asm => include/soc/fsl}/immap_qe.h     |  0
- {arch/powerpc/include/asm => include/soc/fsl}/qe.h |  2 +-
- .../powerpc/include/asm => include/soc/fsl}/ucc.h  |  4 ++--
- .../include/asm => include/soc/fsl}/ucc_fast.h     |  6 +++---
- .../include/asm => include/soc/fsl}/ucc_slow.h     |  6 +++---
- 46 files changed, 103 insertions(+), 115 deletions(-)
- rename {arch/powerpc/sysdev/qe_lib => drivers/irqchip}/qe_ic.c (99%)
- rename {arch/powerpc/sysdev/qe_lib => drivers/irqchip}/qe_ic.h (98%)
- create mode 100644 drivers/soc/fsl/Makefile
- copy {arch/powerpc/sysdev/qe_lib => drivers/soc/fsl/qe}/Kconfig (50%)
- create mode 100644 drivers/soc/fsl/qe/Makefile
- rename {arch/powerpc/sysdev/qe_lib => drivers/soc/fsl/qe}/qe.c (99%)
- rename {arch/powerpc/sysdev/qe_lib => drivers/soc/fsl/qe}/ucc.c (98%)
- rename {arch/powerpc/sysdev/qe_lib => drivers/soc/fsl/qe}/ucc_fast.c (99%)
- rename {arch/powerpc/sysdev/qe_lib => drivers/soc/fsl/qe}/ucc_slow.c (98%)
- rename {arch/powerpc/include/asm => include/linux/fsl}/qe_ic.h (100%)
- rename {arch/powerpc/include/asm => include/soc/fsl}/immap_qe.h (100%)
- rename {arch/powerpc/include/asm => include/soc/fsl}/qe.h (99%)
- rename {arch/powerpc/include/asm => include/soc/fsl}/ucc.h (96%)
- rename {arch/powerpc/include/asm => include/soc/fsl}/ucc_fast.h (98%)
- rename {arch/powerpc/include/asm => include/soc/fsl}/ucc_slow.h (99%)
-
-diff --git a/MAINTAINERS b/MAINTAINERS
-index c43ea88..84b234b 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -3743,8 +3743,9 @@ F:	include/linux/fs_enet_pd.h
- FREESCALE QUICC ENGINE LIBRARY
- L:	linuxppc-dev@lists.ozlabs.org
- S:	Orphan
--F:	arch/powerpc/sysdev/qe_lib/
--F:	arch/powerpc/include/asm/*qe.h
-+F:	drivers/soc/fsl/qe/
-+F:	include/soc/fsl/*qe*.h
-+F:	include/soc/fsl/*ucc*.h
- 
- FREESCALE USB PERIPHERAL DRIVERS
- M:	Li Yang <leoli@freescale.com>
-diff --git a/arch/powerpc/platforms/83xx/km83xx.c b/arch/powerpc/platforms/83xx/km83xx.c
-index bf4c447..11c386bb2 100644
---- a/arch/powerpc/platforms/83xx/km83xx.c
-+++ b/arch/powerpc/platforms/83xx/km83xx.c
-@@ -37,8 +37,8 @@
- #include <asm/udbg.h>
- #include <sysdev/fsl_soc.h>
- #include <sysdev/fsl_pci.h>
--#include <asm/qe.h>
--#include <asm/qe_ic.h>
-+#include <soc/fsl/qe.h>
-+#include <linux/fsl/qe_ic.h>
- 
- #include "mpc83xx.h"
- 
-diff --git a/arch/powerpc/platforms/83xx/misc.c b/arch/powerpc/platforms/83xx/misc.c
-index 125336f..3e2e6d2 100644
---- a/arch/powerpc/platforms/83xx/misc.c
-+++ b/arch/powerpc/platforms/83xx/misc.c
-@@ -17,7 +17,7 @@
- #include <asm/io.h>
- #include <asm/hw_irq.h>
- #include <asm/ipic.h>
--#include <asm/qe_ic.h>
-+#include <linux/fsl/qe_ic.h>
- #include <sysdev/fsl_soc.h>
- #include <sysdev/fsl_pci.h>
- 
-diff --git a/arch/powerpc/platforms/83xx/mpc832x_mds.c b/arch/powerpc/platforms/83xx/mpc832x_mds.c
-index 8d76220..dfa4ba4 100644
---- a/arch/powerpc/platforms/83xx/mpc832x_mds.c
-+++ b/arch/powerpc/platforms/83xx/mpc832x_mds.c
-@@ -36,8 +36,8 @@
- #include <asm/udbg.h>
- #include <sysdev/fsl_soc.h>
- #include <sysdev/fsl_pci.h>
--#include <asm/qe.h>
--#include <asm/qe_ic.h>
-+#include <soc/fsl/qe.h>
-+#include <linux/fsl/qe_ic.h>
- 
- #include "mpc83xx.h"
- 
-diff --git a/arch/powerpc/platforms/83xx/mpc832x_rdb.c b/arch/powerpc/platforms/83xx/mpc832x_rdb.c
-index eff5baa..c5b80c7 100644
---- a/arch/powerpc/platforms/83xx/mpc832x_rdb.c
-+++ b/arch/powerpc/platforms/83xx/mpc832x_rdb.c
-@@ -25,8 +25,8 @@
- #include <asm/time.h>
- #include <asm/ipic.h>
- #include <asm/udbg.h>
--#include <asm/qe.h>
--#include <asm/qe_ic.h>
-+#include <soc/fsl/qe.h>
-+#include <linux/fsl/qe_ic.h>
- #include <sysdev/fsl_soc.h>
- #include <sysdev/fsl_pci.h>
- 
-diff --git a/arch/powerpc/platforms/83xx/mpc836x_mds.c b/arch/powerpc/platforms/83xx/mpc836x_mds.c
-index 1a26d2f..fba4cd3 100644
---- a/arch/powerpc/platforms/83xx/mpc836x_mds.c
-+++ b/arch/powerpc/platforms/83xx/mpc836x_mds.c
-@@ -44,8 +44,8 @@
- #include <sysdev/fsl_soc.h>
- #include <sysdev/fsl_pci.h>
- #include <sysdev/simple_gpio.h>
--#include <asm/qe.h>
--#include <asm/qe_ic.h>
-+#include <soc/fsl/qe.h>
-+#include <linux/fsl/qe_ic.h>
- 
- #include "mpc83xx.h"
- 
-diff --git a/arch/powerpc/platforms/83xx/mpc836x_rdk.c b/arch/powerpc/platforms/83xx/mpc836x_rdk.c
-index b63b42d..2512364 100644
---- a/arch/powerpc/platforms/83xx/mpc836x_rdk.c
-+++ b/arch/powerpc/platforms/83xx/mpc836x_rdk.c
-@@ -20,8 +20,8 @@
- #include <asm/time.h>
- #include <asm/ipic.h>
- #include <asm/udbg.h>
--#include <asm/qe.h>
--#include <asm/qe_ic.h>
-+#include <soc/fsl/qe.h>
-+#include <linux/fsl/qe_ic.h>
- #include <sysdev/fsl_soc.h>
- #include <sysdev/fsl_pci.h>
- 
-diff --git a/arch/powerpc/platforms/85xx/common.c b/arch/powerpc/platforms/85xx/common.c
-index b564b5e..c3f5089 100644
---- a/arch/powerpc/platforms/85xx/common.c
-+++ b/arch/powerpc/platforms/85xx/common.c
-@@ -9,7 +9,7 @@
- #include <linux/of_irq.h>
- #include <linux/of_platform.h>
- 
--#include <asm/qe.h>
-+#include <soc/fsl/qe.h>
- #include <sysdev/cpm2_pic.h>
- 
- #include "mpc85xx.h"
-diff --git a/arch/powerpc/platforms/85xx/corenet_generic.c b/arch/powerpc/platforms/85xx/corenet_generic.c
-index e56b89a..5e2acb9 100644
---- a/arch/powerpc/platforms/85xx/corenet_generic.c
-+++ b/arch/powerpc/platforms/85xx/corenet_generic.c
-@@ -27,7 +27,7 @@
- #include <asm/udbg.h>
- #include <asm/mpic.h>
- #include <asm/ehv_pic.h>
--#include <asm/qe_ic.h>
-+#include <linux/fsl/qe_ic.h>
- 
- #include <linux/of_platform.h>
- #include <sysdev/fsl_soc.h>
-diff --git a/arch/powerpc/platforms/85xx/mpc85xx_mds.c b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
-index a392e94..0a41795 100644
---- a/arch/powerpc/platforms/85xx/mpc85xx_mds.c
-+++ b/arch/powerpc/platforms/85xx/mpc85xx_mds.c
-@@ -47,8 +47,8 @@
- #include <sysdev/fsl_soc.h>
- #include <sysdev/fsl_pci.h>
- #include <sysdev/simple_gpio.h>
--#include <asm/qe.h>
--#include <asm/qe_ic.h>
-+#include <soc/fsl/qe.h>
-+#include <linux/fsl/qe_ic.h>
- #include <asm/mpic.h>
- #include <asm/swiotlb.h>
- #include <asm/fsl_guts.h>
-diff --git a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
-index e358bed..13595cc 100644
---- a/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
-+++ b/arch/powerpc/platforms/85xx/mpc85xx_rdb.c
-@@ -25,8 +25,8 @@
- #include <asm/prom.h>
- #include <asm/udbg.h>
- #include <asm/mpic.h>
--#include <asm/qe.h>
--#include <asm/qe_ic.h>
-+#include <soc/fsl/qe.h>
-+#include <linux/fsl/qe_ic.h>
- #include <asm/fsl_guts.h>
- 
- #include <sysdev/fsl_soc.h>
-diff --git a/arch/powerpc/platforms/85xx/twr_p102x.c b/arch/powerpc/platforms/85xx/twr_p102x.c
-index 1eadb6d..a4ac222 100644
---- a/arch/powerpc/platforms/85xx/twr_p102x.c
-+++ b/arch/powerpc/platforms/85xx/twr_p102x.c
-@@ -21,8 +21,8 @@
- #include <asm/pci-bridge.h>
- #include <asm/udbg.h>
- #include <asm/mpic.h>
--#include <asm/qe.h>
--#include <asm/qe_ic.h>
-+#include <soc/fsl/qe.h>
-+#include <linux/fsl/qe_ic.h>
- #include <asm/fsl_guts.h>
- 
- #include <sysdev/fsl_soc.h>
-diff --git a/arch/powerpc/platforms/Kconfig b/arch/powerpc/platforms/Kconfig
-index 391b3f6..ae8879c 100644
---- a/arch/powerpc/platforms/Kconfig
-+++ b/arch/powerpc/platforms/Kconfig
-@@ -277,25 +277,6 @@ config TAU_AVERAGE
- 
- 	  If in doubt, say N here.
- 
--config QUICC_ENGINE
--	bool "Freescale QUICC Engine (QE) Support"
--	depends on FSL_SOC && PPC32
--	select PPC_LIB_RHEAP
--	select CRC32
--	help
--	  The QUICC Engine (QE) is a new generation of communications
--	  coprocessors on Freescale embedded CPUs (akin to CPM in older chips).
--	  Selecting this option means that you wish to build a kernel
--	  for a machine with a QE coprocessor.
--
--config QE_GPIO
--	bool "QE GPIO support"
--	depends on QUICC_ENGINE
--	select ARCH_REQUIRE_GPIOLIB
--	help
--	  Say Y here if you're going to use hardware that connects to the
--	  QE GPIOs.
--
- config CPM2
- 	bool "Enable support for the CPM2 (Communications Processor Module)"
- 	depends on (FSL_SOC_BOOKE && PPC32) || 8260
-diff --git a/arch/powerpc/sysdev/qe_lib/Kconfig b/arch/powerpc/sysdev/qe_lib/Kconfig
-index 3c25199..c170805 100644
---- a/arch/powerpc/sysdev/qe_lib/Kconfig
-+++ b/arch/powerpc/sysdev/qe_lib/Kconfig
-@@ -1,24 +1,13 @@
- #
- # QE Communication options
- #
--
--config UCC_SLOW
--	bool
--	default y if SERIAL_QE
-+config QE_GPIO
-+	bool "QE GPIO support"
-+	depends on QUICC_ENGINE
-+	select ARCH_REQUIRE_GPIOLIB
- 	help
--	  This option provides qe_lib support to UCC slow
--	  protocols: UART, BISYNC, QMC
--
--config UCC_FAST
--	bool
--	default y if UCC_GETH
--	help
--	  This option provides qe_lib support to UCC fast
--	  protocols: HDLC, Ethernet, ATM, transparent
--
--config UCC
--	bool
--	default y if UCC_FAST || UCC_SLOW
-+	  Say Y here if you're going to use hardware that connects to the
-+	  QE GPIOs.
- 
- config QE_USB
- 	bool
-diff --git a/arch/powerpc/sysdev/qe_lib/Makefile b/arch/powerpc/sysdev/qe_lib/Makefile
-index f1855c1..2f8630b 100644
---- a/arch/powerpc/sysdev/qe_lib/Makefile
-+++ b/arch/powerpc/sysdev/qe_lib/Makefile
-@@ -1,10 +1,6 @@
- #
- # Makefile for the linux ppc-specific parts of QE
- #
--obj-$(CONFIG_QUICC_ENGINE)+= qe.o qe_ic.o qe_io.o
--
--obj-$(CONFIG_UCC)	+= ucc.o
--obj-$(CONFIG_UCC_SLOW)	+= ucc_slow.o
--obj-$(CONFIG_UCC_FAST)	+= ucc_fast.o
--obj-$(CONFIG_QE_USB)	+= usb.o
--obj-$(CONFIG_QE_GPIO)	+= gpio.o
-+obj-$(CONFIG_QUICC_ENGINE)	+= qe_io.o
-+obj-$(CONFIG_QE_USB)		+= usb.o
-+obj-$(CONFIG_QE_GPIO)		+= gpio.o
-diff --git a/arch/powerpc/sysdev/qe_lib/gpio.c b/arch/powerpc/sysdev/qe_lib/gpio.c
-index 521e67a..35f90ea 100644
---- a/arch/powerpc/sysdev/qe_lib/gpio.c
-+++ b/arch/powerpc/sysdev/qe_lib/gpio.c
-@@ -21,7 +21,7 @@
- #include <linux/gpio.h>
- #include <linux/slab.h>
- #include <linux/export.h>
--#include <asm/qe.h>
-+#include <soc/fsl/qe.h>
- 
- struct qe_gpio_chip {
- 	struct of_mm_gpio_chip mm_gc;
-diff --git a/arch/powerpc/sysdev/qe_lib/qe_io.c b/arch/powerpc/sysdev/qe_lib/qe_io.c
-index d099941..54a44e8 100644
---- a/arch/powerpc/sysdev/qe_lib/qe_io.c
-+++ b/arch/powerpc/sysdev/qe_lib/qe_io.c
-@@ -21,7 +21,7 @@
- #include <linux/ioport.h>
- 
- #include <asm/io.h>
--#include <asm/qe.h>
-+#include <soc/fsl/qe.h>
- #include <asm/prom.h>
- #include <sysdev/fsl_soc.h>
- 
-diff --git a/arch/powerpc/sysdev/qe_lib/usb.c b/arch/powerpc/sysdev/qe_lib/usb.c
-index 27f23bd..f71e4d1 100644
---- a/arch/powerpc/sysdev/qe_lib/usb.c
-+++ b/arch/powerpc/sysdev/qe_lib/usb.c
-@@ -17,8 +17,8 @@
- #include <linux/errno.h>
- #include <linux/export.h>
- #include <linux/io.h>
--#include <asm/immap_qe.h>
--#include <asm/qe.h>
-+#include <soc/fsl/immap_qe.h>
-+#include <soc/fsl/qe.h>
- 
- int qe_usb_clock_set(enum qe_clock clk, int rate)
- {
-diff --git a/drivers/irqchip/Makefile b/drivers/irqchip/Makefile
-index 62a13e5..b887856 100644
---- a/drivers/irqchip/Makefile
-+++ b/drivers/irqchip/Makefile
-@@ -30,3 +30,4 @@ obj-$(CONFIG_XTENSA)			+= irq-xtensa-pic.o
- obj-$(CONFIG_XTENSA_MX)			+= irq-xtensa-mx.o
- obj-$(CONFIG_IRQ_CROSSBAR)		+= irq-crossbar.o
- obj-$(CONFIG_BRCMSTB_L2_IRQ)		+= irq-brcmstb-l2.o
-+obj-$(CONFIG_QUICC_ENGINE)		+= qe_ic.o
-diff --git a/arch/powerpc/sysdev/qe_lib/qe_ic.c b/drivers/irqchip/qe_ic.c
-similarity index 99%
-rename from arch/powerpc/sysdev/qe_lib/qe_ic.c
-rename to drivers/irqchip/qe_ic.c
-index b2b87c3..eb4d160 100644
---- a/arch/powerpc/sysdev/qe_lib/qe_ic.c
-+++ b/drivers/irqchip/qe_ic.c
-@@ -28,7 +28,7 @@
- #include <asm/irq.h>
- #include <asm/io.h>
- #include <asm/prom.h>
--#include <asm/qe_ic.h>
-+#include <linux/fsl/qe_ic.h>
- 
- #include "qe_ic.h"
- 
-diff --git a/arch/powerpc/sysdev/qe_lib/qe_ic.h b/drivers/irqchip/qe_ic.h
-similarity index 98%
-rename from arch/powerpc/sysdev/qe_lib/qe_ic.h
-rename to drivers/irqchip/qe_ic.h
-index efef7ab..5c4480e 100644
---- a/arch/powerpc/sysdev/qe_lib/qe_ic.h
-+++ b/drivers/irqchip/qe_ic.h
-@@ -16,7 +16,7 @@
- #ifndef _POWERPC_SYSDEV_QE_IC_H
- #define _POWERPC_SYSDEV_QE_IC_H
- 
--#include <asm/qe_ic.h>
-+#include <linux/fsl/qe_ic.h>
- 
- #define NR_QE_IC_INTS		64
- 
-diff --git a/drivers/net/ethernet/freescale/fsl_pq_mdio.c b/drivers/net/ethernet/freescale/fsl_pq_mdio.c
-index 583e71a..77448fd 100644
---- a/drivers/net/ethernet/freescale/fsl_pq_mdio.c
-+++ b/drivers/net/ethernet/freescale/fsl_pq_mdio.c
-@@ -28,7 +28,7 @@
- #include <linux/of_device.h>
- 
- #include <asm/io.h>
--#include <asm/ucc.h>	/* for ucc_set_qe_mux_mii_mng() */
-+#include <soc/fsl/ucc.h>	/* for ucc_set_qe_mux_mii_mng() */
- 
- #include "gianfar.h"
- 
-diff --git a/drivers/net/ethernet/freescale/ucc_geth.c b/drivers/net/ethernet/freescale/ucc_geth.c
-index fab39e2..28874dc 100644
---- a/drivers/net/ethernet/freescale/ucc_geth.c
-+++ b/drivers/net/ethernet/freescale/ucc_geth.c
-@@ -40,10 +40,10 @@
- #include <asm/uaccess.h>
- #include <asm/irq.h>
- #include <asm/io.h>
--#include <asm/immap_qe.h>
--#include <asm/qe.h>
--#include <asm/ucc.h>
--#include <asm/ucc_fast.h>
-+#include <soc/fsl/immap_qe.h>
-+#include <soc/fsl/qe.h>
-+#include <soc/fsl/ucc.h>
-+#include <soc/fsl/ucc_fast.h>
- #include <asm/machdep.h>
- 
- #include "ucc_geth.h"
-diff --git a/drivers/net/ethernet/freescale/ucc_geth.h b/drivers/net/ethernet/freescale/ucc_geth.h
-index 75f3371..012fdcf 100644
---- a/drivers/net/ethernet/freescale/ucc_geth.h
-+++ b/drivers/net/ethernet/freescale/ucc_geth.h
-@@ -22,11 +22,11 @@
- #include <linux/list.h>
- #include <linux/if_ether.h>
- 
--#include <asm/immap_qe.h>
--#include <asm/qe.h>
-+#include <soc/fsl/immap_qe.h>
-+#include <soc/fsl/qe.h>
- 
--#include <asm/ucc.h>
--#include <asm/ucc_fast.h>
-+#include <soc/fsl/ucc.h>
-+#include <soc/fsl/ucc_fast.h>
- 
- #define DRV_DESC "QE UCC Gigabit Ethernet Controller"
- #define DRV_NAME "ucc_geth"
-diff --git a/drivers/soc/Kconfig b/drivers/soc/Kconfig
-index c854385..324d75c 100644
---- a/drivers/soc/Kconfig
-+++ b/drivers/soc/Kconfig
-@@ -2,4 +2,6 @@ menu "SOC (System On Chip) specific Drivers"
- 
- source "drivers/soc/qcom/Kconfig"
- 
-+source "drivers/soc/fsl/qe/Kconfig"
-+
- endmenu
-diff --git a/drivers/soc/Makefile b/drivers/soc/Makefile
-index 0f7c447..b85c368 100644
---- a/drivers/soc/Makefile
-+++ b/drivers/soc/Makefile
-@@ -3,3 +3,4 @@
- #
- 
- obj-$(CONFIG_ARCH_QCOM)		+= qcom/
-+obj-y				+= fsl/
-diff --git a/drivers/soc/fsl/Makefile b/drivers/soc/fsl/Makefile
-new file mode 100644
-index 0000000..170fe81
---- /dev/null
-+++ b/drivers/soc/fsl/Makefile
-@@ -0,0 +1,5 @@
-+#
-+# Makefile for the Linux Kernel SOC fsl specific device drivers.
-+#
-+
-+obj-$(CONFIG_QUICC_ENGINE)		+= qe/
-diff --git a/arch/powerpc/sysdev/qe_lib/Kconfig b/drivers/soc/fsl/qe/Kconfig
-similarity index 50%
-copy from arch/powerpc/sysdev/qe_lib/Kconfig
-copy to drivers/soc/fsl/qe/Kconfig
-index 3c25199..e6b8862 100644
---- a/arch/powerpc/sysdev/qe_lib/Kconfig
-+++ b/drivers/soc/fsl/qe/Kconfig
-@@ -1,6 +1,16 @@
- #
- # QE Communication options
- #
-+config QUICC_ENGINE
-+	bool "Freescale QUICC Engine (QE) Support"
-+	depends on FSL_SOC && PPC32
-+	select PPC_LIB_RHEAP
-+	select CRC32
-+	help
-+	  The QUICC Engine (QE) is a new generation of communications
-+	  coprocessors on Freescale embedded CPUs (akin to CPM in older chips).
-+	  Selecting this option means that you wish to build a kernel
-+	  for a machine with a QE coprocessor.
- 
- config UCC_SLOW
- 	bool
-@@ -19,9 +29,3 @@ config UCC_FAST
- config UCC
- 	bool
- 	default y if UCC_FAST || UCC_SLOW
--
--config QE_USB
--	bool
--	default y if USB_FSL_QE
--	help
--	  QE USB Controller support
-diff --git a/drivers/soc/fsl/qe/Makefile b/drivers/soc/fsl/qe/Makefile
-new file mode 100644
-index 0000000..703793f
---- /dev/null
-+++ b/drivers/soc/fsl/qe/Makefile
-@@ -0,0 +1,8 @@
-+#
-+# Makefile for the linux ppc-specific parts of QE
-+#
-+obj-$(CONFIG_QUICC_ENGINE)	+= qe.o
-+
-+obj-$(CONFIG_UCC)		+= ucc.o
-+obj-$(CONFIG_UCC_SLOW)		+= ucc_slow.o
-+obj-$(CONFIG_UCC_FAST)		+= ucc_fast.o
-diff --git a/arch/powerpc/sysdev/qe_lib/qe.c b/drivers/soc/fsl/qe/qe.c
-similarity index 99%
-rename from arch/powerpc/sysdev/qe_lib/qe.c
-rename to drivers/soc/fsl/qe/qe.c
-index 238a07b..2c56958 100644
---- a/arch/powerpc/sysdev/qe_lib/qe.c
-+++ b/drivers/soc/fsl/qe/qe.c
-@@ -32,10 +32,10 @@
- #include <asm/irq.h>
- #include <asm/page.h>
- #include <asm/pgtable.h>
--#include <asm/immap_qe.h>
--#include <asm/qe.h>
- #include <asm/prom.h>
- #include <asm/rheap.h>
-+#include <soc/fsl/immap_qe.h>
-+#include <soc/fsl/qe.h>
- 
- static void qe_snums_init(void);
- static int qe_sdma_init(void);
-diff --git a/arch/powerpc/sysdev/qe_lib/ucc.c b/drivers/soc/fsl/qe/ucc.c
-similarity index 98%
-rename from arch/powerpc/sysdev/qe_lib/ucc.c
-rename to drivers/soc/fsl/qe/ucc.c
-index 621575b..f444c95 100644
---- a/arch/powerpc/sysdev/qe_lib/ucc.c
-+++ b/drivers/soc/fsl/qe/ucc.c
-@@ -21,9 +21,9 @@
- 
- #include <asm/irq.h>
- #include <asm/io.h>
--#include <asm/immap_qe.h>
--#include <asm/qe.h>
--#include <asm/ucc.h>
-+#include <soc/fsl/immap_qe.h>
-+#include <soc/fsl/qe.h>
-+#include <soc/fsl/ucc.h>
- 
- int ucc_set_qe_mux_mii_mng(unsigned int ucc_num)
- {
-diff --git a/arch/powerpc/sysdev/qe_lib/ucc_fast.c b/drivers/soc/fsl/qe/ucc_fast.c
-similarity index 99%
-rename from arch/powerpc/sysdev/qe_lib/ucc_fast.c
-rename to drivers/soc/fsl/qe/ucc_fast.c
-index 65aaf15..5b2e9b5e 100644
---- a/arch/powerpc/sysdev/qe_lib/ucc_fast.c
-+++ b/drivers/soc/fsl/qe/ucc_fast.c
-@@ -21,11 +21,11 @@
- #include <linux/export.h>
- 
- #include <asm/io.h>
--#include <asm/immap_qe.h>
--#include <asm/qe.h>
-+#include <soc/fsl/immap_qe.h>
-+#include <soc/fsl/qe.h>
- 
--#include <asm/ucc.h>
--#include <asm/ucc_fast.h>
-+#include <soc/fsl/ucc.h>
-+#include <soc/fsl/ucc_fast.h>
- 
- void ucc_fast_dump_regs(struct ucc_fast_private * uccf)
- {
-diff --git a/arch/powerpc/sysdev/qe_lib/ucc_slow.c b/drivers/soc/fsl/qe/ucc_slow.c
-similarity index 98%
-rename from arch/powerpc/sysdev/qe_lib/ucc_slow.c
-rename to drivers/soc/fsl/qe/ucc_slow.c
-index befaf11..b42c5dd 100644
---- a/arch/powerpc/sysdev/qe_lib/ucc_slow.c
-+++ b/drivers/soc/fsl/qe/ucc_slow.c
-@@ -21,11 +21,11 @@
- #include <linux/export.h>
- 
- #include <asm/io.h>
--#include <asm/immap_qe.h>
--#include <asm/qe.h>
-+#include <soc/fsl/immap_qe.h>
-+#include <soc/fsl/qe.h>
- 
--#include <asm/ucc.h>
--#include <asm/ucc_slow.h>
-+#include <soc/fsl/ucc.h>
-+#include <soc/fsl/ucc_slow.h>
- 
- u32 ucc_slow_get_qe_cr_subblock(int uccs_num)
- {
-diff --git a/drivers/spi/spi-fsl-cpm.c b/drivers/spi/spi-fsl-cpm.c
-index 54b0637..77524c4 100644
---- a/drivers/spi/spi-fsl-cpm.c
-+++ b/drivers/spi/spi-fsl-cpm.c
-@@ -22,7 +22,7 @@
- #include <linux/dma-mapping.h>
- #include <linux/of_address.h>
- #include <asm/cpm.h>
--#include <asm/qe.h>
-+#include <soc/fsl/qe.h>
- 
- #include "spi-fsl-lib.h"
- #include "spi-fsl-cpm.h"
-diff --git a/drivers/tty/serial/ucc_uart.c b/drivers/tty/serial/ucc_uart.c
-index d569ca5..a8d528b 100644
---- a/drivers/tty/serial/ucc_uart.c
-+++ b/drivers/tty/serial/ucc_uart.c
-@@ -31,7 +31,7 @@
- #include <linux/dma-mapping.h>
- 
- #include <linux/fs_uart_pd.h>
--#include <asm/ucc_slow.h>
-+#include <soc/fsl/ucc_slow.h>
- 
- #include <linux/firmware.h>
- #include <asm/reg.h>
-diff --git a/drivers/usb/gadget/fsl_qe_udc.c b/drivers/usb/gadget/fsl_qe_udc.c
-index ad54833..9b0477b 100644
---- a/drivers/usb/gadget/fsl_qe_udc.c
-+++ b/drivers/usb/gadget/fsl_qe_udc.c
-@@ -38,7 +38,7 @@
- #include <linux/usb/ch9.h>
- #include <linux/usb/gadget.h>
- #include <linux/usb/otg.h>
--#include <asm/qe.h>
-+#include <soc/fsl/qe.h>
- #include <asm/cpm.h>
- #include <asm/dma.h>
- #include <asm/reg.h>
-diff --git a/drivers/usb/host/fhci-hcd.c b/drivers/usb/host/fhci-hcd.c
-index 1cf68ea..7a63726 100644
---- a/drivers/usb/host/fhci-hcd.c
-+++ b/drivers/usb/host/fhci-hcd.c
-@@ -31,7 +31,7 @@
- #include <linux/of_platform.h>
- #include <linux/of_gpio.h>
- #include <linux/slab.h>
--#include <asm/qe.h>
-+#include <soc/fsl/qe.h>
- #include <asm/fsl_gtm.h>
- #include "fhci.h"
- 
-diff --git a/drivers/usb/host/fhci-hub.c b/drivers/usb/host/fhci-hub.c
-index 6af2512..c6e91fc 100644
---- a/drivers/usb/host/fhci-hub.c
-+++ b/drivers/usb/host/fhci-hub.c
-@@ -24,7 +24,7 @@
- #include <linux/usb.h>
- #include <linux/usb/hcd.h>
- #include <linux/gpio.h>
--#include <asm/qe.h>
-+#include <soc/fsl/qe.h>
- #include "fhci.h"
- 
- /* virtual root hub specific descriptor */
-diff --git a/drivers/usb/host/fhci-sched.c b/drivers/usb/host/fhci-sched.c
-index 95ca598..acf4d44 100644
---- a/drivers/usb/host/fhci-sched.c
-+++ b/drivers/usb/host/fhci-sched.c
-@@ -25,7 +25,7 @@
- #include <linux/io.h>
- #include <linux/usb.h>
- #include <linux/usb/hcd.h>
--#include <asm/qe.h>
-+#include <soc/fsl/qe.h>
- #include <asm/fsl_gtm.h>
- #include "fhci.h"
- 
-diff --git a/drivers/usb/host/fhci.h b/drivers/usb/host/fhci.h
-index 154e6a0..7492270 100644
---- a/drivers/usb/host/fhci.h
-+++ b/drivers/usb/host/fhci.h
-@@ -27,8 +27,8 @@
- #include <linux/io.h>
- #include <linux/usb.h>
- #include <linux/usb/hcd.h>
--#include <asm/qe.h>
--#include <asm/immap_qe.h>
-+#include <soc/fsl/qe.h>
-+#include <soc/fsl/immap_qe.h>
- 
- #define USB_CLOCK	48000000
- 
-diff --git a/arch/powerpc/include/asm/qe_ic.h b/include/linux/fsl/qe_ic.h
-similarity index 100%
-rename from arch/powerpc/include/asm/qe_ic.h
-rename to include/linux/fsl/qe_ic.h
-diff --git a/arch/powerpc/include/asm/immap_qe.h b/include/soc/fsl/immap_qe.h
-similarity index 100%
-rename from arch/powerpc/include/asm/immap_qe.h
-rename to include/soc/fsl/immap_qe.h
-diff --git a/arch/powerpc/include/asm/qe.h b/include/soc/fsl/qe.h
-similarity index 99%
-rename from arch/powerpc/include/asm/qe.h
-rename to include/soc/fsl/qe.h
-index 32b9bfa..5b54099 100644
---- a/arch/powerpc/include/asm/qe.h
-+++ b/include/soc/fsl/qe.h
-@@ -20,7 +20,7 @@
- #include <linux/errno.h>
- #include <linux/err.h>
- #include <asm/cpm.h>
--#include <asm/immap_qe.h>
-+#include <soc/fsl/immap_qe.h>
- 
- #define QE_NUM_OF_SNUM	256	/* There are 256 serial number in QE */
- #define QE_NUM_OF_BRGS	16
-diff --git a/arch/powerpc/include/asm/ucc.h b/include/soc/fsl/ucc.h
-similarity index 96%
-rename from arch/powerpc/include/asm/ucc.h
-rename to include/soc/fsl/ucc.h
-index 6927ac2..cdb2345 100644
---- a/arch/powerpc/include/asm/ucc.h
-+++ b/include/soc/fsl/ucc.h
-@@ -15,8 +15,8 @@
- #ifndef __UCC_H__
- #define __UCC_H__
- 
--#include <asm/immap_qe.h>
--#include <asm/qe.h>
-+#include <soc/fsl/immap_qe.h>
-+#include <soc/fsl/qe.h>
- 
- #define STATISTICS
- 
-diff --git a/arch/powerpc/include/asm/ucc_fast.h b/include/soc/fsl/ucc_fast.h
-similarity index 98%
-rename from arch/powerpc/include/asm/ucc_fast.h
-rename to include/soc/fsl/ucc_fast.h
-index 72ea9ba..e8dd1f5 100644
---- a/arch/powerpc/include/asm/ucc_fast.h
-+++ b/include/soc/fsl/ucc_fast.h
-@@ -16,10 +16,10 @@
- 
- #include <linux/kernel.h>
- 
--#include <asm/immap_qe.h>
--#include <asm/qe.h>
-+#include <soc/fsl/immap_qe.h>
-+#include <soc/fsl/qe.h>
- 
--#include <asm/ucc.h>
-+#include <soc/fsl/ucc.h>
- 
- /* Receive BD's status */
- #define R_E	0x80000000	/* buffer empty */
-diff --git a/arch/powerpc/include/asm/ucc_slow.h b/include/soc/fsl/ucc_slow.h
-similarity index 99%
-rename from arch/powerpc/include/asm/ucc_slow.h
-rename to include/soc/fsl/ucc_slow.h
-index c44131e..057f861 100644
---- a/arch/powerpc/include/asm/ucc_slow.h
-+++ b/include/soc/fsl/ucc_slow.h
-@@ -17,10 +17,10 @@
- 
- #include <linux/kernel.h>
- 
--#include <asm/immap_qe.h>
--#include <asm/qe.h>
-+#include <soc/fsl/immap_qe.h>
-+#include <soc/fsl/qe.h>
- 
--#include <asm/ucc.h>
-+#include <soc/fsl/ucc.h>
- 
- /* transmit BD's status */
- #define T_R	0x80000000	/* ready bit */
--- 
-2.1.0.27.g96db324
+DQpPbiBUdWUsIDIwMTUtMDYtMDIgYXQgMTA6NTMsIFdvb2QgU2NvdHQgd3JvdGU6DQoNCj4gLS0t
+LS1PcmlnaW5hbCBNZXNzYWdlLS0tLS0NCj4gRnJvbTogV29vZCBTY290dC1CMDc0MjENCj4gU2Vu
+dDogVHVlc2RheSwgSnVuZSAwMiwgMjAxNSAxMDo1MyBBTQ0KPiBUbzogWmhhbyBRaWFuZy1CNDU0
+NzUNCj4gQ2M6IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnOyBsaW51eC1rZXJuZWxAdmdl
+ci5rZXJuZWwub3JnOw0KPiBuZXRkZXZAdmdlci5rZXJuZWwub3JnDQo+IFN1YmplY3Q6IFJlOiBb
+UEFUQ0ggdjVdIFFFOiBNb3ZlIFFFIGZyb20gYXJjaC9wb3dlcnBjIHRvIGRyaXZlcnMvc29jDQo+
+IA0KPiBPbiBUdWUsIDIwMTUtMDYtMDIgYXQgMTA6MzcgKzA4MDAsIFpoYW8gUWlhbmcgd3JvdGU6
+DQo+ID4gbHMxIGhhcyBxZSBhbmQgbHMxIGhhcyBhcm0gY3B1Lg0KPiA+IG1vdmUgcWUgZnJvbSBh
+cmNoL3Bvd2VycGMgdG8gZHJpdmVycy9zb2MvZnNsIHRvIGFkYXB0IHRvIHBvd2VycGMgYW5kDQo+
+ID4gYXJtDQo+ID4NCj4gPiBTaWduZWQtb2ZmLWJ5OiBaaGFvIFFpYW5nIDxCNDU0NzVAZnJlZXNj
+YWxlLmNvbT4NCj4gPiAtLS0NCj4gPiBDaGFuZ2VzIGZvciB2MjoNCj4gPiAgICAgICAtIG1vdmUg
+Y29kZSB0byBkcml2ZXIvc29jDQo+ID4gQ2hhbmdlcyBmb3IgdjM6DQo+ID4gICAgICAgLSBjaGFu
+Z2UgZHJpdmVycy9zb2MvcWUgdG8gZHJpdmVycy9zb2MvZnNsLXFlIENoYW5nZXMgZm9yIHY0Og0K
+PiA+ICAgICAgIC0gbW92ZSBkcml2ZXJzL3NvYy9mc2wtcWUgdG8gZHJpdmVycy9zb2MvZnNsL3Fl
+DQo+ID4gICAgICAgLSBtb3ZlIGhlYWQgZmlsZXMgZm9yIHFlIGZyb20gaW5jbHVkZS9saW51eC9m
+c2wgdG8NCj4gaW5jbHVkZS9zb2MvZnNsDQo+ID4gICAgICAgLSBtb3ZlIHFlX2ljLmMgdG8gZHJp
+dmVycy9pcnFjaGlwLyBDaGFuZ2VzIGZvciB2NToNCj4gPiAgICAgICAtIHVwZGF0ZSBNQUlOVEFJ
+TkVSUw0KPiA+DQo+ID4gIE1BSU5UQUlORVJTICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgIHwgIDUgKysrLS0NCj4gPiAgYXJjaC9wb3dlcnBjL3BsYXRmb3Jtcy84M3h4L2tt
+ODN4eC5jICAgICAgICAgICAgICAgfCAgNCArKy0tDQo+ID4gIGFyY2gvcG93ZXJwYy9wbGF0Zm9y
+bXMvODN4eC9taXNjLmMgICAgICAgICAgICAgICAgIHwgIDIgKy0NCj4gPiAgYXJjaC9wb3dlcnBj
+L3BsYXRmb3Jtcy84M3h4L21wYzgzMnhfbWRzLmMgICAgICAgICAgfCAgNCArKy0tDQo+ID4gIGFy
+Y2gvcG93ZXJwYy9wbGF0Zm9ybXMvODN4eC9tcGM4MzJ4X3JkYi5jICAgICAgICAgIHwgIDQgKyst
+LQ0KPiA+ICBhcmNoL3Bvd2VycGMvcGxhdGZvcm1zLzgzeHgvbXBjODM2eF9tZHMuYyAgICAgICAg
+ICB8ICA0ICsrLS0NCj4gPiAgYXJjaC9wb3dlcnBjL3BsYXRmb3Jtcy84M3h4L21wYzgzNnhfcmRr
+LmMgICAgICAgICAgfCAgNCArKy0tDQo+ID4gIGFyY2gvcG93ZXJwYy9wbGF0Zm9ybXMvODV4eC9j
+b21tb24uYyAgICAgICAgICAgICAgIHwgIDIgKy0NCj4gPiAgYXJjaC9wb3dlcnBjL3BsYXRmb3Jt
+cy84NXh4L2NvcmVuZXRfZ2VuZXJpYy5jICAgICAgfCAgMiArLQ0KPiA+ICBhcmNoL3Bvd2VycGMv
+cGxhdGZvcm1zLzg1eHgvbXBjODV4eF9tZHMuYyAgICAgICAgICB8ICA0ICsrLS0NCj4gPiAgYXJj
+aC9wb3dlcnBjL3BsYXRmb3Jtcy84NXh4L21wYzg1eHhfcmRiLmMgICAgICAgICAgfCAgNCArKy0t
+DQo+ID4gIGFyY2gvcG93ZXJwYy9wbGF0Zm9ybXMvODV4eC90d3JfcDEwMnguYyAgICAgICAgICAg
+IHwgIDQgKystLQ0KPiA+ICBhcmNoL3Bvd2VycGMvcGxhdGZvcm1zL0tjb25maWcgICAgICAgICAg
+ICAgICAgICAgICB8IDE5IC0tLS0tLS0tLS0tLQ0KPiA+IC0tLS0tLQ0KPiA+ICBhcmNoL3Bvd2Vy
+cGMvc3lzZGV2L3FlX2xpYi9LY29uZmlnICAgICAgICAgICAgICAgICB8IDIzICsrKysrKy0tLS0t
+LQ0KPiA+IC0tLS0tLS0tLS0NCj4gPiAgYXJjaC9wb3dlcnBjL3N5c2Rldi9xZV9saWIvTWFrZWZp
+bGUgICAgICAgICAgICAgICAgfCAxMCArKystLS0tLS0tDQo+ID4gIGFyY2gvcG93ZXJwYy9zeXNk
+ZXYvcWVfbGliL2dwaW8uYyAgICAgICAgICAgICAgICAgIHwgIDIgKy0NCj4gPiAgYXJjaC9wb3dl
+cnBjL3N5c2Rldi9xZV9saWIvcWVfaW8uYyAgICAgICAgICAgICAgICAgfCAgMiArLQ0KPiA+ICBh
+cmNoL3Bvd2VycGMvc3lzZGV2L3FlX2xpYi91c2IuYyAgICAgICAgICAgICAgICAgICB8ICA0ICsr
+LS0NCj4gPiAgZHJpdmVycy9pcnFjaGlwL01ha2VmaWxlICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgfCAgMSArDQo+ID4gIC4uLi9zeXNkZXYvcWVfbGliID0+IGRyaXZlcnMvaXJxY2hpcH0vcWVf
+aWMuYyAgICAgIHwgIDIgKy0NCj4gPiAgLi4uL3N5c2Rldi9xZV9saWIgPT4gZHJpdmVycy9pcnFj
+aGlwfS9xZV9pYy5oICAgICAgfCAgMiArLQ0KPiA+ICBkcml2ZXJzL25ldC9ldGhlcm5ldC9mcmVl
+c2NhbGUvZnNsX3BxX21kaW8uYyAgICAgICB8ICAyICstDQo+ID4gIGRyaXZlcnMvbmV0L2V0aGVy
+bmV0L2ZyZWVzY2FsZS91Y2NfZ2V0aC5jICAgICAgICAgIHwgIDggKysrKy0tLS0NCj4gPiAgZHJp
+dmVycy9uZXQvZXRoZXJuZXQvZnJlZXNjYWxlL3VjY19nZXRoLmggICAgICAgICAgfCAgOCArKysr
+LS0tLQ0KPiA+ICBkcml2ZXJzL3NvYy9LY29uZmlnICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICB8ICAyICsrDQo+ID4gIGRyaXZlcnMvc29jL01ha2VmaWxlICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgIHwgIDEgKw0KPiA+ICBkcml2ZXJzL3NvYy9mc2wvTWFrZWZpbGUgICAgICAg
+ICAgICAgICAgICAgICAgICAgICB8ICA1ICsrKysrDQo+ID4gIC4uLi9zeXNkZXYvcWVfbGliID0+
+IGRyaXZlcnMvc29jL2ZzbC9xZX0vS2NvbmZpZyAgIHwgMTYgKysrKysrKysrLS0tDQo+ID4gLS0t
+DQo+ID4gIGRyaXZlcnMvc29jL2ZzbC9xZS9NYWtlZmlsZSAgICAgICAgICAgICAgICAgICAgICAg
+IHwgIDggKysrKysrKysNCj4gPiAgLi4uL3N5c2Rldi9xZV9saWIgPT4gZHJpdmVycy9zb2MvZnNs
+L3FlfS9xZS5jICAgICAgfCAgNCArKy0tDQo+ID4gIC4uLi9zeXNkZXYvcWVfbGliID0+IGRyaXZl
+cnMvc29jL2ZzbC9xZX0vdWNjLmMgICAgIHwgIDYgKysrLS0tDQo+ID4gIC4uLi9xZV9saWIgPT4g
+ZHJpdmVycy9zb2MvZnNsL3FlfS91Y2NfZmFzdC5jICAgICAgIHwgIDggKysrKy0tLS0NCj4gPiAg
+Li4uL3FlX2xpYiA9PiBkcml2ZXJzL3NvYy9mc2wvcWV9L3VjY19zbG93LmMgICAgICAgfCAgOCAr
+KysrLS0tLQ0KPiA+ICBkcml2ZXJzL3NwaS9zcGktZnNsLWNwbS5jICAgICAgICAgICAgICAgICAg
+ICAgICAgICB8ICAyICstDQo+ID4gIGRyaXZlcnMvdHR5L3NlcmlhbC91Y2NfdWFydC5jICAgICAg
+ICAgICAgICAgICAgICAgIHwgIDIgKy0NCj4gPiAgZHJpdmVycy91c2IvZ2FkZ2V0L2ZzbF9xZV91
+ZGMuYyAgICAgICAgICAgICAgICAgICAgfCAgMiArLQ0KPiA+ICBkcml2ZXJzL3VzYi9ob3N0L2Zo
+Y2ktaGNkLmMgICAgICAgICAgICAgICAgICAgICAgICB8ICAyICstDQo+ID4gIGRyaXZlcnMvdXNi
+L2hvc3QvZmhjaS1odWIuYyAgICAgICAgICAgICAgICAgICAgICAgIHwgIDIgKy0NCj4gPiAgZHJp
+dmVycy91c2IvaG9zdC9maGNpLXNjaGVkLmMgICAgICAgICAgICAgICAgICAgICAgfCAgMiArLQ0K
+PiA+ICBkcml2ZXJzL3VzYi9ob3N0L2ZoY2kuaCAgICAgICAgICAgICAgICAgICAgICAgICAgICB8
+ICA0ICsrLS0NCj4gPiAgLi4uL2luY2x1ZGUvYXNtID0+IGluY2x1ZGUvbGludXgvZnNsfS9xZV9p
+Yy5oICAgICAgfCAgMA0KPiA+ICAuLi4vaW5jbHVkZS9hc20gPT4gaW5jbHVkZS9zb2MvZnNsfS9p
+bW1hcF9xZS5oICAgICB8ICAwDQo+ID4gIHthcmNoL3Bvd2VycGMvaW5jbHVkZS9hc20gPT4gaW5j
+bHVkZS9zb2MvZnNsfS9xZS5oIHwgIDIgKy0NCj4gPiAuLi4vcG93ZXJwYy9pbmNsdWRlL2FzbSA9
+PiBpbmNsdWRlL3NvYy9mc2x9L3VjYy5oICB8ICA0ICsrLS0NCj4gPiAgLi4uL2luY2x1ZGUvYXNt
+ID0+IGluY2x1ZGUvc29jL2ZzbH0vdWNjX2Zhc3QuaCAgICAgfCAgNiArKystLS0NCj4gPiAgLi4u
+L2luY2x1ZGUvYXNtID0+IGluY2x1ZGUvc29jL2ZzbH0vdWNjX3Nsb3cuaCAgICAgfCAgNiArKyst
+LS0NCj4gPiAgNDYgZmlsZXMgY2hhbmdlZCwgMTAzIGluc2VydGlvbnMoKyksIDExNSBkZWxldGlv
+bnMoLSkgIHJlbmFtZQ0KPiA+IHthcmNoL3Bvd2VycGMvc3lzZGV2L3FlX2xpYiA9PiBkcml2ZXJz
+L2lycWNoaXB9L3FlX2ljLmMgKDk5JSkgIHJlbmFtZQ0KPiA+IHthcmNoL3Bvd2VycGMvc3lzZGV2
+L3FlX2xpYiA9PiBkcml2ZXJzL2lycWNoaXB9L3FlX2ljLmggKDk4JSkgIGNyZWF0ZQ0KPiA+IG1v
+ZGUgMTAwNjQ0IGRyaXZlcnMvc29jL2ZzbC9NYWtlZmlsZSAgY29weSB7YXJjaC9wb3dlcnBjL3N5
+c2Rldi9xZV9saWINCj4gPiA9PiBkcml2ZXJzL3NvYy9mc2wvcWV9L0tjb25maWcNCj4gPiAoNTAl
+KQ0KPiA+ICBjcmVhdGUgbW9kZSAxMDA2NDQgZHJpdmVycy9zb2MvZnNsL3FlL01ha2VmaWxlICBy
+ZW5hbWUNCj4gPiB7YXJjaC9wb3dlcnBjL3N5c2Rldi9xZV9saWIgPT4gZHJpdmVycy9zb2MvZnNs
+L3FlfS9xZS5jICg5OSUpICByZW5hbWUNCj4gPiB7YXJjaC9wb3dlcnBjL3N5c2Rldi9xZV9saWIg
+PT4gZHJpdmVycy9zb2MvZnNsL3FlfS91Y2MuYw0KPiA+ICg5OCUpDQo+ID4gIHJlbmFtZSB7YXJj
+aC9wb3dlcnBjL3N5c2Rldi9xZV9saWIgPT4gZHJpdmVycy9zb2MvZnNsL3FlfS91Y2NfZmFzdC5j
+DQo+ID4gKDk5JSkgIHJlbmFtZSB7YXJjaC9wb3dlcnBjL3N5c2Rldi9xZV9saWIgPT4NCj4gPiBk
+cml2ZXJzL3NvYy9mc2wvcWV9L3VjY19zbG93LmMgKDk4JSkgIHJlbmFtZSB7YXJjaC9wb3dlcnBj
+L2luY2x1ZGUvYXNtDQo+ID4gPT4gaW5jbHVkZS9saW51eC9mc2x9L3FlX2ljLmgNCj4gPiAoMTAw
+JSkNCj4gPiAgcmVuYW1lIHthcmNoL3Bvd2VycGMvaW5jbHVkZS9hc20gPT4gaW5jbHVkZS9zb2Mv
+ZnNsfS9pbW1hcF9xZS5oDQo+ID4gKDEwMCUpDQo+ID4gIHJlbmFtZSB7YXJjaC9wb3dlcnBjL2lu
+Y2x1ZGUvYXNtID0+IGluY2x1ZGUvc29jL2ZzbH0vcWUuaCAoOTklKQ0KPiA+IHJlbmFtZSB7YXJj
+aC9wb3dlcnBjL2luY2x1ZGUvYXNtID0+IGluY2x1ZGUvc29jL2ZzbH0vdWNjLmggKDk2JSkNCj4g
+PiByZW5hbWUge2FyY2gvcG93ZXJwYy9pbmNsdWRlL2FzbSA9PiBpbmNsdWRlL3NvYy9mc2x9L3Vj
+Y19mYXN0LmgNCj4gPiAoOTglKQ0KPiA+ICByZW5hbWUge2FyY2gvcG93ZXJwYy9pbmNsdWRlL2Fz
+bSA9PiBpbmNsdWRlL3NvYy9mc2x9L3VjY19zbG93LmgNCj4gPiAoOTklKQ0KPiA+DQo+ID4gZGlm
+ZiAtLWdpdCBhL01BSU5UQUlORVJTIGIvTUFJTlRBSU5FUlMgaW5kZXggYzQzZWE4OC4uODRiMjM0
+YiAxMDA2NDQNCj4gPiAtLS0gYS9NQUlOVEFJTkVSUw0KPiA+ICsrKyBiL01BSU5UQUlORVJTDQo+
+ID4gQEAgLTM3NDMsOCArMzc0Myw5IEBAIEY6ICAgICAgaW5jbHVkZS9saW51eC9mc19lbmV0X3Bk
+LmgNCj4gPiAgRlJFRVNDQUxFIFFVSUNDIEVOR0lORSBMSUJSQVJZDQo+ID4gIEw6ICAgbGludXhw
+cGMtZGV2QGxpc3RzLm96bGFicy5vcmcNCj4gPiAgUzogICBPcnBoYW4NCj4gPiAtRjogICBhcmNo
+L3Bvd2VycGMvc3lzZGV2L3FlX2xpYi8NCj4gPiAtRjogICBhcmNoL3Bvd2VycGMvaW5jbHVkZS9h
+c20vKnFlLmgNCj4gPiArRjogICBkcml2ZXJzL3NvYy9mc2wvcWUvDQo+ID4gK0Y6ICAgaW5jbHVk
+ZS9zb2MvZnNsLypxZSouaA0KPiA+ICtGOiAgIGluY2x1ZGUvc29jL2ZzbC8qdWNjKi5oDQo+IA0K
+PiBZb3UgZm9yZ290IHRvIGNoYW5nZSAiT3JwaGFuIiB0byAiTWFpbnRhaW5lZCIgYW5kIGRlc2ln
+bmF0ZSBhIG1haW50YWluZXIuDQo+IA0KPiBXaG8gaXMgZ29pbmcgdG8gZG8gdGhlIGFkZGl0aW9u
+YWwgd29yayB0byBtYWtlIHRoaXMgdXNhYmxlIG9uIEFSTT8NCj4gV2hvIGlzIGdvaW5nIHRvIG1l
+cmdlIHRob3NlIHBhdGNoZXM/DQo+IA0KPiA+IGRpZmYgLS1naXQgYS9hcmNoL3Bvd2VycGMvc3lz
+ZGV2L3FlX2xpYi9LY29uZmlnDQo+ID4gYi9kcml2ZXJzL3NvYy9mc2wvcWUvS2NvbmZpZw0KPiA+
+IHNpbWlsYXJpdHkgaW5kZXggNTAlDQo+ID4gY29weSBmcm9tIGFyY2gvcG93ZXJwYy9zeXNkZXYv
+cWVfbGliL0tjb25maWcNCj4gPiBjb3B5IHRvIGRyaXZlcnMvc29jL2ZzbC9xZS9LY29uZmlnDQo+
+ID4gaW5kZXggM2MyNTE5OS4uZTZiODg2MiAxMDA2NDQNCj4gPiAtLS0gYS9hcmNoL3Bvd2VycGMv
+c3lzZGV2L3FlX2xpYi9LY29uZmlnDQo+ID4gKysrIGIvZHJpdmVycy9zb2MvZnNsL3FlL0tjb25m
+aWcNCj4gPiBAQCAtMSw2ICsxLDE2IEBADQo+ID4gICMNCj4gPiAgIyBRRSBDb21tdW5pY2F0aW9u
+IG9wdGlvbnMNCj4gPiAgIw0KPiA+ICtjb25maWcgUVVJQ0NfRU5HSU5FDQo+ID4gKyAgICAgYm9v
+bCAiRnJlZXNjYWxlIFFVSUNDIEVuZ2luZSAoUUUpIFN1cHBvcnQiDQo+ID4gKyAgICAgZGVwZW5k
+cyBvbiBGU0xfU09DICYmIFBQQzMyDQo+ID4gKyAgICAgc2VsZWN0IFBQQ19MSUJfUkhFQVANCj4g
+PiArICAgICBzZWxlY3QgQ1JDMzINCj4gPiArICAgICBoZWxwDQo+ID4gKyAgICAgICBUaGUgUVVJ
+Q0MgRW5naW5lIChRRSkgaXMgYSBuZXcgZ2VuZXJhdGlvbiBvZiBjb21tdW5pY2F0aW9ucw0KPiA+
+ICsgICAgICAgY29wcm9jZXNzb3JzIG9uIEZyZWVzY2FsZSBlbWJlZGRlZCBDUFVzIChha2luIHRv
+IENQTSBpbiBvbGRlcg0KPiA+IGNoaXBzKS4NCj4gPiArICAgICAgIFNlbGVjdGluZyB0aGlzIG9w
+dGlvbiBtZWFucyB0aGF0IHlvdSB3aXNoIHRvIGJ1aWxkIGEga2VybmVsDQo+ID4gKyAgICAgICBm
+b3IgYSBtYWNoaW5lIHdpdGggYSBRRSBjb3Byb2Nlc3Nvci4NCj4gDQo+IFRoZSB3aG9sZSBwb2lu
+dCBvZiB0aGlzIG1vdmUgaXMgdG8gbGV0IHRoZSBjb2RlIGJlIHVzZWQgb24gbW9yZSB0aGFuIGp1
+c3QNCj4gcG93ZXJwYywgc28gZml4IHRoZSByaGVhcCBhbmQgb3RoZXIgb2J2aW91cyBQUEMgZGVw
+ZW5kZW5jaWVzIGZpcnN0Lg0KDQpDYW4gSSBmaXggdGhlIHJoZWFwIGFuZCBvdGhlciBQUEMgZGVw
+ZW5kZW5jaWVzIGxhdGVyPw0KSSB3aWxsIHNlbmQgcGF0Y2hlcyB0byBmaXggaXQgbGF0ZXIuDQoN
+Cj4gDQo+IC1TY290dA0KDQpCZXN0IFJlZ2FyZHMNClpoYW8gUWlhbmcNCg==
