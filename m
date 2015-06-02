@@ -1,33 +1,37 @@
-Return-Path: <kamalesh@linux.vnet.ibm.com>
-Received: from e28smtp08.in.ibm.com (e28smtp08.in.ibm.com [122.248.162.8])
+Return-Path: <vipin@linux.vnet.ibm.com>
+Received: from e28smtp04.in.ibm.com (e28smtp04.in.ibm.com [122.248.162.4])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id BE9B71A0065
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Jun 2015 15:18:22 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 03FC71A0065
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Jun 2015 15:20:51 +1000 (AEST)
 Received: from /spool/local
- by e28smtp08.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e28smtp04.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <kamalesh@linux.vnet.ibm.com>;
- Tue, 2 Jun 2015 10:48:20 +0530
-Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
- by d28dlp01.in.ibm.com (Postfix) with ESMTP id 78FE7E004C
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Jun 2015 10:51:33 +0530 (IST)
-Received: from d28av05.in.ibm.com (d28av05.in.ibm.com [9.184.220.67])
- by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t525IEPD40304744
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 2 Jun 2015 10:48:15 +0530
-Received: from d28av05.in.ibm.com (localhost [127.0.0.1])
- by d28av05.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t525IERB001093
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 2 Jun 2015 10:48:14 +0530
-From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>,
- Anshuman Khandual <khandual@linux.vnet.ibm.com>,
- Anton Blanchard <anton@samba.org>, Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH v2] powerpc/pseries: Ratelimit EPOW event warnings
-Date: Tue,  2 Jun 2015 10:48:11 +0530
-Message-Id: <1433222291-26461-1-git-send-email-kamalesh@linux.vnet.ibm.com>
+ for <linuxppc-dev@lists.ozlabs.org> from <vipin@linux.vnet.ibm.com>;
+ Tue, 2 Jun 2015 10:50:50 +0530
+Received: from d28relay01.in.ibm.com (d28relay01.in.ibm.com [9.184.220.58])
+ by d28dlp03.in.ibm.com (Postfix) with ESMTP id DFFC2125804F
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Jun 2015 10:53:11 +0530 (IST)
+Received: from d28av04.in.ibm.com (d28av04.in.ibm.com [9.184.220.66])
+ by d28relay01.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t525KjSO62521544
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 2 Jun 2015 10:50:46 +0530
+Received: from d28av04.in.ibm.com (localhost [127.0.0.1])
+ by d28av04.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t525KiEd015595
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 2 Jun 2015 10:50:45 +0530
+Message-ID: <556D3D2C.5090903@linux.vnet.ibm.com>
+Date: Tue, 02 Jun 2015 10:50:44 +0530
+From: Vipin K Parashar <vipin@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
+CC: joel@jms.id.au, stewart@linux.vnet.ibm.com, vaibhav@linux.vnet.ibm.com
+Subject: Re: [PATCH v5] powerpc/powernv: Add poweroff (EPOW,
+ DPO) events support for PowerNV platform
+References: <1431962284-12260-1-git-send-email-vipin@linux.vnet.ibm.com>
+ <1431962284-12260-2-git-send-email-vipin@linux.vnet.ibm.com>
+In-Reply-To: <1431962284-12260-2-git-send-email-vipin@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -37,86 +41,327 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-We print the respective warning after parsing EPOW interrupts,
-prompting user to take action depending upon the severity of the
-event.
+Hi Michael,
+              Please add below minor additions in commit log once u
+accept this patch. Thanks for your help with this. Let me know,
+if anything else is needed from me on this.
 
-Some times same EPOW event warning, such as below could flood kernel
-log, over a period of time. So Limit the warnings by using ratelimit
-variant of pr_err. Also, merge adjacent pr_err/pr_emerg into single
-one to reduce the number of lines printed per warning.
+Regards,
+Vipin
 
-May 25 03:46:34 alp kernel: Non critical power or cooling issue cleared
-May 25 03:46:52 alp kernel: Non critical power or cooling issue cleared
-May 25 03:53:48 alp kernel: Non critical power or cooling issue cleared
-May 25 03:55:46 alp kernel: Non critical power or cooling issue cleared
-May 25 03:56:34 alp kernel: Non critical power or cooling issue cleared
-May 25 03:59:04 alp kernel: Non critical power or cooling issue cleared
-May 25 04:02:01 alp kernel: Non critical power or cooling issue cleared
-May 25 04:04:24 alp kernel: Non critical power or cooling issue cleared
-May 25 04:07:18 alp kernel: Non critical power or cooling issue cleared
-May 25 04:13:04 alp kernel: Non critical power or cooling issue cleared
-May 25 04:22:04 alp kernel: Non critical power or cooling issue cleared
-May 25 04:22:26 alp kernel: Non critical power or cooling issue cleared
-May 25 04:22:36 alp kernel: Non critical power or cooling issue cleared
+On 05/18/2015 08:48 PM, Vipin K Parashar wrote:
+> This patch adds support for FSP EPOW (Early Power Off Warning) and
+> DPO (Delayed Power Off) events for PowerNV platform. EPOW events are
+> generated by SPCN/FSP due to various critical system conditions that
+> need system shutdown. Few examples of these conditions are high
+> ambient temperature or system running on UPS power with low UPS battery.
+> DPO event is generated in response to admin initiated system request.
 
-Signed-off-by: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
-Cc: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-Cc: Anton Blanchard <anton@samba.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
----
-v2 Changes:
- - Merged multiple adjacent pr_err/pr_emerg into single line to reduce multi-line
-   warnings, based on Michael's comments.
+s/system request/shutdown request/
 
- arch/powerpc/platforms/pseries/ras.c | 17 ++++++++---------
- 1 file changed, 8 insertions(+), 9 deletions(-)
+> 	Upon receipt of EPOW and DPO events host kernel invokes
+> orderly_poweroff for performing graceful system shutdown. System admin
+> can also add systemd service shutdown scripts to perform any specific
+> actions like graceful guest shutdown upon system poweroff. libvirt-guests
+> is systemd service available on recent distros for management of guests
+> at system start/shutdown time.
+>
+> Signed-off-by: Vipin K Parashar <vipin@linux.vnet.ibm.com>
 
-diff --git a/arch/powerpc/platforms/pseries/ras.c b/arch/powerpc/platforms/pseries/ras.c
-index 02e4a17..3620935 100644
---- a/arch/powerpc/platforms/pseries/ras.c
-+++ b/arch/powerpc/platforms/pseries/ras.c
-@@ -145,17 +145,17 @@ static void rtas_parse_epow_errlog(struct rtas_error_log *log)
- 
- 	switch (action_code) {
- 	case EPOW_RESET:
--		pr_err("Non critical power or cooling issue cleared");
-+		pr_err_ratelimited("Non critical power or cooling issue cleared");
- 		break;
- 
- 	case EPOW_WARN_COOLING:
--		pr_err("Non critical cooling issue reported by firmware");
--		pr_err("Check RTAS error log for details");
-+		pr_err_ratelimited("Non critical cooling issue reported by firmware,"
-+				   " Check RTAS error log for details");
- 		break;
- 
- 	case EPOW_WARN_POWER:
--		pr_err("Non critical power issue reported by firmware");
--		pr_err("Check RTAS error log for details");
-+		pr_err_ratelimited("Non critical power issue reported by firmware,"
-+				   " Check RTAS error log for details");
- 		break;
- 
- 	case EPOW_SYSTEM_SHUTDOWN:
-@@ -169,15 +169,14 @@ static void rtas_parse_epow_errlog(struct rtas_error_log *log)
- 
- 	case EPOW_MAIN_ENCLOSURE:
- 	case EPOW_POWER_OFF:
--		pr_emerg("Critical power/cooling issue reported by firmware");
--		pr_emerg("Check RTAS error log for details");
--		pr_emerg("Immediate power off");
-+		pr_emerg("Critical power/cooling issue reported by firmware,"
-+			 " Check RTAS error log for details. Immediate power off");
- 		emergency_sync();
- 		kernel_power_off();
- 		break;
- 
- 	default:
--		pr_err("Unknown power/cooling event (action code %d)",
-+		pr_err_ratelimited("Unknown power/cooling event (action code %d)",
- 			action_code);
- 	}
- }
--- 
-2.1.2
+Reviewed-by: Joel Stanley <joel@jms.id.au>
+Reviewed-by: Vaibhav Jain <vaibhav@linux.vnet.ibm.com>
+
+> ---
+>   arch/powerpc/include/asm/opal-api.h            |  44 ++++++++
+>   arch/powerpc/include/asm/opal.h                |   3 +-
+>   arch/powerpc/platforms/powernv/opal-power.c    | 147 ++++++++++++++++++++++---
+>   arch/powerpc/platforms/powernv/opal-wrappers.S |   1 +
+>   4 files changed, 179 insertions(+), 16 deletions(-)
+>
+> diff --git a/arch/powerpc/include/asm/opal-api.h b/arch/powerpc/include/asm/opal-api.h
+> index 0321a90..90fa364 100644
+> --- a/arch/powerpc/include/asm/opal-api.h
+> +++ b/arch/powerpc/include/asm/opal-api.h
+> @@ -355,6 +355,10 @@ enum opal_msg_type {
+>   	OPAL_MSG_TYPE_MAX,
+>   };
+>
+> +/* OPAL_MSG_SHUTDOWN parameter values */
+> +#define	SOFT_OFF	0x00
+> +#define	SOFT_REBOOT	0x01
+> +
+>   struct opal_msg {
+>   	__be32 msg_type;
+>   	__be32 reserved;
+> @@ -730,6 +734,46 @@ struct opal_i2c_request {
+>   	__be64 buffer_ra;		/* Buffer real address */
+>   };
+>
+> +/*
+> + * EPOW status sharing (OPAL and the host)
+> + *
+> + * The host will pass on OPAL, a buffer of length OPAL_SYSEPOW_MAX
+> + * with individual elements being 16 bits wide to fetch the system
+> + * wide EPOW status. Each element in the buffer will contain the
+> + * EPOW status in it's bit representation for a particular EPOW sub
+> + * class as defiend here. So multiple detailed EPOW status bits
+> + * specific for any sub class can be represented in a single buffer
+> + * element as it's bit representation.
+> + */
+> +
+> +/* System EPOW type */
+> +enum OpalSysEpow {
+> +	OPAL_SYSEPOW_POWER	= 0,	/* Power EPOW */
+> +	OPAL_SYSEPOW_TEMP	= 1,	/* Temperature EPOW */
+> +	OPAL_SYSEPOW_COOLING	= 2,	/* Cooling EPOW */
+> +	OPAL_SYSEPOW_MAX	= 3,	/* Max EPOW categories */
+> +};
+> +
+> +/* Power EPOW */
+> +enum OpalSysPower {
+> +	OPAL_SYSPOWER_UPS	= 0x0001, /* System on UPS power */
+> +	OPAL_SYSPOWER_CHNG	= 0x0002, /* System power config change */
+> +	OPAL_SYSPOWER_FAIL	= 0x0004, /* System impending power failure */
+> +	OPAL_SYSPOWER_INCL	= 0x0008, /* System incomplete power */
+> +};
+> +
+> +/* Temperature EPOW */
+> +enum OpalSysTemp {
+> +	OPAL_SYSTEMP_AMB	= 0x0001, /* System over ambient temperature */
+> +	OPAL_SYSTEMP_INT	= 0x0002, /* System over internal temperature */
+> +	OPAL_SYSTEMP_HMD	= 0x0004, /* System over ambient humidity */
+> +};
+> +
+> +/* Cooling EPOW */
+> +enum OpalSysCooling {
+> +	OPAL_SYSCOOL_INSF	= 0x0001, /* System insufficient cooling */
+> +};
+> +
+>   #endif /* __ASSEMBLY__ */
+>
+>   #endif /* __OPAL_API_H */
+> diff --git a/arch/powerpc/include/asm/opal.h b/arch/powerpc/include/asm/opal.h
+> index 042af1a..d30766f 100644
+> --- a/arch/powerpc/include/asm/opal.h
+> +++ b/arch/powerpc/include/asm/opal.h
+> @@ -141,7 +141,8 @@ int64_t opal_pci_fence_phb(uint64_t phb_id);
+>   int64_t opal_pci_reinit(uint64_t phb_id, uint64_t reinit_scope, uint64_t data);
+>   int64_t opal_pci_mask_pe_error(uint64_t phb_id, uint16_t pe_number, uint8_t error_type, uint8_t mask_action);
+>   int64_t opal_set_slot_led_status(uint64_t phb_id, uint64_t slot_id, uint8_t led_type, uint8_t led_action);
+> -int64_t opal_get_epow_status(__be64 *status);
+> +int64_t opal_get_epow_status(uint16_t *status, uint16_t *length);
+> +int64_t opal_get_dpo_status(int64_t *dpo_timeout);
+>   int64_t opal_set_system_attention_led(uint8_t led_action);
+>   int64_t opal_pci_next_error(uint64_t phb_id, __be64 *first_frozen_pe,
+>   			    __be16 *pci_error_type, __be16 *severity);
+> diff --git a/arch/powerpc/platforms/powernv/opal-power.c b/arch/powerpc/platforms/powernv/opal-power.c
+> index ac46c2c..581bbd8 100644
+> --- a/arch/powerpc/platforms/powernv/opal-power.c
+> +++ b/arch/powerpc/platforms/powernv/opal-power.c
+> @@ -1,5 +1,5 @@
+>   /*
+> - * PowerNV OPAL power control for graceful shutdown handling
+> + * PowerNV support for OPAL power-control, poweroff events
+>    *
+>    * Copyright 2015 IBM Corp.
+>    *
+> @@ -9,18 +9,87 @@
+>    * 2 of the License, or (at your option) any later version.
+>    */
+>
+> +#define pr_fmt(fmt)	"OPAL-POWER: "	fmt
+> +
+>   #include <linux/kernel.h>
+> +#include <linux/spinlock.h>
+> +#include <linux/timer.h>
+>   #include <linux/reboot.h>
+> -#include <linux/notifier.h>
+> -
+> +#include <linux/of.h>
+>   #include <asm/opal.h>
+>   #include <asm/machdep.h>
+>
+> -#define SOFT_OFF 0x00
+> -#define SOFT_REBOOT 0x01
+> +/* Get EPOW status */
+> +static bool get_epow_status(void)
+> +{
+> +	int i;
+> +	u16 num_classes;
+> +	__be16 epow_classes;
+> +	__be16 opal_epow_status[OPAL_SYSEPOW_MAX] = {0};
+> +
+> +	/* Send kernel EPOW classes supported info to OPAL */
+> +	epow_classes = cpu_to_be16(OPAL_SYSEPOW_MAX);
+> +
+> +	/* Get EPOW events information from OPAL */
+> +	opal_get_epow_status(opal_epow_status, &epow_classes);
+> +
+> +	/* Look for EPOW events present */
+> +	num_classes = be16_to_cpu(epow_classes);
+> +	for (i = 0; i < num_classes; i++) {
+> +		if (be16_to_cpu(opal_epow_status[i]))
+> +			return true;
+> +	}
+> +
+> +	return false;
+> +}
+> +
+> +/* Process existing EPOW, DPO events */
+> +static void process_existing_poweroff_events(void)
+> +{
+> +	int rc;
+> +	__be64 opal_dpo_timeout;
+>
+> +	/* Check for DPO event */
+> +	rc = opal_get_dpo_status(&opal_dpo_timeout);
+> +	if (rc != OPAL_WRONG_STATE) {
+> +		pr_info("Existing DPO event detected. Powering off system\n");
+> +		goto poweroff;
+> +	}
+> +
+> +	/* Check for EPOW event */
+> +	if (get_epow_status()) {
+> +		pr_info("Existing EPOW event detected. Powering off system");
+> +		goto poweroff;
+> +	}
+> +	return;
+> +
+> +poweroff:
+> +	orderly_poweroff(true);
+> +}
+> +
+> +/* OPAL EPOW, DPO event notifier */
+> +static int opal_epow_dpo_event(struct notifier_block *nb,
+> +				unsigned long msg_type, void *msg)
+> +{
+> +	switch (msg_type) {
+> +	case OPAL_MSG_EPOW:
+> +		pr_info("EPOW msg received. Powering off system\n");
+> +		break;
+> +	case OPAL_MSG_DPO:
+> +		pr_info("DPO msg received. Powering off system\n");
+> +		break;
+> +	default:
+> +		pr_err("Unknown message type %lu\n", msg_type);
+> +		return 0;
+> +	}
+> +
+> +	orderly_poweroff(true);
+> +	return 0;
+> +}
+> +
+> +/* OPAL power-control events notifier */
+>   static int opal_power_control_event(struct notifier_block *nb,
+> -				    unsigned long msg_type, void *msg)
+> +					unsigned long msg_type, void *msg)
+>   {
+>   	struct opal_msg *power_msg = msg;
+>   	uint64_t type;
+> @@ -29,20 +98,35 @@ static int opal_power_control_event(struct notifier_block *nb,
+>
+>   	switch (type) {
+>   	case SOFT_REBOOT:
+> -		pr_info("OPAL: reboot requested\n");
+> +		pr_info("Reboot requested\n");
+>   		orderly_reboot();
+>   		break;
+>   	case SOFT_OFF:
+> -		pr_info("OPAL: poweroff requested\n");
+> +		pr_info("Poweroff requested\n");
+>   		orderly_poweroff(true);
+>   		break;
+>   	default:
+> -		pr_err("OPAL: power control type unexpected %016llx\n", type);
+> +		pr_err("Unknown power-control type %llu\n", type);
+>   	}
+>
+>   	return 0;
+>   }
+>
+> +/* OPAL EPOW event notifier block */
+> +static struct notifier_block opal_epow_nb = {
+> +	.notifier_call	= opal_epow_dpo_event,
+> +	.next		= NULL,
+> +	.priority	= 0,
+> +};
+> +
+> +/* OPAL DPO event notifier block */
+> +static struct notifier_block opal_dpo_nb = {
+> +	.notifier_call	= opal_epow_dpo_event,
+> +	.next		= NULL,
+> +	.priority	= 0,
+> +};
+> +
+> +/* OPAL power-control event notifier block */
+>   static struct notifier_block opal_power_control_nb = {
+>   	.notifier_call	= opal_power_control_event,
+>   	.next		= NULL,
+> @@ -51,16 +135,49 @@ static struct notifier_block opal_power_control_nb = {
+>
+>   static int __init opal_power_control_init(void)
+>   {
+> -	int ret;
+> +	int ret, epow_dpo_supported = 0;
+> +	struct device_node *node_epow;
+>
+> +	/* Register OPAL power-control events notifier */
+>   	ret = opal_message_notifier_register(OPAL_MSG_SHUTDOWN,
+> -					     &opal_power_control_nb);
+> -	if (ret) {
+> -		pr_err("%s: Can't register OPAL event notifier (%d)\n",
+> -				__func__, ret);
+> -		return ret;
+> +				&opal_power_control_nb);
+> +	if (ret)
+> +		pr_err("Power-control events notifier registration "
+> +				"failed, ret = %d\n", ret);
+> +
+> +	/* Determine EPOW, DPO support in hardware. */
+> +	node_epow = of_find_node_by_path("/ibm,opal/epow");
+> +	if (node_epow) {
+> +		epow_dpo_supported = of_device_is_compatible(node_epow,
+> +				"ibm,opal-v3-epow");
+> +		of_node_put(node_epow);
+>   	}
+>
+> +	if (epow_dpo_supported)
+> +		pr_info("OPAL EPOW, DPO support detected.\n");
+> +	else
+> +		return 0;
+> +
+> +	/* Register EPOW event notifier */
+> +	ret = opal_message_notifier_register(OPAL_MSG_EPOW,
+> +			&opal_epow_nb);
+> +	if (ret)
+> +		pr_err("EPOW event notifier registration failed, "
+> +				"ret = %d\n", ret);
+> +
+> +	/* Register DPO event notifier */
+> +	ret = opal_message_notifier_register(OPAL_MSG_DPO,
+> +			&opal_dpo_nb);
+> +	if (ret)
+> +		pr_err("DPO event notifier registration failed, "
+> +				"ret = %d\n", ret);
+> +
+> +	/* Check for any existing EPOW or DPO events. */
+> +	process_existing_poweroff_events();
+> +
+> +	pr_info("Poweroff events support initialized\n");
+> +
+>   	return 0;
+>   }
+> +
+>   machine_subsys_initcall(powernv, opal_power_control_init);
+> diff --git a/arch/powerpc/platforms/powernv/opal-wrappers.S b/arch/powerpc/platforms/powernv/opal-wrappers.S
+> index a7ade94..5d3c8e3 100644
+> --- a/arch/powerpc/platforms/powernv/opal-wrappers.S
+> +++ b/arch/powerpc/platforms/powernv/opal-wrappers.S
+> @@ -249,6 +249,7 @@ OPAL_CALL(opal_pci_reinit,			OPAL_PCI_REINIT);
+>   OPAL_CALL(opal_pci_mask_pe_error,		OPAL_PCI_MASK_PE_ERROR);
+>   OPAL_CALL(opal_set_slot_led_status,		OPAL_SET_SLOT_LED_STATUS);
+>   OPAL_CALL(opal_get_epow_status,			OPAL_GET_EPOW_STATUS);
+> +OPAL_CALL(opal_get_dpo_status,			OPAL_GET_DPO_STATUS);
+>   OPAL_CALL(opal_set_system_attention_led,	OPAL_SET_SYSTEM_ATTENTION_LED);
+>   OPAL_CALL(opal_pci_next_error,			OPAL_PCI_NEXT_ERROR);
+>   OPAL_CALL(opal_pci_poll,			OPAL_PCI_POLL);
