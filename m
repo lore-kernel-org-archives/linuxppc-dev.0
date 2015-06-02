@@ -1,27 +1,21 @@
-Return-Path: <dgibson@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [IPv6:2401:3900:2:1::2])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <scottwood@freescale.com>
+Received: from na01-bn1-obe.outbound.protection.outlook.com
+ (mail-bn1bn0108.outbound.protection.outlook.com [157.56.110.108])
+ (using TLSv1.2 with cipher ECDHE-RSA-AES256-SHA384 (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 99E5F1A0065
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Jun 2015 11:40:17 +1000 (AEST)
-Date: Tue, 2 Jun 2015 11:40:33 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Cc: linuxppc-dev@lists.ozlabs.org,
- Alex Williamson <alex.williamson@redhat.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Gavin Shan <gwshan@linux.vnet.ibm.com>,
- Paul Mackerras <paulus@samba.org>, kvm@vger.kernel.org,
- linux-kernel@vger.kernel.org
-Subject: Re: [PATCH kernel v11 32/34] powerpc/mmu: Add userspace-to-physical
- addresses translation cache
-Message-ID: <20150602014033.GE3186@voom.fritz.box>
-References: <1432889098-22924-1-git-send-email-aik@ozlabs.ru>
- <1432889098-22924-33-git-send-email-aik@ozlabs.ru>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4959F1A0065
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Jun 2015 12:53:40 +1000 (AEST)
+Message-ID: <1433213604.3415.8.camel@freescale.com>
+Subject: Re: [PATCH v5] QE: Move QE from arch/powerpc to drivers/soc
+From: Scott Wood <scottwood@freescale.com>
+To: Zhao Qiang <B45475@freescale.com>
+CC: <linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
+ <netdev@vger.kernel.org>
+Date: Mon, 1 Jun 2015 21:53:24 -0500
+In-Reply-To: <1433212650-29579-1-git-send-email-B45475@freescale.com>
+References: <1433212650-29579-1-git-send-email-B45475@freescale.com>
+Content-Type: text/plain; charset="UTF-8"
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="+JUInw4efm7IfTNU"
-In-Reply-To: <1432889098-22924-33-git-send-email-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,83 +25,144 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Tue, 2015-06-02 at 10:37 +0800, Zhao Qiang wrote:
+> ls1 has qe and ls1 has arm cpu.
+> move qe from arch/powerpc to drivers/soc/fsl
+> to adapt to powerpc and arm
+> 
+> Signed-off-by: Zhao Qiang <B45475@freescale.com>
+> ---
+> Changes for v2:
+>       - move code to driver/soc
+> Changes for v3:
+>       - change drivers/soc/qe to drivers/soc/fsl-qe
+> Changes for v4:
+>       - move drivers/soc/fsl-qe to drivers/soc/fsl/qe
+>       - move head files for qe from include/linux/fsl to include/soc/fsl
+>       - move qe_ic.c to drivers/irqchip/
+> Changes for v5:
+>       - update MAINTAINERS
+> 
+>  MAINTAINERS                                        |  5 +++--
+>  arch/powerpc/platforms/83xx/km83xx.c               |  4 ++--
+>  arch/powerpc/platforms/83xx/misc.c                 |  2 +-
+>  arch/powerpc/platforms/83xx/mpc832x_mds.c          |  4 ++--
+>  arch/powerpc/platforms/83xx/mpc832x_rdb.c          |  4 ++--
+>  arch/powerpc/platforms/83xx/mpc836x_mds.c          |  4 ++--
+>  arch/powerpc/platforms/83xx/mpc836x_rdk.c          |  4 ++--
+>  arch/powerpc/platforms/85xx/common.c               |  2 +-
+>  arch/powerpc/platforms/85xx/corenet_generic.c      |  2 +-
+>  arch/powerpc/platforms/85xx/mpc85xx_mds.c          |  4 ++--
+>  arch/powerpc/platforms/85xx/mpc85xx_rdb.c          |  4 ++--
+>  arch/powerpc/platforms/85xx/twr_p102x.c            |  4 ++--
+>  arch/powerpc/platforms/Kconfig                     | 19 ------------
+> ------
+>  arch/powerpc/sysdev/qe_lib/Kconfig                 | 23 ++++++------
+> ----------
+>  arch/powerpc/sysdev/qe_lib/Makefile                | 10 +++-------
+>  arch/powerpc/sysdev/qe_lib/gpio.c                  |  2 +-
+>  arch/powerpc/sysdev/qe_lib/qe_io.c                 |  2 +-
+>  arch/powerpc/sysdev/qe_lib/usb.c                   |  4 ++--
+>  drivers/irqchip/Makefile                           |  1 +
+>  .../sysdev/qe_lib => drivers/irqchip}/qe_ic.c      |  2 +-
+>  .../sysdev/qe_lib => drivers/irqchip}/qe_ic.h      |  2 +-
+>  drivers/net/ethernet/freescale/fsl_pq_mdio.c       |  2 +-
+>  drivers/net/ethernet/freescale/ucc_geth.c          |  8 ++++----
+>  drivers/net/ethernet/freescale/ucc_geth.h          |  8 ++++----
+>  drivers/soc/Kconfig                                |  2 ++
+>  drivers/soc/Makefile                               |  1 +
+>  drivers/soc/fsl/Makefile                           |  5 +++++
+>  .../sysdev/qe_lib => drivers/soc/fsl/qe}/Kconfig   | 16 +++++++++---
+> ---
+>  drivers/soc/fsl/qe/Makefile                        |  8 ++++++++
+>  .../sysdev/qe_lib => drivers/soc/fsl/qe}/qe.c      |  4 ++--
+>  .../sysdev/qe_lib => drivers/soc/fsl/qe}/ucc.c     |  6 +++---
+>  .../qe_lib => drivers/soc/fsl/qe}/ucc_fast.c       |  8 ++++----
+>  .../qe_lib => drivers/soc/fsl/qe}/ucc_slow.c       |  8 ++++----
+>  drivers/spi/spi-fsl-cpm.c                          |  2 +-
+>  drivers/tty/serial/ucc_uart.c                      |  2 +-
+>  drivers/usb/gadget/fsl_qe_udc.c                    |  2 +-
+>  drivers/usb/host/fhci-hcd.c                        |  2 +-
+>  drivers/usb/host/fhci-hub.c                        |  2 +-
+>  drivers/usb/host/fhci-sched.c                      |  2 +-
+>  drivers/usb/host/fhci.h                            |  4 ++--
+>  .../include/asm => include/linux/fsl}/qe_ic.h      |  0
+>  .../include/asm => include/soc/fsl}/immap_qe.h     |  0
+>  {arch/powerpc/include/asm => include/soc/fsl}/qe.h |  2 +-
+>  .../powerpc/include/asm => include/soc/fsl}/ucc.h  |  4 ++--
+>  .../include/asm => include/soc/fsl}/ucc_fast.h     |  6 +++---
+>  .../include/asm => include/soc/fsl}/ucc_slow.h     |  6 +++---
+>  46 files changed, 103 insertions(+), 115 deletions(-)
+>  rename {arch/powerpc/sysdev/qe_lib => drivers/irqchip}/qe_ic.c (99%)
+>  rename {arch/powerpc/sysdev/qe_lib => drivers/irqchip}/qe_ic.h (98%)
+>  create mode 100644 drivers/soc/fsl/Makefile
+>  copy {arch/powerpc/sysdev/qe_lib => drivers/soc/fsl/qe}/Kconfig 
+> (50%)
+>  create mode 100644 drivers/soc/fsl/qe/Makefile
+>  rename {arch/powerpc/sysdev/qe_lib => drivers/soc/fsl/qe}/qe.c (99%)
+>  rename {arch/powerpc/sysdev/qe_lib => drivers/soc/fsl/qe}/ucc.c 
+> (98%)
+>  rename {arch/powerpc/sysdev/qe_lib => 
+> drivers/soc/fsl/qe}/ucc_fast.c (99%)
+>  rename {arch/powerpc/sysdev/qe_lib => 
+> drivers/soc/fsl/qe}/ucc_slow.c (98%)
+>  rename {arch/powerpc/include/asm => include/linux/fsl}/qe_ic.h 
+> (100%)
+>  rename {arch/powerpc/include/asm => include/soc/fsl}/immap_qe.h 
+> (100%)
+>  rename {arch/powerpc/include/asm => include/soc/fsl}/qe.h (99%)
+>  rename {arch/powerpc/include/asm => include/soc/fsl}/ucc.h (96%)
+>  rename {arch/powerpc/include/asm => include/soc/fsl}/ucc_fast.h 
+> (98%)
+>  rename {arch/powerpc/include/asm => include/soc/fsl}/ucc_slow.h 
+> (99%)
+> 
+> diff --git a/MAINTAINERS b/MAINTAINERS
+> index c43ea88..84b234b 100644
+> --- a/MAINTAINERS
+> +++ b/MAINTAINERS
+> @@ -3743,8 +3743,9 @@ F:      include/linux/fs_enet_pd.h
+>  FREESCALE QUICC ENGINE LIBRARY
+>  L:   linuxppc-dev@lists.ozlabs.org
+>  S:   Orphan
+> -F:   arch/powerpc/sysdev/qe_lib/
+> -F:   arch/powerpc/include/asm/*qe.h
+> +F:   drivers/soc/fsl/qe/
+> +F:   include/soc/fsl/*qe*.h
+> +F:   include/soc/fsl/*ucc*.h
 
---+JUInw4efm7IfTNU
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+You forgot to change "Orphan" to "Maintained" and designate a 
+maintainer.
 
-On Fri, May 29, 2015 at 06:44:56PM +1000, Alexey Kardashevskiy wrote:
-> We are adding support for DMA memory pre-registration to be used in
-> conjunction with VFIO. The idea is that the userspace which is going to
-> run a guest may want to pre-register a user space memory region so
-> it all gets pinned once and never goes away. Having this done,
-> a hypervisor will not have to pin/unpin pages on every DMA map/unmap
-> request. This is going to help with multiple pinning of the same memory.
->=20
-> Another use of it is in-kernel real mode (mmu off) acceleration of
-> DMA requests where real time translation of guest physical to host
-> physical addresses is non-trivial and may fail as linux ptes may be
-> temporarily invalid. Also, having cached host physical addresses
-> (compared to just pinning at the start and then walking the page table
-> again on every H_PUT_TCE), we can be sure that the addresses which we put
-> into TCE table are the ones we already pinned.
->=20
-> This adds a list of memory regions to mm_context_t. Each region consists
-> of a header and a list of physical addresses. This adds API to:
-> 1. register/unregister memory regions;
-> 2. do final cleanup (which puts all pre-registered pages);
-> 3. do userspace to physical address translation;
-> 4. manage usage counters; multiple registration of the same memory
-> is allowed (once per container).
->=20
-> This implements 2 counters per registered memory region:
-> - @mapped: incremented on every DMA mapping; decremented on unmapping;
-> initialized to 1 when a region is just registered; once it becomes zero,
-> no more mappings allowe;
-> - @used: incremented on every "register" ioctl; decremented on
-> "unregister"; unregistration is allowed for DMA mapped regions unless
-> it is the very last reference. For the very last reference this checks
-> that the region is still mapped and returns -EBUSY so the userspace
-> gets to know that memory is still pinned and unregistration needs to
-> be retried; @used remains 1.
->=20
-> Host physical addresses are stored in vmalloc'ed array. In order to
-> access these in the real mode (mmu off), there is a real_vmalloc_addr()
-> helper. In-kernel acceleration patchset will move it from KVM to MMU code.
->=20
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+Who is going to do the additional work to make this usable on ARM?  
+Who is going to merge those patches?
 
-There's a bunch of ways this could be cleaned up, but those can be
-done later.  So,
+> diff --git a/arch/powerpc/sysdev/qe_lib/Kconfig 
+> b/drivers/soc/fsl/qe/Kconfig
+> similarity index 50%
+> copy from arch/powerpc/sysdev/qe_lib/Kconfig
+> copy to drivers/soc/fsl/qe/Kconfig
+> index 3c25199..e6b8862 100644
+> --- a/arch/powerpc/sysdev/qe_lib/Kconfig
+> +++ b/drivers/soc/fsl/qe/Kconfig
+> @@ -1,6 +1,16 @@
+>  #
+>  # QE Communication options
+>  #
+> +config QUICC_ENGINE
+> +     bool "Freescale QUICC Engine (QE) Support"
+> +     depends on FSL_SOC && PPC32
+> +     select PPC_LIB_RHEAP
+> +     select CRC32
+> +     help
+> +       The QUICC Engine (QE) is a new generation of communications
+> +       coprocessors on Freescale embedded CPUs (akin to CPM in older 
+> chips).
+> +       Selecting this option means that you wish to build a kernel
+> +       for a machine with a QE coprocessor.
 
-Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
+The whole point of this move is to let the code be used on more than 
+just powerpc, so fix the rheap and other obvious PPC dependencies 
+first.
 
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
-
---+JUInw4efm7IfTNU
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJVbQmRAAoJEGw4ysog2bOSzMsQAJlZUNMtTLvs1OHxMBvGXqu7
-BTp+djsOO7pbWjT7DJZ4MhXGqAFdZSksyfAZ6q7Bi4IOnZPp7JuanwzlsnT+3n+M
-iANNbyq7wLoktOdj6cQjcOGRt2FZRD9HVmQyppUreYAytfH/SVBlhda/Xj5cXaTk
-U8QVs3HEoXYvZJN/0MQVCyLDzstHQMKg16U/4vrn/0No7vQTi3k+pEfF19FV8DsQ
-a/bhQsuu2+tfYOvQlSfD3KE6SQxYt6eM3n6fq8fejVYqulgS5gFvvCzXlhRDS9f3
-uCIG9R4XHtwKHBINLf4v3RboBXRy24BmVT/+Tj7ECicbUzH7v0vfAHM6+crPa8OY
-Bs9lhNlQNPcOBvHGzgaV9B0w1BGhrdEmnW3b+fLHZnJpywCHZnVFra11/+fJFEX1
-boMI8RAUxmtmxThb4hW0ITFj7bNwOfi6cj6/zcwYtHANpkd97R2CaBikNWXcTVol
-qERenPGDk6ighx8QekybKL2334hTZig3IIyYDbeGNfa3lfam7G7v5bVK7qjyXWTZ
-Qxu2aR34R4Z40QMRaGaTKzNkT2OrweOZrlo+hDJNDR+h7qHZn2KOy1mF34XDuhPB
-xz6AFq8SSPw+0XfxBfScaZuXMQf7oEXjjf2urr2C82G3QCcGQPw9VhwUztcMDCD1
-ZrH/o4UHYoHcI3Vnu7W6
-=xHH3
------END PGP SIGNATURE-----
-
---+JUInw4efm7IfTNU--
+-Scott
