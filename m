@@ -1,25 +1,25 @@
 Return-Path: <maddy@linux.vnet.ibm.com>
-Received: from e23smtp02.au.ibm.com (e23smtp02.au.ibm.com [202.81.31.144])
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id A04081A0868
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jun 2015 02:00:53 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 7FD5F1A074E
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jun 2015 02:01:07 +1000 (AEST)
 Received: from /spool/local
- by e23smtp02.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
- Wed, 3 Jun 2015 02:00:51 +1000
+ Wed, 3 Jun 2015 02:01:07 +1000
 Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
- by d23dlp02.au.ibm.com (Postfix) with ESMTP id 2E9342BB0040
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jun 2015 02:00:49 +1000 (EST)
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id 4BD722BB0047
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jun 2015 02:01:05 +1000 (EST)
 Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
  by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t52G0e8H63373410
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 3 Jun 2015 02:00:49 +1000
+ t52G0vcZ43647170
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 3 Jun 2015 02:01:05 +1000
 Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
  by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t52G0F9Y018634
- for <linuxppc-dev@lists.ozlabs.org>; Wed, 3 Jun 2015 02:00:16 +1000
+ t52G0VMo019008
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 3 Jun 2015 02:00:32 +1000
 From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
@@ -28,10 +28,12 @@ Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
  Paul Mackerras <paulus@samba.org>,
  Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
  Anshuman Khandual <khandual@linux.vnet.ibm.com>,
- Stephane Eranian <eranian@google.com>
-Subject: [PATCH v1 1/9]powerpc/powernv: Data structure and macros definition
-Date: Tue,  2 Jun 2015 21:29:30 +0530
-Message-Id: <1433260778-26497-2-git-send-email-maddy@linux.vnet.ibm.com>
+ Stephane Eranian <eranian@google.com>,
+ Preeti U Murthy <preeti@linux.vnet.ibm.com>,
+ Ingo Molnar <mingo@kernel.org>, Peter Zijlstra <peterz@infradead.org>
+Subject: [PATCH v1 3/9]powerpc/powernv: Add cpu hotplug support
+Date: Tue,  2 Jun 2015 21:29:32 +0530
+Message-Id: <1433260778-26497-4-git-send-email-maddy@linux.vnet.ibm.com>
 In-Reply-To: <1433260778-26497-1-git-send-email-maddy@linux.vnet.ibm.com>
 References: <1433260778-26497-1-git-send-email-maddy@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -43,8 +45,9 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-Patch creates a new header file "nest-pmu.h" to add the data structures
-and macros needed for the nest pmu support.
+Patch adds cpu hotplug support. First online cpu in a node is picked as
+designated thread to read the Nest pmu counter data, and at the time of
+hotplug, next online cpu from the same node is picked up.
 
 Cc: Michael Ellerman <mpe@ellerman.id.au>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
@@ -52,72 +55,115 @@ Cc: Paul Mackerras <paulus@samba.org>
 Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 Cc: Anshuman Khandual <khandual@linux.vnet.ibm.com>
 Cc: Stephane Eranian <eranian@google.com>
+Cc: Preeti U Murthy <preeti@linux.vnet.ibm.com>
+Cc: Ingo Molnar <mingo@kernel.org>
+Cc: Peter Zijlstra <peterz@infradead.org>
 Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 ---
- arch/powerpc/perf/nest-pmu.h | 55 ++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 55 insertions(+)
- create mode 100644 arch/powerpc/perf/nest-pmu.h
+ arch/powerpc/perf/nest-pmu.c | 84 ++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 84 insertions(+)
 
-diff --git a/arch/powerpc/perf/nest-pmu.h b/arch/powerpc/perf/nest-pmu.h
-new file mode 100644
-index 0000000..ed3f79f
---- /dev/null
-+++ b/arch/powerpc/perf/nest-pmu.h
-@@ -0,0 +1,55 @@
-+/*
-+ * Nest Performance Monitor counter support for POWER8 processors.
-+ *
-+ * Copyright 2015 Madhavan Srinivasan, IBM Corporation.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ */
+diff --git a/arch/powerpc/perf/nest-pmu.c b/arch/powerpc/perf/nest-pmu.c
+index d4413bb..3e7010e 100644
+--- a/arch/powerpc/perf/nest-pmu.c
++++ b/arch/powerpc/perf/nest-pmu.c
+@@ -30,6 +30,86 @@ static struct attribute_group cpumask_nest_pmu_attr_group = {
+ 	.attrs = cpumask_nest_pmu_attrs,
+ };
+ 
++static void nest_init(void *dummy)
++{
++	opal_nest_ima_control(P8_NEST_ENGINE_START);
++}
 +
-+#include <linux/perf_event.h>
-+#include <linux/slab.h>
-+#include <linux/of.h>
-+#include <linux/io.h>
-+#include <asm/opal.h>
++static void nest_change_cpu_context(int old_cpu, int new_cpu)
++{
++	int i;
 +
-+#define P8_MAX_CHIP		32
-+#define MAX_PMU_NAME_LEN	256
-+#define MAX_EVENTS_SUPPORTED    256
-+#define P8_NEST_ENGINE_START	1
-+#define P8_NEST_ENGINE_STOP	0
-+#define P8_MAX_NEST_PMUS	32
++	for (i=0; per_nestpmu_arr[i] != NULL; i++)
++		perf_pmu_migrate_context(&per_nestpmu_arr[i]->pmu,
++						old_cpu, new_cpu);
++	return;
++}
 +
-+/*
-+ * Structure to hold per chip specific memory address
-+ * information for nest pmus. Nest Counter data are exported
-+ * in per-chip HOMER region by the PORE Engine.
-+ */
-+struct perchip_nest_info {
-+        uint32_t chip_id;
-+        uint64_t pbase;
-+        uint64_t vbase;
-+        uint32_t size;
-+};
++static void nest_exit_cpu(int cpu)
++{
++	int i, nid, target = -1;
++	const struct cpumask *l_cpumask;
++	int src_chipid;
 +
-+/*
-+ * Place holder for nest pmu events and values.
-+ */
-+struct ppc64_nest_ima_events {
-+        const char *ev_name;
-+        const char *ev_value;
-+};
++	if (!cpumask_test_and_clear_cpu(cpu, &cpu_mask_nest_pmu))
++		return;
 +
-+/*
-+ * Device tree parser code detect nest pmu support
-+ * and create new nest pmus. This structure will
-+ * hold the pmu functions and attrs for each nest pmu and
-+ * will be referenced at the time of pmu registering.
-+ */
-+struct nest_pmu {
-+	struct pmu pmu;
-+	const struct attribute_group *attr_groups[4];
-+};
++	nid = cpu_to_node(cpu);
++	src_chipid = topology_physical_package_id(cpu);
++	l_cpumask = cpumask_of_node(nid);
++	for_each_cpu(i, l_cpumask) {
++		if (i == cpu)
++			continue;
++		if (src_chipid == topology_physical_package_id(i)) {
++			target = i;
++			break;
++		}
++	}
 +
++	cpumask_set_cpu(target, &cpu_mask_nest_pmu);
++	nest_change_cpu_context (cpu, target);
++	return;
++}
++
++static void nest_init_cpu(int cpu)
++{
++	int i, src_chipid;
++
++	src_chipid = topology_physical_package_id(cpu);
++	for_each_cpu(i, &cpu_mask_nest_pmu)
++		if (src_chipid == topology_physical_package_id(i))
++			return;
++
++	cpumask_set_cpu(cpu, &cpu_mask_nest_pmu);
++	nest_change_cpu_context ( -1, cpu);
++	return;
++}
++
++static int nest_cpu_notifier(struct notifier_block *self,
++				unsigned long action, void *hcpu)
++{
++	unsigned int cpu = (long)hcpu;
++
++	switch (action & ~CPU_TASKS_FROZEN) {
++	case CPU_DOWN_FAILED:
++	case CPU_STARTING:
++		nest_init_cpu(cpu);
++		break;
++	case CPU_DOWN_PREPARE:
++		nest_exit_cpu(cpu);
++		break;
++	default:
++		break;
++	}
++
++	return NOTIFY_OK;
++}
++
++static struct notifier_block nest_cpu_nb = {
++	.notifier_call  = nest_cpu_notifier,
++	.priority       = CPU_PRI_PERF + 1,
++}
++
+ void cpumask_chip(void)
+ {
+ 	const struct cpumask *l_cpumask;
+@@ -47,6 +127,10 @@ void cpumask_chip(void)
+ 		cpumask_set_cpu(cpu, &cpu_mask_nest_pmu);
+ 	}
+ 
++	on_each_cpu_mask(&cpu_mask_nest_pmu, (smp_call_func_t)nest_init, NULL, 1);
++
++	__register_cpu_notifier(&nest_cpu_nb);
++
+ 	cpu_notifier_register_done();
+ }
+ 
 -- 
 1.9.1
