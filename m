@@ -1,40 +1,34 @@
-Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
- (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+Return-Path: <tglx@linutronix.de>
+Received: from Galois.linutronix.de (Galois.linutronix.de
+ [IPv6:2001:470:1f0b:db:abcd:42:0:1])
+ (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 06A5C1A0F4F
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jun 2015 05:20:43 +1000 (AEST)
-Received: from /spool/local
- by e34.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
- Violators will be prosecuted
- for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
- Tue, 2 Jun 2015 13:20:41 -0600
-Received: from b03cxnp08025.gho.boulder.ibm.com
- (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
- by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id 8A13519D8040
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Jun 2015 13:11:42 -0600 (MDT)
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
- by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t52JK73126214438
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 2 Jun 2015 12:20:07 -0700
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
- by d03av04.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t52JKeki001001
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 2 Jun 2015 13:20:40 -0600
-Date: Tue, 2 Jun 2015 12:20:02 -0700
-From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-To: mingo@redhat.com, ak@linux.intel.com,
- Michael Ellerman <mpe@ellerman.id.au>, Jiri Olsa <jolsa@redhat.com>,
- Arnaldo Carvalho de Melo <acme@kernel.org>
-Cc: namhyung@kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v13 09/14] perf, tools: Group alias perf list by section
-Message-ID: <20150602192002.GB3978@us.ibm.com>
-References: <1433265135-20426-1-git-send-email-sukadev@linux.vnet.ibm.com>
- <1433265135-20426-10-git-send-email-sukadev@linux.vnet.ibm.com>
+ by lists.ozlabs.org (Postfix) with ESMTPS id D7E321A1025
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jun 2015 05:21:07 +1000 (AEST)
+Date: Tue, 2 Jun 2015 21:20:45 +0200 (CEST)
+From: Thomas Gleixner <tglx@linutronix.de>
+To: Baolin Wang <baolin.wang@linaro.org>
+cc: arnd@arndb.de, john.stultz@linaro.org, heenasirwani@gmail.com,
+ pang.xunlei@linaro.org, peterz@infradead.org, rafael.j.wysocki@intel.com,
+ gregkh@linuxfoundation.org, richardcochran@gmail.com,
+ benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
+ schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com, linux390@de.ibm.com,
+ rth@twiddle.net, riel@redhat.com, cl@linux.com, tj@kernel.org,
+ fweisbec@gmail.com, ahh@google.com, pjt@google.com,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
+ netdev@vger.kernel.org, serge.hallyn@canonical.com,
+ james.l.morris@oracle.com, serge@hallyn.com, pmoore@redhat.com,
+ tiwai@suse.de, jeffv@google.com, jlayton@primarydata.com,
+ keescook@chromium.org, sds@tycho.nsa.gov, mark.d.rustad@intel.com,
+ linux-security-module@vger.kernel.org, y2038@lists.linaro.org
+Subject: Re: [PATCH v4 00/25] Convert the posix_clock_operations and k_clock
+ structure to ready for 2038
+In-Reply-To: <1433159093-4548-1-git-send-email-baolin.wang@linaro.org>
+Message-ID: <alpine.DEB.2.11.1506022115240.20347@nanos>
+References: <1433159093-4548-1-git-send-email-baolin.wang@linaro.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1433265135-20426-10-git-send-email-sukadev@linux.vnet.ibm.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -44,78 +38,23 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+On Mon, 1 Jun 2015, Baolin Wang wrote:
 
-Please drop this patch. It was incorrectly included in the set.
-Also, see the updated Patch 12/14.
+> This patch series changes the 32-bit time types (timespec/itimerspec) to
+> the 64-bit types (timespec64/itimerspec64), since 32-bit time types will
+> break in the year 2038.
 
-Current set of patches are in the json-v13.1 branch:
+That's only true for 32bit systems.
 
-	https://github.com/sukadev/linux/tree/json-v13.1
+All in all the patch series looks rather reasonable now, except for
+the subject lines and the changelogs.
 
-Sukadev
+The only technical objection I have is the macro conversion magic in
+patch #6. This can be done in a less cryptic and more efficient way.
 
-Sukadev Bhattiprolu [sukadev@linux.vnet.ibm.com] wrote:
-| From: Andi Kleen <ak@linux.intel.com>
-| 
-| The first first element in an hardware event name defines the general
-| area, usually the part of the micro architecture it is refering to.
-| Group the perf list output by these sections by adding section headers.
-| 
-| Signed-off-by: Andi Kleen <ak@linux.intel.com>
-| Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-| ---
-|  tools/perf/util/pmu.c |   17 +++++++++++++++++
-|  1 file changed, 17 insertions(+)
-| 
-| diff --git a/tools/perf/util/pmu.c b/tools/perf/util/pmu.c
-| index 417333b..8d91fa7 100644
-| --- a/tools/perf/util/pmu.c
-| +++ b/tools/perf/util/pmu.c
-| @@ -1039,6 +1039,8 @@ void print_pmu_events(const char *event_glob, bool name_only, bool quiet_flag)
-|  	struct pair *aliases;
-|  	int numdesc = 0;
-|  	int columns = pager_get_columns();
-| +	const char *last_section;
-| +	int last_section_len;
-| 
-|  	pmu = NULL;
-|  	len = 0;
-| @@ -1086,6 +1088,8 @@ void print_pmu_events(const char *event_glob, bool name_only, bool quiet_flag)
-|  		}
-|  	}
-|  	len = j;
-| +	last_section = NULL;
-| +	last_section_len = 0;
-|  	qsort(aliases, len, sizeof(struct pair), cmp_pair);
-|  	for (j = 0; j < len; j++) {
-|  		if (name_only) {
-| @@ -1093,8 +1097,21 @@ void print_pmu_events(const char *event_glob, bool name_only, bool quiet_flag)
-|  			continue;
-|  		}
-|  		if (aliases[j].desc && !quiet_flag) {
-| +			char *dot;
-| +			char *name = aliases[j].name;
-| +
-|  			if (numdesc++ == 0)
-|  				printf("\n");
-| +			dot = strchr(name, '.');
-| +			if (dot &&
-| +				(!last_section ||
-| +				 strncmp(last_section, name, last_section_len))) {
-| +				last_section_len = dot - name;
-| +				printf("%s%.*s:\n",
-| +						last_section ? "\n" : "",
-| +						last_section_len, name);
-| +				last_section = name;
-| +			}
-|  			printf("  %-50s\n", aliases[j].name);
-|  			printf("%*s", 8, "[");
-|  			wordwrap(aliases[j].desc, 8, columns, 0);
-| -- 
-| 1.7.9.5
-| 
-| --
-| To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
-| the body of a message to majordomo@vger.kernel.org
-| More majordomo info at  http://vger.kernel.org/majordomo-info.html
-| Please read the FAQ at  http://www.tux.org/lkml/
+See the comments to the various patches and please apply them to all
+of the series.
+
+Thanks,
+
+	tglx
