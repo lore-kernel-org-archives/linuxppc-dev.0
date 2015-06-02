@@ -1,25 +1,27 @@
-Return-Path: <mikey@neuling.org>
+Return-Path: <dgibson@ozlabs.org>
 Received: from ozlabs.org (ozlabs.org [103.22.144.67])
  (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 913331A0054
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Jun 2015 10:36:52 +1000 (AEST)
-Received: from localhost.localdomain (localhost [127.0.0.1])
- by ozlabs.org (Postfix) with ESMTP id 6A9AF1412E6
- for <linuxppc-dev@ozlabs.org>; Tue,  2 Jun 2015 10:36:52 +1000 (AEST)
-Message-ID: <1433205412.24546.30.camel@neuling.org>
-Subject: Re: [PATCH] cxl: Set up and enable PSL Timebase
-From: Michael Neuling <mikey@neuling.org>
-To: Philippe Bergheaud <felix@linux.vnet.ibm.com>
-Cc: imunsie@au1.ibm.com, linuxppc-dev@ozlabs.org,
- vaibhav@linux.vnet.ibm.com,  Stewart Smith <stewart@linux.vnet.ibm.com>
-Date: Tue, 02 Jun 2015 10:36:52 +1000
-In-Reply-To: <556C64A6.2050905@linux.vnet.ibm.com>
-References: <1432818778-27819-1-git-send-email-felix@linux.vnet.ibm.com>
- <1433140899.24546.14.camel@neuling.org>
- <556C64A6.2050905@linux.vnet.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Mime-Version: 1.0
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4A2F91A0054
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Jun 2015 11:40:17 +1000 (AEST)
+Date: Tue, 2 Jun 2015 10:24:03 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Alexey Kardashevskiy <aik@ozlabs.ru>
+Cc: linuxppc-dev@lists.ozlabs.org,
+ Alex Williamson <alex.williamson@redhat.com>,
+ Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+ Gavin Shan <gwshan@linux.vnet.ibm.com>,
+ Paul Mackerras <paulus@samba.org>, kvm@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+Subject: Re: [PATCH kernel v11 28/34] vfio: powerpc/spapr:
+ powerpc/powernv/ioda: Define and implement DMA windows API
+Message-ID: <20150602002403.GA3186@voom.fritz.box>
+References: <1432889098-22924-1-git-send-email-aik@ozlabs.ru>
+ <1432889098-22924-29-git-send-email-aik@ozlabs.ru>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+ protocol="application/pgp-signature"; boundary="ibTvN161/egqYuK8"
+In-Reply-To: <1432889098-22924-29-git-send-email-aik@ozlabs.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -29,55 +31,70 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 2015-06-01 at 15:56 +0200, Philippe Bergheaud wrote:
-> Michael Neuling wrote:
->  > Please use negative error codes here.  -EIO?
->  > And check it here.
+
+--ibTvN161/egqYuK8
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Fri, May 29, 2015 at 06:44:52PM +1000, Alexey Kardashevskiy wrote:
+> This extends iommu_table_group_ops by a set of callbacks to support
+> dynamic DMA windows management.
 >=20
-> Mikey,
+> create_table() creates a TCE table with specific parameters.
+> it receives iommu_table_group to know nodeid in order to allocate
+> TCE table memory closer to the PHB. The exact format of allocated
+> multi-level table might be also specific to the PHB model (not
+> the case now though).
+> This callback calculated the DMA window offset on a PCI bus from @num
+> and stores it in a just created table.
 >=20
-> I am reluctant to fail the entire CAPI init after a PSL timebase sync fai=
-lure.
-> If we ignore the error, the CAPI device stays available (without timebase=
- sync).
-> If we honour the error, the CAPI device fails entirely.
+> set_window() sets the window at specified TVT index + @num on PHB.
 >=20
-> I know three reasons why PSL timebase sync can fail:
-> 1. h/w failure
-
-This would be a good reason to fail it.  Bad hardware, we should fail.
-
-> 2. OPAL did not initialize the CAPP timebase (wrong OPAL version)
-
-This would not as we are going to have to deal with older opal for a
-while.
-
-Is there a way for us to tell if OPAL has this capability?  I guess we
-could add something to the device tree of the PHB node if we know the
-timebase has been synced.
-
-> 3. the PCIe bus was not powered off/on between shutdown and reboot
-
-We should fix that.  What's the problem?
-
-> I think that it is premature to choose to fail the entire CAPI init in al=
-l cases.
-> In particular, point 3. introduces a regression, as PCIe off/on was never=
- a requirement for booting CAPI on P8.
-
-We should fix it.  Is a PERST enough?
-
-> I have tried one workaround do far: forcing the 0 to 1 transition of the =
-tb bit of the PSL register TB_CTLSTAT.
-> In vain.
+> unset_window() unsets the window from specified TVT.
 >=20
-> What do you think?
+> This adds a free() callback to iommu_table_ops to free the memory
+> (potentially a tree of tables) allocated for the TCE table.
+>=20
+> create_table() and free() are supposed to be called once per
+> VFIO container and set_window()/unset_window() are supposed to be
+> called for every group in a container.
+>=20
+> This adds IOMMU capabilities to iommu_table_group such as default
+> 32bit window parameters and others. This makes use of new values in
+> vfio_iommu_spapr_tce. IODA1/P5IOC2 do not support DDW so they do not
+> advertise pagemasks to the userspace.
+>=20
+> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
+> Acked-by: Alex Williamson <alex.williamson@redhat.com>
 
-The OPAL one (2) is the most concerning but let's work out if we can
-determine if the syncing has happened in the CAPP unit or not.  If we
-know it's synced but it fails your test, then I think we should fail the
-whole probe. =20
+Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
 
-I the other reasons (1 and 3) shouldn't be ignored. =20
+--=20
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
 
-Mikey
+--ibTvN161/egqYuK8
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1
+
+iQIcBAEBAgAGBQJVbPejAAoJEGw4ysog2bOStc4QAJZMf5p0TQVV4f58ymM8lWje
+/bdmel4NutnO7KUXhf5l2sikc0lCQN7Qi23tSKlWLwCYmnTk4SPhiOvn3x+M71cs
+msEZg92HLyJxXQu3mCOJY5PzMse/2Vfz/iNwJHe3M8+C5ILVaNbtJ5oFiVozTT1U
+MV7VxtEGBxoZg5wA+9fQMYbNN6UyXtnZT3R3G9bSOUtEFIB0EV12XFTELdRmqk7O
+3QvJBtzjN7ZEeqok8xDiKr5flEkZBgH/pr6/hpEiLZtQGYUo9lqfeSCNdPTCLvly
+9/T8VluDpTawcqCAFurtHfNULgEUjSM6bII1OlLcMmDWBDwJeDFzovAVeg9aMdnK
+rEh/nRdAo8az+0p6qYbmddyNutXOje5IAkkmlLIlnRnJRlniEav25jk+oWhDR6F/
+RaXk28y/BCkfiZcLotkIwvl/2wjXeWdF9w1LNeqGA+PtQ80kA9r6N5mOyZr6W8je
+1ZR+dAzyguLsHbAgfUEQqte7/iGVHgeMiG1Ga9YrILv6r0yvl5IrP1atWvP8hm5w
+1eMz1RYxLEWWJYO25w81ryxlRnISM0mFpaK+ZEUhQWxwQq7Ao/NJg06lgYsPfxED
+kkxG6f+zUTDjvy9aqUq+5O2mcucGP1reJ8UY7dkO4/PYht941ZEtTLTgPsvN3nry
+KLNnKk2Fh/iwjHtYkkt1
+=OQwy
+-----END PGP SIGNATURE-----
+
+--ibTvN161/egqYuK8--
