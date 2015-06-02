@@ -1,27 +1,38 @@
-Return-Path: <dgibson@ozlabs.org>
-Received: from ozlabs.org (ozlabs.org [103.22.144.67])
- (using TLSv1.2 with cipher AECDH-AES256-SHA (256/256 bits))
+Return-Path: <kamalesh@linux.vnet.ibm.com>
+Received: from e28smtp01.in.ibm.com (e28smtp01.in.ibm.com [122.248.162.1])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 420E11A0065
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Jun 2015 15:01:43 +1000 (AEST)
-Date: Tue, 2 Jun 2015 14:37:19 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Alexey Kardashevskiy <aik@ozlabs.ru>
-Cc: linuxppc-dev@lists.ozlabs.org,
- Alex Williamson <alex.williamson@redhat.com>,
- Benjamin Herrenschmidt <benh@kernel.crashing.org>,
- Gavin Shan <gwshan@linux.vnet.ibm.com>,
- Paul Mackerras <paulus@samba.org>, kvm@vger.kernel.org,
- linux-kernel@vger.kernel.org
-Subject: Re: [PATCH kernel v11 34/34] vfio: powerpc/spapr: Support Dynamic
- DMA windows
-Message-ID: <20150602043719.GG3186@voom.fritz.box>
-References: <1432889098-22924-1-git-send-email-aik@ozlabs.ru>
- <1432889098-22924-35-git-send-email-aik@ozlabs.ru>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 8D09E1A0065
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Jun 2015 15:03:37 +1000 (AEST)
+Received: from /spool/local
+ by e28smtp01.in.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <kamalesh@linux.vnet.ibm.com>;
+ Tue, 2 Jun 2015 10:33:34 +0530
+Received: from d28relay05.in.ibm.com (d28relay05.in.ibm.com [9.184.220.62])
+ by d28dlp01.in.ibm.com (Postfix) with ESMTP id 5C8ADE004C
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Jun 2015 10:36:46 +0530 (IST)
+Received: from d28av03.in.ibm.com (d28av03.in.ibm.com [9.184.220.65])
+ by d28relay05.in.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t5253SUU59506886
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 2 Jun 2015 10:33:28 +0530
+Received: from d28av03.in.ibm.com (localhost [127.0.0.1])
+ by d28av03.in.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t524F9IG011259
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 2 Jun 2015 09:45:09 +0530
+Date: Tue, 2 Jun 2015 10:33:21 +0530
+From: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org, Anton Blanchard <anton@samba.org>,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Subject: Re: [RFC PATCH] powerpc/pseries: Ratelimit EPOW event warnings
+Message-ID: <20150602050320.GA25216@linux.vnet.ibm.com>
+Reply-To: Kamalesh Babulal <kamalesh@linux.vnet.ibm.com>
+References: <1432787595-9946-1-git-send-email-kamalesh@linux.vnet.ibm.com>
+ <1433158011.1004.3.camel@ellerman.id.au>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="Cp3Cp8fzgozWLBWL"
-In-Reply-To: <1432889098-22924-35-git-send-email-aik@ozlabs.ru>
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <1433158011.1004.3.camel@ellerman.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -31,63 +42,49 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+* Michael Ellerman <mpe@ellerman.id.au> [2015-06-01 21:26:51]:
 
---Cp3Cp8fzgozWLBWL
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+> On Thu, 2015-05-28 at 10:03 +0530, Kamalesh Babulal wrote:
+> > We print the respective warning after parsing EPOW interrupts,
+> > prompting user to take action depending upon the severity of the
+> > event.
+> > 
+> > Some times same EPOW event warning, such as below could flood kernel
+> > log, within very short duration. So Limit the message by using
+> > ratelimit variant of pr_err.
+> > 
+> > May 25 03:46:34 alp kernel: Non critical power or cooling issue cleared
+> > May 25 03:46:52 alp kernel: Non critical power or cooling issue cleared
+> > May 25 03:53:48 alp kernel: Non critical power or cooling issue cleared
+> > May 25 03:55:46 alp kernel: Non critical power or cooling issue cleared
+> > May 25 03:56:34 alp kernel: Non critical power or cooling issue cleared
+> > May 25 03:59:04 alp kernel: Non critical power or cooling issue cleared
+> > May 25 04:02:01 alp kernel: Non critical power or cooling issue cleared
+> > May 25 04:04:24 alp kernel: Non critical power or cooling issue cleared
+> > May 25 04:07:18 alp kernel: Non critical power or cooling issue cleared
+> > May 25 04:13:04 alp kernel: Non critical power or cooling issue cleared
+> > May 25 04:22:04 alp kernel: Non critical power or cooling issue cleared
+> > May 25 04:22:26 alp kernel: Non critical power or cooling issue cleared
+> > May 25 04:22:36 alp kernel: Non critical power or cooling issue cleared
+> 
+> Looking at the time stamps those are actually all fairly far apart in time,
+> aren't they? So do we actually see them within a short duration in practice?
 
-On Fri, May 29, 2015 at 06:44:58PM +1000, Alexey Kardashevskiy wrote:
-> This adds create/remove window ioctls to create and remove DMA windows.
-> sPAPR defines a Dynamic DMA windows capability which allows
-> para-virtualized guests to create additional DMA windows on a PCI bus.
-> The existing linux kernels use this new window to map the entire guest
-> memory and switch to the direct DMA operations saving time on map/unmap
-> requests which would normally happen in a big amounts.
->=20
-> This adds 2 ioctl handlers - VFIO_IOMMU_SPAPR_TCE_CREATE and
-> VFIO_IOMMU_SPAPR_TCE_REMOVE - to create and remove windows.
-> Up to 2 windows are supported now by the hardware and by this driver.
->=20
-> This changes VFIO_IOMMU_SPAPR_TCE_GET_INFO handler to return additional
-> information such as a number of supported windows and maximum number
-> levels of TCE tables.
->=20
-> DDW is added as a capability, not as a SPAPR TCE IOMMU v2 unique feature
-> as we still want to support v2 on platforms which cannot do DDW for
-> the sake of TCE acceleration in KVM (coming soon).
->=20
-> Signed-off-by: Alexey Kardashevskiy <aik@ozlabs.ru>
-> [aw: for the vfio related changes]
-> Acked-by: Alex Williamson <alex.williamson@redhat.com>
+Thanks for the review. Agree, I should have phrased it better. My intend was to
+say, that these warnings keep flooding the kernel log, over a period of time.
 
-Reviewed-by: David Gibson <david@gibson.dropbear.id.au>
+[..]
+> >  	case EPOW_WARN_POWER:
+> > -		pr_err("Non critical power issue reported by firmware");
+> > -		pr_err("Check RTAS error log for details");
+> > +		pr_err_ratelimited("Non critical power issue reported by firmware");
+> > +		pr_err_ratelimited("Check RTAS error log for details");
+> >  		break;
+> 
+> Those last two could be collapsed onto one line which would reduce the spam.
 
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Yes, it could reduce the number of lines printed. Will resend the patch with the
+changes.
 
---Cp3Cp8fzgozWLBWL
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
-
-iQIcBAEBAgAGBQJVbTL/AAoJEGw4ysog2bOSuf8QAMnDUjB3Mj+IEYjJRI+XF49U
-/FAaLYfAQv/PzyaFGR96IdT169gjV29dmLciu1t47l4gWBkLO4cQSXlC7plDmTaK
-SyulYqwVEgDx7nv/QSvsZL8tr2i5IXvHCScLHgtrreowKZVMpVw00cshncapBOC3
-eifRjMCrEJuUBVnCxXl1c7S+uKkzWWJaDzIZm4SLii2sppdw72Ac/+LTyZrBInCa
-qNFHXYH4YDiJYzAHMvq3j91oEZddoZBlAA+03H1hpnjYEGQJbDPvus63GnXuA+Gy
-wUajq5PyfKLFCfDoFvrHQMbtu4ZYtPaLwlCBxirNRgMWPhtMYZWwLQSob6hni8u+
-pnK+16+GSIb6/if/+yPzbMmkBMcY+/Zk0VZHp6gW0T4C48nDDpCjPW4Nu7S9IweN
-DAqeiRCwNlvH1mNAdSRgOLvMnAJ5JL4LaCU8M3w3Dj6L/nHF2WpywtlDfnxjyNZx
-t7CE6iDojGj5m3t15JY/7Tk+zdH1+6w9GftMDuOW97BM605s05XR2DQArkfwqJUn
-IdzPMR4CQs57B8NHp2HTGMPijK5y0hXmJm6HqqKK7hUH3jrAngolbzRgZDihxKia
-gECy2s6PD0JO/PDEb6WvdNqJyzg1OhQ6UYCNcW9htjWLtcL8RG+jr+Y+HrPgqHDD
-//IlB6gNZlaBHlij1o6A
-=IMCx
------END PGP SIGNATURE-----
-
---Cp3Cp8fzgozWLBWL--
+Thanks,
+Kamalesh.
