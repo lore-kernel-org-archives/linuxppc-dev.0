@@ -1,26 +1,35 @@
-Return-Path: <emunson@akamai.com>
-Received: from prod-mail-xrelay07.akamai.com (prod-mail-xrelay07.akamai.com
- [72.246.2.115])
- by lists.ozlabs.org (Postfix) with ESMTP id 7E4A91A0018
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jun 2015 00:25:23 +1000 (AEST)
-Date: Tue, 2 Jun 2015 10:25:20 -0400
-From: Eric B Munson <emunson@akamai.com>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Shuah Khan <shuahkh@osg.samsung.com>, Michal Hocko <mhocko@suse.cz>,
- linux-alpha@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-mips@linux-mips.org, linux-parisc@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, sparclinux@vger.kernel.org,
- linux-xtensa@linux-xtensa.org, linux-mm@kvack.org,
- linux-arch@vger.kernel.org, linux-api@vger.kernel.org
-Subject: Re: [RESEND PATCH 0/3] Allow user to request memory to be locked on
- page fault
-Message-ID: <20150602142520.GB2364@akamai.com>
-References: <1432908808-31150-1-git-send-email-emunson@akamai.com>
- <20150601152746.abbbbb9d479c0e2dbdec2aaf@linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
- protocol="application/pgp-signature"; boundary="GRPZ8SYKNexpdSJ7"
-In-Reply-To: <20150601152746.abbbbb9d479c0e2dbdec2aaf@linux-foundation.org>
+Return-Path: <maddy@linux.vnet.ibm.com>
+Received: from e23smtp05.au.ibm.com (e23smtp05.au.ibm.com [202.81.31.147])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
+ (No client certificate requested)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 3F1B81A0018
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jun 2015 02:00:42 +1000 (AEST)
+Received: from /spool/local
+ by e23smtp05.au.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <maddy@linux.vnet.ibm.com>;
+ Wed, 3 Jun 2015 02:00:39 +1000
+Received: from d23relay09.au.ibm.com (d23relay09.au.ibm.com [9.185.63.181])
+ by d23dlp02.au.ibm.com (Postfix) with ESMTP id B0C182BB0047
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jun 2015 02:00:35 +1000 (EST)
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.235.139])
+ by d23relay09.au.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t52G0R7I65142796
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 3 Jun 2015 02:00:35 +1000
+Received: from d23av04.au.ibm.com (localhost [127.0.0.1])
+ by d23av04.au.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t52G0260018115
+ for <linuxppc-dev@lists.ozlabs.org>; Wed, 3 Jun 2015 02:00:02 +1000
+From: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Cc: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Paul Mackerras <paulus@samba.org>,
+ Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>,
+ Anshuman Khandual <khandual@linux.vnet.ibm.com>,
+ Stephane Eranian <eranian@google.com>
+Subject: [PATCH v1 0/9]powerpc/powernv: Nest Instrumentation support
+Date: Tue,  2 Jun 2015 21:29:29 +0530
+Message-Id: <1433260778-26497-1-git-send-email-maddy@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -30,104 +39,121 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
+This patchset enables Nest Instrumentation support on powerpc.
+POWER8 has per-chip Nest Intrumentation which provides various
+per-chip metrics like memory, powerbus, Xlink and Alink
+bandwidth.
 
---GRPZ8SYKNexpdSJ7
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Nest Instrumentation provides an interface (via PORE Engine)
+to configure and move the nest counter data to memory. From
+kernel side, OPAL Call interface is used to activate/deactivate
+PORE Engine for nest data collection.
 
-On Mon, 01 Jun 2015, Andrew Morton wrote:
+OPAL at boot, detects the feature, initializes it and pass on
+the nest units and other related information such as memory
+region, events supported so on, to kernel via device-tree.
 
-> On Fri, 29 May 2015 10:13:25 -0400 Eric B Munson <emunson@akamai.com> wro=
-te:
->=20
-> > mlock() allows a user to control page out of program memory, but this
-> > comes at the cost of faulting in the entire mapping when it is
-> > allocated.  For large mappings where the entire area is not necessary
-> > this is not ideal.
-> >=20
-> > This series introduces new flags for mmap() and mlockall() that allow a
-> > user to specify that the covered are should not be paged out, but only
-> > after the memory has been used the first time.
->=20
-> I almost applied these, but the naming issue (below) stopped me.
->=20
-> A few things...
->=20
-> - The 0/n changelog should reveal how MAP_LOCKONFAULT interacts with
->   rlimit(RLIMIT_MEMLOCK).
->=20
->   I see the implementation is "as if the entire mapping will be
->   faulted in" (for mmap) and "as if it was MCL_FUTURE" (for mlockall)
->   which seems fine.  Please include changelog text explaining and
->   justifying these decisions.  This stuff will need to be in the
->   manpage updates as well.
+Kernel code then, parses the device-tree for nest pmu supports
+and registers nest pmu with the events available. PORE Engine collects
+and accumulate nest counter data in per-chip HOMER region, hence
+device-tree also exports per-chip HOMER nest accumulation region.
+And individual event offset are used as event values.
 
-Change logs are updated, and this will be included in the man page
-update as well.
+Here is sample perf usage to explain the interface.
 
->=20
-> - I think I already asked "why not just use MCL_FUTURE" but I forget
->   the answer ;) In general it is a good idea to update changelogs in
->   response to reviewer questions, because other people will be
->   wondering the same things.  Or maybe I forgot to ask.  Either way,
->   please address this in the changelogs.
+#./perf list
+....
+  iTLB-load-misses                                   [Hardware cache event]
 
-I must have missed that question.  Here is the text from the updated
-mlockall changelog:
+  Nest_Alink_BW/Alink0/                              [Kernel PMU event]
+  Nest_Alink_BW/Alink1/                              [Kernel PMU event]
+  Nest_Alink_BW/Alink2/                              [Kernel PMU event]
+  Nest_MCS_Read_BW/MCS_00/                           [Kernel PMU event]
+  Nest_MCS_Read_BW/MCS_01/                           [Kernel PMU event]
+  Nest_MCS_Read_BW/MCS_02/                           [Kernel PMU event]
+  Nest_MCS_Read_BW/MCS_03/                           [Kernel PMU event]
+  Nest_MCS_Write_BW/MCS_00/                          [Kernel PMU event]
+  Nest_MCS_Write_BW/MCS_01/                          [Kernel PMU event]
+  Nest_MCS_Write_BW/MCS_02/                          [Kernel PMU event]
+  Nest_MCS_Write_BW/MCS_03/                          [Kernel PMU event]
+  Nest_PowerBus_BW/External/                         [Kernel PMU event]
+  Nest_PowerBus_BW/Internal/                         [Kernel PMU event]
+  Nest_Xlink_BW/Xlink0/                              [Kernel PMU event]
+  Nest_Xlink_BW/Xlink1/                              [Kernel PMU event]
+  Nest_Xlink_BW/Xlink2/                              [Kernel PMU event]
 
-MCL_ONFAULT is preferrable to MCL_FUTURE for the use cases enumerated
-in the previous patch becuase MCL_FUTURE will behave as if each mapping
-was made with MAP_LOCKED, causing the entire mapping to be faulted in
-when new space is allocated or mapped.  MCL_ONFAULT allows the user to
-delay the fault in cost of any given page until it is actually needed,
-but then guarantees that that page will always be resident.
+  rNNN                                               [Raw hardware event descriptor]
+  cpu/t1=v1[,t2=v2,t3 ...]/modifier                  [Raw hardware event descriptor]
+.....
 
->=20
-> - I can perhaps see the point in mmap(MAP_LOCKONFAULT) (other
->   mappings don't get lock-in-memory treatment), but what's the benefit
->   in mlockall(MCL_ON_FAULT) over MCL_FUTURE?  (Add to changelog also,
->   please).
->=20
-> - Is there a manpage update?
+# ./perf stat -e 'Nest_Xlink_BW/Xlink1/' -a -A sleep 1
 
-I will send one out when I post V2
+ Performance counter stats for 'system wide':
 
->=20
-> - Can we rename patch 1/3 from "add flag to ..." to "add mmap flag to
->   ...", to distinguish from 2/3 "add mlockall flag ..."?
+CPU0             15,913.18 MiB  Nest_Xlink_BW/Xlink1/
+CPU32            11,955.88 MiB  Nest_Xlink_BW/Xlink1/
+CPU64            11,042.43 MiB  Nest_Xlink_BW/Xlink1/
+CPU96            14,065.27 MiB  Nest_Xlink_BW/Xlink1/
 
-Done
+       1.001062038 seconds time elapsed
 
->=20
-> - The MAP_LOCKONFAULT versus MCL_ON_FAULT inconsistency is
->   irritating!  Can we get these consistent please: switch to either
->   MAP_LOCK_ON_FAULT or MCL_ONFAULT.
+# ./perf stat -e 'Nest_Alink_BW/Alink0/,Nest_Alink_BW/Alink1/,Nest_Alink_BW/Alink2/' -a -A -I 1000 sleep 5
 
-Yes, will do for V2.
+ Performance counter stats for 'system wide':
 
->=20
+CPU0                  0.00 MiB  Nest_Alink_BW/Alink0/                                         (100.00%)
+CPU32                 0.00 MiB  Nest_Alink_BW/Alink0/                                         (100.00%)
+CPU64                 0.00 MiB  Nest_Alink_BW/Alink0/                                         (100.00%)
+CPU96                 0.00 MiB  Nest_Alink_BW/Alink0/                                         (100.00%)
+CPU0              1,430.43 MiB  Nest_Alink_BW/Alink1/                                         (100.00%)
+CPU32               320.99 MiB  Nest_Alink_BW/Alink1/                                         (100.00%)
+CPU64             3,443.83 MiB  Nest_Alink_BW/Alink1/                                         (100.00%)
+CPU96             1,904.41 MiB  Nest_Alink_BW/Alink1/                                         (100.00%)
+CPU0              2,856.85 MiB  Nest_Alink_BW/Alink2/
+CPU32                 7.50 MiB  Nest_Alink_BW/Alink2/
+CPU64             4,034.29 MiB  Nest_Alink_BW/Alink2/
+CPU96               288.49 MiB  Nest_Alink_BW/Alink2/
+.....
 
---GRPZ8SYKNexpdSJ7
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
+OPAL side patches are posted in the skiboot mailing list.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1
+Changelog from RFC:
 
-iQIcBAEBAgAGBQJVbbzQAAoJELbVsDOpoOa9EtAP+wamgfoxHetODtEfMUqzYJgN
-GxcPBHPjo32fPtFoQu+IvDCqI48ySC4Syx0DqjzZJah+Uo8ngxUDQz3U9dTFrZq+
-wv18PEj5CV4ejsEPn6pPuFYpQk/s6UvaexGCXONeHD8Zp20zoPpa4foUMyOvvUnC
-tTA+fUJNsinYLGmzidV/1ebXUZYA2ur8Keur7e/kVqzZUWCkClpEVa7ZWnclral9
-8mcvrgnI0Z7HnXlZzgUzncUt/OpVwp6jH8Cg4l2qGvSN0q4w77LWhac4n+ut7ogZ
-XUIZiem41vBBzWuRjI9TiikFv83wQUPgFrlazWaScEl1Ht5N6HBs20EwHS86sBHe
-cMk6SdwUhhCi7rRsZQPcYq+Re6XKXMZPUhfoMqU09TMIpN0t01XGdkAQehgHoyvY
-N2hI4zuLIiFNYouXQKLwp+a7++tzI7XxfIo67CmdzCEb/Buxalhd+rSOQWF28Sos
-F4vRxeyhzE0CjWPcp9qDt4EIJci1TNwvQpOzT0HbX1PXJEJM44cRZxvLIYq9Almy
-g0rQ2LSYZP1gf9ngo/zh02ghenboKwYAMVOZDbOOjUMvtw5RS97voJ5ZOX+/fK95
-AQAEPZnJICFKmP/yNGtWpKuK3yfeYxDL0mAopbzXe2SGgk9eS6Dgsg0gVI4hyu33
-uQVVmWf17Owqb8CI9gAt
-=Aoeb
------END PGP SIGNATURE-----
+1) Removed "uncore" code and made each Nest Unit a separate PMU.
+2) Removed uncore type abstraction and uncore related functions.
+3) Added simple cpumask function since these are per-chip counters
+4) Redesigned device-tree parser based on the latest platform enablement code
+5) Made changes to commit message
 
---GRPZ8SYKNexpdSJ7--
+Kindly let me know you comments and feedback.
+
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+Cc: Anshuman Khandual <khandual@linux.vnet.ibm.com>
+Cc: Stephane Eranian <eranian@google.com>
+Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
+
+Madhavan Srinivasan (9):
+ powerpc/powernv: Data structure and macros definition
+ powerpc/powernv: nest pmu init function with cpumask attr
+ powerpc/powernv: Add cpu hotplug support
+ powerpc/powernv: Add generic nest pmu ops
+ powerpc/powernv: nest pmu feature detection support
+ powerpc/powernv: dt parser function for nest pmu and its events
+ powerpc/powernv: Event attr creation and PMU registration
+ powerpc/powernv: Add OPAL support for Nest PMU
+ powerpc/powernv: Makefile changes to include nest pmu
+
+ arch/powerpc/include/asm/opal-api.h            |   3 +-
+ arch/powerpc/include/asm/opal.h                |   2 +
+ arch/powerpc/perf/Makefile                     |   2 +-
+ arch/powerpc/perf/nest-pmu.c                   | 489 +++++++++++++++++++++++++
+ arch/powerpc/perf/nest-pmu.h                   |  55 +++
+ arch/powerpc/platforms/powernv/opal-wrappers.S |   1 +
+ 6 files changed, 550 insertions(+), 2 deletions(-)
+ create mode 100644 arch/powerpc/perf/nest-pmu.c
+ create mode 100644 arch/powerpc/perf/nest-pmu.h
+
+-- 
+1.9.1
