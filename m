@@ -1,15 +1,14 @@
 Return-Path: <dja@axtens.net>
-Received: from mail-pd0-x229.google.com (mail-pd0-x229.google.com
- [IPv6:2607:f8b0:400e:c02::229])
+Received: from mail-pd0-x22c.google.com (mail-pd0-x22c.google.com
+ [IPv6:2607:f8b0:400e:c02::22c])
  (using TLSv1.2 with cipher ECDHE-RSA-AES128-GCM-SHA256 (128/128 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 118C71A0050
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jun 2015 09:15:40 +1000 (AEST)
-Received: by pdbki1 with SMTP id ki1so142885353pdb.1
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 02 Jun 2015 16:15:38 -0700 (PDT)
-Message-ID: <1433286889.438.13.camel@axtens.net>
-Subject: Re: [PATCH v1 2/9]powerpc/powernv: nest pmu init function with
- cpumask attr
+ by lists.ozlabs.org (Postfix) with ESMTPS id 35D491A0050
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jun 2015 09:39:08 +1000 (AEST)
+Received: by pdbki1 with SMTP id ki1so143223194pdb.1
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 02 Jun 2015 16:39:06 -0700 (PDT)
+Message-ID: <1433288296.438.30.camel@axtens.net>
+Subject: Re: [PATCH v1 3/9]powerpc/powernv: Add cpu hotplug support
 From: Daniel Axtens <dja@axtens.net>
 To: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
 Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Peter
@@ -18,12 +17,12 @@ Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, Peter
  <preeti@linux.vnet.ibm.com>, Sukadev Bhattiprolu
  <sukadev@linux.vnet.ibm.com>, Ingo Molnar <mingo@kernel.org>, Anshuman
  Khandual <khandual@linux.vnet.ibm.com>
-Date: Wed, 03 Jun 2015 09:14:49 +1000
-In-Reply-To: <1433260778-26497-3-git-send-email-maddy@linux.vnet.ibm.com>
+Date: Wed, 03 Jun 2015 09:38:16 +1000
+In-Reply-To: <1433260778-26497-4-git-send-email-maddy@linux.vnet.ibm.com>
 References: <1433260778-26497-1-git-send-email-maddy@linux.vnet.ibm.com>
- <1433260778-26497-3-git-send-email-maddy@linux.vnet.ibm.com>
+ <1433260778-26497-4-git-send-email-maddy@linux.vnet.ibm.com>
 Content-Type: multipart/signed; micalg="pgp-sha256";
- protocol="application/pgp-signature"; boundary="=-wUvBtxTCN0sKNtuDJftd"
+ protocol="application/pgp-signature"; boundary="=-BpXyCyWRl2Gz73c9+mEu"
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
@@ -35,133 +34,116 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
 
---=-wUvBtxTCN0sKNtuDJftd
+--=-BpXyCyWRl2Gz73c9+mEu
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
 On Tue, 2015-06-02 at 21:29 +0530, Madhavan Srinivasan wrote:
-> Patch creates a file "nest-pmu-c" to contain nest pmu related functions.
-"nest-pmu.c"
-> Patch adds nest pmu init function and cpumask function since Nest pmu uni=
-ts
-> are per-chip. First online cpu for a given node is picked as
-> designated thread to read the counter data.
->=20
-> Subsequent patch adds the hotplug support.
->=20
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Cc: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-> Cc: Anshuman Khandual <khandual@linux.vnet.ibm.com>
-> Cc: Stephane Eranian <eranian@google.com>
-> Cc: Preeti U Murthy <preeti@linux.vnet.ibm.com>
-> Cc: Ingo Molnar <mingo@kernel.org>
-> Cc: Peter Zijlstra <peterz@infradead.org>
-> Signed-off-by: Madhavan Srinivasan <maddy@linux.vnet.ibm.com>
-> ---
->  arch/powerpc/perf/nest-pmu.c | 70 ++++++++++++++++++++++++++++++++++++++=
-++++++
->  1 file changed, 70 insertions(+)
->  create mode 100644 arch/powerpc/perf/nest-pmu.c
->=20
-> diff --git a/arch/powerpc/perf/nest-pmu.c b/arch/powerpc/perf/nest-pmu.c
-> new file mode 100644
-> index 0000000..d4413bb
-> --- /dev/null
-> +++ b/arch/powerpc/perf/nest-pmu.c
-> @@ -0,0 +1,70 @@
-> +/*
-> + * Nest Performance Monitor counter support for POWER8 processors.
-> + *
-> + * Copyright 2015 Madhavan Srinivasan, IBM Corporation.
-> + *
-> + * This program is free software; you can redistribute it and/or
-> + * modify it under the terms of the GNU General Public License
-> + * as published by the Free Software Foundation; either version
-> + * 2 of the License, or (at your option) any later version.
-> + */
-> +
-Again, I think this is supposed to be v2 only.
+> Patch adds cpu hotplug support. First online cpu in a node is picked as
+> designated thread to read the Nest pmu counter data, and at the time of
+> hotplug, next online cpu from the same node is picked up.
 
-> +#include "nest-pmu.h"
-> +
-> +static cpumask_t cpu_mask_nest_pmu;
-> +
-> +static ssize_t cpumask_nest_pmu_get_attr(struct device *dev,
-> +				struct device_attribute *attr, char *buf)
+I'm not sure I understand this commit message. I think I understand the
+first half - I think you're trying to say: "At boot, the first online
+CPU in a node is picked as the designated thread to read the Nest PMU
+counter data." I'm not sure I understand the second half: "picked up"
+how and for what?
+
+(I did eventually figure it out by reading the patch, but it'd be really
+nice to have it spelled out nicely in the commit message.)
+
+> +static void nest_exit_cpu(int cpu)
 > +{
-> +	return cpumap_print_to_pagebuf(true, buf, &cpu_mask_nest_pmu);
-> +}
-> +
-> +static DEVICE_ATTR(cpumask, S_IRUGO, cpumask_nest_pmu_get_attr, NULL);
-> +
-> +static struct attribute *cpumask_nest_pmu_attrs[] =3D {
-> +	&dev_attr_cpumask.attr,
-> +	NULL,
-> +};
-> +
-> +static struct attribute_group cpumask_nest_pmu_attr_group =3D {
-> +	.attrs =3D cpumask_nest_pmu_attrs,
-> +};
-> +
-> +void cpumask_chip(void)
-> +{
+> +	int i, nid, target =3D -1;
 > +	const struct cpumask *l_cpumask;
-> +	int cpu, nid;
+> +	int src_chipid;
 > +
-> +	if (!cpumask_empty(&cpu_mask_nest_pmu)) {
-> +		printk(KERN_INFO "cpumask not empty\n");
+> +	if (!cpumask_test_and_clear_cpu(cpu, &cpu_mask_nest_pmu))
 > +		return;
-> +	}
 > +
-> +	cpu_notifier_register_begin();
-> +	for_each_online_node(nid) {
-> +		l_cpumask =3D cpumask_of_node(nid);
-> +		cpu =3D cpumask_first(l_cpumask);
-> +		cpumask_set_cpu(cpu, &cpu_mask_nest_pmu);
+> +	nid =3D cpu_to_node(cpu);
+> +	src_chipid =3D topology_physical_package_id(cpu);
+> +	l_cpumask =3D cpumask_of_node(nid);
+> +	for_each_cpu(i, l_cpumask) {
+> +		if (i =3D=3D cpu)
+> +			continue;
+> +		if (src_chipid =3D=3D topology_physical_package_id(i)) {
+> +			target =3D i;
+> +			break;
+> +		}
 > +	}
-> +
-> +	cpu_notifier_register_done();
-> +}
-It's not clear from the name of this function what it does. I don't
-think I actually understand what it does: it appears to register a
-notifier on the first cpu of each node; maybe that should be reflected
-in the name.
 
-> +static int __init nest_pmu_init(void)
+Some comments here would really help. I think you're looking for the
+first CPU that's (a) not the cpu you're removing and (b) on the same
+physical package, so sharing the same nest, but it took me a lot of
+staring at the code to figure it out.
+
+> +
+> +	cpumask_set_cpu(target, &cpu_mask_nest_pmu);
+> +	nest_change_cpu_context (cpu, target);
+> +	return;
+Return is redundant here and in several other functions in this patch.
+> +}
+> +
+> +static void nest_init_cpu(int cpu)
 > +{
-> +	int ret =3D 0;
+> +	int i, src_chipid;
 > +
-> +	/*
-> +	 * Lets do this only if we are hypervisor
-> +	 */
-> +	if (!cur_cpu_spec->oprofile_cpu_type ||
-> +	   strcmp(cur_cpu_spec->oprofile_cpu_type, "ppc64/power8") ||
-> +	   !cpu_has_feature(CPU_FTR_HVMODE))
-> +		return ret;
+> +	src_chipid =3D topology_physical_package_id(cpu);
+> +	for_each_cpu(i, &cpu_mask_nest_pmu)
+> +		if (src_chipid =3D=3D topology_physical_package_id(i))
+> +			return;
 > +
-> +	cpumask_chip();
-> +
-> +	return 0;
+> +	cpumask_set_cpu(cpu, &cpu_mask_nest_pmu);
+> +	nest_change_cpu_context ( -1, cpu);
+Weird extra spaces here.
+
+> +	return;
 > +}
- - Where is ret set? I can only see it set when it's defined: the if
-statment doesn't change the value of ret as far as I can see...
+This function could also do with a comment: AFAICT, you've structured
+the function so that it only calls nest_change_cpu_context if you've
+picked up a cpu on a physical package that previously didn't have a nest
+pmu thread on it.
 
- - Would it be clearer if you said
-        !(strcmp(cur_cpu_spec->oprofile_cpu_type, "ppc64/power8") =3D=3D 0)
-   That would make it clearer that you're trying to get a list of
-possible failure conditions.
-=20
- - Is there really no better way to check if a CPU is a power 8 than an
-string comparison?
+> +
+> +static int nest_cpu_notifier(struct notifier_block *self,
+> +				unsigned long action, void *hcpu)
+> +{
+> +	unsigned int cpu =3D (long)hcpu;
+What's with this cast? You cast it to a long and then assign it to an
+unsigned int?
+> +
+> +	switch (action & ~CPU_TASKS_FROZEN) {
+> +	case CPU_DOWN_FAILED:
+Is it necessary to move the thread back if the CPU fails to go down?
+You've moved it to another online CPU already; what's the benefit of
+paying the time-penalty to move it back?
+> +	case CPU_STARTING:
+> +		nest_init_cpu(cpu);
+> +		break;
+> +	case CPU_DOWN_PREPARE:
+> +		nest_exit_cpu(cpu);
+> +		break;
+> +	default:
+> +		break;
+> +	}
+> +
+> +	return NOTIFY_OK;
+> +}
 
-> +device_initcall(nest_pmu_init);
+> =20
+
+Now, I don't know the details of CPU hotplug _at all_, so this may be
+stupid, but what happens if you hotplug a lot of CPUs all at once? Is
+everything properly serialised or is this going to race and end up with
+either multiple cpus trying to do PMU or no cpus?
 
 Regards,
 Daniel Axtens
 
---=-wUvBtxTCN0sKNtuDJftd
+
+
+--=-BpXyCyWRl2Gz73c9+mEu
 Content-Type: application/pgp-signature; name="signature.asc"
 Content-Description: This is a digitally signed message part
 Content-Transfer-Encoding: 7bit
@@ -170,19 +152,19 @@ Content-Transfer-Encoding: 7bit
 Version: GnuPG v2
 Comment: GPGTools - https://gpgtools.org
 
-iQIcBAABCAAGBQJVbjjpAAoJEPC3R3P2I92FMY4P/RSySbQkZhVHnLbC6E3R0w6w
-95suMaaK12Uy3GQIGauT6apbR83WxwdVMBW1MVUfhbuhk0yjIM0WFkkTh40V0k47
-V4IO1M9hSTDbeGOcH380jcTdJYYQX34OXmKB24DTgev0KVjGA53WbfRLee6Hb40q
-8a/BGgawL+nmxAaMiW+eFSBto3HPMDUJJkbQ7Qs8J5Bh15RaIwMHm9oRn5VihvoF
-JHP/oHAJWvXILgYLSWWpMNrcbLTN2Xvw6dC6Usw3IMD0LQhfNFMMwacBMde/1wu1
-Qzl2VkxpN0CxzBXo+QLifAm9vdUTNuJK2MWNR3f3+1N5+wyErimU6XunniK90b0w
-CNbrtOTU7wrgSXB1h5Ju1TWQ+VNObdh9WiegNVimIbHpkqdXtCDZWlrgJopTFTBl
-8wXamwiZbfeDQ0Lwit/qFcueE4TzLIF5dO8NjUuAfzBUTOgt624CKfqq7zJeC0EI
-m5csn2XcgF429QjmGZ2soUmcsZ4NrtXffOHBOpnmkNpshf2lEbp2iAh9NqE3CuPQ
-+ERp7m0gxLbtrSSgkjjr0FquGNwHAN7PbrRf5/JhxNocjW/Ie8D97z1mzq9xUu6g
-H46YgJlqInGRW9GBGvYnKxwjqRzDYlg9ix/iOHpWasfuZi8YnNnGpnp+Wu+pJfA8
-nRnrqEITdgPzusX3sdKf
-=89RX
+iQIcBAABCAAGBQJVbj5pAAoJEPC3R3P2I92FT9wQAMk7mNbuGwytFPqqxMkck5oQ
+dY4r8cCDrNiANbGgzCnrQLm4gVHTztDS4NHAJ5FT3WBlwhheabW35dArEobVWx2h
+6ZEBk7qSQQvWDRB1RYlASk8GARC1FZC6UB/oTvMY32q+R0CyhyULMRXFI+MgFB/9
+D5/wMQR9a5dLW0yZnfIjGxaffYU38EjcYFAgB0nVgYhm9cSa9+Ov3tBxto1H72gM
+2pwOm8yyFdY0zFm8bY8kh8zlYvwVmBFgpm3dTcARaTctmP9sdqPyedzs8M8Ia8aR
+aYuB+bxHAMErsCaBYC5opxzOba4D7msN9uWt88riVxcQILCt+5tdvVFdVnRaGxHF
+rvw/YckVtcoerkBrNnakxIqdEmqx0yECgPfXJASbgdqWTVhlhBTeAa0TvUSz9eK6
+SvPWPykgx7Cjm2UKHt0h8q3AOpa7/qcsaIAEv1/2RY0BmKxwxH+WBCeUafm1SGbY
+ktYwGoKaMP7nE+4XZyuxgux/+N5VDFhOffUbOE+UgWQ3nJViBpJcThmxORWMfTxm
+he8zTFnfqBlWn48E2omOHCMp7rrk6wyYoNmKTXsWeSh9R2ifX0LtuEPeO0ek1l3d
+gW/boB60Go3LaR6fx303scSGt/rTkusoy0i5fvJ6i0re+SS6a0GlPrlRfuJvWLlB
+mRbGS6jTtn+9+wII7v2Z
+=pwAz
 -----END PGP SIGNATURE-----
 
---=-wUvBtxTCN0sKNtuDJftd--
+--=-BpXyCyWRl2Gz73c9+mEu--
