@@ -1,34 +1,40 @@
-Return-Path: <tglx@linutronix.de>
-Received: from Galois.linutronix.de (Galois.linutronix.de
- [IPv6:2001:470:1f0b:db:abcd:42:0:1])
- (using TLSv1.2 with cipher DHE-RSA-AES128-SHA (128/128 bits))
+Return-Path: <sukadev@linux.vnet.ibm.com>
+Received: from e17.ny.us.ibm.com (e17.ny.us.ibm.com [129.33.205.207])
+ (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id D7E321A1025
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jun 2015 05:21:07 +1000 (AEST)
-Date: Tue, 2 Jun 2015 21:20:45 +0200 (CEST)
-From: Thomas Gleixner <tglx@linutronix.de>
-To: Baolin Wang <baolin.wang@linaro.org>
-cc: arnd@arndb.de, john.stultz@linaro.org, heenasirwani@gmail.com,
- pang.xunlei@linaro.org, peterz@infradead.org, rafael.j.wysocki@intel.com,
- gregkh@linuxfoundation.org, richardcochran@gmail.com,
- benh@kernel.crashing.org, paulus@samba.org, mpe@ellerman.id.au,
- schwidefsky@de.ibm.com, heiko.carstens@de.ibm.com, linux390@de.ibm.com,
- rth@twiddle.net, riel@redhat.com, cl@linux.com, tj@kernel.org,
- fweisbec@gmail.com, ahh@google.com, pjt@google.com,
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
- linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org,
- netdev@vger.kernel.org, serge.hallyn@canonical.com,
- james.l.morris@oracle.com, serge@hallyn.com, pmoore@redhat.com,
- tiwai@suse.de, jeffv@google.com, jlayton@primarydata.com,
- keescook@chromium.org, sds@tycho.nsa.gov, mark.d.rustad@intel.com,
- linux-security-module@vger.kernel.org, y2038@lists.linaro.org
-Subject: Re: [PATCH v4 00/25] Convert the posix_clock_operations and k_clock
- structure to ready for 2038
-In-Reply-To: <1433159093-4548-1-git-send-email-baolin.wang@linaro.org>
-Message-ID: <alpine.DEB.2.11.1506022115240.20347@nanos>
-References: <1433159093-4548-1-git-send-email-baolin.wang@linaro.org>
+ by lists.ozlabs.org (Postfix) with ESMTPS id 715DE1A0EBE
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jun 2015 05:23:09 +1000 (AEST)
+Received: from /spool/local
+ by e17.ny.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ Violators will be prosecuted
+ for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
+ Tue, 2 Jun 2015 15:23:06 -0400
+Received: from b01cxnp22033.gho.pok.ibm.com (b01cxnp22033.gho.pok.ibm.com
+ [9.57.198.23])
+ by d01dlp01.pok.ibm.com (Postfix) with ESMTP id DC20738C8052
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Jun 2015 15:23:03 -0400 (EDT)
+Received: from d01av05.pok.ibm.com (d01av05.pok.ibm.com [9.56.224.195])
+ by b01cxnp22033.gho.pok.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t52JN3of49545382
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 2 Jun 2015 19:23:03 GMT
+Received: from d01av05.pok.ibm.com (localhost [127.0.0.1])
+ by d01av05.pok.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
+ t52JN30D015551
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 2 Jun 2015 15:23:03 -0400
+Date: Tue, 2 Jun 2015 12:22:27 -0700
+From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
+To: mingo@redhat.com, ak@linux.intel.com,
+ Michael Ellerman <mpe@ellerman.id.au>, Jiri Olsa <jolsa@redhat.com>,
+ Arnaldo Carvalho de Melo <acme@kernel.org>
+Cc: namhyung@kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+Subject: Re: [PATCH V13 00/14] perf, tools: Add support for PMU events in
+ JSON format
+Message-ID: <20150602192227.GC3978@us.ibm.com>
+References: <1433265135-20426-1-git-send-email-sukadev@linux.vnet.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1433265135-20426-1-git-send-email-sukadev@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
 List-Unsubscribe: <https://lists.ozlabs.org/options/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=unsubscribe>
@@ -38,23 +44,20 @@ List-Help: <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=help>
 List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
  <mailto:linuxppc-dev-request@lists.ozlabs.org?subject=subscribe>
 
-On Mon, 1 Jun 2015, Baolin Wang wrote:
+Sukadev Bhattiprolu [sukadev@linux.vnet.ibm.com] wrote:
+| 
+| These patches are available from:
+| 
+| 	https://github.com:sukadev/linux.git 
+| 	
+| 		Branch			Description
+| 		------------------------------------------------------
+| 		json-v13		Source Code only 
+| 		json-files-3		x86 and Powerpc datafiles only
+| 		json-v13-with-data	Both code and data (build/test)
 
-> This patch series changes the 32-bit time types (timespec/itimerspec) to
-> the 64-bit types (timespec64/itimerspec64), since 32-bit time types will
-> break in the year 2038.
+Please use following branches instead:
 
-That's only true for 32bit systems.
-
-All in all the patch series looks rather reasonable now, except for
-the subject lines and the changelogs.
-
-The only technical objection I have is the macro conversion magic in
-patch #6. This can be done in a less cryptic and more efficient way.
-
-See the comments to the various patches and please apply them to all
-of the series.
-
-Thanks,
-
-	tglx
+ 		json-v13.1		Source Code only 
+ 		json-files-3		x86 and Powerpc datafiles only
+ 		json-v13.1-with-data	Both code and data (build/test)
