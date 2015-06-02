@@ -1,25 +1,25 @@
 Return-Path: <sukadev@linux.vnet.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+Received: from e39.co.us.ibm.com (e39.co.us.ibm.com [32.97.110.160])
  (using TLSv1 with cipher CAMELLIA256-SHA (256/256 bits))
  (No client certificate requested)
- by lists.ozlabs.org (Postfix) with ESMTPS id 054421A0CF4
- for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jun 2015 03:13:05 +1000 (AEST)
+ by lists.ozlabs.org (Postfix) with ESMTPS id 4D81C1A0D2A
+ for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Jun 2015 03:13:06 +1000 (AEST)
 Received: from /spool/local
- by e33.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
+ by e39.co.us.ibm.com with IBM ESMTP SMTP Gateway: Authorized Use Only!
  Violators will be prosecuted
  for <linuxppc-dev@lists.ozlabs.org> from <sukadev@linux.vnet.ibm.com>;
  Tue, 2 Jun 2015 11:13:04 -0600
-Received: from b03cxnp08025.gho.boulder.ibm.com
- (b03cxnp08025.gho.boulder.ibm.com [9.17.130.17])
- by d03dlp01.boulder.ibm.com (Postfix) with ESMTP id 20A3A1FF0050
- for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Jun 2015 11:04:11 -0600 (MDT)
+Received: from b03cxnp08028.gho.boulder.ibm.com
+ (b03cxnp08028.gho.boulder.ibm.com [9.17.130.20])
+ by d03dlp03.boulder.ibm.com (Postfix) with ESMTP id A518719D803E
+ for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Jun 2015 11:04:02 -0600 (MDT)
 Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
- by b03cxnp08025.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
- t52HCRUS26214422
- for <linuxppc-dev@lists.ozlabs.org>; Tue, 2 Jun 2015 10:12:27 -0700
+ by b03cxnp08028.gho.boulder.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id
+ t52HCTG942729524
+ for <linuxppc-dev@lists.ozlabs.org>; Tue, 2 Jun 2015 10:12:29 -0700
 Received: from d03av03.boulder.ibm.com (localhost [127.0.0.1])
  by d03av03.boulder.ibm.com (8.14.4/8.14.4/NCO v10.0 AVout) with ESMTP id
- t52HD0hL026277
+ t52HCwvq026208
  for <linuxppc-dev@lists.ozlabs.org>; Tue, 2 Jun 2015 11:13:00 -0600
 From: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
 To: mingo@redhat.com, ak@linux.intel.com,
@@ -27,10 +27,9 @@ To: mingo@redhat.com, ak@linux.intel.com,
  Arnaldo Carvalho de Melo <acme@kernel.org>
 Cc: namhyung@kernel.org, linuxppc-dev@lists.ozlabs.org,
  <linux-kernel@vger.kernel.org>
-Subject: [PATCH v13 10/14] perf,
- tools: Add override support for event list CPUID
-Date: Tue,  2 Jun 2015 10:12:10 -0700
-Message-Id: <1433265135-20426-11-git-send-email-sukadev@linux.vnet.ibm.com>
+Subject: [PATCH v13 09/14] perf, tools: Group alias perf list by section
+Date: Tue,  2 Jun 2015 10:12:09 -0700
+Message-Id: <1433265135-20426-10-git-send-email-sukadev@linux.vnet.ibm.com>
 In-Reply-To: <1433265135-20426-1-git-send-email-sukadev@linux.vnet.ibm.com>
 References: <1433265135-20426-1-git-send-email-sukadev@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.lists.ozlabs.org>
@@ -44,40 +43,59 @@ List-Subscribe: <https://lists.ozlabs.org/listinfo/linuxppc-dev>,
 
 From: Andi Kleen <ak@linux.intel.com>
 
-Add a PERF_CPUID variable to override the CPUID of the current CPU.
-This is useful for testing, so that all event lists can be tested on a single
-system.
+The first first element in an hardware event name defines the general
+area, usually the part of the micro architecture it is refering to.
+Group the perf list output by these sections by adding section headers.
 
 Signed-off-by: Andi Kleen <ak@linux.intel.com>
 Signed-off-by: Sukadev Bhattiprolu <sukadev@linux.vnet.ibm.com>
-
-v2: Fix double free in earlier version.
-    Print actual CPUID being used with verbose option.
 ---
- tools/perf/util/pmu.c |    8 +++++++-
- 1 file changed, 7 insertions(+), 1 deletion(-)
+ tools/perf/util/pmu.c |   17 +++++++++++++++++
+ 1 file changed, 17 insertions(+)
 
 diff --git a/tools/perf/util/pmu.c b/tools/perf/util/pmu.c
-index 8d91fa7..2cf03a7 100644
+index 417333b..8d91fa7 100644
 --- a/tools/perf/util/pmu.c
 +++ b/tools/perf/util/pmu.c
-@@ -481,10 +481,16 @@ static int pmu_add_cpu_aliases(void *data)
- 	struct pmu_event *pe;
- 	char *cpuid;
+@@ -1039,6 +1039,8 @@ void print_pmu_events(const char *event_glob, bool name_only, bool quiet_flag)
+ 	struct pair *aliases;
+ 	int numdesc = 0;
+ 	int columns = pager_get_columns();
++	const char *last_section;
++	int last_section_len;
  
--	cpuid = get_cpuid_str();
-+	cpuid = getenv("PERF_CPUID");
-+	if (cpuid)
-+		cpuid = strdup(cpuid);
-+	if (!cpuid)
-+		cpuid = get_cpuid_str();
- 	if (!cpuid)
- 		return 0;
- 
-+	pr_debug("Using CPUID %s\n", cpuid);
+ 	pmu = NULL;
+ 	len = 0;
+@@ -1086,6 +1088,8 @@ void print_pmu_events(const char *event_glob, bool name_only, bool quiet_flag)
+ 		}
+ 	}
+ 	len = j;
++	last_section = NULL;
++	last_section_len = 0;
+ 	qsort(aliases, len, sizeof(struct pair), cmp_pair);
+ 	for (j = 0; j < len; j++) {
+ 		if (name_only) {
+@@ -1093,8 +1097,21 @@ void print_pmu_events(const char *event_glob, bool name_only, bool quiet_flag)
+ 			continue;
+ 		}
+ 		if (aliases[j].desc && !quiet_flag) {
++			char *dot;
++			char *name = aliases[j].name;
 +
- 	i = 0;
- 	while (1) {
- 		map = &pmu_events_map[i++];
+ 			if (numdesc++ == 0)
+ 				printf("\n");
++			dot = strchr(name, '.');
++			if (dot &&
++				(!last_section ||
++				 strncmp(last_section, name, last_section_len))) {
++				last_section_len = dot - name;
++				printf("%s%.*s:\n",
++						last_section ? "\n" : "",
++						last_section_len, name);
++				last_section = name;
++			}
+ 			printf("  %-50s\n", aliases[j].name);
+ 			printf("%*s", 8, "[");
+ 			wordwrap(aliases[j].desc, 8, columns, 0);
 -- 
 1.7.9.5
